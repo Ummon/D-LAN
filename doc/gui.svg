@@ -34,15 +34,15 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="2"
-     inkscape:cx="626.00089"
-     inkscape:cy="391.37824"
+     inkscape:cx="303.55722"
+     inkscape:cy="587.3846"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
-     inkscape:window-width="1280"
-     inkscape:window-height="945"
+     inkscape:window-width="1278"
+     inkscape:window-height="784"
      inkscape:window-x="0"
-     inkscape:window-y="52"
+     inkscape:window-y="14"
      showguides="true"
      inkscape:guide-bbox="true"
      inkscape:snap-bbox="false"
@@ -121,12 +121,12 @@
        x="100.00801"
        y="74.101746" />
     <rect
-       style="opacity:1;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.49999988;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       style="opacity:1;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.43300393;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        id="rect2682"
-       width="190.01419"
-       height="179.98364"
-       x="184.99986"
-       y="84.101746" />
+       width="190.08119"
+       height="134.93475"
+       x="184.96637"
+       y="84.068245" />
     <rect
        style="opacity:1;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.49999997;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        id="rect2684"
@@ -197,7 +197,7 @@
          id="tspan3201"
          x="101.21472"
          y="71.933777"
-         style="font-size:8px">Pompage</tspan></text>
+         style="font-size:8px">Aybabtus</tspan></text>
     <rect
        style="opacity:1;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
        id="rect3213"
@@ -1174,7 +1174,7 @@
          sodipodi:role="line"
          id="tspan3726"
          x="19.996231"
-         y="37.005032">Pompage - GUI design document</tspan></text>
+         y="37.005032">Aybabtu - GUI design document</tspan></text>
     <text
        xml:space="preserve"
        style="font-size:8px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
@@ -1798,5 +1798,33 @@
          id="tspan2754"
          x="688.25714"
          y="466.09448">Browse</tspan></text>
+    <rect
+       style="opacity:1;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.4054825;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="rect3456"
+       width="185.82845"
+       height="39.820347"
+       x="184.95274"
+       y="224.41367" />
+    <text
+       xml:space="preserve"
+       style="font-size:11px;font-style:normal;font-weight:normal;opacity:1;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+       x="190"
+       y="234.09448"
+       id="text3458"><tspan
+         sodipodi:role="line"
+         x="190"
+         y="234.09448"
+         style="font-size:6px"
+         id="tspan3468">User log :</tspan><tspan
+         sodipodi:role="line"
+         x="190"
+         y="241.59448"
+         style="font-size:6px"
+         id="tspan3484"> * &lt;time&gt; start downloading &quot;blablabla.iso&quot;</tspan><tspan
+         sodipodi:role="line"
+         x="190"
+         y="249.09448"
+         style="font-size:6px"
+         id="tspan3486"> * &lt;time&gt; download compltet for &quot;blablabla.iso&quot;</tspan></text>
   </g>
 </svg>
