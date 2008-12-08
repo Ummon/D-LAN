@@ -34,15 +34,15 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="2"
-     inkscape:cx="303.55722"
-     inkscape:cy="587.3846"
+     inkscape:cx="627.54142"
+     inkscape:cy="390.81881"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
-     inkscape:window-width="1278"
-     inkscape:window-height="784"
-     inkscape:window-x="0"
-     inkscape:window-y="14"
+     inkscape:window-width="1280"
+     inkscape:window-height="945"
+     inkscape:window-x="-4"
+     inkscape:window-y="-4"
      showguides="true"
      inkscape:guide-bbox="true"
      inkscape:snap-bbox="false"
@@ -1602,45 +1602,73 @@
     <rect
        style="opacity:1;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.49999997;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        id="rect2691"
-       width="89.903915"
-       height="9.5476265"
-       x="685.07837"
-       y="409.71091" />
+       width="104.98736"
+       height="10.02369"
+       x="685.09607"
+       y="409.09448" />
     <text
        xml:space="preserve"
        style="font-size:6px;font-style:normal;font-weight:normal;opacity:1;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
-       x="649.77185"
-       y="416.82648"
+       x="650"
+       y="416.09448"
        id="text2693"><tspan
          sodipodi:role="line"
          id="tspan2695"
-         x="649.77185"
-         y="416.82648"
+         x="650"
+         y="416.09448"
          style="font-size:6px">Message : </tspan></text>
     <rect
        style="opacity:1;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.49999997;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        id="rect2697"
-       width="29.139557"
-       height="9.5476265"
-       x="781.77185"
-       y="409.82648" />
+       width="30.014763"
+       height="10.02369"
+       x="795"
+       y="409.09448" />
     <rect
-       style="opacity:1;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       style="opacity:1;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       id="rect3484"
+       width="175"
+       height="30"
+       x="650"
+       y="344.09448" />
+    <rect
+       style="opacity:1;fill:#e2e2e2;fill-opacity:1;stroke:none;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       id="rect2708"
+       width="175"
+       height="10"
+       x="650"
+       y="374.09448" />
+    <rect
+       style="opacity:1;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:0.50000000000000000;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       id="rect3482"
+       width="175"
+       height="10"
+       x="650"
+       y="384.09448" />
+    <rect
+       style="opacity:1;fill:#e2e2e2;fill-opacity:1;stroke:none;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       id="rect3480"
+       width="175"
+       height="10"
+       x="650"
+       y="394.09448" />
+    <rect
+       style="opacity:1;fill:none;fill-opacity:1;stroke:#000000;stroke-width:0.50000000000000000;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        id="rect2699"
-       width="175.00011"
-       height="59.823215"
-       x="649.98218"
-       y="344.53589" />
+       width="174.98224"
+       height="60.268311"
+       x="650.00006"
+       y="344.09079" />
     <text
        xml:space="preserve"
        style="font-size:6px;font-style:normal;font-weight:normal;opacity:1;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
-       x="784.9823"
-       y="416.25854"
+       x="799"
+       y="416.09448"
        id="text2713"><tspan
          sodipodi:role="line"
          id="tspan2715"
-         x="784.9823"
-         y="416.25854"
+         x="799"
+         y="416.09448"
          style="font-size:6px">Send</tspan></text>
     <text
        xml:space="preserve"
@@ -1734,33 +1762,23 @@
          sodipodi:role="line"
          x="625"
          y="214.09448"
-         id="tspan2720">only then end of the string</tspan></text>
+         id="tspan2720">only the end of the string</tspan></text>
     <path
        style="fill:none;fill-rule:evenodd;stroke:#757575;stroke-width:0.30000001;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;display:inline"
        d="M 680,144.09448 L 670,185.09448"
        id="path2722"
        inkscape:connector-type="polyline"
        sodipodi:nodetypes="cc" />
-    <path
-       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       d="M 650,394.09448 L 825,394.09448"
-       id="path2724"
-       sodipodi:nodetypes="cc" />
-    <path
-       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       d="M 650,384.09448 L 825,384.09448"
-       id="path2726"
-       sodipodi:nodetypes="cc" />
     <text
        xml:space="preserve"
        style="font-size:8px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
        x="652"
-       y="391.09448"
+       y="392.09448"
        id="text2728"><tspan
          sodipodi:role="line"
          id="tspan2730"
          x="652"
-         y="391.09448">[time] &lt;peer1&gt; : blablabla</tspan></text>
+         y="392.09448">[time] &lt;peer2&gt; : blablabla</tspan></text>
     <text
        id="text2732"
        y="402.09448"
@@ -1770,7 +1788,7 @@
          y="402.09448"
          x="652"
          id="tspan2734"
-         sodipodi:role="line">[time] &lt;peer2&gt; : blablabla</tspan></text>
+         sodipodi:role="line">[time] &lt;peer3&gt; : blablabla</tspan></text>
     <rect
        style="opacity:1;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.49999979;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        id="rect2740"
@@ -1826,5 +1844,15 @@
          y="249.09448"
          style="font-size:6px"
          id="tspan3486"> * &lt;time&gt; download compltet for &quot;blablabla.iso&quot;</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:8px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+       x="652"
+       y="382.09448"
+       id="text2704"><tspan
+         sodipodi:role="line"
+         id="tspan2706"
+         x="652"
+         y="382.09448">[time] &lt;peer1&gt; : blablabla</tspan></text>
   </g>
 </svg>
