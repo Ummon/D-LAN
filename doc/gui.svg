@@ -36,16 +36,16 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="2.0000001"
-     inkscape:cx="301.93751"
-     inkscape:cy="1021.3347"
+     inkscape:zoom="4.0000002"
+     inkscape:cx="192.64634"
+     inkscape:cy="570.80398"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
-     inkscape:window-width="1278"
-     inkscape:window-height="784"
+     inkscape:window-width="1280"
+     inkscape:window-height="945"
      inkscape:window-x="0"
-     inkscape:window-y="14"
+     inkscape:window-y="22"
      showguides="true"
      inkscape:guide-bbox="true"
      inkscape:snap-bbox="false"
@@ -303,9 +303,9 @@
     <rect
        style="opacity:1;fill:none;fill-opacity:1;stroke:#000000;stroke-width:0.49999988;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        id="rect3243"
-       width="165.32671"
+       width="154.97295"
        height="19.738087"
-       x="109.99585"
+       x="109.99586"
        y="1162.3423" />
     <text
        xml:space="preserve"
@@ -320,9 +320,9 @@
     <rect
        style="opacity:1;fill:none;fill-opacity:1;stroke:#000000;stroke-width:0.49999988;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        id="rect3249"
-       width="165.32671"
+       width="154.97295"
        height="19.738087"
-       x="109.99585"
+       x="109.99586"
        y="1197.3423" />
     <text
        xml:space="preserve"
@@ -519,16 +519,16 @@
     <text
        xml:space="preserve"
        style="font-size:8px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
-       x="389.99976"
-       y="262.4577"
+       x="400"
+       y="272.36218"
        id="text2544"><tspan
          sodipodi:role="line"
          id="tspan2546"
-         x="389.99976"
-         y="262.4577">Status bar</tspan></text>
+         x="400"
+         y="272.36218">Status bar</tspan></text>
     <path
        style="fill:none;fill-rule:evenodd;stroke:#757575;stroke-width:0.30000001;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       d="M 376.99987,270.02103 L 389.99988,262.45771"
+       d="M 377,272.36218 L 399,269.36218"
        id="path2548"
        inkscape:connector-type="polyline"
        sodipodi:nodetypes="cc" />
@@ -555,9 +555,9 @@
     <rect
        style="opacity:1;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.49999979;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        id="rect2478"
-       width="84.742859"
+       width="120.20814"
        height="29.834824"
-       x="109.99989"
+       x="109.9999"
        y="492.36218" />
     <text
        xml:space="preserve"
@@ -568,7 +568,7 @@
          sodipodi:role="line"
          id="tspan2483"
          x="112.99989"
-         y="519.36218">Cancel and remove parts</tspan></text>
+         y="519.36218">Cancel and remove the unfinished file</tspan></text>
     <text
        xml:space="preserve"
        style="font-size:8px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
@@ -581,7 +581,7 @@
          y="487.36224">Contextual menu</tspan></text>
     <path
        style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       d="M 109.99991,502.36218 L 194.99991,502.36218"
+       d="M 110.10285,502.36218 L 230.10295,502.36218"
        id="path2489"
        sodipodi:nodetypes="cc" />
     <text
@@ -624,7 +624,7 @@
          y="509.36218">Clear complete</tspan></text>
     <path
        style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       d="M 109.99991,512.36218 L 194.99991,512.36218"
+       d="M 110.10285,512.36218 L 230.10295,512.36218"
        id="path2487"
        sodipodi:nodetypes="cc" />
     <text
@@ -639,20 +639,20 @@
          y="499.36218">Open  containing folder</tspan></text>
     <path
        style="fill:none;fill-rule:evenodd;stroke:#757575;stroke-width:0.30000001;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;display:inline"
-       d="M 191.38071,515.95843 L 204.99991,512.36218"
+       d="M 228,517.36218 L 241.6192,513.76593"
        id="path2493"
        inkscape:connector-type="polyline"
        sodipodi:nodetypes="cc" />
     <text
        xml:space="preserve"
        style="font-size:8px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
-       x="204.99977"
-       y="513.36218"
+       x="241.61906"
+       y="514.76593"
        id="text2496"><tspan
          sodipodi:role="line"
          id="tspan2498"
-         x="204.99977"
-         y="513.36218">Only for downloading</tspan></text>
+         x="241.61906"
+         y="514.76593">Only for downloading</tspan></text>
     <rect
        style="opacity:1;fill:#f0f0f0;fill-opacity:1;stroke:#000000;stroke-width:0.49999994;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        id="rect2500"
@@ -1273,45 +1273,45 @@
     <rect
        style="opacity:1;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.61422068;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        id="rect3416"
-       width="84.628639"
-       height="29.973063"
-       x="155.31419"
-       y="1052.5841" />
+       width="84.742859"
+       height="19.835178"
+       x="157"
+       y="1050.3622" />
     <text
        xml:space="preserve"
        style="font-size:6px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
-       x="158.25708"
-       y="1069.527"
+       x="160"
+       y="1067.3622"
        id="text3418"><tspan
          sodipodi:role="line"
          id="tspan3420"
-         x="158.25708"
-         y="1069.527">Browse</tspan></text>
+         x="160"
+         y="1067.3622">Browse</tspan></text>
     <text
        xml:space="preserve"
        style="font-size:8px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
-       x="147.25708"
-       y="1045.527"
+       x="149"
+       y="1043.3622"
        id="text3422"><tspan
          sodipodi:role="line"
          id="tspan3424"
-         x="147.25708"
-         y="1045.527">Contextual menu</tspan></text>
+         x="149"
+         y="1043.3622">Contextual menu</tspan></text>
     <path
        style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       d="M 155.25721,1062.527 L 240.25721,1062.527"
+       d="M 157.00013,1060.3622 L 242.00013,1060.3622"
        id="path3426"
        sodipodi:nodetypes="cc" />
     <text
        xml:space="preserve"
        style="font-size:6px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
-       x="158.25708"
-       y="1059.527"
+       x="160"
+       y="1057.3622"
        id="text3430"><tspan
          sodipodi:role="line"
          id="tspan3432"
-         x="158.25708"
-         y="1059.527">Download</tspan></text>
+         x="160"
+         y="1057.3622">Download</tspan></text>
     <rect
        style="opacity:1;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.34484532;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        id="rect2623"
@@ -1894,7 +1894,7 @@
          sodipodi:role="line"
          id="tspan2736"
          x="55"
-         y="292.69464">Contextual for peer list</tspan></text>
+         y="292.69464">Contextual menu</tspan></text>
     <text
        xml:space="preserve"
        style="font-size:6px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
@@ -1905,35 +1905,178 @@
          id="tspan2749"
          x="63"
          y="304.69461">Browse</tspan></text>
+    <rect
+       style="opacity:1;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.49999979;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="rect2716"
+       width="84.742859"
+       height="9.6675749"
+       x="399.25714"
+       y="234.36218" />
+    <text
+       xml:space="preserve"
+       style="font-size:8px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+       x="394.25714"
+       y="229.36221"
+       id="text2718"><tspan
+         sodipodi:role="line"
+         id="tspan2721"
+         x="394.25714"
+         y="229.36221">Contextual menu</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:6px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+       x="402.25714"
+       y="241.36218"
+       id="text2723"><tspan
+         sodipodi:role="line"
+         id="tspan2725"
+         x="402.25714"
+         y="241.36218">Open log file</tspan></text>
+    <path
+       style="fill:none;fill-rule:evenodd;stroke:#757575;stroke-width:0.30000001;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="M 94,285.36218 L 112,249.36218"
+       id="path2727"
+       inkscape:connector-type="polyline"
+       sodipodi:nodetypes="cc" />
+    <path
+       style="fill:none;fill-rule:evenodd;stroke:#757575;stroke-width:0.30000001;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="M 366,236.36218 L 391,227.36218"
+       id="path2729"
+       inkscape:connector-type="polyline"
+       sodipodi:nodetypes="cc" />
+    <rect
+       style="opacity:1;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.49999979;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="rect2723"
+       width="84.742859"
+       height="19.835178"
+       x="320"
+       y="1217.3622" />
+    <text
+       xml:space="preserve"
+       style="font-size:6px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+       x="323"
+       y="1234.3622"
+       id="text2725"><tspan
+         sodipodi:role="line"
+         id="tspan2728"
+         x="323"
+         y="1234.3622">Remove</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:8px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+       x="312"
+       y="1210.3622"
+       id="text2730"><tspan
+         sodipodi:role="line"
+         id="tspan2732"
+         x="312"
+         y="1210.3622">Contextual menu</tspan></text>
     <path
        style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       d="M 150,867.36218 L 235,867.36218"
-       id="path3109"
+       d="M 320.00012,1227.3622 L 405.00012,1227.3622"
+       id="path2734"
        sodipodi:nodetypes="cc" />
     <text
        xml:space="preserve"
        style="font-size:6px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
-       x="152"
-       y="874.36218"
-       id="text3111"><tspan
+       x="323"
+       y="1224.3622"
+       id="text2736"><tspan
          sodipodi:role="line"
-         id="tspan3113"
-         x="152"
-         y="874.36218">Make a chat link</tspan></text>
+         id="tspan2738"
+         x="323"
+         y="1224.3622">Add</tspan></text>
+    <path
+       style="fill:none;fill-rule:evenodd;stroke:#757575;stroke-width:0.30000001;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;display:inline"
+       d="M 260,1179.3622 L 309,1208.3622"
+       id="path2740"
+       inkscape:connector-type="polyline"
+       sodipodi:nodetypes="cc" />
+    <path
+       style="fill:none;fill-rule:evenodd;stroke:#757575;stroke-width:0.30000001;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;display:inline"
+       d="M 260,1202.3622 L 309,1208.3622"
+       id="path2742"
+       inkscape:connector-type="polyline"
+       sodipodi:nodetypes="cc" />
+    <rect
+       style="opacity:1;fill:none;fill-opacity:1;stroke:#000000;stroke-width:0.49999991;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="rect2744"
+       width="7.8694148"
+       height="7.9968185"
+       x="267.09497"
+       y="1162.3622" />
+    <rect
+       style="opacity:1;fill:none;fill-opacity:1;stroke:#000000;stroke-width:0.49999991;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="rect2746"
+       width="7.8694148"
+       height="7.9968185"
+       x="267"
+       y="1172.3654" />
+    <rect
+       style="opacity:1;fill:none;fill-opacity:1;stroke:#000000;stroke-width:0.49999991;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="rect2748"
+       width="7.8694148"
+       height="7.9968185"
+       x="267.22556"
+       y="1197.359" />
+    <rect
+       style="opacity:1;fill:none;fill-opacity:1;stroke:#000000;stroke-width:0.49999991;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="rect2750"
+       width="7.8694148"
+       height="7.9968185"
+       x="267.13058"
+       y="1207.3622" />
     <text
        xml:space="preserve"
        style="font-size:6px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
-       x="158"
-       y="1079.3622"
-       id="text3115"><tspan
+       x="294"
+       y="1166.3622"
+       id="text2753"><tspan
          sodipodi:role="line"
-         id="tspan3117"
-         x="158"
-         y="1079.3622">Make a chat link</tspan></text>
+         id="tspan2756"
+         x="294"
+         y="1166.3622">Add</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:6px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+       x="294"
+       y="1173.3622"
+       id="text2758"><tspan
+         sodipodi:role="line"
+         id="tspan2760"
+         x="294"
+         y="1173.3622">Remove</tspan></text>
     <path
-       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       d="M 155,1072.3622 L 240,1072.3622"
-       id="path3119"
+       style="fill:none;fill-rule:evenodd;stroke:#757575;stroke-width:0.30000001;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;display:inline"
+       d="M 272,1166.3622 L 292,1164.3622"
+       id="path2762"
+       inkscape:connector-type="polyline"
+       sodipodi:nodetypes="cc" />
+    <path
+       sodipodi:nodetypes="cc"
+       inkscape:connector-type="polyline"
+       id="path2764"
+       d="M 272,1176.3622 L 293,1172.3622"
+       style="fill:none;fill-rule:evenodd;stroke:#757575;stroke-width:0.30000001;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;display:inline" />
+    <text
+       xml:space="preserve"
+       style="font-size:8px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+       x="239"
+       y="667.36218"
+       id="text2766"><tspan
+         sodipodi:role="line"
+         id="tspan2768"
+         x="239"
+         y="667.36218">Browse the files of the</tspan><tspan
+         sodipodi:role="line"
+         x="239"
+         y="677.36218"
+         id="tspan2772">message owner</tspan></text>
+    <path
+       style="fill:none;fill-rule:evenodd;stroke:#757575;stroke-width:0.30000001;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;display:inline"
+       d="M 222,664.36218 L 239,664.36218"
+       id="path2770"
+       inkscape:connector-type="polyline"
        sodipodi:nodetypes="cc" />
   </g>
 </svg>
