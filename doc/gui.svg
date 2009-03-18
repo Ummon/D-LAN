@@ -16,7 +16,7 @@
    sodipodi:docname="gui.svg"
    inkscape:output_extension="org.inkscape.output.svg.inkscape"
    version="1.0"
-   inkscape:export-filename="C:\Documents and Settings\bug\Desktop\gui.png"
+   inkscape:export-filename="/home/gburri/Desktop/gui.png"
    inkscape:export-xdpi="130"
    inkscape:export-ydpi="130">
   <defs
@@ -37,15 +37,15 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="2.0000001"
-     inkscape:cx="279.36611"
-     inkscape:cy="852.78933"
+     inkscape:cx="301.93751"
+     inkscape:cy="1021.3347"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
-     inkscape:window-width="1280"
-     inkscape:window-height="945"
-     inkscape:window-x="-4"
-     inkscape:window-y="-4"
+     inkscape:window-width="1278"
+     inkscape:window-height="784"
+     inkscape:window-x="0"
+     inkscape:window-y="14"
      showguides="true"
      inkscape:guide-bbox="true"
      inkscape:snap-bbox="false"
@@ -1104,12 +1104,13 @@
        style="font-size:20px;font-style:normal;font-weight:bold;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans;-inkscape-font-specification:Bitstream Vera Sans Bold"
        x="120"
        y="22.362183"
-       id="text3724"><tspan
+       id="text3724"
+       sodipodi:linespacing="125%"><tspan
          sodipodi:role="line"
          id="tspan3726"
          x="120"
          y="22.362183"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Garamond Premr Pro;-inkscape-font-specification:Garamond Premr Pro">Aybabtu - GUI design document</tspan></text>
+         style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Aksharyogini;-inkscape-font-specification:Aksharyogini Italic;font-size:22px;text-anchor:start;text-align:start;writing-mode:lr;line-height:125%">Aybabtu - GUI design document</tspan></text>
     <text
        xml:space="preserve"
        style="font-size:8px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
@@ -1243,12 +1244,12 @@
        x="405"
        y="128.36218" />
     <rect
-       style="opacity:1;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.49999979;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       style="opacity:1;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.60611349;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        id="rect3383"
-       width="84.742859"
-       height="20.460808"
-       x="150.04912"
-       y="847.26807" />
+       width="84.636749"
+       height="30.104759"
+       x="150.10217"
+       y="847.32111" />
     <text
        xml:space="preserve"
        style="font-size:8px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
@@ -1270,12 +1271,12 @@
          x="152.04906"
          y="854.24359">Download</tspan></text>
     <rect
-       style="opacity:1;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.49999979;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       style="opacity:1;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.61422068;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        id="rect3416"
-       width="84.742859"
-       height="19.835178"
-       x="155.25708"
-       y="1052.527" />
+       width="84.628639"
+       height="29.973063"
+       x="155.31419"
+       y="1052.5841" />
     <text
        xml:space="preserve"
        style="font-size:6px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
@@ -1904,5 +1905,35 @@
          id="tspan2749"
          x="63"
          y="304.69461">Browse</tspan></text>
+    <path
+       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="M 150,867.36218 L 235,867.36218"
+       id="path3109"
+       sodipodi:nodetypes="cc" />
+    <text
+       xml:space="preserve"
+       style="font-size:6px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+       x="152"
+       y="874.36218"
+       id="text3111"><tspan
+         sodipodi:role="line"
+         id="tspan3113"
+         x="152"
+         y="874.36218">Make a chat link</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:6px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+       x="158"
+       y="1079.3622"
+       id="text3115"><tspan
+         sodipodi:role="line"
+         id="tspan3117"
+         x="158"
+         y="1079.3622">Make a chat link</tspan></text>
+    <path
+       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="M 155,1072.3622 L 240,1072.3622"
+       id="path3119"
+       sodipodi:nodetypes="cc" />
   </g>
 </svg>
