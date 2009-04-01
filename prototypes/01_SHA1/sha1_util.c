@@ -3,13 +3,14 @@
 
 #include <stdlib.h>
 
-#define BLOCKSIZE 65536
+#define BLOCKSIZE 65536 // 64 kB
 
 extern int 
 all_hash_chunks(
    const char* path,
    size_t chunk_size,
-   char (**hash_chunks)[SHA1_DIGEST_SIZE]
+   char (**hash_chunks)[SHA1_DIGEST_SIZE],
+   int* nb_chunks
 ) {
    div_t nb_block_per_chunk_div_t = div(chunk_size, BLOCKSIZE);
    if (nb_block_per_chunk_div_t.rem != 0)
@@ -26,26 +27,23 @@ all_hash_chunks(
    fseek(file, 0, SEEK_SET);
    
    // allocate memory for the hashes
-   int nb_chunks = ldiv(filesize, chunk_size).quot;
-   hash_chunks = malloc(nb_chunks * sizeof(char*));
+   ldiv_t nb_chunks_div_t = ldiv(filesize, chunk_size);
+   (*nb_chunks) = nb_chunks_div_t.quot + (nb_chunks_div_t.rem != 0 ? 1 : 0); // we add a part for the reminder
+   (*hash_chunks) = malloc((*nb_chunks) * sizeof(char*));
    int i;
-   for (i = 0; i < nb_chunks; i++)
-      hash_chunks[i] = malloc(SHA1_DIGEST_SIZE * sizeof(char));
    
    char buffer[BLOCKSIZE + 72];
-   size_t sum;
+   size_t sum = 0;
    struct sha1_ctx ctx;
    int nb_block_read;
    
    int chunk_number;
-   for (chunk_number = 0; chunk_number < nb_chunks; chunk_number++)
+   for (chunk_number = 0; chunk_number < (*nb_chunks); chunk_number++)
    {
       sha1_init_ctx (&ctx);
 
       for (nb_block_read = 0; nb_block_read < nb_block_per_chunk; nb_block_read++) {
          size_t n;
-         sum = 0;
-         
          for(;;) {
             n = fread(buffer + sum, 1, BLOCKSIZE - sum, file);
             sum += n;
@@ -59,18 +57,19 @@ all_hash_chunks(
                goto process_partial_block;
             }
                
-            if (feof(file)) 
+            if (feof(file))
                goto process_partial_block;
          }
          sha1_process_block(buffer, BLOCKSIZE, &ctx);
+         sum = 0;
       }
-
+      
       process_partial_block:;
-
+      
       if (sum > 0)
          sha1_process_bytes(buffer, sum, &ctx);
 
-      sha1_finish_ctx(&ctx, hash_chunks[chunk_number]);
+      sha1_finish_ctx(&ctx, (*hash_chunks)[chunk_number]);
    }
    
    return 0;

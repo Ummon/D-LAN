@@ -23,8 +23,6 @@ int main(int argc, char** argv) {
       return res;
    }
    
-   printf("nb part : %i\n", n);
-   
    int i = 0;
    for (i = 0; i < n; i++)
    {

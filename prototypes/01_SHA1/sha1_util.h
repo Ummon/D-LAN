@@ -16,7 +16,7 @@
   *  1: file doesn't exist or unreadable.
   *  2: bad size
   */
-extern int all_hash_chunks(const char* path, size_t chunk_size, char (**hash_chunks)[SHA1_DIGEST_SIZE]);
+extern int all_hash_chunks(const char* path, size_t chunk_size, char (**hash_chunks)[SHA1_DIGEST_SIZE], int* nb_chunks);
 
 /**
   * ! Not used for the moment.
