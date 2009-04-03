@@ -36,16 +36,16 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="4.0000002"
-     inkscape:cx="192.64634"
-     inkscape:cy="570.80398"
+     inkscape:zoom="2.8284273"
+     inkscape:cx="283.16814"
+     inkscape:cy="651.64053"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
-     showgrid="true"
-     inkscape:window-width="1280"
-     inkscape:window-height="945"
+     showgrid="false"
+     inkscape:window-width="1278"
+     inkscape:window-height="784"
      inkscape:window-x="0"
-     inkscape:window-y="22"
+     inkscape:window-y="14"
      showguides="true"
      inkscape:guide-bbox="true"
      inkscape:snap-bbox="false"
@@ -403,7 +403,7 @@
          sodipodi:role="line"
          id="tspan2486"
          x="164.99977"
-         y="377.36218">Progress</tspan></text>
+         y="377.36218">Status</tspan></text>
     <text
        xml:space="preserve"
        style="font-size:6px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
@@ -471,13 +471,17 @@
     <text
        xml:space="preserve"
        style="font-size:8px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
-       x="214.99977"
-       y="346.43365"
+       x="220"
+       y="335.36218"
        id="text2528"><tspan
          sodipodi:role="line"
          id="tspan2530"
-         x="214.99977"
-         y="346.43365">Like amule</tspan></text>
+         x="220"
+         y="335.36218">When downloading this column shows</tspan><tspan
+         sodipodi:role="line"
+         x="220"
+         y="345.36218"
+         id="tspan3171">the progress (with a progress bar)</tspan></text>
     <path
        style="fill:none;fill-rule:evenodd;stroke:#757575;stroke-width:0.30000001;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;display:inline"
        d="M 264.99991,397.36218 L 293.61911,393.76593"
