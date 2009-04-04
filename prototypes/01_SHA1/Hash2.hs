@@ -1,3 +1,10 @@
+{-
+This file will test the speed of the package 'crypto' from hackage.
+Usage : 
+   ghc --make Hash2.hs
+   time ./Hash2 01.wmv
+-}
+
 import Data.Digest.SHA1
 import qualified Data.ByteString.Lazy as L
 import System.Environment   
