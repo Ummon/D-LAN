@@ -3,7 +3,7 @@
 {-
 This file will test the speed of a binding with sha1.h and sha1_util.h.
 Usage : 
-   TODO..
+   TODO...
 -}
 
 import Foreign
