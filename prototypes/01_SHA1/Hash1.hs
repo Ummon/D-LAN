@@ -1,3 +1,10 @@
+{-
+This file will test the speed of the package 'SHA' from hackage.
+Usage : 
+   ghc --make Hash1.hs
+   time ./Hash1 01.wmv
+-}
+
 import Data.Digest.Pure.SHA (Digest(..), sha1, bytestringDigest, showDigest)
 import qualified Data.ByteString.Lazy as L
 import System.Environment   
