@@ -9,11 +9,11 @@
  </data>
  <data>
   <variable>RunConfiguration0-ProFile</variable>
-  <value type="QString" >qt_sha1.pro</value>
+  <value type="QString" >01_SHA1.pro</value>
  </data>
  <data>
   <variable>RunConfiguration0-RunConfiguration.name</variable>
-  <value type="QString" >qt_sha1</value>
+  <value type="QString" >01_SHA1</value>
  </data>
  <data>
   <variable>RunConfiguration0-UseDyldImageSuffix</variable>
@@ -91,7 +91,7 @@
     <value type="QString" >XDG_SESSION_COOKIE=c1f477700b7fb0fbd08cdecf47d5a05e-1245586123.312405-1844277473</value>
    </valuelist>
    <valuelist key="abstractProcess.arguments" type="QVariantList" >
-    <value type="QString" >/home/gburri/code/projects/aybabtu/prototypes/01_SHA1/qt_sha1.pro</value>
+    <value type="QString" >/home/gburri/code/projects/aybabtu/prototypes/01_SHA1/01_SHA1.pro</value>
     <value type="QString" >-spec</value>
     <value type="QString" >/usr/share/qt4/mkspecs/linux-g++</value>
     <value type="QString" >-r</value>
