@@ -2,28 +2,73 @@
 #include <QtCore/QFile>
 #include <QtCore/QDir>
 #include <QtCore/QTextStream>
+#include <QtCore/QTextCodec>
 
 #define OUTPUT_DIR "output"
 #define INPUT_DIR "input"
 
+/**
+  * Create a new directory in the current one.
+  * If it already exists then delete all files in it.
+  */
+void createDir(const QString& dirName)
+{
+   QDir curr = QDir::current();
+
+   if (!curr.exists(dirName))
+      curr.mkdir(dirName);
+   else
+   {
+      QDir dir(curr.absolutePath() + "/" + dirName);
+      foreach (QString e, dir.entryList())
+      {
+         QFile::remove(dir.absolutePath() + "/" + e);
+      }
+   }
+}
+
+/**
+  * Create or empty the input and ouput directories.
+  */
+void reinitDirs()
+{
+   createDir(INPUT_DIR);
+   createDir(OUTPUT_DIR);
+}
+
 int main(int argc, char *argv[])
 {
+   QTextCodec::setCodecForLocale(QTextCodec::codecForName("UTF-8"));
+   
    QTextStream out(stdout);
    
-   QDir curDir = QDir::current();
-   if (!curDir.exists(OUTPUT_DIR))
-      curDir.mkdir(OUTPUT_DIR);
+   // Not required because of the call to 'setCodecForLocale' above.
+   //out.setCodec("UTF-8");
    
-   foreach (QString entry, QDir(INPUT_DIR).entryList())
+   // Create directory 'input' and 'output' if they doesn't exist.
+   reinitDirs();
+   
+   QString filename = QString::fromUtf8("abc123 èéà@Ã#$ƇȤՖÿ");
+   out << filename << endl <<
+      "length : " << filename.length() << endl;
+   
+   QDir input(INPUT_DIR);
+   
    {
-      if (entry == "." ||entry == "..")
-         continue;
-      
-      out << entry << endl;
-      
-      QFile file(QString(OUTPUT_DIR) + "/" + entry);
-      file.open(QIODevice::WriteOnly);
+      QFile f(input.absolutePath() + "/" + filename);
+      f.open(QIODevice::WriteOnly);
    }
+   
+   foreach (QString entry, input.entryList())
+   {      
+      if (entry == "." || entry == "..")
+         continue;
+            
+      QFile f(QString(OUTPUT_DIR) + "/" + entry);
+      f.open(QIODevice::WriteOnly);
+   }
+   
+   out << "You can now compare the files created in both 'input' and 'ouput' folder" << endl;
    
    return 0;
 }
