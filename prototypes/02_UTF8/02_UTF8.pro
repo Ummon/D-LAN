@@ -6,6 +6,8 @@
 
 QT       -= gui
 
+# DEFINES += QT_NO_CAST_FROM_ASCII QT_NO_CAST_TO_ASCII
+
 TARGET = 02_UTF8
 CONFIG   += console
 CONFIG   -= app_bundle
