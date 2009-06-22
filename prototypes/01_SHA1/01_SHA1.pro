@@ -6,7 +6,7 @@
 
 QT       -= gui
 
-TARGET = qt_sha1
+TARGET = 01_SHA1
 CONFIG   += console
 CONFIG   -= app_bundle
 

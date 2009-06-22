@@ -4,9 +4,12 @@
 #include <QtCore/QDebug>
 #include <QtCore/QList>
 
-#define BUFFER_SIZE 65536
+#define BUFFER_SIZE 65536 // Buffer used when reading a file.
 #define CHUNK_SIZE 2097152 // 2 MB
 
+/**
+  * Compute the SHA1 hash for the given file.
+  */
 QByteArray computeSHA1(const QString& filename, qint32 bufferSize)
 {
    QCryptographicHash crypto(QCryptographicHash::Sha1);
@@ -25,6 +28,10 @@ QByteArray computeSHA1(const QString& filename, qint32 bufferSize)
    return crypto.result();
 }
 
+/**
+  * Compute some SHA1 hash for each chunk of the given file.
+  * 'chunkSize' must be a divisor of 'bufferSizer'.
+  */
 QList<QByteArray> computeMultiSHA1(const QString& filename, qint32 chunkSize, qint32 bufferSize)
 {
    QList<QByteArray> result;
@@ -37,12 +44,12 @@ QList<QByteArray> computeMultiSHA1(const QString& filename, qint32 chunkSize, qi
 
    char buffer[bufferSize];
    bool endOfFile = false;
-   while(!endOfFile)
+   while (!endOfFile)
    {
       qint64 bytesReadTotal = 0;
       while (bytesReadTotal < chunkSize)
       {
-         qint64 bytesRead = file.read(buffer, bufferSize);         
+         qint64 bytesRead = file.read(buffer, bufferSize);
          if (bytesRead == 0)
          {
             endOfFile = true;
@@ -67,8 +74,6 @@ int main(int argc, char *argv[])
       out << "Usage : " << argv[0] << " (all|chunk) <file>";
       return 1;
    }
-   
-   QCoreApplication a(argc, argv);
    
    QString mode = QString(argv[1]);   
    if (mode == "all")

@@ -1,23 +1,25 @@
 #!/bin/bash
 
-# This script will test the file 'sha1_util.c' via 'sha1_util_test.c'.
-# It will compute the hashes of a test file ($FILE_TEST) with sha1_util_test.c
+# This script will test this prototype against the common sha1sum.
+# It will compute the hashes of a test file ($FILE_TEST)
 # and compare the result with a computing made by sha1sum on
 # the splitted parts of the test file.
 
 # If all gone fine the '[OK]' is displayed and the script return 0.
 # If a problem appears then an error is displayed and the results are not deleted.
 
-FILE_EXEC=test_sha1
+FILE_EXEC=qt_sha1
 FILE_TEST=01.wmv
 CHUNK_SIZE=2097152
 
-gcc sha1.c sha1_util.c sha1_util_test.c -o $FILE_EXEC
+# Compile the project.
+qmake qt_sha1.pro
+make
 
 split -b $CHUNK_SIZE < $FILE_TEST
 
 sha1sum xa* | egrep -e "\w{40}" -o > FILE_TEST_SHA1SUM
-./$FILE_EXEC $FILE_TEST > FILE_TEST_C
+./$FILE_EXEC chunk $FILE_TEST > FILE_TEST_C
 
 rm xa*
 
