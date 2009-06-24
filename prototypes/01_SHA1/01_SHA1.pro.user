@@ -61,15 +61,15 @@
   <valuemap type="QVariantMap" >
    <value key="ProjectExplorer.BuildConfiguration.DisplayName" type="QString" >Debug</value>
    <valuelist key="abstractProcess.Environment" type="QVariantList" >
-    <value type="QString" >DBUS_SESSION_BUS_ADDRESS=unix:abstract=/tmp/dbus-B4HgzIDIDw,guid=cd11165bf3a7355766ff41cc4a3e22cb</value>
+    <value type="QString" >DBUS_SESSION_BUS_ADDRESS=unix:abstract=/tmp/dbus-NRnYLxfPbI,guid=87fc8a1fd431cd4c250b2edc4a3fb412</value>
     <value type="QString" >DESKTOP_SESSION=default</value>
     <value type="QString" >DESKTOP_STARTUP_ID=</value>
     <value type="QString" >DISPLAY=:0</value>
     <value type="QString" >GDMSESSION=default</value>
     <value type="QString" >GDM_LANG=en_US.UTF-8</value>
     <value type="QString" >GDM_XSERVER_LOCATION=local</value>
-    <value type="QString" >GNOME_KEYRING_PID=13366</value>
-    <value type="QString" >GNOME_KEYRING_SOCKET=/tmp/keyring-T1rjOu/socket</value>
+    <value type="QString" >GNOME_KEYRING_PID=4129</value>
+    <value type="QString" >GNOME_KEYRING_SOCKET=/tmp/keyring-gobS2d/socket</value>
     <value type="QString" >GTK_MODULES=canberra-gtk-module</value>
     <value type="QString" >HOME=/home/gburri</value>
     <value type="QString" >LANG=en_US.UTF-8</value>
@@ -81,14 +81,14 @@
     <value type="QString" >QTDIR=/usr</value>
     <value type="QString" >SHELL=/bin/bash</value>
     <value type="QString" >SHLVL=1</value>
-    <value type="QString" >SSH_AGENT_PID=13464</value>
-    <value type="QString" >SSH_AUTH_SOCK=/tmp/ssh-glXlk13379/agent.13379</value>
+    <value type="QString" >SSH_AGENT_PID=4259</value>
+    <value type="QString" >SSH_AUTH_SOCK=/tmp/ssh-sYeLTh4142/agent.4142</value>
     <value type="QString" >USER=gburri</value>
     <value type="QString" >USERNAME=gburri</value>
     <value type="QString" >WINDOWPATH=7</value>
     <value type="QString" >XAUTHORITY=/home/gburri/.Xauthority</value>
     <value type="QString" >XDG_DATA_DIRS=/usr/local/share/:/usr/share/:/usr/share/gdm/</value>
-    <value type="QString" >XDG_SESSION_COOKIE=c1f477700b7fb0fbd08cdecf47d5a05e-1245586123.312405-1844277473</value>
+    <value type="QString" >XDG_SESSION_COOKIE=c1f477700b7fb0fbd08cdecf47d5a05e-1245688849.306494-79856444</value>
    </valuelist>
    <valuelist key="abstractProcess.arguments" type="QVariantList" >
     <value type="QString" >/home/gburri/code/projects/aybabtu/prototypes/01_SHA1/01_SHA1.pro</value>
@@ -108,15 +108,15 @@
   <valuemap type="QVariantMap" >
    <value key="ProjectExplorer.BuildConfiguration.DisplayName" type="QString" >Debug</value>
    <valuelist key="abstractProcess.Environment" type="QVariantList" >
-    <value type="QString" >DBUS_SESSION_BUS_ADDRESS=unix:abstract=/tmp/dbus-B4HgzIDIDw,guid=cd11165bf3a7355766ff41cc4a3e22cb</value>
+    <value type="QString" >DBUS_SESSION_BUS_ADDRESS=unix:abstract=/tmp/dbus-NRnYLxfPbI,guid=87fc8a1fd431cd4c250b2edc4a3fb412</value>
     <value type="QString" >DESKTOP_SESSION=default</value>
     <value type="QString" >DESKTOP_STARTUP_ID=</value>
     <value type="QString" >DISPLAY=:0</value>
     <value type="QString" >GDMSESSION=default</value>
     <value type="QString" >GDM_LANG=en_US.UTF-8</value>
     <value type="QString" >GDM_XSERVER_LOCATION=local</value>
-    <value type="QString" >GNOME_KEYRING_PID=13366</value>
-    <value type="QString" >GNOME_KEYRING_SOCKET=/tmp/keyring-T1rjOu/socket</value>
+    <value type="QString" >GNOME_KEYRING_PID=4129</value>
+    <value type="QString" >GNOME_KEYRING_SOCKET=/tmp/keyring-gobS2d/socket</value>
     <value type="QString" >GTK_MODULES=canberra-gtk-module</value>
     <value type="QString" >HOME=/home/gburri</value>
     <value type="QString" >LANG=en_US.UTF-8</value>
@@ -128,14 +128,14 @@
     <value type="QString" >QTDIR=/usr</value>
     <value type="QString" >SHELL=/bin/bash</value>
     <value type="QString" >SHLVL=1</value>
-    <value type="QString" >SSH_AGENT_PID=13464</value>
-    <value type="QString" >SSH_AUTH_SOCK=/tmp/ssh-glXlk13379/agent.13379</value>
+    <value type="QString" >SSH_AGENT_PID=4259</value>
+    <value type="QString" >SSH_AUTH_SOCK=/tmp/ssh-sYeLTh4142/agent.4142</value>
     <value type="QString" >USER=gburri</value>
     <value type="QString" >USERNAME=gburri</value>
     <value type="QString" >WINDOWPATH=7</value>
     <value type="QString" >XAUTHORITY=/home/gburri/.Xauthority</value>
     <value type="QString" >XDG_DATA_DIRS=/usr/local/share/:/usr/share/:/usr/share/gdm/</value>
-    <value type="QString" >XDG_SESSION_COOKIE=c1f477700b7fb0fbd08cdecf47d5a05e-1245586123.312405-1844277473</value>
+    <value type="QString" >XDG_SESSION_COOKIE=c1f477700b7fb0fbd08cdecf47d5a05e-1245688849.306494-79856444</value>
    </valuelist>
    <valuelist key="abstractProcess.arguments" type="QVariantList" >
     <value type="QString" >-w</value>

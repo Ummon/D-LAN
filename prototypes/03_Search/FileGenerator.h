@@ -4,6 +4,10 @@
 #include <QtCore/QDir>
 #include <QtCore/QFile>
 
+/**
+  * An instance of this class can generate randomly and recursively some empty files
+  * and folders. Theirs names are exactly eight characters long and also randomly generated.
+  */
 class FileGenerator
 {   
 public:   
@@ -12,12 +16,18 @@ public:
      * A maximum of 'maxFile'.
      * @current the path to create the directory in it.
      * @dirname the directory to create and to populate.
+     */
+   void generate(const QDir& current, const QString& dirname);
+   
+private :
+      
+   /**
+     * The private recursive version of 'generate'.
      * @numOfFile the number of file created. Each time a file is created this variable will be incremented.
      * @level the level of subdirectory for the current directory. The level max is given by 'maxSubdirectoryLevel'.
      */
-   int generate(const QDir& current, const QString& dirname, int numOfFile = 0, int level = 0);
-   
-private :
+   int generate(const QDir& current, const QString& dirname, int numOfFile, int level);
+      
    /**
      * Return a randomly generated eight characters string.
      */
