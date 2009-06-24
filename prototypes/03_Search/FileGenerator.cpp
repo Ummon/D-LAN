@@ -8,6 +8,11 @@ QString FileGenerator::generateName()
    return QUuid::createUuid().toString().mid(1, 8);
 }
 
+void FileGenerator::generate(const QDir& current, const QString& dirname)
+{
+   this->generate(current, dirname, 0, 0);
+}
+
 int FileGenerator::generate(const QDir& current, const QString& dirname, int numOfFile, int level)
 {
    if (level >= maxSubdirectoryLevel)
