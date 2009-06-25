@@ -4,10 +4,11 @@
 #include <QtCore/QFile>
 
 #include <FileGenerator.h>
+#include <Finder.h>
 
 void printUsage(QTextStream& out)
 {
-   out << "Usage : 03_Search ( generate <dir> | search <term> <dir> )" << endl;
+   out << "Usage : 03_Search ( generate <dir> | search <dir> <term> )" << endl;
 }
 
 int main(int argc, char* argv[])
@@ -25,6 +26,21 @@ int main(int argc, char* argv[])
    {
       FileGenerator generator;
       generator.generate(QDir::current(), QString(argv[2]));
+   }
+   if (command == "search")
+   {
+      if (argc <= 3)
+      {
+         printUsage(out);
+         return 1;
+      }
+      
+      QDir t = QDir(argv[2]);
+      Finder finder(t);
+      finder.search(QString(argv[3]));
+      
+      foreach (QString file, finder.getResults())
+         out << file << endl;
    }
    else
    {

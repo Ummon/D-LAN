@@ -45,7 +45,8 @@
    <value key="ProjectExplorer.BuildConfiguration.DisplayName" type="QString" >Debug</value>
    <value key="QtVersionId" type="int" >0</value>
    <value key="addQDumper" type="" ></value>
-   <value key="buildDirectory" type="QString" >/home/gburri/code/projects/aybabtu/prototypes/01_SHA1</value>
+   <value key="buildDirectory" type="QString" ></value>
+   <value key="useShadowBuild" type="bool" >false</value>
   </valuemap>
  </data>
  <data>
