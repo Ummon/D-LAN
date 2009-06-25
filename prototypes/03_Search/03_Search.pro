@@ -7,5 +7,7 @@ CONFIG += console
 CONFIG -= app_bundle
 TEMPLATE = app
 SOURCES += main.cpp \
-    FileGenerator.cpp
-HEADERS += FileGenerator.h
+    FileGenerator.cpp \
+    Finder.cpp
+HEADERS += FileGenerator.h \
+    Finder.h
