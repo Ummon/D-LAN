@@ -2,7 +2,7 @@
 
 #include <QtCore/QFileInfo>
 #include <QtCore/QFileInfoList>
-#include <QtCore/QList>
+#include <QtCore/QLinkedList>
 #include <QtCore/QDebug>
 
 Finder::Finder(const QDir& path)
@@ -16,7 +16,7 @@ void Finder::search(const QString& pattern)
    this->regexp.setPattern(pattern);
    this->result.clear();
    
-   QList<QDir> dirsToVisit;
+   QLinkedList<QDir> dirsToVisit;
    dirsToVisit.append(this->path);
    
    while (!dirsToVisit.isEmpty())
@@ -41,5 +41,3 @@ const QStringList& Finder::getResults()
 {
    return this->result;
 }
-
-

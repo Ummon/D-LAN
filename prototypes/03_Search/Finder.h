@@ -17,6 +17,9 @@ public:
     
     void search(const QString& pattern);
     
+    // TODO
+    // void nativeSearch(const QString& pattern);
+    
     const QStringList& getResults();
     
 private:
