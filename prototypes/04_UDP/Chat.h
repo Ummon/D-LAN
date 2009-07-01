@@ -33,7 +33,7 @@ private:
     
     static const u_char TTL;
     static const int port;
-    static QString multicastIP;
+    static QHostAddress multicastIP;
 };
 
 #endif // CHAT_H
