@@ -1,3 +1,5 @@
+package FileManager
+
 // All the hashes for a set of file.
 message Hashes {
    message Chunk {
