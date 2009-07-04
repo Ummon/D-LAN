@@ -1,0 +1,86 @@
+package Network;
+
+// All string are encoded in UTF-8
+
+// a -> all
+message IMAlive {
+   required bytes id = 1; // Sha1 peer ID
+   required string name = 2;
+}
+
+// a -> all
+message ChatMessage {
+   required bytes id = 1; // peer ID
+   required string message = 2;
+}
+
+// Common types
+message Chunk {
+   required bytes hash = 1;
+}
+
+// Searching
+// a -> b
+message Find {
+   required string pattern = 1;
+}
+// b -> a
+message FindResult {
+   message DirEntry {
+      required string path = 1;
+      required string dirname = 2;
+      required uint64 size = 3; // bytes
+   }
+   message FileEntry {
+      required string path = 1;
+      required string filename = 2;
+      required uint64 size = 3; // bytes
+      repeated Chunk chunks = 4;
+   }
+   repeated DirEntry dirs = 1;
+   repeated FileEntry files = 2;
+}
+
+// Download
+// a -> b
+message GetChunk {
+   required Chunk chunk = 1;
+}
+// b -> a
+message GetChunkResult {
+   enum Status {
+      OK = 0;
+      DONT_HAVE = 1; // b doesn't have this chunk
+      ALREADY_DOWNLOADING = 2; // if a is already downloading a chunk from b
+      OTHER = 255;
+   }
+   required Status status = 1;
+}
+
+// Have chunks ?
+// a -> b
+message HaveChunks {
+   repeated Chunk chunks = 1;
+}
+// b -> a
+message HaveChunksResult {
+   repeated bool chunkStates = 1;
+}
+
+// Browsing
+// a -> b
+message GetEntries {
+   required string path = 1;
+}
+// b -> a
+message GetEntriesResult {
+   message DirEntry {
+      required string dirname = 1;
+      required uint64 size = 2; // bytes
+   }
+   message FileEntry {
+      required string filename = 1;
+      required uint64 size = 2; // bytes
+      repeated Chunk chunks = 3;
+   }
+}
