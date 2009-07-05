@@ -1,0 +1,14 @@
+window_sizes 1278 798 281 987 595 117
+motif_style
+diagrams
+  active  classdiagram_ref 128131 // classes
+    987 595 100 4 0 0
+end
+selected 
+  package_ref 129 // uml
+open
+  componentview_ref 128003 // Components
+  classdiagram_ref 128131 // classes
+  class_ref 128259 // FileManager
+end
+end

@@ -1,0 +1,11 @@
+format 66
+
+componentcanvas 128003 component_ref 128003 // FileManager
+  draw_component_as_icon default show_component_req_prov default show_component_rea default show_stereotype_properties default
+  xyzwh 43 59 2000 145 53
+end
+componentcanvas 128131 component_ref 128131 // PeerManager
+  draw_component_as_icon default show_component_req_prov default show_component_rea default show_stereotype_properties default
+  xyzwh 284 57 2000 145 53
+end
+end
