@@ -1,0 +1,5 @@
+*.[oa]
+moc_*.cpp
+*.pb.cc
+*.pb.h
+*.pb.cpp
