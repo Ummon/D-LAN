@@ -16,7 +16,7 @@ message ChatMessage {
 
 // Common types
 message Chunk {
-   required bytes hash = 1;
+   required bytes hash = 1; // 20 bytes
 }
 
 // Searching
@@ -56,6 +56,7 @@ message GetChunkResult {
    }
    required Status status = 1;
 }
+// b -> a : stream of data..
 
 // Have chunks ?
 // a -> b
