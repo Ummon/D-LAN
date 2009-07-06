@@ -6,6 +6,7 @@ package Network;
 message IMAlive {
    required bytes id = 1; // Sha1 peer ID
    required string name = 2;
+   required uint32 version = 3; // the version of the protocol used.
 }
 
 // a -> all
@@ -14,12 +15,18 @@ message ChatMessage {
    required string message = 2;
 }
 
-// Common types
+// Common types.
 message Chunk {
    required bytes hash = 1; // 20 bytes
 }
+// can be a directory or a file
+message Entry {
+   required string path = 1;
+   required string name = 2; // directory name or file name
+   required uint64 size = 3; // bytes
+}
 
-// Searching
+// Searching.
 // a -> b
 message Find {
    required string pattern = 1;
@@ -27,21 +34,38 @@ message Find {
 // b -> a
 message FindResult {
    message DirEntry {
-      required string path = 1;
-      required string dirname = 2;
-      required uint64 size = 3; // bytes
+      required Entry dir;
    }
    message FileEntry {
-      required string path = 1;
-      required string filename = 2;
-      required uint64 size = 3; // bytes
-      repeated Chunk chunks = 4;
+      required Entry file;
+      repeated Chunk chunks = 4; // No chunk means that 'b' doesn't know the hashes.
    }
    repeated DirEntry dirs = 1;
    repeated FileEntry files = 2;
 }
 
-// Download
+// Get hash.
+// If a peer want to start a queued download but doesn't know its hashes
+// it will ask the hashes to the source peer.
+// If 'b' doesn't have the hashes but have the file
+// the hashes will be computed on the fly. Thus this request
+// can be a bit long (~10s).
+// a -> b
+message GetHashes {
+   required Entry file = 1;
+}
+// b -> a
+message GetHashesResult {
+   enum Status {
+      OK = 0;
+      DONT_HAVE = 1; // b doesn't have this entry
+      ERROR_UNKNOWN = 255;
+   }
+   required Status status = 1;
+   repeated Chunk chunks = 2;
+}
+
+// Download.
 // a -> b
 message GetChunk {
    required Chunk chunk = 1;
@@ -52,7 +76,7 @@ message GetChunkResult {
       OK = 0;
       DONT_HAVE = 1; // b doesn't have this chunk
       ALREADY_DOWNLOADING = 2; // if a is already downloading a chunk from b
-      OTHER = 255;
+      ERROR_UNKNOWN = 255;
    }
    required Status status = 1;
 }
@@ -68,7 +92,7 @@ message HaveChunksResult {
    repeated bool chunkStates = 1;
 }
 
-// Browsing
+// Browsing.
 // a -> b
 message GetEntries {
    required string path = 1;
