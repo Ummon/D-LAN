@@ -7,10 +7,11 @@
 #include <Chunk.h>
 
 /**
-  * Will read a chunk. The data are send to a peer (not implemented).
+  * Read a chunk. The data are send to a peer (not implemented).
   */
 class Uploader : public QThread
 {
+   Q_OBJECT
 public:
    Uploader();
       
@@ -28,8 +29,7 @@ protected:
    
 private:
    static QByteArray refArray; ///< The reference array, each read buffer should be equal to this array.
-   
-   Chunk* chunk;
+   Chunk* chunk; ///< The associated chunk, can be 0 if there is no chunk.
 };
 
 #endif // UPLOADER_H

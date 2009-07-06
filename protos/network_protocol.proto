@@ -2,23 +2,14 @@ package Network;
 
 // All string are encoded in UTF-8
 
-// a -> all
-message IMAlive {
-   required bytes id = 1; // Sha1 peer ID
-   required string name = 2;
-   required uint32 version = 3; // the version of the protocol used.
-}
-
-// a -> all
-message ChatMessage {
-   required bytes id = 1; // peer ID
-   required string message = 2;
-}
-
-// Common types.
-message Chunk {
+/**
+  * Common types.
+  */
+// For identify a chunk or a user
+message Hash {
    required bytes hash = 1; // 20 bytes
 }
+
 // can be a directory or a file
 message Entry {
    required string path = 1;
@@ -26,6 +17,25 @@ message Entry {
    required uint64 size = 3; // bytes
 }
 
+/**
+  * Multicast UDP messages.
+  */
+// a -> all
+message IMAlive {
+   required Hash id = 1; // Sha1 peer ID
+   required string name = 2;
+   required uint32 version = 3; // the version of the protocol used.
+}
+
+// a -> all
+message ChatMessage {
+   required Hash id = 1; // Sha1 peer ID
+   required string message = 2;
+}
+
+/**
+  * Unicast TCP Messages.
+  */
 // Searching.
 // a -> b
 message Find {
@@ -34,11 +44,11 @@ message Find {
 // b -> a
 message FindResult {
    message DirEntry {
-      required Entry dir;
+      required Entry dir = 1;
    }
    message FileEntry {
-      required Entry file;
-      repeated Chunk chunks = 4; // No chunk means that 'b' doesn't know the hashes.
+      required Entry file = 1;
+      repeated Hash chunks = 2; // No chunk means that 'b' doesn't know the hashes.
    }
    repeated DirEntry dirs = 1;
    repeated FileEntry files = 2;
@@ -62,13 +72,14 @@ message GetHashesResult {
       ERROR_UNKNOWN = 255;
    }
    required Status status = 1;
-   repeated Chunk chunks = 2;
+   repeated Hash chunks = 2;
 }
 
 // Download.
 // a -> b
 message GetChunk {
-   required Chunk chunk = 1;
+   required Hash chunk = 1;
+   required uint32 offset = 2;
 }
 // b -> a
 message GetChunkResult {
@@ -85,7 +96,7 @@ message GetChunkResult {
 // Have chunks ?
 // a -> b
 message HaveChunks {
-   repeated Chunk chunks = 1;
+   repeated Hash chunks = 1;
 }
 // b -> a
 message HaveChunksResult {
@@ -106,6 +117,6 @@ message GetEntriesResult {
    message FileEntry {
       required string filename = 1;
       required uint64 size = 2; // bytes
-      repeated Chunk chunks = 3;
+      repeated Hash chunks = 3;
    }
 }
