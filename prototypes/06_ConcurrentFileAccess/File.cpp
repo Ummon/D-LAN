@@ -4,14 +4,14 @@
 
 #include <Chunk.h>
 
-File::File(const QString& name, quint64 size) throw(FileSizeDoesntMatch)
+File::File(const QString& name, quint64 size) throw(FileSizeDoesntMatchException)
       : size(size)
 {
    this->file = new QFile(name);
    if (this->file->exists())
    {
       if ((quint64)this->file->size() != this->size)
-         throw FileSizeDoesntMatch();
+         throw FileSizeDoesntMatchException();
    }
    this->file->open(QIODevice::ReadWrite);
    this->file->resize(this->size); // Warning : can fail

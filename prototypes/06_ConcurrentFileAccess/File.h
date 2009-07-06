@@ -8,7 +8,7 @@
 #include <QFile>
 #include <QReadWriteLock>
 
-class FileSizeDoesntMatch : public std::exception {};
+class FileSizeDoesntMatchException : public std::exception {};
 
 class Chunk;
 
@@ -26,7 +26,7 @@ public:
      * Create a new empty file or open an existing one.
      * If the file already exists the given size must match.
      */
-   File(const QString& name, quint64 size) throw(FileSizeDoesntMatch);
+   File(const QString& name, quint64 size) throw(FileSizeDoesntMatchException);
    
    virtual ~File();
    
