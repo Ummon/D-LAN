@@ -1,20 +1,24 @@
 #include "File.h"
 
 #include <QDebug>
+#include <QMutexLocker>
 
 #include <Chunk.h>
 
 File::File(const QString& name, quint64 size) throw(FileSizeDoesntMatchException)
       : size(size)
 {
-   this->file = new QFile(name);
-   if (this->file->exists())
+   this->fileInWriteMode = new QFile(name);
+   if (this->fileInWriteMode->exists())
    {
-      if ((quint64)this->file->size() != this->size)
+      if ((quint64)this->fileInWriteMode->size() != this->size)
          throw FileSizeDoesntMatchException();
    }
-   this->file->open(QIODevice::ReadWrite);
-   this->file->resize(this->size); // Warning : can fail
+   this->fileInWriteMode->open(QIODevice::WriteOnly);
+   this->fileInWriteMode->resize(this->size); // Warning : can fail
+
+   this->fileInReadMode = new QFile(name);
+   this->fileInReadMode->open(QIODevice::ReadOnly);
       
    quint64 offset = 0;
    for (int chunkNum = 0; offset < size; offset += File::chunkSize, chunkNum++)
@@ -23,8 +27,9 @@ File::File(const QString& name, quint64 size) throw(FileSizeDoesntMatchException
 
 File::~File()
 {
-   this->file->flush();
-   delete this->file;
+   this->fileInWriteMode->flush();
+   delete this->fileInWriteMode;
+   delete this->fileInReadMode;
 }
 
 bool File::write(const QByteArray& buffer, qint64 offset)
@@ -32,11 +37,11 @@ bool File::write(const QByteArray& buffer, qint64 offset)
    if ((quint64)offset >= this->size)
       return true;
    
-   this->lock.lockForWrite();
-   this->file->seek(offset);
+   QMutexLocker locker(&this->writeLock);
+   
+   this->fileInWriteMode->seek(offset);
    int maxSize = (this->size - offset);
-   qint64 n = this->file->write(buffer.data(), buffer.size() > maxSize ? maxSize : buffer.size());
-   this->lock.unlock();
+   qint64 n = this->fileInWriteMode->write(buffer.data(), buffer.size() > maxSize ? maxSize : buffer.size());
    
    return offset + n >= (qint64)this->size || n == -1;
 }
@@ -45,11 +50,11 @@ qint64 File::read(QByteArray& buffer, qint64 offset)
 {
    if ((quint64)offset >= this->size)
       return 0;
-   
-   this->lock.lockForRead();
-   this->file->seek(offset);
-   qint64 bytesRead = this->file->read(buffer.data(), buffer.size());
-   this->lock.unlock();
+
+   QMutexLocker locker(&this->readLock);
+
+   this->fileInReadMode->seek(offset);
+   qint64 bytesRead = this->fileInReadMode->read(buffer.data(), buffer.size());
    
    return bytesRead;
 }
