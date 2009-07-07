@@ -12,11 +12,18 @@ message Hash {
    required bytes hash = 1; // 20 bytes
 }
 
-// Can be a directory or a file.
+// Used for a directory or a file.
 message Entry {
-   required string path = 1;
-   required string name = 2; // Directory name or file name.
+   required string path = 1; // Absolute path. For example : "D:\My Videos\My cat"
+   required string name = 2; // Directory name or file name. For example : "MyLOLCat.avi"
    required uint64 size = 3; // Bytes.
+}
+message DirEntry {
+   required Entry dir = 1;
+}
+message FileEntry {
+   required Entry file = 1;
+   repeated Hash chunks = 2; // No chunk means that the peer doesn't know the hashes.
 }
 
 /***** Multicast UDP messages. *****/
@@ -42,13 +49,6 @@ message Find {
 }
 // b -> a
 message FindResult {
-   message DirEntry {
-      required Entry dir = 1;
-   }
-   message FileEntry {
-      required Entry file = 1;
-      repeated Hash chunks = 2; // No chunk means that 'b' doesn't know the hashes.
-   }
    repeated DirEntry dirs = 1;
    repeated FileEntry files = 2;
 }
@@ -109,17 +109,10 @@ message HaveChunksResult {
 // Browsing.
 // a -> b
 message GetEntries {
-   required string path = 1;
+   required Entry directory = 1;
 }
 // b -> a
 message GetEntriesResult {
-   message DirEntry {
-      required string dirname = 1;
-      required uint64 size = 2; // In bytes.
-   }
-   message FileEntry {
-      required string filename = 1;
-      required uint64 size = 2; // In bytes.
-      repeated Hash chunks = 3;
-   }
+   repeated DirEntry dirs = 1;
+   repeated FileEntry files = 2;
 }
