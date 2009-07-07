@@ -38,14 +38,15 @@ void Uploader::run()
    while (offset < File::chunkSize)
    {
       buffer.fill(0);
-      qDebug() << "Uploader " << this->chunk->getNum() << " : reads some bytes " << hex << offset << " -> " << offset + Downloader::bufferSize-1;
       qint64 bytesRead = this->chunk->read(buffer, offset);
       buffer.resize(bytesRead);
       
-      if (Uploader::refArray.startsWith(buffer))
-         qDebug() << "Uploader " << this->chunk->getNum() << " : read OK";
-      else
-         qDebug() << "Uploader " << this->chunk->getNum() << " : read KO";
+      bool ok = Uploader::refArray.startsWith(buffer);
+      
+      qDebug() << "Uploader " << this->chunk->getNum() <<
+            " : reads some bytes " << hex << offset << 
+            " -> " << offset + Downloader::bufferSize-1 <<
+            " : " << (ok ? "[OK]": "[KO]");
       
       if (bytesRead < buffer.size())
          break;
