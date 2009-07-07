@@ -43,9 +43,9 @@ void Uploader::run()
       buffer.resize(bytesRead);
       
       if (Uploader::refArray.startsWith(buffer))
-         qDebug() << "Uploader " << this->chunk->getNum() << " : Read OK";
+         qDebug() << "Uploader " << this->chunk->getNum() << " : read OK";
       else
-         qDebug() << "Uploader " << this->chunk->getNum() << " : Read KO";
+         qDebug() << "Uploader " << this->chunk->getNum() << " : read KO";
       
       if (bytesRead < buffer.size())
          break;

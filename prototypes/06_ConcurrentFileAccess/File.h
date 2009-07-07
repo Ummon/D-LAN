@@ -6,7 +6,7 @@
 #include <QList>
 #include <QString>
 #include <QFile>
-#include <QReadWriteLock>
+#include <QMutex>
 
 class FileSizeDoesntMatchException : public std::exception {};
 
@@ -55,9 +55,13 @@ public:
    const QList<Chunk*>& getChunks();
    
 private:
-   QFile* file;
+   QFile* fileInWriteMode;
+   QFile* fileInReadMode;
+
    quint64 size;
-   QReadWriteLock lock;
+
+   QMutex writeLock;
+   QMutex readLock;
    
    QList<Chunk*> chunks;
 };
