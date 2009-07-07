@@ -1,30 +1,31 @@
+/**
+  * Protocol between cores (peers).
+  * Version : 1
+  * All string are encoded in UTF-8.
+  */
+
 package Network;
 
-// All string are encoded in UTF-8
-
-/**
-  * Common types.
-  */
-// For identify a chunk or a user
+/***** Common types. *****/
+// For identify a chunk or a user.
 message Hash {
    required bytes hash = 1; // 20 bytes
 }
 
-// can be a directory or a file
+// Can be a directory or a file.
 message Entry {
    required string path = 1;
-   required string name = 2; // directory name or file name
-   required uint64 size = 3; // bytes
+   required string name = 2; // Directory name or file name.
+   required uint64 size = 3; // Bytes.
 }
 
-/**
-  * Multicast UDP messages.
-  */
+/***** Multicast UDP messages. *****/
 // a -> all
 message IMAlive {
-   required Hash id = 1; // Sha1 peer ID
-   required string name = 2;
-   required uint32 version = 3; // the version of the protocol used.
+   required uint32 version = 1; // The version of the protocol used.
+   required Hash id = 2; // Sha1 peer ID
+   required string name = 3;
+   required uint64 amount = 4; // Amount of sharing in bytes.
 }
 
 // a -> all
@@ -33,10 +34,8 @@ message ChatMessage {
    required string message = 2;
 }
 
-/**
-  * Unicast TCP Messages.
-  */
-// Searching.
+/***** Unicast TCP Messages. *****/
+// Searching a file or a directory.
 // a -> b
 message Find {
    required string pattern = 1;
@@ -54,7 +53,7 @@ message FindResult {
    repeated FileEntry files = 2;
 }
 
-// Get hash.
+// Get hashes.
 // If a peer want to start a queued download but doesn't know its hashes
 // it will ask the hashes to the source peer.
 // If 'b' doesn't have the hashes but have the file
@@ -68,7 +67,7 @@ message GetHashes {
 message GetHashesResult {
    enum Status {
       OK = 0;
-      DONT_HAVE = 1; // b doesn't have this entry
+      DONT_HAVE = 1; // 'b' doesn't have this entry.
       ERROR_UNKNOWN = 255;
    }
    required Status status = 1;
@@ -79,14 +78,14 @@ message GetHashesResult {
 // a -> b
 message GetChunk {
    required Hash chunk = 1;
-   required uint32 offset = 2;
+   required uint32 offset = 2; // Relative to the beginning of the chunk.
 }
 // b -> a
 message GetChunkResult {
    enum Status {
       OK = 0;
-      DONT_HAVE = 1; // b doesn't have this chunk
-      ALREADY_DOWNLOADING = 2; // if a is already downloading a chunk from b
+      DONT_HAVE = 1; // 'b' doesn't have this chunk.
+      ALREADY_DOWNLOADING = 2; // If 'a' is already downloading a chunk from 'b'.
       ERROR_UNKNOWN = 255;
    }
    required Status status = 1;
@@ -94,10 +93,14 @@ message GetChunkResult {
 // b -> a : stream of data..
 
 // Have chunks ?
+// Send an array of chunks. These chunks can come
+// from different files.
 // a -> b
 message HaveChunks {
    repeated Hash chunks = 1;
 }
+// Return an array with a bool value for each
+// given chunks. 'true' means "I have this chunk".
 // b -> a
 message HaveChunksResult {
    repeated bool chunkStates = 1;
@@ -112,11 +115,11 @@ message GetEntries {
 message GetEntriesResult {
    message DirEntry {
       required string dirname = 1;
-      required uint64 size = 2; // bytes
+      required uint64 size = 2; // In bytes.
    }
    message FileEntry {
       required string filename = 1;
-      required uint64 size = 2; // bytes
+      required uint64 size = 2; // In bytes.
       repeated Hash chunks = 3;
    }
 }
