@@ -17,5 +17,7 @@ message Hashes {
       repeated File files = 2;
    }
    
-   repeated Dir directory = 1;
+   required uint32 version = 1;
+   required uint32 chunkSize = 2;
+   repeated Dir directory = 3;
 }
