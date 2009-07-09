@@ -27,12 +27,26 @@ message FileEntry {
 }
 
 /***** Multicast UDP messages. *****/
+// Have chunks ?
+// This message is sent periodically to all other peers.
+// It send an array of hashe chunks. These hases can come
+// from different files.
+// This message is also used to know the other peers.
 // a -> all
-message IMAlive {
+message HaveChunks {
    required uint32 version = 1; // The version of the protocol used.
    required Hash id = 2; // Sha1 peer ID
    required string name = 3;
    required uint64 amount = 4; // Amount of sharing in bytes.
+   repeated Hash chunks = 5; // Can be empty.
+}
+// This message is only sent if some chunks are requested.
+// Return an array with a bool value for each
+// given chunks. 'true' means "I have this chunk".
+// all -> a
+message HaveChunksResult {
+   required Hash id = 1; // Sha1 peer ID   
+   repeated bool chunkStates = 2; // The array size must have the same size of HaveChunks.chunks.
 }
 
 // a -> all
@@ -91,20 +105,6 @@ message GetChunkResult {
    required Status status = 1;
 }
 // b -> a : stream of data..
-
-// Have chunks ?
-// Send an array of chunks. These chunks can come
-// from different files.
-// a -> b
-message HaveChunks {
-   repeated Hash chunks = 1;
-}
-// Return an array with a bool value for each
-// given chunks. 'true' means "I have this chunk".
-// b -> a
-message HaveChunksResult {
-   repeated bool chunkStates = 1;
-}
 
 // Browsing.
 // a -> b
