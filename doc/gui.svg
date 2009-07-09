@@ -17,7 +17,7 @@
    sodipodi:docname="gui.svg"
    inkscape:output_extension="org.inkscape.output.svg.inkscape"
    version="1.0"
-   inkscape:export-filename="/home/gburri/Desktop/gui.png"
+   inkscape:export-filename="E:\tmp\gui.png"
    inkscape:export-xdpi="130"
    inkscape:export-ydpi="130">
   <defs
@@ -29,6 +29,125 @@
        inkscape:vp_z="744.09448 : 526.18109 : 1"
        inkscape:persp3d-origin="372.04724 : 350.78739 : 1"
        id="perspective10" />
+    <inkscape:perspective
+       id="perspective3644"
+       inkscape:persp3d-origin="0.5 : 0.33333333 : 1"
+       inkscape:vp_z="1 : 0.5 : 1"
+       inkscape:vp_y="0 : 1000 : 0"
+       inkscape:vp_x="0 : 0.5 : 1"
+       sodipodi:type="inkscape:persp3d" />
+    <inkscape:perspective
+       id="perspective3666"
+       inkscape:persp3d-origin="0.5 : 0.33333333 : 1"
+       inkscape:vp_z="1 : 0.5 : 1"
+       inkscape:vp_y="0 : 1000 : 0"
+       inkscape:vp_x="0 : 0.5 : 1"
+       sodipodi:type="inkscape:persp3d" />
+    <inkscape:perspective
+       id="perspective3702"
+       inkscape:persp3d-origin="0.5 : 0.33333333 : 1"
+       inkscape:vp_z="1 : 0.5 : 1"
+       inkscape:vp_y="0 : 1000 : 0"
+       inkscape:vp_x="0 : 0.5 : 1"
+       sodipodi:type="inkscape:persp3d" />
+    <inkscape:perspective
+       id="perspective3724"
+       inkscape:persp3d-origin="0.5 : 0.33333333 : 1"
+       inkscape:vp_z="1 : 0.5 : 1"
+       inkscape:vp_y="0 : 1000 : 0"
+       inkscape:vp_x="0 : 0.5 : 1"
+       sodipodi:type="inkscape:persp3d" />
+    <inkscape:perspective
+       id="perspective3752"
+       inkscape:persp3d-origin="0.5 : 0.33333333 : 1"
+       inkscape:vp_z="1 : 0.5 : 1"
+       inkscape:vp_y="0 : 1000 : 0"
+       inkscape:vp_x="0 : 0.5 : 1"
+       sodipodi:type="inkscape:persp3d" />
+    <inkscape:perspective
+       id="perspective3778"
+       inkscape:persp3d-origin="0.5 : 0.33333333 : 1"
+       inkscape:vp_z="1 : 0.5 : 1"
+       inkscape:vp_y="0 : 1000 : 0"
+       inkscape:vp_x="0 : 0.5 : 1"
+       sodipodi:type="inkscape:persp3d" />
+    <inkscape:perspective
+       id="perspective3803"
+       inkscape:persp3d-origin="0.5 : 0.33333333 : 1"
+       inkscape:vp_z="1 : 0.5 : 1"
+       inkscape:vp_y="0 : 1000 : 0"
+       inkscape:vp_x="0 : 0.5 : 1"
+       sodipodi:type="inkscape:persp3d" />
+    <inkscape:perspective
+       id="perspective3839"
+       inkscape:persp3d-origin="0.5 : 0.33333333 : 1"
+       inkscape:vp_z="1 : 0.5 : 1"
+       inkscape:vp_y="0 : 1000 : 0"
+       inkscape:vp_x="0 : 0.5 : 1"
+       sodipodi:type="inkscape:persp3d" />
+    <inkscape:perspective
+       id="perspective3839-1"
+       inkscape:persp3d-origin="0.5 : 0.33333333 : 1"
+       inkscape:vp_z="1 : 0.5 : 1"
+       inkscape:vp_y="0 : 1000 : 0"
+       inkscape:vp_x="0 : 0.5 : 1"
+       sodipodi:type="inkscape:persp3d" />
+    <inkscape:perspective
+       id="perspective3839-7"
+       inkscape:persp3d-origin="0.5 : 0.33333333 : 1"
+       inkscape:vp_z="1 : 0.5 : 1"
+       inkscape:vp_y="0 : 1000 : 0"
+       inkscape:vp_x="0 : 0.5 : 1"
+       sodipodi:type="inkscape:persp3d" />
+    <inkscape:perspective
+       id="perspective3839-2"
+       inkscape:persp3d-origin="0.5 : 0.33333333 : 1"
+       inkscape:vp_z="1 : 0.5 : 1"
+       inkscape:vp_y="0 : 1000 : 0"
+       inkscape:vp_x="0 : 0.5 : 1"
+       sodipodi:type="inkscape:persp3d" />
+    <inkscape:perspective
+       id="perspective4682"
+       inkscape:persp3d-origin="0.5 : 0.33333333 : 1"
+       inkscape:vp_z="1 : 0.5 : 1"
+       inkscape:vp_y="0 : 1000 : 0"
+       inkscape:vp_x="0 : 0.5 : 1"
+       sodipodi:type="inkscape:persp3d" />
+    <inkscape:perspective
+       id="perspective4704"
+       inkscape:persp3d-origin="0.5 : 0.33333333 : 1"
+       inkscape:vp_z="1 : 0.5 : 1"
+       inkscape:vp_y="0 : 1000 : 0"
+       inkscape:vp_x="0 : 0.5 : 1"
+       sodipodi:type="inkscape:persp3d" />
+    <inkscape:perspective
+       id="perspective4704-1"
+       inkscape:persp3d-origin="0.5 : 0.33333333 : 1"
+       inkscape:vp_z="1 : 0.5 : 1"
+       inkscape:vp_y="0 : 1000 : 0"
+       inkscape:vp_x="0 : 0.5 : 1"
+       sodipodi:type="inkscape:persp3d" />
+    <inkscape:perspective
+       id="perspective4704-2"
+       inkscape:persp3d-origin="0.5 : 0.33333333 : 1"
+       inkscape:vp_z="1 : 0.5 : 1"
+       inkscape:vp_y="0 : 1000 : 0"
+       inkscape:vp_x="0 : 0.5 : 1"
+       sodipodi:type="inkscape:persp3d" />
+    <inkscape:perspective
+       id="perspective4704-4"
+       inkscape:persp3d-origin="0.5 : 0.33333333 : 1"
+       inkscape:vp_z="1 : 0.5 : 1"
+       inkscape:vp_y="0 : 1000 : 0"
+       inkscape:vp_x="0 : 0.5 : 1"
+       sodipodi:type="inkscape:persp3d" />
+    <inkscape:perspective
+       id="perspective4762"
+       inkscape:persp3d-origin="0.5 : 0.33333333 : 1"
+       inkscape:vp_z="1 : 0.5 : 1"
+       inkscape:vp_y="0 : 1000 : 0"
+       inkscape:vp_x="0 : 0.5 : 1"
+       sodipodi:type="inkscape:persp3d" />
   </defs>
   <sodipodi:namedview
      id="base"
@@ -37,12 +156,12 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="2.0000001"
-     inkscape:cx="342.93891"
-     inkscape:cy="881.70283"
+     inkscape:zoom="2.8284273"
+     inkscape:cx="191.73718"
+     inkscape:cy="638.55197"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
-     showgrid="false"
+     showgrid="true"
      inkscape:window-width="1280"
      inkscape:window-height="943"
      inkscape:window-x="-4"
@@ -73,6 +192,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -420,10 +540,10 @@
        inkscape:export-xdpi="130"
        inkscape:export-ydpi="130" />
     <rect
-       style="opacity:1;fill:#f0f0f0;fill-opacity:1;stroke:#000000;stroke-width:0.49999991;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       style="fill:#f0f0f0;fill-opacity:1;stroke:#000000;stroke-width:0.49999991;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
        id="rect2428"
        width="184.95094"
-       height="114.76257"
+       height="88.762573"
        x="100.05"
        y="362.42456"
        inkscape:export-filename="/home/gburri/temp/gui.png"
@@ -454,10 +574,10 @@
          y="360.16406"
          style="font-size:8px">Downloads</tspan></text>
     <rect
-       style="opacity:1;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.49999982;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.49999982;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
        id="rect2474"
        width="175.00011"
-       height="104.98463"
+       height="68.984627"
        x="104.99989"
        y="367.37756"
        inkscape:export-filename="/home/gburri/temp/gui.png"
@@ -680,24 +800,24 @@
        inkscape:export-xdpi="130"
        inkscape:export-ydpi="130" />
     <path
-       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       d="M 175.99991,367.36218 L 175.99991,472.36218"
+       style="fill:none;stroke:#000000;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       d="m 175.99991,367.3622 0,68.875"
        id="path2550"
        sodipodi:nodetypes="cc"
        inkscape:export-filename="/home/gburri/temp/gui.png"
        inkscape:export-xdpi="130"
        inkscape:export-ydpi="130" />
     <path
-       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       d="M 195.99991,367.36218 L 195.99991,472.36218"
+       style="fill:none;stroke:#000000;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       d="m 195.99991,367.3622 0,68.875"
        id="path3322"
        sodipodi:nodetypes="cc"
        inkscape:export-filename="/home/gburri/temp/gui.png"
        inkscape:export-xdpi="130"
        inkscape:export-ydpi="130" />
     <path
-       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       d="M 230.99991,367.36218 L 230.99991,472.36218"
+       style="fill:none;stroke:#000000;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       d="m 230.99991,367.3622 0,68.875"
        id="path3324"
        sodipodi:nodetypes="cc"
        inkscape:export-filename="/home/gburri/temp/gui.png"
@@ -3030,5 +3150,231 @@
        inkscape:export-filename="/home/gburri/temp/gui.png"
        inkscape:export-xdpi="130"
        inkscape:export-ydpi="130" />
+    <rect
+       style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.49999985;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       id="rect2474-1"
+       width="46.500114"
+       height="7.9846296"
+       x="125"
+       y="439.36218"
+       inkscape:export-filename="/home/gburri/temp/gui.png"
+       inkscape:export-xdpi="130"
+       inkscape:export-ydpi="130" />
+    <text
+       xml:space="preserve"
+       style="font-size:6px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+       x="106"
+       y="445.36218"
+       id="text2476-0"
+       inkscape:export-filename="/home/gburri/temp/gui.png"
+       inkscape:export-xdpi="130"
+       inkscape:export-ydpi="130"><tspan
+         sodipodi:role="line"
+         id="tspan2478-9"
+         x="106"
+         y="445.36218">View</tspan></text>
+    <rect
+       style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.49999979;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       id="rect2474-1-4"
+       width="8.5001221"
+       height="7.9846296"
+       x="163"
+       y="439.36218"
+       inkscape:export-filename="/home/gburri/temp/gui.png"
+       inkscape:export-xdpi="130"
+       inkscape:export-ydpi="130" />
+    <rect
+       style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.49999988;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       id="rect2474-1-8"
+       width="42"
+       height="26"
+       x="125.00001"
+       y="447.36218"
+       inkscape:export-filename="/home/gburri/temp/gui.png"
+       inkscape:export-xdpi="130"
+       inkscape:export-ydpi="130" />
+    <path
+       style="stroke-width:1px"
+       d="m 164.58839,440.71574 2.5,5 2.5,-5 -5,0 z"
+       id="path3742" />
+    <rect
+       style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.49999976;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       id="rect2474-1-4-8"
+       width="3.0000007"
+       height="3"
+       x="127"
+       y="449.36218"
+       inkscape:export-filename="/home/gburri/temp/gui.png"
+       inkscape:export-xdpi="130"
+       inkscape:export-ydpi="130" />
+    <text
+       xml:space="preserve"
+       style="font-size:6px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+       x="133"
+       y="452.36218"
+       id="text2476-0-2"
+       inkscape:export-filename="/home/gburri/temp/gui.png"
+       inkscape:export-xdpi="130"
+       inkscape:export-ydpi="130"><tspan
+         sodipodi:role="line"
+         id="tspan2478-9-4"
+         x="133"
+         y="452.36218"
+         style="font-size:5">&lt;all&gt;</tspan></text>
+    <rect
+       style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.49999976;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       id="rect2474-1-4-8-5"
+       width="3.0000007"
+       height="3"
+       x="127"
+       y="454.36218"
+       inkscape:export-filename="/home/gburri/temp/gui.png"
+       inkscape:export-xdpi="130"
+       inkscape:export-ydpi="130" />
+    <text
+       xml:space="preserve"
+       style="font-size:6px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+       x="133"
+       y="457.36218"
+       id="text2476-0-2-1"
+       inkscape:export-filename="/home/gburri/temp/gui.png"
+       inkscape:export-xdpi="130"
+       inkscape:export-ydpi="130"><tspan
+         sodipodi:role="line"
+         id="tspan2478-9-4-7"
+         x="133"
+         y="457.36218"
+         style="font-size:5px">complete</tspan></text>
+    <rect
+       style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.49999976;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       id="rect2474-1-4-8-1"
+       width="3.0000007"
+       height="3"
+       x="127"
+       y="459.36218"
+       inkscape:export-filename="/home/gburri/temp/gui.png"
+       inkscape:export-xdpi="130"
+       inkscape:export-ydpi="130" />
+    <text
+       xml:space="preserve"
+       style="font-size:6px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+       x="133"
+       y="462.36218"
+       id="text2476-0-2-5"
+       inkscape:export-filename="/home/gburri/temp/gui.png"
+       inkscape:export-xdpi="130"
+       inkscape:export-ydpi="130"><tspan
+         sodipodi:role="line"
+         id="tspan2478-9-4-2"
+         x="133"
+         y="462.36218"
+         style="font-size:5px">downloading</tspan></text>
+    <rect
+       style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.49999976;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       id="rect2474-1-4-8-6"
+       width="3.0000007"
+       height="3"
+       x="127"
+       y="464.36218"
+       inkscape:export-filename="/home/gburri/temp/gui.png"
+       inkscape:export-xdpi="130"
+       inkscape:export-ydpi="130" />
+    <text
+       xml:space="preserve"
+       style="font-size:6px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+       x="133"
+       y="467.36218"
+       id="text2476-0-2-14"
+       inkscape:export-filename="/home/gburri/temp/gui.png"
+       inkscape:export-xdpi="130"
+       inkscape:export-ydpi="130"><tspan
+         sodipodi:role="line"
+         id="tspan2478-9-4-23"
+         x="133"
+         y="467.36218"
+         style="font-size:5px">queued</tspan></text>
+    <rect
+       style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.49999976;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       id="rect2474-1-4-8-2"
+       width="3.0000007"
+       height="3"
+       x="127"
+       y="469.36218"
+       inkscape:export-filename="/home/gburri/temp/gui.png"
+       inkscape:export-xdpi="130"
+       inkscape:export-ydpi="130" />
+    <text
+       xml:space="preserve"
+       style="font-size:6px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+       x="133"
+       y="472.36218"
+       id="text2476-0-2-16"
+       inkscape:export-filename="/home/gburri/temp/gui.png"
+       inkscape:export-xdpi="130"
+       inkscape:export-ydpi="130"><tspan
+         sodipodi:role="line"
+         id="tspan2478-9-4-8"
+         x="133"
+         y="472.36218"
+         style="font-size:5px">invalid</tspan></text>
+    <path
+       style="stroke:#000000;stroke-width:0.4;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-linecap:square"
+       d="m 128,450.36218 1,1"
+       id="path3900" />
+    <path
+       style="stroke:#000000;stroke-width:0.40000001;stroke-linecap:square;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       d="m 129,450.36218 -1,1"
+       id="path3900-5"
+       sodipodi:nodetypes="cc" />
+    <path
+       style="stroke:#000000;stroke-width:0.40000001;stroke-linecap:square;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       d="m 128,455.36218 1,1"
+       id="path3900-7" />
+    <path
+       style="stroke:#000000;stroke-width:0.40000001;stroke-linecap:square;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       d="m 129,455.36218 -1,1"
+       id="path3900-5-6"
+       sodipodi:nodetypes="cc" />
+    <path
+       style="stroke:#000000;stroke-width:0.40000001;stroke-linecap:square;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       d="m 128,460.36218 1,1"
+       id="path3900-8" />
+    <path
+       style="stroke:#000000;stroke-width:0.40000001;stroke-linecap:square;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       d="m 129,460.36218 -1,1"
+       id="path3900-5-9"
+       sodipodi:nodetypes="cc" />
+    <path
+       style="stroke:#000000;stroke-width:0.40000001;stroke-linecap:square;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       d="m 128,465.36218 1,1"
+       id="path3900-79" />
+    <path
+       style="stroke:#000000;stroke-width:0.40000001;stroke-linecap:square;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       d="m 129,465.36218 -1,1"
+       id="path3900-5-5"
+       sodipodi:nodetypes="cc" />
+    <path
+       style="stroke:#000000;stroke-width:0.40000001;stroke-linecap:square;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       d="m 128,470.36218 1,1"
+       id="path3900-3" />
+    <path
+       style="stroke:#000000;stroke-width:0.40000001;stroke-linecap:square;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       d="m 129,470.36218 -1,1"
+       id="path3900-5-1"
+       sodipodi:nodetypes="cc" />
+    <text
+       xml:space="preserve"
+       style="font-size:6px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+       x="128"
+       y="445.36218"
+       id="text2476-0-2-2"
+       inkscape:export-filename="/home/gburri/temp/gui.png"
+       inkscape:export-xdpi="130"
+       inkscape:export-ydpi="130"><tspan
+         sodipodi:role="line"
+         id="tspan2478-9-4-3"
+         x="128"
+         y="445.36218"
+         style="font-size:6px">&lt;all&gt;</tspan></text>
   </g>
 </svg>
