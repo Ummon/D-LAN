@@ -3,7 +3,11 @@
 # -------------------------------------------------
 QT -= gui
 TARGET = 06_ConcurrentFileAccess
-INCLUDEPATH += "." # Only for windows..
+
+win32 {
+   INCLUDEPATH += "."
+}
+
 CONFIG += console
 CONFIG -= app_bundle
 TEMPLATE = app

@@ -3,6 +3,12 @@
 # -------------------------------------------------
 QT += network
 QT -= gui
+
+win32 {
+   INCLUDEPATH += "."
+   LIBS += "$$(WIN_PLATFORM_SDK)\Lib\WSOCK32.LIB"
+}
+
 TARGET = 04_UDP
 CONFIG += console
 CONFIG -= app_bundle

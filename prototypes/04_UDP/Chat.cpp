@@ -4,8 +4,8 @@
 
 #if defined(Q_OS_LINUX)
    #include <netinet/in.h>
-#elif (Q_OS_WIN32)
-   #include <winsock2.h>
+#elif defined(Q_OS_WIN32)
+   #include <Winsock.h>
 #endif
 
 Chat::Chat()
@@ -21,7 +21,7 @@ Chat::Chat()
    int socketDescriptor = this->socket->socketDescriptor();
    
    // 'loop' is activated only for tests.
-   u_char loop = 1;
+   char loop = 1;
    if (setsockopt(socketDescriptor, IPPROTO_IP, IP_MULTICAST_LOOP, &loop, sizeof loop))
       qDebug() << "Can't set socket option : IP_MULTICAST_LOOP";
    
@@ -32,7 +32,11 @@ Chat::Chat()
    struct ip_mreq mreq;
    mreq.imr_multiaddr.s_addr = htonl(Chat::multicastIP.toIPv4Address());
    mreq.imr_interface.s_addr = htonl(INADDR_ANY);
+#if defined(Q_OS_LINUX)
    if (int error = setsockopt(socketDescriptor, IPPROTO_IP, IP_ADD_MEMBERSHIP, &mreq, sizeof mreq))
+#elif defined(Q_OS_WIN32)
+   if (int error = setsockopt(socketDescriptor, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char*)&mreq, sizeof mreq))
+#endif
       qDebug() << "Can't set socket option : IP_ADD_MEMBERSHIP : " << error;
 }
 
@@ -65,6 +69,6 @@ void Chat::processPendingDatagrams()
    }
 }
 
-const u_char Chat::TTL = 3;
+const char Chat::TTL = 3;
 const int Chat::port = 34326;
 QHostAddress Chat::multicastIP("236.123.43.24");

@@ -21,6 +21,12 @@
   <value type="bool" >false</value>
  </data>
  <data>
+  <variable>RunConfiguration0-UserEnvironmentChanges</variable>
+  <valuelist type="QVariantList" >
+   <value type="QString" >WIN_PLATFORM_SDK</value>
+  </valuelist>
+ </data>
+ <data>
   <variable>RunConfiguration0-UserSetName</variable>
   <value type="bool" >false</value>
  </data>
@@ -42,6 +48,10 @@
    <value key="ProjectExplorer.BuildConfiguration.DisplayName" type="QString" >Debug</value>
    <value key="QtVersionId" type="int" >0</value>
    <value key="addQDumper" type="" ></value>
+   <value key="buildDirectory" type="QString" >E:\projets\perso\aybabtu\prototypes\04_UDP</value>
+   <valuelist key="userEnvironmentChanges" type="QVariantList" >
+    <value type="QString" >WIN_PLATFORM_SDK=C:\Program Files\Microsoft Visual Studio 8\VC\PlatformSDK\</value>
+   </valuelist>
   </valuemap>
  </data>
  <data>
@@ -57,45 +67,63 @@
   <valuemap type="QVariantMap" >
    <value key="ProjectExplorer.BuildConfiguration.DisplayName" type="QString" >Debug</value>
    <valuelist key="abstractProcess.Environment" type="QVariantList" >
-    <value type="QString" >DBUS_SESSION_BUS_ADDRESS=unix:abstract=/tmp/dbus-WOuAAeCf1Y,guid=80d051aa9e1ced591e99f38d4a4bc136</value>
-    <value type="QString" >DESKTOP_SESSION=default</value>
-    <value type="QString" >DESKTOP_STARTUP_ID=</value>
-    <value type="QString" >DISPLAY=:0</value>
-    <value type="QString" >GDMSESSION=default</value>
-    <value type="QString" >GDM_LANG=en_US.UTF-8</value>
-    <value type="QString" >GDM_XSERVER_LOCATION=local</value>
-    <value type="QString" >GNOME_KEYRING_PID=10820</value>
-    <value type="QString" >GNOME_KEYRING_SOCKET=/tmp/keyring-5RTyu7/socket</value>
-    <value type="QString" >GTK_MODULES=canberra-gtk-module</value>
-    <value type="QString" >HOME=/home/gburri</value>
-    <value type="QString" >JAVA_HOME=/usr/lib/jvm/java-6-sun</value>
-    <value type="QString" >LANG=en_US.UTF-8</value>
-    <value type="QString" >LD_LIBRARY_PATH=/usr/lib/qtcreator:</value>
-    <value type="QString" >LOGNAME=gburri</value>
-    <value type="QString" >PATH=/usr/bin:/usr/local/bin:/usr/bin:/bin:/usr/games</value>
-    <value type="QString" >PWD=/home/gburri</value>
-    <value type="QString" >QTDIR=/usr</value>
-    <value type="QString" >SHELL=/bin/bash</value>
-    <value type="QString" >SHLVL=1</value>
-    <value type="QString" >SSH_AGENT_PID=10943</value>
-    <value type="QString" >SSH_AUTH_SOCK=/tmp/ssh-wrPaA10832/agent.10832</value>
-    <value type="QString" >USER=gburri</value>
-    <value type="QString" >USERNAME=gburri</value>
-    <value type="QString" >WINDOWPATH=7</value>
-    <value type="QString" >XAUTHORITY=/home/gburri/.Xauthority</value>
-    <value type="QString" >XDG_DATA_DIRS=/usr/local/share/:/usr/share/:/usr/share/gdm/</value>
-    <value type="QString" >XDG_SESSION_COOKIE=c1f477700b7fb0fbd08cdecf47d5a05e-1246478645.889470-2111233099</value>
+    <value type="QString" >ALLUSERSPROFILE=C:\Documents and Settings\All Users</value>
+    <value type="QString" >APPDATA=C:\Documents and Settings\bug\Application Data</value>
+    <value type="QString" >APR_ICONV_PATH=C:\Program Files\Subversion\iconv</value>
+    <value type="QString" >CLASSPATH=.;E:\programs\rhino\js.jar;C:\Program Files\Java\jre1.6.0_07\lib\ext\QTJava.zip</value>
+    <value type="QString" >CLIENTNAME=Console</value>
+    <value type="QString" >COMMONPROGRAMFILES=C:\Program Files\Common Files</value>
+    <value type="QString" >COMPUTERNAME=SUI-PC-BUG</value>
+    <value type="QString" >COMSPEC=C:\WINDOWS\system32\cmd.exe</value>
+    <value type="QString" >FP_NO_HOST_CHECK=NO</value>
+    <value type="QString" >GTK_BASEPATH=C:\GTK</value>
+    <value type="QString" >HOME=C:\Documents and Settings\bug</value>
+    <value type="QString" >HOMEDRIVE=H:</value>
+    <value type="QString" >HOMEPATH=\</value>
+    <value type="QString" >HOMESHARE=\\obelix\users\bug</value>
+    <value type="QString" >INCLUDE=C:\GTK\INCLUDE;C:\GTK\INCLUDE\GTK-2.0;C:\GTK\INCLUDE\GLIB-2.0;C:\GTK\INCLUDE\PANGO-1.0;C:\GTK\INCLUDE\CAIRO;C:\GTK\INCLUDE\ATK-1.0;C:\GTK\INCLUDE\GTKGLEXT-1.0;C:\GTK\LIB\GTK-2.0\INCLUDE;C:\GTK\LIB\GLIB-2.0\INCLUDE;C:\GTK\LIB\GTKGLEXT-1.0\INCLUDE;C:\GTK\INCLUDE\LIBGLADE-2.0;C:\GTK\INCLUDE\LIBXML2;</value>
+    <value type="QString" >INPUTRC=c:\ruby\bin\inputrc.euro</value>
+    <value type="QString" >LIB=C:\GTK\LIB;</value>
+    <value type="QString" >LOGONSERVER=\\SUI-SRV-DC2</value>
+    <value type="QString" >NUMBER_OF_PROCESSORS=1</value>
+    <value type="QString" >OPENSSL_CONF=C:\Program Files\OpenSSL\bin\openssl.cnf</value>
+    <value type="QString" >OS=Windows_NT</value>
+    <value type="QString" >PATH=E:\Qt\2009.03\mingw\bin;E:\Qt\2009.03\qt\bin;E:\oracle\product\11.1.0\db_2\bin;C:\GTK\bin;E:\programs\miktex\miktex\bin;C:\Program Files\MiKTeX 2.7\miktex\bin;E:\programs\postgresql8.1\bin;c:\ruby\bin;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\Program Files\Mozilla Firefox;W:\pws\Debug\dll;W:\pws\Debug\exe;C:\Program Files\erl5.6.4\bin;C:\Qt\4.3.1\bin;C:\Program Files\doxygen\bin;C:\Program Files\Graphviz\bin;E:\programs\FME;E:\programs\scala-2.7.0-final\bin;C:\Program Files\Subversion\bin;E:\programs\nant-0.85\bin;C:\Program Files\QuickTime\QTSystem\;E:\programs\FME2009;C:\Program Files\TortoiseSVN\bin;E:\programs\HaskellPlatform\2009.2.0.1\bin;E:\programs\HaskellPlatform\2009.2.0.1\extralibs\bin;C:\Program Files\Haskell\bin;C:\ghc\ghc-6.10.1\bin;C:\Program Files\Haskell\bin;C:\ghc\ghc-6.8.3\bin;E:\programs\Nmap;C:\GIS_PROG\PWS_DLL;;C:\Program Files\Common Files\Nero\Lib\;C:\Program Files\Common Files\Nero\Lib\;</value>
+    <value type="QString" >PATHEXT=.COM;.EXE;.BAT;.CMD;.VBS;.VBE;.JS;.JSE;.WSF;.WSH;.RB;.RBW</value>
+    <value type="QString" >PROCESSOR_ARCHITECTURE=x86</value>
+    <value type="QString" >PROCESSOR_IDENTIFIER=x86 Family 15 Model 47 Stepping 2, AuthenticAMD</value>
+    <value type="QString" >PROCESSOR_LEVEL=15</value>
+    <value type="QString" >PROCESSOR_REVISION=2f02</value>
+    <value type="QString" >PROGRAMFILES=C:\Program Files</value>
+    <value type="QString" >PWS=NLFDEVSEC</value>
+    <value type="QString" >PWSDEV=NLFDEV</value>
+    <value type="QString" >QTDIR=E:/Qt/2009.03/qt</value>
+    <value type="QString" >QTJAVA=C:\Program Files\Java\jre1.6.0_07\lib\ext\QTJava.zip</value>
+    <value type="QString" >RUBYOPT=-rubygems</value>
+    <value type="QString" >SESSIONNAME=Console</value>
+    <value type="QString" >SYSTEMDRIVE=C:</value>
+    <value type="QString" >SYSTEMROOT=C:\WINDOWS</value>
+    <value type="QString" >TEMP=C:\DOCUME~1\bug\LOCALS~1\Temp</value>
+    <value type="QString" >TMP=C:\DOCUME~1\bug\LOCALS~1\Temp</value>
+    <value type="QString" >ULTRAMON_LANGDIR=C:\Program Files\UltraMon\Resources\en</value>
+    <value type="QString" >USERDNSDOMAIN=LINKVEST.COM</value>
+    <value type="QString" >USERDOMAIN=MASTER</value>
+    <value type="QString" >USERNAME=bug</value>
+    <value type="QString" >USERPROFILE=C:\Documents and Settings\bug</value>
+    <value type="QString" >VS80COMNTOOLS=C:\Program Files\Microsoft Visual Studio 8\Common7\Tools\</value>
+    <value type="QString" >VS90COMNTOOLS=C:\Program Files\Microsoft Visual Studio 9.0\Common7\Tools\</value>
+    <value type="QString" >WINDIR=C:\WINDOWS</value>
+    <value type="QString" >WIN_PLATFORM_SDK=C:\Program Files\Microsoft Visual Studio 8\VC\PlatformSDK\</value>
    </valuelist>
    <valuelist key="abstractProcess.arguments" type="QVariantList" >
-    <value type="QString" >/home/gburri/code/projects/aybabtu/prototypes/04_UDP/04_UDP.pro</value>
+    <value type="QString" >E:/projets/perso/aybabtu/prototypes/04_UDP/04_UDP.pro</value>
     <value type="QString" >-spec</value>
-    <value type="QString" >/usr/share/qt4/mkspecs/linux-g++</value>
+    <value type="QString" >win32-g++</value>
     <value type="QString" >-r</value>
-    <value type="QString" >CONFIG+=debug</value>
    </valuelist>
-   <value key="abstractProcess.command" type="QString" >/usr/bin/qmake-qt4</value>
+   <value key="abstractProcess.command" type="QString" >E:/Qt/2009.03/qt/bin/qmake.exe</value>
    <value key="abstractProcess.enabled" type="bool" >false</value>
-   <value key="abstractProcess.workingDirectory" type="QString" >/home/gburri/code/projects/aybabtu/prototypes/04_UDP</value>
+   <value key="abstractProcess.workingDirectory" type="QString" >E:/projets/perso/aybabtu/prototypes/04_UDP</value>
    <value key="buildConfiguration" type="int" >2</value>
   </valuemap>
  </data>
@@ -104,41 +132,60 @@
   <valuemap type="QVariantMap" >
    <value key="ProjectExplorer.BuildConfiguration.DisplayName" type="QString" >Debug</value>
    <valuelist key="abstractProcess.Environment" type="QVariantList" >
-    <value type="QString" >DBUS_SESSION_BUS_ADDRESS=unix:abstract=/tmp/dbus-WOuAAeCf1Y,guid=80d051aa9e1ced591e99f38d4a4bc136</value>
-    <value type="QString" >DESKTOP_SESSION=default</value>
-    <value type="QString" >DESKTOP_STARTUP_ID=</value>
-    <value type="QString" >DISPLAY=:0</value>
-    <value type="QString" >GDMSESSION=default</value>
-    <value type="QString" >GDM_LANG=en_US.UTF-8</value>
-    <value type="QString" >GDM_XSERVER_LOCATION=local</value>
-    <value type="QString" >GNOME_KEYRING_PID=10820</value>
-    <value type="QString" >GNOME_KEYRING_SOCKET=/tmp/keyring-5RTyu7/socket</value>
-    <value type="QString" >GTK_MODULES=canberra-gtk-module</value>
-    <value type="QString" >HOME=/home/gburri</value>
-    <value type="QString" >JAVA_HOME=/usr/lib/jvm/java-6-sun</value>
-    <value type="QString" >LANG=en_US.UTF-8</value>
-    <value type="QString" >LD_LIBRARY_PATH=/usr/lib/qtcreator:</value>
-    <value type="QString" >LOGNAME=gburri</value>
-    <value type="QString" >PATH=/usr/bin:/usr/local/bin:/usr/bin:/bin:/usr/games</value>
-    <value type="QString" >PWD=/home/gburri</value>
-    <value type="QString" >QTDIR=/usr</value>
-    <value type="QString" >SHELL=/bin/bash</value>
-    <value type="QString" >SHLVL=1</value>
-    <value type="QString" >SSH_AGENT_PID=10943</value>
-    <value type="QString" >SSH_AUTH_SOCK=/tmp/ssh-wrPaA10832/agent.10832</value>
-    <value type="QString" >USER=gburri</value>
-    <value type="QString" >USERNAME=gburri</value>
-    <value type="QString" >WINDOWPATH=7</value>
-    <value type="QString" >XAUTHORITY=/home/gburri/.Xauthority</value>
-    <value type="QString" >XDG_DATA_DIRS=/usr/local/share/:/usr/share/:/usr/share/gdm/</value>
-    <value type="QString" >XDG_SESSION_COOKIE=c1f477700b7fb0fbd08cdecf47d5a05e-1246478645.889470-2111233099</value>
+    <value type="QString" >ALLUSERSPROFILE=C:\Documents and Settings\All Users</value>
+    <value type="QString" >APPDATA=C:\Documents and Settings\bug\Application Data</value>
+    <value type="QString" >APR_ICONV_PATH=C:\Program Files\Subversion\iconv</value>
+    <value type="QString" >CLASSPATH=.;E:\programs\rhino\js.jar;C:\Program Files\Java\jre1.6.0_07\lib\ext\QTJava.zip</value>
+    <value type="QString" >CLIENTNAME=Console</value>
+    <value type="QString" >COMMONPROGRAMFILES=C:\Program Files\Common Files</value>
+    <value type="QString" >COMPUTERNAME=SUI-PC-BUG</value>
+    <value type="QString" >COMSPEC=C:\WINDOWS\system32\cmd.exe</value>
+    <value type="QString" >FP_NO_HOST_CHECK=NO</value>
+    <value type="QString" >GTK_BASEPATH=C:\GTK</value>
+    <value type="QString" >HOME=C:\Documents and Settings\bug</value>
+    <value type="QString" >HOMEDRIVE=H:</value>
+    <value type="QString" >HOMEPATH=\</value>
+    <value type="QString" >HOMESHARE=\\obelix\users\bug</value>
+    <value type="QString" >INCLUDE=C:\GTK\INCLUDE;C:\GTK\INCLUDE\GTK-2.0;C:\GTK\INCLUDE\GLIB-2.0;C:\GTK\INCLUDE\PANGO-1.0;C:\GTK\INCLUDE\CAIRO;C:\GTK\INCLUDE\ATK-1.0;C:\GTK\INCLUDE\GTKGLEXT-1.0;C:\GTK\LIB\GTK-2.0\INCLUDE;C:\GTK\LIB\GLIB-2.0\INCLUDE;C:\GTK\LIB\GTKGLEXT-1.0\INCLUDE;C:\GTK\INCLUDE\LIBGLADE-2.0;C:\GTK\INCLUDE\LIBXML2;</value>
+    <value type="QString" >INPUTRC=c:\ruby\bin\inputrc.euro</value>
+    <value type="QString" >LIB=C:\GTK\LIB;</value>
+    <value type="QString" >LOGONSERVER=\\SUI-SRV-DC2</value>
+    <value type="QString" >NUMBER_OF_PROCESSORS=1</value>
+    <value type="QString" >OPENSSL_CONF=C:\Program Files\OpenSSL\bin\openssl.cnf</value>
+    <value type="QString" >OS=Windows_NT</value>
+    <value type="QString" >PATH=E:\Qt\2009.03\mingw\bin;E:\Qt\2009.03\qt\bin;E:\oracle\product\11.1.0\db_2\bin;C:\GTK\bin;E:\programs\miktex\miktex\bin;C:\Program Files\MiKTeX 2.7\miktex\bin;E:\programs\postgresql8.1\bin;c:\ruby\bin;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\Program Files\Mozilla Firefox;W:\pws\Debug\dll;W:\pws\Debug\exe;C:\Program Files\erl5.6.4\bin;C:\Qt\4.3.1\bin;C:\Program Files\doxygen\bin;C:\Program Files\Graphviz\bin;E:\programs\FME;E:\programs\scala-2.7.0-final\bin;C:\Program Files\Subversion\bin;E:\programs\nant-0.85\bin;C:\Program Files\QuickTime\QTSystem\;E:\programs\FME2009;C:\Program Files\TortoiseSVN\bin;E:\programs\HaskellPlatform\2009.2.0.1\bin;E:\programs\HaskellPlatform\2009.2.0.1\extralibs\bin;C:\Program Files\Haskell\bin;C:\ghc\ghc-6.10.1\bin;C:\Program Files\Haskell\bin;C:\ghc\ghc-6.8.3\bin;E:\programs\Nmap;C:\GIS_PROG\PWS_DLL;;C:\Program Files\Common Files\Nero\Lib\;C:\Program Files\Common Files\Nero\Lib\;</value>
+    <value type="QString" >PATHEXT=.COM;.EXE;.BAT;.CMD;.VBS;.VBE;.JS;.JSE;.WSF;.WSH;.RB;.RBW</value>
+    <value type="QString" >PROCESSOR_ARCHITECTURE=x86</value>
+    <value type="QString" >PROCESSOR_IDENTIFIER=x86 Family 15 Model 47 Stepping 2, AuthenticAMD</value>
+    <value type="QString" >PROCESSOR_LEVEL=15</value>
+    <value type="QString" >PROCESSOR_REVISION=2f02</value>
+    <value type="QString" >PROGRAMFILES=C:\Program Files</value>
+    <value type="QString" >PWS=NLFDEVSEC</value>
+    <value type="QString" >PWSDEV=NLFDEV</value>
+    <value type="QString" >QTDIR=E:/Qt/2009.03/qt</value>
+    <value type="QString" >QTJAVA=C:\Program Files\Java\jre1.6.0_07\lib\ext\QTJava.zip</value>
+    <value type="QString" >RUBYOPT=-rubygems</value>
+    <value type="QString" >SESSIONNAME=Console</value>
+    <value type="QString" >SYSTEMDRIVE=C:</value>
+    <value type="QString" >SYSTEMROOT=C:\WINDOWS</value>
+    <value type="QString" >TEMP=C:\DOCUME~1\bug\LOCALS~1\Temp</value>
+    <value type="QString" >TMP=C:\DOCUME~1\bug\LOCALS~1\Temp</value>
+    <value type="QString" >ULTRAMON_LANGDIR=C:\Program Files\UltraMon\Resources\en</value>
+    <value type="QString" >USERDNSDOMAIN=LINKVEST.COM</value>
+    <value type="QString" >USERDOMAIN=MASTER</value>
+    <value type="QString" >USERNAME=bug</value>
+    <value type="QString" >USERPROFILE=C:\Documents and Settings\bug</value>
+    <value type="QString" >VS80COMNTOOLS=C:\Program Files\Microsoft Visual Studio 8\Common7\Tools\</value>
+    <value type="QString" >VS90COMNTOOLS=C:\Program Files\Microsoft Visual Studio 9.0\Common7\Tools\</value>
+    <value type="QString" >WINDIR=C:\WINDOWS</value>
+    <value type="QString" >WIN_PLATFORM_SDK=C:\Program Files\Microsoft Visual Studio 8\VC\PlatformSDK\</value>
    </valuelist>
    <valuelist key="abstractProcess.arguments" type="QVariantList" >
     <value type="QString" >-w</value>
    </valuelist>
-   <value key="abstractProcess.command" type="QString" >/usr/bin/make</value>
+   <value key="abstractProcess.command" type="QString" >E:/Qt/2009.03/mingw/bin/mingw32-make.exe</value>
    <value key="abstractProcess.enabled" type="bool" >true</value>
-   <value key="abstractProcess.workingDirectory" type="QString" >/home/gburri/code/projects/aybabtu/prototypes/04_UDP</value>
+   <value key="abstractProcess.workingDirectory" type="QString" >E:/projets/perso/aybabtu/prototypes/04_UDP</value>
   </valuemap>
  </data>
  <data>
@@ -146,42 +193,60 @@
   <valuemap type="QVariantMap" >
    <value key="ProjectExplorer.BuildConfiguration.DisplayName" type="QString" >Debug</value>
    <valuelist key="abstractProcess.Environment" type="QVariantList" >
-    <value type="QString" >DBUS_SESSION_BUS_ADDRESS=unix:abstract=/tmp/dbus-fmxQSZDzKc,guid=5997256ea4a4a7eee33664034a45d516</value>
-    <value type="QString" >DESKTOP_SESSION=default</value>
-    <value type="QString" >DESKTOP_STARTUP_ID=</value>
-    <value type="QString" >DISPLAY=:0</value>
-    <value type="QString" >GDMSESSION=default</value>
-    <value type="QString" >GDM_LANG=en_US.UTF-8</value>
-    <value type="QString" >GDM_XSERVER_LOCATION=local</value>
-    <value type="QString" >GNOME_KEYRING_PID=4305</value>
-    <value type="QString" >GNOME_KEYRING_SOCKET=/tmp/keyring-PBQ0cq/socket</value>
-    <value type="QString" >GTK_MODULES=canberra-gtk-module</value>
-    <value type="QString" >HOME=/home/gburri</value>
-    <value type="QString" >JAVA_HOME=/usr/lib/jvm/java-6-sun</value>
-    <value type="QString" >LANG=en_US.UTF-8</value>
-    <value type="QString" >LD_LIBRARY_PATH=/usr/lib/qtcreator:</value>
-    <value type="QString" >LOGNAME=gburri</value>
-    <value type="QString" >PATH=/usr/bin:/usr/local/bin:/usr/bin:/bin:/usr/games</value>
-    <value type="QString" >PWD=/home/gburri</value>
-    <value type="QString" >QTDIR=/usr</value>
-    <value type="QString" >SHELL=/bin/bash</value>
-    <value type="QString" >SHLVL=1</value>
-    <value type="QString" >SSH_AGENT_PID=4431</value>
-    <value type="QString" >SSH_AUTH_SOCK=/tmp/ssh-UPwAxO4318/agent.4318</value>
-    <value type="QString" >USER=gburri</value>
-    <value type="QString" >USERNAME=gburri</value>
-    <value type="QString" >WINDOWPATH=7</value>
-    <value type="QString" >XAUTHORITY=/home/gburri/.Xauthority</value>
-    <value type="QString" >XDG_DATA_DIRS=/usr/local/share/:/usr/share/:/usr/share/gdm/</value>
-    <value type="QString" >XDG_SESSION_COOKIE=c1f477700b7fb0fbd08cdecf47d5a05e-1246090516.458478-58463945</value>
+    <value type="QString" >ALLUSERSPROFILE=C:\Documents and Settings\All Users</value>
+    <value type="QString" >APPDATA=C:\Documents and Settings\bug\Application Data</value>
+    <value type="QString" >APR_ICONV_PATH=C:\Program Files\Subversion\iconv</value>
+    <value type="QString" >CLASSPATH=.;E:\programs\rhino\js.jar;C:\Program Files\Java\jre1.6.0_07\lib\ext\QTJava.zip</value>
+    <value type="QString" >CLIENTNAME=Console</value>
+    <value type="QString" >COMMONPROGRAMFILES=C:\Program Files\Common Files</value>
+    <value type="QString" >COMPUTERNAME=SUI-PC-BUG</value>
+    <value type="QString" >COMSPEC=C:\WINDOWS\system32\cmd.exe</value>
+    <value type="QString" >FP_NO_HOST_CHECK=NO</value>
+    <value type="QString" >GTK_BASEPATH=C:\GTK</value>
+    <value type="QString" >HOME=C:\Documents and Settings\bug</value>
+    <value type="QString" >HOMEDRIVE=H:</value>
+    <value type="QString" >HOMEPATH=\</value>
+    <value type="QString" >HOMESHARE=\\obelix\users\bug</value>
+    <value type="QString" >INCLUDE=C:\GTK\INCLUDE;C:\GTK\INCLUDE\GTK-2.0;C:\GTK\INCLUDE\GLIB-2.0;C:\GTK\INCLUDE\PANGO-1.0;C:\GTK\INCLUDE\CAIRO;C:\GTK\INCLUDE\ATK-1.0;C:\GTK\INCLUDE\GTKGLEXT-1.0;C:\GTK\LIB\GTK-2.0\INCLUDE;C:\GTK\LIB\GLIB-2.0\INCLUDE;C:\GTK\LIB\GTKGLEXT-1.0\INCLUDE;C:\GTK\INCLUDE\LIBGLADE-2.0;C:\GTK\INCLUDE\LIBXML2;</value>
+    <value type="QString" >INPUTRC=c:\ruby\bin\inputrc.euro</value>
+    <value type="QString" >LIB=C:\GTK\LIB;</value>
+    <value type="QString" >LOGONSERVER=\\SUI-SRV-DC2</value>
+    <value type="QString" >NUMBER_OF_PROCESSORS=1</value>
+    <value type="QString" >OPENSSL_CONF=C:\Program Files\OpenSSL\bin\openssl.cnf</value>
+    <value type="QString" >OS=Windows_NT</value>
+    <value type="QString" >PATH=E:\Qt\2009.03\mingw\bin;E:\Qt\2009.03\qt\bin;E:\oracle\product\11.1.0\db_2\bin;C:\GTK\bin;E:\programs\miktex\miktex\bin;C:\Program Files\MiKTeX 2.7\miktex\bin;E:\programs\postgresql8.1\bin;c:\ruby\bin;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\Program Files\Mozilla Firefox;W:\pws\Debug\dll;W:\pws\Debug\exe;C:\Program Files\erl5.6.4\bin;C:\Qt\4.3.1\bin;C:\Program Files\doxygen\bin;C:\Program Files\Graphviz\bin;E:\programs\FME;E:\programs\scala-2.7.0-final\bin;C:\Program Files\Subversion\bin;E:\programs\nant-0.85\bin;C:\Program Files\QuickTime\QTSystem\;E:\programs\FME2009;C:\Program Files\TortoiseSVN\bin;E:\programs\HaskellPlatform\2009.2.0.1\bin;E:\programs\HaskellPlatform\2009.2.0.1\extralibs\bin;C:\Program Files\Haskell\bin;C:\ghc\ghc-6.10.1\bin;C:\Program Files\Haskell\bin;C:\ghc\ghc-6.8.3\bin;E:\programs\Nmap;C:\GIS_PROG\PWS_DLL;;C:\Program Files\Common Files\Nero\Lib\;C:\Program Files\Common Files\Nero\Lib\;</value>
+    <value type="QString" >PATHEXT=.COM;.EXE;.BAT;.CMD;.VBS;.VBE;.JS;.JSE;.WSF;.WSH;.RB;.RBW</value>
+    <value type="QString" >PROCESSOR_ARCHITECTURE=x86</value>
+    <value type="QString" >PROCESSOR_IDENTIFIER=x86 Family 15 Model 47 Stepping 2, AuthenticAMD</value>
+    <value type="QString" >PROCESSOR_LEVEL=15</value>
+    <value type="QString" >PROCESSOR_REVISION=2f02</value>
+    <value type="QString" >PROGRAMFILES=C:\Program Files</value>
+    <value type="QString" >PWS=NLFDEVSEC</value>
+    <value type="QString" >PWSDEV=NLFDEV</value>
+    <value type="QString" >QTDIR=E:/Qt/2009.03/qt</value>
+    <value type="QString" >QTJAVA=C:\Program Files\Java\jre1.6.0_07\lib\ext\QTJava.zip</value>
+    <value type="QString" >RUBYOPT=-rubygems</value>
+    <value type="QString" >SESSIONNAME=Console</value>
+    <value type="QString" >SYSTEMDRIVE=C:</value>
+    <value type="QString" >SYSTEMROOT=C:\WINDOWS</value>
+    <value type="QString" >TEMP=C:\DOCUME~1\bug\LOCALS~1\Temp</value>
+    <value type="QString" >TMP=C:\DOCUME~1\bug\LOCALS~1\Temp</value>
+    <value type="QString" >ULTRAMON_LANGDIR=C:\Program Files\UltraMon\Resources\en</value>
+    <value type="QString" >USERDNSDOMAIN=LINKVEST.COM</value>
+    <value type="QString" >USERDOMAIN=MASTER</value>
+    <value type="QString" >USERNAME=bug</value>
+    <value type="QString" >USERPROFILE=C:\Documents and Settings\bug</value>
+    <value type="QString" >VS80COMNTOOLS=C:\Program Files\Microsoft Visual Studio 8\Common7\Tools\</value>
+    <value type="QString" >VS90COMNTOOLS=C:\Program Files\Microsoft Visual Studio 9.0\Common7\Tools\</value>
+    <value type="QString" >WINDIR=C:\WINDOWS</value>
    </valuelist>
    <valuelist key="abstractProcess.arguments" type="QVariantList" >
     <value type="QString" >clean</value>
     <value type="QString" >-w</value>
    </valuelist>
-   <value key="abstractProcess.command" type="QString" >/usr/bin/make</value>
+   <value key="abstractProcess.command" type="QString" >E:/Qt/2009.03/mingw/bin/mingw32-make.exe</value>
    <value key="abstractProcess.enabled" type="bool" >true</value>
-   <value key="abstractProcess.workingDirectory" type="QString" >/home/gburri/code/projects/aybabtu/prototypes/04_UDP</value>
+   <value key="abstractProcess.workingDirectory" type="QString" >E:/projets/perso/aybabtu/prototypes/04_UDP</value>
   </valuemap>
  </data>
  <data>
