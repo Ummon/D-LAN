@@ -31,7 +31,7 @@ private slots:
 private:
     QUdpSocket* socket;
     
-    static const u_char TTL;
+    static const char TTL;
     static const int port;
     static QHostAddress multicastIP;
 };
