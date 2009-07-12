@@ -64,8 +64,10 @@ void Chat::processPendingDatagrams()
    {
       QByteArray datagram;
       datagram.resize(this->socket->pendingDatagramSize());
-      this->socket->readDatagram(datagram.data(), datagram.size());
+      QHostAddress peerAddress;
+      this->socket->readDatagram(datagram.data(), datagram.size(), &peerAddress);
       out << "Message received : " << datagram.data() << endl;
+      out << "  IP = " << peerAddress.toString() << endl;
    }
 }
 
