@@ -16,7 +16,7 @@
    sodipodi:docname="gui.svg"
    inkscape:output_extension="org.inkscape.output.svg.inkscape"
    version="1.0"
-   inkscape:export-filename="E:\tmp\gui.png"
+   inkscape:export-filename="/tmp/gui.png"
    inkscape:export-xdpi="130"
    inkscape:export-ydpi="130">
   <defs
@@ -155,9 +155,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="2.8284273"
-     inkscape:cx="298.74292"
-     inkscape:cy="891.93278"
+     inkscape:zoom="2.0000001"
+     inkscape:cx="313.54461"
+     inkscape:cy="-258.82436"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -418,7 +418,7 @@
          id="tspan3216"
          x="101.26099"
          y="1245.2446"
-         style="font-size:8px">Options</tspan></text>
+         style="font-size:8px">Settings</tspan></text>
     <text
        xml:space="preserve"
        style="font-size:8px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
