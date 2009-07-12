@@ -35,23 +35,20 @@ message FileEntry {
 // a -> all
 message HaveChunks {
    required uint32 version = 1; // The version of the protocol used.
-   required Hash id = 2; // Sha1 peer ID
-   required string name = 3;
-   required uint64 amount = 4; // Amount of sharing in bytes.
-   repeated Hash chunks = 5; // Can be empty.
+   required string name = 2;
+   required uint64 amount = 3; // Amount of sharing in bytes.
+   repeated Hash chunks = 4; // Can be empty.
 }
 // This message is only sent if some chunks are requested.
 // Return an array with a bool value for each
 // given chunks. 'true' means "I have this chunk".
 // all -> a
 message HaveChunksResult {
-   required Hash id = 1; // Sha1 peer ID   
    repeated bool chunkStates = 2; // The array size must have the same size of HaveChunks.chunks.
 }
 
 // a -> all
 message ChatMessage {
-   required Hash id = 1; // Sha1 peer ID
    required string message = 2;
 }
 
