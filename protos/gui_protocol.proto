@@ -1,0 +1,74 @@
+/**
+  * Protocol between core and GUI.
+  * Version : 1
+  * All string are encoded in UTF-8.
+  */
+
+import "common.proto";
+
+package GUINetwork;
+
+// Core -> GUI
+// The state is sent periodically to the GUI (each second for example)
+// or right after a GUI command.
+message State {
+   message Peer {
+      required uint32 IP = 1;
+      required string nick = 2;
+      required uint64 sharingAmount = 3;
+   }
+   message Download {
+      enum Status {
+         COMPLETE = 0;
+         NO_SOURCE = 1;
+         NOT_FOUND = 2;
+         UNKNOWN_PEER = 3;
+         INITIALIZING = 4;
+         QUEUED = 5;
+      }
+      required uint32 ID = 1;
+      required Entry file = 2;
+      required Status status = 3;
+      required uint8 progress = 4;
+      repeated uint32 IPs = 5;
+   }
+   message Upload {
+      required uint32 ID = 1;
+      required Entry file = 2;
+      required uint16 currentPart = 3;
+      required uint16 nbPart = 4;
+      required uint8 progress = 5;
+      required uint32 IP = 6;
+   }
+   repeated Peer peers = 1;
+   
+   repeated Download downloads = 2;
+   repeated Upload uploads = 3;
+   
+   repeated DirEntry sharedDir = 4; // A dir size can be unknown (=0).
+   repeated DirEntry destinationDir = 5; // A dir size can be unknown (=0).
+   
+   required uint32 downloadRate = 6; // [byte/s].
+   required uint32 uploadRate = 7; // [byte/s].
+   required uint64 sharingAmount = 8; // [byte].
+   
+   enum HashingStatus {
+      INITIALIZING = 0; // 1st pass : grab all file/dir names and their size.
+      HASHING_IN_PROGRESS = 1;
+      COMPLETE = 2;
+      REFRESHING = 3; // followed by status 1 if there is some files to hash
+   }
+   
+   required HashingStatus hashingStatus = 9;
+   required HashingProgress progress = 10;
+}
+
+// GUI -> Core
+// Commands. (TODO)
+message SetSettings
+message Search 
+message Browse
+message ClearCompleteDownload
+message CancelDownload
+message Download 
+message ChatMessage

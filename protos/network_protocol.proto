@@ -4,26 +4,14 @@
   * All string are encoded in UTF-8.
   */
 
+import "common.proto";
+
 package Network;
 
 /***** Common types. *****/
 // For identify a chunk or a user.
 message Hash {
    required bytes hash = 1; // 20 bytes
-}
-
-// Used for a directory or a file.
-message Entry {
-   required string path = 1; // Absolute path. For example : "D:\My Videos\My cat"
-   required string name = 2; // Directory name or file name. For example : "MyLOLCat.avi"
-   required uint64 size = 3; // Bytes.
-}
-message DirEntry {
-   required Entry dir = 1;
-}
-message FileEntry {
-   required Entry file = 1;
-   repeated Hash chunks = 2; // No chunk means that the peer doesn't know the hashes.
 }
 
 /***** Multicast UDP messages. *****/
@@ -35,8 +23,8 @@ message FileEntry {
 // a -> all
 message HaveChunks {
    required uint32 version = 1; // The version of the protocol used.
-   required string name = 2;
-   required uint64 amount = 3; // Amount of sharing in bytes.
+   required string nick = 2;
+   required uint64 amount = 3; // [byte] Amount of sharing.
    repeated Hash chunks = 4; // Can be empty.
 }
 // This message is only sent if some chunks are requested.
@@ -69,7 +57,7 @@ message FindResult {
 // it will ask the hashes to the source peer.
 // If 'b' doesn't have the hashes but have the file
 // the hashes will be computed on the fly. Thus this request
-// can be a bit long (~10s).
+// can be a bit long (~20s).
 // a -> b
 message GetHashes {
    required Entry file = 1;
@@ -89,7 +77,7 @@ message GetHashesResult {
 // a -> b
 message GetChunk {
    required Hash chunk = 1;
-   required uint32 offset = 2; // Relative to the beginning of the chunk.
+   required uint32 offset = 2; // [byte] Relative to the beginning of the chunk.
 }
 // b -> a
 message GetChunkResult {
