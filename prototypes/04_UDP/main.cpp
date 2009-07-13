@@ -32,7 +32,7 @@ int main(int argc, char *argv[])
          " - 'quit' : quit the application" << endl;
    
    QString line;
-   for (;;)
+   forever
    {
       line = in.readLine();
       if (line == "quit")

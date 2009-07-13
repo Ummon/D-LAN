@@ -8,12 +8,6 @@ import "common.proto";
 
 package Network;
 
-/***** Common types. *****/
-// For identify a chunk or a user.
-message Hash {
-   required bytes hash = 1; // 20 bytes
-}
-
 /***** Multicast UDP messages. *****/
 // Have chunks ?
 // This message is sent periodically to all other peers.
@@ -25,7 +19,7 @@ message HaveChunks {
    required uint32 version = 1; // The version of the protocol used.
    required string nick = 2;
    required uint64 amount = 3; // [byte] Amount of sharing.
-   repeated Hash chunks = 4; // Can be empty.
+   repeated Common.Hash chunks = 4; // Can be empty.
 }
 // This message is only sent if some chunks are requested.
 // Return an array with a bool value for each
@@ -48,8 +42,8 @@ message Find {
 }
 // b -> a
 message FindResult {
-   repeated DirEntry dirs = 1;
-   repeated FileEntry files = 2;
+   repeated Common.DirEntry dirs = 1;
+   repeated Common.FileEntry files = 2;
 }
 
 // Get hashes.
@@ -60,7 +54,7 @@ message FindResult {
 // can be a bit long (~20s).
 // a -> b
 message GetHashes {
-   required Entry file = 1;
+   required Common.Entry file = 1;
 }
 // b -> a
 message GetHashesResult {
@@ -70,13 +64,13 @@ message GetHashesResult {
       ERROR_UNKNOWN = 255;
    }
    required Status status = 1;
-   repeated Hash chunks = 2;
+   repeated Common.Hash chunks = 2;
 }
 
 // Download.
 // a -> b
 message GetChunk {
-   required Hash chunk = 1;
+   required Common.Hash chunk = 1;
    required uint32 offset = 2; // [byte] Relative to the beginning of the chunk.
 }
 // b -> a
@@ -94,10 +88,10 @@ message GetChunkResult {
 // Browsing.
 // a -> b
 message GetEntries {
-   required Entry directory = 1;
+   required Common.Entry directory = 1;
 }
 // b -> a
 message GetEntriesResult {
-   repeated DirEntry dirs = 1;
-   repeated FileEntry files = 2;
+   repeated Common.DirEntry dirs = 1;
+   repeated Common.FileEntry files = 2;
 }
