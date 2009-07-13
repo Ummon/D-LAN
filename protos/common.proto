@@ -1,0 +1,21 @@
+/**
+  * Some common messages.
+  * Version : 1
+  * All string are encoded in UTF-8.
+  */
+
+package Common;
+
+// Used for a directory or a file.
+message Entry {
+   required string path = 1; // Absolute path. For example : "D:\My Videos\My cat"
+   required string name = 2; // Directory name or file name. For example : "MyLOLCat.avi"
+   required uint64 size = 3; // [bytes].
+}
+message DirEntry {
+   required Entry dir = 1;
+}
+message FileEntry {
+   required Entry file = 1;
+   repeated Hash chunks = 2; // No chunk means that the peer doesn't know the hashes.
+}
