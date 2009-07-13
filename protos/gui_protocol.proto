@@ -8,6 +8,14 @@ import "common.proto";
 
 package GUINetwork;
 
+/***** GUI Common messages *****/
+message Settings {     
+   optional string nick = 1;
+   optional Common.DirEntry sharedDir = 2; // A dir size can be unknown (=0).
+   optional Common.DirEntry destinationDir = 3; // A dir size can be unknown (=0).
+}
+
+/***** Core state *****/
 // Core -> GUI
 // The state is sent periodically to the GUI (each second for example)
 // or right after a GUI command.
@@ -27,48 +35,83 @@ message State {
          QUEUED = 5;
       }
       required uint32 ID = 1;
-      required Entry file = 2;
+      required Common.Entry file = 2;
       required Status status = 3;
-      required uint8 progress = 4;
+      required uint32 progress = 4; // 0 to 100
       repeated uint32 IPs = 5;
    }
    message Upload {
       required uint32 ID = 1;
-      required Entry file = 2;
-      required uint16 currentPart = 3;
-      required uint16 nbPart = 4;
-      required uint8 progress = 5;
+      required Common.Entry file = 2;
+      required uint32 currentPart = 3;
+      required uint32 nbPart = 4;
+      required uint32 progress = 5; // 0 to 100
       required uint32 IP = 6;
    }
+   message Stats {
+      enum HashingStatus {
+         INITIALIZING = 0; // 1st pass : grab all file/dir names and their size.
+         HASHING_IN_PROGRESS = 1;
+         COMPLETE = 2;
+         REFRESHING = 3; // followed by status 1 if there is some files to hash
+      }
+      required HashingStatus hashingStatus = 1;
+      required uint32 progress = 2; // 0 to 100
+      required uint32 downloadRate = 3; // [byte/s].
+      required uint32 uploadRate = 4; // [byte/s].
+      required uint64 sharingAmount = 5; // [byte].
+   }
+   
    repeated Peer peers = 1;
    
    repeated Download downloads = 2;
    repeated Upload uploads = 3;
    
-   repeated DirEntry sharedDir = 4; // A dir size can be unknown (=0).
-   repeated DirEntry destinationDir = 5; // A dir size can be unknown (=0).
-   
-   required uint32 downloadRate = 6; // [byte/s].
-   required uint32 uploadRate = 7; // [byte/s].
-   required uint64 sharingAmount = 8; // [byte].
-   
-   enum HashingStatus {
-      INITIALIZING = 0; // 1st pass : grab all file/dir names and their size.
-      HASHING_IN_PROGRESS = 1;
-      COMPLETE = 2;
-      REFRESHING = 3; // followed by status 1 if there is some files to hash
-   }
-   
-   required HashingStatus hashingStatus = 9;
-   required HashingProgress progress = 10;
+   optional Settings settings = 4;
+   optional Stats stats = 5;
+}
+
+/***** Commands. *****/
+// GUI -> Core
+message SetSettings {
+   required Settings settings = 1;
 }
 
 // GUI -> Core
-// Commands. (TODO)
-message SetSettings
-message Search 
-message Browse
-message ClearCompleteDownload
-message CancelDownload
-message Download 
-message ChatMessage
+message Search  {
+   required string pattern = 1;
+}
+// Core -> GUI
+// For each peer :
+message SearchResult {
+   required uint32 IP = 1; // IP of the peer.
+   repeated Common.DirEntry dirs = 2;
+   repeated Common.FileEntry files = 3;
+}
+
+// GUI -> Core
+message Browse {
+   required uint32 IP = 1;
+   required Common.DirEntry dirEntry = 2;
+}
+// Core -> GUI
+message BrowseResult {
+   repeated Common.DirEntry dirs = 1;
+   repeated Common.FileEntry files = 2;   
+}
+
+message ClearCompleteDownload {
+}
+
+message CancelDownload {
+   required uint32 ID = 1;
+}
+
+message Download {
+   optional Common.DirEntry dir = 1; // XOR with directory
+   optional Common.FileEntry file = 2;   
+}
+
+message ChatMessage {
+   required string message = 1;
+}
