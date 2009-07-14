@@ -34,18 +34,32 @@ message ChatMessage {
    required string message = 2;
 }
 
-/***** Unicast TCP Messages. *****/
 // Searching a file or a directory.
-// a -> b
+// See http://dev.euphorik.ch/wiki/pmp/Algorithms#Searching for more details.
+// a -> all
 message Find {
    required string pattern = 1;
 }
-// b -> a
+// all -> a
+// The size of this message must fit in a UDP packet so it must not exeed
+// 65'507 bytes.
+// Number of average entry in a result (we don't take in account the overhead of protobuff) :
+//  n = 65507 / (level + averagePathFilenameSize + Size + averageHashNb * 20)
+//  n = 65507 / (4 + 100 + 8 + 20 * 20) = 127 entries
 message FindResult {
-   repeated Common.DirEntry dirs = 1;
-   repeated Common.FileEntry files = 2;
+   message DirEntry {
+      required uint32 level = 1;
+      required Common.DirEntry dir = 2;
+   }
+   message FileEntry {
+      required uint32 level = 1;
+      required Common.FileEntry dir = 2;
+   }
+   repeated DirEntry dirs = 1;
+   repeated FileEntry files = 2;
 }
 
+/***** Unicast TCP Messages. *****/
 // Get hashes.
 // If a peer want to start a queued download but doesn't know its hashes
 // it will ask the hashes to the source peer.
