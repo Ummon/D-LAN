@@ -15,6 +15,7 @@ message Settings {
    optional Common.DirEntry destinationDir = 3; // A dir size can be unknown (=0).
 }
 
+
 /***** Core state *****/
 // Core -> GUI
 // The state is sent periodically to the GUI (each second for example)
@@ -71,6 +72,21 @@ message State {
    optional Stats stats = 5;
 }
 
+
+/***** Events *****/
+// Core -> GUI
+message EventChatMessage {
+   required uint32 time = 1;
+   required string message = 2;
+}
+
+// Core -> GUI
+message EventLogMessage {
+   required uint32 time = 1;
+   required string message = 2;
+}
+
+
 /***** Commands. *****/
 // GUI -> Core
 message SetSettings {
@@ -101,6 +117,7 @@ message BrowseResult {
 }
 
 message ClearCompleteDownload {
+   
 }
 
 message CancelDownload {
@@ -108,8 +125,9 @@ message CancelDownload {
 }
 
 message Download {
-   optional Common.DirEntry dir = 1; // XOR with directory
-   optional Common.FileEntry file = 2;   
+   required uint32 IP = 1; // From where the file/dir is.
+   optional Common.DirEntry dir = 1; // XOR with directory.
+   optional Common.FileEntry file = 2;
 }
 
 message ChatMessage {
