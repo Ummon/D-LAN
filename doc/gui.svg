@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
-
 <svg
    xmlns:dc="http://purl.org/dc/elements/1.1/"
    xmlns:cc="http://creativecommons.org/ns#"
@@ -13,7 +12,7 @@
    height="1052.3622"
    id="svg2"
    sodipodi:version="0.32"
-   inkscape:version="0.46+devel r21627"
+   inkscape:version="0.46"
    sodipodi:docname="gui.svg"
    inkscape:output_extension="org.inkscape.output.svg.inkscape"
    version="1.0"
@@ -318,15 +317,15 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="1.4142136"
-     inkscape:cx="303.73023"
-     inkscape:cy="877.47337"
+     inkscape:cx="465.8885"
+     inkscape:cy="475.30406"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
-     showgrid="false"
-     inkscape:window-width="1280"
-     inkscape:window-height="943"
-     inkscape:window-x="-4"
-     inkscape:window-y="-4"
+     showgrid="true"
+     inkscape:window-width="1278"
+     inkscape:window-height="798"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
      showguides="true"
      inkscape:guide-bbox="true"
      inkscape:snap-bbox="false"
@@ -1936,12 +1935,12 @@
        inkscape:export-xdpi="130"
        inkscape:export-ydpi="130" />
     <rect
-       style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.4937475;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.60621089;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        id="rect3383"
-       width="84.749115"
-       height="19.950827"
-       x="292.99695"
-       y="950.38348"
+       width="84.63665"
+       height="30.11447"
+       x="295.05319"
+       y="952.43964"
        inkscape:export-filename="/home/gburri/temp/gui.png"
        inkscape:export-xdpi="130"
        inkscape:export-ydpi="130" />
@@ -1961,39 +1960,39 @@
     <text
        xml:space="preserve"
        style="font-size:6px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
-       x="295"
-       y="957.36218"
+       x="297"
+       y="959.36212"
        id="text3404"
        inkscape:export-filename="/home/gburri/temp/gui.png"
        inkscape:export-xdpi="130"
        inkscape:export-ydpi="130"><tspan
          sodipodi:role="line"
          id="tspan3406"
-         x="295"
-         y="957.36218">Download</tspan></text>
+         x="297"
+         y="959.36212">Download</tspan></text>
     <rect
-       style="opacity:1;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.61422068;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       style="opacity:1;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.75480962;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        id="rect3416"
-       width="84.742859"
-       height="19.835178"
-       x="156.99988"
-       y="1185.4626"
+       width="84.602272"
+       height="30.00428"
+       x="155.0703"
+       y="1182.5973"
        inkscape:export-filename="/home/gburri/temp/gui.png"
        inkscape:export-xdpi="130"
        inkscape:export-ydpi="130" />
     <text
        xml:space="preserve"
        style="font-size:6px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
-       x="159.99988"
-       y="1202.4626"
+       x="158"
+       y="1199.527"
        id="text3418"
        inkscape:export-filename="/home/gburri/temp/gui.png"
        inkscape:export-xdpi="130"
        inkscape:export-ydpi="130"><tspan
          sodipodi:role="line"
          id="tspan3420"
-         x="159.99988"
-         y="1202.4626">Browse</tspan></text>
+         x="158"
+         y="1199.527">Browse</tspan></text>
     <text
        xml:space="preserve"
        style="font-size:8px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
@@ -2009,7 +2008,7 @@
          y="1178.4626">Contextual menu</tspan></text>
     <path
        style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       d="M 157.00001,1195.4627 L 242.00001,1195.4627"
+       d="M 155.00013,1192.5271 L 240.00013,1192.5271"
        id="path3426"
        sodipodi:nodetypes="cc"
        inkscape:export-filename="/home/gburri/temp/gui.png"
@@ -2018,16 +2017,16 @@
     <text
        xml:space="preserve"
        style="font-size:6px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
-       x="159.99988"
-       y="1192.4626"
+       x="158"
+       y="1189.527"
        id="text3430"
        inkscape:export-filename="/home/gburri/temp/gui.png"
        inkscape:export-xdpi="130"
        inkscape:export-ydpi="130"><tspan
          sodipodi:role="line"
          id="tspan3432"
-         x="159.99988"
-         y="1192.4626">Download</tspan></text>
+         x="158"
+         y="1189.527">Download</tspan></text>
     <rect
        style="opacity:1;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.34484532;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        id="rect2623"
@@ -2483,8 +2482,8 @@
        inkscape:export-xdpi="130"
        inkscape:export-ydpi="130" />
     <path
-       style="fill:none;stroke:#000000;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
-       d="m 293,960.36224 85,0"
+       style="fill:none;stroke:#000000;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="M 295,962.36218 L 380,962.36218"
        id="path2699"
        sodipodi:nodetypes="cc"
        inkscape:export-filename="/home/gburri/temp/gui.png"
@@ -2493,16 +2492,16 @@
     <text
        xml:space="preserve"
        style="font-size:6px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
-       x="295"
-       y="967.36218"
+       x="297"
+       y="969.36212"
        id="text2701"
        inkscape:export-filename="/home/gburri/temp/gui.png"
        inkscape:export-xdpi="130"
        inkscape:export-ydpi="130"><tspan
          sodipodi:role="line"
          id="tspan2703"
-         x="295"
-         y="967.36218">Unfold all subfolders</tspan></text>
+         x="297"
+         y="969.36212">Unfold all subfolders</tspan></text>
     <text
        xml:space="preserve"
        style="font-size:8px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
@@ -3883,5 +3882,47 @@
          id="tspan3404-7"
          x="395"
          y="123.36218">Show GUI</tspan></text>
+    <path
+       style="fill:none;stroke:#000000;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="M 295,972.36218 L 380,972.36218"
+       id="path5011"
+       sodipodi:nodetypes="cc"
+       inkscape:export-filename="/home/gburri/temp/gui.png"
+       inkscape:export-xdpi="130"
+       inkscape:export-ydpi="130" />
+    <text
+       xml:space="preserve"
+       style="font-size:6px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+       x="297"
+       y="979.36218"
+       id="text5013"
+       inkscape:export-filename="/home/gburri/temp/gui.png"
+       inkscape:export-xdpi="130"
+       inkscape:export-ydpi="130"><tspan
+         sodipodi:role="line"
+         id="tspan5015"
+         x="297"
+         y="979.36218">Copy file/directoy location</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:6px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+       x="157"
+       y="1209.3622"
+       id="text5017"
+       inkscape:export-filename="/home/gburri/temp/gui.png"
+       inkscape:export-xdpi="130"
+       inkscape:export-ydpi="130"><tspan
+         sodipodi:role="line"
+         id="tspan5019"
+         x="157"
+         y="1209.3622">Copy file/directoy location</tspan></text>
+    <path
+       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="M 155,1202.3622 L 240,1202.3622"
+       id="path5021"
+       sodipodi:nodetypes="cc"
+       inkscape:export-filename="/home/gburri/temp/gui.png"
+       inkscape:export-xdpi="130"
+       inkscape:export-ydpi="130" />
   </g>
 </svg>
