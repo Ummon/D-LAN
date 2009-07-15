@@ -7,6 +7,7 @@
 /**
   * An instance of this class can generate randomly and recursively some empty files
   * and folders. Theirs names are exactly eight characters long and also randomly generated.
+  * This class will be used to test the 'Finder' class.
   */
 class FileGenerator
 {   
