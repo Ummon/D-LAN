@@ -84,6 +84,10 @@ message EventChatMessage {
 message EventLogMessage {
    required uint32 time = 1;
    required string message = 2;
+   
+   // These fields are use only in debug mode.
+   optional string component = 3;
+   optional string severityLevel = 4;
 }
 
 
@@ -98,7 +102,8 @@ message Search  {
    required string pattern = 1;
 }
 // Core -> GUI
-// For each peer :
+// This message is sent for each peer.
+// The directories and files are sorted by relevant.
 message SearchResult {
    required uint32 IP = 1; // IP of the peer.
    repeated Common.DirEntry dirs = 2;
@@ -117,16 +122,16 @@ message BrowseResult {
 }
 
 message ClearCompleteDownload {
-   
 }
 
-message CancelDownload {
-   required uint32 ID = 1;
+message CancelDownloads {
+   repeated uint32 ID = 1;
 }
 
+// Says to the core to download a file OR a directory (XOR).
 message Download {
    required uint32 IP = 1; // From where the file/dir is.
-   optional Common.DirEntry dir = 1; // XOR with directory.
+   optional Common.DirEntry dir = 1;
    optional Common.FileEntry file = 2;
 }
 

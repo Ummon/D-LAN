@@ -302,6 +302,13 @@
        inkscape:vp_y="0 : 1000 : 0"
        inkscape:vp_x="0 : 0.5 : 1"
        sodipodi:type="inkscape:persp3d" />
+    <inkscape:perspective
+       id="perspective3376"
+       inkscape:persp3d-origin="0.5 : 0.33333333 : 1"
+       inkscape:vp_z="1 : 0.5 : 1"
+       inkscape:vp_y="0 : 1000 : 0"
+       inkscape:vp_x="0 : 0.5 : 1"
+       sodipodi:type="inkscape:persp3d" />
   </defs>
   <sodipodi:namedview
      id="base"
@@ -310,9 +317,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="2.0000001"
-     inkscape:cx="186.49897"
-     inkscape:cy="3.1058539"
+     inkscape:zoom="1.4142136"
+     inkscape:cx="303.73023"
+     inkscape:cy="877.47337"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -512,23 +519,22 @@
        inkscape:export-ydpi="130" />
     <text
        xml:space="preserve"
-       style="font-size:8px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
-       x="387.54535"
-       y="65.420273"
+       style="font-size:8px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+       x="300"
+       y="57.362183"
        id="text2402"
        inkscape:export-filename="/home/gburri/temp/gui.png"
        inkscape:export-xdpi="130"
        inkscape:export-ydpi="130"><tspan
          sodipodi:role="line"
          id="tspan2404"
-         x="387.54535"
-         y="65.420273">Close only the GUI not the Core</tspan></text>
+         x="300"
+         y="57.362183">Close only the GUI not the Core</tspan></text>
     <path
-       style="fill:none;fill-rule:evenodd;stroke:#757575;stroke-width:0.30000001;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       d="M 379.19955,65.595053 L 386.99473,62.342144"
+       style="fill:none;stroke:#757575;stroke-width:0.30000001;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;display:inline"
+       d="m 375,63.362183 -11,-5"
        id="path2406"
        inkscape:connector-type="polyline"
-       inkscape:connection-start="#rect3213"
        sodipodi:nodetypes="cc"
        inkscape:export-filename="/home/gburri/temp/gui.png"
        inkscape:export-xdpi="130"
@@ -1859,19 +1865,19 @@
        inkscape:export-xdpi="130"
        inkscape:export-ydpi="130" />
     <rect
-       style="opacity:1;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.49999979;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.49999979;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
        id="rect3384"
        width="119.92503"
-       height="19.979572"
-       x="403"
-       y="115.36218"
+       height="29.979572"
+       x="392"
+       y="116.36218"
        inkscape:export-filename="/home/gburri/temp/gui.png"
        inkscape:export-xdpi="130"
        inkscape:export-ydpi="130" />
     <text
        xml:space="preserve"
        style="font-size:8px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
-       x="399.90002"
+       x="389.90002"
        y="101.36218"
        id="text3390"
        inkscape:export-filename="/home/gburri/temp/gui.png"
@@ -1879,15 +1885,15 @@
        inkscape:export-ydpi="130"><tspan
          sodipodi:role="line"
          id="tspan3392"
-         x="399.90002"
+         x="389.90002"
          y="101.36218">Tray icon contextual menu</tspan><tspan
          sodipodi:role="line"
-         x="399.90002"
+         x="389.90002"
          y="111.36218"
          id="tspan3634">(Core)</tspan></text>
     <path
-       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       d="M 403.08428,125.3622 L 522.91458,125.3622"
+       style="fill:none;stroke:#000000;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       d="m 392.08428,136.3622 119.8303,0"
        id="path3394"
        sodipodi:nodetypes="cc"
        inkscape:export-filename="/home/gburri/temp/gui.png"
@@ -1895,37 +1901,37 @@
        inkscape:export-ydpi="130" />
     <text
        xml:space="preserve"
-       style="font-size:6px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
-       x="410"
-       y="132.36218"
+       style="font-size:6px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+       x="400.10001"
+       y="133.36218"
        id="text3396"
        inkscape:export-filename="/home/gburri/temp/gui.png"
        inkscape:export-xdpi="130"
        inkscape:export-ydpi="130"><tspan
          sodipodi:role="line"
          id="tspan3398"
-         x="410"
-         y="132.36218">Limit the CPU and bandwidth Usage</tspan></text>
+         x="400.10001"
+         y="133.36218">Limit the CPU and bandwidth Usage</tspan></text>
     <text
        xml:space="preserve"
-       style="font-size:6px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
-       x="406"
-       y="122.36218"
+       style="font-size:6px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+       x="395"
+       y="143.36218"
        id="text3402"
        inkscape:export-filename="/home/gburri/temp/gui.png"
        inkscape:export-xdpi="130"
        inkscape:export-ydpi="130"><tspan
          sodipodi:role="line"
          id="tspan3404"
-         x="406"
-         y="122.36218">Quit</tspan></text>
+         x="395"
+         y="143.36218">Quit</tspan></text>
     <rect
-       style="opacity:1;fill:none;fill-opacity:1;stroke:#000000;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       style="fill:none;stroke:#000000;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0"
        id="rect3412"
        width="3.9000001"
        height="3.9000001"
-       x="405"
-       y="128.36218"
+       x="395.10001"
+       y="129.36218"
        inkscape:export-filename="/home/gburri/temp/gui.png"
        inkscape:export-xdpi="130"
        inkscape:export-ydpi="130" />
@@ -3856,5 +3862,26 @@
          sodipodi:role="line"><tspan
    id="tspan4469"
    style="font-weight:bold;-inkscape-font-specification:Bitstream Vera Sans Bold">Cat</tspan>s/</tspan></text>
+    <path
+       inkscape:export-ydpi="130"
+       inkscape:export-xdpi="130"
+       inkscape:export-filename="/home/gburri/temp/gui.png"
+       sodipodi:nodetypes="cc"
+       id="path3366"
+       d="m 392.08428,126.36218 119.8303,0"
+       style="fill:none;stroke:#000000;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none" />
+    <text
+       xml:space="preserve"
+       style="font-size:6px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+       x="395"
+       y="123.36218"
+       id="text3402-1"
+       inkscape:export-filename="/home/gburri/temp/gui.png"
+       inkscape:export-xdpi="130"
+       inkscape:export-ydpi="130"><tspan
+         sodipodi:role="line"
+         id="tspan3404-7"
+         x="395"
+         y="123.36218">Show GUI</tspan></text>
   </g>
 </svg>
