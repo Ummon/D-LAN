@@ -13,19 +13,30 @@
 class Finder
 {
 public:
-    Finder(const QDir& path);
+   /**
+     * Creates a new Finder.
+     * @param path The path from which all future search will begin.
+     */
+   Finder(const QDir& path);
     
-    void search(const QString& pattern);
+   /**
+     * Search a file or a dire from a pattern.
+     * @param pattern The globbing pattern.
+     */
+   void search(const QString& pattern);
     
-    // TODO
-    // void nativeSearch(const QString& pattern);
+   // TODO
+   // void nativeSearch(const QString& pattern);
     
-    const QStringList& getResults();
+   /**
+     * Returns the results from the previous search.
+     */
+   const QStringList& getResults();
     
 private:
-    const QDir& path;
-    QRegExp regexp;
-    QStringList result;
+   const QDir& path;
+   QRegExp regexp; ///< Used to match filename against pattern.
+   QStringList result;
 };
 
 #endif // FINDER_H

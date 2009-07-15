@@ -4,12 +4,13 @@
 #include <QtCore/QTextStream>
 #include <QtCore/QTextCodec>
 
-#define OUTPUT_DIR "output"
-#define INPUT_DIR "input"
+static const QString OUTPUT_DIR("output");
+static const QString INPUT_DIR("input");
 
 /**
   * Create a new directory in the current one.
   * If it already exists then delete all files in it.
+  * @param dirname The name of the new directory.
   */
 void createDir(const QString& dirName)
 {
@@ -28,7 +29,7 @@ void createDir(const QString& dirName)
 }
 
 /**
-  * Create or empty the input and ouput directories.
+  * Create and/or empty the input and ouput directories.
   */
 void reinitDirs()
 {
@@ -36,6 +37,9 @@ void reinitDirs()
    createDir(OUTPUT_DIR);
 }
 
+/**
+  * 'argc' and 'argv' are unused.
+  */
 int main(int argc, char *argv[])
 {
    QTextCodec::setCodecForLocale(QTextCodec::codecForName("UTF-8"));

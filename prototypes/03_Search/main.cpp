@@ -6,11 +6,19 @@
 #include <FileGenerator.h>
 #include <Finder.h>
 
+/**
+  * Print the usage of the progam.
+  * @param out The information about the usage will be print in this stream.
+  */
 void printUsage(QTextStream& out)
 {
    out << "Usage : 03_Search ( generate <dir> | search <dir> <term> )" << endl;
 }
 
+/**
+  * The entry point.
+  * See 'printUsage' to know the possible entries.
+  */
 int main(int argc, char* argv[])
 {   
    QTextStream out(stdout);  
