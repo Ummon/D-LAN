@@ -99,15 +99,17 @@ message SetSettings {
 
 // GUI -> Core
 message Search  {
-   required string pattern = 1;
+   required uint32 searchID = 1;
+   required string pattern = 2;
 }
 // Core -> GUI
 // This message is sent for each peer.
 // The directories and files are sorted by relevant.
 message SearchResult {
-   required uint32 IP = 1; // IP of the peer.
-   repeated Common.DirEntry dirs = 2;
-   repeated Common.FileEntry files = 3;
+   required uint32 searchID = 1;
+   required uint32 IP = 2; // IP of the peer.
+   repeated Common.DirEntry dirs = 3;
+   repeated Common.FileEntry files = 4;
 }
 
 // GUI -> Core
