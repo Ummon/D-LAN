@@ -74,7 +74,7 @@ message GetHashes {
 message GetHashesResult {
    enum Status {
       OK = 0;
-      DONT_HAVE = 1; // 'b' doesn't have this entry.
+      DONT_HAVE = 1; // 'b' doesn't have the requested entry.
       ERROR_UNKNOWN = 255;
    }
    required Status status = 1;
