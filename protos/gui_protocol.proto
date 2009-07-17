@@ -20,6 +20,7 @@ message Settings {
 // Core -> GUI
 // The state is sent periodically to the GUI (each second for example)
 // or right after a GUI command.
+// The size of this message should be lesser than 63kB ... TODO
 message State {
    message Peer {
       required uint32 IP = 1;
@@ -121,7 +122,7 @@ message BrowseResult {
    repeated Common.FileEntry files = 2;   
 }
 
-message ClearCompleteDownload {
+message ClearCompleteDownloads {
 }
 
 message CancelDownloads {
