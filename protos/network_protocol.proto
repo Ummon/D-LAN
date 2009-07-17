@@ -41,23 +41,14 @@ message Find {
    required string pattern = 1;
 }
 // all -> a
-// The size of this message must fit in a UDP packet so it must not exeed
-// 65'507 bytes.
+// The size of this message must fit in a UDP packet so it must not exeed 65'507 bytes.
 // Number of average entry in a result (we don't take in account the overhead of protobuff) :
 //  n = 65507 / (level + averagePathFilenameSize + Size + averageHashNb * 20)
-//  n = 65507 / (4 + 100 + 8 + 20 * 20) = 127 entries
-message FindResult {
-   message DirEntry {
-      required uint32 level = 1;
-      required Common.DirEntry dir = 2;
-   }
-   message FileEntry {
-      required uint32 level = 1;
-      required Common.FileEntry dir = 2;
-   }
-   repeated DirEntry dirs = 1;
-   repeated FileEntry files = 2;
-}
+//  n = 65507 / (4 + 100 + 8 + 20 * 20) = 127 entries.
+// Many of message can be sent by a peer for a given search. The core will only accept answers
+// for a limited duration. For example 10 seconds.
+// see Common.FindResult
+
 
 /***** Unicast TCP Messages. *****/
 // Get hashes.
