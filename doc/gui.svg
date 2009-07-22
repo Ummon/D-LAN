@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
+
 <svg
    xmlns:dc="http://purl.org/dc/elements/1.1/"
    xmlns:cc="http://creativecommons.org/ns#"
@@ -12,7 +13,7 @@
    height="1052.3622"
    id="svg2"
    sodipodi:version="0.32"
-   inkscape:version="0.46"
+   inkscape:version="0.46+devel r21627"
    sodipodi:docname="gui.svg"
    inkscape:output_extension="org.inkscape.output.svg.inkscape"
    version="1.0"
@@ -316,16 +317,16 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="1.4142136"
-     inkscape:cx="465.8885"
-     inkscape:cy="475.30406"
+     inkscape:zoom="2.8284272"
+     inkscape:cx="251.96819"
+     inkscape:cy="-43.936707"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
-     inkscape:window-width="1278"
-     inkscape:window-height="798"
-     inkscape:window-x="0"
-     inkscape:window-y="0"
+     inkscape:window-width="1280"
+     inkscape:window-height="943"
+     inkscape:window-x="-4"
+     inkscape:window-y="-4"
      showguides="true"
      inkscape:guide-bbox="true"
      inkscape:snap-bbox="false"
@@ -2037,20 +2038,6 @@
        inkscape:export-filename="/home/gburri/temp/gui.png"
        inkscape:export-xdpi="130"
        inkscape:export-ydpi="130" />
-    <text
-       xml:space="preserve"
-       style="font-size:6px;font-style:normal;font-weight:normal;opacity:1;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
-       x="192.99988"
-       y="1117.4092"
-       id="text2625"
-       inkscape:export-filename="/home/gburri/temp/gui.png"
-       inkscape:export-xdpi="130"
-       inkscape:export-ydpi="130"><tspan
-         sodipodi:role="line"
-         id="tspan2627"
-         x="192.99988"
-         y="1117.4092"
-         style="font-size:6px">4 / 12</tspan></text>
     <rect
        style="opacity:1;fill:#614fb4;fill-opacity:1;stroke:none;stroke-width:0.34484532;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        id="rect2629"
@@ -2058,32 +2045,6 @@
        height="5"
        x="215.99988"
        y="1112.4092"
-       inkscape:export-filename="/home/gburri/temp/gui.png"
-       inkscape:export-xdpi="130"
-       inkscape:export-ydpi="130" />
-    <text
-       xml:space="preserve"
-       style="font-size:8px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
-       x="229.99988"
-       y="1137.4626"
-       id="text3401"
-       inkscape:export-filename="/home/gburri/temp/gui.png"
-       inkscape:export-xdpi="130"
-       inkscape:export-ydpi="130"><tspan
-         sodipodi:role="line"
-         x="229.99988"
-         y="1137.4626"
-         id="tspan3409">Number of result</tspan><tspan
-         sodipodi:role="line"
-         x="229.99988"
-         y="1147.4626"
-         id="tspan3413">(one by contacted peer)</tspan></text>
-    <path
-       style="fill:none;fill-rule:evenodd;stroke:#757575;stroke-width:0.30000001;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;display:inline"
-       d="M 205.99995,1120.4092 L 228.99985,1130.4627"
-       id="path3416"
-       inkscape:connector-type="polyline"
-       sodipodi:nodetypes="cc"
        inkscape:export-filename="/home/gburri/temp/gui.png"
        inkscape:export-xdpi="130"
        inkscape:export-ydpi="130" />
