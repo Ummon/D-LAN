@@ -34,7 +34,7 @@ private :
      */
    QString generateName();
 
-   static const int maxFile;
+   static const int maxFile; ///< The max generated files.
    static const int maxSubdirectoryLevel;
 };
 

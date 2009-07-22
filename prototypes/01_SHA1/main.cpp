@@ -84,13 +84,13 @@ QList<QByteArray> computeMultiSHA1(const QString& filename, qint32 chunkSize, qi
   *  3) The filename.
   * @return 0 if all done fine else > 0
   */
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
    QTextStream out(stdout);
 
    if (argc != 3)
    {
-      out << "Usage : " << argv[0] << " (all|chunk) <file>";
+      out << "Usage : " << argv[0] << " (all|chunk) <file>" << endl;
       return 1;
    }
    
