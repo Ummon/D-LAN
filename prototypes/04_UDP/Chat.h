@@ -22,18 +22,22 @@ public:
     
     /**
       * Send a broadcast message.
+      * @param mess The message to send.
       */
     void sendMessage(const QString& mess);
 
 private slots:
+    /**
+      * When a datagram is received this slot is called.
+      */
     void processPendingDatagrams();
     
 private:
     QUdpSocket* socket;
     
-    static const char TTL;
+    static const char TTL; ///< Time to live, see the UDP multicast documentation.
     static const int port;
-    static QHostAddress multicastIP;
+    static QHostAddress multicastIP; ///< A choosen multicast address channel used to send and received messages.
 };
 
 #endif // CHAT_H

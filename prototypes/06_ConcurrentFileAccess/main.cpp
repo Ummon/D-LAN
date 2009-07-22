@@ -7,19 +7,19 @@
 #include <File.h>
 #include <QTextCodec>
 
-const quint64 filesize = 104857600;  // 100 MB
-const QString filename("test.bin");
+static const quint64 filesize = 104857600;  // 100 MB
+static const QString filename("test.bin");
 
 int main(int argc, char *argv[])
 {   
    QTextCodec::setCodecForLocale(QTextCodec::codecForName("UTF-8"));
    
-   QCoreApplication a(argc, argv);  
+   QCoreApplication a(argc, argv);
     
    File f(filename, filesize);
    qDebug() << "File " << filename << " size = " << hex << (quint32)filesize;
         
-   const QList<Chunk*> chunks = f.getChunks();
+   const QList<Chunk*>& chunks = f.getChunks();
    QList<Downloader*> downloaders;
    QList<Uploader*> uploaders;
     
@@ -40,12 +40,18 @@ int main(int argc, char *argv[])
    }
     
    foreach (Downloader* d, downloaders)
+   {
       d->wait();
+      delete d;
+   }
    
    foreach (Uploader* u, uploaders)
+   {
       u->wait();
+      delete u;
+   }
       
    qDebug() << "All thread has terminated";
-    
-   // return a.exec();
+   
+   a.exit(0);
 }

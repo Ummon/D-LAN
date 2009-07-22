@@ -28,8 +28,11 @@ File::File(const QString& name, quint64 size) throw(FileSizeDoesntMatchException
 File::~File()
 {
    this->fileInWriteMode->flush();
+   
    delete this->fileInWriteMode;
    delete this->fileInReadMode;
+   foreach (Chunk* chunk, this->chunks)
+      delete chunk;
 }
 
 bool File::write(const QByteArray& buffer, qint64 offset)
