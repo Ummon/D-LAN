@@ -26,3 +26,18 @@ message FileEntry {
    required Entry file = 1;
    repeated Hash chunks = 2; // No chunk means that the peer doesn't know the hashes.
 }
+
+// A result following a search.
+// See 'Network.Find' and 'GUI.GUINetwork' for more information.
+message FindResult {
+   message DirEntryLevel {
+      required uint32 level = 1;
+      required DirEntry dir = 2;
+   }
+   message FileEntryLevel {
+      required uint32 level = 1;
+      required FileEntry dir = 2;
+   }
+   repeated DirEntryLevel dirs = 1;
+   repeated FileEntryLevel files = 2;
+}

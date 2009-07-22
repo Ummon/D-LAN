@@ -20,6 +20,7 @@ message Settings {
 // Core -> GUI
 // The state is sent periodically to the GUI (each second for example)
 // or right after a GUI command.
+// The size of this message should be lesser than 63kB ... TODO
 message State {
    message Peer {
       required uint32 IP = 1;
@@ -103,13 +104,11 @@ message Search  {
    required string pattern = 2;
 }
 // Core -> GUI
-// This message is sent for each peer.
-// The directories and files are sorted by relevant.
+// This message is sent for each UDP datagram received.
 message SearchResult {
    required uint32 searchID = 1;
    required uint32 IP = 2; // IP of the peer.
-   repeated Common.DirEntry dirs = 3;
-   repeated Common.FileEntry files = 4;
+   required Common.FindResult result = 3; // Encapsulate the received result.
 }
 
 // GUI -> Core
@@ -123,7 +122,7 @@ message BrowseResult {
    repeated Common.FileEntry files = 2;   
 }
 
-message ClearCompleteDownload {
+message ClearCompleteDownloads {
 }
 
 message CancelDownloads {
