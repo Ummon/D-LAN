@@ -20,7 +20,7 @@ message Settings {
 // Core -> GUI
 // The state is sent periodically to the GUI (each second for example)
 // or right after a GUI command.
-// The size of this message should be lesser than 63kB ... TODO
+// The size of this message should be lesser than 63kB to fit in one IP packet.
 message State {
    message Peer {
       required uint32 IP = 1;
@@ -122,13 +122,19 @@ message BrowseResult {
    repeated Common.FileEntry files = 2;   
 }
 
+// GUI -> Core
+// Remove all completed downloads from the queue.
 message ClearCompleteDownloads {
 }
 
+// GUI -> Core
+// Remove a download from the queue. If this download
+// is not finished its chunks will be removed.
 message CancelDownloads {
    repeated uint32 ID = 1;
 }
 
+// GUI -> Core
 // Says to the core to download a file OR a directory (XOR).
 message Download {
    required uint32 IP = 1; // From where the file/dir is.
@@ -136,6 +142,8 @@ message Download {
    optional Common.FileEntry file = 2;
 }
 
+// GUI -> Core
+// Send a chat message to everyone.
 message ChatMessage {
    required string message = 1;
 }
