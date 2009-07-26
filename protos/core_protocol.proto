@@ -19,13 +19,16 @@ message HaveChunks {
    required uint32 version = 1; // The version of the protocol used.
    required string nick = 2;
    required uint64 amount = 3; // [byte] Amount of sharing.
-   repeated Common.Hash chunks = 4; // Can be empty.
+   
+   optional utin32 tag = 4; // A random number, all results must repeate this number.
+   repeated Common.Hash chunks = 5; // Can be empty.
 }
 // This message is only sent if some chunks are requested.
 // Return an array with a bool value for each
 // given chunks. 'true' means "I have this chunk".
 // all -> a
 message HaveChunksResult {
+   required uint32 tag = 1; // The repeated number.
    repeated bool chunkStates = 2; // The array size must have the same size of HaveChunks.chunks.
 }
 
@@ -38,7 +41,8 @@ message ChatMessage {
 // See http://dev.euphorik.ch/wiki/pmp/Algorithms#Searching for more details.
 // a -> all
 message Find {
-   required string pattern = 1;
+   required uint32 tag = 1; // A tag to identify the search. All answers must have the same tag.
+   required string pattern = 2;
 }
 // all -> a
 // The size of this message must fit in a UDP packet so it must not exeed 65'507 bytes.
