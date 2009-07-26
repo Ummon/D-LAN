@@ -38,6 +38,7 @@ message FindResult {
       required uint32 level = 1;
       required FileEntry dir = 2;
    }
-   repeated DirEntryLevel dirs = 1;
-   repeated FileEntryLevel files = 2;
+   required uint64 tag = 1;
+   repeated DirEntryLevel dirs = 2;
+   repeated FileEntryLevel files = 3;
 }
