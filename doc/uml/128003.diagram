@@ -1,11 +1,31 @@
 format 66
 
-componentcanvas 128003 component_ref 128003 // FileManager
+componentcanvas 128259 component_ref 128003 // FileManager
   draw_component_as_icon default show_component_req_prov default show_component_rea default show_stereotype_properties default
-  xyzwh 43 59 2000 145 53
+  xyzwh 13 12 2000 145 137
 end
-componentcanvas 128131 component_ref 128131 // PeerManager
+componentcanvas 128387 component_ref 129283 // DownloadManager
   draw_component_as_icon default show_component_req_prov default show_component_rea default show_stereotype_properties default
-  xyzwh 284 57 2000 145 53
+  xyzwh 173 14 2000 145 251
+end
+componentcanvas 133251 component_ref 128131 // PeerManager
+  draw_component_as_icon default show_component_req_prov default show_component_rea default show_stereotype_properties default
+  xyzwh 179 290 2000 145 157
+end
+componentcanvas 133379 component_ref 129411 // UploadManager
+  draw_component_as_icon default show_component_req_prov default show_component_rea default show_stereotype_properties default
+  xyzwh 327 14 2000 145 157
+end
+componentcanvas 133635 component_ref 129539 // LogManager
+  draw_component_as_icon default show_component_req_prov default show_component_rea default show_stereotype_properties default
+  xyzwh 333 364 2000 145 137
+end
+componentcanvas 133763 component_ref 129667 // NetworkListener
+  draw_component_as_icon default show_component_req_prov default show_component_rea default show_stereotype_properties default
+  xyzwh 17 246 2000 145 233
+end
+componentcanvas 133891 component_ref 129795 // RemoteControlManager
+  draw_component_as_icon default show_component_req_prov default show_component_rea default show_stereotype_properties default
+  xyzwh 330 215 2000 151 137
 end
 end

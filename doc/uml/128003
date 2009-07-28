@@ -1,6 +1,6 @@
 format 66
-"FileManager" // FileManager
-  revision 1
+"FileManager" // AybabtuCore::FileManager
+  revision 5
   modified_by 3 "gburri"
   // class settings
   //class diagram settings
@@ -88,6 +88,14 @@ ${inlines}
 	    classrelation_ref 128643 // <directional composition>
 	  b multiplicity "1" parent class_ref 128515 // Chunk
       end
+
+      classrelation 130691 // <realization>
+	relation 130563 -_-|>
+	  a public
+	    cpp default "${type}"
+	    classrelation_ref 130691 // <realization>
+	  b parent class_ref 130563 // IFile
+      end
     end
 
     class 128131 "Directory"
@@ -150,7 +158,7 @@ ${inlines}
 	    cpp default "    ${comment}${static}${mutable}${volatile}${const}${type} ${name}${value};
 "
 	    classrelation_ref 128003 // (Shared directories)
-	  b multiplicity "1" parent class_ref 128131 // Directory
+	  b multiplicity "0..1" parent class_ref 128131 // Directory
       end
 
       classrelation 128131 // (Download)
@@ -159,7 +167,7 @@ ${inlines}
 	    cpp default "    ${comment}${static}${mutable}${volatile}${const}${type} ${name}${value};
 "
 	    classrelation_ref 128131 // (Download)
-	  b multiplicity "1" parent class_ref 128131 // Directory
+	  b multiplicity "0..1" parent class_ref 128131 // Directory
       end
 
       classrelation 128899 // <directional composition>
@@ -169,6 +177,32 @@ ${inlines}
 "
 	    classrelation_ref 128899 // <directional composition>
 	  b multiplicity "1" parent class_ref 128387 // Chunks
+      end
+
+      classrelation 130051 // <realization>
+	relation 129923 -_-|>
+	  a public
+	    cpp default "${type}"
+	    classrelation_ref 130051 // <realization>
+	  b parent class_ref 129795 // IFileManager
+      end
+
+      classrelation 133123 // <directional composition>
+	relation 132995 *-->
+	  a role_name "" private
+	    cpp default "    ${comment}${static}${mutable}${volatile}${const}${type} ${name}${value};
+"
+	    classrelation_ref 133123 // <directional composition>
+	  b parent class_ref 134147 // FileUpdater
+      end
+
+      classrelation 137731 // <directional composition>
+	relation 137475 *-->
+	  a role_name "" multiplicity "1" private
+	    cpp default "    ${comment}${static}${mutable}${volatile}${const}${type} ${name}${value};
+"
+	    classrelation_ref 137731 // <directional composition>
+	  b multiplicity "1" parent class_ref 137219 // WordIndex
       end
     end
 
@@ -186,12 +220,20 @@ ${inlines}
       
       classrelation 128771 // <directional aggregation>
 	relation 128643 o-->
-	  stereotype "set"
+	  stereotype "map"
 	  a role_name "" multiplicity "*" private
 	    cpp default "    ${comment}${static}${mutable}${volatile}${const}${type} * ${name}${value};
 "
 	    classrelation_ref 128771 // <directional aggregation>
 	  b multiplicity "1" parent class_ref 128515 // Chunk
+      end
+
+      classrelation 131971 // <generalisation>
+	relation 131843 ---|>
+	  a public
+	    cpp default "${type}"
+	    classrelation_ref 131971 // <generalisation>
+	  b parent class_ref 132995 // QHash
       end
     end
 
@@ -236,8 +278,307 @@ ${inlines}
 	python_decl ""
 	idl_decl ""
       end
+
+      classrelation 130563 // <realization>
+	relation 130435 -_-|>
+	  a public
+	    cpp default "${type}"
+	    classrelation_ref 130563 // <realization>
+	  b parent class_ref 130307 // IChunk
+      end
     end
 
-  end
+    class 129795 "IFileManager"
+      abstract visibility package stereotype "interface"
+      cpp_decl "${comment}${template}class ${name}${inherit} {
+${members}};
+${inlines}
+"
+      java_decl "${comment}${@}${visibility}interface ${name}${extends} {
+${members}}
+"
+      php_decl "${comment}${visibility}interface ${name} {
+${members}}
+"
+      python_2_2 python_decl ""
+      idl_decl "${comment}${abstract}${local}interface ${name}${inherit} {
+${members}};
+"
+      explicit_switch_type ""
+      
+      operation 128003 "getChunk"
+	public return_type class_ref 130307 // IChunk
+	nparams 1
+	  param in name "hash" type class_ref 130051 // Hash
+	cpp_decl "    ${comment}${friend}${static}${inline}${virtual}${type} ${name}${(}const ${t0} & ${p0}${)}${const}${volatile}${throw}${abstract};
+"
+	cpp_def "${comment}${inline}${type} ${class}::${name}${(}const ${t0} & ${p0}${)}${const}${volatile}${throw}${staticnl}{
+  ${body}}
+"
+	
+	
+	
+	
+      end
 
+      operation 132867 "getHashes"
+	public return_type class_ref 137347 // GetHashesResult
+	nparams 1
+	  param in name "entry" type class_ref 135043 // FileEntry
+	cpp_decl "    ${comment}${friend}${static}${inline}${virtual}${type} ${name}${(}const ${t0} & ${p0}${)}${const}${volatile}${throw}${abstract};
+"
+	cpp_def "${comment}${inline}${type} ${class}::${name}${(}const ${t0} & ${p0}${)}${const}${volatile}${throw}${staticnl}{
+  ${body}}
+"
+	
+	
+	
+	
+      end
+
+      operation 132995 "getEntries"
+	public return_type class_ref 137475 // GetEntriesResult
+	nparams 1
+	  param in name "entry" type class_ref 135171 // DirEntry
+	cpp_decl "    ${comment}${friend}${static}${inline}${virtual}${type} ${name}${(}const ${t0} & ${p0}${)}${const}${volatile}${throw}${abstract};
+"
+	cpp_def "${comment}${inline}${type} ${class}::${name}${(}const ${t0} & ${p0}${)}${const}${volatile}${throw}${staticnl}{
+  ${body}}
+"
+	
+	
+	
+	
+      end
+
+      operation 133123 "find"
+	public return_type class_ref 137603 // FindResult
+	nparams 1
+	  param in name "words" type class_ref 132867 // QString
+	cpp_decl "    ${comment}${friend}${static}${inline}${virtual}${type} ${name}${(}const ${t0} & ${p0}${)}${const}${volatile}${throw}${abstract};
+"
+	cpp_def "${comment}${inline}${type} ${class}::${name}${(}const ${t0} & ${p0}${)}${const}${volatile}${throw}${staticnl}{
+  ${body}}
+"
+	
+	
+	
+	
+      end
+
+      operation 133251 "haveChunks"
+	public explicit_return_type "QList<bool>"
+	nparams 1
+	  param in name "hashes" explicit_type "QList<Hash>"
+	cpp_decl "    ${comment}${friend}${static}${inline}${virtual}${type} ${name}${(}const ${t0} & ${p0}${)}${const}${volatile}${throw}${abstract};
+"
+	cpp_def "${comment}${inline}${type} ${class}::${name}${(}const ${t0} & ${p0}${)}${const}${volatile}${throw}${staticnl}{
+  ${body}}
+"
+	
+	
+	
+	
+      end
+
+      operation 133379 "getAmount"
+	public explicit_return_type "uint64"
+	nparams 0
+	cpp_decl "    ${comment}${friend}${static}${inline}${virtual}${type} ${name}${(}${)}${const}${volatile}${throw}${abstract};
+"
+	cpp_def "${comment}${inline}${type} ${class}::${name}${(}${)}${const}${volatile}${throw}${staticnl}{
+  ${body}}
+"
+	
+	
+	
+	
+      end
+
+      operation 133507 "getSharedDirs"
+	public explicit_return_type "QList<DirEntry>"
+	nparams 0
+	cpp_decl "    ${comment}${friend}${static}${inline}${virtual}${type} ${name}${(}${)}${const}${volatile}${throw}${abstract};
+"
+	cpp_def "${comment}${inline}${type} ${class}::${name}${(}${)}${const}${volatile}${throw}${staticnl}{
+  ${body}}
+"
+	
+	
+	
+	
+      end
+
+      operation 133635 "getDestinationDirs"
+	public explicit_return_type "QList<DirEntry>"
+	nparams 0
+	cpp_decl "    ${comment}${friend}${static}${inline}${virtual}${type} ${name}${(}${)}${const}${volatile}${throw}${abstract};
+"
+	cpp_def "${comment}${inline}${type} ${class}::${name}${(}${)}${const}${volatile}${throw}${staticnl}{
+  ${body}}
+"
+	
+	
+	
+	
+      end
+
+      operation 133763 "getFile"
+	public return_type class_ref 130563 // IFile
+	nparams 1
+	  param in name "entry" type class_ref 135043 // FileEntry
+	cpp_decl "    ${comment}${friend}${static}${inline}${virtual}${type} ${name}${(}const ${t0} & ${p0}${)}${const}${volatile}${throw}${abstract};
+"
+	cpp_def "${comment}${inline}${type} ${class}::${name}${(}const ${t0} & ${p0}${)}${const}${volatile}${throw}${staticnl}{
+  ${body}}
+"
+	
+	
+	
+	
+      end
+    end
+
+    class 130307 "IChunk"
+      abstract visibility package stereotype "interface"
+      cpp_decl "${comment}${template}class ${name}${inherit} {
+${members}};
+${inlines}
+"
+      java_decl "${comment}${@}${visibility}interface ${name}${extends} {
+${members}}
+"
+      php_decl "${comment}${visibility}interface ${name} {
+${members}}
+"
+      python_2_2 python_decl ""
+      idl_decl "${comment}${abstract}${local}interface ${name}${inherit} {
+${members}};
+"
+      explicit_switch_type ""
+      
+      operation 133891 "read"
+	public explicit_return_type "void"
+	nparams 2
+	  param in name "offset" explicit_type "uint32"
+	  param out name "data" type class_ref 134787 // QByteArray
+	cpp_decl "    ${comment}${friend}${static}${inline}${virtual}${type} ${name}${(}const ${t0} & ${p0}, ${t1} & ${p1}${)}${const}${volatile}${throw}${abstract};
+"
+	cpp_def "${comment}${inline}${type} ${class}::${name}${(}const ${t0} & ${p0}, ${t1} & ${p1}${)}${const}${volatile}${throw}${staticnl}{
+  ${body}}
+"
+	
+	
+	
+	
+      end
+
+      operation 134019 "write"
+	public explicit_return_type "void"
+	nparams 2
+	  param in name "offset" explicit_type "uint32"
+	  param in name "data" type class_ref 134787 // QByteArray
+	cpp_decl "    ${comment}${friend}${static}${inline}${virtual}${type} ${name}${(}const ${t0} & ${p0}, const ${t1} & ${p1}${)}${const}${volatile}${throw}${abstract};
+"
+	cpp_def "${comment}${inline}${type} ${class}::${name}${(}const ${t0} & ${p0}, const ${t1} & ${p1}${)}${const}${volatile}${throw}${staticnl}{
+  ${body}}
+"
+	
+	
+	
+	
+      end
+
+      operation 134147 "getHash"
+	public return_type class_ref 130051 // Hash
+	nparams 0
+	cpp_decl "    ${comment}${friend}${static}${inline}${virtual}${type} ${name}${(}${)}${const}${volatile}${throw}${abstract};
+"
+	cpp_def "${comment}${inline}${type} ${class}::${name}${(}${)}${const}${volatile}${throw}${staticnl}{
+  ${body}}
+"
+	
+	
+	
+	
+      end
+    end
+
+    class 130563 "IFile"
+      abstract visibility package stereotype "interface"
+      cpp_decl "${comment}${template}class ${name}${inherit} {
+${members}};
+${inlines}
+"
+      java_decl "${comment}${@}${visibility}interface ${name}${extends} {
+${members}}
+"
+      php_decl "${comment}${visibility}interface ${name} {
+${members}}
+"
+      python_2_2 python_decl ""
+      idl_decl "${comment}${abstract}${local}interface ${name}${inherit} {
+${members}};
+"
+      explicit_switch_type ""
+      
+      operation 134275 "getChunks"
+	public explicit_return_type "QList<IChunk>"
+	nparams 0
+	cpp_decl "    ${comment}${friend}${static}${inline}${virtual}${type} ${name}${(}${)}${const}${volatile}${throw}${abstract};
+"
+	cpp_def "${comment}${inline}${type} ${class}::${name}${(}${)}${const}${volatile}${throw}${staticnl}{
+  ${body}}
+"
+	
+	
+	
+	
+      end
+    end
+
+    class 134147 "FileUpdater"
+      visibility package 
+      cpp_decl "${comment}${template}class ${name}${inherit} {
+${members}};
+${inlines}
+"
+      java_decl ""
+      php_decl ""
+      python_2_2 python_decl ""
+      idl_decl ""
+      explicit_switch_type ""
+      
+      classrelation 133251 // <generalisation>
+	relation 133123 ---|>
+	  a public
+	    cpp default "${type}"
+	    classrelation_ref 133251 // <generalisation>
+	  b parent class_ref 132483 // QThread
+      end
+    end
+
+    class 137219 "WordIndex"
+      visibility package 
+      cpp_decl "${comment}${template}class ${name}${inherit} {
+${members}};
+${inlines}
+"
+      java_decl ""
+      php_decl ""
+      python_2_2 python_decl ""
+      idl_decl ""
+      explicit_switch_type ""
+      
+      classrelation 137603 // <directional composition>
+	relation 137347 *-->
+	  stereotype "map"
+	  a role_name "" multiplicity "*" private
+	    cpp default "    ${comment}${static}${mutable}${volatile}${const}${type} ${name}${value};
+"
+	    classrelation_ref 137603 // <directional composition>
+	  b multiplicity "0..1" parent class_ref 128003 // File
+      end
+    end
+  end
 end

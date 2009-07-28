@@ -1,14 +1,15 @@
 format 66
 "uml"
-  revision 1
+  revision 4
   modified_by 3 "gburri"
+  cpp_root_dir "../../src/"
 
 
   
   // class settings
   default_attribute_visibility private default_relation_visibility private default_operation_visibility public
   //class diagram settings
-  draw_all_relations yes hide_attributes no hide_operations no show_members_full_definition yes show_members_visibility yes show_members_stereotype no show_members_multiplicity yes show_members_initialization no show_attribute_modifiers no member_max_width 127 show_parameter_dir yes show_parameter_name yes package_name_in_tab no class_drawing_mode natural drawing_language c++ show_context_mode no auto_label_position yes show_relation_modifiers no show_infonote no shadow yes show_stereotype_properties no
+  draw_all_relations yes hide_attributes no hide_operations no show_members_full_definition yes show_members_visibility yes show_members_stereotype yes show_members_multiplicity yes show_members_initialization no show_attribute_modifiers no member_max_width 127 show_parameter_dir yes show_parameter_name yes package_name_in_tab no class_drawing_mode natural drawing_language uml show_context_mode no auto_label_position yes show_relation_modifiers no show_infonote no shadow yes show_stereotype_properties no
   //use case diagram settings
   package_name_in_tab no show_context no auto_label_position yes draw_all_relations yes class_drawing_mode actor shadow yes show_stereotype_properties no
   //sequence diagram settings
@@ -16,7 +17,7 @@ format 66
   //collaboration diagram settings
   show_full_operations_definition no show_hierarchical_rank no write_horizontally yes drawing_language uml package_name_in_tab no show_context no draw_all_relations yes shadow yes show_stereotype_properties no
   //object diagram settings
-   write_horizontally yes package_name_in_tab no show_context no auto_label_position yes draw_all_relations yes shadow yes show_stereotype_properties no
+   write_horizontally yes package_name_in_tab no show_context uml auto_label_position yes draw_all_relations yes shadow yes show_stereotype_properties no
   //component diagram settings
   package_name_in_tab no show_context no auto_label_position yes draw_all_relations yes shadow yes
   draw_component_as_icon no show_component_req_prov no show_component_rea no show_stereotype_properties no
@@ -38,22 +39,15 @@ format 66
   
   ncouples 1
   key "html dir" value "/tmp/"
-  componentview 128003 "Components"
-    //component diagram settings
-    package_name_in_tab default show_context default auto_label_position default draw_all_relations default shadow default
-    draw_component_as_icon default show_component_req_prov default show_component_rea default show_stereotype_properties default
-    component 128003 "FileManager"
-    end
+  package_ref 129283 // AybabtuCommon
 
-    componentdiagram 128003 "components"
-      package_name_in_tab default show_context default auto_label_position default draw_all_relations default shadow default
-      draw_component_as_icon default show_component_req_prov default show_component_rea default show_stereotype_properties default
-      size A4
-    end
+  package_ref 129411 // AybabtuCore
 
-    component 128131 "PeerManager"
-    end
-  end
+  package_ref 130435 // AybabtuGUI
 
-  package_ref 128003 // FileManager
+  package_ref 131587 // AybabtuProtos
+
+  package_ref 130307 // Qt
+
+  package_ref 132739 // std
 end
