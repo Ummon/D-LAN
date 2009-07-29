@@ -1,6 +1,6 @@
 format 67
 "AybabtuCore" // AybabtuCore
-  revision 6
+  revision 7
   modified_by 6 ""
   // class settings
   //class diagram settings
@@ -55,11 +55,6 @@ format 67
       required_classes
 	class_ref 129795 // IFileManager
       end
-      simplerelation 129030
-	-_->
-	  on component_ref 129411 // UploadManager
-      end
-
       simplerelation 135814
 	-_->
 	  on component_ref 128003 // FileManager
@@ -97,10 +92,17 @@ format 67
       required_classes
 	class_ref 130051 // Hash
 	class_ref 130307 // IChunk
+	class_ref 131331 // IPeer
+	class_ref 130947 // IUploadManager
       end
       simplerelation 128134
 	-_->
 	  on component_ref 128003 // FileManager
+      end
+
+      simplerelation 142470
+	-_->
+	  on component_ref 128131 // PeerManager
       end
     end
 
@@ -113,6 +115,7 @@ format 67
       required_classes
 	class_ref 130051 // Hash
 	class_ref 130691 // IChunkDownload
+	class_ref 129667 // IDownloadManager
 	class_ref 129795 // IFileManager
 	class_ref 131203 // IPeerManager
       end
@@ -135,8 +138,12 @@ format 67
     component 129795 "RemoteControlManager"
       required_classes
 	class_ref 131587 // IChat
+	class_ref 129667 // IDownloadManager
+	class_ref 129795 // IFileManager
 	class_ref 131459 // INetworkListener
+	class_ref 131203 // IPeerManager
 	class_ref 131715 // ISearch
+	class_ref 130947 // IUploadManager
       end
       simplerelation 128262
 	-_->

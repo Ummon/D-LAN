@@ -1,7 +1,7 @@
-format 66
+format 67
 "UploadManager" // AybabtuCore::UploadManager
-  revision 3
-  modified_by 3 "gburri"
+  revision 4
+  modified_by 6 ""
   // class settings
   //class diagram settings
   draw_all_relations default hide_attributes default hide_operations default show_members_full_definition default show_members_visibility default show_members_stereotype default show_members_multiplicity default show_members_initialization default show_attribute_modifiers default member_max_width 0 show_parameter_dir default show_parameter_name default package_name_in_tab default class_drawing_mode default drawing_language default show_context_mode default auto_label_position default show_relation_modifiers default show_infonote default shadow default show_stereotype_properties default
@@ -65,14 +65,12 @@ ${members}};
 "
       explicit_switch_type ""
       
-      operation 128131 "newUploader"
-	public explicit_return_type "void"
-	nparams 2
-	  param in name "hash" type class_ref 130051 // Hash
-	  param in name "peer" type class_ref 131331 // IPeer
-	cpp_decl "    ${comment}${friend}${static}${inline}${virtual}${type} ${name}${(}const ${t0} & ${p0}, const ${t1} & ${p1}${)}${const}${volatile}${throw}${abstract};
+      operation 128134 "getUploads"
+	public explicit_return_type "QList<IUpload>"
+	nparams 0
+	cpp_decl "    ${comment}${friend}${static}${inline}${virtual}${type} ${name}${(}${)}${const}${volatile}${throw}${abstract};
 "
-	cpp_def "${comment}${inline}${type} ${class}::${name}${(}const ${t0} & ${p0}, const ${t1} & ${p1}${)}${const}${volatile}${throw}${staticnl}{
+	cpp_def "${comment}${inline}${type} ${class}::${name}${(}${)}${const}${volatile}${throw}${staticnl}{
   ${body}}
 "
 	
@@ -110,6 +108,15 @@ ${inlines}
 	    classrelation_ref 131075 // <directional composition>
 	  b multiplicity "1" parent class_ref 132355 // Uploader
       end
+
+      classrelation 128518 // <directional composition>
+	relation 128518 *-->
+	  a role_name "" multiplicity "*" private
+	    cpp default "    ${comment}${static}${mutable}${volatile}${const}${type} ${name}${value};
+"
+	    classrelation_ref 128518 // <directional composition>
+	  b multiplicity "1" parent class_ref 128134 // Upload
+      end
     end
 
     class 132355 "Uploader"
@@ -124,30 +131,80 @@ ${inlines}
       idl_decl ""
       explicit_switch_type ""
       
-      classrelation 131203 // <directional aggregation>
-	relation 131075 o-->
-	  a role_name "" private
-	    cpp default "    ${comment}${static}${mutable}${volatile}${const}${type} * ${name}${value};
-"
-	    classrelation_ref 131203 // <directional aggregation>
-	  b parent class_ref 131331 // IPeer
-      end
-
-      classrelation 131331 // <directional aggregation>
-	relation 131203 o-->
-	  a role_name "" private
-	    cpp default "    ${comment}${static}${mutable}${volatile}${const}${type} * ${name}${value};
-"
-	    classrelation_ref 131331 // <directional aggregation>
-	  b parent class_ref 130307 // IChunk
-      end
-
       classrelation 131459 // <generalisation>
 	relation 131331 ---|>
 	  a public
 	    cpp default "${type}"
 	    classrelation_ref 131459 // <generalisation>
 	  b parent class_ref 132483 // QThread
+      end
+
+      classrelation 128134 // <directional aggregation>
+	relation 128134 o-->
+	  a role_name "" multiplicity "1" private
+	    cpp default "    ${comment}${static}${mutable}${volatile}${const}${type} * ${name}${value};
+"
+	    classrelation_ref 128134 // <directional aggregation>
+	  b multiplicity "1" parent class_ref 128134 // Upload
+      end
+    end
+
+    class 128006 "IUpload"
+      abstract visibility package stereotype "interface"
+      cpp_decl "${comment}${template}class ${name}${inherit} {
+${members}};
+${inlines}
+"
+      java_decl "${comment}${@}${visibility}interface ${name}${extends} {
+${members}}
+"
+      php_decl "${comment}${visibility}interface ${name} {
+${members}}
+"
+      python_2_2 python_decl ""
+      idl_decl "${comment}${abstract}${local}interface ${name}${inherit} {
+${members}};
+"
+      explicit_switch_type ""
+      
+    end
+
+    class 128134 "Upload"
+      visibility package 
+      cpp_decl "${comment}${template}class ${name}${inherit} {
+${members}};
+${inlines}
+"
+      java_decl ""
+      php_decl ""
+      python_2_2 python_decl ""
+      idl_decl ""
+      explicit_switch_type ""
+      
+      classrelation 128006 // <realization>
+	relation 128006 -_-|>
+	  a public
+	    cpp default "${type}"
+	    classrelation_ref 128006 // <realization>
+	  b parent class_ref 128006 // IUpload
+      end
+
+      classrelation 128262 // <directional aggregation>
+	relation 128262 o-->
+	  a role_name "" private
+	    cpp default "    ${comment}${static}${mutable}${volatile}${const}${type} * ${name}${value};
+"
+	    classrelation_ref 128262 // <directional aggregation>
+	  b parent class_ref 131331 // IPeer
+      end
+
+      classrelation 128390 // <directional aggregation>
+	relation 128390 o-->
+	  a role_name "" private
+	    cpp default "    ${comment}${static}${mutable}${volatile}${const}${type} * ${name}${value};
+"
+	    classrelation_ref 128390 // <directional aggregation>
+	  b parent class_ref 130307 // IChunk
       end
     end
   end

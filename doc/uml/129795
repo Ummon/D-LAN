@@ -1,6 +1,6 @@
 format 67
 "PeerManager" // AybabtuCore::PeerManager
-  revision 4
+  revision 5
   modified_by 6 ""
   // class settings
   //class diagram settings
@@ -147,6 +147,23 @@ ${members}};
 	cpp_decl "    ${comment}${friend}${static}${inline}${virtual}${type} ${name}${(}const ${t0} & ${p0}${)}${const}${volatile}${throw}${abstract};
 "
 	cpp_def "${comment}${inline}${type} ${class}::${name}${(}const ${t0} & ${p0}${)}${const}${volatile}${throw}${staticnl}{
+  ${body}}
+"
+	
+	
+	
+	
+      end
+
+      operation 128006 "newUploadRequest"
+	stereotype "signal"
+	public explicit_return_type "void"
+	nparams 2
+	  param in name "hash" type class_ref 130051 // Hash
+	  param in name "peer" type class_ref 131331 // IPeer
+	cpp_decl "    ${comment}${friend}${static}${inline}${virtual}${type} ${name}${(}const ${t0} & ${p0}, const ${t1} & ${p1}${)}${const}${volatile}${throw}${abstract};
+"
+	cpp_def "${comment}${inline}${type} ${class}::${name}${(}const ${t0} & ${p0}, const ${t1} & ${p1}${)}${const}${volatile}${throw}${staticnl}{
   ${body}}
 "
 	
