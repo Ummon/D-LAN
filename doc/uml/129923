@@ -1,7 +1,7 @@
 format 67
 "NetworkListener" // AybabtuCore::NetworkListener
-  revision 4
-  modified_by 6 ""
+  revision 5
+  modified_by 3 "gburri"
   // class settings
   //class diagram settings
   draw_all_relations default hide_attributes default hide_operations default show_members_full_definition default show_members_visibility default show_members_stereotype default show_members_multiplicity default show_members_initialization default show_attribute_modifiers default member_max_width 0 show_parameter_dir default show_parameter_name default package_name_in_tab default class_drawing_mode default drawing_language default show_context_mode default auto_label_position default show_relation_modifiers default show_infonote default shadow default show_stereotype_properties default
@@ -114,11 +114,12 @@ ${members}};
       
       operation 134659 "newMessage"
 	stereotype "signal"
-	public explicit_return_type ""
-	nparams 0
-	cpp_decl "    ${comment}${friend}${static}${inline}${virtual}${type} ${name}${(}${)}${const}${volatile}${throw}${abstract};
+	public explicit_return_type "void"
+	nparams 1
+	  param in name "message" type class_ref 146819 // ChatMessage
+	cpp_decl "    ${comment}${friend}${static}${inline}${virtual}${type} ${name}${(}const ${t0} & ${p0}${)}${const}${volatile}${throw}${abstract};
 "
-	cpp_def "${comment}${inline}${type} ${class}::${name}${(}${)}${const}${volatile}${throw}${staticnl}{
+	cpp_def "${comment}${inline}${type} ${class}::${name}${(}const ${t0} & ${p0}${)}${const}${volatile}${throw}${staticnl}{
   ${body}}
 "
 	
@@ -128,7 +129,7 @@ ${members}};
       end
 
       operation 134787 "send"
-	public explicit_return_type ""
+	public explicit_return_type "void"
 	nparams 1
 	  param in name "message" type class_ref 132867 // QString
 	cpp_decl "    ${comment}${friend}${static}${inline}${virtual}${type} ${name}${(}const ${t0} & ${p0}${)}${const}${volatile}${throw}${abstract};
@@ -164,10 +165,12 @@ ${members}};
       operation 134915 "found"
 	stereotype "signal"
 	public explicit_return_type ""
-	nparams 0
-	cpp_decl "    ${comment}${friend}${static}${inline}${virtual}${type} ${name}${(}${)}${const}${volatile}${throw}${abstract};
+	nparams 2
+	  param in name "result" type class_ref 137603 // FindResult
+	  param in name "IP" explicit_type "uint32"
+	cpp_decl "    ${comment}${friend}${static}${inline}${virtual}${type} ${name}${(}const ${t0} & ${p0}, const ${t1} & ${p1}${)}${const}${volatile}${throw}${abstract};
 "
-	cpp_def "${comment}${inline}${type} ${class}::${name}${(}${)}${const}${volatile}${throw}${staticnl}{
+	cpp_def "${comment}${inline}${type} ${class}::${name}${(}const ${t0} & ${p0}, const ${t1} & ${p1}${)}${const}${volatile}${throw}${staticnl}{
   ${body}}
 "
 	
@@ -238,6 +241,24 @@ ${inlines}
 	    classrelation_ref 138243 // <directional composition>
 	  b multiplicity "1" parent class_ref 137987 // UDPListener
       end
+
+      classrelation 149379 // <directional composition>
+	relation 148739 *-->
+	  a role_name "" multiplicity "1" private
+	    cpp default "    ${comment}${static}${mutable}${volatile}${const}${type} ${name}${value};
+"
+	    classrelation_ref 149379 // <directional composition>
+	  b multiplicity "1" parent class_ref 146691 // Chat
+      end
+
+      classrelation 149507 // <directional composition>
+	relation 148867 *-->
+	  a role_name "" multiplicity "*" private
+	    cpp default "    ${comment}${static}${mutable}${volatile}${const}${type} ${name}${value};
+"
+	    classrelation_ref 149507 // <directional composition>
+	  b multiplicity "1" parent class_ref 146947 // Search
+      end
     end
 
     class 137859 "TCPListener"
@@ -281,13 +302,53 @@ ${inlines}
 	  b parent class_ref 132483 // QThread
       end
 
-      classrelation 135174 // <directional aggregation>
-	relation 135174 o-->
-	  a role_name "" multiplicity "1" private
-	    cpp default "    ${comment}${static}${mutable}${volatile}${const}${type} * ${name}${value};
+      operation 143875 "newChatMessage"
+	stereotype "signal"
+	package explicit_return_type "void"
+	nparams 1
+	  param in name "message" type class_ref 146819 // ChatMessage
+	cpp_decl "    ${comment}${friend}${static}${inline}${virtual}${type} ${name}${(}const ${t0} & ${p0}${)}${const}${volatile}${throw}${abstract};
 "
-	    classrelation_ref 135174 // <directional aggregation>
-	  b multiplicity "1" parent class_ref 138115 // ChunkUpdater
+	cpp_def "${comment}${inline}${type} ${class}::${name}${(}const ${t0} & ${p0}${)}${const}${volatile}${throw}${staticnl}{
+  ${body}}
+"
+	
+	
+	
+	
+      end
+
+      operation 144003 "newFindResult"
+	stereotype "signal"
+	package explicit_return_type "void"
+	nparams 2
+	  param in name "result" type class_ref 137603 // FindResult
+	  param in name "IP" explicit_type "uint32"
+	cpp_decl "    ${comment}${friend}${static}${inline}${virtual}${type} ${name}${(}const ${t0} & ${p0}, const ${t1} & ${p1}${)}${const}${volatile}${throw}${abstract};
+"
+	cpp_def "${comment}${inline}${type} ${class}::${name}${(}const ${t0} & ${p0}, const ${t1} & ${p1}${)}${const}${volatile}${throw}${staticnl}{
+  ${body}}
+"
+	
+	
+	
+	
+      end
+
+      operation 144131 "newHaveChunksResult"
+	stereotype "signal"
+	package explicit_return_type "void"
+	nparams 1
+	  param in name "result" type class_ref 134662 // HaveChunksResult
+	cpp_decl "    ${comment}${friend}${static}${inline}${virtual}${type} ${name}${(}const ${t0} & ${p0}${)}${const}${volatile}${throw}${abstract};
+"
+	cpp_def "${comment}${inline}${type} ${class}::${name}${(}const ${t0} & ${p0}${)}${const}${volatile}${throw}${staticnl}{
+  ${body}}
+"
+	
+	
+	
+	
       end
     end
 
@@ -330,19 +391,83 @@ ${inlines}
 	idl_decl ""
       end
 
-      operation 134662 "addHaveChunksResult"
-	package explicit_return_type "void"
-	nparams 1
-	  param in name "result" type class_ref 134662 // HaveChunksResult
-	cpp_decl "    ${comment}${friend}${static}${inline}${virtual}${type} ${name}${(}const ${t0} & ${p0}${)}${const}${volatile}${throw}${abstract};
+      classrelation 149891 // <directional aggregation>
+	relation 149251 o-->
+	  a role_name "" private
+	    cpp default "    ${comment}${static}${mutable}${volatile}${const}${type} * ${name}${value};
 "
-	cpp_def "${comment}${inline}${type} ${class}::${name}${(}const ${t0} & ${p0}${)}${const}${volatile}${throw}${staticnl}{
-  ${body}}
+	    classrelation_ref 149891 // <directional aggregation>
+	  b parent class_ref 137987 // UDPListener
+      end
+    end
+
+    class 146691 "Chat"
+      visibility package 
+      cpp_decl "${comment}${template}class ${name}${inherit} {
+${members}};
+${inlines}
 "
-	
-	
-	
-	
+      java_decl ""
+      php_decl ""
+      python_2_2 python_decl ""
+      idl_decl ""
+      explicit_switch_type ""
+      
+      classrelation 148739 // <realization>
+	relation 148099 -_-|>
+	  a public
+	    cpp default "${type}"
+	    classrelation_ref 148739 // <realization>
+	  b parent class_ref 131587 // IChat
+      end
+
+      classrelation 149635 // <directional aggregation>
+	relation 148995 o-->
+	  a role_name "" private
+	    cpp default "    ${comment}${static}${mutable}${volatile}${const}${type} * ${name}${value};
+"
+	    classrelation_ref 149635 // <directional aggregation>
+	  b parent class_ref 137987 // UDPListener
+      end
+    end
+
+    class 146947 "Search"
+      visibility package 
+      cpp_decl "${comment}${template}class ${name}${inherit} {
+${members}};
+${inlines}
+"
+      java_decl ""
+      php_decl ""
+      python_2_2 python_decl ""
+      idl_decl ""
+      explicit_switch_type ""
+      
+      classrelation 148995 // <realization>
+	relation 148355 -_-|>
+	  a public
+	    cpp default "${type}"
+	    classrelation_ref 148995 // <realization>
+	  b parent class_ref 131715 // ISearch
+      end
+
+      attribute 139907 "tag"
+	private explicit_type "uint32"
+	cpp_decl "    ${comment}${static}${mutable}${volatile}${const}${type} ${name}${value};
+"
+	java_decl ""
+	php_decl ""
+	python_decl ""
+	idl_decl ""
+      end
+
+      classrelation 149763 // ()
+	relation 149123 o--> name ""
+	  a role_name "" private
+	    cpp default "    ${comment}${static}${mutable}${volatile}${const}${type} * ${name}${value};
+"
+	    classrelation_ref 149763 // ()
+	  b parent class_ref 137987 // UDPListener
       end
     end
   end

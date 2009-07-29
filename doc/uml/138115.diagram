@@ -1,0 +1,62 @@
+format 67
+
+classinstance 128003 class_ref 134403 // RemoteControlManager
+  name ""   xyz 87 11 2000 life_line_z 2000
+classinstance 128131 class_ref 131587 // IChat
+  name ""   xyz 415 14 2000 life_line_z 2000
+classinstance 128259 class_ref 137731 // NetworkListener
+  name ""   xyz 261 15 2000 life_line_z 2000
+note 129539 "Made only once"
+  xyzwh 45 193 2000 74 55
+classinstance 130307 class_ref 137987 // UDPListener
+  name ""   xyz 641 29 2000 life_line_z 2000
+durationcanvas 128387 classinstance_ref 128003 // :RemoteControlManager
+  xyzwh 147 129 2010 11 162
+  overlappingdurationcanvas 129027
+    xyzwh 153 258 2020 11 28
+  end
+end
+durationcanvas 128515 classinstance_ref 128259 // :NetworkListener
+  xyzwh 303 129 2010 11 25
+end
+durationcanvas 128771 classinstance_ref 128131 // :IChat
+  xyzwh 434 224 2010 11 70
+  overlappingdurationcanvas 130563
+    xyzwh 440 229 2020 11 33
+  end
+end
+durationcanvas 129283 classinstance_ref 128131 // :IChat
+  xyzwh 434 171 2010 11 26
+end
+durationcanvas 130435 classinstance_ref 130307 // :UDPListener
+  xyzwh 674 230 2010 11 29
+end
+msg 128643 synchronous
+  from durationcanvas_ref 128387
+  to durationcanvas_ref 128515
+  yz 132 2015 msg operation_ref 134403 // "getChat() : IChat"
+  show_full_operations_definition default drawing_language default
+  label_xy 206 117
+msg 129155 asynchronous
+  from durationcanvas_ref 128771
+  to durationcanvas_ref 129027
+  yz 264 2025 explicitmsg "<<signal>> newMessage()"
+  show_full_operations_definition default drawing_language default
+  label_xy 178 250
+msg 129411 synchronous
+  from durationcanvas_ref 128387
+  to durationcanvas_ref 129283
+  yz 176 3005 explicitmsg "bind(newMessage)"
+  show_full_operations_definition default drawing_language default
+  label_xy 248 161
+msg 130691 asynchronous
+  from durationcanvas_ref 130435
+  to durationcanvas_ref 130563
+  yz 238 2025 explicitmsg "<<signal>> newChatMessage()"
+  show_full_operations_definition default drawing_language default
+  label_xy 469 222
+line 129667 -_-_
+  from ref 129539 z 2016 to ref 128643
+line 129795 -_-_
+  from ref 129539 z 3006 to ref 129411
+end
