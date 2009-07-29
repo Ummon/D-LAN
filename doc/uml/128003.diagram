@@ -2,19 +2,19 @@ format 67
 
 componentcanvas 128259 component_ref 128003 // FileManager
   draw_component_as_icon default show_component_req_prov default show_component_rea default show_stereotype_properties default
-  xyzwh 278 25 2000 145 137
+  xyzwh 297 22 2000 145 137
 end
 componentcanvas 128387 component_ref 129283 // DownloadManager
   draw_component_as_icon default show_component_req_prov default show_component_rea default show_stereotype_properties default
-  xyzwh 252 234 2000 145 251
+  xyzwh 268 241 2000 145 251
 end
 componentcanvas 133251 component_ref 128131 // PeerManager
   draw_component_as_icon default show_component_req_prov default show_component_rea default show_stereotype_properties default
-  xyzwh 527 463 2000 145 157
+  xyzwh 530 453 2000 145 157
 end
 componentcanvas 133379 component_ref 129411 // UploadManager
   draw_component_as_icon default show_component_req_prov default show_component_rea default show_stereotype_properties default
-  xyzwh 527 82 2000 145 157
+  xyzwh 526 117 2000 145 157
 end
 componentcanvas 133763 component_ref 129667 // NetworkListener
   draw_component_as_icon default show_component_req_prov default show_component_rea default show_stereotype_properties default
@@ -22,7 +22,7 @@ componentcanvas 133763 component_ref 129667 // NetworkListener
 end
 componentcanvas 133891 component_ref 129795 // RemoteControlManager
   draw_component_as_icon default show_component_req_prov default show_component_rea default show_stereotype_properties default
-  xyzwh 52 43 2000 151 137
+  xyzwh 57 23 2000 151 169
 end
 simplerelationcanvas 128006 simplerelation_ref 128006
   from ref 128387 z 2001 to ref 128259
@@ -32,9 +32,6 @@ simplerelationcanvas 128134 simplerelation_ref 128134
 end
 simplerelationcanvas 128902 simplerelation_ref 128902
   from ref 128387 z 2001 to ref 133251
-end
-simplerelationcanvas 129030 simplerelation_ref 129030
-  from ref 133251 z 2001 to ref 133379
 end
 simplerelationcanvas 129158 simplerelation_ref 129158
   from ref 133763 z 2001 to ref 128259
@@ -47,7 +44,10 @@ simplerelationcanvas 129414 simplerelation_ref 135814
 end
 simplerelationcanvas 129926 simplerelation_ref 135942
   geometry VH
-  from ref 133763 z 2001 to point 114 539
+  from ref 133763 z 2001 to point 114 529
   line 130310 z 2001 to ref 133251
+end
+simplerelationcanvas 130438 simplerelation_ref 142470
+  from ref 133379 z 2001 to ref 133251
 end
 end
