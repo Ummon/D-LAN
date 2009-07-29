@@ -91,6 +91,11 @@ message EventLogMessage {
    optional string severityLevel = 4;
 }
 
+// Core -> GUI
+// Sended when the user close the core
+// and when the connection is local.
+message Close {
+}
 
 /***** Commands. *****/
 // GUI -> Core

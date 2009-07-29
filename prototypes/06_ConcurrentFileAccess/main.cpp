@@ -53,5 +53,5 @@ int main(int argc, char *argv[])
       
    qDebug() << "All thread has terminated";
    
-   a.exit(0);
+   a.exec();
 }
