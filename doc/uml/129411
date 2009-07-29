@@ -1,6 +1,6 @@
 format 66
 "AybabtuCore" // AybabtuCore
-  revision 3
+  revision 4
   modified_by 3 "gburri"
   // class settings
   //class diagram settings
@@ -82,14 +82,6 @@ format 66
       end
     end
 
-    component 129539 "LogManager"
-      provided_classes
-	class_ref 132227 // IEntry
-	class_ref 132099 // ILogger
-	class_ref 131971 // ILogManager
-      end
-    end
-
     component 129667 "NetworkListener"
       provided_classes
 	class_ref 131587 // IChat
@@ -118,8 +110,6 @@ format 66
   package_ref 128003 // FileManager
 
   package_ref 129539 // UploadManager
-
-  package_ref 129667 // LogManager
 
   package_ref 129795 // PeerManager
 

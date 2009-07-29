@@ -1,6 +1,6 @@
 format 66
-"LogManager" // AybabtuCore::LogManager
-  revision 3
+"LogManager" // AybabtuCommon::LogManager
+  revision 4
   modified_by 3 "gburri"
   // class settings
   //class diagram settings
@@ -229,13 +229,14 @@ ${inlines}
 	  b parent class_ref 131971 // ILogManager
       end
 
-      classrelation 140291 // <directional composition>
-	relation 139779 *-->
+      classrelation 140291 // <composition>
+	relation 139779 *---
 	  a role_name "" multiplicity "*" private
-	    cpp default "    ${comment}${static}${mutable}${volatile}${const}${type} ${name}${value};
+	    cpp default "    ${comment}${static}${mutable}${volatile}${const}${stereotype}<${type}> ${name}${value};
 "
-	    classrelation_ref 140291 // <directional composition>
-	  b multiplicity "1" parent class_ref 138499 // Logger
+	    classrelation_ref 140291 // <composition>
+	  b role_name "" multiplicity "1" private
+	    classrelation_ref 141955 // <composition>
       end
     end
 
@@ -259,6 +260,9 @@ ${inlines}
 	  b parent class_ref 132099 // ILogger
       end
 
+      classrelation 141955 // <composition>
+	relation_ref 139779 // <composition>
+      end
     end
 
     class 138627 "Severity"
@@ -346,6 +350,42 @@ ${inlines}
 	    cpp default "${type}"
 	    classrelation_ref 140675 // <realization>
 	  b parent class_ref 132227 // IEntry
+      end
+    end
+
+    class 140163 "Builder"
+      visibility public 
+      cpp_decl "${comment}${template}class ${name}${inherit} {
+${members}};
+${inlines}
+"
+      java_decl ""
+      php_decl ""
+      python_2_2 python_decl ""
+      idl_decl ""
+      explicit_switch_type ""
+      
+      operation 137091 "createLogManager"
+	class_operation public return_type class_ref 131971 // ILogManager
+	nparams 1
+	  param in name "file" type class_ref 132867 // QString
+	cpp_decl "    ${comment}${friend}${static}${inline}${virtual}${type} ${name}${(}const ${t0} & ${p0}${)}${const}${volatile}${throw}${abstract};
+"
+	cpp_def "${comment}${inline}${type} ${class}::${name}${(}const ${t0} & ${p0}${)}${const}${volatile}${throw}${staticnl}{
+  ${body}}
+"
+	
+	
+	
+	
+      end
+
+      classrelation 142083 // <dependency>
+	relation 141443 -_->
+	  a default
+	    cpp default "#include in source"
+	    classrelation_ref 142083 // <dependency>
+	  b parent class_ref 138371 // LogManager
       end
     end
   end
