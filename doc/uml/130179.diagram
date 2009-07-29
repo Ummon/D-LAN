@@ -2,39 +2,44 @@ format 66
 
 packagecanvas 128003 
   package_ref 129667 // LogManager
-    xyzwh 15 11 2000 680 394
+    xyzwh 15 11 2000 680 450
 end
 classcanvas 128131 class_ref 131971 // ILogManager
   draw_all_relations default hide_attributes yes hide_operations default show_members_full_definition default show_members_visibility default show_members_stereotype default show_members_multiplicity default show_members_initialization default show_attribute_modifiers default member_max_width 0 show_parameter_dir default show_parameter_name default package_name_in_tab default class_drawing_mode default drawing_language default show_context_mode default auto_label_position default show_relation_modifiers default show_infonote default shadow default show_stereotype_properties default
   color mediumyellow
-  xyz 33 54 2005
+  xyz 305 60 2005
 end
 classcanvas 128259 class_ref 132099 // ILogger
   draw_all_relations default hide_attributes yes hide_operations default show_members_full_definition default show_members_visibility default show_members_stereotype default show_members_multiplicity default show_members_initialization default show_attribute_modifiers default member_max_width 0 show_parameter_dir default show_parameter_name default package_name_in_tab default class_drawing_mode default drawing_language default show_context_mode default auto_label_position default show_relation_modifiers default show_infonote default shadow default show_stereotype_properties default
   color mediumyellow
-  xyz 290 65 2005
+  xyz 404 172 2005
 end
 classcanvas 128387 class_ref 132227 // IEntry
   draw_all_relations default hide_attributes yes hide_operations default show_members_full_definition default show_members_visibility default show_members_stereotype default show_members_multiplicity default show_members_initialization default show_attribute_modifiers default member_max_width 0 show_parameter_dir default show_parameter_name default package_name_in_tab default class_drawing_mode default drawing_language default show_context_mode default auto_label_position default show_relation_modifiers default show_infonote default shadow default show_stereotype_properties default
   color mediumyellow
-  xyz 522 147 2005
+  xyz 540 263 2005
 end
 classcanvas 128515 class_ref 138371 // LogManager
   draw_all_relations default hide_attributes default hide_operations default show_members_full_definition default show_members_visibility default show_members_stereotype default show_members_multiplicity default show_members_initialization default show_attribute_modifiers default member_max_width 0 show_parameter_dir default show_parameter_name default package_name_in_tab default class_drawing_mode default drawing_language default show_context_mode default auto_label_position default show_relation_modifiers default show_infonote default shadow default show_stereotype_properties default
-  xyz 150 232 2005
+  xyz 211 231 2005
 end
 classcanvas 128771 class_ref 138499 // Logger
   draw_all_relations default hide_attributes default hide_operations default show_members_full_definition default show_members_visibility default show_members_stereotype default show_members_multiplicity default show_members_initialization default show_attribute_modifiers default member_max_width 0 show_parameter_dir default show_parameter_name default package_name_in_tab default class_drawing_mode default drawing_language default show_context_mode default auto_label_position default show_relation_modifiers default show_infonote default shadow default show_stereotype_properties default
-  xyz 306 277 2005
+  xyz 312 310 2005
 end
 classcanvas 129539 class_ref 138627 // Severity
   draw_all_relations default hide_attributes default hide_operations yes show_members_full_definition no show_members_visibility default show_members_stereotype default show_members_multiplicity default show_members_initialization default show_attribute_modifiers default member_max_width 0 show_parameter_dir default show_parameter_name default package_name_in_tab default class_drawing_mode default drawing_language default show_context_mode default auto_label_position default show_relation_modifiers default show_infonote default shadow default show_stereotype_properties default
   color mediumyellow
-  xyz 32 172 2005
+  xyz 41 160 2005
 end
 classcanvas 129667 class_ref 138755 // Entry
   draw_all_relations default hide_attributes default hide_operations default show_members_full_definition default show_members_visibility default show_members_stereotype default show_members_multiplicity default show_members_initialization default show_attribute_modifiers default member_max_width 0 show_parameter_dir default show_parameter_name default package_name_in_tab default class_drawing_mode default drawing_language default show_context_mode default auto_label_position default show_relation_modifiers default show_infonote default shadow default show_stereotype_properties default
-  xyz 419 305 2005
+  xyz 431 393 2005
+end
+classcanvas 129923 class_ref 140163 // Builder
+  draw_all_relations default hide_attributes yes hide_operations default show_members_full_definition default show_members_visibility default show_members_stereotype default show_members_multiplicity default show_members_initialization default show_attribute_modifiers default member_max_width 0 show_parameter_dir default show_parameter_name default package_name_in_tab default class_drawing_mode default drawing_language default show_context_mode default auto_label_position default show_relation_modifiers default show_infonote default shadow default show_stereotype_properties default
+  color lightmediumblue
+  xyz 26 39 2005
 end
 relationcanvas 128643 relation_ref 139523 // <realization>
   from ref 128515 z 2006 to ref 128131
@@ -46,13 +51,20 @@ relationcanvas 128899 relation_ref 139651 // <realization>
   no_role_a no_role_b
   no_multiplicity_a no_multiplicity_b
 end
-relationcanvas 129027 relation_ref 139779 // <directional composition>
+relationcanvas 129027 relation_ref 139779 // <composition>
   from ref 128515 z 2006 to ref 128771
   no_role_a no_role_b
-  multiplicity_a_pos 291 297 3000 multiplicity_b_pos 238 273 3000
+  multiplicity_a_pos 301 325 3000 multiplicity_b_pos 281 285 3000
 end
 relationcanvas 129795 relation_ref 140163 // <realization>
   from ref 129667 z 2006 to ref 128387
+  no_role_a no_role_b
+  no_multiplicity_a no_multiplicity_b
+end
+relationcanvas 130051 relation_ref 141443 // <dependency>
+  geometry VH
+  from ref 129923 z 2006 to point 157 248
+  line 130563 z 2006 to ref 128515
   no_role_a no_role_b
   no_multiplicity_a no_multiplicity_b
 end
