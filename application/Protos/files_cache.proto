@@ -1,4 +1,4 @@
-package FileManager;
+package Protos.FileCache;
 
 // All the hashes for a set of file.
 message Hashes {

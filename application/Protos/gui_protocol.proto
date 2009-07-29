@@ -6,7 +6,7 @@
 
 import "common.proto";
 
-package GUINetwork;
+package Protos.GUI;
 
 /***** GUI Common messages *****/
 message Settings {     
@@ -143,8 +143,8 @@ message CancelDownloads {
 // Says to the core to download a file OR a directory (XOR).
 message Download {
    required uint32 IP = 1; // From where the file/dir is.
-   optional Common.DirEntry dir = 1;
-   optional Common.FileEntry file = 2;
+   optional Common.DirEntry dir = 2;
+   optional Common.FileEntry file = 3;
 }
 
 // GUI -> Core
