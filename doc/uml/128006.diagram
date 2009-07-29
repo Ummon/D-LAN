@@ -1,0 +1,61 @@
+format 67
+
+classinstance 128006 class_ref 138115 // ChunkUpdater
+ color mediumyellow  name ""   xyz 279 46 2000 life_line_z 2000
+classinstance 128262 class_ref 129667 // IDownloadManager
+  name ""   xyz 433 49 2000 life_line_z 2000
+classinstance 128390 class_ref 130691 // IChunkDownload
+  name ""   xyz 568 50 2000 life_line_z 2000
+classinstance 129670 class_ref 137987 // UDPListener
+  name ""   xyz 124 43 2000 life_line_z 2000
+note 130182 "Message 'HaveChunks' is sent"
+  xyzwh 190 96 3005 85 59
+note 130566 "Called for each message 'HaveChunksResult' received by 'UDPListener'"
+  xyzwh 178 282 2000 109 82
+note 130822 "Called at the end of the thread loop"
+  xyzwh 370 480 2000 83 73
+note 131206 "ChunkUpdate wait a moment (~1sec)"
+  xyzwh 365 319 2000 80 65
+durationcanvas 128518 classinstance_ref 128006 // :ChunkUpdater
+  color lightmediumgreen
+  xyzwh 311 122 2010 11 337
+  overlappingdurationcanvas 129926
+    xyzwh 317 220 2020 11 25
+  end
+end
+durationcanvas 128646 classinstance_ref 128262 // :IDownloadManager
+  xyzwh 474 125 2010 11 44
+end
+durationcanvas 129414 classinstance_ref 128390 // :IChunkDownload
+  xyzwh 605 413 2010 11 55
+end
+durationcanvas 129798 classinstance_ref 129670 // :UDPListener
+  xyzwh 152 214 2010 11 29
+end
+msg 128774 synchronous
+  from durationcanvas_ref 128518
+  to durationcanvas_ref 128646
+  yz 142 3010 msg operation_ref 132739 // "getUnfinishedChunks(in n : uint32) : QList<IChunkDownload>"
+  show_full_operations_definition default drawing_language default
+  label_xy 355 129
+msg 129542 synchronous
+  from durationcanvas_ref 128518
+  to durationcanvas_ref 129414
+  yz 436 3010 msg operation_ref 131971 // "setIPs(in ips : QList<uint32>) : void"
+  show_full_operations_definition default drawing_language default
+  label_xy 399 425
+msg 130054 synchronous
+  from durationcanvas_ref 129798
+  to durationcanvas_ref 129926
+  yz 225 2025 msg operation_ref 134662 // "addHaveChunksResult(in result : HaveChunksResult) : void"
+  show_full_operations_definition default drawing_language default
+  label_xy 189 213
+line 130310 -_-_ decenter_begin 240
+  from ref 128518 z 3006 to ref 130182
+line 130694 -_-_
+  from ref 130566 z 2026 to ref 130054
+line 130950 -_-_
+  from ref 130822 z 3011 to ref 129542
+line 131334 -_-_
+  from ref 131206 z 2011 to ref 128518
+end

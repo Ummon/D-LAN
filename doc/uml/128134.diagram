@@ -1,0 +1,27 @@
+format 67
+
+classinstance 128006 class_ref 137987 // UDPListener
+  name ""   xyz 175 17 2000 life_line_z 2000
+classinstance 128134 class_ref 129795 // IFileManager
+  name ""   xyz 318 17 2000 life_line_z 2000
+note 128646 "Receive the message 'HaveChunks'"
+  xyzwh 40 33 2000 92 58
+note 128902 "Send the message 'HaveChunkResult'"
+  xyzwh 35 126 2000 113 48
+durationcanvas 128262 classinstance_ref 128006 // :UDPListener
+  xyzwh 203 72 2010 11 73
+end
+durationcanvas 128390 classinstance_ref 128134 // :IFileManager
+  xyzwh 346 91 2010 11 32
+end
+msg 128518 synchronous
+  from durationcanvas_ref 128262
+  to durationcanvas_ref 128390
+  yz 101 2015 msg operation_ref 133251 // "haveChunks(in hashes : QList<Hash>) : QList<bool>"
+  show_full_operations_definition default drawing_language default
+  label_xy 251 89
+line 128774 -_-_ decenter_end 123
+  from ref 128646 z 2011 to ref 128262
+line 129030 -_-_ decenter_begin 495 decenter_end 862
+  from ref 128902 z 2011 to ref 128262
+end
