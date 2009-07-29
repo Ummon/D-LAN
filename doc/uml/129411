@@ -1,7 +1,7 @@
-format 66
+format 67
 "AybabtuCore" // AybabtuCore
-  revision 4
-  modified_by 3 "gburri"
+  revision 6
+  modified_by 6 ""
   // class settings
   //class diagram settings
   draw_all_relations default hide_attributes default hide_operations default show_members_full_definition default show_members_visibility default show_members_stereotype default show_members_multiplicity default show_members_initialization default show_attribute_modifiers default member_max_width 0 show_parameter_dir default show_parameter_name default package_name_in_tab default class_drawing_mode default drawing_language default show_context_mode default auto_label_position default show_relation_modifiers default show_infonote default shadow default show_stereotype_properties default
@@ -42,7 +42,7 @@ format 66
     end
 
     componentdiagram 128003 "components"
-      package_name_in_tab no show_context default auto_label_position default draw_all_relations default shadow default
+      package_name_in_tab no show_context default auto_label_position default draw_all_relations no shadow default
       draw_component_as_icon default show_component_req_prov yes show_component_rea default show_stereotype_properties default
       size A4
     end
@@ -54,6 +54,15 @@ format 66
       end
       required_classes
 	class_ref 129795 // IFileManager
+      end
+      simplerelation 129030
+	-_->
+	  on component_ref 129411 // UploadManager
+      end
+
+      simplerelation 135814
+	-_->
+	  on component_ref 128003 // FileManager
       end
     end
 
@@ -70,6 +79,15 @@ format 66
 	class_ref 129795 // IFileManager
 	class_ref 131331 // IPeer
       end
+      simplerelation 128006
+	-_->
+	  on component_ref 128003 // FileManager
+      end
+
+      simplerelation 128902
+	-_->
+	  on component_ref 128131 // PeerManager
+      end
     end
 
     component 129411 "UploadManager"
@@ -79,6 +97,10 @@ format 66
       required_classes
 	class_ref 130051 // Hash
 	class_ref 130307 // IChunk
+      end
+      simplerelation 128134
+	-_->
+	  on component_ref 128003 // FileManager
       end
     end
 
@@ -94,6 +116,20 @@ format 66
 	class_ref 129795 // IFileManager
 	class_ref 131203 // IPeerManager
       end
+      simplerelation 129158
+	-_->
+	  on component_ref 128003 // FileManager
+      end
+
+      simplerelation 129286
+	-_->
+	  on component_ref 129283 // DownloadManager
+      end
+
+      simplerelation 135942
+	-_->
+	  on component_ref 128131 // PeerManager
+      end
     end
 
     component 129795 "RemoteControlManager"
@@ -101,6 +137,30 @@ format 66
 	class_ref 131587 // IChat
 	class_ref 131459 // INetworkListener
 	class_ref 131715 // ISearch
+      end
+      simplerelation 128262
+	-_->
+	  on component_ref 129667 // NetworkListener
+      end
+
+      simplerelation 128390
+	-_->
+	  on component_ref 128131 // PeerManager
+      end
+
+      simplerelation 128518
+	-_->
+	  on component_ref 128003 // FileManager
+      end
+
+      simplerelation 128646
+	-_->
+	  on component_ref 129283 // DownloadManager
+      end
+
+      simplerelation 128774
+	-_->
+	  on component_ref 129411 // UploadManager
       end
     end
   end
