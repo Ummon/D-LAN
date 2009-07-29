@@ -1,0 +1,50 @@
+format 67
+
+classinstance 128003 class_ref 134403 // RemoteControlManager
+  name ""   xyz 57 32 2000 life_line_z 2000
+classinstance 128131 class_ref 131459 // INetworkListener
+  name ""   xyz 248 31 2000 life_line_z 2000
+classinstance 128643 class_ref 131715 // ISearch
+  name ""   xyz 427 31 2000 life_line_z 2000
+note 129155 "For each peer's answer"
+  xyzwh 147 238 2000 103 52
+note 130051 "After a constant period of time the remote control manager no longer want to listen the signal 'found'."
+  xyzwh 90 386 2031 138 126
+durationcanvas 128259 classinstance_ref 128003 // :RemoteControlManager
+  xyzwh 117 123 2010 11 231
+  overlappingdurationcanvas 128899
+    xyzwh 123 182 2020 11 166
+  end
+end
+durationcanvas 128387 classinstance_ref 128131 // :INetworkListener
+  xyzwh 291 123 2010 11 25
+end
+durationcanvas 128771 classinstance_ref 128643 // :ISearch
+  xyzwh 448 182 2010 11 184
+  overlappingdurationcanvas 129795
+    xyzwh 454 328 2020 11 32
+  end
+end
+msg 128515 synchronous
+  from durationcanvas_ref 128259
+  to durationcanvas_ref 128387
+  yz 132 2015 msg operation_ref 134531 // "search() : ISearch"
+  show_full_operations_definition default drawing_language default
+  label_xy 188 117
+msg 129027 asynchronous
+  from durationcanvas_ref 128771
+  to durationcanvas_ref 128899
+  yz 198 2025 explicitmsg "<<signal>> found()"
+  show_full_operations_definition default drawing_language default
+  label_xy 185 186
+msg 129923 synchronous
+  from durationcanvas_ref 128899
+  to durationcanvas_ref 129795
+  yz 330 2025 explicitmsg "unbind()"
+  show_full_operations_definition default drawing_language default
+  label_xy 243 316
+line 129283 -_-_ decenter_end 342
+  from ref 129155 z 2026 to ref 129027
+line 130179 -_-_ decenter_end 326
+  from ref 130051 z 2026 to ref 129923
+end

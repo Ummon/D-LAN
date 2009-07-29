@@ -9,10 +9,10 @@ note 128646 "Receive the message 'HaveChunks'"
 note 128902 "Send the message 'HaveChunkResult'"
   xyzwh 35 126 2000 113 48
 durationcanvas 128262 classinstance_ref 128006 // :UDPListener
-  xyzwh 203 72 2010 11 73
+  xyzwh 208 72 2010 11 73
 end
 durationcanvas 128390 classinstance_ref 128134 // :IFileManager
-  xyzwh 346 91 2010 11 32
+  xyzwh 351 91 2010 11 32
 end
 msg 128518 synchronous
   from durationcanvas_ref 128262
@@ -22,6 +22,6 @@ msg 128518 synchronous
   label_xy 251 89
 line 128774 -_-_ decenter_end 123
   from ref 128646 z 2011 to ref 128262
-line 129030 -_-_ decenter_begin 495 decenter_end 862
+line 129030 -_-_ decenter_begin 495 decenter_end 861
   from ref 128902 z 2011 to ref 128262
 end
