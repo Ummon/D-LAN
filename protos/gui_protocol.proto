@@ -105,13 +105,13 @@ message SetSettings {
 
 // GUI -> Core
 message Search  {
-   required uint32 searchID = 1;
+   required uint32 tag = 1;
    required string pattern = 2;
 }
 // Core -> GUI
 // This message is sent for each UDP datagram received.
 message SearchResult {
-   required uint32 searchID = 1;
+   required uint32 tag = 1;
    required uint32 IP = 2; // IP of the peer.
    required Common.FindResult result = 3; // Encapsulate the received result.
 }

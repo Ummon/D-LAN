@@ -1,0 +1,30 @@
+format 66
+
+packagecanvas 128003 
+  package_ref 129283 // AybabtuCommon
+    xyzwh 79 102 2000 279 150
+end
+classcanvas 128131 class_ref 130051 // Hash
+  draw_all_relations default hide_attributes default hide_operations default show_members_full_definition default show_members_visibility default show_members_stereotype default show_members_multiplicity default show_members_initialization default show_attribute_modifiers default member_max_width 0 show_parameter_dir default show_parameter_name default package_name_in_tab default class_drawing_mode default drawing_language default show_context_mode default auto_label_position default show_relation_modifiers default show_infonote default shadow default show_stereotype_properties default
+  xyz 138 150 2005
+end
+classcanvas 128643 class_ref 134787 // QByteArray
+  draw_all_relations default hide_attributes default hide_operations default show_members_full_definition default show_members_visibility default show_members_stereotype default show_members_multiplicity default show_members_initialization default show_attribute_modifiers default member_max_width 0 show_parameter_dir default show_parameter_name default package_name_in_tab default class_drawing_mode default drawing_language default show_context_mode default auto_label_position default show_relation_modifiers default show_infonote default shadow default show_stereotype_properties default
+  xyz 128 42 2000
+end
+classcanvas 128899 class_ref 135299 // Hashes
+  draw_all_relations default hide_attributes default hide_operations default show_members_full_definition default show_members_visibility default show_members_stereotype default show_members_multiplicity default show_members_initialization default show_attribute_modifiers default member_max_width 0 show_parameter_dir default show_parameter_name default package_name_in_tab default class_drawing_mode default drawing_language default show_context_mode default auto_label_position default show_relation_modifiers default show_infonote default shadow default show_stereotype_properties default
+  xyz 276 150 2005
+end
+relationcanvas 128771 relation_ref 134403 // <generalisation>
+  decenter_begin 577
+  from ref 128131 z 2006 to ref 128643
+  no_role_a no_role_b
+  no_multiplicity_a no_multiplicity_b
+end
+relationcanvas 129027 relation_ref 134531 // <directional composition>
+  from ref 128899 z 2006 to ref 128131
+  no_role_a no_role_b
+  multiplicity_a_pos 192 176 3000 no_multiplicity_b
+end
+end
