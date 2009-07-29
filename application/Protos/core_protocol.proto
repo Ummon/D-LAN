@@ -6,7 +6,7 @@
 
 import "common.proto";
 
-package Network;
+package Protos.Core;
 
 /***** Multicast UDP messages. *****/
 // Have chunks ?
@@ -20,7 +20,7 @@ message HaveChunks {
    required string nick = 2;
    required uint64 amount = 3; // [byte] Amount of sharing.
    
-   optional utin32 tag = 4; // A random number, all results must repeate this number.
+   optional uint32 tag = 4; // A random number, all results must repeate this number.
    repeated Common.Hash chunks = 5; // Can be empty.
 }
 // This message is only sent if some chunks are requested.

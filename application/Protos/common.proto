@@ -4,7 +4,7 @@
   * All string are encoded in UTF-8.
   */
 
-package Common;
+package Protos.Common;
 
 // For identify a chunk or a user.
 message Hash {
