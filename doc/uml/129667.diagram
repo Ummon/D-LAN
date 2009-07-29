@@ -39,11 +39,11 @@ end
 relationcanvas 128899 relation_ref 131715 // <directional composition>
   from ref 128387 z 2006 to ref 128643
   no_role_a no_role_b
-  multiplicity_a_pos 406 401 3000 no_multiplicity_b
+  multiplicity_a_pos 406 390 3000 no_multiplicity_b
 end
 relationcanvas 129155 relation_ref 134275 // connection pool
   from ref 128643 z 2006 label "connection pool" italic xyz 625 297 2006 to ref 129027
   no_role_a no_role_b
-  multiplicity_a_pos 756 272 3000 no_multiplicity_b
+  multiplicity_a_pos 756 266 3000 no_multiplicity_b
 end
 end

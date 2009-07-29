@@ -1,6 +1,6 @@
 format 67
 "UploadManager" // AybabtuCore::UploadManager
-  revision 4
+  revision 5
   modified_by 6 ""
   // class settings
   //class diagram settings

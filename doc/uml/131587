@@ -1,7 +1,7 @@
-format 66
+format 67
 "AybabtuProtos" // AybabtuProtos
-  revision 2
-  modified_by 3 "gburri"
+  revision 3
+  modified_by 6 ""
   // class settings
   //class diagram settings
   draw_all_relations default hide_attributes default hide_operations default show_members_full_definition default show_members_visibility default show_members_stereotype default show_members_multiplicity default show_members_initialization default show_attribute_modifiers default member_max_width 0 show_parameter_dir default show_parameter_name default package_name_in_tab default class_drawing_mode default drawing_language default show_context_mode default auto_label_position default show_relation_modifiers default show_infonote default shadow default show_stereotype_properties default
@@ -54,13 +54,6 @@ ${inlines}
       idl_decl ""
       explicit_switch_type ""
       
-      classrelation 140547 // <realization>
-	relation 140035 -_-|>
-	  a public
-	    cpp default "${type}"
-	    classrelation_ref 140547 // <realization>
-	  b parent class_ref 132227 // IEntry
-      end
     end
 
     class 135043 "FileEntry"
@@ -120,6 +113,20 @@ ${inlines}
     end
 
     class 137603 "FindResult"
+      visibility package 
+      cpp_decl "${comment}${template}class ${name}${inherit} {
+${members}};
+${inlines}
+"
+      java_decl ""
+      php_decl ""
+      python_2_2 python_decl ""
+      idl_decl ""
+      explicit_switch_type ""
+      
+    end
+
+    class 134662 "HaveChunksResult"
       visibility package 
       cpp_decl "${comment}${template}class ${name}${inherit} {
 ${members}};
