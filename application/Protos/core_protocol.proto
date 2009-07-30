@@ -17,11 +17,12 @@ package Protos.Core;
 // a -> all
 message HaveChunks {
    required uint32 version = 1; // The version of the protocol used.
-   required string nick = 2;
-   required uint64 amount = 3; // [byte] Amount of sharing.
+   required Common.Hash peerID = 2;
+   required string nick = 3;
+   required uint64 amount = 4; // [byte] Amount of sharing.
    
-   optional uint32 tag = 4; // A random number, all results must repeate this number.
-   repeated Common.Hash chunks = 5; // Can be empty.
+   optional uint32 tag = 5; // A random number, all results must repeate this number.
+   repeated Common.Hash chunks = 6; // Can be empty.
 }
 // This message is only sent if some chunks are requested.
 // Return an array with a bool value for each
@@ -29,11 +30,13 @@ message HaveChunks {
 // all -> a
 message HaveChunksResult {
    required uint32 tag = 1; // The repeated number.
-   repeated bool chunkStates = 2; // The array size must have the same size of HaveChunks.chunks.
+   required Common.Hash peerID = 2;
+   repeated bool chunkStates = 3; // The array size must have the same size of HaveChunks.chunks.
 }
 
 // a -> all
 message ChatMessage {
+   required Common.Hash peerID = 1;
    required string message = 2;
 }
 
@@ -42,7 +45,8 @@ message ChatMessage {
 // a -> all
 message Find {
    required uint32 tag = 1; // A tag to identify the search. All answers must have the same tag.
-   required string pattern = 2;
+   required Common.Hash peerID = 2;
+   required string pattern = 3;
 }
 // all -> a
 // The size of this message must fit in a UDP packet so it must not exeed 65'507 bytes.

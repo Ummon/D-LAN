@@ -23,7 +23,7 @@ message Settings {
 // The size of this message should be lesser than 63kB to fit in one IP packet.
 message State {
    message Peer {
-      required uint32 peerID = 1;
+      required Common.Hash peerID = 1;
       required string nick = 2;
       required uint64 sharingAmount = 3;
    }
@@ -48,7 +48,7 @@ message State {
       required uint32 currentPart = 3;
       required uint32 nbPart = 4;
       required uint32 progress = 5; // 0 to 100
-      required uint32 peerID = 6;
+      required Common.Hash peerID = 6;
    }
    message Stats {
       enum HashingStatus {
@@ -112,13 +112,13 @@ message Search  {
 // This message is sent for each UDP datagram received.
 message SearchResult {
    required uint32 tag = 1;
-   required uint32 peerID = 2; // ID of the peer.
+   required Common.Hash peerID = 2; // ID of the peer.
    required Common.FindResult result = 3; // Encapsulate the received result.
 }
 
 // GUI -> Core
 message Browse {
-   required uint32 peerID = 1;
+   required Common.Hash peerID = 1;
    required Common.DirEntry dirEntry = 2;
 }
 // Core -> GUI
@@ -142,7 +142,7 @@ message CancelDownloads {
 // GUI -> Core
 // Says to the core to download a file OR a directory (XOR).
 message Download {
-   required uint32 peerID = 1; // From where the file/dir is.
+   required Common.Hash peerID = 1; // From where the file/dir is.
    optional Common.DirEntry dir = 2;
    optional Common.FileEntry file = 3;
 }

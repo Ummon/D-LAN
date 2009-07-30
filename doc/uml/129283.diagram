@@ -78,7 +78,7 @@ relationcanvas 129539 relation_ref 135939 // <generalisation>
   no_multiplicity_a no_multiplicity_b
 end
 relationcanvas 129667 relation_ref 136067 // <directional composition>
-  from ref 128259 z 2006 stereotype "<<list>>" xyz 199.5 252 3000 to ref 129155
+  from ref 128259 z 2006 stereotype "<<list>>" xyz 199 252 3000 to ref 129155
   no_role_a no_role_b
   multiplicity_a_pos 298 270 3000 multiplicity_b_pos 132 241 3000
 end
@@ -105,10 +105,10 @@ relationcanvas 131075 relation_ref 136579 // <composition>
 end
 relationcanvas 131203 relation_ref 136707 // <directional aggregation>
   geometry VH
-  from ref 130307 z 2006 to point 339 622
+  from ref 130307 z 2006 to point 345 626
   line 132355 z 2006 to ref 130691
   no_role_a no_role_b
-  multiplicity_a_pos 726 630 3000 multiplicity_b_pos 327 574 3000
+  multiplicity_a_pos 725 635 3000 multiplicity_b_pos 333 579 3000
 end
 relationcanvas 131331 relation_ref 136835 // <directional aggregation>
   decenter_begin 910
@@ -128,7 +128,7 @@ relationcanvas 131587 relation_ref 137091 // <realization>
 end
 relationcanvas 131715 relation_ref 137219 // <realization>
   geometry HV
-  from ref 130307 z 2006 to point 588 549
+  from ref 130307 z 2006 to point 624 551
   line 131843 z 2006 to ref 128515
   no_role_a no_role_b
   no_multiplicity_a no_multiplicity_b
