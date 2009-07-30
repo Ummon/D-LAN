@@ -13,8 +13,8 @@ message Hash {
 
 // Used for a directory or a file.
 message Entry {
-   required string path = 1; // Absolute path. For example : "D:\My Videos\My cat"
-   required string name = 2; // Directory name or file name. For example : "MyLOLCat.avi"
+   required string path = 1; // Absolute path. For example : "D:\My Videos\My cat".
+   required string name = 2; // Directory name or file name. For example : "MyLOLCat.avi".
    required uint64 size = 3; // [bytes].
 }
 
@@ -39,6 +39,7 @@ message FindResult {
       required FileEntry dir = 2;
    }
    required uint64 tag = 1;
-   repeated DirEntryLevel dirs = 2;
-   repeated FileEntryLevel files = 3;
+   required Common.Hash peerID = 2;
+   repeated DirEntryLevel dirs = 3;
+   repeated FileEntryLevel files = 4;
 }

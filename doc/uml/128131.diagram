@@ -41,6 +41,7 @@ classcanvas 132867 class_ref 130563 // IFile
 end
 classcanvas 133251 class_ref 132995 // QHash
   draw_all_relations default hide_attributes default hide_operations default show_members_full_definition default show_members_visibility default show_members_stereotype default show_members_multiplicity default show_members_initialization default show_attribute_modifiers default member_max_width 0 show_parameter_dir default show_parameter_name default package_name_in_tab default class_drawing_mode default drawing_language default show_context_mode default auto_label_position default show_relation_modifiers default show_infonote default shadow default show_stereotype_properties default
+  color lightmediumblue
   xyz 677 310 2000
 end
 classcanvas 133507 class_ref 134147 // FileUpdater
@@ -49,6 +50,7 @@ classcanvas 133507 class_ref 134147 // FileUpdater
 end
 classcanvas 133763 class_ref 132483 // QThread
   draw_all_relations default hide_attributes default hide_operations default show_members_full_definition default show_members_visibility default show_members_stereotype default show_members_multiplicity default show_members_initialization default show_attribute_modifiers default member_max_width 0 show_parameter_dir default show_parameter_name default package_name_in_tab default class_drawing_mode default drawing_language default show_context_mode default auto_label_position default show_relation_modifiers default show_infonote default shadow default show_stereotype_properties default
+  color lightmediumblue
   xyz 666 192 2000
 end
 classcanvas 134147 class_ref 137219 // WordIndex
@@ -72,11 +74,11 @@ end
 relationcanvas 129283 relation_ref 128259 // Sub
   decenter_begin 172
   decenter_end 647
-  from ref 128131 z 2001 label "Sub" italic xyz 190.5 447.5 2001 to point 201 444
+  from ref 128131 z 2001 label "Sub" italic xyz 190 447 2001 to point 201 444
   line 129411 z 2001 to point 201 466
   line 129539 z 2001 to ref 128131
   no_role_a no_role_b
-  multiplicity_a_pos 240 472 3000 multiplicity_b_pos 239 452 3000
+  multiplicity_a_pos 240 478 3000 multiplicity_b_pos 238 454 3000
 end
 relationcanvas 130179 relation_ref 128387 // Files
   from ref 128131 z 2001 label "Files" italic xyz 285 554 2001 to ref 128003
@@ -139,9 +141,9 @@ relationcanvas 134275 relation_ref 137347 // <directional composition>
 end
 relationcanvas 134403 relation_ref 137475 // <directional composition>
   geometry VHr
-  from ref 128259 z 2001 to point 55 327
+  from ref 128259 z 2001 to point 58 329
   line 134531 z 2001 to ref 134147
   no_role_a no_role_b
-  multiplicity_a_pos 42 626 3000 multiplicity_b_pos 198 335 3000
+  multiplicity_a_pos 44 622 3000 multiplicity_b_pos 197 338 3000
 end
 end
