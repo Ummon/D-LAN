@@ -1,6 +1,6 @@
 format 67
-"DownloadManager" // AybabtuCore::DownloadManager
-  revision 5
+"DownloadManager" // Aybabtu::Core::DownloadManager
+  revision 6
   modified_by 6 ""
   // class settings
   //class diagram settings

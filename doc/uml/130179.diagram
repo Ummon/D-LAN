@@ -1,4 +1,4 @@
-format 66
+format 67
 
 packagecanvas 128003 
   package_ref 129667 // LogManager
@@ -39,7 +39,7 @@ end
 classcanvas 129923 class_ref 140163 // Builder
   draw_all_relations default hide_attributes yes hide_operations default show_members_full_definition default show_members_visibility default show_members_stereotype default show_members_multiplicity default show_members_initialization default show_attribute_modifiers default member_max_width 0 show_parameter_dir default show_parameter_name default package_name_in_tab default class_drawing_mode default drawing_language default show_context_mode default auto_label_position default show_relation_modifiers default show_infonote default shadow default show_stereotype_properties default
   color lightmediumblue
-  xyz 26 39 2005
+  xyz 25 38 2005
 end
 relationcanvas 128643 relation_ref 139523 // <realization>
   from ref 128515 z 2006 to ref 128131
@@ -54,7 +54,7 @@ end
 relationcanvas 129027 relation_ref 139779 // <composition>
   from ref 128515 z 2006 to ref 128771
   no_role_a no_role_b
-  multiplicity_a_pos 301 325 3000 multiplicity_b_pos 281 285 3000
+  multiplicity_a_pos 299 324 3000 multiplicity_b_pos 275 280 3000
 end
 relationcanvas 129795 relation_ref 140163 // <realization>
   from ref 129667 z 2006 to ref 128387
@@ -63,7 +63,7 @@ relationcanvas 129795 relation_ref 140163 // <realization>
 end
 relationcanvas 130051 relation_ref 141443 // <dependency>
   geometry VH
-  from ref 129923 z 2006 to point 157 248
+  from ref 129923 z 2006 to point 137 246
   line 130563 z 2006 to ref 128515
   no_role_a no_role_b
   no_multiplicity_a no_multiplicity_b

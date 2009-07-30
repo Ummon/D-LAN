@@ -1,8 +1,8 @@
 format 67
 "uml"
-  revision 6
-  modified_by 3 "gburri"
-  cpp_root_dir "../../src/"
+  revision 7
+  modified_by 6 ""
+  cpp_root_dir "e:/tmp/gen_cpp/"
 
 
   
@@ -39,13 +39,7 @@ format 67
   
   ncouples 1
   key "html dir" value "/tmp/"
-  package_ref 129283 // AybabtuCommon
-
-  package_ref 129411 // AybabtuCore
-
-  package_ref 130435 // AybabtuGUI
-
-  package_ref 131587 // AybabtuProtos
+  package_ref 128006 // Aybabtu
 
   package_ref 130307 // Qt
 
