@@ -1,6 +1,6 @@
 format 67
-"GUI" // Aybabtu::GUI
-  revision 2
+"Aybabtu" // Aybabtu
+  revision 1
   modified_by 6 ""
   // class settings
   //class diagram settings
@@ -26,4 +26,11 @@ format 67
   package_name_in_tab default show_context default show_opaque_action_definition default auto_label_position default write_flow_label_horizontally default draw_all_relations default shadow default
   show_infonote default drawing_language default show_stereotype_properties default
   
+  package_ref 129411 // Core
+
+  package_ref 130435 // GUI
+
+  package_ref 131587 // Protos
+
+  package_ref 129283 // Common
 end
