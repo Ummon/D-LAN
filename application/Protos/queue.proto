@@ -1,0 +1,43 @@
+ /**
+  * The persisted queued.
+  * The entry status is not saved, it's defined during the download process.
+  * Version : 1
+  * All string are encoded in UTF-8.
+  */
+
+import "common.proto";
+
+package Protos.Queue;
+
+message Queue {
+   message LocalEntry {
+      required Common.Entry file = 1; // We don't use 'FileEntry' because we don't need hashes information.
+   }
+   
+   // A remote entry is a directory or a file (XOR).
+   message RemoteEntry {
+      required Common.Hash peerID = 1;
+      optional Common.Entry dir = 2;
+      optional Common.Entry file = 3;
+   }   
+   
+   // A queued entry can be remote or local. 
+   // Here is the associated status :
+   // (see the meaning of each status here : http://dev.euphorik.ch/wiki/pmp/Functional_definition#The-download-window).
+   // remote :
+   //  * 'Initializing' (the file is not created until the hashes are not received)
+   //  * 'Not found'
+   //  * 'Unknown peer'
+   //  * 'Queued'
+   // local :
+   //  * 'Completed'
+   //  * 'No source' (we've got the hashes)
+   //  * 'Downloading'
+   message Entry {
+      optional LocalEntry localEntry = 1;
+      optional RemoteEntry remoteEntry = 2;
+   }
+   
+   required uint32 version = 1;
+   repeated Entry entries = 2;
+}

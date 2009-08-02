@@ -1,19 +1,23 @@
+/**
+  * The persisted hashes.
+  * Version : 1
+  * All string are encoded in UTF-8.
+  */
+
+import "common.proto";
+
 package Protos.FileCache;
 
 // All the hashes for a set of file.
 message Hashes {
-   message Chunk {
-      required bytes sha1 = 1;
-   }
-
    message File {
       required string filename = 1;
       required uint64 size = 2;
-      repeated Chunk chunks = 3;
+      repeated Common.Hash hashes = 3;
    }
 
    message Dir {
-      required string path = 1;
+      required Common.DirEntry dir = 1;
       repeated File files = 2;
    }
    
