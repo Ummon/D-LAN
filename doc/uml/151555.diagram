@@ -1,0 +1,38 @@
+format 67
+
+classinstance 128003 class_ref 134403 // RemoteControlManager
+  name ""   xyz 26 12 2000 life_line_z 2000
+classinstance 128131 class_ref 131331 // IPeer
+  name ""   xyz 259 4 2000 life_line_z 2000
+classinstance 128771 class_ref 160131 // IGetEntries
+  name ""   xyz 363 4 2000 life_line_z 2000
+durationcanvas 128259 classinstance_ref 128003 // :RemoteControlManager
+  xyzwh 86 97 2010 11 40
+end
+durationcanvas 128387 classinstance_ref 128131 // :IPeer
+  xyzwh 278 97 2010 11 27
+end
+durationcanvas 128899 classinstance_ref 128771 // :IGetEntries
+  xyzwh 392 163 2010 11 43
+end
+durationcanvas 129027 classinstance_ref 128003 // :RemoteControlManager
+  xyzwh 86 163 2010 11 28
+end
+msg 128515 synchronous
+  from durationcanvas_ref 128259
+  to durationcanvas_ref 128387
+  yz 97 2015 msg operation_ref 157571 // "getEntries(in dir : DirEntry) : IGetEntries"
+  show_full_operations_definition default drawing_language default
+  label_xy 158 82
+msg 128643 return
+  from durationcanvas_ref 128387
+  to durationcanvas_ref 128259
+  yz 113 2015 unspecifiedmsg
+  show_full_operations_definition default drawing_language default
+msg 129155 asynchronous
+  from durationcanvas_ref 128899
+  to durationcanvas_ref 129027
+  yz 172 2015 explicitmsg "<<signal>> result"
+  show_full_operations_definition default drawing_language default
+  label_xy 148 156
+end

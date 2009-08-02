@@ -1,6 +1,6 @@
 format 67
 "DownloadManager" // Aybabtu::Core::DownloadManager
-  revision 7
+  revision 9
   modified_by 3 "gburri"
   // class settings
   //class diagram settings
@@ -43,7 +43,7 @@ format 67
     package_name_in_tab default show_context default show_opaque_action_definition default auto_label_position default write_flow_label_horizontally default draw_all_relations default shadow default
     show_infonote default drawing_language default show_stereotype_properties default
     classdiagram 129283 "classes"
-      draw_all_relations default hide_attributes default hide_operations default show_members_full_definition default show_members_visibility default show_members_stereotype default show_members_multiplicity default show_members_initialization default show_attribute_modifiers default member_max_width 0 show_parameter_dir default show_parameter_name default package_name_in_tab default class_drawing_mode default drawing_language default show_context_mode default auto_label_position default show_relation_modifiers default show_infonote default shadow default show_stereotype_properties default
+      draw_all_relations no hide_attributes default hide_operations default show_members_full_definition default show_members_visibility default show_members_stereotype default show_members_multiplicity default show_members_initialization default show_attribute_modifiers default member_max_width 0 show_parameter_dir default show_parameter_name default package_name_in_tab default class_drawing_mode default drawing_language default show_context_mode default auto_label_position default show_relation_modifiers default show_infonote default shadow default show_stereotype_properties default
       size A4
     end
 
@@ -127,11 +127,11 @@ ${inlines}
 
       classrelation 136707 // <composition>
 	relation 136579 *---
-	  a role_name "" private
+	  a role_name "" multiplicity "*" private
 	    cpp default "    ${comment}${static}${mutable}${volatile}${const}${type} ${name}${value};
 "
 	    classrelation_ref 136707 // <composition>
-	  b role_name "" private
+	  b role_name "" multiplicity "1" private
 	    cpp default "    ${comment}${static}${mutable}${volatile}${const}${type} ${name}${value};
 "
 	    classrelation_ref 136835 // <composition>
@@ -298,6 +298,16 @@ ${inlines}
 	    classrelation_ref 137219 // <directional aggregation>
 	  b multiplicity "0..1" parent class_ref 130563 // IFile
       end
+
+      attribute 153091 "remoteEntry"
+	private type class_ref 135043 // FileEntry
+	cpp_decl "    ${comment}${static}${mutable}${volatile}${const}${type} ${name}${value};
+"
+	java_decl ""
+	php_decl ""
+	python_decl ""
+	idl_decl ""
+      end
     end
 
     class 136579 "Download"
@@ -348,6 +358,16 @@ ${inlines}
 	    cpp default "${type}"
 	    classrelation_ref 136067 // <generalisation>
 	  b parent class_ref 136579 // Download
+      end
+
+      attribute 153219 "remoteEntry"
+	private type class_ref 135171 // DirEntry
+	cpp_decl "    ${comment}${static}${mutable}${volatile}${const}${type} ${name}${value};
+"
+	java_decl ""
+	php_decl ""
+	python_decl ""
+	idl_decl ""
       end
     end
 
@@ -413,6 +433,14 @@ ${inlines}
 
       classrelation 136835 // <composition>
 	relation_ref 136579 // <composition>
+      end
+
+      classrelation 156419 // <generalisation>
+	relation 155779 ---|>
+	  a public
+	    cpp default "${type}"
+	    classrelation_ref 156419 // <generalisation>
+	  b parent class_ref 132483 // QThread
       end
     end
 

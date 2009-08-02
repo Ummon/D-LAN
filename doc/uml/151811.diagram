@@ -1,0 +1,39 @@
+format 67
+
+classinstance 128003 class_ref 136835 // ChunkDownload
+  name ""   xyz 61 7 2000 life_line_z 2000
+classinstance 128643 class_ref 130307 // IChunk
+  name ""   xyz 349 4 2000 life_line_z 2000
+classinstance 128771 class_ref 131331 // IPeer
+  name ""   xyz 239 4 2000 life_line_z 2000
+durationcanvas 128899 classinstance_ref 128003 // :ChunkDownload
+  xyzwh 103 84 2010 11 105
+  overlappingdurationcanvas 129283
+    xyzwh 109 107 2020 11 25
+  end
+end
+durationcanvas 129027 classinstance_ref 128771 // :IPeer
+  xyzwh 258 85 2010 11 50
+end
+durationcanvas 129539 classinstance_ref 128643 // :IChunk
+  xyzwh 368 155 2010 11 34
+end
+msg 129155 synchronous
+  from durationcanvas_ref 128899
+  to durationcanvas_ref 129027
+  yz 86 2015 msg operation_ref 129667 // "send(in data : QByteArray) : void"
+  show_full_operations_definition default drawing_language default
+  label_xy 169 71
+msg 129411 asynchronous
+  from durationcanvas_ref 129027
+  to durationcanvas_ref 129283
+  yz 107 2025 explicitmsg "<<signal>> received()"
+  show_full_operations_definition default drawing_language default
+  label_xy 136 92
+msg 129667 synchronous
+  from durationcanvas_ref 128899
+  to durationcanvas_ref 129539
+  yz 167 2015 msg operation_ref 134019 // "write(in offset : uint32, in data : QByteArray) : void"
+  show_full_operations_definition default drawing_language default
+  label_xy 176 149
+end

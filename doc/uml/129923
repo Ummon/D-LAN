@@ -1,6 +1,6 @@
 format 67
 "NetworkListener" // Aybabtu::Core::NetworkListener
-  revision 6
+  revision 7
   modified_by 3 "gburri"
   // class settings
   //class diagram settings
@@ -273,13 +273,6 @@ ${inlines}
       idl_decl ""
       explicit_switch_type ""
       
-      classrelation 138499 // <generalisation>
-	relation 138243 ---|>
-	  a public
-	    cpp default "${type}"
-	    classrelation_ref 138499 // <generalisation>
-	  b parent class_ref 132483 // QThread
-      end
     end
 
     class 137987 "UDPListener"
@@ -294,14 +287,6 @@ ${inlines}
       idl_decl ""
       explicit_switch_type ""
       
-      classrelation 138371 // <generalisation>
-	relation 138115 ---|>
-	  a public
-	    cpp default "${type}"
-	    classrelation_ref 138371 // <generalisation>
-	  b parent class_ref 132483 // QThread
-      end
-
       operation 143875 "newChatMessage"
 	stereotype "signal"
 	package explicit_return_type "void"
@@ -364,14 +349,6 @@ ${inlines}
       idl_decl ""
       explicit_switch_type ""
       
-      classrelation 138627 // <generalisation>
-	relation 138371 ---|>
-	  a public
-	    cpp default "${type}"
-	    classrelation_ref 138627 // <generalisation>
-	  b parent class_ref 132483 // QThread
-      end
-
       classrelation 135046 // <directional aggregation>
 	relation 135046 o-->
 	  a role_name "" private

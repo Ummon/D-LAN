@@ -1,0 +1,28 @@
+format 67
+
+classinstance 128003 class_ref 129923 // DownloadManager
+  name ""   xyz 83 16 2000 life_line_z 2000
+classinstance 128131 class_ref 131331 // IPeer
+  name ""   xyz 274 16 2000 life_line_z 2000
+note 128643 "The message 'GetHashes' is sent to the peer and a respond is waited in a synchronous manner."
+  xyzwh 362 126 2000 161 89
+durationcanvas 128259 classinstance_ref 128003 // :DownloadManager
+  xyzwh 130 122 2010 11 87
+end
+durationcanvas 128387 classinstance_ref 128131 // :IPeer
+  xyzwh 293 122 2010 11 89
+end
+msg 128515 synchronous
+  from durationcanvas_ref 128259
+  to durationcanvas_ref 128387
+  yz 127 2015 msg operation_ref 129923 // "getHashes(in file : FileEntry) : Hashes"
+  show_full_operations_definition default drawing_language default
+  label_xy 194 112
+msg 128771 return
+  from durationcanvas_ref 128387
+  to durationcanvas_ref 128259
+  yz 196 2015 unspecifiedmsg
+  show_full_operations_definition default drawing_language default
+line 128899 -_-_
+  from ref 128387 z 2011 to ref 128643
+end

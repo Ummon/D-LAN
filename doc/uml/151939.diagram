@@ -1,0 +1,63 @@
+format 67
+
+classinstance 128003 class_ref 132739 // Peer
+  name ""   xyz 135 4 2000 life_line_z 2000
+classinstance 128131 class_ref 131331 // IPeer
+  name ""   xyz 34 4 2000 life_line_z 2000
+classinstance 128259 class_ref 131075 // UploadManager
+  name ""   xyz 266 4 2000 life_line_z 2000
+classinstance 128771 class_ref 132355 // Uploader
+  name ""   xyz 395 4 2000 life_line_z 2000
+classinstance 129155 class_ref 130307 // IChunk
+  name ""   xyz 619 4 2000 life_line_z 2000
+classinstance 129283 class_ref 129795 // IFileManager
+  name ""   xyz 494 4 2000 life_line_z 2000
+durationcanvas 128387 classinstance_ref 128003 // :Peer
+  xyzwh 154 70 2010 11 40
+end
+durationcanvas 128515 classinstance_ref 128259 // :UploadManager
+  xyzwh 306 70 2010 11 39
+end
+durationcanvas 128899 classinstance_ref 128771 // :Uploader
+  xyzwh 419 91 2010 11 125
+end
+durationcanvas 129411 classinstance_ref 129283 // :IFileManager
+  xyzwh 527 106 2010 11 25
+end
+durationcanvas 129667 classinstance_ref 129155 // :IChunk
+  xyzwh 638 152 2010 11 25
+end
+durationcanvas 129923 classinstance_ref 128131 // :IPeer
+  xyzwh 53 175 2010 11 25
+end
+msg 128643 asynchronous
+  from durationcanvas_ref 128387
+  to durationcanvas_ref 128515
+  yz 72 2015 explicitmsg "<<signal>> newUpload"
+  show_full_operations_definition default drawing_language default
+  label_xy 180 57
+msg 129027 synchronous
+  from durationcanvas_ref 128515
+  to durationcanvas_ref 128899
+  yz 91 2020 explicitmsg "<<new>>"
+  show_full_operations_definition default drawing_language default
+  label_xy 345 76
+msg 129539 synchronous
+  from durationcanvas_ref 128899
+  to durationcanvas_ref 129411
+  yz 106 2025 msg operation_ref 128003 // "getChunk(in hash : Hash) : IChunk"
+  show_full_operations_definition default drawing_language default
+  label_xy 450 91
+msg 129795 synchronous
+  from durationcanvas_ref 128899
+  to durationcanvas_ref 129667
+  yz 152 2015 msg operation_ref 133891 // "read(in offset : uint32, out data : QByteArray) : void"
+  show_full_operations_definition default drawing_language default
+  label_xy 545 139
+msg 130051 synchronous
+  from durationcanvas_ref 128899
+  to durationcanvas_ref 129923
+  yz 175 2020 msg operation_ref 129667 // "send(in data : QByteArray) : void"
+  show_full_operations_definition default drawing_language default
+  label_xy 224 160
+end

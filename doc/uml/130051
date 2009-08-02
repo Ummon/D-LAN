@@ -1,6 +1,6 @@
-format 66
-"RemoteControlManager" // AybabtuCore::RemoteControlManager
-  revision 3
+format 67
+"RemoteControlManager" // Aybabtu::Core::RemoteControlManager
+  revision 4
   modified_by 3 "gburri"
   // class settings
   //class diagram settings
@@ -157,14 +157,6 @@ ${inlines}
       idl_decl ""
       explicit_switch_type ""
       
-      classrelation 138755 // <generalisation>
-	relation 138499 ---|>
-	  a public
-	    cpp default "${type}"
-	    classrelation_ref 138755 // <generalisation>
-	  b parent class_ref 132483 // QThread
-      end
-
       classrelation 139267 // <composition>
 	relation_ref 138755 // <composition>
       end
