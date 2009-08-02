@@ -1,6 +1,6 @@
-format 66
+format 67
 "std" // std
-  revision 1
+  revision 2
   modified_by 3 "gburri"
   // class settings
   //class diagram settings

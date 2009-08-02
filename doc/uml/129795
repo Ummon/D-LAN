@@ -1,6 +1,6 @@
 format 67
 "PeerManager" // Aybabtu::Core::PeerManager
-  revision 7
+  revision 8
   modified_by 3 "gburri"
   // class settings
   //class diagram settings
@@ -348,10 +348,25 @@ ${members}};
 	
       end
 
-      operation 129923 "hashes"
+      operation 129923 "getHashes"
 	public return_type class_ref 135299 // Hashes
 	nparams 1
 	  param in name "file" type class_ref 135043 // FileEntry
+	cpp_decl "    ${comment}${friend}${static}${inline}${virtual}${type} ${name}${(}const ${t0} & ${p0}${)}${const}${volatile}${throw}${abstract};
+"
+	cpp_def "${comment}${inline}${type} ${class}::${name}${(}const ${t0} & ${p0}${)}${const}${volatile}${throw}${staticnl}{
+  ${body}}
+"
+	
+	
+	
+	
+      end
+
+      operation 157571 "getEntries"
+	public return_type class_ref 160131 // IGetEntries
+	nparams 1
+	  param in name "dir" type class_ref 135171 // DirEntry
 	cpp_decl "    ${comment}${friend}${static}${inline}${virtual}${type} ${name}${(}const ${t0} & ${p0}${)}${const}${volatile}${throw}${abstract};
 "
 	cpp_def "${comment}${inline}${type} ${class}::${name}${(}const ${t0} & ${p0}${)}${const}${volatile}${throw}${staticnl}{
@@ -411,6 +426,41 @@ ${inlines}
 	php_decl ""
 	python_decl ""
 	idl_decl ""
+      end
+    end
+
+    class 160131 "IGetEntries"
+      abstract visibility package stereotype "interface"
+      cpp_decl "${comment}${template}class ${name}${inherit} {
+${members}};
+${inlines}
+"
+      java_decl "${comment}${@}${visibility}interface ${name}${extends} {
+${members}}
+"
+      php_decl "${comment}${visibility}interface ${name} {
+${members}}
+"
+      python_2_2 python_decl ""
+      idl_decl "${comment}${abstract}${local}interface ${name}${inherit} {
+${members}};
+"
+      explicit_switch_type ""
+      
+      operation 157443 "result"
+	stereotype "signal"
+	public explicit_return_type "void"
+	nparams 1
+	  param in name "result" type class_ref 137475 // GetEntriesResult
+	cpp_decl "    ${comment}${friend}${static}${inline}${virtual}${type} ${name}${(}const ${t0} & ${p0}${)}${const}${volatile}${throw}${abstract};
+"
+	cpp_def "${comment}${inline}${type} ${class}::${name}${(}const ${t0} & ${p0}${)}${const}${volatile}${throw}${staticnl}{
+  ${body}}
+"
+	
+	
+	
+	
       end
     end
   end

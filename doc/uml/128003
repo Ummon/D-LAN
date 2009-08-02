@@ -1,6 +1,6 @@
 format 67
 "FileManager" // Aybabtu::Core::FileManager
-  revision 11
+  revision 13
   modified_by 3 "gburri"
   // class settings
   //class diagram settings
@@ -187,13 +187,14 @@ ${inlines}
 	  b parent class_ref 129795 // IFileManager
       end
 
-      classrelation 133123 // <directional composition>
-	relation 132995 *-->
+      classrelation 133123 // <composition>
+	relation 132995 *---
 	  a role_name "" private
 	    cpp default "    ${comment}${static}${mutable}${volatile}${const}${type} ${name}${value};
 "
-	    classrelation_ref 133123 // <directional composition>
-	  b parent class_ref 134147 // FileUpdater
+	    classrelation_ref 133123 // <composition>
+	  b role_name "" private
+	    classrelation_ref 156547 // <composition>
       end
 
       classrelation 137731 // <directional composition>
@@ -322,7 +323,7 @@ ${members}};
       end
 
       operation 132867 "getHashes"
-	public return_type class_ref 137347 // GetHashesResult
+	public return_type class_ref 153603 // IGetHashesResult
 	nparams 1
 	  param in name "entry" type class_ref 135043 // FileEntry
 	cpp_decl "    ${comment}${friend}${static}${inline}${virtual}${type} ${name}${(}const ${t0} & ${p0}${)}${const}${volatile}${throw}${abstract};
@@ -423,10 +424,10 @@ ${members}};
 	
       end
 
-      operation 133763 "getFile"
+      operation 133763 "newFile"
 	public return_type class_ref 130563 // IFile
 	nparams 1
-	  param in name "entry" type class_ref 135043 // FileEntry
+	  param in name "remotEntry" type class_ref 135043 // FileEntry
 	cpp_decl "    ${comment}${friend}${static}${inline}${virtual}${type} ${name}${(}const ${t0} & ${p0}${)}${const}${volatile}${throw}${abstract};
 "
 	cpp_def "${comment}${inline}${type} ${class}::${name}${(}const ${t0} & ${p0}${)}${const}${volatile}${throw}${staticnl}{
@@ -556,6 +557,10 @@ ${inlines}
 	    classrelation_ref 133251 // <generalisation>
 	  b parent class_ref 132483 // QThread
       end
+
+      classrelation 156547 // <composition>
+	relation_ref 132995 // <composition>
+      end
     end
 
     class 137219 "WordIndex"
@@ -578,6 +583,41 @@ ${inlines}
 "
 	    classrelation_ref 137603 // <directional composition>
 	  b multiplicity "0..1" parent class_ref 128003 // File
+      end
+    end
+
+    class 153603 "IGetHashesResult"
+      abstract visibility package stereotype "interface"
+      cpp_decl "${comment}${template}class ${name}${inherit} {
+${members}};
+${inlines}
+"
+      java_decl "${comment}${@}${visibility}interface ${name}${extends} {
+${members}}
+"
+      php_decl "${comment}${visibility}interface ${name} {
+${members}}
+"
+      python_2_2 python_decl ""
+      idl_decl "${comment}${abstract}${local}interface ${name}${inherit} {
+${members}};
+"
+      explicit_switch_type ""
+      
+      operation 150915 "result"
+	stereotype "signal"
+	public explicit_return_type "void"
+	nparams 1
+	  param out name "result" type class_ref 137347 // GetHashesResult
+	cpp_decl "    ${comment}${friend}${static}${inline}${virtual}${type} ${name}${(}${t0} & ${p0}${)}${const}${volatile}${throw}${abstract};
+"
+	cpp_def "${comment}${inline}${type} ${class}::${name}${(}${t0} & ${p0}${)}${const}${volatile}${throw}${staticnl}{
+  ${body}}
+"
+	
+	
+	
+	
       end
     end
   end

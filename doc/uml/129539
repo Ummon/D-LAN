@@ -1,6 +1,6 @@
 format 67
 "UploadManager" // Aybabtu::Core::UploadManager
-  revision 6
+  revision 7
   modified_by 3 "gburri"
   // class settings
   //class diagram settings

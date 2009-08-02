@@ -1,0 +1,24 @@
+format 67
+
+classinstance 128131 class_ref 137987 // UDPListener
+  name ""   xyz 115 16 2000 life_line_z 2000
+classinstance 128771 class_ref 129795 // IFileManager
+  name ""   xyz 244 17 2000 life_line_z 2000
+durationcanvas 128899 classinstance_ref 128131 // :UDPListener
+  xyzwh 148 81 2010 11 52
+end
+durationcanvas 129027 classinstance_ref 128771 // :IFileManager
+  xyzwh 277 81 2010 11 52
+end
+msg 129155 synchronous
+  from durationcanvas_ref 128899
+  to durationcanvas_ref 129027
+  yz 81 2015 msg operation_ref 133123 // "find(in words : QString) : FindResult"
+  show_full_operations_definition default drawing_language default
+  label_xy 205 66
+msg 129283 return
+  from durationcanvas_ref 129027
+  to durationcanvas_ref 128899
+  yz 119 2015 unspecifiedmsg
+  show_full_operations_definition default drawing_language default
+end
