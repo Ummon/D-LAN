@@ -6,7 +6,8 @@ QT -= gui
 
 win32 {
    INCLUDEPATH += "."
-   LIBS += "$$(WIN_PLATFORM_SDK)\Lib\WSOCK32.LIB"
+   INCLUDEPATH += "$$(QTDIR)\..\mingw\include"
+   LIBS += "$$(QTDIR)\..\mingw\lib\libwsock32.a"
 }
 
 TARGET = 04_UDP
