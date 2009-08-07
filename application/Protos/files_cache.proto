@@ -15,13 +15,25 @@ message Hashes {
       required uint64 size = 2;
       repeated Common.Hash hashes = 3;
    }
+   
+   message SharedDir {
+      enum Type {
+         READ = 0;
+         READ_WRITE = 1;
+      }
+      required Type type = 1;
+      required string path = 2;
+      required Dir root = 3;
+   }
 
    message Dir {
       required Common.DirEntry dir = 1;
       repeated File files = 2;
+      repeated Dir dirs = 3;
    }
    
    required uint32 version = 1;
    required uint32 chunkSize = 2;
-   repeated Dir directory = 3;
+   
+   repeated SharedDir dirs = 3;
 }
