@@ -1,0 +1,117 @@
+#include <QtCore/QDebug>
+
+#if defined(Q_OS_WIN32)
+
+#include "DirWatcherWin.h"
+
+DirWatcherWin::DirWatcherWin()
+{
+}
+
+DirWatcherWin::~DirWatcherWin()
+{
+}
+
+void DirWatcherWin::addDir(const QString& path)
+{
+   TCHAR pathTCHAR[path.size() + 1];
+   path.toWCharArray(pathTCHAR);
+   pathTCHAR[path.size()] = 0;
+
+   HANDLE fileHandle = CreateFile(pathTCHAR, // pointer to the file name
+      FILE_LIST_DIRECTORY, // access (read/write) mode
+      FILE_SHARE_READ | FILE_SHARE_WRITE, // share mode
+      NULL, // security descriptor
+      OPEN_EXISTING, // how to create
+      FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OVERLAPPED, // file attributes
+      NULL // file with attributes to copy
+   );
+   
+   HANDLE eventHandle = CreateEvent(NULL, FALSE, FALSE, NULL);
+   
+   this->dirs.append(Dir(fileHandle, eventHandle));
+   
+   this->watch(this->dirs.count() - 1);
+}
+
+void DirWatcherWin::rmDir(const QString& path)
+{
+   // TODO
+}
+   
+WatcherEvent DirWatcherWin::waitEvent(int timeout)
+{   
+   int n = this->dirs.size();
+   HANDLE eventsArray[n];
+   for(int i = 0; i < n; i++)
+      eventsArray[i] = this->dirs[i].event;
+   
+   qDebug() << "Begin : WaitForMultipleObjects";
+   DWORD waitStatus = WaitForMultipleObjects(
+      n,
+      eventsArray,
+      FALSE,
+      timeout
+   );
+   qDebug() << "End : WaitForMultipleObjects";
+
+   if (waitStatus >= WAIT_OBJECT_0 && waitStatus <= WAIT_OBJECT_0 + (DWORD)n - 1)
+   {
+      int n = waitStatus - WAIT_OBJECT_0;
+
+      qDebug() << "File changed : " << n;
+      
+      FILE_NOTIFY_INFORMATION* notifyInformation = (FILE_NOTIFY_INFORMATION*)this->notifyBuffer;
+      forever
+      {
+         qDebug() << "Action = " << notifyInformation->Action;
+   
+         // We need to add a null character termination because 'QString::fromStdWString' need one.
+         int nbChar = notifyInformation->FileNameLength / sizeof(TCHAR);
+         TCHAR filenameTCHAR[nbChar + 1];
+         wcsncpy(filenameTCHAR, notifyInformation->FileName, nbChar);
+         filenameTCHAR[nbChar] = 0;
+         QString filename = QString::fromStdWString(filenameTCHAR);
+   
+         qDebug() << "filename = " << filename;
+         qDebug() << "offset = " << notifyInformation->NextEntryOffset;
+   
+         if (!notifyInformation->NextEntryOffset)
+            break;
+   
+         notifyInformation = (FILE_NOTIFY_INFORMATION*)((LPBYTE)notifyInformation + notifyInformation->NextEntryOffset);
+      }
+      
+      this->watch(n);
+   }
+   else if (waitStatus == WAIT_TIMEOUT)
+   {
+      qDebug() << "Time out..";
+   }
+   else
+   {
+      qDebug() << "Error, status : " << waitStatus;
+   }
+   
+   return WatcherEvent(WatcherEvent::NEW_FILE, QString());
+}
+
+void DirWatcherWin::watch(int num)
+{
+   OVERLAPPED overlapped;
+   memset(&overlapped, 0, sizeof(OVERLAPPED));
+   overlapped.hEvent = this->dirs[num].event;
+   
+   bool status = ReadDirectoryChangesW(
+      this->dirs[num].file,
+      &this->notifyBuffer,
+      2048,
+      TRUE,
+      FILE_NOTIFY_CHANGE_FILE_NAME | FILE_NOTIFY_CHANGE_DIR_NAME |
+      FILE_NOTIFY_CHANGE_SIZE | FILE_NOTIFY_CHANGE_LAST_WRITE | FILE_NOTIFY_CHANGE_CREATION,
+      &this->nbBytesNotifyBuffer,
+      &overlapped,
+      NULL);  
+}
+
+#endif
