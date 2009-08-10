@@ -4,6 +4,14 @@
 #include <QtCore/QList>
 #include <QtCore/QString>
 
+class DirWatcherException : public std::exception
+{
+   public : 
+   DirWatcherException(const QString& mess) : mess(mess) { }
+   virtual ~DirWatcherException() throw () { } 
+   const QString mess;
+};
+
 struct WatcherEvent;
 
 /**
@@ -12,7 +20,7 @@ struct WatcherEvent;
   *  - Rename file
   *  - New file
   *  - Delete file
-  *  - The size of a file changed
+  *  - The content of a file changed
   */
 class DirWatcher
 {
@@ -23,11 +31,12 @@ public:
    
    /**
      * Build a new watcher.
+     * The implementation depends of the platform.
      */
    static DirWatcher* getNewWatcher();
 
    /**
-     * A a directory to watch.
+     * Add a directory to watch.
      */
    virtual void addDir(const QString& path) = 0;
 
@@ -38,11 +47,20 @@ public:
    
    /**
      * Wait a new event from the listened directories.
+     * There is no timeout, it can wait forever.
+     */
+   virtual const QList<WatcherEvent> waitEvent() = 0;
+   
+   /**
+     * Wait a new event from the listened directories.
      * @param timeout A timeout in milliseconds.
      */
-   virtual WatcherEvent waitEvent(int timeout) = 0;
+   virtual const QList<WatcherEvent> waitEvent(int timeout) = 0;
 };
 
+/**
+  * When a event occurs this struct is returned.
+  */
 struct WatcherEvent
 {
    enum Type {
@@ -50,15 +68,24 @@ struct WatcherEvent
       RENAME_FILE,
       NEW_FILE,
       DELETE_FILE,
-      SIZE_FILE_CHANGED      
+      CONTENT_FILE_CHANGED,
+      TIMEOUT,
+      UNKNOWN
    };
    
+   WatcherEvent();
+   WatcherEvent(Type type);
    WatcherEvent(Type type, const QString& path1);
    WatcherEvent(Type type, const QString& path1, const QString& path2);
+   
+   /**
+     * Default assignment operator does nothing because all members are const.
+     */
+   WatcherEvent& operator=(const WatcherEvent& watcher) { return *this; }
   
-   Type type;
+   const Type type;
    const QString path1;
-   const QString path2;
+   const QString path2; // Only used with type 'RENAME_*'.
 };
 
 #endif // DIRWATCHER_H
