@@ -38,22 +38,27 @@ void DirWatcherWin::rmDir(const QString& path)
 {
    // TODO
 }
+
+const QList<WatcherEvent> DirWatcherWin::waitEvent()
+{
+   return this->waitEvent(INFINITE);
+}
    
-WatcherEvent DirWatcherWin::waitEvent(int timeout)
-{   
+const QList<WatcherEvent> DirWatcherWin::waitEvent(int timeout)
+{
    int n = this->dirs.size();
    HANDLE eventsArray[n];
    for(int i = 0; i < n; i++)
       eventsArray[i] = this->dirs[i].event;
    
-   qDebug() << "Begin : WaitForMultipleObjects";
+   qDebug() << endl << "waitEvent";
+   
    DWORD waitStatus = WaitForMultipleObjects(
       n,
       eventsArray,
       FALSE,
       timeout
    );
-   qDebug() << "End : WaitForMultipleObjects";
 
    if (waitStatus >= WAIT_OBJECT_0 && waitStatus <= WAIT_OBJECT_0 + (DWORD)n - 1)
    {
@@ -80,20 +85,23 @@ WatcherEvent DirWatcherWin::waitEvent(int timeout)
             break;
    
          notifyInformation = (FILE_NOTIFY_INFORMATION*)((LPBYTE)notifyInformation + notifyInformation->NextEntryOffset);
-      }
-      
+      }      
       this->watch(n);
+      
+      QList<WatcherEvent> events;
+      events.append(WatcherEvent(WatcherEvent::NEW_FILE, "TAISTE"));
+      return events;
    }
    else if (waitStatus == WAIT_TIMEOUT)
    {
-      qDebug() << "Time out..";
+      QList<WatcherEvent> events;
+      events.append(WatcherEvent(WatcherEvent::TIMEOUT));
+      return events;
    }
    else
    {
-      qDebug() << "Error, status : " << waitStatus;
+      throw DirWatcherException(QString("WaitForMultipleObjects(..), status : %1").arg(waitStatus)); 
    }
-   
-   return WatcherEvent(WatcherEvent::NEW_FILE, QString());
 }
 
 void DirWatcherWin::watch(int num)
@@ -102,7 +110,7 @@ void DirWatcherWin::watch(int num)
    memset(&overlapped, 0, sizeof(OVERLAPPED));
    overlapped.hEvent = this->dirs[num].event;
    
-   bool status = ReadDirectoryChangesW(
+   if (!ReadDirectoryChangesW(
       this->dirs[num].file,
       &this->notifyBuffer,
       2048,
@@ -111,7 +119,9 @@ void DirWatcherWin::watch(int num)
       FILE_NOTIFY_CHANGE_SIZE | FILE_NOTIFY_CHANGE_LAST_WRITE | FILE_NOTIFY_CHANGE_CREATION,
       &this->nbBytesNotifyBuffer,
       &overlapped,
-      NULL);  
+      NULL
+   ))   
+      throw DirWatcherException(QString("ReadDirectoryChangesW(..), GetLastError : %1").arg(GetLastError()));   
 }
 
 #endif

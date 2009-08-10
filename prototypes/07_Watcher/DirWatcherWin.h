@@ -1,4 +1,4 @@
-#include <QtCore/QtCore>
+#include <QtCore/QtCore> // Only for the Q_OS_* defines.
 
 #if !defined(DIRWATCHERWIN_H) and defined(Q_OS_WIN32)
 #define DIRWATCHERWIN_H
@@ -11,6 +11,10 @@ static const int notifyBufferSize = 2048;
 
 struct Dir;
 
+/**
+  * Implementation of 'DirWatcher' for the windows platform.
+  * Inspired by : http://stackoverflow.com/questions/863135/why-does-readdirectorychangesw-omit-events.
+  */
 class DirWatcherWin : public DirWatcher
 {
 public:
@@ -19,7 +23,8 @@ public:
     
    void addDir(const QString& path);
    void rmDir(const QString& path);
-   WatcherEvent waitEvent(int timeout);
+   const QList<WatcherEvent> waitEvent();
+   const QList<WatcherEvent> waitEvent(int timeout);
     
 private:   
    void watch(int num);
@@ -35,7 +40,6 @@ struct Dir {
    Dir(HANDLE file, HANDLE event) : file(file), event(event) {}
    HANDLE file;
    HANDLE event;
-   // OVERLAPPED overlapped; Is it necessary to hold that ?
 };
 
 #endif // DIRWATCHERWIN_H

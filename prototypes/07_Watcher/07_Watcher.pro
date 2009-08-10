@@ -2,6 +2,7 @@
 # Project created by QtCreator 2009-08-03T20:42:38
 # -------------------------------------------------
 QT -= gui
+
 win32 { 
     INCLUDEPATH += "."
     INCLUDEPATH += "$$(QTDIR)\..\mingw\include"
