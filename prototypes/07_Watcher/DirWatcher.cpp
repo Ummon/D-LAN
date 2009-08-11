@@ -20,7 +20,7 @@ DirWatcher* DirWatcher::getNewWatcher()
 #if defined(Q_OS_WIN32)
    return new DirWatcherWin();
 #else
-   #error There is no implementation of 'DirWatcher' for this platform
+   #error There is no implementation of 'DirWatcher' for the current platform
 #endif
 }
 

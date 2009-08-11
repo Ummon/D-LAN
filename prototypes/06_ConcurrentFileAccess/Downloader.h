@@ -1,7 +1,7 @@
 #ifndef DOWNLOADER_H
 #define DOWNLOADER_H
 
-#include <QThread>
+#include <QtCore/QThread>
 
 #include <Chunk.h>
 

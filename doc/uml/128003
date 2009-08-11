@@ -1,7 +1,7 @@
 format 67
 "FileManager" // Aybabtu::Core::FileManager
-  revision 13
-  modified_by 3 "gburri"
+  revision 14
+  modified_by 34 "gburri"
   // class settings
   //class diagram settings
   draw_all_relations default hide_attributes default hide_operations default show_members_full_definition default show_members_visibility default show_members_stereotype default show_members_multiplicity default show_members_initialization default show_attribute_modifiers default member_max_width 0 show_parameter_dir default show_parameter_name default package_name_in_tab default class_drawing_mode default drawing_language default show_context_mode default auto_label_position default show_relation_modifiers default show_infonote default shadow default show_stereotype_properties default
@@ -60,7 +60,7 @@ ${inlines}
       explicit_switch_type ""
       
       attribute 128131 "name"
-	private explicit_type "string"
+	private type class_ref 132867 // QString
 	cpp_decl "    ${comment}${static}${mutable}${volatile}${const}${type} ${name}${value};
 "
 	java_decl ""
@@ -96,6 +96,10 @@ ${inlines}
 	    classrelation_ref 130691 // <realization>
 	  b parent class_ref 130563 // IFile
       end
+
+      classrelation 128546 // (Files)
+	relation_ref 128387 // Files
+      end
     end
 
     class 128131 "Directory"
@@ -111,7 +115,7 @@ ${inlines}
       explicit_switch_type ""
       
       attribute 128003 "name"
-	private explicit_type "string"
+	private type class_ref 132867 // QString
 	cpp_decl "    ${comment}${static}${mutable}${volatile}${const}${type} ${name}${value};
 "
 	java_decl ""
@@ -121,21 +125,27 @@ ${inlines}
       end
 
       classrelation 128259 // (Sub)
-	relation 128259 *--> name "Sub"
+	relation 128259 *--- name "Sub"
 	  a role_name "" multiplicity "*" private
-	    cpp default "    ${comment}${static}${mutable}${volatile}${const}${type} ${name}${value};
+	    cpp default "    ${comment}${static}${mutable}${volatile}${const}${stereotype}<${type}> ${name}${value};
 "
 	    classrelation_ref 128259 // (Sub)
-	  b multiplicity "1" parent class_ref 128131 // Directory
+	  b role_name "" multiplicity "1" private
+	    classrelation_ref 128418 // (Sub)
       end
 
       classrelation 128515 // (Files)
-	relation 128387 *--> name "Files"
+	relation 128387 *--- name "Files"
 	  a role_name "" multiplicity "*" private
-	    cpp default "    ${comment}${static}${mutable}${volatile}${const}${type} ${name}${value};
+	    cpp default "    ${comment}${static}${mutable}${volatile}${const}${stereotype}<${type}> ${name}${value};
 "
 	    classrelation_ref 128515 // (Files)
-	  b multiplicity "1" parent class_ref 128003 // File
+	  b role_name "" multiplicity "1" private
+	    classrelation_ref 128546 // (Files)
+      end
+
+      classrelation 128418 // (Sub)
+	relation_ref 128259 // Sub
       end
     end
 
@@ -152,24 +162,6 @@ ${inlines}
       explicit_switch_type ""
       
       associated_diagram classdiagram_ref 128131 // classes
-      classrelation 128003 // (Shared directories)
-	relation 128003 *--> name "Shared directories"
-	  a role_name "" multiplicity "*" private
-	    cpp default "    ${comment}${static}${mutable}${volatile}${const}${type} ${name}${value};
-"
-	    classrelation_ref 128003 // (Shared directories)
-	  b multiplicity "0..1" parent class_ref 128131 // Directory
-      end
-
-      classrelation 128131 // (Download)
-	relation 128131 *--> name "Download"
-	  a role_name "" multiplicity "*" private
-	    cpp default "    ${comment}${static}${mutable}${volatile}${const}${type} ${name}${value};
-"
-	    classrelation_ref 128131 // (Download)
-	  b multiplicity "0..1" parent class_ref 128131 // Directory
-      end
-
       classrelation 128899 // <directional composition>
 	relation 128771 *-->
 	  a role_name "" multiplicity "1" private
@@ -204,6 +196,24 @@ ${inlines}
 "
 	    classrelation_ref 137731 // <directional composition>
 	  b multiplicity "1" parent class_ref 137219 // WordIndex
+      end
+
+      classrelation 128162 // (read only)
+	relation 128162 *--> name "read only"
+	  a role_name "" multiplicity "*" private
+	    cpp default "    ${comment}${static}${mutable}${volatile}${const}${type} ${name}${value};
+"
+	    classrelation_ref 128162 // (read only)
+	  b multiplicity "1" parent class_ref 128034 // SharedDirectory
+      end
+
+      classrelation 128290 // (read and write)
+	relation 128290 *--> name "read and write"
+	  a role_name "" multiplicity "*" private
+	    cpp default "    ${comment}${static}${mutable}${volatile}${const}${type} ${name}${value};
+"
+	    classrelation_ref 128290 // (read and write)
+	  b multiplicity "1" parent class_ref 128034 // SharedDirectory
       end
     end
 
@@ -618,6 +628,37 @@ ${members}};
 	
 	
 	
+      end
+    end
+
+    class 128034 "SharedDirectory"
+      visibility package 
+      cpp_decl "${comment}${template}class ${name}${inherit} {
+${members}};
+${inlines}
+"
+      java_decl ""
+      php_decl ""
+      python_2_2 python_decl ""
+      idl_decl ""
+      explicit_switch_type ""
+      
+      classrelation 128034 // <generalisation>
+	relation 128034 ---|>
+	  a public
+	    cpp default "${type}"
+	    classrelation_ref 128034 // <generalisation>
+	  b parent class_ref 128131 // Directory
+      end
+
+      attribute 128034 "path"
+	private type class_ref 132867 // QString
+	cpp_decl "    ${comment}${static}${mutable}${volatile}${const}${type} ${name}${value};
+"
+	java_decl ""
+	php_decl ""
+	python_decl ""
+	idl_decl ""
       end
     end
   end
