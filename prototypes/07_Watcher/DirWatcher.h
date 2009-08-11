@@ -15,6 +15,13 @@ class DirWatcherException : public std::exception
 struct WatcherEvent;
 
 /**
+  * An abstract directory watcher.
+  * Can watch several directories recursively.
+  *
+  * There must be an implementation for the current platform,
+  * if any exist, an error will occur during compilation.
+  * See the factory 'getNewWatcher'.
+  *
   * Event types :
   *  - Rename dir
   *  - Rename file
@@ -37,6 +44,9 @@ public:
 
    /**
      * Add a directory to watch.
+     * Each new added directory is immediately watched. If some modification
+     * occurs in the file system bewteen a call of 'addDir' and a call of 'waitEvent' they
+     * will be recorded and the next call to 'waitEvent' will be no blocking.
      */
    virtual void addDir(const QString& path) = 0;
 

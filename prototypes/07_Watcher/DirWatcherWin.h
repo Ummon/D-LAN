@@ -29,17 +29,18 @@ public:
 private:   
    void watch(int num);
    
+   struct Dir
+   {
+      Dir(HANDLE file, HANDLE event) : file(file), event(event) {}
+      HANDLE file;
+      HANDLE event;
+   };
    QList<Dir> dirs; // The watched dirs;
    
-   // Is this data can be shares among some 'ReadDirectoryChangesW' ?
+   // Is this data can be shares among some 'ReadDirectoryChangesW'?
    char notifyBuffer[notifyBufferSize];
    DWORD nbBytesNotifyBuffer;
 };
 
-struct Dir {
-   Dir(HANDLE file, HANDLE event) : file(file), event(event) {}
-   HANDLE file;
-   HANDLE event;
-};
 
 #endif // DIRWATCHERWIN_H
