@@ -70,6 +70,7 @@ public:
 
 /**
   * When a event occurs this struct is returned.
+  * This type is immutable.
   */
 struct WatcherEvent
 {
@@ -89,9 +90,9 @@ struct WatcherEvent
    WatcherEvent(Type type, const QString& path1, const QString& path2);
    
    /**
-     * Default assignment operator does nothing because all members are const.
+     * We forbid to assign a WatcherEvent.
      */
-   WatcherEvent& operator=(const WatcherEvent& watcher) { return *this; }
+   WatcherEvent& operator=(const WatcherEvent&) { throw DirWatcherException("A WatcherEvent cannot be modified"); }
   
    const Type type;
    const QString path1;
