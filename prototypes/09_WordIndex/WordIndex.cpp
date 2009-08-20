@@ -4,6 +4,7 @@
 
 template<typename T>
 WordIndex<T>::WordIndex()
+   : node('\0')
 {}
 
 template<typename T>
@@ -78,13 +79,18 @@ QList<T> WordIndex<T>::search(QList<QString> words)
 }
 
 template<typename T>
-Node<T>::Node()
-{}
-
-template<typename T>
-Node<T>::Node(QChar letter)
+Node<T>::Node(const QChar& letter)
    : letter(letter)
 {
+   qDebug() << "New node : " << letter;
+}
+
+template<typename T>
+Node<T>::~Node()
+{
+   qDebug() << "Node deleted : " << this->letter;
+   foreach (Node* n, this->children)
+      delete n;
 }
 
 template<typename T>
