@@ -30,7 +30,8 @@ class Node
 {
 public:
    Node();
-   Node(QChar letter);
+   Node(const QChar& letter);
+   ~Node();
          
    /**
      * Add a child node and return it.
