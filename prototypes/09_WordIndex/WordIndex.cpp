@@ -23,7 +23,40 @@ void WordIndex<T>::addItem(const QList<QString>& words, T item)
 template<typename T>
 void WordIndex<T>::rmItem(const QList<QString>& words, T item)
 {
-   // TODO
+   foreach (QString word, words)
+   {
+      QList<Node<T>*> nodes;
+      Node<T>* currentNode = &this->node;
+      nodes.prepend(currentNode);
+      foreach (QChar letter, word)
+      {
+         if (!(currentNode = currentNode->getNode(letter)))
+            goto nextWord;
+         nodes.prepend(currentNode);
+      }
+      
+      currentNode->rmItem(item);
+      
+      if (!currentNode->haveChildren())
+      {   
+         Node<T>* nodeToRemove = 0;
+         foreach (Node<T>* n, nodes)
+         {
+            if (nodeToRemove)
+            {
+               n->rmNode(nodeToRemove);
+               delete nodeToRemove;
+            }
+            
+            if (n->haveItems() || n->haveChildren())
+               break;
+            else
+               nodeToRemove = n;
+         }
+      }
+      
+      nextWord :;      
+   }
 }
 
 template<typename T>
@@ -69,6 +102,12 @@ Node<T>& Node<T>::addNode(QChar letter)
 }
 
 template<typename T>
+void Node<T>::rmNode(Node<T>* const node)
+{
+   this->children.removeOne(node);
+}
+
+template<typename T>
 Node<T>* Node<T>::getNode(QChar letter)
 {
    foreach (Node* n, this->children)
@@ -80,8 +119,15 @@ Node<T>* Node<T>::getNode(QChar letter)
 }
 
 template<typename T>
+bool Node<T>::haveChildren()
+{
+   return !this->children.empty();
+}
+
+template<typename T>
 void Node<T>::addItem(T item)
 {
+   // Do not add an existing item.
    foreach(T i, this->itemList)
       if (i == item)
          return;
@@ -89,6 +135,12 @@ void Node<T>::addItem(T item)
    this->itemList.append(item);
 }
 
+template<typename T>
+void Node<T>::rmItem(T item)
+{
+   this->itemList.removeOne(item);
+}
+   
 template<typename T>
 QList<T> Node<T>::getItems()
 {
@@ -104,4 +156,10 @@ QList<T> Node<T>::getItems()
    }
    
    return result;
+}
+
+template<typename T>
+bool Node<T>::haveItems()
+{
+   return !this->itemList.empty();      
 }

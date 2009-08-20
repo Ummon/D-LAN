@@ -38,18 +38,26 @@ public:
      */
    Node<T>& addNode(QChar letter);
    
+   void rmNode(Node<T>* const node);
+   
    /**
      * Get a children node.
      * /!\ If no one exists 0 is returned.
      */
    Node<T>* getNode(QChar letter);
    
+   bool haveChildren();
+   
    void addItem(T item);
+   
+   void rmItem(T item);
    
    /**
      * Return all items from the node and its sub nodes (recursively).
      */
    QList<T> getItems();
+   
+   bool haveItems();
    
 private:
    QChar letter;
