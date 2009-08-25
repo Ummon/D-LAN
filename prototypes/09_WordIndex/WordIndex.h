@@ -67,7 +67,7 @@ private:
 };
 
 
-/***** Implementation *****/
+/***** Definition *****/
 
 template<typename T>
 WordIndex<T>::WordIndex()
@@ -236,6 +236,5 @@ bool Node<T>::haveItems()
 {
    return !this->itemList.empty();      
 }
-
 
 #endif // WORDINDEX_H
