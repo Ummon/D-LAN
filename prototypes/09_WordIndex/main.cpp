@@ -1,32 +1,48 @@
 #include <QtCore/QCoreApplication>
 #include <QtCore/QDir>
 #include <QtCore/QLinkedList>
+#include <QtCore/QTime>
+#include <QtCore/QTextStream>
 #include <QtCore/QDebug>
 
 #include <WordIndex.h>
 
-void add(WordIndex<QString>& index, const QString& word, const QString& item)
+// When this macro is set to '1', 'int' are used instead of 'QString' when
+// indexing a directory. This is useful when doing some measures because in
+// a real application the index items will be pointer on a complex item.
+#define USE_INT 0
+
+QTextStream in(stdin);
+QTextStream out(stdout);
+
+template <typename T>
+void add(WordIndex<T>& index, const QString& word, const T& item)
 {
-   qDebug() << "Add item : " << item << " indexed by " << word;
+   out << "Add item : " << item << " indexed by " << word << endl;
    
    QList<QString> words;
    words.append(word);
    index.addItem(words, item);
 }
 
-void search(WordIndex<QString>& index, const QString& word)
+template <typename T>
+void search(WordIndex<T>& index, const QString& word)
 {
    QList<QString> words;  
    words.append(word);
-   QList<QString> items = index.search(words);
-   qDebug() << "Search " << word << " : items found (" << items.count() << ") :";
-   foreach (QString item, items)
-      qDebug() << " - " << item;  
+   
+   const QTime& t = QTime::currentTime();
+   
+   QList<T> items = index.search(words);
+   out << "Search \"" << word << "\" : " << items.count() << " items found in " << (double)t.msecsTo(QTime::currentTime()) / 1000 << " s" << endl;
+   foreach (T item, items)
+      out << " - " << item << endl;  
 }
 
-void rm(WordIndex<QString>& index, const QString& word, const QString& item)
+template <typename T>
+void rm(WordIndex<T>& index, const QString& word, const T& item)
 {
-   qDebug() << "Remove " << item << " with word " << word;
+   out << "Remove " << item << " with word " << word << endl;
    QList<QString> words;  
    words.append(word);
    index.rmItem(words, item);
@@ -35,32 +51,40 @@ void rm(WordIndex<QString>& index, const QString& word, const QString& item)
 /**
   * Index a file by its name.
   */
-void indexFile(WordIndex<QString>& index, const QString& path, const QString& fileName)
+template <typename T>
+void indexFile(WordIndex<T>& index, const QString& path, const QString& fileName)
 {
-   const static QRegExp regExp("\\W+");
+   const static QRegExp regExp("(\\W+|_)");
    QString fullPath = path + "/" + fileName;
    QStringList words = fileName.toLower().split(regExp, QString::SkipEmptyParts);
    
-   qDebug() << "Index " << fullPath << " by " << words;
+   qDebug() << "Index" << fullPath << "by" << words;
    
+#if USE_INT == 1
+   index.addItem(words, 0);
+#else
    index.addItem(words, fullPath);
+#endif
 }
 
 /**
   * Index a directory by its name.
+  * The directories are threaten like files.
   */
-void indexDir(WordIndex<QString>& index, const QString& path, const QString& dirName)
+template <typename T>
+void indexDir(WordIndex<T>& index, const QString& path, const QString& dirName)
 {
-   // The directories are threaten like files.
    indexFile(index, path, dirName);
 }
 
-void buildIndex(WordIndex<QString>& index, const QString& path)
+template <typename T>
+void buildIndex(WordIndex<T>& index, const QString& path)
 {
    QLinkedList<QDir> dirsToVisit;
    dirsToVisit.append(path);
-   
+      
    int n = 0;
+   const QTime& t = QTime::currentTime();
    
    while (!dirsToVisit.isEmpty())
    {
@@ -83,33 +107,33 @@ void buildIndex(WordIndex<QString>& index, const QString& path)
       }
    }
    
-   qDebug() << n << " items indexed";
+   out << n << " items indexed in " << (double)t.msecsTo(QTime::currentTime()) / 1000 << " s" << endl;
 }
 
 void test()
 { 
-   WordIndex<QString> index;
+   WordIndex<int> index;
     
-   add(index, "pouet", "1");
-   add(index, "poulpe", "2");
-   add(index, "pouet", "3");
-   add(index, "pou", "4");
+   add(index, "pouet", 1);
+   add(index, "poulpe", 2);
+   add(index, "pouet", 3);
+   add(index, "pou", 4);
    search(index, "pou");
    
-   rm(index, "pouet", "1");
+   rm(index, "pouet", 1);
    search(index, "pou");
    
-   add(index, "pouet", "1");
-   add(index, "mais", "5");
-   add(index, "maison", "6");
+   add(index, "pouet", 1);
+   add(index, "mais", 5);
+   add(index, "maison", 6);
    search(index, "pouet");
    search(index, "maiso");
    
-   rm(index, "pouet", "1");
-   rm(index, "poulpe", "2");
-   rm(index, "pouet", "3");
-   rm(index, "pou", "4");
-   rm(index, "mais", "5");
+   rm(index, "pouet", 1);
+   rm(index, "poulpe", 2);
+   rm(index, "pouet", 3);
+   rm(index, "pou", 4);
+   rm(index, "mais", 5);
    
    // Should be autmatically deleted at the end of the program.
    // rm(index, "maison", 6); 
@@ -118,19 +142,13 @@ void test()
 void printUsage(int argc, char *argv[])
 {
    QTextStream out(stdout);
-   out << "Usage : " << argv[0] << " (test | <directory> <term>*)" << endl
+   out << "Usage : " << argv[0] << " (test | <directory>)" << endl
       << " test : run some little tests." << endl
-      << " <directory> : will scan recursively the directory and index each file and folder." << endl
-      << "  <term>* : A list of optionally term. For each term a search will be done." << endl;
+      << " <directory> : will scan recursively the directory and index each file and folder." << endl;
 }
 
 int main(int argc, char *argv[])
-{
-   QCoreApplication a(argc, argv);
-
-   QTextStream in(stdin);
-   QTextStream out(stdout);
-   
+{   
    if (argc >= 2)
    {
       QString arg1 = argv[1];
@@ -138,7 +156,11 @@ int main(int argc, char *argv[])
          test();  
       else
       {
+#if USE_INT == 1
+         WordIndex<int> index;
+#else
          WordIndex<QString> index;
+#endif
             
          buildIndex(index, arg1);
          
@@ -147,12 +169,13 @@ int main(int argc, char *argv[])
             out << "Type a word : ";
             out.flush();
             QString itemToSearch = in.readLine();
-            search(index, itemToSearch);
+            if (itemToSearch.length() < 3)
+               out << "The word must have more than 2 letters" << endl;
+            else
+               search(index, itemToSearch);
          }
       }
    }
    else
       printUsage(argc, argv);
-   
-   a.exec();
 }

@@ -1,6 +1,7 @@
 #ifndef WORDINDEX_H
 #define WORDINDEX_H
 
+#include <QtCore/QDebug>
 #include <QtCore/QList>
 #include <QtCore/QString>
 #include <QtCore/QChar>
