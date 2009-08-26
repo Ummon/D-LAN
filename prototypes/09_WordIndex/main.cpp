@@ -3,6 +3,7 @@
 #include <QtCore/QLinkedList>
 #include <QtCore/QTime>
 #include <QtCore/QTextStream>
+#include <QtCore/QPair>
 #include <QtCore/QDebug>
 
 #include <WordIndex.h>
@@ -61,7 +62,8 @@ void indexFile(WordIndex<T>& index, const QString& path, const QString& fileName
    qDebug() << "Index" << fullPath << "by" << words;
    
 #if USE_INT == 1
-   index.addItem(words, 0);
+   static int n = 0;
+   index.addItem(words, n++);
 #else
    index.addItem(words, fullPath);
 #endif
@@ -80,12 +82,12 @@ void indexDir(WordIndex<T>& index, const QString& path, const QString& dirName)
 template <typename T>
 void buildIndex(WordIndex<T>& index, const QString& path)
 {
-   QLinkedList<QDir> dirsToVisit;
-   dirsToVisit.append(path);
-      
-   int n = 0;
-   const QTime& t = QTime::currentTime();
+   // Directories and files mixed (QPair::first is the location (path), QPair::second is the name of the file/dir).
+   // This variable exists only for counting the time without the disk access.
+   QList<QPair<QString, QString>> items; 
    
+   QLinkedList<QDir> dirsToVisit;
+   dirsToVisit.append(path);   
    while (!dirsToVisit.isEmpty())
    {
       foreach (QFileInfo entry, dirsToVisit.takeFirst().entryInfoList())
@@ -93,21 +95,19 @@ void buildIndex(WordIndex<T>& index, const QString& path)
          if (entry.fileName() == "." || entry.fileName() == "..")
             continue;
          
+         items.append(QPair<QString, QString>(entry.absoluteFilePath(), entry.fileName()));
+            
          if (entry.isDir())
-         {
             dirsToVisit.append(entry.absoluteFilePath());
-            indexDir(index, entry.absoluteFilePath(), entry.fileName());
-            n += 1;
-         }
-         else
-         {
-            indexFile(index, entry.absoluteFilePath(), entry.fileName());
-            n += 1;
-         }
       }
    }
    
-   out << n << " items indexed in " << (double)t.msecsTo(QTime::currentTime()) / 1000 << " s" << endl;
+   const QTime& t = QTime::currentTime();
+     
+   for (int i = 0; i < items.length(); i++)
+      indexFile(index, items[i].first, items[i].second);
+   
+   out << items.length() << " items indexed in " << (double)t.msecsTo(QTime::currentTime()) / 1000 << " s" << endl;
 }
 
 void test()
