@@ -159,40 +159,34 @@ void test()
 void printUsage(int argc, char *argv[])
 {
    QTextStream out(stdout);
-   out << "Usage : " << argv[0] << " (test | <directory>)" << endl
-      << " test : run some little tests." << endl
-      << " <directory> : will scan recursively the directory and index each file and folder." << endl;
+   out << "Usage : " << argv[0] << " [<directory>]" << endl
+      << " <directory> : will scan recursively the directory and index each file and folder." << endl
+      << " If there is no directory given some little tests are executed." << endl;
 }
 
 int main(int argc, char *argv[])
 {   
    if (argc >= 2)
    {
-      QString arg1 = argv[1];
-      if (arg1 == "test")
-         test();  
-      else
-      {
 #if USE_INT == 1
-         WordIndex<int> index;
+      WordIndex<int> index;
 #else
-         WordIndex<QString> index;
+      WordIndex<QString> index;
 #endif
-            
-         buildIndex(index, arg1);
          
-         forever
-         {
-            out << "Type a word : ";
-            out.flush();
-            QString itemToSearch = in.readLine();
-            if (itemToSearch.length() < MAX_WORD_LENGTH)
-               out << "The word must have more than 2 letters" << endl;
-            else
-               search(index, itemToSearch);
-         }
+      buildIndex(index, argv[1]);
+      
+      forever
+      {
+         out << "Type a word : ";
+         out.flush();
+         QString itemToSearch = in.readLine();
+         if (itemToSearch.length() < MAX_WORD_LENGTH)
+            out << "The word must have more than 2 letters" << endl;
+         else
+            search(index, itemToSearch);
       }
    }
    else
-      printUsage(argc, argv);
+      test();
 }
