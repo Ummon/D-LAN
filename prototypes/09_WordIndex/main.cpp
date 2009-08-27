@@ -11,7 +11,7 @@
 // When this macro is set to '1', 'int' are used instead of 'QString' when
 // indexing a directory. This is useful when doing some measures because in
 // a real application the index items will be pointer on a complex item.
-#define USE_INT 0
+#define USE_INT 1
 
 QTextStream in(stdin);
 QTextStream out(stdout);
@@ -102,6 +102,7 @@ void buildIndex(WordIndex<T>& index, const QString& path)
       }
    }
    
+   out << "Indexing..." << endl;
    const QTime& t = QTime::currentTime();
      
    for (int i = 0; i < items.length(); i++)
