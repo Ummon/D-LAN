@@ -13,6 +13,8 @@
 // a real application the index items will be pointer on a complex item.
 #define USE_INT 0
 
+static const int MAX_WORD_LENGTH = 3;
+
 QTextStream in(stdin);
 QTextStream out(stdout);
 
@@ -59,6 +61,16 @@ void indexFile(WordIndex<T>& index, const QString& path, const QString& fileName
    QString fullPath = path + "/" + fileName;
    QStringList words = fileName.toLower().split(regExp, QString::SkipEmptyParts);
    
+   // Remove all word smaller than MAX_WORD_LENGTH.
+   int i = 0;
+   while (i < words.length())
+   {
+      if (words[i].length() < MAX_WORD_LENGTH)
+         words.removeAt(i);
+      else
+         i += 1;
+   }
+   
    qDebug() << "Index" << fullPath << "by" << words;
    
 #if USE_INT == 1
@@ -84,7 +96,7 @@ void buildIndex(WordIndex<T>& index, const QString& path)
 {
    // Directories and files mixed (QPair::first is the location (path), QPair::second is the name of the file/dir).
    // This variable exists only for counting the time without the disk access.
-   QList<QPair<QString, QString>> items; 
+   QLinkedList< QPair< QString, QString > > items; 
    
    QLinkedList<QDir> dirsToVisit;
    dirsToVisit.append(path);   
@@ -103,11 +115,15 @@ void buildIndex(WordIndex<T>& index, const QString& path)
    }
    
    const QTime& t = QTime::currentTime();
-     
-   for (int i = 0; i < items.length(); i++)
-      indexFile(index, items[i].first, items[i].second);
    
-   out << items.length() << " items indexed in " << (double)t.msecsTo(QTime::currentTime()) / 1000 << " s" << endl;
+   int n = 0;
+   for (QLinkedList< QPair< QString, QString > >::iterator i = items.begin(); i != items.end(); i++)
+   {
+      n += 1;
+      indexFile(index, i->first, i->second);
+   }
+   
+   out << n << " items indexed in " << (double)t.msecsTo(QTime::currentTime()) / 1000 << " s" << endl;
 }
 
 void test()
@@ -169,7 +185,7 @@ int main(int argc, char *argv[])
             out << "Type a word : ";
             out.flush();
             QString itemToSearch = in.readLine();
-            if (itemToSearch.length() < 3)
+            if (itemToSearch.length() < MAX_WORD_LENGTH)
                out << "The word must have more than 2 letters" << endl;
             else
                search(index, itemToSearch);
