@@ -9,8 +9,11 @@ template<typename T>
 class Node
 {
 public:
+   /**
+     * Create a root node.
+     */
    Node();
-   Node(const QChar& letter);
+   
    ~Node();
          
    /**
@@ -19,6 +22,10 @@ public:
      */
    Node<T>& addNode(QChar letter);
    
+   /**
+     * Remove a node for their children.
+     * If the node doesn't exist nothing happen.
+     */
    void rmNode(Node<T>* const node);
    
    /**
@@ -27,10 +34,21 @@ public:
      */
    Node<T>* getNode(QChar letter);
    
+   /**
+     * Does the node have some children?
+     */
    bool haveChildren();
    
+   /**
+     * Add an item to the node.
+     * If the item already exists (using operator==) nothing is added.
+     */
    void addItem(T item);
    
+   /**
+     * Remove the item from the node.
+     * If the item doesn'exist nothing happen.
+     */
    void rmItem(T item);
    
    /**
@@ -38,21 +56,28 @@ public:
      */
    QList<T> getItems();
    
+   /**
+     * Does the node own some items?
+     */
    bool haveItems();
    
 private:
-   QChar letter;
-   QList<Node<T>*> children;
-   QList<T> itemList;
+   Node(const QChar& letter);
+   
+   QChar letter; ///< The letter from an indexed word.
+   
+   QList<Node<T>*> children; ///< The children nodes.
+   
+   QList<T> itemList; ///< The indexed items.
 };
 
 /***** Definition *****/
 
 template <typename T>
-Node<T>::Node(const QChar& letter)
-   : letter(letter)
+Node<T>::Node()
+   : letter('\0')
 {
-   qDebug() << "New node : " << letter;
+   qDebug() << "New root node";
 }
 
 template <typename T>
@@ -138,6 +163,13 @@ template <typename T>
 bool Node<T>::haveItems()
 {
    return !this->itemList.empty();      
+}
+
+template <typename T>
+Node<T>::Node(const QChar& letter)
+   : letter(letter)
+{
+   qDebug() << "New node : " << letter;
 }
 
 #endif // NODE_H

@@ -129,31 +129,28 @@ void buildIndex(WordIndex<T>& index, const QString& path)
 
 void test()
 { 
-   WordIndex<int> index;
+   WordIndex<QString> index;
     
-   add(index, "pouet", 1);
-   add(index, "poulpe", 2);
-   add(index, "pouet", 3);
-   add(index, "pou", 4);
-   search(index, "pou");
+   add(index, "banana", QString("banana1"));
+   add(index, "banana", QString("banana2"));
+   add(index, "ban", QString("ban"));
+   add(index, "bananasplit", QString("bananasplit"));
+   search(index, "bana");
    
-   rm(index, "pouet", 1);
-   search(index, "pou");
+   rm(index, "bananasplit", QString("bananasplit"));
+   search(index, "bana");
    
-   add(index, "pouet", 1);
-   add(index, "mais", 5);
-   add(index, "maison", 6);
-   search(index, "pouet");
-   search(index, "maiso");
+   add(index, "bananasplit", QString("bananasplit"));
+   add(index, "bananas", QString("bananas"));
+   search(index, "bana");
    
-   rm(index, "pouet", 1);
-   rm(index, "poulpe", 2);
-   rm(index, "pouet", 3);
-   rm(index, "pou", 4);
-   rm(index, "mais", 5);
+   rm(index, "banana", QString("banana1"));
+   rm(index, "banana", QString("banana2"));
+   rm(index, "ban", QString("ban"));
+   rm(index, "bananasplit", QString("bananasplit"));
    
-   // Should be autmatically deleted at the end of the program.
-   // rm(index, "maison", 6); 
+   // Should be automatically deleted at the end of the program.
+   // rm(index, "bananas", QString("bananas"));
 }
 
 void printUsage(int argc, char *argv[])

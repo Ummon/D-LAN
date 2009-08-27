@@ -29,7 +29,6 @@ private:
 
 template<typename T>
 WordIndex<T>::WordIndex()
-   : node('\0')
 {}
 
 template<typename T>
