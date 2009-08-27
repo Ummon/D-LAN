@@ -5,6 +5,8 @@
 #include <QtCore/QList>
 #include <QtCore/QChar>
 
+#include <Pool.h>
+
 template<typename T>
 class Node
 {
@@ -40,22 +42,34 @@ public:
    
    bool haveItems();
    
+   static void* operator new(const size_t size)
+   {
+      return pool.New(size);
+   }
+   
+   static void operator delete(void* obj)
+   {
+       pool.Delete(obj);
+   }
+   
 private:
    QChar letter;
    QList<Node<T>*> children;
    QList<T> itemList;
+   
+   static CPool pool;
 };
 
 /***** Definition *****/
 
-template<typename T>
+template <typename T>
 Node<T>::Node(const QChar& letter)
    : letter(letter)
 {
    qDebug() << "New node : " << letter;
 }
 
-template<typename T>
+template <typename T>
 Node<T>::~Node()
 {
    qDebug() << "Node deleted : " << this->letter;
@@ -63,7 +77,7 @@ Node<T>::~Node()
       delete n;
 }
 
-template<typename T>
+template <typename T>
 Node<T>& Node<T>::addNode(QChar letter)
 {
    // Search if the letter already exists.
@@ -77,13 +91,13 @@ Node<T>& Node<T>::addNode(QChar letter)
    return *n;
 }
 
-template<typename T>
+template <typename T>
 void Node<T>::rmNode(Node<T>* const node)
 {
    this->children.removeOne(node);
 }
 
-template<typename T>
+template <typename T>
 Node<T>* Node<T>::getNode(QChar letter)
 {
    foreach (Node* n, this->children)
@@ -94,13 +108,13 @@ Node<T>* Node<T>::getNode(QChar letter)
    return 0;
 }
 
-template<typename T>
+template <typename T>
 bool Node<T>::haveChildren()
 {
    return !this->children.empty();
 }
 
-template<typename T>
+template <typename T>
 void Node<T>::addItem(T item)
 {
    // Do not add an existing item.
@@ -111,13 +125,13 @@ void Node<T>::addItem(T item)
    this->itemList.append(item);
 }
 
-template<typename T>
+template <typename T>
 void Node<T>::rmItem(T item)
 {
    this->itemList.removeOne(item);
 }
    
-template<typename T>
+template <typename T>
 QList<T> Node<T>::getItems()
 {
    QList<T> result;
@@ -134,10 +148,13 @@ QList<T> Node<T>::getItems()
    return result;
 }
 
-template<typename T>
+template <typename T>
 bool Node<T>::haveItems()
 {
    return !this->itemList.empty();      
 }
+
+template <typename T>
+CPool Node<T>::pool(5000, sizeof(Node<T>));
 
 #endif // NODE_H
