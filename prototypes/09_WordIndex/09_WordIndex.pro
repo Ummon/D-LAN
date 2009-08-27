@@ -7,6 +7,8 @@ CONFIG += console
 CONFIG -= app_bundle
 TEMPLATE = app
 INCLUDEPATH += .
-SOURCES += main.cpp
+SOURCES += main.cpp \
+    Pool.cpp
 HEADERS += WordIndex.h \
-    Node.h
+    Node.h \
+    Pool.h
