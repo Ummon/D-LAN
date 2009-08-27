@@ -5,8 +5,6 @@
 #include <QtCore/QList>
 #include <QtCore/QChar>
 
-#include <Pool.h>
-
 template<typename T>
 class Node
 {
@@ -42,22 +40,10 @@ public:
    
    bool haveItems();
    
-   static void* operator new(const size_t size)
-   {
-      return pool.New(size);
-   }
-   
-   static void operator delete(void* obj)
-   {
-       pool.Delete(obj);
-   }
-   
 private:
    QChar letter;
    QList<Node<T>*> children;
    QList<T> itemList;
-   
-   static CPool pool;
 };
 
 /***** Definition *****/
@@ -153,8 +139,5 @@ bool Node<T>::haveItems()
 {
    return !this->itemList.empty();      
 }
-
-template <typename T>
-CPool Node<T>::pool(5000, sizeof(Node<T>));
 
 #endif // NODE_H
