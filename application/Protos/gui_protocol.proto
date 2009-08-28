@@ -53,9 +53,10 @@ message State {
    message Stats {
       enum HashingStatus {
          INITIALIZING = 0; // 1st pass : grab all file/dir names and their size.
-         HASHING_IN_PROGRESS = 1;
-         COMPLETE = 2;
-         REFRESHING = 3; // followed by status 1 if there is some files to hash
+         INDEXING_IN_PROGRESS = 1; // 2nd pass : create the word index.
+         HASHING_IN_PROGRESS = 2;
+         COMPLETE = 3;
+         REFRESHING = 4; // followed by status 1 if there is some files to hash. (these state should not used if we have a file watcher capability)
       }
       required HashingStatus hashingStatus = 1;
       required uint32 progress = 2; // 0 to 100
