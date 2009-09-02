@@ -156,7 +156,7 @@ void test()
 void printUsage(int argc, char *argv[])
 {
    QTextStream out(stdout);
-   out << "Usage : " << argv[0] << " [<directory>]" << endl
+   out << "Usage : " << argv[0] << " <directory>*" << endl
       << " <directory> : will scan recursively the directory and index each file and folder." << endl
       << " If there is no directory given some little tests are executed." << endl;
 }
@@ -171,7 +171,8 @@ int main(int argc, char *argv[])
       WordIndex<QString> index;
 #endif
          
-      buildIndex(index, argv[1]);
+      for (int i = 1; i < argc; i++)
+         buildIndex(index, argv[i]);
       
       forever
       {
