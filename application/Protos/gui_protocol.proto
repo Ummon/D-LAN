@@ -51,15 +51,15 @@ message State {
       required Common.Hash peerID = 6;
    }
    message Stats {
-      enum HashingStatus {
-         INITIALIZING = 0; // 1st pass : grab all file/dir names and their size.
+      enum CacheStatus {
+         SCANNING_IN_PROGRESS = 0; // 1st pass : grab all file/dir names and their size.
          INDEXING_IN_PROGRESS = 1; // 2nd pass : create the word index.
          HASHING_IN_PROGRESS = 2;
-         COMPLETE = 3;
-         REFRESHING = 4; // followed by status 1 if there is some files to hash. (these state should not used if we have a file watcher capability)
+         UP_TO_DATE = 3;
       }
-      required HashingStatus hashingStatus = 1;
+      required CacheStatus cacheStatus = 1;
       required uint32 progress = 2; // 0 to 100
+      
       required uint32 downloadRate = 3; // [byte/s].
       required uint32 uploadRate = 4; // [byte/s].
       required uint64 sharingAmount = 5; // [byte].
