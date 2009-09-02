@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
+
 <svg
    xmlns:dc="http://purl.org/dc/elements/1.1/"
    xmlns:cc="http://creativecommons.org/ns#"
@@ -12,7 +13,7 @@
    height="1052.3622"
    id="svg2"
    sodipodi:version="0.32"
-   inkscape:version="0.46"
+   inkscape:version="0.46+devel r21627"
    sodipodi:docname="gui.svg"
    inkscape:output_extension="org.inkscape.output.svg.inkscape"
    version="1.0"
@@ -316,16 +317,16 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="2.8284272"
-     inkscape:cx="155.84144"
-     inkscape:cy="1020.6125"
+     inkscape:zoom="4.0000001"
+     inkscape:cx="250.44742"
+     inkscape:cy="761.80287"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
      inkscape:window-width="1280"
-     inkscape:window-height="800"
-     inkscape:window-x="0"
-     inkscape:window-y="0"
+     inkscape:window-height="943"
+     inkscape:window-x="1276"
+     inkscape:window-y="-4"
      showguides="true"
      inkscape:guide-bbox="true"
      inkscape:snap-bbox="false"
@@ -911,17 +912,17 @@
        inkscape:export-ydpi="130" />
     <text
        xml:space="preserve"
-       style="font-size:6px;font-style:normal;font-weight:normal;opacity:1;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
-       x="105.99985"
-       y="274.4577"
+       style="font-size:5px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+       x="113.74985"
+       y="273.7077"
        id="text2540"
        inkscape:export-filename="/home/gburri/temp/gui.png"
        inkscape:export-xdpi="130"
        inkscape:export-ydpi="130"><tspan
          sodipodi:role="line"
-         x="105.99985"
-         y="274.4577"
-         style="font-size:6px"
+         x="113.74985"
+         y="273.7077"
+         style="font-size:5px"
          id="tspan2542">&lt;d/l rate&gt; | &lt;u/l rate&gt;</tspan></text>
     <text
        xml:space="preserve"
@@ -1726,17 +1727,17 @@
          style="font-size:6px">Search</tspan></text>
     <text
        xml:space="preserve"
-       style="font-size:6px;font-style:normal;font-weight:normal;opacity:1;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
-       x="182.99986"
-       y="274.4577"
+       style="font-size:5px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+       x="189.99986"
+       y="273.7077"
        id="text3720"
        inkscape:export-filename="/home/gburri/temp/gui.png"
        inkscape:export-xdpi="130"
        inkscape:export-ydpi="130"><tspan
          sodipodi:role="line"
-         x="182.99986"
-         y="274.4577"
-         style="font-size:6px"
+         x="189.99986"
+         y="273.7077"
+         style="font-size:5px"
          id="tspan3722">&lt;total peers sharing&gt;</tspan></text>
     <text
        xml:space="preserve"
@@ -1829,17 +1830,17 @@
        inkscape:export-ydpi="130" />
     <text
        xml:space="preserve"
-       style="font-size:6px;font-style:normal;font-weight:normal;opacity:1;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
-       x="301.99976"
-       y="274.34213"
+       style="font-size:5px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+       x="307.24976"
+       y="273.59213"
        id="text3370"
        inkscape:export-filename="/home/gburri/temp/gui.png"
        inkscape:export-xdpi="130"
        inkscape:export-ydpi="130"><tspan
          sodipodi:role="line"
-         x="301.99976"
-         y="274.34213"
-         style="font-size:6px"
+         x="307.24976"
+         y="273.59213"
+         style="font-size:5px"
          id="tspan3372">Core status : connected</tspan></text>
     <text
        xml:space="preserve"
@@ -2057,21 +2058,21 @@
        inkscape:export-ydpi="130" />
     <text
        xml:space="preserve"
-       style="font-size:6px;font-style:normal;font-weight:normal;opacity:1;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
-       x="255.99977"
-       y="274.34213"
+       style="font-size:5px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+       x="257.24976"
+       y="273.59213"
        id="text2637"
        inkscape:export-filename="/home/gburri/temp/gui.png"
        inkscape:export-xdpi="130"
        inkscape:export-ydpi="130"><tspan
          sodipodi:role="line"
-         x="255.99977"
-         y="274.34213"
-         style="font-size:6px"
-         id="tspan2639">&lt;hashing..&gt;</tspan></text>
+         x="257.24976"
+         y="273.59213"
+         style="font-size:5px"
+         id="tspan2639">&lt;cache status&gt;</tspan></text>
     <text
        xml:space="preserve"
-       style="font-size:6px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+       style="font-size:6px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
        x="195.99979"
        y="293.34213"
        id="text2641"
@@ -2082,20 +2083,25 @@
          id="tspan2643"
          x="195.99979"
          y="293.34213"
-         style="font-size:6px">Informations about the current</tspan><tspan
+         style="font-size:6px">Information about the status of the cache.</tspan><tspan
          sodipodi:role="line"
          x="195.99979"
          y="300.84213"
          id="tspan2645"
-         style="font-size:6px">hashing process if exists.</tspan><tspan
+         style="font-size:6px">The status can be 'scanning', 'indexing',</tspan><tspan
          sodipodi:role="line"
          x="195.99979"
          y="308.34213"
          style="font-size:6px"
-         id="tspan2651">(Which files are being hashed, percents, etc.)</tspan><tspan
+         id="tspan3343">'hashing' or 'up-to-date'.</tspan><tspan
          sodipodi:role="line"
          x="195.99979"
          y="315.84213"
+         style="font-size:6px"
+         id="tspan2651">For the three first status a progress bar is displayed.</tspan><tspan
+         sodipodi:role="line"
+         x="195.99979"
+         y="323.34213"
          id="tspan2647"
          style="font-size:6px" /></text>
     <path
