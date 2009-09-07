@@ -13,8 +13,8 @@ message Hash {
 
 // A shared directory matches an existing handle, thus there is no need to have the complete path to it.
 message SharedDir {
-   requires Hash sharedDir = 1; // Identify a shared directory.
-   optional string shared name = 2; // An optional name to identify the shared directory by human. It may correspond to the name of the shared directory itself.   
+   required Hash sharedDir = 1; // Identify a shared directory.
+   optional string sharedName = 2; // An optional name to identify the shared directory by human. It may correspond to the name of the shared directory itself.   
 }
 
 // Used for a directory or a file.
@@ -49,4 +49,11 @@ message FindResult {
    required Common.Hash peerID = 2;
    repeated DirEntryLevel dirs = 3;
    repeated FileEntryLevel files = 4;
+}
+
+// Core settings
+message Settings {     
+   optional string nick = 1;
+   optional Common.DirEntry sharedDir = 2; // A dir size can be unknown (=0).
+   optional Common.DirEntry destinationDir = 3; // A dir size can be unknown (=0).
 }

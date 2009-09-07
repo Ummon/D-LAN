@@ -8,14 +8,6 @@ import "common.proto";
 
 package Protos.GUI;
 
-/***** GUI Common messages *****/
-message Settings {     
-   optional string nick = 1;
-   optional Common.DirEntry sharedDir = 2; // A dir size can be unknown (=0).
-   optional Common.DirEntry destinationDir = 3; // A dir size can be unknown (=0).
-}
-
-
 /***** Core state *****/
 // Core -> GUI
 // The state is sent periodically to the GUI (each second for example)
@@ -70,7 +62,7 @@ message State {
    repeated Download downloads = 2;
    repeated Upload uploads = 3;
    
-   optional Settings settings = 4;
+   optional Common.Settings settings = 4;
    optional Stats stats = 5;
 }
 
@@ -101,7 +93,7 @@ message Close {
 /***** Commands. *****/
 // GUI -> Core
 message SetSettings {
-   required Settings settings = 1;
+   required Common.Settings settings = 1;
 }
 
 // GUI -> Core
