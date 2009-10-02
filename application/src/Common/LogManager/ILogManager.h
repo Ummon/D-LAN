@@ -16,8 +16,11 @@ namespace LogManager
    class ILogManager : public QObject
    {
       Q_OBJECT      
-   public:
-      virtual ILogger* newLogger(const QString& name) throw(LoggerAlreadyExistsException) = 0;
+   public:      
+      /**
+        * @exception LoggerAlreadyExistsException
+        */
+      virtual ILogger* newLogger(const QString& name) = 0;
       
    signals:
       void newEntry(const IEntry& entry);
