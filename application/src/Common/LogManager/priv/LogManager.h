@@ -8,7 +8,10 @@ namespace LogManager
    class LogManager : public ILogManager
    {
    private:
-      ILogger* newLogger(const QString& name) throw(LoggerAlreadyExistsException);
+      /**
+        * @exception LoggerAlreadyExistsException
+        */
+      ILogger* newLogger(const QString& name);
    };
 }
 #endif
