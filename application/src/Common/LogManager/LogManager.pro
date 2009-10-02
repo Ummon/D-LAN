@@ -6,10 +6,10 @@ TARGET = LogManager
 INCLUDEPATH += .
 TEMPLATE = lib
 CONFIG += staticlib
-SOURCES += Builder.cpp \
-    priv/LogManager.cpp \
+SOURCES += priv/LogManager.cpp \
     priv/Logger.cpp \
-    priv/Entry.cpp
+    priv/Entry.cpp \
+    priv/Builder.cpp
 HEADERS += ILogManager.h \
     ILogger.h \
     ILoggable.h \
@@ -19,4 +19,4 @@ HEADERS += ILogManager.h \
     priv/LogManager.h \
     priv/Logger.h \
     priv/Entry.h
-OTHER_FILES += 
+
