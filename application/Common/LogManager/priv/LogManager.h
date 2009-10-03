@@ -3,6 +3,8 @@
 
 #include <ILogManager.h>
 
+#include <QSharedPointer>
+
 namespace LogManager
 {
    class LogManager : public ILogManager
@@ -11,7 +13,7 @@ namespace LogManager
       /**
         * @exception LoggerAlreadyExistsException
         */
-      ILogger* newLogger(const QString& name);
+      QSharedPointer<ILogger> newLogger(const QString& name);
    };
 }
 #endif

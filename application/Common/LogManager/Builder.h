@@ -2,6 +2,8 @@
 #define LOGMANAGER_BUILDER_H
 
 #include <QTextStream>
+#include <QSharedPointer>
+
 #include <ILogManager.h>
 
 namespace LogManager
@@ -12,8 +14,8 @@ namespace LogManager
       /**
         * Output to stdout.
         */
-      static ILogManager* createLogManager();
-      static ILogManager* createLogManager(QTextStream& stream);
+      static QSharedPointer<ILogManager> createLogManager();
+      static QSharedPointer<ILogManager> createLogManager(QTextStream& stream);
    };
 }
 #endif

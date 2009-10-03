@@ -2,6 +2,7 @@
 #define LOGMANAGER_ILOGMANAGER_H
 
 #include <QObject>
+#include <QSharedPointer>
 
 #include <Exceptions.h>
 #include <IEntry.h>
@@ -20,7 +21,7 @@ namespace LogManager
       /**
         * @exception LoggerAlreadyExistsException
         */
-      virtual ILogger* newLogger(const QString& name) = 0;
+      virtual QSharedPointer<ILogger> newLogger(const QString& name) = 0;
       
    signals:
       void newEntry(const IEntry& entry);
