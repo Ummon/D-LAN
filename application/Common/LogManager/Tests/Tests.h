@@ -5,6 +5,7 @@
 #include <QSharedPointer>
 
 #include <ILogManager.h>
+#include <ILogger.h>
 using namespace LogManager;
 
 class Tests : public QObject
@@ -14,11 +15,14 @@ public:
    Tests();
     
 private slots:
-   void CreateLogManager();
-   //void CreateLoggers();
+   void initTestCase();
+   void createLoggers();
+   void logSomeMessages();
    
 private :
    QSharedPointer<ILogManager> logManager;
+   QSharedPointer<ILogger> logger1;
+   QSharedPointer<ILogger> logger2;
 };
 
 #endif

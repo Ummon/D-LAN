@@ -4,18 +4,25 @@
 #include <QTextStream>
 #include <QSharedPointer>
 
+#include <LogManagerGlobal.h>
 #include <ILogManager.h>
 
 namespace LogManager
 {
-   class Builder
+   class LOGMANAGER_EXPORT Builder
    {
    public:
       /**
         * Output to stdout.
         */
       static QSharedPointer<ILogManager> createLogManager();
-      static QSharedPointer<ILogManager> createLogManager(QTextStream& stream);
+      
+      /**
+        *
+        * /!\ The given stream will never be deleted by the LogManager.
+        * @param stream The stream where to output all log message.
+        */
+      static QSharedPointer<ILogManager> createLogManager(QTextStream* stream);
    };
 }
 #endif

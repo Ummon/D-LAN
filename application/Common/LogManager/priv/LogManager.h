@@ -4,16 +4,23 @@
 #include <ILogManager.h>
 
 #include <QSharedPointer>
+#include <QTextStream>
 
 namespace LogManager
 {
    class LogManager : public ILogManager
    {
-   private:
+   public:
+      LogManager();
+      LogManager(QTextStream* stream);
+      
       /**
         * @exception LoggerAlreadyExistsException
         */
       QSharedPointer<ILogger> newLogger(const QString& name);
+      
+   private:
+      QTextStream* out;
    };
 }
 #endif
