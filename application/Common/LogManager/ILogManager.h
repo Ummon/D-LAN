@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QSharedPointer>
 
+#include <LogManagerGlobal.h>
 #include <Exceptions.h>
 #include <IEntry.h>
 
@@ -14,14 +15,14 @@ namespace LogManager
    /**
      * 
      */
-   class ILogManager : public QObject
+   class LOGMANAGER_EXPORT ILogManager : public QObject
    {
       Q_OBJECT      
    public:      
       /**
         * @exception LoggerAlreadyExistsException
         */
-      virtual QSharedPointer<ILogger> newLogger(const QString& name) = 0;
+      LOGMANAGER_EXPORT virtual QSharedPointer<ILogger> newLogger(const QString& name) = 0;
       
    signals:
       void newEntry(const IEntry& entry);

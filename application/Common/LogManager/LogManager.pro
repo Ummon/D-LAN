@@ -2,10 +2,18 @@
 # Project created by QtCreator 2009-10-01T23:12:38
 # -------------------------------------------------
 QT -= gui
-TARGET = LogManager
+TARGET = LogManager  
 INCLUDEPATH += .
+
 TEMPLATE = lib
-CONFIG += staticlib
+
+# Automatically well defined for realse mode too.
+DESTDIR = "output/debug"
+MOC_DIR = ".tmp/debug"
+OBJECTS_DIR = ".tmp/debug"
+
+DEFINES += LOGMANAGER_LIBRARY
+CONFIG += shared
 SOURCES += priv/LogManager.cpp \
     priv/Logger.cpp \
     priv/Entry.cpp \
@@ -18,5 +26,5 @@ HEADERS += ILogManager.h \
     Builder.h \
     priv/LogManager.h \
     priv/Logger.h \
-    priv/Entry.h
-
+    priv/Entry.h \
+    LogManagerGlobal.h
