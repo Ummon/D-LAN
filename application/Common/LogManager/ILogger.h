@@ -3,8 +3,8 @@
 
 #include <QString>
 
-#include <ILoggable.h>
-#include <IEntry.h>
+#include "ILoggable.h"
+#include "IEntry.h"
 
 namespace LogManager
 {

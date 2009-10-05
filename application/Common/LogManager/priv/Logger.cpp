@@ -1,8 +1,14 @@
 #include <priv/Logger.h>
 using namespace LogManager;
 
+Logger::Logger(const QString& name)
+      : out(new QTextStream(stdout))
+{
+
+}
+
 Logger::Logger(QTextStream* stream, const QString& name)
-   : out(stream)
+      : out(stream)
 {
 }
 
