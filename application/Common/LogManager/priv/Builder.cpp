@@ -1,15 +1,15 @@
 #include <Builder.h>
 using namespace LogManager;
 
-#include <ILogManager.h>
-#include <priv/LogManager.h>
+#include <ILogger.h>
+#include <priv/Logger.h>
 
-QSharedPointer<ILogManager> Builder::createLogManager()
+QSharedPointer<ILogger> Builder::newLogger(const QString& name)
 {
-   return QSharedPointer<ILogManager>(new LogManager());
+   return QSharedPointer<ILogger>(new Logger(name));
 }
 
-QSharedPointer<ILogManager> Builder::createLogManager(QTextStream* stream)
+QSharedPointer<ILogger> Builder::newLogger(QTextStream* stream, const QString& name)
 {
-   return QSharedPointer<ILogManager>(new LogManager(stream));   
+   return QSharedPointer<ILogger>(new Logger(stream, name));
 }

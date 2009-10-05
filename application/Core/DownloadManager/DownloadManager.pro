@@ -3,6 +3,9 @@
 # -------------------------------------------------
 QT += network
 QT -= gui
+TARGET = DownloadManager
+TEMPLATE = lib
+CONFIG += shared
 
 DESTDIR = "output/debug"
 MOC_DIR = ".tmp/debug"
@@ -13,9 +16,7 @@ INCLUDEPATH += . \
     ${PROTOBUF}/src
 LIBS += -L${PROTOBUF}/src/.libs \
     -lprotobuf
-TARGET = DownloadManager
-TEMPLATE = lib
-CONFIG += shared
+
 SOURCES += priv/FileDownload.cpp \
     priv/DownloadManager.cpp \
     priv/Download.cpp \
