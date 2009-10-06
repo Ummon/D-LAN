@@ -2,19 +2,19 @@
 using namespace LogManager;
 
 Logger::Logger(const QString& name)
-      : out(new QTextStream(stdout))
+      : name(name), out(new QTextStream(stdout))
 {
 
 }
 
 Logger::Logger(QTextStream* stream, const QString& name)
-      : out(stream)
+      : name(name), out(stream)
 {
 }
 
 void Logger::log(const QString& message, Severity severity)
 {
-   (*this->out) << message << endl;
+   (*this->out) << name << ": " << message << endl;
 }
 
 void Logger::log(const ILoggable& object, Severity severity)

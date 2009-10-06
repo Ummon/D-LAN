@@ -4,16 +4,18 @@
 QT -= gui
 TARGET = FileManager
 TEMPLATE = lib
-
 DESTDIR = "output/debug"
 MOC_DIR = ".tmp/debug"
 OBJECTS_DIR = ".tmp/debug"
-
 INCLUDEPATH += . \
     ../.. \
     ${PROTOBUF}/src
+
 LIBS += -L${PROTOBUF}/src/.libs \
     -lprotobuf
+
+LIBS += -L../../Common/LogManager/output/debug \
+   -lLogManager
 
 DEFINES += FILEMANAGER_LIBRARY
 SOURCES += priv/WordIndex.cpp \
@@ -23,7 +25,8 @@ SOURCES += priv/WordIndex.cpp \
     priv/File.cpp \
     priv/Directory.cpp \
     priv/Chunks.cpp \
-    priv/Chunk.cpp
+    priv/Chunk.cpp \
+    priv/Builder.cpp
 HEADERS += FileManager_global.h \
     IGetHashesResult.h \
     IFileManager.h \
@@ -36,4 +39,5 @@ HEADERS += FileManager_global.h \
     priv/File.h \
     priv/Directory.h \
     priv/Chunks.h \
-    priv/Chunk.h
+    priv/Chunk.h \
+    Builder.h
