@@ -5,6 +5,8 @@ namespace RemoteControlManager
 {
    class IRemoteControlManager
    {
+   public:
+      virtual ~IRemoteControlManager() {}
    };
 }
 #endif

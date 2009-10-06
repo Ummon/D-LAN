@@ -4,7 +4,7 @@
 #include <QThread>
 
 namespace DownloadManager
-{   
+{
    class ChunkDownload;
    class DownloadManager;
 
@@ -13,6 +13,8 @@ namespace DownloadManager
    private:
       ChunkDownload* chunkDownload;
       DownloadManager* downloadManager;
+
+      bool finished; ///< When true then the associated chunk is entirely downloaded.
    };
 }
 #endif

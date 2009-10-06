@@ -9,8 +9,10 @@ namespace NetworkListener
    class INetworkListener
    {
    public:
-      IChat* getChat();
-      ISearch* search();
+      virtual ~INetworkListener() {}
+
+      virtual IChat* getChat() = 0;
+      virtual ISearch* search() = 0;
    };
 }
 #endif

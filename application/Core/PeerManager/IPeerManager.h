@@ -12,6 +12,8 @@ namespace PeerManager
    class IPeerManager
    {
    public:
+      virtual ~IPeerManager() {}
+
       void setNick(const QString& nick);
       QString getNick();
       void newPeerConnection(const QAbstractSocket& socket);

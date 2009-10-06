@@ -16,7 +16,6 @@ DESTDIR = "output/debug"
 MOC_DIR = ".tmp/debug"
 OBJECTS_DIR = ".tmp/debug"
 
-TEMPLATE = lib
 DEFINES += NETWORKLISTENER_LIBRARY
 SOURCES += priv/UDPListener.cpp \
     priv/TCPListener.cpp \

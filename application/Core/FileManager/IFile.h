@@ -4,11 +4,13 @@
 namespace FileManager
 {
    class IChunk;
-   
+
    class IFile
    {
    public:
-      virtual QList<IChunk*> getChunks() = 0;   
+      virtual ~IFile() {}
+
+      virtual QList<IChunk*> getChunks() = 0;
    };
 }
 #endif

@@ -9,6 +9,8 @@ namespace UploadManager
    class IUploadManager
    {
    public:
+      virtual ~IUploadManager() {}
+
       QList<IUpload*> getUploads();
    };
 }

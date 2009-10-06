@@ -18,6 +18,8 @@ namespace LogManager
    class IEntry
    {
    public:
+      virtual ~IEntry() {}
+
       virtual QString getName() = 0;
       virtual QString getMessage() = 0;
       virtual QDate getDate() = 0;

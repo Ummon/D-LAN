@@ -11,6 +11,8 @@ namespace FileManager
    class IChunk
    {
    public:
+      virtual ~IChunk() {}
+
       virtual void read(const quint32& offset, QByteArray& data) = 0;
       virtual void write(const quint32& offset, const QByteArray& data) = 0;
       virtual Common::Hash getHash() = 0;

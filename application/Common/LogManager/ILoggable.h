@@ -6,6 +6,8 @@ namespace LogManager
    class ILoggable
    {
    public:
+      virtual ~ILoggable() {}
+
       virtual QString toStringLog() const = 0;
    };
 }
