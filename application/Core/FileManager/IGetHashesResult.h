@@ -9,8 +9,11 @@
 namespace FileManager
 {
    class IGetHashesResult : QObject
-   {  
+   {
       Q_OBJECT
+   public:
+      virtual ~IGetHashesResult() {}
+
    signals:
       void result(Protos::Core::GetHashesResult& result);
    };

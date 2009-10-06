@@ -5,6 +5,8 @@ namespace UploadManager
 {
    class IUpload
    {
+   public:
+      virtual ~IUpload() {}
    };
 }
 #endif

@@ -11,6 +11,8 @@ namespace LogManager
    class ILogger
    {
    public:
+      virtual ~ILogger() {}
+
       virtual void log(const QString& message, Severity severity) = 0;
       virtual void log(const ILoggable& object, Severity severity) = 0;
    };

@@ -5,7 +5,7 @@ QT += network
 QT -= gui
 TARGET = RemoteControlManager
 INCLUDEPATH += . \
-    ../.. \
+    ../..
 TEMPLATE = lib
 DESTDIR = "output/debug"
 MOC_DIR = ".tmp/debug"

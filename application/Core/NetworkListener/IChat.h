@@ -12,6 +12,8 @@ namespace NetworkListener
    {
       Q_OBJECT
    public:
+      virtual ~IChat() {}
+
       virtual void send(const QString& message) = 0;
 
    signals:

@@ -15,10 +15,12 @@ namespace DownloadManager
      Initializing,
      Queued
    };
-   
+
    class IDownload
    {
    public:
+      virtual ~IDownload() {}
+
       virtual quint32 getId() = 0;
       virtual Status getStatus() = 0;
       virtual bool isDir() = 0;

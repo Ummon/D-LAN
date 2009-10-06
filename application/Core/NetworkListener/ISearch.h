@@ -12,6 +12,8 @@ namespace NetworkListener
    {
       Q_OBJECT
    public:
+      virtual ~ISearch() {}
+
       virtual void search(const QString& words) = 0;
 
    signals:
