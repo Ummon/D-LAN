@@ -19,6 +19,7 @@ namespace LogManager
 
    private:
       QTextStream* out;
+      QString name;
    };
 }
 #endif

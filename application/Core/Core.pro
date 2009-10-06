@@ -5,9 +5,13 @@ QT -= gui
 TARGET = Core
 INCLUDEPATH += . \
     .. \
+    ${PROTOBUF}/src
 
 LIBS += -L../Common/LogManager/output/debug \
    -lLogManager
+
+LIBS += -LFileManager/output/debug \
+   -lFileManager
 
 DESTDIR = "output/debug"
 MOC_DIR = ".tmp/debug"
