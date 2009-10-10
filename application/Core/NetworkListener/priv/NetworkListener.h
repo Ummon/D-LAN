@@ -7,6 +7,7 @@
 #include <Common/LogManager/ILogger.h>
 
 #include <INetworkListener.h>
+#include <priv/UDPListener.h>
 
 namespace NetworkListener
 {

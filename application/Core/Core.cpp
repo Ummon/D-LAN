@@ -19,8 +19,11 @@ using namespace Core;
    this->logger->log("Ready to serve", LogManager::EndUser);
 
 
+    /*///////////////////////
+      DEBUGGING CODE, HAS TO BE REMOVED OR MOVED INTO TESTING UNITS
+    ////////////////////////*/
 
-   //Testing chat function
+    //Testing chat function
    NetworkListener::IChat* chat = this->networkListener->getChat();
 
    //Listening for chat event
@@ -31,12 +34,21 @@ using namespace Core;
    //Sending a message
    chat->send("Je suis un canard");
 
+    /*///////////////////////
+      END OF DEBUGGING CODE
+    ////////////////////////*/
+
 }
 
+/*///////////////////////
+  DEBUGGING FUNCTION, HAS TO BE REMOVED OR MOVED INTO TESTING UNITS
+////////////////////////*/
 void ::Core::dBug_chat(const Protos::Core::ChatMessage& message) {
 
     QString texte;
-    ;
 
     this->logger->log("Got a message ! " + texte.fromStdString(message.message()), LogManager::EndUser);
 }
+/*///////////////////////
+  END OF DEBUGGING FUNCTION
+////////////////////////*/

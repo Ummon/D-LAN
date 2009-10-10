@@ -13,13 +13,16 @@ namespace NetworkListener
    class Chat : public IChat
    {
        public:
-          Chat();
+          Chat(UDPListener* udpListener_);
           virtual ~Chat() {}
           void send(const QString& message);
 
        private:
           UDPListener* udpListener;
           QSharedPointer<LogManager::ILogger> logger;
+
+       public slots:
+            void newChatMessage(const Protos::Core::ChatMessage& message);
    };
 }
 #endif
