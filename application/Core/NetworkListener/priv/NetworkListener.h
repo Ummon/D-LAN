@@ -2,6 +2,9 @@
 #define NETWORKMANAGER_NETWORKLISTENER_H
 
 #include <QList>
+#include <QSharedPointer>
+
+#include <Common/LogManager/ILogger.h>
 
 #include <INetworkListener.h>
 
@@ -15,12 +18,17 @@ namespace NetworkListener
 
    class NetworkListener : public INetworkListener
    {
+   public:
+       NetworkListener();
+
    private:
       ChunkUpdater* chunkUpdater;
       TCPListener* tcpListener;
       UDPListener* udpListener ;
       Chat* chat;
       QList<Search*> searches;
+
+      QSharedPointer<LogManager::ILogger> logger;
    };
 }
 #endif

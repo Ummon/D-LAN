@@ -1,8 +1,8 @@
 #ifndef LOGMANAGER_LOGGER_H
 #define LOGMANAGER_LOGGER_H
 
-#include <QString.h>
-#include <QTextStream.h>
+#include <qstring.h>
+#include <qtextstream.h>
 
 #include <ILogger.h>
 
