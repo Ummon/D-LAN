@@ -19,7 +19,7 @@ namespace NetworkListener
     signals:
         void newMessage(const Protos::Core::ChatMessage& message);
 
-        /* Dues to a limiation of QObject (cannot inherit more than one QObject class), we must have the def of
+     /* Dues to a limiation of QObject (cannot inherit more than one QObject class), we must have the def of
       newChatMessage, used in Chat, here. TODO: Find a better solution ? */
     public slots:
         virtual void newChatMessage(const Protos::Core::ChatMessage& message) = 0;

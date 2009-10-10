@@ -71,7 +71,7 @@ void ::UDPListener::processPendingDatagrams() {
       QHostAddress peerAddress;
       this->socket->readDatagram(datagram.data(), datagram.size(), &peerAddress);
 
-      //this->logger->log("Recived from " +  peerAddress.toString() + " message of type " + datagram.data()[0], LogManager::Debug);
+      //this->logger->log("Recived from " +  peerAddress.toString() + " message " + datagram.data(), LogManager::Debug);
 
       switch (datagram.data()[0]) {
           //Chat message
@@ -88,6 +88,26 @@ void ::UDPListener::processPendingDatagrams() {
 
             //And we rise the event
             emit newChatMessage(chatMessage);
+
+            break;
+        }
+
+          //IMALIVE message
+          case 'I': {
+            //We create a new chatMessage
+            Protos::Core::HaveChunks IMAlimeMessage;
+
+            //We get the correct string
+            QString data = datagram.data();
+            std::string input = data.mid(1).toStdString();
+
+            //We convert in into a proto
+            IMAlimeMessage.ParseFromString(input);
+
+            //We forward the information to the PeerManager
+            //TODO
+
+            this->logger->log("Someone is alive: " + data.fromStdString(IMAlimeMessage.nick()), LogManager::Debug);
 
             break;
         }
