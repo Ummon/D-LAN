@@ -16,19 +16,19 @@ namespace NetworkListener
     class Chat;
     class Search;
 
-   class NetworkListener : public INetworkListener
-   {
-   public:
-       NetworkListener();
+   class NetworkListener : public INetworkListener {
+       public:
+           NetworkListener();
+           IChat* getChat();
 
-   private:
-      ChunkUpdater* chunkUpdater;
-      TCPListener* tcpListener;
-      UDPListener* udpListener ;
-      Chat* chat;
-      QList<Search*> searches;
+       private:
+          ChunkUpdater* chunkUpdater;
+          TCPListener* tcpListener;
+          UDPListener* udpListener ;
+          Chat* chat;
+          QList<Search*> searches;
 
-      QSharedPointer<LogManager::ILogger> logger;
+          QSharedPointer<LogManager::ILogger> logger;
    };
 }
 #endif

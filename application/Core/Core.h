@@ -12,6 +12,10 @@
 #include <Common/LogManager/ILogger.h>
 #include <FileManager/IFileManager.h>
 #include <NetworkListener/INetworkListener.h>
+#include <NetworkListener/IChat.h>
+
+#include <QObject>
+
 
 namespace LogManager { class ILogger; }
 namespace RemoteControlManager { class IRemoteControlManager; }
@@ -22,10 +26,13 @@ namespace UploadManager { class IUploadManager; }
 
 namespace Core
 {
-   class Core
-   {
+   class Core : public QObject
+ {
+     Q_OBJECT
+
    public:
       Core();
+      virtual ~Core() {}
 
    private:
       QSharedPointer<LogManager::ILogger> logger;
@@ -36,6 +43,10 @@ namespace Core
       PeerManager::IPeerManager* peerManager;
       DownloadManager::IDownloadManager* downloadManager;
       UploadManager::IUploadManager* uploadManager;
+
+   public slots:
+      void dBug_chat(const Protos::Core::ChatMessage& message);
+
    };
 }
 #endif
