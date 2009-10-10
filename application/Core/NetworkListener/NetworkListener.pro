@@ -20,7 +20,9 @@ SOURCES += priv/UDPListener.cpp \
     priv/NetworkListener.cpp \
     priv/ChunkUpdater.cpp \
     priv/Chat.cpp \
-    priv/Builder.cpp
+    priv/Builder.cpp \
+    ../../Protos/common.pb.cc \
+    ../../Protos/core_protocol.pb.cc
 HEADERS += NetworkListener_global.h \
     ISearch.h \
     INetworkListener.h \
@@ -31,4 +33,6 @@ HEADERS += NetworkListener_global.h \
     priv/NetworkListener.h \
     priv/ChunkUpdater.h \
     priv/Chat.h \
-    Builder.h
+    Builder.h \
+    ../../Protos/common.pb.h \
+    ../../Protos/core_protocol.pb.h

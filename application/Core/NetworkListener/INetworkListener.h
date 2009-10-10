@@ -11,7 +11,7 @@ namespace NetworkListener
    public:
       virtual ~INetworkListener() {}
 
-      //virtual IChat* getChat() = 0;
+      virtual IChat* getChat() = 0;
       //virtual ISearch* search() = 0;
    };
 }
