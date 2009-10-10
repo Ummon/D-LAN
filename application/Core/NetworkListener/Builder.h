@@ -17,9 +17,6 @@ namespace NetworkListener
    public:
 
       static QSharedPointer<INetworkListener> newNetworkListener();
-      static QSharedPointer<IChat> newChat();
-      static QSharedPointer<ISearch> newSearch();
-
    };
 }
 #endif

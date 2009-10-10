@@ -9,17 +9,12 @@ using namespace NetworkListener;
 #include <priv/Chat.h>
 #include <priv/Search.h>
 
+/**
+ * Return a new instante of a NetworkListener
+ *
+ * @author mcuony
+ */
 QSharedPointer<INetworkListener> Builder::newNetworkListener()
 {
    return QSharedPointer<INetworkListener>(new NetworkListener());
-}
-
-QSharedPointer<IChat> Builder::newChat()
-{
-   return QSharedPointer<IChat>(new Chat());
-}
-
-QSharedPointer<ISearch> Builder::newSearch()
-{
-   return QSharedPointer<ISearch>(new Search());
 }
