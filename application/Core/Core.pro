@@ -13,6 +13,9 @@ LIBS += -L../Common/LogManager/output/debug \
 LIBS += -LFileManager/output/debug \
    -lFileManager
 
+LIBS += -LNetworkListener/output/debug \
+   -lNetworkListener
+
 DESTDIR = "output/debug"
 MOC_DIR = ".tmp/debug"
 OBJECTS_DIR = ".tmp/debug"
