@@ -18,7 +18,7 @@ namespace NetworkListener
           //virtual ISearch* search() = 0;
 
        /* Dues to a limiation of QObject (cannot inherit more than one QObject class), we must have the def of
-      newChatMessage, used in NetworkListener, here. TODO: Find a better solution ? */
+        presence, used in NetworkListener, here. TODO: Find a better solution ? */
         public slots:
             virtual void presence() = 0;
    };

@@ -16,7 +16,7 @@ using namespace NetworkListener;
     this->logger->log("Loading ..", LogManager::EndUser);
 
     //We create a new UDPListener
-    this->udpListener = new UDPListener();
+    this->udpListener = new UDPListener(peerManager_);
 
     //Reference to the peerManager
     this->peerManager = peerManager_;
@@ -47,7 +47,7 @@ IChat* ::NetworkListener::getChat() {
  * @author mcuony
  */
 void ::NetworkListener::presence() {
-    this->logger->log("Sending IIMALIME", LogManager::Debug);
+    this->logger->log("Sending <IAmAlive>", LogManager::Debug);
 
     //We put info in our chatMessage Proto
     Protos::Core::HaveChunks IMAlimeMessage;
@@ -58,7 +58,8 @@ void ::NetworkListener::presence() {
     IMAlimeMessage.set_version(1);
 
     Protos::Common::Hash peerId;
-    peerId.set_hash(this->peerManager->getMyId()->toBase64());
+
+    peerId.set_hash(peerManager->getMyId()->toStdString());
     *IMAlimeMessage.mutable_peerid() = peerId;
 
     //We serialize the proto to a string

@@ -10,13 +10,15 @@
 
 #include <Protos/core_protocol.pb.h>
 
+#include <Core/PeerManager/IPeerManager.h>
+
 namespace NetworkListener {
     class UDPListener : public QObject {
 
     Q_OBJECT
 
     public:
-        UDPListener();
+        UDPListener(QSharedPointer<PeerManager::IPeerManager> peerManager_);
         void sendMessage(const QString& mess);
 
     signals:
@@ -26,6 +28,7 @@ namespace NetworkListener {
 
     private:
         QSharedPointer<LogManager::ILogger> logger;
+        QSharedPointer<PeerManager::IPeerManager> peerManager;
         static const char TTL; ///< Time to live, see the UDP multicast documentation.
         static const int port;
         static QHostAddress multicastIP; ///< A choosen multicast address channel used to send and received messages.

@@ -1,10 +1,10 @@
 #ifndef COMMON_HASH_H
 #define COMMON_HASH_H
 
-#include <QByteArray>
+#include <QString>
 
 namespace Common
 {
-   class Hash : public QByteArray { };
+   class Hash : public QString { };
 }
 #endif
