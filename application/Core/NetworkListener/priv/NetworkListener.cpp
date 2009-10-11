@@ -11,15 +11,18 @@ using namespace NetworkListener;
  *
  * @author mcuony
  */
-::NetworkListener::NetworkListener() : logger(LogManager::Builder::newLogger("NetworkListener")) {
+::NetworkListener::NetworkListener(QSharedPointer<PeerManager::IPeerManager> peerManager_) : logger(LogManager::Builder::newLogger("NetworkListener")) {
 
     this->logger->log("Loading ..", LogManager::EndUser);
 
     //We create a new UDPListener
     this->udpListener = new UDPListener();
 
+    //Reference to the peerManager
+    this->peerManager = peerManager_;
+
     //And a new chat object
-    this->chat = new Chat(this->udpListener);
+    this->chat = new Chat(this->udpListener, peerManager_);
 
     //We create the timer who will send information about our presence
     timer = new QTimer(this);
@@ -50,12 +53,12 @@ void ::NetworkListener::presence() {
     Protos::Core::HaveChunks IMAlimeMessage;
 
     IMAlimeMessage.set_amount(1);
-    IMAlimeMessage.set_nick("PSEUDO:TODO");
+    IMAlimeMessage.set_nick(this->peerManager->getNick()->toStdString());
     IMAlimeMessage.set_tag(99);
     IMAlimeMessage.set_version(1);
 
     Protos::Common::Hash peerId;
-    peerId.set_hash("TODO:HASH"); // @TODO !
+    peerId.set_hash(this->peerManager->getMyId()->toBase64());
     *IMAlimeMessage.mutable_peerid() = peerId;
 
     //We serialize the proto to a string

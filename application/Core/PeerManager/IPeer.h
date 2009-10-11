@@ -22,7 +22,7 @@ namespace PeerManager
       virtual IGetEntries* getEntries(const Protos::Common::DirEntry& dir) = 0;
 
    signals:
-      void receive(QByteArray& data);
+      virtual void receive(QByteArray& data) = 0;
    };
 }
 #endif

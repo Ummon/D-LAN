@@ -14,7 +14,7 @@ namespace PeerManager
       virtual ~IGetEntries() {}
 
    signals:
-      void result(const Protos::Core::GetEntriesResult& result);
+     virtual void result(const Protos::Core::GetEntriesResult& result) = 0;
    };
 }
 #endif

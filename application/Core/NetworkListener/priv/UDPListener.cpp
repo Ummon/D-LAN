@@ -107,7 +107,7 @@ void ::UDPListener::processPendingDatagrams() {
             //We forward the information to the PeerManager
             //TODO
 
-            this->logger->log("Someone is alive: " + data.fromStdString(IMAlimeMessage.nick()), LogManager::Debug);
+            this->logger->log("Someone is alive: " +  data.fromStdString(IMAlimeMessage.peerid().hash()) + ", " +data.fromStdString(IMAlimeMessage.nick()), LogManager::Debug);
 
             break;
         }

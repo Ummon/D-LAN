@@ -5,6 +5,7 @@
 #include <Common/LogManager/ILogger.h>
 #include <QSharedPointer>
 #include <Protos/core_protocol.pb.h>
+#include <Core/PeerManager/IPeerManager.h>
 
 namespace NetworkListener
 {
@@ -13,13 +14,14 @@ namespace NetworkListener
    class Chat : public IChat
    {
        public:
-          Chat(UDPListener* udpListener_);
+          Chat(UDPListener* udpListener_, QSharedPointer<PeerManager::IPeerManager> peerManager_);
           virtual ~Chat() {}
           void send(const QString& message);
 
        private:
           UDPListener* udpListener;
           QSharedPointer<LogManager::ILogger> logger;
+          QSharedPointer<PeerManager::IPeerManager> peerManager;
 
        public slots:
             void newChatMessage(const Protos::Core::ChatMessage& message);
