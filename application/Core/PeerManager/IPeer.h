@@ -18,7 +18,7 @@ namespace PeerManager
 
       virtual bool isAlive() = 0;
       virtual void send(const QByteArray& data) = 0;
-      virtual Common::Hashes getHashes(const Protos::Common::FileEntry& file) = 0;
+      virtual Common::Hashes* getHashes(const Protos::Common::FileEntry& file) = 0;
       virtual IGetEntries* getEntries(const Protos::Common::DirEntry& dir) = 0;
 
    signals:

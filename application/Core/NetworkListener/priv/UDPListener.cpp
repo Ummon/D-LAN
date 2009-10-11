@@ -20,9 +20,11 @@ QHostAddress UDPListener::multicastIP("236.123.43.24");
  *
  * @author mcuony
  */
-::UDPListener::UDPListener() : QObject() , logger(LogManager::Builder::newLogger("NetworkListener::UDPListener")) {
+::UDPListener::UDPListener(QSharedPointer<PeerManager::IPeerManager> peerManager_) : QObject() , logger(LogManager::Builder::newLogger("NetworkListener::UDPListener")) {
 
     this->logger->log("Loading ..", LogManager::EndUser);
+
+    this->peerManager = peerManager_;
 
     this->socket = new QUdpSocket(this);
 
@@ -104,10 +106,20 @@ void ::UDPListener::processPendingDatagrams() {
             //We convert in into a proto
             IMAlimeMessage.ParseFromString(input);
 
-            //We forward the information to the PeerManager
-            //TODO
+            quint64 am;
+            am = IMAlimeMessage.amount();
 
-            this->logger->log("Someone is alive: " +  data.fromStdString(IMAlimeMessage.peerid().hash()) + ", " +data.fromStdString(IMAlimeMessage.nick()), LogManager::Debug);
+            QString nick;
+            nick = nick.fromStdString(IMAlimeMessage.nick());
+
+            Common::Hash id;
+            id.setNum(id.fromStdString(IMAlimeMessage.peerid().hash()).toLongLong());
+
+
+            //We forward the information to the PeerManager
+            this->peerManager->updatePeer(id, peerAddress.toIPv4Address(), nick, am);
+
+//            this->logger->log("Someone is alive: " + id + ", " +data.fromStdString(IMAlimeMessage.nick()), LogManager::Debug);
 
             break;
         }

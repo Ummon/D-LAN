@@ -15,7 +15,7 @@ using namespace Core;
 
    this->fileManager = FileManager::Builder::newFileManager();
 
-   this->peerManager = PeerManager::Builder::newPeerManager();
+   peerManager = PeerManager::Builder::newPeerManager();
 
    this->peerManager->setNick("Test");
 
@@ -23,7 +23,7 @@ using namespace Core;
 
    this->logger->log("Ready to serve", LogManager::EndUser);
 
-    this->peerManager->setNick("Test2");
+   this->peerManager->setNick("Test2");
 
 
     /*///////////////////////

@@ -42,8 +42,9 @@ void ::Chat::send(const QString& message) {
 
 
     Protos::Common::Hash peerId;
-    peerId.set_hash(this->peerManager->getMyId()->toBase64());
+    peerId.set_hash(this->peerManager->getMyId()->toStdString());
     *chatMessage.mutable_peerid() = peerId;
+
 
 
     //We serialize the proto to a string
