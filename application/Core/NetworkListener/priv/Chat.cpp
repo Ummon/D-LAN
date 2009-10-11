@@ -11,12 +11,15 @@ using namespace NetworkListener;
   * @param udpListener : An udpListener object
   * @author mcuony
   */
-::Chat::Chat(UDPListener* udpListener_) : logger(LogManager::Builder::newLogger("NetworkListener::Chat"))  {
+::Chat::Chat(UDPListener* udpListener_, QSharedPointer<PeerManager::IPeerManager> peerManager_) : logger(LogManager::Builder::newLogger("NetworkListener::Chat"))  {
 
    this->logger->log("Loading ..", LogManager::EndUser);
 
    //Referencing the udpListener
    this->udpListener = udpListener_;
+
+   //Referencing the peerManager
+   this->peerManager = peerManager_;
 
    //Listening for new messages
    Chat::connect(this->udpListener, SIGNAL(newChatMessage(const Protos::Core::ChatMessage&)), this, SLOT(newChatMessage(const Protos::Core::ChatMessage&)));
@@ -37,13 +40,16 @@ void ::Chat::send(const QString& message) {
     Protos::Core::ChatMessage chatMessage;
     chatMessage.set_message(message.toStdString());
 
+
     Protos::Common::Hash peerId;
-    peerId.set_hash("TODO:HASH"); // @TODO !
+    peerId.set_hash(this->peerManager->getMyId()->toBase64());
     *chatMessage.mutable_peerid() = peerId;
+
 
     //We serialize the proto to a string
     std::string output;
     chatMessage.SerializeToString(&output);
+
 
     //We broadcast the data. @TODO: Ugly type of message system
     this->udpListener->sendMessage("C" + message.fromStdString(output));

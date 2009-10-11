@@ -2,6 +2,7 @@
 # Project created by QtCreator 2009-10-05T21:20:26
 # -------------------------------------------------
 QT -= gui
+QT += network
 TARGET = Core
 INCLUDEPATH += . \
     .. \
@@ -15,6 +16,9 @@ LIBS += -LFileManager/output/debug \
 
 LIBS += -LNetworkListener/output/debug \
    -lNetworkListener
+
+LIBS += -LPeerManager/output/debug \
+   -lPeerManager
 
 DESTDIR = "output/debug"
 MOC_DIR = ".tmp/debug"

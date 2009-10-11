@@ -5,18 +5,17 @@
 #include <QSharedPointer>
 
 #include "NetworkListener_global.h"
+#include <Core/PeerManager/IPeerManager.h>
 
 namespace NetworkListener
 {
    class INetworkListener;
-   class IChat;
-   class ISearch;
 
    class NETWORKLISTENERSHARED_EXPORT Builder
    {
    public:
 
-      static QSharedPointer<INetworkListener> newNetworkListener();
+      static QSharedPointer<INetworkListener> newNetworkListener(QSharedPointer<PeerManager::IPeerManager>);
    };
 }
 #endif

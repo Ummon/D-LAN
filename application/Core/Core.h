@@ -3,7 +3,7 @@
 
 /*
 #include <RemoteControlManager/IRemoteControlManager.h>
-#include <PeerManager/IPeerManager.h>
+
 #include <DownloadManager/IDownloadManager.h>
 #include <UploadManager/IUploadManager.h>*/
 
@@ -13,6 +13,7 @@
 #include <FileManager/IFileManager.h>
 #include <NetworkListener/INetworkListener.h>
 #include <NetworkListener/IChat.h>
+#include <PeerManager/IPeerManager.h>
 
 #include <QObject>
 
@@ -38,9 +39,9 @@ namespace Core
       QSharedPointer<LogManager::ILogger> logger;
       QSharedPointer<FileManager::IFileManager> fileManager;
       QSharedPointer<NetworkListener::INetworkListener> networkListener;
+      QSharedPointer<PeerManager::IPeerManager> peerManager;
 
       RemoteControlManager::IRemoteControlManager* remoteControlManager;
-      PeerManager::IPeerManager* peerManager;
       DownloadManager::IDownloadManager* downloadManager;
       UploadManager::IUploadManager* uploadManager;
 
