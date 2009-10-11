@@ -29,14 +29,15 @@ namespace FileManager
       QList<Protos::Common::DirEntry> getDestinationDirs();
       IFile newFile(const Protos::Common::FileEntry& remotEntry);*/
 
+
+      static QSharedPointer<LogManager::ILogger> logger;
+
    private:
       Chunks* chunks;
       FileUpdater* fileUpdater;
       WordIndex* wordIndex;
       QList<SharedDirectory*> sharedDirReadWrite;
       QList<SharedDirectory*> sharedDirReadOnly;
-
-      QSharedPointer<LogManager::ILogger> logger;
    };
 }
 #endif
