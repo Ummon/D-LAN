@@ -11,5 +11,6 @@ int main(int argc, char *argv[])
    QCoreApplication a(argc, argv);
    Core::Core core;
 
+
    return a.exec();
 }

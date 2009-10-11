@@ -14,7 +14,7 @@ namespace NetworkListener
    public:
       virtual ~ISearch() {}
 
-      virtual void search(const QString& words) = 0;
+      //virtual void search(const QString& words) = 0;
 
    signals:
       void found(const Protos::Common::FindResult& result, quint32 IP);
