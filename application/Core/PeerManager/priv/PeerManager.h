@@ -3,10 +3,12 @@
 
 #include <QString>
 #include <QList>
+#include <QSharedPointer>
 
 #include <Common/Hash.h>
 
 #include <IPeerManager.h>
+#include <Common/LogManager/ILogger.h>
 
 namespace PeerManager
 {
@@ -14,10 +16,17 @@ namespace PeerManager
 
    class PeerManager : public IPeerManager
    {
-   private:
-      QList<Peer*> peers;
-      Common::Hash ID;
-      QString nick;
+       public:
+          PeerManager();
+          Common::Hash* getMyId();
+          void setNick(const QString& nick_);
+          QString* getNick();
+
+       private:
+          QList<Peer*> peers;
+          Common::Hash ID;
+          QString nick;
+          QSharedPointer<LogManager::ILogger> logger;
    };
 }
 #endif
