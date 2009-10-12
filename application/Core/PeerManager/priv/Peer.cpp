@@ -51,7 +51,8 @@ bool ::Peer::isAlive() {
  *
  * @author mcuony
  */
-Common::Hash ::Peer::getId() {
+Common::Hash Peer::getId()
+{
     return this->ID;
 }
 
