@@ -11,25 +11,22 @@ using namespace NetworkListener;
  *
  * @author mcuony
  */
-::NetworkListener::NetworkListener(QSharedPointer<PeerManager::IPeerManager> peerManager_) : logger(LogManager::Builder::newLogger("NetworkListener")) {
+::NetworkListener::NetworkListener(QSharedPointer<PeerManager::IPeerManager> newPeerManager) : logger(LogManager::Builder::newLogger("NetworkListener"))
+{
 
     this->logger->log("Loading ..", LogManager::EndUser);
 
-    //We create a new UDPListener
-    this->udpListener = new UDPListener(peerManager_);
+    // References to needed classes.
+    this->udpListener = new UDPListener(newPeerManager);
+    this->peerManager = newPeerManager;
+    this->chat = new Chat(this->udpListener, newPeerManager);
 
-    //Reference to the peerManager
-    this->peerManager = peerManager_;
-
-    //And a new chat object
-    this->chat = new Chat(this->udpListener, peerManager_);
-
-    //We create the timer who will send information about our presence
-    timer = new QTimer(this);
+    // We create the timer who will send information about our presence.
+    this->timer = new QTimer(this);
     connect(timer, SIGNAL(timeout()), this, SLOT(presence()));
-    timer->start(1/IMAliveFrequency*1000);
+    this->timer->start(1/IMAliveFrequency*1000);
 
-    presence(); //Send the information at the first time
+    this->presence(); // Send the information at the first time.
 }
 
 /**
@@ -37,7 +34,8 @@ using namespace NetworkListener;
  *
  * @author mcuony
  */
-IChat* ::NetworkListener::getChat() {
+IChat* ::NetworkListener::getChat()
+{
     return this->chat;
 }
 
@@ -46,10 +44,11 @@ IChat* ::NetworkListener::getChat() {
  *
  * @author mcuony
  */
-void ::NetworkListener::presence() {
+void ::NetworkListener::presence()
+{
     this->logger->log("Sending <IAmAlive>", LogManager::Debug);
 
-    //We put info in our chatMessage Proto
+    // We put info in a IMAlimeMessage Proto.
     Protos::Core::HaveChunks IMAlimeMessage;
 
     IMAlimeMessage.set_amount(1);
@@ -62,12 +61,10 @@ void ::NetworkListener::presence() {
     peerId.set_hash(peerManager->getMyId()->toStdString());
     *IMAlimeMessage.mutable_peerid() = peerId;
 
-    //We serialize the proto to a string
+    // We serialize the proto to a string.
     std::string output;
     IMAlimeMessage.SerializeToString(&output);
 
-    QString message = "A";
-
-    //We broadcast the data. @TODO: Ugly type of message system
-    this->udpListener->sendMessage("I" + message.fromStdString(output));
+    // We broadcast the data.
+    this->udpListener->sendMessage(IAmAlivePacket + QString::fromStdString(output));
 }

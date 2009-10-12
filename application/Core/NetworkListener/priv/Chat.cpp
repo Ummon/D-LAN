@@ -11,18 +11,17 @@ using namespace NetworkListener;
   * @param udpListener : An udpListener object
   * @author mcuony
   */
-::Chat::Chat(UDPListener* udpListener_, QSharedPointer<PeerManager::IPeerManager> peerManager_) : logger(LogManager::Builder::newLogger("NetworkListener::Chat"))  {
+::Chat::Chat(UDPListener* NewUdpListener, QSharedPointer<PeerManager::IPeerManager> NewPeerManager) : logger(LogManager::Builder::newLogger("NetworkListener::Chat"))
+{
 
-   this->logger->log("Loading ..", LogManager::EndUser);
+    this->logger->log("Loading ..", LogManager::EndUser);
 
-   //Referencing the udpListener
-   this->udpListener = udpListener_;
+    this->udpListener = NewUdpListener;
 
-   //Referencing the peerManager
-   this->peerManager = peerManager_;
+    this->peerManager = NewPeerManager;
 
-   //Listening for new messages
-   Chat::connect(this->udpListener, SIGNAL(newChatMessage(const Protos::Core::ChatMessage&)), this, SLOT(newChatMessage(const Protos::Core::ChatMessage&)));
+    // Listening for new messages.
+    Chat::connect(this->udpListener, SIGNAL(newChatMessage(const Protos::Core::ChatMessage&)), this, SLOT(newChatMessage(const Protos::Core::ChatMessage&)));
 
 }
 
@@ -32,28 +31,25 @@ using namespace NetworkListener;
   * @param message : The message to send
   * @author mcuony
   */
-void ::Chat::send(const QString& message) {
+void ::Chat::send(const QString& message)
+{
 
     this->logger->log("Message to send: " + message , LogManager::Debug);
 
-    //We put info in our chatMessage Proto
+    // We put info in our chatMessage Proto.
     Protos::Core::ChatMessage chatMessage;
     chatMessage.set_message(message.toStdString());
-
 
     Protos::Common::Hash peerId;
     peerId.set_hash(this->peerManager->getMyId()->toStdString());
     *chatMessage.mutable_peerid() = peerId;
 
-
-
-    //We serialize the proto to a string
+    // We serialize the proto to a string.
     std::string output;
     chatMessage.SerializeToString(&output);
 
-
-    //We broadcast the data. @TODO: Ugly type of message system
-    this->udpListener->sendMessage("C" + message.fromStdString(output));
+    // .We broadcast the data.
+    this->udpListener->sendMessage(chatMessagePacket + QString::fromStdString(output));
 }
 
 /**
@@ -62,6 +58,7 @@ void ::Chat::send(const QString& message) {
  *
  * @author mcuony
  */
-void ::Chat::newChatMessage(const Protos::Core::ChatMessage& message) {
+void ::Chat::newChatMessage(const Protos::Core::ChatMessage& message)
+{
     emit newMessage(message);
 }

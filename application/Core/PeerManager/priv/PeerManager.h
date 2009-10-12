@@ -25,9 +25,9 @@ namespace PeerManager
        public:
           PeerManager();
           Common::Hash* getMyId();
-          void setNick(const QString& nick_);
+          void setNick(const QString& newNick);
           QString* getNick();
-          void updatePeer(const Common::Hash& ID_, quint32 IP_, const QString& nick_, const quint64& amount_);
+          void updatePeer(const Common::Hash& peerID, quint32 peerIP, const QString& peerNick, const quint64& peerAmount);
 
        private:
           QList<Peer*> peers;
@@ -35,7 +35,7 @@ namespace PeerManager
           QString nick;
           QTimer *timer;
           QSharedPointer<LogManager::ILogger> logger;
-          Peer* fromIdToPeer(const Common::Hash& ID_);
+          Peer* fromIdToPeer(const Common::Hash& peerID);
 
        public slots:
           void cleanUp();

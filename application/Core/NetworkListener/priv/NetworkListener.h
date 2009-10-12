@@ -23,25 +23,26 @@ namespace NetworkListener
     class Chat;
     class Search;
 
-   class NetworkListener : public INetworkListener {
+    class NetworkListener : public INetworkListener
+    {
 
-       public:
-           NetworkListener(QSharedPointer<PeerManager::IPeerManager> peerManager_);
-           IChat* getChat();
+        public:
+            NetworkListener(QSharedPointer<PeerManager::IPeerManager> newPeerManager);
+            IChat* getChat();
 
-       private:
-          ChunkUpdater* chunkUpdater;
-          TCPListener* tcpListener;
-          UDPListener* udpListener;
+        private:
+            ChunkUpdater* chunkUpdater;
+            TCPListener* tcpListener;
+            UDPListener* udpListener;
 
-          Chat* chat;
-          QList<Search*> searches;
-          QTimer *timer;
-          QSharedPointer<PeerManager::IPeerManager> peerManager;
-          QSharedPointer<LogManager::ILogger> logger;
+            Chat* chat;
+            QList<Search*> searches;
+            QTimer *timer;
+            QSharedPointer<PeerManager::IPeerManager> peerManager;
+            QSharedPointer<LogManager::ILogger> logger;
 
-       public slots:
-          void presence();
+        public slots:
+            void presence();
    };
 }
 #endif

@@ -13,9 +13,9 @@ namespace PeerManager
 
    class PEERMANAGERSHARED_EXPORT Builder
    {
-   public:
+       public:
 
-      static QSharedPointer<IPeerManager> newPeerManager();
+          static QSharedPointer<IPeerManager> newPeerManager();
    };
 }
 #endif

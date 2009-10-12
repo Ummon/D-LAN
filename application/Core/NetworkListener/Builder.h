@@ -9,13 +9,12 @@
 
 namespace NetworkListener
 {
-   class INetworkListener;
+    class INetworkListener;
 
-   class NETWORKLISTENERSHARED_EXPORT Builder
-   {
-   public:
-
-      static QSharedPointer<INetworkListener> newNetworkListener(QSharedPointer<PeerManager::IPeerManager>);
-   };
+    class NETWORKLISTENERSHARED_EXPORT Builder
+    {
+        public:
+            static QSharedPointer<INetworkListener> newNetworkListener(QSharedPointer<PeerManager::IPeerManager>);
+    };
 }
 #endif

@@ -10,7 +10,8 @@ using namespace PeerManager;
  *
  * @author mcuony
  */
-::PeerManager::PeerManager() : logger(LogManager::Builder::newLogger("PeerManager")) {
+::PeerManager::PeerManager() : logger(LogManager::Builder::newLogger("PeerManager"))
+{
 
     this->logger->log("Loading ..", LogManager::EndUser);
 
@@ -21,10 +22,10 @@ using namespace PeerManager;
 
     this->logger->log("Our current id: " + this->ID, LogManager::EndUser);
 
-    //We create the timer to clean old peers
-    timer = new QTimer(this);
-    connect(timer, SIGNAL(timeout()), this, SLOT(cleanUp()));
-    timer->start(1/CleanUpFrequency*1000);
+    // We create the timer to clean old peers.
+    this->timer = new QTimer(this);
+    connect(this->timer, SIGNAL(timeout()), this, SLOT(cleanUp()));
+    this->timer->start(1/CleanUpFrequency*1000);
 
 }
 
@@ -34,8 +35,9 @@ using namespace PeerManager;
  *
  * @author mcuony
  */
-Common::Hash* ::PeerManager::getMyId() {
-    return &ID;
+Common::Hash* ::PeerManager::getMyId()
+{
+    return &this->ID;
 }
 
 /**
@@ -43,8 +45,9 @@ Common::Hash* ::PeerManager::getMyId() {
  *
  * @author mcuony
  */
-void ::PeerManager::setNick(const QString &nick_) {
-    nick = nick_;
+void ::PeerManager::setNick(const QString & newNick)
+{
+    this->nick = newNick;
 }
 
 /**
@@ -52,7 +55,8 @@ void ::PeerManager::setNick(const QString &nick_) {
  *
  * @author mcuony
  */
-QString* ::PeerManager::getNick() {
+QString* ::PeerManager::getNick()
+{
     return &this->nick;
 }
 
@@ -61,14 +65,15 @@ QString* ::PeerManager::getNick() {
  *
  * @author mcuony
  */
-void ::PeerManager::updatePeer(const Common::Hash& ID_, quint32 IP_, const QString& nick_, const quint64& amount_) {
-    //We probably know that WE are alive
-    if (ID_ == ID)
+void ::PeerManager::updatePeer(const Common::Hash& peerID, quint32 peerIP, const QString& peerNick, const quint64& peerAmount)
+{
+    // We probably know that WE are alive.
+    if (peerID == this->ID)
         return;
 
-    this->logger->log(ID_ + " is alive !", LogManager::Debug);
+    this->logger->log(peerID + " is alive !", LogManager::Debug);
 
-    Peer* thePeer = fromIdToPeer(ID_);
+    Peer* thePeer = this->fromIdToPeer(peerID);
 
     thePeer->justSeen();
 
@@ -80,17 +85,19 @@ void ::PeerManager::updatePeer(const Common::Hash& ID_, quint32 IP_, const QStri
  *
  * @author mcuony
  */
-Peer* ::PeerManager::fromIdToPeer(const Common::Hash& ID_) {
+Peer* ::PeerManager::fromIdToPeer(const Common::Hash& peerID)
+{
 
-    for (int i = 0; i < peers.length(); i++) {
-        if (peers.at(i)->getId()->toLong() == ID_.toLong())
-            return peers.at(i);
+    for (int i = 0; i < this->peers.length(); i++)
+    {
+        if (this->peers.at(i)->getId()->toLong() == peerID.toLong())
+            return this->peers.at(i);
 
     }
 
-    this->logger->log(ID_ + " wasn't seen before, creating a new peer.", LogManager::Debug);
+    this->logger->log(peerID + " wasn't seen before, creating a new peer.", LogManager::Debug);
 
-    Peer* newPeer = new Peer(ID_);
+    Peer* newPeer = new Peer(peerID);
 
     this->peers.append(newPeer);
 
@@ -103,12 +110,14 @@ Peer* ::PeerManager::fromIdToPeer(const Common::Hash& ID_) {
  *
  * @author mcuony
  */
-void ::PeerManager::cleanUp() {
+void ::PeerManager::cleanUp()
+{
 
     this->logger->log("Cleaning up peers", LogManager::Debug);
 
-    for (int i = 0; i < peers.length(); i++) {
-        if (peers.at(i)->isAlive() && peers.at(i)->haveYouToDie())
+    for (int i = 0; i < peers.length(); i++)
+    {
+        if (this->peers.at(i)->isAlive() && this->peers.at(i)->haveYouToDie())
             this->logger->log(*peers.at(i)->getId() + " is dead.", LogManager::Debug);
 
 

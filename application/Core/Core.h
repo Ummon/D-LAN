@@ -27,27 +27,27 @@ namespace UploadManager { class IUploadManager; }
 
 namespace Core
 {
-   class Core : public QObject
- {
-     Q_OBJECT
+    class Core : public QObject
+    {
+        Q_OBJECT
 
-   public:
-      Core();
-      virtual ~Core() {}
+        public:
+            Core();
+            virtual ~Core() {}
 
-   private:
-      QSharedPointer<LogManager::ILogger> logger;
-      QSharedPointer<FileManager::IFileManager> fileManager;
-      QSharedPointer<NetworkListener::INetworkListener> networkListener;
-      QSharedPointer<PeerManager::IPeerManager> peerManager;
+        private:
+            QSharedPointer<LogManager::ILogger> logger;
+            QSharedPointer<FileManager::IFileManager> fileManager;
+            QSharedPointer<NetworkListener::INetworkListener> networkListener;
+            QSharedPointer<PeerManager::IPeerManager> peerManager;
 
-      RemoteControlManager::IRemoteControlManager* remoteControlManager;
-      DownloadManager::IDownloadManager* downloadManager;
-      UploadManager::IUploadManager* uploadManager;
+            RemoteControlManager::IRemoteControlManager* remoteControlManager;
+            DownloadManager::IDownloadManager* downloadManager;
+            UploadManager::IUploadManager* uploadManager;
 
-   public slots:
-      void dBug_chat(const Protos::Core::ChatMessage& message);
+        public slots:
+            void dBug_chat(const Protos::Core::ChatMessage& message);
 
-   };
-}
+        };
+    }
 #endif

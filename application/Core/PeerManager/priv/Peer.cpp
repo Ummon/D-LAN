@@ -7,8 +7,9 @@ using namespace PeerManager;
  * @author mcuony
  */
 
-::Peer::Peer(Common::Hash ID_) {
-    ID = ID_;
+::Peer::Peer(Common::Hash NewID)
+{
+    this->ID = NewID;
 }
 
 /**
@@ -16,9 +17,10 @@ using namespace PeerManager;
  *
  * @author mcuony
  */
-void ::Peer::justSeen() {
-    IisAlive = true;
-    lastUpdate =  QDateTime::currentDateTime();
+void ::Peer::justSeen()
+{
+    this->IisAlive = true;
+    this->lastUpdate =  QDateTime::currentDateTime();
 }
 
 /**
@@ -26,11 +28,13 @@ void ::Peer::justSeen() {
  *
  * @author mcuony
  */
-bool ::Peer::haveYouToDie() {
+bool ::Peer::haveYouToDie()
+{
     int nSec = lastUpdate.secsTo(QDateTime::currentDateTime()) ;
 
-    if (nSec > TTL) {
-        IisAlive = false;
+    if (nSec > TTL)
+    {
+        this->IisAlive = false;
         return true;
     }
     return false;
@@ -41,8 +45,9 @@ bool ::Peer::haveYouToDie() {
  *
  * @author mcuony
  */
-bool ::Peer::isAlive() {
-    return IisAlive;
+bool ::Peer::isAlive()
+{
+    return this->IisAlive;
 }
 
 /**
@@ -50,16 +55,21 @@ bool ::Peer::isAlive() {
  *
  * @author mcuony
  */
-Common::Hash* ::Peer::getId() {
-    return &ID;
+Common::Hash* ::Peer::getId()
+{
+    return &this->ID;
 }
 
 /*TODO*/
-void ::Peer::send(const QByteArray& data) {
+void ::Peer::send(const QByteArray& data)
+{
 }
-Common::Hashes* ::Peer::getHashes(const Protos::Common::FileEntry& file) {
+Common::Hashes* ::Peer::getHashes(const Protos::Common::FileEntry& file)
+{
 }
-IGetEntries* ::Peer::getEntries(const Protos::Common::DirEntry& dir) {
+IGetEntries* ::Peer::getEntries(const Protos::Common::DirEntry& dir)
+{
 }
-void ::Peer::receive(QByteArray& data) {
+void ::Peer::receive(QByteArray& data)
+{
 }

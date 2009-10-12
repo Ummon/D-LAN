@@ -20,12 +20,14 @@ QHostAddress UDPListener::multicastIP("236.123.43.24");
  *
  * @author mcuony
  */
-::UDPListener::UDPListener(QSharedPointer<PeerManager::IPeerManager> peerManager_) : QObject() , logger(LogManager::Builder::newLogger("NetworkListener::UDPListener")) {
+::UDPListener::UDPListener(QSharedPointer<PeerManager::IPeerManager> newPeerManager) : QObject() , logger(LogManager::Builder::newLogger("NetworkListener::UDPListener"))
+{
 
     this->logger->log("Loading ..", LogManager::EndUser);
 
-    this->peerManager = peerManager_;
+    this->peerManager = newPeerManager;
 
+    // Creating and setting options to the socket.
     this->socket = new QUdpSocket(this);
 
     if (!this->socket->bind(UDPListener::port, QUdpSocket::ReuseAddressHint))
@@ -63,11 +65,13 @@ QHostAddress UDPListener::multicastIP("236.123.43.24");
  *
  * @author mcuony
  */
-void ::UDPListener::processPendingDatagrams() {
+void ::UDPListener::processPendingDatagrams()
+{
 
     QTextStream out(stdout);
 
-   while (this->socket->hasPendingDatagrams()) {
+    while (this->socket->hasPendingDatagrams())
+    {
       QByteArray datagram;
       datagram.resize(this->socket->pendingDatagramSize());
       QHostAddress peerAddress;
@@ -75,56 +79,57 @@ void ::UDPListener::processPendingDatagrams() {
 
       //this->logger->log("Recived from " +  peerAddress.toString() + " message " + datagram.data(), LogManager::Debug);
 
-      switch (datagram.data()[0]) {
-          //Chat message
-          case 'C': {
-            //We create a new chatMessage
+      switch (datagram.data()[0])
+      {
+          case chatMessagePacket:
+          {
+            // We create a new chatMessage.
             Protos::Core::ChatMessage chatMessage;
 
-            //We get the correct string
+            // We get the correct string.
             QString data = datagram.data();
             std::string input = data.mid(1).toStdString();
 
-            //We convert in into a proto
+            // We convert in into a proto.
             chatMessage.ParseFromString(input);
 
-            //And we rise the event
+            // And we rise the event.
             emit newChatMessage(chatMessage);
 
             break;
-        }
+         }
 
-          //IMALIVE message
-          case 'I': {
-            //We create a new chatMessage
+          case IAmAlivePacket:
+          {
+            // We create a new IMAlimeMessage.
             Protos::Core::HaveChunks IMAlimeMessage;
 
-            //We get the correct string
+            // We get the correct string.
             QString data = datagram.data();
             std::string input = data.mid(1).toStdString();
 
-            //We convert in into a proto
+            // We convert in into a proto.
             IMAlimeMessage.ParseFromString(input);
 
             quint64 am;
             am = IMAlimeMessage.amount();
 
             QString nick;
-            nick = nick.fromStdString(IMAlimeMessage.nick());
+            nick = QString::fromStdString(IMAlimeMessage.nick());
 
             Common::Hash id;
-            id.setNum(id.fromStdString(IMAlimeMessage.peerid().hash()).toLongLong());
+            id.setNum(QString::fromStdString(IMAlimeMessage.peerid().hash()).toLongLong());
 
-
-            //We forward the information to the PeerManager
+            // We forward the information to the PeerManager.
             this->peerManager->updatePeer(id, peerAddress.toIPv4Address(), nick, am);
 
-//            this->logger->log("Someone is alive: " + id + ", " +data.fromStdString(IMAlimeMessage.nick()), LogManager::Debug);
+            //this->logger->log("Someone is alive: " + id + ", " +data.fromStdString(IMAlimeMessage.nick()), LogManager::Debug);
 
             break;
         }
 
-        default: {
+        default:
+        {
             this->logger->log("Unknow type ???", LogManager::Debug);
             break;
         }
@@ -139,10 +144,12 @@ void ::UDPListener::processPendingDatagrams() {
   * @param mess : The message to send
   * @author mcuony
   */
-void ::UDPListener::sendMessage(const QString& mess) {
+void ::UDPListener::sendMessage(const QString& mess)
+{
    //this->logger->log("Sending " + mess, LogManager::Debug);
 
    QByteArray datagram = mess.toUtf8();
+
    if (this->socket->writeDatagram(
       datagram.data(),
       datagram.size(),
