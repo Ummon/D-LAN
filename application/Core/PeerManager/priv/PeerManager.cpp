@@ -24,8 +24,7 @@ using namespace PeerManager;
     //We create the timer to clean old peers
     timer = new QTimer(this);
     connect(timer, SIGNAL(timeout()), this, SLOT(cleanUp()));
-    timer->start(1/CleanUpFrequency*1000);
-
+    timer->start(static_cast<int>(1000 / CleanUpFrequency));
 }
 
 
@@ -34,8 +33,9 @@ using namespace PeerManager;
  *
  * @author mcuony
  */
-Common::Hash* ::PeerManager::getMyId() {
-    return &ID;
+Common::Hash PeerManager::PeerManager::getMyId()
+{
+    return this->ID;
 }
 
 /**
@@ -82,10 +82,9 @@ void ::PeerManager::updatePeer(const Common::Hash& ID_, quint32 IP_, const QStri
  */
 Peer* ::PeerManager::fromIdToPeer(const Common::Hash& ID_) {
 
-    for (int i = 0; i < peers.length(); i++) {
-        if (peers.at(i)->getId()->toLong() == ID_.toLong())
+    for (int i = 0; i < peers.length(); i++){
+        if (peers.at(i)->getId() == ID)
             return peers.at(i);
-
     }
 
     this->logger->log(ID_ + " wasn't seen before, creating a new peer.", LogManager::Debug);

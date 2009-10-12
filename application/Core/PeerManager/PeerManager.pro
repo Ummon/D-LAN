@@ -7,8 +7,16 @@ TARGET = PeerManager
 INCLUDEPATH += . \
     ../.. \
     ${PROTOBUF}/src
+
 LIBS += -L${PROTOBUF}/src/.libs \
     -lprotobuf
+
+LIBS += -L../../Common/output/debug \
+    -lCommon
+
+LIBS += -L../../Common/LogManager/output/debug \
+    -lLogManager
+
 TEMPLATE = lib
 DESTDIR = "output/debug"
 MOC_DIR = ".tmp/debug"

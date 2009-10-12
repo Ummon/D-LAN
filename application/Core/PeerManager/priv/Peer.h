@@ -21,7 +21,7 @@ namespace PeerManager
       void justSeen();
       bool haveYouToDie();
       bool isAlive();
-      Common::Hash* getId();
+      Common::Hash getId();
       void send(const QByteArray& data) ;
       Common::Hashes* getHashes(const Protos::Common::FileEntry& file) ;
       IGetEntries* getEntries(const Protos::Common::DirEntry& dir)  ;
