@@ -18,8 +18,8 @@ namespace LogManager
       void log(const ILoggable& object, Severity severity);
 
    private:
-      QTextStream* out;
       QString name;
+      QTextStream* out;
    };
 }
 #endif

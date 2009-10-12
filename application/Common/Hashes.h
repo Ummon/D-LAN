@@ -3,10 +3,11 @@
 
 #include <QList>
 
+#include "Common_global.h"
 #include "Hash.h"
 
 namespace Common
 {
-   class Hashes : public QList<Hash> { };
+   class COMMON_EXPORT Hashes : public QList<Hash> { };
 }
 #endif
