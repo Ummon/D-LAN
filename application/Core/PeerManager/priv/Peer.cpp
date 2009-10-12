@@ -7,8 +7,9 @@ using namespace PeerManager;
  * @author mcuony
  */
 
-::Peer::Peer(Common::Hash ID_) {
-    ID = ID_;
+::Peer::Peer(Common::Hash ID)
+   : ID(ID)
+{
 }
 
 /**
@@ -50,8 +51,8 @@ bool ::Peer::isAlive() {
  *
  * @author mcuony
  */
-Common::Hash* ::Peer::getId() {
-    return &ID;
+Common::Hash ::Peer::getId() {
+    return this->ID;
 }
 
 /*TODO*/

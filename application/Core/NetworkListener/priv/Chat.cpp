@@ -39,13 +39,7 @@ void ::Chat::send(const QString& message) {
     //We put info in our chatMessage Proto
     Protos::Core::ChatMessage chatMessage;
     chatMessage.set_message(message.toStdString());
-
-
-    Protos::Common::Hash peerId;
-    peerId.set_hash(this->peerManager->getMyId()->toStdString());
-    *chatMessage.mutable_peerid() = peerId;
-
-
+    chatMessage.mutable_peerid()->set_hash(this->peerManager->getMyId().data());
 
     //We serialize the proto to a string
     std::string output;

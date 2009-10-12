@@ -23,7 +23,7 @@ namespace PeerManager
       void newPeerConnection(const QAbstractSocket& socket);
       QList<IPeer*> getPeers();
       IPeer* getPeer(const quint32& ID);*/
-      virtual Common::Hash* getMyId() = 0;
+      virtual Common::Hash getMyId() = 0;
 
      /* Dues to a limiation of QObject (cannot inherit more than one QObject class), we must have the def of
         cleanUp, used in PeerManager, here. TODO: Find a better solution ? */
