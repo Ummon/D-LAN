@@ -12,32 +12,41 @@
 
 #include <Core/PeerManager/IPeerManager.h>
 
-namespace NetworkListener {
-    class UDPListener : public QObject {
+namespace NetworkListener
+{
+    class UDPListener : public QObject
+    {
 
-    Q_OBJECT
+        Q_OBJECT
 
-    public:
-        UDPListener(QSharedPointer<PeerManager::IPeerManager> peerManager_);
-        void sendMessage(const QString& mess);
+        public:
+            UDPListener(QSharedPointer<PeerManager::IPeerManager> newPeerManager);
+            void sendMessage(const QString& mess);
 
-    signals:
-        void newChatMessage(const Protos::Core::ChatMessage& message);
-        void newFindResult(const Protos::Common::FindResult& result, const quint32& IP);
-        void newHaveChunksResult(const Protos::Core::HaveChunksResult& result);
+        signals:
+            void newChatMessage(const Protos::Core::ChatMessage& message);
+            void newFindResult(const Protos::Common::FindResult& result, const quint32& IP);
+            void newHaveChunksResult(const Protos::Core::HaveChunksResult& result);
 
-    private:
-        QSharedPointer<LogManager::ILogger> logger;
-        QSharedPointer<PeerManager::IPeerManager> peerManager;
-        static const char TTL; ///< Time to live, see the UDP multicast documentation.
-        static const int port;
-        static QHostAddress multicastIP; ///< A choosen multicast address channel used to send and received messages.
-        QUdpSocket* socket;
+        private:
+            QSharedPointer<LogManager::ILogger> logger;
+            QSharedPointer<PeerManager::IPeerManager> peerManager;
+            static const char TTL; ///< Time to live, see the UDP multicast documentation.
+            static const int port;
+            static QHostAddress multicastIP; ///< A choosen multicast address channel used to send and received messages.
+            QUdpSocket* socket;
 
-    private slots:
-        void processPendingDatagrams();
+        private slots:
+            void processPendingDatagrams();
 
 
    };
+
+    enum messageUDPType
+    {
+       chatMessagePacket = 1,
+       IAmAlivePacket = 2
+    };
+
 }
 #endif

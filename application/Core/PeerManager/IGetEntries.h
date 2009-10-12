@@ -9,12 +9,12 @@ namespace PeerManager
 {
    class IGetEntries : QObject
    {
-      Q_OBJECT
-   public:
-      virtual ~IGetEntries() {}
+       Q_OBJECT
+       public:
+          virtual ~IGetEntries() {}
 
-   signals:
-     virtual void result(const Protos::Core::GetEntriesResult& result) = 0;
+       signals:
+         virtual void result(const Protos::Core::GetEntriesResult& result) = 0;
    };
 }
 #endif

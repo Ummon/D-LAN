@@ -14,7 +14,7 @@ namespace NetworkListener
    class Chat : public IChat
    {
        public:
-          Chat(UDPListener* udpListener_, QSharedPointer<PeerManager::IPeerManager> peerManager_);
+          Chat(UDPListener* newUudpListener, QSharedPointer<PeerManager::IPeerManager> newPeerManager);
           virtual ~Chat() {}
           void send(const QString& message);
 

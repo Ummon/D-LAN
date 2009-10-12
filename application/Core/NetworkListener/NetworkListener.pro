@@ -6,9 +6,19 @@ QT -= gui
 TARGET = NetworkListener
 INCLUDEPATH += . \
     ../.. \
+    .. \
     ${PROTOBUF}/src
+
+
 LIBS += -L${PROTOBUF}/src/.libs \
     -lprotobuf
+
+LIBS += -L../../Common/LogManager/output/debug \
+   -lLogManager
+
+LIBS += -L../PeerManager/output/debug \
+   -lPeerManager
+
 TEMPLATE = lib
 DESTDIR = "output/debug"
 MOC_DIR = ".tmp/debug"

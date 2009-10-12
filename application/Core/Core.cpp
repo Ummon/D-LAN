@@ -8,14 +8,13 @@ using namespace Core;
 #include <PeerManager/Builder.h>
 #include <QObject>
 
-::Core::Core()
-      : QObject(),  logger(LogManager::Builder::newLogger("Core"))
+::Core::Core() : QObject(),  logger(LogManager::Builder::newLogger("Core"))
 {
    this->logger->log("Loading ..", LogManager::EndUser);
 
    this->fileManager = FileManager::Builder::newFileManager();
 
-   peerManager = PeerManager::Builder::newPeerManager();
+   this->peerManager = PeerManager::Builder::newPeerManager();
 
    this->peerManager->setNick("Test");
 
@@ -30,15 +29,15 @@ using namespace Core;
       DEBUGGING CODE, HAS TO BE REMOVED OR MOVED INTO TESTING UNITS
     ////////////////////////*/
 
-    //Testing chat function
+    // Testing chat function.
    NetworkListener::IChat* chat = this->networkListener->getChat();
 
-   //Listening for chat event
+   // Listening for chat event.
    connect(chat, SIGNAL(newMessage(const Protos::Core::ChatMessage&)), this, SLOT(dBug_chat(const Protos::Core::ChatMessage&)));
 
    this->logger->log("Listening for new messages..", LogManager::Debug);
 
-   //Sending a message
+   // Sending a message.
    chat->send("Je suis un canard");
 
     /*///////////////////////
@@ -50,11 +49,9 @@ using namespace Core;
 /*///////////////////////
   DEBUGGING FUNCTION, HAS TO BE REMOVED OR MOVED INTO TESTING UNITS
 ////////////////////////*/
-void ::Core::dBug_chat(const Protos::Core::ChatMessage& message) {
-
-    QString texte;
-
-    this->logger->log("Got a message ! (" + texte.fromStdString(message.peerid().hash()) + ") " + texte.fromStdString(message.message()), LogManager::EndUser);
+void ::Core::dBug_chat(const Protos::Core::ChatMessage& message)
+{
+    this->logger->log("Got a message ! (" + QString::fromStdString(message.peerid().hash()) + ") " + QString::fromStdString(message.message()), LogManager::EndUser);
 }
 /*///////////////////////
   END OF DEBUGGING FUNCTION

@@ -17,7 +17,7 @@ namespace PeerManager
    class Peer : public IPeer
    {
        public:
-          Peer(Common::Hash ID_);
+          Peer(Common::Hash NewID);
           void justSeen();
           bool haveYouToDie();
           bool isAlive();

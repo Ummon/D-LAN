@@ -8,7 +8,8 @@ namespace NetworkListener
    class IChat;
    class ISearch;
 
-   class INetworkListener : public QObject {
+   class INetworkListener : public QObject
+   {
        Q_OBJECT
 
        public:
