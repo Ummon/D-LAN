@@ -24,7 +24,8 @@ namespace PeerManager
    {
        public:
           PeerManager();
-          Common::Hash* getMyId();
+
+          Common::Hash getMyId();
           void setNick(const QString& newNick);
           QString* getNick();
           void updatePeer(const Common::Hash& peerID, quint32 peerIP, const QString& peerNick, const quint64& peerAmount);

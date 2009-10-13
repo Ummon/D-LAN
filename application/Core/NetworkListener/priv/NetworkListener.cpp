@@ -24,7 +24,8 @@ using namespace NetworkListener;
     // We create the timer who will send information about our presence.
     this->timer = new QTimer(this);
     connect(timer, SIGNAL(timeout()), this, SLOT(presence()));
-    this->timer->start(1/IMAliveFrequency*1000);
+
+    this->timer->start(static_cast<int>(1000 / IMAliveFrequency));
 
     this->presence(); // Send the information at the first time.
 }
@@ -55,11 +56,7 @@ void ::NetworkListener::presence()
     IMAlimeMessage.set_nick(this->peerManager->getNick()->toStdString());
     IMAlimeMessage.set_tag(99);
     IMAlimeMessage.set_version(1);
-
-    Protos::Common::Hash peerId;
-
-    peerId.set_hash(peerManager->getMyId()->toStdString());
-    *IMAlimeMessage.mutable_peerid() = peerId;
+    IMAlimeMessage.mutable_peerid()->set_hash(this->peerManager->getMyId().data());
 
     // We serialize the proto to a string.
     std::string output;

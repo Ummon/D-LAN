@@ -103,25 +103,14 @@ void ::UDPListener::processPendingDatagrams()
           {
             // We create a new IMAlimeMessage.
             Protos::Core::HaveChunks IMAlimeMessage;
+            IMAlimeMessage.ParseFromString(datagram.mid(1).data());
 
-            // We get the correct string.
-            QString data = datagram.data();
-            std::string input = data.mid(1).toStdString();
+            quint64 amount = IMAlimeMessage.amount();
+            QString nick(IMAlimeMessage.nick().data());
+            Common::Hash id(IMAlimeMessage.peerid().hash().data());
 
-            // We convert in into a proto.
-            IMAlimeMessage.ParseFromString(input);
-
-            quint64 am;
-            am = IMAlimeMessage.amount();
-
-            QString nick;
-            nick = QString::fromStdString(IMAlimeMessage.nick());
-
-            Common::Hash id;
-            id.setNum(QString::fromStdString(IMAlimeMessage.peerid().hash()).toLongLong());
-
-            // We forward the information to the PeerManager.
-            this->peerManager->updatePeer(id, peerAddress.toIPv4Address(), nick, am);
+            //We forward the information to the PeerManager
+            this->peerManager->updatePeer(id, peerAddress.toIPv4Address(), nick, amount);
 
             //this->logger->log("Someone is alive: " + id + ", " +data.fromStdString(IMAlimeMessage.nick()), LogManager::Debug);
 
