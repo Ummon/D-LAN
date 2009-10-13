@@ -7,7 +7,7 @@ using namespace FileManager;
 #include <Common/LogManager/ILogger.h>
 
 ::FileManager::FileManager()
-      //: logger(LogManager::Builder::newLogger("FileManager"))
+   : fileUpdater(this)
 {
    FileManager::logger->log("Loading ..", LogManager::EndUser);
 }

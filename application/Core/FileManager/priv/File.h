@@ -5,19 +5,27 @@
 #include <QList>
 
 #include <IFile.h>
+#include <priv/Entry.h>
 
 namespace FileManager
 {
    class Chunk;
+   class Directory;
+   class IChunk;
 
-   class File : public IFile
+   class File : public Entry, public IFile
    {
    public:
-      virtual ~File();
+      File(Directory* dir, const QString& name, qint64 size);
+      virtual ~File() {};
+
+      QString getPath();
+
+      QList<IChunk*> getChunks();
 
    private:
-      QString name;
-      quint64 size;
+      Directory* dir;
+
       QList<Chunk*> chunk;
    };
 }

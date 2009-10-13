@@ -9,8 +9,14 @@ namespace FileManager
 {
    class SharedDirectory : public Directory
    {
-   private:
-      QString path;   
+   public:
+      SharedDirectory(const QString& path);
+
+      /**
+        * Return the full path to the shared directory.
+        * For exemple : '/home/paul/movies'. (no slash at the end).
+        */
+      QString getPath();
    };
 
 }
