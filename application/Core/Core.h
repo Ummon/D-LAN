@@ -3,7 +3,6 @@
 
 /*
 #include <RemoteControlManager/IRemoteControlManager.h>
-
 #include <DownloadManager/IDownloadManager.h>
 #include <UploadManager/IUploadManager.h>*/
 
@@ -17,7 +16,6 @@
 
 #include <QObject>
 
-
 namespace LogManager { class ILogger; }
 namespace RemoteControlManager { class IRemoteControlManager; }
 namespace PeerManager { class IPeerManager; }
@@ -27,24 +25,23 @@ namespace UploadManager { class IUploadManager; }
 
 namespace Core
 {
-    class Core : public QObject
-    {
-        Q_OBJECT
+   class Core : public QObject
+   {
+   Q_OBJECT
 
-        public:
-            Core();
-            virtual ~Core() {}
+   public:
+      Core();
+      virtual ~Core() {}
 
-        private:
-            QSharedPointer<LogManager::ILogger> logger;
-            QSharedPointer<FileManager::IFileManager> fileManager;
-            QSharedPointer<NetworkListener::INetworkListener> networkListener;
-            QSharedPointer<PeerManager::IPeerManager> peerManager;
+   private:
+      QSharedPointer<LogManager::ILogger> logger;
+      QSharedPointer<FileManager::IFileManager> fileManager;
+      QSharedPointer<NetworkListener::INetworkListener> networkListener;
+      QSharedPointer<PeerManager::IPeerManager> peerManager;
 
-            RemoteControlManager::IRemoteControlManager* remoteControlManager;
-            DownloadManager::IDownloadManager* downloadManager;
-            UploadManager::IUploadManager* uploadManager;
-
-        };
-    }
+      RemoteControlManager::IRemoteControlManager* remoteControlManager;
+      DownloadManager::IDownloadManager* downloadManager;
+      UploadManager::IUploadManager* uploadManager;
+   };
+}
 #endif
