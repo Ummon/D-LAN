@@ -45,9 +45,6 @@ namespace Core
             DownloadManager::IDownloadManager* downloadManager;
             UploadManager::IUploadManager* uploadManager;
 
-        public slots:
-            void dBug_chat(const Protos::Core::ChatMessage& message);
-
         };
     }
 #endif

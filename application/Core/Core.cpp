@@ -22,37 +22,4 @@ using namespace Core;
 
    this->logger->log("Ready to serve", LogManager::EndUser);
 
-   this->peerManager->setNick("Test2");
-
-
-    /*///////////////////////
-      DEBUGGING CODE, HAS TO BE REMOVED OR MOVED INTO TESTING UNITS
-    ////////////////////////*/
-
-    // Testing chat function.
-   NetworkListener::IChat* chat = this->networkListener->getChat();
-
-   // Listening for chat event.
-   connect(chat, SIGNAL(newMessage(const Protos::Core::ChatMessage&)), this, SLOT(dBug_chat(const Protos::Core::ChatMessage&)));
-
-   this->logger->log("Listening for new messages..", LogManager::Debug);
-
-   // Sending a message.
-   chat->send("Je suis un canard");
-
-    /*///////////////////////
-      END OF DEBUGGING CODE
-    ////////////////////////*/
-
 }
-
-/*///////////////////////
-  DEBUGGING FUNCTION, HAS TO BE REMOVED OR MOVED INTO TESTING UNITS
-////////////////////////*/
-void ::Core::dBug_chat(const Protos::Core::ChatMessage& message)
-{
-    this->logger->log("Got a message ! (" + QString::fromStdString(message.peerid().hash()) + ") " + QString::fromStdString(message.message()), LogManager::EndUser);
-}
-/*///////////////////////
-  END OF DEBUGGING FUNCTION
-////////////////////////*/
