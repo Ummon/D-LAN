@@ -11,7 +11,6 @@ INCLUDEPATH += . \
 LIBS += -L${PROTOBUF}/src/.libs \
     -lprotobuf
 
-
 LIBS += -L../../Common/output/debug \
     -lCommon
 
