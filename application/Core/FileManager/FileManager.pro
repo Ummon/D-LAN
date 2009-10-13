@@ -10,13 +10,10 @@ OBJECTS_DIR = ".tmp/debug"
 INCLUDEPATH += . \
     ../.. \
     ${PROTOBUF}/src
-
 LIBS += -L${PROTOBUF}/src/.libs \
     -lprotobuf
-
 LIBS += -L../../Common/LogManager/output/debug \
-   -lLogManager
-
+    -lLogManager
 DEFINES += FILEMANAGER_LIBRARY
 SOURCES += priv/WordIndex.cpp \
     priv/SharedDirectory.cpp \
@@ -26,7 +23,10 @@ SOURCES += priv/WordIndex.cpp \
     priv/Directory.cpp \
     priv/Chunks.cpp \
     priv/Chunk.cpp \
-    priv/Builder.cpp
+    priv/Builder.cpp \
+    priv/Entry.cpp \
+    priv/DirWatcherWin.cpp \
+    priv/DirWatcher.cpp
 HEADERS += FileManager_global.h \
     IGetHashesResult.h \
     IFileManager.h \
@@ -40,4 +40,7 @@ HEADERS += FileManager_global.h \
     priv/Directory.h \
     priv/Chunks.h \
     priv/Chunk.h \
-    Builder.h
+    Builder.h \
+    priv/Entry.h \
+    priv/DirWatcherWin.h \
+    priv/DirWatcher.h

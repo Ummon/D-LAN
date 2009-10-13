@@ -4,14 +4,29 @@
 #include <QString>
 #include <QList>
 
+#include <priv/Entry.h>
+
 namespace FileManager
 {
    class File;
 
-   class Directory
+   class Directory : public Entry
    {
+   public:
+      Directory(Directory* parent, const QString& name);
+      virtual ~Directory() {};
+      virtual QString getPath();
+
+      /**
+        * Only called by the class File.
+        */
+      void addFile(File* file);
+
+   protected:
+      Directory(const QString& name);
+
    private:
-      QString name;
+      Directory* parent;
 
       QList<Directory*> subDirs;
       QList<File*> files;
