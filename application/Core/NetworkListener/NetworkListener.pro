@@ -4,11 +4,17 @@
 QT += network
 QT -= gui
 TARGET = NetworkListener
+
+win32 {
+    INCLUDEPATH += "."
+    INCLUDEPATH += "$$(QTDIR)\..\mingw\include"
+    LIBS += "$$(QTDIR)\..\mingw\lib\libwsock32.a"
+}
+
 INCLUDEPATH += . \
     ../.. \
     .. \
     ${PROTOBUF}/src
-
 
 LIBS += -L${PROTOBUF}/src/.libs \
     -lprotobuf
@@ -19,6 +25,8 @@ LIBS += -L../../Common/LogManager/output/debug \
 LIBS += -L../PeerManager/output/debug \
    -lPeerManager
 
+LIBS += -L../../Common/output/debug \
+   -lCommon
 
 TEMPLATE = lib
 DESTDIR = "output/debug"
