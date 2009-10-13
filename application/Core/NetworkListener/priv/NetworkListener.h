@@ -1,9 +1,6 @@
 #ifndef NETWORKMANAGER_NETWORKLISTENER_H
 #define NETWORKMANAGER_NETWORKLISTENER_H
 
-//The message IMAlive is sent each 10s.
-#define IMAliveFrequency 0.1
-
 #include <QList>
 #include <QSharedPointer>
 #include <QTimer>
@@ -41,8 +38,11 @@ namespace NetworkListener
             QSharedPointer<PeerManager::IPeerManager> peerManager;
             QSharedPointer<LogManager::ILogger> logger;
 
+            const static double IMAliveFrequency = 0.1; ///< The message IMAlive is sent each 10s.
+
         public slots:
             void presence();
+
    };
 }
 #endif

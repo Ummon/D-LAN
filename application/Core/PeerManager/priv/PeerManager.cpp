@@ -25,7 +25,8 @@ using namespace PeerManager;
     // We create the timer to clean old peers.
     this->timer = new QTimer(this);
     connect(this->timer, SIGNAL(timeout()), this, SLOT(cleanUp()));
-    this->timer->start(1/CleanUpFrequency*1000);
+    this->timer->start(static_cast<int>(1000 / CleanUpFrequency));
+
 
 }
 
@@ -35,9 +36,10 @@ using namespace PeerManager;
  *
  * @author mcuony
  */
-Common::Hash* ::PeerManager::getMyId()
+
+Common::Hash PeerManager::PeerManager::getMyId()
 {
-    return &this->ID;
+    return this->ID;
 }
 
 /**
@@ -90,7 +92,7 @@ Peer* ::PeerManager::fromIdToPeer(const Common::Hash& peerID)
 
     for (int i = 0; i < this->peers.length(); i++)
     {
-        if (this->peers.at(i)->getId()->toLong() == peerID.toLong())
+        if (this->peers.at(i)->getId() == peerID)
             return this->peers.at(i);
 
     }

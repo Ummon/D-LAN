@@ -19,6 +19,7 @@ LIBS += -L../../Common/LogManager/output/debug \
 LIBS += -L../PeerManager/output/debug \
    -lPeerManager
 
+
 TEMPLATE = lib
 DESTDIR = "output/debug"
 MOC_DIR = ".tmp/debug"
