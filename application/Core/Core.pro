@@ -11,6 +11,10 @@ INCLUDEPATH += . \
 LIBS += -L../Common/LogManager/output/debug \
    -lLogManager
 
+
+LIBS += -L../Common/output/debug \
+   -lCommon
+
 LIBS += -LFileManager/output/debug \
    -lFileManager
 

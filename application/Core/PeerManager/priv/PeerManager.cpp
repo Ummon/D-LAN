@@ -1,9 +1,28 @@
 #include <priv/PeerManager.h>
 
-using namespace PeerManager;
 
 #include <Common/LogManager/Builder.h>
 #include <Protos/common.pb.h>
+
+
+
+
+
+
+
+/**
+ * Return the peer id of our current instance
+ *
+ * @author mcuony
+ */
+
+
+Common::Hash PeerManager::PeerManager::getMyId()
+{
+    return this->ID;
+}
+
+using namespace PeerManager;
 
 /**
  * Constructor of PeerManager, generate a random peer id for ourself
@@ -31,16 +50,6 @@ using namespace PeerManager;
 }
 
 
-/**
- * Return the peer id of our current instance
- *
- * @author mcuony
- */
-
-Common::Hash PeerManager::PeerManager::getMyId()
-{
-    return this->ID;
-}
 
 /**
  * Set the current nick

@@ -19,7 +19,7 @@ namespace PeerManager
 
       virtual void setNick(const QString& newNick) = 0;
       virtual QString* getNick() = 0;
-      virtual updatePeer(const Common::Hash& peerID, quint32 peerIP, const QString& peerNick, const quint64& peerAmount) = 0;
+      virtual void updatePeer(const Common::Hash& peerID, quint32 peerIP, const QString& peerNick, const quint64& peerAmount) = 0;
       /*
       void newPeerConnection(const QAbstractSocket& socket);
       QList<IPeer*> getPeers();
