@@ -10,13 +10,13 @@ OBJECTS_DIR = ".tmp/debug"
 #    -lNetworkManager
 
 INCLUDEPATH += . \
-    ../ \
-    ../../ \
-    ../../../ \
-    ../../../../ \
-    ../../../../../ \
-    ../../../../../../ \
-    ../../../../../../../
+    .. \ # NetworkListener
+    ../.. \ # Core
+    ../../.. \ # For access to Common and Protos
+    ${PROTOBUF}/src
+
+
+
 CONFIG += console
 CONFIG -= app_bundle
 TEMPLATE = app
