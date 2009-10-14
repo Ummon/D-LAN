@@ -133,7 +133,7 @@ void ::UDPListener::processPendingDatagrams()
   * @param mess : The message to send
   * @author mcuony
   */
-void ::UDPListener::sendMessage(const QString& mess)
+bool ::UDPListener::sendMessage(const QString& mess)
 {
    //this->logger->log("Sending " + mess, LogManager::Debug);
 
@@ -144,7 +144,13 @@ void ::UDPListener::sendMessage(const QString& mess)
       datagram.size(),
       UDPListener::multicastIP,
       UDPListener::port
-   ) == -1)
-     this->logger->log("Unable to send datagram", LogManager::FatalError);
-
+      ) == -1)
+   {
+      this->logger->log("Unable to send datagram", LogManager::FatalError);
+      return false;
+   }
+   else
+   {
+      return true;
+   }
 }

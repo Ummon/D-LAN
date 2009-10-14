@@ -14,7 +14,7 @@ namespace NetworkListener
         public:
             virtual ~IChat() {}
 
-            virtual void send(const QString& message) = 0;
+            virtual bool send(const QString& message) = 0;
 
         signals:
             void newMessage(const Protos::Core::ChatMessage& message);

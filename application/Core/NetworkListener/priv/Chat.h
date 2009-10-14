@@ -16,7 +16,7 @@ namespace NetworkListener
        public:
           Chat(UDPListener* newUudpListener, QSharedPointer<PeerManager::IPeerManager> newPeerManager);
           virtual ~Chat() {}
-          void send(const QString& message);
+          bool send(const QString& message);
 
        private:
           UDPListener* udpListener;
