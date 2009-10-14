@@ -5,7 +5,7 @@
 #include <QList>
 
 #include <IFile.h>
-#include <priv/Entry.h>
+#include <priv/Cache/Entry.h>
 
 namespace FileManager
 {

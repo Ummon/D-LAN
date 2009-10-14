@@ -1,7 +1,7 @@
-#include <priv/Directory.h>
+#include <priv/Cache/Directory.h>
 using namespace FileManager;
 
-#include <priv/File.h>
+#include <priv/Cache/File.h>
 
 Directory::Directory(Directory* parent, const QString& name)
    : Entry(name), parent(parent)
@@ -17,6 +17,13 @@ Directory::Directory(const QString& name)
 QString Directory::getPath()
 {
    return this->parent->getPath() + "/" + this->name;
+}
+
+Directory* Directory::getRoot()
+{
+   if (this->parent)
+      return this->parent->getRoot();
+   return this;
 }
 
 void Directory::addFile(File* file)

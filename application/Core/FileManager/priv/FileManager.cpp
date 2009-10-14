@@ -17,4 +17,19 @@ IChunk* ::FileManager::getChunk(const Common::Hash& hash)
    throw 1;
 }
 
+Chunks& ::FileManager::getChunks()
+{
+   return this->chunks;
+}
+
+void ::FileManager::addToWordIndex(Entry* entry)
+{
+   // TODO ;)
+}
+
+/*WordIndex<Entry*>& ::FileManager::getWordIndex()
+{
+   return this->wordIndex;
+}*/
+
 QSharedPointer<LogManager::ILogger> FileManager::FileManager::logger(LogManager::Builder::newLogger("FileManager"));

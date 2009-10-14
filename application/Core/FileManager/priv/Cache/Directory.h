@@ -4,7 +4,7 @@
 #include <QString>
 #include <QList>
 
-#include <priv/Entry.h>
+#include <priv/Cache/Entry.h>
 
 namespace FileManager
 {
@@ -16,6 +16,8 @@ namespace FileManager
       Directory(Directory* parent, const QString& name);
       virtual ~Directory() {};
       virtual QString getPath();
+
+      virtual Directory* getRoot();
 
       /**
         * Only called by the class File.
