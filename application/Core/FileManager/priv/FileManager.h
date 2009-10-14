@@ -7,11 +7,12 @@
 
 #include <IFileManager.h>
 #include <priv/FileUpdater/FileUpdater.h>
+#include <priv/ChunkIndex/Chunks.h>
+#include <priv/WordIndex/WordIndex.h>
 
 namespace FileManager
 {
-   class Chunks;
-   class WordIndex;
+   class Entry;
    class SharedDirectory;
    class File;
    class Directory;
@@ -35,13 +36,29 @@ namespace FileManager
       Directory* getDir(const QString& path, const QString& name);
       // QList<SharedDirectory*> getRoots(); // Useless for the moment.
 
+      Chunks& getChunks();
+
+      //WordIndex<Entry*>& getWordIndex();
+      void addToWordIndex(Entry* entry);
+
+      /**
+        * Called by a newly created file;
+        * It willadd
+        */
+      //void newFileAdded(); // not necessary for the moment
+
+      /**
+        * Called by a newly created directory;
+        */
+      //void newDirAdded(); // not necessary for the moment
+
       static QSharedPointer<LogManager::ILogger> logger;
 
    private:
       FileUpdater fileUpdater;
 
-      Chunks* chunks;
-      WordIndex* wordIndex;
+      Chunks chunks;
+      WordIndex<Entry*> wordIndex;
 
       QList<SharedDirectory*> sharedDirReadWrite;
       QList<SharedDirectory*> sharedDirReadOnly;

@@ -1,13 +1,13 @@
-#include <priv/FileUpdater.h>
+#include <priv/FileUpdater/FileUpdater.h>
 using namespace FileManager;
 
 #include <QLinkedList>
 #include <QDir>
 
-#include <priv/DirWatcher.h>
-#include <priv/SharedDirectory.h>
-#include <priv/Directory.h>
-#include <priv/File.h>
+#include <priv/Cache/SharedDirectory.h>
+#include <priv/Cache/Directory.h>
+#include <priv/Cache/File.h>
+#include <priv/FileUpdater/DirWatcher.h>
 
 FileUpdater::FileUpdater(FileManager* fileManager)
    : fileManager(fileManager), dirWatcher(DirWatcher::getNewWatcher())

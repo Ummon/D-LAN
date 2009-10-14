@@ -15,32 +15,32 @@ LIBS += -L${PROTOBUF}/src/.libs \
 LIBS += -L../../Common/LogManager/output/debug \
     -lLogManager
 DEFINES += FILEMANAGER_LIBRARY
-SOURCES += priv/SharedDirectory.cpp \
+SOURCES += priv/Builder.cpp \
+    priv/FileManager.cpp \
     priv/FileUpdater/FileUpdater.cpp \
     priv/FileUpdater/DirWatcherWin.cpp \
     priv/FileUpdater/DirWatcher.cpp \
-    priv/FileManager.cpp \
-    priv/File.cpp \
-    priv/Directory.cpp \
-    priv/Chunks.cpp \
-    priv/Chunk.cpp \
-    priv/Builder.cpp \
-    priv/Entry.cpp
+    priv/Cache/Entry.cpp \
+    priv/Cache/File.cpp \
+    priv/Cache/Directory.cpp \
+    priv/Cache/SharedDirectory.cpp \
+    priv/ChunkIndex/Chunks.cpp \
+    priv/ChunkIndex/Chunk.cpp
 HEADERS += FileManager_global.h \
     IGetHashesResult.h \
     IFileManager.h \
     IFile.h \
     IChunk.h \
-    priv/SharedDirectory.h \
+    Builder.h \
+    priv/FileManager.h \
     priv/FileUpdater/FileUpdater.h \
     priv/FileUpdater/DirWatcherWin.h \
     priv/FileUpdater/DirWatcher.h \
-    priv/FileManager.h \
-    priv/File.h \
-    priv/Directory.h \
-    priv/Chunks.h \
-    priv/Chunk.h \
-    Builder.h \
-    priv/Entry.h \
+    priv/Cache/Entry.h \
+    priv/Cache/File.h \
+    priv/Cache/Directory.h \
+    priv/Cache/SharedDirectory.h \
+    priv/ChunkIndex/Chunks.h \
+    priv/ChunkIndex/Chunk.h \
     priv/WordIndex/WordIndex.h \
     priv/WordIndex/Node.h
