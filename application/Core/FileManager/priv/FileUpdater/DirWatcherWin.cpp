@@ -2,7 +2,7 @@
 
 #if defined(Q_OS_WIN32)
 
-#include <priv/DirWatcherWin.h>
+#include <priv/FileUpdater/DirWatcherWin.h>
 using namespace FileManager;
 
 DirWatcherWin::DirWatcherWin()

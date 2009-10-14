@@ -26,6 +26,12 @@ namespace FileManager
       Directory(const QString& name);
 
    private:
+      /**
+        * When a new file is added to a directory this method is called
+        * to add its size.
+        */
+      void addSize(qint64);
+
       Directory* parent;
 
       QList<Directory*> subDirs;

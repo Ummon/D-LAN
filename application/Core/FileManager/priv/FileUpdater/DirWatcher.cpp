@@ -1,4 +1,4 @@
-#include <priv/DirWatcher.h>
+#include <priv/FileUpdater/DirWatcher.h>
 using namespace FileManager;
 
 #include <QtCore/QtDebug>
@@ -6,7 +6,7 @@ using namespace FileManager;
 #include <priv/FileManager.h>
 
 #if defined(Q_OS_WIN32)
-   #include <priv/DirWatcherWin.h>
+   #include <priv/FileUpdater/DirWatcherWin.h>
 #endif
 
 DirWatcher::DirWatcher()

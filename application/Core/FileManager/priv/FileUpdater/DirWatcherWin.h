@@ -3,7 +3,7 @@
 #if !defined(FILEMANAGER_DIRWATCHERWIN_H) and defined(Q_OS_WIN32)
 #define FILEMANAGER_DIRWATCHERWIN_H
 
-#include <priv/DirWatcher.h>
+#include <priv/FileUpdater/DirWatcher.h>
 
 #include <windows.h>
 
