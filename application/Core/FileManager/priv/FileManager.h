@@ -6,7 +6,7 @@
 #include <Common/LogManager/ILogger.h>
 
 #include <IFileManager.h>
-#include <priv/FileUpdater.h>
+#include <priv/FileUpdater/FileUpdater.h>
 
 namespace FileManager
 {

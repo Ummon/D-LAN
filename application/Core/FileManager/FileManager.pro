@@ -15,26 +15,26 @@ LIBS += -L${PROTOBUF}/src/.libs \
 LIBS += -L../../Common/LogManager/output/debug \
     -lLogManager
 DEFINES += FILEMANAGER_LIBRARY
-SOURCES += priv/WordIndex.cpp \
-    priv/SharedDirectory.cpp \
-    priv/FileUpdater.cpp \
+SOURCES += priv/SharedDirectory.cpp \
+    priv/FileUpdater/FileUpdater.cpp \
+    priv/FileUpdater/DirWatcherWin.cpp \
+    priv/FileUpdater/DirWatcher.cpp \
     priv/FileManager.cpp \
     priv/File.cpp \
     priv/Directory.cpp \
     priv/Chunks.cpp \
     priv/Chunk.cpp \
     priv/Builder.cpp \
-    priv/Entry.cpp \
-    priv/DirWatcherWin.cpp \
-    priv/DirWatcher.cpp
+    priv/Entry.cpp
 HEADERS += FileManager_global.h \
     IGetHashesResult.h \
     IFileManager.h \
     IFile.h \
     IChunk.h \
-    priv/WordIndex.h \
     priv/SharedDirectory.h \
-    priv/FileUpdater.h \
+    priv/FileUpdater/FileUpdater.h \
+    priv/FileUpdater/DirWatcherWin.h \
+    priv/FileUpdater/DirWatcher.h \
     priv/FileManager.h \
     priv/File.h \
     priv/Directory.h \
@@ -42,5 +42,5 @@ HEADERS += FileManager_global.h \
     priv/Chunk.h \
     Builder.h \
     priv/Entry.h \
-    priv/DirWatcherWin.h \
-    priv/DirWatcher.h
+    priv/WordIndex/WordIndex.h \
+    priv/WordIndex/Node.h

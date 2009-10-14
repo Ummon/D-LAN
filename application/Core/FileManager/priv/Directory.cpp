@@ -25,6 +25,15 @@ void Directory::addFile(File* file)
       return;
 
    this->files.append(file);
-   this->size += file->getSize();
+
+   this->addSize(file->getSize());
+}
+
+void Directory::addSize(qint64 size)
+{
+   this->size += size;
+
+   if (this->parent)
+      this->parent->addSize(this->size);
 }
 

@@ -3,3 +3,10 @@ moc_*.cpp
 *.pb.cc
 *.pb.h
 *.pb.cpp
+*.user
+*.session
+*.Release
+*.Debug
+*.exe
+*.dll
+Makefile
