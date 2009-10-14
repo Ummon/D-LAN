@@ -29,9 +29,10 @@ using namespace NetworkListener;
   * Send a chat message
   *
   * @param message : The message to send
+  * @return True for success
   * @author mcuony
   */
-void ::Chat::send(const QString& message)
+bool ::Chat::send(const QString& message)
 {
 
     this->logger->log("Message to send: " + message , LogManager::Debug);
@@ -47,7 +48,7 @@ void ::Chat::send(const QString& message)
     chatMessage.SerializeToString(&output);
 
     // .We broadcast the data.
-    this->udpListener->sendMessage(chatMessagePacket + QString::fromStdString(output));
+    return this->udpListener->sendMessage(chatMessagePacket + QString::fromStdString(output));
 }
 
 /**
