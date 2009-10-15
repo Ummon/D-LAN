@@ -23,41 +23,41 @@ QHostAddress UDPListener::multicastIP("236.123.43.24");
 ::UDPListener::UDPListener(QSharedPointer<PeerManager::IPeerManager> newPeerManager) : QObject() , logger(LogManager::Builder::newLogger("NetworkListener::UDPListener"))
 {
 
-    this->logger->log("Loading ..", LogManager::EndUser);
+   this->logger->log("Loading ..", LogManager::EndUser);
 
-    this->peerManager = newPeerManager;
+   this->peerManager = newPeerManager;
 
-    // Creating and setting options to the socket.
-    this->socket = new QUdpSocket(this);
+   // Creating and setting options to the socket.
+   this->socket = new QUdpSocket(this);
 
-    if (!this->socket->bind(UDPListener::port, QUdpSocket::ReuseAddressHint))
-        this->logger->log("Can't bind", LogManager::FatalError);
+   if (!this->socket->bind(UDPListener::port, QUdpSocket::ReuseAddressHint))
+      this->logger->log("Can't bind", LogManager::FatalError);
 
-    if (!connect(this->socket, SIGNAL(readyRead()), this, SLOT(processPendingDatagrams())))
-        this->logger->log("Can't listen", LogManager::FatalError);
+   if (!connect(this->socket, SIGNAL(readyRead()), this, SLOT(processPendingDatagrams())))
+      this->logger->log("Can't listen", LogManager::FatalError);
 
-    int socketDescriptor = this->socket->socketDescriptor();
+   int socketDescriptor = this->socket->socketDescriptor();
 
-    // 'loop' is activated only for tests.
-    char loop = 1;
-    if (setsockopt(socketDescriptor, IPPROTO_IP, IP_MULTICAST_LOOP, &loop, sizeof loop))
-        this->logger->log("Can't set socket option : IP_MULTICAST_LOOP", LogManager::FatalError);
+   // 'loop' is activated only for tests.
+   char loop = 1;
+   if (setsockopt(socketDescriptor, IPPROTO_IP, IP_MULTICAST_LOOP, &loop, sizeof loop))
+      this->logger->log("Can't set socket option : IP_MULTICAST_LOOP", LogManager::FatalError);
 
-    if (int error = setsockopt(socketDescriptor, IPPROTO_IP, IP_MULTICAST_TTL, &UDPListener::TTL, sizeof UDPListener::TTL))
-        this->logger->log("Can't set socket option : IP_MULTICAST_TTL : " + error, LogManager::FatalError);
+   if (int error = setsockopt(socketDescriptor, IPPROTO_IP, IP_MULTICAST_TTL, &UDPListener::TTL, sizeof UDPListener::TTL))
+      this->logger->log("Can't set socket option : IP_MULTICAST_TTL : " + error, LogManager::FatalError);
 
-    // 'htonl' reverse the order of the bytes, see : http://www.opengroup.org/onlinepubs/007908799/xns/htonl.html
-    struct ip_mreq mreq;
-    mreq.imr_multiaddr.s_addr = htonl(UDPListener::multicastIP.toIPv4Address());
-    mreq.imr_interface.s_addr = htonl(INADDR_ANY);
-    #if defined(Q_OS_LINUX)
-        if (int error = setsockopt(socketDescriptor, IPPROTO_IP, IP_ADD_MEMBERSHIP, &mreq, sizeof mreq))
-    #elif defined(Q_OS_WIN32)
-        if (int error = setsockopt(socketDescriptor, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char*)&mreq, sizeof mreq))
-    #endif
+   // 'htonl' reverse the order of the bytes, see : http://www.opengroup.org/onlinepubs/007908799/xns/htonl.html
+   struct ip_mreq mreq;
+   mreq.imr_multiaddr.s_addr = htonl(UDPListener::multicastIP.toIPv4Address());
+   mreq.imr_interface.s_addr = htonl(INADDR_ANY);
+   #if defined(Q_OS_LINUX)
+      if (int error = setsockopt(socketDescriptor, IPPROTO_IP, IP_ADD_MEMBERSHIP, &mreq, sizeof mreq))
+   #elif defined(Q_OS_WIN32)
+      if (int error = setsockopt(socketDescriptor, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char*)&mreq, sizeof mreq))
+   #endif
          this->logger->log("Can't set socket option : IP_ADD_MEMBERSHIP : " + error, LogManager::FatalError);
 
-    this->logger->log("Done", LogManager::EndUser);
+   this->logger->log("Done", LogManager::EndUser);
 }
 
 /**
@@ -68,10 +68,10 @@ QHostAddress UDPListener::multicastIP("236.123.43.24");
 void ::UDPListener::processPendingDatagrams()
 {
 
-    QTextStream out(stdout);
+   QTextStream out(stdout);
 
-    while (this->socket->hasPendingDatagrams())
-    {
+   while (this->socket->hasPendingDatagrams())
+   {
       QByteArray datagram;
       datagram.resize(this->socket->pendingDatagramSize());
       QHostAddress peerAddress;
@@ -81,8 +81,8 @@ void ::UDPListener::processPendingDatagrams()
 
       switch (datagram.data()[0])
       {
-          case chatMessagePacket:
-          {
+         case chatMessagePacket:
+         {
             // We create a new chatMessage.
             Protos::Core::ChatMessage chatMessage;
 
@@ -99,12 +99,11 @@ void ::UDPListener::processPendingDatagrams()
             break;
          }
 
-          case IAmAlivePacket:
-          {
+         case IAmAlivePacket:
+         {
             // We create a new IMAlimeMessage.
             Protos::Core::HaveChunks IMAlimeMessage;
             IMAlimeMessage.ParseFromString(datagram.mid(1).data());
-
             quint64 amount = IMAlimeMessage.amount();
             QString nick(IMAlimeMessage.nick().data());
             Common::Hash id(IMAlimeMessage.peerid().hash().data());
@@ -115,14 +114,13 @@ void ::UDPListener::processPendingDatagrams()
             //this->logger->log("Someone is alive: " + id + ", " +data.fromStdString(IMAlimeMessage.nick()), LogManager::Debug);
 
             break;
-        }
+         }
 
-        default:
-        {
+         default:
+         {
             this->logger->log("Unknow type ???", LogManager::Debug);
             break;
-        }
-
+         }
       }
    }
 }

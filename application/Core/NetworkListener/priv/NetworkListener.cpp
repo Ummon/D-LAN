@@ -14,20 +14,20 @@ using namespace NetworkListener;
 ::NetworkListener::NetworkListener(QSharedPointer<PeerManager::IPeerManager> newPeerManager) : logger(LogManager::Builder::newLogger("NetworkListener"))
 {
 
-    this->logger->log("Loading ..", LogManager::EndUser);
+   this->logger->log("Loading ..", LogManager::EndUser);
 
-    // References to needed classes.
-    this->udpListener = new UDPListener(newPeerManager);
-    this->peerManager = newPeerManager;
-    this->chat = new Chat(this->udpListener, newPeerManager);
+   // References to needed classes.
+   this->udpListener = new UDPListener(newPeerManager);
+   this->peerManager = newPeerManager;
+   this->chat = new Chat(this->udpListener, newPeerManager);
 
-    // We create the timer who will send information about our presence.
-    this->timer = new QTimer(this);
-    connect(timer, SIGNAL(timeout()), this, SLOT(presence()));
+   // We create the timer who will send information about our presence.
+   this->timer = new QTimer(this);
+   connect(timer, SIGNAL(timeout()), this, SLOT(presence()));
 
-    this->timer->start(static_cast<int>(1000 / IMAliveFrequency));
+   this->timer->start(static_cast<int>(1000 / IMAliveFrequency));
 
-    this->presence(); // Send the information at the first time.
+   this->presence(); // Send the information at the first time.
 }
 
 /**
@@ -37,7 +37,7 @@ using namespace NetworkListener;
  */
 IChat* ::NetworkListener::getChat()
 {
-    return this->chat;
+   return this->chat;
 }
 
 /**
@@ -47,21 +47,21 @@ IChat* ::NetworkListener::getChat()
  */
 void ::NetworkListener::presence()
 {
-    this->logger->log("Sending <IAmAlive>", LogManager::Debug);
+   this->logger->log("Sending <IAmAlive>", LogManager::Debug);
 
-    // We put info in a IMAlimeMessage Proto.
-    Protos::Core::HaveChunks IMAlimeMessage;
+   // We put info in a IMAlimeMessage Proto.
+   Protos::Core::HaveChunks IMAlimeMessage;
 
-    IMAlimeMessage.set_amount(1);
-    IMAlimeMessage.set_nick(this->peerManager->getNick()->toStdString());
-    IMAlimeMessage.set_tag(99);
-    IMAlimeMessage.set_version(1);
-    IMAlimeMessage.mutable_peerid()->set_hash(this->peerManager->getMyId().data());
+   IMAlimeMessage.set_amount(1);
+   IMAlimeMessage.set_nick(this->peerManager->getNick()->toStdString());
+   IMAlimeMessage.set_tag(99);
+   IMAlimeMessage.set_version(1);
+   IMAlimeMessage.mutable_peerid()->set_hash(this->peerManager->getMyId().data());
 
-    // We serialize the proto to a string.
-    std::string output;
-    IMAlimeMessage.SerializeToString(&output);
+   // We serialize the proto to a string.
+   std::string output;
+   IMAlimeMessage.SerializeToString(&output);
 
-    // We broadcast the data.
-    this->udpListener->sendMessage(IAmAlivePacket + QString::fromStdString(output));
+   // We broadcast the data.
+   this->udpListener->sendMessage(IAmAlivePacket + QString::fromStdString(output));
 }

@@ -14,14 +14,14 @@ using namespace NetworkListener;
 ::Chat::Chat(UDPListener* NewUdpListener, QSharedPointer<PeerManager::IPeerManager> NewPeerManager) : logger(LogManager::Builder::newLogger("NetworkListener::Chat"))
 {
 
-    this->logger->log("Loading ..", LogManager::EndUser);
+   this->logger->log("Loading ..", LogManager::EndUser);
 
-    this->udpListener = NewUdpListener;
+   this->udpListener = NewUdpListener;
 
-    this->peerManager = NewPeerManager;
+   this->peerManager = NewPeerManager;
 
-    // Listening for new messages.
-    Chat::connect(this->udpListener, SIGNAL(newChatMessage(const Protos::Core::ChatMessage&)), this, SLOT(newChatMessage(const Protos::Core::ChatMessage&)));
+   // Listening for new messages.
+   Chat::connect(this->udpListener, SIGNAL(newChatMessage(const Protos::Core::ChatMessage&)), this, SLOT(newChatMessage(const Protos::Core::ChatMessage&)));
 
 }
 
@@ -35,20 +35,20 @@ using namespace NetworkListener;
 bool ::Chat::send(const QString& message)
 {
 
-    this->logger->log("Message to send: " + message , LogManager::Debug);
+   this->logger->log("Message to send: " + message , LogManager::Debug);
 
-    // We put info in our chatMessage Proto.
-    Protos::Core::ChatMessage chatMessage;
-    chatMessage.set_message(message.toStdString());
+   // We put info in our chatMessage Proto.
+   Protos::Core::ChatMessage chatMessage;
+   chatMessage.set_message(message.toStdString());
 
-    chatMessage.mutable_peerid()->set_hash(this->peerManager->getMyId().data());
+   chatMessage.mutable_peerid()->set_hash(this->peerManager->getMyId().data());
 
-    //We serialize the proto to a string
-    std::string output;
-    chatMessage.SerializeToString(&output);
+   //We serialize the proto to a string
+   std::string output;
+   chatMessage.SerializeToString(&output);
 
-    // .We broadcast the data.
-    return this->udpListener->sendMessage(chatMessagePacket + QString::fromStdString(output));
+   // .We broadcast the data.
+   return this->udpListener->sendMessage(chatMessagePacket + QString::fromStdString(output));
 }
 
 /**
@@ -59,5 +59,5 @@ bool ::Chat::send(const QString& message)
  */
 void ::Chat::newChatMessage(const Protos::Core::ChatMessage& message)
 {
-    emit newMessage(message);
+   emit newMessage(message);
 }

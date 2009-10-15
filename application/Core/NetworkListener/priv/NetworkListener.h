@@ -14,34 +14,34 @@
 
 namespace NetworkListener
 {
-    class ChunkUpdater;
-    class TCPListener;
-    class UDPListener;
-    class Chat;
-    class Search;
+   class ChunkUpdater;
+   class TCPListener;
+   class UDPListener;
+   class Chat;
+   class Search;
 
-    class NetworkListener : public INetworkListener
-    {
+   class NetworkListener : public INetworkListener
+   {
 
-        public:
-            NetworkListener(QSharedPointer<PeerManager::IPeerManager> newPeerManager);
-            IChat* getChat();
+      public:
+         NetworkListener(QSharedPointer<PeerManager::IPeerManager> newPeerManager);
+         IChat* getChat();
 
-        private:
-            ChunkUpdater* chunkUpdater;
-            TCPListener* tcpListener;
-            UDPListener* udpListener;
+      private:
+         ChunkUpdater* chunkUpdater;
+         TCPListener* tcpListener;
+         UDPListener* udpListener;
 
-            Chat* chat;
-            QList<Search*> searches;
-            QTimer *timer;
-            QSharedPointer<PeerManager::IPeerManager> peerManager;
-            QSharedPointer<LogManager::ILogger> logger;
+         Chat* chat;
+         QList<Search*> searches;
+         QTimer *timer;
+         QSharedPointer<PeerManager::IPeerManager> peerManager;
+         QSharedPointer<LogManager::ILogger> logger;
 
-            const static double IMAliveFrequency = 0.1; ///< The message IMAlive is sent each 10s.
+         const static double IMAliveFrequency = 0.1; ///< The message IMAlive is sent each 10s.
 
-        public slots:
-            void presence();
+      public slots:
+         void presence();
 
    };
 }
