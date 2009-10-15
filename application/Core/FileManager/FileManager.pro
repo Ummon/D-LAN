@@ -10,34 +10,37 @@ OBJECTS_DIR = ".tmp/debug"
 INCLUDEPATH += . \
     ../.. \
     ${PROTOBUF}/src
-
 LIBS += -L${PROTOBUF}/src/.libs \
     -lprotobuf
-
 LIBS += -L../../Common/LogManager/output/debug \
-   -lLogManager
-
+    -lLogManager
 DEFINES += FILEMANAGER_LIBRARY
-SOURCES += priv/WordIndex.cpp \
-    priv/SharedDirectory.cpp \
-    priv/FileUpdater.cpp \
+SOURCES += priv/Builder.cpp \
     priv/FileManager.cpp \
-    priv/File.cpp \
-    priv/Directory.cpp \
-    priv/Chunks.cpp \
-    priv/Chunk.cpp \
-    priv/Builder.cpp
+    priv/FileUpdater/FileUpdater.cpp \
+    priv/FileUpdater/DirWatcherWin.cpp \
+    priv/FileUpdater/DirWatcher.cpp \
+    priv/Cache/Entry.cpp \
+    priv/Cache/File.cpp \
+    priv/Cache/Directory.cpp \
+    priv/Cache/SharedDirectory.cpp \
+    priv/ChunkIndex/Chunks.cpp \
+    priv/ChunkIndex/Chunk.cpp
 HEADERS += FileManager_global.h \
     IGetHashesResult.h \
     IFileManager.h \
     IFile.h \
     IChunk.h \
-    priv/WordIndex.h \
-    priv/SharedDirectory.h \
-    priv/FileUpdater.h \
+    Builder.h \
     priv/FileManager.h \
-    priv/File.h \
-    priv/Directory.h \
-    priv/Chunks.h \
-    priv/Chunk.h \
-    Builder.h
+    priv/FileUpdater/FileUpdater.h \
+    priv/FileUpdater/DirWatcherWin.h \
+    priv/FileUpdater/DirWatcher.h \
+    priv/Cache/Entry.h \
+    priv/Cache/File.h \
+    priv/Cache/Directory.h \
+    priv/Cache/SharedDirectory.h \
+    priv/ChunkIndex/Chunks.h \
+    priv/ChunkIndex/Chunk.h \
+    priv/WordIndex/WordIndex.h \
+    priv/WordIndex/Node.h
