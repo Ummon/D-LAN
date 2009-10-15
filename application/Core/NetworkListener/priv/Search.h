@@ -11,9 +11,9 @@ namespace NetworkListener
 
    class Search : public ISearch
    {
-      private:
-         quint32 tag;
-         UDPListener* udpListener;
+   private:
+      quint32 tag;
+      sUDPListener* udpListener;
    };
 }
 #endif

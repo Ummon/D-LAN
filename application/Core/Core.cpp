@@ -13,10 +13,10 @@ using namespace Core;
 {
    this->logger->log("Loading ..", LogManager::EndUser);
 
-   /*this->fileManager = FileManager::Builder::newFileManager();
+   this->fileManager = FileManager::Builder::newFileManager();
    this->peerManager = PeerManager::Builder::newPeerManager();
    this->peerManager->setNick("Test");
-   this->networkListener = NetworkListener::Builder::newNetworkListener(this->peerManager);*/
+   this->networkListener = NetworkListener::Builder::newNetworkListener(this->peerManager);
 
    this->logger->log("Ready to serve", LogManager::EndUser);
 

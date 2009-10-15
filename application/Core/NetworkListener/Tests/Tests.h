@@ -25,7 +25,7 @@ namespace UploadManager { class IUploadManager; }
 
 class Tests : public QObject
 {
-   Q_OBJECT
+Q_OBJECT
 public:
    Tests();
 
