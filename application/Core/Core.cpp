@@ -5,6 +5,7 @@ using namespace Core;
 #include <FileManager/Builder.h>
 #include <NetworkListener/Builder.h>
 #include <NetworkListener/IChat.h>
+#include <NetworkListener/ISearch.h>
 #include <PeerManager/Builder.h>
 #include <QObject>
 
@@ -19,5 +20,6 @@ using namespace Core;
    this->networkListener = NetworkListener::Builder::newNetworkListener(this->peerManager);
 
    this->logger->log("Ready to serve", LogManager::EndUser);
+
 
 }

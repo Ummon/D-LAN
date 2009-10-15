@@ -44,7 +44,7 @@ message ChatMessage {
 // See http://dev.euphorik.ch/wiki/pmp/Algorithms#Searching for more details.
 // a -> all
 message Find {
-   required uint32 tag = 1; // A tag to identify the search. All answers must have the same tag.
+   required uint64 tag = 1; // A tag to identify the search. All answers must have the same tag.
    required Common.Hash peerID = 2;
    required string pattern = 3;
 }

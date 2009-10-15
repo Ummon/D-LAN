@@ -12,6 +12,7 @@
 #include <FileManager/IFileManager.h>
 #include <NetworkListener/INetworkListener.h>
 #include <NetworkListener/IChat.h>
+#include <NetworkListener/ISearch.h>
 #include <PeerManager/IPeerManager.h>
 
 #include <QObject>

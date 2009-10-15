@@ -24,10 +24,12 @@ using namespace NetworkListener;
    // We create the timer who will send information about our presence.
    this->timer = new QTimer(this);
    connect(timer, SIGNAL(timeout()), this, SLOT(presence()));
-
    this->timer->start(static_cast<int>(1000 / IMAliveFrequency));
 
    this->presence(); // Send the information at the first time.
+
+   // Listening for new search request.
+   Chat::connect(this->udpListener, SIGNAL(newFindRequset(const Protos::Core::Find&)), this, SLOT(newFindRequset(const Protos::Core::Find&)));
 }
 
 /**
@@ -64,4 +66,39 @@ void ::NetworkListener::presence()
 
    // We broadcast the data.
    this->udpListener->sendMessage(IAmAlivePacket + QString::fromStdString(output));
+}
+
+/**
+ * Return a new search object
+ *
+ * @author mcuony
+ */
+ISearch* ::NetworkListener::search()
+{
+   return new Search(this->udpListener, this->peerManager);
+}
+
+/**
+ * Called when someone want to search something
+ *
+ * For the moment, we just reply with testing data
+ *
+ * @author mcuony
+ */
+void ::NetworkListener::newFindRequset(const Protos::Core::Find& request)
+{
+   Protos::Common::FindResult fr;
+
+
+   fr.set_tag(request.tag());
+   fr.mutable_peerid()->set_hash(this->peerManager->getMyId().data());
+
+   std::string output;
+   fr.SerializeToString(&output);
+
+   // We broadcast the data.
+   this->udpListener->sendMessage(findResultPacket + QString::fromStdString(output));
+
+   this->logger->log("Stupid search answer for " + QString::number(request.tag()), LogManager::Debug);
+
 }
