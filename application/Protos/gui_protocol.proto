@@ -105,8 +105,7 @@ message Search  {
 // This message is sent for each UDP datagram received.
 message SearchResult {
    required uint32 tag = 1;
-   required Common.Hash peerID = 2; // ID of the peer.
-   required Common.FindResult result = 3; // Encapsulate the received result.
+   required Common.FindResult result = 2; // Encapsulate the received result.
 }
 
 // GUI -> Core
