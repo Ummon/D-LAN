@@ -54,6 +54,5 @@ message FindResult {
 // Core settings
 message Settings {     
    optional string nick = 1;
-   optional Common.DirEntry sharedDir = 2; // A dir size can be unknown (=0).
-   optional Common.DirEntry destinationDir = 3; // A dir size can be unknown (=0).
+   optional Common.Hash peerID = 2;
 }

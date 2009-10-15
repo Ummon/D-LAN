@@ -3,14 +3,14 @@
 # -------------------------------------------------
 QT -= gui
 TARGET = Common
-
 DESTDIR = "output/debug"
 MOC_DIR = ".tmp/debug"
 OBJECTS_DIR = ".tmp/debug"
-
 TEMPLATE = lib
 DEFINES += COMMON_LIBRARY
-SOURCES += Hash.cpp
+SOURCES += Hash.cpp \
+    PersistantData.cpp
 HEADERS += Common_global.h \
     Hashes.h \
-    Hash.h
+    Hash.h \
+    PersistantData.h
