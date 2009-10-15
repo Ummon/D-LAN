@@ -10,10 +10,10 @@ namespace NetworkListener
    class UDPListener;
    class ChunkUpdater
    {
-      private:
-         DownloadManager::IDownloadManager* downloadManager;
-         quint32 currentTag; ///< The tag of the last sent 'HaveChunks' message.
-         UDPListener* udpListener;
+   private:
+      DownloadManager::IDownloadManager* downloadManager;
+      quint32 currentTag; ///< The tag of the last sent 'HaveChunks' message.
+      UDPListener* udpListener;
    };
 }
 #endif
