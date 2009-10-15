@@ -9,6 +9,7 @@
 #include <Common/LogManager/ILogger.h>
 
 #include <Protos/core_protocol.pb.h>
+#include <Protos/common.pb.h>
 
 #include <Core/PeerManager/IPeerManager.h>
 
@@ -25,7 +26,8 @@ namespace NetworkListener
 
    signals:
       void newChatMessage(const Protos::Core::ChatMessage& message);
-      void newFindResult(const Protos::Common::FindResult& result, const quint32& IP);
+      void newFindResult(const Protos::Common::FindResult& result);
+      void newFindRequset(const Protos::Core::Find& request);
       void newHaveChunksResult(const Protos::Core::HaveChunksResult& result);
 
    private:
@@ -44,7 +46,9 @@ namespace NetworkListener
    enum messageUDPType
    {
       chatMessagePacket = 1,
-      IAmAlivePacket = 2
+      IAmAlivePacket = 2,
+      findPacket = 3,
+      findResultPacket = 4
    };
 }
 #endif

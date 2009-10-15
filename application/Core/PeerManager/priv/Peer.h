@@ -9,9 +9,6 @@
 
 #include <IPeer.h>
 
-//Time before a peer is dead
-#define TTL 15
-
 namespace PeerManager
 {
    class Peer : public IPeer

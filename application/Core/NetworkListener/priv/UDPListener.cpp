@@ -116,6 +116,35 @@ void ::UDPListener::processPendingDatagrams()
             break;
          }
 
+         case findPacket:
+         {
+            // We create a new findMessage.
+            Protos::Core::Find findMessage;
+            findMessage.ParseFromString(datagram.mid(1).data());
+
+            emit newFindRequset(findMessage);
+
+            this->logger->log("Find request id " + QString::number( findMessage.tag() ), LogManager::Debug);
+
+            break;
+         }
+
+         case findResultPacket:
+         {
+            // We create a new findMessage.
+            Protos::Common::FindResult findRMessage;
+            findRMessage.ParseFromString(datagram.mid(1).data());
+
+            emit newFindResult(findRMessage);
+
+            //this->logger->log("Someone is alive: " + id + ", " +data.fromStdString(IMAlimeMessage.nick()), LogManager::Debug);
+
+            break;
+         }
+
+
+
+
          default:
          {
             this->logger->log("Unknow type ???", LogManager::Debug);

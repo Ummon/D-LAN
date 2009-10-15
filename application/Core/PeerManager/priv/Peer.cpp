@@ -30,7 +30,7 @@ void ::Peer::justSeen()
  */
 bool ::Peer::haveYouToDie()
 {
-   int nSec = lastUpdate.secsTo(QDateTime::currentDateTime()) ;
+   int nSec = this->lastUpdate.secsTo(QDateTime::currentDateTime()) ;
 
    if (nSec > Peer::ttl)
    {

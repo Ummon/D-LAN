@@ -59,5 +59,5 @@ bool ::Chat::send(const QString& message)
  */
 void ::Chat::newChatMessage(const Protos::Core::ChatMessage& message)
 {
-   emit newMessage(message);
+    emit newMessage(message);
 }

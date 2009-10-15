@@ -10,6 +10,8 @@
 #include <Core/PeerManager/IPeerManager.h>
 
 #include <INetworkListener.h>
+#include <ISearch.h>
+#include <priv/Search.h>
 #include <priv/UDPListener.h>
 
 namespace NetworkListener
@@ -19,6 +21,7 @@ namespace NetworkListener
    class UDPListener;
    class Chat;
    class Search;
+   class ISearch;
 
    class NetworkListener : public INetworkListener
    {
@@ -26,6 +29,7 @@ namespace NetworkListener
    public:
       NetworkListener(QSharedPointer<PeerManager::IPeerManager> newPeerManager);
       IChat* getChat();
+      ISearch* search();
 
    private:
       ChunkUpdater* chunkUpdater;
@@ -33,7 +37,6 @@ namespace NetworkListener
       UDPListener* udpListener;
 
       Chat* chat;
-      QList<Search*> searches;
       QTimer *timer;
       QSharedPointer<PeerManager::IPeerManager> peerManager;
       QSharedPointer<LogManager::ILogger> logger;
@@ -42,6 +45,7 @@ namespace NetworkListener
 
    public slots:
       void presence();
+      void newFindRequset(const Protos::Core::Find& request);
 
    };
 }
