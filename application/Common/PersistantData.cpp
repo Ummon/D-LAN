@@ -28,7 +28,13 @@ QByteArray PersistantData::getValue(const QString& name)
    {
       return file.readAll();
    }
-   return QByteArray();
+   else
+      throw UnknownValueException();
+}
+
+bool PersistantData::rmValue(const QString& name)
+{
+   return QFile::remove(applicationFolderPath + QDir::separator() + name);
 }
 
 bool PersistantData::createApplicationFolder()

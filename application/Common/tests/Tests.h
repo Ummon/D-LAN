@@ -15,6 +15,7 @@ public:
 private slots:
    void writePersistantData();
    void readPersistantData();
+   void removePersistantData();
 };
 
 #endif
