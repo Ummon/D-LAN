@@ -8,8 +8,7 @@ using namespace PeerManager;
  */
 
 
-::Peer::Peer(Common::Hash ID)
-   : ID(ID)
+::Peer::Peer(Common::Hash ID) : ID(ID)
 {
 }
 
@@ -20,8 +19,8 @@ using namespace PeerManager;
  */
 void ::Peer::justSeen()
 {
-    this->IisAlive = true;
-    this->lastUpdate =  QDateTime::currentDateTime();
+   this->IisAlive = true;
+   this->lastUpdate =  QDateTime::currentDateTime();
 }
 
 /**
@@ -31,14 +30,14 @@ void ::Peer::justSeen()
  */
 bool ::Peer::haveYouToDie()
 {
-    int nSec = lastUpdate.secsTo(QDateTime::currentDateTime()) ;
+   int nSec = lastUpdate.secsTo(QDateTime::currentDateTime()) ;
 
-    if (nSec > TTL)
-    {
-        this->IisAlive = false;
-        return true;
-    }
-    return false;
+   if (nSec > Peer::ttl)
+   {
+      this->IisAlive = false;
+      return true;
+   }
+   return false;
 }
 
 /**
@@ -48,7 +47,7 @@ bool ::Peer::haveYouToDie()
  */
 bool ::Peer::isAlive()
 {
-    return this->IisAlive;
+   return this->IisAlive;
 }
 
 /**
@@ -59,7 +58,7 @@ bool ::Peer::isAlive()
 
 Common::Hash Peer::getId()
 {
-    return this->ID;
+   return this->ID;
 }
 
 /*TODO*/

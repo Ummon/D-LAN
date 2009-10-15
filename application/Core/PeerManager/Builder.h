@@ -10,12 +10,10 @@ namespace PeerManager
 {
    class IPeerManager;
 
-
    class PEERMANAGERSHARED_EXPORT Builder
    {
-       public:
-
-          static QSharedPointer<IPeerManager> newPeerManager();
+      public:
+         static QSharedPointer<IPeerManager> newPeerManager();
    };
 }
 #endif
