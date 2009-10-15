@@ -6,13 +6,16 @@
 #include <Common/LogManager/ILogger.h>
 
 #include <IFileManager.h>
+#include <priv/FileUpdater/FileUpdater.h>
+#include <priv/ChunkIndex/Chunks.h>
+#include <priv/WordIndex/WordIndex.h>
 
 namespace FileManager
 {
-   class Chunks;
-   class FileUpdater;
-   class WordIndex;
+   class Entry;
    class SharedDirectory;
+   class File;
+   class Directory;
 
    class FileManager : public IFileManager
    {
@@ -29,13 +32,34 @@ namespace FileManager
       QList<Protos::Common::DirEntry> getDestinationDirs();
       IFile newFile(const Protos::Common::FileEntry& remotEntry);*/
 
+      File* getFile(const QString& path, const QString& name);
+      Directory* getDir(const QString& path, const QString& name);
+      // QList<SharedDirectory*> getRoots(); // Useless for the moment.
+
+      Chunks& getChunks();
+
+      //WordIndex<Entry*>& getWordIndex();
+      void addToWordIndex(Entry* entry);
+
+      /**
+        * Called by a newly created file;
+        * It willadd
+        */
+      //void newFileAdded(); // not necessary for the moment
+
+      /**
+        * Called by a newly created directory;
+        */
+      //void newDirAdded(); // not necessary for the moment
 
       static QSharedPointer<LogManager::ILogger> logger;
 
    private:
-      Chunks* chunks;
-      FileUpdater* fileUpdater;
-      WordIndex* wordIndex;
+      FileUpdater fileUpdater;
+
+      Chunks chunks;
+      WordIndex<Entry*> wordIndex;
+
       QList<SharedDirectory*> sharedDirReadWrite;
       QList<SharedDirectory*> sharedDirReadOnly;
    };
