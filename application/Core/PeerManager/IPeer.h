@@ -12,7 +12,7 @@ namespace PeerManager
    class IGetEntries;
    class IPeer : public QObject
    {
-      Q_OBJECT
+   Q_OBJECT
    public:
       virtual ~IPeer() {}
 
