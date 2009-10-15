@@ -13,18 +13,18 @@ namespace NetworkListener
 
    class Chat : public IChat
    {
-       public:
-          Chat(UDPListener* newUudpListener, QSharedPointer<PeerManager::IPeerManager> newPeerManager);
-          virtual ~Chat() {}
-          bool send(const QString& message);
+      public:
+         Chat(UDPListener* newUudpListener, QSharedPointer<PeerManager::IPeerManager> newPeerManager);
+         virtual ~Chat() {}
+         bool send(const QString& message);
 
-       private:
-          UDPListener* udpListener;
-          QSharedPointer<LogManager::ILogger> logger;
-          QSharedPointer<PeerManager::IPeerManager> peerManager;
+      private:
+         UDPListener* udpListener;
+         QSharedPointer<LogManager::ILogger> logger;
+         QSharedPointer<PeerManager::IPeerManager> peerManager;
 
-       public slots:
-            void newChatMessage(const Protos::Core::ChatMessage& message);
+      public slots:
+         void newChatMessage(const Protos::Core::ChatMessage& message);
    };
 }
 #endif
