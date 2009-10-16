@@ -14,10 +14,11 @@ namespace FileManager
    {
    public:
       Directory(Directory* parent, const QString& name);
-      virtual ~Directory() {};
-      virtual QString getPath();
 
-      virtual Directory* getRoot();
+      virtual ~Directory() {};
+
+      virtual QString getPath();
+      Directory* getRoot();
 
       /**
         * Only called by the class File.
@@ -28,6 +29,8 @@ namespace FileManager
       Directory(const QString& name);
 
    private:
+      void init();
+
       /**
         * When a new file is added to a directory this method is called
         * to add its size.

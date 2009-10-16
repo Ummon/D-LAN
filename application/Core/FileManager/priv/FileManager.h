@@ -54,6 +54,8 @@ namespace FileManager
 
       static QSharedPointer<LogManager::ILogger> logger;
 
+      static const int  MAX_WORD_LENGTH = 3;
+
    private:
       FileUpdater fileUpdater;
 
