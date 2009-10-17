@@ -124,7 +124,7 @@ void ::UDPListener::processPendingDatagrams()
 
             emit newFindRequset(findMessage);
 
-            this->logger->log("Find request id " + QString::fromStdString(findMessage.DebugString())  + QString::number( findMessage.tag() ), LogManager::Debug);
+            //ISO C++ says that these are ambiguous, even though the worst conversion for the first is better than the worst conversion for the secondthis->logger->log("Find request id " + QString::fromStdString(findMessage.DebugString())  + QString::number( findMessage.tag() ), LogManager::Debug);
 
             break;
          }
@@ -160,11 +160,11 @@ void ::UDPListener::processPendingDatagrams()
   * @param mess : The message to send
   * @author mcuony
   */
-bool ::UDPListener::sendMessage(const QString& mess)
+bool ::UDPListener::sendMessage(const QByteArray& datagram)
 {
    //this->logger->log("Sending " + mess, LogManager::Debug);
 
-   QByteArray datagram = mess.toUtf8();
+   //QByteArray datagram = mess.toUtf8();
 
    if (this->socket->writeDatagram(
       datagram.data(),
