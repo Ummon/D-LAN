@@ -49,7 +49,7 @@ bool ::NetworkListener::Search::search(const QString& words)
       findProto.SerializeToString(&output);
 
 
-      this->logger->log("Search launched ! (" + words + ")", LogManager::Debug);
+      this->logger->log("Search launched ! (" + words + QString::number(findProto.tag()) + ")", LogManager::Debug);
 
       this->searchLaunched = true;
       this->dateOfLaunch =  QDateTime::currentDateTime();

@@ -124,7 +124,7 @@ void ::UDPListener::processPendingDatagrams()
 
             emit newFindRequset(findMessage);
 
-            this->logger->log("Find request id " + QString::number( findMessage.tag() ), LogManager::Debug);
+            this->logger->log("Find request id " + QString::fromStdString(findMessage.DebugString())  + QString::number( findMessage.tag() ), LogManager::Debug);
 
             break;
          }
