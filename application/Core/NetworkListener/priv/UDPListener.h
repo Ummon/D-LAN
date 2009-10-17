@@ -22,7 +22,7 @@ namespace NetworkListener
 
    public:
       UDPListener(QSharedPointer<PeerManager::IPeerManager> newPeerManager);
-      bool sendMessage(const QString& mess);
+      bool sendMessage(const QByteArray& datagram);
 
    signals:
       void newChatMessage(const Protos::Core::ChatMessage& message);

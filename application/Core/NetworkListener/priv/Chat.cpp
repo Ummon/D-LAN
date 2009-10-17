@@ -48,7 +48,7 @@ bool ::Chat::send(const QString& message)
    chatMessage.SerializeToString(&output);
 
    // .We broadcast the data.
-   return this->udpListener->sendMessage(chatMessagePacket + QString::fromStdString(output));
+   return this->udpListener->sendMessage(QByteArray(output.data()).prepend(chatMessagePacket));
 }
 
 /**
