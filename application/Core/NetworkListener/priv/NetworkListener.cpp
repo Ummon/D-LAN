@@ -65,7 +65,7 @@ void ::NetworkListener::presence()
    IMAlimeMessage.SerializeToString(&output);
 
    // We broadcast the data.
-   this->udpListener->sendMessage(IAmAlivePacket + QString::fromStdString(output));
+   this->udpListener->sendMessage(QByteArray(output.data()).prepend(IAmAlivePacket));
 }
 
 /**
@@ -97,8 +97,8 @@ void ::NetworkListener::newFindRequset(const Protos::Core::Find& request)
    fr.SerializeToString(&output);
 
    // We broadcast the data.
-   this->udpListener->sendMessage(findResultPacket + QString::fromStdString(output));
+   this->udpListener->sendMessage(QByteArray(output.data()).prepend(findResultPacket));
 
-   this->logger->log("Stupid search answer for " + QString::number(request.tag()), LogManager::Debug);
+   //this->logger->log("Stupid search answer for " + QString::number(request.tag()), LogManager::Debug);
 
 }

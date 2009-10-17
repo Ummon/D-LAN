@@ -49,7 +49,7 @@ bool ::NetworkListener::Search::search(const QString& words)
       findProto.SerializeToString(&output);
 
 
-      this->logger->log("Search launched ! (" + words + QString::number(findProto.tag()) + ")", LogManager::Debug);
+      this->logger->log("Search launched ! (" + words + ")", LogManager::Debug);
 
       this->searchLaunched = true;
       this->dateOfLaunch =  QDateTime::currentDateTime();
@@ -58,7 +58,7 @@ bool ::NetworkListener::Search::search(const QString& words)
       Search::connect(this->udpListener, SIGNAL(newFindResult(const Protos::Common::FindResult&)), this, SLOT(newFindResult(const Protos::Common::FindResult&)));
 
       // We broadcast the data.
-      return this->udpListener->sendMessage(findPacket + QString::fromStdString(output));
+      return this->udpListener->sendMessage(QByteArray(output.data()).prepend(findPacket));
    }
 
 }
@@ -70,11 +70,11 @@ bool ::NetworkListener::Search::search(const QString& words)
  */
 void ::NetworkListener::Search::newFindResult(const Protos::Common::FindResult& result) {
 
-   this->logger->log("Search result" + QString::number(result.tag()), LogManager::Debug);
+   //this->logger->log("Search result" + QString::number(result.tag()), LogManager::Debug);
 
    if (result.tag() == this->tag)
    {
       this->logger->log("Find result for me !", LogManager::Debug);
-      emit newFindResult(result);
+      //emit newFindResult(result);
    }
 }
