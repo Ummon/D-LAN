@@ -3,9 +3,6 @@
 
 #include <QTest>
 
-#include <PersistantData.h>
-using namespace Common;
-
 class Tests : public QObject
 {
    Q_OBJECT

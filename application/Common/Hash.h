@@ -14,7 +14,7 @@ namespace Common
       Hash(const char* str);
       Hash(const QByteArray& bytes);
 
-      QString Hash::toStr();
+      QString toStr();
       static Hash rand();
    };
 }
