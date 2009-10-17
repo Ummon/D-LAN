@@ -19,7 +19,7 @@ Hash::Hash(const QByteArray& bytes)
 
 QString Hash::toStr()
 {
-   throw 1; // TODO
+   return QString(this->toHex().data());
 }
 
 Hash Hash::rand()

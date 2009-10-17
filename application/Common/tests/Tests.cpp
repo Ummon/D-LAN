@@ -1,9 +1,10 @@
 #include <Tests.h>
-using namespace Common;
 
 #include <QtDebug>
 
 #include <Hash.h>
+#include <PersistantData.h>
+using namespace Common;
 
 Tests::Tests()
 {
@@ -44,6 +45,7 @@ void Tests::generateAHash()
 {
    Common::Hash hash = Common::Hash::rand();
    QVERIFY(hash.size() == 20);
+   qDebug() << "Generated hash : " << hash.toStr();
 }
 
 
