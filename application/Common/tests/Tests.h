@@ -16,6 +16,7 @@ private slots:
    void writePersistantData();
    void readPersistantData();
    void removePersistantData();
+   void generateAHash();
 };
 
 #endif

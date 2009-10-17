@@ -3,6 +3,8 @@ using namespace Common;
 
 #include <QtDebug>
 
+#include <Hash.h>
+
 Tests::Tests()
 {
 }
@@ -37,4 +39,12 @@ void Tests::removePersistantData()
    QVERIFY(PersistantData::rmValue("paul"));
    QVERIFY(!PersistantData::rmValue("john"));
 }
+
+void Tests::generateAHash()
+{
+   Common::Hash hash = Common::Hash::rand();
+   QVERIFY(hash.size() == 20);
+}
+
+
 
