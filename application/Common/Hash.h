@@ -12,6 +12,10 @@ namespace Common
    public:
       Hash();
       Hash(const char* str);
+      Hash(const QByteArray& bytes);
+
+      QString Hash::toStr();
+      static Hash rand();
    };
 }
 #endif
