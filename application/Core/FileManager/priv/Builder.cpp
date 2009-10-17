@@ -1,6 +1,8 @@
 #include <Builder.h>
 using namespace FileManager;
 
+#include <string>
+
 #include <IFileManager.h>
 #include <priv/FileManager.h>
 

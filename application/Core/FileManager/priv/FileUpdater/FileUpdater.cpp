@@ -3,11 +3,11 @@ using namespace FileManager;
 
 #include <QLinkedList>
 #include <QDir>
+#include <QTime>
 
 #include <priv/Cache/SharedDirectory.h>
 #include <priv/Cache/Directory.h>
 #include <priv/Cache/File.h>
-#include <priv/FileUpdater/DirWatcher.h>
 
 FileUpdater::FileUpdater(FileManager* fileManager)
    : fileManager(fileManager), dirWatcher(DirWatcher::getNewWatcher())
@@ -20,7 +20,7 @@ void FileUpdater::addRoot(SharedDirectory* dir)
    if (this->dirWatcher)
       this->dirWatcher->addDir(dir->getPath());
 
-   this->dirsToScan.append(dir);
+   this->dirsToScan << dir;
 
    this->dirNotEmpty.wakeOne();
    this->mutex.unlock();
@@ -36,6 +36,8 @@ void FileUpdater::run()
 {
    forever
    {
+      this->computeSomeHashes();
+
       this->mutex.lock();
 
       // If there is no watcher capability or no directory to watch then
@@ -55,14 +57,40 @@ void FileUpdater::run()
       {
          this->mutex.unlock();
 
+         if (this->dirsToScan.isEmpty())
+            this->treatEvents(this->dirWatcher->waitEvent());
+         else
+            this->treatEvents(this->dirWatcher->waitEvent(0));
       }
+   }
+}
+
+void FileUpdater::createNewFile(Directory* dir, const QString& filename, qint64 size)
+{
+   File* file = new File(dir, filename, size);
+   this->fileWithoutHashes << file;
+}
+
+void FileUpdater::computeSomeHashes()
+{
+   QTime time;
+   time.start();
+
+   QMutableLinkedListIterator<File*> file(this->fileWithoutHashes);
+   while (file.hasNext())
+   {
+      file.next()->computeHashes();
+      file.remove();
+
+      if (time.elapsed() / 1000 >= minimumDurationWhenHashing)
+         break;
    }
 }
 
 void FileUpdater::scan(SharedDirectory* dir)
 {
    QLinkedList<Directory*> dirsToVisit;
-   dirsToVisit.append(dir);
+   dirsToVisit << dir;
 
    while (!dirsToVisit.isEmpty())
    {
@@ -74,12 +102,17 @@ void FileUpdater::scan(SharedDirectory* dir)
 
          if (entry.isDir())
          {
-            dirsToVisit.append(new Directory(currentDir, entry.baseName()));
+            dirsToVisit << new Directory(currentDir, entry.baseName());
          }
          else
          {
-            new File(currentDir, entry.fileName(), entry.size());
+            this->createNewFile(currentDir, entry.fileName(), entry.size());
          }
       }
    }
+}
+
+void FileUpdater::treatEvents(const QList<WatcherEvent>& events)
+{
+
 }
