@@ -16,13 +16,23 @@ File::File(Directory* dir, const QString& name, qint64 size)
    this->size = size;
    this->dir->addFile(this);
 
-   // The root must be a shared directory !
-   static_cast<SharedDirectory*>(this->dir->getRoot())->getFileManager()->addToWordIndex(this);
+   // The root must be a shared directory. If not, someone will be fired !
+   static_cast<SharedDirectory*>(this->getRoot())->getFileManager()->addToWordIndex(this);
 }
 
 QString File::getPath()
 {
    return this->dir->getPath() + "/" + this->name;
+}
+
+Directory* File::getRoot()
+{
+   return this->dir->getRoot();
+}
+
+void File::computeHashes()
+{
+   // TODO
 }
 
 QList<IChunk*> File::getChunks()

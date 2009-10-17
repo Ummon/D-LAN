@@ -25,7 +25,9 @@ SOURCES += priv/Builder.cpp \
     priv/Cache/Directory.cpp \
     priv/Cache/SharedDirectory.cpp \
     priv/ChunkIndex/Chunks.cpp \
-    priv/ChunkIndex/Chunk.cpp
+    priv/ChunkIndex/Chunk.cpp \
+    ../../Protos/core_protocol.pb.cc \
+    ../../Protos/common.pb.cc
 HEADERS += FileManager_global.h \
     IGetHashesResult.h \
     IFileManager.h \
@@ -43,4 +45,7 @@ HEADERS += FileManager_global.h \
     priv/ChunkIndex/Chunks.h \
     priv/ChunkIndex/Chunk.h \
     priv/WordIndex/WordIndex.h \
-    priv/WordIndex/Node.h
+    priv/WordIndex/Node.h \
+    ../../Protos/core_protocol.pb.h \
+    ../../Protos/common.pb.h
+OTHER_FILES += 

@@ -38,7 +38,7 @@ WordIndex<T>::WordIndex()
 template<typename T>
 void WordIndex<T>::addItem(const QList<QString>& words, T item)
 {
-   QListIterator<QString> i(QString);
+   QListIterator<QString> i(words);
    while (i.hasNext())
    {
       Node<T>* currentNode = &this->node;
@@ -53,7 +53,7 @@ void WordIndex<T>::addItem(const QList<QString>& words, T item)
 template<typename T>
 void WordIndex<T>::rmItem(const QList<QString>& words, T item)
 {
-   QListIterator<QString> i(QString);
+   QListIterator<QString> i(words);
    while (i.hasNext())
    {
       QList<Node<T>*> nodes;
