@@ -1,8 +1,8 @@
 #ifndef FILEMANAGER_NODE_H
 #define FILEMANAGER_NODE_H
 
-#include <QtCore/QDebug>
 #include <QtCore/QList>
+#include <QtCore/QSet>
 #include <QtCore/QChar>
 
 namespace FileManager
@@ -56,7 +56,7 @@ namespace FileManager
       /**
         * Return all items from the current node and its sub nodes (recursively).
         */
-      QList<T> getItems();
+      QSet<T> getItems();
 
       /**
         * Does the node own some items?
@@ -70,7 +70,7 @@ namespace FileManager
 
       QList<Node<T>*> children; ///< The children nodes.
 
-      QList<T> itemList; ///< The indexed items.
+      QSet<T> itemList; ///< The indexed items.
    };
 }
 
@@ -81,13 +81,11 @@ template <typename T>
 Node<T>::Node()
    : letter('\0')
 {
-   qDebug() << "New root node";
 }
 
 template <typename T>
 Node<T>::~Node()
 {
-   qDebug() << "Node deleted : " << this->letter;
    foreach (Node* n, this->children)
       delete n;
 }
@@ -96,10 +94,10 @@ template <typename T>
 Node<T>& Node<T>::addNode(QChar letter)
 {
    // Search if the letter already exists.
-   foreach (Node* n, this->children)
+   for (int i = 0; i < this->children.size(); i++)
    {
-      if (n->letter == letter)
-         return *n;
+      if (this->children[i]->letter == letter)
+         return *this->children[i];
    }
    Node<T>* n = new Node(letter);
    this->children.append(n);
@@ -133,11 +131,9 @@ template <typename T>
 void Node<T>::addItem(T item)
 {
    // Do not add an existing item.
-   foreach(T i, this->itemList)
-      if (i == item)
-         return;
-
-   this->itemList.append(item);
+   if (this->itemList.contains(item))
+      return;
+   this->itemList << item;
 }
 
 template <typename T>
@@ -147,16 +143,16 @@ void Node<T>::rmItem(T item)
 }
 
 template <typename T>
-QList<T> Node<T>::getItems()
+QSet<T> Node<T>::getItems()
 {
-   QList<T> result;
+   QSet<T> result;
    QList<Node<T>*> nodesToVisit;
 
    nodesToVisit.append(this);
    while (!nodesToVisit.empty())
    {
       Node<T>* current = nodesToVisit.takeFirst();
-      result.append(current->itemList);
+      result += current->itemList;
       nodesToVisit.append(current->children);
    }
 
@@ -172,8 +168,6 @@ bool Node<T>::haveItems()
 template <typename T>
 Node<T>::Node(const QChar& letter)
    : letter(letter)
-{
-   qDebug() << "New node : " << letter;
-}
+{}
 
-#endif // NODE_H
+#endif

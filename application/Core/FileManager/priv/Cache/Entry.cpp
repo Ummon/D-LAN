@@ -5,7 +5,7 @@ using namespace FileManager;
 #include <priv/FileManager.h>
 
 Entry::Entry(const QString& name)
-   : name(name)
+   : name(name), size(0)
 {
 }
 

@@ -1,8 +1,8 @@
 #ifndef FILEMANAGER_WORDINDEX_H
 #define FILEMANAGER_WORDINDEX_H
 
-#include <QDebug>
 #include <QList>
+#include <QSet>
 #include <QString>
 #include <QChar>
 
@@ -21,7 +21,8 @@ namespace FileManager
 
       void addItem(const QList<QString>& words, T item);
       void rmItem(const QList<QString>& words, T item);
-      QList<T> search(QList<QString> words);
+      QSet<T> search(QList<QString> words);
+      QSet<T> search(const QString& word);
 
    private:
       Node<T> node;
@@ -38,14 +39,12 @@ WordIndex<T>::WordIndex()
 template<typename T>
 void WordIndex<T>::addItem(const QList<QString>& words, T item)
 {
-   QListIterator<QString> i(words);
-   while (i.hasNext())
+   for (QListIterator<QString> i(words); i.hasNext();)
    {
+      const QString& word = i.next();
       Node<T>* currentNode = &this->node;
-      foreach (QChar letter, i.next())
-      {
-         currentNode = &currentNode->addNode(letter);
-      }
+      for (int j = 0; j < word.size(); j++)
+         currentNode = &currentNode->addNode(word[j]);
       currentNode->addItem(item);
    }
 }
@@ -53,15 +52,16 @@ void WordIndex<T>::addItem(const QList<QString>& words, T item)
 template<typename T>
 void WordIndex<T>::rmItem(const QList<QString>& words, T item)
 {
-   QListIterator<QString> i(words);
-   while (i.hasNext())
+
+   for (QListIterator<QString> i(words); i.hasNext();)
    {
+      const QString& word = i.next();
       QList<Node<T>*> nodes;
       Node<T>* currentNode = &this->node;
       nodes.prepend(currentNode);
-      foreach (QChar letter, i.next())
+      for (int j = 0; j < word.size(); j++)
       {
-         if (!(currentNode = currentNode->getNode(letter)))
+         if (!(currentNode = currentNode->getNode(word[j])))
             goto nextWord;
          nodes.prepend(currentNode);
       }
@@ -91,9 +91,9 @@ void WordIndex<T>::rmItem(const QList<QString>& words, T item)
 }
 
 template<typename T>
-QList<T> WordIndex<T>::search(QList<QString> words)
+QSet<T> WordIndex<T>::search(QList<QString> words)
 {
-   QList<T> result;
+   QSet<T> result;
    foreach (QString word, words)
    {
       Node<T>* currentNode = &this->node;
@@ -102,10 +102,22 @@ QList<T> WordIndex<T>::search(QList<QString> words)
          if (!(currentNode = currentNode->getNode(letter)))
             goto nextWord;
       }
-      result.append(currentNode->getItems());
+      result += currentNode->getItems();
       nextWord :;
    }
    return result;
 }
 
-#endif // WORDINDEX_H
+template<typename T>
+QSet<T> WordIndex<T>::search(const QString& word)
+{
+   Node<T>* currentNode = &this->node;
+
+   for (int i = 0; i < word.size(); i++)
+      if (!(currentNode = currentNode->getNode(word[i])))
+         return QSet<T>();
+
+   return currentNode->getItems();
+}
+
+#endif

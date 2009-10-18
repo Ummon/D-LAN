@@ -3,6 +3,7 @@
 
 #include <QString>
 
+#include <Common/Hash.h>
 #include <priv/Cache/Directory.h>
 
 namespace FileManager
@@ -12,6 +13,11 @@ namespace FileManager
    class SharedDirectory : public Directory
    {
    public:
+      enum Rights {
+         READ_ONLY,
+         READ_WRITE
+      };
+
       SharedDirectory(FileManager* file, const QString& path);
 
       /**
@@ -22,8 +28,12 @@ namespace FileManager
 
       FileManager* getFileManager();
 
+      Rights getRights();
+
    private:
       FileManager* fileManager;
+      Common::Hash id;
+      Rights rights;
    };
 
 }
