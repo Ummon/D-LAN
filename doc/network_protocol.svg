@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
-
 <svg
    xmlns:dc="http://purl.org/dc/elements/1.1/"
    xmlns:cc="http://creativecommons.org/ns#"
@@ -13,12 +12,13 @@
    height="297mm"
    id="svg2"
    version="1.1"
-   inkscape:version="0.46+devel r21627"
+   inkscape:version="0.46"
    sodipodi:docname="network_protocol.svg"
    inkscape:output_extension="org.inkscape.output.svg.inkscape"
    inkscape:export-filename="E:\tmp\network_protocol.png"
    inkscape:export-xdpi="100"
-   inkscape:export-ydpi="100">
+   inkscape:export-ydpi="100"
+   sodipodi:version="0.32">
   <defs
      id="defs4">
     <marker
@@ -620,16 +620,16 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.98994949"
-     inkscape:cx="266.68587"
-     inkscape:cy="684.74169"
+     inkscape:zoom="1.4"
+     inkscape:cx="231.08703"
+     inkscape:cy="564.29515"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
      inkscape:window-width="1280"
-     inkscape:window-height="943"
-     inkscape:window-x="-4"
-     inkscape:window-y="-4"
+     inkscape:window-height="784"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
      inkscape:window-maximized="1" />
   <metadata
      id="metadata7">
@@ -774,7 +774,7 @@
          id="tspan3604-7"
          x="80.42791"
          y="159.88559"
-         style="font-size:8px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;text-anchor:start;font-family:Bitstream Vera Sans Mono;-inkscape-font-specification:Bitstream Vera Sans Mono">(version, name,</tspan><tspan
+         style="font-size:8px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;text-anchor:start;font-family:Bitstream Vera Sans Mono;-inkscape-font-specification:Bitstream Vera Sans Mono">(version, peerId, nick,</tspan><tspan
          sodipodi:role="line"
          x="80.42791"
          y="169.88559"
@@ -915,7 +915,7 @@
          x="83.752495"
          y="344.17316"
          style="font-size:8px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;text-anchor:start;font-family:Bitstream Vera Sans Mono;-inkscape-font-specification:Bitstream Vera Sans Mono"
-         id="tspan2905-6">(message)</tspan><tspan
+         id="tspan2905-6">(peerId, message)</tspan><tspan
          sodipodi:role="line"
          x="83.752495"
          y="354.17316"
@@ -947,7 +947,7 @@
          x="81.104485"
          y="472.5979"
          style="font-size:8px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;text-anchor:start;font-family:Bitstream Vera Sans Mono;-inkscape-font-specification:Bitstream Vera Sans Mono"
-         id="tspan2905-6-3">(pattern)</tspan><tspan
+         id="tspan2905-6-3">(peerId, pattern)</tspan><tspan
          sodipodi:role="line"
          x="81.104485"
          y="482.5979"
@@ -968,7 +968,7 @@
          x="127.58092"
          y="592.19403"
          style="font-size:8px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;text-anchor:start;font-family:Bitstream Vera Sans Mono;-inkscape-font-specification:Bitstream Vera Sans Mono"
-         id="tspan2905-6-8">([dir], [file])</tspan><tspan
+         id="tspan2905-6-8">(peerId, [dir], [file])</tspan><tspan
          sodipodi:role="line"
          x="127.58092"
          y="602.19403"
