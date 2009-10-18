@@ -21,7 +21,7 @@ message HaveChunks {
    required string nick = 3;
    required uint64 amount = 4; // [byte] Amount of sharing.
    
-   optional uint32 tag = 5; // A random number, all results must repeate this number.
+   optional uint64 tag = 5; // A random number, all results must repeate this number.
    repeated Common.Hash chunks = 6; // Can be empty.
 }
 // This message is only sent if some chunks are requested.
@@ -29,7 +29,7 @@ message HaveChunks {
 // given chunks. 'true' means "I have this chunk".
 // all -> a
 message HaveChunksResult {
-   required uint32 tag = 1; // The repeated number.
+   required uint64 tag = 1; // The repeated number.
    required Common.Hash peerID = 2;
    repeated bool chunkStates = 3; // The array size must have the same size of HaveChunks.chunks.
 }
@@ -101,7 +101,7 @@ message GetChunkResult {
 // Browsing.
 // a -> b
 message GetEntries {
-   required Common.Entry directory = 1;
+   required Common.DirEntry directory = 1;
 }
 // b -> a
 message GetEntriesResult {
