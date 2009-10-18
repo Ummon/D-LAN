@@ -3,6 +3,7 @@
 #include <QtDebug>
 
 #include <Hash.h>
+#include <Math.h>
 #include <PersistantData.h>
 using namespace Common;
 
@@ -46,6 +47,14 @@ void Tests::generateAHash()
    Common::Hash hash = Common::Hash::rand();
    QVERIFY(hash.size() == 20);
    qDebug() << "Generated hash : " << hash.toStr();
+}
+
+void Tests::math()
+{
+   QVERIFY(Common::Math::nCombinations(5, 4) == 5);
+   QVERIFY(Common::Math::nCombinations(4, 2) == 6);
+   QVERIFY(Common::Math::nCombinations(4, 4) == 1);
+   QVERIFY(Common::Math::nCombinations(2, 4) == 0);
 }
 
 
