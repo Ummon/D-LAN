@@ -1,6 +1,8 @@
 
   cpp_default_defs 
   cpp_h_extension "h" cpp_src_extension "cpp" java_extension "java" php_extension "php" python_extension "py" idl_extension "idl"
+  cpp_include_with_path
+  cpp_root_relative_path
 
   type_forms 15 // uml cpp java idl cpp_in cpp_out cpp_inout cpp_return
     "void" "void" "void" "void" "${type}" "${type} &" "${type}" "${type}"
@@ -8,7 +10,7 @@
     "bool" "bool" "boolean" "boolean" "${type}" "${type} &" "${type} &" "${type}"
     "char" "QChar" "char" "char" "${type}" "${type} &" "${type} &" "${type}"
     "uchar" "unsigned char" "char" "octet" "${type}" "${type} &" "${type} &" "${type}"
-    "byte" "unsigned char" "byte" "octet" "${type}" "${type} &" "${type} &" "${type}"
+    "byte" "char" "byte" "octet" "${type}" "${type} &" "${type} &" "${type}"
     "short" "short" "short" "short" "${type}" "${type} &" "${type} &" "${type}"
     "ushort" "unsigned short" "short" "unsigned short" "${type}" "${type} &" "${type} &" "${type}"
     "int" "int" "int" "long" "${type}" "${type} &" "${type} &" "${type}"
@@ -20,11 +22,11 @@
     "string" "QString" "String" "string" "${type}" "${type} &" "${type} &" "${type}"
   
   relations_stereotypes 5 // uml cpp java pythonidl
-    "sequence" "vector" "Vector" "list" "sequence"
-    "vector" "vector" "Vector" "list" "sequence"
-    "list" "list" "List" "list" "sequence"
-    "set" "set" "Set" "set" "sequence"
-    "map" "map" "Map" "dict" "sequence"
+    "sequence" "QList" "Vector" "list" "sequence"
+    "vector" "QVector" "Vector" "list" "sequence"
+    "list" "QList" "List" "list" "sequence"
+    "set" "QSet" "Set" "set" "sequence"
+    "map" "QHashMap" "Map" "dict" "sequence"
   
   classes_stereotypes 14 // uml cpp java php python idl
     "class" "class" "class" "class" "class" "valuetype"
@@ -42,8 +44,8 @@
     "@interface" "ignored" "@interface" "ignored" "ignored" "ignored"
     "stereotype" "ignored" "ignored" "ignored" "ignored" "ignored"
   
-  cpp_enum_default_type_forms "${type}" "${type} &" "${type} &" "${type}" // in out inout return
-  other_cpp_types_default_type_forms "const ${type} &" "${type} &" "${type} &" "${type}" // in out inout return
+  cpp_enum_default_type_forms "${type}" "${type}&" "${type}&" "${type}" // in out inout return
+  other_cpp_types_default_type_forms "const ${type} &" "${type}&" "${type}&" "${type}" // in out inout return
 
   cpp_default_h_content "#ifndef ${NAMESPACE}_${NAME}_H
 #define ${NAMESPACE}_${NAME}_H
@@ -52,64 +54,67 @@ ${comment}
 ${includes}
 ${declarations}
 ${namespace_start}
-${definition}
+   ${definition}
 ${namespace_end}
 #endif
 "
   cpp_default_src_content "${comment}
 ${includes}
 ${namespace_start}
-${members}
+   ${members}
 ${namespace_end}"
-  cpp_default_class_decl "${comment}${template}class ${name}${inherit} {
+  cpp_default_class_decl "${comment}${template}class ${name}${inherit}
+{
 ${members}};
 ${inlines}
 "
   cpp_default_external_class_decl "${name}
 #include <${name}.h>
 "
-  cpp_default_struct_decl "${comment}${template}struct ${name}${inherit} {
+  cpp_default_struct_decl "${comment}${template}struct ${name}${inherit}
+{
 ${members}};
 ${inlines}
 "
-  cpp_default_union_decl "${comment}${template}union ${name} {
+  cpp_default_union_decl "${comment}${template}union ${name}
+{
 ${members}};
 ${inlines}
 "
-  cpp_default_enum_decl "${comment}enum ${name} {
-${items}
-};
+  cpp_default_enum_decl "${comment}enum ${name}
+{
+${items}};
 "
   cpp_default_typedef_decl "${comment}typedef ${type} ${name};
 "
-  cpp_default_attribute_declaration "    ${comment}${static}${mutable}${volatile}${const}${type} ${name}${value};
+  cpp_default_attribute_declaration "   ${comment}${static}${mutable}${volatile}${const}${type} ${name}${value};
 " // multiplicity 1
-  "    ${comment}${static}${mutable}${volatile}${const}${stereotype}<${type}> ${name}${value};
+  "   ${comment}${static}${mutable}${volatile}${const}${stereotype}<${type}> ${name}${value};
 " // multiplicity * a..b
-  "    ${comment}${static}${mutable}${volatile}${const}${type} ${name}${multiplicity}${value};
+  "   ${comment}${static}${mutable}${volatile}${const}${type} ${name}${multiplicity}${value};
 " // multiplicity [..]
   cpp_default_enum_item_declaration "  ${name}${value},${comment}"
   cpp_association_aggregation_declaration
-    "    ${comment}${static}${mutable}${volatile}${const}${type} * ${name}${value};
+    "   ${comment}${static}${mutable}${volatile}${const}${type}* ${name}${value};
 " // multiplicity 1
-    "    ${comment}${static}${mutable}${volatile}${const}${stereotype}<${type} *> ${name}${value};
+    "   ${comment}${static}${mutable}${volatile}${const}${stereotype}<${type}*> ${name}${value};
 " // multiplicity * a..b
-    "    ${comment}${static}${mutable}${volatile}${const}${type} * ${name}${multiplicity}${value};
+    "   ${comment}${static}${mutable}${volatile}${const}${type}* ${name}${multiplicity}${value};
 " // multiplicity [..]
   cpp_aggregation_by_value_declaration
-    "    ${comment}${static}${mutable}${volatile}${const}${type} ${name}${value};
+    "   ${comment}${static}${mutable}${volatile}${const}${type} ${name}${value};
 " // multiplicity 1
-    "    ${comment}${static}${mutable}${volatile}${const}${stereotype}<${type}> ${name}${value};
+    "   ${comment}${static}${mutable}${volatile}${const}${stereotype}<${type}> ${name}${value};
 " // multiplicity * a..b
-    "    ${comment}${static}${mutable}${volatile}${const}${type} ${name}${multiplicity}${value};
+    "   ${comment}${static}${mutable}${volatile}${const}${type} ${name}${multiplicity}${value};
 " // multiplicity [..]
-  cpp_get "get_${name}" inline const value_const public
-  cpp_set "set_${name}" public
-  cpp_default_operation_declaration "    ${comment}${friend}${static}${inline}${virtual}${type} ${name}${(}${)}${const}${volatile}${throw}${abstract};
+  cpp_get "get${name}" inline const value_const public
+  cpp_set "set${name}" public
+  cpp_default_operation_declaration "   ${comment}${friend}${static}${inline}${virtual}${type} ${name}${(}${)}${const}${volatile}${throw}${abstract};
 "
-  cpp_default_operation_definition "${comment}${inline}${type} ${class}::${name}${(}${)}${const}${volatile}${throw}${staticnl}{
-  ${body}}
-"
+  cpp_default_operation_definition "${comment}${inline}${type} ${class}::${name}${(}${)}${const}${volatile}${throw}${staticnl}
+{
+  ${body}}"
   java_default_src_content "${comment}
 ${package}
 ${imports}

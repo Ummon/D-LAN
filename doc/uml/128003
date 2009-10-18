@@ -1,10 +1,10 @@
-format 67
+format 69
 "FileManager" // Aybabtu::Core::FileManager
-  revision 14
+  revision 18
   modified_by 34 "gburri"
   // class settings
   //class diagram settings
-  draw_all_relations default hide_attributes default hide_operations default show_members_full_definition default show_members_visibility default show_members_stereotype default show_members_multiplicity default show_members_initialization default show_attribute_modifiers default member_max_width 0 show_parameter_dir default show_parameter_name default package_name_in_tab default class_drawing_mode default drawing_language default show_context_mode default auto_label_position default show_relation_modifiers default show_infonote default shadow default show_stereotype_properties default
+  draw_all_relations default hide_attributes default hide_operations default hide_getset_operations default show_members_full_definition default show_members_visibility default show_members_stereotype default show_members_multiplicity default show_members_initialization default show_attribute_modifiers default member_max_width 0 show_parameter_dir default show_parameter_name default package_name_in_tab default class_drawing_mode default drawing_language default show_context_mode default auto_label_position default show_relation_modifiers default show_infonote default shadow default show_stereotype_properties default
   //use case diagram settings
   package_name_in_tab default show_context default auto_label_position default draw_all_relations default class_drawing_mode default shadow default show_stereotype_properties default
   //sequence diagram settings
@@ -26,9 +26,12 @@ format 67
   package_name_in_tab default show_context default show_opaque_action_definition default auto_label_position default write_flow_label_horizontally default draw_all_relations default shadow default
   show_infonote default drawing_language default show_stereotype_properties default
   
+  cpp_h_dir "Core/FileManager/priv/"
+  cpp_src_dir "Core/FileManager/priv/"
+  cpp_namespace "FileManager"
   classview 128003 "Classes"
     //class diagram settings
-    draw_all_relations default hide_attributes default hide_operations default show_members_full_definition default show_members_visibility default show_members_stereotype default show_members_multiplicity default show_members_initialization default show_attribute_modifiers default member_max_width 0 show_parameter_dir default show_parameter_name default package_name_in_tab default class_drawing_mode default drawing_language default show_context_mode default auto_label_position default show_relation_modifiers default show_infonote default shadow default show_stereotype_properties default
+    draw_all_relations default hide_attributes default hide_operations default hide_getset_operations default show_members_full_definition default show_members_visibility default show_members_stereotype default show_members_multiplicity default show_members_initialization default show_attribute_modifiers default member_max_width 0 show_parameter_dir default show_parameter_name default package_name_in_tab default class_drawing_mode default drawing_language default show_context_mode default auto_label_position default show_relation_modifiers default show_infonote default shadow default show_stereotype_properties default
     //collaboration diagram settings
     show_full_operations_definition default show_hierarchical_rank default write_horizontally default drawing_language default package_name_in_tab default show_context default draw_all_relations default shadow default show_stereotype_properties default
     //object diagram settings
@@ -42,14 +45,16 @@ format 67
     //activity diagram settings
     package_name_in_tab default show_context default show_opaque_action_definition default auto_label_position default write_flow_label_horizontally default draw_all_relations default shadow default
     show_infonote default drawing_language default show_stereotype_properties default
+    associated_deployment_view deploymentview_ref 128418 // Classes
     classdiagram 128131 "classes"
-      draw_all_relations default hide_attributes default hide_operations default show_members_full_definition default show_members_visibility default show_members_stereotype default show_members_multiplicity default show_members_initialization default show_attribute_modifiers default member_max_width 0 show_parameter_dir default show_parameter_name default package_name_in_tab default class_drawing_mode default drawing_language default show_context_mode default auto_label_position default show_relation_modifiers default show_infonote default shadow default show_stereotype_properties default
+      draw_all_relations default hide_attributes default hide_operations default hide_getset_operations default show_members_full_definition default show_members_visibility default show_members_stereotype default show_members_multiplicity default show_members_initialization default show_attribute_modifiers default member_max_width 0 show_parameter_dir default show_parameter_name default package_name_in_tab default class_drawing_mode default drawing_language default show_context_mode default auto_label_position default show_relation_modifiers default show_infonote default shadow default show_stereotype_properties default
       size A4
     end
 
     class 128003 "File"
       visibility package 
-      cpp_decl "${comment}${template}class ${name}${inherit} {
+      cpp_decl "${comment}${template}class ${name}${inherit}
+{
 ${members}};
 ${inlines}
 "
@@ -97,14 +102,15 @@ ${inlines}
 	  b parent class_ref 130563 // IFile
       end
 
-      classrelation 128546 // (Files)
+      classrelation 128546 // Files
 	relation_ref 128387 // Files
       end
     end
 
     class 128131 "Directory"
       visibility public 
-      cpp_decl "${comment}${template}class ${name}${inherit} {
+      cpp_decl "${comment}${template}class ${name}${inherit}
+{
 ${members}};
 ${inlines}
 "
@@ -141,7 +147,7 @@ ${inlines}
 "
 	    classrelation_ref 128515 // (Files)
 	  b role_name "" multiplicity "1" private
-	    classrelation_ref 128546 // (Files)
+	    classrelation_ref 128546 // Files
       end
 
       classrelation 128418 // (Sub)
@@ -151,7 +157,8 @@ ${inlines}
 
     class 128259 "FileManager"
       visibility package 
-      cpp_decl "${comment}${template}class ${name}${inherit} {
+      cpp_decl "${comment}${template}class ${name}${inherit}
+{
 ${members}};
 ${inlines}
 "
@@ -219,7 +226,8 @@ ${inlines}
 
     class 128387 "Chunks"
       visibility package 
-      cpp_decl "${comment}${template}class ${name}${inherit} {
+      cpp_decl "${comment}${template}class ${name}${inherit}
+{
 ${members}};
 ${inlines}
 "
@@ -250,7 +258,8 @@ ${inlines}
 
     class 128515 "Chunk"
       visibility package 
-      cpp_decl "${comment}${template}class ${name}${inherit} {
+      cpp_decl "${comment}${template}class ${name}${inherit}
+{
 ${members}};
 ${inlines}
 "
@@ -301,7 +310,8 @@ ${inlines}
 
     class 129795 "IFileManager"
       abstract visibility package stereotype "interface"
-      cpp_decl "${comment}${template}class ${name}${inherit} {
+      cpp_decl "${comment}${template}class ${name}${inherit}
+{
 ${members}};
 ${inlines}
 "
@@ -452,7 +462,8 @@ ${members}};
 
     class 130307 "IChunk"
       abstract visibility package stereotype "interface"
-      cpp_decl "${comment}${template}class ${name}${inherit} {
+      cpp_decl "${comment}${template}class ${name}${inherit}
+{
 ${members}};
 ${inlines}
 "
@@ -517,7 +528,8 @@ ${members}};
 
     class 130563 "IFile"
       abstract visibility package stereotype "interface"
-      cpp_decl "${comment}${template}class ${name}${inherit} {
+      cpp_decl "${comment}${template}class ${name}${inherit}
+{
 ${members}};
 ${inlines}
 "
@@ -550,7 +562,8 @@ ${members}};
 
     class 134147 "FileUpdater"
       visibility package 
-      cpp_decl "${comment}${template}class ${name}${inherit} {
+      cpp_decl "${comment}${template}class ${name}${inherit}
+{
 ${members}};
 ${inlines}
 "
@@ -575,7 +588,8 @@ ${inlines}
 
     class 137219 "WordIndex"
       visibility package 
-      cpp_decl "${comment}${template}class ${name}${inherit} {
+      cpp_decl "${comment}${template}class ${name}${inherit}
+{
 ${members}};
 ${inlines}
 "
@@ -598,7 +612,8 @@ ${inlines}
 
     class 153603 "IGetHashesResult"
       abstract visibility package stereotype "interface"
-      cpp_decl "${comment}${template}class ${name}${inherit} {
+      cpp_decl "${comment}${template}class ${name}${inherit}
+{
 ${members}};
 ${inlines}
 "
@@ -633,7 +648,8 @@ ${members}};
 
     class 128034 "SharedDirectory"
       visibility package 
-      cpp_decl "${comment}${template}class ${name}${inherit} {
+      cpp_decl "${comment}${template}class ${name}${inherit}
+{
 ${members}};
 ${inlines}
 "
@@ -659,6 +675,363 @@ ${inlines}
 	php_decl ""
 	python_decl ""
 	idl_decl ""
+      end
+    end
+  end
+
+  deploymentview 128418 "Classes"
+    //deployment diagram settings
+    package_name_in_tab default show_context default write_horizontally default auto_label_position default draw_all_relations default shadow default
+    draw_component_as_icon default show_component_req_prov default show_component_rea default show_stereotype_properties default
+    artifact 130594 "File"
+      stereotype "source"
+      cpp_h "#ifndef ${NAMESPACE}_${NAME}_H
+#define ${NAMESPACE}_${NAME}_H
+
+${comment}
+${includes}
+${declarations}
+${namespace_start}
+   ${definition}
+${namespace_end}
+#endif
+"
+      cpp_src "${comment}
+${includes}
+${namespace_start}
+   ${members}
+${namespace_end}"
+      associated_classes
+	class_ref 128003 // File
+      end
+    end
+
+    artifact 130722 "Directory"
+      stereotype "source"
+      cpp_h "#ifndef ${NAMESPACE}_${NAME}_H
+#define ${NAMESPACE}_${NAME}_H
+
+${comment}
+${includes}
+${declarations}
+${namespace_start}
+   ${definition}
+${namespace_end}
+#endif
+"
+      cpp_src "${comment}
+${includes}
+${namespace_start}
+   ${members}
+${namespace_end}"
+      associated_classes
+	class_ref 128131 // Directory
+      end
+    end
+
+    artifact 130850 "FileManager"
+      stereotype "source"
+      cpp_h "#ifndef ${NAMESPACE}_${NAME}_H
+#define ${NAMESPACE}_${NAME}_H
+
+${comment}
+${includes}
+${declarations}
+${namespace_start}
+   ${definition}
+${namespace_end}
+#endif
+"
+      cpp_src "${comment}
+${includes}
+${namespace_start}
+   ${members}
+${namespace_end}"
+      associated_classes
+	class_ref 128259 // FileManager
+      end
+    end
+
+    artifact 130978 "Chunks"
+      stereotype "source"
+      cpp_h "#ifndef ${NAMESPACE}_${NAME}_H
+#define ${NAMESPACE}_${NAME}_H
+
+${comment}
+${includes}
+${declarations}
+${namespace_start}
+   ${definition}
+${namespace_end}
+#endif
+"
+      cpp_src "${comment}
+${includes}
+${namespace_start}
+   ${members}
+${namespace_end}"
+      associated_classes
+	class_ref 128387 // Chunks
+      end
+    end
+
+    artifact 131106 "Chunk"
+      stereotype "source"
+      cpp_h "#ifndef ${NAMESPACE}_${NAME}_H
+#define ${NAMESPACE}_${NAME}_H
+
+${comment}
+${includes}
+${declarations}
+${namespace_start}
+   ${definition}
+${namespace_end}
+#endif
+"
+      cpp_src "${comment}
+${includes}
+${namespace_start}
+   ${members}
+${namespace_end}"
+      associated_classes
+	class_ref 128515 // Chunk
+      end
+    end
+
+    artifact 131234 "IFileManager"
+      stereotype "source"
+      cpp_h "#ifndef ${NAMESPACE}_${NAME}_H
+#define ${NAMESPACE}_${NAME}_H
+
+${comment}
+${includes}
+${declarations}
+${namespace_start}
+   ${definition}
+${namespace_end}
+#endif
+"
+      cpp_src "${comment}
+${includes}
+${namespace_start}
+   ${members}
+${namespace_end}"
+      java_src "${comment}
+${package}
+${imports}
+${definition}"
+      php_src "<?php
+${comment}
+${definition}
+?>
+"
+      idl_src "#ifndef ${MODULE}_${NAME}_H
+#define ${MODULE}_${NAME}_H
+
+${comment}
+${includes}
+${module_start}
+${definition}
+${module_end}
+#endif
+"
+      associated_classes
+	class_ref 129795 // IFileManager
+      end
+    end
+
+    artifact 131362 "IChunk"
+      stereotype "source"
+      cpp_h "#ifndef ${NAMESPACE}_${NAME}_H
+#define ${NAMESPACE}_${NAME}_H
+
+${comment}
+${includes}
+${declarations}
+${namespace_start}
+   ${definition}
+${namespace_end}
+#endif
+"
+      cpp_src "${comment}
+${includes}
+${namespace_start}
+   ${members}
+${namespace_end}"
+      java_src "${comment}
+${package}
+${imports}
+${definition}"
+      php_src "<?php
+${comment}
+${definition}
+?>
+"
+      idl_src "#ifndef ${MODULE}_${NAME}_H
+#define ${MODULE}_${NAME}_H
+
+${comment}
+${includes}
+${module_start}
+${definition}
+${module_end}
+#endif
+"
+      associated_classes
+	class_ref 130307 // IChunk
+      end
+    end
+
+    artifact 131490 "IFile"
+      stereotype "source"
+      cpp_h "#ifndef ${NAMESPACE}_${NAME}_H
+#define ${NAMESPACE}_${NAME}_H
+
+${comment}
+${includes}
+${declarations}
+${namespace_start}
+   ${definition}
+${namespace_end}
+#endif
+"
+      cpp_src "${comment}
+${includes}
+${namespace_start}
+   ${members}
+${namespace_end}"
+      java_src "${comment}
+${package}
+${imports}
+${definition}"
+      php_src "<?php
+${comment}
+${definition}
+?>
+"
+      idl_src "#ifndef ${MODULE}_${NAME}_H
+#define ${MODULE}_${NAME}_H
+
+${comment}
+${includes}
+${module_start}
+${definition}
+${module_end}
+#endif
+"
+      associated_classes
+	class_ref 130563 // IFile
+      end
+    end
+
+    artifact 131618 "FileUpdater"
+      stereotype "source"
+      cpp_h "#ifndef ${NAMESPACE}_${NAME}_H
+#define ${NAMESPACE}_${NAME}_H
+
+${comment}
+${includes}
+${declarations}
+${namespace_start}
+   ${definition}
+${namespace_end}
+#endif
+"
+      cpp_src "${comment}
+${includes}
+${namespace_start}
+   ${members}
+${namespace_end}"
+      associated_classes
+	class_ref 134147 // FileUpdater
+      end
+    end
+
+    artifact 131746 "WordIndex"
+      stereotype "source"
+      cpp_h "#ifndef ${NAMESPACE}_${NAME}_H
+#define ${NAMESPACE}_${NAME}_H
+
+${comment}
+${includes}
+${declarations}
+${namespace_start}
+   ${definition}
+${namespace_end}
+#endif
+"
+      cpp_src "${comment}
+${includes}
+${namespace_start}
+   ${members}
+${namespace_end}"
+      associated_classes
+	class_ref 137219 // WordIndex
+      end
+    end
+
+    artifact 131874 "IGetHashesResult"
+      stereotype "source"
+      cpp_h "#ifndef ${NAMESPACE}_${NAME}_H
+#define ${NAMESPACE}_${NAME}_H
+
+${comment}
+${includes}
+${declarations}
+${namespace_start}
+   ${definition}
+${namespace_end}
+#endif
+"
+      cpp_src "${comment}
+${includes}
+${namespace_start}
+   ${members}
+${namespace_end}"
+      java_src "${comment}
+${package}
+${imports}
+${definition}"
+      php_src "<?php
+${comment}
+${definition}
+?>
+"
+      idl_src "#ifndef ${MODULE}_${NAME}_H
+#define ${MODULE}_${NAME}_H
+
+${comment}
+${includes}
+${module_start}
+${definition}
+${module_end}
+#endif
+"
+      associated_classes
+	class_ref 153603 // IGetHashesResult
+      end
+    end
+
+    artifact 132002 "SharedDirectory"
+      stereotype "source"
+      cpp_h "#ifndef ${NAMESPACE}_${NAME}_H
+#define ${NAMESPACE}_${NAME}_H
+
+${comment}
+${includes}
+${declarations}
+${namespace_start}
+   ${definition}
+${namespace_end}
+#endif
+"
+      cpp_src "${comment}
+${includes}
+${namespace_start}
+   ${members}
+${namespace_end}"
+      associated_classes
+	class_ref 128034 // SharedDirectory
       end
     end
   end
