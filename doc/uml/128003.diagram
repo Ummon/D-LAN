@@ -1,4 +1,4 @@
-format 67
+format 69
 
 componentcanvas 128259 component_ref 128003 // FileManager
   draw_component_as_icon default show_component_req_prov default show_component_rea default show_stereotype_properties default

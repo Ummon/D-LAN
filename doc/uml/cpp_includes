@@ -1,13 +1,11 @@
 // "a type" "needed cpp_includes"
-"vector" "#include <vector>
+"vector" "#include <QCore/QVector>"
+
+"list" "#include <QCore/QList>"
+
+"map" "#include <QHashMap>
 using namespace std;"
 
-"list" "#include <list>
-using namespace std;"
-
-"map" "#include <map>
-using namespace std;"
-
-"string" "#include <string>
+"string" "#include <QString>
 using namespace std;"
 

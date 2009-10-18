@@ -1,4 +1,4 @@
-format 67
+format 69
 
 classinstance 128006 class_ref 138115 // ChunkUpdater
  color mediumyellow  name ""   xyz 279 46 2000 life_line_z 2000
@@ -17,20 +17,20 @@ note 130822 "Called at the end of the thread loop"
 note 131206 "ChunkUpdate wait a moment (~1sec)"
   xyzwh 348 323 2000 115 71
 durationcanvas 128003 classinstance_ref 129670 // :UDPListener
-  xyzwh 70 235 2010 11 40
+  xyzwh 65 235 2010 11 40
 end
 durationcanvas 128518 classinstance_ref 128006 // :ChunkUpdater
   color lightmediumgreen
-  xyzwh 316 122 2010 11 337
+  xyzwh 311 122 2010 11 337
   overlappingdurationcanvas 128131
-    xyzwh 322 235 2020 11 25
+    xyzwh 317 235 2020 11 25
   end
 end
 durationcanvas 128646 classinstance_ref 128262 // :IDownloadManager
-  xyzwh 482 129 2010 11 44
+  xyzwh 474 129 2010 11 44
 end
 durationcanvas 129414 classinstance_ref 128390 // :IChunkDownload
-  xyzwh 611 413 2010 11 55
+  xyzwh 605 413 2010 11 55
 end
 msg 128259 asynchronous
   from durationcanvas_ref 128003
