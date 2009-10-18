@@ -14,7 +14,11 @@ LIBS += -L${PROTOBUF}/src/.libs \
     -lprotobuf
 LIBS += -L../../Common/LogManager/output/debug \
     -lLogManager
+LIBS += -L../../Common/output/debug \
+    -lCommon
 DEFINES += FILEMANAGER_LIBRARY
+debug:DEFINES += DEBUG
+release:DEFINES += RELEASE
 SOURCES += priv/Builder.cpp \
     priv/FileManager.cpp \
     priv/FileUpdater/FileUpdater.cpp \
@@ -25,9 +29,11 @@ SOURCES += priv/Builder.cpp \
     priv/Cache/Directory.cpp \
     priv/Cache/SharedDirectory.cpp \
     priv/ChunkIndex/Chunks.cpp \
-    priv/ChunkIndex/Chunk.cpp \
     ../../Protos/core_protocol.pb.cc \
-    ../../Protos/common.pb.cc
+    ../../Protos/common.pb.cc \
+    priv/Cache/Chunk.cpp \
+    priv/Cache/DataReader.cpp \
+    priv/Cache/DataWriter.cpp
 HEADERS += FileManager_global.h \
     IGetHashesResult.h \
     IFileManager.h \
@@ -43,9 +49,13 @@ HEADERS += FileManager_global.h \
     priv/Cache/Directory.h \
     priv/Cache/SharedDirectory.h \
     priv/ChunkIndex/Chunks.h \
-    priv/ChunkIndex/Chunk.h \
     priv/WordIndex/WordIndex.h \
     priv/WordIndex/Node.h \
     ../../Protos/core_protocol.pb.h \
-    ../../Protos/common.pb.h
-OTHER_FILES += 
+    ../../Protos/common.pb.h \
+    IDataReader.h \
+    IDataWriter.h \
+    priv/Cache/Chunk.h \
+    priv/Cache/DataReader.h \
+    priv/Cache/DataWriter.h
+OTHER_FILES +=

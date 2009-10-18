@@ -1,20 +1,23 @@
 #ifndef FILEMANAGER_ICHUNK_H
 #define FILEMANAGER_ICHUNK_H
 
-#include <QtGlobal>
-#include <QByteArray>
+#include <QSharedPointer>
 
 #include <Common/Hash.h>
 
 namespace FileManager
 {
+   class IDataReader;
+   class IDataWriter;
+
    class IChunk
    {
    public:
       virtual ~IChunk() {}
 
-      virtual void read(const quint32& offset, QByteArray& data) = 0;
-      virtual void write(const quint32& offset, const QByteArray& data) = 0;
+      virtual QSharedPointer<IDataReader> getDataReader() = 0;
+      virtual QSharedPointer<IDataWriter> getDataWriter() = 0;
+
       virtual Common::Hash getHash() = 0;
    };
 }

@@ -57,8 +57,6 @@ const QList<WatcherEvent> DirWatcherWin::waitEvent(int timeout)
    for(int i = 0; i < n; i++)
       eventsArray[i] = this->dirs[i].event;
 
-   qDebug() << endl << "waitEvent";
-
    DWORD waitStatus = WaitForMultipleObjects(
       n,
       eventsArray,

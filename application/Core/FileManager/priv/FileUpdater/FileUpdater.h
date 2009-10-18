@@ -19,13 +19,14 @@ namespace FileManager
 
    class FileUpdater : public QThread
    {
-      static const int minimumDurationWhenHashing = 30; ///< In seconds.
+      static const int MINIMUM_DURATION_WHEN_HASHING = 30; ///< In seconds.
 
    public:
       FileUpdater(FileManager* fileManager);
       void addRoot(SharedDirectory* dir);
       void rmRoot(SharedDirectory* dir);
 
+   protected:
       void run();
 
    private:

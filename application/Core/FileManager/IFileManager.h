@@ -1,8 +1,7 @@
 #ifndef FILEMANAGER_IFILEMANAGER_H
 #define FILEMANAGER_IFILEMANAGER_H
 
-#include <QString>
-#include <QList>
+#include <QStringList>
 
 #include <Common/Hash.h>
 
@@ -20,14 +19,18 @@ namespace FileManager
    public:
       virtual ~IFileManager() {}
 
+      virtual QStringList getSharedDirsReadOnly() = 0;
+      virtual QStringList getSharedDirsReadWrite() = 0;
+      virtual void setSharedDirsReadOnly(const QStringList& dirs) = 0;
+      virtual void setSharedDirsReadWrite(const QStringList& dirs) = 0;
+
      virtual IChunk* getChunk(const Common::Hash& hash) = 0;
+
       /*virtual IGetHashesResult* getHashes(const  Protos::Common::FileEntry& entry) = 0;
-      virtual Protos::Core::GetEntriesResult* getEntries(const Protos::Common::DirEntry& entry) = 0;
+      virtual Protos::Core::GetEntriesResult* getEntries(const Protos::Common::DirEntry& entry) = 0;*/
       virtual Protos::Common::FindResult find(const QString& words) = 0;
-      virtual QList<bool> haveChunks(const QList<Common::Hash>& hashes) = 0;
+      /*virtual QList<bool> haveChunks(const QList<Common::Hash>& hashes) = 0;
       virtual quint64 getAmount() = 0;
-      virtual QList<Protos::Common::DirEntry> getSharedDirs() = 0; //set?
-      virtual QList<Protos::Common::DirEntry> getDestinationDirs() = 0; //set?
       virtual IFile newFile(const Protos::Common::FileEntry& remotEntry) = 0;*/
    };
 }

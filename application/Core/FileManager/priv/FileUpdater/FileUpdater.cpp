@@ -5,6 +5,7 @@ using namespace FileManager;
 #include <QDir>
 #include <QTime>
 
+#include <priv/FileManager.h>
 #include <priv/Cache/SharedDirectory.h>
 #include <priv/Cache/Directory.h>
 #include <priv/Cache/File.h>
@@ -45,7 +46,10 @@ void FileUpdater::run()
       if (!this->dirWatcher || this->dirWatcher->nbWatchedDir() == 0 || !this->dirsToScan.empty())
       {
          if (this->dirsToScan.empty())
+         {
+            LOG_DEBUG("Waiting for a new shared directory added..");
             this->dirNotEmpty.wait(&this->mutex);
+         }
 
          SharedDirectory* addedDir = this->dirsToScan.takeLast();
          this->mutex.unlock();
@@ -82,13 +86,14 @@ void FileUpdater::computeSomeHashes()
       file.next()->computeHashes();
       file.remove();
 
-      if (time.elapsed() / 1000 >= minimumDurationWhenHashing)
+      if (time.elapsed() / 1000 >= MINIMUM_DURATION_WHEN_HASHING)
          break;
    }
 }
 
 void FileUpdater::scan(SharedDirectory* dir)
 {
+   LOG_DEBUG("Start scanning a shared directory : " + dir->getPath());
    QLinkedList<Directory*> dirsToVisit;
    dirsToVisit << dir;
 
@@ -102,7 +107,7 @@ void FileUpdater::scan(SharedDirectory* dir)
 
          if (entry.isDir())
          {
-            dirsToVisit << new Directory(currentDir, entry.baseName());
+            dirsToVisit << new Directory(currentDir, entry.fileName()   );
          }
          else
          {
@@ -110,9 +115,10 @@ void FileUpdater::scan(SharedDirectory* dir)
          }
       }
    }
+   LOG_DEBUG("Scan terminated : " + dir->getPath());
 }
 
 void FileUpdater::treatEvents(const QList<WatcherEvent>& events)
 {
-
+   LOG_DEBUG("File structure event occurs");
 }

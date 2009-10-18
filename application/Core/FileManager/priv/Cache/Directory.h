@@ -4,6 +4,7 @@
 #include <QString>
 #include <QList>
 
+#include <Protos/common.pb.h>
 #include <priv/Cache/Entry.h>
 
 namespace FileManager
@@ -20,6 +21,8 @@ namespace FileManager
       virtual QString getPath();
       Directory* getRoot();
 
+      void populateDirEntry(Protos::Common::DirEntry* entry);
+
       /**
         * Only called by the class File.
         */
@@ -29,7 +32,6 @@ namespace FileManager
       Directory(const QString& name);
 
    private:
-      void init();
 
       /**
         * When a new file is added to a directory this method is called
