@@ -8,6 +8,12 @@ import "common.proto";
 
 package Protos.GUI;
 
+message Settings {
+   optional Common.Settings settings = 1;
+   repeated string sharedDirectories = 2;
+   repeated string destinationDirectories = 3;
+}
+
 /***** Core state *****/
 // Core -> GUI
 // The state is sent periodically to the GUI (each second for example)
@@ -62,7 +68,7 @@ message State {
    repeated Download downloads = 2;
    repeated Upload uploads = 3;
    
-   optional Common.Settings settings = 4;
+   optional Settings settings = 4;
    optional Stats stats = 5;
 }
 
@@ -93,18 +99,18 @@ message Close {
 /***** Commands. *****/
 // GUI -> Core
 message SetSettings {
-   required Common.Settings settings = 1;
+   required Settings settings = 1;
 }
 
 // GUI -> Core
 message Search  {
-   required uint32 tag = 1;
+   required uint64 tag = 1;
    required string pattern = 2;
 }
 // Core -> GUI
 // This message is sent for each UDP datagram received.
 message SearchResult {
-   required uint32 tag = 1;
+   required uint64 tag = 1;
    required Common.FindResult result = 2; // Encapsulate the received result.
 }
 

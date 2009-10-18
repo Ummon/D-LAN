@@ -21,13 +21,14 @@ message Hashes {
          READ = 0;
          READ_WRITE = 1;
       }
-      required Type type = 1;
-      required string path = 2;
-      required Dir root = 3;
+      required Common.Hash id = 1;
+      required Type type = 2;
+      required string path = 3;
+      required Dir root = 4;
    }
 
    message Dir {
-      required Common.DirEntry dir = 1;
+      required string name = 1;
       repeated File files = 2;
       repeated Dir dirs = 3;
    }
