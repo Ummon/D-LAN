@@ -17,7 +17,7 @@ Hash::Hash(const QByteArray& bytes)
    : QByteArray(bytes)
 {}
 
-QString Hash::toStr()
+const QString Hash::toStr() const
 {
    return QString(this->toHex().data());
 }
