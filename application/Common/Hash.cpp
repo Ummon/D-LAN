@@ -1,4 +1,4 @@
-#include "Hash.h"
+#include <Hash.h>
 using namespace Common;
 
 #include <cstdlib>
@@ -17,7 +17,7 @@ Hash::Hash(const QByteArray& bytes)
    : QByteArray(bytes)
 {}
 
-QString Hash::toStr()
+QString Hash::toStr() const
 {
    return QString(this->toHex().data());
 }
