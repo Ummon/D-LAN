@@ -3,12 +3,7 @@
 
 #include <Common/LogManager/Builder.h>
 #include <Protos/common.pb.h>
-
-
-
-
-
-
+#include <Common/Hash.h>
 
 /**
  * Return the peer id of our current instance
@@ -34,12 +29,10 @@ using namespace PeerManager;
 
     this->logger->log("Loading ..", LogManager::EndUser);
 
-    QTime midnight(0, 0, 0);
-    qsrand(midnight.secsTo(QTime::currentTime()));
 
-    this->ID.setNum(QTime::currentTime().second() + QTime::currentTime().hour() * 900 + (qrand() % 9999) * 180000 );
+    this->ID = Common::Hash::rand();
 
-    this->logger->log("Our current id: " + this->ID, LogManager::EndUser);
+    this->logger->log("Our current id: " + this->ID.toStr(), LogManager::EndUser);
 
     // We create the timer to clean old peers.
     this->timer = new QTimer(this);
@@ -82,7 +75,7 @@ void ::PeerManager::updatePeer(const Common::Hash& peerID, quint32 peerIP, const
     if (peerID == this->ID)
         return;
 
-    this->logger->log(peerID + " is alive !", LogManager::Debug);
+    this->logger->log(peerID.toStr() + " is alive !", LogManager::Debug);
 
     Peer* thePeer = this->fromIdToPeer(peerID);
 
@@ -106,7 +99,7 @@ Peer* ::PeerManager::fromIdToPeer(const Common::Hash& peerID)
 
     }
 
-    this->logger->log(peerID + " wasn't seen before, creating a new peer.", LogManager::Debug);
+    this->logger->log(peerID.toStr() + " wasn't seen before, creating a new peer.", LogManager::Debug);
 
     Peer* newPeer = new Peer(peerID);
 
@@ -129,7 +122,7 @@ void ::PeerManager::cleanUp()
     for (int i = 0; i < peers.length(); i++)
     {
         if (this->peers.at(i)->isAlive() && this->peers.at(i)->haveYouToDie())
-            this->logger->log(*peers.at(i)->getId() + " is dead.", LogManager::Debug);
+            this->logger->log(peers.at(i)->getId().toStr() + " is dead.", LogManager::Debug);
 
 
     }
