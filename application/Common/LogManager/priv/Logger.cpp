@@ -1,6 +1,10 @@
 #include <priv/Logger.h>
 using namespace LogManager;
 
+#include <QThread>
+
+#include <priv/Entry.h>
+
 Logger::Logger(const QString& name)
       : name(name), out(new QTextStream(stdout))
 {
@@ -14,9 +18,13 @@ Logger::Logger(QTextStream* stream, const QString& name)
 
 void Logger::log(const QString& message, Severity severity)
 {
-   (*this->out) << name << ": " << message << endl;
+   QMutexLocker lock(&Logger::mutex);
+   int threadId = (int)QThread::currentThreadId();
+   (*this->out) << "[" << Entry::SeverityToStr(severity) << "] (" << threadId << ") " << name << ": " << message << endl;
 }
 
 void Logger::log(const ILoggable& object, Severity severity)
 {
 }
+
+QMutex Logger::mutex;

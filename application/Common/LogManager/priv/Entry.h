@@ -10,12 +10,13 @@ namespace LogManager
    public:
       Entry();
       virtual ~Entry();
-      
+
       QString getName();
       QString getMessage();
       QDate getDate();
       Severity getSeverity();
-      
+      static QString SeverityToStr(Severity severity);
+
    private:
       QString name;
       QString message;

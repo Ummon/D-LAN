@@ -3,6 +3,7 @@
 
 #include <QString>
 #include <QTextStream>
+#include <QMutex>
 
 #include <ILogger.h>
 
@@ -20,6 +21,7 @@ namespace LogManager
    private:
       QString name;
       QTextStream* out;
+      static QMutex mutex;
    };
 }
 #endif
