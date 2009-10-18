@@ -43,7 +43,7 @@ message FindResult {
    }
    message FileEntryLevel {
       required uint32 level = 1;
-      required FileEntry dir = 2;
+      required FileEntry file = 2;
    }
    required uint64 tag = 1;
    required Common.Hash peerID = 2;
