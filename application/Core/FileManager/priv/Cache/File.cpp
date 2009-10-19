@@ -151,4 +151,5 @@ QList<IChunk*> File::getChunks()
 void File::populateFileEntry(Protos::Common::FileEntry* entry)
 {
    entry->mutable_file()->set_path(this->getPath().toStdString());
+   entry->mutable_file()->set_name(this->getName().toStdString());
 }
