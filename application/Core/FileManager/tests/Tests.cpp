@@ -26,9 +26,14 @@ void Tests::addSharedDirectories()
 void Tests::search()
 {
    QTest::qSleep(1000);
-   Protos::Common::FindResult result = this->fileManager->find("flytrap"); // It's a trap!
+   /*Protos::Common::FindResult result = this->fileManager->find("flytrap"); // It's a trap!
+   qDebug() << result.DebugString().data();*/
 
-   qDebug() << result.DebugString().data();
+   /*Protos::Common::FindResult result2 = this->fileManager->find("Fungi Dikarya Basidiomycota ");
+   qDebug() << result2.DebugString().data();*/
+
+   Protos::Common::FindResult result3 = this->fileManager->find("fungi agaricomycete antarctic");
+   qDebug() << result3.DebugString().data();
 }
 
 void Tests::cleanupTestCase()

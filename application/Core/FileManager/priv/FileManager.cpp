@@ -63,15 +63,15 @@ Protos::Common::FindResult FileManager::FileManager::find(const QString& words)
    for (int i = 0; i < n; i++)
       results[i] += this->wordIndex.search(terms[i]);
 
-   // Compute the number of combination of results (levels).
-   // For example, for three term a, b, c -> [a, b, c, (a, b), (a, c), (b, c), (a, b, c)].
-   int nbLevel = 0;
-   for (int i = 0; i < n; i++)
-      nbLevel += Common::Math::nCombinations(n, i+1);
-   //QSet<Entry*> resultsByLevel[nResult];
-
    Protos::Common::FindResult result;
    int level = 0;
+   // For each group of intersection number.
+   // For example, [a, b, c] :
+   //  1) a & b & c
+   //  2) (a & b) \ c
+   //     (a & c) \ b
+   //     (b & c) \ a
+   //  3) a \ b \ c
    for (int i = 0; i < n; i++)
    {
       int nbIntersect = n - i; // Number of set intersected.
@@ -79,20 +79,13 @@ Protos::Common::FindResult FileManager::FileManager::find(const QString& words)
       for (int j = 0; j < nbIntersect; j++)
          intersect[j] = j;
 
+      // For each combination of the current intersection group.
+      // For 2 intersections (nbIntersect == 2) among 3 elements [a, b, c] :
+      //  * (a, b)
+      //  * (a, c)
+      //  * (b, c)
       for (int j = 0; j < Common::Math::nCombinations(n, nbIntersect); j++)
       {
-         // Define positions of each intersect term.
-         for (int k = nbIntersect - 1; k >= 0; k--)
-         {
-            if  (intersect[k] < n - 2)
-            {
-               intersect[k] += 1;
-               for (int l = k + 1; l < nbIntersect; l++)
-                  intersect[l] = intersect[k] - (l - k);
-               break;
-            }
-         }
-
          QSet<Entry*> currentLevelSet;
 
          // Apply intersects.
@@ -104,8 +97,8 @@ Protos::Common::FindResult FileManager::FileManager::find(const QString& words)
          for (int k = -1; k < nbIntersect; k++)
          {
             for (
-               int l = k == -1 ? 0 : intersect[k] + 1;
-                l < k == nbIntersect - 1 ? n - 1 : intersect[k+1];
+               int l = (k == -1 ? 0 : intersect[k] + 1);
+                l < (k == nbIntersect - 1 ? n : intersect[k+1]);
                 l++
             )
                currentLevelSet -= results[l];
@@ -128,6 +121,19 @@ Protos::Common::FindResult FileManager::FileManager::find(const QString& words)
                file->populateFileEntry(fileEntry->mutable_file());
             }
          }
+
+         // Define positions of each intersect term.
+         for (int k = nbIntersect - 1; k >= 0; k--)
+         {
+            if  (intersect[k] < n - nbIntersect + k)
+            {
+               intersect[k] += 1;
+               for (int l = k + 1; l < nbIntersect; l++)
+                  intersect[l] = intersect[k] - (l - k);
+               break;
+            }
+         }
+
          level += 1;
       }
    }
