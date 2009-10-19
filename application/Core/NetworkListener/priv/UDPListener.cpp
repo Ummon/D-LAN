@@ -12,7 +12,8 @@ using namespace NetworkListener;
 
 //Constantes
 const char UDPListener::TTL = 3;
-const int UDPListener::port = 34326;
+const int UDPListener::multicastPort = 34326;
+const int UDPListener::unicastPort = 24614;
 QHostAddress UDPListener::multicastIP("236.123.43.24");
 
 /**
@@ -28,15 +29,15 @@ QHostAddress UDPListener::multicastIP("236.123.43.24");
    this->peerManager = newPeerManager;
 
    // Creating and setting options to the socket.
-   this->socket = new QUdpSocket(this);
+   this->multicastSocket = new QUdpSocket(this);
 
-   if (!this->socket->bind(UDPListener::port, QUdpSocket::ReuseAddressHint))
+   if (!this->multicastSocket->bind(UDPListener::multicastPort, QUdpSocket::ReuseAddressHint))
       this->logger->log("Can't bind", LogManager::FatalError);
 
-   if (!connect(this->socket, SIGNAL(readyRead()), this, SLOT(processPendingDatagrams())))
+   if (!connect(this->multicastSocket, SIGNAL(readyRead()), this, SLOT(processPendingMulticastDatagrams())))
       this->logger->log("Can't listen", LogManager::FatalError);
 
-   int socketDescriptor = this->socket->socketDescriptor();
+   int socketDescriptor = this->multicastSocket->socketDescriptor();
 
    // 'loop' is activated only for tests.
    char loop = 1;
@@ -57,6 +58,19 @@ QHostAddress UDPListener::multicastIP("236.123.43.24");
    #endif
          this->logger->log("Can't set socket option : IP_ADD_MEMBERSHIP : " + error, LogManager::FatalError);
 
+
+   // Creating and setting options to the socket.
+   this->unicastSocket = new QUdpSocket(this);
+
+   if (!this->unicastSocket->bind(UDPListener::unicastPort, QUdpSocket::ReuseAddressHint))
+      this->logger->log("Can't bind", LogManager::FatalError);
+
+   if (!connect(this->unicastSocket, SIGNAL(readyRead()), this, SLOT(processPendingUnicastDatagrams())))
+      this->logger->log("Can't listen", LogManager::FatalError);
+
+   //int socketDescriptor = this->unicastSocket->socketDescriptor();
+
+
    this->logger->log("Done", LogManager::EndUser);
 }
 
@@ -65,19 +79,19 @@ QHostAddress UDPListener::multicastIP("236.123.43.24");
  *
  * @author mcuony
  */
-void ::UDPListener::processPendingDatagrams()
+void ::UDPListener::processPendingMulticastDatagrams()
 {
 
    QTextStream out(stdout);
 
-   while (this->socket->hasPendingDatagrams())
+   while (this->multicastSocket->hasPendingDatagrams())
    {
       QByteArray datagram;
-      datagram.resize(this->socket->pendingDatagramSize());
+      datagram.resize(this->multicastSocket->pendingDatagramSize());
       QHostAddress peerAddress;
-      this->socket->readDatagram(datagram.data(), datagram.size(), &peerAddress);
+      this->multicastSocket->readDatagram(datagram.data(), datagram.size(), &peerAddress);
 
-      //this->logger->log("Recived from " +  peerAddress.toString() + " message " + datagram.data(), LogManager::Debug);
+      this->logger->log("[MULTICAST] Recived from " +  peerAddress.toString() + " message " + datagram.data(), LogManager::Debug);
 
       switch (datagram.data()[0])
       {
@@ -122,12 +136,43 @@ void ::UDPListener::processPendingDatagrams()
             Protos::Core::Find findMessage;
             findMessage.ParseFromString(datagram.mid(1).data());
 
-            emit newFindRequset(findMessage);
+            emit newFindRequset(findMessage, peerAddress);
 
             //ISO C++ says that these are ambiguous, even though the worst conversion for the first is better than the worst conversion for the secondthis->logger->log("Find request id " + QString::fromStdString(findMessage.DebugString())  + QString::number( findMessage.tag() ), LogManager::Debug);
 
             break;
          }
+
+         default:
+         {
+            this->logger->log("Unknow type ???", LogManager::Debug);
+            break;
+         }
+      }
+   }
+}
+
+/**
+ * Function called when data is recevied by the socket : The coresponding proto is created and the coresponding event is rised
+ *
+ * @author mcuony
+ */
+void ::UDPListener::processPendingUnicastDatagrams()
+{this->logger->log("CALLED", LogManager::Debug);
+
+   QTextStream out(stdout);
+
+   while (this->unicastSocket->hasPendingDatagrams())
+   {
+      QByteArray datagram;
+      datagram.resize(this->unicastSocket->pendingDatagramSize());
+      QHostAddress peerAddress;
+      this->unicastSocket->readDatagram(datagram.data(), datagram.size(), &peerAddress);
+
+      this->logger->log("[UNICAST] Recived from " +  peerAddress.toString() + " message " + datagram.data(), LogManager::Debug);
+
+      switch (datagram.data()[0])
+      {
 
          case findResultPacket:
          {
@@ -166,11 +211,39 @@ bool ::UDPListener::sendMessage(const QByteArray& datagram)
 
    //QByteArray datagram = mess.toUtf8();
 
-   if (this->socket->writeDatagram(
+   if (this->multicastSocket->writeDatagram(
       datagram.data(),
       datagram.size(),
       UDPListener::multicastIP,
-      UDPListener::port
+      UDPListener::multicastPort
+      ) == -1)
+   {
+      this->logger->log("Unable to send datagram", LogManager::FatalError);
+      return false;
+   }
+   else
+   {
+      return true;
+   }
+}
+
+/**
+  * Send an Udp multicast message
+  *
+  * @param mess : The message to send
+  * @author mcuony
+  */
+bool ::UDPListener::sendMessageTo(const QByteArray& datagram, const QHostAddress& ipTo)
+{
+   //this->logger->log("Sending " + mess, LogManager::Debug);
+
+   //QByteArray datagram = mess.toUtf8();
+
+   if (this->unicastSocket->writeDatagram(
+      datagram.data(),
+      datagram.size(),
+      ipTo,
+      UDPListener::unicastPort
       ) == -1)
    {
       this->logger->log("Unable to send datagram", LogManager::FatalError);

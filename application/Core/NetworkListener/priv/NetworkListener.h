@@ -5,6 +5,7 @@
 #include <QSharedPointer>
 #include <QTimer>
 #include <QObject>
+#include <QtNetwork/QNetworkInterface>
 
 #include <Common/LogManager/ILogger.h>
 #include <Core/PeerManager/IPeerManager.h>
@@ -45,7 +46,7 @@ namespace NetworkListener
 
    public slots:
       void presence();
-      void newFindRequset(const Protos::Core::Find& request);
+      void newFindRequset(const Protos::Core::Find& request, const QHostAddress& peerAdress);
 
    };
 }

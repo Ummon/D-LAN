@@ -23,23 +23,27 @@ namespace NetworkListener
    public:
       UDPListener(QSharedPointer<PeerManager::IPeerManager> newPeerManager);
       bool sendMessage(const QByteArray& datagram);
+      bool sendMessageTo(const QByteArray& datagram, const QHostAddress& ipTo);
 
    signals:
       void newChatMessage(const Protos::Core::ChatMessage& message);
       void newFindResult(const Protos::Common::FindResult& result);
-      void newFindRequset(const Protos::Core::Find& request);
+      void newFindRequset(const Protos::Core::Find& request, const QHostAddress& peerAdress);
       void newHaveChunksResult(const Protos::Core::HaveChunksResult& result);
 
    private:
       QSharedPointer<LogManager::ILogger> logger;
       QSharedPointer<PeerManager::IPeerManager> peerManager;
       static const char TTL; ///< Time to live, see the UDP multicast documentation.
-      static const int port;
+      static const int multicastPort;
+      static const int unicastPort;
       static QHostAddress multicastIP; ///< A choosen multicast address channel used to send and received messages.
-      QUdpSocket* socket;
+      QUdpSocket* multicastSocket;
+      QUdpSocket* unicastSocket;
 
    private slots:
-      void processPendingDatagrams();
+      void processPendingMulticastDatagrams();
+      void processPendingUnicastDatagrams();
 
    };
 
