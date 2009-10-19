@@ -124,15 +124,13 @@ Protos::Common::FindResult FileManager::FileManager::find(const QString& words)
 
          // Define positions of each intersect term.
          for (int k = nbIntersect - 1; k >= 0; k--)
-         {
             if  (intersect[k] < n - nbIntersect + k)
             {
                intersect[k] += 1;
                for (int l = k + 1; l < nbIntersect; l++)
-                  intersect[l] = intersect[k] - (l - k);
+                  intersect[l] = intersect[k] + (l - k);
                break;
             }
-         }
 
          level += 1;
       }

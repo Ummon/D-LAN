@@ -36,6 +36,7 @@ Directory* Directory::getRoot()
 void Directory::populateDirEntry(Protos::Common::DirEntry* entry)
 {
    entry->mutable_dir()->set_path(this->getPath().toStdString());
+   entry->mutable_dir()->set_name(this->getName().toStdString());
 }
 
 
