@@ -2,6 +2,7 @@
 #define NETWORKMANAGER_INETWORKLISTENER_H
 
 #include <QObject>
+#include <QtNetwork/QNetworkInterface>
 
 #include <Protos/core_protocol.pb.h>
 
@@ -24,7 +25,7 @@ namespace NetworkListener
      presence, used in NetworkListener, here. TODO: Find a better solution ? */
    public slots:
       virtual void presence() = 0;
-      virtual void newFindRequset(const Protos::Core::Find& request) = 0;
+      virtual void newFindRequset(const Protos::Core::Find& request, const QHostAddress& peerAdress) = 0;
    };
 }
 #endif

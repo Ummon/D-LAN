@@ -21,4 +21,8 @@ using namespace Core;
 
    this->logger->log("Ready to serve", LogManager::EndUser);
 
+      NetworkListener::ISearch* s = this->networkListener->search();
+   s->search("coucou");
+   s->search("coucou2");
+
 }

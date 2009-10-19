@@ -29,7 +29,9 @@ using namespace NetworkListener;
    this->presence(); // Send the information at the first time.
 
    // Listening for new search request.
-   Chat::connect(this->udpListener, SIGNAL(newFindRequset(const Protos::Core::Find&)), this, SLOT(newFindRequset(const Protos::Core::Find&)));
+   Chat::connect(this->udpListener, SIGNAL(newFindRequset(const Protos::Core::Find&, const QHostAddress&)), this, SLOT(newFindRequset(const Protos::Core::Find&, const QHostAddress&)));
+
+
 }
 
 /**
@@ -85,7 +87,7 @@ ISearch* ::NetworkListener::search()
  *
  * @author mcuony
  */
-void ::NetworkListener::newFindRequset(const Protos::Core::Find& request)
+void ::NetworkListener::newFindRequset(const Protos::Core::Find& request, const QHostAddress& peerAdress)
 {
    Protos::Common::FindResult fr;
 
@@ -97,8 +99,8 @@ void ::NetworkListener::newFindRequset(const Protos::Core::Find& request)
    fr.SerializeToString(&output);
 
    // We broadcast the data.
-   this->udpListener->sendMessage(QByteArray(output.data()).prepend(findResultPacket));
+   this->udpListener->sendMessageTo(QByteArray(output.data()).prepend(findResultPacket), peerAdress);
 
-   //this->logger->log("Stupid search answer for " + QString::number(request.tag()), LogManager::Debug);
+   this->logger->log("Stupid search answer for " + QString::number(request.tag()), LogManager::Debug);
 
 }
