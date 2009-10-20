@@ -1,222 +1,246 @@
 <!DOCTYPE QtCreatorProject>
 <qtcreator>
  <data>
+  <variable>RunConfiguration0-BaseEnvironmentBase</variable>
+  <value type="int">2</value>
+ </data>
+ <data>
   <variable>RunConfiguration0-CommandLineArguments</variable>
-  <valuelist type="QVariantList" >
-   <value type="QString" >chunk</value>
-   <value type="QString" >01.wmv</value>
+  <valuelist type="QVariantList">
+   <value type="QString">chunk</value>
+   <value type="QString">01.wmv</value>
   </valuelist>
  </data>
  <data>
   <variable>RunConfiguration0-ProFile</variable>
-  <value type="QString" >01_SHA1.pro</value>
+  <value type="QString">01_SHA1.pro</value>
  </data>
  <data>
   <variable>RunConfiguration0-RunConfiguration.name</variable>
-  <value type="QString" >01_SHA1</value>
+  <value type="QString">01_SHA1</value>
  </data>
  <data>
   <variable>RunConfiguration0-UseDyldImageSuffix</variable>
-  <value type="bool" >false</value>
+  <value type="bool">false</value>
  </data>
  <data>
   <variable>RunConfiguration0-UseTerminal</variable>
-  <value type="bool" >false</value>
+  <value type="bool">false</value>
+ </data>
+ <data>
+  <variable>RunConfiguration0-UserEnvironmentChanges</variable>
+  <valuelist type="QVariantList"/>
  </data>
  <data>
   <variable>RunConfiguration0-UserSetName</variable>
-  <value type="bool" >true</value>
+  <value type="bool">true</value>
+ </data>
+ <data>
+  <variable>RunConfiguration0-UserSetWorkingDirectory</variable>
+  <value type="bool">false</value>
+ </data>
+ <data>
+  <variable>RunConfiguration0-UserWorkingDirectory</variable>
+  <value type="QString"></value>
  </data>
  <data>
   <variable>RunConfiguration0-type</variable>
-  <value type="QString" >Qt4ProjectManager.Qt4RunConfiguration</value>
+  <value type="QString">Qt4ProjectManager.Qt4RunConfiguration</value>
  </data>
  <data>
   <variable>activeRunConfiguration</variable>
-  <value type="int" >0</value>
+  <value type="int">0</value>
  </data>
  <data>
   <variable>activebuildconfiguration</variable>
-  <value type="QString" >Debug</value>
+  <value type="QString">Debug</value>
  </data>
  <data>
   <variable>buildConfiguration-Debug</variable>
-  <valuemap type="QVariantMap" >
-   <value key="ProjectExplorer.BuildConfiguration.DisplayName" type="QString" >Debug</value>
-   <value key="QtVersionId" type="int" >0</value>
-   <value key="addQDumper" type="" ></value>
-   <value key="buildDirectory" type="QString" ></value>
-   <value key="useShadowBuild" type="bool" >false</value>
+  <valuemap type="QVariantMap">
+   <value key="ProjectExplorer.BuildConfiguration.DisplayName" type="QString">Debug</value>
+   <value key="QtVersionId" type="int">0</value>
+   <value key="ToolChain" type="int">2</value>
+   <value key="addQDumper" type=""></value>
+   <value key="buildConfiguration" type="int">2</value>
+   <value key="buildDirectory" type="QString">C:\Users\gburri\Documents\aybabtu\prototypes\01_SHA1</value>
+   <value key="useShadowBuild" type="bool">false</value>
   </valuemap>
  </data>
  <data>
   <variable>buildConfiguration-Release</variable>
-  <valuemap type="QVariantMap" >
-   <value key="ProjectExplorer.BuildConfiguration.DisplayName" type="QString" >Release</value>
-   <value key="QtVersionId" type="int" >0</value>
-   <value key="addQDumper" type="" ></value>
+  <valuemap type="QVariantMap">
+   <value key="ProjectExplorer.BuildConfiguration.DisplayName" type="QString">Release</value>
+   <value key="QtVersionId" type="int">0</value>
+   <value key="ToolChain" type="int">2</value>
+   <value key="addQDumper" type=""></value>
+   <value key="buildConfiguration" type="int">0</value>
   </valuemap>
  </data>
  <data>
   <variable>buildconfiguration-Debug-buildstep0</variable>
-  <valuemap type="QVariantMap" >
-   <value key="ProjectExplorer.BuildConfiguration.DisplayName" type="QString" >Debug</value>
-   <valuelist key="abstractProcess.Environment" type="QVariantList" >
-    <value type="QString" >DBUS_SESSION_BUS_ADDRESS=unix:abstract=/tmp/dbus-NRnYLxfPbI,guid=87fc8a1fd431cd4c250b2edc4a3fb412</value>
-    <value type="QString" >DESKTOP_SESSION=default</value>
-    <value type="QString" >DESKTOP_STARTUP_ID=</value>
-    <value type="QString" >DISPLAY=:0</value>
-    <value type="QString" >GDMSESSION=default</value>
-    <value type="QString" >GDM_LANG=en_US.UTF-8</value>
-    <value type="QString" >GDM_XSERVER_LOCATION=local</value>
-    <value type="QString" >GNOME_KEYRING_PID=4129</value>
-    <value type="QString" >GNOME_KEYRING_SOCKET=/tmp/keyring-gobS2d/socket</value>
-    <value type="QString" >GTK_MODULES=canberra-gtk-module</value>
-    <value type="QString" >HOME=/home/gburri</value>
-    <value type="QString" >LANG=en_US.UTF-8</value>
-    <value type="QString" >LANGUAGE=</value>
-    <value type="QString" >LD_LIBRARY_PATH=/usr/lib/qtcreator:</value>
-    <value type="QString" >LOGNAME=gburri</value>
-    <value type="QString" >PATH=/usr/bin:/usr/local/bin:/usr/bin:/bin:/usr/games</value>
-    <value type="QString" >PWD=/home/gburri</value>
-    <value type="QString" >QTDIR=/usr</value>
-    <value type="QString" >SHELL=/bin/bash</value>
-    <value type="QString" >SHLVL=1</value>
-    <value type="QString" >SSH_AGENT_PID=4259</value>
-    <value type="QString" >SSH_AUTH_SOCK=/tmp/ssh-sYeLTh4142/agent.4142</value>
-    <value type="QString" >USER=gburri</value>
-    <value type="QString" >USERNAME=gburri</value>
-    <value type="QString" >WINDOWPATH=7</value>
-    <value type="QString" >XAUTHORITY=/home/gburri/.Xauthority</value>
-    <value type="QString" >XDG_DATA_DIRS=/usr/local/share/:/usr/share/:/usr/share/gdm/</value>
-    <value type="QString" >XDG_SESSION_COOKIE=c1f477700b7fb0fbd08cdecf47d5a05e-1245688849.306494-79856444</value>
+  <valuemap type="QVariantMap">
+   <value key="ProjectExplorer.BuildConfiguration.DisplayName" type="QString">Debug</value>
+   <valuelist key="abstractProcess.Environment" type="QVariantList">
+    <value type="QString">DBUS_SESSION_BUS_ADDRESS=unix:abstract=/tmp/dbus-NRnYLxfPbI,guid=87fc8a1fd431cd4c250b2edc4a3fb412</value>
+    <value type="QString">DESKTOP_SESSION=default</value>
+    <value type="QString">DESKTOP_STARTUP_ID=</value>
+    <value type="QString">DISPLAY=:0</value>
+    <value type="QString">GDMSESSION=default</value>
+    <value type="QString">GDM_LANG=en_US.UTF-8</value>
+    <value type="QString">GDM_XSERVER_LOCATION=local</value>
+    <value type="QString">GNOME_KEYRING_PID=4129</value>
+    <value type="QString">GNOME_KEYRING_SOCKET=/tmp/keyring-gobS2d/socket</value>
+    <value type="QString">GTK_MODULES=canberra-gtk-module</value>
+    <value type="QString">HOME=/home/gburri</value>
+    <value type="QString">LANG=en_US.UTF-8</value>
+    <value type="QString">LANGUAGE=</value>
+    <value type="QString">LD_LIBRARY_PATH=/usr/lib/qtcreator:</value>
+    <value type="QString">LOGNAME=gburri</value>
+    <value type="QString">PATH=/usr/bin:/usr/local/bin:/usr/bin:/bin:/usr/games</value>
+    <value type="QString">PWD=/home/gburri</value>
+    <value type="QString">QTDIR=/usr</value>
+    <value type="QString">SHELL=/bin/bash</value>
+    <value type="QString">SHLVL=1</value>
+    <value type="QString">SSH_AGENT_PID=4259</value>
+    <value type="QString">SSH_AUTH_SOCK=/tmp/ssh-sYeLTh4142/agent.4142</value>
+    <value type="QString">USER=gburri</value>
+    <value type="QString">USERNAME=gburri</value>
+    <value type="QString">WINDOWPATH=7</value>
+    <value type="QString">XAUTHORITY=/home/gburri/.Xauthority</value>
+    <value type="QString">XDG_DATA_DIRS=/usr/local/share/:/usr/share/:/usr/share/gdm/</value>
+    <value type="QString">XDG_SESSION_COOKIE=c1f477700b7fb0fbd08cdecf47d5a05e-1245688849.306494-79856444</value>
    </valuelist>
-   <valuelist key="abstractProcess.arguments" type="QVariantList" >
-    <value type="QString" >/home/gburri/code/projects/aybabtu/prototypes/01_SHA1/01_SHA1.pro</value>
-    <value type="QString" >-spec</value>
-    <value type="QString" >/usr/share/qt4/mkspecs/linux-g++</value>
-    <value type="QString" >-r</value>
-    <value type="QString" >CONFIG+=debug</value>
+   <valuelist key="abstractProcess.arguments" type="QVariantList">
+    <value type="QString">/home/gburri/code/projects/aybabtu/prototypes/01_SHA1/01_SHA1.pro</value>
+    <value type="QString">-spec</value>
+    <value type="QString">/usr/share/qt4/mkspecs/linux-g++</value>
+    <value type="QString">-r</value>
+    <value type="QString">CONFIG+=debug</value>
    </valuelist>
-   <value key="abstractProcess.command" type="QString" >/usr/bin/qmake-qt4</value>
-   <value key="abstractProcess.enabled" type="bool" >false</value>
-   <value key="abstractProcess.workingDirectory" type="QString" >/home/gburri/code/projects/aybabtu/prototypes/01_SHA1</value>
-   <value key="buildConfiguration" type="int" >2</value>
+   <value key="abstractProcess.command" type="QString">/usr/bin/qmake-qt4</value>
+   <value key="abstractProcess.enabled" type="bool">false</value>
+   <value key="abstractProcess.workingDirectory" type="QString">/home/gburri/code/projects/aybabtu/prototypes/01_SHA1</value>
+   <value key="buildConfiguration" type=""></value>
   </valuemap>
  </data>
  <data>
   <variable>buildconfiguration-Debug-buildstep1</variable>
-  <valuemap type="QVariantMap" >
-   <value key="ProjectExplorer.BuildConfiguration.DisplayName" type="QString" >Debug</value>
-   <valuelist key="abstractProcess.Environment" type="QVariantList" >
-    <value type="QString" >DBUS_SESSION_BUS_ADDRESS=unix:abstract=/tmp/dbus-NRnYLxfPbI,guid=87fc8a1fd431cd4c250b2edc4a3fb412</value>
-    <value type="QString" >DESKTOP_SESSION=default</value>
-    <value type="QString" >DESKTOP_STARTUP_ID=</value>
-    <value type="QString" >DISPLAY=:0</value>
-    <value type="QString" >GDMSESSION=default</value>
-    <value type="QString" >GDM_LANG=en_US.UTF-8</value>
-    <value type="QString" >GDM_XSERVER_LOCATION=local</value>
-    <value type="QString" >GNOME_KEYRING_PID=4129</value>
-    <value type="QString" >GNOME_KEYRING_SOCKET=/tmp/keyring-gobS2d/socket</value>
-    <value type="QString" >GTK_MODULES=canberra-gtk-module</value>
-    <value type="QString" >HOME=/home/gburri</value>
-    <value type="QString" >LANG=en_US.UTF-8</value>
-    <value type="QString" >LANGUAGE=</value>
-    <value type="QString" >LD_LIBRARY_PATH=/usr/lib/qtcreator:</value>
-    <value type="QString" >LOGNAME=gburri</value>
-    <value type="QString" >PATH=/usr/bin:/usr/local/bin:/usr/bin:/bin:/usr/games</value>
-    <value type="QString" >PWD=/home/gburri</value>
-    <value type="QString" >QTDIR=/usr</value>
-    <value type="QString" >SHELL=/bin/bash</value>
-    <value type="QString" >SHLVL=1</value>
-    <value type="QString" >SSH_AGENT_PID=4259</value>
-    <value type="QString" >SSH_AUTH_SOCK=/tmp/ssh-sYeLTh4142/agent.4142</value>
-    <value type="QString" >USER=gburri</value>
-    <value type="QString" >USERNAME=gburri</value>
-    <value type="QString" >WINDOWPATH=7</value>
-    <value type="QString" >XAUTHORITY=/home/gburri/.Xauthority</value>
-    <value type="QString" >XDG_DATA_DIRS=/usr/local/share/:/usr/share/:/usr/share/gdm/</value>
-    <value type="QString" >XDG_SESSION_COOKIE=c1f477700b7fb0fbd08cdecf47d5a05e-1245688849.306494-79856444</value>
+  <valuemap type="QVariantMap">
+   <value key="ProjectExplorer.BuildConfiguration.DisplayName" type="QString">Debug</value>
+   <valuelist key="abstractProcess.Environment" type="QVariantList">
+    <value type="QString">DBUS_SESSION_BUS_ADDRESS=unix:abstract=/tmp/dbus-NRnYLxfPbI,guid=87fc8a1fd431cd4c250b2edc4a3fb412</value>
+    <value type="QString">DESKTOP_SESSION=default</value>
+    <value type="QString">DESKTOP_STARTUP_ID=</value>
+    <value type="QString">DISPLAY=:0</value>
+    <value type="QString">GDMSESSION=default</value>
+    <value type="QString">GDM_LANG=en_US.UTF-8</value>
+    <value type="QString">GDM_XSERVER_LOCATION=local</value>
+    <value type="QString">GNOME_KEYRING_PID=4129</value>
+    <value type="QString">GNOME_KEYRING_SOCKET=/tmp/keyring-gobS2d/socket</value>
+    <value type="QString">GTK_MODULES=canberra-gtk-module</value>
+    <value type="QString">HOME=/home/gburri</value>
+    <value type="QString">LANG=en_US.UTF-8</value>
+    <value type="QString">LANGUAGE=</value>
+    <value type="QString">LD_LIBRARY_PATH=/usr/lib/qtcreator:</value>
+    <value type="QString">LOGNAME=gburri</value>
+    <value type="QString">PATH=/usr/bin:/usr/local/bin:/usr/bin:/bin:/usr/games</value>
+    <value type="QString">PWD=/home/gburri</value>
+    <value type="QString">QTDIR=/usr</value>
+    <value type="QString">SHELL=/bin/bash</value>
+    <value type="QString">SHLVL=1</value>
+    <value type="QString">SSH_AGENT_PID=4259</value>
+    <value type="QString">SSH_AUTH_SOCK=/tmp/ssh-sYeLTh4142/agent.4142</value>
+    <value type="QString">USER=gburri</value>
+    <value type="QString">USERNAME=gburri</value>
+    <value type="QString">WINDOWPATH=7</value>
+    <value type="QString">XAUTHORITY=/home/gburri/.Xauthority</value>
+    <value type="QString">XDG_DATA_DIRS=/usr/local/share/:/usr/share/:/usr/share/gdm/</value>
+    <value type="QString">XDG_SESSION_COOKIE=c1f477700b7fb0fbd08cdecf47d5a05e-1245688849.306494-79856444</value>
    </valuelist>
-   <valuelist key="abstractProcess.arguments" type="QVariantList" >
-    <value type="QString" >-w</value>
+   <valuelist key="abstractProcess.arguments" type="QVariantList">
+    <value type="QString">-w</value>
    </valuelist>
-   <value key="abstractProcess.command" type="QString" >/usr/bin/make</value>
-   <value key="abstractProcess.enabled" type="bool" >true</value>
-   <value key="abstractProcess.workingDirectory" type="QString" >/home/gburri/code/projects/aybabtu/prototypes/01_SHA1</value>
+   <value key="abstractProcess.command" type="QString">/usr/bin/make</value>
+   <value key="abstractProcess.enabled" type="bool">true</value>
+   <value key="abstractProcess.workingDirectory" type="QString">/home/gburri/code/projects/aybabtu/prototypes/01_SHA1</value>
   </valuemap>
  </data>
  <data>
   <variable>buildconfiguration-Debug-cleanstep0</variable>
-  <valuemap type="QVariantMap" >
-   <value key="ProjectExplorer.BuildConfiguration.DisplayName" type="QString" >Debug</value>
+  <valuemap type="QVariantMap">
+   <value key="ProjectExplorer.BuildConfiguration.DisplayName" type="QString">Debug</value>
+   <value key="cleanConfig" type="bool">true</value>
+   <valuelist key="makeargs" type="QVariantList">
+    <value type="QString">clean</value>
+   </valuelist>
   </valuemap>
  </data>
  <data>
   <variable>buildconfiguration-Release-buildstep0</variable>
-  <valuemap type="QVariantMap" >
-   <value key="ProjectExplorer.BuildConfiguration.DisplayName" type="QString" >Release</value>
-   <value key="buildConfiguration" type="int" >0</value>
+  <valuemap type="QVariantMap">
+   <value key="ProjectExplorer.BuildConfiguration.DisplayName" type="QString">Release</value>
+   <value key="buildConfiguration" type=""></value>
   </valuemap>
  </data>
  <data>
   <variable>buildconfiguration-Release-buildstep1</variable>
-  <valuemap type="QVariantMap" >
-   <value key="ProjectExplorer.BuildConfiguration.DisplayName" type="QString" >Release</value>
+  <valuemap type="QVariantMap">
+   <value key="ProjectExplorer.BuildConfiguration.DisplayName" type="QString">Release</value>
   </valuemap>
  </data>
  <data>
   <variable>buildconfiguration-Release-cleanstep0</variable>
-  <valuemap type="QVariantMap" >
-   <value key="ProjectExplorer.BuildConfiguration.DisplayName" type="QString" >Release</value>
+  <valuemap type="QVariantMap">
+   <value key="ProjectExplorer.BuildConfiguration.DisplayName" type="QString">Release</value>
   </valuemap>
  </data>
  <data>
   <variable>buildconfigurations</variable>
-  <valuelist type="QVariantList" >
-   <value type="QString" >Debug</value>
-   <value type="QString" >Release</value>
+  <valuelist type="QVariantList">
+   <value type="QString">Debug</value>
+   <value type="QString">Release</value>
   </valuelist>
  </data>
  <data>
   <variable>buildstep0</variable>
-  <valuemap type="QVariantMap" >
-   <value key="ProjectExplorer.BuildConfiguration.DisplayName" type="QString" ></value>
-   <value key="mkspec" type="QString" ></value>
+  <valuemap type="QVariantMap">
+   <value key="ProjectExplorer.BuildConfiguration.DisplayName" type="QString"></value>
+   <value key="mkspec" type="QString"></value>
   </valuemap>
  </data>
  <data>
   <variable>buildstep1</variable>
-  <valuemap type="QVariantMap" >
-   <value key="ProjectExplorer.BuildConfiguration.DisplayName" type="QString" ></value>
+  <valuemap type="QVariantMap">
+   <value key="ProjectExplorer.BuildConfiguration.DisplayName" type="QString"></value>
   </valuemap>
  </data>
  <data>
   <variable>buildsteps</variable>
-  <valuelist type="QVariantList" >
-   <value type="QString" >trolltech.qt4projectmanager.qmake</value>
-   <value type="QString" >trolltech.qt4projectmanager.make</value>
+  <valuelist type="QVariantList">
+   <value type="QString">trolltech.qt4projectmanager.qmake</value>
+   <value type="QString">trolltech.qt4projectmanager.make</value>
   </valuelist>
  </data>
  <data>
   <variable>cleanstep0</variable>
-  <valuemap type="QVariantMap" >
-   <value key="ProjectExplorer.BuildConfiguration.DisplayName" type="QString" ></value>
-   <value key="clean" type="bool" >true</value>
+  <valuemap type="QVariantMap">
+   <value key="ProjectExplorer.BuildConfiguration.DisplayName" type="QString"></value>
+   <value key="clean" type="bool">true</value>
   </valuemap>
  </data>
  <data>
   <variable>cleansteps</variable>
-  <valuelist type="QVariantList" >
-   <value type="QString" >trolltech.qt4projectmanager.make</value>
+  <valuelist type="QVariantList">
+   <value type="QString">trolltech.qt4projectmanager.make</value>
   </valuelist>
  </data>
  <data>
   <variable>defaultFileEncoding</variable>
-  <value type="QByteArray" >UTF-8</value>
+  <value type="QByteArray">UTF-8</value>
  </data>
  <data>
   <variable>project</variable>
-  <valuemap type="QVariantMap" />
+  <valuemap type="QVariantMap"/>
  </data>
 </qtcreator>

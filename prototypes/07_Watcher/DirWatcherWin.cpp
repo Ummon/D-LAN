@@ -120,7 +120,7 @@ void DirWatcherWin::watch(int num)
       &this->nbBytesNotifyBuffer,
       &overlapped,
       NULL
-   ))   
+   ))
       throw DirWatcherException(QString("ReadDirectoryChangesW(..), GetLastError : %1").arg(GetLastError()));   
 }
 
