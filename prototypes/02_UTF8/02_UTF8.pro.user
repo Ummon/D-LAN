@@ -21,6 +21,10 @@
   <value type="bool" >false</value>
  </data>
  <data>
+  <variable>RunConfiguration0-UserEnvironmentChanges</variable>
+  <valuelist type="QVariantList" />
+ </data>
+ <data>
   <variable>RunConfiguration0-UserSetName</variable>
   <value type="bool" >false</value>
  </data>
@@ -42,7 +46,7 @@
    <value key="ProjectExplorer.BuildConfiguration.DisplayName" type="QString" >Debug</value>
    <value key="QtVersionId" type="int" >0</value>
    <value key="addQDumper" type="" ></value>
-   <value key="buildDirectory" type="QString" >/home/gburri/code/projects/aybabtu/prototypes/02_UTF8</value>
+   <value key="buildDirectory" type="QString" >C:\Users\gburri\Documents\aybabtu\prototypes\02_UTF8</value>
    <valuelist key="userEnvironmentChanges" type="QVariantList" />
   </valuemap>
  </data>

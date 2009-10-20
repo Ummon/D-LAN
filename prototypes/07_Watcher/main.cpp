@@ -15,7 +15,7 @@ int main(int argc, char *argv[])
    
       forever
       {
-         QList<WatcherEvent> events = dirWatcher->waitEvent();
+         QList<WatcherEvent> events = dirWatcher->waitEvent();         
       }
    }
    catch (const DirWatcherException& e)
