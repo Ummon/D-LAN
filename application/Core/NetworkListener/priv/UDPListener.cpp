@@ -123,7 +123,7 @@ void ::UDPListener::processPendingMulticastDatagrams()
             Common::Hash id(IMAlimeMessage.peerid().hash().data());
 
             //We forward the information to the PeerManager
-            this->peerManager->updatePeer(id, peerAddress.toIPv4Address(), nick, amount);
+            this->peerManager->updatePeer(id, peerAddress, nick, amount);
 
             //this->logger->log("Someone is alive: " + id + ", " +data.fromStdString(IMAlimeMessage.nick()), LogManager::Debug);
 
@@ -158,7 +158,7 @@ void ::UDPListener::processPendingMulticastDatagrams()
  * @author mcuony
  */
 void ::UDPListener::processPendingUnicastDatagrams()
-{this->logger->log("CALLED", LogManager::Debug);
+{
 
    QTextStream out(stdout);
 

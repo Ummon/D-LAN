@@ -42,8 +42,6 @@ using namespace PeerManager;
 
 }
 
-
-
 /**
  * Set the current nick
  *
@@ -69,7 +67,7 @@ QString* ::PeerManager::getNick()
  *
  * @author mcuony
  */
-void ::PeerManager::updatePeer(const Common::Hash& peerID, quint32 peerIP, const QString& peerNick, const quint64& peerAmount)
+void ::PeerManager::updatePeer(const Common::Hash& peerID, const QHostAddress&  peerIP, const QString& peerNick, const quint64& peerAmount)
 {
     // We probably know that WE are alive.
     if (peerID == this->ID)
@@ -79,7 +77,7 @@ void ::PeerManager::updatePeer(const Common::Hash& peerID, quint32 peerIP, const
 
     Peer* thePeer = this->fromIdToPeer(peerID);
 
-    thePeer->justSeen();
+    thePeer->justSeen(peerIP, peerNick, peerAmount);
 
 }
 
@@ -123,6 +121,22 @@ void ::PeerManager::cleanUp()
     {
         if (this->peers.at(i)->isAlive() && this->peers.at(i)->haveYouToDie())
             this->logger->log(peers.at(i)->getId().toStr() + " is dead.", LogManager::Debug);
+
+
+    }
+
+}
+
+void ::PeerManager::newSocket(const QHostAddress&  peerIP, QSharedPointer<QTcpSocket> socket)
+{
+
+   for (int i = 0; i < peers.length(); i++)
+    {
+        if (this->peers.at(i)->isAlive() && this->peers.at(i)->getIp() == peerIP)
+        {
+            this->logger->log(peers.at(i)->getId().toStr() + " want a connetion", LogManager::Debug);
+            peers.at(i)->newSocket(socket);
+        }
 
 
     }

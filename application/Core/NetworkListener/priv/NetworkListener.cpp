@@ -21,6 +21,8 @@ using namespace NetworkListener;
    this->peerManager = newPeerManager;
    this->chat = new Chat(this->udpListener, newPeerManager);
 
+   this->tcpListener = new TCPListener(newPeerManager);
+
    // We create the timer who will send information about our presence.
    this->timer = new QTimer(this);
    connect(timer, SIGNAL(timeout()), this, SLOT(presence()));

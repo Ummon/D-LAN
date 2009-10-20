@@ -3,6 +3,8 @@
 
 #include <QString>
 #include <QAbstractSocket>
+#include <QTcpSocket>
+#include <QSharedPointer>
 
 #include <Common/Hash.h>
 #include <Protos/common.pb.h>
@@ -18,7 +20,8 @@ namespace PeerManager
          virtual ~IPeerManager() {}
          virtual void setNick(const QString& newNick) = 0;
          virtual QString* getNick() = 0;
-         virtual void updatePeer(const Common::Hash& peerID, quint32 peerIP, const QString& peerNick, const quint64& peerAmount) = 0;
+         virtual void updatePeer(const Common::Hash& peerID, const QHostAddress&  peerIP, const QString& peerNick, const quint64& peerAmount) = 0;
+         virtual void newSocket(const QHostAddress&  peerIP, QSharedPointer<QTcpSocket> socket) = 0;
          /*
          void newPeerConnection(const QAbstractSocket& socket);
          QList<IPeer*> getPeers();
