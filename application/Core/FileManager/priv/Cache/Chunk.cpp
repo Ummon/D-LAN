@@ -10,7 +10,7 @@ using namespace FileManager;
 Chunk::Chunk(File& file, const Common::Hash& hash, int num)
    : file(file), hash(hash), num(num), complete(false)
 {
-   LOG_DEBUG(QString("New chunk[%1] : %2. File : %3").arg(num).arg(hash.toStr()).arg(file.getPath()));
+   LOG_DEBUG(QString("New chunk[%1] : %2. File : %3").arg(num).arg(hash.toStr()).arg(file.getFullPath()));
 }
 
 QSharedPointer<IDataReader> Chunk::getDataReader()

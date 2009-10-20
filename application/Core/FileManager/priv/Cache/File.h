@@ -30,6 +30,7 @@ namespace FileManager
       virtual ~File() {};
 
       QString getPath();
+      QString getFullPath();
       Directory* getRoot();
 
       void newDataWriterCreated();
@@ -66,6 +67,7 @@ namespace FileManager
       void computeHashes();
 
       QList<IChunk*> getChunks();
+      const QList<Chunk*>& getChunksRef();
 
       void populateFileEntry(Protos::Common::FileEntry* entry);
 

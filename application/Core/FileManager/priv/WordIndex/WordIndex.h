@@ -5,6 +5,7 @@
 #include <QSet>
 #include <QString>
 #include <QChar>
+#include <QMutex>
 
 #include <priv/WordIndex/Node.h>
 
@@ -26,6 +27,7 @@ namespace FileManager
 
    private:
       Node<T> node;
+      QMutex mutex;
    };
 }
 
@@ -39,6 +41,8 @@ WordIndex<T>::WordIndex()
 template<typename T>
 void WordIndex<T>::addItem(const QList<QString>& words, T item)
 {
+   QMutexLocker lock(&mutex);
+
    for (QListIterator<QString> i(words); i.hasNext();)
    {
       const QString& word = i.next();
@@ -52,6 +56,7 @@ void WordIndex<T>::addItem(const QList<QString>& words, T item)
 template<typename T>
 void WordIndex<T>::rmItem(const QList<QString>& words, T item)
 {
+   QMutexLocker lock(&mutex);
 
    for (QListIterator<QString> i(words); i.hasNext();)
    {
@@ -93,6 +98,8 @@ void WordIndex<T>::rmItem(const QList<QString>& words, T item)
 template<typename T>
 QSet<T> WordIndex<T>::search(QList<QString> words)
 {
+   QMutexLocker lock(&mutex);
+
    QSet<T> result;
    foreach (QString word, words)
    {
@@ -111,6 +118,8 @@ QSet<T> WordIndex<T>::search(QList<QString> words)
 template<typename T>
 QSet<T> WordIndex<T>::search(const QString& word)
 {
+   QMutexLocker lock(&mutex);
+
    Node<T>* currentNode = &this->node;
 
    for (int i = 0; i < word.size(); i++)

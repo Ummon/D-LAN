@@ -1,25 +1,30 @@
 #include <priv/Cache/SharedDirectory.h>
 using namespace FileManager;
 
-#include <priv/FileManager.h>
+#include <priv/Cache/Cache.h>
 
-SharedDirectory::SharedDirectory(FileManager* fileManager, const QString& path)
-   : Directory(path), fileManager(fileManager)
+SharedDirectory::SharedDirectory(Cache* cache, const QString& path)
+   : Directory(), cache(cache), path(path)
 {
    this->id = Common::Hash::rand();
 
    // Same as a new file (see the File ctor).
-   static_cast<SharedDirectory*>(this->getRoot())->getFileManager()->addToWordIndex(this);
+   this->cache->onEntryAdded(this);
 }
 
 QString SharedDirectory::getPath()
 {
-   return this->name;
+   return "";
 }
 
-FileManager::FileManager* SharedDirectory::getFileManager()
+QString SharedDirectory::getFullPath()
 {
-   return this->fileManager;
+   return this->path;
+}
+
+Cache* SharedDirectory::getCache()
+{
+   return this->cache;
 }
 
 SharedDirectory::Rights SharedDirectory::getRights()

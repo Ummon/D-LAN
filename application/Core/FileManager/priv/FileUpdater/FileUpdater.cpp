@@ -19,7 +19,7 @@ void FileUpdater::addRoot(SharedDirectory* dir)
 {
    this->mutex.lock();
    if (this->dirWatcher)
-      this->dirWatcher->addDir(dir->getPath());
+      this->dirWatcher->addDir(dir->getFullPath());
 
    this->dirsToScan << dir;
 
@@ -93,21 +93,21 @@ void FileUpdater::computeSomeHashes()
 
 void FileUpdater::scan(SharedDirectory* dir)
 {
-   LOG_DEBUG("Start scanning a shared directory : " + dir->getPath());
+   LOG_DEBUG("Start scanning a shared directory : " + dir->getFullPath());
    QLinkedList<Directory*> dirsToVisit;
    dirsToVisit << dir;
 
    while (!dirsToVisit.isEmpty())
    {
       Directory* currentDir = dirsToVisit.takeFirst();
-      foreach (QFileInfo entry, QDir(currentDir->getPath()).entryInfoList())
+      foreach (QFileInfo entry, QDir(currentDir->getFullPath()).entryInfoList())
       {
          if (entry.fileName() == "." || entry.fileName() == "..")
             continue;
 
          if (entry.isDir())
          {
-            dirsToVisit << new Directory(currentDir, entry.fileName()   );
+            dirsToVisit << new Directory(currentDir, entry.fileName());
          }
          else
          {
@@ -115,7 +115,7 @@ void FileUpdater::scan(SharedDirectory* dir)
          }
       }
    }
-   LOG_DEBUG("Scan terminated : " + dir->getPath());
+   LOG_DEBUG("Scan terminated : " + dir->getFullPath());
 }
 
 void FileUpdater::treatEvents(const QList<WatcherEvent>& events)
