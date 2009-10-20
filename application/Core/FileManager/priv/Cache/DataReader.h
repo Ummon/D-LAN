@@ -6,7 +6,7 @@
 #include <IDataReader.h>
 #include <priv/Cache/Chunk.h>
 
-namespace FileManager
+namespace FM
 {
    class DataReader : public IDataReader
    {

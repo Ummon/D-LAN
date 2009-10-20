@@ -5,7 +5,7 @@
 #include <QtCore/QSet>
 #include <QtCore/QChar>
 
-namespace FileManager
+namespace FM
 {
    template<typename T>
    class Node
@@ -75,7 +75,7 @@ namespace FileManager
 }
 
 /***** Definition *****/
-using namespace FileManager;
+using namespace FM;
 
 template <typename T>
 Node<T>::Node()

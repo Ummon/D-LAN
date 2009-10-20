@@ -6,7 +6,7 @@
 #include <Common/Hash.h>
 #include <priv/Cache/Directory.h>
 
-namespace FileManager
+namespace FM
 {
    class Cache;
    class FileManager;

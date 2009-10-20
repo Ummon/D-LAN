@@ -1,5 +1,5 @@
 #include <Builder.h>
-using namespace FileManager;
+using namespace FM;
 
 #include <string>
 

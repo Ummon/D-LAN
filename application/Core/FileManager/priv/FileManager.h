@@ -29,7 +29,7 @@
 #  define LOG_FATAL(mess)
 #endif
 
-namespace FileManager
+namespace FM
 {
    class Entry;
    class File;

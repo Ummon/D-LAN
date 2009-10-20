@@ -7,7 +7,7 @@
 
 #include <priv/Cache/SharedDirectory.h>
 
-namespace FileManager
+namespace FM
 {
    class SharedDirectory;
    class Entry;

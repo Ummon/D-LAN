@@ -9,7 +9,7 @@
 
 #include <priv/FileUpdater/DirWatcher.h>
 
-namespace FileManager
+namespace FM
 {
    class FileManager;
    class DirWatcher;
