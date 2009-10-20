@@ -1,5 +1,5 @@
 #include <priv/Cache/Chunk.h>
-using namespace FileManager;
+using namespace FM;
 
 #include <IDataReader.h>
 #include <IDataWriter.h>

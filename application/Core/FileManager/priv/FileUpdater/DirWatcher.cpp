@@ -1,5 +1,5 @@
 #include <priv/FileUpdater/DirWatcher.h>
-using namespace FileManager;
+using namespace FM;
 
 #include <QtCore/QtDebug>
 
@@ -23,7 +23,7 @@ DirWatcher* DirWatcher::getNewWatcher()
 #if defined(Q_OS_WIN32)
    return new DirWatcherWin();
 #else
-   FileManager::logger->log("Cannot create a watcher for the current platform, no implementation.");
+   LOG_WARN("Cannot create a watcher for the current platform, no implementation.");
    return 0;
 #endif
 }

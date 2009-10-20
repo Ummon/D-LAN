@@ -8,7 +8,7 @@
 #include <Protos/common.pb.h>
 #include <Protos/core_protocol.pb.h>
 
-namespace FileManager
+namespace FM
 {
    class IChunk;
    class IFile;

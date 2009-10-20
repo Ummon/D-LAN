@@ -5,7 +5,7 @@
 
 #include "FileManager_global.h"
 
-namespace FileManager
+namespace FM
 {
    class IFileManager;
 

@@ -1,5 +1,5 @@
 #include <priv/ChunkIndex/Chunks.h>
-using namespace FileManager;
+using namespace FM;
 
 #include <priv/Cache/Chunk.h>
 

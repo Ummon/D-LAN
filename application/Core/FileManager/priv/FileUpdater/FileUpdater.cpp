@@ -1,5 +1,5 @@
 #include <priv/FileUpdater/FileUpdater.h>
-using namespace FileManager;
+using namespace FM;
 
 #include <QLinkedList>
 #include <QDir>
@@ -120,5 +120,6 @@ void FileUpdater::scan(SharedDirectory* dir)
 
 void FileUpdater::treatEvents(const QList<WatcherEvent>& events)
 {
+   // TODO something
    LOG_DEBUG("File structure event occurs");
 }

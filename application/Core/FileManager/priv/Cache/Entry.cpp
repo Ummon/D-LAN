@@ -1,5 +1,5 @@
 #include "Entry.h"
-using namespace FileManager;
+using namespace FM;
 
 #include <priv/Cache/SharedDirectory.h>
 #include <priv/FileManager.h>

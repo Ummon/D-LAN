@@ -3,7 +3,7 @@
 
 #include <QByteArray>
 
-namespace FileManager
+namespace FM
 {
    class IDataWriter
    {
