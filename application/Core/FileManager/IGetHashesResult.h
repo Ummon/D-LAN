@@ -13,6 +13,7 @@ namespace FileManager
       Q_OBJECT
    public:
       virtual ~IGetHashesResult() {}
+      virtual void start() = 0;
 
    signals:
       void result(Protos::Core::GetHashesResult& result);

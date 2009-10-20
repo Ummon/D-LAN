@@ -13,17 +13,31 @@ Directory::Directory(Directory* parent, const QString& name)
    this->parent->subDirs.append(this);
 
    // Same as a new file (see the File ctor).
-   static_cast<SharedDirectory*>(this->getRoot())->getFileManager()->addToWordIndex(this);
+   static_cast<SharedDirectory*>(this->getRoot())->getCache()->onEntryAdded(this);
 }
 
-Directory::Directory(const QString& name)
-   : Entry(name), parent(0)
+Directory::Directory()
+   : Entry(""), parent(0)
 {
 }
 
 QString Directory::getPath()
 {
-   return this->parent->getPath() + QDir::separator() + this->name;
+   QString path;
+   Directory* dir = this;
+   while (dir->parent)
+   {
+      dir = dir->parent;
+      if (dir->parent)
+         path.prepend('/');
+      path.prepend(dir->getName());
+   }
+   return path;
+}
+
+QString Directory::getFullPath()
+{
+   return this->parent->getFullPath().append('/').append(this->name);
 }
 
 Directory* Directory::getRoot()
@@ -38,7 +52,6 @@ void Directory::populateDirEntry(Protos::Common::DirEntry* entry)
    entry->mutable_dir()->set_path(this->getPath().toStdString());
    entry->mutable_dir()->set_name(this->getName().toStdString());
 }
-
 
 void Directory::addFile(File* file)
 {

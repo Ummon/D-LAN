@@ -19,6 +19,8 @@ namespace FileManager
       virtual ~Directory() {};
 
       virtual QString getPath();
+      virtual QString getFullPath();
+
       Directory* getRoot();
 
       void populateDirEntry(Protos::Common::DirEntry* entry);
@@ -29,7 +31,7 @@ namespace FileManager
       void addFile(File* file);
 
    protected:
-      Directory(const QString& name);
+      Directory();
 
    private:
 

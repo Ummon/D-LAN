@@ -18,31 +18,32 @@ using namespace FileManager;
 QSharedPointer<LogManager::ILogger> FileManager::FileManager::logger(LogManager::Builder::newLogger("FileManager"));
 
 ::FileManager::FileManager()
-   : fileUpdater(this)
+   : fileUpdater(this), cache(this, &this->fileUpdater)
 {
    FileManager::logger->log("Loading ..", LogManager::EndUser);
+   connect(&this->cache, SIGNAL(entryAdded(Entry*)), this, SLOT(entryAdded(Entry*)), Qt::DirectConnection);
    this->fileUpdater.start();
    FileManager::logger->log("Loaded!", LogManager::EndUser);
 }
 
 QStringList FileManager::FileManager::getSharedDirsReadOnly()
 {
-   return this->getSharedDirs(SharedDirectory::READ_ONLY);
+   return this->cache.getSharedDirs(SharedDirectory::READ_ONLY);
 }
 
 QStringList FileManager::FileManager::getSharedDirsReadWrite()
 {
-   return this->getSharedDirs(SharedDirectory::READ_WRITE);
+   return this->cache.getSharedDirs(SharedDirectory::READ_WRITE);
 }
 
 void ::FileManager::setSharedDirsReadOnly(const QStringList& dirs)
 {
-   this->setSharedDirs(dirs, SharedDirectory::READ_ONLY);
+   this->cache.setSharedDirs(dirs, SharedDirectory::READ_ONLY);
 }
 
 void ::FileManager::setSharedDirsReadWrite(const QStringList& dirs)
 {
-   this->setSharedDirs(dirs, SharedDirectory::READ_WRITE);
+   this->cache.setSharedDirs(dirs, SharedDirectory::READ_WRITE);
 }
 
 IChunk* ::FileManager::getChunk(const Common::Hash& hash)
@@ -51,7 +52,7 @@ IChunk* ::FileManager::getChunk(const Common::Hash& hash)
 }
 
 /**
-  * TODO : little explanation? ^.^
+  * See http://dev.euphorik.ch/wiki/pmp/Algorithms#Word-indexing for more information.
   */
 Protos::Common::FindResult FileManager::FileManager::find(const QString& words)
 {
@@ -139,79 +140,21 @@ Protos::Common::FindResult FileManager::FileManager::find(const QString& words)
    return result;
 }
 
-Chunks& ::FileManager::getChunks()
+void ::FileManager::entryAdded(Entry* entry)
 {
-   return this->chunks;
-}
-
-void FileManager::FileManager::addToWordIndex(Entry* entry)
-{
-   LOG_DEBUG("Indexing item " + entry->getPath());
+   LOG_DEBUG("Indexing item : " + entry->getFullPath());
    this->wordIndex.addItem(FileManager::splitInWords(entry->getName()), entry);
+
+   if (File* file = dynamic_cast<File*>(entry))
+   {
+      for (QListIterator<Chunk*> i(file->getChunksRef()); i.hasNext();)
+         this->chunks.add(i.next());
+   }
 }
 
-QStringList FileManager::FileManager::getSharedDirs(SharedDirectory::Rights rights)
+void ::FileManager::entryRemoved(Entry* entry)
 {
-   QStringList list;
-
-   for (QListIterator<SharedDirectory*> i(this->sharedDirs); i.hasNext();)
-   {
-      SharedDirectory* dir = i.next();
-      if (dir->getRights() == rights)
-         list << dir->getPath();
-   }
-   return list;
-}
-
-void ::FileManager::setSharedDirs(const QStringList& dirs, SharedDirectory::Rights rights)
-{
-   // Filter the actual shared directories by looking theirs rights.
-   QList<SharedDirectory*> sharedDirs;
-   for(QListIterator<SharedDirectory*> i(this->sharedDirs); i.hasNext();)
-   {
-      SharedDirectory* dir = i.next();
-      if (dir->getRights() == rights)
-         sharedDirs << dir;
-   }
-
-   QStringList newDirs;
-   QMutableListIterator<SharedDirectory*> j(sharedDirs);
-
-   // O(n^2).
-   for(QListIterator<QString> i(dirs); i.hasNext();)
-   {
-      QString dir =  QDir::cleanPath(i.next());
-      j.toFront();
-      while(j.hasNext())
-      {
-         if (j.next()->getPath() == dir)
-         {
-            j.remove();
-            goto next;
-         }
-      }
-      newDirs << dir;
-      next:;
-   }
-
-   // Remove shared directories.
-   for (j.toFront(); j.hasNext();)
-   {
-      SharedDirectory* dir = j.next();
-      LOG_DEBUG("Remove a shared directory : " + dir->getPath());
-      this->fileUpdater.rmRoot(dir);
-      this->sharedDirs.removeOne(dir);
-   }
-
-   // Create new shared directories.
-   for (QListIterator<QString> i(newDirs); i.hasNext();)
-   {
-      QString path = i.next();
-      SharedDirectory* dir = new SharedDirectory(this, path);
-      LOG_DEBUG("Add a shared directory : " + dir->getPath());
-      this->fileUpdater.addRoot(dir);
-      this->sharedDirs << dir;
-   }
+   // TODO
 }
 
 QStringList FileManager::FileManager::splitInWords(const QString& words)

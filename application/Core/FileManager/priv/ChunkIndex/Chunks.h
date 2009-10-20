@@ -11,6 +11,8 @@ namespace FileManager
 
    class Chunks : public QHash<Common::Hash, Chunk*>
    {
+   public:
+      void add(Chunk* chunk);
    };
 }
 #endif

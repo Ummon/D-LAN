@@ -1,6 +1,7 @@
 #ifndef FILEMANAGER_FILEMANAGER_H
 #define FILEMANAGER_FILEMANAGER_H
 
+#include <QObject>
 #include <QSharedPointer>
 #include <QList>
 
@@ -11,6 +12,7 @@
 #include <IFileManager.h>
 #include <priv/Cache/SharedDirectory.h>
 #include <priv/FileUpdater/FileUpdater.h>
+#include <priv/Cache/Cache.h>
 #include <priv/ChunkIndex/Chunks.h>
 #include <priv/WordIndex/WordIndex.h>
 
@@ -36,6 +38,7 @@ namespace FileManager
 
    class FileManager : public IFileManager
    {
+      Q_OBJECT
    public :
       static const int  MAX_WORD_LENGTH = 3;
       static QSharedPointer<LogManager::ILogger> logger;
@@ -46,7 +49,6 @@ namespace FileManager
       QStringList getSharedDirsReadWrite();
       void setSharedDirsReadOnly(const QStringList& dirs);
       void setSharedDirsReadWrite(const QStringList& dirs);
-
       IChunk* getChunk(const Common::Hash& hash);
       /*IGetHashesResult* getHashes(const  Protos::Common::FileEntry& entry);
       Protos::Core::GetEntriesResult* getEntries(const Protos::Common::DirEntry& entry);*/
@@ -59,29 +61,12 @@ namespace FileManager
 
       File* getFile(const QString& path, const QString& name);
       Directory* getDir(const QString& path, const QString& name);
-      // QList<SharedDirectory*> getRoots(); // Useless for the moment.
 
-      Chunks& getChunks();
-
-      //WordIndex<Entry*>& getWordIndex();
-      void addToWordIndex(Entry* entry);
-
-      /**
-        * Called by a newly created file;
-        * It willadd
-        */
-      //void newFileAdded(); // not necessary for the moment
-
-      /**
-        * Called by a newly created directory;
-        */
-      //void newDirAdded(); // not necessary for the moment
+   public slots:
+      void entryAdded(Entry* entry);
+      void entryRemoved(Entry* entry);
 
    private:
-
-      QStringList getSharedDirs(SharedDirectory::Rights rights);
-      void setSharedDirs(const QStringList& dirs, SharedDirectory::Rights rights);
-
       /**
         * Take raw terms in a string and split, trim and filter to
         * return a list of keyword.
@@ -91,11 +76,9 @@ namespace FileManager
       static QStringList splitInWords(const QString& words);
 
       FileUpdater fileUpdater;
-
+      Cache cache; ///< The files and directories.
       Chunks chunks; ///< The indexed chunks.
-      WordIndex<Entry*> wordIndex; ///< The word index
-
-      QList<SharedDirectory*> sharedDirs;
+      WordIndex<Entry*> wordIndex; ///< The word index.
    };
 }
 #endif

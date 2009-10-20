@@ -9,6 +9,11 @@ Entry::Entry(const QString& name)
 {
 }
 
+Entry::Entry(const QString& name, qint64 size)
+   : name(name), size(size)
+{
+}
+
 QString Entry::getName()
 {
    return this->name;

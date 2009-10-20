@@ -14,7 +14,7 @@ namespace FileManager
    class IFile;
    class IGetHashesResult;
 
-   class IFileManager
+   class IFileManager : public QObject // These are not the droids you are looking for.
    {
    public:
       virtual ~IFileManager() {}
@@ -26,12 +26,12 @@ namespace FileManager
 
      virtual IChunk* getChunk(const Common::Hash& hash) = 0;
 
-      /*virtual IGetHashesResult* getHashes(const  Protos::Common::FileEntry& entry) = 0;
+      /*virtual IGetHashesResult* getHashes(const Protos::Common::FileEntry& entry) = 0;
       virtual Protos::Core::GetEntriesResult* getEntries(const Protos::Common::DirEntry& entry) = 0;*/
       virtual Protos::Common::FindResult find(const QString& words) = 0;
       /*virtual QList<bool> haveChunks(const QList<Common::Hash>& hashes) = 0;
       virtual quint64 getAmount() = 0;
-      virtual IFile newFile(const Protos::Common::FileEntry& remotEntry) = 0;*/
+      virtual QSharedPointer<IFile> newFile(const Protos::Common::FileEntry& remotEntry) = 0;*/
    };
 }
 #endif

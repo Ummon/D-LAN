@@ -8,6 +8,7 @@
 
 namespace FileManager
 {
+   class Cache;
    class FileManager;
 
    class SharedDirectory : public Directory
@@ -18,20 +19,27 @@ namespace FileManager
          READ_WRITE
       };
 
-      SharedDirectory(FileManager* file, const QString& path);
+      SharedDirectory(Cache* cache, const QString& path);
+
+      /**
+        * Return always "" thus it makes this method the most usefull of the entire known univers.
+        */
+      QString getPath();
 
       /**
         * Return the full path to the shared directory.
         * For exemple : '/home/paul/movies'. (no slash at the end).
         */
-      QString getPath();
+      QString getFullPath();
 
-      FileManager* getFileManager();
+      Cache* getCache();
 
       Rights getRights();
 
    private:
-      FileManager* fileManager;
+      Cache* cache;
+
+      QString path;
       Common::Hash id;
       Rights rights;
    };

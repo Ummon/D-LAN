@@ -11,22 +11,28 @@ using namespace FileManager;
 #include <priv/Cache/Chunk.h>
 
 File::File(Directory* dir, const QString& name, qint64 size)
-   : Entry(name), dir(dir),
+   : Entry(name, size), dir(dir),
    numDataWriter(0), numDataReader(0),
    fileInWriteMode(0), fileInReadMode(0),
    writeLock(0), readLock(0)
 {
-   this->name = name;
-   this->size = size;
    this->dir->addFile(this);
 
    // The root must be a shared directory. If not, someone will be fired !
-   static_cast<SharedDirectory*>(this->getRoot())->getFileManager()->addToWordIndex(this);
+   static_cast<SharedDirectory*>(this->getRoot())->getCache()->onEntryAdded(this);
 }
 
 QString File::getPath()
 {
-   return this->dir->getPath() + "/" + this->name;
+   QString path = this->dir->getPath();
+   if (!path.isEmpty())
+      path.append('/');
+   return path.append(this->dir->getName());
+}
+
+QString File::getFullPath()
+{
+   return this->dir->getFullPath().append("/").append(this->name);
 }
 
 Directory* File::getRoot()
@@ -115,7 +121,7 @@ void File::computeHashes()
 
    QCryptographicHash crypto(QCryptographicHash::Sha1);
 
-   QFile file(this->getPath());
+   QFile file(this->getFullPath());
    if (!file.open(QIODevice::ReadOnly))
       throw FileNotFoundException();
 
@@ -145,7 +151,13 @@ void File::computeHashes()
 
 QList<IChunk*> File::getChunks()
 {
-   return QList<IChunk*>();
+   // TODO
+   return QList<IChunk*>(); //this->chunks;
+}
+
+const QList<Chunk*>& File::getChunksRef()
+{
+   return this->chunks;
 }
 
 void File::populateFileEntry(Protos::Common::FileEntry* entry)
