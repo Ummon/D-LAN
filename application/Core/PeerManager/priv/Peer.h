@@ -3,11 +3,16 @@
 
 #include <QDate>
 #include <QString>
-#include <QAbstractSocket>
+#include <QTcpSocket>
+#include <QHostAddress>
 
 #include <Common/Hash.h>
 
+#include <QSharedPointer>
+
 #include <IPeer.h>
+#include <Common/LogManager/ILogger.h>
+
 
 namespace PeerManager
 {
@@ -15,29 +20,37 @@ namespace PeerManager
    {
    public:
       Peer(Common::Hash NewID);
-      void justSeen();
+      void justSeen(const QHostAddress& peerIP, const QString& peerNick, const quint64& peerAmount);
       bool haveYouToDie();
       bool isAlive();
       Common::Hash getId();
-      void send(const QByteArray& data) ;
+      bool send(const QByteArray& data) ;
       Common::Hashes* getHashes(const Protos::Common::FileEntry& file) ;
       IGetEntries* getEntries(const Protos::Common::DirEntry& dir)  ;
+      QHostAddress getIp();
+      void newSocket(QSharedPointer<QTcpSocket> newSocket);
 
 
    private:
       Common::Hash ID;
-      quint32 IP;
+      QHostAddress IP;
       bool IisAlive;
       QDateTime lastUpdate;
       QString nick;
       quint64 amount;
-      //?Erreur a la compilation?QAbstractSocket socket;
+      QSharedPointer<QTcpSocket> socket;
       quint32 averageSpeed;
       QDate lastUpdateAverageSpeed;
-      const static int ttl = 15;
+      QByteArray bufferToWrite;
+      QSharedPointer<LogManager::ILogger> logger;
+      static const int ttl = 15;
+      static const int port;
 
    signals:
       void receive(QByteArray& data);
+   public slots:
+      void connected();
+      void gotData();
    };
 }
 #endif

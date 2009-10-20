@@ -14,6 +14,7 @@
 #include <ISearch.h>
 #include <priv/Search.h>
 #include <priv/UDPListener.h>
+#include <priv/TCPListener.h>
 
 namespace NetworkListener
 {
