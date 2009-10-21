@@ -30,6 +30,7 @@
 namespace FM
 {
    class Entry;
+   class Chunk;
    class File;
    class Directory;
    class IChunk;
@@ -63,6 +64,7 @@ namespace FM
    public slots:
       void entryAdded(Entry* entry);
       void entryRemoved(Entry* entry);
+      void chunkAdded(Chunk* chunk);
 
    private:
       /**

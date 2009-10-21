@@ -21,7 +21,10 @@ FileManager::FileManager()
    : fileUpdater(this), cache(this, &this->fileUpdater)
 {
    FileManager::logger->log("Loading ..", LM::EndUser);
+
    connect(&this->cache, SIGNAL(entryAdded(Entry*)), this, SLOT(entryAdded(Entry*)), Qt::DirectConnection);
+   connect(&this->cache, SIGNAL(chunkAdded(Chunk*)), this, SLOT(chunkAdded(Chunk*)), Qt::DirectConnection);
+
    this->fileUpdater.start();
    FileManager::logger->log("Loaded!", LM::EndUser);
 }
@@ -153,16 +156,22 @@ void FileManager::entryAdded(Entry* entry)
    LOG_DEBUG("Indexing item : " + entry->getFullPath());
    this->wordIndex.addItem(FileManager::splitInWords(entry->getName()), entry);
 
+   /* See 'chunkAdded'
    if (File* file = dynamic_cast<File*>(entry))
    {
       for (QListIterator<Chunk*> i(file->getChunksRef()); i.hasNext();)
          this->chunks.add(i.next());
-   }
+   }*/
 }
 
 void FileManager::entryRemoved(Entry* entry)
 {
    // TODO
+}
+
+void FileManager::chunkAdded(Chunk* chunk)
+{
+   this->chunks.add(chunk);
 }
 
 QStringList FileManager::FileManager::splitInWords(const QString& words)
