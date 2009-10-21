@@ -5,7 +5,7 @@
 
 #include <Common/Hash.h>
 
-namespace FileManager
+namespace FM
 {
    class Chunk;
 

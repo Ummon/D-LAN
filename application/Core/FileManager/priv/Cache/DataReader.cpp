@@ -1,5 +1,5 @@
 #include <priv/Cache/DataReader.h>
-using namespace FileManager;
+using namespace FM;
 
 DataReader::DataReader(Chunk& chunk)
    : chunk(chunk)

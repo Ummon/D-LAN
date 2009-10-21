@@ -4,7 +4,7 @@
 #include <IDataWriter.h>
 #include <priv/Cache/Chunk.h>
 
-namespace FileManager
+namespace FM
 {
    class DataWriter : public IDataWriter
    {

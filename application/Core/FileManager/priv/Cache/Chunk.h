@@ -9,7 +9,7 @@
 #include <IChunk.h>
 #include <priv/Cache/File.h>
 
-namespace FileManager
+namespace FM
 {
    class ChunkNotCompletedException : public std::exception {};
 

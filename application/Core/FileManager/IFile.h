@@ -1,7 +1,7 @@
 #ifndef FILEMANAGER_IFILE_H
 #define FILEMANAGER_IFILE_H
 
-namespace FileManager
+namespace FM
 {
    class IChunk;
 

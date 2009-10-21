@@ -3,7 +3,7 @@
 
 #include <QString>
 
-namespace FileManager
+namespace FM
 {
    class Directory;
    class Entry
