@@ -1,5 +1,5 @@
 #include <priv/Entry.h>
-using namespace LogManager;
+using namespace LM;
 
 #include <QString>
 
@@ -7,15 +7,15 @@ QString Entry::SeverityToStr(Severity severity)
 {
    switch (severity)
    {
-   case LogManager::FatalError:
+   case FatalError:
       return "Fatal";
-   case LogManager::Error:
+   case Error:
       return "Error";
-   case LogManager::Warning:
+   case Warning:
       return "Warning";
-   case LogManager::Debug:
+   case Debug:
       return "Debug";
-   case LogManager::EndUser:
+   case EndUser:
       return "User";
    };
    return "Unknown";

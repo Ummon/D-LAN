@@ -18,9 +18,9 @@ using namespace NetworkListener;
    this->searchLaunched = false;
    this->tag = QTime::currentTime().second() * 1000 + (qrand() % 999);   //Sould be random enought, don't forget a search die after 15s.
 
-   this->logger = LogManager::Builder::newLogger("NetworkListener::Search[" + QString::number(this->tag) + "]");
+   this->logger = LM::Builder::newLogger("NetworkListener::Search[" + QString::number(this->tag) + "]");
 
-   this->logger->log("New search", LogManager::Debug);
+   this->logger->log("New search", LM::Debug);
 }
 
 /**
@@ -32,7 +32,7 @@ bool ::NetworkListener::Search::search(const QString& words)
 {
    if (this->searchLaunched)
    {
-      this->logger->log("You can't launch a search twice !", LogManager::Error);
+      this->logger->log("You can't launch a search twice !", LM::Error);
       return false;
    }
    else
@@ -49,7 +49,7 @@ bool ::NetworkListener::Search::search(const QString& words)
       findProto.SerializeToString(&output);
 
 
-      this->logger->log("Search launched ! (" + words + ")", LogManager::Debug);
+      this->logger->log("Search launched ! (" + words + ")", LM::Debug);
 
       this->searchLaunched = true;
       this->dateOfLaunch =  QDateTime::currentDateTime();
@@ -74,7 +74,7 @@ void ::NetworkListener::Search::newFindResult(const Protos::Common::FindResult& 
 
    if (result.tag() == this->tag)
    {
-      this->logger->log("Find result for me !", LogManager::Debug);
+      this->logger->log("Find result for me !", LM::Debug);
       //emit newFindResult(result);
    }
 }

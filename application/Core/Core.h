@@ -35,8 +35,8 @@ namespace Core
       virtual ~Core() {}
 
    private:
-      QSharedPointer<LogManager::ILogger> logger;
-      QSharedPointer<FileManager::IFileManager> fileManager;
+      QSharedPointer<LM::ILogger> logger;
+      QSharedPointer<FM::IFileManager> fileManager;
       QSharedPointer<NetworkListener::INetworkListener> networkListener;
       QSharedPointer<PeerManager::IPeerManager> peerManager;
 

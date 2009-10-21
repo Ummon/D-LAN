@@ -6,7 +6,7 @@
 #include "ILoggable.h"
 #include "IEntry.h"
 
-namespace LogManager
+namespace LM
 {
    class ILogger
    {

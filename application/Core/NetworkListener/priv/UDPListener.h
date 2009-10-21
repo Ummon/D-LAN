@@ -32,7 +32,7 @@ namespace NetworkListener
       void newHaveChunksResult(const Protos::Core::HaveChunksResult& result);
 
    private:
-      QSharedPointer<LogManager::ILogger> logger;
+      QSharedPointer<LM::ILogger> logger;
       QSharedPointer<PeerManager::IPeerManager> peerManager;
       static const char TTL; ///< Time to live, see the UDP multicast documentation.
       static const int multicastPort;

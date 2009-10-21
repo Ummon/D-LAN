@@ -24,15 +24,15 @@ using namespace PeerManager;
  *
  * @author mcuony
  */
-::PeerManager::PeerManager() : logger(LogManager::Builder::newLogger("PeerManager"))
+::PeerManager::PeerManager() : logger(LM::Builder::newLogger("PeerManager"))
 {
 
-    this->logger->log("Loading ..", LogManager::EndUser);
+    this->logger->log("Loading ..", LM::EndUser);
 
 
     this->ID = Common::Hash::rand();
 
-    this->logger->log("Our current id: " + this->ID.toStr(), LogManager::EndUser);
+    this->logger->log("Our current id: " + this->ID.toStr(), LM::EndUser);
 
     // We create the timer to clean old peers.
     this->timer = new QTimer(this);
@@ -73,7 +73,7 @@ void ::PeerManager::updatePeer(const Common::Hash& peerID, const QHostAddress&  
     if (peerID == this->ID)
         return;
 
-    this->logger->log(peerID.toStr() + " is alive !", LogManager::Debug);
+    this->logger->log(peerID.toStr() + " is alive !", LM::Debug);
 
     Peer* thePeer = this->fromIdToPeer(peerID);
 
@@ -97,7 +97,7 @@ Peer* ::PeerManager::fromIdToPeer(const Common::Hash& peerID)
 
     }
 
-    this->logger->log(peerID.toStr() + " wasn't seen before, creating a new peer.", LogManager::Debug);
+    this->logger->log(peerID.toStr() + " wasn't seen before, creating a new peer.", LM::Debug);
 
     Peer* newPeer = new Peer(peerID);
 
@@ -115,12 +115,12 @@ Peer* ::PeerManager::fromIdToPeer(const Common::Hash& peerID)
 void ::PeerManager::cleanUp()
 {
 
-    this->logger->log("Cleaning up peers", LogManager::Debug);
+    this->logger->log("Cleaning up peers", LM::Debug);
 
     for (int i = 0; i < peers.length(); i++)
     {
         if (this->peers.at(i)->isAlive() && this->peers.at(i)->haveYouToDie())
-            this->logger->log(peers.at(i)->getId().toStr() + " is dead.", LogManager::Debug);
+            this->logger->log(peers.at(i)->getId().toStr() + " is dead.", LM::Debug);
 
 
     }
@@ -134,7 +134,7 @@ void ::PeerManager::newSocket(const QHostAddress&  peerIP, QSharedPointer<QTcpSo
     {
         if (this->peers.at(i)->isAlive() && this->peers.at(i)->getIp() == peerIP)
         {
-            this->logger->log(peers.at(i)->getId().toStr() + " want a connetion", LogManager::Debug);
+            this->logger->log(peers.at(i)->getId().toStr() + " want a connetion", LM::Debug);
             peers.at(i)->newSocket(socket);
         }
 

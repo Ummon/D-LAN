@@ -1,7 +1,9 @@
 #ifndef LOGMANAGER_ILOGGABLE_H
 #define LOGMANAGER_ILOGGABLE_H
 
-namespace LogManager
+#include <QString>
+
+namespace LM
 {
    class ILoggable
    {

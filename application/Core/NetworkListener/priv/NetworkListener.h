@@ -41,7 +41,7 @@ namespace NetworkListener
       Chat* chat;
       QTimer *timer;
       QSharedPointer<PeerManager::IPeerManager> peerManager;
-      QSharedPointer<LogManager::ILogger> logger;
+      QSharedPointer<LM::ILogger> logger;
 
       const static double IMAliveFrequency = 0.1; ///< The message IMAlive is sent each 10s.
 
