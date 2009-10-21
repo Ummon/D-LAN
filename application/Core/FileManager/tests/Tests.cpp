@@ -7,6 +7,8 @@ using namespace FileManager;
 
 #include <Protos/common.pb.h>
 
+#include <Exceptions.h>
+
 Tests::Tests()
 {
 }
@@ -18,9 +20,19 @@ void Tests::initTestCase()
 
 void Tests::addSharedDirectories()
 {
-   QStringList dirList;
-   dirList << QDir::currentPath() + "/../../terms";
-   this->fileManager->setSharedDirsReadOnly(dirList);
+   QStringList dirs;
+   dirs << QDir::currentPath().append("/../../terms");
+   dirs << QDir::currentPath().append("/asdasdasd"); // This directory doesn't exit.
+
+   try
+   {
+      this->fileManager->setSharedDirsReadOnly(dirs);
+   }
+   catch (FileManager::DirsNotFoundException& e)
+   {
+      foreach (QString path, e.getPaths())
+         qDebug() << "This directory hasn't been found : " << path << " (Exception thrown)";
+   }
 }
 
 void Tests::search()

@@ -3,8 +3,10 @@ using namespace FileManager;
 
 #include <QDir>
 
-#include <priv/Cache/SharedDirectory.h>
+#include <Exceptions.h>
 #include <priv/FileManager.h>
+#include <priv/Exceptions.h>
+#include <priv/Cache/SharedDirectory.h>
 
 Cache::Cache(FileManager* fileManager, FileUpdater* fileUpdater)
    : fileManager(fileManager), fileUpdater(fileUpdater)
@@ -64,15 +66,25 @@ void Cache::setSharedDirs(const QStringList& dirs, SharedDirectory::Rights right
       this->sharedDirs.removeOne(dir);
    }
 
+   QStringList dirsNotFound;
+
    // Create new shared directories.
    for (QListIterator<QString> i(newDirs); i.hasNext();)
    {
       QString path = i.next();
       SharedDirectory* dir = new SharedDirectory(this, path);
       LOG_DEBUG("Add a shared directory : " + dir->getPath());
-      this->fileUpdater->addRoot(dir);
-      this->sharedDirs << dir;
+      try {
+         this->fileUpdater->addRoot(dir);
+         this->sharedDirs << dir;
+      } catch (DirNotFoundException& e)
+      {
+         dirsNotFound << e.getPath();
+      }
    }
+
+   if (!dirsNotFound.isEmpty())
+      throw DirsNotFoundException(dirsNotFound);
 }
 
 void Cache::onEntryAdded(Entry* entry)

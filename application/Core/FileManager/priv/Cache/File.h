@@ -18,8 +18,6 @@ namespace FileManager
    class Chunk;
    class Directory;
 
-   class FileNotFoundException : public std::exception {};
-
    class File : public Entry, public IFile
    {
    public:
@@ -63,6 +61,7 @@ namespace FileManager
         * If it already owns some chunks, there are destroyed first.
         * This method can be called from an another thread than the main one. For example,
         * from 'FileUpdated' thread.
+        * @exception FileNotFoundException
         */
       void computeHashes();
 

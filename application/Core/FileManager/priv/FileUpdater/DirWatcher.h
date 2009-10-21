@@ -50,6 +50,7 @@ namespace FileManager
         * Each new added directory is immediately watched. If some modification
         * occurs in the file system bewteen a call of 'addDir' and a call of 'waitEvent' they
         * will be recorded and the next call to 'waitEvent' will be no blocking.
+        * @exception DirNotFoundException
         */
       virtual void addDir(const QString& path) = 0;
 

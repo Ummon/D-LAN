@@ -23,7 +23,12 @@ namespace FileManager
 
    public:
       FileUpdater(FileManager* fileManager);
+
+      /**
+        * @exception DirNotFoundException
+        */
       void addRoot(SharedDirectory* dir);
+
       void rmRoot(SharedDirectory* dir);
 
    protected:

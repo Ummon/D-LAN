@@ -101,6 +101,15 @@ message Close {
 message SetSettings {
    required Settings settings = 1;
 }
+// Core -> GUI
+message ReturnStatus {
+   enum Status {
+      OK = 0,
+      ERROR = 1,
+   }
+   required Status status = 1;
+   optional string errorMessage = 2;
+}
 
 // GUI -> Core
 message Search  {

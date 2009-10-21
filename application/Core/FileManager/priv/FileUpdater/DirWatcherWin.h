@@ -18,10 +18,14 @@ namespace FileManager
    class DirWatcherWin : public DirWatcher
    {
    public:
-       DirWatcherWin();
-       ~DirWatcherWin();
+      DirWatcherWin();
+      ~DirWatcherWin();
 
+      /**
+        * @exception DirNotFoundException
+        */
       void addDir(const QString& path);
+
       void rmDir(const QString& path);
       int nbWatchedDir();
       const QList<WatcherEvent> waitEvent();
