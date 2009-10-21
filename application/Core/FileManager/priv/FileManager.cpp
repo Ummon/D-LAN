@@ -140,6 +140,14 @@ Protos::Common::FindResult FileManager::find(const QString& words)
    return result;
 }
 
+QBitArray FileManager::haveChunks(const QList<Common::Hash>& hashes)
+{
+   QBitArray result(hashes.size());
+   for (int i = 0; i < hashes.size(); i++)
+      result.setBit(i, this->chunks.contains(hashes[i]));
+   return result;
+}
+
 void FileManager::entryAdded(Entry* entry)
 {
    LOG_DEBUG("Indexing item : " + entry->getFullPath());

@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QSharedPointer>
 #include <QList>
+#include <QBitArray>
 
 #include <Protos/common.pb.h>
 #include <Protos/core_protocol.pb.h>
@@ -50,8 +51,8 @@ namespace FM
       /*IGetHashesResult* getHashes(const  Protos::Common::FileEntry& entry);
       Protos::Core::GetEntriesResult* getEntries(const Protos::Common::DirEntry& entry);*/
       Protos::Common::FindResult find(const QString& words);
-      /*QList<bool> haveChunks(const QList<Common::Hash>& hashes);
-      quint64 getAmount();
+      QBitArray haveChunks(const QList<Common::Hash>& hashes);
+      /*quint64 getAmount();
       QList<Protos::Common::DirEntry> getSharedDirs();
       QList<Protos::Common::DirEntry> getDestinationDirs();
       IFile newFile(const Protos::Common::FileEntry& remotEntry);*/
