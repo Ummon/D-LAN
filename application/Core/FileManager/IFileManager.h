@@ -21,7 +21,15 @@ namespace FileManager
 
       virtual QStringList getSharedDirsReadOnly() = 0;
       virtual QStringList getSharedDirsReadWrite() = 0;
+
+      /**
+        * @exception DirNotFoundException
+        */
       virtual void setSharedDirsReadOnly(const QStringList& dirs) = 0;
+
+      /**
+        * @exception DirNotFoundException
+        */
       virtual void setSharedDirsReadWrite(const QStringList& dirs) = 0;
 
      virtual IChunk* getChunk(const Common::Hash& hash) = 0;

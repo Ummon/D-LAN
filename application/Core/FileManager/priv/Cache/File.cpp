@@ -6,6 +6,7 @@ using namespace FileManager;
 #include <QCryptographicHash>
 
 #include <priv/FileManager.h>
+#include <priv/Exceptions.h>
 #include <priv/Cache/Directory.h>
 #include <priv/Cache/SharedDirectory.h>
 #include <priv/Cache/Chunk.h>
@@ -123,7 +124,7 @@ void File::computeHashes()
 
    QFile file(this->getFullPath());
    if (!file.open(QIODevice::ReadOnly))
-      throw FileNotFoundException();
+      throw FileNotFoundException(this->getFullPath());
 
    char buffer[BUFFER_SIZE];
    bool endOfFile = false;

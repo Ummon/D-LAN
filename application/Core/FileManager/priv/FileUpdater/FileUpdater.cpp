@@ -6,6 +6,7 @@ using namespace FileManager;
 #include <QTime>
 
 #include <priv/FileManager.h>
+#include <priv/Exceptions.h>
 #include <priv/Cache/SharedDirectory.h>
 #include <priv/Cache/Directory.h>
 #include <priv/Cache/File.h>
@@ -17,14 +18,16 @@ FileUpdater::FileUpdater(FileManager* fileManager)
 
 void FileUpdater::addRoot(SharedDirectory* dir)
 {
-   this->mutex.lock();
+   QMutexLocker lock(&this->mutex);
+
    if (this->dirWatcher)
       this->dirWatcher->addDir(dir->getFullPath());
+   else
+      if (!QDir(dir->getFullPath()).exists())
+         throw DirNotFoundException(dir->getFullPath());
 
    this->dirsToScan << dir;
-
    this->dirNotEmpty.wakeOne();
-   this->mutex.unlock();
 }
 
 void FileUpdater::rmRoot(SharedDirectory* dir)

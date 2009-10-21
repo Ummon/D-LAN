@@ -21,6 +21,10 @@ namespace FileManager
       Cache(FileManager* fileManager, FileUpdater* fileUpdater);
 
       QStringList getSharedDirs(SharedDirectory::Rights rights);
+
+      /**
+        * @exception DirsNotFoundException
+        */
       void setSharedDirs(const QStringList& dirs, SharedDirectory::Rights rights);
 
       void onEntryAdded(Entry* entry);

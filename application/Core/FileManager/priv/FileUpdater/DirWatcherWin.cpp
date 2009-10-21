@@ -2,6 +2,7 @@
 
 #if defined(Q_OS_WIN32)
 
+#include <priv/Exceptions.h>
 #include <priv/FileUpdater/DirWatcherWin.h>
 using namespace FileManager;
 
@@ -19,14 +20,17 @@ void DirWatcherWin::addDir(const QString& path)
    path.toWCharArray(pathTCHAR);
    pathTCHAR[path.size()] = 0;
 
-   HANDLE fileHandle = CreateFile(pathTCHAR, // pointer to the file name
-      FILE_LIST_DIRECTORY, // access (read/write) mode
-      FILE_SHARE_READ | FILE_SHARE_WRITE, // share mode
+   HANDLE fileHandle = CreateFile(pathTCHAR, // Pointer to the file name.
+      FILE_LIST_DIRECTORY, // Access (read/write) mode.
+      FILE_SHARE_READ | FILE_SHARE_WRITE, // Share mode.
       NULL, // security descriptor
       OPEN_EXISTING, // how to create
       FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OVERLAPPED, // file attributes
       NULL // file with attributes to copy
    );
+
+   if (fileHandle == INVALID_HANDLE_VALUE)
+      throw DirNotFoundException(path);
 
    HANDLE eventHandle = CreateEvent(NULL, FALSE, FALSE, NULL);
 

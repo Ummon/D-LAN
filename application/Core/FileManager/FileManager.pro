@@ -59,5 +59,7 @@ HEADERS += FileManager_global.h \
     priv/Cache/Chunk.h \
     priv/Cache/DataReader.h \
     priv/Cache/DataWriter.h \
-    priv/Cache/Cache.h
+    priv/Cache/Cache.h \
+    priv/Exceptions.h \
+    Exceptions.h
 OTHER_FILES += 
