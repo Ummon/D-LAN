@@ -11,6 +11,8 @@ Chunk::Chunk(File& file, const Common::Hash& hash, int num)
    : file(file), hash(hash), num(num), complete(false)
 {
    LOG_DEBUG(QString("New chunk[%1] : %2. File : %3").arg(num).arg(hash.toStr()).arg(file.getFullPath()));
+
+   static_cast<SharedDirectory*>(this->file.getRoot())->getCache()->onChunkAdded(this);
 }
 
 QSharedPointer<IDataReader> Chunk::getDataReader()

@@ -8,6 +8,8 @@ using namespace FM;
 #include <priv/Exceptions.h>
 #include <priv/Cache/SharedDirectory.h>
 
+QMutex Cache::lock;
+
 Cache::Cache(FileManager* fileManager, FileUpdater* fileUpdater)
    : fileManager(fileManager), fileUpdater(fileUpdater)
 {
@@ -74,11 +76,14 @@ void Cache::setSharedDirs(const QStringList& dirs, SharedDirectory::Rights right
       QString path = i.next();
       SharedDirectory* dir = new SharedDirectory(this, path);
       LOG_DEBUG("Add a shared directory : " + dir->getPath());
-      try {
+      try
+      {
          this->fileUpdater->addRoot(dir);
          this->sharedDirs << dir;
-      } catch (DirNotFoundException& e)
+      }
+      catch (DirNotFoundException& e)
       {
+         delete dir;
          dirsNotFound << e.getPath();
       }
    }
@@ -95,4 +100,9 @@ void Cache::onEntryAdded(Entry* entry)
 void Cache::onEntryRemoved(Entry* entry)
 {
    emit entryRemoved(entry);
+}
+
+void Cache::onChunkAdded(Chunk* chunk)
+{
+   emit chunkAdded(chunk);
 }

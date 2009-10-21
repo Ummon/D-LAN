@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QList>
 #include <QStringList>
+#include <QMutex>
 
 #include <priv/Cache/SharedDirectory.h>
 
@@ -11,6 +12,7 @@ namespace FM
 {
    class SharedDirectory;
    class Entry;
+   class Chunk;
    class FileUpdater;
    class FileManager;
 
@@ -18,6 +20,8 @@ namespace FM
    {
       Q_OBJECT
    public:
+      static QMutex lock; // To protect some data into the cache (not used for the moment).
+
       Cache(FileManager* fileManager, FileUpdater* fileUpdater);
 
       QStringList getSharedDirs(SharedDirectory::Rights rights);
@@ -29,10 +33,12 @@ namespace FM
 
       void onEntryAdded(Entry* entry);
       void onEntryRemoved(Entry* entry);
+      void onChunkAdded(Chunk* chunk);
 
    signals:
       void entryAdded(Entry* entry);
       void entryRemoved(Entry* entry);
+      void chunkAdded(Chunk* chunk);
 
    private:
       QList<SharedDirectory*> sharedDirs;
