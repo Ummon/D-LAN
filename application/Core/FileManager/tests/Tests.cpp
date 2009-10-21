@@ -1,5 +1,5 @@
 #include <Tests.h>
-using namespace FileManager;
+using namespace FM;
 
 #include <QtDebug>
 #include <QDir>
@@ -11,6 +11,33 @@ using namespace FileManager;
 
 Tests::Tests()
 {
+}
+
+void Tests::doASearch(bool checkResult)
+{
+   QString terms("aaaa bbbb cccc");
+   quint32 levelResults[] = {
+      0, 1, 2, 3, 3, 4, 5, 5
+   };
+   QList<QString> fileResults[] = {
+      QList<QString>() << "aaaa bbbb cccc.txt",
+      QList<QString>() << "aaaa bbbb.txt",
+      QList<QString>() << "aaaa cccc.txt",
+      QList<QString>() << "cccc bbbbbb.txt" << "bbbb cccc.txt",
+      QList<QString>() << "aaaa dddddd.txt",
+      QList<QString>() << "bbbb dddd.txt" << "bbbb.txt"
+   };
+   Protos::Common::FindResult result = this->fileManager->find(terms);
+   qDebug() << "Search : '" << terms << "'";
+   for (int i = 0; i < result.files_size(); i++)
+   {
+      qDebug() << "[" << result.files(i).level() << "] " << result.files(i).file().file().name().data();
+      if (checkResult)
+      {
+         QVERIFY(result.files(i).level() == levelResults[i]);
+         QVERIFY(fileResults[result.files(i).level()].contains(QString(result.files(i).file().file().name().data())));
+      }
+   }
 }
 
 void Tests::initTestCase()
@@ -28,7 +55,7 @@ void Tests::addSharedDirectories()
    {
       this->fileManager->setSharedDirsReadOnly(dirs);
    }
-   catch (FileManager::DirsNotFoundException& e)
+   catch (DirsNotFoundException& e)
    {
       foreach (QString path, e.getPaths())
          qDebug() << "This directory hasn't been found : " << path << " (Exception thrown)";
@@ -42,30 +69,11 @@ void Tests::search()
      * with the indexing.
      */
    for (int i = 0; i < 20; i++)
-   {
-      QString terms("aaaa bbbb cccc");
-      quint32 levelResults[] = {
-         0, 1, 2, 3, 3, 4, 5, 5
-      };
-      QString fileResults[] = {
-         "aaaa bbbb cccc.txt",
-         "aaaa bbbb.txt",
-         "aaaa cccc.txt",
-         "cccc bbbbbb.txt",
-         "bbbb cccc.txt",
-         "aaaa dddddd.txt",
-         "bbbb dddd.txt",
-         "bbbb.txt"
-      };
-      Protos::Common::FindResult result = this->fileManager->find(terms);
-      qDebug() << "Search : '" << terms << "'";
-      for (int i = 0; i < result.files_size(); i++)
-      {
-         qDebug() << "[" << result.files(i).level() << "] " << result.files(i).file().file().name().data();
-         QVERIFY(result.files(i).level() == levelResults[i]);
-         QVERIFY(QString(result.files(i).file().file().name().data()) == QString(fileResults[i]));
-      }
-   }
+      this->doASearch(false);
+
+   QTest::qSleep(300);
+
+   this->doASearch(true);
 }
 
 void Tests::cleanupTestCase()

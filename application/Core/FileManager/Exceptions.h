@@ -6,7 +6,7 @@ using namespace std;
 
 #include <QStringList>
 
-namespace FileManager
+namespace FM
 {
    class FileSystemEntriesNotFoundException : public exception
    {

@@ -6,7 +6,7 @@ using namespace std;
 
 #include <QString>
 
-namespace FileManager
+namespace FM
 {
    class FileSystemEntryNotFoundException : public exception
    {

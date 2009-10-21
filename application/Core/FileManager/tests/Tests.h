@@ -5,7 +5,7 @@
 
 #include <Builder.h>
 #include <IFileManager.h>
-using namespace FileManager;
+using namespace FM;
 
 class Tests : public QObject
 {
@@ -15,6 +15,8 @@ public:
 
 private:
    QSharedPointer<IFileManager> fileManager;
+
+   void doASearch(bool checkResult);
 
 private slots:
    void initTestCase();
