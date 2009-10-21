@@ -15,15 +15,15 @@ using namespace FM;
 #include <priv/Cache/SharedDirectory.h>
 #include <priv/Cache/Chunk.h>
 
-QSharedPointer<LogManager::ILogger> FileManager::logger(LogManager::Builder::newLogger("FileManager"));
+QSharedPointer<LM::ILogger> FileManager::logger(LM::Builder::newLogger("FileManager"));
 
 FileManager::FileManager()
    : fileUpdater(this), cache(this, &this->fileUpdater)
 {
-   FileManager::logger->log("Loading ..", LogManager::EndUser);
+   FileManager::logger->log("Loading ..", LM::EndUser);
    connect(&this->cache, SIGNAL(entryAdded(Entry*)), this, SLOT(entryAdded(Entry*)), Qt::DirectConnection);
    this->fileUpdater.start();
-   FileManager::logger->log("Loaded!", LogManager::EndUser);
+   FileManager::logger->log("Loaded!", LM::EndUser);
 }
 
 QStringList FileManager::getSharedDirsReadOnly()
@@ -157,7 +157,7 @@ void FileManager::entryRemoved(Entry* entry)
    // TODO
 }
 
-QStringList FileManager::splitInWords(const QString& words)
+QStringList FileManager::FileManager::splitInWords(const QString& words)
 {
    const static QRegExp regExp("(\\W+|_)");
    QStringList keywords = words.toLower().split(regExp, QString::SkipEmptyParts);

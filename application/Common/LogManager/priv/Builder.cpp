@@ -1,5 +1,5 @@
 #include <Builder.h>
-using namespace LogManager;
+using namespace LM;
 
 #include <ILogger.h>
 #include <priv/Logger.h>

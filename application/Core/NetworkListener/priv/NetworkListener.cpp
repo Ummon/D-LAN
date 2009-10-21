@@ -11,10 +11,10 @@ using namespace NetworkListener;
  *
  * @author mcuony
  */
-::NetworkListener::NetworkListener(QSharedPointer<PeerManager::IPeerManager> newPeerManager) : logger(LogManager::Builder::newLogger("NetworkListener"))
+::NetworkListener::NetworkListener(QSharedPointer<PeerManager::IPeerManager> newPeerManager) : logger(LM::Builder::newLogger("NetworkListener"))
 {
 
-   this->logger->log("Loading ..", LogManager::EndUser);
+   this->logger->log("Loading ..", LM::EndUser);
 
    // References to needed classes.
    this->udpListener = new UDPListener(newPeerManager);
@@ -53,7 +53,7 @@ IChat* ::NetworkListener::getChat()
  */
 void ::NetworkListener::presence()
 {
-   this->logger->log("Sending <IAmAlive>", LogManager::Debug);
+   this->logger->log("Sending <IAmAlive>", LM::Debug);
 
    // We put info in a IMAlimeMessage Proto.
    Protos::Core::HaveChunks IMAlimeMessage;
@@ -103,6 +103,6 @@ void ::NetworkListener::newFindRequset(const Protos::Core::Find& request, const 
    // We broadcast the data.
    this->udpListener->sendMessageTo(QByteArray(output.data()).prepend(findResultPacket), peerAdress);
 
-   this->logger->log("Stupid search answer for " + QString::number(request.tag()), LogManager::Debug);
+   this->logger->log("Stupid search answer for " + QString::number(request.tag()), LM::Debug);
 
 }

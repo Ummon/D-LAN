@@ -20,7 +20,7 @@ namespace NetworkListener
 
    private:
       UDPListener* udpListener;
-      QSharedPointer<LogManager::ILogger> logger;
+      QSharedPointer<LM::ILogger> logger;
       QSharedPointer<PeerManager::IPeerManager> peerManager;
 
    public slots:

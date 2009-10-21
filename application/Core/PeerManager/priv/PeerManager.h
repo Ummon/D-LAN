@@ -36,7 +36,7 @@ namespace PeerManager
           Common::Hash ID;
           QString nick;
           QTimer *timer;
-          QSharedPointer<LogManager::ILogger> logger;
+          QSharedPointer<LM::ILogger> logger;
           Peer* fromIdToPeer(const Common::Hash& peerID);
 
        public slots:

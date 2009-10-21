@@ -16,18 +16,15 @@
 #include <priv/ChunkIndex/Chunks.h>
 #include <priv/WordIndex/WordIndex.h>
 
-#define LOG_USER(mess)  FileManager::logger->log((mess), LogManager::EndUser)
+#define LOG_USER(mess)  FileManager::logger->log((mess), LM::EndUser)
 #ifdef DEBUG
-#  define LOG_DEBUG(mess) FileManager::logger->log((mess), LogManager::Debug)
-#  define LOG_WARN(mess)  FileManager::logger->log((mess), LogManager::Warning)
-#  define LOG_ERR(mess)   FileManager::logger->log((mess), LogManager::Error)
-#  define LOG_FATAL(mess) FileManager::logger->log((mess), LogManager::FatalError)
+#  define LOG_DEBUG(mess) FileManager::logger->log((mess), LM::Debug)
 #else
 #  define LOG_DEBUG(mess)
-#  define LOG_WARN(mess)
-#  define LOG_ERR(mess)
-#  define LOG_FATAL(mess)
 #endif
+#  define LOG_WARN(mess)  FileManager::logger->log((mess), LM::Warning)
+#  define LOG_ERR(mess)   FileManager::logger->log((mess), LM::Error)
+#  define LOG_FATAL(mess) FileManager::logger->log((mess), LM::FatalError)
 
 namespace FM
 {
@@ -41,7 +38,7 @@ namespace FM
       Q_OBJECT
    public :
       static const int  MAX_WORD_LENGTH = 3;
-      static QSharedPointer<LogManager::ILogger> logger;
+      static QSharedPointer<LM::ILogger> logger;
 
       FileManager();
 

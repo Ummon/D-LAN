@@ -42,7 +42,7 @@ namespace PeerManager
       quint32 averageSpeed;
       QDate lastUpdateAverageSpeed;
       QByteArray bufferToWrite;
-      QSharedPointer<LogManager::ILogger> logger;
+      QSharedPointer<LM::ILogger> logger;
       static const int ttl = 15;
       static const int port;
 

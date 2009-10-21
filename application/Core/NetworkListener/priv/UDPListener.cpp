@@ -21,10 +21,10 @@ QHostAddress UDPListener::multicastIP("236.123.43.24");
  *
  * @author mcuony
  */
-::UDPListener::UDPListener(QSharedPointer<PeerManager::IPeerManager> newPeerManager) : QObject() , logger(LogManager::Builder::newLogger("NetworkListener::UDPListener"))
+::UDPListener::UDPListener(QSharedPointer<PeerManager::IPeerManager> newPeerManager) : QObject() , logger(LM::Builder::newLogger("NetworkListener::UDPListener"))
 {
 
-   this->logger->log("Loading ..", LogManager::EndUser);
+   this->logger->log("Loading ..", LM::EndUser);
 
    this->peerManager = newPeerManager;
 
@@ -32,20 +32,20 @@ QHostAddress UDPListener::multicastIP("236.123.43.24");
    this->multicastSocket = new QUdpSocket(this);
 
    if (!this->multicastSocket->bind(UDPListener::multicastPort, QUdpSocket::ReuseAddressHint))
-      this->logger->log("Can't bind", LogManager::FatalError);
+      this->logger->log("Can't bind", LM::FatalError);
 
    if (!connect(this->multicastSocket, SIGNAL(readyRead()), this, SLOT(processPendingMulticastDatagrams())))
-      this->logger->log("Can't listen", LogManager::FatalError);
+      this->logger->log("Can't listen", LM::FatalError);
 
    int socketDescriptor = this->multicastSocket->socketDescriptor();
 
    // 'loop' is activated only for tests.
    char loop = 1;
    if (setsockopt(socketDescriptor, IPPROTO_IP, IP_MULTICAST_LOOP, &loop, sizeof loop))
-      this->logger->log("Can't set socket option : IP_MULTICAST_LOOP", LogManager::FatalError);
+      this->logger->log("Can't set socket option : IP_MULTICAST_LOOP", LM::FatalError);
 
    if (int error = setsockopt(socketDescriptor, IPPROTO_IP, IP_MULTICAST_TTL, &UDPListener::TTL, sizeof UDPListener::TTL))
-      this->logger->log("Can't set socket option : IP_MULTICAST_TTL : " + error, LogManager::FatalError);
+      this->logger->log("Can't set socket option : IP_MULTICAST_TTL : " + error, LM::FatalError);
 
    // 'htonl' reverse the order of the bytes, see : http://www.opengroup.org/onlinepubs/007908799/xns/htonl.html
    struct ip_mreq mreq;
@@ -56,22 +56,22 @@ QHostAddress UDPListener::multicastIP("236.123.43.24");
    #elif defined(Q_OS_WIN32)
       if (int error = setsockopt(socketDescriptor, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char*)&mreq, sizeof mreq))
    #endif
-         this->logger->log("Can't set socket option : IP_ADD_MEMBERSHIP : " + error, LogManager::FatalError);
+         this->logger->log("Can't set socket option : IP_ADD_MEMBERSHIP : " + error, LM::FatalError);
 
 
    // Creating and setting options to the socket.
    this->unicastSocket = new QUdpSocket(this);
 
    if (!this->unicastSocket->bind(UDPListener::unicastPort, QUdpSocket::ReuseAddressHint))
-      this->logger->log("Can't bind", LogManager::FatalError);
+      this->logger->log("Can't bind", LM::FatalError);
 
    if (!connect(this->unicastSocket, SIGNAL(readyRead()), this, SLOT(processPendingUnicastDatagrams())))
-      this->logger->log("Can't listen", LogManager::FatalError);
+      this->logger->log("Can't listen", LM::FatalError);
 
    //int socketDescriptor = this->unicastSocket->socketDescriptor();
 
 
-   this->logger->log("Done", LogManager::EndUser);
+   this->logger->log("Done", LM::EndUser);
 }
 
 /**
@@ -91,7 +91,7 @@ void ::UDPListener::processPendingMulticastDatagrams()
       QHostAddress peerAddress;
       this->multicastSocket->readDatagram(datagram.data(), datagram.size(), &peerAddress);
 
-      this->logger->log("[MULTICAST] Recived from " +  peerAddress.toString() + " message " + datagram.data(), LogManager::Debug);
+      this->logger->log("[MULTICAST] Recived from " +  peerAddress.toString() + " message " + datagram.data(), LM::Debug);
 
       switch (datagram.data()[0])
       {
@@ -125,7 +125,7 @@ void ::UDPListener::processPendingMulticastDatagrams()
             //We forward the information to the PeerManager
             this->peerManager->updatePeer(id, peerAddress, nick, amount);
 
-            //this->logger->log("Someone is alive: " + id + ", " +data.fromStdString(IMAlimeMessage.nick()), LogManager::Debug);
+            //this->logger->log("Someone is alive: " + id + ", " +data.fromStdString(IMAlimeMessage.nick()), LM::Debug);
 
             break;
          }
@@ -138,14 +138,14 @@ void ::UDPListener::processPendingMulticastDatagrams()
 
             emit newFindRequset(findMessage, peerAddress);
 
-            //ISO C++ says that these are ambiguous, even though the worst conversion for the first is better than the worst conversion for the secondthis->logger->log("Find request id " + QString::fromStdString(findMessage.DebugString())  + QString::number( findMessage.tag() ), LogManager::Debug);
+            //ISO C++ says that these are ambiguous, even though the worst conversion for the first is better than the worst conversion for the secondthis->logger->log("Find request id " + QString::fromStdString(findMessage.DebugString())  + QString::number( findMessage.tag() ), LM::Debug);
 
             break;
          }
 
          default:
          {
-            this->logger->log("Unknow type ???", LogManager::Debug);
+            this->logger->log("Unknow type ???", LM::Debug);
             break;
          }
       }
@@ -169,7 +169,7 @@ void ::UDPListener::processPendingUnicastDatagrams()
       QHostAddress peerAddress;
       this->unicastSocket->readDatagram(datagram.data(), datagram.size(), &peerAddress);
 
-      this->logger->log("[UNICAST] Recived from " +  peerAddress.toString() + " message " + datagram.data(), LogManager::Debug);
+      this->logger->log("[UNICAST] Recived from " +  peerAddress.toString() + " message " + datagram.data(), LM::Debug);
 
       switch (datagram.data()[0])
       {
@@ -182,7 +182,7 @@ void ::UDPListener::processPendingUnicastDatagrams()
 
             emit newFindResult(findRMessage);
 
-            //this->logger->log("Someone is alive: " + id + ", " +data.fromStdString(IMAlimeMessage.nick()), LogManager::Debug);
+            //this->logger->log("Someone is alive: " + id + ", " +data.fromStdString(IMAlimeMessage.nick()), LM::Debug);
 
             break;
          }
@@ -192,7 +192,7 @@ void ::UDPListener::processPendingUnicastDatagrams()
 
          default:
          {
-            this->logger->log("Unknow type ???", LogManager::Debug);
+            this->logger->log("Unknow type ???", LM::Debug);
             break;
          }
       }
@@ -207,7 +207,7 @@ void ::UDPListener::processPendingUnicastDatagrams()
   */
 bool ::UDPListener::sendMessage(const QByteArray& datagram)
 {
-   //this->logger->log("Sending " + mess, LogManager::Debug);
+   //this->logger->log("Sending " + mess, LM::Debug);
 
    //QByteArray datagram = mess.toUtf8();
 
@@ -218,7 +218,7 @@ bool ::UDPListener::sendMessage(const QByteArray& datagram)
       UDPListener::multicastPort
       ) == -1)
    {
-      this->logger->log("Unable to send datagram", LogManager::FatalError);
+      this->logger->log("Unable to send datagram", LM::FatalError);
       return false;
    }
    else
@@ -235,7 +235,7 @@ bool ::UDPListener::sendMessage(const QByteArray& datagram)
   */
 bool ::UDPListener::sendMessageTo(const QByteArray& datagram, const QHostAddress& ipTo)
 {
-   //this->logger->log("Sending " + mess, LogManager::Debug);
+   //this->logger->log("Sending " + mess, LM::Debug);
 
    //QByteArray datagram = mess.toUtf8();
 
@@ -246,7 +246,7 @@ bool ::UDPListener::sendMessageTo(const QByteArray& datagram, const QHostAddress
       UDPListener::unicastPort
       ) == -1)
    {
-      this->logger->log("Unable to send datagram", LogManager::FatalError);
+      this->logger->log("Unable to send datagram", LM::FatalError);
       return false;
    }
    else

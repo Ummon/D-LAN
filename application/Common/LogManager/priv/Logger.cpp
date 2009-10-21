@@ -1,5 +1,5 @@
 #include <priv/Logger.h>
-using namespace LogManager;
+using namespace LM;
 
 #include <QThread>
 

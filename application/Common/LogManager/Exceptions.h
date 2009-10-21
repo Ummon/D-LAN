@@ -4,7 +4,7 @@
 #include <exception>
 using namespace std;
 
-namespace LogManager
+namespace LM
 {
    class LoggerAlreadyExistsException : public exception {};
 }

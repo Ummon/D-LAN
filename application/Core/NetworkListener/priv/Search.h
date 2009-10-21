@@ -27,7 +27,7 @@ namespace NetworkListener
       UDPListener* udpListener;
       bool searchLaunched;
       QDateTime dateOfLaunch;
-      QSharedPointer<LogManager::ILogger> logger;
+      QSharedPointer<LM::ILogger> logger;
       QSharedPointer<PeerManager::IPeerManager> peerManager;
 
    public slots:

@@ -3,7 +3,7 @@
 
 #include <IEntry.h>
 
-namespace LogManager
+namespace LM
 {
    class Entry : public IEntry
    {

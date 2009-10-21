@@ -4,7 +4,7 @@
 #include <QString>
 #include <QDate>
 
-namespace LogManager
+namespace LM
 {
    enum Severity
    {

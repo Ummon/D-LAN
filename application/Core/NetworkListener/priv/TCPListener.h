@@ -18,7 +18,7 @@ namespace NetworkListener
    public:
       TCPListener(QSharedPointer<PeerManager::IPeerManager> newPeerManager);
    private:
-      QSharedPointer<LogManager::ILogger> logger;
+      QSharedPointer<LM::ILogger> logger;
       QSharedPointer<PeerManager::IPeerManager> peerManager;
 
    public slots:

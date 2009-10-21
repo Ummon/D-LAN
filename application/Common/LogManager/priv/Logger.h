@@ -7,7 +7,7 @@
 
 #include <ILogger.h>
 
-namespace LogManager
+namespace LM
 {
    class Logger : public ILogger
    {

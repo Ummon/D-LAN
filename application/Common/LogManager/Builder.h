@@ -6,7 +6,7 @@
 
 #include "LogManager_global.h"
 
-namespace LogManager
+namespace LM
 {
    class ILogger;
 
