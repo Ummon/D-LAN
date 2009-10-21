@@ -12,7 +12,7 @@
 #include <IFile.h>
 #include <priv/Cache/Entry.h>
 
-namespace FileManager
+namespace FM
 {
    class IChunk;
    class Chunk;

@@ -7,7 +7,7 @@
 #include <Protos/common.pb.h>
 #include <priv/Cache/Entry.h>
 
-namespace FileManager
+namespace FM
 {
    class File;
 

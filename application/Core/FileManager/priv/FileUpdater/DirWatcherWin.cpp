@@ -4,7 +4,7 @@
 
 #include <priv/Exceptions.h>
 #include <priv/FileUpdater/DirWatcherWin.h>
-using namespace FileManager;
+using namespace FM;
 
 DirWatcherWin::DirWatcherWin()
 {

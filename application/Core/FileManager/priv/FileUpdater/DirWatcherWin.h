@@ -7,7 +7,7 @@
 
 #include <windows.h>
 
-namespace FileManager
+namespace FM
 {
    static const int notifyBufferSize = 2048;
 

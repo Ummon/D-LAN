@@ -1,5 +1,5 @@
 #include <priv/Cache/File.h>
-using namespace FileManager;
+using namespace FM;
 
 #include <QString>
 #include <QFile>

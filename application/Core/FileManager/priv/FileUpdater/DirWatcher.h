@@ -4,7 +4,7 @@
 #include <QtCore/QList>
 #include <QtCore/QString>
 
-namespace FileManager
+namespace FM
 {
    class DirWatcherException : public std::exception
    {
@@ -100,7 +100,7 @@ namespace FileManager
       /**
         * Default assignment operator does nothing because all members are const.
         */
-      WatcherEvent& operator=(const WatcherEvent& watcher) { return *this; }
+      WatcherEvent& operator=(const WatcherEvent&) { return *this; }
 
       const Type type;
       const QString path1;

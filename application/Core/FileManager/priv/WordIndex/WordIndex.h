@@ -9,7 +9,7 @@
 
 #include <priv/WordIndex/Node.h>
 
-namespace FileManager
+namespace FM
 {
    /**
      * An collection of T indexed by word.
@@ -32,7 +32,7 @@ namespace FileManager
 }
 
 /***** Definition *****/
-using namespace FileManager;
+using namespace FM;
 
 template<typename T>
 WordIndex<T>::WordIndex()

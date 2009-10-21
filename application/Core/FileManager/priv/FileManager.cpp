@@ -1,5 +1,5 @@
 #include <priv/FileManager.h>
-using namespace FileManager;
+using namespace FM;
 
 #include <QSharedPointer>
 #include <QStringList>
@@ -15,9 +15,9 @@ using namespace FileManager;
 #include <priv/Cache/SharedDirectory.h>
 #include <priv/Cache/Chunk.h>
 
-QSharedPointer<LogManager::ILogger> FileManager::FileManager::logger(LogManager::Builder::newLogger("FileManager"));
+QSharedPointer<LogManager::ILogger> FileManager::logger(LogManager::Builder::newLogger("FileManager"));
 
-::FileManager::FileManager()
+FileManager::FileManager()
    : fileUpdater(this), cache(this, &this->fileUpdater)
 {
    FileManager::logger->log("Loading ..", LogManager::EndUser);
@@ -26,27 +26,27 @@ QSharedPointer<LogManager::ILogger> FileManager::FileManager::logger(LogManager:
    FileManager::logger->log("Loaded!", LogManager::EndUser);
 }
 
-QStringList FileManager::FileManager::getSharedDirsReadOnly()
+QStringList FileManager::getSharedDirsReadOnly()
 {
    return this->cache.getSharedDirs(SharedDirectory::READ_ONLY);
 }
 
-QStringList FileManager::FileManager::getSharedDirsReadWrite()
+QStringList FileManager::getSharedDirsReadWrite()
 {
    return this->cache.getSharedDirs(SharedDirectory::READ_WRITE);
 }
 
-void ::FileManager::setSharedDirsReadOnly(const QStringList& dirs)
+void FileManager::setSharedDirsReadOnly(const QStringList& dirs)
 {
    this->cache.setSharedDirs(dirs, SharedDirectory::READ_ONLY);
 }
 
-void ::FileManager::setSharedDirsReadWrite(const QStringList& dirs)
+void FileManager::setSharedDirsReadWrite(const QStringList& dirs)
 {
    this->cache.setSharedDirs(dirs, SharedDirectory::READ_WRITE);
 }
 
-IChunk* ::FileManager::getChunk(const Common::Hash& hash)
+IChunk* FileManager::getChunk(const Common::Hash& hash)
 {
    return this->chunks.value(hash);
 }
@@ -54,7 +54,7 @@ IChunk* ::FileManager::getChunk(const Common::Hash& hash)
 /**
   * See http://dev.euphorik.ch/wiki/pmp/Algorithms#Word-indexing for more information.
   */
-Protos::Common::FindResult FileManager::FileManager::find(const QString& words)
+Protos::Common::FindResult FileManager::find(const QString& words)
 {
    QStringList terms = FileManager::splitInWords(words);
    int n = terms.size();
@@ -140,7 +140,7 @@ Protos::Common::FindResult FileManager::FileManager::find(const QString& words)
    return result;
 }
 
-void ::FileManager::entryAdded(Entry* entry)
+void FileManager::entryAdded(Entry* entry)
 {
    LOG_DEBUG("Indexing item : " + entry->getFullPath());
    this->wordIndex.addItem(FileManager::splitInWords(entry->getName()), entry);
@@ -152,12 +152,12 @@ void ::FileManager::entryAdded(Entry* entry)
    }
 }
 
-void ::FileManager::entryRemoved(Entry* entry)
+void FileManager::entryRemoved(Entry* entry)
 {
    // TODO
 }
 
-QStringList FileManager::FileManager::splitInWords(const QString& words)
+QStringList FileManager::splitInWords(const QString& words)
 {
    const static QRegExp regExp("(\\W+|_)");
    QStringList keywords = words.toLower().split(regExp, QString::SkipEmptyParts);

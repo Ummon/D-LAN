@@ -1,5 +1,5 @@
 #include <priv/Cache/Cache.h>
-using namespace FileManager;
+using namespace FM;
 
 #include <QDir>
 

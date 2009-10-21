@@ -1,5 +1,5 @@
 #include <priv/Cache/DataWriter.h>
-using namespace FileManager;
+using namespace FM;
 
 DataWriter::DataWriter(Chunk& chunk)
    : chunk(chunk)
