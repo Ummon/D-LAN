@@ -35,7 +35,8 @@ SOURCES += priv/Builder.cpp \
     priv/Cache/Chunk.cpp \
     priv/Cache/DataReader.cpp \
     priv/Cache/DataWriter.cpp \
-    priv/Cache/Cache.cpp
+    priv/Cache/Cache.cpp \
+    ../../Protos/files_cache.pb.cc
 HEADERS += FileManager_global.h \
     IGetHashesResult.h \
     IFileManager.h \
@@ -62,5 +63,6 @@ HEADERS += FileManager_global.h \
     priv/Cache/DataWriter.h \
     priv/Cache/Cache.h \
     priv/Exceptions.h \
-    Exceptions.h
-OTHER_FILES +=
+    Exceptions.h \
+    ../../Protos/files_cache.pb.h
+OTHER_FILES += 

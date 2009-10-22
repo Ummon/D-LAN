@@ -34,7 +34,7 @@ namespace FM
         */
       virtual void setSharedDirsReadWrite(const QStringList& dirs) = 0;
 
-     virtual IChunk* getChunk(const Common::Hash& hash) = 0;
+      virtual IChunk* getChunk(const Common::Hash& hash) = 0;
 
       // virtual IGetHashesResult* getHashes(const Protos::Common::FileEntry& entry) = 0;
       // virtual Protos::Core::GetEntriesResult* getEntries(const Protos::Common::DirEntry& entry) = 0;

@@ -6,6 +6,8 @@
 #include <QStringList>
 #include <QMutex>
 
+#include <Protos/files_cache.pb.h>
+
 #include <priv/Cache/SharedDirectory.h>
 
 namespace FM
@@ -28,6 +30,12 @@ namespace FM
         * @exception DirsNotFoundException
         */
       void setSharedDirs(const QStringList& dirs, SharedDirectory::Rights rights);
+
+      /**
+        * Define the shared directories from the persisted given data.
+        * The directories and files are not created here but later by the fileUpdater, see the FileManager ctor.
+        */
+      void retrieveFromFile(const Protos::FileCache::Hashes& hashes);
 
       quint64 getAmount();
 

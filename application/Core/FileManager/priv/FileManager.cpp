@@ -8,6 +8,9 @@ using namespace FM;
 #include <QRegExp>
 #include <QMutableListIterator>
 
+#include <Protos/files_cache.pb.h>
+
+#include <Common/PersistantData.h>
 #include <Common/LogManager/Builder.h>
 #include <Common/LogManager/ILogger.h>
 #include <Common/Math.h>
@@ -15,6 +18,7 @@ using namespace FM;
 #include <priv/Cache/SharedDirectory.h>
 #include <priv/Cache/Chunk.h>
 
+const QString FileManager::FILE_CACHE("file_cache.bin");
 QSharedPointer<LM::ILogger> FileManager::logger(LM::Builder::newLogger("FileManager"));
 
 FileManager::FileManager()
@@ -24,6 +28,25 @@ FileManager::FileManager()
 
    connect(&this->cache, SIGNAL(entryAdded(Entry*)), this, SLOT(entryAdded(Entry*)), Qt::DirectConnection);
    connect(&this->cache, SIGNAL(chunkAdded(Chunk*)), this, SLOT(chunkAdded(Chunk*)), Qt::DirectConnection);
+
+   // Load the cache from the persistant data
+   try
+   {
+      QByteArray savedCacheBin(Common::PersistantData::getValue(FILE_CACHE));
+      Protos::FileCache::Hashes savedCache;
+      savedCache.ParseFromString(savedCacheBin.constData());
+      this->cache.retrieveFromFile(savedCache);
+      // TODO
+      // this->fileUpdater.retrieveFromFile(savedCache);
+   }
+   catch (Common::UnknownValueException& e)
+   {
+      LOG_WARN(QString("The persitsed file cache cannot be retrived (the file doesn't exist) : %1").arg(FILE_CACHE));
+   }
+   catch (...)
+   {
+      LOG_WARN(QString("The persisted file cache cannot be retrived (Unkown exception) : %1").arg(FILE_CACHE));
+   }
 
    this->fileUpdater.start();
    FileManager::logger->log("Loaded!", LM::EndUser);
