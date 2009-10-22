@@ -8,8 +8,6 @@ using namespace FM;
 #include <priv/Exceptions.h>
 #include <priv/Cache/SharedDirectory.h>
 
-QMutex Cache::lock;
-
 Cache::Cache(FileManager* fileManager, FileUpdater* fileUpdater)
    : fileManager(fileManager), fileUpdater(fileUpdater)
 {
@@ -90,6 +88,14 @@ void Cache::setSharedDirs(const QStringList& dirs, SharedDirectory::Rights right
 
    if (!dirsNotFound.isEmpty())
       throw DirsNotFoundException(dirsNotFound);
+}
+
+quint64 Cache::getAmount()
+{
+   quint64 amount = 0;
+   for(QListIterator<SharedDirectory*> i(this->sharedDirs); i.hasNext();)
+      amount += i.next()->getSize();
+   return amount;
 }
 
 void Cache::onEntryAdded(Entry* entry)

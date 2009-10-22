@@ -151,6 +151,11 @@ QBitArray FileManager::haveChunks(const QList<Common::Hash>& hashes)
    return result;
 }
 
+quint64 FileManager::getAmount()
+{
+   return this->cache.getAmount();
+}
+
 QSharedPointer<IFile> FileManager::newFile(const Protos::Common::FileEntry& remoteEntry)
 {
    // TODO...

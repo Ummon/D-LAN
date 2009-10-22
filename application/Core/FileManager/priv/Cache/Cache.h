@@ -20,8 +20,6 @@ namespace FM
    {
       Q_OBJECT
    public:
-      static QMutex lock; // To protect some data into the cache (not used for the moment).
-
       Cache(FileManager* fileManager, FileUpdater* fileUpdater);
 
       QStringList getSharedDirs(SharedDirectory::Rights rights);
@@ -30,6 +28,8 @@ namespace FM
         * @exception DirsNotFoundException
         */
       void setSharedDirs(const QStringList& dirs, SharedDirectory::Rights rights);
+
+      quint64 getAmount();
 
       void onEntryAdded(Entry* entry);
       void onEntryRemoved(Entry* entry);
@@ -45,6 +45,8 @@ namespace FM
 
       FileManager* fileManager;
       FileUpdater* fileUpdater;
+
+      QMutex lock; // To protect some data into the cache.
    };
 }
 #endif
