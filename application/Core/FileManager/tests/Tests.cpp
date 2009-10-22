@@ -13,6 +13,11 @@ Tests::Tests()
 {
 }
 
+void Tests::printAmount()
+{
+   qDebug() << "Sharing amount : " << this->fileManager->getAmount() << " bytes";
+}
+
 void Tests::doASearch(bool checkResult)
 {
    QString terms("aaaa bbbb cccc");
@@ -69,11 +74,15 @@ void Tests::search()
      * with the indexing.
      */
    for (int i = 0; i < 20; i++)
+   {
+      this->printAmount();
       this->doASearch(false);
+   }
 
-   QTest::qSleep(300);
+   QTest::qSleep(500);
 
    this->doASearch(true);
+   this->printAmount();
 }
 
 void Tests::cleanupTestCase()

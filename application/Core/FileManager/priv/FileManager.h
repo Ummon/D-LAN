@@ -53,7 +53,7 @@ namespace FM
       // Protos::Core::GetEntriesResult* getEntries(const Protos::Common::DirEntry& entry);
       Protos::Common::FindResult find(const QString& words);
       QBitArray haveChunks(const QList<Common::Hash>& hashes);
-      // quint64 getAmount();
+      quint64 getAmount();
 
       virtual QSharedPointer<IFile> newFile(const Protos::Common::FileEntry& remoteEntry);
 

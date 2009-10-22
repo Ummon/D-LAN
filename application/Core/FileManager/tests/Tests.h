@@ -14,6 +14,7 @@ public:
    Tests();
 
 private:
+   void printAmount();
    QSharedPointer<IFileManager> fileManager;
 
    void doASearch(bool checkResult);
