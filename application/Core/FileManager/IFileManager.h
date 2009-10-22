@@ -3,6 +3,7 @@
 
 #include <QStringList>
 #include <QBitArray>
+#include <QSharedPointer>
 
 #include <Common/Hash.h>
 
@@ -35,12 +36,12 @@ namespace FM
 
      virtual IChunk* getChunk(const Common::Hash& hash) = 0;
 
-      /*virtual IGetHashesResult* getHashes(const Protos::Common::FileEntry& entry) = 0;
-      virtual Protos::Core::GetEntriesResult* getEntries(const Protos::Common::DirEntry& entry) = 0;*/
+      // virtual IGetHashesResult* getHashes(const Protos::Common::FileEntry& entry) = 0;
+      // virtual Protos::Core::GetEntriesResult* getEntries(const Protos::Common::DirEntry& entry) = 0;
       virtual Protos::Common::FindResult find(const QString& words) = 0;
       virtual QBitArray haveChunks(const QList<Common::Hash>& hashes) = 0;
-      /*virtual quint64 getAmount() = 0;
-      virtual QSharedPointer<IFile> newFile(const Protos::Common::FileEntry& remotEntry) = 0;*/
+      // virtual quint64 getAmount() = 0;
+      virtual QSharedPointer<IFile> newFile(const Protos::Common::FileEntry& remoteEntry) = 0;
    };
 }
 #endif

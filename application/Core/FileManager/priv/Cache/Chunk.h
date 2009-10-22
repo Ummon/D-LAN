@@ -19,7 +19,7 @@ namespace FM
    class Chunk : public IChunk
    {
    public:
-      Chunk(File& file, const Common::Hash& hash, int num);
+      Chunk(File& file, const Common::Hash& hash, int num, int knownBytes = File::CHUNK_SIZE);
       virtual ~Chunk() {};
 
       QSharedPointer<IDataReader> getDataReader();
@@ -41,7 +41,12 @@ namespace FM
         */
       bool write(const QByteArray& buffer, int offset);
 
+      void sendContentToSocket(QAbstractSocket& socket);
+      void getContentFromSocket(QAbstractSocket& socket);
+
       Common::Hash getHash();
+
+      int getKnownBytes();
 
       File& getFile();
 
@@ -49,7 +54,7 @@ namespace FM
       File& file;
       Common::Hash hash;
       int num;
-      bool complete;
+      int knownBytes; ///< Relative offset, 0 means we don't have any byte and File::CHUNK_SIZE means we have all the chunk data.
    };
 }
 #endif
