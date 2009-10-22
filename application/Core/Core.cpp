@@ -12,6 +12,8 @@ using namespace Core;
 ::Core::Core()
    : QObject(), logger(LM::Builder::newLogger("Core"))
 {
+   GOOGLE_PROTOBUF_VERIFY_VERSION;
+
    this->logger->log("Loading ..", LM::EndUser);
 
    this->fileManager = FM::Builder::newFileManager();
@@ -24,5 +26,9 @@ using namespace Core;
       NetworkListener::ISearch* s = this->networkListener->search();
    s->search("coucou");
    s->search("coucou2");
+}
 
+::Core::~Core()
+{
+   google::protobuf::ShutdownProtobufLibrary();
 }

@@ -32,7 +32,7 @@ namespace Core
 
    public:
       Core();
-      virtual ~Core() {}
+      virtual ~Core();
 
    private:
       QSharedPointer<LM::ILogger> logger;

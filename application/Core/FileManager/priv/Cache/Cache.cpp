@@ -90,6 +90,16 @@ void Cache::setSharedDirs(const QStringList& dirs, SharedDirectory::Rights right
       throw DirsNotFoundException(dirsNotFound);
 }
 
+void Cache::retrieveFromFile(const Protos::FileCache::Hashes& hashes)
+{
+   // TODO..
+   // Add the shared directory.
+   for (int i = 0; i < hashes.dirs_size(); i++)
+   {
+      hashes.dirs(0);
+   }
+}
+
 quint64 Cache::getAmount()
 {
    quint64 amount = 0;
