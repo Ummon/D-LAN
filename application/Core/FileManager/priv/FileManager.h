@@ -49,14 +49,13 @@ namespace FM
       void setSharedDirsReadOnly(const QStringList& dirs);
       void setSharedDirsReadWrite(const QStringList& dirs);
       IChunk* getChunk(const Common::Hash& hash);
-      /*IGetHashesResult* getHashes(const  Protos::Common::FileEntry& entry);
-      Protos::Core::GetEntriesResult* getEntries(const Protos::Common::DirEntry& entry);*/
+      // IGetHashesResult* getHashes(const  Protos::Common::FileEntry& entry);
+      // Protos::Core::GetEntriesResult* getEntries(const Protos::Common::DirEntry& entry);
       Protos::Common::FindResult find(const QString& words);
       QBitArray haveChunks(const QList<Common::Hash>& hashes);
-      /*quint64 getAmount();
-      QList<Protos::Common::DirEntry> getSharedDirs();
-      QList<Protos::Common::DirEntry> getDestinationDirs();
-      IFile newFile(const Protos::Common::FileEntry& remotEntry);*/
+      // quint64 getAmount();
+
+      virtual QSharedPointer<IFile> newFile(const Protos::Common::FileEntry& remoteEntry);
 
       File* getFile(const QString& path, const QString& name);
       Directory* getDir(const QString& path, const QString& name);

@@ -7,8 +7,8 @@ using namespace FM;
 #include <priv/Cache/DataReader.h>
 #include <priv/Cache/DataWriter.h>
 
-Chunk::Chunk(File& file, const Common::Hash& hash, int num)
-   : file(file), hash(hash), num(num), complete(false)
+Chunk::Chunk(File& file, const Common::Hash& hash, int num, int knownBytes)
+   : file(file), hash(hash), num(num), knownBytes(knownBytes)
 {
    LOG_DEBUG(QString("New chunk[%1] : %2. File : %3").arg(num).arg(hash.toStr()).arg(file.getFullPath()));
 
@@ -27,7 +27,7 @@ QSharedPointer<IDataWriter> Chunk::getDataWriter()
 
 int Chunk::read(QByteArray& buffer, int offset)
 {
-   if (!this->complete)
+   if (this->knownBytes != File::CHUNK_SIZE)
       throw ChunkNotCompletedException();
 
    return this->file.read(buffer, offset + this->num * File::CHUNK_SIZE);
@@ -35,15 +35,29 @@ int Chunk::read(QByteArray& buffer, int offset)
 
 bool Chunk::write(const QByteArray& buffer, int offset)
 {
+   if (this->knownBytes + buffer.size() > File::CHUNK_SIZE)
+      throw 1; // TODO : create exception
    bool eof = this->file.write(buffer, offset + this->num * File::CHUNK_SIZE);
-   if (offset + buffer.size() >= File::CHUNK_SIZE)
-      this->complete = true;
+   this->knownBytes += buffer.size();
    return eof;
+}
+
+void Chunk::sendContentToSocket(QAbstractSocket& socket)
+{
+}
+
+void Chunk::getContentFromSocket(QAbstractSocket& socket)
+{
 }
 
 Common::Hash Chunk::getHash()
 {
    return this->hash;
+}
+
+int Chunk::getKnownBytes()
+{
+   return this->knownBytes;
 }
 
 File& Chunk::getFile()

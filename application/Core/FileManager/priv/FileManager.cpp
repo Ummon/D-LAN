@@ -151,6 +151,16 @@ QBitArray FileManager::haveChunks(const QList<Common::Hash>& hashes)
    return result;
 }
 
+QSharedPointer<IFile> FileManager::newFile(const Protos::Common::FileEntry& remoteEntry)
+{
+   // TODO...
+   Directory* dir;
+   QString name("plop");
+   int size = 42;
+   Common::Hashes hashes;
+   return QSharedPointer<IFile>(new File(dir, name, size, hashes));
+}
+
 void FileManager::entryAdded(Entry* entry)
 {
    LOG_DEBUG("Indexing item : " + entry->getFullPath());

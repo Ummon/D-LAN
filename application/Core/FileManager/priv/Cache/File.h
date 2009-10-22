@@ -8,6 +8,7 @@
 #include <QFile>
 #include <QList>
 
+#include <Common/Hashes.h>
 #include <Protos/common.pb.h>
 #include <IFile.h>
 #include <priv/Cache/Entry.h>
@@ -21,10 +22,15 @@ namespace FM
    class File : public Entry, public IFile
    {
    public:
-      static const int BUFFER_SIZE = 65536; // (64kB) Buffer used when reading a file.
-      static const int CHUNK_SIZE = 33554432; // (32 MB).
+      static const int BUFFER_SIZE = 65536; ///< (64kB) Buffer used when reading a file.
+      static const int CHUNK_SIZE = 33554432; ///< (32 MB).
+      static const QString FILE_TEMP_POSTFIX;
 
-      File(Directory* dir, const QString& name, qint64 size);
+      /**
+        * Create a new file into a given directory.
+        * The file may or may not have a correponding local file.
+        */
+      File(Directory* dir, const QString& name, qint64 size, const Common::Hashes& hashes = Common::Hashes());
       virtual ~File() {};
 
       QString getPath();

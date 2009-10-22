@@ -11,12 +11,23 @@ using namespace FM;
 #include <priv/Cache/SharedDirectory.h>
 #include <priv/Cache/Chunk.h>
 
-File::File(Directory* dir, const QString& name, qint64 size)
+const QString File::FILE_TEMP_POSTFIX(".temp");
+
+File::File(Directory* dir, const QString& name, qint64 size, const Common::Hashes& hashes)
    : Entry(name, size), dir(dir),
    numDataWriter(0), numDataReader(0),
    fileInWriteMode(0), fileInReadMode(0),
    writeLock(0), readLock(0)
 {
+   if (!hashes.isEmpty())
+   {
+      for (int i = 0; i < hashes.size(); i++)
+      {
+         Chunk* chunk = new  Chunk(*this, hashes[i], i, 0);
+         this->chunks.append(chunk);
+      }
+   }
+
    this->dir->addFile(this);
 
    // The root must be a shared directory. If not, someone will be fired !

@@ -2,6 +2,7 @@
 # Project created by QtCreator 2009-10-04T18:54:43
 # -------------------------------------------------
 QT -= gui
+QT += network
 TARGET = FileManager
 TEMPLATE = lib
 DESTDIR = "output/debug"
@@ -62,4 +63,4 @@ HEADERS += FileManager_global.h \
     priv/Cache/Cache.h \
     priv/Exceptions.h \
     Exceptions.h
-OTHER_FILES += 
+OTHER_FILES +=
