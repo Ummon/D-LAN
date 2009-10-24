@@ -4,6 +4,7 @@
 
 #include <priv/Exceptions.h>
 #include <priv/FileUpdater/DirWatcherWin.h>
+#include <priv/FileUpdater/WaitConditionWin.h>
 using namespace FM;
 
 DirWatcherWin::DirWatcherWin()
@@ -49,24 +50,27 @@ int DirWatcherWin::nbWatchedDir()
    return this->dirs.size();
 }
 
-const QList<WatcherEvent> DirWatcherWin::waitEvent()
+const QList<WatcherEvent> DirWatcherWin::waitEvent(WaitCondition* w)
 {
-   return this->waitEvent(INFINITE);
+   return this->waitEvent(INFINITE, w);
 }
 
-const QList<WatcherEvent> DirWatcherWin::waitEvent(int timeout)
+const QList<WatcherEvent> DirWatcherWin::waitEvent(int timeout, WaitCondition* waitCondition)
 {
    int n = this->dirs.size();
-   HANDLE eventsArray[n];
+   int m = n + (waitCondition ? 1 : 0);
+
+   HANDLE eventsArray[m];
    for(int i = 0; i < n; i++)
       eventsArray[i] = this->dirs[i].event;
 
-   DWORD waitStatus = WaitForMultipleObjects(
-      n,
-      eventsArray,
-      FALSE,
-      timeout
-   );
+   if (waitCondition)
+   {
+      HANDLE hdl = waitCondition->getHandle();
+      eventsArray[n] = hdl;
+   }
+
+   DWORD waitStatus = WaitForMultipleObjects(m, eventsArray, FALSE, timeout);
 
    if (waitStatus >= WAIT_OBJECT_0 && waitStatus <= WAIT_OBJECT_0 + (DWORD)n - 1)
    {
@@ -99,6 +103,10 @@ const QList<WatcherEvent> DirWatcherWin::waitEvent(int timeout)
       QList<WatcherEvent> events;
       events.append(WatcherEvent(WatcherEvent::NEW_FILE, "TAISTE"));
       return events;
+   }
+   else if (waitCondition && waitStatus == WAIT_OBJECT_0 + (DWORD)n)
+   {
+      return QList<WatcherEvent>();
    }
    else if (waitStatus == WAIT_TIMEOUT)
    {

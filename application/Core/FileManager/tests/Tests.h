@@ -13,17 +13,20 @@ class Tests : public QObject
 public:
    Tests();
 
-private:
-   void printAmount();
-   QSharedPointer<IFileManager> fileManager;
-
-   void doASearch(bool checkResult);
-
 private slots:
    void initTestCase();
    void addSharedDirectories();
    void search();
    void cleanupTestCase();
+
+
+private:
+   void doASearch(bool checkResult);
+   void printSearch(const QString& terms, const Protos::Common::FindResult& result);
+   void printAmount();
+
+   QStringList sharedDirs;
+   QSharedPointer<IFileManager> fileManager;
 };
 
 #endif

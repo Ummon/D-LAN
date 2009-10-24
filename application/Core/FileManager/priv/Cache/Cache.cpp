@@ -47,7 +47,7 @@ void Cache::setSharedDirs(const QStringList& dirs, SharedDirectory::Rights right
       j.toFront();
       while(j.hasNext())
       {
-         if (j.next()->getPath() == dir)
+         if (j.next()->getFullPath() == dir)
          {
             j.remove();
             goto next;
@@ -62,8 +62,7 @@ void Cache::setSharedDirs(const QStringList& dirs, SharedDirectory::Rights right
    {
       SharedDirectory* dir = j.next();
       LOG_DEBUG("Remove a shared directory : " + dir->getPath());
-      this->fileUpdater->rmRoot(dir);
-      this->sharedDirs.removeOne(dir);
+      this->removeSharedDir(dir);
    }
 
    QStringList dirsNotFound;
@@ -72,7 +71,7 @@ void Cache::setSharedDirs(const QStringList& dirs, SharedDirectory::Rights right
    for (QListIterator<QString> i(newDirs); i.hasNext();)
    {
       QString path = i.next();
-      SharedDirectory* dir = new SharedDirectory(this, path);
+      SharedDirectory* dir = new SharedDirectory(this, path, rights);
       LOG_DEBUG("Add a shared directory : " + dir->getPath());
       try
       {
@@ -121,4 +120,14 @@ void Cache::onEntryRemoved(Entry* entry)
 void Cache::onChunkAdded(Chunk* chunk)
 {
    emit chunkAdded(chunk);
+}
+
+void Cache::removeSharedDir(SharedDirectory* dir)
+{
+   dir->setDeleted();
+
+   this->fileUpdater->rmRoot(dir);
+   this->sharedDirs.removeOne(dir);
+
+   // Mark each chunk as deleted and delete it.
 }

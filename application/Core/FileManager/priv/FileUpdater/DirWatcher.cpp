@@ -9,15 +9,6 @@ using namespace FM;
    #include <priv/FileUpdater/DirWatcherWin.h>
 #endif
 
-DirWatcher::DirWatcher()
-{
-
-}
-
-DirWatcher::~DirWatcher()
-{
-}
-
 DirWatcher* DirWatcher::getNewWatcher()
 {
 #if defined(Q_OS_WIN32)

@@ -3,7 +3,7 @@
 
 #include <QSharedPointer>
 
-#include "FileManager_global.h"
+#include "priv/FileManager_global.h"
 
 namespace FM
 {

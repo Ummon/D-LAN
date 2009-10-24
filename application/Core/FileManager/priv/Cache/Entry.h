@@ -3,10 +3,13 @@
 
 #include <QString>
 
+#include <Common/Deletable.h>
+
 namespace FM
 {
    class Directory;
-   class Entry
+
+   class Entry : public Common::Deletable
    {
    public:
       Entry(const QString& name);

@@ -16,6 +16,7 @@ namespace FM
    class SharedDirectory;
    class Directory;
    class File;
+   class WaitCondition;
 
    class FileUpdater : public QThread
    {
@@ -23,6 +24,7 @@ namespace FM
 
    public:
       FileUpdater(FileManager* fileManager);
+      ~FileUpdater();
 
       /**
         * @exception DirNotFoundException
@@ -55,10 +57,11 @@ namespace FM
       FileManager* fileManager;
       DirWatcher* dirWatcher;
 
-      QWaitCondition dirNotEmpty;
+      WaitCondition* dirNotEmpty; ///< Using to wait when a sharing directory is added.
       QMutex mutex;
 
       QLinkedList<SharedDirectory*> dirsToScan; ///< When a new shared directory is added, it is put in this list until it is scanned.
+      QLinkedList<SharedDirectory*> dirsToRemove;
 
       QLinkedList<File*> fileWithoutHashes;
    };

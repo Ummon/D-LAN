@@ -3,8 +3,8 @@ using namespace FM;
 
 #include <priv/Cache/Cache.h>
 
-SharedDirectory::SharedDirectory(Cache* cache, const QString& path)
-   : Directory(), cache(cache), path(path)
+SharedDirectory::SharedDirectory(Cache* cache, const QString& path, Rights rights)
+   : Directory(), cache(cache), path(path), rights(rights)
 {
    this->id = Common::Hash::rand();
 

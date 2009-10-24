@@ -7,8 +7,6 @@
 
 #include <priv/Download.h>
 
-namespace FileManager { class IFile; } 
-
 namespace DownloadManager
 {
    class ChunkDownload;
@@ -16,10 +14,10 @@ namespace DownloadManager
    {
    public:
       virtual ~FileDownload();
-   
+
    private:
       QList<ChunkDownload*> chunkDownloads;
-      FileManager::IFile* file;
+      //FileManager::IFile* file;
       Protos::Common::FileEntry remoteEntry;
    };
 }
