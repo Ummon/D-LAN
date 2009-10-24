@@ -4,13 +4,27 @@
 QT += testlib
 QT -= gui
 TARGET = Tests
-DESTDIR = "output/debug"
-MOC_DIR = ".tmp/debug"
-OBJECTS_DIR = ".tmp/debug"
-LIBS += -L../output/debug \
-    -lFileManager
-LIBS += -L../../../Common/output/debug \
-    -lCommon
+
+debug {
+   DESTDIR = "output/debug"
+   MOC_DIR = ".tmp/debug"
+   OBJECTS_DIR = ".tmp/debug"
+   LIBS += -L../output/debug \
+       -lFileManager
+   LIBS += -L../../../Common/output/debug \
+       -lCommon
+}
+
+debug {
+   DESTDIR = "output/release"
+   MOC_DIR = ".tmp/release"
+   OBJECTS_DIR = ".tmp/release"
+   LIBS += -L../output/release \
+       -lFileManager
+   LIBS += -L../../../Common/output/release \
+       -lCommon
+}
+
 LIBS += -L${PROTOBUF}/src/.libs \
     -lprotobuf
 INCLUDEPATH += . \

@@ -61,7 +61,9 @@ namespace FM
       QMutex mutex;
 
       QLinkedList<SharedDirectory*> dirsToScan; ///< When a new shared directory is added, it is put in this list until it is scanned.
-      QLinkedList<SharedDirectory*> dirsToRemove;
+      SharedDirectory* currentScanningDir;
+      QWaitCondition scanningStopped;
+      QMutex scanningMutex;
 
       QLinkedList<File*> fileWithoutHashes;
    };

@@ -5,21 +5,38 @@ QT -= gui
 QT += network
 TARGET = FileManager
 TEMPLATE = lib
-DESTDIR = "output/debug"
-MOC_DIR = ".tmp/debug"
-OBJECTS_DIR = ".tmp/debug"
+
+LIBS += -L${PROTOBUF}/src/.libs \
+    -lprotobuf
+
 INCLUDEPATH += . \
     ../.. \
     ${PROTOBUF}/src
-LIBS += -L${PROTOBUF}/src/.libs \
-    -lprotobuf
-LIBS += -L../../Common/LogManager/output/debug \
-    -lLogManager
-LIBS += -L../../Common/output/debug \
-    -lCommon
+
+debug {
+   DEFINES += DEBUG
+   DESTDIR = "output/debug"
+   MOC_DIR = ".tmp/debug"
+   OBJECTS_DIR = ".tmp/debug"
+   LIBS += -L../../Common/LogManager/output/debug \
+       -lLogManager
+   LIBS += -L../../Common/output/debug \
+       -lCommon
+}
+
+release {
+   DEFINES += RELEASE
+   DESTDIR = "output/release"
+   MOC_DIR = ".tmp/release"
+   OBJECTS_DIR = ".tmp/release"
+   LIBS += -L../../Common/LogManager/output/release \
+       -lLogManager
+   LIBS += -L../../Common/output/release \
+       -lCommon
+}
+
+
 DEFINES += FILEMANAGER_LIBRARY
-debug:DEFINES += DEBUG
-release:DEFINES += RELEASE
 SOURCES += priv/Builder.cpp \
     priv/FileManager.cpp \
     priv/FileUpdater/FileUpdater.cpp \
