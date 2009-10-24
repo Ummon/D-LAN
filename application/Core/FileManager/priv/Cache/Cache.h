@@ -49,12 +49,14 @@ namespace FM
       void chunkAdded(Chunk* chunk);
 
    private:
+      void removeSharedDir(SharedDirectory* dir);
+
       QList<SharedDirectory*> sharedDirs;
 
       FileManager* fileManager;
       FileUpdater* fileUpdater;
 
-      QMutex lock; // To protect some data into the cache.
+      //QMutex lock; // To protect some data into the cache.
    };
 }
 #endif

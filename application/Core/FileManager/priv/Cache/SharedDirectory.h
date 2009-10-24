@@ -19,7 +19,7 @@ namespace FM
          READ_WRITE
       };
 
-      SharedDirectory(Cache* cache, const QString& path);
+      SharedDirectory(Cache* cache, const QString& path, Rights rights);
 
       /**
         * Return always "" thus it makes this method the most usefull of the entire known univers.

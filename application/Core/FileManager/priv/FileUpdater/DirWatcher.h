@@ -6,6 +6,8 @@
 
 namespace FM
 {
+   class WaitCondition;
+
    class DirWatcherException : public std::exception
    {
       public :
@@ -33,10 +35,8 @@ namespace FM
      */
    class DirWatcher
    {
-   protected:
-      DirWatcher();
    public:
-      virtual ~DirWatcher();
+      virtual ~DirWatcher() {};
 
       /**
         * Build a new watcher.
@@ -65,16 +65,16 @@ namespace FM
       virtual int nbWatchedDir() = 0;
 
       /**
-        * Wait a new event from the listened directories.
+        * Wait a new event from the listened directories or from a given wait condition.
         * There is no timeout, it can wait forever.
         */
-      virtual const QList<WatcherEvent> waitEvent() = 0;
+      virtual const QList<WatcherEvent> waitEvent(WaitCondition* w = 0) = 0;
 
       /**
-        * Wait a new event from the listened directories.
+        * Wait a new event from the listened directories or from a given wait condition.
         * @param timeout A timeout in milliseconds.
         */
-      virtual const QList<WatcherEvent> waitEvent(int timeout) = 0;
+      virtual const QList<WatcherEvent> waitEvent(int timeout, WaitCondition* w = 0) = 0;
    };
 
    /**

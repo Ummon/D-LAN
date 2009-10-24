@@ -10,7 +10,6 @@
 
 #include <Common/Hashes.h>
 #include <Protos/common.pb.h>
-#include <IFile.h>
 #include <priv/Cache/Entry.h>
 
 namespace FM
@@ -19,7 +18,7 @@ namespace FM
    class Chunk;
    class Directory;
 
-   class File : public Entry, public IFile
+   class File : public Entry
    {
    public:
       static const int BUFFER_SIZE = 65536; ///< (64kB) Buffer used when reading a file.

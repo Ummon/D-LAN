@@ -55,10 +55,17 @@ namespace FM
       Protos::Common::FindResult find(const QString& words);
       QBitArray haveChunks(const QList<Common::Hash>& hashes);
       quint64 getAmount();
+      virtual QList< QSharedPointer<IChunk> > newFile(const Protos::Common::FileEntry& remoteEntry);
 
-      virtual QSharedPointer<IFile> newFile(const Protos::Common::FileEntry& remoteEntry);
 
+      /**
+        * Used to retrieve a file by the fileUpdater when a filesystem event occurs.
+        */
       File* getFile(const QString& path, const QString& name);
+
+      /**
+        * Used to retrieve a directory by the fileUpdater when a filesystem event occurs.
+        */
       Directory* getDir(const QString& path, const QString& name);
 
    public slots:

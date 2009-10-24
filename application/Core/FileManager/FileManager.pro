@@ -36,11 +36,12 @@ SOURCES += priv/Builder.cpp \
     priv/Cache/DataReader.cpp \
     priv/Cache/DataWriter.cpp \
     priv/Cache/Cache.cpp \
-    ../../Protos/files_cache.pb.cc
-HEADERS += FileManager_global.h \
+    ../../Protos/files_cache.pb.cc \
+    priv/FileUpdater/WaitCondition.cpp \
+    priv/FileUpdater/WaitConditionWin.cpp
+HEADERS += priv/FileManager_global.h \
     IGetHashesResult.h \
     IFileManager.h \
-    IFile.h \
     IChunk.h \
     Builder.h \
     priv/FileManager.h \
@@ -64,5 +65,7 @@ HEADERS += FileManager_global.h \
     priv/Cache/Cache.h \
     priv/Exceptions.h \
     Exceptions.h \
-    ../../Protos/files_cache.pb.h
-OTHER_FILES += 
+    ../../Protos/files_cache.pb.h \
+    priv/FileUpdater/WaitCondition.h \
+    priv/FileUpdater/WaitConditionWin.h
+OTHER_FILES +=

@@ -179,27 +179,21 @@ quint64 FileManager::getAmount()
    return this->cache.getAmount();
 }
 
-QSharedPointer<IFile> FileManager::newFile(const Protos::Common::FileEntry& remoteEntry)
+QList< QSharedPointer<IChunk> > FileManager::newFile(const Protos::Common::FileEntry& remoteEntry)
 {
    // TODO...
    Directory* dir;
    QString name("plop");
    int size = 42;
    Common::Hashes hashes;
-   return QSharedPointer<IFile>(new File(dir, name, size, hashes));
+   File* file = new File(dir, name, size, hashes);
+   return QList< QSharedPointer<IChunk> >();
 }
 
 void FileManager::entryAdded(Entry* entry)
 {
    LOG_DEBUG("Indexing item : " + entry->getFullPath());
    this->wordIndex.addItem(FileManager::splitInWords(entry->getName()), entry);
-
-   /* See 'chunkAdded'
-   if (File* file = dynamic_cast<File*>(entry))
-   {
-      for (QListIterator<Chunk*> i(file->getChunksRef()); i.hasNext();)
-         this->chunks.add(i.next());
-   }*/
 }
 
 void FileManager::entryRemoved(Entry* entry)

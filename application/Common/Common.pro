@@ -16,4 +16,5 @@ HEADERS += Common_global.h \
     Hashes.h \
     Hash.h \
     PersistantData.h \
-    Math.h
+    Math.h \
+    Deletable.h

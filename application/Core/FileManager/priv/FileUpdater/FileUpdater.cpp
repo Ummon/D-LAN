@@ -10,15 +10,23 @@ using namespace FM;
 #include <priv/Cache/SharedDirectory.h>
 #include <priv/Cache/Directory.h>
 #include <priv/Cache/File.h>
+#include <priv/FileUpdater/WaitCondition.h>
 
 FileUpdater::FileUpdater(FileManager* fileManager)
    : fileManager(fileManager), dirWatcher(DirWatcher::getNewWatcher())
 {
+   this->dirNotEmpty = WaitCondition::getNewWaitCondition();
+}
+
+FileUpdater::~FileUpdater()
+{
+   if (this->dirNotEmpty)
+      delete this->dirNotEmpty;
 }
 
 void FileUpdater::addRoot(SharedDirectory* dir)
 {
-   QMutexLocker lock(&this->mutex);
+   QMutexLocker(&this->mutex);
 
    if (this->dirWatcher)
       this->dirWatcher->addDir(dir->getFullPath());
@@ -27,13 +35,16 @@ void FileUpdater::addRoot(SharedDirectory* dir)
          throw DirNotFoundException(dir->getFullPath());
 
    this->dirsToScan << dir;
-   this->dirNotEmpty.wakeOne();
+
+   this->dirNotEmpty->release();
 }
 
 void FileUpdater::rmRoot(SharedDirectory* dir)
 {
+   QMutexLocker(&this->mutex);
+
    if (this->dirWatcher)
-      this->dirWatcher->rmDir(dir->getPath());
+      this->dirWatcher->rmDir(dir->getFullPath());
 }
 
 void FileUpdater::run()
@@ -48,26 +59,40 @@ void FileUpdater::run()
       // we wait for an added directory.
       if (!this->dirWatcher || this->dirWatcher->nbWatchedDir() == 0 || !this->dirsToScan.empty())
       {
-         if (this->dirsToScan.empty())
+         if (this->dirsToScan.isEmpty())
          {
             LOG_DEBUG("Waiting for a new shared directory added..");
-            this->dirNotEmpty.wait(&this->mutex);
-         }
+            this->mutex.unlock();
 
-         SharedDirectory* addedDir = this->dirsToScan.takeLast();
+            this->dirNotEmpty->wait();
+         }
+         else
+            this->mutex.unlock();
+
+         SharedDirectory* addedDir = 0;
+         this->mutex.lock();
+         if (!this->dirsToScan.isEmpty())
+            addedDir = this->dirsToScan.takeLast();
          this->mutex.unlock();
 
          // Synchronize the new directory.
-         this->scan(addedDir);
+         if (addedDir)
+            this->scan(addedDir);
       }
       else // Wait for filesystem modifications.
       {
-         this->mutex.unlock();
-
-         if (this->dirsToScan.isEmpty())
-            this->treatEvents(this->dirWatcher->waitEvent());
+         // If we have no dir to scan and no file to hash we wait for a new shared file
+         // or a filesystem event.
+         if (this->dirsToScan.isEmpty() && this->fileWithoutHashes.isEmpty())
+         {
+            this->mutex.unlock();
+            this->treatEvents(this->dirWatcher->waitEvent(this->dirNotEmpty));
+         }
          else
+         {
+            this->mutex.unlock();
             this->treatEvents(this->dirWatcher->waitEvent(0));
+         }
       }
    }
 }

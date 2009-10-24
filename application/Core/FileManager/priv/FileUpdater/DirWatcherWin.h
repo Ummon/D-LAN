@@ -9,7 +9,7 @@
 
 namespace FM
 {
-   static const int notifyBufferSize = 2048;
+   static const int NOTIFY_BUFFER_SIZE = 2048;
 
    /**
      * Implementation of 'DirWatcher' for the windows platform.
@@ -28,8 +28,8 @@ namespace FM
 
       void rmDir(const QString& path);
       int nbWatchedDir();
-      const QList<WatcherEvent> waitEvent();
-      const QList<WatcherEvent> waitEvent(int timeout);
+      const QList<WatcherEvent> waitEvent(WaitCondition* w = 0);
+      const QList<WatcherEvent> waitEvent(int timeout, WaitCondition* w = 0);
 
    private:
       void watch(int num);
@@ -43,7 +43,7 @@ namespace FM
       QList<Dir> dirs; // The watched dirs.
 
       // Is this data can be shares among some 'ReadDirectoryChangesW'?
-      char notifyBuffer[notifyBufferSize];
+      char notifyBuffer[NOTIFY_BUFFER_SIZE];
       DWORD nbBytesNotifyBuffer;
    };
 }
