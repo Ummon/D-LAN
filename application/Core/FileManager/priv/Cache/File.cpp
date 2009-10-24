@@ -14,10 +14,15 @@ using namespace FM;
 const QString File::FILE_TEMP_POSTFIX(".temp");
 
 File::File(Directory* dir, const QString& name, qint64 size, const Common::Hashes& hashes)
-   : Entry(name, size), dir(dir),
-   numDataWriter(0), numDataReader(0),
-   fileInWriteMode(0), fileInReadMode(0),
-   writeLock(0), readLock(0)
+   : Entry(name, size),
+     dir(dir),
+     numDataWriter(0),
+     numDataReader(0),
+     fileInWriteMode(0),
+     fileInReadMode(0),
+     writeLock(0),
+     readLock(0),
+     hashing(false)
 {
    if (!hashes.isEmpty())
    {
@@ -32,6 +37,18 @@ File::File(Directory* dir, const QString& name, qint64 size, const Common::Hashe
 
    // The root must be a shared directory. If not, someone will be fired !
    static_cast<SharedDirectory*>(this->getRoot())->getCache()->onEntryAdded(this);
+}
+
+File::~File()
+{
+   // If there is a hashing stop it.
+   this->hashingMutex.lock();
+   if (this->hashing)
+   {
+      this->hashing = false;
+      this->hashingStopped.wait(&this->hashingMutex);
+   }
+   this->hashingMutex.unlock();
 }
 
 QString File::getPath()
@@ -127,7 +144,17 @@ bool File::write(const QByteArray& buffer, qint64 offset)
 
 void File::computeHashes()
 {
-   LOG_DEBUG("Computing the hash for " + this->getPath());
+   LOG_DEBUG("Computing the hash for " + this->getFullPath());
+
+   if (this->isDeleted())
+   {
+      LOG_DEBUG("Cannot compute hash for a deleted file : " + dir->getFullPath());
+      return;
+   }
+
+   this->hashingMutex.lock();
+   this->hashing = true;
+   this->hashingMutex.unlock();
 
    QList<QByteArray> result;
 
@@ -137,11 +164,25 @@ void File::computeHashes()
    if (!file.open(QIODevice::ReadOnly))
       throw FileNotFoundException(this->getFullPath());
 
+#if DEBUG
+   QTime time;
+   time.start();
+#endif
+
    char buffer[BUFFER_SIZE];
    bool endOfFile = false;
    int chunkNum = 0;
    while (!endOfFile)
    {
+      this->hashingMutex.lock();
+      if (!this->hashing)
+      {
+         this->hashingMutex.unlock();
+         this->hashingStopped.wakeOne();
+         return;
+      }
+      this->hashingMutex.unlock();
+
       qint64 bytesReadTotal = 0;
       while (bytesReadTotal < CHUNK_SIZE)
       {
@@ -159,6 +200,13 @@ void File::computeHashes()
       crypto.reset();
       chunkNum += 1;
    }
+
+   this->hashingMutex.lock();
+   this->hashing = false;
+   this->hashingStopped.wakeOne();
+   this->hashingMutex.unlock();
+
+   LOG_DEBUG(QString("Hashing speed : %1 MB/s").arg(static_cast<double>(this->size) / 1024 / 1024 / (static_cast<double>(time.elapsed()) / 1000)));
 }
 
 QList<IChunk*> File::getChunks()

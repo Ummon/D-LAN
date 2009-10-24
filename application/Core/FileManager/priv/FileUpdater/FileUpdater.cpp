@@ -13,7 +13,7 @@ using namespace FM;
 #include <priv/FileUpdater/WaitCondition.h>
 
 FileUpdater::FileUpdater(FileManager* fileManager)
-   : fileManager(fileManager), dirWatcher(DirWatcher::getNewWatcher())
+   : fileManager(fileManager), dirWatcher(DirWatcher::getNewWatcher()), currentScanningDir(0)
 {
    this->dirNotEmpty = WaitCondition::getNewWaitCondition();
 }
@@ -45,6 +45,16 @@ void FileUpdater::rmRoot(SharedDirectory* dir)
 
    if (this->dirWatcher)
       this->dirWatcher->rmDir(dir->getFullPath());
+
+   // If there is a scanning for this directory stop it.
+   this->scanningMutex.lock();
+   if (this->currentScanningDir == dir)
+   {
+      this->currentScanningDir = 0;
+      this->scanningStopped.wait(&this->scanningMutex);
+   }
+   this->scanningMutex.unlock();
+
 }
 
 void FileUpdater::run()
@@ -108,11 +118,11 @@ void FileUpdater::computeSomeHashes()
    QTime time;
    time.start();
 
-   QMutableLinkedListIterator<File*> file(this->fileWithoutHashes);
-   while (file.hasNext())
+   QMutableLinkedListIterator<File*> i(this->fileWithoutHashes);
+   while (i.hasNext())
    {
-      file.next()->computeHashes();
-      file.remove();
+      i.next()->computeHashes();
+      i.remove();
 
       if (time.elapsed() / 1000 >= MINIMUM_DURATION_WHEN_HASHING)
          break;
@@ -122,11 +132,32 @@ void FileUpdater::computeSomeHashes()
 void FileUpdater::scan(SharedDirectory* dir)
 {
    LOG_DEBUG("Start scanning a shared directory : " + dir->getFullPath());
+
+   if (dir->isDeleted())
+   {
+      LOG_DEBUG("Cannot scan a deleted shared directory : " + dir->getFullPath());
+      return;
+   }
+
+   this->scanningMutex.lock();
+   this->currentScanningDir = dir;
+   this->scanningMutex.unlock();
+
    QLinkedList<Directory*> dirsToVisit;
    dirsToVisit << dir;
 
    while (!dirsToVisit.isEmpty())
    {
+      this->scanningMutex.lock();
+      if (!this->currentScanningDir)
+      {
+         this->scanningStopped.wakeOne();
+         this->scanningMutex.unlock();
+         LOG_DEBUG("Cannot scan a deleted shared directory : " + dir->getFullPath());
+         return;
+      }
+      this->scanningMutex.unlock();
+
       Directory* currentDir = dirsToVisit.takeFirst();
       foreach (QFileInfo entry, QDir(currentDir->getFullPath()).entryInfoList())
       {
@@ -144,6 +175,11 @@ void FileUpdater::scan(SharedDirectory* dir)
       }
    }
    LOG_DEBUG("Scan terminated : " + dir->getFullPath());
+
+   this->scanningMutex.lock();
+   this->currentScanningDir = 0;
+   this->scanningStopped.wakeOne();
+   this->scanningMutex.unlock();
 }
 
 void FileUpdater::treatEvents(const QList<WatcherEvent>& events)

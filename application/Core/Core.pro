@@ -23,6 +23,9 @@ LIBS += -LNetworkListener/output/debug \
 LIBS += -LPeerManager/output/debug \
    -lPeerManager
 
+LIBS += -L${PROTOBUF}/src/.libs \
+    -lprotobuf
+
 DESTDIR = "output/debug"
 MOC_DIR = ".tmp/debug"
 OBJECTS_DIR = ".tmp/debug"

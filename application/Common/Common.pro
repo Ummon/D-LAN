@@ -3,9 +3,22 @@
 # -------------------------------------------------
 QT -= gui
 TARGET = Common
-DESTDIR = "output/debug"
-MOC_DIR = ".tmp/debug"
-OBJECTS_DIR = ".tmp/debug"
+
+debug {
+   DEFINES += DEBUG
+   DESTDIR = "output/debug"
+   MOC_DIR = ".tmp/debug"
+   OBJECTS_DIR = ".tmp/debug"
+}
+
+release {
+   DEFINES += DEBUG
+   DESTDIR = "output/release"
+   MOC_DIR = ".tmp/release"
+   OBJECTS_DIR = ".tmp/release"
+}
+
+
 INCLUDEPATH += .
 TEMPLATE = lib
 DEFINES += COMMON_LIBRARY

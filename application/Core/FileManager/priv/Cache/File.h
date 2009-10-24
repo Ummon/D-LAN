@@ -5,6 +5,7 @@
 
 #include <QString>
 #include <QMutex>
+#include <QWaitCondition>
 #include <QFile>
 #include <QList>
 
@@ -21,7 +22,7 @@ namespace FM
    class File : public Entry
    {
    public:
-      static const int BUFFER_SIZE = 65536; ///< (64kB) Buffer used when reading a file.
+      static const int BUFFER_SIZE = 524288; ///< (512kB) Buffer used when reading a file (hashing).
       static const int CHUNK_SIZE = 33554432; ///< (32 MB).
       static const QString FILE_TEMP_POSTFIX;
 
@@ -30,7 +31,7 @@ namespace FM
         * The file may or may not have a correponding local file.
         */
       File(Directory* dir, const QString& name, qint64 size, const Common::Hashes& hashes = Common::Hashes());
-      virtual ~File() {};
+      virtual ~File();
 
       QString getPath();
       QString getFullPath();
@@ -85,6 +86,11 @@ namespace FM
       QFile* fileInReadMode;
       QMutex* writeLock;
       QMutex* readLock;
+
+      // Mutex and wait condition used during hashing. (A bit heavy)
+      bool hashing;
+      QWaitCondition hashingStopped;
+      QMutex hashingMutex;
    };
 }
 #endif
