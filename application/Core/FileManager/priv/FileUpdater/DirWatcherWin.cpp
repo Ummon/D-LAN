@@ -1,11 +1,12 @@
 #include <QtCore/QDebug>
 
 #if defined(Q_OS_WIN32)
+#include <priv/FileUpdater/DirWatcherWin.h>
+using namespace FM;
 
 #include <priv/Exceptions.h>
-#include <priv/FileUpdater/DirWatcherWin.h>
+#include <priv/Log.h>
 #include <priv/FileUpdater/WaitConditionWin.h>
-using namespace FM;
 
 DirWatcherWin::DirWatcherWin()
 {
@@ -35,7 +36,7 @@ void DirWatcherWin::addDir(const QString& path)
 
    HANDLE eventHandle = CreateEvent(NULL, FALSE, FALSE, NULL);
 
-   this->dirs.append(Dir(fileHandle, eventHandle));
+   this->dirs.append(Dir(fileHandle, eventHandle, path));
 
    this->watch(this->dirs.count() - 1);
 }
@@ -43,6 +44,19 @@ void DirWatcherWin::addDir(const QString& path)
 void DirWatcherWin::rmDir(const QString& path)
 {
    // TODO
+   for (QMutableListIterator<Dir> i(this->dirs); i.hasNext();)
+   {
+      const Dir& dir = i.next();
+      if (dir.fullPath == path)
+      {
+         // TODO : close event + folder
+         if (!CloseHandle(dir.event)) LOG_ERR(QString("CloseHandle(dir.event) return an error : %1").arg(GetLastError()));
+         if (!CloseHandle(dir.file)) LOG_ERR(QString("CloseHandle(dir.file) return an error : %1").arg(GetLastError()));
+
+         i.remove();
+         break;
+      }
+   }
 }
 
 int DirWatcherWin::nbWatchedDir()

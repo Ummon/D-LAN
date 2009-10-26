@@ -36,7 +36,6 @@ void Tests::addSharedDirectories()
    this->sharedDirs.removeLast(); // Remove the nonexistent directory.
 }
 
-
 void Tests::search()
 {
    /**
@@ -62,6 +61,12 @@ void Tests::search()
    QString terms("xxxx");
    Protos::Common::FindResult result = this->fileManager->find(terms);
    this->printSearch(terms, result);
+}
+
+void Tests::rmSharedDirectories()
+{
+   this->sharedDirs.removeLast();
+   this->fileManager->setSharedDirsReadOnly(this->sharedDirs);
 }
 
 void Tests::cleanupTestCase()

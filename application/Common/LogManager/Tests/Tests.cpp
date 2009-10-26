@@ -2,7 +2,7 @@
 
 #include <Builder.h>
 #include <IEntry.h>
-using namespace LogManager;
+using namespace LM;
 
 Tests::Tests()
 {
@@ -10,13 +10,12 @@ Tests::Tests()
 
 void Tests::initTestCase()
 {
-   this->logManager = Builder::createLogManager();
 }
 
 void Tests::createLoggers()
 {
-   this->logger1 = this->logManager->newLogger("Logger1");
-   this->logger2 = this->logManager->newLogger("Logger2");
+   this->logger1 = Builder::newLogger("Logger1");
+   this->logger2 = Builder::newLogger("Logger2");
 }
 
 void Tests::logSomeMessages()

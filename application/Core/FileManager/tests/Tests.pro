@@ -13,9 +13,7 @@ debug {
        -lFileManager
    LIBS += -L../../../Common/output/debug \
        -lCommon
-}
-
-debug {
+} else {
    DESTDIR = "output/release"
    MOC_DIR = ".tmp/release"
    OBJECTS_DIR = ".tmp/release"

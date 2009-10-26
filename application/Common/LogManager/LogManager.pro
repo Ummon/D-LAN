@@ -11,14 +11,13 @@ debug {
    DESTDIR = "output/debug"
    MOC_DIR = ".tmp/debug"
    OBJECTS_DIR = ".tmp/debug"
-}
-
-release {
+} else {
    DEFINES += RELEASE
    DESTDIR = "output/release"
    MOC_DIR = ".tmp/relase"
    OBJECTS_DIR = ".tmp/release"
 }
+
 
 DEFINES += LOGMANAGER_LIBRARY
 CONFIG += shared

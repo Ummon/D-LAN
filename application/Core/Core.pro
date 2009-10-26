@@ -7,29 +7,21 @@ TARGET = Core
 INCLUDEPATH += . \
     .. \
     ${PROTOBUF}/src
-
 LIBS += -L../Common/LogManager/output/debug \
-   -lLogManager
-
+    -lLogManager
 LIBS += -L../Common/output/debug \
-   -lCommon
-
+    -lCommon
 LIBS += -LFileManager/output/debug \
-   -lFileManager
-
+    -lFileManager
 LIBS += -LNetworkListener/output/debug \
-   -lNetworkListener
-
+    -lNetworkListener
 LIBS += -LPeerManager/output/debug \
-   -lPeerManager
-
+    -lPeerManager
 LIBS += -L${PROTOBUF}/src/.libs \
     -lprotobuf
-
 DESTDIR = "output/debug"
 MOC_DIR = ".tmp/debug"
 OBJECTS_DIR = ".tmp/debug"
-
 CONFIG += console
 CONFIG -= app_bundle
 TEMPLATE = app

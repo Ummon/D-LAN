@@ -36,9 +36,10 @@ namespace FM
 
       struct Dir
       {
-         Dir(HANDLE file, HANDLE event) : file(file), event(event) {}
+         Dir(HANDLE file, HANDLE event, QString fullPath) : file(file), event(event), fullPath(fullPath) {}
          HANDLE file;
          HANDLE event;
+         QString fullPath;
       };
       QList<Dir> dirs; // The watched dirs.
 

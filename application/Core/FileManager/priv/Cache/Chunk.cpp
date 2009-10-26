@@ -3,7 +3,9 @@ using namespace FM;
 
 #include <IDataReader.h>
 #include <IDataWriter.h>
-#include <priv/FileManager.h>
+#include <priv/Log.h>
+#include <priv/Cache/Cache.h>
+#include <priv/Cache/SharedDirectory.h>
 #include <priv/Cache/DataReader.h>
 #include <priv/Cache/DataWriter.h>
 

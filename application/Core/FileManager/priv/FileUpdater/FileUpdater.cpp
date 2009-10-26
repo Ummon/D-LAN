@@ -5,7 +5,7 @@ using namespace FM;
 #include <QDir>
 #include <QTime>
 
-#include <priv/FileManager.h>
+#include <priv/log.h>
 #include <priv/Exceptions.h>
 #include <priv/Cache/SharedDirectory.h>
 #include <priv/Cache/Directory.h>
@@ -13,15 +13,15 @@ using namespace FM;
 #include <priv/FileUpdater/WaitCondition.h>
 
 FileUpdater::FileUpdater(FileManager* fileManager)
-   : fileManager(fileManager), dirWatcher(DirWatcher::getNewWatcher()), currentScanningDir(0)
+   : fileManager(fileManager), dirWatcher(DirWatcher::getNewWatcher())/*, currentScanningDir(0)*/
 {
-   this->dirNotEmpty = WaitCondition::getNewWaitCondition();
+   this->dirEvent = WaitCondition::getNewWaitCondition();
 }
 
 FileUpdater::~FileUpdater()
 {
-   if (this->dirNotEmpty)
-      delete this->dirNotEmpty;
+   if (this->dirEvent)
+      delete this->dirEvent;
 }
 
 void FileUpdater::addRoot(SharedDirectory* dir)
@@ -36,25 +36,26 @@ void FileUpdater::addRoot(SharedDirectory* dir)
 
    this->dirsToScan << dir;
 
-   this->dirNotEmpty->release();
+   this->dirEvent->release();
 }
 
 void FileUpdater::rmRoot(SharedDirectory* dir)
 {
    QMutexLocker(&this->mutex);
 
-   if (this->dirWatcher)
-      this->dirWatcher->rmDir(dir->getFullPath());
-
    // If there is a scanning for this directory stop it.
-   this->scanningMutex.lock();
+   // (Not used for the moment, maybe reactive later if useful)
+   /*this->scanningMutex.lock();
    if (this->currentScanningDir == dir)
    {
       this->currentScanningDir = 0;
       this->scanningStopped.wait(&this->scanningMutex);
    }
-   this->scanningMutex.unlock();
+   this->scanningMutex.unlock();*/
 
+   this->dirsToRemove << dir;
+
+   this->dirEvent->release();
 }
 
 void FileUpdater::run()
@@ -65,6 +66,13 @@ void FileUpdater::run()
 
       this->mutex.lock();
 
+      if (!this->dirsToRemove.isEmpty())
+      {
+         // Stop watching this directory.
+         if (this->dirWatcher)
+            this->dirWatcher->rmDir(this->dirsToRemove.takeLast()->getFullPath());
+      }
+
       // If there is no watcher capability or no directory to watch then
       // we wait for an added directory.
       if (!this->dirWatcher || this->dirWatcher->nbWatchedDir() == 0 || !this->dirsToScan.empty())
@@ -74,7 +82,7 @@ void FileUpdater::run()
             LOG_DEBUG("Waiting for a new shared directory added..");
             this->mutex.unlock();
 
-            this->dirNotEmpty->wait();
+            this->dirEvent->wait();
          }
          else
             this->mutex.unlock();
@@ -96,7 +104,7 @@ void FileUpdater::run()
          if (this->dirsToScan.isEmpty() && this->fileWithoutHashes.isEmpty())
          {
             this->mutex.unlock();
-            this->treatEvents(this->dirWatcher->waitEvent(this->dirNotEmpty));
+            this->treatEvents(this->dirWatcher->waitEvent(this->dirEvent));
          }
          else
          {
@@ -139,16 +147,16 @@ void FileUpdater::scan(SharedDirectory* dir)
       return;
    }
 
-   this->scanningMutex.lock();
+   /*this->scanningMutex.lock();
    this->currentScanningDir = dir;
-   this->scanningMutex.unlock();
+   this->scanningMutex.unlock();*/
 
    QLinkedList<Directory*> dirsToVisit;
    dirsToVisit << dir;
 
    while (!dirsToVisit.isEmpty())
    {
-      this->scanningMutex.lock();
+      /*this->scanningMutex.lock();
       if (!this->currentScanningDir)
       {
          this->scanningStopped.wakeOne();
@@ -156,7 +164,7 @@ void FileUpdater::scan(SharedDirectory* dir)
          LOG_DEBUG("Cannot scan a deleted shared directory : " + dir->getFullPath());
          return;
       }
-      this->scanningMutex.unlock();
+      this->scanningMutex.unlock();*/
 
       Directory* currentDir = dirsToVisit.takeFirst();
       foreach (QFileInfo entry, QDir(currentDir->getFullPath()).entryInfoList())
@@ -176,10 +184,10 @@ void FileUpdater::scan(SharedDirectory* dir)
    }
    LOG_DEBUG("Scan terminated : " + dir->getFullPath());
 
-   this->scanningMutex.lock();
+   /*this->scanningMutex.lock();
    this->currentScanningDir = 0;
    this->scanningStopped.wakeOne();
-   this->scanningMutex.unlock();
+   this->scanningMutex.unlock();*/
 }
 
 void FileUpdater::treatEvents(const QList<WatcherEvent>& events)
