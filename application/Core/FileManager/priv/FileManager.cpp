@@ -11,20 +11,18 @@ using namespace FM;
 #include <Protos/files_cache.pb.h>
 
 #include <Common/PersistantData.h>
-#include <Common/LogManager/Builder.h>
-#include <Common/LogManager/ILogger.h>
 #include <Common/Math.h>
+#include <priv/Log.h>
 #include <priv/Cache/Entry.h>
 #include <priv/Cache/SharedDirectory.h>
 #include <priv/Cache/Chunk.h>
 
 const QString FileManager::FILE_CACHE("file_cache.bin");
-QSharedPointer<LM::ILogger> FileManager::logger(LM::Builder::newLogger("FileManager"));
 
 FileManager::FileManager()
    : fileUpdater(this), cache(this, &this->fileUpdater)
 {
-   FileManager::logger->log("Loading ..", LM::EndUser);
+   LOG_USER("Loading ..");
 
    connect(&this->cache, SIGNAL(entryAdded(Entry*)), this, SLOT(entryAdded(Entry*)), Qt::DirectConnection);
    connect(&this->cache, SIGNAL(chunkAdded(Chunk*)), this, SLOT(chunkAdded(Chunk*)), Qt::DirectConnection);
@@ -35,8 +33,10 @@ FileManager::FileManager()
       QByteArray savedCacheBin(Common::PersistantData::getValue(FILE_CACHE));
       Protos::FileCache::Hashes savedCache;
       savedCache.ParseFromString(savedCacheBin.constData());
+      // Set the shared directories.
       this->cache.retrieveFromFile(savedCache);
-      // TODO
+
+      // Scan the shared directories and try to match the files against the saved cache.
       // this->fileUpdater.retrieveFromFile(savedCache);
    }
    catch (Common::UnknownValueException& e)
@@ -49,7 +49,7 @@ FileManager::FileManager()
    }
 
    this->fileUpdater.start();
-   FileManager::logger->log("Loaded!", LM::EndUser);
+   LOG_USER("Loaded!");
 }
 
 QStringList FileManager::getSharedDirsReadOnly()

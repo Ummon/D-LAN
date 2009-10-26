@@ -9,23 +9,12 @@
 #include <Protos/common.pb.h>
 #include <Protos/core_protocol.pb.h>
 
-#include <Common/LogManager/ILogger.h>
 #include <IFileManager.h>
 #include <priv/Cache/SharedDirectory.h>
 #include <priv/FileUpdater/FileUpdater.h>
 #include <priv/Cache/Cache.h>
 #include <priv/ChunkIndex/Chunks.h>
 #include <priv/WordIndex/WordIndex.h>
-
-#define LOG_USER(mess)  FileManager::logger->log((mess), LM::EndUser)
-#ifdef DEBUG
-#  define LOG_DEBUG(mess) FileManager::logger->log((mess), LM::Debug)
-#else
-#  define LOG_DEBUG(mess)
-#endif
-#  define LOG_WARN(mess)  FileManager::logger->log((mess), LM::Warning)
-#  define LOG_ERR(mess)   FileManager::logger->log((mess), LM::Error)
-#  define LOG_FATAL(mess) FileManager::logger->log((mess), LM::FatalError)
 
 namespace FM
 {
@@ -41,7 +30,6 @@ namespace FM
    public :
       static const int  MAX_WORD_LENGTH = 3;
       static const QString FILE_CACHE;
-      static QSharedPointer<LM::ILogger> logger;
 
       FileManager();
 

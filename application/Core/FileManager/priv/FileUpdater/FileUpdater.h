@@ -57,13 +57,15 @@ namespace FM
       FileManager* fileManager;
       DirWatcher* dirWatcher;
 
-      WaitCondition* dirNotEmpty; ///< Using to wait when a sharing directory is added.
+      WaitCondition* dirEvent; ///< Using to wait when a sharing directory is added or deleted.
       QMutex mutex;
 
       QLinkedList<SharedDirectory*> dirsToScan; ///< When a new shared directory is added, it is put in this list until it is scanned.
-      SharedDirectory* currentScanningDir;
+      /*SharedDirectory* currentScanningDir;
       QWaitCondition scanningStopped;
-      QMutex scanningMutex;
+      QMutex scanningMutex;*/
+
+      QLinkedList<SharedDirectory*> dirsToRemove;
 
       QLinkedList<File*> fileWithoutHashes;
    };

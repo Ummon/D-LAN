@@ -5,8 +5,9 @@ using namespace FM;
 #include <QFile>
 #include <QCryptographicHash>
 
-#include <priv/FileManager.h>
+#include <priv/Log.h>
 #include <priv/Exceptions.h>
+#include <priv/Cache/Cache.h>
 #include <priv/Cache/Directory.h>
 #include <priv/Cache/SharedDirectory.h>
 #include <priv/Cache/Chunk.h>

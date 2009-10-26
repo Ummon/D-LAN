@@ -22,9 +22,7 @@ debug {
        -lLogManager
    LIBS += -L../../Common/output/debug \
        -lCommon
-}
-
-release {
+} else {
    DEFINES += RELEASE
    DESTDIR = "output/release"
    MOC_DIR = ".tmp/release"
@@ -61,6 +59,7 @@ HEADERS += priv/FileManager_global.h \
     IFileManager.h \
     IChunk.h \
     Builder.h \
+    priv/Log.h \
     priv/FileManager.h \
     priv/FileUpdater/FileUpdater.h \
     priv/FileUpdater/DirWatcherWin.h \

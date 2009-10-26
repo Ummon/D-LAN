@@ -4,6 +4,7 @@ using namespace FM;
 #include <QDir>
 
 #include <Exceptions.h>
+#include <priv/Log.h>
 #include <priv/FileManager.h>
 #include <priv/Exceptions.h>
 #include <priv/Cache/SharedDirectory.h>
@@ -40,7 +41,7 @@ void Cache::setSharedDirs(const QStringList& dirs, SharedDirectory::Rights right
    QStringList newDirs;
    QMutableListIterator<SharedDirectory*> j(sharedDirs);
 
-   // O(n^2).
+   // /!\ O(n^2).
    for(QListIterator<QString> i(dirs); i.hasNext();)
    {
       QString dir =  QDir::cleanPath(i.next());
@@ -61,7 +62,7 @@ void Cache::setSharedDirs(const QStringList& dirs, SharedDirectory::Rights right
    for (j.toFront(); j.hasNext();)
    {
       SharedDirectory* dir = j.next();
-      LOG_DEBUG("Remove a shared directory : " + dir->getPath());
+      LOG_DEBUG("Remove a shared directory : " + dir->getFullPath());
       this->removeSharedDir(dir);
    }
 
@@ -72,7 +73,7 @@ void Cache::setSharedDirs(const QStringList& dirs, SharedDirectory::Rights right
    {
       QString path = i.next();
       SharedDirectory* dir = new SharedDirectory(this, path, rights);
-      LOG_DEBUG("Add a shared directory : " + dir->getPath());
+      LOG_DEBUG("Add a shared directory : " + dir->getFullPath());
       try
       {
          this->fileUpdater->addRoot(dir);
@@ -95,7 +96,7 @@ void Cache::retrieveFromFile(const Protos::FileCache::Hashes& hashes)
    // Add the shared directory.
    for (int i = 0; i < hashes.dirs_size(); i++)
    {
-      hashes.dirs(0);
+      hashes.dirs(i);
    }
 }
 
@@ -125,9 +126,10 @@ void Cache::onChunkAdded(Chunk* chunk)
 void Cache::removeSharedDir(SharedDirectory* dir)
 {
    dir->setDeleted();
-
-   this->fileUpdater->rmRoot(dir);
    this->sharedDirs.removeOne(dir);
 
-   // Mark each chunk as deleted and delete it.
+   // Mark each chunk as deleted and delete it?
+   //... TODO
+
+   this->fileUpdater->rmRoot(dir);
 }

@@ -17,8 +17,8 @@ private slots:
    void initTestCase();
    void addSharedDirectories();
    void search();
+   void rmSharedDirectories();
    void cleanupTestCase();
-
 
 private:
    void doASearch(bool checkResult);
