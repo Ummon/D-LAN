@@ -1,4 +1,4 @@
-format 67
+format 69
 
 classinstance 128003 class_ref 136835 // ChunkDownload
   name ""   xyz 61 7 2000 life_line_z 2000
@@ -7,9 +7,9 @@ classinstance 128643 class_ref 130307 // IChunk
 classinstance 128771 class_ref 131331 // IPeer
   name ""   xyz 239 4 2000 life_line_z 2000
 durationcanvas 128899 classinstance_ref 128003 // :ChunkDownload
-  xyzwh 103 84 2010 11 105
+  xyzwh 96 84 2010 11 105
   overlappingdurationcanvas 129283
-    xyzwh 109 107 2020 11 25
+    xyzwh 102 107 2020 11 25
   end
 end
 durationcanvas 129027 classinstance_ref 128771 // :IPeer
@@ -27,9 +27,9 @@ msg 129155 synchronous
 msg 129411 asynchronous
   from durationcanvas_ref 129027
   to durationcanvas_ref 129283
-  yz 107 2025 explicitmsg "<<signal>> received()"
+  yz 117 2025 explicitmsg "<<signal>> received()"
   show_full_operations_definition default drawing_language default
-  label_xy 136 92
+  label_xy 136 102
 msg 129667 synchronous
   from durationcanvas_ref 128899
   to durationcanvas_ref 129539
