@@ -9,9 +9,7 @@ debug {
    DESTDIR = "output/debug"
    MOC_DIR = ".tmp/debug"
    OBJECTS_DIR = ".tmp/debug"
-}
-
-release {
+} else {
    DEFINES += DEBUG
    DESTDIR = "output/release"
    MOC_DIR = ".tmp/release"

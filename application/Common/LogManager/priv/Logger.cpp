@@ -19,7 +19,7 @@ Logger::Logger(QTextStream* stream, const QString& name)
 void Logger::log(const QString& message, Severity severity)
 {
    QMutexLocker lock(&Logger::mutex);
-   int threadId = (int)QThread::currentThreadId();
+   quint32 threadId = (quint32)QThread::currentThreadId();
    (*this->out) << "[" << Entry::SeverityToStr(severity) << "] (" << threadId << ") " << name << ": " << message << endl;
 }
 
