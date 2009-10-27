@@ -44,7 +44,7 @@ void FileUpdater::rmRoot(SharedDirectory* dir)
    QMutexLocker(&this->mutex);
 
    // If there is a scanning for this directory stop it.
-   // (Not used for the moment, maybe reactive later if useful)
+   // (Not used for the moment, maybe reactive later if needed)
    /*this->scanningMutex.lock();
    if (this->currentScanningDir == dir)
    {
