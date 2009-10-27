@@ -3,7 +3,7 @@ using namespace FM;
 
 #include <QtCore/QtDebug>
 
-#include <priv/FileManager.h>
+#include <priv/Log.h>
 
 #if defined(Q_OS_WIN32)
    #include <priv/FileUpdater/DirWatcherWin.h>

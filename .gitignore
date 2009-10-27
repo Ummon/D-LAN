@@ -10,3 +10,5 @@ moc_*.cpp
 *.exe
 *.dll
 Makefile
+output/
+.tmp/

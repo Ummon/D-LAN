@@ -5,35 +5,31 @@ QT -= gui
 QT += network
 TARGET = FileManager
 TEMPLATE = lib
-
 LIBS += -L${PROTOBUF}/src/.libs \
     -lprotobuf
-
 INCLUDEPATH += . \
     ../.. \
     ${PROTOBUF}/src
-
-debug {
-   DEFINES += DEBUG
-   DESTDIR = "output/debug"
-   MOC_DIR = ".tmp/debug"
-   OBJECTS_DIR = ".tmp/debug"
-   LIBS += -L../../Common/LogManager/output/debug \
-       -lLogManager
-   LIBS += -L../../Common/output/debug \
-       -lCommon
-} else {
-   DEFINES += RELEASE
-   DESTDIR = "output/release"
-   MOC_DIR = ".tmp/release"
-   OBJECTS_DIR = ".tmp/release"
-   LIBS += -L../../Common/LogManager/output/release \
-       -lLogManager
-   LIBS += -L../../Common/output/release \
-       -lCommon
+debug { 
+    DEFINES += DEBUG
+    DESTDIR = "output/debug"
+    MOC_DIR = ".tmp/debug"
+    OBJECTS_DIR = ".tmp/debug"
+    LIBS += -L../../Common/LogManager/output/debug \
+        -lLogManager
+    LIBS += -L../../Common/output/debug \
+        -lCommon
 }
-
-
+else { 
+    DEFINES += RELEASE
+    DESTDIR = "output/release"
+    MOC_DIR = ".tmp/release"
+    OBJECTS_DIR = ".tmp/release"
+    LIBS += -L../../Common/LogManager/output/release \
+        -lLogManager
+    LIBS += -L../../Common/output/release \
+        -lCommon
+}
 DEFINES += FILEMANAGER_LIBRARY
 SOURCES += priv/Builder.cpp \
     priv/FileManager.cpp \
@@ -53,7 +49,8 @@ SOURCES += priv/Builder.cpp \
     priv/Cache/Cache.cpp \
     ../../Protos/files_cache.pb.cc \
     priv/FileUpdater/WaitCondition.cpp \
-    priv/FileUpdater/WaitConditionWin.cpp
+    priv/FileUpdater/WaitConditionWin.cpp \
+    priv/FileUpdater/WaitConditionLinux.cpp
 HEADERS += priv/FileManager_global.h \
     IGetHashesResult.h \
     IFileManager.h \
@@ -83,5 +80,6 @@ HEADERS += priv/FileManager_global.h \
     Exceptions.h \
     ../../Protos/files_cache.pb.h \
     priv/FileUpdater/WaitCondition.h \
-    priv/FileUpdater/WaitConditionWin.h
-OTHER_FILES +=
+    priv/FileUpdater/WaitConditionWin.h \
+    priv/FileUpdater/WaitConditionLinux.h
+OTHER_FILES += 

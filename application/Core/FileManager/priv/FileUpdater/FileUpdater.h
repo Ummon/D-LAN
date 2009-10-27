@@ -59,7 +59,7 @@ namespace FM
 
       WaitCondition* dirEvent; ///< Using to wait when a sharing directory is added or deleted.
       QMutex mutex;
-
+      
       QLinkedList<SharedDirectory*> dirsToScan; ///< When a new shared directory is added, it is put in this list until it is scanned.
       /*SharedDirectory* currentScanningDir;
       QWaitCondition scanningStopped;

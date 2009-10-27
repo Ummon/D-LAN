@@ -1,3 +1,6 @@
+#include <QtCore/QDebug>
+
+#if defined(Q_OS_WIN32)
 #include <priv/FileUpdater/WaitConditionWin.h>
 using namespace FM;
 
@@ -25,3 +28,5 @@ void* WaitConditionWin::getHandle()
 {
    return this->handle;
 }
+
+#endif

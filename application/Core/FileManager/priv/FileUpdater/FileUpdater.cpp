@@ -5,7 +5,7 @@ using namespace FM;
 #include <QDir>
 #include <QTime>
 
-#include <priv/log.h>
+#include <priv/Log.h>
 #include <priv/Exceptions.h>
 #include <priv/Cache/SharedDirectory.h>
 #include <priv/Cache/Directory.h>
