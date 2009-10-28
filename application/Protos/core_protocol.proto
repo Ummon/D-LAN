@@ -31,7 +31,7 @@ message HaveChunks {
 message HaveChunksResult {
    required uint64 tag = 1; // The repeated number.
    required Common.Hash peerID = 2;
-   repeated bool chunkStates = 3; // The array size must have the same size of HaveChunks.chunks.
+   repeated bool chunkStates = 3 [packed=true]; // The array size must have the same size of HaveChunks.chunks.
 }
 
 // a -> all
