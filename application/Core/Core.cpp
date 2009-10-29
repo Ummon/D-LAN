@@ -2,8 +2,11 @@
 using namespace Core;
 
 #include <Common/LogManager/Builder.h>
+#include <Common/LogManager/ILogger.h>
 #include <FileManager/Builder.h>
+#include <FileManager/IFileManager.h>
 #include <NetworkListener/Builder.h>
+#include <NetworkListener/INetworkListener.h>
 #include <NetworkListener/IChat.h>
 #include <NetworkListener/ISearch.h>
 #include <PeerManager/Builder.h>
@@ -17,13 +20,13 @@ using namespace Core;
    this->logger->log("Loading ..", LM::EndUser);
 
    this->fileManager = FM::Builder::newFileManager();
-   this->peerManager = PeerManager::Builder::newPeerManager();
+   this->peerManager = PM::Builder::newPeerManager();
    this->peerManager->setNick("Test");
-   this->networkListener = NetworkListener::Builder::newNetworkListener(this->peerManager);
+   this->networkListener = NL::Builder::newNetworkListener(this->peerManager);
 
    this->logger->log("Ready to serve", LM::EndUser);
 
-      NetworkListener::ISearch* s = this->networkListener->search();
+   NL::ISearch* s = this->networkListener->search();
    s->search("coucou");
    s->search("coucou2");
 }

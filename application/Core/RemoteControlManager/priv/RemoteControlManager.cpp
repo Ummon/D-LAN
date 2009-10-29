@@ -1,3 +1,3 @@
 #include <priv/RemoteControlManager.h>
 
-using namespace RemoteControlManager;
+using namespace RCM;

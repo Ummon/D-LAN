@@ -4,6 +4,7 @@
 QT += network
 QT -= gui
 TARGET = RemoteControlManager
+CONFIG += link_prl
 INCLUDEPATH += . \
     ../..
 TEMPLATE = lib
@@ -13,7 +14,6 @@ OBJECTS_DIR = ".tmp/debug"
 DEFINES += REMOTECONTROLMANAGER_LIBRARY
 SOURCES += priv/RemoteControlManager.cpp \
     priv/RemoteConnection.cpp
-HEADERS += RemoteControlManager_global.h \
-    IRemoteControlManager.h \
+HEADERS += IRemoteControlManager.h \
     priv/RemoteControlManager.h \
     priv/RemoteConnection.h

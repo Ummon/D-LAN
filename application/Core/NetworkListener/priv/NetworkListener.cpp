@@ -1,6 +1,5 @@
 #include <priv/NetworkListener.h>
-
-using namespace NetworkListener;
+using namespace NL;
 
 #include <Common/LogManager/Builder.h>
 #include <priv/Chat.h>
@@ -11,7 +10,7 @@ using namespace NetworkListener;
  *
  * @author mcuony
  */
-::NetworkListener::NetworkListener(QSharedPointer<PeerManager::IPeerManager> newPeerManager) : logger(LM::Builder::newLogger("NetworkListener"))
+NetworkListener::NetworkListener(QSharedPointer<PM::IPeerManager> newPeerManager) : logger(LM::Builder::newLogger("NetworkListener"))
 {
 
    this->logger->log("Loading ..", LM::EndUser);
@@ -41,7 +40,7 @@ using namespace NetworkListener;
  *
  * @author mcuony
  */
-IChat* ::NetworkListener::getChat()
+IChat* NetworkListener::getChat()
 {
    return this->chat;
 }
@@ -51,7 +50,7 @@ IChat* ::NetworkListener::getChat()
  *
  * @author mcuony
  */
-void ::NetworkListener::presence()
+void NetworkListener::presence()
 {
    this->logger->log("Sending <IAmAlive>", LM::Debug);
 
@@ -77,7 +76,7 @@ void ::NetworkListener::presence()
  *
  * @author mcuony
  */
-ISearch* ::NetworkListener::search()
+ISearch* NetworkListener::search()
 {
    return new Search(this->udpListener, this->peerManager);
 }
@@ -89,7 +88,7 @@ ISearch* ::NetworkListener::search()
  *
  * @author mcuony
  */
-void ::NetworkListener::newFindRequset(const Protos::Core::Find& request, const QHostAddress& peerAdress)
+void NetworkListener::newFindRequset(const Protos::Core::Find& request, const QHostAddress& peerAdress)
 {
    Protos::Common::FindResult fr;
 

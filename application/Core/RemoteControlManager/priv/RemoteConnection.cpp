@@ -1,3 +1,2 @@
 #include <priv/RemoteConnection.h>
-
-using namespace RemoteControlManager;
+using namespace RCM;

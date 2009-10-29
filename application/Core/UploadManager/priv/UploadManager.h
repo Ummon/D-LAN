@@ -3,7 +3,7 @@
 
 #include <IUploadManager.h>
 
-namespace UploadManager
+namespace UM
 {
    class Uploader;
    class Upload;

@@ -4,13 +4,11 @@
 #include <QTextStream>
 #include <QSharedPointer>
 
-#include "PeerManager_global.h"
-
-namespace PeerManager
+namespace PM
 {
    class IPeerManager;
 
-   class PEERMANAGERSHARED_EXPORT Builder
+   class Builder
    {
       public:
          static QSharedPointer<IPeerManager> newPeerManager();

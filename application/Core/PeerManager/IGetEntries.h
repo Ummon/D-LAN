@@ -5,7 +5,7 @@
 
 #include <Protos/core_protocol.pb.h>
 
-namespace PeerManager
+namespace PM
 {
    class IGetEntries : QObject
    {

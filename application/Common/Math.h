@@ -1,11 +1,9 @@
 #ifndef COMMON_MATH_H
 #define COMMON_MATH_H
 
-#include "Common_global.h"
-
 namespace Common
 {
-   class COMMON_EXPORT Math
+   class Math
    {
    public:
       /**

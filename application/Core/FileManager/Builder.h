@@ -3,13 +3,11 @@
 
 #include <QSharedPointer>
 
-#include "priv/FileManager_global.h"
-
 namespace FM
 {
    class IFileManager;
 
-   class FILEMANAGER_EXPORT Builder
+   class Builder
    {
    public:
       static QSharedPointer<IFileManager> newFileManager();

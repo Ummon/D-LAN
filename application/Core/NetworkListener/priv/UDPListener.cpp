@@ -1,6 +1,5 @@
 #include <priv/UDPListener.h>
-
-using namespace NetworkListener;
+using namespace NL;
 
 #include <Common/LogManager/Builder.h>
 
@@ -21,7 +20,7 @@ QHostAddress UDPListener::multicastIP("236.123.43.24");
  *
  * @author mcuony
  */
-::UDPListener::UDPListener(QSharedPointer<PeerManager::IPeerManager> newPeerManager) : QObject() , logger(LM::Builder::newLogger("NetworkListener::UDPListener"))
+UDPListener::UDPListener(QSharedPointer<PM::IPeerManager> newPeerManager) : QObject() , logger(LM::Builder::newLogger("NetworkListener::UDPListener"))
 {
 
    this->logger->log("Loading ..", LM::EndUser);
@@ -79,7 +78,7 @@ QHostAddress UDPListener::multicastIP("236.123.43.24");
  *
  * @author mcuony
  */
-void ::UDPListener::processPendingMulticastDatagrams()
+void UDPListener::processPendingMulticastDatagrams()
 {
 
    QTextStream out(stdout);
@@ -157,7 +156,7 @@ void ::UDPListener::processPendingMulticastDatagrams()
  *
  * @author mcuony
  */
-void ::UDPListener::processPendingUnicastDatagrams()
+void UDPListener::processPendingUnicastDatagrams()
 {
 
    QTextStream out(stdout);
@@ -205,7 +204,7 @@ void ::UDPListener::processPendingUnicastDatagrams()
   * @param mess : The message to send
   * @author mcuony
   */
-bool ::UDPListener::sendMessage(const QByteArray& datagram)
+bool UDPListener::sendMessage(const QByteArray& datagram)
 {
    //this->logger->log("Sending " + mess, LM::Debug);
 
@@ -233,7 +232,7 @@ bool ::UDPListener::sendMessage(const QByteArray& datagram)
   * @param mess : The message to send
   * @author mcuony
   */
-bool ::UDPListener::sendMessageTo(const QByteArray& datagram, const QHostAddress& ipTo)
+bool UDPListener::sendMessageTo(const QByteArray& datagram, const QHostAddress& ipTo)
 {
    //this->logger->log("Sending " + mess, LM::Debug);
 

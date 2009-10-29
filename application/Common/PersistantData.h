@@ -7,8 +7,6 @@ using namespace std;
 #include <QString>
 #include <QByteArray>
 
-#include "Common_global.h"
-
 namespace Common
 {
    class UnknownValueException : public exception {};
@@ -18,7 +16,7 @@ namespace Common
      * The data are persisted in the user directory.
      * Theses functions can be used for the application settings.
      */
-   class COMMON_EXPORT PersistantData
+   class PersistantData
    {
    public:
 

@@ -5,11 +5,13 @@ QT += testlib
 QT -= gui
 TARGET = Tests
 
+CONFIG += link_prl
+
 DESTDIR = "output/debug"
 MOC_DIR = ".tmp/debug"
 OBJECTS_DIR = ".tmp/debug"
 
-LIBS += -L../output/debug \
+LIBS += -L"../output/debug" \
    -lCommon
 
 INCLUDEPATH += . \

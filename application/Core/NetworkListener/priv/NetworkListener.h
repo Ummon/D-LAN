@@ -16,7 +16,7 @@
 #include <priv/UDPListener.h>
 #include <priv/TCPListener.h>
 
-namespace NetworkListener
+namespace NL
 {
    class ChunkUpdater;
    class TCPListener;
@@ -27,9 +27,9 @@ namespace NetworkListener
 
    class NetworkListener : public INetworkListener
    {
-
+      Q_OBJECT
    public:
-      NetworkListener(QSharedPointer<PeerManager::IPeerManager> newPeerManager);
+      NetworkListener(QSharedPointer<PM::IPeerManager> newPeerManager);
       IChat* getChat();
       ISearch* search();
 
@@ -40,7 +40,7 @@ namespace NetworkListener
 
       Chat* chat;
       QTimer *timer;
-      QSharedPointer<PeerManager::IPeerManager> peerManager;
+      QSharedPointer<PM::IPeerManager> peerManager;
       QSharedPointer<LM::ILogger> logger;
 
       const static double IMAliveFrequency = 0.1; ///< The message IMAlive is sent each 10s.

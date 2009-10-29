@@ -5,12 +5,13 @@ QT -= gui
 QT += network
 TARGET = FileManager
 TEMPLATE = lib
+CONFIG += staticlib link_prl create_prl
 LIBS += -L${PROTOBUF}/src/.libs \
     -lprotobuf
 INCLUDEPATH += . \
     ../.. \
     ${PROTOBUF}/src
-debug { 
+debug {
     DEFINES += DEBUG
     DESTDIR = "output/debug"
     MOC_DIR = ".tmp/debug"
@@ -20,7 +21,7 @@ debug {
     LIBS += -L../../Common/output/debug \
         -lCommon
 }
-else { 
+else {
     DEFINES += RELEASE
     DESTDIR = "output/release"
     MOC_DIR = ".tmp/release"
@@ -51,8 +52,7 @@ SOURCES += priv/Builder.cpp \
     priv/FileUpdater/WaitCondition.cpp \
     priv/FileUpdater/WaitConditionWin.cpp \
     priv/FileUpdater/WaitConditionLinux.cpp
-HEADERS += priv/FileManager_global.h \
-    IGetHashesResult.h \
+HEADERS += IGetHashesResult.h \
     IFileManager.h \
     IChunk.h \
     Builder.h \
@@ -82,4 +82,4 @@ HEADERS += priv/FileManager_global.h \
     priv/FileUpdater/WaitCondition.h \
     priv/FileUpdater/WaitConditionWin.h \
     priv/FileUpdater/WaitConditionLinux.h
-OTHER_FILES += 
+OTHER_FILES +=

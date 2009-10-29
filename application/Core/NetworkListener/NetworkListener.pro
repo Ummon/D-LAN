@@ -4,30 +4,24 @@
 QT += network
 QT -= gui
 TARGET = NetworkListener
-
+CONFIG += staticlib create_prl link_prl
 win32 {
     INCLUDEPATH += "."
     INCLUDEPATH += "$$(QTDIR)\..\mingw\include"
     LIBS += "$$(QTDIR)\..\mingw\lib\libwsock32.a"
 }
-
 INCLUDEPATH += . \
     ../.. \
     .. \
     ${PROTOBUF}/src
-
 LIBS += -L${PROTOBUF}/src/.libs \
     -lprotobuf
-
 LIBS += -L../../Common/LogManager/output/debug \
-   -lLogManager
-
+    -lLogManager
 LIBS += -L../PeerManager/output/debug \
-   -lPeerManager
-
+    -lPeerManager
 LIBS += -L../../Common/output/debug \
-   -lCommon
-
+    -lCommon
 TEMPLATE = lib
 DESTDIR = "output/debug"
 MOC_DIR = ".tmp/debug"
@@ -42,8 +36,7 @@ SOURCES += priv/UDPListener.cpp \
     priv/Builder.cpp \
     ../../Protos/common.pb.cc \
     ../../Protos/core_protocol.pb.cc
-HEADERS += NetworkListener_global.h \
-    ISearch.h \
+HEADERS += ISearch.h \
     INetworkListener.h \
     IChat.h \
     priv/UDPListener.h \

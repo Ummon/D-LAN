@@ -4,13 +4,11 @@
 #include <QTextStream>
 #include <QSharedPointer>
 
-#include "LogManager_global.h"
-
 namespace LM
 {
    class ILogger;
 
-   class LOGMANAGER_EXPORT Builder
+   class Builder
    {
    public:
       /**

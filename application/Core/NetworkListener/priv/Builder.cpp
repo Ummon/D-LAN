@@ -1,5 +1,5 @@
 #include <Builder.h>
-using namespace NetworkListener;
+using namespace NL;
 
 #include <INetworkListener.h>
 
@@ -10,7 +10,7 @@ using namespace NetworkListener;
  *
  * @author mcuony
  */
-QSharedPointer<INetworkListener> Builder::newNetworkListener(QSharedPointer<PeerManager::IPeerManager> peerManager)
+QSharedPointer<INetworkListener> Builder::newNetworkListener(QSharedPointer<PM::IPeerManager> peerManager)
 {
    return QSharedPointer<INetworkListener>(new NetworkListener(peerManager));
 }

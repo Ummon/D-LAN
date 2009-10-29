@@ -8,7 +8,7 @@
 
 #include <Common/Hashes.h>
 
-namespace PeerManager
+namespace PM
 {
    class IGetEntries;
    class IPeer : public QObject

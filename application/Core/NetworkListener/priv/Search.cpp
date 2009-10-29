@@ -1,6 +1,5 @@
 #include <priv/Search.h>
-
-using namespace NetworkListener;
+using namespace NL;
 
 #include <Common/LogManager/Builder.h>
 #include <priv/UDPListener.h>
@@ -11,7 +10,7 @@ using namespace NetworkListener;
  * @author mcuony
  */
 
-::NetworkListener::Search::Search(UDPListener* newUdpListener, QSharedPointer<PeerManager::IPeerManager> newPeerManager)
+Search::Search(UDPListener* newUdpListener, QSharedPointer<PM::IPeerManager> newPeerManager)
 {
    this->udpListener = newUdpListener;
    this->peerManager = newPeerManager;
@@ -28,7 +27,7 @@ using namespace NetworkListener;
  *
  * @author mcuony
  */
-bool ::NetworkListener::Search::search(const QString& words)
+bool Search::search(const QString& words)
 {
    if (this->searchLaunched)
    {
@@ -68,7 +67,7 @@ bool ::NetworkListener::Search::search(const QString& words)
  *
  * @author mcuony
  */
-void ::NetworkListener::Search::newFindResult(const Protos::Common::FindResult& result) {
+void Search::newFindResult(const Protos::Common::FindResult& result) {
 
    //this->logger->log("Search result" + QString::number(result.tag()), LogManager::Debug);
 

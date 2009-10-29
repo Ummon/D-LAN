@@ -14,7 +14,7 @@
 #include <Common/LogManager/ILogger.h>
 
 
-namespace PeerManager
+namespace PM
 {
    class Peer : public IPeer
    {

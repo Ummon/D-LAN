@@ -6,7 +6,7 @@
 
 #include <Protos/core_protocol.pb.h>
 
-namespace NetworkListener
+namespace NL
 {
    class IChat : public QObject
    {

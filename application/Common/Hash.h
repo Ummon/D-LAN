@@ -3,11 +3,9 @@
 
 #include <QByteArray>
 
-#include "Common_global.h"
-
 namespace Common
 {
-   class COMMON_EXPORT Hash : public QByteArray
+   class Hash : public QByteArray
    {
    public:
       Hash();

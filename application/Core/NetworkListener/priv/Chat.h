@@ -7,21 +7,22 @@
 #include <Protos/core_protocol.pb.h>
 #include <Core/PeerManager/IPeerManager.h>
 
-namespace NetworkListener
+namespace NL
 {
    class UDPListener;
 
    class Chat : public IChat
    {
+      Q_OBJECT
    public:
-      Chat(UDPListener* newUudpListener, QSharedPointer<PeerManager::IPeerManager> newPeerManager);
+      Chat(UDPListener* newUudpListener, QSharedPointer<PM::IPeerManager> newPeerManager);
       virtual ~Chat() {}
       bool send(const QString& message);
 
    private:
       UDPListener* udpListener;
       QSharedPointer<LM::ILogger> logger;
-      QSharedPointer<PeerManager::IPeerManager> peerManager;
+      QSharedPointer<PM::IPeerManager> peerManager;
 
    public slots:
       void newChatMessage(const Protos::Core::ChatMessage& message);

@@ -3,15 +3,15 @@
 
 #include <QtGlobal>
 
-namespace DownloadManager { class IDownloadManager; }
+namespace DM { class IDownloadManager; }
 
-namespace NetworkListener
+namespace NL
 {
    class UDPListener;
    class ChunkUpdater
    {
    private:
-      DownloadManager::IDownloadManager* downloadManager;
+      DM::IDownloadManager* downloadManager;
       quint32 currentTag; ///< The tag of the last sent 'HaveChunks' message.
       UDPListener* udpListener;
    };

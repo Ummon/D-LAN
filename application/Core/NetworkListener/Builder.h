@@ -4,17 +4,16 @@
 #include <QTextStream>
 #include <QSharedPointer>
 
-#include "NetworkListener_global.h"
 #include <PeerManager/IPeerManager.h>
 
-namespace NetworkListener
+namespace NL
 {
    class INetworkListener;
 
-   class NETWORKLISTENERSHARED_EXPORT Builder
+   class Builder
    {
    public:
-      static QSharedPointer<INetworkListener> newNetworkListener(QSharedPointer<PeerManager::IPeerManager>);
+      static QSharedPointer<INetworkListener> newNetworkListener(QSharedPointer<PM::IPeerManager>);
    };
 }
 #endif
