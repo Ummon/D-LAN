@@ -1,10 +1,9 @@
 #include <priv/TCPListener.h>
+using namespace NL;
 
 #include <Common/LogManager/Builder.h>
 
-using namespace NetworkListener;
-
-::TCPListener::TCPListener(QSharedPointer<PeerManager::IPeerManager> newPeerManager) : logger(LM::Builder::newLogger("NetworkListener::TCPListener"))
+TCPListener::TCPListener(QSharedPointer<PM::IPeerManager> newPeerManager) : logger(LM::Builder::newLogger("NetworkListener::TCPListener"))
 {
    listen(QHostAddress::Any,55142);
 
@@ -17,7 +16,7 @@ using namespace NetworkListener;
 }
 
 
-void ::TCPListener::newConnexion()
+void TCPListener::newConnexion()
 {
 
    QTcpSocket* socket = nextPendingConnection();

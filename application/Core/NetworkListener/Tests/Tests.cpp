@@ -4,7 +4,7 @@
 
 #include <QTest>
 
-using namespace NetworkListener;
+using namespace NL;
 
 
 #include <Common/LogManager/Builder.h>
@@ -25,13 +25,13 @@ Tests::Tests()
  */
 void Tests::initTestCase()
 {
-   this->fileManager = FileManager::Builder::newFileManager();
+   this->fileManager = FM::Builder::newFileManager();
 
-   this->peerManager = PeerManager::Builder::newPeerManager();
+   this->peerManager = PM::Builder::newPeerManager();
 
    this->peerManager->setNick("TestCase");
 
-   this->networkListener = NetworkListener::Builder::newNetworkListener(this->peerManager);
+   this->networkListener = NL::Builder::newNetworkListener(this->peerManager);
 
 
 
@@ -44,7 +44,7 @@ void Tests::initTestCase()
  */
 void Tests::testSending()
 {
-   NetworkListener::IChat* chat = this->networkListener->getChat();
+   NL::IChat* chat = this->networkListener->getChat();
 
    //For the next test
    connect(chat, SIGNAL(newMessage(const Protos::Core::ChatMessage&)), this, SLOT(messageRecevied(const Protos::Core::ChatMessage&)));

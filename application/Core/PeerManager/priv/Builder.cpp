@@ -1,6 +1,5 @@
-#include "Builder.h"
-
-using namespace PeerManager;
+#include <Builder.h>
+using namespace PM;
 
 #include <IPeerManager.h>
 

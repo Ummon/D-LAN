@@ -4,6 +4,7 @@
 QT += testlib
 QT -= gui
 TARGET = Tests
+CONFIG += link_prl
 
 DESTDIR = "output/debug"
 MOC_DIR = ".tmp/debug"

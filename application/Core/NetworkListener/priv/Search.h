@@ -7,28 +7,27 @@
 #include <Protos/core_protocol.pb.h>
 #include <Core/PeerManager/IPeerManager.h>
 
-namespace NetworkListener { class UDPListener; }
-
-namespace NetworkListener
+namespace NL
 {
    class UDPListener;
 
    class Search : public ISearch
    {
+      Q_OBJECT
    public:
-      Search(UDPListener* newUdpListener, QSharedPointer<PeerManager::IPeerManager> newPeerManager);
+      Search(UDPListener* newUdpListener, QSharedPointer<PM::IPeerManager> newPeerManager);
       bool search(const QString& words);
 
    signals:
       void found(const Protos::Common::FindResult& result);
 
    private:
-      ::google::protobuf::uint64 tag;
+      quint64 tag;
       UDPListener* udpListener;
       bool searchLaunched;
       QDateTime dateOfLaunch;
       QSharedPointer<LM::ILogger> logger;
-      QSharedPointer<PeerManager::IPeerManager> peerManager;
+      QSharedPointer<PM::IPeerManager> peerManager;
 
    public slots:
       void newFindResult(const Protos::Common::FindResult& result);

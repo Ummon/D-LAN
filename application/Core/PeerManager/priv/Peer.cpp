@@ -1,10 +1,9 @@
 #include <priv/Peer.h>
+using namespace PM;
+
 #include <Common/LogManager/Builder.h>
-using namespace PeerManager;
 
 const int Peer::port = 55142;
-
-
 
 /**
  * Constructor: Create a new peer, based on his ID

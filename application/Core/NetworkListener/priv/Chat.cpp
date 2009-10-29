@@ -1,6 +1,5 @@
 #include <priv/Chat.h>
-
-using namespace NetworkListener;
+using namespace NL;
 
 #include <Common/LogManager/Builder.h>
 #include <priv/UDPListener.h>
@@ -11,7 +10,7 @@ using namespace NetworkListener;
   * @param udpListener : An udpListener object
   * @author mcuony
   */
-::Chat::Chat(UDPListener* NewUdpListener, QSharedPointer<PeerManager::IPeerManager> NewPeerManager) : logger(LM::Builder::newLogger("NetworkListener::Chat"))
+::Chat::Chat(UDPListener* NewUdpListener, QSharedPointer<PM::IPeerManager> NewPeerManager) : logger(LM::Builder::newLogger("NetworkListener::Chat"))
 {
 
    this->logger->log("Loading ..", LM::EndUser);

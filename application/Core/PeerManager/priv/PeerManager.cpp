@@ -1,5 +1,5 @@
 #include <priv/PeerManager.h>
-
+using namespace PM;
 
 #include <Common/LogManager/Builder.h>
 #include <Protos/common.pb.h>
@@ -12,19 +12,17 @@
  */
 
 
-Common::Hash PeerManager::PeerManager::getMyId()
+Common::Hash PeerManager::getMyId()
 {
     return this->ID;
 }
-
-using namespace PeerManager;
 
 /**
  * Constructor of PeerManager, generate a random peer id for ourself
  *
  * @author mcuony
  */
-::PeerManager::PeerManager() : logger(LM::Builder::newLogger("PeerManager"))
+PeerManager::PeerManager() : logger(LM::Builder::newLogger("PeerManager"))
 {
 
     this->logger->log("Loading ..", LM::EndUser);
@@ -47,7 +45,7 @@ using namespace PeerManager;
  *
  * @author mcuony
  */
-void ::PeerManager::setNick(const QString & newNick)
+void PeerManager::setNick(const QString & newNick)
 {
     this->nick = newNick;
 }
@@ -57,7 +55,7 @@ void ::PeerManager::setNick(const QString & newNick)
  *
  * @author mcuony
  */
-QString* ::PeerManager::getNick()
+QString* PeerManager::getNick()
 {
     return &this->nick;
 }
@@ -67,7 +65,7 @@ QString* ::PeerManager::getNick()
  *
  * @author mcuony
  */
-void ::PeerManager::updatePeer(const Common::Hash& peerID, const QHostAddress&  peerIP, const QString& peerNick, const quint64& peerAmount)
+void PeerManager::updatePeer(const Common::Hash& peerID, const QHostAddress&  peerIP, const QString& peerNick, const quint64& peerAmount)
 {
     // We probably know that WE are alive.
     if (peerID == this->ID)
@@ -87,7 +85,7 @@ void ::PeerManager::updatePeer(const Common::Hash& peerID, const QHostAddress&  
  *
  * @author mcuony
  */
-Peer* ::PeerManager::fromIdToPeer(const Common::Hash& peerID)
+Peer* PeerManager::fromIdToPeer(const Common::Hash& peerID)
 {
 
     for (int i = 0; i < this->peers.length(); i++)
@@ -112,7 +110,7 @@ Peer* ::PeerManager::fromIdToPeer(const Common::Hash& peerID)
  *
  * @author mcuony
  */
-void ::PeerManager::cleanUp()
+void PeerManager::cleanUp()
 {
 
     this->logger->log("Cleaning up peers", LM::Debug);
@@ -127,7 +125,7 @@ void ::PeerManager::cleanUp()
 
 }
 
-void ::PeerManager::newSocket(const QHostAddress&  peerIP, QSharedPointer<QTcpSocket> socket)
+void PeerManager::newSocket(const QHostAddress&  peerIP, QSharedPointer<QTcpSocket> socket)
 {
 
    for (int i = 0; i < peers.length(); i++)

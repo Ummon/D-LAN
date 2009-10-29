@@ -9,17 +9,17 @@
 #include <Common/LogManager/ILogger.h>
 #include <Core/PeerManager/IPeerManager.h>
 
-namespace NetworkListener
+namespace NL
 {
    class TCPListener : public QTcpServer
    {
    Q_OBJECT
 
    public:
-      TCPListener(QSharedPointer<PeerManager::IPeerManager> newPeerManager);
+      TCPListener(QSharedPointer<PM::IPeerManager> newPeerManager);
    private:
       QSharedPointer<LM::ILogger> logger;
-      QSharedPointer<PeerManager::IPeerManager> peerManager;
+      QSharedPointer<PM::IPeerManager> peerManager;
 
    public slots:
       void newConnexion();

@@ -13,15 +13,14 @@
 
 #include <Core/PeerManager/IPeerManager.h>
 
-namespace NetworkListener
+namespace NL
 {
    class UDPListener : public QObject
    {
-
    Q_OBJECT
 
    public:
-      UDPListener(QSharedPointer<PeerManager::IPeerManager> newPeerManager);
+      UDPListener(QSharedPointer<PM::IPeerManager> newPeerManager);
       bool sendMessage(const QByteArray& datagram);
       bool sendMessageTo(const QByteArray& datagram, const QHostAddress& ipTo);
 
@@ -33,7 +32,7 @@ namespace NetworkListener
 
    private:
       QSharedPointer<LM::ILogger> logger;
-      QSharedPointer<PeerManager::IPeerManager> peerManager;
+      QSharedPointer<PM::IPeerManager> peerManager;
       static const char TTL; ///< Time to live, see the UDP multicast documentation.
       static const int multicastPort;
       static const int unicastPort;

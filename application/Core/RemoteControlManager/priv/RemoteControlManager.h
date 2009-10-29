@@ -3,13 +3,13 @@
 
 #include <IRemoteControlManager.h>
 
-namespace UploadManager { class IUploadManager; }
-namespace DownloadManager { class IDownloadManager; }
-namespace PeerManager { class IPeerManager; }
-namespace FileManager { class IFileManager; }
-namespace NetworkListener { class INetworkListener; }
+namespace UM { class IUploadManager; }
+namespace DM { class IDownloadManager; }
+namespace PM { class IPeerManager; }
+namespace FM { class IFileManager; }
+namespace NL { class INetworkListener; }
 
-namespace RemoteControlManager
+namespace RCM
 {
    class RemoteConnection;
 
@@ -17,11 +17,11 @@ namespace RemoteControlManager
    {
    private:
       RemoteConnection* remoteConnection;
-      UploadManager::IUploadManager* uploadManager;
-      DownloadManager::IDownloadManager* downloadManager;
-      PeerManager::IPeerManager* peerManager;
-      FileManager::IFileManager* fileManager;
-      NetworkListener::INetworkListener* networkListener;
+      UM::IUploadManager* uploadManager;
+      DM::IDownloadManager* downloadManager;
+      PM::IPeerManager* peerManager;
+      FM::IFileManager* fileManager;
+      NL::INetworkListener* networkListener;
    };
 }
 #endif

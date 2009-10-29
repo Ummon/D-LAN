@@ -4,27 +4,21 @@
 QT += testlib
 QT -= gui
 TARGET = Tests
+CONFIG += link_prl
 
-debug {
-   DESTDIR = "output/debug"
-   MOC_DIR = ".tmp/debug"
-   OBJECTS_DIR = ".tmp/debug"
-   LIBS += -L../output/debug \
-       -lFileManager
-   LIBS += -L../../../Common/output/debug \
-       -lCommon
-} else {
-   DESTDIR = "output/release"
-   MOC_DIR = ".tmp/release"
-   OBJECTS_DIR = ".tmp/release"
-   LIBS += -L../output/release \
-       -lFileManager
-   LIBS += -L../../../Common/output/release \
-       -lCommon
-}
-
+DESTDIR = "output/debug"
+MOC_DIR = ".tmp/debug"
+OBJECTS_DIR = ".tmp/debug"
+LIBS += -L../output/debug \
+    -lFileManager
+LIBS += -L../../../Common/output/debug \
+    -lCommon
+# FIXME : Should not be here, all dependies are read from the prl file (see link_prl):
+LIBS += -L../../../Common/LogManager/output/debug \
+    -lLogManager
 LIBS += -L${PROTOBUF}/src/.libs \
     -lprotobuf
+
 INCLUDEPATH += . \
     .. \
     ../../.. \ # For the 'Common' component.

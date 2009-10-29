@@ -9,7 +9,7 @@
 #include <Common/Hash.h>
 #include <Protos/common.pb.h>
 
-namespace PeerManager
+namespace PM
 {
    class IPeer;
    class IPeerManager : public QObject

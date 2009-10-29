@@ -3,7 +3,7 @@
 #include <QTextCodec>
 #include <QTextStream>
 
-#include "Core.h"
+#include <Core.h>
 
 int main(int argc, char *argv[])
 {

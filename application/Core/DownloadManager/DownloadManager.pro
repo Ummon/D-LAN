@@ -5,7 +5,7 @@ QT += network
 QT -= gui
 TARGET = DownloadManager
 TEMPLATE = lib
-CONFIG += shared
+CONFIG += staticlib create_prl link_prl
 
 DESTDIR = "output/debug"
 MOC_DIR = ".tmp/debug"

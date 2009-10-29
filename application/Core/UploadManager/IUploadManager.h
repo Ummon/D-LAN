@@ -3,7 +3,7 @@
 
 #include <QList>
 
-namespace UploadManager
+namespace UM
 {
    class IUpload;
    class IUploadManager

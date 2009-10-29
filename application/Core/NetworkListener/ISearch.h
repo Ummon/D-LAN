@@ -6,7 +6,7 @@
 
 #include <Protos/common.pb.h>
 
-namespace NetworkListener
+namespace NL
 {
    class ISearch : public QObject
    {

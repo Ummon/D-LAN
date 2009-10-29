@@ -1,28 +1,17 @@
 #ifndef CORE_CORE_H
 #define CORE_CORE_H
 
-/*
-#include <RemoteControlManager/IRemoteControlManager.h>
-#include <DownloadManager/IDownloadManager.h>
-#include <UploadManager/IUploadManager.h>*/
-
 #include <QSharedPointer>
-
-#include <Common/LogManager/ILogger.h>
-#include <FileManager/IFileManager.h>
-#include <NetworkListener/INetworkListener.h>
-#include <NetworkListener/IChat.h>
-#include <NetworkListener/ISearch.h>
-#include <PeerManager/IPeerManager.h>
-
 #include <QObject>
 
-namespace LogManager { class ILogger; }
-namespace RemoteControlManager { class IRemoteControlManager; }
-namespace PeerManager { class IPeerManager; }
-namespace NetworkListener { class INetworkListener; }
-namespace DownloadManager { class IDownloadManager; }
-namespace UploadManager { class IUploadManager; }
+namespace LM { class ILogger; }
+namespace FM { class IFileManager; }
+namespace RCM { class IRemoteControlManager; }
+namespace PM { class IPeerManager; }
+namespace NL { class INetworkListener; }
+namespace DL { class IDownloadManager; }
+namespace UM { class IUploadManager; }
+namespace DM { class IDownloadManager; }
 
 namespace Core
 {
@@ -37,12 +26,12 @@ namespace Core
    private:
       QSharedPointer<LM::ILogger> logger;
       QSharedPointer<FM::IFileManager> fileManager;
-      QSharedPointer<NetworkListener::INetworkListener> networkListener;
-      QSharedPointer<PeerManager::IPeerManager> peerManager;
+      QSharedPointer<NL::INetworkListener> networkListener;
+      QSharedPointer<PM::IPeerManager> peerManager;
 
-      RemoteControlManager::IRemoteControlManager* remoteControlManager;
-      DownloadManager::IDownloadManager* downloadManager;
-      UploadManager::IUploadManager* uploadManager;
+      RCM::IRemoteControlManager* remoteControlManager;
+      DM::IDownloadManager* downloadManager;
+      UM::IUploadManager* uploadManager;
    };
 }
 #endif

@@ -5,20 +5,19 @@ QT -= gui
 TARGET = LogManager
 INCLUDEPATH += .
 TEMPLATE = lib
-
+CONFIG += staticlib create_prl
 debug {
-   DEFINES += DEBUG
-   DESTDIR = "output/debug"
-   MOC_DIR = ".tmp/debug"
-   OBJECTS_DIR = ".tmp/debug"
-} else {
-   DEFINES += RELEASE
-   DESTDIR = "output/release"
-   MOC_DIR = ".tmp/relase"
-   OBJECTS_DIR = ".tmp/release"
+    DEFINES += DEBUG
+    DESTDIR = "output/debug"
+    MOC_DIR = ".tmp/debug"
+    OBJECTS_DIR = ".tmp/debug"
 }
-
-
+else {
+    DEFINES += RELEASE
+    DESTDIR = "output/release"
+    MOC_DIR = ".tmp/relase"
+    OBJECTS_DIR = ".tmp/release"
+}
 DEFINES += LOGMANAGER_LIBRARY
 CONFIG += shared
 SOURCES += priv/Logger.cpp \
@@ -30,5 +29,4 @@ HEADERS += ILogger.h \
     Exceptions.h \
     Builder.h \
     priv/Logger.h \
-    priv/Entry.h \
-    LogManager_global.h
+    priv/Entry.h

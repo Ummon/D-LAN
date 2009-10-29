@@ -3,16 +3,16 @@
 
 #include <IUpload.h>
 
-namespace PeerManager { class IPeer; }
-namespace FileManager { class IChunk; }
+namespace PM { class IPeer; }
+namespace FM { class IChunk; }
 
-namespace UploadManager
+namespace UM
 {
    class Upload : public IUpload
    {
    private:
-      PeerManager::IPeer* peer;
-      FileManager::IChunk* chunk;
+      PM::IPeer* peer;
+      FM::IChunk* chunk;
    };
 }
 #endif

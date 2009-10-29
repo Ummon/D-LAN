@@ -1,3 +1,2 @@
 #include <priv/ChunkUpdater.h>
-
-using namespace NetworkListener;
+using namespace NL;

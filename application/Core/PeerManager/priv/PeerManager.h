@@ -16,7 +16,7 @@
 //Clean up each 10s.
 #define CleanUpFrequency 0.1
 
-namespace PeerManager
+namespace PM
 {
    class Peer;
 

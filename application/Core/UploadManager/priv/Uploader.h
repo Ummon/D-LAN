@@ -3,7 +3,7 @@
 
 #include <QThread>
 
-namespace UploadManager
+namespace UM
 {
    class Upload;
 
