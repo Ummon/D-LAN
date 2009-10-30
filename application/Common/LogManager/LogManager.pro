@@ -6,6 +6,7 @@ TARGET = LogManager
 INCLUDEPATH += .
 TEMPLATE = lib
 CONFIG += staticlib create_prl
+
 debug {
     DEFINES += DEBUG
     DESTDIR = "output/debug"
@@ -19,7 +20,7 @@ else {
     OBJECTS_DIR = ".tmp/release"
 }
 DEFINES += LOGMANAGER_LIBRARY
-CONFIG += shared
+
 SOURCES += priv/Logger.cpp \
     priv/Entry.cpp \
     priv/Builder.cpp
