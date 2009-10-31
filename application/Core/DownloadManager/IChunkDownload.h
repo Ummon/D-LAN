@@ -5,7 +5,7 @@
 
 #include <Common/Hash.h>
 
-namespace DownloadManager
+namespace DM
 {
    /**
      * A chunk which one or more known peer have.

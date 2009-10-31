@@ -5,7 +5,7 @@
 
 #include <IDownloadManager.h>
 
-namespace DownloadManager
+namespace DM
 {
    class Download;
    class ChunkDownloader;

@@ -13,7 +13,7 @@ using namespace FM;
 #include <priv/FileUpdater/WaitCondition.h>
 
 FileUpdater::FileUpdater(FileManager* fileManager)
-   : fileManager(fileManager), dirWatcher(DirWatcher::getNewWatcher())/*, currentScanningDir(0)*/
+   : fileManager(fileManager), dirWatcher(DirWatcher::getNewWatcher()), fileCache(0)/*, currentScanningDir(0)*/
 {
    this->dirEvent = WaitCondition::getNewWaitCondition();
 }
@@ -58,8 +58,21 @@ void FileUpdater::rmRoot(SharedDirectory* dir)
    this->dirEvent->release();
 }
 
+void FileUpdater::retrieveFromFile(const Protos::FileCache::Hashes* fileCache, const QList<SharedDirectory*>& sharedDirectories)
+{
+   this->fileCache = fileCache;
+   dirsToScan << sharedDirectories;
+}
+
 void FileUpdater::run()
 {
+   // First retrieve the directories and file from the file cache.
+   if (this->fileCache)
+   {
+
+      delete this->fileCache;
+   }
+
    forever
    {
       this->computeSomeHashes();
@@ -126,7 +139,7 @@ void FileUpdater::computeSomeHashes()
    QTime time;
    time.start();
 
-   QMutableLinkedListIterator<File*> i(this->fileWithoutHashes);
+   QMutableListIterator<File*> i(this->fileWithoutHashes);
    while (i.hasNext())
    {
       i.next()->computeHashes();

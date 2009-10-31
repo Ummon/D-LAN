@@ -7,7 +7,7 @@
 
 #include <priv/Download.h>
 
-namespace DownloadManager
+namespace DM
 {
    class ChunkDownload;
    class FileDownload : public Download

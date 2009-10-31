@@ -3,7 +3,7 @@
 
 #include <QtGlobal>
 
-namespace DownloadManager
+namespace DM
 {
    enum Status
    {

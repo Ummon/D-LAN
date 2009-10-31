@@ -5,8 +5,8 @@
 
 #include <priv/Download.h>
 
-namespace DownloadManager
-{   
+namespace DM
+{
    class DirDownload : public Download
    {
    public:

@@ -6,7 +6,7 @@
 namespace FileManager { class IChunk; }
 namespace PeerManager { class IPeer; }
 
-namespace DownloadManager
+namespace DM
 {
    /**
      * /!\ The 'ChunkDownload' objects are in a download thread, see 'ChunkDownloader'.

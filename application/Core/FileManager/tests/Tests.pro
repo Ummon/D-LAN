@@ -4,7 +4,8 @@
 QT += testlib
 QT -= gui
 TARGET = Tests
-CONFIG += link_prl
+CONFIG += link_prl console
+CONFIG -= app_bundle
 
 DESTDIR = "output/debug"
 MOC_DIR = ".tmp/debug"
@@ -23,8 +24,7 @@ INCLUDEPATH += . \
     .. \
     ../../.. \ # For the 'Common' component.
     ${PROTOBUF}/src
-CONFIG += console
-CONFIG -= app_bundle
+
 TEMPLATE = app
 SOURCES += main.cpp \
     Tests.cpp \
