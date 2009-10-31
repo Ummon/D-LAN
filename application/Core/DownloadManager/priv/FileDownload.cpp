@@ -1,3 +1,2 @@
 #include <priv/FileDownload.h>
-
-using namespace DownloadManager;
+using namespace DM;

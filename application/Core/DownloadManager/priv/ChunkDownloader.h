@@ -3,7 +3,7 @@
 
 #include <QThread>
 
-namespace DownloadManager
+namespace DM
 {
    class ChunkDownload;
    class DownloadManager;

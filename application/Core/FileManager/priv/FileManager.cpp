@@ -31,13 +31,13 @@ FileManager::FileManager()
    try
    {
       QByteArray savedCacheBin(Common::PersistantData::getValue(FILE_CACHE));
-      Protos::FileCache::Hashes savedCache;
-      savedCache.ParseFromString(savedCacheBin.constData());
-      // Set the shared directories.
-      this->cache.retrieveFromFile(savedCache);
+
+      // The hashes will be unallocated by the fileUpdater.
+      Protos::FileCache::Hashes* savedCache = new Protos::FileCache::Hashes();
+      savedCache->ParseFromString(savedCacheBin.constData());
 
       // Scan the shared directories and try to match the files against the saved cache.
-      // this->fileUpdater.retrieveFromFile(savedCache);
+      this->fileUpdater.retrieveFromFile(savedCache, this->cache.retrieveFromFile(savedCache));
    }
    catch (Common::UnknownValueException& e)
    {

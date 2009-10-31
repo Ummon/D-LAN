@@ -66,7 +66,7 @@ namespace FM
         * Take raw terms in a string and split, trim and filter to
         * return a list of keyword.
         * Some character or word can be removed.
-        * @example " The little   DUCK " => ["little", "duck"].
+        * @example " The little  DUCK " => ["little", "duck"].
         */
       static QStringList splitInWords(const QString& words);
 

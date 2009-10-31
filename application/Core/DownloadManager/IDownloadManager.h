@@ -6,7 +6,7 @@
 
 #include <IChunkDownload.h>
 
-namespace DownloadManager
+namespace DM
 {
    class IDownload;
 

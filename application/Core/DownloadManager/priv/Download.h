@@ -5,7 +5,7 @@
 
 namespace PeerManager { class IPeer; }
 
-namespace DownloadManager
+namespace DM
 {
    class Download : public IDownload
    {

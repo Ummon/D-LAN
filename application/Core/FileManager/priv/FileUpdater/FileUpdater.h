@@ -5,8 +5,9 @@
 #include <QWaitCondition>
 #include <QMutex>
 #include <QString>
-#include <QLinkedList>
+#include <QList>
 
+#include <Protos/files_cache.pb.h>
 #include <priv/FileUpdater/DirWatcher.h>
 
 namespace FM
@@ -33,6 +34,13 @@ namespace FM
 
       void rmRoot(SharedDirectory* dir);
 
+      /**
+        * Retrieve the file cache frome the given data.
+        * Muste be called before starting the fileUpdater.
+        * This object must unallocated the hashes;
+        */
+      void retrieveFromFile(const Protos::FileCache::Hashes* fileCache, const QList<SharedDirectory*>& sharedDirectories);
+
    protected:
       void run();
 
@@ -57,17 +65,19 @@ namespace FM
       FileManager* fileManager;
       DirWatcher* dirWatcher;
 
+      const Protos::FileCache::Hashes* fileCache; ///< The hashes from the saved file cache. Used only at the begining of 'run()'.
+
       WaitCondition* dirEvent; ///< Using to wait when a sharing directory is added or deleted.
       QMutex mutex;
-      
-      QLinkedList<SharedDirectory*> dirsToScan; ///< When a new shared directory is added, it is put in this list until it is scanned.
+
+      QList<SharedDirectory*> dirsToScan; ///< When a new shared directory is added, it is put in this list until it is scanned.
       /*SharedDirectory* currentScanningDir;
       QWaitCondition scanningStopped;
       QMutex scanningMutex;*/
 
-      QLinkedList<SharedDirectory*> dirsToRemove;
+      QList<SharedDirectory*> dirsToRemove;
 
-      QLinkedList<File*> fileWithoutHashes;
+      QList<File*> fileWithoutHashes;
    };
 }
 #endif
