@@ -11,7 +11,7 @@ package Protos.FileCache;
 // All the hashes for a set of file.
 message Hashes {
    message Chunk {
-      required int knownBytes = 1;
+      required uint32 knownBytes = 1;
       repeated Common.Hash hashes = 2;
    }
    
