@@ -17,6 +17,17 @@ Chunk::Chunk(File& file, const Common::Hash& hash, int num, int knownBytes)
    static_cast<SharedDirectory*>(this->file.getRoot())->getCache()->onChunkAdded(this);
 }
 
+Chunk::Chunk(File& file, int num, const Protos::FileCache::Hashes_Chunk& chunk)
+   : file(file), hash(chunk.hash().hash().data()), num(num), knownBytes(chunk.knownbytes())
+{
+}
+
+void Chunk::populateHashesChunk(Protos::FileCache::Hashes_Chunk& chunk)
+{
+   chunk.set_knownbytes(this->knownBytes);
+   chunk.mutable_hash()->set_hash(this->hash.data());
+}
+
 QSharedPointer<IDataReader> Chunk::getDataReader()
 {
    return QSharedPointer<IDataReader>(new DataReader(*this));
@@ -65,10 +76,4 @@ int Chunk::getKnownBytes()
 File& Chunk::getFile()
 {
    return this->file;
-}
-
-void Chunk::populateHashesChunk(Protos::FileCache::Hashes_Chunk& chunk)
-{
-   chunk.set_knownbytes(this->knownBytes);
-   chunk.mutable_hash()->set_hash(this->hash.data());
 }

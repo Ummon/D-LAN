@@ -142,7 +142,7 @@ void Cache::createSharedDirs(const QStringList& dirs, const QList<SharedDirector
       QString path = i.next();
       SharedDirectory::Rights currentRights = j.hasNext() ? j.next() : SharedDirectory::READ_ONLY;
 
-      LOG_DEBUG("Add a new shared directory : " + path);
+      LOG_DEBUG(QString("Add a new shared directory : %1").arg(path));
 
       SharedDirectory* dir = k.hasNext() ?
          new SharedDirectory(this, path, currentRights, k.next()) :

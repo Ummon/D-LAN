@@ -19,14 +19,16 @@ namespace FM
 
       virtual ~Directory() {};
 
+      QList<File*> restoreFromFileCache(const Protos::FileCache::Hashes_Dir& dir);
+
+      void populateHashesDir(Protos::FileCache::Hashes_Dir& dirToFill);
+
+      void populateDirEntry(Protos::Common::DirEntry* entry);
+
       virtual QString getPath();
       virtual QString getFullPath();
 
       Directory* getRoot();
-
-      void populateDirEntry(Protos::Common::DirEntry* entry);
-
-      void populateHashesDir(Protos::FileCache::Hashes_Dir& dirToFill);
 
       /**
         * Only called by the class File.
@@ -35,8 +37,6 @@ namespace FM
 
    protected:
       Directory();
-
-   private:
 
       /**
         * When a new file is added to a directory this method is called

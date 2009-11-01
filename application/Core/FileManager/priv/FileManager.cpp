@@ -218,7 +218,7 @@ void FileManager::loadCacheFromFile()
 
       // Scan the shared directories and try to match the files against the saved cache.
       this->cache.retrieveFromFile(*savedCache);
-      this->fileUpdater.retrieveFromFile(savedCache);
+      this->fileUpdater.setFileCache(savedCache);
    }
    catch (Common::UnknownValueException& e)
    {

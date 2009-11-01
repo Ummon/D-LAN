@@ -22,7 +22,10 @@ namespace FM
    {
    public:
       Chunk(File& file, const Common::Hash& hash, int num, int knownBytes = CHUNK_SIZE);
+      Chunk(File& file, int num, const Protos::FileCache::Hashes_Chunk& chunk);
       virtual ~Chunk() {};
+
+      void populateHashesChunk(Protos::FileCache::Hashes_Chunk& chunk);
 
       QSharedPointer<IDataReader> getDataReader();
       QSharedPointer<IDataWriter> getDataWriter();
@@ -51,8 +54,6 @@ namespace FM
       int getKnownBytes();
 
       File& getFile();
-
-      void populateHashesChunk(Protos::FileCache::Hashes_Chunk& chunk);
 
    private:
       File& file;

@@ -33,7 +33,7 @@ message Hashes {
    }
 
    message Dir {
-      required string name = 1;
+      required string name = 1; // Empty for the roots.
       repeated File file = 2;
       repeated Dir dir = 3;
    }

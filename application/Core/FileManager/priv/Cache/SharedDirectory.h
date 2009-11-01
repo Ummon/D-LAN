@@ -28,6 +28,8 @@ namespace FM
 
       ~SharedDirectory();
 
+      QList<File*> restoreFromFileCache(const Protos::FileCache::Hashes& hashes);
+
       /**
         * Return always "" thus it makes this method the most usefull of the entire known univers.
         */
