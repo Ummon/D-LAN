@@ -19,8 +19,9 @@ Logger::Logger(QTextStream* stream, const QString& name)
 void Logger::log(const QString& message, Severity severity)
 {
    QMutexLocker lock(&Logger::mutex);
-   quint32 threadId = (quint32)QThread::currentThreadId();
-   (*this->out) << "[" << Entry::SeverityToStr(severity) << "] (" << threadId << ") " << name << ": " << message << endl;
+   QString threadName = QThread::currentThread()->objectName();
+   (*this->out) << "[" << Entry::SeverityToStr(severity) << "] " <<
+         "(" << (threadName.isEmpty() ? QString::number((quint32)QThread::currentThreadId()) : threadName) << ") " << name << ": " << message << endl;
 }
 
 void Logger::log(const ILoggable& object, Severity severity)

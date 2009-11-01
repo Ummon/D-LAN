@@ -12,3 +12,4 @@ moc_*.cpp
 Makefile
 output/
 .tmp/
+/doc/doxygen/html

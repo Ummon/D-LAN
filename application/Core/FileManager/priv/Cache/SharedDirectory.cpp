@@ -18,6 +18,11 @@ SharedDirectory::SharedDirectory(Cache* cache, const QString& path, Rights right
    this->cache->onEntryAdded(this);
 }
 
+SharedDirectory::~SharedDirectory()
+{
+   this->cache->onEntryRemoved(this);
+}
+
 QString SharedDirectory::getPath()
 {
    return "";

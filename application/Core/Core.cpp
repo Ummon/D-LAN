@@ -1,6 +1,9 @@
 #include <Core.h>
 using namespace Core;
 
+#include <QObject>
+#include <QThread>
+
 #include <Common/LogManager/Builder.h>
 #include <Common/LogManager/ILogger.h>
 #include <FileManager/Builder.h>
@@ -10,7 +13,6 @@ using namespace Core;
 #include <NetworkListener/IChat.h>
 #include <NetworkListener/ISearch.h>
 #include <PeerManager/Builder.h>
-#include <QObject>
 
 ::Core::Core()
    : QObject(), logger(LM::Builder::newLogger("Core"))
@@ -18,6 +20,7 @@ using namespace Core;
    GOOGLE_PROTOBUF_VERIFY_VERSION;
 
    this->logger->log("Loading ..", LM::EndUser);
+   QThread::currentThread()->setObjectName("Core");
 
    this->fileManager = FM::Builder::newFileManager();
    this->peerManager = PM::Builder::newPeerManager();

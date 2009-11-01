@@ -38,9 +38,10 @@ namespace FM
       /**
         * Retrieve the file cache frome the given data.
         * Muste be called before starting the fileUpdater.
-        * This object must unallocated the hashes;
+        * The shared dirs in fileCache must be previously added by 'addRoot(..)'.
+        * This object must unallocated the hashes.
         */
-      void retrieveFromFile(const Protos::FileCache::Hashes* fileCache, const QList<SharedDirectory*>& sharedDirectories);
+      void retrieveFromFile(const Protos::FileCache::Hashes* fileCache);
 
    signals:
       void persistCache();

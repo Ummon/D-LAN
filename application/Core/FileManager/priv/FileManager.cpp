@@ -26,6 +26,7 @@ FileManager::FileManager()
    LOG_USER("Loading ..");
 
    connect(&this->cache, SIGNAL(entryAdded(Entry*)), this, SLOT(entryAdded(Entry*)), Qt::DirectConnection);
+   connect(&this->cache, SIGNAL(entryRemoved(Entry*)), this, SLOT(entryRemoved(Entry*)), Qt::DirectConnection);
    connect(&this->cache, SIGNAL(chunkAdded(Chunk*)), this, SLOT(chunkAdded(Chunk*)), Qt::DirectConnection);
    connect(&this->fileUpdater, SIGNAL(persistCache()), this, SLOT(persistCacheToFile()), Qt::DirectConnection);
 
@@ -216,7 +217,8 @@ void FileManager::loadCacheFromFile()
       Common::PersistantData::getValue(FILE_CACHE, *savedCache);
 
       // Scan the shared directories and try to match the files against the saved cache.
-      this->fileUpdater.retrieveFromFile(savedCache, this->cache.retrieveFromFile(*savedCache));
+      this->cache.retrieveFromFile(*savedCache);
+      this->fileUpdater.retrieveFromFile(savedCache);
    }
    catch (Common::UnknownValueException& e)
    {
