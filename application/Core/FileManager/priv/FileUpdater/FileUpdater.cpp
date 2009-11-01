@@ -13,7 +13,10 @@ using namespace FM;
 #include <priv/FileUpdater/WaitCondition.h>
 
 FileUpdater::FileUpdater(FileManager* fileManager)
-   : fileManager(fileManager), dirWatcher(DirWatcher::getNewWatcher()), fileCache(0)/*, currentScanningDir(0)*/
+   : fileManager(fileManager),
+     dirWatcher(DirWatcher::getNewWatcher()),
+     fileCache(0)
+     /*, currentScanningDir(0)*/
 {
    this->dirEvent = WaitCondition::getNewWaitCondition();
 }
@@ -69,13 +72,15 @@ void FileUpdater::run()
    // First retrieve the directories and file from the file cache.
    if (this->fileCache)
    {
-
+      for (QListIterator<SharedDirectory*> i(this->dirsToScan); i.hasNext();)
+         this->scan(i.next());
       delete this->fileCache;
    }
 
    forever
    {
-      this->computeSomeHashes();
+      if (this->computeSomeHashes())
+         emit persistCache();
 
       this->mutex.lock();
 
@@ -134,11 +139,12 @@ void FileUpdater::createNewFile(Directory* dir, const QString& filename, qint64 
    this->fileWithoutHashes << file;
 }
 
-void FileUpdater::computeSomeHashes()
+bool FileUpdater::computeSomeHashes()
 {
    QTime time;
    time.start();
 
+   bool ret = !this->fileWithoutHashes.isEmpty();
    QMutableListIterator<File*> i(this->fileWithoutHashes);
    while (i.hasNext())
    {
@@ -148,6 +154,7 @@ void FileUpdater::computeSomeHashes()
       if (time.elapsed() / 1000 >= MINIMUM_DURATION_WHEN_HASHING)
          break;
    }
+   return ret;
 }
 
 void FileUpdater::scan(SharedDirectory* dir)

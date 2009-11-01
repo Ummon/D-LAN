@@ -4,6 +4,8 @@
 #include <exception>
 using namespace std;
 
+#include <google/protobuf/message.h>
+
 #include <QString>
 #include <QByteArray>
 
@@ -14,6 +16,7 @@ namespace Common
    /**
      * Some little functions to persist data and retrieve it.
      * The data are persisted in the user directory.
+     * The data are described by a Protocol Buffer message.
      * Theses functions can be used for the application settings.
      */
    class PersistantData
@@ -27,7 +30,7 @@ namespace Common
         * @param name The name of the data
         * @param data The data to persist
         */
-      static void setValue(const QString& name, const QByteArray& data);
+      static void setValue(const QString& name, const google::protobuf::Message& data);
 
       /**
         * Retrieve the data associated to a given name.
@@ -35,7 +38,7 @@ namespace Common
         * @return the associated value
         * @exception UnknownValueException Throwed if the value doesn't exist
         */
-      static QByteArray getValue(const QString& name);
+      static void getValue(const QString& name, google::protobuf::Message& data);
 
       /**
         * Remove a data.
@@ -46,9 +49,9 @@ namespace Common
    private:
       static bool createApplicationFolder();
 
-      static const QString applicationFolderName;
-      static const QString applicationFolderPath;
-      static const QString tempPostfixTerm;
+      static const QString APPLICATION_FOLDER_NAME;
+      static const QString APPLICATION_FOLDER_PATH;
+      static const QString TEMP_POSTFIX_TERM;
    };
 }
 #endif

@@ -36,7 +36,12 @@ namespace FM
         * The directories and files are not created here but later by the fileUpdater, see the FileManager ctor.
         * @return The shared directories
         */
-      QList<SharedDirectory*> retrieveFromFile(const Protos::FileCache::Hashes* hashes);
+      QList<SharedDirectory*> retrieveFromFile(const Protos::FileCache::Hashes& hashes);
+
+      /**
+        * Populate the given structure to be persisted later.
+        */
+      void saveInFile(Protos::FileCache::Hashes& hashes);
 
       quint64 getAmount();
 

@@ -8,6 +8,8 @@ using namespace FM;
 #include <QRegExp>
 #include <QMutableListIterator>
 
+#include <google/protobuf/text_format.h>
+
 #include <Protos/files_cache.pb.h>
 
 #include <Common/PersistantData.h>
@@ -26,27 +28,9 @@ FileManager::FileManager()
 
    connect(&this->cache, SIGNAL(entryAdded(Entry*)), this, SLOT(entryAdded(Entry*)), Qt::DirectConnection);
    connect(&this->cache, SIGNAL(chunkAdded(Chunk*)), this, SLOT(chunkAdded(Chunk*)), Qt::DirectConnection);
+   connect(&this->fileUpdater, SIGNAL(persistCache()), this, SLOT(persistCacheToFile()), Qt::DirectConnection);
 
-   // Load the cache from the persistant data
-   try
-   {
-      QByteArray savedCacheBin(Common::PersistantData::getValue(FILE_CACHE));
-
-      // The hashes will be unallocated by the fileUpdater.
-      Protos::FileCache::Hashes* savedCache = new Protos::FileCache::Hashes();
-      savedCache->ParseFromString(savedCacheBin.constData());
-
-      // Scan the shared directories and try to match the files against the saved cache.
-      this->fileUpdater.retrieveFromFile(savedCache, this->cache.retrieveFromFile(savedCache));
-   }
-   catch (Common::UnknownValueException& e)
-   {
-      LOG_WARN(QString("The persitsed file cache cannot be retrived (the file doesn't exist) : %1").arg(FILE_CACHE));
-   }
-   catch (...)
-   {
-      LOG_WARN(QString("The persisted file cache cannot be retrived (Unkown exception) : %1").arg(FILE_CACHE));
-   }
+   this->loadCacheFromFile();
 
    this->fileUpdater.start();
    LOG_USER("Loaded!");
@@ -206,7 +190,7 @@ void FileManager::chunkAdded(Chunk* chunk)
    this->chunks.add(chunk);
 }
 
-QStringList FileManager::FileManager::splitInWords(const QString& words)
+QStringList FileManager::splitInWords(const QString& words)
 {
    const static QRegExp regExp("(\\W+|_)");
    QStringList keywords = words.toLower().split(regExp, QString::SkipEmptyParts);
@@ -224,3 +208,32 @@ QStringList FileManager::FileManager::splitInWords(const QString& words)
    return keywords;
 }
 
+void FileManager::loadCacheFromFile()
+{
+   try
+   {
+      // The hashes will be unallocated by the fileUpdater.
+      Protos::FileCache::Hashes* savedCache = new Protos::FileCache::Hashes();
+      Common::PersistantData::getValue(FILE_CACHE, *savedCache);
+
+      // Scan the shared directories and try to match the files against the saved cache.
+      this->fileUpdater.retrieveFromFile(savedCache, this->cache.retrieveFromFile(*savedCache));
+   }
+   catch (Common::UnknownValueException& e)
+   {
+      LOG_WARN(QString("The persitsed file cache cannot be retrived (the file doesn't exist) : %1").arg(FILE_CACHE));
+   }
+   catch (...)
+   {
+      LOG_WARN(QString("The persisted file cache cannot be retrived (Unkown exception) : %1").arg(FILE_CACHE));
+   }
+}
+
+void FileManager::persistCacheToFile()
+{
+   LOG_DEBUG("Persists cache..");
+
+   Protos::FileCache::Hashes hashes;
+   this->cache.saveInFile(hashes);
+   Common::PersistantData::setValue(FILE_CACHE, hashes);
+}

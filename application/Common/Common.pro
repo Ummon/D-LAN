@@ -3,6 +3,14 @@
 # -------------------------------------------------
 QT -= gui
 TARGET = Common
+
+LIBS += -L${PROTOBUF}/src/.libs \
+    -lprotobuf
+INCLUDEPATH += . \
+    ../.. \
+    ${PROTOBUF}/src
+
+
 TEMPLATE = lib
 CONFIG += staticlib create_prl
 DEFINES += DEBUG
