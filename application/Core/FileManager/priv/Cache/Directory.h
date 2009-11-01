@@ -5,6 +5,7 @@
 #include <QList>
 
 #include <Protos/common.pb.h>
+#include <Protos/files_cache.pb.h>
 #include <priv/Cache/Entry.h>
 
 namespace FM
@@ -24,6 +25,8 @@ namespace FM
       Directory* getRoot();
 
       void populateDirEntry(Protos::Common::DirEntry* entry);
+
+      void populateHashesDir(Protos::FileCache::Hashes_Dir& dirToFill);
 
       /**
         * Only called by the class File.

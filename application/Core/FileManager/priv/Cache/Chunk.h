@@ -5,8 +5,10 @@
 
 #include <QByteArray>
 
+#include <Protos/files_cache.pb.h>
 #include <Common/Hash.h>
 #include <IChunk.h>
+#include <priv/Constants.h>
 #include <priv/Cache/File.h>
 
 namespace FM
@@ -19,7 +21,7 @@ namespace FM
    class Chunk : public IChunk
    {
    public:
-      Chunk(File& file, const Common::Hash& hash, int num, int knownBytes = File::CHUNK_SIZE);
+      Chunk(File& file, const Common::Hash& hash, int num, int knownBytes = CHUNK_SIZE);
       virtual ~Chunk() {};
 
       QSharedPointer<IDataReader> getDataReader();
@@ -49,6 +51,8 @@ namespace FM
       int getKnownBytes();
 
       File& getFile();
+
+      void populateHashesChunk(Protos::FileCache::Hashes_Chunk& chunk);
 
    private:
       File& file;

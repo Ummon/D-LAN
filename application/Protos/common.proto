@@ -31,7 +31,7 @@ message DirEntry {
 
 message FileEntry {
    required Entry file = 1;
-   repeated Hash chunks = 2; // No chunk means that the peer doesn't know the hashes.
+   repeated Hash chunk = 2; // No chunk means that the peer doesn't know the hashes.
 }
 
 // A result following a search.
@@ -47,8 +47,8 @@ message FindResult {
    }
    required uint64 tag = 1;
    required Common.Hash peerID = 2;
-   repeated DirEntryLevel dirs = 3;
-   repeated FileEntryLevel files = 4;
+   repeated DirEntryLevel dir = 3;
+   repeated FileEntryLevel file = 4;
 }
 
 // Core settings

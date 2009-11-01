@@ -92,10 +92,10 @@ void Tests::doASearch(bool checkResult)
          QList<QString>() << "aaaa dddddd.txt",
          QList<QString>() << "bbbb dddd.txt" << "bbbb.txt"
       };
-      for (int i = 0; i < result.files_size(); i++)
+      for (int i = 0; i < result.file_size(); i++)
       {
-         QVERIFY(result.files(i).level() == levelResults[i]);
-         QVERIFY(fileResults[result.files(i).level()].contains(QString(result.files(i).file().file().name().data())));
+         QVERIFY(result.file(i).level() == levelResults[i]);
+         QVERIFY(fileResults[result.file(i).level()].contains(QString(result.file(i).file().file().name().data())));
       }
    }
 }
@@ -103,8 +103,8 @@ void Tests::doASearch(bool checkResult)
 void Tests::printSearch(const QString& terms, const Protos::Common::FindResult& result)
 {
    qDebug() << "Search : '" << terms << "'";
-   for (int i = 0; i < result.files_size(); i++)
-      qDebug() << "[" << result.files(i).level() << "] " << result.files(i).file().file().name().data();
+   for (int i = 0; i < result.file_size(); i++)
+      qDebug() << "[" << result.file(i).level() << "] " << result.file(i).file().file().name().data();
 }
 
 void Tests::printAmount()

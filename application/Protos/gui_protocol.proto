@@ -10,8 +10,8 @@ package Protos.GUI;
 
 message Settings {
    optional Common.Settings settings = 1;
-   repeated string sharedDirectories = 2;
-   repeated string destinationDirectories = 3;
+   repeated string sharedDirectory = 2;
+   repeated string destinationDirectory = 3;
 }
 
 /***** Core state *****/
@@ -38,7 +38,7 @@ message State {
       required Common.Entry file = 2;
       required Status status = 3;
       required uint32 progress = 4; // 0 to 100
-      repeated uint32 peerIDs = 5;
+      repeated uint32 peerID = 5;
    }
    message Upload {
       required uint32 ID = 1;
@@ -63,10 +63,10 @@ message State {
       required uint64 sharingAmount = 5; // [byte].
    }
    
-   repeated Peer peers = 1;
+   repeated Peer peer = 1;
    
-   repeated Download downloads = 2;
-   repeated Upload uploads = 3;
+   repeated Download download = 2;
+   repeated Upload upload = 3;
    
    optional Settings settings = 4;
    optional Stats stats = 5;
@@ -130,8 +130,8 @@ message Browse {
 }
 // Core -> GUI
 message BrowseResult {
-   repeated Common.DirEntry dirs = 1;
-   repeated Common.FileEntry files = 2;   
+   repeated Common.DirEntry dir = 1;
+   repeated Common.FileEntry file = 2;   
 }
 
 // GUI -> Core

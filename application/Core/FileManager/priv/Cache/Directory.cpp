@@ -53,6 +53,22 @@ void Directory::populateDirEntry(Protos::Common::DirEntry* entry)
    entry->mutable_dir()->set_name(this->getName().toStdString());
 }
 
+void Directory::populateHashesDir(Protos::FileCache::Hashes_Dir& dirToFill)
+{
+   dirToFill.set_name(this->name.toStdString());
+
+   for (QListIterator<File*> f(this->files); f.hasNext();)
+   {
+      Protos::FileCache::Hashes_File* file = dirToFill.add_file();
+      f.next()->populateHashesFile(*file);
+   }
+
+   for (QListIterator<Directory*> dir(this->subDirs); dir.hasNext();)
+   {
+      dir.next()->populateHashesDir(*dirToFill.add_dir());
+   }
+}
+
 void Directory::addFile(File* file)
 {
    if (this->files.contains(file))

@@ -37,3 +37,8 @@ SharedDirectory::Rights SharedDirectory::getRights()
 {
    return this->rights;
 }
+
+const Common::Hash& SharedDirectory::getId()
+{
+   return this->id;
+}

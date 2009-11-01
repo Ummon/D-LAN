@@ -28,8 +28,6 @@ namespace FM
    {
       Q_OBJECT
    public :
-      static const int  MAX_WORD_LENGTH = 3;
-      static const QString FILE_CACHE;
 
       FileManager();
 

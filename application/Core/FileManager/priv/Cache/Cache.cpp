@@ -7,6 +7,7 @@ using namespace FM;
 #include <priv/Log.h>
 #include <priv/FileManager.h>
 #include <priv/Exceptions.h>
+#include <priv/Constants.h>
 #include <priv/Cache/SharedDirectory.h>
 
 Cache::Cache(FileManager* fileManager, FileUpdater* fileUpdater)
@@ -93,9 +94,9 @@ void Cache::setSharedDirs(const QStringList& dirs, SharedDirectory::Rights right
 QList<SharedDirectory*> Cache::retrieveFromFile(const Protos::FileCache::Hashes& hashes)
 {
    // Add the shared directories from the file cache.
-   for (int i = 0; i < hashes.dirs_size(); i++)
+   for (int i = 0; i < hashes.dir_size(); i++)
    {
-      const Protos::FileCache::Hashes_SharedDir& dir = hashes.dirs(i);
+      const Protos::FileCache::Hashes_SharedDir& dir = hashes.dir(i);
       new SharedDirectory(
          this,
          dir.path().data(),
@@ -108,11 +109,22 @@ QList<SharedDirectory*> Cache::retrieveFromFile(const Protos::FileCache::Hashes&
 
 void Cache::saveInFile(Protos::FileCache::Hashes& hashes)
 {
+   hashes.set_version(1);
+   hashes.set_chunksize(CHUNK_SIZE);
    for (QListIterator<SharedDirectory*> i(this->sharedDirs); i.hasNext();)
    {
       SharedDirectory* sharedDir = i.next();
-      Protos::FileCache::Hashes_SharedDir* sharedDirMess = hashes.add_dirs();
+      Protos::FileCache::Hashes_SharedDir* sharedDirMess = hashes.add_dir();
+
       sharedDirMess->set_path(sharedDir->getFullPath().toStdString());
+      sharedDirMess->set_type(
+         sharedDir->getRights() == SharedDirectory::READ_ONLY ?
+            Protos::FileCache::Hashes_SharedDir_Type_READ :
+            Protos::FileCache::Hashes_SharedDir_Type_READ_WRITE
+      );
+      sharedDirMess->mutable_id()->set_hash(sharedDir->getId().data());
+
+      sharedDir->populateHashesDir(*sharedDirMess->mutable_root());
    }
 }
 
