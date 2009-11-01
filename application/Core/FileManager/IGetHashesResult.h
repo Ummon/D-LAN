@@ -17,6 +17,7 @@ namespace FM
 
    signals:
       void result(Protos::Core::GetHashesResult& result);
+      void error(QString message);
    };
 }
 #endif

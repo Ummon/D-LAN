@@ -47,22 +47,12 @@ void FileUpdater::rmRoot(SharedDirectory* dir)
 {
    QMutexLocker(&this->mutex);
 
-   // If there is a scanning for this directory stop it.
-   // (Not used for the moment, maybe reactive later if needed)
-   /*this->scanningMutex.lock();
-   if (this->currentScanningDir == dir)
-   {
-      this->currentScanningDir = 0;
-      this->scanningStopped.wait(&this->scanningMutex);
-   }
-   this->scanningMutex.unlock();*/
-
    this->dirsToRemove << dir;
 
    this->dirEvent->release();
 }
 
-void FileUpdater::retrieveFromFile(const Protos::FileCache::Hashes* fileCache)
+void FileUpdater::setFileCache(const Protos::FileCache::Hashes* fileCache)
 {
    this->fileCache = fileCache;
 }
@@ -76,8 +66,15 @@ void FileUpdater::run()
    if (this->fileCache)
    {
       for (QListIterator<SharedDirectory*> i(this->dirsToScan); i.hasNext();)
-         this->scan(i.next());
+      {
+         SharedDirectory* dir = i.next();
+         this->scan(dir);
+         this->restoreFromFileCache(dir);
+      }
+
+      this->dirsToScan.clear();
       delete this->fileCache;
+      this->fileCache = 0;
    }
 
    forever
@@ -89,9 +86,16 @@ void FileUpdater::run()
 
       if (!this->dirsToRemove.isEmpty())
       {
-         // Stop watching this directory.
-         if (this->dirWatcher)
-            this->dirWatcher->rmDir(this->dirsToRemove.takeLast()->getFullPath());
+         for (QListIterator<SharedDirectory*> i(this->dirsToRemove); i.hasNext();)
+         {
+            SharedDirectory* dir = i.next();
+            this->dirsToScan.removeOne(dir);
+
+            // Stop watching this directory.
+            if (this->dirWatcher)
+               this->dirWatcher->rmDir(dir->getFullPath());
+         }
+         this->dirsToRemove.clear();
       }
 
       // If there is no watcher capability or no directory to watch then
@@ -170,25 +174,11 @@ void FileUpdater::scan(SharedDirectory* dir)
       return;
    }
 
-   /*this->scanningMutex.lock();
-   this->currentScanningDir = dir;
-   this->scanningMutex.unlock();*/
-
    QLinkedList<Directory*> dirsToVisit;
    dirsToVisit << dir;
 
    while (!dirsToVisit.isEmpty())
    {
-      /*this->scanningMutex.lock();
-      if (!this->currentScanningDir)
-      {
-         this->scanningStopped.wakeOne();
-         this->scanningMutex.unlock();
-         LOG_DEBUG("Cannot scan a deleted shared directory : " + dir->getFullPath());
-         return;
-      }
-      this->scanningMutex.unlock();*/
-
       Directory* currentDir = dirsToVisit.takeFirst();
       foreach (QFileInfo entry, QDir(currentDir->getFullPath()).entryInfoList())
       {
@@ -206,15 +196,26 @@ void FileUpdater::scan(SharedDirectory* dir)
       }
    }
    LOG_DEBUG("Scan terminated : " + dir->getFullPath());
+}
 
-   /*this->scanningMutex.lock();
-   this->currentScanningDir = 0;
-   this->scanningStopped.wakeOne();
-   this->scanningMutex.unlock();*/
+void FileUpdater::restoreFromFileCache(SharedDirectory* dir)
+{
+   if (this->fileCache == 0)
+   {
+      LOG_ERR("FileUpdater::restoreFromFileCache : this->fileCache must be previously set. Unable to restore from the file cache.");
+      return;
+   }
+
+   QList<File*> filesWithHashes = dir->restoreFromFileCache(*this->fileCache);
+
+   // Remove the files which have a hash.
+   // TODO : O(n^2) can be a bit long...
+   for (QListIterator<File*>i(filesWithHashes); i.hasNext();)
+      this->fileWithoutHashes.removeOne(i.next());
 }
 
 void FileUpdater::treatEvents(const QList<WatcherEvent>& events)
 {
-   // TODO something
+   // TODO something..
    LOG_DEBUG("File structure event occurs");
 }

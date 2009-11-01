@@ -31,6 +31,12 @@ namespace FM
       File(Directory* dir, const QString& name, qint64 size, const Common::Hashes& hashes = Common::Hashes());
       virtual ~File();
 
+      File* restoreFromFileCache(const Protos::FileCache::Hashes_File& file);
+
+      void populateHashesFile(Protos::FileCache::Hashes_File& fileToFill);
+
+      void populateFileEntry(Protos::Common::FileEntry* entry);
+
       QString getPath();
       QString getFullPath();
       Directory* getRoot();
@@ -71,10 +77,6 @@ namespace FM
 
       QList<IChunk*> getChunks();
       const QList<Chunk*>& getChunksRef();
-
-      void populateFileEntry(Protos::Common::FileEntry* entry);
-
-      void populateHashesFile(Protos::FileCache::Hashes_File& fileToFill);
 
    private:
       Directory* dir;

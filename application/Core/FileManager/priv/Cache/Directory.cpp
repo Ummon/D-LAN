@@ -21,6 +21,48 @@ Directory::Directory()
 {
 }
 
+QList<File*> Directory::restoreFromFileCache(const Protos::FileCache::Hashes_Dir& dir)
+{
+   QList<File*> ret;
+
+   if (dir.name().data() == this->getName())
+   {
+      // Sub directories..
+      for (int i = 0; i < dir.dir_size(); i++)
+         for (QListIterator<Directory*> d(this->subDirs); d.hasNext();)
+            ret << d.next()->restoreFromFileCache(dir.dir(i));
+
+      // .. And files.
+      for (int i = 0; i < dir.file_size(); i++)
+         for (QListIterator<File*> f(this->files); f.hasNext();)
+            ret << f.next()->restoreFromFileCache(dir.file(i));
+   }
+
+   return ret;
+}
+
+void Directory::populateHashesDir(Protos::FileCache::Hashes_Dir& dirToFill)
+{
+   dirToFill.set_name(this->name.toStdString());
+
+   for (QListIterator<File*> f(this->files); f.hasNext();)
+   {
+      Protos::FileCache::Hashes_File* file = dirToFill.add_file();
+      f.next()->populateHashesFile(*file);
+   }
+
+   for (QListIterator<Directory*> dir(this->subDirs); dir.hasNext();)
+   {
+      dir.next()->populateHashesDir(*dirToFill.add_dir());
+   }
+}
+
+void Directory::populateDirEntry(Protos::Common::DirEntry* entry)
+{
+   entry->mutable_dir()->set_path(this->getPath().toStdString());
+   entry->mutable_dir()->set_name(this->getName().toStdString());
+}
+
 QString Directory::getPath()
 {
    QString path;
@@ -45,28 +87,6 @@ Directory* Directory::getRoot()
    if (this->parent)
       return this->parent->getRoot();
    return this;
-}
-
-void Directory::populateDirEntry(Protos::Common::DirEntry* entry)
-{
-   entry->mutable_dir()->set_path(this->getPath().toStdString());
-   entry->mutable_dir()->set_name(this->getName().toStdString());
-}
-
-void Directory::populateHashesDir(Protos::FileCache::Hashes_Dir& dirToFill)
-{
-   dirToFill.set_name(this->name.toStdString());
-
-   for (QListIterator<File*> f(this->files); f.hasNext();)
-   {
-      Protos::FileCache::Hashes_File* file = dirToFill.add_file();
-      f.next()->populateHashesFile(*file);
-   }
-
-   for (QListIterator<Directory*> dir(this->subDirs); dir.hasNext();)
-   {
-      dir.next()->populateHashesDir(*dirToFill.add_dir());
-   }
 }
 
 void Directory::addFile(File* file)

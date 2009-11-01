@@ -43,7 +43,6 @@ namespace FM
       quint64 getAmount();
       virtual QList< QSharedPointer<IChunk> > newFile(const Protos::Common::FileEntry& remoteEntry);
 
-
       /**
         * Used to retrieve a file by the fileUpdater when a filesystem event occurs.
         */

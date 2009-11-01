@@ -36,12 +36,12 @@ namespace FM
       void rmRoot(SharedDirectory* dir);
 
       /**
-        * Retrieve the file cache frome the given data.
+        * Set the file cache to retrieve the hashes frome it.
         * Muste be called before starting the fileUpdater.
         * The shared dirs in fileCache must be previously added by 'addRoot(..)'.
         * This object must unallocated the hashes.
         */
-      void retrieveFromFile(const Protos::FileCache::Hashes* fileCache);
+      void setFileCache(const Protos::FileCache::Hashes* fileCache);
 
    signals:
       void persistCache();
@@ -65,6 +65,12 @@ namespace FM
         * given 'SharedDirectory'.
         */
       void scan(SharedDirectory* dir);
+
+      /**
+        * Try to restore the chunk hashes from 'fileCache'.
+        * 'fileCache' is set from 'retrieveFromFile(..)'.
+        */
+      void restoreFromFileCache(SharedDirectory* dir);
 
       void treatEvents(const QList<WatcherEvent>& events);
 

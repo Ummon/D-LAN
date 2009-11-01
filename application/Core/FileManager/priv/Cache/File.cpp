@@ -51,6 +51,39 @@ File::~File()
    this->hashingMutex.unlock();
 }
 
+File* File::restoreFromFileCache(const Protos::FileCache::Hashes_File& file)
+{
+   this->chunks.clear();
+
+   // TODO : test the modification (or creation) date too..
+   if (file.filename().data() == this->name && (qint64)file.size() == this->size)
+   {
+      LOG_DEBUG(QString("Restoring file '%1' from the file cache").arg(this->getFullPath()));
+      // TODO : maybe test whether the chunks size is correct..
+      for (int i = 0; i < file.chunk_size(); i++)
+         this->chunks << new Chunk(*this, i, file.chunk(i));
+   }
+
+   return this;
+}
+
+void File::populateHashesFile(Protos::FileCache::Hashes_File& fileToFill)
+{
+   fileToFill.set_filename(this->name.toStdString());
+   fileToFill.set_size(this->size);
+   for (QListIterator<Chunk*> i(this->chunks); i.hasNext();)
+   {
+      Protos::FileCache::Hashes_Chunk* chunk = fileToFill.add_chunk();
+      i.next()->populateHashesChunk(*chunk);
+   }
+}
+
+void File::populateFileEntry(Protos::Common::FileEntry* entry)
+{
+   entry->mutable_file()->set_path(this->getPath().toStdString());
+   entry->mutable_file()->set_name(this->getName().toStdString());
+}
+
 QString File::getPath()
 {
    QString path = this->dir->getPath();
@@ -218,22 +251,5 @@ QList<IChunk*> File::getChunks()
 const QList<Chunk*>& File::getChunksRef()
 {
    return this->chunks;
-}
-
-void File::populateFileEntry(Protos::Common::FileEntry* entry)
-{
-   entry->mutable_file()->set_path(this->getPath().toStdString());
-   entry->mutable_file()->set_name(this->getName().toStdString());
-}
-
-void File::populateHashesFile(Protos::FileCache::Hashes_File& fileToFill)
-{
-   fileToFill.set_filename(this->name.toStdString());
-   fileToFill.set_size(this->size);
-   for (QListIterator<Chunk*> i(this->chunks); i.hasNext();)
-   {
-      Protos::FileCache::Hashes_Chunk* chunk = fileToFill.add_chunk();
-      i.next()->populateHashesChunk(*chunk);
-   }
 }
 

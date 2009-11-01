@@ -18,8 +18,9 @@ LIBS += -L../../../Common/output/debug -lCommon
 POST_TARGETDEPS += ../../../Common/output/debug/libCommon.a
 
 # FIXME : Should not be here, all dependies are read from the prl file (see link_prl):
-LIBS += -L../../../Common/LogManager/output/debug \
-    -lLogManager
+LIBS += -L../../../Common/LogManager/output/debug -lLogManager
+POST_TARGETDEPS += ../../../Common/LogManager/output/debug/libLogManager.a
+
 LIBS += -L${PROTOBUF}/src/.libs \
     -lprotobuf
 
