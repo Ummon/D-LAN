@@ -12,23 +12,27 @@ using namespace std;
 #  include <google/protobuf/io/zero_copy_stream_impl.h>
 #endif
 
+const QString PersistantData::APPLICATION_FOLDER_NAME(".aybabtu");
+const QString PersistantData::APPLICATION_FOLDER_PATH(QDir::homePath() + QDir::separator() + APPLICATION_FOLDER_NAME);
+const QString PersistantData::TEMP_POSTFIX_TERM(".temp");
+
 void PersistantData::setValue(const QString& name, const google::protobuf::Message& data)
 {
    if (PersistantData::createApplicationFolder())
    {
       QString tempName(name + TEMP_POSTFIX_TERM);
 
-      ofstream file((APPLICATION_FOLDER_PATH + QDir::separator() + tempName).toStdString().data(), ios_base::binary | ios_base::out);
-      // if (file.fail()) // TODO : check if failure
+      {
+         ofstream file((APPLICATION_FOLDER_PATH + QDir::separator() + tempName).toStdString().data(), ios_base::binary | ios_base::out);
+         // if (file.fail()) // TODO : check if failure
 
 #if DEBUG
-      google::protobuf::io::OstreamOutputStream zeroCopyStream(&file);
-      google::protobuf::TextFormat::Print(data, &zeroCopyStream);
+         google::protobuf::io::OstreamOutputStream zeroCopyStream(&file);
+         google::protobuf::TextFormat::Print(data, &zeroCopyStream);
 #else
-      data.SerializeToOstream(&file);
+         data.SerializeToOstream(&file);
 #endif
-
-      file.close(); // We have to close before renaming.
+      }
 
       // TODO : Some data loss can occure here, we must remove the file first
       // because 'rename' cannot overwrite an existing file.
@@ -63,9 +67,3 @@ bool PersistantData::createApplicationFolder()
 
    return true;
 }
-
-const QString PersistantData::APPLICATION_FOLDER_NAME(".aybabtu");
-const QString PersistantData::APPLICATION_FOLDER_PATH(QDir::homePath() + QDir::separator() + APPLICATION_FOLDER_NAME);
-const QString PersistantData::TEMP_POSTFIX_TERM(".temp");
-
-

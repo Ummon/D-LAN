@@ -39,5 +39,5 @@ message Queue {
    }
    
    required uint32 version = 1;
-   repeated Entry entries = 2;
+   repeated Entry entry = 2;
 }

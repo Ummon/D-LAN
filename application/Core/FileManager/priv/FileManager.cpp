@@ -15,11 +15,10 @@ using namespace FM;
 #include <Common/PersistantData.h>
 #include <Common/Math.h>
 #include <priv/Log.h>
+#include <priv/Constants.h>
 #include <priv/Cache/Entry.h>
 #include <priv/Cache/SharedDirectory.h>
 #include <priv/Cache/Chunk.h>
-
-const QString FileManager::FILE_CACHE("file_cache.bin");
 
 FileManager::FileManager()
    : fileUpdater(this), cache(this, &this->fileUpdater)
@@ -121,13 +120,13 @@ Protos::Common::FindResult FileManager::find(const QString& words)
             Entry* entry = k.next();
             if (Directory* dir = dynamic_cast<Directory*>(entry))
             {
-               Protos::Common::FindResult_DirEntryLevel* dirEntry = result.add_dirs();
+               Protos::Common::FindResult_DirEntryLevel* dirEntry = result.add_dir();
                dirEntry->set_level(level);
                dir->populateDirEntry(dirEntry->mutable_dir());
             }
             else if (File* file  = dynamic_cast<File*>(entry))
             {
-               Protos::Common::FindResult_FileEntryLevel* fileEntry = result.add_files();
+               Protos::Common::FindResult_FileEntryLevel* fileEntry = result.add_file();
                fileEntry->set_level(level);
                file->populateFileEntry(fileEntry->mutable_file());
             }
@@ -221,7 +220,7 @@ void FileManager::loadCacheFromFile()
    }
    catch (Common::UnknownValueException& e)
    {
-      LOG_WARN(QString("The persitsed file cache cannot be retrived (the file doesn't exist) : %1").arg(FILE_CACHE));
+      LOG_WARN(QString("The persisted file cache cannot be retrived (the file doesn't exist) : %1").arg(FILE_CACHE));
    }
    catch (...)
    {

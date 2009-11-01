@@ -41,6 +41,8 @@ namespace FM
 
       Rights getRights();
 
+      const Common::Hash& getId();
+
    private:
       Cache* cache;
 

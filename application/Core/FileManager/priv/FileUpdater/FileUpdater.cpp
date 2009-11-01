@@ -7,6 +7,7 @@ using namespace FM;
 
 #include <priv/Log.h>
 #include <priv/Exceptions.h>
+#include <priv/Constants.h>
 #include <priv/Cache/SharedDirectory.h>
 #include <priv/Cache/Directory.h>
 #include <priv/Cache/File.h>

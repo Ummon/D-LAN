@@ -29,17 +29,17 @@ QSharedPointer<IDataWriter> Chunk::getDataWriter()
 
 int Chunk::read(QByteArray& buffer, int offset)
 {
-   if (this->knownBytes != File::CHUNK_SIZE)
+   if (this->knownBytes != CHUNK_SIZE)
       throw ChunkNotCompletedException();
 
-   return this->file.read(buffer, offset + this->num * File::CHUNK_SIZE);
+   return this->file.read(buffer, offset + this->num * CHUNK_SIZE);
 }
 
 bool Chunk::write(const QByteArray& buffer, int offset)
 {
-   if (this->knownBytes + buffer.size() > File::CHUNK_SIZE)
+   if (this->knownBytes + buffer.size() > CHUNK_SIZE)
       throw 1; // TODO : create exception
-   bool eof = this->file.write(buffer, offset + this->num * File::CHUNK_SIZE);
+   bool eof = this->file.write(buffer, offset + this->num * CHUNK_SIZE);
    this->knownBytes += buffer.size();
    return eof;
 }
@@ -65,4 +65,10 @@ int Chunk::getKnownBytes()
 File& Chunk::getFile()
 {
    return this->file;
+}
+
+void Chunk::populateHashesChunk(Protos::FileCache::Hashes_Chunk& chunk)
+{
+   chunk.set_knownbytes(this->knownBytes);
+   chunk.mutable_hash()->set_hash(this->hash.data());
 }

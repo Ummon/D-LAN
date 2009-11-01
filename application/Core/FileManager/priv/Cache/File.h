@@ -11,6 +11,7 @@
 
 #include <Common/Hashes.h>
 #include <Protos/common.pb.h>
+#include <Protos/files_cache.pb.h>
 #include <priv/Cache/Entry.h>
 
 namespace FM
@@ -22,9 +23,6 @@ namespace FM
    class File : public Entry
    {
    public:
-      static const int BUFFER_SIZE = 524288; ///< (512kB) Buffer used when reading a file (hashing).
-      static const int CHUNK_SIZE = 33554432; ///< (32 MB).
-      static const QString FILE_TEMP_POSTFIX;
 
       /**
         * Create a new file into a given directory.
@@ -75,6 +73,8 @@ namespace FM
       const QList<Chunk*>& getChunksRef();
 
       void populateFileEntry(Protos::Common::FileEntry* entry);
+
+      void populateHashesFile(Protos::FileCache::Hashes_File& fileToFill);
 
    private:
       Directory* dir;

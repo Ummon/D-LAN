@@ -24,8 +24,6 @@ namespace FM
    {
       Q_OBJECT
 
-      static const int MINIMUM_DURATION_WHEN_HASHING = 30; ///< In seconds.
-
    public:
       FileUpdater(FileManager* fileManager);
       ~FileUpdater();

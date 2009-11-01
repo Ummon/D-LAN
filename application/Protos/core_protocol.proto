@@ -22,7 +22,7 @@ message HaveChunks {
    required uint64 amount = 4; // [byte] Amount of sharing.
    
    optional uint64 tag = 5; // A random number, all results must repeate this number.
-   repeated Common.Hash chunks = 6; // Can be empty.
+   repeated Common.Hash chunk = 6; // Can be empty.
 }
 // This message is only sent if some chunks are requested.
 // Return an array with a bool value for each
@@ -31,7 +31,7 @@ message HaveChunks {
 message HaveChunksResult {
    required uint64 tag = 1; // The repeated number.
    required Common.Hash peerID = 2;
-   repeated bool chunkStates = 3 [packed=true]; // The array size must have the same size of HaveChunks.chunks.
+   repeated bool chunkState = 3 [packed=true]; // The array size must have the same size of HaveChunks.chunks.
 }
 
 // a -> all
@@ -77,7 +77,7 @@ message GetHashesResult {
       ERROR_UNKNOWN = 255;
    }
    required Status status = 1;
-   repeated Common.Hash chunks = 2;
+   repeated Common.Hash chunk = 2;
 }
 
 // Download.
@@ -105,6 +105,6 @@ message GetEntries {
 }
 // b -> a
 message GetEntriesResult {
-   repeated Common.DirEntry dirs = 1;
-   repeated Common.FileEntry files = 2;
+   repeated Common.DirEntry dir = 1;
+   repeated Common.FileEntry file = 2;
 }

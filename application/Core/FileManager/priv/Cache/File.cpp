@@ -7,12 +7,11 @@ using namespace FM;
 
 #include <priv/Log.h>
 #include <priv/Exceptions.h>
+#include <priv/Constants.h>
 #include <priv/Cache/Cache.h>
 #include <priv/Cache/Directory.h>
 #include <priv/Cache/SharedDirectory.h>
 #include <priv/Cache/Chunk.h>
-
-const QString File::FILE_TEMP_POSTFIX(".temp");
 
 File::File(Directory* dir, const QString& name, qint64 size, const Common::Hashes& hashes)
    : Entry(name, size),
@@ -226,3 +225,15 @@ void File::populateFileEntry(Protos::Common::FileEntry* entry)
    entry->mutable_file()->set_path(this->getPath().toStdString());
    entry->mutable_file()->set_name(this->getName().toStdString());
 }
+
+void File::populateHashesFile(Protos::FileCache::Hashes_File& fileToFill)
+{
+   fileToFill.set_filename(this->name.toStdString());
+   fileToFill.set_size(this->size);
+   for (QListIterator<Chunk*> i(this->chunks); i.hasNext();)
+   {
+      Protos::FileCache::Hashes_Chunk* chunk = fileToFill.add_chunk();
+      i.next()->populateHashesChunk(*chunk);
+   }
+}
+
