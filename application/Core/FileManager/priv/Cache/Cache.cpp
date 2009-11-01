@@ -90,16 +90,30 @@ void Cache::setSharedDirs(const QStringList& dirs, SharedDirectory::Rights right
       throw DirsNotFoundException(dirsNotFound);
 }
 
-QList<SharedDirectory*> Cache::retrieveFromFile(const Protos::FileCache::Hashes* hashes)
+QList<SharedDirectory*> Cache::retrieveFromFile(const Protos::FileCache::Hashes& hashes)
 {
-   // TODO..
-   // Add the shared directory.
-   for (int i = 0; i < hashes->dirs_size(); i++)
+   // Add the shared directories from the file cache.
+   for (int i = 0; i < hashes.dirs_size(); i++)
    {
-      hashes->dirs(i);
+      const Protos::FileCache::Hashes_SharedDir& dir = hashes.dirs(i);
+      new SharedDirectory(
+         this,
+         dir.path().data(),
+         dir.type() == Protos::FileCache::Hashes_SharedDir_Type_READ ? SharedDirectory::READ_ONLY : SharedDirectory::READ_WRITE,
+         Common::Hash(dir.id().hash().data())
+      );
    }
-
    return this->sharedDirs;
+}
+
+void Cache::saveInFile(Protos::FileCache::Hashes& hashes)
+{
+   for (QListIterator<SharedDirectory*> i(this->sharedDirs); i.hasNext();)
+   {
+      SharedDirectory* sharedDir = i.next();
+      Protos::FileCache::Hashes_SharedDir* sharedDirMess = hashes.add_dirs();
+      sharedDirMess->set_path(sharedDir->getFullPath().toStdString());
+   }
 }
 
 quint64 Cache::getAmount()

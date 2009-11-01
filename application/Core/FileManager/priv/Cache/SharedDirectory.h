@@ -22,6 +22,11 @@ namespace FM
       SharedDirectory(Cache* cache, const QString& path, Rights rights);
 
       /**
+        * Create from a saved shared directory (file cache).
+        */
+      SharedDirectory(Cache* cache, const QString& path, Rights rights, const Common::Hash& id);
+
+      /**
         * Return always "" thus it makes this method the most usefull of the entire known univers.
         */
       QString getPath();
@@ -40,8 +45,8 @@ namespace FM
       Cache* cache;
 
       QString path;
-      Common::Hash id;
       Rights rights;
+      Common::Hash id;
    };
 
 }

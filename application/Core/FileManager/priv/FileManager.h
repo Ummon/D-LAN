@@ -56,7 +56,7 @@ namespace FM
         */
       Directory* getDir(const QString& path, const QString& name);
 
-   public slots:
+   private slots:
       void entryAdded(Entry* entry);
       void entryRemoved(Entry* entry);
       void chunkAdded(Chunk* chunk);
@@ -69,6 +69,23 @@ namespace FM
         * @example " The little  DUCK " => ["little", "duck"].
         */
       static QStringList splitInWords(const QString& words);
+
+      /**
+        * Load the cache from a file.
+        * It will give the file cache to the fileUpdater and ask it
+        * to load the cache.
+        */
+      void loadCacheFromFile();
+
+   private slots:
+      /**
+        * Save the cache from a file.
+        * Called by the fileUpdater when it needs to persist the cache.
+        * /!\ Called in the fileUpdater thread.
+        */
+      void persistCacheToFile();
+
+   private:
 
       FileUpdater fileUpdater;
       Cache cache; ///< The files and directories.

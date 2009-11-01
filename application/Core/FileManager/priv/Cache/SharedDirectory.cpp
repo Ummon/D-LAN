@@ -12,6 +12,12 @@ SharedDirectory::SharedDirectory(Cache* cache, const QString& path, Rights right
    this->cache->onEntryAdded(this);
 }
 
+SharedDirectory::SharedDirectory(Cache* cache, const QString& path, Rights rights, const Common::Hash& id)
+   : Directory(), cache(cache), path(path), rights(rights), id(id)
+{
+   this->cache->onEntryAdded(this);
+}
+
 QString SharedDirectory::getPath()
 {
    return "";

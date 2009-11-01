@@ -6,6 +6,7 @@
 #include <QMutex>
 #include <QString>
 #include <QList>
+#include <QTime>
 
 #include <Protos/files_cache.pb.h>
 #include <priv/FileUpdater/DirWatcher.h>
@@ -21,6 +22,8 @@ namespace FM
 
    class FileUpdater : public QThread
    {
+      Q_OBJECT
+
       static const int MINIMUM_DURATION_WHEN_HASHING = 30; ///< In seconds.
 
    public:
@@ -41,6 +44,9 @@ namespace FM
         */
       void retrieveFromFile(const Protos::FileCache::Hashes* fileCache, const QList<SharedDirectory*>& sharedDirectories);
 
+   signals:
+      void persistCache();
+
    protected:
       void run();
 
@@ -50,8 +56,9 @@ namespace FM
       /**
         * It will take some file from 'fileWithoutHashes' and compute theirs hashes.
         * The duration of the compuation is minimum 'minimumDurationWhenHashing'.
+        * @return true if some file has been hashed
         */
-      void computeSomeHashes();
+      bool computeSomeHashes();
 
       /**
         * Scan recursively all the directories and files contained
