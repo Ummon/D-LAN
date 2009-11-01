@@ -104,8 +104,8 @@ message SetSettings {
 // Core -> GUI
 message ReturnStatus {
    enum Status {
-      OK = 0,
-      ERROR = 1,
+      OK = 0;
+      ERROR = 1;
    }
    required Status status = 1;
    optional string errorMessage = 2;
