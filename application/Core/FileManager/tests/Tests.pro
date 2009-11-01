@@ -10,10 +10,13 @@ CONFIG -= app_bundle
 DESTDIR = "output/debug"
 MOC_DIR = ".tmp/debug"
 OBJECTS_DIR = ".tmp/debug"
-LIBS += -L../output/debug \
-    -lFileManager
-LIBS += -L../../../Common/output/debug \
-    -lCommon
+
+LIBS += -L../output/debug -lFileManager
+POST_TARGETDEPS += ../output/debug/libFileManager.a
+
+LIBS += -L../../../Common/output/debug -lCommon
+POST_TARGETDEPS += ../../../Common/output/debug/libCommon.a
+
 # FIXME : Should not be here, all dependies are read from the prl file (see link_prl):
 LIBS += -L../../../Common/LogManager/output/debug \
     -lLogManager

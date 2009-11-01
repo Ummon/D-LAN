@@ -62,15 +62,17 @@ void FileUpdater::rmRoot(SharedDirectory* dir)
    this->dirEvent->release();
 }
 
-void FileUpdater::retrieveFromFile(const Protos::FileCache::Hashes* fileCache, const QList<SharedDirectory*>& sharedDirectories)
+void FileUpdater::retrieveFromFile(const Protos::FileCache::Hashes* fileCache)
 {
    this->fileCache = fileCache;
-   dirsToScan << sharedDirectories;
 }
 
 void FileUpdater::run()
 {
-   // First retrieve the directories and file from the file cache.
+   QThread::currentThread()->setObjectName("FileUpdater");
+
+   // First : retrieve the directories and file from the file cache and
+   // synchronize it with the file system.
    if (this->fileCache)
    {
       for (QListIterator<SharedDirectory*> i(this->dirsToScan); i.hasNext();)

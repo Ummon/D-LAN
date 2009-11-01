@@ -67,44 +67,12 @@ void Cache::setSharedDirs(const QStringList& dirs, SharedDirectory::Rights right
       this->removeSharedDir(dir);
    }
 
-   QStringList dirsNotFound;
-
-   // Create new shared directories.
-   for (QListIterator<QString> i(newDirs); i.hasNext();)
-   {
-      QString path = i.next();
-      SharedDirectory* dir = new SharedDirectory(this, path, rights);
-      LOG_DEBUG("Add a shared directory : " + dir->getFullPath());
-      try
-      {
-         this->fileUpdater->addRoot(dir);
-         this->sharedDirs << dir;
-      }
-      catch (DirNotFoundException& e)
-      {
-         delete dir;
-         dirsNotFound << e.getPath();
-      }
-   }
-
-   if (!dirsNotFound.isEmpty())
-      throw DirsNotFoundException(dirsNotFound);
+   this->createSharedDirs(newDirs, rights);
 }
 
-QList<SharedDirectory*> Cache::retrieveFromFile(const Protos::FileCache::Hashes& hashes)
+void Cache::retrieveFromFile(const Protos::FileCache::Hashes& hashes)
 {
-   // Add the shared directories from the file cache.
-   for (int i = 0; i < hashes.dir_size(); i++)
-   {
-      const Protos::FileCache::Hashes_SharedDir& dir = hashes.dir(i);
-      new SharedDirectory(
-         this,
-         dir.path().data(),
-         dir.type() == Protos::FileCache::Hashes_SharedDir_Type_READ ? SharedDirectory::READ_ONLY : SharedDirectory::READ_WRITE,
-         Common::Hash(dir.id().hash().data())
-      );
-   }
-   return this->sharedDirs;
+   this->createSharedDirs(hashes);
 }
 
 void Cache::saveInFile(Protos::FileCache::Hashes& hashes)
@@ -160,4 +128,60 @@ void Cache::removeSharedDir(SharedDirectory* dir)
    //... TODO
 
    this->fileUpdater->rmRoot(dir);
+}
+
+void Cache::createSharedDirs(const QStringList& dirs, const QList<SharedDirectory::Rights>& rights, const QList<Common::Hash>& ids)
+{
+   QStringList dirsNotFound;
+
+   QListIterator<QString> i(dirs);
+   QListIterator<SharedDirectory::Rights> j(rights);
+   QListIterator<Common::Hash> k(ids);
+   while (i.hasNext())
+   {
+      QString path = i.next();
+      SharedDirectory::Rights currentRights = j.hasNext() ? j.next() : SharedDirectory::READ_ONLY;
+
+      LOG_DEBUG("Add a new shared directory : " + path);
+
+      SharedDirectory* dir = k.hasNext() ?
+         new SharedDirectory(this, path, currentRights, k.next()) :
+         new SharedDirectory(this, path, currentRights);
+
+      try
+      {
+         this->fileUpdater->addRoot(dir);
+         this->sharedDirs << dir;
+      }
+      catch (DirNotFoundException& e)
+      {
+         delete dir;
+         dirsNotFound << e.getPath();
+      }
+   }
+
+   if (!dirsNotFound.isEmpty())
+      throw DirsNotFoundException(dirsNotFound);
+}
+
+void Cache::createSharedDirs(const QStringList& dirs, SharedDirectory::Rights rights)
+{
+   this->createSharedDirs(dirs, QList<SharedDirectory::Rights>() << rights);
+}
+
+void Cache::createSharedDirs(const Protos::FileCache::Hashes& hashes)
+{
+   QStringList paths;
+   QList<SharedDirectory::Rights> rights;
+   QList<Common::Hash> ids;
+
+   // Add the shared directories from the file cache.
+   for (int i = 0; i < hashes.dir_size(); i++)
+   {
+      const Protos::FileCache::Hashes_SharedDir& dir = hashes.dir(i);
+      paths << dir.path().data();
+      rights << (dir.type() == Protos::FileCache::Hashes_SharedDir_Type_READ ? SharedDirectory::READ_ONLY : SharedDirectory::READ_WRITE)  ;
+      ids << Common::Hash(dir.id().hash().data());
+   }
+   this->createSharedDirs(paths, rights, ids);
 }

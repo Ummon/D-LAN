@@ -26,6 +26,8 @@ namespace FM
         */
       SharedDirectory(Cache* cache, const QString& path, Rights rights, const Common::Hash& id);
 
+      ~SharedDirectory();
+
       /**
         * Return always "" thus it makes this method the most usefull of the entire known univers.
         */

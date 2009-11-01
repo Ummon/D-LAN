@@ -34,9 +34,8 @@ namespace FM
       /**
         * Define the shared directories from the persisted given data.
         * The directories and files are not created here but later by the fileUpdater, see the FileManager ctor.
-        * @return The shared directories
         */
-      QList<SharedDirectory*> retrieveFromFile(const Protos::FileCache::Hashes& hashes);
+      void retrieveFromFile(const Protos::FileCache::Hashes& hashes);
 
       /**
         * Populate the given structure to be persisted later.
@@ -56,6 +55,14 @@ namespace FM
 
    private:
       void removeSharedDir(SharedDirectory* dir);
+
+      /**
+        * Create new shared directories and inform the fileUpdater.
+        * @exception DirsNotFoundException
+        */
+      void createSharedDirs(const QStringList& dirs, const QList<SharedDirectory::Rights>& rights, const QList<Common::Hash>& ids = QList<Common::Hash>());
+      void createSharedDirs(const QStringList& dirs, SharedDirectory::Rights rights);
+      void createSharedDirs(const Protos::FileCache::Hashes& hashes);
 
       QList<SharedDirectory*> sharedDirs;
 
