@@ -1,19 +1,49 @@
 #ifndef COMMON_HASH_H
 #define COMMON_HASH_H
 
+#include <QString>
 #include <QByteArray>
 
 namespace Common
 {
-   class Hash : public QByteArray
+   /**
+     * An uber-optimized SHA-1 hash. It always takes 20 bytes.
+     * see : http://fr.wikipedia.org/wiki/SHA-1
+     */
+   class Hash
    {
    public:
       Hash();
-      Hash(const char* str);
-      Hash(const QByteArray& bytes);
+      ~Hash();
+      Hash(const Hash& h);
+      Hash(const char* h);
+      Hash(const QByteArray& a);
+      Hash& operator=(const Hash&);
 
+      const char* getData() const;
       QString toStr() const;
+
       static Hash rand();
+
+   private:
+      /**
+        * Dereference the pointed data.
+        * return true if the data has been deleted.
+        */
+      inline bool dereference();
+      inline void newData();
+
+      char* data; ///< Point to an array of 22 bytes. The first byte is the number of hash which point this array and the last byte is always 0.
    };
+
+   inline bool operator==(const Hash& h1, const Hash& h2)
+   {
+      return memcmp(h1.getData(), h2.getData(), 20) == 0;
+   }
+
+   inline uint qHash(const Hash& h)
+   {
+      return (uint)(h.getData() + 1);
+   }
 }
 #endif

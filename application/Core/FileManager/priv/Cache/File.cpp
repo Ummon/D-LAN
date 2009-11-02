@@ -56,7 +56,7 @@ File* File::restoreFromFileCache(const Protos::FileCache::Hashes_File& file)
    this->chunks.clear();
 
    // TODO : test the modification (or creation) date too..
-   if (file.filename().data() == this->name && (qint64)file.size() == this->size)
+   if (file.filename().data() == this->getName() && (qint64)file.size() == this->size)
    {
       LOG_DEBUG(QString("Restoring file '%1' from the file cache").arg(this->getFullPath()));
       // TODO : maybe test whether the chunks size is correct..
