@@ -25,7 +25,7 @@ Chunk::Chunk(File& file, int num, const Protos::FileCache::Hashes_Chunk& chunk)
 void Chunk::populateHashesChunk(Protos::FileCache::Hashes_Chunk& chunk)
 {
    chunk.set_knownbytes(this->knownBytes);
-   chunk.mutable_hash()->set_hash(this->hash.data());
+   chunk.mutable_hash()->set_hash(this->hash.getData());
 }
 
 QSharedPointer<IDataReader> Chunk::getDataReader()

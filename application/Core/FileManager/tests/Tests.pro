@@ -21,8 +21,7 @@ POST_TARGETDEPS += ../../../Common/output/debug/libCommon.a
 LIBS += -L../../../Common/LogManager/output/debug -lLogManager
 POST_TARGETDEPS += ../../../Common/LogManager/output/debug/libLogManager.a
 
-LIBS += -L${PROTOBUF}/src/.libs \
-    -lprotobuf
+LIBS += -L${PROTOBUF}/src/.libs -lprotobuf
 
 INCLUDEPATH += . \
     .. \

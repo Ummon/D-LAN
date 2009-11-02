@@ -3,6 +3,7 @@ using namespace FM;
 
 #include <QDir>
 
+#include <priv/Log.h>
 #include <priv/FileManager.h>
 #include <priv/Cache/File.h>
 #include <priv/Cache/SharedDirectory.h>
