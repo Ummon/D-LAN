@@ -90,7 +90,7 @@ void Cache::saveInFile(Protos::FileCache::Hashes& hashes)
             Protos::FileCache::Hashes_SharedDir_Type_READ :
             Protos::FileCache::Hashes_SharedDir_Type_READ_WRITE
       );
-      sharedDirMess->mutable_id()->set_hash(sharedDir->getId().getData());
+      sharedDirMess->mutable_id()->set_hash(sharedDir->getId().getData(), Common::Hash::HASH_SIZE);
 
       sharedDir->populateHashesDir(*sharedDirMess->mutable_root());
    }

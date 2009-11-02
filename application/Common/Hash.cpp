@@ -7,6 +7,7 @@ using namespace Common;
 Hash::Hash()
 {
    this->newData();
+   memset(this->data, 0, HASH_SIZE);
 }
 
 Hash::~Hash()
@@ -23,16 +24,16 @@ Hash::Hash(const Hash& h)
 Hash::Hash(const char* h)
 {
    this->newData();
-   memcpy(this->data + 1, h, 20);
+   memcpy(this->data + 1, h, HASH_SIZE);
 }
 
 Hash::Hash(const QByteArray& a)
 {
-   if (a.size() != 20)
-      throw QString("The given QByteArray must have a size of 20");
+   if (a.size() != HASH_SIZE)
+      throw QString("The given QByteArray must have a size of %1").arg(HASH_SIZE);
 
    this->newData();
-   memcpy(this->data + 1, a.constData(), 20);
+   memcpy(this->data + 1, a.constData(), HASH_SIZE);
 }
 
 Hash& Hash::operator=(const Hash& h)
@@ -51,7 +52,7 @@ const char* Hash::getData() const
 QString Hash::toStr() const
 {
    QString ret(40);
-   for (int i = 0; i < 20; i++)
+   for (int i = 0; i < HASH_SIZE; i++)
    {
       char p1 = (this->data[i+1] & 0xF0) >> 4;
       char p2 = this->data[i+1] & 0x0F;
@@ -65,7 +66,7 @@ Hash Hash::rand()
 {
    Hash hash;
    qsrand(QTime(0,0,0).secsTo(QTime::currentTime()));
-   for (int i = 0; i < 20; i++)
+   for (int i = 0; i < HASH_SIZE; i++)
       hash.data[i+1] = (char)(qrand() % 256);
 
    return hash;
@@ -84,45 +85,6 @@ bool Hash::dereference()
 
 void Hash::newData()
 {
-   this->data = new char[22];
+   this->data = new char[HASH_SIZE + 1];
    this->data[0] = 1;
-   this->data[21] = 0; // null terminated, useful for the method 'getData()'.
 }
-
-/*
-Hash::Hash()
-   : QByteArray(20, 0)
-{
-   qDebug() << "Hash::Hash() capacity : " << this->capacity();
-}
-
-Hash::Hash(const char* str)
-   : QByteArray(str, 20)
-{
-   qDebug() << "Hash::Hash(const char* str) capacity : " << this->capacity();
-}
-
-
-Hash::Hash(const QByteArray& bytes)
-   : QByteArray(bytes)
-{
-   QByteArray::resize(20);
-   QByteArray::squeeze();
-}
-
-QString Hash::toStr() const
-{
-   return QString(this->toHex().data());
-}
-
-Hash Hash::rand()
-{
-   Hash hash;
-   hash.resize(20);
-   qsrand(QTime(0,0,0).secsTo(QTime::currentTime()));
-   for (int i = 0; i < 20; i++)
-   {
-      hash[i] = (char)(qrand() % 256);
-   }
-   return hash;
-}*/
