@@ -44,9 +44,12 @@ Hash& Hash::operator=(const Hash& h)
 #if WITH_MUTEX
    QMutexLocker(&h.data->mutex);
 #endif
-   this->dereference();
-   this->data = h.data;
-   this->data->nbRef += 1;
+   if (&h != this)
+   {
+      this->dereference();
+      this->data = h.data;
+      this->data->nbRef += 1;
+   }
    return *this;
 }
 
