@@ -622,7 +622,7 @@
      inkscape:pageshadow="2"
      inkscape:zoom="1.4"
      inkscape:cx="231.08703"
-     inkscape:cy="564.29515"
+     inkscape:cy="792.86658"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -680,15 +680,10 @@
        y="147.29424"
        id="text3602"><tspan
          sodipodi:role="line"
-         id="tspan3604"
          x="148.87944"
          y="147.29424"
-         style="font-size:12px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:end;text-anchor:end;fill:#67680d;fill-opacity:1;font-family:Bitstream Vera Sans Mono;-inkscape-font-specification:Bitstream Vera Sans Mono">HaveChunks?</tspan><tspan
-         sodipodi:role="line"
-         x="148.87944"
-         y="162.29424"
-         style="font-size:8px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:end;text-anchor:end;fill:#67680d;fill-opacity:1;font-family:Bitstream Vera Sans Mono;-inkscape-font-specification:Bitstream Vera Sans Mono"
-         id="tspan2869" /></text>
+         style="font-size:12px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:end;text-anchor:end;fill:#67680d;fill-opacity:1;font-family:Bitstream Vera Sans Mono;-inkscape-font-specification:Bitstream Vera Sans Mono"
+         id="tspan2869">IMAlive</tspan></text>
     <path
        sodipodi:type="arc"
        style="fill:#000000;fill-opacity:1;stroke:none"
@@ -795,7 +790,7 @@
          id="tspan3604-9"
          x="267.61981"
          y="268.39548"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:end;text-anchor:end;fill:#2833b2;fill-opacity:1;font-family:Bitstream Vera Sans Mono;-inkscape-font-specification:Bitstream Vera Sans Mono">HaveChunksResult<tspan
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:end;text-anchor:end;fill:#2833b2;fill-opacity:1;font-family:Bitstream Vera Sans Mono;-inkscape-font-specification:Bitstream Vera Sans Mono">ChunksOwned<tspan
    style="font-size:9px;fill:#2833b2;fill-opacity:1"
    id="tspan2947"> (optional)</tspan></tspan><tspan
          sodipodi:role="line"
