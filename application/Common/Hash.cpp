@@ -2,7 +2,6 @@
 using namespace Common;
 
 #include <QtGlobal>
-#include <QtDebug>
 #include <QTime>
 
 Hash::Hash()
@@ -11,14 +10,9 @@ Hash::Hash()
    memset(this->data->hash, 0, HASH_SIZE);
 }
 
-Hash::~Hash()
-{
-   this->dereference();
-}
-
 Hash::Hash(const Hash& h)
 {
-#ifdef WITH_MUTEX
+#if WITH_MUTEX
    QMutexLocker(&h.data->mutex);
 #endif
    this->data = h.data;
@@ -40,9 +34,14 @@ Hash::Hash(const QByteArray& a)
    memcpy(this->data->hash, a.constData(), HASH_SIZE);
 }
 
+Hash::~Hash()
+{
+   this->dereference();
+}
+
 Hash& Hash::operator=(const Hash& h)
 {
-#ifdef WITH_MUTEX
+#if WITH_MUTEX
    QMutexLocker(&h.data->mutex);
 #endif
    this->dereference();
@@ -81,7 +80,7 @@ Hash Hash::rand()
 
 void Hash::dereference()
 {
-#ifdef WITH_MUTEX
+#if WITH_MUTEX
    QMutexLocker(&this->data->mutex);
 #endif
    this->data->nbRef -= 1;
