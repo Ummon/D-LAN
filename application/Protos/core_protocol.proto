@@ -9,32 +9,37 @@ import "common.proto";
 package Protos.Core;
 
 /***** Multicast UDP messages. *****/
-// Have chunks ?
+// Im alive.
 // This message is sent periodically to all other peers.
-// It send an array of hashe chunks. These hases can come
-// from different files.
-// This message is also used to know the other peers.
+// It send an array of hash chunks to know which one has which chunk.
+// If a peer owns one or more chunk corresponding to the given hashes then it
+// will reply with a 'ChunksOwned' message.
+// These hashes can come from different files.
 // a -> all
-message HaveChunks {
+// id : 0x01
+message IMAlive {
    required uint32 version = 1; // The version of the protocol used.
    required Common.Hash peerID = 2;
    required string nick = 3;
    required uint64 amount = 4; // [byte] Amount of sharing.
    
-   optional uint64 tag = 5; // A random number, all results must repeate this number.
+   optional uint64 tag = 5; // A random number, all results must repeat this number.
    repeated Common.Hash chunk = 6; // Can be empty.
 }
 // This message is only sent if some chunks are requested.
 // Return an array with a bool value for each
 // given chunks. 'true' means "I have this chunk".
+// Not sent if the peer doesn't own any chunk.
 // all -> a
-message HaveChunksResult {
+// id : 0x02
+message ChunksOwned {
    required uint64 tag = 1; // The repeated number.
    required Common.Hash peerID = 2;
    repeated bool chunkState = 3 [packed=true]; // The array size must have the same size of HaveChunks.chunks.
 }
 
 // a -> all
+// id : 0x11
 message ChatMessage {
    required Common.Hash peerID = 1;
    required string message = 2;
@@ -43,19 +48,22 @@ message ChatMessage {
 // Searching a file or a directory.
 // See http://dev.euphorik.ch/wiki/pmp/Algorithms#Searching for more details.
 // a -> all
+// id : 0x21
 message Find {
    required uint64 tag = 1; // A tag to identify the search. All answers must have the same tag.
    required Common.Hash peerID = 2;
    required string pattern = 3;
 }
-// all -> a
+// Results.
 // The size of this message must fit in a UDP packet so it must not exeed 65'507 bytes.
 // Number of average entry in a result (we don't take in account the overhead of protobuff) :
 //  n = 65507 / (level + averagePathFilenameSize + Size + averageHashNb * 20)
 //  n = 65507 / (4 + 100 + 8 + 20 * 20) = 127 entries.
 // Many of message can be sent by a peer for a given search. The core will only accept answers
 // for a limited duration. For example 10 seconds.
-// see Common.FindResult
+// all -> a
+// id : 0x22
+// Common.FindResult (see common.proto)
 
 
 /***** Unicast TCP Messages. *****/
@@ -66,10 +74,12 @@ message Find {
 // the hashes will be computed on the fly. Thus this request
 // can be a bit long (~20s).
 // a -> b
+// id : 0x31
 message GetHashes {
    required Common.Entry file = 1;
 }
 // b -> a
+// id : 0x32
 message GetHashesResult {
    enum Status {
       OK = 0;
@@ -82,11 +92,13 @@ message GetHashesResult {
 
 // Download.
 // a -> b
+// id : 0x41
 message GetChunk {
    required Common.Hash chunk = 1;
    required uint32 offset = 2; // [byte] Relative to the beginning of the chunk.
 }
 // b -> a
+// id : 0x42
 message GetChunkResult {
    enum Status {
       OK = 0;
@@ -100,10 +112,12 @@ message GetChunkResult {
 
 // Browsing.
 // a -> b
+// id : 0x51
 message GetEntries {
    required Common.DirEntry directory = 1;
 }
 // b -> a
+// id : 0x52
 message GetEntriesResult {
    repeated Common.DirEntry dir = 1;
    repeated Common.FileEntry file = 2;

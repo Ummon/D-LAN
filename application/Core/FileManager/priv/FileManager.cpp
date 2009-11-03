@@ -14,6 +14,7 @@ using namespace FM;
 
 #include <Common/PersistantData.h>
 #include <Common/Math.h>
+#include <Exceptions.h>
 #include <priv/Log.h>
 #include <priv/Constants.h>
 #include <priv/Cache/Entry.h>
@@ -217,7 +218,16 @@ void FileManager::loadCacheFromFile()
       Common::PersistantData::getValue(FILE_CACHE, *savedCache);
 
       // Scan the shared directories and try to match the files against the saved cache.
-      this->cache.retrieveFromFile(*savedCache);
+      try
+      {
+         this->cache.retrieveFromFile(*savedCache);
+      }
+      catch (DirsNotFoundException& e)
+      {
+         foreach (QString path, e.getPaths())
+            LOG_WARN(QString("During the file cache loading, this directory hasn't been found : %1").arg(path));
+      }
+
       this->fileUpdater.setFileCache(savedCache);
    }
    catch (Common::UnknownValueException& e)
