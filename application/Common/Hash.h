@@ -3,6 +3,9 @@
 
 #include <QString>
 #include <QByteArray>
+#include <QMutex>
+
+#define WITH_MUTEX 1
 
 namespace Common
 {
@@ -33,12 +36,20 @@ namespace Common
    private:
       /**
         * Dereference the pointed data.
-        * return true if the data has been deleted.
         */
-      inline bool dereference();
+      inline void dereference();
       inline void newData();
 
-      char* data; ///< Point to an array of HASH_SIZE+1 bytes. The first byte is the number of hash which point this array.
+      struct SharedData
+      {
+#ifdef WITH_MUTEX
+         QMutex mutex;
+#endif
+         int nbRef;
+         char hash[HASH_SIZE];
+      };
+
+      SharedData* data;
    };
 
    inline bool operator==(const Hash& h1, const Hash& h2)
