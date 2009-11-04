@@ -19,6 +19,7 @@ message Settings {
 // The state is sent periodically to the GUI (each second for example)
 // or right after a GUI command.
 // The size of this message should be lesser than 63kB to fit in one IP packet.
+// id : 0x01
 message State {
    message Peer {
       required Common.Hash peerID = 1;
@@ -75,12 +76,14 @@ message State {
 
 /***** Events *****/
 // Core -> GUI
+// id : 0x11
 message EventChatMessage {
    required uint32 time = 1;
    required string message = 2;
 }
 
 // Core -> GUI
+// id : 0x12
 message EventLogMessage {
    required uint32 time = 1;
    required string message = 2;
@@ -93,15 +96,18 @@ message EventLogMessage {
 // Core -> GUI
 // Sended when the user close the core
 // and when the connection is local.
+// id : 0x13
 message Close {
 }
 
 /***** Commands. *****/
 // GUI -> Core
+// id : 0x21
 message SetSettings {
    required Settings settings = 1;
 }
 // Core -> GUI
+// id : 0x22
 message ReturnStatus {
    enum Status {
       OK = 0;
@@ -112,29 +118,34 @@ message ReturnStatus {
 }
 
 // GUI -> Core
+// id : 0x31
 message Search  {
    required uint64 tag = 1;
    required string pattern = 2;
 }
 // Core -> GUI
 // This message is sent for each UDP datagram received.
+// id : 0x32
 message SearchResult {
    required uint64 tag = 1;
    required Common.FindResult result = 2; // Encapsulate the received result.
 }
 
 // GUI -> Core
+// id : 0x41
 message Browse {
    required Common.Hash peerID = 1;
    required Common.DirEntry dirEntry = 2;
 }
 // Core -> GUI
+// id : 0x42
 message BrowseResult {
    repeated Common.DirEntry dir = 1;
    repeated Common.FileEntry file = 2;   
 }
 
 // GUI -> Core
+// id : 0x51
 // Remove all completed downloads from the queue.
 message ClearCompleteDownloads {
 }
@@ -142,12 +153,14 @@ message ClearCompleteDownloads {
 // GUI -> Core
 // Remove a download from the queue. If this download
 // is not finished its chunks will be removed.
+// id : 0x61
 message CancelDownloads {
    repeated uint32 ID = 1;
 }
 
 // GUI -> Core
 // Says to the core to download a file OR a directory (XOR).
+// id : 0x71
 message Download {
    required Common.Hash peerID = 1; // From where the file/dir is.
    optional Common.DirEntry dir = 2;
@@ -156,6 +169,7 @@ message Download {
 
 // GUI -> Core
 // Send a chat message to everyone.
+// id : 0x81
 message ChatMessage {
    required string message = 1;
 }
