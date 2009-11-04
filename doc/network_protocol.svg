@@ -620,16 +620,16 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="1.4"
-     inkscape:cx="231.08703"
-     inkscape:cy="792.86658"
+     inkscape:zoom="2.8"
+     inkscape:cx="398.44574"
+     inkscape:cy="778.19246"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
      inkscape:window-width="1280"
      inkscape:window-height="784"
-     inkscape:window-x="0"
-     inkscape:window-y="0"
+     inkscape:window-x="-10"
+     inkscape:window-y="52"
      inkscape:window-maximized="1" />
   <metadata
      id="metadata7">
@@ -980,17 +980,17 @@
     <text
        xml:space="preserve"
        style="font-size:12.16813469px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:end;text-anchor:end;fill:#2833b2;fill-opacity:1;stroke:none;font-family:Monaco;-inkscape-font-specification:Monaco"
-       x="441.47122"
-       y="254.75674"
+       x="410.04266"
+       y="250.18532"
        id="text3602-5-3-0-9"><tspan
          sodipodi:role="line"
          id="tspan3604-2-4-2-4"
-         x="441.47122"
-         y="254.75674"
+         x="410.04266"
+         y="250.18532"
          style="font-size:12px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:end;text-anchor:end;fill:#2833b2;fill-opacity:1;font-family:Bitstream Vera Sans Mono;-inkscape-font-specification:Bitstream Vera Sans Mono">GetHashesResult</tspan><tspan
          sodipodi:role="line"
-         x="441.47122"
-         y="269.75674"
+         x="410.04266"
+         y="265.1853"
          style="font-size:8px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:end;text-anchor:end;fill:#2833b2;fill-opacity:1;font-family:Bitstream Vera Sans Mono;-inkscape-font-specification:Bitstream Vera Sans Mono"
          id="tspan2869-7-1-8-8" /></text>
     <path
@@ -1053,22 +1053,22 @@
     <text
        xml:space="preserve"
        style="font-size:12.16813469px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Monaco;-inkscape-font-specification:Monaco"
-       x="383.83588"
-       y="265.59476"
+       x="348.83588"
+       y="261.02332"
        id="text3602-1-85-4-4"><tspan
          sodipodi:role="line"
-         x="383.83588"
-         y="265.59476"
+         x="348.83588"
+         y="261.02332"
          style="font-size:8px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;text-anchor:start;font-family:Bitstream Vera Sans Mono;-inkscape-font-specification:Bitstream Vera Sans Mono"
-         id="tspan2905-6-8-2">(status, [hash])</tspan><tspan
+         id="tspan2905-6-8-2">(status)</tspan><tspan
          sodipodi:role="line"
-         x="383.83588"
-         y="275.59476"
+         x="348.83588"
+         y="271.02332"
          style="font-size:8px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;text-anchor:start;font-family:Bitstream Vera Sans Mono;-inkscape-font-specification:Bitstream Vera Sans Mono"
          id="tspan2869-4-1-6-3" /></text>
     <path
-       style="fill:none;stroke:#2833b2;stroke-width:2.12599993;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker-start:url(#Arrow1Mstart);marker-mid:none"
-       d="m 350.30403,215.91837 c 0,0 37.0889,21.23668 82.01378,18.27579 44.92488,-2.96089 73.49593,-23.97869 73.49593,-23.97869"
+       style="fill:none;stroke:#2833b2;stroke-width:2.12599993;marker-start:url(#Arrow1Mstart);marker-mid:none;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       d="M 344.58974,212.34694 C 344.58974,212.34694 380.25007,220.72648 425.17495,217.76559 C 470.09983,214.8047 498.67088,200.21547 498.67088,200.21547"
        id="path3630-1-5-1"
        sodipodi:nodetypes="czc" />
     <text
@@ -1396,6 +1396,27 @@
          style="font-size:13.74558163px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:end;text-anchor:end;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans Mono;-inkscape-font-specification:Bitstream Vera Sans Mono"
          y="132.43828"
          x="468.57941"
+         sodipodi:role="line" /></text>
+    <path
+       style="fill:none;stroke:#b22828;stroke-width:2.12599993;marker-start:url(#Arrow1Mstart);marker-mid:none;stroke-miterlimit:4;stroke-dasharray:8.50399971, 4.25199986;stroke-dashoffset:0;stroke-opacity:1"
+       d="M 340.47464,219.43327 C 340.47464,219.43327 379.7064,238.5271 424.63128,235.56621 C 469.55616,232.60532 500.98435,205.87323 500.98435,205.87323"
+       id="path2593"
+       sodipodi:nodetypes="czc" />
+    <text
+       id="text3557"
+       y="267.4133"
+       x="403.56616"
+       style="font-size:12.16813469px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Monaco;-inkscape-font-specification:Monaco"
+       xml:space="preserve"><tspan
+         style="font-size:12px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;text-anchor:start;fill:#ff0101;fill-opacity:1;font-family:Bitstream Vera Sans Mono;-inkscape-font-specification:Bitstream Vera Sans Mono"
+         y="267.4133"
+         x="403.56616"
+         sodipodi:role="line"
+         id="tspan3559">Stream of hashes</tspan><tspan
+         id="tspan3563"
+         style="font-size:12px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;text-anchor:start;font-family:Bitstream Vera Sans Mono;-inkscape-font-specification:Bitstream Vera Sans Mono"
+         y="282.4133"
+         x="403.56616"
          sodipodi:role="line" /></text>
   </g>
 </svg>
