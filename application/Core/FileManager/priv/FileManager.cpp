@@ -26,9 +26,10 @@ FileManager::FileManager()
 {
    LOG_USER("Loading ..");
 
-   connect(&this->cache, SIGNAL(entryAdded(Entry*)), this, SLOT(entryAdded(Entry*)), Qt::DirectConnection);
+   connect(&this->cache, SIGNAL(entryAdded(Entry*)),   this, SLOT(entryAdded(Entry*)),   Qt::DirectConnection);
    connect(&this->cache, SIGNAL(entryRemoved(Entry*)), this, SLOT(entryRemoved(Entry*)), Qt::DirectConnection);
-   connect(&this->cache, SIGNAL(chunkAdded(Chunk*)), this, SLOT(chunkAdded(Chunk*)), Qt::DirectConnection);
+   connect(&this->cache, SIGNAL(chunkAdded(Chunk*)),   this, SLOT(chunkAdded(Chunk*)),   Qt::DirectConnection);
+   connect(&this->cache, SIGNAL(chunkRemoved(Chunk*)), this, SLOT(chunkRemoved(Chunk*)), Qt::DirectConnection);
    connect(&this->fileUpdater, SIGNAL(persistCache()), this, SLOT(persistCacheToFile()), Qt::DirectConnection);
 
    this->loadCacheFromFile();
@@ -177,16 +178,22 @@ QList< QSharedPointer<IChunk> > FileManager::newFile(const Protos::Common::FileE
 
 void FileManager::entryAdded(Entry* entry)
 {
-   LOG_DEBUG("Indexing item : " + entry->getFullPath());
+   LOG_DEBUG(QString("Entry added item : %1, adding to the index..").arg(entry->getFullPath()));
    this->wordIndex.addItem(FileManager::splitInWords(entry->getName()), entry);
 }
 
 void FileManager::entryRemoved(Entry* entry)
 {
-   // TODO
+   LOG_DEBUG(QString("Entry added item : %1, adding to the index..").arg(entry->getFullPath()));
+   // TODO : remove from the index
 }
 
 void FileManager::chunkAdded(Chunk* chunk)
+{
+   this->chunks.add(chunk);
+}
+
+void FileManager::chunkRemoved(Chunk* chunk)
 {
    this->chunks.add(chunk);
 }
@@ -213,7 +220,7 @@ void FileManager::loadCacheFromFile()
 {
    try
    {
-      // The hashes will be unallocated by the fileUpdater.
+      // This hashes will be unallocated by the fileUpdater.
       Protos::FileCache::Hashes* savedCache = new Protos::FileCache::Hashes();
       Common::PersistantData::getValue(FILE_CACHE, *savedCache);
 

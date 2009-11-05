@@ -54,7 +54,7 @@ void Tests::search()
    this->printAmount();
 
    this->sharedDirs << QDir::currentPath().append("/../../aSharedDir");
-   this->fileManager->setSharedDirsReadOnly(this->sharedDirs);
+   this->fileManager->setSharedDirsReadWrite(this->sharedDirs);
 
    QTest::qSleep(500);
 
@@ -63,10 +63,50 @@ void Tests::search()
    this->printSearch(terms, result);
 }
 
+void Tests::addSubSharedDirectories()
+{
+   this->sharedDirs << QDir::currentPath().append("/../../aSharedDir/subdir");
+   this->sharedDirs << QDir::currentPath().append("/../../aSharedDir/anotherSubdir");
+   try
+   {
+      this->fileManager->setSharedDirsReadOnly(this->sharedDirs);
+   }
+   catch(SuperDirectoryExistsException& e)
+   {
+      qDebug() << "There is already a super directory : "; // TODO : print the super directory
+      this->sharedDirs.removeLast();
+      this->sharedDirs.removeLast();
+   }
+}
+
+void Tests::addSuperSharedDirectories()
+{
+   this->sharedDirs << QDir::currentPath().append("/../..");
+   try
+   {
+      this->fileManager->setSharedDirsReadOnly(this->sharedDirs);
+   }
+   catch(SubDirectoriesWithDifferentRightsExistsException& e)
+   {
+      qDebug() << "There is already sub directories with different rights : "; // TODO : print more information
+      this->sharedDirs.removeLast();
+   }
+}
+
 void Tests::rmSharedDirectories()
 {
-   this->sharedDirs.removeLast();
+   this->sharedDirs.clear();
    this->fileManager->setSharedDirsReadOnly(this->sharedDirs);
+}
+
+void Tests::addSuperSharedDirectoriesAndMerge()
+{
+   /*
+   QStringList dirs;
+   dirs << QDir::currentPath().append("/../../aSharedDir/subdir") <<
+         QDir::currentPath().append("/../../aSharedDir/anotherSubdir") <<
+         QDir::currentPath().append("/../../aSharedDir");
+   this->fileManager2->setSharedDirsReadOnly(dirs);*/
 }
 
 void Tests::cleanupTestCase()

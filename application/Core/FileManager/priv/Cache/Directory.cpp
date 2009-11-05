@@ -14,12 +14,18 @@ Directory::Directory(Directory* parent, const QString& name)
    this->parent->subDirs.append(this);
 
    // Same as a new file (see the File ctor).
-   static_cast<SharedDirectory*>(this->getRoot())->getCache()->onEntryAdded(this);
+   static_cast<SharedDirectory*>(this->getRoot())->getCache()->onEntryAdded(this);;
+   //this->getCache()->onEntryAdded(this);
 }
 
 Directory::Directory()
    : Entry(""), parent(0)
 {
+}
+
+Directory::~Directory()
+{
+   static_cast<SharedDirectory*>(this->getRoot())->getCache()->onEntryRemoved(this);
 }
 
 QList<File*> Directory::restoreFromFileCache(const Protos::FileCache::Hashes_Dir& dir)
@@ -80,6 +86,11 @@ QString Directory::getPath()
 
 QString Directory::getFullPath()
 {
+   // In case of a partially constructed ShareDirectory.
+   // (When a exception is thrown from the SharedDirectory ctor).
+   if (!this->parent)
+      return this->name;
+
    return this->parent->getFullPath().append('/').append(this->name);
 }
 
@@ -98,6 +109,20 @@ void Directory::addFile(File* file)
    this->files.append(file);
 
    this->addSize(file->getSize());
+}
+
+void Directory::stealSubDirs(Directory* dir)
+{
+   this->subDirs.append(dir->subDirs);
+
+   foreach (Directory* d, dir->subDirs)
+   {
+      d->parent = this;
+      this->addSize(d->getSize());
+      dir->size -= d->getSize();
+   }
+
+   dir->subDirs.clear();
 }
 
 void Directory::addSize(qint64 size)

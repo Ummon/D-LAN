@@ -1,20 +1,53 @@
 #include <priv/Cache/SharedDirectory.h>
 using namespace FM;
 
+#include <QDir>
+
+#include <Exceptions.h>
+#include <priv/Exceptions.h>
 #include <priv/Cache/Cache.h>
 
 SharedDirectory::SharedDirectory(Cache* cache, const QString& path, Rights rights)
-   : Directory(), cache(cache), path(path), rights(rights)
+   : Directory(), cache(cache), path(path), rights(rights), id(Common::Hash::rand())
 {
-   this->id = Common::Hash::rand();
-
-   // Same as a new file (see the File ctor).
-   this->cache->onEntryAdded(this);
+   this->init();
 }
 
 SharedDirectory::SharedDirectory(Cache* cache, const QString& path, Rights rights, const Common::Hash& id)
    : Directory(), cache(cache), path(path), rights(rights), id(id)
 {
+   this->init();
+}
+
+void SharedDirectory::init()
+{
+   // First of all check is the directory physically exists.
+   if (!QDir(this->path).exists())
+      throw DirNotFoundException(this->path);
+
+   if (this->cache->getSuperSharedDirectory(path))
+      throw SuperDirectoryExistsException();
+
+   // Gets the sub directories and checks the rights matches.
+   QList<SharedDirectory*> subDirs = this->cache->getSubSharedDirectories(path);
+   foreach (SharedDirectory* subDir, subDirs)
+      if (subDir->rights != this->rights)
+         throw SubDirectoriesWithDifferentRightsExistsException();
+
+   // Merges the sub-directories of each directory found.
+   foreach (SharedDirectory* subDir, subDirs)
+   {
+      // Create the missing directories.
+      const QStringList& parentFolders = this->getFullPath().split('/', QString::SkipEmptyParts);
+      const QStringList& childFolders = subDir->getFullPath().split('/', QString::SkipEmptyParts);
+      Directory* current = this;
+      for (int i = parentFolders.size(); i < childFolders.size(); i++)
+         current = new Directory(this, childFolders[i]);
+      current->stealSubDirs(subDir);
+
+      delete subDir;
+   }
+
    this->cache->onEntryAdded(this);
 }
 
