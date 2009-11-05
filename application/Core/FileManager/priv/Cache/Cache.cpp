@@ -11,7 +11,7 @@ using namespace FM;
 #include <priv/Cache/SharedDirectory.h>
 
 Cache::Cache(FileManager* fileManager, FileUpdater* fileUpdater)
-   : fileManager(fileManager), fileUpdater(fileUpdater)
+   : fileManager(fileManager), fileUpdater(fileUpdater), lock(QMutex::Recursive)
 {
 }
 
@@ -104,6 +104,50 @@ quint64 Cache::getAmount()
    return amount;
 }
 
+SharedDirectory* Cache::getSuperSharedDirectory(const QString& path)
+{
+   const QStringList& folders = path.split('/', QString::SkipEmptyParts);
+
+   for (QListIterator<SharedDirectory*> i(this->sharedDirs); i.hasNext();)
+   {
+      SharedDirectory* sharedDir = i.next();
+      const QStringList& foldersShared = sharedDir->getFullPath().split('/', QString::SkipEmptyParts);
+      if (folders.size() <= foldersShared.size())
+         continue;
+
+      for (int i = 0; i < foldersShared.size(); i++)
+         if (folders[i] != foldersShared[i])
+            continue;
+
+      return sharedDir;
+   }
+
+   return 0;
+}
+
+QList<SharedDirectory*> Cache::getSubSharedDirectories(const QString& path)
+{
+   QList<SharedDirectory*> ret;
+
+   const QStringList& folders = path.split('/', QString::SkipEmptyParts);
+
+   for (QListIterator<SharedDirectory*> i(this->sharedDirs); i.hasNext();)
+   {
+      SharedDirectory* sharedDir = i.next();
+      const QStringList& foldersShared = sharedDir->getFullPath().split('/', QString::SkipEmptyParts);
+      if (foldersShared.size() <= folders.size())
+         continue;
+
+      for (int i = 0; i < folders.size(); i++)
+         if (folders[i] != foldersShared[i])
+            continue;
+
+      ret.append(sharedDir);
+   }
+
+   return ret;
+}
+
 void Cache::onEntryAdded(Entry* entry)
 {
    emit entryAdded(entry);
@@ -144,18 +188,17 @@ void Cache::createSharedDirs(const QStringList& dirs, const QList<SharedDirector
 
       LOG_DEBUG(QString("Add a new shared directory : %1").arg(path));
 
-      SharedDirectory* dir = k.hasNext() ?
-         new SharedDirectory(this, path, currentRights, k.next()) :
-         new SharedDirectory(this, path, currentRights);
-
       try
       {
+         SharedDirectory* dir = k.hasNext() ?
+            new SharedDirectory(this, path, currentRights, k.next()) :
+            new SharedDirectory(this, path, currentRights);
+
          this->fileUpdater->addRoot(dir);
          this->sharedDirs << dir;
       }
       catch (DirNotFoundException& e)
       {
-         delete dir;
          dirsNotFound << e.getPath();
       }
    }

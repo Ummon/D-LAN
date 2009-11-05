@@ -17,7 +17,7 @@ namespace FM
    public:
       Directory(Directory* parent, const QString& name);
 
-      virtual ~Directory() {};
+      virtual ~Directory();
 
       QList<File*> restoreFromFileCache(const Protos::FileCache::Hashes_Dir& dir);
 
@@ -34,6 +34,12 @@ namespace FM
         * Only called by the class File.
         */
       void addFile(File* file);
+
+      /**
+        * Steal the sub directories from 'dir'.
+        * The sub dirs will be removed from 'dir'.
+        */
+      void stealSubDirs(Directory* dir);
 
    protected:
       Directory();

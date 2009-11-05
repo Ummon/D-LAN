@@ -17,7 +17,10 @@ private slots:
    void initTestCase();
    void addSharedDirectories();
    void search();
+   void addSubSharedDirectories();
+   void addSuperSharedDirectories();
    void rmSharedDirectories();
+   void addSuperSharedDirectoriesAndMerge();
    void cleanupTestCase();
 
 private:
