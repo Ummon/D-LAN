@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
-
 <svg
    xmlns:dc="http://purl.org/dc/elements/1.1/"
    xmlns:cc="http://creativecommons.org/ns#"
@@ -13,7 +12,7 @@
    height="1052.3622"
    id="svg2"
    sodipodi:version="0.32"
-   inkscape:version="0.46+devel r21627"
+   inkscape:version="0.46"
    sodipodi:docname="gui.svg"
    inkscape:output_extension="org.inkscape.output.svg.inkscape"
    version="1.0"
@@ -317,16 +316,16 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="4.0000001"
-     inkscape:cx="250.44742"
-     inkscape:cy="761.80287"
+     inkscape:zoom="2.8284272"
+     inkscape:cx="323.59029"
+     inkscape:cy="745.39832"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
      inkscape:window-width="1280"
      inkscape:window-height="943"
-     inkscape:window-x="1276"
-     inkscape:window-y="-4"
+     inkscape:window-x="1280"
+     inkscape:window-y="24"
      showguides="true"
      inkscape:guide-bbox="true"
      inkscape:snap-bbox="false"
@@ -2087,18 +2086,18 @@
          sodipodi:role="line"
          x="195.99979"
          y="300.84213"
-         id="tspan2645"
-         style="font-size:6px">The status can be 'scanning', 'indexing',</tspan><tspan
+         style="font-size:6px"
+         id="tspan3343">The status can be 'scanning',</tspan><tspan
          sodipodi:role="line"
          x="195.99979"
          y="308.34213"
          style="font-size:6px"
-         id="tspan3343">'hashing' or 'up-to-date'.</tspan><tspan
+         id="tspan2913">'hashing' or 'up-to-date'.</tspan><tspan
          sodipodi:role="line"
          x="195.99979"
          y="315.84213"
          style="font-size:6px"
-         id="tspan2651">For the three first status a progress bar is displayed.</tspan><tspan
+         id="tspan2651">For the two first status a progress bar is displayed.</tspan><tspan
          sodipodi:role="line"
          x="195.99979"
          y="323.34213"
