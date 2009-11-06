@@ -49,6 +49,8 @@ File::~File()
       this->hashingStopped.wait(&this->hashingMutex);
    }
    this->hashingMutex.unlock();
+
+   static_cast<SharedDirectory*>(this->getRoot())->getCache()->onEntryRemoved(this);
 }
 
 File* File::restoreFromFileCache(const Protos::FileCache::Hashes_File& file)

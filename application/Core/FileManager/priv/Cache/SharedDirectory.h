@@ -19,12 +19,16 @@ namespace FM
          READ_WRITE
       };
 
-      SharedDirectory(Cache* cache, const QString& path, Rights rights);
-
       /**
         * Create from a saved shared directory (file cache).
+        * If a existing shared directory is a sub directory then it will be merged.
+        * @exception SuperDirectoryExistsException Throwed when a super shared directory already exists.
+        * @exception SubDirectoriesWithDifferentRightsExistsException Throwed when one or more sub directory already exists with different rights.
         */
       SharedDirectory(Cache* cache, const QString& path, Rights rights, const Common::Hash& id);
+      SharedDirectory(Cache* cache, const QString& path, Rights rights);
+
+      void init();
 
       ~SharedDirectory();
 
@@ -37,7 +41,12 @@ namespace FM
 
       /**
         * Return the full path to the shared directory.
-        * For exemple : '/home/paul/movies'. (no slash at the end).
+        * There is no slash at the end, only for the root.
+        * For exemple :
+        *  - '/home/paul/movies'
+        *  - '/'.
+        *  - 'C:/Users/Paul/My Movies'
+        *  - 'G:/'
         */
       QString getFullPath();
 

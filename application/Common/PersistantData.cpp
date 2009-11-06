@@ -13,7 +13,7 @@ using namespace std;
 #endif
 
 const QString PersistantData::APPLICATION_FOLDER_NAME(".aybabtu");
-const QString PersistantData::APPLICATION_FOLDER_PATH(QDir::homePath() + QDir::separator() + APPLICATION_FOLDER_NAME);
+const QString PersistantData::APPLICATION_FOLDER_PATH(QDir::homePath() + '/' + APPLICATION_FOLDER_NAME);
 const QString PersistantData::TEMP_POSTFIX_TERM(".temp");
 
 void PersistantData::setValue(const QString& name, const google::protobuf::Message& data)
@@ -23,7 +23,7 @@ void PersistantData::setValue(const QString& name, const google::protobuf::Messa
       QString tempName(name + TEMP_POSTFIX_TERM);
 
       {
-         ofstream file((APPLICATION_FOLDER_PATH + QDir::separator() + tempName).toStdString().data(), ios_base::binary | ios_base::out);
+         ofstream file((APPLICATION_FOLDER_PATH + '/' + tempName).toStdString().data(), ios_base::binary | ios_base::out);
          // if (file.fail()) // TODO : check if failure
 
 #if DEBUG
@@ -36,14 +36,14 @@ void PersistantData::setValue(const QString& name, const google::protobuf::Messa
 
       // TODO : Some data loss can occure here, we must remove the file first
       // because 'rename' cannot overwrite an existing file.
-      QFile::remove(APPLICATION_FOLDER_PATH + QDir::separator() + name);
-      QFile::rename(APPLICATION_FOLDER_PATH + QDir::separator() + tempName, APPLICATION_FOLDER_PATH + QDir::separator() + name);
+      QFile::remove(APPLICATION_FOLDER_PATH + '/' + name);
+      QFile::rename(APPLICATION_FOLDER_PATH + '/' + tempName, APPLICATION_FOLDER_PATH + QDir::separator() + name);
    }
 }
 
 void PersistantData::getValue(const QString& name, google::protobuf::Message& data)
 {
-   ifstream file((APPLICATION_FOLDER_PATH + QDir::separator() + name).toStdString().data(), ios_base::binary | ios_base::in);
+   ifstream file((APPLICATION_FOLDER_PATH + '/' + name).toStdString().data(), ios_base::binary | ios_base::in);
    if (file.fail())
       throw UnknownValueException();
 
@@ -57,7 +57,7 @@ void PersistantData::getValue(const QString& name, google::protobuf::Message& da
 
 bool PersistantData::rmValue(const QString& name)
 {
-   return QFile::remove(APPLICATION_FOLDER_PATH + QDir::separator() + name);
+   return QFile::remove(APPLICATION_FOLDER_PATH + '/' + name);
 }
 
 bool PersistantData::createApplicationFolder()

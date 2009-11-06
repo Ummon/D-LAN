@@ -44,9 +44,17 @@ namespace FM
 
       quint64 getAmount();
 
+      SharedDirectory* getSuperSharedDirectory(const QString& path);
+      QList<SharedDirectory*> getSubSharedDirectories(const QString& path);
+
       void onEntryAdded(Entry* entry);
       void onEntryRemoved(Entry* entry);
       void onChunkAdded(Chunk* chunk);
+
+      /**
+        * Return the big cach lock.
+        */
+      QMutex& getMutex() { return this->lock; }
 
    signals:
       void entryAdded(Entry* entry);
@@ -69,7 +77,7 @@ namespace FM
       FileManager* fileManager;
       FileUpdater* fileUpdater;
 
-      //QMutex lock; // To protect some data into the cache.
+      QMutex lock; ///< To protect all the data into the cache, files and directories.
    };
 }
 #endif

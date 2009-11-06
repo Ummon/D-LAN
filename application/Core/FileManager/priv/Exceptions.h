@@ -32,6 +32,12 @@ namespace FM
       DirNotFoundException(const QString& path) : FileSystemEntryNotFoundException(path) {}
       virtual ~DirNotFoundException() throw () {}
    };
+
+   /**
+     * Throwed when an entry (file or directory) already exist
+     * in its directory.
+     */
+   class EntryAlreadyExists : public exception {};
 }
 
 #endif

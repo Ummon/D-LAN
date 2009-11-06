@@ -32,6 +32,19 @@ namespace FM
       DirsNotFoundException(const QStringList& paths) : FileSystemEntriesNotFoundException(paths) {}
       virtual ~DirsNotFoundException() throw () {}
    };
+
+   class SuperDirectoryExistsException : public exception
+   {
+   public:
+      virtual ~SuperDirectoryExistsException() throw() {}
+   };
+
+   // TODO : add some additionnals informations
+   class SubDirectoriesWithDifferentRightsExistsException : public exception
+   {
+   public:
+      virtual ~SubDirectoriesWithDifferentRightsExistsException() throw() {}
+   };
 }
 
 #endif
