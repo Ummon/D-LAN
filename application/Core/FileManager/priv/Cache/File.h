@@ -9,7 +9,7 @@
 #include <QFile>
 #include <QList>
 
-#include <Common/Hashes.h>
+   #include <Common/Hashes.h>
 #include <Protos/common.pb.h>
 #include <Protos/files_cache.pb.h>
 #include <priv/Cache/Entry.h>

@@ -57,6 +57,7 @@ namespace FM
       void entryAdded(Entry* entry);
       void entryRemoved(Entry* entry);
       void chunkAdded(Chunk* chunk);
+      void chunkRemoved(Chunk* chunk);
 
    private:
       /**
@@ -68,7 +69,7 @@ namespace FM
       static QStringList splitInWords(const QString& words);
 
       /**
-        * Load the cache from a file.
+        * Load the cache from a file. Called at start, by the constructor.
         * It will give the file cache to the fileUpdater and ask it
         * to load the cache.
         */
@@ -83,7 +84,6 @@ namespace FM
       void persistCacheToFile();
 
    private:
-
       FileUpdater fileUpdater;
       Cache cache; ///< The files and directories.
       Chunks chunks; ///< The indexed chunks.

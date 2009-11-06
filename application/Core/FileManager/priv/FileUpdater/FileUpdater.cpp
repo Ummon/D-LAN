@@ -34,9 +34,6 @@ void FileUpdater::addRoot(SharedDirectory* dir)
 
    if (this->dirWatcher)
       this->dirWatcher->addDir(dir->getFullPath());
-   else
-      if (!QDir(dir->getFullPath()).exists())
-         throw DirNotFoundException(dir->getFullPath());
 
    this->dirsToScan << dir;
 
