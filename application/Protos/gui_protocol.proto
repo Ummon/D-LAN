@@ -1,5 +1,7 @@
 /**
   * Protocol between core and GUI.
+  * When a command is sent to the core, one or more responds will be sent back,
+  * there cannot be other message like 'event message' between theses messages.
   * Version : 1
   * All string are encoded in UTF-8.
   */
@@ -7,6 +9,12 @@
 import "common.proto";
 
 package Protos.GUI;
+
+// Generic message sent by the core after a command.
+message ReturnStatus {
+   required uint32 errorCode = 1; // 0 means no error.
+   repeated string errorParam = 2;
+}
 
 message Settings {
    optional Common.Settings settings = 1;
@@ -100,21 +108,14 @@ message Close {
 }
 
 /***** Commands. *****/
+// Set the settings
 // GUI -> Core
 // id : 0x21
-message SetSettings {
-   required Settings settings = 1;
-}
+// Message 'Settings'
+
 // Core -> GUI
 // id : 0x22
-message ReturnStatus {
-   enum Status {
-      OK = 0;
-      ERROR = 1;
-   }
-   required Status status = 1;
-   optional string errorMessage = 2;
-}
+// Message 'ReturnStatus'
 
 // GUI -> Core
 // id : 0x31
@@ -123,8 +124,11 @@ message Search  {
    required string pattern = 2;
 }
 // Core -> GUI
-// This message is sent for each UDP datagram received.
 // id : 0x32
+// Message 'ReturnStatus'
+// Core -> GUI
+// This message is sent for each UDP datagram received.
+// id : 0x33
 message SearchResult {
    required uint64 tag = 1;
    required Common.FindResult result = 2; // Encapsulate the received result.
@@ -138,6 +142,9 @@ message Browse {
 }
 // Core -> GUI
 // id : 0x42
+// Message 'ReturnStatus'
+// Core -> GUI
+// id : 0x43
 message BrowseResult {
    repeated Common.DirEntry dir = 1;
    repeated Common.FileEntry file = 2;   
@@ -148,6 +155,9 @@ message BrowseResult {
 // Remove all completed downloads from the queue.
 message ClearCompleteDownloads {
 }
+// Core -> GUI
+// id : 0x52
+// Message 'ReturnStatus'
 
 // GUI -> Core
 // Remove a download from the queue. If this download
@@ -156,6 +166,9 @@ message ClearCompleteDownloads {
 message CancelDownloads {
    repeated uint32 ID = 1;
 }
+// Core -> GUI
+// id : 0x62
+// Message 'ReturnStatus'
 
 // GUI -> Core
 // Says to the core to download a file OR a directory (XOR).
@@ -165,6 +178,9 @@ message Download {
    optional Common.DirEntry dir = 2;
    optional Common.FileEntry file = 3;
 }
+// Core -> GUI
+// id : 0x72
+// Message 'ReturnStatus'
 
 // GUI -> Core
 // Send a chat message to everyone.
@@ -172,3 +188,6 @@ message Download {
 message ChatMessage {
    required string message = 1;
 }
+// Core -> GUI
+// id : 0x82
+// Message 'ReturnStatus'
