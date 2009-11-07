@@ -8,31 +8,35 @@
 namespace FM
 {
    class Directory;
+   class Cache;
 
    class Entry : public Common::Deletable
    {
    public:
-      Entry(const QString& name);
-      Entry(const QString& name, qint64 size);
-      virtual ~Entry() {};
+      Entry(Cache* cache, const QString& name, qint64 size = 0);
+      virtual ~Entry();
+
+      Cache* getCache();
 
       /**
         * Return the relative path from the root directory.
         * It's the directory in which the entry is.
         * For example : "animals/fish"
         */
-      virtual QString getPath() = 0;
+      virtual QString getPath() const = 0;
 
       /**
         * Return the full absolute path to the entry.
         */
-      virtual QString getFullPath() = 0;
-      virtual Directory* getRoot() = 0;
+      virtual QString getFullPath() const = 0;
+      virtual Directory* getRoot() const = 0;
 
-      virtual QString getName();
-      virtual qint64 getSize();
+      virtual const QString& getName() const;
+      virtual qint64 getSize() const;
 
    protected:
+      Cache* cache;
+
       QString name;
       qint64 size;
    };

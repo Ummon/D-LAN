@@ -22,14 +22,16 @@ namespace FM
       /**
         * Create from a saved shared directory (file cache).
         * If a existing shared directory is a sub directory then it will be merged.
-        * @exception SuperDirectoryExistsException Throwed when a super shared directory already exists.
-        * @exception SubDirectoriesWithDifferentRightsExistsException Throwed when one or more sub directory already exists with different rights.
+        * @exception SuperDirectoryExistsException Thrown when a super shared directory already exists.
+        * @exception SubDirectoriesWithDifferentRightsExistsException Thrown when one or more sub directory already exists with different rights.
         */
       SharedDirectory(Cache* cache, const QString& path, Rights rights, const Common::Hash& id);
       SharedDirectory(Cache* cache, const QString& path, Rights rights);
 
+   private:
       void init();
 
+   public:
       ~SharedDirectory();
 
       QList<File*> restoreFromFileCache(const Protos::FileCache::Hashes& hashes);
@@ -37,7 +39,7 @@ namespace FM
       /**
         * Return always "" thus it makes this method the most usefull of the entire known univers.
         */
-      QString getPath();
+      QString getPath() const;
 
       /**
         * Return the full path to the shared directory.
@@ -48,21 +50,17 @@ namespace FM
         *  - 'C:/Users/Paul/My Movies'
         *  - 'G:/'
         */
-      QString getFullPath();
+      QString getFullPath() const;
 
-      Cache* getCache();
+      Rights getRights() const;
 
-      Rights getRights();
-
-      const Common::Hash& getId();
+      const Common::Hash& getId() const;
 
    private:
-      Cache* cache;
 
       QString path;
       Rights rights;
       Common::Hash id;
    };
-
 }
 #endif

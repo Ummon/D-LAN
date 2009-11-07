@@ -9,24 +9,18 @@ using namespace FM;
 #include <priv/Cache/SharedDirectory.h>
 
 Directory::Directory(Directory* parent, const QString& name)
-   : Entry(name), parent(parent)
+   : Entry(parent->cache, name), parent(parent)
 {
    this->parent->subDirs.append(this);
-
-   // Same as a new file (see the File ctor).
-   static_cast<SharedDirectory*>(this->getRoot())->getCache()->onEntryAdded(this);;
-   //this->getCache()->onEntryAdded(this);
 }
 
-Directory::Directory()
-   : Entry(""), parent(0)
+Directory::Directory(Cache* cache)
+   : Entry(cache, ""), parent(0)
 {
 }
 
 Directory::~Directory()
-{
-   static_cast<SharedDirectory*>(this->getRoot())->getCache()->onEntryRemoved(this);
-}
+{}
 
 QList<File*> Directory::restoreFromFileCache(const Protos::FileCache::Hashes_Dir& dir)
 {
@@ -48,9 +42,9 @@ QList<File*> Directory::restoreFromFileCache(const Protos::FileCache::Hashes_Dir
    return ret;
 }
 
-void Directory::populateHashesDir(Protos::FileCache::Hashes_Dir& dirToFill)
+void Directory::populateHashesDir(Protos::FileCache::Hashes_Dir& dirToFill) const
 {
-   dirToFill.set_name(this->name.toStdString());
+   dirToFill.set_name(this->getName().toStdString());
 
    for (QListIterator<File*> f(this->files); f.hasNext();)
    {
@@ -64,16 +58,16 @@ void Directory::populateHashesDir(Protos::FileCache::Hashes_Dir& dirToFill)
    }
 }
 
-void Directory::populateDirEntry(Protos::Common::DirEntry* entry)
+void Directory::populateDirEntry(Protos::Common::DirEntry* entry) const
 {
    entry->mutable_dir()->set_path(this->getPath().toStdString());
    entry->mutable_dir()->set_name(this->getName().toStdString());
 }
 
-QString Directory::getPath()
+QString Directory::getPath() const
 {
    QString path;
-   Directory* dir = this;
+   const Directory* dir = this;
    while (dir->parent)
    {
       dir = dir->parent;
@@ -84,21 +78,21 @@ QString Directory::getPath()
    return path;
 }
 
-QString Directory::getFullPath()
+QString Directory::getFullPath() const
 {
    // In case of a partially constructed ShareDirectory.
    // (When a exception is thrown from the SharedDirectory ctor).
    if (!this->parent)
-      return this->name;
+      return this->getName();
 
-   return this->parent->getFullPath().append('/').append(this->name);
+   return this->parent->getFullPath().append('/').append(this->getName());
 }
 
-Directory* Directory::getRoot()
+Directory* Directory::getRoot() const
 {
    if (this->parent)
       return this->parent->getRoot();
-   return this;
+   return const_cast<Directory*>(this);
 }
 
 void Directory::addFile(File* file)

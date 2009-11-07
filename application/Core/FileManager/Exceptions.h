@@ -45,6 +45,10 @@ namespace FM
    public:
       virtual ~SubDirectoriesWithDifferentRightsExistsException() throw() {}
    };
+
+   class DirAlreadySharedException: public exception
+   {
+   };
 }
 
 #endif

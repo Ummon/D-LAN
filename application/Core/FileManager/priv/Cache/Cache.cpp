@@ -39,7 +39,6 @@ void Cache::setSharedDirs(const QStringList& dirs, SharedDirectory::Rights right
          sharedDirs << dir;
    }
 
-   QStringList newDirs;
    QMutableListIterator<SharedDirectory*> j(sharedDirs);
 
    // /!\ O(n^2).
@@ -49,13 +48,13 @@ void Cache::setSharedDirs(const QStringList& dirs, SharedDirectory::Rights right
       j.toFront();
       while(j.hasNext())
       {
-         if (j.next()->getFullPath() == dir)
+         SharedDirectory* sharedDir = j.next();
+         if (sharedDir->getFullPath() == dir)
          {
             j.remove();
             goto next;
          }
       }
-      newDirs << dir;
       next:;
    }
 
@@ -67,7 +66,9 @@ void Cache::setSharedDirs(const QStringList& dirs, SharedDirectory::Rights right
       this->removeSharedDir(dir);
    }
 
-   this->createSharedDirs(newDirs, rights);
+   // The duplicate dirs are found further because we compare only
+   // directories with the same rights here,
+   this->createSharedDirs(dirs, rights);
 }
 
 void Cache::retrieveFromFile(const Protos::FileCache::Hashes& hashes)
@@ -148,6 +149,14 @@ QList<SharedDirectory*> Cache::getSubSharedDirectories(const QString& path)
    return ret;
 }
 
+bool Cache::isShared(const QString& path) const
+{
+   foreach (SharedDirectory* dir, this->sharedDirs)
+      if (dir->getFullPath() == path)
+         return true;
+   return false;
+}
+
 void Cache::onEntryAdded(Entry* entry)
 {
    emit entryAdded(entry);
@@ -184,9 +193,8 @@ void Cache::createSharedDirs(const QStringList& dirs, const QList<SharedDirector
    while (i.hasNext())
    {
       QString path = i.next();
-      SharedDirectory::Rights currentRights = j.hasNext() ? j.next() : SharedDirectory::READ_ONLY;
 
-      LOG_DEBUG(QString("Add a new shared directory : %1").arg(path));
+      SharedDirectory::Rights currentRights = j.hasNext() ? j.next() : SharedDirectory::READ_ONLY;
 
       try
       {
@@ -194,12 +202,17 @@ void Cache::createSharedDirs(const QStringList& dirs, const QList<SharedDirector
             new SharedDirectory(this, path, currentRights, k.next()) :
             new SharedDirectory(this, path, currentRights);
 
+         LOG_DEBUG(QString("Add a new shared directory : %1").arg(path));
          this->fileUpdater->addRoot(dir);
          this->sharedDirs << dir;
       }
       catch (DirNotFoundException& e)
       {
          dirsNotFound << e.getPath();
+      }
+      catch (DirAlreadySharedException&)
+      {
+         LOG_WARN(QString("Directory already shared : %1").arg(path));
       }
    }
 

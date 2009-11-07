@@ -14,7 +14,7 @@ Chunk::Chunk(File& file, const Common::Hash& hash, int num, int knownBytes)
 {
    LOG_DEBUG(QString("New chunk[%1] : %2. File : %3").arg(num).arg(hash.toStr()).arg(file.getFullPath()));
 
-   static_cast<SharedDirectory*>(this->file.getRoot())->getCache()->onChunkAdded(this);
+   this->file.getCache()->onChunkAdded(this);
 }
 
 Chunk::Chunk(File& file, int num, const Protos::FileCache::Hashes_Chunk& chunk)

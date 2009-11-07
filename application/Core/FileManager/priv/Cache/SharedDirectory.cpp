@@ -8,19 +8,23 @@ using namespace FM;
 #include <priv/Cache/Cache.h>
 
 SharedDirectory::SharedDirectory(Cache* cache, const QString& path, Rights rights)
-   : Directory(), cache(cache), path(path), rights(rights), id(Common::Hash::rand())
+   : Directory(cache), path(QDir::cleanPath(path)), rights(rights), id(Common::Hash::rand())
 {
    this->init();
 }
 
 SharedDirectory::SharedDirectory(Cache* cache, const QString& path, Rights rights, const Common::Hash& id)
-   : Directory(), cache(cache), path(path), rights(rights), id(id)
+   : Directory(cache), path(QDir::cleanPath(path)), rights(rights), id(id)
 {
    this->init();
 }
 
 void SharedDirectory::init()
 {
+   // Avoid two same directories.
+   if (this->cache->isShared(this->path))
+      throw DirAlreadySharedException();
+
    // First of all check is the directory physically exists.
    if (!QDir(this->path).exists())
       throw DirNotFoundException(this->path);
@@ -47,14 +51,10 @@ void SharedDirectory::init()
 
       delete subDir;
    }
-
-   this->cache->onEntryAdded(this);
 }
 
 SharedDirectory::~SharedDirectory()
-{
-   this->cache->onEntryRemoved(this);
-}
+{}
 
 QList<File*> SharedDirectory::restoreFromFileCache(const Protos::FileCache::Hashes& hashes)
 {
@@ -67,27 +67,22 @@ QList<File*> SharedDirectory::restoreFromFileCache(const Protos::FileCache::Hash
    return ret;
 }
 
-QString SharedDirectory::getPath()
+QString SharedDirectory::getPath() const
 {
    return "";
 }
 
-QString SharedDirectory::getFullPath()
+QString SharedDirectory::getFullPath() const
 {
    return this->path;
 }
 
-Cache* SharedDirectory::getCache()
-{
-   return this->cache;
-}
-
-SharedDirectory::Rights SharedDirectory::getRights()
+SharedDirectory::Rights SharedDirectory::getRights() const
 {
    return this->rights;
 }
 
-const Common::Hash& SharedDirectory::getId()
+const Common::Hash& SharedDirectory::getId() const
 {
    return this->id;
 }
