@@ -7,6 +7,7 @@
 
 #include <Protos/files_cache.pb.h>
 #include <Common/Hash.h>
+#include <Common/Deletable.h>
 #include <IChunk.h>
 #include <priv/Constants.h>
 #include <priv/Cache/File.h>
@@ -18,12 +19,12 @@ namespace FM
    class IDataReader;
    class IDataWriter;
 
-   class Chunk : public IChunk
+   class Chunk : public IChunk, public Common::Deletable
    {
    public:
       Chunk(File& file, const Common::Hash& hash, int num, int knownBytes = CHUNK_SIZE);
       Chunk(File& file, int num, const Protos::FileCache::Hashes_Chunk& chunk);
-      virtual ~Chunk() {};
+      virtual ~Chunk();
 
       void populateHashesChunk(Protos::FileCache::Hashes_Chunk& chunk);
 

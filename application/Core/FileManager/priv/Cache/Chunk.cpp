@@ -12,7 +12,7 @@ using namespace FM;
 Chunk::Chunk(File& file, const Common::Hash& hash, int num, int knownBytes)
    : file(file), hash(hash), num(num), knownBytes(knownBytes)
 {
-   LOG_DEBUG(QString("New chunk[%1] : %2. File : %3").arg(num).arg(hash.toStr()).arg(file.getFullPath()));
+   LOG_DEBUG(QString("New chunk[%1] : %2. File : %3").arg(num).arg(hash.toStr()).arg(this->file.getFullPath()));
 
    this->file.getCache()->onChunkAdded(this);
 }
@@ -20,6 +20,15 @@ Chunk::Chunk(File& file, const Common::Hash& hash, int num, int knownBytes)
 Chunk::Chunk(File& file, int num, const Protos::FileCache::Hashes_Chunk& chunk)
    : file(file), hash(chunk.hash().hash().data()), num(num), knownBytes(chunk.knownbytes())
 {
+   LOG_DEBUG(QString("New chunk[%1] : %2. File : %3").arg(num).arg(hash.toStr()).arg(this->file.getFullPath()));
+
+   this->file.getCache()->onChunkAdded(this);
+}
+
+Chunk::~Chunk()
+{
+   LOG_DEBUG(QString("Deleted chunk[%1] : %2. File : %3").arg(num).arg(hash.toStr()).arg(this->file.getFullPath()));
+   this->file.chunkDeleted(this);
 }
 
 void Chunk::populateHashesChunk(Protos::FileCache::Hashes_Chunk& chunk)

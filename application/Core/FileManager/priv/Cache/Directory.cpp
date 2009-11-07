@@ -20,7 +20,10 @@ Directory::Directory(Cache* cache)
 }
 
 Directory::~Directory()
-{}
+{
+   if (this->parent)
+      this->parent->subDirDeleted(this);
+}
 
 QList<File*> Directory::restoreFromFileCache(const Protos::FileCache::Hashes_Dir& dir)
 {
@@ -62,6 +65,54 @@ void Directory::populateDirEntry(Protos::Common::DirEntry* entry) const
 {
    entry->mutable_dir()->set_path(this->getPath().toStdString());
    entry->mutable_dir()->set_name(this->getName().toStdString());
+}
+
+void Directory::deleteChunks()
+{
+   foreach (File* f, this->files)
+      f->deleteChunks();
+   foreach (Directory* d, this->subDirs)
+      d->deleteChunks();
+}
+
+void Directory::fileDeleted(File* file)
+{
+   this->files.removeOne(file);
+
+   if (this->files.isEmpty())
+      this->tryToSuicide();
+}
+
+void Directory::subDirDeleted(Directory* dir)
+{
+   this->subDirs.removeOne(dir);
+   if (this->subDirs.isEmpty() && this->files.isEmpty())
+      delete this;
+}
+
+bool Directory::tryToSuicide()
+{
+   if (!this->files.isEmpty())
+      return false;
+
+   if (this->subDirs.isEmpty())
+   {
+      delete this;
+      return true;
+   }
+
+   bool suicide = true;
+   for (QListIterator<Directory*> i(this->subDirs); i.hasNext();)
+      if (!i.next()->tryToSuicide())
+         suicide = false;
+
+   if (suicide)
+   {
+      delete this;
+      return true;
+   }
+
+   return false;
 }
 
 QString Directory::getPath() const
