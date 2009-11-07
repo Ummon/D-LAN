@@ -83,11 +83,11 @@ namespace FM
       QMutex mutex;
 
       QList<SharedDirectory*> dirsToScan; ///< When a new shared directory is added, it is put in this list until it is scanned.
-      /*SharedDirectory* currentScanningDir;
+      SharedDirectory* currentScanningDir;
       QWaitCondition scanningStopped;
-      QMutex scanningMutex;*/
+      QMutex scanningMutex;
 
-      QList<SharedDirectory*> dirsToRemove;
+      QList<QString> dirsToRemove;
 
       QList<File*> fileWithoutHashes;
    };

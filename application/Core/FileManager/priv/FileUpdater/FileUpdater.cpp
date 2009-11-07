@@ -44,7 +44,16 @@ void FileUpdater::rmRoot(SharedDirectory* dir)
 {
    QMutexLocker(&this->mutex);
 
-   this->dirsToRemove << dir;
+   // If there is a scanning for this directory stop it.
+   this->scanningMutex.lock();
+   if (this->currentScanningDir == dir)
+   {
+      this->currentScanningDir = 0;
+      this->scanningStopped.wait(&this->scanningMutex);
+   }
+   this->scanningMutex.unlock();
+
+   this->dirsToRemove << dir->getFullPath();
 
    this->dirEvent->release();
 }
@@ -83,14 +92,11 @@ void FileUpdater::run()
 
       if (!this->dirsToRemove.isEmpty())
       {
-         for (QListIterator<SharedDirectory*> i(this->dirsToRemove); i.hasNext();)
+         for (QListIterator<QString> i(this->dirsToRemove); i.hasNext();)
          {
-            SharedDirectory* dir = i.next();
-            this->dirsToScan.removeOne(dir);
-
             // Stop watching this directory.
             if (this->dirWatcher)
-               this->dirWatcher->rmDir(dir->getFullPath());
+               this->dirWatcher->rmDir(i.next());
          }
          this->dirsToRemove.clear();
       }
@@ -178,11 +184,25 @@ void FileUpdater::scan(SharedDirectory* dir)
       return;
    }
 
+   this->scanningMutex.lock();
+   this->currentScanningDir = dir;
+   this->scanningMutex.unlock();
+
    QLinkedList<Directory*> dirsToVisit;
    dirsToVisit << dir;
 
    while (!dirsToVisit.isEmpty())
    {
+      this->scanningMutex.lock();
+      if (!this->currentScanningDir)
+      {
+         this->scanningStopped.wakeOne();
+         this->scanningMutex.unlock();
+         LOG_DEBUG("Scanning aborted, shared directory deleted : " + dir->getFullPath());
+         return;
+      }
+      this->scanningMutex.unlock();
+
       Directory* currentDir = dirsToVisit.takeFirst();
       foreach (QFileInfo entry, QDir(currentDir->getFullPath()).entryInfoList())
       {
@@ -199,6 +219,12 @@ void FileUpdater::scan(SharedDirectory* dir)
          }
       }
    }
+
+   this->scanningMutex.lock();
+   this->currentScanningDir = 0;
+   this->scanningStopped.wakeOne();
+   this->scanningMutex.unlock();
+
    LOG_DEBUG("Scan terminated : " + dir->getFullPath());
 }
 

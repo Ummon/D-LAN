@@ -8,6 +8,7 @@
 #include <QWaitCondition>
 #include <QFile>
 #include <QList>
+#include <QSharedPointer>
 
 #include <Common/Hashes.h>
 #include <Protos/common.pb.h>
@@ -37,6 +38,13 @@ namespace FM
       void populateHashesFile(Protos::FileCache::Hashes_File& fileToFill) const;
 
       void populateFileEntry(Protos::Common::FileEntry* entry) const;
+
+      void deleteChunks();
+
+      /**
+        * Called only by its chunks.
+        */
+      void chunkDeleted(Chunk* chunk);
 
       QString getPath() const;
       QString getFullPath() const;
@@ -76,12 +84,12 @@ namespace FM
         */
       void computeHashes();
 
-      QList<IChunk*> getChunks() const;
-      const QList<Chunk*>& getChunksRef() const;
+      /*QList<IChunk*> getChunks() const;
+      const QList<Chunk*>& getChunksRef() const;*/
 
    private:
       Directory* dir;
-      QList<Chunk*> chunks;
+      QList< QSharedPointer<Chunk> > chunks;
 
       int numDataWriter;
       int numDataReader;

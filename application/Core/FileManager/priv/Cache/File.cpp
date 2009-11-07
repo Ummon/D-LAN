@@ -24,11 +24,13 @@ File::File(Directory* dir, const QString& name, qint64 size, const Common::Hashe
      readLock(0),
      hashing(false)
 {
+   LOG_DEBUG(QString("New file : %1").arg(this->getFullPath()));
+
    if (!hashes.isEmpty())
    {
       for (int i = 0; i < hashes.size(); i++)
       {
-         Chunk* chunk = new  Chunk(*this, hashes[i], i, 0);
+         QSharedPointer<Chunk> chunk(new  Chunk(*this, hashes[i], i, 0));
          this->chunks.append(chunk);
       }
    }
@@ -38,6 +40,8 @@ File::File(Directory* dir, const QString& name, qint64 size, const Common::Hashe
 
 File::~File()
 {
+   LOG_DEBUG(QString("File deleted : %1").arg(this->getFullPath()));
+
    // If there is a hashing stop it.
    this->hashingMutex.lock();
    if (this->hashing)
@@ -46,6 +50,8 @@ File::~File()
       this->hashingStopped.wait(&this->hashingMutex);
    }
    this->hashingMutex.unlock();
+
+   this->dir->fileDeleted(this);
 }
 
 File* File::restoreFromFileCache(const Protos::FileCache::Hashes_File& file)
@@ -58,7 +64,7 @@ File* File::restoreFromFileCache(const Protos::FileCache::Hashes_File& file)
       LOG_DEBUG(QString("Restoring file '%1' from the file cache").arg(this->getFullPath()));
       // TODO : maybe test whether the chunks size is correct..
       for (int i = 0; i < file.chunk_size(); i++)
-         this->chunks << new Chunk(*this, i, file.chunk(i));
+         this->chunks << QSharedPointer<Chunk>(new Chunk(*this, i, file.chunk(i)));
    }
 
    return this;
@@ -68,7 +74,7 @@ void File::populateHashesFile(Protos::FileCache::Hashes_File& fileToFill) const
 {
    fileToFill.set_filename(this->name.toStdString());
    fileToFill.set_size(this->size);
-   for (QListIterator<Chunk*> i(this->chunks); i.hasNext();)
+   for (QListIterator< QSharedPointer<Chunk> > i(this->chunks); i.hasNext();)
    {
       Protos::FileCache::Hashes_Chunk* chunk = fileToFill.add_chunk();
       i.next()->populateHashesChunk(*chunk);
@@ -79,6 +85,19 @@ void File::populateFileEntry(Protos::Common::FileEntry* entry) const
 {
    entry->mutable_file()->set_path(this->getPath().toStdString());
    entry->mutable_file()->set_name(this->getName().toStdString());
+}
+
+void File::deleteChunks()
+{
+   foreach (QSharedPointer<Chunk> c, this->chunks)
+      c->setDeleted();
+   this->chunks.clear();
+}
+
+void File::chunkDeleted(Chunk* chunk)
+{
+   if (this->chunks.isEmpty())
+      delete this;
 }
 
 QString File::getPath() const
@@ -225,8 +244,7 @@ void File::computeHashes()
          crypto.addData(buffer, bytesRead);
          bytesReadTotal += bytesRead;
       }
-      Chunk* chunk = new  Chunk(*this, crypto.result(), chunkNum);
-      this->chunks.append(chunk);
+      this->chunks.append(QSharedPointer<Chunk>(new  Chunk(*this, crypto.result(), chunkNum)));
       crypto.reset();
       chunkNum += 1;
    }
@@ -239,7 +257,7 @@ void File::computeHashes()
    LOG_DEBUG(QString("Hashing speed : %1 MB/s").arg(static_cast<double>(this->size) / 1024 / 1024 / (static_cast<double>(time.elapsed()) / 1000)));
 }
 
-QList<IChunk*> File::getChunks() const
+/*QList<IChunk*> File::getChunks() const
 {
    // TODO
    return QList<IChunk*>(); //this->chunks;
@@ -248,5 +266,6 @@ QList<IChunk*> File::getChunks() const
 const QList<Chunk*>& File::getChunksRef() const
 {
    return this->chunks;
-}
+}*/
+
 

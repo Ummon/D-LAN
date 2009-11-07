@@ -34,6 +34,22 @@ namespace FM
 
       void populateDirEntry(Protos::Common::DirEntry* entry) const;
 
+      /**
+        * Ask to delete all chunks is this directory.
+        */
+      void deleteChunks();
+
+      /**
+        * Called by one of its file destructor.
+        */
+      void fileDeleted(File* file);
+
+   private:
+      void subDirDeleted(Directory* dir);
+      bool tryToSuicide();
+
+   public:
+
       virtual QString getPath() const;
       virtual QString getFullPath() const;
 
