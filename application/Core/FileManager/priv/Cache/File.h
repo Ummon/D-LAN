@@ -9,7 +9,7 @@
 #include <QFile>
 #include <QList>
 
-   #include <Common/Hashes.h>
+#include <Common/Hashes.h>
 #include <Protos/common.pb.h>
 #include <Protos/files_cache.pb.h>
 #include <priv/Cache/Entry.h>
@@ -19,6 +19,7 @@ namespace FM
    class IChunk;
    class Chunk;
    class Directory;
+   class Cache;
 
    class File : public Entry
    {
@@ -33,13 +34,13 @@ namespace FM
 
       File* restoreFromFileCache(const Protos::FileCache::Hashes_File& file);
 
-      void populateHashesFile(Protos::FileCache::Hashes_File& fileToFill);
+      void populateHashesFile(Protos::FileCache::Hashes_File& fileToFill) const;
 
-      void populateFileEntry(Protos::Common::FileEntry* entry);
+      void populateFileEntry(Protos::Common::FileEntry* entry) const;
 
-      QString getPath();
-      QString getFullPath();
-      Directory* getRoot();
+      QString getPath() const;
+      QString getFullPath() const;
+      Directory* getRoot() const;
 
       void newDataWriterCreated();
       void newDataReaderCreated();
@@ -75,8 +76,8 @@ namespace FM
         */
       void computeHashes();
 
-      QList<IChunk*> getChunks();
-      const QList<Chunk*>& getChunksRef();
+      QList<IChunk*> getChunks() const;
+      const QList<Chunk*>& getChunksRef() const;
 
    private:
       Directory* dir;
@@ -89,7 +90,7 @@ namespace FM
       QMutex* writeLock;
       QMutex* readLock;
 
-      // Mutex and wait condition used during hashing. (A bit heavy)
+      // Mutex and wait condition used during hashing. (A bit heavy).
       bool hashing;
       QWaitCondition hashingStopped;
       QMutex hashingMutex;

@@ -139,7 +139,7 @@ void Node<T>::addItem(T item)
 template <typename T>
 void Node<T>::rmItem(T item)
 {
-   this->itemList.removeOne(item);
+   this->itemList.remove(item);
 }
 
 template <typename T>

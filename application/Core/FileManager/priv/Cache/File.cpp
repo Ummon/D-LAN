@@ -14,7 +14,7 @@ using namespace FM;
 #include <priv/Cache/Chunk.h>
 
 File::File(Directory* dir, const QString& name, qint64 size, const Common::Hashes& hashes)
-   : Entry(name, size),
+   : Entry(dir->getCache(), name, size),
      dir(dir),
      numDataWriter(0),
      numDataReader(0),
@@ -34,9 +34,6 @@ File::File(Directory* dir, const QString& name, qint64 size, const Common::Hashe
    }
 
    this->dir->addFile(this);
-
-   // The root must be a shared directory. If not, someone will be fired !
-   static_cast<SharedDirectory*>(this->getRoot())->getCache()->onEntryAdded(this);
 }
 
 File::~File()
@@ -49,8 +46,6 @@ File::~File()
       this->hashingStopped.wait(&this->hashingMutex);
    }
    this->hashingMutex.unlock();
-
-   static_cast<SharedDirectory*>(this->getRoot())->getCache()->onEntryRemoved(this);
 }
 
 File* File::restoreFromFileCache(const Protos::FileCache::Hashes_File& file)
@@ -58,7 +53,7 @@ File* File::restoreFromFileCache(const Protos::FileCache::Hashes_File& file)
    this->chunks.clear();
 
    // TODO : test the modification (or creation) date too..
-   if (file.filename().data() == this->getName() && (qint64)file.size() == this->size)
+   if (file.filename().data() == this->getName() && (qint64)file.size() == this->getSize())
    {
       LOG_DEBUG(QString("Restoring file '%1' from the file cache").arg(this->getFullPath()));
       // TODO : maybe test whether the chunks size is correct..
@@ -69,7 +64,7 @@ File* File::restoreFromFileCache(const Protos::FileCache::Hashes_File& file)
    return this;
 }
 
-void File::populateHashesFile(Protos::FileCache::Hashes_File& fileToFill)
+void File::populateHashesFile(Protos::FileCache::Hashes_File& fileToFill) const
 {
    fileToFill.set_filename(this->name.toStdString());
    fileToFill.set_size(this->size);
@@ -80,13 +75,13 @@ void File::populateHashesFile(Protos::FileCache::Hashes_File& fileToFill)
    }
 }
 
-void File::populateFileEntry(Protos::Common::FileEntry* entry)
+void File::populateFileEntry(Protos::Common::FileEntry* entry) const
 {
    entry->mutable_file()->set_path(this->getPath().toStdString());
    entry->mutable_file()->set_name(this->getName().toStdString());
 }
 
-QString File::getPath()
+QString File::getPath() const
 {
    QString path = this->dir->getPath();
    if (!path.isEmpty())
@@ -94,12 +89,12 @@ QString File::getPath()
    return path.append(this->dir->getName());
 }
 
-QString File::getFullPath()
+QString File::getFullPath() const
 {
    return this->dir->getFullPath().append("/").append(this->name);
 }
 
-Directory* File::getRoot()
+Directory* File::getRoot() const
 {
    return this->dir->getRoot();
 }
@@ -244,13 +239,13 @@ void File::computeHashes()
    LOG_DEBUG(QString("Hashing speed : %1 MB/s").arg(static_cast<double>(this->size) / 1024 / 1024 / (static_cast<double>(time.elapsed()) / 1000)));
 }
 
-QList<IChunk*> File::getChunks()
+QList<IChunk*> File::getChunks() const
 {
    // TODO
    return QList<IChunk*>(); //this->chunks;
 }
 
-const QList<Chunk*>& File::getChunksRef()
+const QList<Chunk*>& File::getChunksRef() const
 {
    return this->chunks;
 }

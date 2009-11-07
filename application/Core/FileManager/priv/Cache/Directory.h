@@ -11,24 +11,33 @@
 namespace FM
 {
    class File;
+   class Cache;
 
    class Directory : public Entry
    {
    public:
       Directory(Directory* parent, const QString& name);
 
+   protected:
+      /**
+        * Called by the root which will not have parent and name.
+        */
+      Directory(Cache* cache);
+
+   public:
+
       virtual ~Directory();
 
       QList<File*> restoreFromFileCache(const Protos::FileCache::Hashes_Dir& dir);
 
-      void populateHashesDir(Protos::FileCache::Hashes_Dir& dirToFill);
+      void populateHashesDir(Protos::FileCache::Hashes_Dir& dirToFill) const;
 
-      void populateDirEntry(Protos::Common::DirEntry* entry);
+      void populateDirEntry(Protos::Common::DirEntry* entry) const;
 
-      virtual QString getPath();
-      virtual QString getFullPath();
+      virtual QString getPath() const;
+      virtual QString getFullPath() const;
 
-      Directory* getRoot();
+      Directory* getRoot() const;
 
       /**
         * Only called by the class File.
@@ -40,9 +49,6 @@ namespace FM
         * The sub dirs will be removed from 'dir'.
         */
       void stealSubDirs(Directory* dir);
-
-   protected:
-      Directory();
 
       /**
         * When a new file is added to a directory this method is called

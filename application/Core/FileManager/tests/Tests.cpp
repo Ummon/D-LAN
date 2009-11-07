@@ -95,8 +95,8 @@ void Tests::addSuperSharedDirectories()
 
 void Tests::rmSharedDirectories()
 {
-   this->sharedDirs.clear();
-   this->fileManager->setSharedDirsReadOnly(this->sharedDirs);
+   /*this->sharedDirs.clear();
+   this->fileManager->setSharedDirsReadOnly(this->sharedDirs);*/
 }
 
 void Tests::addSuperSharedDirectoriesAndMerge()

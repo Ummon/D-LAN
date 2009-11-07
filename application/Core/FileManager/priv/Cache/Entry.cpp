@@ -1,25 +1,33 @@
 #include "Entry.h"
 using namespace FM;
 
-#include <priv/Cache/SharedDirectory.h>
+#include <priv/Log.h>
 #include <priv/FileManager.h>
+#include <priv/Cache/Cache.h>
+#include <priv/Cache/SharedDirectory.h>
 
-Entry::Entry(const QString& name)
-   : name(name), size(0)
+Entry::Entry(Cache* cache, const QString& name, qint64 size)
+   : cache(cache), name(name), size(size)
 {
+   this->cache->onEntryAdded(this);
 }
 
-Entry::Entry(const QString& name, qint64 size)
-   : name(name), size(size)
+Entry::~Entry()
 {
+   this->cache->onEntryRemoved(this);
 }
 
-QString Entry::getName()
+Cache* Entry::getCache()
+{
+   return this->cache;
+}
+
+const QString& Entry::getName() const
 {
    return this->name;
 }
 
-qint64 Entry::getSize()
+qint64 Entry::getSize() const
 {
    return this->size;
 }

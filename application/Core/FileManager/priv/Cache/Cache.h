@@ -12,7 +12,6 @@
 
 namespace FM
 {
-   class SharedDirectory;
    class Entry;
    class Chunk;
    class FileUpdater;
@@ -46,6 +45,7 @@ namespace FM
 
       SharedDirectory* getSuperSharedDirectory(const QString& path);
       QList<SharedDirectory*> getSubSharedDirectories(const QString& path);
+      bool isShared(const QString& path) const;
 
       void onEntryAdded(Entry* entry);
       void onEntryRemoved(Entry* entry);

@@ -178,14 +178,14 @@ QList< QSharedPointer<IChunk> > FileManager::newFile(const Protos::Common::FileE
 
 void FileManager::entryAdded(Entry* entry)
 {
-   LOG_DEBUG(QString("Entry added item : %1, adding to the index..").arg(entry->getFullPath()));
+   LOG_DEBUG(QString("Entry added : '%1', adding to the index..").arg(entry->getName()));
    this->wordIndex.addItem(FileManager::splitInWords(entry->getName()), entry);
 }
 
 void FileManager::entryRemoved(Entry* entry)
 {
-   LOG_DEBUG(QString("Entry added item : %1, adding to the index..").arg(entry->getFullPath()));
-   // TODO : remove from the index
+   LOG_DEBUG(QString("Entry removed : '%1', removing from the index..").arg(entry->getName()));
+   this->wordIndex.rmItem(FileManager::splitInWords(entry->getName()), entry);
 }
 
 void FileManager::chunkAdded(Chunk* chunk)

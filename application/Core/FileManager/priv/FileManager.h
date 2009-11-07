@@ -33,7 +33,17 @@ namespace FM
 
       QStringList getSharedDirsReadOnly();
       QStringList getSharedDirsReadWrite();
+
+      /**
+        * @exception SuperDirectoryExistsException Thrown when a super shared directory already exists.
+        * @exception SubDirectoriesWithDifferentRightsExistsException Thrown when one or more sub directory already exists with different rights.
+        */
       void setSharedDirsReadOnly(const QStringList& dirs);
+
+      /**
+        * @exception SuperDirectoryExistsException Thrown when a super shared directory already exists.
+        * @exception SubDirectoriesWithDifferentRightsExistsException Thrown when one or more sub directory already exists with different rights.
+        */
       void setSharedDirsReadWrite(const QStringList& dirs);
       IChunk* getChunk(const Common::Hash& hash);
       // IGetHashesResult* getHashes(const  Protos::Common::FileEntry& entry);

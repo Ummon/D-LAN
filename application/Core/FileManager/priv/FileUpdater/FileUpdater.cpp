@@ -62,13 +62,13 @@ void FileUpdater::run()
    // synchronize it with the file system.
    if (this->fileCache)
    {
+      // TODO : the mutex should be used ?
       for (QListIterator<SharedDirectory*> i(this->dirsToScan); i.hasNext();)
       {
          SharedDirectory* dir = i.next();
          this->scan(dir);
          this->restoreFromFileCache(dir);
       }
-
       this->dirsToScan.clear();
       delete this->fileCache;
       this->fileCache = 0;
@@ -145,10 +145,14 @@ void FileUpdater::createNewFile(Directory* dir, const QString& filename, qint64 
 
 bool FileUpdater::computeSomeHashes()
 {
+   if (fileWithoutHashes.isEmpty())
+      return false;
+
+   LOG_DEBUG("Start computing some hashes..");
+
    QTime time;
    time.start();
 
-   bool ret = !this->fileWithoutHashes.isEmpty();
    QMutableListIterator<File*> i(this->fileWithoutHashes);
    while (i.hasNext())
    {
@@ -158,7 +162,10 @@ bool FileUpdater::computeSomeHashes()
       if (time.elapsed() / 1000 >= MINIMUM_DURATION_WHEN_HASHING)
          break;
    }
-   return ret;
+
+   LOG_DEBUG("Computing some hashes terminated");
+
+   return true;
 }
 
 void FileUpdater::scan(SharedDirectory* dir)
@@ -197,6 +204,8 @@ void FileUpdater::scan(SharedDirectory* dir)
 
 void FileUpdater::restoreFromFileCache(SharedDirectory* dir)
 {
+   LOG_DEBUG("Start restoring hashes of a shared directory : " + dir->getFullPath());
+
    if (this->fileCache == 0)
    {
       LOG_ERR("FileUpdater::restoreFromFileCache : this->fileCache must be previously set. Unable to restore from the file cache.");
@@ -209,6 +218,8 @@ void FileUpdater::restoreFromFileCache(SharedDirectory* dir)
    // TODO : O(n^2) can be a bit long...
    for (QListIterator<File*>i(filesWithHashes); i.hasNext();)
       this->fileWithoutHashes.removeOne(i.next());
+
+   LOG_DEBUG("Restoring terminated : " + dir->getFullPath());
 }
 
 void FileUpdater::treatEvents(const QList<WatcherEvent>& events)
