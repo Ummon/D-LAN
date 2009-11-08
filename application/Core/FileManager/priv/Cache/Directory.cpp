@@ -21,6 +21,8 @@ Directory::Directory(Cache* cache)
 
 Directory::~Directory()
 {
+   LOG_DEBUG(QString("Directory deleted : %1").arg(this->getFullPath()));
+
    if (this->parent)
       this->parent->subDirDeleted(this);
 }
@@ -49,10 +51,15 @@ void Directory::populateHashesDir(Protos::FileCache::Hashes_Dir& dirToFill) cons
 {
    dirToFill.set_name(this->getName().toStdString());
 
-   for (QListIterator<File*> f(this->files); f.hasNext();)
+   for (QListIterator<File*> i(this->files); i.hasNext();)
    {
-      Protos::FileCache::Hashes_File* file = dirToFill.add_file();
-      f.next()->populateHashesFile(*file);
+      File* f = i.next();
+      // We persist only if the file know all its hashes.
+      if (f->haveAllHashes())
+      {
+         Protos::FileCache::Hashes_File* file = dirToFill.add_file();
+         f->populateHashesFile(*file);
+      }
    }
 
    for (QListIterator<Directory*> dir(this->subDirs); dir.hasNext();)
@@ -69,10 +76,14 @@ void Directory::populateDirEntry(Protos::Common::DirEntry* entry) const
 
 void Directory::deleteChunks()
 {
-   foreach (File* f, this->files)
-      f->deleteChunks();
    foreach (Directory* d, this->subDirs)
       d->deleteChunks();
+
+   foreach (File* f, this->files)
+   {
+      LOG_DEBUG(QString("DELETE : = %1").arg(f->getName()));
+      f->setDeleted();
+   }
 }
 
 void Directory::fileDeleted(File* file)

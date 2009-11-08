@@ -31,7 +31,11 @@ namespace FM
         * The file may or may not have a correponding local file.
         */
       File(Directory* dir, const QString& name, qint64 size, const Common::Hashes& hashes = Common::Hashes());
+
+   private:
       virtual ~File();
+
+   public:
 
       File* restoreFromFileCache(const Protos::FileCache::Hashes_File& file);
 
@@ -39,10 +43,15 @@ namespace FM
 
       void populateFileEntry(Protos::Common::FileEntry* entry) const;
 
-      void deleteChunks();
+      /**
+        * Set as deleted and delete all chunks.
+        */
+      void setDeleted();
 
       /**
         * Called only by its chunks.
+        * If the file is marked as deleted and has no more chunk
+        * it will commit a suicide.
         */
       void chunkDeleted(Chunk* chunk);
 
@@ -87,6 +96,8 @@ namespace FM
       /*QList<IChunk*> getChunks() const;
       const QList<Chunk*>& getChunksRef() const;*/
 
+      bool haveAllHashes();
+
    private:
       Directory* dir;
       QList< QSharedPointer<Chunk> > chunks;
@@ -98,7 +109,10 @@ namespace FM
       QMutex* writeLock;
       QMutex* readLock;
 
-      // Mutex and wait condition used during hashing. (A bit heavy).
+      int nbChunks;
+
+      // Mutex and wait condition used during hashing.
+      // (TODO : It's a bit heavy, try to reduce the memory footprint).
       bool hashing;
       QWaitCondition hashingStopped;
       QMutex hashingMutex;

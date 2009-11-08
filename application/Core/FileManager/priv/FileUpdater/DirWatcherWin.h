@@ -36,9 +36,13 @@ namespace FM
 
       struct Dir
       {
-         Dir(HANDLE file, HANDLE event, QString fullPath) : file(file), event(event), fullPath(fullPath) {}
+         Dir(HANDLE file, HANDLE event, QString fullPath) : file(file), fullPath(fullPath)
+         {
+            memset(&this->overlapped, 0, sizeof(OVERLAPPED));
+            overlapped.hEvent = event;
+         }
          HANDLE file;
-         HANDLE event;
+         OVERLAPPED overlapped;
          QString fullPath;
       };
       QList<Dir> dirs; // The watched dirs.
