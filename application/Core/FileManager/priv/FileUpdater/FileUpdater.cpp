@@ -92,11 +92,11 @@ void FileUpdater::run()
 
       if (!this->dirsToRemove.isEmpty())
       {
-         for (QListIterator<QString> i(this->dirsToRemove); i.hasNext();)
+         foreach (QString path, this->dirsToRemove)
          {
             // Stop watching this directory.
             if (this->dirWatcher)
-               this->dirWatcher->rmDir(i.next());
+               this->dirWatcher->rmDir(path);
          }
          this->dirsToRemove.clear();
       }

@@ -177,10 +177,10 @@ void Cache::removeSharedDir(SharedDirectory* dir)
    dir->setDeleted();
    this->sharedDirs.removeOne(dir);
 
-   // Mark each chunk as deleted and delete it?
-   dir->deleteChunks();
-
    this->fileUpdater->rmRoot(dir);
+
+   // Delete all chunks.
+   dir->deleteChunks();
 }
 
 void Cache::createSharedDirs(const QStringList& dirs, const QList<SharedDirectory::Rights>& rights, const QList<Common::Hash>& ids)

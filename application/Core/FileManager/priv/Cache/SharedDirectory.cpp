@@ -4,6 +4,7 @@ using namespace FM;
 #include <QDir>
 
 #include <Exceptions.h>
+#include <priv/Log.h>
 #include <priv/Exceptions.h>
 #include <priv/Cache/Cache.h>
 

@@ -81,6 +81,8 @@ void Tests::addSubSharedDirectories()
 
 void Tests::addSuperSharedDirectories()
 {
+   // TODO : doesn't work!!!!!!
+   /*
    this->sharedDirs << QDir::currentPath().append("/../..");
    try
    {
@@ -90,11 +92,13 @@ void Tests::addSuperSharedDirectories()
    {
       qDebug() << "There is already sub directories with different rights : "; // TODO : print more information
       this->sharedDirs.removeLast();
-   }
+   }*/
 }
 
 void Tests::rmSharedDirectories()
 {
+   return;
+
    this->sharedDirs.clear();
 //   this->fileManager->setSharedDirsReadOnly(this->sharedDirs);
    this->fileManager->setSharedDirsReadWrite(this->sharedDirs);

@@ -43,15 +43,16 @@ void DirWatcherWin::addDir(const QString& path)
 
 void DirWatcherWin::rmDir(const QString& path)
 {
-   // TODO
    for (QMutableListIterator<Dir> i(this->dirs); i.hasNext();)
    {
-      const Dir& dir = i.next();
+      Dir& dir = i.next();
       if (dir.fullPath == path)
       {
-         // TODO : close event + folder
-         if (!CloseHandle(dir.event)) LOG_ERR(QString("CloseHandle(dir.event) return an error : %1").arg(GetLastError()));
+         // Should we wait with GetOverlappedResult or do a test with HasOverlappedIoCompleted ?
+         CancelIo(dir.file);
+
          if (!CloseHandle(dir.file)) LOG_ERR(QString("CloseHandle(dir.file) return an error : %1").arg(GetLastError()));
+         if (!CloseHandle(dir.overlapped.hEvent)) LOG_ERR(QString("CloseHandle(dir.overlapped.hEvent) return an error : %1").arg(GetLastError()));
 
          i.remove();
          break;
@@ -76,7 +77,7 @@ const QList<WatcherEvent> DirWatcherWin::waitEvent(int timeout, WaitCondition* w
 
    HANDLE eventsArray[m];
    for(int i = 0; i < n; i++)
-      eventsArray[i] = this->dirs[i].event;
+      eventsArray[i] = this->dirs[i].overlapped.hEvent;
 
    if (waitCondition)
    {
@@ -136,19 +137,14 @@ const QList<WatcherEvent> DirWatcherWin::waitEvent(int timeout, WaitCondition* w
 
 void DirWatcherWin::watch(int num)
 {
-   OVERLAPPED overlapped;
-   memset(&overlapped, 0, sizeof(OVERLAPPED));
-   overlapped.hEvent = this->dirs[num].event;
-
    if (!ReadDirectoryChangesW(
-      this->dirs[num].file,
-      &this->notifyBuffer,
-      2048,
-      TRUE,
-      FILE_NOTIFY_CHANGE_FILE_NAME | FILE_NOTIFY_CHANGE_DIR_NAME |
-      FILE_NOTIFY_CHANGE_SIZE | FILE_NOTIFY_CHANGE_LAST_WRITE | FILE_NOTIFY_CHANGE_CREATION,
-      &this->nbBytesNotifyBuffer,
-      &overlapped,
+      this->dirs[num].file, // The file handle;
+      &this->notifyBuffer, // The buffer where the information is put when an event occur.
+      NOTIFY_BUFFER_SIZE,
+      TRUE, // Watch subtree.
+      FILE_NOTIFY_CHANGE_FILE_NAME | FILE_NOTIFY_CHANGE_DIR_NAME | FILE_NOTIFY_CHANGE_SIZE | FILE_NOTIFY_CHANGE_LAST_WRITE | FILE_NOTIFY_CHANGE_CREATION,
+      &this->nbBytesNotifyBuffer, // not used in asynchronous mode.
+      &this->dirs[num].overlapped,
       NULL
    ))
       throw DirWatcherException(QString("ReadDirectoryChangesW(..), GetLastError : %1").arg(GetLastError()));
