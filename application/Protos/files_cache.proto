@@ -11,14 +11,14 @@ package Protos.FileCache;
 // All the hashes for a set of file.
 message Hashes {
    message Chunk {
-      required uint32 knownBytes = 1;
-      required Common.Hash hash = 2;
+      required uint32 knownBytes = 1; // Used only when downloading a file, we have the hash but we don't have all the file content.
+      optional Common.Hash hash = 2; // 
    }
    
    message File {
       required string filename = 1;
       required uint64 size = 2;
-      repeated Chunk chunk = 3;
+      repeated Chunk chunk = 3; // Contains all the file chunk, if we don't a chunk its hash is ommited.
    }
    
    message SharedDir {
@@ -34,7 +34,7 @@ message Hashes {
 
    message Dir {
       required string name = 1; // Empty for the roots.
-      repeated File file = 2;
+      repeated File file = 2; // Contains only the files which have at least one hash known.
       repeated Dir dir = 3;
    }
    

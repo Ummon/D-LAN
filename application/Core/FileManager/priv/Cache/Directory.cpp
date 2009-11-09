@@ -54,7 +54,8 @@ void Directory::populateHashesDir(Protos::FileCache::Hashes_Dir& dirToFill) cons
    for (QListIterator<File*> i(this->files); i.hasNext();)
    {
       File* f = i.next();
-      // We persist only if the file know all its hashes.
+      // We persist only if the file knows all its hashes.
+      // TODO : We should also persist the files which know at least one chunk!
       if (f->haveAllHashes())
       {
          Protos::FileCache::Hashes_File* file = dirToFill.add_file();
