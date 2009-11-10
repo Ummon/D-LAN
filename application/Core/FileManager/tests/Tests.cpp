@@ -6,8 +6,9 @@ using namespace FM;
 #include <QStringList>
 
 #include <Protos/common.pb.h>
-
+#include <Common/PersistantData.h>
 #include <Exceptions.h>
+#include <priv/Constants.h>
 
 Tests::Tests()
 {
@@ -15,12 +16,69 @@ Tests::Tests()
 
 void Tests::initTestCase()
 {
+   Common::PersistantData::rmValue(FILE_CACHE); // Reset the stored cache.
    this->fileManager = Builder::newFileManager();
 }
 
-void Tests::addSharedDirectories()
+void Tests::addASharedDirectory()
 {
-   this->sharedDirs << QDir::currentPath().append("/../../terms");
+   this->sharedDirs << QDir::currentPath().append("/../../sharedDirs/share1");
+   this->fileManager->setSharedDirsReadOnly(this->sharedDirs);
+   QStringList paths = this->fileManager->getSharedDirsReadOnly();
+   QVERIFY(paths.size() == 1);
+   QCOMPARE(paths.at(0), QDir::cleanPath(this->sharedDirs.at(0)));
+}
+
+void Tests::addAnAlreadySharedDirectory()
+{
+   this->fileManager->setSharedDirsReadOnly(this->sharedDirs);
+   QStringList paths = this->fileManager->getSharedDirsReadOnly();
+   QVERIFY(paths.size() == 1);
+   QCOMPARE(paths.at(0), QDir::cleanPath(this->sharedDirs.at(0)));
+}
+
+void Tests::addInexistantSharedDirectory()
+{
+   this->sharedDirs << QDir::currentPath().append("/this_is_spartaaaaaa"); // This directory doesn't exit.
+   try
+   {
+      this->fileManager->setSharedDirsReadOnly(this->sharedDirs);
+   }
+   catch (DirsNotFoundException& e)
+   {
+      QVERIFY(e.paths.size() == 1);
+      QCOMPARE(e.paths.at(0), QDir::cleanPath(this->sharedDirs.last()));
+      qDebug() << "This directory hasn't been found : " << e.paths.at(0) << " (Exception thrown)";
+   }
+   this->sharedDirs.removeLast();
+}
+
+void Tests::addSubSharedDirectories()
+{
+   this->sharedDirs << QDir::currentPath().append("/../../sharedDirs/share1/subdir");
+   this->sharedDirs << QDir::currentPath().append("/../../sharedDirs/share1/anotherSubdir");
+   try
+   {
+      this->fileManager->setSharedDirsReadOnly(this->sharedDirs);
+   }
+   catch(SuperDirectoryExistsException& e)
+   {
+      QCOMPARE(e.directory, QDir::cleanPath(this->sharedDirs.at(0)));
+      qDebug() << "There is already a super directory : " << e.directory;
+   }
+   this->sharedDirs.removeLast();
+   this->sharedDirs.removeLast();
+}
+
+void Tests::cleanupTestCase()
+{
+   // This call is only used to stop the fileUpdater and wait for it to finish.
+   // It's should not be used in a normal code.
+   this->fileManager.clear();
+}
+
+/*
+
    this->sharedDirs << QDir::currentPath().append("/asdasdasd"); // This directory doesn't exit.
 
    try
@@ -34,7 +92,7 @@ void Tests::addSharedDirectories()
    }
 
    this->sharedDirs.removeLast(); // Remove the nonexistent directory.
-}
+   */
 
 void Tests::search()
 {
@@ -61,22 +119,6 @@ void Tests::search()
    QString terms("xxxx");
    Protos::Common::FindResult result = this->fileManager->find(terms);
    this->printSearch(terms, result);
-}
-
-void Tests::addSubSharedDirectories()
-{
-   this->sharedDirs << QDir::currentPath().append("/../../aSharedDir/subdir");
-   this->sharedDirs << QDir::currentPath().append("/../../aSharedDir/anotherSubdir");
-   try
-   {
-      this->fileManager->setSharedDirsReadOnly(this->sharedDirs);
-   }
-   catch(SuperDirectoryExistsException& e)
-   {
-      qDebug() << "There is already a super directory : "; // TODO : print the super directory
-      this->sharedDirs.removeLast();
-      this->sharedDirs.removeLast();
-   }
 }
 
 void Tests::addSuperSharedDirectories()
@@ -112,10 +154,6 @@ void Tests::addSuperSharedDirectoriesAndMerge()
          QDir::currentPath().append("/../../aSharedDir/anotherSubdir") <<
          QDir::currentPath().append("/../../aSharedDir");
    this->fileManager2->setSharedDirsReadOnly(dirs);*/
-}
-
-void Tests::cleanupTestCase()
-{
 }
 
 void Tests::doASearch(bool checkResult)

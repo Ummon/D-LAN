@@ -65,24 +65,24 @@ int DirWatcherWin::nbWatchedDir()
    return this->dirs.size();
 }
 
-const QList<WatcherEvent> DirWatcherWin::waitEvent(WaitCondition* w)
+const QList<WatcherEvent> DirWatcherWin::waitEvent(QList<WaitCondition*> ws)
 {
-   return this->waitEvent(INFINITE, w);
+   return this->waitEvent(INFINITE, ws);
 }
 
-const QList<WatcherEvent> DirWatcherWin::waitEvent(int timeout, WaitCondition* waitCondition)
+const QList<WatcherEvent> DirWatcherWin::waitEvent(int timeout, QList<WaitCondition*> ws)
 {
    int n = this->dirs.size();
-   int m = n + (waitCondition ? 1 : 0);
+   int m = n + ws.size();
 
    HANDLE eventsArray[m];
    for(int i = 0; i < n; i++)
       eventsArray[i] = this->dirs[i].overlapped.hEvent;
 
-   if (waitCondition)
+   for (int i = 0; i < ws.size(); i++)
    {
-      HANDLE hdl = waitCondition->getHandle();
-      eventsArray[n] = hdl;
+      HANDLE hdl = ws[i]->getHandle();
+      eventsArray[i+n] = hdl;
    }
 
    DWORD waitStatus = WaitForMultipleObjects(m, eventsArray, FALSE, timeout);
@@ -119,7 +119,7 @@ const QList<WatcherEvent> DirWatcherWin::waitEvent(int timeout, WaitCondition* w
       events.append(WatcherEvent(WatcherEvent::NEW_FILE, "TAISTE"));
       return events;
    }
-   else if (waitCondition && waitStatus == WAIT_OBJECT_0 + (DWORD)n)
+   else if (!ws.isEmpty() && waitStatus >= WAIT_OBJECT_0 + (DWORD)n && waitStatus <= WAIT_OBJECT_0 + (DWORD)m - 1)
    {
       return QList<WatcherEvent>();
    }

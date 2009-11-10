@@ -13,10 +13,7 @@ namespace FM
    public :
       FileSystemEntriesNotFoundException(const QStringList& paths) : paths(paths) {}
       virtual ~FileSystemEntriesNotFoundException() throw () {}
-      QStringList getPaths() const { return this->paths; }
-
-   private :
-      QStringList paths;
+      const QStringList paths;
    };
 
    class FilesNotFoundException : public FileSystemEntriesNotFoundException
@@ -33,10 +30,15 @@ namespace FM
       virtual ~DirsNotFoundException() throw () {}
    };
 
+   /**
+     * Thrown when adding a shared directory when a super directory is already shared.
+     */
    class SuperDirectoryExistsException : public exception
    {
    public:
+      SuperDirectoryExistsException(const QString& directory) : directory(directory) {}
       virtual ~SuperDirectoryExistsException() throw() {}
+      const QString directory;
    };
 
    // TODO : add some additionnals informations
