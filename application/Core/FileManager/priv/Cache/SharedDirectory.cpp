@@ -30,8 +30,8 @@ void SharedDirectory::init()
    if (!QDir(this->path).exists())
       throw DirNotFoundException(this->path);
 
-   if (this->cache->getSuperSharedDirectory(path))
-      throw SuperDirectoryExistsException();
+   if (SharedDirectory* dir = this->cache->getSuperSharedDirectory(path))
+      throw SuperDirectoryExistsException(dir->getFullPath());
 
    // Gets the sub directories and checks the rights matches.
    QList<SharedDirectory*> subDirs = this->cache->getSubSharedDirectories(path);

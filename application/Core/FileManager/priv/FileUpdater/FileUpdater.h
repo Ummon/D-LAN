@@ -28,6 +28,8 @@ namespace FM
       FileUpdater(FileManager* fileManager);
       ~FileUpdater();
 
+      void stop();
+
       /**
         * @exception DirNotFoundException
         */
@@ -79,7 +81,10 @@ namespace FM
 
       const Protos::FileCache::Hashes* fileCache; ///< The hashes from the saved file cache. Used only at the begining of 'run()'.
 
+      bool toStop; ///< Set to true when the service must be stopped.
+
       WaitCondition* dirEvent; ///< Using to wait when a sharing directory is added or deleted.
+      WaitCondition* stopEvent; ///< Using to stop the thread.
       QMutex mutex;
 
       QList<SharedDirectory*> dirsToScan; ///< When a new shared directory is added, it is put in this list until it is scanned.

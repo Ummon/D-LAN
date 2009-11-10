@@ -23,7 +23,7 @@ QStringList Cache::getSharedDirs(SharedDirectory::Rights rights)
    {
       SharedDirectory* dir = i.next();
       if (dir->getRights() == rights)
-         list << dir->getPath();
+         list << dir->getFullPath();
    }
    return list;
 }
@@ -170,6 +170,11 @@ void Cache::onEntryRemoved(Entry* entry)
 void Cache::onChunkAdded(Chunk* chunk)
 {
    emit chunkAdded(chunk);
+}
+
+void Cache::onChunkRemoved(Chunk* chunk)
+{
+   emit chunkRemoved(chunk);
 }
 
 void Cache::removeSharedDir(SharedDirectory* dir)

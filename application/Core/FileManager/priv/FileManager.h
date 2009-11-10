@@ -30,6 +30,7 @@ namespace FM
    public :
 
       FileManager();
+      ~FileManager();
 
       QStringList getSharedDirsReadOnly();
       QStringList getSharedDirsReadWrite();

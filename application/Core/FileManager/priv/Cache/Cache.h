@@ -50,6 +50,7 @@ namespace FM
       void onEntryAdded(Entry* entry);
       void onEntryRemoved(Entry* entry);
       void onChunkAdded(Chunk* chunk);
+      void onChunkRemoved(Chunk* chunk);
 
       /**
         * Return the big cach lock.
@@ -60,6 +61,7 @@ namespace FM
       void entryAdded(Entry* entry);
       void entryRemoved(Entry* entry);
       void chunkAdded(Chunk* chunk);
+      void chunkRemoved(Chunk* chunk);
 
    private:
       void removeSharedDir(SharedDirectory* dir);

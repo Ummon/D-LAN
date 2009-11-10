@@ -16,16 +16,27 @@ using namespace FM;
 FileUpdater::FileUpdater(FileManager* fileManager)
    : fileManager(fileManager),
      dirWatcher(DirWatcher::getNewWatcher()),
-     fileCache(0)
+     fileCache(0),
+     toStop(false)
      /*, currentScanningDir(0)*/
 {
    this->dirEvent = WaitCondition::getNewWaitCondition();
+   this->stopEvent = WaitCondition::getNewWaitCondition();
 }
 
 FileUpdater::~FileUpdater()
 {
    if (this->dirEvent)
       delete this->dirEvent;
+   if (this->stopEvent)
+      delete this->stopEvent;
+}
+
+void FileUpdater::stop()
+{
+   this->toStop = true;
+   this->stopEvent->release();
+   this->wait();
 }
 
 void FileUpdater::addRoot(SharedDirectory* dir)
@@ -132,13 +143,15 @@ void FileUpdater::run()
          if (this->dirsToScan.isEmpty() && this->fileWithoutHashes.isEmpty())
          {
             this->mutex.unlock();
-            this->treatEvents(this->dirWatcher->waitEvent(this->dirEvent));
+            this->treatEvents(this->dirWatcher->waitEvent(QList<WaitCondition*>() << this->dirEvent << this->stopEvent));
          }
          else
          {
             this->mutex.unlock();
             this->treatEvents(this->dirWatcher->waitEvent(0));
          }
+         if (this->toStop)
+            return;
       }
    }
 }
@@ -250,6 +263,9 @@ void FileUpdater::restoreFromFileCache(SharedDirectory* dir)
 
 void FileUpdater::treatEvents(const QList<WatcherEvent>& events)
 {
-   // TODO something..
-   LOG_DEBUG("File structure event occurs");
+   if (events.isEmpty())
+      return;
+
+   // TODO..
+   LOG_DEBUG("File structure event occurs...");
 }

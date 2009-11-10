@@ -28,8 +28,8 @@ namespace FM
 
       void rmDir(const QString& path);
       int nbWatchedDir();
-      const QList<WatcherEvent> waitEvent(WaitCondition* w = 0);
-      const QList<WatcherEvent> waitEvent(int timeout, WaitCondition* w = 0);
+      const QList<WatcherEvent> waitEvent(QList<WaitCondition*> ws = QList<WaitCondition*>());
+      const QList<WatcherEvent> waitEvent(int timeout, QList<WaitCondition*> ws = QList<WaitCondition*>());
 
    private:
       void watch(int num);

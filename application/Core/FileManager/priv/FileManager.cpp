@@ -38,6 +38,13 @@ FileManager::FileManager()
    LOG_USER("Loaded!");
 }
 
+FileManager::~FileManager()
+{
+   LOG_DEBUG("~FileManager : Stopping the file updater..");
+   this->fileUpdater.stop();
+   LOG_DEBUG("FileManager deleted");
+}
+
 QStringList FileManager::getSharedDirsReadOnly()
 {
    return this->cache.getSharedDirs(SharedDirectory::READ_ONLY);
@@ -178,12 +185,18 @@ QList< QSharedPointer<IChunk> > FileManager::newFile(const Protos::Common::FileE
 
 void FileManager::entryAdded(Entry* entry)
 {
+   if (entry->getName().isEmpty())
+      return;
+
    LOG_DEBUG(QString("Entry added : '%1', adding to the index..").arg(entry->getName()));
    this->wordIndex.addItem(FileManager::splitInWords(entry->getName()), entry);
 }
 
 void FileManager::entryRemoved(Entry* entry)
 {
+   if (entry->getName().isEmpty())
+      return;
+
    LOG_DEBUG(QString("Entry removed : '%1', removing from the index..").arg(entry->getName()));
    this->wordIndex.rmItem(FileManager::splitInWords(entry->getName()), entry);
 }
@@ -231,7 +244,7 @@ void FileManager::loadCacheFromFile()
       }
       catch (DirsNotFoundException& e)
       {
-         foreach (QString path, e.getPaths())
+         foreach (QString path, e.paths)
             LOG_WARN(QString("During the file cache loading, this directory hasn't been found : %1").arg(path));
       }
 

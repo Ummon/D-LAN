@@ -270,7 +270,16 @@ void File::computeHashes()
    this->hashingStopped.wakeOne();
    this->hashingMutex.unlock();
 
-   LOG_DEBUG(QString("Hashing speed : %1 MB/s").arg(static_cast<double>(this->size) / 1024 / 1024 / (static_cast<double>(time.elapsed()) / 1000)));
+#ifdef DEBUG
+   const int delta = time.elapsed();
+   if (delta == 0)
+      LOG_DEBUG("Hashing speed : ?? MB/s");
+   else
+   {
+      const double speed = static_cast<double>(this->size) / 1024 / 1024 / (static_cast<double>(delta) / 1000);
+      LOG_DEBUG(QString("Hashing speed : %1 MB/s").arg(speed < 0.1 ? "< 0.1" : QString::number(speed)));
+   }
+#endif
 }
 
 
