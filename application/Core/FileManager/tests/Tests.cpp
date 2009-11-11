@@ -27,6 +27,7 @@ void Tests::addASharedDirectory()
    QStringList paths = this->fileManager->getSharedDirsReadOnly();
    QVERIFY(paths.size() == 1);
    QCOMPARE(paths.at(0), QDir::cleanPath(this->sharedDirs.at(0)));
+   QVERIFY(this->fileManager->getSharedDirsReadWrite().size() == 0);
 }
 
 void Tests::addAnAlreadySharedDirectory()
@@ -35,6 +36,7 @@ void Tests::addAnAlreadySharedDirectory()
    QStringList paths = this->fileManager->getSharedDirsReadOnly();
    QVERIFY(paths.size() == 1);
    QCOMPARE(paths.at(0), QDir::cleanPath(this->sharedDirs.at(0)));
+   QVERIFY(this->fileManager->getSharedDirsReadWrite().size() == 0);
 }
 
 void Tests::addInexistantSharedDirectory()
@@ -43,6 +45,7 @@ void Tests::addInexistantSharedDirectory()
    try
    {
       this->fileManager->setSharedDirsReadOnly(this->sharedDirs);
+      QFAIL("An exception must be thrown");
    }
    catch (DirsNotFoundException& e)
    {
@@ -60,14 +63,46 @@ void Tests::addSubSharedDirectories()
    try
    {
       this->fileManager->setSharedDirsReadOnly(this->sharedDirs);
+      QFAIL("An exception must be thrown");
    }
    catch(SuperDirectoryExistsException& e)
    {
-      QCOMPARE(e.directory, QDir::cleanPath(this->sharedDirs.at(0)));
-      qDebug() << "There is already a super directory : " << e.directory;
+      QCOMPARE(e.superDirectory, QDir::cleanPath(this->sharedDirs.at(0)));
+      QCOMPARE(e.subDirectory, QDir::cleanPath(this->sharedDirs.at(this->sharedDirs.size()-2)));
+
+      qDebug() << "There is already a super directory : " << e.superDirectory <<
+            " for this directory : " << e.subDirectory;
    }
    this->sharedDirs.removeLast();
    this->sharedDirs.removeLast();
+}
+
+void Tests::addSuperSharedDirectoriesWithDifferentRights()
+{
+   QStringList sharedWriteDirs;
+   sharedWriteDirs << QDir::currentPath().append("/../../sharedDirs");
+
+   try
+   {
+      this->fileManager->setSharedDirsReadWrite(sharedWriteDirs);
+      QFAIL("An exception must be thrown");
+   }
+   catch(SubDirectoriesWithDifferentRightsExistsException& e)
+   {
+      qDebug() << "This directory : " << e.superDirectory <<
+            " has sub directories with different rights : " << e.subDirectories;
+   }
+}
+
+/**
+  * The subs directories of each subdirectory must be merged into the super directory.
+  */
+void Tests::addSuperSharedDirectoriesWithSameRights()
+{
+   /* TODO
+   this->sharedDirs << QDir::currentPath().append("/../../sharedDirs");
+   this->fileManager->setSharedDirsReadOnly(this->sharedDirs);
+   */
 }
 
 void Tests::cleanupTestCase()
@@ -119,22 +154,6 @@ void Tests::search()
    QString terms("xxxx");
    Protos::Common::FindResult result = this->fileManager->find(terms);
    this->printSearch(terms, result);
-}
-
-void Tests::addSuperSharedDirectories()
-{
-   // TODO : doesn't work!!!!!!
-   /*
-   this->sharedDirs << QDir::currentPath().append("/../..");
-   try
-   {
-      this->fileManager->setSharedDirsReadOnly(this->sharedDirs);
-   }
-   catch(SubDirectoriesWithDifferentRightsExistsException& e)
-   {
-      qDebug() << "There is already sub directories with different rights : "; // TODO : print more information
-      this->sharedDirs.removeLast();
-   }*/
 }
 
 void Tests::rmSharedDirectories()

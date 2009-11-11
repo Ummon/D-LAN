@@ -36,16 +36,22 @@ namespace FM
    class SuperDirectoryExistsException : public exception
    {
    public:
-      SuperDirectoryExistsException(const QString& directory) : directory(directory) {}
+      SuperDirectoryExistsException(const QString& super, const QString& sub)
+         : superDirectory(super), subDirectory(sub) {}
       virtual ~SuperDirectoryExistsException() throw() {}
-      const QString directory;
+      const QString superDirectory;
+      const QString subDirectory;
    };
 
    // TODO : add some additionnals informations
    class SubDirectoriesWithDifferentRightsExistsException : public exception
    {
    public:
+      SubDirectoriesWithDifferentRightsExistsException(const QString& super, const QStringList& subs)
+         : superDirectory(super), subDirectories(subs) {}
       virtual ~SubDirectoriesWithDifferentRightsExistsException() throw() {}
+      const QString superDirectory;
+      const QStringList subDirectories;
    };
 
    class DirAlreadySharedException: public exception

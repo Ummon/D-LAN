@@ -21,10 +21,7 @@ namespace Common
      */
    class PersistantData
    {
-      static const QString APPLICATION_FOLDER_NAME;
-      static const QString APPLICATION_FOLDER_PATH;
       static const QString TEMP_POSTFIX_TERM;
-
    public:
 
       /**
@@ -49,9 +46,6 @@ namespace Common
         * @return Return false if the data didn't exist.
         */
       static bool rmValue(const QString& name);
-
-   private:
-      static bool createApplicationFolder();
    };
 }
 #endif

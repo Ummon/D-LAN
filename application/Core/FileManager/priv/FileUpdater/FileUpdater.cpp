@@ -35,6 +35,9 @@ FileUpdater::~FileUpdater()
 void FileUpdater::stop()
 {
    this->toStop = true;
+
+   // TODO : stop scanning and hashing...
+
    this->stopEvent->release();
    this->wait();
 }

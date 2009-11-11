@@ -3,7 +3,8 @@
 # -------------------------------------------------
 QT -= gui
 TARGET = LogManager
-INCLUDEPATH += .
+INCLUDEPATH += . \
+   ..
 TEMPLATE = lib
 CONFIG += staticlib create_prl
 

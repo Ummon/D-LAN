@@ -136,6 +136,7 @@ QList<SharedDirectory*> Cache::getSubSharedDirectories(const QString& path)
    {
       SharedDirectory* sharedDir = i.next();
       const QStringList& foldersShared = sharedDir->getFullPath().split('/', QString::SkipEmptyParts);
+
       if (foldersShared.size() <= folders.size())
          continue;
 
@@ -143,7 +144,7 @@ QList<SharedDirectory*> Cache::getSubSharedDirectories(const QString& path)
          if (folders[i] != foldersShared[i])
             continue;
 
-      ret.append(sharedDir);
+      ret << sharedDir;
    }
 
    return ret;
@@ -213,7 +214,8 @@ void Cache::createSharedDirs(const QStringList& dirs, const QList<SharedDirector
       }
       catch (DirNotFoundException& e)
       {
-         dirsNotFound << e.getPath();
+         LOG_WARN(QString("Directory not found : %1").arg(e.path));
+         dirsNotFound << e.path;
       }
       catch (DirAlreadySharedException&)
       {

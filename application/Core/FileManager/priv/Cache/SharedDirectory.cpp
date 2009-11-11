@@ -31,13 +31,18 @@ void SharedDirectory::init()
       throw DirNotFoundException(this->path);
 
    if (SharedDirectory* dir = this->cache->getSuperSharedDirectory(path))
-      throw SuperDirectoryExistsException(dir->getFullPath());
+      throw SuperDirectoryExistsException(dir->getFullPath(), this->getFullPath());
 
    // Gets the sub directories and checks the rights matches.
-   QList<SharedDirectory*> subDirs = this->cache->getSubSharedDirectories(path);
+   QList<SharedDirectory*> subDirs = this->cache->getSubSharedDirectories(this->path);
    foreach (SharedDirectory* subDir, subDirs)
+   {
+      QStringList subs;
       if (subDir->rights != this->rights)
-         throw SubDirectoriesWithDifferentRightsExistsException();
+         subs << subDir->getFullPath();
+      if (!subs.isEmpty())
+         throw SubDirectoriesWithDifferentRightsExistsException(this->path, subs);
+   }
 
    // Merges the sub-directories of each directory found.
    foreach (SharedDirectory* subDir, subDirs)
