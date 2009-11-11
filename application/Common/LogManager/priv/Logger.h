@@ -13,15 +13,17 @@ namespace LM
    {
    public:
       Logger(const QString& name);
-      Logger(QTextStream* stream, const QString& name);
+      ~Logger();
 
       void log(const QString& message, Severity severity);
       void log(const ILoggable& object, Severity severity);
 
    private:
       QString name;
-      QTextStream* out;
+
+      static QTextStream* out;
       static QMutex mutex;
+      static int nbLogger;
    };
 }
 #endif

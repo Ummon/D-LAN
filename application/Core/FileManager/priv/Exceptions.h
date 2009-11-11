@@ -11,12 +11,9 @@ namespace FM
    class FileSystemEntryNotFoundException : public exception
    {
    public :
-      FileSystemEntryNotFoundException(const QString path) : path(path) {}
+      FileSystemEntryNotFoundException(const QString& path) : path(path) {}
       virtual ~FileSystemEntryNotFoundException() throw () {}
-      QString getPath() const { return this->path; }
-
-   private :
-      QString path;
+      const QString path;
    };
 
    class FileNotFoundException : public FileSystemEntryNotFoundException

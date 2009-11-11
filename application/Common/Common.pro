@@ -3,16 +3,14 @@
 # -------------------------------------------------
 QT -= gui
 TARGET = Common
-
 LIBS += -L${PROTOBUF}/src/.libs \
     -lprotobuf
 INCLUDEPATH += . \
     ../.. \
     ${PROTOBUF}/src
-
-
 TEMPLATE = lib
-CONFIG += staticlib create_prl
+CONFIG += staticlib \
+    create_prl
 DEFINES += DEBUG
 DESTDIR = "output/debug"
 MOC_DIR = ".tmp/debug"
@@ -21,9 +19,12 @@ INCLUDEPATH += .
 DEFINES += COMMON_LIBRARY
 SOURCES += Hash.cpp \
     PersistantData.cpp \
-    Math.cpp
+    Math.cpp \
+    Common.cpp
 HEADERS += Hashes.h \
     Hash.h \
     PersistantData.h \
     Math.h \
-    Deletable.h
+    Deletable.h \
+    Constants.h \
+    Common.h

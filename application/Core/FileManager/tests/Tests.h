@@ -20,10 +20,11 @@ private slots:
    void cleanupTestCase();
    void addInexistantSharedDirectory();
    void addSubSharedDirectories();
+   void addSuperSharedDirectoriesWithDifferentRights();
+   void addSuperSharedDirectoriesWithSameRights();
 
 private:
    void search();
-   void addSuperSharedDirectories();
    void rmSharedDirectories();
    void addSuperSharedDirectoriesAndMerge();
 

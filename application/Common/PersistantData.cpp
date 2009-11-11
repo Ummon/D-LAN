@@ -12,13 +12,14 @@ using namespace std;
 #  include <google/protobuf/io/zero_copy_stream_impl.h>
 #endif
 
-const QString PersistantData::APPLICATION_FOLDER_NAME(".aybabtu");
-const QString PersistantData::APPLICATION_FOLDER_PATH(QDir::homePath() + '/' + APPLICATION_FOLDER_NAME);
+#include <Constants.h>
+#include <Common.h>
+
 const QString PersistantData::TEMP_POSTFIX_TERM(".temp");
 
 void PersistantData::setValue(const QString& name, const google::protobuf::Message& data)
 {
-   if (PersistantData::createApplicationFolder())
+   if (Global::createApplicationFolder())
    {
       QString tempName(name + TEMP_POSTFIX_TERM);
 
@@ -58,12 +59,4 @@ void PersistantData::getValue(const QString& name, google::protobuf::Message& da
 bool PersistantData::rmValue(const QString& name)
 {
    return QFile::remove(APPLICATION_FOLDER_PATH + '/' + name);
-}
-
-bool PersistantData::createApplicationFolder()
-{
-   if (!QDir::home().exists(APPLICATION_FOLDER_NAME))
-      return QDir::home().mkdir(APPLICATION_FOLDER_NAME);
-
-   return true;
 }
