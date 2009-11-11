@@ -5,6 +5,7 @@
 using namespace FM;
 
 WaitConditionLinux::WaitConditionLinux()
+   : released(false)
 {
 }
 
@@ -15,6 +16,7 @@ WaitConditionLinux::~WaitConditionLinux()
 void WaitConditionLinux::release()
 {
    this->mutex.lock();
+   this->released = true;
    this->waitCondition.wakeOne();
    this->mutex.unlock();      
 }
@@ -22,7 +24,10 @@ void WaitConditionLinux::release()
 void WaitConditionLinux::wait()
 {
    this->mutex.lock();
-   this->waitCondition.wait(&this->mutex);
+   if (!this->released)
+      this->waitCondition.wait(&this->mutex);
+   
+   this->released = false;
    this->mutex.unlock();   
 }
 
