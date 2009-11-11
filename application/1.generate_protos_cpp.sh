@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+# Generate all .h/.cpp from the proto files.
+
 PROTOS_DIR=Protos
 
 cd $PROTOS_DIR
