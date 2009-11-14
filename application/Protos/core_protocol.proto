@@ -19,7 +19,7 @@ package Protos.Core;
 // id : 0x01
 message IMAlive {
    required uint32 version = 1; // The version of the protocol used.
-   required Common.Hash peerID = 2;
+   required Common.Hash peer_id = 2;
    required string nick = 3;
    required uint64 amount = 4; // [byte] Amount of sharing.
    
@@ -34,14 +34,14 @@ message IMAlive {
 // id : 0x02
 message ChunksOwned {
    required uint64 tag = 1; // The repeated number.
-   required Common.Hash peerID = 2;
-   repeated bool chunkState = 3 [packed=true]; // The array size must have the same size of HaveChunks.chunks.
+   required Common.Hash peer_id = 2;
+   repeated bool chunk_state = 3 [packed=true]; // The array size must have the same size of HaveChunks.chunks.
 }
 
 // a -> all
 // id : 0x11
 message ChatMessage {
-   required Common.Hash peerID = 1;
+   required Common.Hash peer_id = 1;
    required string message = 2;
 }
 
@@ -51,7 +51,7 @@ message ChatMessage {
 // id : 0x21
 message Find {
    required uint64 tag = 1; // A tag to identify the search. All answers must have the same tag.
-   required Common.Hash peerID = 2;
+   required Common.Hash peer_id = 2;
    required string pattern = 3;
 }
 // Results.

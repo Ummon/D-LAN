@@ -9,6 +9,7 @@
 #include <QFile>
 #include <QList>
 #include <QSharedPointer>
+#include <QDateTime>
 
 #include <Common/Hashes.h>
 #include <Protos/common.pb.h>
@@ -30,7 +31,13 @@ namespace FM
         * Create a new file into a given directory.
         * The file may or may not have a correponding local file.
         */
-      File(Directory* dir, const QString& name, qint64 size, const Common::Hashes& hashes = Common::Hashes());
+      File(
+         Directory* dir,
+         const QString& name,
+         qint64 size,
+         const QDateTime& dateLastModified,
+         const Common::Hashes& hashes = Common::Hashes()
+      );
 
    private:
       virtual ~File();
@@ -46,7 +53,7 @@ namespace FM
       /**
         * Set as deleted and delete all chunks.
         */
-      void setDeleted();
+      void eliminate();
 
       /**
         * Called only by its chunks.
@@ -58,6 +65,7 @@ namespace FM
       QString getPath() const;
       QString getFullPath() const;
       Directory* getRoot() const;
+      QDateTime getDateLastModified() const;
 
       void newDataWriterCreated();
       void newDataReaderCreated();
@@ -89,9 +97,12 @@ namespace FM
         * If it already owns some chunks, there are destroyed first.
         * This method can be called from an another thread than the main one. For example,
         * from 'FileUpdated' thread.
+        * @return Return true if all the hashes as been computed.
         * @exception FileNotFoundException
         */
-      void computeHashes();
+      bool computeHashes();
+
+      void stopHashing();
 
       /*QList<IChunk*> getChunks() const;
       const QList<Chunk*>& getChunksRef() const;*/
@@ -101,6 +112,7 @@ namespace FM
    private:
       Directory* dir;
       QList< QSharedPointer<Chunk> > chunks;
+      QDateTime dateLastModified;
 
       int numDataWriter;
       int numDataReader;

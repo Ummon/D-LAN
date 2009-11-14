@@ -13,9 +13,16 @@ using namespace FM;
 #include <priv/Cache/SharedDirectory.h>
 #include <priv/Cache/Chunk.h>
 
-File::File(Directory* dir, const QString& name, qint64 size, const Common::Hashes& hashes)
+File::File(
+   Directory* dir,
+   const QString& name,
+   qint64 size,
+   const QDateTime& dateLastModified,
+   const Common::Hashes& hashes
+)
    : Entry(dir->getCache(), name, size),
      dir(dir),
+     dateLastModified(dateLastModified),
      numDataWriter(0),
      numDataReader(0),
      fileInWriteMode(0),
@@ -25,6 +32,7 @@ File::File(Directory* dir, const QString& name, qint64 size, const Common::Hashe
      nbChunks(0),
      hashing(false)
 {
+   //QMutexLocker locker(&this->getCache()->getMutex());
    LOG_DEBUG(QString("New file : %1").arg(this->getFullPath()));
 
    if (!hashes.isEmpty())
@@ -44,15 +52,6 @@ File::~File()
 {
    LOG_DEBUG(QString("File deleted : %1").arg(this->getFullPath()));
 
-   // If there is a hashing stop it.
-   this->hashingMutex.lock();
-   if (this->hashing)
-   {
-      this->hashing = false;
-      this->hashingStopped.wait(&this->hashingMutex);
-   }
-   this->hashingMutex.unlock();
-
    this->dir->fileDeleted(this);
 }
 
@@ -62,8 +61,11 @@ File* File::restoreFromFileCache(const Protos::FileCache::Hashes_File& file)
 
    this->chunks.clear();
 
-   // TODO : test the modification (or creation) date too..
-   if (file.filename().data() == this->getName() && (qint64)file.size() == this->getSize())
+   if (
+      file.filename().data() == this->getName() &&
+      (qint64)file.size() == this->getSize() &&
+      file.date_last_modified() == this->getDateLastModified().toTime_t()
+   )
    {
       LOG_DEBUG(QString("Restoring file '%1' from the file cache").arg(this->getFullPath()));
       // TODO : maybe test whether the chunks size is correct..
@@ -81,6 +83,7 @@ void File::populateHashesFile(Protos::FileCache::Hashes_File& fileToFill) const
 {
    fileToFill.set_filename(this->name.toStdString());
    fileToFill.set_size(this->size);
+   fileToFill.set_date_last_modified(this->getDateLastModified().toTime_t());
    for (QListIterator< QSharedPointer<Chunk> > i(this->chunks); i.hasNext();)
    {
       Protos::FileCache::Hashes_Chunk* chunk = fileToFill.add_chunk();
@@ -94,9 +97,12 @@ void File::populateFileEntry(Protos::Common::FileEntry* entry) const
    entry->mutable_file()->set_name(this->getName().toStdString());
 }
 
-void File::setDeleted()
+void File::eliminate()
 {
-   Deletable::setDeleted();
+   LOG_DEBUG(QString("File::eliminate() : %1").arg(this->getFullPath()));
+
+   this->setDeleted();
+   this->stopHashing();
 
    if (this->nbChunks == 0)
       delete this;
@@ -131,6 +137,11 @@ QString File::getFullPath() const
 Directory* File::getRoot() const
 {
    return this->dir->getRoot();
+}
+
+QDateTime File::getDateLastModified() const
+{
+   return this->dateLastModified;
 }
 
 void File::newDataWriterCreated()
@@ -206,14 +217,14 @@ bool File::write(const QByteArray& buffer, qint64 offset)
    return offset + n >= (qint64)this->size || n == -1;
 }
 
-void File::computeHashes()
+bool File::computeHashes()
 {
    LOG_DEBUG("Computing the hash for " + this->getFullPath());
 
    if (this->isDeleted())
    {
       LOG_DEBUG("Cannot compute hash for a deleted file : " + dir->getFullPath());
-      return;
+      return false;
    }
 
    this->hashingMutex.lock();
@@ -243,7 +254,7 @@ void File::computeHashes()
       {
          this->hashingMutex.unlock();
          this->hashingStopped.wakeOne();
-         return;
+         return false;
       }
       this->hashingMutex.unlock();
 
@@ -280,12 +291,26 @@ void File::computeHashes()
       LOG_DEBUG(QString("Hashing speed : %1 MB/s").arg(speed < 0.1 ? "< 0.1" : QString::number(speed)));
    }
 #endif
+   return true;
 }
 
+void File::stopHashing()
+{
+   QMutexLocker locker(&this->hashingMutex);
+   if (this->hashing)
+   {
+      LOG_DEBUG(QString("File::stopHashing() for %1 ..").arg(this->getFullPath()));
+      this->hashing = false;
+      this->hashingStopped.wait(&this->hashingMutex);
+      LOG_DEBUG("Hashing stopped");
+   }
+}
 
 bool File::haveAllHashes()
 {
    //LOG_DEBUG(QString("this->size = %1, CHUNK_SIZE = %2, res = %3, this->nbChunks = %4").arg(this->size).arg(CHUNK_SIZE).arg(this->size / CHUNK_SIZE + (this->size % CHUNK_SIZE == 0 ? 0 : 1)).arg(this->nbChunks));
+
+   // TODO : Some chunks can be not complete
    return this->nbChunks == this->size / CHUNK_SIZE + (this->size % CHUNK_SIZE == 0 ? 0 : 1);
 }
 

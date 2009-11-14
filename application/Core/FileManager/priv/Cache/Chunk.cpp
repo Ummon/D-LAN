@@ -18,7 +18,7 @@ Chunk::Chunk(File& file, const Common::Hash& hash, int num, int knownBytes)
 }
 
 Chunk::Chunk(File& file, int num, const Protos::FileCache::Hashes_Chunk& chunk)
-   : file(file), hash(chunk.hash().hash().data()), num(num), knownBytes(chunk.knownbytes())
+   : file(file), hash(chunk.hash().hash().data()), num(num), knownBytes(chunk.known_bytes())
 {
    LOG_DEBUG(QString("New chunk [%1] : %2. File : %3").arg(num).arg(hash.toStr()).arg(this->file.getFullPath()));
 
@@ -34,7 +34,7 @@ Chunk::~Chunk()
 
 void Chunk::populateHashesChunk(Protos::FileCache::Hashes_Chunk& chunk)
 {
-   chunk.set_knownbytes(this->knownBytes);
+   chunk.set_known_bytes(this->knownBytes);
    chunk.mutable_hash()->set_hash(this->hash.getData(), Common::Hash::HASH_SIZE);
 }
 
