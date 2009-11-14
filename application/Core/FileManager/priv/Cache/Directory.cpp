@@ -11,6 +11,7 @@ using namespace FM;
 Directory::Directory(Directory* parent, const QString& name)
    : Entry(parent->cache, name), parent(parent)
 {
+   //QMutexLocker locker(&this->getCache()->getMutex());
    this->parent->subDirs.append(this);
 }
 
@@ -75,15 +76,17 @@ void Directory::populateDirEntry(Protos::Common::DirEntry* entry) const
    entry->mutable_dir()->set_name(this->getName().toStdString());
 }
 
-void Directory::deleteChunks()
+void Directory::eliminate()
 {
+   this->setDeleted();
+
    foreach (Directory* d, this->subDirs)
-      d->deleteChunks();
+      d->eliminate();
 
    foreach (File* f, this->files)
    {
       LOG_DEBUG(QString("DELETE : = %1").arg(f->getName()));
-      f->setDeleted();
+      f->eliminate();
    }
 }
 
@@ -158,6 +161,44 @@ Directory* Directory::getRoot() const
    return const_cast<Directory*>(this);
 }
 
+QList<Directory*> Directory::getSubDirs()
+{
+   return this->subDirs;
+}
+
+QList<File*> Directory::getFiles()
+{
+   return this->files;
+}
+
+Directory* Directory::createSubDirectory(const QString& name)
+{
+   foreach (Directory* d, this->subDirs)
+   {
+      if (d->getName() == name)
+         return d;
+   }
+
+   return new Directory(this, name);
+}
+
+File* Directory::createFile(const QFileInfo& fileInfo)
+{
+   foreach (File* f, this->files)
+   {
+      if (f->getName() == fileInfo.fileName())
+      {
+         if (f->getSize() == fileInfo.size() && f->getDateLastModified() == fileInfo.lastModified())
+            return f;
+
+         f->eliminate();
+         break;
+      }
+   }
+
+   return new File(this, fileInfo.fileName(), fileInfo.size(), fileInfo.lastModified());
+}
+
 void Directory::addFile(File* file)
 {
    if (this->files.contains(file))
@@ -165,28 +206,48 @@ void Directory::addFile(File* file)
 
    this->files.append(file);
 
-   this->addSize(file->getSize());
+   (*this) += file->getSize();
 }
 
-void Directory::stealSubDirs(Directory* dir)
+void Directory::stealContent(Directory* dir)
 {
+   if (dir == this)
+   {
+      return;
+      LOG_ERR("Directory::stealSubDirs(..) : dir == this");
+   }
+
+   //LOG_DEBUG(QString("this = %1, dir = %2").arg(this->getFullPath()).arg(dir->getFullPath()));
+
    this->subDirs.append(dir->subDirs);
+   this->files.append(dir->files);
 
    foreach (Directory* d, dir->subDirs)
    {
       d->parent = this;
-      this->addSize(d->getSize());
-      dir->size -= d->getSize();
+      (*this) += d->getSize();
+      (*dir) -= d->getSize();
    }
 
    dir->subDirs.clear();
+   dir->files.clear();
 }
 
-void Directory::addSize(qint64 size)
+Directory& Directory::operator+=(qint64 size)
 {
    this->size += size;
-
    if (this->parent)
-      this->parent->addSize(this->size);
+      (*this->parent) += size;
+
+   return *this;
+}
+
+Directory& Directory::operator-=(qint64 size)
+{
+   this->size -= size;
+   if (this->parent)
+      (*this->parent) -= size;
+
+   return *this;
 }
 

@@ -99,10 +99,8 @@ void Tests::addSuperSharedDirectoriesWithDifferentRights()
   */
 void Tests::addSuperSharedDirectoriesWithSameRights()
 {
-   /* TODO
    this->sharedDirs << QDir::currentPath().append("/../../sharedDirs");
    this->fileManager->setSharedDirsReadOnly(this->sharedDirs);
-   */
 }
 
 void Tests::cleanupTestCase()

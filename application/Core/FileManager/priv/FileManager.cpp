@@ -179,7 +179,7 @@ QList< QSharedPointer<IChunk> > FileManager::newFile(const Protos::Common::FileE
    QString name("plop");
    int size = 42;
    Common::Hashes hashes;
-   File* file = new File(dir, name, size, hashes);
+   File* file = new File(dir, name, size, QDateTime::currentDateTime(), hashes);
    return QList< QSharedPointer<IChunk> >();
 }
 

@@ -14,12 +14,12 @@ message Hash {
 // A shared directory matches an existing handle, thus there is no need to have the complete path to it.
 message SharedDir {
    required Hash id = 1; // Identify a shared directory.
-   optional string sharedName = 2; // An optional name to identify the shared directory by human. It may correspond to the name of the shared directory itself.   
+   optional string shared_name = 2; // An optional name to identify the shared directory by human. It may correspond to the name of the shared directory itself.   
 }
 
 // Used for a directory or a file.
 message Entry {
-   optional SharedDir sharedDir = 1; // Identify the shared directory.
+   optional SharedDir shared_dir = 1; // Identify the shared directory.
    required string path = 2; // Relative path from the sharing directory. For example : "Videos\My cat".
    required string name = 3; // Directory name or file name. For example : "MyLOLCat.avi".
    required uint64 size = 4; // [bytes].
@@ -46,7 +46,7 @@ message FindResult {
       required FileEntry file = 2;
    }
    required uint64 tag = 1;
-   required Common.Hash peerID = 2;
+   required Common.Hash peer_id = 2;
    repeated DirEntryLevel dir = 3;
    repeated FileEntryLevel file = 4;
 }

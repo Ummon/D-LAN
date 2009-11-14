@@ -12,14 +12,14 @@ package Protos.GUI;
 
 // Generic message sent by the core after a command.
 message ReturnStatus {
-   required uint32 errorCode = 1; // 0 means no error.
-   repeated string errorParam = 2;
+   required uint32 error_code = 1; // 0 means no error.
+   repeated string error_param = 2;
 }
 
 message Settings {
    optional Common.Settings settings = 1;
-   repeated string sharedDirectory = 2;
-   repeated string destinationDirectory = 3;
+   repeated string shared_directory = 2;
+   repeated string destination_directory = 3;
 }
 
 /***** Core state *****/
@@ -30,9 +30,9 @@ message Settings {
 // id : 0x01
 message State {
    message Peer {
-      required Common.Hash peerID = 1;
+      required Common.Hash peer_id = 1;
       required string nick = 2;
-      required uint64 sharingAmount = 3;
+      required uint64 sharing_amount = 3;
    }
    message Download {
       enum Status {
@@ -43,19 +43,19 @@ message State {
          INITIALIZING = 4;
          QUEUED = 5;
       }
-      required uint32 ID = 1;
+      required uint32 id = 1;
       required Common.Entry file = 2;
       required Status status = 3;
       required uint32 progress = 4; // 0 to 100
-      repeated uint32 peerID = 5;
+      repeated uint32 peer_id = 5;
    }
    message Upload {
-      required uint32 ID = 1;
+      required uint32 id = 1;
       required Common.Entry file = 2;
-      required uint32 currentPart = 3;
-      required uint32 nbPart = 4;
+      required uint32 current_part = 3;
+      required uint32 nb_part = 4;
       required uint32 progress = 5; // 0 to 100
-      required Common.Hash peerID = 6;
+      required Common.Hash peer_id = 6;
    }
    message Stats {
       enum CacheStatus {
@@ -63,12 +63,12 @@ message State {
          HASHING_IN_PROGRESS = 1;
          UP_TO_DATE = 2;
       }
-      required CacheStatus cacheStatus = 1;
+      required CacheStatus cache_status = 1;
       required uint32 progress = 2; // 0 to 100
       
-      required uint32 downloadRate = 3; // [byte/s].
-      required uint32 uploadRate = 4; // [byte/s].
-      required uint64 sharingAmount = 5; // [byte].
+      required uint32 download_rate = 3; // [byte/s].
+      required uint32 upload_rate = 4; // [byte/s].
+      required uint64 sharing_amount = 5; // [byte].
    }
    
    repeated Peer peer = 1;
@@ -97,7 +97,7 @@ message EventLogMessage {
    
    // These fields are use only in debug mode.
    optional string component = 3;
-   optional string severityLevel = 4;
+   optional string severity_level = 4;
 }
 
 // Core -> GUI
@@ -137,8 +137,8 @@ message SearchResult {
 // GUI -> Core
 // id : 0x41
 message Browse {
-   required Common.Hash peerID = 1;
-   required Common.DirEntry dirEntry = 2;
+   required Common.Hash peer_id = 1;
+   required Common.DirEntry dir_entry = 2;
 }
 // Core -> GUI
 // id : 0x42
@@ -164,7 +164,7 @@ message ClearCompleteDownloads {
 // is not finished its chunks will be removed.
 // id : 0x61
 message CancelDownloads {
-   repeated uint32 ID = 1;
+   repeated uint32 id = 1;
 }
 // Core -> GUI
 // id : 0x62
@@ -174,7 +174,7 @@ message CancelDownloads {
 // Says to the core to download a file OR a directory (XOR).
 // id : 0x71
 message Download {
-   required Common.Hash peerID = 1; // From where the file/dir is.
+   required Common.Hash peer_id = 1; // From where the file/dir is.
    optional Common.DirEntry dir = 2;
    optional Common.FileEntry file = 3;
 }

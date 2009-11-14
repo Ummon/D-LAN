@@ -142,9 +142,11 @@ QList<SharedDirectory*> Cache::getSubSharedDirectories(const QString& path)
 
       for (int i = 0; i < folders.size(); i++)
          if (folders[i] != foldersShared[i])
-            continue;
+            goto nextSharedDir;
 
       ret << sharedDir;
+
+      nextSharedDir:;
    }
 
    return ret;
@@ -178,19 +180,26 @@ void Cache::onChunkRemoved(Chunk* chunk)
    emit chunkRemoved(chunk);
 }
 
-void Cache::removeSharedDir(SharedDirectory* dir)
+void Cache::removeSharedDir(SharedDirectory* dir, Directory* dir2)
 {
+   QMutexLocker locker(&this->lock);
+
    dir->setDeleted();
    this->sharedDirs.removeOne(dir);
 
    this->fileUpdater->rmRoot(dir);
 
+   if (dir2)
+      dir2->stealContent(dir);
+
    // Delete all chunks.
-   dir->deleteChunks();
+   dir->eliminate();
 }
 
 void Cache::createSharedDirs(const QStringList& dirs, const QList<SharedDirectory::Rights>& rights, const QList<Common::Hash>& ids)
 {
+   QMutexLocker locker(&this->lock);
+
    QStringList dirsNotFound;
 
    QListIterator<QString> i(dirs);

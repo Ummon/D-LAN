@@ -52,15 +52,16 @@ void SharedDirectory::init()
       const QStringList& childFolders = subDir->getFullPath().split('/', QString::SkipEmptyParts);
       Directory* current = this;
       for (int i = parentFolders.size(); i < childFolders.size(); i++)
-         current = new Directory(this, childFolders[i]);
-      current->stealSubDirs(subDir);
+         current = new Directory(current, childFolders[i]);
 
-      delete subDir;
+      this->getCache()->removeSharedDir(subDir, current);
    }
 }
 
 SharedDirectory::~SharedDirectory()
-{}
+{
+   LOG_DEBUG(QString("SharedDirectory deleted : %1").arg(this->path));
+}
 
 QList<File*> SharedDirectory::restoreFromFileCache(const Protos::FileCache::Hashes& hashes)
 {

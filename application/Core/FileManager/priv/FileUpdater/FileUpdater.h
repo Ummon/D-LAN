@@ -52,7 +52,6 @@ namespace FM
       void run();
 
    private:
-      void createNewFile(Directory* dir, const QString& filename, qint64 size);
 
       /**
         * It will take some file from 'fileWithoutHashes' and compute theirs hashes.
@@ -62,11 +61,20 @@ namespace FM
       bool computeSomeHashes();
 
       /**
+        * Stop the current hashing process, do not change
+        */
+      void stopHashing();
+
+      /**
+        * Synchronize the cache with the file system.
         * Scan recursively all the directories and files contained
         * in dir. Create the associated cached tree structure under
         * given 'SharedDirectory'.
+        * Ths directories of files may already exist in the cache.
         */
       void scan(SharedDirectory* dir);
+
+      void stopScanning(SharedDirectory* dir = 0);
 
       /**
         * Try to restore the chunk hashes from 'fileCache'.
@@ -91,6 +99,10 @@ namespace FM
       SharedDirectory* currentScanningDir;
       QWaitCondition scanningStopped;
       QMutex scanningMutex;
+
+      QMutex hashingMutex;
+      File* currentHashingFile;
+      bool toStopHashing;
 
       QList<QString> dirsToRemove;
 

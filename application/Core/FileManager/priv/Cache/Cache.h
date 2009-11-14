@@ -57,6 +57,12 @@ namespace FM
         */
       QMutex& getMutex() { return this->lock; }
 
+      /**
+        * Will inform the fileUpdater and delete 'dir'.
+        * If 'dir2' is given 'dir' content (sub dirs + files) will be give to 'dir2'.
+        */
+      void removeSharedDir(SharedDirectory* dir, Directory* dir2 = 0);
+
    signals:
       void entryAdded(Entry* entry);
       void entryRemoved(Entry* entry);
@@ -64,7 +70,6 @@ namespace FM
       void chunkRemoved(Chunk* chunk);
 
    private:
-      void removeSharedDir(SharedDirectory* dir);
 
       /**
         * Create new shared directories and inform the fileUpdater.
