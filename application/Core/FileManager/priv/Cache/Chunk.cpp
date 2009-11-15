@@ -14,7 +14,7 @@ using namespace FM;
 Chunk::Chunk(Cache* cache, File* file, const Common::Hash& hash, int num, int knownBytes)
    : cache(cache), file(file), hash(hash), num(num), knownBytes(knownBytes)
 {
-   QMutexLocker(&this->mutex);
+   QMutexLocker locker (&this->mutex);
    LOG_DEBUG(QString("New chunk[%1] : %2. File : %3").arg(num).arg(hash.toStr()).arg(this->file->getFullPath()));
 
    this->cache->onChunkAdded(this);
@@ -23,7 +23,7 @@ Chunk::Chunk(Cache* cache, File* file, const Common::Hash& hash, int num, int kn
 Chunk::Chunk(Cache* cache, File* file, int num, const Protos::FileCache::Hashes_Chunk& chunk)
    : cache(cache), file(file), hash(chunk.hash().hash().data()), num(num), knownBytes(chunk.known_bytes())
 {
-   QMutexLocker(&this->mutex);
+   QMutexLocker locker(&this->mutex);
    LOG_DEBUG(QString("New chunk [%1] : %2. File : %3").arg(num).arg(hash.toStr()).arg(this->file->getFullPath()));
 
    this->cache->onChunkAdded(this);
@@ -31,7 +31,7 @@ Chunk::Chunk(Cache* cache, File* file, int num, const Protos::FileCache::Hashes_
 
 Chunk::~Chunk()
 {
-   QMutexLocker(&this->mutex);
+   QMutexLocker locker(&this->mutex);
    LOG_DEBUG(QString("Chunk Deleted [%1] : %2. File : %3").arg(num).
       arg(hash.toStr()).
       arg(this->file ? this->file->getFullPath() : "<file deleted>")
@@ -58,41 +58,41 @@ QSharedPointer<IDataWriter> Chunk::getDataWriter()
 
 void Chunk::newDataWriterCreated()
 {
-   QMutexLocker(&this->mutex);
+   QMutexLocker locker(&this->mutex);
    if (this->file)
       this->file->newDataReaderCreated();
 }
 
 void Chunk::newDataReaderCreated()
 {
-   QMutexLocker(&this->mutex);
+   QMutexLocker locker(&this->mutex);
    if (this->file)
       this->file->newDataReaderCreated();
 }
 
 void Chunk::dataWriterDeleted()
 {
-   QMutexLocker(&this->mutex);
+   QMutexLocker locker(&this->mutex);
    if (this->file)
       this->file->dataWriterDeleted();
 }
 
 void Chunk::dataReaderDeleted()
 {
-   QMutexLocker(&this->mutex);
+   QMutexLocker locker(&this->mutex);
    if (this->file)
       this->file->dataWriterDeleted();
 }
 
 void Chunk::fileDeleted()
 {
-   QMutexLocker(&this->mutex);
+   QMutexLocker locker(&this->mutex);
    this->file = 0;
 }
 
 int Chunk::read(QByteArray& buffer, int offset)
 {
-   QMutexLocker(&this->mutex);
+   QMutexLocker locker(&this->mutex);
    if (!this->file)
       throw ChunkDeletedException();
 
@@ -104,7 +104,7 @@ int Chunk::read(QByteArray& buffer, int offset)
 
 bool Chunk::write(const QByteArray& buffer, int offset)
 {
-   QMutexLocker(&this->mutex);
+   QMutexLocker locker(&this->mutex);
    if (!this->file)
       throw ChunkDeletedException();
 

@@ -105,8 +105,8 @@ namespace FM
       int numDataReader;
       QFile* fileInWriteMode;
       QFile* fileInReadMode;
-      QMutex* writeLock;
-      QMutex* readLock;
+      QMutex writeLock; ///< Protect the file from concurrent access from different downloaders.
+      QMutex readLock; ///< Protect the file from concurrent access from different uploaders.
 
       int nbChunks;
 
