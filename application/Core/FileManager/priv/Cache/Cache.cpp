@@ -167,6 +167,9 @@ void Cache::onEntryAdded(Entry* entry)
 
 void Cache::onEntryRemoved(Entry* entry)
 {
+   if (SharedDirectory* sharedDir = dynamic_cast<SharedDirectory*>(entry))
+      this->sharedDirs.removeOne(sharedDir);
+
    emit entryRemoved(entry);
 }
 
@@ -184,16 +187,14 @@ void Cache::removeSharedDir(SharedDirectory* dir, Directory* dir2)
 {
    QMutexLocker locker(&this->lock);
 
-   dir->setDeleted();
    this->sharedDirs.removeOne(dir);
 
    this->fileUpdater->rmRoot(dir);
 
-   if (dir2)
-      dir2->stealContent(dir);
-
    // Delete all chunks.
-   dir->eliminate();
+   //dir->eliminate();
+
+   //delete dir; // Directory is deleted by fileUpdater
 }
 
 void Cache::createSharedDirs(const QStringList& dirs, const QList<SharedDirectory::Rights>& rights, const QList<Common::Hash>& ids)

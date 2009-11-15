@@ -23,21 +23,23 @@ FileUpdater::FileUpdater(FileManager* fileManager)
      toStopHashing(false)
 {
    this->dirEvent = WaitCondition::getNewWaitCondition();
-   this->stopEvent = WaitCondition::getNewWaitCondition();
 }
 
 FileUpdater::~FileUpdater()
 {
    if (this->dirEvent)
       delete this->dirEvent;
-   if (this->stopEvent)
-      delete this->stopEvent;
+
+   if (this->dirWatcher)
+      delete this->dirWatcher;
 
    LOG_DEBUG("FileUpdater deleted");
 }
 
 void FileUpdater::stop()
 {
+   QMutexLocker(&this->mutex);
+
    LOG_DEBUG("Stopping FileUpdater..");
 
    this->toStop = true;
@@ -49,7 +51,8 @@ void FileUpdater::stop()
    this->stopScanning();
 
    LOG_DEBUG("OK3");
-   this->stopEvent->release();
+   // Simulate a dirEvent to stop the main loop.
+   this->dirEvent->release();
 
    LOG_DEBUG("OK4");
    this->wait();
@@ -61,15 +64,18 @@ void FileUpdater::addRoot(SharedDirectory* dir)
 {
    QMutexLocker(&this->mutex);
 
+   bool watchable = false;
    if (this->dirWatcher)
-      this->dirWatcher->addDir(dir->getFullPath());
+      watchable = this->dirWatcher->addDir(dir->getFullPath());
+
+   // TODO : treat the unwatchable directory
 
    this->dirsToScan << dir;
 
    this->dirEvent->release();
 }
 
-void FileUpdater::rmRoot(SharedDirectory* dir)
+void FileUpdater::rmRoot(SharedDirectory* dir, Directory* dir2)
 {
    QMutexLocker(&this->mutex);
 
@@ -77,11 +83,16 @@ void FileUpdater::rmRoot(SharedDirectory* dir)
    this->stopScanning(dir);
 
    this->stopHashing();
+
+   // TODO : Find a more elegant way!
+   if (dir2)
+      dir2->stealContent(dir);
+
    for (QMutableListIterator<File*> i(this->fileWithoutHashes); i.hasNext();)
       if (i.next()->getRoot() == dir)
          i.remove();
 
-   this->dirsToRemove << dir->getFullPath();
+   this->dirsToRemove << dir;
 
    this->dirEvent->release();
 }
@@ -118,16 +129,15 @@ void FileUpdater::run()
 
       this->mutex.lock();
 
-      if (!this->dirsToRemove.isEmpty())
+      foreach (SharedDirectory* dir, this->dirsToRemove)
       {
-         foreach (QString path, this->dirsToRemove)
-         {
-            LOG_DEBUG(QString("Stop watching this directory : %1").arg(path));
-            if (this->dirWatcher)
-               this->dirWatcher->rmDir(path);
-         }
-         this->dirsToRemove.clear();
+         LOG_DEBUG(QString("Stop watching this directory : %1").arg(dir->getFullPath()));
+         if (this->dirWatcher)
+            this->dirWatcher->rmDir(dir->getFullPath());
+
+         delete dir;
       }
+      this->dirsToRemove.clear();
 
       // If there is no watcher capability or no directory to watch then
       // we wait for an added directory.
@@ -159,23 +169,37 @@ void FileUpdater::run()
          if (this->dirsToScan.isEmpty() && this->fileWithoutHashes.isEmpty())
          {
             this->mutex.unlock();
-            this->treatEvents(this->dirWatcher->waitEvent(QList<WaitCondition*>() << this->dirEvent << this->stopEvent));
+            this->treatEvents(this->dirWatcher->waitEvent(
+                  QList<WaitCondition*>() << this->dirEvent)
+            );
          }
          else
          {
             this->mutex.unlock();
             this->treatEvents(this->dirWatcher->waitEvent(0));
          }
-         if (this->toStop)
-            return;
       }
+      if (this->toStop)
+         return;
    }
 }
 
 bool FileUpdater::computeSomeHashes()
 {
-   if (fileWithoutHashes.isEmpty())
+   this->hashingMutex.lock();
+   if (this->toStopHashing)
+   {
+      this->toStopHashing = false;
+      LOG_DEBUG("Computing some hashes aborted");
+      this->hashingMutex.unlock();
       return false;
+   }
+
+   if (fileWithoutHashes.isEmpty())
+   {
+      this->hashingMutex.unlock();
+      return false;
+   }
 
    LOG_DEBUG("Start computing some hashes..");
 
@@ -185,22 +209,19 @@ bool FileUpdater::computeSomeHashes()
    QMutableListIterator<File*> i(this->fileWithoutHashes);
    while (i.hasNext())
    {
+      this->currentHashingFile = i.next();
+
+      this->hashingMutex.unlock();
+      bool completed = this->currentHashingFile->computeHashes();
+      this->hashingMutex.lock();
+
+      this->currentHashingFile = 0;
+      if (this->toStopHashing)
       {
-         QMutexLocker(&this->hashingMutex);
-         if (this->toStop)
-            return false;
-         this->currentHashingFile = i.next();
-      }
-         bool completed = this->currentHashingFile->computeHashes();
-      {
-         QMutexLocker(&this->hashingMutex);
-         this->currentHashingFile = 0;
-         if (this->toStopHashing)
-         {
-            this->toStopHashing = false;
-            LOG_DEBUG("Computing some hashes aborted");
-            return false;
-         }
+         this->toStopHashing = false;
+         LOG_DEBUG("Computing some hashes aborted");
+         this->hashingMutex.unlock();
+         return false;
       }
 
       if (completed)
@@ -212,6 +233,7 @@ bool FileUpdater::computeSomeHashes()
 
    LOG_DEBUG("Computing some hashes terminated");
 
+   this->hashingMutex.unlock();
    return true;
 }
 
@@ -219,21 +241,13 @@ void FileUpdater::stopHashing()
 {
    QMutexLocker(&this->hashingMutex);
    if (this->currentHashingFile)
-   {
-      this->toStopHashing = true;
       this->currentHashingFile->stopHashing();
-   }
+   this->toStopHashing = true;
 }
 
 void FileUpdater::scan(SharedDirectory* sharedDir)
 {
    LOG_DEBUG("Start scanning a shared directory : " + sharedDir->getFullPath());
-
-   if (sharedDir->isDeleted())
-   {
-      LOG_DEBUG("Cannot scan a deleted shared directory : " + sharedDir->getFullPath());
-      return;
-   }
 
    this->scanningMutex.lock();
    this->currentScanningDir = sharedDir;
@@ -285,9 +299,9 @@ void FileUpdater::scan(SharedDirectory* sharedDir)
 
       // Deletes all the files and directories which doesn't exist on the file system.
       foreach (File* f, currentFiles)
-         f->eliminate();
+         delete f;
       foreach (Directory* d, currentSubDirs)
-         d->eliminate();
+         delete d;
    }
 
    this->scanningMutex.lock();

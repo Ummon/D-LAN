@@ -3,33 +3,41 @@ using namespace FM;
 
 #include <IDataReader.h>
 #include <IDataWriter.h>
+#include <Exceptions.h>
 #include <priv/Log.h>
 #include <priv/Cache/Cache.h>
+#include <priv/Cache/File.h>
 #include <priv/Cache/SharedDirectory.h>
 #include <priv/Cache/DataReader.h>
 #include <priv/Cache/DataWriter.h>
 
-Chunk::Chunk(File& file, const Common::Hash& hash, int num, int knownBytes)
-   : file(file), hash(hash), num(num), knownBytes(knownBytes)
+Chunk::Chunk(Cache* cache, File* file, const Common::Hash& hash, int num, int knownBytes)
+   : cache(cache), file(file), hash(hash), num(num), knownBytes(knownBytes)
 {
-   LOG_DEBUG(QString("New chunk[%1] : %2. File : %3").arg(num).arg(hash.toStr()).arg(this->file.getFullPath()));
+   QMutexLocker(&this->mutex);
+   LOG_DEBUG(QString("New chunk[%1] : %2. File : %3").arg(num).arg(hash.toStr()).arg(this->file->getFullPath()));
 
-   this->file.getCache()->onChunkAdded(this);
+   this->cache->onChunkAdded(this);
 }
 
-Chunk::Chunk(File& file, int num, const Protos::FileCache::Hashes_Chunk& chunk)
-   : file(file), hash(chunk.hash().hash().data()), num(num), knownBytes(chunk.known_bytes())
+Chunk::Chunk(Cache* cache, File* file, int num, const Protos::FileCache::Hashes_Chunk& chunk)
+   : cache(cache), file(file), hash(chunk.hash().hash().data()), num(num), knownBytes(chunk.known_bytes())
 {
-   LOG_DEBUG(QString("New chunk [%1] : %2. File : %3").arg(num).arg(hash.toStr()).arg(this->file.getFullPath()));
+   QMutexLocker(&this->mutex);
+   LOG_DEBUG(QString("New chunk [%1] : %2. File : %3").arg(num).arg(hash.toStr()).arg(this->file->getFullPath()));
 
-   this->file.getCache()->onChunkAdded(this);
+   this->cache->onChunkAdded(this);
 }
 
 Chunk::~Chunk()
 {
-   LOG_DEBUG(QString("Chunk Deleted [%1] : %2. File : %3").arg(num).arg(hash.toStr()).arg(this->file.getFullPath()));
-   this->file.getCache()->onChunkRemoved(this);
-   this->file.chunkDeleted(this);
+   QMutexLocker(&this->mutex);
+   LOG_DEBUG(QString("Chunk Deleted [%1] : %2. File : %3").arg(num).
+      arg(hash.toStr()).
+      arg(this->file ? this->file->getFullPath() : "<file deleted>")
+   );
+   this->cache->onChunkRemoved(this);
+   //this->file->chunkDeleted(this);
 }
 
 void Chunk::populateHashesChunk(Protos::FileCache::Hashes_Chunk& chunk)
@@ -48,30 +56,72 @@ QSharedPointer<IDataWriter> Chunk::getDataWriter()
    return QSharedPointer<IDataWriter>(new DataWriter(*this));
 }
 
+void Chunk::newDataWriterCreated()
+{
+   QMutexLocker(&this->mutex);
+   if (this->file)
+      this->file->newDataReaderCreated();
+}
+
+void Chunk::newDataReaderCreated()
+{
+   QMutexLocker(&this->mutex);
+   if (this->file)
+      this->file->newDataReaderCreated();
+}
+
+void Chunk::dataWriterDeleted()
+{
+   QMutexLocker(&this->mutex);
+   if (this->file)
+      this->file->dataWriterDeleted();
+}
+
+void Chunk::dataReaderDeleted()
+{
+   QMutexLocker(&this->mutex);
+   if (this->file)
+      this->file->dataWriterDeleted();
+}
+
+void Chunk::fileDeleted()
+{
+   QMutexLocker(&this->mutex);
+   this->file = 0;
+}
+
 int Chunk::read(QByteArray& buffer, int offset)
 {
+   QMutexLocker(&this->mutex);
+   if (!this->file)
+      throw ChunkDeletedException();
+
    if (this->knownBytes != CHUNK_SIZE)
       throw ChunkNotCompletedException();
 
-   return this->file.read(buffer, offset + this->num * CHUNK_SIZE);
+   return this->file->read(buffer, offset + this->num * CHUNK_SIZE);
 }
 
 bool Chunk::write(const QByteArray& buffer, int offset)
 {
+   QMutexLocker(&this->mutex);
+   if (!this->file)
+      throw ChunkDeletedException();
+
    if (this->knownBytes + buffer.size() > CHUNK_SIZE)
       throw 1; // TODO : create exception
-   bool eof = this->file.write(buffer, offset + this->num * CHUNK_SIZE);
+   bool eof = this->file->write(buffer, offset + this->num * CHUNK_SIZE);
    this->knownBytes += buffer.size();
    return eof;
 }
 
-void Chunk::sendContentToSocket(QAbstractSocket& socket)
+/*void Chunk::sendContentToSocket(QAbstractSocket& socket)
 {
 }
 
 void Chunk::getContentFromSocket(QAbstractSocket& socket)
 {
-}
+}*/
 
 Common::Hash Chunk::getHash()
 {
@@ -83,7 +133,8 @@ int Chunk::getKnownBytes()
    return this->knownBytes;
 }
 
+/*
 File& Chunk::getFile()
 {
    return this->file;
-}
+}*/

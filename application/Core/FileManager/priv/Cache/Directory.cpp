@@ -11,7 +11,6 @@ using namespace FM;
 Directory::Directory(Directory* parent, const QString& name)
    : Entry(parent->cache, name), parent(parent)
 {
-   //QMutexLocker locker(&this->getCache()->getMutex());
    this->parent->subDirs.append(this);
 }
 
@@ -22,10 +21,12 @@ Directory::Directory(Cache* cache)
 
 Directory::~Directory()
 {
-   LOG_DEBUG(QString("Directory deleted : %1").arg(this->getFullPath()));
+   foreach (File* f, this->files)
+      delete f;
+   foreach (Directory* d, this->subDirs)
+      delete d;
 
-   if (this->parent)
-      this->parent->subDirDeleted(this);
+   LOG_DEBUG(QString("Directory deleted : %1").arg(this->getFullPath()));
 }
 
 QList<File*> Directory::restoreFromFileCache(const Protos::FileCache::Hashes_Dir& dir)
@@ -76,58 +77,15 @@ void Directory::populateDirEntry(Protos::Common::DirEntry* entry) const
    entry->mutable_dir()->set_name(this->getName().toStdString());
 }
 
-void Directory::eliminate()
-{
-   this->setDeleted();
-
-   foreach (Directory* d, this->subDirs)
-      d->eliminate();
-
-   foreach (File* f, this->files)
-   {
-      LOG_DEBUG(QString("DELETE : = %1").arg(f->getName()));
-      f->eliminate();
-   }
-}
-
 void Directory::fileDeleted(File* file)
 {
+   LOG_DEBUG(QString("Directory::fileDeleted() remove %1 from %2").arg(file->getFullPath()).arg(this->getFullPath()));
    this->files.removeOne(file);
-
-   if (this->files.isEmpty())
-      this->tryToSuicide();
 }
 
 void Directory::subDirDeleted(Directory* dir)
 {
    this->subDirs.removeOne(dir);
-   if (this->subDirs.isEmpty() && this->files.isEmpty())
-      delete this;
-}
-
-bool Directory::tryToSuicide()
-{
-   if (!this->files.isEmpty())
-      return false;
-
-   if (this->subDirs.isEmpty())
-   {
-      delete this;
-      return true;
-   }
-
-   bool suicide = true;
-   for (QListIterator<Directory*> i(this->subDirs); i.hasNext();)
-      if (!i.next()->tryToSuicide())
-         suicide = false;
-
-   if (suicide)
-   {
-      delete this;
-      return true;
-   }
-
-   return false;
 }
 
 QString Directory::getPath() const
@@ -161,12 +119,12 @@ Directory* Directory::getRoot() const
    return const_cast<Directory*>(this);
 }
 
-QList<Directory*> Directory::getSubDirs()
+QList<Directory*> Directory::getSubDirs() const
 {
    return this->subDirs;
 }
 
-QList<File*> Directory::getFiles()
+QList<File*> Directory::getFiles() const
 {
    return this->files;
 }
@@ -191,7 +149,7 @@ File* Directory::createFile(const QFileInfo& fileInfo)
          if (f->getSize() == fileInfo.size() && f->getDateLastModified() == fileInfo.lastModified())
             return f;
 
-         f->eliminate();
+         delete f;
          break;
       }
    }

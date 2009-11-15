@@ -50,9 +50,10 @@ namespace FM
         * Each new added directory is immediately watched. If some modification
         * occurs in the file system bewteen a call of 'addDir' and a call of 'waitEvent' they
         * will be recorded and the next call to 'waitEvent' will be no blocking.
+        * @return 'true' is the dir is watchable else 'false'.
         * @exception DirNotFoundException
         */
-      virtual void addDir(const QString& path) = 0;
+      virtual bool addDir(const QString& path) = 0;
 
       /**
         * Remove a watched directory.

@@ -4,12 +4,12 @@ using namespace FM;
 DataReader::DataReader(Chunk& chunk)
    : chunk(chunk)
 {
-   this->chunk.getFile().newDataReaderCreated();
+   this->chunk.newDataReaderCreated();
 }
 
 DataReader::~DataReader()
 {
-   this->chunk.getFile().dataReaderDeleted();
+   this->chunk.dataReaderDeleted();
 }
 
 qint64 DataReader::read(QByteArray& buffer, uint offset)

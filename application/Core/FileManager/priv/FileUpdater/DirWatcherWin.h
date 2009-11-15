@@ -4,6 +4,7 @@
 #define FILEMANAGER_DIRWATCHERWIN_H
 
 #include <priv/FileUpdater/DirWatcher.h>
+#include <priv/Log.h>
 
 #include <windows.h>
 
@@ -24,7 +25,7 @@ namespace FM
       /**
         * @exception DirNotFoundException
         */
-      void addDir(const QString& path);
+      bool addDir(const QString& path);
 
       void rmDir(const QString& path);
       int nbWatchedDir();
@@ -32,7 +33,7 @@ namespace FM
       const QList<WatcherEvent> waitEvent(int timeout, QList<WaitCondition*> ws = QList<WaitCondition*>());
 
    private:
-      void watch(int num);
+      bool watch(int num);
 
       struct Dir
       {
@@ -41,11 +42,20 @@ namespace FM
             memset(&this->overlapped, 0, sizeof(OVERLAPPED));
             overlapped.hEvent = event;
          }
+         ~Dir()
+         {
+            // Should we wait with GetOverlappedResult or do a test with HasOverlappedIoCompleted ?
+            CancelIo(this->file);
+
+            if (!CloseHandle(this->file)) LOG_ERR(QString("CloseHandle(dir.file) return an error : %1").arg(GetLastError()));
+            if (!CloseHandle(this->overlapped.hEvent)) LOG_ERR(QString("CloseHandle(dir.overlapped.hEvent) return an error : %1").arg(GetLastError()));
+         }
+
          HANDLE file;
          OVERLAPPED overlapped;
          QString fullPath;
       };
-      QList<Dir> dirs; // The watched dirs.
+      QList<Dir*> dirs; // The watched dirs.
 
       // Is this data can be shares among some 'ReadDirectoryChangesW'?
       char notifyBuffer[NOTIFY_BUFFER_SIZE];

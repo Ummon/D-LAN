@@ -39,7 +39,7 @@ void Tests::addAnAlreadySharedDirectory()
    QVERIFY(this->fileManager->getSharedDirsReadWrite().size() == 0);
 }
 
-void Tests::addInexistantSharedDirectory()
+void Tests::addInexistingSharedDirectory()
 {
    this->sharedDirs << QDir::currentPath().append("/this_is_spartaaaaaa"); // This directory doesn't exit.
    try
@@ -103,6 +103,12 @@ void Tests::addSuperSharedDirectoriesWithSameRights()
    this->fileManager->setSharedDirsReadOnly(this->sharedDirs);
 }
 
+void Tests::rmSharedDirectory()
+{
+   this->sharedDirs.clear();
+   this->fileManager->setSharedDirsReadOnly(this->sharedDirs);
+}
+
 void Tests::cleanupTestCase()
 {
    // This call is only used to stop the fileUpdater and wait for it to finish.
@@ -111,7 +117,6 @@ void Tests::cleanupTestCase()
 }
 
 /*
-
    this->sharedDirs << QDir::currentPath().append("/asdasdasd"); // This directory doesn't exit.
 
    try
@@ -152,15 +157,6 @@ void Tests::search()
    QString terms("xxxx");
    Protos::Common::FindResult result = this->fileManager->find(terms);
    this->printSearch(terms, result);
-}
-
-void Tests::rmSharedDirectories()
-{
-   return;
-
-   this->sharedDirs.clear();
-//   this->fileManager->setSharedDirsReadOnly(this->sharedDirs);
-   this->fileManager->setSharedDirsReadWrite(this->sharedDirs);
 }
 
 void Tests::addSuperSharedDirectoriesAndMerge()
