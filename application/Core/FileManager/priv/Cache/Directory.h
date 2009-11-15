@@ -38,16 +38,17 @@ namespace FM
       /**
         * Ask to delete all chunks is this directory.
         */
-      virtual void eliminate();
+      //virtual void eliminate();
 
       /**
-        * Called by one of its file destructor.
+        * Called from one of its file.
         */
       void fileDeleted(File* file);
 
    private:
       void subDirDeleted(Directory* dir);
-      bool tryToSuicide();
+
+      //bool tryToSuicide();
 
    public:
 
@@ -56,8 +57,8 @@ namespace FM
 
       Directory* getRoot() const;
 
-      QList<Directory*> getSubDirs();
-      QList<File*> getFiles();
+      QList<Directory*> getSubDirs() const;
+      QList<File*> getFiles() const;
 
       /**
         * Creates a new sub-directory if none exists already otherwise

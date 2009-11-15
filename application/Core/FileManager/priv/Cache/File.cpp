@@ -39,7 +39,7 @@ File::File(
    {
       for (int i = 0; i < hashes.size(); i++)
       {
-         QSharedPointer<Chunk> chunk(new Chunk(*this, hashes[i], i, 0));
+         QSharedPointer<Chunk> chunk(new Chunk(this->cache, this, hashes[i], i, 0));
          this->nbChunks += 1;
          this->chunks.append(chunk);
       }
@@ -50,9 +50,12 @@ File::File(
 
 File::~File()
 {
-   LOG_DEBUG(QString("File deleted : %1").arg(this->getFullPath()));
-
    this->dir->fileDeleted(this);
+
+   foreach (QSharedPointer<Chunk> c, this->chunks)
+      c->fileDeleted();
+
+   LOG_DEBUG(QString("File deleted : %1").arg(this->getFullPath()));
 }
 
 File* File::restoreFromFileCache(const Protos::FileCache::Hashes_File& file)
@@ -71,7 +74,7 @@ File* File::restoreFromFileCache(const Protos::FileCache::Hashes_File& file)
       // TODO : maybe test whether the chunks size is correct..
       for (int i = 0; i < file.chunk_size(); i++)
       {
-         this->chunks << QSharedPointer<Chunk>(new Chunk(*this, i, file.chunk(i)));
+         this->chunks << QSharedPointer<Chunk>(new Chunk(this->cache, this, i, file.chunk(i)));
          this->nbChunks += 1;
       }
    }
@@ -95,30 +98,6 @@ void File::populateFileEntry(Protos::Common::FileEntry* entry) const
 {
    entry->mutable_file()->set_path(this->getPath().toStdString());
    entry->mutable_file()->set_name(this->getName().toStdString());
-}
-
-void File::eliminate()
-{
-   LOG_DEBUG(QString("File::eliminate() : %1").arg(this->getFullPath()));
-
-   this->setDeleted();
-   this->stopHashing();
-
-   if (this->nbChunks == 0)
-      delete this;
-
-   foreach (QSharedPointer<Chunk> c, this->chunks)
-      c->setDeleted();
-
-   this->chunks.clear();
-}
-
-void File::chunkDeleted(Chunk* chunk)
-{
-   LOG_DEBUG(QString("File::chunkDeleted() : nbChunks = %1").arg(this->nbChunks));
-   this->nbChunks -= 1;
-   if (this->nbChunks == 0 && this->isDeleted())
-      delete this;
 }
 
 QString File::getPath() const
@@ -192,10 +171,10 @@ void File::dataReaderDeleted()
 
 qint64 File::read(QByteArray& buffer, qint64 offset)
 {
+   QMutexLocker locker(this->readLock);
+
    if (offset >= this->size)
       return 0;
-
-   QMutexLocker locker(this->readLock);
 
    this->fileInReadMode->seek(offset);
    qint64 bytesRead = this->fileInReadMode->read(buffer.data(), buffer.size());
@@ -205,10 +184,10 @@ qint64 File::read(QByteArray& buffer, qint64 offset)
 
 bool File::write(const QByteArray& buffer, qint64 offset)
 {
+   QMutexLocker locker(this->writeLock);
+
    if (offset >= this->size)
       return true;
-
-   QMutexLocker locker(this->writeLock);
 
    this->fileInWriteMode->seek(offset);
    int maxSize = (this->size - offset);
@@ -220,12 +199,6 @@ bool File::write(const QByteArray& buffer, qint64 offset)
 bool File::computeHashes()
 {
    LOG_DEBUG("Computing the hash for " + this->getFullPath());
-
-   if (this->isDeleted())
-   {
-      LOG_DEBUG("Cannot compute hash for a deleted file : " + dir->getFullPath());
-      return false;
-   }
 
    this->hashingMutex.lock();
    this->hashing = true;
@@ -270,7 +243,7 @@ bool File::computeHashes()
          crypto.addData(buffer, bytesRead);
          bytesReadTotal += bytesRead;
       }
-      this->chunks.append(QSharedPointer<Chunk>(new Chunk(*this, crypto.result(), chunkNum)));
+      this->chunks.append(QSharedPointer<Chunk>(new Chunk(this->cache, this, crypto.result(), chunkNum)));
       this->nbChunks += 1;
       chunkNum += 1;
       crypto.reset();

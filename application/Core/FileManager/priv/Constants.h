@@ -12,6 +12,8 @@ namespace FM
    const QString FILE_CACHE("file_cache.bin"); ///< The name of the file cache saved in the home directory.
 
    const int MINIMUM_DURATION_WHEN_HASHING = 30; ///< In seconds.
+
+   const int TIME_BETWEEN_RESCAN = 30; ///< Only for unwatchable directories. In seconds
 }
 
 #endif

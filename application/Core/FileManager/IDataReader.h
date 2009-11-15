@@ -9,6 +9,10 @@ namespace FM
    {
    public:
       virtual ~IDataReader() {}
+
+      /**
+        * @exception ChunkDeletedException
+        */
       virtual qint64 read(QByteArray& buffer, uint offset) = 0;
    };
 }

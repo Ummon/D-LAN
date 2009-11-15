@@ -3,14 +3,12 @@
 
 #include <QString>
 
-#include <Common/Deletable.h>
-
 namespace FM
 {
    class Directory;
    class Cache;
 
-   class Entry : public Common::Deletable
+   class Entry
    {
    public:
       Entry(Cache* cache, const QString& name, qint64 size = 0);

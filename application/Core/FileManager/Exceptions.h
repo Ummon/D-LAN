@@ -57,6 +57,10 @@ namespace FM
    class DirAlreadySharedException: public exception
    {
    };
+
+   class ChunkDeletedException : public exception
+   {
+   };
 }
 
 #endif

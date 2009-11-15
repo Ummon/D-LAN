@@ -9,6 +9,10 @@ namespace FM
    {
    public:
       virtual ~IDataWriter() {}
+
+      /**
+        * @exception ChunkDeletedException
+        */
       virtual bool write(const QByteArray& buffer, uint offset) = 0;
    };
 }

@@ -39,28 +39,13 @@ namespace FM
          const Common::Hashes& hashes = Common::Hashes()
       );
 
-   private:
       virtual ~File();
-
-   public:
 
       File* restoreFromFileCache(const Protos::FileCache::Hashes_File& file);
 
       void populateHashesFile(Protos::FileCache::Hashes_File& fileToFill) const;
 
       void populateFileEntry(Protos::Common::FileEntry* entry) const;
-
-      /**
-        * Set as deleted and delete all chunks.
-        */
-      void eliminate();
-
-      /**
-        * Called only by its chunks.
-        * If the file is marked as deleted and has no more chunk
-        * it will commit a suicide.
-        */
-      void chunkDeleted(Chunk* chunk);
 
       QString getPath() const;
       QString getFullPath() const;

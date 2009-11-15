@@ -4,12 +4,12 @@ using namespace FM;
 DataWriter::DataWriter(Chunk& chunk)
    : chunk(chunk)
 {
-   this->chunk.getFile().newDataWriterCreated();
+   this->chunk.newDataWriterCreated();
 }
 
 DataWriter::~DataWriter()
 {
-   this->chunk.getFile().dataWriterDeleted();
+   this->chunk.dataWriterDeleted();
 }
 
 bool DataWriter::write(const QByteArray& buffer, uint offset)

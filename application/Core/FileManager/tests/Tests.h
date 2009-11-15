@@ -18,14 +18,14 @@ private slots:
    void addASharedDirectory();
    void addAnAlreadySharedDirectory();
    void cleanupTestCase();
-   void addInexistantSharedDirectory();
+   void addInexistingSharedDirectory();
    void addSubSharedDirectories();
    void addSuperSharedDirectoriesWithDifferentRights();
    void addSuperSharedDirectoriesWithSameRights();
+   void rmSharedDirectory();
 
 private:
    void search();
-   void rmSharedDirectories();
    void addSuperSharedDirectoriesAndMerge();
 
 private:

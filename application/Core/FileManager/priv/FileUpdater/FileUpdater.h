@@ -35,7 +35,7 @@ namespace FM
         */
       void addRoot(SharedDirectory* dir);
 
-      void rmRoot(SharedDirectory* dir);
+      void rmRoot(SharedDirectory* dir, Directory* dir2 = 0);
 
       /**
         * Set the file cache to retrieve the hashes frome it.
@@ -61,7 +61,7 @@ namespace FM
       bool computeSomeHashes();
 
       /**
-        * Stop the current hashing process, do not change
+        * Stop the current hashing process or the next hashing process.
         */
       void stopHashing();
 
@@ -74,6 +74,10 @@ namespace FM
         */
       void scan(SharedDirectory* dir);
 
+      /**
+        * If you omit 'dir' then all scanning will be removed
+        * from the queue.
+        */
       void stopScanning(SharedDirectory* dir = 0);
 
       /**
@@ -92,7 +96,6 @@ namespace FM
       bool toStop; ///< Set to true when the service must be stopped.
 
       WaitCondition* dirEvent; ///< Using to wait when a sharing directory is added or deleted.
-      WaitCondition* stopEvent; ///< Using to stop the thread.
       QMutex mutex;
 
       QList<SharedDirectory*> dirsToScan; ///< When a new shared directory is added, it is put in this list until it is scanned.
@@ -104,7 +107,7 @@ namespace FM
       File* currentHashingFile;
       bool toStopHashing;
 
-      QList<QString> dirsToRemove;
+      QList<SharedDirectory*> dirsToRemove;
 
       QList<File*> fileWithoutHashes;
    };

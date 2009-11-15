@@ -5,7 +5,6 @@
 using namespace FM;
 
 #include <priv/Exceptions.h>
-#include <priv/Log.h>
 #include <priv/FileUpdater/WaitConditionWin.h>
 
 DirWatcherWin::DirWatcherWin()
@@ -14,9 +13,11 @@ DirWatcherWin::DirWatcherWin()
 
 DirWatcherWin::~DirWatcherWin()
 {
+   foreach (Dir* d, this->dirs)
+      delete d;
 }
 
-void DirWatcherWin::addDir(const QString& path)
+bool DirWatcherWin::addDir(const QString& path)
 {
    TCHAR pathTCHAR[path.size() + 1];
    path.toWCharArray(pathTCHAR);
@@ -36,25 +37,26 @@ void DirWatcherWin::addDir(const QString& path)
 
    HANDLE eventHandle = CreateEvent(NULL, FALSE, FALSE, NULL);
 
-   this->dirs.append(Dir(fileHandle, eventHandle, path));
+   this->dirs.append(new Dir(fileHandle, eventHandle, path));
 
-   this->watch(this->dirs.count() - 1);
+   if (!this->watch(this->dirs.count() - 1))
+   {
+      delete this->dirs.takeLast();
+      return false;
+   }
+
+   return true;
 }
 
 void DirWatcherWin::rmDir(const QString& path)
 {
-   for (QMutableListIterator<Dir> i(this->dirs); i.hasNext();)
+   for (QMutableListIterator<Dir*> i(this->dirs); i.hasNext();)
    {
-      Dir& dir = i.next();
-      if (dir.fullPath == path)
+      Dir* dir = i.next();
+      if (dir->fullPath == path)
       {
-         // Should we wait with GetOverlappedResult or do a test with HasOverlappedIoCompleted ?
-         CancelIo(dir.file);
-
-         if (!CloseHandle(dir.file)) LOG_ERR(QString("CloseHandle(dir.file) return an error : %1").arg(GetLastError()));
-         if (!CloseHandle(dir.overlapped.hEvent)) LOG_ERR(QString("CloseHandle(dir.overlapped.hEvent) return an error : %1").arg(GetLastError()));
-
          i.remove();
+         delete dir;
          break;
       }
    }
@@ -77,7 +79,7 @@ const QList<WatcherEvent> DirWatcherWin::waitEvent(int timeout, QList<WaitCondit
 
    HANDLE eventsArray[m];
    for(int i = 0; i < n; i++)
-      eventsArray[i] = this->dirs[i].overlapped.hEvent;
+      eventsArray[i] = this->dirs[i]->overlapped.hEvent;
 
    for (int i = 0; i < ws.size(); i++)
    {
@@ -135,19 +137,18 @@ const QList<WatcherEvent> DirWatcherWin::waitEvent(int timeout, QList<WaitCondit
    }
 }
 
-void DirWatcherWin::watch(int num)
+bool DirWatcherWin::watch(int num)
 {
-   if (!ReadDirectoryChangesW(
-      this->dirs[num].file, // The file handle;
+   return ReadDirectoryChangesW(
+      this->dirs[num]->file, // The file handle;
       &this->notifyBuffer, // The buffer where the information is put when an event occur.
       NOTIFY_BUFFER_SIZE,
       TRUE, // Watch subtree.
       FILE_NOTIFY_CHANGE_FILE_NAME | FILE_NOTIFY_CHANGE_DIR_NAME | FILE_NOTIFY_CHANGE_SIZE | FILE_NOTIFY_CHANGE_LAST_WRITE | FILE_NOTIFY_CHANGE_CREATION,
-      &this->nbBytesNotifyBuffer, // not used in asynchronous mode.
-      &this->dirs[num].overlapped,
+      &this->nbBytesNotifyBuffer, // Not used in asynchronous mode.
+      &this->dirs[num]->overlapped,
       NULL
-   ))
-      throw DirWatcherException(QString("ReadDirectoryChangesW(..), GetLastError : %1").arg(GetLastError()));
+   );
 }
 
 #endif
