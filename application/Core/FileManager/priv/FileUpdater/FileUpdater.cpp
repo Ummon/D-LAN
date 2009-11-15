@@ -82,15 +82,22 @@ void FileUpdater::rmRoot(SharedDirectory* dir, Directory* dir2)
    // If there is a scanning for this directory stop it.
    this->stopScanning(dir);
 
-   this->stopHashing();
+   // Stop the hashing to modify 'this->fileWithoutHashes'.
+   // TODO : A suspend/resume hashing methods would be more readable.
+   {
+      QMutexLocker(&this->hashingMutex);
+      if (this->currentHashingFile)
+         this->currentHashingFile->stopHashing();
+      this->toStopHashing = true;
 
-   // TODO : Find a more elegant way!
-   if (dir2)
-      dir2->stealContent(dir);
+      // TODO : Find a more elegant way!
+      if (dir2)
+         dir2->stealContent(dir);
 
-   for (QMutableListIterator<File*> i(this->fileWithoutHashes); i.hasNext();)
-      if (i.next()->getRoot() == dir)
-         i.remove();
+      for (QMutableListIterator<File*> i(this->fileWithoutHashes); i.hasNext();)
+         if (i.next()->getRoot() == dir)
+            i.remove();
+   }
 
    this->dirsToRemove << dir;
 

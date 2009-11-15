@@ -189,7 +189,7 @@ void Cache::removeSharedDir(SharedDirectory* dir, Directory* dir2)
 
    this->sharedDirs.removeOne(dir);
 
-   this->fileUpdater->rmRoot(dir);
+   this->fileUpdater->rmRoot(dir, dir2);
 
    // Delete all chunks.
    //dir->eliminate();

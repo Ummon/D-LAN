@@ -94,6 +94,8 @@ namespace FM
 
       bool haveAllHashes();
 
+      void changeDirectory(Directory* dir);
+
    private:
       Directory* dir;
       QList< QSharedPointer<Chunk> > chunks;
@@ -111,6 +113,7 @@ namespace FM
       // Mutex and wait condition used during hashing.
       // (TODO : It's a bit heavy, try to reduce the memory footprint).
       bool hashing;
+      bool toStopHashing;
       QWaitCondition hashingStopped;
       QMutex hashingMutex;
    };

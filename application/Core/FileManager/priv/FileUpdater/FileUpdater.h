@@ -64,6 +64,8 @@ namespace FM
         * Stop the current hashing process or the next hashing process.
         */
       void stopHashing();
+      /*void suspendHashing();
+      void resumeHashing();*/
 
       /**
         * Synchronize the cache with the file system.

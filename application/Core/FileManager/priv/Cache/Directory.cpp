@@ -187,6 +187,9 @@ void Directory::stealContent(Directory* dir)
       (*dir) -= d->getSize();
    }
 
+   foreach (File* f, dir->files)
+      f->changeDirectory(this);
+
    dir->subDirs.clear();
    dir->files.clear();
 }

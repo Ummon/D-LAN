@@ -30,7 +30,8 @@ File::File(
      writeLock(0),
      readLock(0),
      nbChunks(0),
-     hashing(false)
+     hashing(false),
+     toStopHashing(false)
 {
    //QMutexLocker locker(&this->getCache()->getMutex());
    LOG_DEBUG(QString("New file : %1").arg(this->getFullPath()));
@@ -198,11 +199,18 @@ bool File::write(const QByteArray& buffer, qint64 offset)
 
 bool File::computeHashes()
 {
-   LOG_DEBUG("Computing the hash for " + this->getFullPath());
-
    this->hashingMutex.lock();
+
+   if (this->toStopHashing)
+   {
+      this->toStopHashing = false;
+      this->hashingMutex.unlock();
+      return false;
+   }
+
    this->hashing = true;
-   this->hashingMutex.unlock();
+
+   LOG_DEBUG("Computing the hash for " + this->getFullPath());
 
    QList<QByteArray> result;
 
@@ -210,7 +218,12 @@ bool File::computeHashes()
 
    QFile file(this->getFullPath());
    if (!file.open(QIODevice::ReadOnly))
+   {
+      this->toStopHashing = false;
+      this->hashing = false;
+      this->hashingMutex.unlock();
       throw FileNotFoundException(this->getFullPath());
+   }
 
 #if DEBUG
    QTime time;
@@ -222,14 +235,17 @@ bool File::computeHashes()
    int chunkNum = 0;
    while (!endOfFile)
    {
+      // See 'stopHashing()'.
+      this->hashingMutex.unlock();
       this->hashingMutex.lock();
-      if (!this->hashing)
+      if (this->toStopHashing)
       {
-         this->hashingMutex.unlock();
          this->hashingStopped.wakeOne();
+         this->toStopHashing = false;
+         this->hashing = false;
+         this->hashingMutex.unlock();
          return false;
       }
-      this->hashingMutex.unlock();
 
       qint64 bytesReadTotal = 0;
       while (bytesReadTotal < CHUNK_SIZE)
@@ -249,31 +265,30 @@ bool File::computeHashes()
       crypto.reset();
    }
 
-   this->hashingMutex.lock();
-   this->hashing = false;
-   this->hashingStopped.wakeOne();
-   this->hashingMutex.unlock();
-
 #ifdef DEBUG
    const int delta = time.elapsed();
    if (delta == 0)
-      LOG_DEBUG("Hashing speed : ?? MB/s");
+      LOG_DEBUG("Hashing speed : ?? MB/s (delta too small)");
    else
    {
       const double speed = static_cast<double>(this->size) / 1024 / 1024 / (static_cast<double>(delta) / 1000);
       LOG_DEBUG(QString("Hashing speed : %1 MB/s").arg(speed < 0.1 ? "< 0.1" : QString::number(speed)));
    }
 #endif
+
+   this->toStopHashing = false;
+   this->hashing = false;
+   this->hashingMutex.unlock();
    return true;
 }
 
 void File::stopHashing()
 {
    QMutexLocker locker(&this->hashingMutex);
+   this->toStopHashing = true;
    if (this->hashing)
    {
       LOG_DEBUG(QString("File::stopHashing() for %1 ..").arg(this->getFullPath()));
-      this->hashing = false;
       this->hashingStopped.wait(&this->hashingMutex);
       LOG_DEBUG("Hashing stopped");
    }
@@ -285,6 +300,11 @@ bool File::haveAllHashes()
 
    // TODO : Some chunks can be not complete
    return this->nbChunks == this->size / CHUNK_SIZE + (this->size % CHUNK_SIZE == 0 ? 0 : 1);
+}
+
+void File::changeDirectory(Directory* dir)
+{
+   this->dir = dir;
 }
 
 /*QList<IChunk*> File::getChunks() const
