@@ -13,7 +13,7 @@ Hash::Hash()
 Hash::Hash(const Hash& h)
 {
 #if WITH_MUTEX
-   QMutexLocker(&h.data->mutex);
+   QMutexLocker locker(&h.data->mutex);
 #endif
    this->data = h.data;
    this->data->nbRef += 1;
@@ -42,7 +42,7 @@ Hash::~Hash()
 Hash& Hash::operator=(const Hash& h)
 {
 #if WITH_MUTEX
-   QMutexLocker(&h.data->mutex);
+   QMutexLocker locker(&h.data->mutex);
 #endif
    if (&h != this)
    {
@@ -84,7 +84,7 @@ Hash Hash::rand()
 void Hash::dereference()
 {
 #if WITH_MUTEX
-   QMutexLocker(&this->data->mutex);
+   QMutexLocker locker(&this->data->mutex);
 #endif
    this->data->nbRef -= 1;
    if (this->data->nbRef == 0)

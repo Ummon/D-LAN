@@ -18,6 +18,7 @@ FileUpdater::FileUpdater(FileManager* fileManager)
      dirWatcher(DirWatcher::getNewWatcher()),
      fileCache(0),
      toStop(false),
+     mutex(QMutex::Recursive),
      currentScanningDir(0),
      currentHashingFile(0),
      toStopHashing(false)
@@ -38,8 +39,6 @@ FileUpdater::~FileUpdater()
 
 void FileUpdater::stop()
 {
-   QMutexLocker(&this->mutex);
-
    LOG_DEBUG("Stopping FileUpdater..");
 
    this->toStop = true;
@@ -62,7 +61,7 @@ void FileUpdater::stop()
 
 void FileUpdater::addRoot(SharedDirectory* dir)
 {
-   QMutexLocker(&this->mutex);
+   QMutexLocker locker(&this->mutex);
 
    bool watchable = false;
    if (this->dirWatcher)
@@ -77,7 +76,7 @@ void FileUpdater::addRoot(SharedDirectory* dir)
 
 void FileUpdater::rmRoot(SharedDirectory* dir, Directory* dir2)
 {
-   QMutexLocker(&this->mutex);
+   QMutexLocker locker(&this->mutex);
 
    // If there is a scanning for this directory stop it.
    this->stopScanning(dir);
@@ -85,7 +84,7 @@ void FileUpdater::rmRoot(SharedDirectory* dir, Directory* dir2)
    // Stop the hashing to modify 'this->fileWithoutHashes'.
    // TODO : A suspend/resume hashing methods would be more readable.
    {
-      QMutexLocker(&this->hashingMutex);
+      QMutexLocker locker(&this->hashingMutex);
       if (this->currentHashingFile)
          this->currentHashingFile->stopHashing();
       this->toStopHashing = true;
@@ -246,7 +245,7 @@ bool FileUpdater::computeSomeHashes()
 
 void FileUpdater::stopHashing()
 {
-   QMutexLocker(&this->hashingMutex);
+   QMutexLocker locker(&this->hashingMutex);
    if (this->currentHashingFile)
       this->currentHashingFile->stopHashing();
    this->toStopHashing = true;

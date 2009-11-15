@@ -27,8 +27,6 @@ File::File(
      numDataReader(0),
      fileInWriteMode(0),
      fileInReadMode(0),
-     writeLock(0),
-     readLock(0),
      nbChunks(0),
      hashing(false),
      toStopHashing(false)
@@ -51,6 +49,9 @@ File::File(
 
 File::~File()
 {
+   QMutexLocker writeLocker(&this->writeLock);
+   QMutexLocker readLocker(&this->readLock);
+
    this->dir->fileDeleted(this);
 
    foreach (QSharedPointer<Chunk> c, this->chunks)
@@ -126,53 +127,55 @@ QDateTime File::getDateLastModified() const
 
 void File::newDataWriterCreated()
 {
+   QMutexLocker locker(&this->writeLock);
+
    if (this->numDataWriter == 0)
    {
       this->fileInWriteMode = new QFile(this->getPath());
       this->fileInWriteMode->open(QIODevice::WriteOnly);
-      this->writeLock = new QMutex();
    }
    this->numDataWriter += 1;
 }
 
 void File::newDataReaderCreated()
 {
+   QMutexLocker locker(&this->readLock);
+
    if (this->numDataReader == 0)
    {
       this->fileInReadMode = new QFile(this->getPath());
       this->fileInReadMode->open(QIODevice::ReadOnly);
-      this->readLock = new QMutex();
    }
    this->numDataReader += 1;
 }
 
 void File::dataWriterDeleted()
 {
+   QMutexLocker locker(&this->writeLock);
+
    this->numDataWriter -= 1;
    if  (this->numDataWriter == 0)
    {
       delete this->fileInWriteMode;
       this->fileInWriteMode = 0;
-      delete this->writeLock;
-      this->writeLock = 0;
    }
 }
 
 void File::dataReaderDeleted()
 {
+   QMutexLocker locker(&this->readLock);
+
    this->numDataReader -= 1;
    if  (this->numDataReader == 0)
    {
       delete this->fileInReadMode;
       this->fileInReadMode = 0;
-      delete this->readLock;
-      this->readLock = 0;
    }
 }
 
 qint64 File::read(QByteArray& buffer, qint64 offset)
 {
-   QMutexLocker locker(this->readLock);
+   QMutexLocker locker(&this->readLock);
 
    if (offset >= this->size)
       return 0;
@@ -185,7 +188,7 @@ qint64 File::read(QByteArray& buffer, qint64 offset)
 
 bool File::write(const QByteArray& buffer, qint64 offset)
 {
-   QMutexLocker locker(this->writeLock);
+   QMutexLocker locker(&this->writeLock);
 
    if (offset >= this->size)
       return true;
