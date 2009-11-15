@@ -3,8 +3,8 @@
 
 #include <IChunkDownload.h>
 
-namespace FileManager { class IChunk; }
-namespace PeerManager { class IPeer; }
+namespace FM { class IChunk; }
+namespace PM { class IPeer; }
 
 namespace DM
 {
@@ -14,8 +14,8 @@ namespace DM
    class ChunkDownload : public IChunkDownload
    {
    private:
-      FileManager::IChunk* chunk;
-      PeerManager::IPeer* peer;
+      FM::IChunk* chunk;
+      PM::IPeer* peer;
    };
 }
 #endif
