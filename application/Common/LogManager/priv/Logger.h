@@ -3,12 +3,15 @@
 
 #include <QString>
 #include <QTextStream>
+#include <QDir>
 #include <QMutex>
 
 #include <ILogger.h>
 
 namespace LM
 {
+   const int NB_LOGFILE = 10; ///< The maximum number of log file, if there is more file the oldest will be deleted.
+
    class Logger : public ILogger
    {
    public:
@@ -19,6 +22,8 @@ namespace LM
       void log(const ILoggable& object, Severity severity);
 
    private:
+      void deleteOldestLog(const QDir& logDir);
+
       QString name;
 
       static QTextStream* out;

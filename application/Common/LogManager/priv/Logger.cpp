@@ -33,18 +33,21 @@ Logger::Logger(const QString& name)
          }
          else
          {
-            QDir LogDir(Common::APPLICATION_FOLDER_PATH + '/' + logDirname);
+            QDir logDir(Common::APPLICATION_FOLDER_PATH + '/' + logDirname);
 
             QString filename = QDateTime::currentDateTime().toString("yyyy_MM_dd-hh_mm_ss") + ".log";
 
-            QFile* file = new QFile(LogDir.absoluteFilePath(filename));
+            QFile* file = new QFile(logDir.absoluteFilePath(filename));
             if (!file->open(QIODevice::WriteOnly))
             {
-               out << "Error, cannot create log file : " << LogDir.absoluteFilePath(filename) << endl;
+               out << "Error, cannot create log file : " << logDir.absoluteFilePath(filename) << endl;
                delete file;
             }
             else
+            {
+               this->deleteOldestLog(logDir);
                Logger::out = new QTextStream(file);
+            }
          }
       }
    }
@@ -85,6 +88,31 @@ void Logger::log(const QString& message, Severity severity)
 
 void Logger::log(const ILoggable& object, Severity severity)
 {
+}
+
+/**
+  * To sort a 'QList<QFileInfo>' by its last modified date.
+  * See 'Logger::deleteOldestLog(..)'.
+  */
+bool fileInfoLessThan(const QFileInfo& f1, const QFileInfo& f2)
+{
+   return f1.lastModified() < f2.lastModified();
+}
+
+void Logger::deleteOldestLog(const QDir& logDir)
+{
+   QList<QFileInfo> entries;
+   foreach (QFileInfo entry, logDir.entryInfoList())
+   {
+      if (entry.fileName() == "." || entry.fileName() == "..")
+         continue;
+      if (entry.isFile())
+         entries.append(entry);
+   }
+   qSort(entries.begin(), entries.end(), fileInfoLessThan);
+
+   while (entries.size() > NB_LOGFILE)
+      QFile::remove(entries.takeFirst().absoluteFilePath());
 }
 
 QTextStream* Logger::out(0);
