@@ -3,7 +3,7 @@
 
 #include <IDownload.h>
 
-namespace PeerManager { class IPeer; }
+namespace PM { class IPeer; }
 
 namespace DM
 {
@@ -15,7 +15,7 @@ namespace DM
       virtual bool isDir();
       virtual quint32 getProgress();
    protected:
-      PeerManager::IPeer* peer;
+      PM::IPeer* peer;
    };
 }
 #endif
