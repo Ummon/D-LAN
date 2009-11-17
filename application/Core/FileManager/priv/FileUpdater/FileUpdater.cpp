@@ -124,6 +124,7 @@ void FileUpdater::run()
          this->restoreFromFileCache(dir);
       }
       this->dirsToScan.clear();
+
       delete this->fileCache;
       this->fileCache = 0;
    }

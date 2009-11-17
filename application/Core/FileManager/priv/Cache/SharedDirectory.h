@@ -35,6 +35,10 @@ namespace FM
    public:
       ~SharedDirectory();
 
+      /**
+        * Restore the hashes from the cache.
+        * @return Returns the completed files.
+        */
       QList<File*> restoreFromFileCache(const Protos::FileCache::Hashes& hashes);
 
       /**
