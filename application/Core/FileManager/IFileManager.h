@@ -40,6 +40,12 @@ namespace FM
       virtual Protos::Common::FindResult find(const QString& words) = 0;
       virtual QBitArray haveChunks(const QList<Common::Hash>& hashes) = 0;
       virtual quint64 getAmount() = 0;
+
+      /**
+        * Create a new empty file. It will be automatically create in the same path than the remote one.
+        * The file will have the exact file size.
+        * The filename will end with .unfinished.
+        */
       virtual QList< QSharedPointer<IChunk> > newFile(const Protos::Common::FileEntry& remoteEntry) = 0;
    };
 }

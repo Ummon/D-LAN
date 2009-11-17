@@ -49,7 +49,7 @@ namespace FM
 
       void onEntryAdded(Entry* entry);
       void onEntryRemoved(Entry* entry);
-      void onChunkAdded(Chunk* chunk);
+      void onChunkHashKnown(Chunk* chunk);
       void onChunkRemoved(Chunk* chunk);
 
       /**
@@ -66,7 +66,7 @@ namespace FM
    signals:
       void entryAdded(Entry* entry);
       void entryRemoved(Entry* entry);
-      void chunkAdded(Chunk* chunk);
+      void chunkHashKnown(Chunk* chunk);
       void chunkRemoved(Chunk* chunk);
 
    private:

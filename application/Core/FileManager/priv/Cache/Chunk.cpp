@@ -11,22 +11,20 @@ using namespace FM;
 #include <priv/Cache/DataReader.h>
 #include <priv/Cache/DataWriter.h>
 
-Chunk::Chunk(Cache* cache, File* file, const Common::Hash& hash, int num, int knownBytes)
-   : cache(cache), file(file), hash(hash), num(num), knownBytes(knownBytes)
+Chunk::Chunk(Cache* cache, File* file, int num, int knownBytes)
+   : cache(cache), file(file), num(num), knownBytes(knownBytes)
+{
+   QMutexLocker locker (&this->mutex);
+   //LOG_DEBUG(QString("New chunk[%1] : %2. File : %3").arg(num).arg(hash.toStr()).arg(this->file->getFullPath()));
+}
+
+Chunk::Chunk(Cache* cache, File* file, int num, int knownBytes, const Common::Hash& hash)
+   : cache(cache), file(file), num(num), knownBytes(knownBytes), hash(hash)
 {
    QMutexLocker locker (&this->mutex);
    LOG_DEBUG(QString("New chunk[%1] : %2. File : %3").arg(num).arg(hash.toStr()).arg(this->file->getFullPath()));
 
-   this->cache->onChunkAdded(this);
-}
-
-Chunk::Chunk(Cache* cache, File* file, int num, const Protos::FileCache::Hashes_Chunk& chunk)
-   : cache(cache), file(file), hash(chunk.hash().hash().data()), num(num), knownBytes(chunk.known_bytes())
-{
-   QMutexLocker locker(&this->mutex);
-   LOG_DEBUG(QString("New chunk [%1] : %2. File : %3").arg(num).arg(hash.toStr()).arg(this->file->getFullPath()));
-
-   this->cache->onChunkAdded(this);
+   this->cache->onChunkHashKnown(this);
 }
 
 Chunk::~Chunk()
@@ -38,6 +36,14 @@ Chunk::~Chunk()
    );
    this->cache->onChunkRemoved(this);
    //this->file->chunkDeleted(this);
+}
+
+Chunk* Chunk::restoreFromFileCache(const Protos::FileCache::Hashes_Chunk& chunk)
+{
+   this->hash = chunk.hash().hash().data();
+   this->knownBytes = chunk.known_bytes();
+   this->cache->onChunkHashKnown(this);
+   return this;
 }
 
 void Chunk::populateHashesChunk(Protos::FileCache::Hashes_Chunk& chunk)
@@ -123,9 +129,19 @@ void Chunk::getContentFromSocket(QAbstractSocket& socket)
 {
 }*/
 
+bool Chunk::hasHash()
+{
+   return !this->hash.isNull();
+}
+
 Common::Hash Chunk::getHash()
 {
    return this->hash;
+}
+
+void Chunk::setHash(const Common::Hash& hash)
+{
+   this->hash = hash;
 }
 
 int Chunk::getKnownBytes()

@@ -71,7 +71,7 @@ namespace FM
    private slots:
       void entryAdded(Entry* entry);
       void entryRemoved(Entry* entry);
-      void chunkAdded(Chunk* chunk);
+      void chunkHashKnown(Chunk* chunk);
       void chunkRemoved(Chunk* chunk);
 
    private:

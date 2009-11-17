@@ -14,6 +14,8 @@ namespace FM
    const int MINIMUM_DURATION_WHEN_HASHING = 30; ///< In seconds.
 
    const int TIME_BETWEEN_RESCAN = 30; ///< Only for unwatchable directories. In seconds
+
+   const QString UNFINISHED_SUFFIX_TERM(".unfinished");
 }
 
 #endif

@@ -28,9 +28,9 @@ FileManager::FileManager()
 {
    LOG_USER("Loading ..");
 
-   connect(&this->cache, SIGNAL(entryAdded(Entry*)),   this, SLOT(entryAdded(Entry*)),   Qt::DirectConnection);
+   connect(&this->cache, SIGNAL(entryAdded(Entry*)), this, SLOT(entryAdded(Entry*)), Qt::DirectConnection);
    connect(&this->cache, SIGNAL(entryRemoved(Entry*)), this, SLOT(entryRemoved(Entry*)), Qt::DirectConnection);
-   connect(&this->cache, SIGNAL(chunkAdded(Chunk*)),   this, SLOT(chunkAdded(Chunk*)),   Qt::DirectConnection);
+   connect(&this->cache, SIGNAL(chunkHashKnown(Chunk*)), this, SLOT(chunkHashKnown(Chunk*)), Qt::DirectConnection);
    connect(&this->cache, SIGNAL(chunkRemoved(Chunk*)), this, SLOT(chunkRemoved(Chunk*)), Qt::DirectConnection);
    connect(&this->fileUpdater, SIGNAL(persistCache()), this, SLOT(persistCacheToFile()), Qt::DirectConnection);
 
@@ -190,7 +190,7 @@ void FileManager::entryAdded(Entry* entry)
    if (entry->getName().isEmpty())
       return;
 
-   LOG_DEBUG(QString("Entry added : '%1', adding to the index..").arg(entry->getName()));
+   LOG_DEBUG(QString("Adding entry '%1' to the index..").arg(entry->getName()));
    this->wordIndex.addItem(FileManager::splitInWords(entry->getName()), entry);
 }
 
@@ -199,18 +199,19 @@ void FileManager::entryRemoved(Entry* entry)
    if (entry->getName().isEmpty())
       return;
 
-   LOG_DEBUG(QString("Entry removed : '%1', removing from the index..").arg(entry->getName()));
+   LOG_DEBUG(QString("Removing entry '%1' from the index..").arg(entry->getName()));
    this->wordIndex.rmItem(FileManager::splitInWords(entry->getName()), entry);
 }
 
-void FileManager::chunkAdded(Chunk* chunk)
+void FileManager::chunkHashKnown(Chunk* chunk)
 {
+   LOG_DEBUG(QString("Adding chunk '%1' to the index..").arg(chunk->getHash().toStr()));
    this->chunks.add(chunk);
 }
 
 void FileManager::chunkRemoved(Chunk* chunk)
 {
-   this->chunks.add(chunk);
+   this->chunks.rm(chunk);
 }
 
 QStringList FileManager::splitInWords(const QString& words)

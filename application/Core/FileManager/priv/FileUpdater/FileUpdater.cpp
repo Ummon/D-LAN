@@ -295,7 +295,7 @@ void FileUpdater::scan(SharedDirectory* sharedDir)
             else
             {
                File* file = currentDir->createFile(entry);
-               if (!file->haveAllHashes())
+               if (!file->hasAllHashes())
                   this->fileWithoutHashes << file;
 
                currentFiles.removeOne(file);

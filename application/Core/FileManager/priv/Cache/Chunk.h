@@ -23,9 +23,16 @@ namespace FM
    class Chunk : public IChunk
    {
    public:
-      Chunk(Cache* cache, File* file, const Common::Hash& hash, int num, int knownBytes = CHUNK_SIZE);
-      Chunk(Cache* cache, File* file, int num, const Protos::FileCache::Hashes_Chunk& chunk);
+      /**
+        * Create a new empty chunk.
+        */
+      Chunk(Cache* cache, File* file, int num, int knownBytes);
+
+      Chunk(Cache* cache, File* file, int num, int knownBytes, const Common::Hash& hash);
+
       virtual ~Chunk();
+
+      Chunk* restoreFromFileCache(const Protos::FileCache::Hashes_Chunk& chunk);
 
       void populateHashesChunk(Protos::FileCache::Hashes_Chunk& chunk);
 
@@ -62,7 +69,11 @@ namespace FM
       //void sendContentToSocket(QAbstractSocket& socket);
       //void getContentFromSocket(QAbstractSocket& socket);
 
+      bool hasHash();
+
       Common::Hash getHash();
+
+      void setHash(const Common::Hash& hash);
 
       int getKnownBytes();
 
@@ -73,9 +84,9 @@ namespace FM
 
       Cache* cache;
       File* file;
-      Common::Hash hash;
       int num;
       int knownBytes; ///< Relative offset, 0 means we don't have any byte and File::CHUNK_SIZE means we have all the chunk data.
+      Common::Hash hash;
    };
 }
 #endif

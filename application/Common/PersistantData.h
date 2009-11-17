@@ -21,7 +21,7 @@ namespace Common
      */
    class PersistantData
    {
-      static const QString TEMP_POSTFIX_TERM;
+      static const QString TEMP_SUFFIX_TERM;
    public:
 
       /**
