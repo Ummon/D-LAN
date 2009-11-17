@@ -173,9 +173,9 @@ void Cache::onEntryRemoved(Entry* entry)
    emit entryRemoved(entry);
 }
 
-void Cache::onChunkAdded(Chunk* chunk)
+void Cache::onChunkHashKnown(Chunk* chunk)
 {
-   emit chunkAdded(chunk);
+   emit chunkHashKnown(chunk);
 }
 
 void Cache::onChunkRemoved(Chunk* chunk)

@@ -27,7 +27,6 @@ File::File(
      numDataReader(0),
      fileInWriteMode(0),
      fileInReadMode(0),
-     nbChunks(0),
      hashing(false),
      toStopHashing(false)
 {
@@ -35,13 +34,24 @@ File::File(
    LOG_DEBUG(QString("New file : %1").arg(this->getFullPath()));
 
    if (!hashes.isEmpty())
+      if (this->getNbChunks() != hashes.size())
+         LOG_ERR(QString("File::File(..) : The number of hashes (%1) doesn't correspond to the calculate number of chunk (%2)").arg(hashes.size()).arg(this->getNbChunks()));
+
+   bool complete = true;
+   if (name.size() > UNFINISHED_SUFFIX_TERM.size() && name.endsWith(UNFINISHED_SUFFIX_TERM))
    {
-      for (int i = 0; i < hashes.size(); i++)
-      {
-         QSharedPointer<Chunk> chunk(new Chunk(this->cache, this, hashes[i], i, 0));
-         this->nbChunks += 1;
-         this->chunks.append(chunk);
-      }
+      complete = false;
+      this->name = this->name.left(this->name.length() - UNFINISHED_SUFFIX_TERM.length());
+   }
+
+   for (int i = 0; i < this->getNbChunks(); i++)
+   {
+      int chunkKnownBytes = !complete ? 0 : i == this->getNbChunks() - 1 ? this->size % CHUNK_SIZE : CHUNK_SIZE;
+
+      if (i < hashes.size())
+         this->chunks.append(QSharedPointer<Chunk>(new Chunk(this->cache, this, i, chunkKnownBytes, hashes[i])));
+      else
+         this->chunks.append(QSharedPointer<Chunk>(new Chunk(this->cache, this, i, chunkKnownBytes)));
    }
 
    this->dir->addFile(this);
@@ -73,12 +83,10 @@ File* File::restoreFromFileCache(const Protos::FileCache::Hashes_File& file)
    )
    {
       LOG_DEBUG(QString("Restoring file '%1' from the file cache").arg(this->getFullPath()));
+
       // TODO : maybe test whether the chunks size is correct..
       for (int i = 0; i < file.chunk_size(); i++)
-      {
-         this->chunks << QSharedPointer<Chunk>(new Chunk(this->cache, this, i, file.chunk(i)));
-         this->nbChunks += 1;
-      }
+         this->chunks[i]->restoreFromFileCache(file.chunk(i));
    }
 
    return this;
@@ -262,8 +270,7 @@ bool File::computeHashes()
          crypto.addData(buffer, bytesRead);
          bytesReadTotal += bytesRead;
       }
-      this->chunks.append(QSharedPointer<Chunk>(new Chunk(this->cache, this, crypto.result(), chunkNum)));
-      this->nbChunks += 1;
+      this->chunks[chunkNum]->setHash(crypto.result());
       chunkNum += 1;
       crypto.reset();
    }
@@ -297,17 +304,46 @@ void File::stopHashing()
    }
 }
 
-bool File::haveAllHashes()
+QList< QSharedPointer<Chunk> > File::getChunks() const
+{
+   return this->chunks;
+}
+
+bool File::hasAllHashes()
+{
+   foreach (QSharedPointer<Chunk> c, this->chunks)
+      if (!c->hasHash())
+         return false;
+   return true;
+}
+
+bool File::hasOneOrMoreHashes()
+{
+   foreach (QSharedPointer<Chunk> c, this->chunks)
+     if (c->hasHash())
+         return true;
+   return false;
+}
+
+bool File::isComplete()
 {
    //LOG_DEBUG(QString("this->size = %1, CHUNK_SIZE = %2, res = %3, this->nbChunks = %4").arg(this->size).arg(CHUNK_SIZE).arg(this->size / CHUNK_SIZE + (this->size % CHUNK_SIZE == 0 ? 0 : 1)).arg(this->nbChunks));
 
-   // TODO : Some chunks can be not complete
-   return this->nbChunks == this->size / CHUNK_SIZE + (this->size % CHUNK_SIZE == 0 ? 0 : 1);
+   qint64 currentSize = 0;
+   for (int i = 0; i < this->chunks.size(); i++)
+      currentSize += this->chunks[i]->getKnownBytes();
+
+   return this->size == currentSize;
 }
 
 void File::changeDirectory(Directory* dir)
 {
    this->dir = dir;
+}
+
+int File::getNbChunks()
+{
+   return this->size / CHUNK_SIZE + (this->size % CHUNK_SIZE == 0 ? 0 : 1);
 }
 
 /*QList<IChunk*> File::getChunks() const

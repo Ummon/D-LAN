@@ -15,13 +15,13 @@ using namespace std;
 #include <Constants.h>
 #include <Common.h>
 
-const QString PersistantData::TEMP_POSTFIX_TERM(".temp");
+const QString PersistantData::TEMP_SUFFIX_TERM(".temp");
 
 void PersistantData::setValue(const QString& name, const google::protobuf::Message& data)
 {
    if (Global::createApplicationFolder())
    {
-      QString tempName(name + TEMP_POSTFIX_TERM);
+      QString tempName(name + TEMP_SUFFIX_TERM);
 
       {
          ofstream file((APPLICATION_FOLDER_PATH + '/' + tempName).toStdString().data(), ios_base::binary | ios_base::out);

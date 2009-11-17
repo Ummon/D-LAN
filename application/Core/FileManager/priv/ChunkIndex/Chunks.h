@@ -13,6 +13,7 @@ namespace FM
    {
    public:
       void add(Chunk* chunk);
+      void rm(Chunk* chunk);
    };
 }
 #endif

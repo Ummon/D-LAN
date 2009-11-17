@@ -30,6 +30,7 @@ namespace FM
       /**
         * Create a new file into a given directory.
         * The file may or may not have a correponding local file.
+        * @param hashes Optional hashes, if given it must contain ALL hashes.
         */
       File(
          Directory* dir,
@@ -89,14 +90,19 @@ namespace FM
 
       void stopHashing();
 
-      /*QList<IChunk*> getChunks() const;
-      const QList<Chunk*>& getChunksRef() const;*/
+      QList< QSharedPointer<Chunk> > getChunks() const;
 
-      bool haveAllHashes();
+      bool hasAllHashes();
+      bool hasOneOrMoreHashes();
+
+      bool isComplete();
 
       void changeDirectory(Directory* dir);
 
    private:
+
+      int getNbChunks();
+
       Directory* dir;
       QList< QSharedPointer<Chunk> > chunks;
       QDateTime dateLastModified;
@@ -107,8 +113,6 @@ namespace FM
       QFile* fileInReadMode;
       QMutex writeLock; ///< Protect the file from concurrent access from different downloaders.
       QMutex readLock; ///< Protect the file from concurrent access from different uploaders.
-
-      int nbChunks;
 
       // Mutex and wait condition used during hashing.
       // (TODO : It's a bit heavy, try to reduce the memory footprint).

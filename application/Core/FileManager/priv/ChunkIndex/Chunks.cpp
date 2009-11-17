@@ -7,3 +7,8 @@ void Chunks::add(Chunk* chunk)
 {
    this->insert(chunk->getHash(), chunk);
 }
+
+void Chunks::rm(Chunk* chunk)
+{
+   this->remove(chunk->getHash());
+}

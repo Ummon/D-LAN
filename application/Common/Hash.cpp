@@ -71,6 +71,14 @@ QString Hash::toStr() const
    return ret;
 }
 
+bool Hash::isNull() const
+{
+   for (int i = 0; i < HASH_SIZE; i++)
+      if (this->data->hash[i] != 0)
+         return false;
+   return true;
+}
+
 Hash Hash::rand()
 {
    Hash hash;
