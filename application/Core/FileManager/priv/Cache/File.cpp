@@ -70,26 +70,25 @@ File::~File()
    LOG_DEBUG(QString("File deleted : %1").arg(this->getFullPath()));
 }
 
-File* File::restoreFromFileCache(const Protos::FileCache::Hashes_File& file)
+bool File::restoreFromFileCache(const Protos::FileCache::Hashes_File& file)
 {
    LOG_DEBUG(QString("Restoring file '%1' from file cache..").arg(this->getFullPath()));
-
-   this->chunks.clear();
 
    if (
       file.filename().data() == this->getName() &&
       (qint64)file.size() == this->getSize() &&
-      file.date_last_modified() == this->getDateLastModified().toTime_t()
+      file.date_last_modified() == this->getDateLastModified().toTime_t() &&
+      this->chunks.size() == file.chunk_size()
    )
    {
       LOG_DEBUG(QString("Restoring file '%1' from the file cache").arg(this->getFullPath()));
 
-      // TODO : maybe test whether the chunks size is correct..
       for (int i = 0; i < file.chunk_size(); i++)
          this->chunks[i]->restoreFromFileCache(file.chunk(i));
-   }
 
-   return this;
+      return true;
+   }
+   return false;
 }
 
 void File::populateHashesFile(Protos::FileCache::Hashes_File& fileToFill) const
@@ -334,6 +333,16 @@ bool File::isComplete()
       currentSize += this->chunks[i]->getKnownBytes();
 
    return this->size == currentSize;
+}
+
+void File::physicallyRemoveUnfinished()
+{
+   if (!this->isComplete())
+   {
+      QString path = this->getFullPath().append(UNFINISHED_SUFFIX_TERM);
+      if (!QFile::remove(path))
+         LOG_WARN(QString("File::physicallyRemoveUnfinished() : Cannot remove the file '%1'").arg(path));
+   }
 }
 
 void File::changeDirectory(Directory* dir)

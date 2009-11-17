@@ -42,7 +42,7 @@ namespace FM
 
       virtual ~File();
 
-      File* restoreFromFileCache(const Protos::FileCache::Hashes_File& file);
+      bool restoreFromFileCache(const Protos::FileCache::Hashes_File& file);
 
       void populateHashesFile(Protos::FileCache::Hashes_File& fileToFill) const;
 
@@ -96,6 +96,12 @@ namespace FM
       bool hasOneOrMoreHashes();
 
       bool isComplete();
+
+      /**
+        * Remove the file physically only if it's not complete.
+        * The file removed must ended by UNFINISHED_SUFFIX_TERM.
+        */
+      void physicallyRemoveUnfinished();
 
       void changeDirectory(Directory* dir);
 

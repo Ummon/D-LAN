@@ -40,10 +40,28 @@ QList<File*> Directory::restoreFromFileCache(const Protos::FileCache::Hashes_Dir
          for (QListIterator<Directory*> d(this->subDirs); d.hasNext();)
             ret << d.next()->restoreFromFileCache(dir.dir(i));
 
-      // .. And files.
+      // .. And files.s
+      QList<File*> filesExistPhysically;
       for (int i = 0; i < dir.file_size(); i++)
-         for (QListIterator<File*> f(this->files); f.hasNext();)
-            ret << f.next()->restoreFromFileCache(dir.file(i));
+         for (QListIterator<File*> j(this->files); j.hasNext();)
+         {
+            File* f = j.next();
+            if (f->restoreFromFileCache(dir.file(i)))
+            {
+               filesExistPhysically << f;
+               if (f->hasAllHashes())
+                  ret << f;
+            }
+         }
+
+      // Removes incomplete file we don't know.
+      foreach (File* f, this->files)
+         if (!filesExistPhysically.contains(f) && !f->isComplete())
+         {
+            f->physicallyRemoveUnfinished();
+            delete f;
+         }
+
    }
 
    return ret;

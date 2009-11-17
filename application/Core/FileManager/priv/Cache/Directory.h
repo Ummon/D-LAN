@@ -29,6 +29,12 @@ namespace FM
 
       virtual ~Directory();
 
+      /**
+        * Retore the hashes from the cache.
+        * All file which are not complete and not in the cache are physically removed.
+        * Only files ending with UNFINISHED_SUFFIX_TERM will be removed.
+        * @return The files which have all theirs hashes (complete).
+        */
       QList<File*> restoreFromFileCache(const Protos::FileCache::Hashes_Dir& dir);
 
       void populateHashesDir(Protos::FileCache::Hashes_Dir& dirToFill) const;
