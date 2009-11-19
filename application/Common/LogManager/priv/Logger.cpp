@@ -104,7 +104,7 @@ void Logger::deleteOldestLog(const QDir& logDir)
    QList<QFileInfo> entries;
    foreach (QFileInfo entry, logDir.entryInfoList())
    {
-      if (entry.fileName() == "." || entry.fileName() == "..")
+      if (entry.fileName() == "." || entry.fileName() == ".." || !entry.fileName().endsWith(".log"))
          continue;
       if (entry.isFile())
          entries.append(entry);
