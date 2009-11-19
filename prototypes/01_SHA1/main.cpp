@@ -1,10 +1,24 @@
 #include <QtCore/QCoreApplication>
-#include <QtCore/QCryptographicHash>
+#include <QtCore/QTextStream>
 #include <QtCore/QFile>
 #include <QtCore/QDebug>
 #include <QtCore/QList>
 
-static const int BUFFER_SIZE = 65536; // (64kB) Buffer used when reading a file.
+#define WITH_SHA1_LINUS true
+
+#if WITH_SHA1_LINUS
+extern "C" {
+#  include "sha1.h"
+}
+#else
+#  include <QCryptographicHash>
+#endif
+
+static const int BUFFER_SIZE_512 = 524288; // (512kB)
+static const int BUFFER_SIZE_64 = 65536; // (64kB)
+static const int BUFFER_SIZE_4 = 4096; // (4kB)
+
+static const int BUFFER_SIZE = BUFFER_SIZE_64; // Buffer used when reading a file.
 static const int CHUNK_SIZE = 2097152; // (2 MB)
 
 class FileNotFoundException : public std::exception {};
@@ -19,18 +33,37 @@ class FileNotFoundException : public std::exception {};
 QByteArray computeSHA1(const QString& filename, qint32 bufferSize)
       throw (FileNotFoundException)
 {
+#if not WITH_SHA1_LINUS
    QCryptographicHash crypto(QCryptographicHash::Sha1);
-      
+#endif
+
    QFile file(filename);
    if (!file.open(QIODevice::ReadOnly))
       throw FileNotFoundException();
 
+#if WITH_SHA1_LINUS
+   blk_SHA_CTX sha1State;
+   blk_SHA1_Init(&sha1State);
+   unsigned char bufferHash[20];
+#endif
+
    char buffer[bufferSize];
    qint64 bytesRead = 0;
    while ((bytesRead = file.read(buffer, bufferSize)) > 0)
+   {
+#if WITH_SHA1_LINUS
+      blk_SHA1_Update(&sha1State, buffer, bytesRead);
+#else
       crypto.addData(buffer, bytesRead);
-      
+#endif
+   }
+
+#if WITH_SHA1_LINUS
+      blk_SHA1_Final(bufferHash, &sha1State);
+      return QByteArray((const char*)bufferHash, 20);
+#else
    return crypto.result();
+#endif
 }
 
 /**
@@ -45,17 +78,27 @@ QList<QByteArray> computeMultiSHA1(const QString& filename, qint32 chunkSize, qi
       throw (FileNotFoundException)
 {
    QList<QByteArray> result;
-   
+
+#if not WITH_SHA1_LINUS
    QCryptographicHash crypto(QCryptographicHash::Sha1);
-      
+#endif
+
    QFile file(filename);
    if (!file.open(QIODevice::ReadOnly))
       throw FileNotFoundException();
+
+#if WITH_SHA1_LINUS
+   blk_SHA_CTX sha1State;
+   unsigned char bufferHash[20];
+#endif
 
    char buffer[bufferSize];
    bool endOfFile = false;
    while (!endOfFile)
    {
+#if WITH_SHA1_LINUS
+      blk_SHA1_Init(&sha1State);
+#endif
       qint64 bytesReadTotal = 0;
       while (bytesReadTotal < chunkSize)
       {
@@ -65,13 +108,22 @@ QList<QByteArray> computeMultiSHA1(const QString& filename, qint32 chunkSize, qi
             endOfFile = true;
             break;
          }
+#if WITH_SHA1_LINUS
+         blk_SHA1_Update(&sha1State, buffer, bytesRead);
+#else
          crypto.addData(buffer, bytesRead);
+#endif
          bytesReadTotal += bytesRead;
       }
+#if WITH_SHA1_LINUS
+      blk_SHA1_Final(bufferHash, &sha1State);
+      result.append(QByteArray((const char*)bufferHash, 20));
+#else
       result.append(crypto.result());
       crypto.reset();
+#endif
    }
-      
+
    return result;
 }
 
@@ -93,8 +145,8 @@ int main(int argc, char* argv[])
       out << "Usage : " << argv[0] << " (all|chunk) <file>" << endl;
       return 1;
    }
-   
-   QString mode = QString(argv[1]);   
+
+   QString mode = QString(argv[1]);
    if (mode == "all")
    {
       out << computeSHA1(argv[2], BUFFER_SIZE).toHex() << "\n";
@@ -105,6 +157,6 @@ int main(int argc, char* argv[])
       foreach (QByteArray sha, shas)
          out << sha.toHex() << "\n";
    }
-      
+
    return 0;
 }
