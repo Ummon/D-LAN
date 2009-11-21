@@ -59,7 +59,7 @@ namespace FM
 
       Rights getRights() const;
 
-      const Common::Hash& getId() const;
+      Common::Hash getId() const;
 
    private:
 

@@ -39,7 +39,16 @@ namespace FM
       virtual IChunk* getChunk(const Common::Hash& hash) = 0;
 
       // virtual IGetHashesResult* getHashes(const Protos::Common::FileEntry& entry) = 0;
-      // virtual Protos::Core::GetEntriesResult* getEntries(const Protos::Common::DirEntry& entry) = 0;
+
+      /**
+        * Returns the directories and files contained in the given directory.
+        */
+      virtual Protos::Core::GetEntriesResult getEntries(const Protos::Common::DirEntry& entry) = 0;
+
+      /**
+        * Returns the shared directories (roots).
+        */
+      virtual Protos::Core::GetEntriesResult getEntries() = 0;
 
       virtual Protos::Common::FindResult find(const QString& words) = 0;
       virtual QBitArray haveChunks(const QList<Common::Hash>& hashes) = 0;
@@ -48,10 +57,12 @@ namespace FM
       /**
         * Create a new empty file. It will be automatically create in the same path than the remote one.
         * It will take the shared directory which has enought storage space and matches paths the closest.
-        * The file will have the exact final size filled with 0.
+        * The file will have the exact final size and filled with 0.
         * The filename will end with .unfinished.
+        * Some or all hashes can be null (see Protos.Common.Hash). They can be set later with IChunk::setHash(..).
         * @exception NoReadWriteSharedDirectoryException
         * @exception InsufficientStorageSpaceException
+        * @exception FilePhysicallyAlreadyExistsException
         */
       virtual QList< QSharedPointer<IChunk> > newFile(const Protos::Common::FileEntry& remoteEntry) = 0;
    };

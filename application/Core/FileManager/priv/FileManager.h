@@ -52,7 +52,10 @@ namespace FM
 
       IChunk* getChunk(const Common::Hash& hash);
       // IGetHashesResult* getHashes(const  Protos::Common::FileEntry& entry);
-      // Protos::Core::GetEntriesResult* getEntries(const Protos::Common::DirEntry& entry);
+
+      Protos::Core::GetEntriesResult getEntries(const Protos::Common::DirEntry& entry);
+      Protos::Core::GetEntriesResult getEntries();
+
       Protos::Common::FindResult find(const QString& words);
       QBitArray haveChunks(const QList<Common::Hash>& hashes);
       quint64 getAmount();

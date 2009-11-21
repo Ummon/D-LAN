@@ -3,6 +3,7 @@ using namespace FM;
 
 #include <QDir>
 
+#include <priv/Constants.h>
 #include <priv/Log.h>
 #include <priv/FileManager.h>
 #include <priv/Cache/File.h>
@@ -43,7 +44,7 @@ QList<File*> Directory::restoreFromFileCache(const Protos::FileCache::Hashes_Dir
          for (QListIterator<Directory*> d(this->subDirs); d.hasNext();)
             ret << d.next()->restoreFromFileCache(dir.dir(i));
 
-      // .. And files.s
+      // .. And files.
       QList<File*> filesExistPhysically;
       for (int i = 0; i < dir.file_size(); i++)
          for (QListIterator<File*> j(this->files); j.hasNext();)
@@ -93,8 +94,7 @@ void Directory::populateHashesDir(Protos::FileCache::Hashes_Dir& dirToFill) cons
 
 void Directory::populateDirEntry(Protos::Common::DirEntry* entry) const
 {
-   entry->mutable_dir()->set_path(this->getPath().toStdString());
-   entry->mutable_dir()->set_name(this->getName().toStdString());
+   this->populateEntry(entry->mutable_dir());
 }
 
 void Directory::fileDeleted(File* file)
@@ -149,11 +149,13 @@ Directory* Directory::getSubDir(const QString& name) const
 
 QList<Directory*> Directory::getSubDirs() const
 {
+   QMutexLocker(&this->cache->getMutex());
    return this->subDirs;
 }
 
 QList<File*> Directory::getFiles() const
 {
+   QMutexLocker(&this->cache->getMutex());
    return this->files;
 }
 
@@ -178,7 +180,8 @@ File* Directory::createFile(const QFileInfo& fileInfo)
    {
       if (f->getName() == fileInfo.fileName())
       {
-         if (f->getSize() == fileInfo.size() && f->getDateLastModified() == fileInfo.lastModified())
+         // If the file is uncompleted its size and date may change.
+         if (!f->isComplete() || f->getSize() == fileInfo.size() && f->getDateLastModified() == fileInfo.lastModified())
             return f;
 
          delete f;

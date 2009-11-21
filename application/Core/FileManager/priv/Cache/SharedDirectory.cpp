@@ -89,7 +89,7 @@ SharedDirectory::Rights SharedDirectory::getRights() const
    return this->rights;
 }
 
-const Common::Hash& SharedDirectory::getId() const
+Common::Hash SharedDirectory::getId() const
 {
    return this->id;
 }

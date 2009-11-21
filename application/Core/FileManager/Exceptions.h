@@ -69,6 +69,10 @@ namespace FM
    class InsufficientStorageSpaceException : public exception
    {
    };
+
+   class FilePhysicallyAlreadyExistsException : public exception
+   {
+   };
 }
 
 #endif

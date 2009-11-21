@@ -72,6 +72,16 @@ IChunk* FileManager::getChunk(const Common::Hash& hash)
    return this->chunks.value(hash);
 }
 
+Protos::Core::GetEntriesResult FileManager::getEntries(const Protos::Common::DirEntry& entry)
+{
+   return this->cache.getEntries(entry);
+}
+
+Protos::Core::GetEntriesResult FileManager::getEntries()
+{
+   return this->cache.getEntries();
+}
+
 /**
   * See http://dev.euphorik.ch/wiki/pmp/Algorithms#Word-indexing for more information.
   */
@@ -178,11 +188,24 @@ QList< QSharedPointer<IChunk> > FileManager::newFile(const Protos::Common::FileE
 {
    Directory* dir = this->cache.getDirectory(QDir::cleanPath(remoteEntry.file().path().data()), remoteEntry.file().size() + MINIMUM_FREE_SPACE);
 
-   QString name("plop");
-   int size = 42;
    Common::Hashes hashes;
-   File* file = new File(dir, name, size, QDateTime::currentDateTime(), hashes);
-   return QList< QSharedPointer<IChunk> >();
+   for (int i = 0; i < remoteEntry.chunk_size(); i++)
+      hashes << (remoteEntry.chunk(i).has_hash() ? Common::Hash(remoteEntry.chunk(i).hash().data()) : Common::Hash());
+
+   File* file = new File(
+      dir,
+      remoteEntry.file().name().data(),
+      remoteEntry.file().size(),
+      QDateTime::currentDateTime(),
+      hashes,
+      true
+   );
+
+   // TODO : is there a better way to up cast ?
+   QList< QSharedPointer<IChunk> > chunks;
+   foreach (QSharedPointer<Chunk> chunk, file->getChunks())
+      chunks << chunk;
+   return chunks;
 }
 
 void FileManager::entryAdded(Entry* entry)

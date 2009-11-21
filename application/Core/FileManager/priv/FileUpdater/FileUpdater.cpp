@@ -296,7 +296,9 @@ void FileUpdater::scan(SharedDirectory* sharedDir)
             else
             {
                File* file = currentDir->createFile(entry);
-               if (!file->hasAllHashes())
+
+               // If a file is incomplete (unfinished) we can't compute its hashes because we don't have all data.
+               if (!file->hasAllHashes() && file->isComplete())
                   this->fileWithoutHashes << file;
 
                currentFiles.removeOne(file);

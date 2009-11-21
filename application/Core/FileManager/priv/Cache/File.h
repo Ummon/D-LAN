@@ -23,6 +23,11 @@ namespace FM
    class Directory;
    class Cache;
 
+   /**
+     * A file can be finished or unfinished.
+     * If it is an unfinished one, the name ends with ".unfinished" (see UNFINISHED_SUFFIX_TERM).
+     * When a file is just finished the suffix ".unfinished" is removed and the file is renamed.
+     */
    class File : public Entry
    {
    public:
@@ -30,14 +35,18 @@ namespace FM
       /**
         * Create a new file into a given directory.
         * The file may or may not have a correponding local file.
+        * If 'createPhysically' is true then the file is created as unfinished with no byte known.
         * @param hashes Optional hashes, if given it must contain ALL hashes.
+        * @exception FileAlreadyExistsException : TODO!!!
+        * @exception FilePhysicallyAlreadyExistsException : TODO!!!
         */
       File(
          Directory* dir,
          const QString& name,
          qint64 size,
          const QDateTime& dateLastModified,
-         const Common::Hashes& hashes = Common::Hashes()
+         const Common::Hashes& hashes = Common::Hashes(),
+         bool createPhysically = false
       );
 
       virtual ~File();

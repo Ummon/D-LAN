@@ -30,7 +30,7 @@ namespace FM
 
       Chunk(Cache* cache, File* file, int num, int knownBytes, const Common::Hash& hash);
 
-      virtual ~Chunk();
+      ~Chunk();
 
       Chunk* restoreFromFileCache(const Protos::FileCache::Hashes_Chunk& chunk);
 
