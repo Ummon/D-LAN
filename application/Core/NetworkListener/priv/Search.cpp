@@ -41,7 +41,7 @@ bool Search::search(const QString& words)
       Protos::Core::Find findProto;
       findProto.set_pattern(words.toStdString());
       findProto.set_tag(this->tag);
-      findProto.mutable_peerid()->set_hash(this->peerManager->getMyId().data());
+      findProto.mutable_peer_id()->set_hash(this->peerManager->getMyId().getData(), Common::Hash::HASH_SIZE);
 
       // We serialize the proto to a string.
       std::string output;

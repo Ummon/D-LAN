@@ -55,13 +55,13 @@ void NetworkListener::presence()
    this->logger->log("Sending <IAmAlive>", LM::Debug);
 
    // We put info in a IMAlimeMessage Proto.
-   Protos::Core::HaveChunks IMAlimeMessage;
+   Protos::Core::IMAlive IMAlimeMessage;
 
    IMAlimeMessage.set_amount(1);
    IMAlimeMessage.set_nick(this->peerManager->getNick()->toStdString());
    IMAlimeMessage.set_tag(99);
    IMAlimeMessage.set_version(1);
-   IMAlimeMessage.mutable_peerid()->set_hash(this->peerManager->getMyId().data());
+   IMAlimeMessage.mutable_peer_id()->set_hash(this->peerManager->getMyId().getData(), Common::Hash::HASH_SIZE);
 
    // We serialize the proto to a string.
    std::string output;
@@ -94,7 +94,7 @@ void NetworkListener::newFindRequset(const Protos::Core::Find& request, const QH
 
 
    fr.set_tag(request.tag());
-   fr.mutable_peerid()->set_hash(this->peerManager->getMyId().data());
+   fr.mutable_peer_id()->set_hash(this->peerManager->getMyId().getData(), Common::Hash::HASH_SIZE);
 
    std::string output;
    fr.SerializeToString(&output);
