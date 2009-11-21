@@ -28,7 +28,7 @@ namespace NL
       void newChatMessage(const Protos::Core::ChatMessage& message);
       void newFindResult(const Protos::Common::FindResult& result);
       void newFindRequset(const Protos::Core::Find& request, const QHostAddress& peerAdress);
-      void newHaveChunksResult(const Protos::Core::HaveChunksResult& result);
+      void newHaveChunksResult(const Protos::Core::ChunksOwned& result);
 
    private:
       QSharedPointer<LM::ILogger> logger;

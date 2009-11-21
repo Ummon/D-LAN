@@ -115,11 +115,11 @@ void UDPListener::processPendingMulticastDatagrams()
          case IAmAlivePacket:
          {
             // We create a new IMAlimeMessage.
-            Protos::Core::HaveChunks IMAlimeMessage;
+            Protos::Core::IMAlive IMAlimeMessage;
             IMAlimeMessage.ParseFromString(datagram.mid(1).data());
             quint64 amount = IMAlimeMessage.amount();
             QString nick(IMAlimeMessage.nick().data());
-            Common::Hash id(IMAlimeMessage.peerid().hash().data());
+            Common::Hash id(IMAlimeMessage.peer_id().hash().data());
 
             //We forward the information to the PeerManager
             this->peerManager->updatePeer(id, peerAddress, nick, amount);

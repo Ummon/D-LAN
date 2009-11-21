@@ -15,12 +15,12 @@ LIBS += -LNetworkListener/output/debug \
     -lNetworkListener
 LIBS += -LPeerManager/output/debug \
     -lPeerManager
-LIBS += -L${PROTOBUF}/src/.libs \
-    -lprotobuf
 LIBS += -L../Common/LogManager/output/debug \
     -lLogManager
 LIBS += -L../Common/output/debug \
     -lCommon
+LIBS += -L${PROTOBUF}/src/.libs \
+    -lprotobuf
 
 # FIXME : Theses declarations should not be here, all dependencies are read from the prl files of each library (see link_prl):
 win32 {
