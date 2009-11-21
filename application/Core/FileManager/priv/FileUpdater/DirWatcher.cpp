@@ -20,11 +20,15 @@ DirWatcher* DirWatcher::getNewWatcher()
 }
 
 WatcherEvent::WatcherEvent()
-      : type(WatcherEvent::UNKNOWN)
+   : type(WatcherEvent::UNKNOWN)
 {}
 
+ WatcherEvent::WatcherEvent(const WatcherEvent& e)
+   : type(e.type), path1(e.path1), path2(e.path2)
+ {}
+
 WatcherEvent::WatcherEvent(Type type)
-      : type(type)
+   : type(type)
 {}
 
 WatcherEvent::WatcherEvent(WatcherEvent::Type type, const QString& path1)
@@ -34,3 +38,27 @@ WatcherEvent::WatcherEvent(WatcherEvent::Type type, const QString& path1)
 WatcherEvent::WatcherEvent(WatcherEvent::Type type, const QString& path1, const QString& path2)
       : type(type), path1(path1), path2(path2)
 {}
+
+QString WatcherEvent::toStr()
+{
+   QString str;
+   switch (this->type)
+   {
+   case RENAME_DIR : str += "RENAME_DIR"; break;
+   case RENAME_FILE : str += "RENAME_FILE"; break;
+   case NEW_FILE : str += "NEW_FILE"; break;
+   case DELETE_FILE : str += "DELETE_FILE"; break;
+   case CONTENT_FILE_CHANGED : str += "CONTENT_FILE_CHANGED"; break;
+   case TIMEOUT : str += "TIMEOUT"; break;
+   case UNKNOWN : str += "UNKNOWN"; break;
+   default : str += "UNKNOWN"; break;
+   }
+   str += " :\n";
+   if (!this->path1.isEmpty())
+      str.append("  ").append(this->path1);
+   if (!this->path1.isEmpty() && !this->path2.isEmpty())
+      str.append("\n");
+   if (!this->path2.isEmpty())
+      str.append("  ").append(this->path2);
+   return str;
+}

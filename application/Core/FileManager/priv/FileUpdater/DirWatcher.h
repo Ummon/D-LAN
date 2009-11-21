@@ -94,6 +94,7 @@ namespace FM
       };
 
       WatcherEvent();
+      WatcherEvent(const WatcherEvent& e);
       WatcherEvent(Type type);
       WatcherEvent(Type type, const QString& path1);
       WatcherEvent(Type type, const QString& path1, const QString& path2);
@@ -102,6 +103,8 @@ namespace FM
         * Default assignment operator does nothing because all members are const.
         */
       WatcherEvent& operator=(const WatcherEvent&) { return *this; }
+
+      QString toStr();
 
       const Type type;
       const QString path1;

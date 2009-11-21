@@ -20,11 +20,11 @@ DEFINES += COMMON_LIBRARY
 SOURCES += Hash.cpp \
     PersistantData.cpp \
     Math.cpp \
-    Common.cpp
+    Global.cpp
 HEADERS += Hashes.h \
     Hash.h \
     PersistantData.h \
     Math.h \
     Deletable.h \
     Constants.h \
-    Common.h
+    Global.h

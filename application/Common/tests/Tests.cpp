@@ -6,6 +6,7 @@
 #include <Hash.h>
 #include <Math.h>
 #include <PersistantData.h>
+#include <Global.h>
 using namespace Common;
 
 Tests::Tests()
@@ -79,6 +80,11 @@ void Tests::math()
    QVERIFY(Common::Math::nCombinations(4, 2) == 6);
    QVERIFY(Common::Math::nCombinations(4, 4) == 1);
    QVERIFY(Common::Math::nCombinations(2, 4) == 0);
+}
+
+void Tests::availableDiskSpace()
+{
+   qDebug() << "Available disk space [Mo] : " << Common::Global::availableDiskSpace(".") / 1024 / 1024;
 }
 
 

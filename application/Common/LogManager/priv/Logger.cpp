@@ -5,7 +5,7 @@ using namespace LM;
 #include <QThread>
 
 #include <Constants.h>
-#include <Common.h>
+#include <Global.h>
 
 #include <priv/Entry.h>
 

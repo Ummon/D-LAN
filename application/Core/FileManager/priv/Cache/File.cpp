@@ -269,9 +269,10 @@ bool File::computeHashes()
          crypto.addData(buffer, bytesRead);
          bytesReadTotal += bytesRead;
       }
+
       this->chunks[chunkNum]->setHash(crypto.result());
-      chunkNum += 1;
       crypto.reset();
+      chunkNum += 1;
    }
 
 #ifdef DEBUG

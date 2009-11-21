@@ -61,6 +61,14 @@ namespace FM
    class ChunkDeletedException : public exception
    {
    };
+
+   class NoReadWriteSharedDirectoryException : public exception
+   {
+   };
+
+   class InsufficientStorageSpaceException : public exception
+   {
+   };
 }
 
 #endif

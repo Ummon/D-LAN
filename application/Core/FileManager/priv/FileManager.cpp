@@ -176,8 +176,8 @@ quint64 FileManager::getAmount()
 
 QList< QSharedPointer<IChunk> > FileManager::newFile(const Protos::Common::FileEntry& remoteEntry)
 {
-   // TODO...
-   Directory* dir;
+   Directory* dir = this->cache.getDirectory(QDir::cleanPath(remoteEntry.file().path().data()), remoteEntry.file().size() + MINIMUM_FREE_SPACE);
+
    QString name("plop");
    int size = 42;
    Common::Hashes hashes;

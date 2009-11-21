@@ -3,6 +3,7 @@ using namespace FM;
 
 #include <QDir>
 
+#include <Common/Global.h>
 #include <Exceptions.h>
 #include <priv/Log.h>
 #include <priv/FileManager.h>
@@ -97,12 +98,65 @@ void Cache::saveInFile(Protos::FileCache::Hashes& hashes)
    }
 }
 
-quint64 Cache::getAmount()
+quint64 Cache::getAmount() const
 {
    quint64 amount = 0;
    for(QListIterator<SharedDirectory*> i(this->sharedDirs); i.hasNext();)
       amount += i.next()->getSize();
    return amount;
+}
+
+Directory* Cache::getDirectory(const QString& path, qint64 spaceNeeded)
+{
+   QMutexLocker locker(&this->lock);
+
+   const QStringList folders = path.split('/', QString::SkipEmptyParts);
+
+   QList<SharedDirectory*> sharedDirsReadWrite;
+   foreach (SharedDirectory* dir, this->sharedDirs)
+      if (dir->getRights() == SharedDirectory::READ_WRITE)
+         sharedDirsReadWrite << dir;
+
+   if (sharedDirsReadWrite.isEmpty())
+      throw NoReadWriteSharedDirectoryException();
+
+   // Search for the best fitted shared directory.
+   SharedDirectory* currentSharedDir = 0;
+   int currentNbDirsInCommon = -1;
+
+   foreach (SharedDirectory* dir, this->sharedDirs)
+   {
+      if (Common::Global::availableDiskSpace(dir->getFullPath()) < spaceNeeded)
+         continue;
+
+      Directory* currentDir = dir;
+      int nbDirsInCommon = 0;
+      foreach (QString folder, folders)
+      {
+         if (currentDir = currentDir->getSubDir(folder))
+            nbDirsInCommon += 1;
+         else
+            break;
+      }
+      if (nbDirsInCommon > currentNbDirsInCommon)
+      {
+         currentNbDirsInCommon = nbDirsInCommon;
+         currentSharedDir = dir;
+      }
+   }
+
+   if (!currentSharedDir)
+      throw InsufficientStorageSpaceException();
+
+   // Create the missing directories.
+   Directory* currentDir = currentSharedDir;
+   foreach (QString folder, folders)
+   {
+      Directory* currentDir = currentDir->physicallyCreateSubDirectory(folder);
+      if (!currentDir)
+         return 0;
+   }
+   return currentDir;
 }
 
 SharedDirectory* Cache::getSuperSharedDirectory(const QString& path)
