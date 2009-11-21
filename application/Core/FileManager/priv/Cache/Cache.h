@@ -7,6 +7,7 @@
 #include <QMutex>
 
 #include <Protos/files_cache.pb.h>
+#include <Protos/core_protocol.pb.h>
 
 #include <priv/Cache/SharedDirectory.h>
 
@@ -24,6 +25,9 @@ namespace FM
       Cache(FileManager* fileManager, FileUpdater* fileUpdater);
 
       QStringList getSharedDirs(SharedDirectory::Rights rights);
+
+      Protos::Core::GetEntriesResult getEntries(const Protos::Common::DirEntry& entry);
+      Protos::Core::GetEntriesResult getEntries();
 
       /**
         * @exception DirsNotFoundException

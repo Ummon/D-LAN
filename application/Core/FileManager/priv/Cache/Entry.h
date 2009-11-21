@@ -3,6 +3,8 @@
 
 #include <QString>
 
+#include <Protos/common.pb.h>
+
 namespace FM
 {
    class Directory;
@@ -13,6 +15,11 @@ namespace FM
    public:
       Entry(Cache* cache, const QString& name, qint64 size = 0);
       virtual ~Entry();
+
+   protected:
+      void populateEntry(Protos::Common::Entry* entry) const;
+
+   public:
 
       Cache* getCache();
 

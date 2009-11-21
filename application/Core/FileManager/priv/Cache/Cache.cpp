@@ -10,6 +10,7 @@ using namespace FM;
 #include <priv/Exceptions.h>
 #include <priv/Constants.h>
 #include <priv/Cache/SharedDirectory.h>
+#include <priv/Cache/File.h>
 
 Cache::Cache(FileManager* fileManager, FileUpdater* fileUpdater)
    : fileManager(fileManager), fileUpdater(fileUpdater), lock(QMutex::Recursive)
@@ -27,6 +28,53 @@ QStringList Cache::getSharedDirs(SharedDirectory::Rights rights)
          list << dir->getFullPath();
    }
    return list;
+}
+
+Protos::Core::GetEntriesResult Cache::getEntries(const Protos::Common::DirEntry& entry)
+{
+   Protos::Core::GetEntriesResult result;
+
+   // If we can't find the shared directory..
+   if (!entry.dir().has_shared_dir())
+      return result;
+
+   foreach (SharedDirectory* sharedDir, this->sharedDirs)
+   {
+      if (sharedDir->getId() == entry.dir().shared_dir().id().hash().data())
+      {
+         QStringList folders = QDir::cleanPath(QString(entry.dir().path().data())).split('/', QString::SkipEmptyParts);
+         if (!entry.dir().name().empty()) // When a folder is itself a shared directory its name is empty.
+            folders << entry.dir().name().data();
+
+         Directory* currentDir = sharedDir;
+         foreach (QString folder, folders)
+         {
+            currentDir = currentDir->getSubDir(folder);
+            if (!currentDir)
+               break;
+         }
+
+         foreach (Directory* dir, currentDir->getSubDirs())
+            dir->populateDirEntry(result.add_dir());
+
+         foreach (File* file, currentDir->getFiles())
+            file->populateFileEntry(result.add_file());
+
+         break;
+      }
+   }
+
+   return result;
+}
+
+Protos::Core::GetEntriesResult Cache::getEntries()
+{
+   Protos::Core::GetEntriesResult result;
+
+   foreach (SharedDirectory* sharedDir, this->sharedDirs)
+      sharedDir->populateDirEntry(result.add_dir());
+
+   return result;
 }
 
 void Cache::setSharedDirs(const QStringList& dirs, SharedDirectory::Rights rights)
@@ -124,7 +172,7 @@ Directory* Cache::getDirectory(const QString& path, qint64 spaceNeeded)
    SharedDirectory* currentSharedDir = 0;
    int currentNbDirsInCommon = -1;
 
-   foreach (SharedDirectory* dir, this->sharedDirs)
+   foreach (SharedDirectory* dir, sharedDirsReadWrite)
    {
       if (Common::Global::availableDiskSpace(dir->getFullPath()) < spaceNeeded)
          continue;
@@ -133,7 +181,8 @@ Directory* Cache::getDirectory(const QString& path, qint64 spaceNeeded)
       int nbDirsInCommon = 0;
       foreach (QString folder, folders)
       {
-         if (currentDir = currentDir->getSubDir(folder))
+         currentDir = currentDir->getSubDir(folder);
+         if (currentDir)
             nbDirsInCommon += 1;
          else
             break;

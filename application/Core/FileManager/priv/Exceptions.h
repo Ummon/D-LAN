@@ -34,7 +34,9 @@ namespace FM
      * Throwed when an entry (file or directory) already exist
      * in its directory.
      */
-   class EntryAlreadyExists : public exception {};
+   //class EntryAlreadyExists : public exception {};
+
+   class FileAlreadyExistsException : public exception {};
 }
 
 #endif

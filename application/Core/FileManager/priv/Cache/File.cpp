@@ -5,8 +5,9 @@ using namespace FM;
 #include <QFile>
 #include <QCryptographicHash>
 
-#include <priv/Log.h>
+#include <Exceptions.h>
 #include <priv/Exceptions.h>
+#include <priv/Log.h>
 #include <priv/Constants.h>
 #include <priv/Cache/Cache.h>
 #include <priv/Cache/Directory.h>
@@ -18,9 +19,10 @@ File::File(
    const QString& name,
    qint64 size,
    const QDateTime& dateLastModified,
-   const Common::Hashes& hashes
+   const Common::Hashes& hashes,
+   bool createPhysically
 )
-   : Entry(dir->getCache(), name, size),
+   : Entry(dir->getCache(), name + (createPhysically ? UNFINISHED_SUFFIX_TERM : ""), size),
      dir(dir),
      dateLastModified(dateLastModified),
      numDataWriter(0),
@@ -38,11 +40,17 @@ File::File(
          LOG_ERR(QString("File::File(..) : The number of hashes (%1) doesn't correspond to the calculate number of chunk (%2)").arg(hashes.size()).arg(this->getNbChunks()));
 
    bool complete = true;
-   if (name.size() > UNFINISHED_SUFFIX_TERM.size() && name.endsWith(UNFINISHED_SUFFIX_TERM))
+   if (this->name.size() > UNFINISHED_SUFFIX_TERM.size() && this->name.endsWith(UNFINISHED_SUFFIX_TERM))
    {
       complete = false;
-      this->name = this->name.left(this->name.length() - UNFINISHED_SUFFIX_TERM.length());
+      //this->name = this->name.left(this->name.length() - UNFINISHED_SUFFIX_TERM.length());
    }
+
+   // Test if the file already exists.
+   /*
+   foreach (File* f, this->dir->getFiles())
+      if (f->getName() == this->name)
+         throw FileAlreadyExistsException();*/
 
    for (int i = 0; i < this->getNbChunks(); i++)
    {
@@ -51,7 +59,30 @@ File::File(
       if (i < hashes.size())
          this->chunks.append(QSharedPointer<Chunk>(new Chunk(this->cache, this, i, chunkKnownBytes, hashes[i])));
       else
+         // If there is too few hashes then null hashes are added.
          this->chunks.append(QSharedPointer<Chunk>(new Chunk(this->cache, this, i, chunkKnownBytes)));
+   }
+
+   if (createPhysically)
+   {
+      if (static_cast<SharedDirectory*>(this->getRoot())->getRights() == SharedDirectory::READ_ONLY)
+         LOG_ERR(QString("File::File(..) : Cannot create a file (%1) in a read only shared directory (%2)").arg(this->getPath()).arg(static_cast<SharedDirectory*>(this->getRoot())->getFullPath()));
+      else
+      {
+         QFile file(this->getFullPath());
+         if (file.exists())
+         {
+            LOG_ERR(QString("File::File(..) : Ask to physically create a file which already exists : %1").arg(this->getFullPath()));
+            throw FilePhysicallyAlreadyExistsException();
+         }
+         else
+         {
+            file.open(QIODevice::WriteOnly);
+            file.resize(this->size);
+            file.close();
+            this->dateLastModified = QFileInfo(file).lastModified();
+         }
+      }
    }
 
    this->dir->addFile(this);
@@ -105,8 +136,7 @@ void File::populateHashesFile(Protos::FileCache::Hashes_File& fileToFill) const
 
 void File::populateFileEntry(Protos::Common::FileEntry* entry) const
 {
-   entry->mutable_file()->set_path(this->getPath().toStdString());
-   entry->mutable_file()->set_name(this->getName().toStdString());
+   this->populateEntry(entry->mutable_file());
 }
 
 QString File::getPath() const
@@ -340,9 +370,8 @@ void File::physicallyRemoveUnfinished()
 {
    if (!this->isComplete())
    {
-      QString path = this->getFullPath().append(UNFINISHED_SUFFIX_TERM);
-      if (!QFile::remove(path))
-         LOG_WARN(QString("File::physicallyRemoveUnfinished() : Cannot remove the file '%1'").arg(path));
+      if (!QFile::remove(this->getFullPath()))
+         LOG_WARN(QString("File::physicallyRemoveUnfinished() : Cannot remove the file '%1'").arg(this->getFullPath()));
    }
 }
 

@@ -82,7 +82,7 @@ bool Hash::isNull() const
 Hash Hash::rand()
 {
    Hash hash;
-   qsrand(QTime(0,0,0).secsTo(QTime::currentTime()));
+   qsrand(QTime(0,0,0).msecsTo(QTime::currentTime()));
    for (int i = 0; i < HASH_SIZE; i++)
       hash.data->hash[i] = (char)(qrand() % 256);
 

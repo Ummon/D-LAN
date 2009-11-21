@@ -2,10 +2,15 @@
 #define COMMON_HASHES_H
 
 #include <QList>
+
 #include "Hash.h"
+
+#include <Protos/common.pb.h>
 
 namespace Common
 {
-   class Hashes : public QList<Hash> { };
+   class Hashes : public QList<Hash>
+   {
+   };
 }
 #endif

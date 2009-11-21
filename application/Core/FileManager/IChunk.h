@@ -2,7 +2,6 @@
 #define FILEMANAGER_ICHUNK_H
 
 #include <QSharedPointer>
-#include <QAbstractSocket>
 
 #include <Common/Hash.h>
 
@@ -31,6 +30,8 @@ namespace FM
       //virtual void getContentFromSocket(QAbstractSocket& socket) = 0;
 
       virtual Common::Hash getHash() = 0;
+
+      virtual void setHash(const Common::Hash&) = 0;
 
       virtual int getKnownBytes() = 0;
    };

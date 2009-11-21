@@ -119,7 +119,7 @@ message GetChunkResult {
 // a -> b
 // id : 0x51
 message GetEntries {
-   required Common.DirEntry directory = 1;
+   optional Common.DirEntry directory = 1; // If the directory is omitted the shared directories (roots) are return.
 }
 // b -> a
 // id : 0x52
