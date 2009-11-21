@@ -15,6 +15,7 @@ private slots:
    void removePersistantData();
    void generateAHash();
    void math();
+   void availableDiskSpace();
 };
 
 #endif

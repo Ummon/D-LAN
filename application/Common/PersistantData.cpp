@@ -13,7 +13,7 @@ using namespace std;
 #endif
 
 #include <Constants.h>
-#include <Common.h>
+#include <Global.h>
 
 const QString PersistantData::TEMP_SUFFIX_TERM(".temp");
 

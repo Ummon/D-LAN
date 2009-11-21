@@ -41,10 +41,27 @@ namespace FM
         */
       void saveInFile(Protos::FileCache::Hashes& hashes);
 
-      quint64 getAmount();
+      quint64 getAmount() const;
+
+      /**
+        * Returns a directory wich correspond to the path, it will choose the shared directory which :
+        *  - Has at least the needed space.
+        *  - Has the most directories in common with 'path'.
+        * The missing directories will be automatically created.
+        * @param path Must be a cleaned path (QDir::cleanPath).
+        * @return The directory, 0 if error.
+        * @exception NoReadWriteSharedDirectoryException
+        * @exception InsufficientStorageSpaceException
+        */
+      Directory* getDirectory(const QString& path, qint64 spaceNeeded);
 
       SharedDirectory* getSuperSharedDirectory(const QString& path);
+
       QList<SharedDirectory*> getSubSharedDirectories(const QString& path);
+
+      /**
+        * If path matches a shared directory or one of its sub directories then true is returned.
+        */
       bool isShared(const QString& path) const;
 
       void onEntryAdded(Entry* entry);

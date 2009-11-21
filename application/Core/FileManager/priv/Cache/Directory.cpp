@@ -8,9 +8,12 @@ using namespace FM;
 #include <priv/Cache/File.h>
 #include <priv/Cache/SharedDirectory.h>
 
-Directory::Directory(Directory* parent, const QString& name)
+Directory::Directory(Directory* parent, const QString& name, bool createPhysically)
    : Entry(parent->cache, name), parent(parent)
 {
+   if (createPhysically)
+      QDir(this->parent->getFullPath()).mkdir(this->name);
+
    this->parent->subDirs.append(this);
 }
 
@@ -136,6 +139,14 @@ Directory* Directory::getRoot() const
    return const_cast<Directory*>(this);
 }
 
+Directory* Directory::getSubDir(const QString& name) const
+{
+   foreach (Directory* d, this->subDirs)
+      if (d->getName() == name)
+         return d;
+   return 0;
+}
+
 QList<Directory*> Directory::getSubDirs() const
 {
    return this->subDirs;
@@ -148,13 +159,17 @@ QList<File*> Directory::getFiles() const
 
 Directory* Directory::createSubDirectory(const QString& name)
 {
-   foreach (Directory* d, this->subDirs)
-   {
-      if (d->getName() == name)
-         return d;
-   }
-
+   if (Directory* subDir = this->getSubDir(name))
+      return subDir;
    return new Directory(this, name);
+}
+
+Directory* Directory::physicallyCreateSubDirectory(const QString& name)
+{
+   if (Directory* subDir = this->getSubDir(name))
+      return subDir;
+
+   return new Directory(this, name, true);
 }
 
 File* Directory::createFile(const QFileInfo& fileInfo)

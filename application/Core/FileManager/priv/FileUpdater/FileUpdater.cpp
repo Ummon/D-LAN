@@ -362,6 +362,13 @@ void FileUpdater::treatEvents(const QList<WatcherEvent>& events)
    if (events.isEmpty())
       return;
 
-   // TODO..
-   LOG_DEBUG("File structure event occurs..");
+   foreach (WatcherEvent event, events)
+   {
+      if (event.type == WatcherEvent::TIMEOUT)
+         continue;
+
+      // TODO..
+      LOG_DEBUG("File structure event occurs :");
+      LOG_DEBUG(event.toStr());
+   }
 }

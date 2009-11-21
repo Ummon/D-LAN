@@ -33,18 +33,25 @@ namespace FM
         */
       virtual void setSharedDirsReadWrite(const QStringList& dirs) = 0;
 
+      /**
+        * Returns a chunk, return 0 if no chunk correspond to the given hash.
+        */
       virtual IChunk* getChunk(const Common::Hash& hash) = 0;
 
       // virtual IGetHashesResult* getHashes(const Protos::Common::FileEntry& entry) = 0;
       // virtual Protos::Core::GetEntriesResult* getEntries(const Protos::Common::DirEntry& entry) = 0;
+
       virtual Protos::Common::FindResult find(const QString& words) = 0;
       virtual QBitArray haveChunks(const QList<Common::Hash>& hashes) = 0;
       virtual quint64 getAmount() = 0;
 
       /**
         * Create a new empty file. It will be automatically create in the same path than the remote one.
-        * The file will have the exact file size.
+        * It will take the shared directory which has enought storage space and matches paths the closest.
+        * The file will have the exact final size filled with 0.
         * The filename will end with .unfinished.
+        * @exception NoReadWriteSharedDirectoryException
+        * @exception InsufficientStorageSpaceException
         */
       virtual QList< QSharedPointer<IChunk> > newFile(const Protos::Common::FileEntry& remoteEntry) = 0;
    };

@@ -53,7 +53,8 @@ Chunk* Chunk::restoreFromFileCache(const Protos::FileCache::Hashes_Chunk& chunk)
 void Chunk::populateHashesChunk(Protos::FileCache::Hashes_Chunk& chunk)
 {
    chunk.set_known_bytes(this->knownBytes);
-   chunk.mutable_hash()->set_hash(this->hash.getData(), Common::Hash::HASH_SIZE);
+   if (!this->hash.isNull())
+      chunk.mutable_hash()->set_hash(this->hash.getData(), Common::Hash::HASH_SIZE);
 }
 
 QSharedPointer<IDataReader> Chunk::getDataReader()
@@ -145,6 +146,7 @@ Common::Hash Chunk::getHash()
 
 void Chunk::setHash(const Common::Hash& hash)
 {
+   LOG_DEBUG(QString("Chunk::setHash(..) : %1").arg(hash.toStr()));
    this->hash = hash;
 }
 

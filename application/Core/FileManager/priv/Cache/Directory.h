@@ -17,7 +17,7 @@ namespace FM
    class Directory : public Entry
    {
    public:
-      Directory(Directory* parent, const QString& name);
+      Directory(Directory* parent, const QString& name, bool createPhysically = false);
 
    protected:
       /**
@@ -63,6 +63,10 @@ namespace FM
 
       Directory* getRoot() const;
 
+      /**
+        * @return Returns 0 if no one match.
+        */
+      Directory* getSubDir(const QString& name) const;
       QList<Directory*> getSubDirs() const;
       QList<File*> getFiles() const;
 
@@ -71,6 +75,12 @@ namespace FM
         * returns an already existing.
         */
       Directory* createSubDirectory(const QString& name);
+
+      /**
+        * Creates a new sub-directory if none exists already otherwise
+        * returns an already existing.
+        */
+      Directory* physicallyCreateSubDirectory(const QString& name);
 
       /**
         * Creates a new file if none exists already otherwise
