@@ -32,11 +32,11 @@ WatcherEvent::WatcherEvent(Type type)
 {}
 
 WatcherEvent::WatcherEvent(WatcherEvent::Type type, const QString& path1)
-      : type(type), path1(path1)
+      : type(type), path1(QDir::cleanPath(path1))
 {}
 
 WatcherEvent::WatcherEvent(WatcherEvent::Type type, const QString& path1, const QString& path2)
-      : type(type), path1(path1), path2(path2)
+      : type(type), path1(QDir::cleanPath(path1)), path2(QDir::cleanPath(path2))
 {}
 
 QString WatcherEvent::toStr()
@@ -44,14 +44,15 @@ QString WatcherEvent::toStr()
    QString str;
    switch (this->type)
    {
-   case RENAME_DIR : str += "RENAME_DIR"; break;
-   case RENAME_FILE : str += "RENAME_FILE"; break;
-   case NEW_FILE : str += "NEW_FILE"; break;
-   case DELETE_FILE : str += "DELETE_FILE"; break;
-   case CONTENT_FILE_CHANGED : str += "CONTENT_FILE_CHANGED"; break;
+   /*case RENAME_DIR : str += "RENAME_DIR"; break;
+   case RENAME_FILE : str += "RENAME_FILE"; break;*/
+   case RENAME : str += "RENAME"; break;
+   case MOVED : str += "MOVED"; break;
+   case NEW : str += "NEW"; break;
+   case DELETED : str += "DELETED"; break;
+   case CONTENT_CHANGED : str += "CONTENT_CHANGED"; break;
    case TIMEOUT : str += "TIMEOUT"; break;
-   case UNKNOWN : str += "UNKNOWN"; break;
-   default : str += "UNKNOWN"; break;
+   case UNKNOWN : default : str += "UNKNOWN"; break;
    }
    str += " :\n";
    if (!this->path1.isEmpty())
