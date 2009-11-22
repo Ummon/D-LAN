@@ -366,6 +366,7 @@ void FileUpdater::treatEvents(const QList<WatcherEvent>& events)
 
    foreach (WatcherEvent event, events)
    {
+      // Don't care about this event type.
       if (event.type == WatcherEvent::TIMEOUT)
          continue;
 

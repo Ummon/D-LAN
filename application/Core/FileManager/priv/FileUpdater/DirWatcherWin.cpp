@@ -95,11 +95,14 @@ const QList<WatcherEvent> DirWatcherWin::waitEvent(int timeout, QList<WaitCondit
 
       qDebug() << "File changed : " << n;
 
+      QList<WatcherEvent> events;
+
       FILE_NOTIFY_INFORMATION* notifyInformation = (FILE_NOTIFY_INFORMATION*)this->notifyBuffer;
+
+      QString previousPath; // Used for FILE_ACTION_RENAMED_OLD_NAME
+
       forever
       {
-         qDebug() << "Action = " << notifyInformation->Action;
-
          // We need to add a null character termination because 'QString::fromStdWString' need one.
          int nbChar = notifyInformation->FileNameLength / sizeof(TCHAR);
          TCHAR filenameTCHAR[nbChar + 1];
@@ -107,18 +110,44 @@ const QList<WatcherEvent> DirWatcherWin::waitEvent(int timeout, QList<WaitCondit
          filenameTCHAR[nbChar] = 0;
          QString filename = QString::fromStdWString(filenameTCHAR);
 
+         /*
+         qDebug() << "---------";
+         qDebug() << "Action = " << notifyInformation->Action;
          qDebug() << "filename = " << filename;
          qDebug() << "offset = " << notifyInformation->NextEntryOffset;
+         qDebug() << "---------";
+         */
+
+         QString path = this->dirs[n]->fullPath;
+         path.append('/').append(filename);
+
+         switch (notifyInformation->Action)
+         {
+         case FILE_ACTION_ADDED:
+            events << WatcherEvent(WatcherEvent::NEW, path);
+            break;
+         case FILE_ACTION_REMOVED:
+            events << WatcherEvent(WatcherEvent::DELETED, path);
+            break;
+         case FILE_ACTION_MODIFIED:
+            events << WatcherEvent(WatcherEvent::CONTENT_CHANGED, path);
+            break;
+         case FILE_ACTION_RENAMED_OLD_NAME:
+            previousPath = path;
+            break;
+         case FILE_ACTION_RENAMED_NEW_NAME:
+            events << WatcherEvent(WatcherEvent::RENAME, previousPath, path);
+            break;
+         }
 
          if (!notifyInformation->NextEntryOffset)
             break;
 
          notifyInformation = (FILE_NOTIFY_INFORMATION*)((LPBYTE)notifyInformation + notifyInformation->NextEntryOffset);
       }
+
       this->watch(n);
 
-      QList<WatcherEvent> events;
-      events.append(WatcherEvent(WatcherEvent::NEW_FILE, "TAISTE"));
       return events;
    }
    else if (!ws.isEmpty() && waitStatus >= WAIT_OBJECT_0 + (DWORD)n && waitStatus <= WAIT_OBJECT_0 + (DWORD)m - 1)
