@@ -14,7 +14,6 @@ Logger::Logger(const QString& name)
 {
    QMutexLocker lock(&Logger::mutex);
 
-   // TODO : catch exception whether folder or file cannot be created.
    if (Logger::nbLogger == 0)
    {
       QTextStream out(stdout);
