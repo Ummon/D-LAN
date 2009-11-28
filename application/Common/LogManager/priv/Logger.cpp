@@ -87,6 +87,21 @@ void Logger::log(const QString& message, Severity severity)
 
 void Logger::log(const ILoggable& object, Severity severity)
 {
+    QMutexLocker lock(&Logger::mutex);
+    QString threadName = QThread::currentThread()->objectName();
+    const QString& formatedMessage = QString("[%1] (%2) %3: %4").arg(
+            Entry::SeverityToStr(),
+            threadName.isEmpty() ? QString::number((quint32)QThread::currentThreadId()) : threadName,
+            this->name,
+            object.toStringLog()
+    );
+
+    if (Logger::out)
+        (*Logger::out) << formatedMessage << endl;
+
+#ifdef DEBG
+    qDebug().nospace() << formatedMessage;
+#endif
 }
 
 /**
