@@ -5,19 +5,28 @@ QT -= gui
 QT += network
 TARGET = Core
 CONFIG += link_prl
+
+
+CONFIG(debug, debug|release) {
+   FOLDER = debug
+   DEFINES += DEBUG
+} else {
+   FOLDER = release
+}
+
 INCLUDEPATH += . \
     .. \
     ${PROTOBUF}/src
 
-LIBS += -LFileManager/output/debug \
+LIBS += -LFileManager/output/$$FOLDER \
     -lFileManager
-LIBS += -LNetworkListener/output/debug \
+LIBS += -LNetworkListener/output/$$FOLDER \
     -lNetworkListener
-LIBS += -LPeerManager/output/debug \
+LIBS += -LPeerManager/output/$$FOLDER \
     -lPeerManager
-LIBS += -L../Common/LogManager/output/debug \
+LIBS += -L../Common/LogManager/output/$$FOLDER \
     -lLogManager
-LIBS += -L../Common/output/debug \
+LIBS += -L../Common/output/$$FOLDER \
     -lCommon
 LIBS += -L${PROTOBUF}/src/.libs \
     -lprotobuf
@@ -29,9 +38,9 @@ win32 {
     LIBS += "$$(QTDIR)\..\mingw\lib\libwsock32.a"
 }
 
-DESTDIR = "output/debug"
-MOC_DIR = ".tmp/debug"
-OBJECTS_DIR = ".tmp/debug"
+DESTDIR = output/$$FOLDER
+MOC_DIR = .tmp/$$FOLDER
+OBJECTS_DIR = .tmp/$$FOLDER
 CONFIG += console
 CONFIG -= app_bundle
 TEMPLATE = app

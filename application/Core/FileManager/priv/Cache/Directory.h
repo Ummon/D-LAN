@@ -89,6 +89,9 @@ namespace FM
         */
       File* createFile(const QFileInfo& fileInfo);
 
+
+      File* getFile(const QString& name) const;
+
       /**
         * Only called by the class File.
         */

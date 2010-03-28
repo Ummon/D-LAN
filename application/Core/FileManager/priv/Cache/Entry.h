@@ -37,6 +37,12 @@ namespace FM
       virtual Directory* getRoot() const = 0;
 
       virtual const QString& getName() const;
+
+      /**
+        * When a file or a directory is renamed.
+        */
+      virtual void changeName(const QString& newName);
+
       virtual qint64 getSize() const;
 
    protected:

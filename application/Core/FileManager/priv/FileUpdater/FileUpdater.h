@@ -14,7 +14,6 @@
 namespace FM
 {
    class FileManager;
-   class DirWatcher;
    class SharedDirectory;
    class Directory;
    class File;
@@ -31,19 +30,20 @@ namespace FM
       void stop();
 
       /**
-        * @exception DirNotFoundException
-        */
-      void addRoot(SharedDirectory* dir);
-
-      void rmRoot(SharedDirectory* dir, Directory* dir2 = 0);
-
-      /**
         * Set the file cache to retrieve the hashes frome it.
         * Muste be called before starting the fileUpdater.
         * The shared dirs in fileCache must be previously added by 'addRoot(..)'.
         * This object must unallocated the hashes.
         */
       void setFileCache(const Protos::FileCache::Hashes* fileCache);
+
+   public slots:
+      /**
+        * @exception DirNotFoundException
+        */
+      void addRoot(SharedDirectory* dir);
+
+      void rmRoot(SharedDirectory* dir, Directory* dir2 = 0);
 
    signals:
       void persistCache();
@@ -74,13 +74,13 @@ namespace FM
         * given 'SharedDirectory'.
         * Ths directories of files may already exist in the cache.
         */
-      void scan(SharedDirectory* dir);
+      void scan(Directory* dir);
 
       /**
         * If you omit 'dir' then all scanning will be removed
         * from the queue.
         */
-      void stopScanning(SharedDirectory* dir = 0);
+      void stopScanning(Directory* dir = 0);
 
       /**
         * Try to restore the chunk hashes from 'fileCache'.
@@ -100,8 +100,8 @@ namespace FM
       WaitCondition* dirEvent; ///< Using to wait when a sharing directory is added or deleted.
       QMutex mutex;
 
-      QList<SharedDirectory*> dirsToScan; ///< When a new shared directory is added, it is put in this list until it is scanned.
-      SharedDirectory* currentScanningDir;
+      QList<Directory*> dirsToScan; ///< When a new shared directory is added, it is put in this list until it is scanned.
+      Directory* currentScanningDir;
       QWaitCondition scanningStopped;
       QMutex scanningMutex;
 

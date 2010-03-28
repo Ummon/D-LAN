@@ -6,6 +6,14 @@ QT += network
 TARGET = FileManager
 TEMPLATE = lib
 
+CONFIG(debug, debug|release) {
+   FOLDER = debug
+   DEFINES += DEBUG
+} else {
+   FOLDER = release
+}
+
+
 CONFIG += staticlib \
     link_prl \
     create_prl
@@ -14,29 +22,17 @@ LIBS += -L${PROTOBUF}/src/.libs \
 INCLUDEPATH += . \
     ../.. \
     ${PROTOBUF}/src
-debug {
-    DEFINES += DEBUG
-    DESTDIR = "output/debug"
-    MOC_DIR = ".tmp/debug"
-    OBJECTS_DIR = ".tmp/debug"
-    LIBS += -L../../Common/LogManager/output/debug \
-        -lLogManager
-   POST_TARGETDEPS += ../../Common/LogManager/output/debug/libLogManager.a
 
-    LIBS += -L../../Common/output/debug \
-        -lCommon
-   POST_TARGETDEPS += ../../Common/output/debug/libCommon.a
-}
-else {
-    DEFINES += RELEASE
-    DESTDIR = "output/release"
-    MOC_DIR = ".tmp/release"
-    OBJECTS_DIR = ".tmp/release"
-    LIBS += -L../../Common/LogManager/output/release \
-        -lLogManager
-    LIBS += -L../../Common/output/release \
-        -lCommon
-}
+ DESTDIR = output/$$FOLDER
+ MOC_DIR = .tmp/$$FOLDER
+ OBJECTS_DIR = .tmp/$$FOLDER
+ LIBS += -L../../Common/LogManager/output/$$FOLDER \
+     -lLogManager
+ POST_TARGETDEPS += ../../Common/LogManager/output/$$FOLDER/libLogManager.a
+ LIBS += -L../../Common/output/$$FOLDER \
+     -lCommon
+ POST_TARGETDEPS += ../../Common/output/$$FOLDER/libCommon.a
+
 DEFINES += FILEMANAGER_LIBRARY
 SOURCES += priv/Builder.cpp \
     priv/FileManager.cpp \

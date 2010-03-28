@@ -23,6 +23,8 @@ private slots:
    void addSuperSharedDirectoriesWithDifferentRights();
    void addSuperSharedDirectoriesWithSameRights();
    void rmSharedDirectory();
+   void createAFile();
+   void browseAdirectory();
 
 private:
    void search();
@@ -33,7 +35,8 @@ private:
    void printSearch(const QString& terms, const Protos::Common::FindResult& result);
    void printAmount();
 
-   QStringList sharedDirs;
+   QStringList sharedDirsReadOnly;
+   QStringList sharedDirsReadWrite;
    QSharedPointer<IFileManager> fileManager;
 };
 

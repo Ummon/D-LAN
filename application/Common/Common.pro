@@ -3,6 +3,14 @@
 # -------------------------------------------------
 QT -= gui
 TARGET = Common
+
+CONFIG(debug, debug|release) {
+   FOLDER = debug
+   DEFINES += DEBUG
+} else {
+   FOLDER = release
+}
+
 LIBS += -L${PROTOBUF}/src/.libs \
     -lprotobuf
 INCLUDEPATH += . \
@@ -11,10 +19,9 @@ INCLUDEPATH += . \
 TEMPLATE = lib
 CONFIG += staticlib \
     create_prl
-DEFINES += DEBUG
-DESTDIR = "output/debug"
-MOC_DIR = ".tmp/debug"
-OBJECTS_DIR = ".tmp/debug"
+DESTDIR = output/$$FOLDER
+MOC_DIR = .tmp/$$FOLDER
+OBJECTS_DIR = .tmp/$$FOLDER
 INCLUDEPATH += .
 DEFINES += COMMON_LIBRARY
 SOURCES += Hash.cpp \

@@ -8,18 +8,17 @@ INCLUDEPATH += . \
 TEMPLATE = lib
 CONFIG += staticlib create_prl
 
-debug {
-    DEFINES += DEBUG
-    DESTDIR = "output/debug"
-    MOC_DIR = ".tmp/debug"
-    OBJECTS_DIR = ".tmp/debug"
+CONFIG(debug, debug|release) {
+   FOLDER = debug
+   DEFINES += DEBUG
+} else {
+   FOLDER = release
 }
-else {
-    DEFINES += RELEASE
-    DESTDIR = "output/release"
-    MOC_DIR = ".tmp/relase"
-    OBJECTS_DIR = ".tmp/release"
-}
+
+DESTDIR = output/$$FOLDER
+MOC_DIR = .tmp/$$FOLDER
+OBJECTS_DIR = .tmp/$$FOLDER
+
 DEFINES += LOGMANAGER_LIBRARY
 
 SOURCES += priv/Logger.cpp \
