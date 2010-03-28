@@ -8,6 +8,7 @@ using namespace FM;
 #include <priv/Log.h>
 #include <priv/Exceptions.h>
 #include <priv/Constants.h>
+#include <priv/FileManager.h>
 #include <priv/Cache/SharedDirectory.h>
 #include <priv/Cache/Directory.h>
 #include <priv/Cache/File.h>
@@ -117,11 +118,10 @@ void FileUpdater::run()
    if (this->fileCache)
    {
       // TODO : the mutex should be used ?
-      for (QListIterator<SharedDirectory*> i(this->dirsToScan); i.hasNext();)
+      foreach (Directory* dir, this->dirsToScan)
       {
-         SharedDirectory* dir = i.next();
          this->scan(dir);
-         this->restoreFromFileCache(dir);
+         this->restoreFromFileCache(static_cast<SharedDirectory*>(dir));
       }
       this->dirsToScan.clear();
 
@@ -159,7 +159,7 @@ void FileUpdater::run()
          else
             this->mutex.unlock();
 
-         SharedDirectory* addedDir = 0;
+         Directory* addedDir = 0;
          this->mutex.lock();
          if (!this->dirsToScan.isEmpty())
             addedDir = this->dirsToScan.takeLast();
@@ -252,16 +252,16 @@ void FileUpdater::stopHashing()
    this->toStopHashing = true;
 }
 
-void FileUpdater::scan(SharedDirectory* sharedDir)
+void FileUpdater::scan(Directory* dir)
 {
-   LOG_DEBUG("Start scanning a shared directory : " + sharedDir->getFullPath());
+   LOG_DEBUG("Start scanning a shared directory : " + dir->getFullPath());
 
    this->scanningMutex.lock();
-   this->currentScanningDir = sharedDir;
+   this->currentScanningDir = dir;
    this->scanningMutex.unlock();
 
    QLinkedList<Directory*> dirsToVisit;
-   dirsToVisit << sharedDir;
+   dirsToVisit << dir;
 
    while (!dirsToVisit.isEmpty())
    {
@@ -280,7 +280,7 @@ void FileUpdater::scan(SharedDirectory* sharedDir)
 
             if (!this->currentScanningDir || this->toStop)
             {
-               LOG_DEBUG("Scanning aborted : " + sharedDir->getFullPath());
+               LOG_DEBUG("Scanning aborted : " + dir->getFullPath());
                this->currentScanningDir = 0;
                this->scanningStopped.wakeOne();
                return;
@@ -318,10 +318,10 @@ void FileUpdater::scan(SharedDirectory* sharedDir)
    this->scanningStopped.wakeOne();
    this->scanningMutex.unlock();
 
-   LOG_DEBUG("Scanning terminated : " + sharedDir->getFullPath());
+   LOG_DEBUG("Scanning terminated : " + dir->getFullPath());
 }
 
-void FileUpdater::stopScanning(SharedDirectory* dir)
+void FileUpdater::stopScanning(Directory* dir)
 {
    QMutexLocker scanningLocker(&this->scanningMutex);
    if (!dir && this->currentScanningDir || dir && this->currentScanningDir == dir)
@@ -366,12 +366,40 @@ void FileUpdater::treatEvents(const QList<WatcherEvent>& events)
 
    foreach (WatcherEvent event, events)
    {
-      // Don't care about this event type.
-      if (event.type == WatcherEvent::TIMEOUT)
+      if (event.type == WatcherEvent::TIMEOUT || // Don't care about this event type.
+         event.path1.endsWith(UNFINISHED_SUFFIX_TERM) //
+      )
          continue;
 
       // TODO..
       LOG_DEBUG("File structure event occurs :");
       LOG_DEBUG(event.toStr());
+
+      switch (event.type)
+      {
+      case WatcherEvent::RENAME:
+         {
+            Entry* entry = this->fileManager->getEntry(event.path1);
+            if (entry)
+               entry->changeName(event.path2.split('/', QString::SkipEmptyParts).last());
+            break;
+         }
+
+      case WatcherEvent::NEW:
+         {
+            Directory* dir = this->fileManager->getFittestDirectory(event.path1);
+            if (dir)
+               this->dirsToScan << dir;
+            break;
+         }
+
+      case WatcherEvent::CONTENT_CHANGED:
+         {
+            QFileInfo i(event.path1);
+            //LOG_DEBUG("i.isWritable()
+         }
+      }
+
+      //this->fileManager->getEntry(event.path1)
    }
 }

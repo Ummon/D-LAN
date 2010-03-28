@@ -35,6 +35,11 @@ const QString& Entry::getName() const
    return this->name;
 }
 
+void Entry::changeName(const QString& newName)
+{
+   this->name = newName;
+}
+
 qint64 Entry::getSize() const
 {
    return this->size;

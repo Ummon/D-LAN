@@ -73,7 +73,7 @@ QList<File*> Directory::restoreFromFileCache(const Protos::FileCache::Hashes_Dir
 
 void Directory::populateHashesDir(Protos::FileCache::Hashes_Dir& dirToFill) const
 {
-   dirToFill.set_name(this->getName().toStdString());
+   //dirToFill.set_name(this->getName().toStdString());
 
    for (QListIterator<File*> i(this->files); i.hasNext();)
    {
@@ -86,6 +86,7 @@ void Directory::populateHashesDir(Protos::FileCache::Hashes_Dir& dirToFill) cons
       }
    }
 
+   return;
    for (QListIterator<Directory*> dir(this->subDirs); dir.hasNext();)
    {
       dir.next()->populateHashesDir(*dirToFill.add_dir());
@@ -190,6 +191,14 @@ File* Directory::createFile(const QFileInfo& fileInfo)
    }
 
    return new File(this, fileInfo.fileName(), fileInfo.size(), fileInfo.lastModified());
+}
+
+File* Directory::getFile(const QString& name) const
+{
+   foreach (File* f, this->files)
+      if (f->getName() == name)
+         return f;
+   return 0;
 }
 
 void Directory::addFile(File* file)

@@ -61,15 +61,11 @@ namespace FM
       quint64 getAmount();
       virtual QList< QSharedPointer<IChunk> > newFile(const Protos::Common::FileEntry& remoteEntry);
 
+      Directory* getFittestDirectory(const QString& path);
       /**
-        * Used to retrieve a file by the fileUpdater when a filesystem event occurs.
+        * Used to retrieve a file or a directory by the fileUpdater when a filesystem event occurs.
         */
-      File* getFile(const QString& path, const QString& name);
-
-      /**
-        * Used to retrieve a directory by the fileUpdater when a filesystem event occurs.
-        */
-      Directory* getDir(const QString& path, const QString& name);
+      Entry* getEntry(const QString& path);
 
    private slots:
       void entryAdded(Entry* entry);

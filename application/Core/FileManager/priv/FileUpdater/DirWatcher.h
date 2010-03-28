@@ -84,10 +84,7 @@ namespace FM
    struct WatcherEvent
    {
       enum Type {
-         /*RENAME_DIR,
-         RENAME_FILE,*/
          RENAME,
-         MOVED,
          NEW,
          DELETED,
          CONTENT_CHANGED,

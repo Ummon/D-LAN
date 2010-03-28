@@ -124,13 +124,15 @@ bool File::restoreFromFileCache(const Protos::FileCache::Hashes_File& file)
 
 void File::populateHashesFile(Protos::FileCache::Hashes_File& fileToFill) const
 {
-   fileToFill.set_filename(this->name.toStdString());
+   return;
+   //fileToFill.set_filename(this->name.toStdString());
    fileToFill.set_size(this->size);
    fileToFill.set_date_last_modified(this->getDateLastModified().toTime_t());
    for (QListIterator< QSharedPointer<Chunk> > i(this->chunks); i.hasNext();)
    {
       Protos::FileCache::Hashes_Chunk* chunk = fileToFill.add_chunk();
-      i.next()->populateHashesChunk(*chunk);
+      i.next();
+      //i.next()->populateHashesChunk(*chunk);
    }
 }
 

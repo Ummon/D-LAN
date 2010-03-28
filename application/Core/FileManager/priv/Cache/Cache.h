@@ -9,6 +9,7 @@
 #include <Protos/files_cache.pb.h>
 #include <Protos/core_protocol.pb.h>
 
+#include <priv/FileUpdater/DirWatcher.h>
 #include <priv/Cache/SharedDirectory.h>
 
 namespace FM
@@ -22,7 +23,9 @@ namespace FM
    {
       Q_OBJECT
    public:
-      Cache(FileManager* fileManager, FileUpdater* fileUpdater);
+      Cache(FileManager* fileManager);
+
+   public:
 
       QStringList getSharedDirs(SharedDirectory::Rights rights);
 
@@ -51,13 +54,29 @@ namespace FM
         * Returns a directory wich correspond to the path, it will choose the shared directory which :
         *  - Has at least the needed space.
         *  - Has the most directories in common with 'path'.
+        *  - Can be written.
         * The missing directories will be automatically created.
-        * @param path Must be a cleaned path (QDir::cleanPath).
+        * @param path A relative path to a shared directory. Must be a cleaned path (QDir::cleanPath).
         * @return The directory, 0 if error.
         * @exception NoReadWriteSharedDirectoryException
         * @exception InsufficientStorageSpaceException
         */
       Directory* getDirectory(const QString& path, qint64 spaceNeeded);
+
+      /**
+        * Returns the directory that best matches to the given path.
+        * For example, path = /home/peter/linux/distrib/debian/etch
+        *  This directory exists in cache : /home/peter/linux/distrib
+        *  Thus, this directory 'distrib' will be returned.
+        * @param path An absolute path.
+        * @return If no directory can be match 0 is resturned.
+        */
+      Directory* getFittestDirectory(const QString& path);
+
+      /**
+        * @return Returns 0 if no entry found.
+        */
+      Entry* getEntry(const QString& path);
 
       SharedDirectory* getSuperSharedDirectory(const QString& path);
 
@@ -90,6 +109,9 @@ namespace FM
       void chunkHashKnown(Chunk* chunk);
       void chunkRemoved(Chunk* chunk);
 
+      void newSharedDirectory(SharedDirectory* dir);
+      void sharedDirectoryRemoved(SharedDirectory* dir, Directory* dir2);
+
    private:
 
       /**
@@ -103,7 +125,6 @@ namespace FM
       QList<SharedDirectory*> sharedDirs;
 
       FileManager* fileManager;
-      FileUpdater* fileUpdater;
 
       QMutex lock; ///< To protect all the data into the cache, files and directories.
    };

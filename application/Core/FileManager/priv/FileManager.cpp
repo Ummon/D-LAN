@@ -24,7 +24,7 @@ using namespace FM;
 #include <priv/Cache/Chunk.h>
 
 FileManager::FileManager()
-   : fileUpdater(this), cache(this, &this->fileUpdater)
+   : fileUpdater(this), cache(this)
 {
    LOG_USER("Loading ..");
 
@@ -32,6 +32,10 @@ FileManager::FileManager()
    connect(&this->cache, SIGNAL(entryRemoved(Entry*)), this, SLOT(entryRemoved(Entry*)), Qt::DirectConnection);
    connect(&this->cache, SIGNAL(chunkHashKnown(Chunk*)), this, SLOT(chunkHashKnown(Chunk*)), Qt::DirectConnection);
    connect(&this->cache, SIGNAL(chunkRemoved(Chunk*)), this, SLOT(chunkRemoved(Chunk*)), Qt::DirectConnection);
+
+   connect(&this->cache, SIGNAL(newSharedDirectory(SharedDirectory*)), &this->fileUpdater, SLOT(addRoot(SharedDirectory*)), Qt::DirectConnection);
+   connect(&this->cache, SIGNAL(sharedDirectoryRemoved(SharedDirectory*,SharedDirectory*)), &this->fileUpdater, SLOT(rmRoot(SharedDirectory*,Directory*)), Qt::DirectConnection);
+
    connect(&this->fileUpdater, SIGNAL(persistCache()), this, SLOT(persistCacheToFile()), Qt::DirectConnection);
 
    this->loadCacheFromFile();
@@ -208,6 +212,16 @@ QList< QSharedPointer<IChunk> > FileManager::newFile(const Protos::Common::FileE
    return chunks;
 }
 
+Directory* FileManager::getFittestDirectory(const QString& path)
+{
+   return this->cache.getFittestDirectory(path);
+}
+
+Entry* FileManager::getEntry(const QString& path)
+{
+   return this->cache.getEntry(path);
+}
+
 void FileManager::entryAdded(Entry* entry)
 {
    if (entry->getName().isEmpty())
@@ -257,10 +271,11 @@ QStringList FileManager::splitInWords(const QString& words)
 
 void FileManager::loadCacheFromFile()
 {
+   // This hashes will be unallocated by the fileUpdater.
+   Protos::FileCache::Hashes* savedCache = new Protos::FileCache::Hashes();
+
    try
    {
-      // This hashes will be unallocated by the fileUpdater.
-      Protos::FileCache::Hashes* savedCache = new Protos::FileCache::Hashes();
       Common::PersistantData::getValue(FILE_CACHE, *savedCache);
 
       // Scan the shared directories and try to match the files against the saved cache.
@@ -273,8 +288,6 @@ void FileManager::loadCacheFromFile()
          foreach (QString path, e.paths)
             LOG_WARN(QString("During the file cache loading, this directory hasn't been found : %1").arg(path));
       }
-
-      this->fileUpdater.setFileCache(savedCache);
    }
    catch (Common::UnknownValueException& e)
    {
@@ -284,13 +297,17 @@ void FileManager::loadCacheFromFile()
    {
       LOG_WARN(QString("The persisted file cache cannot be retrived (Unkown exception) : %1").arg(FILE_CACHE));
    }
+
+   this->fileUpdater.setFileCache(savedCache);
 }
 
 void FileManager::persistCacheToFile()
 {
    LOG_DEBUG("Persists cache..");
+   LOG_DEBUG("#######################################");
 
    Protos::FileCache::Hashes hashes;
    this->cache.saveInFile(hashes);
-   Common::PersistantData::setValue(FILE_CACHE, hashes);
+   //LOG_DEBUG(QString("hashes.SpaceUsed() = %1").arg(hashes.SpaceUsed()));
+   //Common::PersistantData::setValue(FILE_CACHE, hashes);
 }

@@ -47,7 +47,6 @@ QString WatcherEvent::toStr()
    /*case RENAME_DIR : str += "RENAME_DIR"; break;
    case RENAME_FILE : str += "RENAME_FILE"; break;*/
    case RENAME : str += "RENAME"; break;
-   case MOVED : str += "MOVED"; break;
    case NEW : str += "NEW"; break;
    case DELETED : str += "DELETED"; break;
    case CONTENT_CHANGED : str += "CONTENT_CHANGED"; break;
