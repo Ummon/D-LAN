@@ -9,10 +9,6 @@
 
 static const int notifyBufferSize = 2048;
 
-/**
-  * Implementation of 'DirWatcher' for the windows platform.
-  * Inspired by : http://stackoverflow.com/questions/863135/why-does-readdirectorychangesw-omit-events.
-  */
 class DirWatcherWin : public DirWatcher
 {
 public:
@@ -33,7 +29,7 @@ private:
       HANDLE file;
       HANDLE event;
    };
-   QList<Dir> dirs; // The watched dirs.
+   QList<Dir> dirs; ///< The watched dirs.
    
    // Is this data can be shares among some 'ReadDirectoryChangesW'?
    char notifyBuffer[notifyBufferSize];
@@ -41,4 +37,4 @@ private:
 };
 
 
-#endif // DIRWATCHERWIN_H
+#endif

@@ -4,6 +4,12 @@
 
 #include "DirWatcherWin.h"
 
+/**
+  * @class DirWatcherWin
+  * Implementation of 'DirWatcher' for the windows platform.
+  * Inspired by : http://stackoverflow.com/questions/863135/why-does-readdirectorychangesw-omit-events.
+  */
+
 DirWatcherWin::DirWatcherWin()
 {
 }

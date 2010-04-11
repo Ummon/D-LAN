@@ -14,32 +14,13 @@ class DirWatcherException : public std::exception
 
 struct WatcherEvent;
 
-/**
-  * An abstract directory watcher.
-  * Can watch several directories recursively.
-  *
-  * There must be an implementation for the current platform,
-  * if any exist, an error will occur during compilation.
-  * See the factory 'getNewWatcher'.
-  *
-  * Event types :
-  *  - Rename dir
-  *  - Rename file
-  *  - New file
-  *  - Delete file
-  *  - The content of a file changed
-  */
 class DirWatcher
 {
 protected:
    DirWatcher();
 public:
    virtual ~DirWatcher();
-   
-   /**
-     * Build a new watcher.
-     * The implementation depends of the platform.
-     */
+
    static DirWatcher* getNewWatcher();
 
    /**
@@ -68,9 +49,6 @@ public:
    virtual const QList<WatcherEvent> waitEvent(int timeout) = 0;
 };
 
-/**
-  * When a event occurs this struct is returned.
-  */
 struct WatcherEvent
 {
    enum Type {
@@ -98,4 +76,4 @@ struct WatcherEvent
    const QString path2; // Only used with type 'RENAME_*'.
 };
 
-#endif // DIRWATCHER_H
+#endif

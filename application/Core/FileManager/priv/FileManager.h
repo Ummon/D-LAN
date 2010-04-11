@@ -35,19 +35,7 @@ namespace FM
       QStringList getSharedDirsReadOnly();
 
       QStringList getSharedDirsReadWrite();
-
-      /**
-        * @exception SuperDirectoryExistsException Thrown when a super shared directory already exists.
-        * @exception SubDirectoriesWithDifferentRightsExistsException Thrown when one or more sub directory already exists with different rights.
-        * @exception SuperDirectoryExistsException Thrown when a super directory already exists regardless of the rights.
-        */
       void setSharedDirsReadOnly(const QStringList& dirs);
-
-      /**
-        * @exception SuperDirectoryExistsException Thrown when a super shared directory already exists.
-        * @exception SubDirectoriesWithDifferentRightsExistsException Thrown when one or more sub directory already exists with different rights.
-        * @exception SuperDirectoryExistsException Thrown when a super directory already exists regardless of the rights.
-        */
       void setSharedDirsReadWrite(const QStringList& dirs);
 
       IChunk* getChunk(const Common::Hash& hash);
@@ -62,9 +50,6 @@ namespace FM
       virtual QList< QSharedPointer<IChunk> > newFile(const Protos::Common::FileEntry& remoteEntry);
 
       Directory* getFittestDirectory(const QString& path);
-      /**
-        * Used to retrieve a file or a directory by the fileUpdater when a filesystem event occurs.
-        */
       Entry* getEntry(const QString& path);
 
    private slots:
@@ -93,7 +78,7 @@ namespace FM
       /**
         * Save the cache from a file.
         * Called by the fileUpdater when it needs to persist the cache.
-        * /!\ Called in the fileUpdater thread.
+        * @warning Called in the fileUpdater thread.
         */
       void persistCacheToFile();
 

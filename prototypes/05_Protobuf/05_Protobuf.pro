@@ -3,10 +3,12 @@
 # -------------------------------------------------
 QT -= gui
 TARGET = 05_Protobuf
-INCLUDEPATH += "/usr/include/"
 
-# LIBS += /usr/lib/libprotobuf.so # Windows style
-LIBS += -L/usr/lib \
+INCLUDEPATH += . \
+    ../.. \
+    ${PROTOBUF}/src
+
+LIBS += -L${PROTOBUF}/src/.libs \
     -lprotobuf
 CONFIG += console
 CONFIG -= app_bundle

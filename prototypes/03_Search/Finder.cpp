@@ -5,12 +5,27 @@
 #include <QtCore/QLinkedList>
 #include <QtCore/QDebug>
 
+
+/**
+  * @class Finder
+  * Class to find a directory or a file recursively
+  * from a given path using a Glob pattern.
+  */
+
+/**
+  * Creates a new Finder.
+  * 'path' is the path from which all future search will begin.
+  */
 Finder::Finder(const QDir& path)
    : path(path)
 {
    this->regexp.setPatternSyntax(QRegExp::Wildcard);
 }
 
+
+/**
+  * Search a file or a dire from a globbing pattern.
+  */
 void Finder::search(const QString& pattern)
 {
    this->regexp.setPattern(pattern);
@@ -37,6 +52,9 @@ void Finder::search(const QString& pattern)
    }
 }
 
+/**
+  * Returns the results from the previous search.
+  */
 const QStringList& Finder::getResults()
 {
    return this->result;

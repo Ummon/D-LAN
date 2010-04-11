@@ -55,7 +55,9 @@ namespace FM
         *  - Has at least the needed space.
         *  - Has the most directories in common with 'path'.
         *  - Can be written.
+        *
         * The missing directories will be automatically created.
+        *
         * @param path A relative path to a shared directory. Must be a cleaned path (QDir::cleanPath).
         * @return The directory, 0 if error.
         * @exception NoReadWriteSharedDirectoryException

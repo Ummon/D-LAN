@@ -5,6 +5,18 @@
 
 #include <Chunk.h>
 
+
+/**
+  * @class File
+  * A file can be filled by a downloader or read by an uploader.
+  * It has a fixed size.
+  * 'read' and 'write' are thread safe and a 'QReadWriteLock'.
+  */
+
+/**
+  * Create a new empty file or open an existing one.
+  * If the file already exists the given size must match.
+  */
 File::File(const QString& name, quint64 size) throw(FileSizeDoesntMatchException)
       : size(size)
 {
@@ -35,6 +47,11 @@ File::~File()
       delete chunk;
 }
 
+/**
+  * Write some bytes to the file at the given offset.
+  * If the buffer exceed the file size then only the begining of the buffer is
+  * used, the file is not resizing.
+  */
 bool File::write(const QByteArray& buffer, qint64 offset)
 {
    if ((quint64)offset >= this->size)
@@ -49,6 +66,10 @@ bool File::write(const QByteArray& buffer, qint64 offset)
    return offset + n >= (qint64)this->size || n == -1;
 }
 
+/**
+  * Fill the buffer with the read bytes from the given offset.
+  * If the end of file is reached the buffer will be partialy filled.
+  */
 qint64 File::read(QByteArray& buffer, qint64 offset)
 {
    if ((quint64)offset >= this->size)
@@ -62,6 +83,9 @@ qint64 File::read(QByteArray& buffer, qint64 offset)
    return bytesRead;
 }
 
+/**
+  * Return a collection of the file's chunks.
+  */
 const QList<Chunk*>& File::getChunks()
 {
    return this->chunks;

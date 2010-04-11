@@ -51,11 +51,11 @@ bool ::Chat::send(const QString& message)
 }
 
 /**
- * Reception of a new chat message form UDPListener
- * We forward the message to our listeners
- *
- * @author mcuony
- */
+  * Reception of a new chat message form UDPListener
+  * We forward the message to our listeners
+  *
+  * @author mcuony
+  */
 void ::Chat::newChatMessage(const Protos::Core::ChatMessage& message)
 {
     emit newMessage(message);

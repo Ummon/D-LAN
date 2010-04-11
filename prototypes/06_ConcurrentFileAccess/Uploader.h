@@ -6,25 +6,15 @@
 
 #include <Chunk.h>
 
-/**
-  * Read a chunk. The data are send to a peer (not implemented).
-  */
 class Uploader : public QThread
 {
    Q_OBJECT
 public:
    Uploader();
-      
-   /**
-     * Defines a chunk, must be called prior 'run()'.
-     * @param chunk The chunk.
-     */
+
    void setChunk(Chunk* chunk);
     
 protected:
-   /**
-     * Start the downloading. Non-blocking call.
-     */
    void run();
    
 private:
@@ -32,4 +22,4 @@ private:
    Chunk* chunk; ///< The associated chunk, can be 0 if there is no chunk.
 };
 
-#endif // UPLOADER_H
+#endif
