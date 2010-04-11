@@ -3,16 +3,26 @@
 #include <QtCore/QUuid>
 #include <QtCore/QDebug>
  
-QString FileGenerator::generateName()
-{
-   return QUuid::createUuid().toString().mid(1, 8);
-}
+/**
+  * @class FileGenerator
+  * An instance of this class can generate randomly and recursively some empty files
+  * and folders. Theirs names are exactly eight characters long and also randomly generated.
+  * This class will be used to test the 'Finder' class.
+  */
 
+/**
+  * Create some files and some folders into the given directory 'dirname' which is
+  * locate in 'current'. It will be created if it doesn't exist.
+  * A maximum of 'maxFile'.
+  */
 void FileGenerator::generate(const QDir& current, const QString& dirname)
 {
    this->generate(current, dirname, 0, 0);
 }
 
+/**
+  * The private recursive version of 'generate'.
+  */
 int FileGenerator::generate(const QDir& current, const QString& dirname, int numOfFile, int level)
 {
    if (level >= maxSubdirectoryLevel)
@@ -42,5 +52,13 @@ int FileGenerator::generate(const QDir& current, const QString& dirname, int num
    return numOfFile;
 }
 
-const int FileGenerator::maxFile = 50000;
+/**
+  * Return a randomly generated eight characters string.
+  */
+QString FileGenerator::generateName()
+{
+   return QUuid::createUuid().toString().mid(1, 8);
+}
+
+const int FileGenerator::maxFile = 50000; ///< The max generated files.
 const int FileGenerator::maxSubdirectoryLevel = 4;

@@ -6,6 +6,9 @@ TARGET = 03_Search
 CONFIG += console
 CONFIG -= app_bundle
 TEMPLATE = app
+
+INCLUDEPATH += .
+
 SOURCES += main.cpp \
     FileGenerator.cpp \
     Finder.cpp

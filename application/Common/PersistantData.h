@@ -28,15 +28,11 @@ namespace Common
         * Define a value associated to a name.
         * You may refer to the name policy of the platform. Try to avoir special characters or space.
         * You can use an extension in the name like "settings.conf".
-        * @param name The name of the data
-        * @param data The data to persist
         */
       static void setValue(const QString& name, const google::protobuf::Message& data);
 
       /**
         * Retrieve the data associated to a given name.
-        * @param name The name of the data
-        * @return the associated value
         * @exception UnknownValueException Throwed if the value doesn't exist
         */
       static void getValue(const QString& name, google::protobuf::Message& data);

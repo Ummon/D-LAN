@@ -1,4 +1,4 @@
-#include <priv/FileManager.h>
+        #include <priv/FileManager.h>
 using namespace FM;
 
 #include <QSharedPointer>
@@ -61,11 +61,21 @@ QStringList FileManager::getSharedDirsReadWrite()
    return this->cache.getSharedDirs(SharedDirectory::READ_WRITE);
 }
 
+/**
+  * @exception SuperDirectoryExistsException Thrown when a super shared directory already exists.
+  * @exception SubDirectoriesWithDifferentRightsExistsException Thrown when one or more sub directory already exists with different rights.
+  * @exception SuperDirectoryExistsException Thrown when a super directory already exists regardless of the rights.
+  */
 void FileManager::setSharedDirsReadOnly(const QStringList& dirs)
 {
    this->cache.setSharedDirs(dirs, SharedDirectory::READ_ONLY);
 }
 
+/**
+  * @exception SuperDirectoryExistsException Thrown when a super shared directory already exists.
+  * @exception SubDirectoriesWithDifferentRightsExistsException Thrown when one or more sub directory already exists with different rights.
+  * @exception SuperDirectoryExistsException Thrown when a super directory already exists regardless of the rights.
+  */
 void FileManager::setSharedDirsReadWrite(const QStringList& dirs)
 {
    this->cache.setSharedDirs(dirs, SharedDirectory::READ_WRITE);
@@ -87,7 +97,7 @@ Protos::Core::GetEntriesResult FileManager::getEntries()
 }
 
 /**
-  * See http://dev.euphorik.ch/wiki/pmp/Algorithms#Word-indexing for more information.
+  * @see http://dev.euphorik.ch/wiki/pmp/Algorithms#Word-indexing for more information.
   */
 Protos::Common::FindResult FileManager::find(const QString& words)
 {
@@ -217,6 +227,9 @@ Directory* FileManager::getFittestDirectory(const QString& path)
    return this->cache.getFittestDirectory(path);
 }
 
+/**
+  * Used to retrieve a file or a directory by the fileUpdater when a filesystem event occurs.
+  */
 Entry* FileManager::getEntry(const QString& path)
 {
    return this->cache.getEntry(path);

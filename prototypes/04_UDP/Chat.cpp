@@ -8,6 +8,14 @@
    #include <Winsock.h>
 #endif
 
+/**
+  * @class Chat
+  * An instance of this class will listen for UDP datagram on a certain port and IP (class D).
+  * see : http://tldp.org/HOWTO/Multicast-HOWTO-2.html#ss2.1
+  * When a message is received it will print it.
+  * Multicast nessages can be sended with 'sendMessage'.
+  */
+
 Chat::Chat()
 {
    this->socket = new QUdpSocket(this);
@@ -45,6 +53,9 @@ Chat::~Chat()
    delete this->socket;
 }
 
+/**
+  * Send a broadcast message.
+  */
 void Chat::sendMessage(const QString& mess)
 {
    QByteArray datagram = mess.toUtf8();
@@ -57,6 +68,9 @@ void Chat::sendMessage(const QString& mess)
       qDebug() << "Unable to send datagram";      
 }
 
+/**
+  * When a datagram is received this slot is called.
+  */
 void Chat::processPendingDatagrams()
 {
    QTextStream out(stdout);

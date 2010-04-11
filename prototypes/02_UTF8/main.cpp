@@ -52,7 +52,7 @@ int main(int argc, char *argv[])
    // Create directory 'input' and 'output' if they doesn't exist.
    reinitDirs();
    
-   QString filename = QString::fromUtf8("abc123 èéà@Ã#$ƇȤՖÿ");
+   QString filename = QString::fromUtf8("abc123 èé� @Ã#$ƇȤՖÿ");
    out << filename << endl <<
       "length : " << filename.length() << endl;
    

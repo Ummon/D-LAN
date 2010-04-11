@@ -4,6 +4,11 @@
 
 #include <Downloader.h>
 
+/**
+  * @class Uploader
+  * Read a chunk. The data are send to a peer (not implemented).
+  */
+
 Uploader::Uploader()
       : chunk(0)
 {
@@ -14,11 +19,17 @@ Uploader::Uploader()
    }
 }
 
+/**
+  * Defines a chunk, must be called prior 'run()'.
+  */
 void Uploader::setChunk(Chunk* chunk)
 {
    this->chunk = chunk;
 }
 
+/**
+  * Start the downloading. Non-blocking call.
+  */
 void Uploader::run()
 {      
    if (!this->chunk)
