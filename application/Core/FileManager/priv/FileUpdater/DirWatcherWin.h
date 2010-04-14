@@ -47,8 +47,8 @@ namespace FM
             // Should we wait with GetOverlappedResult or do a test with HasOverlappedIoCompleted ?
             CancelIo(this->file);
 
-            if (!CloseHandle(this->file)) LOG_ERR(QString("CloseHandle(dir.file) return an error : %1").arg(GetLastError()));
-            if (!CloseHandle(this->overlapped.hEvent)) LOG_ERR(QString("CloseHandle(dir.overlapped.hEvent) return an error : %1").arg(GetLastError()));
+            if (!CloseHandle(this->file)) L_ERR(QString("CloseHandle(dir.file) return an error : %1").arg(GetLastError()));
+            if (!CloseHandle(this->overlapped.hEvent)) L_ERR(QString("CloseHandle(dir.overlapped.hEvent) return an error : %1").arg(GetLastError()));
          }
 
          HANDLE file;

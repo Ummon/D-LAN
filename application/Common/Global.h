@@ -5,9 +5,6 @@
 
 namespace Common
 {
-   /**
-     * Some generic global functions.
-     */
    class Global
    {
    public:

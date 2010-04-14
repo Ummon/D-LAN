@@ -18,8 +18,8 @@ namespace LM
       Logger(const QString& name);
       ~Logger();
 
-      void log(const QString& message, Severity severity);
-      void log(const ILoggable& object, Severity severity);
+      void log(const QString& message, Severity severity, const char* filename = 0, int line = 0);
+      void log(const ILoggable& object, Severity severity, const char* filename = 0, int line = 0);
 
    private:
       void deleteOldestLog(const QDir& logDir);

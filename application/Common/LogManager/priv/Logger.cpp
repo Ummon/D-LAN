@@ -66,18 +66,26 @@ Logger::~Logger()
    }
 }
 
-void Logger::log(const QString& message, Severity severity)
+void Logger::log(const QString& message, Severity severity, const char* filename, int line)
 {
    QMutexLocker lock(&Logger::mutex);
    QString threadName = QThread::currentThread()->objectName();
-   const QString& formatedMessage = QString("%1 %2: [%3] (%4) %5: %6").arg(
-      QDate::currentDate().toString("dd-MM-yyyy"),
-      QTime::currentTime().toString("HH:mm:ss"),
-      Entry::SeverityToStr(severity),
-      threadName.isEmpty() ? QString::number((quint32)QThread::currentThreadId()) : threadName,
-      this->name,
-      message
-   );
+
+   bool logFilnameAndLineNumber = filename && line;
+
+   QString formatedMessage =
+      QString(logFilnameAndLineNumber ? "%1 %2: [%3] (%4) <%5:%6> %7: %8" : "%1 %2: [%3] (%4) %5: %6").arg
+      (
+         QDate::currentDate().toString("dd-MM-yyyy"),
+         QTime::currentTime().toString("HH:mm:ss"),
+         Entry::SeverityToStr(severity),
+         threadName.isEmpty() ? QString::number((quint32)QThread::currentThreadId()) : threadName
+      );
+
+   if (logFilnameAndLineNumber)
+      formatedMessage = formatedMessage.arg(filename, QString::number(line));
+
+   formatedMessage = formatedMessage.arg(this->name, message);
 
    if (Logger::out)
       (*Logger::out) << formatedMessage << endl;
@@ -87,9 +95,9 @@ void Logger::log(const QString& message, Severity severity)
 #endif
 }
 
-void Logger::log(const ILoggable& object, Severity severity)
+void Logger::log(const ILoggable& object, Severity severity, const char* filename, int line)
 {
-    this->log(object.toStringLog(), severity);
+    this->log(object.toStringLog(), severity, filename, line);
 }
 
 /**

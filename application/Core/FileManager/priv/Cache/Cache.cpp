@@ -111,7 +111,7 @@ void Cache::setSharedDirs(const QStringList& dirs, SharedDirectory::Rights right
    for (j.toFront(); j.hasNext();)
    {
       SharedDirectory* dir = j.next();
-      LOG_DEBUG("Remove a shared directory : " + dir->getFullPath());
+      L_DEBUG("Remove a shared directory : " + dir->getFullPath());
       this->removeSharedDir(dir);
    }
 
@@ -386,19 +386,19 @@ void Cache::createSharedDirs(const QStringList& dirs, const QList<SharedDirector
             new SharedDirectory(this, path, currentRights, k.next()) :
             new SharedDirectory(this, path, currentRights);
 
-         LOG_DEBUG(QString("Add a new shared directory : %1").arg(path));
+         L_DEBUG(QString("Add a new shared directory : %1").arg(path));
          emit newSharedDirectory(dir);
          //this->fileUpdater->addRoot(dir);
          this->sharedDirs << dir;
       }
       catch (DirNotFoundException& e)
       {
-         LOG_WARN(QString("Directory not found : %1").arg(e.path));
+         L_WARN(QString("Directory not found : %1").arg(e.path));
          dirsNotFound << e.path;
       }
       catch (DirAlreadySharedException&)
       {
-         LOG_WARN(QString("Directory already shared : %1").arg(path));
+         L_WARN(QString("Directory already shared : %1").arg(path));
       }
    }
 
