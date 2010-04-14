@@ -22,7 +22,7 @@ Chunk::Chunk(Cache* cache, File* file, int num, int knownBytes, const Common::Ha
    : cache(cache), file(file), num(num), knownBytes(knownBytes), hash(hash)
 {
    QMutexLocker locker (&this->mutex);
-   LOG_DEBUG(QString("New chunk[%1] : %2. File : %3").arg(num).arg(hash.toStr()).arg(this->file->getFullPath()));
+   L_DEBUG(QString("New chunk[%1] : %2. File : %3").arg(num).arg(hash.toStr()).arg(this->file->getFullPath()));
 
    this->cache->onChunkHashKnown(this);
 }
@@ -30,7 +30,7 @@ Chunk::Chunk(Cache* cache, File* file, int num, int knownBytes, const Common::Ha
 Chunk::~Chunk()
 {
    QMutexLocker locker(&this->mutex);
-   LOG_DEBUG(QString("Chunk Deleted [%1] : %2. File : %3").arg(num).
+   L_DEBUG(QString("Chunk Deleted [%1] : %2. File : %3").arg(num).
       arg(hash.toStr()).
       arg(this->file ? this->file->getFullPath() : "<file deleted>")
    );
@@ -146,7 +146,7 @@ Common::Hash Chunk::getHash()
 
 void Chunk::setHash(const Common::Hash& hash)
 {
-   LOG_DEBUG(QString("Chunk::setHash(..) : %1").arg(hash.toStr()));
+   L_DEBUG(QString("Chunk::setHash(..) : %1").arg(hash.toStr()));
    this->hash = hash;
 }
 

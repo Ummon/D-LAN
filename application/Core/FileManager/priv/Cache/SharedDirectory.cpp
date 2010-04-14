@@ -60,7 +60,7 @@ void SharedDirectory::init()
 
 SharedDirectory::~SharedDirectory()
 {
-   LOG_DEBUG(QString("SharedDirectory deleted : %1").arg(this->path));
+   L_DEBUG(QString("SharedDirectory deleted : %1").arg(this->path));
 }
 
 QList<File*> SharedDirectory::restoreFromFileCache(const Protos::FileCache::Hashes& hashes)

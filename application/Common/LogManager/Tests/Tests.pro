@@ -6,12 +6,24 @@ QT -= gui
 TARGET = Tests
 CONFIG += link_prl
 
-DESTDIR = "output/debug"
-MOC_DIR = ".tmp/debug"
-OBJECTS_DIR = ".tmp/debug"
+CONFIG(debug, debug|release) {
+   FOLDER = debug
+   DEFINES += DEBUG
+} else {
+   FOLDER = release
+}
 
-LIBS += -L../output/debug \
+DESTDIR = "output/$$FOLDER"
+MOC_DIR = ".tmp/$$FOLDER"
+OBJECTS_DIR = ".tmp/$$FOLDER"
+
+LIBS += -L../output/$$FOLDER \
    -lLogManager
+POST_TARGETDEPS += ../output/$$FOLDER/libLogManager.a
+
+LIBS += -L../../output/$$FOLDER \
+   -lCommon
+POST_TARGETDEPS += ../../output/$$FOLDER/libCommon.a
 
 INCLUDEPATH += . \
    ..

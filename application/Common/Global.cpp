@@ -11,6 +11,12 @@ using namespace Common;
 
 #include <Constants.h>
 
+
+/**
+  * @class Global
+  * Some generic global functions.
+  */
+
 bool Global::createApplicationFolder()
 {
    if (!QDir::home().exists(APPLICATION_FOLDER_NAME))

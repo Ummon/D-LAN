@@ -33,11 +33,11 @@ File::File(
      toStopHashing(false)
 {
    //QMutexLocker locker(&this->getCache()->getMutex());
-   LOG_DEBUG(QString("New file : %1").arg(this->getFullPath()));
+   L_DEBUG(QString("New file : %1").arg(this->getFullPath()));
 
    if (!hashes.isEmpty())
       if (this->getNbChunks() != hashes.size())
-         LOG_ERR(QString("File::File(..) : The number of hashes (%1) doesn't correspond to the calculate number of chunk (%2)").arg(hashes.size()).arg(this->getNbChunks()));
+         L_ERR(QString("File::File(..) : The number of hashes (%1) doesn't correspond to the calculate number of chunk (%2)").arg(hashes.size()).arg(this->getNbChunks()));
 
    bool complete = true;
    if (this->name.size() > UNFINISHED_SUFFIX_TERM.size() && this->name.endsWith(UNFINISHED_SUFFIX_TERM))
@@ -66,13 +66,13 @@ File::File(
    if (createPhysically)
    {
       if (static_cast<SharedDirectory*>(this->getRoot())->getRights() == SharedDirectory::READ_ONLY)
-         LOG_ERR(QString("File::File(..) : Cannot create a file (%1) in a read only shared directory (%2)").arg(this->getPath()).arg(static_cast<SharedDirectory*>(this->getRoot())->getFullPath()));
+         L_ERR(QString("File::File(..) : Cannot create a file (%1) in a read only shared directory (%2)").arg(this->getPath()).arg(static_cast<SharedDirectory*>(this->getRoot())->getFullPath()));
       else
       {
          QFile file(this->getFullPath());
          if (file.exists())
          {
-            LOG_ERR(QString("File::File(..) : Ask to physically create a file which already exists : %1").arg(this->getFullPath()));
+            L_ERR(QString("File::File(..) : Ask to physically create a file which already exists : %1").arg(this->getFullPath()));
             throw FilePhysicallyAlreadyExistsException();
          }
          else
@@ -98,12 +98,12 @@ File::~File()
    foreach (QSharedPointer<Chunk> c, this->chunks)
       c->fileDeleted();
 
-   LOG_DEBUG(QString("File deleted : %1").arg(this->getFullPath()));
+   L_DEBUG(QString("File deleted : %1").arg(this->getFullPath()));
 }
 
 bool File::restoreFromFileCache(const Protos::FileCache::Hashes_File& file)
 {
-   LOG_DEBUG(QString("Restoring file '%1' from file cache..").arg(this->getFullPath()));
+   L_DEBUG(QString("Restoring file '%1' from file cache..").arg(this->getFullPath()));
 
    if (
       file.filename().data() == this->getName() &&
@@ -112,7 +112,7 @@ bool File::restoreFromFileCache(const Protos::FileCache::Hashes_File& file)
       this->chunks.size() == file.chunk_size()
    )
    {
-      LOG_DEBUG(QString("Restoring file '%1' from the file cache").arg(this->getFullPath()));
+      L_DEBUG(QString("Restoring file '%1' from the file cache").arg(this->getFullPath()));
 
       for (int i = 0; i < file.chunk_size(); i++)
          this->chunks[i]->restoreFromFileCache(file.chunk(i));
@@ -252,7 +252,7 @@ bool File::computeHashes()
 
    this->hashing = true;
 
-   LOG_DEBUG("Computing the hash for " + this->getFullPath());
+   L_DEBUG("Computing the hash for " + this->getFullPath());
 
    QList<QByteArray> result;
 
@@ -310,11 +310,11 @@ bool File::computeHashes()
 #ifdef DEBUG
    const int delta = time.elapsed();
    if (delta == 0)
-      LOG_DEBUG("Hashing speed : ?? MB/s (delta too small)");
+      L_DEBUG("Hashing speed : ?? MB/s (delta too small)");
    else
    {
       const double speed = static_cast<double>(this->size) / 1024 / 1024 / (static_cast<double>(delta) / 1000);
-      LOG_DEBUG(QString("Hashing speed : %1 MB/s").arg(speed < 0.1 ? "< 0.1" : QString::number(speed)));
+      L_DEBUG(QString("Hashing speed : %1 MB/s").arg(speed < 0.1 ? "< 0.1" : QString::number(speed)));
    }
 #endif
 
@@ -330,9 +330,9 @@ void File::stopHashing()
    this->toStopHashing = true;
    if (this->hashing)
    {
-      LOG_DEBUG(QString("File::stopHashing() for %1 ..").arg(this->getFullPath()));
+      L_DEBUG(QString("File::stopHashing() for %1 ..").arg(this->getFullPath()));
       this->hashingStopped.wait(&this->hashingMutex);
-      LOG_DEBUG("Hashing stopped");
+      L_DEBUG("Hashing stopped");
    }
 }
 
@@ -373,7 +373,7 @@ void File::physicallyRemoveUnfinished()
    if (!this->isComplete())
    {
       if (!QFile::remove(this->getFullPath()))
-         LOG_WARN(QString("File::physicallyRemoveUnfinished() : Cannot remove the file '%1'").arg(this->getFullPath()));
+         L_WARN(QString("File::physicallyRemoveUnfinished() : Cannot remove the file '%1'").arg(this->getFullPath()));
    }
 }
 

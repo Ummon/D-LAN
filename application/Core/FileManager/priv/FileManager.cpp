@@ -26,7 +26,7 @@ using namespace FM;
 FileManager::FileManager()
    : fileUpdater(this), cache(this)
 {
-   LOG_USER("Loading ..");
+   L_USER("Loading ..");
 
    connect(&this->cache, SIGNAL(entryAdded(Entry*)), this, SLOT(entryAdded(Entry*)), Qt::DirectConnection);
    connect(&this->cache, SIGNAL(entryRemoved(Entry*)), this, SLOT(entryRemoved(Entry*)), Qt::DirectConnection);
@@ -41,14 +41,14 @@ FileManager::FileManager()
    this->loadCacheFromFile();
 
    this->fileUpdater.start();
-   LOG_USER("Loaded!");
+   L_USER("Loaded!");
 }
 
 FileManager::~FileManager()
 {
-   LOG_DEBUG("~FileManager : Stopping the file updater..");
+   L_DEBUG("~FileManager : Stopping the file updater..");
    this->fileUpdater.stop();
-   LOG_DEBUG("FileManager deleted");
+   L_DEBUG("FileManager deleted");
 }
 
 QStringList FileManager::getSharedDirsReadOnly()
@@ -240,7 +240,7 @@ void FileManager::entryAdded(Entry* entry)
    if (entry->getName().isEmpty())
       return;
 
-   LOG_DEBUG(QString("Adding entry '%1' to the index..").arg(entry->getName()));
+   L_DEBUG(QString("Adding entry '%1' to the index..").arg(entry->getName()));
    this->wordIndex.addItem(FileManager::splitInWords(entry->getName()), entry);
 }
 
@@ -249,13 +249,13 @@ void FileManager::entryRemoved(Entry* entry)
    if (entry->getName().isEmpty())
       return;
 
-   LOG_DEBUG(QString("Removing entry '%1' from the index..").arg(entry->getName()));
+   L_DEBUG(QString("Removing entry '%1' from the index..").arg(entry->getName()));
    this->wordIndex.rmItem(FileManager::splitInWords(entry->getName()), entry);
 }
 
 void FileManager::chunkHashKnown(Chunk* chunk)
 {
-   LOG_DEBUG(QString("Adding chunk '%1' to the index..").arg(chunk->getHash().toStr()));
+   L_DEBUG(QString("Adding chunk '%1' to the index..").arg(chunk->getHash().toStr()));
    this->chunks.add(chunk);
 }
 
@@ -299,16 +299,16 @@ void FileManager::loadCacheFromFile()
       catch (DirsNotFoundException& e)
       {
          foreach (QString path, e.paths)
-            LOG_WARN(QString("During the file cache loading, this directory hasn't been found : %1").arg(path));
+            L_WARN(QString("During the file cache loading, this directory hasn't been found : %1").arg(path));
       }
    }
    catch (Common::UnknownValueException& e)
    {
-      LOG_WARN(QString("The persisted file cache cannot be retrived (the file doesn't exist) : %1").arg(FILE_CACHE));
+      L_WARN(QString("The persisted file cache cannot be retrived (the file doesn't exist) : %1").arg(FILE_CACHE));
    }
    catch (...)
    {
-      LOG_WARN(QString("The persisted file cache cannot be retrived (Unkown exception) : %1").arg(FILE_CACHE));
+      L_WARN(QString("The persisted file cache cannot be retrived (Unkown exception) : %1").arg(FILE_CACHE));
    }
 
    this->fileUpdater.setFileCache(savedCache);
@@ -316,8 +316,8 @@ void FileManager::loadCacheFromFile()
 
 void FileManager::persistCacheToFile()
 {
-   LOG_DEBUG("Persists cache..");
-   LOG_DEBUG("#######################################");
+   L_DEBUG("Persists cache..");
+   L_DEBUG("#######################################");
 
    Protos::FileCache::Hashes hashes;
    this->cache.saveInFile(hashes);

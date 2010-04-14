@@ -20,6 +20,7 @@ void Tests::createLoggers()
 
 void Tests::logSomeMessages()
 {
-   this->logger1->log("This is a message log", EndUser);
+   this->logger1->log("This is a user message log", EndUser);
+   LOG_USER(this->logger1, "This is an other user message log");
 }
 

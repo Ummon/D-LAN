@@ -4,12 +4,25 @@ using namespace Common;
 #include <QtGlobal>
 #include <QTime>
 
+/**
+  * @class Hash
+  * An uber-optimized SHA-1 hash.
+  * see : http://fr.wikipedia.org/wiki/SHA-1
+  */
+
+/**
+  * Build a new empty hash, its value is set to 0.
+  */
 Hash::Hash()
 {
    this->newData();
    memset(this->data->hash, 0, HASH_SIZE);
 }
 
+/**
+  * Build a new hash from an existing one.
+  * The data are shared between both.
+  */
 Hash::Hash(const Hash& h)
 {
 #if WITH_MUTEX
@@ -19,12 +32,22 @@ Hash::Hash(const Hash& h)
    this->data->nbRef += 1;
 }
 
+/**
+  * Build a new hash from a char*.
+  * 'h' must have a length equal or bigger to HASH_SIZE!
+  * The data are copied, no pointer is keept to 'h'.
+  */
 Hash::Hash(const char* h)
 {
    this->newData();
    memcpy(this->data->hash, h, HASH_SIZE);
 }
 
+/**
+  * Build a new hash from a QByteArray.
+  * 'a' must have a length equal or bigger to HASH_SIZE!
+  * The data are copied, no pointer is keept to 'a'.
+  */
 Hash::Hash(const QByteArray& a)
 {
    if (a.size() != HASH_SIZE)
@@ -34,11 +57,19 @@ Hash::Hash(const QByteArray& a)
    memcpy(this->data->hash, a.constData(), HASH_SIZE);
 }
 
+/**
+  * Remove its reference to the shared data, if its the last
+  * then delete the data.
+  */
 Hash::~Hash()
 {
    this->dereference();
 }
 
+/**
+  * Assign the data of a another hash.
+  * The data are shared.
+  */
 Hash& Hash::operator=(const Hash& h)
 {
 #if WITH_MUTEX
@@ -53,11 +84,19 @@ Hash& Hash::operator=(const Hash& h)
    return *this;
 }
 
+/**
+  * Return a pointer to its internal data.
+  * The length of the returned value is exactly HASH_SIZE.
+  */
 const char* Hash::getData() const
 {
    return this->data->hash;
 }
 
+/**
+  * Return a human readable string.
+  * For example : 16bd4b1e656129eb9ddaa2ce0f0705f1cc161f77.
+  */
 QString Hash::toStr() const
 {
    QString ret(40);
@@ -79,6 +118,9 @@ bool Hash::isNull() const
    return true;
 }
 
+/**
+  * Return a new rand hash.
+  */
 Hash Hash::rand()
 {
    Hash hash;
@@ -89,6 +131,9 @@ Hash Hash::rand()
    return hash;
 }
 
+/**
+  * Dereference the pointed data.
+  */
 void Hash::dereference()
 {
 #if WITH_MUTEX
@@ -99,6 +144,9 @@ void Hash::dereference()
       delete this->data;
 }
 
+/**
+  * Allocated new shared data.
+  */
 void Hash::newData()
 {
    this->data = new SharedData;

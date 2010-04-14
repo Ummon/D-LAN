@@ -35,29 +35,29 @@ FileUpdater::~FileUpdater()
    if (this->dirWatcher)
       delete this->dirWatcher;
 
-   LOG_DEBUG("FileUpdater deleted");
+   L_DEBUG("FileUpdater deleted");
 }
 
 void FileUpdater::stop()
 {
-   LOG_DEBUG("Stopping FileUpdater..");
+   L_DEBUG("Stopping FileUpdater..");
 
    this->toStop = true;
 
-   LOG_DEBUG("OK1");
+   L_DEBUG("OK1");
    this->stopHashing();
 
-   LOG_DEBUG("OK2");
+   L_DEBUG("OK2");
    this->stopScanning();
 
-   LOG_DEBUG("OK3");
+   L_DEBUG("OK3");
    // Simulate a dirEvent to stop the main loop.
    this->dirEvent->release();
 
-   LOG_DEBUG("OK4");
+   L_DEBUG("OK4");
    this->wait();
 
-   LOG_DEBUG("OK5");
+   L_DEBUG("OK5");
 }
 
 void FileUpdater::addRoot(SharedDirectory* dir)
@@ -138,7 +138,7 @@ void FileUpdater::run()
 
       foreach (SharedDirectory* dir, this->dirsToRemove)
       {
-         LOG_DEBUG(QString("Stop watching this directory : %1").arg(dir->getFullPath()));
+         L_DEBUG(QString("Stop watching this directory : %1").arg(dir->getFullPath()));
          if (this->dirWatcher)
             this->dirWatcher->rmDir(dir->getFullPath());
 
@@ -152,7 +152,7 @@ void FileUpdater::run()
       {
          if (this->dirsToScan.isEmpty())
          {
-            LOG_DEBUG("Waiting for a new shared directory added..");
+            L_DEBUG("Waiting for a new shared directory added..");
             this->mutex.unlock();
             this->dirEvent->wait();
          }
@@ -197,7 +197,7 @@ bool FileUpdater::computeSomeHashes()
    if (this->toStopHashing)
    {
       this->toStopHashing = false;
-      LOG_DEBUG("Computing some hashes aborted");
+      L_DEBUG("Computing some hashes aborted");
       this->hashingMutex.unlock();
       return false;
    }
@@ -208,7 +208,7 @@ bool FileUpdater::computeSomeHashes()
       return false;
    }
 
-   LOG_DEBUG("Start computing some hashes..");
+   L_DEBUG("Start computing some hashes..");
 
    QTime time;
    time.start();
@@ -226,7 +226,7 @@ bool FileUpdater::computeSomeHashes()
       if (this->toStopHashing)
       {
          this->toStopHashing = false;
-         LOG_DEBUG("Computing some hashes aborted");
+         L_DEBUG("Computing some hashes aborted");
          this->hashingMutex.unlock();
          return false;
       }
@@ -238,7 +238,7 @@ bool FileUpdater::computeSomeHashes()
          break;
    }
 
-   LOG_DEBUG("Computing some hashes terminated");
+   L_DEBUG("Computing some hashes terminated");
 
    this->hashingMutex.unlock();
    return true;
@@ -254,7 +254,7 @@ void FileUpdater::stopHashing()
 
 void FileUpdater::scan(Directory* dir)
 {
-   LOG_DEBUG("Start scanning a shared directory : " + dir->getFullPath());
+   L_DEBUG("Start scanning a shared directory : " + dir->getFullPath());
 
    this->scanningMutex.lock();
    this->currentScanningDir = dir;
@@ -280,7 +280,7 @@ void FileUpdater::scan(Directory* dir)
 
             if (!this->currentScanningDir || this->toStop)
             {
-               LOG_DEBUG("Scanning aborted : " + dir->getFullPath());
+               L_DEBUG("Scanning aborted : " + dir->getFullPath());
                this->currentScanningDir = 0;
                this->scanningStopped.wakeOne();
                return;
@@ -318,7 +318,7 @@ void FileUpdater::scan(Directory* dir)
    this->scanningStopped.wakeOne();
    this->scanningMutex.unlock();
 
-   LOG_DEBUG("Scanning terminated : " + dir->getFullPath());
+   L_DEBUG("Scanning terminated : " + dir->getFullPath());
 }
 
 void FileUpdater::stopScanning(Directory* dir)
@@ -341,11 +341,11 @@ void FileUpdater::stopScanning(Directory* dir)
 
 void FileUpdater::restoreFromFileCache(SharedDirectory* dir)
 {
-   LOG_DEBUG("Start restoring hashes of a shared directory : " + dir->getFullPath());
+   L_DEBUG("Start restoring hashes of a shared directory : " + dir->getFullPath());
 
    if (this->fileCache == 0)
    {
-      LOG_ERR("FileUpdater::restoreFromFileCache : this->fileCache must be previously set. Unable to restore from the file cache.");
+      L_ERR("FileUpdater::restoreFromFileCache : this->fileCache must be previously set. Unable to restore from the file cache.");
       return;
    }
 
@@ -356,7 +356,7 @@ void FileUpdater::restoreFromFileCache(SharedDirectory* dir)
    for (QListIterator<File*>i(filesWithHashes); i.hasNext();)
       this->fileWithoutHashes.removeOne(i.next());
 
-   LOG_DEBUG("Restoring terminated : " + dir->getFullPath());
+   L_DEBUG("Restoring terminated : " + dir->getFullPath());
 }
 
 void FileUpdater::treatEvents(const QList<WatcherEvent>& events)
@@ -372,8 +372,8 @@ void FileUpdater::treatEvents(const QList<WatcherEvent>& events)
          continue;
 
       // TODO..
-      LOG_DEBUG("File structure event occurs :");
-      LOG_DEBUG(event.toStr());
+      L_DEBUG("File structure event occurs :");
+      L_DEBUG(event.toStr());
 
       switch (event.type)
       {
