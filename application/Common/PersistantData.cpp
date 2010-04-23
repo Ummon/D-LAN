@@ -15,8 +15,21 @@ using namespace std;
 #include <Constants.h>
 #include <Global.h>
 
+/**
+  * @class PersistantData
+  * Some little functions to persist data and retrieve it.
+  * The data are persisted in the user directory.
+  * The data are described by a Protocol Buffer message.
+  * Theses functions can be used for the application settings.
+  */
+
 const QString PersistantData::TEMP_SUFFIX_TERM(".temp");
 
+/**
+  * Define a value associated to a name.
+  * You may refer to the name policy of the platform. Try to avoir special characters or space.
+  * You can use an extension in the name like "settings.conf".
+  */
 void PersistantData::setValue(const QString& name, const google::protobuf::Message& data)
 {
    if (Global::createApplicationFolder())
@@ -42,6 +55,10 @@ void PersistantData::setValue(const QString& name, const google::protobuf::Messa
    }
 }
 
+/**
+  * Retrieve the data associated to a given name.
+  * @exception UnknownValueException Throwed if the value doesn't exist
+  */
 void PersistantData::getValue(const QString& name, google::protobuf::Message& data)
 {
    ifstream file((APPLICATION_FOLDER_PATH + '/' + name).toStdString().data(), ios_base::binary | ios_base::in);
@@ -56,6 +73,10 @@ void PersistantData::getValue(const QString& name, google::protobuf::Message& da
 #endif
 }
 
+/**
+  * Remove a data.
+  * @return Return false if the data didn't exist.
+  */
 bool PersistantData::rmValue(const QString& name)
 {
    return QFile::remove(APPLICATION_FOLDER_PATH + '/' + name);
