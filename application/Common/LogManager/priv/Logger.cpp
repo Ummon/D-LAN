@@ -16,7 +16,7 @@ Logger::Logger(const QString& name)
 
    if (Logger::nbLogger == 0)
    {
-      QTextStream out(stdout);
+      QTextStream out(stderr);
       static const QString logDirname("log");
 
       if (!Common::Global::createApplicationFolder())
@@ -74,18 +74,19 @@ void Logger::log(const QString& message, Severity severity, const char* filename
    bool logFilnameAndLineNumber = filename && line;
 
    QString formatedMessage =
-      QString(logFilnameAndLineNumber ? "%1 %2: [%3] (%4) <%5:%6> %7: %8" : "%1 %2: [%3] (%4) %5: %6").arg
+      QString(logFilnameAndLineNumber ? "%1 %2 [%3] {%4} (%5) <%6:%7> : %8" : "%1 %2 [%3] {%4} (%5) : %6").arg
       (
          QDate::currentDate().toString("dd-MM-yyyy"),
          QTime::currentTime().toString("HH:mm:ss"),
          Entry::SeverityToStr(severity),
+         this->name,
          threadName.isEmpty() ? QString::number((quint32)QThread::currentThreadId()) : threadName
       );
 
    if (logFilnameAndLineNumber)
       formatedMessage = formatedMessage.arg(filename, QString::number(line));
 
-   formatedMessage = formatedMessage.arg(this->name, message);
+   formatedMessage = formatedMessage.arg(message);
 
    if (Logger::out)
       (*Logger::out) << formatedMessage << endl;
