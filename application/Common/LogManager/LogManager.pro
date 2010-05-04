@@ -3,6 +3,7 @@
 # -------------------------------------------------
 QT -= gui
 TARGET = LogManager
+
 INCLUDEPATH += . \
    ..
 TEMPLATE = lib

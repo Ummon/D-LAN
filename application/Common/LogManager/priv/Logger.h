@@ -14,6 +14,10 @@ namespace LM
 
    class Logger : public ILogger
    {
+      static QTextStream* out;
+      static QMutex mutex;
+      static int nbLogger;
+
    public:
       Logger(const QString& name);
       ~Logger();
@@ -25,10 +29,6 @@ namespace LM
       void deleteOldestLog(const QDir& logDir);
 
       QString name;
-
-      static QTextStream* out;
-      static QMutex mutex;
-      static int nbLogger;
    };
 }
 #endif
