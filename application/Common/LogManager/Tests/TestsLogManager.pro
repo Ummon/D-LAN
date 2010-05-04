@@ -16,7 +16,6 @@ CONFIG(debug, debug|release) {
 DESTDIR = "output/$$FOLDER"
 MOC_DIR = ".tmp/$$FOLDER"
 OBJECTS_DIR = ".tmp/$$FOLDER"
-RCC_DIR = ".tmp/$$FOLDER"
 
 LIBS += -L../output/$$FOLDER \
    -lLogManager

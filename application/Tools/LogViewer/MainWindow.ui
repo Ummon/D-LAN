@@ -32,7 +32,7 @@
      <verstretch>0</verstretch>
     </sizepolicy>
    </property>
-   <layout class="QVBoxLayout" name="verticalLayout">
+   <layout class="QVBoxLayout" name="verticalLayout" stretch="0,1,0">
     <property name="spacing">
      <number>4</number>
     </property>
@@ -269,7 +269,7 @@
         </layout>
        </item>
        <item>
-        <layout class="QHBoxLayout" name="laySeverity">
+        <layout class="QHBoxLayout" name="laySeverity" stretch="0">
          <item>
           <widget class="QLabel" name="lblSeverity">
            <property name="text">
@@ -301,19 +301,7 @@
          </item>
         </layout>
        </item>
-       <item>
-        <layout class="QHBoxLayout" name="laySource">
-         <item>
-          <widget class="QLabel" name="lblSource">
-           <property name="text">
-            <string>Source</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
       </layout>
-      <zorder></zorder>
       <zorder></zorder>
       <zorder></zorder>
       <zorder></zorder>

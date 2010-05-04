@@ -4,8 +4,8 @@
 
 #include <Common/LogManager/Builder.h>
 
-TableLogModel::TableLogModel()
-   : source(0)
+TableLogModel::TableLogModel() :
+   source(0)
 {
 }
 
@@ -68,6 +68,21 @@ void TableLogModel::removeDataSource()
    this->source = 0;
 }
 
+const QStringList& TableLogModel::getSeverities()
+{
+   return this->severities;
+}
+
+const QStringList& TableLogModel::getModules()
+{
+   return this->modules;
+}
+
+const QStringList& TableLogModel::getThreads()
+{
+   return this->threads;
+}
+
 void TableLogModel::readLines()
 {
    QTextStream stream(this->source);
@@ -78,7 +93,17 @@ void TableLogModel::readLines()
    QString line;
    while (line = stream.readLine(), !line.isNull())
    {
-      this->entries << LM::Builder::decode(line);
+      QSharedPointer<LM::IEntry> entry = LM::Builder::decode(line);
+      this->entries << entry;
+
+      if (!this->severities.contains(entry->getSeverityStr()))
+         this->severities << entry->getSeverityStr();
+
+      if (!this->modules.contains(entry->getName()))
+         this->modules << entry->getName();
+
+      if (!this->threads.contains(entry->getThread()))
+         this->threads << entry->getThread();
    }
    this->beginInsertRows(QModelIndex(), count, this->entries.count() - 1);
    this->endInsertRows();

@@ -7,9 +7,9 @@ using namespace LM;
 const QString Entry::DATE_TIME_FORMAT("dd-MM-yyyy HH:mm:ss");
 const QString Entry::SEVERITIES_STR[] = {"Fatal", "Error", "Warning", "Debug", "User", "Unkown"};
 
-Entry::Entry(const QString& line)
-   : lineRegExp("(\\S+ \\S+) \\[(\\w+)\\] \\{(\\S+)\\} \\((\\w+)\\) (?:<(\\S+:\\d+)> )?: (.*)"),
-     severity(SV_UNKNOWN)
+Entry::Entry(const QString& line) :
+   lineRegExp("(\\S+ \\S+) \\[(\\w+)\\] \\{(\\S+)\\} \\((\\w+)\\) (?:<(\\S+:\\d+)> )?: (.*)"),
+   severity(SV_UNKNOWN)
 {
    if (!lineRegExp.exactMatch(line))
       return;

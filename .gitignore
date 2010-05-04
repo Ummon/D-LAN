@@ -13,3 +13,4 @@ Makefile
 output/
 .tmp/
 /doc/doxygen/html
+qrc_*.cpp
