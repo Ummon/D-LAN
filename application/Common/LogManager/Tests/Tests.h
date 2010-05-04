@@ -2,6 +2,7 @@
 #define TESTS_H
 
 #include <QObject>
+#include <QVector>
 #include <QSharedPointer>
 
 #include <ILogger.h>
@@ -16,11 +17,12 @@ public:
 private slots:
    void initTestCase();
    void createLoggers();
-   void logSomeMessages();
+   void logSomeBasicMessages();
+   void logSomeMessagesWithSpecialCharacters();
+   void logALotOfRandomMessages();
 
-private :
-   QSharedPointer<ILogger> logger1;
-   QSharedPointer<ILogger> logger2;
+private:
+   QVector< QSharedPointer<ILogger> > loggers;
 };
 
 #endif

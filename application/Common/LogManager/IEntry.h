@@ -2,17 +2,18 @@
 #define LOGMANAGER_IENTRY_H
 
 #include <QString>
-#include <QDate>
+#include <QDateTime>
 
 namespace LM
 {
    enum Severity
    {
-      FatalError,
-      Error,
-      Warning,
-      Debug,
-      EndUser
+      SV_FATAL_ERROR = 0,
+      SV_ERROR,
+      SV_WARNING,
+      SV_DEBUG,
+      SV_END_USER,
+      SV_UNKNOWN
    };
 
    class IEntry
@@ -20,10 +21,14 @@ namespace LM
    public:
       virtual ~IEntry() {}
 
-      virtual QString getName() = 0;
-      virtual QString getMessage() = 0;
-      virtual QDate getDate() = 0;
-      virtual Severity getSeverity() = 0;
+      virtual QDateTime getDate() const = 0;
+      virtual QString getDateStr() const = 0;
+      virtual Severity getSeverity() const = 0;
+      virtual QString getSeverityStr() const = 0;
+      virtual QString getName() const = 0;
+      virtual QString getThread() const = 0;
+      virtual QString getSource() const = 0;
+      virtual QString getMessage() const = 0;
    };
 }
 #endif

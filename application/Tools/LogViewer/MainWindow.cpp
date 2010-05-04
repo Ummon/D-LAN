@@ -2,6 +2,7 @@
 #include "ui_MainWindow.h"
 
 #include <QFileDialog>
+#include <Common/Constants.h>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -10,12 +11,19 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
     connect(this->ui->actOpen, SIGNAL(activated()), this, SLOT(openDir()));
+
     this->currentDir.setSorting(QDir::Name);
+
+    this->ui->tblLog->horizontalHeader()->setResizeMode(QHeaderView::ResizeToContents);
+    this->ui->tblLog->verticalHeader()->setResizeMode(QHeaderView::Custom);
+    this->ui->tblLog->verticalHeader()->setDefaultSectionSize(17);    
+    this->ui->tblLog->setModel(&this->model);
 }
 
 MainWindow::~MainWindow()
 {
     delete ui;
+    this->closeCurrentFile();
 }
 
 void MainWindow::changeEvent(QEvent *e)
@@ -32,9 +40,28 @@ void MainWindow::changeEvent(QEvent *e)
 
 void MainWindow::openDir()
 {
-   QString dir = QFileDialog::getExistingDirectory(this, "Choose a directory");
+   QString dir = QFileDialog::getExistingDirectory(
+      this,
+      "Choose a directory",
+      Common::APPLICATION_FOLDER_PATH + '/' + Common::LOG_FOLDER_NAME
+   );
+
    if (!dir.isNull())
       this->setCurrentDir(dir);
+}
+
+/**
+  * Open a file and set it as the current listened file.
+  */
+void MainWindow::setCurrentFile(QString file)
+{
+   this->closeCurrentFile();
+
+   this->currentFile = new QFile(this->currentDir.absolutePath() + '/' + file);
+   if (currentFile->exists() && this->currentFile->open(QIODevice::ReadOnly))
+   {
+      this->model.setDataSource(this->currentFile);
+   }
 }
 
 /**
@@ -45,6 +72,7 @@ void MainWindow::setCurrentDir(const QString& dir)
 {
    this->currentDir.setPath(dir);
    QStringList entries(this->currentDir.entryList());
+   disconnect(this->ui->cmbFile, SIGNAL(currentIndexChanged(QString)));
    foreach (QString d, entries)
    {
       if (d.endsWith(".log"))
@@ -52,21 +80,13 @@ void MainWindow::setCurrentDir(const QString& dir)
          this->ui->cmbFile->addItem(d);
       }
    }
-   this->setCurrentFile(entries.last());
-}
-
-/**
-  * Open a file, set it as the current listened file.
-  */
-void MainWindow::setCurrentFile(const QString& file)
-{
-   this->closeCurrentFile();
-
-   this->currentFile = new QFile(file, QIODevice::ReadOnly);
+   connect(this->ui->cmbFile, SIGNAL(currentIndexChanged(QString)), this, SLOT(setCurrentFile(QString)));
+   this->ui->cmbFile->setCurrentIndex(this->ui->cmbFile->count() - 1);
 }
 
 void MainWindow::closeCurrentFile()
 {
+   this->model.removeDataSource();
    if (this->currentFile)
    {
       delete this->currentFile;

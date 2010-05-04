@@ -26,12 +26,13 @@ INCLUDEPATH += . \
  DESTDIR = output/$$FOLDER
  MOC_DIR = .tmp/$$FOLDER
  OBJECTS_DIR = .tmp/$$FOLDER
- LIBS += -L../../Common/LogManager/output/$$FOLDER \
+
+LIBS += -L../../Common/LogManager/output/$$FOLDER \
      -lLogManager
- POST_TARGETDEPS += ../../Common/LogManager/output/$$FOLDER/libLogManager.a
- LIBS += -L../../Common/output/$$FOLDER \
+POST_TARGETDEPS += ../../Common/LogManager/output/$$FOLDER/libLogManager.a
+LIBS += -L../../Common/output/$$FOLDER \
      -lCommon
- POST_TARGETDEPS += ../../Common/output/$$FOLDER/libCommon.a
+POST_TARGETDEPS += ../../Common/output/$$FOLDER/libCommon.a
 
 DEFINES += FILEMANAGER_LIBRARY
 SOURCES += priv/Builder.cpp \

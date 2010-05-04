@@ -9,6 +9,10 @@ using namespace LM;
 
 #include <priv/Entry.h>
 
+QTextStream* Logger::out(0);
+QMutex Logger::mutex;
+int Logger::nbLogger(0);
+
 Logger::Logger(const QString& name)
    : name(name)
 {
@@ -17,7 +21,6 @@ Logger::Logger(const QString& name)
    if (Logger::nbLogger == 0)
    {
       QTextStream out(stderr);
-      static const QString logDirname("log");
 
       if (!Common::Global::createApplicationFolder())
       {
@@ -26,13 +29,13 @@ Logger::Logger(const QString& name)
       else
       {
          QDir appDir(Common::APPLICATION_FOLDER_PATH);
-         if (!appDir.exists(logDirname) && !appDir.mkdir(logDirname))
+         if (!appDir.exists(Common::LOG_FOLDER_NAME) && !appDir.mkdir(Common::LOG_FOLDER_NAME))
          {
-            out << "Error, cannot create log directory : " << Common::APPLICATION_FOLDER_PATH << "/" << logDirname << endl;
+            out << "Error, cannot create log directory : " << Common::APPLICATION_FOLDER_PATH << "/" << Common::LOG_FOLDER_NAME << endl;
          }
          else
          {
-            QDir logDir(Common::APPLICATION_FOLDER_PATH + '/' + logDirname);
+            QDir logDir(Common::APPLICATION_FOLDER_PATH + '/' + Common::LOG_FOLDER_NAME);
 
             QString filename = QDateTime::currentDateTime().toString("yyyy_MM_dd-hh_mm_ss") + ".log";
 
@@ -46,6 +49,7 @@ Logger::Logger(const QString& name)
             {
                this->deleteOldestLog(logDir);
                Logger::out = new QTextStream(file);
+               Logger::out->setCodec("UTF-8");
             }
          }
       }
@@ -66,19 +70,21 @@ Logger::~Logger()
    }
 }
 
-void Logger::log(const QString& message, Severity severity, const char* filename, int line)
+void Logger::log(const QString& originalMessage, Severity severity, const char* filename, int line)
 {
    QMutexLocker lock(&Logger::mutex);
    QString threadName = QThread::currentThread()->objectName();
 
+   QString message(originalMessage);
+   message.replace('\n', "<cr>");
+
    bool logFilnameAndLineNumber = filename && line;
 
    QString formatedMessage =
-      QString(logFilnameAndLineNumber ? "%1 %2 [%3] {%4} (%5) <%6:%7> : %8" : "%1 %2 [%3] {%4} (%5) : %6").arg
+      QString(logFilnameAndLineNumber ? "%1 [%2] {%3} (%4) <%5:%6> : %7" : "%1 [%2] {%3} (%4) : %5").arg
       (
-         QDate::currentDate().toString("dd-MM-yyyy"),
-         QTime::currentTime().toString("HH:mm:ss"),
-         Entry::SeverityToStr(severity),
+         Entry::dateToStr(QDateTime::currentDateTime()),
+         Entry::severityToStr(severity),
          this->name,
          threadName.isEmpty() ? QString::number((quint32)QThread::currentThreadId()) : threadName
       );
@@ -125,7 +131,3 @@ void Logger::deleteOldestLog(const QDir& logDir)
    while (entries.size() > NB_LOGFILE)
       QFile::remove(entries.takeFirst().absoluteFilePath());
 }
-
-QTextStream* Logger::out(0);
-QMutex Logger::mutex;
-int Logger::nbLogger(0);

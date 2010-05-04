@@ -4,6 +4,8 @@
 #include <QMainWindow>
 #include <QDir>
 
+#include <TableLogModel.h>
+
 namespace Ui { class MainWindow; }
 
 class MainWindow : public QMainWindow
@@ -18,13 +20,15 @@ protected:
 
 private slots:
    void openDir();
+   void setCurrentFile(QString file);
 
 private:
    void setCurrentDir(const QString& dir);
-   void setCurrentFile(const QString& file);
    void closeCurrentFile();
 
    Ui::MainWindow *ui;
+
+   TableLogModel model;
 
    QDir currentDir;
    QFile* currentFile;
