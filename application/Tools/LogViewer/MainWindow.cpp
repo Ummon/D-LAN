@@ -5,24 +5,32 @@
 #include <Common/Constants.h>
 
 MainWindow::MainWindow(QWidget *parent) :
-    QMainWindow(parent),
-    ui(new Ui::MainWindow),
-    currentFile(0)
+   QMainWindow(parent),
+   ui(new Ui::MainWindow),
+   currentFile(0)
 {
-    ui->setupUi(this);
-    connect(this->ui->actOpen, SIGNAL(activated()), this, SLOT(openDir()));
+   this->ui->setupUi(this);
+   connect(this->ui->actOpen, SIGNAL(activated()), this, SLOT(openDir()));
 
-    this->currentDir.setSorting(QDir::Name);
+   this->currentDir.setSorting(QDir::Name);
 
-    this->ui->tblLog->horizontalHeader()->setResizeMode(QHeaderView::ResizeToContents);
-    this->ui->tblLog->verticalHeader()->setResizeMode(QHeaderView::Custom);
-    this->ui->tblLog->verticalHeader()->setDefaultSectionSize(17);    
-    this->ui->tblLog->setModel(&this->model);
+   this->ui->tblLog->horizontalHeader()->setResizeMode(QHeaderView::ResizeToContents);
+   this->ui->tblLog->verticalHeader()->setResizeMode(QHeaderView::Custom);
+   this->ui->tblLog->verticalHeader()->setDefaultSectionSize(17);
+   this->ui->tblLog->setModel(&this->model);
+
+   this->severities = new TooglableList(this);
+   this->modules = new TooglableList(this);
+   this->threads = new TooglableList(this);
+
+   this->ui->laySeverity->addWidget(this->severities);
+   this->ui->layModule->addWidget(this->modules);
+   this->ui->layThread->addWidget(this->threads);
 }
 
 MainWindow::~MainWindow()
 {
-    delete ui;
+    delete this->ui;
     this->closeCurrentFile();
 }
 
@@ -61,6 +69,7 @@ void MainWindow::setCurrentFile(QString file)
    if (currentFile->exists() && this->currentFile->open(QIODevice::ReadOnly))
    {
       this->model.setDataSource(this->currentFile);
+      this->refreshFilters();
    }
 }
 
@@ -91,4 +100,15 @@ void MainWindow::closeCurrentFile()
    {
       delete this->currentFile;
    }
+}
+
+/**
+  * Ask the log model wich are the known severities, modules and thread. Then refresh the
+  * widgets 'TooglableList'.
+  */
+void MainWindow::refreshFilters()
+{
+   this->severities->setList(this->model.getSeverities());
+   this->modules->setList(this->model.getModules());
+   this->threads->setList(this->model.getThreads());
 }

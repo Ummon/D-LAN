@@ -3,34 +3,31 @@
 # -------------------------------------------------
 TARGET = LogViewer
 TEMPLATE = app
-
-CONFIG(debug, debug|release) {
-   FOLDER = debug
-   DEFINES += DEBUG
-} else {
-   FOLDER = release
+CONFIG(debug, debug|release) { 
+    FOLDER = debug
+    DEFINES += DEBUG
 }
-
+else:FOLDER = release
 DESTDIR = output/$$FOLDER
 MOC_DIR = .tmp/$$FOLDER
 OBJECTS_DIR = .tmp/$$FOLDER
-
+RCC_DIR = ".tmp/$$FOLDER"
+UI_DIR = ".tmp/$$FOLDER"
 INCLUDEPATH += . \
     ../..
-
 LIBS += -L../../Common/LogManager/output/$$FOLDER \
-     -lLogManager
+    -lLogManager
 POST_TARGETDEPS += ../../Common/LogManager/output/$$FOLDER/libLogManager.a
-
 LIBS += -L../../Common/output/$$FOLDER \
     -lCommon
 POST_TARGETDEPS += ../../Common/output/$$FOLDER/libCommon.a
-
 SOURCES += main.cpp \
     MainWindow.cpp \
-    TableLogModel.cpp
+    TableLogModel.cpp \
+    TooglableList.cpp
 HEADERS += MainWindow.h \
-    TableLogModel.h
+    TableLogModel.h \
+    TooglableList.h
 FORMS += MainWindow.ui \
     TooglableList.ui
 RESOURCES += resources.qrc

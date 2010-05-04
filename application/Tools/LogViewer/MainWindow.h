@@ -5,6 +5,7 @@
 #include <QDir>
 
 #include <TableLogModel.h>
+#include <TooglableList.h>
 
 namespace Ui { class MainWindow; }
 
@@ -25,8 +26,13 @@ private slots:
 private:
    void setCurrentDir(const QString& dir);
    void closeCurrentFile();
+   void refreshFilters();
 
-   Ui::MainWindow *ui;
+   TooglableList* severities;
+   TooglableList* modules;
+   TooglableList* threads;
+
+   Ui::MainWindow* ui;
 
    TableLogModel model;
 

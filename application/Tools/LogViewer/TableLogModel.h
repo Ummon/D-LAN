@@ -5,6 +5,7 @@
 #include <QFile>
 #include <QVector>
 #include <QSharedPointer>
+#include <QStringList>
 
 #include <Common/LogManager/IEntry.h>
 
@@ -21,6 +22,10 @@ public:
    void setDataSource(QFile* source);
    void removeDataSource();
 
+   const QStringList& getSeverities();
+   const QStringList& getModules();
+   const QStringList& getThreads();
+
 private:
    void readLines();
 
@@ -29,6 +34,9 @@ private:
    QFile* source;
 
    QVector< QSharedPointer<LM::IEntry> > entries;
+   QStringList severities;
+   QStringList modules;
+   QStringList threads;
 };
 
 #endif
