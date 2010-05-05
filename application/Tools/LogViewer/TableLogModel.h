@@ -11,6 +11,7 @@
 
 class TableLogModel : public QAbstractTableModel
 {
+   Q_OBJECT
 public:
    TableLogModel();
 
@@ -22,9 +23,11 @@ public:
    void setDataSource(QFile* source);
    void removeDataSource();
 
-   const QStringList& getSeverities();
-   const QStringList& getModules();
-   const QStringList& getThreads();
+   const QStringList& getSeverities() const;
+   const QStringList& getModules() const;
+   const QStringList& getThreads() const;
+
+   bool isFiltered(int num, const QStringList& severities, const QStringList& modules, const QStringList& threads) const;
 
 private:
    void readLines();

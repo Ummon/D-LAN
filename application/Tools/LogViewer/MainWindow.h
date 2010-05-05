@@ -3,6 +3,8 @@
 
 #include <QMainWindow>
 #include <QDir>
+#include <QLabel>
+#include <QStringList>
 
 #include <TableLogModel.h>
 #include <TooglableList.h>
@@ -23,14 +25,21 @@ private slots:
    void openDir();
    void setCurrentFile(QString file);
 
+   void filtersChange();
+   void checkAll();
+
 private:
    void setCurrentDir(const QString& dir);
    void closeCurrentFile();
    void refreshFilters();
 
+   bool disableRefreshFilters;
+
    TooglableList* severities;
    TooglableList* modules;
    TooglableList* threads;
+
+   QLabel* lblStatus;
 
    Ui::MainWindow* ui;
 
