@@ -6,11 +6,13 @@
 
 MainWindow::MainWindow(QWidget *parent) :
    QMainWindow(parent),
+   disableRefreshFilters(false),
    ui(new Ui::MainWindow),
    currentFile(0)
 {
    this->ui->setupUi(this);
    connect(this->ui->actOpen, SIGNAL(activated()), this, SLOT(openDir()));
+   connect(this->ui->butFilterAll, SIGNAL(clicked()), this, SLOT(checkAll()));
 
    this->currentDir.setSorting(QDir::Name);
 
@@ -22,10 +24,16 @@ MainWindow::MainWindow(QWidget *parent) :
    this->severities = new TooglableList(this);
    this->modules = new TooglableList(this);
    this->threads = new TooglableList(this);
+   connect(this->severities, SIGNAL(stateChanged()), this, SLOT(filtersChange()));
+   connect(this->modules, SIGNAL(stateChanged()), this, SLOT(filtersChange()));
+   connect(this->threads, SIGNAL(stateChanged()), this, SLOT(filtersChange()));
 
    this->ui->laySeverity->addWidget(this->severities);
    this->ui->layModule->addWidget(this->modules);
    this->ui->layThread->addWidget(this->threads);
+
+   this->lblStatus = new QLabel(this->ui->statusBar);
+   this->ui->statusBar->addWidget(this->lblStatus);
 }
 
 MainWindow::~MainWindow()
@@ -46,6 +54,9 @@ void MainWindow::changeEvent(QEvent *e)
     }
 }
 
+/**
+  * Ask the user to choose a directory. Trigged by the menu.
+  */
 void MainWindow::openDir()
 {
    QString dir = QFileDialog::getExistingDirectory(
@@ -74,14 +85,49 @@ void MainWindow::setCurrentFile(QString file)
 }
 
 /**
+  * Called when the filter is modified. It will refresh the entry list.
+  */
+void MainWindow::filtersChange()
+{
+   if (this->disableRefreshFilters)
+      return;
+
+   for (int i = 0; i < this->model.rowCount(); i++)
+   {
+      if (this->model.isFiltered(i, this->severities->getList(), this->modules->getList(), this->threads->getList()))
+         this->ui->tblLog->hideRow(i);
+      else
+         this->ui->tblLog->showRow(i);
+   }
+}
+
+/**
+  * Check all the filtered terms.
+  */
+void MainWindow::checkAll()
+{
+   this->disableRefreshFilters = true;
+   this->severities->checkAll();
+   this->modules->checkAll();
+   this->threads->checkAll();
+   this->disableRefreshFilters = false;
+   this->filtersChange();
+}
+
+/**
   * - Read the directory content
   * - Open the last log file
   */
 void MainWindow::setCurrentDir(const QString& dir)
 {
    this->currentDir.setPath(dir);
+   if (!this->currentDir.exists())
+      return;
+
    QStringList entries(this->currentDir.entryList());
    disconnect(this->ui->cmbFile, SIGNAL(currentIndexChanged(QString)));
+   this->ui->cmbFile->clear();
+   this->lblStatus->setText(dir);
    foreach (QString d, entries)
    {
       if (d.endsWith(".log"))

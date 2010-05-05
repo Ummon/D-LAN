@@ -1,6 +1,5 @@
 <RCC>
     <qresource prefix="/icons">
-        <file>ressources/cross.png</file>
         <file>ressources/tick.png</file>
         <file>ressources/arrow_refresh.png</file>
         <file>ressources/control_pause_blue.png</file>

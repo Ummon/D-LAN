@@ -234,26 +234,6 @@
           </widget>
          </item>
          <item>
-          <widget class="QPushButton" name="butNone">
-           <property name="maximumSize">
-            <size>
-             <width>24</width>
-             <height>24</height>
-            </size>
-           </property>
-           <property name="toolTip">
-            <string>Uncheck all</string>
-           </property>
-           <property name="text">
-            <string/>
-           </property>
-           <property name="icon">
-            <iconset resource="resources.qrc">
-             <normaloff>:/icons/ressources/cross.png</normaloff>:/icons/ressources/cross.png</iconset>
-           </property>
-          </widget>
-         </item>
-         <item>
           <spacer name="spc">
            <property name="orientation">
             <enum>Qt::Horizontal</enum>
@@ -347,7 +327,6 @@
   <tabstop>butRefresh</tabstop>
   <tabstop>tblLog</tabstop>
   <tabstop>butFilterAll</tabstop>
-  <tabstop>butNone</tabstop>
  </tabstops>
  <resources>
   <include location="resources.qrc"/>

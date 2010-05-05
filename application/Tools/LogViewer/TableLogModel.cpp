@@ -68,19 +68,30 @@ void TableLogModel::removeDataSource()
    this->source = 0;
 }
 
-const QStringList& TableLogModel::getSeverities()
+const QStringList& TableLogModel::getSeverities() const
 {
    return this->severities;
 }
 
-const QStringList& TableLogModel::getModules()
+const QStringList& TableLogModel::getModules() const
 {
    return this->modules;
 }
 
-const QStringList& TableLogModel::getThreads()
+const QStringList& TableLogModel::getThreads() const
 {
    return this->threads;
+}
+
+bool TableLogModel::isFiltered(int num, const QStringList& severities, const QStringList& modules, const QStringList& threads) const
+{
+   if (num >= this->entries.count())
+      return false;
+   return !(
+      severities.contains(this->entries[num]->getSeverityStr()) &&
+      modules.contains(this->entries[num]->getName()) &&
+      threads.contains(this->entries[num]->getThread())
+   );
 }
 
 void TableLogModel::readLines()
@@ -115,6 +126,9 @@ void TableLogModel::clear()
       return;
 
    this->beginRemoveRows(QModelIndex(), 0, this->entries.count() - 1);
+   this->severities.clear();
+   this->modules.clear();
+   this->threads.clear();
    this->entries.clear();
    this->endRemoveRows();
 }

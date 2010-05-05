@@ -6,9 +6,11 @@
 
 TooglableList::TooglableList(QWidget *parent) :
     QWidget(parent),
+    disableSignalStateChanged(false),
     ui(new Ui::TooglableList)
 {
    this->ui->setupUi(this);
+   connect(this->ui->butAll, SIGNAL(clicked()), this, SLOT(checkAll()));
 }
 
 TooglableList::~TooglableList()
@@ -16,8 +18,12 @@ TooglableList::~TooglableList()
     delete this->ui;
 }
 
+/**
+  * Define the terms which can be filtered.
+  */
 void TooglableList::setList(const QStringList& list)
 {
+   this->clear();
    foreach (QString item, list)
    {
       QLayout* lay = this->ui->widContent->layout();
@@ -25,18 +31,64 @@ void TooglableList::setList(const QStringList& list)
       but->sizePolicy().setHorizontalPolicy(QSizePolicy::MinimumExpanding);
       but->setText(item);
       but->setCheckable(true);
-      connect(but, SIGNAL(toggled(bool)), this, SIGNAL(stateChanged()));
+      but->setChecked(true);
+      connect(but, SIGNAL(toggled(bool)), this, SLOT(butToogled(bool)));
       lay->addWidget(but);
    }
 }
 
-QList<ToogleState> TooglableList::getList()
+QStringList TooglableList::getList()
 {
-   QList<ToogleState> list;
+   QStringList list;
    foreach (QObject* object, this->ui->widContent->children())
    {
-      if (QPushButton* button = dynamic_cast<QPushButton*>(object))
-         list << ToogleState(button->isChecked(), button->text());
+      QPushButton* button = dynamic_cast<QPushButton*>(object);
+      if (button && button->isChecked())
+         list << button->text();
    }
    return list;
 }
+
+void TooglableList::checkAll()
+{
+   this->disableSignalStateChanged = true;
+   bool stateHasChanged = false;
+   foreach (QObject* object, this->ui->widContent->children())
+      if (QPushButton* button = dynamic_cast<QPushButton*>(object))
+         if (!button->isChecked())
+         {
+            stateHasChanged = true;
+            button->setChecked(true);
+         }
+   this->disableSignalStateChanged = false;
+
+   if (stateHasChanged)
+      emit stateChanged();
+}
+
+/**
+  * Check that all button are not unchecked.
+  */
+void TooglableList::butToogled(bool)
+{
+   QPushButton* toggledBut = static_cast<QPushButton*>(QWidget::sender());
+
+   foreach (QObject* object, this->ui->widContent->children())
+      if (QPushButton* button = dynamic_cast<QPushButton*>(object))
+         if (button->isChecked())
+         {
+            if (!this->disableSignalStateChanged)
+               emit stateChanged();
+            return;
+         }
+
+   toggledBut->setChecked(true);
+}
+
+void TooglableList::clear()
+{
+   foreach (QObject* object, this->ui->widContent->children())
+      if (QPushButton* button = dynamic_cast<QPushButton*>(object))
+         delete button;
+}
+

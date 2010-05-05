@@ -5,13 +5,6 @@
 
 namespace Ui { class TooglableList; }
 
-struct ToogleState
-{
-   ToogleState(bool pushed, QString str) : pushed(pushed), str(str) {}
-   bool pushed;
-   QString str;
-};
-
 class TooglableList : public QWidget
 {
    Q_OBJECT
@@ -20,12 +13,22 @@ public:
    ~TooglableList();
 
    void setList(const QStringList& list);
-   QList<ToogleState> getList();
+   QStringList getList();
 
 signals:
    void stateChanged();
 
+public slots:
+   void checkAll();
+
+private slots:
+   void butToogled(bool);
+
 private:
+   void clear();
+
+   bool disableSignalStateChanged; ///< When all buttons are checked ('checkAll') it's usefull to avoid multiple signal sent.
+
    Ui::TooglableList* ui;
 };
 
