@@ -150,7 +150,7 @@ void MainWindow::setCurrentDir(const QString& dir)
 void MainWindow::readCurrentDir()
 {
    QStringList entries(this->currentDir.entryList());
-   disconnect(this->ui->cmbFile, SIGNAL(currentIndexChanged(QString)));
+   disconnect(this->ui->cmbFile, SIGNAL(currentIndexChanged(QString)), 0, 0);
    this->ui->cmbFile->clear();
    this->lblStatus->setText(this->currentDir.absolutePath());
    foreach (QString d, entries)
@@ -169,6 +169,7 @@ void MainWindow::closeCurrentFile()
    if (this->currentFile)
    {
       delete this->currentFile;
+      this->currentFile = 0;
    }
 }
 
