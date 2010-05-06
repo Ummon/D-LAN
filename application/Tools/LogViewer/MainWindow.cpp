@@ -2,6 +2,8 @@
 #include "ui_MainWindow.h"
 
 #include <QFileDialog>
+#include <QFileInfo>
+
 #include <Common/Constants.h>
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -13,6 +15,7 @@ MainWindow::MainWindow(QWidget *parent) :
    this->ui->setupUi(this);
    connect(this->ui->actOpen, SIGNAL(activated()), this, SLOT(openDir()));
    connect(this->ui->butFilterAll, SIGNAL(clicked()), this, SLOT(checkAll()));
+   connect(this->ui->butRefresh, SIGNAL(clicked()), this, SLOT(reloadAll()));
 
    this->currentDir.setSorting(QDir::Name);
 
@@ -115,6 +118,22 @@ void MainWindow::checkAll()
 }
 
 /**
+  * Reread the current directory and reload the current file.
+  */
+void MainWindow::reloadAll()
+{
+   if (!this->currentDir.exists())
+      return;
+   this->readCurrentDir();
+
+   this->ui->cmbFile->setCurrentIndex(this->ui->cmbFile->findText(QFileInfo(this->currentFile->fileName()).fileName()));
+   this->currentFile->reset();
+   this->model.setDataSource(this->currentFile);
+
+   this->refreshFilters();
+}
+
+/**
   * - Read the directory content
   * - Open the last log file
   */
@@ -124,10 +143,16 @@ void MainWindow::setCurrentDir(const QString& dir)
    if (!this->currentDir.exists())
       return;
 
+   this->readCurrentDir();
+   this->ui->cmbFile->setCurrentIndex(this->ui->cmbFile->count() - 1);
+}
+
+void MainWindow::readCurrentDir()
+{
    QStringList entries(this->currentDir.entryList());
    disconnect(this->ui->cmbFile, SIGNAL(currentIndexChanged(QString)));
    this->ui->cmbFile->clear();
-   this->lblStatus->setText(dir);
+   this->lblStatus->setText(this->currentDir.absolutePath());
    foreach (QString d, entries)
    {
       if (d.endsWith(".log"))
@@ -136,7 +161,6 @@ void MainWindow::setCurrentDir(const QString& dir)
       }
    }
    connect(this->ui->cmbFile, SIGNAL(currentIndexChanged(QString)), this, SLOT(setCurrentFile(QString)));
-   this->ui->cmbFile->setCurrentIndex(this->ui->cmbFile->count() - 1);
 }
 
 void MainWindow::closeCurrentFile()

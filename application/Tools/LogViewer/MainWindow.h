@@ -28,8 +28,11 @@ private slots:
    void filtersChange();
    void checkAll();
 
+   void reloadAll();
+
 private:
    void setCurrentDir(const QString& dir);
+   void readCurrentDir();
    void closeCurrentFile();
    void refreshFilters();
 
