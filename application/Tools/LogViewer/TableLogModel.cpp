@@ -116,6 +116,10 @@ void TableLogModel::readLines()
       if (!this->threads.contains(entry->getThread()))
          this->threads << entry->getThread();
    }
+
+   if (this->entries.count() - count <= 0)
+      return;
+
    this->beginInsertRows(QModelIndex(), count, this->entries.count() - 1);
    this->endInsertRows();
 }
