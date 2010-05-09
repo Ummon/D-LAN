@@ -12,6 +12,7 @@
 TableLogModel::TableLogModel() :
    source(0)
 {
+   connect(&this->watcher, SIGNAL(fileChanged(QString)), this, SLOT(fileChanged()));
 }
 
 int TableLogModel::rowCount(const QModelIndex& parent) const
@@ -63,7 +64,10 @@ QVariant TableLogModel::headerData(int section, Qt::Orientation orientation, int
 void TableLogModel::setDataSource(QFile* source)
 {
    this->clear();
+   if (this->source)
+      this->watcher.removePath(this->source->fileName());
    this->source = source;
+   this->watcher.addPath(this->source->fileName());
    this->readLines();
 }
 
@@ -106,6 +110,11 @@ bool TableLogModel::isFiltered(int num, const QStringList& severities, const QSt
    );
 }
 
+void TableLogModel::fileChanged()
+{
+   this->readLines();
+}
+
 void TableLogModel::readLines()
 {
    QTextStream stream(this->source);
@@ -116,6 +125,10 @@ void TableLogModel::readLines()
    QString line;
    while (line = stream.readLine(), !line.isNull())
    {
+      line = line.trimmed();
+      if (line.isEmpty())
+         continue;
+
       QSharedPointer<LM::IEntry> entry = LM::Builder::decode(line);
       this->entries << entry;
 
@@ -135,7 +148,7 @@ void TableLogModel::readLines()
    this->beginInsertRows(QModelIndex(), count, this->entries.count() - 1);
    this->endInsertRows();
 
-   emit(newLogEntries());
+   emit(newLogEntries(this->entries.count() - count));
 }
 
 void TableLogModel::clear()

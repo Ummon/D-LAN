@@ -6,6 +6,7 @@
 #include <QVector>
 #include <QSharedPointer>
 #include <QStringList>
+#include <QFileSystemWatcher>
 
 #include <Common/LogManager/IEntry.h>
 
@@ -32,7 +33,13 @@ public:
    bool isFiltered(int num, const QStringList& severities, const QStringList& modules, const QStringList& threads) const;
 
 signals:
-   void newLogEntries();
+   /**
+     * 'n' is the number of entry added.
+     */
+   void newLogEntries(int n);
+
+private slots:
+   void fileChanged();
 
 private:
    void readLines();
@@ -40,8 +47,10 @@ private:
    void clear();
 
    QFile* source;
+   QFileSystemWatcher watcher;
 
    QVector< QSharedPointer<LM::IEntry> > entries;
+
    QStringList severities;
    QStringList modules;
    QStringList threads;
