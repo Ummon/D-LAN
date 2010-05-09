@@ -3,6 +3,7 @@
 #include <QTextStream>
 
 #include <Common/LogManager/Builder.h>
+#include <Common/LogManager/Exceptions.h>
 
 /**
   * @class TableLogModel
@@ -12,7 +13,6 @@
 TableLogModel::TableLogModel() :
    source(0)
 {
-   connect(&this->watcher, SIGNAL(fileChanged(QString)), this, SLOT(fileChanged()));
 }
 
 int TableLogModel::rowCount(const QModelIndex& parent) const
@@ -110,6 +110,14 @@ bool TableLogModel::isFiltered(int num, const QStringList& severities, const QSt
    );
 }
 
+void TableLogModel::setWatchingPause(bool pause)
+{
+   if (pause)
+      disconnect(&this->watcher, SIGNAL(fileChanged(QString)), this, SLOT(fileChanged()));
+   else
+      connect(&this->watcher, SIGNAL(fileChanged(QString)), this, SLOT(fileChanged()));
+}
+
 void TableLogModel::fileChanged()
 {
    this->readLines();
@@ -129,17 +137,24 @@ void TableLogModel::readLines()
       if (line.isEmpty())
          continue;
 
-      QSharedPointer<LM::IEntry> entry = LM::Builder::decode(line);
-      this->entries << entry;
+      try
+      {
+         QSharedPointer<LM::IEntry> entry = LM::Builder::decode(line);
+         this->entries << entry;
 
-      if (!this->severities.contains(entry->getSeverityStr()))
-         this->severities << entry->getSeverityStr();
+         if (!this->severities.contains(entry->getSeverityStr()))
+            this->severities << entry->getSeverityStr();
 
-      if (!this->modules.contains(entry->getName()))
-         this->modules << entry->getName();
+         if (!this->modules.contains(entry->getName()))
+            this->modules << entry->getName();
 
-      if (!this->threads.contains(entry->getThread()))
-         this->threads << entry->getThread();
+         if (!this->threads.contains(entry->getThread()))
+            this->threads << entry->getThread();
+      }
+      catch (LM::MalformedEntryLog&)
+      {
+         // Malformed line are silently ignored.
+      }
    }
 
    if (this->entries.count() - count <= 0)

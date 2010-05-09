@@ -39,6 +39,9 @@ MainWindow::MainWindow(QWidget *parent) :
 
    this->lblStatus = new QLabel(this->ui->statusBar);
    this->ui->statusBar->addWidget(this->lblStatus);
+
+   connect(this->ui->butPause, SIGNAL(toggled(bool)), this, SLOT(setWatchingPause(bool)));
+   this->setWatchingPause(false);
 }
 
 MainWindow::~MainWindow()
@@ -141,15 +144,38 @@ void MainWindow::newLogEntries(int n)
    this->ui->tblLog->scrollToBottom();
 }
 
+void MainWindow::setWatchingPause(bool pause)
+{
+   if (pause)
+      disconnect(&this->watcher, SIGNAL(directoryChanged(QString)), this, SLOT(directoryChanged()));
+   else
+      connect(&this->watcher, SIGNAL(directoryChanged(QString)), this, SLOT(directoryChanged()));
+
+   this->model.setWatchingPause(pause);
+}
+
+void MainWindow::directoryChanged()
+{
+   if (!this->currentFile || !this->currentDir.exists())
+      return;
+
+   this->readCurrentDir();
+   this->ui->cmbFile->setCurrentIndex(this->ui->cmbFile->count() - 1);
+}
+
 /**
   * - Read the directory content
   * - Open the last log file
   */
 void MainWindow::setCurrentDir(const QString& dir)
 {
+   this->watcher.removePath(this->currentDir.absolutePath());
+
    this->currentDir.setPath(dir);
    if (!this->currentDir.exists())
       return;
+
+   this->watcher.addPath(this->currentDir.absolutePath());
 
    this->readCurrentDir();
    this->ui->cmbFile->setCurrentIndex(this->ui->cmbFile->count() - 1);

@@ -4,6 +4,8 @@ using namespace LM;
 #include <QString>
 #include <QStringList>
 
+#include <Exceptions.h>
+
 const QString Entry::DATE_TIME_FORMAT("dd-MM-yyyy HH:mm:ss");
 const QString Entry::SEVERITIES_STR[] = {"Fatal", "Error", "Warning", "Debug", "User", "Unkown"};
 
@@ -12,7 +14,7 @@ Entry::Entry(const QString& line) :
    severity(SV_UNKNOWN)
 {
    if (!lineRegExp.exactMatch(line))
-      return;
+      throw MalformedEntryLog(line);
 
    QStringList capturedTexts = lineRegExp.capturedTexts();
 
