@@ -29,12 +29,14 @@ private slots:
    void checkAll();
 
    void reloadAll();
+   void newLogEntries(int n);
 
 private:
    void setCurrentDir(const QString& dir);
    void readCurrentDir();
    void closeCurrentFile();
    void refreshFilters();
+   void filterRow(int r);
 
    bool disableRefreshFilters;
 

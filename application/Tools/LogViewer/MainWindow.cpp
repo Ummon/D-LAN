@@ -18,9 +18,6 @@ MainWindow::MainWindow(QWidget *parent) :
    connect(this->ui->butFilterAll, SIGNAL(clicked()), this, SLOT(checkAll()));
    connect(this->ui->butRefresh, SIGNAL(clicked()), this, SLOT(reloadAll()));
 
-   // It's should be better to use the signal 'rowsInserted' but it does work with 'scrollToBottom'.
-   connect(&this->model, SIGNAL(newLogEntries()), this->ui->tblLog, SLOT(scrollToBottom()));
-
    this->currentDir.setSorting(QDir::Name);
 
    this->ui->tblLog->horizontalHeader()->setResizeMode(QHeaderView::ResizeToContents);
@@ -83,12 +80,15 @@ void MainWindow::openDir()
 void MainWindow::setCurrentFile(QString file)
 {
    this->closeCurrentFile();
+   disconnect(&this->model, SIGNAL(newLogEntries(int)), 0, 0);
 
    this->currentFile = new QFile(this->currentDir.absolutePath() + '/' + file);
    if (currentFile->exists() && this->currentFile->open(QIODevice::ReadOnly))
    {
       this->model.setDataSource(this->currentFile);
       this->refreshFilters();
+      this->ui->tblLog->scrollToBottom();
+      connect(&this->model, SIGNAL(newLogEntries(int)), this, SLOT(newLogEntries(int)));
    }
 }
 
@@ -101,12 +101,7 @@ void MainWindow::filtersChange()
       return;
 
    for (int i = 0; i < this->model.rowCount(); i++)
-   {
-      if (this->model.isFiltered(i, this->severities->getList(), this->modules->getList(), this->threads->getList()))
-         this->ui->tblLog->hideRow(i);
-      else
-         this->ui->tblLog->showRow(i);
-   }
+      this->filterRow(i);
 }
 
 /**
@@ -137,6 +132,13 @@ void MainWindow::reloadAll()
    this->model.setDataSource(this->currentFile);
 
    this->refreshFilters();
+}
+
+void MainWindow::newLogEntries(int n)
+{
+   for (int i = this->model.rowCount() - n; i < this->model.rowCount(); i++)
+      this->filterRow(i);
+   this->ui->tblLog->scrollToBottom();
 }
 
 /**
@@ -188,4 +190,15 @@ void MainWindow::refreshFilters()
    this->severities->setList(this->model.getSeverities());
    this->modules->setList(this->model.getModules());
    this->threads->setList(this->model.getThreads());
+}
+
+/**
+  * Hide or show the given row depending the current filters.
+  */
+void MainWindow::filterRow(int r)
+{
+   if (this->model.isFiltered(r, this->severities->getList(), this->modules->getList(), this->threads->getList()))
+      this->ui->tblLog->hideRow(r);
+   else
+      this->ui->tblLog->showRow(r);
 }
