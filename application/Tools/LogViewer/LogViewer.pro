@@ -24,10 +24,12 @@ POST_TARGETDEPS += ../../Common/output/$$FOLDER/libCommon.a
 SOURCES += main.cpp \
     MainWindow.cpp \
     TableLogModel.cpp \
-    TooglableList.cpp
+    TooglableList.cpp \
+    TableLogItemDelegate.cpp
 HEADERS += MainWindow.h \
     TableLogModel.h \
-    TooglableList.h
+    TooglableList.h \
+    TableLogItemDelegate.h
 FORMS += MainWindow.ui \
     TooglableList.ui
 RESOURCES += resources.qrc
