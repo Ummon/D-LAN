@@ -46,9 +46,9 @@ FileManager::FileManager()
 
 FileManager::~FileManager()
 {
-   L_DEBUG("~FileManager : Stopping the file updater..");
+   L_DEBU("~FileManager : Stopping the file updater..");
    this->fileUpdater.stop();
-   L_DEBUG("FileManager deleted");
+   L_DEBU("FileManager deleted");
 }
 
 QStringList FileManager::getSharedDirsReadOnly()
@@ -240,7 +240,7 @@ void FileManager::entryAdded(Entry* entry)
    if (entry->getName().isEmpty())
       return;
 
-   L_DEBUG(QString("Adding entry '%1' to the index..").arg(entry->getName()));
+   L_DEBU(QString("Adding entry '%1' to the index..").arg(entry->getName()));
    this->wordIndex.addItem(FileManager::splitInWords(entry->getName()), entry);
 }
 
@@ -249,13 +249,13 @@ void FileManager::entryRemoved(Entry* entry)
    if (entry->getName().isEmpty())
       return;
 
-   L_DEBUG(QString("Removing entry '%1' from the index..").arg(entry->getName()));
+   L_DEBU(QString("Removing entry '%1' from the index..").arg(entry->getName()));
    this->wordIndex.rmItem(FileManager::splitInWords(entry->getName()), entry);
 }
 
 void FileManager::chunkHashKnown(Chunk* chunk)
 {
-   L_DEBUG(QString("Adding chunk '%1' to the index..").arg(chunk->getHash().toStr()));
+   L_DEBU(QString("Adding chunk '%1' to the index..").arg(chunk->getHash().toStr()));
    this->chunks.add(chunk);
 }
 
@@ -316,8 +316,8 @@ void FileManager::loadCacheFromFile()
 
 void FileManager::persistCacheToFile()
 {
-   L_DEBUG("Persists cache..");
-   L_DEBUG("#######################################");
+   L_DEBU("Persists cache..");
+   L_DEBU("#######################################");
 
    Protos::FileCache::Hashes hashes;
    this->cache.saveInFile(hashes);

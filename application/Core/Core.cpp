@@ -14,12 +14,14 @@ using namespace Core;
 #include <NetworkListener/ISearch.h>
 #include <PeerManager/Builder.h>
 
-::Core::Core()
-   : QObject(), logger(LM::Builder::newLogger("Core"))
+::Core::Core() :
+   QObject(),
+   logger(LM::Builder::newLogger("Core"))
 {
    GOOGLE_PROTOBUF_VERIFY_VERSION;
 
-   this->logger->log("Loading ..", LM::EndUser);
+   LOG_USER(this->logger, "Loading ..");
+
    QThread::currentThread()->setObjectName("Core");
 
    this->fileManager = FM::Builder::newFileManager();
@@ -27,7 +29,7 @@ using namespace Core;
    this->peerManager->setNick("Test");
    this->networkListener = NL::Builder::newNetworkListener(this->peerManager);
 
-   this->logger->log("Ready to serve", LM::EndUser);
+   LOG_USER(this->logger, "Ready to serve");
 
    NL::ISearch* s = this->networkListener->search();
    s->search("coucou");

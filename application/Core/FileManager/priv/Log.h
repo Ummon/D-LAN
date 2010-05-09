@@ -9,11 +9,11 @@ namespace FM
    // There is only one logger for the FileManager component.
    static QSharedPointer<LM::ILogger> logger(LM::Builder::newLogger("FileManager"));
 
-   #define L_USER(mess) LOG_FATAL(logger, mess)
-   #define L_DEBUG(mess) LOG_FATAL(logger, mess)
-   #define L_WARN(mess) LOG_FATAL(logger, mess)
-   #define L_ERR(mess) LOG_FATAL(logger, mess)
-   #define L_FATAL(mess) LOG_FATAL(logger, mess)
+   #define L_USER(mess) LOG_USER(logger, mess)
+   #define L_DEBU(mess) LOG_DEBU(logger, mess)
+   #define L_WARN(mess) LOG_WARN(logger, mess)
+   #define L_ERRO(mess) LOG_ERRO(logger, mess)
+   #define L_FATA(mess) LOG_FATA(logger, mess)
 }
 
 #endif
