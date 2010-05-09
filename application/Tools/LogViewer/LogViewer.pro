@@ -15,12 +15,12 @@ RCC_DIR = ".tmp/$$FOLDER"
 UI_DIR = ".tmp/$$FOLDER"
 INCLUDEPATH += . \
     ../..
-LIBS += -L../../Common/LogManager/output/$$FOLDER \
+LIBS += -L../Common/LogManager/output/$$FOLDER \
     -lLogManager
-POST_TARGETDEPS += ../../Common/LogManager/output/$$FOLDER/libLogManager.a
-LIBS += -L../../Common/output/$$FOLDER \
+POST_TARGETDEPS += ../Common/LogManager/output/$$FOLDER/libLogManager.a
+LIBS += -L../Common/output/$$FOLDER \
     -lCommon
-POST_TARGETDEPS += ../../Common/output/$$FOLDER/libCommon.a
+POST_TARGETDEPS += ../Common/output/$$FOLDER/libCommon.a
 SOURCES += main.cpp \
     MainWindow.cpp \
     TableLogModel.cpp \

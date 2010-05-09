@@ -16,6 +16,7 @@ QSharedPointer<ILogger> Builder::newLogger(const QString& name)
 
 /**
   * Read a log entry given as a string.
+  * @exception MalformedEntryLog
   */
 QSharedPointer<IEntry> Builder::decode(const QString& line)
 {

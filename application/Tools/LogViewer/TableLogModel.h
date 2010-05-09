@@ -32,6 +32,9 @@ public:
 
    bool isFiltered(int num, const QStringList& severities, const QStringList& modules, const QStringList& threads) const;
 
+public slots:
+   void setWatchingPause(bool pause);
+
 signals:
    /**
      * 'n' is the number of entry added.

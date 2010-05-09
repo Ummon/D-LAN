@@ -5,6 +5,7 @@
 #include <QDir>
 #include <QLabel>
 #include <QStringList>
+#include <QFileSystemWatcher>
 
 #include <TableLogModel.h>
 #include <TooglableList.h>
@@ -31,6 +32,9 @@ private slots:
    void reloadAll();
    void newLogEntries(int n);
 
+   void setWatchingPause(bool pause);
+   void directoryChanged();
+
 private:
    void setCurrentDir(const QString& dir);
    void readCurrentDir();
@@ -52,6 +56,7 @@ private:
 
    QDir currentDir;
    QFile* currentFile;
+   QFileSystemWatcher watcher;
 };
 
 #endif
