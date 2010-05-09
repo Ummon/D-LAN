@@ -29,7 +29,6 @@ private slots:
    void checkAll();
 
    void reloadAll();
-   void test();
 
 private:
    void setCurrentDir(const QString& dir);

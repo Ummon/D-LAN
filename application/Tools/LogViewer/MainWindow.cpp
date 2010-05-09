@@ -19,7 +19,7 @@ MainWindow::MainWindow(QWidget *parent) :
    connect(this->ui->butRefresh, SIGNAL(clicked()), this, SLOT(reloadAll()));
 
    // It's should be better to use the signal 'rowsInserted' but it does work with 'scrollToBottom'.
-   connect(&this->model, SIGNAL(newLogEntries()), this, SLOT(test()));
+   connect(&this->model, SIGNAL(newLogEntries()), this->ui->tblLog, SLOT(scrollToBottom()));
 
    this->currentDir.setSorting(QDir::Name);
 
@@ -137,15 +137,6 @@ void MainWindow::reloadAll()
    this->model.setDataSource(this->currentFile);
 
    this->refreshFilters();
-}
-
-#include <iostream>
-void MainWindow::test()
-{
-   using namespace std;
-   cout << "hello" << endl;
-   //this->ui->tblLog->scrollTo(index);
-   this->ui->tblLog->scrollToBottom();
 }
 
 /**
