@@ -6,6 +6,12 @@
 
 #include <TableLogModel.h>
 
+/**
+  * @class TableLogItemDelegate
+  * Override the pain method for table log items and
+  * draw them in fonction of their severity.
+  */
+
 TableLogItemDelegate::TableLogItemDelegate(QObject *parent) :
     QItemDelegate(parent)
 {
