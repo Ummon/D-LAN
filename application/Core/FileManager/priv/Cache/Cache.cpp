@@ -153,7 +153,7 @@ void Cache::setSharedDirs(const QStringList& dirs, SharedDirectory::Rights right
    for (j.toFront(); j.hasNext();)
    {
       SharedDirectory* dir = j.next();
-      L_DEBUG("Remove a shared directory : " + dir->getFullPath());
+      L_DEBU("Remove a shared directory : " + dir->getFullPath());
       this->removeSharedDir(dir);
    }
 
@@ -431,7 +431,7 @@ void Cache::createSharedDirs(const QStringList& dirs, const QList<SharedDirector
             new SharedDirectory(this, path, currentRights, k.next()) :
             new SharedDirectory(this, path, currentRights);
 
-         L_DEBUG(QString("Add a new shared directory : %1").arg(path));
+         L_DEBU(QString("Add a new shared directory : %1").arg(path));
          emit newSharedDirectory(dir);
          //this->fileUpdater->addRoot(dir);
          this->sharedDirs << dir;

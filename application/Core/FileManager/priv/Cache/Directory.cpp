@@ -30,7 +30,7 @@ Directory::~Directory()
    foreach (Directory* d, this->subDirs)
       delete d;
 
-   L_DEBUG(QString("Directory deleted : %1").arg(this->getFullPath()));
+   L_DEBU(QString("Directory deleted : %1").arg(this->getFullPath()));
 }
 
 QList<File*> Directory::restoreFromFileCache(const Protos::FileCache::Hashes_Dir& dir)
@@ -100,7 +100,7 @@ void Directory::populateDirEntry(Protos::Common::DirEntry* entry) const
 
 void Directory::fileDeleted(File* file)
 {
-   L_DEBUG(QString("Directory::fileDeleted() remove %1 from %2").arg(file->getFullPath()).arg(this->getFullPath()));
+   L_DEBU(QString("Directory::fileDeleted() remove %1 from %2").arg(file->getFullPath()).arg(this->getFullPath()));
    this->files.removeOne(file);
 }
 
@@ -215,8 +215,8 @@ void Directory::stealContent(Directory* dir)
 {
    if (dir == this)
    {
+      L_ERRO("Directory::stealSubDirs(..) : dir == this");
       return;
-      L_ERR("Directory::stealSubDirs(..) : dir == this");
    }
 
    //LOG_DEBUG(QString("this = %1, dir = %2").arg(this->getFullPath()).arg(dir->getFullPath()));
