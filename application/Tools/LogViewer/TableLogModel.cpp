@@ -4,6 +4,11 @@
 
 #include <Common/LogManager/Builder.h>
 
+/**
+  * @class TableLogModel
+  * Acess to the file data log, read it and organize it for the views.
+  */
+
 TableLogModel::TableLogModel() :
    source(0)
 {
@@ -68,6 +73,13 @@ void TableLogModel::removeDataSource()
    this->source = 0;
 }
 
+LM::Severity TableLogModel::getSeverity(int row) const
+{
+   if (row >= this->entries.count())
+      return LM::SV_UNKNOWN;
+   return this->entries[row]->getSeverity();
+}
+
 const QStringList& TableLogModel::getSeverities() const
 {
    return this->severities;
@@ -122,6 +134,8 @@ void TableLogModel::readLines()
 
    this->beginInsertRows(QModelIndex(), count, this->entries.count() - 1);
    this->endInsertRows();
+
+   emit(newLogEntries());
 }
 
 void TableLogModel::clear()

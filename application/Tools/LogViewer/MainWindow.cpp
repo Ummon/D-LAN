@@ -5,6 +5,7 @@
 #include <QFileInfo>
 
 #include <Common/Constants.h>
+#include <TableLogItemDelegate.h>
 
 MainWindow::MainWindow(QWidget *parent) :
    QMainWindow(parent),
@@ -17,12 +18,16 @@ MainWindow::MainWindow(QWidget *parent) :
    connect(this->ui->butFilterAll, SIGNAL(clicked()), this, SLOT(checkAll()));
    connect(this->ui->butRefresh, SIGNAL(clicked()), this, SLOT(reloadAll()));
 
+   // It's should be better to use the signal 'rowsInserted' but it does work with 'scrollToBottom'.
+   connect(&this->model, SIGNAL(newLogEntries()), this, SLOT(test()));
+
    this->currentDir.setSorting(QDir::Name);
 
    this->ui->tblLog->horizontalHeader()->setResizeMode(QHeaderView::ResizeToContents);
    this->ui->tblLog->verticalHeader()->setResizeMode(QHeaderView::Custom);
    this->ui->tblLog->verticalHeader()->setDefaultSectionSize(17);
    this->ui->tblLog->setModel(&this->model);
+   this->ui->tblLog->setItemDelegate(new TableLogItemDelegate(this));
 
    this->severities = new TooglableList(this);
    this->modules = new TooglableList(this);
@@ -122,8 +127,9 @@ void MainWindow::checkAll()
   */
 void MainWindow::reloadAll()
 {
-   if (!this->currentDir.exists())
+   if (!this->currentFile || !this->currentDir.exists())
       return;
+
    this->readCurrentDir();
 
    this->ui->cmbFile->setCurrentIndex(this->ui->cmbFile->findText(QFileInfo(this->currentFile->fileName()).fileName()));
@@ -131,6 +137,15 @@ void MainWindow::reloadAll()
    this->model.setDataSource(this->currentFile);
 
    this->refreshFilters();
+}
+
+#include <iostream>
+void MainWindow::test()
+{
+   using namespace std;
+   cout << "hello" << endl;
+   //this->ui->tblLog->scrollTo(index);
+   this->ui->tblLog->scrollToBottom();
 }
 
 /**

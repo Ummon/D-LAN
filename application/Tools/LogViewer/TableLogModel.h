@@ -23,11 +23,16 @@ public:
    void setDataSource(QFile* source);
    void removeDataSource();
 
+   LM::Severity getSeverity(int row) const;
+
    const QStringList& getSeverities() const;
    const QStringList& getModules() const;
    const QStringList& getThreads() const;
 
    bool isFiltered(int num, const QStringList& severities, const QStringList& modules, const QStringList& threads) const;
+
+signals:
+   void newLogEntries();
 
 private:
    void readLines();
