@@ -11,7 +11,7 @@ namespace LM
    /**
      * Example of a log line :
      * 04-05-2010 17:16:44 [User] {Logger1} (896) <Tests.cpp:30> : This is an user message log
-     * Line return (\n) are replaced by the string "<cr>".
+     * Line return (\n) are replaced by the string "<lf>".
      * All strings are logged in UTF-8.
      */
    class ILogger
