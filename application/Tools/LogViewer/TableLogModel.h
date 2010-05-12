@@ -7,6 +7,8 @@
 #include <QSharedPointer>
 #include <QStringList>
 #include <QFileSystemWatcher>
+#include <QSocketNotifier>
+#include <QTimer>
 
 #include <Common/LogManager/IEntry.h>
 
@@ -41,6 +43,10 @@ signals:
      */
    void newLogEntries(int n);
 
+   void newSeverity(QString);
+   void newModule(QString);
+   void newThread(QString);
+
 private slots:
    void fileChanged();
 
@@ -50,7 +56,7 @@ private:
    void clear();
 
    QFile* source;
-   QFileSystemWatcher watcher;
+   QTimer timer;
 
    QVector< QSharedPointer<LM::IEntry> > entries;
 

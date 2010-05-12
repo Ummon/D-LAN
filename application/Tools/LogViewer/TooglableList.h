@@ -19,6 +19,7 @@ signals:
    void stateChanged();
 
 public slots:
+   void addItem(const QString& item);
    void checkAll();
 
 private slots:

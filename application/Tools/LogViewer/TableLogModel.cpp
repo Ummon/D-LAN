@@ -13,6 +13,8 @@
 TableLogModel::TableLogModel() :
    source(0)
 {
+   this->timer.setInterval(500);
+   connect(&this->timer, SIGNAL(timeout()), this, SLOT(fileChanged()));
 }
 
 int TableLogModel::rowCount(const QModelIndex& parent) const
@@ -64,10 +66,7 @@ QVariant TableLogModel::headerData(int section, Qt::Orientation orientation, int
 void TableLogModel::setDataSource(QFile* source)
 {
    this->clear();
-   if (this->source)
-      this->watcher.removePath(this->source->fileName());
    this->source = source;
-   this->watcher.addPath(this->source->fileName());
    this->readLines();
 }
 
@@ -113,9 +112,9 @@ bool TableLogModel::isFiltered(int num, const QStringList& severities, const QSt
 void TableLogModel::setWatchingPause(bool pause)
 {
    if (pause)
-      disconnect(&this->watcher, SIGNAL(fileChanged(QString)), this, SLOT(fileChanged()));
+      this->timer.stop();
    else
-      connect(&this->watcher, SIGNAL(fileChanged(QString)), this, SLOT(fileChanged()));
+      this->timer.start();
 }
 
 void TableLogModel::fileChanged()
@@ -125,6 +124,9 @@ void TableLogModel::fileChanged()
 
 void TableLogModel::readLines()
 {
+   if (!this->source)
+      return;
+
    QTextStream stream(this->source);
    stream.setCodec("UTF-8");
 
@@ -143,13 +145,22 @@ void TableLogModel::readLines()
          this->entries << entry;
 
          if (!this->severities.contains(entry->getSeverityStr()))
+         {
             this->severities << entry->getSeverityStr();
+            emit newSeverity(entry->getSeverityStr());
+         }
 
          if (!this->modules.contains(entry->getName()))
+         {
             this->modules << entry->getName();
+            emit newModule(entry->getName());
+         }
 
          if (!this->threads.contains(entry->getThread()))
+         {
             this->threads << entry->getThread();
+            emit newThread(entry->getThread());
+         }
       }
       catch (LM::MalformedEntryLog&)
       {

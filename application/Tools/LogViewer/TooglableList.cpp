@@ -25,16 +25,7 @@ void TooglableList::setList(const QStringList& list)
 {
    this->clear();
    foreach (QString item, list)
-   {
-      QLayout* lay = this->ui->widContent->layout();
-      QPushButton* but = new QPushButton(this->ui->widContent);
-      but->sizePolicy().setHorizontalPolicy(QSizePolicy::MinimumExpanding);
-      but->setText(item);
-      but->setCheckable(true);
-      but->setChecked(true);
-      connect(but, SIGNAL(toggled(bool)), this, SLOT(butToogled(bool)));
-      lay->addWidget(but);
-   }
+      this->addItem(item);
 }
 
 QStringList TooglableList::getList()
@@ -47,6 +38,18 @@ QStringList TooglableList::getList()
          list << button->text();
    }
    return list;
+}
+
+void TooglableList::addItem(const QString& item)
+{
+   QLayout* lay = this->ui->widContent->layout();
+   QPushButton* but = new QPushButton(this->ui->widContent);
+   but->sizePolicy().setHorizontalPolicy(QSizePolicy::MinimumExpanding);
+   but->setText(item);
+   but->setCheckable(true);
+   but->setChecked(true);
+   connect(but, SIGNAL(toggled(bool)), this, SLOT(butToogled(bool)));
+   lay->addWidget(but);
 }
 
 void TooglableList::checkAll()
