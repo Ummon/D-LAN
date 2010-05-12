@@ -90,6 +90,12 @@ void MainWindow::setCurrentFile(QString file)
    {
       this->model.setDataSource(this->currentFile);
       this->refreshFilters();
+
+      // New messages can be logged after the file is loaded, thus some new severities/modules/threads can appear.
+      connect(&this->model, SIGNAL(newSeverity(QString)), this->severities, SLOT(addItem(const QString&)));
+      connect(&this->model, SIGNAL(newModule(QString)), this->modules, SLOT(addItem(const QString&)));
+      connect(&this->model, SIGNAL(newThread(QString)), this->threads, SLOT(addItem(const QString&)));
+
       this->ui->tblLog->scrollToBottom();
       connect(&this->model, SIGNAL(newLogEntries(int)), this, SLOT(newLogEntries(int)));
    }
@@ -160,7 +166,6 @@ void MainWindow::directoryChanged()
       return;
 
    this->readCurrentDir();
-   this->ui->cmbFile->setCurrentIndex(this->ui->cmbFile->count() - 1);
 }
 
 /**
@@ -178,11 +183,15 @@ void MainWindow::setCurrentDir(const QString& dir)
    this->watcher.addPath(this->currentDir.absolutePath());
 
    this->readCurrentDir();
-   this->ui->cmbFile->setCurrentIndex(this->ui->cmbFile->count() - 1);
 }
 
+/**
+  * Read or refresh the current directory set with 'setCurrentDirectory'.
+  * The newest file will become the current file and be automatically loaded.
+  */
 void MainWindow::readCurrentDir()
 {
+   this->currentDir.refresh();
    QStringList entries(this->currentDir.entryList());
    disconnect(this->ui->cmbFile, SIGNAL(currentIndexChanged(QString)), 0, 0);
    this->ui->cmbFile->clear();
@@ -194,11 +203,19 @@ void MainWindow::readCurrentDir()
          this->ui->cmbFile->addItem(d);
       }
    }
+   this->ui->cmbFile->setCurrentIndex(this->ui->cmbFile->count() - 1);
+
+   if (this-ui->cmbFile->count() > 0)
+      this->setCurrentFile(this->ui->cmbFile->itemText(this->ui->cmbFile->count() - 1));
+
    connect(this->ui->cmbFile, SIGNAL(currentIndexChanged(QString)), this, SLOT(setCurrentFile(QString)));
 }
 
 void MainWindow::closeCurrentFile()
 {
+   disconnect(&this->model, SIGNAL(newSeverity(QString)), this->severities, SLOT(addItem(const QString&)));
+   disconnect(&this->model, SIGNAL(newModule(QString)), this->modules, SLOT(addItem(const QString&)));
+   disconnect(&this->model, SIGNAL(newThread(QString)), this->threads, SLOT(addItem(const QString&)));
    this->model.removeDataSource();
    if (this->currentFile)
    {

@@ -8,7 +8,7 @@
 
 /**
   * @class TableLogItemDelegate
-  * Override the pain method for table log items and
+  * Override the paint method for table log items and
   * draw them in fonction of their severity.
   */
 
