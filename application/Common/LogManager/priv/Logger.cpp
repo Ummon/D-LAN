@@ -76,7 +76,7 @@ void Logger::log(const QString& originalMessage, Severity severity, const char* 
    QString threadName = QThread::currentThread()->objectName();
 
    QString message(originalMessage);
-   message.replace('\n', "<cr>");
+   message.replace('\n', "<lf>");
 
    bool logFilnameAndLineNumber = filename && line;
 

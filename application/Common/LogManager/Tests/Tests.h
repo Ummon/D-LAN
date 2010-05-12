@@ -4,9 +4,21 @@
 #include <QObject>
 #include <QVector>
 #include <QSharedPointer>
+#include <QThread>
 
 #include <ILogger.h>
 using namespace LM;
+
+class Logger : public QThread
+{
+public:
+   Logger(const QString& name, int delta);
+   void run();
+
+private:
+   QSharedPointer<ILogger> logger;
+   int delta;
+};
 
 class Tests : public QObject
 {
@@ -19,10 +31,11 @@ private slots:
    void createLoggers();
    void logSomeBasicMessages();
    void logSomeMessagesWithSpecialCharacters();
-   void logALotOfRandomMessages();
+   void startTheThreadLoggers();
 
 private:
    QVector< QSharedPointer<ILogger> > loggers;
+   QVector< QSharedPointer<Logger> > threadLoggers;
 };
 
 #endif
