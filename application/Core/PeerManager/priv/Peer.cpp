@@ -82,7 +82,7 @@ bool ::Peer::send(const QByteArray& data)
       QObject::connect(this->socket.data(), SIGNAL(readyRead()), this, SLOT(gotData()));
       this->socket->connectToHost(this->IP, Peer::port);
 
-      this->logger->log("Someone want to send data to the peer, but not connected yet, connecting...", LM::Debug);
+      LOG_DEBU(this->logger, "Someone want to send data to the peer, but not connected yet, connecting...");
 
       this->bufferToWrite.append(data);
    }
@@ -105,12 +105,12 @@ void ::Peer::receive(QByteArray& data)
 void ::Peer::connected()
 {
 
-   this->logger->log("Now connected to the peer as requested", LM::Debug);
+   LOG_DEBU(this->logger, "Now connected to the peer as requested");
 
    if (this->bufferToWrite.length() > 0) {
       this->socket->write(this->bufferToWrite);
       this->bufferToWrite.clear();
-      this->logger->log("Some data was waiting for the peer. Flushed.", LM::Debug);
+      LOG_DEBU(this->logger, "Some data was waiting for the peer. Flushed.");
    }
 }
 
@@ -118,7 +118,7 @@ void ::Peer::gotData()
 {
    while (this->socket->canReadLine())
    {
-      this->logger->log("Data:" + this->socket->readLine(), LM::Debug);
+      LOG_DEBU(this->logger, "Data:" + this->socket->readLine());
    }
 }
 

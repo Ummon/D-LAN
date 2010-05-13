@@ -25,12 +25,12 @@ Common::Hash PeerManager::getMyId()
 PeerManager::PeerManager() : logger(LM::Builder::newLogger("PeerManager"))
 {
 
-    this->logger->log("Loading ..", LM::EndUser);
+    LOG_USER(this->logger, "Loading ..");
 
 
     this->ID = Common::Hash::rand();
 
-    this->logger->log("Our current id: " + this->ID.toStr(), LM::EndUser);
+    LOG_USER(this->logger, "Our current id: " + this->ID.toStr());
 
     // We create the timer to clean old peers.
     this->timer = new QTimer(this);
@@ -71,7 +71,7 @@ void PeerManager::updatePeer(const Common::Hash& peerID, const QHostAddress&  pe
     if (peerID == this->ID)
         return;
 
-    this->logger->log(peerID.toStr() + " is alive !", LM::Debug);
+    LOG_DEBU(this->logger, peerID.toStr() + " is alive !");
 
     Peer* thePeer = this->fromIdToPeer(peerID);
 
@@ -95,7 +95,7 @@ Peer* PeerManager::fromIdToPeer(const Common::Hash& peerID)
 
     }
 
-    this->logger->log(peerID.toStr() + " wasn't seen before, creating a new peer.", LM::Debug);
+    LOG_DEBU(this->logger, peerID.toStr() + " wasn't seen before, creating a new peer.");
 
     Peer* newPeer = new Peer(peerID);
 
@@ -113,12 +113,12 @@ Peer* PeerManager::fromIdToPeer(const Common::Hash& peerID)
 void PeerManager::cleanUp()
 {
 
-    this->logger->log("Cleaning up peers", LM::Debug);
+    LOG_DEBU(this->logger, "Cleaning up peers");
 
     for (int i = 0; i < peers.length(); i++)
     {
         if (this->peers.at(i)->isAlive() && this->peers.at(i)->haveYouToDie())
-            this->logger->log(peers.at(i)->getId().toStr() + " is dead.", LM::Debug);
+            LOG_DEBU(this->logger, peers.at(i)->getId().toStr() + " is dead.");
 
 
     }
@@ -132,7 +132,7 @@ void PeerManager::newSocket(const QHostAddress&  peerIP, QSharedPointer<QTcpSock
     {
         if (this->peers.at(i)->isAlive() && this->peers.at(i)->getIp() == peerIP)
         {
-            this->logger->log(peers.at(i)->getId().toStr() + " want a connetion", LM::Debug);
+            LOG_DEBU(this->logger, peers.at(i)->getId().toStr() + " want a connetion");
             peers.at(i)->newSocket(socket);
         }
 

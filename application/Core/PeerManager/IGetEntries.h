@@ -15,7 +15,7 @@ namespace PM
       virtual ~IGetEntries() {}
 
    signals:
-      virtual void result(const Protos::Core::GetEntriesResult& result) = 0;
+      void result(const Protos::Core::GetEntriesResult& result);
    };
 }
 #endif

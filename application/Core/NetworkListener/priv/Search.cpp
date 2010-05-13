@@ -19,7 +19,7 @@ Search::Search(UDPListener* newUdpListener, QSharedPointer<PM::IPeerManager> new
 
    this->logger = LM::Builder::newLogger("NetworkListener::Search[" + QString::number(this->tag) + "]");
 
-   this->logger->log("New search", LM::Debug);
+   LOG_DEBU(this->logger, "New search");
 }
 
 /**
@@ -31,7 +31,7 @@ bool Search::search(const QString& words)
 {
    if (this->searchLaunched)
    {
-      this->logger->log("You can't launch a search twice !", LM::Error);
+      LOG_ERRO(this->logger, "You can't launch a search twice !");
       return false;
    }
    else
@@ -48,7 +48,7 @@ bool Search::search(const QString& words)
       findProto.SerializeToString(&output);
 
 
-      this->logger->log("Search launched ! (" + words + ")", LM::Debug);
+      LOG_DEBU(this->logger, "Search launched ! (" + words + ")");
 
       this->searchLaunched = true;
       this->dateOfLaunch =  QDateTime::currentDateTime();
@@ -73,7 +73,7 @@ void Search::newFindResult(const Protos::Common::FindResult& result) {
 
    if (result.tag() == this->tag)
    {
-      this->logger->log("Find result for me !", LM::Debug);
+      LOG_DEBU(this->logger, "Find result for me !");
       //emit newFindResult(result);
    }
 }
