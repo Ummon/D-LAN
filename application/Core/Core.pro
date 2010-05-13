@@ -20,14 +20,19 @@ INCLUDEPATH += . \
 
 LIBS += -LFileManager/output/$$FOLDER \
     -lFileManager
+POST_TARGETDEPS += FileManager/output/$$FOLDER/libFileManager.a
 LIBS += -LNetworkListener/output/$$FOLDER \
     -lNetworkListener
+POST_TARGETDEPS += NetworkListener/output/$$FOLDER/libNetworkListener.a
 LIBS += -LPeerManager/output/$$FOLDER \
     -lPeerManager
+POST_TARGETDEPS += PeerManager/output/$$FOLDER/libPeerManager.a
 LIBS += -L../Common/LogManager/output/$$FOLDER \
     -lLogManager
+POST_TARGETDEPS += ../Common/LogManager/output/$$FOLDER/libLogManager.a
 LIBS += -L../Common/output/$$FOLDER \
     -lCommon
+POST_TARGETDEPS += ../Common/output/$$FOLDER/libCommon.a
 LIBS += -L${PROTOBUF}/src/.libs \
     -lprotobuf
 
