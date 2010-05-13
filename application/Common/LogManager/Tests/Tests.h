@@ -9,10 +9,10 @@
 #include <ILogger.h>
 using namespace LM;
 
-class Logger : public QThread
+class ThreadLogger : public QThread
 {
 public:
-   Logger(const QString& name, int delta);
+   ThreadLogger(const QString& name, int delta);
    void run();
 
 private:
@@ -35,7 +35,7 @@ private slots:
 
 private:
    QVector< QSharedPointer<ILogger> > loggers;
-   QVector< QSharedPointer<Logger> > threadLoggers;
+   QVector< QSharedPointer<ThreadLogger> > threadLoggers;
 };
 
 #endif

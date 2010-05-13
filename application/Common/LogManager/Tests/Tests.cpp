@@ -12,12 +12,12 @@ using namespace LM;
   * A thread to logg some random messages.
   */
 
-Logger::Logger(const QString& name, int delta) :
+ThreadLogger::ThreadLogger(const QString& name, int delta) :
    logger(Builder::newLogger(name)), delta(delta)
 {
 }
 
-void Logger::run()
+void ThreadLogger::run()
 {
    const QString mess("A random message from thread");
 
@@ -69,7 +69,7 @@ void Tests::createLoggers()
    this->loggers << Builder::newLogger("Logger 3");
 
    for (int i = 0; i < 8; i++)
-      this->threadLoggers << QSharedPointer<Logger>(new Logger(QString("Thread logger %1").arg(i), 1000 + i * 100));
+      this->threadLoggers << QSharedPointer<ThreadLogger>(new ThreadLogger(QString("Thread logger %1").arg(i), 1000 + i * 100));
 }
 
 void Tests::logSomeBasicMessages()
@@ -95,12 +95,14 @@ void Tests::logSomeMessagesWithSpecialCharacters()
   */
 void Tests::startTheThreadLoggers()
 {
-   foreach (QSharedPointer<Logger> logger, this->threadLoggers)
+   connect(this, SIGNAL(destroyed()), this, SLOT(asdasd()));
+
+   foreach (QSharedPointer<ThreadLogger> logger, this->threadLoggers)
    {
       logger->start();
       QTest::qSleep(100);
    }
-   foreach (QSharedPointer<Logger> logger, this->threadLoggers)
+   foreach (QSharedPointer<ThreadLogger> logger, this->threadLoggers)
    {
       logger->wait();
    }

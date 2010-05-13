@@ -70,7 +70,7 @@ Logger::~Logger()
    }
 }
 
-void Logger::log(const QString& originalMessage, Severity severity, const char* filename, int line)
+void Logger::log(const QString& originalMessage, Severity severity, const char* filename, int line) const
 {
    QMutexLocker lock(&Logger::mutex);
    QString threadName = QThread::currentThread()->objectName();
@@ -96,13 +96,9 @@ void Logger::log(const QString& originalMessage, Severity severity, const char* 
 
    if (Logger::out)
       (*Logger::out) << formatedMessage << endl;
-
-#ifdef DEBUG
-   qDebug().nospace() << formatedMessage;
-#endif
 }
 
-void Logger::log(const ILoggable& object, Severity severity, const char* filename, int line)
+void Logger::log(const ILoggable& object, Severity severity, const char* filename, int line) const
 {
     this->log(object.toStringLog(), severity, filename, line);
 }

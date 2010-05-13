@@ -24,11 +24,13 @@ DEFINES += LOGMANAGER_LIBRARY
 
 SOURCES += priv/Logger.cpp \
     priv/Entry.cpp \
-    priv/Builder.cpp
+    priv/Builder.cpp \
+    priv/QtLogger.cpp
 HEADERS += ILogger.h \
     ILoggable.h \
     IEntry.h \
     Exceptions.h \
     Builder.h \
     priv/Logger.h \
-    priv/Entry.h
+    priv/Entry.h \
+    priv/QtLogger.h
