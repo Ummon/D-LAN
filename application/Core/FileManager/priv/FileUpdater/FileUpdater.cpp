@@ -104,6 +104,12 @@ void FileUpdater::rmRoot(SharedDirectory* dir, Directory* dir2)
    this->dirEvent->release();
 }
 
+/**
+  * Set the file cache to retrieve the hashes frome it.
+  * Muste be called before starting the fileUpdater.
+  * The shared dirs in fileCache must be previously added by 'addRoot(..)'.
+  * This object must unallocated the hashes.
+  */
 void FileUpdater::setFileCache(const Protos::FileCache::Hashes* fileCache)
 {
    this->fileCache = fileCache;
@@ -191,6 +197,11 @@ void FileUpdater::run()
    }
 }
 
+/**
+  * It will take some file from 'fileWithoutHashes' and compute theirs hashes.
+  * The duration of the compuation is minimum 'minimumDurationWhenHashing'.
+  * @return true if some file has been hashed
+  */
 bool FileUpdater::computeSomeHashes()
 {
    this->hashingMutex.lock();
@@ -244,6 +255,9 @@ bool FileUpdater::computeSomeHashes()
    return true;
 }
 
+/**
+  * Stop the current hashing process or the next hashing process.
+  */
 void FileUpdater::stopHashing()
 {
    QMutexLocker locker(&this->hashingMutex);
@@ -252,6 +266,13 @@ void FileUpdater::stopHashing()
    this->toStopHashing = true;
 }
 
+/**
+  * Synchronize the cache with the file system.
+  * Scan recursively all the directories and files contained
+  * in dir. Create the associated cached tree structure under
+  * given 'SharedDirectory'.
+  * Ths directories of files may already exist in the cache.
+  */
 void FileUpdater::scan(Directory* dir)
 {
    L_DEBU("Start scanning a shared directory : " + dir->getFullPath());
@@ -321,6 +342,10 @@ void FileUpdater::scan(Directory* dir)
    L_DEBU("Scanning terminated : " + dir->getFullPath());
 }
 
+/**
+  * If you omit 'dir' then all scanning will be removed
+  * from the queue.
+  */
 void FileUpdater::stopScanning(Directory* dir)
 {
    QMutexLocker scanningLocker(&this->scanningMutex);
@@ -339,6 +364,10 @@ void FileUpdater::stopScanning(Directory* dir)
    }
 }
 
+/**
+  * Try to restore the chunk hashes from 'fileCache'.
+  * 'fileCache' is set from 'retrieveFromFile(..)'.
+  */
 void FileUpdater::restoreFromFileCache(SharedDirectory* dir)
 {
    L_DEBU("Start restoring hashes of a shared directory : " + dir->getFullPath());
