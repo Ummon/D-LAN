@@ -10,10 +10,10 @@ using namespace NL;
   * @param udpListener : An udpListener object
   * @author mcuony
   */
-::Chat::Chat(UDPListener* NewUdpListener, QSharedPointer<PM::IPeerManager> NewPeerManager) : logger(LM::Builder::newLogger("NetworkListener::Chat"))
+Chat::Chat(UDPListener* NewUdpListener, QSharedPointer<PM::IPeerManager> NewPeerManager) : logger(LM::Builder::newLogger("NetworkListener::Chat"))
 {
 
-   this->logger->log("Loading ..", LM::EndUser);
+   LOG_USER(this->logger, "Loading ..");
 
    this->udpListener = NewUdpListener;
 
@@ -34,7 +34,7 @@ using namespace NL;
 bool ::Chat::send(const QString& message)
 {
 
-   this->logger->log("Message to send: " + message , LM::Debug);
+   LOG_DEBU(this->logger, "Message to send: " + message);
 
    // We put info in our chatMessage Proto.
    Protos::Core::ChatMessage chatMessage;

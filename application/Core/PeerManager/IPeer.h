@@ -24,7 +24,7 @@ namespace PM
       virtual QHostAddress getIp() = 0;
 
    signals:
-      virtual void receive(QByteArray& data) = 0;
+      void receive(QByteArray& data);
 
    public slots:
       virtual void connected() = 0;
