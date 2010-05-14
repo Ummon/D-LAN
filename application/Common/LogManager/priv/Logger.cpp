@@ -17,44 +17,6 @@ Logger::Logger(const QString& name)
    : name(name)
 {
    QMutexLocker lock(&Logger::mutex);
-
-   if (Logger::nbLogger == 0)
-   {
-      QTextStream out(stderr);
-
-      if (!Common::Global::createApplicationFolder())
-      {
-         out << "Error, cannot create application directory : " << Common::APPLICATION_FOLDER_PATH << endl;
-      }
-      else
-      {
-         QDir appDir(Common::APPLICATION_FOLDER_PATH);
-         if (!appDir.exists(Common::LOG_FOLDER_NAME) && !appDir.mkdir(Common::LOG_FOLDER_NAME))
-         {
-            out << "Error, cannot create log directory : " << Common::APPLICATION_FOLDER_PATH << "/" << Common::LOG_FOLDER_NAME << endl;
-         }
-         else
-         {
-            QDir logDir(Common::APPLICATION_FOLDER_PATH + '/' + Common::LOG_FOLDER_NAME);
-
-            QString filename = QDateTime::currentDateTime().toString("yyyy_MM_dd-hh_mm_ss") + ".log";
-
-            QFile* file = new QFile(logDir.absoluteFilePath(filename));
-            if (!file->open(QIODevice::WriteOnly))
-            {
-               out << "Error, cannot create log file : " << logDir.absoluteFilePath(filename) << endl;
-               delete file;
-            }
-            else
-            {
-               this->deleteOldestLog(logDir);
-               Logger::out = new QTextStream(file);
-               Logger::out->setCodec("UTF-8");
-            }
-         }
-      }
-   }
-
    Logger::nbLogger += 1;
 }
 
@@ -73,6 +35,9 @@ Logger::~Logger()
 void Logger::log(const QString& originalMessage, Severity severity, const char* filename, int line) const
 {
    QMutexLocker lock(&Logger::mutex);
+
+   Logger::createFileLog();
+
    QString threadName = QThread::currentThread()->objectName();
 
    QString message(originalMessage);
@@ -110,6 +75,50 @@ void Logger::log(const ILoggable& object, Severity severity, const char* filenam
 bool fileInfoLessThan(const QFileInfo& f1, const QFileInfo& f2)
 {
    return f1.lastModified() < f2.lastModified();
+}
+
+/**
+  * It will create the file log and open it for writing if it doesn't already exist.
+  * Must be called in a mutex.
+  */
+void Logger::createFileLog()
+{
+   if (!Logger::out)
+   {
+      QTextStream out(stderr);
+
+      if (!Common::Global::createApplicationFolder())
+      {
+         out << "Error, cannot create application directory : " << Common::APPLICATION_FOLDER_PATH << endl;
+      }
+      else
+      {
+         QDir appDir(Common::APPLICATION_FOLDER_PATH);
+         if (!appDir.exists(Common::LOG_FOLDER_NAME) && !appDir.mkdir(Common::LOG_FOLDER_NAME))
+         {
+            out << "Error, cannot create log directory : " << Common::APPLICATION_FOLDER_PATH << "/" << Common::LOG_FOLDER_NAME << endl;
+         }
+         else
+         {
+            QDir logDir(Common::APPLICATION_FOLDER_PATH + '/' + Common::LOG_FOLDER_NAME);
+
+            QString filename = QDateTime::currentDateTime().toString("yyyy_MM_dd-hh_mm_ss") + ".log";
+
+            QFile* file = new QFile(logDir.absoluteFilePath(filename));
+            if (!file->open(QIODevice::WriteOnly))
+            {
+               out << "Error, cannot create log file : " << logDir.absoluteFilePath(filename) << endl;
+               delete file;
+            }
+            else
+            {
+               Logger::deleteOldestLog(logDir);
+               Logger::out = new QTextStream(file);
+               Logger::out->setCodec("UTF-8");
+            }
+         }
+      }
+   }
 }
 
 void Logger::deleteOldestLog(const QDir& logDir)
