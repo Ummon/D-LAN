@@ -43,12 +43,14 @@ QStringList TooglableList::getList()
 void TooglableList::addItem(const QString& item)
 {
    QLayout* lay = this->ui->widContent->layout();
-   QPushButton* but = new QPushButton(this->ui->widContent);
+   TooglableListButton* but = new TooglableListButton(this->ui->widContent);
    but->sizePolicy().setHorizontalPolicy(QSizePolicy::MinimumExpanding);
    but->setText(item);
    but->setCheckable(true);
    but->setChecked(true);
    connect(but, SIGNAL(toggled(bool)), this, SLOT(butToogled(bool)));
+   connect(but, SIGNAL(rightClicked()), this, SLOT(butRightClicked()));
+
    lay->addWidget(but);
 }
 
@@ -63,6 +65,31 @@ void TooglableList::checkAll()
             stateHasChanged = true;
             button->setChecked(true);
          }
+   this->disableSignalStateChanged = false;
+
+   if (stateHasChanged)
+      emit stateChanged();
+}
+
+void TooglableList::checkOne(QPushButton& but)
+{
+   this->disableSignalStateChanged = true;
+   bool stateHasChanged = false;
+
+   if (!but.isChecked())
+   {
+      stateHasChanged = true;
+      but.setChecked(true);
+   }
+
+   foreach (QObject* object, this->ui->widContent->children())
+      if (QPushButton* button = dynamic_cast<QPushButton*>(object))
+         if (button != &but && button->isChecked())
+         {
+            stateHasChanged = true;
+            button->setChecked(false);
+         }
+
    this->disableSignalStateChanged = false;
 
    if (stateHasChanged)
@@ -86,6 +113,12 @@ void TooglableList::butToogled(bool)
          }
 
    toggledBut->setChecked(true);
+}
+
+void TooglableList::butRightClicked()
+{
+   QPushButton* toggledBut = static_cast<QPushButton*>(QWidget::sender());
+   this->checkOne(*toggledBut);
 }
 
 void TooglableList::clear()

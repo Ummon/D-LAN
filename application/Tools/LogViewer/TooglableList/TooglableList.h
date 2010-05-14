@@ -3,6 +3,8 @@
 
 #include <QWidget>
 
+#include <TooglableList/TooglableListButton.h>
+
 namespace Ui { class TooglableList; }
 
 class TooglableList : public QWidget
@@ -21,9 +23,11 @@ signals:
 public slots:
    void addItem(const QString& item);
    void checkAll();
+   void checkOne(QPushButton& but);
 
 private slots:
    void butToogled(bool);
+   void butRightClicked();
 
 private:
    void clear();
