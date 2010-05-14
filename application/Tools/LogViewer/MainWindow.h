@@ -8,7 +8,7 @@
 #include <QFileSystemWatcher>
 
 #include <TableLogModel.h>
-#include <TooglableList.h>
+#include <TooglableList/TooglableList.h>
 
 namespace Ui { class MainWindow; }
 
