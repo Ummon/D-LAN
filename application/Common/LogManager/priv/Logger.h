@@ -26,7 +26,8 @@ namespace LM
       void log(const ILoggable& object, Severity severity, const char* filename = 0, int line = 0) const;
 
    private:
-      void deleteOldestLog(const QDir& logDir);
+      static void createFileLog();
+      static void deleteOldestLog(const QDir& logDir);
 
       QString name;
    };

@@ -95,8 +95,6 @@ void Tests::logSomeMessagesWithSpecialCharacters()
   */
 void Tests::startTheThreadLoggers()
 {
-   connect(this, SIGNAL(destroyed()), this, SLOT(asdasd()));
-
    foreach (QSharedPointer<ThreadLogger> logger, this->threadLoggers)
    {
       logger->start();
