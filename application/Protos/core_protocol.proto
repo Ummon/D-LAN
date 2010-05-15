@@ -20,11 +20,12 @@ package Protos.Core;
 message IMAlive {
    required uint32 version = 1; // The version of the protocol used.
    required Common.Hash peer_id = 2;
-   required string nick = 3;
-   required uint64 amount = 4; // [byte] Amount of sharing.
+   required uint32 port = 3; // The port listened by the core.
+   required string nick = 4;
+   required uint64 amount = 5; // [byte] Amount of sharing.
    
-   optional uint64 tag = 5; // A random number, all results must repeat this number.
-   repeated Common.Hash chunk = 6; // Can be empty.
+   optional uint64 tag = 6; // A random number, all results must repeat this number.
+   repeated Common.Hash chunk = 7; // Can be empty.
 }
 // This message is only sent if some chunks are requested.
 // Return an array with a bool value for each

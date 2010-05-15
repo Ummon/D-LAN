@@ -6,7 +6,7 @@ using namespace Common;
 #include <QtGlobal>
 
 #ifdef Q_OS_WIN32
-#  include <windows.h>
+   #include <windows.h>
 #endif
 
 #include <Constants.h>
