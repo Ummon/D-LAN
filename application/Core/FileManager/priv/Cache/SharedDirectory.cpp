@@ -8,6 +8,14 @@ using namespace FM;
 #include <priv/Exceptions.h>
 #include <priv/Cache/Cache.h>
 
+
+/**
+  * Create from a saved shared directory (file cache).
+  * If a existing shared directory is a sub directory then it will be merged.
+  * @exception SuperDirectoryExistsException Thrown when a super shared directory already exists.
+  * @exception SubDirectoriesWithDifferentRightsExistsException Thrown when one or more sub directory already exists with different rights.
+  * @exception SuperDirectoryExistsException Thrown when a super directory already exists regardless of the rights.
+  */
 SharedDirectory::SharedDirectory(Cache* cache, const QString& path, Rights rights)
    : Directory(cache), path(QDir::cleanPath(path)), rights(rights), id(Common::Hash::rand())
 {

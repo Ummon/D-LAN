@@ -20,9 +20,6 @@ namespace FM
    public:
       virtual ~IFileManager() {}
 
-      virtual QStringList getSharedDirsReadOnly() = 0;
-      virtual QStringList getSharedDirsReadWrite() = 0;
-
       /**
         * @exception DirNotFoundException
         */
@@ -32,6 +29,9 @@ namespace FM
         * @exception DirNotFoundException
         */
       virtual void setSharedDirsReadWrite(const QStringList& dirs) = 0;
+
+      virtual QStringList getSharedDirsReadOnly() = 0;
+      virtual QStringList getSharedDirsReadWrite() = 0;
 
       /**
         * Returns a chunk, return 0 if no chunk correspond to the given hash.

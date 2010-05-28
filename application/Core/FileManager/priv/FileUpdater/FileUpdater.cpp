@@ -14,6 +14,11 @@ using namespace FM;
 #include <priv/Cache/File.h>
 #include <priv/FileUpdater/WaitCondition.h>
 
+/**
+  * @class FileUpdater
+  *
+  */
+
 FileUpdater::FileUpdater(FileManager* fileManager)
    : fileManager(fileManager),
      dirWatcher(DirWatcher::getNewWatcher()),
@@ -40,17 +45,18 @@ FileUpdater::~FileUpdater()
 
 void FileUpdater::stop()
 {
-   L_DEBU("Stopping FileUpdater..");
+   L_DEBU("Stopping FileUpdater ..");
 
    this->toStop = true;
 
-   L_DEBU("OK1");
+   L_DEBU("Stopping hashing ..");
    this->stopHashing();
+   L_DEBU("Hashing stopped");
 
-   L_DEBU("OK2");
+   L_DEBU("Stopping scanning ..");
    this->stopScanning();
+   L_DEBU("Scanning stopped");
 
-   L_DEBU("OK3");
    // Simulate a dirEvent to stop the main loop.
    this->dirEvent->release();
 
@@ -60,6 +66,9 @@ void FileUpdater::stop()
    L_DEBU("OK5");
 }
 
+/**
+  * @exception DirNotFoundException
+  */
 void FileUpdater::addRoot(SharedDirectory* dir)
 {
    QMutexLocker locker(&this->mutex);
@@ -75,6 +84,10 @@ void FileUpdater::addRoot(SharedDirectory* dir)
    this->dirEvent->release();
 }
 
+/**
+  * If 'dir2' is given it will steal the subdirs of 'dir' and append
+  * them to itself.
+  */
 void FileUpdater::rmRoot(SharedDirectory* dir, Directory* dir2)
 {
    QMutexLocker locker(&this->mutex);
@@ -94,6 +107,7 @@ void FileUpdater::rmRoot(SharedDirectory* dir, Directory* dir2)
       if (dir2)
          dir2->stealContent(dir);
 
+      // Remove all the pending files owned by 'dir'.
       for (QMutableListIterator<File*> i(this->fileWithoutHashes); i.hasNext();)
          if (i.next()->getRoot() == dir)
             i.remove();
@@ -193,7 +207,10 @@ void FileUpdater::run()
          }
       }
       if (this->toStop)
+      {
+         L_DEBU("FileUpdater mainloop finished");
          return;
+      }
    }
 }
 
@@ -269,9 +286,9 @@ void FileUpdater::stopHashing()
 /**
   * Synchronize the cache with the file system.
   * Scan recursively all the directories and files contained
-  * in dir. Create the associated cached tree structure under
-  * given 'SharedDirectory'.
-  * Ths directories of files may already exist in the cache.
+  * in dir. Create the associated cached tree structure under the
+  * given 'Directory*'.
+  * The directories may already exist in the cache.
   */
 void FileUpdater::scan(Directory* dir)
 {
@@ -366,7 +383,7 @@ void FileUpdater::stopScanning(Directory* dir)
 
 /**
   * Try to restore the chunk hashes from 'fileCache'.
-  * 'fileCache' is set from 'retrieveFromFile(..)'.
+  * 'fileCache' is set by 'retrieveFromFile(..)'.
   */
 void FileUpdater::restoreFromFileCache(SharedDirectory* dir)
 {

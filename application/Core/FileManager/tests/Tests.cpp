@@ -7,6 +7,7 @@ using namespace FM;
 
 #include <IChunk.h>
 #include <Protos/common.pb.h>
+#include <Common/LogManager/Builder.h>
 #include <Common/PersistantData.h>
 #include <Exceptions.h>
 #include <priv/Constants.h>
@@ -19,12 +20,11 @@ void Tests::initTestCase()
 {
    Common::PersistantData::rmValue(FILE_CACHE); // Reset the stored cache.
    this->fileManager = Builder::newFileManager();
+   LM::Builder::initMsgHandler();
 }
 
 void Tests::addASharedDirectory()
 {
-   return;
-
    this->sharedDirsReadOnly << QDir::currentPath().append("/../../sharedDirs/share1");
    this->fileManager->setSharedDirsReadOnly(this->sharedDirsReadOnly);
    QStringList paths = this->fileManager->getSharedDirsReadOnly();
@@ -35,7 +35,7 @@ void Tests::addASharedDirectory()
 
 void Tests::addAnAlreadySharedDirectory()
 {
-   return;
+   // return;
 
    this->fileManager->setSharedDirsReadOnly(this->sharedDirsReadOnly);
    QStringList paths = this->fileManager->getSharedDirsReadOnly();
@@ -46,7 +46,7 @@ void Tests::addAnAlreadySharedDirectory()
 
 void Tests::addInexistingSharedDirectory()
 {
-   return;
+   // return;
 
    this->sharedDirsReadOnly << QDir::currentPath().append("/this_is_spartaaaaaa"); // This directory doesn't exit.
    try
@@ -65,8 +65,6 @@ void Tests::addInexistingSharedDirectory()
 
 void Tests::addSubSharedDirectories()
 {
-   return;
-
    this->sharedDirsReadOnly << QDir::currentPath().append("/../../sharedDirs/share1/subdir");
    this->sharedDirsReadOnly << QDir::currentPath().append("/../../sharedDirs/share1/anotherSubdir");
    try
@@ -88,8 +86,6 @@ void Tests::addSubSharedDirectories()
 
 void Tests::addSuperSharedDirectoriesWithDifferentRights()
 {
-   return;
-
    QStringList sharedWriteDirs;
    sharedWriteDirs << QDir::currentPath().append("/../../sharedDirs");
 
@@ -127,6 +123,7 @@ void Tests::addSuperSharedDirectoriesWithSameRights()
 void Tests::rmSharedDirectory()
 {
    return;
+
    this->sharedDirsReadOnly.clear();
    this->fileManager->setSharedDirsReadOnly(this->sharedDirsReadOnly);
 }
@@ -134,6 +131,7 @@ void Tests::rmSharedDirectory()
 void Tests::createAFile()
 {
    return;
+
    QFile::remove("../../sharedDirs/incoming1/my_lol_cat.avi.unfinished");
 
    this->sharedDirsReadWrite << QDir::currentPath().append("/../../sharedDirs/incoming1");
@@ -150,6 +148,7 @@ void Tests::createAFile()
 void Tests::browseAdirectory()
 {
    return;
+
    Protos::Core::GetEntriesResult entries = this->fileManager->getEntries();
    qDebug() << QString::fromStdString(entries.DebugString());
 

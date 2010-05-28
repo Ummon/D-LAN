@@ -115,7 +115,6 @@ namespace FM
       void changeDirectory(Directory* dir);
 
    private:
-
       int getNbChunks();
 
       Directory* dir;

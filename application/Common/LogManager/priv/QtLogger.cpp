@@ -31,12 +31,13 @@ const QtLogger QtLogger::me;
   * Fake class method to avoid the case where this compilation unit (.o)
   * is dropped by the linker when using 'libLogManager.a'.
   */
-void QtLogger::init()
+void QtLogger::initMsgHandler()
 {
+   qInstallMsgHandler(handler);
 }
 
 QtLogger::QtLogger() :
    Logger("Qt")
 {
-   qInstallMsgHandler(handler);
+   QtLogger::initMsgHandler();
 }

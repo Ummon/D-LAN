@@ -21,8 +21,10 @@ MainWindow::MainWindow(QWidget *parent) :
    this->currentDir.setSorting(QDir::Name);
 
    this->ui->tblLog->horizontalHeader()->setResizeMode(QHeaderView::ResizeToContents);
-   this->ui->tblLog->verticalHeader()->setResizeMode(QHeaderView::Custom);
+   this->ui->tblLog->verticalHeader()->setResizeMode(QHeaderView::ResizeToContents);
+   //this->ui->tblLog->verticalHeader()->setResizeMode(QHeaderView::Custom);
    this->ui->tblLog->verticalHeader()->setDefaultSectionSize(17);
+   this->ui->tblLog->setWordWrap(true);
    this->ui->tblLog->setModel(&this->model);
    this->ui->tblLog->setItemDelegate(new TableLogItemDelegate(this));
 

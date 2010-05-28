@@ -9,7 +9,7 @@ namespace LM
    {
    public:
       static const QtLogger me;
-      static void init();
+      static void initMsgHandler();
 
    private:
       QtLogger();

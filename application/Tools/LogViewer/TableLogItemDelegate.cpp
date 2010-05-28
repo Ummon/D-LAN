@@ -20,7 +20,7 @@ TableLogItemDelegate::TableLogItemDelegate(QObject *parent) :
 void TableLogItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
    const TableLogModel* model = static_cast<const TableLogModel*>(index.model());
-   QStyleOptionViewItem newOption(option);
+   QStyleOptionViewItemV4 newOption(option);
 
    switch (model->getSeverity(index.row()))
    {
@@ -42,3 +42,13 @@ void TableLogItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& 
 
    QItemDelegate::paint(painter, newOption, index);
 }
+
+/*QSize TableLogItemDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index ) const
+{
+   QSize s = QItemDelegate::sizeHint(option, index);
+   if (s.isValid())
+   {
+      s.setHeight(0.5 * s.height());
+   }
+   return s;
+}*/

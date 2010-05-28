@@ -18,6 +18,9 @@ Directory::Directory(Directory* parent, const QString& name, bool createPhysical
    this->parent->subDirs.append(this);
 }
 
+/**
+  * Called by the root which will not have parent and name.
+  */
 Directory::Directory(Cache* cache)
    : Entry(cache, ""), parent(0)
 {
@@ -33,6 +36,12 @@ Directory::~Directory()
    L_DEBU(QString("Directory deleted : %1").arg(this->getFullPath()));
 }
 
+/**
+  * Retore the hashes from the cache.
+  * All file which are not complete and not in the cache are physically removed.
+  * Only files ending with UNFINISHED_SUFFIX_TERM will be removed.
+  * @return The files which have all theirs hashes (complete).
+  */
 QList<File*> Directory::restoreFromFileCache(const Protos::FileCache::Hashes_Dir& dir)
 {
    QList<File*> ret;
@@ -98,6 +107,9 @@ void Directory::populateDirEntry(Protos::Common::DirEntry* entry) const
    this->populateEntry(entry->mutable_dir());
 }
 
+/**
+  * Called from one of its file.
+  */
 void Directory::fileDeleted(File* file)
 {
    L_DEBU(QString("Directory::fileDeleted() remove %1 from %2").arg(file->getFullPath()).arg(this->getFullPath()));
@@ -140,6 +152,9 @@ Directory* Directory::getRoot() const
    return const_cast<Directory*>(this);
 }
 
+/**
+  * @return Returns 0 if no one match.
+  */
 Directory* Directory::getSubDir(const QString& name) const
 {
    foreach (Directory* d, this->subDirs)
@@ -160,6 +175,10 @@ QList<File*> Directory::getFiles() const
    return this->files;
 }
 
+/**
+  * Creates a new sub-directory if none exists already otherwise
+  * returns an already existing.
+  */
 Directory* Directory::createSubDirectory(const QString& name)
 {
    if (Directory* subDir = this->getSubDir(name))
@@ -167,6 +186,10 @@ Directory* Directory::createSubDirectory(const QString& name)
    return new Directory(this, name);
 }
 
+/**
+  * Creates a new sub-directory if none exists already otherwise
+  * returns an already existing.
+  */
 Directory* Directory::physicallyCreateSubDirectory(const QString& name)
 {
    if (Directory* subDir = this->getSubDir(name))
@@ -175,6 +198,11 @@ Directory* Directory::physicallyCreateSubDirectory(const QString& name)
    return new Directory(this, name, true);
 }
 
+/**
+  * Creates a new file if none exists already otherwise
+  * checks if the size and the modification date match, if not then delete the
+  * file and create a new one.
+  */
 File* Directory::createFile(const QFileInfo& fileInfo)
 {
    foreach (File* f, this->files)
@@ -201,6 +229,9 @@ File* Directory::getFile(const QString& name) const
    return 0;
 }
 
+/**
+  * Only called by the class File.
+  */
 void Directory::addFile(File* file)
 {
    if (this->files.contains(file))
@@ -211,6 +242,10 @@ void Directory::addFile(File* file)
    (*this) += file->getSize();
 }
 
+/**
+  * Steal the sub directories and files from 'dir'.
+  * The sub dirs and files will be removed from 'dir'.
+  */
 void Directory::stealContent(Directory* dir)
 {
    if (dir == this)
@@ -219,7 +254,7 @@ void Directory::stealContent(Directory* dir)
       return;
    }
 
-   //LOG_DEBUG(QString("this = %1, dir = %2").arg(this->getFullPath()).arg(dir->getFullPath()));
+   // L_DEBU(QString("this = %1, dir = %2").arg(this->getFullPath()).arg(dir->getFullPath()));
 
    this->subDirs.append(dir->subDirs);
    this->files.append(dir->files);
@@ -238,6 +273,10 @@ void Directory::stealContent(Directory* dir)
    dir->files.clear();
 }
 
+/**
+  * When a new file is added to a directory this method is called
+  * to add its size.
+  */
 Directory& Directory::operator+=(qint64 size)
 {
    this->size += size;

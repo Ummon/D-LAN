@@ -332,7 +332,7 @@ void File::stopHashing()
    {
       L_DEBU(QString("File::stopHashing() for %1 ..").arg(this->getFullPath()));
       this->hashingStopped.wait(&this->hashingMutex);
-      L_DEBU("Hashing stopped");
+      L_DEBU("File hashing stopped");
    }
 }
 

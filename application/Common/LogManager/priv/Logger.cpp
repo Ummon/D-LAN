@@ -16,7 +16,6 @@ int Logger::nbLogger(0);
 Logger::Logger(const QString& name)
    : name(name)
 {
-   QMutexLocker lock(&Logger::mutex);
    Logger::nbLogger += 1;
 }
 
