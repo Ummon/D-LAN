@@ -28,13 +28,13 @@ FileManager::FileManager()
 {
    L_USER("Loading ..");
 
-   connect(&this->cache, SIGNAL(entryAdded(Entry*)), this, SLOT(entryAdded(Entry*)), Qt::DirectConnection);
-   connect(&this->cache, SIGNAL(entryRemoved(Entry*)), this, SLOT(entryRemoved(Entry*)), Qt::DirectConnection);
+   connect(&this->cache, SIGNAL(entryAdded(Entry*)),     this, SLOT(entryAdded(Entry*)),     Qt::DirectConnection);
+   connect(&this->cache, SIGNAL(entryRemoved(Entry*)),   this, SLOT(entryRemoved(Entry*)),   Qt::DirectConnection);
    connect(&this->cache, SIGNAL(chunkHashKnown(Chunk*)), this, SLOT(chunkHashKnown(Chunk*)), Qt::DirectConnection);
-   connect(&this->cache, SIGNAL(chunkRemoved(Chunk*)), this, SLOT(chunkRemoved(Chunk*)), Qt::DirectConnection);
+   connect(&this->cache, SIGNAL(chunkRemoved(Chunk*)),   this, SLOT(chunkRemoved(Chunk*)),   Qt::DirectConnection);
 
-   connect(&this->cache, SIGNAL(newSharedDirectory(SharedDirectory*)), &this->fileUpdater, SLOT(addRoot(SharedDirectory*)), Qt::DirectConnection);
-   connect(&this->cache, SIGNAL(sharedDirectoryRemoved(SharedDirectory*,SharedDirectory*)), &this->fileUpdater, SLOT(rmRoot(SharedDirectory*,Directory*)), Qt::DirectConnection);
+   connect(&this->cache, SIGNAL(newSharedDirectory(SharedDirectory*)),                 &this->fileUpdater, SLOT(addRoot(SharedDirectory*)),              Qt::DirectConnection);
+   connect(&this->cache, SIGNAL(sharedDirectoryRemoved(SharedDirectory*, Directory*)), &this->fileUpdater, SLOT(rmRoot(SharedDirectory*, Directory*)),   Qt::DirectConnection);
 
    connect(&this->fileUpdater, SIGNAL(persistCache()), this, SLOT(persistCacheToFile()), Qt::DirectConnection);
 
@@ -49,16 +49,6 @@ FileManager::~FileManager()
    L_DEBU("~FileManager : Stopping the file updater..");
    this->fileUpdater.stop();
    L_DEBU("FileManager deleted");
-}
-
-QStringList FileManager::getSharedDirsReadOnly()
-{
-   return this->cache.getSharedDirs(SharedDirectory::READ_ONLY);
-}
-
-QStringList FileManager::getSharedDirsReadWrite()
-{
-   return this->cache.getSharedDirs(SharedDirectory::READ_WRITE);
 }
 
 /**
@@ -79,6 +69,16 @@ void FileManager::setSharedDirsReadOnly(const QStringList& dirs)
 void FileManager::setSharedDirsReadWrite(const QStringList& dirs)
 {
    this->cache.setSharedDirs(dirs, SharedDirectory::READ_WRITE);
+}
+
+QStringList FileManager::getSharedDirsReadOnly()
+{
+   return this->cache.getSharedDirs(SharedDirectory::READ_ONLY);
+}
+
+QStringList FileManager::getSharedDirsReadWrite()
+{
+   return this->cache.getSharedDirs(SharedDirectory::READ_WRITE);
 }
 
 IChunk* FileManager::getChunk(const Common::Hash& hash)
@@ -264,6 +264,12 @@ void FileManager::chunkRemoved(Chunk* chunk)
    this->chunks.rm(chunk);
 }
 
+/**
+  * Take raw terms in a string and split, trim and filter to
+  * return a list of keyword.
+  * Some character or word can be removed.
+  * @example " The little  DUCK " => ["little", "duck"].
+  */
 QStringList FileManager::splitInWords(const QString& words)
 {
    const static QRegExp regExp("(\\W+|_)");
@@ -282,6 +288,11 @@ QStringList FileManager::splitInWords(const QString& words)
    return keywords;
 }
 
+/**
+  * Load the cache from a file. Called at start, by the constructor.
+  * It will give the file cache to the fileUpdater and ask it
+  * to load the cache.
+  */
 void FileManager::loadCacheFromFile()
 {
    // This hashes will be unallocated by the fileUpdater.
@@ -314,6 +325,11 @@ void FileManager::loadCacheFromFile()
    this->fileUpdater.setFileCache(savedCache);
 }
 
+/**
+  * Save the cache to a file.
+  * Called by the fileUpdater when it needs to persist the cache.
+  * @warning Called in the fileUpdater thread.
+  */
 void FileManager::persistCacheToFile()
 {
    L_DEBU("Persists cache..");
@@ -322,5 +338,5 @@ void FileManager::persistCacheToFile()
    Protos::FileCache::Hashes hashes;
    this->cache.saveInFile(hashes);
    //LOG_DEBUG(QString("hashes.SpaceUsed() = %1").arg(hashes.SpaceUsed()));
-   //Common::PersistantData::setValue(FILE_CACHE, hashes);
+   Common::PersistantData::setValue(FILE_CACHE, hashes);
 }

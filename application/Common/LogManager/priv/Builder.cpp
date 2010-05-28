@@ -13,7 +13,6 @@ using namespace LM;
   */
 QSharedPointer<ILogger> Builder::newLogger(const QString& name)
 {
-   QtLogger::init();
    return QSharedPointer<ILogger>(new Logger(name));
 }
 
@@ -24,4 +23,14 @@ QSharedPointer<ILogger> Builder::newLogger(const QString& name)
 QSharedPointer<IEntry> Builder::decode(const QString& line)
 {
    return QSharedPointer<IEntry>(new Entry(line));
+}
+
+/**
+  * If the Qt message handler is overridden you can redefine it
+  * by calling this function.
+  * For example the function 'QTest::qExec(..)' will override the message handler.
+  */
+void Builder::initMsgHandler()
+{
+   QtLogger::initMsgHandler();
 }

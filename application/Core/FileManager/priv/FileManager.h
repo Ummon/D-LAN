@@ -28,15 +28,13 @@ namespace FM
    {
       Q_OBJECT
    public :
-
       FileManager();
       ~FileManager();
 
-      QStringList getSharedDirsReadOnly();
-
-      QStringList getSharedDirsReadWrite();
       void setSharedDirsReadOnly(const QStringList& dirs);
       void setSharedDirsReadWrite(const QStringList& dirs);
+      QStringList getSharedDirsReadOnly();
+      QStringList getSharedDirsReadWrite();
 
       IChunk* getChunk(const Common::Hash& hash);
       // IGetHashesResult* getHashes(const  Protos::Common::FileEntry& entry);
@@ -59,27 +57,11 @@ namespace FM
       void chunkRemoved(Chunk* chunk);
 
    private:
-      /**
-        * Take raw terms in a string and split, trim and filter to
-        * return a list of keyword.
-        * Some character or word can be removed.
-        * @example " The little  DUCK " => ["little", "duck"].
-        */
       static QStringList splitInWords(const QString& words);
 
-      /**
-        * Load the cache from a file. Called at start, by the constructor.
-        * It will give the file cache to the fileUpdater and ask it
-        * to load the cache.
-        */
       void loadCacheFromFile();
 
    private slots:
-      /**
-        * Save the cache from a file.
-        * Called by the fileUpdater when it needs to persist the cache.
-        * @warning Called in the fileUpdater thread.
-        */
       void persistCacheToFile();
 
    private:

@@ -19,13 +19,6 @@ namespace FM
          READ_WRITE
       };
 
-      /**
-        * Create from a saved shared directory (file cache).
-        * If a existing shared directory is a sub directory then it will be merged.
-        * @exception SuperDirectoryExistsException Thrown when a super shared directory already exists.
-        * @exception SubDirectoriesWithDifferentRightsExistsException Thrown when one or more sub directory already exists with different rights.
-        * @exception SuperDirectoryExistsException Thrown when a super directory already exists regardless of the rights.
-        */
       SharedDirectory(Cache* cache, const QString& path, Rights rights, const Common::Hash& id);
       SharedDirectory(Cache* cache, const QString& path, Rights rights);
 
@@ -62,7 +55,6 @@ namespace FM
       Common::Hash getId() const;
 
    private:
-
       QString path;
       Rights rights;
       Common::Hash id;

@@ -15,16 +15,19 @@ public:
 
 private slots:
    void initTestCase();
+
    void addASharedDirectory();
    void addAnAlreadySharedDirectory();
-   void cleanupTestCase();
    void addInexistingSharedDirectory();
    void addSubSharedDirectories();
    void addSuperSharedDirectoriesWithDifferentRights();
    void addSuperSharedDirectoriesWithSameRights();
+
    void rmSharedDirectory();
    void createAFile();
    void browseAdirectory();
+
+   void cleanupTestCase();
 
 private:
    void search();

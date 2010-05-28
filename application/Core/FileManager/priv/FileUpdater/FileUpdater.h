@@ -28,15 +28,10 @@ namespace FM
       ~FileUpdater();
 
       void stop();
-
       void setFileCache(const Protos::FileCache::Hashes* fileCache);
 
    public slots:
-      /**
-        * @exception DirNotFoundException
-        */
       void addRoot(SharedDirectory* dir);
-
       void rmRoot(SharedDirectory* dir, Directory* dir2 = 0);
 
    signals:
@@ -46,7 +41,6 @@ namespace FM
       void run();
 
    private:
-
       bool computeSomeHashes();
 
       void stopHashing();
@@ -64,7 +58,7 @@ namespace FM
       FileManager* fileManager;
       DirWatcher* dirWatcher;
 
-      const Protos::FileCache::Hashes* fileCache; ///< The hashes from the saved file cache. Used only at the begining of 'run()'.
+      const Protos::FileCache::Hashes* fileCache; ///< The hashes from the saved file cache. Used only temporally at the begining of 'run()'.
 
       bool toStop; ///< Set to true when the service must be stopped.
 

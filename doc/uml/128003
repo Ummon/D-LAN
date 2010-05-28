@@ -1,10 +1,10 @@
-format 69
+format 73
 "FileManager" // Aybabtu::Core::FileManager
-  revision 18
-  modified_by 34 "gburri"
+  revision 21
+  modified_by 42 "gburri"
   // class settings
   //class diagram settings
-  draw_all_relations default hide_attributes default hide_operations default hide_getset_operations default show_members_full_definition default show_members_visibility default show_members_stereotype default show_members_multiplicity default show_members_initialization default show_attribute_modifiers default member_max_width 0 show_parameter_dir default show_parameter_name default package_name_in_tab default class_drawing_mode default drawing_language default show_context_mode default auto_label_position default show_relation_modifiers default show_infonote default shadow default show_stereotype_properties default
+  draw_all_relations default hide_attributes default hide_operations default hide_getset_operations default show_members_full_definition default show_members_visibility default show_members_stereotype default show_members_multiplicity default show_members_initialization default show_attribute_modifiers default member_max_width 0 show_parameter_dir default show_parameter_name default package_name_in_tab default class_drawing_mode default drawing_language default show_context_mode default auto_label_position default show_relation_modifiers default show_relation_visibility default show_infonote default shadow default show_stereotype_properties default
   //use case diagram settings
   package_name_in_tab default show_context default auto_label_position default draw_all_relations default class_drawing_mode default shadow default show_stereotype_properties default
   //sequence diagram settings
@@ -31,7 +31,7 @@ format 69
   cpp_namespace "FileManager"
   classview 128003 "Classes"
     //class diagram settings
-    draw_all_relations default hide_attributes default hide_operations default hide_getset_operations default show_members_full_definition default show_members_visibility default show_members_stereotype default show_members_multiplicity default show_members_initialization default show_attribute_modifiers default member_max_width 0 show_parameter_dir default show_parameter_name default package_name_in_tab default class_drawing_mode default drawing_language default show_context_mode default auto_label_position default show_relation_modifiers default show_infonote default shadow default show_stereotype_properties default
+    draw_all_relations default hide_attributes default hide_operations default hide_getset_operations default show_members_full_definition default show_members_visibility default show_members_stereotype default show_members_multiplicity default show_members_initialization default show_attribute_modifiers default member_max_width 0 show_parameter_dir default show_parameter_name default package_name_in_tab default class_drawing_mode default drawing_language default show_context_mode default auto_label_position default show_relation_modifiers default show_relation_visibility default show_infonote default shadow default show_stereotype_properties default
     //collaboration diagram settings
     show_full_operations_definition default show_hierarchical_rank default write_horizontally default drawing_language default package_name_in_tab default show_context default draw_all_relations default shadow default show_stereotype_properties default
     //object diagram settings
@@ -47,7 +47,7 @@ format 69
     show_infonote default drawing_language default show_stereotype_properties default
     associated_deployment_view deploymentview_ref 128418 // Classes
     classdiagram 128131 "classes"
-      draw_all_relations default hide_attributes default hide_operations default hide_getset_operations default show_members_full_definition default show_members_visibility default show_members_stereotype default show_members_multiplicity default show_members_initialization default show_attribute_modifiers default member_max_width 0 show_parameter_dir default show_parameter_name default package_name_in_tab default class_drawing_mode default drawing_language default show_context_mode default auto_label_position default show_relation_modifiers default show_infonote default shadow default show_stereotype_properties default
+      draw_all_relations default hide_attributes default hide_operations default hide_getset_operations default show_members_full_definition default show_members_visibility default show_members_stereotype default show_members_multiplicity default show_members_initialization default show_attribute_modifiers default member_max_width 0 show_parameter_dir default show_parameter_name default package_name_in_tab default class_drawing_mode default drawing_language default show_context_mode default auto_label_position default show_relation_modifiers default show_relation_visibility default show_infonote default shadow default show_stereotype_properties default
       size A4
     end
 
@@ -64,46 +64,36 @@ ${inlines}
       idl_decl ""
       explicit_switch_type ""
       
-      attribute 128131 "name"
-	private type class_ref 132867 // QString
-	cpp_decl "    ${comment}${static}${mutable}${volatile}${const}${type} ${name}${value};
-"
-	java_decl ""
-	php_decl ""
-	python_decl ""
-	idl_decl ""
-      end
-
-      attribute 128259 "size"
-	private explicit_type "quint64"
-	cpp_decl "    ${comment}${static}${mutable}${volatile}${const}${type} ${name}${value};
-"
-	java_decl ""
-	php_decl ""
-	python_decl ""
-	idl_decl ""
-      end
-
-      classrelation 128643 // <directional composition>
-	relation 128515 *-->
-	  stereotype "vector"
+      classrelation 128643 // <aggregation>
+	relation 128515 o---
 	  a role_name "" multiplicity "1..*" private
-	    cpp default "    ${comment}${static}${mutable}${volatile}${const}${type} ${name}${value};
+	    cpp default "   ${comment}${static}${mutable}${volatile}${const}${stereotype}<${type}*> ${name}${value};
 "
-	    classrelation_ref 128643 // <directional composition>
-	  b multiplicity "1" parent class_ref 128515 // Chunk
+	    classrelation_ref 128643 // <aggregation>
+	  b role_name "" multiplicity "1" private
+	    classrelation_ref 129066 // <aggregation>
       end
 
-      classrelation 130691 // <realization>
-	relation 130563 -_-|>
+      classrelation 128546 // files
+	relation_ref 128387 // files
+      end
+
+      attribute 128554 "dateLastModified"
+	private explicit_type "QDateTime"
+	cpp_decl "   ${comment}${static}${mutable}${volatile}${const}${type} ${name}${value};
+"
+	java_decl ""
+	php_decl ""
+	python_decl ""
+	idl_decl ""
+      end
+
+      classrelation 128810 // <generalisation>
+	relation 128682 ---|>
 	  a public
 	    cpp default "${type}"
-	    classrelation_ref 130691 // <realization>
-	  b parent class_ref 130563 // IFile
-      end
-
-      classrelation 128546 // Files
-	relation_ref 128387 // Files
+	    classrelation_ref 128810 // <generalisation>
+	  b parent class_ref 128426 // Entry
       end
     end
 
@@ -120,38 +110,36 @@ ${inlines}
       idl_decl ""
       explicit_switch_type ""
       
-      attribute 128003 "name"
-	private type class_ref 132867 // QString
-	cpp_decl "    ${comment}${static}${mutable}${volatile}${const}${type} ${name}${value};
-"
-	java_decl ""
-	php_decl ""
-	python_decl ""
-	idl_decl ""
-      end
-
-      classrelation 128259 // (Sub)
-	relation 128259 *--- name "Sub"
+      classrelation 128259 // (subDirs)
+	relation 128259 *--- name "subDirs"
 	  a role_name "" multiplicity "*" private
 	    cpp default "    ${comment}${static}${mutable}${volatile}${const}${stereotype}<${type}> ${name}${value};
 "
-	    classrelation_ref 128259 // (Sub)
+	    classrelation_ref 128259 // (subDirs)
 	  b role_name "" multiplicity "1" private
-	    classrelation_ref 128418 // (Sub)
+	    classrelation_ref 128418 // (subDirs)
       end
 
-      classrelation 128515 // (Files)
-	relation 128387 *--- name "Files"
+      classrelation 128515 // (files)
+	relation 128387 *--- name "files"
 	  a role_name "" multiplicity "*" private
 	    cpp default "    ${comment}${static}${mutable}${volatile}${const}${stereotype}<${type}> ${name}${value};
 "
-	    classrelation_ref 128515 // (Files)
+	    classrelation_ref 128515 // (files)
 	  b role_name "" multiplicity "1" private
-	    classrelation_ref 128546 // Files
+	    classrelation_ref 128546 // files
       end
 
-      classrelation 128418 // (Sub)
-	relation_ref 128259 // Sub
+      classrelation 128418 // (subDirs)
+	relation_ref 128259 // subDirs
+      end
+
+      classrelation 128426 // <generalisation>
+	relation 128298 ---|>
+	  a public
+	    cpp default "${type}"
+	    classrelation_ref 128426 // <generalisation>
+	  b parent class_ref 128426 // Entry
       end
     end
 
@@ -205,22 +193,16 @@ ${inlines}
 	  b multiplicity "1" parent class_ref 137219 // WordIndex
       end
 
-      classrelation 128162 // (read only)
-	relation 128162 *--> name "read only"
-	  a role_name "" multiplicity "*" private
-	    cpp default "    ${comment}${static}${mutable}${volatile}${const}${type} ${name}${value};
+      classrelation 128042 // <composition>
+	relation 128042 *---
+	  a role_name "" multiplicity "1" private
+	    cpp default "   ${comment}${static}${mutable}${volatile}${const}${type} ${name}${value};
 "
-	    classrelation_ref 128162 // (read only)
-	  b multiplicity "1" parent class_ref 128034 // SharedDirectory
-      end
-
-      classrelation 128290 // (read and write)
-	relation 128290 *--> name "read and write"
-	  a role_name "" multiplicity "*" private
-	    cpp default "    ${comment}${static}${mutable}${volatile}${const}${type} ${name}${value};
+	    classrelation_ref 128042 // <composition>
+	  b role_name "" multiplicity "1" private
+	    cpp default "   ${comment}${static}${mutable}${volatile}${const}${type} ${name}${value};
 "
-	    classrelation_ref 128290 // (read and write)
-	  b multiplicity "1" parent class_ref 128034 // SharedDirectory
+	    classrelation_ref 128170 // <composition>
       end
     end
 
@@ -270,7 +252,7 @@ ${inlines}
       explicit_switch_type ""
       
       attribute 128515 "num"
-	private explicit_type "uint"
+	private explicit_type "int"
 	cpp_decl "    ${comment}${static}${mutable}${volatile}${const}${type} ${name}${value};
 "
 	java_decl ""
@@ -280,7 +262,7 @@ ${inlines}
       end
 
       attribute 128387 "hash"
-	private explicit_type "QByteArray"
+	private type class_ref 130051 // Hash
 	cpp_decl "    ${comment}${static}${mutable}${volatile}${const}${type} ${name}${value};
 "
 	java_decl ""
@@ -289,8 +271,8 @@ ${inlines}
 	idl_decl ""
       end
 
-      attribute 128643 "complete"
-	private explicit_type "bool"
+      attribute 128643 "knownBytes"
+	private explicit_type "int"
 	cpp_decl "    ${comment}${static}${mutable}${volatile}${const}${type} ${name}${value};
 "
 	java_decl ""
@@ -305,6 +287,35 @@ ${inlines}
 	    cpp default "${type}"
 	    classrelation_ref 130563 // <realization>
 	  b parent class_ref 130307 // IChunk
+      end
+
+      classrelation 128938 // <unidirectional association>
+	relation 128810 --->
+	  a role_name "" private
+	    cpp default "   ${comment}${static}${mutable}${volatile}${const}${type}* ${name}${value};
+"
+	    classrelation_ref 128938 // <unidirectional association>
+	  b parent class_ref 128298 // Cache
+      end
+
+      classrelation 129066 // <aggregation>
+	relation_ref 128515 // <aggregation>
+      end
+
+      classrelation 129450 // <dependency>
+	relation 129194 -_->
+	  a default
+	    cpp default "#include in source"
+	    classrelation_ref 129450 // <dependency>
+	  b parent class_ref 128554 // DataWriter
+      end
+
+      classrelation 129578 // <dependency>
+	relation 129322 -_->
+	  a default
+	    cpp default "#include in source"
+	    classrelation_ref 129578 // <dependency>
+	  b parent class_ref 128682 // DataReader
       end
     end
 
@@ -328,13 +339,10 @@ ${members}};
       explicit_switch_type ""
       
       operation 128003 "getChunk"
-	public return_type class_ref 130307 // IChunk
+	abstract cpp_virtual public return_type class_ref 130307 // IChunk
 	nparams 1
 	  param in name "hash" type class_ref 130051 // Hash
 	cpp_decl "    ${comment}${friend}${static}${inline}${virtual}${type} ${name}${(}const ${t0} & ${p0}${)}${const}${volatile}${throw}${abstract};
-"
-	cpp_def "${comment}${inline}${type} ${class}::${name}${(}const ${t0} & ${p0}${)}${const}${volatile}${throw}${staticnl}{
-  ${body}}
 "
 	
 	
@@ -445,7 +453,7 @@ ${members}};
       end
 
       operation 133763 "newFile"
-	public return_type class_ref 130563 // IFile
+	public explicit_return_type "IFile"
 	nparams 1
 	  param in name "remotEntry" type class_ref 135043 // FileEntry
 	cpp_decl "    ${comment}${friend}${static}${inline}${virtual}${type} ${name}${(}const ${t0} & ${p0}${)}${const}${volatile}${throw}${abstract};
@@ -526,40 +534,6 @@ ${members}};
       end
     end
 
-    class 130563 "IFile"
-      abstract visibility package stereotype "interface"
-      cpp_decl "${comment}${template}class ${name}${inherit}
-{
-${members}};
-${inlines}
-"
-      java_decl "${comment}${@}${visibility}interface ${name}${extends} {
-${members}}
-"
-      php_decl "${comment}${visibility}interface ${name} {
-${members}}
-"
-      python_2_2 python_decl ""
-      idl_decl "${comment}${abstract}${local}interface ${name}${inherit} {
-${members}};
-"
-      explicit_switch_type ""
-      
-      operation 134275 "getChunks"
-	public explicit_return_type "QList<IChunk>"
-	nparams 0
-	cpp_decl "    ${comment}${friend}${static}${inline}${virtual}${type} ${name}${(}${)}${const}${volatile}${throw}${abstract};
-"
-	cpp_def "${comment}${inline}${type} ${class}::${name}${(}${)}${const}${volatile}${throw}${staticnl}{
-  ${body}}
-"
-	
-	
-	
-	
-      end
-    end
-
     class 134147 "FileUpdater"
       visibility package 
       cpp_decl "${comment}${template}class ${name}${inherit}
@@ -623,7 +597,9 @@ ${members}}
       php_decl "${comment}${visibility}interface ${name} {
 ${members}}
 "
-      python_2_2 python_decl ""
+      python_2_2 python_decl "class ${name}${inherit}:
+${docstring}${members}
+"
       idl_decl "${comment}${abstract}${local}interface ${name}${inherit} {
 ${members}};
 "
@@ -675,6 +651,209 @@ ${inlines}
 	php_decl ""
 	python_decl ""
 	idl_decl ""
+      end
+
+      attribute 128042 "rights"
+	private explicit_type "Rights"
+	cpp_decl "   ${comment}${static}${mutable}${volatile}${const}${type} ${name}${value};
+"
+	java_decl ""
+	php_decl ""
+	python_decl ""
+	idl_decl ""
+      end
+
+      attribute 128170 "id"
+	private type class_ref 130051 // Hash
+	cpp_decl "   ${comment}${static}${mutable}${volatile}${const}${type} ${name}${value};
+"
+	java_decl ""
+	php_decl ""
+	python_decl ""
+	idl_decl ""
+      end
+    end
+
+    class 128042 "IDataWriter"
+      abstract visibility package stereotype "interface"
+      cpp_decl "${comment}${template}class ${name}${inherit}
+{
+${members}};
+${inlines}
+"
+      java_decl "${comment}${@}${visibility}interface ${name}${extends} {
+${members}}
+"
+      php_decl "${comment}${visibility}interface ${name} {
+${members}}
+"
+      python_2_2 python_decl ""
+      idl_decl "${comment}${abstract}${local}interface ${name}${inherit} {
+${members}};
+"
+      explicit_switch_type ""
+      
+      operation 128042 "write"
+	abstract cpp_virtual public explicit_return_type ""
+	nparams 2
+	  param in name "buffer" type class_ref 134787 // QByteArray
+	  param in name "offset" explicit_type "uint"
+	cpp_decl "   ${comment}${friend}${static}${inline}${virtual}${type} ${name}${(}const ${t0} & ${p0}, ${t1} ${p1}${)}${const}${volatile}${throw}${abstract};
+"
+	
+	
+	
+	
+      end
+    end
+
+    class 128170 "IDataReader"
+      abstract visibility package stereotype "interface"
+      cpp_decl "${comment}${template}class ${name}${inherit}
+{
+${members}};
+${inlines}
+"
+      java_decl "${comment}${@}${visibility}interface ${name}${extends} {
+${members}}
+"
+      php_decl "${comment}${visibility}interface ${name} {
+${members}}
+"
+      python_2_2 python_decl ""
+      idl_decl "${comment}${abstract}${local}interface ${name}${inherit} {
+${members}};
+"
+      explicit_switch_type ""
+      
+      operation 128170 "read"
+	public explicit_return_type ""
+	nparams 2
+	  param out name "buffer" type class_ref 134787 // QByteArray
+	  param in name "offset" explicit_type "uint"
+	cpp_decl "   ${comment}${friend}${static}${inline}${virtual}${type} ${name}${(}${t0}& ${p0}, ${t1} ${p1}${)}${const}${volatile}${throw}${abstract};
+"
+	cpp_def "${comment}${inline}${type} ${class}::${name}${(}${t0}& ${p0}, ${t1} ${p1}${)}${const}${volatile}${throw}${staticnl}
+{
+  ${body}}"
+	
+	
+	
+	
+      end
+    end
+
+    class 128298 "Cache"
+      visibility package 
+      cpp_decl "${comment}${template}class ${name}${inherit}
+{
+${members}};
+${inlines}
+"
+      java_decl ""
+      php_decl ""
+      python_2_2 python_decl ""
+      idl_decl ""
+      explicit_switch_type ""
+      
+      classrelation 128170 // <composition>
+	relation_ref 128042 // <composition>
+      end
+
+      classrelation 128298 // <directional composition>
+	relation 128170 *-->
+	  a role_name "" multiplicity "*" private
+	    cpp default "   ${comment}${static}${mutable}${volatile}${const}${type} ${name}${value};
+"
+	    classrelation_ref 128298 // <directional composition>
+	  b multiplicity "1" parent class_ref 128034 // SharedDirectory
+      end
+    end
+
+    class 128426 "Entry"
+      visibility package 
+      cpp_decl "${comment}${template}class ${name}${inherit}
+{
+${members}};
+${inlines}
+"
+      java_decl ""
+      php_decl ""
+      python_2_2 python_decl ""
+      idl_decl ""
+      explicit_switch_type ""
+      
+      classrelation 128682 // <unidirectional association>
+	relation 128554 --->
+	  a role_name "" private
+	    cpp default "   ${comment}${static}${mutable}${volatile}${const}${type}* ${name}${value};
+"
+	    classrelation_ref 128682 // <unidirectional association>
+	  b parent class_ref 128298 // Cache
+      end
+
+      attribute 128298 "name"
+	private type class_ref 132867 // QString
+	cpp_decl "   ${comment}${static}${mutable}${volatile}${const}${type} ${name}${value};
+"
+	java_decl ""
+	php_decl ""
+	python_decl ""
+	idl_decl ""
+      end
+
+      attribute 128426 "size"
+	private explicit_type "quint64"
+	cpp_decl "   ${comment}${static}${mutable}${volatile}${const}${type} ${name}${value};
+"
+	java_decl ""
+	php_decl ""
+	python_decl ""
+	idl_decl ""
+      end
+    end
+
+    class 128554 "DataWriter"
+      visibility package 
+      cpp_decl "${comment}${template}class ${name}${inherit}
+{
+${members}};
+${inlines}
+"
+      java_decl ""
+      php_decl ""
+      python_2_2 python_decl ""
+      idl_decl ""
+      explicit_switch_type ""
+      
+      classrelation 129194 // <realization>
+	relation 128938 -_-|>
+	  a public
+	    cpp default "${type}"
+	    classrelation_ref 129194 // <realization>
+	  b parent class_ref 128042 // IDataWriter
+      end
+    end
+
+    class 128682 "DataReader"
+      visibility package 
+      cpp_decl "${comment}${template}class ${name}${inherit}
+{
+${members}};
+${inlines}
+"
+      java_decl ""
+      php_decl ""
+      python_2_2 python_decl ""
+      idl_decl ""
+      explicit_switch_type ""
+      
+      classrelation 129322 // <realization>
+	relation 129066 -_-|>
+	  a public
+	    cpp default "${type}"
+	    classrelation_ref 129322 // <realization>
+	  b parent class_ref 128170 // IDataReader
       end
     end
   end
@@ -920,7 +1099,6 @@ ${module_end}
 #endif
 "
       associated_classes
-	class_ref 130563 // IFile
       end
     end
 

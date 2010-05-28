@@ -16,7 +16,7 @@
    inkscape:version="0.47 r22583"
    sodipodi:docname="network_protocol.svg"
    inkscape:output_extension="org.inkscape.output.svg.inkscape"
-   inkscape:export-filename="c:\tmp\network_protocol.png"
+   inkscape:export-filename="C:\Users\gburri\AppData\Local\Temp\network_protocol.png"
    inkscape:export-xdpi="120"
    inkscape:export-ydpi="120"
    sodipodi:version="0.32">
@@ -623,7 +623,7 @@
      inkscape:pageshadow="2"
      inkscape:zoom="1.4"
      inkscape:cx="229.16099"
-     inkscape:cy="717.6811"
+     inkscape:cy="689.10967"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -640,7 +640,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title />
+        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>

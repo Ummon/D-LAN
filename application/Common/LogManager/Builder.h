@@ -15,6 +15,7 @@ namespace LM
    public:
       static QSharedPointer<ILogger> newLogger(const QString& name);
       static QSharedPointer<IEntry> decode(const QString& line);
+      static void initMsgHandler();
    };
 }
 

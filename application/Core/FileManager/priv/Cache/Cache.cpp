@@ -17,6 +17,11 @@ Cache::Cache(FileManager* fileManager)
 {
 }
 
+/**
+  * a) Search among their shared directory the one who match the given entry.
+  * b) In the shared directory try to find the directory corresponding to 'entry.dir.path'.
+  * c) Populate the result with directories and files.
+  */
 Protos::Core::GetEntriesResult Cache::getEntries(const Protos::Common::DirEntry& entry)
 {
    Protos::Core::GetEntriesResult result;
@@ -158,7 +163,7 @@ void Cache::setSharedDirs(const QStringList& dirs, SharedDirectory::Rights right
    }
 
    // The duplicate dirs are found further because we compare only
-   // directories with the same rights here,
+   // directories with the same rights here.
    this->createSharedDirs(dirs, rights);
 }
 
@@ -175,7 +180,7 @@ void Cache::removeSharedDir(SharedDirectory* dir, Directory* dir2)
    emit sharedDirectoryRemoved(dir, dir2);
 
    // Delete all chunks.
-   //dir->eliminate();
+   // dir->eliminate();
 
    //delete dir; // Directory is deleted by fileUpdater
 }
@@ -433,7 +438,6 @@ void Cache::createSharedDirs(const QStringList& dirs, const QList<SharedDirector
 
          L_DEBU(QString("Add a new shared directory : %1").arg(path));
          emit newSharedDirectory(dir);
-         //this->fileUpdater->addRoot(dir);
          this->sharedDirs << dir;
       }
       catch (DirNotFoundException& e)
