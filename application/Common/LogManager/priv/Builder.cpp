@@ -6,6 +6,7 @@ using namespace LM;
 #include <priv/Entry.h>
 
 #include <priv/QtLogger.h>
+#include <priv/StdLogger.h>
 
 /**
   * Create a new logger, the name may correspond to a module name.
@@ -32,5 +33,6 @@ QSharedPointer<IEntry> Builder::decode(const QString& line)
   */
 void Builder::initMsgHandler()
 {
+   StdLogger::init();
    QtLogger::initMsgHandler();
 }
