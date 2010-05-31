@@ -86,6 +86,30 @@ IChunk* FileManager::getChunk(const Common::Hash& hash)
    return this->chunks.value(hash);
 }
 
+QList< QSharedPointer<IChunk> > FileManager::newFile(const Protos::Common::FileEntry& remoteEntry)
+{
+   Directory* dir = this->cache.getDirectory(QDir::cleanPath(remoteEntry.file().path().data()), remoteEntry.file().size() + MINIMUM_FREE_SPACE);
+
+   Common::Hashes hashes;
+   for (int i = 0; i < remoteEntry.chunk_size(); i++)
+      hashes << (remoteEntry.chunk(i).has_hash() ? Common::Hash(remoteEntry.chunk(i).hash().data()) : Common::Hash());
+
+   File* file = new File(
+      dir,
+      remoteEntry.file().name().data(),
+      remoteEntry.file().size(),
+      QDateTime::currentDateTime(),
+      hashes,
+      true
+   );
+
+   // TODO : is there a better way to up cast ?
+   QList< QSharedPointer<IChunk> > chunks;
+   foreach (QSharedPointer<Chunk> chunk, file->getChunks())
+      chunks << chunk;
+   return chunks;
+}
+
 Protos::Core::GetEntriesResult FileManager::getEntries(const Protos::Common::DirEntry& entry)
 {
    return this->cache.getEntries(entry);
@@ -198,30 +222,6 @@ quint64 FileManager::getAmount()
    return this->cache.getAmount();
 }
 
-QList< QSharedPointer<IChunk> > FileManager::newFile(const Protos::Common::FileEntry& remoteEntry)
-{
-   Directory* dir = this->cache.getDirectory(QDir::cleanPath(remoteEntry.file().path().data()), remoteEntry.file().size() + MINIMUM_FREE_SPACE);
-
-   Common::Hashes hashes;
-   for (int i = 0; i < remoteEntry.chunk_size(); i++)
-      hashes << (remoteEntry.chunk(i).has_hash() ? Common::Hash(remoteEntry.chunk(i).hash().data()) : Common::Hash());
-
-   File* file = new File(
-      dir,
-      remoteEntry.file().name().data(),
-      remoteEntry.file().size(),
-      QDateTime::currentDateTime(),
-      hashes,
-      true
-   );
-
-   // TODO : is there a better way to up cast ?
-   QList< QSharedPointer<IChunk> > chunks;
-   foreach (QSharedPointer<Chunk> chunk, file->getChunks())
-      chunks << chunk;
-   return chunks;
-}
-
 Directory* FileManager::getFittestDirectory(const QString& path)
 {
    return this->cache.getFittestDirectory(path);
@@ -240,7 +240,7 @@ void FileManager::entryAdded(Entry* entry)
    if (entry->getName().isEmpty())
       return;
 
-   L_DEBU(QString("Adding entry '%1' to the index..").arg(entry->getName()));
+   L_DEBU(QString("Adding entry '%1' to the index ..").arg(entry->getName()));
    this->wordIndex.addItem(FileManager::splitInWords(entry->getName()), entry);
 }
 

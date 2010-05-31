@@ -16,6 +16,7 @@ public:
 private slots:
    void initTestCase();
 
+   /***** Adding shared directories *****/
    void addASharedDirectory();
    void addAnAlreadySharedDirectory();
    void addInexistingSharedDirectory();
@@ -23,17 +24,36 @@ private slots:
    void addSuperSharedDirectoriesWithDifferentRights();
    void addSuperSharedDirectoriesWithSameRights();
 
-   void rmSharedDirectory();
+   /***** Create / remove / modify the file system *****/
    void createAFile();
+
+   /***** Ask for chunks by hash *****/
+
+   /***** Get Hashes from a FileEntry which the hash is already computed *****/
+
+   /***** Get Hashes from a FileEntry which the hash is unknown *****/
+
+   /***** Read and write concurrently some chunks *****/
+
+   /***** Browse the shared directories *****/
    void browseAdirectory();
+
+   /***** Find files and directories by keywords *****/
+
+   /***** Ask if the given hashes are known *****/
+
+   /***** Ask for the amount of shared byte *****/
+
+   /***** Removing shared directories *****/
+   void rmSharedDirectory();
+
+   /***** Simulating of a real usage with all previous tests running concurrently *****/
 
    void cleanupTestCase();
 
 private:
    void search();
    void addSuperSharedDirectoriesAndMerge();
-
-private:
    void doASearch(bool checkResult);
    void printSearch(const QString& terms, const Protos::Common::FindResult& result);
    void printAmount();

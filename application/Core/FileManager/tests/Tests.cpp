@@ -16,8 +16,13 @@ Tests::Tests()
 {
 }
 
+#include <iostream>
+using namespace std;
+
 void Tests::initTestCase()
 {
+   qDebug() << "===== initTestCase() =====";
+
    Common::PersistantData::rmValue(FILE_CACHE); // Reset the stored cache.
    this->fileManager = Builder::newFileManager();
    LM::Builder::initMsgHandler();
@@ -25,6 +30,8 @@ void Tests::initTestCase()
 
 void Tests::addASharedDirectory()
 {
+   qDebug() << "===== addASharedDirectory() =====";
+
    this->sharedDirsReadOnly << QDir::currentPath().append("/../../sharedDirs/share1");
    this->fileManager->setSharedDirsReadOnly(this->sharedDirsReadOnly);
    QStringList paths = this->fileManager->getSharedDirsReadOnly();
@@ -35,7 +42,7 @@ void Tests::addASharedDirectory()
 
 void Tests::addAnAlreadySharedDirectory()
 {
-   // return;
+   qDebug() << "===== addAnAlreadySharedDirectory() =====";
 
    this->fileManager->setSharedDirsReadOnly(this->sharedDirsReadOnly);
    QStringList paths = this->fileManager->getSharedDirsReadOnly();
@@ -46,7 +53,7 @@ void Tests::addAnAlreadySharedDirectory()
 
 void Tests::addInexistingSharedDirectory()
 {
-   // return;
+   qDebug() << "===== addInexistingSharedDirectory() =====";
 
    this->sharedDirsReadOnly << QDir::currentPath().append("/this_is_spartaaaaaa"); // This directory doesn't exit.
    try
@@ -65,6 +72,8 @@ void Tests::addInexistingSharedDirectory()
 
 void Tests::addSubSharedDirectories()
 {
+   qDebug() << "===== addSubSharedDirectories() =====";
+
    this->sharedDirsReadOnly << QDir::currentPath().append("/../../sharedDirs/share1/subdir");
    this->sharedDirsReadOnly << QDir::currentPath().append("/../../sharedDirs/share1/anotherSubdir");
    try
@@ -86,6 +95,8 @@ void Tests::addSubSharedDirectories()
 
 void Tests::addSuperSharedDirectoriesWithDifferentRights()
 {
+   qDebug() << "===== addSuperSharedDirectoriesWithDifferentRights() =====";
+
    QStringList sharedWriteDirs;
    sharedWriteDirs << QDir::currentPath().append("/../../sharedDirs");
 
@@ -106,23 +117,21 @@ void Tests::addSuperSharedDirectoriesWithDifferentRights()
   */
 void Tests::addSuperSharedDirectoriesWithSameRights()
 {
-   return;
-
-   this->sharedDirsReadOnly << "C:/Qt/2009.05-rc1/bin";
-   this->fileManager->setSharedDirsReadOnly(this->sharedDirsReadOnly);
-
-   return;
-
-   /*qsrand(QTime(0,0,0).secsTo(QTime::currentTime()));
-   QTest::qSleep(qrand() % 256 + 1);*/
+   qDebug() << "===== addSuperSharedDirectoriesWithSameRights() =====";
 
    this->sharedDirsReadOnly << QDir::currentPath().append("/../../sharedDirs");
    this->fileManager->setSharedDirsReadOnly(this->sharedDirsReadOnly);
+
+   QTest::qSleep(100);
+
+   /*
+   qsrand(QTime(0,0,0).secsTo(QTime::currentTime()));
+   QTest::qSleep(qrand() % 10 + 1);*/
 }
 
 void Tests::rmSharedDirectory()
 {
-   return;
+   qDebug() << "===== rmSharedDirectory() =====";
 
    this->sharedDirsReadOnly.clear();
    this->fileManager->setSharedDirsReadOnly(this->sharedDirsReadOnly);

@@ -37,6 +37,7 @@ namespace FM
       QStringList getSharedDirsReadWrite();
 
       IChunk* getChunk(const Common::Hash& hash);
+      virtual QList< QSharedPointer<IChunk> > newFile(const Protos::Common::FileEntry& remoteEntry);
       // IGetHashesResult* getHashes(const  Protos::Common::FileEntry& entry);
 
       Protos::Core::GetEntriesResult getEntries(const Protos::Common::DirEntry& entry);
@@ -45,7 +46,6 @@ namespace FM
       Protos::Common::FindResult find(const QString& words);
       QBitArray haveChunks(const QList<Common::Hash>& hashes);
       quint64 getAmount();
-      virtual QList< QSharedPointer<IChunk> > newFile(const Protos::Common::FileEntry& remoteEntry);
 
       Directory* getFittestDirectory(const QString& path);
       Entry* getEntry(const QString& path);
