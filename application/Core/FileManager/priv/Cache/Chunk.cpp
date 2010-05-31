@@ -15,7 +15,7 @@ Chunk::Chunk(Cache* cache, File* file, int num, int knownBytes)
    : cache(cache), file(file), num(num), knownBytes(knownBytes)
 {
    QMutexLocker locker (&this->mutex);
-   //LOG_DEBUG(QString("New chunk[%1] : %2. File : %3").arg(num).arg(hash.toStr()).arg(this->file->getFullPath()));
+   L_DEBU(QString("New chunk[%1] : %2. File : %3").arg(num).arg(hash.toStr()).arg(this->file->getFullPath()));
 }
 
 Chunk::Chunk(Cache* cache, File* file, int num, int knownBytes, const Common::Hash& hash)

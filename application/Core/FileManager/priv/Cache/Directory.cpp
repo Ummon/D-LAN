@@ -165,13 +165,20 @@ Directory* Directory::getSubDir(const QString& name) const
 
 QList<Directory*> Directory::getSubDirs() const
 {
-   QMutexLocker(&this->cache->getMutex());
+   // TODO : it create a deadlock, rethink serously about the concurency problems ..
+   // - main thread (MT) : setSharedDirsReadOnly(..) with a super shared directory -> Cache::lock
+   // - FileUpdater thread (FT) : Scan some directories and be locked by the call currentDir->getSubDirs() -> Cache::lock;
+   // - (MT) : SharedDirectory::init() call this->getCache()->removeSharedDir(subDir, current); and emit sharedDirectoryRemoved
+   //          which will call FileUpdater::rmRoot which will try to stop scanning -> deadlock
+   // QMutexLocker(&this->cache->getMutex());
    return this->subDirs;
 }
 
 QList<File*> Directory::getFiles() const
 {
-   QMutexLocker(&this->cache->getMutex());
+   // TODO : it create a deadlock, rethink serously about the concurency problems ..
+   // Same problem as above.
+   // QMutexLocker(&this->cache->getMutex());
    return this->files;
 }
 

@@ -38,6 +38,18 @@ namespace FM
         */
       virtual IChunk* getChunk(const Common::Hash& hash) = 0;
 
+      /**
+        * Create a new empty file. It will be automatically create in the same path than the remote one.
+        * It will take the shared directory which has enought storage space and matches paths the closest.
+        * The file will have the exact final size and filled with 0.
+        * The filename will end with .unfinished.
+        * Some or all hashes can be null (see Protos.Common.Hash). They can be set later with IChunk::setHash(..).
+        * @exception NoReadWriteSharedDirectoryException
+        * @exception InsufficientStorageSpaceException
+        * @exception FilePhysicallyAlreadyExistsException
+        */
+      virtual QList< QSharedPointer<IChunk> > newFile(const Protos::Common::FileEntry& remoteEntry) = 0;
+
       // virtual IGetHashesResult* getHashes(const Protos::Common::FileEntry& entry) = 0;
 
       /**
@@ -53,18 +65,6 @@ namespace FM
       virtual Protos::Common::FindResult find(const QString& words) = 0;
       virtual QBitArray haveChunks(const QList<Common::Hash>& hashes) = 0;
       virtual quint64 getAmount() = 0;
-
-      /**
-        * Create a new empty file. It will be automatically create in the same path than the remote one.
-        * It will take the shared directory which has enought storage space and matches paths the closest.
-        * The file will have the exact final size and filled with 0.
-        * The filename will end with .unfinished.
-        * Some or all hashes can be null (see Protos.Common.Hash). They can be set later with IChunk::setHash(..).
-        * @exception NoReadWriteSharedDirectoryException
-        * @exception InsufficientStorageSpaceException
-        * @exception FilePhysicallyAlreadyExistsException
-        */
-      virtual QList< QSharedPointer<IChunk> > newFile(const Protos::Common::FileEntry& remoteEntry) = 0;
    };
 }
 #endif

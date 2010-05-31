@@ -137,6 +137,7 @@ void Cache::setSharedDirs(const QStringList& dirs, SharedDirectory::Rights right
 
    QMutableListIterator<SharedDirectory*> j(sharedDirs);
 
+   // Remove already shared directories from 'sharedDirs'.
    // /!\ O(n^2).
    for(QListIterator<QString> i(dirs); i.hasNext();)
    {
@@ -170,6 +171,7 @@ void Cache::setSharedDirs(const QStringList& dirs, SharedDirectory::Rights right
 /**
   * Will inform the fileUpdater and delete 'dir'.
   * If 'dir2' is given 'dir' content (sub dirs + files) will be give to 'dir2'.
+  * The directory is deleted by fileUpdater.
   */
 void Cache::removeSharedDir(SharedDirectory* dir, Directory* dir2)
 {
@@ -179,10 +181,9 @@ void Cache::removeSharedDir(SharedDirectory* dir, Directory* dir2)
 
    emit sharedDirectoryRemoved(dir, dir2);
 
+   // TODO : why theses lines are commented without comment?
    // Delete all chunks.
    // dir->eliminate();
-
-   //delete dir; // Directory is deleted by fileUpdater
 }
 
 SharedDirectory* Cache::getSuperSharedDirectory(const QString& path)
