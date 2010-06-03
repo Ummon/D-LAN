@@ -7,6 +7,7 @@
 #include <QMutex>
 #include <QWaitCondition>
 #include <QFile>
+#include <QFileInfo>
 #include <QList>
 #include <QSharedPointer>
 #include <QDateTime>
@@ -105,6 +106,7 @@ namespace FM
       bool hasOneOrMoreHashes();
 
       bool isComplete();
+      bool correspondTo(const QFileInfo& fileInfo);
 
       /**
         * Remove the file physically only if it's not complete.

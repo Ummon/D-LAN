@@ -82,7 +82,7 @@ QList<File*> Directory::restoreFromFileCache(const Protos::FileCache::Hashes_Dir
 
 void Directory::populateHashesDir(Protos::FileCache::Hashes_Dir& dirToFill) const
 {
-   //dirToFill.set_name(this->getName().toStdString());
+   dirToFill.set_name(this->getName().toStdString());
 
    for (QListIterator<File*> i(this->files); i.hasNext();)
    {
@@ -95,7 +95,6 @@ void Directory::populateHashesDir(Protos::FileCache::Hashes_Dir& dirToFill) cons
       }
    }
 
-   return;
    for (QListIterator<Directory*> dir(this->subDirs); dir.hasNext();)
    {
       dir.next()->populateHashesDir(*dirToFill.add_dir());
@@ -112,7 +111,7 @@ void Directory::populateDirEntry(Protos::Common::DirEntry* entry) const
   */
 void Directory::fileDeleted(File* file)
 {
-   L_DEBU(QString("Directory::fileDeleted() remove %1 from %2").arg(file->getFullPath()).arg(this->getFullPath()));
+   L_DEBU(QString("Directory::fileDeleted() remove %1").arg(file->getFullPath()));
    this->files.removeOne(file);
 }
 
@@ -217,7 +216,7 @@ File* Directory::createFile(const QFileInfo& fileInfo)
       if (f->getName() == fileInfo.fileName())
       {
          // If the file is uncompleted its size and date may change.
-         if (!f->isComplete() || f->getSize() == fileInfo.size() && f->getDateLastModified() == fileInfo.lastModified())
+         if (!f->isComplete() || f->correspondTo(fileInfo))
             return f;
 
          delete f;
@@ -244,7 +243,7 @@ void Directory::addFile(File* file)
    if (this->files.contains(file))
       return;
 
-   this->files.append(file);
+   this->files << file;
 
    (*this) += file->getSize();
 }

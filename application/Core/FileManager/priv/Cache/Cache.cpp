@@ -317,7 +317,7 @@ Directory* Cache::getDirectory(const QString& path, qint64 spaceNeeded)
   *  This directory exists in cache : /home/peter/linux/distrib
   *  Thus, this directory 'distrib' will be returned.
   * @param path An absolute path.
-  * @return If no directory can be match 0 is resturned.
+  * @return If no directory can be match 0 is returned.
   */
 Directory* Cache::getFittestDirectory(const QString& path)
 {
@@ -366,16 +366,17 @@ void Cache::saveInFile(Protos::FileCache::Hashes& hashes)
    for (QListIterator<SharedDirectory*> i(this->sharedDirs); i.hasNext();)
    {
       SharedDirectory* sharedDir = i.next();
-      Protos::FileCache::Hashes_SharedDir* sharedDirMess = hashes.add_dir();
+      Protos::FileCache::Hashes_SharedDir* sharedDirMess = hashes.add_shareddir();
 
-      //sharedDirMess->set_path(sharedDir->getFullPath().toStdString());
+      sharedDirMess->mutable_id()->set_hash(sharedDir->getId().getData(), Common::Hash::HASH_SIZE);
 
       sharedDirMess->set_type(
          sharedDir->getRights() == SharedDirectory::READ_ONLY ?
             Protos::FileCache::Hashes_SharedDir_Type_READ :
             Protos::FileCache::Hashes_SharedDir_Type_READ_WRITE
       );
-      //sharedDirMess->mutable_id()->set_hash(sharedDir->getId().getData(), Common::Hash::HASH_SIZE);
+
+      sharedDirMess->set_path(sharedDir->getFullPath().toStdString());
 
       sharedDir->populateHashesDir(*sharedDirMess->mutable_root());
    }
@@ -468,9 +469,9 @@ void Cache::createSharedDirs(const Protos::FileCache::Hashes& hashes)
    QList<Common::Hash> ids;
 
    // Add the shared directories from the file cache.
-   for (int i = 0; i < hashes.dir_size(); i++)
+   for (int i = 0; i < hashes.shareddir_size(); i++)
    {
-      const Protos::FileCache::Hashes_SharedDir& dir = hashes.dir(i);
+      const Protos::FileCache::Hashes_SharedDir& dir = hashes.shareddir(i);
       paths << dir.path().data();
       rights << (dir.type() == Protos::FileCache::Hashes_SharedDir_Type_READ ? SharedDirectory::READ_ONLY : SharedDirectory::READ_WRITE)  ;
       ids << Common::Hash(dir.id().hash().data());
