@@ -196,9 +196,7 @@ void FileUpdater::run()
          if (this->dirsToScan.isEmpty() && this->fileWithoutHashes.isEmpty())
          {
             this->mutex.unlock();
-            this->treatEvents(this->dirWatcher->waitEvent(
-                  QList<WaitCondition*>() << this->dirEvent)
-            );
+            this->treatEvents(this->dirWatcher->waitEvent(QList<WaitCondition*>() << this->dirEvent));
          }
          else
          {
@@ -241,8 +239,7 @@ bool FileUpdater::computeSomeHashes()
    QTime time;
    time.start();
 
-   QMutableListIterator<File*> i(this->fileWithoutHashes);
-   while (i.hasNext())
+   for (QMutableListIterator<File*> i(this->fileWithoutHashes); i.hasNext();)
    {
       this->currentHashingFile = i.next();
 
@@ -308,39 +305,34 @@ void FileUpdater::scan(Directory* dir)
       QList<Directory*> currentSubDirs = currentDir->getSubDirs();
       QList<File*> currentFiles = currentDir->getFiles();
 
-      foreach (QFileInfo entry, QDir(currentDir->getFullPath()).entryInfoList())
+      foreach (QFileInfo entry, QDir(currentDir->getFullPath()).entryInfoList(QDir::AllEntries | QDir::NoDotAndDotDot))
       {
-         if (entry.fileName() == "." || entry.fileName() == "..")
-            continue;
+         QMutexLocker locker(&this->scanningMutex);
 
+         if (!this->currentScanningDir || this->toStop)
          {
-            QMutexLocker locker(&this->scanningMutex);
+            L_DEBU("Scanning aborted : " + dir->getFullPath());
+            this->currentScanningDir = 0;
+            this->scanningStopped.wakeOne();
+            return;
+         }
 
-            if (!this->currentScanningDir || this->toStop)
-            {
-               L_DEBU("Scanning aborted : " + dir->getFullPath());
-               this->currentScanningDir = 0;
-               this->scanningStopped.wakeOne();
-               return;
-            }
+         if (entry.isDir())
+         {
+            Directory* dir = currentDir->createSubDirectory(entry.fileName());
+            dirsToVisit << dir;
 
-            if (entry.isDir())
-            {
-               Directory* dir = currentDir->createSubDirectory(entry.fileName());
-               dirsToVisit << dir;
+            currentSubDirs.removeOne(dir);
+         }
+         else
+         {
+            File* file = currentDir->createFile(entry);
 
-               currentSubDirs.removeOne(dir);
-            }
-            else
-            {
-               File* file = currentDir->createFile(entry);
+            // If a file is incomplete (unfinished) we can't compute its hashes because we don't have all data.
+            if (!file->hasAllHashes() && file->isComplete())
+               this->fileWithoutHashes << file;
 
-               // If a file is incomplete (unfinished) we can't compute its hashes because we don't have all data.
-               if (!file->hasAllHashes() && file->isComplete())
-                  this->fileWithoutHashes << file;
-
-               currentFiles.removeOne(file);
-            }
+            currentFiles.removeOne(file);
          }
       }
 
@@ -405,6 +397,9 @@ void FileUpdater::restoreFromFileCache(SharedDirectory* dir)
    L_DEBU("Restoring terminated : " + dir->getFullPath());
 }
 
+/**
+  * Event from the filesystem like a new created file or a renamed file.
+  */
 void FileUpdater::treatEvents(const QList<WatcherEvent>& events)
 {
    if (events.isEmpty())
@@ -412,13 +407,13 @@ void FileUpdater::treatEvents(const QList<WatcherEvent>& events)
 
    foreach (WatcherEvent event, events)
    {
-      if (event.type == WatcherEvent::TIMEOUT || // Don't care about this event type.
-         event.path1.endsWith(UNFINISHED_SUFFIX_TERM) //
+      if (
+         event.type == WatcherEvent::TIMEOUT || // Don't care about this event type.
+         event.path1.endsWith(UNFINISHED_SUFFIX_TERM) // Don't care about unfinished files.
       )
          continue;
 
-      // TODO..
-      L_DEBU("File structure event occurs :");
+      L_DEBU("A file structure event occurs :");
       L_DEBU(event.toStr());
 
       switch (event.type)
@@ -432,20 +427,14 @@ void FileUpdater::treatEvents(const QList<WatcherEvent>& events)
          }
 
       case WatcherEvent::NEW:
+      case WatcherEvent::DELETED:
+      case WatcherEvent::CONTENT_CHANGED:
          {
             Directory* dir = this->fileManager->getFittestDirectory(event.path1);
-            if (dir)
+            if (dir && !this->dirsToScan.contains(dir))
                this->dirsToScan << dir;
             break;
          }
-
-      case WatcherEvent::CONTENT_CHANGED:
-         {
-            QFileInfo i(event.path1);
-            //LOG_DEBU("i.isWritable()
-         }
       }
-
-      //this->fileManager->getEntry(event.path1)
    }
 }
