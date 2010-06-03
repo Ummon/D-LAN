@@ -2,6 +2,7 @@
 #define COMMON_TESTS_H
 
 #include <QTest>
+#include <QDir>
 
 #include <Builder.h>
 #include <IFileManager.h>
@@ -23,9 +24,20 @@ private slots:
    void addSubSharedDirectories();
    void addSuperSharedDirectoriesWithDifferentRights();
    void addSuperSharedDirectoriesWithSameRights();
+   void addASharedDirectoryReadWrite();
 
-   /***** Create / remove / modify the file system *****/
+   /***** Modification of the file system *****/
    void createAFile();
+   void moveAFile();
+   void renameAFile();
+   void modifyAFile();
+   void removeAFile();
+   void createABigFile();
+   void modifyABigFile();
+   void removeABigFile();
+   void createADirectory();
+   void moveADirectory();
+   void removeADirectory();
 
    /***** Ask for chunks by hash *****/
 
@@ -34,6 +46,12 @@ private slots:
    /***** Get Hashes from a FileEntry which the hash is unknown *****/
 
    /***** Read and write concurrently some chunks *****/
+   /*<Protos::Common::FileEntry fileEntry;
+   Protos::Common::Entry* entry = fileEntry.mutable_file();
+   entry->set_path("");
+   entry->set_name("my_lol_cat.avi");
+   entry->set_size(650000000);
+   QList< QSharedPointer<FM::IChunk> > chunks = this->fileManager->newFile(fileEntry);*/
 
    /***** Browse the shared directories *****/
    void browseAdirectory();
@@ -52,6 +70,10 @@ private slots:
    void cleanupTestCase();
 
 private:
+   void createInitialFiles();
+   void deleteAllFiles();
+
+   void createFile(const QString& path);
    void search();
    void addSuperSharedDirectoriesAndMerge();
    void doASearch(bool checkResult);

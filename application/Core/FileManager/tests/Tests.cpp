@@ -2,8 +2,10 @@
 using namespace FM;
 
 #include <QtDebug>
-#include <QDir>
+#include <QFile>
+#include <QTextStream>
 #include <QStringList>
+#include <QDirIterator>
 
 #include <IChunk.h>
 #include <Protos/common.pb.h>
@@ -21,18 +23,20 @@ using namespace std;
 
 void Tests::initTestCase()
 {
+   LM::Builder::initMsgHandler();
    qDebug() << "===== initTestCase() =====";
 
    Common::PersistantData::rmValue(FILE_CACHE); // Reset the stored cache.
+   this->createInitialFiles();
+
    this->fileManager = Builder::newFileManager();
-   LM::Builder::initMsgHandler();
 }
 
 void Tests::addASharedDirectory()
 {
    qDebug() << "===== addASharedDirectory() =====";
 
-   this->sharedDirsReadOnly << QDir::currentPath().append("/../../sharedDirs/share1");
+   this->sharedDirsReadOnly << QDir::currentPath().append("/sharedDirs/share1");
    this->fileManager->setSharedDirsReadOnly(this->sharedDirsReadOnly);
    QStringList paths = this->fileManager->getSharedDirsReadOnly();
    QVERIFY(paths.size() == 1);
@@ -74,8 +78,8 @@ void Tests::addSubSharedDirectories()
 {
    qDebug() << "===== addSubSharedDirectories() =====";
 
-   this->sharedDirsReadOnly << QDir::currentPath().append("/../../sharedDirs/share1/subdir");
-   this->sharedDirsReadOnly << QDir::currentPath().append("/../../sharedDirs/share1/anotherSubdir");
+   this->sharedDirsReadOnly << QDir::currentPath().append("/sharedDirs/share1/subdir");
+   this->sharedDirsReadOnly << QDir::currentPath().append("/sharedDirs/share1/another subdir");
    try
    {
       this->fileManager->setSharedDirsReadOnly(this->sharedDirsReadOnly);
@@ -98,7 +102,7 @@ void Tests::addSuperSharedDirectoriesWithDifferentRights()
    qDebug() << "===== addSuperSharedDirectoriesWithDifferentRights() =====";
 
    QStringList sharedWriteDirs;
-   sharedWriteDirs << QDir::currentPath().append("/../../sharedDirs");
+   sharedWriteDirs << QDir::currentPath().append("/sharedDirs");
 
    try
    {
@@ -119,7 +123,7 @@ void Tests::addSuperSharedDirectoriesWithSameRights()
 {
    qDebug() << "===== addSuperSharedDirectoriesWithSameRights() =====";
 
-   this->sharedDirsReadOnly << QDir::currentPath().append("/../../sharedDirs");
+   this->sharedDirsReadOnly << QDir::currentPath().append("/sharedDirs");
    this->fileManager->setSharedDirsReadOnly(this->sharedDirsReadOnly);
 
    QTest::qSleep(100);
@@ -129,29 +133,93 @@ void Tests::addSuperSharedDirectoriesWithSameRights()
    QTest::qSleep(qrand() % 10 + 1);*/
 }
 
-void Tests::rmSharedDirectory()
+void Tests::addASharedDirectoryReadWrite()
 {
-   qDebug() << "===== rmSharedDirectory() =====";
+   qDebug() << "===== addASharedDirectoryReadWrite() =====";
 
-   this->sharedDirsReadOnly.clear();
-   this->fileManager->setSharedDirsReadOnly(this->sharedDirsReadOnly);
+   QStringList sharedWriteDirs;
+   sharedWriteDirs << QDir::currentPath().append("/incoming");
+   this->fileManager->setSharedDirsReadWrite(sharedWriteDirs);
 }
 
 void Tests::createAFile()
 {
-   return;
+   qDebug() << "===== createAFile() =====";
 
-   QFile::remove("../../sharedDirs/incoming1/my_lol_cat.avi.unfinished");
+   this->createFile("sharedDirs/k.txt");
+   QTest::qSleep(100);
+}
 
-   this->sharedDirsReadWrite << QDir::currentPath().append("/../../sharedDirs/incoming1");
-   this->fileManager->setSharedDirsReadWrite(this->sharedDirsReadWrite);
+void Tests::moveAFile()
+{
+   qDebug() << "===== moveAFile() =====";
 
-   Protos::Common::FileEntry fileEntry;
-   Protos::Common::Entry* entry = fileEntry.mutable_file();
-   entry->set_path("");
-   entry->set_name("my_lol_cat.avi");
-   entry->set_size(650000000);
-   QList< QSharedPointer<FM::IChunk> > chunks = this->fileManager->newFile(fileEntry);
+   QDir::current().rename("sharedDirs/k.txt", "sharedDirs/share1/k.txt");
+   QTest::qSleep(100);
+}
+
+void Tests::renameAFile()
+{
+   qDebug() << "===== renameAFile() =====";
+
+   QDir::current().rename("sharedDirs/share1/d.txt", "sharedDirs/share1/l.txt");
+   QTest::qSleep(100);
+}
+
+void Tests::modifyAFile()
+{
+   qDebug() << "===== modifyAFile() =====";
+
+   {
+      QFile file("sharedDirs/share1/subdir/a.txt");
+      file.open(QIODevice::Append);
+      QTextStream stream(&file);
+      stream << "test";
+   }
+   QTest::qSleep(100);
+}
+
+void Tests::removeAFile()
+{
+   qDebug() << "===== removeAFile() =====";
+
+   QFile("sharedDirs/share1/subdir/a.txt").remove();
+   QTest::qSleep(100);
+}
+
+void Tests::createABigFile()
+{
+   qDebug() << "===== createABigFile() =====";
+
+   QFile file("sharedDirs/big.bin");
+   file.open(QIODevice::WriteOnly);
+   file.resize(1024 * 1024 * 1024); // 1Go
+   QTest::qSleep(1000000);
+}
+
+void Tests::modifyABigFile()
+{
+
+}
+
+void Tests::removeABigFile()
+{
+
+}
+
+void Tests::createADirectory()
+{
+
+}
+
+void Tests::moveADirectory()
+{
+
+}
+
+void Tests::removeADirectory()
+{
+
 }
 
 void Tests::browseAdirectory()
@@ -165,11 +233,70 @@ void Tests::browseAdirectory()
    qDebug() << QString::fromStdString(entries2.DebugString());
 }
 
+void Tests::rmSharedDirectory()
+{
+   qDebug() << "===== rmSharedDirectory() =====";
+
+   this->sharedDirsReadOnly.clear();
+   this->fileManager->setSharedDirsReadOnly(this->sharedDirsReadOnly);
+}
+
 void Tests::cleanupTestCase()
 {
    // This call is only used to stop the fileUpdater and wait for it to finish.
    // It's should not be used in a normal code.
    //this->fileManager.clear();
+
+   QTest::qSleep(200);
+}
+
+void Tests::createInitialFiles()
+{
+   this->deleteAllFiles();
+
+   this->createFile("sharedDirs/share1/subdir/a.txt");
+   this->createFile("sharedDirs/share1/subdir/b.txt");
+   this->createFile("sharedDirs/share1/another subdir/c.txt");
+   this->createFile("sharedDirs/share1/empty subdir/");
+   this->createFile("sharedDirs/share1/d.txt");
+   this->createFile("sharedDirs/share1/e.txt");
+
+   this->createFile("sharedDirs/share2/f.txt");
+   this->createFile("sharedDirs/share2/g.txt");
+
+   this->createFile("sharedDirs/share3/h.txt");
+   this->createFile("sharedDirs/share3/i.txt");
+   this->createFile("sharedDirs/share3/j.txt");
+
+   this->createFile("incoming/");
+}
+
+void Tests::deleteAllFiles()
+{
+   foreach (QString dir, QStringList() << "sharedDirs" << "incoming")
+   {
+      for (QDirIterator i(dir, QDir::Files, QDirIterator::Subdirectories); i.hasNext();)
+         QFile(i.next()).remove();
+
+      for (QDirIterator i(dir, QDir::AllDirs, QDirIterator::Subdirectories); i.hasNext();)
+         QDir::current().rmpath(i.next());
+   }
+}
+
+/**
+  * Create a file and its parent directories if needed.
+  */
+void Tests::createFile(const QString& path)
+{
+   QFileInfo fileInfo(path);
+   QDir::current().mkpath(fileInfo.path());
+   if (fileInfo.fileName().isEmpty())
+      return;
+
+   QFile file(path);
+   file.open(QIODevice::WriteOnly);
+   QTextStream stream(&file);
+   stream << fileInfo.fileName();
 }
 
 /*
@@ -205,7 +332,7 @@ void Tests::search()
    this->doASearch(true);
    this->printAmount();
 
-   this->sharedDirsReadOnly << QDir::currentPath().append("/../../aSharedDir");
+   this->sharedDirsReadOnly << QDir::currentPath().append("/sharedDirs");
    this->fileManager->setSharedDirsReadWrite(this->sharedDirsReadOnly);
 
    QTest::qSleep(500);
