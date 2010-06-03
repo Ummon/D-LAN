@@ -18,7 +18,7 @@ message Hashes {
    message File {
       required string filename = 1;
       required uint64 size = 2;
-      required uint32 date_last_modified = 3;
+      required uint64 date_last_modified = 3; // In ms since Epoch.
       repeated Chunk chunk = 4; // Contains all the file chunk, if we don't a chunk its hash is ommited.
    }
    
@@ -42,5 +42,5 @@ message Hashes {
    required uint32 version = 1;
    required uint32 chunkSize = 2;
    
-   repeated SharedDir dir = 3;
+   repeated SharedDir sharedDir = 3;
 }

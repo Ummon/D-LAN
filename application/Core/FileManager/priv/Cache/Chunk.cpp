@@ -53,8 +53,8 @@ Chunk* Chunk::restoreFromFileCache(const Protos::FileCache::Hashes_Chunk& chunk)
 void Chunk::populateHashesChunk(Protos::FileCache::Hashes_Chunk& chunk)
 {
    chunk.set_known_bytes(this->knownBytes);
-   //if (!this->hash.isNull())
-      //chunk.mutable_hash()->set_hash(this->hash.getData(), Common::Hash::HASH_SIZE);
+   if (!this->hash.isNull())
+      chunk.mutable_hash()->set_hash(this->hash.getData(), Common::Hash::HASH_SIZE);
 }
 
 QSharedPointer<IDataReader> Chunk::getDataReader()

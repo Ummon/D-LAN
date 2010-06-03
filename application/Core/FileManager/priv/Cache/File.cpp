@@ -39,12 +39,7 @@ File::File(
       if (this->getNbChunks() != hashes.size())
          L_ERRO(QString("File::File(..) : The number of hashes (%1) doesn't correspond to the calculate number of chunk (%2)").arg(hashes.size()).arg(this->getNbChunks()));
 
-   bool complete = true;
-   if (this->name.size() > UNFINISHED_SUFFIX_TERM.size() && this->name.endsWith(UNFINISHED_SUFFIX_TERM))
-   {
-      complete = false;
-      //this->name = this->name.left(this->name.length() - UNFINISHED_SUFFIX_TERM.length());
-   }
+   bool complete = !(this->name.size() > UNFINISHED_SUFFIX_TERM.size() && this->name.endsWith(UNFINISHED_SUFFIX_TERM));
 
    // Test if the file already exists.
    /*
@@ -54,7 +49,7 @@ File::File(
 
    for (int i = 0; i < this->getNbChunks(); i++)
    {
-      int chunkKnownBytes = !complete ? 0 : i == this->getNbChunks() - 1 ? this->size % CHUNK_SIZE : CHUNK_SIZE;
+      int chunkKnownBytes = !complete ? 0 : i == this->getNbChunks() - 1 && this->size % CHUNK_SIZE != 0 ? this->size % CHUNK_SIZE : CHUNK_SIZE;
 
       if (i < hashes.size())
          this->chunks.append(QSharedPointer<Chunk>(new Chunk(this->cache, this, i, chunkKnownBytes, hashes[i])));
@@ -124,15 +119,14 @@ bool File::restoreFromFileCache(const Protos::FileCache::Hashes_File& file)
 
 void File::populateHashesFile(Protos::FileCache::Hashes_File& fileToFill) const
 {
-   return;
-   //fileToFill.set_filename(this->name.toStdString());
+   fileToFill.set_filename(this->name.toStdString());
    fileToFill.set_size(this->size);
-   fileToFill.set_date_last_modified(this->getDateLastModified().toTime_t());
+   fileToFill.set_date_last_modified(this->getDateLastModified().currentMSecsSinceEpoch());
+
    for (QListIterator< QSharedPointer<Chunk> > i(this->chunks); i.hasNext();)
    {
       Protos::FileCache::Hashes_Chunk* chunk = fileToFill.add_chunk();
-      i.next();
-      //i.next()->populateHashesChunk(*chunk);
+      i.next()->populateHashesChunk(*chunk);
    }
 }
 
@@ -302,7 +296,9 @@ bool File::computeHashes()
          bytesReadTotal += bytesRead;
       }
 
-      this->chunks[chunkNum]->setHash(crypto.result());
+      if (bytesReadTotal > 0)
+         this->chunks[chunkNum]->setHash(crypto.result());
+
       crypto.reset();
       chunkNum += 1;
    }
@@ -359,13 +355,23 @@ bool File::hasOneOrMoreHashes()
 
 bool File::isComplete()
 {
-   //L_DEBU(QString("this->size = %1, CHUNK_SIZE = %2, res = %3, this->nbChunks = %4").arg(this->size).arg(CHUNK_SIZE).arg(this->size / CHUNK_SIZE + (this->size % CHUNK_SIZE == 0 ? 0 : 1)).arg(this->nbChunks));
+   L_DEBU(QString("this->size = %1, CHUNK_SIZE = %2, res = %3, this->getNbChunks() = %4").arg(this->size).arg(CHUNK_SIZE).arg(this->size / CHUNK_SIZE + (this->size % CHUNK_SIZE == 0 ? 0 : 1)).arg(this->getNbChunks()));
 
    qint64 currentSize = 0;
    for (int i = 0; i < this->chunks.size(); i++)
       currentSize += this->chunks[i]->getKnownBytes();
 
+   L_DEBU(QString("currentSize %1").arg(currentSize));
+
    return this->size == currentSize;
+}
+
+/**
+  * Return true if the size and the last modification date correspond to the given file information
+  */
+bool File::correspondTo(const QFileInfo& fileInfo)
+{
+   return this->getSize() == fileInfo.size() && this->getDateLastModified() == fileInfo.lastModified();
 }
 
 void File::physicallyRemoveUnfinished()
