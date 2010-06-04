@@ -17,6 +17,7 @@ namespace FM
    class SharedDirectory;
    class Directory;
    class File;
+   class Entry;
    class WaitCondition;
 
    class FileUpdater : public QThread
@@ -50,6 +51,9 @@ namespace FM
       void scan(Directory* dir);
 
       void stopScanning(Directory* dir = 0);
+
+      void deleteEntry(Entry* entry);
+      void removeFromDirsToScan(Directory* dir);
 
       void restoreFromFileCache(SharedDirectory* dir);
 

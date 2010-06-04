@@ -33,6 +33,9 @@ Directory::~Directory()
    foreach (Directory* d, this->subDirs)
       delete d;
 
+   if (this->parent)
+      this->parent->subDirDeleted(this);
+
    L_DEBU(QString("Directory deleted : %1").arg(this->getFullPath()));
 }
 
@@ -299,5 +302,29 @@ Directory& Directory::operator-=(qint64 size)
       (*this->parent) -= size;
 
    return *this;
+}
+
+/**
+  * @class DirIterator
+  * Iterate recursively over a directory tree structure.
+  */
+
+DirIterator::DirIterator(Directory* dir) :
+   dirsToVisit(dir->subDirs)
+{
+}
+
+/**
+  * Return the next directory, 0 if there is no more directory.
+  */
+Directory* DirIterator::next()
+{
+   if (this->dirsToVisit.isEmpty())
+      return 0;
+
+   Directory* dir = this->dirsToVisit.front();
+   this->dirsToVisit.removeFirst();
+   this->dirsToVisit.append(dir->subDirs);
+   return dir;
 }
 

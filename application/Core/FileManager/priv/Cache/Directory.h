@@ -16,6 +16,8 @@ namespace FM
 
    class Directory : public Entry
    {
+      friend class DirIterator;
+
    public:
       Directory(Directory* parent, const QString& name, bool createPhysically = false);
 
@@ -31,17 +33,10 @@ namespace FM
 
       void populateDirEntry(Protos::Common::DirEntry* entry) const;
 
-      /**
-        * Ask to delete all chunks is this directory.
-        */
-      //virtual void eliminate();
-
       void fileDeleted(File* file);
 
    private:
       void subDirDeleted(Directory* dir);
-
-      //bool tryToSuicide();
 
    public:
       virtual QString getPath() const;
@@ -74,6 +69,17 @@ namespace FM
 
       QList<Directory*> subDirs;
       QList<File*> files;
+   };
+
+   class DirIterator
+   {
+   public:
+      DirIterator(Directory* dir);
+      virtual ~DirIterator() {}
+      Directory* next();
+
+   private:
+      QList<Directory*> dirsToVisit;
    };
 }
 #endif
