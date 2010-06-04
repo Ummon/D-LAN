@@ -63,7 +63,9 @@ namespace FM
       virtual Protos::Core::GetEntriesResult getEntries() = 0;
 
       virtual Protos::Common::FindResult find(const QString& words) = 0;
+
       virtual QBitArray haveChunks(const QList<Common::Hash>& hashes) = 0;
+
       virtual quint64 getAmount() = 0;
    };
 }

@@ -4,6 +4,8 @@
 #include <QTest>
 #include <QDir>
 
+#include <Protos/common.pb.h>
+
 #include <Builder.h>
 #include <IFileManager.h>
 using namespace FM;
@@ -57,13 +59,17 @@ private slots:
    QList< QSharedPointer<FM::IChunk> > chunks = this->fileManager->newFile(fileEntry);*/
 
    /***** Browse the shared directories *****/
-   void browseAdirectory();
+   void browseSomedirectories();
 
    /***** Find files and directories by keywords *****/
+   void findExistingFilesWithOneWord();
+   void findUnexistingFilesWithOneWord();
+   void findFilesWithSomeWords();
 
    /***** Ask if the given hashes are known *****/
 
    /***** Ask for the amount of shared byte *****/
+   void printAmount();
 
    /***** Removing shared directories *****/
    void rmSharedDirectory();
@@ -76,13 +82,14 @@ private:
    void createInitialFiles();
    void deleteAllFiles();
 
-   void createFile(const QString& path);
-   void search();
-   void addSuperSharedDirectoriesAndMerge();
-   void doASearch(bool checkResult);
-   void printSearch(const QString& terms, const Protos::Common::FindResult& result);
-   void printAmount();
 
+   void search();
+   void printSearch(const QString& terms, const Protos::Common::FindResult& result);
+   void compareExpectedResult(const Protos::Common::FindResult& result, quint32 expectedLevelResult[], QList<QString> expectedFileResult[]);
+
+   void addSuperSharedDirectoriesAndMerge();
+
+   static void createFile(const QString& path);
    static void recursiveDeleteDirectory(const QString& dir);
    static void compareStrRegexp(const QString& regexp, const QString& str);
 
