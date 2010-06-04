@@ -111,8 +111,11 @@ void MainWindow::filtersChange()
    if (this->disableRefreshFilters)
       return;
 
+   // TODO : find a better way to avoid slowing down.
+   this->ui->tblLog->verticalHeader()->setResizeMode(QHeaderView::Custom);
    for (int i = 0; i < this->model.rowCount(); i++)
       this->filterRow(i);
+   this->ui->tblLog->verticalHeader()->setResizeMode(QHeaderView::ResizeToContents);
 }
 
 /**
@@ -236,12 +239,13 @@ void MainWindow::refreshFilters()
    this->modules->setList(this->model.getModules());
    this->threads->setList(this->model.getThreads());
 }
-
+#include <QDebug>
 /**
   * Hide or show the given row depending the current filters.
   */
 void MainWindow::filterRow(int r)
 {
+   qDebug() << "MainWindow::filterRow : " << r;
    if (this->model.isFiltered(r, this->severities->getList(), this->modules->getList(), this->threads->getList()))
       this->ui->tblLog->hideRow(r);
    else
