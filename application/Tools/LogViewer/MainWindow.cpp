@@ -27,6 +27,7 @@ MainWindow::MainWindow(QWidget *parent) :
    this->ui->tblLog->setWordWrap(true);
    this->ui->tblLog->setModel(&this->model);
    this->ui->tblLog->setItemDelegate(new TableLogItemDelegate(this));
+   this->ui->tblLog->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
 
    this->severities = new TooglableList(this);
    this->modules = new TooglableList(this);
