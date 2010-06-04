@@ -10,7 +10,6 @@ using namespace FM;
 #include <QDirIterator>
 
 #include <IChunk.h>
-#include <Protos/common.pb.h>
 #include <Common/LogManager/Builder.h>
 #include <Common/PersistantData.h>
 #include <Exceptions.h>
@@ -148,7 +147,7 @@ void Tests::createAFile()
 {
    qDebug() << "===== createAFile() =====";
 
-   this->createFile("sharedDirs/k.txt");
+   Tests::createFile("sharedDirs/x.txt");
    QTest::qSleep(100);
 }
 
@@ -156,7 +155,7 @@ void Tests::moveAFile()
 {
    qDebug() << "===== moveAFile() =====";
 
-   QDir::current().rename("sharedDirs/k.txt", "sharedDirs/share1/k.txt");
+   QDir::current().rename("sharedDirs/x.txt", "sharedDirs/share1/x.txt");
    QTest::qSleep(100);
 }
 
@@ -164,7 +163,7 @@ void Tests::renameAFile()
 {
    qDebug() << "===== renameAFile() =====";
 
-   QDir::current().rename("sharedDirs/share1/d.txt", "sharedDirs/share1/l.txt");
+   QDir::current().rename("sharedDirs/share1/x.txt", "sharedDirs/share1/y.txt");
    QTest::qSleep(100);
 }
 
@@ -173,10 +172,10 @@ void Tests::modifyAFile()
    qDebug() << "===== modifyAFile() =====";
 
    {
-      QFile file("sharedDirs/share1/subdir/a.txt");
+      QFile file("sharedDirs/share1/y.txt");
       file.open(QIODevice::Append);
       QTextStream stream(&file);
-      stream << "test";
+      stream << "12345";
    }
    QTest::qSleep(100);
 }
@@ -185,14 +184,15 @@ void Tests::removeAFile()
 {
    qDebug() << "===== removeAFile() =====";
 
-   QFile("sharedDirs/share1/subdir/a.txt").remove();
+   QFile("sharedDirs/share1/y.txt").remove();
    QTest::qSleep(100);
 }
 
 void Tests::createASubFile()
 {
    qDebug() << "===== createASubFile() =====";
-   this->createFile("sharedDirs/share1/m.txt");
+
+   Tests::createFile("sharedDirs/share1/v.txt");
    QTest::qSleep(100);
 }
 
@@ -238,7 +238,7 @@ void Tests::createADirectory()
 {
    qDebug() << "===== createADirectory() =====";
 
-   this->createFile("sharedDirs/a/");
+   Tests::createFile("sharedDirs/a/");
    QTest::qSleep(100);
 }
 
@@ -262,7 +262,7 @@ void Tests::moveADirectoryContainingFiles()
 {
    qDebug() << "===== moveADirectoryContainingFiles() =====";
 
-   QDir("sharedDirs").rename("share2", "share3/share2");
+   QDir("sharedDirs").rename("share2", "share1/share2");
    QTest::qSleep(100);
 }
 
@@ -270,28 +270,91 @@ void Tests::removeADirectory()
 {
    qDebug() << "===== removeADirectory() =====";
 
-   Tests::recursiveDeleteDirectory("sharedDirs/share3");
+   Tests::recursiveDeleteDirectory("sharedDirs/share1/share2");
    QTest::qSleep(100);
 }
 
-void Tests::browseAdirectory()
+void Tests::browseSomedirectories()
 {
-   qDebug() << "===== browseAdirectory() =====";
+   qDebug() << "===== browseSomedirectories() =====";
 
+   // TODO : active the regexp comparison.
+
+   // Get the shared directories.
    Protos::Core::GetEntriesResult entries1 = this->fileManager->getEntries();
    QString entries1Str = QString::fromStdString(entries1.DebugString());
-   Tests::compareStrRegexp(
+   /*Tests::compareStrRegexp(
       "dir\\s*\\{\n\\s*shared_dir\\s*\\{\n\\s*id\\s*\\{\n\\s*hash:\\s*\".+\"\n\\s*\\}\n\\s*\\}\n\\s*path:\\s*\"\"\n\\s*name:\\s*\"sharedDirs\"\n\\s*size:\\s*\\d+\n\\}\ndir\\s*\\{\n\\s*shared_dir\\s*\\{\n\\s*id\\s*\\{\n\\s*hash:\\s*\".+\"\n\\s*\\}\n\\s*\\}\n\\s*path:\\s*\"\"\n\\s*name:\\s*\"incoming\"\n\\s*size:\\s*\\d+\n\\}.*",
       entries1Str
-   );
+   );*/
    qDebug() << entries1Str;
 
-   // TODO : maybe to control the string output like above.
+   // Ask for the files and directories of the first shared directory
    Protos::Core::GetEntriesResult entries2 = this->fileManager->getEntries(entries1.dir(0));
    qDebug() << QString::fromStdString(entries2.DebugString());
 
+   // Ask for the files and directores of the first directory of the first shared directory
    Protos::Core::GetEntriesResult entries3 = this->fileManager->getEntries(entries2.dir(0));
    qDebug() << QString::fromStdString(entries3.DebugString());
+}
+
+void Tests::findExistingFilesWithOneWord()
+{
+   qDebug() << "===== findExistingFilesWithOneWord() =====";
+
+   QString terms("aaaa");
+   quint32 expectedLevelResult[] = {
+      0, 0, 0, 0
+   };
+   QList<QString> expectedFileResult[] = {
+      QList<QString>() << "aaaa dddddd.txt" << "aaaa cccc.txt" << "aaaa bbbb.txt" << "aaaa bbbb cccc.txt"
+   };
+
+   Protos::Common::FindResult result = this->fileManager->find(terms);
+   this->printSearch(terms, result);
+   this->compareExpectedResult(result, expectedLevelResult, expectedFileResult);
+}
+
+
+void Tests::findUnexistingFilesWithOneWord()
+{
+   qDebug() << "===== findUnexistingFilesWithOneWord() =====";
+
+   QString terms("mmmm");
+   quint32 expectedLevelResult[] = {};
+   QList<QString> expectedFileResult[] = {};
+
+   Protos::Common::FindResult result = this->fileManager->find(terms);
+   this->printSearch(terms, result);
+   this->compareExpectedResult(result, expectedLevelResult, expectedFileResult);
+
+}
+
+void Tests::findFilesWithSomeWords()
+{
+   qDebug() << "===== findFilesWithSomeWords() =====";
+
+   QString terms("aaaa bbbb cccc");
+   quint32 expectedLevelResult[] = {
+      0, 1, 2, 3, 3, 4, 5, 5
+   };
+   QList<QString> expectedFileResult[] = {
+      QList<QString>() << "aaaa bbbb cccc.txt",
+      QList<QString>() << "aaaa bbbb.txt",
+      QList<QString>() << "aaaa cccc.txt",
+      QList<QString>() << "cccc bbbbbb.txt" << "bbbb cccc.txt",
+      QList<QString>() << "aaaa dddddd.txt",
+      QList<QString>() << "bbbb dddd.txt" << "bbbb.txt"
+   };
+
+   Protos::Common::FindResult result = this->fileManager->find(terms);
+   this->printSearch(terms, result);
+   this->compareExpectedResult(result, expectedLevelResult, expectedFileResult);
+}
+
+void Tests::printAmount()
+{
+   qDebug() << "Sharing amount : " << this->fileManager->getAmount() << " bytes";
 }
 
 void Tests::rmSharedDirectory()
@@ -316,21 +379,28 @@ void Tests::createInitialFiles()
 {
    this->deleteAllFiles();
 
-   this->createFile("sharedDirs/share1/subdir/a.txt");
-   this->createFile("sharedDirs/share1/subdir/b.txt");
-   this->createFile("sharedDirs/share1/another subdir/c.txt");
-   this->createFile("sharedDirs/share1/empty subdir/");
-   this->createFile("sharedDirs/share1/d.txt");
-   this->createFile("sharedDirs/share1/e.txt");
+   Tests::createFile("sharedDirs/share1/subdir/o.txt");
+   Tests::createFile("sharedDirs/share1/subdir/p.txt");
+   Tests::createFile("sharedDirs/share1/another subdir/q.txt");
+   Tests::createFile("sharedDirs/share1/empty subdir/");
+   Tests::createFile("sharedDirs/share1/r.txt");
+   Tests::createFile("sharedDirs/share1/s.txt");
 
-   this->createFile("sharedDirs/share2/f.txt");
-   this->createFile("sharedDirs/share2/g.txt");
+   Tests::createFile("sharedDirs/share2/t.txt");
+   Tests::createFile("sharedDirs/share2/u.txt");
 
-   this->createFile("sharedDirs/share3/h.txt");
-   this->createFile("sharedDirs/share3/i.txt");
-   this->createFile("sharedDirs/share3/j.txt");
+   // "share3" is dedicated to the search feature.
+   Tests::createFile("sharedDirs/share3/aaaa bbbb cccc.txt");
+   Tests::createFile("sharedDirs/share3/aaaa bbbb.txt");
+   Tests::createFile("sharedDirs/share3/aaaa cccc.txt");
+   Tests::createFile("sharedDirs/share3/aaaa dddddd.txt");
+   Tests::createFile("sharedDirs/share3/bbbb cccc.txt");
+   Tests::createFile("sharedDirs/share3/bbbb dddd.txt");
+   Tests::createFile("sharedDirs/share3/bbbb.txt");
+   Tests::createFile("sharedDirs/share3/cccc bbbbbb.txt");
+   Tests::createFile("sharedDirs/share3/dddd.txt");
 
-   this->createFile("incoming/");
+   Tests::createFile("incoming/");
 }
 
 void Tests::deleteAllFiles()
@@ -339,44 +409,13 @@ void Tests::deleteAllFiles()
    Tests::recursiveDeleteDirectory("incoming");
 }
 
-/**
-  * Create a file and its parent directories if needed.
-  */
-void Tests::createFile(const QString& path)
-{
-   QFileInfo fileInfo(path);
-   QDir::current().mkpath(fileInfo.path());
-   if (fileInfo.fileName().isEmpty())
-      return;
-
-   QFile file(path);
-   file.open(QIODevice::WriteOnly);
-   QTextStream stream(&file);
-   stream << fileInfo.fileName();
-}
-
-/*
-   this->sharedDirs << QDir::currentPath().append("/asdasdasd"); // This directory doesn't exit.
-
-   try
-   {
-      this->fileManager->setSharedDirsReadOnly(this->sharedDirs);
-   }
-   catch (DirsNotFoundException& e)
-   {
-      foreach (QString path, e.getPaths())
-         qDebug() << "This directory hasn't been found : " << path << " (Exception thrown)";
-   }
-
-   this->sharedDirs.removeLast(); // Remove the nonexistent directory.
-   */
-
 void Tests::search()
 {
    /**
      * Execute many times the search in parallel
      * with the indexing.
      */
+   /*
    for (int i = 0; i < 20; i++)
    {
       this->printAmount();
@@ -395,58 +434,40 @@ void Tests::search()
 
    QString terms("xxxx");
    Protos::Common::FindResult result = this->fileManager->find(terms);
-   this->printSearch(terms, result);
-}
-
-void Tests::addSuperSharedDirectoriesAndMerge()
-{
-   /*
-   QStringList dirs;
-   dirs << QDir::currentPath().append("/../../aSharedDir/subdir") <<
-         QDir::currentPath().append("/../../aSharedDir/anotherSubdir") <<
-         QDir::currentPath().append("/../../aSharedDir");
-   this->fileManager2->setSharedDirsReadOnly(dirs);*/
-}
-
-void Tests::doASearch(bool checkResult)
-{
-   QString terms("aaaa bbbb cccc");
-   Protos::Common::FindResult result = this->fileManager->find(terms);
-   this->printSearch(terms, result);
-
-   if (checkResult)
-   {
-      quint32 levelResults[] = {
-         0, 1, 2, 3, 3, 4, 5, 5
-      };
-      QList<QString> fileResults[] = {
-         QList<QString>() << "aaaa bbbb cccc.txt",
-         QList<QString>() << "aaaa bbbb.txt",
-         QList<QString>() << "aaaa cccc.txt",
-         QList<QString>() << "cccc bbbbbb.txt" << "bbbb cccc.txt",
-         QList<QString>() << "aaaa dddddd.txt",
-         QList<QString>() << "bbbb dddd.txt" << "bbbb.txt"
-      };
-      for (int i = 0; i < result.file_size(); i++)
-      {
-         QVERIFY(result.file(i).level() == levelResults[i]);
-         QVERIFY(fileResults[result.file(i).level()].contains(QString(result.file(i).file().file().name().data())));
-      }
-   }
+   this->printSearch(terms, result);*/
 }
 
 void Tests::printSearch(const QString& terms, const Protos::Common::FindResult& result)
 {
-   qDebug() << "Search : '" << terms << "'";
+   qDebug() << "Search : " << terms;
    for (int i = 0; i < result.file_size(); i++)
       qDebug() << "[" << result.file(i).level() << "] " << result.file(i).file().file().name().data();
 }
 
-void Tests::printAmount()
+void Tests::compareExpectedResult(const Protos::Common::FindResult& result, quint32 expectedLevelResult[], QList<QString> expectedFileResult[])
 {
-   qDebug() << "Sharing amount : " << this->fileManager->getAmount() << " bytes";
+   for (int i = 0; i < result.file_size(); i++)
+   {
+      QVERIFY(result.file(i).level() == expectedLevelResult[i]);
+      QVERIFY(expectedFileResult[result.file(i).level()].contains(QString(result.file(i).file().file().name().data())));
+   }
 }
 
+/**
+  * Create a file and its parent directories if needed.
+  */
+void Tests::createFile(const QString& path)
+{
+   QFileInfo fileInfo(path);
+   QDir::current().mkpath(fileInfo.path());
+   if (fileInfo.fileName().isEmpty())
+      return;
+
+   QFile file(path);
+   file.open(QIODevice::WriteOnly);
+   QTextStream stream(&file);
+   stream << fileInfo.fileName();
+}
 
 void Tests::recursiveDeleteDirectory(const QString& dir)
 {
