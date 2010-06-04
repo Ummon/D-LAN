@@ -14,6 +14,22 @@ using namespace FM;
 #include <priv/Cache/SharedDirectory.h>
 #include <priv/Cache/Chunk.h>
 
+
+/**
+  * @class File
+  * A file can be finished or unfinished.
+  * If it is an unfinished one, the name ends with ".unfinished" (see UNFINISHED_SUFFIX_TERM).
+  * When a file is just finished the suffix ".unfinished" is removed and the file is renamed.
+  */
+
+/**
+  * Create a new file into a given directory.
+  * The file may or may not have a correponding local file.
+  * If 'createPhysically' is true then the file is created as unfinished with no byte known.
+  * @param hashes Optional hashes, if given it must contain ALL hashes.
+  * @exception FileAlreadyExistsException : TODO!!!
+  * @exception FilePhysicallyAlreadyExistsException : TODO!!!
+  */
 File::File(
    Directory* dir,
    const QString& name,
@@ -206,19 +222,14 @@ void File::dataReaderDeleted()
    }
 }
 
-qint64 File::read(QByteArray& buffer, qint64 offset)
-{
-   QMutexLocker locker(&this->readLock);
-
-   if (offset >= this->size)
-      return 0;
-
-   this->fileInReadMode->seek(offset);
-   qint64 bytesRead = this->fileInReadMode->read(buffer.data(), buffer.size());
-
-   return bytesRead;
-}
-
+/**
+  * Write some bytes to the file at the given offset.
+  * If the buffer exceed the file size then only the begining of the buffer is
+  * used, the file is not resizing.
+  * @param buffer The buffer.
+  * @param offset An offset.
+  * @return true if end of file reached.
+  */
 bool File::write(const QByteArray& buffer, qint64 offset)
 {
    QMutexLocker locker(&this->writeLock);
@@ -233,6 +244,34 @@ bool File::write(const QByteArray& buffer, qint64 offset)
    return offset + n >= (qint64)this->size || n == -1;
 }
 
+/**
+  * Fill the buffer with the read bytes from the given offset.
+  * If the end of file is reached the buffer will be partialy filled.
+  * @param buffer The buffer.
+  * @param offset An offset.
+  * @return the number of bytes read.
+  */
+qint64 File::read(QByteArray& buffer, qint64 offset)
+{
+   QMutexLocker locker(&this->readLock);
+
+   if (offset >= this->size)
+      return 0;
+
+   this->fileInReadMode->seek(offset);
+   qint64 bytesRead = this->fileInReadMode->read(buffer.data(), buffer.size());
+
+   return bytesRead;
+}
+
+/**
+  * It will open the file, read it and calculate all theirs chunk hashes.
+  * If it already owns some chunks, their hashes will be overriden.
+  * This method can be called from an another thread than the main one. For example,
+  * from 'FileUpdated' thread.
+  * @return Return true if all the hashes as been computed.
+  * @exception FileNotFoundException
+  */
 bool File::computeHashes()
 {
    this->hashingMutex.lock();
@@ -258,7 +297,8 @@ bool File::computeHashes()
       this->toStopHashing = false;
       this->hashing = false;
       this->hashingMutex.unlock();
-      throw FileNotFoundException(this->getFullPath());
+      L_WARN(QString("Unable to open this file : %1").arg(this->getFullPath()));
+      return false;
    }
 
 #if DEBUG
@@ -355,13 +395,11 @@ bool File::hasOneOrMoreHashes()
 
 bool File::isComplete()
 {
-   L_DEBU(QString("this->size = %1, CHUNK_SIZE = %2, res = %3, this->getNbChunks() = %4").arg(this->size).arg(CHUNK_SIZE).arg(this->size / CHUNK_SIZE + (this->size % CHUNK_SIZE == 0 ? 0 : 1)).arg(this->getNbChunks()));
+   //L_DEBU(QString("this->size = %1, CHUNK_SIZE = %2, res = %3, this->getNbChunks() = %4").arg(this->size).arg(CHUNK_SIZE).arg(this->size / CHUNK_SIZE + (this->size % CHUNK_SIZE == 0 ? 0 : 1)).arg(this->getNbChunks()));
 
    qint64 currentSize = 0;
    for (int i = 0; i < this->chunks.size(); i++)
       currentSize += this->chunks[i]->getKnownBytes();
-
-   L_DEBU(QString("currentSize %1").arg(currentSize));
 
    return this->size == currentSize;
 }
@@ -374,6 +412,10 @@ bool File::correspondTo(const QFileInfo& fileInfo)
    return this->getSize() == fileInfo.size() && this->getDateLastModified() == fileInfo.lastModified();
 }
 
+/**
+  * Remove the file physically only if it's not complete.
+  * The file removed must ended by UNFINISHED_SUFFIX_TERM.
+  */
 void File::physicallyRemoveUnfinished()
 {
    if (!this->isComplete())

@@ -67,6 +67,7 @@ void FileUpdater::stop()
 }
 
 /**
+  * Called by another thread.
   * @exception DirNotFoundException
   */
 void FileUpdater::addRoot(SharedDirectory* dir)
@@ -85,6 +86,7 @@ void FileUpdater::addRoot(SharedDirectory* dir)
 }
 
 /**
+  * Called by another thread.
   * If 'dir2' is given it will steal the subdirs of 'dir' and append
   * them to itself.
   */
@@ -113,6 +115,7 @@ void FileUpdater::rmRoot(SharedDirectory* dir, Directory* dir2)
             i.remove();
    }
 
+   this->removeFromDirsToScan(dir);
    this->dirsToRemove << dir;
 
    this->dirEvent->release();
@@ -338,9 +341,9 @@ void FileUpdater::scan(Directory* dir)
 
       // Deletes all the files and directories which doesn't exist on the file system.
       foreach (File* f, currentFiles)
-         delete f;
+         this->deleteEntry(f);
       foreach (Directory* d, currentSubDirs)
-         delete d;
+         this->deleteEntry(d);
    }
 
    this->scanningMutex.lock();
@@ -371,6 +374,44 @@ void FileUpdater::stopScanning(Directory* dir)
       else
          this->dirsToScan.clear();
    }
+}
+
+
+/**
+  * Delete an entry and if it's a directory remove it and its sub childs from dirsToScan.
+  */
+void FileUpdater::deleteEntry(Entry* entry)
+{
+   if (!entry)
+      return;
+
+   // Remove the directory and their sub child from the scan list (this->dirsToScan).
+   if (Directory* dir = dynamic_cast<Directory*>(entry))
+      this->removeFromDirsToScan(dir);
+
+   if (SharedDirectory* sharedDir = dynamic_cast<SharedDirectory*>(entry))
+   {
+      if (!this->dirsToRemove.contains(sharedDir))
+         this->dirsToRemove << sharedDir;
+   }
+   else if (File* file = dynamic_cast<File*>(entry))
+   {
+      this->fileWithoutHashes.removeOne(file);
+      delete file;
+   }
+   else
+      delete entry;
+}
+
+/**
+  * Remove a directory and its sub directories from 'this->dirsToScan'.
+  */
+void FileUpdater::removeFromDirsToScan(Directory* dir)
+{
+   this->dirsToScan.removeOne(dir);
+   DirIterator i(dir);
+   while (Directory* subDir = i.next())
+      this->dirsToScan.removeOne(subDir);
 }
 
 /**
@@ -426,8 +467,14 @@ void FileUpdater::treatEvents(const QList<WatcherEvent>& events)
             break;
          }
 
-      case WatcherEvent::NEW:
       case WatcherEvent::DELETED:
+         {
+            Entry* entry = this->fileManager->getEntry(event.path1);
+            this->deleteEntry(entry);
+            break;
+         }
+
+      case WatcherEvent::NEW:
       case WatcherEvent::CONTENT_CHANGED:
          {
             Directory* dir = this->fileManager->getFittestDirectory(event.path1);

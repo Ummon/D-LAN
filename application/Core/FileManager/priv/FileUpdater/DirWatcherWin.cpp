@@ -93,8 +93,6 @@ const QList<WatcherEvent> DirWatcherWin::waitEvent(int timeout, QList<WaitCondit
    {
       int n = waitStatus - WAIT_OBJECT_0;
 
-      qDebug() << "File changed : " << n;
-
       QList<WatcherEvent> events;
 
       FILE_NOTIFY_INFORMATION* notifyInformation = (FILE_NOTIFY_INFORMATION*)this->notifyBuffer;

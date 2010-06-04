@@ -4,6 +4,7 @@ using namespace FM;
 #include <QtDebug>
 #include <QFile>
 #include <QTextStream>
+#include <QDataStream>
 #include <QStringList>
 #include <QDirIterator>
 
@@ -187,50 +188,99 @@ void Tests::removeAFile()
    QTest::qSleep(100);
 }
 
+void Tests::createASubFile()
+{
+   qDebug() << "===== createASubFile() =====";
+   this->createFile("sharedDirs/share1/m.txt");
+   QTest::qSleep(100);
+}
+
 void Tests::createABigFile()
 {
    qDebug() << "===== createABigFile() =====";
 
    QFile file("sharedDirs/big.bin");
    file.open(QIODevice::WriteOnly);
-   file.resize(1024 * 1024 * 1024); // 1Go
-   QTest::qSleep(1000000);
+   file.resize(128 * 1024 * 1024); // 128Mo
+   QTest::qSleep(1000);
 }
 
 void Tests::modifyABigFile()
 {
+   qDebug() << "===== modifyABigFile() =====";
 
+   {
+      QFile file("sharedDirs/big.bin");
+      file.open(QIODevice::ReadWrite);
+      QDataStream stream(&file);
+      stream.skipRawData(32 * 1024 * 1024 - 3);
+      QByteArray data("XXXXXX");
+      stream.writeRawData(data.constData(), data.size());
+   }
+
+   QTest::qSleep(1000);
 }
 
 void Tests::removeABigFile()
 {
+   qDebug() << "===== removeABigFile() =====";
 
+   while(!QFile("sharedDirs/big.bin").remove())
+      QTest::qSleep(100);
+   QTest::qSleep(100);
 }
 
 void Tests::createADirectory()
 {
+   qDebug() << "===== createADirectory() =====";
 
+   this->createFile("sharedDirs/a/");
+   QTest::qSleep(100);
 }
 
-void Tests::moveADirectory()
+void Tests::renameADirectory()
 {
+   qDebug() << "===== renameADirectory() =====";
 
+   QDir("sharedDirs").rename("a", "b");
+   QTest::qSleep(100);
+}
+
+void Tests::moveAnEmptyDirectory()
+{
+   qDebug() << "===== moveAnEmptyDirectory() =====";
+
+   QDir("sharedDirs").rename("b", "share1/b");
+   QTest::qSleep(100);
+}
+
+void Tests::moveADirectoryContainingFiles()
+{
+   qDebug() << "===== moveADirectoryContainingFiles() =====";
+
+   QDir("sharedDirs").rename("share2", "share3/share2");
+   QTest::qSleep(100);
 }
 
 void Tests::removeADirectory()
 {
+   qDebug() << "===== removeADirectory() =====";
 
+   this->recursiveDeleteDirectory("sharedDirs/share3");
+   QTest::qSleep(100);
 }
 
 void Tests::browseAdirectory()
 {
    return;
+   qDebug() << "===== browseAdirectory() =====";
 
    Protos::Core::GetEntriesResult entries = this->fileManager->getEntries();
    qDebug() << QString::fromStdString(entries.DebugString());
 
+   /*
    Protos::Core::GetEntriesResult entries2 = this->fileManager->getEntries(entries.dir(0));
-   qDebug() << QString::fromStdString(entries2.DebugString());
+   qDebug() << QString::fromStdString(entries2.DebugString());*/
 }
 
 void Tests::rmSharedDirectory()
@@ -243,6 +293,7 @@ void Tests::rmSharedDirectory()
 
 void Tests::cleanupTestCase()
 {
+   qDebug() << "===== cleanupTestCase() =====";
    // This call is only used to stop the fileUpdater and wait for it to finish.
    // It's should not be used in a normal code.
    //this->fileManager.clear();
@@ -273,14 +324,8 @@ void Tests::createInitialFiles()
 
 void Tests::deleteAllFiles()
 {
-   foreach (QString dir, QStringList() << "sharedDirs" << "incoming")
-   {
-      for (QDirIterator i(dir, QDir::Files, QDirIterator::Subdirectories); i.hasNext();)
-         QFile(i.next()).remove();
-
-      for (QDirIterator i(dir, QDir::AllDirs, QDirIterator::Subdirectories); i.hasNext();)
-         QDir::current().rmpath(i.next());
-   }
+   this->recursiveDeleteDirectory("sharedDirs");
+   this->recursiveDeleteDirectory("incoming");
 }
 
 /**
@@ -389,5 +434,15 @@ void Tests::printSearch(const QString& terms, const Protos::Common::FindResult& 
 void Tests::printAmount()
 {
    qDebug() << "Sharing amount : " << this->fileManager->getAmount() << " bytes";
+}
+
+
+void Tests::recursiveDeleteDirectory(const QString& dir)
+{
+   for (QDirIterator i(dir, QDir::Files, QDirIterator::Subdirectories); i.hasNext();)
+      QFile(i.next()).remove();
+
+   for (QDirIterator i(dir, QDir::AllDirs, QDirIterator::Subdirectories); i.hasNext();)
+      QDir::current().rmpath(i.next());
 }
 

@@ -32,11 +32,14 @@ private slots:
    void renameAFile();
    void modifyAFile();
    void removeAFile();
+   void createASubFile();
    void createABigFile();
    void modifyABigFile();
    void removeABigFile();
    void createADirectory();
-   void moveADirectory();
+   void renameADirectory();
+   void moveAnEmptyDirectory();
+   void moveADirectoryContainingFiles();
    void removeADirectory();
 
    /***** Ask for chunks by hash *****/
@@ -79,6 +82,8 @@ private:
    void doASearch(bool checkResult);
    void printSearch(const QString& terms, const Protos::Common::FindResult& result);
    void printAmount();
+
+   void recursiveDeleteDirectory(const QString& dir);
 
    QStringList sharedDirsReadOnly;
    QStringList sharedDirsReadWrite;
