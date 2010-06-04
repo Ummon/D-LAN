@@ -40,7 +40,7 @@ namespace FM
       virtual QList< QSharedPointer<IChunk> > newFile(const Protos::Common::FileEntry& remoteEntry);
       // IGetHashesResult* getHashes(const  Protos::Common::FileEntry& entry);
 
-      Protos::Core::GetEntriesResult getEntries(const Protos::Common::DirEntry& entry);
+      Protos::Core::GetEntriesResult getEntries(const Protos::Common::Entry& dir);
       Protos::Core::GetEntriesResult getEntries();
 
       Protos::Common::FindResult find(const QString& words);

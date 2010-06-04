@@ -138,7 +138,7 @@ message SearchResult {
 // id : 0x41
 message Browse {
    required Common.Hash peer_id = 1;
-   required Common.DirEntry dir_entry = 2;
+   required Common.Entry dir = 2;
 }
 // Core -> GUI
 // id : 0x42
@@ -146,7 +146,7 @@ message Browse {
 // Core -> GUI
 // id : 0x43
 message BrowseResult {
-   repeated Common.DirEntry dir = 1;
+   repeated Common.Entry dir = 1;
    repeated Common.FileEntry file = 2;   
 }
 
@@ -175,7 +175,7 @@ message CancelDownloads {
 // id : 0x71
 message Download {
    required Common.Hash peer_id = 1; // From where the file/dir is.
-   optional Common.DirEntry dir = 2;
+   optional Common.Entry dir = 2;
    optional Common.FileEntry file = 3;
 }
 // Core -> GUI

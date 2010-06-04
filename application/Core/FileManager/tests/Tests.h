@@ -83,7 +83,8 @@ private:
    void printSearch(const QString& terms, const Protos::Common::FindResult& result);
    void printAmount();
 
-   void recursiveDeleteDirectory(const QString& dir);
+   static void recursiveDeleteDirectory(const QString& dir);
+   static void compareStrRegexp(const QString& regexp, const QString& str);
 
    QStringList sharedDirsReadOnly;
    QStringList sharedDirsReadWrite;

@@ -22,21 +22,22 @@ Cache::Cache(FileManager* fileManager)
   * b) In the shared directory try to find the directory corresponding to 'entry.dir.path'.
   * c) Populate the result with directories and files.
   */
-Protos::Core::GetEntriesResult Cache::getEntries(const Protos::Common::DirEntry& entry)
+Protos::Core::GetEntriesResult Cache::getEntries(const Protos::Common::Entry& dir)
 {
    Protos::Core::GetEntriesResult result;
 
    // If we can't find the shared directory..
-   if (!entry.dir().has_shared_dir())
+   if (!dir.has_shared_dir())
       return result;
 
    foreach (SharedDirectory* sharedDir, this->sharedDirs)
    {
-      if (sharedDir->getId() == entry.dir().shared_dir().id().hash().data())
+      if (sharedDir->getId() == dir.shared_dir().id().hash().data())
       {
-         QStringList folders = QDir::cleanPath(QString(entry.dir().path().data())).split('/', QString::SkipEmptyParts);
-         if (!entry.dir().name().empty()) // When a folder is itself a shared directory its name is empty.
-            folders << entry.dir().name().data();
+         QStringList folders = QDir::cleanPath(QString(dir.path().data())).split('/', QString::SkipEmptyParts);
+
+         if (!dir.path().empty()) // An empty path means the dir is the root (a SharedDirectory).
+            folders << dir.name().data();
 
          Directory* currentDir = sharedDir;
          foreach (QString folder, folders)

@@ -26,7 +26,9 @@ namespace FM
       /**
         * Return the relative path from the root directory.
         * It's the directory in which the entry is.
-        * For example : "animals/fish"
+        * For example : "/animals/fish/"
+        * An entry in a root will have a path like "/".
+        * A root (SharedDirectory) will have an empty path ("").
         */
       virtual QString getPath() const = 0;
 

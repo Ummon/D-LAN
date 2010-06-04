@@ -153,15 +153,12 @@ void File::populateFileEntry(Protos::Common::FileEntry* entry) const
 
 QString File::getPath() const
 {
-   QString path = this->dir->getPath();
-   if (!path.isEmpty())
-      path.append('/');
-   return path.append(this->dir->getName());
+   return this->dir->getPath().append(this->dir->getName()).append('/');
 }
 
 QString File::getFullPath() const
 {
-   return this->dir->getFullPath().append("/").append(this->name);
+   return this->dir->getFullPath().append('/').append(this->name);
 }
 
 Directory* File::getRoot() const
