@@ -17,13 +17,13 @@ using namespace FM;
   * @exception SuperDirectoryExistsException Thrown when a super directory already exists regardless of the rights.
   */
 SharedDirectory::SharedDirectory(Cache* cache, const QString& path, Rights rights)
-   : Directory(cache), path(QDir::cleanPath(path)), rights(rights), id(Common::Hash::rand())
+   : Directory(cache, QDir(path).dirName()), path(QDir::cleanPath(path)), rights(rights), id(Common::Hash::rand())
 {
    this->init();
 }
 
 SharedDirectory::SharedDirectory(Cache* cache, const QString& path, Rights rights, const Common::Hash& id)
-   : Directory(cache), path(QDir::cleanPath(path)), rights(rights), id(id)
+   : Directory(cache, QDir(path).dirName()), path(QDir::cleanPath(path)), rights(rights), id(id)
 {
    this->init();
 }

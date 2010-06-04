@@ -110,9 +110,9 @@ QList< QSharedPointer<IChunk> > FileManager::newFile(const Protos::Common::FileE
    return chunks;
 }
 
-Protos::Core::GetEntriesResult FileManager::getEntries(const Protos::Common::DirEntry& entry)
+Protos::Core::GetEntriesResult FileManager::getEntries(const Protos::Common::Entry& dir)
 {
-   return this->cache.getEntries(entry);
+   return this->cache.getEntries(dir);
 }
 
 Protos::Core::GetEntriesResult FileManager::getEntries()

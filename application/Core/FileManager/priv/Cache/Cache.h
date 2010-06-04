@@ -25,7 +25,7 @@ namespace FM
    public:
       Cache(FileManager* fileManager);
 
-      Protos::Core::GetEntriesResult getEntries(const Protos::Common::DirEntry& entry);
+      Protos::Core::GetEntriesResult getEntries(const Protos::Common::Entry& dir);
       Protos::Core::GetEntriesResult getEntries();
       Entry* getEntry(const QString& path);
 

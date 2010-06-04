@@ -19,10 +19,10 @@ Directory::Directory(Directory* parent, const QString& name, bool createPhysical
 }
 
 /**
-  * Called by the root which will not have parent and name.
+  * Called by the root (SharedDirectory) which will not have parent and name.
   */
-Directory::Directory(Cache* cache)
-   : Entry(cache, ""), parent(0)
+Directory::Directory(Cache* cache, const QString& name)
+   : Entry(cache, name), parent(0)
 {
 }
 
@@ -104,9 +104,9 @@ void Directory::populateHashesDir(Protos::FileCache::Hashes_Dir& dirToFill) cons
    }
 }
 
-void Directory::populateDirEntry(Protos::Common::DirEntry* entry) const
+void Directory::populateDirEntry(Protos::Common::Entry* dir) const
 {
-   this->populateEntry(entry->mutable_dir());
+   this->populateEntry(dir);
 }
 
 /**
@@ -125,14 +125,14 @@ void Directory::subDirDeleted(Directory* dir)
 
 QString Directory::getPath() const
 {
-   QString path;
+   QString path('/');
+
    const Directory* dir = this;
-   while (dir->parent)
+   while (dir->parent && dir->parent->parent) // We don't care about the name of the root (SharedDirectory).
    {
       dir = dir->parent;
-      if (dir->parent)
-         path.prepend('/');
       path.prepend(dir->getName());
+      path.prepend('/');
    }
    return path;
 }

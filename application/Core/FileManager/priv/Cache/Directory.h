@@ -22,7 +22,7 @@ namespace FM
       Directory(Directory* parent, const QString& name, bool createPhysically = false);
 
    protected:
-      Directory(Cache* cache);
+      Directory(Cache* cache, const QString& name);
 
    public:
       virtual ~Directory();
@@ -31,7 +31,7 @@ namespace FM
 
       void populateHashesDir(Protos::FileCache::Hashes_Dir& dirToFill) const;
 
-      void populateDirEntry(Protos::Common::DirEntry* entry) const;
+      void populateDirEntry(Protos::Common::Entry* dir) const;
 
       void fileDeleted(File* file);
 

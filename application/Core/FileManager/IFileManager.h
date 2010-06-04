@@ -55,7 +55,7 @@ namespace FM
       /**
         * Returns the directories and files contained in the given directory.
         */
-      virtual Protos::Core::GetEntriesResult getEntries(const Protos::Common::DirEntry& entry) = 0;
+      virtual Protos::Core::GetEntriesResult getEntries(const Protos::Common::Entry& dir) = 0;
 
       /**
         * Returns the shared directories (roots).

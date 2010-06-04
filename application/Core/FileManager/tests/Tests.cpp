@@ -2,6 +2,7 @@
 using namespace FM;
 
 #include <QtDebug>
+#include <QRegExp>
 #include <QFile>
 #include <QTextStream>
 #include <QDataStream>
@@ -197,6 +198,7 @@ void Tests::createASubFile()
 
 void Tests::createABigFile()
 {
+   return;
    qDebug() << "===== createABigFile() =====";
 
    QFile file("sharedDirs/big.bin");
@@ -207,6 +209,7 @@ void Tests::createABigFile()
 
 void Tests::modifyABigFile()
 {
+   return;
    qDebug() << "===== modifyABigFile() =====";
 
    {
@@ -223,6 +226,7 @@ void Tests::modifyABigFile()
 
 void Tests::removeABigFile()
 {
+   return;
    qDebug() << "===== removeABigFile() =====";
 
    while(!QFile("sharedDirs/big.bin").remove())
@@ -266,21 +270,28 @@ void Tests::removeADirectory()
 {
    qDebug() << "===== removeADirectory() =====";
 
-   this->recursiveDeleteDirectory("sharedDirs/share3");
+   Tests::recursiveDeleteDirectory("sharedDirs/share3");
    QTest::qSleep(100);
 }
 
 void Tests::browseAdirectory()
 {
-   return;
    qDebug() << "===== browseAdirectory() =====";
 
-   Protos::Core::GetEntriesResult entries = this->fileManager->getEntries();
-   qDebug() << QString::fromStdString(entries.DebugString());
+   Protos::Core::GetEntriesResult entries1 = this->fileManager->getEntries();
+   QString entries1Str = QString::fromStdString(entries1.DebugString());
+   Tests::compareStrRegexp(
+      "dir\\s*\\{\n\\s*shared_dir\\s*\\{\n\\s*id\\s*\\{\n\\s*hash:\\s*\".+\"\n\\s*\\}\n\\s*\\}\n\\s*path:\\s*\"\"\n\\s*name:\\s*\"sharedDirs\"\n\\s*size:\\s*\\d+\n\\}\ndir\\s*\\{\n\\s*shared_dir\\s*\\{\n\\s*id\\s*\\{\n\\s*hash:\\s*\".+\"\n\\s*\\}\n\\s*\\}\n\\s*path:\\s*\"\"\n\\s*name:\\s*\"incoming\"\n\\s*size:\\s*\\d+\n\\}.*",
+      entries1Str
+   );
+   qDebug() << entries1Str;
 
-   /*
-   Protos::Core::GetEntriesResult entries2 = this->fileManager->getEntries(entries.dir(0));
-   qDebug() << QString::fromStdString(entries2.DebugString());*/
+   // TODO : maybe to control the string output like above.
+   Protos::Core::GetEntriesResult entries2 = this->fileManager->getEntries(entries1.dir(0));
+   qDebug() << QString::fromStdString(entries2.DebugString());
+
+   Protos::Core::GetEntriesResult entries3 = this->fileManager->getEntries(entries2.dir(0));
+   qDebug() << QString::fromStdString(entries3.DebugString());
 }
 
 void Tests::rmSharedDirectory()
@@ -324,8 +335,8 @@ void Tests::createInitialFiles()
 
 void Tests::deleteAllFiles()
 {
-   this->recursiveDeleteDirectory("sharedDirs");
-   this->recursiveDeleteDirectory("incoming");
+   Tests::recursiveDeleteDirectory("sharedDirs");
+   Tests::recursiveDeleteDirectory("incoming");
 }
 
 /**
@@ -444,5 +455,15 @@ void Tests::recursiveDeleteDirectory(const QString& dir)
 
    for (QDirIterator i(dir, QDir::AllDirs, QDirIterator::Subdirectories); i.hasNext();)
       QDir::current().rmpath(i.next());
+}
+
+void Tests::compareStrRegexp(const QString& regexp, const QString& str)
+{
+   QRegExp expected(regexp);
+   if (!expected.exactMatch(str))
+   {
+      int l = expected.matchedLength();
+      QFAIL(QString("This string doesn't match the expected regular expression from character %1 : \n%2").arg(l).arg(str).toStdString().data());
+   }
 }
 
