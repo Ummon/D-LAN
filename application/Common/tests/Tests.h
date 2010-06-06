@@ -14,6 +14,8 @@ private slots:
    void readPersistantData();
    void removePersistantData();
    void generateAHash();
+   void buildAnHashFromAString();
+   void compareTwoHash();
    void math();
    void availableDiskSpace();
 };

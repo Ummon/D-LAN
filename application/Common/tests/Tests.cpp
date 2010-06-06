@@ -74,6 +74,30 @@ void Tests::generateAHash()
    QVERIFY(memcmp(h4.getData(), array, 20) == 0);
 }
 
+void Tests::buildAnHashFromAString()
+{
+   QString str("97d464813598e2e4299b5fe7db29aefffdf2641d");
+   Common::Hash h = Common::Hash::fromStr(str);
+   QCOMPARE(h.toStr(), str);
+}
+
+void Tests::compareTwoHash()
+{
+   QString str("97d464813598e2e4299b5fe7db29aefffdf2641d");
+   Common::Hash h1 = Common::Hash::fromStr(str);
+   Common::Hash h2 = Common::Hash::fromStr(str);
+   Common::Hash h3 = h1;
+   Common::Hash h4;
+   h4 = h1;
+
+   QVERIFY(h1 == h1);
+   QVERIFY(h1 == h2);
+   QVERIFY(h1 == h3);
+   QVERIFY(h1 == h4);
+   QVERIFY(h2 == h3);
+   QVERIFY(h2 == h4);
+}
+
 void Tests::math()
 {
    QVERIFY(Common::Math::nCombinations(5, 4) == 5);
