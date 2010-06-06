@@ -28,7 +28,9 @@ namespace Common
       const char* getData() const;
       QString toStr() const;
       bool isNull() const;
+
       static Hash rand();
+      static Hash fromStr(const QString& str);
 
    private:
       inline void dereference();

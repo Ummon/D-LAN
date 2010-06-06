@@ -33,7 +33,7 @@ Hash::Hash(const Hash& h)
 }
 
 /**
-  * Build a new hash from a char*.
+  * Build a new hash from a char*, 'h' is not a readable string, @see fromStr.
   * 'h' must have a length equal or bigger to HASH_SIZE!
   * The data are copied, no pointer is keept to 'h'.
   */
@@ -96,6 +96,7 @@ const char* Hash::getData() const
 /**
   * Return a human readable string.
   * For example : 16bd4b1e656129eb9ddaa2ce0f0705f1cc161f77.
+  * @see fromStr to decode a such string.
   */
 QString Hash::toStr() const
 {
@@ -127,6 +128,25 @@ Hash Hash::rand()
    qsrand(QTime(0,0,0).msecsTo(QTime::currentTime()));
    for (int i = 0; i < HASH_SIZE; i++)
       hash.data->hash[i] = (char)(qrand() % 256);
+
+   return hash;
+}
+
+Hash Hash::fromStr(const QString& str)
+{
+   Hash hash;
+   QString strLower = str.toLower();
+
+   for (int i = 0; i < HASH_SIZE; i++)
+   {
+      char c1 = strLower[i*2].toAscii();
+      char c2 = strLower[i*2 + 1].toAscii();
+
+      char p1 = c1 <= '9' ? c1 - '0' : c1 - 'a' + 10;
+      char p2 = c2 <= '9' ? c2 - '0' : c2 - 'a' + 10;
+
+      hash.data->hash[i] = (p1 << 4 & 0xF0) | (p2 & 0x0F);
+   }
 
    return hash;
 }
