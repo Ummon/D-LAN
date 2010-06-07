@@ -34,9 +34,10 @@ namespace FM
       virtual QStringList getSharedDirsReadWrite() = 0;
 
       /**
-        * Returns a chunk, return 0 if no chunk correspond to the given hash.
+        * Returns a chunk. If no chunk is found throw UnknownChunkException.
+        * @exception UnknownChunkException
         */
-      virtual IChunk* getChunk(const Common::Hash& hash) = 0;
+      virtual QSharedPointer<IChunk> getChunk(const Common::Hash& hash) = 0;
 
       /**
         * Create a new empty file. It will be automatically create in the same path than the remote one.

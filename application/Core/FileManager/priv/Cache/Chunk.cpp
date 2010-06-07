@@ -5,26 +5,23 @@ using namespace FM;
 #include <IDataWriter.h>
 #include <Exceptions.h>
 #include <priv/Log.h>
-#include <priv/Cache/Cache.h>
 #include <priv/Cache/File.h>
 #include <priv/Cache/SharedDirectory.h>
 #include <priv/Cache/DataReader.h>
 #include <priv/Cache/DataWriter.h>
 
-Chunk::Chunk(Cache* cache, File* file, int num, int knownBytes)
-   : cache(cache), file(file), num(num), knownBytes(knownBytes)
+Chunk::Chunk(File* file, int num, int knownBytes)
+   : file(file), num(num), knownBytes(knownBytes)
 {
-   QMutexLocker locker (&this->mutex);
+   QMutexLocker locker(&this->mutex);
    L_DEBU(QString("New chunk[%1] : %2. File : %3").arg(num).arg(hash.toStr()).arg(this->file->getFullPath()));
 }
 
-Chunk::Chunk(Cache* cache, File* file, int num, int knownBytes, const Common::Hash& hash)
-   : cache(cache), file(file), num(num), knownBytes(knownBytes), hash(hash)
+Chunk::Chunk(File* file, int num, int knownBytes, const Common::Hash& hash)
+   : file(file), num(num), knownBytes(knownBytes), hash(hash)
 {
-   QMutexLocker locker (&this->mutex);
+   QMutexLocker locker(&this->mutex);
    L_DEBU(QString("New chunk[%1] : %2. File : %3").arg(num).arg(hash.toStr()).arg(this->file->getFullPath()));
-
-   this->cache->onChunkHashKnown(this);
 }
 
 Chunk::~Chunk()
@@ -34,8 +31,6 @@ Chunk::~Chunk()
       arg(hash.toStr()).
       arg(this->file ? this->file->getFullPath() : "<file deleted>")
    );
-   this->cache->onChunkRemoved(this);
-   //this->file->chunkDeleted(this);
 }
 
 Chunk* Chunk::restoreFromFileCache(const Protos::FileCache::Hashes_Chunk& chunk)
@@ -43,10 +38,7 @@ Chunk* Chunk::restoreFromFileCache(const Protos::FileCache::Hashes_Chunk& chunk)
    this->knownBytes = chunk.known_bytes();
 
    if (chunk.has_hash())
-   {
       this->hash = chunk.hash().hash().data();
-      this->cache->onChunkHashKnown(this);
-   }
    return this;
 }
 
@@ -147,6 +139,10 @@ Common::Hash Chunk::getHash()
 void Chunk::setHash(const Common::Hash& hash)
 {
    L_DEBU(QString("Chunk[%1] setHash(..) : %2").arg(num).arg(hash.toStr()));
+
+   if (!this->hash.isNull())
+      L_ERRO(QString("Chunk::setHash : Chunk has already an hash! file : %1").arg(this->file->getFullPath()));
+
    this->hash = hash;
 }
 

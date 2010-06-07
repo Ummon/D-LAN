@@ -30,8 +30,8 @@ FileManager::FileManager()
 
    connect(&this->cache, SIGNAL(entryAdded(Entry*)),     this, SLOT(entryAdded(Entry*)),     Qt::DirectConnection);
    connect(&this->cache, SIGNAL(entryRemoved(Entry*)),   this, SLOT(entryRemoved(Entry*)),   Qt::DirectConnection);
-   connect(&this->cache, SIGNAL(chunkHashKnown(Chunk*)), this, SLOT(chunkHashKnown(Chunk*)), Qt::DirectConnection);
-   connect(&this->cache, SIGNAL(chunkRemoved(Chunk*)),   this, SLOT(chunkRemoved(Chunk*)),   Qt::DirectConnection);
+   connect(&this->cache, SIGNAL(chunkHashKnown(QSharedPointer<Chunk>)), this, SLOT(chunkHashKnown(QSharedPointer<Chunk>)), Qt::DirectConnection);
+   connect(&this->cache, SIGNAL(chunkRemoved(QSharedPointer<Chunk>)),   this, SLOT(chunkRemoved(QSharedPointer<Chunk>)),   Qt::DirectConnection);
 
    connect(&this->cache, SIGNAL(newSharedDirectory(SharedDirectory*)),                 &this->fileUpdater, SLOT(addRoot(SharedDirectory*)),              Qt::DirectConnection);
    connect(&this->cache, SIGNAL(sharedDirectoryRemoved(SharedDirectory*, Directory*)), &this->fileUpdater, SLOT(rmRoot(SharedDirectory*, Directory*)),   Qt::DirectConnection);
@@ -81,9 +81,12 @@ QStringList FileManager::getSharedDirsReadWrite()
    return this->cache.getSharedDirs(SharedDirectory::READ_WRITE);
 }
 
-IChunk* FileManager::getChunk(const Common::Hash& hash)
+QSharedPointer<IChunk> FileManager::getChunk(const Common::Hash& hash)
 {
-   return this->chunks.value(hash);
+   QSharedPointer<IChunk> chunk = this->chunks.value(hash);
+   if (chunk.isNull())
+      throw UnknownChunkException();
+   return chunk;
 }
 
 QList< QSharedPointer<IChunk> > FileManager::newFile(const Protos::Common::FileEntry& remoteEntry)
@@ -253,13 +256,13 @@ void FileManager::entryRemoved(Entry* entry)
    this->wordIndex.rmItem(FileManager::splitInWords(entry->getName()), entry);
 }
 
-void FileManager::chunkHashKnown(Chunk* chunk)
+void FileManager::chunkHashKnown(QSharedPointer<Chunk> chunk)
 {
    L_DEBU(QString("Adding chunk '%1' to the index..").arg(chunk->getHash().toStr()));
    this->chunks.add(chunk);
 }
 
-void FileManager::chunkRemoved(Chunk* chunk)
+void FileManager::chunkRemoved(QSharedPointer<Chunk> chunk)
 {
    this->chunks.rm(chunk);
 }

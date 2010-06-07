@@ -404,12 +404,12 @@ void Cache::onEntryRemoved(Entry* entry)
    emit entryRemoved(entry);
 }
 
-void Cache::onChunkHashKnown(Chunk* chunk)
+void Cache::onChunkHashKnown(QSharedPointer<Chunk> chunk)
 {
    emit chunkHashKnown(chunk);
 }
 
-void Cache::onChunkRemoved(Chunk* chunk)
+void Cache::onChunkRemoved(QSharedPointer<Chunk> chunk)
 {
    emit chunkRemoved(chunk);
 }

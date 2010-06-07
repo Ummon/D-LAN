@@ -274,6 +274,29 @@ void Tests::removeADirectory()
    QTest::qSleep(100);
 }
 
+void Tests::getAExistingChunk()
+{
+   qDebug() << "===== getAExistingChunk() =====";
+   try
+   {
+      QSharedPointer<IChunk> chunk = this->fileManager->getChunk(Common::Hash::fromStr("97d464813598e2e4299b5fe7db29aefffdf2641d"));
+
+      qDebug() << chunk->getHash().toStr();
+   }
+   catch(UnknownChunkException&)
+   {
+      QFAIL("Chunk not found");
+   }
+}
+
+void Tests::getAUnexistingChunk()
+{
+   qDebug() << "===== getAUnexistingChunk() =====";
+
+   //QSharedPointer<IChunk> chunk = this->fileManager->getChunk(Common::Hash::fromStr("47ddfe38b8c66c0f9d98b9d802f220c84b4b30d4"));
+
+}
+
 void Tests::browseSomedirectories()
 {
    qDebug() << "===== browseSomedirectories() =====";

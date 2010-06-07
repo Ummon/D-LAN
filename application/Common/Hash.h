@@ -58,7 +58,7 @@ namespace Common
      */
    inline uint qHash(const Hash& h)
    {
-      return (uint)h.getData();
+      return *(const uint*)(h.getData());
    }
 }
 #endif

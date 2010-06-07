@@ -73,6 +73,10 @@ namespace FM
    class FilePhysicallyAlreadyExistsException : public exception
    {
    };
+
+   class UnknownChunkException : public exception
+   {
+   };
 }
 
 #endif

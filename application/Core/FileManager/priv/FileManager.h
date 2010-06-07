@@ -36,7 +36,7 @@ namespace FM
       QStringList getSharedDirsReadOnly();
       QStringList getSharedDirsReadWrite();
 
-      IChunk* getChunk(const Common::Hash& hash);
+      QSharedPointer<IChunk> getChunk(const Common::Hash& hash);
       virtual QList< QSharedPointer<IChunk> > newFile(const Protos::Common::FileEntry& remoteEntry);
       // IGetHashesResult* getHashes(const  Protos::Common::FileEntry& entry);
 
@@ -53,8 +53,8 @@ namespace FM
    private slots:
       void entryAdded(Entry* entry);
       void entryRemoved(Entry* entry);
-      void chunkHashKnown(Chunk* chunk);
-      void chunkRemoved(Chunk* chunk);
+      void chunkHashKnown(QSharedPointer<Chunk> chunk);
+      void chunkRemoved(QSharedPointer<Chunk> chunk);
 
    private:
       static QStringList splitInWords(const QString& words);
