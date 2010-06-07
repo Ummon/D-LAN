@@ -45,6 +45,8 @@ private slots:
    void removeADirectory();
 
    /***** Ask for chunks by hash *****/
+   void getAExistingChunk();
+   void getAUnexistingChunk();
 
    /***** Get Hashes from a FileEntry which the hash is already computed *****/
 

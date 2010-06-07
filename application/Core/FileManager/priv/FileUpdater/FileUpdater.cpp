@@ -332,7 +332,7 @@ void FileUpdater::scan(Directory* dir)
             File* file = currentDir->createFile(entry);
 
             // If a file is incomplete (unfinished) we can't compute its hashes because we don't have all data.
-            if (!file->hasAllHashes() && file->isComplete())
+            if (!file->hasAllHashes() && file->isComplete() && !fileWithoutHashes.contains(file))
                this->fileWithoutHashes << file;
 
             currentFiles.removeOne(file);
@@ -482,6 +482,10 @@ void FileUpdater::treatEvents(const QList<WatcherEvent>& events)
                this->dirsToScan << dir;
             break;
          }
+
+      case WatcherEvent::UNKNOWN:
+      case WatcherEvent::TIMEOUT:
+         break; // Do nothing.
       }
    }
 }

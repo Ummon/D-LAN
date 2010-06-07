@@ -16,7 +16,6 @@ namespace FM
    class ChunkNotCompletedException : public std::exception {};
 
    class File;
-   class Cache;
    class IDataReader;
    class IDataWriter;
 
@@ -26,9 +25,9 @@ namespace FM
       /**
         * Create a new empty chunk.
         */
-      Chunk(Cache* cache, File* file, int num, int knownBytes);
+      Chunk(File* file, int num, int knownBytes);
 
-      Chunk(Cache* cache, File* file, int num, int knownBytes, const Common::Hash& hash);
+      Chunk(File* file, int num, int knownBytes, const Common::Hash& hash);
 
       ~Chunk();
 
@@ -82,7 +81,6 @@ namespace FM
    private:
       QMutex mutex; ///< Protect 'file' against multiple access.
 
-      Cache* cache;
       File* file;
       int num;
       int knownBytes; ///< Relative offset, 0 means we don't have any byte and File::CHUNK_SIZE means we have all the chunk data.

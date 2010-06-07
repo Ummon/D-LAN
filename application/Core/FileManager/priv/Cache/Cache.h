@@ -5,6 +5,7 @@
 #include <QList>
 #include <QStringList>
 #include <QMutex>
+#include <QSharedPointer>
 
 #include <Protos/files_cache.pb.h>
 #include <Protos/core_protocol.pb.h>
@@ -47,8 +48,8 @@ namespace FM
 
       void onEntryAdded(Entry* entry);
       void onEntryRemoved(Entry* entry);
-      void onChunkHashKnown(Chunk* chunk);
-      void onChunkRemoved(Chunk* chunk);
+      void onChunkHashKnown(QSharedPointer<Chunk> chunk);
+      void onChunkRemoved(QSharedPointer<Chunk> chunk);
 
       /**
         * Return the big cach lock.
@@ -58,8 +59,8 @@ namespace FM
    signals:
       void entryAdded(Entry* entry);
       void entryRemoved(Entry* entry);
-      void chunkHashKnown(Chunk* chunk);
-      void chunkRemoved(Chunk* chunk);
+      void chunkHashKnown(QSharedPointer<Chunk> chunk);
+      void chunkRemoved(QSharedPointer<Chunk> chunk);
 
       void newSharedDirectory(SharedDirectory* dir);
       void sharedDirectoryRemoved(SharedDirectory* dir, Directory* dir2);

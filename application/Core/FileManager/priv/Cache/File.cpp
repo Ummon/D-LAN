@@ -68,10 +68,14 @@ File::File(
       int chunkKnownBytes = !complete ? 0 : i == this->getNbChunks() - 1 && this->size % CHUNK_SIZE != 0 ? this->size % CHUNK_SIZE : CHUNK_SIZE;
 
       if (i < hashes.size())
-         this->chunks.append(QSharedPointer<Chunk>(new Chunk(this->cache, this, i, chunkKnownBytes, hashes[i])));
+      {
+         QSharedPointer<Chunk> chunk(new Chunk(this, i, chunkKnownBytes, hashes[i]));
+         this->chunks.append(chunk);
+         this->cache->onChunkHashKnown(chunk);
+      }
       else
          // If there is too few hashes then null hashes are added.
-         this->chunks.append(QSharedPointer<Chunk>(new Chunk(this->cache, this, i, chunkKnownBytes)));
+         this->chunks.append(QSharedPointer<Chunk>(new Chunk(this, i, chunkKnownBytes)));
    }
 
    if (createPhysically)
@@ -107,7 +111,10 @@ File::~File()
    this->dir->fileDeleted(this);
 
    foreach (QSharedPointer<Chunk> c, this->chunks)
+   {
       c->fileDeleted();
+      this->cache->onChunkRemoved(c);
+   }
 
    L_DEBU(QString("File deleted : %1").arg(this->getFullPath()));
 }
@@ -126,7 +133,11 @@ bool File::restoreFromFileCache(const Protos::FileCache::Hashes_File& file)
       L_DEBU(QString("Restoring file '%1' from the file cache").arg(this->getFullPath()));
 
       for (int i = 0; i < file.chunk_size(); i++)
+      {
          this->chunks[i]->restoreFromFileCache(file.chunk(i));
+         if (file.chunk(i).has_hash())
+            this->cache->onChunkHashKnown(this->chunks[i]);
+      }
 
       return true;
    }
@@ -334,7 +345,10 @@ bool File::computeHashes()
       }
 
       if (bytesReadTotal > 0)
+      {
          this->chunks[chunkNum]->setHash(crypto.result());
+         this->cache->onChunkHashKnown(this->chunks[chunkNum]);
+      }
 
       crypto.reset();
       chunkNum += 1;

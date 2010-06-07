@@ -76,16 +76,25 @@ void Tests::generateAHash()
 
 void Tests::buildAnHashFromAString()
 {
-   QString str("97d464813598e2e4299b5fe7db29aefffdf2641d");
+   QString str("2d73736f34a73837d422f7aba2740d8409ac60df");
    Common::Hash h = Common::Hash::fromStr(str);
    QCOMPARE(h.toStr(), str);
 }
 
 void Tests::compareTwoHash()
 {
-   QString str("97d464813598e2e4299b5fe7db29aefffdf2641d");
+   char array[] = {
+      0x2d, 0x73, 0x73, 0x6f,
+      0x34, 0xa7, 0x38, 0x37,
+      0xd4, 0x22, 0xf7, 0xab,
+      0xa2, 0x74, 0x0d, 0x84,
+      0x09, 0xac, 0x60, 0xdf
+   };
+   QByteArray byteArray(array, 20);
+   QString str("2d73736f34a73837d422f7aba2740d8409ac60df");
+
    Common::Hash h1 = Common::Hash::fromStr(str);
-   Common::Hash h2 = Common::Hash::fromStr(str);
+   Common::Hash h2(byteArray);
    Common::Hash h3 = h1;
    Common::Hash h4;
    h4 = h1;
