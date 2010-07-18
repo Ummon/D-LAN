@@ -10,6 +10,7 @@
 #include <Protos/files_cache.pb.h>
 #include <Protos/core_protocol.pb.h>
 
+#include <Common/Uncopyable.h>
 #include <priv/FileUpdater/DirWatcher.h>
 #include <priv/Cache/SharedDirectory.h>
 
@@ -20,12 +21,13 @@ namespace FM
    class FileUpdater;
    class FileManager;
 
-   class Cache : public QObject
+   class Cache : public QObject, Common::Uncopyable
    {
       Q_OBJECT
    public:
       Cache(FileManager* fileManager);
 
+   public:
       Protos::Core::GetEntriesResult getEntries(const Protos::Common::Entry& dir);
       Protos::Core::GetEntriesResult getEntries();
       Entry* getEntry(const QString& path);

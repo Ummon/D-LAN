@@ -34,4 +34,5 @@ HEADERS += Hashes.h \
     Math.h \
     Deletable.h \
     Constants.h \
-    Global.h
+    Global.h \
+    Uncopyable.h

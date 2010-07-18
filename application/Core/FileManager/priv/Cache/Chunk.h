@@ -8,6 +8,7 @@
 
 #include <Protos/files_cache.pb.h>
 #include <Common/Hash.h>
+#include <Common/Uncopyable.h>
 #include <IChunk.h>
 #include <priv/Constants.h>
 
@@ -19,16 +20,16 @@ namespace FM
    class IDataReader;
    class IDataWriter;
 
-   class Chunk : public IChunk
+   class Chunk : public IChunk, Common::Uncopyable
    {
    public:
       /**
         * Create a new empty chunk.
         */
       Chunk(File* file, int num, int knownBytes);
-
       Chunk(File* file, int num, int knownBytes, const Common::Hash& hash);
 
+   public:
       ~Chunk();
 
       Chunk* restoreFromFileCache(const Protos::FileCache::Hashes_Chunk& chunk);
