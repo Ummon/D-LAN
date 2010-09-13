@@ -77,7 +77,7 @@ namespace FM
 
       int getKnownBytes();
 
-      /*File& getFile();*/
+      bool isOwnedBy(File* file);
 
    private:
       QMutex mutex; ///< Protect 'file' against multiple access.

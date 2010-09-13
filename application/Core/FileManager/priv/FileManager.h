@@ -23,6 +23,7 @@ namespace FM
    class File;
    class Directory;
    class IChunk;
+   class IGetHashesResult;
 
    class FileManager : public IFileManager
    {
@@ -38,7 +39,7 @@ namespace FM
 
       QSharedPointer<IChunk> getChunk(const Common::Hash& hash);
       virtual QList< QSharedPointer<IChunk> > newFile(const Protos::Common::FileEntry& remoteEntry);
-      // IGetHashesResult* getHashes(const  Protos::Common::FileEntry& entry);
+      QSharedPointer<IGetHashesResult> getHashes(const Protos::Common::FileEntry& file);
 
       Protos::Core::GetEntriesResult getEntries(const Protos::Common::Entry& dir);
       Protos::Core::GetEntriesResult getEntries();

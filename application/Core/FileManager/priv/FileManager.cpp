@@ -1,4 +1,4 @@
-        #include <priv/FileManager.h>
+#include <priv/FileManager.h>
 using namespace FM;
 
 #include <QSharedPointer>
@@ -17,6 +17,7 @@ using namespace FM;
 #include <Exceptions.h>
 #include <priv/Log.h>
 #include <priv/Constants.h>
+#include <priv/GetHashesResult.h>
 #include <priv/Cache/Entry.h>
 #include <priv/Cache/File.h>
 #include <priv/Cache/Directory.h>
@@ -111,6 +112,11 @@ QList< QSharedPointer<IChunk> > FileManager::newFile(const Protos::Common::FileE
    foreach (QSharedPointer<Chunk> chunk, file->getChunks())
       chunks << chunk;
    return chunks;
+}
+
+QSharedPointer<IGetHashesResult> FileManager::getHashes(const Protos::Common::FileEntry& file)
+{
+   return QSharedPointer<IGetHashesResult>(new GetHashesResult(file, this->cache, this->fileUpdater));
 }
 
 Protos::Core::GetEntriesResult FileManager::getEntries(const Protos::Common::Entry& dir)

@@ -30,6 +30,7 @@ namespace FM
 
       void stop();
       void setFileCache(const Protos::FileCache::Hashes* fileCache);
+      void prioritizeAFileToHash(File* file);
 
    public slots:
       void addRoot(SharedDirectory* dir);
@@ -80,7 +81,7 @@ namespace FM
 
       QList<SharedDirectory*> dirsToRemove;
 
-      QList<File*> fileWithoutHashes;
+      QList<File*> filesWithoutHashes;
    };
 }
 #endif

@@ -105,8 +105,9 @@ File::File(
 
 File::~File()
 {
-   QMutexLocker writeLocker(&this->writeLock);
-   QMutexLocker readLocker(&this->readLock);
+   QMutexLocker(&this->writeLock);
+   QMutexLocker(&this->readLock);
+   // QMutexLocker(&this->cache->getMutex()); // TODO :
 
    this->dir->fileDeleted(this);
 
@@ -274,13 +275,14 @@ qint64 File::read(QByteArray& buffer, qint64 offset)
 
 /**
   * It will open the file, read it and calculate all theirs chunk hashes.
-  * If it already owns some chunks, their hashes will be overriden.
+  * Only the chunk without hashes will be computed.
   * This method can be called from an another thread than the main one. For example,
   * from 'FileUpdated' thread.
+  * @param n number of hashes to compute, 0 if we want to compute all the hashes.
   * @return Return true if all the hashes as been computed.
   * @exception FileNotFoundException
   */
-bool File::computeHashes()
+bool File::computeHashes(int n)
 {
    this->hashingMutex.lock();
 
@@ -309,6 +311,14 @@ bool File::computeHashes()
       return false;
    }
 
+   // Skip the already known hashes.
+   int chunkNum = 0;
+   while (chunkNum < this->chunks.size() && this->chunks[chunkNum]->hasHash())
+   {
+      chunkNum++;
+      file.seek(file.pos() + CHUNK_SIZE);
+   }
+
 #if DEBUG
    QTime time;
    time.start();
@@ -316,7 +326,6 @@ bool File::computeHashes()
 
    char buffer[BUFFER_SIZE];
    bool endOfFile = false;
-   int chunkNum = 0;
    while (!endOfFile)
    {
       // See 'stopHashing()'.

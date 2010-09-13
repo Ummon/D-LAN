@@ -13,11 +13,11 @@
 #include <Common/Uncopyable.h>
 #include <priv/FileUpdater/DirWatcher.h>
 #include <priv/Cache/SharedDirectory.h>
+#include <priv/Cache/Chunk.h>
 
 namespace FM
 {
    class Entry;
-   class Chunk;
    class FileUpdater;
    class FileManager;
 
@@ -28,25 +28,26 @@ namespace FM
       Cache(FileManager* fileManager);
 
    public:
-      Protos::Core::GetEntriesResult getEntries(const Protos::Common::Entry& dir);
-      Protos::Core::GetEntriesResult getEntries();
-      Entry* getEntry(const QString& path);
+      Protos::Core::GetEntriesResult getEntries(const Protos::Common::Entry& dir) const;
+      Protos::Core::GetEntriesResult getEntries() const;
+      Entry* getEntry(const QString& path) const;
+      File* getFile(const Protos::Common::FileEntry&) const;
 
-      QStringList getSharedDirs(SharedDirectory::Rights rights);
+      QStringList getSharedDirs(SharedDirectory::Rights rights) const;
       void setSharedDirs(const QStringList& dirs, SharedDirectory::Rights rights);
       void removeSharedDir(SharedDirectory* dir, Directory* dir2 = 0);
 
-      SharedDirectory* getSuperSharedDirectory(const QString& path);
-      QList<SharedDirectory*> getSubSharedDirectories(const QString& path);
+      SharedDirectory* getSuperSharedDirectory(const QString& path) const;
+      QList<SharedDirectory*> getSubSharedDirectories(const QString& path) const;
       bool isShared(const QString& path) const;
 
-      Directory* getDirectory(const QString& path, qint64 spaceNeeded);
-      Directory* getFittestDirectory(const QString& path);
+      Directory* getDirectory(const QString& path, qint64 spaceNeeded) const;
+      Directory* getFittestDirectory(const QString& path) const;
 
       void retrieveFromFile(const Protos::FileCache::Hashes& hashes);
-      void saveInFile(Protos::FileCache::Hashes& hashes);
+      void saveInFile(Protos::FileCache::Hashes& hashes) const;
 
-      quint64 getAmount() const;      
+      quint64 getAmount() const;
 
       void onEntryAdded(Entry* entry);
       void onEntryRemoved(Entry* entry);
@@ -76,7 +77,7 @@ namespace FM
 
       FileManager* fileManager;
 
-      QMutex lock; ///< To protect all the data into the cache, files and directories.
+      mutable QMutex lock; ///< To protect all the data into the cache, files and directories.
    };
 }
 #endif

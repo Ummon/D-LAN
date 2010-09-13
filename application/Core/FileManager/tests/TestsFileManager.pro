@@ -35,7 +35,9 @@ INCLUDEPATH += . \
 TEMPLATE = app
 SOURCES += main.cpp \
     Tests.cpp \
-    ../../../Protos/common.pb.cc
+    ../../../Protos/common.pb.cc \
+    HashesReceiver.cpp
 HEADERS += Tests.h \
     ../../../Protos/common.pb.h \
-    debug_new.h
+    debug_new.h \
+    HashesReceiver.h

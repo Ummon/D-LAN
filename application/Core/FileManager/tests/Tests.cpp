@@ -10,10 +10,13 @@ using namespace FM;
 #include <QDirIterator>
 
 #include <IChunk.h>
+#include <IGetHashesResult.h>
 #include <Common/LogManager/Builder.h>
 #include <Common/PersistantData.h>
 #include <Exceptions.h>
 #include <priv/Constants.h>
+
+#include <HashesReceiver.h>
 
 Tests::Tests()
 {
@@ -281,7 +284,7 @@ void Tests::getAExistingChunk()
    {
       QSharedPointer<IChunk> chunk = this->fileManager->getChunk(Common::Hash::fromStr("97d464813598e2e4299b5fe7db29aefffdf2641d"));
 
-      qDebug() << chunk->getHash().toStr();
+      qDebug() << "Chunk found : " << chunk->getHash().toStr();
    }
    catch(UnknownChunkException&)
    {
@@ -292,9 +295,65 @@ void Tests::getAExistingChunk()
 void Tests::getAUnexistingChunk()
 {
    qDebug() << "===== getAUnexistingChunk() =====";
+   try
+   {
+      QSharedPointer<IChunk> chunk = this->fileManager->getChunk(Common::Hash::fromStr("47ddfe38b8c66c0f9d98b9d802f220c84b4b30d4"));
+   }
+   catch(UnknownChunkException&)
+   {
+      qDebug() << "Chunk not found : ok";
+   }
+}
 
-   //QSharedPointer<IChunk> chunk = this->fileManager->getChunk(Common::Hash::fromStr("47ddfe38b8c66c0f9d98b9d802f220c84b4b30d4"));
+void Tests::getHashesFromAFileEntry1()
+{
+   qDebug() << "===== getHashesFromAFileEntry1() =====";
 
+   // Find the id of the first shared directory.
+   Protos::Core::GetEntriesResult sharedDirs = this->fileManager->getEntries();
+   const string sharedDirId = sharedDirs.dir(0).shared_dir().id().hash();
+
+   Protos::Common::FileEntry entry;
+   entry.mutable_file()->set_path("/share1");
+   entry.mutable_file()->set_name("v.txt");
+   entry.mutable_file()->mutable_shared_dir()->mutable_id()->set_hash(sharedDirId);
+   QSharedPointer<IGetHashesResult> result = this->fileManager->getHashes(entry);
+
+   HashesReceiver hashesReceiver;
+   connect(result.data(), SIGNAL(nextHash(Common::Hash)), &hashesReceiver, SLOT(nextHash(Common::Hash)));
+
+   Protos::Core::GetHashesResult res = result->start();
+
+   QVERIFY(res.status() == Protos::Core::GetHashesResult_Status_OK);
+}
+
+void Tests::getHashesFromAFileEntry2()
+{
+   qDebug() << "===== getHashesFromAFileEntry2() =====";
+
+   {
+      QFile file("sharedDirs/big2.bin");
+      file.open(QIODevice::WriteOnly);
+      file.resize(128 * 1024 * 1024); // 128Mo
+   }
+   QTest::qSleep(100);
+
+   Protos::Core::GetEntriesResult sharedDirs = this->fileManager->getEntries();
+   const string sharedDirId = sharedDirs.dir(0).shared_dir().id().hash();
+
+   Protos::Common::FileEntry entry;
+   entry.mutable_file()->set_path("/");
+   entry.mutable_file()->set_name("big2.bin");
+   entry.mutable_file()->mutable_shared_dir()->mutable_id()->set_hash(sharedDirId);
+   QSharedPointer<IGetHashesResult> result = this->fileManager->getHashes(entry);
+
+   HashesReceiver hashesReceiver;
+   connect(result.data(), SIGNAL(nextHash(Common::Hash)), &hashesReceiver, SLOT(nextHash(Common::Hash)));
+   Protos::Core::GetHashesResult res = result->start();
+
+   QTest::qWait(5000);
+
+   QVERIFY(res.status() == Protos::Core::GetHashesResult_Status_OK);
 }
 
 void Tests::browseSomedirectories()
@@ -310,6 +369,7 @@ void Tests::browseSomedirectories()
       "dir\\s*\\{\n\\s*shared_dir\\s*\\{\n\\s*id\\s*\\{\n\\s*hash:\\s*\".+\"\n\\s*\\}\n\\s*\\}\n\\s*path:\\s*\"\"\n\\s*name:\\s*\"sharedDirs\"\n\\s*size:\\s*\\d+\n\\}\ndir\\s*\\{\n\\s*shared_dir\\s*\\{\n\\s*id\\s*\\{\n\\s*hash:\\s*\".+\"\n\\s*\\}\n\\s*\\}\n\\s*path:\\s*\"\"\n\\s*name:\\s*\"incoming\"\n\\s*size:\\s*\\d+\n\\}.*",
       entries1Str
    );*/
+   QVERIFY(entries1Str != "");
    qDebug() << entries1Str;
 
    // Ask for the files and directories of the first shared directory

@@ -58,7 +58,7 @@ namespace FM
       bool write(const QByteArray& buffer, qint64 offset);
       qint64 read(QByteArray& buffer, qint64 offset);
 
-      bool computeHashes();
+      bool computeHashes(int n = 0);
 
       void stopHashing();
 
