@@ -13,6 +13,7 @@ CONFIG(debug, debug|release) {
    FOLDER = release
 }
 
+QMAKE_CXXFLAGS += -Wno-parentheses
 
 CONFIG += staticlib \
     link_prl \
@@ -23,9 +24,9 @@ INCLUDEPATH += . \
     ../.. \
     ${PROTOBUF}/src
 
- DESTDIR = output/$$FOLDER
- MOC_DIR = .tmp/$$FOLDER
- OBJECTS_DIR = .tmp/$$FOLDER
+DESTDIR = output/$$FOLDER
+MOC_DIR = .tmp/$$FOLDER
+OBJECTS_DIR = .tmp/$$FOLDER
 
 LIBS += -L../../Common/LogManager/output/$$FOLDER \
      -lLogManager
@@ -54,7 +55,8 @@ SOURCES += priv/Builder.cpp \
     ../../Protos/files_cache.pb.cc \
     priv/FileUpdater/WaitCondition.cpp \
     priv/FileUpdater/WaitConditionWin.cpp \
-    priv/FileUpdater/WaitConditionLinux.cpp
+    priv/FileUpdater/WaitConditionLinux.cpp \
+    priv/GetHashesResult.cpp
 HEADERS += IGetHashesResult.h \
     IFileManager.h \
     IChunk.h \
@@ -85,5 +87,6 @@ HEADERS += IGetHashesResult.h \
     priv/FileUpdater/WaitCondition.h \
     priv/FileUpdater/WaitConditionWin.h \
     priv/FileUpdater/WaitConditionLinux.h \
-    priv/Constants.h
+    priv/Constants.h \
+    priv/GetHashesResult.h
 OTHER_FILES +=

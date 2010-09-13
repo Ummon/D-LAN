@@ -1,5 +1,5 @@
-#ifndef COMMON_TESTS_H
-#define COMMON_TESTS_H
+#ifndef FILE_MANAGER_TESTS_H
+#define FILE_MANAGER_TESTS_H
 
 #include <QTest>
 #include <QDir>
@@ -49,8 +49,10 @@ private slots:
    void getAUnexistingChunk();
 
    /***** Get Hashes from a FileEntry which the hash is already computed *****/
+   void getHashesFromAFileEntry1();
 
    /***** Get Hashes from a FileEntry which the hash is unknown *****/
+   void getHashesFromAFileEntry2();
 
    /***** Read and write concurrently some chunks *****/
    /*<Protos::Common::FileEntry fileEntry;
@@ -83,7 +85,6 @@ private slots:
 private:
    void createInitialFiles();
    void deleteAllFiles();
-
 
    void search();
    void printSearch(const QString& terms, const Protos::Common::FindResult& result);

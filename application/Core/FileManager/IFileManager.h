@@ -51,7 +51,11 @@ namespace FM
         */
       virtual QList< QSharedPointer<IChunk> > newFile(const Protos::Common::FileEntry& remoteEntry) = 0;
 
-      // virtual IGetHashesResult* getHashes(const Protos::Common::FileEntry& entry) = 0;
+      /**
+        * Return the hashes from a FileEntry. If the hashes don't exist they will be computed on the fly. However this
+        * Method is non-blocking, when the hashes are ready a signal will be emited by the IGetHashesResult object.
+        */
+      virtual QSharedPointer<IGetHashesResult> getHashes(const Protos::Common::FileEntry& file) = 0;
 
       /**
         * Returns the directories and files contained in the given directory.

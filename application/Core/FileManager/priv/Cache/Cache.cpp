@@ -22,7 +22,7 @@ Cache::Cache(FileManager* fileManager)
   * b) In the shared directory try to find the directory corresponding to 'entry.dir.path'.
   * c) Populate the result with directories and files.
   */
-Protos::Core::GetEntriesResult Cache::getEntries(const Protos::Common::Entry& dir)
+Protos::Core::GetEntriesResult Cache::getEntries(const Protos::Common::Entry& dir) const
 {
    Protos::Core::GetEntriesResult result;
 
@@ -60,7 +60,7 @@ Protos::Core::GetEntriesResult Cache::getEntries(const Protos::Common::Entry& di
    return result;
 }
 
-Protos::Core::GetEntriesResult Cache::getEntries()
+Protos::Core::GetEntriesResult Cache::getEntries() const
 {
    Protos::Core::GetEntriesResult result;
 
@@ -71,9 +71,10 @@ Protos::Core::GetEntriesResult Cache::getEntries()
 }
 
 /**
+  * @path the absolute path to a directory or a file.
   * @return Returns 0 if no entry found.
   */
-Entry* Cache::getEntry(const QString& path)
+Entry* Cache::getEntry(const QString& path) const
 {
    QMutexLocker locker(&this->lock);
 
@@ -86,12 +87,13 @@ Entry* Cache::getEntry(const QString& path)
          const QStringList folders = relativePath.split('/', QString::SkipEmptyParts);
 
          Directory* currentDir = sharedDir;
-         foreach (QString folder, folders)
+         for (QStringListIterator i(folders); i.hasNext();)
          {
+            QString folder = i.next();
             Directory* dir = currentDir->getSubDir(folder);
             if (!dir)
             {
-               if (folders.last() == folder)
+               if (!i.hasNext())
                {
                   File* file = currentDir->getFile(folder);
                   if (file)
@@ -109,7 +111,55 @@ Entry* Cache::getEntry(const QString& path)
    return 0;
 }
 
-QStringList Cache::getSharedDirs(SharedDirectory::Rights rights)
+/**
+  * Try to find the file into the cache from a reference.
+  */
+File* Cache::getFile(const Protos::Common::FileEntry& fileEntry) const
+{
+   QMutexLocker locker(&this->lock);
+
+   if (!fileEntry.file().has_shared_dir())
+      return 0;
+
+   foreach (SharedDirectory* sharedDir, this->sharedDirs)
+   {
+      if (sharedDir->getId() == fileEntry.file().shared_dir().id().hash().data())
+      {
+         QString relativePath(fileEntry.file().path().data());
+         const QStringList folders = relativePath.split('/', QString::SkipEmptyParts);
+
+         Directory* dir = sharedDir;
+         QStringListIterator i(folders);
+         forever
+         {
+            if (dir)
+            {
+               if (!i.hasNext())
+               {
+                  File* file = dir->getFile(fileEntry.file().name().data());
+
+                  if (file)
+                     return file;
+                  return 0;
+               }
+            }
+            else
+               return 0;
+
+            if (!i.hasNext())
+               return 0;
+
+            dir = dir->getSubDir(i.next());
+         }
+
+         return 0;
+      }
+   }
+
+   return 0;
+}
+
+QStringList Cache::getSharedDirs(SharedDirectory::Rights rights) const
 {
    QStringList list;
 
@@ -187,7 +237,7 @@ void Cache::removeSharedDir(SharedDirectory* dir, Directory* dir2)
    // dir->eliminate();
 }
 
-SharedDirectory* Cache::getSuperSharedDirectory(const QString& path)
+SharedDirectory* Cache::getSuperSharedDirectory(const QString& path) const
 {
    const QStringList& folders = path.split('/', QString::SkipEmptyParts);
 
@@ -208,7 +258,7 @@ SharedDirectory* Cache::getSuperSharedDirectory(const QString& path)
    return 0;
 }
 
-QList<SharedDirectory*> Cache::getSubSharedDirectories(const QString& path)
+QList<SharedDirectory*> Cache::getSubSharedDirectories(const QString& path) const
 {
    QList<SharedDirectory*> ret;
 
@@ -258,7 +308,7 @@ bool Cache::isShared(const QString& path) const
   * @exception NoReadWriteSharedDirectoryException
   * @exception InsufficientStorageSpaceException
   */
-Directory* Cache::getDirectory(const QString& path, qint64 spaceNeeded)
+Directory* Cache::getDirectory(const QString& path, qint64 spaceNeeded) const
 {
    QMutexLocker locker(&this->lock);
 
@@ -320,7 +370,7 @@ Directory* Cache::getDirectory(const QString& path, qint64 spaceNeeded)
   * @param path An absolute path.
   * @return If no directory can be match 0 is returned.
   */
-Directory* Cache::getFittestDirectory(const QString& path)
+Directory* Cache::getFittestDirectory(const QString& path) const
 {
    QMutexLocker locker(&this->lock);
 
@@ -359,7 +409,7 @@ void Cache::retrieveFromFile(const Protos::FileCache::Hashes& hashes)
 /**
   * Populate the given structure to be persisted later.
   */
-void Cache::saveInFile(Protos::FileCache::Hashes& hashes)
+void Cache::saveInFile(Protos::FileCache::Hashes& hashes) const
 {
    hashes.set_version(1);
    hashes.set_chunksize(CHUNK_SIZE);

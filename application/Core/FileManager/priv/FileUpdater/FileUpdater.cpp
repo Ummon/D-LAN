@@ -110,7 +110,7 @@ void FileUpdater::rmRoot(SharedDirectory* dir, Directory* dir2)
          dir2->stealContent(dir);
 
       // Remove all the pending files owned by 'dir'.
-      for (QMutableListIterator<File*> i(this->fileWithoutHashes); i.hasNext();)
+      for (QMutableListIterator<File*> i(this->filesWithoutHashes); i.hasNext();)
          if (i.next()->getRoot() == dir)
             i.remove();
    }
@@ -130,6 +130,21 @@ void FileUpdater::rmRoot(SharedDirectory* dir, Directory* dir2)
 void FileUpdater::setFileCache(const Protos::FileCache::Hashes* fileCache)
 {
    this->fileCache = fileCache;
+}
+
+
+void FileUpdater::prioritizeAFileToHash(File* file)
+{
+   QMutexLocker(&this->mutex);
+
+   // If a file is incomplete (unfinished) we can't compute its hashes because we don't have all data.
+   if (!file->hasAllHashes() && file->isComplete())
+   {
+      this->filesWithoutHashes.removeOne(file);
+      this->filesWithoutHashes.prepend(file);
+   }
+
+   this->stopHashing();
 }
 
 void FileUpdater::run()
@@ -196,7 +211,7 @@ void FileUpdater::run()
       {
          // If we have no dir to scan and no file to hash we wait for a new shared file
          // or a filesystem event.
-         if (this->dirsToScan.isEmpty() && this->fileWithoutHashes.isEmpty())
+         if (this->dirsToScan.isEmpty() && this->filesWithoutHashes.isEmpty())
          {
             this->mutex.unlock();
             this->treatEvents(this->dirWatcher->waitEvent(QList<WaitCondition*>() << this->dirEvent));
@@ -207,6 +222,7 @@ void FileUpdater::run()
             this->treatEvents(this->dirWatcher->waitEvent(0));
          }
       }
+
       if (this->toStop)
       {
          L_DEBU("FileUpdater mainloop finished");
@@ -231,7 +247,7 @@ bool FileUpdater::computeSomeHashes()
       return false;
    }
 
-   if (fileWithoutHashes.isEmpty())
+   if (this->filesWithoutHashes.isEmpty())
    {
       this->hashingMutex.unlock();
       return false;
@@ -242,7 +258,7 @@ bool FileUpdater::computeSomeHashes()
    QTime time;
    time.start();
 
-   for (QMutableListIterator<File*> i(this->fileWithoutHashes); i.hasNext();)
+   for (QMutableListIterator<File*> i(this->filesWithoutHashes); i.hasNext();)
    {
       this->currentHashingFile = i.next();
 
@@ -277,7 +293,7 @@ bool FileUpdater::computeSomeHashes()
   */
 void FileUpdater::stopHashing()
 {
-   QMutexLocker locker(&this->hashingMutex);
+   QMutexLocker(&this->hashingMutex);
    if (this->currentHashingFile)
       this->currentHashingFile->stopHashing();
    this->toStopHashing = true;
@@ -332,8 +348,8 @@ void FileUpdater::scan(Directory* dir)
             File* file = currentDir->createFile(entry);
 
             // If a file is incomplete (unfinished) we can't compute its hashes because we don't have all data.
-            if (!file->hasAllHashes() && file->isComplete() && !fileWithoutHashes.contains(file))
-               this->fileWithoutHashes << file;
+            if (!file->hasAllHashes() && file->isComplete() && !this->filesWithoutHashes.contains(file))
+               this->filesWithoutHashes << file;
 
             currentFiles.removeOne(file);
          }
@@ -396,7 +412,7 @@ void FileUpdater::deleteEntry(Entry* entry)
    }
    else if (File* file = dynamic_cast<File*>(entry))
    {
-      this->fileWithoutHashes.removeOne(file);
+      this->filesWithoutHashes.removeOne(file);
       delete file;
    }
    else
@@ -433,7 +449,7 @@ void FileUpdater::restoreFromFileCache(SharedDirectory* dir)
    // Remove the files which have a hash.
    // TODO : O(n^2) can be a bit long...
    for (QListIterator<File*>i(filesWithHashes); i.hasNext();)
-      this->fileWithoutHashes.removeOne(i.next());
+      this->filesWithoutHashes.removeOne(i.next());
 
    L_DEBU("Restoring terminated : " + dir->getFullPath());
 }

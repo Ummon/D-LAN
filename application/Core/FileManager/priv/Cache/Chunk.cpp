@@ -151,8 +151,7 @@ int Chunk::getKnownBytes()
    return this->knownBytes;
 }
 
-/*
-File& Chunk::getFile()
+bool Chunk::isOwnedBy(File* file)
 {
-   return this->file;
-}*/
+   return this->file == file;
+}
