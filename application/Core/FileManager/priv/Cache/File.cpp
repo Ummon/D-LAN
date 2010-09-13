@@ -105,8 +105,8 @@ File::File(
 
 File::~File()
 {
-   QMutexLocker(&this->writeLock);
-   QMutexLocker(&this->readLock);
+   QMutexLocker lockerWrite(&this->writeLock);
+   QMutexLocker lockerRead(&this->readLock);
    // QMutexLocker(&this->cache->getMutex()); // TODO :
 
    this->dir->fileDeleted(this);
@@ -383,6 +383,7 @@ bool File::computeHashes(int n)
 void File::stopHashing()
 {
    QMutexLocker locker(&this->hashingMutex);
+
    this->toStopHashing = true;
    if (this->hashing)
    {

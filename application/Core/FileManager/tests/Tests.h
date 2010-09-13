@@ -71,6 +71,7 @@ private slots:
    void findFilesWithSomeWords();
 
    /***** Ask if the given hashes are known *****/
+   void haveChunks();
 
    /***** Ask for the amount of shared byte *****/
    void printAmount();
