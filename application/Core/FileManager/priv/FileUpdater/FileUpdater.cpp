@@ -135,7 +135,7 @@ void FileUpdater::setFileCache(const Protos::FileCache::Hashes* fileCache)
 
 void FileUpdater::prioritizeAFileToHash(File* file)
 {
-   QMutexLocker(&this->mutex);
+   QMutexLocker locker(&this->mutex);
 
    // If a file is incomplete (unfinished) we can't compute its hashes because we don't have all data.
    if (!file->hasAllHashes() && file->isComplete())
@@ -290,13 +290,18 @@ bool FileUpdater::computeSomeHashes()
 
 /**
   * Stop the current hashing process or the next hashing process.
+  * The file is requeued.
   */
 void FileUpdater::stopHashing()
 {
-   QMutexLocker(&this->hashingMutex);
+   QMutexLocker lockerHashing(&this->hashingMutex);
    if (this->currentHashingFile)
       this->currentHashingFile->stopHashing();
+
    this->toStopHashing = true;
+
+   QMutexLocker locker(&this->mutex);
+   this->filesWithoutHashes.append(this->currentHashingFile);
 }
 
 /**

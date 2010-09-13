@@ -298,6 +298,7 @@ void Tests::getAUnexistingChunk()
    try
    {
       QSharedPointer<IChunk> chunk = this->fileManager->getChunk(Common::Hash::fromStr("47ddfe38b8c66c0f9d98b9d802f220c84b4b30d4"));
+      QFAIL("No chunk must be found");
    }
    catch(UnknownChunkException&)
    {
@@ -332,24 +333,28 @@ void Tests::getHashesFromAFileEntry2()
    qDebug() << "===== getHashesFromAFileEntry2() =====";
 
    {
-      QFile file("sharedDirs/big2.bin");
-      file.open(QIODevice::WriteOnly);
-      file.resize(128 * 1024 * 1024); // 128Mo
+      QFile file1("sharedDirs/big2.bin");
+      file1.open(QIODevice::WriteOnly);
+      file1.resize(128 * 1024 * 1024); // 128Mo
+
+      QFile file2("sharedDirs/big3.bin");
+      file2.open(QIODevice::WriteOnly);
+      file2.resize(128 * 1024 * 1024); // 128Mo
    }
-   QTest::qSleep(100);
+   QTest::qWait(2000); // Begin the computing of the big2.bin hashes.
 
    Protos::Core::GetEntriesResult sharedDirs = this->fileManager->getEntries();
    const string sharedDirId = sharedDirs.dir(0).shared_dir().id().hash();
 
    Protos::Common::FileEntry entry;
    entry.mutable_file()->set_path("/");
-   entry.mutable_file()->set_name("big2.bin");
+   entry.mutable_file()->set_name("big3.bin");
    entry.mutable_file()->mutable_shared_dir()->mutable_id()->set_hash(sharedDirId);
    QSharedPointer<IGetHashesResult> result = this->fileManager->getHashes(entry);
 
    HashesReceiver hashesReceiver;
    connect(result.data(), SIGNAL(nextHash(Common::Hash)), &hashesReceiver, SLOT(nextHash(Common::Hash)));
-   Protos::Core::GetHashesResult res = result->start();
+   Protos::Core::GetHashesResult res = result->start(); // Should stop the computing of 'big2.bin' and switch to 'big3.bin'.
 
    QTest::qWait(5000);
 
@@ -435,8 +440,37 @@ void Tests::findFilesWithSomeWords()
    this->compareExpectedResult(result, expectedLevelResult, expectedFileResult);
 }
 
+void Tests::haveChunks()
+{
+   qDebug() << "===== haveChunks() =====";
+
+   QList<Common::Hash> hashes;
+   hashes
+      << Common::Hash::fromStr("f6126deaa5e1d9692d54e3bef0507721372ee7f8") // "/sharedDirs/share3/aaaa bbbb cccc.txt"
+      << Common::Hash::fromStr("4c24e58c47746ea04296df9342185d9b3a447899") // "/sharedDirs/share1/v.txt"
+      << Common::Hash::fromStr("954531aef8ac193ad62f4de783da9d7e6ebd59dd") // "/sharedDirs/share1/y.txt" (deleted)
+      << Common::Hash::fromStr("8374d82e993012aa23b293f319eef2c21d2da3b9"); // Random hash
+
+   QBitArray excpectedResult(hashes.size());
+   excpectedResult[0] = true;
+   excpectedResult[1] = true;
+   excpectedResult[2] = false;
+   excpectedResult[3] = false;
+
+   QBitArray result = this->fileManager->haveChunks(hashes);
+   QVERIFY(result.size() == hashes.size());
+
+   for (int i = 0; i < result.size(); i++)
+   {
+      QVERIFY(result[i] == excpectedResult[i]);
+      qDebug() << hashes[i].toStr() << " : " << (result[i] ? "Yes" : "No");
+   }
+}
+
 void Tests::printAmount()
 {
+   qDebug() << "===== printAmount() =====";
+
    qDebug() << "Sharing amount : " << this->fileManager->getAmount() << " bytes";
 }
 
