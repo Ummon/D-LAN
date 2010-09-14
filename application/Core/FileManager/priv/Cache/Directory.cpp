@@ -183,7 +183,7 @@ QList<File*> Directory::getFiles() const
 {
    // TODO : it create a deadlock, rethink serously about the concurency problems ..
    // Same problem as above.
-   // QMutexLocker(&this->cache->getMutex());
+   // QMutexLocker locker(&this->cache->getMutex());
    return this->files;
 }
 
