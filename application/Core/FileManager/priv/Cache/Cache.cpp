@@ -178,17 +178,17 @@ QStringList Cache::getSharedDirs(SharedDirectory::Rights rights) const
 void Cache::setSharedDirs(const QStringList& dirs, SharedDirectory::Rights rights)
 {
    // Filter the actual shared directories by looking theirs rights.
-   QList<SharedDirectory*> sharedDirs;
+   QList<SharedDirectory*> sharedDirsFiltered;
    for(QListIterator<SharedDirectory*> i(this->sharedDirs); i.hasNext();)
    {
       SharedDirectory* dir = i.next();
       if (dir->getRights() == rights)
-         sharedDirs << dir;
+         sharedDirsFiltered << dir;
    }
 
-   QMutableListIterator<SharedDirectory*> j(sharedDirs);
+   QMutableListIterator<SharedDirectory*> j(sharedDirsFiltered);
 
-   // Remove already shared directories from 'sharedDirs'.
+   // Remove already shared directories from 'sharedDirsFiltered'.
    // /!\ O(n^2).
    for(QListIterator<QString> i(dirs); i.hasNext();)
    {
@@ -231,10 +231,6 @@ void Cache::removeSharedDir(SharedDirectory* dir, Directory* dir2)
    this->sharedDirs.removeOne(dir);
 
    emit sharedDirectoryRemoved(dir, dir2);
-
-   // TODO : why theses lines are commented without comment?
-   // Delete all chunks.
-   // dir->eliminate();
 }
 
 SharedDirectory* Cache::getSuperSharedDirectory(const QString& path) const
