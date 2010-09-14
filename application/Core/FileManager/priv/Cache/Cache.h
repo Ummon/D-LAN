@@ -41,7 +41,7 @@ namespace FM
       QList<SharedDirectory*> getSubSharedDirectories(const QString& path) const;
       bool isShared(const QString& path) const;
 
-      Directory* getDirectory(const QString& path, qint64 spaceNeeded) const;
+      Directory* getWriteableDirectory(const QString& path, qint64 spaceNeeded) const;
       Directory* getFittestDirectory(const QString& path) const;
 
       void retrieveFromFile(const Protos::FileCache::Hashes& hashes);

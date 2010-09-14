@@ -164,6 +164,7 @@ Directory* Directory::getSubDir(const QString& name) const
    foreach (Directory* d, this->subDirs)
       if (d->getName() == name)
          return d;
+
    return 0;
 }
 
@@ -174,7 +175,7 @@ QList<Directory*> Directory::getSubDirs() const
    // - FileUpdater thread (FT) : Scan some directories and be locked by the call currentDir->getSubDirs() -> Cache::lock;
    // - (MT) : SharedDirectory::init() call this->getCache()->removeSharedDir(subDir, current); and emit sharedDirectoryRemoved
    //          which will call FileUpdater::rmRoot which will try to stop scanning -> deadlock
-   // QMutexLocker(&this->cache->getMutex());
+   // QMutexLocker locker(&this->cache->getMutex());
    return this->subDirs;
 }
 

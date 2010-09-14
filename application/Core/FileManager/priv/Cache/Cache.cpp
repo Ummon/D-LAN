@@ -296,7 +296,7 @@ bool Cache::isShared(const QString& path) const
 }
 
 /**
-  * Returns a directory wich correspond to the path, it will choose the shared directory which :
+  * Returns a directory wich matches to the path, it will choose the shared directory which :
   *  - Has at least the needed space.
   *  - Has the most directories in common with 'path'.
   *  - Can be written.
@@ -304,11 +304,11 @@ bool Cache::isShared(const QString& path) const
   * The missing directories will be automatically created.
   *
   * @param path A relative path to a shared directory. Must be a cleaned path (QDir::cleanPath).
-  * @return The directory, 0 if error.
+  * @return The directory, 0 if unkown error.
   * @exception NoReadWriteSharedDirectoryException
   * @exception InsufficientStorageSpaceException
   */
-Directory* Cache::getDirectory(const QString& path, qint64 spaceNeeded) const
+Directory* Cache::getWriteableDirectory(const QString& path, qint64 spaceNeeded) const
 {
    QMutexLocker locker(&this->lock);
 
@@ -355,7 +355,7 @@ Directory* Cache::getDirectory(const QString& path, qint64 spaceNeeded) const
    Directory* currentDir = currentSharedDir;
    foreach (QString folder, folders)
    {
-      Directory* currentDir = currentDir->physicallyCreateSubDirectory(folder);
+      currentDir = currentDir->physicallyCreateSubDirectory(folder);
       if (!currentDir)
          return 0;
    }
