@@ -43,6 +43,7 @@ private slots:
    void moveAnEmptyDirectory();
    void moveADirectoryContainingFiles();
    void removeADirectory();
+   void createAnEmptyFile();
 
    /***** Ask for chunks by hash *****/
    void getAExistingChunk();

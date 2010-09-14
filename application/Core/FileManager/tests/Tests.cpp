@@ -201,7 +201,6 @@ void Tests::createASubFile()
 
 void Tests::createABigFile()
 {
-   return;
    qDebug() << "===== createABigFile() =====";
 
    QFile file("sharedDirs/big.bin");
@@ -212,7 +211,6 @@ void Tests::createABigFile()
 
 void Tests::modifyABigFile()
 {
-   return;
    qDebug() << "===== modifyABigFile() =====";
 
    {
@@ -229,7 +227,6 @@ void Tests::modifyABigFile()
 
 void Tests::removeABigFile()
 {
-   return;
    qDebug() << "===== removeABigFile() =====";
 
    while(!QFile("sharedDirs/big.bin").remove())
@@ -275,6 +272,39 @@ void Tests::removeADirectory()
 
    Tests::recursiveDeleteDirectory("sharedDirs/share1/share2");
    QTest::qSleep(100);
+}
+
+void Tests::createAnEmptyFile()
+{
+   qDebug() << "===== createAnEmptyFile() =====";
+
+   Protos::Common::FileEntry remoteEntry;
+   remoteEntry.mutable_file()->set_path("/remoteShare1");
+   remoteEntry.mutable_file()->set_name("remoteFile.txt");
+   remoteEntry.mutable_file()->set_size(1 * 1024 * 1024); // 1Mo.
+
+   try
+   {
+      QList< QSharedPointer<IChunk> > chunks = this->fileManager->newFile(remoteEntry);
+      for (int i = 0; i < chunks.size(); i++)
+         QVERIFY(chunks[i]->getHash().isNull());
+   }
+   catch(NoReadWriteSharedDirectoryException&)
+   {
+      QFAIL("NoReadWriteSharedDirectoryException");
+   }
+   catch(InsufficientStorageSpaceException&)
+   {
+      QFAIL("InsufficientStorageSpaceException");
+   }
+   catch(FilePhysicallyAlreadyExistsException)
+   {
+      QFAIL("FilePhysicallyAlreadyExistsException");
+   }
+   catch(UnableToCreateNewFileException&)
+   {
+      QFAIL("UnableToCreateNewFileException");
+   }
 }
 
 void Tests::getAExistingChunk()

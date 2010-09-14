@@ -54,7 +54,6 @@ namespace FM
 
       File* createFile(const QFileInfo& fileInfo);
 
-
       File* getFile(const QString& name) const;
 
       void addFile(File* file);

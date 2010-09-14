@@ -70,6 +70,10 @@ namespace FM
    {
    };
 
+   class UnableToCreateNewFileException : public exception
+   {
+   };
+
    class FilePhysicallyAlreadyExistsException : public exception
    {
    };

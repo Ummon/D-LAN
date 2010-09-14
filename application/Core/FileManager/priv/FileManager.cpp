@@ -92,7 +92,9 @@ QSharedPointer<IChunk> FileManager::getChunk(const Common::Hash& hash)
 
 QList< QSharedPointer<IChunk> > FileManager::newFile(const Protos::Common::FileEntry& remoteEntry)
 {
-   Directory* dir = this->cache.getDirectory(QDir::cleanPath(remoteEntry.file().path().data()), remoteEntry.file().size() + MINIMUM_FREE_SPACE);
+   Directory* dir = this->cache.getWriteableDirectory(QDir::cleanPath(remoteEntry.file().path().data()), remoteEntry.file().size() + MINIMUM_FREE_SPACE);
+   if (!dir)
+      throw UnableToCreateNewFileException();
 
    Common::Hashes hashes;
    for (int i = 0; i < remoteEntry.chunk_size(); i++)
