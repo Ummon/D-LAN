@@ -5,6 +5,7 @@
 
 #include <QString>
 #include <QByteArray>
+#include <QDataStream>
 
 #if WITH_MUTEX
 #  include <QMutex>
@@ -34,7 +35,13 @@ namespace Common
 
    private:
       inline void dereference();
-      inline void newData();
+      inline void newData()
+      {
+         this->data = new SharedData;
+         this->data->nbRef = 1;
+      }
+
+      friend QDataStream& operator>>(QDataStream&, Hash&);
 
       struct SharedData
       {
@@ -47,6 +54,25 @@ namespace Common
 
       SharedData* data;
    };
+
+   /**
+     * It will read an hash from a data stream and modify the given hash.
+     */
+   inline QDataStream& operator>>(QDataStream& stream, Hash& hash)
+   {
+      char data[Hash::HASH_SIZE];
+      int length = stream.readRawData(data, Hash::HASH_SIZE);
+      if (length != Hash::HASH_SIZE)
+         return stream;
+
+      if (qstrncmp(hash.data->hash, data, Hash::HASH_SIZE) != 0)
+      {
+         hash.newData();
+         memcpy(hash.data->hash, data, Hash::HASH_SIZE);
+      }
+
+      return stream;
+   }
 
    inline bool operator==(const Hash& h1, const Hash& h2)
    {

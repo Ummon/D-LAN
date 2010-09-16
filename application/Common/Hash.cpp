@@ -6,7 +6,7 @@ using namespace Common;
 
 /**
   * @class Hash
-  * An uber-optimized SHA-1 hash.
+  * An über-optimized SHA-1 hash.
   * see : http://fr.wikipedia.org/wiki/SHA-1
   */
 
@@ -162,13 +162,4 @@ void Hash::dereference()
    this->data->nbRef -= 1;
    if (this->data->nbRef == 0)
       delete this->data;
-}
-
-/**
-  * Allocated new shared data.
-  */
-void Hash::newData()
-{
-   this->data = new SharedData;
-   this->data->nbRef = 1;
 }

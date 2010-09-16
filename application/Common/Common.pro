@@ -27,7 +27,8 @@ DEFINES += COMMON_LIBRARY
 SOURCES += Hash.cpp \
     PersistantData.cpp \
     Math.cpp \
-    Global.cpp
+    Global.cpp \
+    Network.cpp
 HEADERS += Hashes.h \
     Hash.h \
     PersistantData.h \
@@ -35,4 +36,5 @@ HEADERS += Hashes.h \
     Deletable.h \
     Constants.h \
     Global.h \
-    Uncopyable.h
+    Uncopyable.h \
+    Network.h
