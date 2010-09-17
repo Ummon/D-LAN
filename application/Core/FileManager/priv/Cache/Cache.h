@@ -32,6 +32,7 @@ namespace FM
       Protos::Core::GetEntriesResult getEntries() const;
       Entry* getEntry(const QString& path) const;
       File* getFile(const Protos::Common::FileEntry&) const;
+      QList< QSharedPointer<IChunk> > newFile(const Protos::Common::FileEntry& remoteEntry);
 
       QStringList getSharedDirs(SharedDirectory::Rights rights) const;
       void setSharedDirs(const QStringList& dirs, SharedDirectory::Rights rights);
@@ -41,7 +42,6 @@ namespace FM
       QList<SharedDirectory*> getSubSharedDirectories(const QString& path) const;
       bool isShared(const QString& path) const;
 
-      Directory* getWriteableDirectory(const QString& path, qint64 spaceNeeded) const;
       Directory* getFittestDirectory(const QString& path) const;
 
       void retrieveFromFile(const Protos::FileCache::Hashes& hashes);
@@ -55,7 +55,7 @@ namespace FM
       void onChunkRemoved(QSharedPointer<Chunk> chunk);
 
       /**
-        * Return the big cach lock.
+        * Return the big cache lock.
         */
       QMutex& getMutex() { return this->lock; }
 
@@ -72,6 +72,8 @@ namespace FM
       void createSharedDirs(const QStringList& dirs, const QList<SharedDirectory::Rights>& rights, const QList<Common::Hash>& ids = QList<Common::Hash>());
       void createSharedDirs(const QStringList& dirs, SharedDirectory::Rights rights);
       void createSharedDirs(const Protos::FileCache::Hashes& hashes);
+
+      Directory* getWriteableDirectory(const QString& path, qint64 spaceNeeded) const;
 
       QList<SharedDirectory*> sharedDirs;
 

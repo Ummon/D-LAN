@@ -92,28 +92,7 @@ QSharedPointer<IChunk> FileManager::getChunk(const Common::Hash& hash)
 
 QList< QSharedPointer<IChunk> > FileManager::newFile(const Protos::Common::FileEntry& remoteEntry)
 {
-   Directory* dir = this->cache.getWriteableDirectory(QDir::cleanPath(remoteEntry.file().path().data()), remoteEntry.file().size() + MINIMUM_FREE_SPACE);
-   if (!dir)
-      throw UnableToCreateNewFileException();
-
-   Common::Hashes hashes;
-   for (int i = 0; i < remoteEntry.chunk_size(); i++)
-      hashes << (remoteEntry.chunk(i).has_hash() ? Common::Hash(remoteEntry.chunk(i).hash().data()) : Common::Hash());
-
-   File* file = new File(
-      dir,
-      remoteEntry.file().name().data(),
-      remoteEntry.file().size(),
-      QDateTime::currentDateTime(),
-      hashes,
-      true
-   );
-
-   // TODO : is there a better way to up cast ?
-   QList< QSharedPointer<IChunk> > chunks;
-   foreach (QSharedPointer<Chunk> chunk, file->getChunks())
-      chunks << chunk;
-   return chunks;
+   return this->cache.newFile(remoteEntry);
 }
 
 QSharedPointer<IGetHashesResult> FileManager::getHashes(const Protos::Common::FileEntry& file)

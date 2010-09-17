@@ -504,6 +504,17 @@ void Tests::printAmount()
    qDebug() << "Sharing amount : " << this->fileManager->getAmount() << " bytes";
 }
 
+
+/**
+  * Some tasks will be performed concurrently :
+  *  - Searching some files
+  *  -
+  */
+void Tests::concurrencyTest()
+{
+   // TODO..
+}
+
 void Tests::rmSharedDirectory()
 {
    qDebug() << "===== rmSharedDirectory() =====";
@@ -554,34 +565,6 @@ void Tests::deleteAllFiles()
 {
    Tests::recursiveDeleteDirectory("sharedDirs");
    Tests::recursiveDeleteDirectory("incoming");
-}
-
-void Tests::search()
-{
-   /**
-     * Execute many times the search in parallel
-     * with the indexing.
-     */
-   /*
-   for (int i = 0; i < 20; i++)
-   {
-      this->printAmount();
-      this->doASearch(false);
-   }
-
-   QTest::qSleep(500);
-
-   this->doASearch(true);
-   this->printAmount();
-
-   this->sharedDirsReadOnly << QDir::currentPath().append("/sharedDirs");
-   this->fileManager->setSharedDirsReadWrite(this->sharedDirsReadOnly);
-
-   QTest::qSleep(500);
-
-   QString terms("xxxx");
-   Protos::Common::FindResult result = this->fileManager->find(terms);
-   this->printSearch(terms, result);*/
 }
 
 void Tests::printSearch(const QString& terms, const Protos::Common::FindResult& result)
