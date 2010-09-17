@@ -30,6 +30,8 @@ Protos::Core::GetEntriesResult Cache::getEntries(const Protos::Common::Entry& di
    if (!dir.has_shared_dir())
       return result;
 
+   QMutexLocker locker(&this->lock);
+
    foreach (SharedDirectory* sharedDir, this->sharedDirs)
    {
       if (sharedDir->getId() == dir.shared_dir().id().hash().data())
@@ -62,6 +64,8 @@ Protos::Core::GetEntriesResult Cache::getEntries(const Protos::Common::Entry& di
 
 Protos::Core::GetEntriesResult Cache::getEntries() const
 {
+   QMutexLocker locker(&this->lock);
+
    Protos::Core::GetEntriesResult result;
 
    foreach (SharedDirectory* sharedDir, this->sharedDirs)
@@ -159,8 +163,37 @@ File* Cache::getFile(const Protos::Common::FileEntry& fileEntry) const
    return 0;
 }
 
+QList< QSharedPointer<IChunk> > Cache::newFile(const Protos::Common::FileEntry& remoteEntry)
+{
+   QMutexLocker locker(&this->lock);
+
+   Directory* dir = this->getWriteableDirectory(QDir::cleanPath(remoteEntry.file().path().data()), remoteEntry.file().size() + MINIMUM_FREE_SPACE);
+   if (!dir)
+      throw UnableToCreateNewFileException();
+
+   Common::Hashes hashes;
+   for (int i = 0; i < remoteEntry.chunk_size(); i++)
+      hashes << (remoteEntry.chunk(i).has_hash() ? Common::Hash(remoteEntry.chunk(i).hash().data()) : Common::Hash());
+
+   File* file = new File(
+      dir,
+      remoteEntry.file().name().data(),
+      remoteEntry.file().size(),
+      QDateTime::currentDateTime(),
+      hashes,
+      true
+   );
+
+   // TODO : is there a better way to up cast ?
+   QList< QSharedPointer<IChunk> > chunks;
+   foreach (QSharedPointer<Chunk> chunk, file->getChunks())
+      chunks << chunk;
+   return chunks;
+}
+
 QStringList Cache::getSharedDirs(SharedDirectory::Rights rights) const
 {
+   QMutexLocker locker(&this->lock);
    QStringList list;
 
    for (QListIterator<SharedDirectory*> i(this->sharedDirs); i.hasNext();)
@@ -177,6 +210,8 @@ QStringList Cache::getSharedDirs(SharedDirectory::Rights rights) const
   */
 void Cache::setSharedDirs(const QStringList& dirs, SharedDirectory::Rights rights)
 {
+   QMutexLocker locker(&this->lock);
+
    // Filter the actual shared directories by looking theirs rights.
    QList<SharedDirectory*> sharedDirsFiltered;
    for(QListIterator<SharedDirectory*> i(this->sharedDirs); i.hasNext();)
@@ -235,6 +270,7 @@ void Cache::removeSharedDir(SharedDirectory* dir, Directory* dir2)
 
 SharedDirectory* Cache::getSuperSharedDirectory(const QString& path) const
 {
+   QMutexLocker locker(&this->lock);
    const QStringList& folders = path.split('/', QString::SkipEmptyParts);
 
    for (QListIterator<SharedDirectory*> i(this->sharedDirs); i.hasNext();)
@@ -256,6 +292,7 @@ SharedDirectory* Cache::getSuperSharedDirectory(const QString& path) const
 
 QList<SharedDirectory*> Cache::getSubSharedDirectories(const QString& path) const
 {
+   QMutexLocker locker(&this->lock);
    QList<SharedDirectory*> ret;
 
    const QStringList& folders = path.split('/', QString::SkipEmptyParts);
@@ -285,77 +322,11 @@ QList<SharedDirectory*> Cache::getSubSharedDirectories(const QString& path) cons
   */
 bool Cache::isShared(const QString& path) const
 {
+   QMutexLocker locker(&this->lock);
    foreach (SharedDirectory* dir, this->sharedDirs)
       if (dir->getFullPath() == path)
          return true;
    return false;
-}
-
-/**
-  * Returns a directory wich matches to the path, it will choose the shared directory which :
-  *  - Has at least the needed space.
-  *  - Has the most directories in common with 'path'.
-  *  - Can be written.
-  *
-  * The missing directories will be automatically created.
-  *
-  * @param path A relative path to a shared directory. Must be a cleaned path (QDir::cleanPath).
-  * @return The directory, 0 if unkown error.
-  * @exception NoReadWriteSharedDirectoryException
-  * @exception InsufficientStorageSpaceException
-  */
-Directory* Cache::getWriteableDirectory(const QString& path, qint64 spaceNeeded) const
-{
-   QMutexLocker locker(&this->lock);
-
-   const QStringList folders = path.split('/', QString::SkipEmptyParts);
-
-   QList<SharedDirectory*> sharedDirsReadWrite;
-   foreach (SharedDirectory* dir, this->sharedDirs)
-      if (dir->getRights() == SharedDirectory::READ_WRITE)
-         sharedDirsReadWrite << dir;
-
-   if (sharedDirsReadWrite.isEmpty())
-      throw NoReadWriteSharedDirectoryException();
-
-   // Search for the best fitted shared directory.
-   SharedDirectory* currentSharedDir = 0;
-   int currentNbDirsInCommon = -1;
-
-   foreach (SharedDirectory* dir, sharedDirsReadWrite)
-   {
-      if (Common::Global::availableDiskSpace(dir->getFullPath()) < spaceNeeded)
-         continue;
-
-      Directory* currentDir = dir;
-      int nbDirsInCommon = 0;
-      foreach (QString folder, folders)
-      {
-         currentDir = currentDir->getSubDir(folder);
-         if (currentDir)
-            nbDirsInCommon += 1;
-         else
-            break;
-      }
-      if (nbDirsInCommon > currentNbDirsInCommon)
-      {
-         currentNbDirsInCommon = nbDirsInCommon;
-         currentSharedDir = dir;
-      }
-   }
-
-   if (!currentSharedDir)
-      throw InsufficientStorageSpaceException();
-
-   // Create the missing directories.
-   Directory* currentDir = currentSharedDir;
-   foreach (QString folder, folders)
-   {
-      currentDir = currentDir->physicallyCreateSubDirectory(folder);
-      if (!currentDir)
-         return 0;
-   }
-   return currentDir;
 }
 
 /**
@@ -524,4 +495,71 @@ void Cache::createSharedDirs(const Protos::FileCache::Hashes& hashes)
       ids << Common::Hash(dir.id().hash().data());
    }
    this->createSharedDirs(paths, rights, ids);
+}
+
+/**
+  * Returns a directory wich matches to the path, it will choose the shared directory which :
+  *  - Has at least the needed space.
+  *  - Has the most directories in common with 'path'.
+  *  - Can be written.
+  *
+  * The missing directories will be automatically created.
+  *
+  * @param path A relative path to a shared directory. Must be a cleaned path (QDir::cleanPath).
+  * @return The directory, 0 if unkown error.
+  * @exception NoReadWriteSharedDirectoryException
+  * @exception InsufficientStorageSpaceException
+  */
+Directory* Cache::getWriteableDirectory(const QString& path, qint64 spaceNeeded) const
+{
+   QMutexLocker locker(&this->lock);
+
+   const QStringList folders = path.split('/', QString::SkipEmptyParts);
+
+   QList<SharedDirectory*> sharedDirsReadWrite;
+   foreach (SharedDirectory* dir, this->sharedDirs)
+      if (dir->getRights() == SharedDirectory::READ_WRITE)
+         sharedDirsReadWrite << dir;
+
+   if (sharedDirsReadWrite.isEmpty())
+      throw NoReadWriteSharedDirectoryException();
+
+   // Search for the best fitted shared directory.
+   SharedDirectory* currentSharedDir = 0;
+   int currentNbDirsInCommon = -1;
+
+   foreach (SharedDirectory* dir, sharedDirsReadWrite)
+   {
+      if (Common::Global::availableDiskSpace(dir->getFullPath()) < spaceNeeded)
+         continue;
+
+      Directory* currentDir = dir;
+      int nbDirsInCommon = 0;
+      foreach (QString folder, folders)
+      {
+         currentDir = currentDir->getSubDir(folder);
+         if (currentDir)
+            nbDirsInCommon += 1;
+         else
+            break;
+      }
+      if (nbDirsInCommon > currentNbDirsInCommon)
+      {
+         currentNbDirsInCommon = nbDirsInCommon;
+         currentSharedDir = dir;
+      }
+   }
+
+   if (!currentSharedDir)
+      throw InsufficientStorageSpaceException();
+
+   // Create the missing directories.
+   Directory* currentDir = currentSharedDir;
+   foreach (QString folder, folders)
+   {
+      currentDir = currentDir->physicallyCreateSubDirectory(folder);
+      if (!currentDir)
+         return 0;
+   }
+   return currentDir;
 }
