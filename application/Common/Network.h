@@ -17,7 +17,10 @@ namespace Common
    class Network
    {
    public:
+      static const int HEADER_SIZE = sizeof(MessageHeader::type) + sizeof(MessageHeader::size) + Hash::HASH_SIZE;
+
       static MessageHeader readHeader(QIODevice& device, bool skipReadData = true);
+      static void writeHeader(QIODevice& device, const MessageHeader& header);
    };
 }
 
