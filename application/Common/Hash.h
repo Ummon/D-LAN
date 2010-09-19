@@ -15,6 +15,9 @@ namespace Common
 {
    class Hash
    {
+   private:
+      static bool randInit;
+
    public:
       static const int HASH_SIZE = 20; ///< 20 bytes.
 
@@ -42,6 +45,7 @@ namespace Common
       }
 
       friend QDataStream& operator>>(QDataStream&, Hash&);
+      friend QDataStream& operator<<(QDataStream& stream, const Hash& hash);
 
       struct SharedData
       {
@@ -70,6 +74,17 @@ namespace Common
          hash.newData();
          memcpy(hash.data->hash, data, Hash::HASH_SIZE);
       }
+
+      return stream;
+   }
+
+   /**
+     * It will write an hash to a data stream.
+     */
+   inline QDataStream& operator<<(QDataStream& stream, const Hash& hash)
+   {
+      if (!hash.isNull())
+         stream.writeRawData(hash.data->hash, Hash::HASH_SIZE);
 
       return stream;
    }
