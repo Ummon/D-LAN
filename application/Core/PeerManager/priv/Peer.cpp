@@ -3,86 +3,69 @@ using namespace PM;
 
 #include <Common/LogManager/Builder.h>
 
-const int Peer::port = 55142;
+#include <priv/Constants.h>
+#include <priv/Log.h>
 
-/**
- * Constructor: Create a new peer, based on his ID
- * @author mcuony
- */
-::Peer::Peer(Common::Hash ID) : ID(ID)
+//const int Peer::port = 55142;
+
+Peer::Peer(QSharedPointer<FM::IFileManager> fileManager, Common::Hash ID)
+   : fileManager(fileManager), ID(ID), alive(false)
 {
-   this->logger = LM::Builder::newLogger("PeerManager::Peer[" + this->ID.toStr() + "]");
-   QTcpSocket nsocket;
-   this->socket = QSharedPointer<QTcpSocket>(&nsocket);
+   this->aliveTimer.setSingleShot(true);
+   this->aliveTimer.setInterval(PEER_TIMEOUT * 1000);
+   connect(&this->aliveTimer, SIGNAL(timeout()), this, SLOT(consideredDead()));
 }
 
-/**
- * Set the lastUpdate to now
- *
- * @author mcuony
- */
-void ::Peer::justSeen( const QHostAddress&  peerIP, const QString& peerNick, const quint64& peerAmount)
-{
-   this->IisAlive = true;
-   this->lastUpdate =  QDateTime::currentDateTime();
-   this->IP = peerIP;
-   this->nick = peerNick;
-   this->amount = peerAmount;
-
-   this->send("Coucou");
-}
-
-/**
- * Test if the peer is dead or not, and set IisAlive
- *
- * @author mcuony
- */
-bool ::Peer::haveYouToDie()
-{
-   int nSec = this->lastUpdate.secsTo(QDateTime::currentDateTime()) ;
-
-   if (nSec > Peer::ttl)
-   {
-      this->IisAlive = false;
-      return true;
-   }
-   return false;
-}
-
-/**
- * Return true if the peer is alive
- *
- * @author mcuony
- */
-bool ::Peer::isAlive()
-{
-   return this->IisAlive;
-}
-
-/**
- * Return the id of the peer
- *
- * @author mcuony
- */
-
-Common::Hash Peer::getId()
+Common::Hash Peer::getID()
 {
    return this->ID;
 }
 
-bool ::Peer::send(const QByteArray& data)
+QHostAddress Peer::getIP()
+{
+   return this->IP;
+}
+
+QString Peer::getNick()
+{
+   return this->nick;
+}
+
+quint64 Peer::getSharingAmount()
+{
+   return this->sharingAmount;
+}
+
+bool Peer::isAlive()
+{
+   return this->alive;
+}
+
+/**
+ * Set the lastUpdate to now
+ */
+void Peer::update(const QHostAddress&  IP, const QString& nick, const quint64& sharingAmount)
+{
+   this->alive = true;
+   this->aliveTimer.start();
+
+   this->IP = IP;
+   this->nick = nick;
+   this->sharingAmount = sharingAmount;
+}
+
+/*bool Peer::send(const QByteArray& data)
 {
    if (this->IisAlive == false)
    {
       return false;
    }
 
+
    if (this->socket->isOpen() == false) {
       QObject::connect(this->socket.data(), SIGNAL(connected()),this,SLOT(connected()));
       QObject::connect(this->socket.data(), SIGNAL(readyRead()), this, SLOT(gotData()));
       this->socket->connectToHost(this->IP, Peer::port);
-
-      LOG_DEBU(this->logger, "Someone want to send data to the peer, but not connected yet, connecting...");
 
       this->bufferToWrite.append(data);
    }
@@ -90,48 +73,57 @@ bool ::Peer::send(const QByteArray& data)
       this->socket->write(data);
 
    return true;
+}*/
+
+void Peer::getHashes(const Protos::Common::FileEntry& file)
+{
 
 }
-Common::Hashes* ::Peer::getHashes(const Protos::Common::FileEntry& file)
+
+void Peer::getEntries(const Protos::Common::Entry& dir)
 {
-}
-IGetEntries* ::Peer::getEntries(const Protos::Common::DirEntry& dir)
-{
-}
-void ::Peer::receive(QByteArray& data)
-{
+   Protos::Core::GetEntries entriesMessage;
+   entriesMessage.mutable_dir()->CopyFrom(dir);
+
+   //this->connectionPool.getSocket(GET_ENTRIES)->write();
 }
 
-void ::Peer::connected()
+/*void Peer::receive(QByteArray& data)
 {
+}*/
 
+void Peer::newConnexion(Common::MessageHeader header, QSharedPointer<QTcpSocket> socket)
+{
+   this->sockets << socket;
+
+   connect(socket.data(), SIGNAL(stateChanged()), this, SLOT(stateChanged()));
+   connect(socket.data(), SIGNAL(readyRead()), this, SLOT(dataReceived()));
+}
+
+void Peer::consideredDead()
+{
+   L_DEBU(QString("Peer \"%1\" is dead").arg(this->nick));
+   this->alive = false;
+}
+
+void Peer::stateChanged(QAbstractSocket::SocketState socketState)
+{
+   /*
    LOG_DEBU(this->logger, "Now connected to the peer as requested");
 
-   if (this->bufferToWrite.length() > 0) {
+   if (this->bufferToWrite.length() > 0)
+   {
       this->socket->write(this->bufferToWrite);
       this->bufferToWrite.clear();
       LOG_DEBU(this->logger, "Some data was waiting for the peer. Flushed.");
-   }
+   }*/
 }
 
-void ::Peer::gotData()
+void Peer::dataReceived()
 {
+   /*
    while (this->socket->canReadLine())
    {
       LOG_DEBU(this->logger, "Data:" + this->socket->readLine());
-   }
-}
-
-QHostAddress Peer::Peer::getIp()
-{
-   return this->IP;
-}
-
-void ::Peer::newSocket(QSharedPointer<QTcpSocket> newSocket)
-{
-
-     this->socket = newSocket;
-
-     QObject::connect(this->socket.data(),SIGNAL(connected()),this,SLOT(connected()));
-     QObject::connect(this->socket.data(), SIGNAL(readyRead()), this, SLOT(gotData()));
+   }*/
 }

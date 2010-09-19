@@ -2,55 +2,71 @@
 #define PEERMANAGER_PEER_H
 
 #include <QDate>
+#include <QTimer>
 #include <QString>
 #include <QTcpSocket>
 #include <QHostAddress>
 
 #include <Common/Hash.h>
+#include <Common/Network.h>
 
 #include <QSharedPointer>
 
-#include <IPeer.h>
-#include <Common/LogManager/ILogger.h>
+#include <Core/FileManager/IFileManager.h>
 
+#include <IPeer.h>
 
 namespace PM
 {
    class Peer : public IPeer
    {
+      Q_OBJECT
    public:
-      Peer(Common::Hash NewID);
-      void justSeen(const QHostAddress& peerIP, const QString& peerNick, const quint64& peerAmount);
-      bool haveYouToDie();
-      bool isAlive();
-      Common::Hash getId();
-      bool send(const QByteArray& data) ;
-      Common::Hashes* getHashes(const Protos::Common::FileEntry& file) ;
-      IGetEntries* getEntries(const Protos::Common::DirEntry& dir)  ;
-      QHostAddress getIp();
-      void newSocket(QSharedPointer<QTcpSocket> newSocket);
+      Peer(QSharedPointer<FM::IFileManager> fileManager, Common::Hash ID);
 
+      Common::Hash getID();
+      QHostAddress getIP();
+      QString getNick();
+      quint64 getSharingAmount();
+
+      bool isAlive();
+      void update(const QHostAddress& IP, const QString& nick, const quint64& sharingAmount);
+
+      //bool send(const QByteArray& data) ;
+      void getHashes(const Protos::Common::FileEntry& file) ;
+      void getEntries(const Protos::Common::Entry& dir);
+
+      void newConnexion(Common::MessageHeader header, QSharedPointer<QTcpSocket> socket);
 
    private:
+      QSharedPointer<FM::IFileManager> fileManager;
+
       Common::Hash ID;
       QHostAddress IP;
-      bool IisAlive;
-      QDateTime lastUpdate;
       QString nick;
-      quint64 amount;
-      QSharedPointer<QTcpSocket> socket;
-      quint32 averageSpeed;
-      QDate lastUpdateAverageSpeed;
-      QByteArray bufferToWrite;
-      QSharedPointer<LM::ILogger> logger;
-      static const int ttl = 15;
-      static const int port;
+      quint64 sharingAmount;
 
-   signals:
-      void receive(QByteArray& data);
-   public slots:
-      void connected();
-      void gotData();
+      bool alive;
+      QTimer aliveTimer;
+
+      QList< QSharedPointer<QTcpSocket> > sockets;
+
+      quint32 averageSpeed;
+      QDateTime lastUpdateAverageSpeed;
+
+      //QByteArray bufferToWrite;
+
+      //static const int ttl = 15;
+      //static const int port;
+
+   /*signals:
+      void receive(QByteArray& data);*/
+
+   private slots:
+      void consideredDead();
+
+      void stateChanged(QAbstractSocket::SocketState socketState);
+      void dataReceived();
    };
 }
 #endif

@@ -1,30 +1,52 @@
 # -------------------------------------------------
 # Project created by QtCreator 2009-10-05T19:14:23
 # -------------------------------------------------
-QT += network
 QT -= gui
+QT += network
 TARGET = PeerManager
 TEMPLATE = lib
-CONFIG += staticlib create_prl link_prl
-INCLUDEPATH += . \
-    ../.. \ # For Common and LogManager.
-    ${PROTOBUF}/src
+
+CONFIG(debug, debug|release) {
+   FOLDER = debug
+   DEFINES += DEBUG
+} else {
+   FOLDER = release
+}
+
+CONFIG += staticlib \
+    link_prl \
+    create_prl
 LIBS += -L${PROTOBUF}/src/.libs \
     -lprotobuf
-LIBS += -L../../Common/output/debug \
-    -lCommon
-LIBS += -L../../Common/LogManager/output/debug \
-    -lLogManager
-DESTDIR = "output/debug"
-MOC_DIR = ".tmp/debug"
-OBJECTS_DIR = ".tmp/debug"
+INCLUDEPATH += . \
+    ../.. \
+    ${PROTOBUF}/src
+
+DESTDIR = output/$$FOLDER
+MOC_DIR = .tmp/$$FOLDER
+OBJECTS_DIR = .tmp/$$FOLDER
+
+LIBS += -L../FileManager/output/$$FOLDER \
+     -lFileManager
+POST_TARGETDEPS += ../FileManager/output/$$FOLDER/libFileManager.a
+LIBS += -L../../Common/LogManager/output/$$FOLDER \
+     -lLogManager
+POST_TARGETDEPS += ../../Common/LogManager/output/$$FOLDER/libLogManager.a
+LIBS += -L../../Common/output/$$FOLDER \
+     -lCommon
+POST_TARGETDEPS += ../../Common/output/$$FOLDER/libCommon.a
 DEFINES += PEERMANAGER_LIBRARY
 SOURCES += priv/PeerManager.cpp \
     priv/Peer.cpp \
-    priv/Builder.cpp
+    priv/Builder.cpp \
+    priv/ConnectionPool.cpp
 HEADERS += IPeerManager.h \
     IPeer.h \
     IGetEntries.h \
     priv/PeerManager.h \
     priv/Peer.h \
-    Builder.h
+    Builder.h \
+    priv/Log.h \
+    priv/Constants.h \
+    IGetHashes.h \
+    priv/ConnectionPool.h

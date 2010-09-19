@@ -13,6 +13,7 @@ using namespace FM;
 #include <IGetHashesResult.h>
 #include <Common/LogManager/Builder.h>
 #include <Common/PersistantData.h>
+#include <Common/Constants.h>
 #include <Exceptions.h>
 #include <priv/Constants.h>
 
@@ -30,7 +31,7 @@ void Tests::initTestCase()
    LM::Builder::initMsgHandler();
    qDebug() << "===== initTestCase() =====";
 
-   Common::PersistantData::rmValue(FILE_CACHE); // Reset the stored cache.
+   Common::PersistantData::rmValue(Common::FILE_CACHE); // Reset the stored cache.
    this->createInitialFiles();
 
    this->fileManager = Builder::newFileManager();

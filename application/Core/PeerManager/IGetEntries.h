@@ -13,6 +13,7 @@ namespace PM
 
    public:
       virtual ~IGetEntries() {}
+      virtual void start() = 0;
 
    signals:
       void result(const Protos::Core::GetEntriesResult& result);

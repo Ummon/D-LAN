@@ -14,6 +14,7 @@ using namespace FM;
 
 #include <Common/PersistantData.h>
 #include <Common/Math.h>
+#include <Common/Constants.h>
 #include <Exceptions.h>
 #include <priv/Log.h>
 #include <priv/Constants.h>
@@ -290,7 +291,7 @@ void FileManager::loadCacheFromFile()
 
    try
    {
-      Common::PersistantData::getValue(FILE_CACHE, *savedCache);
+      Common::PersistantData::getValue(Common::FILE_CACHE, *savedCache);
 
       // Scan the shared directories and try to match the files against the saved cache.
       try
@@ -305,11 +306,11 @@ void FileManager::loadCacheFromFile()
    }
    catch (Common::UnknownValueException& e)
    {
-      L_WARN(QString("The persisted file cache cannot be retrived (the file doesn't exist) : %1").arg(FILE_CACHE));
+      L_WARN(QString("The persisted file cache cannot be retrived (the file doesn't exist) : %1").arg(Common::FILE_CACHE));
    }
    catch (...)
    {
-      L_WARN(QString("The persisted file cache cannot be retrived (Unkown exception) : %1").arg(FILE_CACHE));
+      L_WARN(QString("The persisted file cache cannot be retrived (Unkown exception) : %1").arg(Common::FILE_CACHE));
    }
 
    this->fileUpdater.setFileCache(savedCache);
@@ -328,5 +329,5 @@ void FileManager::persistCacheToFile()
    Protos::FileCache::Hashes hashes;
    this->cache.saveInFile(hashes);
    //LOG_DEBUG(QString("hashes.SpaceUsed() = %1").arg(hashes.SpaceUsed()));
-   Common::PersistantData::setValue(FILE_CACHE, hashes);
+   Common::PersistantData::setValue(Common::FILE_CACHE, hashes);
 }
