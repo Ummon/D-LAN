@@ -41,9 +41,6 @@ bool Peer::isAlive()
    return this->alive;
 }
 
-/**
- * Set the lastUpdate to now
- */
 void Peer::update(const QHostAddress&  IP, const QString& nick, const quint64& sharingAmount)
 {
    this->alive = true;
@@ -52,6 +49,8 @@ void Peer::update(const QHostAddress&  IP, const QString& nick, const quint64& s
    this->IP = IP;
    this->nick = nick;
    this->sharingAmount = sharingAmount;
+
+   this->connectionPool.setIP(this->IP);
 }
 
 /*bool Peer::send(const QByteArray& data)
@@ -94,7 +93,7 @@ void Peer::getEntries(const Protos::Common::Entry& dir)
 
 void Peer::newConnexion(Common::MessageHeader header, QSharedPointer<QTcpSocket> socket)
 {
-   this->sockets << socket;
+   this->connectionPool.addSocket(socket);
 
    connect(socket.data(), SIGNAL(stateChanged()), this, SLOT(stateChanged()));
    connect(socket.data(), SIGNAL(readyRead()), this, SLOT(dataReceived()));
