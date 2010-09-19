@@ -1,20 +1,20 @@
 #ifndef PEERMANAGER_PEERMANAGER_H
 #define PEERMANAGER_PEERMANAGER_H
 
+#include <QObject>
 #include <QString>
+#include <QTimer>
 #include <QList>
 #include <QSharedPointer>
-#include <QTimer>
-#include <QObject>
+#include <QTcpSocket>
 
 #include <Common/Hash.h>
+
+#include <Core/FileManager/IFileManager.h>
 
 #include <IPeerManager.h>
 #include <Common/LogManager/ILogger.h>
 #include <priv/Peer.h>
-
-//Clean up each 10s.
-#define CleanUpFrequency 0.1
 
 namespace PM
 {
@@ -22,25 +22,37 @@ namespace PM
 
    class PeerManager : public IPeerManager
    {
-       public:
-          PeerManager();
+      Q_OBJECT
+   public:
+      PeerManager(QSharedPointer<FM::IFileManager> fileManager);
 
-          Common::Hash getMyId();
-          void setNick(const QString& newNick);
-          QString* getNick();
-          void updatePeer(const Common::Hash& peerID, const QHostAddress&  peerIP, const QString& peerNick, const quint64& peerAmount);
-          void newSocket(const QHostAddress&  peerIP, QSharedPointer<QTcpSocket> socket);
+      Common::Hash getID();
+      void setNick(const QString& nick);
+      QString getNick();
 
-       private:
-          QList<Peer*> peers;
-          Common::Hash ID;
-          QString nick;
-          QTimer *timer;
-          QSharedPointer<LM::ILogger> logger;
-          Peer* fromIdToPeer(const Common::Hash& peerID);
+      QList<IPeer*> getPeers();
+      IPeer* getPeer(const Common::Hash& ID);
+      Peer* getPeer_(const Common::Hash& ID);
 
-       public slots:
-          void cleanUp();
+      void updatePeer(const Common::Hash& ID, const QHostAddress& IP, const QString& nick, const quint64& sharingAmount);
+      void newConnection(QSharedPointer<QTcpSocket> socket);
+
+   private slots:
+      void dataReceived(QTcpSocket* socket = 0);
+      void disconnected();
+
+   private:
+      QSharedPointer<QTcpSocket> removeSocketFromPending(QTcpSocket* socket);
+
+      QSharedPointer<FM::IFileManager> fileManager;
+
+      Common::Hash ID;
+      QString nick;
+      QList<Peer*> peers;
+
+      QTimer timer;
+
+      QList< QSharedPointer<QTcpSocket> > pendingSockets;
    };
 }
 #endif

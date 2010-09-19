@@ -2,17 +2,12 @@
 using namespace PM;
 
 #include <IPeerManager.h>
-
-
 #include <priv/PeerManager.h>
-
 
 /**
  * Return a new instante of a PeerManager
- *
- * @author mcuony
  */
-QSharedPointer<IPeerManager> Builder::newPeerManager()
+QSharedPointer<IPeerManager> Builder::newPeerManager(QSharedPointer<FM::IFileManager> fileManager)
 {
-   return QSharedPointer<IPeerManager>(new PeerManager());
+   return QSharedPointer<IPeerManager>(new PeerManager(fileManager));
 }

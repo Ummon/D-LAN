@@ -1,8 +1,10 @@
-#ifndef BUILDER_BUILDER__H
-#define BUILDER_BUILDER__H
+#ifndef PEERMANAGER_BUILDER__H
+#define PEERMANAGER_BUILDER__H
 
 #include <QTextStream>
 #include <QSharedPointer>
+
+#include <Core/FileManager/IFileManager.h>
 
 namespace PM
 {
@@ -11,7 +13,7 @@ namespace PM
    class Builder
    {
       public:
-         static QSharedPointer<IPeerManager> newPeerManager();
+         static QSharedPointer<IPeerManager> newPeerManager(QSharedPointer<FM::IFileManager> fileManager);
    };
 }
 #endif

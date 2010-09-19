@@ -1,142 +1,177 @@
 #include <priv/PeerManager.h>
 using namespace PM;
 
-#include <Common/LogManager/Builder.h>
 #include <Protos/common.pb.h>
+
 #include <Common/Hash.h>
+#include <Common/Network.h>
+#include <Common/PersistantData.h>
+
+#include <Priv/Log.h>
+#include <Priv/Constants.h>
 
 /**
- * Return the peer id of our current instance
- *
- * @author mcuony
- */
+  * @class PeerManager
+  *
+  */
 
-
-Common::Hash PeerManager::getMyId()
+PeerManager::PeerManager(QSharedPointer<FM::IFileManager> fileManager)
+   : fileManager(fileManager)
 {
-    return this->ID;
+   L_USER("Loading ..");
+
+   Protos::Common::Settings settings;
+
+   try
+   {
+      Common::PersistantData::getValue(FILE_SETTINGS, settings);
+      this->ID = settings.peerid().hash().data();
+      this->nick = settings.nick().data();
+   }
+   catch (Common::UnknownValueException)
+   {
+      this->ID = Common::Hash::rand();
+      this->nick = "Bob";
+      settings.mutable_peerid()->set_hash(this->ID.getData(), Common::Hash::HASH_SIZE);
+      settings.set_nick(this->nick.toStdString());
+      Common::PersistantData::setValue(FILE_SETTINGS, settings);
+   }
+
+   L_USER(QString("Our current ID: %1").arg(this->ID.toStr()));
+}
+
+Common::Hash PeerManager::getID()
+{
+   return this->ID;
 }
 
 /**
- * Constructor of PeerManager, generate a random peer id for ourself
- *
- * @author mcuony
- */
-PeerManager::PeerManager() : logger(LM::Builder::newLogger("PeerManager"))
+  * Set the current nick.
+  */
+void PeerManager::setNick(const QString& nick)
 {
+    this->nick = nick;
 
-    LOG_USER(this->logger, "Loading ..");
-
-
-    this->ID = Common::Hash::rand();
-
-    LOG_USER(this->logger, "Our current id: " + this->ID.toStr());
-
-    // We create the timer to clean old peers.
-    this->timer = new QTimer(this);
-    connect(this->timer, SIGNAL(timeout()), this, SLOT(cleanUp()));
-    this->timer->start(static_cast<int>(1000 / CleanUpFrequency));
-
-
+    Protos::Common::Settings settings;
+    Common::PersistantData::getValue(FILE_SETTINGS, settings);
+    settings.set_nick(this->nick.toStdString());
+    Common::PersistantData::setValue(FILE_SETTINGS, settings);
 }
 
 /**
- * Set the current nick
- *
- * @author mcuony
- */
-void PeerManager::setNick(const QString & newNick)
+  * Get the current nick.
+  */
+QString PeerManager::getNick()
 {
-    this->nick = newNick;
+   return this->nick;
+}
+
+QList<IPeer*> PeerManager::getPeers()
+{
+   QList<IPeer*> peers;
+
+   for (QListIterator<Peer*> i(this->peers); i.hasNext();)
+      peers << i.next();
+
+   return peers;
 }
 
 /**
- * Get the current nick
- *
- * @author mcuony
- */
-QString* PeerManager::getNick()
+  * Return the IPeer* coresponding to ID in the peer list.
+  * Return 0 is the peer doesn't exist.
+  */
+IPeer* PeerManager::getPeer(const Common::Hash& ID)
 {
-    return &this->nick;
+   return this->getPeer_(ID);
+}
+
+Peer* PeerManager::getPeer_(const Common::Hash& ID)
+{
+   if (ID.isNull())
+      return 0;
+
+   for (QListIterator<Peer*> i(this->peers); i.hasNext();)
+   {
+      Peer* peer = i.next();
+      if (peer->getID() == ID)
+         return peer;
+   }
+
+   return 0;
 }
 
 /**
- * A peer just send a IAmAlive packet, we update information about it
- *
- * @author mcuony
- */
-void PeerManager::updatePeer(const Common::Hash& peerID, const QHostAddress&  peerIP, const QString& peerNick, const quint64& peerAmount)
+  * A peer just send a IAmAlive packet, we update information about it
+  */
+void PeerManager::updatePeer(const Common::Hash& ID, const QHostAddress& IP, const QString& nick, const quint64& sharingAmount)
 {
-    // We probably know that WE are alive.
-    if (peerID == this->ID)
-        return;
+   if (ID.isNull() || ID == this->ID)
+      return;
 
-    LOG_DEBU(this->logger, peerID.toStr() + " is alive !");
+   L_DEBU(QString("%1 (%2) is alive!").arg(ID.toStr()).arg(nick));
 
-    Peer* thePeer = this->fromIdToPeer(peerID);
-
-    thePeer->justSeen(peerIP, peerNick, peerAmount);
-
+   Peer* peer = this->getPeer_(ID);
+   if (!peer)
+   {
+      peer = new Peer(this->fileManager, ID);
+      this->peers << peer;
+   }
+   peer->update(IP, nick, sharingAmount);
 }
 
-
-/**
- * Return the Peer* coresponding to ID_ in the peer list, and create one if he dosen't exist yet
- *
- * @author mcuony
- */
-Peer* PeerManager::fromIdToPeer(const Common::Hash& peerID)
+void PeerManager::newConnection(QSharedPointer<QTcpSocket> socket)
 {
+   if (!socket->isValid())
+      return;
 
-    for (int i = 0; i < this->peers.length(); i++)
-    {
-        if (this->peers.at(i)->getId() == peerID)
-            return this->peers.at(i);
-
-    }
-
-    LOG_DEBU(this->logger, peerID.toStr() + " wasn't seen before, creating a new peer.");
-
-    Peer* newPeer = new Peer(peerID);
-
-    this->peers.append(newPeer);
-
-    return newPeer;
-
+   this->pendingSockets << socket;
+   connect(socket.data(), SIGNAL(readyRead()), this, SLOT(dataReceived()));
+   connect(socket.data(), SIGNAL(disconnected()), this, SLOT(disconnected()));
+   this->dataReceived(socket.data()); // The case where some data arrived before the 'connect' above.
 }
 
-/**
- * Clean up old peers
- *
- * @author mcuony
- */
-void PeerManager::cleanUp()
+void PeerManager::dataReceived(QTcpSocket* socket)
 {
+   if (!socket)
+   {
+      socket = dynamic_cast<QTcpSocket*>(this->sender());
+      if (!socket)
+         return;
+   }
 
-    LOG_DEBU(this->logger, "Cleaning up peers");
+   if (socket->bytesAvailable() >= Common::Network::HEADER_SIZE)
+   {
+      Common::MessageHeader header = Common::Network::readHeader(*socket, false);
+      Peer* p = this->getPeer_(header.senderID);
 
-    for (int i = 0; i < peers.length(); i++)
-    {
-        if (this->peers.at(i)->isAlive() && this->peers.at(i)->haveYouToDie())
-            LOG_DEBU(this->logger, peers.at(i)->getId().toStr() + " is dead.");
+      L_DEBU(QString("New Connection from %1 (%2) size = %3").arg(header.senderID.toStr()).arg(socket->peerAddress().toString()).arg(header.size));
 
-
-    }
-
+      QSharedPointer<QTcpSocket> sharedSocket = this->removeSocketFromPending(socket);
+      if (!sharedSocket.isNull() && p)
+         p->newConnexion(header, sharedSocket);
+   }
 }
 
-void PeerManager::newSocket(const QHostAddress&  peerIP, QSharedPointer<QTcpSocket> socket)
+void PeerManager::disconnected()
 {
+   QTcpSocket* socket = dynamic_cast<QTcpSocket*>(this->sender());
+   if (!socket)
+      return;
+   this->removeSocketFromPending(socket);
+}
 
-   for (int i = 0; i < peers.length(); i++)
-    {
-        if (this->peers.at(i)->isAlive() && this->peers.at(i)->getIp() == peerIP)
-        {
-            LOG_DEBU(this->logger, peers.at(i)->getId().toStr() + " want a connetion");
-            peers.at(i)->newSocket(socket);
-        }
-
-
-    }
-
+QSharedPointer<QTcpSocket> PeerManager::removeSocketFromPending(QTcpSocket* socket)
+{
+   for (QMutableListIterator< QSharedPointer<QTcpSocket> > i(this->pendingSockets); i.hasNext();)
+   {
+      QSharedPointer<QTcpSocket> sharedSocket = i.next();
+      if (sharedSocket.data() == socket)
+      {
+         i.remove();
+         disconnect(socket, SIGNAL(readyRead()));
+         disconnect(socket, SIGNAL(disconnected()));
+         return sharedSocket;
+      }
+   }
+   return QSharedPointer<QTcpSocket>();
 }
