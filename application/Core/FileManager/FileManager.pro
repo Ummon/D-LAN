@@ -13,8 +13,6 @@ CONFIG(debug, debug|release) {
    FOLDER = release
 }
 
-QMAKE_CXXFLAGS += -Wno-parentheses
-
 CONFIG += staticlib \
     link_prl \
     create_prl
