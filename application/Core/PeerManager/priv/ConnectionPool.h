@@ -1,45 +1,42 @@
 #ifndef PEERMANAGER_CONNECTIONPOOL_H
 #define PEERMANAGER_CONNECTIONPOOL_H
 
+#include <QtNetwork>
 #include <QList>
 #include <QSharedPointer>
-#include <QTcpSocket>
+#include <QDateTime>
+#include <QTimer>
 
 namespace PM
 {
-   struct Socket
+   class ConnectionPool : public QObject
    {
-      void setIdle(bool idle) { this->idle = idle; }
-      bool isIdle() { return this->idle; }
+      Q_OBJECT
+      struct Socket
+      {
+         Socket(QSharedPointer<QTcpSocket> socket) : socket(socket), idle(false) {}
 
-      void setSocket(QSharedPointer<QTcpSocket> socket) { this->socket = socket; }
-      QSharedPointer<QTcpSocket> getSocket() { return this->socket; }
+         QSharedPointer<QTcpSocket> socket;
+         QDateTime lastReleaseTime;
+         bool idle;
+      };
 
-   private:
-      QSharedPointer<QTcpSocket> socket;
-      bool idle;
-   };
-
-   template <typename T>
-   class ConnectionPool
-   {
    public:
-      //ConnectionPool(host);
+      ConnectionPool();
 
-      void setIdleTimeout(int time);
-      void setMaxIdleSocket(int n);
+      void setIP(const QHostAddress& IP);
+      void addSocket(QSharedPointer<QTcpSocket> socket);
+      QSharedPointer<QTcpSocket> grabSocket();
+      void releaseSocket(QSharedPointer<QTcpSocket> socket);
 
-      void addSocket(QSharedPointer<QTcpSocket>, T value);
-      QSharedPointer<QTcpSocket> grabSocket(T value);
-      void releaseSocket(QSharedPointer<QTcpSocket>);
+   private slots:
+      void cleanIdleSockets();
 
    private:
-      int idleTimeout; // [ms].
-      int maxIdleSocket;
-      //host;
+      QTimer timer;
+      QList<Socket> sockets;
+      QHostAddress peerIP;
    };
-
-   /***** Definition *****/
 }
 
 #endif

@@ -15,6 +15,7 @@
 #include <Core/FileManager/IFileManager.h>
 
 #include <IPeer.h>
+#include <priv/ConnectionPool.h>
 
 namespace PM
 {
@@ -39,6 +40,16 @@ namespace PM
       void newConnexion(Common::MessageHeader header, QSharedPointer<QTcpSocket> socket);
 
    private:
+      enum SOCKET_TYPE
+      {
+         GET_HASHES_REQUEST = 1,
+         GET_CHUNK_REQUEST = 2,
+         GET_ENTRIES_REQUEST = 3,
+         INGOING = 4
+      };
+
+      ConnectionPool connectionPool;
+
       QSharedPointer<FM::IFileManager> fileManager;
 
       Common::Hash ID;
@@ -49,7 +60,7 @@ namespace PM
       bool alive;
       QTimer aliveTimer;
 
-      QList< QSharedPointer<QTcpSocket> > sockets;
+
 
       quint32 averageSpeed;
       QDateTime lastUpdateAverageSpeed;
