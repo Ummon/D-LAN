@@ -3,6 +3,7 @@
 # -------------------------------------------------
 TARGET = LogViewer
 TEMPLATE = app
+CONFIG += link_prl
 CONFIG(debug, debug|release) { 
     FOLDER = debug
     DEFINES += DEBUG

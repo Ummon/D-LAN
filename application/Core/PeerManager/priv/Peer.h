@@ -7,6 +7,8 @@
 #include <QTcpSocket>
 #include <QHostAddress>
 
+#include <google/protobuf/text_format.h>
+
 #include <Common/Hash.h>
 #include <Common/Network.h>
 
@@ -18,12 +20,15 @@
 #include <priv/ConnectionPool.h>
 
 namespace PM
-{
+{   
+   class Socket;
+   class PeerManager;
+
    class Peer : public IPeer
    {
       Q_OBJECT
    public:
-      Peer(QSharedPointer<FM::IFileManager> fileManager, Common::Hash ID);
+      Peer(PeerManager* peerManager, QSharedPointer<FM::IFileManager> fileManager, Common::Hash ID);
 
       Common::Hash getID();
       QHostAddress getIP();
@@ -31,53 +36,42 @@ namespace PM
       quint64 getSharingAmount();
 
       bool isAlive();
-      void update(const QHostAddress& IP, const QString& nick, const quint64& sharingAmount);
+      void update(const QHostAddress& IP, quint16 port, const QString& nick, const quint64& sharingAmount);
 
       //bool send(const QByteArray& data) ;
-      void getHashes(const Protos::Common::FileEntry& file) ;
       void getEntries(const Protos::Common::Entry& dir);
+      void getHashes(const Protos::Common::FileEntry& file);
+      void getChunk(const Protos::Core::GetChunk& chunk);
 
-      void newConnexion(Common::MessageHeader header, QSharedPointer<QTcpSocket> socket);
+      void newConnexion(QTcpSocket* tcpSocket);
+
+   private slots:
+      void messageReceived(quint32 type, const google::protobuf::Message& message, Socket* socket);
+
+//      void sendGetEntriesRequest(QTcpSocket* socket = 0);
+//      void consideredDead();
+//      void stateChanged(QAbstractSocket::SocketState socketState);
+//      void dataReceived();
 
    private:
-      enum SOCKET_TYPE
-      {
-         GET_HASHES_REQUEST = 1,
-         GET_CHUNK_REQUEST = 2,
-         GET_ENTRIES_REQUEST = 3,
-         INGOING = 4
-      };
+      QString toStr();
 
       ConnectionPool connectionPool;
 
+      PeerManager* peerManager;
       QSharedPointer<FM::IFileManager> fileManager;
 
       Common::Hash ID;
       QHostAddress IP;
+      quint16 port;
       QString nick;
       quint64 sharingAmount;
 
       bool alive;
       QTimer aliveTimer;
 
-
-
       quint32 averageSpeed;
       QDateTime lastUpdateAverageSpeed;
-
-      //QByteArray bufferToWrite;
-
-      //static const int ttl = 15;
-      //static const int port;
-
-   /*signals:
-      void receive(QByteArray& data);*/
-
-   private slots:
-      void consideredDead();
-
-      void stateChanged(QAbstractSocket::SocketState socketState);
-      void dataReceived();
    };
 }
 #endif

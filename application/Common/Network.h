@@ -7,6 +7,8 @@
 
 namespace Common
 {
+   class notEnoughData {};
+
    struct MessageHeader
    {
       quint32 type;

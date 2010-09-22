@@ -3,17 +3,18 @@ using namespace PM;
 
 #include <Common/LogManager/Builder.h>
 
+#include <priv/PeerManager.h>
 #include <priv/Constants.h>
 #include <priv/Log.h>
 
-//const int Peer::port = 55142;
-
-Peer::Peer(QSharedPointer<FM::IFileManager> fileManager, Common::Hash ID)
-   : fileManager(fileManager), ID(ID), alive(false)
+Peer::Peer(PeerManager* peerManager, QSharedPointer<FM::IFileManager> fileManager, Common::Hash ID)
+   : peerManager(peerManager), fileManager(fileManager), ID(ID), alive(false)
 {
    this->aliveTimer.setSingleShot(true);
    this->aliveTimer.setInterval(PEER_TIMEOUT * 1000);
    connect(&this->aliveTimer, SIGNAL(timeout()), this, SLOT(consideredDead()));
+
+   connect(&this->connectionPool, SIGNAL(newMessage(quint32, google::protobuf::Message, Socket*)), this, SLOT(messageReceived(quint32, google::protobuf::Message, Socket*)));
 }
 
 Common::Hash Peer::getID()
@@ -41,16 +42,17 @@ bool Peer::isAlive()
    return this->alive;
 }
 
-void Peer::update(const QHostAddress&  IP, const QString& nick, const quint64& sharingAmount)
+void Peer::update(const QHostAddress&  IP, quint16 port, const QString& nick, const quint64& sharingAmount)
 {
    this->alive = true;
    this->aliveTimer.start();
 
    this->IP = IP;
+   this->port = port;
    this->nick = nick;
    this->sharingAmount = sharingAmount;
 
-   this->connectionPool.setIP(this->IP);
+   this->connectionPool.setIP(this->IP, this->port);
 }
 
 /*bool Peer::send(const QByteArray& data)
@@ -74,55 +76,63 @@ void Peer::update(const QHostAddress&  IP, const QString& nick, const quint64& s
    return true;
 }*/
 
+void Peer::getEntries(const Protos::Common::Entry& dir)
+{
+   Protos::Core::GetEntries entriesMessage;
+   entriesMessage.mutable_dir()->CopyFrom(dir);
+}
+
+
 void Peer::getHashes(const Protos::Common::FileEntry& file)
 {
 
 }
 
-void Peer::getEntries(const Protos::Common::Entry& dir)
+void Peer::getChunk(const Protos::Core::GetChunk& chunk)
 {
-   Protos::Core::GetEntries entriesMessage;
-   entriesMessage.mutable_dir()->CopyFrom(dir);
 
-   //this->connectionPool.getSocket(GET_ENTRIES)->write();
 }
 
-/*void Peer::receive(QByteArray& data)
+void Peer::newConnexion(QTcpSocket* tcpSocket)
 {
-}*/
-
-void Peer::newConnexion(Common::MessageHeader header, QSharedPointer<QTcpSocket> socket)
-{
-   this->connectionPool.addSocket(socket);
-
-   connect(socket.data(), SIGNAL(stateChanged()), this, SLOT(stateChanged()));
-   connect(socket.data(), SIGNAL(readyRead()), this, SLOT(dataReceived()));
+   L_DEBU(QString("New Connection from %1").arg(this->toStr()));
+   this->connectionPool.newConnexion(tcpSocket);
 }
 
-void Peer::consideredDead()
+void Peer::messageReceived(quint32 type, const google::protobuf::Message& message, Socket* socket)
 {
-   L_DEBU(QString("Peer \"%1\" is dead").arg(this->nick));
-   this->alive = false;
-}
-
-void Peer::stateChanged(QAbstractSocket::SocketState socketState)
-{
-   /*
-   LOG_DEBU(this->logger, "Now connected to the peer as requested");
-
-   if (this->bufferToWrite.length() > 0)
+   switch (type)
    {
-      this->socket->write(this->bufferToWrite);
-      this->bufferToWrite.clear();
-      LOG_DEBU(this->logger, "Some data was waiting for the peer. Flushed.");
-   }*/
+   case 0x31 :
+      socket->send(0x32, this->fileManager->getEntries(dynamic_cast<const Protos::Core::GetEntries&>(message).dir()), this->peerManager->getID());
+      socket->finished();
+//   case 0x32 :
+
+//   case 0x41 :
+//   case 0x42 :
+//   case 0x43 :
+//   case 0x44 :
+
+//   case 0x51 :
+//   case 0x52 :
+   }
 }
 
-void Peer::dataReceived()
+/**
+  * Mainly for debugging purpose.
+  */
+QString Peer::toStr()
 {
-   /*
-   while (this->socket->canReadLine())
-   {
-      LOG_DEBU(this->logger, "Data:" + this->socket->readLine());
-   }*/
+   return QString("%1 - %2 - %3").arg(this->nick).arg(this->ID.toStr()).arg(this->IP.toString());
 }
+
+//void Peer::messageReceived(Socket* socket, const google::protobuf::Message& message)
+//{
+
+//}
+
+//void Peer::consideredDead()
+//{
+//   L_DEBU(QString("Peer \"%1\" is dead").arg(this->nick));
+//   this->alive = false;
+//}

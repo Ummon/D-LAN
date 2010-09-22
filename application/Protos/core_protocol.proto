@@ -64,6 +64,19 @@ message Find {
 
 
 /***** Unicast TCP Messages. *****/
+// Browsing.
+// a -> b
+// id : 0x31
+message GetEntries {
+   optional Common.Entry dir = 1; // If the directory is omitted the shared directories (roots) are return.
+}
+// b -> a
+// id : 0x32
+message GetEntriesResult {
+   repeated Common.Entry dir = 1;
+   repeated Common.FileEntry file = 2;
+}
+
 // Get hashes.
 // If a peer want to start a queued download but doesn't know its hashes
 // it will ask the hashes to the source peer.
@@ -71,12 +84,12 @@ message Find {
 // the hashes will be computed on the fly. Thus this request
 // can be a bit long (~20s).
 // a -> b
-// id : 0x31
+// id : 0x41
 message GetHashes {
    required Common.Entry file = 1;
 }
 // b -> a
-// id : 0x32
+// id : 0x42
 message GetHashesResult {
    enum Status {
       OK = 0;
@@ -88,21 +101,21 @@ message GetHashesResult {
 // For each hash, this message is sent. Only if GetHashesResult.status == OK.
 // 'a' know how many hash there are.
 // b -> a
-// id = 0x33
+// id = 0x43
 // Common.Hash
 // or (only once)
-// id = 0x34
+// id = 0x44
 // Common.Error
 
 // Download.
 // a -> b
-// id : 0x41
+// id : 0x51
 message GetChunk {
    required Common.Hash chunk = 1;
    required uint32 offset = 2; // [byte] Relative to the beginning of the chunk.
 }
 // b -> a
-// id : 0x42
+// id : 0x52
 message GetChunkResult {
    enum Status {
       OK = 0;
@@ -114,16 +127,3 @@ message GetChunkResult {
    required Status status = 1;
 }
 // b -> a : stream of data..
-
-// Browsing.
-// a -> b
-// id : 0x51
-message GetEntries {
-   optional Common.Entry dir = 1; // If the directory is omitted the shared directories (roots) are return.
-}
-// b -> a
-// id : 0x52
-message GetEntriesResult {
-   repeated Common.Entry dir = 1;
-   repeated Common.FileEntry file = 2;
-}

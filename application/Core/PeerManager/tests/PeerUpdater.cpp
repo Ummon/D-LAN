@@ -1,11 +1,12 @@
 #include <PeerUpdater.h>
 
 #include <Common/Hash.h>
+#include <Constants.h>
 
 PeerUpdater::PeerUpdater(QSharedPointer<IPeerManager> peerManager, int n)
    : peerManager(peerManager)
 {
-   this->timer.setInterval(200); // 200ms
+   this->timer.setInterval(200); // 200ms.
    connect(&this->timer, SIGNAL(timeout()), this, SLOT(update()));
    this->timer.start();
 
@@ -35,6 +36,6 @@ void PeerUpdater::update()
    for (QListIterator<PeerData> i(this->peers); i.hasNext();)
    {
       PeerData peerData = i.next();
-      this->peerManager->updatePeer(peerData.ID, peerData.IP, peerData.nick, peerData.sharingAmount);
+      this->peerManager->updatePeer(peerData.ID, peerData.IP, PORT, peerData.nick, peerData.sharingAmount);
    }
 }

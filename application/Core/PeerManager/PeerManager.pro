@@ -39,7 +39,8 @@ DEFINES += PEERMANAGER_LIBRARY
 SOURCES += priv/PeerManager.cpp \
     priv/Peer.cpp \
     priv/Builder.cpp \
-    priv/ConnectionPool.cpp
+    priv/ConnectionPool.cpp \
+    priv/Socket.cpp
 HEADERS += IPeerManager.h \
     IPeer.h \
     IGetEntries.h \
@@ -49,4 +50,5 @@ HEADERS += IPeerManager.h \
     priv/Log.h \
     priv/Constants.h \
     IGetHashes.h \
-    priv/ConnectionPool.h
+    priv/ConnectionPool.h \
+    priv/Socket.h
