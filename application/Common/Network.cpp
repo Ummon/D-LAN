@@ -5,6 +5,9 @@ using namespace Common;
 
 MessageHeader Network::readHeader(QIODevice& device, bool skipReadData)
 {
+   if (device.bytesAvailable() < Common::Network::HEADER_SIZE)
+      throw notEnoughData();
+
    MessageHeader header;
 
    char data[HEADER_SIZE];

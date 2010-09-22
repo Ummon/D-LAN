@@ -1,5 +1,5 @@
-#ifndef FILE_MANAGER_TESTS_H
-#define FILE_MANAGER_TESTS_H
+#ifndef TESTS_FILEMANAGER_H
+#define TESTS_FILEMANAGER_H
 
 #include <QTest>
 #include <QDir>

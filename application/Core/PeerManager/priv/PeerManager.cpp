@@ -103,7 +103,7 @@ Peer* PeerManager::getPeer_(const Common::Hash& ID)
 /**
   * A peer just send a IAmAlive packet, we update information about it
   */
-void PeerManager::updatePeer(const Common::Hash& ID, const QHostAddress& IP, const QString& nick, const quint64& sharingAmount)
+void PeerManager::updatePeer(const Common::Hash& ID, const QHostAddress& IP, quint16 port, const QString& nick, const quint64& sharingAmount)
 {
    if (ID.isNull() || ID == this->ID)
       return;
@@ -113,65 +113,51 @@ void PeerManager::updatePeer(const Common::Hash& ID, const QHostAddress& IP, con
    Peer* peer = this->getPeer_(ID);
    if (!peer)
    {
-      peer = new Peer(this->fileManager, ID);
+      peer = new Peer(this, this->fileManager, ID);
       this->peers << peer;
    }
-   peer->update(IP, nick, sharingAmount);
+   peer->update(IP, port, nick, sharingAmount);
 }
 
-void PeerManager::newConnection(QSharedPointer<QTcpSocket> socket)
+void PeerManager::newConnection(QTcpSocket* tcpSocket)
 {
-   if (!socket->isValid())
+   if (!tcpSocket)
       return;
 
-   this->pendingSockets << socket;
-   connect(socket.data(), SIGNAL(readyRead()), this, SLOT(dataReceived()));
-   connect(socket.data(), SIGNAL(disconnected()), this, SLOT(disconnected()));
-   this->dataReceived(socket.data()); // The case where some data arrived before the 'connect' above.
+   this->pendingSockets << tcpSocket;
+   connect(tcpSocket, SIGNAL(readyRead()), this, SLOT(dataReceived()));
+   connect(tcpSocket, SIGNAL(disconnected()), this, SLOT(disconnected()));
+
+   if (!tcpSocket->isValid())
+      this->disconnect(tcpSocket);
+   else
+      this->dataReceived(tcpSocket); // The case where some data arrived before the 'connect' above.
 }
 
-void PeerManager::dataReceived(QTcpSocket* socket)
+void PeerManager::dataReceived(QTcpSocket* tcpSocket)
 {
-   if (!socket)
-   {
-      socket = dynamic_cast<QTcpSocket*>(this->sender());
-      if (!socket)
-         return;
-   }
+   if (!tcpSocket)
+      tcpSocket = dynamic_cast<QTcpSocket*>(this->sender());
 
-   if (socket->bytesAvailable() >= Common::Network::HEADER_SIZE)
+   if (tcpSocket->bytesAvailable() >= Common::Network::HEADER_SIZE)
    {
-      Common::MessageHeader header = Common::Network::readHeader(*socket, false);
+      Common::MessageHeader header = Common::Network::readHeader(*tcpSocket, false);
       Peer* p = this->getPeer_(header.senderID);
 
-      L_DEBU(QString("New Connection from %1 (%2) size = %3").arg(header.senderID.toStr()).arg(socket->peerAddress().toString()).arg(header.size));
+      this->pendingSockets.removeOne(tcpSocket);
+      disconnect(tcpSocket, SIGNAL(readyRead()));
+      disconnect(tcpSocket, SIGNAL(disconnected()));
 
-      QSharedPointer<QTcpSocket> sharedSocket = this->removeSocketFromPending(socket);
-      if (!sharedSocket.isNull() && p)
-         p->newConnexion(header, sharedSocket);
+      if (p)
+         p->newConnexion(tcpSocket);
    }
 }
 
-void PeerManager::disconnected()
+void PeerManager::disconnected(QTcpSocket* tcpSocket)
 {
-   QTcpSocket* socket = dynamic_cast<QTcpSocket*>(this->sender());
-   if (!socket)
-      return;
-   this->removeSocketFromPending(socket);
-}
+   if (!tcpSocket)
+      tcpSocket = dynamic_cast<QTcpSocket*>(this->sender());
 
-QSharedPointer<QTcpSocket> PeerManager::removeSocketFromPending(QTcpSocket* socket)
-{
-   for (QMutableListIterator< QSharedPointer<QTcpSocket> > i(this->pendingSockets); i.hasNext();)
-   {
-      QSharedPointer<QTcpSocket> sharedSocket = i.next();
-      if (sharedSocket.data() == socket)
-      {
-         i.remove();
-         disconnect(socket, SIGNAL(readyRead()));
-         disconnect(socket, SIGNAL(disconnected()));
-         return sharedSocket;
-      }
-   }
-   return QSharedPointer<QTcpSocket>();
+   this->pendingSockets.removeOne(tcpSocket);
+   delete tcpSocket;
 }

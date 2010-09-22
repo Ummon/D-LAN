@@ -49,4 +49,5 @@ HEADERS += Tests.h \
     ../../../Protos/common.pb.h \
     debug_new.h \
     TestServer.h \
-    PeerUpdater.h
+    PeerUpdater.h \
+    Constants.h

@@ -44,11 +44,18 @@ namespace PM
         */
       virtual void getHashes(const Protos::Common::FileEntry& file) = 0;
 
+      /**
+        * Ask to download a chunk.
+        */
+      virtual void getChunk(const Protos::Core::GetChunk& chunk) = 0;
+
    signals:
-      void entriesResult(Protos::Core::GetEntriesResult entries);
+      void entriesResult(const Protos::Core::GetEntriesResult entries);
 
       void nextHashResult(Protos::Core::GetHashesResult hashesResult);
       void nextHash(Common::Hash hash);
+
+      void chunkData(QIODevice* device);
 
       //void nextHashError();
 

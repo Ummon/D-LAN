@@ -5,7 +5,6 @@
 #include <QString>
 #include <QTimer>
 #include <QList>
-#include <QSharedPointer>
 #include <QTcpSocket>
 
 #include <Common/Hash.h>
@@ -34,16 +33,14 @@ namespace PM
       IPeer* getPeer(const Common::Hash& ID);
       Peer* getPeer_(const Common::Hash& ID);
 
-      void updatePeer(const Common::Hash& ID, const QHostAddress& IP, const QString& nick, const quint64& sharingAmount);
-      void newConnection(QSharedPointer<QTcpSocket> socket);
+      void updatePeer(const Common::Hash& ID, const QHostAddress& IP, quint16 port, const QString& nick, const quint64& sharingAmount);
+      void newConnection(QTcpSocket* tcpSocket);
 
    private slots:
-      void dataReceived(QTcpSocket* socket = 0);
-      void disconnected();
+      void dataReceived(QTcpSocket* tcpSocket = 0);
+      void disconnected(QTcpSocket* tcpSocket = 0);
 
    private:
-      QSharedPointer<QTcpSocket> removeSocketFromPending(QTcpSocket* socket);
-
       QSharedPointer<FM::IFileManager> fileManager;
 
       Common::Hash ID;
@@ -52,7 +49,7 @@ namespace PM
 
       QTimer timer;
 
-      QList< QSharedPointer<QTcpSocket> > pendingSockets;
+      QList<QTcpSocket*> pendingSockets;
    };
 }
 #endif

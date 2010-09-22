@@ -47,4 +47,5 @@ HEADERS += ISearch.h \
     priv/Chat.h \
     Builder.h \
     ../../Protos/common.pb.h \
-    ../../Protos/core_protocol.pb.h
+    ../../Protos/core_protocol.pb.h \
+    priv/Constants.h

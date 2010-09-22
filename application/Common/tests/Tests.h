@@ -1,5 +1,5 @@
-#ifndef COMMON_TESTS_H
-#define COMMON_TESTS_H
+#ifndef TESTS_COMMON_H
+#define TESTS_COMMON_H
 
 #include <QTest>
 

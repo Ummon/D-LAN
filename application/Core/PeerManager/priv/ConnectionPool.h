@@ -3,39 +3,42 @@
 
 #include <QtNetwork>
 #include <QList>
-#include <QSharedPointer>
 #include <QDateTime>
 #include <QTimer>
 
+#include <priv/Socket.h>
+
 namespace PM
 {
+   class Socket;
+
    class ConnectionPool : public QObject
    {
       Q_OBJECT
-      struct Socket
-      {
-         Socket(QSharedPointer<QTcpSocket> socket) : socket(socket), idle(false) {}
-
-         QSharedPointer<QTcpSocket> socket;
-         QDateTime lastReleaseTime;
-         bool idle;
-      };
 
    public:
       ConnectionPool();
 
-      void setIP(const QHostAddress& IP);
-      void addSocket(QSharedPointer<QTcpSocket> socket);
-      QSharedPointer<QTcpSocket> grabSocket();
-      void releaseSocket(QSharedPointer<QTcpSocket> socket);
+      void setIP(const QHostAddress& IP, quint16 port);
+      void newConnexion(QTcpSocket* socket);
+
+
+      Socket* getASocket();
+//      void releaseSocket(QSharedPointer<QTcpSocket> socket);
+
+   signals:
+      void newMessage(quint32 type, const google::protobuf::Message& message, Socket* socket);
+
+      //void cleanIdleSockets();
 
    private slots:
-      void cleanIdleSockets();
+      void socketGetIdle(Socket* socket);
 
    private:
       QTimer timer;
-      QList<Socket> sockets;
+      QList<Socket*> sockets;
       QHostAddress peerIP;
+      quint16 port;
    };
 }
 

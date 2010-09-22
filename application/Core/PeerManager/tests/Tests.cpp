@@ -10,6 +10,8 @@ using namespace PM;
 #include <Common/Global.h>
 #include <Common/Network.h>
 
+#include <Constants.h>
+
 Tests::Tests()
 {
 }
@@ -106,7 +108,7 @@ void Tests::newConnection()
 
    QTcpSocket socket;
    connect(&socket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(socketError(QAbstractSocket::SocketError)));
-   socket.connectToHost(QHostAddress::LocalHost, Common::BASE_PORT);
+   socket.connectToHost(QHostAddress::LocalHost, PORT);
    if (socket.waitForConnected())
    {
       Common::MessageHeader header;
@@ -124,6 +126,7 @@ void Tests::cleanupTestCase()
    qDebug() << "===== cleanupTestCase() =====";
 
    delete server;
+   delete peerUpdater;
 }
 
 void Tests::socketError(QAbstractSocket::SocketError error)

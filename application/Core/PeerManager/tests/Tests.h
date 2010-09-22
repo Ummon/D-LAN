@@ -1,5 +1,5 @@
-#ifndef PEER_MANAGER_TESTS_H
-#define PEER_MANAGER_TESTS_H
+#ifndef TESTS_PEERMANAGER_TESTS_H
+#define TESTS_PEERMANAGER_TESTS_H
 
 #include <QTest>
 #include <QSharedPointer>

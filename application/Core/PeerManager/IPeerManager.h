@@ -24,9 +24,12 @@ namespace PM
       /**
         * The method must be call frequently to tell that a peer (ID) is still alive.
         */
-      virtual void updatePeer(const Common::Hash& ID, const QHostAddress& IP, const QString& nick, const quint64& sharingAmount) = 0;
+      virtual void updatePeer(const Common::Hash& ID, const QHostAddress& IP, quint16 port, const QString& nick, const quint64& sharingAmount) = 0;
 
-      virtual void newConnection(QSharedPointer<QTcpSocket> socket) = 0;
+      /**
+        * @param socket PeerManager will care about deleting the socket.
+        */
+      virtual void newConnection(QTcpSocket* tcpSocket) = 0;
    };
 }
 #endif
