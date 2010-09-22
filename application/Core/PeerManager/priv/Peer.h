@@ -49,7 +49,7 @@ namespace PM
       void messageReceived(quint32 type, const google::protobuf::Message& message, Socket* socket);
 
 //      void sendGetEntriesRequest(QTcpSocket* socket = 0);
-//      void consideredDead();
+      void consideredDead();
 //      void stateChanged(QAbstractSocket::SocketState socketState);
 //      void dataReceived();
 

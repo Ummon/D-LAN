@@ -28,12 +28,15 @@ private slots:
    void setGetNick();
    void updatePeers();
    void getPeerFromID();
-   void newConnection();
+   void askForEntries();
    void cleanupTestCase();
 
    void socketError(QAbstractSocket::SocketError error);
 
 private:
+   void createInitialFiles();
+   void deleteAllFiles();
+
    QSharedPointer<FM::IFileManager> fileManager;
    QSharedPointer<IPeerManager> peerManager;
 

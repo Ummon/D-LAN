@@ -14,6 +14,7 @@ using namespace FM;
 #include <Common/LogManager/Builder.h>
 #include <Common/PersistantData.h>
 #include <Common/Constants.h>
+#include <Common/Global.h>
 #include <Exceptions.h>
 #include <priv/Constants.h>
 
@@ -151,7 +152,7 @@ void Tests::createAFile()
 {
    qDebug() << "===== createAFile() =====";
 
-   Tests::createFile("sharedDirs/x.txt");
+   Common::Global::createFile("sharedDirs/x.txt");
    QTest::qSleep(100);
 }
 
@@ -196,7 +197,7 @@ void Tests::createASubFile()
 {
    qDebug() << "===== createASubFile() =====";
 
-   Tests::createFile("sharedDirs/share1/v.txt");
+   Common::Global::createFile("sharedDirs/share1/v.txt");
    QTest::qSleep(100);
 }
 
@@ -239,7 +240,7 @@ void Tests::createADirectory()
 {
    qDebug() << "===== createADirectory() =====";
 
-   Tests::createFile("sharedDirs/a/");
+   Common::Global::createFile("sharedDirs/a/");
    QTest::qSleep(100);
 }
 
@@ -271,7 +272,7 @@ void Tests::removeADirectory()
 {
    qDebug() << "===== removeADirectory() =====";
 
-   Tests::recursiveDeleteDirectory("sharedDirs/share1/share2");
+   Common::Global::recursiveDeleteDirectory("sharedDirs/share1/share2");
    QTest::qSleep(100);
 }
 
@@ -538,34 +539,34 @@ void Tests::createInitialFiles()
 {
    this->deleteAllFiles();
 
-   Tests::createFile("sharedDirs/share1/subdir/o.txt");
-   Tests::createFile("sharedDirs/share1/subdir/p.txt");
-   Tests::createFile("sharedDirs/share1/another subdir/q.txt");
-   Tests::createFile("sharedDirs/share1/empty subdir/");
-   Tests::createFile("sharedDirs/share1/r.txt");
-   Tests::createFile("sharedDirs/share1/s.txt");
+   Common::Global::createFile("sharedDirs/share1/subdir/o.txt");
+   Common::Global::createFile("sharedDirs/share1/subdir/p.txt");
+   Common::Global::createFile("sharedDirs/share1/another subdir/q.txt");
+   Common::Global::createFile("sharedDirs/share1/empty subdir/");
+   Common::Global::createFile("sharedDirs/share1/r.txt");
+   Common::Global::createFile("sharedDirs/share1/s.txt");
 
-   Tests::createFile("sharedDirs/share2/t.txt");
-   Tests::createFile("sharedDirs/share2/u.txt");
+   Common::Global::createFile("sharedDirs/share2/t.txt");
+   Common::Global::createFile("sharedDirs/share2/u.txt");
 
    // "share3" is dedicated to the search feature.
-   Tests::createFile("sharedDirs/share3/aaaa bbbb cccc.txt");
-   Tests::createFile("sharedDirs/share3/aaaa bbbb.txt");
-   Tests::createFile("sharedDirs/share3/aaaa cccc.txt");
-   Tests::createFile("sharedDirs/share3/aaaa dddddd.txt");
-   Tests::createFile("sharedDirs/share3/bbbb cccc.txt");
-   Tests::createFile("sharedDirs/share3/bbbb dddd.txt");
-   Tests::createFile("sharedDirs/share3/bbbb.txt");
-   Tests::createFile("sharedDirs/share3/cccc bbbbbb.txt");
-   Tests::createFile("sharedDirs/share3/dddd.txt");
+   Common::Global::createFile("sharedDirs/share3/aaaa bbbb cccc.txt");
+   Common::Global::createFile("sharedDirs/share3/aaaa bbbb.txt");
+   Common::Global::createFile("sharedDirs/share3/aaaa cccc.txt");
+   Common::Global::createFile("sharedDirs/share3/aaaa dddddd.txt");
+   Common::Global::createFile("sharedDirs/share3/bbbb cccc.txt");
+   Common::Global::createFile("sharedDirs/share3/bbbb dddd.txt");
+   Common::Global::createFile("sharedDirs/share3/bbbb.txt");
+   Common::Global::createFile("sharedDirs/share3/cccc bbbbbb.txt");
+   Common::Global::createFile("sharedDirs/share3/dddd.txt");
 
-   Tests::createFile("incoming/");
+   Common::Global::createFile("incoming/");
 }
 
 void Tests::deleteAllFiles()
 {
-   Tests::recursiveDeleteDirectory("sharedDirs");
-   Tests::recursiveDeleteDirectory("incoming");
+   Common::Global::recursiveDeleteDirectory("sharedDirs");
+   Common::Global::recursiveDeleteDirectory("incoming");
 }
 
 void Tests::printSearch(const QString& terms, const Protos::Common::FindResult& result)
@@ -582,31 +583,6 @@ void Tests::compareExpectedResult(const Protos::Common::FindResult& result, quin
       QVERIFY(result.file(i).level() == expectedLevelResult[i]);
       QVERIFY(expectedFileResult[result.file(i).level()].contains(QString(result.file(i).file().file().name().data())));
    }
-}
-
-/**
-  * Create a file and its parent directories if needed.
-  */
-void Tests::createFile(const QString& path)
-{
-   QFileInfo fileInfo(path);
-   QDir::current().mkpath(fileInfo.path());
-   if (fileInfo.fileName().isEmpty())
-      return;
-
-   QFile file(path);
-   file.open(QIODevice::WriteOnly);
-   QTextStream stream(&file);
-   stream << fileInfo.fileName();
-}
-
-void Tests::recursiveDeleteDirectory(const QString& dir)
-{
-   for (QDirIterator i(dir, QDir::Files, QDirIterator::Subdirectories); i.hasNext();)
-      QFile(i.next()).remove();
-
-   for (QDirIterator i(dir, QDir::AllDirs, QDirIterator::Subdirectories); i.hasNext();)
-      QDir::current().rmpath(i.next());
 }
 
 void Tests::compareStrRegexp(const QString& regexp, const QString& str)
