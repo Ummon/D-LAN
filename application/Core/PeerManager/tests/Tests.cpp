@@ -3,12 +3,17 @@ using namespace PM;
 
 #include <QtDebug>
 #include <QtNetwork>
+#include <QStringList>
+
+#include <Protos/core_protocol.pb.h>
+#include <Protos/common.pb.h>
 
 #include <Common/LogManager/Builder.h>
 #include <Common/PersistantData.h>
 #include <Common/Constants.h>
 #include <Common/Global.h>
 #include <Common/Network.h>
+#include <Common/ZeroCopyStreamQIODevice.h>
 
 #include <Constants.h>
 
@@ -22,9 +27,15 @@ void Tests::initTestCase()
    qDebug() << "===== initTestCase() =====";
 
    Common::PersistantData::rmValue(Common::FILE_CACHE); // Reset the stored cache.
-   qDebug() << Common::Global::availableDiskSpace("C:\\");
-
+   this->createInitialFiles();
    this->fileManager = FM::Builder::newFileManager();
+
+   QStringList sharedDirs;
+   sharedDirs << QDir::currentPath().append("/sharedDirs/share1") << QDir::currentPath().append("/sharedDirs/share2");
+   this->fileManager->setSharedDirsReadOnly(sharedDirs);
+
+//   qDebug() << Common::Global::availableDiskSpace("C:\\");
+
    this->peerManager = Builder::newPeerManager(this->fileManager);
 
    this->server = new TestServer(this->peerManager);
@@ -102,21 +113,42 @@ void Tests::getPeerFromID()
    QVERIFY(this->peerManager->getPeer(Common::Hash::rand()) == 0);
 }
 
-void Tests::newConnection()
+void Tests::askForEntries()
 {
-   qDebug() << "===== newConnection() =====";
+   qDebug() << "===== askForEntries() =====";
 
    QTcpSocket socket;
    connect(&socket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(socketError(QAbstractSocket::SocketError)));
    socket.connectToHost(QHostAddress::LocalHost, PORT);
+
    if (socket.waitForConnected())
-   {
-      Common::MessageHeader header;
-      header.type = 0;
-      header.size = 0;
-      header.senderID = Common::Hash::rand();
-      Common::Network::writeHeader(socket, header);
+   {      
+      PeerData peer = this->peerUpdater->getPeers().first();
+      Protos::Core::GetEntries getEntriesMessage;
+
+      {
+         Common::MessageHeader header;
+         header.type = 0x31;
+         header.size = getEntriesMessage.ByteSize();
+         header.senderID = peer.ID;
+         Common::Network::writeHeader(socket, header);
+      }
+
+      getEntriesMessage.SerializeToFileDescriptor(socket.socketDescriptor());
       socket.flush();
+      QTest::qWait(1000);
+      socket.waitForReadyRead(2000);
+
+      {
+         Common::MessageHeader header = Common::Network::readHeader(socket);
+         qDebug() << "Data received : type = " << header.type << " size = " << header.size << " senderId = " << header.senderID.toStr();
+         qDebug() << socket.bytesAvailable();
+         Protos::Core::GetEntriesResult result;
+         Common::ZeroCopyInputStreamQIODevice inputStream(&socket);
+         result.ParseFromZeroCopyStream(&inputStream);
+         qDebug() << QString::fromStdString(result.DebugString());
+      }
+
       QTest::qWait(1000);
    }
 }
@@ -134,4 +166,23 @@ void Tests::socketError(QAbstractSocket::SocketError error)
    qDebug() << "Error : " << error;
 }
 
+void Tests::createInitialFiles()
+{
+   this->deleteAllFiles();
+
+   Common::Global::createFile("sharedDirs/share1/subdir/a.txt");
+   Common::Global::createFile("sharedDirs/share1/subdir/b.txt");
+   Common::Global::createFile("sharedDirs/share1/subdir/c.txt");
+   Common::Global::createFile("sharedDirs/share1/d.txt");
+   Common::Global::createFile("sharedDirs/share1/e.txt");
+
+   Common::Global::createFile("sharedDirs/share2/f.txt");
+   Common::Global::createFile("sharedDirs/share2/g.txt");
+   Common::Global::createFile("sharedDirs/share2/h.txt");
+}
+
+void Tests::deleteAllFiles()
+{
+   Common::Global::recursiveDeleteDirectory("sharedDirs");
+}
 

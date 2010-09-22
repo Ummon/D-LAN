@@ -50,7 +50,7 @@ namespace PM
       virtual void getChunk(const Protos::Core::GetChunk& chunk) = 0;
 
    signals:
-      void entriesResult(const Protos::Core::GetEntriesResult entries);
+      void entriesResult(const Protos::Core::GetEntriesResult& entries);
 
       void nextHashResult(Protos::Core::GetHashesResult hashesResult);
       void nextHash(Common::Hash hash);

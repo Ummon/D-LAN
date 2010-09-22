@@ -44,10 +44,12 @@ SOURCES += main.cpp \
     Tests.cpp \
     ../../../Protos/common.pb.cc \
     TestServer.cpp \
-    PeerUpdater.cpp
+    PeerUpdater.cpp \
+    ResultListener.cpp
 HEADERS += Tests.h \
     ../../../Protos/common.pb.h \
     debug_new.h \
     TestServer.h \
     PeerUpdater.h \
-    Constants.h
+    Constants.h \
+    ResultListener.h

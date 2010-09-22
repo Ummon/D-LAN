@@ -86,8 +86,6 @@ private:
 
    void addSuperSharedDirectoriesAndMerge();
 
-   static void createFile(const QString& path);
-   static void recursiveDeleteDirectory(const QString& dir);
    static void compareStrRegexp(const QString& regexp, const QString& str);
 
    QStringList sharedDirsReadOnly;

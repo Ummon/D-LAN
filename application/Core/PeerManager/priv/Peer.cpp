@@ -104,7 +104,12 @@ void Peer::messageReceived(quint32 type, const google::protobuf::Message& messag
    switch (type)
    {
    case 0x31 :
-      socket->send(0x32, this->fileManager->getEntries(dynamic_cast<const Protos::Core::GetEntries&>(message).dir()), this->peerManager->getID());
+      const Protos::Core::GetEntries& getEntriesMessage = dynamic_cast<const Protos::Core::GetEntries&>(message);
+      socket->send(
+         0x32,
+         getEntriesMessage.has_dir() ? this->fileManager->getEntries(getEntriesMessage.dir()) : this->fileManager->getEntries(),
+         this->peerManager->getID()
+      );
       socket->finished();
 //   case 0x32 :
 
@@ -131,8 +136,8 @@ QString Peer::toStr()
 
 //}
 
-//void Peer::consideredDead()
-//{
-//   L_DEBU(QString("Peer \"%1\" is dead").arg(this->nick));
-//   this->alive = false;
-//}
+void Peer::consideredDead()
+{
+   L_DEBU(QString("Peer \"%1\" is dead").arg(this->nick));
+   this->alive = false;
+}

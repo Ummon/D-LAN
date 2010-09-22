@@ -2,6 +2,7 @@
 using namespace Common;
 
 #include <QDir>
+#include <QDirIterator>
 #include <qDebug>
 #include <QtGlobal>
 
@@ -10,20 +11,6 @@ using namespace Common;
 #endif
 
 #include <Constants.h>
-
-
-/**
-  * @class Global
-  * Some generic global functions.
-  */
-
-bool Global::createApplicationFolder()
-{
-   if (!QDir::home().exists(APPLICATION_FOLDER_NAME))
-      return QDir::home().mkdir(APPLICATION_FOLDER_NAME);
-
-   return true;
-}
 
 qint64 Global::availableDiskSpace(const QString& path)
 {
@@ -43,5 +30,43 @@ qint64 Global::availableDiskSpace(const QString& path)
 
    // TODO : Linux
    return max;
+}
+
+/**
+  * @class Global
+  * Some generic global functions.
+  */
+
+bool Global::createApplicationFolder()
+{
+   if (!QDir::home().exists(APPLICATION_FOLDER_NAME))
+      return QDir::home().mkdir(APPLICATION_FOLDER_NAME);
+
+   return true;
+}
+
+/**
+  * Create a file and its parent directories if needed.
+  */
+void Global::createFile(const QString& path)
+{
+   QFileInfo fileInfo(path);
+   QDir::current().mkpath(fileInfo.path());
+   if (fileInfo.fileName().isEmpty())
+      return;
+
+   QFile file(path);
+   file.open(QIODevice::WriteOnly);
+   QTextStream stream(&file);
+   stream << fileInfo.fileName();
+}
+
+void Global::recursiveDeleteDirectory(const QString& dir)
+{
+   for (QDirIterator i(dir, QDir::Files, QDirIterator::Subdirectories); i.hasNext();)
+      QFile(i.next()).remove();
+
+   for (QDirIterator i(dir, QDir::AllDirs, QDirIterator::Subdirectories); i.hasNext();)
+      QDir::current().rmpath(i.next());
 }
 

@@ -28,7 +28,8 @@ SOURCES += Hash.cpp \
     PersistantData.cpp \
     Math.cpp \
     Global.cpp \
-    Network.cpp
+    Network.cpp \
+    ZeroCopyStreamQIODevice.cpp
 HEADERS += Hashes.h \
     Hash.h \
     PersistantData.h \
@@ -37,4 +38,5 @@ HEADERS += Hashes.h \
     Constants.h \
     Global.h \
     Uncopyable.h \
-    Network.h
+    Network.h \
+    ZeroCopyStreamQIODevice.h

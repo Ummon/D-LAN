@@ -3,14 +3,15 @@ using namespace PM;
 
 #include <Common/Constants.h>
 
+#include <priv/Log.h>
 #include <priv/Constants.h>
 #include <priv/Socket.h>
 
 ConnectionPool::ConnectionPool()
 {
-   this->timer.setInterval(1000 * IDLE_SOCKET_TIMEOUT / 10);
-   connect(&this->timer, SIGNAL(timeout()), this, SLOT(cleanIdleSockets()));
-   this->timer.start();
+//   connect(&this->timer, SIGNAL(timeout()), this, SLOT(cleanIdleSockets()));
+//   this->timer.start();
+//   this->timer.setInterval(1000 * IDLE_SOCKET_TIMEOUT / 10);
 }
 
 void ConnectionPool::setIP(const QHostAddress& IP, quint16 port)
@@ -26,10 +27,11 @@ void ConnectionPool::newConnexion(QTcpSocket* tcpSocket)
 {
    Socket* socket = new Socket(tcpSocket);
    this->sockets << socket;
-   connect(socket, SIGNAL(Socket::newMessage(quint32, google::protobuf::Message, Socket*)), this, SIGNAL(ConnectionPool::newMessage(quint32, google::protobuf::Message, Socket*)));
+   connect(socket, SIGNAL(newMessage(quint32, const google::protobuf::Message&, Socket*)), this, SIGNAL(newMessage(quint32, const google::protobuf::Message&, Socket*)));
    connect(socket, SIGNAL(getIdle(Socket*)), this, SLOT(socketGetIdle(Socket*)));
-}
 
+   socket->startListening();
+}
 
 Socket* ConnectionPool::getASocket()
 {
