@@ -125,6 +125,7 @@ void PeerManager::newConnection(QTcpSocket* tcpSocket)
       return;
 
    this->pendingSockets << tcpSocket;
+
    connect(tcpSocket, SIGNAL(readyRead()), this, SLOT(dataReceived()));
    connect(tcpSocket, SIGNAL(disconnected()), this, SLOT(disconnected()));
 
@@ -145,8 +146,8 @@ void PeerManager::dataReceived(QTcpSocket* tcpSocket)
       Peer* p = this->getPeer_(header.senderID);
 
       this->pendingSockets.removeOne(tcpSocket);
-      disconnect(tcpSocket, SIGNAL(readyRead()));
-      disconnect(tcpSocket, SIGNAL(disconnected()));
+      disconnect(tcpSocket, SIGNAL(readyRead()), 0, 0);
+      disconnect(tcpSocket, SIGNAL(disconnected()), 0, 0);
 
       if (p)
          p->newConnexion(tcpSocket);

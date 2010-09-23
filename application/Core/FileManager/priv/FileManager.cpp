@@ -91,12 +91,12 @@ QSharedPointer<IChunk> FileManager::getChunk(const Common::Hash& hash)
    return chunk;
 }
 
-QList< QSharedPointer<IChunk> > FileManager::newFile(const Protos::Common::FileEntry& remoteEntry)
+QList< QSharedPointer<IChunk> > FileManager::newFile(const Protos::Common::Entry& remoteEntry)
 {
    return this->cache.newFile(remoteEntry);
 }
 
-QSharedPointer<IGetHashesResult> FileManager::getHashes(const Protos::Common::FileEntry& file)
+QSharedPointer<IGetHashesResult> FileManager::getHashes(const Protos::Common::Entry& file)
 {
    return QSharedPointer<IGetHashesResult>(new GetHashesResult(file, this->cache, this->fileUpdater));
 }
@@ -169,18 +169,9 @@ Protos::Common::FindResult FileManager::find(const QString& words)
          for (QSetIterator<Entry*> k(currentLevelSet); k.hasNext();)
          {
             Entry* entry = k.next();
-            if (Directory* dir = dynamic_cast<Directory*>(entry))
-            {
-               Protos::Common::FindResult_DirEntryLevel* dirEntry = result.add_dir();
-               dirEntry->set_level(level);
-               dir->populateDirEntry(dirEntry->mutable_dir());
-            }
-            else if (File* file  = dynamic_cast<File*>(entry))
-            {
-               Protos::Common::FindResult_FileEntryLevel* fileEntry = result.add_file();
-               fileEntry->set_level(level);
-               file->populateFileEntry(fileEntry->mutable_file());
-            }
+            Protos::Common::FindResult_EntryLevel* entryLevel = result.add_entry();
+            entryLevel->set_level(level);
+            entry->populateEntry(entryLevel->mutable_entry());
          }
 
          // Define positions of each intersect term.

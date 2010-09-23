@@ -50,10 +50,10 @@ Protos::Core::GetEntriesResult Cache::getEntries(const Protos::Common::Entry& di
          }
 
          foreach (Directory* dir, currentDir->getSubDirs())
-            dir->populateDirEntry(result.add_dir());
+            dir->populateEntry(result.add_entry());
 
          foreach (File* file, currentDir->getFiles())
-            file->populateFileEntry(result.add_file());
+            file->populateEntry(result.add_entry());
 
          break;
       }
@@ -69,7 +69,7 @@ Protos::Core::GetEntriesResult Cache::getEntries() const
    Protos::Core::GetEntriesResult result;
 
    foreach (SharedDirectory* sharedDir, this->sharedDirs)
-      sharedDir->populateDirEntry(result.add_dir());
+      sharedDir->populateEntry(result.add_entry());
 
    return result;
 }
@@ -118,18 +118,21 @@ Entry* Cache::getEntry(const QString& path) const
 /**
   * Try to find the file into the cache from a reference.
   */
-File* Cache::getFile(const Protos::Common::FileEntry& fileEntry) const
+File* Cache::getFile(const Protos::Common::Entry& fileEntry) const
 {
    QMutexLocker locker(&this->lock);
 
-   if (!fileEntry.file().has_shared_dir())
+   if (!fileEntry.has_shared_dir())
+   {
+      L_WARN(QString("Cache::getFile : 'fileEntry' doesn't have the field 'shared_dir' set!"));
       return 0;
+   }
 
    foreach (SharedDirectory* sharedDir, this->sharedDirs)
    {
-      if (sharedDir->getId() == fileEntry.file().shared_dir().id().hash().data())
+      if (sharedDir->getId() == fileEntry.shared_dir().id().hash().data())
       {
-         QString relativePath(fileEntry.file().path().data());
+         QString relativePath(fileEntry.path().data());
          const QStringList folders = relativePath.split('/', QString::SkipEmptyParts);
 
          Directory* dir = sharedDir;
@@ -140,7 +143,7 @@ File* Cache::getFile(const Protos::Common::FileEntry& fileEntry) const
             {
                if (!i.hasNext())
                {
-                  File* file = dir->getFile(fileEntry.file().name().data());
+                  File* file = dir->getFile(fileEntry.name().data());
 
                   if (file)
                      return file;
@@ -163,11 +166,11 @@ File* Cache::getFile(const Protos::Common::FileEntry& fileEntry) const
    return 0;
 }
 
-QList< QSharedPointer<IChunk> > Cache::newFile(const Protos::Common::FileEntry& remoteEntry)
+QList< QSharedPointer<IChunk> > Cache::newFile(const Protos::Common::Entry& remoteEntry)
 {
    QMutexLocker locker(&this->lock);
 
-   Directory* dir = this->getWriteableDirectory(QDir::cleanPath(remoteEntry.file().path().data()), remoteEntry.file().size() + MINIMUM_FREE_SPACE);
+   Directory* dir = this->getWriteableDirectory(QDir::cleanPath(remoteEntry.path().data()), remoteEntry.size() + MINIMUM_FREE_SPACE);
    if (!dir)
       throw UnableToCreateNewFileException();
 
@@ -177,8 +180,8 @@ QList< QSharedPointer<IChunk> > Cache::newFile(const Protos::Common::FileEntry& 
 
    File* file = new File(
       dir,
-      remoteEntry.file().name().data(),
-      remoteEntry.file().size(),
+      remoteEntry.name().data(),
+      remoteEntry.size(),
       QDateTime::currentDateTime(),
       hashes,
       true

@@ -42,7 +42,7 @@ namespace FM
 
       void populateHashesFile(Protos::FileCache::Hashes_File& fileToFill) const;
 
-      void populateFileEntry(Protos::Common::FileEntry* entry) const;
+      void populateEntry(Protos::Common::Entry* entry) const;
 
       QString getPath() const;
       QString getFullPath() const;

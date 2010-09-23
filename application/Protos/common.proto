@@ -23,32 +23,28 @@ message SharedDir {
 
 // Used for a directory or a file.
 message Entry {
-   optional SharedDir shared_dir = 1; // Identify the shared directory.
+   enum Type {
+      FILE = 0;
+      DIR = 1;
+   }
+   required Type type = 1;
    required string path = 2; // Relative path from the sharing directory. For example : "/Videos/My cat". A root directory has an empty path : "".
    required string name = 3; // Directory name or file name. For example : "MyLOLCat.avi". A root directory has an undetermined name.
    required uint64 size = 4; // [bytes].
-}
-
-message FileEntry {
-   required Entry file = 1;
-   repeated Hash chunk = 2; // No chunk means that the peer doesn't know the hashes.
+   optional SharedDir shared_dir = 5; // The shared directory of the entry.
+   repeated Hash chunk = 6; // Only for a file. No chunk means that the peer doesn't know the hashes.
 }
 
 // A result following a search.
 // See 'Network.Find' and 'GUI.GUINetwork' for more information.
 message FindResult {
-   message DirEntryLevel {
+   message EntryLevel {
       required uint32 level = 1;
-      required Entry dir = 2;
-   }
-   message FileEntryLevel {
-      required uint32 level = 1;
-      required FileEntry file = 2;
+      required Entry entry = 2;
    }
    required uint64 tag = 1;
    required Common.Hash peer_id = 2;
-   repeated DirEntryLevel dir = 3;
-   repeated FileEntryLevel file = 4;
+   repeated EntryLevel entry = 3;
 }
 
 // Core settings

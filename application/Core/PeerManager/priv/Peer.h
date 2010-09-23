@@ -40,7 +40,7 @@ namespace PM
 
       //bool send(const QByteArray& data) ;
       void getEntries(const Protos::Common::Entry& dir);
-      void getHashes(const Protos::Common::FileEntry& file);
+      void getHashes(const Protos::Common::Entry& file);
       void getChunk(const Protos::Core::GetChunk& chunk);
 
       void newConnexion(QTcpSocket* tcpSocket);

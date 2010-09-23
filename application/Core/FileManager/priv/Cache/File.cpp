@@ -158,14 +158,32 @@ void File::populateHashesFile(Protos::FileCache::Hashes_File& fileToFill) const
    }
 }
 
-void File::populateFileEntry(Protos::Common::FileEntry* entry) const
+/**
+  * Will add the hashes to the entry.
+  */
+void File::populateEntry(Protos::Common::Entry* entry) const
 {
-   this->populateEntry(entry->mutable_file());
+   Entry::populateEntry(entry);
+
+   entry->set_type(Protos::Common::Entry_Type_FILE);
+
+   for (QListIterator< QSharedPointer<Chunk> > i(this->chunks); i.hasNext();)
+   {
+      Common::Hash hash = i.next()->getHash();
+      if (hash.isNull())
+         break;
+
+      entry->add_chunk()->set_hash(hash.getData(), Common::Hash::HASH_SIZE);
+   }
 }
 
 QString File::getPath() const
 {
-   return this->dir->getPath().append(this->dir->getName()).append('/');
+   QString path;
+   if (!dynamic_cast<SharedDirectory*>(this->dir))
+      path.append(this->dir->getPath()).append(this->dir->getName());
+
+   return path.append('/');
 }
 
 QString File::getFullPath() const

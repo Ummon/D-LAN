@@ -131,9 +131,7 @@ void ConnectionPool::socketGetIdle(Socket* socket)
      {
         n += 1;
         if (n > MAX_NUMBER_IDLE_SOCKET)
-        {
            i.remove();
-        }
      }
    }
 }

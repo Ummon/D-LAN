@@ -28,6 +28,12 @@ SharedDirectory::SharedDirectory(Cache* cache, const QString& path, Rights right
    this->init();
 }
 
+void SharedDirectory::populateEntry(Protos::Common::Entry* entry) const
+{
+   Directory::populateEntry(entry);
+   entry->mutable_shared_dir()->mutable_id()->set_hash(static_cast<SharedDirectory*>(this->getRoot())->getId().getData(), Common::Hash::HASH_SIZE);
+}
+
 void SharedDirectory::init()
 {
    // Avoid two same directories.

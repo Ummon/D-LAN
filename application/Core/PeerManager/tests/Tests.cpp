@@ -2,7 +2,6 @@
 using namespace PM;
 
 #include <QtDebug>
-#include <QtNetwork>
 #include <QStringList>
 
 #include <Protos/core_protocol.pb.h>
@@ -34,10 +33,9 @@ void Tests::initTestCase()
    sharedDirs << QDir::currentPath().append("/sharedDirs/share1") << QDir::currentPath().append("/sharedDirs/share2");
    this->fileManager->setSharedDirsReadOnly(sharedDirs);
 
-//   qDebug() << Common::Global::availableDiskSpace("C:\\");
-
    this->peerManager = Builder::newPeerManager(this->fileManager);
 
+   this->socket = new QTcpSocket();
    this->server = new TestServer(this->peerManager);
 }
 
@@ -113,44 +111,46 @@ void Tests::getPeerFromID()
    QVERIFY(this->peerManager->getPeer(Common::Hash::rand()) == 0);
 }
 
-void Tests::askForEntries()
+void Tests::connectToServer()
 {
-   qDebug() << "===== askForEntries() =====";
+   qDebug() << "===== connectToServer() =====";
 
-   QTcpSocket socket;
-   connect(&socket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(socketError(QAbstractSocket::SocketError)));
-   socket.connectToHost(QHostAddress::LocalHost, PORT);
+   connect(this->socket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(socketError(QAbstractSocket::SocketError)));
+   this->socket->connectToHost(QHostAddress::LocalHost, PORT);
+   QVERIFY(this->socket->waitForConnected());
+}
 
-   if (socket.waitForConnected())
-   {      
-      PeerData peer = this->peerUpdater->getPeers().first();
-      Protos::Core::GetEntries getEntriesMessage;
+void Tests::askForRootEntries()
+{
+   qDebug() << "===== askForRootEntries() =====";
 
-      {
-         Common::MessageHeader header;
-         header.type = 0x31;
-         header.size = getEntriesMessage.ByteSize();
-         header.senderID = peer.ID;
-         Common::Network::writeHeader(socket, header);
-      }
+   Protos::Core::GetEntries getEntriesMessage;
+   this->sendMessage(this->peerUpdater->getPeers().first(), 0x31, getEntriesMessage);
+   QVERIFY(!this->getEntriesResultList.isEmpty());
+   qDebug() << QString::fromStdString(this->getEntriesResultList.last().DebugString());
+}
 
-      getEntriesMessage.SerializeToFileDescriptor(socket.socketDescriptor());
-      socket.flush();
-      QTest::qWait(1000);
-      socket.waitForReadyRead(2000);
+/**
+  * Use the same socket as the previous request.
+  */
+void Tests::askForSomeEntries()
+{
+   qDebug() << "===== askForSomeEntries() =====";
 
-      {
-         Common::MessageHeader header = Common::Network::readHeader(socket);
-         qDebug() << "Data received : type = " << header.type << " size = " << header.size << " senderId = " << header.senderID.toStr();
-         qDebug() << socket.bytesAvailable();
-         Protos::Core::GetEntriesResult result;
-         Common::ZeroCopyInputStreamQIODevice inputStream(&socket);
-         result.ParseFromZeroCopyStream(&inputStream);
-         qDebug() << QString::fromStdString(result.DebugString());
-      }
+   QVERIFY(!this->getEntriesResultList.isEmpty());
 
-      QTest::qWait(1000);
-   }
+   Protos::Core::GetEntries getEntriesMessage1;
+   getEntriesMessage1.mutable_dir()->CopyFrom(this->getEntriesResultList.last().entry(0));
+   this->sendMessage(this->peerUpdater->getPeers().first(), 0x31, getEntriesMessage1);
+   QVERIFY(!this->getEntriesResultList.isEmpty());
+   qDebug() << QString::fromStdString(this->getEntriesResultList.last().DebugString());
+
+   Protos::Core::GetEntries getEntriesMessage2;
+   getEntriesMessage2.mutable_dir()->CopyFrom(this->getEntriesResultList.last().entry(0));
+   getEntriesMessage2.mutable_dir()->mutable_shared_dir()->CopyFrom(getEntriesMessage1.dir().shared_dir());
+   this->sendMessage(this->peerUpdater->getPeers().first(), 0x31, getEntriesMessage2);
+   QVERIFY(!this->getEntriesResultList.isEmpty());
+   qDebug() << QString::fromStdString(this->getEntriesResultList.last().DebugString());
 }
 
 void Tests::cleanupTestCase()
@@ -164,6 +164,30 @@ void Tests::cleanupTestCase()
 void Tests::socketError(QAbstractSocket::SocketError error)
 {
    qDebug() << "Error : " << error;
+}
+
+
+void Tests::sendMessage(const PeerData& peer, quint32 type, const google::protobuf::Message& message)
+{
+   Common::Network::writeHeader(*this->socket, Common::MessageHeader(type, message.ByteSize(), peer.ID));
+   Common::ZeroCopyOutputStreamQIODevice outputStream(this->socket);
+   message.SerializeToZeroCopyStream(&outputStream);
+
+   QTest::qWait(500);
+   QVERIFY(this->socket->bytesAvailable());
+   QTest::qWait(500);
+
+   Common::MessageHeader header = Common::Network::readHeader(*this->socket);
+   qDebug() << "Data received : type = " << header.type << " size = " << header.size << " senderId = " << header.senderID.toStr();
+
+   Common::ZeroCopyInputStreamQIODevice inputStream(this->socket);
+   switch (type)
+   {
+   case 0x31 :
+      Protos::Core::GetEntriesResult result;
+      result.ParseFromZeroCopyStream(&inputStream);
+      this->getEntriesResultList << result;
+   }
 }
 
 void Tests::createInitialFiles()

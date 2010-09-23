@@ -3,6 +3,9 @@
 
 #include <QTest>
 #include <QSharedPointer>
+#include <QtNetwork>
+
+#include <google/protobuf/message.h>
 
 #include <Protos/common.pb.h>
 
@@ -28,20 +31,27 @@ private slots:
    void setGetNick();
    void updatePeers();
    void getPeerFromID();
-   void askForEntries();
+   void connectToServer();
+   void askForRootEntries();
+   void askForSomeEntries();
    void cleanupTestCase();
 
    void socketError(QAbstractSocket::SocketError error);
 
 private:
+   void sendMessage(const PeerData& peer, quint32 type, const google::protobuf::Message& message);
    void createInitialFiles();
    void deleteAllFiles();
 
    QSharedPointer<FM::IFileManager> fileManager;
    QSharedPointer<IPeerManager> peerManager;
 
+   QTcpSocket* socket;
+
    TestServer* server;
    PeerUpdater* peerUpdater;
+
+   QList<Protos::Core::GetEntriesResult> getEntriesResultList;
 };
 
 #endif

@@ -22,6 +22,8 @@ namespace FM
       SharedDirectory(Cache* cache, const QString& path, Rights rights, const Common::Hash& id);
       SharedDirectory(Cache* cache, const QString& path, Rights rights);
 
+      void populateEntry(Protos::Common::Entry* entry) const;
+
    private:
       void init();
 

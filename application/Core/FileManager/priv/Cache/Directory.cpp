@@ -106,9 +106,10 @@ void Directory::populateHashesDir(Protos::FileCache::Hashes_Dir& dirToFill) cons
    }
 }
 
-void Directory::populateDirEntry(Protos::Common::Entry* dir) const
+void Directory::populateEntry(Protos::Common::Entry* dir) const
 {
-   this->populateEntry(dir);
+   Entry::populateEntry(dir);
+   dir->set_type(Protos::Common::Entry_Type_DIR);
 }
 
 /**
