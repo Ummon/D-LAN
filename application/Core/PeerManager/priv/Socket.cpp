@@ -77,7 +77,8 @@ void Socket::dataReceived()
          case 0x31 :
             {
                Protos::Core::GetEntries getEntries;
-               if (header.size == 0 || getEntries.ParseFromFileDescriptor(this->socket->socketDescriptor()))
+               Common::ZeroCopyInputStreamQIODevice inputStream(this->socket);
+               if (header.size == 0 || getEntries.ParseFromZeroCopyStream(&inputStream))
                   emit newMessage(header.type, getEntries, this);
             }
 //         case 0x32 :

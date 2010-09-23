@@ -280,10 +280,10 @@ void Tests::createAnEmptyFile()
 {
    qDebug() << "===== createAnEmptyFile() =====";
 
-   Protos::Common::FileEntry remoteEntry;
-   remoteEntry.mutable_file()->set_path("/remoteShare1");
-   remoteEntry.mutable_file()->set_name("remoteFile.txt");
-   remoteEntry.mutable_file()->set_size(1 * 1024 * 1024); // 1Mo.
+   Protos::Common::Entry remoteEntry;
+   remoteEntry.set_path("/remoteShare1");
+   remoteEntry.set_name("remoteFile.txt");
+   remoteEntry.set_size(1 * 1024 * 1024); // 1Mo.
 
    try
    {
@@ -344,12 +344,12 @@ void Tests::getHashesFromAFileEntry1()
 
    // Find the id of the first shared directory.
    Protos::Core::GetEntriesResult sharedDirs = this->fileManager->getEntries();
-   const string sharedDirId = sharedDirs.dir(0).shared_dir().id().hash();
+   const string sharedDirId = sharedDirs.entry(0).shared_dir().id().hash();
 
-   Protos::Common::FileEntry entry;
-   entry.mutable_file()->set_path("/share1");
-   entry.mutable_file()->set_name("v.txt");
-   entry.mutable_file()->mutable_shared_dir()->mutable_id()->set_hash(sharedDirId);
+   Protos::Common::Entry entry;
+   entry.set_path("/share1");
+   entry.set_name("v.txt");
+   entry.mutable_shared_dir()->mutable_id()->set_hash(sharedDirId);
    QSharedPointer<IGetHashesResult> result = this->fileManager->getHashes(entry);
 
    HashesReceiver hashesReceiver;
@@ -376,12 +376,12 @@ void Tests::getHashesFromAFileEntry2()
    QTest::qWait(2000); // Begin the computing of the big2.bin hashes.
 
    Protos::Core::GetEntriesResult sharedDirs = this->fileManager->getEntries();
-   const string sharedDirId = sharedDirs.dir(0).shared_dir().id().hash();
+   const string sharedDirId = sharedDirs.entry(0).shared_dir().id().hash();
 
-   Protos::Common::FileEntry entry;
-   entry.mutable_file()->set_path("/");
-   entry.mutable_file()->set_name("big3.bin");
-   entry.mutable_file()->mutable_shared_dir()->mutable_id()->set_hash(sharedDirId);
+   Protos::Common::Entry entry;
+   entry.set_path("/");
+   entry.set_name("big3.bin");
+   entry.mutable_shared_dir()->mutable_id()->set_hash(sharedDirId);
    QSharedPointer<IGetHashesResult> result = this->fileManager->getHashes(entry);
 
    HashesReceiver hashesReceiver;
@@ -410,11 +410,11 @@ void Tests::browseSomedirectories()
    qDebug() << entries1Str;
 
    // Ask for the files and directories of the first shared directory
-   Protos::Core::GetEntriesResult entries2 = this->fileManager->getEntries(entries1.dir(0));
+   Protos::Core::GetEntriesResult entries2 = this->fileManager->getEntries(entries1.entry(0));
    qDebug() << QString::fromStdString(entries2.DebugString());
 
    // Ask for the files and directores of the first directory of the first shared directory
-   Protos::Core::GetEntriesResult entries3 = this->fileManager->getEntries(entries2.dir(0));
+   Protos::Core::GetEntriesResult entries3 = this->fileManager->getEntries(entries2.entry(0));
    qDebug() << QString::fromStdString(entries3.DebugString());
 }
 
@@ -572,16 +572,16 @@ void Tests::deleteAllFiles()
 void Tests::printSearch(const QString& terms, const Protos::Common::FindResult& result)
 {
    qDebug() << "Search : " << terms;
-   for (int i = 0; i < result.file_size(); i++)
-      qDebug() << "[" << result.file(i).level() << "] " << result.file(i).file().file().name().data();
+   for (int i = 0; i < result.entry_size(); i++)
+      qDebug() << "[" << result.entry(i).level() << "] " << result.entry(i).entry().name().data();
 }
 
 void Tests::compareExpectedResult(const Protos::Common::FindResult& result, quint32 expectedLevelResult[], QList<QString> expectedFileResult[])
 {
-   for (int i = 0; i < result.file_size(); i++)
+   for (int i = 0; i < result.entry_size(); i++)
    {
-      QVERIFY(result.file(i).level() == expectedLevelResult[i]);
-      QVERIFY(expectedFileResult[result.file(i).level()].contains(QString(result.file(i).file().file().name().data())));
+      QVERIFY(result.entry(i).level() == expectedLevelResult[i]);
+      QVERIFY(expectedFileResult[result.entry(i).level()].contains(QString(result.entry(i).entry().name().data())));
    }
 }
 

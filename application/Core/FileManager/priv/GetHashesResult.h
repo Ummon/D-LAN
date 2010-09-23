@@ -19,7 +19,7 @@ namespace FM
    {
       Q_OBJECT
    public:
-      GetHashesResult(const Protos::Common::FileEntry& fileEntry, Cache& cache, FileUpdater& fileUpdater);
+      GetHashesResult(const Protos::Common::Entry& fileEntry, Cache& cache, FileUpdater& fileUpdater);
       virtual ~GetHashesResult() {}
       Protos::Core::GetHashesResult start();
 
@@ -27,7 +27,7 @@ namespace FM
       void chunkHashKnown(QSharedPointer<Chunk> chunk);
 
    private:
-      const Protos::Common::FileEntry& fileEntry;
+      const Protos::Common::Entry& fileEntry;
       File* file; // TODO : if the file is deleted how can we know?
       Cache& cache;
       FileUpdater& fileUpdater;

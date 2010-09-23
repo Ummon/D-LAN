@@ -146,8 +146,7 @@ message Browse {
 // Core -> GUI
 // id : 0x43
 message BrowseResult {
-   repeated Common.Entry dir = 1;
-   repeated Common.FileEntry file = 2;   
+   repeated Common.Entry entry = 1;
 }
 
 // GUI -> Core
@@ -171,12 +170,11 @@ message CancelDownloads {
 // Message 'ReturnStatus'
 
 // GUI -> Core
-// Says to the core to download a file OR a directory (XOR).
+// Says to the core to download a file or a directory.
 // id : 0x71
 message Download {
    required Common.Hash peer_id = 1; // From where the file/dir is.
-   optional Common.Entry dir = 2;
-   optional Common.FileEntry file = 3;
+   required Common.Entry entry = 2;
 }
 // Core -> GUI
 // id : 0x72

@@ -38,8 +38,8 @@ namespace FM
       QStringList getSharedDirsReadWrite();
 
       QSharedPointer<IChunk> getChunk(const Common::Hash& hash);
-      virtual QList< QSharedPointer<IChunk> > newFile(const Protos::Common::FileEntry& remoteEntry);
-      QSharedPointer<IGetHashesResult> getHashes(const Protos::Common::FileEntry& file);
+      virtual QList< QSharedPointer<IChunk> > newFile(const Protos::Common::Entry& remoteEntry);
+      QSharedPointer<IGetHashesResult> getHashes(const Protos::Common::Entry& file);
 
       Protos::Core::GetEntriesResult getEntries(const Protos::Common::Entry& dir);
       Protos::Core::GetEntriesResult getEntries();

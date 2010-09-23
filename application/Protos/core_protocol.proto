@@ -19,7 +19,7 @@ package Protos.Core;
 // id : 0x01
 message IMAlive {
    required uint32 version = 1; // The version of the protocol used.
-   required uint16 port = 2; // The port listened by the core.
+   required uint32 port = 2; // The port listened by the core.
    required string nick = 3;
    required uint64 amount = 4; // [byte] Amount of sharing.
    
@@ -68,13 +68,12 @@ message Find {
 // a -> b
 // id : 0x31
 message GetEntries {
-   optional Common.Entry dir = 1; // If the directory is omitted the shared directories (roots) are return.
+   optional Common.Entry dir = 1; // If the directories are omitted the shared directories (roots) are return.
 }
 // b -> a
 // id : 0x32
 message GetEntriesResult {
-   repeated Common.Entry dir = 1;
-   repeated Common.FileEntry file = 2;
+   repeated Common.Entry entry = 1;
 }
 
 // Get hashes.
@@ -86,7 +85,7 @@ message GetEntriesResult {
 // a -> b
 // id : 0x41
 message GetHashes {
-   required Common.Entry file = 1;
+   required Common.Entry file = 1; // Must have the field shared_dir set.
 }
 // b -> a
 // id : 0x42

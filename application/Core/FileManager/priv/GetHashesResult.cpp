@@ -10,7 +10,7 @@
 
 using namespace FM;
 
-GetHashesResult::GetHashesResult(const Protos::Common::FileEntry& fileEntry, Cache& cache, FileUpdater& fileUpdater)
+GetHashesResult::GetHashesResult(const Protos::Common::Entry& fileEntry, Cache& cache, FileUpdater& fileUpdater)
    : fileEntry(fileEntry), file(0), cache(cache), fileUpdater(fileUpdater)
 {
    qRegisterMetaType<Common::Hash>("Common::Hash");

@@ -78,12 +78,12 @@ void Peer::update(const QHostAddress&  IP, quint16 port, const QString& nick, co
 
 void Peer::getEntries(const Protos::Common::Entry& dir)
 {
-   Protos::Core::GetEntries entriesMessage;
-   entriesMessage.mutable_dir()->CopyFrom(dir);
+   /*Protos::Core::GetEntries entriesMessage;
+   entriesMessage.mutable_dir()->CopyFrom(dir);*/
 }
 
 
-void Peer::getHashes(const Protos::Common::FileEntry& file)
+void Peer::getHashes(const Protos::Common::Entry& file)
 {
 
 }

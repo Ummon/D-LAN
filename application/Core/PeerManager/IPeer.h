@@ -42,7 +42,7 @@ namespace PM
         * This method is non-blocking, the hashes will be delivered by the signal 'nextHashResult' followed by
         * one or more 'nextHash' signal.
         */
-      virtual void getHashes(const Protos::Common::FileEntry& file) = 0;
+      virtual void getHashes(const Protos::Common::Entry& file) = 0;
 
       /**
         * Ask to download a chunk.

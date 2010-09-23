@@ -11,6 +11,8 @@ namespace Common
 
    struct MessageHeader
    {
+      MessageHeader() {}
+      MessageHeader(quint32 type, quint32 size, const Common::Hash senderID) : type(type), size(size), senderID(senderID) {}
       quint32 type;
       quint32 size;
       Common::Hash senderID;

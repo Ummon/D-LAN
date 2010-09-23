@@ -22,7 +22,6 @@ void Entry::populateEntry(Protos::Common::Entry* entry) const
    entry->set_path(this->getPath().toStdString());
    entry->set_name(this->getName().toStdString());
    entry->set_size(this->getSize());
-   entry->mutable_shared_dir()->mutable_id()->set_hash(static_cast<SharedDirectory*>(this->getRoot())->getId().getData(), Common::Hash::HASH_SIZE);
 }
 
 Cache* Entry::getCache()
