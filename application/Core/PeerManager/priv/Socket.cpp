@@ -2,13 +2,16 @@
 using namespace PM;
 
 #include <Protos/core_protocol.pb.h>
+#include <Protos/common.pb.h>
 
 #include <Common/Network.h>
 #include <Common/ZeroCopyStreamQIODevice.h>
-#include <priv/Log.h>
 
-Socket::Socket(QTcpSocket* socket)
-   : socket(socket), idle(true)
+#include <priv/Log.h>
+#include <priv/PeerManager.h>
+
+Socket::Socket(PeerManager* peerManager, QSharedPointer<FM::IFileManager> fileManager, QTcpSocket* socket)
+   : peerManager(peerManager), fileManager(fileManager), socket(socket), idle(true)
 {
 }
 
@@ -45,19 +48,16 @@ void Socket::setActive()
    this->idle = false;
 }
 
-void Socket::send(quint32 type, const google::protobuf::Message& message, const Common::Hash& senderID)
+void Socket::send(quint32 type, const google::protobuf::Message& message)
 {
-   Common::MessageHeader header;
-   header.type = type;
-   header.size = message.ByteSize();
-   header.senderID = senderID;
+   Common::MessageHeader header(type, message.ByteSize(), this->peerManager->getID());
 
-   L_DEBU(QString("Socket::send : header.type = %1, header.size = %2").arg(header.type, 0, 16).arg(header.size));
-   L_DEBU(QString::fromStdString(message.DebugString()));
+   L_DEBU(QString("Socket::send : header.type = %1, header.size = %2\n%3").arg(header.type, 0, 16).arg(header.size).arg(QString::fromStdString(message.DebugString())));
 
    Common::Network::writeHeader(*this->socket, header);
    Common::ZeroCopyOutputStreamQIODevice outputStream(this->socket);
-   message.SerializeToZeroCopyStream(&outputStream);
+   if (!message.SerializeToZeroCopyStream(&outputStream))
+      L_WARN(QString("Unable to send %1").arg(QString::fromStdString(message.DebugString())));
 }
 
 void Socket::dataReceived()
@@ -79,11 +79,39 @@ void Socket::dataReceived()
                Protos::Core::GetEntries getEntries;
                Common::ZeroCopyInputStreamQIODevice inputStream(this->socket);
                if (header.size == 0 || getEntries.ParseFromZeroCopyStream(&inputStream))
-                  emit newMessage(header.type, getEntries, this);
+               {
+                  this->send(
+                     0x32,
+                     getEntries.has_dir() ? this->fileManager->getEntries(getEntries.dir()) : this->fileManager->getEntries()
+                  );
+               }
+               this->finished();
             }
+            break;
 //         case 0x32 :
 
-//         case 0x41 :
+         case 0x41 :
+            {
+               Protos::Core::GetHashes getHashes;
+               Common::ZeroCopyInputStreamQIODevice inputStream(this->socket);
+               if (getHashes.ParseFromZeroCopyStream(&inputStream))
+               {
+                  this->currentHashesResult = this->fileManager->getHashes(getHashes.file());
+                  connect(this->currentHashesResult.data(), SIGNAL(nextHash(Common::Hash)), this, SLOT(nextAskedHash(Common::Hash)));
+                  Protos::Core::GetHashesResult res = this->currentHashesResult->start();
+
+                  this->nbHashToSend = res.nb_hash();
+
+                  this->send(0x42, res);
+
+                  if (res.status() != Protos::Core::GetHashesResult_Status_OK)
+                  {
+                     this->currentHashesResult.clear();
+                     this->finished();
+                  }
+               }
+            }
+            break;
 //         case 0x42 :
 //         case 0x43 :
 //         case 0x44 :
@@ -95,7 +123,7 @@ void Socket::dataReceived()
    }
    catch (Common::notEnoughData&)
    {
-      L_DEBU("Socket : Not enough data for read the header");
+      L_DEBU("Socket : Not enough data to read the header");
    }
 }
 
@@ -108,4 +136,17 @@ void Socket::finished()
 void Socket::disconnected()
 {
    emit close();
+}
+
+void Socket::nextAskedHash(Common::Hash hash)
+{
+   Protos::Common::Hash hashProto;
+   hashProto.set_hash(hash.getData(), Common::Hash::HASH_SIZE);
+   this->send(0x43, hashProto);
+
+   if (--this->nbHashToSend == 0)
+   {
+      this->currentHashesResult.clear();
+      this->finished();
+   }
 }

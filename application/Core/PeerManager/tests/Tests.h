@@ -34,6 +34,7 @@ private slots:
    void connectToServer();
    void askForRootEntries();
    void askForSomeEntries();
+   void askForHashes();
    void cleanupTestCase();
 
    void socketError(QAbstractSocket::SocketError error);

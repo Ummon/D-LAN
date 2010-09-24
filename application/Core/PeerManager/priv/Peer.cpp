@@ -8,13 +8,13 @@ using namespace PM;
 #include <priv/Log.h>
 
 Peer::Peer(PeerManager* peerManager, QSharedPointer<FM::IFileManager> fileManager, Common::Hash ID)
-   : peerManager(peerManager), fileManager(fileManager), ID(ID), alive(false)
+   : peerManager(peerManager), fileManager(fileManager), connectionPool(peerManager, fileManager), ID(ID), alive(false)
 {
    this->aliveTimer.setSingleShot(true);
    this->aliveTimer.setInterval(PEER_TIMEOUT * 1000);
    connect(&this->aliveTimer, SIGNAL(timeout()), this, SLOT(consideredDead()));
 
-   connect(&this->connectionPool, SIGNAL(newMessage(quint32, google::protobuf::Message, Socket*)), this, SLOT(messageReceived(quint32, google::protobuf::Message, Socket*)));
+//   connect(&this->connectionPool, SIGNAL(newMessage(quint32, google::protobuf::Message, Socket*)), this, SLOT(messageReceived(quint32, google::protobuf::Message, Socket*)));
 }
 
 Common::Hash Peer::getID()
@@ -76,51 +76,28 @@ void Peer::update(const QHostAddress&  IP, quint16 port, const QString& nick, co
    return true;
 }*/
 
-void Peer::getEntries(const Protos::Common::Entry& dir)
+QSharedPointer<IGetEntriesResult> Peer::getEntries(const Protos::Common::Entry& dir)
 {
    /*Protos::Core::GetEntries entriesMessage;
    entriesMessage.mutable_dir()->CopyFrom(dir);*/
+   return QSharedPointer<IGetEntriesResult>();
 }
 
 
-void Peer::getHashes(const Protos::Common::Entry& file)
+QSharedPointer<IGetHashesResult> Peer::getHashes(const Protos::Common::Entry& file)
 {
-
+   return QSharedPointer<IGetHashesResult>();
 }
 
-void Peer::getChunk(const Protos::Core::GetChunk& chunk)
+QSharedPointer<IGetChunkResult> Peer::getChunk(const Protos::Core::GetChunk& chunk)
 {
-
+   return QSharedPointer<IGetChunkResult>();
 }
 
 void Peer::newConnexion(QTcpSocket* tcpSocket)
 {
    L_DEBU(QString("New Connection from %1").arg(this->toStr()));
    this->connectionPool.newConnexion(tcpSocket);
-}
-
-void Peer::messageReceived(quint32 type, const google::protobuf::Message& message, Socket* socket)
-{
-   switch (type)
-   {
-   case 0x31 :
-      const Protos::Core::GetEntries& getEntriesMessage = dynamic_cast<const Protos::Core::GetEntries&>(message);
-      socket->send(
-         0x32,
-         getEntriesMessage.has_dir() ? this->fileManager->getEntries(getEntriesMessage.dir()) : this->fileManager->getEntries(),
-         this->peerManager->getID()
-      );
-      socket->finished();
-//   case 0x32 :
-
-//   case 0x41 :
-//   case 0x42 :
-//   case 0x43 :
-//   case 0x44 :
-
-//   case 0x51 :
-//   case 0x52 :
-   }
 }
 
 /**
@@ -141,3 +118,4 @@ void Peer::consideredDead()
    L_DEBU(QString("Peer \"%1\" is dead").arg(this->nick));
    this->alive = false;
 }
+

@@ -194,6 +194,20 @@ QList< QSharedPointer<IChunk> > Cache::newFile(const Protos::Common::Entry& remo
    return chunks;
 }
 
+/**
+  * Access the chunks of a file in an atomic way.
+  */
+QList< QSharedPointer<Chunk> > Cache::getChunks(const Protos::Common::Entry& fileEntry)
+{
+   QMutexLocker locker(&this->lock);
+
+   File* file = this->getFile(fileEntry);
+   if (!file)
+      return QList< QSharedPointer<Chunk> >();
+
+   return file->getChunks();
+}
+
 QStringList Cache::getSharedDirs(SharedDirectory::Rights rights) const
 {
    QMutexLocker locker(&this->lock);

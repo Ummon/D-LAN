@@ -1,5 +1,5 @@
-#ifndef PEERMANAGER_IGETHASHES_H
-#define PEERMANAGER_IGETHASHES_H
+#ifndef PEERMANAGER_IGET_HASHES_H
+#define PEERMANAGER_IGET_HASHES_H
 
 #include <QObject>
 
@@ -8,19 +8,17 @@
 
 #include <Common/Hash.h>
 
-namespace FM
+namespace PM
 {
-   class IGetHashes : public QObject
+   class IGetHashesResult : public QObject
    {
       Q_OBJECT
    public:
-      virtual ~IGetHashes() {}
+      virtual ~IGetHashesResult() {}
       virtual void start() = 0;
 
    signals:
       void nextHash(Common::Hash hash);
-      //void error(/*QString message*/);
-      //void result(Protos::Core::GetHashesResult& result);
    };
 }
 #endif

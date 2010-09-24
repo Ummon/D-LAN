@@ -4,6 +4,7 @@ moc_*.cpp
 *.pb.h
 *.pb.cpp
 *.user
+*.user.*
 *.session
 *.Release
 *.Debug
