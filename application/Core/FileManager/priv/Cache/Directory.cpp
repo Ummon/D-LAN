@@ -216,8 +216,9 @@ Directory* Directory::physicallyCreateSubDirectory(const QString& name)
   * checks if the size and the modification date match, if not then delete the
   * file and create a new one.
   */
-File* Directory::createFile(const QFileInfo& fileInfo)
+File* Directory::createFile(const QFileInfo& fileInfo, File** oldFile)
 {
+   *oldFile = 0;
    foreach (File* f, this->files)
    {
       if (f->getName() == fileInfo.fileName())
@@ -226,6 +227,7 @@ File* Directory::createFile(const QFileInfo& fileInfo)
          if (!f->isComplete() || f->correspondTo(fileInfo))
             return f;
 
+         *oldFile = f;
          delete f;
          break;
       }

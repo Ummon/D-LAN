@@ -52,7 +52,7 @@ namespace FM
 
       Directory* physicallyCreateSubDirectory(const QString& name);
 
-      File* createFile(const QFileInfo& fileInfo);
+      File* createFile(const QFileInfo& fileInfo, File** oldFile);
 
       File* getFile(const QString& name) const;
 

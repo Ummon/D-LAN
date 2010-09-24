@@ -350,19 +350,24 @@ void FileUpdater::scan(Directory* dir)
          }
          else
          {
-            File* file = currentDir->createFile(entry);
+            File* oldFile;
+            File* file = currentDir->createFile(entry, &oldFile);
 
             // If a file is incomplete (unfinished) we can't compute its hashes because we don't have all data.
             if (!file->hasAllHashes() && file->isComplete() && !this->filesWithoutHashes.contains(file))
                this->filesWithoutHashes << file;
 
-            currentFiles.removeOne(file);
+            if (oldFile)
+               currentFiles.removeOne(oldFile);
+            else
+               currentFiles.removeOne(file);
          }
       }
 
       // Deletes all the files and directories which doesn't exist on the file system.
       foreach (File* f, currentFiles)
          this->deleteEntry(f);
+
       foreach (Directory* d, currentSubDirs)
          this->deleteEntry(d);
    }
