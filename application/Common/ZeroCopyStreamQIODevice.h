@@ -3,7 +3,7 @@
 
 #include <QIODevice>
 
-#include <google/protobuf/io/zero_copy_stream.h>
+   #include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/stubs/common.h>
 
 #include "Constants.h"
@@ -14,14 +14,15 @@ namespace Common
    {
    public:
       ZeroCopyOutputStreamQIODevice(QIODevice* device);
+      ~ZeroCopyOutputStreamQIODevice();
       bool Next(void** data, int* size);
       void BackUp(int count);
       google::protobuf::int64 ByteCount() const;
 
    private:
       QIODevice* device;
-      bool bufferAvaible;
       char buffer[PROTOBUF_STREAMING_BUFFER_SIZE];
+      char* pos;
       google::protobuf::int64 bytesWritten;
    };
 
@@ -41,7 +42,7 @@ namespace Common
 
       int nbLastRead;
       char buffer[PROTOBUF_STREAMING_BUFFER_SIZE];
-      char* pos;
+      char* pos; ///< Point on the remaining data, remaing data size is "buffer + nbLastRead - pos".
 
       google::protobuf::int64 bytesRead;
    };

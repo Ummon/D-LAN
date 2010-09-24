@@ -66,7 +66,7 @@ void Socket::dataReceived()
    {
       Common::MessageHeader header = Common::Network::readHeader(*this->socket);
 
-      L_DEBU(QString("Data received from from %1 - %2, type = %3, size = %4").arg(this->socket->peerAddress().toString()).arg(header.senderID.toStr()).arg(header.type, 0, 16).arg(header.size));
+      L_DEBU(QString("Data received from %1 - %2, type = %3, size = %4").arg(this->socket->peerAddress().toString()).arg(header.senderID.toStr()).arg(header.type, 0, 16).arg(header.size));
 
       L_DEBU(QString("this->socket->bytesAvailable() = %1").arg(this->socket->bytesAvailable()));
 
@@ -74,11 +74,11 @@ void Socket::dataReceived()
       {
          switch (header.type)
          {
-         case 0x31 :
+         case 0x31 : // GetEntries.
             {
                Protos::Core::GetEntries getEntries;
                Common::ZeroCopyInputStreamQIODevice inputStream(this->socket);
-               if (header.size == 0 || getEntries.ParseFromZeroCopyStream(&inputStream))
+               if (header.size == 0 || getEntries.ParseFromBoundedZeroCopyStream(&inputStream, header.size))
                {
                   this->send(
                      0x32,
@@ -90,11 +90,11 @@ void Socket::dataReceived()
             break;
 //         case 0x32 :
 
-         case 0x41 :
+         case 0x41 : // GetHashes.
             {
                Protos::Core::GetHashes getHashes;
                Common::ZeroCopyInputStreamQIODevice inputStream(this->socket);
-               if (getHashes.ParseFromZeroCopyStream(&inputStream))
+               if (getHashes.ParseFromBoundedZeroCopyStream(&inputStream, header.size))
                {
                   this->currentHashesResult = this->fileManager->getHashes(getHashes.file());
                   connect(this->currentHashesResult.data(), SIGNAL(nextHash(Common::Hash)), this, SLOT(nextAskedHash(Common::Hash)));
@@ -116,7 +116,28 @@ void Socket::dataReceived()
 //         case 0x43 :
 //         case 0x44 :
 
-//         case 0x51 :
+         case 0x51 : // GetChunk.
+            {
+               /*
+               Protos::Core::GetChunk getChunk;
+               Common::ZeroCopyInputStreamQIODevice inputStream(this->socket);
+               if (getHashes.ParseFromZeroCopyStream(&inputStream))
+               {
+                  this->currentHashesResult = this->fileManager->getHashes(getHashes.file());
+                  connect(this->currentHashesResult.data(), SIGNAL(nextHash(Common::Hash)), this, SLOT(nextAskedHash(Common::Hash)));
+                  Protos::Core::GetHashesResult res = this->currentHashesResult->start();
+
+                  this->nbHashToSend = res.nb_hash();
+
+                  this->send(0x42, res);
+
+                  if (res.status() != Protos::Core::GetHashesResult_Status_OK)
+                  {
+                     this->currentHashesResult.clear();
+                     this->finished();
+                  }
+               }*/
+            }
 //         case 0x52 :
          }
       }

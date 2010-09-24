@@ -51,7 +51,6 @@ Protos::Core::GetHashesResult GetHashesResult::start()
 
 void GetHashesResult::chunkHashKnown(QSharedPointer<Chunk> chunk)
 {
-   L_WARN(QString::number(chunk->num));
    if (chunk->isOwnedBy(this->file))
       emit nextHash(chunk->getHash());
 }

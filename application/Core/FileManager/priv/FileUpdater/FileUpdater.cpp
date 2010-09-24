@@ -475,8 +475,7 @@ void FileUpdater::treatEvents(const QList<WatcherEvent>& events)
       )
          continue;
 
-      L_DEBU("A file structure event occurs :");
-      L_DEBU(event.toStr());
+      L_DEBU(QString("A file structure event occurs :\n%1").arg(event.toStr()));
 
       switch (event.type)
       {
