@@ -10,7 +10,7 @@ namespace Common
    const QString LOG_FOLDER_NAME("log");
    const QString FILE_CACHE("cache.bin"); ///< The name of the file cache saved in the home directory.
 
-   const int PROTOBUF_STREAMING_BUFFER_SIZE(64 * 1024); ///< 64kB.
+   const int PROTOBUF_STREAMING_BUFFER_SIZE(4 * 1024); ///< 4kB.
 }
 
 #endif

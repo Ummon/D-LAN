@@ -18,6 +18,7 @@ private slots:
    void compareTwoHash();
    void math();
    void availableDiskSpace();
+   void readAndWriteWithZeroCopyStreamQIODevice();
 };
 
 #endif

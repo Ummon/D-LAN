@@ -2,36 +2,48 @@
 using namespace Common;
 
 ZeroCopyOutputStreamQIODevice::ZeroCopyOutputStreamQIODevice(QIODevice* device)
-   : device(device), bufferAvaible(false), bytesWritten(0)
+   : device(device), bytesWritten(0)
 {
+   this->pos = this->buffer;
+}
+
+ZeroCopyOutputStreamQIODevice::~ZeroCopyOutputStreamQIODevice()
+{
+   if (this->pos != this->buffer)
+      this->device->write(this->buffer, this->pos - this->buffer);
 }
 
 
 bool ZeroCopyOutputStreamQIODevice::Next(void** data, int* size)
 {
-   if (this->bufferAvaible)
+   if (this->pos != this->buffer)
    {
-      int nBytes = this->device->write(this->buffer, PROTOBUF_STREAMING_BUFFER_SIZE);
+      int nBytes = this->device->write(this->buffer, this->pos - this->buffer);
       if (nBytes == -1)
          return false;
+
+      // We assume that all the buffer is written.
+      if (nBytes != this->pos - this->buffer)
+         throw 1;
+
+      this->pos -= nBytes;
       this->bytesWritten += nBytes;
    }
 
-   this->bufferAvaible = true;
    *data = this->buffer;
    *size = PROTOBUF_STREAMING_BUFFER_SIZE;
+
+   this->pos = this->buffer + PROTOBUF_STREAMING_BUFFER_SIZE;
 
    return true;
 }
 
 void ZeroCopyOutputStreamQIODevice::BackUp(int count)
 {
-   if (this->bufferAvaible)
-   {
-      int nBytes = this->device->write(this->buffer, PROTOBUF_STREAMING_BUFFER_SIZE - count);
-      if (nBytes != -1)
-         this->bytesWritten += count;
-   }
+   this->pos -= count;
+
+   if (this->pos < this->buffer)
+      this->pos = this->buffer;
 }
 
 google::protobuf::int64 ZeroCopyOutputStreamQIODevice::ByteCount() const
@@ -39,6 +51,12 @@ google::protobuf::int64 ZeroCopyOutputStreamQIODevice::ByteCount() const
    return this->bytesWritten;
 }
 
+/**
+  * @class ZeroCopyInputStreamQIODevice
+  * A bridge to read data from a QIODevice by a google::protobuf::message.
+  * Warning : The data will be effectively read when the object is destroyed.
+  * See the unit tests for more some examples.
+  */
 
 ZeroCopyInputStreamQIODevice::ZeroCopyInputStreamQIODevice(QIODevice* device)
    : device(device), nbLastRead(0), pos(buffer), bytesRead(0)
@@ -81,7 +99,7 @@ bool ZeroCopyInputStreamQIODevice::Next(const void** data, int* size)
 
 void ZeroCopyInputStreamQIODevice::BackUp(int count)
 {
-   this->pos -= count + 1; // Don't why I add '+ 1' ..
+   this->pos -= count;
 }
 
 bool ZeroCopyInputStreamQIODevice::Skip(int count)

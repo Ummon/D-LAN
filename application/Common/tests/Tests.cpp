@@ -2,11 +2,16 @@
 
 #include <QtDebug>
 #include <QByteArray>
+#include <QFile>
+#include <QDir>
+
+#include <Protos/common.pb.h>
 
 #include <Hash.h>
 #include <Math.h>
 #include <PersistantData.h>
 #include <Global.h>
+#include <ZeroCopyStreamQIODevice.h>
 using namespace Common;
 
 Tests::Tests()
@@ -118,6 +123,53 @@ void Tests::math()
 void Tests::availableDiskSpace()
 {
    qDebug() << "Available disk space [Mo] : " << Common::Global::availableDiskSpace(".") / 1024 / 1024;
+}
+
+
+#include <google/protobuf/io/zero_copy_stream_impl.h>
+
+void Tests::readAndWriteWithZeroCopyStreamQIODevice()
+{
+   QString filePath(QDir::tempPath().append("/test.bin"));
+   QFile file(filePath);
+   file.remove();
+
+   Hash hash1 = Hash::fromStr("2c583d414e4a9eb956228209b367e48f59078a4b");
+   Hash hash2 = Hash::fromStr("5c9c3741bded231f84b8a8200eaf3e30a9c0a951");
+
+   qDebug() << "hash1 : " << hash1.toStr();
+   qDebug() << "hash2 : " << hash2.toStr();
+
+   Protos::Common::Hash hashMessage1;
+   Protos::Common::Hash hashMessage2;
+
+   file.open(QIODevice::WriteOnly);
+   {
+      ZeroCopyOutputStreamQIODevice outputStream(&file);
+
+      hashMessage1.set_hash(hash1.getData(),  Hash::HASH_SIZE);
+      hashMessage1.SerializeToZeroCopyStream(&outputStream);
+
+      hashMessage2.set_hash(hash2.getData(), Hash::HASH_SIZE);
+      hashMessage2.SerializeToZeroCopyStream(&outputStream);
+   }
+   file.close();
+
+   QFileInfo fileInfo(filePath);
+   QCOMPARE(fileInfo.size(), static_cast<long long>(hashMessage1.ByteSize() + hashMessage2.ByteSize()));
+
+   hashMessage1.Clear();
+   hashMessage2.Clear();
+   file.open(QIODevice::ReadOnly);
+   {
+      ZeroCopyInputStreamQIODevice inputStream(&file);
+      hashMessage1.ParseFromBoundedZeroCopyStream(&inputStream, 22);
+      hashMessage2.ParseFromBoundedZeroCopyStream(&inputStream, 22);
+   }
+   file.close();
+
+   QCOMPARE(QByteArray(hashMessage1.hash().data(), Hash::HASH_SIZE), QByteArray(hash1.getData(), Hash::HASH_SIZE));
+   QCOMPARE(QByteArray(hashMessage2.hash().data(), Hash::HASH_SIZE), QByteArray(hash2.getData(), Hash::HASH_SIZE));
 }
 
 

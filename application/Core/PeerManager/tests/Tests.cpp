@@ -161,7 +161,6 @@ void Tests::askForHashes()
    {
       QFile file("sharedDirs/share1/big.bin");
       file.open(QIODevice::WriteOnly);
-      file.resize(128 * 1024 * 1024); // 128Mo
 
       // To have four different hashes.
       for (int i = 0; i < 4; i++)
@@ -170,6 +169,8 @@ void Tests::askForHashes()
          file.write(randomData);
       }
    }
+
+   QTest::qWait(200);
 
    Protos::Core::GetHashes getHashesMessage;
    Protos::Common::Entry* fileEntry = getHashesMessage.mutable_file();
@@ -203,8 +204,11 @@ void Tests::sendMessage(const PeerData& peer, quint32 type, const google::protob
    qDebug() << "Tests::sendMessage : " << endl << QString::fromStdString(message.DebugString());
 
    Common::Network::writeHeader(*this->socket, Common::MessageHeader(type, message.ByteSize(), peer.ID));
-   Common::ZeroCopyOutputStreamQIODevice outputStream(this->socket);
-   message.SerializeToZeroCopyStream(&outputStream);
+
+   {
+      Common::ZeroCopyOutputStreamQIODevice outputStream(this->socket);
+      message.SerializeToZeroCopyStream(&outputStream);
+   }
 
    while (this->socket->bytesAvailable() < Common::Network::HEADER_SIZE) QTest::qWait(500);
 
@@ -214,27 +218,28 @@ void Tests::sendMessage(const PeerData& peer, quint32 type, const google::protob
 
    switch (header.type)
    {
-   case 0x32 :
+   case 0x32 : // GetEntriesResult
       {
          Common::ZeroCopyInputStreamQIODevice inputStream(this->socket);
          Protos::Core::GetEntriesResult result;
-         result.ParseFromZeroCopyStream(&inputStream);
+         result.ParseFromBoundedZeroCopyStream(&inputStream, header.size);
          this->getEntriesResultList << result;
          break;
       }
 
-   case 0x42 :
+   case 0x42 : // GetHashesResult
       {
          int nbHash = 0;
 
          {
             Common::ZeroCopyInputStreamQIODevice inputStream(this->socket);
             Protos::Core::GetHashesResult result;
-            result.ParseFromZeroCopyStream(&inputStream);
+            result.ParseFromBoundedZeroCopyStream(&inputStream, header.size);
             qDebug() << QString::fromStdString(result.DebugString());
             nbHash = result.nb_hash();
          }
 
+         // Wait and read each hash.
          const int nbTotalHash = nbHash;
          Protos::Common::Hash hash;
          while (nbHash--)
@@ -244,7 +249,7 @@ void Tests::sendMessage(const PeerData& peer, quint32 type, const google::protob
             Common::MessageHeader header = Common::Network::readHeader(*this->socket);
             QCOMPARE(header.type, 0x43U);
             Common::ZeroCopyInputStreamQIODevice inputStream(this->socket);
-            hash.ParseFromZeroCopyStream(&inputStream);
+            hash.ParseFromBoundedZeroCopyStream(&inputStream, header.size);
             qDebug() << nbTotalHash - 1 - nbHash << " : " <<  QString::fromStdString(hash.DebugString());
          }
          break;
