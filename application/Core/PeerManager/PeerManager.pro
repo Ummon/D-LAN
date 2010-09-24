@@ -43,12 +43,13 @@ SOURCES += priv/PeerManager.cpp \
     priv/Socket.cpp
 HEADERS += IPeerManager.h \
     IPeer.h \
-    IGetEntries.h \
     priv/PeerManager.h \
     priv/Peer.h \
     Builder.h \
     priv/Log.h \
     priv/Constants.h \
-    IGetHashes.h \
     priv/ConnectionPool.h \
-    priv/Socket.h
+    priv/Socket.h \
+    IGetEntriesResult.h \
+    IGetHashesResult.h \
+    IGetChunkResult.h

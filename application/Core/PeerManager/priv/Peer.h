@@ -6,14 +6,14 @@
 #include <QString>
 #include <QTcpSocket>
 #include <QHostAddress>
+#include <QSharedPointer>
 
 #include <google/protobuf/text_format.h>
 
 #include <Common/Hash.h>
 #include <Common/Network.h>
 
-#include <QSharedPointer>
-
+#include <Core/FileManager/IGetHashesResult.h>
 #include <Core/FileManager/IFileManager.h>
 
 #include <IPeer.h>
@@ -39,14 +39,13 @@ namespace PM
       void update(const QHostAddress& IP, quint16 port, const QString& nick, const quint64& sharingAmount);
 
       //bool send(const QByteArray& data) ;
-      void getEntries(const Protos::Common::Entry& dir);
-      void getHashes(const Protos::Common::Entry& file);
-      void getChunk(const Protos::Core::GetChunk& chunk);
+      QSharedPointer<IGetEntriesResult> getEntries(const Protos::Common::Entry& dir);
+      QSharedPointer<IGetHashesResult> getHashes(const Protos::Common::Entry& file);
+      QSharedPointer<IGetChunkResult> getChunk(const Protos::Core::GetChunk& chunk);
 
       void newConnexion(QTcpSocket* tcpSocket);
 
    private slots:
-      void messageReceived(quint32 type, const google::protobuf::Message& message, Socket* socket);
 
 //      void sendGetEntriesRequest(QTcpSocket* socket = 0);
       void consideredDead();
@@ -56,10 +55,11 @@ namespace PM
    private:
       QString toStr();
 
-      ConnectionPool connectionPool;
-
       PeerManager* peerManager;
       QSharedPointer<FM::IFileManager> fileManager;
+
+      ConnectionPool connectionPool;
+
 
       Common::Hash ID;
       QHostAddress IP;

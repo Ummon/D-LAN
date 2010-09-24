@@ -2,16 +2,19 @@
 #define PEERMANAGER_IPEER_H
 
 #include <QObject>
+#include <QSharedPointer>
 
 #include <Protos/common.pb.h>
 #include <Protos/core_protocol.pb.h>
 #include <QHostAddress>
 
 #include <Common/Hashes.h>
+#include <IGetEntriesResult.h>
+#include <IGetHashesResult.h>
+#include <IGetChunkResult.h>
 
 namespace PM
 {
-   class IGetEntries;
    class IGetHashes;
 
    class IPeer : public QObject
@@ -35,22 +38,21 @@ namespace PM
         * 'entriesResult'.
         * If a second getEntries
         */
-      virtual void getEntries(const Protos::Common::Entry& dir) = 0;
+      virtual QSharedPointer<IGetEntriesResult> getEntries(const Protos::Common::Entry& dir) = 0;
 
       /**
         * Ask for the hashes of a given file.
         * This method is non-blocking, the hashes will be delivered by the signal 'nextHashResult' followed by
         * one or more 'nextHash' signal.
         */
-      virtual void getHashes(const Protos::Common::Entry& file) = 0;
+      virtual QSharedPointer<IGetHashesResult> getHashes(const Protos::Common::Entry& file) = 0;
 
       /**
         * Ask to download a chunk.
         */
-      virtual void getChunk(const Protos::Core::GetChunk& chunk) = 0;
+      virtual QSharedPointer<IGetChunkResult> getChunk(const Protos::Core::GetChunk& chunk) = 0;
 
    signals:
-      void entriesResult(const Protos::Core::GetEntriesResult& entries);
 
       void nextHashResult(Protos::Core::GetHashesResult hashesResult);
       void nextHash(Common::Hash hash);

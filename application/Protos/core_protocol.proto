@@ -96,9 +96,9 @@ message GetHashesResult {
       ERROR_UNKNOWN = 255;
    }
    required Status status = 1;
+   required uint32 nb_hash = 2;
 }
 // For each hash, this message is sent. Only if GetHashesResult.status == OK.
-// 'a' know how many hash there are.
 // b -> a
 // id = 0x43
 // Common.Hash

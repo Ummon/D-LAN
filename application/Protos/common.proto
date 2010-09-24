@@ -28,7 +28,7 @@ message Entry {
       DIR = 1;
    }
    required Type type = 1;
-   required string path = 2; // Relative path from the sharing directory. For example : "/Videos/My cat". A root directory has an empty path : "".
+   required string path = 2; // Relative path from the sharing directory. For example : "/Videos/My cat/". A root directory has a one slash : "/".
    required string name = 3; // Directory name or file name. For example : "MyLOLCat.avi". A root directory has an undetermined name.
    required uint64 size = 4; // [bytes].
    optional SharedDir shared_dir = 5; // The shared directory of the entry.

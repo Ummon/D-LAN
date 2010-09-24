@@ -22,7 +22,6 @@ namespace Common
       QIODevice* device;
       bool bufferAvaible;
       char buffer[PROTOBUF_STREAMING_BUFFER_SIZE];
-      int bufferSize;
       google::protobuf::int64 bytesWritten;
    };
 
@@ -30,6 +29,8 @@ namespace Common
    {
    public:
       ZeroCopyInputStreamQIODevice(QIODevice* device);
+      ~ZeroCopyInputStreamQIODevice();
+
       bool Next(const void** data, int* size);
       void BackUp(int count);
       bool Skip(int count);
@@ -38,10 +39,10 @@ namespace Common
    private:
       QIODevice* device;
 
-      int backupCount;
       int nbLastRead;
       char buffer[PROTOBUF_STREAMING_BUFFER_SIZE];
-      int bufferSize;
+      char* pos;
+
       google::protobuf::int64 bytesRead;
    };
 }

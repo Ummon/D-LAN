@@ -347,7 +347,7 @@ void Tests::getHashesFromAFileEntry1()
    const string sharedDirId = sharedDirs.entry(0).shared_dir().id().hash();
 
    Protos::Common::Entry entry;
-   entry.set_path("/share1");
+   entry.set_path("/share1/");
    entry.set_name("v.txt");
    entry.mutable_shared_dir()->mutable_id()->set_hash(sharedDirId);
    QSharedPointer<IGetHashesResult> result = this->fileManager->getHashes(entry);
@@ -357,7 +357,7 @@ void Tests::getHashesFromAFileEntry1()
 
    Protos::Core::GetHashesResult res = result->start();
 
-   QVERIFY(res.status() == Protos::Core::GetHashesResult_Status_OK);
+   QCOMPARE(res.status(), Protos::Core::GetHashesResult_Status_OK);
 }
 
 void Tests::getHashesFromAFileEntry2()
@@ -387,10 +387,9 @@ void Tests::getHashesFromAFileEntry2()
    HashesReceiver hashesReceiver;
    connect(result.data(), SIGNAL(nextHash(Common::Hash)), &hashesReceiver, SLOT(nextHash(Common::Hash)));
    Protos::Core::GetHashesResult res = result->start(); // Should stop the computing of 'big2.bin' and switch to 'big3.bin'.
+   QCOMPARE(res.status(), Protos::Core::GetHashesResult_Status_OK);
 
-   QTest::qWait(5000);
-
-   QVERIFY(res.status() == Protos::Core::GetHashesResult_Status_OK);
+   QTest::qWait(4000);
 }
 
 void Tests::browseSomedirectories()

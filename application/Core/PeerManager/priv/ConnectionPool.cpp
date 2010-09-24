@@ -7,7 +7,8 @@ using namespace PM;
 #include <priv/Constants.h>
 #include <priv/Socket.h>
 
-ConnectionPool::ConnectionPool()
+ConnectionPool::ConnectionPool(PeerManager* peerManager, QSharedPointer<FM::IFileManager> fileManager)
+   : peerManager(peerManager), fileManager(fileManager)
 {
 //   connect(&this->timer, SIGNAL(timeout()), this, SLOT(cleanIdleSockets()));
 //   this->timer.start();
@@ -25,9 +26,9 @@ void ConnectionPool::setIP(const QHostAddress& IP, quint16 port)
   */
 void ConnectionPool::newConnexion(QTcpSocket* tcpSocket)
 {
-   Socket* socket = new Socket(tcpSocket);
+   Socket* socket = new Socket(this->peerManager, this->fileManager, tcpSocket);
    this->sockets << socket;
-   connect(socket, SIGNAL(newMessage(quint32, const google::protobuf::Message&, Socket*)), this, SIGNAL(newMessage(quint32, const google::protobuf::Message&, Socket*)));
+   //connect(socket, SIGNAL(newMessage(quint32, const google::protobuf::Message&, Socket*)), this, SIGNAL(newMessage(quint32, const google::protobuf::Message&, Socket*)));
    connect(socket, SIGNAL(getIdle(Socket*)), this, SLOT(socketGetIdle(Socket*)));
 
    socket->startListening();
