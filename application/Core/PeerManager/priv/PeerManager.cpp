@@ -135,6 +135,21 @@ void PeerManager::newConnection(QTcpSocket* tcpSocket)
       this->dataReceived(tcpSocket); // The case where some data arrived before the 'connect' above.
 }
 
+void PeerManager::onGetChunk(Common::Hash hash, int offset, ISocket* socket)
+{
+   if (this->receivers(SIGNAL(getChunk(Common::Hash, int, ISocket*))) < 1)
+   {
+      Protos::Core::GetChunkResult mess;
+      mess.set_status(Protos::Core::GetChunkResult_Status_ERROR_UNKNOWN);
+      socket->send(0x52, mess);
+      socket->finished();
+      L_ERRO("PeerManager::onGetChunk(..) : no slot connected to the signal 'getChunk(..)'");
+      return;
+   }
+
+   emit getChunk(hash, offset, socket);
+}
+
 void PeerManager::dataReceived(QTcpSocket* tcpSocket)
 {
    if (!tcpSocket)

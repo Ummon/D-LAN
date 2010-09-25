@@ -36,6 +36,8 @@ namespace PM
       void updatePeer(const Common::Hash& ID, const QHostAddress& IP, quint16 port, const QString& nick, const quint64& sharingAmount);
       void newConnection(QTcpSocket* tcpSocket);
 
+      void onGetChunk(Common::Hash hash, int offset, ISocket* socket);
+
    private slots:
       void dataReceived(QTcpSocket* tcpSocket = 0);
       void disconnected(QTcpSocket* tcpSocket = 0);

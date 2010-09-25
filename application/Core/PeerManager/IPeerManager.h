@@ -10,8 +10,11 @@
 namespace PM
 {
    class IPeer;
+   class ISocket;
+
    class IPeerManager : public QObject
    {
+      Q_OBJECT
    public:
       virtual ~IPeerManager() {}
       virtual Common::Hash getID() = 0;
@@ -30,6 +33,9 @@ namespace PM
         * @param socket PeerManager will care about deleting the socket.
         */
       virtual void newConnection(QTcpSocket* tcpSocket) = 0;
+
+   signals:
+      void getChunk(Common::Hash hash, int offset, ISocket* socket);
    };
 }
 #endif
