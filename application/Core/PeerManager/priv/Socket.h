@@ -8,14 +8,15 @@
 #include <google/protobuf/message.h>
 
 #include <Core/FileManager/IFileManager.h>
-
 #include <Common/Hash.h>
+
+#include <ISocket.h>
 
 namespace PM
 {
    class PeerManager;
 
-   class Socket : public QObject
+   class Socket : public ISocket
    {
       Q_OBJECT
    public:
@@ -23,9 +24,9 @@ namespace PM
       Socket(const QHostAddress& address, quint16 port);
       ~Socket();
 
-      void startListening();
-      //QTcpSocket* getSocket();
+      QIODevice* getDevice();
 
+      void startListening();
       bool isIdle();
       void setActive();
 
@@ -33,7 +34,7 @@ namespace PM
       void finished();
 
    signals:
-//      void newMessage(quint32 type, const google::protobuf::Message& message, Socket* socket);
+//    void newMessage(quint32 type, const google::protobuf::Message& message, Socket* socket);
       void getIdle(Socket*);
       void close();
 

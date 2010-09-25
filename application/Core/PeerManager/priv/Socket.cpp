@@ -27,6 +27,11 @@ Socket::~Socket()
    delete this->socket;
 }
 
+QIODevice* Socket::getDevice()
+{
+   return this->socket;
+}
+
 void Socket::startListening()
 {
    connect(this->socket, SIGNAL(readyRead()), this, SLOT(dataReceived()));
@@ -118,25 +123,12 @@ void Socket::dataReceived()
 
          case 0x51 : // GetChunk.
             {
-               /*
                Protos::Core::GetChunk getChunk;
                Common::ZeroCopyInputStreamQIODevice inputStream(this->socket);
-               if (getHashes.ParseFromZeroCopyStream(&inputStream))
+               if (getChunk.ParseFromZeroCopyStream(&inputStream))
                {
-                  this->currentHashesResult = this->fileManager->getHashes(getHashes.file());
-                  connect(this->currentHashesResult.data(), SIGNAL(nextHash(Common::Hash)), this, SLOT(nextAskedHash(Common::Hash)));
-                  Protos::Core::GetHashesResult res = this->currentHashesResult->start();
-
-                  this->nbHashToSend = res.nb_hash();
-
-                  this->send(0x42, res);
-
-                  if (res.status() != Protos::Core::GetHashesResult_Status_OK)
-                  {
-                     this->currentHashesResult.clear();
-                     this->finished();
-                  }
-               }*/
+                  this->peerManager->onGetChunk(Common::Hash(getChunk.chunk().hash().data()), getChunk.offset(), this);
+               }
             }
 //         case 0x52 :
          }

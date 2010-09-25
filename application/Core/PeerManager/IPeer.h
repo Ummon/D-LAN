@@ -57,8 +57,6 @@ namespace PM
       void nextHashResult(Protos::Core::GetHashesResult hashesResult);
       void nextHash(Common::Hash hash);
 
-      void chunkData(QIODevice* device);
-
       //void nextHashError();
 
       /*

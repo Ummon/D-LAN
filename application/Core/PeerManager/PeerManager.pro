@@ -52,4 +52,5 @@ HEADERS += IPeerManager.h \
     priv/Socket.h \
     IGetEntriesResult.h \
     IGetHashesResult.h \
-    IGetChunkResult.h
+    IGetChunkResult.h \
+    ISocket.h
