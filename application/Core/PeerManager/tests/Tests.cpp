@@ -14,6 +14,9 @@ using namespace PM;
 #include <Common/Network.h>
 #include <Common/ZeroCopyStreamQIODevice.h>
 
+#include <ResultListener.h>
+#include <IGetEntriesResult.h>
+#include <IGetHashesResult.h>
 #include <Constants.h>
 
 Tests::Tests()
@@ -27,97 +30,46 @@ void Tests::initTestCase()
 
    Common::PersistantData::rmValue(Common::FILE_CACHE); // Reset the stored cache.
    this->createInitialFiles();
-   this->fileManager = FM::Builder::newFileManager();
 
-   QStringList sharedDirs;
-   sharedDirs << QDir::currentPath().append("/sharedDirs/share1") << QDir::currentPath().append("/sharedDirs/share2");
-   this->fileManager->setSharedDirsReadOnly(sharedDirs);
+   this->fileManagers << FM::Builder::newFileManager() << FM::Builder::newFileManager();
+   this->peerManagers << Builder::newPeerManager(this->fileManagers[0]) << Builder::newPeerManager(this->fileManagers[1]);
 
-   this->peerManager = Builder::newPeerManager(this->fileManager);
+   this->fileManagers[0]->setSharedDirsReadOnly(QStringList() << QDir::currentPath().append("/sharedDirs/peer1"));
+   this->fileManagers[1]->setSharedDirsReadOnly(QStringList() << QDir::currentPath().append("/sharedDirs/peer2"));
 
-   this->socket = new QTcpSocket();
-   this->server = new TestServer(this->peerManager);
-}
+   this->peerUpdater = new PeerUpdater(this->fileManagers, this->peerManagers);
 
-void Tests::getId()
-{
-   qDebug() << "===== getId() =====";
-
-   Common::Hash ID = this->peerManager->getID();
-   QVERIFY(!ID.isNull());
-   qDebug() << "Current ID: " << ID.toStr();
-}
-
-void Tests::setGetNick()
-{
-   qDebug() << "===== setGetNick() =====";
-
-   this->peerManager->setNick("Bob");
-   QVERIFY(this->peerManager->getNick() == "Bob");
+   this->servers << new TestServer(this->peerManagers[0], PORT) << new TestServer(this->peerManagers[1], PORT + 1);
 }
 
 void Tests::updatePeers()
 {
    qDebug() << "===== updatePeers() =====";
 
-   const int NUMBER_OF_PEER = 3;
-   this->peerUpdater = new PeerUpdater(this->peerManager, NUMBER_OF_PEER);
-   QTest::qWait(1000);
+   this->peerUpdater->start();
 
-   QList<PeerData> peers = this->peerUpdater->getPeers();
-   QCOMPARE(peers.size(), NUMBER_OF_PEER);
+   QTest::qWait(2000);
 
-   int n = 0;
-   for (QListIterator<IPeer*> i(this->peerManager->getPeers()); i.hasNext();)
-   {
-      IPeer* peer = i.next();
-      for (QMutableListIterator<PeerData> j(peers); j.hasNext();)
-      {
-         PeerData peerData = j.next();
-         if (peerData.ID == peer->getID())
-         {
-            QCOMPARE(peerData.IP, peer->getIP());
-            QCOMPARE(peerData.nick, peer->getNick());
-            QCOMPARE(peerData.sharingAmount, peer->getSharingAmount());
-            n += 1;
-            j.remove();
-            break;
-         }
-      }
-   }
+   // Check if each peer know the other.
+   QCOMPARE(this->peerManagers[0]->getPeers().size(), 1);
+   QCOMPARE(this->peerManagers[1]->getPeers().size(), 1);
 
-   QCOMPARE(n, NUMBER_OF_PEER);
+   QCOMPARE(this->peerManagers[1]->getPeers()[0]->getID(), this->peerManagers[0]->getID());
+   QCOMPARE(this->peerManagers[1]->getPeers()[0]->getNick(), this->peerManagers[0]->getNick());
+   QCOMPARE(this->peerManagers[1]->getPeers()[0]->getSharingAmount(), this->fileManagers[0]->getAmount());
 
-   this->peerUpdater->stop();
+   QCOMPARE(this->peerManagers[0]->getPeers()[0]->getID(), this->peerManagers[1]->getID());
+   QCOMPARE(this->peerManagers[0]->getPeers()[0]->getNick(), this->peerManagers[1]->getNick());
+   QCOMPARE(this->peerManagers[0]->getPeers()[0]->getSharingAmount(), this->fileManagers[1]->getAmount());
 }
 
 void Tests::getPeerFromID()
 {
    qDebug() << "===== getPeerFromID() =====";
 
-   QList<PeerData> peers = this->peerUpdater->getPeers();
-   for (QMutableListIterator<PeerData> j(peers); j.hasNext();)
-   {
-      PeerData peerData = j.next();
-      IPeer* peer = this->peerManager->getPeer(peerData.ID);
-
-      QVERIFY(peer);
-
-      QCOMPARE(peerData.IP, peer->getIP());
-      QCOMPARE(peerData.nick, peer->getNick());
-      QCOMPARE(peerData.sharingAmount, peer->getSharingAmount());
-   }
-
-   QVERIFY(this->peerManager->getPeer(Common::Hash::rand()) == 0);
-}
-
-void Tests::connectToServer()
-{
-   qDebug() << "===== connectToServer() =====";
-
-   connect(this->socket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(socketError(QAbstractSocket::SocketError)));
-   this->socket->connectToHost(QHostAddress::LocalHost, PORT);
-   QVERIFY(this->socket->waitForConnected());
+   QCOMPARE(this->peerManagers[0]->getID(), this->peerManagers[1]->getPeer(this->peerManagers[0]->getID())->getID());
+   QCOMPARE(this->peerManagers[1]->getID(), this->peerManagers[0]->getPeer(this->peerManagers[1]->getID())->getID());
+   QVERIFY(this->peerManagers[0]->getPeer(Common::Hash::rand()) == 0);
 }
 
 void Tests::askForRootEntries()
@@ -125,9 +77,11 @@ void Tests::askForRootEntries()
    qDebug() << "===== askForRootEntries() =====";
 
    Protos::Core::GetEntries getEntriesMessage;
-   this->sendMessage(this->peerUpdater->getPeers().first(), 0x31, getEntriesMessage);
-   QVERIFY(!this->getEntriesResultList.isEmpty());
-   qDebug() << QString::fromStdString(this->getEntriesResultList.last().DebugString());
+   QSharedPointer<IGetEntriesResult> result = this->peerManagers[0]->getPeers()[0]->getEntries(getEntriesMessage);
+   connect(result.data(), SIGNAL(result(Protos::Core::GetEntriesResult)), &this->resultListener, SLOT(entriesResult(Protos::Core::GetEntriesResult)));
+   result->start();
+   QTest::qWait(1000);
+   QCOMPARE(this->resultListener.getNbEntriesResultReceived(), 1);
 }
 
 /**
@@ -137,20 +91,24 @@ void Tests::askForSomeEntries()
 {
    qDebug() << "===== askForSomeEntries() =====";
 
-   QVERIFY(!this->getEntriesResultList.isEmpty());
+   QVERIFY(!this->resultListener.getEntriesResultList().isEmpty());
 
    Protos::Core::GetEntries getEntriesMessage1;
-   getEntriesMessage1.mutable_dir()->CopyFrom(this->getEntriesResultList.last().entry(0));
-   this->sendMessage(this->peerUpdater->getPeers().first(), 0x31, getEntriesMessage1);
-   QVERIFY(!this->getEntriesResultList.isEmpty());
-   qDebug() << QString::fromStdString(this->getEntriesResultList.last().DebugString());
+   getEntriesMessage1.mutable_dir()->CopyFrom(this->resultListener.getEntriesResultList().last().entry(0));
+   QSharedPointer<IGetEntriesResult> result1 = this->peerManagers[0]->getPeers()[0]->getEntries(getEntriesMessage1);
+   connect(result1.data(), SIGNAL(result(Protos::Core::GetEntriesResult)), &this->resultListener, SLOT(entriesResult(Protos::Core::GetEntriesResult)));
+   result1->start();
+   QTest::qWait(1000);
+   QCOMPARE(this->resultListener.getNbEntriesResultReceived(), 2);
 
    Protos::Core::GetEntries getEntriesMessage2;
-   getEntriesMessage2.mutable_dir()->CopyFrom(this->getEntriesResultList.last().entry(0));
+   getEntriesMessage2.mutable_dir()->CopyFrom(this->resultListener.getEntriesResultList().last().entry(0));
    getEntriesMessage2.mutable_dir()->mutable_shared_dir()->CopyFrom(getEntriesMessage1.dir().shared_dir());
-   this->sendMessage(this->peerUpdater->getPeers().first(), 0x31, getEntriesMessage2);
-   QVERIFY(!this->getEntriesResultList.isEmpty());
-   qDebug() << QString::fromStdString(this->getEntriesResultList.last().DebugString());
+   QSharedPointer<IGetEntriesResult> result2 = this->peerManagers[0]->getPeers()[0]->getEntries(getEntriesMessage2);
+   connect(result2.data(), SIGNAL(result(Protos::Core::GetEntriesResult)), &this->resultListener, SLOT(entriesResult(Protos::Core::GetEntriesResult)));
+   result2->start();
+   QTest::qWait(1000);
+   QCOMPARE(this->resultListener.getNbEntriesResultReceived(), 3);
 }
 
 void Tests::askForHashes()
@@ -159,7 +117,7 @@ void Tests::askForHashes()
 
    // 1) Create a big file.
    {
-      QFile file("sharedDirs/share1/big.bin");
+      QFile file("sharedDirs/peer2/big.bin");
       file.open(QIODevice::WriteOnly);
 
       // To have four different hashes.
@@ -169,107 +127,48 @@ void Tests::askForHashes()
          file.write(randomData);
       }
    }
-
    QTest::qWait(200);
 
-   Protos::Core::GetHashes getHashesMessage;
-   Protos::Common::Entry* fileEntry = getHashesMessage.mutable_file();
-   fileEntry->set_type(Protos::Common::Entry_Type_FILE);
-   fileEntry->set_path("/");
-   fileEntry->set_name("big.bin");
-   fileEntry->set_size(0);
-   fileEntry->mutable_shared_dir()->CopyFrom(this->getEntriesResultList.first().entry(0).shared_dir());
+   Protos::Common::Entry fileEntry;
+   fileEntry.set_type(Protos::Common::Entry_Type_FILE);
+   fileEntry.set_path("/");
+   fileEntry.set_name("big.bin");
+   fileEntry.set_size(0);
+   fileEntry.mutable_shared_dir()->CopyFrom(this->resultListener.getEntriesResultList().first().entry(0).shared_dir());
 
-   this->sendMessage(this->peerUpdater->getPeers().first(), 0x41, getHashesMessage);
-
-   QTest::qWait(2000);
+   QSharedPointer<IGetHashesResult> result = this->peerManagers[0]->getPeers()[0]->getHashes(fileEntry);
+   connect(result.data(), SIGNAL(result(const Protos::Core::GetHashesResult&)), &this->resultListener, SLOT(result(const Protos::Core::GetHashesResult&)));
+   connect(result.data(), SIGNAL(nextHash(const Common::Hash&)), &this->resultListener, SLOT(nextHash(const Common::Hash&)));
+   result->start();
+   QTest::qWait(5000);
 }
 
 void Tests::cleanupTestCase()
 {
    qDebug() << "===== cleanupTestCase() =====";
 
-   delete server;
-   delete peerUpdater;
-}
+   for (QListIterator<TestServer*> i(this->servers); i.hasNext();)
+      delete i.next();
 
-void Tests::socketError(QAbstractSocket::SocketError error)
-{
-   qDebug() << "Error : " << error;
-}
-
-
-void Tests::sendMessage(const PeerData& peer, quint32 type, const google::protobuf::Message& message)
-{
-   qDebug() << "Tests::sendMessage : " << endl << QString::fromStdString(message.DebugString());
-
-   Common::Network::writeHeader(*this->socket, Common::MessageHeader(type, message.ByteSize(), peer.ID));
-
-   {
-      Common::ZeroCopyOutputStreamQIODevice outputStream(this->socket);
-      message.SerializeToZeroCopyStream(&outputStream);
-   }
-
-   while (this->socket->bytesAvailable() < Common::Network::HEADER_SIZE) QTest::qWait(500);
-
-   Common::MessageHeader header = Common::Network::readHeader(*this->socket);
-
-   qDebug() << "Data received : type = " << hex << header.type << " size = " << dec << header.size << " senderId = " << header.senderID.toStr();
-
-   switch (header.type)
-   {
-   case 0x32 : // GetEntriesResult
-      {
-         Common::ZeroCopyInputStreamQIODevice inputStream(this->socket);
-         Protos::Core::GetEntriesResult result;
-         result.ParseFromBoundedZeroCopyStream(&inputStream, header.size);
-         this->getEntriesResultList << result;
-         break;
-      }
-
-   case 0x42 : // GetHashesResult
-      {
-         int nbHash = 0;
-
-         {
-            Common::ZeroCopyInputStreamQIODevice inputStream(this->socket);
-            Protos::Core::GetHashesResult result;
-            result.ParseFromBoundedZeroCopyStream(&inputStream, header.size);
-            qDebug() << QString::fromStdString(result.DebugString());
-            nbHash = result.nb_hash();
-         }
-
-         // Wait and read each hash.
-         const int nbTotalHash = nbHash;
-         Protos::Common::Hash hash;
-         while (nbHash--)
-         {
-            while (this->socket->bytesAvailable() < Common::Network::HEADER_SIZE) QTest::qWait(500);
-
-            Common::MessageHeader header = Common::Network::readHeader(*this->socket);
-            QCOMPARE(header.type, 0x43U);
-            Common::ZeroCopyInputStreamQIODevice inputStream(this->socket);
-            hash.ParseFromBoundedZeroCopyStream(&inputStream, header.size);
-            qDebug() << nbTotalHash - 1 - nbHash << " : " <<  QString::fromStdString(hash.DebugString());
-         }
-         break;
-      }
-   }
+   delete this->peerUpdater;
 }
 
 void Tests::createInitialFiles()
 {
    this->deleteAllFiles();
 
-   Common::Global::createFile("sharedDirs/share1/subdir/a.txt");
-   Common::Global::createFile("sharedDirs/share1/subdir/b.txt");
-   Common::Global::createFile("sharedDirs/share1/subdir/c.txt");
-   Common::Global::createFile("sharedDirs/share1/d.txt");
-   Common::Global::createFile("sharedDirs/share1/e.txt");
+   Common::Global::createFile("sharedDirs/peer1/subdir/a.txt");
+   Common::Global::createFile("sharedDirs/peer1/subdir/b.txt");
+   Common::Global::createFile("sharedDirs/peer1/subdir/c.txt");
+   Common::Global::createFile("sharedDirs/peer1/d.txt");
+   Common::Global::createFile("sharedDirs/peer1/e.txt");
 
-   Common::Global::createFile("sharedDirs/share2/f.txt");
-   Common::Global::createFile("sharedDirs/share2/g.txt");
-   Common::Global::createFile("sharedDirs/share2/h.txt");
+   Common::Global::createFile("sharedDirs/peer2/subdir/f.txt");
+   Common::Global::createFile("sharedDirs/peer2/subdir/g.txt");
+   Common::Global::createFile("sharedDirs/peer2/subdir/h.txt");
+   Common::Global::createFile("sharedDirs/peer2/i.txt");
+   Common::Global::createFile("sharedDirs/peer2/j.txt");
+   Common::Global::createFile("sharedDirs/peer2/k.txt");
 }
 
 void Tests::deleteAllFiles()

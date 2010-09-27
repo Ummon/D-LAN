@@ -38,6 +38,8 @@ namespace PM
       void socketGetIdle(Socket* socket);
 
    private:
+      Socket* addNewSocket(Socket* socket);
+
       PeerManager* peerManager;
       QSharedPointer<FM::IFileManager> fileManager;
 

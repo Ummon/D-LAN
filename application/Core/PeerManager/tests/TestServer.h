@@ -10,7 +10,7 @@ class TestServer : QObject
 {
    Q_OBJECT
 public:
-   TestServer(QSharedPointer<IPeerManager> peerManager);
+   TestServer(QSharedPointer<IPeerManager> peerManager, int port);
 
 private slots:
    void newConnection();

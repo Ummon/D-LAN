@@ -2,28 +2,24 @@
 
 #include <Common/Hash.h>
 #include <Constants.h>
+#include <priv/PeerManager.h>
 
-PeerUpdater::PeerUpdater(QSharedPointer<IPeerManager> peerManager, int n)
-   : peerManager(peerManager)
+PeerUpdater::PeerUpdater(QList< QSharedPointer<FM::IFileManager> > fileManagers, QList< QSharedPointer<IPeerManager> > peerManagers)
+   : fileManagers(fileManagers), peerManagers(peerManagers)
 {
-   this->timer.setInterval(200); // 200ms.
+   this->timer.setInterval(1000);
    connect(&this->timer, SIGNAL(timeout()), this, SLOT(update()));
-   this->timer.start();
 
-   for (int i = 0; i < n; i++)
+   for (int i = 0; i < this->peerManagers.size(); i++)
    {
-      PeerData peer;
-      peer.ID = Common::Hash::rand();
-      peer.IP = QHostAddress::LocalHost;
-      peer.nick = "Bob" + QString::number(i);
-      peer.sharingAmount = 42 + 10 * i;
-      this->peers << peer;
+      dynamic_cast<PeerManager*>(this->peerManagers[i].data())->setID(Common::Hash::rand());
+      this->peerManagers[i]->setNick("Bob " + QString::number(i + 1));
    }
 }
 
-QList<PeerData> PeerUpdater::getPeers()
+void PeerUpdater::start()
 {
-   return this->peers;
+   this->timer.start();
 }
 
 void PeerUpdater::stop()
@@ -33,9 +29,18 @@ void PeerUpdater::stop()
 
 void PeerUpdater::update()
 {
-   for (QListIterator<PeerData> i(this->peers); i.hasNext();)
+   for (int i = 0; i < this->peerManagers.size(); i++)
    {
-      PeerData peerData = i.next();
-      this->peerManager->updatePeer(peerData.ID, peerData.IP, PORT, peerData.nick, peerData.sharingAmount);
+      for (int j = 0; j < this->peerManagers.size(); j++)
+      {
+         if (this->peerManagers[i]->getID() != this->peerManagers[j]->getID())
+            this->peerManagers[i]->updatePeer(
+               this->peerManagers[j]->getID(),
+               QHostAddress::LocalHost,
+               PORT + j,
+               this->peerManagers[j]->getNick(),
+               this->fileManagers[j]->getAmount()
+            );
+      }
    }
 }

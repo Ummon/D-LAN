@@ -5,6 +5,8 @@
 #include <QTimer>
 #include <QList>
 
+#include <Core/FileManager/IFileManager.h>
+
 #include <IPeerManager.h>
 #include <IPeer.h>
 using namespace PM;
@@ -13,6 +15,7 @@ struct PeerData
 {
    Common::Hash ID;
    QHostAddress IP;
+   int port;
    QString nick;
    quint64 sharingAmount;
 };
@@ -21,16 +24,17 @@ class PeerUpdater : public QObject
 {
    Q_OBJECT
 public:
-   PeerUpdater(QSharedPointer<IPeerManager> peerManager, int n);
-   QList<PeerData> getPeers();
+   PeerUpdater(QList< QSharedPointer<FM::IFileManager> > fileManagers, QList< QSharedPointer<IPeerManager> > peerManagers);
+
+   void start();
    void stop();
 
 private slots:
    void update();
 
 private:
-   QSharedPointer<IPeerManager> peerManager;
-   QList<PeerData> peers;
+   QList< QSharedPointer<FM::IFileManager> > fileManagers;
+   QList< QSharedPointer<IPeerManager> > peerManagers;
    QTimer timer;
 };
 

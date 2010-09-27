@@ -18,7 +18,8 @@ namespace PM
       virtual void start() = 0;
 
    signals:
-      void nextHash(Common::Hash hash);
+      void result(const Protos::Core::GetHashesResult&);
+      void nextHash(const Common::Hash&);
    };
 }
 #endif

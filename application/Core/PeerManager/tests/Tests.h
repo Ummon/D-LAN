@@ -18,6 +18,7 @@ using namespace PM;
 
 #include <TestServer.h>
 #include <PeerUpdater.h>
+#include <ResultListener.h>
 
 class Tests : public QObject
 {
@@ -27,32 +28,26 @@ public:
 
 private slots:
    void initTestCase();
-   void getId();
-   void setGetNick();
    void updatePeers();
    void getPeerFromID();
-   void connectToServer();
    void askForRootEntries();
    void askForSomeEntries();
    void askForHashes();
    void cleanupTestCase();
 
-   void socketError(QAbstractSocket::SocketError error);
+//   void socketError(QAbstractSocket::SocketError error);
 
 private:
-   void sendMessage(const PeerData& peer, quint32 type, const google::protobuf::Message& message);
    void createInitialFiles();
    void deleteAllFiles();
 
-   QSharedPointer<FM::IFileManager> fileManager;
-   QSharedPointer<IPeerManager> peerManager;
+   QList< QSharedPointer<FM::IFileManager> > fileManagers;
+   QList< QSharedPointer<IPeerManager> > peerManagers;
+   QList<TestServer*> servers;
 
-   QTcpSocket* socket;
-
-   TestServer* server;
    PeerUpdater* peerUpdater;
 
-   QList<Protos::Core::GetEntriesResult> getEntriesResultList;
+   ResultListener resultListener;
 };
 
 #endif

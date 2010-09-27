@@ -7,8 +7,9 @@
 
 #include <google/protobuf/message.h>
 
-#include <Core/FileManager/IFileManager.h>
+#include <Common/Network.h>
 #include <Common/Hash.h>
+#include <Core/FileManager/IFileManager.h>
 
 #include <ISocket.h>
 
@@ -21,7 +22,7 @@ namespace PM
       Q_OBJECT
    public:
       Socket(PeerManager* peerManager, QSharedPointer<FM::IFileManager> fileManager, QTcpSocket* socket);
-      Socket(const QHostAddress& address, quint16 port);
+      Socket(PeerManager* peerManager, QSharedPointer<FM::IFileManager> fileManager, const QHostAddress& address, quint16 port);
       ~Socket();
 
       QIODevice* getDevice();
@@ -34,7 +35,7 @@ namespace PM
       void finished();
 
    signals:
-//    void newMessage(quint32 type, const google::protobuf::Message& message, Socket* socket);
+      void newMessage(quint32 type, const google::protobuf::Message& message);
       void getIdle(Socket*);
       void close();
 
@@ -45,15 +46,19 @@ namespace PM
       void nextAskedHash(Common::Hash hash);
 
    private:
+      bool readMessage();
+
       PeerManager* peerManager;
       QSharedPointer<FM::IFileManager> fileManager;
+
+      Common::MessageHeader currentHeader;
 
       QTcpSocket* socket;
       QDateTime lastReleaseTime;
       bool idle;
 
       QSharedPointer<FM::IGetHashesResult> currentHashesResult;
-      int nbHashToSend;
+      int nbHash;
    };
 }
 

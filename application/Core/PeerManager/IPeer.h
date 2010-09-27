@@ -38,7 +38,7 @@ namespace PM
         * 'entriesResult'.
         * If a second getEntries
         */
-      virtual QSharedPointer<IGetEntriesResult> getEntries(const Protos::Common::Entry& dir) = 0;
+      virtual QSharedPointer<IGetEntriesResult> getEntries(const Protos::Core::GetEntries& dir) = 0;
 
       /**
         * Ask for the hashes of a given file.

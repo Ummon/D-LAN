@@ -39,7 +39,7 @@ namespace PM
       void update(const QHostAddress& IP, quint16 port, const QString& nick, const quint64& sharingAmount);
 
       //bool send(const QByteArray& data) ;
-      QSharedPointer<IGetEntriesResult> getEntries(const Protos::Common::Entry& dir);
+      QSharedPointer<IGetEntriesResult> getEntries(const Protos::Core::GetEntries& dir);
       QSharedPointer<IGetHashesResult> getHashes(const Protos::Common::Entry& file);
       QSharedPointer<IGetChunkResult> getChunk(const Protos::Core::GetChunk& chunk);
 
