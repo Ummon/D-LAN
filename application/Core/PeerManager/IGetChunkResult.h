@@ -6,6 +6,8 @@
 
 #include <Protos/core_protocol.pb.h>
 
+#include <ISocket.h>
+
 namespace PM
 {
    class IGetChunkResult : public QObject
@@ -16,7 +18,8 @@ namespace PM
       virtual void start() = 0;
 
    signals:
-      void result(QIODevice* device);
+      void result(const Protos::Core::GetChunkResult& result);
+      void stream(ISocket* socket);
    };
 }
 #endif

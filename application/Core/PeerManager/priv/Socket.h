@@ -28,16 +28,17 @@ namespace PM
       QIODevice* getDevice();
 
       void startListening();
+      void stopListening();
       bool isIdle();
-      void setActive();
 
       void send(quint32 type, const google::protobuf::Message& message);
       void finished();
+      void close();
 
    signals:
       void newMessage(quint32 type, const google::protobuf::Message& message);
       void getIdle(Socket*);
-      void close();
+      void closed();
 
    private slots:
       void dataReceived();
@@ -46,6 +47,7 @@ namespace PM
       void nextAskedHash(Common::Hash hash);
 
    private:
+      void setActive();
       bool readMessage();
 
       PeerManager* peerManager;
@@ -56,6 +58,7 @@ namespace PM
       QTcpSocket* socket;
       QDateTime lastReleaseTime;
       bool idle;
+      bool listening;
 
       QSharedPointer<FM::IGetHashesResult> currentHashesResult;
       int nbHash;

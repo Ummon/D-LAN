@@ -42,7 +42,8 @@ SOURCES += priv/PeerManager.cpp \
     priv/ConnectionPool.cpp \
     priv/Socket.cpp \
     priv/GetEntriesResult.cpp \
-    priv/GetHashesResult.cpp
+    priv/GetHashesResult.cpp \
+    priv/GetChunkResult.cpp
 HEADERS += IPeerManager.h \
     IPeer.h \
     priv/PeerManager.h \
@@ -57,4 +58,5 @@ HEADERS += IPeerManager.h \
     IGetChunkResult.h \
     ISocket.h \
     priv/GetEntriesResult.h \
-    priv/GetHashesResult.h
+    priv/GetHashesResult.h \
+    priv/GetChunkResult.h

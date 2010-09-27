@@ -30,8 +30,6 @@ namespace PM
 
       virtual bool isAlive() = 0;
 
-      //virtual bool send(const QByteArray& data) = 0;
-
       /**
         * Ask for the entries in a given directory.
         * This method is non-blocking, the entries will be delivered by the signal
@@ -56,16 +54,6 @@ namespace PM
 
       void nextHashResult(Protos::Core::GetHashesResult hashesResult);
       void nextHash(Common::Hash hash);
-
-      //void nextHashError();
-
-      /*
-   signals:
-      void receive(QByteArray& data);
-
-   public slots:
-      virtual void connected() = 0;
-      virtual void gotData() = 0;*/
    };
 }
 #endif
