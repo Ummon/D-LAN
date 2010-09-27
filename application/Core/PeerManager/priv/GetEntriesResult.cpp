@@ -8,10 +8,9 @@ GetEntriesResult::GetEntriesResult(const Protos::Core::GetEntries& dir, Socket* 
 {
 }
 
-
 void GetEntriesResult::start()
 {
-   connect(this->socket, SIGNAL(newMessage(quint32, google::protobuf::Message)), this, SLOT(newMessage(quint32, google::protobuf::Message)));
+   connect(this->socket, SIGNAL(newMessage(quint32, const google::protobuf::Message&)), this, SLOT(newMessage(quint32, const google::protobuf::Message&)));
    socket->send(0x31, this->dir);
 }
 
@@ -22,5 +21,5 @@ void GetEntriesResult::newMessage(quint32 type, const google::protobuf::Message&
 
    const Protos::Core::GetEntriesResult& entries = dynamic_cast<const Protos::Core::GetEntriesResult&>(message);
    emit result(entries);
-   disconnect(this->socket, SIGNAL(newMessage(quint32, google::protobuf::Message)), this, SLOT(newMessage(quint32, google::protobuf::Message)));
+   disconnect(this->socket, SIGNAL(newMessage(quint32, const google::protobuf::Message&)), this, SLOT(newMessage(quint32, const google::protobuf::Message&)));
 }

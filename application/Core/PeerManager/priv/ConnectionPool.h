@@ -25,14 +25,8 @@ namespace PM
       void setIP(const QHostAddress& IP, quint16 port);
       void newConnexion(QTcpSocket* socket);
 
-
       Socket* getASocket();
-//      void releaseSocket(QSharedPointer<QTcpSocket> socket);
-
-//   signals:
-//      void newMessage(quint32 type, const google::protobuf::Message& message, Socket* socket);
-
-      //void cleanIdleSockets();
+      void closeAllSocket();
 
    private slots:
       void socketGetIdle(Socket* socket);

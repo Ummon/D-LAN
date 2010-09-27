@@ -1,7 +1,11 @@
 #include <ResultListener.h>
+using namespace PM;
 
 #include <QtDebug>
+#include <QTest>
 #include <QString>
+
+#include <ISocket.h>
 
 ResultListener::ResultListener()
    : nbHashes(0), currentHash(0)
@@ -35,4 +39,29 @@ void ResultListener::nextHash(const Common::Hash& hash)
 {
    qDebug() << "ResultListener::nextHash : [" << this->currentHash + 1 << "/" << this->nbHashes << "] " << hash.toStr();
    this->currentHash++;
+}
+
+void ResultListener::result(const Protos::Core::GetChunkResult& result)
+{
+   qDebug() << "ResultListener::result : " << QString::fromStdString(result.DebugString());
+}
+
+static const QByteArray CHUNK_DATA("HELLO");
+
+void ResultListener::stream(ISocket* socket)
+{
+   QByteArray data = socket->getDevice()->readAll();
+   qDebug() << "ResultListener::stream : " << data;
+   QCOMPARE(data, CHUNK_DATA);
+   socket->finished();
+}
+
+void ResultListener::getChunk(Common::Hash hash, int offset, ISocket* socket)
+{
+   Protos::Core::GetChunkResult result;
+   result.set_status(Protos::Core::GetChunkResult_Status_OK);
+   socket->send(0x52, result);
+
+   socket->getDevice()->write(CHUNK_DATA);
+   socket->finished();
 }

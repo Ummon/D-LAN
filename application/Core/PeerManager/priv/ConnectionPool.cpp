@@ -10,9 +10,6 @@ using namespace PM;
 ConnectionPool::ConnectionPool(PeerManager* peerManager, QSharedPointer<FM::IFileManager> fileManager)
    : peerManager(peerManager), fileManager(fileManager)
 {
-//   connect(&this->timer, SIGNAL(timeout()), this, SLOT(cleanIdleSockets()));
-//   this->timer.start();
-//   this->timer.setInterval(1000 * IDLE_SOCKET_TIMEOUT / 10);
 }
 
 void ConnectionPool::setIP(const QHostAddress& IP, quint16 port)
@@ -27,7 +24,6 @@ void ConnectionPool::setIP(const QHostAddress& IP, quint16 port)
 void ConnectionPool::newConnexion(QTcpSocket* tcpSocket)
 {
    this->addNewSocket(new Socket(this->peerManager, this->fileManager, tcpSocket));
-   //connect(socket, SIGNAL(newMessage(quint32, const google::protobuf::Message&, Socket*)), this, SIGNAL(newMessage(quint32, const google::protobuf::Message&, Socket*)));
 }
 
 Socket* ConnectionPool::getASocket()
@@ -36,10 +32,7 @@ Socket* ConnectionPool::getASocket()
    {
       Socket* socket = i.next();
       if (socket->isIdle())
-      {
-         socket->setActive();
          return socket;
-      }
    }
 
    if (!this->peerIP.isNull())
@@ -48,71 +41,13 @@ Socket* ConnectionPool::getASocket()
    return 0;
 }
 
-/**
-  * Return a socket to communicate with the peer.
-  * Choose an idle one or create a new one if there is no idle socket.
-  */
-//QSharedPointer<QTcpSocket> ConnectionPool::grabSocket()
-//{
-//   for (QListIterator<Socket> i(this->sockets); i.hasNext();)
-//   {
-//      Socket socket = i.next();
-//      if (socket.idle)
-//      {
-//         socket.idle = false;
-//         return socket.socket;
-//      }
-//   }
+void ConnectionPool::closeAllSocket()
+{
+   for (QListIterator<Socket*> i(this->sockets); i.hasNext();)
+      i.next()->close();
 
-//   QSharedPointer<QTcpSocket> newSocket;
-
-//   if (!this->peerIP.isNull())
-//   {
-//      newSocket = QSharedPointer<QTcpSocket>(new QTcpSocket());
-//      newSocket->connectToHost(this->peerIP, this->port);
-//      this->sockets << Socket(newSocket);
-//   }
-
-//   return newSocket;
-//}
-
-///**
-//  * When a socket is no more used this method must be called.
-//  */
-//void ConnectionPool::releaseSocket(QSharedPointer<QTcpSocket> socket)
-//{
-//   for (QListIterator<Socket> i(this->sockets); i.hasNext();)
-//   {
-//      Socket existingSocket = i.next();
-//      if (existingSocket.socket == socket)
-//      {
-//         existingSocket.idle = true;
-//         existingSocket.lastReleaseTime = QDateTime::currentDateTime();
-//         break;
-//      }
-//   }
-//}
-
-//void ConnectionPool::cleanIdleSockets()
-//{
-//   int n = 0;
-//   for (QMutableListIterator<Socket> i(this->sockets); i.hasNext();)
-//   {
-//      Socket existingSocket = i.next();
-//      if (existingSocket.idle)
-//      {
-//         if (existingSocket.lastReleaseTime.addSecs(IDLE_SOCKET_TIMEOUT) > QDateTime::currentDateTime())
-//            i.remove();
-//         else
-//         {
-//            n += 1;
-//            if (n > MAX_NUMBER_IDLE_SOCKET)
-//               i.remove();
-//         }
-//      }
-//   }
-//}
-
+   this->sockets.clear();
+}
 
 void ConnectionPool::socketGetIdle(Socket* socket)
 {

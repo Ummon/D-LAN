@@ -143,7 +143,7 @@ void PeerManager::newConnection(QTcpSocket* tcpSocket)
       this->dataReceived(tcpSocket); // The case where some data arrived before the 'connect' above.
 }
 
-void PeerManager::onGetChunk(Common::Hash hash, int offset, ISocket* socket)
+void PeerManager::onGetChunk(Common::Hash hash, int offset, Socket* socket)
 {
    if (this->receivers(SIGNAL(getChunk(Common::Hash, int, ISocket*))) < 1)
    {
@@ -155,6 +155,7 @@ void PeerManager::onGetChunk(Common::Hash hash, int offset, ISocket* socket)
       return;
    }
 
+   socket->stopListening();
    emit getChunk(hash, offset, socket);
 }
 

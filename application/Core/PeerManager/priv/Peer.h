@@ -38,7 +38,6 @@ namespace PM
       bool isAlive();
       void update(const QHostAddress& IP, quint16 port, const QString& nick, const quint64& sharingAmount);
 
-      //bool send(const QByteArray& data) ;
       QSharedPointer<IGetEntriesResult> getEntries(const Protos::Core::GetEntries& dir);
       QSharedPointer<IGetHashesResult> getHashes(const Protos::Common::Entry& file);
       QSharedPointer<IGetChunkResult> getChunk(const Protos::Core::GetChunk& chunk);
@@ -46,11 +45,7 @@ namespace PM
       void newConnexion(QTcpSocket* tcpSocket);
 
    private slots:
-
-//      void sendGetEntriesRequest(QTcpSocket* socket = 0);
       void consideredDead();
-//      void stateChanged(QAbstractSocket::SocketState socketState);
-//      void dataReceived();
 
    private:
       QString toStr();
@@ -59,7 +54,6 @@ namespace PM
       QSharedPointer<FM::IFileManager> fileManager;
 
       ConnectionPool connectionPool;
-
 
       Common::Hash ID;
       QHostAddress IP;

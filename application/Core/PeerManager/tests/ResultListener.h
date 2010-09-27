@@ -7,6 +7,9 @@
 
 #include <Common/Hash.h>
 
+#include <ISocket.h>
+using namespace PM;
+
 class ResultListener : public QObject
 {
    Q_OBJECT
@@ -21,6 +24,10 @@ public slots:
 
    void result(const Protos::Core::GetHashesResult& result);
    void nextHash(const Common::Hash& hash);
+
+   void result(const Protos::Core::GetChunkResult& result);
+   void stream(ISocket* socket);
+   void getChunk(Common::Hash hash, int offset, ISocket* socket);
 
 private:
    QList<Protos::Core::GetEntriesResult> entriesResultList;

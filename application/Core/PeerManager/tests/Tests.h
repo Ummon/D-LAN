@@ -33,6 +33,7 @@ private slots:
    void askForRootEntries();
    void askForSomeEntries();
    void askForHashes();
+   void askForAChunk();
    void cleanupTestCase();
 
 //   void socketError(QAbstractSocket::SocketError error);
