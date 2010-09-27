@@ -6,6 +6,8 @@ using namespace PM;
 #include <priv/PeerManager.h>
 #include <priv/Constants.h>
 #include <priv/Log.h>
+#include <priv/GetEntriesResult.h>
+#include <priv/GetHashesResult.h>
 
 Peer::Peer(PeerManager* peerManager, QSharedPointer<FM::IFileManager> fileManager, Common::Hash ID)
    : peerManager(peerManager), fileManager(fileManager), connectionPool(peerManager, fileManager), ID(ID), alive(false)
@@ -76,17 +78,19 @@ void Peer::update(const QHostAddress&  IP, quint16 port, const QString& nick, co
    return true;
 }*/
 
-QSharedPointer<IGetEntriesResult> Peer::getEntries(const Protos::Common::Entry& dir)
+QSharedPointer<IGetEntriesResult> Peer::getEntries(const Protos::Core::GetEntries& dir)
 {
-   /*Protos::Core::GetEntries entriesMessage;
-   entriesMessage.mutable_dir()->CopyFrom(dir);*/
-   return QSharedPointer<IGetEntriesResult>();
+   return QSharedPointer<IGetEntriesResult>(
+      new GetEntriesResult(dir, this->connectionPool.getASocket())
+   );
 }
 
 
 QSharedPointer<IGetHashesResult> Peer::getHashes(const Protos::Common::Entry& file)
 {
-   return QSharedPointer<IGetHashesResult>();
+   return QSharedPointer<IGetHashesResult>(
+      new GetHashesResult(file, this->connectionPool.getASocket())
+   );
 }
 
 QSharedPointer<IGetChunkResult> Peer::getChunk(const Protos::Core::GetChunk& chunk)

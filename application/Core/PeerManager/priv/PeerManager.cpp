@@ -46,6 +46,14 @@ Common::Hash PeerManager::getID()
 }
 
 /**
+  * Used only during unit testing.
+  */
+void PeerManager::setID(Common::Hash ID)
+{
+   this->ID = ID;
+}
+
+/**
   * Set the current nick.
   */
 void PeerManager::setNick(const QString& nick)

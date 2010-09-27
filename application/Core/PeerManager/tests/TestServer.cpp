@@ -7,11 +7,16 @@
 #include <Common/Constants.h>
 #include <Constants.h>
 
-TestServer::TestServer(QSharedPointer<IPeerManager> peerManager)
+/**
+  * @class TestServer
+  * Listen for new connection and forward them to the given peerManager
+  */
+
+TestServer::TestServer(QSharedPointer<IPeerManager> peerManager, int port)
    : peerManager(peerManager)
 {
    connect(&this->server, SIGNAL(newConnection()), this, SLOT(newConnection()));
-   QVERIFY(this->server.listen(QHostAddress::Any, PORT));
+   QVERIFY(this->server.listen(QHostAddress::Any, port));
 }
 
 void TestServer::newConnection()

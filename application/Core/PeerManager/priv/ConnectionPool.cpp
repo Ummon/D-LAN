@@ -26,12 +26,8 @@ void ConnectionPool::setIP(const QHostAddress& IP, quint16 port)
   */
 void ConnectionPool::newConnexion(QTcpSocket* tcpSocket)
 {
-   Socket* socket = new Socket(this->peerManager, this->fileManager, tcpSocket);
-   this->sockets << socket;
+   this->addNewSocket(new Socket(this->peerManager, this->fileManager, tcpSocket));
    //connect(socket, SIGNAL(newMessage(quint32, const google::protobuf::Message&, Socket*)), this, SIGNAL(newMessage(quint32, const google::protobuf::Message&, Socket*)));
-   connect(socket, SIGNAL(getIdle(Socket*)), this, SLOT(socketGetIdle(Socket*)));
-
-   socket->startListening();
 }
 
 Socket* ConnectionPool::getASocket()
@@ -47,11 +43,7 @@ Socket* ConnectionPool::getASocket()
    }
 
    if (!this->peerIP.isNull())
-   {
-      Socket* newSocket = new Socket(this->peerIP, this->port);
-      this->sockets << newSocket;
-      return newSocket;
-   }
+      return this->addNewSocket(new Socket(this->peerManager, this->fileManager, this->peerIP, this->port));
 
    return 0;
 }
@@ -135,4 +127,15 @@ void ConnectionPool::socketGetIdle(Socket* socket)
            i.remove();
      }
    }
+}
+
+/**
+  * Add a newly created socket to the socket pool.
+  */
+Socket* ConnectionPool::addNewSocket(Socket* socket)
+{
+   this->sockets << socket;
+   connect(socket, SIGNAL(getIdle(Socket*)), this, SLOT(socketGetIdle(Socket*)));
+   socket->startListening();
+   return socket;
 }
