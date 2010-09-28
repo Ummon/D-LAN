@@ -34,7 +34,9 @@ namespace FM
 
       Chunk* restoreFromFileCache(const Protos::FileCache::Hashes_Chunk& chunk);
 
-      void populateHashesChunk(Protos::FileCache::Hashes_Chunk& chunk);
+      void populateHashesChunk(Protos::FileCache::Hashes_Chunk& chunk) const;
+
+      void populateEntry(Protos::Common::Entry* entry) const;
 
       QSharedPointer<IDataReader> getDataReader();
       QSharedPointer<IDataWriter> getDataWriter();
@@ -69,18 +71,20 @@ namespace FM
       //void sendContentToSocket(QAbstractSocket& socket);
       //void getContentFromSocket(QAbstractSocket& socket);
 
-      bool hasHash();
+      int getNum() const;
 
-      Common::Hash getHash();
+      bool hasHash() const;
+
+      Common::Hash getHash() const;
 
       void setHash(const Common::Hash& hash);
 
-      int getKnownBytes();
+      int getKnownBytes() const;
 
-      bool isOwnedBy(File* file);
+      bool isOwnedBy(File* file) const;
 
    private:
-      QMutex mutex; ///< Protect 'file' against multiple access.
+      mutable QMutex mutex; ///< Protect 'file' against multiple access.
 
       File* file;
       int num;

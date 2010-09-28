@@ -3,6 +3,8 @@
 
 #include <QSharedPointer>
 
+#include <Protos/common.pb.h>
+
 #include <Common/Hash.h>
 
 namespace FM
@@ -14,6 +16,8 @@ namespace FM
    {
    public:
       virtual ~IChunk() {}
+
+      virtual void populateEntry(Protos::Common::Entry* entry) const = 0;
 
       virtual QSharedPointer<IDataReader> getDataReader() = 0;
       virtual QSharedPointer<IDataWriter> getDataWriter() = 0;
@@ -29,11 +33,13 @@ namespace FM
         */
       //virtual void getContentFromSocket(QAbstractSocket& socket) = 0;
 
-      virtual Common::Hash getHash() = 0;
+      virtual int getNum() const = 0;
+
+      virtual Common::Hash getHash() const = 0;
 
       virtual void setHash(const Common::Hash&) = 0;
 
-      virtual int getKnownBytes() = 0;
+      virtual int getKnownBytes() const = 0;
    };
 }
 #endif
