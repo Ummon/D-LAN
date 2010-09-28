@@ -50,12 +50,12 @@ message State {
       repeated uint32 peer_id = 5;
    }
    message Upload {
-      required uint32 id = 1;
-      required Common.Entry file = 2;
-      required uint32 current_part = 3;
-      required uint32 nb_part = 4;
-      required uint32 progress = 5; // 0 to 100
-      required Common.Hash peer_id = 6;
+      //required uint32 id = 1;
+      required Common.Entry file = 1;
+      required uint32 current_part = 2;
+      required uint32 nb_part = 3;
+      required uint32 progress = 4; // 0 to 100
+      required Common.Hash peer_id = 5;
    }
    message Stats {
       enum CacheStatus {
