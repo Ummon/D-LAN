@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QString>
 #include <QTimer>
+#include <QTime>
 #include <QList>
 #include <QTcpSocket>
 
@@ -18,6 +19,14 @@
 namespace PM
 {
    class Peer;
+
+   struct PendingSocket
+   {
+      PendingSocket(QTcpSocket* socket) : socket(socket) { this->t.start(); }
+
+      QTcpSocket* socket;
+      QTime t;
+   };
 
    class PeerManager : public IPeerManager
    {
@@ -42,17 +51,19 @@ namespace PM
    private slots:
       void dataReceived(QTcpSocket* tcpSocket = 0);
       void disconnected(QTcpSocket* tcpSocket = 0);
+      void checkIdlePendingSockets();
 
    private:
+      void removeFromPending(QTcpSocket* socket);
+
       QSharedPointer<FM::IFileManager> fileManager;
 
       Common::Hash ID;
       QString nick;
       QList<Peer*> peers;
 
-      QTimer timer;
-
-      QList<QTcpSocket*> pendingSockets;
+      QTimer timer; ///< Used to check periodically if some pending sockets have timeouted.
+      QList<PendingSocket> pendingSockets;
    };
 }
 #endif

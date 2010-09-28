@@ -8,6 +8,11 @@ GetEntriesResult::GetEntriesResult(const Protos::Core::GetEntries& dir, Socket* 
 {
 }
 
+GetEntriesResult::~GetEntriesResult()
+{
+   this->socket->finished();
+}
+
 void GetEntriesResult::start()
 {
    connect(this->socket, SIGNAL(newMessage(quint32, const google::protobuf::Message&)), this, SLOT(newMessage(quint32, const google::protobuf::Message&)));

@@ -18,6 +18,7 @@ namespace PM
       Q_OBJECT
    public:
       GetEntriesResult(const Protos::Core::GetEntries& dir, Socket* socket);
+      ~GetEntriesResult();
       void start();
 
    private slots:

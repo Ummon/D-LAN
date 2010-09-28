@@ -8,23 +8,40 @@ using namespace PM;
 
 #include <priv/Log.h>
 #include <priv/PeerManager.h>
+#include <priv/Constants.h>
 
 Socket::Socket(PeerManager* peerManager, QSharedPointer<FM::IFileManager> fileManager, QTcpSocket* socket)
-   : peerManager(peerManager), fileManager(fileManager), socket(socket), idle(true), listening(false)
-{   
+   : peerManager(peerManager), fileManager(fileManager), socket(socket), idle(false), listening(false)
+{
+#ifdef DEBUG
+   this->num = ++Socket::currentNum;
+   L_DEBU(QString("New Socket (from a QTcpSocket) [%1]").arg(this->num));
+#endif
+
+   this->socket->setReadBufferSize(SOCKET_BUFFER_SIZE);
    connect(this->socket, SIGNAL(disconnected()), this->socket, SLOT(deleteLater()));
+   this->initActivityTimer();
 }
 
 Socket::Socket(PeerManager* peerManager, QSharedPointer<FM::IFileManager> fileManager, const QHostAddress& address, quint16 port)
-   : peerManager(peerManager), fileManager(fileManager), idle(true), listening(false)
-{
+   : peerManager(peerManager), fileManager(fileManager), idle(false), listening(false)
+{   
+#ifdef DEBUG
+   this->num = ++Socket::currentNum;
+   L_DEBU(QString("New Socket (connection) [%1]").arg(this->num));
+#endif
+
    this->socket = new QTcpSocket();
+   this->socket->setReadBufferSize(SOCKET_BUFFER_SIZE);
    connect(this->socket, SIGNAL(disconnected()), this->socket, SLOT(deleteLater()));
    this->socket->connectToHost(address, port);
+   this->initActivityTimer();
 }
 
 Socket::~Socket()
 {
+   L_DEBU(QString("Socket deleted [%1]").arg(this->num));
+
    delete this->socket;
 }
 
@@ -39,6 +56,8 @@ void Socket::startListening()
    if (this->listening)
       return;
 
+   L_DEBU(QString("Socket starting to listen [%1]").arg(this->num));
+
    connect(this->socket, SIGNAL(readyRead()), this, SLOT(dataReceived()));
    connect(this->socket, SIGNAL(disconnected()), this, SLOT(disconnected()));
    this->listening = true;
@@ -51,6 +70,8 @@ void Socket::startListening()
 
 void Socket::stopListening()
 {
+   L_DEBU(QString("Socket stopping to listen [%1]").arg(this->num));
+
    disconnect(this->socket, SIGNAL(readyRead()), this, SLOT(dataReceived()));
    disconnect(this->socket, SIGNAL(disconnected()), this, SLOT(disconnected()));
    this->listening = false;
@@ -61,9 +82,18 @@ bool Socket::isIdle()
    return this->idle;
 }
 
+void Socket::setActive()
+{
+   L_DEBU(QString("Socket set to active [%1]").arg(this->num));
+
+   this->idle = false;
+   this->activityTimer.start();
+}
+
 void Socket::send(quint32 type, const google::protobuf::Message& message)
 {
    this->setActive();
+
    Common::MessageHeader header(type, message.ByteSize(), this->peerManager->getID());
 
    L_DEBU(QString("Socket::send : header.type = %1, header.size = %2\n%3").arg(header.type, 0, 16).arg(header.size).arg(QString::fromStdString(message.DebugString())));
@@ -76,9 +106,10 @@ void Socket::send(quint32 type, const google::protobuf::Message& message)
 
 void Socket::dataReceived()
 {
-   this->setActive();
-   while (this->socket->bytesAvailable())
+   while (!this->socket->atEnd())
    {
+      this->setActive();
+
       L_DEBU(QString("Socket::dataReceived() : bytesAvailable = %1").arg(this->socket->bytesAvailable()));
 
       if (this->currentHeader.isNull() && this->socket->bytesAvailable() >= Common::Network::HEADER_SIZE)
@@ -104,6 +135,8 @@ void Socket::dataReceived()
 
 void Socket::finished()
 {
+   L_DEBU(QString("Socket set to idle [%1]").arg(this->num));
+
    this->idle = true;
    this->socket->readAll(); // Maybe there is some garbage data..
    this->startListening();
@@ -112,12 +145,16 @@ void Socket::finished()
 
 void Socket::close()
 {
+   L_DEBU(QString("Socket closed [%1]").arg(this->num));
+
    this->socket->close();
 }
 
 void Socket::disconnected()
-{
-   emit closed();
+{   
+   L_DEBU(QString("Socket disconnected [%1]").arg(this->num));
+
+   emit closed(this);
 }
 
 /**
@@ -135,11 +172,6 @@ void Socket::nextAskedHash(Common::Hash hash)
       this->currentHashesResult.clear();
       this->finished();
    }
-}
-
-void Socket::setActive()
-{
-   this->idle = false;
 }
 
 /**
@@ -274,8 +306,20 @@ bool Socket::readMessage()
       break;
 
    default:
-      return false;
+      readOK = false;
    }
 
    return readOK;
 }
+
+void Socket::initActivityTimer()
+{
+   this->activityTimer.setSingleShot(true);
+   this->activityTimer.setInterval(IDLE_SOCKET_TIMEOUT * 1000);
+   connect(&this->activityTimer, SIGNAL(timeout()), this, SLOT(close()));
+   this->activityTimer.start();
+}
+
+#ifdef DEBUG
+   int Socket::currentNum(0);
+#endif

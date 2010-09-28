@@ -20,6 +20,9 @@ PeerManager::PeerManager(QSharedPointer<FM::IFileManager> fileManager)
 {
    L_USER("Loading ..");
 
+   this->timer.setInterval(1000 * PENDING_SOCKET_TIMEOUT / 10);
+   connect(&this->timer, SIGNAL(timeout()), this, SLOT(checkIdlePendingSockets()));
+
    Protos::Common::Settings settings;
 
    try
@@ -132,7 +135,11 @@ void PeerManager::newConnection(QTcpSocket* tcpSocket)
    if (!tcpSocket)
       return;
 
-   this->pendingSockets << tcpSocket;
+   L_DEBU("New pending socket");
+   if (!this->timer.isActive())
+      this->timer.start();
+
+   this->pendingSockets << PendingSocket(tcpSocket);
 
    connect(tcpSocket, SIGNAL(readyRead()), this, SLOT(dataReceived()));
    connect(tcpSocket, SIGNAL(disconnected()), this, SLOT(disconnected()));
@@ -169,12 +176,14 @@ void PeerManager::dataReceived(QTcpSocket* tcpSocket)
       Common::MessageHeader header = Common::Network::readHeader(*tcpSocket, false);
       Peer* p = this->getPeer_(header.senderID);
 
-      this->pendingSockets.removeOne(tcpSocket);
+      this->removeFromPending(tcpSocket);
       disconnect(tcpSocket, SIGNAL(readyRead()), 0, 0);
       disconnect(tcpSocket, SIGNAL(disconnected()), 0, 0);
 
       if (p)
          p->newConnexion(tcpSocket);
+      else
+         this->disconnected(tcpSocket);
    }
 }
 
@@ -183,6 +192,44 @@ void PeerManager::disconnected(QTcpSocket* tcpSocket)
    if (!tcpSocket)
       tcpSocket = dynamic_cast<QTcpSocket*>(this->sender());
 
-   this->pendingSockets.removeOne(tcpSocket);
-   delete tcpSocket;
+   this->removeFromPending(tcpSocket);
+   tcpSocket->deleteLater();
+
+   L_DEBU("Pending socket disconnected and deleted");
+}
+
+void PeerManager::checkIdlePendingSockets()
+{
+   for (QMutableListIterator<PendingSocket> i(this->pendingSockets); i.hasNext();)
+   {
+      PendingSocket pendingSocket = i.next();
+      if (pendingSocket.t.elapsed() > PENDING_SOCKET_TIMEOUT * 1000)
+      {
+         i.remove();
+         // Without these 'disconnect' this warning is printed by Qt : "QCoreApplication::postEvent: Unexpected null receiver".
+         disconnect(pendingSocket.socket, SIGNAL(readyRead()), 0, 0);
+         disconnect(pendingSocket.socket, SIGNAL(disconnected()), 0, 0);
+         pendingSocket.socket->deleteLater();
+         L_DEBU("Pending socket timeout -> deleted");
+      }
+   }
+
+   if (this->pendingSockets.isEmpty())
+      this->timer.stop();
+}
+
+void PeerManager::removeFromPending(QTcpSocket* socket)
+{
+   for (QMutableListIterator<PendingSocket> i(this->pendingSockets); i.hasNext();)
+   {
+      PendingSocket pendingSocket = i.next();
+      if (pendingSocket.socket == socket)
+      {
+         i.remove();
+         break;
+      }
+   }
+
+   if (this->pendingSockets.isEmpty())
+      this->timer.stop();
 }

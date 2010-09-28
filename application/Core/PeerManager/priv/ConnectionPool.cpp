@@ -26,13 +26,20 @@ void ConnectionPool::newConnexion(QTcpSocket* tcpSocket)
    this->addNewSocket(new Socket(this->peerManager, this->fileManager, tcpSocket));
 }
 
+/**
+  * Return an idle socket to the peer.
+  * A new connection is made if there is no idle socket.
+  */
 Socket* ConnectionPool::getASocket()
 {
    for (QListIterator<Socket*> i(this->sockets); i.hasNext();)
    {
       Socket* socket = i.next();
       if (socket->isIdle())
+      {
+         socket->setActive();
          return socket;
+      }
    }
 
    if (!this->peerIP.isNull())
@@ -64,6 +71,11 @@ void ConnectionPool::socketGetIdle(Socket* socket)
    }
 }
 
+void ConnectionPool::socketClosed(Socket* socket)
+{
+   this->sockets.removeAll(socket);
+}
+
 /**
   * Add a newly created socket to the socket pool.
   */
@@ -71,6 +83,7 @@ Socket* ConnectionPool::addNewSocket(Socket* socket)
 {
    this->sockets << socket;
    connect(socket, SIGNAL(getIdle(Socket*)), this, SLOT(socketGetIdle(Socket*)));
+   connect(socket, SIGNAL(closed(Socket*)), this, SLOT(socketClosed(Socket*)));
    socket->startListening();
    return socket;
 }
