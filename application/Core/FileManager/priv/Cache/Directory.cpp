@@ -28,7 +28,7 @@ Directory::Directory(Cache* cache, const QString& name)
 
 Directory::~Directory()
 {
-   // QMutexLocker(&this->cache->getMutex()); TODO : it creates a deadlock
+   // QMutexLocker lock(&this->cache->getMutex()); // TODO : it creates a deadlock
 
    foreach (File* f, this->files)
       delete f;

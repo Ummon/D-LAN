@@ -18,7 +18,6 @@ namespace FM
       virtual void populateEntry(Protos::Common::Entry* entry) const;
 
    public:
-
       Cache* getCache();
 
       /**
@@ -36,7 +35,7 @@ namespace FM
       virtual QString getFullPath() const = 0;
       virtual Directory* getRoot() const = 0;
 
-      virtual const QString& getName() const;
+      const QString& getName() const;
 
       /**
         * When a file or a directory is renamed.
