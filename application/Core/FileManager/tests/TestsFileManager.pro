@@ -36,8 +36,10 @@ TEMPLATE = app
 SOURCES += main.cpp \
     Tests.cpp \
     ../../../Protos/common.pb.cc \
-    HashesReceiver.cpp
+    HashesReceiver.cpp \
+    StressTest.cpp
 HEADERS += Tests.h \
     ../../../Protos/common.pb.h \
     debug_new.h \
-    HashesReceiver.h
+    HashesReceiver.h \
+    StressTest.h

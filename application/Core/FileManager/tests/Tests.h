@@ -18,6 +18,7 @@ public:
 
 private slots:
    void initTestCase();
+   void createFileManager();
 
    /***** Adding shared directories *****/
    void addASharedDirectory();

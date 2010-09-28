@@ -18,14 +18,12 @@ using namespace FM;
 #include <Exceptions.h>
 #include <priv/Constants.h>
 
+#include <StressTest.h>
 #include <HashesReceiver.h>
 
 Tests::Tests()
 {
 }
-
-#include <iostream>
-using namespace std;
 
 void Tests::initTestCase()
 {
@@ -33,8 +31,12 @@ void Tests::initTestCase()
    qDebug() << "===== initTestCase() =====";
 
    Common::PersistantData::rmValue(Common::FILE_CACHE); // Reset the stored cache.
-   this->createInitialFiles();
+}
 
+void Tests::createFileManager()
+{
+   qDebug() << "===== createFileManager() =====";
+   this->createInitialFiles();
    this->fileManager = Builder::newFileManager();
 }
 
@@ -505,23 +507,23 @@ void Tests::printAmount()
    qDebug() << "Sharing amount : " << this->fileManager->getAmount() << " bytes";
 }
 
-
-/**
-  * Some tasks will be performed concurrently :
-  *  - Searching some files
-  *  -
-  */
-void Tests::concurrencyTest()
-{
-   // TODO..
-}
-
 void Tests::rmSharedDirectory()
 {
    qDebug() << "===== rmSharedDirectory() =====";
 
    this->sharedDirsReadOnly.clear();
    this->fileManager->setSharedDirsReadOnly(this->sharedDirsReadOnly);
+}
+
+/**
+  * Some tasks will be performed concurrently.
+  */
+void Tests::concurrencyTest()
+{
+   qDebug() << "===== concurrencyTest() =====";
+
+   Common::PersistantData::rmValue(Common::FILE_CACHE);
+   StressTest test;
 }
 
 void Tests::cleanupTestCase()
