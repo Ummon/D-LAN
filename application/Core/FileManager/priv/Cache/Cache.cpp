@@ -458,6 +458,8 @@ void Cache::createSharedDirs(const QStringList& dirs, const QList<SharedDirector
 
    QStringList dirsNotFound;
 
+   SharedDirectory::Rights currentRights = SharedDirectory::READ_ONLY;
+
    QListIterator<QString> i(dirs);
    QListIterator<SharedDirectory::Rights> j(rights);
    QListIterator<Common::Hash> k(ids);
@@ -465,7 +467,8 @@ void Cache::createSharedDirs(const QStringList& dirs, const QList<SharedDirector
    {
       QString path = i.next();
 
-      SharedDirectory::Rights currentRights = j.hasNext() ? j.next() : SharedDirectory::READ_ONLY;
+      if (j.hasNext())
+         currentRights = j.next();
 
       try
       {
