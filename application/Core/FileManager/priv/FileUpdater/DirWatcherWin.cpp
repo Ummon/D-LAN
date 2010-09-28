@@ -1,5 +1,7 @@
 #include <QtCore/QDebug>
 
+#include <QMutexLocker>
+
 #if defined(Q_OS_WIN32)
 #include <priv/FileUpdater/DirWatcherWin.h>
 using namespace FM;
@@ -8,17 +10,25 @@ using namespace FM;
 #include <priv/FileUpdater/WaitConditionWin.h>
 
 DirWatcherWin::DirWatcherWin()
+   : mutex(QMutex::Recursive)
 {
 }
 
 DirWatcherWin::~DirWatcherWin()
 {
+   QMutexLocker lock(&this->mutex);
+
    foreach (Dir* d, this->dirs)
       delete d;
 }
 
 bool DirWatcherWin::addDir(const QString& path)
 {
+   QMutexLocker lock(&this->mutex);
+
+   if (this->dirs.size() > MAXIMUM_WAIT_OBJECTS - MAX_WAIT_CONDITION)
+      return false;
+
    TCHAR pathTCHAR[path.size() + 1];
    path.toWCharArray(pathTCHAR);
    pathTCHAR[path.size()] = 0;
@@ -36,27 +46,31 @@ bool DirWatcherWin::addDir(const QString& path)
       throw DirNotFoundException(path);
 
    HANDLE eventHandle = CreateEvent(NULL, FALSE, FALSE, NULL);
+   if (eventHandle == NULL)
+      throw DirNotFoundException(path);
 
-   this->dirs.append(new Dir(fileHandle, eventHandle, path));
+   Dir* dir = new Dir(fileHandle, eventHandle, path);
 
-   if (!this->watch(this->dirs.count() - 1))
+   if (!this->watch(dir))
    {
-      delete this->dirs.takeLast();
+      delete dir;
       return false;
    }
 
+   this->dirs << dir;
    return true;
 }
 
 void DirWatcherWin::rmDir(const QString& path)
 {
-   for (QMutableListIterator<Dir*> i(this->dirs); i.hasNext();)
+   QMutexLocker lock(&this->mutex);
+
+   for (QListIterator<Dir*> i(this->dirs); i.hasNext();)
    {
       Dir* dir = i.next();
       if (dir->fullPath == path)
       {
-         i.remove();
-         delete dir;
+         this->dirsToDelete << dir;
          break;
       }
    }
@@ -64,6 +78,7 @@ void DirWatcherWin::rmDir(const QString& path)
 
 int DirWatcherWin::nbWatchedDir()
 {
+   QMutexLocker lock(&this->mutex);
    return this->dirs.size();
 }
 
@@ -74,12 +89,38 @@ const QList<WatcherEvent> DirWatcherWin::waitEvent(QList<WaitCondition*> ws)
 
 const QList<WatcherEvent> DirWatcherWin::waitEvent(int timeout, QList<WaitCondition*> ws)
 {
-   int n = this->dirs.size();
+   this->mutex.lock();
+
+   if (ws.size() > MAX_WAIT_CONDITION)
+   {
+      L_ERRO(QString("DirWatcherWin::waitEvent : No more than %1 condition(s), some directory will not be watched any more.").arg(MAX_WAIT_CONDITION));
+      int n = this->dirs.size() + ws.size() - MAXIMUM_WAIT_OBJECTS;
+      while (n --> 0) // The better C++ operator!
+         this->dirsToDelete << this->dirs.takeLast();
+   }
+
+   if (!this->dirsToDelete.isEmpty())
+   {
+      for (QMutableListIterator<Dir*> i(this->dirs); i.hasNext();)
+      {
+         Dir* dir = i.next();
+         if (this->dirsToDelete.contains(dir))
+         {
+            i.remove();
+            delete dir;
+         }
+      }
+      this->dirsToDelete.clear();
+   }
+
+   QList<Dir*> dirsCopy(this->dirs);
+
+   int n = dirsCopy.size();
    int m = n + ws.size();
 
    HANDLE eventsArray[m];
    for(int i = 0; i < n; i++)
-      eventsArray[i] = this->dirs[i]->overlapped.hEvent;
+      eventsArray[i] = dirsCopy[i]->overlapped.hEvent;
 
    for (int i = 0; i < ws.size(); i++)
    {
@@ -87,9 +128,13 @@ const QList<WatcherEvent> DirWatcherWin::waitEvent(int timeout, QList<WaitCondit
       eventsArray[i+n] = hdl;
    }
 
+   this->mutex.unlock();
+
    DWORD waitStatus = WaitForMultipleObjects(m, eventsArray, FALSE, timeout);
 
-   if (waitStatus >= WAIT_OBJECT_0 && waitStatus <= WAIT_OBJECT_0 + (DWORD)n - 1)
+   QMutexLocker lock(&this->mutex);
+
+   if (!dirsCopy.empty() && waitStatus >= WAIT_OBJECT_0 && waitStatus <= WAIT_OBJECT_0 + (DWORD)n - 1)
    {
       int n = waitStatus - WAIT_OBJECT_0;
 
@@ -107,6 +152,7 @@ const QList<WatcherEvent> DirWatcherWin::waitEvent(int timeout, QList<WaitCondit
          wcsncpy(filenameTCHAR, notifyInformation->FileName, nbChar);
          filenameTCHAR[nbChar] = 0;
          QString filename = QString::fromStdWString(filenameTCHAR);
+         L_WARN("PLO2");
 
          /*
          qDebug() << "---------";
@@ -116,7 +162,7 @@ const QList<WatcherEvent> DirWatcherWin::waitEvent(int timeout, QList<WaitCondit
          qDebug() << "---------";
          */
 
-         QString path = this->dirs[n]->fullPath;
+         QString path = dirsCopy[n]->fullPath;
          path.append('/').append(filename);
 
          switch (notifyInformation->Action)
@@ -144,7 +190,7 @@ const QList<WatcherEvent> DirWatcherWin::waitEvent(int timeout, QList<WaitCondit
          notifyInformation = (FILE_NOTIFY_INFORMATION*)((LPBYTE)notifyInformation + notifyInformation->NextEntryOffset);
       }
 
-      this->watch(n);
+      this->watch(dirsCopy[n]);
 
       return events;
    }
@@ -158,22 +204,26 @@ const QList<WatcherEvent> DirWatcherWin::waitEvent(int timeout, QList<WaitCondit
       events.append(WatcherEvent(WatcherEvent::TIMEOUT));
       return events;
    }
+   else if (waitStatus == WAIT_FAILED)
+   {
+      L_ERRO(QString("WaitForMultipleObjects(..) failed, error code : %1").arg(GetLastError()));
+   }
    else
    {
-      throw DirWatcherException(QString("WaitForMultipleObjects(..), status : %1").arg(waitStatus));
+      L_ERRO(QString("WaitForMultipleObjects(..), status : %1").arg(waitStatus));
    }
 }
 
-bool DirWatcherWin::watch(int num)
+bool DirWatcherWin::watch(Dir* dir)
 {
    return ReadDirectoryChangesW(
-      this->dirs[num]->file, // The file handle;
+      dir->file, // The file handle;
       &this->notifyBuffer, // The buffer where the information is put when an event occur.
       NOTIFY_BUFFER_SIZE,
       TRUE, // Watch subtree.
       FILE_NOTIFY_CHANGE_FILE_NAME | FILE_NOTIFY_CHANGE_DIR_NAME | FILE_NOTIFY_CHANGE_SIZE | FILE_NOTIFY_CHANGE_LAST_WRITE | FILE_NOTIFY_CHANGE_CREATION,
       &this->nbBytesNotifyBuffer, // Not used in asynchronous mode.
-      &this->dirs[num]->overlapped,
+      &dir->overlapped,
       NULL
    );
 }

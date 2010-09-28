@@ -7,15 +7,6 @@
 namespace FM
 {
    class WaitCondition;
-
-   class DirWatcherException : public std::exception
-   {
-      public :
-      DirWatcherException(const QString& mess) : mess(mess) { }
-      virtual ~DirWatcherException() throw () { }
-      const QString mess;
-   };
-
    struct WatcherEvent;
 
    /**
