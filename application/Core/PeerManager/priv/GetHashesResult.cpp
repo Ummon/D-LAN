@@ -8,6 +8,11 @@ GetHashesResult::GetHashesResult(const Protos::Common::Entry& file, Socket* sock
 {
 }
 
+GetHashesResult::~GetHashesResult()
+{
+   this->socket->finished();
+}
+
 void GetHashesResult::start()
 {
    Protos::Core::GetHashes message;

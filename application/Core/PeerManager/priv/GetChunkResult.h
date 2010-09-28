@@ -18,6 +18,7 @@ namespace PM
       Q_OBJECT
    public:
       GetChunkResult(const Protos::Core::GetChunk& chunk, Socket* socket);
+      ~GetChunkResult();
       void start();
 
    private slots:

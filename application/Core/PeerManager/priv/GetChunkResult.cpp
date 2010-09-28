@@ -8,6 +8,10 @@ GetChunkResult::GetChunkResult(const Protos::Core::GetChunk& chunk, Socket* sock
 {
 }
 
+GetChunkResult::~GetChunkResult()
+{
+   this->socket->finished();
+}
 
 void GetChunkResult::start()
 {

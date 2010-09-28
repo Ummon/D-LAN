@@ -18,6 +18,7 @@ namespace PM
       Q_OBJECT
    public:
       GetHashesResult(const Protos::Common::Entry& file, Socket* socket);
+      ~GetHashesResult();
       void start();
 
    private slots:

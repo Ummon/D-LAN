@@ -30,6 +30,7 @@ namespace PM
 
    private slots:
       void socketGetIdle(Socket* socket);
+      void socketClosed(Socket* socket);
 
    private:
       Socket* addNewSocket(Socket* socket);
