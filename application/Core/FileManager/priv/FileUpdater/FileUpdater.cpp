@@ -79,6 +79,8 @@ void FileUpdater::addRoot(SharedDirectory* dir)
       watchable = this->dirWatcher->addDir(dir->getFullPath());
 
    // TODO : treat the unwatchable directory
+   if (!watchable)
+      L_WARN(QString("This directory is not watchable : %1").arg(dir->getFullPath()));
 
    this->dirsToScan << dir;
 

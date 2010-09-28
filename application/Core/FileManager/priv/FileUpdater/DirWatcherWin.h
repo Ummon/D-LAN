@@ -3,6 +3,8 @@
 #if !defined(FILEMANAGER_DIRWATCHERWIN_H) and defined(Q_OS_WIN32)
 #define FILEMANAGER_DIRWATCHERWIN_H
 
+#include <QMutex>
+
 #include <priv/FileUpdater/DirWatcher.h>
 #include <priv/Log.h>
 
@@ -11,6 +13,7 @@
 namespace FM
 {
    static const int NOTIFY_BUFFER_SIZE = 2048;
+   static const int MAX_WAIT_CONDITION = 4;
 
    /**
      * Implementation of 'DirWatcher' for the windows platform.
@@ -26,15 +29,12 @@ namespace FM
         * @exception DirNotFoundException
         */
       bool addDir(const QString& path);
-
       void rmDir(const QString& path);
       int nbWatchedDir();
       const QList<WatcherEvent> waitEvent(QList<WaitCondition*> ws = QList<WaitCondition*>());
       const QList<WatcherEvent> waitEvent(int timeout, QList<WaitCondition*> ws = QList<WaitCondition*>());
 
    private:
-      bool watch(int num);
-
       struct Dir
       {
          Dir(HANDLE file, HANDLE event, QString fullPath) : file(file), fullPath(fullPath)
@@ -55,11 +55,17 @@ namespace FM
          OVERLAPPED overlapped;
          QString fullPath;
       };
+
+      bool watch(Dir* dir);
+
       QList<Dir*> dirs; // The watched dirs.
+      QList<Dir*> dirsToDelete; // Dirs to delete.
 
       // Is this data can be shares among some 'ReadDirectoryChangesW'?
       char notifyBuffer[NOTIFY_BUFFER_SIZE];
       DWORD nbBytesNotifyBuffer;
+
+      QMutex mutex;
    };
 }
 
