@@ -58,11 +58,13 @@ void Chunk::populateEntry(Protos::Common::Entry* entry) const
 
 QSharedPointer<IDataReader> Chunk::getDataReader()
 {
+   QMutexLocker locker(&this->mutex);
    return QSharedPointer<IDataReader>(new DataReader(*this));
 }
 
 QSharedPointer<IDataWriter> Chunk::getDataWriter()
 {
+   QMutexLocker locker(&this->mutex);
    return QSharedPointer<IDataWriter>(new DataWriter(*this));
 }
 
