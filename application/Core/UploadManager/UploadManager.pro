@@ -4,8 +4,42 @@
 QT += network
 QT -= gui
 TARGET = UploadManager
-INCLUDEPATH += .
 TEMPLATE = lib
+
+CONFIG(debug, debug|release) {
+   FOLDER = debug
+   DEFINES += DEBUG
+} else {
+   FOLDER = release
+}
+
+CONFIG += staticlib \
+    link_prl \
+    create_prl
+LIBS += -L${PROTOBUF}/src/.libs \
+    -lprotobuf
+INCLUDEPATH += . \
+    ../.. \
+    ${PROTOBUF}/src
+
+DESTDIR = output/$$FOLDER
+MOC_DIR = .tmp/$$FOLDER
+OBJECTS_DIR = .tmp/$$FOLDER
+
+LIBS += -L../../Common/LogManager/output/$$FOLDER \
+     -lLogManager
+POST_TARGETDEPS += ../../Common/LogManager/output/$$FOLDER/libLogManager.a
+LIBS += -L../../Common/output/$$FOLDER \
+     -lCommon
+POST_TARGETDEPS += ../../Common/output/$$FOLDER/libCommon.a
+LIBS += -L../FileManager/output/$$FOLDER \
+     -lFileManager
+POST_TARGETDEPS += ../FileManager/output/$$FOLDER/libFileManager.a
+LIBS += -L../PeerManager/output/$$FOLDER \
+     -lPeerManager
+POST_TARGETDEPS += ../PeerManager/output/$$FOLDER/libPeerManager.a
+
+
 CONFIG += staticlib create_prl link_prl
 DESTDIR = "output/debug"
 MOC_DIR = ".tmp/debug"
@@ -13,9 +47,10 @@ OBJECTS_DIR = ".tmp/debug"
 DEFINES += UPLOADMANAGER_LIBRARY
 SOURCES += priv/UploadManager.cpp \
     priv/Uploader.cpp \
-    priv/Upload.cpp
+    Builder.cpp
 HEADERS += IUploadManager.h \
     IUpload.h \
     priv/UploadManager.h \
     priv/Uploader.h \
-    priv/Upload.h
+    Builder.h \
+    priv/Constants.h
