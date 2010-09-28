@@ -7,8 +7,8 @@ using namespace PM;
 #include <priv/Constants.h>
 #include <priv/Socket.h>
 
-ConnectionPool::ConnectionPool(PeerManager* peerManager, QSharedPointer<FM::IFileManager> fileManager)
-   : peerManager(peerManager), fileManager(fileManager)
+ConnectionPool::ConnectionPool(PeerManager* peerManager, QSharedPointer<FM::IFileManager> fileManager, const Common::Hash& peerID)
+   : peerManager(peerManager), fileManager(fileManager), peerID(peerID)
 {
 }
 
@@ -23,7 +23,7 @@ void ConnectionPool::setIP(const QHostAddress& IP, quint16 port)
   */
 void ConnectionPool::newConnexion(QTcpSocket* tcpSocket)
 {
-   this->addNewSocket(new Socket(this->peerManager, this->fileManager, tcpSocket));
+   this->addNewSocket(new Socket(this->peerManager, this->fileManager, this->peerID, tcpSocket));
 }
 
 /**
@@ -43,7 +43,7 @@ Socket* ConnectionPool::getASocket()
    }
 
    if (!this->peerIP.isNull())
-      return this->addNewSocket(new Socket(this->peerManager, this->fileManager, this->peerIP, this->port));
+      return this->addNewSocket(new Socket(this->peerManager, this->fileManager, this->peerID, this->peerIP, this->port));
 
    return 0;
 }

@@ -20,7 +20,7 @@ namespace PM
       Q_OBJECT
 
    public:
-      ConnectionPool(PeerManager* peerManager, QSharedPointer<FM::IFileManager> fileManager);
+      ConnectionPool(PeerManager* peerManager, QSharedPointer<FM::IFileManager> fileManager, const Common::Hash& peerID);
 
       void setIP(const QHostAddress& IP, quint16 port);
       void newConnexion(QTcpSocket* socket);
@@ -42,6 +42,7 @@ namespace PM
       QList<Socket*> sockets;
       QHostAddress peerIP;
       quint16 port;
+      const Common::Hash peerID;
    };
 }
 
