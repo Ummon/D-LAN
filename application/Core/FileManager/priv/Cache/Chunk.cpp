@@ -42,11 +42,18 @@ Chunk* Chunk::restoreFromFileCache(const Protos::FileCache::Hashes_Chunk& chunk)
    return this;
 }
 
-void Chunk::populateHashesChunk(Protos::FileCache::Hashes_Chunk& chunk)
+void Chunk::populateHashesChunk(Protos::FileCache::Hashes_Chunk& chunk) const
 {
    chunk.set_known_bytes(this->knownBytes);
    if (!this->hash.isNull())
       chunk.mutable_hash()->set_hash(this->hash.getData(), Common::Hash::HASH_SIZE);
+}
+
+void Chunk::populateEntry(Protos::Common::Entry* entry) const
+{
+   QMutexLocker locker(&this->mutex);
+   if (this->file)
+      this->file->populateEntry(entry);
 }
 
 QSharedPointer<IDataReader> Chunk::getDataReader()
@@ -126,19 +133,24 @@ void Chunk::getContentFromSocket(QAbstractSocket& socket)
 {
 }*/
 
-bool Chunk::hasHash()
+int Chunk::getNum() const
+{
+   return this->num;
+}
+
+bool Chunk::hasHash() const
 {
    return !this->hash.isNull();
 }
 
-Common::Hash Chunk::getHash()
+Common::Hash Chunk::getHash() const
 {
    return this->hash;
 }
 
 void Chunk::setHash(const Common::Hash& hash)
 {
-   L_DEBU(QString("Chunk[%1] setHash(..) : %2").arg(num).arg(hash.toStr()));
+   L_DEBU(QString("Chunk[%1] setHash(..) : %2").arg(this->num).arg(hash.toStr()));
 
    if (!this->hash.isNull())
       L_ERRO(QString("Chunk::setHash : Chunk has already an hash! file : %1").arg(this->file->getFullPath()));
@@ -146,12 +158,12 @@ void Chunk::setHash(const Common::Hash& hash)
    this->hash = hash;
 }
 
-int Chunk::getKnownBytes()
+int Chunk::getKnownBytes() const
 {
    return this->knownBytes;
 }
 
-bool Chunk::isOwnedBy(File* file)
+bool Chunk::isOwnedBy(File* file) const
 {
    return this->file == file;
 }
