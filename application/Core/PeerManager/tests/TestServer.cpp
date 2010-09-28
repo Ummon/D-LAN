@@ -9,7 +9,7 @@
 
 /**
   * @class TestServer
-  * Listen for new connection and forward them to the given peerManager
+  * Listen for new connection and forward them to the given peerManager.
   */
 
 TestServer::TestServer(QSharedPointer<IPeerManager> peerManager, int port)

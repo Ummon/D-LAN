@@ -10,8 +10,8 @@ using namespace PM;
 #include <priv/PeerManager.h>
 #include <priv/Constants.h>
 
-Socket::Socket(PeerManager* peerManager, QSharedPointer<FM::IFileManager> fileManager, QTcpSocket* socket)
-   : peerManager(peerManager), fileManager(fileManager), socket(socket), idle(false), listening(false)
+Socket::Socket(PeerManager* peerManager, QSharedPointer<FM::IFileManager> fileManager, const Common::Hash& peerID, QTcpSocket* socket)
+   : peerManager(peerManager), fileManager(fileManager), peerID(peerID), socket(socket), idle(false), listening(false)
 {
 #ifdef DEBUG
    this->num = ++Socket::currentNum;
@@ -23,8 +23,8 @@ Socket::Socket(PeerManager* peerManager, QSharedPointer<FM::IFileManager> fileMa
    this->initActivityTimer();
 }
 
-Socket::Socket(PeerManager* peerManager, QSharedPointer<FM::IFileManager> fileManager, const QHostAddress& address, quint16 port)
-   : peerManager(peerManager), fileManager(fileManager), idle(false), listening(false)
+Socket::Socket(PeerManager* peerManager, QSharedPointer<FM::IFileManager> fileManager, const Common::Hash& peerID, const QHostAddress& address, quint16 port)
+   : peerManager(peerManager), fileManager(fileManager), peerID(peerID), idle(false), listening(false)
 {   
 #ifdef DEBUG
    this->num = ++Socket::currentNum;
@@ -45,9 +45,14 @@ Socket::~Socket()
    delete this->socket;
 }
 
-QIODevice* Socket::getDevice()
+QIODevice* Socket::getDevice() const
 {
    return this->socket;
+}
+
+Common::Hash Socket::getPeerID() const
+{
+   return this->peerID;
 }
 
 void Socket::startListening()
@@ -122,6 +127,13 @@ void Socket::dataReceived()
             .arg(this->currentHeader.type, 0, 16)
             .arg(this->currentHeader.size)
          );
+
+         if (this->currentHeader.senderID != this->peerID)
+         {
+            L_DEBU(QString("Peer ID from message (%1) doesn't match the known peer ID (%2)").arg(this->currentHeader.senderID.toStr()).arg(this->peerID.toStr()));
+            this->finished();
+            return;
+         }
       }
 
       if (!this->currentHeader.isNull() && this->socket->bytesAvailable() >= this->currentHeader.size)

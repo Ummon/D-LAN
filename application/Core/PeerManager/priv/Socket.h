@@ -22,11 +22,13 @@ namespace PM
    {
       Q_OBJECT
    public:
-      Socket(PeerManager* peerManager, QSharedPointer<FM::IFileManager> fileManager, QTcpSocket* socket);
-      Socket(PeerManager* peerManager, QSharedPointer<FM::IFileManager> fileManager, const QHostAddress& address, quint16 port);
+      Socket(PeerManager* peerManager, QSharedPointer<FM::IFileManager> fileManager, const Common::Hash& peerID, QTcpSocket* socket);
+      Socket(PeerManager* peerManager, QSharedPointer<FM::IFileManager> fileManager, const Common::Hash& peerID, const QHostAddress& address, quint16 port);
       ~Socket();
 
-      QIODevice* getDevice();
+      QIODevice* getDevice() const;
+
+      Common::Hash getPeerID() const;
 
       void startListening();
       void stopListening();
@@ -56,6 +58,7 @@ namespace PM
 
       PeerManager* peerManager;
       QSharedPointer<FM::IFileManager> fileManager;
+      const Common::Hash peerID;
 
       Common::MessageHeader currentHeader;
 
