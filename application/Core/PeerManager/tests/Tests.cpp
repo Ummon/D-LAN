@@ -80,7 +80,7 @@ void Tests::askForRootEntries()
    QSharedPointer<IGetEntriesResult> result = this->peerManagers[0]->getPeers()[0]->getEntries(getEntriesMessage);
    connect(result.data(), SIGNAL(result(Protos::Core::GetEntriesResult)), &this->resultListener, SLOT(entriesResult(Protos::Core::GetEntriesResult)));
    result->start();
-   QTest::qWait(1000);
+   QTest::qWait(1500);
    QCOMPARE(this->resultListener.getNbEntriesResultReceived(), 1);
 }
 
