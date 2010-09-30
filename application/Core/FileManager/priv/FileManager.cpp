@@ -13,8 +13,8 @@ using namespace FM;
 #include <Protos/files_cache.pb.h>
 
 #include <Common/PersistantData.h>
-#include <Common/Math.h>
 #include <Common/Constants.h>
+#include <Common/Global.h>
 #include <Exceptions.h>
 #include <priv/Log.h>
 #include <priv/Constants.h>
@@ -145,7 +145,7 @@ Protos::Common::FindResult FileManager::find(const QString& words)
       //  * (a, b)
       //  * (a, c)
       //  * (b, c)
-      for (int j = 0; j < Common::Math::nCombinations(n, nbIntersect); j++)
+      for (int j = 0; j < Common::Global::nCombinations(n, nbIntersect); j++)
       {
          QSet<Entry*> currentLevelSet;
 

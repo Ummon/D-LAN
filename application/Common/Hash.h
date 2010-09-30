@@ -7,6 +7,8 @@
 #include <QByteArray>
 #include <QDataStream>
 
+#include <Libs/MersenneTwister.h>
+
 #if WITH_MUTEX
 #  include <QMutex>
 #endif
@@ -16,7 +18,7 @@ namespace Common
    class Hash
    {
    private:
-      static bool randInit;
+      static MTRand mtrand;
 
    public:
       static const int HASH_SIZE = 20; ///< 20 bytes.

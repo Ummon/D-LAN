@@ -6,11 +6,14 @@
 #include <QSharedPointer>
 #include <QThread>
 
+#include <Libs/MersenneTwister.h>
+
 #include <ILogger.h>
 using namespace LM;
 
 class ThreadLogger : public QThread
 {
+   static MTRand mtrand;
 public:
    ThreadLogger(const QString& name, int delta);
    void run();

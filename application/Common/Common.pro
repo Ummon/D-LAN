@@ -26,14 +26,12 @@ INCLUDEPATH += .
 DEFINES += COMMON_LIBRARY
 SOURCES += Hash.cpp \
     PersistantData.cpp \
-    Math.cpp \
     Global.cpp \
     Network.cpp \
     ZeroCopyStreamQIODevice.cpp
 HEADERS += Hashes.h \
     Hash.h \
     PersistantData.h \
-    Math.h \
     Deletable.h \
     Constants.h \
     Global.h \

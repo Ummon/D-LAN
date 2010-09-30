@@ -12,6 +12,41 @@ using namespace Common;
 
 #include <Constants.h>
 
+/**
+  * The number of k-combinations (each of size k) from a set S with n elements (size n).
+  * @link http://en.wikipedia.org/wiki/Combination
+  */
+int Global::nCombinations(int n, int k)
+{
+   if (n < 0 || k < 0)
+      return 0;
+
+   int c = 1;
+   for(int i = 1; i <= k; i++)
+      c = c * (n - k + i) / i;
+   return c;
+}
+
+/**
+  * Will return a formated size with the unit prefix.
+  * For example :
+  * - 1 -> "1 B"
+  * - 1024 -> "1 KiB"
+  * - 1024^2 -> "1 MiB"
+  * - 1024^3 -> "1 GiB"
+  * - 1024^4 -> "1 TiB"
+  */
+QString Global::formatByteSize(qint64 bytes)
+{
+   int current = 0;
+   while (bytes > 1024)
+   {
+      bytes /= 1024;
+      current++;
+   }
+   return QString::number(bytes).append(" ").append(BINARY_PREFIXS[current]);
+}
+
 qint64 Global::availableDiskSpace(const QString& path)
 {
    const qint64 max = 9223372036854775807LL;
@@ -61,12 +96,29 @@ void Global::createFile(const QString& path)
    stream << fileInfo.fileName();
 }
 
-void Global::recursiveDeleteDirectory(const QString& dir)
+bool Global::recursiveDeleteDirectoryContent(const QString& dir)
 {
-   for (QDirIterator i(dir, QDir::Files, QDirIterator::Subdirectories); i.hasNext();)
-      QFile(i.next()).remove();
+   bool success = true;
 
-   for (QDirIterator i(dir, QDir::AllDirs, QDirIterator::Subdirectories); i.hasNext();)
-      QDir::current().rmpath(i.next());
+   for (QDirIterator i(dir, QDir::Files, QDirIterator::Subdirectories); i.hasNext();)
+      if (!QFile(i.next()).remove())
+         success = false;
+
+   for (QDirIterator i(dir, QDir::AllDirs | QDir::NoDotAndDotDot, QDirIterator::Subdirectories); i.hasNext();)
+      if (!QDir::current().rmdir(i.next()))
+         success = false;
+
+   return success;
+
+}
+
+bool Global::recursiveDeleteDirectory(const QString& dir)
+{
+   bool success = Global::recursiveDeleteDirectoryContent(dir);
+
+   if (QDir::current().exists(dir) && !QDir(dir).rmdir("."))
+      success = false;
+
+   return success;
 }
 

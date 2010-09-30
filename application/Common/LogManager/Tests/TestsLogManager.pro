@@ -26,7 +26,8 @@ LIBS += -L../../output/$$FOLDER \
 POST_TARGETDEPS += ../../output/$$FOLDER/libCommon.a
 
 INCLUDEPATH += . \
-   ..
+   .. \
+   ../../.. # For the 'Common' component.
 CONFIG += console
 CONFIG -= app_bundle
 TEMPLATE = app

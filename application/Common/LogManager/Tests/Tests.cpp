@@ -12,6 +12,8 @@ using namespace LM;
   * A thread to logg some random messages.
   */
 
+MTRand ThreadLogger::mtrand;
+
 ThreadLogger::ThreadLogger(const QString& name, int delta) :
    logger(Builder::newLogger(name)), delta(delta)
 {
@@ -24,7 +26,7 @@ void ThreadLogger::run()
    qsrand(QTime::currentTime().msec());
    for (int i = 0; i < 300; i++)
    {
-      int severity = qrand() % 6;
+      int severity = mtrand.randInt(5);
       switch (severity)
       {
       case 0 :
