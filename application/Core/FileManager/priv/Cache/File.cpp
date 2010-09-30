@@ -383,8 +383,6 @@ bool File::computeHashes(int n)
 
       if (bytesReadChunk > 0)
       {
-         L_WARN(QString("crypto.result() = %1").arg(QString(crypto.result().toHex())));
-
          if (this->chunks.size() <= chunkNum) // The size of the file has increased during the read..
             this->chunks.append(QSharedPointer<Chunk>(new Chunk(this, chunkNum, bytesReadChunk, crypto.result())));
          else
