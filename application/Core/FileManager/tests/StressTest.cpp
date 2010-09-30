@@ -5,6 +5,7 @@ using namespace FM;
 #include <QtDebug>
 #include <QtGlobal>
 #include <QTime>
+#include <QDirIterator>
 
 #include <Common/Global.h>
 
@@ -13,17 +14,34 @@ using namespace FM;
 #include <Builder.h>
 
 const QDir StressTest::ROOT_DIR("stress");
+MTRand StressTest::mtrand;
+
+// Beautiful macros.
+#define PROB_100(A) if (percentRand() <= 100 - A) return;
+#define PROB_1000(A) if (permilRand() <= 1000 - A) return;
 
 StressTest::StressTest()
 {
    this->fileManager = Builder::newFileManager();
-   Common::Global::recursiveDeleteDirectory(ROOT_DIR.dirName());
+
    QDir().mkdir(ROOT_DIR.dirName());
+   qDebug() << Common::Global::recursiveDeleteDirectoryContent(ROOT_DIR.dirName());
 
    forever
    {
-      this->doAnAction();
-      QTest::qWait(20);
+      (this->*StressTest::actions[mtrand.randInt(NB_ACTION-1)])();
+
+      QTest::qWait(10);
+
+      for (QMutableListIterator<QString> i(this->dirsToDelete); i.hasNext();)
+      {
+         QString dir = i.next();
+         if (Common::Global::recursiveDeleteDirectory(dir))
+         {
+            qDebug() << "Directory removed : " << dir;
+            i.remove();
+         }
+      }
    }
 }
 
@@ -42,30 +60,51 @@ const int StressTest::NB_ACTION = sizeof(StressTest::actions) / sizeof(void (Str
 QString StressTest::generateAName()
 {
    QString str("");
-   for (int i = 0; i < 2; i++)
-      str.append('A' + qrand() % 26);
+
+   for (MTRand::uint32 j = 0; j < mtrand.randInt(2) + 1; j++)
+   {
+      if (!str.isEmpty())
+         str.append(' ');
+
+      for (MTRand::uint32 i = 0; i < mtrand.randInt(2) + 3; i++)
+         str.append('A' + static_cast<char>(mtrand.randInt(25)));
+   }
    return str;
+}
+
+int StressTest::percentRand()
+{
+   return mtrand.randInt(100);
+}
+
+int StressTest::permilRand()
+{
+   return mtrand.randInt(1000);
 }
 
 void StressTest::createASharedDir()
 {
-   if (qrand() % 101 >= 90)
+   PROB_100(10);
+
+   // No more than 30 shared directory
+   if (this->sharedDirsReadOnly.size() + this->sharedDirsReadWrite.size() >= 30)
       return;
 
    qDebug() << "===== StressTest::createASharedDir() =====";
+
    QString name = generateAName();
    ROOT_DIR.mkdir(name);
 
    try
    {
-      if (qrand() % 101 <= 75)
+      if (this->percentRand() <= 75)
       {
-         this->sharedDirsReadOnly << ROOT_DIR.absolutePath().append("/").append(name);
+         this->sharedDirsReadOnly << ROOT_DIR.dirName().append("/").append(name);
          this->fileManager->setSharedDirsReadOnly(this->sharedDirsReadOnly);
       }
       else
       {
-         this->sharedDirsReadWrite << ROOT_DIR.absolutePath().append("/").append(name);
+         this->sharedDirsReadWrite << ROOT_DIR.dirName().append("/").append(name);;
          this->fileManager->setSharedDirsReadWrite(this->sharedDirsReadWrite);
       }
    }
@@ -77,19 +116,17 @@ void StressTest::createASharedDir()
 
 void StressTest::removeASharedDir()
 {
-   if (qrand() % 101 >= 95)
-      return;
+   PROB_100(1);
 
    qDebug() << "===== StressTest::removeASharedDir() =====";
    try
    {
-      if (qrand() % 101 <= 75)
+      if (this->percentRand() <= 75)
       {
          if (this->sharedDirsReadOnly.isEmpty())
             return;
-         int i = qrand() % this->sharedDirsReadOnly.size();
-         qDebug() << "Remove : " << QDir(this->sharedDirsReadOnly[i]).dirName();
-         ROOT_DIR.rmpath(QDir(this->sharedDirsReadOnly[i]).dirName());
+         int i = mtrand.randInt(this->sharedDirsReadOnly.size()-1);
+         this->dirsToDelete << this->sharedDirsReadOnly[i];
          this->sharedDirsReadOnly.removeAt(i);
          this->fileManager->setSharedDirsReadOnly(this->sharedDirsReadOnly);
       }
@@ -97,9 +134,8 @@ void StressTest::removeASharedDir()
       {
          if (this->sharedDirsReadWrite.isEmpty())
             return;
-         int i = qrand() % this->sharedDirsReadWrite.size();
-         qDebug() << "Remove : " << QDir(this->sharedDirsReadWrite[i]).dirName();
-         ROOT_DIR.rmpath(QDir(this->sharedDirsReadWrite[i]).dirName());
+         int i = mtrand.randInt(this->sharedDirsReadWrite.size()-1);
+         this->dirsToDelete << this->sharedDirsReadWrite[i];
          this->sharedDirsReadWrite.removeAt(i);
          this->fileManager->setSharedDirsReadWrite(this->sharedDirsReadWrite);
       }
@@ -111,11 +147,8 @@ void StressTest::removeASharedDir()
 }
 
 void StressTest::createADir()
-{
-   if (qrand() % 101 >= 50)
-      return;
-
-   qDebug() << "===== StressTest::createADir() =====";
+{   
+   PROB_100(30);
 
    QStringList dirs;
    dirs.append(this->sharedDirsReadOnly);
@@ -125,59 +158,84 @@ void StressTest::createADir()
    if (dirs.empty())
       return;
 
-   QString dir = dirs[qrand() % dirs.size()];
+   qDebug() << "===== StressTest::createADir() =====";
+
+   QString dir = dirs[mtrand.randInt(dirs.size()-1)];
    QString name = generateAName();
-   QDir(dir).mkdir(name);
-   QString path = dir.append("/").append(name);
-   this->directories.append(path);
-   qDebug() << "Create directory : " << path;
+   if (QDir(dir).mkdir(name))
+   {
+      QString path = dir.append("/").append(name);
+      this->directories.append(path);
+      qDebug() << "Create directory : " << path;
+   }
+   else
+      qDebug() << "Can't create the directory " << name << " in " << dir;
 }
 
 void StressTest::removeADir()
 {
-   if (qrand() % 101 >= 70)
-      return;
-
-   qDebug() << "===== StressTest::removeADir() =====";
+   PROB_100(2);
 
    if (this->directories.empty())
       return;
 
-   QString dir = this->directories.takeAt(qrand() % this->directories.size());
-   ROOT_DIR.rmpath(dir);
-   qDebug() << "Remove directory : " << dir;
+   qDebug() << "===== StressTest::removeADir() =====";
+
+   QString dir = this->directories.takeAt(mtrand.randInt(this->directories.size()-1));
+   this->dirsToDelete << dir;
 }
 
 void StressTest::createAFile()
 {
+   PROB_100(50);
+
+   QStringList dirs;
+   dirs.append(this->sharedDirsReadOnly);
+   dirs.append(this->sharedDirsReadWrite);
+   dirs.append(this->directories);
+
+   if (dirs.empty())
+      return;
+
    qDebug() << "===== StressTest::createAFile() =====";
 
+   QString filePath = dirs[mtrand.randInt(dirs.size()-1)] + "/" + generateAName();
+
+   // Create a file with a random size from 1 to 100 Mo
+   int bytes = mtrand.randInt(100 * 1024 * 1024 - 1) + 1;
+   static const int CHUNK_SIZE = 64 * 1024;
+   static char buffer[CHUNK_SIZE];
+
+   qDebug() << "Creating file " << filePath << " (" << Common::Global::formatByteSize(bytes) << ")";
+
+   QFile file(filePath);
+   if (!file.open(QIODevice::WriteOnly))
+   {
+      qDebug() << "Unable to open file " << filePath;
+      return;
+   }
+
+   while (bytes > 0)
+   {
+      int bufferSize = bytes < CHUNK_SIZE ? bytes : CHUNK_SIZE;
+      for (int i = 0; i < bufferSize; i++)
+         buffer[i] = mtrand.randInt(255);
+
+      int bytesWritten = file.write(buffer, bufferSize);
+      if (bytesWritten == -1)
+      {
+         qDebug() << "Unable to write in the file " << filePath;
+         break;
+      }
+      bytes -= bytesWritten;
+   }
 }
 
 void StressTest::removeAFile()
 {
-   if (qrand() % 101 >= 25)
-      return;
+   PROB_100(0);
 
    qDebug() << "===== StressTest::removeAFile() =====";
 
 }
 
-void StressTest::doAnAction()
-{
-   qsrand(QTime(0,0,0).msecsTo(QTime::currentTime()));
-
-   //void (StressTest::*actions[])() = { &StressTest::doAnAction };
-
-   (this->*StressTest::actions[qrand() % NB_ACTION])();
-
-//   switch (qrand() % NB_ACTION)
-//   {
-//   case 0 : this->createASharedDir(); break;
-//   case 1 : this->removeASharedDir(); break;
-//   case 0 : this->createADir(); break;
-//   case 1 : this->removeADir(); break;
-//   case 0 : this->createAFile(); break;
-//   case 1 : this->removeAFile(); break;
-//   }
-}
