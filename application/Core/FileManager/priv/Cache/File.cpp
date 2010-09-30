@@ -453,9 +453,13 @@ QList< QSharedPointer<Chunk> > File::getChunks() const
 
 bool File::hasAllHashes()
 {
+   if (this->size == 0)
+      return false;
+
    foreach (QSharedPointer<Chunk> c, this->chunks)
       if (!c->hasHash())
-         return false;
+         return false;   
+
    return true;
 }
 
@@ -502,6 +506,16 @@ void File::physicallyRemoveUnfinished()
 void File::changeDirectory(Directory* dir)
 {
    this->dir = dir;
+}
+
+/**
+  * If dir is a parent dir of the file return true.
+  */
+bool File::hasAParentDir(Directory* dir)
+{
+   if (this->dir == dir)
+      return true;
+   return this->dir->isAChildOf(dir);
 }
 
 int File::getNbChunks()

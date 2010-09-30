@@ -73,6 +73,7 @@ namespace FM
       void physicallyRemoveUnfinished();
 
       void changeDirectory(Directory* dir);
+      bool hasAParentDir(Directory* dir);
 
    private:
       int getNbChunks();

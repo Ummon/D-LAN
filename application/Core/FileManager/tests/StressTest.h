@@ -37,7 +37,6 @@ private:
    QStringList sharedDirsReadOnly;
    QStringList sharedDirsReadWrite;
    QStringList directories;
-   QStringList files;
 
    QStringList dirsToDelete;
 };
