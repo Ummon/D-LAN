@@ -5,6 +5,8 @@ using namespace FM;
 #include <QFile>
 #include <QCryptographicHash>
 
+#include <Common/Global.h>
+
 #include <Exceptions.h>
 #include <priv/Exceptions.h>
 #include <priv/Log.h>
@@ -49,7 +51,7 @@ File::File(
      toStopHashing(false)
 {
    //QMutexLocker locker(&this->getCache()->getMutex());
-   L_DEBU(QString("New file : %1").arg(this->getFullPath()));
+   L_DEBU(QString("New file : %1 (%2)").arg(this->getFullPath()).arg(Common::Global::formatByteSize(this->size)));
 
    if (!hashes.isEmpty())
       if (this->getNbChunks() != hashes.size())
@@ -302,12 +304,11 @@ qint64 File::read(QByteArray& buffer, qint64 offset)
   */
 bool File::computeHashes(int n)
 {
-   this->hashingMutex.lock();
+   QMutexLocker lock(&this->hashingMutex);
 
    if (this->toStopHashing)
    {
       this->toStopHashing = false;
-      this->hashingMutex.unlock();
       return false;
    }
 
@@ -324,14 +325,16 @@ bool File::computeHashes(int n)
    {
       this->toStopHashing = false;
       this->hashing = false;
-      this->hashingMutex.unlock();
       L_WARN(QString("Unable to open this file : %1").arg(this->getFullPath()));
       return false;
    }
 
-   // Skip the already known hashes.
+   // Skip the already known full hashes.
    int chunkNum = 0;
-   while (chunkNum < this->chunks.size() && this->chunks[chunkNum]->hasHash())
+   while (
+      chunkNum < this->chunks.size() &&
+      this->chunks[chunkNum]->hasHash() &&
+      this->chunks[chunkNum]->getKnownBytes() == CHUNK_SIZE) // Maybe the file has grown and the last chunk must be recomputed.
    {
       chunkNum++;
       file.seek(file.pos() + CHUNK_SIZE);
@@ -344,6 +347,7 @@ bool File::computeHashes(int n)
 
    char buffer[BUFFER_SIZE];
    bool endOfFile = false;
+   qint64 bytesReadTotal = 0;
    while (!endOfFile)
    {
       // See 'stopHashing()'.
@@ -354,26 +358,41 @@ bool File::computeHashes(int n)
          this->hashingStopped.wakeOne();
          this->toStopHashing = false;
          this->hashing = false;
-         this->hashingMutex.unlock();
          return false;
       }
 
-      qint64 bytesReadTotal = 0;
-      while (bytesReadTotal < CHUNK_SIZE)
+      int bytesReadChunk = 0;
+      while (bytesReadChunk < CHUNK_SIZE)
       {
-         qint64 bytesRead = file.read(buffer, BUFFER_SIZE);
-         if (bytesRead == 0)
+         int bytesRead = file.read(buffer, BUFFER_SIZE);
+         switch (bytesRead)
          {
+         case -1:
+            L_ERRO(QString("Error during reading the file %1").arg(this->getFullPath()));
+         case 0:
             endOfFile = true;
-            break;
+            goto endReading;
          }
-         crypto.addData(buffer, bytesRead);
-         bytesReadTotal += bytesRead;
-      }
 
-      if (bytesReadTotal > 0)
+         crypto.addData(buffer, bytesRead);
+         bytesReadChunk += bytesRead;
+      }
+      endReading:
+
+      bytesReadTotal += bytesReadChunk;
+
+      if (bytesReadChunk > 0)
       {
-         this->chunks[chunkNum]->setHash(crypto.result());
+         L_WARN(QString("crypto.result() = %1").arg(QString(crypto.result().toHex())));
+
+         if (this->chunks.size() <= chunkNum) // The size of the file has increased during the read..
+            this->chunks.append(QSharedPointer<Chunk>(new Chunk(this, chunkNum, bytesReadChunk, crypto.result())));
+         else
+         {
+            this->chunks[chunkNum]->setHash(crypto.result());
+            this->chunks[chunkNum]->setKnownBytes(bytesReadChunk);
+         }
+
          this->cache->onChunkHashKnown(this->chunks[chunkNum]);
       }
 
@@ -387,14 +406,30 @@ bool File::computeHashes(int n)
       L_DEBU("Hashing speed : ?? MB/s (delta too small)");
    else
    {
-      const double speed = static_cast<double>(this->size) / 1024 / 1024 / (static_cast<double>(delta) / 1000);
+      const double speed = static_cast<double>(bytesReadTotal) / 1024 / 1024 / (static_cast<double>(delta) / 1000);
       L_DEBU(QString("Hashing speed : %1 MB/s").arg(speed < 0.1 ? "< 0.1" : QString::number(speed)));
    }
 #endif
 
    this->toStopHashing = false;
    this->hashing = false;
-   this->hashingMutex.unlock();
+
+   if (bytesReadTotal != this->size)
+   {
+      L_DEBU(QString("The file content has changed during the hashes computing process. File = %1, bytes read = %2, previous size = %3").arg(this->getFullPath()).arg(bytesReadTotal).arg(this->size));
+      this->size = bytesReadTotal;
+      this->dateLastModified = QFileInfo(this->getFullPath()).lastModified();
+
+      if (bytesReadTotal < this->size) // In this case, maybe some chunk must be deleted.
+         for (int i = this->getNbChunks(); i < this->chunks.size(); i++)
+         {
+            QSharedPointer<Chunk> c = this->chunks.takeLast();
+            this->cache->onChunkRemoved(c);
+         }
+
+      return false;
+   }
+
    return true;
 }
 

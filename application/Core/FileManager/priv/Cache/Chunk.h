@@ -80,6 +80,7 @@ namespace FM
       void setHash(const Common::Hash& hash);
 
       int getKnownBytes() const;
+      void setKnownBytes(int bytes);
 
       bool isOwnedBy(File* file) const;
 
@@ -88,7 +89,7 @@ namespace FM
 
       File* file;
       int num;
-      int knownBytes; ///< Relative offset, 0 means we don't have any byte and File::CHUNK_SIZE means we have all the chunk data.
+      int knownBytes; ///< Relative offset, 0 means we don't have any byte and CHUNK_SIZE means we have all the chunk data.
       Common::Hash hash;
    };
 }

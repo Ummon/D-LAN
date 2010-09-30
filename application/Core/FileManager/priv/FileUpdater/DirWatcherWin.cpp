@@ -152,15 +152,12 @@ const QList<WatcherEvent> DirWatcherWin::waitEvent(int timeout, QList<WaitCondit
          wcsncpy(filenameTCHAR, notifyInformation->FileName, nbChar);
          filenameTCHAR[nbChar] = 0;
          QString filename = QString::fromStdWString(filenameTCHAR);
-         L_WARN("PLO2");
 
-         /*
-         qDebug() << "---------";
-         qDebug() << "Action = " << notifyInformation->Action;
-         qDebug() << "filename = " << filename;
-         qDebug() << "offset = " << notifyInformation->NextEntryOffset;
-         qDebug() << "---------";
-         */
+//         L_WARN("---------");
+//         L_WARN(QString("Action = %1").arg(notifyInformation->Action));
+//         L_WARN(QString("filename = %1").arg(filename));
+//         L_WARN(QString("offset = %1").arg(notifyInformation->NextEntryOffset));
+//         L_WARN("---------");
 
          QString path = dirsCopy[n]->fullPath;
          path.append('/').append(filename);
@@ -182,6 +179,8 @@ const QList<WatcherEvent> DirWatcherWin::waitEvent(int timeout, QList<WaitCondit
          case FILE_ACTION_RENAMED_NEW_NAME:
             events << WatcherEvent(WatcherEvent::RENAME, previousPath, path);
             break;
+         default:
+            L_WARN(QString("File event action unkown : %1").arg(notifyInformation->Action));
          }
 
          if (!notifyInformation->NextEntryOffset)
