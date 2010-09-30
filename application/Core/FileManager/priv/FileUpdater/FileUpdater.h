@@ -55,6 +55,7 @@ namespace FM
 
       void deleteEntry(Entry* entry);
       void removeFromDirsToScan(Directory* dir);
+      void removeFromFilesWithoutHashes(Directory* dir);
 
       void restoreFromFileCache(SharedDirectory* dir);
 

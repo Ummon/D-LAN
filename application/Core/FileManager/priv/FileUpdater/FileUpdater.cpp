@@ -103,6 +103,7 @@ void FileUpdater::rmRoot(SharedDirectory* dir, Directory* dir2)
    // TODO : A suspend/resume hashing methods would be more readable.
    {
       QMutexLocker locker(&this->hashingMutex);
+
       if (this->currentHashingFile)
          this->currentHashingFile->stopHashing();
       this->toStopHashing = true;
@@ -111,14 +112,10 @@ void FileUpdater::rmRoot(SharedDirectory* dir, Directory* dir2)
       if (dir2)
          dir2->stealContent(dir);
 
-      // Remove all the pending files owned by 'dir'.
-      for (QMutableListIterator<File*> i(this->filesWithoutHashes); i.hasNext();)
-         if (i.next()->getRoot() == dir)
-            i.remove();
+      this->removeFromFilesWithoutHashes(dir);
+      this->removeFromDirsToScan(dir);
+      this->dirsToRemove << dir;
    }
-
-   this->removeFromDirsToScan(dir);
-   this->dirsToRemove << dir;
 
    this->dirEvent->release();
 }
@@ -133,7 +130,6 @@ void FileUpdater::setFileCache(const Protos::FileCache::Hashes* fileCache)
 {
    this->fileCache = fileCache;
 }
-
 
 void FileUpdater::prioritizeAFileToHash(File* file)
 {
@@ -350,19 +346,32 @@ void FileUpdater::scan(Directory* dir)
 
             currentSubDirs.removeOne(dir);
          }
-         else
+         else if (entry.size() > 0)
          {
-            File* oldFile;
-            File* file = currentDir->createFile(entry, &oldFile);
+            File* file = currentDir->getFile(entry.fileName());
+
+            // The case where a file is being copied and a lot of modification event is thrown.
+            if (file)
+            {
+               if (this->filesWithoutHashes.contains(file))
+                  currentFiles.removeOne(file);
+               else if (file->isComplete() && !file->correspondTo(entry))
+               {
+                  currentFiles.removeOne(file);
+                  delete file;
+                  file = 0;
+               }
+            }
+
+            if (!file)
+               file = new File(currentDir, entry.fileName(), entry.size(), entry.lastModified());
 
             // If a file is incomplete (unfinished) we can't compute its hashes because we don't have all data.
             if (!file->hasAllHashes() && file->isComplete() && !this->filesWithoutHashes.contains(file))
+            {
+               L_WARN(QString("Adding file %1 to this->filesWithoutHashes").arg(file->getFullPath()));
                this->filesWithoutHashes << file;
-
-            if (oldFile)
-               currentFiles.removeOne(oldFile);
-            else
-               currentFiles.removeOne(file);
+            }
          }
       }
 
@@ -415,7 +424,10 @@ void FileUpdater::deleteEntry(Entry* entry)
 
    // Remove the directory and their sub child from the scan list (this->dirsToScan).
    if (Directory* dir = dynamic_cast<Directory*>(entry))
+   {
+      this->removeFromFilesWithoutHashes(dir);
       this->removeFromDirsToScan(dir);
+   }
 
    if (SharedDirectory* sharedDir = dynamic_cast<SharedDirectory*>(entry))
    {
@@ -440,6 +452,16 @@ void FileUpdater::removeFromDirsToScan(Directory* dir)
    DirIterator i(dir);
    while (Directory* subDir = i.next())
       this->dirsToScan.removeOne(subDir);
+}
+
+/**
+  * Remove all the pending files owned by 'dir'.
+  */
+void FileUpdater::removeFromFilesWithoutHashes(Directory* dir)
+{
+   for (QMutableListIterator<File*> i(this->filesWithoutHashes); i.hasNext();)
+      if (i.next()->hasAParentDir(dir))
+         i.remove();
 }
 
 /**

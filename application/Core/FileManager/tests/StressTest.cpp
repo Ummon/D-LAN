@@ -233,9 +233,38 @@ void StressTest::createAFile()
 
 void StressTest::removeAFile()
 {
-   PROB_100(0);
+   PROB_100(10);
+
+   if (this->directories.isEmpty())
+      return;
 
    qDebug() << "===== StressTest::removeAFile() =====";
 
+   QString dirPath;
+   QString filename;
+   do
+   {
+      if (this->directories.isEmpty())
+         return;
+
+      int i = mtrand.randInt(this->directories.size()-1);
+      if (!QDir(this->directories[i]).exists())
+         this->directories.removeAt(i);
+      else
+      {
+         dirPath = this->directories[i];
+         QDir dir(dirPath);
+         QStringList files = dir.entryList(QDir::Files);
+         if (!files.isEmpty())
+            filename = files[mtrand.randInt(files.size()-1)];
+         else
+            dirPath = QString();
+      }
+   } while (dirPath.isNull());
+
+   if (!QDir(dirPath).remove(filename))
+      qDebug() << "Unable to remove : " << dirPath.append("/").append(filename);
+   else
+      qDebug() << "File " << dirPath.append("/").append(filename) << " removed";
 }
 

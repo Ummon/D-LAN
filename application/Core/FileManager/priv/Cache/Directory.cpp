@@ -157,6 +157,18 @@ Directory* Directory::getRoot() const
    return const_cast<Directory*>(this);
 }
 
+bool Directory::isAChildOf(const Directory* dir) const
+{
+   if (this->parent)
+   {
+      if (this->parent == dir)
+         return true;
+      else
+         return this->parent->isAChildOf(dir);
+   }
+   return false;
+}
+
 /**
   * @return Returns 0 if no one match.
   */
@@ -216,25 +228,25 @@ Directory* Directory::physicallyCreateSubDirectory(const QString& name)
   * checks if the size and the modification date match, if not then delete the
   * file and create a new one.
   */
-File* Directory::createFile(const QFileInfo& fileInfo, File** oldFile)
-{
-   *oldFile = 0;
-   foreach (File* f, this->files)
-   {
-      if (f->getName() == fileInfo.fileName())
-      {
-         // If the file is uncompleted its size and date may change.
-         if (!f->isComplete() || f->correspondTo(fileInfo))
-            return f;
+//File* Directory::createFile(const QFileInfo& fileInfo, File** oldFile)
+//{
+//   *oldFile = 0;
+//   foreach (File* f, this->files)
+//   {
+//      if (f->getName() == fileInfo.fileName())
+//      {
+//         // If the file is uncompleted its size and date may change.
+//         if (!f->isComplete() || f->correspondTo(fileInfo))
+//            return f;
 
-         *oldFile = f;
-         delete f;
-         break;
-      }
-   }
+//         *oldFile = f;
+//         delete f;
+//         break;
+//      }
+//   }
 
-   return new File(this, fileInfo.fileName(), fileInfo.size(), fileInfo.lastModified());
-}
+//   return new File(this, fileInfo.fileName(), fileInfo.size(), fileInfo.lastModified());
+//}
 
 File* Directory::getFile(const QString& name) const
 {

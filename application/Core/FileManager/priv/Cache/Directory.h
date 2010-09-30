@@ -43,6 +43,7 @@ namespace FM
       virtual QString getFullPath() const;
 
       Directory* getRoot() const;
+      bool isAChildOf(const Directory* dir) const;
 
       Directory* getSubDir(const QString& name) const;
       QList<Directory*> getSubDirs() const;
@@ -52,7 +53,7 @@ namespace FM
 
       Directory* physicallyCreateSubDirectory(const QString& name);
 
-      File* createFile(const QFileInfo& fileInfo, File** oldFile);
+//      File* createFile(const QFileInfo& fileInfo, File** oldFile);
 
       File* getFile(const QString& name) const;
 
