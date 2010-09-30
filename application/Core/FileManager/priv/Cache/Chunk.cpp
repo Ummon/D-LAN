@@ -155,7 +155,7 @@ void Chunk::setHash(const Common::Hash& hash)
    L_DEBU(QString("Chunk[%1] setHash(..) : %2").arg(this->num).arg(hash.toStr()));
 
    if (!this->hash.isNull())
-      L_ERRO(QString("Chunk::setHash : Chunk has already an hash! file : %1").arg(this->file->getFullPath()));
+      L_WARN(QString("Chunk::setHash : Chunk has already an hash! file : %1").arg(this->file->getFullPath()));
 
    this->hash = hash;
 }
@@ -163,6 +163,11 @@ void Chunk::setHash(const Common::Hash& hash)
 int Chunk::getKnownBytes() const
 {
    return this->knownBytes;
+}
+
+void Chunk::setKnownBytes(int bytes)
+{
+   this->knownBytes = bytes;
 }
 
 bool Chunk::isOwnedBy(File* file) const
