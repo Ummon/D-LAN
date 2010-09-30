@@ -4,12 +4,15 @@
 #include <QSharedPointer>
 #include <QDir>
 
+#include <Libs/MersenneTwister.h>
+
 #include <IFileManager.h>
 using namespace FM;
 
 class StressTest
 {
    static const QDir ROOT_DIR;
+   static MTRand mtrand;
 
 public:
    StressTest();
@@ -17,7 +20,10 @@ public:
 private:
    static void (StressTest::*actions[])();
    static const int NB_ACTION;
+
    static QString generateAName();
+   static int percentRand();
+   static int permilRand();
 
    void createASharedDir();
    void removeASharedDir();
@@ -26,14 +32,14 @@ private:
    void createAFile();
    void removeAFile();
 
-   void doAnAction();
-
    QSharedPointer<IFileManager> fileManager;
 
    QStringList sharedDirsReadOnly;
    QStringList sharedDirsReadWrite;
    QStringList directories;
    QStringList files;
+
+   QStringList dirsToDelete;
 };
 
 #endif
