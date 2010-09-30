@@ -10,8 +10,7 @@ using namespace Common;
   * see : http://fr.wikipedia.org/wiki/SHA-1
   */
 
-
-bool Hash::randInit = false;
+MTRand Hash::mtrand;
 
 /**
   * Build a new empty hash, its value is set to 0.
@@ -127,15 +126,9 @@ bool Hash::isNull() const
   */
 Hash Hash::rand()
 {
-   if (!Hash::randInit)
-   {
-      qsrand(QTime(0,0,0).msecsTo(QTime::currentTime()));
-      Hash::randInit = true;
-   }
-
    Hash hash;
    for (int i = 0; i < HASH_SIZE; i++)
-      hash.data->hash[i] = (char)(qrand() % 256);
+      hash.data->hash[i] = static_cast<char>(mtrand.randInt(255));
 
    return hash;
 }

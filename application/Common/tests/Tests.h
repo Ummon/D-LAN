@@ -16,7 +16,7 @@ private slots:
    void generateAHash();
    void buildAnHashFromAString();
    void compareTwoHash();
-   void math();
+   void nCombinations();
    void availableDiskSpace();
    void readAndWriteWithZeroCopyStreamQIODevice();
 };

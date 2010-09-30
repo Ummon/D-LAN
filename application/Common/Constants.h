@@ -11,6 +11,8 @@ namespace Common
    const QString FILE_CACHE("cache.bin"); ///< The name of the file cache saved in the home directory.
 
    const int PROTOBUF_STREAMING_BUFFER_SIZE(4 * 1024); ///< 4kB.
+
+   const QString BINARY_PREFIXS[] = {"B", "KiB", "MiB", "GiB", "TiB", "Pi", "Ei", "Zi"};
 }
 
 #endif

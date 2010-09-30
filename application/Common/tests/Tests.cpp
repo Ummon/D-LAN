@@ -8,7 +8,6 @@
 #include <Protos/common.pb.h>
 
 #include <Hash.h>
-#include <Math.h>
 #include <PersistantData.h>
 #include <Global.h>
 #include <ZeroCopyStreamQIODevice.h>
@@ -112,12 +111,12 @@ void Tests::compareTwoHash()
    QVERIFY(h2 == h4);
 }
 
-void Tests::math()
+void Tests::nCombinations()
 {
-   QVERIFY(Common::Math::nCombinations(5, 4) == 5);
-   QVERIFY(Common::Math::nCombinations(4, 2) == 6);
-   QVERIFY(Common::Math::nCombinations(4, 4) == 1);
-   QVERIFY(Common::Math::nCombinations(2, 4) == 0);
+   QVERIFY(Common::Global::nCombinations(5, 4) == 5);
+   QVERIFY(Common::Global::nCombinations(4, 2) == 6);
+   QVERIFY(Common::Global::nCombinations(4, 4) == 1);
+   QVERIFY(Common::Global::nCombinations(2, 4) == 0);
 }
 
 void Tests::availableDiskSpace()
