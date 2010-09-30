@@ -3,42 +3,75 @@
 
 #include <QSharedPointer>
 #include <QDir>
+#include <QThread>
 
 #include <Libs/MersenneTwister.h>
 
 #include <IFileManager.h>
 using namespace FM;
 
-class StressTest
+class RandGenerator
 {
-   static const QDir ROOT_DIR;
-   static MTRand mtrand;
-
 public:
-   StressTest();
+   int percentRand();
+   int permilRand();
+   int rand(int n);
+   QString generateAName();
 
 private:
-   static void (StressTest::*actions[])();
+   MTRand mtrand;
+};
+
+class StressTest;
+
+class FilesAndDirs : public QThread
+{
+public:
+   FilesAndDirs(QSharedPointer<IFileManager>, StressTest* stressTest);
+   void run();
+
+private:
+   static void (FilesAndDirs::*actions[])();
    static const int NB_ACTION;
 
-   static QString generateAName();
-   static int percentRand();
-   static int permilRand();
-
-   void createASharedDir();
-   void removeASharedDir();
    void createADir();
    void removeADir();
    void createAFile();
    void removeAFile();
 
    QSharedPointer<IFileManager> fileManager;
+   StressTest* stressTest;
 
+   QStringList directories;
+   QStringList dirsToDelete;
+
+   RandGenerator randGen;
+};
+
+class StressTest
+{
+   static const int NB_FILES_AND_DIR_THREAD;
+public:
+   StressTest();
+   QStringList getSharedDirsReadOnly() const;
+   QStringList getSharedDirsReadWrite() const;
+
+private:
+   static void (StressTest::*actions[])();
+   static const int NB_ACTION;
+
+   void createASharedDir();
+   void removeASharedDir();
+   void doASearch();
+   void printAmount();
+
+   QSharedPointer<IFileManager> fileManager;
+   QList<FilesAndDirs*> filesAndDirs;
    QStringList sharedDirsReadOnly;
    QStringList sharedDirsReadWrite;
-   QStringList directories;
-
    QStringList dirsToDelete;
+
+   RandGenerator randGen;
 };
 
 #endif
