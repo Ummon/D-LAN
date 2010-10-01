@@ -31,20 +31,22 @@ int Global::nCombinations(int n, int k)
   * Will return a formated size with the unit prefix.
   * For example :
   * - 1 -> "1 B"
-  * - 1024 -> "1 KiB"
-  * - 1024^2 -> "1 MiB"
-  * - 1024^3 -> "1 GiB"
-  * - 1024^4 -> "1 TiB"
+  * - 1024 -> "1.0 KiB"
+  * - 1024^2 -> "1.0 MiB"
+  * - 1024^3 -> "1.0 GiB"
+  * - 1024^4 -> "1.0 TiB"
   */
 QString Global::formatByteSize(qint64 bytes)
 {
    int current = 0;
+   int rest = 0;
    while (bytes > 1024)
    {
+      rest = ((bytes % 1024) + 50) / 100;
       bytes /= 1024;
       current++;
    }
-   return QString::number(bytes).append(" ").append(BINARY_PREFIXS[current]);
+   return QString::number(bytes).append(rest == 0 ? "" : QString(".").append(QString::number(rest))).append(" ").append(BINARY_PREFIXS[current]);
 }
 
 qint64 Global::availableDiskSpace(const QString& path)
