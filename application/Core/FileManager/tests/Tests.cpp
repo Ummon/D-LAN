@@ -283,7 +283,7 @@ void Tests::createAnEmptyFile()
    qDebug() << "===== createAnEmptyFile() =====";
 
    Protos::Common::Entry remoteEntry;
-   remoteEntry.set_path("/remoteShare1");
+   remoteEntry.set_path("/remoteShare1/");
    remoteEntry.set_name("remoteFile.txt");
    remoteEntry.set_size(1 * 1024 * 1024); // 1Mo.
 

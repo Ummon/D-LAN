@@ -50,12 +50,13 @@ File::File(
      hashing(false),
      toStopHashing(false)
 {
-   //QMutexLocker locker(&this->getCache()->getMutex());
+   // QMutexLocker locker(&this->getCache()->getMutex());
+
    L_DEBU(QString("New file : %1 (%2)").arg(this->getFullPath()).arg(Common::Global::formatByteSize(this->size)));
 
    if (!hashes.isEmpty())
-      if (this->getNbChunks() != hashes.size())
-         L_ERRO(QString("File::File(..) : The number of hashes (%1) doesn't correspond to the calculate number of chunk (%2)").arg(hashes.size()).arg(this->getNbChunks()));
+      if (this->getNbChunks() != hashes.size()) // It can occur when IFileManager::newFile(..) is called with an entry not owning all its hashes.
+         L_WARN(QString("File::File(..) : The number of hashes (%1) doesn't correspond to the calculate number of chunk (%2)").arg(hashes.size()).arg(this->getNbChunks()));
 
    bool complete = !(this->name.size() > UNFINISHED_SUFFIX_TERM.size() && this->name.endsWith(UNFINISHED_SUFFIX_TERM));
 
@@ -96,7 +97,6 @@ File::File(
          {
             file.open(QIODevice::WriteOnly);
             file.resize(this->size);
-            file.close();
             this->dateLastModified = QFileInfo(file).lastModified();
          }
       }

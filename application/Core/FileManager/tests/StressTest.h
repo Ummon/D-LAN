@@ -64,12 +64,16 @@ private:
    void removeASharedDir();
    void doASearch();
    void printAmount();
+   void getChunk();
+   void newFile();
 
    QSharedPointer<IFileManager> fileManager;
    QList<FilesAndDirs*> filesAndDirs;
    QStringList sharedDirsReadOnly;
    QStringList sharedDirsReadWrite;
    QStringList dirsToDelete;
+
+   QList<Common::Hash> someHashes;
 
    RandGenerator randGen;
 };
