@@ -219,7 +219,7 @@ Entry* FileManager::getEntry(const QString& path)
 
 void FileManager::entryAdded(Entry* entry)
 {
-   if (entry->getName().isEmpty())
+   if (entry->getName().isEmpty() || Cache::isFileUnfinished(entry->getName()))
       return;
 
    L_DEBU(QString("Adding entry '%1' to the index ..").arg(entry->getName()));
