@@ -48,6 +48,7 @@ namespace FM
       Directory* getSubDir(const QString& name) const;
       QList<Directory*> getSubDirs() const;
       QList<File*> getFiles() const;
+      QList<File*> getCompleteFiles() const;
 
       Directory* createSubDirectory(const QString& name);
 
@@ -55,9 +56,9 @@ namespace FM
 
 //      File* createFile(const QFileInfo& fileInfo, File** oldFile);
 
-      File* getFile(const QString& name) const;
-
+      File* getFile(const QString& name) const;      
       void addFile(File* file);
+      void fileSizeChanged(qint64 oldSize, qint64 newSize);
 
       void stealContent(Directory* dir);
 

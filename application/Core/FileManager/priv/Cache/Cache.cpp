@@ -17,6 +17,11 @@ Cache::Cache(FileManager* fileManager)
 {
 }
 
+bool Cache::isFileUnfinished(const QString filename)
+{
+   return filename.size() > UNFINISHED_SUFFIX_TERM.size() && filename.endsWith(UNFINISHED_SUFFIX_TERM);
+}
+
 /**
   * a) Search among their shared directory the one who match the given entry.
   * b) In the shared directory try to find the directory corresponding to 'entry.dir.path'.
@@ -422,6 +427,8 @@ void Cache::saveInFile(Protos::FileCache::Hashes& hashes) const
 
 quint64 Cache::getAmount() const
 {
+   QMutexLocker lock(&this->lock);
+
    quint64 amount = 0;
    for(QListIterator<SharedDirectory*> i(this->sharedDirs); i.hasNext();)
       amount += i.next()->getSize();

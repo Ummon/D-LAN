@@ -325,7 +325,7 @@ void FileUpdater::scan(Directory* dir)
       Directory* currentDir = dirsToVisit.takeFirst();
 
       QList<Directory*> currentSubDirs = currentDir->getSubDirs();
-      QList<File*> currentFiles = currentDir->getFiles();
+      QList<File*> currentFiles = currentDir->getCompleteFiles(); // We don't care about the unfinished files.
 
       foreach (QFileInfo entry, QDir(currentDir->getFullPath()).entryInfoList(QDir::AllEntries | QDir::NoDotAndDotDot))
       {
@@ -346,21 +346,20 @@ void FileUpdater::scan(Directory* dir)
 
             currentSubDirs.removeOne(dir);
          }
-         else if (entry.size() > 0)
+         else if (entry.size() > 0 && !Cache::isFileUnfinished(entry.fileName()))
          {
             File* file = currentDir->getFile(entry.fileName());
 
-            // The case where a file is being copied and a lot of modification event is thrown.
             if (file)
             {
-               if (this->filesWithoutHashes.contains(file))
-                  currentFiles.removeOne(file);
-               else if (file->isComplete() && !file->correspondTo(entry))
-               {
-                  currentFiles.removeOne(file);
-                  delete file;
+               if (
+                   !this->filesWithoutHashes.contains(file) && // The case where a file is being copied and a lot of modification event is thrown (thus the file is in this->filesWithoutHashes).
+                   file->isComplete() &&
+                   !file->correspondTo(entry)
+               )
                   file = 0;
-               }
+               else
+                  currentFiles.removeOne(file);
             }
 
             if (!file)
@@ -500,7 +499,7 @@ void FileUpdater::treatEvents(const QList<WatcherEvent>& events)
    {
       if (
          event.type == WatcherEvent::TIMEOUT || // Don't care about this event type.
-         event.path1.endsWith(UNFINISHED_SUFFIX_TERM) // Don't care about unfinished files.
+         Cache::isFileUnfinished(event.path1) // Don't care about unfinished files.
       )
          continue;
 

@@ -27,7 +27,8 @@ namespace FM
    public:
       Cache(FileManager* fileManager);
 
-   public:
+      static bool isFileUnfinished(const QString filename);
+
       Protos::Core::GetEntriesResult getEntries(const Protos::Common::Entry& dir) const;
       Protos::Core::GetEntriesResult getEntries() const;
       Entry* getEntry(const QString& path) const;

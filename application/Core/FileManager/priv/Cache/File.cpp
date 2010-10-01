@@ -58,7 +58,7 @@ File::File(
       if (this->getNbChunks() != hashes.size()) // It can occur when IFileManager::newFile(..) is called with an entry not owning all its hashes.
          L_WARN(QString("File::File(..) : The number of hashes (%1) doesn't correspond to the calculate number of chunk (%2)").arg(hashes.size()).arg(this->getNbChunks()));
 
-   bool complete = !(this->name.size() > UNFINISHED_SUFFIX_TERM.size() && this->name.endsWith(UNFINISHED_SUFFIX_TERM));
+   bool complete = !Cache::isFileUnfinished(this->name);
 
    // Test if the file already exists.
    /*
@@ -128,7 +128,7 @@ bool File::restoreFromFileCache(const Protos::FileCache::Hashes_File& file)
 
    if (
       file.filename().data() == this->getName() &&
-      (qint64)file.size() == this->getSize() &&
+      (qint64)file.size() == this->size &&
       file.date_last_modified() == this->getDateLastModified().toTime_t() &&
       this->chunks.size() == file.chunk_size()
    )
@@ -330,12 +330,14 @@ bool File::computeHashes(int n)
    }
 
    // Skip the already known full hashes.
+   qint64 bytesSkipped = 0;
    int chunkNum = 0;
    while (
       chunkNum < this->chunks.size() &&
       this->chunks[chunkNum]->hasHash() &&
       this->chunks[chunkNum]->getKnownBytes() == CHUNK_SIZE) // Maybe the file has grown and the last chunk must be recomputed.
    {
+      bytesSkipped += CHUNK_SIZE;
       chunkNum++;
       file.seek(file.pos() + CHUNK_SIZE);
    }
@@ -412,13 +414,14 @@ bool File::computeHashes(int n)
    this->toStopHashing = false;
    this->hashing = false;
 
-   if (bytesReadTotal != this->size)
+   if (bytesReadTotal + bytesSkipped != this->size)
    {
       L_DEBU(QString("The file content has changed during the hashes computing process. File = %1, bytes read = %2, previous size = %3").arg(this->getFullPath()).arg(bytesReadTotal).arg(this->size));
-      this->size = bytesReadTotal;
+      this->dir->fileSizeChanged(this->size, bytesReadTotal + bytesSkipped);
+      this->size = bytesReadTotal + bytesSkipped;
       this->dateLastModified = QFileInfo(this->getFullPath()).lastModified();
 
-      if (bytesReadTotal < this->size) // In this case, maybe some chunk must be deleted.
+      if (bytesReadTotal + bytesSkipped < this->size) // In this case, maybe some chunk must be deleted.
          for (int i = this->getNbChunks(); i < this->chunks.size(); i++)
          {
             QSharedPointer<Chunk> c = this->chunks.takeLast();
