@@ -53,7 +53,10 @@ Protos::Core::GetEntriesResult Cache::getEntries(const Protos::Common::Entry& di
             dir->populateEntry(result.add_entry());
 
          foreach (File* file, currentDir->getFiles())
-            file->populateEntry(result.add_entry());
+         {
+            if (file->isComplete())
+               file->populateEntry(result.add_entry());
+         }
 
          break;
       }
