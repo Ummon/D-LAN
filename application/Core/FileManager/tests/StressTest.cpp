@@ -11,9 +11,10 @@ using namespace FM;
 
 #include <Common/Global.h>
 
+#include <priv/Constants.h>
 #include <Exceptions.h>
-
 #include <Builder.h>
+#include <IChunk.h>
 
 // Beautiful macros..
 #define PROB_100(A) if (this->randGen.percentRand() <= 100 - A) return;
@@ -146,7 +147,7 @@ void FilesAndDirs::createAFile()
 
    QString filePath = dirs[this->randGen.rand(dirs.size()-1)] + "/" + this->randGen.generateAName();
 
-   // Create a file with a random size from 1 to 100 Mo
+   // Create a file with a random size from 1 B to 100 MB
    int bytes = this->randGen.rand(100 * 1024 * 1024 - 1) + 1;
    static const int CHUNK_SIZE = 64 * 1024;
    char buffer[CHUNK_SIZE];
@@ -162,7 +163,6 @@ void FilesAndDirs::createAFile()
 
    while (bytes > 0)
    {
-      //qDebug() << bytes;
       int bufferSize = bytes < CHUNK_SIZE ? bytes : CHUNK_SIZE;
 
       int n = this->randGen.rand(255); // Don't generate a number for each byte to avoid too much computation.
@@ -264,6 +264,8 @@ void (StressTest::*StressTest::actions[])() =
    &StressTest::removeASharedDir,
    &StressTest::doASearch,
    &StressTest::printAmount,
+   &StressTest::getChunk,
+   &StressTest::newFile,
 };
 
 const int StressTest::NB_ACTION = sizeof(StressTest::actions) / sizeof(void (StressTest::*)());
@@ -371,4 +373,78 @@ void StressTest::printAmount()
 
    qDebug() << "Amount of shared data : " << Common::Global::formatByteSize(this->fileManager->getAmount()) << " (" << this->fileManager->getAmount() << ")";
 }
+
+void StressTest::getChunk()
+{
+   PROB_100(20);
+
+   if (this->someHashes.isEmpty())
+      return;
+
+   qDebug() << "===== StressTest::getChunk() =====";
+
+   Common::Hash hash = this->someHashes.takeAt(this->randGen.rand(this->someHashes.size()-1));
+   try
+   {
+      QSharedPointer<IChunk> chunk = this->fileManager->getChunk(hash);
+      qDebug() << "Hash found : " << hash.toStr();
+      // TODO : give the chunk to an uploader.
+   }
+   catch(UnknownChunkException&)
+   {
+      qDebug() << "Hash unknown : " << hash.toStr();
+   }
+}
+
+void StressTest::newFile()
+{
+   PROB_100(30);
+
+   qDebug() << "===== StressTest::newFile() =====";
+
+   QString path("/");
+   for (int i = 0; i < this->randGen.rand(2); i++)
+   {
+      path.append(this->randGen.generateAName()).append("/");
+   }
+
+   // Size is from 1 B to 100 MB.
+   int bytes = this->randGen.rand(100 * 1024 * 1024 - 1) + 1;
+   int nbChunk = bytes / CHUNK_SIZE + (bytes % CHUNK_SIZE == 0 ? 0 : 1);
+
+   Protos::Common::Entry entry;
+   entry.set_type(Protos::Common::Entry_Type_DIR);
+   entry.set_path(path.toStdString());
+   entry.set_name(this->randGen.generateAName().toStdString());
+   entry.set_size(bytes);
+   for (int i = 0; i < this->randGen.rand(nbChunk); i++) // Do not give all hashes.
+   {
+      Protos::Common::Hash* hash = entry.add_chunk();
+      hash->set_hash(Common::Hash::rand().getData(), Common::Hash::HASH_SIZE);
+   }
+
+   try
+   {
+      this->fileManager->newFile(entry);
+      // TODO : give the chunk to ad downloader.
+   }
+   catch(NoReadWriteSharedDirectoryException&)
+   {
+      qDebug() << "NoReadWriteSharedDirectoryException";
+   }
+   catch(InsufficientStorageSpaceException&)
+   {
+      qDebug() << "InsufficientStorageSpaceException";
+   }
+   catch(FilePhysicallyAlreadyExistsException)
+   {
+      qDebug() << "FilePhysicallyAlreadyExistsException";
+   }
+   catch(UnableToCreateNewFileException&)
+   {
+      qDebug() << "UnableToCreateNewFileException";
+   }
+}
+
+
 

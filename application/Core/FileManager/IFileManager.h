@@ -44,8 +44,8 @@ namespace FM
         * It will take the shared directory which has enought storage space and matches paths the closest.
         * The file will have the exact final size and filled with 0.
         * The filename will end with .unfinished.
-        * All returned hashes are null, they can be set with the method 'IChunk::setHash(..)'.
         * Some or all hashes can be null (see Protos.Common.Hash). They can be set later with IChunk::setHash(..).
+        * @remarks Entry.shared_dir is not used.
         * @exception NoReadWriteSharedDirectoryException
         * @exception InsufficientStorageSpaceException
         * @exception FilePhysicallyAlreadyExistsException
