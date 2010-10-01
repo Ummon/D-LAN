@@ -118,6 +118,8 @@ void Directory::populateEntry(Protos::Common::Entry* dir) const
 void Directory::fileDeleted(File* file)
 {
    L_DEBU(QString("Directory::fileDeleted() remove %1").arg(file->getFullPath()));
+
+   (*this) -= file->getSize();
    this->files.removeOne(file);
 }
 
@@ -200,6 +202,17 @@ QList<File*> Directory::getFiles() const
    return this->files;
 }
 
+QList<File*> Directory::getCompleteFiles() const
+{
+   QList<File*> completeFiles;
+   foreach (File* file, this->files)
+   {
+      if (file->isComplete())
+         completeFiles << file;
+   }
+   return completeFiles;
+}
+
 /**
   * Creates a new sub-directory if none exists already otherwise
   * returns an already existing.
@@ -268,6 +281,11 @@ void Directory::addFile(File* file)
    this->files << file;
 
    (*this) += file->getSize();
+}
+
+void Directory::fileSizeChanged(qint64 oldSize, qint64 newSize)
+{
+   (*this) += newSize - oldSize;
 }
 
 /**
