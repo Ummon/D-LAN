@@ -138,6 +138,7 @@ void FileUpdater::prioritizeAFileToHash(File* file)
    // If a file is incomplete (unfinished) we can't compute its hashes because we don't have all data.
    if (!file->hasAllHashes() && file->isComplete())
    {
+      QMutexLocker lockerHashing(&this->hashingMutex);
       this->filesWithoutHashes.removeOne(file);
       this->filesWithoutHashes.prepend(file);
    }
@@ -349,6 +350,7 @@ void FileUpdater::scan(Directory* dir)
          else if (entry.size() > 0 && !Cache::isFileUnfinished(entry.fileName()))
          {
             File* file = currentDir->getFile(entry.fileName());
+            QMutexLocker locker(&this->mutex);
 
             if (file)
             {
@@ -420,6 +422,8 @@ void FileUpdater::deleteEntry(Entry* entry)
 {
    if (!entry)
       return;
+
+   QMutexLocker locker(&this->mutex);
 
    // Remove the directory and their sub child from the scan list (this->dirsToScan).
    if (Directory* dir = dynamic_cast<Directory*>(entry))
