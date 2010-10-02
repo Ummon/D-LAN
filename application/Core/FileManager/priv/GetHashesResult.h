@@ -27,10 +27,14 @@ namespace FM
       void chunkHashKnown(QSharedPointer<Chunk> chunk);
 
    private:
+      void decNbHash();
+
       const Protos::Common::Entry& fileEntry;
       File* file; // TODO : if the file is deleted how can we know?
       Cache& cache;
       FileUpdater& fileUpdater;
+
+      int nbHash;
    };
 }
 
