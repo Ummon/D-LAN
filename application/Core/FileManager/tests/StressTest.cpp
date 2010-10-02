@@ -268,7 +268,7 @@ void (StressTest::*StressTest::actions[])() =
    &StressTest::haveChunk,
    &StressTest::getRootEntries,
    &StressTest::getEntries,
-   //&StressTest::getHashes,
+   &StressTest::getHashes,
 };
 
 const int StressTest::NB_ACTION = sizeof(StressTest::actions) / sizeof(void (StressTest::*)());
@@ -476,7 +476,8 @@ void StressTest::haveChunk()
 
    QList<Common::Hash> hashes;
 
-   for (int i = 0; i < this->randGen.rand(500) + 2500 && i < this->someHashes.size(); i++)
+   int n = this->randGen.rand(2000) + 500;
+   for (int i = 0; i < n && i < this->someHashes.size(); i++)
       hashes << this->someHashes[i];
 
    QTime time;
@@ -567,14 +568,19 @@ void StressTest::getHashes()
    else
    {
       qDebug() << "Number of hashes : " << result2.nb_hash();
-      this->getHashesResults << result;
-      this->getHashesResultsNumber << result2.nb_hash();
+      this->getHashesResults << HashesResult(result, result2.nb_hash(), entryToStr(entry));
    }
 }
 
 void StressTest::nextHash(Common::Hash hash)
 {
-   qDebug() << "nextHash : " << hash.toStr();
+   for (int i = 0; i < this->getHashesResults.size(); i++)
+      if (this->getHashesResults[i].result.data() == dynamic_cast<IGetHashesResult*>(this->sender()))
+      {
+         qDebug() << "nextHash : " << hash.toStr() << " for " << this->getHashesResults[i].filename;
+         this->getHashesResults.removeAt(i);
+         break;
+      }
 }
 
 void StressTest::addEntries(const Protos::Core::GetEntriesResult& entries)
@@ -588,7 +594,7 @@ void StressTest::addEntries(const Protos::Core::GetEntriesResult& entries)
              this->knownDirEntries[j].shared_dir().id().hash() == entries.entry(i).shared_dir().id().hash())
             goto nextEntryResult;
 
-      //qDebug() << entryToStr(entries.entry(i));
+      qDebug() << entryToStr(entries.entry(i));
 
       if (entries.entry(i).type() == Protos::Common::Entry_Type_DIR)
          this->knownDirEntries << entries.entry(i);
