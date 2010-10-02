@@ -11,7 +11,7 @@
 using namespace FM;
 
 GetHashesResult::GetHashesResult(const Protos::Common::Entry& fileEntry, Cache& cache, FileUpdater& fileUpdater)
-   : fileEntry(fileEntry), file(0), cache(cache), fileUpdater(fileUpdater)
+   : fileEntry(fileEntry), file(0), cache(cache), fileUpdater(fileUpdater), nbHash(0)
 {
    qRegisterMetaType<Common::Hash>("Common::Hash");
 }
@@ -29,17 +29,20 @@ Protos::Core::GetHashesResult GetHashesResult::start()
       return result;
    }
 
+   this->nbHash = chunks.size();
+   connect(&this->cache, SIGNAL(chunkHashKnown(QSharedPointer<Chunk>)), this, SLOT(chunkHashKnown(QSharedPointer<Chunk>)), Qt::DirectConnection);
+
    result.set_nb_hash(chunks.size());
    for (QListIterator< QSharedPointer<Chunk> > i(chunks); i.hasNext();)
    {
       QSharedPointer<Chunk> chunk(i.next());
       if (chunk->hasHash())
       {
+         this->decNbHash();
          emit nextHash(chunk->getHash());
       }
       else // If only one hash is missing we tell the FileUpdater to compute the remaining ones.
       {
-         connect(&this->cache, SIGNAL(chunkHashKnown(QSharedPointer<Chunk>)), this, SLOT(chunkHashKnown(QSharedPointer<Chunk>)), Qt::DirectConnection);
          this->fileUpdater.prioritizeAFileToHash(this->file);
          break;
       }
@@ -52,5 +55,13 @@ Protos::Core::GetHashesResult GetHashesResult::start()
 void GetHashesResult::chunkHashKnown(QSharedPointer<Chunk> chunk)
 {
    if (chunk->isOwnedBy(this->file))
+   {
+      this->decNbHash();
       emit nextHash(chunk->getHash());
+   }
+}
+void GetHashesResult::decNbHash()
+{
+   if (!--this->nbHash)
+      disconnect(&this->cache, SIGNAL(chunkHashKnown(QSharedPointer<Chunk>)), this, SLOT(chunkHashKnown(QSharedPointer<Chunk>)));
 }
