@@ -51,7 +51,7 @@ Protos::Core::GetEntriesResult Cache::getEntries(const Protos::Common::Entry& di
          {
             currentDir = currentDir->getSubDir(folder);
             if (!currentDir)
-               break;
+               return result;
          }
 
          foreach (Directory* dir, currentDir->getSubDirs())
@@ -63,7 +63,7 @@ Protos::Core::GetEntriesResult Cache::getEntries(const Protos::Common::Entry& di
                file->populateEntry(result.add_entry());
          }
 
-         break;
+         return result;
       }
    }
 
@@ -219,6 +219,7 @@ QList< QSharedPointer<Chunk> > Cache::getChunks(const Protos::Common::Entry& fil
 QStringList Cache::getSharedDirs(SharedDirectory::Rights rights) const
 {
    QMutexLocker locker(&this->lock);
+
    QStringList list;
 
    for (QListIterator<SharedDirectory*> i(this->sharedDirs); i.hasNext();)
@@ -443,7 +444,10 @@ void Cache::onEntryAdded(Entry* entry)
 void Cache::onEntryRemoved(Entry* entry)
 {
    if (SharedDirectory* sharedDir = dynamic_cast<SharedDirectory*>(entry))
+   {
+      QMutexLocker lock(&this->lock);
       this->sharedDirs.removeOne(sharedDir);
+   }
 
    emit entryRemoved(entry);
 }
