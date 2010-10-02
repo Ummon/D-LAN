@@ -69,7 +69,7 @@ namespace FM
       bool toStop; ///< Set to true when the service must be stopped.
 
       WaitCondition* dirEvent; ///< Using to wait when a sharing directory is added or deleted.
-      QMutex mutex;
+      QMutex mutex; ///< Prevent the access from many thread to the internal data like 'filesWithoutHashes' for example.
 
       QList<Directory*> dirsToScan; ///< When a new shared directory is added, it is put in this list until it is scanned.
       Directory* currentScanningDir;
