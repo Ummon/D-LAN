@@ -242,7 +242,7 @@ bool Socket::readMessage()
          if (readOK)
          {
             this->currentHashesResult = this->fileManager->getHashes(getHashes.file());
-            connect(this->currentHashesResult.data(), SIGNAL(nextHash(Common::Hash)), this, SLOT(nextAskedHash(Common::Hash)));
+            connect(this->currentHashesResult.data(), SIGNAL(nextHash(Common::Hash)), this, SLOT(nextAskedHash(Common::Hash)), Qt::QueuedConnection);
             Protos::Core::GetHashesResult res = this->currentHashesResult->start();
 
             this->nbHash = res.nb_hash();

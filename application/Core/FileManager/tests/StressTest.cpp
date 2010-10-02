@@ -62,7 +62,7 @@ void FilesAndDirs::run()
    forever
    {
       (this->*FilesAndDirs::actions[this->randGen.rand(NB_ACTION-1)])();
-      QTest::qWait(1000);
+      QTest::qWait(this->randGen.rand(800) + 100);
 
       for (QMutableListIterator<QString> i(this->dirsToDelete); i.hasNext();)
       {
@@ -558,7 +558,7 @@ void StressTest::getHashes()
    qDebug() << "Entry " << entryToStr(entry);
 
    QSharedPointer<IGetHashesResult> result = this->fileManager->getHashes(entry);
-   connect(result.data(), SIGNAL(nextHash(Common::Hash)), this, SLOT(nextHash(Common::Hash)));
+   connect(result.data(), SIGNAL(nextHash(Common::Hash)), this, SLOT(nextHash(Common::Hash)), Qt::QueuedConnection);
    Protos::Core::GetHashesResult result2 = result->start();
 
    if (result2.status() != Protos::Core::GetHashesResult_Status_OK)
@@ -578,7 +578,11 @@ void StressTest::nextHash(Common::Hash hash)
       if (this->getHashesResults[i].result.data() == dynamic_cast<IGetHashesResult*>(this->sender()))
       {
          qDebug() << "nextHash : " << hash.toStr() << " for " << this->getHashesResults[i].filename;
-         this->getHashesResults.removeAt(i);
+         if (!--this->getHashesResults[i].nb)
+         {
+            qDebug() << "It was the last hash! Removing the listener..";
+            this->getHashesResults.removeAt(i);
+         }
          break;
       }
 }

@@ -18,7 +18,13 @@ namespace FM
       virtual Protos::Core::GetHashesResult start() = 0;
 
    signals:
+      /**
+        * This signal must be connected as Qt::QueuedConnection!
+        * If not, the connected slot may be called right after the 'start()' call and thus don't
+        * give the caller the time to treat the 'start()' return value.
+        */
       void nextHash(Common::Hash hash);
+
       //void error(/*QString message*/);
       //void result(Protos::Core::GetHashesResult& result);
    };
