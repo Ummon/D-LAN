@@ -8,6 +8,7 @@
 #include <Libs/MersenneTwister.h>
 
 #include <IFileManager.h>
+#include <IGetHashesResult.h>
 using namespace FM;
 
 class RandGenerator
@@ -48,8 +49,9 @@ private:
    RandGenerator randGen;
 };
 
-class StressTest
+class StressTest : public QObject
 {
+   Q_OBJECT
    static const int NB_FILES_AND_DIR_THREAD;
 public:
    StressTest();
@@ -66,6 +68,18 @@ private:
    void printAmount();
    void getChunk();
    void newFile();
+   void haveChunk();
+   void getRootEntries();
+   void getEntries();
+   void getHashes();
+
+private slots:
+   void nextHash(Common::Hash hash);
+
+private:
+   void addEntries(const Protos::Core::GetEntriesResult& entries);
+
+   static QString entryToStr(const Protos::Common::Entry& entry);
 
    QSharedPointer<IFileManager> fileManager;
    QList<FilesAndDirs*> filesAndDirs;
@@ -74,6 +88,11 @@ private:
    QStringList dirsToDelete;
 
    QList<Common::Hash> someHashes;
+   QList<Protos::Common::Entry> knownDirEntries;
+   QList<Protos::Common::Entry> knownFileEntries;
+
+   QList< QSharedPointer<IGetHashesResult> > getHashesResults;
+   QList<int> getHashesResultsNumber;
 
    RandGenerator randGen;
 };
