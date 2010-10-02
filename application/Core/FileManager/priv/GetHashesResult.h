@@ -2,6 +2,7 @@
 #define GETHASHESRESULT_H
 
 #include <QObject>
+#include <QMutex>
 
 #include <Protos/core_protocol.pb.h>
 
@@ -27,14 +28,16 @@ namespace FM
       void chunkHashKnown(QSharedPointer<Chunk> chunk);
 
    private:
-      void decNbHash();
+      void sendNextHash(QSharedPointer<Chunk> chunk);
 
       const Protos::Common::Entry& fileEntry;
       File* file; // TODO : if the file is deleted how can we know?
       Cache& cache;
       FileUpdater& fileUpdater;
 
+      QMutex mutex;
       int nbHash;
+      int lastHashNumSent;
    };
 }
 

@@ -2,6 +2,7 @@
 
 #include <QSharedPointer>
 #include <QList>
+#include <QMutexLocker>
 #include <QMetaType>
 
 #include <priv/Cache/File.h>
@@ -11,11 +12,14 @@
 using namespace FM;
 
 GetHashesResult::GetHashesResult(const Protos::Common::Entry& fileEntry, Cache& cache, FileUpdater& fileUpdater)
-   : fileEntry(fileEntry), file(0), cache(cache), fileUpdater(fileUpdater), nbHash(0)
+   : fileEntry(fileEntry), file(0), cache(cache), fileUpdater(fileUpdater), nbHash(0), lastHashNumSent(-1)
 {
    qRegisterMetaType<Common::Hash>("Common::Hash");
 }
 
+/**
+  * Called from the main thread.
+  */
 Protos::Core::GetHashesResult GetHashesResult::start()
 {
    Protos::Core::GetHashesResult result;
@@ -29,8 +33,8 @@ Protos::Core::GetHashesResult GetHashesResult::start()
       return result;
    }
 
-   this->nbHash = chunks.size();
    connect(&this->cache, SIGNAL(chunkHashKnown(QSharedPointer<Chunk>)), this, SLOT(chunkHashKnown(QSharedPointer<Chunk>)), Qt::DirectConnection);
+   this->nbHash = chunks.size();
 
    result.set_nb_hash(chunks.size());
    for (QListIterator< QSharedPointer<Chunk> > i(chunks); i.hasNext();)
@@ -38,8 +42,7 @@ Protos::Core::GetHashesResult GetHashesResult::start()
       QSharedPointer<Chunk> chunk(i.next());
       if (chunk->hasHash())
       {
-         this->decNbHash();
-         emit nextHash(chunk->getHash());
+         this->sendNextHash(chunk);
       }
       else // If only one hash is missing we tell the FileUpdater to compute the remaining ones.
       {
@@ -52,16 +55,28 @@ Protos::Core::GetHashesResult GetHashesResult::start()
    return result;
 }
 
+/**
+  * Called from UploadManager thread.
+  */
 void GetHashesResult::chunkHashKnown(QSharedPointer<Chunk> chunk)
 {
    if (chunk->isOwnedBy(this->file))
    {
-      this->decNbHash();
-      emit nextHash(chunk->getHash());
+      this->sendNextHash(chunk);
    }
 }
-void GetHashesResult::decNbHash()
+
+void GetHashesResult::sendNextHash(QSharedPointer<Chunk> chunk)
 {
+   QMutexLocker lock(&this->mutex);
+
+   if (chunk->getNum() == this->lastHashNumSent)
+      return;
+
+   this->lastHashNumSent = chunk->getNum();
+
    if (!--this->nbHash)
       disconnect(&this->cache, SIGNAL(chunkHashKnown(QSharedPointer<Chunk>)), this, SLOT(chunkHashKnown(QSharedPointer<Chunk>)));
+
+   emit nextHash(chunk->getHash());
 }
