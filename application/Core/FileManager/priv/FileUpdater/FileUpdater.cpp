@@ -295,12 +295,13 @@ void FileUpdater::stopHashing()
 {
    QMutexLocker lockerHashing(&this->hashingMutex);
    if (this->currentHashingFile)
+   {
       this->currentHashingFile->stopHashing();
+      QMutexLocker locker(&this->mutex);
+      this->filesWithoutHashes.append(this->currentHashingFile);
+   }
 
    this->toStopHashing = true;
-
-   QMutexLocker locker(&this->mutex);
-   this->filesWithoutHashes.append(this->currentHashingFile);
 }
 
 /**
