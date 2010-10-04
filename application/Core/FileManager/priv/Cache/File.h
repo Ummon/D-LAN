@@ -55,7 +55,7 @@ namespace FM
       void dataWriterDeleted();
       void dataReaderDeleted();
 
-      bool write(const QByteArray& buffer, qint64 offset);
+      qint64 write(const QByteArray& buffer, qint64 offset);
       qint64 read(QByteArray& buffer, qint64 offset);
 
       bool computeHashes(int n = 0);
@@ -77,6 +77,7 @@ namespace FM
 
    private:
       int getNbChunks();
+      void setAsComplete();
 
       Directory* dir;
       QList< QSharedPointer<Chunk> > chunks;
@@ -88,6 +89,7 @@ namespace FM
       QFile* fileInReadMode;
       QMutex writeLock; ///< Protect the file from concurrent access from different downloaders.
       QMutex readLock; ///< Protect the file from concurrent access from different uploaders.
+      QMutex mutex;
 
       // Mutex and wait condition used during hashing.
       // (TODO : It's a bit heavy, try to reduce the memory footprint).

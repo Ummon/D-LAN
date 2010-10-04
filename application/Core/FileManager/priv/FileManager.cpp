@@ -243,6 +243,7 @@ void FileManager::chunkHashKnown(QSharedPointer<Chunk> chunk)
 
 void FileManager::chunkRemoved(QSharedPointer<Chunk> chunk)
 {
+   L_DEBU(QString("Removing chunk '%1' from the index ..").arg(chunk->getHash().toStr()));
    this->chunks.rm(chunk);
 }
 

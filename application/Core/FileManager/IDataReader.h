@@ -11,7 +11,9 @@ namespace FM
       virtual ~IDataReader() {}
 
       /**
+        * @exception IOErrorException
         * @exception ChunkDeletedException
+        * @exception ChunkNotCompletedException
         */
       virtual qint64 read(QByteArray& buffer, uint offset) = 0;
    };

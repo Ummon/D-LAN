@@ -47,6 +47,7 @@ File::File(
      numDataReader(0),
      fileInWriteMode(0),
      fileInReadMode(0),
+     mutex(QMutex::Recursive),
      hashing(false),
      toStopHashing(false)
 {
@@ -209,8 +210,9 @@ void File::newDataWriterCreated()
 
    if (this->numDataWriter == 0)
    {
-      this->fileInWriteMode = new QFile(this->getPath());
-      this->fileInWriteMode->open(QIODevice::WriteOnly);
+      this->fileInWriteMode = new QFile(this->getFullPath());
+      if (!this->fileInWriteMode->open(QIODevice::WriteOnly))
+         throw UnableToOpenFileInWriteModeException();
    }
    this->numDataWriter += 1;
 }
@@ -221,8 +223,9 @@ void File::newDataReaderCreated()
 
    if (this->numDataReader == 0)
    {
-      this->fileInReadMode = new QFile(this->getPath());
-      this->fileInReadMode->open(QIODevice::ReadOnly);
+      this->fileInReadMode = new QFile(this->getFullPath());
+      if (!this->fileInReadMode->open(QIODevice::ReadOnly))
+         throw UnableToOpenFileInReadModeException();
    }
    this->numDataReader += 1;
 }
@@ -255,22 +258,27 @@ void File::dataReaderDeleted()
   * Write some bytes to the file at the given offset.
   * If the buffer exceed the file size then only the begining of the buffer is
   * used, the file is not resizing.
+  * @exception IOErrorException
   * @param buffer The buffer.
   * @param offset An offset.
-  * @return true if end of file reached.
   */
-bool File::write(const QByteArray& buffer, qint64 offset)
+qint64 File::write(const QByteArray& buffer, qint64 offset)
 {
    QMutexLocker locker(&this->writeLock);
 
-   if (offset >= this->size)
-      return true;
+   if (offset >= this->size || !this->fileInWriteMode->seek(offset))
+      throw IOErrorException();
 
-   this->fileInWriteMode->seek(offset);
-   int maxSize = (this->size - offset);
+   int maxSize = this->size - offset;
    qint64 n = this->fileInWriteMode->write(buffer.data(), buffer.size() > maxSize ? maxSize : buffer.size());
 
-   return offset + n >= (qint64)this->size || n == -1;
+   if (n == -1)
+      throw IOErrorException();
+
+   if (this->isComplete())
+      this->setAsComplete();
+
+    return n;
 }
 
 /**
@@ -289,6 +297,9 @@ qint64 File::read(QByteArray& buffer, qint64 offset)
 
    this->fileInReadMode->seek(offset);
    qint64 bytesRead = this->fileInReadMode->read(buffer.data(), buffer.size());
+
+   if (bytesRead == -1)
+      throw IOErrorException();
 
    return bytesRead;
 }
@@ -389,6 +400,9 @@ bool File::computeHashes(int n)
             this->chunks.append(QSharedPointer<Chunk>(new Chunk(this, chunkNum, bytesReadChunk, crypto.result())));
          else
          {
+            if (this->chunks[chunkNum]->hasHash())
+               this->cache->onChunkRemoved(this->chunks[chunkNum]); // To remove the chunk from the chunk index (TODO : fin a more elegant way).
+
             this->chunks[chunkNum]->setHash(crypto.result());
             this->chunks[chunkNum]->setKnownBytes(bytesReadChunk);
          }
@@ -474,6 +488,7 @@ bool File::hasOneOrMoreHashes()
 
 bool File::isComplete()
 {
+   QMutexLocker lock(&this->mutex);
    //L_DEBU(QString("this->size = %1, CHUNK_SIZE = %2, res = %3, this->getNbChunks() = %4").arg(this->size).arg(CHUNK_SIZE).arg(this->size / CHUNK_SIZE + (this->size % CHUNK_SIZE == 0 ? 0 : 1)).arg(this->getNbChunks()));
 
    qint64 currentSize = 0;
@@ -522,6 +537,17 @@ bool File::hasAParentDir(Directory* dir)
 int File::getNbChunks()
 {
    return this->size / CHUNK_SIZE + (this->size % CHUNK_SIZE == 0 ? 0 : 1);
+}
+
+void File::setAsComplete()
+{
+   QMutexLocker lock(&this->mutex);
+
+   if (Cache::isFileUnfinished(this->name))
+   {
+      QString path = this->getFullPath();
+      QFile::rename(path, path.left(path.size() - UNFINISHED_SUFFIX_TERM.size()));
+   }
 }
 
 /*QList<IChunk*> File::getChunks() const
