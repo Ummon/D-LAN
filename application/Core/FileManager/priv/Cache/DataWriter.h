@@ -12,7 +12,7 @@ namespace FM
       DataWriter(Chunk& chunk);
       ~DataWriter();
 
-      bool write(const QByteArray& buffer, uint offset);
+      bool write(const QByteArray& buffer);
 
    private:
       Chunk& chunk;

@@ -19,7 +19,14 @@ namespace FM
 
       virtual void populateEntry(Protos::Common::Entry* entry) const = 0;
 
+      /**
+        * @exception UnableToOpenFileInReadMode
+        */
       virtual QSharedPointer<IDataReader> getDataReader() = 0;
+
+      /**
+        * @exception UnableToOpenFileInWriteMode
+        */
       virtual QSharedPointer<IDataWriter> getDataWriter() = 0;
 
       /**

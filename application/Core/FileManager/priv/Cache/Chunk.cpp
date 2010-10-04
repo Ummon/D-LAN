@@ -11,14 +11,14 @@ using namespace FM;
 #include <priv/Cache/DataWriter.h>
 
 Chunk::Chunk(File* file, int num, int knownBytes)
-   : file(file), num(num), knownBytes(knownBytes)
+   : mutex(QMutex::Recursive), file(file), num(num), knownBytes(knownBytes)
 {
    QMutexLocker locker(&this->mutex);
    L_DEBU(QString("New chunk[%1] : %2. File : %3").arg(num).arg(hash.toStr()).arg(this->file->getFullPath()));
 }
 
 Chunk::Chunk(File* file, int num, int knownBytes, const Common::Hash& hash)
-   : file(file), num(num), knownBytes(knownBytes), hash(hash)
+   : mutex(QMutex::Recursive), file(file), num(num), knownBytes(knownBytes), hash(hash)
 {
    QMutexLocker locker(&this->mutex);
    L_DEBU(QString("New chunk[%1] : %2. File : %3").arg(num).arg(hash.toStr()).arg(this->file->getFullPath()));
@@ -72,7 +72,7 @@ void Chunk::newDataWriterCreated()
 {
    QMutexLocker locker(&this->mutex);
    if (this->file)
-      this->file->newDataReaderCreated();
+      this->file->newDataWriterCreated();
 }
 
 void Chunk::newDataReaderCreated()
@@ -108,23 +108,39 @@ int Chunk::read(QByteArray& buffer, int offset)
    if (!this->file)
       throw ChunkDeletedException();
 
-   if (this->knownBytes != CHUNK_SIZE)
+   if (this->knownBytes == 0)
       throw ChunkNotCompletedException();
+
+   if (offset >= this->knownBytes)
+      return 0;
 
    return this->file->read(buffer, offset + this->num * CHUNK_SIZE);
 }
 
-bool Chunk::write(const QByteArray& buffer, int offset)
+/**
+  * Write the given buffer after 'knownBytes'.
+  * @exception IOErrorException
+  * @exception ChunkDeletedException
+  * @exception TryToWriteBeyondTheEndOfChunkException
+  */
+bool Chunk::write(const QByteArray& buffer)
 {
    QMutexLocker locker(&this->mutex);
    if (!this->file)
       throw ChunkDeletedException();
 
    if (this->knownBytes + buffer.size() > CHUNK_SIZE)
-      throw 1; // TODO : create exception
-   bool eof = this->file->write(buffer, offset + this->num * CHUNK_SIZE);
-   this->knownBytes += buffer.size();
-   return eof;
+      throw TryToWriteBeyondTheEndOfChunkException();
+
+   this->knownBytes += this->file->write(buffer, this->knownBytes + this->num * CHUNK_SIZE);
+
+   if (this->knownBytes > CHUNK_SIZE) // Should never be true.
+   {
+      L_ERRO("Chunk::write : this->knownBytes > CHUNK_SIZE");
+      this->knownBytes = CHUNK_SIZE;
+   }
+
+   return this->knownBytes == CHUNK_SIZE;
 }
 
 /*void Chunk::sendContentToSocket(QAbstractSocket& socket)

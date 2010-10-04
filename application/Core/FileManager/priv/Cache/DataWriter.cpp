@@ -12,7 +12,7 @@ DataWriter::~DataWriter()
    this->chunk.dataWriterDeleted();
 }
 
-bool DataWriter::write(const QByteArray& buffer, uint offset)
+bool DataWriter::write(const QByteArray& buffer)
 {
-   return this->chunk.write(buffer, offset);
+   return this->chunk.write(buffer);
 }

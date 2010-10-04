@@ -14,8 +14,6 @@
 
 namespace FM
 {
-   class ChunkNotCompletedException : public std::exception {};
-
    class File;
    class IDataReader;
    class IDataWriter;
@@ -64,9 +62,9 @@ namespace FM
       int read(QByteArray& buffer, int offset);
 
       /**
-        * @return 'true' if end of file reached.
+        * @return 'true' if end of chunk reached.
         */
-      bool write(const QByteArray& buffer, int offset);
+      bool write(const QByteArray& buffer);
 
       //void sendContentToSocket(QAbstractSocket& socket);
       //void getContentFromSocket(QAbstractSocket& socket);

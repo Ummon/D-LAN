@@ -11,9 +11,11 @@ namespace FM
       virtual ~IDataWriter() {}
 
       /**
+        * @exception IOErrorException
         * @exception ChunkDeletedException
+        * @exception TryToWriteBeyondTheEndOfChunkException
         */
-      virtual bool write(const QByteArray& buffer, uint offset) = 0;
+      virtual bool write(const QByteArray& buffer) = 0;
    };
 }
 
