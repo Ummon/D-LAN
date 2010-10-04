@@ -1,14 +1,11 @@
 #ifndef FILEMANAGER_EXCEPTIONS_H
 #define FILEMANAGER_EXCEPTIONS_H
 
-#include <exception>
-using namespace std;
-
 #include <QStringList>
 
 namespace FM
 {
-   class FileSystemEntriesNotFoundException : public exception
+   class FileSystemEntriesNotFoundException
    {
    public :
       FileSystemEntriesNotFoundException(const QStringList& paths) : paths(paths) {}
@@ -33,7 +30,7 @@ namespace FM
    /**
      * Thrown when adding a shared directory when a super directory is already shared.
      */
-   class SuperDirectoryExistsException : public exception
+   class SuperDirectoryExistsException
    {
    public:
       SuperDirectoryExistsException(const QString& super, const QString& sub)
@@ -44,7 +41,7 @@ namespace FM
    };
 
    // TODO : add some additionnals informations
-   class SubDirectoriesWithDifferentRightsExistsException : public exception
+   class SubDirectoriesWithDifferentRightsExistsException
    {
    public:
       SubDirectoriesWithDifferentRightsExistsException(const QString& super, const QStringList& subs)
@@ -54,33 +51,29 @@ namespace FM
       const QStringList subDirectories;
    };
 
-   class DirAlreadySharedException: public exception
-   {
-   };
+   class IOErrorException {};
 
-   class ChunkDeletedException : public exception
-   {
-   };
+   class UnableToOpenFileInWriteModeException {};
 
-   class NoReadWriteSharedDirectoryException : public exception
-   {
-   };
+   class UnableToOpenFileInReadModeException {};
 
-   class InsufficientStorageSpaceException : public exception
-   {
-   };
+   class TryToWriteBeyondTheEndOfChunkException {};
 
-   class UnableToCreateNewFileException : public exception
-   {
-   };
+   class DirAlreadySharedException {};
 
-   class FilePhysicallyAlreadyExistsException : public exception
-   {
-   };
+   class ChunkDeletedException {};
 
-   class UnknownChunkException : public exception
-   {
-   };
+   class ChunkNotCompletedException {};
+
+   class NoReadWriteSharedDirectoryException {};
+
+   class InsufficientStorageSpaceException {};
+
+   class UnableToCreateNewFileException {};
+
+   class FilePhysicallyAlreadyExistsException {};
+
+   class UnknownChunkException {};
 }
 
 #endif
