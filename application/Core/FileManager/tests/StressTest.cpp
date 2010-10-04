@@ -15,6 +15,8 @@ using namespace FM;
 #include <Exceptions.h>
 #include <Builder.h>
 #include <IChunk.h>
+#include <IDataWriter.h>
+#include <IDataReader.h>
 
 // Beautiful macros..
 #define PROB_100(A) if (this->randGen.percentRand() <= 100 - A) return;
@@ -401,8 +403,13 @@ void StressTest::getChunk()
       {
          QSharedPointer<IChunk> chunk = this->fileManager->getChunk(hash);
          nbFound++;
-         //qDebug() << "Hash found : " << hash.toStr();
-         // TODO : give the chunk to an uploader.
+
+         if (this->randGen.permilRand() <= 1)
+         {
+            Uploader* uploader = new Uploader(chunk);
+            this->uploaders << uploader;
+            uploader->start();
+         }
       }
       catch(UnknownChunkException&)
       {
@@ -417,7 +424,7 @@ void StressTest::getChunk()
 
 void StressTest::newFile()
 {
-   PROB_100(20);
+   PROB_100(10);
 
    qDebug() << "===== StressTest::newFile() =====";
 
@@ -444,8 +451,13 @@ void StressTest::newFile()
 
    try
    {
-      this->fileManager->newFile(entry);
-      // TODO : give the chunk to ad downloader.
+      QList< QSharedPointer<IChunk> > chunks = this->fileManager->newFile(entry);
+      for (QListIterator< QSharedPointer<IChunk> > i(chunks); i.hasNext();)
+      {
+         Downloader* downloader = new Downloader(i.next(), QString(entry.path().data()) + QString(entry.name().data()));
+         this->downloaders << downloader;
+         downloader->start();
+      }
    }
    catch(NoReadWriteSharedDirectoryException&)
    {
@@ -520,7 +532,7 @@ void StressTest::getEntries()
       Protos::Common::Entry entry = this->knownDirEntries[n];
       if (!entry.has_shared_dir())
       {
-         qDebug() << "!!! The entry " << entry.path().data() << "/" << entry.name().data() << " doesn't have a shared directory defined !!!";
+         qDebug() << "!!! The entry " << entry.path().data() << entry.name().data() << " doesn't have a shared directory defined !!!";
          this->knownDirEntries.removeAt(n);
          return;
       }
@@ -615,11 +627,101 @@ void StressTest::addEntries(const Protos::Core::GetEntriesResult& entries)
 
 QString StressTest::entryToStr(const Protos::Common::Entry& entry)
 {
-   return QString("Entry (%1), path = %2, name = %3, sharedDir = %4").
-         arg(entry.type() == Protos::Common::Entry_Type_DIR ? "DIR" : "FILE").
-         arg(entry.path().data()).
-         arg(entry.name().data()).
-         arg(Common::Hash(entry.shared_dir().id().hash().data()).toStr());
+   QString str = QString("Entry (%1), path = %2, name = %3, sharedDir = %4").
+      arg(entry.type() == Protos::Common::Entry_Type_DIR ? "DIR" : "FILE").
+      arg(entry.path().data()).
+      arg(entry.name().data()).
+      arg(Common::Hash(entry.shared_dir().id().hash().data()).toStr());
+
+   if (entry.type() == Protos::Common::Entry_Type_FILE)
+   {
+      str.append(QString(" number of chunk : %1").arg(entry.chunk_size()));
+      for (int i = 0; i < entry.chunk_size(); i++)
+         str.append(" ").append(Common::Hash(entry.chunk(i).hash().data()).toStr());
+   }
+   return str;
+}
+
+Downloader::Downloader(QSharedPointer<IChunk> chunk, QString filePath)
+   : chunk(chunk), filePath(filePath)
+{
+}
+
+void Downloader::run()
+{
+   qDebug() << "===== Downloader::run() =====";
+
+   try
+   {
+      QSharedPointer<IDataWriter> writer = chunk->getDataWriter();
+
+      QByteArray buffer(64 * 1024, 0);
+      for (int i = 0; i < buffer.size(); i++)
+         buffer[i] = this->chunk->getNum() + 1;
+
+      while (!writer->write(buffer));
+   }
+   catch(UnableToOpenFileInWriteModeException&)
+   {
+      qDebug() << "UnableToOpenFileInWriteModeException, file = " << this->filePath;
+   }
+   catch(IOErrorException&)
+   {
+      qDebug() << "IOErrorException, file = " << this->filePath;
+   }
+   catch(TryToWriteBeyondTheEndOfChunkException&)
+   {
+      qDebug() << "TryToWriteBeyondTheEndOfChunkException, file = " << this->filePath;
+   }
+   catch(ChunkDeletedException&)
+   {
+      qDebug() << "ChunkDeletedException, file = " << this->filePath;
+   }
+
+   qDebug() << "Downloader::run() finished, file" << this->filePath;
+}
+
+
+Uploader::Uploader(QSharedPointer<IChunk> chunk)
+   : chunk(chunk)
+{
+}
+
+void Uploader::run()
+{
+   qDebug() << "===== Uploader::run() =====";
+
+   try
+   {
+      QSharedPointer<FM::IDataReader> reader = this->chunk->getDataReader();
+
+      QByteArray buffer(64 * 1024, 0);
+
+      qint64 bytesReadTotal = 0;
+      qint64 bytesRead = 0;
+
+      while (bytesRead = reader->read(buffer, bytesReadTotal))
+         bytesReadTotal += bytesRead;
+      qDebug() << "Uploader::run() : bytesRead = " << bytesReadTotal << " for the chunk " << this->chunk->getHash().toStr() << " num : " << this->chunk->getNum();
+   }
+   catch(UnableToOpenFileInReadModeException&)
+   {
+      qDebug() << "UnableToOpenFileInReadModeException";
+   }
+   catch(IOErrorException&)
+   {
+      qDebug() << "IOErrorException";
+   }
+   catch(ChunkDeletedException&)
+   {
+      qDebug() << "ChunkDeletedException";
+   }
+   catch(ChunkNotCompletedException&)
+   {
+      qDebug() << "ChunkNotCompletedException";
+   }
+
+   qDebug() << "Uploader::run() finished";
 }
 
 

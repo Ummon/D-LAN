@@ -49,6 +49,9 @@ private:
    RandGenerator randGen;
 };
 
+class Downloader;
+class Uploader;
+
 class StressTest : public QObject
 {
    Q_OBJECT
@@ -91,18 +94,42 @@ private:
    QList<Protos::Common::Entry> knownDirEntries;
    QList<Protos::Common::Entry> knownFileEntries;
 
+   QList<Downloader*> downloaders;
+   QList<Uploader*> uploaders;
+
    struct HashesResult
    {
       HashesResult(QSharedPointer<IGetHashesResult> result, int nb, QString filename)
          : result(result), nb(nb), filename(filename) {}
-
       QSharedPointer<IGetHashesResult> result;
       int nb;
       QString filename;
    };
-
    QList< HashesResult > getHashesResults;
 
+   RandGenerator randGen;
+};
+
+class Downloader : public QThread
+{
+public:
+   Downloader(QSharedPointer<IChunk> chunk, QString filePath);
+   void run();
+
+private:
+   QSharedPointer<IChunk> chunk;
+   QString filePath;
+   RandGenerator randGen;
+};
+
+class Uploader : public QThread
+{
+public:
+   Uploader(QSharedPointer<IChunk> chunk);
+   void run();
+
+private:
+   QSharedPointer<IChunk> chunk;
    RandGenerator randGen;
 };
 
