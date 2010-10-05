@@ -3,6 +3,7 @@
 
 #include <QSharedPointer>
 #include <QTimer>
+#include <QFlags>
 
 #include <Core/FileManager/IFileManager.h>
 #include <Core/PeerManager/IPeerManager.h>
@@ -31,14 +32,9 @@ namespace DM
       void remove();
 
       bool hasAValidPeer();
-      void retreiveHashes();
-
-   private:
-      void retrievePeer();
 
    private slots:
-      void result(const Protos::Core::GetHashesResult& result);
-      void nextHash(const Common::Hash& hash);
+      void retrievePeer();
 
    protected:
       QSharedPointer<FM::IFileManager> fileManager;
@@ -48,10 +44,23 @@ namespace DM
       PM::IPeer* peerSource;
       Protos::Common::Entry entry;
 
-      Status status;
+      enum InternalStatus
+      {
+         QUEUED = 0x1,
+         ASKING_FOR_HASHES = 0x2,
+         DOWNLOADING = 0x4,
+         COMPLETE = 0x8,
+         PAUSED = 0x10,
+         UNKNOWN_PEER = 0x20,
+         ENTRY_NOT_FOUND = 0x40,
+         NO_SOURCE = 0x80,
+      };
+      QFlags<InternalStatus> status;
 
       QSharedPointer<PM::IGetHashesResult> getHashesResult;
       int nbHashes;
+
+      QTimer timer;
    };
 }
 #endif

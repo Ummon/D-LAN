@@ -64,4 +64,5 @@ HEADERS += IDownloadManager.h \
     priv/ChunkDownloader.h \
     priv/ChunkDownload.h \
     ../../Protos/common.pb.h \
-    Builder.h
+    Builder.h \
+    priv/Constants.h

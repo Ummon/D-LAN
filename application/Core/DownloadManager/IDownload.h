@@ -11,13 +11,16 @@ namespace DM
 {
    enum Status
    {
-     COMPLETE,
-     NO_SOURCE,
-     NOT_FOUND,
-     UNKNOWN_PEER,
+     QUEUED,
      INITIALIZING,
      DOWNLOADING,
-     QUEUED
+     COMPLETE,
+     PAUSED,
+
+     // All theses status will imply the paused status.
+     UNKNOWN_PEER, // The source peer can't be found.
+     ENTRY_NOT_FOUND, // The source peer can't find the entry.
+     NO_SOURCE, // Some chunk can't be download. Only when there is no more downloading.
    };
 
    class IDownload : public QObject

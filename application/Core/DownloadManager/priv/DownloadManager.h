@@ -2,6 +2,7 @@
 #define DOWNLOADMANAGER_DOWNLOADMANAGER_H
 
 #include <QLinkedList>
+#include <QMutableLinkedListIterator>
 #include <QList>
 #include <QSet>
 #include <QSharedPointer>
@@ -24,8 +25,13 @@ namespace DM
       DownloadManager(QSharedPointer<FM::IFileManager> fileManager, QSharedPointer<PM::IPeerManager> peerManager);
 
       void addDownload(Common::Hash peerSource, const Protos::Common::Entry& entry);
+      void addDownload(Common::Hash peerSource, const Protos::Common::Entry& entry, QMutableLinkedListIterator<Download*> iterator);
+
       QList<IDownload*> getDownloads();
       QList< QSharedPointer<IChunkDownload> > getUnfinishedChunks(int n);
+
+   private slots:
+      void newEntries(const Protos::Core::GetEntriesResult& entries);
 
    private:
       void addNewDownload(FileDownload* download);

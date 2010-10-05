@@ -1,17 +1,48 @@
 #include <priv/Download.h>
 using namespace DM;
 
+#include <priv/Constants.h>
+
 Download::Download(QSharedPointer<FM::IFileManager> fileManager, QSharedPointer<PM::IPeerManager> peerManager, Common::Hash peerSourceID, const Protos::Common::Entry& entry)
    : fileManager(fileManager), peerManager(peerManager), peerSourceID(peerSourceID), peerSource(0), entry(entry), status(QUEUED), nbHashes(0)
 {
+   this->timer.setInterval(CHECK_DEAD_PEER_PERIOD);
+   connect(&this->timer, SIGNAL(timeout()), this, SLOT(retrievePeer()));
+
    this->retrievePeer();
 }
 
-void Download::retrievePeer()
+int Download::getId()
 {
-   this->peerSource = this->peerManager->getPeer(this->peerSourceID);
-   if (!this->hasAValidPeer())
-      this->status = NO_SOURCE;
+   // TODO
+   return 0;
+}
+
+Status Download::getStatus()
+{
+   // TODO
+   return DM::QUEUED;
+}
+
+char Download::getProgress()
+{
+   // TODO
+   return 0;
+}
+
+Common::Hash Download::getPeerSourceID()
+{
+   return this->peerSourceID;
+}
+
+Protos::Common::Entry Download::getEntry()
+{
+   return this->entry;
+}
+
+void Download::remove()
+{
+   // TODO
 }
 
 bool Download::hasAValidPeer()
@@ -19,33 +50,18 @@ bool Download::hasAValidPeer()
    return this->peerSource && this->peerSource->isAlive();
 }
 
-
-void Download::retreiveHashes()
+void Download::retrievePeer()
 {
+   this->peerSource = this->peerManager->getPeer(this->peerSourceID);
    if (!this->hasAValidPeer())
-      return;
-
-   this->getHashesResult = this->peerSource->getHashes(this->entry);
-   connect(this->getHashesResult.data(), SIGNAL(result(const Protos::Core::GetHashesResult&)), this, SLOT(result(const Protos::Core::GetHashesResult&)));
-   connect(this->getHashesResult.data(), SIGNAL(nextHash(const Common::Hash&)), this, SLOT(nextHash(const Common::Hash&)));
-   this->getHashesResult->start();
-}
-
-void Download::result(const Protos::Core::GetHashesResult& result)
-{
-   if (result.status() == Protos::Core::GetHashesResult_Status_OK)
    {
-      this->status = INITIALIZING;
-      this->nbHashes = result.nb_hash();
+      this->status |= UNKNOWN_PEER;
+      this->timer.start();
    }
    else
    {
-      this->status = NOT_FOUND;
-      this->getHashesResult.clear();
+      this->status &= !UNKNOWN_PEER;
+      this->timer.stop();
    }
 }
 
-void Download::nextHash(const Common::Hash& hash)
-{
-
-}

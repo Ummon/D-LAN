@@ -3,6 +3,8 @@
 
 #include <QThread>
 
+#include <Common/Hash.h>
+
 namespace DM
 {
    class ChunkDownload;
@@ -10,6 +12,10 @@ namespace DM
 
    class ChunkDownloader : public QThread
    {
+      void run();
+      Common::Hash getHash();
+      void setPeerIDs(const QList<Common::Hash>& peerIDs);
+
    private:
       ChunkDownload* chunkDownload;
       DownloadManager* downloadManager;
