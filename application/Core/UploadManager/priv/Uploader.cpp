@@ -31,10 +31,10 @@ void Uploader::run()
          currentOffset += bytesRead;
       }
    }
-   catch(UnableToOpenFileInReadModeException&)
+   catch(FM::UnableToOpenFileInReadModeException&)
    {
    }
-   catch(IOErrorException&)
+   catch(FM::IOErrorException&)
    {
    }
    catch (FM::ChunkDeletedException)

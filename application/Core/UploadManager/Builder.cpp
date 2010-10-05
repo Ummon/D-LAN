@@ -7,7 +7,7 @@ using namespace UM;
 #include <priv/UploadManager.h>
 #include <IUploadManager.h>
 
-QSharedPointer<IUploadManager> Builder::newFileManager(QSharedPointer<FM::IFileManager> fileManager, QSharedPointer<PM::IPeerManager> peerManager)
+QSharedPointer<IUploadManager> Builder::newUploadManager(QSharedPointer<FM::IFileManager> fileManager, QSharedPointer<PM::IPeerManager> peerManager)
 {
    return QSharedPointer<IUploadManager>(new UploadManager(fileManager, peerManager));
 }
