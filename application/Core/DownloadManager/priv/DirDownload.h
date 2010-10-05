@@ -5,6 +5,7 @@
 
 #include <Core/FileManager/IFileManager.h>
 #include <Core/PeerManager/IPeerManager.h>
+#include <Core/PeerManager/IGetEntriesResult.h>
 
 #include <Protos/common.pb.h>
 #include <Protos/core_protocol.pb.h>
@@ -19,13 +20,16 @@ namespace DM
    public:
       DirDownload(QSharedPointer<FM::IFileManager> fileManager, QSharedPointer<PM::IPeerManager>, Common::Hash peerSourceID, const Protos::Common::Entry& entry);
 
+      void retrieveEntries();
+
    signals:
-      void newEntries(Common::Hash peerSourceID, const Protos::Core::GetEntriesResult& entries);
+      void newEntries(const Protos::Core::GetEntriesResult& entries);
 
    private slots:
       void result(const Protos::Core::GetEntriesResult& entries);
 
    private:
+      QSharedPointer<PM::IGetEntriesResult> getEntriesResult;
    };
 }
 #endif

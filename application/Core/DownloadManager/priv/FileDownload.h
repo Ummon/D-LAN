@@ -10,18 +10,25 @@
 #include <Protos/common.pb.h>
 
 #include <priv/Download.h>
+#include <priv/ChunkDownload.h>
 
 namespace DM
 {
    class ChunkDownload;
    class FileDownload : public Download
    {
+      Q_OBJECT
    public:
       FileDownload(QSharedPointer<FM::IFileManager> fileManager, QSharedPointer<PM::IPeerManager>, Common::Hash peerSourceID, const Protos::Common::Entry& entry);
 
+      void retreiveHashes();
+
+   private slots:
+      void result(const Protos::Core::GetHashesResult& result);
+      void nextHash(const Common::Hash& hash);
+
    private:
       QList<ChunkDownload*> chunkDownloads;
-      //FileManager::IFile* file;
    };
 }
 #endif
