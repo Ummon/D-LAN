@@ -17,7 +17,8 @@ using namespace PM;
 #include <ResultListener.h>
 #include <IGetEntriesResult.h>
 #include <IGetHashesResult.h>
-#include <Constants.h>
+
+const int Tests::PORT = 59487;
 
 Tests::Tests()
 {
@@ -37,7 +38,7 @@ void Tests::initTestCase()
    this->fileManagers[0]->setSharedDirsReadOnly(QStringList() << QDir::currentPath().append("/sharedDirs/peer1"));
    this->fileManagers[1]->setSharedDirsReadOnly(QStringList() << QDir::currentPath().append("/sharedDirs/peer2"));
 
-   this->peerUpdater = new PeerUpdater(this->fileManagers, this->peerManagers);
+   this->peerUpdater = new PeerUpdater(this->fileManagers, this->peerManagers, PORT);
 
    this->servers << new TestServer(this->peerManagers[0], PORT) << new TestServer(this->peerManagers[1], PORT + 1);
 }

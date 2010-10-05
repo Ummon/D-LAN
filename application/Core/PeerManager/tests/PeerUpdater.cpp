@@ -1,18 +1,23 @@
-#include <PeerUpdater.h>
+#include "PeerUpdater.h"
 
 #include <Common/Hash.h>
-#include <Constants.h>
-#include <priv/PeerManager.h>
+#include <Core/PeerManager/priv/PeerManager.h>
 
-PeerUpdater::PeerUpdater(QList< QSharedPointer<FM::IFileManager> > fileManagers, QList< QSharedPointer<IPeerManager> > peerManagers)
-   : fileManagers(fileManagers), peerManagers(peerManagers)
+/**
+  * @class PeerUpdater
+  * Simulate a periodic update, each peerManager will know the information of each other.
+  * This class is also used by /Core/DownloadManager/tests
+  */
+
+PeerUpdater::PeerUpdater(QList< QSharedPointer<FM::IFileManager> > fileManagers, QList< QSharedPointer<PM::IPeerManager> > peerManagers, int port)
+   : fileManagers(fileManagers), peerManagers(peerManagers), port(port)
 {
    this->timer.setInterval(1000);
    connect(&this->timer, SIGNAL(timeout()), this, SLOT(update()));
 
    for (int i = 0; i < this->peerManagers.size(); i++)
    {
-      dynamic_cast<PeerManager*>(this->peerManagers[i].data())->setID(Common::Hash::rand());
+      dynamic_cast<PM::PeerManager*>(this->peerManagers[i].data())->setID(Common::Hash::rand());
       this->peerManagers[i]->setNick("Bob " + QString::number(i + 1));
    }
 }
@@ -37,7 +42,7 @@ void PeerUpdater::update()
             this->peerManagers[i]->updatePeer(
                this->peerManagers[j]->getID(),
                QHostAddress::LocalHost,
-               PORT + j,
+               this->port + j,
                this->peerManagers[j]->getNick(),
                this->fileManagers[j]->getAmount()
             );

@@ -7,9 +7,8 @@
 
 #include <Core/FileManager/IFileManager.h>
 
-#include <IPeerManager.h>
-#include <IPeer.h>
-using namespace PM;
+#include <Core/PeerManager/IPeerManager.h>
+#include <Core/PeerManager/IPeer.h>
 
 struct PeerData
 {
@@ -24,7 +23,7 @@ class PeerUpdater : public QObject
 {
    Q_OBJECT
 public:
-   PeerUpdater(QList< QSharedPointer<FM::IFileManager> > fileManagers, QList< QSharedPointer<IPeerManager> > peerManagers);
+   PeerUpdater(QList< QSharedPointer<FM::IFileManager> > fileManagers, QList< QSharedPointer<PM::IPeerManager> > peerManagers, int port);
 
    void start();
    void stop();
@@ -34,8 +33,9 @@ private slots:
 
 private:
    QList< QSharedPointer<FM::IFileManager> > fileManagers;
-   QList< QSharedPointer<IPeerManager> > peerManagers;
+   QList< QSharedPointer<PM::IPeerManager> > peerManagers;
    QTimer timer;
+   const int port;
 };
 
 #endif

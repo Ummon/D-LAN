@@ -23,6 +23,8 @@ using namespace PM;
 class Tests : public QObject
 {
    Q_OBJECT
+   static const int PORT;
+
 public:
    Tests();
 
@@ -35,8 +37,6 @@ private slots:
    void askForHashes();
    void askForAChunk();
    void cleanupTestCase();
-
-//   void socketError(QAbstractSocket::SocketError error);
 
 private:
    void createInitialFiles();

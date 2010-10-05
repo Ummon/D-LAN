@@ -1,6 +1,0 @@
-#ifndef TESTS_PEERMANAGER_CONSTANTS_H
-#define TESTS_PEERMANAGER_CONSTANTS_H
-
-const int PORT = 59487;
-
-#endif
