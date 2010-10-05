@@ -40,7 +40,6 @@ LIBS += -L../PeerManager/output/$$FOLDER \
 POST_TARGETDEPS += ../PeerManager/output/$$FOLDER/libPeerManager.a
 
 
-CONFIG += staticlib create_prl link_prl
 DESTDIR = "output/debug"
 MOC_DIR = ".tmp/debug"
 OBJECTS_DIR = ".tmp/debug"

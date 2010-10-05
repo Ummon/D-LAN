@@ -1,20 +1,24 @@
 #ifndef DOWNLOADMANAGER_CHUNKDOWNLOAD_H
 #define DOWNLOADMANAGER_CHUNKDOWNLOAD_H
 
+#include <QSharedPointer>
+
+#include <Common/Hash.h>
+#include <Core/FileManager/IChunk.h>
+
 #include <IChunkDownload.h>
 
-namespace FM { class IChunk; }
 namespace PM { class IPeer; }
 
 namespace DM
 {
-   /**
-     * /!\ The 'ChunkDownload' objects are in a download thread, see 'ChunkDownloader'.
-     */
    class ChunkDownload : public IChunkDownload
    {
+      virtual Common::Hash getHash();
+      virtual void setPeerIDs(const QList<Common::Hash>& peerIDs);
+
    private:
-      FM::IChunk* chunk;
+      QSharedPointer<FM::IChunk> chunk;
       PM::IPeer* peer;
    };
 }

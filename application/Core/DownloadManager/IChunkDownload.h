@@ -8,9 +8,7 @@
 namespace DM
 {
    /**
-     * A chunk which one or more known peer have.
-     * The chunk is not or partially downloaded.
-     * Once a chunk is terminated, the IChunkDownload is deleted.
+     * Once a chunk is downloader, the IChunkDownload is deleted.
      */
    class IChunkDownload
    {
@@ -23,9 +21,9 @@ namespace DM
       virtual Common::Hash getHash() = 0;
 
       /**
-        * Defines the peers which have the chunk.
+        * Define (or redefine) the peers which have the chunk.
         */
-      virtual void setPeerIDs(const QList<quint32>& peerIDs) = 0;
+      virtual void setPeerIDs(const QList<Common::Hash>& peerIDs) = 0;
    };
 }
 #endif

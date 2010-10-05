@@ -2,6 +2,10 @@
 #define DOWNLOADMANAGER_FILEDOWNLOAD_H
 
 #include <QList>
+#include <QSharedPointer>
+
+#include <Core/FileManager/IFileManager.h>
+#include <Core/PeerManager/IPeerManager.h>
 
 #include <Protos/common.pb.h>
 
@@ -13,12 +17,11 @@ namespace DM
    class FileDownload : public Download
    {
    public:
-      virtual ~FileDownload();
+      FileDownload(QSharedPointer<FM::IFileManager> fileManager, QSharedPointer<PM::IPeerManager>, Common::Hash peerSourceID, const Protos::Common::Entry& entry);
 
    private:
       QList<ChunkDownload*> chunkDownloads;
       //FileManager::IFile* file;
-      Protos::Common::FileEntry remoteEntry;
    };
 }
 #endif
