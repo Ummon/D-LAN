@@ -36,18 +36,19 @@ message State {
    }
    message Download {
       enum Status {
-         COMPLETE = 0;
-         NO_SOURCE = 1;
-         NOT_FOUND = 2;
-         UNKNOWN_PEER = 3;
-         INITIALIZING = 4;
-         DOWNLOADING = 5;
-         QUEUED = 6;
+         QUEUED = 0;
+         INITIALIZING = 1;
+         DOWNLOADING = 2;
+         COMPLETE = 3;
+         PAUSED = 4;
+         UNKNOWN_PEER = 5;
+         ENTRY_NOT_FOUND = 6;
+         NO_SOURCE = 7;
       }
       required uint32 id = 1;
       required Common.Entry file = 2;
       required Status status = 3;
-      required uint32 progress = 4; // 0 to 100
+      required uint32 progress = 4; // 0 to 100.
       repeated uint32 peer_id = 5;
    }
    message Upload {
@@ -55,7 +56,7 @@ message State {
       required Common.Entry file = 1;
       required uint32 current_part = 2;
       required uint32 nb_part = 3;
-      required uint32 progress = 4; // 0 to 100
+      required uint32 progress = 4; // 0 to 100.
       required Common.Hash peer_id = 5;
    }
    message Stats {
