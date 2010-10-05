@@ -87,10 +87,6 @@ QList<IPeer*> PeerManager::getPeers()
    return peers;
 }
 
-/**
-  * Return the IPeer* coresponding to ID in the peer list.
-  * Return 0 is the peer doesn't exist.
-  */
 IPeer* PeerManager::getPeer(const Common::Hash& ID)
 {
    return this->getPeer_(ID);

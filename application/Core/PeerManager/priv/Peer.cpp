@@ -11,7 +11,7 @@ using namespace PM;
 #include <priv/GetChunkResult.h>
 
 Peer::Peer(PeerManager* peerManager, QSharedPointer<FM::IFileManager> fileManager, Common::Hash ID)
-   : peerManager(peerManager), fileManager(fileManager), connectionPool(peerManager, fileManager, ID), ID(ID), alive(false)
+   : peerManager(peerManager), fileManager(fileManager), connectionPool(peerManager, fileManager, ID), ID(ID), speed(-1), alive(false)
 {
    this->aliveTimer.setSingleShot(true);
    this->aliveTimer.setInterval(PEER_TIMEOUT * 1000);
@@ -36,6 +36,16 @@ QString Peer::getNick()
 quint64 Peer::getSharingAmount()
 {
    return this->sharingAmount;
+}
+
+int Peer::getSpeed()
+{
+   return this->speed;
+}
+
+void Peer::setSpeed(int speed)
+{
+   this->speed = speed;
 }
 
 bool Peer::isAlive()

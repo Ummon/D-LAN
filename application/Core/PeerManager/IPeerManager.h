@@ -31,6 +31,11 @@ namespace PM
       virtual QString getNick() = 0;
 
       virtual QList<IPeer*> getPeers() = 0;
+
+      /**
+        * Return the IPeer* coresponding to ID.
+        * Return 0 if the peer doesn't exist.
+        */
       virtual IPeer* getPeer(const Common::Hash& ID) = 0;
 
       /**

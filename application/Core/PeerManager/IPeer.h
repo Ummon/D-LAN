@@ -9,9 +9,9 @@
 #include <QHostAddress>
 
 #include <Common/Hashes.h>
-#include <IGetEntriesResult.h>
-#include <IGetHashesResult.h>
-#include <IGetChunkResult.h>
+#include <Core/PeerManager/IGetEntriesResult.h>
+#include <Core/PeerManager/IGetHashesResult.h>
+#include <Core/PeerManager/IGetChunkResult.h>
 
 namespace PM
 {
@@ -27,6 +27,14 @@ namespace PM
       virtual QHostAddress getIP() = 0;
       virtual QString getNick() = 0;
       virtual quint64 getSharingAmount() = 0;
+
+      /**
+        * Return the average speed when downloading from this peer.
+        * [bytes/s].
+        * Set to -1 by default which mean unknown speed;
+        */
+      virtual int getSpeed() = 0;
+      virtual void setSpeed(int speed) = 0;
 
       virtual bool isAlive() = 0;
 
@@ -51,7 +59,6 @@ namespace PM
       virtual QSharedPointer<IGetChunkResult> getChunk(const Protos::Core::GetChunk& chunk) = 0;
 
    signals:
-
       void nextHashResult(Protos::Core::GetHashesResult hashesResult);
       void nextHash(Common::Hash hash);
    };

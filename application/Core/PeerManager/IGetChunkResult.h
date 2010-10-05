@@ -6,7 +6,7 @@
 
 #include <Protos/core_protocol.pb.h>
 
-#include <ISocket.h>
+#include <Core/PeerManager/ISocket.h>
 
 namespace PM
 {

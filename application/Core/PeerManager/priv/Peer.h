@@ -35,6 +35,9 @@ namespace PM
       QString getNick();
       quint64 getSharingAmount();
 
+      int getSpeed();
+      void setSpeed(int speed);
+
       bool isAlive();
       void update(const QHostAddress& IP, quint16 port, const QString& nick, const quint64& sharingAmount);
 
@@ -60,6 +63,8 @@ namespace PM
       quint16 port;
       QString nick;
       quint64 sharingAmount;
+
+      int speed; // [bytes/s]
 
       bool alive;
       QTimer aliveTimer;
