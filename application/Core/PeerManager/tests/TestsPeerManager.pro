@@ -28,7 +28,7 @@ LIBS += -L../../../Common/output/$$FOLDER \
     -lCommon
 POST_TARGETDEPS += ../../../Common/output/$$FOLDER/libCommon.a
 
-# FIXME : Should not be here, all dependies are read from the prl file (see link_prl):
+# FIXME : Should not be here, all dependencies are read from the prl file (see link_prl):
 LIBS += -L../../../Common/LogManager/output/$$FOLDER \
     -lLogManager
 POST_TARGETDEPS += ../../../Common/LogManager/output/$$FOLDER/libLogManager.a
@@ -51,5 +51,4 @@ HEADERS += Tests.h \
     debug_new.h \
     TestServer.h \
     PeerUpdater.h \
-    Constants.h \
     ResultListener.h

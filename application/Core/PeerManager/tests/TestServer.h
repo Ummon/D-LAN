@@ -3,20 +3,19 @@
 
 #include <QtNetwork>
 
-#include <IPeerManager.h>
-using namespace PM;
+#include <Core/PeerManager/IPeerManager.h>
 
 class TestServer : QObject
 {
    Q_OBJECT
 public:
-   TestServer(QSharedPointer<IPeerManager> peerManager, int port);
+   TestServer(QSharedPointer<PM::IPeerManager> peerManager, int port);
 
 private slots:
    void newConnection();
 
 private:
-   QSharedPointer<IPeerManager> peerManager;
+   QSharedPointer<PM::IPeerManager> peerManager;
 
    QTcpServer server;
 };

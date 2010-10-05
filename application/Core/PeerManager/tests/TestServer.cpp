@@ -1,4 +1,4 @@
-#include <TestServer.h>
+#include "TestServer.h"
 
 #include <QSharedPointer>
 #include <QtDebug>
@@ -10,9 +10,10 @@
 /**
   * @class TestServer
   * Listen for new connection and forward them to the given peerManager.
+  * This class is also used by /Core/DownloadManager/tests
   */
 
-TestServer::TestServer(QSharedPointer<IPeerManager> peerManager, int port)
+TestServer::TestServer(QSharedPointer<PM::IPeerManager> peerManager, int port)
    : peerManager(peerManager)
 {
    connect(&this->server, SIGNAL(newConnection()), this, SLOT(newConnection()));
