@@ -11,14 +11,13 @@ package Protos.Queue;
 
 message Queue {
    message LocalEntry {
-      required Common.Entry file = 1; // We don't use 'FileEntry' because we don't need hashes information.
+      required Common.Entry file = 1;
    }
    
-   // A remote entry is a directory or a file (XOR).
+   // A remote entry is a directory or a file.
    message RemoteEntry {
-      required Common.Hash peer_id = 1;
-      optional Common.Entry dir = 2;
-      optional Common.Entry file = 3;
+      required Common.Hash peer_id = 1; // source.
+      optional Common.Entry entry = 2;
    }   
    
    // A queued entry can be remote or local. 

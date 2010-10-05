@@ -41,7 +41,8 @@ message State {
          NOT_FOUND = 2;
          UNKNOWN_PEER = 3;
          INITIALIZING = 4;
-         QUEUED = 5;
+         DOWNLOADING = 5;
+         QUEUED = 6;
       }
       required uint32 id = 1;
       required Common.Entry file = 2;
