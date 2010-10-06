@@ -3,10 +3,14 @@ using namespace DM;
 
 #include <priv/FileDownload.h>
 #include <priv/DirDownload.h>
+#include <priv/ChunkDownloader.h>
+#include <priv/Constants.h>
 
 DownloadManager::DownloadManager(QSharedPointer<FM::IFileManager> fileManager, QSharedPointer<PM::IPeerManager> peerManager)
    : fileManager(fileManager), peerManager(peerManager)
 {
+   for (int i = 0; i < NUMBER_OF_DOWNLOADER; i++)
+      this->chunkDownloaders << new ChunkDownloader();
 }
 
 /**
@@ -58,7 +62,7 @@ QList<IDownload*> DownloadManager::getDownloads()
 QList< QSharedPointer<IChunkDownload> > DownloadManager::getUnfinishedChunks(int n)
 {
    // TODO
-   QList< QSharedPointer<IChunkDownload> >();
+   return QList< QSharedPointer<IChunkDownload> >();
 }
 
 void DownloadManager::newEntries(const Protos::Core::GetEntriesResult& entries)
