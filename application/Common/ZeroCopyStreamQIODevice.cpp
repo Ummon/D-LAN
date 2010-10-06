@@ -1,4 +1,4 @@
-#include <ZeroCopyStreamQIODevice.h>
+#include <Common/ZeroCopyStreamQIODevice.h>
 using namespace Common;
 
 ZeroCopyOutputStreamQIODevice::ZeroCopyOutputStreamQIODevice(QIODevice* device)
@@ -12,7 +12,6 @@ ZeroCopyOutputStreamQIODevice::~ZeroCopyOutputStreamQIODevice()
    if (this->pos != this->buffer)
       this->device->write(this->buffer, this->pos - this->buffer);
 }
-
 
 bool ZeroCopyOutputStreamQIODevice::Next(void** data, int* size)
 {

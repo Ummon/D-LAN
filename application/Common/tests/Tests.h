@@ -3,6 +3,8 @@
 
 #include <QTest>
 
+#include <Hash.h>
+
 class Tests : public QObject
 {
    Q_OBJECT
@@ -13,12 +15,18 @@ private slots:
    void writePersistantData();
    void readPersistantData();
    void removePersistantData();
+   void writeSettings();
+   void readSettings();
+   void removeSettings();
    void generateAHash();
    void buildAnHashFromAString();
    void compareTwoHash();
    void nCombinations();
    void availableDiskSpace();
    void readAndWriteWithZeroCopyStreamQIODevice();
+
+private:
+   Common::Hash hash;
 };
 
 #endif
