@@ -57,9 +57,6 @@ namespace DM
       };
       QFlags<InternalStatus> status;
 
-      QSharedPointer<PM::IGetHashesResult> getHashesResult;
-      int nbHashes;
-
       QTimer timer;
    };
 }

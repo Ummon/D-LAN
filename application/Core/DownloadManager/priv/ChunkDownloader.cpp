@@ -3,7 +3,7 @@ using namespace DM;
 
 void ChunkDownloader::run()
 {
-   // TODO
+   this->exec();
 }
 
 Common::Hash ChunkDownloader::getHash()
@@ -15,4 +15,12 @@ Common::Hash ChunkDownloader::getHash()
 void ChunkDownloader::setPeerIDs(const QList<Common::Hash>& peerIDs)
 {
    // TODO
+}
+
+void ChunkDownloader::chunkReadyToDownload(QSharedPointer<ChunkDownload> chunkDownload)
+{
+   if (chunkDownload->setAsDownloading())
+   {
+      // Choose the best IPeer.
+   }
 }

@@ -1,7 +1,7 @@
 #ifndef DOWNLOADMANAGER_ICHUNKDOWNLOAD_H
 #define DOWNLOADMANAGER_ICHUNKDOWNLOAD_H
 
-#include <QtGlobal>
+#include <QObject>
 
 #include <Common/Hash.h>
 
@@ -10,7 +10,7 @@ namespace DM
    /**
      * Once a chunk is downloader, the IChunkDownload is deleted.
      */
-   class IChunkDownload
+   class IChunkDownload : public QObject
    {
    public:
       virtual ~IChunkDownload() {}

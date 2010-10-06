@@ -20,10 +20,23 @@ void FileDownload::retreiveHashes()
    this->getHashesResult->start();
 }
 
+void FileDownload::chunkReadyToDownload(ChunkDownload* chunkDownload)
+{
+   for (QListIterator< QSharedPointer<ChunkDownload> > i(this->chunkDownloads); i.hasNext(); i.next())
+   {
+      if (i.peekNext().data() == chunkDownload)
+      {
+         emit chunkReadyToDownload(i.peekNext());
+         return;
+      }
+   }
+}
+
 void FileDownload::result(const Protos::Core::GetHashesResult& result)
 {
    if (result.status() == Protos::Core::GetHashesResult_Status_OK)
    {
+      this->status &= !ENTRY_NOT_FOUND;
       this->nbHashes = result.nb_hash();
    }
    else
@@ -36,5 +49,15 @@ void FileDownload::result(const Protos::Core::GetHashesResult& result)
 
 void FileDownload::nextHash(const Common::Hash& hash)
 {
+   if (--this->nbHashes == 0)
+      this->getHashesResult.clear(); // TODO : Must we disconnect the signals ?
 
+   // The file is creating on the fly when the first hash is received.
+   if (this->chunkDownloads.isEmpty())
+      this->chunksWithoutDownload = this->fileManager->newFile(this->entry);
+
+   QSharedPointer<FM::IChunk> chunk = this->chunksWithoutDownload.takeFirst();
+   chunk->setHash(hash);
+   this->chunkDownloads << QSharedPointer<ChunkDownload>(new ChunkDownload(this->peerManager, chunk, this->peerSource));
+   emit chunkReadyToDownload(this->chunkDownloads.last()); // We assume the sourcePeer has the chunk..
 }

@@ -4,7 +4,7 @@ using namespace DM;
 #include <priv/Constants.h>
 
 Download::Download(QSharedPointer<FM::IFileManager> fileManager, QSharedPointer<PM::IPeerManager> peerManager, Common::Hash peerSourceID, const Protos::Common::Entry& entry)
-   : fileManager(fileManager), peerManager(peerManager), peerSourceID(peerSourceID), peerSource(0), entry(entry), status(QUEUED), nbHashes(0)
+   : fileManager(fileManager), peerManager(peerManager), peerSourceID(peerSourceID), peerSource(0), entry(entry), status(QUEUED)
 {
    this->timer.setInterval(CHECK_DEAD_PEER_PERIOD);
    connect(&this->timer, SIGNAL(timeout()), this, SLOT(retrievePeer()));
