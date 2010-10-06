@@ -2,6 +2,7 @@
 using namespace PM;
 
 #include <Common/Constants.h>
+#include <Common/Settings.h>
 
 #include <priv/Log.h>
 #include <priv/Constants.h>
@@ -65,7 +66,7 @@ void ConnectionPool::socketGetIdle(Socket* socket)
      if (currentSocket->isIdle())
      {
         n += 1;
-        if (n > MAX_NUMBER_IDLE_SOCKET)
+        if (n > SETTINGS.getUInt32("max_number_idle_socket"))
            i.remove();
      }
    }

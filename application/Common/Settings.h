@@ -37,6 +37,10 @@ namespace Common
       void get(const QString& name, QString& value);
       void get(const QString& name, Hash& hash);
 
+      quint32 getUInt32(const QString& name);
+      QString getString(const QString& name);
+      Hash getHash(const QString& name);
+
    private:
       static void printErrorNameNotFound(const QString& name);
       static void printErrorBadType(const QString& fieldName, const QString& excepted);

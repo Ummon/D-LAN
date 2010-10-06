@@ -1,6 +1,7 @@
 #include <priv/Peer.h>
 using namespace PM;
 
+#include <Common/Settings.h>
 #include <Common/LogManager/Builder.h>
 
 #include <priv/PeerManager.h>
@@ -14,7 +15,7 @@ Peer::Peer(PeerManager* peerManager, QSharedPointer<FM::IFileManager> fileManage
    : peerManager(peerManager), fileManager(fileManager), connectionPool(peerManager, fileManager, ID), ID(ID), speed(-1), alive(false)
 {
    this->aliveTimer.setSingleShot(true);
-   this->aliveTimer.setInterval(PEER_TIMEOUT * 1000);
+   this->aliveTimer.setInterval(SETTINGS.getUInt32("peer_timeout"));
    connect(&this->aliveTimer, SIGNAL(timeout()), this, SLOT(consideredDead()));
 }
 

@@ -5,6 +5,8 @@ using namespace FM;
 #include <QDir>
 #include <QTime>
 
+#include <Common/Settings.h>
+
 #include <priv/Log.h>
 #include <priv/Exceptions.h>
 #include <priv/Constants.h>
@@ -277,7 +279,7 @@ bool FileUpdater::computeSomeHashes()
       if (completed)
          i.remove();
 
-      if (time.elapsed() / 1000 >= MINIMUM_DURATION_WHEN_HASHING)
+      if (static_cast<quint32>(time.elapsed()) >= SETTINGS.getUInt32("minimum_duration_when_hashing"));
          break;
    }
 
