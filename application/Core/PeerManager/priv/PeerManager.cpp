@@ -5,7 +5,7 @@ using namespace PM;
 
 #include <Common/Hash.h>
 #include <Common/Network.h>
-#include <Common/PersistantData.h>
+#include <Common/Settings.h>
 
 #include <Priv/Log.h>
 #include <Priv/Constants.h>
@@ -25,19 +25,18 @@ PeerManager::PeerManager(QSharedPointer<FM::IFileManager> fileManager)
 
    Protos::Common::Settings settings;
 
-   try
+   if (SETTINGS.arePersisted())
    {
-      Common::PersistantData::getValue(FILE_SETTINGS, settings);
-      this->ID = settings.peerid().hash().data();
-      this->nick = settings.nick().data();
+      SETTINGS.get("peerID", this->ID);
+      SETTINGS.get("nick", this->nick);
    }
-   catch (Common::UnknownValueException)
+   else
    {
       this->ID = Common::Hash::rand();
       this->nick = "Bob";
-      settings.mutable_peerid()->set_hash(this->ID.getData(), Common::Hash::HASH_SIZE);
-      settings.set_nick(this->nick.toStdString());
-      Common::PersistantData::setValue(FILE_SETTINGS, settings);
+      SETTINGS.set("peerID", this->ID);
+      SETTINGS.set("nick", this->nick);
+      SETTINGS.save();
    }
 
    L_USER(QString("Our current ID: %1").arg(this->ID.toStr()));
@@ -62,11 +61,8 @@ void PeerManager::setID(Common::Hash ID)
 void PeerManager::setNick(const QString& nick)
 {
     this->nick = nick;
-
-    Protos::Common::Settings settings;
-    Common::PersistantData::getValue(FILE_SETTINGS, settings);
-    settings.set_nick(this->nick.toStdString());
-    Common::PersistantData::setValue(FILE_SETTINGS, settings);
+    SETTINGS.set("nick", this->nick);
+    SETTINGS.save();
 }
 
 /**

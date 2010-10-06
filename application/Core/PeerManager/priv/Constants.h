@@ -17,8 +17,6 @@ namespace PM
 
    // The maximum number of idle socket per distant peer.
    const int MAX_NUMBER_IDLE_SOCKET = 1;
-
-   const QString FILE_SETTINGS("settings.txt"); ///< The name of the file cache saved in the home directory.
 }
 
 #endif

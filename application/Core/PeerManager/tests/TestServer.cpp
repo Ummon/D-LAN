@@ -5,7 +5,6 @@
 #include <QTest>
 
 #include <Common/Constants.h>
-#include <Constants.h>
 
 /**
   * @class TestServer
