@@ -1,4 +1,4 @@
-#include "Global.h"
+#include <Common/Global.h>
 using namespace Common;
 
 #include <QDir>

@@ -1,4 +1,4 @@
-#include <Hash.h>
+#include <Common/Hash.h>
 using namespace Common;
 
 #include <QtGlobal>

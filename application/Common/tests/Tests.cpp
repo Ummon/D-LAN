@@ -7,8 +7,8 @@
 
 #include <Protos/common.pb.h>
 
-#include <Hash.h>
 #include <PersistantData.h>
+#include <Settings.h>
 #include <Global.h>
 #include <ZeroCopyStreamQIODevice.h>
 using namespace Common;
@@ -47,6 +47,36 @@ void Tests::removePersistantData()
 {
    /*QVERIFY(PersistantData::rmValue("paul"));
    QVERIFY(!PersistantData::rmValue("john"));*/
+}
+
+void Tests::writeSettings()
+{
+   QVERIFY(!SETTINGS.arePersisted());
+
+   this->hash = Hash::rand();
+   SETTINGS.set("nick", QString("paul"));
+   SETTINGS.set("peerID", this->hash);
+   SETTINGS.save();
+   QVERIFY(SETTINGS.arePersisted());
+}
+
+void Tests::readSettings()
+{
+   SETTINGS.load();
+
+   QString nick;
+   SETTINGS.get("nick", nick);
+   Common::Hash hash;
+   SETTINGS.get("peerID", hash);
+
+   QCOMPARE(nick, QString("paul"));
+   QCOMPARE(hash.toStr(), this->hash.toStr());
+}
+
+void Tests::removeSettings()
+{
+   SETTINGS.remove();
+   QVERIFY(!SETTINGS.arePersisted());
 }
 
 void Tests::generateAHash()

@@ -1,4 +1,4 @@
-#include "PersistantData.h"
+#include <Common/PersistantData.h>
 using namespace Common;
 
 #include <fstream>
@@ -50,6 +50,7 @@ void PersistantData::setValue(const QString& name, const google::protobuf::Messa
 
       // TODO : Some data loss can occure here, we must remove the file first
       // because 'rename' cannot overwrite an existing file.
+      // Using a system primitive can help!?
       QFile::remove(APPLICATION_FOLDER_PATH + '/' + name);
       QFile::rename(APPLICATION_FOLDER_PATH + '/' + tempName, APPLICATION_FOLDER_PATH + QDir::separator() + name);
    }
