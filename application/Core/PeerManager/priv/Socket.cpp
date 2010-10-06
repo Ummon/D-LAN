@@ -5,6 +5,7 @@ using namespace PM;
 #include <Protos/common.pb.h>
 
 #include <Common/ZeroCopyStreamQIODevice.h>
+#include <Common/Settings.h>
 
 #include <priv/Log.h>
 #include <priv/PeerManager.h>
@@ -18,7 +19,7 @@ Socket::Socket(PeerManager* peerManager, QSharedPointer<FM::IFileManager> fileMa
    L_DEBU(QString("New Socket (from a QTcpSocket) [%1]").arg(this->num));
 #endif
 
-   this->socket->setReadBufferSize(SOCKET_BUFFER_SIZE);
+   this->socket->setReadBufferSize(SETTINGS.getUInt32("socket_buffer_size"));
    connect(this->socket, SIGNAL(disconnected()), this->socket, SLOT(deleteLater()));
    this->initActivityTimer();
 }
@@ -32,7 +33,7 @@ Socket::Socket(PeerManager* peerManager, QSharedPointer<FM::IFileManager> fileMa
 #endif
 
    this->socket = new QTcpSocket();
-   this->socket->setReadBufferSize(SOCKET_BUFFER_SIZE);
+   this->socket->setReadBufferSize(SETTINGS.getUInt32("socket_buffer_size"));
    connect(this->socket, SIGNAL(disconnected()), this->socket, SLOT(deleteLater()));
    this->socket->connectToHost(address, port);
    this->initActivityTimer();
@@ -327,7 +328,7 @@ bool Socket::readMessage()
 void Socket::initActivityTimer()
 {
    this->activityTimer.setSingleShot(true);
-   this->activityTimer.setInterval(IDLE_SOCKET_TIMEOUT * 1000);
+   this->activityTimer.setInterval(SETTINGS.getUInt32("idle_socket_timeout"));
    connect(&this->activityTimer, SIGNAL(timeout()), this, SLOT(close()));
    this->activityTimer.start();
 }

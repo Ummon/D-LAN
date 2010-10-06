@@ -6,6 +6,7 @@ using namespace FM;
 #include <QCryptographicHash>
 
 #include <Common/Global.h>
+#include <Common/Settings.h>
 
 #include <Exceptions.h>
 #include <priv/Exceptions.h>
@@ -20,7 +21,7 @@ using namespace FM;
 /**
   * @class File
   * A file can be finished or unfinished.
-  * If it is an unfinished one, the name ends with ".unfinished" (see UNFINISHED_SUFFIX_TERM).
+  * If it is an unfinished one, the name ends with ".unfinished" (see setting "unfinished_suffix_term").
   * When a file is just finished the suffix ".unfinished" is removed and the file is renamed.
   */
 
@@ -40,7 +41,7 @@ File::File(
    const Common::Hashes& hashes,
    bool createPhysically
 )
-   : Entry(dir->getCache(), name + (createPhysically ? UNFINISHED_SUFFIX_TERM : ""), size),
+   : Entry(dir->getCache(), name + (createPhysically ? SETTINGS.getString("unfinished_suffix_term") : ""), size),
      dir(dir),
      dateLastModified(dateLastModified),
      numDataWriter(0),
@@ -358,7 +359,7 @@ bool File::computeHashes(int n)
    time.start();
 #endif
 
-   char buffer[BUFFER_SIZE];
+   char buffer[SETTINGS.getUInt32("buffer_size")];
    bool endOfFile = false;
    qint64 bytesReadTotal = 0;
    while (!endOfFile)
@@ -377,7 +378,7 @@ bool File::computeHashes(int n)
       int bytesReadChunk = 0;
       while (bytesReadChunk < CHUNK_SIZE)
       {
-         int bytesRead = file.read(buffer, BUFFER_SIZE);
+         int bytesRead = file.read(buffer, SETTINGS.getUInt32("buffer_size"));
          switch (bytesRead)
          {
          case -1:
@@ -508,7 +509,7 @@ bool File::correspondTo(const QFileInfo& fileInfo)
 
 /**
   * Remove the file physically only if it's not complete.
-  * The file removed must ended by UNFINISHED_SUFFIX_TERM.
+  * The file removed must ended by the setting "unfinished_suffix_term".
   */
 void File::physicallyRemoveUnfinished()
 {
@@ -546,7 +547,7 @@ void File::setAsComplete()
    if (Cache::isFileUnfinished(this->name))
    {
       QString path = this->getFullPath();
-      QFile::rename(path, path.left(path.size() - UNFINISHED_SUFFIX_TERM.size()));
+      QFile::rename(path, path.left(path.size() - SETTINGS.getString("unfinished_suffix_term").size()));
    }
 }
 

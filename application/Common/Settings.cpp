@@ -146,6 +146,28 @@ void Settings::get(const QString& name, Hash& hash)
    hash = static_cast<const Protos::Common::Hash&>(this->settings.GetReflection()->GetMessage(this->settings, fieldDescriptor)).hash().data();
 }
 
+quint32 Settings::getUInt32(const QString& name)
+{
+   quint32 value = 0;
+   Settings::get(name, value);
+   return value;
+}
+
+QString Settings::getString(const QString& name)
+{
+   QString value;
+   Settings::get(name, value);
+   return value;
+}
+
+Hash Settings::getHash(const QString& name)
+{
+   Hash value;
+   Settings::get(name, value);
+   return value;
+}
+
+
 void Settings::printErrorNameNotFound(const QString& name)
 {
    QTextStream(stderr) << QString("Settings : name \"%1\" doesn't exist").arg(name) << endl;

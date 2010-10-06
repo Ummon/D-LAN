@@ -44,7 +44,7 @@ Directory::~Directory()
 /**
   * Retore the hashes from the cache.
   * All file which are not complete and not in the cache are physically removed.
-  * Only files ending with UNFINISHED_SUFFIX_TERM will be removed.
+  * Only files ending with the setting "unfinished_suffix_term" will be removed.
   * @return The files which have all theirs hashes (complete).
   */
 QList<File*> Directory::restoreFromFileCache(const Protos::FileCache::Hashes_Dir& dir)

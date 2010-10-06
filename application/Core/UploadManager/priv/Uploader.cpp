@@ -3,6 +3,8 @@ using namespace UM;
 
 #include <QByteArray>
 
+#include <Common/Settings.h>
+
 #include <Core/FileManager/IDataReader.h>
 #include <Core/FileManager/Exceptions.h>
 #include <Core/PeerManager/ISocket.h>
@@ -21,7 +23,7 @@ void Uploader::run()
    {
       QSharedPointer<FM::IDataReader> reader = this->chunk->getDataReader();
 
-      QByteArray buffer(BUFFER_SIZE, 0);
+      QByteArray buffer(SETTINGS.getUInt32("buffer_size"), 0);
       int currentOffset = this->offset;
       qint64 bytesRead = 0;
 

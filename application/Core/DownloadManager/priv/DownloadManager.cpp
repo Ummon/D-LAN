@@ -1,6 +1,8 @@
 #include <priv/DownloadManager.h>
 using namespace DM;
 
+#include <Common/Settings.h>
+
 #include <priv/FileDownload.h>
 #include <priv/DirDownload.h>
 #include <priv/ChunkDownloader.h>
@@ -9,7 +11,7 @@ using namespace DM;
 DownloadManager::DownloadManager(QSharedPointer<FM::IFileManager> fileManager, QSharedPointer<PM::IPeerManager> peerManager)
    : fileManager(fileManager), peerManager(peerManager)
 {
-   for (int i = 0; i < NUMBER_OF_DOWNLOADER; i++)
+   for (int i = 0; i < SETTINGS.getUInt32("number_of_downloader"); i++)
       this->chunkDownloaders << new ChunkDownloader();
 }
 
