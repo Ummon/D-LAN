@@ -30,14 +30,17 @@ namespace Common
       void remove();
 
       void set(const QString& name, quint32 value);
+      void set(const QString& name, double hash);
       void set(const QString& name, const QString& value);
       void set(const QString& name, const Hash& hash);
 
       void get(const QString& name, quint32& value);
+      void get(const QString& name, double& value);
       void get(const QString& name, QString& value);
       void get(const QString& name, Hash& hash);
 
       quint32 getUInt32(const QString& name);
+      double getDouble(const QString& name);
       QString getString(const QString& name);
       Hash getHash(const QString& name);
 

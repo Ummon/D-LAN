@@ -18,8 +18,8 @@ namespace Common
       static const QString TEMP_SUFFIX_TERM;
    public:
 
-      static void setValue(const QString& name, const google::protobuf::Message& data);
-      static void getValue(const QString& name, google::protobuf::Message& data);
+      static void setValue(const QString& name, const google::protobuf::Message& data, bool humanReadable = false);
+      static void getValue(const QString& name, google::protobuf::Message& data, bool humanReadable = false);
       static bool rmValue(const QString& name);
    };
 }
