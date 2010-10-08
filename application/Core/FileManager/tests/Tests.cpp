@@ -518,9 +518,9 @@ void Tests::rmSharedDirectory()
 /**
   * Some tasks will be performed concurrently.
   */
-void Tests::concurrencyTest()
+void Tests::stressTest()
 {
-   qDebug() << "===== concurrencyTest() =====";
+   qDebug() << "===== stressTest() =====";
 
    Common::PersistantData::rmValue(Common::FILE_CACHE);
    StressTest test;
