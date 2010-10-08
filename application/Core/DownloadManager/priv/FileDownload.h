@@ -11,36 +11,56 @@
 
 #include <Protos/common.pb.h>
 
+#include <priv/OccupiedPeers.h>
 #include <priv/Download.h>
 #include <priv/ChunkDownload.h>
 
 namespace DM
 {
+   class DownloadManager;
    class FileDownload : public Download
    {
       Q_OBJECT
    public:
-      FileDownload(QSharedPointer<FM::IFileManager> fileManager, QSharedPointer<PM::IPeerManager>, Common::Hash peerSourceID, const Protos::Common::Entry& entry);
+      FileDownload(
+         QSharedPointer<FM::IFileManager> fileManager,
+         QSharedPointer<PM::IPeerManager> peerManager,
+         OccupiedPeers& occupiedPeersAskingForHashes,
+         OccupiedPeers& occupiedPeersDownloadingChunk,
+         Common::Hash peerSourceID,
+         const Protos::Common::Entry& entry
+      );
 
-      void retreiveHashes();
+      bool retreiveHashes();
+
+      QSharedPointer<ChunkDownload> getAChunkToDownload();
 
    signals:
-      /**
-        * When a chunkDownload know its hash and has at least on IPeer associated this signal is emitted.
-        */
-      void chunkReadyToDownload(QSharedPointer<ChunkDownload> chunkDownload);
+      void changeOccurs();
+
+   protected slots:
+      void retrievePeer();
 
    private slots:
-      void chunkReadyToDownload(ChunkDownload*);
+      //void chunkReadyToDownload(ChunkDownload*);
 
       void result(const Protos::Core::GetHashesResult& result);
       void nextHash(const Common::Hash& hash);
 
+
    private:
-      int nbHashes;
-      QSharedPointer<PM::IGetHashesResult> getHashesResult;
-      QList< QSharedPointer<ChunkDownload> > chunkDownloads;
+      const int NB_CHUNK;
+      DownloadManager* downloadManager;
+
       QList< QSharedPointer<FM::IChunk> > chunksWithoutDownload;
+      QList< QSharedPointer<ChunkDownload> > chunkDownloads;
+
+      OccupiedPeers& occupiedPeersAskingForHashes;
+      OccupiedPeers& occupiedPeersDownloadingChunk;
+
+      int nbHashes;
+      int nbHashesReceived;
+      QSharedPointer<PM::IGetHashesResult> getHashesResult;
    };
 }
 #endif

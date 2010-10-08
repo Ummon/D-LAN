@@ -19,7 +19,11 @@ namespace DM
    public:
       virtual ~IDownloadManager() {}
 
+      /**
+        * @param entry It must have the field 'shared_dir'.
+        */
       virtual void addDownload(Common::Hash peerSource, const Protos::Common::Entry& entry) = 0;
+
       virtual QList<IDownload*> getDownloads() = 0;
       virtual QList< QSharedPointer<IChunkDownload> > getUnfinishedChunks(int n) = 0;
    };

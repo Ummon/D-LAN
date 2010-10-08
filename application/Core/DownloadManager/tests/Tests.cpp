@@ -51,6 +51,17 @@ void Tests::updatePeers()
    QTest::qWait(2000);
 }
 
+void Tests::addADirectoryToDownload()
+{
+   qDebug() << "===== addADirectoryToDownload() =====";
+
+   Protos::Core::GetEntriesResult result = this->fileManagers[1]->getEntries();
+
+   this->downloadManagers[0]->addDownload(this->peerManagers[1]->getID(), result.entry(0));
+
+   QTest::qWait(1000000);
+}
+
 void Tests::cleanupTestCase()
 {
    qDebug() << "===== cleanupTestCase() =====";

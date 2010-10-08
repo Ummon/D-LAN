@@ -20,8 +20,10 @@ namespace DM
    class Download : public IDownload
    {
       Q_OBJECT
-   public:
+   protected:
       Download(QSharedPointer<FM::IFileManager> fileManager, QSharedPointer<PM::IPeerManager> peerManager, Common::Hash peerSourceID, const Protos::Common::Entry& entry);
+
+   public:
       virtual ~Download() {}
 
       int getId();
@@ -33,8 +35,8 @@ namespace DM
 
       bool hasAValidPeer();
 
-   private slots:
-      void retrievePeer();
+   protected slots:
+      virtual void retrievePeer();
 
    protected:
       QSharedPointer<FM::IFileManager> fileManager;

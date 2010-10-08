@@ -1,9 +1,12 @@
 #include <priv/DirDownload.h>
 using namespace DM;
 
-DirDownload::DirDownload(QSharedPointer<FM::IFileManager> fileManager, QSharedPointer<PM::IPeerManager>, Common::Hash peerSourceID, const Protos::Common::Entry& entry)
+#include <priv/Log.h>
+
+DirDownload::DirDownload(QSharedPointer<FM::IFileManager> fileManager, QSharedPointer<PM::IPeerManager> peerManager, Common::Hash peerSourceID, const Protos::Common::Entry& entry)
    : Download(fileManager, peerManager, peerSourceID, entry)
 {
+   L_DEBU(QString("New DirDownload : path = %1/%2 source = %3").arg(QString::fromStdString(entry.path())).arg(QString::fromStdString(entry.name())).arg(this->peerSourceID.toStr()));
 }
 
 /**
@@ -24,7 +27,13 @@ void DirDownload::retrieveEntries()
 
 void DirDownload::result(const Protos::Core::GetEntriesResult& entries)
 {
-   this->getEntriesResult.clear(); // TODO : is the 'IGetEntriesResult' object is deleted? Must we disconnect the signal?
-   emit newEntries(entries);
+   this->getEntriesResult.clear(); // Is the 'IGetEntriesResult' object is deleted? Must we disconnect the signal? Answer : No the signal is automatically disconnected.
+
+   // We need to specify the shared directory for each entry.
+   Protos::Core::GetEntriesResult entriesCopy(entries);
+   for (int i = 0; i < entries.entry_size(); i++)
+      entriesCopy.mutable_entry(i)->mutable_shared_dir()->CopyFrom(this->entry.shared_dir());
+
+   emit newEntries(entriesCopy);
 }
 
