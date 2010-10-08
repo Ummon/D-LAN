@@ -42,6 +42,7 @@ File::File(
    bool createPhysically
 )
    : Entry(dir->getCache(), name + (createPhysically ? SETTINGS.getString("unfinished_suffix_term") : ""), size),
+     CHUNK_SIZE(SETTINGS.getUInt32("chunk_size")),
      dir(dir),
      dateLastModified(dateLastModified),
      numDataWriter(0),
@@ -119,6 +120,12 @@ File::~File()
    {
       c->fileDeleted();
       this->cache->onChunkRemoved(c);
+   }
+
+   if (!this->isComplete())
+   {
+      if (!QFile::remove(this->getFullPath()))
+         L_ERRO(QString("File::~File() : cannot delete an unfinished file : %1").arg(this->getFullPath()));
    }
 
    L_DEBU(QString("File deleted : %1").arg(this->getFullPath()));
@@ -375,7 +382,7 @@ bool File::computeHashes(int n)
          return false;
       }
 
-      int bytesReadChunk = 0;
+      quint32 bytesReadChunk = 0;
       while (bytesReadChunk < CHUNK_SIZE)
       {
          int bytesRead = file.read(buffer, SETTINGS.getUInt32("buffer_size"));

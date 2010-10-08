@@ -79,6 +79,8 @@ namespace FM
       int getNbChunks();
       void setAsComplete();
 
+      const quint32 CHUNK_SIZE;
+
       Directory* dir;
       QList< QSharedPointer<Chunk> > chunks;
       QDateTime dateLastModified;

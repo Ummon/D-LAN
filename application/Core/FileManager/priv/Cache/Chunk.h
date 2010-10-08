@@ -24,11 +24,13 @@ namespace FM
       /**
         * Create a new empty chunk.
         */
-      Chunk(File* file, int num, int knownBytes);
-      Chunk(File* file, int num, int knownBytes, const Common::Hash& hash);
+      Chunk(File* file, int num, quint32 knownBytes);
+      Chunk(File* file, int num, quint32 knownBytes, const Common::Hash& hash);
 
    public:
       ~Chunk();
+
+      void removeItsFile();
 
       Chunk* restoreFromFileCache(const Protos::FileCache::Hashes_Chunk& chunk);
 
@@ -59,7 +61,7 @@ namespace FM
         *         and the buffer will be partially filled.
         * @exception ChunkNotCompletedException
         */
-      int read(QByteArray& buffer, int offset);
+      int read(QByteArray& buffer, quint32 offset);
 
       /**
         * @return 'true' if end of chunk reached.
@@ -77,17 +79,19 @@ namespace FM
 
       void setHash(const Common::Hash& hash);
 
-      int getKnownBytes() const;
+      quint32 getKnownBytes() const;
       void setKnownBytes(int bytes);
 
       bool isOwnedBy(File* file) const;
 
    private:
+      const quint32 CHUNK_SIZE;
+
       mutable QMutex mutex; ///< Protect 'file' against multiple access.
 
       File* file;
       int num;
-      int knownBytes; ///< Relative offset, 0 means we don't have any byte and CHUNK_SIZE means we have all the chunk data.
+      quint32 knownBytes; ///< Relative offset, 0 means we don't have any byte and CHUNK_SIZE means we have all the chunk data.
       Common::Hash hash;
    };
 }

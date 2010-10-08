@@ -10,6 +10,7 @@ using namespace FM;
 #include <QMutexLocker>
 
 #include <Common/Global.h>
+#include <Common/Settings.h>
 
 #include <priv/Constants.h>
 #include <Exceptions.h>
@@ -151,7 +152,7 @@ void FilesAndDirs::createAFile()
 
    // Create a file with a random size from 1 B to 100 MB
    int bytes = this->randGen.rand(100 * 1024 * 1024 - 1) + 1;
-   static const int CHUNK_SIZE = 64 * 1024;
+   static const int CHUNK_SIZE = SETTINGS.getUInt32("chunk_size");
    char buffer[CHUNK_SIZE];
 
    qDebug() << "Creating file " << filePath << " (" << Common::Global::formatByteSize(bytes) << ")";
@@ -436,6 +437,7 @@ void StressTest::newFile()
 
    // Size is from 1 B to 100 MB.
    int bytes = this->randGen.rand(100 * 1024 * 1024 - 1) + 1;
+   static const int CHUNK_SIZE = SETTINGS.getUInt32("chunk_size");
    int nbChunk = bytes / CHUNK_SIZE + (bytes % CHUNK_SIZE == 0 ? 0 : 1);
 
    Protos::Common::Entry entry;

@@ -407,7 +407,7 @@ void Cache::retrieveFromFile(const Protos::FileCache::Hashes& hashes)
 void Cache::saveInFile(Protos::FileCache::Hashes& hashes) const
 {
    hashes.set_version(1);
-   hashes.set_chunksize(CHUNK_SIZE);
+   hashes.set_chunksize(SETTINGS.getUInt32("chunk_size"));
 
    for (QListIterator<SharedDirectory*> i(this->sharedDirs); i.hasNext();)
    {

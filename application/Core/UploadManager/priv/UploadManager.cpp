@@ -12,7 +12,7 @@ using namespace UM;
 UploadManager::UploadManager(QSharedPointer<FM::IFileManager> fileManager, QSharedPointer<PM::IPeerManager> peerManager)
    : fileManager(fileManager), peerManager(peerManager)
 {
-   connect(this->peerManager.data(), SIGNAL(getChunk(Common::Hash, int, ISocket*)), this, SLOT(getChunk(Common::Hash,int,PM::ISocket*)));
+   connect(this->peerManager.data(), SIGNAL(getChunk(Common::Hash, int, PM::ISocket*)), this, SLOT(getChunk(Common::Hash, int, PM::ISocket*)));
 }
 
 void UploadManager::getChunk(Common::Hash hash, int offset, PM::ISocket* socket)
