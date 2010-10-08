@@ -25,7 +25,7 @@ namespace FM
    class IChunk;
    class IGetHashesResult;
 
-   class FileManager : public IFileManager
+   class FileManager : public QObject, public IFileManager
    {
       Q_OBJECT
    public:

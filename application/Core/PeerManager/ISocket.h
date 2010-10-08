@@ -9,7 +9,7 @@
 
 namespace PM
 {
-   class ISocket : public QObject
+   class ISocket
    {
    public:
       virtual ~ISocket() {}

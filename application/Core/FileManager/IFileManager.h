@@ -15,7 +15,7 @@ namespace FM
    class IChunk;
    class IGetHashesResult;
 
-   class IFileManager : public QObject // These are not the droids you are looking for.
+   class IFileManager
    {
    public:
       virtual ~IFileManager() {}

@@ -18,7 +18,7 @@ namespace PM
 {
    class PeerManager;
 
-   class Socket : public ISocket
+   class Socket : public QObject, public ISocket
    {
       Q_OBJECT
    public:

@@ -59,7 +59,7 @@ void ConnectionPool::closeAllSocket()
 
 void ConnectionPool::socketGetIdle(Socket* socket)
 {
-   int n = 0;
+   quint32 n = 0;
    for (QMutableListIterator<Socket*> i(this->sockets); i.hasNext();)
    {
      Socket* currentSocket = i.next();

@@ -17,9 +17,8 @@ namespace PM
 {
    class IGetHashes;
 
-   class IPeer : public QObject
+   class IPeer
    {
-      Q_OBJECT
    public:
       virtual ~IPeer() {}
 
@@ -58,10 +57,6 @@ namespace PM
         * Ask to download a chunk.
         */
       virtual QSharedPointer<IGetChunkResult> getChunk(const Protos::Core::GetChunk& chunk) = 0;
-
-   signals:
-      void nextHashResult(Protos::Core::GetHashesResult hashesResult);
-      void nextHash(Common::Hash hash);
    };
 }
 #endif

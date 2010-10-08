@@ -24,10 +24,9 @@ namespace PM
    class Socket;
    class PeerManager;
 
-   class Peer : public IPeer
+   class Peer : public QObject, public IPeer
    {
       Q_OBJECT
-
       static const quint32 MAX_SPEED;
 
    public:
