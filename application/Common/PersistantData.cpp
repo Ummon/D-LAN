@@ -30,7 +30,7 @@ const QString PersistantData::TEMP_SUFFIX_TERM(".temp");
   * You may refer to the name policy of the platform. Try to avoir special characters or space.
   * You can use an extension in the name like "settings.conf".
   */
-void PersistantData::setValue(const QString& name, const google::protobuf::Message& data)
+void PersistantData::setValue(const QString& name, const google::protobuf::Message& data, bool humanReadable)
 {
    if (Global::createApplicationFolder())
    {
@@ -39,12 +39,18 @@ void PersistantData::setValue(const QString& name, const google::protobuf::Messa
       {
          ofstream file((APPLICATION_FOLDER_PATH + '/' + tempName).toStdString().data(), ios_base::binary | ios_base::out);
          // if (file.fail()) // TODO : check if failure
-
-#if DEBUG
-         google::protobuf::io::OstreamOutputStream zeroCopyStream(&file);
-         google::protobuf::TextFormat::Print(data, &zeroCopyStream);
-#else
-         data.SerializeToOstream(&file);
+#if !DEBUG
+         if (humanReadable)
+         {
+#endif
+            google::protobuf::io::OstreamOutputStream zeroCopyStream(&file);
+            google::protobuf::TextFormat::Print(data, &zeroCopyStream);
+#if !DEBUG
+         }
+         else
+         {
+            data.SerializeToOstream(&file);
+         }
 #endif
       }
 
@@ -60,17 +66,24 @@ void PersistantData::setValue(const QString& name, const google::protobuf::Messa
   * Retrieve the data associated to a given name.
   * @exception UnknownValueException Throwed if the value doesn't exist
   */
-void PersistantData::getValue(const QString& name, google::protobuf::Message& data)
+void PersistantData::getValue(const QString& name, google::protobuf::Message& data, bool humanReadable)
 {
    ifstream file((APPLICATION_FOLDER_PATH + '/' + name).toStdString().data(), ios_base::binary | ios_base::in);
    if (file.fail())
       throw UnknownValueException();
 
-#if DEBUG
+#if !DEBUG
+   if (humanReadable)
+   {
+#endif
       google::protobuf::io::IstreamInputStream zeroCopyStream(&file);
       google::protobuf::TextFormat::Parse(&zeroCopyStream, &data);
-#else
+#if !DEBUG
+   }
+   else
+   {
       data.ParseFromIstream(&file);
+   }
 #endif
 }
 

@@ -25,7 +25,7 @@ Settings& Settings::getInstance()
 }
 
 Settings::Settings()
-   : persisted(false)
+   : persisted(false), mutex(QMutex::Recursive)
 {
    this->descriptor = this->settings.GetDescriptor();
    this->load();
@@ -33,20 +33,23 @@ Settings::Settings()
 
 bool Settings::arePersisted()
 {
+   QMutexLocker lock(&this->mutex);
    return this->persisted;
 }
 
 void Settings::save()
 {
-   PersistantData::setValue(FILENAME, this->settings);
+   QMutexLocker lock(&this->mutex);
+   PersistantData::setValue(FILENAME, this->settings, true);
    this->persisted = true;
 }
 
 void Settings::load()
 {
+   QMutexLocker lock(&this->mutex);
    try
    {
-      PersistantData::getValue(FILENAME, this->settings);
+      PersistantData::getValue(FILENAME, this->settings, true);
       this->persisted = true;
    }
    catch (Common::UnknownValueException)
@@ -56,12 +59,14 @@ void Settings::load()
 
 void Settings::remove()
 {
+   QMutexLocker lock(&this->mutex);
    PersistantData::rmValue(FILENAME);
    this->persisted = false;
 }
 
 void Settings::set(const QString& name, quint32 value)
 {
+   QMutexLocker lock(&this->mutex);
    const google::protobuf::FieldDescriptor* fieldDescriptor = this->descriptor->FindFieldByName(name.toStdString());
    if (!fieldDescriptor)
    {
@@ -77,8 +82,27 @@ void Settings::set(const QString& name, quint32 value)
    this->settings.GetReflection()->SetUInt32(&this->settings, fieldDescriptor, value);
 }
 
+void Settings::set(const QString& name, double value)
+{
+   QMutexLocker lock(&this->mutex);
+   const google::protobuf::FieldDescriptor* fieldDescriptor = this->descriptor->FindFieldByName(name.toStdString());
+   if (!fieldDescriptor)
+   {
+      printErrorNameNotFound(name);
+      return;
+   }
+   if (fieldDescriptor->type() != google::protobuf::FieldDescriptor::TYPE_DOUBLE)
+   {
+      printErrorBadType(QString::fromStdString(fieldDescriptor->name()), "double");
+      return;
+   }
+
+   this->settings.GetReflection()->SetDouble(&this->settings, fieldDescriptor, value);
+}
+
 void Settings::set(const QString& name, const QString& value)
 {
+   QMutexLocker lock(&this->mutex);
    const google::protobuf::FieldDescriptor* fieldDescriptor = this->descriptor->FindFieldByName(name.toStdString());
    if (!fieldDescriptor)
    {
@@ -95,6 +119,7 @@ void Settings::set(const QString& name, const QString& value)
 
 void Settings::set(const QString& name, const Hash& hash)
 {
+   QMutexLocker lock(&this->mutex);
    const google::protobuf::FieldDescriptor* fieldDescriptor = this->descriptor->FindFieldByName(name.toStdString());
    if (!fieldDescriptor)
    {
@@ -115,6 +140,7 @@ void Settings::set(const QString& name, const Hash& hash)
 
 void Settings::get(const QString& name, quint32& value)
 {
+   QMutexLocker lock(&this->mutex);
    const google::protobuf::FieldDescriptor* fieldDescriptor = this->descriptor->FindFieldByName(name.toStdString());
    if (!fieldDescriptor)
    {
@@ -124,8 +150,21 @@ void Settings::get(const QString& name, quint32& value)
    value = this->settings.GetReflection()->GetUInt32(this->settings, fieldDescriptor);
 }
 
+void Settings::get(const QString& name, double& value)
+{
+   QMutexLocker lock(&this->mutex);
+   const google::protobuf::FieldDescriptor* fieldDescriptor = this->descriptor->FindFieldByName(name.toStdString());
+   if (!fieldDescriptor)
+   {
+      printErrorNameNotFound(name);
+      return;
+   }
+   value = this->settings.GetReflection()->GetDouble(this->settings, fieldDescriptor);
+}
+
 void Settings::get(const QString& name, QString& value)
 {
+   QMutexLocker lock(&this->mutex);
    const google::protobuf::FieldDescriptor* fieldDescriptor = this->descriptor->FindFieldByName(name.toStdString());
    if (!fieldDescriptor)
    {
@@ -137,6 +176,7 @@ void Settings::get(const QString& name, QString& value)
 
 void Settings::get(const QString& name, Hash& hash)
 {
+   QMutexLocker lock(&this->mutex);
    const google::protobuf::FieldDescriptor* fieldDescriptor = this->descriptor->FindFieldByName(name.toStdString());
    if (!fieldDescriptor)
    {
@@ -148,13 +188,23 @@ void Settings::get(const QString& name, Hash& hash)
 
 quint32 Settings::getUInt32(const QString& name)
 {
+   QMutexLocker lock(&this->mutex);
    quint32 value = 0;
+   Settings::get(name, value);
+   return value;
+}
+
+double Settings::getDouble(const QString& name)
+{
+   QMutexLocker lock(&this->mutex);
+   double value = 0;
    Settings::get(name, value);
    return value;
 }
 
 QString Settings::getString(const QString& name)
 {
+   QMutexLocker lock(&this->mutex);
    QString value;
    Settings::get(name, value);
    return value;
@@ -162,6 +212,7 @@ QString Settings::getString(const QString& name)
 
 Hash Settings::getHash(const QString& name)
 {
+   QMutexLocker lock(&this->mutex);
    Hash value;
    Settings::get(name, value);
    return value;
