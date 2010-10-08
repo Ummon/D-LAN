@@ -152,8 +152,8 @@ void FilesAndDirs::createAFile()
 
    // Create a file with a random size from 1 B to 100 MB
    int bytes = this->randGen.rand(100 * 1024 * 1024 - 1) + 1;
-   static const int CHUNK_SIZE = SETTINGS.getUInt32("chunk_size");
-   char buffer[CHUNK_SIZE];
+   const int CHUNK_SIZE = SETTINGS.getUInt32("chunk_size");
+   QByteArray buffer(CHUNK_SIZE, 0); // Don't know why "char buffer[CHUNK_SIZE]" crashes..
 
    qDebug() << "Creating file " << filePath << " (" << Common::Global::formatByteSize(bytes) << ")";
 
@@ -224,7 +224,7 @@ StressTest::StressTest()
    this->fileManager = Builder::newFileManager();
 
    QDir().mkdir(ROOT_DIR.dirName());
-   qDebug() << Common::Global::recursiveDeleteDirectoryContent(ROOT_DIR.dirName());
+   Common::Global::recursiveDeleteDirectoryContent(ROOT_DIR.dirName());
 
    for (int i = 0; i < NB_FILES_AND_DIR_THREAD; i++)
    {

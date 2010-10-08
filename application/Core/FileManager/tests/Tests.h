@@ -71,7 +71,7 @@ private slots:
    void printAmount();
 
    /***** Simulating of a real usage with all previous tests running concurrently *****/
-   void concurrencyTest();
+   void stressTest();
 
    /***** Removing shared directories *****/
    void rmSharedDirectory();
