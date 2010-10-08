@@ -68,7 +68,7 @@ message Find {
 // a -> b
 // id : 0x31
 message GetEntries {
-   optional Common.Entry dir = 1; // If the directories are omitted the shared directories (roots) are return.
+   optional Common.Entry dir = 1; // If the directories are omitted the shared directories (roots) are return. The entry must have the field 'shared_dir'.
 }
 // b -> a
 // id : 0x32
