@@ -279,7 +279,7 @@ bool FileUpdater::computeSomeHashes()
       if (completed)
          i.remove();
 
-      if (static_cast<quint32>(time.elapsed()) >= SETTINGS.getUInt32("minimum_duration_when_hashing"));
+      if (static_cast<quint32>(time.elapsed()) >= SETTINGS.getUInt32("minimum_duration_when_hashing"))
          break;
    }
 
@@ -373,7 +373,6 @@ void FileUpdater::scan(Directory* dir)
             // If a file is incomplete (unfinished) we can't compute its hashes because we don't have all data.
             if (!file->hasAllHashes() && file->isComplete() && !this->filesWithoutHashes.contains(file))
             {
-               L_WARN(QString("Adding file %1 to this->filesWithoutHashes").arg(file->getFullPath()));
                this->filesWithoutHashes << file;
             }
          }
