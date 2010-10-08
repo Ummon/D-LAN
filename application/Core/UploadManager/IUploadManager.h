@@ -6,7 +6,7 @@
 namespace UM
 {
    class IUpload;
-   class IUploadManager : public QObject
+   class IUploadManager
    {
    public:
       virtual ~IUploadManager() {}

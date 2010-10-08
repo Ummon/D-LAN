@@ -15,7 +15,7 @@ namespace UM
 {
    class Upload;
 
-   class UploadManager : public IUploadManager
+   class UploadManager : public QObject, public IUploadManager
    {
       Q_OBJECT
    public:
