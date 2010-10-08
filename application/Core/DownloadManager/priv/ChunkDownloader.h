@@ -16,19 +16,30 @@ namespace DM
    {
       Q_OBJECT
    public:
+      ChunkDownloader();
+
       void run();
 
+      bool isIdle() const;
       Common::Hash getHash();
+
       void setPeerIDs(const QList<Common::Hash>& peerIDs);
 
-   public slots:
-      void chunkReadyToDownload(QSharedPointer<ChunkDownload> chunkDownload);
+//   signals:
+//      /**
+//        * Sent when the downloader
+//        */
+//      void idle(ChunkDownloader* downloader);
+
+//   public slots:
+//      void chunkReadyToDownload(QSharedPointer<ChunkDownload> chunkDownload);
 
    private:
       QSharedPointer<ChunkDownload> chunkDownload;
-      DownloadManager* downloadManager;
 
-      bool finished; ///< When true the associated chunk is entirely downloaded.
+      bool idle;
+
+      //bool finished; ///< When true the associated chunk is entirely downloaded.
    };
 }
 #endif

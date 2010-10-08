@@ -2,6 +2,7 @@
 using namespace DM;
 
 #include <priv/Constants.h>
+#include <priv/Log.h>
 
 Download::Download(QSharedPointer<FM::IFileManager> fileManager, QSharedPointer<PM::IPeerManager> peerManager, Common::Hash peerSourceID, const Protos::Common::Entry& entry)
    : fileManager(fileManager), peerManager(peerManager), peerSourceID(peerSourceID), peerSource(0), entry(entry), status(QUEUED)
@@ -53,6 +54,7 @@ bool Download::hasAValidPeer()
 void Download::retrievePeer()
 {
    this->peerSource = this->peerManager->getPeer(this->peerSourceID);
+
    if (!this->hasAValidPeer())
    {
       this->status |= UNKNOWN_PEER;

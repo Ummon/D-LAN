@@ -11,6 +11,12 @@
 #include <Core/PeerManager/IPeerManager.h>
 
 #include <IDownloadManager.h>
+#include <priv/OccupiedPeers.h>
+
+namespace PM
+{
+   class IPeer;
+}
 
 namespace DM
 {
@@ -33,17 +39,20 @@ namespace DM
    private slots:
       void newEntries(const Protos::Core::GetEntriesResult& entries);
 
-   private:
-      void addNewDownload(FileDownload* download);
+      void peerNoLongerAskingForHashes(PM::IPeer* peer);
+      void peerNoLongerDownloadingChunk(PM::IPeer* peer);
 
+   private:
       QSharedPointer<FM::IFileManager> fileManager;
       QSharedPointer<PM::IPeerManager> peerManager;
 
+      OccupiedPeers occupiedPeersAskingForHashes;
+      OccupiedPeers occupiedPeersDownloadingChunk;
+
       QLinkedList<Download*> downloads;
-
-      QSet<Common::Hash> peerIDAskingHashes;
-
       QList<ChunkDownloader*> chunkDownloaders;
+
+      bool scanFlag; // When a peer is no more occupied to download we set this flag to true, it means that when a Downloader is idle we can do a scan to search a chunk to download.
    };
 }
 #endif

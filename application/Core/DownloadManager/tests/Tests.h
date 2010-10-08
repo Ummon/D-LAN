@@ -36,6 +36,7 @@ public:
 private slots:
    void initTestCase();
    void updatePeers();
+   void addADirectoryToDownload();
    void cleanupTestCase();
 
 private:

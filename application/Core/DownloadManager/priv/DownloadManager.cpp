@@ -3,6 +3,7 @@ using namespace DM;
 
 #include <Common/Settings.h>
 
+#include <priv/Log.h>
 #include <priv/FileDownload.h>
 #include <priv/DirDownload.h>
 #include <priv/ChunkDownloader.h>
@@ -11,7 +12,10 @@ using namespace DM;
 DownloadManager::DownloadManager(QSharedPointer<FM::IFileManager> fileManager, QSharedPointer<PM::IPeerManager> peerManager)
    : fileManager(fileManager), peerManager(peerManager)
 {
-   for (int i = 0; i < SETTINGS.getUInt32("number_of_downloader"); i++)
+   connect(&this->occupiedPeersAskingForHashes, SIGNAL(newFreePeer(PM::IPeer*)), this, SLOT(peerNoLongerAskingForHashes(PM::IPeer*)));
+   connect(&this->occupiedPeersDownloadingChunk, SIGNAL(newFreePeer(PM::IPeer*)), this, SLOT(peerNoLongerDownloadingChunk(PM::IPeer*)), Qt::QueuedConnection); // Queued because the signal can be emitted from a Downloader thread.
+
+   for (quint32 i = 0; i < SETTINGS.getUInt32("number_of_downloader"); i++)
       this->chunkDownloaders << new ChunkDownloader();
 }
 
@@ -43,12 +47,7 @@ void DownloadManager::addDownload(Common::Hash peerSource, const Protos::Common:
 
    case Protos::Common::Entry_Type_FILE :
       {
-         FileDownload* fileDownload = new FileDownload(this->fileManager, this->peerManager, peerSource, entry);
-         if (fileDownload->hasAValidPeer() && !this->peerIDAskingHashes.contains(fileDownload->getPeerSourceID()))
-         {
-            this->peerIDAskingHashes.insert(fileDownload->getPeerSourceID());
-            fileDownload->retreiveHashes();
-         }
+         FileDownload* fileDownload = new FileDownload(this->fileManager, this->peerManager, this->occupiedPeersAskingForHashes, this->occupiedPeersDownloadingChunk, peerSource, entry);
          iterator.insert(fileDownload);
       }
       break;
@@ -77,4 +76,25 @@ void DownloadManager::newEntries(const Protos::Core::GetEntriesResult& entries)
 
    for (int n = 0; n < entries.entry_size(); n++)
       this->addDownload(dirDownload->getPeerSourceID(), entries.entry(n), i);
+
+   delete dirDownload;
 }
+
+/**
+  * Search for a new file to asking hashes.
+  */
+void DownloadManager::peerNoLongerAskingForHashes(PM::IPeer* peer)
+{
+   for (QLinkedListIterator<Download*> i(this->downloads); i.hasNext();)
+   {
+      FileDownload* fileDownload = dynamic_cast<FileDownload*>(i.next());
+      if (fileDownload && fileDownload->retreiveHashes())
+         break;
+   }
+}
+
+void DownloadManager::peerNoLongerDownloadingChunk(PM::IPeer* peer)
+{
+
+}
+
