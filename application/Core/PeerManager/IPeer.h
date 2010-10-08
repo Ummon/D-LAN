@@ -31,10 +31,11 @@ namespace PM
       /**
         * Return the average speed when downloading from this peer.
         * [bytes/s].
-        * Set to -1 by default which mean unknown speed;
+        * The default speed is 2^32-1.
         */
-      virtual int getSpeed() = 0;
-      virtual void setSpeed(int speed) = 0;
+      virtual quint32 getSpeed() = 0;
+
+      virtual void setSpeed(quint32 speed) = 0;
 
       virtual bool isAlive() = 0;
 

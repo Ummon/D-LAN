@@ -28,7 +28,7 @@ namespace FM
    class FileManager : public IFileManager
    {
       Q_OBJECT
-   public :
+   public:
       FileManager();
       ~FileManager();
 
@@ -66,6 +66,7 @@ namespace FM
       void persistCacheToFile();
 
    private:
+      const quint32 CHUNK_SIZE;
       FileUpdater fileUpdater;
       Cache cache; ///< The files and directories.
       Chunks chunks; ///< The indexed chunks.

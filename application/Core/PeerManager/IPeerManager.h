@@ -52,7 +52,7 @@ namespace PM
       /**
         * When a remote peer want a chunk, this signal is emitted.
         */
-      void getChunk(Common::Hash hash, int offset, ISocket* socket);
+      void getChunk(Common::Hash hash, int offset, PM::ISocket* socket);
    };
 }
 #endif

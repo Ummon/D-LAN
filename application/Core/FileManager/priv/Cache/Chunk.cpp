@@ -1,6 +1,8 @@
 #include <priv/Cache/Chunk.h>
 using namespace FM;
 
+#include <Common/Settings.h>
+
 #include <IDataReader.h>
 #include <IDataWriter.h>
 #include <Exceptions.h>
@@ -10,15 +12,15 @@ using namespace FM;
 #include <priv/Cache/DataReader.h>
 #include <priv/Cache/DataWriter.h>
 
-Chunk::Chunk(File* file, int num, int knownBytes)
-   : mutex(QMutex::Recursive), file(file), num(num), knownBytes(knownBytes)
+Chunk::Chunk(File* file, int num, quint32 knownBytes)
+   : CHUNK_SIZE(SETTINGS.getUInt32("chunk_size")), mutex(QMutex::Recursive), file(file), num(num), knownBytes(knownBytes)
 {
    QMutexLocker locker(&this->mutex);
    L_DEBU(QString("New chunk[%1] : %2. File : %3").arg(num).arg(hash.toStr()).arg(this->file->getFullPath()));
 }
 
-Chunk::Chunk(File* file, int num, int knownBytes, const Common::Hash& hash)
-   : mutex(QMutex::Recursive), file(file), num(num), knownBytes(knownBytes), hash(hash)
+Chunk::Chunk(File* file, int num, quint32 knownBytes, const Common::Hash& hash)
+   : CHUNK_SIZE(SETTINGS.getUInt32("chunk_size")), mutex(QMutex::Recursive), file(file), num(num), knownBytes(knownBytes), hash(hash)
 {
    QMutexLocker locker(&this->mutex);
    L_DEBU(QString("New chunk[%1] : %2. File : %3").arg(num).arg(hash.toStr()).arg(this->file->getFullPath()));
@@ -31,6 +33,13 @@ Chunk::~Chunk()
       arg(hash.toStr()).
       arg(this->file ? this->file->getFullPath() : "<file deleted>")
    );
+}
+
+void Chunk::removeItsFile()
+{
+   QMutexLocker locker(&this->mutex);
+   if (this->file)
+      delete this->file;
 }
 
 Chunk* Chunk::restoreFromFileCache(const Protos::FileCache::Hashes_Chunk& chunk)
@@ -102,7 +111,7 @@ void Chunk::fileDeleted()
    this->file = 0;
 }
 
-int Chunk::read(QByteArray& buffer, int offset)
+int Chunk::read(QByteArray& buffer, quint32 offset)
 {
    QMutexLocker locker(&this->mutex);
    if (!this->file)
@@ -176,7 +185,7 @@ void Chunk::setHash(const Common::Hash& hash)
    this->hash = hash;
 }
 
-int Chunk::getKnownBytes() const
+quint32 Chunk::getKnownBytes() const
 {
    return this->knownBytes;
 }

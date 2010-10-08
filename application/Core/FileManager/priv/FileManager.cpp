@@ -13,6 +13,7 @@ using namespace FM;
 #include <Protos/files_cache.pb.h>
 
 #include <Common/PersistantData.h>
+#include <Common/Settings.h>
 #include <Common/Constants.h>
 #include <Common/Global.h>
 #include <Exceptions.h>
@@ -26,7 +27,7 @@ using namespace FM;
 #include <priv/Cache/Chunk.h>
 
 FileManager::FileManager()
-   : fileUpdater(this), cache(this)
+   : CHUNK_SIZE(SETTINGS.getUInt32("chunk_size")), fileUpdater(this), cache(this)
 {
    L_USER("Loading ..");
 

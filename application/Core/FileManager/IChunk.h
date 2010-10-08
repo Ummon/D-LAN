@@ -17,6 +17,8 @@ namespace FM
    public:
       virtual ~IChunk() {}
 
+      virtual void removeItsFile() = 0;
+
       virtual void populateEntry(Protos::Common::Entry* entry) const = 0;
 
       /**
@@ -46,7 +48,7 @@ namespace FM
 
       virtual void setHash(const Common::Hash&) = 0;
 
-      virtual int getKnownBytes() const = 0;
+      virtual quint32 getKnownBytes() const = 0;
    };
 }
 #endif

@@ -11,11 +11,13 @@ using namespace PM;
 #include <priv/GetHashesResult.h>
 #include <priv/GetChunkResult.h>
 
+const quint32 Peer::MAX_SPEED = 4294967295u;
+
 Peer::Peer(PeerManager* peerManager, QSharedPointer<FM::IFileManager> fileManager, Common::Hash ID)
-   : peerManager(peerManager), fileManager(fileManager), connectionPool(peerManager, fileManager, ID), ID(ID), speed(-1), alive(false)
+   : peerManager(peerManager), fileManager(fileManager), connectionPool(peerManager, fileManager, ID), ID(ID), speed(MAX_SPEED), alive(false)
 {
    this->aliveTimer.setSingleShot(true);
-   this->aliveTimer.setInterval(SETTINGS.getUInt32("peer_timeout"));
+   this->aliveTimer.setInterval(SETTINGS.getUInt32("peer_timeout_factor") * SETTINGS.getUInt32("peer_imalive_period"));
    connect(&this->aliveTimer, SIGNAL(timeout()), this, SLOT(consideredDead()));
 }
 
@@ -39,12 +41,14 @@ quint64 Peer::getSharingAmount()
    return this->sharingAmount;
 }
 
-int Peer::getSpeed()
+quint32 Peer::getSpeed()
 {
+   if (static_cast<quint32>(this->lastSpeedUpdate.restart()) > 1000 * SETTINGS.getUInt32("download_rate_valid_time_factor") / (SETTINGS.getUInt32("lan_speed") / 1024 / 1024))
+      this->speed = MAX_SPEED;
    return this->speed;
 }
 
-void Peer::setSpeed(int speed)
+void Peer::setSpeed(quint32 speed)
 {
    this->speed = speed;
 }

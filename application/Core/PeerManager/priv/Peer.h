@@ -27,6 +27,9 @@ namespace PM
    class Peer : public IPeer
    {
       Q_OBJECT
+
+      static const quint32 MAX_SPEED;
+
    public:
       Peer(PeerManager* peerManager, QSharedPointer<FM::IFileManager> fileManager, Common::Hash ID);
 
@@ -35,8 +38,8 @@ namespace PM
       QString getNick();
       quint64 getSharingAmount();
 
-      int getSpeed();
-      void setSpeed(int speed);
+      quint32 getSpeed();
+      void setSpeed(quint32 speed);
 
       bool isAlive();
       void update(const QHostAddress& IP, quint16 port, const QString& nick, const quint64& sharingAmount);
@@ -64,7 +67,8 @@ namespace PM
       QString nick;
       quint64 sharingAmount;
 
-      int speed; // [bytes/s]
+      QTime lastSpeedUpdate;
+      quint32 speed; // [bytes/s]
 
       bool alive;
       QTimer aliveTimer;
