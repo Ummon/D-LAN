@@ -8,9 +8,8 @@ using namespace std;
 #include <QtDebug>
 
 #include <google/protobuf/text_format.h>
-#if DEBUG
-#  include <google/protobuf/io/zero_copy_stream_impl.h>
-#endif
+#include <google/protobuf/io/zero_copy_stream_impl.h>
+
 
 #include <Constants.h>
 #include <Global.h>
