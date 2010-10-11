@@ -19,7 +19,7 @@ namespace PM
 
    signals:
       void result(const Protos::Core::GetChunkResult& result);
-      void stream(ISocket* socket);
+      void stream(PM::ISocket* socket);
    };
 }
 #endif

@@ -148,7 +148,7 @@ void Tests::askForAChunk()
 {
    qDebug() << "===== askForAChunk() =====";
 
-   connect(this->peerManagers[1].data(), SIGNAL(getChunk(Common::Hash, int, ISocket*)), &this->resultListener, SLOT(getChunk(Common::Hash, int, ISocket*)));
+   connect(this->peerManagers[1].data(), SIGNAL(getChunk(Common::Hash, int, PM::ISocket*)), &this->resultListener, SLOT(getChunk(Common::Hash, int, PM::ISocket*)));
 
    Protos::Core::GetChunk getChunkMessage;
    getChunkMessage.mutable_chunk()->set_hash(Common::Hash::rand().getData(), Common::Hash::HASH_SIZE);

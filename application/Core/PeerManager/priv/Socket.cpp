@@ -16,7 +16,7 @@ Socket::Socket(PeerManager* peerManager, QSharedPointer<FM::IFileManager> fileMa
 {
 #ifdef DEBUG
    this->num = ++Socket::currentNum;
-   L_DEBU(QString("New Socket (from a QTcpSocket) [%1]").arg(this->num));
+   L_DEBU(QString("New Socket[%1] (from a QTcpSocket)").arg(this->num));
 #endif
 
    this->socket->setReadBufferSize(SETTINGS.getUInt32("socket_buffer_size"));
@@ -29,7 +29,7 @@ Socket::Socket(PeerManager* peerManager, QSharedPointer<FM::IFileManager> fileMa
 {   
 #ifdef DEBUG
    this->num = ++Socket::currentNum;
-   L_DEBU(QString("New Socket (connection) [%1]").arg(this->num));
+   L_DEBU(QString("New Socket[%1] (connection)").arg(this->num));
 #endif
 
    this->socket = new QTcpSocket();
@@ -41,12 +41,12 @@ Socket::Socket(PeerManager* peerManager, QSharedPointer<FM::IFileManager> fileMa
 
 Socket::~Socket()
 {
-   L_DEBU(QString("Socket deleted [%1]").arg(this->num));
+   L_DEBU(QString("Socket[%1] deleted").arg(this->num));
 
    delete this->socket;
 }
 
-QIODevice* Socket::getDevice() const
+QAbstractSocket* Socket::getQSocket() const
 {
    return this->socket;
 }
@@ -62,11 +62,11 @@ void Socket::startListening()
    if (this->listening)
       return;
 
-   L_DEBU(QString("Socket starting to listen [%1]").arg(this->num));
+   L_DEBU(QString("Socket[%1] starting to listen").arg(this->num));
 
+   this->listening = true;
    connect(this->socket, SIGNAL(readyRead()), this, SLOT(dataReceived()));
    connect(this->socket, SIGNAL(disconnected()), this, SLOT(disconnected()));
-   this->listening = true;
 
    if (!this->socket->isValid())
       this->disconnect();
@@ -76,7 +76,7 @@ void Socket::startListening()
 
 void Socket::stopListening()
 {
-   L_DEBU(QString("Socket stopping to listen [%1]").arg(this->num));
+   L_DEBU(QString("Socket[%1] stopping to listen").arg(this->num));
 
    disconnect(this->socket, SIGNAL(readyRead()), this, SLOT(dataReceived()));
    disconnect(this->socket, SIGNAL(disconnected()), this, SLOT(disconnected()));
@@ -90,7 +90,7 @@ bool Socket::isIdle()
 
 void Socket::setActive()
 {
-   L_DEBU(QString("Socket set to active [%1]").arg(this->num));
+   L_DEBU(QString("Socket[%1] set to active").arg(this->num));
 
    this->idle = false;
    this->activityTimer.start();
@@ -102,7 +102,7 @@ void Socket::send(quint32 type, const google::protobuf::Message& message)
 
    Common::MessageHeader header(type, message.ByteSize(), this->peerManager->getID());
 
-   L_DEBU(QString("Socket::send : header.type = %1, header.size = %2\n%3").arg(header.type, 0, 16).arg(header.size).arg(QString::fromStdString(message.DebugString())));
+   L_DEBU(QString("Socket[%1]::send : header.type = %2, header.size = %3\n%4").arg(this->num).arg(header.type, 0, 16).arg(header.size).arg(QString::fromStdString(message.DebugString())));
 
    Common::Network::writeHeader(*this->socket, header);
    Common::ZeroCopyOutputStreamQIODevice outputStream(this->socket);
@@ -112,17 +112,19 @@ void Socket::send(quint32 type, const google::protobuf::Message& message)
 
 void Socket::dataReceived()
 {
-   while (!this->socket->atEnd())
+   // TODO : it will loop infinetly if not enough data is provided.
+   while (!this->socket->atEnd() && this->listening)
    {
       this->setActive();
 
-      L_DEBU(QString("Socket::dataReceived() : bytesAvailable = %1").arg(this->socket->bytesAvailable()));
+      L_DEBU(QString("Socket[%1]::dataReceived() : bytesAvailable = %2").arg(this->num).arg(this->socket->bytesAvailable()));
 
       if (this->currentHeader.isNull() && this->socket->bytesAvailable() >= Common::Network::HEADER_SIZE)
       {
          this->currentHeader = Common::Network::readHeader(*this->socket);
 
-         L_DEBU(QString("Data received from %1 - %2, type = %3, size = %4")
+         L_DEBU(QString("Socket[%1]: Data received from %2 - %3, type = %4, size = %5")
+            .arg(this->num)
             .arg(this->socket->peerAddress().toString())
             .arg(this->currentHeader.senderID.toStr())
             .arg(this->currentHeader.type, 0, 16)
@@ -131,8 +133,9 @@ void Socket::dataReceived()
 
          if (this->currentHeader.senderID != this->peerID)
          {
-            L_DEBU(QString("Peer ID from message (%1) doesn't match the known peer ID (%2)").arg(this->currentHeader.senderID.toStr()).arg(this->peerID.toStr()));
+            L_DEBU(QString("Socket[%1]: Peer ID from message (%2) doesn't match the known peer ID (%3)").arg(this->num).arg(this->currentHeader.senderID.toStr()).arg(this->peerID.toStr()));            
             this->finished();
+            this->currentHeader.setNull();
             return;
          }
       }
@@ -148,24 +151,24 @@ void Socket::dataReceived()
 
 void Socket::finished()
 {
-   L_DEBU(QString("Socket set to idle [%1]").arg(this->num));
+   L_DEBU(QString("Socket[%1] set to idle").arg(this->num));
 
    this->idle = true;
-   this->socket->readAll(); // Maybe there is some garbage data..
+   while(!this->socket->readAll().isNull()); // Maybe there is some garbage data..
    this->startListening();
    emit getIdle(this);
 }
 
 void Socket::close()
 {
-   L_DEBU(QString("Socket closed [%1]").arg(this->num));
+   L_DEBU(QString("Socket[%1] closed").arg(this->num));
 
    this->socket->close();
 }
 
 void Socket::disconnected()
 {   
-   L_DEBU(QString("Socket disconnected [%1]").arg(this->num));
+   L_DEBU(QString("Socket[%1] disconnected").arg(this->num));
 
    emit closed(this);
 }

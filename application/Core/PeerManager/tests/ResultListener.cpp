@@ -50,7 +50,7 @@ static const QByteArray CHUNK_DATA("HELLO");
 
 void ResultListener::stream(ISocket* socket)
 {
-   QByteArray data = socket->getDevice()->readAll();
+   QByteArray data = socket->getQSocket()->readAll();
    qDebug() << "ResultListener::stream : " << data;
    QCOMPARE(data, CHUNK_DATA);
    socket->finished();
@@ -62,6 +62,6 @@ void ResultListener::getChunk(Common::Hash hash, int offset, ISocket* socket)
    result.set_status(Protos::Core::GetChunkResult_Status_OK);
    socket->send(0x52, result);
 
-   socket->getDevice()->write(CHUNK_DATA);
+   socket->getQSocket()->write(CHUNK_DATA);
    socket->finished();
 }
