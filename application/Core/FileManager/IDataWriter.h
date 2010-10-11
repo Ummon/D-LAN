@@ -1,35 +1,19 @@
 #ifndef FILEMANAGER_IDATAWRITER_H
 #define FILEMANAGER_IDATAWRITER_H
 
-#include <QObject>
-
-#include <QByteArray>
-
 namespace FM
 {
-   class IDataWriter : virtual public QObject
+   class IDataWriter
    {
-      Q_OBJECT
    public:
-      enum Status
-      {
-         NOT_FINISHED,
-         END_OF_CHUNK,
-         IO_ERROR
-      };
-
       virtual ~IDataWriter() {}
 
-      virtual char* getBuffer() = 0;
-      virtual int getBufferSize() const = 0;
-
       /**
-        * Non-blockant method.
+        * @exception IOErrorException
+        * @exception ChunkDeletedException
+        * @exception TryToWriteBeyondTheEndOfChunkException
         */
-      virtual void write(int nbBytes) = 0;
-
-   signals:
-      void writeFinished(FM::IDataWriter::Status status);
+      virtual bool write(const char* buffer, int nbBytes) = 0;
    };
 }
 

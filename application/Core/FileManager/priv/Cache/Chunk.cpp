@@ -111,7 +111,7 @@ void Chunk::fileDeleted()
    this->file = 0;
 }
 
-int Chunk::read(char* buffer, int bufferSize, int offset)
+int Chunk::read(char* buffer, int offset)
 {
    QMutexLocker locker(&this->mutex);
    if (!this->file)
@@ -123,7 +123,7 @@ int Chunk::read(char* buffer, int bufferSize, int offset)
    if (offset >= this->knownBytes)
       return 0;
 
-   return this->file->read(buffer, bufferSize, offset + this->num * CHUNK_SIZE);
+   return this->file->read(buffer, offset + this->num * CHUNK_SIZE);
 }
 
 /**
@@ -134,6 +134,7 @@ int Chunk::read(char* buffer, int bufferSize, int offset)
   */
 bool Chunk::write(const char* buffer, int nbBytes)
 {
+   //L_WARN(QString("Chunk::write, nbBytes = %1").arg(nbBytes));
    QMutexLocker locker(&this->mutex);
    if (!this->file)
       throw ChunkDeletedException();
@@ -201,6 +202,11 @@ void Chunk::setKnownBytes(int bytes)
    this->knownBytes = bytes;
 }
 
+bool Chunk::isComplete() const
+{
+   return this->knownBytes >= this->getChunkSize(); // Should be '==' but we are never 100% sure ;).
+}
+
 bool Chunk::isOwnedBy(File* file) const
 {
    return this->file == file;
@@ -215,9 +221,14 @@ QString Chunk::toStr() const
 
 int Chunk::getChunkSize() const
 {
+   //L_WARN(QString("this->file->getNbChunks() = %1").arg(this->file->getNbChunks()));
    if (this->num < this->file->getNbChunks() - 1)
       return this->CHUNK_SIZE;
 
-   return this->file->getSize() % this->CHUNK_SIZE;
+   int size = this->file->getSize() % this->CHUNK_SIZE;
+   if (!size)
+      return this->CHUNK_SIZE;
+   else
+      return size;
 }
 
