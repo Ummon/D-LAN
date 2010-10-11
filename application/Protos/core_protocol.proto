@@ -124,5 +124,6 @@ message GetChunkResult {
       ERROR_UNKNOWN = 255;
    }
    required Status status = 1;
+   optional uint32 chunk_size = 2;
 }
 // b -> a : stream of data..

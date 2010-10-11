@@ -26,7 +26,6 @@ namespace PM
 
    private:
       const Protos::Common::Entry& file;
-      int nbHashes;
       Socket* socket;
    };
 }

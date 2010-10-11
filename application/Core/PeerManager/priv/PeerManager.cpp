@@ -127,6 +127,8 @@ void PeerManager::newConnection(QTcpSocket* tcpSocket)
    if (!tcpSocket)
       return;
 
+   tcpSocket->setParent(0);
+
    L_DEBU("New pending socket");
    if (!this->timer.isActive())
       this->timer.start();
@@ -144,7 +146,7 @@ void PeerManager::newConnection(QTcpSocket* tcpSocket)
 
 void PeerManager::onGetChunk(Common::Hash hash, int offset, Socket* socket)
 {
-   if (this->receivers(SIGNAL(getChunk(Common::Hash, int, ISocket*))) < 1)
+   if (this->receivers(SIGNAL(getChunk(Common::Hash, int, PM::ISocket*))) < 1)
    {
       Protos::Core::GetChunkResult mess;
       mess.set_status(Protos::Core::GetChunkResult_Status_ERROR_UNKNOWN);
@@ -154,7 +156,6 @@ void PeerManager::onGetChunk(Common::Hash hash, int offset, Socket* socket)
       return;
    }
 
-   socket->stopListening();
    emit getChunk(hash, offset, socket);
 }
 

@@ -26,7 +26,7 @@ namespace PM
       Socket(PeerManager* peerManager, QSharedPointer<FM::IFileManager> fileManager, const Common::Hash& peerID, const QHostAddress& address, quint16 port);
       ~Socket();
 
-      QIODevice* getDevice() const;
+      QAbstractSocket* getQSocket() const;
 
       Common::Hash getPeerID() const;
 
@@ -73,6 +73,7 @@ namespace PM
       int nbHash;
 
 #ifdef DEBUG
+      // To identify the sockets in debug mode.
       int num;
       static int currentNum;
 #endif
