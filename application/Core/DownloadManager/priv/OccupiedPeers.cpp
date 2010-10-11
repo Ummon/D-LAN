@@ -1,6 +1,11 @@
 #include <priv/OccupiedPeers.h>
 using namespace DM;
 
+bool OccupiedPeers::isPeerFree(PM::IPeer* peer)
+{
+   return !this->occupiedPeers.contains(peer);
+}
+
 bool OccupiedPeers::setPeerAsOccupied(PM::IPeer* peer)
 {
    if (this->occupiedPeers.contains(peer))

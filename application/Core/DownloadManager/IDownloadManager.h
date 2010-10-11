@@ -14,7 +14,7 @@ namespace DM
 {
    class IDownload;
 
-   class IDownloadManager : public QObject
+   class IDownloadManager
    {
    public:
       virtual ~IDownloadManager() {}
@@ -25,7 +25,13 @@ namespace DM
       virtual void addDownload(Common::Hash peerSource, const Protos::Common::Entry& entry) = 0;
 
       virtual QList<IDownload*> getDownloads() = 0;
+
       virtual QList< QSharedPointer<IChunkDownload> > getUnfinishedChunks(int n) = 0;
+
+      /**
+        * @return Byte/s.
+        */
+      virtual int getDownloadRate() = 0;
    };
 }
 #endif
