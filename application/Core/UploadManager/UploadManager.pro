@@ -52,4 +52,5 @@ HEADERS += IUploadManager.h \
     priv/UploadManager.h \
     priv/Uploader.h \
     Builder.h \
-    priv/Constants.h
+    priv/Constants.h \
+    priv/Log.h
