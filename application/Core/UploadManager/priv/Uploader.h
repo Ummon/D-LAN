@@ -5,6 +5,7 @@
 #include <QSharedPointer>
 
 #include <Core/FileManager/IChunk.h>
+#include <Core/FileManager/IDataReader.h>
 
 #include <IUpload.h>
 
@@ -14,17 +15,27 @@ namespace UM
 {
    class Uploader : public QThread, public IUpload
    {
+      Q_OBJECT
    public:
       Uploader(QSharedPointer<FM::IChunk> chunk, int offset, PM::ISocket* socket);
-      void run();
 
       Common::Hash getPeerID() const;
       QSharedPointer<FM::IChunk> getChunk() const;
+
+      PM::ISocket* getSocket();
+
+   signals:
+      void uploadFinished();
+
+   protected:
+      void run();
 
    private:
       QSharedPointer<FM::IChunk> chunk;
       int offset;
       PM::ISocket* socket;
+
+      QThread* mainThread;
    };
 }
 #endif
