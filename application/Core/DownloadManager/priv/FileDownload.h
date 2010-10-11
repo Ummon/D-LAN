@@ -42,7 +42,6 @@ namespace DM
       void retrievePeer();
 
    private slots:
-      //void chunkReadyToDownload(ChunkDownload*);
 
       void result(const Protos::Core::GetHashesResult& result);
       void nextHash(const Common::Hash& hash);
@@ -61,6 +60,8 @@ namespace DM
       int nbHashes;
       int nbHashesReceived;
       QSharedPointer<PM::IGetHashesResult> getHashesResult;
+
+      bool fileCreated;
    };
 }
 #endif

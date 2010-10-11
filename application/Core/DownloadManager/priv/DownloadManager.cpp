@@ -6,17 +6,13 @@ using namespace DM;
 #include <priv/Log.h>
 #include <priv/FileDownload.h>
 #include <priv/DirDownload.h>
-#include <priv/ChunkDownloader.h>
 #include <priv/Constants.h>
 
 DownloadManager::DownloadManager(QSharedPointer<FM::IFileManager> fileManager, QSharedPointer<PM::IPeerManager> peerManager)
-   : fileManager(fileManager), peerManager(peerManager)
+   : fileManager(fileManager), peerManager(peerManager), numberOfDownload(0)
 {
    connect(&this->occupiedPeersAskingForHashes, SIGNAL(newFreePeer(PM::IPeer*)), this, SLOT(peerNoLongerAskingForHashes(PM::IPeer*)));
-   connect(&this->occupiedPeersDownloadingChunk, SIGNAL(newFreePeer(PM::IPeer*)), this, SLOT(peerNoLongerDownloadingChunk(PM::IPeer*)), Qt::QueuedConnection); // Queued because the signal can be emitted from a Downloader thread.
-
-   for (quint32 i = 0; i < SETTINGS.getUInt32("number_of_downloader"); i++)
-      this->chunkDownloaders << new ChunkDownloader();
+   connect(&this->occupiedPeersDownloadingChunk, SIGNAL(newFreePeer(PM::IPeer*)), this, SLOT(peerNoLongerDownloadingChunk(PM::IPeer*)));
 }
 
 /**
@@ -66,6 +62,12 @@ QList< QSharedPointer<IChunkDownload> > DownloadManager::getUnfinishedChunks(int
    return QList< QSharedPointer<IChunkDownload> >();
 }
 
+int DownloadManager::getDownloadRate()
+{
+   // TODO
+   return 0;
+}
+
 void DownloadManager::newEntries(const Protos::Core::GetEntriesResult& entries)
 {
    DirDownload* dirDownload = dynamic_cast<DirDownload*>(this->sender());
@@ -93,8 +95,48 @@ void DownloadManager::peerNoLongerAskingForHashes(PM::IPeer* peer)
    }
 }
 
+/**
+  * Search a chunk to download.
+  */
 void DownloadManager::peerNoLongerDownloadingChunk(PM::IPeer* peer)
 {
+   L_DEBU(QString("A peer is free : %1, number of downloading thread : %2").arg(peer->getID().toStr()).arg(this->numberOfDownload));
 
+   if (this->numberOfDownload < static_cast<int>(SETTINGS.getUInt32("number_of_downloader")))
+   {
+      for (QLinkedListIterator<Download*> i(this->downloads); i.hasNext();)
+      {
+         FileDownload* fileDownload = dynamic_cast<FileDownload*>(i.next());
+         if (!fileDownload)
+            continue;
+
+         QSharedPointer<ChunkDownload> chunkDownload = fileDownload->getAChunkToDownload();
+         if (chunkDownload.isNull())
+            continue;
+
+         this->numberOfDownload++;
+         connect(chunkDownload.data(), SIGNAL(downloadFinished()), this, SLOT(downloadFinished()), Qt::DirectConnection);
+         chunkDownload->startDownloading();
+      }
+   }
 }
+
+/**
+  * Called from a download thread.
+  */
+void DownloadManager::downloadFinished()
+{
+   this->sender()->disconnect(this, SLOT(downloadFinished()));
+   this->numberOfDownload--;
+}
+
+
+
+
+
+
+
+
+
+
 

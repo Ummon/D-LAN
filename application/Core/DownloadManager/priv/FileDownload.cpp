@@ -15,7 +15,9 @@ FileDownload::FileDownload(
    : Download(fileManager, peerManager, peerSourceID, entry),
    NB_CHUNK(this->entry.size() / SETTINGS.getUInt32("chunk_size") + (this->entry.size() % SETTINGS.getUInt32("chunk_size") == 0 ? 0 : 1)),
    occupiedPeersAskingForHashes(occupiedPeersAskingForHashes),
-   occupiedPeersDownloadingChunk(occupiedPeersDownloadingChunk)
+   occupiedPeersDownloadingChunk(occupiedPeersDownloadingChunk),
+   nbHashes(0),
+   fileCreated(false)
 {   
    L_DEBU(QString("New FileDownload : path = %1/%2 source = %3").arg(QString::fromStdString(entry.path())).arg(QString::fromStdString(entry.name())).arg(this->peerSourceID.toStr()));
 
@@ -34,12 +36,12 @@ FileDownload::FileDownload(
   */
 bool FileDownload::retreiveHashes()
 {
-   // If we've already got all the chunk hashes it's unecessary to reask them.
+   // If we've already got all the chunk hashes it's unecessary to re-ask them.
    // Or if we'v got anyone to ask the chunk hashes..
-   if (this->chunkDownloads.size() == this->NB_CHUNK || !this->hasAValidPeer())
+   if (this->nbHashes != 0 || !this->hasAValidPeer())
       return false;
 
-   if (!this->occupiedPeersDownloadingChunk.setPeerAsOccupied(this->peerSource))
+   if (!this->occupiedPeersAskingForHashes.setPeerAsOccupied(this->peerSource))
       return false;
 
    this->status |= ASKING_FOR_HASHES;
@@ -57,6 +59,23 @@ bool FileDownload::retreiveHashes()
   */
 QSharedPointer<ChunkDownload> FileDownload::getAChunkToDownload()
 {
+   for (QListIterator< QSharedPointer<ChunkDownload> > i(this->chunkDownloads); i.hasNext();)
+   {
+      QSharedPointer<ChunkDownload> chunkDownload = i.next();
+      if (chunkDownload->isReadyToDownload())
+      {
+         if (!this->fileCreated)
+         {
+            this->chunksWithoutDownload = this->fileManager->newFile(this->entry);
+            for (int i = 0; i < this->chunksWithoutDownload.size() && i < this->chunkDownloads.size(); i++)
+               this->chunkDownloads[i]->setChunk(this->chunksWithoutDownload.takeFirst());
+            this->fileCreated = true;
+         }
+
+         return chunkDownload;
+      }
+   }
+
    return QSharedPointer<ChunkDownload>();
 }
 
@@ -67,18 +86,6 @@ void FileDownload::retrievePeer()
    // Right after we got the peer we can ask him the hashes.
    this->retreiveHashes();
 }
-
-/*void FileDownload::chunkReadyToDownload(ChunkDownload* chunkDownload)
-{
-   for (QListIterator< QSharedPointer<ChunkDownload> > i(this->chunkDownloads); i.hasNext(); i.next())
-   {
-      if (i.peekNext().data() == chunkDownload)
-      {
-         emit chunkReadyToDownload(i.peekNext());
-         return;
-      }
-   }
-}*/
 
 void FileDownload::result(const Protos::Core::GetHashesResult& result)
 {
@@ -101,16 +108,9 @@ void FileDownload::nextHash(const Common::Hash& hash)
 {
    if (++this->nbHashesReceived == this->nbHashes)
    {
-      this->getHashesResult.clear(); // TODO : Must we disconnect the signals ?
+      this->getHashesResult.clear();
       this->occupiedPeersAskingForHashes.setPeerAsFree(this->peerSource);
    }
-
-   // The file is creating on the fly when the first hash is received.
-//   if (this->chunkDownloads.isEmpty())
-//      this->chunksWithoutDownload = this->fileManager->newFile(this->entry);
-
-   /*QSharedPointer<FM::IChunk> chunk = this->chunksWithoutDownload.takeFirst();
-   chunk->setHash(hash);*/
 
    if (this->chunkDownloads.size() >= this->nbHashesReceived && this->chunkDownloads[this->nbHashesReceived-1]->getHash() != hash)
    {
@@ -124,9 +124,12 @@ void FileDownload::nextHash(const Common::Hash& hash)
    else
    {
       QSharedPointer<ChunkDownload> chunkDownload = QSharedPointer<ChunkDownload>(new ChunkDownload(this->peerManager, this->occupiedPeersDownloadingChunk, hash));
+
+      // If the file has alredy been created the chunks are known.
+      if (!this->chunksWithoutDownload.isEmpty())
+         chunkDownload->setChunk(this->chunksWithoutDownload.takeFirst());
+
       this->chunkDownloads << chunkDownload;
       chunkDownload->setPeerSource(this->peerSource);
    }
-
-   //emit chunkReadyToDownload(this->chunkDownloads.last()); // We assume the sourcePeer has the chunk..
 }

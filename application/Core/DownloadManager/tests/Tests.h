@@ -37,6 +37,7 @@ private slots:
    void initTestCase();
    void updatePeers();
    void addADirectoryToDownload();
+   void addABigFileToDownload();
    void cleanupTestCase();
 
 private:

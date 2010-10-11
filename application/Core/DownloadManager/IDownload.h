@@ -23,12 +23,13 @@ namespace DM
      NO_SOURCE, // Some chunk can't be download. Only when there is no more downloading.
    };
 
-   class IDownload : public QObject
+   class IDownload
    {
    public:
       virtual ~IDownload() {}
 
       virtual int getId() = 0;
+
       virtual Status getStatus() = 0;
 
       /**
@@ -37,6 +38,7 @@ namespace DM
       virtual char getProgress() = 0;
 
       virtual Common::Hash getPeerSourceID() = 0;
+
       virtual Protos::Common::Entry getEntry() = 0;
 
       /**

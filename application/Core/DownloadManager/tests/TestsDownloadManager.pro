@@ -49,6 +49,8 @@ INCLUDEPATH += . \
     ../../.. \ # For the 'Common' component.
     ${PROTOBUF}/src
 
+# LIBS += -L${QTDIR}/../mingw/lib -lws2_32
+
 TEMPLATE = app
 SOURCES += main.cpp \
     Tests.cpp \

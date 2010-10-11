@@ -50,7 +50,6 @@ SOURCES += priv/FileDownload.cpp \
     priv/DownloadManager.cpp \
     priv/Download.cpp \
     priv/DirDownload.cpp \
-    priv/ChunkDownloader.cpp \
     priv/ChunkDownload.cpp \
     ../../Protos/common.pb.cc \
     priv/Builder.cpp \
@@ -62,7 +61,6 @@ HEADERS += IDownloadManager.h \
     priv/DownloadManager.h \
     priv/Download.h \
     priv/DirDownload.h \
-    priv/ChunkDownloader.h \
     priv/ChunkDownload.h \
     ../../Protos/common.pb.h \
     Builder.h \

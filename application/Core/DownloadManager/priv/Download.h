@@ -17,7 +17,7 @@ namespace PM { class IPeer; }
 
 namespace DM
 {
-   class Download : public IDownload
+   class Download : public QObject, public IDownload
    {
       Q_OBJECT
    protected:

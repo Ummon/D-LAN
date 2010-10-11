@@ -55,15 +55,43 @@ void Tests::addADirectoryToDownload()
 {
    qDebug() << "===== addADirectoryToDownload() =====";
 
-   Protos::Core::GetEntriesResult result = this->fileManagers[1]->getEntries();
+   /*Protos::Core::GetEntriesResult result = this->fileManagers[1]->getEntries();
+   this->downloadManagers[0]->addDownload(this->peerManagers[1]->getID(), result.entry(0));*/
+}
 
-   this->downloadManagers[0]->addDownload(this->peerManagers[1]->getID(), result.entry(0));
+void Tests::addABigFileToDownload()
+{
+   qDebug() << "===== addABigFileToDownload() =====";
 
-   QTest::qWait(1000000);
+   const int FILE_SIZE = 128 * 1024 * 1024;
+   {
+      QFile file("sharedDirs/peer2/big.bin");
+      file.open(QIODevice::WriteOnly);
+
+      // To have four different hashes.
+      for (int i = 0; i < 4 ; i++)
+      {
+         QByteArray randomData(32 * 1024 * 1024, i+1);
+         file.write(randomData);
+      }
+   }
+   QTest::qWait(4000);
+
+   Protos::Core::GetEntriesResult rootEntry = this->fileManagers[1]->getEntries();
+
+   Protos::Common::Entry entry;
+   entry.set_type(Protos::Common::Entry_Type_FILE);
+   entry.set_path("/");
+   entry.set_name("big.bin");
+   entry.set_size(FILE_SIZE);
+   entry.mutable_shared_dir()->CopyFrom(rootEntry.entry(0).shared_dir());
+
+   this->downloadManagers[0]->addDownload(this->peerManagers[1]->getID(), entry);
 }
 
 void Tests::cleanupTestCase()
 {
+   QTest::qWait(1000000);
    qDebug() << "===== cleanupTestCase() =====";
 
    for (QListIterator<TestServer*> i(this->servers); i.hasNext();)

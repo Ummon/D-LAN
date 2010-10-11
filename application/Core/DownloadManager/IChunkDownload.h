@@ -10,7 +10,7 @@ namespace DM
    /**
      * Once a chunk is downloader, the IChunkDownload is deleted.
      */
-   class IChunkDownload : public QObject
+   class IChunkDownload
    {
    public:
       virtual ~IChunkDownload() {}

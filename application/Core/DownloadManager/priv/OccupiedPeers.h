@@ -15,12 +15,10 @@ namespace DM
    {
       Q_OBJECT
    public:
+      bool isPeerFree(PM::IPeer* peer);
       bool setPeerAsOccupied(PM::IPeer* peer);
       void setPeerAsFree(PM::IPeer* peer);
       void newPeer(PM::IPeer* peer);
-
-      //bool askingForHashes
-      //void noLongerAskingForHashes(PM::IPeer* peer);
 
    signals:
       void newFreePeer(PM::IPeer*);
