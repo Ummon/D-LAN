@@ -9,6 +9,9 @@
 
 #include <IFileManager.h>
 #include <IGetHashesResult.h>
+#include <IDataWriter.h>
+#include <IDataReader.h>
+#include <IChunk.h>
 using namespace FM;
 
 class RandGenerator
@@ -94,9 +97,6 @@ private:
    QList<Protos::Common::Entry> knownDirEntries;
    QList<Protos::Common::Entry> knownFileEntries;
 
-   QList<Downloader*> downloaders;
-   QList<Uploader*> uploaders;
-
    struct HashesResult
    {
       HashesResult(QSharedPointer<IGetHashesResult> result, int nb, QString filename)
@@ -110,26 +110,38 @@ private:
    RandGenerator randGen;
 };
 
-class Downloader : public QThread
+class Downloader : public QObject
 {
+   Q_OBJECT
 public:
    Downloader(QSharedPointer<IChunk> chunk, QString filePath);
-   void run();
+   void start();
+
+private slots:
+   void writeFinished(FM::IDataWriter::Status status);
 
 private:
+   QSharedPointer<IDataWriter> writer;
    QSharedPointer<IChunk> chunk;
    QString filePath;
+   int chunkNum;
    RandGenerator randGen;
 };
 
-class Uploader : public QThread
+class Uploader : public QObject
 {
+   Q_OBJECT
 public:
    Uploader(QSharedPointer<IChunk> chunk);
-   void run();
+   void start();
+
+private slots:
+   void readFinished(char* data, int nbBytesRead);
 
 private:
+   QSharedPointer<IDataReader> reader;
    QSharedPointer<IChunk> chunk;
+   int offset;
    RandGenerator randGen;
 };
 

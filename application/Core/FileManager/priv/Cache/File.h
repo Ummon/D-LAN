@@ -55,8 +55,8 @@ namespace FM
       void dataWriterDeleted();
       void dataReaderDeleted();
 
-      qint64 write(const QByteArray& buffer, qint64 offset);
-      qint64 read(QByteArray& buffer, qint64 offset);
+      qint64 write(const char* buffer, int nbBytes, qint64 offset);
+      qint64 read(char* buffer, int bufferSize, qint64 offset);
 
       bool computeHashes(int n = 0);
 
@@ -68,6 +68,10 @@ namespace FM
       bool hasOneOrMoreHashes();
 
       bool isComplete();
+      void setAsComplete();
+      void chunkComplete();
+
+      int getNbChunks();
       bool correspondTo(const QFileInfo& fileInfo);
 
       void physicallyRemoveUnfinished();
@@ -76,14 +80,15 @@ namespace FM
       bool hasAParentDir(Directory* dir);
 
    private:
-      int getNbChunks();
-      void setAsComplete();
-
-      const quint32 CHUNK_SIZE;
+      const int CHUNK_SIZE;
 
       Directory* dir;
       QList< QSharedPointer<Chunk> > chunks;
       QDateTime dateLastModified;
+
+      // Used only when writing a file.
+      int nbChunkComplete;
+      bool complete;
 
       int numDataWriter;
       int numDataReader;

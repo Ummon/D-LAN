@@ -17,6 +17,11 @@ GetHashesResult::GetHashesResult(const Protos::Common::Entry& fileEntry, Cache& 
    qRegisterMetaType<Common::Hash>("Common::Hash");
 }
 
+GetHashesResult::~GetHashesResult()
+{
+   disconnect(&this->cache, SIGNAL(chunkHashKnown(QSharedPointer<Chunk>)), this, SLOT(chunkHashKnown(QSharedPointer<Chunk>)));
+}
+
 /**
   * Called from the main thread.
   */
@@ -36,7 +41,7 @@ Protos::Core::GetHashesResult GetHashesResult::start()
    connect(&this->cache, SIGNAL(chunkHashKnown(QSharedPointer<Chunk>)), this, SLOT(chunkHashKnown(QSharedPointer<Chunk>)), Qt::DirectConnection);
    this->nbHash = chunks.size();
 
-   result.set_nb_hash(chunks.size());
+   result.set_nb_hash(this->nbHash);
    for (QListIterator< QSharedPointer<Chunk> > i(chunks); i.hasNext();)
    {
       QSharedPointer<Chunk> chunk(i.next());

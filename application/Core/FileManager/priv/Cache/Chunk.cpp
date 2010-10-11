@@ -102,7 +102,7 @@ void Chunk::dataReaderDeleted()
 {
    QMutexLocker locker(&this->mutex);
    if (this->file)
-      this->file->dataWriterDeleted();
+      this->file->dataReaderDeleted();
 }
 
 void Chunk::fileDeleted()
@@ -111,7 +111,7 @@ void Chunk::fileDeleted()
    this->file = 0;
 }
 
-int Chunk::read(QByteArray& buffer, quint32 offset)
+int Chunk::read(char* buffer, int bufferSize, int offset)
 {
    QMutexLocker locker(&this->mutex);
    if (!this->file)
@@ -123,7 +123,7 @@ int Chunk::read(QByteArray& buffer, quint32 offset)
    if (offset >= this->knownBytes)
       return 0;
 
-   return this->file->read(buffer, offset + this->num * CHUNK_SIZE);
+   return this->file->read(buffer, bufferSize, offset + this->num * CHUNK_SIZE);
 }
 
 /**
@@ -132,24 +132,28 @@ int Chunk::read(QByteArray& buffer, quint32 offset)
   * @exception ChunkDeletedException
   * @exception TryToWriteBeyondTheEndOfChunkException
   */
-bool Chunk::write(const QByteArray& buffer)
+bool Chunk::write(const char* buffer, int nbBytes)
 {
    QMutexLocker locker(&this->mutex);
    if (!this->file)
       throw ChunkDeletedException();
 
-   if (this->knownBytes + buffer.size() > CHUNK_SIZE)
+   if (this->knownBytes + nbBytes > this->getChunkSize())
       throw TryToWriteBeyondTheEndOfChunkException();
 
-   this->knownBytes += this->file->write(buffer, this->knownBytes + this->num * CHUNK_SIZE);
+   this->knownBytes += this->file->write(buffer, nbBytes, this->knownBytes + this->num * CHUNK_SIZE);
 
-   if (this->knownBytes > CHUNK_SIZE) // Should never be true.
+   if (this->knownBytes > this->getChunkSize()) // Should never be true.
    {
       L_ERRO("Chunk::write : this->knownBytes > CHUNK_SIZE");
       this->knownBytes = CHUNK_SIZE;
    }
+   bool complete = this->knownBytes == this->getChunkSize();
 
-   return this->knownBytes == CHUNK_SIZE;
+   if (complete)
+      this->file->chunkComplete();
+
+   return complete;
 }
 
 /*void Chunk::sendContentToSocket(QAbstractSocket& socket)
@@ -172,6 +176,7 @@ bool Chunk::hasHash() const
 
 Common::Hash Chunk::getHash() const
 {
+   QMutexLocker locker(&this->mutex);
    return this->hash;
 }
 
@@ -185,8 +190,9 @@ void Chunk::setHash(const Common::Hash& hash)
    this->hash = hash;
 }
 
-quint32 Chunk::getKnownBytes() const
+int Chunk::getKnownBytes() const
 {
+   QMutexLocker locker(&this->mutex);
    return this->knownBytes;
 }
 
@@ -199,3 +205,19 @@ bool Chunk::isOwnedBy(File* file) const
 {
    return this->file == file;
 }
+
+#if DEBUG
+QString Chunk::toStr() const
+{
+   return QString("num = [%1], knownBytes = %2, hash = %3").arg(this->num).arg(this->getKnownBytes()).arg(this->getHash().toStr());
+}
+#endif
+
+int Chunk::getChunkSize() const
+{
+   if (this->num < this->file->getNbChunks() - 1)
+      return this->CHUNK_SIZE;
+
+   return this->file->getSize() % this->CHUNK_SIZE;
+}
+

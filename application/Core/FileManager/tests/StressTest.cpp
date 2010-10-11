@@ -15,9 +15,6 @@ using namespace FM;
 #include <priv/Constants.h>
 #include <Exceptions.h>
 #include <Builder.h>
-#include <IChunk.h>
-#include <IDataWriter.h>
-#include <IDataReader.h>
 
 // Beautiful macros..
 #define PROB_100(A) if (this->randGen.percentRand() <= 100 - A) return;
@@ -408,7 +405,6 @@ void StressTest::getChunk()
          if (this->randGen.permilRand() <= 1)
          {
             Uploader* uploader = new Uploader(chunk);
-            this->uploaders << uploader;
             uploader->start();
          }
       }
@@ -457,7 +453,6 @@ void StressTest::newFile()
       for (QListIterator< QSharedPointer<IChunk> > i(chunks); i.hasNext();)
       {
          Downloader* downloader = new Downloader(i.next(), QString(entry.path().data()) + QString(entry.name().data()));
-         this->downloaders << downloader;
          downloader->start();
       }
    }
@@ -645,85 +640,86 @@ QString StressTest::entryToStr(const Protos::Common::Entry& entry)
 }
 
 Downloader::Downloader(QSharedPointer<IChunk> chunk, QString filePath)
-   : chunk(chunk), filePath(filePath)
+   : chunk(chunk), filePath(filePath), chunkNum(chunk->getNum())
 {
 }
 
-void Downloader::run()
+void Downloader::start()
 {
-   qDebug() << "===== Downloader::run() =====";
+   qDebug() << "===== Downloader::start() =====";
+
+   qDebug() << "Downloader::start(), file : " << this->filePath << " chunk : " << this->chunkNum;
 
    try
    {
-      QSharedPointer<IDataWriter> writer = chunk->getDataWriter();
+      this->writer = chunk->getDataWriter();
+      connect(this->writer.data(), SIGNAL(writeFinished(FM::IDataWriter::Status)), this, SLOT(writeFinished(FM::IDataWriter::Status)), Qt::QueuedConnection);
 
-      QByteArray buffer(64 * 1024, 0);
-      for (int i = 0; i < buffer.size(); i++)
-         buffer[i] = this->chunk->getNum() + 1;
-
-      while (!writer->write(buffer));
+      this->writeFinished(IDataWriter::NOT_FINISHED);
    }
    catch(UnableToOpenFileInWriteModeException&)
    {
-      qDebug() << "UnableToOpenFileInWriteModeException, file = " << this->filePath;
+      qDebug() << "UnableToOpenFileInWriteModeException, file = " << this->filePath << " chunk : " << this->chunkNum;
    }
-   catch(IOErrorException&)
-   {
-      qDebug() << "IOErrorException, file = " << this->filePath;
-   }
-   catch(TryToWriteBeyondTheEndOfChunkException&)
-   {
-      qDebug() << "TryToWriteBeyondTheEndOfChunkException, file = " << this->filePath;
-   }
-   catch(ChunkDeletedException&)
-   {
-      qDebug() << "ChunkDeletedException, file = " << this->filePath;
-   }
+}
 
-   qDebug() << "Downloader::run() finished, file" << this->filePath;
+void Downloader::writeFinished(FM::IDataWriter::Status status)
+{
+   switch (status)
+   {
+   case FM::IDataWriter::NOT_FINISHED:
+      {
+         // Fill the buffer with the chunk number.
+         char* buffer = this->writer->getBuffer();
+         memset(buffer, this->chunkNum + 1, this->writer->getBufferSize());
+
+         this->writer->write(this->writer->getBufferSize());
+         break;
+      }
+
+   case FM::IDataWriter::END_OF_CHUNK:
+   case FM::IDataWriter::IO_ERROR:
+      qDebug() << "Downloader::writeFinished(), file : " << this->filePath;
+      this->writer.clear();
+      delete this;
+      break;
+   }
 }
 
 
 Uploader::Uploader(QSharedPointer<IChunk> chunk)
-   : chunk(chunk)
+   : chunk(chunk), offset(0)
 {
 }
 
-void Uploader::run()
+void Uploader::start()
 {
-   qDebug() << "===== Uploader::run() =====";
+   qDebug() << "===== Uploader::start() =====";
 
    try
    {
-      QSharedPointer<FM::IDataReader> reader = this->chunk->getDataReader();
-
-      QByteArray buffer(64 * 1024, 0);
-
-      qint64 bytesReadTotal = 0;
-      qint64 bytesRead = 0;
-
-      while (bytesRead = reader->read(buffer, bytesReadTotal))
-         bytesReadTotal += bytesRead;
-      qDebug() << "Uploader::run() : bytesRead = " << bytesReadTotal << " for the chunk " << this->chunk->getHash().toStr() << " num : " << this->chunk->getNum();
+      this->reader = this->chunk->getDataReader();
+      connect(this->reader.data(), SIGNAL(readFinished(char*, int)), this, SLOT(readFinished(char*, int)), Qt::QueuedConnection);
+      this->reader->read(this->offset);
    }
    catch(UnableToOpenFileInReadModeException&)
    {
       qDebug() << "UnableToOpenFileInReadModeException";
    }
-   catch(IOErrorException&)
-   {
-      qDebug() << "IOErrorException";
-   }
-   catch(ChunkDeletedException&)
-   {
-      qDebug() << "ChunkDeletedException";
-   }
-   catch(ChunkNotCompletedException&)
-   {
-      qDebug() << "ChunkNotCompletedException";
-   }
-
-   qDebug() << "Uploader::run() finished";
 }
 
+void Uploader::readFinished(char* data, int nbBytesRead)
+{
+   if (nbBytesRead > 0)
+   {
+      this->offset += nbBytesRead;
+      this->reader->read(this->offset);
+   }
+   else
+   {
+      qDebug() << "Uploader::readFinished() : this->offset = " << this->offset << " for the chunk " << this->chunk->toStr();
+      this->reader.clear();
+      delete this;
+   }
+}
 

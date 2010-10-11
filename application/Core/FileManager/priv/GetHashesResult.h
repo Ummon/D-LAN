@@ -21,7 +21,7 @@ namespace FM
       Q_OBJECT
    public:
       GetHashesResult(const Protos::Common::Entry& fileEntry, Cache& cache, FileUpdater& fileUpdater);
-      virtual ~GetHashesResult() {}
+      ~GetHashesResult();
       Protos::Core::GetHashesResult start();
 
    private slots:
