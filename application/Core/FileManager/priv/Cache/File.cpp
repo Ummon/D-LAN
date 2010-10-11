@@ -45,6 +45,8 @@ File::File(
      CHUNK_SIZE(SETTINGS.getUInt32("chunk_size")),
      dir(dir),
      dateLastModified(dateLastModified),
+     nbChunkComplete(0),
+     complete(!createPhysically),
      numDataWriter(0),
      numDataReader(0),
      fileInWriteMode(0),
@@ -110,9 +112,7 @@ File::File(
 
 File::~File()
 {
-   QMutexLocker lockerWrite(&this->writeLock);
-   QMutexLocker lockerRead(&this->readLock);
-   // QMutexLocker(&this->cache->getMutex()); // TODO :
+   // QMutexLocker(&this->cache->getMutex()); // TODO : Is it necessary ?
 
    this->dir->fileDeleted(this);
 
@@ -219,7 +219,7 @@ void File::newDataWriterCreated()
    if (this->numDataWriter == 0)
    {
       this->fileInWriteMode = new QFile(this->getFullPath());
-      if (!this->fileInWriteMode->open(QIODevice::WriteOnly))
+      if (!this->fileInWriteMode->open(QIODevice::ReadWrite))
          throw UnableToOpenFileInWriteModeException();
    }
    this->numDataWriter += 1;
@@ -270,7 +270,7 @@ void File::dataReaderDeleted()
   * @param buffer The buffer.
   * @param offset An offset.
   */
-qint64 File::write(const QByteArray& buffer, qint64 offset)
+qint64 File::write(const char* buffer, int nbBytes, qint64 offset)
 {
    QMutexLocker locker(&this->writeLock);
 
@@ -278,15 +278,17 @@ qint64 File::write(const QByteArray& buffer, qint64 offset)
       throw IOErrorException();
 
    int maxSize = this->size - offset;
-   qint64 n = this->fileInWriteMode->write(buffer.data(), buffer.size() > maxSize ? maxSize : buffer.size());
+   qint64 n = this->fileInWriteMode->write(buffer, nbBytes > maxSize ? maxSize : nbBytes);
 
    if (n == -1)
       throw IOErrorException();
 
    if (this->isComplete())
+   {
       this->setAsComplete();
+   }
 
-    return n;
+   return n;
 }
 
 /**
@@ -296,7 +298,7 @@ qint64 File::write(const QByteArray& buffer, qint64 offset)
   * @param offset An offset.
   * @return the number of bytes read.
   */
-qint64 File::read(QByteArray& buffer, qint64 offset)
+qint64 File::read(char* buffer, int bufferSize, qint64 offset)
 {
    QMutexLocker locker(&this->readLock);
 
@@ -304,7 +306,7 @@ qint64 File::read(QByteArray& buffer, qint64 offset)
       return 0;
 
    this->fileInReadMode->seek(offset);
-   qint64 bytesRead = this->fileInReadMode->read(buffer.data(), buffer.size());
+   qint64 bytesRead = this->fileInReadMode->read(buffer, bufferSize);
 
    if (bytesRead == -1)
       throw IOErrorException();
@@ -382,7 +384,7 @@ bool File::computeHashes(int n)
          return false;
       }
 
-      quint32 bytesReadChunk = 0;
+      int bytesReadChunk = 0;
       while (bytesReadChunk < CHUNK_SIZE)
       {
          int bytesRead = file.read(buffer, SETTINGS.getUInt32("buffer_size"));
@@ -499,11 +501,58 @@ bool File::isComplete()
    QMutexLocker lock(&this->mutex);
    //L_DEBU(QString("this->size = %1, CHUNK_SIZE = %2, res = %3, this->getNbChunks() = %4").arg(this->size).arg(CHUNK_SIZE).arg(this->size / CHUNK_SIZE + (this->size % CHUNK_SIZE == 0 ? 0 : 1)).arg(this->getNbChunks()));
 
+   /*
    qint64 currentSize = 0;
    for (int i = 0; i < this->chunks.size(); i++)
       currentSize += this->chunks[i]->getKnownBytes();
 
-   return this->size == currentSize;
+   return this->size == currentSize;*/
+
+   return this->complete;
+}
+
+void File::setAsComplete()
+{
+   QMutexLocker lock(&this->mutex);
+
+   this->complete = true;
+
+   if (Cache::isFileUnfinished(this->name))
+   {
+      // TODO how can we handle one or more reader ?
+      if (this->fileInWriteMode)
+      {
+         this->fileInWriteMode->close();
+         this->fileInWriteMode = 0;
+      }
+
+      QString path = this->getFullPath();
+      QDateTime oldDate = this->dateLastModified;
+      QString oldname = this->name;
+
+      this->dateLastModified = QFileInfo(this->getFullPath()).lastModified();
+      this->name = this->name.left(this->name.size() - SETTINGS.getString("unfinished_suffix_term").size());
+
+      if (!QFile::rename(path, this->getFullPath()))
+      {
+         this->dateLastModified = oldDate;
+         this->name = oldname;
+         L_ERRO(QString("Unable to rename the file %1").arg(path));
+      }
+   }
+}
+
+void File::chunkComplete()
+{
+   if (++this->nbChunkComplete == this->getNbChunks())
+   {
+      this->setAsComplete();
+   }
+}
+
+int File::getNbChunks()
+{
+   return this->size / CHUNK_SIZE + (this->size % CHUNK_SIZE == 0 ? 0 : 1);
 }
 
 /**
@@ -540,22 +589,6 @@ bool File::hasAParentDir(Directory* dir)
    if (this->dir == dir)
       return true;
    return this->dir->isAChildOf(dir);
-}
-
-int File::getNbChunks()
-{
-   return this->size / CHUNK_SIZE + (this->size % CHUNK_SIZE == 0 ? 0 : 1);
-}
-
-void File::setAsComplete()
-{
-   QMutexLocker lock(&this->mutex);
-
-   if (Cache::isFileUnfinished(this->name))
-   {
-      QString path = this->getFullPath();
-      QFile::rename(path, path.left(path.size() - SETTINGS.getString("unfinished_suffix_term").size()));
-   }
 }
 
 /*QList<IChunk*> File::getChunks() const

@@ -22,11 +22,13 @@ namespace FM
       virtual void populateEntry(Protos::Common::Entry* entry) const = 0;
 
       /**
+        * The caller must not delete the IChunk as long as data is read with the IDataReader.
         * @exception UnableToOpenFileInReadMode
         */
       virtual QSharedPointer<IDataReader> getDataReader() = 0;
 
       /**
+        * The caller must not delete the IChunk as long as data is written with the IDataWriter.
         * @exception UnableToOpenFileInWriteMode
         */
       virtual QSharedPointer<IDataWriter> getDataWriter() = 0;
@@ -48,7 +50,11 @@ namespace FM
 
       virtual void setHash(const Common::Hash&) = 0;
 
-      virtual quint32 getKnownBytes() const = 0;
+      virtual int getKnownBytes() const = 0;
+
+#if DEBUG
+      virtual QString toStr() const = 0;
+#endif
    };
 }
 #endif

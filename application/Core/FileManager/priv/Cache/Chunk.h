@@ -61,12 +61,12 @@ namespace FM
         *         and the buffer will be partially filled.
         * @exception ChunkNotCompletedException
         */
-      int read(QByteArray& buffer, quint32 offset);
+      int read(char* buffer, int bufferSize, int offset);
 
       /**
         * @return 'true' if end of chunk reached.
         */
-      bool write(const QByteArray& buffer);
+      bool write(const char* buffer, int nbBytes);
 
       //void sendContentToSocket(QAbstractSocket& socket);
       //void getContentFromSocket(QAbstractSocket& socket);
@@ -79,19 +79,25 @@ namespace FM
 
       void setHash(const Common::Hash& hash);
 
-      quint32 getKnownBytes() const;
+      int getKnownBytes() const;
       void setKnownBytes(int bytes);
 
       bool isOwnedBy(File* file) const;
 
+#if DEBUG
+      QString toStr() const;
+#endif
+
    private:
-      const quint32 CHUNK_SIZE;
+      int getChunkSize() const;
+
+      const int CHUNK_SIZE;
 
       mutable QMutex mutex; ///< Protect 'file' against multiple access.
 
       File* file;
       int num;
-      quint32 knownBytes; ///< Relative offset, 0 means we don't have any byte and CHUNK_SIZE means we have all the chunk data.
+      int knownBytes; ///< Relative offset, 0 means we don't have any byte and CHUNK_SIZE means we have all the chunk data.
       Common::Hash hash;
    };
 }

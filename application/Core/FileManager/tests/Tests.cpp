@@ -36,6 +36,7 @@ void Tests::initTestCase()
 void Tests::createFileManager()
 {
    qDebug() << "===== createFileManager() =====";
+
    this->createInitialFiles();
    this->fileManager = Builder::newFileManager();
 }
@@ -369,10 +370,11 @@ void Tests::getHashesFromAFileEntry2()
    {
       QFile file1("sharedDirs/big2.bin");
       file1.open(QIODevice::WriteOnly);
-      file1.resize(128 * 1024 * 1024); // 128Mo
 
       QFile file2("sharedDirs/big3.bin");
       file2.open(QIODevice::WriteOnly);
+
+      file1.resize(128 * 1024 * 1024); // 128Mo
       file2.resize(128 * 1024 * 1024); // 128Mo
    }
    QTest::qWait(2000); // Begin the computing of the big2.bin hashes.

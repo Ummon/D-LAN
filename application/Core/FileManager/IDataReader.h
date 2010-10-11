@@ -1,21 +1,30 @@
 #ifndef FILEMANAGER_IDATAREADER_H
 #define FILEMANAGER_IDATAREADER_H
 
+#include <QObject>
 #include <QByteArray>
 
 namespace FM
 {
-   class IDataReader
+   class IDataReader : virtual public QObject
    {
+      Q_OBJECT
    public:
+
       virtual ~IDataReader() {}
 
       /**
-        * @exception IOErrorException
-        * @exception ChunkDeletedException
-        * @exception ChunkNotCompletedException
+        * Non-blockant method.
         */
-      virtual qint64 read(QByteArray& buffer, uint offset) = 0;
+      virtual void read(uint offset) = 0;
+
+   signals:
+      /**
+        * Emitted when the read is terminated.
+        * If an error occurs, data is null.
+        * Data is valid until an other read is called or the IDataReader object is deleted.
+        */
+      void readFinished(char* data, int nbBytesRead);
    };
 }
 
