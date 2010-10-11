@@ -10,28 +10,31 @@ const QString Entry::DATE_TIME_FORMAT("dd-MM-yyyy HH:mm:ss");
 const QString Entry::SEVERITIES_STR[] = {"Fatal", "Error", "Warning", "Debug", "User", "Unkown"};
 
 Entry::Entry(const QString& line) :
-   lineRegExp("(\\S+ \\S+) \\[(.+)\\] \\{(.+)\\} \\((\\w+)\\) (?:<(\\S+:\\d+)> )?: (.*)"),
+   lineRegExp("(\\S{10} \\S{8})\\.(\\d{3}) \\[(.+)\\] \\{(.+)\\} \\((\\w+)\\) (?:<(\\S+:\\d+)> )?: (.*)"),
    severity(SV_UNKNOWN)
 {
+   //lineRegExp.setMinimal(true); // Non-greedy.
    if (!lineRegExp.exactMatch(line))
       throw MalformedEntryLog(line);
 
    QStringList capturedTexts = lineRegExp.capturedTexts();
 
-   if (capturedTexts.count() < 6)
+   if (capturedTexts.count() < 7)
       return;
 
    this->date = QDateTime::fromString(capturedTexts[1], Entry::DATE_TIME_FORMAT);
-   this->severity = Entry::severityFromStr(capturedTexts[2]);
-   this->name = capturedTexts[3];
-   this->thread = capturedTexts[4];
+   this->date = this->date.addMSecs(capturedTexts[2].toInt());
 
-   if (capturedTexts.count() == 6)
-      this->message = capturedTexts[5];
-   else if (capturedTexts.count() == 7)
-   {
-      this->source = capturedTexts[5];
+   this->severity = Entry::severityFromStr(capturedTexts[3]);
+   this->name = capturedTexts[4];
+   this->thread = capturedTexts[5];
+
+   if (capturedTexts.count() == 7)
       this->message = capturedTexts[6];
+   else if (capturedTexts.count() == 8)
+   {
+      this->source = capturedTexts[6];
+      this->message = capturedTexts[7];
    }
 }
 
@@ -77,7 +80,7 @@ QString Entry::getMessage() const
 
 QString Entry::dateToStr(const QDateTime& date)
 {
-   return date.toString("dd-MM-yyyy HH:mm:ss");
+   return date.toString("dd-MM-yyyy HH:mm:ss.zzz");
 }
 
 QString Entry::severityToStr(Severity severity)
