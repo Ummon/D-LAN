@@ -61,7 +61,7 @@ namespace FM
         *         and the buffer will be partially filled.
         * @exception ChunkNotCompletedException
         */
-      int read(char* buffer, int bufferSize, int offset);
+      int read(char* buffer, int offset);
 
       /**
         * @return 'true' if end of chunk reached.
@@ -81,6 +81,8 @@ namespace FM
 
       int getKnownBytes() const;
       void setKnownBytes(int bytes);
+
+      bool isComplete() const;
 
       bool isOwnedBy(File* file) const;
 

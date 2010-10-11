@@ -56,7 +56,7 @@ namespace FM
       void dataReaderDeleted();
 
       qint64 write(const char* buffer, int nbBytes, qint64 offset);
-      qint64 read(char* buffer, int bufferSize, qint64 offset);
+      qint64 read(char* buffer, qint64 offset);
 
       bool computeHashes(int n = 0);
 
@@ -81,6 +81,7 @@ namespace FM
 
    private:
       const int CHUNK_SIZE;
+      const int BUFFER_SIZE;
 
       Directory* dir;
       QList< QSharedPointer<Chunk> > chunks;

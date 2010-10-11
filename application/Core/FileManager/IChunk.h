@@ -52,6 +52,8 @@ namespace FM
 
       virtual int getKnownBytes() const = 0;
 
+      virtual bool isComplete() const = 0;
+
 #if DEBUG
       virtual QString toStr() const = 0;
 #endif

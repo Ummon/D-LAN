@@ -110,38 +110,30 @@ private:
    RandGenerator randGen;
 };
 
-class Downloader : public QObject
+class Downloader : public QThread
 {
-   Q_OBJECT
 public:
    Downloader(QSharedPointer<IChunk> chunk, QString filePath);
-   void start();
 
-private slots:
-   void writeFinished(FM::IDataWriter::Status status);
+protected:
+   void run();
 
 private:
-   QSharedPointer<IDataWriter> writer;
    QSharedPointer<IChunk> chunk;
    QString filePath;
-   int chunkNum;
    RandGenerator randGen;
 };
 
-class Uploader : public QObject
+class Uploader : public QThread
 {
-   Q_OBJECT
 public:
    Uploader(QSharedPointer<IChunk> chunk);
-   void start();
 
-private slots:
-   void readFinished(char* data, int nbBytesRead);
+protected:
+   void run();
 
 private:
-   QSharedPointer<IDataReader> reader;
    QSharedPointer<IChunk> chunk;
-   int offset;
    RandGenerator randGen;
 };
 

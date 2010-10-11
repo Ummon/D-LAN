@@ -43,6 +43,7 @@ File::File(
 )
    : Entry(dir->getCache(), name + (createPhysically ? SETTINGS.getString("unfinished_suffix_term") : ""), size),
      CHUNK_SIZE(SETTINGS.getUInt32("chunk_size")),
+     BUFFER_SIZE(SETTINGS.getUInt32("buffer_size")),
      dir(dir),
      dateLastModified(dateLastModified),
      nbChunkComplete(0),
@@ -298,7 +299,7 @@ qint64 File::write(const char* buffer, int nbBytes, qint64 offset)
   * @param offset An offset.
   * @return the number of bytes read.
   */
-qint64 File::read(char* buffer, int bufferSize, qint64 offset)
+qint64 File::read(char* buffer, qint64 offset)
 {
    QMutexLocker locker(&this->readLock);
 
@@ -306,7 +307,7 @@ qint64 File::read(char* buffer, int bufferSize, qint64 offset)
       return 0;
 
    this->fileInReadMode->seek(offset);
-   qint64 bytesRead = this->fileInReadMode->read(buffer, bufferSize);
+   qint64 bytesRead = this->fileInReadMode->read(buffer, this->BUFFER_SIZE);
 
    if (bytesRead == -1)
       throw IOErrorException();
