@@ -2,6 +2,7 @@
 #define COMMON_NETWORK_H
 
 #include <QIODevice>
+#include <QDataStream>
 
 #include <Common/Hash.h>
 
@@ -28,7 +29,13 @@ namespace Common
       static const int HEADER_SIZE = sizeof(MessageHeader::type) + sizeof(MessageHeader::size) + Hash::HASH_SIZE;
 
       static MessageHeader readHeader(QIODevice& device, bool skipReadData = true);
+      static MessageHeader readHeader(const char* data);
+
       static void writeHeader(QIODevice& device, const MessageHeader& header);
+      static void writeHeader(char* buffer, const MessageHeader& header);
+
+   private:
+      inline static void writeHeader(QDataStream& stream, const MessageHeader& header);
    };
 }
 
