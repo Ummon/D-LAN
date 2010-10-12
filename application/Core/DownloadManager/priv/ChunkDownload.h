@@ -53,8 +53,6 @@ namespace DM
       void stream(PM::ISocket* socket);
 
       void downloadingEnded();
-      /*void socketReadyRead();
-      void socketDisconnected();*/
 
    private:
       PM::IPeer* getTheFastestFreePeer() const;
@@ -75,6 +73,7 @@ namespace DM
       QSharedPointer<PM::IGetChunkResult> getChunkResult;
 
       bool downloading;
+      bool networkError;
    };
 }
 #endif

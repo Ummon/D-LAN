@@ -37,10 +37,6 @@ void GetHashesResult::newMessage(quint32 type, const google::protobuf::Message& 
       {
          const Protos::Common::Hash& hash = dynamic_cast<const Protos::Common::Hash&>(message);
          emit nextHash(Common::Hash(hash.hash().data()));
-
-// The caller will destroy the object while he receive the last hash, we must not do any action here.
-//         if (--this->nbHashes <= 0)
-//            disconnect(this->socket, SIGNAL(newMessage(quint32, const google::protobuf::Message&)), this, SLOT(newMessage(quint32, const google::protobuf::Message&)));
       }
       break;
 

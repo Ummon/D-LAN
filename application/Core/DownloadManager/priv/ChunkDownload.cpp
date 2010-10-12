@@ -13,7 +13,7 @@ using namespace DM;
 #include <priv/Log.h>
 
 ChunkDownload::ChunkDownload(QSharedPointer<PM::IPeerManager> peerManager, OccupiedPeers& occupiedPeersDownloadingChunk, Common::Hash chunkHash)
-   : peerManager(peerManager), occupiedPeersDownloadingChunk(occupiedPeersDownloadingChunk), chunkHash(chunkHash), socket(0), downloading(false)
+   : peerManager(peerManager), occupiedPeersDownloadingChunk(occupiedPeersDownloadingChunk), chunkHash(chunkHash), socket(0), downloading(false), networkError(false)
 {
    connect(this, SIGNAL(finished()), this, SLOT(downloadingEnded()), Qt::QueuedConnection);
    this->mainThread = QThread::currentThread();
@@ -102,31 +102,31 @@ void ChunkDownload::run()
 
       int bytesRead = 0;
       int bytesReadTotal = 0;
-      int socketDescriptor = socket->getQSocket()->socketDescriptor();
 
-      //while (bytesRead = recv(socketDescriptor, buffer, BUFFER_SIZE, 0x8))
       forever
       {
-         socket->getQSocket()->waitForReadyRead();
+         if (socket->getQSocket()->bytesAvailable() == 0 && !socket->getQSocket()->waitForReadyRead(2000)) // TODO : create a constant or a setting
+         {
+            L_WARN("Connection dropped");
+            this->networkError = true;
+            break;
+         }
+
          bytesRead = socket->getQSocket()->read(buffer, BUFFER_SIZE);
 
-         if (bytesRead == -1) //SOCKET_ERROR)
+         if (bytesRead == -1)
          {
-            L_ERRO(QString("Socket : cannot receive data"));
+            L_ERRO(QString("Socket : cannot receive data : %1").arg(this->chunk->toStr()));
+            this->networkError = true;
             break;
          }
          bytesReadTotal += bytesRead;
 
-         //L_WARN(QString(QByteArray(buffer, bytesRead).toHex()));
          writer->write(buffer, bytesRead);
 
          if (bytesReadTotal >= this->chunkSize)
             break;
       }
-
-      //connect(this->writer.data(), SIGNAL(writeFinished(FM::IDataWriter::Status)), this, SLOT(writeFinished(FM::IDataWriter::Status)), Qt::QueuedConnection);
-      /*connect(this->socket->getQSocket(), SIGNAL(readyRead()), this, SLOT(socketReadyRead()));
-      connect(this->socket->getQSocket(), SIGNAL(disconnected()), this, SLOT(socketDisconnected()));*/
    }
    catch(FM::UnableToOpenFileInWriteModeException)
    {
@@ -152,6 +152,7 @@ void ChunkDownload::result(const Protos::Core::GetChunkResult& result)
    if (result.status() != Protos::Core::GetChunkResult_Status_OK)
    {
       L_WARN(QString("Status error from GetChunkResult : %1. Download aborted.").arg(result.status()));
+      this->networkError = true;
       this->downloadingEnded();
    }
    else
@@ -159,6 +160,7 @@ void ChunkDownload::result(const Protos::Core::GetChunkResult& result)
       if (!result.has_chunk_size())
       {
          L_ERRO(QString("Message 'GetChunkResult' doesn't contain the size of the chunk : %1. Download aborted.").arg(this->chunk->getHash().toStr()));
+         this->networkError = true;
          this->downloadingEnded();
       }
       else
@@ -173,17 +175,6 @@ void ChunkDownload::stream(PM::ISocket* socket)
    this->start();
 }
 
-/*
-void ChunkDownload::socketReadyRead()
-{
-   this->downloadNextData();
-}
-
-void ChunkDownload::socketDisconnected()
-{
-   this->downloadingEnded();
-}*/
-
 void ChunkDownload::downloadingEnded()
 {
    L_DEBU(QString("Downloading ended, chunk : %1").arg(this->chunk->toStr()));
@@ -192,13 +183,11 @@ void ChunkDownload::downloadingEnded()
       // Empty the socket.
       while (!this->socket->getQSocket()->readAll().isNull());
       this->socket->getQSocket()->moveToThread(QThread::currentThread());
-
-      /*disconnect(this->socket->getQSocket(), SIGNAL(readyRead()), this, SLOT(socketReadyRead()));
-      disconnect(this->socket->getQSocket(), SIGNAL(disconnected()), this, SLOT(socketDisconnected()));*/
-      this->socket->finished();
+      this->socket->finished(this->networkError);
       this->socket = 0;
    }
 
+   this->networkError = false;
    this->getChunkResult.clear();
    this->downloading = false;
    emit downloadFinished();

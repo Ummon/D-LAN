@@ -38,13 +38,24 @@ Protos::Core::GetHashesResult GetHashesResult::start()
       return result;
    }
 
+   if (this->fileEntry.chunk_size() > chunks.size())
+   {
+      L_ERRO("Impossible to known more hashes than the number of chunks.");
+      result.set_status(Protos::Core::GetHashesResult_Status_ERROR_UNKNOWN);
+      return result;
+   }
+
    connect(&this->cache, SIGNAL(chunkHashKnown(QSharedPointer<Chunk>)), this, SLOT(chunkHashKnown(QSharedPointer<Chunk>)), Qt::DirectConnection);
-   this->nbHash = chunks.size();
+   this->nbHash = chunks.size() - this->fileEntry.chunk_size();
 
    result.set_nb_hash(this->nbHash);
+
    for (QListIterator< QSharedPointer<Chunk> > i(chunks); i.hasNext();)
    {
       QSharedPointer<Chunk> chunk(i.next());
+      if (chunk->getNum() < this->fileEntry.chunk_size()) // TODO : maybe we should check if the hashes are equal..
+         continue;
+
       if (chunk->hasHash())
       {
          this->sendNextHash(chunk);

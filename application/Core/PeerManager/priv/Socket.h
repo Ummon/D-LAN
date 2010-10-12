@@ -36,7 +36,7 @@ namespace PM
       void setActive();
 
       void send(quint32 type, const google::protobuf::Message& message);
-      void finished();
+      void finished(bool error = false);
 
    public slots:
       void close();
@@ -71,6 +71,8 @@ namespace PM
       // Used when asking hashes to the fileManager.
       QSharedPointer<FM::IGetHashesResult> currentHashesResult;
       int nbHash;
+
+      int nbError;
 
 #ifdef DEBUG
       // To identify the sockets in debug mode.

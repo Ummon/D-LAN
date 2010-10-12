@@ -12,11 +12,11 @@ using namespace PM;
 #include <priv/Constants.h>
 
 Socket::Socket(PeerManager* peerManager, QSharedPointer<FM::IFileManager> fileManager, const Common::Hash& peerID, QTcpSocket* socket)
-   : peerManager(peerManager), fileManager(fileManager), peerID(peerID), socket(socket), idle(false), listening(false)
+   : peerManager(peerManager), fileManager(fileManager), peerID(peerID), socket(socket), idle(false), listening(false), nbError(0)
 {
 #ifdef DEBUG
    this->num = ++Socket::currentNum;
-   L_DEBU(QString("New Socket[%1] (from a QTcpSocket)").arg(this->num));
+   L_DEBU(QString("New Socket[%1] (connection from %2:%3)").arg(this->num).arg(socket->peerAddress().toString()).arg(socket->peerPort()));
 #endif
 
    this->socket->setReadBufferSize(SETTINGS.getUInt32("socket_buffer_size"));
@@ -29,7 +29,7 @@ Socket::Socket(PeerManager* peerManager, QSharedPointer<FM::IFileManager> fileMa
 {   
 #ifdef DEBUG
    this->num = ++Socket::currentNum;
-   L_DEBU(QString("New Socket[%1] (connection)").arg(this->num));
+   L_DEBU(QString("New Socket[%1] (connection to %2:%3)").arg(this->num).arg(address.toString()).arg(port));
 #endif
 
    this->socket = new QTcpSocket();
@@ -117,7 +117,7 @@ void Socket::dataReceived()
    {
       this->setActive();
 
-      L_DEBU(QString("Socket[%1]::dataReceived() : bytesAvailable = %2").arg(this->num).arg(this->socket->bytesAvailable()));
+      //L_DEBU(QString("Socket[%1]::dataReceived() : bytesAvailable = %2").arg(this->num).arg(this->socket->bytesAvailable()));
 
       if (this->currentHeader.isNull() && this->socket->bytesAvailable() >= Common::Network::HEADER_SIZE)
       {
@@ -133,8 +133,8 @@ void Socket::dataReceived()
 
          if (this->currentHeader.senderID != this->peerID)
          {
-            L_DEBU(QString("Socket[%1]: Peer ID from message (%2) doesn't match the known peer ID (%3)").arg(this->num).arg(this->currentHeader.senderID.toStr()).arg(this->peerID.toStr()));            
-            this->finished();
+            L_DEBU(QString("Socket[%1]: Peer ID from message (%2) doesn't match the known peer ID (%3)").arg(this->num).arg(this->currentHeader.senderID.toStr()).arg(this->peerID.toStr()));
+            this->finished(true);
             this->currentHeader.setNull();
             return;
          }
@@ -143,18 +143,27 @@ void Socket::dataReceived()
       if (!this->currentHeader.isNull() && this->socket->bytesAvailable() >= this->currentHeader.size)
       {
          if (!this->readMessage())
-            this->finished();
+            this->finished(true);
          this->currentHeader.setNull();
       }
    }
 }
 
-void Socket::finished()
+void Socket::finished(bool error)
 {
-   L_DEBU(QString("Socket[%1] set to idle").arg(this->num));
+   L_DEBU(QString("Socket[%1] set to idle%2").arg(this->num).arg(error ? " with error" : ""));
 
    this->idle = true;
+
+   if (error && ++this->nbError > 5) // TODO : -> constant
+   {
+      L_WARN("Socket with too many error, closed");
+      this->close();
+      return;
+   }
+
    while(!this->socket->readAll().isNull()); // Maybe there is some garbage data..
+
    this->startListening();
    emit getIdle(this);
 }

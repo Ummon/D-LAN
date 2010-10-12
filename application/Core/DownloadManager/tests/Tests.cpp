@@ -55,8 +55,8 @@ void Tests::addADirectoryToDownload()
 {
    qDebug() << "===== addADirectoryToDownload() =====";
 
-   /*Protos::Core::GetEntriesResult result = this->fileManagers[1]->getEntries();
-   this->downloadManagers[0]->addDownload(this->peerManagers[1]->getID(), result.entry(0));*/
+   Protos::Core::GetEntriesResult result = this->fileManagers[1]->getEntries();
+   this->downloadManagers[0]->addDownload(this->peerManagers[1]->getID(), result.entry(0));
 }
 
 void Tests::addABigFileToDownload()

@@ -57,8 +57,7 @@ namespace DM
       OccupiedPeers& occupiedPeersAskingForHashes;
       OccupiedPeers& occupiedPeersDownloadingChunk;
 
-      int nbHashes;
-      int nbHashesReceived;
+      int nbHashesKnown;
       QSharedPointer<PM::IGetHashesResult> getHashesResult;
 
       bool fileCreated;

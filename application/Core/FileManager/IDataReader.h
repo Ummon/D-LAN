@@ -8,7 +8,6 @@ namespace FM
    class IDataReader
    {
    public:
-
       virtual ~IDataReader() {}
 
       /**

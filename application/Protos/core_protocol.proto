@@ -85,7 +85,7 @@ message GetEntriesResult {
 // a -> b
 // id : 0x41
 message GetHashes {
-   required Common.Entry file = 1; // Must have the field shared_dir set.
+   required Common.Entry file = 1; // Must have the field shared_dir set. If it contains some chunk hashes only the next ones will be sent.
 }
 // b -> a
 // id : 0x42
@@ -96,7 +96,7 @@ message GetHashesResult {
       ERROR_UNKNOWN = 255;
    }
    required Status status = 1;
-   required uint32 nb_hash = 2;
+   required uint32 nb_hash = 2; // Only the unknown hashes are sent, not the total. Depend of GetHashes.file.chunk.
 }
 // For each hash, this message is sent. Only if GetHashesResult.status == OK.
 // b -> a

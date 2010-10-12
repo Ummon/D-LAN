@@ -17,7 +17,7 @@ namespace PM
       virtual QAbstractSocket* getQSocket() const = 0;
       virtual Common::Hash getPeerID() const = 0;
       virtual void send(quint32 type, const google::protobuf::Message& message) = 0;
-      virtual void finished() = 0;
+      virtual void finished(bool error = false) = 0;
    };
 }
 
