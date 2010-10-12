@@ -35,6 +35,7 @@ POST_TARGETDEPS += ../../Common/LogManager/output/$$FOLDER/libLogManager.a
 LIBS += -L../../Common/output/$$FOLDER \
      -lCommon
 POST_TARGETDEPS += ../../Common/output/$$FOLDER/libCommon.a
+
 DEFINES += PEERMANAGER_LIBRARY
 SOURCES += priv/PeerManager.cpp \
     priv/Peer.cpp \

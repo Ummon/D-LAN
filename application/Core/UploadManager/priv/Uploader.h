@@ -25,7 +25,7 @@ namespace UM
       PM::ISocket* getSocket();
 
    signals:
-      void uploadFinished();
+      void uploadFinished(bool error);
 
    protected:
       void run();

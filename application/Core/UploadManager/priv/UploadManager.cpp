@@ -29,7 +29,7 @@ void UploadManager::getChunk(Common::Hash hash, int offset, PM::ISocket* socket)
       socket->send(0x52, result);
 
       QSharedPointer<Uploader> uploader = QSharedPointer<Uploader>(new Uploader(chunk, offset, socket));
-      connect(uploader.data(), SIGNAL(uploadFinished()), this, SLOT(uploadFinished()), Qt::QueuedConnection);
+      connect(uploader.data(), SIGNAL(uploadFinished(bool)), this, SLOT(uploadFinished(bool)), Qt::QueuedConnection);
       this->uploaders << uploader;
       uploader->start();
    }
@@ -44,13 +44,13 @@ void UploadManager::getChunk(Common::Hash hash, int offset, PM::ISocket* socket)
    }
 }
 
-void UploadManager::uploadFinished()
+void UploadManager::uploadFinished(bool networkError)
 {
    Uploader* uploader = dynamic_cast<Uploader*>(this->sender());
 
    L_DEBU(QString("Upload finished, chunk : %1").arg(uploader->getChunk()->toStr()));
 
-   uploader->getSocket()->finished();
+   uploader->getSocket()->finished(networkError);
    for (QMutableListIterator< QSharedPointer<Uploader> > i(this->uploaders); i.hasNext();)
    {
       if (i.next().data() == uploader)
