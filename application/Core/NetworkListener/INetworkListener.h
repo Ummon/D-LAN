@@ -1,31 +1,20 @@
 #ifndef NETWORKMANAGER_INETWORKLISTENER_H
 #define NETWORKMANAGER_INETWORKLISTENER_H
 
-#include <QObject>
-#include <QtNetwork/QNetworkInterface>
-
-#include <Protos/core_protocol.pb.h>
+#include <QSharedPointer>
 
 namespace NL
 {
    class IChat;
    class ISearch;
 
-   class INetworkListener : public QObject
+   class INetworkListener
    {
-   Q_OBJECT
-
    public:
       virtual ~INetworkListener() {}
 
-      virtual IChat* getChat() = 0;
-      virtual ISearch* search() = 0;
-
-   /* Dues to a limiation of QObject (cannot inherit more than one QObject class), we must have the def of
-     presence, used in NetworkListener, here. TODO: Find a better solution ? */
-   public slots:
-      virtual void presence() = 0;
-      virtual void newFindRequset(const Protos::Core::Find& request, const QHostAddress& peerAdress) = 0;
+      virtual IChat& getChat() = 0;
+      virtual QSharedPointer<ISearch> newSearch() = 0;
    };
 }
 #endif

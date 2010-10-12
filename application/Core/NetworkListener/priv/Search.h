@@ -1,11 +1,12 @@
 #ifndef NETWORKMANAGER_SEARCH_H
 #define NETWORKMANAGER_SEARCH_H
 
-#include <ISearch.h>
-#include <Common/LogManager/ILogger.h>
 #include <QSharedPointer>
+
 #include <Protos/core_protocol.pb.h>
-#include <Core/PeerManager/IPeerManager.h>
+
+#include <ISearch.h>
+#include <priv/UDPListener.h>
 
 namespace NL
 {
@@ -15,7 +16,7 @@ namespace NL
    {
       Q_OBJECT
    public:
-      Search(UDPListener* newUdpListener, QSharedPointer<PM::IPeerManager> newPeerManager);
+      Search(UDPListener& uDPListener);
       bool search(const QString& words);
 
    signals:
@@ -23,10 +24,11 @@ namespace NL
 
    private:
       quint64 tag;
-      UDPListener* udpListener;
+
+      UDPListener& uDPListener;
+
       bool searchLaunched;
       QDateTime dateOfLaunch;
-      QSharedPointer<LM::ILogger> logger;
       QSharedPointer<PM::IPeerManager> peerManager;
 
    public slots:

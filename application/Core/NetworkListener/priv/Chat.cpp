@@ -5,58 +5,22 @@ using namespace NL;
 #include <priv/UDPListener.h>
 
 /**
-  * Create a new Chat object
-  *
-  * @param udpListener : An udpListener object
+  * @class Chat
   * @author mcuony
+  * @author gburri
   */
-Chat::Chat(UDPListener* NewUdpListener, QSharedPointer<PM::IPeerManager> NewPeerManager) : logger(LM::Builder::newLogger("NetworkListener::Chat"))
+
+Chat::Chat(UDPListener& uDPListener)
+   : uDPListener(uDPListener)
 {
-
-   LOG_USER(this->logger, "Loading ..");
-
-   this->udpListener = NewUdpListener;
-
-   this->peerManager = NewPeerManager;
-
-   // Listening for new messages.
-   Chat::connect(this->udpListener, SIGNAL(newChatMessage(const Protos::Core::ChatMessage&)), this, SLOT(newChatMessage(const Protos::Core::ChatMessage&)));
-
+   // Listening for new messages and forward them to our own signal.
+   Chat::connect(&this->uDPListener, SIGNAL(newChatMessage(const Protos::Core::ChatMessage&)), this, SIGNAL(newChatMessage(const Protos::Core::ChatMessage&)));
 }
 
-/**
-  * Send a chat message
-  *
-  * @param message : The message to send
-  * @return True for success
-  * @author mcuony
-  */
-bool ::Chat::send(const QString& message)
+void Chat::send(const QString& message)
 {
-
-   LOG_DEBU(this->logger, "Message to send: " + message);
-
-   // We put info in our chatMessage Proto.
    Protos::Core::ChatMessage chatMessage;
    chatMessage.set_message(message.toStdString());
 
-   chatMessage.mutable_peer_id()->set_hash(this->peerManager->getMyId().getData(), Common::Hash::HASH_SIZE);
-
-   //We serialize the proto to a string
-   std::string output;
-   chatMessage.SerializeToString(&output);
-
-   // .We broadcast the data.
-   return this->udpListener->sendMessage(QByteArray(output.data()).prepend(chatMessagePacket));
-}
-
-/**
-  * Reception of a new chat message form UDPListener
-  * We forward the message to our listeners
-  *
-  * @author mcuony
-  */
-void ::Chat::newChatMessage(const Protos::Core::ChatMessage& message)
-{
-    emit newMessage(message);
+   this->uDPListener.send(0x11, chatMessage);
 }

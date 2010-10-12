@@ -1,19 +1,24 @@
 #ifndef NETWORKLISTENER_BUILDER_H
 #define NETWORKLISTENER_BUILDER_H
 
-#include <QTextStream>
 #include <QSharedPointer>
 
-#include <PeerManager/IPeerManager.h>
+#include <Core/FileManager/IFileManager.h>
+#include <Core/PeerManager/IPeerManager.h>
+#include <Core/DownloadManager/IDownloadManager.h>
+
+#include <INetworkListener.h>
 
 namespace NL
 {
-   class INetworkListener;
-
    class Builder
    {
    public:
-      static QSharedPointer<INetworkListener> newNetworkListener(QSharedPointer<PM::IPeerManager>);
+      static QSharedPointer<INetworkListener> newNetworkListener(
+         QSharedPointer<FM::IFileManager> fileManager,
+         QSharedPointer<PM::IPeerManager> peerManager,
+         QSharedPointer<DM::IDownloadManager> downloadManager
+      );
    };
 }
 #endif
