@@ -1,5 +1,7 @@
 #include "PeerUpdater.h"
 
+#include <QtDebug>
+
 #include <Common/Hash.h>
 #include <Core/PeerManager/priv/PeerManager.h>
 
@@ -19,6 +21,7 @@ PeerUpdater::PeerUpdater(QList< QSharedPointer<FM::IFileManager> > fileManagers,
    {
       dynamic_cast<PM::PeerManager*>(this->peerManagers[i].data())->setID(Common::Hash::rand());
       this->peerManagers[i]->setNick("Bob " + QString::number(i + 1));
+      qDebug() << QString("Peer[%1] : %2 %3").arg(i).arg(this->peerManagers[i]->getNick()).arg(this->peerManagers[i]->getID().toStr());
    }
 }
 

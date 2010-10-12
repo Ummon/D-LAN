@@ -1,10 +1,7 @@
 #include <priv/ChunkDownload.h>
 using namespace DM;
 
-#include <windows.h>
-#include <winsock2.h>
-
-#include <QMutexLocker>
+#include <QElapsedTimer>
 
 #include <Common/Settings.h>
 #include <Core/FileManager/Exceptions.h>
@@ -103,9 +100,15 @@ void ChunkDownload::run()
       int bytesRead = 0;
       int bytesReadTotal = 0;
 
+      int deltaRead = 0;
+
+      QElapsedTimer time;
+      time.start();
+
       forever
       {
-         if (socket->getQSocket()->bytesAvailable() == 0 && !socket->getQSocket()->waitForReadyRead(2000)) // TODO : create a constant or a setting
+         // Waiting for data..
+         if (socket->getQSocket()->bytesAvailable() == 0 && !socket->getQSocket()->waitForReadyRead(5000)) // TODO : create a constant or a setting
          {
             L_WARN("Connection dropped");
             this->networkError = true;
@@ -120,7 +123,29 @@ void ChunkDownload::run()
             this->networkError = true;
             break;
          }
+
          bytesReadTotal += bytesRead;
+         deltaRead += bytesRead;
+
+         if (time.elapsed() > 1000)
+         {
+            this->currentDownloadingPeer->setSpeed(deltaRead / time.elapsed() * 1000);
+            time.start();
+            deltaRead = 0;
+
+            // If a another peer exists and our speed is lesser than 'lan_speed' / 'time_recheck_chunk_factor' and the other peer speed is greater than our
+            // then we will try to switch to this peer.
+            PM::IPeer* peer = this->getTheFastestFreePeer();
+            if (
+               peer && peer != this->currentDownloadingPeer &&
+               this->currentDownloadingPeer->getSpeed() < SETTINGS.getUInt32("lan_speed") / SETTINGS.getUInt32("time_recheck_chunk_factor") &&
+               peer->getSpeed() > SETTINGS.getUInt32("switch_to_another_peer_factor") * this->currentDownloadingPeer->getSpeed()
+            )
+            {
+               L_DEBU("Switch to a better peer..");
+               break;
+            }
+         }
 
          writer->write(buffer, bytesRead);
 
@@ -164,7 +189,9 @@ void ChunkDownload::result(const Protos::Core::GetChunkResult& result)
          this->downloadingEnded();
       }
       else
+      {
          this->chunkSize = result.chunk_size();
+      }
    }
 }
 

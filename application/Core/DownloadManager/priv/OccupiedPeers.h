@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include <QSet>
+#include <QMutex>
 
 namespace PM
 {
@@ -15,7 +16,9 @@ namespace DM
    {
       Q_OBJECT
    public:
-      bool isPeerFree(PM::IPeer* peer);
+      OccupiedPeers();
+
+      bool isPeerFree(PM::IPeer* peer) const;
       bool setPeerAsOccupied(PM::IPeer* peer);
       void setPeerAsFree(PM::IPeer* peer);
       void newPeer(PM::IPeer* peer);
@@ -25,6 +28,7 @@ namespace DM
 
    private:
       QSet<PM::IPeer*> occupiedPeers; // Peers currently occupied.
+      mutable QMutex mutex;
    };
 }
 

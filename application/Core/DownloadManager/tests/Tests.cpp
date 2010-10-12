@@ -28,19 +28,37 @@ void Tests::initTestCase()
    Common::PersistantData::rmValue(Common::FILE_CACHE); // Reset the stored cache.
    this->createInitialFiles();
 
-   this->fileManagers << FM::Builder::newFileManager() << FM::Builder::newFileManager();
-   this->peerManagers << PM::Builder::newPeerManager(this->fileManagers[0]) << PM::Builder::newPeerManager(this->fileManagers[1]);
+   this->fileManagers <<
+      FM::Builder::newFileManager() <<
+      FM::Builder::newFileManager() <<
+      FM::Builder::newFileManager();
+
+   this->peerManagers <<
+      PM::Builder::newPeerManager(this->fileManagers[0]) <<
+      PM::Builder::newPeerManager(this->fileManagers[1]) <<
+      PM::Builder::newPeerManager(this->fileManagers[2]);
 
    this->fileManagers[0]->setSharedDirsReadWrite(QStringList() << QDir::currentPath().append("/sharedDirs/peer1/incoming"));
    this->fileManagers[0]->setSharedDirsReadOnly(QStringList() << QDir::currentPath().append("/sharedDirs/peer1/shared"));
    this->fileManagers[1]->setSharedDirsReadOnly(QStringList() << QDir::currentPath().append("/sharedDirs/peer2"));
+   this->fileManagers[2]->setSharedDirsReadOnly(QStringList() << QDir::currentPath().append("/sharedDirs/peer3"));
 
-   this->uploadManagers << UM::Builder::newUploadManager(this->fileManagers[0], this->peerManagers[0]) << UM::Builder::newUploadManager(this->fileManagers[1], this->peerManagers[1]);
-   this->downloadManagers << Builder::newDownloadManager(this->fileManagers[0], this->peerManagers[0]) << Builder::newDownloadManager(this->fileManagers[1], this->peerManagers[1]);
+   this->uploadManagers <<
+      UM::Builder::newUploadManager(this->fileManagers[0], this->peerManagers[0]) <<
+      UM::Builder::newUploadManager(this->fileManagers[1], this->peerManagers[1]) <<
+      UM::Builder::newUploadManager(this->fileManagers[2], this->peerManagers[2]);
+
+   this->downloadManagers <<
+      Builder::newDownloadManager(this->fileManagers[0], this->peerManagers[0]) <<
+      Builder::newDownloadManager(this->fileManagers[1], this->peerManagers[1]) <<
+      Builder::newDownloadManager(this->fileManagers[2], this->peerManagers[2]);
 
    this->peerUpdater = new PeerUpdater(this->fileManagers, this->peerManagers, PORT);
 
-   this->servers << new TestServer(this->peerManagers[0], PORT) << new TestServer(this->peerManagers[1], PORT + 1);
+   this->servers <<
+      new TestServer(this->peerManagers[0], PORT) <<
+      new TestServer(this->peerManagers[1], PORT + 1) <<
+      new TestServer(this->peerManagers[2], PORT + 2);
 }
 
 void Tests::updatePeers()
@@ -112,6 +130,10 @@ void Tests::createInitialFiles()
    Common::Global::createFile("sharedDirs/peer2/d.txt");
    Common::Global::createFile("sharedDirs/peer2/e.txt");
    Common::Global::createFile("sharedDirs/peer2/f.txt");
+
+   Common::Global::createFile("sharedDirs/peer3/a.txt");
+   Common::Global::createFile("sharedDirs/peer3/b.txt");
+   Common::Global::createFile("sharedDirs/peer3/c.txt");
 }
 
 void Tests::deleteAllFiles()
