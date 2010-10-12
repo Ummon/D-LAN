@@ -32,10 +32,13 @@ namespace PM
    public:
       Peer(PeerManager* peerManager, QSharedPointer<FM::IFileManager> fileManager, Common::Hash ID);
 
-      Common::Hash getID();
-      QHostAddress getIP();
-      QString getNick();
-      quint64 getSharingAmount();
+      QString toStringLog() const;
+
+      Common::Hash getID() const;
+      QHostAddress getIP() const;
+      quint16 getPort() const;
+      QString getNick() const;
+      quint64 getSharingAmount() const;
 
       quint32 getSpeed();
       void setSpeed(quint32 speed);
