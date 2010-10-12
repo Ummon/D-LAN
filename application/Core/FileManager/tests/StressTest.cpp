@@ -351,14 +351,14 @@ void StressTest::doASearch()
    {
       QString terms = this->randGen.generateAName() + " " + this->randGen.generateAName();
 
-      Protos::Common::FindResult result = this->fileManager->find(terms);
+      QList<Protos::Common::FindResult> results = this->fileManager->find(terms, 65536);
 
-      if (result.entry_size() != 0)
+      if (!results.isEmpty() && results.first().entry_size() != 0)
       {
          found = true;
          qDebug() << "Found, terms : " << terms;
-         for (int i = 0; i < result.entry_size(); i++)
-            qDebug() << "[" << result.entry(i).level() << "] " << result.entry(i).entry().name().data();
+         for (int i = 0; i < results.first().entry_size(); i++)
+            qDebug() << "[" << results.first().entry(i).level() << "] " << results.first().entry(i).entry().name().data();
       }
    }
    int delta = time.elapsed();

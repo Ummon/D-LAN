@@ -211,6 +211,10 @@ const QList<WatcherEvent> DirWatcherWin::waitEvent(int timeout, QList<WaitCondit
    {
       L_ERRO(QString("WaitForMultipleObjects(..), status : %1").arg(waitStatus));
    }
+
+   QList<WatcherEvent> events;
+   events << WatcherEvent(WatcherEvent::UNKNOWN);
+   return QList<WatcherEvent>();
 }
 
 bool DirWatcherWin::watch(Dir* dir)

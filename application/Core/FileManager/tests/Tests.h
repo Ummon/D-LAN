@@ -63,6 +63,7 @@ private slots:
    void findExistingFilesWithOneWord();
    void findUnexistingFilesWithOneWord();
    void findFilesWithSomeWords();
+   void findFilesWithResultFragmentation();
 
    /***** Ask if the given hashes are known *****/
    void haveChunks();
