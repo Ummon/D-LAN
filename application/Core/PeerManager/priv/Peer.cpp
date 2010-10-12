@@ -21,22 +21,32 @@ Peer::Peer(PeerManager* peerManager, QSharedPointer<FM::IFileManager> fileManage
    connect(&this->aliveTimer, SIGNAL(timeout()), this, SLOT(consideredDead()));
 }
 
-Common::Hash Peer::getID()
+QString Peer::toStringLog() const
+{
+   return QString("%1 %2 %3:%4 %5").arg(this->nick).arg(this->ID.toStr()).arg(this->IP.toString()).arg(this->port).arg(this->alive ? "<alive>" : "<dead>");
+}
+
+Common::Hash Peer::getID() const
 {
    return this->ID;
 }
 
-QHostAddress Peer::getIP()
+QHostAddress Peer::getIP() const
 {
    return this->IP;
 }
 
-QString Peer::getNick()
+quint16 Peer::getPort() const
+{
+   return this->port;
+}
+
+QString Peer::getNick() const
 {
    return this->nick;
 }
 
-quint64 Peer::getSharingAmount()
+quint64 Peer::getSharingAmount() const
 {
    return this->sharingAmount;
 }

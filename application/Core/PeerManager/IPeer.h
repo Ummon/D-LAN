@@ -3,12 +3,13 @@
 
 #include <QObject>
 #include <QSharedPointer>
+#include <QHostAddress>
 
 #include <Protos/common.pb.h>
 #include <Protos/core_protocol.pb.h>
-#include <QHostAddress>
 
 #include <Common/Hashes.h>
+#include <Common/LogManager/ILoggable.h>
 #include <Core/PeerManager/IGetEntriesResult.h>
 #include <Core/PeerManager/IGetHashesResult.h>
 #include <Core/PeerManager/IGetChunkResult.h>
@@ -17,15 +18,16 @@ namespace PM
 {
    class IGetHashes;
 
-   class IPeer
+   class IPeer : public LM::ILoggable
    {
    public:
       virtual ~IPeer() {}
 
-      virtual Common::Hash getID() = 0;
-      virtual QHostAddress getIP() = 0;
-      virtual QString getNick() = 0;
-      virtual quint64 getSharingAmount() = 0;
+      virtual Common::Hash getID() const = 0;
+      virtual QHostAddress getIP() const = 0;
+      virtual quint16 getPort() const = 0;
+      virtual QString getNick() const = 0;
+      virtual quint64 getSharingAmount() const = 0;
 
       /**
         * Return the average speed when downloading from this peer.

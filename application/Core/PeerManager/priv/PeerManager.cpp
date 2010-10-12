@@ -127,9 +127,10 @@ void PeerManager::newConnection(QTcpSocket* tcpSocket)
    if (!tcpSocket)
       return;
 
+   // Detach the socket to use it into a thread.
    tcpSocket->setParent(0);
 
-   L_DEBU("New pending socket");
+   L_DEBU(QString("New pending socket from %1").arg(tcpSocket->peerAddress().toString()));
    if (!this->timer.isActive())
       this->timer.start();
 
@@ -166,7 +167,7 @@ void PeerManager::dataReceived(QTcpSocket* tcpSocket)
 
    if (tcpSocket->bytesAvailable() >= Common::Network::HEADER_SIZE)
    {
-      Common::MessageHeader header = Common::Network::readHeader(*tcpSocket, false);
+      const Common::MessageHeader& header = Common::Network::readHeader(*tcpSocket, false);
       Peer* p = this->getPeer_(header.senderID);
 
       this->removeFromPending(tcpSocket);
