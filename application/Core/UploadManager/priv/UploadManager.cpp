@@ -47,6 +47,9 @@ void UploadManager::getChunk(Common::Hash hash, int offset, PM::ISocket* socket)
 void UploadManager::uploadFinished()
 {
    Uploader* uploader = dynamic_cast<Uploader*>(this->sender());
+
+   L_DEBU(QString("Upload finished, chunk : %1").arg(uploader->getChunk()->toStr()));
+
    uploader->getSocket()->finished();
    for (QMutableListIterator< QSharedPointer<Uploader> > i(this->uploaders); i.hasNext();)
    {

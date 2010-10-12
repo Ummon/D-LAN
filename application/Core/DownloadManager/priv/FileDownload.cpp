@@ -16,13 +16,14 @@ FileDownload::FileDownload(
    NB_CHUNK(this->entry.size() / SETTINGS.getUInt32("chunk_size") + (this->entry.size() % SETTINGS.getUInt32("chunk_size") == 0 ? 0 : 1)),
    occupiedPeersAskingForHashes(occupiedPeersAskingForHashes),
    occupiedPeersDownloadingChunk(occupiedPeersDownloadingChunk),
-   nbHashes(0),
+   nbHashesKnown(0),
    fileCreated(false)
 {   
    L_DEBU(QString("New FileDownload : path = %1/%2 source = %3").arg(QString::fromStdString(entry.path())).arg(QString::fromStdString(entry.name())).arg(this->peerSourceID.toStr()));
 
    for (int i = 0; i < entry.chunk_size(); i++)
       this->chunkDownloads << QSharedPointer<ChunkDownload>(new ChunkDownload(this->peerManager, this->occupiedPeersDownloadingChunk, Common::Hash(entry.chunk(i).hash().data())));
+   this->nbHashesKnown = this->chunkDownloads.size();
 
    if (this->hasAValidPeer())
       for (QListIterator< QSharedPointer<ChunkDownload> > i(this->chunkDownloads); i.hasNext();)
@@ -38,7 +39,7 @@ bool FileDownload::retreiveHashes()
 {
    // If we've already got all the chunk hashes it's unecessary to re-ask them.
    // Or if we'v got anyone to ask the chunk hashes..
-   if (this->nbHashes != 0 || !this->hasAValidPeer())
+   if (this->nbHashesKnown == this->NB_CHUNK || !this->hasAValidPeer())
       return false;
 
    if (!this->occupiedPeersAskingForHashes.setPeerAsOccupied(this->peerSource))
@@ -92,8 +93,8 @@ void FileDownload::result(const Protos::Core::GetHashesResult& result)
    if (result.status() == Protos::Core::GetHashesResult_Status_OK)
    {
       this->status &= !ENTRY_NOT_FOUND;
-      this->nbHashes = result.nb_hash();
-      this->nbHashesReceived = 0;
+      if (this->nbHashesKnown + static_cast<int>(result.nb_hash()) != this->NB_CHUNK)
+         L_ERRO(QString("The received hashes (%1) plus the known hashes (%2) is not equal to the number of chunks (%3)").arg(result.nb_hash()).arg(this->nbHashesKnown).arg(this->NB_CHUNK));
    }
    else
    {
@@ -106,19 +107,19 @@ void FileDownload::result(const Protos::Core::GetHashesResult& result)
 
 void FileDownload::nextHash(const Common::Hash& hash)
 {
-   if (++this->nbHashesReceived == this->nbHashes)
+   if (++this->nbHashesKnown == this->NB_CHUNK)
    {
       this->getHashesResult.clear();
       this->occupiedPeersAskingForHashes.setPeerAsFree(this->peerSource);
    }
 
-   if (this->chunkDownloads.size() >= this->nbHashesReceived && this->chunkDownloads[this->nbHashesReceived-1]->getHash() != hash)
+   if (this->chunkDownloads.size() >= this->nbHashesKnown && this->chunkDownloads[this->nbHashesKnown-1]->getHash() != hash)
    {
       L_ERRO(
          QString("The hash (%1) num %2 received doesn't match the hash (%3) in the entry").
             arg(hash.toStr()).
-            arg(this->nbHashesReceived-1).
-            arg(this->chunkDownloads[this->nbHashesReceived-1]->getHash().toStr())
+            arg(this->nbHashesKnown-1).
+            arg(this->chunkDownloads[this->nbHashesKnown-1]->getHash().toStr())
       );
    }
    else
