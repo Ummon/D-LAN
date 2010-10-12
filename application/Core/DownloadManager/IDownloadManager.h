@@ -8,7 +8,7 @@
 
 #include <Common/Hash.h>
 
-#include <IChunkDownload.h>
+#include <Core/DownloadManager/IChunkDownload.h>
 
 namespace DM
 {

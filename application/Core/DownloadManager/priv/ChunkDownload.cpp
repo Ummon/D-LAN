@@ -108,7 +108,7 @@ void ChunkDownload::run()
       forever
       {
          // Waiting for data..
-         if (socket->getQSocket()->bytesAvailable() == 0 && !socket->getQSocket()->waitForReadyRead(5000)) // TODO : create a constant or a setting
+         if (socket->getQSocket()->bytesAvailable() == 0 && !socket->getQSocket()->waitForReadyRead(SETTINGS.getUInt32("timeout_during_transfert")))
          {
             L_WARN("Connection dropped");
             this->networkError = true;
