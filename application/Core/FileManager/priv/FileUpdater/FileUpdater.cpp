@@ -3,7 +3,7 @@ using namespace FM;
 
 #include <QLinkedList>
 #include <QDir>
-#include <QTime>
+#include <QElapsedTimer>
 
 #include <Common/Settings.h>
 
@@ -256,8 +256,8 @@ bool FileUpdater::computeSomeHashes()
 
    L_DEBU("Start computing some hashes..");
 
-   QTime time;
-   time.start();
+   QElapsedTimer timer;
+   timer.start();
 
    for (QMutableListIterator<File*> i(this->filesWithoutHashes); i.hasNext();)
    {
@@ -279,7 +279,7 @@ bool FileUpdater::computeSomeHashes()
       if (completed)
          i.remove();
 
-      if (static_cast<quint32>(time.elapsed()) >= SETTINGS.getUInt32("minimum_duration_when_hashing"))
+      if (static_cast<quint32>(timer.elapsed()) >= SETTINGS.getUInt32("minimum_duration_when_hashing"))
          break;
    }
 

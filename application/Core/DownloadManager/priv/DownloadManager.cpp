@@ -52,8 +52,13 @@ void DownloadManager::addDownload(Common::Hash peerSource, const Protos::Common:
 
 QList<IDownload*> DownloadManager::getDownloads()
 {
-   // TODO
-   return QList<IDownload*>();
+   QList<IDownload*> listDownloads;
+
+   // TODO : very heavy!
+   for (QLinkedListIterator<Download*> i(this->downloads); i.hasNext();)
+      listDownloads << i.next();
+
+   return listDownloads;
 }
 
 QList< QSharedPointer<IChunkDownload> > DownloadManager::getUnfinishedChunks(int n)

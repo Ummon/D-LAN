@@ -50,7 +50,10 @@ quint32 Peer::getSpeed()
 
 void Peer::setSpeed(quint32 speed)
 {
-   this->speed = speed;
+   if (speed == MAX_SPEED)
+      this->speed = speed;
+   else
+      this->speed = (this->speed + speed) / 2;
 }
 
 bool Peer::isAlive()

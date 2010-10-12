@@ -3,7 +3,6 @@
 
 #include <QSharedPointer>
 #include <QList>
-#include <QMutex>
 #include <QThread>
 
 #include <Protos/core_protocol.pb.h>
@@ -57,17 +56,19 @@ namespace DM
    private:
       PM::IPeer* getTheFastestFreePeer() const;
 
-      QSharedPointer<PM::IPeerManager> peerManager;
+      QSharedPointer<PM::IPeerManager> peerManager; // To retrieve the peers from their ID.
 
-      OccupiedPeers& occupiedPeersDownloadingChunk;
+      OccupiedPeers& occupiedPeersDownloadingChunk; // The peers from where we downloading.
 
       Common::Hash chunkHash;
       QSharedPointer<FM::IChunk> chunk;
-      QList<PM::IPeer*> peers;
+
+      QList<PM::IPeer*> peers; // The peers which own this chunk.
       PM::IPeer* currentDownloadingPeer;
+
       PM::ISocket* socket;
 
-      QThread* mainThread;
+      QThread* mainThread; // Only use to move the socket from and to the main thread.
 
       int chunkSize;
       QSharedPointer<PM::IGetChunkResult> getChunkResult;

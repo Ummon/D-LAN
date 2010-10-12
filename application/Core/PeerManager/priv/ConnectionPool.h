@@ -4,7 +4,6 @@
 #include <QtNetwork>
 #include <QList>
 #include <QDateTime>
-#include <QTimer>
 
 #include <Core/FileManager/IFileManager.h>
 
@@ -38,7 +37,6 @@ namespace PM
       PeerManager* peerManager;
       QSharedPointer<FM::IFileManager> fileManager;
 
-      QTimer timer;
       QList<Socket*> sockets;
       QHostAddress peerIP;
       quint16 port;
