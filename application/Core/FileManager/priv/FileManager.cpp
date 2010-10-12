@@ -115,7 +115,7 @@ Protos::Core::GetEntriesResult FileManager::getEntries()
 /**
   * @see http://dev.euphorik.ch/wiki/pmp/Algorithms#Word-indexing for more information.
   */
-Protos::Common::FindResult FileManager::find(const QString& words)
+QList<Protos::Common::FindResult> FileManager::find(const QString& words, int maxSize)
 {
    QStringList terms = FileManager::splitInWords(words);
    int n = terms.size();
@@ -125,7 +125,9 @@ Protos::Common::FindResult FileManager::find(const QString& words)
    for (int i = 0; i < n; i++)
       results[i] += this->wordIndex.search(terms[i]);
 
-   Protos::Common::FindResult result;
+   QList<Protos::Common::FindResult> findResults;
+   findResults << Protos::Common::FindResult();
+
    int level = 0;
    // For each group of intersection number.
    // For example, [a, b, c] :
@@ -170,9 +172,20 @@ Protos::Common::FindResult FileManager::find(const QString& words)
          for (QSetIterator<Entry*> k(currentLevelSet); k.hasNext();)
          {
             Entry* entry = k.next();
-            Protos::Common::FindResult_EntryLevel* entryLevel = result.add_entry();
+            Protos::Common::FindResult_EntryLevel* entryLevel = findResults.last().add_entry();
             entryLevel->set_level(level);
             entry->populateEntry(entryLevel->mutable_entry());
+
+            if (findResults.last().ByteSize() > maxSize)
+            {
+               google::protobuf::RepeatedPtrField<Protos::Common::FindResult_EntryLevel>* entries = findResults.last().mutable_entry();
+               findResults << Protos::Common::FindResult();
+               if (entries->size() > 0)
+               {
+                  findResults.last().add_entry()->CopyFrom(entries->Get(entries->size()-1));
+                  entries->RemoveLast();
+               }
+            }
          }
 
          // Define positions of each intersect term.
@@ -189,7 +202,9 @@ Protos::Common::FindResult FileManager::find(const QString& words)
       }
    }
 
-   return result;
+   if (findResults.last().entry_size() == 0)
+      findResults.removeLast();
+   return findResults;
 }
 
 QBitArray FileManager::haveChunks(const QList<Common::Hash>& hashes)
