@@ -14,13 +14,13 @@ using namespace Core;
 #include <NetworkListener/ISearch.h>
 #include <PeerManager/Builder.h>
 
-::Core::Core() :
-   QObject(),
-   logger(LM::Builder::newLogger("Core"))
+Core::Core()
+   : QObject(), logger(LM::Builder::newLogger("Core"))
 {
    GOOGLE_PROTOBUF_VERIFY_VERSION;
-
    LOG_USER(this->logger, "Loading ..");
+
+   this->checkSettingsIntegrity();
 
    QThread::currentThread()->setObjectName("Core");
 
@@ -36,7 +36,16 @@ using namespace Core;
    s->search("coucou2");
 }
 
-::Core::~Core()
+Core::~Core()
 {
    google::protobuf::ShutdownProtobufLibrary();
+}
+
+/**
+  * Check if each value settings is valid, for example buffer_size cannot be one byte or 3 TiB..
+  */
+void checkSettingsIntegrity()
+{
+   //LOG_USER(this->logger, "Checking");
+   // TODO..
 }

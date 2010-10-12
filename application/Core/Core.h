@@ -13,7 +13,7 @@ namespace DL { class IDownloadManager; }
 namespace UM { class IUploadManager; }
 namespace DM { class IDownloadManager; }
 
-namespace Core
+namespace Core // Best than the Arm.
 {
    class Core : public QObject
    {
@@ -24,6 +24,9 @@ namespace Core
       virtual ~Core();
 
    private:
+      void checkSettingsIntegrity();
+
+
       QSharedPointer<LM::ILogger> logger;
       QSharedPointer<FM::IFileManager> fileManager;
       QSharedPointer<NL::INetworkListener> networkListener;
