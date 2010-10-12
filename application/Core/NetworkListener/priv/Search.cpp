@@ -5,21 +5,16 @@ using namespace NL;
 #include <priv/UDPListener.h>
 
 /**
- * Create a new Search object
- *
- * @author mcuony
- */
+  * @class Search
+  * @author mcuony
+  * @author gburri
+  */
 
-Search::Search(UDPListener* newUdpListener, QSharedPointer<PM::IPeerManager> newPeerManager)
+Search::Search(UDPListener& uDPListener)
+   : uDPListener(uDPListener)
 {
-   this->udpListener = newUdpListener;
-   this->peerManager = newPeerManager;
    this->searchLaunched = false;
    this->tag = QTime::currentTime().second() * 1000 + (qrand() % 999);   //Sould be random enought, don't forget a search die after 15s.
-
-   this->logger = LM::Builder::newLogger("NetworkListener::Search[" + QString::number(this->tag) + "]");
-
-   LOG_DEBU(this->logger, "New search");
 }
 
 /**
@@ -29,43 +24,41 @@ Search::Search(UDPListener* newUdpListener, QSharedPointer<PM::IPeerManager> new
  */
 bool Search::search(const QString& words)
 {
-   if (this->searchLaunched)
-   {
-      LOG_ERRO(this->logger, "You can't launch a search twice !");
-      return false;
-   }
-   else
-   {
+//   if (this->searchLaunched)
+//   {
+//      LOG_ERRO(this->logger, "You can't launch a search twice !");
+//      return false;
+//   }
+//   else
+//   {
+//      // We put info in our find Proto.
+//      Protos::Core::Find findProto;
+//      findProto.set_pattern(words.toStdString());
+//      findProto.set_tag(this->tag);
+//      findProto.mutable_peer_id()->set_hash(this->peerManager->getMyId().getData(), Common::Hash::HASH_SIZE);
 
-      // We put info in our find Proto.
-      Protos::Core::Find findProto;
-      findProto.set_pattern(words.toStdString());
-      findProto.set_tag(this->tag);
-      findProto.mutable_peer_id()->set_hash(this->peerManager->getMyId().getData(), Common::Hash::HASH_SIZE);
-
-      // We serialize the proto to a string.
-      std::string output;
-      findProto.SerializeToString(&output);
+//      // We serialize the proto to a string.
+//      std::string output;
+//      findProto.SerializeToString(&output);
 
 
-      LOG_DEBU(this->logger, "Search launched ! (" + words + ")");
+//      LOG_DEBU(this->logger, "Search launched ! (" + words + ")");
 
-      this->searchLaunched = true;
-      this->dateOfLaunch =  QDateTime::currentDateTime();
+//      this->searchLaunched = true;
+//      this->dateOfLaunch =  QDateTime::currentDateTime();
 
-      //We listen for new search results
-      Search::connect(this->udpListener, SIGNAL(newFindResult(const Protos::Common::FindResult&)), this, SLOT(newFindResult(const Protos::Common::FindResult&)));
+//      //We listen for new search results
+//      Search::connect(this->udpListener, SIGNAL(newFindResult(const Protos::Common::FindResult&)), this, SLOT(newFindResult(const Protos::Common::FindResult&)));
 
-      // We broadcast the data.
-      return this->udpListener->sendMessage(QByteArray(output.data()).prepend(findPacket));
-   }
-
+//      // We broadcast the data.
+//      return this->udpListener->sendMessage(QByteArray(output.data()).prepend(findPacket));
+//   }
+   return true;
 }
 
 /**
  * Called we a result is recevied : If the tag match, we forward to our listeners
  *
- * @author mcuony
  */
 void Search::newFindResult(const Protos::Common::FindResult& result) {
 
@@ -73,7 +66,6 @@ void Search::newFindResult(const Protos::Common::FindResult& result) {
 
    if (result.tag() == this->tag)
    {
-      LOG_DEBU(this->logger, "Find result for me !");
       //emit newFindResult(result);
    }
 }

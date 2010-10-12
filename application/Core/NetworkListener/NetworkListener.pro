@@ -4,28 +4,47 @@
 QT += network
 QT -= gui
 TARGET = NetworkListener
+TEMPLATE = lib
+
+CONFIG(debug, debug|release) {
+   FOLDER = debug
+   DEFINES += DEBUG
+} else {
+   FOLDER = release
+}
+
 CONFIG += staticlib create_prl link_prl
+
 win32 {
     INCLUDEPATH += "."
-    INCLUDEPATH += "$$(QTDIR)\..\mingw\include"
     LIBS += "$$(QTDIR)\..\mingw\lib\libwsock32.a"
 }
 INCLUDEPATH += . \
     ../.. \
-    .. \
     ${PROTOBUF}/src
+
+DESTDIR = output/$$FOLDER
+MOC_DIR = .tmp/$$FOLDER
+OBJECTS_DIR = .tmp/$$FOLDER
+
 LIBS += -L${PROTOBUF}/src/.libs \
     -lprotobuf
-LIBS += -L../../Common/LogManager/output/debug \
-    -lLogManager
-LIBS += -L../PeerManager/output/debug \
-    -lPeerManager
-LIBS += -L../../Common/output/debug \
-    -lCommon
-TEMPLATE = lib
-DESTDIR = "output/debug"
-MOC_DIR = ".tmp/debug"
-OBJECTS_DIR = ".tmp/debug"
+
+LIBS += -L../DownloadManager/output/$$FOLDER -lDownloadManager
+POST_TARGETDEPS += ../DownloadManager/output/$$FOLDER/libDownloadManager.a
+
+LIBS += -L../PeerManager/output/$$FOLDER -lPeerManager
+POST_TARGETDEPS += ../PeerManager/output/$$FOLDER/libPeerManager.a
+
+LIBS += -L../FileManager/output/$$FOLDER -lFileManager
+POST_TARGETDEPS += ../FileManager/output/$$FOLDER/libFileManager.a
+
+LIBS += -L../../Common/LogManager/output/$$FOLDER -lLogManager
+POST_TARGETDEPS += ../../Common/LogManager/output/$$FOLDER/libLogManager.a
+
+LIBS += -L../../Common/output/$$FOLDER -lCommon
+POST_TARGETDEPS += ../../Common/output/$$FOLDER/libCommon.a
+
 DEFINES += NETWORKLISTENER_LIBRARY
 SOURCES += priv/UDPListener.cpp \
     priv/TCPListener.cpp \
@@ -48,4 +67,5 @@ HEADERS += ISearch.h \
     Builder.h \
     ../../Protos/common.pb.h \
     ../../Protos/core_protocol.pb.h \
-    priv/Constants.h
+    priv/Constants.h \
+    priv/Log.h

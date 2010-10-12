@@ -1,28 +1,41 @@
 #ifndef NETWORKMANAGER_TCPLISTENER_H
 #define NETWORKMANAGER_TCPLISTENER_H
 
-#include <QTcpSocket>
-#include <QHostAddress>
+#include <QObject>
+#include <QList>
 #include <QTcpServer>
 #include <QSharedPointer>
 
-#include <Common/LogManager/ILogger.h>
 #include <Core/PeerManager/IPeerManager.h>
 
 namespace NL
 {
-   class TCPListener : public QTcpServer
+   class TCPListener : QObject
    {
-   Q_OBJECT
+      Q_OBJECT
+      static const int MAX_LISTEN_ATTEMPT;
 
    public:
-      TCPListener(QSharedPointer<PM::IPeerManager> newPeerManager);
-   private:
-      QSharedPointer<LM::ILogger> logger;
-      QSharedPointer<PM::IPeerManager> peerManager;
+      TCPListener(QSharedPointer<PM::IPeerManager> peerManager);
+      quint16 getCurrentPort();
 
-   public slots:
-      void newConnexion();
+   private slots:
+      void newConnection();
+
+   private:
+      QSharedPointer<PM::IPeerManager> peerManager;
+      QTcpServer tcpServer;
+
+      quint16 currentPort;
+
+        // TODO : count the number of connection per ip per second and
+        // banned temporarely an ip with too much attempt.
+//      struct BannedIPs
+//      {
+//         QHostAddress address;
+//         QDateTime time;
+//      };
+//      QList<BannedIPs> bannedIPs;
    };
 }
 #endif

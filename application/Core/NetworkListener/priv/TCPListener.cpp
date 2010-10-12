@@ -1,29 +1,32 @@
 #include <priv/TCPListener.h>
 using namespace NL;
 
-#include <Common/LogManager/Builder.h>
+#include <Common/Settings.h>
 
-TCPListener::TCPListener(QSharedPointer<PM::IPeerManager> newPeerManager) : logger(LM::Builder::newLogger("NetworkListener::TCPListener"))
-{
-   listen(QHostAddress::Any,55142);
+#include <priv/Log.h>
 
-   QObject:: connect(this, SIGNAL(newConnection()),this, SLOT(newConnexion()));
+const int TCPListener::MAX_LISTEN_ATTEMPT(10);
 
-   LOG_DEBU(this->logger, "Listening..");
+TCPListener::TCPListener(QSharedPointer<PM::IPeerManager> peerManager)
+   : peerManager(peerManager)
+{   
+   this->currentPort = SETTINGS.getUInt32("unicast_base_port");
 
-   this->peerManager = newPeerManager;
-
+   int n = 0;
+   while(!this->tcpServer.listen(QHostAddress::Any, this->currentPort))
+   {
+      if (++n == MAX_LISTEN_ATTEMPT)
+      {
+         L_ERRO("Can't find a port to listen");
+         break;
+      }
+      this->currentPort++;
+   }
+   connect(&this->tcpServer, SIGNAL(newConnection()), this, SLOT(newConnexion()));
 }
 
-
-void TCPListener::newConnexion()
+void TCPListener::newConnection()
 {
-
-   QTcpSocket* socket = nextPendingConnection();
-
-   LOG_DEBU(this->logger, "New connexion form " + socket->peerAddress().toString());
-
-   this->peerManager->newSocket(socket->peerAddress(), QSharedPointer<QTcpSocket>(socket));
-
-
+   QTcpSocket* socket = this->tcpServer.nextPendingConnection();
+   this->peerManager->newConnection(socket);
 }

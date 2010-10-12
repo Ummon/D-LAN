@@ -10,17 +10,13 @@ namespace NL
 {
    class ISearch : public QObject
    {
-   Q_OBJECT
-
+      Q_OBJECT
    public:
       virtual ~ISearch() {}
       virtual bool search(const QString& words) = 0;
 
    signals:
-      void found(const Protos::Common::FindResult& result, quint32 IP);
-
-   public slots:
-      virtual void newFindResult(const Protos::Common::FindResult& result) = 0;
+      void found(const Protos::Common::FindResult& result);
    };
 }
 #endif

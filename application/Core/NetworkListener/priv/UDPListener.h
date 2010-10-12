@@ -2,56 +2,66 @@
 #define NETWORKMANAGER_UDPLISTENER_H
 
 #include <QObject>
+#include <QTimer>
 #include <QSharedPointer>
 #include <QtNetwork/QNetworkInterface>
 #include <QtNetwork/QUdpSocket>
 
-#include <Common/LogManager/ILogger.h>
+#include <google/protobuf/message.h>
 
 #include <Protos/core_protocol.pb.h>
 #include <Protos/common.pb.h>
 
+#include <Core/FileManager/IFileManager.h>
 #include <Core/PeerManager/IPeerManager.h>
+#include <Core/DownloadManager/IDownloadManager.h>
 
 namespace NL
 {
    class UDPListener : public QObject
    {
-   Q_OBJECT
+      Q_OBJECT
+      static const int MAX_DATAGRAM_SIZE = 65536;
 
    public:
-      UDPListener(QSharedPointer<PM::IPeerManager> newPeerManager);
-      bool sendMessage(const QByteArray& datagram);
-      bool sendMessageTo(const QByteArray& datagram, const QHostAddress& ipTo);
+      UDPListener(
+         QSharedPointer<FM::IFileManager> fileManager,
+         QSharedPointer<PM::IPeerManager> peerManager,
+         QSharedPointer<DM::IDownloadManager> downloadManager,
+         quint16 unicastPort
+      );
+
+      void send(quint32 type, const Common::Hash& peerID, const google::protobuf::Message& message);
+      void send(quint32 type, const google::protobuf::Message& message);
 
    signals:
       void newChatMessage(const Protos::Core::ChatMessage& message);
-      void newFindResult(const Protos::Common::FindResult& result);
-      void newFindRequset(const Protos::Core::Find& request, const QHostAddress& peerAdress);
-      void newHaveChunksResult(const Protos::Core::ChunksOwned& result);
-
-   private:
-      QSharedPointer<LM::ILogger> logger;
-      QSharedPointer<PM::IPeerManager> peerManager;
-      static const char TTL; ///< Time to live, see the UDP multicast documentation.
-      static const int multicastPort;
-      static const int unicastPort;
-      static QHostAddress multicastIP; ///< A choosen multicast address channel used to send and received messages.
-      QUdpSocket* multicastSocket;
-      QUdpSocket* unicastSocket;
+      void newFindResultMessage(const Protos::Core::Find& request);
 
    private slots:
+      void sendIMAliveMessage();
       void processPendingMulticastDatagrams();
       void processPendingUnicastDatagrams();
 
-   };
+   private:
+      int writeMessageToBuffer(quint32 type, const google::protobuf::Message& message);
 
-   enum messageUDPType
-   {
-      chatMessagePacket = 1,
-      IAmAlivePacket = 2,
-      findPacket = 3,
-      findResultPacket = 4
+      char buffer[MAX_DATAGRAM_SIZE]; // Buffer used when sending or receiving datagram.
+      char* const bodyBuffer;
+
+      const quint16 UNICAST_PORT;
+      const QHostAddress MULTICAST_GROUP;
+      const quint16 MULTICAST_PORT;
+
+      QSharedPointer<FM::IFileManager> fileManager;
+      QSharedPointer<PM::IPeerManager> peerManager;
+      QSharedPointer<DM::IDownloadManager> downloadManager;
+
+      QUdpSocket* multicastSocket;
+      QUdpSocket* unicastSocket;
+
+      QTimer timerIMAlive;
+
    };
 }
 #endif

@@ -1,31 +1,28 @@
 #ifndef NETWORKMANAGER_CHAT_H
 #define NETWORKMANAGER_CHAT_H
 
-#include <IChat.h>
-#include <Common/LogManager/ILogger.h>
 #include <QSharedPointer>
+
 #include <Protos/core_protocol.pb.h>
-#include <Core/PeerManager/IPeerManager.h>
+
+#include <IChat.h>
+#include <priv/UDPListener.h>
 
 namespace NL
 {
-   class UDPListener;
-
    class Chat : public IChat
    {
       Q_OBJECT
    public:
-      Chat(UDPListener* newUudpListener, QSharedPointer<PM::IPeerManager> newPeerManager);
+      Chat(UDPListener& uDPListener);
       virtual ~Chat() {}
-      bool send(const QString& message);
+      void send(const QString& message);
+
+   signals:
+      void newChatMessage(const Protos::Core::ChatMessage& message);
 
    private:
-      UDPListener* udpListener;
-      QSharedPointer<LM::ILogger> logger;
-      QSharedPointer<PM::IPeerManager> peerManager;
-
-   public slots:
-      void newChatMessage(const Protos::Core::ChatMessage& message);
+      UDPListener& uDPListener;
    };
 }
 #endif
