@@ -37,6 +37,8 @@ void Uploader::run()
 {
    L_DEBU(QString("Starting uploading a chunk : %1").arg(this->chunk->toStr()));
 
+   bool networkError = false;
+
    try
    {
       QSharedPointer<FM::IDataReader> reader = this->chunk->getDataReader();
@@ -45,17 +47,27 @@ void Uploader::run()
       int currentOffset = this->offset;
       qint64 bytesRead = 0;
 
-      int socketDescriptor = socket->getQSocket()->socketDescriptor();
       while (bytesRead = reader->read(buffer, currentOffset))
       {
          int bytesSent = socket->getQSocket()->write(buffer, bytesRead);
          if (bytesSent == -1)
          {
             L_ERRO(QString("Socket : cannot send data : %1").arg(this->chunk->toStr()));
+            networkError = true;
             break;
          }
 
          currentOffset += bytesSent;
+
+         if (socket->getQSocket()->bytesToWrite() > SETTINGS.getUInt32("socket_buffer_size"))
+         {
+            if (!socket->getQSocket()->waitForBytesWritten(5000)) // TODO -> constant/settings
+            {
+               L_ERRO(QString("Socket : cannot write data : %1").arg(this->chunk->toStr()));
+               networkError = true;
+               break;
+            }
+         }
       }
    }
    catch(FM::UnableToOpenFileInReadModeException&)
@@ -72,5 +84,5 @@ void Uploader::run()
    }
    this->socket->getQSocket()->moveToThread(this->mainThread);
 
-   emit uploadFinished();
+   emit uploadFinished(networkError);
 }
