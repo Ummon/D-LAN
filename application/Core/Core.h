@@ -2,23 +2,17 @@
 #define CORE_CORE_H
 
 #include <QSharedPointer>
-#include <QObject>
 
-namespace LM { class ILogger; }
-namespace FM { class IFileManager; }
-namespace RCM { class IRemoteControlManager; }
-namespace PM { class IPeerManager; }
-namespace NL { class INetworkListener; }
-namespace DL { class IDownloadManager; }
-namespace UM { class IUploadManager; }
-namespace DM { class IDownloadManager; }
+#include <FileManager/IFileManager.h>
+#include <PeerManager/IPeerManager.h>
+#include <UploadManager/IUploadManager.h>
+#include <DownloadManager/IDownloadManager.h>
+#include <NetworkListener/INetworkListener.h>
 
 namespace Core // Best than the Arm.
 {
-   class Core : public QObject
+   class Core
    {
-   Q_OBJECT
-
    public:
       Core();
       virtual ~Core();
@@ -26,15 +20,11 @@ namespace Core // Best than the Arm.
    private:
       void checkSettingsIntegrity();
 
-
-      QSharedPointer<LM::ILogger> logger;
       QSharedPointer<FM::IFileManager> fileManager;
-      QSharedPointer<NL::INetworkListener> networkListener;
       QSharedPointer<PM::IPeerManager> peerManager;
-
-      RCM::IRemoteControlManager* remoteControlManager;
-      DM::IDownloadManager* downloadManager;
-      UM::IUploadManager* uploadManager;
+      QSharedPointer<UM::IUploadManager> uploadManager;
+      QSharedPointer<DM::IDownloadManager> downloadManager;
+      QSharedPointer<NL::INetworkListener> networkListener;
    };
 }
 #endif
