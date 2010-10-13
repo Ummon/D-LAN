@@ -67,5 +67,4 @@ HEADERS += ISearch.h \
     Builder.h \
     ../../Protos/common.pb.h \
     ../../Protos/core_protocol.pb.h \
-    priv/Constants.h \
     priv/Log.h

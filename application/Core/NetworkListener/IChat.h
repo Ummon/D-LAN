@@ -1,5 +1,5 @@
-#ifndef NETWORKMANAGER_ICHAT_H
-#define NETWORKMANAGER_ICHAT_H
+#ifndef NETWORKLISTENER_ICHAT_H
+#define NETWORKLISTENER_ICHAT_H
 
 #include <QObject>
 #include <QString>

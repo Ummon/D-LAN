@@ -7,7 +7,7 @@
 #include <Core/PeerManager/IPeerManager.h>
 #include <Core/DownloadManager/IDownloadManager.h>
 
-#include <INetworkListener.h>
+#include <Core/NetworkListener/INetworkListener.h>
 
 namespace NL
 {

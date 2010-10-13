@@ -1,7 +1,9 @@
-#ifndef NETWORKMANAGER_SEARCH_H
-#define NETWORKMANAGER_SEARCH_H
+#ifndef NETWORKLISTENER_SEARCH_H
+#define NETWORKLISTENER_SEARCH_H
 
 #include <QSharedPointer>
+
+#include <Libs/MersenneTwister.h>
 
 #include <Protos/core_protocol.pb.h>
 
@@ -10,30 +12,27 @@
 
 namespace NL
 {
-   class UDPListener;
-
    class Search : public ISearch
    {
       Q_OBJECT
    public:
       Search(UDPListener& uDPListener);
-      bool search(const QString& words);
+      void search(const QString& words);
 
    signals:
       void found(const Protos::Common::FindResult& result);
 
-   private:
-      quint64 tag;
+   private slots:
+      void newFindResult(const Protos::Common::FindResult& result);
 
+   private:
       UDPListener& uDPListener;
 
       bool searchLaunched;
       QDateTime dateOfLaunch;
-      QSharedPointer<PM::IPeerManager> peerManager;
 
-   public slots:
-      void newFindResult(const Protos::Common::FindResult& result);
-
+      quint64 tag;
+      MTRand mtrand;
    };
 }
 #endif

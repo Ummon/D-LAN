@@ -1,5 +1,5 @@
-#ifndef NETWORKMANAGER_CHAT_H
-#define NETWORKMANAGER_CHAT_H
+#ifndef NETWORKLISTENER_CHAT_H
+#define NETWORKLISTENER_CHAT_H
 
 #include <QSharedPointer>
 

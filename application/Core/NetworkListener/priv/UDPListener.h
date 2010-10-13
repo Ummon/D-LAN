@@ -1,17 +1,21 @@
-#ifndef NETWORKMANAGER_UDPLISTENER_H
-#define NETWORKMANAGER_UDPLISTENER_H
+#ifndef NETWORKLISTENER_UDPLISTENER_H
+#define NETWORKLISTENER_UDPLISTENER_H
 
 #include <QObject>
+#include <QUdpSocket>
 #include <QTimer>
 #include <QSharedPointer>
 #include <QtNetwork/QNetworkInterface>
 #include <QtNetwork/QUdpSocket>
+
+#include <Libs/MersenneTwister.h>
 
 #include <google/protobuf/message.h>
 
 #include <Protos/core_protocol.pb.h>
 #include <Protos/common.pb.h>
 
+#include <Common/Network.h>
 #include <Core/FileManager/IFileManager.h>
 #include <Core/PeerManager/IPeerManager.h>
 #include <Core/DownloadManager/IDownloadManager.h>
@@ -21,7 +25,7 @@ namespace NL
    class UDPListener : public QObject
    {
       Q_OBJECT
-      static const int MAX_DATAGRAM_SIZE = 65536;
+      static const int BUFFER_SIZE = 65536; // The size max of an UDP datagram : 2^16.
 
    public:
       UDPListener(
@@ -35,8 +39,8 @@ namespace NL
       void send(quint32 type, const google::protobuf::Message& message);
 
    signals:
-      void newChatMessage(const Protos::Core::ChatMessage& message);
-      void newFindResultMessage(const Protos::Core::Find& request);
+      void newChatMessage(const Protos::Core::ChatMessage& chatMessage);
+      void newFindResultMessage(const Protos::Common::FindResult& findResult);
 
    private slots:
       void sendIMAliveMessage();
@@ -45,8 +49,9 @@ namespace NL
 
    private:
       int writeMessageToBuffer(quint32 type, const google::protobuf::Message& message);
+      Common::MessageHeader readDatagramToBuffer(QUdpSocket& socket, QHostAddress& peerAddress);
 
-      char buffer[MAX_DATAGRAM_SIZE]; // Buffer used when sending or receiving datagram.
+      char buffer[BUFFER_SIZE]; // Buffer used when sending or receiving datagram.
       char* const bodyBuffer;
 
       const quint16 UNICAST_PORT;
@@ -57,11 +62,14 @@ namespace NL
       QSharedPointer<PM::IPeerManager> peerManager;
       QSharedPointer<DM::IDownloadManager> downloadManager;
 
-      QUdpSocket* multicastSocket;
-      QUdpSocket* unicastSocket;
+      QUdpSocket multicastSocket;
+      QUdpSocket unicastSocket;
+
+      MTRand mtrand;
+      quint64 currentIMAliveTag;
+      QList< QSharedPointer<DM::IChunkDownload> > currentChunkDownloads;
 
       QTimer timerIMAlive;
-
    };
 }
 #endif
