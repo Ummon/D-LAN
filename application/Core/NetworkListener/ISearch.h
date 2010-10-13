@@ -1,5 +1,5 @@
-#ifndef NETWORKMANAGER_ISEARCH_H
-#define NETWORKMANAGER_ISEARCH_H
+#ifndef NETWORKLISTENER_ISEARCH_H
+#define NETWORKLISTENER_ISEARCH_H
 
 #include <QObject>
 #include <QString>
@@ -13,7 +13,7 @@ namespace NL
       Q_OBJECT
    public:
       virtual ~ISearch() {}
-      virtual bool search(const QString& words) = 0;
+      virtual void search(const QString& words) = 0;
 
    signals:
       void found(const Protos::Common::FindResult& result);

@@ -1,8 +1,7 @@
 #include <priv/Search.h>
 using namespace NL;
 
-#include <Common/LogManager/Builder.h>
-#include <priv/UDPListener.h>
+#include <priv/Log.h>
 
 /**
   * @class Search
@@ -11,61 +10,41 @@ using namespace NL;
   */
 
 Search::Search(UDPListener& uDPListener)
-   : uDPListener(uDPListener)
+   : uDPListener(uDPListener), tag(0)
 {
-   this->searchLaunched = false;
-   this->tag = QTime::currentTime().second() * 1000 + (qrand() % 999);   //Sould be random enought, don't forget a search die after 15s.
+   //this->searchLaunched = false;
 }
 
 /**
- * Begin a new search. This function can be called only ONE time
- *
- * @author mcuony
- */
-bool Search::search(const QString& words)
+  * Begin a new search. This function can be called only ONE time
+  */
+void Search::search(const QString& words)
 {
-//   if (this->searchLaunched)
-//   {
-//      LOG_ERRO(this->logger, "You can't launch a search twice !");
-//      return false;
-//   }
-//   else
-//   {
-//      // We put info in our find Proto.
-//      Protos::Core::Find findProto;
-//      findProto.set_pattern(words.toStdString());
-//      findProto.set_tag(this->tag);
-//      findProto.mutable_peer_id()->set_hash(this->peerManager->getMyId().getData(), Common::Hash::HASH_SIZE);
-
-//      // We serialize the proto to a string.
-//      std::string output;
-//      findProto.SerializeToString(&output);
-
-
-//      LOG_DEBU(this->logger, "Search launched ! (" + words + ")");
-
-//      this->searchLaunched = true;
-//      this->dateOfLaunch =  QDateTime::currentDateTime();
-
-//      //We listen for new search results
-//      Search::connect(this->udpListener, SIGNAL(newFindResult(const Protos::Common::FindResult&)), this, SLOT(newFindResult(const Protos::Common::FindResult&)));
-
-//      // We broadcast the data.
-//      return this->udpListener->sendMessage(QByteArray(output.data()).prepend(findPacket));
-//   }
-   return true;
-}
-
-/**
- * Called we a result is recevied : If the tag match, we forward to our listeners
- *
- */
-void Search::newFindResult(const Protos::Common::FindResult& result) {
-
-   //this->logger->log("Search result" + QString::number(result.tag()), LogManager::Debug);
-
-   if (result.tag() == this->tag)
+   if (this->tag != 0)
    {
-      //emit newFindResult(result);
+      L_ERRO(QString("You can't launch a search twice! : %1").arg(words));
+      return;
    }
+
+   Protos::Core::Find findMessage;
+
+   this->tag = this->mtrand.randInt();
+   this->tag <<= 32;
+   this->tag |= this->mtrand.randInt();
+   findMessage.set_tag(this->tag);
+
+   findMessage.set_pattern(words.toStdString());
+
+   connect(&this->uDPListener, SIGNAL(newFindResultMessage(Protos::Common::FindResult)), this, SLOT(newFindResult(Protos::Common::FindResult)));
+
+   this->uDPListener.send(0x21, findMessage);
+}
+
+/**
+  * Called when a result is recevied, if the tag matches, we forward the result to our listeners.
+  */
+void Search::newFindResult(const Protos::Common::FindResult& result)
+{
+   if (result.tag() == this->tag)
+      emit found(result);
 }

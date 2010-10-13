@@ -29,6 +29,7 @@ OBJECTS_DIR = .tmp/$$FOLDER
 LIBS += -L../../Common/LogManager/output/$$FOLDER \
      -lLogManager
 POST_TARGETDEPS += ../../Common/LogManager/output/$$FOLDER/libLogManager.a
+
 LIBS += -L../../Common/output/$$FOLDER \
      -lCommon
 POST_TARGETDEPS += ../../Common/output/$$FOLDER/libCommon.a

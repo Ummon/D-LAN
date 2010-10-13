@@ -18,6 +18,7 @@ OBJECTS_DIR = .tmp/$$FOLDER
 LIBS += -L../output/$$FOLDER \
     -lFileManager
 POST_TARGETDEPS += ../output/$$FOLDER/libFileManager.a
+
 LIBS += -L../../../Common/output/$$FOLDER \
     -lCommon
 POST_TARGETDEPS += ../../../Common/output/$$FOLDER/libCommon.a

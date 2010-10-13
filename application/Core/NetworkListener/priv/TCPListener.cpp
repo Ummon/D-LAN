@@ -5,6 +5,12 @@ using namespace NL;
 
 #include <priv/Log.h>
 
+/**
+  * @class TCPListener
+  * @author mcuony
+  * @author gburri
+  */
+
 const int TCPListener::MAX_LISTEN_ATTEMPT(10);
 
 TCPListener::TCPListener(QSharedPointer<PM::IPeerManager> peerManager)
@@ -22,7 +28,12 @@ TCPListener::TCPListener(QSharedPointer<PM::IPeerManager> peerManager)
       }
       this->currentPort++;
    }
-   connect(&this->tcpServer, SIGNAL(newConnection()), this, SLOT(newConnexion()));
+   connect(&this->tcpServer, SIGNAL(newConnection()), this, SLOT(newConnection()));
+}
+
+quint16 TCPListener::getCurrentPort()
+{
+   return this->currentPort;
 }
 
 void TCPListener::newConnection()
