@@ -23,7 +23,8 @@ MessageHeader Network::readHeader(const char* data)
 {
    MessageHeader header;
 
-   QDataStream stream(QByteArray(data, HEADER_SIZE));
+   QByteArray array = QByteArray::fromRawData(data, HEADER_SIZE);
+   QDataStream stream(&array, QIODevice::ReadOnly);
    stream >> header.type;
    stream >> header.size;
    stream >> header.senderID;
@@ -39,8 +40,13 @@ void Network::writeHeader(QIODevice& device, const MessageHeader& header)
 
 void Network::writeHeader(char* buffer, const MessageHeader& header)
 {
-   QDataStream stream(QByteArray(buffer, HEADER_SIZE));
+   // We can't use 'fromRawData' because QByteArray can't modify the given buffer.
+   // QByteArray array = QByteArray::fromRawData(buffer, HEADER_SIZE);
+
+   QByteArray array(HEADER_SIZE, 0);
+   QDataStream stream(&array, QIODevice::WriteOnly);
    Network::writeHeader(stream, header);
+   memcpy(buffer, array.data(), HEADER_SIZE);
 }
 
 inline void Network::writeHeader(QDataStream& stream, const MessageHeader& header)
