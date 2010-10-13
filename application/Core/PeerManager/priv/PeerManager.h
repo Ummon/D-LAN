@@ -35,7 +35,6 @@ namespace PM
       PeerManager(QSharedPointer<FM::IFileManager> fileManager);
 
       Common::Hash getID();
-      void setID(Common::Hash ID);
       void setNick(const QString& nick);
       QString getNick();
 
