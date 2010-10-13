@@ -27,7 +27,13 @@ PeerManager::PeerManager(QSharedPointer<FM::IFileManager> fileManager)
 
    if (SETTINGS.arePersisted())
    {
-      SETTINGS.get("peerID", this->ID);
+
+#if DEBUG
+   this->ID = Common::Hash::rand();
+#else
+   SETTINGS.get("peerID", this->ID);
+#endif
+
       SETTINGS.get("nick", this->nick);
    }
    else
@@ -45,14 +51,6 @@ PeerManager::PeerManager(QSharedPointer<FM::IFileManager> fileManager)
 Common::Hash PeerManager::getID()
 {
    return this->ID;
-}
-
-/**
-  * Used only during unit testing.
-  */
-void PeerManager::setID(Common::Hash ID)
-{
-   this->ID = ID;
 }
 
 /**
