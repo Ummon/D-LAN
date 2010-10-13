@@ -52,7 +52,7 @@ void Settings::load()
       PersistantData::getValue(FILENAME, this->settings, true);
       this->persisted = true;
    }
-   catch (Common::UnknownValueException)
+   catch (Common::UnknownValueException&)
    {
    }
 }

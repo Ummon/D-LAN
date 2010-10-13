@@ -21,6 +21,26 @@ Common::Hash ChunkDownload::getHash()
    return this->chunkHash;
 }
 
+void ChunkDownload::addPeerID(const Common::Hash& peerID)
+{
+   QMutexLocker lock(&this->mutex);
+   PM::IPeer* peer = this->peerManager->getPeer(peerID);
+   if (peer && !this->peers.contains(peer))
+   {
+      this->peers << peer;
+      this->occupiedPeersDownloadingChunk.newPeer(peer);
+   }
+}
+
+void ChunkDownload::rmPeerID(const Common::Hash& peerID)
+{
+   QMutexLocker lock(&this->mutex);
+   PM::IPeer* peer = this->peerManager->getPeer(peerID);
+   if (peer)
+      this->peers.removeOne(peer);
+}
+
+/* Old interface
 void ChunkDownload::setPeerIDs(const QList<Common::Hash>& peerIDs)
 {
    this->peers.clear();
@@ -33,7 +53,7 @@ void ChunkDownload::setPeerIDs(const QList<Common::Hash>& peerIDs)
          this->occupiedPeersDownloadingChunk.newPeer(peer);
       }
    }
-}
+}*/
 
 void ChunkDownload::setChunk(QSharedPointer<FM::IChunk> chunk)
 {
@@ -43,6 +63,7 @@ void ChunkDownload::setChunk(QSharedPointer<FM::IChunk> chunk)
 
 void ChunkDownload::setPeerSource(PM::IPeer* peer)
 {
+   QMutexLocker lock(&this->mutex);
    if (!this->peers.contains(peer))
    {
       this->peers << peer;
@@ -224,6 +245,8 @@ void ChunkDownload::downloadingEnded()
 
 PM::IPeer* ChunkDownload::getTheFastestFreePeer() const
 {
+   QMutexLocker lock(&this->mutex);
+
    PM::IPeer* current = 0;
    foreach (PM::IPeer* peer, this->peers)
    {

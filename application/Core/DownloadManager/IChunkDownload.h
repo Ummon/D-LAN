@@ -23,7 +23,8 @@ namespace DM
       /**
         * Define (or redefine) the peers which have the chunk.
         */
-      virtual void setPeerIDs(const QList<Common::Hash>& peerIDs) = 0;
+      virtual void addPeerID(const Common::Hash& peerID) = 0;
+      virtual void rmPeerID(const Common::Hash& peerID) = 0;
    };
 }
 #endif
