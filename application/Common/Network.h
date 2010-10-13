@@ -15,7 +15,7 @@ namespace Common
       MessageHeader() : type(0), size(0) {}
       MessageHeader(quint32 type, quint32 size, const Common::Hash senderID) : type(type), size(size), senderID(senderID) {}
 
-      bool isNull() { return this->type == 0; }
+      bool isNull() const { return this->type == 0; }
       void setNull() { this->type = 0; }
 
       quint32 type;
