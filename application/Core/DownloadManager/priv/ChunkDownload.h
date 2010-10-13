@@ -28,7 +28,8 @@ namespace DM
       ChunkDownload(QSharedPointer<PM::IPeerManager> peerManager, OccupiedPeers& occupiedPeersDownloadingChunk, Common::Hash chunkHash);
 
       Common::Hash getHash();
-      void setPeerIDs(const QList<Common::Hash>& peerIDs);
+      void addPeerID(const Common::Hash& peerID);
+      void rmPeerID(const Common::Hash& peerID);
 
       void setChunk(QSharedPointer<FM::IChunk> chunk);
 
@@ -75,6 +76,8 @@ namespace DM
 
       bool downloading;
       bool networkError;
+
+      mutable QMutex mutex; // To protect 'peers'.
    };
 }
 #endif
