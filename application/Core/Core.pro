@@ -6,7 +6,6 @@ QT += network
 TARGET = Core
 CONFIG += link_prl
 
-
 CONFIG(debug, debug|release) {
    FOLDER = debug
    DEFINES += DEBUG
@@ -21,18 +20,31 @@ INCLUDEPATH += . \
 LIBS += -LFileManager/output/$$FOLDER \
     -lFileManager
 POST_TARGETDEPS += FileManager/output/$$FOLDER/libFileManager.a
-LIBS += -LNetworkListener/output/$$FOLDER \
-    -lNetworkListener
-POST_TARGETDEPS += NetworkListener/output/$$FOLDER/libNetworkListener.a
+
 LIBS += -LPeerManager/output/$$FOLDER \
     -lPeerManager
 POST_TARGETDEPS += PeerManager/output/$$FOLDER/libPeerManager.a
+
+LIBS += -LUploadManager/output/$$FOLDER \
+    -lUploadManager
+POST_TARGETDEPS += UploadManager/output/$$FOLDER/libUploadManager.a
+
+LIBS += -LDownloadManager/output/$$FOLDER \
+    -lDownloadManager
+POST_TARGETDEPS += DownloadManager/output/$$FOLDER/libDownloadManager.a
+
+LIBS += -LNetworkListener/output/$$FOLDER \
+    -lNetworkListener
+POST_TARGETDEPS += NetworkListener/output/$$FOLDER/libNetworkListener.a
+
 LIBS += -L../Common/LogManager/output/$$FOLDER \
     -lLogManager
 POST_TARGETDEPS += ../Common/LogManager/output/$$FOLDER/libLogManager.a
+
 LIBS += -L../Common/output/$$FOLDER \
     -lCommon
 POST_TARGETDEPS += ../Common/output/$$FOLDER/libCommon.a
+
 LIBS += -L${PROTOBUF}/src/.libs \
     -lprotobuf
 
@@ -51,4 +63,5 @@ CONFIG -= app_bundle
 TEMPLATE = app
 SOURCES += main.cpp \
     Core.cpp
-HEADERS += Core.h
+HEADERS += Core.h \
+    Log.h

@@ -43,8 +43,8 @@ message FindResult {
       required Entry entry = 2; // The entry must have the field 'shared_dir'.
    }
    required uint64 tag = 1;
-   required Common.Hash peer_id = 2;
-   repeated EntryLevel entry = 3;
+   repeated EntryLevel entry = 2;
+   optional Common.Hash peer_id = 3;
 }
 
 // Core settings.
@@ -83,4 +83,6 @@ message Settings {
    optional uint32 multicast_group = 23 [default = 3960285976]; // 236.123.43.24
    optional uint32 multicast_ttl = 24 [default = 3];
    optional uint32 max_udp_datagram_size = 25 [default = 8164]; // (~8 KiB). Don't include the IP+UDP header (28 bits).
+   optional uint32 number_of_hashes_sent_imalive = 26 [default = 128];
+   optional uint32 protocol_version = 27 [default = 1];
 }
