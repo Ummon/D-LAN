@@ -115,7 +115,7 @@ void ChunkDownload::run()
 
       QSharedPointer<FM::IDataWriter> writer = this->chunk->getDataWriter();
 
-      const int BUFFER_SIZE = SETTINGS.getUInt32("buffer_size");
+      const int BUFFER_SIZE = SETTINGS.get<quint32>("buffer_size");
       char buffer[BUFFER_SIZE];
 
       int bytesRead = 0;
@@ -129,7 +129,7 @@ void ChunkDownload::run()
       forever
       {
          // Waiting for data..
-         if (socket->getQSocket()->bytesAvailable() == 0 && !socket->getQSocket()->waitForReadyRead(SETTINGS.getUInt32("timeout_during_transfert")))
+         if (socket->getQSocket()->bytesAvailable() == 0 && !socket->getQSocket()->waitForReadyRead(SETTINGS.get<quint32>("timeout_during_transfert")))
          {
             L_WARN("Connection dropped");
             this->networkError = true;
@@ -159,8 +159,8 @@ void ChunkDownload::run()
             PM::IPeer* peer = this->getTheFastestFreePeer();
             if (
                peer && peer != this->currentDownloadingPeer &&
-               this->currentDownloadingPeer->getSpeed() < SETTINGS.getUInt32("lan_speed") / SETTINGS.getUInt32("time_recheck_chunk_factor") &&
-               peer->getSpeed() > SETTINGS.getUInt32("switch_to_another_peer_factor") * this->currentDownloadingPeer->getSpeed()
+               this->currentDownloadingPeer->getSpeed() < SETTINGS.get<quint32>("lan_speed") / SETTINGS.get<quint32>("time_recheck_chunk_factor") &&
+               peer->getSpeed() > SETTINGS.get<quint32>("switch_to_another_peer_factor") * this->currentDownloadingPeer->getSpeed()
             )
             {
                L_DEBU("Switch to a better peer..");

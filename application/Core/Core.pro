@@ -3,7 +3,7 @@
 # -------------------------------------------------
 QT -= gui
 QT += network
-TARGET = Core
+TARGET = AybabtuCore
 CONFIG += link_prl
 
 CONFIG(debug, debug|release) {
@@ -47,6 +47,10 @@ POST_TARGETDEPS += ../Common/output/$$FOLDER/libCommon.a
 
 LIBS += -L${PROTOBUF}/src/.libs \
     -lprotobuf
+
+#LIBS += -L../Libs/qtservice/lib -lQtSolutions_Service-2.6
+include(../Libs/qtservice/src/qtservice.pri)
+
 
 # FIXME : Theses declarations should not be here, all dependencies are read from the prl files of each library (see link_prl):
 win32 {

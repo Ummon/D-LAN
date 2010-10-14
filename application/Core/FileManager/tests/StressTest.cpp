@@ -149,7 +149,7 @@ void FilesAndDirs::createAFile()
 
    // Create a file with a random size from 1 B to 100 MB
    int bytes = this->randGen.rand(100 * 1024 * 1024 - 1) + 1;
-   const int CHUNK_SIZE = SETTINGS.getUInt32("chunk_size");
+   const int CHUNK_SIZE = SETTINGS.get<quint32>("chunk_size");
    QByteArray buffer(CHUNK_SIZE, 0); // Don't know why "char buffer[CHUNK_SIZE]" crashes..
 
    qDebug() << "Creating file " << filePath << " (" << Common::Global::formatByteSize(bytes) << ")";
@@ -351,7 +351,7 @@ void StressTest::doASearch()
    {
       QString terms = this->randGen.generateAName() + " " + this->randGen.generateAName();
 
-      QList<Protos::Common::FindResult> results = this->fileManager->find(terms, 65536);
+      QList<Protos::Common::FindResult> results = this->fileManager->find(terms, 10000, 65536);
 
       if (!results.isEmpty() && results.first().entry_size() != 0)
       {
@@ -433,7 +433,7 @@ void StressTest::newFile()
 
    // Size is from 1 B to 100 MB.
    int bytes = this->randGen.rand(100 * 1024 * 1024 - 1) + 1;
-   static const int CHUNK_SIZE = SETTINGS.getUInt32("chunk_size");
+   static const int CHUNK_SIZE = SETTINGS.get<quint32>("chunk_size");
    int nbChunk = bytes / CHUNK_SIZE + (bytes % CHUNK_SIZE == 0 ? 0 : 1);
 
    Protos::Common::Entry entry;
@@ -652,7 +652,7 @@ void Downloader::run()
    {
       QSharedPointer<IDataWriter> writer = chunk->getDataWriter();
 
-      const int BUFFER_SIZE = SETTINGS.getUInt32("buffer_size");
+      const int BUFFER_SIZE = SETTINGS.get<quint32>("buffer_size");
       char buffer[BUFFER_SIZE];
       for (int i = 0; i < BUFFER_SIZE; i++)
          buffer[i] = this->chunk->getNum() + 1;
@@ -692,7 +692,7 @@ void Uploader::run()
    {
       QSharedPointer<FM::IDataReader> reader = this->chunk->getDataReader();
 
-      char buffer[SETTINGS.getUInt32("buffer_size")];
+      char buffer[SETTINGS.get<quint32>("buffer_size")];
 
       qint64 bytesReadTotal = 0;
       qint64 bytesRead = 0;

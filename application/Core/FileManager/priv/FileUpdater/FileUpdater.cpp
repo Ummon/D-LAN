@@ -279,7 +279,7 @@ bool FileUpdater::computeSomeHashes()
       if (completed)
          i.remove();
 
-      if (static_cast<quint32>(timer.elapsed()) >= SETTINGS.getUInt32("minimum_duration_when_hashing"))
+      if (static_cast<quint32>(timer.elapsed()) >= SETTINGS.get<quint32>("minimum_duration_when_hashing"))
          break;
    }
 

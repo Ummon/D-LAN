@@ -66,7 +66,7 @@ void ConnectionPool::socketGetIdle(Socket* socket)
      if (currentSocket->isIdle())
      {
         n += 1;
-        if (n > SETTINGS.getUInt32("max_number_idle_socket"))
+        if (n > SETTINGS.get<quint32>("max_number_idle_socket"))
            i.remove();
      }
    }

@@ -75,7 +75,7 @@ namespace FM
         * It should not be here but it's far more harder to split the result outside this method.
         * @remarks Will not fill the fields 'FindResult.tag' and 'FindResult.peer_id'.
         */
-      virtual QList<Protos::Common::FindResult> find(const QString& words, int maxSize) = 0;
+      virtual QList<Protos::Common::FindResult> find(const QString& words, int maxNbResult, int maxSize) = 0;
 
       virtual QBitArray haveChunks(const QList<Common::Hash>& hashes) = 0;
 

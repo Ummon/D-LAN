@@ -32,8 +32,8 @@ UDPListener::UDPListener(
 ) :
    bodyBuffer(UDPListener::buffer + Common::Network::HEADER_SIZE),
    UNICAST_PORT(unicastPort),
-   MULTICAST_GROUP(SETTINGS.getUInt32("multicast_group")),
-   MULTICAST_PORT(SETTINGS.getUInt32("multicast_port")),
+   MULTICAST_GROUP(SETTINGS.get<quint32>("multicast_group")),
+   MULTICAST_PORT(SETTINGS.get<quint32>("multicast_port")),
    fileManager(fileManager),
    peerManager(peerManager),
    downloadManager(downloadManager),
@@ -57,7 +57,7 @@ UDPListener::UDPListener(
    if (setsockopt(socketDescriptor, IPPROTO_IP, IP_MULTICAST_LOOP, &loop, sizeof loop))
       L_ERRO("Can't set socket option : IP_MULTICAST_LOOP");
 
-   const char TTL = SETTINGS.getUInt32("multicast_ttl");
+   const char TTL = SETTINGS.get<quint32>("multicast_ttl");
    if (int error = setsockopt(socketDescriptor, IPPROTO_IP, IP_MULTICAST_TTL, &TTL, sizeof TTL))
       L_ERRO(QString("Can't set socket option : IP_MULTICAST_TTL : %1").arg(error));
 
@@ -77,7 +77,7 @@ UDPListener::UDPListener(
    connect(&this->unicastSocket, SIGNAL(readyRead()), this, SLOT(processPendingUnicastDatagrams()));
 
    connect(&this->timerIMAlive, SIGNAL(timeout()), this, SLOT(sendIMAliveMessage()));
-   this->timerIMAlive.start(static_cast<int>(SETTINGS.getUInt32("peer_imalive_period")));
+   this->timerIMAlive.start(static_cast<int>(SETTINGS.get<quint32>("peer_imalive_period")));
    this->sendIMAliveMessage();
 }
 
@@ -118,7 +118,7 @@ void UDPListener::send(quint32 type, const google::protobuf::Message& message)
 void UDPListener::sendIMAliveMessage()
 {
    Protos::Core::IMAlive IMAliveMessage;
-   IMAliveMessage.set_version(SETTINGS.getUInt32("protocol_version"));
+   IMAliveMessage.set_version(SETTINGS.get<quint32>("protocol_version"));
    IMAliveMessage.set_port(this->UNICAST_PORT);
    IMAliveMessage.set_nick(this->peerManager->getNick().toStdString());
    IMAliveMessage.set_amount(this->fileManager->getAmount());
@@ -128,7 +128,7 @@ void UDPListener::sendIMAliveMessage()
    this->currentIMAliveTag |= this->mtrand.randInt();
    IMAliveMessage.set_tag(this->currentIMAliveTag);
 
-   this->currentChunkDownloads = this->downloadManager->getUnfinishedChunks(SETTINGS.getUInt32("number_of_hashes_sent_imalive"));
+   this->currentChunkDownloads = this->downloadManager->getUnfinishedChunks(SETTINGS.get<quint32>("number_of_hashes_sent_imalive"));
    IMAliveMessage.mutable_chunk()->Reserve(this->currentChunkDownloads.size());
    for (QListIterator< QSharedPointer<DM::IChunkDownload> > i(this->currentChunkDownloads); i.hasNext();)
    {
@@ -157,9 +157,9 @@ void UDPListener::processPendingMulticastDatagrams()
             Protos::Core::IMAlive IMAliveMessage;
             IMAliveMessage.ParseFromArray(this->bodyBuffer, header.size);
 
-            if (IMAliveMessage.version() != SETTINGS.getUInt32("protocol_version"))
+            if (IMAliveMessage.version() != SETTINGS.get<quint32>("protocol_version"))
             {
-               L_WARN(QString("Peer protocol (%1) doesn't match the current one (%2)").arg(IMAliveMessage.version()).arg(SETTINGS.getUInt32("protocol_version")));
+               L_WARN(QString("Peer protocol (%1) doesn't match the current one (%2)").arg(IMAliveMessage.version()).arg(SETTINGS.get<quint32>("protocol_version")));
                continue;
             }
 
@@ -201,7 +201,13 @@ void UDPListener::processPendingMulticastDatagrams()
             Protos::Core::Find findMessage;
             findMessage.ParseFromArray(this->bodyBuffer, header.size);
 
-            QList<Protos::Common::FindResult> results = this->fileManager->find(QString::fromStdString(findMessage.pattern()), SETTINGS.getUInt32("max_udp_datagram_size") - Common::Network::HEADER_SIZE);
+            QList<Protos::Common::FindResult> results =
+               this->fileManager->find(
+                  QString::fromStdString(findMessage.pattern()),
+                  SETTINGS.get<quint32>("max_number_of_search_result_to_send"),
+                  SETTINGS.get<quint32>("max_udp_datagram_size") - Common::Network::HEADER_SIZE
+               );
+
             for (QMutableListIterator<Protos::Common::FindResult> i(results); i.hasNext();)
             {
                Protos::Common::FindResult& result = i.next();
@@ -275,7 +281,7 @@ int UDPListener::writeMessageToBuffer(quint32 type, const google::protobuf::Mess
    const int bodySize = message.ByteSize();
    Common::MessageHeader header(type, bodySize, this->peerManager->getID());
 
-   if (Common::Network::HEADER_SIZE + bodySize > static_cast<int>(SETTINGS.getUInt32("max_udp_datagram_size")))
+   if (Common::Network::HEADER_SIZE + bodySize > static_cast<int>(SETTINGS.get<quint32>("max_udp_datagram_size")))
    {
       L_ERRO(QString("Datagram size too big : %1").arg(BUFFER_SIZE + bodySize));
       return 0;

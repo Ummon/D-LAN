@@ -13,14 +13,14 @@ using namespace FM;
 #include <priv/Cache/DataWriter.h>
 
 Chunk::Chunk(File* file, int num, quint32 knownBytes)
-   : CHUNK_SIZE(SETTINGS.getUInt32("chunk_size")), mutex(QMutex::Recursive), file(file), num(num), knownBytes(knownBytes)
+   : CHUNK_SIZE(SETTINGS.get<quint32>("chunk_size")), mutex(QMutex::Recursive), file(file), num(num), knownBytes(knownBytes)
 {
    QMutexLocker locker(&this->mutex);
    L_DEBU(QString("New chunk[%1] : %2. File : %3").arg(num).arg(hash.toStr()).arg(this->file->getFullPath()));
 }
 
 Chunk::Chunk(File* file, int num, quint32 knownBytes, const Common::Hash& hash)
-   : CHUNK_SIZE(SETTINGS.getUInt32("chunk_size")), mutex(QMutex::Recursive), file(file), num(num), knownBytes(knownBytes), hash(hash)
+   : CHUNK_SIZE(SETTINGS.get<quint32>("chunk_size")), mutex(QMutex::Recursive), file(file), num(num), knownBytes(knownBytes), hash(hash)
 {
    QMutexLocker locker(&this->mutex);
    L_DEBU(QString("New chunk[%1] : %2. File : %3").arg(num).arg(hash.toStr()).arg(this->file->getFullPath()));
