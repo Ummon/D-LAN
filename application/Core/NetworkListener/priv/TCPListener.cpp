@@ -16,7 +16,7 @@ const int TCPListener::MAX_LISTEN_ATTEMPT(10);
 TCPListener::TCPListener(QSharedPointer<PM::IPeerManager> peerManager)
    : peerManager(peerManager)
 {   
-   this->currentPort = SETTINGS.getUInt32("unicast_base_port");
+   this->currentPort = SETTINGS.get<quint32>("unicast_base_port");
 
    int n = 0;
    while(!this->tcpServer.listen(QHostAddress::Any, this->currentPort))

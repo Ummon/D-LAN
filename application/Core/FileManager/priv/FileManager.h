@@ -44,7 +44,7 @@ namespace FM
       Protos::Core::GetEntriesResult getEntries(const Protos::Common::Entry& dir);
       Protos::Core::GetEntriesResult getEntries();
 
-      QList<Protos::Common::FindResult> find(const QString& words, int maxSize);
+      QList<Protos::Common::FindResult> find(const QString& words, int maxNbResult, int maxSize);
       QBitArray haveChunks(const QList<Common::Hash>& hashes);
       quint64 getAmount();
 

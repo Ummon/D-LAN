@@ -186,38 +186,17 @@ void Settings::get(const QString& name, Hash& hash)
    hash = static_cast<const Protos::Common::Hash&>(this->settings.GetReflection()->GetMessage(this->settings, fieldDescriptor)).hash().data();
 }
 
-quint32 Settings::getUInt32(const QString& name)
+void Settings::rm(const QString& name)
 {
    QMutexLocker lock(&this->mutex);
-   quint32 value = 0;
-   Settings::get(name, value);
-   return value;
+   const google::protobuf::FieldDescriptor* fieldDescriptor = this->descriptor->FindFieldByName(name.toStdString());
+   if (!fieldDescriptor)
+   {
+      printErrorNameNotFound(name);
+      return;
+   }
+   this->settings.GetReflection()->ClearField(&this->settings, fieldDescriptor);
 }
-
-double Settings::getDouble(const QString& name)
-{
-   QMutexLocker lock(&this->mutex);
-   double value = 0;
-   Settings::get(name, value);
-   return value;
-}
-
-QString Settings::getString(const QString& name)
-{
-   QMutexLocker lock(&this->mutex);
-   QString value;
-   Settings::get(name, value);
-   return value;
-}
-
-Hash Settings::getHash(const QString& name)
-{
-   QMutexLocker lock(&this->mutex);
-   Hash value;
-   Settings::get(name, value);
-   return value;
-}
-
 
 void Settings::printErrorNameNotFound(const QString& name)
 {

@@ -18,9 +18,7 @@ using namespace PM;
 PeerManager::PeerManager(QSharedPointer<FM::IFileManager> fileManager)
    : fileManager(fileManager)
 {
-   L_USER("Loading ..");
-
-   this->timer.setInterval(SETTINGS.getUInt32("pending_socket_timeout") / 10);
+   this->timer.setInterval(SETTINGS.get<quint32>("pending_socket_timeout") / 10);
    connect(&this->timer, SIGNAL(timeout()), this, SLOT(checkIdlePendingSockets()));
 
    Protos::Common::Settings settings;
@@ -195,7 +193,7 @@ void PeerManager::checkIdlePendingSockets()
    for (QMutableListIterator<PendingSocket> i(this->pendingSockets); i.hasNext();)
    {
       PendingSocket pendingSocket = i.next();
-      if (static_cast<quint32>(pendingSocket.t.elapsed()) > SETTINGS.getUInt32("pending_socket_timeout"))
+      if (static_cast<quint32>(pendingSocket.t.elapsed()) > SETTINGS.get<quint32>("pending_socket_timeout"))
       {
          i.remove();
          // Without these 'disconnect' this warning is printed by Qt : "QCoreApplication::postEvent: Unexpected null receiver".

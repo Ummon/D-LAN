@@ -433,7 +433,7 @@ void Tests::findExistingFilesWithOneWord()
       QList<QString>() << "aaaa dddddd.txt" << "aaaa cccc.txt" << "aaaa bbbb.txt" << "aaaa bbbb cccc.txt"
    };
 
-   QList<Protos::Common::FindResult> results = this->fileManager->find(terms, 65536);
+   QList<Protos::Common::FindResult> results = this->fileManager->find(terms, 10000, 65536);
    QVERIFY(!results.isEmpty());
    this->printSearch(terms, results.first());
    this->compareExpectedResult(results.first(), expectedLevelResult, expectedFileResult);
@@ -445,7 +445,7 @@ void Tests::findUnexistingFilesWithOneWord()
    qDebug() << "===== findUnexistingFilesWithOneWord() =====";
 
    QString terms("mmmm");
-   QList<Protos::Common::FindResult> results = this->fileManager->find(terms, 65536);
+   QList<Protos::Common::FindResult> results = this->fileManager->find(terms, 10000, 65536);
    QVERIFY(results.isEmpty());
 }
 
@@ -466,7 +466,7 @@ void Tests::findFilesWithSomeWords()
       QList<QString>() << "bbbb dddd.txt" << "bbbb.txt"
    };
 
-   QList<Protos::Common::FindResult> results = this->fileManager->find(terms, 65536);
+   QList<Protos::Common::FindResult> results = this->fileManager->find(terms, 10000, 65536);
    QVERIFY(!results.isEmpty());
    this->printSearch(terms, results.first());
    this->compareExpectedResult(results.first(), expectedLevelResult, expectedFileResult);
@@ -479,7 +479,7 @@ void Tests::findFilesWithResultFragmentation()
    const int FRAGMENT_MAX_SIZE = 120;
 
    QString terms("bbb");
-   QList<Protos::Common::FindResult> results = this->fileManager->find(terms, FRAGMENT_MAX_SIZE);
+   QList<Protos::Common::FindResult> results = this->fileManager->find(terms, 10000, FRAGMENT_MAX_SIZE);
    qDebug() << "Nb fragment : " << results.size();
    for (int i = 0; i < results.size(); i++)
    {

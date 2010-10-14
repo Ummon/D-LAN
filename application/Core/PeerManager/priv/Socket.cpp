@@ -19,7 +19,7 @@ Socket::Socket(PeerManager* peerManager, QSharedPointer<FM::IFileManager> fileMa
    L_DEBU(QString("New Socket[%1] (connection from %2:%3)").arg(this->num).arg(socket->peerAddress().toString()).arg(socket->peerPort()));
 #endif
 
-   this->socket->setReadBufferSize(SETTINGS.getUInt32("socket_buffer_size"));
+   this->socket->setReadBufferSize(SETTINGS.get<quint32>("socket_buffer_size"));
    connect(this->socket, SIGNAL(disconnected()), this->socket, SLOT(deleteLater()));
    this->initActivityTimer();
 }
@@ -33,7 +33,7 @@ Socket::Socket(PeerManager* peerManager, QSharedPointer<FM::IFileManager> fileMa
 #endif
 
    this->socket = new QTcpSocket();
-   this->socket->setReadBufferSize(SETTINGS.getUInt32("socket_buffer_size"));
+   this->socket->setReadBufferSize(SETTINGS.get<quint32>("socket_buffer_size"));
    connect(this->socket, SIGNAL(disconnected()), this->socket, SLOT(deleteLater()));
    this->socket->connectToHost(address, port);
    this->initActivityTimer();
@@ -340,7 +340,7 @@ bool Socket::readMessage()
 void Socket::initActivityTimer()
 {
    this->activityTimer.setSingleShot(true);
-   this->activityTimer.setInterval(SETTINGS.getUInt32("idle_socket_timeout"));
+   this->activityTimer.setInterval(SETTINGS.get<quint32>("idle_socket_timeout"));
    connect(&this->activityTimer, SIGNAL(timeout()), this, SLOT(close()));
    this->activityTimer.start();
 }

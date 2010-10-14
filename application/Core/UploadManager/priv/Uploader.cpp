@@ -43,7 +43,7 @@ void Uploader::run()
    {
       QSharedPointer<FM::IDataReader> reader = this->chunk->getDataReader();
 
-      char buffer[SETTINGS.getUInt32("buffer_size")];
+      char buffer[SETTINGS.get<quint32>("buffer_size")];
       int currentOffset = this->offset;
       qint64 bytesRead = 0;
 
@@ -59,9 +59,9 @@ void Uploader::run()
 
          currentOffset += bytesSent;
 
-         if (socket->getQSocket()->bytesToWrite() > SETTINGS.getUInt32("socket_buffer_size"))
+         if (socket->getQSocket()->bytesToWrite() > SETTINGS.get<quint32>("socket_buffer_size"))
          {
-            if (!socket->getQSocket()->waitForBytesWritten(SETTINGS.getUInt32("timeout_during_transfert")))
+            if (!socket->getQSocket()->waitForBytesWritten(SETTINGS.get<quint32>("timeout_during_transfert")))
             {
                L_ERRO(QString("Socket : cannot write data : %1").arg(this->chunk->toStr()));
                networkError = true;

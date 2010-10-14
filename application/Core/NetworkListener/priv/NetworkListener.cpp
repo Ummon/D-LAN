@@ -21,7 +21,6 @@ NetworkListener::NetworkListener(
    uDPListener(fileManager, peerManager, downloadManager, tCPListener.getCurrentPort()),
    chat(uDPListener)
 {
-   L_USER("Loading ..");
 }
 
 IChat& NetworkListener::getChat()

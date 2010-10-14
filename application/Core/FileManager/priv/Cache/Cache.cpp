@@ -20,7 +20,7 @@ Cache::Cache(FileManager* fileManager)
 
 bool Cache::isFileUnfinished(const QString filename)
 {
-   const QString suffix = SETTINGS.getString("unfinished_suffix_term");
+   const QString suffix = SETTINGS.get<QString>("unfinished_suffix_term");
    return filename.size() > suffix.size() && filename.endsWith(suffix);
 }
 
@@ -180,7 +180,7 @@ QList< QSharedPointer<IChunk> > Cache::newFile(const Protos::Common::Entry& remo
 {
    QMutexLocker locker(&this->lock);
 
-   Directory* dir = this->getWriteableDirectory(QDir::cleanPath(remoteEntry.path().data()), remoteEntry.size() + SETTINGS.getUInt32("minimum_free_space"));
+   Directory* dir = this->getWriteableDirectory(QDir::cleanPath(remoteEntry.path().data()), remoteEntry.size() + SETTINGS.get<quint32>("minimum_free_space"));
    if (!dir)
       throw UnableToCreateNewFileException();
 
@@ -407,7 +407,7 @@ void Cache::retrieveFromFile(const Protos::FileCache::Hashes& hashes)
 void Cache::saveInFile(Protos::FileCache::Hashes& hashes) const
 {
    hashes.set_version(1);
-   hashes.set_chunksize(SETTINGS.getUInt32("chunk_size"));
+   hashes.set_chunksize(SETTINGS.get<quint32>("chunk_size"));
 
    for (QListIterator<SharedDirectory*> i(this->sharedDirs); i.hasNext();)
    {

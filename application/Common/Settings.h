@@ -39,10 +39,10 @@ namespace Common
       void get(const QString& name, QString& value);
       void get(const QString& name, Hash& hash);
 
-      quint32 getUInt32(const QString& name);
-      double getDouble(const QString& name);
-      QString getString(const QString& name);
-      Hash getHash(const QString& name);
+      template <typename T>
+      T get(const QString& name);
+
+      void rm(const QString& name);
 
    private:
       static void printErrorNameNotFound(const QString& name);
@@ -54,6 +54,18 @@ namespace Common
 
       const google::protobuf::Descriptor* descriptor;
    };
+}
+
+/***** Definitions *****/
+using namespace Common;
+
+template <typename T>
+T Settings::get(const QString& name)
+{
+   QMutexLocker lock(&this->mutex);
+   T value;
+   this->get(name, value);
+   return value;
 }
 
 #endif

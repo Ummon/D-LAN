@@ -17,7 +17,7 @@ Peer::Peer(PeerManager* peerManager, QSharedPointer<FM::IFileManager> fileManage
    : peerManager(peerManager), fileManager(fileManager), connectionPool(peerManager, fileManager, ID), ID(ID), speed(MAX_SPEED), alive(false)
 {
    this->aliveTimer.setSingleShot(true);
-   this->aliveTimer.setInterval(SETTINGS.getUInt32("peer_timeout_factor") * SETTINGS.getUInt32("peer_imalive_period"));
+   this->aliveTimer.setInterval(SETTINGS.get<quint32>("peer_timeout_factor") * SETTINGS.get<quint32>("peer_imalive_period"));
    connect(&this->aliveTimer, SIGNAL(timeout()), this, SLOT(consideredDead()));
 }
 
@@ -53,7 +53,7 @@ quint64 Peer::getSharingAmount() const
 
 quint32 Peer::getSpeed()
 {
-   if (static_cast<quint32>(this->lastSpeedUpdate.restart()) > 1000 * SETTINGS.getUInt32("download_rate_valid_time_factor") / (SETTINGS.getUInt32("lan_speed") / 1024 / 1024))
+   if (static_cast<quint32>(this->lastSpeedUpdate.restart()) > 1000 * SETTINGS.get<quint32>("download_rate_valid_time_factor") / (SETTINGS.get<quint32>("lan_speed") / 1024 / 1024))
       this->speed = MAX_SPEED;
    return this->speed;
 }

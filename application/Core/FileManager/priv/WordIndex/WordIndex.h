@@ -31,7 +31,7 @@ namespace FM
    };
 }
 
-/***** Definition *****/
+/***** Definitions *****/
 using namespace FM;
 
 template<typename T>

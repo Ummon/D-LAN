@@ -41,9 +41,9 @@ File::File(
    const Common::Hashes& hashes,
    bool createPhysically
 )
-   : Entry(dir->getCache(), name + (createPhysically ? SETTINGS.getString("unfinished_suffix_term") : ""), size),
-     CHUNK_SIZE(SETTINGS.getUInt32("chunk_size")),
-     BUFFER_SIZE(SETTINGS.getUInt32("buffer_size")),
+   : Entry(dir->getCache(), name + (createPhysically ? SETTINGS.get<QString>("unfinished_suffix_term") : ""), size),
+     CHUNK_SIZE(SETTINGS.get<quint32>("chunk_size")),
+     BUFFER_SIZE(SETTINGS.get<quint32>("buffer_size")),
      dir(dir),
      dateLastModified(dateLastModified),
      nbChunkComplete(0),
@@ -369,7 +369,7 @@ bool File::computeHashes(int n)
    time.start();
 #endif
 
-   char buffer[SETTINGS.getUInt32("buffer_size")];
+   char buffer[SETTINGS.get<quint32>("buffer_size")];
    bool endOfFile = false;
    qint64 bytesReadTotal = 0;
    while (!endOfFile)
@@ -388,7 +388,7 @@ bool File::computeHashes(int n)
       int bytesReadChunk = 0;
       while (bytesReadChunk < CHUNK_SIZE)
       {
-         int bytesRead = file.read(buffer, SETTINGS.getUInt32("buffer_size"));
+         int bytesRead = file.read(buffer, SETTINGS.get<quint32>("buffer_size"));
          switch (bytesRead)
          {
          case -1:
@@ -532,7 +532,7 @@ void File::setAsComplete()
       QString oldname = this->name;
 
       this->dateLastModified = QFileInfo(this->getFullPath()).lastModified();
-      this->name = this->name.left(this->name.size() - SETTINGS.getString("unfinished_suffix_term").size());
+      this->name = this->name.left(this->name.size() - SETTINGS.get<QString>("unfinished_suffix_term").size());
 
       if (!QFile::rename(path, this->getFullPath()))
       {

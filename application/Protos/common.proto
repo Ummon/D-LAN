@@ -85,4 +85,5 @@ message Settings {
    optional uint32 max_udp_datagram_size = 25 [default = 8164]; // (~8 KiB). Don't include the IP+UDP header (28 bits).
    optional uint32 number_of_hashes_sent_imalive = 26 [default = 128];
    optional uint32 protocol_version = 27 [default = 1];
+   optional uint32 max_number_of_search_result_to_send = 28 [default = 100];
 }

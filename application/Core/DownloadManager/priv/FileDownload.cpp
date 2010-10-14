@@ -13,7 +13,7 @@ FileDownload::FileDownload(
    Common::Hash peerSourceID, const Protos::Common::Entry& entry
 )
    : Download(fileManager, peerManager, peerSourceID, entry),
-   NB_CHUNK(this->entry.size() / SETTINGS.getUInt32("chunk_size") + (this->entry.size() % SETTINGS.getUInt32("chunk_size") == 0 ? 0 : 1)),
+   NB_CHUNK(this->entry.size() / SETTINGS.get<quint32>("chunk_size") + (this->entry.size() % SETTINGS.get<quint32>("chunk_size") == 0 ? 0 : 1)),
    occupiedPeersAskingForHashes(occupiedPeersAskingForHashes),
    occupiedPeersDownloadingChunk(occupiedPeersDownloadingChunk),
    nbHashesKnown(0),

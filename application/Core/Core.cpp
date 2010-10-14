@@ -3,6 +3,7 @@ using namespace Core;
 
 #include <QObject>
 #include <QThread>
+#include <QRegExp>
 
 #include <FileManager/Builder.h>
 #include <PeerManager/Builder.h>
@@ -10,17 +11,21 @@ using namespace Core;
 #include <DownloadManager/Builder.h>
 #include <NetworkListener/Builder.h>
 
-#include <Log.h>
-
-::Core::Core()
+::Core::Core(int argc, char **argv)
+   : QtService<QCoreApplication>(argc, argv, "Aybabtu")
 {
    GOOGLE_PROTOBUF_VERIFY_VERSION;
 
-   L_USER("Loading ..");
+   this->setServiceDescription("A LAN file sharing system");
+   this->setStartupType(QtServiceController::ManualStartup);
+   this->setServiceFlags(QtServiceBase::Default);
+}
 
+void ::Core::start()
+{
    this->checkSettingsIntegrity();
 
-   QThread::currentThread()->setObjectName("Core");
+   L_USER("Core starting ..");
 
    this->fileManager = FM::Builder::newFileManager();
    this->peerManager = PM::Builder::newPeerManager(this->fileManager);
@@ -31,7 +36,7 @@ using namespace Core;
    L_USER("Ready to serve");
 }
 
-::Core::~Core()
+void ::Core::stop()
 {
    google::protobuf::ShutdownProtobufLibrary();
 }
@@ -41,6 +46,43 @@ using namespace Core;
   */
 void ::Core::checkSettingsIntegrity()
 {
-   //LOG_USER(this->logger, "Checking");
-   // TODO..
+   SETTINGS.rm("chunk_size"); // The size of the chunks must never change.
+
+   this->checkSetting("buffer_size", 1024u, 32u * 1024u * 1024u, true);
+   this->checkSetting("socket_buffer_size", 1024u, 32u * 1024u * 1024u, true);
+   this->checkSetting("timeout_during_transfert", 1000u, 60u * 1000u);
+
+   this->checkSetting("minimum_duration_when_hashing", 100u, 30u * 1000u);
+   this->checkSetting("time_between_rescan", 1000u, 60u * 60u * 1000u);
+   QRegExp unfinishedSuffixExp("^\\.\\S+$");
+   if (!unfinishedSuffixExp.exactMatch(SETTINGS.get<QString>("unfinished_suffix_term")))
+   {
+      L_ERRO("Settings : 'unfinished_suffix_term' must begin with a dot and not contain any space character");
+      SETTINGS.rm("unfinished_suffix_term");
+   }
+   this->checkSetting("minimum_free_space", 0u, 4294967295u);
+
+   this->checkSetting("pending_socket_timeout", 10u, 30u * 1000u);
+   this->checkSetting("peer_timeout_factor", 1u, 10u);
+   this->checkSetting("idle_socket_timeout", 1000u, 60u * 60u * 1000u);
+   this->checkSetting("max_number_idle_socket", 0u, 10u);
+
+   this->checkSetting("number_of_downloader", 1u, 10u);
+   this->checkSetting("lan_speed", 1024u * 1024u, 1024u * 1024u * 1024u);
+   this->checkSetting("time_recheck_chunk_factor", 1.0, 10.0);
+   this->checkSetting("switch_to_another_peer_factor", 1.0, 10.0);
+   this->checkSetting("download_rate_valid_time_factor", 100u, 1000u);
+   this->checkSetting("peer_imalive_period", 1000u, 60u * 1000u);
+
+   this->checkSetting("unicast_base_port", 1u, 65535u);
+   this->checkSetting("multicast_port", 1u, 65535u);
+   this->checkSetting("multicast_ttl", 1u, 255u);
+   this->checkSetting("max_udp_datagram_size", 255u, 65535u);
+   this->checkSetting("number_of_hashes_sent_imalive", 1u, 1000u);
+   this->checkSetting("protocol_version", 1u, 10000u);
+   this->checkSetting("max_number_of_search_result_to_send", 1u, 10000u);
 }
+
+
+
+

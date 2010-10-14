@@ -107,7 +107,7 @@ void DownloadManager::peerNoLongerDownloadingChunk(PM::IPeer* peer)
 {
    L_DEBU(QString("A peer is free : %1, number of downloading thread : %2").arg(peer->getID().toStr()).arg(this->numberOfDownload));
 
-   if (this->numberOfDownload < static_cast<int>(SETTINGS.getUInt32("number_of_downloader")))
+   if (this->numberOfDownload < static_cast<int>(SETTINGS.get<quint32>("number_of_downloader")))
    {
       for (QLinkedListIterator<Download*> i(this->downloads); i.hasNext();)
       {

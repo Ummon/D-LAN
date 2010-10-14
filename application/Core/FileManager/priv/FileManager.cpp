@@ -27,10 +27,8 @@ using namespace FM;
 #include <priv/Cache/Chunk.h>
 
 FileManager::FileManager()
-   : CHUNK_SIZE(SETTINGS.getUInt32("chunk_size")), fileUpdater(this), cache(this)
+   : CHUNK_SIZE(SETTINGS.get<quint32>("chunk_size")), fileUpdater(this), cache(this)
 {
-   L_USER("Loading ..");
-
    connect(&this->cache, SIGNAL(entryAdded(Entry*)),     this, SLOT(entryAdded(Entry*)),     Qt::DirectConnection);
    connect(&this->cache, SIGNAL(entryRemoved(Entry*)),   this, SLOT(entryRemoved(Entry*)),   Qt::DirectConnection);
    connect(&this->cache, SIGNAL(chunkHashKnown(QSharedPointer<Chunk>)), this, SLOT(chunkHashKnown(QSharedPointer<Chunk>)), Qt::DirectConnection);
@@ -44,7 +42,6 @@ FileManager::FileManager()
    this->loadCacheFromFile();
 
    this->fileUpdater.start();
-   L_USER("Loaded!");
 }
 
 FileManager::~FileManager()
@@ -115,7 +112,7 @@ Protos::Core::GetEntriesResult FileManager::getEntries()
 /**
   * @see http://dev.euphorik.ch/wiki/pmp/Algorithms#Word-indexing for more information.
   */
-QList<Protos::Common::FindResult> FileManager::find(const QString& words, int maxSize)
+QList<Protos::Common::FindResult> FileManager::find(const QString& words, int maxNbResult, int maxSize)
 {
    QStringList terms = FileManager::splitInWords(words);
    int n = terms.size();
@@ -128,6 +125,9 @@ QList<Protos::Common::FindResult> FileManager::find(const QString& words, int ma
    QList<Protos::Common::FindResult> findResults;
    findResults << Protos::Common::FindResult();
 
+   int numberOfResult = 0;
+   bool end = false;
+
    int level = 0;
    // For each group of intersection number.
    // For example, [a, b, c] :
@@ -136,7 +136,7 @@ QList<Protos::Common::FindResult> FileManager::find(const QString& words, int ma
    //     (a & c) \ b
    //     (b & c) \ a
    //  3) a \ b \ c
-   for (int i = 0; i < n; i++)
+   for (int i = 0; i < n && !end; i++)
    {
       int nbIntersect = n - i; // Number of set intersected.
       int intersect[nbIntersect]; // A array of the results wich will be intersected.
@@ -148,7 +148,7 @@ QList<Protos::Common::FindResult> FileManager::find(const QString& words, int ma
       //  * (a, b)
       //  * (a, c)
       //  * (b, c)
-      for (int j = 0; j < Common::Global::nCombinations(n, nbIntersect); j++)
+      for (int j = 0; j < Common::Global::nCombinations(n, nbIntersect) && !end; j++)
       {
          QSet<Entry*> currentLevelSet;
 
@@ -185,6 +185,12 @@ QList<Protos::Common::FindResult> FileManager::find(const QString& words, int ma
                   findResults.last().add_entry()->CopyFrom(entries->Get(entries->size()-1));
                   entries->RemoveLast();
                }
+            }
+
+            if (++numberOfResult >= maxNbResult)
+            {
+               end = true;
+               break;
             }
          }
 
