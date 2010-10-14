@@ -71,7 +71,7 @@ void ::Core::checkSettingsIntegrity()
    this->checkSetting("lan_speed", 1024u * 1024u, 1024u * 1024u * 1024u);
    this->checkSetting("time_recheck_chunk_factor", 1.0, 10.0);
    this->checkSetting("switch_to_another_peer_factor", 1.0, 10.0);
-   this->checkSetting("download_rate_valid_time_factor", 100u, 1000u);
+   this->checkSetting("download_rate_valid_time_factor", 100u, 100000u);
    this->checkSetting("peer_imalive_period", 1000u, 60u * 1000u);
 
    this->checkSetting("unicast_base_port", 1u, 65535u);
