@@ -23,6 +23,8 @@ using namespace Core;
 
 void ::Core::start()
 {
+   QThread::currentThread()->setObjectName("Core");
+
    this->checkSettingsIntegrity();
 
    L_USER("Core starting ..");
