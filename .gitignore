@@ -1,5 +1,6 @@
 *.[oa]
 moc_*.cpp
+*.moc
 *.pb.cc
 *.pb.h
 *.pb.cpp
