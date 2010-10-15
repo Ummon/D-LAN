@@ -500,18 +500,12 @@ bool File::hasOneOrMoreHashes()
 bool File::isComplete()
 {
    QMutexLocker lock(&this->mutex);
-   //L_DEBU(QString("this->size = %1, CHUNK_SIZE = %2, res = %3, this->getNbChunks() = %4").arg(this->size).arg(CHUNK_SIZE).arg(this->size / CHUNK_SIZE + (this->size % CHUNK_SIZE == 0 ? 0 : 1)).arg(this->getNbChunks()));
-
-   /*
-   qint64 currentSize = 0;
-   for (int i = 0; i < this->chunks.size(); i++)
-      currentSize += this->chunks[i]->getKnownBytes();
-
-   return this->size == currentSize;*/
-
    return this->complete;
 }
 
+/**
+  * Called from a downloading thread.
+  */
 void File::setAsComplete()
 {
    QMutexLocker lock(&this->mutex);
@@ -534,7 +528,7 @@ void File::setAsComplete()
       this->dateLastModified = QFileInfo(this->getFullPath()).lastModified();
       this->name = this->name.left(this->name.size() - SETTINGS.get<QString>("unfinished_suffix_term").size());
 
-      if (!QFile::rename(path, this->getFullPath()))
+      if (!QFile(path).rename(this->getFullPath()))
       {
          this->dateLastModified = oldDate;
          this->name = oldname;
@@ -545,6 +539,8 @@ void File::setAsComplete()
 
 void File::chunkComplete()
 {
+   QMutexLocker lock(&this->mutex);
+
    if (++this->nbChunkComplete == this->getNbChunks())
    {
       this->setAsComplete();
@@ -591,16 +587,4 @@ bool File::hasAParentDir(Directory* dir)
       return true;
    return this->dir->isAChildOf(dir);
 }
-
-/*QList<IChunk*> File::getChunks() const
-{
-   // TODO
-   return QList<IChunk*>(); //this->chunks;
-}
-
-const QList<Chunk*>& File::getChunksRef() const
-{
-   return this->chunks;
-}*/
-
 
