@@ -19,7 +19,6 @@ PeerUpdater::PeerUpdater(QList< QSharedPointer<FM::IFileManager> > fileManagers,
 
    for (int i = 0; i < this->peerManagers.size(); i++)
    {
-      // dynamic_cast<PM::PeerManager*>(this->peerManagers[i].data())->setID(Common::Hash::rand());
       this->peerManagers[i]->setNick("Bob " + QString::number(i + 1));
       qDebug() << QString("Peer[%1] : %2 %3").arg(i).arg(this->peerManagers[i]->getNick()).arg(this->peerManagers[i]->getID().toStr());
    }
@@ -27,6 +26,7 @@ PeerUpdater::PeerUpdater(QList< QSharedPointer<FM::IFileManager> > fileManagers,
 
 void PeerUpdater::start()
 {
+   this->update();
    this->timer.start();
 }
 
