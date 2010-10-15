@@ -170,9 +170,12 @@ void Socket::finished(bool error)
 
 void Socket::close()
 {
-   L_DEBU(QString("Socket[%1] closed").arg(this->num));
+   // L_DEBU(QString("Socket[%1] closed").arg(this->num));
 
-   this->socket->close();
+   // A socket can be currently in a download or upload thread so we can't close it.
+   // This code is commented because a download or an upload may begin just before the socket-close and thus change its thread... (We should use mutex synchronisation)
+   // if (this->socket->thread() == QThread::currentThread())
+   //   this->socket->close();
 }
 
 void Socket::disconnected()
