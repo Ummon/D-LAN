@@ -29,7 +29,8 @@ SOURCES += Hash.cpp \
     Global.cpp \
     Network.cpp \
     ZeroCopyStreamQIODevice.cpp \
-    Settings.cpp
+    Settings.cpp \
+    TransferRateCalculator.cpp
 HEADERS += Hashes.h \
     Hash.h \
     PersistantData.h \
@@ -39,4 +40,5 @@ HEADERS += Hashes.h \
     Uncopyable.h \
     Network.h \
     ZeroCopyStreamQIODevice.h \
-    Settings.h
+    Settings.h \
+    TransferRateCalculator.h
