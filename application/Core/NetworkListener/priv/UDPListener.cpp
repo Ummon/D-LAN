@@ -163,6 +163,8 @@ void UDPListener::processPendingMulticastDatagrams()
                continue;
             }
 
+            PM::IPeer* peer = this->peerManager->getPeer(header.senderID);
+
             this->peerManager->updatePeer(
                header.senderID,
                peerAddress,
@@ -184,6 +186,13 @@ void UDPListener::processPendingMulticastDatagrams()
                   chunkOwnedMessage.add_chunk_state(bitArray[i]);
 
                this->send(0x02, header.senderID, chunkOwnedMessage);
+            }
+
+            // If we don't know the peer, he may not know our.
+            if (!peer || !peer->isAlive())
+            {
+               this->timerIMAlive.start();
+               this->sendIMAliveMessage();
             }
          }
          break;
