@@ -11,11 +11,16 @@ using namespace UM;
 #include <priv/Constants.h>
 #include <priv/Log.h>
 
-Uploader::Uploader(QSharedPointer<FM::IChunk> chunk, int offset, PM::ISocket* socket)
-   : chunk(chunk), offset(offset), socket(socket)
+Uploader::Uploader(QSharedPointer<FM::IChunk> chunk, int offset, PM::ISocket* socket) :
+   chunk(chunk), offset(offset), socket(socket)
 {
    this->mainThread = QThread::currentThread();
    this->socket->getQSocket()->moveToThread(this);
+}
+
+int Uploader::getUploadRate() const
+{
+   return this->transfertRateCalculator.getTransferRate();
 }
 
 Common::Hash Uploader::getPeerID() const
@@ -47,6 +52,8 @@ void Uploader::run()
       int currentOffset = this->offset;
       qint64 bytesRead = 0;
 
+      this->transfertRateCalculator.reset();
+
       while (bytesRead = reader->read(buffer, currentOffset))
       {
          int bytesSent = socket->getQSocket()->write(buffer, bytesRead);
@@ -61,13 +68,15 @@ void Uploader::run()
 
          if (socket->getQSocket()->bytesToWrite() > SETTINGS.get<quint32>("socket_buffer_size"))
          {
-            if (!socket->getQSocket()->waitForBytesWritten(SETTINGS.get<quint32>("timeout_during_transfert")))
+            if (!socket->getQSocket()->waitForBytesWritten(SETTINGS.get<quint32>("timeout_during_transfer")))
             {
                L_ERRO(QString("Socket : cannot write data : %1").arg(this->chunk->toStr()));
                networkError = true;
                break;
             }
          }
+
+         this->transfertRateCalculator.addData(bytesSent);
       }
    }
    catch(FM::UnableToOpenFileInReadModeException&)
