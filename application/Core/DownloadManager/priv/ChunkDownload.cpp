@@ -287,8 +287,8 @@ void ChunkDownload::downloadingEnded()
 
    this->networkError = false;
    this->getChunkResult.clear();
-   emit downloadFinished();
    this->downloading = false;
+   emit downloadFinished();
 
    // occupiedPeersDownloadingChunk can relaunch the download, so we have to set this->currentDownloadingPeer to 0 before.
    PM::IPeer* currentPeer = this->currentDownloadingPeer;
