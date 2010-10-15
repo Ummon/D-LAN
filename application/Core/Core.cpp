@@ -52,7 +52,7 @@ void ::Core::checkSettingsIntegrity()
 
    this->checkSetting("buffer_size", 1024u, 32u * 1024u * 1024u, true);
    this->checkSetting("socket_buffer_size", 1024u, 32u * 1024u * 1024u, true);
-   this->checkSetting("timeout_during_transfert", 1000u, 60u * 1000u);
+   this->checkSetting("timeout_during_transfer", 1000u, 60u * 1000u);
 
    this->checkSetting("minimum_duration_when_hashing", 100u, 30u * 1000u);
    this->checkSetting("time_between_rescan", 1000u, 60u * 60u * 1000u);
