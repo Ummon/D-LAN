@@ -4,6 +4,7 @@
 #include <QThread>
 #include <QSharedPointer>
 
+#include <Common/TransferRateCalculator.h>
 #include <Core/FileManager/IChunk.h>
 #include <Core/FileManager/IDataReader.h>
 
@@ -18,6 +19,8 @@ namespace UM
       Q_OBJECT
    public:
       Uploader(QSharedPointer<FM::IChunk> chunk, int offset, PM::ISocket* socket);
+
+      int getUploadRate() const;
 
       Common::Hash getPeerID() const;
       QSharedPointer<FM::IChunk> getChunk() const;
@@ -34,6 +37,8 @@ namespace UM
       QSharedPointer<FM::IChunk> chunk;
       int offset;
       PM::ISocket* socket;
+
+      Common::TransferRateCalculator transfertRateCalculator;
 
       QThread* mainThread;
    };

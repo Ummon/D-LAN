@@ -21,6 +21,10 @@ namespace UM
    public:
       UploadManager(QSharedPointer<FM::IFileManager> fileManager, QSharedPointer<PM::IPeerManager> peerManager);
 
+      QList< QSharedPointer<IUpload> > getUploads();
+
+      int getUploadRate() const;
+
    private slots:
       void getChunk(Common::Hash hash, int offset, PM::ISocket* socket);
       void uploadFinished(bool networkError);

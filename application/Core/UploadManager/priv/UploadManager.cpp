@@ -4,6 +4,7 @@ using namespace UM;
 #include <Protos/core_protocol.pb.h>
 
 #include <Common/ZeroCopyStreamQIODevice.h>
+#include <Common/Settings.h>
 #include <Core/FileManager/IChunk.h>
 #include <Core/FileManager/Exceptions.h>
 #include <Core/PeerManager/ISocket.h>
@@ -11,10 +12,29 @@ using namespace UM;
 #include <priv/Log.h>
 #include <priv/Uploader.h>
 
-UploadManager::UploadManager(QSharedPointer<FM::IFileManager> fileManager, QSharedPointer<PM::IPeerManager> peerManager)
-   : fileManager(fileManager), peerManager(peerManager)
+UploadManager::UploadManager(QSharedPointer<FM::IFileManager> fileManager, QSharedPointer<PM::IPeerManager> peerManager) :
+   fileManager(fileManager), peerManager(peerManager)
 {
    connect(this->peerManager.data(), SIGNAL(getChunk(Common::Hash, int, PM::ISocket*)), this, SLOT(getChunk(Common::Hash, int, PM::ISocket*)));
+}
+
+QList< QSharedPointer<IUpload> > UploadManager::getUploads()
+{
+   QList< QSharedPointer<IUpload> > uploads;
+
+   for (QListIterator< QSharedPointer<Uploader> > i(this->uploaders); i.hasNext();)
+      uploads << i.next();
+
+   return uploads;
+}
+
+int UploadManager::getUploadRate() const
+{
+   int uploadRate = 0;
+   for (QListIterator< QSharedPointer<Uploader> > i(this->uploaders); i.hasNext();)
+      uploadRate += i.next()->getUploadRate();
+
+   return uploadRate;
 }
 
 void UploadManager::getChunk(Common::Hash hash, int offset, PM::ISocket* socket)
