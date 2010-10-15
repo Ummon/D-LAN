@@ -67,10 +67,17 @@ QList< QSharedPointer<IChunkDownload> > DownloadManager::getUnfinishedChunks(int
    return QList< QSharedPointer<IChunkDownload> >();
 }
 
-int DownloadManager::getDownloadRate()
+int DownloadManager::getDownloadRate() const
 {
-   // TODO
-   return 0;
+   int downloadRate = 0;
+   for (QLinkedListIterator<Download*> i(this->downloads); i.hasNext();)
+   {
+      FileDownload* fileDownload = dynamic_cast<FileDownload*>(i.next());
+
+      if (fileDownload && fileDownload->getStatus() == DOWNLOADING)
+         downloadRate += fileDownload->getDownloadRate();
+   }
+   return downloadRate;
 }
 
 void DownloadManager::newEntries(const Protos::Core::GetEntriesResult& entries)
@@ -107,22 +114,19 @@ void DownloadManager::peerNoLongerDownloadingChunk(PM::IPeer* peer)
 {
    L_DEBU(QString("A peer is free : %1, number of downloading thread : %2").arg(peer->getID().toStr()).arg(this->numberOfDownload));
 
-   if (this->numberOfDownload < static_cast<int>(SETTINGS.get<quint32>("number_of_downloader")))
+   for (QLinkedListIterator<Download*> i(this->downloads); i.hasNext() && this->numberOfDownload < static_cast<int>(SETTINGS.get<quint32>("number_of_downloader"));)
    {
-      for (QLinkedListIterator<Download*> i(this->downloads); i.hasNext();)
-      {
-         FileDownload* fileDownload = dynamic_cast<FileDownload*>(i.next());
-         if (!fileDownload)
-            continue;
+      FileDownload* fileDownload = dynamic_cast<FileDownload*>(i.next());
+      if (!fileDownload)
+         continue;
 
-         QSharedPointer<ChunkDownload> chunkDownload = fileDownload->getAChunkToDownload();
-         if (chunkDownload.isNull())
-            continue;
+      QSharedPointer<ChunkDownload> chunkDownload = fileDownload->getAChunkToDownload();
+      if (chunkDownload.isNull())
+         continue;
 
+      connect(chunkDownload.data(), SIGNAL(downloadFinished()), this, SLOT(downloadFinished()), Qt::DirectConnection);
+      if (chunkDownload->startDownloading())
          this->numberOfDownload++;
-         connect(chunkDownload.data(), SIGNAL(downloadFinished()), this, SLOT(downloadFinished()), Qt::DirectConnection);
-         chunkDownload->startDownloading();
-      }
    }
 }
 

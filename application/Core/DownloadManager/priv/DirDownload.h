@@ -29,7 +29,7 @@ namespace DM
       void result(const Protos::Core::GetEntriesResult& entries);
 
    private:
-      QSharedPointer<PM::IGetEntriesResult> getEntriesResult;
+      QSharedPointer<PM::IGetEntriesResult> getEntriesResult;;
    };
 }
 #endif

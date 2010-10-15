@@ -8,26 +8,25 @@ Download::Download(QSharedPointer<FM::IFileManager> fileManager, QSharedPointer<
    : fileManager(fileManager), peerManager(peerManager), peerSourceID(peerSourceID), peerSource(0), entry(entry), status(QUEUED)
 {
    this->timer.setInterval(CHECK_DEAD_PEER_PERIOD);
+   this->timer.setSingleShot(true);
    connect(&this->timer, SIGNAL(timeout()), this, SLOT(retrievePeer()));
 
    this->retrievePeer();
 }
 
-int Download::getId()
+int Download::getId() const
 {
    // TODO
    return 0;
 }
 
-Status Download::getStatus()
+Status Download::getStatus() const
 {
-   // TODO
-   return DM::QUEUED;
+   return this->status;
 }
 
-char Download::getProgress()
+int Download::getProgress() const
 {
-   // TODO
    return 0;
 }
 
@@ -57,13 +56,8 @@ void Download::retrievePeer()
 
    if (!this->hasAValidPeer())
    {
-      this->status |= UNKNOWN_PEER;
+      this->status = UNKNOWN_PEER;
       this->timer.start();
-   }
-   else
-   {
-      this->status &= !UNKNOWN_PEER;
-      this->timer.stop();
    }
 }
 

@@ -11,7 +11,7 @@ namespace DM
 {
    enum Status
    {
-     QUEUED,
+     QUEUED = 1,
      INITIALIZING,
      DOWNLOADING,
      COMPLETE,
@@ -20,7 +20,7 @@ namespace DM
      // All theses status will imply the paused status.
      UNKNOWN_PEER, // The source peer can't be found.
      ENTRY_NOT_FOUND, // The source peer can't find the entry.
-     NO_SOURCE, // Some chunk can't be download. Only when there is no more downloading.
+     NO_SOURCE, // Some chunk can't be downloaded. Only when there is no more downloading.
    };
 
    class IDownload
@@ -28,14 +28,14 @@ namespace DM
    public:
       virtual ~IDownload() {}
 
-      virtual int getId() = 0;
+      virtual int getId() const = 0;
 
-      virtual Status getStatus() = 0;
+      virtual Status getStatus() const = 0;
 
       /**
         * Return a value between 0 and 100.
         */
-      virtual char getProgress() = 0;
+      virtual int getProgress() const = 0;
 
       virtual Common::Hash getPeerSourceID() = 0;
 

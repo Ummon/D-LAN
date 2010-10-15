@@ -14,6 +14,8 @@ using namespace DM;
 #include <Common/Network.h>
 #include <Common/ZeroCopyStreamQIODevice.h>
 
+#include <IDownload.h>
+
 const int Tests::PORT = 59487;
 
 Tests::Tests()
@@ -59,14 +61,8 @@ void Tests::initTestCase()
       new TestServer(this->peerManagers[0], PORT) <<
       new TestServer(this->peerManagers[1], PORT + 1) <<
       new TestServer(this->peerManagers[2], PORT + 2);
-}
-
-void Tests::updatePeers()
-{
-   qDebug() << "===== updatePeers() =====";
 
    this->peerUpdater->start();
-   QTest::qWait(2000);
 }
 
 void Tests::addADirectoryToDownload()
@@ -105,7 +101,43 @@ void Tests::addABigFileToDownload()
    entry.mutable_shared_dir()->CopyFrom(rootEntry.entry(0).shared_dir());
 
    this->downloadManagers[0]->addDownload(this->peerManagers[1]->getID(), entry);
+
+   for (int i = 0; i < 15; i++)
+   {
+      qDebug() << "Upload rate : " << QString("%1/s").arg(Common::Global::formatByteSize(this->uploadManagers[1]->getUploadRate()));
+      qDebug() << "Download rate : " << QString("%1/s").arg(Common::Global::formatByteSize(this->downloadManagers[0]->getDownloadRate()));
+
+      this->printDownloads(0);
+
+      QTest::qWait(100);
+   }
 }
+
+/*void Tests::addABigFileToDownloadFromTwoPeers()
+{
+   qDebug() << "===== addABigFileToDownloadFromTwoPeers() =====";
+
+   const int FILE_SIZE = 256 * 1024 * 1024;
+   QStringList files;
+   files << "sharedDirs/peer2/big2.bin";
+   files << "sharedDirs/peer3/anotherBigFile.bin";
+   for (QStringListIterator i(files); i.hasNext();)
+   {
+      QFile file(i.next());
+      file.open(QIODevice::WriteOnly);
+
+      // To have height different hashes.
+      for (int i = 0; i < 8 ; i++)
+      {
+         QByteArray randomData(32 * 1024 * 1024, i+1);
+         file.write(randomData);
+      }
+   }
+   QTest::qWait(5000);
+
+   // TODO : get
+
+}*/
 
 void Tests::cleanupTestCase()
 {
@@ -115,6 +147,16 @@ void Tests::cleanupTestCase()
    for (QListIterator<TestServer*> i(this->servers); i.hasNext();)
       delete i.next();
    delete this->peerUpdater;
+}
+
+void Tests::printDownloads(int num)
+{
+   QList<IDownload*> downloads = this->downloadManagers[num]->getDownloads();
+   for (QListIterator<IDownload*> i(downloads); i.hasNext();)
+   {
+      IDownload* download = i.next();
+      qDebug() << QString("[%1] : status = %2, progress = %3").arg(download->getId()).arg(download->getStatus()).arg(download->getProgress());
+   }
 }
 
 void Tests::createInitialFiles()
