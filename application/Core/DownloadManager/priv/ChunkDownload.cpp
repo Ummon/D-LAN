@@ -9,11 +9,22 @@ using namespace DM;
 
 #include <priv/Log.h>
 
-ChunkDownload::ChunkDownload(QSharedPointer<PM::IPeerManager> peerManager, OccupiedPeers& occupiedPeersDownloadingChunk, Common::Hash chunkHash)
-   : peerManager(peerManager), occupiedPeersDownloadingChunk(occupiedPeersDownloadingChunk), chunkHash(chunkHash), socket(0), downloading(false), networkError(false)
+ChunkDownload::ChunkDownload(QSharedPointer<PM::IPeerManager> peerManager, OccupiedPeers& occupiedPeersDownloadingChunk, Common::Hash chunkHash) :
+   peerManager(peerManager),
+   occupiedPeersDownloadingChunk(occupiedPeersDownloadingChunk),
+   chunkHash(chunkHash),
+   socket(0),
+   downloading(false),
+   networkError(false),
+   mutex(QMutex::Recursive)
 {
    connect(this, SIGNAL(finished()), this, SLOT(downloadingEnded()), Qt::QueuedConnection);
    this->mainThread = QThread::currentThread();
+}
+
+int ChunkDownload::getDownloadRate() const
+{
+   return this->transferRateCalculator.getTransferRate();
 }
 
 Common::Hash ChunkDownload::getHash()
@@ -87,12 +98,44 @@ bool ChunkDownload::isReadyToDownload()
    return this->currentDownloadingPeer != 0;
 }
 
+bool ChunkDownload::isDownloading() const
+{
+   return this->downloading;
+}
+
+bool ChunkDownload::isComplete() const
+{
+   return !this->chunk.isNull() && this->chunk->isComplete();
+}
+
+bool ChunkDownload::hasAtLeastAPeer() const
+{
+   return !this->peers.isEmpty();
+}
+
+int ChunkDownload::getDownloadedBytes() const
+{
+   if (this->chunk.isNull())
+      return 0;
+
+   return this->chunk->getKnownBytes();
+}
+
 /**
   * Tell the chunkDownload to download the chunk from one of its peer.
+  * @return true if the downloading has been started.
   */
-void ChunkDownload::startDownloading()
+bool ChunkDownload::startDownloading()
 {
+   if (this->chunk.isNull())
+   {
+      L_ERRO(QString("Unable to download without the chunk. Hash : %1").arg(this->chunkHash.toStr()));
+      return false;
+   }
+
    this->downloading = true;
+   emit downloadStarted();
+
    this->occupiedPeersDownloadingChunk.setPeerAsOccupied(this->currentDownloadingPeer);
 
    Protos::Core::GetChunk getChunkMess;
@@ -103,6 +146,7 @@ void ChunkDownload::startDownloading()
    connect(this->getChunkResult.data(), SIGNAL(stream(PM::ISocket*)), this, SLOT(stream(PM::ISocket*)));
 
    this->getChunkResult->start();
+   return true;
 }
 
 void ChunkDownload::run()
@@ -123,13 +167,15 @@ void ChunkDownload::run()
 
       int deltaRead = 0;
 
-      QElapsedTimer time;
-      time.start();
+      this->transferRateCalculator.reset();
+
+      QElapsedTimer timer;
+      timer.start();
 
       forever
       {
          // Waiting for data..
-         if (socket->getQSocket()->bytesAvailable() == 0 && !socket->getQSocket()->waitForReadyRead(SETTINGS.get<quint32>("timeout_during_transfert")))
+         if (socket->getQSocket()->bytesAvailable() == 0 && !socket->getQSocket()->waitForReadyRead(SETTINGS.get<quint32>("timeout_during_transfer")))
          {
             L_WARN("Connection dropped");
             this->networkError = true;
@@ -148,10 +194,10 @@ void ChunkDownload::run()
          bytesReadTotal += bytesRead;
          deltaRead += bytesRead;
 
-         if (time.elapsed() > 1000)
+         if (timer.elapsed() > 1000)
          {
-            this->currentDownloadingPeer->setSpeed(deltaRead / time.elapsed() * 1000);
-            time.start();
+            this->currentDownloadingPeer->setSpeed(deltaRead / timer.elapsed() * 1000);
+            timer.start();
             deltaRead = 0;
 
             // If a another peer exists and our speed is lesser than 'lan_speed' / 'time_recheck_chunk_factor' and the other peer speed is greater than our
@@ -169,6 +215,8 @@ void ChunkDownload::run()
          }
 
          writer->write(buffer, bytesRead);
+
+         this->transferRateCalculator.addData(bytesRead);
 
          if (bytesReadTotal >= this->chunkSize)
             break;
@@ -190,7 +238,9 @@ void ChunkDownload::run()
    {
       L_ERRO("TryToWriteBeyondTheEndOfChunkException");
    }
+
    this->socket->getQSocket()->moveToThread(this->mainThread);
+   this->transferRateCalculator.reset();
 }
 
 void ChunkDownload::result(const Protos::Core::GetChunkResult& result)
@@ -237,10 +287,13 @@ void ChunkDownload::downloadingEnded()
 
    this->networkError = false;
    this->getChunkResult.clear();
-   this->downloading = false;
    emit downloadFinished();
-   this->occupiedPeersDownloadingChunk.setPeerAsFree(this->currentDownloadingPeer);
+   this->downloading = false;
+
+   // occupiedPeersDownloadingChunk can relaunch the download, so we have to set this->currentDownloadingPeer to 0 before.
+   PM::IPeer* currentPeer = this->currentDownloadingPeer;
    this->currentDownloadingPeer = 0;
+   this->occupiedPeersDownloadingChunk.setPeerAsFree(currentPeer);
 }
 
 PM::IPeer* ChunkDownload::getTheFastestFreePeer() const

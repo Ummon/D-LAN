@@ -35,12 +35,13 @@ public:
 
 private slots:
    void initTestCase();
-   void updatePeers();
    void addADirectoryToDownload();
    void addABigFileToDownload();
+   //void addABigFileToDownloadFromTwoPeers();
    void cleanupTestCase();
 
 private:
+   void printDownloads(int num);
    void createInitialFiles();
    void deleteAllFiles();
 

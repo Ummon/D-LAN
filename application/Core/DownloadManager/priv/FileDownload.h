@@ -31,9 +31,13 @@ namespace DM
          const Protos::Common::Entry& entry
       );
 
-      bool retreiveHashes();
+      int getDownloadRate() const;
+      int getProgress() const;
 
       QSharedPointer<ChunkDownload> getAChunkToDownload();
+
+   public slots:
+      bool retreiveHashes();
 
    signals:
       void changeOccurs();
@@ -42,12 +46,15 @@ namespace DM
       void retrievePeer();
 
    private slots:
-
       void result(const Protos::Core::GetHashesResult& result);
       void nextHash(const Common::Hash& hash);
 
+      void downloadStarted();
+      void downloadFinished();
 
    private:
+      void connectChunkDownloadSignals(QSharedPointer<ChunkDownload> chunkDownload);
+
       const int NB_CHUNK;
       DownloadManager* downloadManager;
 
@@ -61,6 +68,8 @@ namespace DM
       QSharedPointer<PM::IGetHashesResult> getHashesResult;
 
       bool fileCreated;
+
+      QTimer timer; // Used to periodically try to retrieve hashes.
    };
 }
 #endif

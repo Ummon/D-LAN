@@ -4,6 +4,7 @@ using namespace DM;
 #include <Common/Settings.h>
 
 #include <priv/Log.h>
+#include <priv/Constants.h>
 
 FileDownload::FileDownload(
    QSharedPointer<FM::IFileManager> fileManager,
@@ -19,10 +20,18 @@ FileDownload::FileDownload(
    nbHashesKnown(0),
    fileCreated(false)
 {   
-   L_DEBU(QString("New FileDownload : path = %1/%2 source = %3").arg(QString::fromStdString(entry.path())).arg(QString::fromStdString(entry.name())).arg(this->peerSourceID.toStr()));
+   L_DEBU(QString("New FileDownload : source = %1, entry : \n%2").arg(this->peerSourceID.toStr()).arg(QString::fromStdString(this->entry.DebugString())));
+
+   this->timer.setInterval(CHECK_ENTRY_PERIOD);
+   this->timer.setSingleShot(true);
+   connect(&this->timer, SIGNAL(timeout()), this, SLOT(retreiveHashes()));
 
    for (int i = 0; i < entry.chunk_size(); i++)
-      this->chunkDownloads << QSharedPointer<ChunkDownload>(new ChunkDownload(this->peerManager, this->occupiedPeersDownloadingChunk, Common::Hash(entry.chunk(i).hash().data())));
+   {
+      QSharedPointer<ChunkDownload> chunkDownload = QSharedPointer<ChunkDownload>(new ChunkDownload(this->peerManager, this->occupiedPeersDownloadingChunk, Common::Hash(entry.chunk(i).hash().data())));
+      this->chunkDownloads << chunkDownload;
+      this->connectChunkDownloadSignals(this->chunkDownloads.last());
+   }
    this->nbHashesKnown = this->chunkDownloads.size();
 
    if (this->hasAValidPeer())
@@ -32,26 +41,24 @@ FileDownload::FileDownload(
    this->retreiveHashes();
 }
 
-/**
-  * Return true if a GetHashes request has been sent to the peer.
-  */
-bool FileDownload::retreiveHashes()
+int FileDownload::getDownloadRate() const
 {
-   // If we've already got all the chunk hashes it's unecessary to re-ask them.
-   // Or if we'v got anyone to ask the chunk hashes..
-   if (this->nbHashesKnown == this->NB_CHUNK || !this->hasAValidPeer())
-      return false;
+   int downloadRate = 0;
+   for (QListIterator< QSharedPointer<ChunkDownload> > i(this->chunkDownloads); i.hasNext();)
+      downloadRate += i.next()->getDownloadRate();
 
-   if (!this->occupiedPeersAskingForHashes.setPeerAsOccupied(this->peerSource))
-      return false;
+   return downloadRate;
+}
 
-   this->status |= ASKING_FOR_HASHES;
+int FileDownload::getProgress() const
+{
+   quint64 knownBytes = 0;
+   for (QListIterator< QSharedPointer<ChunkDownload> > i(this->chunkDownloads); i.hasNext();)
+   {
+      knownBytes += i.next()->getDownloadedBytes();
+   }
 
-   this->getHashesResult = this->peerSource->getHashes(this->entry);
-   connect(this->getHashesResult.data(), SIGNAL(result(const Protos::Core::GetHashesResult&)), this, SLOT(result(const Protos::Core::GetHashesResult&)));
-   connect(this->getHashesResult.data(), SIGNAL(nextHash(const Common::Hash&)), this, SLOT(nextHash(const Common::Hash&)));
-   this->getHashesResult->start();
-   return true;
+   return 100LL * knownBytes / this->entry.size();
 }
 
 /**
@@ -68,8 +75,10 @@ QSharedPointer<ChunkDownload> FileDownload::getAChunkToDownload()
          if (!this->fileCreated)
          {
             this->chunksWithoutDownload = this->fileManager->newFile(this->entry);
-            for (int i = 0; i < this->chunksWithoutDownload.size() && i < this->chunkDownloads.size(); i++)
+            for (int i = 0; !this->chunksWithoutDownload.isEmpty() && i < this->chunkDownloads.size(); i++)
+            {
                this->chunkDownloads[i]->setChunk(this->chunksWithoutDownload.takeFirst());
+            }
             this->fileCreated = true;
          }
 
@@ -78,6 +87,28 @@ QSharedPointer<ChunkDownload> FileDownload::getAChunkToDownload()
    }
 
    return QSharedPointer<ChunkDownload>();
+}
+
+/**
+  * Return true if a GetHashes request has been sent to the peer.
+  */
+bool FileDownload::retreiveHashes()
+{
+   // If we've already got all the chunk hashes it's unecessary to re-ask them.
+   // Or if we'v got anyone to ask the chunk hashes..
+   if (this->nbHashesKnown == this->NB_CHUNK || !this->hasAValidPeer())
+      return false;
+
+   if (!this->occupiedPeersAskingForHashes.setPeerAsOccupied(this->peerSource))
+      return false;
+
+   this->status = INITIALIZING;
+
+   this->getHashesResult = this->peerSource->getHashes(this->entry);
+   connect(this->getHashesResult.data(), SIGNAL(result(const Protos::Core::GetHashesResult&)), this, SLOT(result(const Protos::Core::GetHashesResult&)));
+   connect(this->getHashesResult.data(), SIGNAL(nextHash(const Common::Hash&)), this, SLOT(nextHash(const Common::Hash&)));
+   this->getHashesResult->start();
+   return true;
 }
 
 void FileDownload::retrievePeer()
@@ -92,16 +123,15 @@ void FileDownload::result(const Protos::Core::GetHashesResult& result)
 {
    if (result.status() == Protos::Core::GetHashesResult_Status_OK)
    {
-      this->status &= !ENTRY_NOT_FOUND;
       if (this->nbHashesKnown + static_cast<int>(result.nb_hash()) != this->NB_CHUNK)
          L_ERRO(QString("The received hashes (%1) plus the known hashes (%2) is not equal to the number of chunks (%3)").arg(result.nb_hash()).arg(this->nbHashesKnown).arg(this->NB_CHUNK));
    }
    else
    {
-      this->status &= !ASKING_FOR_HASHES;
-      this->status |= ENTRY_NOT_FOUND;
+      this->status = ENTRY_NOT_FOUND;
       this->getHashesResult.clear();
       this->occupiedPeersAskingForHashes.setPeerAsFree(this->peerSource);
+      this->timer.start(); // Retry later.
    }
 }
 
@@ -131,6 +161,42 @@ void FileDownload::nextHash(const Common::Hash& hash)
          chunkDownload->setChunk(this->chunksWithoutDownload.takeFirst());
 
       this->chunkDownloads << chunkDownload;
+      this->connectChunkDownloadSignals(chunkDownload);
       chunkDownload->setPeerSource(this->peerSource);
    }
+}
+
+void FileDownload::downloadStarted()
+{
+   this->status = DOWNLOADING;
+}
+
+void FileDownload::downloadFinished()
+{
+   this->status = COMPLETE;
+   for (QListIterator< QSharedPointer<ChunkDownload> > i(this->chunkDownloads); i.hasNext();)
+   {
+      QSharedPointer<ChunkDownload> chunkDownload = i.next();
+
+      if (chunkDownload->isDownloading())
+      {
+         this->status = DOWNLOADING;
+         return;
+      }
+      else if (!chunkDownload->isComplete())
+      {
+         if (!chunkDownload->hasAtLeastAPeer())
+            this->status = NO_SOURCE;
+         else if (!this->getHashesResult.isNull())
+            this->status = INITIALIZING;
+         else
+            this->status = QUEUED;
+      }
+   }
+}
+
+void FileDownload::connectChunkDownloadSignals(QSharedPointer<ChunkDownload> chunkDownload)
+{
+   connect(chunkDownload.data(), SIGNAL(downloadStarted()), this, SLOT(downloadStarted()), Qt::DirectConnection);
+   connect(chunkDownload.data(), SIGNAL(downloadFinished()), this, SLOT(downloadFinished()), Qt::DirectConnection);
 }

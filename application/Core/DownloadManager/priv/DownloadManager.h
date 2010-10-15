@@ -35,7 +35,7 @@ namespace DM
       QList<IDownload*> getDownloads();
       QList< QSharedPointer<IChunkDownload> > getUnfinishedChunks(int n);
 
-      int getDownloadRate();
+      int getDownloadRate() const;
 
    private slots:
       void newEntries(const Protos::Core::GetEntriesResult& entries);

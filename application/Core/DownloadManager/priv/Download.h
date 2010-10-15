@@ -26,9 +26,9 @@ namespace DM
    public:
       virtual ~Download() {}
 
-      int getId();
-      Status getStatus();
-      char getProgress();
+      int getId() const;
+      Status getStatus() const;
+      virtual int getProgress() const;
       Common::Hash getPeerSourceID();
       Protos::Common::Entry getEntry();
       void remove();
@@ -46,20 +46,9 @@ namespace DM
       PM::IPeer* peerSource;
       Protos::Common::Entry entry;
 
-      enum InternalStatus
-      {
-         QUEUED = 0x1,
-         ASKING_FOR_HASHES = 0x2,
-         DOWNLOADING = 0x4,
-         COMPLETE = 0x8,
-         PAUSED = 0x10,
-         UNKNOWN_PEER = 0x20,
-         ENTRY_NOT_FOUND = 0x40,
-         NO_SOURCE = 0x80,
-      };
-      QFlags<InternalStatus> status;
+      Status status;
 
-      QTimer timer;
+      QTimer timer; // Used to periodically try to retrieve the peerSource;
    };
 }
 #endif

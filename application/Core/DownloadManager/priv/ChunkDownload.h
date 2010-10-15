@@ -4,9 +4,11 @@
 #include <QSharedPointer>
 #include <QList>
 #include <QThread>
+#include <QElapsedTimer>
 
 #include <Protos/core_protocol.pb.h>
 
+#include <Common/TransferRateCalculator.h>
 #include <Common/Hash.h>
 #include <Core/FileManager/IChunk.h>
 #include <Core/FileManager/IDataWriter.h>
@@ -27,6 +29,8 @@ namespace DM
    public:
       ChunkDownload(QSharedPointer<PM::IPeerManager> peerManager, OccupiedPeers& occupiedPeersDownloadingChunk, Common::Hash chunkHash);
 
+      int getDownloadRate() const;
+
       Common::Hash getHash();
       void addPeerID(const Common::Hash& peerID);
       void rmPeerID(const Common::Hash& peerID);
@@ -36,10 +40,16 @@ namespace DM
       void setPeerSource(PM::IPeer* peer);
 
       bool isReadyToDownload();
+      bool isDownloading() const;
+      bool isComplete() const;
+      bool hasAtLeastAPeer() const;
 
-      void startDownloading();
+      int getDownloadedBytes() const;
+
+      bool startDownloading();
 
    signals:
+      void downloadStarted();
       /**
         * Emitted when a downlad is terminated (or aborted).
         */
@@ -76,6 +86,8 @@ namespace DM
 
       bool downloading;
       bool networkError;
+
+      Common::TransferRateCalculator transferRateCalculator;
 
       mutable QMutex mutex; // To protect 'peers'.
    };
