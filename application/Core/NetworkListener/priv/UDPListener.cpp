@@ -188,7 +188,7 @@ void UDPListener::processPendingMulticastDatagrams()
                this->send(0x02, header.senderID, chunkOwnedMessage);
             }
 
-            // If we don't know the peer, he may not know our.
+            // If we don't know the peer, he may not know us.
             if (!peer || !peer->isAlive())
             {
                this->timerIMAlive.start();

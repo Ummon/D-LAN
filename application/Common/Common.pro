@@ -41,4 +41,5 @@ HEADERS += Hashes.h \
     Network.h \
     ZeroCopyStreamQIODevice.h \
     Settings.h \
-    TransferRateCalculator.h
+    TransferRateCalculator.h \
+    ProtoHelper.h
