@@ -1,6 +1,8 @@
 #include "Entry.h"
 using namespace FM;
 
+#include <Common/ProtoHelper.h>
+
 #include <priv/Log.h>
 #include <priv/FileManager.h>
 #include <priv/Cache/Cache.h>
@@ -19,8 +21,8 @@ Entry::~Entry()
 
 void Entry::populateEntry(Protos::Common::Entry* entry) const
 {
-   entry->set_path(this->getPath().toStdString());
-   entry->set_name(this->getName().toStdString());
+   Common::ProtoHelper::setStr(*entry, &Protos::Common::Entry::set_path, this->getPath());
+   Common::ProtoHelper::setStr(*entry, &Protos::Common::Entry::set_name, this->getName());
    entry->set_size(this->getSize());
 }
 

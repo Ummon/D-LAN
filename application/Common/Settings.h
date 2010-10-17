@@ -46,7 +46,7 @@ namespace Common
 
    private:
       static void printErrorNameNotFound(const QString& name);
-      static void printErrorBadType(const QString& fieldName, const QString& excepted);
+      static void printErrorBadType(const google::protobuf::FieldDescriptor* field, const QString& excepted);
 
       bool persisted;
       Protos::Common::Settings settings;

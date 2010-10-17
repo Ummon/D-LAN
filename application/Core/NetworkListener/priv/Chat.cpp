@@ -1,7 +1,9 @@
 #include <priv/Chat.h>
 using namespace NL;
 
+#include <Common/ProtoHelper.h>
 #include <Common/LogManager/Builder.h>
+
 #include <priv/UDPListener.h>
 
 /**
@@ -20,7 +22,7 @@ Chat::Chat(UDPListener& uDPListener)
 void Chat::send(const QString& message)
 {
    Protos::Core::ChatMessage chatMessage;
-   chatMessage.set_message(message.toStdString());
+   Common::ProtoHelper::setStr(chatMessage, &Protos::Core::ChatMessage::set_message, message);
 
    this->uDPListener.send(0x11, chatMessage);
 }

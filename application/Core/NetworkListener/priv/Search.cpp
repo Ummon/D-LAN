@@ -1,6 +1,8 @@
 #include <priv/Search.h>
 using namespace NL;
 
+#include <Common/ProtoHelper.h>
+
 #include <priv/Log.h>
 
 /**
@@ -33,7 +35,7 @@ void Search::search(const QString& words)
    this->tag |= this->mtrand.randInt();
    findMessage.set_tag(this->tag);
 
-   findMessage.set_pattern(words.toStdString());
+   Common::ProtoHelper::setStr(findMessage, &Protos::Core::Find::set_pattern, words);
 
    connect(&this->uDPListener, SIGNAL(newFindResultMessage(Protos::Common::FindResult)), this, SLOT(newFindResult(Protos::Common::FindResult)));
 

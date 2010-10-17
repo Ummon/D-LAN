@@ -5,6 +5,8 @@ using namespace FM;
 
 #include <Common/Global.h>
 #include <Common/Settings.h>
+#include <Common/ProtoHelper.h>
+
 #include <Exceptions.h>
 #include <priv/Log.h>
 #include <priv/FileManager.h>
@@ -43,10 +45,10 @@ Protos::Core::GetEntriesResult Cache::getEntries(const Protos::Common::Entry& di
    {
       if (sharedDir->getId() == dir.shared_dir().id().hash().data())
       {
-         QStringList folders = QDir::cleanPath(QString(dir.path().data())).split('/', QString::SkipEmptyParts);
+         QStringList folders = QDir::cleanPath(Common::ProtoHelper::getStr(dir, &Protos::Common::Entry::path)).split('/', QString::SkipEmptyParts);
 
          if (!dir.path().empty()) // An empty path means the dir is the root (a SharedDirectory).
-            folders << dir.name().data();
+            folders << Common::ProtoHelper::getStr(dir, &Protos::Common::Entry::name);
 
          Directory* currentDir = sharedDir;
          foreach (QString folder, folders)
@@ -142,7 +144,7 @@ File* Cache::getFile(const Protos::Common::Entry& fileEntry) const
    {
       if (sharedDir->getId() == fileEntry.shared_dir().id().hash().data())
       {
-         QString relativePath(fileEntry.path().data());
+         QString relativePath(Common::ProtoHelper::getStr(fileEntry, &Protos::Common::Entry::path));
          const QStringList folders = relativePath.split('/', QString::SkipEmptyParts);
 
          Directory* dir = sharedDir;
@@ -153,7 +155,7 @@ File* Cache::getFile(const Protos::Common::Entry& fileEntry) const
             {
                if (!i.hasNext())
                {
-                  File* file = dir->getFile(fileEntry.name().data());
+                  File* file = dir->getFile(Common::ProtoHelper::getStr(fileEntry, &Protos::Common::Entry::name));
 
                   if (file)
                      return file;
@@ -180,7 +182,7 @@ QList< QSharedPointer<IChunk> > Cache::newFile(const Protos::Common::Entry& remo
 {
    QMutexLocker locker(&this->lock);
 
-   Directory* dir = this->getWriteableDirectory(QDir::cleanPath(remoteEntry.path().data()), remoteEntry.size() + SETTINGS.get<quint32>("minimum_free_space"));
+   Directory* dir = this->getWriteableDirectory(QDir::cleanPath(Common::ProtoHelper::getStr(remoteEntry, &Protos::Common::Entry::path)), remoteEntry.size() + SETTINGS.get<quint32>("minimum_free_space"));
    if (!dir)
       throw UnableToCreateNewFileException();
 
@@ -190,7 +192,7 @@ QList< QSharedPointer<IChunk> > Cache::newFile(const Protos::Common::Entry& remo
 
    File* file = new File(
       dir,
-      remoteEntry.name().data(),
+      Common::ProtoHelper::getStr(remoteEntry, &Protos::Common::Entry::name),
       remoteEntry.size(),
       QDateTime::currentDateTime(),
       hashes,
@@ -422,7 +424,7 @@ void Cache::saveInFile(Protos::FileCache::Hashes& hashes) const
             Protos::FileCache::Hashes_SharedDir_Type_READ_WRITE
       );
 
-      sharedDirMess->set_path(sharedDir->getFullPath().toStdString());
+      Common::ProtoHelper::setStr(*sharedDirMess, &Protos::FileCache::Hashes_SharedDir::set_path, sharedDir->getFullPath());
 
       sharedDir->populateHashesDir(*sharedDirMess->mutable_root());
    }
@@ -526,7 +528,7 @@ void Cache::createSharedDirs(const Protos::FileCache::Hashes& hashes)
    for (int i = 0; i < hashes.shareddir_size(); i++)
    {
       const Protos::FileCache::Hashes_SharedDir& dir = hashes.shareddir(i);
-      paths << dir.path().data();
+      paths << Common::ProtoHelper::getStr(dir, &Protos::FileCache::Hashes_SharedDir::path);
       rights << (dir.type() == Protos::FileCache::Hashes_SharedDir_Type_READ ? SharedDirectory::READ_ONLY : SharedDirectory::READ_WRITE)  ;
       ids << Common::Hash(dir.id().hash().data());
    }

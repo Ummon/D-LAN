@@ -3,6 +3,8 @@
 
 #include <QString>
 
+#include <google/protobuf/message.h>
+
 namespace Common
 {
    class ProtoHelper
@@ -13,6 +15,8 @@ namespace Common
 
       template <typename T>
       static QString getStr(const T& mess, const std::string& (T::*getter)() const);
+
+      static QString getDebugStr(const google::protobuf::Message& mess);
    };
 }
 

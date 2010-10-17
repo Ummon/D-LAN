@@ -7,9 +7,12 @@ using namespace NL;
    #include <Winsock.h>
 #endif
 
+#include <google/protobuf/message.h>
+
 #include <Common/Settings.h>
 #include <Common/Global.h>
 #include <Common/Network.h>
+#include <Common/ProtoHelper.h>
 
 #include <Core/PeerManager/IPeer.h>
 
@@ -94,7 +97,11 @@ void UDPListener::send(quint32 type, const Common::Hash& peerID, const google::p
    if (!(messageSize = this->writeMessageToBuffer(type, message)))
       return;
 
-   L_DEBU(QString("Send unicast UDP to %1 : header.type = %2, message size = %3 \n%4").arg(peer->toStringLog()).arg(type, 0, 16).arg(messageSize).arg(QString::fromStdString(message.DebugString())));
+   L_DEBU(QString("Send unicast UDP to %1 : header.type = %2, message size = %3 \n%4").
+      arg(peer->toStringLog()).
+      arg(type, 0, 16).arg(messageSize).
+      arg(Common::ProtoHelper::getDebugStr(message))
+   );
 
    if (this->unicastSocket.writeDatagram(this->buffer, messageSize, peer->getIP(), peer->getPort()) == -1)
       L_ERRO("Unable to send datagram");
@@ -109,7 +116,7 @@ void UDPListener::send(quint32 type, const google::protobuf::Message& message)
    if (!(messageSize = this->writeMessageToBuffer(type, message)))
       return;
 
-   L_DEBU(QString("Send multicast UDP : header.type = %2, message size = %3 \n%4").arg(type, 0, 16).arg(messageSize).arg(QString::fromStdString(message.DebugString())));
+   L_DEBU(QString("Send multicast UDP : header.type = %2, message size = %3 \n%4").arg(type, 0, 16).arg(messageSize).arg(Common::ProtoHelper::getDebugStr(message)));
 
    if (this->multicastSocket.writeDatagram(this->buffer, messageSize, MULTICAST_GROUP, MULTICAST_PORT) == -1)
       L_ERRO("Unable to send datagram");
@@ -120,7 +127,7 @@ void UDPListener::sendIMAliveMessage()
    Protos::Core::IMAlive IMAliveMessage;
    IMAliveMessage.set_version(SETTINGS.get<quint32>("protocol_version"));
    IMAliveMessage.set_port(this->UNICAST_PORT);
-   IMAliveMessage.set_nick(this->peerManager->getNick().toStdString());
+   Common::ProtoHelper::setStr(IMAliveMessage, &Protos::Core::IMAlive::set_nick, this->peerManager->getNick());
    IMAliveMessage.set_amount(this->fileManager->getAmount());
 
    this->currentIMAliveTag = this->mtrand.randInt();
@@ -169,7 +176,7 @@ void UDPListener::processPendingMulticastDatagrams()
                header.senderID,
                peerAddress,
                IMAliveMessage.port(),
-               QString::fromStdString(IMAliveMessage.nick()),
+               Common::ProtoHelper::getStr(IMAliveMessage, &Protos::Core::IMAlive::nick),
                IMAliveMessage.amount()
             );
 
@@ -212,7 +219,7 @@ void UDPListener::processPendingMulticastDatagrams()
 
             QList<Protos::Common::FindResult> results =
                this->fileManager->find(
-                  QString::fromStdString(findMessage.pattern()),
+                  Common::ProtoHelper::getStr(findMessage, &Protos::Core::Find::pattern),
                   SETTINGS.get<quint32>("max_number_of_search_result_to_send"),
                   SETTINGS.get<quint32>("max_udp_datagram_size") - Common::Network::HEADER_SIZE
                );

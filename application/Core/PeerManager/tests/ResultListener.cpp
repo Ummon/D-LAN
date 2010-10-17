@@ -5,6 +5,8 @@ using namespace PM;
 #include <QTest>
 #include <QString>
 
+#include <Common/ProtoHelper.h>
+
 #include <ISocket.h>
 
 ResultListener::ResultListener()
@@ -25,14 +27,14 @@ int ResultListener::getNbEntriesResultReceived() const
 void ResultListener::entriesResult(const Protos::Core::GetEntriesResult& entries)
 {
    this->entriesResultList << entries;
-   qDebug() << "ResultListener::entriesResult : " << QString::fromStdString(entries.DebugString());
+   qDebug() << "ResultListener::entriesResult : " << Common::ProtoHelper::getDebugStr(entries);
 }
 
 void ResultListener::result(const Protos::Core::GetHashesResult& result)
 {
    this->nbHashes = result.nb_hash();
    this->currentHash = 0;
-   qDebug() << "ResultListener::result : " << QString::fromStdString(result.DebugString());
+   qDebug() << "ResultListener::result : " << Common::ProtoHelper::getDebugStr(result);
 }
 
 void ResultListener::nextHash(const Common::Hash& hash)
@@ -43,7 +45,7 @@ void ResultListener::nextHash(const Common::Hash& hash)
 
 void ResultListener::result(const Protos::Core::GetChunkResult& result)
 {
-   qDebug() << "ResultListener::result : " << QString::fromStdString(result.DebugString());
+   qDebug() << "ResultListener::result : " << Common::ProtoHelper::getDebugStr(result);
 }
 
 static const QByteArray CHUNK_DATA("HELLO");
