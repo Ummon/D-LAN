@@ -1,12 +1,18 @@
 #include <priv/DirDownload.h>
 using namespace DM;
 
+#include <Common/ProtoHelper.h>
+
 #include <priv/Log.h>
 
 DirDownload::DirDownload(QSharedPointer<FM::IFileManager> fileManager, QSharedPointer<PM::IPeerManager> peerManager, Common::Hash peerSourceID, const Protos::Common::Entry& entry)
    : Download(fileManager, peerManager, peerSourceID, entry)
 {
-   L_DEBU(QString("New DirDownload : path = %1/%2 source = %3").arg(QString::fromStdString(entry.path())).arg(QString::fromStdString(entry.name())).arg(this->peerSourceID.toStr()));
+   L_DEBU(QString("New DirDownload : path = %1/%2 source = %3").
+      arg(Common::ProtoHelper::getStr(entry, &Protos::Common::Entry::path)).
+      arg(Common::ProtoHelper::getStr(entry, &Protos::Common::Entry::name)).
+      arg(this->peerSourceID.toStr())
+   );
 }
 
 /**

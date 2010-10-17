@@ -30,7 +30,8 @@ SOURCES += Hash.cpp \
     Network.cpp \
     ZeroCopyStreamQIODevice.cpp \
     Settings.cpp \
-    TransferRateCalculator.cpp
+    TransferRateCalculator.cpp \
+    ProtoHelper.cpp
 HEADERS += Hashes.h \
     Hash.h \
     PersistantData.h \

@@ -2,6 +2,7 @@
 using namespace DM;
 
 #include <Common/Settings.h>
+#include <Common/ProtoHelper.h>
 
 #include <priv/Log.h>
 #include <priv/Constants.h>
@@ -20,7 +21,10 @@ FileDownload::FileDownload(
    nbHashesKnown(0),
    fileCreated(false)
 {   
-   L_DEBU(QString("New FileDownload : source = %1, entry : \n%2").arg(this->peerSourceID.toStr()).arg(QString::fromStdString(this->entry.DebugString())));
+   L_DEBU(QString("New FileDownload : source = %1, entry : \n%2").
+      arg(this->peerSourceID.toStr()).
+      arg(Common::ProtoHelper::getDebugStr(this->entry))
+   );
 
    this->timer.setInterval(CHECK_ENTRY_PERIOD);
    this->timer.setSingleShot(true);

@@ -3,6 +3,8 @@ using namespace FM;
 
 #include <QDir>
 
+#include <Common/ProtoHelper.h>
+
 #include <priv/Constants.h>
 #include <priv/Log.h>
 #include <priv/FileManager.h>
@@ -51,7 +53,7 @@ QList<File*> Directory::restoreFromFileCache(const Protos::FileCache::Hashes_Dir
 {
    QList<File*> ret;
 
-   if (dir.name().data() == this->getName())
+   if (Common::ProtoHelper::getStr(dir, &Protos::FileCache::Hashes_Dir::name) == this->getName())
    {
       // Sub directories..
       for (int i = 0; i < dir.dir_size(); i++)
@@ -87,7 +89,7 @@ QList<File*> Directory::restoreFromFileCache(const Protos::FileCache::Hashes_Dir
 
 void Directory::populateHashesDir(Protos::FileCache::Hashes_Dir& dirToFill) const
 {
-   dirToFill.set_name(this->getName().toStdString());
+   Common::ProtoHelper::setStr(dirToFill, &Protos::FileCache::Hashes_Dir::set_name, this->getName());
 
    for (QListIterator<File*> i(this->files); i.hasNext();)
    {

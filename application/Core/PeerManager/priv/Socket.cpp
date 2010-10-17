@@ -6,6 +6,7 @@ using namespace PM;
 
 #include <Common/ZeroCopyStreamQIODevice.h>
 #include <Common/Settings.h>
+#include <Common/ProtoHelper.h>
 
 #include <priv/Log.h>
 #include <priv/PeerManager.h>
@@ -102,12 +103,12 @@ void Socket::send(quint32 type, const google::protobuf::Message& message)
 
    Common::MessageHeader header(type, message.ByteSize(), this->peerManager->getID());
 
-   L_DEBU(QString("Socket[%1]::send : header.type = %2, header.size = %3\n%4").arg(this->num).arg(header.type, 0, 16).arg(header.size).arg(QString::fromStdString(message.DebugString())));
+   L_DEBU(QString("Socket[%1]::send : header.type = %2, header.size = %3\n%4").arg(this->num).arg(header.type, 0, 16).arg(header.size).arg(Common::ProtoHelper::getDebugStr(message)));
 
    Common::Network::writeHeader(*this->socket, header);
    Common::ZeroCopyOutputStreamQIODevice outputStream(this->socket);
    if (!message.SerializeToZeroCopyStream(&outputStream))
-      L_WARN(QString("Unable to send %1").arg(QString::fromStdString(message.DebugString())));
+      L_WARN(QString("Unable to send %1").arg(Common::ProtoHelper::getDebugStr(message)));
 }
 
 void Socket::dataReceived()

@@ -11,6 +11,7 @@ using namespace FM;
 
 #include <Common/Global.h>
 #include <Common/Settings.h>
+#include <Common/ProtoHelper.h>
 
 #include <priv/Constants.h>
 #include <Exceptions.h>
@@ -358,7 +359,7 @@ void StressTest::doASearch()
          found = true;
          qDebug() << "Found, terms : " << terms;
          for (int i = 0; i < results.first().entry_size(); i++)
-            qDebug() << "[" << results.first().entry(i).level() << "] " << results.first().entry(i).entry().name().data();
+            qDebug() << "[" << results.first().entry(i).level() << "] " << Common::ProtoHelper::getStr(results.first().entry(i).entry(), &Protos::Common::Entry::name);
       }
    }
    int delta = time.elapsed();
@@ -438,8 +439,8 @@ void StressTest::newFile()
 
    Protos::Common::Entry entry;
    entry.set_type(Protos::Common::Entry_Type_DIR);
-   entry.set_path(path.toStdString());
-   entry.set_name(this->randGen.generateAName().toStdString());
+   Common::ProtoHelper::setStr(entry, &Protos::Common::Entry::set_path, path);
+   Common::ProtoHelper::setStr(entry, &Protos::Common::Entry::set_name, this->randGen.generateAName());
    entry.set_size(bytes);
    for (int i = 0; i < this->randGen.rand(nbChunk); i++) // Do not give all hashes.
    {
@@ -452,7 +453,10 @@ void StressTest::newFile()
       QList< QSharedPointer<IChunk> > chunks = this->fileManager->newFile(entry);
       for (QListIterator< QSharedPointer<IChunk> > i(chunks); i.hasNext();)
       {
-         Downloader* downloader = new Downloader(i.next(), QString(entry.path().data()) + QString(entry.name().data()));
+         Downloader* downloader = new Downloader(
+            i.next(),
+            QString(Common::ProtoHelper::getStr(entry, &Protos::Common::Entry::path)) + QString(Common::ProtoHelper::getStr(entry, &Protos::Common::Entry::name))
+         );
          downloader->start();
       }
    }
@@ -529,7 +533,7 @@ void StressTest::getEntries()
       Protos::Common::Entry entry = this->knownDirEntries[n];
       if (!entry.has_shared_dir())
       {
-         qDebug() << "!!! The entry " << entry.path().data() << entry.name().data() << " doesn't have a shared directory defined !!!";
+         qDebug() << "!!! The entry " << Common::ProtoHelper::getStr(entry, &Protos::Common::Entry::path) << Common::ProtoHelper::getStr(entry, &Protos::Common::Entry::name) << " doesn't have a shared directory defined !!!";
          this->knownDirEntries.removeAt(n);
          return;
       }
@@ -626,8 +630,8 @@ QString StressTest::entryToStr(const Protos::Common::Entry& entry)
 {
    QString str = QString("Entry (%1), path = %2, name = %3, sharedDir = %4").
       arg(entry.type() == Protos::Common::Entry_Type_DIR ? "DIR" : "FILE").
-      arg(entry.path().data()).
-      arg(entry.name().data()).
+      arg(Common::ProtoHelper::getStr(entry, &Protos::Common::Entry::path)).
+      arg(Common::ProtoHelper::getStr(entry, &Protos::Common::Entry::name)).
       arg(Common::Hash(entry.shared_dir().id().hash().data()).toStr());
 
    if (entry.type() == Protos::Common::Entry_Type_FILE)

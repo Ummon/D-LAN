@@ -7,6 +7,7 @@ using namespace FM;
 
 #include <Common/Global.h>
 #include <Common/Settings.h>
+#include <Common/ProtoHelper.h>
 
 #include <Exceptions.h>
 #include <priv/Exceptions.h>
@@ -137,7 +138,7 @@ bool File::restoreFromFileCache(const Protos::FileCache::Hashes_File& file)
    L_DEBU(QString("Restoring file '%1' from file cache..").arg(this->getFullPath()));
 
    if (
-      file.filename().data() == this->getName() &&
+      Common::ProtoHelper::getStr(file, &Protos::FileCache::Hashes_File::filename) == this->getName() &&
       (qint64)file.size() == this->size &&
       file.date_last_modified() == this->getDateLastModified().toTime_t() &&
       this->chunks.size() == file.chunk_size()
@@ -159,7 +160,7 @@ bool File::restoreFromFileCache(const Protos::FileCache::Hashes_File& file)
 
 void File::populateHashesFile(Protos::FileCache::Hashes_File& fileToFill) const
 {
-   fileToFill.set_filename(this->name.toStdString());
+   Common::ProtoHelper::setStr(fileToFill, &Protos::FileCache::Hashes_File::set_filename, this->name);
    fileToFill.set_size(this->size);
    fileToFill.set_date_last_modified(this->getDateLastModified().currentMSecsSinceEpoch());
 

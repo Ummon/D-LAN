@@ -7,6 +7,7 @@ using namespace Common;
 #include <google/protobuf/message.h>
 
 #include <Common/PersistantData.h>
+#include <ProtoHelper.h>
 
 /**
   * @class Settings
@@ -75,7 +76,7 @@ void Settings::set(const QString& name, quint32 value)
    }
    if (fieldDescriptor->type() != google::protobuf::FieldDescriptor::TYPE_UINT32)
    {
-      printErrorBadType(QString::fromStdString(fieldDescriptor->name()), "uint32");
+      printErrorBadType(fieldDescriptor, "uint32");
       return;
    }
 
@@ -93,7 +94,7 @@ void Settings::set(const QString& name, double value)
    }
    if (fieldDescriptor->type() != google::protobuf::FieldDescriptor::TYPE_DOUBLE)
    {
-      printErrorBadType(QString::fromStdString(fieldDescriptor->name()), "double");
+      printErrorBadType(fieldDescriptor, "double");
       return;
    }
 
@@ -111,10 +112,11 @@ void Settings::set(const QString& name, const QString& value)
    }
    if (fieldDescriptor->type() != google::protobuf::FieldDescriptor::TYPE_STRING)
    {
-      printErrorBadType(QString::fromStdString(fieldDescriptor->name()), "string");
+      printErrorBadType(fieldDescriptor, "string");
       return;
    }
-   this->settings.GetReflection()->SetString(&this->settings, fieldDescriptor, value.toStdString());
+   QByteArray array = value.toUtf8();
+   this->settings.GetReflection()->SetString(&this->settings, fieldDescriptor, array.data());
 }
 
 void Settings::set(const QString& name, const Hash& hash)
@@ -129,7 +131,7 @@ void Settings::set(const QString& name, const Hash& hash)
    if (fieldDescriptor->type() != google::protobuf::FieldDescriptor::TYPE_MESSAGE ||
        fieldDescriptor->type() == google::protobuf::FieldDescriptor::TYPE_MESSAGE && fieldDescriptor->message_type()->name() != "Hash")
    {
-      printErrorBadType(QString::fromStdString(fieldDescriptor->name()), "Hash");
+      printErrorBadType(fieldDescriptor, "Hash");
       return;
    }
 
@@ -171,7 +173,7 @@ void Settings::get(const QString& name, QString& value)
       printErrorNameNotFound(name);
       return;
    }
-   value = QString::fromStdString(this->settings.GetReflection()->GetString(this->settings, fieldDescriptor));
+   value = QString::fromUtf8(this->settings.GetReflection()->GetString(this->settings, fieldDescriptor).data());
 }
 
 void Settings::get(const QString& name, Hash& hash)
@@ -203,7 +205,7 @@ void Settings::printErrorNameNotFound(const QString& name)
    QTextStream(stderr) << QString("Settings : name \"%1\" doesn't exist").arg(name) << endl;
 }
 
-void Settings::printErrorBadType(const QString& fieldName, const QString& excepted)
-{
-   QTextStream(stderr) << QString("Settings : bad type, field name = \"%1\", expected type : \"%2\"").arg(fieldName).arg(excepted) << endl;
+void Settings::printErrorBadType(const google::protobuf::FieldDescriptor* field, const QString& excepted)
+{   
+   QTextStream(stderr) << QString("Settings : bad type, field name = \"%1\", expected type : \"%2\"").arg(Common::ProtoHelper::getStr(*field, &google::protobuf::FieldDescriptor::name)).arg(excepted) << endl;
 }

@@ -9,12 +9,14 @@ using namespace FM;
 #include <QStringList>
 #include <QDirIterator>
 
-#include <IChunk.h>
-#include <IGetHashesResult.h>
 #include <Common/LogManager/Builder.h>
 #include <Common/PersistantData.h>
 #include <Common/Constants.h>
 #include <Common/Global.h>
+#include <Common/ProtoHelper.h>
+
+#include <IChunk.h>
+#include <IGetHashesResult.h>
 #include <Exceptions.h>
 #include <priv/Constants.h>
 
@@ -404,7 +406,7 @@ void Tests::browseSomedirectories()
 
    // Get the shared directories.
    Protos::Core::GetEntriesResult entries1 = this->fileManager->getEntries();
-   QString entries1Str = QString::fromStdString(entries1.DebugString());
+   QString entries1Str = Common::ProtoHelper::getDebugStr(entries1);
    /*Tests::compareStrRegexp(
       "dir\\s*\\{\n\\s*shared_dir\\s*\\{\n\\s*id\\s*\\{\n\\s*hash:\\s*\".+\"\n\\s*\\}\n\\s*\\}\n\\s*path:\\s*\"\"\n\\s*name:\\s*\"sharedDirs\"\n\\s*size:\\s*\\d+\n\\}\ndir\\s*\\{\n\\s*shared_dir\\s*\\{\n\\s*id\\s*\\{\n\\s*hash:\\s*\".+\"\n\\s*\\}\n\\s*\\}\n\\s*path:\\s*\"\"\n\\s*name:\\s*\"incoming\"\n\\s*size:\\s*\\d+\n\\}.*",
       entries1Str
@@ -414,11 +416,11 @@ void Tests::browseSomedirectories()
 
    // Ask for the files and directories of the first shared directory
    Protos::Core::GetEntriesResult entries2 = this->fileManager->getEntries(entries1.entry(0));
-   qDebug() << QString::fromStdString(entries2.DebugString());
+   qDebug() << Common::ProtoHelper::getDebugStr(entries2);
 
    // Ask for the files and directores of the first directory of the first shared directory
    Protos::Core::GetEntriesResult entries3 = this->fileManager->getEntries(entries2.entry(0));
-   qDebug() << QString::fromStdString(entries3.DebugString());
+   qDebug() << Common::ProtoHelper::getDebugStr(entries3);
 }
 
 void Tests::findExistingFilesWithOneWord()
@@ -484,7 +486,7 @@ void Tests::findFilesWithResultFragmentation()
    for (int i = 0; i < results.size(); i++)
    {
       QVERIFY(results[i].ByteSize() <= FRAGMENT_MAX_SIZE);
-      qDebug() << "Fragment n°" << i << ", size = " << results[i].ByteSize();
+      qDebug() << "Fragment nÂ°" << i << ", size = " << results[i].ByteSize();
       this->printSearch(terms, results[i]);
    }
 }
@@ -590,7 +592,7 @@ void Tests::printSearch(const QString& terms, const Protos::Common::FindResult& 
 {
    qDebug() << "Search : " << terms;
    for (int i = 0; i < result.entry_size(); i++)
-      qDebug() << "[" << result.entry(i).level() << "] " << result.entry(i).entry().name().data();
+      qDebug() << "[" << result.entry(i).level() << "] " << Common::ProtoHelper::getStr(result.entry(i).entry(), &Protos::Common::Entry::name);
 }
 
 void Tests::compareExpectedResult(const Protos::Common::FindResult& result, quint32 expectedLevelResult[], QList<QString> expectedFileResult[])
@@ -598,7 +600,7 @@ void Tests::compareExpectedResult(const Protos::Common::FindResult& result, quin
    for (int i = 0; i < result.entry_size(); i++)
    {
       QVERIFY(result.entry(i).level() == expectedLevelResult[i]);
-      QVERIFY(expectedFileResult[result.entry(i).level()].contains(QString(result.entry(i).entry().name().data())));
+      QVERIFY(expectedFileResult[result.entry(i).level()].contains(Common::ProtoHelper::getStr(result.entry(i).entry(), &Protos::Common::Entry::name)));
    }
 }
 
@@ -608,7 +610,8 @@ void Tests::compareStrRegexp(const QString& regexp, const QString& str)
    if (!expected.exactMatch(str))
    {
       int l = expected.matchedLength();
-      QFAIL(QString("This string doesn't match the expected regular expression from character %1 : \n%2").arg(l).arg(str).toStdString().data());
+      QByteArray message = QString("This string doesn't match the expected regular expression from character %1 : \n%2").arg(l).arg(str).toUtf8();
+      QFAIL(message.data());
    }
 }
 
