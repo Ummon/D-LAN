@@ -28,7 +28,8 @@ namespace DM
          OccupiedPeers& occupiedPeersAskingForHashes,
          OccupiedPeers& occupiedPeersDownloadingChunk,
          Common::Hash peerSourceID,
-         const Protos::Common::Entry& entry
+         const Protos::Common::Entry& entry,
+         bool complete = false
       );
 
       int getDownloadRate() const;

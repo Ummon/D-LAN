@@ -38,6 +38,7 @@ namespace FM
 
    signals:
       void persistCache();
+      void fileCacheLoaded();
 
    protected:
       void run();

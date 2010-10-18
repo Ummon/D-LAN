@@ -15,8 +15,9 @@ namespace FM
    class IChunk;
    class IGetHashesResult;
 
-   class IFileManager
+   class IFileManager : public QObject
    {
+      Q_OBJECT
    public:
       virtual ~IFileManager() {}
 
@@ -34,8 +35,7 @@ namespace FM
       virtual QStringList getSharedDirsReadWrite() = 0;
 
       /**
-        * Returns a chunk. If no chunk is found throw UnknownChunkException.
-        * @exception UnknownChunkException
+        * Returns a chunk. If no chunk is found return a empty pointer.
         */
       virtual QSharedPointer<IChunk> getChunk(const Common::Hash& hash) = 0;
 
@@ -80,6 +80,12 @@ namespace FM
       virtual QBitArray haveChunks(const QList<Common::Hash>& hashes) = 0;
 
       virtual quint64 getAmount() = 0;
+
+   signals:
+      /**
+        * Emitted when the file cache has been loaded.
+        */
+      void fileCacheLoaded();
    };
 }
 #endif

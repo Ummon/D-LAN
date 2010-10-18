@@ -10,6 +10,7 @@
 #include <Core/PeerManager/IPeer.h>
 
 #include <Protos/common.pb.h>
+#include <Protos/queue.pb.h>
 
 #include <IDownload.h>
 
@@ -20,11 +21,15 @@ namespace DM
    class Download : public QObject, public IDownload
    {
       Q_OBJECT
+      static quint32 currentID;
+
    protected:
       Download(QSharedPointer<FM::IFileManager> fileManager, QSharedPointer<PM::IPeerManager> peerManager, Common::Hash peerSourceID, const Protos::Common::Entry& entry);
 
    public:
       virtual ~Download() {}
+
+      virtual void populateEntry(Protos::Queue::Queue_Entry* entry) const;
 
       int getId() const;
       Status getStatus() const;
@@ -39,6 +44,8 @@ namespace DM
       virtual void retrievePeer();
 
    protected:
+      const quint32 ID;
+
       QSharedPointer<FM::IFileManager> fileManager;
       QSharedPointer<PM::IPeerManager> peerManager;
 

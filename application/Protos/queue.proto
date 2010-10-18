@@ -10,31 +10,10 @@ import "common.proto";
 package Protos.Queue;
 
 message Queue {
-   message LocalEntry {
-      required Common.Entry file = 1;
-   }
-   
-   // A remote entry is a directory or a file.
-   message RemoteEntry {
-      required Common.Hash peer_id = 1; // source.
-      optional Common.Entry entry = 2;
-   }   
-   
-   // A queued entry can be remote or local. 
-   // Here is the associated status :
-   // (see the meaning of each status here : http://dev.euphorik.ch/wiki/pmp/Functional_definition#The-download-window).
-   // remote :
-   //  * 'Initializing' (the file is not created until the hashes are not received)
-   //  * 'Not found'
-   //  * 'Unknown peer'
-   //  * 'Queued'
-   // local :
-   //  * 'Completed'
-   //  * 'No source' (we've got the hashes)
-   //  * 'Downloading'
    message Entry {
-      optional LocalEntry local_entry = 1;
-      optional RemoteEntry remote_entry = 2;
+      required Common.Entry entry = 1;
+      required Common.Hash peer_id = 3;
+      optional bool complete = 2 [default = false]; // Only for Common.Entry.type == FILE
    }
    
    required uint32 version = 1;

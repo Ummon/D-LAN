@@ -398,9 +398,15 @@ void StressTest::getChunk()
    {
       int n = this->randGen.rand(this->someHashes.size()-1);
       Common::Hash hash = this->someHashes[n];
-      try
+
+      QSharedPointer<IChunk> chunk = this->fileManager->getChunk(hash);
+      if (chunk.isNull())
       {
-         QSharedPointer<IChunk> chunk = this->fileManager->getChunk(hash);
+         nbNotFound++;
+         this->someHashes.removeAt(n);
+      }
+      else
+      {
          nbFound++;
 
          if (this->randGen.permilRand() <= 1)
@@ -408,12 +414,6 @@ void StressTest::getChunk()
             Uploader* uploader = new Uploader(chunk);
             uploader->start();
          }
-      }
-      catch(UnknownChunkException&)
-      {
-         nbNotFound++;
-         this->someHashes.removeAt(n);
-         //qDebug() << "Hash unknown : " << hash.toStr();
       }
    }
    qDebug() << "Time elapsed for " << i << " getChunk : " << time.elapsed() << " ms";

@@ -37,7 +37,8 @@ FileManager::FileManager()
    connect(&this->cache, SIGNAL(newSharedDirectory(SharedDirectory*)),                 &this->fileUpdater, SLOT(addRoot(SharedDirectory*)),              Qt::DirectConnection);
    connect(&this->cache, SIGNAL(sharedDirectoryRemoved(SharedDirectory*, Directory*)), &this->fileUpdater, SLOT(rmRoot(SharedDirectory*, Directory*)),   Qt::DirectConnection);
 
-   connect(&this->fileUpdater, SIGNAL(persistCache()), this, SLOT(persistCacheToFile()), Qt::DirectConnection);
+   connect(&this->fileUpdater, SIGNAL(persistCache()),    this, SLOT(persistCacheToFile()), Qt::DirectConnection);
+   connect(&this->fileUpdater, SIGNAL(fileCacheLoaded()), this, SIGNAL(fileCacheLoaded()),  Qt::QueuedConnection);
 
    this->loadCacheFromFile();
 
@@ -83,10 +84,7 @@ QStringList FileManager::getSharedDirsReadWrite()
 
 QSharedPointer<IChunk> FileManager::getChunk(const Common::Hash& hash)
 {
-   QSharedPointer<IChunk> chunk = this->chunks.value(hash);
-   if (chunk.isNull())
-      throw UnknownChunkException();
-   return chunk;
+   return this->chunks.value(hash);
 }
 
 QList< QSharedPointer<IChunk> > FileManager::newFile(const Protos::Common::Entry& remoteEntry)
@@ -306,6 +304,12 @@ void FileManager::loadCacheFromFile()
    try
    {
       Common::PersistantData::getValue(Common::FILE_CACHE, *savedCache);
+      if (static_cast<int>(savedCache->version()) != FILE_CACHE_VERSION)
+      {
+         L_ERRO(QString("The version (%1) of the file cache \"%2\" doesn't match the current version (%3)").arg(savedCache->version()).arg(Common::FILE_CACHE).arg(FILE_CACHE_VERSION));
+         Common::PersistantData::rmValue(Common::FILE_CACHE);
+         return;
+      }
 
       // Scan the shared directories and try to match the files against the saved cache.
       try
