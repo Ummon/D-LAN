@@ -36,14 +36,21 @@ message State {
    }
    message Download {
       enum Status {
-         QUEUED = 0;
-         INITIALIZING = 1;
-         DOWNLOADING = 2;
-         COMPLETE = 3;
-         PAUSED = 4;
-         UNKNOWN_PEER = 5;
-         ENTRY_NOT_FOUND = 6;
-         NO_SOURCE = 7;
+         QUEUED = 0x1;
+         INITIALIZING = 0x2;
+         DOWNLOADING = 0x3;
+         COMPLETE = 0x4;
+         PAUSED = 0x5;
+         
+         UNKNOWN_PEER = 0x10; // When the peer is online the download will (re)start automatically.
+         ENTRY_NOT_FOUND = 0x11; // When the entry is found the download will start automatically
+         NO_SOURCE = 0x12; // When a new source is available the download will start automatically.
+         
+         // All the following status will pause the download.
+         NO_SHARED_DIRECTORY_TO_WRITE = 0x20;
+         NO_ENOUGH_FREE_SPACE = 0x21;
+         THE_FILE_ALREADY_EXISTS = 0x22;
+         UNABLE_TO_CREATE_THE_FILE = 0x23;
       }
       required uint32 id = 1;
       required Common.Entry file = 2;

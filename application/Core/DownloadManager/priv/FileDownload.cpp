@@ -4,6 +4,8 @@ using namespace DM;
 #include <Common/Settings.h>
 #include <Common/ProtoHelper.h>
 
+#include <Core/FileManager/Exceptions.h>
+
 #include <priv/Log.h>
 #include <priv/Constants.h>
 
@@ -12,7 +14,9 @@ FileDownload::FileDownload(
    QSharedPointer<PM::IPeerManager> peerManager,
    OccupiedPeers& occupiedPeersAskingForHashes,
    OccupiedPeers& occupiedPeersDownloadingChunk,
-   Common::Hash peerSourceID, const Protos::Common::Entry& entry
+   Common::Hash peerSourceID,
+   const Protos::Common::Entry& entry,
+   bool complete
 )
    : Download(fileManager, peerManager, peerSourceID, entry),
    NB_CHUNK(this->entry.size() / SETTINGS.get<quint32>("chunk_size") + (this->entry.size() % SETTINGS.get<quint32>("chunk_size") == 0 ? 0 : 1)),
@@ -20,11 +24,14 @@ FileDownload::FileDownload(
    occupiedPeersDownloadingChunk(occupiedPeersDownloadingChunk),
    nbHashesKnown(0),
    fileCreated(false)
-{   
+{
    L_DEBU(QString("New FileDownload : source = %1, entry : \n%2").
       arg(this->peerSourceID.toStr()).
       arg(Common::ProtoHelper::getDebugStr(this->entry))
    );
+
+   if (complete)
+      this->status = COMPLETE;
 
    this->timer.setInterval(CHECK_ENTRY_PERIOD);
    this->timer.setSingleShot(true);
@@ -32,7 +39,13 @@ FileDownload::FileDownload(
 
    for (int i = 0; i < entry.chunk_size(); i++)
    {
-      QSharedPointer<ChunkDownload> chunkDownload = QSharedPointer<ChunkDownload>(new ChunkDownload(this->peerManager, this->occupiedPeersDownloadingChunk, Common::Hash(entry.chunk(i).hash().data())));
+      Common::Hash chunkHash(entry.chunk(i).hash().data());
+      QSharedPointer<ChunkDownload> chunkDownload = QSharedPointer<ChunkDownload>(new ChunkDownload(this->peerManager, this->occupiedPeersDownloadingChunk, chunkHash));
+
+      QSharedPointer<FM::IChunk> chunk = this->fileManager->getChunk(chunkHash);
+      if (!chunk.isNull())
+         chunkDownload->setChunk(chunk);
+
       this->chunkDownloads << chunkDownload;
       this->connectChunkDownloadSignals(this->chunkDownloads.last());
    }
@@ -71,23 +84,46 @@ int FileDownload::getProgress() const
   */
 QSharedPointer<ChunkDownload> FileDownload::getAChunkToDownload()
 {
-   for (QListIterator< QSharedPointer<ChunkDownload> > i(this->chunkDownloads); i.hasNext();)
+   try
    {
-      QSharedPointer<ChunkDownload> chunkDownload = i.next();
-      if (chunkDownload->isReadyToDownload())
+      for (QListIterator< QSharedPointer<ChunkDownload> > i(this->chunkDownloads); i.hasNext() && this->status != COMPLETE;)
       {
-         if (!this->fileCreated)
+         QSharedPointer<ChunkDownload> chunkDownload = i.next();
+         if (chunkDownload->isReadyToDownload())
          {
-            this->chunksWithoutDownload = this->fileManager->newFile(this->entry);
-            for (int i = 0; !this->chunksWithoutDownload.isEmpty() && i < this->chunkDownloads.size(); i++)
+            if (!this->fileCreated)
             {
-               this->chunkDownloads[i]->setChunk(this->chunksWithoutDownload.takeFirst());
-            }
-            this->fileCreated = true;
+               this->chunksWithoutDownload = this->fileManager->newFile(this->entry);
+               for (int i = 0; !this->chunksWithoutDownload.isEmpty() && i < this->chunkDownloads.size(); i++)
+               {
+                  this->chunkDownloads[i]->setChunk(this->chunksWithoutDownload.takeFirst());
+               }
+               this->fileCreated = true;
          }
 
-         return chunkDownload;
+            return chunkDownload;
+         }
       }
+   }
+   catch(FM::NoReadWriteSharedDirectoryException&)
+   {
+      L_WARN(QString("There is no shared directory with writting rights for this download : %1").arg(Common::ProtoHelper::getStr(this->entry, &Protos::Common::Entry::name)));
+      this->status = NO_SHARED_DIRECTORY_TO_WRITE;
+   }
+   catch(FM::InsufficientStorageSpaceException&)
+   {
+      L_WARN(QString("There is no enough space storage available for this download : %1").arg(Common::ProtoHelper::getStr(this->entry, &Protos::Common::Entry::name)));
+      this->status = NO_ENOUGH_FREE_SPACE;
+   }
+   catch(FM::FilePhysicallyAlreadyExistsException)
+   {
+      L_WARN(QString("The file already exists, download : %1").arg(Common::ProtoHelper::getStr(this->entry, &Protos::Common::Entry::name)));
+      this->status = THE_FILE_ALREADY_EXISTS;
+   }
+   catch(FM::UnableToCreateNewFileException&)
+   {
+      L_WARN(QString("Unable to create the file, download : %1").arg(Common::ProtoHelper::getStr(this->entry, &Protos::Common::Entry::name)));
+      this->status = UNABLE_TO_CREATE_THE_FILE;
    }
 
    return QSharedPointer<ChunkDownload>();
@@ -100,7 +136,7 @@ bool FileDownload::retreiveHashes()
 {
    // If we've already got all the chunk hashes it's unecessary to re-ask them.
    // Or if we'v got anyone to ask the chunk hashes..
-   if (this->nbHashesKnown == this->NB_CHUNK || !this->hasAValidPeer())
+   if (this->nbHashesKnown == this->NB_CHUNK || !this->hasAValidPeer() || this->status == COMPLETE)
       return false;
 
    if (!this->occupiedPeersAskingForHashes.setPeerAsOccupied(this->peerSource))
@@ -141,6 +177,8 @@ void FileDownload::result(const Protos::Core::GetHashesResult& result)
 
 void FileDownload::nextHash(const Common::Hash& hash)
 {
+   L_DEBU(QString("New Hash received : %1").arg(hash.toStr()));
+
    if (++this->nbHashesKnown == this->NB_CHUNK)
    {
       this->getHashesResult.clear();
@@ -167,6 +205,7 @@ void FileDownload::nextHash(const Common::Hash& hash)
       this->chunkDownloads << chunkDownload;
       this->connectChunkDownloadSignals(chunkDownload);
       chunkDownload->setPeerSource(this->peerSource);
+      this->entry.add_chunk()->set_hash(hash.getData(), Common::Hash::HASH_SIZE); // Used during the saving of the queue, see Download::populateEntry(..).
    }
 }
 

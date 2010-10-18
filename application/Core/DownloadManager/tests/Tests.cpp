@@ -28,6 +28,8 @@ void Tests::initTestCase()
    qDebug() << "===== initTestCase() =====";
 
    Common::PersistantData::rmValue(Common::FILE_CACHE); // Reset the stored cache.
+   Common::PersistantData::rmValue(Common::FILE_QUEUE); // Reset the stored queue.
+
    this->createInitialFiles();
 
    this->fileManagers <<
@@ -70,7 +72,8 @@ void Tests::addADirectoryToDownload()
    qDebug() << "===== addADirectoryToDownload() =====";
 
    Protos::Core::GetEntriesResult result = this->fileManagers[1]->getEntries();
-   this->downloadManagers[0]->addDownload(this->peerManagers[1]->getID(), result.entry(0));
+   this->downloadManagers[0]->addDownload(result.entry(0), this->peerManagers[1]->getID());
+   QTest::qWait(1000);
 }
 
 void Tests::addABigFileToDownload()
@@ -100,7 +103,7 @@ void Tests::addABigFileToDownload()
    entry.set_size(FILE_SIZE);
    entry.mutable_shared_dir()->CopyFrom(rootEntry.entry(0).shared_dir());
 
-   this->downloadManagers[0]->addDownload(this->peerManagers[1]->getID(), entry);
+   this->downloadManagers[0]->addDownload(entry, this->peerManagers[1]->getID());
 
    for (int i = 0; i < 15; i++)
    {
@@ -141,7 +144,7 @@ void Tests::addABigFileToDownload()
 
 void Tests::cleanupTestCase()
 {
-   QTest::qWait(1000000);
+   QTest::qWait(10000);
    qDebug() << "===== cleanupTestCase() =====";
 
    for (QListIterator<TestServer*> i(this->servers); i.hasNext();)

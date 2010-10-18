@@ -4,20 +4,27 @@ using namespace DM;
 #include <priv/Constants.h>
 #include <priv/Log.h>
 
+quint32 Download::currentID(1);
+
 Download::Download(QSharedPointer<FM::IFileManager> fileManager, QSharedPointer<PM::IPeerManager> peerManager, Common::Hash peerSourceID, const Protos::Common::Entry& entry)
-   : fileManager(fileManager), peerManager(peerManager), peerSourceID(peerSourceID), peerSource(0), entry(entry), status(QUEUED)
+   : ID(currentID++), fileManager(fileManager), peerManager(peerManager), peerSourceID(peerSourceID), peerSource(0), entry(entry), status(QUEUED)
 {
    this->timer.setInterval(CHECK_DEAD_PEER_PERIOD);
    this->timer.setSingleShot(true);
    connect(&this->timer, SIGNAL(timeout()), this, SLOT(retrievePeer()));
-
    this->retrievePeer();
+}
+
+void Download::populateEntry(Protos::Queue::Queue_Entry* entry) const
+{
+   entry->mutable_entry()->CopyFrom(this->entry);
+   entry->mutable_peer_id()->set_hash(this->peerSourceID.getData(), Common::Hash::HASH_SIZE);
+   entry->set_complete(this->status == COMPLETE);
 }
 
 int Download::getId() const
 {
-   // TODO
-   return 0;
+   return this->ID;
 }
 
 Status Download::getStatus() const

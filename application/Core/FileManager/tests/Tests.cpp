@@ -317,16 +317,12 @@ void Tests::createAnEmptyFile()
 void Tests::getAExistingChunk()
 {
    qDebug() << "===== getAExistingChunk() =====";
-   try
-   {
-      QSharedPointer<IChunk> chunk = this->fileManager->getChunk(Common::Hash::fromStr("97d464813598e2e4299b5fe7db29aefffdf2641d"));
 
-      qDebug() << "Chunk found : " << chunk->getHash().toStr();
-   }
-   catch(UnknownChunkException&)
-   {
+   QSharedPointer<IChunk> chunk = this->fileManager->getChunk(Common::Hash::fromStr("97d464813598e2e4299b5fe7db29aefffdf2641d"));
+   if (chunk.isNull())
       QFAIL("Chunk not found");
-   }
+   else
+      qDebug() << "Chunk found : " << chunk->getHash().toStr();
 }
 
 void Tests::getAUnexistingChunk()

@@ -22,7 +22,7 @@ namespace DM
       /**
         * @param entry It must have the field 'shared_dir'.
         */
-      virtual void addDownload(Common::Hash peerSource, const Protos::Common::Entry& entry) = 0;
+      virtual void addDownload(const Protos::Common::Entry& entry, Common::Hash peerSource) = 0;
 
       /**
         * @remarks The returned download pointers must not be retained.

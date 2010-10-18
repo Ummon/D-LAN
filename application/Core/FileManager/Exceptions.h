@@ -72,8 +72,6 @@ namespace FM
    class UnableToCreateNewFileException {};
 
    class FilePhysicallyAlreadyExistsException {};
-
-   class UnknownChunkException {};
 }
 
 #endif

@@ -53,7 +53,8 @@ SOURCES += priv/FileDownload.cpp \
     priv/ChunkDownload.cpp \
     ../../Protos/common.pb.cc \
     priv/Builder.cpp \
-    priv/OccupiedPeers.cpp
+    priv/OccupiedPeers.cpp \
+    ../../Protos/queue.pb.cc
 HEADERS += IDownloadManager.h \
     IDownload.h \
     IChunkDownload.h \
@@ -66,4 +67,5 @@ HEADERS += IDownloadManager.h \
     Builder.h \
     priv/Constants.h \
     priv/OccupiedPeers.h \
-    priv/Log.h
+    priv/Log.h \
+    ../../Protos/queue.pb.h

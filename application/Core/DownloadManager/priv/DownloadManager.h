@@ -6,6 +6,7 @@
 #include <QList>
 #include <QSet>
 #include <QSharedPointer>
+#include <QTimer>
 
 #include <Core/FileManager/IFileManager.h>
 #include <Core/PeerManager/IPeerManager.h>
@@ -28,9 +29,11 @@ namespace DM
       Q_OBJECT
    public:
       DownloadManager(QSharedPointer<FM::IFileManager> fileManager, QSharedPointer<PM::IPeerManager> peerManager);
+      ~DownloadManager();
 
-      void addDownload(Common::Hash peerSource, const Protos::Common::Entry& entry);
-      void addDownload(Common::Hash peerSource, const Protos::Common::Entry& entry, QMutableLinkedListIterator<Download*> iterator);
+      void addDownload(const Protos::Common::Entry& entry, Common::Hash peerSource);
+      void addDownload(const Protos::Common::Entry& entry, Common::Hash peerSource, bool complete);
+      void addDownload(const Protos::Common::Entry& entry, Common::Hash peerSource, bool complete, QMutableLinkedListIterator<Download*> iterator);
 
       QList<IDownload*> getDownloads();
       QList< QSharedPointer<IChunkDownload> > getUnfinishedChunks(int n);
@@ -38,14 +41,21 @@ namespace DM
       int getDownloadRate() const;
 
    private slots:
+      void fileCacheLoaded();
+
       void newEntries(const Protos::Core::GetEntriesResult& entries);
 
       void peerNoLongerAskingForHashes(PM::IPeer* peer);
       void peerNoLongerDownloadingChunk(PM::IPeer* peer);
 
+      void scanTheQueue();
       void downloadFinished();
 
    private:
+      void loadQueueFromFile();
+      void saveQueueToFile();
+      bool isEntryAlreadyQueued(const Protos::Common::Entry& entry);
+
       QSharedPointer<FM::IFileManager> fileManager;
       QSharedPointer<PM::IPeerManager> peerManager;
 
@@ -55,6 +65,8 @@ namespace DM
       QLinkedList<Download*> downloads;
 
       int numberOfDownload;
+
+      QTimer timer; // When a download has an error status, the queue will be rescaned periodically.
    };
 }
 #endif

@@ -168,6 +168,8 @@ void FileUpdater::run()
       this->fileCache = 0;
    }
 
+   emit fileCacheLoaded();
+
    forever
    {
       if (this->computeSomeHashes())
