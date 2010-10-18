@@ -51,7 +51,7 @@ message FindResult {
 message Settings {
    optional string nick = 1;
    optional Common.Hash peerID = 2;
-   
+      
    optional uint32 chunk_size = 3 [default = 33554432]; // (32MiB).
    optional uint32 buffer_size = 4 [default = 524288]; // (512KiB), Buffer used when reading/writting files.
    optional uint32 socket_buffer_size = 5 [default = 4194304]; // 4 MiB. Max size of the socket buffer, using when receiving or sending data over the sockets.
@@ -86,4 +86,9 @@ message Settings {
    optional uint32 number_of_hashes_sent_imalive = 26 [default = 128];
    optional uint32 protocol_version = 27 [default = 1];
    optional uint32 max_number_of_search_result_to_send = 28 [default = 100];
+   
+   // RemoteControlManager
+   optional uint32 remote_control_port = 29 [default = 59485];
+   optional uint32 remote_refresh_rate = 30 [default = 1000]; // [ms].
+   optional uint32 remote_max_nb_connection = 31 [default = 5]; // [ms].
 }
