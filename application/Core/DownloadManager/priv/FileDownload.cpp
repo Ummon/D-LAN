@@ -209,12 +209,12 @@ void FileDownload::nextHash(const Common::Hash& hash)
    }
 }
 
-void FileDownload::downloadStarted()
+void FileDownload::chunkDownloadStarted()
 {
    this->status = DOWNLOADING;
 }
 
-void FileDownload::downloadFinished()
+void FileDownload::chunkDownloadFinished()
 {
    this->status = COMPLETE;
    for (QListIterator< QSharedPointer<ChunkDownload> > i(this->chunkDownloads); i.hasNext();)
@@ -240,6 +240,6 @@ void FileDownload::downloadFinished()
 
 void FileDownload::connectChunkDownloadSignals(QSharedPointer<ChunkDownload> chunkDownload)
 {
-   connect(chunkDownload.data(), SIGNAL(downloadStarted()), this, SLOT(downloadStarted()), Qt::DirectConnection);
-   connect(chunkDownload.data(), SIGNAL(downloadFinished()), this, SLOT(downloadFinished()), Qt::DirectConnection);
+   connect(chunkDownload.data(), SIGNAL(downloadStarted()), this, SLOT(chunkDownloadStarted()), Qt::DirectConnection);
+   connect(chunkDownload.data(), SIGNAL(downloadFinished()), this, SLOT(chunkDownloadFinished()), Qt::DirectConnection);
 }

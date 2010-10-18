@@ -50,8 +50,8 @@ namespace DM
       void result(const Protos::Core::GetHashesResult& result);
       void nextHash(const Common::Hash& hash);
 
-      void downloadStarted();
-      void downloadFinished();
+      void chunkDownloadStarted();
+      void chunkDownloadFinished();
 
    private:
       void connectChunkDownloadSignals(QSharedPointer<ChunkDownload> chunkDownload);
