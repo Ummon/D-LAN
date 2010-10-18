@@ -49,7 +49,7 @@ namespace DM
       void peerNoLongerDownloadingChunk(PM::IPeer* peer);
 
       void scanTheQueue();
-      void downloadFinished();
+      void chunkDownloadFinished();
 
    private:
       void loadQueueFromFile();

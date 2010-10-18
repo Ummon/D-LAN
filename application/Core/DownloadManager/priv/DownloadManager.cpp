@@ -168,18 +168,17 @@ void DownloadManager::scanTheQueue()
       if (chunkDownload.isNull())
          continue;
 
-      connect(chunkDownload.data(), SIGNAL(downloadFinished()), this, SLOT(downloadFinished()), Qt::DirectConnection);
+      connect(chunkDownload.data(), SIGNAL(downloadFinished()), this, SLOT(chunkDownloadFinished()), Qt::QueuedConnection);
+
       if (chunkDownload->startDownloading())
          this->numberOfDownload++;
    }
 }
 
-/**
-  * Called from a download thread.
-  */
-void DownloadManager::downloadFinished()
+void DownloadManager::chunkDownloadFinished()
 {
-   this->sender()->disconnect(this, SLOT(downloadFinished()));
+   L_DEBU(QString("DownloadManager::chunkDownloadFinished, numberOfDownload = %1").arg(this->numberOfDownload));
+   this->sender()->disconnect(this, SLOT(chunkDownloadFinished()));
    this->numberOfDownload--;
 }
 

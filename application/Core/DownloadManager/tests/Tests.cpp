@@ -144,7 +144,7 @@ void Tests::addABigFileToDownload()
 
 void Tests::cleanupTestCase()
 {
-   QTest::qWait(10000);
+   QTest::qWait(1000);
    qDebug() << "===== cleanupTestCase() =====";
 
    for (QListIterator<TestServer*> i(this->servers); i.hasNext();)
