@@ -49,6 +49,7 @@ File::File(
      dateLastModified(dateLastModified),
      nbChunkComplete(0),
      complete(!createPhysically),
+     tryToRename(false),
      numDataWriter(0),
      numDataReader(0),
      fileInWriteMode(0),
@@ -261,6 +262,9 @@ void File::dataReaderDeleted()
    {
       delete this->fileInReadMode;
       this->fileInReadMode = 0;
+
+      if (this->tryToRename)
+         this->setAsComplete();
    }
 }
 
@@ -515,6 +519,13 @@ void File::setAsComplete()
 
    if (Cache::isFileUnfinished(this->name))
    {
+      if (this->numDataReader > 0)
+      {
+         L_DEBU(QString("Delay file renaming, %1 reader(s)").arg(this->numDataReader));
+         this->tryToRename = true;
+         return;
+      }
+
       // TODO how can we handle one or more reader ?
       if (this->fileInWriteMode)
       {
@@ -534,7 +545,10 @@ void File::setAsComplete()
          this->dateLastModified = oldDate;
          this->name = oldname;
          L_ERRO(QString("Unable to rename the file %1").arg(path));
+         this->tryToRename = true;
       }
+      else
+         this->tryToRename = false;
    }
 }
 

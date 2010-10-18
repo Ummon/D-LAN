@@ -90,6 +90,7 @@ namespace FM
       // Used only when writing a file.
       int nbChunkComplete;
       bool complete;
+      bool tryToRename; // If a finished file can't be renamed (removing the suffix '.unfinished') because there is some readers, the renaming will be delayed until there is no more reader.
 
       int numDataWriter;
       int numDataReader;
