@@ -1,27 +1,48 @@
 #ifndef REMOTECONTROLMANAGER_REMOTECONTROLMANAGER_H
 #define REMOTECONTROLMANAGER_REMOTECONTROLMANAGER_H
 
+#include <QObject>
+#include <QSharedPointer>
+#include <QList>
+#include <QTcpServer>
+
 #include <IRemoteControlManager.h>
 
-namespace UM { class IUploadManager; }
-namespace DM { class IDownloadManager; }
-namespace PM { class IPeerManager; }
-namespace FM { class IFileManager; }
-namespace NL { class INetworkListener; }
+#include <Core/FileManager/IFileManager.h>
+#include <Core/PeerManager/IPeerManager.h>
+#include <Core/UploadManager/IUploadManager.h>
+#include <Core/DownloadManager/IDownloadManager.h>
+#include <Core/NetworkListener/INetworkListener.h>
+
+#include <priv/RemoteConnection.h>
 
 namespace RCM
 {
-   class RemoteConnection;
-
-   class RemoteControlManager : public IRemoteControlManager
+   class RemoteControlManager : public QObject, public IRemoteControlManager
    {
+      Q_OBJECT
+   public:
+      RemoteControlManager(
+         QSharedPointer<FM::IFileManager> fileManager,
+         QSharedPointer<PM::IPeerManager> peerManager,
+         QSharedPointer<UM::IUploadManager> uploadManager,
+         QSharedPointer<DM::IDownloadManager> downloadManager,
+         QSharedPointer<NL::INetworkListener> networkListener
+      );
+
+   private slots:
+      void newConnection();
+      void connectionDeleted(RemoteConnection* sender);
+
    private:
-      RemoteConnection* remoteConnection;
-      UM::IUploadManager* uploadManager;
-      DM::IDownloadManager* downloadManager;
-      PM::IPeerManager* peerManager;
-      FM::IFileManager* fileManager;
-      NL::INetworkListener* networkListener;
+      QSharedPointer<FM::IFileManager> fileManager;
+      QSharedPointer<PM::IPeerManager> peerManager;
+      QSharedPointer<UM::IUploadManager> uploadManager;
+      QSharedPointer<DM::IDownloadManager> downloadManager;
+      QSharedPointer<NL::INetworkListener> networkListener;
+
+      QTcpServer tcpServer;
+      QList<RemoteConnection*> connections;
    };
 }
 #endif
