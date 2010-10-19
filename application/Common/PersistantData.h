@@ -1,9 +1,6 @@
 #ifndef COMMON_PERSISTANTDATA_H
 #define COMMON_PERSISTANTDATA_H
 
-#include <exception>
-using namespace std;
-
 #include <google/protobuf/message.h>
 
 #include <QString>
@@ -11,7 +8,7 @@ using namespace std;
 
 namespace Common
 {
-   class UnknownValueException : public exception {};
+   class UnknownValueException {};
 
    class PersistantData
    {

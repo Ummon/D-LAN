@@ -1,15 +1,12 @@
 #include <Common/PersistantData.h>
 using namespace Common;
 
-#include <fstream>
-using namespace std;
-
+#include <QFile>
 #include <QDir>
 #include <QtDebug>
 
 #include <google/protobuf/text_format.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
-
 
 #include <Constants.h>
 #include <Global.h>
@@ -36,19 +33,21 @@ void PersistantData::setValue(const QString& name, const google::protobuf::Messa
       QString tempName(name + TEMP_SUFFIX_TERM);
 
       {
-         ofstream file((APPLICATION_FOLDER_PATH + '/' + tempName).toStdString().data(), ios_base::binary | ios_base::out);
+         QFile file(APPLICATION_FOLDER_PATH + '/' + tempName);
+         file.open(QIODevice::WriteOnly);
          // if (file.fail()) // TODO : check if failure
+
 #if !DEBUG
          if (humanReadable)
          {
 #endif
-            google::protobuf::io::OstreamOutputStream zeroCopyStream(&file);
-            google::protobuf::TextFormat::Print(data, &zeroCopyStream);
+            google::protobuf::io::FileOutputStream fileStream(file.handle());
+            google::protobuf::TextFormat::Print(data, &fileStream);
 #if !DEBUG
          }
          else
          {
-            data.SerializeToOstream(&file);
+            data.SerializeToFileDescriptor(file.handle());
          }
 #endif
       }
@@ -67,21 +66,21 @@ void PersistantData::setValue(const QString& name, const google::protobuf::Messa
   */
 void PersistantData::getValue(const QString& name, google::protobuf::Message& data, bool humanReadable)
 {
-   ifstream file((APPLICATION_FOLDER_PATH + '/' + name).toStdString().data(), ios_base::binary | ios_base::in);
-   if (file.fail())
+   QFile file(APPLICATION_FOLDER_PATH + '/' + name);
+   if (!file.open(QIODevice::ReadOnly))
       throw UnknownValueException();
 
 #if !DEBUG
    if (humanReadable)
    {
 #endif
-      google::protobuf::io::IstreamInputStream zeroCopyStream(&file);
-      google::protobuf::TextFormat::Parse(&zeroCopyStream, &data);
+      google::protobuf::io::FileInputStream fileStream(file.handle());
+      google::protobuf::TextFormat::Parse(&fileStream, &data);
 #if !DEBUG
    }
    else
    {
-      data.ParseFromIstream(&file);
+      data.ParseFromIstream(file.handle());
    }
 #endif
 }
