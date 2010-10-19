@@ -154,7 +154,14 @@ void DownloadManager::peerNoLongerDownloadingChunk(PM::IPeer* peer)
 void DownloadManager::scanTheQueue()
 {
    L_DEBU("Scanning the queue..");
-   for (QLinkedListIterator<Download*> i(this->downloads); i.hasNext() && this->numberOfDownload < static_cast<int>(SETTINGS.get<quint32>("number_of_downloader"));)
+
+   int numberOfDownloadCopy;
+   {
+      QMutexLocker lock(&this->mutexNumberOfDownload);
+      numberOfDownloadCopy = this->numberOfDownload;
+   }
+
+   for (QLinkedListIterator<Download*> i(this->downloads); i.hasNext() && numberOfDownloadCopy < static_cast<int>(SETTINGS.get<quint32>("number_of_downloader"));)
    {
       FileDownload* fileDownload = dynamic_cast<FileDownload*>(i.next());
       if (!fileDownload)
@@ -168,15 +175,26 @@ void DownloadManager::scanTheQueue()
       if (chunkDownload.isNull())
          continue;
 
-      connect(chunkDownload.data(), SIGNAL(downloadFinished()), this, SLOT(chunkDownloadFinished()), Qt::QueuedConnection);
+      {
+         QMutexLocker lock(&this->mutexNumberOfDownload);
+         connect(chunkDownload.data(), SIGNAL(downloadFinished()), this, SLOT(chunkDownloadFinished()));
+      }
 
       if (chunkDownload->startDownloading())
+      {
+         QMutexLocker lock(&this->mutexNumberOfDownload);
          this->numberOfDownload++;
+      }
    }
 }
 
+/**
+  * Called from a download thread. It must be called before 'peerNoLongerDownloadingChunk' when a download is finished.
+  */
 void DownloadManager::chunkDownloadFinished()
 {
+   QMutexLocker lock(&this->mutexNumberOfDownload);
+
    L_DEBU(QString("DownloadManager::chunkDownloadFinished, numberOfDownload = %1").arg(this->numberOfDownload));
    this->sender()->disconnect(this, SLOT(chunkDownloadFinished()));
    this->numberOfDownload--;

@@ -72,6 +72,11 @@ void ChunkDownload::setChunk(QSharedPointer<FM::IChunk> chunk)
    this->chunk->setHash(this->chunkHash);
 }
 
+QSharedPointer<FM::IChunk> ChunkDownload::getChunk() const
+{
+   return this->chunk;
+}
+
 void ChunkDownload::setPeerSource(PM::IPeer* peer)
 {
    QMutexLocker lock(&this->mutex);
@@ -119,6 +124,14 @@ int ChunkDownload::getDownloadedBytes() const
       return 0;
 
    return this->chunk->getKnownBytes();
+}
+
+QList<Common::Hash> ChunkDownload::getPeers() const
+{
+   QList<Common::Hash> peerIDs;
+   for (QListIterator<PM::IPeer*> i(this->peers); i.hasNext();)
+      peerIDs << i.next()->getID();
+   return peerIDs;
 }
 
 /**
