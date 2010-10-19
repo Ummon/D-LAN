@@ -56,8 +56,10 @@ SOURCES += main.cpp \
     Tests.cpp \
     ../../../Protos/common.pb.cc \
     ../../PeerManager/tests/TestServer.cpp \
-    ../../PeerManager/tests/PeerUpdater.cpp
+    ../../PeerManager/tests/PeerUpdater.cpp \
+    ../../../Protos/core_settings.pb.cc
 HEADERS += Tests.h \
     ../../../Protos/common.pb.h \
     ../../PeerManager/tests/TestServer.h \
-    ../../PeerManager/tests/PeerUpdater.h
+    ../../PeerManager/tests/PeerUpdater.h \
+    ../../../Protos/core_settings.pb.h

@@ -44,7 +44,10 @@ FileDownload::FileDownload(
 
       QSharedPointer<FM::IChunk> chunk = this->fileManager->getChunk(chunkHash);
       if (!chunk.isNull())
+      {
+         this->fileCreated = true; // If we know the chunks we considere the file as already created.
          chunkDownload->setChunk(chunk);
+      }
 
       this->chunkDownloads << chunkDownload;
       this->connectChunkDownloadSignals(this->chunkDownloads.last());
@@ -78,6 +81,14 @@ int FileDownload::getProgress() const
    return 100LL * knownBytes / this->entry.size();
 }
 
+QList<Common::Hash> FileDownload::getPeers() const
+{
+   QList<Common::Hash> peerIDs;
+   for (QListIterator< QSharedPointer<ChunkDownload> > i(this->chunkDownloads); i.hasNext();)
+      peerIDs.append(i.next()->getPeers());
+   return peerIDs;
+}
+
 /**
   * If there is a ChunkDownload with a free peer (we do not already download from this peer) the return the chunk.
   * The file is created on the fly with IFileManager::newFile(..) if we don't have the IChunks.
@@ -94,12 +105,18 @@ QSharedPointer<ChunkDownload> FileDownload::getAChunkToDownload()
             if (!this->fileCreated)
             {
                this->chunksWithoutDownload = this->fileManager->newFile(this->entry);
+
                for (int i = 0; !this->chunksWithoutDownload.isEmpty() && i < this->chunkDownloads.size(); i++)
                {
                   this->chunkDownloads[i]->setChunk(this->chunksWithoutDownload.takeFirst());
                }
+
+               // If we got all the chunks, remote entry becomes a local entry.
+               if (!this->chunksWithoutDownload.isEmpty() && this->nbHashesKnown == this->NB_CHUNK)
+                  this->chunksWithoutDownload.first()->populateEntry(&this->entry);
+
                this->fileCreated = true;
-         }
+            }
 
             return chunkDownload;
          }
@@ -183,6 +200,10 @@ void FileDownload::nextHash(const Common::Hash& hash)
    {
       this->getHashesResult.clear();
       this->occupiedPeersAskingForHashes.setPeerAsFree(this->peerSource);
+
+      // If we got all the chunks, remote entry becomes a local entry.
+      if (this->fileCreated && !this->chunkDownloads.isEmpty())
+         this->chunkDownloads.first()->getChunk()->populateEntry(&this->entry);
    }
 
    if (this->chunkDownloads.size() >= this->nbHashesKnown && this->chunkDownloads[this->nbHashesKnown-1]->getHash() != hash)
@@ -198,7 +219,7 @@ void FileDownload::nextHash(const Common::Hash& hash)
    {
       QSharedPointer<ChunkDownload> chunkDownload = QSharedPointer<ChunkDownload>(new ChunkDownload(this->peerManager, this->occupiedPeersDownloadingChunk, hash));
 
-      // If the file has alredy been created the chunks are known.
+      // If the file has already been created, the chunks are known.
       if (!this->chunksWithoutDownload.isEmpty())
          chunkDownload->setChunk(this->chunksWithoutDownload.takeFirst());
 
