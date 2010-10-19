@@ -16,7 +16,6 @@ namespace Common
    class Settings
    {
       static Settings* instance;
-
       Settings();
 
    public:

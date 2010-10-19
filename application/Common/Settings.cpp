@@ -55,6 +55,26 @@ void Settings::setSettingsMessage(google::protobuf::Message* settings)
 
    this->settings = settings;
    this->descriptor = this->settings->GetDescriptor();
+
+   // Very ugly : to force the optional field to be written. TODO : find a another way.
+   for (int i = 0; i < this->descriptor->field_count(); i++)
+   {
+      const google::protobuf::FieldDescriptor* fieldDescriptor = this->descriptor->field(i);
+      switch(fieldDescriptor->type())
+      {
+      case google::protobuf::FieldDescriptor::TYPE_UINT32:
+         this->settings->GetReflection()->SetUInt32(this->settings, fieldDescriptor, fieldDescriptor->default_value_uint32());
+         break;
+      case google::protobuf::FieldDescriptor::TYPE_DOUBLE:
+         this->settings->GetReflection()->SetDouble(this->settings, fieldDescriptor, fieldDescriptor->default_value_double());
+         break;
+      case google::protobuf::FieldDescriptor::TYPE_STRING:
+         this->settings->GetReflection()->SetString(this->settings, fieldDescriptor, fieldDescriptor->default_value_string());
+         break;
+      default:
+         break;
+      }
+   }
 }
 
 bool Settings::arePersisted()
