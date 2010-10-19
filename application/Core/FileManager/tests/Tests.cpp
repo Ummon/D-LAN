@@ -12,11 +12,14 @@ using namespace std;
 #include <QStringList>
 #include <QDirIterator>
 
+#include <Protos/core_settings.pb.h>
+
 #include <Common/LogManager/Builder.h>
 #include <Common/PersistantData.h>
 #include <Common/Constants.h>
 #include <Common/Global.h>
 #include <Common/ProtoHelper.h>
+#include <Common/Settings.h>
 
 #include <IChunk.h>
 #include <IGetHashesResult.h>
@@ -36,6 +39,9 @@ void Tests::initTestCase()
    qDebug() << "===== initTestCase() =====";
 
    Common::PersistantData::rmValue(Common::FILE_CACHE); // Reset the stored cache.
+
+   SETTINGS.setFilename("core_settings.txt");
+   SETTINGS.setSettingsMessage(new Protos::Core::Settings());
 }
 
 void Tests::createFileManager()

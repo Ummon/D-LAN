@@ -181,12 +181,12 @@ void File::populateEntry(Protos::Common::Entry* entry) const
 
    entry->set_type(Protos::Common::Entry_Type_FILE);
 
+   entry->clear_chunk();
    for (QListIterator< QSharedPointer<Chunk> > i(this->chunks); i.hasNext();)
    {
       Common::Hash hash = i.next()->getHash();
       if (hash.isNull())
          break;
-
       entry->add_chunk()->set_hash(hash.getData(), Common::Hash::HASH_SIZE);
    }
 }
