@@ -13,28 +13,12 @@ CONFIG(debug, debug|release) {
    FOLDER = release
 }
 
-CONFIG += staticlib \
-    link_prl \
-    create_prl
-LIBS += -L${PROTOBUF}/src/.libs \
-    -lprotobuf
-INCLUDEPATH += . \
-    ../.. \
-    ${PROTOBUF}/src
+CONFIG += staticlib link_prl create_prl
+INCLUDEPATH += . ../.. ${PROTOBUF}/src
 
 DESTDIR = output/$$FOLDER
 MOC_DIR = .tmp/$$FOLDER
 OBJECTS_DIR = .tmp/$$FOLDER
-
-LIBS += -L../FileManager/output/$$FOLDER \
-     -lFileManager
-POST_TARGETDEPS += ../FileManager/output/$$FOLDER/libFileManager.a
-LIBS += -L../../Common/LogManager/output/$$FOLDER \
-     -lLogManager
-POST_TARGETDEPS += ../../Common/LogManager/output/$$FOLDER/libLogManager.a
-LIBS += -L../../Common/output/$$FOLDER \
-     -lCommon
-POST_TARGETDEPS += ../../Common/output/$$FOLDER/libCommon.a
 
 DEFINES += PEERMANAGER_LIBRARY
 SOURCES += priv/PeerManager.cpp \
