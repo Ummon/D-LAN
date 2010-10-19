@@ -74,7 +74,11 @@ QList<IPeer*> PeerManager::getPeers()
    QList<IPeer*> peers;
 
    for (QListIterator<Peer*> i(this->peers); i.hasNext();)
-      peers << i.next();
+   {
+      Peer* peer = i.next();
+      if (peer->isAlive())
+         peers << peer;
+   }
 
    return peers;
 }

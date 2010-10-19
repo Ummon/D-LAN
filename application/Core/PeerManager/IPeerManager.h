@@ -30,6 +30,9 @@ namespace PM
       virtual void setNick(const QString& nick) = 0;
       virtual QString getNick() = 0;
 
+      /**
+        * Return all connected peers.
+        */
       virtual QList<IPeer*> getPeers() = 0;
 
       /**
