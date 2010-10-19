@@ -1,6 +1,9 @@
 #include <Tests.h>
 using namespace FM;
 
+#include <string>
+using namespace std;
+
 #include <QtDebug>
 #include <QRegExp>
 #include <QFile>
@@ -328,15 +331,12 @@ void Tests::getAExistingChunk()
 void Tests::getAUnexistingChunk()
 {
    qDebug() << "===== getAUnexistingChunk() =====";
-   try
-   {
-      QSharedPointer<IChunk> chunk = this->fileManager->getChunk(Common::Hash::fromStr("47ddfe38b8c66c0f9d98b9d802f220c84b4b30d4"));
-      QFAIL("No chunk must be found");
-   }
-   catch(UnknownChunkException&)
-   {
+
+   QSharedPointer<IChunk> chunk = this->fileManager->getChunk(Common::Hash::fromStr("47ddfe38b8c66c0f9d98b9d802f220c84b4b30d4"));
+   if (chunk.isNull())
       qDebug() << "Chunk not found : ok";
-   }
+   else
+      QFAIL("No chunk must be found");
 }
 
 void Tests::getHashesFromAFileEntry1()
@@ -536,6 +536,7 @@ void Tests::stressTest()
 {
    qDebug() << "===== stressTest() =====";
 
+   return;
    Common::PersistantData::rmValue(Common::FILE_CACHE);
    StressTest test;
 }
