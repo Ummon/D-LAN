@@ -150,7 +150,11 @@ void FileUpdater::prioritizeAFileToHash(File* file)
 
 void FileUpdater::run()
 {
-   QThread::currentThread()->setObjectName("FileUpdater");
+   QString threadName = "FileUpdater";
+#if DEBUG
+   threadName.append("_").append(QString::number((quint32)QThread::currentThreadId()));
+#endif
+   QThread::currentThread()->setObjectName(threadName);
 
    // First : retrieve the directories and file from the file cache and
    // synchronize it with the file system.

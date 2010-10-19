@@ -23,6 +23,8 @@ Cache::Cache(FileManager* fileManager)
 bool Cache::isFileUnfinished(const QString filename)
 {
    const QString suffix = SETTINGS.get<QString>("unfinished_suffix_term");
+   if (suffix.isEmpty())
+      L_ERRO("Setting 'unfinished_suffix_term' is empty");
    return filename.size() > suffix.size() && filename.endsWith(suffix);
 }
 
