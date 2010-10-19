@@ -39,10 +39,18 @@ int UploadManager::getUploadRate() const
 
 void UploadManager::getChunk(Common::Hash hash, int offset, PM::ISocket* socket)
 {
-   try
+   QSharedPointer<FM::IChunk> chunk = this->fileManager->getChunk(hash);
+   if (chunk.isNull())
    {
-      QSharedPointer<FM::IChunk> chunk = this->fileManager->getChunk(hash);
+      Protos::Core::GetChunkResult result;
+      result.set_status(Protos::Core::GetChunkResult_Status_DONT_HAVE);
+      socket->send(0x52, result);
+      socket->finished();
 
+      L_ERRO(QString("UploadManager::getChunk(..) : Chunk unknown : %1").arg(hash.toStr()));
+   }
+   else
+   {
       Protos::Core::GetChunkResult result;
       result.set_status(Protos::Core::GetChunkResult_Status_OK);
       result.set_chunk_size(chunk->getKnownBytes());
@@ -52,15 +60,6 @@ void UploadManager::getChunk(Common::Hash hash, int offset, PM::ISocket* socket)
       connect(uploader.data(), SIGNAL(uploadFinished(bool)), this, SLOT(uploadFinished(bool)), Qt::QueuedConnection);
       this->uploaders << uploader;
       uploader->start();
-   }
-   catch(FM::UnknownChunkException)
-   {
-      Protos::Core::GetChunkResult result;
-      result.set_status(Protos::Core::GetChunkResult_Status_DONT_HAVE);
-      socket->send(0x52, result);
-      socket->finished();
-
-      L_ERRO(QString("UploadManager::getChunk(..) : Chunk unknown : %1").arg(hash.toStr()));
    }
 }
 
