@@ -4,6 +4,7 @@ using namespace DM;
 #include <QtDebug>
 #include <QStringList>
 
+#include <Protos/core_settings.pb.h>
 #include <Protos/core_protocol.pb.h>
 #include <Protos/common.pb.h>
 
@@ -13,6 +14,7 @@ using namespace DM;
 #include <Common/Global.h>
 #include <Common/Network.h>
 #include <Common/ZeroCopyStreamQIODevice.h>
+#include <Common/Settings.h>
 
 #include <IDownload.h>
 
@@ -29,6 +31,9 @@ void Tests::initTestCase()
 
    Common::PersistantData::rmValue(Common::FILE_CACHE); // Reset the stored cache.
    Common::PersistantData::rmValue(Common::FILE_QUEUE); // Reset the stored queue.
+
+   SETTINGS.setFilename("core_settings.txt");
+   SETTINGS.setSettingsMessage(new Protos::Core::Settings());
 
    this->createInitialFiles();
 
