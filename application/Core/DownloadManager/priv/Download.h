@@ -31,10 +31,10 @@ namespace DM
 
       virtual void populateEntry(Protos::Queue::Queue_Entry* entry) const;
 
-      int getId() const;
+      quint32 getId() const;
       Status getStatus() const;
       virtual int getProgress() const;
-      Common::Hash getPeerSourceID();
+      Common::Hash getPeerSourceID() const;
       Protos::Common::Entry getEntry();
       void remove();
 

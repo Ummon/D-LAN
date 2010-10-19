@@ -34,7 +34,7 @@ namespace DM
    public:
       virtual ~IDownload() {}
 
-      virtual int getId() const = 0;
+      virtual quint32 getId() const = 0;
 
       virtual Status getStatus() const = 0;
 
@@ -43,7 +43,12 @@ namespace DM
         */
       virtual int getProgress() const = 0;
 
-      virtual Common::Hash getPeerSourceID() = 0;
+      virtual Common::Hash getPeerSourceID() const = 0;
+
+      /**
+        * Return all the peer who own at least one chunk.
+        */
+      virtual QList<Common::Hash> getPeers() const = 0;
 
       virtual Protos::Common::Entry getEntry() = 0;
 
