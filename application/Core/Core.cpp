@@ -21,6 +21,8 @@ using namespace Core;
 
    SETTINGS.setFilename("core_settings.txt");
    SETTINGS.setSettingsMessage(new Protos::Core::Settings());
+   SETTINGS.load();
+   SETTINGS.save(); // To automatically create the file if it doesn't exist.
 
    this->setServiceDescription("A LAN file sharing system");
    this->setStartupType(QtServiceController::ManualStartup);
