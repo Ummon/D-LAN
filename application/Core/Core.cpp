@@ -10,9 +10,10 @@ using namespace Core;
 #include <UploadManager/Builder.h>
 #include <DownloadManager/Builder.h>
 #include <NetworkListener/Builder.h>
+#include <RemoteControlManager/Builder.h>
 
 ::Core::Core(int argc, char **argv)
-   : QtService<QCoreApplication>(argc, argv, "Aybabtu")
+   : QtService<QCoreApplication>(argc, argv, "AybabtuCore")
 {
    GOOGLE_PROTOBUF_VERIFY_VERSION;
 
@@ -34,6 +35,7 @@ void ::Core::start()
    this->uploadManager = UM::Builder::newUploadManager(this->fileManager, this->peerManager);
    this->downloadManager = DM::Builder::newDownloadManager(this->fileManager, this->peerManager);
    this->networkListener = NL::Builder::newNetworkListener(this->fileManager, this->peerManager, this->downloadManager);
+   this->remoteControlManager = RCM::Builder::newRemoteControlManager(this->fileManager, this->peerManager, this->uploadManager, this->downloadManager, this->networkListener);
 
    L_USER("Ready to serve");
 }
