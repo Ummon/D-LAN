@@ -4,9 +4,8 @@
 #include <QString>
 #include <QMutex>
 
+#include <google/protobuf/message.h>
 #include <google/protobuf/descriptor.h>
-
-#include <Protos/common.pb.h>
 
 #include <Common/Hash.h>
 
@@ -16,13 +15,16 @@ namespace Common
 {
    class Settings
    {
-      static const QString FILENAME; ///< The name of the file cache saved in the home directory.
       static Settings* instance;
 
+      Settings();
+
    public:
+      ~Settings();
       static Settings& getInstance();
 
-      Settings();
+      void setFilename(const QString& filename);
+      void setSettingsMessage(google::protobuf::Message* settings);
 
       bool arePersisted();
       void save();
@@ -48,8 +50,9 @@ namespace Common
       static void printErrorNameNotFound(const QString& name);
       static void printErrorBadType(const google::protobuf::FieldDescriptor* field, const QString& excepted);
 
+      QString filename; ///< The name of the file cache saved in the home directory.
       bool persisted;
-      Protos::Common::Settings settings;
+      google::protobuf::Message* settings;
       QMutex mutex;
 
       const google::protobuf::Descriptor* descriptor;

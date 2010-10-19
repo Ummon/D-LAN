@@ -70,6 +70,8 @@ CONFIG += console
 CONFIG -= app_bundle
 TEMPLATE = app
 SOURCES += main.cpp \
-    Core.cpp
+    Core.cpp \
+    ../Protos/core_settings.pb.cc
 HEADERS += Core.h \
-    Log.h
+    Log.h \
+    ../Protos/core_settings.pb.h
