@@ -36,6 +36,7 @@ namespace DM
       void rmPeerID(const Common::Hash& peerID);
 
       void setChunk(QSharedPointer<FM::IChunk> chunk);
+      QSharedPointer<FM::IChunk> getChunk() const;
 
       void setPeerSource(PM::IPeer* peer);
 
@@ -45,6 +46,7 @@ namespace DM
       bool hasAtLeastAPeer() const;
 
       int getDownloadedBytes() const;
+      QList<Common::Hash> getPeers() const;
 
       bool startDownloading();
 

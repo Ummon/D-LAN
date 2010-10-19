@@ -65,6 +65,7 @@ namespace DM
       QLinkedList<Download*> downloads;
 
       int numberOfDownload;
+      QMutex mutexNumberOfDownload;
 
       QTimer timer; // When a download has an error status, the queue will be rescaned periodically.
    };
