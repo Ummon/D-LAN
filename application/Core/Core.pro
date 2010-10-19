@@ -37,6 +37,10 @@ LIBS += -LNetworkListener/output/$$FOLDER \
     -lNetworkListener
 POST_TARGETDEPS += NetworkListener/output/$$FOLDER/libNetworkListener.a
 
+LIBS += -LRemoteControlManager/output/$$FOLDER \
+    -lRemoteControlManager
+POST_TARGETDEPS += RemoteControlManager/output/$$FOLDER/libRemoteControlManager.a
+
 LIBS += -L../Common/LogManager/output/$$FOLDER \
     -lLogManager
 POST_TARGETDEPS += ../Common/LogManager/output/$$FOLDER/libLogManager.a
