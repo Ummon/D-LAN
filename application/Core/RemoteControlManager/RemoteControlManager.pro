@@ -4,16 +4,37 @@
 QT += network
 QT -= gui
 TARGET = RemoteControlManager
-CONFIG += link_prl
-INCLUDEPATH += . \
-    ../..
+
 TEMPLATE = lib
-DESTDIR = "output/debug"
-MOC_DIR = ".tmp/debug"
-OBJECTS_DIR = ".tmp/debug"
+
+CONFIG(debug, debug|release) {
+   FOLDER = debug
+   DEFINES += DEBUG
+} else {
+   FOLDER = release
+}
+
+CONFIG += staticlib \
+   link_prl \
+   create_prl
+INCLUDEPATH += . \
+   ../.. \
+   ${PROTOBUF}/src
+
+DESTDIR = output/$$FOLDER
+MOC_DIR = .tmp/$$FOLDER
+OBJECTS_DIR = .tmp/$$FOLDER
+
 DEFINES += REMOTECONTROLMANAGER_LIBRARY
 SOURCES += priv/RemoteControlManager.cpp \
-    priv/RemoteConnection.cpp
+    priv/RemoteConnection.cpp \
+    priv/Builder.cpp \
+    ../../Protos/gui_protocol.pb.cc \
+    ../../Protos/common.pb.cc
 HEADERS += IRemoteControlManager.h \
     priv/RemoteControlManager.h \
-    priv/RemoteConnection.h
+    priv/RemoteConnection.h \
+    Builder.h \
+    priv/Log.h \
+    ../../Protos/common.pb.h \
+    ../../Protos/gui_protocol.pb.h
