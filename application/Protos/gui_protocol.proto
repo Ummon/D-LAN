@@ -89,7 +89,6 @@ message State {
    optional Stats stats = 5;
 }
 
-
 /***** Events *****/
 // Core -> GUI
 // id : 0x11
@@ -113,7 +112,7 @@ message EventLogMessage {
 // Sended when the user close the core
 // and when the connection is local.
 // id : 0x13
-message Close {
+message EventClose {
 }
 
 /***** Commands. *****/
