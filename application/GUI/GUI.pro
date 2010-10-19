@@ -15,6 +15,12 @@ CONFIG(debug, debug|release) {
    FOLDER = release
 }
 
+DESTDIR = output/$$FOLDER
+MOC_DIR = ".tmp/$$FOLDER"
+OBJECTS_DIR = ".tmp/$$FOLDER"
+RCC_DIR = ".tmp/$$FOLDER"
+UI_DIR = ".tmp/$$FOLDER"
+
 INCLUDEPATH += . \
     .. \
     ${PROTOBUF}/src
