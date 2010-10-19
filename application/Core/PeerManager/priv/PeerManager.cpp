@@ -21,8 +21,6 @@ PeerManager::PeerManager(QSharedPointer<FM::IFileManager> fileManager)
    this->timer.setInterval(SETTINGS.get<quint32>("pending_socket_timeout") / 10);
    connect(&this->timer, SIGNAL(timeout()), this, SLOT(checkIdlePendingSockets()));
 
-   Protos::Common::Settings settings;
-
    if (SETTINGS.arePersisted())
    {
 

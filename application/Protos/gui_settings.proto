@@ -1,0 +1,9 @@
+/**
+  * All the GUI settings.
+  */
+package Protos.GUI;
+
+message Settings {
+   optional string core_address = 1 [default = "localhost"];
+   optional uint32 core_port = 2 [default = 59485];
+}

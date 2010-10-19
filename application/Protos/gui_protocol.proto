@@ -7,6 +7,7 @@
   */
 
 import "common.proto";
+import "core_settings.proto";
 
 package Protos.GUI;
 
@@ -16,8 +17,8 @@ message ReturnStatus {
    repeated string error_param = 2;
 }
 
-message Settings {
-   optional Common.Settings settings = 1;
+message CoreSettings {
+   optional Core.Settings settings = 1;
    repeated string shared_directory = 2;
    repeated string destination_directory = 3;
 }
@@ -85,7 +86,7 @@ message State {
    repeated Download download = 2;
    repeated Upload upload = 3;
    
-   optional Settings settings = 4;
+   optional CoreSettings settings = 4;
    optional Stats stats = 5;
 }
 

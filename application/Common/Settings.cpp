@@ -4,7 +4,7 @@ using namespace Common;
 #include <QMutexLocker>
 #include <QTextStream>
 
-#include <google/protobuf/message.h>
+#include <Protos/common.pb.h>
 
 #include <Common/PersistantData.h>
 #include <ProtoHelper.h>
@@ -15,7 +15,6 @@ using namespace Common;
   * Singleton.
   */
 
-const QString Settings::FILENAME("settings.txt");
 Settings* Settings::instance(0);
 
 Settings& Settings::getInstance()
@@ -25,11 +24,37 @@ Settings& Settings::getInstance()
    return *Settings::instance;
 }
 
-Settings::Settings()
-   : persisted(false), mutex(QMutex::Recursive)
+Settings::Settings() :
+   filename("settings.txt"), // The default name.
+   persisted(false),
+   settings(0),
+   mutex(QMutex::Recursive)
 {
-   this->descriptor = this->settings.GetDescriptor();
    this->load();
+}
+
+Settings::~Settings()
+{
+   if (this->settings)
+      delete this->settings;
+}
+
+void Settings::setFilename(const QString& filename)
+{
+   this->filename = filename;
+}
+
+/**
+  * Define the settings structure.
+  * The object will be deleted by this settings class.
+  */
+void Settings::setSettingsMessage(google::protobuf::Message* settings)
+{
+   if (this->settings)
+      delete this->settings;
+
+   this->settings = settings;
+   this->descriptor = this->settings->GetDescriptor();
 }
 
 bool Settings::arePersisted()
@@ -41,16 +66,20 @@ bool Settings::arePersisted()
 void Settings::save()
 {
    QMutexLocker lock(&this->mutex);
-   PersistantData::setValue(FILENAME, this->settings, true);
+   if (!this->settings)
+      return;
+   PersistantData::setValue(this->filename, *this->settings, true);
    this->persisted = true;
 }
 
 void Settings::load()
 {
    QMutexLocker lock(&this->mutex);
+   if (!this->settings)
+      return;
    try
    {
-      PersistantData::getValue(FILENAME, this->settings, true);
+      PersistantData::getValue(this->filename, *this->settings, true);
       this->persisted = true;
    }
    catch (Common::UnknownValueException&)
@@ -61,13 +90,17 @@ void Settings::load()
 void Settings::remove()
 {
    QMutexLocker lock(&this->mutex);
-   PersistantData::rmValue(FILENAME);
+   if (!this->settings)
+      return;
+   PersistantData::rmValue(this->filename);
    this->persisted = false;
 }
 
 void Settings::set(const QString& name, quint32 value)
 {
    QMutexLocker lock(&this->mutex);
+   if (!this->settings)
+      return;
    const google::protobuf::FieldDescriptor* fieldDescriptor = this->descriptor->FindFieldByName(name.toStdString());
    if (!fieldDescriptor)
    {
@@ -80,12 +113,14 @@ void Settings::set(const QString& name, quint32 value)
       return;
    }
 
-   this->settings.GetReflection()->SetUInt32(&this->settings, fieldDescriptor, value);
+   this->settings->GetReflection()->SetUInt32(this->settings, fieldDescriptor, value);
 }
 
 void Settings::set(const QString& name, double value)
 {
    QMutexLocker lock(&this->mutex);
+   if (!this->settings)
+      return;
    const google::protobuf::FieldDescriptor* fieldDescriptor = this->descriptor->FindFieldByName(name.toStdString());
    if (!fieldDescriptor)
    {
@@ -98,12 +133,14 @@ void Settings::set(const QString& name, double value)
       return;
    }
 
-   this->settings.GetReflection()->SetDouble(&this->settings, fieldDescriptor, value);
+   this->settings->GetReflection()->SetDouble(this->settings, fieldDescriptor, value);
 }
 
 void Settings::set(const QString& name, const QString& value)
 {
    QMutexLocker lock(&this->mutex);
+   if (!this->settings)
+      return;
    const google::protobuf::FieldDescriptor* fieldDescriptor = this->descriptor->FindFieldByName(name.toStdString());
    if (!fieldDescriptor)
    {
@@ -116,12 +153,14 @@ void Settings::set(const QString& name, const QString& value)
       return;
    }
    QByteArray array = value.toUtf8();
-   this->settings.GetReflection()->SetString(&this->settings, fieldDescriptor, array.data());
+   this->settings->GetReflection()->SetString(this->settings, fieldDescriptor, array.data());
 }
 
 void Settings::set(const QString& name, const Hash& hash)
 {
    QMutexLocker lock(&this->mutex);
+   if (!this->settings)
+      return;
    const google::protobuf::FieldDescriptor* fieldDescriptor = this->descriptor->FindFieldByName(name.toStdString());
    if (!fieldDescriptor)
    {
@@ -137,67 +176,77 @@ void Settings::set(const QString& name, const Hash& hash)
 
    Protos::Common::Hash hashMessage;
    hashMessage.set_hash(hash.getData(), Hash::HASH_SIZE);
-   this->settings.GetReflection()->MutableMessage(&this->settings, fieldDescriptor)->CopyFrom(hashMessage);
+   this->settings->GetReflection()->MutableMessage(this->settings, fieldDescriptor)->CopyFrom(hashMessage);
 }
 
 void Settings::get(const QString& name, quint32& value)
 {
    QMutexLocker lock(&this->mutex);
+   if (!this->settings)
+      return;
    const google::protobuf::FieldDescriptor* fieldDescriptor = this->descriptor->FindFieldByName(name.toStdString());
    if (!fieldDescriptor)
    {
       printErrorNameNotFound(name);
       return;
    }
-   value = this->settings.GetReflection()->GetUInt32(this->settings, fieldDescriptor);
+   value = this->settings->GetReflection()->GetUInt32(*this->settings, fieldDescriptor);
 }
 
 void Settings::get(const QString& name, double& value)
 {
    QMutexLocker lock(&this->mutex);
+   if (!this->settings)
+      return;
    const google::protobuf::FieldDescriptor* fieldDescriptor = this->descriptor->FindFieldByName(name.toStdString());
    if (!fieldDescriptor)
    {
       printErrorNameNotFound(name);
       return;
    }
-   value = this->settings.GetReflection()->GetDouble(this->settings, fieldDescriptor);
+   value = this->settings->GetReflection()->GetDouble(*this->settings, fieldDescriptor);
 }
 
 void Settings::get(const QString& name, QString& value)
 {
    QMutexLocker lock(&this->mutex);
+   if (!this->settings)
+      return;
    const google::protobuf::FieldDescriptor* fieldDescriptor = this->descriptor->FindFieldByName(name.toStdString());
    if (!fieldDescriptor)
    {
       printErrorNameNotFound(name);
       return;
    }
-   value = QString::fromUtf8(this->settings.GetReflection()->GetString(this->settings, fieldDescriptor).data());
+   value = QString::fromUtf8(this->settings->GetReflection()->GetString(*this->settings, fieldDescriptor).data());
 }
 
 void Settings::get(const QString& name, Hash& hash)
 {
    QMutexLocker lock(&this->mutex);
+   if (!this->settings)
+      return;
    const google::protobuf::FieldDescriptor* fieldDescriptor = this->descriptor->FindFieldByName(name.toStdString());
    if (!fieldDescriptor)
    {
       printErrorNameNotFound(name);
       return;
    }
-   hash = static_cast<const Protos::Common::Hash&>(this->settings.GetReflection()->GetMessage(this->settings, fieldDescriptor)).hash().data();
+   hash = static_cast<const Protos::Common::Hash&>(this->settings->GetReflection()->GetMessage(*this->settings, fieldDescriptor)).hash().data();
 }
 
 void Settings::rm(const QString& name)
 {
    QMutexLocker lock(&this->mutex);
+   if (!this->settings)
+      return;
    const google::protobuf::FieldDescriptor* fieldDescriptor = this->descriptor->FindFieldByName(name.toStdString());
    if (!fieldDescriptor)
    {
       printErrorNameNotFound(name);
       return;
    }
-   this->settings.GetReflection()->ClearField(&this->settings, fieldDescriptor);
+   this->settings->GetReflection()->ClearField(this->settings, fieldDescriptor);
 }
 
 void Settings::printErrorNameNotFound(const QString& name)

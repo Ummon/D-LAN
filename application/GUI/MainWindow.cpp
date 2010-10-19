@@ -5,11 +5,18 @@ using namespace GUI;
 #include <QTabBar>
 #include <QMdiSubWindow>
 
+#include <Protos/gui_settings.pb.h>
+
+#include <Common/Settings.h>
+
 MainWindow::MainWindow(QWidget* parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
     this->ui->setupUi(this);
+
+    SETTINGS.setFilename("gui_settings.txt");
+    SETTINGS.setSettingsMessage(new Protos::GUI::Settings());
 
     this->lblStatusConnection = new QLabel(this->ui->statusBar);
     ui->statusBar->addWidget(this->lblStatusConnection);

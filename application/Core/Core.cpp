@@ -5,6 +5,8 @@ using namespace Core;
 #include <QThread>
 #include <QRegExp>
 
+#include <Protos/core_settings.pb.h>
+
 #include <FileManager/Builder.h>
 #include <PeerManager/Builder.h>
 #include <UploadManager/Builder.h>
@@ -16,6 +18,9 @@ using namespace Core;
    : QtService<QCoreApplication>(argc, argv, "AybabtuCore")
 {
    GOOGLE_PROTOBUF_VERIFY_VERSION;
+
+   SETTINGS.setFilename("core_settings.txt");
+   SETTINGS.setSettingsMessage(new Protos::Core::Settings());
 
    this->setServiceDescription("A LAN file sharing system");
    this->setStartupType(QtServiceController::ManualStartup);

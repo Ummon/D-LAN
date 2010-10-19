@@ -35,14 +35,18 @@ SOURCES += main.cpp\
     ../Protos/common.pb.cc \
     PeerListModel.cpp \
     WidgetChat.cpp \
-    CoreConnection.cpp
+    CoreConnection.cpp \
+    ../Protos/gui_settings.pb.cc \
+    ../Protos/core_settings.pb.cc
 
 HEADERS  += MainWindow.h \
     ../Protos/gui_protocol.pb.h \
     ../Protos/common.pb.h \
     PeerListModel.h \
     WidgetChat.h \
-    CoreConnection.h
+    CoreConnection.h \
+    ../Protos/gui_settings.pb.h \
+    ../Protos/core_settings.pb.h
 
 FORMS    += MainWindow.ui \
     WidgetChat.ui
