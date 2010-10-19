@@ -22,7 +22,7 @@ void Download::populateEntry(Protos::Queue::Queue_Entry* entry) const
    entry->set_complete(this->status == COMPLETE);
 }
 
-int Download::getId() const
+quint32 Download::getId() const
 {
    return this->ID;
 }
@@ -37,7 +37,7 @@ int Download::getProgress() const
    return 0;
 }
 
-Common::Hash Download::getPeerSourceID()
+Common::Hash Download::getPeerSourceID() const
 {
    return this->peerSourceID;
 }
