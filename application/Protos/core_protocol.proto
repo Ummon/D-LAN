@@ -95,8 +95,8 @@ message GetHashesResult {
       DONT_HAVE = 1; // 'b' doesn't have the requested entry.
       ERROR_UNKNOWN = 255;
    }
-   required Status status = 1;
-   required uint32 nb_hash = 2; // Only the unknown hashes are sent, not the total. Depend of GetHashes.file.chunk.
+   required Status status = 1; // If status != OK nb_hash is not set.
+   optional uint32 nb_hash = 2; // Only the unknown hashes are sent, not the total. Depend of GetHashes.file.chunk.
 }
 // For each hash, this message is sent. Only if GetHashesResult.status == OK.
 // b -> a
