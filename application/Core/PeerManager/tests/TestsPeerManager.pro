@@ -45,10 +45,12 @@ SOURCES += main.cpp \
     ../../../Protos/common.pb.cc \
     TestServer.cpp \
     PeerUpdater.cpp \
-    ResultListener.cpp
+    ResultListener.cpp \
+    ../../../Protos/core_settings.pb.cc
 HEADERS += Tests.h \
     ../../../Protos/common.pb.h \
     debug_new.h \
     TestServer.h \
     PeerUpdater.h \
-    ResultListener.h
+    ResultListener.h \
+    ../../../Protos/core_settings.pb.h
