@@ -14,6 +14,7 @@ using namespace PM;
 #include <Common/Global.h>
 #include <Common/Network.h>
 #include <Common/ZeroCopyStreamQIODevice.h>
+#include <Common/Settings.h>
 
 #include <ResultListener.h>
 #include <IGetEntriesResult.h>
