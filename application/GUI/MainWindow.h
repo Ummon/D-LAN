@@ -8,9 +8,10 @@
 #include <Protos/gui_protocol.pb.h>
 #include <Protos/common.pb.h>
 
-#include "PeerListModel.h"
-#include "CoreConnection.h"
-#include "WidgetChat.h"
+#include <PeerListModel.h>
+#include <ChatModel.h>
+#include <CoreConnection.h>
+#include <WidgetChat.h>
 
 namespace Ui {
    class MainWindow;
@@ -28,7 +29,6 @@ namespace GUI
    private slots:
       void coreConnected();
       void coreDisconnected();
-      void newState(const Protos::GUI::State& state);
 
    private:
       void addDefaultWidgets();
@@ -37,15 +37,17 @@ namespace GUI
       QLabel* lblStatusConnection;
       WidgetChat* widgetChat;
 
-      PeerListModel peerListModel;
-
       CoreConnection coreConnection;
+
+      PeerListModel peerListModel;
+      ChatModel chatModel;
    };
 
    class PeerTableDelegate : public QItemDelegate
    {
       Q_OBJECT
    public:
+      virtual void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const;
       virtual void drawFocus(QPainter*, const QStyleOptionViewItem&, const QRect&) const {}
    };
 }

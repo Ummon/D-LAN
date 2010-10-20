@@ -7,20 +7,30 @@
 
 #include <Common/Hash.h>
 
+#include <CoreConnection.h>
+
 namespace GUI
 {
    class PeerListModel : public QAbstractTableModel
    {
+      Q_OBJECT
    public:
-      PeerListModel();
-      void setPeers(const google::protobuf::RepeatedPtrField<Protos::GUI::State_Peer>& peers);
+      PeerListModel(CoreConnection& coreConnection);
+      QString getNick(const Common::Hash peerID);
+      bool isOurself(int rowNum) const;
 
       int rowCount(const QModelIndex& parent = QModelIndex()) const;
       int columnCount(const QModelIndex& parent = QModelIndex()) const;
       QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const;
 
+   private slots:
+      void newState(const Protos::GUI::State& state);
+
    private:
+      void setPeers(const google::protobuf::RepeatedPtrField<Protos::GUI::Peer>& peers);
       void sort();
+
+      CoreConnection& coreConnection;
 
       struct Peer
       {
@@ -36,7 +46,6 @@ namespace GUI
          QString nick;
          quint64 sharingAmount;
       };
-
       QList<Peer> peers;
    };
 
