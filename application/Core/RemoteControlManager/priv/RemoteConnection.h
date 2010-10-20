@@ -5,14 +5,22 @@
 #include <QSharedPointer>
 #include <QTcpSocket>
 #include <QTimer>
+#include <QList>
+
+#include <Libs/MersenneTwister.h>
 
 #include <google/protobuf/message.h>
 
+#include <Protos/common.pb.h>
+
+#include <Common/Network.h>
 #include <Core/FileManager/IFileManager.h>
 #include <Core/PeerManager/IPeerManager.h>
+#include <Core/PeerManager/IGetEntriesResult.h>
 #include <Core/UploadManager/IUploadManager.h>
 #include <Core/DownloadManager/IDownloadManager.h>
 #include <Core/NetworkListener/INetworkListener.h>
+#include <Core/NetworkListener/ISearch.h>
 
 namespace RCM
 {
@@ -38,7 +46,12 @@ namespace RCM
       void dataReceived();
       void disconnected();
 
+      void newChatMessage(const Common::Hash& peerID, const Protos::Core::ChatMessage&);
+      void searchFound(const Protos::Common::FindResult& result);
+      void getEntriesResult(const Protos::Common::Entries& entries);
+
    private:
+      bool readMessage();
       void send(quint32 type, const google::protobuf::Message& message);
 
       QSharedPointer<FM::IFileManager> fileManager;
@@ -49,6 +62,13 @@ namespace RCM
 
       QTcpSocket* socket;
       QTimer timerRefresh;
+
+      Common::MessageHeader currentHeader;
+
+      QList< QSharedPointer<NL::ISearch> > currentSearches;
+      QList< QSharedPointer<PM::IGetEntriesResult> > getEntriesResults;
+
+      MTRand mtrand;
    };
 }
 #endif
