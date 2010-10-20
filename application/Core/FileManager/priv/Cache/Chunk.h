@@ -73,6 +73,8 @@ namespace FM
 
       int getNum() const;
 
+      int getNbTotalChunk() const;
+
       bool hasHash() const;
 
       Common::Hash getHash() const;
@@ -81,6 +83,8 @@ namespace FM
 
       int getKnownBytes() const;
       void setKnownBytes(int bytes);
+
+      int getChunkSize() const;
 
       bool isComplete() const;
 
@@ -91,8 +95,6 @@ namespace FM
 #endif
 
    private:
-      int getChunkSize() const;
-
       const int CHUNK_SIZE;
 
       mutable QMutex mutex; ///< Protect 'file' against multiple access.

@@ -14,7 +14,7 @@ ResultListener::ResultListener()
 {
 }
 
-QList<Protos::Core::GetEntriesResult> ResultListener::getEntriesResultList() const
+QList<Protos::Common::Entries> ResultListener::getEntriesResultList() const
 {
    return this->entriesResultList;
 }
@@ -24,7 +24,7 @@ int ResultListener::getNbEntriesResultReceived() const
    return this->entriesResultList.size();
 }
 
-void ResultListener::entriesResult(const Protos::Core::GetEntriesResult& entries)
+void ResultListener::entriesResult(const Protos::Common::Entries& entries)
 {
    this->entriesResultList << entries;
    qDebug() << "ResultListener::entriesResult : " << Common::ProtoHelper::getDebugStr(entries);

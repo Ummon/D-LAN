@@ -23,6 +23,9 @@ namespace UM
       int getUploadRate() const;
 
       Common::Hash getPeerID() const;
+
+      int getProgress() const;
+
       QSharedPointer<FM::IChunk> getChunk() const;
 
       PM::ISocket* getSocket();

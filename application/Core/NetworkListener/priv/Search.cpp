@@ -14,25 +14,21 @@ using namespace NL;
 Search::Search(UDPListener& uDPListener)
    : uDPListener(uDPListener), tag(0)
 {
-   //this->searchLaunched = false;
 }
 
-/**
-  * Begin a new search. This function can be called only ONE time
-  */
-void Search::search(const QString& words)
+quint64 Search::search(const QString& words)
 {
    if (this->tag != 0)
    {
       L_ERRO(QString("You can't launch a search twice! : %1").arg(words));
-      return;
+      return 0;
    }
+
+   this->timer.start();
 
    Protos::Core::Find findMessage;
 
-   this->tag = this->mtrand.randInt();
-   this->tag <<= 32;
-   this->tag |= this->mtrand.randInt();
+   this->tag = (static_cast<quint64>(this->mtrand.randInt()) << 32) | this->mtrand.randInt();
    findMessage.set_tag(this->tag);
 
    Common::ProtoHelper::setStr(findMessage, &Protos::Core::Find::set_pattern, words);
@@ -40,6 +36,13 @@ void Search::search(const QString& words)
    connect(&this->uDPListener, SIGNAL(newFindResultMessage(Protos::Common::FindResult)), this, SLOT(newFindResult(Protos::Common::FindResult)));
 
    this->uDPListener.send(0x21, findMessage);
+
+   return this->tag;
+}
+
+qint64 Search::elapsed()
+{
+   return timer.elapsed();
 }
 
 /**

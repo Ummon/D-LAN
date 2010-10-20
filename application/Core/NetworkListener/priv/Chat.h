@@ -18,9 +18,6 @@ namespace NL
       virtual ~Chat() {}
       void send(const QString& message);
 
-   signals:
-      void newChatMessage(const Protos::Core::ChatMessage& message);
-
    private:
       UDPListener& uDPListener;
    };

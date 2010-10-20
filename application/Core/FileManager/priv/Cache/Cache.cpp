@@ -33,9 +33,9 @@ bool Cache::isFileUnfinished(const QString filename)
   * b) In the shared directory try to find the directory corresponding to 'entry.dir.path'.
   * c) Populate the result with directories and files.
   */
-Protos::Core::GetEntriesResult Cache::getEntries(const Protos::Common::Entry& dir) const
+Protos::Common::Entries Cache::getEntries(const Protos::Common::Entry& dir) const
 {
-   Protos::Core::GetEntriesResult result;
+   Protos::Common::Entries result;
 
    // If we can't find the shared directory..
    if (!dir.has_shared_dir())
@@ -76,11 +76,11 @@ Protos::Core::GetEntriesResult Cache::getEntries(const Protos::Common::Entry& di
    return result;
 }
 
-Protos::Core::GetEntriesResult Cache::getEntries() const
+Protos::Common::Entries Cache::getEntries() const
 {
    QMutexLocker locker(&this->lock);
 
-   Protos::Core::GetEntriesResult result;
+   Protos::Common::Entries result;
 
    foreach (SharedDirectory* sharedDir, this->sharedDirs)
       sharedDir->populateEntry(result.add_entry());

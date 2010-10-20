@@ -16,7 +16,12 @@ Chat::Chat(UDPListener& uDPListener)
    : uDPListener(uDPListener)
 {
    // Listening for new messages and forward them to our own signal.
-   Chat::connect(&this->uDPListener, SIGNAL(newChatMessage(const Protos::Core::ChatMessage&)), this, SIGNAL(newChatMessage(const Protos::Core::ChatMessage&)));
+   Chat::connect(
+      &this->uDPListener,
+      SIGNAL(newChatMessage(const Common::Hash&, const Protos::Core::ChatMessage&)),
+      this,
+      SIGNAL(newMessage(const Common::Hash&, const Protos::Core::ChatMessage&))
+   );
 }
 
 void Chat::send(const QString& message)

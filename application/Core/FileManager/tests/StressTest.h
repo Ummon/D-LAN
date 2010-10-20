@@ -83,7 +83,7 @@ private slots:
    void nextHash(Common::Hash hash);
 
 private:
-   void addEntries(const Protos::Core::GetEntriesResult& entries);
+   void addEntries(const Protos::Common::Entries& entries);
 
    static QString entryToStr(const Protos::Common::Entry& entry);
 

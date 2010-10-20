@@ -41,8 +41,8 @@ namespace FM
       virtual QList< QSharedPointer<IChunk> > newFile(const Protos::Common::Entry& remoteEntry);
       QSharedPointer<IGetHashesResult> getHashes(const Protos::Common::Entry& file);
 
-      Protos::Core::GetEntriesResult getEntries(const Protos::Common::Entry& dir);
-      Protos::Core::GetEntriesResult getEntries();
+      Protos::Common::Entries getEntries(const Protos::Common::Entry& dir);
+      Protos::Common::Entries getEntries();
 
       QList<Protos::Common::FindResult> find(const QString& words, int maxNbResult, int maxSize);
       QBitArray haveChunks(const QList<Common::Hash>& hashes);

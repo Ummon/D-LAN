@@ -16,6 +16,12 @@ namespace UM
       virtual ~IUpload() {}
 
       virtual Common::Hash getPeerID() const = 0;
+
+      /**
+        * Return a value between 0 and 100.
+        */
+      virtual int getProgress() const = 0;
+
       virtual QSharedPointer<FM::IChunk> getChunk() const = 0;
    };
 }

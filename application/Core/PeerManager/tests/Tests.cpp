@@ -5,6 +5,7 @@ using namespace PM;
 #include <QStringList>
 
 #include <Protos/core_protocol.pb.h>
+#include <Protos/core_settings.pb.h>
 #include <Protos/common.pb.h>
 
 #include <Common/LogManager/Builder.h>
@@ -30,6 +31,10 @@ void Tests::initTestCase()
    qDebug() << "===== initTestCase() =====";
 
    Common::PersistantData::rmValue(Common::FILE_CACHE); // Reset the stored cache.
+
+   SETTINGS.setFilename("core_settings.txt");
+   SETTINGS.setSettingsMessage(new Protos::Core::Settings());
+
    this->createInitialFiles();
 
    this->fileManagers << FM::Builder::newFileManager() << FM::Builder::newFileManager();
@@ -79,7 +84,7 @@ void Tests::askForRootEntries()
 
    Protos::Core::GetEntries getEntriesMessage;
    QSharedPointer<IGetEntriesResult> result = this->peerManagers[0]->getPeers()[0]->getEntries(getEntriesMessage);
-   connect(result.data(), SIGNAL(result(Protos::Core::GetEntriesResult)), &this->resultListener, SLOT(entriesResult(Protos::Core::GetEntriesResult)));
+   connect(result.data(), SIGNAL(result(Protos::Common::Entries)), &this->resultListener, SLOT(entriesResult(Protos::Common::Entries)));
    result->start();
    QTest::qWait(1500);
    QCOMPARE(this->resultListener.getNbEntriesResultReceived(), 1);
@@ -97,7 +102,7 @@ void Tests::askForSomeEntries()
    Protos::Core::GetEntries getEntriesMessage1;
    getEntriesMessage1.mutable_dir()->CopyFrom(this->resultListener.getEntriesResultList().last().entry(0));
    QSharedPointer<IGetEntriesResult> result1 = this->peerManagers[0]->getPeers()[0]->getEntries(getEntriesMessage1);
-   connect(result1.data(), SIGNAL(result(Protos::Core::GetEntriesResult)), &this->resultListener, SLOT(entriesResult(Protos::Core::GetEntriesResult)));
+   connect(result1.data(), SIGNAL(result(Protos::Common::Entries)), &this->resultListener, SLOT(entriesResult(Protos::Common::Entries)));
    result1->start();
    QTest::qWait(1000);
    QCOMPARE(this->resultListener.getNbEntriesResultReceived(), 2);
@@ -106,7 +111,7 @@ void Tests::askForSomeEntries()
    getEntriesMessage2.mutable_dir()->CopyFrom(this->resultListener.getEntriesResultList().last().entry(0));
    getEntriesMessage2.mutable_dir()->mutable_shared_dir()->CopyFrom(getEntriesMessage1.dir().shared_dir());
    QSharedPointer<IGetEntriesResult> result2 = this->peerManagers[0]->getPeers()[0]->getEntries(getEntriesMessage2);
-   connect(result2.data(), SIGNAL(result(Protos::Core::GetEntriesResult)), &this->resultListener, SLOT(entriesResult(Protos::Core::GetEntriesResult)));
+   connect(result2.data(), SIGNAL(result(Protos::Common::Entries)), &this->resultListener, SLOT(entriesResult(Protos::Common::Entries)));
    result2->start();
    QTest::qWait(1000);
    QCOMPARE(this->resultListener.getNbEntriesResultReceived(), 3);

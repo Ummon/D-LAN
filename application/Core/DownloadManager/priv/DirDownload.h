@@ -25,10 +25,10 @@ namespace DM
       void retrieveEntries();
 
    signals:
-      void newEntries(const Protos::Core::GetEntriesResult& entries);
+      void newEntries(const Protos::Common::Entries& entries);
 
    private slots:
-      void result(const Protos::Core::GetEntriesResult& entries);
+      void result(const Protos::Common::Entries& entries);
 
    private:
       QSharedPointer<PM::IGetEntriesResult> getEntriesResult;;

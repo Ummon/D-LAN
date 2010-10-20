@@ -18,11 +18,11 @@ UploadManager::UploadManager(QSharedPointer<FM::IFileManager> fileManager, QShar
    connect(this->peerManager.data(), SIGNAL(getChunk(Common::Hash, int, PM::ISocket*)), this, SLOT(getChunk(Common::Hash, int, PM::ISocket*)));
 }
 
-QList< QSharedPointer<IUpload> > UploadManager::getUploads()
+QList<IUpload*> UploadManager::getUploads()
 {
-   QList< QSharedPointer<IUpload> > uploads;
+   QList<IUpload*> uploads;
 
-   for (QListIterator< QSharedPointer<Uploader> > i(this->uploaders); i.hasNext();)
+   for (QListIterator<Uploader*> i(this->uploaders); i.hasNext();)
       uploads << i.next();
 
    return uploads;
@@ -31,7 +31,7 @@ QList< QSharedPointer<IUpload> > UploadManager::getUploads()
 int UploadManager::getUploadRate() const
 {
    int uploadRate = 0;
-   for (QListIterator< QSharedPointer<Uploader> > i(this->uploaders); i.hasNext();)
+   for (QListIterator<Uploader*> i(this->uploaders); i.hasNext();)
       uploadRate += i.next()->getUploadRate();
 
    return uploadRate;
@@ -56,8 +56,8 @@ void UploadManager::getChunk(Common::Hash hash, int offset, PM::ISocket* socket)
       result.set_chunk_size(chunk->getKnownBytes());
       socket->send(0x52, result);
 
-      QSharedPointer<Uploader> uploader = QSharedPointer<Uploader>(new Uploader(chunk, offset, socket));
-      connect(uploader.data(), SIGNAL(uploadFinished(bool)), this, SLOT(uploadFinished(bool)), Qt::QueuedConnection);
+      Uploader* uploader = new Uploader(chunk, offset, socket);
+      connect(uploader, SIGNAL(uploadFinished(bool)), this, SLOT(uploadFinished(bool)), Qt::QueuedConnection);
       this->uploaders << uploader;
       uploader->start();
    }
@@ -70,12 +70,7 @@ void UploadManager::uploadFinished(bool networkError)
    L_DEBU(QString("Upload finished, chunk : %1").arg(uploader->getChunk()->toStr()));
 
    uploader->getSocket()->finished(networkError);
-   for (QMutableListIterator< QSharedPointer<Uploader> > i(this->uploaders); i.hasNext();)
-   {
-      if (i.next().data() == uploader)
-      {
-         i.remove();
-         break;
-      }
-   }
+
+   this->uploaders.removeOne(uploader);
+   delete uploader;
 }

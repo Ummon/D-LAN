@@ -11,8 +11,14 @@ import "core_settings.proto";
 
 package Protos.GUI;
 
+message Peer {
+   optional Common.Hash peer_id = 1;
+   optional string nick = 2;
+   optional uint64 sharing_amount = 3; // [byte].
+}
+   
 message CoreSettings {
-   optional Core.Settings settings = 1;
+   required Peer myself = 1;
    repeated string shared_directory = 2;
    repeated string destination_directory = 3;
 }
@@ -24,11 +30,6 @@ message CoreSettings {
 // The size of this message should be lesser than 63kB to fit in one IP packet.
 // id : 0x01
 message State {
-   message Peer {
-      required Common.Hash peer_id = 1;
-      required string nick = 2;
-      required uint64 sharing_amount = 3;
-   }
    message Download {
       enum Status {
          QUEUED = 0x1;
@@ -48,7 +49,7 @@ message State {
          UNABLE_TO_CREATE_THE_FILE = 0x23;
       }
       required uint32 id = 1;
-      required Common.Entry file = 2;
+      required Common.Entry file = 2; // Can be remote or local. When we know all the hashes and the local file exists (.unfinished) the entry becomes local, otherwise the entry is a remote one.
       required Status status = 3;
       required uint32 progress = 4; // 0 to 100.
       repeated Common.Hash peer_id = 5;
@@ -70,7 +71,6 @@ message State {
       required uint32 progress = 2; // 0 to 100
       required uint32 download_rate = 3; // [byte/s].
       required uint32 upload_rate = 4; // [byte/s].
-      required uint64 sharing_amount = 5; // [byte].
    }
    
    repeated Peer peer = 1;
@@ -110,37 +110,40 @@ message EventClose {
 
 /***** Commands. *****/
 // Set the settings
+// Peer.peer_id and Peer.sharing_amount are ignored.
 // GUI -> Core
 // id : 0x21
-// Message 'Settings'
+// Message 'CoreSettings'
 
 // GUI -> Core
 // id : 0x31
 message Search  {
-   required uint64 tag = 1;
    required string pattern = 2;
 }
-// Core -> GUI
+// Core -> GUI (directly)
 // id : 0x32
-// Message 'ReturnStatus'
-// Core -> GUI
+message SearchTag  {
+   required uint64 tag = 2;
+}
+// Core -> GUI (deffered)
 // This message is sent for each UDP datagram received.
 // id : 0x33
-message SearchResult {
-   required uint64 tag = 1;
-   required Common.FindResult result = 2; // Encapsulate the received result.
-}
+// Common.FindResult
 
 // GUI -> Core
 // id : 0x41
 message Browse {
    required Common.Hash peer_id = 1;
-   required Common.Entry dir = 2;
+   optional Common.Entry dir = 2;
 }
-// Core -> GUI
+// Core -> GUI (directly)
+// id : 0x42
+// SearchTag
+// Core -> GUI (deffered)
 // id : 0x43
 message BrowseResult {
-   repeated Common.Entry entry = 1;
+   required Common.Entries entries = 1;
+   required uint64 tag = 2;
 }
 
 // GUI -> Core

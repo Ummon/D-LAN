@@ -43,7 +43,7 @@ namespace DM
    private slots:
       void fileCacheLoaded();
 
-      void newEntries(const Protos::Core::GetEntriesResult& entries);
+      void newEntries(const Protos::Common::Entries& entries);
 
       void peerNoLongerAskingForHashes(PM::IPeer* peer);
       void peerNoLongerDownloadingChunk(PM::IPeer* peer);

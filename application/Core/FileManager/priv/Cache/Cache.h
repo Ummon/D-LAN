@@ -29,8 +29,8 @@ namespace FM
 
       static bool isFileUnfinished(const QString filename);
 
-      Protos::Core::GetEntriesResult getEntries(const Protos::Common::Entry& dir) const;
-      Protos::Core::GetEntriesResult getEntries() const;
+      Protos::Common::Entries getEntries(const Protos::Common::Entry& dir) const;
+      Protos::Common::Entries getEntries() const;
       Entry* getEntry(const QString& path) const;
       File* getFile(const Protos::Common::Entry&) const;
       QList< QSharedPointer<IChunk> > newFile(const Protos::Common::Entry& remoteEntry);

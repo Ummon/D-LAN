@@ -46,11 +46,15 @@ namespace FM
 
       virtual int getNum() const = 0;
 
+      virtual int getNbTotalChunk() const = 0;
+
       virtual Common::Hash getHash() const = 0;
 
       virtual void setHash(const Common::Hash&) = 0;
 
       virtual int getKnownBytes() const = 0;
+
+      virtual int getChunkSize() const = 0;
 
       virtual bool isComplete() const = 0;
 

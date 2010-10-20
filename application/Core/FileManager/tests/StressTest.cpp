@@ -510,7 +510,7 @@ void StressTest::getRootEntries()
 
    qDebug() << "===== StressTest::getRootEntries() =====";
 
-   Protos::Core::GetEntriesResult roots = this->fileManager->getEntries();
+   Protos::Common::Entries roots = this->fileManager->getEntries();
    this->addEntries(roots);
 }
 
@@ -540,7 +540,7 @@ void StressTest::getEntries()
 
       qDebug() << "Search : " << entryToStr(entry);
 
-      Protos::Core::GetEntriesResult entries = this->fileManager->getEntries(entry);
+      Protos::Common::Entries entries = this->fileManager->getEntries(entry);
 
       if (entries.entry_size() == 0)
       {
@@ -600,7 +600,7 @@ void StressTest::nextHash(Common::Hash hash)
       }
 }
 
-void StressTest::addEntries(const Protos::Core::GetEntriesResult& entries)
+void StressTest::addEntries(const Protos::Common::Entries& entries)
 {
    for (int i = 0; i < entries.entry_size(); i++)
    {

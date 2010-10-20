@@ -234,7 +234,7 @@ bool Socket::readMessage()
       break;
    case 0x32 : // GetEntriesResult.
       {
-         Protos::Core::GetEntriesResult getEntriesResult;
+         Protos::Common::Entries getEntriesResult;
          {
             Common::ZeroCopyInputStreamQIODevice inputStream(this->socket);
             readOK = getEntriesResult.ParseFromBoundedZeroCopyStream(&inputStream, this->currentHeader.size);
