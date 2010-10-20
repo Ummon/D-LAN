@@ -4,6 +4,7 @@ using namespace GUI;
 
 #include <QTabBar>
 #include <QMdiSubWindow>
+#include <QPainter>
 
 #include <Protos/gui_settings.pb.h>
 
@@ -11,15 +12,21 @@ using namespace GUI;
 
 MainWindow::MainWindow(QWidget* parent) :
     QMainWindow(parent),
-    ui(new Ui::MainWindow)
+    ui(new Ui::MainWindow),
+    peerListModel(coreConnection),
+    chatModel(coreConnection, peerListModel)
 {
     this->ui->setupUi(this);
 
     SETTINGS.setFilename("gui_settings.txt");
     SETTINGS.setSettingsMessage(new Protos::GUI::Settings());
+    SETTINGS.load();
+    SETTINGS.save(); // To automatically create the file if it doesn't exist.
 
     this->lblStatusConnection = new QLabel(this->ui->statusBar);
     ui->statusBar->addWidget(this->lblStatusConnection);
+
+    this->ui->tblPeers->setModel(&this->peerListModel);
 
     this->ui->tblPeers->setItemDelegate(new PeerTableDelegate());
     this->ui->tblPeers->horizontalHeader()->setResizeMode(QHeaderView::Stretch);
@@ -34,7 +41,6 @@ MainWindow::MainWindow(QWidget* parent) :
     this->ui->tblPeers->setSelectionMode(QAbstractItemView::SingleSelection);
     this->ui->tblPeers->setShowGrid(false);
     this->ui->tblPeers->setAlternatingRowColors(true);
-    this->ui->tblPeers->setModel(&this->peerListModel);
 
     this->addDefaultWidgets();
 
@@ -42,7 +48,6 @@ MainWindow::MainWindow(QWidget* parent) :
 
     connect(&this->coreConnection, SIGNAL(coreConnected()), this, SLOT(coreConnected()));
     connect(&this->coreConnection, SIGNAL(coreDisconnected()), this, SLOT(coreDisconnected()));
-    connect(&this->coreConnection, SIGNAL(newState(Protos::GUI::State)), this, SLOT(newState(Protos::GUI::State)));
     this->coreConnection.connectToCore();
 }
 
@@ -61,11 +66,6 @@ void MainWindow::coreDisconnected()
    this->lblStatusConnection->setText("Disconnected");
 }
 
-void MainWindow::newState(const Protos::GUI::State& state)
-{
-   this->peerListModel.setPeers(state.peer());
-}
-
 /**
   * Add theses four default widgets to the MDI area :
   * - Settings
@@ -75,7 +75,8 @@ void MainWindow::newState(const Protos::GUI::State& state)
   */
 void MainWindow::addDefaultWidgets()
 {
-   this->widgetChat = new WidgetChat();
+   this->widgetChat = new WidgetChat(this->coreConnection, this->chatModel);
+
    QMdiSubWindow* subWin = this->ui->mdiArea->addSubWindow(this->widgetChat, Qt::CustomizeWindowHint);
    //subWin->layout()->set
    this->widgetChat->setWindowState(Qt::WindowMaximized);
@@ -85,4 +86,19 @@ void MainWindow::addDefaultWidgets()
    {
       tab->setTabsClosable(true);
    }*/
+}
+
+/**
+  * Highlight ourself in the peers list.
+  */
+void PeerTableDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
+{
+   const PeerListModel* model = static_cast<const PeerListModel*>(index.model());
+
+   QStyleOptionViewItemV4 newOption(option);
+
+   if (model->isOurself(index.row()))
+      painter->fillRect(option.rect, QColor(192, 255, 192));
+
+   QItemDelegate::paint(painter, newOption, index);
 }

@@ -43,7 +43,8 @@ SOURCES += main.cpp\
     WidgetChat.cpp \
     CoreConnection.cpp \
     ../Protos/gui_settings.pb.cc \
-    ../Protos/core_settings.pb.cc
+    ../Protos/core_settings.pb.cc \
+    ChatModel.cpp
 
 HEADERS  += MainWindow.h \
     ../Protos/gui_protocol.pb.h \
@@ -52,7 +53,8 @@ HEADERS  += MainWindow.h \
     WidgetChat.h \
     CoreConnection.h \
     ../Protos/gui_settings.pb.h \
-    ../Protos/core_settings.pb.h
+    ../Protos/core_settings.pb.h \
+    ChatModel.h
 
 FORMS    += MainWindow.ui \
     WidgetChat.ui

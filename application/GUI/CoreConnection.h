@@ -17,12 +17,15 @@ namespace GUI
    public:
       CoreConnection();
       void connectToCore();
+      Common::Hash getOurID() const;
+      void sendChatMessage(const QString& message);
 
    signals:
       void coreConnected();
       void coreDisconnected();
 
       void newState(const Protos::GUI::State&);
+      void newChatMessage(const Common::Hash& peerID, const QString& message);
 
    private slots:
       /*void connected();
@@ -31,8 +34,10 @@ namespace GUI
 
    private:
       bool readMessage();
+      void send(quint32 type, const google::protobuf::Message& message);
 
       QTcpSocket socket;
+      Common::Hash ourID;
       Common::MessageHeader currentHeader;
    };
 }
