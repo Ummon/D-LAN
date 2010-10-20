@@ -2,7 +2,6 @@
 #define UPLOADMANAGER_IUPLOADMANAGER_H
 
 #include <QList>
-#include <QSharedPointer>
 
 namespace UM
 {
@@ -12,7 +11,7 @@ namespace UM
    public:
       virtual ~IUploadManager() {}
 
-      virtual QList< QSharedPointer<IUpload> > getUploads() = 0;
+      virtual QList<IUpload*> getUploads() = 0;
 
       /**
         * @return Byte/s.

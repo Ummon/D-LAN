@@ -170,6 +170,16 @@ int Chunk::getNum() const
    return this->num;
 }
 
+int Chunk::getNbTotalChunk() const
+{
+   QMutexLocker locker(&this->mutex);
+
+   if (this->file)
+      return this->file->getNbChunks();
+
+   return 0;
+}
+
 bool Chunk::hasHash() const
 {
    return !this->hash.isNull();
@@ -202,6 +212,19 @@ void Chunk::setKnownBytes(int bytes)
    this->knownBytes = bytes;
 }
 
+int Chunk::getChunkSize() const
+{
+   //L_WARN(QString("this->file->getNbChunks() = %1").arg(this->file->getNbChunks()));
+   if (this->num < this->file->getNbChunks() - 1)
+      return this->CHUNK_SIZE;
+
+   int size = this->file->getSize() % this->CHUNK_SIZE;
+   if (!size)
+      return this->CHUNK_SIZE;
+   else
+      return size;
+}
+
 bool Chunk::isComplete() const
 {
    return this->knownBytes >= this->getChunkSize(); // Should be '==' but we are never 100% sure ;).
@@ -218,17 +241,4 @@ QString Chunk::toStr() const
    return QString("num = [%1], knownBytes = %2, hash = %3").arg(this->num).arg(this->getKnownBytes()).arg(this->getHash().toStr());
 }
 #endif
-
-int Chunk::getChunkSize() const
-{
-   //L_WARN(QString("this->file->getNbChunks() = %1").arg(this->file->getNbChunks()));
-   if (this->num < this->file->getNbChunks() - 1)
-      return this->CHUNK_SIZE;
-
-   int size = this->file->getSize() % this->CHUNK_SIZE;
-   if (!size)
-      return this->CHUNK_SIZE;
-   else
-      return size;
-}
 

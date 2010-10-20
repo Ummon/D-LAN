@@ -28,6 +28,11 @@ Common::Hash Uploader::getPeerID() const
    return this->socket->getPeerID();
 }
 
+int Uploader::getProgress() const
+{
+   return 100 * this->chunk->getKnownBytes() / this->chunk->getChunkSize();
+}
+
 QSharedPointer<FM::IChunk> Uploader::getChunk() const
 {
    return this->chunk;

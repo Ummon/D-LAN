@@ -62,12 +62,12 @@ namespace FM
       /**
         * Returns the directories and files contained in the given directory.
         */
-      virtual Protos::Core::GetEntriesResult getEntries(const Protos::Common::Entry& dir) = 0;
+      virtual Protos::Common::Entries getEntries(const Protos::Common::Entry& dir) = 0;
 
       /**
         * Returns the shared directories (roots).
         */
-      virtual Protos::Core::GetEntriesResult getEntries() = 0;
+      virtual Protos::Common::Entries getEntries() = 0;
 
       /**
         * Find some entry from a given words.

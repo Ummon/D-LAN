@@ -15,7 +15,8 @@ namespace PM
       virtual void start() = 0;
 
    signals:
-      void result(const Protos::Core::GetEntriesResult& entries);
+      void result(const Protos::Common::Entries& entries);
+      //void timeout() // TODO.
    };
 }
 #endif

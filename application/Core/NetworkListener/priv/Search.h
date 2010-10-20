@@ -2,6 +2,7 @@
 #define NETWORKLISTENER_SEARCH_H
 
 #include <QSharedPointer>
+#include <QElapsedTimer>
 
 #include <Libs/MersenneTwister.h>
 
@@ -17,7 +18,8 @@ namespace NL
       Q_OBJECT
    public:
       Search(UDPListener& uDPListener);
-      void search(const QString& words);
+      quint64 search(const QString& words);
+      qint64 elapsed();
 
    signals:
       void found(const Protos::Common::FindResult& result);
@@ -33,6 +35,8 @@ namespace NL
 
       quint64 tag;
       MTRand mtrand;
+
+      QElapsedTimer timer;
    };
 }
 #endif

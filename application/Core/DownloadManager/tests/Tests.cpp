@@ -76,7 +76,7 @@ void Tests::addADirectoryToDownload()
 {
    qDebug() << "===== addADirectoryToDownload() =====";
 
-   Protos::Core::GetEntriesResult result = this->fileManagers[1]->getEntries();
+   Protos::Common::Entries result = this->fileManagers[1]->getEntries();
    this->downloadManagers[0]->addDownload(result.entry(0), this->peerManagers[1]->getID());
    QTest::qWait(1000);
 }
@@ -99,7 +99,7 @@ void Tests::addABigFileToDownload()
    }
    QTest::qWait(4000);
 
-   Protos::Core::GetEntriesResult rootEntry = this->fileManagers[1]->getEntries();
+   Protos::Common::Entries rootEntry = this->fileManagers[1]->getEntries();
 
    Protos::Common::Entry entry;
    entry.set_type(Protos::Common::Entry_Type_FILE);

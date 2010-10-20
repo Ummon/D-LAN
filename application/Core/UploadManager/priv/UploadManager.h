@@ -21,7 +21,7 @@ namespace UM
    public:
       UploadManager(QSharedPointer<FM::IFileManager> fileManager, QSharedPointer<PM::IPeerManager> peerManager);
 
-      QList< QSharedPointer<IUpload> > getUploads();
+      QList<IUpload*> getUploads();
 
       int getUploadRate() const;
 
@@ -33,7 +33,7 @@ namespace UM
       QSharedPointer<FM::IFileManager> fileManager;
       QSharedPointer<PM::IPeerManager> peerManager;
 
-      QList< QSharedPointer<Uploader> > uploaders;
+      QList<Uploader*> uploaders;
    };
 }
 #endif

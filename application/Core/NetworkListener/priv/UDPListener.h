@@ -39,7 +39,7 @@ namespace NL
       void send(quint32 type, const google::protobuf::Message& message);
 
    signals:
-      void newChatMessage(const Protos::Core::ChatMessage& chatMessage);
+      void newChatMessage(const Common::Hash&, const Protos::Core::ChatMessage& chatMessage);
       void newFindResultMessage(const Protos::Common::FindResult& findResult);
 
    private slots:

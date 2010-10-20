@@ -47,3 +47,7 @@ message FindResult {
    optional Common.Hash peer_id = 3;
 }
 
+message Entries
+{
+   repeated Common.Entry entry = 1;
+}

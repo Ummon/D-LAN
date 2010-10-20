@@ -25,6 +25,6 @@ void GetEntriesResult::newMessage(quint32 type, const google::protobuf::Message&
       return;
    disconnect(this->socket, SIGNAL(newMessage(quint32, const google::protobuf::Message&)), this, SLOT(newMessage(quint32, const google::protobuf::Message&)));
 
-   const Protos::Core::GetEntriesResult& entries = dynamic_cast<const Protos::Core::GetEntriesResult&>(message);
+   const Protos::Common::Entries& entries = dynamic_cast<const Protos::Common::Entries&>(message);
    emit result(entries);
 }

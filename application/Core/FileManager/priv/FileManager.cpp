@@ -97,12 +97,12 @@ QSharedPointer<IGetHashesResult> FileManager::getHashes(const Protos::Common::En
    return QSharedPointer<IGetHashesResult>(new GetHashesResult(file, this->cache, this->fileUpdater));
 }
 
-Protos::Core::GetEntriesResult FileManager::getEntries(const Protos::Common::Entry& dir)
+Protos::Common::Entries FileManager::getEntries(const Protos::Common::Entry& dir)
 {
    return this->cache.getEntries(dir);
 }
 
-Protos::Core::GetEntriesResult FileManager::getEntries()
+Protos::Common::Entries FileManager::getEntries()
 {
    return this->cache.getEntries();
 }

@@ -65,7 +65,7 @@ void DownloadManager::addDownload(const Protos::Common::Entry& entry, Common::Ha
    case Protos::Common::Entry_Type_DIR :
       {
          DirDownload* dirDownload = new DirDownload(this->fileManager, this->peerManager, peerSource, entry);
-         connect(dirDownload, SIGNAL(newEntries(Protos::Core::GetEntriesResult)), this, SLOT(newEntries(Protos::Core::GetEntriesResult)));
+         connect(dirDownload, SIGNAL(newEntries(Protos::Common::Entries)), this, SLOT(newEntries(Protos::Common::Entries)));
          iterator.insert(dirDownload);
          dirDownload->retrieveEntries();
       }
@@ -115,7 +115,7 @@ void DownloadManager::fileCacheLoaded()
    this->loadQueueFromFile();
 }
 
-void DownloadManager::newEntries(const Protos::Core::GetEntriesResult& entries)
+void DownloadManager::newEntries(const Protos::Common::Entries& entries)
 {
    DirDownload* dirDownload = dynamic_cast<DirDownload*>(this->sender());
    QMutableLinkedListIterator<Download*> i(this->downloads);

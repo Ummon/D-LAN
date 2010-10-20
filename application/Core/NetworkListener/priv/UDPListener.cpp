@@ -208,7 +208,7 @@ void UDPListener::processPendingMulticastDatagrams()
          {
             Protos::Core::ChatMessage chatMessage;
             chatMessage.ParseFromArray(this->bodyBuffer, header.size);
-            emit newChatMessage(chatMessage);
+            emit newChatMessage(header.senderID, chatMessage);
          }
          break;
 

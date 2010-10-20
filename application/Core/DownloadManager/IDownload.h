@@ -54,6 +54,7 @@ namespace DM
 
       /**
         * Stop and delete the download.
+        * If the download has begun the downloaded data are removed.
         */
       virtual void remove() = 0;
    };
