@@ -7,6 +7,9 @@
 
 namespace Common
 {
+   /**
+     * The ugliest class ever!
+     */
    class ProtoHelper
    {
    public:
@@ -15,6 +18,9 @@ namespace Common
 
       template <typename T>
       static QString getStr(const T& mess, const std::string& (T::*getter)() const);
+
+      template <typename T>
+      static QString getRepeatedStr(const T& mess, const std::string& (T::*getter)(int) const, int i);
 
       static QString getDebugStr(const google::protobuf::Message& mess);
    };
@@ -34,6 +40,12 @@ template <typename T>
 QString ProtoHelper::getStr(const T& mess, const std::string& (T::*getter)() const)
 {
    return QString::fromUtf8((mess.*getter)().data());
+}
+
+template <typename T>
+QString ProtoHelper::getRepeatedStr(const T& mess, const std::string& (T::*getter)(int) const, int i)
+{
+   return QString::fromUtf8((mess.*getter)(i).data());
 }
 
 #endif
