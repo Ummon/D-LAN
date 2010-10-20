@@ -14,6 +14,7 @@
 #include <Protos/common.pb.h>
 
 #include <Common/Network.h>
+#include <Common/LogManager/Builder.h>
 #include <Core/FileManager/IFileManager.h>
 #include <Core/PeerManager/IPeerManager.h>
 #include <Core/PeerManager/IGetEntriesResult.h>
@@ -69,6 +70,8 @@ namespace RCM
       QList< QSharedPointer<PM::IGetEntriesResult> > getEntriesResults;
 
       MTRand mtrand;
+
+      QSharedPointer<LM::ILogger> loggerRefreshState;
    };
 }
 #endif

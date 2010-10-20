@@ -32,6 +32,11 @@ RemoteConnection::RemoteConnection(
    networkListener(networkListener),
    socket(socket)
 {
+   L_DEBU(QString("New RemoteConnection from %1").arg(socket->peerAddress().toString()));
+
+   // Create a other logger specially for the state message.
+   this->loggerRefreshState = LM::Builder::newLogger("RemoteConnection (State)");
+
    this->timerRefresh.setInterval(SETTINGS.get<quint32>("remote_refresh_rate"));
    connect(&this->timerRefresh, SIGNAL(timeout()), this, SLOT(refresh()));
    this->timerRefresh.start();
@@ -45,11 +50,12 @@ RemoteConnection::RemoteConnection(
    else
       this->dataReceived(); // The case where some data arrived before the 'connect' above.
 
-   connect(&this->networkListener->getChat(), SIGNAL(newMessage(const Protos::Core::ChatMessage&)), this, SLOT(newChatMessage(const Protos::Core::ChatMessage&)));
+   connect(&this->networkListener->getChat(), SIGNAL(newMessage(const Common::Hash&, const Protos::Core::ChatMessage&)), this, SLOT(newChatMessage(const Common::Hash&, const Protos::Core::ChatMessage&)));
 }
 
 RemoteConnection::~RemoteConnection()
 {
+   L_DEBU(QString("RemoteConnection deleted, %1").arg(socket->peerAddress().toString()));
    emit deleted(this);
    delete this->socket;
 }
@@ -311,6 +317,8 @@ bool RemoteConnection::readMessage()
             readOK = chatMessage.ParseFromBoundedZeroCopyStream(&inputStream, this->currentHeader.size);
          }
 
+         L_DEBU(QString("RemoteConnection::receive : header.type = %1, header.size = %2\n%3").arg(this->currentHeader.type, 0, 16).arg(this->currentHeader.size).arg(Common::ProtoHelper::getDebugStr(chatMessage)));
+
          if (readOK)
             this->networkListener->getChat().send(Common::ProtoHelper::getStr(chatMessage, &Protos::GUI::ChatMessage::message));
       }
@@ -327,7 +335,13 @@ void RemoteConnection::send(quint32 type, const google::protobuf::Message& messa
 {
    Common::MessageHeader header(type, message.ByteSize(), this->peerManager->getID());
 
-   L_DEBU(QString("RemoteConnection::send : header.type = %1, header.size = %2\n%3").arg(header.type, 0, 16).arg(header.size).arg(Common::ProtoHelper::getDebugStr(message)));
+#if DEBUG
+   QString logMess = QString("RemoteConnection::send : header.type = %1, header.size = %2\n%3").arg(header.type, 0, 16).arg(header.size).arg(Common::ProtoHelper::getDebugStr(message));
+   if (type == 0x01)
+      LOG_DEBU(this->loggerRefreshState, logMess);
+   else
+      L_DEBU(logMess);
+#endif
 
    Common::Network::writeHeader(*this->socket, header);
    Common::ZeroCopyOutputStreamQIODevice outputStream(this->socket);

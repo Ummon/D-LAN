@@ -20,6 +20,8 @@ RemoteControlManager::RemoteControlManager(
 {
    this->tcpServer.listen(QHostAddress::Any, SETTINGS.get<quint32>("remote_control_port"));
    connect(&this->tcpServer, SIGNAL(newConnection()), this, SLOT(newConnection()));
+
+   L_DEBU(QString("Listen new remoteConnection on port %1").arg(SETTINGS.get<quint32>("remote_control_port")));
 }
 
 void RemoteControlManager::newConnection()
