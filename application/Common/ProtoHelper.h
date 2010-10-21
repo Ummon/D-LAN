@@ -22,6 +22,9 @@ namespace Common
       template <typename T>
       static QString getRepeatedStr(const T& mess, const std::string& (T::*getter)(int) const, int i);
 
+      template <typename T>
+      static void addRepeatedStr(T& mess, void (T::*adder)(const char*), const QString& str);
+
       static QString getDebugStr(const google::protobuf::Message& mess);
    };
 }
@@ -46,6 +49,13 @@ template <typename T>
 QString ProtoHelper::getRepeatedStr(const T& mess, const std::string& (T::*getter)(int) const, int i)
 {
    return QString::fromUtf8((mess.*getter)(i).data());
+}
+
+template <typename T>
+void ProtoHelper::addRepeatedStr(T& mess, void (T::*adder)(const char*), const QString& str)
+{
+   QByteArray array = str.toUtf8();
+   (mess.*adder)(array.data());
 }
 
 #endif
