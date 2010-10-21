@@ -10,6 +10,7 @@ using namespace RCM;
 #include <Common/ProtoHelper.h>
 #include <Common/Hash.h>
 #include <Core/FileManager/IChunk.h>
+#include <Core/FileManager/Exceptions.h>
 #include <Core/PeerManager/IPeer.h>
 #include <Core/NetworkListener/IChat.h>
 #include <Core/DownloadManager/IDownload.h>
@@ -30,12 +31,10 @@ RemoteConnection::RemoteConnection(
    uploadManager(uploadManager),
    downloadManager(downloadManager),
    networkListener(networkListener),
-   socket(socket)
+   socket(socket),
+   loggerRefreshState(LM::Builder::newLogger("RemoteConnection (State)"))
 {
    L_DEBU(QString("New RemoteConnection from %1").arg(socket->peerAddress().toString()));
-
-   // Create a other logger specially for the state message.
-   this->loggerRefreshState = LM::Builder::newLogger("RemoteConnection (State)");
 
    this->timerRefresh.setInterval(SETTINGS.get<quint32>("remote_refresh_rate"));
    connect(&this->timerRefresh, SIGNAL(timeout()), this, SLOT(refresh()));
@@ -189,15 +188,22 @@ bool RemoteConnection::readMessage()
          {
             this->peerManager->setNick(Common::ProtoHelper::getStr(coreSettingsMessage.myself(), &Protos::GUI::Peer::nick));
 
-            QStringList sharedDirsReadOnly;
-            for (int i = 0; i < coreSettingsMessage.shared_directory_size(); i++)
-               sharedDirsReadOnly << Common::ProtoHelper::getRepeatedStr(coreSettingsMessage, &Protos::GUI::CoreSettings::shared_directory, i);
-            this->fileManager->setSharedDirsReadOnly(sharedDirsReadOnly);
+            try
+            {
+               QStringList sharedDirsReadOnly;
+               for (int i = 0; i < coreSettingsMessage.shared_directory_size(); i++)
+                  sharedDirsReadOnly << Common::ProtoHelper::getRepeatedStr(coreSettingsMessage, &Protos::GUI::CoreSettings::shared_directory, i);
+               this->fileManager->setSharedDirsReadOnly(sharedDirsReadOnly);
 
-            QStringList sharedDirsReadWrite;
-            for (int i = 0; i < coreSettingsMessage.destination_directory_size(); i++)
-               sharedDirsReadWrite << Common::ProtoHelper::getRepeatedStr(coreSettingsMessage, &Protos::GUI::CoreSettings::destination_directory, i);
-            this->fileManager->setSharedDirsReadWrite(sharedDirsReadWrite);
+               QStringList sharedDirsReadWrite;
+               for (int i = 0; i < coreSettingsMessage.destination_directory_size(); i++)
+                  sharedDirsReadWrite << Common::ProtoHelper::getRepeatedStr(coreSettingsMessage, &Protos::GUI::CoreSettings::destination_directory, i);
+               this->fileManager->setSharedDirsReadWrite(sharedDirsReadWrite);
+            }
+            catch(FM::SuperDirectoryExistsException& e)
+            {
+               L_WARN(QString("There is already a super directory : %1 for this directory : %2").arg(e.superDirectory).arg(e.subDirectory));
+            }
          }
       }
       break;

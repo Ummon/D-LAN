@@ -15,6 +15,7 @@
 
 #include <Common/Network.h>
 #include <Common/LogManager/Builder.h>
+#include <Common/LogManager/ILogger.h>
 #include <Core/FileManager/IFileManager.h>
 #include <Core/PeerManager/IPeerManager.h>
 #include <Core/PeerManager/IGetEntriesResult.h>
@@ -71,7 +72,7 @@ namespace RCM
 
       MTRand mtrand;
 
-      QSharedPointer<LM::ILogger> loggerRefreshState;
+      QSharedPointer<LM::ILogger> loggerRefreshState; // A logger especially for the state message.
    };
 }
 #endif
