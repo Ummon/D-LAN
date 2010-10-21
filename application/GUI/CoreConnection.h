@@ -19,6 +19,7 @@ namespace GUI
       void connectToCore();
       Common::Hash getOurID() const;
       void sendChatMessage(const QString& message);
+      void setCoreSettings(const Protos::GUI::CoreSettings settings);
 
    signals:
       void coreConnected();

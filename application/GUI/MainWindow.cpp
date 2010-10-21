@@ -75,10 +75,11 @@ void MainWindow::coreDisconnected()
   */
 void MainWindow::addDefaultWidgets()
 {
-   this->widgetChat = new WidgetChat(this->coreConnection, this->chatModel);
+   this->widgetSettings = new WidgetSettings(this->coreConnection, this);
+   this->ui->mdiArea->addSubWindow(this->widgetSettings, Qt::CustomizeWindowHint);
 
-   QMdiSubWindow* subWin = this->ui->mdiArea->addSubWindow(this->widgetChat, Qt::CustomizeWindowHint);
-   //subWin->layout()->set
+   this->widgetChat = new WidgetChat(this->coreConnection, this->chatModel, this);
+   this->ui->mdiArea->addSubWindow(this->widgetChat, Qt::CustomizeWindowHint);
    this->widgetChat->setWindowState(Qt::WindowMaximized);
 
    /* To see the close button on the tab.

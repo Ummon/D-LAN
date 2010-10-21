@@ -11,6 +11,8 @@
 #include <PeerListModel.h>
 #include <ChatModel.h>
 #include <CoreConnection.h>
+
+#include <WidgetSettings.h>
 #include <WidgetChat.h>
 
 namespace Ui {
@@ -35,6 +37,8 @@ namespace GUI
 
       Ui::MainWindow *ui;
       QLabel* lblStatusConnection;
+
+      WidgetSettings* widgetSettings;
       WidgetChat* widgetChat;
 
       CoreConnection coreConnection;
