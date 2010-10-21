@@ -40,7 +40,8 @@ UDPListener::UDPListener(
    fileManager(fileManager),
    peerManager(peerManager),
    downloadManager(downloadManager),
-   currentIMAliveTag(0)
+   currentIMAliveTag(0),
+   loggerIMAlive(LM::Builder::newLogger("NetworkListener (IMAlive)"))
 {
    if (!this->multicastSocket.bind(MULTICAST_PORT, QUdpSocket::ReuseAddressHint))
    {
@@ -116,7 +117,13 @@ void UDPListener::send(quint32 type, const google::protobuf::Message& message)
    if (!(messageSize = this->writeMessageToBuffer(type, message)))
       return;
 
-   L_DEBU(QString("Send multicast UDP : header.type = %2, message size = %3 \n%4").arg(type, 0, 16).arg(messageSize).arg(Common::ProtoHelper::getDebugStr(message)));
+#if DEBUG
+   QString logMess = QString("Send multicast UDP : header.type = %2, message size = %3 \n%4").arg(type, 0, 16).arg(messageSize).arg(Common::ProtoHelper::getDebugStr(message));
+   if (type == 0x01)
+      LOG_DEBU(this->loggerIMAlive, logMess);
+   else
+      L_DEBU(logMess);
+#endif
 
    if (this->multicastSocket.writeDatagram(this->buffer, messageSize, MULTICAST_GROUP, MULTICAST_PORT) == -1)
       L_ERRO("Unable to send datagram");
@@ -327,7 +334,7 @@ Common::MessageHeader UDPListener::readDatagramToBuffer(QUdpSocket& socket, QHos
 
    if (header.senderID == this->peerManager->getID())
    {
-      L_WARN("We receive a datagram from ourself, skip");
+      // L_WARN("We receive a datagram from ourself, skip"); // Don't care..
       header.setNull();
       return header;
    }

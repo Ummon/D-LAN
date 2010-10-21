@@ -16,6 +16,8 @@
 #include <Protos/common.pb.h>
 
 #include <Common/Network.h>
+#include <Common/LogManager/Builder.h>
+#include <Common/LogManager/ILogger.h>
 #include <Core/FileManager/IFileManager.h>
 #include <Core/PeerManager/IPeerManager.h>
 #include <Core/DownloadManager/IDownloadManager.h>
@@ -70,6 +72,7 @@ namespace NL
       QList< QSharedPointer<DM::IChunkDownload> > currentChunkDownloads;
 
       QTimer timerIMAlive;
+      QSharedPointer<LM::ILogger> loggerIMAlive; // A logger especially for the IMAlive message.
    };
 }
 #endif
