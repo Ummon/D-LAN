@@ -38,6 +38,11 @@ void CoreConnection::sendChatMessage(const QString& message)
    this->send(0x81, chatMessage);
 }
 
+void CoreConnection::setCoreSettings(const Protos::GUI::CoreSettings settings)
+{
+   this->send(0x21, settings);
+}
+
 void CoreConnection::dataReceived()
 {
    // TODO : it will loop infinetly if not enough data is provided.

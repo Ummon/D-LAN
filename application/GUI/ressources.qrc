@@ -1,5 +1,7 @@
 <RCC>
     <qresource prefix="/icons">
         <file>ressources/zoom.png</file>
+        <file>ressources/add.png</file>
+        <file>ressources/delete.png</file>
     </qresource>
 </RCC>

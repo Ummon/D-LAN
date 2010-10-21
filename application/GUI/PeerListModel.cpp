@@ -92,6 +92,11 @@ void PeerListModel::setPeers(const google::protobuf::RepeatedPtrField<Protos::GU
             this->peers[j].sharingAmount = peer.sharingAmount;
             stateChanged = true;
          }
+         if (this->peers[j].nick != peer.nick)
+         {
+            this->peers[j].nick = peer.nick;
+            stateChanged = true;
+         }
       }
       else
       {

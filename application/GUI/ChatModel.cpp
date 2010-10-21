@@ -31,7 +31,13 @@ QVariant ChatModel::data(const QModelIndex& index, int role) const
    switch (index.column())
    {
    case 0: return this->messages[index.row()].dateTime.toString("HH:mm:ss");
-   case 1: return this->messages[index.row()].nick;
+   case 1:
+      {
+         QString nick = this->messages[index.row()].nick;
+         if (nick.size() > 12)
+            return nick.left(8).append("...");
+         return nick;
+      }
    case 2: return this->messages[index.row()].message;
    default: return QVariant();
    }

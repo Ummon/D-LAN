@@ -15,8 +15,11 @@ WidgetChat::WidgetChat(CoreConnection& coreConnection, ChatModel& chatModel, QWi
    this->ui->tblChat->horizontalHeader()->setResizeMode(0, QHeaderView::ResizeToContents);
    this->ui->tblChat->horizontalHeader()->setResizeMode(1, QHeaderView::ResizeToContents);
    this->ui->tblChat->horizontalHeader()->setResizeMode(2, QHeaderView::Stretch);
+
+   //this->ui->tblChat->verticalHeader()->setResizeMode(QHeaderView::ResizeToContents);
    this->ui->tblChat->verticalHeader()->setResizeMode(QHeaderView::Fixed);
    this->ui->tblChat->verticalHeader()->setDefaultSectionSize(QApplication::fontMetrics().height() + 2);
+
    this->ui->tblChat->verticalHeader()->setVisible(false);
    this->ui->tblChat->setSelectionBehavior(QAbstractItemView::SelectRows);
    this->ui->tblChat->setSelectionMode(QAbstractItemView::SingleSelection);

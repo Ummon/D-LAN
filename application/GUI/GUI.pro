@@ -11,6 +11,7 @@ TEMPLATE = app
 CONFIG(debug, debug|release) {
    FOLDER = debug
    DEFINES += DEBUG
+#   CONFIG += console
 } else {
    FOLDER = release
 }
@@ -44,7 +45,8 @@ SOURCES += main.cpp\
     CoreConnection.cpp \
     ../Protos/gui_settings.pb.cc \
     ../Protos/core_settings.pb.cc \
-    ChatModel.cpp
+    ChatModel.cpp \
+    WidgetSettings.cpp
 
 HEADERS  += MainWindow.h \
     ../Protos/gui_protocol.pb.h \
@@ -54,10 +56,12 @@ HEADERS  += MainWindow.h \
     CoreConnection.h \
     ../Protos/gui_settings.pb.h \
     ../Protos/core_settings.pb.h \
-    ChatModel.h
+    ChatModel.h \
+    WidgetSettings.h
 
 FORMS    += MainWindow.ui \
-    WidgetChat.ui
+    WidgetChat.ui \
+    WidgetSettings.ui
 
 RESOURCES += \
     ressources.qrc
