@@ -96,10 +96,10 @@ void FileUpdater::addRoot(SharedDirectory* dir)
   */
 void FileUpdater::rmRoot(SharedDirectory* dir, Directory* dir2)
 {
-   QMutexLocker locker(&this->mutex);
-
    // If there is a scanning for this directory stop it.
    this->stopScanning(dir);
+
+   QMutexLocker locker(&this->mutex);
 
    // Stop the hashing to modify 'this->fileWithoutHashes'.
    // TODO : A suspend/resume hashing methods would be more readable.
