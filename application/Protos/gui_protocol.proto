@@ -122,7 +122,7 @@ message Search  {
 }
 // Core -> GUI (directly)
 // id : 0x32
-message SearchTag  {
+message Tag  {
    required uint64 tag = 2;
 }
 // Core -> GUI (deffered)
@@ -138,7 +138,7 @@ message Browse {
 }
 // Core -> GUI (directly)
 // id : 0x42
-// SearchTag
+// Tag
 // Core -> GUI (deffered)
 // id : 0x43
 message BrowseResult {
