@@ -46,7 +46,10 @@ SOURCES += main.cpp\
     ../Protos/gui_settings.pb.cc \
     ../Protos/core_settings.pb.cc \
     ChatModel.cpp \
-    WidgetSettings.cpp
+    WidgetSettings.cpp \
+    WidgetBrowse.cpp \
+    WidgetSearch.cpp \
+    BrowseModel.cpp
 
 HEADERS  += MainWindow.h \
     ../Protos/gui_protocol.pb.h \
@@ -57,11 +60,16 @@ HEADERS  += MainWindow.h \
     ../Protos/gui_settings.pb.h \
     ../Protos/core_settings.pb.h \
     ChatModel.h \
-    WidgetSettings.h
+    WidgetSettings.h \
+    WidgetBrowse.h \
+    WidgetSearch.h \
+    BrowseModel.h
 
 FORMS    += MainWindow.ui \
     WidgetChat.ui \
-    WidgetSettings.ui
+    WidgetSettings.ui \
+    WidgetBrowse.ui \
+    WidgetSearch.ui
 
 RESOURCES += \
     ressources.qrc

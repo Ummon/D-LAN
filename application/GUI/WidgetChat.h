@@ -5,6 +5,7 @@
 #include <QItemDelegate>
 
 #include <CoreConnection.h>
+#include <PeerListModel.h>
 #include <ChatModel.h>
 
 namespace Ui {
@@ -17,7 +18,7 @@ namespace GUI
    {
       Q_OBJECT
    public:
-      explicit WidgetChat(CoreConnection& coreConnection, ChatModel& chatModel, QWidget *parent = 0);
+      explicit WidgetChat(CoreConnection& coreConnection, PeerListModel& peerListModel, QWidget *parent = 0);
       ~WidgetChat();
 
    private slots:
@@ -28,6 +29,7 @@ namespace GUI
       Ui::WidgetChat *ui;
 
       CoreConnection& coreConnection;
+      ChatModel chatModel;
    };
 
    class TblChatDelegate : public QItemDelegate
