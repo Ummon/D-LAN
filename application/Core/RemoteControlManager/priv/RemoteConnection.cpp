@@ -228,9 +228,9 @@ bool RemoteConnection::readMessage()
             this->currentSearches << search;
             quint64 tag = search->search(Common::ProtoHelper::getStr(searchMessage, &Protos::GUI::Search::pattern));
 
-            Protos::GUI::SearchTag searchTag;
-            searchTag.set_tag(tag);
-            this->send(0x32, searchTag);
+            Protos::GUI::Tag tagMess;
+            tagMess.set_tag(tag);
+            this->send(0x32, tagMess);
          }
       }
       break;
@@ -249,9 +249,9 @@ bool RemoteConnection::readMessage()
             PM::IPeer* peer = this->peerManager->getPeer(peerID);
 
             quint64 tag = (static_cast<quint64>(this->mtrand.randInt()) << 32) | this->mtrand.randInt();
-            Protos::GUI::SearchTag searchTag;
-            searchTag.set_tag(tag);
-            this->send(0x42, searchTag);
+            Protos::GUI::Tag tagMess;
+            tagMess.set_tag(tag);
+            this->send(0x42, tagMess);
 
             if (peer)
             {
@@ -266,6 +266,15 @@ bool RemoteConnection::readMessage()
             else
             {
                Protos::GUI::BrowseResult result;
+
+               // If we want to browse our files.
+               if (peerID == this->peerManager->getID())
+               {
+                  result.mutable_entries()->CopyFrom(this->fileManager->getEntries(browseMessage.dir()));
+               }
+               else
+                  result.mutable_entries(); // To create an empty 'entries' field.
+
                result.set_tag(tag);
                this->send(0x43, result);
             }
