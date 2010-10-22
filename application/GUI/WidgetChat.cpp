@@ -1,13 +1,13 @@
-#include "WidgetChat.h"
-#include "ui_WidgetChat.h"
+#include <WidgetChat.h>
+#include <ui_WidgetChat.h>
 using namespace GUI;
 
-WidgetChat::WidgetChat(CoreConnection& coreConnection, ChatModel& chatModel, QWidget *parent)
-   :  QWidget(parent), ui(new Ui::WidgetChat), coreConnection(coreConnection)
+WidgetChat::WidgetChat(CoreConnection& coreConnection, PeerListModel& peerListModel, QWidget *parent)
+   :  QWidget(parent), ui(new Ui::WidgetChat), coreConnection(coreConnection), chatModel(coreConnection, peerListModel)
 {
    this->ui->setupUi(this);
 
-   this->ui->tblChat->setModel(&chatModel);
+   this->ui->tblChat->setModel(&this->chatModel);
 
    this->ui->tblChat->setItemDelegate(new TblChatDelegate());
    this->ui->tblChat->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);

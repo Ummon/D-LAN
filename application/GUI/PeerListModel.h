@@ -18,6 +18,7 @@ namespace GUI
       PeerListModel(CoreConnection& coreConnection);
       QString getNick(const Common::Hash peerID);
       bool isOurself(int rowNum) const;
+      Common::Hash getPeerID(int rowNum) const;
 
       int rowCount(const QModelIndex& parent = QModelIndex()) const;
       int columnCount(const QModelIndex& parent = QModelIndex()) const;

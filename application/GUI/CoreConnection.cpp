@@ -7,6 +7,50 @@ using namespace GUI;
 #include <Common/Settings.h>
 #include <Common/ProtoHelper.h>
 
+BrowseResult::BrowseResult(CoreConnection* coreConnection, const Common::Hash& peerID)
+   : peerID(peerID), tag(0)
+{
+   this->init(coreConnection);
+}
+
+BrowseResult::BrowseResult(CoreConnection* coreConnection, const Common::Hash& peerID, const Protos::Common::Entry& entry)
+   : peerID(peerID), entry(entry), tag(0)
+{
+   this->init(coreConnection);
+}
+
+void BrowseResult::start()
+{
+   Protos::GUI::Browse browseMessage;
+   browseMessage.mutable_peer_id()->set_hash(this->peerID.getData(), Common::Hash::HASH_SIZE);
+   if (this->entry.IsInitialized())
+      browseMessage.mutable_dir()->CopyFrom(this->entry);
+
+   this->coreConnection->send(0x41, browseMessage);
+}
+
+void BrowseResult::setTag(quint64 tag)
+{
+   this->tag = tag;
+}
+
+void BrowseResult::browseResult(quint64 tag, const Protos::Common::Entries& entries)
+{
+   if (tag == this->tag) // Is this message for us?
+   {
+      this->tag = 0; // To avoid multi emit (should not occurs).
+      emit result(entries);
+   }
+}
+
+void BrowseResult::init(CoreConnection* coreConnection)
+{
+   this->coreConnection = coreConnection;
+   connect(this->coreConnection, SIGNAL(browseResult(quint64, const Protos::Common::Entries&)), this, SLOT(browseResult(quint64, const Protos::Common::Entries&)));
+}
+
+/////
+
 CoreConnection::CoreConnection()
 {
    connect(&this->socket, SIGNAL(readyRead()), this, SLOT(dataReceived()));
@@ -41,6 +85,33 @@ void CoreConnection::sendChatMessage(const QString& message)
 void CoreConnection::setCoreSettings(const Protos::GUI::CoreSettings settings)
 {
    this->send(0x21, settings);
+}
+
+QSharedPointer<BrowseResult> CoreConnection::browse(const Common::Hash& peerID)
+{
+   QSharedPointer<BrowseResult> browseResult = QSharedPointer<BrowseResult>(new BrowseResult(this, peerID));
+   this->browseResultsWithoutTag << browseResult;
+   return browseResult;
+}
+
+QSharedPointer<BrowseResult> CoreConnection::browse(const Common::Hash& peerID, const Protos::Common::Entry& entry)
+{
+   QSharedPointer<BrowseResult> browseResult = QSharedPointer<BrowseResult>(new BrowseResult(this, peerID, entry));
+   this->browseResultsWithoutTag << browseResult;
+   return browseResult;
+}
+
+void CoreConnection::send(quint32 type, const google::protobuf::Message& message)
+{
+   Common::MessageHeader header(type, message.ByteSize(), this->ourID);
+
+   //L_DEBU(QString("CoreConnection::send : header.type = %1, header.size = %2\n%3").arg(header.type, 0, 16).arg(header.size).arg(Common::ProtoHelper::getDebugStr(message)));
+
+   Common::Network::writeHeader(this->socket, header);
+   Common::ZeroCopyOutputStreamQIODevice outputStream(&this->socket);
+   message.SerializeToZeroCopyStream(&outputStream);
+   /*if (!message.SerializeToZeroCopyStream(&outputStream))
+      L_WARN(QString("Unable to send %1").arg(Common::ProtoHelper::getDebugStr(message)));*/
 }
 
 void CoreConnection::dataReceived()
@@ -103,22 +174,45 @@ bool CoreConnection::readMessage()
       }
       break;
 
+   case 0x42 : // Tag (for Browse).
+      {
+         Protos::GUI::Tag tagMessage;
+
+         // This scope (and the others ones below) is here to force the input stream to read all the bytes.
+         // See Common::ZeroCopyInputStreamQIODevice::~ZeroCopyInputStreamQIODevice.
+         {
+            Common::ZeroCopyInputStreamQIODevice inputStream(&this->socket);
+            readOK = tagMessage.ParseFromBoundedZeroCopyStream(&inputStream, this->currentHeader.size);
+         }
+
+         if (readOK && !browseResultsWithoutTag.isEmpty())
+         {
+            this->browseResultsWithoutTag.takeFirst()->setTag(tagMessage.tag());
+         }
+      }
+      break;
+
+   case 0x43 : // BrowseResult.
+      {
+         Protos::GUI::BrowseResult browseResultMessage;
+
+         // This scope (and the others ones below) is here to force the input stream to read all the bytes.
+         // See Common::ZeroCopyInputStreamQIODevice::~ZeroCopyInputStreamQIODevice.
+         {
+            Common::ZeroCopyInputStreamQIODevice inputStream(&this->socket);
+            readOK = browseResultMessage.ParseFromBoundedZeroCopyStream(&inputStream, this->currentHeader.size);
+         }
+
+         if (readOK)
+         {
+            emit browseResult(browseResultMessage.tag(), browseResultMessage.entries());
+         }
+      }
+      break;
+
    default:
       readOK = false;
    }
 
    return readOK;
-}
-
-void CoreConnection::send(quint32 type, const google::protobuf::Message& message)
-{
-   Common::MessageHeader header(type, message.ByteSize(), this->ourID);
-
-   //L_DEBU(QString("CoreConnection::send : header.type = %1, header.size = %2\n%3").arg(header.type, 0, 16).arg(header.size).arg(Common::ProtoHelper::getDebugStr(message)));
-
-   Common::Network::writeHeader(this->socket, header);
-   Common::ZeroCopyOutputStreamQIODevice outputStream(&this->socket);
-   message.SerializeToZeroCopyStream(&outputStream);
-   /*if (!message.SerializeToZeroCopyStream(&outputStream))
-      L_WARN(QString("Unable to send %1").arg(Common::ProtoHelper::getDebugStr(message)));*/
 }

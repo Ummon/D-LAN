@@ -34,6 +34,13 @@ bool PeerListModel::isOurself(int rowNum) const
    return this->peers[rowNum].peerID == this->coreConnection.getOurID();
 }
 
+Common::Hash PeerListModel::getPeerID(int rowNum) const
+{
+   if (rowNum >= this->peers.size())
+      return Common::Hash();
+   return this->peers[rowNum].peerID;
+}
+
 int PeerListModel::rowCount(const QModelIndex& parent) const
 {
    return this->peers.size();
