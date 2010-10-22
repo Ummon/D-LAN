@@ -30,7 +30,7 @@ namespace FM
    private:
       void sendNextHash(QSharedPointer<Chunk> chunk);
 
-      const Protos::Common::Entry& fileEntry;
+      const Protos::Common::Entry fileEntry;
       File* file; // TODO : if the file is deleted how can we know?
       Cache& cache;
       FileUpdater& fileUpdater;
