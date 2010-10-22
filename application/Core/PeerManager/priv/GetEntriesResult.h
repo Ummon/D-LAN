@@ -25,7 +25,7 @@ namespace PM
       void newMessage(quint32 type, const google::protobuf::Message& message);
 
    private:
-      const Protos::Core::GetEntries& dir;
+      const Protos::Core::GetEntries dir;
       Socket* socket;
    };
 }
