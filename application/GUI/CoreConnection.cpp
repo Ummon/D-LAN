@@ -101,6 +101,14 @@ QSharedPointer<BrowseResult> CoreConnection::browse(const Common::Hash& peerID, 
    return browseResult;
 }
 
+void CoreConnection::download(const Common::Hash& peerID, const Protos::Common::Entry& entry)
+{
+   Protos::GUI::Download downloadMessage;
+   downloadMessage.mutable_peer_id()->set_hash(peerID.getData(), Common::Hash::HASH_SIZE);
+   downloadMessage.mutable_entry()->CopyFrom(entry);
+   this->send(0x71, downloadMessage);
+}
+
 void CoreConnection::send(quint32 type, const google::protobuf::Message& message)
 {
    Common::MessageHeader header(type, message.ByteSize(), this->ourID);
@@ -117,8 +125,8 @@ void CoreConnection::send(quint32 type, const google::protobuf::Message& message
 void CoreConnection::dataReceived()
 {
    // TODO : it will loop infinetly if not enough data is provided.
-   /*while (!this->socket.atEnd())
-   {*/
+   while (!this->socket.atEnd())
+   {
       if (this->currentHeader.isNull() && this->socket.bytesAvailable() >= Common::Network::HEADER_SIZE)
       {
          this->currentHeader = Common::Network::readHeader(this->socket);
@@ -130,7 +138,7 @@ void CoreConnection::dataReceived()
          this->readMessage();
          this->currentHeader.setNull();
       }
-   //}
+   }
 }
 
 bool CoreConnection::readMessage()

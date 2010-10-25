@@ -24,6 +24,12 @@ namespace GUI
       int columnCount(const QModelIndex& parent = QModelIndex()) const;
       QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const;
 
+   signals:
+      /**
+        * To remove peer files browse window. (Not used).
+        */
+      void peersRemoved(QList<Common::Hash> peerIDs);
+
    private slots:
       void newState(const Protos::GUI::State& state);
 

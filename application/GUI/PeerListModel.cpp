@@ -53,13 +53,22 @@ int PeerListModel::columnCount(const QModelIndex& parent) const
 
 QVariant PeerListModel::data(const QModelIndex& index, int role) const
 {
-   if (role != Qt::DisplayRole || index.row() >= this->peers.size())
+   if (!index.isValid() || index.row() >= this->peers.size())
       return QVariant();
 
-   switch (index.column())
+   switch(role)
    {
-   case 0: return this->peers[index.row()].nick;
-   case 1: return Common::Global::formatByteSize(this->peers[index.row()].sharingAmount);
+   case Qt::DisplayRole:
+      switch (index.column())
+      {
+      case 0: return this->peers[index.row()].nick;
+      case 1: return Common::Global::formatByteSize(this->peers[index.row()].sharingAmount);
+      default: return QVariant();
+      }
+
+   case Qt::TextAlignmentRole:
+      return index.column() == 0 ? Qt::AlignLeft : Qt::AlignRight;
+
    default: return QVariant();
    }
 }
@@ -114,9 +123,12 @@ void PeerListModel::setPeers(const google::protobuf::RepeatedPtrField<Protos::GU
    if (!peersToRemove.isEmpty() || !peersToAdd.isEmpty())
       stateChanged = true;
 
+   QList<Common::Hash> peerIDsRemoved;
    for (QListIterator<Peer> i(peersToRemove); i.hasNext();)
    {
-      int j = this->peers.indexOf(i.next());
+      Peer peer = i.next();
+      peerIDsRemoved << peer.peerID;
+      int j = this->peers.indexOf(peer);
       if (j != -1)
       {
          this->beginRemoveRows(QModelIndex(), j, j);
@@ -125,12 +137,16 @@ void PeerListModel::setPeers(const google::protobuf::RepeatedPtrField<Protos::GU
       }
    }
 
+   if (!peerIDsRemoved.isEmpty())
+      emit peersRemoved(peerIDsRemoved);
+
    if (!peersToAdd.isEmpty())
    {
       this->beginInsertRows(QModelIndex(), this->peers.size(), this->peers.size() + peersToAdd.size() - 1);
       this->peers.append(peersToAdd);
       this->endInsertRows();
    }
+
 
    if (stateChanged)
       this->sort();

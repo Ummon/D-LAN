@@ -30,7 +30,8 @@ MainWindow::MainWindow(QWidget* parent) :
     this->ui->tblPeers->setModel(&this->peerListModel);
 
     this->ui->tblPeers->setItemDelegate(new PeerTableDelegate());
-    this->ui->tblPeers->horizontalHeader()->setResizeMode(QHeaderView::Stretch);
+    this->ui->tblPeers->horizontalHeader()->setResizeMode(0, QHeaderView::Stretch);
+    this->ui->tblPeers->horizontalHeader()->setResizeMode(1, QHeaderView::ResizeToContents);
     this->ui->tblPeers->horizontalHeader()->setVisible(false);
 
     // TODO : is there an another way to reduce the row size?
