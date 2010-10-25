@@ -26,7 +26,7 @@ Socket::Socket(PeerManager* peerManager, QSharedPointer<FM::IFileManager> fileMa
 }
 
 Socket::Socket(PeerManager* peerManager, QSharedPointer<FM::IFileManager> fileManager, const Common::Hash& peerID, const QHostAddress& address, quint16 port)
-   : peerManager(peerManager), fileManager(fileManager), peerID(peerID), idle(false), listening(false)
+   : peerManager(peerManager), fileManager(fileManager), peerID(peerID), idle(false), listening(false), nbError(0)
 {   
 #ifdef DEBUG
    this->num = ++Socket::currentNum;
@@ -91,6 +91,9 @@ bool Socket::isIdle()
 
 void Socket::setActive()
 {
+   if (!this->idle)
+      return;
+
    L_DEBU(QString("Socket[%1] set to active").arg(this->num));
 
    this->idle = false;
@@ -144,7 +147,10 @@ void Socket::dataReceived()
       if (!this->currentHeader.isNull() && this->socket->bytesAvailable() >= this->currentHeader.size)
       {
          if (!this->readMessage())
+         {
+            L_DEBU("Can't read the message -> finished");
             this->finished(true);
+         }
          this->currentHeader.setNull();
       }
    }
@@ -152,6 +158,9 @@ void Socket::dataReceived()
 
 void Socket::finished(bool error)
 {
+   if (this->idle)
+      return;
+
    L_DEBU(QString("Socket[%1] set to idle%2").arg(this->num).arg(error ? " with error" : ""));
 
    this->idle = true;
@@ -162,8 +171,6 @@ void Socket::finished(bool error)
       this->close();
       return;
    }
-
-   while(!this->socket->readAll().isNull()); // Maybe there is some garbage data..
 
    this->startListening();
    emit getIdle(this);
@@ -232,6 +239,7 @@ bool Socket::readMessage()
          this->finished();
       }
       break;
+
    case 0x32 : // GetEntriesResult.
       {
          Protos::Common::Entries getEntriesResult;
@@ -240,11 +248,12 @@ bool Socket::readMessage()
             readOK = getEntriesResult.ParseFromBoundedZeroCopyStream(&inputStream, this->currentHeader.size);
          }
 
+         this->finished();
+
          if (readOK)
          {
             emit newMessage(this->currentHeader.type, getEntriesResult);
          }
-         this->finished();
       }
       break;
 
@@ -274,6 +283,7 @@ bool Socket::readMessage()
          }
       }
       break;
+
    case 0x42 : // GetHashesResult.
       {
          Protos::Core::GetHashesResult getHashesResult;
@@ -289,6 +299,7 @@ bool Socket::readMessage()
          }
       }
       break;
+
    case 0x43 : // Common.Hash.
       {
          Protos::Common::Hash hash;
@@ -299,9 +310,10 @@ bool Socket::readMessage()
 
          if (readOK)
          {
-            emit newMessage(this->currentHeader.type, hash);
             if (--this->nbHash == 0)
                this->finished();
+
+            emit newMessage(this->currentHeader.type, hash);
          }
       }
       break;
@@ -313,7 +325,7 @@ bool Socket::readMessage()
          Protos::Core::GetChunk getChunk;
          {
             Common::ZeroCopyInputStreamQIODevice inputStream(this->socket);
-            readOK = getChunk.ParseFromZeroCopyStream(&inputStream);
+            readOK = getChunk.ParseFromBoundedZeroCopyStream(&inputStream, this->currentHeader.size);
          }
 
          if (readOK)
