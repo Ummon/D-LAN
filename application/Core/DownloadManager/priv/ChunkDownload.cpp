@@ -292,7 +292,7 @@ void ChunkDownload::downloadingEnded()
    if (this->socket)
    {
       // Empty the socket.
-      while (!this->socket->getQSocket()->readAll().isNull());
+      // while (!this->socket->getQSocket()->readAll().isNull());
       this->socket->getQSocket()->moveToThread(QThread::currentThread());
       this->socket->finished(this->networkError);
       this->socket = 0;
