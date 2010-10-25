@@ -10,7 +10,6 @@ GetEntriesResult::GetEntriesResult(const Protos::Core::GetEntries& dir, Socket* 
 
 GetEntriesResult::~GetEntriesResult()
 {
-   this->socket->finished();
 }
 
 void GetEntriesResult::start()
