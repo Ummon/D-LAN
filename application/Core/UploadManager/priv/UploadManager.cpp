@@ -66,6 +66,7 @@ void UploadManager::getChunk(Common::Hash hash, int offset, PM::ISocket* socket)
 void UploadManager::uploadFinished(bool networkError)
 {
    Uploader* uploader = dynamic_cast<Uploader*>(this->sender());
+   uploader->wait(); // TODO : wait for the finished signal instead, like the downloaders : connect(this, SIGNAL(finished()), this, SLOT(downloadingEnded()), Qt::QueuedConnection);
 
    L_DEBU(QString("Upload finished, chunk : %1").arg(uploader->getChunk()->toStr()));
 

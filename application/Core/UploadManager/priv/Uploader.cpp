@@ -75,7 +75,7 @@ void Uploader::run()
          {
             if (!socket->getQSocket()->waitForBytesWritten(SETTINGS.get<quint32>("timeout_during_transfer")))
             {
-               L_ERRO(QString("Socket : cannot write data : %1").arg(this->chunk->toStr()));
+               L_ERRO(QString("Socket : cannot write data, timeout : %1").arg(this->chunk->toStr()));
                networkError = true;
                break;
             }
