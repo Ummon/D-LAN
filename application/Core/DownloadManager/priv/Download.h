@@ -54,8 +54,6 @@ namespace DM
       Protos::Common::Entry entry;
 
       Status status;
-
-      QTimer timer; // Used to periodically try to retrieve the peerSource;
    };
 }
 #endif

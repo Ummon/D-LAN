@@ -9,9 +9,6 @@ quint32 Download::currentID(1);
 Download::Download(QSharedPointer<FM::IFileManager> fileManager, QSharedPointer<PM::IPeerManager> peerManager, Common::Hash peerSourceID, const Protos::Common::Entry& entry)
    : ID(currentID++), fileManager(fileManager), peerManager(peerManager), peerSourceID(peerSourceID), peerSource(0), entry(entry), status(QUEUED)
 {
-   this->timer.setInterval(CHECK_DEAD_PEER_PERIOD);
-   this->timer.setSingleShot(true);
-   connect(&this->timer, SIGNAL(timeout()), this, SLOT(retrievePeer()));
    this->retrievePeer();
 }
 
@@ -63,8 +60,9 @@ void Download::retrievePeer()
 
    if (!this->hasAValidPeer())
    {
+      L_DEBU(QString("Unable to retrieve the peer, peerID = %1").arg(this->peerSourceID.toStr()));
       this->status = UNKNOWN_PEER;
-      this->timer.start();
+      QTimer::singleShot(CHECK_DEAD_PEER_PERIOD, this, SLOT(retrievePeer()));
    }
 }
 

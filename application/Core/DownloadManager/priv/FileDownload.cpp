@@ -53,7 +53,10 @@ FileDownload::FileDownload(
       this->connectChunkDownloadSignals(this->chunkDownloads.last());
    }
    this->nbHashesKnown = this->chunkDownloads.size();
+}
 
+void FileDownload::start()
+{
    if (this->hasAValidPeer())
       for (QListIterator< QSharedPointer<ChunkDownload> > i(this->chunkDownloads); i.hasNext();)
          i.next()->setPeerSource(this->peerSource);
@@ -185,6 +188,7 @@ void FileDownload::result(const Protos::Core::GetHashesResult& result)
    }
    else
    {
+      L_DEBU(QString("Unable to retrieve the hashes, error = %1").arg(result.status()));
       this->status = ENTRY_NOT_FOUND;
       this->getHashesResult.clear();
       this->occupiedPeersAskingForHashes.setPeerAsFree(this->peerSource);

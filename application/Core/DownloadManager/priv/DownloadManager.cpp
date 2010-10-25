@@ -14,7 +14,7 @@ using namespace DM;
 #include <priv/Constants.h>
 
 DownloadManager::DownloadManager(QSharedPointer<FM::IFileManager> fileManager, QSharedPointer<PM::IPeerManager> peerManager)
-   : fileManager(fileManager), peerManager(peerManager), numberOfDownload(0)
+   : fileManager(fileManager), peerManager(peerManager), numberOfDownload(0), retrievingEntries(false)
 {
    connect(&this->occupiedPeersAskingForHashes, SIGNAL(newFreePeer(PM::IPeer*)), this, SLOT(peerNoLongerAskingForHashes(PM::IPeer*)));
    connect(&this->occupiedPeersDownloadingChunk, SIGNAL(newFreePeer(PM::IPeer*)), this, SLOT(peerNoLongerDownloadingChunk(PM::IPeer*)));
@@ -67,7 +67,7 @@ void DownloadManager::addDownload(const Protos::Common::Entry& entry, Common::Ha
          DirDownload* dirDownload = new DirDownload(this->fileManager, this->peerManager, peerSource, entry);
          connect(dirDownload, SIGNAL(newEntries(Protos::Common::Entries)), this, SLOT(newEntries(Protos::Common::Entries)));
          iterator.insert(dirDownload);
-         dirDownload->retrieveEntries();
+         this->scanTheQueueToRetrieveEntries();
       }
       break;
 
@@ -75,6 +75,7 @@ void DownloadManager::addDownload(const Protos::Common::Entry& entry, Common::Ha
       {
          FileDownload* fileDownload = new FileDownload(this->fileManager, this->peerManager, this->occupiedPeersAskingForHashes, this->occupiedPeersDownloadingChunk, peerSource, entry, complete);
          iterator.insert(fileDownload);
+         fileDownload->start();
       }
       break;
    }
@@ -117,6 +118,8 @@ void DownloadManager::fileCacheLoaded()
 
 void DownloadManager::newEntries(const Protos::Common::Entries& entries)
 {
+   this->retrievingEntries = false;
+
    DirDownload* dirDownload = dynamic_cast<DirDownload*>(this->sender());
    QMutableLinkedListIterator<Download*> i(this->downloads);
    if (!i.findNext(dirDownload))
@@ -127,6 +130,8 @@ void DownloadManager::newEntries(const Protos::Common::Entries& entries)
       this->addDownload(entries.entry(n), dirDownload->getPeerSourceID(), false, i);
 
    delete dirDownload;
+
+   this->scanTheQueueToRetrieveEntries();
 }
 
 /**
@@ -149,6 +154,25 @@ void DownloadManager::peerNoLongerDownloadingChunk(PM::IPeer* peer)
 {
    L_DEBU(QString("A peer is free : %1, number of downloading thread : %2").arg(peer->getID().toStr()).arg(this->numberOfDownload));
    this->scanTheQueue();
+}
+
+void DownloadManager::scanTheQueueToRetrieveEntries()
+{
+   if (this->retrievingEntries)
+      return;
+
+   L_DEBU("Scanning the queue to retrieve entries");
+
+   for (QLinkedListIterator<Download*> i(this->downloads); i.hasNext();)
+   {
+      DirDownload* dirDownload = dynamic_cast<DirDownload*>(i.next());
+      if (!dirDownload)
+         continue;
+
+      dirDownload->retrieveEntries();
+      this->retrievingEntries = true;
+      return;
+   }
 }
 
 void DownloadManager::scanTheQueue()

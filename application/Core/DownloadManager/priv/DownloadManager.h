@@ -48,6 +48,7 @@ namespace DM
       void peerNoLongerAskingForHashes(PM::IPeer* peer);
       void peerNoLongerDownloadingChunk(PM::IPeer* peer);
 
+      void scanTheQueueToRetrieveEntries();
       void scanTheQueue();
       void chunkDownloadFinished();
 
@@ -66,6 +67,8 @@ namespace DM
 
       int numberOfDownload;
       QMutex mutexNumberOfDownload;
+
+      bool retrievingEntries; // TODO : if the socket is closed then retrievingEntries = false
 
       QTimer timer; // When a download has an error status, the queue will be rescaned periodically.
    };
