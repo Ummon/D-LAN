@@ -123,15 +123,18 @@ void RemoteConnection::refresh()
 
 void RemoteConnection::dataReceived()
 {
-   if (this->currentHeader.isNull() && this->socket->bytesAvailable() >= Common::Network::HEADER_SIZE)
+   while (!this->socket->atEnd())
    {
-      this->currentHeader = Common::Network::readHeader(*this->socket);
-   }
+      if (this->currentHeader.isNull() && this->socket->bytesAvailable() >= Common::Network::HEADER_SIZE)
+      {
+         this->currentHeader = Common::Network::readHeader(*this->socket);
+      }
 
-   if (!this->currentHeader.isNull() && this->socket->bytesAvailable() >= this->currentHeader.size)
-   {
-      this->readMessage();
-      this->currentHeader.setNull();
+      if (!this->currentHeader.isNull() && this->socket->bytesAvailable() >= this->currentHeader.size)
+      {
+         this->readMessage();
+         this->currentHeader.setNull();
+      }
    }
 }
 
@@ -260,8 +263,9 @@ bool RemoteConnection::readMessage()
                   getEntries.mutable_dir()->CopyFrom(browseMessage.dir());
                QSharedPointer<PM::IGetEntriesResult> entries = peer->getEntries(getEntries);
                entries->setProperty("tag", tag);
-               connect(entries.data(), SIGNAL(result(const Protos::Common::Entries&)), this, SLOT(getEntriesResult(Protos::Common::Entries)));
+               connect(entries.data(), SIGNAL(result(const Protos::Common::Entries&)), this, SLOT(getEntriesResult(const Protos::Common::Entries&)));
                entries->start();
+               this->getEntriesResults << entries;
             }
             else
             {
@@ -270,7 +274,7 @@ bool RemoteConnection::readMessage()
                // If we want to browse our files.
                if (peerID == this->peerManager->getID())
                {
-                  result.mutable_entries()->CopyFrom(this->fileManager->getEntries(browseMessage.dir()));
+                  result.mutable_entries()->CopyFrom(browseMessage.has_dir() ? this->fileManager->getEntries(browseMessage.dir()) : this->fileManager->getEntries());
                }
                else
                   result.mutable_entries(); // To create an empty 'entries' field.
