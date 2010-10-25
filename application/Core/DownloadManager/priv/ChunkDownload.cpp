@@ -176,9 +176,9 @@ void ChunkDownload::run()
       char buffer[BUFFER_SIZE];
 
       int bytesRead = 0;
-      int bytesReadTotal = 0;
+      quint64 bytesReadTotal = 0;
 
-      int deltaRead = 0;
+      quint64 deltaRead = 0;
 
       this->transferRateCalculator.reset();
 
@@ -282,6 +282,7 @@ void ChunkDownload::result(const Protos::Core::GetChunkResult& result)
 void ChunkDownload::stream(PM::ISocket* socket)
 {
    this->socket = socket;
+   this->socket->stopListening();
    this->socket->getQSocket()->moveToThread(this);
    this->start();
 }
