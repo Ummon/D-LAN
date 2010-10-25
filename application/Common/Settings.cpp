@@ -95,8 +95,6 @@ void Settings::save()
 void Settings::load()
 {
    QMutexLocker lock(&this->mutex);
-   if (!this->settings)
-      return;
    try
    {
       PersistantData::getValue(this->filename, *this->settings, true);
