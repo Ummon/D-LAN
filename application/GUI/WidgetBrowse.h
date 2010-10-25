@@ -19,16 +19,20 @@ namespace GUI
    {
       Q_OBJECT
    public:
-      explicit WidgetBrowse(CoreConnection& coreConnection, PeerListModel& model, const Common::Hash& peerID, QWidget *parent = 0);
+      explicit WidgetBrowse(CoreConnection& coreConnection, PeerListModel& peerListModel, const Common::Hash& peerID, QWidget *parent = 0);
       ~WidgetBrowse();
       Common::Hash getPeerID() const;
+
+   private slots:
+      void displayContextMenuPeers(const QPoint& point);
+      void download();
 
    private:
       Ui::WidgetBrowse *ui;
 
       CoreConnection& coreConnection;
       PeerListModel& peerListModel;
-      Common::Hash peerID;
+      const Common::Hash peerID;
 
       BrowseModel browseModel;
    };

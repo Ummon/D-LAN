@@ -86,6 +86,12 @@
           <height>0</height>
          </size>
         </property>
+        <attribute name="horizontalHeaderDefaultSectionSize">
+         <number>10</number>
+        </attribute>
+        <attribute name="horizontalHeaderMinimumSectionSize">
+         <number>10</number>
+        </attribute>
        </widget>
       </item>
      </layout>

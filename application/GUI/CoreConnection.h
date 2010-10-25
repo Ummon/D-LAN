@@ -35,7 +35,7 @@ namespace GUI
       void init(CoreConnection* coreConnection);
 
       CoreConnection* coreConnection;
-      Common::Hash peerID;
+      const Common::Hash peerID;
       const Protos::Common::Entry entry; // Not sure if it's save to not copy the entry...
       quint64 tag;
    };
@@ -52,6 +52,8 @@ namespace GUI
 
       QSharedPointer<BrowseResult> browse(const Common::Hash& peerID);
       QSharedPointer<BrowseResult> browse(const Common::Hash& peerID, const Protos::Common::Entry& entry);
+
+      void download(const Common::Hash& peerID, const Protos::Common::Entry& entry);
 
       void send(quint32 type, const google::protobuf::Message& message);
 
