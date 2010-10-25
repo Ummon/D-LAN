@@ -32,6 +32,8 @@ namespace DM
          bool complete = false
       );
 
+      void start();
+
       int getDownloadRate() const;
       int getProgress() const;
       QList<Common::Hash> getPeers() const;
