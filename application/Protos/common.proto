@@ -32,6 +32,7 @@ message Entry {
    required string name = 3; // Directory name or file name. For example : "MyLOLCat.avi". A root directory has an undetermined name.
    required uint64 size = 4; // [bytes].
    optional SharedDir shared_dir = 5; // The shared directory of the entry.
+   optional bool is_empty = 7 [default = true]; // Only for a Dir. Warning a directory can be not empty and has a size of 0.
    repeated Hash chunk = 6; // Only for a file. No chunk means that the peer doesn't know the hashes.
 }
 
