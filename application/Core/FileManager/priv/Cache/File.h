@@ -80,6 +80,8 @@ namespace FM
       bool hasAParentDir(Directory* dir);
 
    private:
+      void deleteAllChunks();
+
       const int CHUNK_SIZE;
       const int BUFFER_SIZE;
 
