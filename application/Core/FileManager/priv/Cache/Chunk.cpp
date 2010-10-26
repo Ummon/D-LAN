@@ -30,7 +30,7 @@ Chunk::~Chunk()
 {
    QMutexLocker locker(&this->mutex);
    L_DEBU(QString("Chunk Deleted[%1] : %2. File : %3").arg(num).
-      arg(hash.toStr()).
+      arg(this->hash.toStr()).
       arg(this->file ? this->file->getFullPath() : "<file deleted>")
    );
 }
@@ -142,7 +142,7 @@ bool Chunk::write(const char* buffer, int nbBytes)
    if (this->knownBytes + nbBytes > this->getChunkSize())
       throw TryToWriteBeyondTheEndOfChunkException();
 
-   this->knownBytes += this->file->write(buffer, nbBytes, this->knownBytes + this->num * CHUNK_SIZE);
+   this->knownBytes += this->file->write(buffer, nbBytes, this->knownBytes + static_cast<qint64>(this->num) * CHUNK_SIZE);
 
    if (this->knownBytes > this->getChunkSize()) // Should never be true.
    {
