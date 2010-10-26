@@ -21,7 +21,7 @@ int TransferRateCalculator::getTransferRate() const
    if (this->timer.elapsed() == 0)
       return 0;
 
-   return this->bytesTransmitted / this->timer.elapsed();
+   return this->bytesTransmitted / this->timer.elapsed() * 1000;
 }
 
 void TransferRateCalculator::reset()
