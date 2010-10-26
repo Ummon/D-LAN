@@ -3,5 +3,8 @@
         <file>ressources/zoom.png</file>
         <file>ressources/add.png</file>
         <file>ressources/delete.png</file>
+        <file>ressources/bullet_arrow_down.png</file>
+        <file>ressources/bullet_arrow_up.png</file>
+        <file>ressources/world.png</file>
     </qresource>
 </RCC>

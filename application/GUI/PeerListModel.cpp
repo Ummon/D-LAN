@@ -41,6 +41,12 @@ Common::Hash PeerListModel::getPeerID(int rowNum) const
    return this->peers[rowNum].peerID;
 }
 
+void PeerListModel::clear()
+{
+   google::protobuf::RepeatedPtrField<Protos::GUI::Peer> peers;
+   this->setPeers(peers);
+}
+
 int PeerListModel::rowCount(const QModelIndex& parent) const
 {
    return this->peers.size();
@@ -75,7 +81,6 @@ QVariant PeerListModel::data(const QModelIndex& index, int role) const
 
 void PeerListModel::newState(const Protos::GUI::State& state)
 {
-   // Add ourself to the peer list.
    // TODO : not very efficient!?
    google::protobuf::RepeatedPtrField<Protos::GUI::Peer> peers;
    peers.MergeFrom(state.peer());

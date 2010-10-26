@@ -2,11 +2,20 @@
 #include <MainWindow.h>
 using namespace GUI;
 
+#include <Protos/gui_settings.pb.h>
+
+#include <Common/Settings.h>
+
 int main(int argc, char *argv[])
 {
-    QApplication a(argc, argv);
-    MainWindow w;
-    w.show();
+   SETTINGS.setFilename("gui_settings.txt");
+   SETTINGS.setSettingsMessage(new Protos::GUI::Settings());
+   SETTINGS.load();
+   SETTINGS.save(); // To automatically create the file if it doesn't exist.
 
-    return a.exec();
+   QApplication a(argc, argv);
+   MainWindow w;
+   w.show();
+
+   return a.exec();
 }

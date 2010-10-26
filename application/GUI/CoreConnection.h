@@ -45,7 +45,6 @@ namespace GUI
       Q_OBJECT
    public:
       CoreConnection();
-      void connectToCore();
       Common::Hash getOurID() const;
       void sendChatMessage(const QString& message);
       void setCoreSettings(const Protos::GUI::CoreSettings settings);
@@ -57,6 +56,9 @@ namespace GUI
 
       void send(quint32 type, const google::protobuf::Message& message);
 
+   public slots:
+      void connectToCore();
+
    signals:
       void coreConnected();
       void coreDisconnected();
@@ -66,8 +68,7 @@ namespace GUI
       void browseResult(quint64 tag, const Protos::Common::Entries& entries);
 
    private slots:
-      /*void connected();
-      void disconnected();*/
+      void stateChanged(QAbstractSocket::SocketState socketState);
       void dataReceived();
 
    private:
@@ -78,6 +79,7 @@ namespace GUI
       Common::MessageHeader currentHeader;
 
       QList< QSharedPointer<BrowseResult> > browseResultsWithoutTag;
+      bool connecting;
    };
 }
 
