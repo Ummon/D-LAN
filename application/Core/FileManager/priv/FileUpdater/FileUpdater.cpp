@@ -163,7 +163,7 @@ void FileUpdater::run()
       // TODO : the mutex should be used ?
       foreach (Directory* dir, this->dirsToScan)
       {
-         this->scan(dir);
+         this->scan(dir, true);
          this->restoreFromFileCache(static_cast<SharedDirectory*>(dir));
       }
       this->dirsToScan.clear();
@@ -319,7 +319,7 @@ void FileUpdater::stopHashing()
   * given 'Directory*'.
   * The directories may already exist in the cache.
   */
-void FileUpdater::scan(Directory* dir)
+void FileUpdater::scan(Directory* dir, bool addUnfinished)
 {
    L_DEBU("Start scanning a shared directory : " + dir->getFullPath());
 
@@ -356,7 +356,7 @@ void FileUpdater::scan(Directory* dir)
 
             currentSubDirs.removeOne(dir);
          }
-         else if (entry.size() > 0 && !Cache::isFileUnfinished(entry.fileName()))
+         else if (entry.size() > 0 && (addUnfinished || !Cache::isFileUnfinished(entry.fileName())))
          {
             File* file = currentDir->getFile(entry.fileName());
             QMutexLocker locker(&this->mutex);
