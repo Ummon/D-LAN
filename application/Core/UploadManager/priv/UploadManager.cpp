@@ -56,6 +56,7 @@ void UploadManager::getChunk(Common::Hash hash, int offset, PM::ISocket* socket)
       result.set_chunk_size(chunk->getKnownBytes());
       socket->send(0x52, result);
 
+      socket->stopListening();
       Uploader* uploader = new Uploader(chunk, offset, socket);
       connect(uploader, SIGNAL(uploadFinished(bool)), this, SLOT(uploadFinished(bool)), Qt::QueuedConnection);
       this->uploaders << uploader;

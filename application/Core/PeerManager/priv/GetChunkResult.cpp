@@ -29,7 +29,6 @@ void GetChunkResult::newMessage(quint32 type, const google::protobuf::Message& m
 
    if (chunkResult.status() == Protos::Core::GetChunkResult_Status_OK)
    {
-      this->socket->stopListening();
       emit stream(this->socket);
    }
    else
