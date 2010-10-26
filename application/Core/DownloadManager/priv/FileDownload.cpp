@@ -95,6 +95,7 @@ QList<Common::Hash> FileDownload::getPeers() const
 /**
   * If there is a ChunkDownload with a free peer (we do not already download from this peer) the return the chunk.
   * The file is created on the fly with IFileManager::newFile(..) if we don't have the IChunks.
+  * @return The chunk to download, can return a null pointer if an error occurs.
   */
 QSharedPointer<ChunkDownload> FileDownload::getAChunkToDownload()
 {
