@@ -50,7 +50,7 @@ namespace FM
       /*void suspendHashing();
       void resumeHashing();*/
 
-      void scan(Directory* dir);
+      void scan(Directory* dir, bool addUnfinished = false);
 
       void stopScanning(Directory* dir = 0);
 
