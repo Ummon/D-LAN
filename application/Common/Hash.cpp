@@ -6,7 +6,7 @@ using namespace Common;
 
 /**
   * @class Hash
-  * An über-optimized SHA-1 hash.
+  * An Ãœber-optimized SHA-1 hash.
   * see : http://fr.wikipedia.org/wiki/SHA-1
   */
 
