@@ -54,9 +54,9 @@ namespace GUI
       void removeWidgetChat();
       void addWidgetBrowse(const Common::Hash& peerID);
       void addWidgetSearch(const QString& term);
+      void removeAllWidgets();
 
       Ui::MainWindow *ui;
-      QLabel* lblStatusConnection;
 
       WidgetSettings* widgetSettings;
       WidgetChat* widgetChat;

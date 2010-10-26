@@ -11,6 +11,8 @@ using namespace GUI;
 
 #include <Common/Settings.h>
 
+#include <StatusBar.h>
+
 MainWindow::MainWindow(QWidget* parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow),
@@ -19,13 +21,7 @@ MainWindow::MainWindow(QWidget* parent) :
 {
     this->ui->setupUi(this);
 
-    SETTINGS.setFilename("gui_settings.txt");
-    SETTINGS.setSettingsMessage(new Protos::GUI::Settings());
-    SETTINGS.load();
-    SETTINGS.save(); // To automatically create the file if it doesn't exist.
-
-    this->lblStatusConnection = new QLabel(this->ui->statusBar);
-    ui->statusBar->addWidget(this->lblStatusConnection);
+    ui->statusBar->addWidget(new StatusBar(this->coreConnection), 1);
 
     this->ui->tblPeers->setModel(&this->peerListModel);
 
@@ -67,8 +63,6 @@ MainWindow::~MainWindow()
 
 void MainWindow::coreConnected()
 {
-   this->lblStatusConnection->setText("Connected");
-
    this->addWidgetChat();
    this->ui->txtSearch->setDisabled(false);
    this->ui->butSearch->setDisabled(false);
@@ -76,11 +70,11 @@ void MainWindow::coreConnected()
 
 void MainWindow::coreDisconnected()
 {
-   this->lblStatusConnection->setText("Disconnected");
-
    this->removeWidgetChat();
+   this->removeAllWidgets();
    this->ui->txtSearch->setDisabled(true);
    this->ui->butSearch->setDisabled(true);
+   this->peerListModel.clear();
 }
 
 void MainWindow::displayContextMenuPeers(const QPoint& point)
@@ -233,6 +227,15 @@ void MainWindow::addWidgetSearch(const QString& term)
    TabCloseButton* closeButton = new TabCloseButton(widgetSearch);
    connect(closeButton, SIGNAL(clicked(QWidget*)), this, SLOT(removeWidget(QWidget*)));
    tab->setTabButton(tab->count() - 1, QTabBar::RightSide, closeButton);
+}
+
+void MainWindow::removeAllWidgets()
+{
+   foreach (WidgetBrowse* widget, this->widgetsBrowse)
+      this->removeWidget(widget);
+
+   foreach (WidgetSearch* widget, this->widgetsSearch)
+      this->removeWidget(widget);
 }
 
 /////

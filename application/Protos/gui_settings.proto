@@ -7,4 +7,5 @@ message Settings {
    optional string core_address = 1 [default = "localhost"];
    optional uint32 core_port = 2 [default = 59485];
    optional uint32 max_chat_message_displayed = 3 [default = 500];
+   optional uint32 reconnect_period = 4 [default = 1000];
 }

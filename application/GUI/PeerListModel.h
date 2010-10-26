@@ -19,6 +19,7 @@ namespace GUI
       QString getNick(const Common::Hash peerID);
       bool isOurself(int rowNum) const;
       Common::Hash getPeerID(int rowNum) const;
+      void clear();
 
       int rowCount(const QModelIndex& parent = QModelIndex()) const;
       int columnCount(const QModelIndex& parent = QModelIndex()) const;

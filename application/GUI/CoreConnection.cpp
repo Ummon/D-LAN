@@ -2,6 +2,7 @@
 using namespace GUI;
 
 #include <QHostAddress>
+#include <QCoreApplication>
 
 #include <Common/ZeroCopyStreamQIODevice.h>
 #include <Common/Settings.h>
@@ -52,22 +53,12 @@ void BrowseResult::init(CoreConnection* coreConnection)
 /////
 
 CoreConnection::CoreConnection()
+   : connecting(false)
 {
    connect(&this->socket, SIGNAL(readyRead()), this, SLOT(dataReceived()));
    connect(&this->socket, SIGNAL(connected()), this, SIGNAL(coreConnected()));
    connect(&this->socket, SIGNAL(disconnected()), this, SIGNAL(coreDisconnected()));
-}
-
-void CoreConnection::connectToCore()
-{
-   QHostAddress address(SETTINGS.get<QString>("core_address"));
-
-   // If the address is local check if the core is launched, if not try to launch it.
-   if (address == QHostAddress::LocalHost)
-   {
-   }
-
-   this->socket.connectToHost(SETTINGS.get<QString>("core_address"), SETTINGS.get<quint32>("core_port"));
+   connect(&this->socket, SIGNAL(stateChanged(QAbstractSocket::SocketState)), this, SLOT(stateChanged(QAbstractSocket::SocketState)));
 }
 
 Common::Hash CoreConnection::getOurID() const
@@ -122,11 +113,38 @@ void CoreConnection::send(quint32 type, const google::protobuf::Message& message
       L_WARN(QString("Unable to send %1").arg(Common::ProtoHelper::getDebugStr(message)));*/
 }
 
+void CoreConnection::connectToCore()
+{
+   if (this->connecting)
+      return;
+   this->connecting = true;
+
+   this->socket.close();
+   QHostAddress address(SETTINGS.get<QString>("core_address"));
+
+   // If the address is local check if the core is launched, if not try to launch it.
+   if (address == QHostAddress::LocalHost)
+   {
+   }
+
+   this->socket.connectToHost(SETTINGS.get<QString>("core_address"), SETTINGS.get<quint32>("core_port"));
+   this->connecting = false;
+}
+
+void CoreConnection::stateChanged(QAbstractSocket::SocketState socketState)
+{
+   if (socketState == QAbstractSocket::UnconnectedState)
+   {
+      this->connectToCore();
+   }
+}
+
 void CoreConnection::dataReceived()
 {
    // TODO : it will loop infinetly if not enough data is provided.
    while (!this->socket.atEnd())
    {
+      QCoreApplication::processEvents(); // To read from the native socket to the internal QTcpSocket buffer. TODO : more elegant way?
       if (this->currentHeader.isNull() && this->socket.bytesAvailable() >= Common::Network::HEADER_SIZE)
       {
          this->currentHeader = Common::Network::readHeader(this->socket);

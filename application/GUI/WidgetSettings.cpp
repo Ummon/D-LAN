@@ -5,6 +5,9 @@ using namespace GUI;
 #include <QFileDialog>
 
 #include <Common/ProtoHelper.h>
+#include <Common/Settings.h>
+
+#include <Protos/gui_settings.pb.h>
 
 void DirListModel::setDirs(const QStringList& dirs)
 {
@@ -84,14 +87,19 @@ WidgetSettings::WidgetSettings(CoreConnection& coreConnection, QWidget *parent)
    this->ui->lstIncoming->setModel(&this->incomingDirsModel);
    this->ui->lstShared->setModel(&this->sharedDirsModel);
 
+   this->ui->txtCoreAddress->setText(SETTINGS.get<QString>("core_address"));
+
    connect(&this->coreConnection, SIGNAL(newState(Protos::GUI::State)), this, SLOT(newState(Protos::GUI::State)));
 
-   connect(this->ui->txtNick, SIGNAL(editingFinished()), this, SLOT(saveSettings()));
+   connect(this->ui->txtNick, SIGNAL(editingFinished()), this, SLOT(saveCoreSettings()));
 
    connect(this->ui->butAddIncoming, SIGNAL(clicked()), this, SLOT(addIncoming()));
    connect(this->ui->butAddShared, SIGNAL(clicked()), this, SLOT(addShared()));
    connect(this->ui->butRemoveIncoming, SIGNAL(clicked()), this, SLOT(removeIncoming()));
    connect(this->ui->butRemoveShared, SIGNAL(clicked()), this, SLOT(removeShared()));
+
+   connect(this->ui->txtCoreAddress, SIGNAL(editingFinished()), this, SLOT(saveGUISettings()));
+   connect(this->ui->butResetCoreAddress, SIGNAL(clicked()), this, SLOT(resetCoreAddress()));
 }
 
 WidgetSettings::~WidgetSettings()
@@ -116,7 +124,7 @@ void WidgetSettings::newState(const Protos::GUI::State& state)
    this->sharedDirsModel.setDirs(sharedDirs);
 }
 
-void WidgetSettings::saveSettings()
+void WidgetSettings::saveCoreSettings()
 {
    Protos::GUI::CoreSettings settings;
    Common::ProtoHelper::setStr(*settings.mutable_myself(), &Protos::GUI::Peer::set_nick, this->ui->txtNick->text());
@@ -127,7 +135,23 @@ void WidgetSettings::saveSettings()
    for (QStringListIterator i(this->sharedDirsModel.getDirs()); i.hasNext();)
       Common::ProtoHelper::addRepeatedStr(settings, &Protos::GUI::CoreSettings::add_shared_directory, i.next());
 
+   Common::ProtoHelper::setStr(*settings.mutable_myself(), &Protos::GUI::Peer::set_nick, this->ui->txtNick->text());
+
    this->coreConnection.setCoreSettings(settings);
+}
+
+void WidgetSettings::saveGUISettings()
+{
+   //Common::ProtoHelper::setStr(*settings.mutable_myself(), &Protos::GUI::Settings::set_core_address, this->ui->txtCoreAddress->text());
+
+   QString previousAddress = SETTINGS.get<QString>("core_address");
+   SETTINGS.set("core_address", this->ui->txtCoreAddress->text());
+   SETTINGS.save();
+
+   if (previousAddress != SETTINGS.get<QString>("core_address"))
+   {
+      this->coreConnection.connectToCore();
+   }
 }
 
 void WidgetSettings::addIncoming()
@@ -136,7 +160,7 @@ void WidgetSettings::addIncoming()
    if (!dir.isNull())
    {
       this->incomingDirsModel.addDir(dir);
-      this->saveSettings();
+      this->saveCoreSettings();
    }
 }
 
@@ -146,7 +170,7 @@ void WidgetSettings::addShared()
    if (!dir.isNull())
    {
       this->sharedDirsModel.addDir(dir);
-      this->saveSettings();
+      this->saveCoreSettings();
    }
 }
 
@@ -156,7 +180,7 @@ void WidgetSettings::removeIncoming()
    if (index.isValid())
    {
       this->incomingDirsModel.rmDir(index.row());
-      this->saveSettings();
+      this->saveCoreSettings();
    }
 }
 
@@ -166,8 +190,14 @@ void WidgetSettings::removeShared()
    if (index.isValid())
    {
       this->sharedDirsModel.rmDir(index.row());
-      this->saveSettings();
+      this->saveCoreSettings();
    }
+}
+
+void WidgetSettings::resetCoreAddress()
+{
+   this->ui->txtCoreAddress->setText("localhost");
+   this->saveGUISettings();
 }
 
 /**

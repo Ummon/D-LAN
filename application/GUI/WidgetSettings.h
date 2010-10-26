@@ -37,12 +37,15 @@ namespace GUI
 
    private slots:
       void newState(const Protos::GUI::State& state);
-      void saveSettings();
+      void saveCoreSettings();
+      void saveGUISettings();
 
       void addIncoming();
       void addShared();
       void removeIncoming();
       void removeShared();
+
+      void resetCoreAddress();
 
       QString askADirectory();
 
