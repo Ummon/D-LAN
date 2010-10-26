@@ -20,7 +20,7 @@ Uploader::Uploader(QSharedPointer<FM::IChunk> chunk, int offset, PM::ISocket* so
 
 int Uploader::getUploadRate() const
 {
-   return this->transfertRateCalculator.getTransferRate();
+   return this->transferRateCalculator.getTransferRate();
 }
 
 Common::Hash Uploader::getPeerID() const
@@ -57,7 +57,7 @@ void Uploader::run()
       int currentOffset = this->offset;
       qint64 bytesRead = 0;
 
-      this->transfertRateCalculator.reset();
+      this->transferRateCalculator.reset();
 
       while (bytesRead = reader->read(buffer, currentOffset))
       {
@@ -81,7 +81,7 @@ void Uploader::run()
             }
          }
 
-         this->transfertRateCalculator.addData(bytesSent);
+         this->transferRateCalculator.addData(bytesSent);
       }
    }
    catch(FM::UnableToOpenFileInReadModeException&)
