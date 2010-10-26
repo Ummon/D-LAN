@@ -48,7 +48,7 @@ File::File(
      dir(dir),
      dateLastModified(dateLastModified),
      nbChunkComplete(0),
-     complete(!createPhysically),
+     complete(!Cache::isFileUnfinished(Entry::getName())),
      tryToRename(false),
      numDataWriter(0),
      numDataReader(0),
@@ -98,13 +98,16 @@ File::File(
          QFile file(this->getFullPath());
          if (file.exists())
          {
-            L_ERRO(QString("File::File(..) : Ask to physically create a file which already exists : %1").arg(this->getFullPath()));
+            this->deleteAllChunks();
             throw FilePhysicallyAlreadyExistsException();
          }
          else
          {
-            file.open(QIODevice::WriteOnly);
-            file.resize(this->size);
+            if (!file.open(QIODevice::WriteOnly) || !file.resize(this->size))
+            {
+               this->deleteAllChunks();
+               throw UnableToCreateNewFileException();
+            }
             this->dateLastModified = QFileInfo(file).lastModified();
          }
       }
@@ -118,12 +121,7 @@ File::~File()
    // QMutexLocker(&this->cache->getMutex()); // TODO : Is it necessary ?
 
    this->dir->fileDeleted(this);
-
-   foreach (QSharedPointer<Chunk> c, this->chunks)
-   {
-      c->fileDeleted();
-      this->cache->onChunkRemoved(c);
-   }
+   this->deleteAllChunks();
 
    if (!this->isComplete())
    {
@@ -136,12 +134,10 @@ File::~File()
 
 bool File::restoreFromFileCache(const Protos::FileCache::Hashes_File& file)
 {
-   L_DEBU(QString("Restoring file '%1' from file cache..").arg(this->getFullPath()));
-
    if (
       Common::ProtoHelper::getStr(file, &Protos::FileCache::Hashes_File::filename) == this->getName() &&
       (qint64)file.size() == this->size &&
-      file.date_last_modified() == this->getDateLastModified().toTime_t() &&
+      file.date_last_modified() == this->getDateLastModified().toMSecsSinceEpoch() &&
       this->chunks.size() == file.chunk_size()
    )
    {
@@ -151,7 +147,9 @@ bool File::restoreFromFileCache(const Protos::FileCache::Hashes_File& file)
       {
          this->chunks[i]->restoreFromFileCache(file.chunk(i));
          if (file.chunk(i).has_hash())
+         {
             this->cache->onChunkHashKnown(this->chunks[i]);
+         }
       }
 
       return true;
@@ -163,7 +161,7 @@ void File::populateHashesFile(Protos::FileCache::Hashes_File& fileToFill) const
 {
    Common::ProtoHelper::setStr(fileToFill, &Protos::FileCache::Hashes_File::set_filename, this->name);
    fileToFill.set_size(this->size);
-   fileToFill.set_date_last_modified(this->getDateLastModified().currentMSecsSinceEpoch());
+   fileToFill.set_date_last_modified(this->getDateLastModified().toMSecsSinceEpoch());
 
    for (QListIterator< QSharedPointer<Chunk> > i(this->chunks); i.hasNext();)
    {
@@ -283,7 +281,7 @@ qint64 File::write(const char* buffer, int nbBytes, qint64 offset)
    if (offset >= this->size || !this->fileInWriteMode->seek(offset))
       throw IOErrorException();
 
-   int maxSize = this->size - offset;
+   qint64 maxSize = this->size - offset;
    qint64 n = this->fileInWriteMode->write(buffer, nbBytes > maxSize ? maxSize : nbBytes);
 
    if (n == -1)
@@ -382,6 +380,7 @@ bool File::computeHashes(int n)
       // See 'stopHashing()'.
       this->hashingMutex.unlock();
       this->hashingMutex.lock();
+
       if (this->toStopHashing)
       {
          this->hashingStopped.wakeOne();
@@ -404,6 +403,7 @@ bool File::computeHashes(int n)
          }
 
          crypto.addData(buffer, bytesRead);
+
          bytesReadChunk += bytesRead;
       }
       endReading:
@@ -432,7 +432,7 @@ bool File::computeHashes(int n)
 
 #ifdef DEBUG
    const int delta = time.elapsed();
-   if (delta == 0)
+   if (delta < 50)
       L_DEBU("Hashing speed : ?? MB/s (delta too small)");
    else
    {
@@ -601,5 +601,14 @@ bool File::hasAParentDir(Directory* dir)
    if (this->dir == dir)
       return true;
    return this->dir->isAChildOf(dir);
+}
+
+void File::deleteAllChunks()
+{
+   foreach (QSharedPointer<Chunk> c, this->chunks)
+   {
+      c->fileDeleted();
+      this->cache->onChunkRemoved(c);
+   }
 }
 
