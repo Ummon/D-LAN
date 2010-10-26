@@ -1,6 +1,8 @@
 #include <priv/Socket.h>
 using namespace PM;
 
+#include <QCoreApplication>
+
 #include <Protos/core_protocol.pb.h>
 #include <Protos/common.pb.h>
 
@@ -21,7 +23,6 @@ Socket::Socket(PeerManager* peerManager, QSharedPointer<FM::IFileManager> fileMa
 #endif
 
    this->socket->setReadBufferSize(SETTINGS.get<quint32>("socket_buffer_size"));
-   connect(this->socket, SIGNAL(disconnected()), this->socket, SLOT(deleteLater()));
    this->initActivityTimer();
 }
 
@@ -35,7 +36,6 @@ Socket::Socket(PeerManager* peerManager, QSharedPointer<FM::IFileManager> fileMa
 
    this->socket = new QTcpSocket();
    this->socket->setReadBufferSize(SETTINGS.get<quint32>("socket_buffer_size"));
-   connect(this->socket, SIGNAL(disconnected()), this->socket, SLOT(deleteLater()));
    this->socket->connectToHost(address, port);
    this->initActivityTimer();
 }
@@ -68,9 +68,10 @@ void Socket::startListening()
    this->listening = true;
    connect(this->socket, SIGNAL(readyRead()), this, SLOT(dataReceived()));
    connect(this->socket, SIGNAL(disconnected()), this, SLOT(disconnected()));
+   connect(this->socket, SIGNAL(disconnected()), this->socket, SLOT(deleteLater()));
 
    if (!this->socket->isValid())
-      this->disconnect();
+      this->close();
    else
       this->dataReceived();
 }
@@ -81,6 +82,7 @@ void Socket::stopListening()
 
    disconnect(this->socket, SIGNAL(readyRead()), this, SLOT(dataReceived()));
    disconnect(this->socket, SIGNAL(disconnected()), this, SLOT(disconnected()));
+   disconnect(this->socket, SIGNAL(disconnected()), this->socket, SLOT(deleteLater()));
    this->listening = false;
 }
 
@@ -119,6 +121,7 @@ void Socket::dataReceived()
    // TODO : it will loop infinetly if not enough data is provided.
    while (!this->socket->atEnd() && this->listening)
    {
+      QCoreApplication::processEvents(); // To read from the native socket to the internal QTcpSocket buffer. TODO : more elegant way?
       this->setActive();
 
       //L_DEBU(QString("Socket[%1]::dataReceived() : bytesAvailable = %2").arg(this->num).arg(this->socket->bytesAvailable()));
@@ -163,14 +166,20 @@ void Socket::finished(bool error)
 
    L_DEBU(QString("Socket[%1] set to idle%2").arg(this->num).arg(error ? " with error" : ""));
 
-   this->idle = true;
-
    if (error && ++this->nbError > 5) // TODO : -> constant
    {
       L_WARN("Socket with too many error, closed");
       this->close();
       return;
    }
+
+   if (!this->socket->isValid())
+   {
+      this->close();
+      return;
+   }
+
+   this->idle = true;
 
    this->startListening();
    emit getIdle(this);
@@ -184,6 +193,8 @@ void Socket::close()
    // This code is commented because a download or an upload may begin just before the socket-close and thus change its thread... (We should use mutex synchronisation)
    // if (this->socket->thread() == QThread::currentThread())
    //   this->socket->close();
+   if (!this->listening)
+      emit closed(this);
 }
 
 void Socket::disconnected()
