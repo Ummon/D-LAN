@@ -164,8 +164,6 @@ bool ChunkDownload::startDownloading()
 
 void ChunkDownload::run()
 {
-   QSharedPointer<FM::IDataWriter> writer;
-
    try
    {
       L_DEBU(QString("Starting downloading a chunk : %1").arg(this->chunk->toStr()));
