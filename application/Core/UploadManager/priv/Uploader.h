@@ -41,7 +41,7 @@ namespace UM
       int offset;
       PM::ISocket* socket;
 
-      Common::TransferRateCalculator transfertRateCalculator;
+      Common::TransferRateCalculator transferRateCalculator;
 
       QThread* mainThread;
    };
