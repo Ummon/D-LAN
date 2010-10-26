@@ -2,6 +2,7 @@
 using namespace RCM;
 
 #include <QSet>
+#include <QCoreApplication>
 
 #include <Protos/gui_protocol.pb.h>
 
@@ -125,6 +126,7 @@ void RemoteConnection::dataReceived()
 {
    while (!this->socket->atEnd())
    {
+      QCoreApplication::processEvents(); // To read from the native socket to the internal QTcpSocket buffer. TODO : more elegant way?
       if (this->currentHeader.isNull() && this->socket->bytesAvailable() >= Common::Network::HEADER_SIZE)
       {
          this->currentHeader = Common::Network::readHeader(*this->socket);
