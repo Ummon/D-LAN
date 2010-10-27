@@ -68,7 +68,7 @@ void Socket::startListening()
    this->listening = true;
    connect(this->socket, SIGNAL(readyRead()), this, SLOT(dataReceived()));
    connect(this->socket, SIGNAL(disconnected()), this, SLOT(disconnected()));
-   connect(this->socket, SIGNAL(disconnected()), this->socket, SLOT(deleteLater()));
+   //connect(this->socket, SIGNAL(disconnected()), this->socket, SLOT(deleteLater()));
 
    if (!this->socket->isValid())
       this->close();
@@ -82,7 +82,7 @@ void Socket::stopListening()
 
    disconnect(this->socket, SIGNAL(readyRead()), this, SLOT(dataReceived()));
    disconnect(this->socket, SIGNAL(disconnected()), this, SLOT(disconnected()));
-   disconnect(this->socket, SIGNAL(disconnected()), this->socket, SLOT(deleteLater()));
+   //disconnect(this->socket, SIGNAL(disconnected()), this->socket, SLOT(deleteLater()));
    this->listening = false;
 }
 
@@ -96,7 +96,7 @@ void Socket::setActive()
    if (!this->idle)
       return;
 
-   L_DEBU(QString("Socket[%1] set to active").arg(this->num));
+   L_DEBU(QString("Socket[%1] set to active >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>").arg(this->num));
 
    this->idle = false;
    this->activityTimer.start();
@@ -164,7 +164,7 @@ void Socket::finished(bool error)
    if (this->idle)
       return;
 
-   L_DEBU(QString("Socket[%1] set to idle%2").arg(this->num).arg(error ? " with error" : ""));
+   L_DEBU(QString("Socket[%1] set to idle%2<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<").arg(this->num).arg(error ? " with error " : " "));
 
    if (error && ++this->nbError > 5) // TODO : -> constant
    {
