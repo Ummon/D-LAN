@@ -21,24 +21,17 @@ PeerManager::PeerManager(QSharedPointer<FM::IFileManager> fileManager)
    this->timer.setInterval(SETTINGS.get<quint32>("pending_socket_timeout") / 10);
    connect(&this->timer, SIGNAL(timeout()), this, SLOT(checkIdlePendingSockets()));
 
-   if (SETTINGS.arePersisted())
+   SETTINGS.get("nick", this->nick);
+
+   if (!SETTINGS.isSet("peerID"))
    {
-
-#if DEBUG
-   this->ID = Common::Hash::rand();
-#else
-   SETTINGS.get("peerID", this->ID);
-#endif
-
-      SETTINGS.get("nick", this->nick);
+      this->ID = Common::Hash::rand();
+      SETTINGS.set("peerID", this->ID);
+      SETTINGS.save();
    }
    else
    {
-      this->ID = Common::Hash::rand();
-      this->nick = "Bob";
-      SETTINGS.set("peerID", this->ID);
-      SETTINGS.set("nick", this->nick);
-      SETTINGS.save();
+      SETTINGS.get("peerID", this->ID);
    }
 
    L_USER(QString("Our current ID: %1").arg(this->ID.toStr()));
