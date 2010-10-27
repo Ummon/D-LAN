@@ -314,9 +314,10 @@ SharedDirectory* Cache::getSuperSharedDirectory(const QString& path) const
 
       for (int i = 0; i < foldersShared.size(); i++)
          if (folders[i] != foldersShared[i])
-            continue;
+            goto nextSharedDir;
 
       return sharedDir;
+      nextSharedDir:;
    }
 
    return 0;
