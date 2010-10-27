@@ -30,6 +30,8 @@ namespace Common
       void load();
       void remove();
 
+      bool isSet(const QString& name);
+
       void set(const QString& name, quint32 value);
       void set(const QString& name, double hash);
       void set(const QString& name, const QString& value);

@@ -30,7 +30,6 @@ Settings::Settings() :
    settings(0),
    mutex(QMutex::Recursive)
 {
-   this->load();
 }
 
 Settings::~Settings()
@@ -112,6 +111,19 @@ void Settings::remove()
       return;
    PersistantData::rmValue(this->filename);
    this->persisted = false;
+}
+
+bool Settings::isSet(const QString& name)
+{
+   QMutexLocker lock(&this->mutex);
+   if (!this->settings)
+      return false;
+
+   const google::protobuf::FieldDescriptor* fieldDescriptor = this->descriptor->FindFieldByName(name.toStdString());
+   if (!fieldDescriptor)
+      return false;
+
+   return this->settings->GetReflection()->HasField(*this->settings, fieldDescriptor);
 }
 
 void Settings::set(const QString& name, quint32 value)
