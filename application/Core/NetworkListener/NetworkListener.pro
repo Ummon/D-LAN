@@ -16,9 +16,9 @@ CONFIG(debug, debug|release) {
 CONFIG += staticlib create_prl link_prl
 
 win32 {
-    INCLUDEPATH += "."
     LIBS += "$$(QTDIR)\..\mingw\lib\libwsock32.a"
 }
+
 INCLUDEPATH += . \
     ../.. \
     ${PROTOBUF}/src
