@@ -31,8 +31,8 @@ void StatusBar::coreDisconnected()
 
 void StatusBar::newState(const Protos::GUI::State& state)
 {
-   this->ui->lblDownloadRate->setText(Common::Global::formatByteSize(state.stats().download_rate()));
-   this->ui->lblUploadRate->setText(Common::Global::formatByteSize(state.stats().upload_rate()));
+   this->ui->lblDownloadRate->setText(Common::Global::formatByteSize(state.stats().download_rate()).append("/s"));
+   this->ui->lblUploadRate->setText(Common::Global::formatByteSize(state.stats().upload_rate()).append("/s"));
 
    qint64 totalSharing = 0;
    for (int i = 0; i < state.peer_size(); i++)
