@@ -38,7 +38,7 @@ namespace DM
       void setChunk(QSharedPointer<FM::IChunk> chunk);
       QSharedPointer<FM::IChunk> getChunk() const;
 
-      void setPeerSource(PM::IPeer* peer);
+      void setPeerSource(PM::IPeer* peer, bool informOccupiedPeers = true);
 
       bool isReadyToDownload();
       bool isDownloading() const;

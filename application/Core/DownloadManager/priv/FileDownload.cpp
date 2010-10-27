@@ -58,8 +58,12 @@ FileDownload::FileDownload(
 void FileDownload::start()
 {
    if (this->hasAValidPeer())
+   {
       for (QListIterator< QSharedPointer<ChunkDownload> > i(this->chunkDownloads); i.hasNext();)
-         i.next()->setPeerSource(this->peerSource);
+         i.next()->setPeerSource(this->peerSource, false); // 'false' : to avoid to send unnecessary 'newFreePeer'.
+
+      this->occupiedPeersDownloadingChunk.newPeer(this->peerSource);
+   }
 
    this->retreiveHashes();
 }
@@ -230,7 +234,7 @@ void FileDownload::nextHash(const Common::Hash& hash)
 
       this->chunkDownloads << chunkDownload;
       this->connectChunkDownloadSignals(chunkDownload);
-      chunkDownload->setPeerSource(this->peerSource);
+      chunkDownload->setPeerSource(this->peerSource); // May start a download.
       this->entry.add_chunk()->set_hash(hash.getData(), Common::Hash::HASH_SIZE); // Used during the saving of the queue, see Download::populateEntry(..).
    }
 }
@@ -243,6 +247,7 @@ void FileDownload::chunkDownloadStarted()
 void FileDownload::chunkDownloadFinished()
 {
    this->status = COMPLETE;
+
    for (QListIterator< QSharedPointer<ChunkDownload> > i(this->chunkDownloads); i.hasNext();)
    {
       QSharedPointer<ChunkDownload> chunkDownload = i.next();
@@ -262,6 +267,9 @@ void FileDownload::chunkDownloadFinished()
             this->status = QUEUED;
       }
    }
+
+   if (this->chunkDownloads.size() != this->NB_CHUNK)
+      this->status = INITIALIZING;
 }
 
 void FileDownload::connectChunkDownloadSignals(QSharedPointer<ChunkDownload> chunkDownload)

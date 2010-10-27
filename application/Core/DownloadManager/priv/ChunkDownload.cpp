@@ -9,6 +9,12 @@ using namespace DM;
 
 #include <priv/Log.h>
 
+/**
+  * @class ChunkDownload
+  * A class to download a file chunk. A ChunkDownload can exist only if we know its hash.
+  * It can be created when a new FileDownload is added for each chunk known in the given entry or when a FileDownload receive a hash.
+  */
+
 ChunkDownload::ChunkDownload(QSharedPointer<PM::IPeerManager> peerManager, OccupiedPeers& occupiedPeersDownloadingChunk, Common::Hash chunkHash) :
    peerManager(peerManager),
    occupiedPeersDownloadingChunk(occupiedPeersDownloadingChunk),
@@ -18,6 +24,7 @@ ChunkDownload::ChunkDownload(QSharedPointer<PM::IPeerManager> peerManager, Occup
    networkError(false),
    mutex(QMutex::Recursive)
 {
+   L_DEBU(QString("New ChunkDownload : %1").arg(this->chunkHash.toStr()));
    connect(this, SIGNAL(finished()), this, SLOT(downloadingEnded()), Qt::QueuedConnection);
    this->mainThread = QThread::currentThread();
 }
@@ -77,13 +84,15 @@ QSharedPointer<FM::IChunk> ChunkDownload::getChunk() const
    return this->chunk;
 }
 
-void ChunkDownload::setPeerSource(PM::IPeer* peer)
+void ChunkDownload::setPeerSource(PM::IPeer* peer, bool informOccupiedPeers)
 {
    QMutexLocker lock(&this->mutex);
    if (!this->peers.contains(peer))
    {
       this->peers << peer;
-      this->occupiedPeersDownloadingChunk.newPeer(peer);
+
+      if (informOccupiedPeers)
+         this->occupiedPeersDownloadingChunk.newPeer(peer);
    }
 }
 
@@ -290,8 +299,6 @@ void ChunkDownload::downloadingEnded()
    L_DEBU(QString("Downloading ended, chunk : %1").arg(this->chunk->toStr()));
    if (this->socket)
    {
-      // Empty the socket.
-      // while (!this->socket->getQSocket()->readAll().isNull());
       this->socket->getQSocket()->moveToThread(QThread::currentThread());
       this->socket->finished(this->networkError);
       this->socket = 0;
