@@ -193,7 +193,7 @@ void DownloadManager::scanTheQueue()
 
       QSharedPointer<ChunkDownload> chunkDownload = fileDownload->getAChunkToDownload();
 
-      if (fileDownload->getStatus() >= 0x20)
+      if (fileDownload->getStatus() >= 0x20) // TODO : a bit ugly as usual.
          this->timer.start();
 
       if (chunkDownload.isNull())
