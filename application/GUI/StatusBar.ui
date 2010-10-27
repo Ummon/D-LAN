@@ -25,6 +25,9 @@
        <height>16</height>
       </size>
      </property>
+     <property name="toolTip">
+      <string>Download rate</string>
+     </property>
      <property name="text">
       <string/>
      </property>
@@ -54,6 +57,9 @@
        <height>16</height>
       </size>
      </property>
+     <property name="toolTip">
+      <string>Upload rate</string>
+     </property>
      <property name="text">
       <string/>
      </property>
@@ -76,6 +82,9 @@
        <width>16</width>
        <height>16</height>
       </size>
+     </property>
+     <property name="toolTip">
+      <string>Total sharing</string>
      </property>
      <property name="text">
       <string/>
