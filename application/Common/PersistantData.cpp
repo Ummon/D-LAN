@@ -80,7 +80,7 @@ void PersistantData::getValue(const QString& name, google::protobuf::Message& da
    }
    else
    {
-      data.ParseFromIstream(file.handle());
+      data.ParsePartialFromFileDescriptor(file.handle());
    }
 #endif
 }
