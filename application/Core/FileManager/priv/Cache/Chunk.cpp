@@ -123,7 +123,7 @@ int Chunk::read(char* buffer, int offset)
    if (offset >= this->knownBytes)
       return 0;
 
-   return this->file->read(buffer, offset + this->num * CHUNK_SIZE);
+   return this->file->read(buffer, offset + static_cast<qint64>(this->num) * CHUNK_SIZE);
 }
 
 /**
@@ -146,8 +146,8 @@ bool Chunk::write(const char* buffer, int nbBytes)
 
    if (this->knownBytes > this->getChunkSize()) // Should never be true.
    {
-      L_ERRO("Chunk::write : this->knownBytes > CHUNK_SIZE");
-      this->knownBytes = CHUNK_SIZE;
+      L_ERRO("Chunk::write : this->knownBytes > getChunkSize");
+      this->knownBytes = this->getChunkSize();
    }
    bool complete = this->knownBytes == this->getChunkSize();
 
@@ -195,8 +195,8 @@ void Chunk::setHash(const Common::Hash& hash)
 {
    L_DEBU(QString("Chunk[%1] setHash(..) : %2").arg(this->num).arg(hash.toStr()));
 
-   if (!this->hash.isNull())
-      L_WARN(QString("Chunk::setHash : Chunk has already an hash! file : %1").arg(this->file->getFullPath()));
+   if (!this->hash.isNull() && this->hash != hash)
+      L_WARN(QString("Chunk::setHash : Hash chunk changed from %1 to %2 for the file %3").arg(this->hash.toStr()).arg(hash.toStr()).arg(this->file->getFullPath()));
 
    this->hash = hash;
 }
@@ -235,10 +235,7 @@ bool Chunk::isOwnedBy(File* file) const
    return this->file == file;
 }
 
-#if DEBUG
 QString Chunk::toStr() const
 {
    return QString("num = [%1], knownBytes = %2, hash = %3").arg(this->num).arg(this->getKnownBytes()).arg(this->getHash().toStr());
 }
-#endif
-

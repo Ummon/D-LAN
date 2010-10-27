@@ -90,9 +90,7 @@ namespace FM
 
       bool isOwnedBy(File* file) const;
 
-#if DEBUG
       QString toStr() const;
-#endif
 
    private:
       const int CHUNK_SIZE;

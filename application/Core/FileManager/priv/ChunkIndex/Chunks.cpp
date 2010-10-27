@@ -27,8 +27,3 @@ bool Chunks::contains(const Common::Hash& hash) const
    QMutexLocker lock(&this->mutex);
    return QHash< Common::Hash, QSharedPointer<Chunk> >::contains(hash);
 }
-
-/*const QSharedPointer<Chunk> operator[] (const Common::Hash& key) const
-{
-   return QHash::operator[](key);
-}*/
