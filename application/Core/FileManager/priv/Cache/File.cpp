@@ -62,21 +62,39 @@ File::File(
 
    L_DEBU(QString("New file : %1 (%2)").arg(this->getFullPath()).arg(Common::Global::formatByteSize(this->size)));
 
-   if (!hashes.isEmpty())
-      if (this->getNbChunks() != hashes.size()) // It can occur when IFileManager::newFile(..) is called with an entry not owning all its hashes.
-         L_WARN(QString("File::File(..) : The number of hashes (%1) doesn't correspond to the calculate number of chunk (%2)").arg(hashes.size()).arg(this->getNbChunks()));
-
-   bool complete = !Cache::isFileUnfinished(this->name);
-
    // Test if the file already exists.
    /*
    foreach (File* f, this->dir->getFiles())
       if (f->getName() == this->name)
          throw FileAlreadyExistsException();*/
 
+   if (createPhysically)
+   {
+      if (static_cast<SharedDirectory*>(this->getRoot())->getRights() == SharedDirectory::READ_ONLY)
+         L_ERRO(QString("File::File(..) : Cannot create a file (%1) in a read only shared directory (%2)").arg(this->getPath()).arg(static_cast<SharedDirectory*>(this->getRoot())->getFullPath()));
+      else
+      {
+         QFile file(this->getFullPath());
+         if (file.exists() && this->isComplete()) // We avoid to erase existing files (only unfinished ones).
+         {
+            throw FilePhysicallyAlreadyExistsException();
+         }
+         else
+         {
+            if (!file.open(QIODevice::WriteOnly) || !file.resize(this->size))
+               throw UnableToCreateNewFileException();
+            this->dateLastModified = QFileInfo(file).lastModified();
+         }
+      }
+   }
+
+   if (!hashes.isEmpty())
+      if (this->getNbChunks() != hashes.size()) // It can occur when IFileManager::newFile(..) is called with an entry not owning all its hashes.
+         L_WARN(QString("File::File(..) : The number of hashes (%1) doesn't correspond to the calculate number of chunk (%2)").arg(hashes.size()).arg(this->getNbChunks()));
+
    for (int i = 0; i < this->getNbChunks(); i++)
    {
-      int chunkKnownBytes = !complete ? 0 : i == this->getNbChunks() - 1 && this->size % CHUNK_SIZE != 0 ? this->size % CHUNK_SIZE : CHUNK_SIZE;
+      int chunkKnownBytes = !this->isComplete() ? 0 : i == this->getNbChunks() - 1 && this->size % CHUNK_SIZE != 0 ? this->size % CHUNK_SIZE : CHUNK_SIZE;
 
       if (i < hashes.size())
       {
@@ -87,30 +105,6 @@ File::File(
       else
          // If there is too few hashes then null hashes are added.
          this->chunks.append(QSharedPointer<Chunk>(new Chunk(this, i, chunkKnownBytes)));
-   }
-
-   if (createPhysically)
-   {
-      if (static_cast<SharedDirectory*>(this->getRoot())->getRights() == SharedDirectory::READ_ONLY)
-         L_ERRO(QString("File::File(..) : Cannot create a file (%1) in a read only shared directory (%2)").arg(this->getPath()).arg(static_cast<SharedDirectory*>(this->getRoot())->getFullPath()));
-      else
-      {
-         QFile file(this->getFullPath());
-         if (file.exists())
-         {
-            this->deleteAllChunks();
-            throw FilePhysicallyAlreadyExistsException();
-         }
-         else
-         {
-            if (!file.open(QIODevice::WriteOnly) || !file.resize(this->size))
-            {
-               this->deleteAllChunks();
-               throw UnableToCreateNewFileException();
-            }
-            this->dateLastModified = QFileInfo(file).lastModified();
-         }
-      }
    }
 
    this->dir->addFile(this);
