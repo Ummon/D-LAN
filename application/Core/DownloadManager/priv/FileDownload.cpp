@@ -37,17 +37,19 @@ FileDownload::FileDownload(
    this->timer.setSingleShot(true);
    connect(&this->timer, SIGNAL(timeout()), this, SLOT(retreiveHashes()));
 
+   // We create a ChunkDownload for each known hash in the entry.
    for (int i = 0; i < entry.chunk_size(); i++)
    {
       Common::Hash chunkHash(entry.chunk(i).hash().data());
       QSharedPointer<ChunkDownload> chunkDownload = QSharedPointer<ChunkDownload>(new ChunkDownload(this->peerManager, this->occupiedPeersDownloadingChunk, chunkHash));
 
+      /* A same file can exist somewhere else... don't care.
       QSharedPointer<FM::IChunk> chunk = this->fileManager->getChunk(chunkHash);
       if (!chunk.isNull())
       {
          this->fileCreated = true; // If we know the chunks we considere the file as already created.
          chunkDownload->setChunk(chunk);
-      }
+      }*/
 
       this->chunkDownloads << chunkDownload;
       this->connectChunkDownloadSignals(this->chunkDownloads.last());
@@ -167,6 +169,9 @@ bool FileDownload::retreiveHashes()
    if (!this->occupiedPeersAskingForHashes.setPeerAsOccupied(this->peerSource))
       return false;
 
+   if (!this->sender() && this->status == UNABLE_TO_RETRIEVE_THE_HASHES) // Not called by the timer.
+      return false;
+
    this->status = INITIALIZING;
 
    this->getHashesResult = this->peerSource->getHashes(this->entry);
@@ -197,6 +202,7 @@ void FileDownload::result(const Protos::Core::GetHashesResult& result)
       this->status = ENTRY_NOT_FOUND;
       this->getHashesResult.clear();
       this->occupiedPeersAskingForHashes.setPeerAsFree(this->peerSource);
+      this->status = UNABLE_TO_RETRIEVE_THE_HASHES;
       this->timer.start(); // Retry later.
    }
 }

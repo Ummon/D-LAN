@@ -65,7 +65,7 @@ void DownloadManager::addDownload(const Protos::Common::Entry& entry, Common::Ha
    case Protos::Common::Entry_Type_DIR :
       {
          DirDownload* dirDownload = new DirDownload(this->fileManager, this->peerManager, peerSource, entry);
-         connect(dirDownload, SIGNAL(newEntries(Protos::Common::Entries)), this, SLOT(newEntries(Protos::Common::Entries)));
+         connect(dirDownload, SIGNAL(newEntries(Protos::Common::Entries)), this, SLOT(newEntries(Protos::Common::Entries)), Qt::DirectConnection);
          iterator.insert(dirDownload);
          this->scanTheQueueToRetrieveEntries();
       }
