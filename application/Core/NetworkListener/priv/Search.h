@@ -21,9 +21,6 @@ namespace NL
       quint64 search(const QString& words);
       qint64 elapsed();
 
-   signals:
-      void found(const Protos::Common::FindResult& result);
-
    private slots:
       void newFindResult(const Protos::Common::FindResult& result);
 
