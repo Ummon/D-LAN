@@ -2,11 +2,12 @@
 using namespace GUI;
 
 #include <Common/Settings.h>
+#include <Common/Global.h>
 
 const int SearchModel::NB_SIGNAL_PROGRESS(50);
 
-SearchModel::SearchModel(CoreConnection& coreConnection)
-   : BrowseModel(coreConnection, Common::Hash()), currentProgress(0)
+SearchModel::SearchModel(CoreConnection& coreConnection, PeerListModel& peerListModel)
+   : BrowseModel(coreConnection, Common::Hash()), peerListModel(peerListModel), currentProgress(0)
 {
    delete this->root;
    this->root = new SearchNode();
@@ -40,12 +41,18 @@ int SearchModel::columnCount(const QModelIndex& parent) const
    return 4;
 }
 
+void SearchModel::loadChildren(const QPersistentModelIndex &index)
+{
+   this->peerID = static_cast<const SearchNode*>(index.internalPointer())->getPeerID();
+   BrowseModel::loadChildren(index);
+}
+
 void SearchModel::result(const Protos::Common::FindResult& findResult)
 {
    SearchNode* root = this->getRoot();
 
    int currentDirNode = -1; // Will point to the first directory of a group of same level directory.
-   if (!root->getNbChildren() != 0 && root->getChild(0)->getEntry().type() == Protos::Common::Entry_Type_DIR)
+   if (root->getNbChildren() != 0 && root->getChild(0)->getEntry().type() == Protos::Common::Entry_Type_DIR)
       currentDirNode = 0;
 
    for (int i = 0; i < findResult.entry_size(); i++)
@@ -56,7 +63,10 @@ void SearchModel::result(const Protos::Common::FindResult& findResult)
       {
          if (currentDirNode == -1)
          {
-            this->getRoot()->insertChild(entry, findResult.peer_id().hash().data());
+            this->beginInsertRows(QModelIndex(), 0, 0);
+            const Common::Hash peerID = findResult.peer_id().hash().data();
+            this->getRoot()->insertChild(entry, peerID, this->peerListModel.getNick(peerID));
+            this->endInsertRows();
             currentDirNode = 0;
          }
          else
@@ -86,7 +96,8 @@ void SearchModel::result(const Protos::Common::FindResult& findResult)
             }
 
             this->beginInsertRows(QModelIndex(), nodeToInsertBefore, nodeToInsertBefore);
-            root->insertChild(nodeToInsertBefore, entry, findResult.peer_id().hash().data());
+            const Common::Hash peerID = findResult.peer_id().hash().data();
+            root->insertChild(nodeToInsertBefore, entry, peerID, this->peerListModel.getNick(peerID));
             this->endInsertRows();
          }
       }
@@ -122,8 +133,13 @@ SearchModel::SearchNode::SearchNode()
 {
 }
 
-SearchModel::SearchNode::SearchNode(const Protos::Common::FindResult_EntryLevel& entry, const Common::Hash& peerID, Node* parent)
-   : Node(entry.entry(), parent), level(entry.level()), peerID(peerID)
+SearchModel::SearchNode::SearchNode(const Protos::Common::FindResult_EntryLevel& entry, const Common::Hash& peerID, const QString& peerNick, Node* parent)
+   : Node(entry.entry(), parent), level(entry.level()), peerID(peerID), peerNick(peerNick)
+{
+}
+
+SearchModel::SearchNode::SearchNode(const Protos::Common::Entry& entry, const Common::Hash& peerID,  Node* parent)
+   : Node(entry, parent), level(0), peerID(peerID)
 {
 }
 
@@ -132,21 +148,39 @@ int SearchModel::SearchNode::getLevel() const
    return this->level;
 }
 
-QVariant SearchModel::SearchNode::getData(int column) const
+Common::Hash SearchModel::SearchNode::getPeerID() const
 {
-   return QVariant();
+   return this->peerID;
 }
 
-SearchModel::SearchNode* SearchModel::SearchNode::insertChild(const Protos::Common::FindResult_EntryLevel& entry, const Common::Hash& peerID)
+QVariant SearchModel::SearchNode::getData(int column) const
 {
-   SearchNode* searchNode = new SearchNode(entry, peerID, this);
+   switch(column)
+   {
+   case 0: return this->peerNick;
+   case 1: return Common::ProtoHelper::getStr(this->entry, &Protos::Common::Entry::path);
+   case 2: return Common::ProtoHelper::getStr(this->entry, &Protos::Common::Entry::name);
+   case 3: return Common::Global::formatByteSize(this->entry.size());
+   default: return QVariant();
+   }
+}
+
+SearchModel::Node* SearchModel::SearchNode::newNode(const Protos::Common::Entry& entry)
+{
+   this->children << new SearchNode(entry, this->peerID, this);
+   return this->children.last();
+}
+
+SearchModel::SearchNode* SearchModel::SearchNode::insertChild(const Protos::Common::FindResult_EntryLevel& entry, const Common::Hash& peerID, const QString& peerNick)
+{
+   SearchNode* searchNode = new SearchNode(entry, peerID, peerNick, this);
    this->children << searchNode;
    return searchNode;
 }
 
-SearchModel::SearchNode* SearchModel::SearchNode::insertChild(int index, const Protos::Common::FindResult_EntryLevel& entry, const Common::Hash& peerID)
+SearchModel::SearchNode* SearchModel::SearchNode::insertChild(int index, const Protos::Common::FindResult_EntryLevel& entry, const Common::Hash& peerID, const QString& peerNick)
 {
-   SearchNode* searchNode = new SearchNode(entry, peerID, this);
+   SearchNode* searchNode = new SearchNode(entry, peerID, peerNick, this);
    this->children.insert(index, searchNode);
    return searchNode;
 }

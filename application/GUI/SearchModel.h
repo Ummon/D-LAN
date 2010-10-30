@@ -10,6 +10,7 @@
 
 #include <CoreConnection.h>
 #include <BrowseModel.h>
+#include <PeerListModel.h>
 
 namespace GUI
 {
@@ -19,7 +20,7 @@ namespace GUI
       static const int NB_SIGNAL_PROGRESS; // The number of signal progress sent during a search.
       Q_OBJECT
    public:
-      SearchModel(CoreConnection& coreConnection);
+      SearchModel(CoreConnection& coreConnection, PeerListModel& peerListModel);
       ~SearchModel();
 
       void search(const QString& terms);
@@ -36,6 +37,9 @@ namespace GUI
         */
       void progress(int);
 
+   protected:
+      void loadChildren(const QPersistentModelIndex &index);
+
    protected slots:
       void result(const Protos::Common::FindResult& findResult);
       void sendNextProgress();
@@ -43,6 +47,8 @@ namespace GUI
 
    private:
       SearchNode* getRoot();
+
+      PeerListModel& peerListModel;
 
       QSharedPointer<ISearchResult> searchResult;
 
@@ -55,16 +61,22 @@ namespace GUI
       {
       public:
          SearchNode();
-         SearchNode(const Protos::Common::FindResult_EntryLevel& entry, const Common::Hash& peerID, Node* parent);
+         SearchNode(const Protos::Common::FindResult_EntryLevel& entry, const Common::Hash& peerID, const QString& peerNick, Node* parent);
+         SearchNode(const Protos::Common::Entry& entry, const Common::Hash& peerID,  Node* parent);
          int getLevel() const;
-         SearchNode* insertChild(const Protos::Common::FindResult_EntryLevel& entry, const Common::Hash& peerID);
-         SearchNode* insertChild(int index, const Protos::Common::FindResult_EntryLevel& entry, const Common::Hash& peerID);
+         Common::Hash getPeerID() const;
+         SearchNode* insertChild(const Protos::Common::FindResult_EntryLevel& entry, const Common::Hash& peerID, const QString& peerNick);
+         SearchNode* insertChild(int index, const Protos::Common::FindResult_EntryLevel& entry, const Common::Hash& peerID, const QString& peerNick);
 
          QVariant getData(int column) const;
+
+      protected:
+         Node* newNode(const Protos::Common::Entry& entry);
 
       private:
          const int level;
          const Common::Hash peerID;
+         const QString peerNick;
       };
    };
 }

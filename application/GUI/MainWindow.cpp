@@ -218,7 +218,7 @@ void MainWindow::addWidgetBrowse(const Common::Hash& peerID)
 
 void MainWindow::addWidgetSearch(const QString& term)
 {
-   WidgetSearch* widgetSearch = new WidgetSearch(this->coreConnection, term, this);
+   WidgetSearch* widgetSearch = new WidgetSearch(this->coreConnection, this->peerListModel, term, this);
    this->ui->mdiArea->addSubWindow(widgetSearch, Qt::CustomizeWindowHint);
    //this->mdiChat->setAttribute(Qt::WA_DeleteOnClose);
    widgetSearch->setWindowState(Qt::WindowMaximized);

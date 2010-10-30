@@ -46,8 +46,6 @@ QVariant ChatModel::data(const QModelIndex& index, int role) const
 void ChatModel::newChatMessage(const Common::Hash& peerID, const QString& message)
 {
    QString nick = this->peerListModel.getNick(peerID);
-   if (nick.isNull())
-      nick = "<unknown>";
 
    this->beginInsertRows(QModelIndex(), messages.size(), messages.size());
    messages << Message(peerID, nick, QDateTime::currentDateTime(), message);

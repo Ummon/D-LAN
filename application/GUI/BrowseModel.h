@@ -61,7 +61,7 @@ namespace GUI
       };
 
       CoreConnection& coreConnection;
-      const Common::Hash peerID;
+      Common::Hash peerID;
 
       QPersistentModelIndex currentBrowseIndex; // When we receive some entries after a browse query, they will be added as children to this index.
       QSharedPointer<IBrowseResult> browseResult;
