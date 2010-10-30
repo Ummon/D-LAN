@@ -19,11 +19,18 @@ Entry::~Entry()
    this->cache->onEntryRemoved(this);
 }
 
-void Entry::populateEntry(Protos::Common::Entry* entry) const
+void Entry::populateEntry(Protos::Common::Entry* entry, bool setSharedDir) const
 {
    Common::ProtoHelper::setStr(*entry, &Protos::Common::Entry::set_path, this->getPath());
    Common::ProtoHelper::setStr(*entry, &Protos::Common::Entry::set_name, this->getName());
    entry->set_size(this->getSize());
+
+   if (setSharedDir)
+   {
+      SharedDirectory* dir = dynamic_cast<SharedDirectory*>(this->getRoot());
+      if (dir)
+         entry->mutable_shared_dir()->mutable_id()->set_hash(dir->getId().getData(), Common::Hash::HASH_SIZE);
+   }
 }
 
 Cache* Entry::getCache()

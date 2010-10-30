@@ -167,9 +167,9 @@ void File::populateHashesFile(Protos::FileCache::Hashes_File& fileToFill) const
 /**
   * Will add the hashes to the entry.
   */
-void File::populateEntry(Protos::Common::Entry* entry) const
+void File::populateEntry(Protos::Common::Entry* entry, bool setSharedDir) const
 {
-   Entry::populateEntry(entry);
+   Entry::populateEntry(entry, setSharedDir);
 
    entry->set_type(Protos::Common::Entry_Type_FILE);
 

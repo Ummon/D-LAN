@@ -31,7 +31,7 @@ namespace FM
 
       void populateHashesDir(Protos::FileCache::Hashes_Dir& dirToFill) const;
 
-      virtual void populateEntry(Protos::Common::Entry* dir) const;
+      virtual void populateEntry(Protos::Common::Entry* dir, bool setSharedDir = false) const;
 
       void fileDeleted(File* file);
 

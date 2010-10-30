@@ -108,9 +108,9 @@ void Directory::populateHashesDir(Protos::FileCache::Hashes_Dir& dirToFill) cons
    }
 }
 
-void Directory::populateEntry(Protos::Common::Entry* dir) const
+void Directory::populateEntry(Protos::Common::Entry* dir, bool setSharedDir) const
 {
-   Entry::populateEntry(dir);
+   Entry::populateEntry(dir, setSharedDir);
    dir->set_is_empty(this->subDirs.isEmpty() && this->files.isEmpty());
    dir->set_type(Protos::Common::Entry_Type_DIR);
 }

@@ -136,6 +136,7 @@ void FileUpdater::setFileCache(const Protos::FileCache::Hashes* fileCache)
 void FileUpdater::prioritizeAFileToHash(File* file)
 {
    QMutexLocker locker(&this->mutex);
+   L_DEBU(QString("FileUpdater::prioritizeAFileToHash : %1").arg(file->getFullPath()));
 
    // If a file is incomplete (unfinished) we can't compute its hashes because we don't have all data.
    if (!file->hasAllHashes() && file->isComplete())
