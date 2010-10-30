@@ -15,7 +15,7 @@ PeerListModel::PeerListModel(CoreConnection& coreConnection)
 /**
   * Return a null string if not found.
   */
-QString PeerListModel::getNick(const Common::Hash peerID)
+QString PeerListModel::getNick(const Common::Hash& peerID)
 {
    for (QListIterator<Peer> i(this->peers); i.hasNext();)
    {
@@ -24,7 +24,7 @@ QString PeerListModel::getNick(const Common::Hash peerID)
          return peer.nick;
    }
 
-   return QString();
+   return "<unknown>";
 }
 
 bool PeerListModel::isOurself(int rowNum) const

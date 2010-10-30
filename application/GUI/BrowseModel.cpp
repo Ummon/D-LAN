@@ -25,7 +25,7 @@ QModelIndex BrowseModel::index(int row, int column, const QModelIndex &parent) c
 
    Node* parentNode;
 
-   if (!parent.isValid())
+    if (!parent.isValid())
        parentNode = this->root;
    else
        parentNode = static_cast<Node*>(parent.internalPointer());

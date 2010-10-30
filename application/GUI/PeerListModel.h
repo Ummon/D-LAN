@@ -16,7 +16,7 @@ namespace GUI
       Q_OBJECT
    public:
       PeerListModel(CoreConnection& coreConnection);
-      QString getNick(const Common::Hash peerID);
+      QString getNick(const Common::Hash& peerID);
       bool isOurself(int rowNum) const;
       Common::Hash getPeerID(int rowNum) const;
       void clear();
