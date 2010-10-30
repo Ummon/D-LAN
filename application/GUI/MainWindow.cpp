@@ -58,7 +58,8 @@ MainWindow::MainWindow(QWidget* parent) :
 
 MainWindow::~MainWindow()
 {
-    delete this->ui;
+   disconnect(&this->coreConnection, SIGNAL(coreDisconnected()), this, SLOT(coreDisconnected())); // To avoid calling 'coreDisconnected' after deleted 'this->ui'.
+   delete this->ui;
 }
 
 void MainWindow::coreConnected()

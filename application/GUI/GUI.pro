@@ -50,7 +50,8 @@ SOURCES += main.cpp\
     WidgetBrowse.cpp \
     WidgetSearch.cpp \
     BrowseModel.cpp \
-    StatusBar.cpp
+    StatusBar.cpp \
+    SearchModel.cpp
 
 HEADERS  += MainWindow.h \
     ../Protos/gui_protocol.pb.h \
@@ -65,7 +66,8 @@ HEADERS  += MainWindow.h \
     WidgetBrowse.h \
     WidgetSearch.h \
     BrowseModel.h \
-    StatusBar.h
+    StatusBar.h \
+    SearchModel.h
 
 FORMS    += MainWindow.ui \
     WidgetChat.ui \

@@ -5,6 +5,7 @@
 #include <QString>
 
 #include <CoreConnection.h>
+#include <SearchModel.h>
 
 namespace Ui {
    class WidgetSearch;
@@ -16,12 +17,14 @@ namespace GUI
    {
       Q_OBJECT
    public:
-      explicit WidgetSearch(CoreConnection& coreConnection, const QString& term, QWidget *parent = 0);
+      explicit WidgetSearch(CoreConnection& coreConnection, const QString& terms, QWidget *parent = 0);
       ~WidgetSearch();
 
    private:
       Ui::WidgetSearch *ui;
       CoreConnection& coreConnection;
+
+      SearchModel searchModel;
    };
 }
 
