@@ -172,7 +172,7 @@ QList<Protos::Common::FindResult> FileManager::find(const QString& words, int ma
             Entry* entry = k.next();
             Protos::Common::FindResult_EntryLevel* entryLevel = findResults.last().add_entry();
             entryLevel->set_level(level);
-            entry->populateEntry(entryLevel->mutable_entry());
+            entry->populateEntry(entryLevel->mutable_entry(), true);
 
             if (findResults.last().ByteSize() > maxSize)
             {

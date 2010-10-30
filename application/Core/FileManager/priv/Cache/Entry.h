@@ -15,7 +15,7 @@ namespace FM
    public:
       Entry(Cache* cache, const QString& name, qint64 size = 0);
       virtual ~Entry();
-      virtual void populateEntry(Protos::Common::Entry* entry) const;
+      virtual void populateEntry(Protos::Common::Entry* entry, bool setSharedDir = false) const;
 
    public:
       Cache* getCache();
