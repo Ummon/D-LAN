@@ -6,13 +6,15 @@ using namespace GUI;
 BrowseModel::BrowseModel(CoreConnection& coreConnection, const Common::Hash& peerID) :
     coreConnection(coreConnection), peerID(peerID), root(new Node())
 {
-   this->browseResult = coreConnection.browse(this->peerID);
-   connect(this->browseResult.data(), SIGNAL(result(const Protos::Common::Entries&)), this, SLOT(result(const Protos::Common::Entries&)));
-   this->browseResult->start();
+   if (!peerID.isNull())
+      this->browse(this->peerID);
 }
 
 BrowseModel::~BrowseModel()
 {
+   if (!this->browseResult.isNull())
+      disconnect(this->browseResult.data(), SIGNAL(result(const Protos::Common::Entries&)), this, SLOT(result(const Protos::Common::Entries&)));
+
    delete this->root;
 }
 
@@ -30,7 +32,7 @@ QModelIndex BrowseModel::index(int row, int column, const QModelIndex &parent) c
 
    Node* childNode = parentNode->getChild(row);
 
-   if (childNode)
+   if (childNode && parentNode->getEntry().type() == Protos::Common::Entry_Type_DIR)
        return this->createIndex(row, column, childNode);
    else if (parentNode->hasUnloadedChildren()) // The view want some not yet loaded children.. so we will load them.
       const_cast<BrowseModel*>(this)->loadChildren(parent);
@@ -93,7 +95,7 @@ QVariant BrowseModel::data(const QModelIndex& index, int role) const
       break;
 
    case Qt::TextAlignmentRole:
-      return index.column() == 0 ? Qt::AlignLeft : Qt::AlignRight;
+      return index.column() < this->columnCount(QModelIndex()) - 1 ? Qt::AlignLeft : Qt::AlignRight;
 
    default: return QVariant();
    }
@@ -126,13 +128,17 @@ void BrowseModel::result(const Protos::Common::Entries& entries)
    this->browseResult.clear();
 }
 
-void BrowseModel::loadChildren(const QPersistentModelIndex &index)
+void BrowseModel::browse(const Common::Hash& peerID, Node* node)
 {
-   Node* node = static_cast<Node*>(index.internalPointer());
-   this->currentBrowseIndex = index;
-   this->browseResult = this->coreConnection.browse(this->peerID, node->getEntry());
+   this->browseResult = node ? this->coreConnection.browse(this->peerID, node->getEntry()) : this->coreConnection.browse(this->peerID);
    connect(this->browseResult.data(), SIGNAL(result(const Protos::Common::Entries&)), this, SLOT(result(const Protos::Common::Entries&)));
    this->browseResult->start();
+}
+
+void BrowseModel::loadChildren(const QPersistentModelIndex &index)
+{
+   this->currentBrowseIndex = index;
+   this->browse(this->peerID, static_cast<Node*>(index.internalPointer()));
 }
 
 /**
@@ -142,7 +148,9 @@ void BrowseModel::loadChildren(const QPersistentModelIndex &index)
 
 BrowseModel::Node::Node()
    : parent(0)
-{}
+{
+   this->entry.set_type(Protos::Common::Entry_Type_DIR);
+}
 
 BrowseModel::Node::Node(const Protos::Common::Entry& entry, Node* parent)
    : entry(entry), parent(parent)
@@ -198,18 +206,24 @@ QVariant BrowseModel::Node::getData(int column) const
 void BrowseModel::Node::insertChildren(const Protos::Common::Entries& entries)
 {
    for (int i = 0; i < entries.entry_size(); i++)
-   {
-      this->children << new Node(entries.entry(i), this);
-   }
+      this->newNode(entries.entry(i));
 }
 
 bool BrowseModel::Node::hasUnloadedChildren()
 {
-   return this->children.isEmpty() && !this->entry.is_empty();
+   return this->entry.type() == Protos::Common::Entry_Type_DIR && this->children.isEmpty() && !this->entry.is_empty();
 }
 
 const Protos::Common::Entry& BrowseModel::Node::getEntry() const
 {
    return this->entry;
 }
+
+BrowseModel::Node* BrowseModel::Node::newNode(const Protos::Common::Entry& entry)
+{
+   this->children << new Node(entry, this);
+   return this->children.last();
+}
+
+
 

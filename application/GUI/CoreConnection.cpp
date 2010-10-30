@@ -52,6 +52,35 @@ void BrowseResult::init(CoreConnection* coreConnection)
 
 /////
 
+SearchResult::SearchResult(CoreConnection* coreConnection, const QString& terms)
+   : coreConnection(coreConnection), terms(terms)
+{
+   connect(this->coreConnection, SIGNAL(searchResult(const Protos::Common::FindResult&)), this, SLOT(searchResult(const Protos::Common::FindResult&)));
+}
+
+void SearchResult::start()
+{
+   Protos::GUI::Search search;
+   Common::ProtoHelper::setStr(search, &Protos::GUI::Search::set_pattern, this->terms);
+   this->coreConnection->send(0x31, search);
+}
+
+void SearchResult::setTag(quint64 tag)
+{
+   this->tag = tag;
+}
+
+void SearchResult::searchResult(const Protos::Common::FindResult& findResult)
+{
+   if (findResult.tag() == this->tag) // Is this message for us?
+   {
+      this->tag = 0; // To avoid multi emit (should not occurs).
+      emit result(findResult);
+   }
+}
+
+/////
+
 CoreConnection::CoreConnection()
    : connecting(false)
 {
@@ -78,18 +107,25 @@ void CoreConnection::setCoreSettings(const Protos::GUI::CoreSettings settings)
    this->send(0x21, settings);
 }
 
-QSharedPointer<BrowseResult> CoreConnection::browse(const Common::Hash& peerID)
+QSharedPointer<IBrowseResult> CoreConnection::browse(const Common::Hash& peerID)
 {
    QSharedPointer<BrowseResult> browseResult = QSharedPointer<BrowseResult>(new BrowseResult(this, peerID));
    this->browseResultsWithoutTag << browseResult;
    return browseResult;
 }
 
-QSharedPointer<BrowseResult> CoreConnection::browse(const Common::Hash& peerID, const Protos::Common::Entry& entry)
+QSharedPointer<IBrowseResult> CoreConnection::browse(const Common::Hash& peerID, const Protos::Common::Entry& entry)
 {
    QSharedPointer<BrowseResult> browseResult = QSharedPointer<BrowseResult>(new BrowseResult(this, peerID, entry));
    this->browseResultsWithoutTag << browseResult;
    return browseResult;
+}
+
+QSharedPointer<ISearchResult> CoreConnection::search(const QString& terms)
+{
+   QSharedPointer<SearchResult> searchResult = QSharedPointer<SearchResult>(new SearchResult(this, terms));
+   this->searchResultsWithoutTag << searchResult;
+   return searchResult;
 }
 
 void CoreConnection::download(const Common::Hash& peerID, const Protos::Common::Entry& entry)
@@ -200,39 +236,55 @@ bool CoreConnection::readMessage()
       }
       break;
 
-   case 0x42 : // Tag (for Browse).
+   case 0x32 : // Tag (for Search).
       {
          Protos::GUI::Tag tagMessage;
-
-         // This scope (and the others ones below) is here to force the input stream to read all the bytes.
-         // See Common::ZeroCopyInputStreamQIODevice::~ZeroCopyInputStreamQIODevice.
          {
             Common::ZeroCopyInputStreamQIODevice inputStream(&this->socket);
             readOK = tagMessage.ParseFromBoundedZeroCopyStream(&inputStream, this->currentHeader.size);
          }
 
-         if (readOK && !browseResultsWithoutTag.isEmpty())
+         if (readOK && !this->searchResultsWithoutTag.isEmpty())
+            this->searchResultsWithoutTag.takeFirst()->setTag(tagMessage.tag());
+      }
+      break;
+
+   case 0x33 : // FindResult.
+      {
+         Protos::Common::FindResult findResultMessage;
          {
-            this->browseResultsWithoutTag.takeFirst()->setTag(tagMessage.tag());
+            Common::ZeroCopyInputStreamQIODevice inputStream(&this->socket);
+            readOK = findResultMessage.ParseFromBoundedZeroCopyStream(&inputStream, this->currentHeader.size);
          }
+
+         if (readOK)
+            emit searchResult(findResultMessage);
+      }
+      break;
+
+   case 0x42 : // Tag (for Browse).
+      {
+         Protos::GUI::Tag tagMessage;
+         {
+            Common::ZeroCopyInputStreamQIODevice inputStream(&this->socket);
+            readOK = tagMessage.ParseFromBoundedZeroCopyStream(&inputStream, this->currentHeader.size);
+         }
+
+         if (readOK && !this->browseResultsWithoutTag.isEmpty())
+            this->browseResultsWithoutTag.takeFirst()->setTag(tagMessage.tag());
       }
       break;
 
    case 0x43 : // BrowseResult.
       {
          Protos::GUI::BrowseResult browseResultMessage;
-
-         // This scope (and the others ones below) is here to force the input stream to read all the bytes.
-         // See Common::ZeroCopyInputStreamQIODevice::~ZeroCopyInputStreamQIODevice.
          {
             Common::ZeroCopyInputStreamQIODevice inputStream(&this->socket);
             readOK = browseResultMessage.ParseFromBoundedZeroCopyStream(&inputStream, this->currentHeader.size);
          }
 
          if (readOK)
-         {
             emit browseResult(browseResultMessage.tag(), browseResultMessage.entries());
-         }
       }
       break;
 

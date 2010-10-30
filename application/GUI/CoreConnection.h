@@ -14,19 +14,38 @@ namespace GUI
 {
    class CoreConnection;
 
-   class BrowseResult : public QObject
+   class IBrowseResult : public QObject
+   {
+      Q_OBJECT
+   public:
+      virtual ~IBrowseResult() {}
+      virtual void start() = 0;
+
+   signals:
+      void result(const Protos::Common::Entries& entries);
+      // void timeout(); TODO
+   };
+
+   class ISearchResult : public QObject
+   {
+      Q_OBJECT
+   public:
+      virtual ~ISearchResult() {}
+      virtual void start() = 0;
+
+   signals:
+      void result(const Protos::Common::FindResult&);
+      // void timeout(); TODO
+   };
+
+   class BrowseResult : public IBrowseResult
    {
       Q_OBJECT
    public:
       BrowseResult(CoreConnection* coreConnection, const Common::Hash& peerID);
       BrowseResult(CoreConnection* coreConnection, const Common::Hash& peerID, const Protos::Common::Entry& entry);
       void start();
-
       void setTag(quint64 tag);
-
-   signals:
-      void result(const Protos::Common::Entries& entries);
-      // void timeout(); TODO
 
    private slots:
       void browseResult(quint64 tag, const Protos::Common::Entries& entries);
@@ -40,6 +59,23 @@ namespace GUI
       quint64 tag;
    };
 
+   class SearchResult : public ISearchResult
+   {
+      Q_OBJECT
+   public:
+      SearchResult(CoreConnection* coreConnection, const QString& terms);
+      void start();
+      void setTag(quint64 tag);
+
+   private slots:
+      void searchResult(const Protos::Common::FindResult& findResult);
+
+   private:
+      CoreConnection* coreConnection;
+      const QString terms;
+      quint64 tag;
+   };
+
    class CoreConnection : public QObject
    {
       Q_OBJECT
@@ -49,8 +85,10 @@ namespace GUI
       void sendChatMessage(const QString& message);
       void setCoreSettings(const Protos::GUI::CoreSettings settings);
 
-      QSharedPointer<BrowseResult> browse(const Common::Hash& peerID);
-      QSharedPointer<BrowseResult> browse(const Common::Hash& peerID, const Protos::Common::Entry& entry);
+      QSharedPointer<IBrowseResult> browse(const Common::Hash& peerID);
+      QSharedPointer<IBrowseResult> browse(const Common::Hash& peerID, const Protos::Common::Entry& entry);
+
+      QSharedPointer<ISearchResult> search(const QString& terms);
 
       void download(const Common::Hash& peerID, const Protos::Common::Entry& entry);
 
@@ -66,6 +104,7 @@ namespace GUI
       void newState(const Protos::GUI::State&);
       void newChatMessage(const Common::Hash& peerID, const QString& message);
       void browseResult(quint64 tag, const Protos::Common::Entries& entries);
+      void searchResult(const Protos::Common::FindResult& findResult);
 
    private slots:
       void stateChanged(QAbstractSocket::SocketState socketState);
@@ -79,6 +118,7 @@ namespace GUI
       Common::MessageHeader currentHeader;
 
       QList< QSharedPointer<BrowseResult> > browseResultsWithoutTag;
+      QList< QSharedPointer<SearchResult> > searchResultsWithoutTag;
       bool connecting;
    };
 }

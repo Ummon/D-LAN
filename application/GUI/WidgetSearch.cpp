@@ -2,15 +2,21 @@
 #include "ui_WidgetSearch.h"
 using namespace GUI;
 
-WidgetSearch::WidgetSearch(CoreConnection& coreConnection, const QString& term, QWidget *parent)
-   : QWidget(parent), ui(new Ui::WidgetSearch), coreConnection(coreConnection)
+WidgetSearch::WidgetSearch(CoreConnection& coreConnection, const QString& terms, QWidget *parent)
+   : QWidget(parent), ui(new Ui::WidgetSearch), coreConnection(coreConnection), searchModel(coreConnection)
 {
-    ui->setupUi(this);
+    this->ui->setupUi(this);
 
-    this->setWindowTitle(QString("\"%1\"").arg(term));
+    connect(&this->searchModel, SIGNAL(progress(int)), this->ui->prgSearch, SLOT(setValue(int)));
+
+    this->ui->treeView->setModel(&this->searchModel);
+
+    this->searchModel.search(terms);
+
+    this->setWindowTitle(QString("\"%1\"").arg(terms));
 }
 
 WidgetSearch::~WidgetSearch()
 {
-    delete ui;
+    delete this->ui;
 }
