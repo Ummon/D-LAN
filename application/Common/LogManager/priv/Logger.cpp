@@ -12,6 +12,12 @@ using namespace LM;
 QTextStream* Logger::out(0);
 QMutex Logger::mutex;
 int Logger::nbLogger(0);
+QString Logger::logDirName;
+
+void Logger::setLogDirName(const QString& logDirName)
+{
+   Logger::logDirName = logDirName;
+}
 
 Logger::Logger(const QString& name)
    : name(name)
@@ -84,6 +90,9 @@ void Logger::createFileLog()
 {
    if (!Logger::out)
    {
+      if (logDirName.isEmpty())
+         logDirName = Common::LOG_FOLDER_NAME;
+
       QTextStream out(stderr);
 
       if (!Common::Global::createApplicationFolder())
@@ -93,13 +102,13 @@ void Logger::createFileLog()
       else
       {
          QDir appDir(Common::APPLICATION_FOLDER_PATH);
-         if (!appDir.exists(Common::LOG_FOLDER_NAME) && !appDir.mkdir(Common::LOG_FOLDER_NAME))
+         if (!appDir.exists(logDirName) && !appDir.mkdir(logDirName))
          {
-            out << "Error, cannot create log directory : " << Common::APPLICATION_FOLDER_PATH << "/" << Common::LOG_FOLDER_NAME << endl;
+            out << "Error, cannot create log directory : " << Common::APPLICATION_FOLDER_PATH << "/" << logDirName << endl;
          }
          else
          {
-            QDir logDir(Common::APPLICATION_FOLDER_PATH + '/' + Common::LOG_FOLDER_NAME);
+            QDir logDir(Common::APPLICATION_FOLDER_PATH + '/' + logDirName);
 
             QString filename = QDateTime::currentDateTime().toString("yyyy_MM_dd-hh_mm_ss") + ".log";
 

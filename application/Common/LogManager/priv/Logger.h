@@ -17,8 +17,11 @@ namespace LM
       static QTextStream* out;
       static QMutex mutex;
       static int nbLogger;
+      static QString logDirName;
 
    public:
+      static void setLogDirName(const QString& logDirName);
+
       Logger(const QString& name);
       virtual ~Logger();
 
