@@ -13,6 +13,7 @@ namespace LM
    class Builder
    {
    public:
+      static void setLogDirName(const QString& logDirName);
       static QSharedPointer<ILogger> newLogger(const QString& name);
       static QSharedPointer<IEntry> decode(const QString& line);
       static void initMsgHandler();

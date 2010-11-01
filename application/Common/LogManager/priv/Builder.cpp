@@ -1,12 +1,19 @@
 #include <Builder.h>
 using namespace LM;
 
+#include <Constants.h>
+
 #include <ILogger.h>
 #include <priv/Logger.h>
 #include <priv/Entry.h>
 
 #include <priv/QtLogger.h>
 #include <priv/StdLogger.h>
+
+void Builder::setLogDirName(const QString& logDirName)
+{
+   Logger::setLogDirName(logDirName);
+}
 
 /**
   * Create a new logger, the name may correspond to a module name.
