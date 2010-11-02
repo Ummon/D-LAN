@@ -8,6 +8,8 @@ using namespace GUI;
 #include <Common/Settings.h>
 #include <Common/ProtoHelper.h>
 
+#include <Log.h>
+
 BrowseResult::BrowseResult(CoreConnection* coreConnection, const Common::Hash& peerID)
    : peerID(peerID), tag(0)
 {
@@ -181,6 +183,7 @@ void CoreConnection::dataReceived()
    while (!this->socket.atEnd())
    {
       QCoreApplication::processEvents(); // To read from the native socket to the internal QTcpSocket buffer. TODO : more elegant way?
+
       if (this->currentHeader.isNull() && this->socket.bytesAvailable() >= Common::Network::HEADER_SIZE)
       {
          this->currentHeader = Common::Network::readHeader(this->socket);
@@ -189,7 +192,8 @@ void CoreConnection::dataReceived()
 
       if (!this->currentHeader.isNull() && this->socket.bytesAvailable() >= this->currentHeader.size)
       {
-         this->readMessage();
+         if (!this->readMessage())
+            L_WARN(QString("Unable to read message : %1").arg(this->currentHeader.toStr()));
          this->currentHeader.setNull();
       }
    }

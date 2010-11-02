@@ -10,7 +10,6 @@ WidgetBrowse::WidgetBrowse(CoreConnection& coreConnection, PeerListModel& peerLi
     this->ui->setupUi(this);
 
     this->ui->treeView->setModel(&this->browseModel);
-
     this->ui->treeView->header()->setVisible(false);
     this->ui->treeView->header()->setResizeMode(0, QHeaderView::ResizeToContents);
     this->ui->treeView->header()->setResizeMode(1, QHeaderView::Stretch);

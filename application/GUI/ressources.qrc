@@ -6,5 +6,7 @@
         <file>ressources/bullet_arrow_down.png</file>
         <file>ressources/bullet_arrow_up.png</file>
         <file>ressources/world.png</file>
+        <file>ressources/file.png</file>
+        <file>ressources/folder.png</file>
     </qresource>
 </RCC>
