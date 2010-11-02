@@ -16,7 +16,14 @@ namespace Common
       MessageHeader(quint32 type, quint32 size, const Common::Hash senderID) : type(type), size(size), senderID(senderID) {}
 
       bool isNull() const { return this->type == 0; }
-      void setNull() { this->type = 0; }
+      void setNull() { this->type = 0; this->size = 0; }
+      QString toStr() const
+      {
+         if (this->isNull())
+            return QString("MessageHeader : <null>");
+         else
+            return QString("MessageHeader : type = %1, size = %2, senderID = %3").arg(this->type, 0, 16).arg(this->size).arg(this->senderID.toStr());
+      }
 
       quint32 type;
       quint32 size;
