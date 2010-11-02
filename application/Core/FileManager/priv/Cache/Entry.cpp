@@ -29,7 +29,10 @@ void Entry::populateEntry(Protos::Common::Entry* entry, bool setSharedDir) const
    {
       SharedDirectory* dir = dynamic_cast<SharedDirectory*>(this->getRoot());
       if (dir)
+      {
          entry->mutable_shared_dir()->mutable_id()->set_hash(dir->getId().getData(), Common::Hash::HASH_SIZE);
+         Common::ProtoHelper::setStr(*entry->mutable_shared_dir(), &Protos::Common::SharedDir::set_shared_name, dir->getName());
+      }
    }
 }
 
