@@ -1,7 +1,15 @@
 #include <BrowseModel.h>
 using namespace GUI;
 
+#include <QPixmap>
+
 #include <Common/Global.h>
+
+/**
+  * @class BrowseModel
+  * The model of a distant peer file system. The directory content is lazy loaded, see the method 'loadChildren()'.
+  * Used by 'WidgetBrowse'.
+  */
 
 BrowseModel::BrowseModel(CoreConnection& coreConnection, const Common::Hash& peerID) :
     coreConnection(coreConnection), peerID(peerID), root(new Node())
@@ -32,7 +40,7 @@ QModelIndex BrowseModel::index(int row, int column, const QModelIndex &parent) c
 
    Node* childNode = parentNode->getChild(row);
 
-   if (childNode && parentNode->getEntry().type() == Protos::Common::Entry_Type_DIR)
+   if (childNode)
        return this->createIndex(row, column, childNode);
    else if (parentNode->hasUnloadedChildren()) // The view want some not yet loaded children.. so we will load them.
       const_cast<BrowseModel*>(this)->loadChildren(parent);
@@ -94,8 +102,21 @@ QVariant BrowseModel::data(const QModelIndex& index, int role) const
       }
       break;
 
+   case Qt::DecorationRole:
+      {
+         if (index.column() == 0)
+         {
+            Node* node = static_cast<Node*>(index.internalPointer());
+            if (node->getEntry().type() == Protos::Common::Entry_Type_DIR)
+               return QPixmap(":/icons/ressources/folder.png");
+            else
+               return QPixmap(":/icons/ressources/file.png");
+         }
+         return QVariant();
+      }
+
    case Qt::TextAlignmentRole:
-      return index.column() < this->columnCount(QModelIndex()) - 1 ? Qt::AlignLeft : Qt::AlignRight;
+      return static_cast<int>((index.column() < this->columnCount(QModelIndex()) - 1 ? Qt::AlignLeft : Qt::AlignRight) | Qt::AlignVCenter);
 
    default: return QVariant();
    }
@@ -168,13 +189,6 @@ BrowseModel::Node::~Node()
       delete i.next();
 }
 
-BrowseModel::Node* BrowseModel::Node::getChild(int row)
-{
-   if (row >= this->children.size())
-      return 0;
-   return this->children[row];
-}
-
 BrowseModel::Node* BrowseModel::Node::getParent()
 {
    return this->parent;
@@ -185,6 +199,27 @@ int BrowseModel::Node::getNbChildren() const
    return this->children.size();
 }
 
+BrowseModel::Node* BrowseModel::Node::getChild(int row) const
+{
+   if (row >= this->children.size())
+      return 0;
+   return this->children[row];
+}
+
+void BrowseModel::Node::insertChildren(const Protos::Common::Entries& entries)
+{
+   for (int i = 0; i < entries.entry_size(); i++)
+      this->newNode(entries.entry(i));
+}
+
+bool BrowseModel::Node::hasUnloadedChildren()
+{
+   return this->entry.type() == Protos::Common::Entry_Type_DIR && this->children.isEmpty() && !this->entry.is_empty();
+}
+
+/**
+  * O(n).
+  */
 int BrowseModel::Node::getRow() const
 {
    if (this->parent)
@@ -201,17 +236,6 @@ QVariant BrowseModel::Node::getData(int column) const
    case 1: return Common::Global::formatByteSize(this->entry.size());
    default: return QVariant();
    }
-}
-
-void BrowseModel::Node::insertChildren(const Protos::Common::Entries& entries)
-{
-   for (int i = 0; i < entries.entry_size(); i++)
-      this->newNode(entries.entry(i));
-}
-
-bool BrowseModel::Node::hasUnloadedChildren()
-{
-   return this->entry.type() == Protos::Common::Entry_Type_DIR && this->children.isEmpty() && !this->entry.is_empty();
 }
 
 const Protos::Common::Entry& BrowseModel::Node::getEntry() const

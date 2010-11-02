@@ -8,6 +8,7 @@ StatusBar::StatusBar(CoreConnection& coreConnection, QWidget *parent)
    : QWidget(parent), ui(new Ui::StatusBar), coreConnection(coreConnection)
 {
    this->ui->setupUi(this);
+   this->coreDisconnected();
 
    connect(&coreConnection, SIGNAL(newState(const Protos::GUI::State&)), this, SLOT(newState(const Protos::GUI::State&)));
    connect(&coreConnection, SIGNAL(coreConnected()), this, SLOT(coreConnected()));

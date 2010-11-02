@@ -1,22 +1,137 @@
-#include "WidgetSearch.h"
-#include "ui_WidgetSearch.h"
+#include <WidgetSearch.h>
+#include <ui_WidgetSearch.h>
 using namespace GUI;
+
+#include <QTextDocument>
+#include <QAbstractTextDocumentLayout>
+#include <QRegExp>
+#include <QMenu>
+
+const QString SearchDelegate::MARKUP_FIRST_PART("<b>");
+const QString SearchDelegate::MARKUP_SECOND_PART("</b>");
+
+void SearchDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
+{
+   if (index.column() == 0)
+   {
+      QStyleOptionViewItemV4 optionV4 = option;
+      initStyleOption(&optionV4, index);
+
+      const QWidget *widget = optionV4.widget;
+      QStyle *style = widget ? widget->style() : QApplication::style();
+
+      QTextDocument doc;
+      doc.setHtml(this->toHtmlText(optionV4.text));
+
+      /// Painting item without text
+      optionV4.text = QString();
+      style->drawControl(QStyle::CE_ItemViewItem, &optionV4, painter, widget);
+
+      QAbstractTextDocumentLayout::PaintContext ctx;
+
+      // Highlighting text if item is selected
+      if (optionV4.state & QStyle::State_Selected)
+          ctx.palette.setColor(QPalette::Text, optionV4.palette.color(QPalette::Active, QPalette::HighlightedText));
+
+      QRect textRect = style->subElementRect(QStyle::SE_ItemViewItemText, &optionV4);
+      painter->save();
+      painter->translate(textRect.topLeft());
+      painter->setClipRect(textRect.translated(-textRect.topLeft()));
+      doc.documentLayout()->draw(painter, ctx);
+      painter->restore();
+   }
+   else
+   {
+      QStyledItemDelegate::paint(painter, option, index);
+   }
+}
+
+QSize SearchDelegate::sizeHint ( const QStyleOptionViewItem & option, const QModelIndex & index ) const
+{
+   if (index.column() == 0)
+   {
+      QStyleOptionViewItemV4 optionV4 = option;
+      initStyleOption(&optionV4, index);
+
+      QTextDocument doc;
+      doc.setHtml(this->toHtmlText(optionV4.text));
+      //doc.setTextWidth(optionV4.rect.width());
+      return QSize(doc.idealWidth() + 20, doc.size().height()); // + 20 is for the icon, TODO : find a better way to obtain this value.
+   }
+   else
+   {
+      return QStyledItemDelegate::sizeHint(option, index);
+   }
+}
+
+void SearchDelegate::setTerms(const QString& terms)
+{
+   this->currentTerms = terms.split(' ', QString::SkipEmptyParts);
+}
+
+QString SearchDelegate::toHtmlText(const QString& text) const
+{
+   QString htmlText(text);
+   for (QStringListIterator i(this->currentTerms); i.hasNext();)
+   {
+      const QString& term = i.next();
+      int pos = 0;
+      while(-1 != (pos = htmlText.indexOf(term, pos, Qt::CaseInsensitive)))
+      {
+         if (pos == 0 || !htmlText.at(pos-1).isLetter())
+         {
+            htmlText.insert(pos + term.size(), MARKUP_SECOND_PART);
+            htmlText.insert(pos, MARKUP_FIRST_PART);
+         }
+         pos += term.size() + MARKUP_FIRST_PART.size() + MARKUP_SECOND_PART.size();
+      }
+   }
+   return htmlText;
+}
+
 
 WidgetSearch::WidgetSearch(CoreConnection& coreConnection, PeerListModel& peerListModel, const QString& terms, QWidget *parent)
    : QWidget(parent), ui(new Ui::WidgetSearch), coreConnection(coreConnection), searchModel(coreConnection, peerListModel)
 {
     this->ui->setupUi(this);
+    this->searchDelegate.setTerms(terms);
 
     connect(&this->searchModel, SIGNAL(progress(int)), this->ui->prgSearch, SLOT(setValue(int)));
 
     this->ui->treeView->setModel(&this->searchModel);
+    this->ui->treeView->setItemDelegate(&this->searchDelegate);
+    this->ui->treeView->header()->setVisible(false);
+    this->ui->treeView->header()->setResizeMode(0, QHeaderView::ResizeToContents);
+    this->ui->treeView->header()->setResizeMode(1, QHeaderView::ResizeToContents);
+    this->ui->treeView->header()->setResizeMode(2, QHeaderView::ResizeToContents);
+    this->ui->treeView->header()->setResizeMode(3, QHeaderView::Stretch);
 
     this->searchModel.search(terms);
+
+    this->ui->treeView->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(this->ui->treeView, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(displayContextMenuPeers(const QPoint&)));
 
     this->setWindowTitle(QString("\"%1\"").arg(terms));
 }
 
 WidgetSearch::~WidgetSearch()
 {
-    delete this->ui;
+   disconnect(&this->searchModel, SIGNAL(progress(int)), this->ui->prgSearch, SLOT(setValue(int)));
+   delete this->ui;
+}
+
+void WidgetSearch::displayContextMenuPeers(const QPoint& point)
+{
+   QMenu menu;
+   menu.addAction("Download", this, SLOT(download()));
+   menu.exec(this->ui->treeView->mapToGlobal(point));
+}
+
+void WidgetSearch::download()
+{
+   QModelIndex i = this->ui->treeView->currentIndex();
+   if (i.isValid())
+   {
+      this->coreConnection.download(this->searchModel.getPeerID(i), this->searchModel.getEntry(i));
+   }
 }

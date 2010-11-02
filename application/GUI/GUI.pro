@@ -29,6 +29,7 @@ INCLUDEPATH += . \
 LIBS += -L${PROTOBUF}/src/.libs \
     -lprotobuf
 
+
 LIBS += -L../Common/LogManager/output/$$FOLDER \
     -lLogManager
 POST_TARGETDEPS += ../Common/LogManager/output/$$FOLDER/libLogManager.a
@@ -67,7 +68,8 @@ HEADERS  += MainWindow.h \
     WidgetSearch.h \
     BrowseModel.h \
     StatusBar.h \
-    SearchModel.h
+    SearchModel.h \
+    Log.h
 
 FORMS    += MainWindow.ui \
     WidgetChat.ui \

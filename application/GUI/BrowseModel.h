@@ -43,13 +43,15 @@ namespace GUI
          Node();
          Node(const Protos::Common::Entry& entry, Node* parent);
          virtual ~Node();
-         virtual Node* getChild(int row);
+
          virtual Node* getParent();
          virtual int getNbChildren() const;
-         virtual int getRow() const;
-         virtual QVariant getData(int column) const;
+         virtual Node* getChild(int row) const;
          virtual void insertChildren(const Protos::Common::Entries& entries);
          virtual bool hasUnloadedChildren();
+
+         virtual int getRow() const;
+         virtual QVariant getData(int column) const;
          virtual const Protos::Common::Entry& getEntry() const;
 
       protected:

@@ -3,6 +3,7 @@
 
 #include <QAbstractItemModel>
 #include <QTimer>
+#include <QHash>
 
 #include <Protos/common.pb.h>
 
@@ -23,13 +24,11 @@ namespace GUI
       SearchModel(CoreConnection& coreConnection, PeerListModel& peerListModel);
       ~SearchModel();
 
+      Common::Hash getPeerID(const QModelIndex& index);
+
       void search(const QString& terms);
 
-      //QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const;
-      //QModelIndex parent(const QModelIndex& child) const;
-      //int rowCount(const QModelIndex& parent = QModelIndex()) const;
       int columnCount(const QModelIndex& parent = QModelIndex()) const;
-      //QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const;
 
    signals:
       /**
@@ -47,6 +46,7 @@ namespace GUI
 
    private:
       SearchNode* getRoot();
+      int insertNode(const Protos::Common::FindResult_EntryLevel& entry, const Common::Hash& peerID, int currentIndex);
 
       PeerListModel& peerListModel;
 
@@ -57,26 +57,35 @@ namespace GUI
 
       int currentProgress;
 
+      QHash<Common::Hash, SearchNode*> indexedFile;
+
       class SearchNode : public Node
       {
       public:
+         static QString entryPath(const Protos::Common::Entry& entry);
+
          SearchNode();
-         SearchNode(const Protos::Common::FindResult_EntryLevel& entry, const Common::Hash& peerID, const QString& peerNick, Node* parent);
+         SearchNode(const Protos::Common::Entry& entry, int level, const Common::Hash& peerID, const QString& peerNick, Node* parent);
          SearchNode(const Protos::Common::Entry& entry, const Common::Hash& peerID,  Node* parent);
-         int getLevel() const;
-         Common::Hash getPeerID() const;
+
          SearchNode* insertChild(const Protos::Common::FindResult_EntryLevel& entry, const Common::Hash& peerID, const QString& peerNick);
          SearchNode* insertChild(int index, const Protos::Common::FindResult_EntryLevel& entry, const Common::Hash& peerID, const QString& peerNick);
+         SearchNode* insertChild(SearchNode* node);
 
+         int getLevel() const;
+         Common::Hash getPeerID() const;
          QVariant getData(int column) const;
+
+         void copyFrom(const SearchNode* otherNode);
+         bool isSameAs(const Protos::Common::Entry& otherEntry) const;
 
       protected:
          Node* newNode(const Protos::Common::Entry& entry);
 
       private:
-         const int level;
-         const Common::Hash peerID;
-         const QString peerNick;
+         int level;
+         Common::Hash peerID;
+         QString peerNick;
       };
    };
 }
