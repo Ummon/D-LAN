@@ -24,12 +24,10 @@ namespace PM
 
    private slots:
       void newMessage(quint32 type, const google::protobuf::Message& message);
-      void timeoutError();
 
    private:
       const Protos::Core::GetChunk chunk;
       QSharedPointer<Socket> socket;
-      QTimer timerTimeout;
       bool error;
    };
 }

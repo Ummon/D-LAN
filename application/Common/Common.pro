@@ -31,7 +31,8 @@ SOURCES += Hash.cpp \
     ZeroCopyStreamQIODevice.cpp \
     Settings.cpp \
     TransferRateCalculator.cpp \
-    ProtoHelper.cpp
+    ProtoHelper.cpp \
+    Timeoutable.cpp
 HEADERS += Hashes.h \
     Hash.h \
     PersistantData.h \
@@ -43,4 +44,5 @@ HEADERS += Hashes.h \
     ZeroCopyStreamQIODevice.h \
     Settings.h \
     TransferRateCalculator.h \
-    ProtoHelper.h
+    ProtoHelper.h \
+    Timeoutable.h
