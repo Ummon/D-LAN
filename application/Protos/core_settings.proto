@@ -9,11 +9,11 @@ package Protos.Core;
 message Settings {
    optional string nick = 1 [default = "Bob"];
    optional Common.Hash peerID = 2;
-      
+      // timeout_during_transfer
    optional uint32 chunk_size = 3 [default = 33554432]; // (32MiB).
    optional uint32 buffer_size = 4 [default = 524288]; // (512KiB), Buffer used when reading/writting files.
    optional uint32 socket_buffer_size = 5 [default = 4194304]; // 4 MiB. Max size of the socket buffer, using when receiving or sending data over the sockets.
-   optional uint32 timeout_during_transfer = 6 [default = 5000]; // [ms].
+   optional uint32 socket_timeout = 6 [default = 5000]; // [ms].
       
    // FileManager.
    optional uint32 minimum_duration_when_hashing = 7 [default = 1000]; // [ms].
