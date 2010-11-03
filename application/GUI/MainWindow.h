@@ -18,6 +18,7 @@
 
 #include <WidgetSettings.h>
 #include <WidgetChat.h>
+#include <WidgetDownloads.h>
 #include <WidgetBrowse.h>
 #include <WidgetSearch.h>
 
@@ -49,9 +50,15 @@ namespace GUI
 
    private:
       void removeMdiSubWindow(QMdiSubWindow* mdiSubWindow);
+
       void addWidgetSettings();
-      void addWidgetChat();
+
+      void addWidgetChat();      
       void removeWidgetChat();
+
+      void addWidgetDownloads();
+      void removeWidgetDownloads();
+
       void addWidgetBrowse(const Common::Hash& peerID);
       void addWidgetSearch(const QString& term);
       void removeAllWidgets();
@@ -60,6 +67,7 @@ namespace GUI
 
       WidgetSettings* widgetSettings;
       WidgetChat* widgetChat;
+      WidgetDownloads* widgetDownloads;
       QList<WidgetBrowse*> widgetsBrowse;
       QList<WidgetSearch*> widgetsSearch;
 
@@ -72,8 +80,8 @@ namespace GUI
    {
       Q_OBJECT
    public:
-      virtual void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const;
-      virtual void drawFocus(QPainter*, const QStyleOptionViewItem&, const QRect&) const {}
+      void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const;
+      void drawFocus(QPainter*, const QStyleOptionViewItem&, const QRect&) const {}
    };
 
    /**

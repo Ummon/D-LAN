@@ -89,6 +89,7 @@ QString SearchDelegate::toHtmlText(const QString& text) const
    return htmlText;
 }
 
+/////
 
 WidgetSearch::WidgetSearch(CoreConnection& coreConnection, PeerListModel& peerListModel, const QString& terms, QWidget *parent)
    : QWidget(parent), ui(new Ui::WidgetSearch), coreConnection(coreConnection), searchModel(coreConnection, peerListModel)

@@ -35,6 +35,9 @@ namespace GUI
       explicit WidgetSettings(CoreConnection& coreConnection, QWidget *parent = 0);
       ~WidgetSettings();
 
+      void coreConnected();
+      void coreDisconnected();
+
    private slots:
       void newState(const Protos::GUI::State& state);
       void saveCoreSettings();

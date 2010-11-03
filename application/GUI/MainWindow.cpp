@@ -17,6 +17,7 @@ MainWindow::MainWindow(QWidget* parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow),
     widgetChat(0),
+    widgetDownloads(0),
     peerListModel(coreConnection)
 {
     this->ui->setupUi(this);
@@ -41,6 +42,7 @@ MainWindow::MainWindow(QWidget* parent) :
     this->ui->tblPeers->setAlternatingRowColors(true);
 
     this->ui->tblPeers->setContextMenuPolicy(Qt::CustomContextMenu);
+
     connect(this->ui->tblPeers, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(displayContextMenuPeers(const QPoint&)));
     connect(this->ui->tblPeers, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(browse()));
 
@@ -65,14 +67,19 @@ MainWindow::~MainWindow()
 void MainWindow::coreConnected()
 {
    this->addWidgetChat();
+   this->addWidgetDownloads();
+   this->widgetSettings->coreConnected();
    this->ui->txtSearch->setDisabled(false);
    this->ui->butSearch->setDisabled(false);
+   this->ui->mdiArea->setActiveSubWindow(dynamic_cast<QMdiSubWindow*>(this->widgetChat->parent()));
 }
 
 void MainWindow::coreDisconnected()
 {
+   this->removeWidgetDownloads();
    this->removeWidgetChat();
    this->removeAllWidgets();
+   this->widgetSettings->coreDisconnected();
    this->ui->txtSearch->setDisabled(true);
    this->ui->butSearch->setDisabled(true);
    this->peerListModel.clear();
@@ -188,6 +195,23 @@ void MainWindow::removeWidgetChat()
    {
       this->removeMdiSubWindow(dynamic_cast<QMdiSubWindow*>(this->widgetChat->parent()));
       this->widgetChat = 0;
+   }
+}
+
+void MainWindow::addWidgetDownloads()
+{
+   this->widgetDownloads = new WidgetDownloads(this->coreConnection, this->peerListModel, this);
+   this->ui->mdiArea->addSubWindow(this->widgetDownloads, Qt::CustomizeWindowHint);
+   //this->mdiChat->setAttribute(Qt::WA_DeleteOnClose);
+   this->widgetDownloads->setWindowState(Qt::WindowMaximized);
+}
+
+void MainWindow::removeWidgetDownloads()
+{
+   if (this->widgetDownloads)
+   {
+      this->removeMdiSubWindow(dynamic_cast<QMdiSubWindow*>(this->widgetDownloads->parent()));
+      this->widgetDownloads = 0;
    }
 }
 

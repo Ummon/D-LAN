@@ -107,6 +107,16 @@ WidgetSettings::~WidgetSettings()
    delete ui;
 }
 
+void WidgetSettings::coreConnected()
+{
+   this->ui->tabWidget->setTabEnabled(0, true);
+}
+
+void WidgetSettings::coreDisconnected()
+{
+   this->ui->tabWidget->setTabEnabled(0, false);
+}
+
 void WidgetSettings::newState(const Protos::GUI::State& state)
 {
    const Protos::GUI::CoreSettings& settings = state.settings();
