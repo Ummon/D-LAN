@@ -156,6 +156,16 @@ QSharedPointer<ChunkDownload> FileDownload::getAChunkToDownload()
    return QSharedPointer<ChunkDownload>();
 }
 
+void FileDownload::getUnfinishedChunks(QList< QSharedPointer<IChunkDownload> >& chunks, int n)
+{
+   for (QListIterator< QSharedPointer<ChunkDownload> > i(this->chunkDownloads); i.hasNext() && this->status != COMPLETE;)
+   {
+      const QSharedPointer<ChunkDownload>& chunkDownload = i.next();
+      if (!chunkDownload->isComplete())
+         chunks << chunkDownload;
+   }
+}
+
 /**
   * Return true if a GetHashes request has been sent to the peer.
   */

@@ -2,6 +2,7 @@
 #define PEERMANAGER_GET_CHUNK_RESULT_H
 
 #include <QObject>
+#include <QTimer>
 
 #include <google/protobuf/message.h>
 
@@ -17,16 +18,19 @@ namespace PM
    {
       Q_OBJECT
    public:
-      GetChunkResult(const Protos::Core::GetChunk& chunk, Socket* socket);
+      GetChunkResult(const Protos::Core::GetChunk& chunk, QSharedPointer<Socket> socket);
       ~GetChunkResult();
       void start();
 
    private slots:
       void newMessage(quint32 type, const google::protobuf::Message& message);
+      void timeoutError();
 
    private:
       const Protos::Core::GetChunk chunk;
-      Socket* socket;
+      QSharedPointer<Socket> socket;
+      QTimer timerTimeout;
+      bool error;
    };
 }
 

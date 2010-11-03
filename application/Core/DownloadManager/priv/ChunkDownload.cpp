@@ -58,21 +58,6 @@ void ChunkDownload::rmPeerID(const Common::Hash& peerID)
       this->peers.removeOne(peer);
 }
 
-/* Old interface
-void ChunkDownload::setPeerIDs(const QList<Common::Hash>& peerIDs)
-{
-   this->peers.clear();
-   for (QListIterator<Common::Hash> i(peerIDs); i.hasNext();)
-   {
-      PM::IPeer* peer = this->peerManager->getPeer(i.next());
-      if (peer)
-      {
-         this->peers << peer;
-         this->occupiedPeersDownloadingChunk.newPeer(peer);
-      }
-   }
-}*/
-
 void ChunkDownload::setChunk(QSharedPointer<FM::IChunk> chunk)
 {
    this->chunk = chunk;
@@ -155,6 +140,8 @@ bool ChunkDownload::startDownloading()
       return false;
    }
 
+   L_DEBU(QString("Starting downloading a chunk : %1").arg(this->chunk->toStr()));
+
    this->downloading = true;
    emit downloadStarted();
 
@@ -165,7 +152,8 @@ bool ChunkDownload::startDownloading()
    getChunkMess.set_offset(this->chunk->getKnownBytes());
    this->getChunkResult = this->currentDownloadingPeer->getChunk(getChunkMess);
    connect(this->getChunkResult.data(), SIGNAL(result(const Protos::Core::GetChunkResult&)), this, SLOT(result(const Protos::Core::GetChunkResult&)));
-   connect(this->getChunkResult.data(), SIGNAL(stream(PM::ISocket*)), this, SLOT(stream(PM::ISocket*)));
+   connect(this->getChunkResult.data(), SIGNAL(stream(QSharedPointer<PM::ISocket>)), this, SLOT(stream(QSharedPointer<PM::ISocket>)));
+   connect(this->getChunkResult.data(), SIGNAL(timeout()), this, SLOT(getChunkTimeout()));
 
    this->getChunkResult->start();
    return true;
@@ -175,17 +163,16 @@ void ChunkDownload::run()
 {
    try
    {
-      L_DEBU(QString("Starting downloading a chunk : %1").arg(this->chunk->toStr()));
-
       QSharedPointer<FM::IDataWriter> writer = this->chunk->getDataWriter();
 
       const int BUFFER_SIZE = SETTINGS.get<quint32>("buffer_size");
       char buffer[BUFFER_SIZE];
 
+      const int initialKnownBytes = this->chunk->getKnownBytes();
       int bytesRead = 0;
-      quint64 bytesReadTotal = 0;
+      qint64 bytesReadTotal = 0;
 
-      quint64 deltaRead = 0;
+      qint64 deltaRead = 0;
 
       this->transferRateCalculator.reset();
 
@@ -194,17 +181,19 @@ void ChunkDownload::run()
 
       forever
       {
-         // Waiting for data..
-         if (socket->getQSocket()->bytesAvailable() == 0 && !socket->getQSocket()->waitForReadyRead(SETTINGS.get<quint32>("timeout_during_transfer")))
-         {
-            L_WARN("Connection dropped");
-            this->networkError = true;
-            break;
-         }
-
          bytesRead = socket->getQSocket()->read(buffer, BUFFER_SIZE);
 
-         if (bytesRead == -1)
+         if (bytesRead == 0)
+         {
+            if (!socket->getQSocket()->waitForReadyRead(SETTINGS.get<quint32>("socket_timeout")))
+            {
+               L_WARN(QString("Connection dropped, error = %1, bytesAvailable = %2").arg(socket->getQSocket()->errorString()).arg(socket->getQSocket()->bytesAvailable()));
+               this->networkError = true;
+               break;
+            }
+            continue;
+         }
+         else if (bytesRead == -1)
          {
             L_ERRO(QString("Socket : cannot receive data : %1").arg(this->chunk->toStr()));
             this->networkError = true;
@@ -225,8 +214,8 @@ void ChunkDownload::run()
             PM::IPeer* peer = this->getTheFastestFreePeer();
             if (
                peer && peer != this->currentDownloadingPeer &&
-               this->currentDownloadingPeer->getSpeed() < SETTINGS.get<quint32>("lan_speed") / SETTINGS.get<quint32>("time_recheck_chunk_factor") &&
-               peer->getSpeed() > SETTINGS.get<quint32>("switch_to_another_peer_factor") * this->currentDownloadingPeer->getSpeed()
+               this->currentDownloadingPeer->getSpeed() < SETTINGS.get<quint32>("lan_speed") / SETTINGS.get<double>("time_recheck_chunk_factor") &&
+               peer->getSpeed() > SETTINGS.get<double>("switch_to_another_peer_factor") * this->currentDownloadingPeer->getSpeed()
             )
             {
                L_DEBU("Switch to a better peer..");
@@ -238,7 +227,7 @@ void ChunkDownload::run()
 
          this->transferRateCalculator.addData(bytesRead);
 
-         if (bytesReadTotal >= this->chunkSize)
+         if (initialKnownBytes + bytesReadTotal >= this->chunkSize)
             break;
       }
    }
@@ -286,7 +275,7 @@ void ChunkDownload::result(const Protos::Core::GetChunkResult& result)
    }
 }
 
-void ChunkDownload::stream(PM::ISocket* socket)
+void ChunkDownload::stream(QSharedPointer<PM::ISocket> socket)
 {
    this->socket = socket;
    this->socket->stopListening();
@@ -294,14 +283,26 @@ void ChunkDownload::stream(PM::ISocket* socket)
    this->start();
 }
 
+void ChunkDownload::getChunkTimeout()
+{
+   L_WARN("Timeout from GetChunkResult, Download aborted.");
+   this->networkError = true;
+   this->downloadingEnded();
+}
+
 void ChunkDownload::downloadingEnded()
 {
    L_DEBU(QString("Downloading ended, chunk : %1").arg(this->chunk->toStr()));
-   if (this->socket)
+
+   if (!this->chunk->isComplete())
    {
-      this->socket->getQSocket()->moveToThread(QThread::currentThread());
+      L_DEBU(QString("OMG 1 : %1").arg(this->chunk->isComplete()));
+   }
+
+   if (!this->socket.isNull())
+   {
       this->socket->finished(this->networkError);
-      this->socket = 0;
+      this->socket.clear();
    }
 
    this->networkError = false;
@@ -315,14 +316,20 @@ void ChunkDownload::downloadingEnded()
    this->occupiedPeersDownloadingChunk.setPeerAsFree(currentPeer);
 }
 
-PM::IPeer* ChunkDownload::getTheFastestFreePeer() const
+/**
+  * Get the fastest free peer, may remove dead peers.
+  */
+PM::IPeer* ChunkDownload::getTheFastestFreePeer()
 {
    QMutexLocker lock(&this->mutex);
 
    PM::IPeer* current = 0;
-   foreach (PM::IPeer* peer, this->peers)
+   for (QMutableListIterator<PM::IPeer*> i(this->peers); i.hasNext();)
    {
-      if (this->occupiedPeersDownloadingChunk.isPeerFree(peer) && (!current || peer->getSpeed() > current->getSpeed()))
+      PM::IPeer* peer = i.next();
+      if (!peer->isAlive())
+         i.remove();
+      else if (this->occupiedPeersDownloadingChunk.isPeerFree(peer) && (!current || peer->getSpeed() > current->getSpeed()))
          current = peer;
    }
    return current;

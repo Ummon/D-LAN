@@ -4,6 +4,7 @@
 #include <QtNetwork>
 #include <QList>
 #include <QDateTime>
+#include <QSharedPointer>
 
 #include <Core/FileManager/IFileManager.h>
 
@@ -24,20 +25,21 @@ namespace PM
       void setIP(const QHostAddress& IP, quint16 port);
       void newConnexion(QTcpSocket* socket);
 
-      Socket* getASocket();
+      QSharedPointer<Socket> getASocket();
       void closeAllSocket();
 
    private slots:
       void socketGetIdle(Socket* socket);
       void socketClosed(Socket* socket);
+      void socketGetChunk(const Common::Hash& hash, int offset, Socket* socket);
 
    private:
-      Socket* addNewSocket(Socket* socket);
+      QSharedPointer<Socket> addNewSocket(QSharedPointer<Socket> socket);
 
       PeerManager* peerManager;
       QSharedPointer<FM::IFileManager> fileManager;
 
-      QList<Socket*> sockets;
+      QList< QSharedPointer<Socket> > sockets;
       QHostAddress peerIP;
       quint16 port;
       const Common::Hash peerID;

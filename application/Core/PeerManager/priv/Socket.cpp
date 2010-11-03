@@ -44,7 +44,7 @@ Socket::~Socket()
 {
    L_DEBU(QString("Socket[%1] deleted").arg(this->num));
 
-   delete this->socket;
+   this->socket->deleteLater();
 }
 
 QAbstractSocket* Socket::getQSocket() const
@@ -66,14 +66,15 @@ void Socket::startListening()
    L_DEBU(QString("Socket[%1] starting to listen").arg(this->num));
 
    this->listening = true;
-   connect(this->socket, SIGNAL(readyRead()), this, SLOT(dataReceived()));
-   connect(this->socket, SIGNAL(disconnected()), this, SLOT(disconnected()));
-   //connect(this->socket, SIGNAL(disconnected()), this->socket, SLOT(deleteLater()));
 
    if (!this->socket->isValid())
       this->close();
    else
+   {
+      connect(this->socket, SIGNAL(readyRead()), this, SLOT(dataReceived()));
+      connect(this->socket, SIGNAL(disconnected()), this, SLOT(disconnected()));
       this->dataReceived();
+   }
 }
 
 void Socket::stopListening()
@@ -82,7 +83,6 @@ void Socket::stopListening()
 
    disconnect(this->socket, SIGNAL(readyRead()), this, SLOT(dataReceived()));
    disconnect(this->socket, SIGNAL(disconnected()), this, SLOT(disconnected()));
-   //disconnect(this->socket, SIGNAL(disconnected()), this->socket, SLOT(deleteLater()));
    this->listening = false;
 }
 
@@ -185,6 +185,9 @@ void Socket::finished(bool error)
    emit getIdle(this);
 }
 
+/**
+  * Close remove from the connection pool.
+  */
 void Socket::close()
 {
    // L_DEBU(QString("Socket[%1] closed").arg(this->num));
@@ -193,15 +196,16 @@ void Socket::close()
    // This code is commented because a download or an upload may begin just before the socket-close and thus change its thread... (We should use mutex synchronisation)
    // if (this->socket->thread() == QThread::currentThread())
    //   this->socket->close();
-   if (!this->listening)
-      emit closed(this);
+
+   this->stopListening();
+   this->idle = true;
+   emit closed(this);
 }
 
 void Socket::disconnected()
 {   
    L_DEBU(QString("Socket[%1] disconnected").arg(this->num));
-
-   emit closed(this);
+   this->close();
 }
 
 /**
@@ -333,14 +337,14 @@ bool Socket::readMessage()
 
    case 0x51 : // GetChunk.
       {
-         Protos::Core::GetChunk getChunk;
+         Protos::Core::GetChunk getChunkMessage;
          {
             Common::ZeroCopyInputStreamQIODevice inputStream(this->socket);
-            readOK = getChunk.ParseFromBoundedZeroCopyStream(&inputStream, this->currentHeader.size);
+            readOK = getChunkMessage.ParseFromBoundedZeroCopyStream(&inputStream, this->currentHeader.size);
          }
 
          if (readOK)
-            this->peerManager->onGetChunk(Common::Hash(getChunk.chunk().hash().data()), getChunk.offset(), this);
+            emit getChunk(Common::Hash(getChunkMessage.chunk().hash().data()), getChunkMessage.offset(), this);
       }
       break;
 

@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include <QIODevice>
+#include <QSharedPointer>
 
 #include <Protos/core_protocol.pb.h>
 
@@ -19,7 +20,8 @@ namespace PM
 
    signals:
       void result(const Protos::Core::GetChunkResult& result);
-      void stream(PM::ISocket* socket);
+      void stream(QSharedPointer<PM::ISocket> socket);
+      void timeout();
    };
 }
 #endif

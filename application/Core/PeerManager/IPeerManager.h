@@ -3,6 +3,7 @@
 
 #include <QString>
 #include <QtNetwork>
+#include <QSharedPointer>
 
 #include <Common/Hash.h>
 #include <Protos/common.pb.h>
@@ -55,7 +56,7 @@ namespace PM
       /**
         * When a remote peer want a chunk, this signal is emitted.
         */
-      void getChunk(Common::Hash hash, int offset, PM::ISocket* socket);
+      void getChunk(Common::Hash hash, int offset, QSharedPointer<PM::ISocket> socket);
    };
 }
 #endif

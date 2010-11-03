@@ -11,7 +11,7 @@ using namespace UM;
 #include <priv/Constants.h>
 #include <priv/Log.h>
 
-Uploader::Uploader(QSharedPointer<FM::IChunk> chunk, int offset, PM::ISocket* socket) :
+Uploader::Uploader(QSharedPointer<FM::IChunk> chunk, int offset, QSharedPointer<PM::ISocket> socket) :
    chunk(chunk), offset(offset), socket(socket)
 {
    this->mainThread = QThread::currentThread();
@@ -38,23 +38,23 @@ QSharedPointer<FM::IChunk> Uploader::getChunk() const
    return this->chunk;
 }
 
-PM::ISocket* Uploader::getSocket()
+QSharedPointer<PM::ISocket> Uploader::getSocket()
 {
    return this->socket;
 }
 
 void Uploader::run()
 {
-   L_DEBU(QString("Starting uploading a chunk : %1").arg(this->chunk->toStr()));
+   L_DEBU(QString("Starting uploading a chunk from offset %1 : %2").arg(this->offset).arg(this->chunk->toStr()));
 
    bool networkError = false;
+   int currentOffset = this->offset;
 
    try
    {
       QSharedPointer<FM::IDataReader> reader = this->chunk->getDataReader();
 
       char buffer[SETTINGS.get<quint32>("buffer_size")];
-      int currentOffset = this->offset;
       qint64 bytesRead = 0;
 
       this->transferRateCalculator.reset();
@@ -71,15 +71,16 @@ void Uploader::run()
 
          currentOffset += bytesSent;
 
-         if (socket->getQSocket()->bytesToWrite() > SETTINGS.get<quint32>("socket_buffer_size"))
+         // Sometimes will block when data are send between the 'bytesToWrite' call and the 'waitForBytesWritten' call.
+         /*if (socket->getQSocket()->bytesToWrite() > SETTINGS.get<quint32>("socket_buffer_size"))
          {
-            if (!socket->getQSocket()->waitForBytesWritten(SETTINGS.get<quint32>("timeout_during_transfer")))
+            if (!socket->getQSocket()->waitForBytesWritten(SETTINGS.get<quint32>("socket_timeout")))
             {
-               L_ERRO(QString("Socket : cannot write data, timeout : %1").arg(this->chunk->toStr()));
+               L_ERRO(QString("Socket : cannot write data, timeout, chunk : %1, error : %2").arg(this->chunk->toStr()).arg(socket->getQSocket()->errorString()));
                networkError = true;
                break;
             }
-         }
+         }*/
 
          this->transferRateCalculator.addData(bytesSent);
       }
@@ -96,6 +97,11 @@ void Uploader::run()
    {
       L_ERRO("ChunkDeletedException");
    }
+
+   /*L_WARN(QString("OMG : %1").arg(currentOffset));
+   this->socket->getQSocket()->flush();
+   this->usleep(2000000);*/
+
    this->socket->getQSocket()->moveToThread(this->mainThread);
 
    emit uploadFinished(networkError);

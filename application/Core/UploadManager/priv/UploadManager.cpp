@@ -15,7 +15,7 @@ using namespace UM;
 UploadManager::UploadManager(QSharedPointer<FM::IFileManager> fileManager, QSharedPointer<PM::IPeerManager> peerManager) :
    fileManager(fileManager), peerManager(peerManager)
 {
-   connect(this->peerManager.data(), SIGNAL(getChunk(Common::Hash, int, PM::ISocket*)), this, SLOT(getChunk(Common::Hash, int, PM::ISocket*)));
+   connect(this->peerManager.data(), SIGNAL(getChunk(Common::Hash, int, QSharedPointer<PM::ISocket>)), this, SLOT(getChunk(Common::Hash, int, QSharedPointer<PM::ISocket>)));
 }
 
 QList<IUpload*> UploadManager::getUploads()
@@ -37,7 +37,7 @@ int UploadManager::getUploadRate() const
    return uploadRate;
 }
 
-void UploadManager::getChunk(Common::Hash hash, int offset, PM::ISocket* socket)
+void UploadManager::getChunk(Common::Hash hash, int offset, QSharedPointer<PM::ISocket> socket)
 {
    QSharedPointer<FM::IChunk> chunk = this->fileManager->getChunk(hash);
    if (chunk.isNull())

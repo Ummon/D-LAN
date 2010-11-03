@@ -264,16 +264,19 @@ void UDPListener::processPendingUnicastDatagrams()
          {
             Protos::Core::ChunksOwned chunksOwnedMessage;
             chunksOwnedMessage.ParseFromArray(this->bodyBuffer, header.size);
+
             if (chunksOwnedMessage.tag() != this->currentIMAliveTag)
             {
                L_WARN(QString("ChunksOwned : tag (%1) doesn't match current tag (%2)").arg(chunksOwnedMessage.tag()).arg(currentIMAliveTag));
                continue;
             }
+
             if (chunksOwnedMessage.chunk_state_size() != this->currentChunkDownloads.size())
             {
                L_WARN(QString("ChunksOwned : The size (%1) doesn't match the expected one (%2)").arg(chunksOwnedMessage.chunk_state_size()).arg(this->currentChunkDownloads.size()));
                continue;
             }
+
             for (int i = 0; i < chunksOwnedMessage.chunk_state_size(); i++)
             {
                if (chunksOwnedMessage.chunk_state(i))

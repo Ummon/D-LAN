@@ -26,8 +26,8 @@ public slots:
    void nextHash(const Common::Hash& hash);
 
    void result(const Protos::Core::GetChunkResult& result);
-   void stream(ISocket* socket);
-   void getChunk(Common::Hash hash, int offset, PM::ISocket* socket);
+   void stream(QSharedPointer<ISocket> socket);
+   void getChunk(Common::Hash hash, int offset, QSharedPointer<PM::ISocket> socket);
 
 private:
    QList<Protos::Common::Entries> entriesResultList;

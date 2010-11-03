@@ -18,7 +18,7 @@ namespace UM
    {
       Q_OBJECT
    public:
-      Uploader(QSharedPointer<FM::IChunk> chunk, int offset, PM::ISocket* socket);
+      Uploader(QSharedPointer<FM::IChunk> chunk, int offset, QSharedPointer<PM::ISocket> socket);
 
       int getUploadRate() const;
 
@@ -28,7 +28,7 @@ namespace UM
 
       QSharedPointer<FM::IChunk> getChunk() const;
 
-      PM::ISocket* getSocket();
+      QSharedPointer<PM::ISocket> getSocket();
 
    signals:
       void uploadFinished(bool error);
@@ -39,7 +39,7 @@ namespace UM
    private:
       QSharedPointer<FM::IChunk> chunk;
       int offset;
-      PM::ISocket* socket;
+      QSharedPointer<PM::ISocket> socket;
 
       Common::TransferRateCalculator transferRateCalculator;
 
