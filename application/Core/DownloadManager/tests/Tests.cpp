@@ -163,7 +163,7 @@ void Tests::printDownloads(int num)
    for (QListIterator<IDownload*> i(downloads); i.hasNext();)
    {
       IDownload* download = i.next();
-      qDebug() << QString("[%1] : status = %2, progress = %3").arg(download->getId()).arg(download->getStatus()).arg(download->getProgress());
+      qDebug() << QString("[%1] : status = %2, progress = %3").arg(download->getID()).arg(download->getStatus()).arg(download->getProgress());
    }
 }
 

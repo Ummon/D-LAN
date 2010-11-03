@@ -90,11 +90,12 @@ int FileDownload::getProgress() const
    return 100LL * knownBytes / this->entry.size();
 }
 
-QList<Common::Hash> FileDownload::getPeers() const
+QSet<Common::Hash> FileDownload::getPeers() const
 {
-   QList<Common::Hash> peerIDs;
+   QSet<Common::Hash> peerIDs;
    for (QListIterator< QSharedPointer<ChunkDownload> > i(this->chunkDownloads); i.hasNext();)
-      peerIDs.append(i.next()->getPeers());
+      for (QListIterator<Common::Hash> j(i.next()->getPeers()); j.hasNext();)
+         peerIDs << j.next();
    return peerIDs;
 }
 

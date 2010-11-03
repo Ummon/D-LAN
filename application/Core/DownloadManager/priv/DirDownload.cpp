@@ -15,9 +15,9 @@ DirDownload::DirDownload(QSharedPointer<FM::IFileManager> fileManager, QSharedPo
    );
 }
 
-QList<Common::Hash> DirDownload::getPeers() const
+QSet<Common::Hash> DirDownload::getPeers() const
 {
-   return QList<Common::Hash>() << this->peerSourceID;
+   return QSet<Common::Hash>() << this->peerSourceID;
 }
 
 /**

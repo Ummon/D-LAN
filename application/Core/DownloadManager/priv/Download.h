@@ -21,7 +21,7 @@ namespace DM
    class Download : public QObject, public IDownload
    {
       Q_OBJECT
-      static quint32 currentID;
+      static quint64 currentID;
 
    protected:
       Download(QSharedPointer<FM::IFileManager> fileManager, QSharedPointer<PM::IPeerManager> peerManager, Common::Hash peerSourceID, const Protos::Common::Entry& entry);
@@ -31,7 +31,7 @@ namespace DM
 
       virtual void populateEntry(Protos::Queue::Queue_Entry* entry) const;
 
-      quint32 getId() const;
+      quint64 getID() const;
       Status getStatus() const;
       virtual int getProgress() const;
       Common::Hash getPeerSourceID() const;
@@ -44,7 +44,7 @@ namespace DM
       virtual void retrievePeer();
 
    protected:
-      const quint32 ID;
+      const quint64 ID;
 
       QSharedPointer<FM::IFileManager> fileManager;
       QSharedPointer<PM::IPeerManager> peerManager;
