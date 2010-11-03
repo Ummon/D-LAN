@@ -296,7 +296,7 @@ qint64 File::write(const char* buffer, int nbBytes, qint64 offset)
   * @param offset An offset.
   * @return the number of bytes read.
   */
-qint64 File::read(char* buffer, qint64 offset)
+qint64 File::read(char* buffer, qint64 offset, int maxBytesToRead)
 {
    QMutexLocker locker(&this->readLock);
 
@@ -304,7 +304,7 @@ qint64 File::read(char* buffer, qint64 offset)
       return 0;
 
    this->fileInReadMode->seek(offset);
-   qint64 bytesRead = this->fileInReadMode->read(buffer, this->BUFFER_SIZE);
+   qint64 bytesRead = this->fileInReadMode->read(buffer, maxBytesToRead);
 
    if (bytesRead == -1)
       throw IOErrorException();
@@ -366,7 +366,7 @@ bool File::computeHashes(int n)
    time.start();
 #endif
 
-   char buffer[SETTINGS.get<quint32>("buffer_size")];
+   char buffer[this->BUFFER_SIZE];
    bool endOfFile = false;
    qint64 bytesReadTotal = 0;
    while (!endOfFile)
@@ -386,7 +386,7 @@ bool File::computeHashes(int n)
       int bytesReadChunk = 0;
       while (bytesReadChunk < CHUNK_SIZE)
       {
-         int bytesRead = file.read(buffer, SETTINGS.get<quint32>("buffer_size"));
+         int bytesRead = file.read(buffer, this->BUFFER_SIZE);
          switch (bytesRead)
          {
          case -1:

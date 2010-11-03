@@ -12,15 +12,19 @@ using namespace FM;
 #include <priv/Cache/DataReader.h>
 #include <priv/Cache/DataWriter.h>
 
-Chunk::Chunk(File* file, int num, quint32 knownBytes)
-   : CHUNK_SIZE(SETTINGS.get<quint32>("chunk_size")), mutex(QMutex::Recursive), file(file), num(num), knownBytes(knownBytes)
+Chunk::Chunk(File* file, int num, quint32 knownBytes) :
+   CHUNK_SIZE(SETTINGS.get<quint32>("chunk_size")),
+   BUFFER_SIZE(SETTINGS.get<quint32>("buffer_size")),
+   mutex(QMutex::Recursive), file(file), num(num), knownBytes(knownBytes)
 {
    QMutexLocker locker(&this->mutex);
    L_DEBU(QString("New chunk[%1] : %2. File : %3").arg(num).arg(hash.toStr()).arg(this->file->getFullPath()));
 }
 
-Chunk::Chunk(File* file, int num, quint32 knownBytes, const Common::Hash& hash)
-   : CHUNK_SIZE(SETTINGS.get<quint32>("chunk_size")), mutex(QMutex::Recursive), file(file), num(num), knownBytes(knownBytes), hash(hash)
+Chunk::Chunk(File* file, int num, quint32 knownBytes, const Common::Hash& hash) :
+   CHUNK_SIZE(SETTINGS.get<quint32>("chunk_size")),
+   BUFFER_SIZE(SETTINGS.get<quint32>("buffer_size")),
+   mutex(QMutex::Recursive), file(file), num(num), knownBytes(knownBytes), hash(hash)
 {
    QMutexLocker locker(&this->mutex);
    L_DEBU(QString("New chunk[%1] : %2. File : %3").arg(num).arg(hash.toStr()).arg(this->file->getFullPath()));
@@ -123,7 +127,8 @@ int Chunk::read(char* buffer, int offset)
    if (offset >= this->knownBytes)
       return 0;
 
-   return this->file->read(buffer, offset + static_cast<qint64>(this->num) * CHUNK_SIZE);
+   int bytesRemaining = this->getChunkSize() - offset;
+   return this->file->read(buffer, offset + static_cast<qint64>(this->num) * CHUNK_SIZE, bytesRemaining >= this->BUFFER_SIZE ? this->BUFFER_SIZE : bytesRemaining);
 }
 
 /**
