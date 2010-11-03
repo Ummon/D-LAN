@@ -7,13 +7,17 @@
 
 #include <Protos/core_protocol.pb.h>
 
+#include <Common/Timeoutable.h>
+
 #include <Core/PeerManager/ISocket.h>
 
 namespace PM
 {
-   class IGetChunkResult : public QObject
+   class IGetChunkResult : public Common::Timeoutable
    {
       Q_OBJECT
+   protected:
+      IGetChunkResult(int time) : Common::Timeoutable(time) {}
    public:
       virtual ~IGetChunkResult() {}
       virtual void start() = 0;
@@ -21,7 +25,6 @@ namespace PM
    signals:
       void result(const Protos::Core::GetChunkResult& result);
       void stream(QSharedPointer<PM::ISocket> socket);
-      void timeout();
    };
 }
 #endif
