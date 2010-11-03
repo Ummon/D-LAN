@@ -81,11 +81,11 @@ void RemoteConnection::refresh()
    {
       DM::IDownload* download = i.next();
       Protos::GUI::State_Download* protoDownload = state.add_download();
-      protoDownload->set_id(download->getId());
-      protoDownload->mutable_file()->CopyFrom(download->getEntry());
+      protoDownload->set_id(download->getID());
+      protoDownload->mutable_entry()->CopyFrom(download->getEntry());
       protoDownload->set_status(static_cast<Protos::GUI::State_Download_Status>(download->getStatus())); // Warning, enums must be compatible.
       protoDownload->set_progress(download->getProgress());
-      for (QListIterator<Common::Hash> j(download->getPeers()); j.hasNext();)
+      for (QSetIterator<Common::Hash> j(download->getPeers()); j.hasNext();)
          protoDownload->add_peer_id()->set_hash(j.next().getData(), Common::Hash::HASH_SIZE);
    }
 
@@ -96,6 +96,7 @@ void RemoteConnection::refresh()
       UM::IUpload* upload = i.next();
       Protos::GUI::State_Upload* protoUpload = state.add_upload();
       upload->getChunk()->populateEntry(protoUpload->mutable_file());
+      protoUpload->set_id(upload->getID());
       protoUpload->set_current_part(upload->getChunk()->getNum());
       protoUpload->set_nb_part(upload->getChunk()->getNbTotalChunk());
       protoUpload->set_progress(upload->getProgress());
@@ -307,7 +308,7 @@ bool RemoteConnection::readMessage()
             for (QListIterator<DM::IDownload*> i(downloads); i.hasNext();)
             {
                DM::IDownload* download = i.next();
-               if (IDs.contains(download->getId()))
+               if (IDs.contains(download->getID()))
                   download->remove();
             }
          }
@@ -359,7 +360,7 @@ void RemoteConnection::send(quint32 type, const google::protobuf::Message& messa
 #if DEBUG
    QString logMess = QString("RemoteConnection::send : header.type = %1, header.size = %2\n%3").arg(header.type, 0, 16).arg(header.size).arg(Common::ProtoHelper::getDebugStr(message));
    if (type == 0x01)
-      LOG_DEBU(this->loggerRefreshState, logMess);
+      ; // LOG_DEBU(this->loggerRefreshState, logMess); // Too heavy...
    else
       L_DEBU(logMess);
 #endif

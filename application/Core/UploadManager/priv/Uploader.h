@@ -17,8 +17,12 @@ namespace UM
    class Uploader : public QThread, public IUpload
    {
       Q_OBJECT
+      static quint64 currentID;
+
    public:
       Uploader(QSharedPointer<FM::IChunk> chunk, int offset, QSharedPointer<PM::ISocket> socket);
+
+      quint64 getID() const;
 
       int getUploadRate() const;
 
@@ -37,6 +41,7 @@ namespace UM
       void run();
 
    private:
+      const quint64 ID;
       QSharedPointer<FM::IChunk> chunk;
       int offset;
       QSharedPointer<PM::ISocket> socket;

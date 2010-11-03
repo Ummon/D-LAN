@@ -11,11 +11,18 @@ using namespace UM;
 #include <priv/Constants.h>
 #include <priv/Log.h>
 
-Uploader::Uploader(QSharedPointer<FM::IChunk> chunk, int offset, QSharedPointer<PM::ISocket> socket) :
-   chunk(chunk), offset(offset), socket(socket)
+quint64 Uploader::currentID(1);
+
+Uploader::Uploader(QSharedPointer<FM::IChunk> chunk, int offset, QSharedPointer<PM::ISocket> socket)
+   : ID(currentID++), chunk(chunk), offset(offset), socket(socket)
 {
    this->mainThread = QThread::currentThread();
    this->socket->getQSocket()->moveToThread(this);
+}
+
+quint64 Uploader::getID() const
+{
+   return this->ID;
 }
 
 int Uploader::getUploadRate() const

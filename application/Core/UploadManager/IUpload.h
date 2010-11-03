@@ -15,6 +15,8 @@ namespace UM
    public:
       virtual ~IUpload() {}
 
+      virtual quint64 getID() const = 0;
+
       virtual Common::Hash getPeerID() const = 0;
 
       /**
