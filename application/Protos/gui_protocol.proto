@@ -30,6 +30,7 @@ message CoreSettings {
 // The size of this message should be lesser than 63kB to fit in one IP packet.
 // id : 0x01
 message State {
+   // A download can be a file or a directory.
    message Download {
       enum Status {
          QUEUED = 0x1;
@@ -48,18 +49,19 @@ message State {
          THE_FILE_ALREADY_EXISTS = 0x22;
          UNABLE_TO_CREATE_THE_FILE = 0x23;
       }
-      required uint32 id = 1;
-      required Common.Entry file = 2; // Can be remote or local. When we know all the hashes and the local file exists (.unfinished) the entry becomes local, otherwise the entry is a remote one.
+      required uint64 id = 1;
+      required Common.Entry entry = 2; // Can be remote or local. When we know all the hashes and the local file exists (.unfinished) the entry becomes local, otherwise the entry is a remote one.
       required Status status = 3;
       required uint32 progress = 4; // 0 to 100.
       repeated Common.Hash peer_id = 5;
    }
    message Upload {
-      required Common.Entry file = 1;
-      required uint32 current_part = 2;
-      required uint32 nb_part = 3;
-      required uint32 progress = 4; // 0 to 100.
-      required Common.Hash peer_id = 5;
+      required uint64 id = 1;
+      required Common.Entry file = 2;
+      required uint32 current_part = 3;
+      required uint32 nb_part = 4;
+      required uint32 progress = 5; // 0 to 100.
+      required Common.Hash peer_id = 6;
    }
    message Stats {
       enum CacheStatus {

@@ -20,7 +20,7 @@ namespace DM
    public:
       DirDownload(QSharedPointer<FM::IFileManager> fileManager, QSharedPointer<PM::IPeerManager> peerManager, Common::Hash peerSourceID, const Protos::Common::Entry& entry);
 
-      QList<Common::Hash> getPeers() const;
+      QSet<Common::Hash> getPeers() const;
 
       void retrieveEntries();
 

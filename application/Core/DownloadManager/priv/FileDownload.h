@@ -36,7 +36,7 @@ namespace DM
 
       int getDownloadRate() const;
       int getProgress() const;
-      QList<Common::Hash> getPeers() const;
+      QSet<Common::Hash> getPeers() const;
 
       QSharedPointer<ChunkDownload> getAChunkToDownload();
 

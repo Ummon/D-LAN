@@ -2,6 +2,7 @@
 #define DOWNLOADMANAGER_IDOWNLOAD_H
 
 #include <QObject>
+#include <QSet>
 
 #include <Protos/common.pb.h>
 
@@ -22,7 +23,7 @@ namespace DM
      ENTRY_NOT_FOUND = 0x11, // The source peer can't find the entry.
      NO_SOURCE = 0x12, // Some chunk can't be downloaded. Only when there is no more downloading.
 
-     // Erro status :
+     // Error status :
      NO_SHARED_DIRECTORY_TO_WRITE = 0x20,
      NO_ENOUGH_FREE_SPACE = 0x21,
      THE_FILE_ALREADY_EXISTS = 0x22,
@@ -35,7 +36,7 @@ namespace DM
    public:
       virtual ~IDownload() {}
 
-      virtual quint32 getId() const = 0;
+      virtual quint64 getID() const = 0;
 
       virtual Status getStatus() const = 0;
 
@@ -49,7 +50,7 @@ namespace DM
       /**
         * Return all the peer who own at least one chunk.
         */
-      virtual QList<Common::Hash> getPeers() const = 0;
+      virtual QSet<Common::Hash> getPeers() const = 0;
 
       virtual Protos::Common::Entry getEntry() = 0;
 
