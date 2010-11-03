@@ -154,14 +154,14 @@ void Tests::askForAChunk()
 {
    qDebug() << "===== askForAChunk() =====";
 
-   connect(this->peerManagers[1].data(), SIGNAL(getChunk(Common::Hash, int, PM::ISocket*)), &this->resultListener, SLOT(getChunk(Common::Hash, int, PM::ISocket*)));
+   connect(this->peerManagers[1].data(), SIGNAL(getChunk(Common::Hash, int, QSharedPointer<PM::ISocket>)), &this->resultListener, SLOT(getChunk(Common::Hash, int, QSharedPointer<PM::ISocket>)));
 
    Protos::Core::GetChunk getChunkMessage;
    getChunkMessage.mutable_chunk()->set_hash(Common::Hash::rand().getData(), Common::Hash::HASH_SIZE);
    getChunkMessage.set_offset(0);
    QSharedPointer<IGetChunkResult> result = this->peerManagers[0]->getPeers()[0]->getChunk(getChunkMessage);
    connect(result.data(), SIGNAL(result(const Protos::Core::GetChunkResult&)), &this->resultListener, SLOT(result(const Protos::Core::GetChunkResult&)));
-   connect(result.data(), SIGNAL(stream(ISocket*)), &this->resultListener, SLOT(stream(ISocket*)));
+   connect(result.data(), SIGNAL(stream(QSharedPointer<ISocket>)), &this->resultListener, SLOT(stream(QSharedPointer<ISocket>)));
    result->start();
    QTest::qWait(1000);
 }

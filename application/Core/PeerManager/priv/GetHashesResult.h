@@ -2,6 +2,7 @@
 #define PEERMANAGER_GET_HASHES_RESULT_H
 
 #include <QObject>
+#include <QSharedPointer>
 
 #include <google/protobuf/message.h>
 
@@ -17,7 +18,7 @@ namespace PM
    {
       Q_OBJECT
    public:
-      GetHashesResult(const Protos::Common::Entry& file, Socket* socket);
+      GetHashesResult(const Protos::Common::Entry& file, QSharedPointer<Socket> socket);
       ~GetHashesResult();
       void start();
 
@@ -26,7 +27,7 @@ namespace PM
 
    private:
       const Protos::Common::Entry file;
-      Socket* socket;
+      QSharedPointer<Socket> socket;
    };
 }
 

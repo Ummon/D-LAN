@@ -62,12 +62,13 @@ namespace DM
 
    private slots:
       void result(const Protos::Core::GetChunkResult& result);
-      void stream(PM::ISocket* socket);
+      void stream(QSharedPointer<PM::ISocket> socket);
+      void getChunkTimeout();
 
       void downloadingEnded();
 
    private:
-      PM::IPeer* getTheFastestFreePeer() const;
+      PM::IPeer* getTheFastestFreePeer();
 
       QSharedPointer<PM::IPeerManager> peerManager; // To retrieve the peers from their ID.
 
@@ -79,7 +80,7 @@ namespace DM
       QList<PM::IPeer*> peers; // The peers which own this chunk.
       PM::IPeer* currentDownloadingPeer;
 
-      PM::ISocket* socket;
+      QSharedPointer<PM::ISocket> socket;
 
       QThread* mainThread; // Only use to move the socket from and to the main thread.
 

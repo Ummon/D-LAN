@@ -50,7 +50,7 @@ void ResultListener::result(const Protos::Core::GetChunkResult& result)
 
 static const QByteArray CHUNK_DATA("HELLO");
 
-void ResultListener::stream(ISocket* socket)
+void ResultListener::stream(QSharedPointer<ISocket> socket)
 {
    QByteArray data = socket->getQSocket()->readAll();
    qDebug() << "ResultListener::stream : " << data;
@@ -58,7 +58,7 @@ void ResultListener::stream(ISocket* socket)
    socket->finished();
 }
 
-void ResultListener::getChunk(Common::Hash hash, int offset, ISocket* socket)
+void ResultListener::getChunk(Common::Hash hash, int offset, QSharedPointer<ISocket> socket)
 {
    Protos::Core::GetChunkResult result;
    result.set_status(Protos::Core::GetChunkResult_Status_OK);

@@ -94,8 +94,18 @@ QList<IDownload*> DownloadManager::getDownloads()
 
 QList< QSharedPointer<IChunkDownload> > DownloadManager::getUnfinishedChunks(int n)
 {
-   // TODO
-   return QList< QSharedPointer<IChunkDownload> >();
+   QList< QSharedPointer<IChunkDownload> > unfinishedChunks;
+
+   for (QLinkedListIterator<Download*> i(this->downloads); i.hasNext() && unfinishedChunks.size() < n;)
+   {
+      FileDownload* fileDownload = dynamic_cast<FileDownload*>(i.next());
+      if (!fileDownload)
+         continue;
+
+      fileDownload->getUnfinishedChunks(unfinishedChunks, n);
+   }
+
+   return unfinishedChunks;
 }
 
 int DownloadManager::getDownloadRate() const

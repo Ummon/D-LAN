@@ -26,7 +26,7 @@ namespace UM
       int getUploadRate() const;
 
    private slots:
-      void getChunk(Common::Hash hash, int offset, PM::ISocket* socket);
+      void getChunk(Common::Hash hash, int offset, QSharedPointer<PM::ISocket> socket);
       void uploadFinished(bool networkError);
 
    private:

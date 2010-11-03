@@ -17,7 +17,7 @@ namespace PM
    {
       Q_OBJECT
    public:
-      GetEntriesResult(const Protos::Core::GetEntries& dir, Socket* socket);
+      GetEntriesResult(const Protos::Core::GetEntries& dir, QSharedPointer<Socket> socket);
       ~GetEntriesResult();
       void start();
 
@@ -26,7 +26,7 @@ namespace PM
 
    private:
       const Protos::Core::GetEntries dir;
-      Socket* socket;
+      QSharedPointer<Socket> socket;
    };
 }
 

@@ -45,6 +45,7 @@ namespace PM
       void newMessage(quint32 type, const google::protobuf::Message& message);
       void getIdle(Socket*);
       void closed(Socket*);
+      void getChunk(const Common::Hash&, int, Socket*);
 
    private slots:
       void dataReceived();
