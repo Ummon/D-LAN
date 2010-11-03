@@ -8,5 +8,6 @@
         <file>ressources/world.png</file>
         <file>ressources/file.png</file>
         <file>ressources/folder.png</file>
+        <file>ressources/error.png</file>
     </qresource>
 </RCC>

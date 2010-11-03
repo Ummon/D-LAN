@@ -13,7 +13,7 @@ PeerListModel::PeerListModel(CoreConnection& coreConnection)
 }
 
 /**
-  * Return a null string if not found.
+  * Return "<unknown>" string if not found.
   */
 QString PeerListModel::getNick(const Common::Hash& peerID)
 {
@@ -73,7 +73,7 @@ QVariant PeerListModel::data(const QModelIndex& index, int role) const
       }
 
    case Qt::TextAlignmentRole:
-      return index.column() == 0 ? Qt::AlignLeft : Qt::AlignRight;
+      return index.column() == 1 ? Qt::AlignRight : Qt::AlignLeft;
 
    default: return QVariant();
    }

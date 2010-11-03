@@ -52,7 +52,9 @@ SOURCES += main.cpp\
     WidgetSearch.cpp \
     BrowseModel.cpp \
     StatusBar.cpp \
-    SearchModel.cpp
+    SearchModel.cpp \
+    WidgetDownloads.cpp \
+    DownloadsModel.cpp
 
 HEADERS  += MainWindow.h \
     ../Protos/gui_protocol.pb.h \
@@ -69,14 +71,17 @@ HEADERS  += MainWindow.h \
     BrowseModel.h \
     StatusBar.h \
     SearchModel.h \
-    Log.h
+    Log.h \
+    WidgetDownloads.h \
+    DownloadsModel.h
 
 FORMS    += MainWindow.ui \
     WidgetChat.ui \
     WidgetSettings.ui \
     WidgetBrowse.ui \
     WidgetSearch.ui \
-    StatusBar.ui
+    StatusBar.ui \
+    WidgetDownloads.ui
 
 RESOURCES += \
     ressources.qrc

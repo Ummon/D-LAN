@@ -8,8 +8,7 @@ WidgetChat::WidgetChat(CoreConnection& coreConnection, PeerListModel& peerListMo
    this->ui->setupUi(this);
 
    this->ui->tblChat->setModel(&this->chatModel);
-
-   this->ui->tblChat->setItemDelegate(new TblChatDelegate());
+   this->ui->tblChat->setItemDelegate(&this->chatDelegate);
    this->ui->tblChat->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
    this->ui->tblChat->horizontalHeader()->setVisible(false);
    this->ui->tblChat->horizontalHeader()->setResizeMode(0, QHeaderView::ResizeToContents);

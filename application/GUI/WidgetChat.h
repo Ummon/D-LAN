@@ -14,6 +14,13 @@ namespace Ui {
 
 namespace GUI
 {
+   class ChatDelegate : public QItemDelegate
+   {
+      Q_OBJECT
+   public:
+      virtual void drawFocus(QPainter*, const QStyleOptionViewItem&, const QRect&) const {}
+   };
+
    class WidgetChat : public QWidget
    {
       Q_OBJECT
@@ -30,13 +37,7 @@ namespace GUI
 
       CoreConnection& coreConnection;
       ChatModel chatModel;
-   };
-
-   class TblChatDelegate : public QItemDelegate
-   {
-      Q_OBJECT
-   public:
-      virtual void drawFocus(QPainter*, const QStyleOptionViewItem&, const QRect&) const {}
+      ChatDelegate chatDelegate;
    };
 }
 #endif
