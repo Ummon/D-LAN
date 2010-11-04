@@ -4,6 +4,7 @@
 #include <QString>
 #include <QList>
 #include <QFileInfo>
+#include <QMutex>
 
 #include <Protos/common.pb.h>
 #include <Protos/files_cache.pb.h>
@@ -61,6 +62,7 @@ namespace FM
       void fileSizeChanged(qint64 oldSize, qint64 newSize);
 
       void stealContent(Directory* dir);
+      void append(Directory* dir);
 
    private:
       Directory& operator+=(qint64);
@@ -70,6 +72,8 @@ namespace FM
 
       QList<Directory*> subDirs;
       QList<File*> files;
+
+      mutable QMutex mutex;
    };
 
    class DirIterator

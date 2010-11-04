@@ -12,25 +12,28 @@ using namespace FM;
 #include <priv/Cache/SharedDirectory.h>
 
 Directory::Directory(Directory* parent, const QString& name, bool createPhysically)
-   : Entry(parent->cache, name), parent(parent)
+   : Entry(parent->cache, name), parent(parent), mutex(QMutex::Recursive)
 {
+   QMutexLocker locker(&this->mutex);
+   L_DEBU(QString("New Directory : %1").arg(this->getFullPath()));
+
    if (createPhysically)
       QDir(this->parent->getFullPath()).mkdir(this->name);
 
-   this->parent->subDirs.append(this);
+   this->parent->append(this);
 }
 
 /**
   * Called by the root (SharedDirectory) which will not have parent and name.
   */
 Directory::Directory(Cache* cache, const QString& name)
-   : Entry(cache, name), parent(0)
+   : Entry(cache, name), parent(0), mutex(QMutex::Recursive)
 {
 }
 
 Directory::~Directory()
 {
-   // QMutexLocker lock(&this->cache->getMutex()); // TODO : it creates a deadlock
+   QMutexLocker locker(&this->mutex);
 
    foreach (File* f, this->files)
       delete f;
@@ -51,6 +54,8 @@ Directory::~Directory()
   */
 QList<File*> Directory::restoreFromFileCache(const Protos::FileCache::Hashes_Dir& dir)
 {
+   QMutexLocker locker(&this->mutex);
+
    QList<File*> ret;
 
    if (Common::ProtoHelper::getStr(dir, &Protos::FileCache::Hashes_Dir::name) == this->getName())
@@ -89,6 +94,8 @@ QList<File*> Directory::restoreFromFileCache(const Protos::FileCache::Hashes_Dir
 
 void Directory::populateHashesDir(Protos::FileCache::Hashes_Dir& dirToFill) const
 {
+   QMutexLocker locker(&this->mutex);
+
    Common::ProtoHelper::setStr(dirToFill, &Protos::FileCache::Hashes_Dir::set_name, this->getName());
 
    for (QListIterator<File*> i(this->files); i.hasNext();)
@@ -110,6 +117,8 @@ void Directory::populateHashesDir(Protos::FileCache::Hashes_Dir& dirToFill) cons
 
 void Directory::populateEntry(Protos::Common::Entry* dir, bool setSharedDir) const
 {
+   QMutexLocker locker(&this->mutex);
+
    Entry::populateEntry(dir, setSharedDir);
    dir->set_is_empty(this->subDirs.isEmpty() && this->files.isEmpty());
    dir->set_type(Protos::Common::Entry_Type_DIR);
@@ -128,6 +137,7 @@ void Directory::fileDeleted(File* file)
 
 void Directory::subDirDeleted(Directory* dir)
 {
+   QMutexLocker locker(&this->mutex);
    this->subDirs.removeOne(dir);
 }
 
@@ -179,6 +189,8 @@ bool Directory::isAChildOf(const Directory* dir) const
   */
 Directory* Directory::getSubDir(const QString& name) const
 {
+   QMutexLocker locker(&this->mutex);
+
    foreach (Directory* d, this->subDirs)
       if (d->getName() == name)
          return d;
@@ -188,6 +200,7 @@ Directory* Directory::getSubDir(const QString& name) const
 
 QList<Directory*> Directory::getSubDirs() const
 {
+   QMutexLocker locker(&this->mutex);
    // TODO : it create a deadlock, rethink serously about the concurency problems ..
    // - main thread (MT) : setSharedDirsReadOnly(..) with a super shared directory -> Cache::lock
    // - FileUpdater thread (FT) : Scan some directories and be locked by the call currentDir->getSubDirs() -> Cache::lock;
@@ -199,6 +212,7 @@ QList<Directory*> Directory::getSubDirs() const
 
 QList<File*> Directory::getFiles() const
 {
+   QMutexLocker locker(&this->mutex);
    // TODO : it create a deadlock, rethink serously about the concurency problems ..
    // Same problem as above.
    // QMutexLocker locker(&this->cache->getMutex());
@@ -207,6 +221,7 @@ QList<File*> Directory::getFiles() const
 
 QList<File*> Directory::getCompleteFiles() const
 {
+   QMutexLocker locker(&this->mutex);
    QList<File*> completeFiles;
    foreach (File* file, this->files)
    {
@@ -222,6 +237,7 @@ QList<File*> Directory::getCompleteFiles() const
   */
 Directory* Directory::createSubDirectory(const QString& name)
 {
+   QMutexLocker locker(&this->mutex);
    if (Directory* subDir = this->getSubDir(name))
       return subDir;
    return new Directory(this, name);
@@ -233,6 +249,7 @@ Directory* Directory::createSubDirectory(const QString& name)
   */
 Directory* Directory::physicallyCreateSubDirectory(const QString& name)
 {
+   QMutexLocker locker(&this->mutex);
    if (Directory* subDir = this->getSubDir(name))
       return subDir;
 
@@ -266,6 +283,7 @@ Directory* Directory::physicallyCreateSubDirectory(const QString& name)
 
 File* Directory::getFile(const QString& name) const
 {
+   QMutexLocker locker(&this->mutex);
    foreach (File* f, this->files)
       if (f->getName() == name)
          return f;
@@ -278,9 +296,9 @@ File* Directory::getFile(const QString& name) const
   */
 void Directory::addFile(File* file)
 {
+   QMutexLocker locker(&this->mutex);
    if (this->files.contains(file))
       return;
-
    this->files << file;
 
    (*this) += file->getSize();
@@ -288,6 +306,7 @@ void Directory::addFile(File* file)
 
 void Directory::fileSizeChanged(qint64 oldSize, qint64 newSize)
 {
+   QMutexLocker locker(&this->mutex);
    (*this) += newSize - oldSize;
 }
 
@@ -297,6 +316,7 @@ void Directory::fileSizeChanged(qint64 oldSize, qint64 newSize)
   */
 void Directory::stealContent(Directory* dir)
 {
+   QMutexLocker locker(&this->mutex);
    if (dir == this)
    {
       L_ERRO("Directory::stealSubDirs(..) : dir == this");
@@ -322,12 +342,19 @@ void Directory::stealContent(Directory* dir)
    dir->files.clear();
 }
 
+void Directory::append(Directory* dir)
+{
+   QMutexLocker locker(&this->mutex);
+   this->subDirs << dir;
+}
+
 /**
   * When a new file is added to a directory this method is called
   * to add its size.
   */
 Directory& Directory::operator+=(qint64 size)
 {
+   QMutexLocker locker(&this->mutex);
    this->size += size;
    if (this->parent)
       (*this->parent) += size;
@@ -337,6 +364,7 @@ Directory& Directory::operator+=(qint64 size)
 
 Directory& Directory::operator-=(qint64 size)
 {
+   QMutexLocker locker(&this->mutex);
    this->size -= size;
    if (this->parent)
       (*this->parent) -= size;

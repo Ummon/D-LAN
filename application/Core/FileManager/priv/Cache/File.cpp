@@ -99,7 +99,7 @@ File::File(
       if (i < hashes.size())
       {
          QSharedPointer<Chunk> chunk(new Chunk(this, i, chunkKnownBytes, hashes[i]));
-         this->chunks.append(chunk);
+         this->chunks << chunk;
          this->cache->onChunkHashKnown(chunk);
       }
       else
