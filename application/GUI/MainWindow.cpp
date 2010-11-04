@@ -18,6 +18,7 @@ MainWindow::MainWindow(QWidget* parent) :
     ui(new Ui::MainWindow),
     widgetChat(0),
     widgetDownloads(0),
+    widgetUploads(0),
     peerListModel(coreConnection)
 {
     this->ui->setupUi(this);
@@ -68,6 +69,7 @@ void MainWindow::coreConnected()
 {
    this->addWidgetChat();
    this->addWidgetDownloads();
+   this->addWidgetUploads();
    this->widgetSettings->coreConnected();
    this->ui->txtSearch->setDisabled(false);
    this->ui->butSearch->setDisabled(false);
@@ -76,6 +78,7 @@ void MainWindow::coreConnected()
 
 void MainWindow::coreDisconnected()
 {
+   this->removeWidgetUploads();
    this->removeWidgetDownloads();
    this->removeWidgetChat();
    this->removeAllWidgets();
@@ -212,6 +215,23 @@ void MainWindow::removeWidgetDownloads()
    {
       this->removeMdiSubWindow(dynamic_cast<QMdiSubWindow*>(this->widgetDownloads->parent()));
       this->widgetDownloads = 0;
+   }
+}
+
+void MainWindow::addWidgetUploads()
+{
+   this->widgetUploads = new WidgetUploads(this->coreConnection, this->peerListModel, this);
+   this->ui->mdiArea->addSubWindow(this->widgetUploads, Qt::CustomizeWindowHint);
+   //this->mdiChat->setAttribute(Qt::WA_DeleteOnClose);
+   this->widgetUploads->setWindowState(Qt::WindowMaximized);
+}
+
+void MainWindow::removeWidgetUploads()
+{
+   if (this->widgetUploads)
+   {
+      this->removeMdiSubWindow(dynamic_cast<QMdiSubWindow*>(this->widgetUploads->parent()));
+      this->widgetUploads = 0;
    }
 }
 

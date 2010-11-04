@@ -8,38 +8,38 @@ void DownloadsDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opt
    {
       Progress progress = index.data().value<Progress>();
 
-       QStyleOptionProgressBar progressBarOption;
-       progressBarOption.rect = option.rect;
-       progressBarOption.minimum = 0;
-       progressBarOption.maximum = 100;
-       progressBarOption.textAlignment = Qt::AlignHCenter;
-       progressBarOption.progress = progress.progress;
+      QStyleOptionProgressBar progressBarOption;
+      progressBarOption.rect = option.rect;
+      progressBarOption.minimum = 0;
+      progressBarOption.maximum = 100;
+      progressBarOption.textAlignment = Qt::AlignHCenter;
+      progressBarOption.progress = progress.progress;
 
-       switch(progress.status)
-       {
-       case Protos::GUI::State_Download_Status_QUEUED:
-          progressBarOption.text = "Queued";
-          break;
-       case Protos::GUI::State_Download_Status_INITIALIZING:
-          progressBarOption.text = "Initializing..";
-          break;
-       case Protos::GUI::State_Download_Status_DOWNLOADING:
-          progressBarOption.text = QString("%1%").arg(progress.progress);
-          break;
-       case Protos::GUI::State_Download_Status_COMPLETE:
-          progressBarOption.text = "Complete";
-          break;
-       case Protos::GUI::State_Download_Status_PAUSED:
-          progressBarOption.text = "Paused";
-          break;
-       default:
-          progressBarOption.text = "Error";
-          break;
-       }
+      switch(progress.status)
+      {
+      case Protos::GUI::State_Download_Status_QUEUED:
+         progressBarOption.text = "Queued";
+         break;
+      case Protos::GUI::State_Download_Status_INITIALIZING:
+         progressBarOption.text = "Initializing..";
+         break;
+      case Protos::GUI::State_Download_Status_DOWNLOADING:
+         progressBarOption.text = QString("%1%").arg(progress.progress);
+         break;
+      case Protos::GUI::State_Download_Status_COMPLETE:
+         progressBarOption.text = "Complete";
+         break;
+      case Protos::GUI::State_Download_Status_PAUSED:
+         progressBarOption.text = "Paused";
+         break;
+      default:
+         progressBarOption.text = "Error";
+         break;
+      }
 
-       progressBarOption.textVisible = true;
+      progressBarOption.textVisible = true;
 
-       QApplication::style()->drawControl(QStyle::CE_ProgressBar, &progressBarOption, painter);
+      QApplication::style()->drawControl(QStyle::CE_ProgressBar, &progressBarOption, painter);
    }
    else
    {
