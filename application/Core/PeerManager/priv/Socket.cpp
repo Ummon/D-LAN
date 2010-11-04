@@ -44,6 +44,9 @@ Socket::~Socket()
 {
    L_DEBU(QString("Socket[%1] deleted").arg(this->num));
 
+   disconnect(this->socket, SIGNAL(readyRead()), this, SLOT(dataReceived()));
+   disconnect(this->socket, SIGNAL(disconnected()), this, SLOT(disconnected()));
+
    this->socket->deleteLater();
 }
 
@@ -190,14 +193,8 @@ void Socket::finished(bool error)
   */
 void Socket::close()
 {
-   // L_DEBU(QString("Socket[%1] closed").arg(this->num));
+   L_DEBU(QString("Socket[%1] closing..").arg(this->num));
 
-   // A socket can be currently in a download or upload thread so we can't close it.
-   // This code is commented because a download or an upload may begin just before the socket-close and thus change its thread... (We should use mutex synchronisation)
-   // if (this->socket->thread() == QThread::currentThread())
-   //   this->socket->close();
-
-   this->stopListening();
    this->idle = true;
    emit closed(this);
 }
