@@ -39,7 +39,7 @@ Common::Hash Download::getPeerSourceID() const
    return this->peerSourceID;
 }
 
-Protos::Common::Entry Download::getEntry()
+const Protos::Common::Entry& Download::getEntry()
 {
    return this->entry;
 }

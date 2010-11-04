@@ -35,7 +35,7 @@ namespace DM
       Status getStatus() const;
       virtual int getProgress() const;
       Common::Hash getPeerSourceID() const;
-      Protos::Common::Entry getEntry();
+      const Protos::Common::Entry& getEntry();
       void remove();
 
       bool hasAValidPeer();

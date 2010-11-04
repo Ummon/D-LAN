@@ -52,7 +52,7 @@ namespace DM
         */
       virtual QSet<Common::Hash> getPeers() const = 0;
 
-      virtual Protos::Common::Entry getEntry() = 0;
+      virtual const Protos::Common::Entry& getEntry() = 0;
 
       /**
         * Stop and delete the download.
