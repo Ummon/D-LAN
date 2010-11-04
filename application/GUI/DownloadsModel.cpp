@@ -100,7 +100,7 @@ void DownloadsModel::newState(const Protos::GUI::State& state)
    int i = 0;
    for (; i < state.download_size() && i < this->downloads.size(); i++)
    {
-      if (state.download(i).id() == this->downloads[i].id() && state.download(i) != this->downloads[i])
+      if (state.download(i) != this->downloads[i])
       {
          this->downloads[i].CopyFrom(state.download(i));
          emit dataChanged(this->createIndex(i, 0), this->createIndex(i, 3));

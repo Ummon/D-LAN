@@ -19,6 +19,7 @@
 #include <WidgetSettings.h>
 #include <WidgetChat.h>
 #include <WidgetDownloads.h>
+#include <WidgetUploads.h>
 #include <WidgetBrowse.h>
 #include <WidgetSearch.h>
 
@@ -59,6 +60,9 @@ namespace GUI
       void addWidgetDownloads();
       void removeWidgetDownloads();
 
+      void addWidgetUploads();
+      void removeWidgetUploads();
+
       void addWidgetBrowse(const Common::Hash& peerID);
       void addWidgetSearch(const QString& term);
       void removeAllWidgets();
@@ -68,6 +72,7 @@ namespace GUI
       WidgetSettings* widgetSettings;
       WidgetChat* widgetChat;
       WidgetDownloads* widgetDownloads;
+      WidgetUploads* widgetUploads;
       QList<WidgetBrowse*> widgetsBrowse;
       QList<WidgetSearch*> widgetsSearch;
 
