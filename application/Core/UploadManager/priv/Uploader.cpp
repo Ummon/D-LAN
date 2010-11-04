@@ -37,7 +37,7 @@ Common::Hash Uploader::getPeerID() const
 
 int Uploader::getProgress() const
 {
-   return 100 * this->chunk->getKnownBytes() / this->chunk->getChunkSize();
+   return 100 * this->offset / this->chunk->getChunkSize();
 }
 
 QSharedPointer<FM::IChunk> Uploader::getChunk() const
@@ -104,10 +104,6 @@ void Uploader::run()
    {
       L_ERRO("ChunkDeletedException");
    }
-
-   /*L_WARN(QString("OMG : %1").arg(currentOffset));
-   this->socket->getQSocket()->flush();
-   this->usleep(2000000);*/
 
    this->socket->getQSocket()->moveToThread(this->mainThread);
 
