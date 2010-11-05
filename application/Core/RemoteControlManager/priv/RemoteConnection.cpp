@@ -130,13 +130,11 @@ void RemoteConnection::dataReceived()
       QCoreApplication::processEvents(); // To read from the native socket to the internal QTcpSocket buffer. TODO : more elegant way?
       if (this->currentHeader.isNull() && this->socket->bytesAvailable() >= Common::Network::HEADER_SIZE)
       {
-         this->currentHeader = Common::Network::readHeader(*this->socket);
+         this->currentHeader = Common::Network::readHeader<Common::Network::GUIMessageType>(*this->socket);
 
-         L_DEBU(QString("RemoteConnection::dataReceived from %1 - %2, type = %3, size = %4")
+         L_DEBU(QString("RemoteConnection::dataReceived from %1, %2")
             .arg(this->socket->peerAddress().toString())
-            .arg(this->currentHeader.senderID.toStr())
-            .arg(this->currentHeader.type, 0, 16)
-            .arg(this->currentHeader.size)
+            .arg(this->currentHeader.toStr())
          );
       }
 
@@ -346,8 +344,6 @@ bool RemoteConnection::readMessage()
             readOK = chatMessage.ParseFromBoundedZeroCopyStream(&inputStream, this->currentHeader.size);
          }
 
-         L_DEBU(QString("RemoteConnection::receive : header.type = %1, header.size = %2\n%3").arg(this->currentHeader.type, 0, 16).arg(this->currentHeader.size).arg(Common::ProtoHelper::getDebugStr(chatMessage)));
-
          if (readOK)
             this->networkListener->getChat().send(Common::ProtoHelper::getStr(chatMessage, &Protos::GUI::ChatMessage::message));
       }
@@ -362,10 +358,10 @@ bool RemoteConnection::readMessage()
 
 void RemoteConnection::send(Common::Network::GUIMessageType type, const google::protobuf::Message& message)
 {
-   Common::Network::MessageHeader header(type, message.ByteSize(), this->peerManager->getID());
+   const Common::Network::MessageHeader<Common::Network::GUIMessageType> header(type, message.ByteSize(), this->peerManager->getID());
 
 #if DEBUG
-   QString logMess = QString("RemoteConnection::send : header.type = %1, header.size = %2\n%3").arg(header.type, 0, 16).arg(header.size).arg(Common::ProtoHelper::getDebugStr(message));
+   QString logMess = QString("RemoteConnection::send : %2\n%3").arg(header.toStr()).arg(Common::ProtoHelper::getDebugStr(message));
    if (type == Common::Network::GUI_STATE)
       ; // LOG_DEBU(this->loggerRefreshState, logMess); // Commented -> too heavy...
    else

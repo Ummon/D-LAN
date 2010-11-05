@@ -158,7 +158,7 @@ void PeerManager::dataReceived(QTcpSocket* tcpSocket)
 
    if (tcpSocket->bytesAvailable() >= Common::Network::HEADER_SIZE)
    {
-      const Common::Network::MessageHeader& header = Common::Network::readHeader(*tcpSocket, false);
+      const Common::Network::MessageHeader<Common::Network::CoreMessageType>& header = Common::Network::readHeader<Common::Network::CoreMessageType>(*tcpSocket, false);
       Peer* p = this->getPeer_(header.senderID);
 
       this->removeFromPending(tcpSocket);

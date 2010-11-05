@@ -65,7 +65,7 @@ namespace RCM
       QTcpSocket* socket;
       QTimer timerRefresh;
 
-      Common::Network::MessageHeader currentHeader;
+      Common::Network::MessageHeader<Common::Network::GUIMessageType> currentHeader;
 
       QList< QSharedPointer<NL::ISearch> > currentSearches;
       QList< QSharedPointer<PM::IGetEntriesResult> > getEntriesResults;

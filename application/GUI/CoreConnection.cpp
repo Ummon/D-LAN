@@ -173,7 +173,7 @@ void CoreConnection::dataReceived()
 
       if (this->currentHeader.isNull() && this->socket.bytesAvailable() >= Common::Network::HEADER_SIZE)
       {
-         this->currentHeader = Common::Network::readHeader(this->socket);
+         this->currentHeader = Common::Network::readHeader<Common::Network::GUIMessageType>(this->socket);
          this->ourID = this->currentHeader.senderID;
       }
 
@@ -188,9 +188,9 @@ void CoreConnection::dataReceived()
 
 void CoreConnection::send(Common::Network::GUIMessageType type, const google::protobuf::Message& message)
 {
-   Common::Network::MessageHeader header(type, message.ByteSize(), this->ourID);
+   const Common::Network::MessageHeader<Common::Network::GUIMessageType> header(type, message.ByteSize(), this->ourID);
 
-   //L_DEBU(QString("CoreConnection::send : header.type = %1, header.size = %2\n%3").arg(header.type, 0, 16).arg(header.size).arg(Common::ProtoHelper::getDebugStr(message)));
+   L_DEBU(QString("CoreConnection::send : %1\n%2").arg(header.toStr()).arg(Common::ProtoHelper::getDebugStr(message)));
 
    Common::Network::writeHeader(this->socket, header);
    Common::ZeroCopyOutputStreamQIODevice outputStream(&this->socket);
