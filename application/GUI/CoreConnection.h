@@ -117,7 +117,7 @@ namespace GUI
 
       QTcpSocket socket;
       Common::Hash ourID;
-      Common::Network::MessageHeader currentHeader;
+      Common::Network::MessageHeader<Common::Network::GUIMessageType> currentHeader;
 
       QList< QSharedPointer<BrowseResult> > browseResultsWithoutTag;
       QList< QSharedPointer<SearchResult> > searchResultsWithoutTag;

@@ -100,7 +100,8 @@ void UDPListener::send(Common::Network::CoreMessageType type, const Common::Hash
 
    L_DEBU(QString("Send unicast UDP to %1 : header.type = %2, message size = %3 \n%4").
       arg(peer->toStringLog()).
-      arg(type, 0, 16).arg(messageSize).
+      arg(Common::Network::messToStr(type)).
+      arg(messageSize).
       arg(Common::ProtoHelper::getDebugStr(message))
    );
 
@@ -118,7 +119,11 @@ void UDPListener::send(Common::Network::CoreMessageType type, const google::prot
       return;
 
 #if DEBUG
-   QString logMess = QString("Send multicast UDP : header.type = %2, message size = %3 \n%4").arg(type, 0, 16).arg(messageSize).arg(Common::ProtoHelper::getDebugStr(message));
+   QString logMess = QString("Send multicast UDP : header.type = %1, message size = %2 \n%3").
+      arg(Common::Network::messToStr(type)).
+      arg(messageSize).
+      arg(Common::ProtoHelper::getDebugStr(message));
+
    if (type == Common::Network::CORE_IM_ALIVE)
       LOG_DEBU(this->loggerIMAlive, logMess);
    else
@@ -160,7 +165,7 @@ void UDPListener::processPendingMulticastDatagrams()
    while (this->multicastSocket.hasPendingDatagrams())
    {
       QHostAddress peerAddress;
-      const Common::Network::MessageHeader& header =  UDPListener::readDatagramToBuffer(this->multicastSocket, peerAddress);
+      const Common::Network::MessageHeader<Common::Network::CoreMessageType>& header =  UDPListener::readDatagramToBuffer(this->multicastSocket, peerAddress);
       if (header.isNull())
          continue;
 
@@ -254,13 +259,13 @@ void UDPListener::processPendingUnicastDatagrams()
    while (this->unicastSocket.hasPendingDatagrams())
    {
       QHostAddress peerAddress;
-      const Common::Network::MessageHeader& header =  UDPListener::readDatagramToBuffer(this->unicastSocket, peerAddress);
+      const Common::Network::MessageHeader<Common::Network::CoreMessageType>& header =  UDPListener::readDatagramToBuffer(this->unicastSocket, peerAddress);
       if (header.isNull())
          continue;
 
       switch (header.type)
       {
-      case 0x02: // ChunksOwned.
+      case Common::Network::CORE_CHUNKS_OWNED:
          {
             Protos::Core::ChunksOwned chunksOwnedMessage;
             chunksOwnedMessage.ParseFromArray(this->bodyBuffer, header.size);
@@ -287,7 +292,7 @@ void UDPListener::processPendingUnicastDatagrams()
          }
          break;
 
-      case 0x22: // FindResult.
+      case Common::Network::CORE_FIND_RESULT:
          {
             Protos::Common::FindResult findResultMessage;
             findResultMessage.ParseFromArray(this->bodyBuffer, header.size);
@@ -305,7 +310,7 @@ void UDPListener::processPendingUnicastDatagrams()
 int UDPListener::writeMessageToBuffer(Common::Network::CoreMessageType type, const google::protobuf::Message& message)
 {
    const int bodySize = message.ByteSize();
-   Common::Network::MessageHeader header(type, bodySize, this->peerManager->getID());
+   Common::Network::MessageHeader<Common::Network::CoreMessageType> header(type, bodySize, this->peerManager->getID());
 
    if (Common::Network::HEADER_SIZE + bodySize > static_cast<int>(SETTINGS.get<quint32>("max_udp_datagram_size")))
    {
@@ -320,13 +325,13 @@ int UDPListener::writeMessageToBuffer(Common::Network::CoreMessageType type, con
 }
 
 /**
-  * @return false if error.
+  * @return A null header if error.
   */
-Common::Network::MessageHeader UDPListener::readDatagramToBuffer(QUdpSocket& socket, QHostAddress& peerAddress)
+Common::Network::MessageHeader<Common::Network::CoreMessageType> UDPListener::readDatagramToBuffer(QUdpSocket& socket, QHostAddress& peerAddress)
 {
    qint64 datagramSize = socket.readDatagram(this->buffer, BUFFER_SIZE, &peerAddress);
 
-   Common::Network::MessageHeader header = Common::Network::readHeader(buffer);
+   Common::Network::MessageHeader<Common::Network::CoreMessageType> header = Common::Network::readHeader<Common::Network::CoreMessageType>(buffer);
 
    if (header.size > datagramSize - Common::Network::HEADER_SIZE)
    {
@@ -359,11 +364,11 @@ Common::Network::MessageHeader UDPListener::readDatagramToBuffer(QUdpSocket& soc
          return header;
       }
 
-      L_DEBU(QString("Receive a datagram UDP from %1 : header.type = %2, message size = %3").arg(peer->toStringLog()).arg(header.type, 0, 16).arg(header.size));
+      L_DEBU(QString("Receive a datagram UDP from %1, %2").arg(peer->toStringLog()).arg(header.toStr()));
    }
    else
    {
-      L_DEBU(QString("Receive a datagram UDP from %1 : header.type = %2, message size = %3").arg(header.senderID.toStr()).arg(header.type, 0, 16).arg(header.size));
+      L_DEBU(QString("Receive a datagram UDP from %1, %2").arg(header.senderID.toStr()).arg(header.toStr()));
    }
    return header;
 }

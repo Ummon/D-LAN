@@ -104,9 +104,9 @@ void Socket::send(Common::Network::CoreMessageType type, const google::protobuf:
 {
    this->setActive();
 
-   Common::Network::MessageHeader header(type, message.ByteSize(), this->peerManager->getID());
+   Common::Network::MessageHeader<Common::Network::CoreMessageType> header(type, message.ByteSize(), this->peerManager->getID());
 
-   L_DEBU(QString("Socket[%1]::send : header.type = %2, header.size = %3\n%4").arg(this->num).arg(header.type, 0, 16).arg(header.size).arg(Common::ProtoHelper::getDebugStr(message)));
+   L_DEBU(QString("Socket[%1]::send : %2\n%3").arg(this->num).arg(header.toStr()).arg(Common::ProtoHelper::getDebugStr(message)));
 
    Common::Network::writeHeader(*this->socket, header);
    Common::ZeroCopyOutputStreamQIODevice outputStream(this->socket);
@@ -126,14 +126,12 @@ void Socket::dataReceived()
 
       if (this->currentHeader.isNull() && this->socket->bytesAvailable() >= Common::Network::HEADER_SIZE)
       {
-         this->currentHeader = Common::Network::readHeader(*this->socket);
+         this->currentHeader = Common::Network::readHeader<Common::Network::CoreMessageType>(*this->socket);
 
-         L_DEBU(QString("Socket[%1]: Data received from %2 - %3, type = %4, size = %5")
+         L_DEBU(QString("Socket[%1]: Data received from %2, %3")
             .arg(this->num)
             .arg(this->socket->peerAddress().toString())
-            .arg(this->currentHeader.senderID.toStr())
-            .arg(this->currentHeader.type, 0, 16)
-            .arg(this->currentHeader.size)
+            .arg(this->currentHeader.toStr())
          );
 
          if (this->currentHeader.senderID != this->peerID)

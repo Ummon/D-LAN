@@ -51,7 +51,7 @@ namespace NL
 
    private:
       int writeMessageToBuffer(Common::Network::CoreMessageType type, const google::protobuf::Message& message);
-      Common::Network::MessageHeader readDatagramToBuffer(QUdpSocket& socket, QHostAddress& peerAddress);
+      Common::Network::MessageHeader<Common::Network::CoreMessageType> readDatagramToBuffer(QUdpSocket& socket, QHostAddress& peerAddress);
 
       char buffer[BUFFER_SIZE]; // Buffer used when sending or receiving datagram.
       char* const bodyBuffer;

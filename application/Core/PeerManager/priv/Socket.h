@@ -61,7 +61,7 @@ namespace PM
       QSharedPointer<FM::IFileManager> fileManager;
       const Common::Hash peerID;
 
-      Common::Network::MessageHeader currentHeader;
+      Common::Network::MessageHeader<Common::Network::CoreMessageType> currentHeader;
 
       QTcpSocket* socket;
 

@@ -36,7 +36,7 @@ message Settings {
    optional uint32 peer_imalive_period = 20 [default = 10000]; // [ms].
    
    // UploadManager.
-   optional uint32 upload_live_time = 29 [default = 5000]; // [ms].
+   optional uint32 upload_live_time = 33 [default = 5000]; // [ms].
    
    // NetworkListener.
    optional uint32 unicast_base_port = 21 [default = 59487]; // If it's already taken we will look further to a free port. (UDP + TCP).
