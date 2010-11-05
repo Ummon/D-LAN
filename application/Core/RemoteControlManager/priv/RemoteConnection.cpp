@@ -120,7 +120,7 @@ void RemoteConnection::refresh()
    stats->set_download_rate(this->downloadManager->getDownloadRate());
    stats->set_upload_rate(this->uploadManager->getUploadRate());
 
-   this->send(0x01, state);
+   this->send(Common::Network::GUI_STATE, state);
 }
 
 void RemoteConnection::dataReceived()
@@ -131,6 +131,13 @@ void RemoteConnection::dataReceived()
       if (this->currentHeader.isNull() && this->socket->bytesAvailable() >= Common::Network::HEADER_SIZE)
       {
          this->currentHeader = Common::Network::readHeader(*this->socket);
+
+         L_DEBU(QString("RemoteConnection::dataReceived from %1 - %2, type = %3, size = %4")
+            .arg(this->socket->peerAddress().toString())
+            .arg(this->currentHeader.senderID.toStr())
+            .arg(this->currentHeader.type, 0, 16)
+            .arg(this->currentHeader.size)
+         );
       }
 
       if (!this->currentHeader.isNull() && this->socket->bytesAvailable() >= this->currentHeader.size)
@@ -154,12 +161,12 @@ void RemoteConnection::newChatMessage(const Common::Hash& peerID, const Protos::
    eventChatMessage.mutable_peer_id()->set_hash(peerID.getData(), Common::Hash::HASH_SIZE);
    eventChatMessage.set_message(message.message());
 
-   this->send(0x11, eventChatMessage);
+   this->send(Common::Network::GUI_EVENT_CHAT_MESSAGE, eventChatMessage);
 }
 
 void RemoteConnection::searchFound(const Protos::Common::FindResult& result)
 {
-   this->send(0x33, result);
+   this->send(Common::Network::GUI_SEARCH_RESULT, result);
 }
 
 void RemoteConnection::getEntriesResult(const Protos::Common::Entries& entries)
@@ -169,7 +176,7 @@ void RemoteConnection::getEntriesResult(const Protos::Common::Entries& entries)
    Protos::GUI::BrowseResult result;
    result.mutable_entries()->CopyFrom(entries);
    result.set_tag(getEntriesResult->property("tag").toULongLong());
-   this->send(0x43, result);
+   this->send(Common::Network::GUI_BROWSE_RESULT, result);
 
    for (QMutableListIterator< QSharedPointer<PM::IGetEntriesResult> > i(this->getEntriesResults); i.hasNext();)
       if (i.next().data() == getEntriesResult)
@@ -182,7 +189,7 @@ bool RemoteConnection::readMessage()
 
    switch (this->currentHeader.type)
    {
-   case 0x21: // CoreSettings.
+   case Common::Network::GUI_SETTINGS:
       {
          Protos::GUI::CoreSettings coreSettingsMessage;
          {
@@ -214,7 +221,7 @@ bool RemoteConnection::readMessage()
       }
       break;
 
-   case 0x31: // Search.
+   case Common::Network::GUI_SEARCH:
       {
          // Remove old searches.
          for (QMutableListIterator< QSharedPointer<NL::ISearch> > i(this->currentSearches); i.hasNext();)
@@ -236,12 +243,12 @@ bool RemoteConnection::readMessage()
 
             Protos::GUI::Tag tagMess;
             tagMess.set_tag(tag);
-            this->send(0x32, tagMess);
+            this->send(Common::Network::GUI_SEARCH_TAG, tagMess);
          }
       }
       break;
 
-   case 0x41: // Browse.
+   case Common::Network::GUI_BROWSE:
       {
          Protos::GUI::Browse browseMessage;
          {
@@ -257,7 +264,7 @@ bool RemoteConnection::readMessage()
             quint64 tag = (static_cast<quint64>(this->mtrand.randInt()) << 32) | this->mtrand.randInt();
             Protos::GUI::Tag tagMess;
             tagMess.set_tag(tag);
-            this->send(0x42, tagMess);
+            this->send(Common::Network::GUI_BROWSE_TAG, tagMess);
 
             if (peer)
             {
@@ -283,13 +290,13 @@ bool RemoteConnection::readMessage()
                   result.mutable_entries(); // To create an empty 'entries' field.
 
                result.set_tag(tag);
-               this->send(0x43, result);
+               this->send(Common::Network::GUI_BROWSE_RESULT, result);
             }
          }
       }
       break;
 
-   case 0x61: // CancelDownloads.
+   case Common::Network::GUI_CANCEL_DOWNLOADS:
       {
          Protos::GUI::CancelDownloads cancelDownloadsMessage;
          {
@@ -315,7 +322,7 @@ bool RemoteConnection::readMessage()
       }
       break;
 
-   case 0x71: // Download.
+   case Common::Network::GUI_DOWNLOAD:
       {
          Protos::GUI::Download downloadMessage;
          {
@@ -331,7 +338,7 @@ bool RemoteConnection::readMessage()
       }
       break;
 
-   case 0x81: // ChatMessage.
+   case Common::Network::GUI_CHAT_MESSAGE:
       {
          Protos::GUI::ChatMessage chatMessage;
          {
@@ -353,14 +360,14 @@ bool RemoteConnection::readMessage()
    return readOK;
 }
 
-void RemoteConnection::send(quint32 type, const google::protobuf::Message& message)
+void RemoteConnection::send(Common::Network::GUIMessageType type, const google::protobuf::Message& message)
 {
-   Common::MessageHeader header(type, message.ByteSize(), this->peerManager->getID());
+   Common::Network::MessageHeader header(type, message.ByteSize(), this->peerManager->getID());
 
 #if DEBUG
    QString logMess = QString("RemoteConnection::send : header.type = %1, header.size = %2\n%3").arg(header.type, 0, 16).arg(header.size).arg(Common::ProtoHelper::getDebugStr(message));
-   if (type == 0x01)
-      ; // LOG_DEBU(this->loggerRefreshState, logMess); // Too heavy...
+   if (type == Common::Network::GUI_STATE)
+      ; // LOG_DEBU(this->loggerRefreshState, logMess); // Commented -> too heavy...
    else
       L_DEBU(logMess);
 #endif

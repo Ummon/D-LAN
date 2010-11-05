@@ -4,6 +4,7 @@
 #include <QAbstractSocket>
 
 #include <Common/Hash.h>
+#include <Common/Network.h>
 
 #include <google/protobuf/message.h>
 
@@ -16,7 +17,7 @@ namespace PM
 
       virtual QAbstractSocket* getQSocket() const = 0;
       virtual Common::Hash getPeerID() const = 0;
-      virtual void send(quint32 type, const google::protobuf::Message& message) = 0;
+      virtual void send(Common::Network::CoreMessageType type, const google::protobuf::Message& message) = 0;
 
       /**
         * Called before an upload or a download to take the control of the socket.

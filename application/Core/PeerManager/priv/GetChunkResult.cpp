@@ -17,14 +17,14 @@ GetChunkResult::~GetChunkResult()
 
 void GetChunkResult::start()
 {
-   connect(this->socket.data(), SIGNAL(newMessage(quint32, const google::protobuf::Message&)), this, SLOT(newMessage(quint32, const google::protobuf::Message&)));
-   socket->send(0x51, this->chunk);
+   connect(this->socket.data(), SIGNAL(newMessage(Common::Network::CoreMessageType, const google::protobuf::Message&)), this, SLOT(newMessage(Common::Network::CoreMessageType, const google::protobuf::Message&)));
+   socket->send(Common::Network::CORE_GET_CHUNK, this->chunk);
    this->startTimer();
 }
 
-void GetChunkResult::newMessage(quint32 type, const google::protobuf::Message& message)
+void GetChunkResult::newMessage(Common::Network::CoreMessageType type, const google::protobuf::Message& message)
 {
-   if (type != 0x52)
+   if (type != Common::Network::CORE_GET_CHUNK_RESULT)
       return;
 
    this->stopTimer();
@@ -39,6 +39,6 @@ void GetChunkResult::newMessage(quint32 type, const google::protobuf::Message& m
    else
    {
       this->error = true;
-      disconnect(this->socket.data(), SIGNAL(newMessage(quint32, const google::protobuf::Message&)), this, SLOT(newMessage(quint32, const google::protobuf::Message&)));
+      disconnect(this->socket.data(), SIGNAL(newMessage(Common::Network::CoreMessageType, const google::protobuf::Message&)), this, SLOT(newMessage(Common::Network::CoreMessageType, const google::protobuf::Message&)));
    }
 }

@@ -6,6 +6,7 @@ using namespace PM;
 #include <QString>
 
 #include <Common/ProtoHelper.h>
+#include <Common/Network.h>
 
 #include <ISocket.h>
 
@@ -62,7 +63,7 @@ void ResultListener::getChunk(Common::Hash hash, int offset, QSharedPointer<ISoc
 {
    Protos::Core::GetChunkResult result;
    result.set_status(Protos::Core::GetChunkResult_Status_OK);
-   socket->send(0x52, result);
+   socket->send(Common::Network::CORE_GET_CHUNK_RESULT, result);
 
    socket->getQSocket()->write(CHUNK_DATA);
    socket->finished();

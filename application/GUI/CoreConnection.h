@@ -92,8 +92,6 @@ namespace GUI
 
       void download(const Common::Hash& peerID, const Protos::Common::Entry& entry);
 
-      void send(quint32 type, const google::protobuf::Message& message);
-
    public slots:
       void connectToCore();
 
@@ -111,11 +109,15 @@ namespace GUI
       void dataReceived();
 
    private:
+      friend class BrowseResult;
+      friend class SearchResult;
+
+      void send(Common::Network::GUIMessageType type, const google::protobuf::Message& message);
       bool readMessage();
 
       QTcpSocket socket;
       Common::Hash ourID;
-      Common::MessageHeader currentHeader;
+      Common::Network::MessageHeader currentHeader;
 
       QList< QSharedPointer<BrowseResult> > browseResultsWithoutTag;
       QList< QSharedPointer<SearchResult> > searchResultsWithoutTag;

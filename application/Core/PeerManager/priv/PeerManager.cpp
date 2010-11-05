@@ -142,7 +142,7 @@ void PeerManager::onGetChunk(Common::Hash hash, int offset, QSharedPointer<Socke
    {
       Protos::Core::GetChunkResult mess;
       mess.set_status(Protos::Core::GetChunkResult_Status_ERROR_UNKNOWN);
-      socket->send(0x52, mess);
+      socket->send(Common::Network::CORE_GET_CHUNK_RESULT, mess);
       socket->finished();
       L_ERRO("PeerManager::onGetChunk(..) : no slot connected to the signal 'getChunk(..)'");
       return;
@@ -158,7 +158,7 @@ void PeerManager::dataReceived(QTcpSocket* tcpSocket)
 
    if (tcpSocket->bytesAvailable() >= Common::Network::HEADER_SIZE)
    {
-      const Common::MessageHeader& header = Common::Network::readHeader(*tcpSocket, false);
+      const Common::Network::MessageHeader& header = Common::Network::readHeader(*tcpSocket, false);
       Peer* p = this->getPeer_(header.senderID);
 
       this->removeFromPending(tcpSocket);

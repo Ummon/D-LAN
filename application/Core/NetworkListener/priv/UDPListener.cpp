@@ -85,7 +85,7 @@ UDPListener::UDPListener(
    this->sendIMAliveMessage();
 }
 
-void UDPListener::send(quint32 type, const Common::Hash& peerID, const google::protobuf::Message& message)
+void UDPListener::send(Common::Network::CoreMessageType type, const Common::Hash& peerID, const google::protobuf::Message& message)
 {
    PM::IPeer* peer = this->peerManager->getPeer(peerID);
    if (!peer)
@@ -111,7 +111,7 @@ void UDPListener::send(quint32 type, const Common::Hash& peerID, const google::p
 /**
   * Send an UDP multicast message.
   */
-void UDPListener::send(quint32 type, const google::protobuf::Message& message)
+void UDPListener::send(Common::Network::CoreMessageType type, const google::protobuf::Message& message)
 {
    int messageSize;
    if (!(messageSize = this->writeMessageToBuffer(type, message)))
@@ -119,7 +119,7 @@ void UDPListener::send(quint32 type, const google::protobuf::Message& message)
 
 #if DEBUG
    QString logMess = QString("Send multicast UDP : header.type = %2, message size = %3 \n%4").arg(type, 0, 16).arg(messageSize).arg(Common::ProtoHelper::getDebugStr(message));
-   if (type == 0x01)
+   if (type == Common::Network::CORE_IM_ALIVE)
       LOG_DEBU(this->loggerIMAlive, logMess);
    else
       L_DEBU(logMess);
@@ -149,7 +149,7 @@ void UDPListener::sendIMAliveMessage()
       IMAliveMessage.add_chunk()->set_hash(i.next()->getHash().getData(), Common::Hash::HASH_SIZE);
    }
 
-   this->send(0x01, IMAliveMessage);
+   this->send(Common::Network::CORE_IM_ALIVE, IMAliveMessage);
 }
 
 /**
@@ -160,13 +160,13 @@ void UDPListener::processPendingMulticastDatagrams()
    while (this->multicastSocket.hasPendingDatagrams())
    {
       QHostAddress peerAddress;
-      const Common::MessageHeader& header =  UDPListener::readDatagramToBuffer(this->multicastSocket, peerAddress);
+      const Common::Network::MessageHeader& header =  UDPListener::readDatagramToBuffer(this->multicastSocket, peerAddress);
       if (header.isNull())
          continue;
 
       switch (header.type)
       {
-      case 0x01: // IMAlive.
+      case Common::Network::CORE_IM_ALIVE:
          {
             Protos::Core::IMAlive IMAliveMessage;
             IMAliveMessage.ParseFromArray(this->bodyBuffer, header.size);
@@ -199,7 +199,7 @@ void UDPListener::processPendingMulticastDatagrams()
                for (int i = 0; i < bitArray.size(); i++)
                   chunkOwnedMessage.add_chunk_state(bitArray[i]);
 
-               this->send(0x02, header.senderID, chunkOwnedMessage);
+               this->send(Common::Network::CORE_CHUNKS_OWNED, header.senderID, chunkOwnedMessage);
             }
 
             // If we don't know the peer, he may not know us.
@@ -211,7 +211,7 @@ void UDPListener::processPendingMulticastDatagrams()
          }
          break;
 
-      case 0x11: // ChatMessage.
+      case Common::Network::CORE_CHAT_MESSAGE:
          {
             Protos::Core::ChatMessage chatMessage;
             chatMessage.ParseFromArray(this->bodyBuffer, header.size);
@@ -219,7 +219,7 @@ void UDPListener::processPendingMulticastDatagrams()
          }
          break;
 
-      case 0x21: // Find.
+      case Common::Network::CORE_FIND: // Find.
          {
             Protos::Core::Find findMessage;
             findMessage.ParseFromArray(this->bodyBuffer, header.size);
@@ -235,7 +235,7 @@ void UDPListener::processPendingMulticastDatagrams()
             {
                Protos::Common::FindResult& result = i.next();
                result.set_tag(findMessage.tag());
-               this->send(0x22, header.senderID, result);
+               this->send(Common::Network::CORE_FIND_RESULT, header.senderID, result);
             }
          }
          break;
@@ -254,7 +254,7 @@ void UDPListener::processPendingUnicastDatagrams()
    while (this->unicastSocket.hasPendingDatagrams())
    {
       QHostAddress peerAddress;
-      const Common::MessageHeader& header =  UDPListener::readDatagramToBuffer(this->unicastSocket, peerAddress);
+      const Common::Network::MessageHeader& header =  UDPListener::readDatagramToBuffer(this->unicastSocket, peerAddress);
       if (header.isNull())
          continue;
 
@@ -302,10 +302,10 @@ void UDPListener::processPendingUnicastDatagrams()
    }
 }
 
-int UDPListener::writeMessageToBuffer(quint32 type, const google::protobuf::Message& message)
+int UDPListener::writeMessageToBuffer(Common::Network::CoreMessageType type, const google::protobuf::Message& message)
 {
    const int bodySize = message.ByteSize();
-   Common::MessageHeader header(type, bodySize, this->peerManager->getID());
+   Common::Network::MessageHeader header(type, bodySize, this->peerManager->getID());
 
    if (Common::Network::HEADER_SIZE + bodySize > static_cast<int>(SETTINGS.get<quint32>("max_udp_datagram_size")))
    {
@@ -322,11 +322,11 @@ int UDPListener::writeMessageToBuffer(quint32 type, const google::protobuf::Mess
 /**
   * @return false if error.
   */
-Common::MessageHeader UDPListener::readDatagramToBuffer(QUdpSocket& socket, QHostAddress& peerAddress)
+Common::Network::MessageHeader UDPListener::readDatagramToBuffer(QUdpSocket& socket, QHostAddress& peerAddress)
 {
    qint64 datagramSize = socket.readDatagram(this->buffer, BUFFER_SIZE, &peerAddress);
 
-   Common::MessageHeader header = Common::Network::readHeader(buffer);
+   Common::Network::MessageHeader header = Common::Network::readHeader(buffer);
 
    if (header.size > datagramSize - Common::Network::HEADER_SIZE)
    {
@@ -342,7 +342,7 @@ Common::MessageHeader UDPListener::readDatagramToBuffer(QUdpSocket& socket, QHos
       return header;
    }
 
-   if (header.type != 0x01)
+   if (header.type != Common::Network::CORE_IM_ALIVE)
    {
       PM::IPeer* peer = this->peerManager->getPeer(header.senderID);
       if (!peer)

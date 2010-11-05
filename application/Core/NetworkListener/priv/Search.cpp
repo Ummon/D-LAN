@@ -2,6 +2,7 @@
 using namespace NL;
 
 #include <Common/ProtoHelper.h>
+#include <Common/Network.h>
 
 #include <priv/Log.h>
 
@@ -35,7 +36,7 @@ quint64 Search::search(const QString& words)
 
    connect(&this->uDPListener, SIGNAL(newFindResultMessage(Protos::Common::FindResult)), this, SLOT(newFindResult(Protos::Common::FindResult)));
 
-   this->uDPListener.send(0x21, findMessage);
+   this->uDPListener.send(Common::Network::CORE_FIND, findMessage);
 
    return this->tag;
 }

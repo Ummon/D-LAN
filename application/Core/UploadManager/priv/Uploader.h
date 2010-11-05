@@ -3,14 +3,15 @@
 
 #include <QThread>
 #include <QSharedPointer>
+#include <QTimer>
+#include <QMutex>
 
 #include <Common/TransferRateCalculator.h>
 #include <Core/FileManager/IChunk.h>
 #include <Core/FileManager/IDataReader.h>
+#include <Core/PeerManager/ISocket.h>
 
 #include <IUpload.h>
-
-namespace PM { class ISocket; }
 
 namespace UM
 {
@@ -34,8 +35,11 @@ namespace UM
 
       QSharedPointer<PM::ISocket> getSocket();
 
+      void startTimer();
+
    signals:
       void uploadFinished(bool error);
+      void uploadTimeout();
 
    protected:
       void run();
@@ -45,6 +49,8 @@ namespace UM
       QSharedPointer<FM::IChunk> chunk;
       int offset;
       QSharedPointer<PM::ISocket> socket;
+      QTimer timer;
+      mutable QMutex mutex;
 
       Common::TransferRateCalculator transferRateCalculator;
 

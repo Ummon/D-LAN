@@ -54,7 +54,7 @@ namespace RCM
 
    private:
       bool readMessage();
-      void send(quint32 type, const google::protobuf::Message& message);
+      void send(Common::Network::GUIMessageType type, const google::protobuf::Message& message);
 
       QSharedPointer<FM::IFileManager> fileManager;
       QSharedPointer<PM::IPeerManager> peerManager;
@@ -65,7 +65,7 @@ namespace RCM
       QTcpSocket* socket;
       QTimer timerRefresh;
 
-      Common::MessageHeader currentHeader;
+      Common::Network::MessageHeader currentHeader;
 
       QList< QSharedPointer<NL::ISearch> > currentSearches;
       QList< QSharedPointer<PM::IGetEntriesResult> > getEntriesResults;

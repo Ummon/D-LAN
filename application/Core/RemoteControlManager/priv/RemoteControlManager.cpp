@@ -28,7 +28,7 @@ void RemoteControlManager::newConnection()
 {
    QTcpSocket* socket = this->tcpServer.nextPendingConnection();
 
-   if (this->connections.size() > SETTINGS.get<quint32>("remote_max_nb_connection"))
+   if (static_cast<quint32>(this->connections.size()) > SETTINGS.get<quint32>("remote_max_nb_connection"))
    {
       L_WARN("Cannot handle new connection, too many connection");
       delete socket;

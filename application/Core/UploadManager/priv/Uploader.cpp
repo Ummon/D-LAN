@@ -2,6 +2,7 @@
 using namespace UM;
 
 #include <QByteArray>
+#include <QSharedPointer>
 
 #include <Common/Settings.h>
 
@@ -18,6 +19,10 @@ Uploader::Uploader(QSharedPointer<FM::IChunk> chunk, int offset, QSharedPointer<
 {
    this->mainThread = QThread::currentThread();
    this->socket->getQSocket()->moveToThread(this);
+
+   this->timer.setInterval(SETTINGS.get<quint32>("upload_live_time"));
+   this->timer.setSingleShot(true);
+   connect(&this->timer, SIGNAL(timeout()), this, SIGNAL(uploadTimeout()));
 }
 
 quint64 Uploader::getID() const
@@ -37,6 +42,7 @@ Common::Hash Uploader::getPeerID() const
 
 int Uploader::getProgress() const
 {
+   QMutexLocker locker(&this->mutex);
    return 100 * this->offset / this->chunk->getChunkSize();
 }
 
@@ -50,12 +56,16 @@ QSharedPointer<PM::ISocket> Uploader::getSocket()
    return this->socket;
 }
 
+void Uploader::startTimer()
+{
+   this->timer.start();
+}
+
 void Uploader::run()
 {
    L_DEBU(QString("Starting uploading a chunk from offset %1 : %2").arg(this->offset).arg(this->chunk->toStr()));
 
    bool networkError = false;
-   int currentOffset = this->offset;
 
    try
    {
@@ -66,7 +76,7 @@ void Uploader::run()
 
       this->transferRateCalculator.reset();
 
-      while (bytesRead = reader->read(buffer, currentOffset))
+      while (bytesRead = reader->read(buffer, this->offset))
       {
          int bytesSent = socket->getQSocket()->write(buffer, bytesRead);
          if (bytesSent == -1)
@@ -76,9 +86,11 @@ void Uploader::run()
             break;
          }
 
-         currentOffset += bytesSent;
+         this->mutex.lock();
+         this->offset += bytesSent;
+         this->mutex.unlock();
 
-         // Sometimes will block when data are send between the 'bytesToWrite' call and the 'waitForBytesWritten' call.
+         // Sometimes it will block when data are send between the 'bytesToWrite' call and the 'waitForBytesWritten' call.
          /*if (socket->getQSocket()->bytesToWrite() > SETTINGS.get<quint32>("socket_buffer_size"))
          {
             if (!socket->getQSocket()->waitForBytesWritten(SETTINGS.get<quint32>("socket_timeout")))

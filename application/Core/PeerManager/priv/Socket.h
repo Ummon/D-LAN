@@ -35,14 +35,14 @@ namespace PM
       bool isIdle();
       void setActive();
 
-      void send(quint32 type, const google::protobuf::Message& message);
+      void send(Common::Network::CoreMessageType type, const google::protobuf::Message& message);
       void finished(bool error = false);
 
    public slots:
       void close();
 
    signals:
-      void newMessage(quint32 type, const google::protobuf::Message& message);
+      void newMessage(Common::Network::CoreMessageType type, const google::protobuf::Message& message);
       void getIdle(Socket*);
       void closed(Socket*);
       void getChunk(const Common::Hash&, int, Socket*);
@@ -61,7 +61,7 @@ namespace PM
       QSharedPointer<FM::IFileManager> fileManager;
       const Common::Hash peerID;
 
-      Common::MessageHeader currentHeader;
+      Common::Network::MessageHeader currentHeader;
 
       QTcpSocket* socket;
 

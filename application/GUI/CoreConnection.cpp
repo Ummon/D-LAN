@@ -29,7 +29,7 @@ void BrowseResult::start()
    if (this->entry.IsInitialized())
       browseMessage.mutable_dir()->CopyFrom(this->entry);
 
-   this->coreConnection->send(0x41, browseMessage);
+   this->coreConnection->send(Common::Network::GUI_BROWSE, browseMessage);
 }
 
 void BrowseResult::setTag(quint64 tag)
@@ -64,7 +64,7 @@ void SearchResult::start()
 {
    Protos::GUI::Search search;
    Common::ProtoHelper::setStr(search, &Protos::GUI::Search::set_pattern, this->terms);
-   this->coreConnection->send(0x31, search);
+   this->coreConnection->send(Common::Network::GUI_SEARCH, search);
 }
 
 void SearchResult::setTag(quint64 tag)
@@ -101,12 +101,12 @@ void CoreConnection::sendChatMessage(const QString& message)
 {
    Protos::GUI::ChatMessage chatMessage;
    Common::ProtoHelper::setStr(chatMessage, &Protos::GUI::ChatMessage::set_message, message);
-   this->send(0x81, chatMessage);
+   this->send(Common::Network::GUI_CHAT_MESSAGE, chatMessage);
 }
 
 void CoreConnection::setCoreSettings(const Protos::GUI::CoreSettings settings)
 {
-   this->send(0x21, settings);
+   this->send(Common::Network::GUI_SETTINGS, settings);
 }
 
 QSharedPointer<IBrowseResult> CoreConnection::browse(const Common::Hash& peerID)
@@ -135,20 +135,7 @@ void CoreConnection::download(const Common::Hash& peerID, const Protos::Common::
    Protos::GUI::Download downloadMessage;
    downloadMessage.mutable_peer_id()->set_hash(peerID.getData(), Common::Hash::HASH_SIZE);
    downloadMessage.mutable_entry()->CopyFrom(entry);
-   this->send(0x71, downloadMessage);
-}
-
-void CoreConnection::send(quint32 type, const google::protobuf::Message& message)
-{
-   Common::MessageHeader header(type, message.ByteSize(), this->ourID);
-
-   //L_DEBU(QString("CoreConnection::send : header.type = %1, header.size = %2\n%3").arg(header.type, 0, 16).arg(header.size).arg(Common::ProtoHelper::getDebugStr(message)));
-
-   Common::Network::writeHeader(this->socket, header);
-   Common::ZeroCopyOutputStreamQIODevice outputStream(&this->socket);
-   message.SerializeToZeroCopyStream(&outputStream);
-   /*if (!message.SerializeToZeroCopyStream(&outputStream))
-      L_WARN(QString("Unable to send %1").arg(Common::ProtoHelper::getDebugStr(message)));*/
+   this->send(Common::Network::GUI_DOWNLOAD, downloadMessage);
 }
 
 void CoreConnection::connectToCore()
@@ -199,13 +186,26 @@ void CoreConnection::dataReceived()
    }
 }
 
+void CoreConnection::send(Common::Network::GUIMessageType type, const google::protobuf::Message& message)
+{
+   Common::Network::MessageHeader header(type, message.ByteSize(), this->ourID);
+
+   //L_DEBU(QString("CoreConnection::send : header.type = %1, header.size = %2\n%3").arg(header.type, 0, 16).arg(header.size).arg(Common::ProtoHelper::getDebugStr(message)));
+
+   Common::Network::writeHeader(this->socket, header);
+   Common::ZeroCopyOutputStreamQIODevice outputStream(&this->socket);
+   message.SerializeToZeroCopyStream(&outputStream);
+   /*if (!message.SerializeToZeroCopyStream(&outputStream))
+      L_WARN(QString("Unable to send %1").arg(Common::ProtoHelper::getDebugStr(message)));*/
+}
+
 bool CoreConnection::readMessage()
 {
    bool readOK = false;
 
    switch (this->currentHeader.type)
    {
-   case 0x01 : // State.
+   case Common::Network::GUI_STATE:
       {
          Protos::GUI::State state;
 
@@ -221,12 +221,10 @@ bool CoreConnection::readMessage()
       }
       break;
 
-   case 0x11 : // EventChatMessage.
+   case Common::Network::GUI_EVENT_CHAT_MESSAGE: // EventChatMessage.
       {
          Protos::GUI::EventChatMessage eventChatMessage;
 
-         // This scope (and the others ones below) is here to force the input stream to read all the bytes.
-         // See Common::ZeroCopyInputStreamQIODevice::~ZeroCopyInputStreamQIODevice.
          {
             Common::ZeroCopyInputStreamQIODevice inputStream(&this->socket);
             readOK = eventChatMessage.ParseFromBoundedZeroCopyStream(&inputStream, this->currentHeader.size);
@@ -240,7 +238,7 @@ bool CoreConnection::readMessage()
       }
       break;
 
-   case 0x32 : // Tag (for Search).
+   case Common::Network::GUI_SEARCH_TAG:
       {
          Protos::GUI::Tag tagMessage;
          {
@@ -253,7 +251,7 @@ bool CoreConnection::readMessage()
       }
       break;
 
-   case 0x33 : // FindResult.
+   case Common::Network::GUI_SEARCH_RESULT:
       {
          Protos::Common::FindResult findResultMessage;
          {
@@ -266,7 +264,7 @@ bool CoreConnection::readMessage()
       }
       break;
 
-   case 0x42 : // Tag (for Browse).
+   case Common::Network::GUI_BROWSE_TAG:
       {
          Protos::GUI::Tag tagMessage;
          {
@@ -279,7 +277,7 @@ bool CoreConnection::readMessage()
       }
       break;
 
-   case 0x43 : // BrowseResult.
+   case Common::Network::GUI_BROWSE_RESULT:
       {
          Protos::GUI::BrowseResult browseResultMessage;
          {
