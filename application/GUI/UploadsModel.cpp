@@ -42,8 +42,8 @@ QVariant UploadsModel::data(const QModelIndex& index, int role) const
          }
       }
 
-   /*case Qt::TextAlignmentRole:
-      return index.column() == 1 ? Qt::AlignRight : Qt::AlignLeft;*/
+   case Qt::TextAlignmentRole:
+      return index.column() == 1 ? Qt::AlignRight : Qt::AlignLeft;
 
    default: return QVariant();
    }

@@ -10,7 +10,7 @@ GetHashesResult::GetHashesResult(const Protos::Common::Entry& file, QSharedPoint
 
 GetHashesResult::~GetHashesResult()
 {
-   disconnect(this->socket.data(), SIGNAL(newMessage(quint32, const google::protobuf::Message&)), this, SLOT(newMessage(quint32, const google::protobuf::Message&)));
+   disconnect(this->socket.data(), SIGNAL(newMessage(Common::Network::CoreMessageType, const google::protobuf::Message&)), this, SLOT(newMessage(Common::Network::CoreMessageType, const google::protobuf::Message&)));
    this->socket->finished();
 }
 
@@ -18,28 +18,28 @@ void GetHashesResult::start()
 {
    Protos::Core::GetHashes message;
    message.mutable_file()->CopyFrom(this->file);
-   connect(this->socket.data(), SIGNAL(newMessage(quint32, const google::protobuf::Message&)), this, SLOT(newMessage(quint32, const google::protobuf::Message&)));
-   socket->send(0x41, message);
+   connect(this->socket.data(), SIGNAL(newMessage(Common::Network::CoreMessageType, const google::protobuf::Message&)), this, SLOT(newMessage(Common::Network::CoreMessageType, const google::protobuf::Message&)));
+   socket->send(Common::Network::CORE_GET_HASHES, message);
 }
 
-void GetHashesResult::newMessage(quint32 type, const google::protobuf::Message& message)
+void GetHashesResult::newMessage(Common::Network::CoreMessageType type, const google::protobuf::Message& message)
 {
    switch (type)
    {
-   case 0x42:
+   case Common::Network::CORE_GET_HASHES_RESULT:
       {
          const Protos::Core::GetHashesResult& hashesResult = dynamic_cast<const Protos::Core::GetHashesResult&>(message);
          emit result(hashesResult);
       }
       break;
 
-   case 0x43:
+   case Common::Network::CORE_HASH:
       {
          const Protos::Common::Hash& hash = dynamic_cast<const Protos::Common::Hash&>(message);
          emit nextHash(Common::Hash(hash.hash().data()));
       }
       break;
 
-   //case 0x44: // TODO
+   default:;
    }
 }

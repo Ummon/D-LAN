@@ -181,7 +181,7 @@ void ChunkDownload::run()
 
       forever
       {
-         bytesRead = socket->getQSocket()->read(buffer, BUFFER_SIZE);
+         bytesRead = this->socket->getQSocket()->read(buffer, BUFFER_SIZE);
 
          if (bytesRead == 0)
          {

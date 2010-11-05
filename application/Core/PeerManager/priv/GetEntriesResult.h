@@ -8,6 +8,8 @@
 #include <Protos/common.pb.h>
 #include <Protos/core_protocol.pb.h>
 
+#include <Common/Network.h>
+
 #include <IGetEntriesResult.h>
 #include <priv/Socket.h>
 
@@ -22,7 +24,7 @@ namespace PM
       void start();
 
    private slots:
-      void newMessage(quint32 type, const google::protobuf::Message& message);
+      void newMessage(Common::Network::CoreMessageType type, const google::protobuf::Message& message);
 
    private:
       const Protos::Core::GetEntries dir;

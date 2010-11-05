@@ -242,5 +242,5 @@ bool Chunk::isOwnedBy(File* file) const
 
 QString Chunk::toStr() const
 {
-   return QString("num = [%1], knownBytes = %2, hash = %3").arg(this->num).arg(this->getKnownBytes()).arg(this->getHash().toStr());
+   return QString("num = [%1], hash = %2, knownBytes = %3, size = %4").arg(this->num).arg(this->getHash().toStr()).arg(this->getKnownBytes()).arg(this->getChunkSize());
 }

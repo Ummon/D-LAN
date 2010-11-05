@@ -85,6 +85,8 @@ void ::Core::checkSettingsIntegrity()
    this->checkSetting("download_rate_valid_time_factor", 100u, 100000u);
    this->checkSetting("peer_imalive_period", 1000u, 60u * 1000u);
 
+   this->checkSetting("upload_live_time", 0u, 30u * 1000u);
+
    this->checkSetting("unicast_base_port", 1u, 65535u);
    this->checkSetting("multicast_port", 1u, 65535u);
    this->checkSetting("multicast_ttl", 1u, 255u);

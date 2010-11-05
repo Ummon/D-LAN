@@ -51,7 +51,7 @@ void ChatModel::newChatMessage(const Common::Hash& peerID, const QString& messag
    messages << Message(peerID, nick, QDateTime::currentDateTime(), message);
    this->endInsertRows();
 
-   if (this->messages.size() > SETTINGS.get<quint32>("max_chat_message_displayed"))
+   if (static_cast<quint32>(this->messages.size()) > SETTINGS.get<quint32>("max_chat_message_displayed"))
    {
       this->beginRemoveRows(QModelIndex(), 0, 0);
       messages.removeFirst();

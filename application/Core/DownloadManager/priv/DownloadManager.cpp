@@ -229,7 +229,7 @@ void DownloadManager::chunkDownloadFinished()
 {
    QMutexLocker lock(&this->mutexNumberOfDownload);
 
-   L_DEBU(QString("DownloadManager::chunkDownloadFinished, numberOfDownload = %1").arg(this->numberOfDownload));
+   //L_DEBU(QString("DownloadManager::chunkDownloadFinished, numberOfDownload = %1").arg(this->numberOfDownload));
    this->sender()->disconnect(this, SLOT(chunkDownloadFinished()));
    this->numberOfDownload--;
 }

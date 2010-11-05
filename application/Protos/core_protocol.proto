@@ -100,9 +100,6 @@ message GetHashesResult {
 // b -> a
 // id = 0x43
 // Common.Hash
-// or (only once)
-// id = 0x44
-// Common.Error
 
 // Download.
 // a -> b

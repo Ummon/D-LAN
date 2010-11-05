@@ -5,13 +5,14 @@
 #include <QtNetwork>
 #include <QSharedPointer>
 
+#include <Core/PeerManager/ISocket.h>
+
 #include <Common/Hash.h>
 #include <Protos/common.pb.h>
 
 namespace PM
 {
    class IPeer;
-   class ISocket;
 
    class IPeerManager : public QObject
    {

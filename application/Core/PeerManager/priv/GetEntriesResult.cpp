@@ -14,15 +14,16 @@ GetEntriesResult::~GetEntriesResult()
 
 void GetEntriesResult::start()
 {
-   connect(this->socket.data(), SIGNAL(newMessage(quint32, const google::protobuf::Message&)), this, SLOT(newMessage(quint32, const google::protobuf::Message&)));
-   socket->send(0x31, this->dir);
+   connect(this->socket.data(), SIGNAL(newMessage(Common::Network::CoreMessageType, const google::protobuf::Message&)), this, SLOT(newMessage(Common::Network::CoreMessageType, const google::protobuf::Message&)));
+   socket->send(Common::Network::CORE_GET_ENTRIES, this->dir);
 }
 
-void GetEntriesResult::newMessage(quint32 type, const google::protobuf::Message& message)
+void GetEntriesResult::newMessage(Common::Network::CoreMessageType type, const google::protobuf::Message& message)
 {
-   if (type != 0x32)
+   if (type != Common::Network::CORE_GET_ENTRIES_RESULT)
       return;
-   disconnect(this->socket.data(), SIGNAL(newMessage(quint32, const google::protobuf::Message&)), this, SLOT(newMessage(quint32, const google::protobuf::Message&)));
+
+   disconnect(this->socket.data(), SIGNAL(newMessage(Common::Network::CoreMessageType, const google::protobuf::Message&)), this, SLOT(newMessage(Common::Network::CoreMessageType, const google::protobuf::Message&)));
 
    const Protos::Common::Entries& entries = dynamic_cast<const Protos::Common::Entries&>(message);
    emit result(entries);

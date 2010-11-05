@@ -37,8 +37,8 @@ namespace NL
          quint16 unicastPort
       );
 
-      void send(quint32 type, const Common::Hash& peerID, const google::protobuf::Message& message);
-      void send(quint32 type, const google::protobuf::Message& message);
+      void send(Common::Network::CoreMessageType type, const Common::Hash& peerID, const google::protobuf::Message& message);
+      void send(Common::Network::CoreMessageType type, const google::protobuf::Message& message);
 
    signals:
       void newChatMessage(const Common::Hash&, const Protos::Core::ChatMessage& chatMessage);
@@ -50,8 +50,8 @@ namespace NL
       void processPendingUnicastDatagrams();
 
    private:
-      int writeMessageToBuffer(quint32 type, const google::protobuf::Message& message);
-      Common::MessageHeader readDatagramToBuffer(QUdpSocket& socket, QHostAddress& peerAddress);
+      int writeMessageToBuffer(Common::Network::CoreMessageType type, const google::protobuf::Message& message);
+      Common::Network::MessageHeader readDatagramToBuffer(QUdpSocket& socket, QHostAddress& peerAddress);
 
       char buffer[BUFFER_SIZE]; // Buffer used when sending or receiving datagram.
       char* const bodyBuffer;

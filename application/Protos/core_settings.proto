@@ -35,6 +35,9 @@ message Settings {
    optional uint32 download_rate_valid_time_factor = 19 [default = 1500];
    optional uint32 peer_imalive_period = 20 [default = 10000]; // [ms].
    
+   // UploadManager.
+   optional uint32 upload_live_time = 29 [default = 5000]; // [ms].
+   
    // NetworkListener.
    optional uint32 unicast_base_port = 21 [default = 59487]; // If it's already taken we will look further to a free port. (UDP + TCP).
    optional uint32 multicast_port = 22 [default = 59486]; // (UDP)

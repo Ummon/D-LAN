@@ -44,9 +44,6 @@ Socket::~Socket()
 {
    L_DEBU(QString("Socket[%1] deleted").arg(this->num));
 
-   disconnect(this->socket, SIGNAL(readyRead()), this, SLOT(dataReceived()));
-   disconnect(this->socket, SIGNAL(disconnected()), this, SLOT(disconnected()));
-
    this->socket->deleteLater();
 }
 
@@ -84,8 +81,6 @@ void Socket::stopListening()
 {
    L_DEBU(QString("Socket[%1] stopping to listen").arg(this->num));
 
-   disconnect(this->socket, SIGNAL(readyRead()), this, SLOT(dataReceived()));
-   disconnect(this->socket, SIGNAL(disconnected()), this, SLOT(disconnected()));
    this->listening = false;
 }
 
@@ -105,11 +100,11 @@ void Socket::setActive()
    this->activityTimer.start();
 }
 
-void Socket::send(quint32 type, const google::protobuf::Message& message)
+void Socket::send(Common::Network::CoreMessageType type, const google::protobuf::Message& message)
 {
    this->setActive();
 
-   Common::MessageHeader header(type, message.ByteSize(), this->peerManager->getID());
+   Common::Network::MessageHeader header(type, message.ByteSize(), this->peerManager->getID());
 
    L_DEBU(QString("Socket[%1]::send : header.type = %2, header.size = %3\n%4").arg(this->num).arg(header.type, 0, 16).arg(header.size).arg(Common::ProtoHelper::getDebugStr(message)));
 
@@ -195,6 +190,9 @@ void Socket::close()
 {
    L_DEBU(QString("Socket[%1] closing..").arg(this->num));
 
+   disconnect(this->socket, SIGNAL(readyRead()), this, SLOT(dataReceived()));
+   disconnect(this->socket, SIGNAL(disconnected()), this, SLOT(disconnected()));
+
    this->idle = true;
    emit closed(this);
 }
@@ -213,7 +211,7 @@ void Socket::nextAskedHash(Common::Hash hash)
 {
    Protos::Common::Hash hashProto;
    hashProto.set_hash(hash.getData(), Common::Hash::HASH_SIZE);
-   this->send(0x43, hashProto);
+   this->send(Common::Network::CORE_HASH, hashProto);
 
    if (--this->nbHash == 0)
    {
@@ -231,7 +229,7 @@ bool Socket::readMessage()
 
    switch (this->currentHeader.type)
    {
-   case 0x31 : // GetEntries.
+   case Common::Network::CORE_GET_ENTRIES:
       {
          Protos::Core::GetEntries getEntries;
 
@@ -244,7 +242,7 @@ bool Socket::readMessage()
 
          if (readOK)
             this->send(
-               0x32,
+               Common::Network::CORE_GET_ENTRIES_RESULT,
                getEntries.has_dir() ? this->fileManager->getEntries(getEntries.dir()) : this->fileManager->getEntries()
             );
 
@@ -252,7 +250,7 @@ bool Socket::readMessage()
       }
       break;
 
-   case 0x32 : // GetEntriesResult.
+   case Common::Network::CORE_GET_ENTRIES_RESULT:
       {
          Protos::Common::Entries getEntriesResult;
          {
@@ -264,12 +262,12 @@ bool Socket::readMessage()
 
          if (readOK)
          {
-            emit newMessage(this->currentHeader.type, getEntriesResult);
+            emit newMessage(this->currentHeader.getTypeCore(), getEntriesResult);
          }
       }
       break;
 
-   case 0x41 : // GetHashes.
+   case Common::Network::CORE_GET_HASHES:
       {
          Protos::Core::GetHashes getHashes;
          {
@@ -285,7 +283,7 @@ bool Socket::readMessage()
 
             this->nbHash = res.nb_hash();
 
-            this->send(0x42, res);
+            this->send(Common::Network::CORE_GET_HASHES_RESULT, res);
 
             if (res.status() != Protos::Core::GetHashesResult_Status_OK)
             {
@@ -296,7 +294,7 @@ bool Socket::readMessage()
       }
       break;
 
-   case 0x42 : // GetHashesResult.
+   case Common::Network::CORE_GET_HASHES_RESULT:
       {
          Protos::Core::GetHashesResult getHashesResult;
          {
@@ -307,12 +305,12 @@ bool Socket::readMessage()
          if (readOK)
          {
             this->nbHash = getHashesResult.nb_hash();
-            emit newMessage(this->currentHeader.type, getHashesResult);
+            emit newMessage(this->currentHeader.getTypeCore(), getHashesResult);
          }
       }
       break;
 
-   case 0x43 : // Common.Hash.
+   case Common::Network::CORE_HASH:
       {
          Protos::Common::Hash hash;
          {
@@ -325,14 +323,12 @@ bool Socket::readMessage()
             if (--this->nbHash == 0)
                this->finished();
 
-            emit newMessage(this->currentHeader.type, hash);
+            emit newMessage(this->currentHeader.getTypeCore(), hash);
          }
       }
       break;
 
-//         case 0x44 : // TODO
-
-   case 0x51 : // GetChunk.
+   case Common::Network::CORE_GET_CHUNK:
       {
          Protos::Core::GetChunk getChunkMessage;
          {
@@ -345,7 +341,7 @@ bool Socket::readMessage()
       }
       break;
 
-   case 0x52 : // GetChunkResult.
+   case Common::Network::CORE_GET_CHUNK_RESULT:
       {
          Protos::Core::GetChunkResult getChunkResult;
          {
@@ -354,7 +350,7 @@ bool Socket::readMessage()
          }
 
          if (readOK)
-            emit newMessage(this->currentHeader.type, getChunkResult);
+            emit newMessage(this->currentHeader.getTypeCore(), getChunkResult);
       }
       break;
 

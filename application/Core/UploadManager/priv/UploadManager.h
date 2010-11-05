@@ -28,6 +28,7 @@ namespace UM
    private slots:
       void getChunk(Common::Hash hash, int offset, QSharedPointer<PM::ISocket> socket);
       void uploadFinished(bool networkError);
+      void deleteUpload();
 
    private:
       QSharedPointer<FM::IFileManager> fileManager;
