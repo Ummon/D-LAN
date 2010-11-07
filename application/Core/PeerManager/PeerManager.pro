@@ -13,8 +13,10 @@ CONFIG(debug, debug|release) {
    FOLDER = release
 }
 
+include(../../Libs/protobuf.pri)
+
 CONFIG += staticlib link_prl create_prl
-INCLUDEPATH += . ../.. ${PROTOBUF}/src
+INCLUDEPATH += . ../..
 
 DESTDIR = output/$$FOLDER
 MOC_DIR = .tmp/$$FOLDER

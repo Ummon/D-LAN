@@ -11,11 +11,10 @@ CONFIG(debug, debug|release) {
    FOLDER = release
 }
 
-LIBS += -L${PROTOBUF}/src/.libs \
-    -lprotobuf
+include(../Libs/protobuf.pri)
+
 INCLUDEPATH += . \
-    .. \
-    ${PROTOBUF}/src
+    ..
 TEMPLATE = lib
 CONFIG += staticlib \
     create_prl
