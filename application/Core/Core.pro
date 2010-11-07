@@ -13,9 +13,10 @@ CONFIG(debug, debug|release) {
    FOLDER = release
 }
 
+include(../Libs/protobuf.pri)
+
 INCLUDEPATH += . \
-    .. \
-    ${PROTOBUF}/src
+    ..
 
 LIBS += -LFileManager/output/$$FOLDER \
     -lFileManager
@@ -49,8 +50,6 @@ LIBS += -L../Common/output/$$FOLDER \
     -lCommon
 POST_TARGETDEPS += ../Common/output/$$FOLDER/libCommon.a
 
-LIBS += -L${PROTOBUF}/src/.libs \
-    -lprotobuf
 
 #LIBS += -L../Libs/qtservice/lib -lQtSolutions_Service-2.6
 include(../Libs/qtservice/src/qtservice.pri)
@@ -75,3 +74,6 @@ SOURCES += main.cpp \
 HEADERS += Core.h \
     Log.h \
     ../Protos/core_settings.pb.h
+
+OTHER_FILES += \
+    ../Libs/protobuf.pri

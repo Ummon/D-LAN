@@ -16,19 +16,15 @@ CONFIG(debug, debug|release) {
    FOLDER = release
 }
 
+include(../Libs/protobuf.pri)
+
 DESTDIR = output/$$FOLDER
 MOC_DIR = ".tmp/$$FOLDER"
 OBJECTS_DIR = ".tmp/$$FOLDER"
 RCC_DIR = ".tmp/$$FOLDER"
 UI_DIR = ".tmp/$$FOLDER"
 
-INCLUDEPATH += . \
-    .. \
-    ${PROTOBUF}/src
-
-LIBS += -L${PROTOBUF}/src/.libs \
-    -lprotobuf
-
+INCLUDEPATH += . ..
 
 LIBS += -L../Common/LogManager/output/$$FOLDER \
     -lLogManager

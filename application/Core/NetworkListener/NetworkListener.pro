@@ -13,6 +13,8 @@ CONFIG(debug, debug|release) {
    FOLDER = release
 }
 
+include(../../Libs/protobuf.pri)
+
 CONFIG += staticlib create_prl link_prl
 
 win32 {
@@ -20,15 +22,11 @@ win32 {
 }
 
 INCLUDEPATH += . \
-    ../.. \
-    ${PROTOBUF}/src
+    ../..
 
 DESTDIR = output/$$FOLDER
 MOC_DIR = .tmp/$$FOLDER
 OBJECTS_DIR = .tmp/$$FOLDER
-
-LIBS += -L${PROTOBUF}/src/.libs \
-    -lprotobuf
 
 LIBS += -L../DownloadManager/output/$$FOLDER -lDownloadManager
 POST_TARGETDEPS += ../DownloadManager/output/$$FOLDER/libDownloadManager.a
