@@ -81,6 +81,9 @@ void Socket::stopListening()
 {
    L_DEBU(QString("Socket[%1] stopping to listen").arg(this->num));
 
+   disconnect(this->socket, SIGNAL(readyRead()), this, SLOT(dataReceived()));
+   disconnect(this->socket, SIGNAL(disconnected()), this, SLOT(disconnected()));
+
    this->listening = false;
 }
 
@@ -175,6 +178,7 @@ void Socket::finished(bool error)
       return;
    }
 
+   this->socket->flush();
    this->idle = true;
 
    this->startListening();
@@ -335,7 +339,9 @@ bool Socket::readMessage()
          }
 
          if (readOK)
+         {
             emit getChunk(Common::Hash(getChunkMessage.chunk().hash().data()), getChunkMessage.offset(), this);
+         }
       }
       break;
 

@@ -14,7 +14,7 @@ GetEntriesResult::~GetEntriesResult()
 
 void GetEntriesResult::start()
 {
-   connect(this->socket.data(), SIGNAL(newMessage(Common::Network::CoreMessageType, const google::protobuf::Message&)), this, SLOT(newMessage(Common::Network::CoreMessageType, const google::protobuf::Message&)));
+   connect(this->socket.data(), SIGNAL(newMessage(Common::Network::CoreMessageType, const google::protobuf::Message&)), this, SLOT(newMessage(Common::Network::CoreMessageType, const google::protobuf::Message&)), Qt::DirectConnection);
    socket->send(Common::Network::CORE_GET_ENTRIES, this->dir);
 }
 

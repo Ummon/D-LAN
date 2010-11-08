@@ -17,7 +17,7 @@ GetChunkResult::~GetChunkResult()
 
 void GetChunkResult::start()
 {
-   connect(this->socket.data(), SIGNAL(newMessage(Common::Network::CoreMessageType, const google::protobuf::Message&)), this, SLOT(newMessage(Common::Network::CoreMessageType, const google::protobuf::Message&)));
+   connect(this->socket.data(), SIGNAL(newMessage(Common::Network::CoreMessageType, const google::protobuf::Message&)), this, SLOT(newMessage(Common::Network::CoreMessageType, const google::protobuf::Message&)), Qt::DirectConnection);
    socket->send(Common::Network::CORE_GET_CHUNK, this->chunk);
    this->startTimer();
 }
