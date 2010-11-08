@@ -218,6 +218,7 @@ void DownloadManager::scanTheQueue()
       {
          QMutexLocker lock(&this->mutexNumberOfDownload);
          this->numberOfDownload++;
+         numberOfDownloadCopy = this->numberOfDownload;
       }
    }
 }

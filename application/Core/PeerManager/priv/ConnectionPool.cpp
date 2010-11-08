@@ -60,6 +60,8 @@ void ConnectionPool::closeAllSocket()
 void ConnectionPool::socketGetIdle(Socket* socket)
 {
    quint32 n = 0;
+   QList< QSharedPointer<Socket> > socketsToClose;
+
    for (QMutableListIterator< QSharedPointer<Socket> > i(this->sockets); i.hasNext();)
    {
      QSharedPointer<Socket> currentSocket = i.next();
@@ -67,9 +69,12 @@ void ConnectionPool::socketGetIdle(Socket* socket)
      {
         n += 1;
         if (n > SETTINGS.get<quint32>("max_number_idle_socket"))
-           i.remove();
+           socketsToClose << currentSocket;
      }
    }
+
+   for (QListIterator<QSharedPointer<Socket> > i(socketsToClose); i.hasNext();)
+      i.next()->close();
 }
 
 void ConnectionPool::socketClosed(Socket* socket)
@@ -103,7 +108,7 @@ QSharedPointer<Socket> ConnectionPool::addNewSocket(QSharedPointer<Socket> socke
    this->sockets << socket;
    connect(socket.data(), SIGNAL(getIdle(Socket*)), this, SLOT(socketGetIdle(Socket*)));
    connect(socket.data(), SIGNAL(closed(Socket*)), this, SLOT(socketClosed(Socket*)));
-   connect(socket.data(), SIGNAL(getChunk(const Common::Hash&, int, Socket*)), this, SLOT(socketGetChunk(const Common::Hash&, int, Socket*)));
+   connect(socket.data(), SIGNAL(getChunk(const Common::Hash&, int, Socket*)), this, SLOT(socketGetChunk(const Common::Hash&, int, Socket*)), Qt::DirectConnection);
    socket->startListening();
    return socket;
 }
