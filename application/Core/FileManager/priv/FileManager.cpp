@@ -113,10 +113,10 @@ Protos::Common::Entries FileManager::getEntries()
 QList<Protos::Common::FindResult> FileManager::find(const QString& words, int maxNbResult, int maxSize)
 {
    QStringList terms = FileManager::splitInWords(words);
-   int n = terms.size();
+   const int n = terms.size();
 
    // Launch a search for each term.
-   QSet<Entry*> results[n];
+   QSet< NodeResult<Entry*> > results[n];
    for (int i = 0; i < n; i++)
       results[i] += this->wordIndex.search(terms[i]);
 
@@ -129,14 +129,14 @@ QList<Protos::Common::FindResult> FileManager::find(const QString& words, int ma
    int level = 0;
    // For each group of intersection number.
    // For example, [a, b, c] :
-   //  1) a & b & c
-   //  2) (a & b) \ c
-   //     (a & c) \ b
-   //     (b & c) \ a
-   //  3) a \ b \ c
+   //  * a & b & c
+   //  * (a & b) \ c
+   //    (a & c) \ b
+   //    (b & c) \ a
+   //  * a \ b \ c
    for (int i = 0; i < n && !end; i++)
    {
-      int nbIntersect = n - i; // Number of set intersected.
+      const int nbIntersect = n - i; // Number of set intersected.
       int intersect[nbIntersect]; // A array of the results wich will be intersected.
       for (int j = 0; j < nbIntersect; j++)
          intersect[j] = j;
@@ -146,14 +146,23 @@ QList<Protos::Common::FindResult> FileManager::find(const QString& words, int ma
       //  * (a, b)
       //  * (a, c)
       //  * (b, c)
-      for (int j = 0; j < Common::Global::nCombinations(n, nbIntersect) && !end; j++)
+      QList< NodeResult<Entry*> > nodesToSort;
+      const int nCombinations = Common::Global::nCombinations(n, nbIntersect);
+      for (int j = 0; j < nCombinations && !end; j++)
       {
-         QSet<Entry*> currentLevelSet;
+         QSet< NodeResult<Entry*> > currentLevelSet;
 
          // Apply intersects.
          currentLevelSet = results[intersect[0]];
+
+         for (QSetIterator< NodeResult<Entry*> > k(currentLevelSet); k.hasNext();)
+         {
+            NodeResult<Entry*>& node = const_cast<NodeResult<Entry*>&>(k.next());
+            node.level = node.level ? nCombinations : 0;
+         }
+
          for (int k = 1; k < nbIntersect; k++)
-            currentLevelSet &= results[intersect[k]];
+            NodeResult<Entry*>::intersect(currentLevelSet, results[intersect[k]], nCombinations);
 
          // Apply substracts.
          for (int k = -1; k < nbIntersect; k++)
@@ -166,31 +175,11 @@ QList<Protos::Common::FindResult> FileManager::find(const QString& words, int ma
                currentLevelSet -= results[l];
          }
 
-         // Populate the result.
-         for (QSetIterator<Entry*> k(currentLevelSet); k.hasNext();)
-         {
-            Entry* entry = k.next();
-            Protos::Common::FindResult_EntryLevel* entryLevel = findResults.last().add_entry();
-            entryLevel->set_level(level);
-            entry->populateEntry(entryLevel->mutable_entry(), true);
+         for (QSetIterator< NodeResult<Entry*> > k(currentLevelSet); k.hasNext();)
+            const_cast<NodeResult<Entry*>&>(k.next()).level += level;
 
-            if (findResults.last().ByteSize() > maxSize)
-            {
-               google::protobuf::RepeatedPtrField<Protos::Common::FindResult_EntryLevel>* entries = findResults.last().mutable_entry();
-               findResults << Protos::Common::FindResult();
-               if (entries->size() > 0)
-               {
-                  findResults.last().add_entry()->CopyFrom(entries->Get(entries->size()-1));
-                  entries->RemoveLast();
-               }
-            }
-
-            if (++numberOfResult >= maxNbResult)
-            {
-               end = true;
-               break;
-            }
-         }
+         // Sort by level.
+         nodesToSort << currentLevelSet.toList();
 
          // Define positions of each intersect term.
          for (int k = nbIntersect - 1; k >= 0; k--)
@@ -204,6 +193,36 @@ QList<Protos::Common::FindResult> FileManager::find(const QString& words, int ma
 
          level += 1;
       }
+
+      qSort(nodesToSort);
+
+      // Populate the result.
+      for (QListIterator< NodeResult<Entry*> > k(nodesToSort); k.hasNext();)
+      {
+         NodeResult<Entry*> entry = k.next();
+         Protos::Common::FindResult_EntryLevel* entryLevel = findResults.last().add_entry();
+         entryLevel->set_level(entry.level);
+         entry.value->populateEntry(entryLevel->mutable_entry(), true);
+
+         if (findResults.last().ByteSize() > maxSize)
+         {
+            google::protobuf::RepeatedPtrField<Protos::Common::FindResult_EntryLevel>* entries = findResults.last().mutable_entry();
+            findResults << Protos::Common::FindResult();
+            if (entries->size() > 0)
+            {
+               findResults.last().add_entry()->CopyFrom(entries->Get(entries->size()-1));
+               entries->RemoveLast();
+            }
+         }
+
+         if (++numberOfResult >= maxNbResult)
+         {
+            end = true;
+            break;
+         }
+      }
+
+      level += nCombinations * nbIntersect;
    }
 
    if (findResults.last().entry_size() == 0)
@@ -276,19 +295,7 @@ void FileManager::chunkRemoved(QSharedPointer<Chunk> chunk)
 QStringList FileManager::splitInWords(const QString& words)
 {
    const static QRegExp regExp("(\\W+|_)");
-   QStringList keywords = words.toLower().split(regExp, QString::SkipEmptyParts);
-
-   // Remove all word smaller than MAX_WORD_LENGTH.
-   int i = 0;
-   while (i < keywords.length())
-   {
-      if (keywords[i].length() < MAX_WORD_LENGTH)
-         keywords.removeAt(i);
-      else
-         i += 1;
-   }
-
-   return keywords;
+   return words.toLower().split(regExp, QString::SkipEmptyParts);
 }
 
 /**

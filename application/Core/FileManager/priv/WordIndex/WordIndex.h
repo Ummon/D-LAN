@@ -17,17 +17,18 @@ namespace FM
    template<typename T>
    class WordIndex
    {
+      static const int MIN_WORD_SIZE_PARTIAL_MATCH; ///< During a search, the words which have a size below this value must match entirely, for exemple 'of' match "conspiracy of one" and not "offspring".
    public:
       WordIndex();
 
-      void addItem(const QList<QString>& words, T item);
-      void rmItem(const QList<QString>& words, T item);
-      QSet<T> search(QList<QString> words);
-      QSet<T> search(const QString& word);
+      void addItem(const QStringList& words, T item);
+      void rmItem(const QStringList& words, T item);
+      QSet< NodeResult<T> > search(const QStringList& words) const;
+      QSet< NodeResult<T> > search(const QString& word) const;
 
    private:
       Node<T> node;
-      QMutex mutex;
+      mutable QMutex mutex;
    };
 }
 
@@ -35,11 +36,14 @@ namespace FM
 using namespace FM;
 
 template<typename T>
+const int WordIndex<T>::MIN_WORD_SIZE_PARTIAL_MATCH(3);
+
+template<typename T>
 WordIndex<T>::WordIndex()
 {}
 
 template<typename T>
-void WordIndex<T>::addItem(const QList<QString>& words, T item)
+void WordIndex<T>::addItem(const QStringList& words, T item)
 {
    QMutexLocker lock(&mutex);
 
@@ -54,7 +58,7 @@ void WordIndex<T>::addItem(const QList<QString>& words, T item)
 }
 
 template<typename T>
-void WordIndex<T>::rmItem(const QList<QString>& words, T item)
+void WordIndex<T>::rmItem(const QStringList& words, T item)
 {
    QMutexLocker lock(&mutex);
 
@@ -96,29 +100,33 @@ void WordIndex<T>::rmItem(const QList<QString>& words, T item)
 }
 
 template<typename T>
-QSet<T> WordIndex<T>::search(QList<QString> words)
+QSet< NodeResult<T> > WordIndex<T>::search(const QStringList& words) const
 {
    QMutexLocker lock(&mutex);
 
-   QSet<T> result;
+   QSet< NodeResult<T> > result;
    foreach (QString word, words)
    {
-      Node<T>* currentNode = &this->node;
+      const Node<T>* currentNode = &this->node;
       foreach (QChar letter, word)
       {
          if (!(currentNode = currentNode->getNode(letter)))
             goto nextWord;
       }
-      result += currentNode->getItems();
+
+      result += currentNode->getItems(word.size() >= MIN_WORD_SIZE_PARTIAL_MATCH);
       nextWord :;
    }
    return result;
 }
 
 template<typename T>
-QSet<T> WordIndex<T>::search(const QString& word)
+QSet< NodeResult<T> > WordIndex<T>::search(const QString& word) const
 {
-   QMutexLocker lock(&mutex);
+   return this->search(QStringList() << word);
+
+   /*
+   //QMutexLocker lock(&mutex);
 
    Node<T>* currentNode = &this->node;
 
@@ -126,7 +134,7 @@ QSet<T> WordIndex<T>::search(const QString& word)
       if (!(currentNode = currentNode->getNode(word[i])))
          return QSet<T>();
 
-   return currentNode->getItems();
+   return currentNode->getItems();*/
 }
 
 #endif
