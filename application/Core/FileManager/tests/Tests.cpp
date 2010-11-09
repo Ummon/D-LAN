@@ -430,19 +430,16 @@ void Tests::findExistingFilesWithOneWord()
    qDebug() << "===== findExistingFilesWithOneWord() =====";
 
    QString terms("aaaa");
-   quint32 expectedLevelResult[] = {
-      0, 0, 0, 0
-   };
-   QList<QString> expectedFileResult[] = {
-      QList<QString>() << "aaaa dddddd.txt" << "aaaa cccc.txt" << "aaaa bbbb.txt" << "aaaa bbbb cccc.txt"
-   };
+
+   FindResult expectedResult;
+   expectedResult[0] << "aaaa cccc.txt" << "aaaa bbbb.txt" << "aaaa bbbb cccc.txt" << "aaaa dddddd.txt";
+   expectedResult[1] << "aaaaaa dddddd.txt" << "aaaaaa bbbb.txt" << "aaaaaa bbbbbb.txt";
 
    QList<Protos::Common::FindResult> results = this->fileManager->find(terms, 10000, 65536);
    QVERIFY(!results.isEmpty());
    this->printSearch(terms, results.first());
-   this->compareExpectedResult(results.first(), expectedLevelResult, expectedFileResult);
+   this->compareExpectedResult(results.first(), expectedResult);
 }
-
 
 void Tests::findUnexistingFilesWithOneWord()
 {
@@ -453,27 +450,54 @@ void Tests::findUnexistingFilesWithOneWord()
    QVERIFY(results.isEmpty());
 }
 
-void Tests::findFilesWithSomeWords()
+void Tests::findFilesWithSomeWords1()
 {
-   qDebug() << "===== findFilesWithSomeWords() =====";
+   qDebug() << "===== findFilesWithSomeWords1() =====";
 
    QString terms("aaaa bbbb cccc");
-   quint32 expectedLevelResult[] = {
-      0, 1, 2, 3, 3, 4, 5, 5
-   };
-   QList<QString> expectedFileResult[] = {
-      QList<QString>() << "aaaa bbbb cccc.txt",
-      QList<QString>() << "aaaa bbbb.txt",
-      QList<QString>() << "aaaa cccc.txt",
-      QList<QString>() << "cccc bbbbbb.txt" << "bbbb cccc.txt",
-      QList<QString>() << "aaaa dddddd.txt",
-      QList<QString>() << "bbbb dddd.txt" << "bbbb.txt"
-   };
+
+   FindResult expectedResult;
+   expectedResult[0] << "aaaa bbbb cccc.txt";
+   expectedResult[4] << "aaaa bbbb.txt";
+   expectedResult[5] << "aaaa cccc.txt";
+   expectedResult[6] << "cccc bbbb.txt" << "bbbb cccc.txt";
+   expectedResult[7] << "aaaaaa bbbb.txt";
+   expectedResult[9] << "cccc bbbbbb.txt";
+   expectedResult[10] << "aaaaaa bbbbbb.txt";
+   expectedResult[13] << "aaaa dddddd.txt";
+   expectedResult[14] << "bbbb.txt" <<  "bbbb dddd.txt";
+   expectedResult[16] << "aaaaaa dddddd.txt";
 
    QList<Protos::Common::FindResult> results = this->fileManager->find(terms, 10000, 65536);
    QVERIFY(!results.isEmpty());
    this->printSearch(terms, results.first());
-   this->compareExpectedResult(results.first(), expectedLevelResult, expectedFileResult);
+   this->compareExpectedResult(results.first(), expectedResult);
+}
+
+void Tests::findFilesWithSomeWords2()
+{
+   qDebug() << "===== findFilesWithSomeWords2() =====";
+
+   QString terms("aaaa bbbb cccc dddd");
+
+   FindResult expectedResult;
+   expectedResult[5] << "aaaa bbbb cccc.txt";
+   expectedResult[21] << "aaaa bbbb.txt";
+   expectedResult[22] << "aaaa cccc.txt";
+   expectedResult[24] << "bbbb cccc.txt" << "cccc bbbb.txt";
+   expectedResult[25] << "bbbb dddd.txt";
+   expectedResult[27] << "aaaaaa bbbb.txt";
+   expectedResult[29] << "aaaa dddddd.txt";
+   expectedResult[30] << "cccc bbbbbb.txt";
+   expectedResult[33] << "aaaaaa bbbbbb.txt";
+   expectedResult[35] << "aaaaaa dddddd.txt";
+   expectedResult[40] << "bbbb.txt";
+   expectedResult[42] << "dddd.txt";
+
+   QList<Protos::Common::FindResult> results = this->fileManager->find(terms, 10000, 65536);
+   QVERIFY(!results.isEmpty());
+   this->printSearch(terms, results.first());
+   this->compareExpectedResult(results.first(), expectedResult);
 }
 
 void Tests::findFilesWithResultFragmentation()
@@ -574,9 +598,13 @@ void Tests::createInitialFiles()
    // "share3" is dedicated to the search feature.
    Common::Global::createFile("sharedDirs/share3/aaaa bbbb cccc.txt");
    Common::Global::createFile("sharedDirs/share3/aaaa bbbb.txt");
+   Common::Global::createFile("sharedDirs/share3/aaaaaa bbbb.txt");
+   Common::Global::createFile("sharedDirs/share3/aaaaaa bbbbbb.txt");
    Common::Global::createFile("sharedDirs/share3/aaaa cccc.txt");
    Common::Global::createFile("sharedDirs/share3/aaaa dddddd.txt");
+   Common::Global::createFile("sharedDirs/share3/aaaaaa dddddd.txt");
    Common::Global::createFile("sharedDirs/share3/bbbb cccc.txt");
+   Common::Global::createFile("sharedDirs/share3/cccc bbbb.txt");
    Common::Global::createFile("sharedDirs/share3/bbbb dddd.txt");
    Common::Global::createFile("sharedDirs/share3/bbbb.txt");
    Common::Global::createFile("sharedDirs/share3/cccc bbbbbb.txt");
@@ -598,12 +626,12 @@ void Tests::printSearch(const QString& terms, const Protos::Common::FindResult& 
       qDebug() << "[" << result.entry(i).level() << "] " << Common::ProtoHelper::getStr(result.entry(i).entry(), &Protos::Common::Entry::name);
 }
 
-void Tests::compareExpectedResult(const Protos::Common::FindResult& result, quint32 expectedLevelResult[], QList<QString> expectedFileResult[])
+void Tests::compareExpectedResult(const Protos::Common::FindResult& result, const FindResult& expectedResult)
 {
    for (int i = 0; i < result.entry_size(); i++)
    {
-      QVERIFY(result.entry(i).level() == expectedLevelResult[i]);
-      QVERIFY(expectedFileResult[result.entry(i).level()].contains(Common::ProtoHelper::getStr(result.entry(i).entry(), &Protos::Common::Entry::name)));
+      QVERIFY(expectedResult.contains(result.entry(i).level()));
+      QVERIFY(expectedResult[result.entry(i).level()].contains(Common::ProtoHelper::getStr(result.entry(i).entry(), &Protos::Common::Entry::name)));
    }
 }
 

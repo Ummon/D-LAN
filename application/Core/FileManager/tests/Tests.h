@@ -12,6 +12,8 @@ using namespace FM;
 
 class Tests : public QObject
 {
+   struct FindResult : public QMap< int, QList<QString> > {};
+
    Q_OBJECT
 public:
    Tests();
@@ -62,7 +64,8 @@ private slots:
    /***** Find files and directories by keywords *****/
    void findExistingFilesWithOneWord();
    void findUnexistingFilesWithOneWord();
-   void findFilesWithSomeWords();
+   void findFilesWithSomeWords1();
+   void findFilesWithSomeWords2();
    void findFilesWithResultFragmentation();
 
    /***** Ask if the given hashes are known *****/
@@ -84,7 +87,7 @@ private:
    void deleteAllFiles();
 
    void printSearch(const QString& terms, const Protos::Common::FindResult& result);
-   void compareExpectedResult(const Protos::Common::FindResult& result, quint32 expectedLevelResult[], QList<QString> expectedFileResult[]);
+      void compareExpectedResult(const Protos::Common::FindResult& result, const FindResult& expectedResult);
 
    void addSuperSharedDirectoriesAndMerge();
 
