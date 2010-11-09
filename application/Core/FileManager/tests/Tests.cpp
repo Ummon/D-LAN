@@ -566,7 +566,6 @@ void Tests::stressTest()
 {
    qDebug() << "===== stressTest() =====";
 
-   return;
    Common::PersistantData::rmValue(Common::FILE_CACHE);
    StressTest test;
 }
