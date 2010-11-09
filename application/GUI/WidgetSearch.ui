@@ -44,8 +44,14 @@
      <property name="value">
       <number>0</number>
      </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
      <property name="textVisible">
-      <bool>false</bool>
+      <bool>true</bool>
+     </property>
+     <property name="format">
+      <string/>
      </property>
     </widget>
    </item>

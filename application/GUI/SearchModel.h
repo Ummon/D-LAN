@@ -28,7 +28,11 @@ namespace GUI
 
       void search(const QString& terms);
 
+      virtual QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const;
       int columnCount(const QModelIndex& parent = QModelIndex()) const;
+
+      int getNbFolders() const;
+      int getNbFiles() const;
 
    signals:
       /**
@@ -47,10 +51,16 @@ namespace GUI
    private:
       SearchNode* getRoot();
       int insertNode(const Protos::Common::FindResult_EntryLevel& entry, const Common::Hash& peerID, int currentIndex);
+      void setMaxLevel(int newLevel);
 
       PeerListModel& peerListModel;
 
       QSharedPointer<ISearchResult> searchResult;
+
+      int maxLevel;
+
+      int nbFolders;
+      int nbFiles;
 
       QTimer timerProgress;
       QTimer timerTimeout;

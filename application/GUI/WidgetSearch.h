@@ -40,6 +40,7 @@ namespace GUI
    private slots:
       void displayContextMenuPeers(const QPoint& point);
       void download();
+      void progress(int value);
 
    private:
       Ui::WidgetSearch *ui;
