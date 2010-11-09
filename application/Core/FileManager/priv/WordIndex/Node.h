@@ -1,12 +1,52 @@
 #ifndef FILEMANAGER_NODE_H
 #define FILEMANAGER_NODE_H
 
-#include <QtCore/QList>
-#include <QtCore/QSet>
-#include <QtCore/QChar>
+#include <QList>
+#include <QSet>
+#include <QChar>
 
 namespace FM
 {
+   template<typename T>
+   struct NodeResult
+   {
+      NodeResult() : level(0) {}
+      NodeResult(const T v, bool level = 0) : value(v), level(level) {}
+      static void intersect(QSet< NodeResult<T> >& s1, const QSet< NodeResult<T> >& s2, int matchValue);
+
+      T value; // Should be const but QList can change a NodeResult in place...
+      int level;
+   };
+
+   /**
+     * s1 <- s1 & s2.
+     * For all common items the 'exactMatch' fields are summed.
+     */
+   template <typename T>
+   void NodeResult<T>::intersect(QSet< NodeResult<T> >& s1, const QSet< NodeResult<T> >& s2, int matchValue)
+   {
+      for (QMutableSetIterator< NodeResult<T> > i(s1); i.hasNext();)
+      {
+         const NodeResult<T>& node = i.next();
+         typename QSet< NodeResult<T> >::const_iterator j = s2.find(node);
+         if (j == s2.constEnd())
+            i.remove();
+         else
+            const_cast<NodeResult<T>&>(node).level += /*(node.level ? matchValue : 0) +*/ j->level ? matchValue : 0;
+      }
+   }
+
+   /**
+     * To sort from the best level (the lowest value) to the
+     */
+   template <typename T>
+   inline bool operator<(const NodeResult<T>& nr1, const NodeResult<T>& nr2)
+   {
+      return nr1.level < nr2.level;
+   }
+
+   /////
+
    template<typename T>
    class Node
    {
@@ -34,12 +74,12 @@ namespace FM
         * Get a children node.
         * /!\ If no one exists 0 is returned.
         */
-      Node<T>* getNode(QChar letter);
+      Node<T>* getNode(QChar letter) const;
 
       /**
         * Does the node have some children?
         */
-      bool haveChildren();
+      bool haveChildren() const;
 
       /**
         * Add an item to the node.
@@ -54,14 +94,14 @@ namespace FM
       void rmItem(T item);
 
       /**
-        * Return all items from the current node and its sub nodes (recursively).
+        * Return all items from the current node and its sub nodes (recursively) if 'alsoFromSubNodes' is true.
         */
-      QSet<T> getItems();
+      QSet< NodeResult<T> > getItems(bool alsoFromSubNodes = false) const;
 
       /**
         * Does the node own some items?
         */
-      bool haveItems();
+      bool haveItems() const;
 
    private:
       Node(const QChar& letter);
@@ -70,8 +110,20 @@ namespace FM
 
       QList<Node<T>*> children; ///< The children nodes.
 
-      QSet<T> itemList; ///< The indexed items.
+      QSet< NodeResult<T> > items; ///< The indexed items.
    };
+
+   template <typename T>
+   inline bool operator==(const NodeResult<T>& r1, const NodeResult<T>& r2)
+   {
+      return r1.value == r2.value;
+   }
+
+   template <typename T>
+   inline uint qHash(const NodeResult<T>& r)
+   {
+      return uint(r.value);
+   }
 }
 
 /***** Definition *****/
@@ -111,7 +163,7 @@ void Node<T>::rmNode(Node<T>* const node)
 }
 
 template <typename T>
-Node<T>* Node<T>::getNode(QChar letter)
+Node<T>* Node<T>::getNode(QChar letter) const
 {
    foreach (Node* n, this->children)
    {
@@ -122,7 +174,7 @@ Node<T>* Node<T>::getNode(QChar letter)
 }
 
 template <typename T>
-bool Node<T>::haveChildren()
+bool Node<T>::haveChildren() const
 {
    return !this->children.empty();
 }
@@ -131,28 +183,35 @@ template <typename T>
 void Node<T>::addItem(T item)
 {
    // Do not add an existing item.
-   if (this->itemList.contains(item))
+   if (this->items.contains(NodeResult<T>(item)))
       return;
-   this->itemList << item;
+   this->items << item;
 }
 
 template <typename T>
 void Node<T>::rmItem(T item)
 {
-   this->itemList.remove(item);
+   this->items.remove(NodeResult<T>(item));
 }
 
 template <typename T>
-QSet<T> Node<T>::getItems()
+QSet< NodeResult<T> > Node<T>::getItems(bool alsoFromSubNodes) const
 {
-   QSet<T> result;
+   if (!alsoFromSubNodes)
+      return this->items;
+
+   QSet< NodeResult<T> > result;
    QList<Node<T>*> nodesToVisit;
 
-   nodesToVisit.append(this);
+   nodesToVisit.append(const_cast<Node<T>*>(this));
+
    while (!nodesToVisit.empty())
    {
-      Node<T>* current = nodesToVisit.takeFirst();
-      result += current->itemList;
+      const Node<T>* current = nodesToVisit.takeFirst();
+      QSet< NodeResult<T> > currentItems = current->items;
+      for (QSetIterator< NodeResult<T> > i(currentItems); i.hasNext();)
+         const_cast< NodeResult<T>& >(i.next()).level = (current == this ? 0 : 1); // Const cast is valid because 'exactMatch' is not used by QSet.
+      result += currentItems;
       nodesToVisit.append(current->children);
    }
 
@@ -160,9 +219,9 @@ QSet<T> Node<T>::getItems()
 }
 
 template <typename T>
-bool Node<T>::haveItems()
+bool Node<T>::haveItems() const
 {
-   return !this->itemList.empty();
+   return !this->items.empty();
 }
 
 template <typename T>
