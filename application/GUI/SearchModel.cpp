@@ -13,7 +13,7 @@ const int SearchModel::NB_SIGNAL_PROGRESS(50);
   */
 
 SearchModel::SearchModel(CoreConnection& coreConnection, PeerListModel& peerListModel)
-   : BrowseModel(coreConnection, Common::Hash()), peerListModel(peerListModel), currentProgress(0)
+   : BrowseModel(coreConnection, Common::Hash()), peerListModel(peerListModel), maxLevel(0), nbFolders(0), nbFiles(0), currentProgress(0)
 {
    delete this->root;
    this->root = new SearchNode();
@@ -50,9 +50,47 @@ void SearchModel::search(const QString& terms)
    this->timerTimeout.start();
 }
 
+QVariant SearchModel::data(const QModelIndex& index, int role) const
+{
+   if (!index.isValid())
+      return QVariant();
+
+   if (index.column() == 2) // Match rate in percent. Cannot be 0%.
+   {
+      switch(role)
+      {
+      case Qt::DisplayRole:
+         {
+            SearchNode* node = static_cast<SearchNode*>(index.internalPointer());
+
+            if (node->getParent()->getParent() != 0 && node->getParent()->getEntry().type() == Protos::Common::Entry_Type_DIR)
+               return QVariant();
+
+            int percentMatch = 100 - 100 * node->getLevel() / (this->maxLevel + 1);
+            return percentMatch > 100 ? 100 : percentMatch;
+         }
+      default: return QVariant();
+      }
+   }
+   else
+   {
+      return BrowseModel::data(index, role);
+   }
+}
+
 int SearchModel::columnCount(const QModelIndex& parent) const
 {
-   return 4;
+   return 5;
+}
+
+int SearchModel::getNbFolders() const
+{
+   return this->nbFolders;
+}
+
+int SearchModel::getNbFiles() const
+{
+   return this->nbFiles;
 }
 
 void SearchModel::loadChildren(const QPersistentModelIndex &index)
@@ -83,10 +121,11 @@ void SearchModel::result(const Protos::Common::FindResult& findResult)
    for (int i = 0; i < findResult.entry_size(); i++)
    {
       const Protos::Common::FindResult_EntryLevel entry = findResult.entry(i);
+      this->setMaxLevel(entry.level());
 
       if (entry.entry().type() == Protos::Common::Entry_Type_DIR)
       {
-         currentDirNode = this->insertNode(entry, findResult.peer_id().hash().data(), currentDirNode);
+         currentDirNode = this->insertNode(entry, findResult.peer_id().hash().data(), currentDirNode);         
          currentFileNode += 1;
       }
       else // It's a file.
@@ -158,6 +197,11 @@ SearchModel::SearchNode* SearchModel::getRoot()
   */
 int SearchModel::insertNode(const Protos::Common::FindResult_EntryLevel& entry, const Common::Hash& peerID, int currentIndex)
 {
+   if (entry.entry().type() == Protos::Common::Entry_Type_FILE)
+      this->nbFiles++;
+   else
+      this->nbFolders++;
+
    SearchNode* root = this->getRoot();
    SearchNode* newNode = 0;
 
@@ -212,6 +256,16 @@ int SearchModel::insertNode(const Protos::Common::FindResult_EntryLevel& entry, 
       this->indexedFile.insert(newNode->getEntry().chunk(0).hash().data(), newNode);
 
    return currentIndex;
+}
+
+void SearchModel::setMaxLevel(int newLevel)
+{
+   if (newLevel > this->maxLevel)
+   {
+      this->maxLevel = newLevel;
+      if (this->rowCount() > 0)
+         emit dataChanged(this->createIndex(0, 2), this->createIndex(this->rowCount() - 1, 2));
+   }
 }
 
 /////
@@ -293,7 +347,9 @@ QVariant SearchModel::SearchNode::getData(int column) const
 
       return entryPath(this->entry);
 
-   case 2:
+   // case 2: // See SearchModel::data(..).
+
+   case 3:
       if (this->entry.type() == Protos::Common::Entry_Type_FILE && this->getNbChildren() > 0)
       {
          for (int i = 0; i < this->getNbChildren(); i++)
@@ -302,7 +358,7 @@ QVariant SearchModel::SearchNode::getData(int column) const
       }
       return this->peerNick;
 
-   case 3: return Common::Global::formatByteSize(this->entry.size());
+   case 4: return Common::Global::formatByteSize(this->entry.size());
    default: return QVariant();
    }
 }

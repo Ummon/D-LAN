@@ -137,8 +137,8 @@ void MainWindow::keyPressEvent(QKeyEvent* event)
    {
       switch (event->key())
       {
-      case 's':
-      case 'S':
+      case 'f':
+      case 'F':
          this->ui->txtSearch->setFocus();
          this->ui->txtSearch->selectAll();
       }

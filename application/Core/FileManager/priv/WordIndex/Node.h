@@ -32,7 +32,7 @@ namespace FM
          if (j == s2.constEnd())
             i.remove();
          else
-            const_cast<NodeResult<T>&>(node).level += /*(node.level ? matchValue : 0) +*/ j->level ? matchValue : 0;
+            const_cast<NodeResult<T>&>(node).level += j->level ? matchValue : 0;
       }
    }
 
@@ -209,8 +209,11 @@ QSet< NodeResult<T> > Node<T>::getItems(bool alsoFromSubNodes) const
    {
       const Node<T>* current = nodesToVisit.takeFirst();
       QSet< NodeResult<T> > currentItems = current->items;
+
       for (QSetIterator< NodeResult<T> > i(currentItems); i.hasNext();)
-         const_cast< NodeResult<T>& >(i.next()).level = (current == this ? 0 : 1); // Const cast is valid because 'exactMatch' is not used by QSet.
+         // 'level' == 1 means the item matches exactly, it's a bit tricky..
+         const_cast< NodeResult<T>& >(i.next()).level = (current == this ? 0 : 1); // Const cast is valid because 'level' is not used by QSet. See 'uint qHash(const NodeResult<T>& r)'.
+
       result += currentItems;
       nodesToVisit.append(current->children);
    }

@@ -12,54 +12,88 @@ const QString SearchDelegate::MARKUP_SECOND_PART("</b>");
 
 void SearchDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
-   if (index.column() == 0)
+   switch(index.column())
    {
-      QStyleOptionViewItemV4 optionV4 = option;
-      initStyleOption(&optionV4, index);
+   case 0:
+      {
+         QStyleOptionViewItemV4 optionV4 = option;
+         initStyleOption(&optionV4, index);
 
-      const QWidget *widget = optionV4.widget;
-      QStyle *style = widget ? widget->style() : QApplication::style();
+         const QWidget *widget = optionV4.widget;
+         QStyle *style = widget ? widget->style() : QApplication::style();
 
-      QTextDocument doc;
-      doc.setHtml(this->toHtmlText(optionV4.text));
+         QTextDocument doc;
+         doc.setHtml(this->toHtmlText(optionV4.text));
 
-      /// Painting item without text
-      optionV4.text = QString();
-      style->drawControl(QStyle::CE_ItemViewItem, &optionV4, painter, widget);
+         /// Painting item without text
+         optionV4.text = QString();
+         style->drawControl(QStyle::CE_ItemViewItem, &optionV4, painter, widget);
 
-      QAbstractTextDocumentLayout::PaintContext ctx;
+         QAbstractTextDocumentLayout::PaintContext ctx;
 
-      // Highlighting text if item is selected
-      if (optionV4.state & QStyle::State_Selected)
-          ctx.palette.setColor(QPalette::Text, optionV4.palette.color(QPalette::Active, QPalette::HighlightedText));
+         // Highlighting text if item is selected
+         if (optionV4.state & QStyle::State_Selected)
+             ctx.palette.setColor(QPalette::Text, optionV4.palette.color(QPalette::Active, QPalette::HighlightedText));
 
-      QRect textRect = style->subElementRect(QStyle::SE_ItemViewItemText, &optionV4);
-      painter->save();
-      painter->translate(textRect.topLeft());
-      painter->setClipRect(textRect.translated(-textRect.topLeft()));
-      doc.documentLayout()->draw(painter, ctx);
-      painter->restore();
-   }
-   else
-   {
+         QRect textRect = style->subElementRect(QStyle::SE_ItemViewItemText, &optionV4);
+         painter->save();
+         painter->translate(textRect.topLeft());
+         painter->setClipRect(textRect.translated(-textRect.topLeft()));
+         doc.documentLayout()->draw(painter, ctx);
+         painter->restore();
+
+      }
+      break;
+
+   case 2: // Match rate.
+      {
+         QStyledItemDelegate::paint(painter, option, index);
+
+         if (index.data().isNull())
+            return;
+
+         int value = index.data().toInt();
+
+         QStyleOptionProgressBar progressBarOption;
+         progressBarOption.rect = option.rect;
+         progressBarOption.minimum = 0;
+         progressBarOption.maximum = 100;
+         progressBarOption.textAlignment = Qt::AlignHCenter;
+         progressBarOption.progress = value;
+         progressBarOption.textVisible = false;
+
+         QRect rect(progressBarOption.rect);
+         const int height = rect.height();
+         rect.setTop(rect.top() + height / 4);
+         rect.setBottom(rect.bottom() - height / 4);
+         progressBarOption.rect = rect;
+
+         QApplication::style()->drawControl(QStyle::CE_ProgressBar, &progressBarOption, painter);
+      }
+      break;
+
+   default:
       QStyledItemDelegate::paint(painter, option, index);
    }
 }
 
 QSize SearchDelegate::sizeHint ( const QStyleOptionViewItem & option, const QModelIndex & index ) const
 {
-   if (index.column() == 0)
+   switch(index.column())
    {
-      QStyleOptionViewItemV4 optionV4 = option;
-      initStyleOption(&optionV4, index);
+   case 1:
+      {
+         QStyleOptionViewItemV4 optionV4 = option;
+         initStyleOption(&optionV4, index);
 
-      QTextDocument doc;
-      doc.setHtml(this->toHtmlText(optionV4.text));
-      //doc.setTextWidth(optionV4.rect.width());
-      return QSize(doc.idealWidth() + 20, doc.size().height()); // + 20 is for the icon, TODO : find a better way to obtain this value.
-   }
-   else
-   {
+         QTextDocument doc;
+         doc.setHtml(this->toHtmlText(optionV4.text));
+         //doc.setTextWidth(optionV4.rect.width());
+         return QSize(doc.idealWidth() + 20, doc.size().height()); // + 20 is for the icon, TODO : find a better way to obtain this value.
+      }
+      break;
+
+   default:
       return QStyledItemDelegate::sizeHint(option, index);
    }
 }
@@ -97,7 +131,7 @@ WidgetSearch::WidgetSearch(CoreConnection& coreConnection, PeerListModel& peerLi
     this->ui->setupUi(this);
     this->searchDelegate.setTerms(terms);
 
-    connect(&this->searchModel, SIGNAL(progress(int)), this->ui->prgSearch, SLOT(setValue(int)));
+    connect(&this->searchModel, SIGNAL(progress(int)), this, SLOT(progress(int)));
 
     this->ui->treeView->setModel(&this->searchModel);
     this->ui->treeView->setItemDelegate(&this->searchDelegate);
@@ -135,4 +169,12 @@ void WidgetSearch::download()
    {
       this->coreConnection.download(this->searchModel.getPeerID(i), this->searchModel.getEntry(i));
    }
+}
+
+void WidgetSearch::progress(int value)
+{
+   this->ui->prgSearch->setValue(value);
+   const int nbFolders = this->searchModel.getNbFolders();
+   const int nbFiles = this->searchModel.getNbFiles();
+   this->ui->prgSearch->setFormat(QString("%1 folder%2 / %3 file%4").arg(nbFolders).arg(nbFolders > 1 ? "s" : "").arg(nbFiles).arg(nbFiles > 1 ? "s" : ""));
 }
