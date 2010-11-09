@@ -10,11 +10,12 @@ package Protos.Core;
 
 /***** Multicast UDP messages. *****/
 // Im alive.
-// This message is sent periodically to all other peers.
+// This message is sent periodically to all other peers (for example each 10s).
 // It send an array of hash chunks to know which one has which chunk.
 // If a peer owns one or more chunk corresponding to the given hashes then it
 // will reply with a 'ChunksOwned' message.
 // These hashes can come from different files.
+// Remember that the peer ID of the sender is in the message header.
 // a -> all
 // id : 0x01
 message IMAlive {
@@ -29,7 +30,7 @@ message IMAlive {
 // This message is only sent if some chunks are requested.
 // Return an array with a bool value for each
 // given chunks. 'true' means "I have this chunk".
-// Not sent if the peer doesn't own any chunk.
+// Not sent if the peer doesn't own any requested chunk.
 // all -> a
 // id : 0x02
 message ChunksOwned {
@@ -52,12 +53,10 @@ message Find {
    required string pattern = 2;
 }
 // Results.
-// The size of this message must fit in a UDP packet so it must not exeed 65'507 bytes.
-// Number of average entry in a result (we don't take in account the overhead of protobuff) :
-//  n = 65507 / (level + averagePathFilenameSize + Size + averageHashNb * 20)
-//  n = 65507 / (4 + 100 + 8 + 20 * 20) = 127 entries.
+// The size of this message must fit in a UDP packet so it must not exeed a certain amount of bytes, depending of the network. See Protos.Core.Settings.max_udp_datagram_size.
+// The size can typically set to 8164 B.
 // Many of message can be sent by a peer for a given search. The core will only accept answers
-// for a limited duration. For example 10 seconds.
+// for a limited duration. For example 3 seconds.
 // all -> a
 // id : 0x22
 // Common.FindResult (see common.proto)
@@ -77,7 +76,7 @@ message GetEntries {
 // Get hashes.
 // If a peer want to start a queued download but doesn't know its hashes
 // it will ask the hashes to the source peer.
-// If 'b' doesn't have the hashes but have the file
+// If 'b' doesn't have the hashes but has the file
 // the hashes will be computed on the fly. Thus this request
 // can be a bit long (~20s).
 // a -> b

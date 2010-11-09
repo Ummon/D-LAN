@@ -14,13 +14,13 @@ namespace FM
       NodeResult(const T v, bool level = 0) : value(v), level(level) {}
       static void intersect(QSet< NodeResult<T> >& s1, const QSet< NodeResult<T> >& s2, int matchValue);
 
-      T value; // Should be const but QList can change a NodeResult in place...
+      T value; // Should be const but QList must be able to change a NodeResult in place...
       int level;
    };
 
    /**
      * s1 <- s1 & s2.
-     * For all common items the 'exactMatch' fields are summed.
+     * For all common items the 'level' fields are summed.
      */
    template <typename T>
    void NodeResult<T>::intersect(QSet< NodeResult<T> >& s1, const QSet< NodeResult<T> >& s2, int matchValue)
@@ -37,7 +37,7 @@ namespace FM
    }
 
    /**
-     * To sort from the best level (the lowest value) to the
+     * To sort from the best level (the lowest value) to the worse (the hightest value).
      */
    template <typename T>
    inline bool operator<(const NodeResult<T>& nr1, const NodeResult<T>& nr2)
