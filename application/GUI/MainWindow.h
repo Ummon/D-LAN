@@ -50,6 +50,9 @@ namespace GUI
       void keyPressEvent(QKeyEvent* event);
 
    private:
+      void saveWindowsSettings();
+      void restoreWindowsSettings();
+
       void removeMdiSubWindow(QMdiSubWindow* mdiSubWindow);
 
       void addWidgetSettings();

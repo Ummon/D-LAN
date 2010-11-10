@@ -6,6 +6,7 @@ using namespace GUI;
 #include <QMdiSubWindow>
 #include <QPainter>
 #include <QMenu>
+#include <QSettings>
 
 #include <Protos/gui_settings.pb.h>
 
@@ -54,6 +55,8 @@ MainWindow::MainWindow(QWidget* parent) :
 
     this->coreDisconnected(); // Initial state.
 
+    this->restoreWindowsSettings();
+
     connect(&this->coreConnection, SIGNAL(coreConnected()), this, SLOT(coreConnected()));
     connect(&this->coreConnection, SIGNAL(coreDisconnected()), this, SLOT(coreDisconnected()));
     this->coreConnection.connectToCore();
@@ -61,6 +64,8 @@ MainWindow::MainWindow(QWidget* parent) :
 
 MainWindow::~MainWindow()
 {
+   this->saveWindowsSettings();
+
    disconnect(&this->coreConnection, SIGNAL(coreDisconnected()), this, SLOT(coreDisconnected())); // To avoid calling 'coreDisconnected' after deleted 'this->ui'.
    delete this->ui;
 }
@@ -143,6 +148,26 @@ void MainWindow::keyPressEvent(QKeyEvent* event)
          this->ui->txtSearch->selectAll();
       }
    }
+}
+
+void MainWindow::saveWindowsSettings()
+{
+   QSettings settings("EKSoft", "Aybabtu");
+
+   settings.beginGroup("WindowsPos");
+   settings.setValue("size", this->size());
+   settings.setValue("windows_state", this->saveState());
+   settings.endGroup();
+}
+
+void MainWindow::restoreWindowsSettings()
+{
+   QSettings settings("EKSoft", "Aybabtu");
+
+   settings.beginGroup("WindowsPos");
+   this->resize(settings.value("size", QSize(900, 500)).toSize());
+   this->restoreState(settings.value("windows_state", QByteArray()).toByteArray());
+   settings.endGroup();
 }
 
 /**
