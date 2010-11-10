@@ -6,6 +6,7 @@ using namespace GUI;
 #include <QAbstractTextDocumentLayout>
 #include <QRegExp>
 #include <QMenu>
+#include <QIcon>
 
 const QString SearchDelegate::MARKUP_FIRST_PART("<b>");
 const QString SearchDelegate::MARKUP_SECOND_PART("</b>");
@@ -135,11 +136,12 @@ WidgetSearch::WidgetSearch(CoreConnection& coreConnection, PeerListModel& peerLi
 
     this->ui->treeView->setModel(&this->searchModel);
     this->ui->treeView->setItemDelegate(&this->searchDelegate);
-    this->ui->treeView->header()->setVisible(false);
+    this->ui->treeView->header()->setVisible(true);
     this->ui->treeView->header()->setResizeMode(0, QHeaderView::ResizeToContents);
     this->ui->treeView->header()->setResizeMode(1, QHeaderView::ResizeToContents);
     this->ui->treeView->header()->setResizeMode(2, QHeaderView::ResizeToContents);
-    this->ui->treeView->header()->setResizeMode(3, QHeaderView::Stretch);
+    this->ui->treeView->header()->setResizeMode(3, QHeaderView::ResizeToContents);
+    this->ui->treeView->header()->setResizeMode(4, QHeaderView::Stretch);
 
     this->searchModel.search(terms);
 
@@ -158,7 +160,7 @@ WidgetSearch::~WidgetSearch()
 void WidgetSearch::displayContextMenuPeers(const QPoint& point)
 {
    QMenu menu;
-   menu.addAction("Download", this, SLOT(download()));
+   menu.addAction(QIcon(":/icons/ressources/download.png"), "Download", this, SLOT(download()));
    menu.exec(this->ui->treeView->mapToGlobal(point));
 }
 

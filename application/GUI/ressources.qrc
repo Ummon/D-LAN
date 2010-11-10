@@ -3,11 +3,11 @@
         <file>ressources/zoom.png</file>
         <file>ressources/add.png</file>
         <file>ressources/delete.png</file>
-        <file>ressources/bullet_arrow_down.png</file>
-        <file>ressources/bullet_arrow_up.png</file>
         <file>ressources/world.png</file>
         <file>ressources/file.png</file>
         <file>ressources/folder.png</file>
         <file>ressources/error.png</file>
+        <file>ressources/download.png</file>
+        <file>ressources/upload.png</file>
     </qresource>
 </RCC>

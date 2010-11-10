@@ -28,7 +28,8 @@ namespace GUI
 
       void search(const QString& terms);
 
-      virtual QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const;
+      QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const;
+      QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const;
       int columnCount(const QModelIndex& parent = QModelIndex()) const;
 
       int getNbFolders() const;
