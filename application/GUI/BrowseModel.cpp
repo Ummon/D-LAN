@@ -177,10 +177,13 @@ BrowseModel::Node::Node(const Protos::Common::Entry& entry, Node* parent)
    : entry(entry), parent(parent)
 {
    // Copy the shared directory ID from the parent.
-   if (this->parent->parent)
+   if (!this->entry.has_shared_dir())
    {
-      this->entry.mutable_shared_dir()->CopyFrom(this->parent->entry.shared_dir());
+      if (this->parent->parent)
+         this->entry.mutable_shared_dir()->CopyFrom(this->parent->entry.shared_dir());
    }
+   if (!this->entry.shared_dir().has_shared_name())
+      this->entry.mutable_shared_dir()->set_shared_name(this->entry.name()); // For the root.
 }
 
 BrowseModel::Node::~Node()

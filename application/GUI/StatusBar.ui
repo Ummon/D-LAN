@@ -32,7 +32,7 @@
       <string/>
      </property>
      <property name="pixmap">
-      <pixmap resource="ressources.qrc">:/icons/ressources/bullet_arrow_down.png</pixmap>
+      <pixmap resource="ressources.qrc">:/icons/ressources/download.png</pixmap>
      </property>
     </widget>
    </item>
@@ -64,7 +64,7 @@
       <string/>
      </property>
      <property name="pixmap">
-      <pixmap resource="ressources.qrc">:/icons/ressources/bullet_arrow_up.png</pixmap>
+      <pixmap resource="ressources.qrc">:/icons/ressources/upload.png</pixmap>
      </property>
     </widget>
    </item>

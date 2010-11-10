@@ -78,6 +78,35 @@ QVariant SearchModel::data(const QModelIndex& index, int role) const
    }
 }
 
+QVariant SearchModel::headerData(int section, Qt::Orientation orientation, int role) const
+{
+   if (orientation == Qt::Vertical)
+      return QAbstractItemModel::headerData(section, orientation, role);
+
+   switch(role)
+   {
+   case Qt::DisplayRole:
+      switch(section)
+      {
+      case 0: return "Filename";
+      case 1: return "Folder";
+      case 2: return "Relevance";
+      case 3: return "Peer";
+      case 4: return "Size";
+      default: return QAbstractItemModel::headerData(section, orientation, role);
+      }
+
+   case Qt::TextAlignmentRole:
+      switch(section)
+      {
+      case 4: return Qt::AlignRight;
+      default: return QAbstractItemModel::headerData(section, orientation, role);
+      }
+   }
+
+   return QAbstractItemModel::headerData(section, orientation, role);
+}
+
 int SearchModel::columnCount(const QModelIndex& parent) const
 {
    return 5;

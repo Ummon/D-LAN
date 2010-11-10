@@ -40,7 +40,7 @@ namespace FM
       virtual QSharedPointer<IChunk> getChunk(const Common::Hash& hash) = 0;
 
       /**
-        * Create a new empty file. It will be automatically create in the same path than the remote one.
+        * Create a new empty file. It will be automatically create in the same path than the remote.
         * It will take the shared directory which has enought storage space and matches paths the closest.
         * The file will have the exact final size and filled with 0.
         * The filename will end with .unfinished.

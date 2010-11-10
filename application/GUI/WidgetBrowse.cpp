@@ -3,6 +3,7 @@
 using namespace GUI;
 
 #include <QMenu>
+#include <QIcon>
 
 WidgetBrowse::WidgetBrowse(CoreConnection& coreConnection, PeerListModel& peerListModel, const Common::Hash& peerID, QWidget *parent)
    : QWidget(parent), ui(new Ui::WidgetBrowse), coreConnection(coreConnection), peerListModel(peerListModel), peerID(peerID), browseModel(coreConnection, peerID)
@@ -33,7 +34,7 @@ Common::Hash WidgetBrowse::getPeerID() const
 void WidgetBrowse::displayContextMenuPeers(const QPoint& point)
 {
    QMenu menu;
-   menu.addAction("Download", this, SLOT(download()));
+   menu.addAction(QIcon(":/icons/ressources/download.png"), "Download", this, SLOT(download()));
    menu.exec(this->ui->treeView->mapToGlobal(point));
 }
 

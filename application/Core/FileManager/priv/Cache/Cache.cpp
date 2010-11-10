@@ -184,7 +184,11 @@ QList< QSharedPointer<IChunk> > Cache::newFile(const Protos::Common::Entry& remo
 {
    QMutexLocker locker(&this->lock);
 
-   Directory* dir = this->getWriteableDirectory(QDir::cleanPath(Common::ProtoHelper::getStr(remoteEntry, &Protos::Common::Entry::path)), remoteEntry.size() + SETTINGS.get<quint32>("minimum_free_space"));
+   QString dirPath = QDir::cleanPath(Common::ProtoHelper::getStr(remoteEntry, &Protos::Common::Entry::path));
+   if (remoteEntry.has_shared_dir() && !remoteEntry.shared_dir().shared_name().empty())
+      dirPath.prepend(Common::ProtoHelper::getStr(remoteEntry.shared_dir(), &Protos::Common::SharedDir::shared_name)).prepend('/');
+
+   Directory* dir = this->getWriteableDirectory(dirPath, remoteEntry.size() + SETTINGS.get<quint32>("minimum_free_space"));
    if (!dir)
       throw UnableToCreateNewFileException();
 
@@ -539,7 +543,7 @@ void Cache::createSharedDirs(const Protos::FileCache::Hashes& hashes)
 }
 
 /**
-  * Returns a directory wich matches to the path, it will choose the shared directory which :
+  * Returns a directory which matches to the path, it will choose the shared directory which :
   *  - Has at least the needed space.
   *  - Has the most directories in common with 'path'.
   *  - Can be written.

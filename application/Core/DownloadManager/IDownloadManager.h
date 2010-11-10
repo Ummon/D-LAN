@@ -20,7 +20,7 @@ namespace DM
       virtual ~IDownloadManager() {}
 
       /**
-        * @param entry It must have the field 'shared_dir'.
+        * @param entry It must have the field 'shared_dir' and 'shared_dir.shared_name' should be set.
         */
       virtual void addDownload(const Protos::Common::Entry& entry, Common::Hash peerSource) = 0;
 
