@@ -12,6 +12,8 @@ GetChunkResult::GetChunkResult(const Protos::Core::GetChunk& chunk, QSharedPoint
 
 GetChunkResult::~GetChunkResult()
 {
+   // We must disconnect because 'this->socket->finished' can read some data and emit 'newMessage'.
+   disconnect(this->socket.data(), SIGNAL(newMessage(Common::Network::CoreMessageType, const google::protobuf::Message&)), this, SLOT(newMessage(Common::Network::CoreMessageType, const google::protobuf::Message&)));
    this->socket->finished(this->error | this->isTimeouted());
 }
 
@@ -20,6 +22,11 @@ void GetChunkResult::start()
    connect(this->socket.data(), SIGNAL(newMessage(Common::Network::CoreMessageType, const google::protobuf::Message&)), this, SLOT(newMessage(Common::Network::CoreMessageType, const google::protobuf::Message&)), Qt::DirectConnection);
    socket->send(Common::Network::CORE_GET_CHUNK, this->chunk);
    this->startTimer();
+}
+
+void GetChunkResult::setError()
+{
+   this->error = true;
 }
 
 void GetChunkResult::newMessage(Common::Network::CoreMessageType type, const google::protobuf::Message& message)

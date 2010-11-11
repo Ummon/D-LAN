@@ -1,8 +1,6 @@
 #ifndef DOWNLOADMANAGER_DOWNLOADMANAGER_H
 #define DOWNLOADMANAGER_DOWNLOADMANAGER_H
 
-#include <QLinkedList>
-#include <QMutableLinkedListIterator>
 #include <QList>
 #include <QSet>
 #include <QSharedPointer>
@@ -33,7 +31,7 @@ namespace DM
 
       void addDownload(const Protos::Common::Entry& entry, Common::Hash peerSource);
       void addDownload(const Protos::Common::Entry& entry, Common::Hash peerSource, bool complete);
-      void addDownload(const Protos::Common::Entry& entry, Common::Hash peerSource, bool complete, QMutableLinkedListIterator<Download*> iterator);
+      void addDownload(const Protos::Common::Entry& entry, Common::Hash peerSource, bool complete, QMutableListIterator<Download*> iterator);
 
       QList<IDownload*> getDownloads();
       QList< QSharedPointer<IChunkDownload> > getUnfinishedChunks(int n);
@@ -57,13 +55,15 @@ namespace DM
       void saveQueueToFile();
       bool isEntryAlreadyQueued(const Protos::Common::Entry& entry);
 
+      const int NUMBER_OF_DOWNLOADER;
+
       QSharedPointer<FM::IFileManager> fileManager;
       QSharedPointer<PM::IPeerManager> peerManager;
 
       OccupiedPeers occupiedPeersAskingForHashes;
       OccupiedPeers occupiedPeersDownloadingChunk;
 
-      QLinkedList<Download*> downloads;
+      QList<Download*> downloads;
 
       int numberOfDownload;
       QMutex mutexNumberOfDownload;

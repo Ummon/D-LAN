@@ -15,7 +15,7 @@ bool Timeoutable::isTimeouted() const
 
 void Timeoutable::startTimer()
 {
-   connect(&this->timer, SIGNAL(timeout()), this, SLOT(timeoutSlot()));
+   connect(&this->timer, SIGNAL(timeout()), this, SLOT(timeoutSlot()), Qt::DirectConnection);
    this->timer.start();
 }
 

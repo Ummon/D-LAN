@@ -16,12 +16,13 @@ using namespace DM;
   */
 
 ChunkDownload::ChunkDownload(QSharedPointer<PM::IPeerManager> peerManager, OccupiedPeers& occupiedPeersDownloadingChunk, Common::Hash chunkHash) :
+   SOCKET_TIMEOUT(SETTINGS.get<quint32>("socket_timeout")),
    peerManager(peerManager),
    occupiedPeersDownloadingChunk(occupiedPeersDownloadingChunk),
    chunkHash(chunkHash),
    socket(0),
    downloading(false),
-   networkError(false),
+   networkTransferError(false),
    mutex(QMutex::Recursive)
 {
    L_DEBU(QString("New ChunkDownload : %1").arg(this->chunkHash.toStr()));
@@ -151,9 +152,9 @@ bool ChunkDownload::startDownloading()
    getChunkMess.mutable_chunk()->set_hash(this->chunkHash.getData(), Common::Hash::HASH_SIZE);
    getChunkMess.set_offset(this->chunk->getKnownBytes());
    this->getChunkResult = this->currentDownloadingPeer->getChunk(getChunkMess);
-   connect(this->getChunkResult.data(), SIGNAL(result(const Protos::Core::GetChunkResult&)), this, SLOT(result(const Protos::Core::GetChunkResult&)));
-   connect(this->getChunkResult.data(), SIGNAL(stream(QSharedPointer<PM::ISocket>)), this, SLOT(stream(QSharedPointer<PM::ISocket>)));
-   connect(this->getChunkResult.data(), SIGNAL(timeout()), this, SLOT(getChunkTimeout()));
+   connect(this->getChunkResult.data(), SIGNAL(result(const Protos::Core::GetChunkResult&)), this, SLOT(result(const Protos::Core::GetChunkResult&)), Qt::DirectConnection);
+   connect(this->getChunkResult.data(), SIGNAL(stream(QSharedPointer<PM::ISocket>)), this, SLOT(stream(QSharedPointer<PM::ISocket>)), Qt::DirectConnection);
+   connect(this->getChunkResult.data(), SIGNAL(timeout()), this, SLOT(getChunkTimeout()), Qt::DirectConnection);
 
    this->getChunkResult->start();
    return true;
@@ -185,10 +186,10 @@ void ChunkDownload::run()
 
          if (bytesRead == 0)
          {
-            if (!socket->getQSocket()->waitForReadyRead(SETTINGS.get<quint32>("socket_timeout")))
+            if (!socket->getQSocket()->waitForReadyRead(SOCKET_TIMEOUT))
             {
                L_WARN(QString("Connection dropped, error = %1, bytesAvailable = %2").arg(socket->getQSocket()->errorString()).arg(socket->getQSocket()->bytesAvailable()));
-               this->networkError = true;
+               this->networkTransferError = true;
                break;
             }
             continue;
@@ -196,7 +197,7 @@ void ChunkDownload::run()
          else if (bytesRead == -1)
          {
             L_ERRO(QString("Socket : cannot receive data : %1").arg(this->chunk->toStr()));
-            this->networkError = true;
+            this->networkTransferError = true;
             break;
          }
 
@@ -248,8 +249,8 @@ void ChunkDownload::run()
       L_ERRO("TryToWriteBeyondTheEndOfChunkException");
    }
 
-   this->socket->getQSocket()->moveToThread(this->mainThread);
    this->transferRateCalculator.reset();
+   this->socket->getQSocket()->moveToThread(this->mainThread);
 }
 
 void ChunkDownload::result(const Protos::Core::GetChunkResult& result)
@@ -257,7 +258,6 @@ void ChunkDownload::result(const Protos::Core::GetChunkResult& result)
    if (result.status() != Protos::Core::GetChunkResult_Status_OK)
    {
       L_WARN(QString("Status error from GetChunkResult : %1. Download aborted.").arg(result.status()));
-      this->networkError = true;
       this->downloadingEnded();
    }
    else
@@ -265,7 +265,6 @@ void ChunkDownload::result(const Protos::Core::GetChunkResult& result)
       if (!result.has_chunk_size())
       {
          L_ERRO(QString("Message 'GetChunkResult' doesn't contain the size of the chunk : %1. Download aborted.").arg(this->chunk->getHash().toStr()));
-         this->networkError = true;
          this->downloadingEnded();
       }
       else
@@ -280,33 +279,28 @@ void ChunkDownload::stream(QSharedPointer<PM::ISocket> socket)
    this->socket = socket;
    this->socket->stopListening();
    this->socket->getQSocket()->moveToThread(this);
+
    this->start();
 }
 
 void ChunkDownload::getChunkTimeout()
 {
    L_WARN("Timeout from GetChunkResult, Download aborted.");
-   this->networkError = true;
    this->downloadingEnded();
 }
 
 void ChunkDownload::downloadingEnded()
 {
-   L_DEBU(QString("Downloading ended, chunk : %1").arg(this->chunk->toStr()));
-
-   if (!this->chunk->isComplete())
-   {
-      L_DEBU(QString("OMG 1 : %1").arg(this->chunk->isComplete()));
-   }
+   L_DEBU(QString("Downloading ended, chunk : %1%2").arg(this->chunk->toStr()).arg(this->chunk->isComplete() ? "" : " Not complete!"));
 
    if (!this->socket.isNull())
-   {
-      this->socket->finished(this->networkError);
       this->socket.clear();
-   }
 
-   this->networkError = false;
+   if (this->networkTransferError)
+      this->getChunkResult->setError();
+   this->networkTransferError = false;
    this->getChunkResult.clear();
+
    this->downloading = false;
    emit downloadFinished();
 

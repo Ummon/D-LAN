@@ -14,7 +14,7 @@ using namespace DM;
 #include <priv/Constants.h>
 
 DownloadManager::DownloadManager(QSharedPointer<FM::IFileManager> fileManager, QSharedPointer<PM::IPeerManager> peerManager)
-   : fileManager(fileManager), peerManager(peerManager), numberOfDownload(0), retrievingEntries(false)
+   : NUMBER_OF_DOWNLOADER(static_cast<int>(SETTINGS.get<quint32>("number_of_downloader"))), fileManager(fileManager), peerManager(peerManager), numberOfDownload(0), retrievingEntries(false)
 {
    connect(&this->occupiedPeersAskingForHashes, SIGNAL(newFreePeer(PM::IPeer*)), this, SLOT(peerNoLongerAskingForHashes(PM::IPeer*)));
    connect(&this->occupiedPeersDownloadingChunk, SIGNAL(newFreePeer(PM::IPeer*)), this, SLOT(peerNoLongerDownloadingChunk(PM::IPeer*)));
@@ -37,14 +37,14 @@ DownloadManager::~DownloadManager()
   */
 void DownloadManager::addDownload(const Protos::Common::Entry& entry, Common::Hash peerSource)
 {
-   QMutableLinkedListIterator<Download*> i(this->downloads);
+   QMutableListIterator<Download*> i(this->downloads);
    i.toBack();
    this->addDownload(entry, peerSource, false, i);
 }
 
 void DownloadManager::addDownload(const Protos::Common::Entry& entry, Common::Hash peerSource, bool complete)
 {
-   QMutableLinkedListIterator<Download*> i(this->downloads);
+   QMutableListIterator<Download*> i(this->downloads);
    i.toBack();
    this->addDownload(entry, peerSource, complete, i);
 }
@@ -52,13 +52,14 @@ void DownloadManager::addDownload(const Protos::Common::Entry& entry, Common::Ha
 /**
   * Insert a new download at the given position.
   */
-void DownloadManager::addDownload(const Protos::Common::Entry& entry, Common::Hash peerSource, bool complete, QMutableLinkedListIterator<Download*> iterator)
+void DownloadManager::addDownload(const Protos::Common::Entry& entry, Common::Hash peerSource, bool complete, QMutableListIterator<Download*> iterator)
 {
+   /* Commented : not very useful and a bit CPU consumer.
    if (this->isEntryAlreadyQueued(entry))
    {
-      L_WARN(QString("Entry already exists, it will no be added to the queue : %1").arg(Common::ProtoHelper::getStr(entry, &Protos::Common::Entry::name)));
+      L_WARN(QString("Entry already queued, it will no be added to the queue : %1").arg(Common::ProtoHelper::getStr(entry, &Protos::Common::Entry::name)));
       return;
-   }
+   }*/
 
    switch (entry.type())
    {
@@ -86,7 +87,7 @@ QList<IDownload*> DownloadManager::getDownloads()
    QList<IDownload*> listDownloads;
 
    // TODO : very heavy!
-   for (QLinkedListIterator<Download*> i(this->downloads); i.hasNext();)
+   for (QListIterator<Download*> i(this->downloads); i.hasNext();)
       listDownloads << i.next();
 
    return listDownloads;
@@ -96,7 +97,7 @@ QList< QSharedPointer<IChunkDownload> > DownloadManager::getUnfinishedChunks(int
 {
    QList< QSharedPointer<IChunkDownload> > unfinishedChunks;
 
-   for (QLinkedListIterator<Download*> i(this->downloads); i.hasNext() && unfinishedChunks.size() < n;)
+   for (QListIterator<Download*> i(this->downloads); i.hasNext() && unfinishedChunks.size() < n;)
    {
       FileDownload* fileDownload = dynamic_cast<FileDownload*>(i.next());
       if (!fileDownload)
@@ -111,7 +112,7 @@ QList< QSharedPointer<IChunkDownload> > DownloadManager::getUnfinishedChunks(int
 int DownloadManager::getDownloadRate() const
 {
    int downloadRate = 0;
-   for (QLinkedListIterator<Download*> i(this->downloads); i.hasNext();)
+   for (QListIterator<Download*> i(this->downloads); i.hasNext();)
    {
       FileDownload* fileDownload = dynamic_cast<FileDownload*>(i.next());
 
@@ -131,7 +132,7 @@ void DownloadManager::newEntries(const Protos::Common::Entries& entries)
    this->retrievingEntries = false;
 
    DirDownload* dirDownload = dynamic_cast<DirDownload*>(this->sender());
-   QMutableLinkedListIterator<Download*> i(this->downloads);
+   QMutableListIterator<Download*> i(this->downloads);
    if (!i.findNext(dirDownload))
       return;
    i.remove();
@@ -149,7 +150,7 @@ void DownloadManager::newEntries(const Protos::Common::Entries& entries)
   */
 void DownloadManager::peerNoLongerAskingForHashes(PM::IPeer* peer)
 {
-   for (QLinkedListIterator<Download*> i(this->downloads); i.hasNext();)
+   for (QListIterator<Download*> i(this->downloads); i.hasNext();)
    {
       FileDownload* fileDownload = dynamic_cast<FileDownload*>(i.next());
       if (fileDownload && fileDownload->retreiveHashes())
@@ -173,7 +174,7 @@ void DownloadManager::scanTheQueueToRetrieveEntries()
 
    L_DEBU("Scanning the queue to retrieve entries");
 
-   for (QLinkedListIterator<Download*> i(this->downloads); i.hasNext();)
+   for (QListIterator<Download*> i(this->downloads); i.hasNext();)
    {
       DirDownload* dirDownload = dynamic_cast<DirDownload*>(i.next());
       if (!dirDownload)
@@ -195,7 +196,7 @@ void DownloadManager::scanTheQueue()
       numberOfDownloadCopy = this->numberOfDownload;
    }
 
-   for (QLinkedListIterator<Download*> i(this->downloads); i.hasNext() && numberOfDownloadCopy < static_cast<int>(SETTINGS.get<quint32>("number_of_downloader"));)
+   for (QListIterator<Download*> i(this->downloads); i.hasNext() && numberOfDownloadCopy < NUMBER_OF_DOWNLOADER;)
    {
       FileDownload* fileDownload = dynamic_cast<FileDownload*>(i.next());
       if (!fileDownload)
@@ -211,7 +212,7 @@ void DownloadManager::scanTheQueue()
 
       {
          QMutexLocker lock(&this->mutexNumberOfDownload);
-         connect(chunkDownload.data(), SIGNAL(downloadFinished()), this, SLOT(chunkDownloadFinished()));
+         connect(chunkDownload.data(), SIGNAL(downloadFinished()), this, SLOT(chunkDownloadFinished()), Qt::DirectConnection);
       }
 
       if (chunkDownload->startDownloading())
@@ -270,7 +271,7 @@ void DownloadManager::saveQueueToFile()
    Protos::Queue::Queue savedQueue;
    savedQueue.set_version(FILE_QUEUE_VERSION);
 
-   for (QLinkedListIterator<Download*> i(this->downloads); i.hasNext();)
+   for (QListIterator<Download*> i(this->downloads); i.hasNext();)
    {
       i.next()->populateEntry(savedQueue.add_entry());
    }
@@ -280,7 +281,7 @@ void DownloadManager::saveQueueToFile()
 
 bool DownloadManager::isEntryAlreadyQueued(const Protos::Common::Entry& entry)
 {
-   for (QLinkedListIterator<Download*> i(this->downloads); i.hasNext();)
+   for (QListIterator<Download*> i(this->downloads); i.hasNext();)
    {
       Download* download = i.next();
       // TODO : Do we should check peer_id also?
