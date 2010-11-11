@@ -192,11 +192,14 @@ void CoreConnection::send(Common::Network::GUIMessageType type, const google::pr
 
    L_DEBU(QString("CoreConnection::send : %1\n%2").arg(header.toStr()).arg(Common::ProtoHelper::getDebugStr(message)));
 
-   Common::Network::writeHeader(this->socket, header);
-   Common::ZeroCopyOutputStreamQIODevice outputStream(&this->socket);
-   message.SerializeToZeroCopyStream(&outputStream);
-   /*if (!message.SerializeToZeroCopyStream(&outputStream))
-      L_WARN(QString("Unable to send %1").arg(Common::ProtoHelper::getDebugStr(message)));*/
+   {
+      Common::Network::writeHeader(this->socket, header);
+      Common::ZeroCopyOutputStreamQIODevice outputStream(&this->socket);
+      message.SerializeToZeroCopyStream(&outputStream);
+   }
+
+   if (this->socket.state() == QAbstractSocket::ConnectedState)
+      this->socket.flush();
 }
 
 bool CoreConnection::readMessage()

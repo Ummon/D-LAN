@@ -5,6 +5,7 @@
 #include <QDateTime>
 #include <QHostAddress>
 #include <QTimer>
+#include <QQueue>
 
 #include <google/protobuf/message.h>
 

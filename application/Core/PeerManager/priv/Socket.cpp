@@ -71,8 +71,8 @@ void Socket::startListening()
       this->close();
    else
    {
-      connect(this->socket, SIGNAL(readyRead()), this, SLOT(dataReceived()));
-      connect(this->socket, SIGNAL(disconnected()), this, SLOT(disconnected()));
+      connect(this->socket, SIGNAL(readyRead()), this, SLOT(dataReceived()), Qt::DirectConnection);
+      connect(this->socket, SIGNAL(disconnected()), this, SLOT(disconnected()), Qt::DirectConnection);
       this->dataReceived();
    }
 }
@@ -108,16 +108,21 @@ void Socket::send(Common::Network::CoreMessageType type, const google::protobuf:
    if (!this->listening)
       return;
 
-   this->setActive();
-
    Common::Network::MessageHeader<Common::Network::CoreMessageType> header(type, message.ByteSize(), this->peerManager->getID());
+
+   this->setActive();
 
    L_DEBU(QString("Socket[%1]::send : %2\n%3").arg(this->num).arg(header.toStr()).arg(Common::ProtoHelper::getDebugStr(message)));
 
-   Common::Network::writeHeader(*this->socket, header);
-   Common::ZeroCopyOutputStreamQIODevice outputStream(this->socket);
-   if (!message.SerializeToZeroCopyStream(&outputStream))
-      L_WARN(QString("Unable to send %1").arg(Common::ProtoHelper::getDebugStr(message)));
+   {
+      Common::Network::writeHeader(*this->socket, header);
+      Common::ZeroCopyOutputStreamQIODevice outputStream(this->socket);
+      if (!message.SerializeToZeroCopyStream(&outputStream))
+         L_WARN(QString("Unable to send %1").arg(Common::ProtoHelper::getDebugStr(message)));
+   }
+
+   if (this->socket->state() == QAbstractSocket::ConnectedState)
+      this->socket->flush();
 }
 
 void Socket::dataReceived()
