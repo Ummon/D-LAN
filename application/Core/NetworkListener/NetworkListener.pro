@@ -6,23 +6,13 @@ QT -= gui
 TARGET = NetworkListener
 TEMPLATE = lib
 
-CONFIG(debug, debug|release) {
-   FOLDER = debug
-   DEFINES += DEBUG
-} else {
-   FOLDER = release
-}
-
+include(../../Common/common.pri)
 include(../../Libs/protobuf.pri)
 
 CONFIG += staticlib create_prl link_prl
 
 INCLUDEPATH += . \
     ../..
-
-DESTDIR = output/$$FOLDER
-MOC_DIR = .tmp/$$FOLDER
-OBJECTS_DIR = .tmp/$$FOLDER
 
 LIBS += -L../DownloadManager/output/$$FOLDER -lDownloadManager
 POST_TARGETDEPS += ../DownloadManager/output/$$FOLDER/libDownloadManager.a

@@ -6,17 +6,11 @@ QT += network gui # 'gui' is only needed for the trayicon :/.
 TARGET = AybabtuCore
 CONFIG += link_prl
 
-CONFIG(debug, debug|release) {
-   FOLDER = debug
-   DEFINES += DEBUG
-} else {
-   FOLDER = release
-}
 
+include(../Common/common.pri)
 include(../Libs/protobuf.pri)
 
-INCLUDEPATH += . \
-    ..
+INCLUDEPATH += . ..
 
 LIBS += -LFileManager/output/$$FOLDER \
     -lFileManager
@@ -51,20 +45,18 @@ LIBS += -L../Common/output/$$FOLDER \
 POST_TARGETDEPS += ../Common/output/$$FOLDER/libCommon.a
 
 
-#LIBS += -L../Libs/qtservice/lib -lQtSolutions_Service-2.6
 include(../Libs/qtservice/src/qtservice.pri)
 
 
 # FIXME : Theses declarations should not be here, all dependencies are read from the prl files of each library (see link_prl):
 win32 {
     INCLUDEPATH += "."
-    INCLUDEPATH += "$$(QTDIR)/../mingw/include"
-    LIBS += "$$(QTDIR)/../mingw/lib/libwsock32.a"
+    #INCLUDEPATH += "$$(QTDIR)/../mingw/include"
+    #LIBS += "$$(QTDIR)/../mingw/lib/libwsock32.a"
+    INCLUDEPATH += "C:/Qt/qtcreator-2.0.93/mingw/include"
+    LIBS += "C:/Qt/qtcreator-2.0.93/mingw/lib/libwsock32.a"
 }
 
-DESTDIR = output/$$FOLDER
-MOC_DIR = .tmp/$$FOLDER
-OBJECTS_DIR = .tmp/$$FOLDER
 CONFIG += console
 CONFIG -= app_bundle
 TEMPLATE = app

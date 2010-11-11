@@ -7,13 +7,7 @@ TARGET = RemoteControlManager
 
 TEMPLATE = lib
 
-CONFIG(debug, debug|release) {
-   FOLDER = debug
-   DEFINES += DEBUG
-} else {
-   FOLDER = release
-}
-
+include(../../Common/common.pri)
 include(../../Libs/protobuf.pri)
 
 CONFIG += staticlib \
@@ -21,10 +15,6 @@ CONFIG += staticlib \
    create_prl
 INCLUDEPATH += . \
    ../..
-
-DESTDIR = output/$$FOLDER
-MOC_DIR = .tmp/$$FOLDER
-OBJECTS_DIR = .tmp/$$FOLDER
 
 DEFINES += REMOTECONTROLMANAGER_LIBRARY
 SOURCES += priv/RemoteControlManager.cpp \

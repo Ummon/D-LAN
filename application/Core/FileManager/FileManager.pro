@@ -6,32 +6,17 @@ QT += network
 TARGET = FileManager
 TEMPLATE = lib
 
-CONFIG(debug, debug|release) {
-   FOLDER = debug
-   DEFINES += DEBUG
-} else {
-   FOLDER = release
-}
-
+include(../../Common/common.pri)
 include(../../Libs/protobuf.pri)
 
-CONFIG += staticlib \
-    link_prl \
-    create_prl
+CONFIG += staticlib link_prl create_prl
 
-INCLUDEPATH += . \
-    ../..
+INCLUDEPATH += . ../..
 
-DESTDIR = output/$$FOLDER
-MOC_DIR = .tmp/$$FOLDER
-OBJECTS_DIR = .tmp/$$FOLDER
-
-LIBS += -L../../Common/LogManager/output/$$FOLDER \
-     -lLogManager
+LIBS += -L../../Common/LogManager/output/$$FOLDER -lLogManager
 POST_TARGETDEPS += ../../Common/LogManager/output/$$FOLDER/libLogManager.a
 
-LIBS += -L../../Common/output/$$FOLDER \
-     -lCommon
+LIBS += -L../../Common/output/$$FOLDER -lCommon
 POST_TARGETDEPS += ../../Common/output/$$FOLDER/libCommon.a
 
 DEFINES += FILEMANAGER_LIBRARY

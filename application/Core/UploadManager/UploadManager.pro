@@ -6,13 +6,7 @@ QT -= gui
 TARGET = UploadManager
 TEMPLATE = lib
 
-CONFIG(debug, debug|release) {
-   FOLDER = debug
-   DEFINES += DEBUG
-} else {
-   FOLDER = release
-}
-
+include(../../Common/common.pri)
 include(../../Libs/protobuf.pri)
 
 CONFIG += staticlib \
@@ -21,10 +15,6 @@ CONFIG += staticlib \
 
 INCLUDEPATH += . \
     ../..
-
-DESTDIR = output/$$FOLDER
-MOC_DIR = .tmp/$$FOLDER
-OBJECTS_DIR = .tmp/$$FOLDER
 
 LIBS += -L../../Common/LogManager/output/$$FOLDER \
      -lLogManager
