@@ -18,9 +18,15 @@ namespace PM
       Q_OBJECT
    protected:
       IGetChunkResult(int time) : Common::Timeoutable(time) {}
+
    public:
       virtual ~IGetChunkResult() {}
       virtual void start() = 0;
+
+      /**
+        * If there is an error during the streaming, it can reported by calling this method.
+        */
+      virtual void setError() = 0;
 
    signals:
       void result(const Protos::Core::GetChunkResult& result);

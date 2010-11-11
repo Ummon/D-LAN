@@ -23,6 +23,7 @@ namespace PM
       GetChunkResult(const Protos::Core::GetChunk& chunk, QSharedPointer<Socket> socket);
       ~GetChunkResult();
       void start();
+      void setError();
 
    private slots:
       void newMessage(Common::Network::CoreMessageType type, const google::protobuf::Message& message);

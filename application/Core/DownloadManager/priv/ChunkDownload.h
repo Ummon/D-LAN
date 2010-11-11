@@ -70,6 +70,8 @@ namespace DM
    private:
       PM::IPeer* getTheFastestFreePeer();
 
+      const int SOCKET_TIMEOUT;
+
       QSharedPointer<PM::IPeerManager> peerManager; // To retrieve the peers from their ID.
 
       OccupiedPeers& occupiedPeersDownloadingChunk; // The peers from where we downloading.
@@ -88,7 +90,7 @@ namespace DM
       QSharedPointer<PM::IGetChunkResult> getChunkResult;
 
       bool downloading;
-      bool networkError;
+      bool networkTransferError;
 
       Common::TransferRateCalculator transferRateCalculator;
 

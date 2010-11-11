@@ -105,6 +105,9 @@ void Socket::setActive()
 
 void Socket::send(Common::Network::CoreMessageType type, const google::protobuf::Message& message)
 {
+   if (!this->listening)
+      return;
+
    this->setActive();
 
    Common::Network::MessageHeader<Common::Network::CoreMessageType> header(type, message.ByteSize(), this->peerManager->getID());
