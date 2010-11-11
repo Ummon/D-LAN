@@ -7,14 +7,8 @@ TARGET = Tests
 CONFIG += link_prl \
     console
 CONFIG -= app_bundle
-CONFIG(debug, debug|release) {
-    DEFINES += DEBUG
-    FOLDER = debug
-}
-else:FOLDER = release
-DESTDIR = output/$$FOLDER
-MOC_DIR = .tmp/$$FOLDER
-OBJECTS_DIR = .tmp/$$FOLDER
+
+include(../../../Common/common.pri)
 
 LIBS += -L../output/$$FOLDER \
     -lDownloadManager

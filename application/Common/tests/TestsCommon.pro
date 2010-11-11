@@ -7,9 +7,7 @@ TARGET = Tests
 
 CONFIG += link_prl
 
-DESTDIR = "output/debug"
-MOC_DIR = ".tmp/debug"
-OBJECTS_DIR = ".tmp/debug"
+include(../../Common/common.pri)
 
 LIBS += -L"../output/debug" -lCommon
 POST_TARGETDEPS += ../output/debug/libCommon.a

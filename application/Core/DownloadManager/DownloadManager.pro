@@ -6,13 +6,7 @@ QT -= gui
 TARGET = DownloadManager
 TEMPLATE = lib
 
-CONFIG(debug, debug|release) {
-   FOLDER = debug
-   DEFINES += DEBUG
-} else {
-   FOLDER = release
-}
-
+include(../../Common/common.pri)
 include(../../Libs/protobuf.pri)
 
 CONFIG += staticlib \
@@ -21,10 +15,6 @@ CONFIG += staticlib \
 
 INCLUDEPATH += . \
     ../..
-
-DESTDIR = output/$$FOLDER
-MOC_DIR = .tmp/$$FOLDER
-OBJECTS_DIR = .tmp/$$FOLDER
 
 LIBS += -L../../Common/LogManager/output/$$FOLDER \
      -lLogManager
@@ -39,11 +29,6 @@ LIBS += -L../PeerManager/output/$$FOLDER \
      -lPeerManager
 POST_TARGETDEPS += ../PeerManager/output/$$FOLDER/libPeerManager.a
 
-
-CONFIG += staticlib create_prl link_prl
-DESTDIR = "output/debug"
-MOC_DIR = ".tmp/debug"
-OBJECTS_DIR = ".tmp/debug"
 DEFINES += DOWNLOADMANAGER_LIBRARY
 
 SOURCES += priv/FileDownload.cpp \

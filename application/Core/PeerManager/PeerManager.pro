@@ -6,21 +6,11 @@ QT += network
 TARGET = PeerManager
 TEMPLATE = lib
 
-CONFIG(debug, debug|release) {
-   FOLDER = debug
-   DEFINES += DEBUG
-} else {
-   FOLDER = release
-}
-
+include(../../Common/common.pri)
 include(../../Libs/protobuf.pri)
 
 CONFIG += staticlib link_prl create_prl
 INCLUDEPATH += . ../..
-
-DESTDIR = output/$$FOLDER
-MOC_DIR = .tmp/$$FOLDER
-OBJECTS_DIR = .tmp/$$FOLDER
 
 DEFINES += PEERMANAGER_LIBRARY
 SOURCES += priv/PeerManager.cpp \

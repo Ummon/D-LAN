@@ -4,35 +4,24 @@
 QT += testlib
 QT -= gui
 TARGET = Tests
-CONFIG += link_prl \
-    console
+CONFIG += link_prl console
 CONFIG -= app_bundle
-CONFIG(debug, debug|release) { 
-    DEFINES += DEBUG
-    FOLDER = debug
-}
-else:FOLDER = release
-DESTDIR = output/$$FOLDER
-MOC_DIR = .tmp/$$FOLDER
-OBJECTS_DIR = .tmp/$$FOLDER
-LIBS += -L../output/$$FOLDER \
-    -lFileManager
+
+include(../../../Libs/protobuf.pri)
+include(../../../Common/common.pri)
+
+LIBS += -L../output/$$FOLDER -lFileManager
 POST_TARGETDEPS += ../output/$$FOLDER/libFileManager.a
 
-LIBS += -L../../../Common/output/$$FOLDER \
-    -lCommon
+LIBS += -L../../../Common/output/$$FOLDER -lCommon
 POST_TARGETDEPS += ../../../Common/output/$$FOLDER/libCommon.a
 
-# FIXME : Should not be here, all dependencies are read from the prl file (see link_prl):
-LIBS += -L../../../Common/LogManager/output/$$FOLDER \
-    -lLogManager
+LIBS += -L../../../Common/LogManager/output/$$FOLDER -lLogManager
 POST_TARGETDEPS += ../../../Common/LogManager/output/$$FOLDER/libLogManager.a
-LIBS += -L${PROTOBUF}/src/.libs \
-    -lprotobuf
+
 INCLUDEPATH += . \
     .. \
-    ../../.. \ # For the 'Common' component.
-    ${PROTOBUF}/src
+    ../../.. # For the 'Common' component.
 TEMPLATE = app
 SOURCES += main.cpp \
     Tests.cpp \

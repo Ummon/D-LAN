@@ -9,16 +9,7 @@ INCLUDEPATH += . \
 TEMPLATE = lib
 CONFIG += staticlib create_prl
 
-CONFIG(debug, debug|release) {
-   FOLDER = debug
-   DEFINES += DEBUG
-} else {
-   FOLDER = release
-}
-
-DESTDIR = output/$$FOLDER
-MOC_DIR = .tmp/$$FOLDER
-OBJECTS_DIR = .tmp/$$FOLDER
+include(../common.pri)
 
 DEFINES += LOGMANAGER_LIBRARY
 
