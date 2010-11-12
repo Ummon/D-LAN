@@ -61,11 +61,14 @@ void DownloadManager::addDownload(const Protos::Common::Entry& entry, Common::Ha
       return;
    }*/
 
+   Download* newDownload;
+
    switch (entry.type())
    {
    case Protos::Common::Entry_Type_DIR :
       {
          DirDownload* dirDownload = new DirDownload(this->fileManager, this->peerManager, peerSource, entry);
+         newDownload = dirDownload;
          connect(dirDownload, SIGNAL(newEntries(const Protos::Common::Entries&)), this, SLOT(newEntries(const Protos::Common::Entries&)), Qt::DirectConnection);
          iterator.insert(dirDownload);
          this->scanTheQueueToRetrieveEntries();
@@ -75,11 +78,14 @@ void DownloadManager::addDownload(const Protos::Common::Entry& entry, Common::Ha
    case Protos::Common::Entry_Type_FILE :
       {
          FileDownload* fileDownload = new FileDownload(this->fileManager, this->peerManager, this->occupiedPeersAskingForHashes, this->occupiedPeersDownloadingChunk, peerSource, entry, complete);
+         newDownload = fileDownload;
          iterator.insert(fileDownload);
          fileDownload->start();
       }
       break;
    }
+
+   connect(newDownload, SIGNAL(deleted(Download*)), this, SLOT(downloadDeleted(Download*)), Qt::DirectConnection);
 }
 
 QList<IDownload*> DownloadManager::getDownloads()
@@ -143,6 +149,11 @@ void DownloadManager::newEntries(const Protos::Common::Entries& entries)
    delete dirDownload;
 
    this->scanTheQueueToRetrieveEntries();
+}
+
+void DownloadManager::downloadDeleted(Download* download)
+{
+   this->downloads.removeOne(download);
 }
 
 /**

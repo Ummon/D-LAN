@@ -19,6 +19,7 @@ namespace DM
       Q_OBJECT
    public:
       DirDownload(QSharedPointer<FM::IFileManager> fileManager, QSharedPointer<PM::IPeerManager> peerManager, Common::Hash peerSourceID, const Protos::Common::Entry& entry);
+      ~DirDownload();
 
       QSet<Common::Hash> getPeers() const;
 
@@ -29,9 +30,10 @@ namespace DM
 
    private slots:
       void result(const Protos::Common::Entries& entries);
+      void resultTimeout();
 
    private:
-      QSharedPointer<PM::IGetEntriesResult> getEntriesResult;;
+      QSharedPointer<PM::IGetEntriesResult> getEntriesResult;
    };
 }
 #endif

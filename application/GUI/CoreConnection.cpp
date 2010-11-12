@@ -11,13 +11,13 @@ using namespace GUI;
 #include <Log.h>
 
 BrowseResult::BrowseResult(CoreConnection* coreConnection, const Common::Hash& peerID)
-   : peerID(peerID), tag(0)
+   : IBrowseResult(SETTINGS.get<quint32>("socket_timeout")), peerID(peerID), tag(0)
 {
    this->init(coreConnection);
 }
 
 BrowseResult::BrowseResult(CoreConnection* coreConnection, const Common::Hash& peerID, const Protos::Common::Entry& entry)
-   : peerID(peerID), entry(entry), tag(0)
+   : IBrowseResult(SETTINGS.get<quint32>("socket_timeout")), peerID(peerID), entry(entry), tag(0)
 {
    this->init(coreConnection);
 }
@@ -55,7 +55,7 @@ void BrowseResult::init(CoreConnection* coreConnection)
 /////
 
 SearchResult::SearchResult(CoreConnection* coreConnection, const QString& terms)
-   : coreConnection(coreConnection), terms(terms)
+   : ISearchResult(SETTINGS.get<quint32>("socket_timeout")), coreConnection(coreConnection), terms(terms)
 {
    connect(this->coreConnection, SIGNAL(searchResult(const Protos::Common::FindResult&)), this, SLOT(searchResult(const Protos::Common::FindResult&)));
 }
@@ -138,6 +138,14 @@ void CoreConnection::download(const Common::Hash& peerID, const Protos::Common::
    this->send(Common::Network::GUI_DOWNLOAD, downloadMessage);
 }
 
+void CoreConnection::cancelDownloads(const QList<quint64>& downloadIDs)
+{
+   Protos::GUI::CancelDownloads cancelDownloadsMessage;
+   for(QListIterator<quint64> i(downloadIDs); i.hasNext();)
+      cancelDownloadsMessage.add_id(i.next());
+   this->send(Common::Network::GUI_CANCEL_DOWNLOADS, cancelDownloadsMessage);
+}
+
 void CoreConnection::connectToCore()
 {
    if (this->connecting)
@@ -150,6 +158,7 @@ void CoreConnection::connectToCore()
    // If the address is local check if the core is launched, if not try to launch it.
    if (address == QHostAddress::LocalHost)
    {
+      // TODO
    }
 
    this->socket.connectToHost(SETTINGS.get<QString>("core_address"), SETTINGS.get<quint32>("core_port"));

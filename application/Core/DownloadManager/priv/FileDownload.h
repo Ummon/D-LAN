@@ -31,6 +31,7 @@ namespace DM
          const Protos::Common::Entry& entry,
          bool complete = false
       );
+      ~FileDownload();
 
       void start();
 

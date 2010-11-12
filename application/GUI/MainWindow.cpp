@@ -318,11 +318,12 @@ void PeerTableDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opt
    const PeerListModel* model = static_cast<const PeerListModel*>(index.model());
 
    QStyleOptionViewItemV4 newOption(option);
+   newOption.state = option.state & (~QStyle::State_HasFocus);
 
    if (model->isOurself(index.row()))
       painter->fillRect(option.rect, QColor(192, 255, 192));
 
-   QItemDelegate::paint(painter, newOption, index);
+   QStyledItemDelegate::paint(painter, newOption, index);
 }
 
 /////

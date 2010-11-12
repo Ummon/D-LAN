@@ -15,6 +15,12 @@ DirDownload::DirDownload(QSharedPointer<FM::IFileManager> fileManager, QSharedPo
    );
 }
 
+DirDownload::~DirDownload()
+{
+   this->status = DELETED;
+   this->getEntriesResult.clear();
+}
+
 QSet<Common::Hash> DirDownload::getPeers() const
 {
    return QSet<Common::Hash>() << this->peerSourceID;
@@ -33,6 +39,7 @@ void DirDownload::retrieveEntries()
    getEntries.mutable_dir()->CopyFrom(this->entry);
    this->getEntriesResult = this->peerSource->getEntries(getEntries);
    connect(this->getEntriesResult.data(), SIGNAL(result(Protos::Common::Entries)), this, SLOT(result(Protos::Common::Entries)));
+   connect(this->getEntriesResult.data(), SIGNAL(timeout()), this, SLOT(resultTimeout()));
    this->getEntriesResult->start();
 }
 
@@ -46,5 +53,11 @@ void DirDownload::result(const Protos::Common::Entries& entries)
       entriesCopy.mutable_entry(i)->mutable_shared_dir()->CopyFrom(this->entry.shared_dir());
 
    emit newEntries(entriesCopy);
+}
+
+void DirDownload::resultTimeout()
+{
+   this->getEntriesResult.clear();
+   this->retrieveEntries();
 }
 

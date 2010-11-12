@@ -32,6 +32,7 @@ namespace GUI
 
    protected slots:
       virtual void result(const Protos::Common::Entries& entries);
+      virtual void resultTimeout();
 
    protected:
       virtual void browse(const Common::Hash& peerID, Node* node = 0);

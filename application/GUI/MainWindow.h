@@ -3,7 +3,7 @@
 
 #include <QMainWindow>
 #include <QLabel>
-#include <QItemDelegate>
+#include <QStyledItemDelegate>
 #include <QPushButton>
 #include <QIcon>
 #include <QMdiSubWindow>
@@ -84,12 +84,11 @@ namespace GUI
       PeerListModel peerListModel;
    };
 
-   class PeerTableDelegate : public QItemDelegate
+   class PeerTableDelegate : public QStyledItemDelegate
    {
       Q_OBJECT
    public:
       void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const;
-      void drawFocus(QPainter*, const QStyleOptionViewItem&, const QRect&) const {}
    };
 
    /**

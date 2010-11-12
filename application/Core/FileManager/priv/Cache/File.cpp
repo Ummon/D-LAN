@@ -119,6 +119,14 @@ File::~File()
 
    if (!this->isComplete())
    {
+      QMutexLocker lockerWrite(&this->writeLock);
+      QMutexLocker lockerRead(&this->readLock);
+
+      if (this->fileInReadMode)
+         this->fileInReadMode->close();
+      if (this->fileInWriteMode)
+         this->fileInWriteMode->close();
+
       if (!QFile::remove(this->getFullPath()))
          L_ERRO(QString("File::~File() : cannot delete an unfinished file : %1").arg(this->getFullPath()));
    }

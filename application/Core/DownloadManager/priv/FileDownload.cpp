@@ -57,6 +57,15 @@ FileDownload::FileDownload(
    this->nbHashesKnown = this->chunkDownloads.size();
 }
 
+FileDownload::~FileDownload()
+{
+   this->status = DELETED;
+   this->timer.stop();
+   this->getHashesResult.clear();
+   this->chunksWithoutDownload.clear();
+   this->chunkDownloads.clear();
+}
+
 void FileDownload::start()
 {
    if (this->hasAValidPeer())
@@ -106,9 +115,12 @@ QSet<Common::Hash> FileDownload::getPeers() const
   */
 QSharedPointer<ChunkDownload> FileDownload::getAChunkToDownload()
 {
+   if (this->status == COMPLETE || this->status == DELETED)
+      return QSharedPointer<ChunkDownload>();
+
    try
    {
-      for (QListIterator< QSharedPointer<ChunkDownload> > i(this->chunkDownloads); i.hasNext() && this->status != COMPLETE;)
+      for (QListIterator< QSharedPointer<ChunkDownload> > i(this->chunkDownloads); i.hasNext();)
       {
          QSharedPointer<ChunkDownload> chunkDownload = i.next();
          if (chunkDownload->isReadyToDownload())
@@ -263,6 +275,9 @@ void FileDownload::chunkDownloadStarted()
 
 void FileDownload::chunkDownloadFinished()
 {
+   if (this->status == DELETED)
+      return;
+
    this->status = COMPLETE;
 
    for (QListIterator< QSharedPointer<ChunkDownload> > i(this->chunkDownloads); i.hasNext();)

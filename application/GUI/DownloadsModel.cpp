@@ -95,6 +95,22 @@ QVariant DownloadsModel::data(const QModelIndex& index, int role) const
    }
 }
 
+quint64 DownloadsModel::getDownloadID(int row) const
+{
+   if (row >= this->downloads.size())
+      return 0;
+   return this->downloads[row].id();
+}
+
+QList<quint64> DownloadsModel::getCompletedDownloadIDs() const
+{
+   QList<quint64> IDs;
+   for (int i = 0; i < this->downloads.size(); i++)
+      if (this->downloads[i].status() == Protos::GUI::State_Download_Status_COMPLETE)
+         IDs << this->downloads[i].id();
+   return IDs;
+}
+
 void DownloadsModel::newState(const Protos::GUI::State& state)
 {
    int i = 0;

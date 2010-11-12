@@ -2,6 +2,7 @@
 #define GUI_WIDGETBROWSE_H
 
 #include <QWidget>
+#include <QStyledItemDelegate>
 
 #include <Common/Hash.h>
 
@@ -15,6 +16,12 @@ namespace Ui {
 
 namespace GUI
 {
+   class BrowseDelegate : public QStyledItemDelegate
+   {
+   public:
+      void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const;
+   };
+
    class WidgetBrowse : public QWidget
    {
       Q_OBJECT
@@ -35,6 +42,7 @@ namespace GUI
       const Common::Hash peerID;
 
       BrowseModel browseModel;
+      BrowseDelegate browseDelegate;
    };
 }
 #endif

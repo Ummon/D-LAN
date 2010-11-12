@@ -142,11 +142,11 @@ message BrowseResult {
 }
 
 // GUI -> Core
-// Remove a download from the queue. If this download
-// is not finished its chunks will be removed.
+// Remove one or several download from the queue. If this download
+// is not finished the unfinished file is removed.
 // id : 0x61
 message CancelDownloads {
-   repeated uint32 id = 1;
+   repeated uint64 id = 1;
 }
 
 // GUI -> Core

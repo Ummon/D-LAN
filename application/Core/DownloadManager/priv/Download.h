@@ -27,7 +27,7 @@ namespace DM
       Download(QSharedPointer<FM::IFileManager> fileManager, QSharedPointer<PM::IPeerManager> peerManager, Common::Hash peerSourceID, const Protos::Common::Entry& entry);
 
    public:
-      virtual ~Download() {}
+      virtual ~Download();
 
       virtual void populateEntry(Protos::Queue::Queue_Entry* entry) const;
 
@@ -39,6 +39,9 @@ namespace DM
       void remove();
 
       bool hasAValidPeer();
+
+   signals:
+      void deleted(Download*);
 
    protected slots:
       virtual void retrievePeer();

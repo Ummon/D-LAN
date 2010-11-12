@@ -5,6 +5,8 @@
 #include <QTcpSocket>
 #include <QSharedPointer>
 
+#include <Common/Timeoutable.h>
+
 #include <Protos/gui_protocol.pb.h>
 #include <Protos/common.pb.h>
 
@@ -14,28 +16,32 @@ namespace GUI
 {
    class CoreConnection;
 
-   class IBrowseResult : public QObject
+   class IBrowseResult : public Common::Timeoutable
    {
       Q_OBJECT
+   protected:
+      IBrowseResult(int time) : Common::Timeoutable(time) {}
+
    public:
       virtual ~IBrowseResult() {}
       virtual void start() = 0;
 
    signals:
       void result(const Protos::Common::Entries& entries);
-      // void timeout(); TODO
    };
 
-   class ISearchResult : public QObject
+   class ISearchResult : public Common::Timeoutable
    {
       Q_OBJECT
+   protected:
+      ISearchResult(int time) : Common::Timeoutable(time) {}
+
    public:
       virtual ~ISearchResult() {}
       virtual void start() = 0;
 
    signals:
       void result(const Protos::Common::FindResult&);
-      // void timeout(); TODO
    };
 
    class BrowseResult : public IBrowseResult
@@ -91,6 +97,7 @@ namespace GUI
       QSharedPointer<ISearchResult> search(const QString& terms);
 
       void download(const Common::Hash& peerID, const Protos::Common::Entry& entry);
+      void cancelDownloads(const QList<quint64>& downloadIDs);
 
    public slots:
       void connectToCore();

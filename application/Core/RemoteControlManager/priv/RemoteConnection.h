@@ -50,11 +50,14 @@ namespace RCM
 
       void newChatMessage(const Common::Hash& peerID, const Protos::Core::ChatMessage&);
       void searchFound(const Protos::Common::FindResult& result);
+
       void getEntriesResult(const Protos::Common::Entries& entries);
+      void getEntriesTimeout();
 
    private:
       bool readMessage();
       void send(Common::Network::GUIMessageType type, const google::protobuf::Message& message);
+      void removeGetEntriesResult(const PM::IGetEntriesResult* getEntriesResult);
 
       QSharedPointer<FM::IFileManager> fileManager;
       QSharedPointer<PM::IPeerManager> peerManager;
