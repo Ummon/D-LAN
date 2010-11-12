@@ -44,6 +44,7 @@ void SearchModel::search(const QString& terms)
 
    this->searchResult = this->coreConnection.search(terms);
    connect(this->searchResult.data(), SIGNAL(result(const Protos::Common::FindResult&)), this, SLOT(result(const Protos::Common::FindResult&)));
+   // We don't use the 'timout' signal from 'ISearchResult', not useful.
    this->searchResult->start();
 
    this->timerProgress.start();

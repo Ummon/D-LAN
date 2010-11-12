@@ -2,6 +2,7 @@
 #define GUI_WIDGETDOWNLOADS_H
 
 #include <QWidget>
+#include <QPoint>
 #include <QStyledItemDelegate>
 
 #include <DownloadsModel.h>
@@ -19,7 +20,6 @@ namespace GUI
    public:
       void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const;
       QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const;
-      void drawFocus(QPainter*, const QStyleOptionViewItem&, const QRect&) const {}
    };
 
    class WidgetDownloads : public QWidget
@@ -29,8 +29,15 @@ namespace GUI
       explicit WidgetDownloads(CoreConnection& coreConnection, PeerListModel& peerListModel, QWidget *parent = 0);
       ~WidgetDownloads();
 
+   private slots:
+      void displayContextMenuDownloads(const QPoint& point);
+      void removeSelectedEntries();
+      void removeCompletedFiles();
+
    private:
       Ui::WidgetDownloads *ui;
+
+      CoreConnection& coreConnection;
 
       DownloadsModel downloadsModel;
       DownloadsDelegate downloadsDelegate;

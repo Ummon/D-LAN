@@ -149,10 +149,16 @@ void BrowseModel::result(const Protos::Common::Entries& entries)
    this->browseResult.clear();
 }
 
+void BrowseModel::resultTimeout()
+{
+   this->browseResult.clear();
+}
+
 void BrowseModel::browse(const Common::Hash& peerID, Node* node)
 {
    this->browseResult = node ? this->coreConnection.browse(this->peerID, node->getEntry()) : this->coreConnection.browse(this->peerID);
    connect(this->browseResult.data(), SIGNAL(result(const Protos::Common::Entries&)), this, SLOT(result(const Protos::Common::Entries&)));
+   connect(this->browseResult.data(), SIGNAL(timeout()), this, SLOT(resultTimeout()));
    this->browseResult->start();
 }
 

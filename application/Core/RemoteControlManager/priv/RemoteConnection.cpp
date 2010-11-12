@@ -176,9 +176,13 @@ void RemoteConnection::getEntriesResult(const Protos::Common::Entries& entries)
    result.set_tag(getEntriesResult->property("tag").toULongLong());
    this->send(Common::Network::GUI_BROWSE_RESULT, result);
 
-   for (QMutableListIterator< QSharedPointer<PM::IGetEntriesResult> > i(this->getEntriesResults); i.hasNext();)
-      if (i.next().data() == getEntriesResult)
-         i.remove();
+   this->removeGetEntriesResult(getEntriesResult);
+}
+
+void RemoteConnection::getEntriesTimeout()
+{
+   PM::IGetEntriesResult* getEntriesResult = dynamic_cast<PM::IGetEntriesResult*>(this->sender());
+   this->removeGetEntriesResult(getEntriesResult);
 }
 
 bool RemoteConnection::readMessage()
@@ -272,6 +276,7 @@ bool RemoteConnection::readMessage()
                QSharedPointer<PM::IGetEntriesResult> entries = peer->getEntries(getEntries);
                entries->setProperty("tag", tag);
                connect(entries.data(), SIGNAL(result(const Protos::Common::Entries&)), this, SLOT(getEntriesResult(const Protos::Common::Entries&)));
+               connect(entries.data(), SIGNAL(timeout()), this, SLOT(getEntriesTimeout()));
                entries->start();
                this->getEntriesResults << entries;
             }
@@ -305,7 +310,7 @@ bool RemoteConnection::readMessage()
          if (readOK)
          {
             // To avoid O(n^2).
-            QSet<quint32> IDs;
+            QSet<quint64> IDs;
             for (int i = 0; i < cancelDownloadsMessage.id_size(); i++)
                IDs.insert(cancelDownloadsMessage.id(i));
 
@@ -372,6 +377,13 @@ void RemoteConnection::send(Common::Network::GUIMessageType type, const google::
    Common::ZeroCopyOutputStreamQIODevice outputStream(this->socket);
    if (!message.SerializeToZeroCopyStream(&outputStream))
       L_WARN(QString("Unable to send %1").arg(Common::ProtoHelper::getDebugStr(message)));
+}
+
+void RemoteConnection::removeGetEntriesResult(const PM::IGetEntriesResult* getEntriesResult)
+{
+   for (QMutableListIterator< QSharedPointer<PM::IGetEntriesResult> > i(this->getEntriesResults); i.hasNext();)
+      if (i.next().data() == getEntriesResult)
+         i.remove();
 }
 
 

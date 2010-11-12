@@ -17,6 +17,9 @@ namespace FM
    public:
       virtual ~IChunk() {}
 
+      /**
+        * Remove only the file if it's incomplete.
+        */
       virtual void removeItsFile() = 0;
 
       virtual void populateEntry(Protos::Common::Entry* entry) const = 0;

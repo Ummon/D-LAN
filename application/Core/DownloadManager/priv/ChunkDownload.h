@@ -28,6 +28,7 @@ namespace DM
       Q_OBJECT
    public:
       ChunkDownload(QSharedPointer<PM::IPeerManager> peerManager, OccupiedPeers& occupiedPeersDownloadingChunk, Common::Hash chunkHash);
+      ~ChunkDownload();
 
       int getDownloadRate() const;
 
@@ -94,7 +95,7 @@ namespace DM
 
       Common::TransferRateCalculator transferRateCalculator;
 
-      mutable QMutex mutex; // To protect 'peers'.
+      mutable QMutex mutex; // To protect 'peers' and 'downloading'.
    };
 }
 #endif

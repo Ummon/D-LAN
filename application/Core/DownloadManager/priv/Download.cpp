@@ -12,6 +12,11 @@ Download::Download(QSharedPointer<FM::IFileManager> fileManager, QSharedPointer<
    this->retrievePeer();
 }
 
+Download::~Download()
+{
+   emit deleted(this);
+}
+
 void Download::populateEntry(Protos::Queue::Queue_Entry* entry) const
 {
    entry->mutable_entry()->CopyFrom(this->entry);
@@ -46,7 +51,7 @@ const Protos::Common::Entry& Download::getEntry()
 
 void Download::remove()
 {
-   // TODO
+   delete this;
 }
 
 bool Download::hasAValidPeer()

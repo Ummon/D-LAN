@@ -17,6 +17,7 @@ namespace DM
      DOWNLOADING = 0x3,
      COMPLETE = 0x4,
      PAUSED = 0x5,
+     DELETED = 0x6,
 
      // All theses status will imply the paused status.
      UNKNOWN_PEER = 0x10, // The source peer can't be found.

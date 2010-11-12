@@ -42,7 +42,7 @@ Chunk::~Chunk()
 void Chunk::removeItsFile()
 {
    QMutexLocker locker(&this->mutex);
-   if (this->file)
+   if (this->file && !this->file->isComplete())
       delete this->file;
 }
 
@@ -219,6 +219,9 @@ void Chunk::setKnownBytes(int bytes)
 
 int Chunk::getChunkSize() const
 {
+   if (!this->file)
+      return 0;
+
    //L_WARN(QString("this->file->getNbChunks() = %1").arg(this->file->getNbChunks()));
    if (this->num < this->file->getNbChunks() - 1)
       return this->CHUNK_SIZE;
@@ -232,6 +235,7 @@ int Chunk::getChunkSize() const
 
 bool Chunk::isComplete() const
 {
+   QMutexLocker locker(&this->mutex);
    return this->knownBytes >= this->getChunkSize(); // Should be '==' but we are never 100% sure ;).
 }
 

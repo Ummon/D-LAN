@@ -30,6 +30,26 @@ ChunkDownload::ChunkDownload(QSharedPointer<PM::IPeerManager> peerManager, Occup
    this->mainThread = QThread::currentThread();
 }
 
+ChunkDownload::~ChunkDownload()
+{
+   disconnect(this, SIGNAL(finished()), this, SLOT(downloadingEnded()));
+
+   if (this->downloading)
+   {
+      this->mutex.lock();
+      this->downloading = false;
+      this->mutex.unlock();
+
+      this->wait();
+      this->downloadingEnded();
+   }
+
+   if (!this->chunk.isNull())
+   {
+      this->chunk->removeItsFile(); // (only if incomplete).
+   }
+}
+
 int ChunkDownload::getDownloadRate() const
 {
    return this->transferRateCalculator.getTransferRate();
@@ -182,6 +202,16 @@ void ChunkDownload::run()
 
       forever
       {
+         this->mutex.lock();
+         if (!this->downloading)
+         {
+            L_DEBU(QString("Downloading aborted, chunk : %1%2").arg(this->chunk->toStr()).arg(this->chunk->isComplete() ? "" : " Not complete!"));
+            this->mutex.unlock();
+            break;
+         }
+         this->mutex.unlock();
+
+
          bytesRead = this->socket->getQSocket()->read(buffer, BUFFER_SIZE);
 
          if (bytesRead == 0)

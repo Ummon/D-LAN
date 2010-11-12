@@ -43,6 +43,8 @@ namespace DM
 
       void newEntries(const Protos::Common::Entries& entries);
 
+      void downloadDeleted(Download* download);
+
       void peerNoLongerAskingForHashes(PM::IPeer* peer);
       void peerNoLongerDownloadingChunk(PM::IPeer* peer);
 
