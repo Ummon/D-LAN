@@ -54,12 +54,12 @@ void DownloadManager::addDownload(const Protos::Common::Entry& entry, Common::Ha
   */
 void DownloadManager::addDownload(const Protos::Common::Entry& entry, Common::Hash peerSource, bool complete, QMutableListIterator<Download*> iterator)
 {
-   /* Commented : not very useful and a bit CPU consumer.
+   // If there is a lot of file in queue it can be a bit CPU consumer.
    if (this->isEntryAlreadyQueued(entry))
    {
       L_WARN(QString("Entry already queued, it will no be added to the queue : %1").arg(Common::ProtoHelper::getStr(entry, &Protos::Common::Entry::name)));
       return;
-   }*/
+   }
 
    Download* newDownload;
 

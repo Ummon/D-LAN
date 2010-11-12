@@ -38,6 +38,7 @@ WidgetChat::~WidgetChat()
 
 void WidgetChat::sendMessage()
 {
+   this->ui->txtMessage->setText(this->ui->txtMessage->text().trimmed());
    if (this->ui->txtMessage->text().isEmpty())
       return;
 
