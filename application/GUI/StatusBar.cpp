@@ -49,6 +49,6 @@ void StatusBar::newState(const Protos::GUI::State& state)
 
 void StatusBar::showAbout()
 {
-   DialogAbout about;
+   DialogAbout about(this);
    about.exec();
 }

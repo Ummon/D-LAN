@@ -118,7 +118,7 @@ void WidgetDownloads::removeSelectedEntries()
 
    if (!downloadIDs.isEmpty())
    {
-      QMessageBox msgBox;
+      QMessageBox msgBox(this);
       msgBox.setText("Are you sure to remove the selected downloads?");
       msgBox.setIcon(QMessageBox::Question);
       msgBox.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);

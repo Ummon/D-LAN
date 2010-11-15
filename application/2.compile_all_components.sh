@@ -8,6 +8,10 @@ cd Tools
 ./update_version.sh
 cd ..
 
+# To force to recompile the Common/Version.rs.
+rm Core/.tmp/release/version_res.o
+rm GUI/.tmp/release/version_res.o
+
 # Common.
 cd Common
 qmake Common.pro -r -spec $SPEC CONFIG+=release

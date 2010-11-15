@@ -215,7 +215,7 @@ void WidgetSettings::resetCoreAddress()
   */
 QString WidgetSettings::askADirectory()
 {
-   QFileDialog fileDialog;
+   QFileDialog fileDialog(this);
    fileDialog.setOptions(QFileDialog::ShowDirsOnly | QFileDialog::ReadOnly);
    fileDialog.setFileMode(QFileDialog::DirectoryOnly);
    if (fileDialog.exec())
