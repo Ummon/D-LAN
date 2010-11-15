@@ -12,9 +12,9 @@ public:
    Tests();
 
 private slots:
-   void writePersistantData();
-   void readPersistantData();
-   void removePersistantData();
+   void writePersistentData();
+   void readPersistentData();
+   void removePersistentData();
    void writeSettings();
    void readSettings();
    void removeSettings();

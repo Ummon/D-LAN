@@ -17,7 +17,7 @@ CONFIG += staticlib \
 INCLUDEPATH += .
 DEFINES += COMMON_LIBRARY
 SOURCES += Hash.cpp \
-    PersistantData.cpp \
+    PersistentData.cpp \
     Global.cpp \
     Network.cpp \
     ZeroCopyStreamQIODevice.cpp \
@@ -27,7 +27,7 @@ SOURCES += Hash.cpp \
     Timeoutable.cpp
 HEADERS += Hashes.h \
     Hash.h \
-    PersistantData.h \
+    PersistentData.h \
     Deletable.h \
     Constants.h \
     Global.h \

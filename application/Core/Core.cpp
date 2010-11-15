@@ -13,7 +13,7 @@ using namespace Core;
 #include <DownloadManager/Builder.h>
 #include <NetworkListener/Builder.h>
 #include <RemoteControlManager/Builder.h>
-#include <Common/PersistantData.h>
+#include <Common/PersistentData.h>
 
 ::Core::Core(int argc, char **argv)
    : QtService<QCoreApplication>(argc, argv, "AybabtuCore")
@@ -28,7 +28,7 @@ using namespace Core;
    {
       SETTINGS.save(); // To automatically create the file if it doesn't exist.
    }
-   catch(Common::PersistantDataIOException& err)
+   catch(Common::PersistentDataIOException& err)
    {
       L_ERRO(err.message);
    }

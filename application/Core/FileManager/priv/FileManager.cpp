@@ -12,7 +12,7 @@ using namespace FM;
 
 #include <Protos/files_cache.pb.h>
 
-#include <Common/PersistantData.h>
+#include <Common/PersistentData.h>
 #include <Common/Settings.h>
 #include <Common/Constants.h>
 #include <Common/Global.h>
@@ -310,11 +310,11 @@ void FileManager::loadCacheFromFile()
 
    try
    {
-      Common::PersistantData::getValue(Common::FILE_CACHE, *savedCache);
+      Common::PersistentData::getValue(Common::FILE_CACHE, *savedCache);
       if (static_cast<int>(savedCache->version()) != FILE_CACHE_VERSION)
       {
          L_ERRO(QString("The version (%1) of the file cache \"%2\" doesn't match the current version (%3)").arg(savedCache->version()).arg(Common::FILE_CACHE).arg(FILE_CACHE_VERSION));
-         Common::PersistantData::rmValue(Common::FILE_CACHE);
+         Common::PersistentData::rmValue(Common::FILE_CACHE);
          return;
       }
 
@@ -356,9 +356,9 @@ void FileManager::persistCacheToFile()
 
    try
    {
-      Common::PersistantData::setValue(Common::FILE_CACHE, hashes);
+      Common::PersistentData::setValue(Common::FILE_CACHE, hashes);
    }
-   catch (Common::PersistantDataIOException& err)
+   catch (Common::PersistentDataIOException& err)
    {
       L_ERRO(err.message);
    }

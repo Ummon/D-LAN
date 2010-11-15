@@ -5,7 +5,7 @@ using namespace PM;
 
 #include <Common/Hash.h>
 #include <Common/Network.h>
-#include <Common/PersistantData.h>
+#include <Common/PersistentData.h>
 #include <Common/Settings.h>
 
 #include <Priv/Log.h>
@@ -33,7 +33,7 @@ PeerManager::PeerManager(QSharedPointer<FM::IFileManager> fileManager)
       {
          SETTINGS.save();
       }
-      catch(Common::PersistantDataIOException& err)
+      catch(Common::PersistentDataIOException& err)
       {
          L_ERRO(err.message);
       }
@@ -63,7 +63,7 @@ void PeerManager::setNick(const QString& nick)
     {
       SETTINGS.save();
     }
-    catch(Common::PersistantDataIOException& err)
+    catch(Common::PersistentDataIOException& err)
     {
        L_ERRO(err.message);
     }

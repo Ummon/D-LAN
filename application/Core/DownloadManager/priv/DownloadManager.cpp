@@ -4,7 +4,7 @@ using namespace DM;
 #include <Protos/queue.pb.h>
 
 #include <Common/Settings.h>
-#include <Common/PersistantData.h>
+#include <Common/PersistentData.h>
 #include <Common/Constants.h>
 #include <Common/ProtoHelper.h>
 
@@ -253,11 +253,11 @@ void DownloadManager::loadQueueFromFile()
 
    try
    {
-      Common::PersistantData::getValue(Common::FILE_QUEUE, savedQueue);
+      Common::PersistentData::getValue(Common::FILE_QUEUE, savedQueue);
       if (static_cast<int>(savedQueue.version()) != FILE_QUEUE_VERSION)
       {
          L_ERRO(QString("The version (%1) of the queue file \"%2\" doesn't match the current version (%3)").arg(savedQueue.version()).arg(Common::FILE_QUEUE).arg(FILE_QUEUE_VERSION));
-         Common::PersistantData::rmValue(Common::FILE_QUEUE);
+         Common::PersistentData::rmValue(Common::FILE_QUEUE);
          return;
       }
 
@@ -289,9 +289,9 @@ void DownloadManager::saveQueueToFile()
 
    try
    {
-      Common::PersistantData::setValue(Common::FILE_QUEUE, savedQueue);
+      Common::PersistentData::setValue(Common::FILE_QUEUE, savedQueue);
    }
-   catch (Common::PersistantDataIOException& err)
+   catch (Common::PersistentDataIOException& err)
    {
       L_ERRO(err.message);
    }

@@ -16,7 +16,7 @@ namespace Common
       const QString message;
    };
 
-   class PersistantData
+   class PersistentData
    {
       static const QString TEMP_SUFFIX_TERM;
    public:
