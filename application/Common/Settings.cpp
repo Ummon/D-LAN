@@ -6,12 +6,12 @@ using namespace Common;
 
 #include <Protos/common.pb.h>
 
-#include <Common/PersistantData.h>
+#include <Common/PersistentData.h>
 #include <ProtoHelper.h>
 
 /**
   * @class Settings
-  * Store some settings into a file via PersistantData.
+  * Store some settings into a file via PersistentData.
   * Singleton.
   */
 
@@ -76,14 +76,14 @@ void Settings::setSettingsMessage(google::protobuf::Message* settings)
 }
 
 /**
-  * @exception PersistantDataIOException see the class 'PersistantData'.
+  * @exception PersistentDataIOException see the class 'PersistentData'.
   */
 void Settings::save()
 {
    QMutexLocker lock(&this->mutex);
    if (!this->settings)
       return;
-   PersistantData::setValue(this->filename, *this->settings, true);
+   PersistentData::setValue(this->filename, *this->settings, true);
 }
 
 void Settings::load()
@@ -93,7 +93,7 @@ void Settings::load()
       return;
    try
    {
-      PersistantData::getValue(this->filename, *this->settings, true);
+      PersistentData::getValue(this->filename, *this->settings, true);
    }
    catch (Common::UnknownValueException&)
    {
@@ -105,7 +105,7 @@ void Settings::remove()
    QMutexLocker lock(&this->mutex);
    if (!this->settings)
       return;
-   PersistantData::rmValue(this->filename);
+   PersistentData::rmValue(this->filename);
 }
 
 bool Settings::isSet(const QString& name)

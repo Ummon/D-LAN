@@ -9,7 +9,7 @@ using namespace PM;
 #include <Protos/common.pb.h>
 
 #include <Common/LogManager/Builder.h>
-#include <Common/PersistantData.h>
+#include <Common/PersistentData.h>
 #include <Common/Constants.h>
 #include <Common/Global.h>
 #include <Common/Network.h>
@@ -31,7 +31,7 @@ void Tests::initTestCase()
    LM::Builder::initMsgHandler();
    qDebug() << "===== initTestCase() =====";
 
-   Common::PersistantData::rmValue(Common::FILE_CACHE); // Reset the stored cache.
+   Common::PersistentData::rmValue(Common::FILE_CACHE); // Reset the stored cache.
 
    SETTINGS.setFilename("core_settings.txt");
    SETTINGS.setSettingsMessage(new Protos::Core::Settings());

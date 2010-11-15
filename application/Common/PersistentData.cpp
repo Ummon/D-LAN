@@ -1,4 +1,4 @@
-#include <Common/PersistantData.h>
+#include <Common/PersistentData.h>
 using namespace Common;
 
 #include <QFile>
@@ -12,14 +12,14 @@ using namespace Common;
 #include <Global.h>
 
 /**
-  * @class PersistantData
+  * @class PersistentData
   * Some little functions to persist data and retrieve it.
   * The data are persisted in the user directory.
   * The data are described by a Protocol Buffer message.
   * Theses functions can be used for the application settings.
   */
 
-const QString PersistantData::TEMP_SUFFIX_TERM(".temp");
+const QString PersistentData::TEMP_SUFFIX_TERM(".temp");
 
 /**
   * Define a value associated to a name.
@@ -27,7 +27,7 @@ const QString PersistantData::TEMP_SUFFIX_TERM(".temp");
   * You can use an extension in the name like "settings.conf".
   * @exception PersistantDataIOException if the value can't be persisted.
   */
-void PersistantData::setValue(const QString& name, const google::protobuf::Message& data, bool humanReadable)
+void PersistentData::setValue(const QString& name, const google::protobuf::Message& data, bool humanReadable)
 {
    if (Global::createApplicationFolder())
    {
@@ -66,7 +66,7 @@ void PersistantData::setValue(const QString& name, const google::protobuf::Messa
   * Retrieve the data associated to a given name.
   * @exception UnknownValueException Throwed if the value doesn't exist
   */
-void PersistantData::getValue(const QString& name, google::protobuf::Message& data, bool humanReadable)
+void PersistentData::getValue(const QString& name, google::protobuf::Message& data, bool humanReadable)
 {
    QFile file(APPLICATION_FOLDER_PATH + '/' + name);
    if (!file.open(QIODevice::ReadOnly))
@@ -91,7 +91,7 @@ void PersistantData::getValue(const QString& name, google::protobuf::Message& da
   * Remove a data.
   * @return Return false if the data didn't exist.
   */
-bool PersistantData::rmValue(const QString& name)
+bool PersistentData::rmValue(const QString& name)
 {
    return QFile::remove(APPLICATION_FOLDER_PATH + '/' + name);
 }

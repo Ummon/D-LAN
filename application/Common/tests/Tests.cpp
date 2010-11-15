@@ -8,7 +8,7 @@
 #include <Protos/common.pb.h>
 #include <Protos/core_settings.pb.h>
 
-#include <PersistantData.h>
+#include <PersistentData.h>
 #include <Settings.h>
 #include <Global.h>
 #include <ZeroCopyStreamQIODevice.h>
@@ -18,21 +18,21 @@ Tests::Tests()
 {
 }
 
-void Tests::writePersistantData()
+void Tests::writePersistentData()
 {
-   //PersistantData::setValue("paul", "42 years old");
+   //PersistentData::setValue("paul", "42 years old");
 }
 
-void Tests::readPersistantData()
+void Tests::readPersistentData()
 {
    /* TODO :
-   QByteArray value = PersistantData::getValue("paul");
+   QByteArray value = PersistentData::getValue("paul");
    qDebug() << "read value : " << value;
    QVERIFY(value == "42 years old");
 
    try
    {
-      PersistantData::getValue("john");
+      PersistentData::getValue("john");
    }
    catch (Common::UnknownValueException)
    {
@@ -44,10 +44,10 @@ void Tests::readPersistantData()
    }*/
 }
 
-void Tests::removePersistantData()
+void Tests::removePersistentData()
 {
-   /*QVERIFY(PersistantData::rmValue("paul"));
-   QVERIFY(!PersistantData::rmValue("john"));*/
+   /*QVERIFY(PersistentData::rmValue("paul"));
+   QVERIFY(!PersistentData::rmValue("john"));*/
 }
 
 void Tests::writeSettings()
