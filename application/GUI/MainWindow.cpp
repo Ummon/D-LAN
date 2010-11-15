@@ -113,6 +113,8 @@ void MainWindow::browse()
 
 void MainWindow::search()
 {
+   this->ui->txtSearch->setText(this->ui->txtSearch->text().trimmed());
+
    if (!this->ui->txtSearch->text().isEmpty())
    {
       this->addWidgetSearch(this->ui->txtSearch->text());

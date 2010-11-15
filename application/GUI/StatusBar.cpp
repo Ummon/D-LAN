@@ -4,6 +4,8 @@ using namespace GUI;
 
 #include <Common/Global.h>
 
+#include <DialogAbout.h>
+
 StatusBar::StatusBar(CoreConnection& coreConnection, QWidget *parent)
    : QWidget(parent), ui(new Ui::StatusBar), coreConnection(coreConnection)
 {
@@ -13,6 +15,8 @@ StatusBar::StatusBar(CoreConnection& coreConnection, QWidget *parent)
    connect(&coreConnection, SIGNAL(newState(const Protos::GUI::State&)), this, SLOT(newState(const Protos::GUI::State&)));
    connect(&coreConnection, SIGNAL(coreConnected()), this, SLOT(coreConnected()));
    connect(&coreConnection, SIGNAL(coreDisconnected()), this, SLOT(coreDisconnected()));
+
+   connect(this->ui->butHelp, SIGNAL(clicked()), this, SLOT(showAbout()));
 }
 
 StatusBar::~StatusBar()
@@ -41,4 +45,10 @@ void StatusBar::newState(const Protos::GUI::State& state)
    totalSharing += state.settings().myself().sharing_amount();
 
    this->ui->lblTotalSharing->setText(Common::Global::formatByteSize(totalSharing));
+}
+
+void StatusBar::showAbout()
+{
+   DialogAbout about;
+   about.exec();
 }
