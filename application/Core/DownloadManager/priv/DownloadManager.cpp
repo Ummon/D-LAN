@@ -287,7 +287,14 @@ void DownloadManager::saveQueueToFile()
       i.next()->populateEntry(savedQueue.add_entry());
    }
 
-   Common::PersistantData::setValue(Common::FILE_QUEUE, savedQueue);
+   try
+   {
+      Common::PersistantData::setValue(Common::FILE_QUEUE, savedQueue);
+   }
+   catch (Common::PersistantDataIOException& err)
+   {
+      L_ERRO(err.message);
+   }
 }
 
 bool DownloadManager::isEntryAlreadyQueued(const Protos::Common::Entry& entry)

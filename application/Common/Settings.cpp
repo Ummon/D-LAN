@@ -26,7 +26,6 @@ Settings& Settings::getInstance()
 
 Settings::Settings() :
    filename("settings.txt"), // The default name.
-   persisted(false),
    settings(0),
    mutex(QMutex::Recursive)
 {
@@ -76,28 +75,25 @@ void Settings::setSettingsMessage(google::protobuf::Message* settings)
    }
 }
 
-bool Settings::arePersisted()
-{
-   QMutexLocker lock(&this->mutex);
-   return this->persisted;
-}
-
+/**
+  * @exception PersistantDataIOException see the class 'PersistantData'.
+  */
 void Settings::save()
 {
    QMutexLocker lock(&this->mutex);
    if (!this->settings)
       return;
    PersistantData::setValue(this->filename, *this->settings, true);
-   this->persisted = true;
 }
 
 void Settings::load()
 {
    QMutexLocker lock(&this->mutex);
+   if (!this->settings)
+      return;
    try
    {
       PersistantData::getValue(this->filename, *this->settings, true);
-      this->persisted = true;
    }
    catch (Common::UnknownValueException&)
    {
@@ -110,7 +106,6 @@ void Settings::remove()
    if (!this->settings)
       return;
    PersistantData::rmValue(this->filename);
-   this->persisted = false;
 }
 
 bool Settings::isSet(const QString& name)

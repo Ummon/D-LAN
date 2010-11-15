@@ -25,17 +25,19 @@ const QString PersistantData::TEMP_SUFFIX_TERM(".temp");
   * Define a value associated to a name.
   * You may refer to the name policy of the platform. Try to avoir special characters or space.
   * You can use an extension in the name like "settings.conf".
+  * @exception PersistantDataIOException if the value can't be persisted.
   */
 void PersistantData::setValue(const QString& name, const google::protobuf::Message& data, bool humanReadable)
 {
    if (Global::createApplicationFolder())
    {
-      QString tempName(name + TEMP_SUFFIX_TERM);
+      const QString tempName(name + TEMP_SUFFIX_TERM);
 
       {
-         QFile file(APPLICATION_FOLDER_PATH + '/' + tempName);
-         file.open(QIODevice::WriteOnly);
-         // if (file.fail()) // TODO : check if failure
+         const QString filename(APPLICATION_FOLDER_PATH + '/' + tempName);
+         QFile file(filename);
+         if (!file.open(QIODevice::WriteOnly))
+            throw PersistantDataIOException(QString("Unable to open the file in write mode : %1, error : %2").arg(filename).arg(file.errorString()));
 
 #if !DEBUG
          if (humanReadable)

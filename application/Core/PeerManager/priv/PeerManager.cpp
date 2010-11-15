@@ -5,6 +5,7 @@ using namespace PM;
 
 #include <Common/Hash.h>
 #include <Common/Network.h>
+#include <Common/PersistantData.h>
 #include <Common/Settings.h>
 
 #include <Priv/Log.h>
@@ -27,7 +28,15 @@ PeerManager::PeerManager(QSharedPointer<FM::IFileManager> fileManager)
    {
       this->ID = Common::Hash::rand();
       SETTINGS.set("peerID", this->ID);
-      SETTINGS.save();
+
+      try
+      {
+         SETTINGS.save();
+      }
+      catch(Common::PersistantDataIOException& err)
+      {
+         L_ERRO(err.message);
+      }
    }
    else
    {
@@ -49,7 +58,15 @@ void PeerManager::setNick(const QString& nick)
 {
     this->nick = nick;
     SETTINGS.set("nick", this->nick);
-    SETTINGS.save();
+
+    try
+    {
+      SETTINGS.save();
+    }
+    catch(Common::PersistantDataIOException& err)
+    {
+       L_ERRO(err.message);
+    }
 }
 
 /**

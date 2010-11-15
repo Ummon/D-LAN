@@ -9,6 +9,12 @@
 namespace Common
 {
    class UnknownValueException {};
+   class PersistantDataIOException
+   {
+   public:
+      PersistantDataIOException(const QString message) : message(message) {}
+      const QString message;
+   };
 
    class PersistantData
    {

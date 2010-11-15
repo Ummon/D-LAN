@@ -13,6 +13,7 @@ using namespace Core;
 #include <DownloadManager/Builder.h>
 #include <NetworkListener/Builder.h>
 #include <RemoteControlManager/Builder.h>
+#include <Common/PersistantData.h>
 
 ::Core::Core(int argc, char **argv)
    : QtService<QCoreApplication>(argc, argv, "AybabtuCore")
@@ -22,7 +23,15 @@ using namespace Core;
    SETTINGS.setFilename("core_settings.txt");
    SETTINGS.setSettingsMessage(new Protos::Core::Settings());
    SETTINGS.load();
-   SETTINGS.save(); // To automatically create the file if it doesn't exist.
+
+   try
+   {
+      SETTINGS.save(); // To automatically create the file if it doesn't exist.
+   }
+   catch(Common::PersistantDataIOException& err)
+   {
+      L_ERRO(err.message);
+   }
 
    this->setServiceDescription("A LAN file sharing system");
    this->setStartupType(QtServiceController::ManualStartup);

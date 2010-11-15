@@ -6,6 +6,7 @@
 #include <QDir>
 
 #include <Protos/common.pb.h>
+#include <Protos/core_settings.pb.h>
 
 #include <PersistantData.h>
 #include <Settings.h>
@@ -51,13 +52,14 @@ void Tests::removePersistantData()
 
 void Tests::writeSettings()
 {
-   QVERIFY(!SETTINGS.arePersisted());
-
    this->hash = Hash::rand();
+
+   SETTINGS.setFilename("tests_core_settings.txt");
+   SETTINGS.setSettingsMessage(new Protos::Core::Settings());
+
    SETTINGS.set("nick", QString("paul"));
    SETTINGS.set("peerID", this->hash);
    SETTINGS.save();
-   QVERIFY(SETTINGS.arePersisted());
 }
 
 void Tests::readSettings()
@@ -76,7 +78,6 @@ void Tests::readSettings()
 void Tests::removeSettings()
 {
    SETTINGS.remove();
-   QVERIFY(!SETTINGS.arePersisted());
 }
 
 void Tests::generateAHash()
@@ -154,9 +155,6 @@ void Tests::availableDiskSpace()
    qDebug() << "Available disk space [Mo] : " << Common::Global::availableDiskSpace(".") / 1024 / 1024;
 }
 
-
-#include <google/protobuf/io/zero_copy_stream_impl.h>
-
 void Tests::readAndWriteWithZeroCopyStreamQIODevice()
 {
    QString filePath(QDir::tempPath().append("/test.bin"));
@@ -176,7 +174,7 @@ void Tests::readAndWriteWithZeroCopyStreamQIODevice()
    {
       ZeroCopyOutputStreamQIODevice outputStream(&file);
 
-      hashMessage1.set_hash(hash1.getData(),  Hash::HASH_SIZE);
+      hashMessage1.set_hash(hash1.getData(), Hash::HASH_SIZE);
       hashMessage1.SerializeToZeroCopyStream(&outputStream);
 
       hashMessage2.set_hash(hash2.getData(), Hash::HASH_SIZE);

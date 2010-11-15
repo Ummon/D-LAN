@@ -353,6 +353,13 @@ void FileManager::persistCacheToFile()
 
    Protos::FileCache::Hashes hashes;
    this->cache.saveInFile(hashes);
-   //LOG_DEBUG(QString("hashes.SpaceUsed() = %1").arg(hashes.SpaceUsed()));
-   Common::PersistantData::setValue(Common::FILE_CACHE, hashes);
+
+   try
+   {
+      Common::PersistantData::setValue(Common::FILE_CACHE, hashes);
+   }
+   catch (Common::PersistantDataIOException& err)
+   {
+      L_ERRO(err.message);
+   }
 }

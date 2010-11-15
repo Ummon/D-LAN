@@ -7,23 +7,21 @@ TARGET = Tests
 
 CONFIG += link_prl
 
-include(../../Common/common.pri)
+include(../common.pri)
+include(../../Libs/protobuf.pri)
 
-LIBS += -L"../output/debug" -lCommon
-POST_TARGETDEPS += ../output/debug/libCommon.a
-
-LIBS += -L${PROTOBUF}/src/.libs \
-   -lprotobuf
+LIBS += -L"../output/$$FOLDER" -lCommon
+POST_TARGETDEPS += ../output/$$FOLDER/libCommon.a
 
 INCLUDEPATH += . \
    .. \
-   ../.. \
-   ${PROTOBUF}/src
+   ../..
 
 CONFIG += console
 CONFIG -= app_bundle
 TEMPLATE = app
 SOURCES += main.cpp \
     Tests.cpp \
-    ../../Protos/common.pb.cc
+    ../../Protos/common.pb.cc \
+    ../../Protos/core_settings.pb.cc
 HEADERS += Tests.h
