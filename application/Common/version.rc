@@ -1,5 +1,7 @@
-#include <windows.h>
+#include <winver.h>
 #include "Version.h"
+
+// For more information : http://msdn.microsoft.com/en-us/library/aa381058%28VS.85%29.aspx .
  
 IDI_ICON1 ICON DISCARDABLE "ressources/aybabtu_icon.ico"
 

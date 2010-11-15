@@ -8,15 +8,22 @@ cd Tools
 ./update_version.sh
 cd ..
 
-# To force to recompile the Common/Version.rs.
+# To force to recompile the Common/Version.rs and DialogAbout.
 rm Core/.tmp/release/version_res.o
 rm GUI/.tmp/release/version_res.o
+rm GUI/.tmp/release/DialogAbout.o
 
 # Common.
 cd Common
 qmake Common.pro -r -spec $SPEC CONFIG+=release
 $MAKE -w
 cd ..
+
+# TestsCommon.
+cd Common/tests
+qmake TestsCommon.pro -r -spec $SPEC CONFIG+=release
+$MAKE -w
+cd ../..
 
 # LogManager.
 cd Common/LogManager
