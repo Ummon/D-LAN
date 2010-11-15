@@ -1,4 +1,4 @@
-#! /bin/bash
+#!/usr/bin/env bash
 
 # Will update the two fields 'BUILD_TIME' and 'GIT_VERSION' from the file 'application/Common/Version.h'.
 CURRENT_DATE=`date -u +%Y-%m-%d_%H-%M`
