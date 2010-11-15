@@ -52,7 +52,6 @@ namespace Common
       static void printErrorBadType(const google::protobuf::FieldDescriptor* field, const QString& excepted);
 
       QString filename; ///< The name of the file cache saved in the home directory.
-      bool persisted;
       google::protobuf::Message* settings;
       QMutex mutex;
 
