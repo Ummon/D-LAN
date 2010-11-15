@@ -37,4 +37,5 @@ HEADERS += Hashes.h \
     Settings.h \
     TransferRateCalculator.h \
     ProtoHelper.h \
-    Timeoutable.h
+    Timeoutable.h \
+    Version.h

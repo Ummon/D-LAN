@@ -2,7 +2,7 @@
 #define GUI_WIDGETCHAT_H
 
 #include <QWidget>
-#include <QItemDelegate>
+#include <QStyledItemDelegate>
 
 #include <CoreConnection.h>
 #include <PeerListModel.h>
@@ -14,11 +14,10 @@ namespace Ui {
 
 namespace GUI
 {
-   class ChatDelegate : public QItemDelegate
+   class ChatDelegate : public QStyledItemDelegate
    {
-      Q_OBJECT
    public:
-      virtual void drawFocus(QPainter*, const QStyleOptionViewItem&, const QRect&) const {}
+      void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const;
    };
 
    class WidgetChat : public QWidget

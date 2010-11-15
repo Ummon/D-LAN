@@ -26,6 +26,8 @@ namespace GUI
       void coreDisconnected();
       void newState(const Protos::GUI::State& state);
 
+      void showAbout();
+
    private:
       Ui::StatusBar *ui;
 

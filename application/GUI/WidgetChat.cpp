@@ -2,6 +2,15 @@
 #include <ui_WidgetChat.h>
 using namespace GUI;
 
+void ChatDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
+{
+   QStyleOptionViewItemV4 newOption(option);
+   newOption.state = option.state & (~QStyle::State_HasFocus);
+   QStyledItemDelegate::paint(painter, newOption, index);
+}
+
+/////
+
 WidgetChat::WidgetChat(CoreConnection& coreConnection, PeerListModel& peerListModel, QWidget *parent)
    :  QWidget(parent), ui(new Ui::WidgetChat), coreConnection(coreConnection), chatModel(coreConnection, peerListModel)
 {

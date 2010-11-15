@@ -6,6 +6,7 @@ QT += network gui # 'gui' is only needed for the trayicon :/.
 TARGET = AybabtuCore
 CONFIG += link_prl
 
+RC_FILE = ../Common/version.rc
 
 include(../Common/common.pri)
 include(../Libs/protobuf.pri)

@@ -9,5 +9,7 @@
         <file>ressources/error.png</file>
         <file>ressources/download.png</file>
         <file>ressources/upload.png</file>
+        <file>ressources/help.png</file>
+        <file>ressources/logo.png</file>
     </qresource>
 </RCC>

@@ -1,0 +1,31 @@
+#include <windows.h>
+#include "Version.h"
+ 
+IDI_ICON1 ICON DISCARDABLE "ressources/aybabtu_icon.ico"
+
+VS_VERSION_INFO VERSIONINFO
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904b0"
+        BEGIN
+            VALUE "CompanyName",      "Ek Dev"
+            VALUE "FileDescription",  "Aybabtu - A LAN file sharing software"
+            VALUE "FileVersion",      VERSION
+            VALUE "InternalName",     "Aybabtu"
+            VALUE "LegalCopyright",   "2010"
+            VALUE "LegalTrademarks1", ""
+            VALUE "LegalTrademarks2", ""
+            VALUE "OriginalFilename", ""
+            VALUE "ProductName",      "Aybabtu"
+            VALUE "ProductVersion",   VERSION
+            VALUE "VersionTag",       VERSION_TAG
+            VALUE "BuildTime",        BUILD_TIME
+            VALUE "GitVersion",       GIT_VERSION
+        END
+    END    
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1200
+    END
+END

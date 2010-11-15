@@ -8,6 +8,8 @@ QT       += core gui network
 TARGET = AybabtuGUI
 TEMPLATE = app
 
+RC_FILE = ../Common/version.rc
+
 include(../Common/common.pri)
 include(../Libs/protobuf.pri)
 
@@ -39,7 +41,8 @@ SOURCES += main.cpp\
     WidgetDownloads.cpp \
     DownloadsModel.cpp \
     WidgetUploads.cpp \
-    UploadsModel.cpp
+    UploadsModel.cpp \
+    DialogAbout.cpp
 
 HEADERS  += MainWindow.h \
     ../Protos/gui_protocol.pb.h \
@@ -60,7 +63,8 @@ HEADERS  += MainWindow.h \
     WidgetDownloads.h \
     DownloadsModel.h \
     UploadsModel.h \
-    WidgetUploads.h
+    WidgetUploads.h \
+    DialogAbout.h
 
 FORMS    += MainWindow.ui \
     WidgetChat.ui \
@@ -69,7 +73,8 @@ FORMS    += MainWindow.ui \
     WidgetSearch.ui \
     StatusBar.ui \
     WidgetDownloads.ui \
-    WidgetUploads.ui
+    WidgetUploads.ui \
+    DialogAbout.ui
 
 RESOURCES += \
     ressources.qrc
