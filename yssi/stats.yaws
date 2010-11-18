@@ -1,0 +1,6 @@
+<erl>
+   out(A) ->
+      {ehtml,
+         lists:map(fun({File, N}) -> File ++ " " ++ integer_to_list(N) end,aybabtu_download_counter:all_files())
+      }.
+</erl>
