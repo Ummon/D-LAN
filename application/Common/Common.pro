@@ -17,17 +17,16 @@ CONFIG += staticlib \
 INCLUDEPATH += .
 DEFINES += COMMON_LIBRARY
 SOURCES += Hash.cpp \
-    PersistentData.cpp \
     Global.cpp \
     Network.cpp \
     ZeroCopyStreamQIODevice.cpp \
     Settings.cpp \
     TransferRateCalculator.cpp \
     ProtoHelper.cpp \
-    Timeoutable.cpp
+    Timeoutable.cpp \
+    PersistentData.cpp
 HEADERS += Hashes.h \
     Hash.h \
-    PersistentData.h \
     Deletable.h \
     Constants.h \
     Global.h \
@@ -38,4 +37,5 @@ HEADERS += Hashes.h \
     TransferRateCalculator.h \
     ProtoHelper.h \
     Timeoutable.h \
-    Version.h
+    Version.h \
+    PersistentData.h
