@@ -1,5 +1,5 @@
 -module(aybabtu_download_counter).
--export([start/1, stop/0, new_download/1, nb_download/1, reset/1]).
+-export([start/1, stop/0, new_download/1, nb_download/1, all_files/0, reset/1]).
 
 -include("/usr/lib/yaws/include/yaws.hrl"). 
 -include("../include/aybabtu_defines.hrl").
@@ -37,6 +37,9 @@ nb_download(Filename) ->
       [] -> 0;
       [{_, N}] -> N
    end.
+   
+all_files() ->
+   dets:foldl(fun(File, Acc) -> [File | Acc] end, [], ?MODULE).
 
 reset(Filename) ->
    aybabtu_download_counter_process ! {reset, Filename}.
@@ -46,7 +49,7 @@ loop() ->
       {new_download, Filename} ->
          case dets:lookup(?MODULE, Filename) of
             [] ->
-               dets:insert(?MODULE, [{Filename, 0}]),
+               dets:insert(?MODULE, [{Filename, 1}]),
                loop();
             [{_, N}] ->
                dets:insert(?MODULE, [{Filename, N + 1}]),

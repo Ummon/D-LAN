@@ -7,12 +7,14 @@
 pages() ->
    [home, features, about].
    
+hidden_pages() -> [stats].
+   
 % Return the current page depending the page parameters -> atom()
 current_page(A) ->
    case yaws_api:queryvar(A, "p") of
       {ok, PageStr} ->
          Page = list_to_atom(PageStr),
-         case lists:member(Page, pages()) of
+         case lists:member(Page, pages() ++ hidden_pages()) of
             true -> Page;
             _ -> unknown
          end;
@@ -40,9 +42,9 @@ image(Filename, Caption) ->
    {ehtml,
       [{'div', [{class, "gallery"}],
          [
-            {a, [{href, "img/" ++ Filename ++ ".png"}],
+            {a, [{href, "img/gallery/" ++ Filename ++ ".png"}, {rel, "group"}, {title, Caption}],
                [
-                  {img, [{src, "img/" ++ Filename ++ "_mini.png"}, {alt, Caption}]}
+                  {img, [{src, "img/gallery/" ++ Filename ++ "_thumb.png"}, {alt, Caption}]}
                ]
             },
             {p, [], Caption}
@@ -61,10 +63,10 @@ images(Filename_caption_list) ->
          Filename_caption_list
       )
    }.
-   
+
 download_button(A) ->
    {ok, Filenames} = file:list_dir(A#arg.docroot ++ "/" ++ ?RELEASES_FOLDER),
-   [Filename|_] = lists:sort(Filenames),
+   Filename = lists:last(lists:sort(lists:filter(fun(F) -> string:right(F, 4) =:= ".exe" end, Filenames))),
    {match, [Version, Version_tag, Year, Month, Day]} = re:run(Filename, "Aybabtu-((?:\\d|\\.)+)([^-]*)-(\\d+)-(\\d+)-(\\d+).*", [{capture, all_but_first, list}]),
    File_size = filelib:file_size(A#arg.docroot ++ "/" ++ ?RELEASES_FOLDER ++ Filename),
    File_size_kb = trunc(File_size / 1024),
@@ -74,7 +76,7 @@ download_button(A) ->
             [
                {em, [], ["Download Aybabtu (" ++ integer_to_list(trunc(File_size_kb / 1024)) ++ "." ++ integer_to_list(trunc(((File_size_kb rem 1024) + 50) / 100)) ++ " MiB)"]}, {br},
                "Version " ++ Version ++ if Version_tag =/= [] -> " " ++ Version_tag; true -> [] end ++ " for Windows", {br},
-               "Released on " ++ httpd_util:month(list_to_integer(Month)) ++ " " ++ Day ++ " " ++ Year, {br}
+               "Released on " ++ httpd_util:month(list_to_integer(Month)) ++ " " ++ Day ++ " " ++ Year ++ " UTC", {br}
                %"Number of download : " ++ integer_to_list(aybabtu_download_counter:nb_download(Filename))
             ]
          }]
