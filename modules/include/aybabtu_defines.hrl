@@ -1,0 +1,3 @@
+-define(BUFFER_SIZE, 4096).
+-define(RELEASES_FOLDER, "files/releases/").
+-define(DOWNLOAD_DB_FILEPATH, "db/downloads_count.dets").

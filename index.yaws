@@ -1,0 +1,47 @@
+<erl>
+   % If a download is requested we ask the module 'aybabtu_common' to send the file.
+   out(A) ->
+      case yaws_api:queryvar(A, "dl") of
+         {ok, Filename} -> aybabtu_common:send_file(A, Filename);
+         _ -> ok
+      end.
+</erl><?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="fr" >
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8" /> <!-- just for IE ... -->
+      <title>Aybabtu</title>
+      <link rel="stylesheet" href="style.css" type="text/css" />
+      <link rel="stylesheet" href="colorbox/colorbox.css" type="text/css" />
+      <script type="text/javascript" src="jquery-1.4.4.min.js"></script>
+      <script type="text/javascript" src="colorbox/jquery.colorbox.js"></script>
+      <script type="text/javascript" src="aybabtu.js"></script>
+   </head>
+   <body>
+      <div id="main">
+         <div id="logo"></div>
+         <div id="logoText"></div>
+         <ul id="menu">
+            <erl>
+               out(A) -> aybabtu_common:menu(A).
+            </erl>
+            <li><a href="http://dev.aybabtu.org/projects/pmp/boards">forums</a></li>
+            <li><a href="http://dev.aybabtu.org/projects/pmp/wiki">development</a></li>
+         </ul>
+         <div id="content" class="<erl>
+            out(A) ->
+               {html, atom_to_list(aybabtu_common:current_page(A))}.
+         </erl>">
+            <erl>
+               out(A) ->
+                  {yssi, "yssi/" ++ atom_to_list(aybabtu_common:current_page(A)) ++ ".yaws"}.       
+            </erl>
+         </div>         
+         <div id="footer">
+            <span class="copyright">copyright 2010 Greg Burri</span>
+            <a href="http://yaws.hyber.org"><img src="img/powered-by-yaws.gif" alt="powered by Yaws" /></a>
+         </div>
+      </div>
+   </body>
+</html>

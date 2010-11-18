@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="744.09448819"
+   height="1052.3622047"
+   id="svg2"
+   version="1.1"
+   inkscape:version="0.48.0 r9654"
+   sodipodi:docname="New document 1">
+  <defs
+     id="defs4" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="1.4"
+     inkscape:cx="388.20673"
+     inkscape:cy="703.40198"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     inkscape:window-width="1055"
+     inkscape:window-height="888"
+     inkscape:window-x="777"
+     inkscape:window-y="70"
+     inkscape:window-maximized="0">
+    <inkscape:grid
+       type="xygrid"
+       id="grid3753" />
+  </sodipodi:namedview>
+  <metadata
+     id="metadata7">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <path
+       sodipodi:type="arc"
+       style="fill:none;stroke:#dfdfdf;stroke-width:6.38691012;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       id="path3777"
+       sodipodi:cx="300"
+       sodipodi:cy="392.36218"
+       sodipodi:rx="38.321461"
+       sodipodi:ry="38.321461"
+       d="m 338.32146,392.36218 a 38.321461,38.321461 0 1 1 -76.64292,0 38.321461,38.321461 0 1 1 76.64292,0 z"
+       transform="matrix(0.78285116,0,0,0.78285116,65.144652,84.190841)"
+       inkscape:export-filename="F:\web\www\aybabtu_pre\download_arrow.png"
+       inkscape:export-xdpi="62.306641"
+       inkscape:export-ydpi="62.306641" />
+    <path
+       style="fill:#dfdfdf;fill-opacity:1;stroke:#000000;stroke-width:0.09815847;stroke-miterlimit:4;stroke-opacity:1"
+       d="m 291.0394,371.00492 0,20.59119 -13.4409,0 22.4015,22.4015 22.4015,-22.4015 -13.4409,0 0,-20.59119 z"
+       id="rect3755"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="cccccccc"
+       inkscape:export-filename="F:\web\www\aybabtu_pre\download_arrow.png"
+       inkscape:export-xdpi="62.306641"
+       inkscape:export-ydpi="62.306641" />
+  </g>
+</svg>

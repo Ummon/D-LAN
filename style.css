@@ -1,0 +1,200 @@
+/*** Global ***/
+
+body {
+	font-family: verdana, sans-serif;
+	font-size: 13px;
+	background-color: #111111;
+	color: #000000;
+	margin: 0px
+}
+
+img {
+	border-style: none;
+}
+
+h1 {
+	margin-top: 20px;
+	margin-bottom: 8px;
+	font-size: 15px;
+}
+
+h2 {
+	margin-top: 20px;
+	margin-bottom: 8px;
+	font-size: 14px;
+}
+
+h3 {
+	margin-top: 20px;
+	margin-bottom: 8px;
+	font-size: 13px;
+}
+
+em {
+	font-weight: bold; 
+	color: #c65f30;
+}
+
+a {
+	text-decoration:none;
+	color: #c43fc4
+}
+
+a:hover {
+	color: #e480e4
+}
+
+
+/*** Header ***/
+
+#logo {
+	background-image: url("img/aybabtu_logo.png");
+	background-repeat: no-repeat;
+	height:80px;
+	width:83px;
+	position:absolute;
+	top: 5px;
+	left: 5px;
+}
+
+#logoText {
+	background-image:url("img/aybabtu_text.png");
+	background-repeat:no-repeat;	
+	height:22px;
+	width:121px;
+	position:absolute;
+	top: 14px;
+	left: 90px;
+}
+
+#main > h1 {
+	margin-left: 20px
+}
+
+ul#menu {
+	text-align: left;
+	list-style-type:none; 
+	height: 20px;
+	background-color: #3c023c;
+	border-top: 1px solid #bc3e04;
+	border-bottom: 1px solid #bc3e04;
+	margin-top: 30px;
+	padding: 10px 0px 10px 120px;
+}
+
+#menu li {
+	vertical-align: top;
+	display: inline;
+	text-align: center;
+}
+
+#menu li a {
+	color: #e4b9e4;
+	padding: 10px 10px 14px 10px;
+}
+
+#menu li a.currentPage {
+	background-color: #bc3e04;
+}
+
+#menu li a:hover {
+	color: #e4d8e4;
+	background-color: #bc3e04;
+}
+
+#menu li a:active {
+	color: #e4d8e4;
+	background-color: #bc643b;
+}
+
+
+/*** Content ***/
+
+#content {
+	background-color: #dfdfdf;
+	margin: 20px 8% 20px 8%;
+	padding: 10px 20px 10px 20px;
+	/* border: 1px solid #bc3e04; */
+	-moz-border-radius: 15px;
+	border-radius: 15px;
+}
+
+
+/*** Download button ***/
+
+.download {
+	border: 1px solid #bc3e04;
+	-moz-border-radius: 10px;
+	border-radius: 10px;
+	width: 300px;
+	background-color: #3c023c;
+	margin-left: 15px;
+	margin-right: 15px;
+	background-image: url("img/download_arrow.png");
+	background-repeat: no-repeat;
+	background-position: 10px 8px;
+}
+
+.download:hover {
+	border: 1px solid #ffffff;
+	background-color: #891a89;
+}
+
+.download a {
+	display:block;
+	text-decoration:none;
+	padding: 10px 10px 10px 70px;
+}
+
+.download a {
+	font-size: 11px;
+}
+
+.download a em {
+	font-size: 13px;
+}
+
+
+/*** Images ***/
+
+.gallery {
+	margin: 10px;
+}
+
+.gallery p {
+	margin-top: 0px;
+	margin-left: 5px;
+	font-style: italic;
+	font-size: 11px;
+}
+
+.home .gallery {
+	float: right;
+}
+
+.features .gallery {
+	display: inline-block;
+}
+
+
+/*** Footer ***/
+
+#footer {
+	color: #dddddd;
+	padding: 2px 10px 2px 10px;
+	font-family: sans-serif;
+	margin-bottom: 5px;
+	font-size: 9px;
+	text-align: right;
+	background-color: #3c023c;
+	border-top: 1px solid #bc3e04;
+	border-bottom: 1px solid #bc3e04;
+}
+
+#footer .copyright {
+	margin-right: 9px
+}
+
+#footer a img {	
+	vertical-align: sub;
+}

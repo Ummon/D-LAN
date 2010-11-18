@@ -1,0 +1,38 @@
+<p>Author : <a id="emailLink" href="">Greg Burri</a></p>
+
+<p>Thanks to Maximilien Cuony ("The Glu") and <a href="http://twitter.com/algorithme">Olivier Morel</a> for their support.
+
+<h2>Technologies and softwares used</h2> 
+<h3>Aybabtu</h3>
+<ul>
+   <li>Programming language : <a href="http://en.wikipedia.org/wiki/C%2B%2B">C++</a></li>
+   <li>Framework and libraries : <a href="http://qt.nokia.com/">Qt 4</a></li>
+   <li>Compiler : <a href="http://gcc.gnu.org/">GCC</a> + <a href="http://www.mingw.org/">MinGW</a></li>
+   <li>Message serializer : <a href="http://code.google.com/p/protobuf/">Protocol Buffers</a></li>
+   <li>Random number generator : <a href="http://www-personal.umich.edu/~wagnerr/MersenneTwister.html">Mersenne Twister</a></li>
+   <li>Icons library : <a href="http://www.fatcow.com/free-icons">FatCow</a></li>
+</ul>
+
+<h3>Developpment tools</h3>
+<ul>
+   <li>Development environment : <a href="http://qt.nokia.com/products/developer-tools/">Qt Creator</a></li>
+   <li>Version control system : <a href="http://git-scm.com/">git</a> + <a href="http://code.google.com/p/msysgit/">msysgit</a> + <a href="http://code.google.com/p/tortoisegit/">Tortoise Git</a></li>
+   <li>Scripting : <a href="http://www.gnu.org/software/bash/bash.html">Bash</a></li>
+   <li>Lightweight editor : <a href="http://www.scintilla.org/SciTE.html">SciTE</a></li>
+   <li>Project management : <a href="http://www.redmine.org/">Redmine</a></li>
+   <li>Documentation generator : <a href="http://www.doxygen.org/">Doxygen</a></li>
+   <li>Uml editor : <a href="http://bouml.free.fr/">Bouml</a></li>
+   <li>Setup builder : <a href="http://www.jrsoftware.org/isinfo.php">Inno Setup</a></li>
+   <li>Vector graphics editor : <a href="http://inkscape.org/">Inkscape</a></li>
+   <li>Bitmap graphics editor : <a href="http://www.gimp.org/">GIMP</a></li>
+</ul>
+
+<h3>Web site</h3>
+<ul>
+   <li>Document structure : <a href="http://www.w3.org/TR/xhtml11/">XHTML 1.1</a></li>
+   <li>Document presentation : <a href="http://www.w3.org/TR/CSS21/">CSS 2.1</a></li>
+   <li>Client side dynamic language : <a href="http://fr.wikipedia.org/wiki/JavaScript">JavaScript</a></li>
+   <li>JavaScript libraries : <a href="http://jquery.com/">JQuery</a> + <a href="http://colorpowered.com/colorbox/">ColorBox</a></li>
+   <li>Server side language : <a href="http://www.erlang.org/">Erlang</a></li>
+   <li>Web server : <a href="http://yaws.hyber.org/">Yaws</a></li>
+</ul>

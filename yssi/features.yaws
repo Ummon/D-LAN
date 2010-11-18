@@ -1,0 +1,19 @@
+<p><em>Here is the main features of the actual release.</em> Aybabtu is constantly under development, you can see <a href="http://dev.aybabtu.org/projects/pmp/roadmap">here</a> the planned features.</p> 
+
+<ul>
+   <li>Share files and folders in a local area network environment (LAN). Subnets are supported.</li>
+   <li>Manage the download queue. It includes adding, deleting or reordering.</li>
+   <li>Distributed transfers to increase performance and reliability.</li>
+   <li>Use without configuration. There is no central server or authentication system.</li>
+   <li>Browse all files and folders of any other peer.</li>
+   <li>Fast indexed search among all other peers.</li>
+   <li>Global chatting.</li>
+   <li>Aybabtu can run without graphic interface (GUI) and be controlled remotly.</li>
+   <li>Open source. Code source distributed under GPLv3 license.</li>
+</ul>
+
+<p>Don't forget to support us. It will help to maintain and add new features.</p>
+
+<erl>
+   out(A) -> aybabtu_common:images([{"aybabtu_search", "Browsing"}, {"aybabtu_search", "Download queue"}, {"aybabtu_search", "Search result"}]).
+</erl>
