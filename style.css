@@ -67,10 +67,6 @@ a:hover {
 	left: 90px;
 }
 
-#main > h1 {
-	margin-left: 20px
-}
-
 ul#menu {
 	text-align: left;
 	list-style-type:none; 
@@ -117,6 +113,12 @@ ul#menu {
 	/* border: 1px solid #bc3e04; */
 	-moz-border-radius: 15px;
 	border-radius: 15px;
+}
+
+/*** Stats page ***/
+
+.stats .nb-download .nb {
+	text-align: right
 }
 
 

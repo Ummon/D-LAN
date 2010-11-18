@@ -1,6 +1,11 @@
+<h1>Download statistics</h1>
+
 <erl>
    out(A) ->
       {ehtml,
-         lists:map(fun({File, N}) -> File ++ " " ++ integer_to_list(N) end,aybabtu_download_counter:all_files())
+         {table, [{class, "nb-download"}], [
+            {tr, [], [{th, [], "Filename"}, {th, [], "Nb of d/l"}]} |
+            lists:map(fun({File, N}) -> {tr, [], [{td, [], File}, {td, [{class, "nb"}], integer_to_list(N)}]} end, aybabtu_download_counter:all_files())
+         ]}
       }.
 </erl>
