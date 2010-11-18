@@ -16,7 +16,7 @@ $(rep_ebin)/aybabtu_urlrewrite.beam \
 $(rep_ebin)/aybabtu_download_counter.beam
 
 $(rep_ebin): FORCE
-	[-d ($rep_ebin)] || mkdir $(rep_ebin)
+	[ -d $(rep_ebin) ] || mkdir $(rep_ebin)
    
 FORCE:
 
