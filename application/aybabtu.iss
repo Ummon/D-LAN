@@ -17,7 +17,7 @@ UninstallDisplayIcon={app}/MyProg.exe
 Compression=lzma2
 SolidCompression=yes
 OutputDir=Installations
-OutputBaseFilename={#AppName} {#Version} {#VersionTag} - {#BuildTime} - Setup
+OutputBaseFilename={#AppName}-{#Version}{#VersionTag}-{#BuildTime}-Setup
 
 [Files]
 Source: Core/output/release/AybabtuCore.exe; DestDir: {app}; Flags: comparetimestamp; 
