@@ -1,0 +1,7 @@
+auth.log
+report.log
+trace.http
+*.access
+*.exe
+*.beam
+*~
