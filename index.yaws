@@ -15,7 +15,7 @@
       <link rel="stylesheet" href="style.css" type="text/css" />
       <link rel="stylesheet" href="colorbox/colorbox.css" type="text/css" />
       <script type="text/javascript" src="jquery-1.4.4.min.js"></script>
-      <script type="text/javascript" src="colorbox/jquery.colorbox.js"></script>
+      <script type="text/javascript" src="colorbox/jquery.colorbox-min.js"></script>
       <script type="text/javascript" src="aybabtu.js"></script>
    </head>
    <!-- For great justice. -->
