@@ -5,3 +5,4 @@ trace.http
 *.exe
 *.beam
 *~
+*.dump

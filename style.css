@@ -193,6 +193,10 @@ ul#menu {
 	border-bottom: 1px solid #bc3e04;
 }
 
+#footer .aybabtu {
+	float: left
+}
+
 #footer .copyright {
 	margin-right: 9px
 }

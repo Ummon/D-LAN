@@ -76,7 +76,7 @@ download_button(A) ->
             [
                {em, [], ["Download Aybabtu (" ++ integer_to_list(trunc(File_size_kb / 1024)) ++ "." ++ integer_to_list(trunc(((File_size_kb rem 1024) + 50) / 100)) ++ " MiB)"]}, {br},
                "Version " ++ Version ++ if Version_tag =/= [] -> " " ++ Version_tag; true -> [] end ++ " for Windows", {br},
-               "Released on " ++ httpd_util:month(list_to_integer(Month)) ++ " " ++ Day ++ " " ++ Year ++ " UTC", {br}
+               "Released on " ++ httpd_util:month(list_to_integer(Month)) ++ " " ++ Day ++ " " ++ Year, {br}
                %"Number of download : " ++ integer_to_list(aybabtu_download_counter:nb_download(Filename))
             ]
          }]
