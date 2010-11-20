@@ -34,7 +34,7 @@ WidgetChat::WidgetChat(CoreConnection& coreConnection, PeerListModel& peerListMo
    this->ui->tblChat->setShowGrid(false);
    this->ui->tblChat->setAlternatingRowColors(true);
 
-   connect(&chatModel, SIGNAL(rowsInserted(const QModelIndex&, int, int)), this, SLOT(newRows()));
+   connect(&this->chatModel, SIGNAL(rowsInserted(const QModelIndex&, int, int)), this, SLOT(newRows()));
 
    connect(this->ui->butSend, SIGNAL(clicked()), this, SLOT(sendMessage()));
    connect(this->ui->txtMessage, SIGNAL(returnPressed()), this, SLOT(sendMessage()));

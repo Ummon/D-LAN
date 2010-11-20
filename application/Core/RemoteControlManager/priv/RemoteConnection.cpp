@@ -51,6 +51,9 @@ RemoteConnection::RemoteConnection(
       this->dataReceived(); // The case where some data arrived before the 'connect' above.
 
    connect(&this->networkListener->getChat(), SIGNAL(newMessage(const Common::Hash&, const Protos::Core::ChatMessage&)), this, SLOT(newChatMessage(const Common::Hash&, const Protos::Core::ChatMessage&)));
+
+   this->loggerHook = LM::Builder::newLoggerHook(LM::Severity(LM::SV_FATAL_ERROR | LM::SV_ERROR | LM::SV_END_USER | LM::SV_WARNING));
+   connect(this->loggerHook.data(), SIGNAL(newLogEntry(QSharedPointer<const LM::IEntry>)), this, SLOT(newLogEntry(QSharedPointer<const LM::IEntry>)));
 }
 
 RemoteConnection::~RemoteConnection()
@@ -183,6 +186,16 @@ void RemoteConnection::getEntriesTimeout()
 {
    PM::IGetEntriesResult* getEntriesResult = dynamic_cast<PM::IGetEntriesResult*>(this->sender());
    this->removeGetEntriesResult(getEntriesResult);
+}
+
+void RemoteConnection::newLogEntry(QSharedPointer<const LM::IEntry> entry)
+{
+   Protos::GUI::EventLogMessage eventLogMessage;
+   eventLogMessage.set_time(entry->getDate().currentMSecsSinceEpoch());
+   Common::ProtoHelper::setStr(eventLogMessage, &Protos::GUI::EventLogMessage::set_message, entry->getMessage());
+   eventLogMessage.set_severity(static_cast<Protos::GUI::EventLogMessage_Severity>(entry->getSeverity()));
+
+   this->send(Common::Network::GUI_EVENT_LOG_MESSAGE, eventLogMessage);
 }
 
 bool RemoteConnection::readMessage()

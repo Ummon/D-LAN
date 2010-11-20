@@ -4,6 +4,7 @@ using namespace GUI;
 #include <QHostAddress>
 #include <QCoreApplication>
 
+#include <Common/LogManager/Builder.h>
 #include <Common/ZeroCopyStreamQIODevice.h>
 #include <Common/Settings.h>
 #include <Common/ProtoHelper.h>
@@ -167,9 +168,15 @@ void CoreConnection::connectToCore()
 
 void CoreConnection::stateChanged(QAbstractSocket::SocketState socketState)
 {
-   if (socketState == QAbstractSocket::UnconnectedState)
+   switch(socketState)
    {
+   case QAbstractSocket::UnconnectedState:
+      L_USER("Unable to connect to the core");
       this->connectToCore();
+      break;
+   case QAbstractSocket::ConnectedState:
+      L_USER("Connected to the core");
+      break;
    }
 }
 
@@ -233,7 +240,7 @@ bool CoreConnection::readMessage()
       }
       break;
 
-   case Common::Network::GUI_EVENT_CHAT_MESSAGE: // EventChatMessage.
+   case Common::Network::GUI_EVENT_CHAT_MESSAGE:
       {
          Protos::GUI::EventChatMessage eventChatMessage;
 
@@ -246,6 +253,25 @@ bool CoreConnection::readMessage()
          {
             Common::Hash peerID(eventChatMessage.peer_id().hash().data());
             emit newChatMessage(peerID, Common::ProtoHelper::getStr(eventChatMessage, &Protos::GUI::EventChatMessage::message));
+         }
+      }
+      break;
+
+   case Common::Network::GUI_EVENT_LOG_MESSAGE:
+      {
+         Protos::GUI::EventLogMessage eventLogMessage;
+
+         {
+            Common::ZeroCopyInputStreamQIODevice inputStream(&this->socket);
+            readOK = eventLogMessage.ParseFromBoundedZeroCopyStream(&inputStream, this->currentHeader.size);
+         }
+
+         if (readOK)
+         {
+            QDateTime dateTime = QDateTime::fromMSecsSinceEpoch(eventLogMessage.time());
+            QString message = Common::ProtoHelper::getStr(eventLogMessage, &Protos::GUI::EventLogMessage::message);
+            LM::Severity severity = LM::Severity(eventLogMessage.severity());
+            emit newLogMessage(LM::Builder::newEntry(dateTime, severity, message));
          }
       }
       break;

@@ -47,14 +47,14 @@ void ChatModel::newChatMessage(const Common::Hash& peerID, const QString& messag
 {
    QString nick = this->peerListModel.getNick(peerID);
 
-   this->beginInsertRows(QModelIndex(), messages.size(), messages.size());
-   messages << Message(peerID, nick, QDateTime::currentDateTime(), message);
+   this->beginInsertRows(QModelIndex(), this->messages.size(), this->messages.size());
+   this->messages << Message(peerID, nick, QDateTime::currentDateTime(), message);
    this->endInsertRows();
 
    if (static_cast<quint32>(this->messages.size()) > SETTINGS.get<quint32>("max_chat_message_displayed"))
    {
       this->beginRemoveRows(QModelIndex(), 0, 0);
-      messages.removeFirst();
+      this->messages.removeFirst();
       this->endRemoveRows();
    }
 }

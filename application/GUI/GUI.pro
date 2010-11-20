@@ -42,7 +42,8 @@ SOURCES += main.cpp\
     DownloadsModel.cpp \
     WidgetUploads.cpp \
     UploadsModel.cpp \
-    DialogAbout.cpp
+    DialogAbout.cpp \
+    LogModel.cpp
 
 HEADERS  += MainWindow.h \
     ../Protos/gui_protocol.pb.h \
@@ -64,7 +65,8 @@ HEADERS  += MainWindow.h \
     DownloadsModel.h \
     UploadsModel.h \
     WidgetUploads.h \
-    DialogAbout.h
+    DialogAbout.h \
+    LogModel.h
 
 FORMS    += MainWindow.ui \
     WidgetChat.ui \

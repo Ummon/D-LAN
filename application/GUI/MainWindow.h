@@ -13,7 +13,7 @@
 #include <Protos/common.pb.h>
 
 #include <PeerListModel.h>
-#include <ChatModel.h>
+#include <LogModel.h>
 #include <CoreConnection.h>
 
 #include <WidgetSettings.h>
@@ -45,6 +45,8 @@ namespace GUI
       void search();
 
       void removeWidget(QWidget* widget);
+
+      void newLogMessage();
 
    protected:
       void keyPressEvent(QKeyEvent* event);
@@ -82,6 +84,7 @@ namespace GUI
       CoreConnection coreConnection;
 
       PeerListModel peerListModel;
+      LogModel logModel;
    };
 
    class PeerTableDelegate : public QStyledItemDelegate

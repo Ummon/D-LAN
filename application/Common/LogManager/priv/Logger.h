@@ -5,7 +5,9 @@
 #include <QTextStream>
 #include <QDir>
 #include <QMutex>
+#include <QSharedPointer>
 
+#include <priv/LoggerHook.h>
 #include <ILogger.h>
 
 namespace LM
@@ -16,11 +18,15 @@ namespace LM
    {
       static QTextStream* out;
       static QMutex mutex;
+
       static int nbLogger;
       static QString logDirName;
 
+      static QList< QSharedPointer<LoggerHook> > loggerHooks;
+
    public:
       static void setLogDirName(const QString& logDirName);
+      static void addALoggerHook(QSharedPointer<LoggerHook> loggerHook);
 
       Logger(const QString& name);
       virtual ~Logger();

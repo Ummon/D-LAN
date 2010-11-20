@@ -95,12 +95,21 @@ message EventChatMessage {
 // Core -> GUI
 // id : 0x12
 message EventLogMessage {
-   required uint64 time = 1;
-   required string message = 2;
+   enum Severity {
+      SV_FATAL_ERROR = 0x01;
+      SV_ERROR = 0x02;
+      SV_WARNING = 0x04; // Send to the GUI but should not be shown to the user.
+      SV_DEBUG = 0x08; // Never send to the GUI, there are only logged in the core log file.
+      SV_END_USER = 0x10;
+      SV_UNKNOWN = 0x20;
+   }
    
-   // These fields are use only in debug mode.
-   optional string component = 3;
-   optional string severity_level = 4;
+   required uint64 time = 1; // In [ms] since Epoch.
+   required Severity severity = 2;
+   required string message = 3;
+   
+   // Only in debug mode. (not used at all for the moment).
+   // optional string component = 4;
 }
 
 /***** Commands. *****/

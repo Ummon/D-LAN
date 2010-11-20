@@ -5,6 +5,7 @@
 #include <QSharedPointer>
 
 #include "IEntry.h"
+#include "ILoggerHook.h"
 
 namespace LM
 {
@@ -15,7 +16,11 @@ namespace LM
    public:
       static void setLogDirName(const QString& logDirName);
       static QSharedPointer<ILogger> newLogger(const QString& name);
+      static QSharedPointer<ILoggerHook> newLoggerHook(Severity severities);
+
       static QSharedPointer<IEntry> decode(const QString& line);
+      static QSharedPointer<IEntry> newEntry(const QDateTime& dateTime, Severity severity, const QString& message, const QString& name = QString(""), const QString& thread = QString(""), const QString& source = QString(""));
+
       static void initMsgHandler();
    };
 }
