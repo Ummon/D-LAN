@@ -3,6 +3,7 @@ using namespace LM;
 
 #include <QtDebug>
 #include <QThread>
+#include <QSharedPointer>
 
 #include <Constants.h>
 #include <Global.h>
@@ -10,13 +11,21 @@ using namespace LM;
 #include <priv/Entry.h>
 
 QTextStream* Logger::out(0);
-QMutex Logger::mutex;
+QMutex Logger::mutex(QMutex::Recursive);
 int Logger::nbLogger(0);
 QString Logger::logDirName;
+
+QList< QSharedPointer<LoggerHook> > Logger::loggerHooks;
 
 void Logger::setLogDirName(const QString& logDirName)
 {
    Logger::logDirName = logDirName;
+}
+
+void Logger::addALoggerHook(QSharedPointer<LoggerHook> loggerHook)
+{
+   QMutexLocker lock(&Logger::mutex);
+   Logger::loggerHooks << loggerHook;
 }
 
 Logger::Logger(const QString& name)
@@ -30,42 +39,33 @@ Logger::~Logger()
    QMutexLocker lock(&Logger::mutex);
    Logger::nbLogger -= 1;
 
-   if (Logger::nbLogger == 0 && this->out)
+   if (Logger::nbLogger == 0 && Logger::out)
    {
-      delete this->out->device(); // Is this necessary?
-      delete this->out;
+      delete Logger::out->device(); // Is this necessary?
+      delete Logger::out;
    }
 }
 
-void Logger::log(const QString& originalMessage, Severity severity, const char* filename, int line) const
+void Logger::log(const QString& message, Severity severity, const char* filename, int line) const
 {
    QMutexLocker lock(&Logger::mutex);
 
-   Logger::createFileLog();
-
    QString threadName = QThread::currentThread()->objectName();
+   threadName = threadName.isEmpty() ? QString::number((quint32)QThread::currentThreadId()) : threadName;
 
-   QString message(originalMessage);
-   message.replace('\n', "<lf>");
+   QString filenameLine;
+   if (filename && line)
+      filenameLine = QString("%1:%2").arg(filename, QString::number(line));
 
-   bool logFilnameAndLineNumber = filename && line;
+   QSharedPointer<Entry> entry(new Entry(QDateTime::currentDateTime(), severity, this->name, threadName, filenameLine, message));
 
-   QString formatedMessage =
-      QString(logFilnameAndLineNumber ? "%1 [%2] {%3} (%4) <%5:%6> : %7" : "%1 [%2] {%3} (%4) : %5").arg
-      (
-         Entry::dateToStr(QDateTime::currentDateTime()),
-         Entry::severityToStr(severity),
-         this->name,
-         threadName.isEmpty() ? QString::number((quint32)QThread::currentThreadId()) : threadName
-      );
+   // Say to all hooks there is a new message.
+   foreach (QSharedPointer<LoggerHook> loggerHook, Logger::loggerHooks)
+      loggerHook->newMessage(entry);
 
-   if (logFilnameAndLineNumber)
-      formatedMessage = formatedMessage.arg(filename, QString::number(line));
-
-   formatedMessage = formatedMessage.arg(message);
-
+   Logger::createFileLog();
    if (Logger::out)
-      (*Logger::out) << formatedMessage << endl;
+      (*Logger::out) << entry->toStrLine() << endl;
 }
 
 void Logger::log(const ILoggable& object, Severity severity, const char* filename, int line) const

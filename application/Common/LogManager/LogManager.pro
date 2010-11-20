@@ -17,7 +17,8 @@ SOURCES += priv/Logger.cpp \
     priv/Entry.cpp \
     priv/Builder.cpp \
     priv/QtLogger.cpp \
-    priv/StdLogger.cpp
+    priv/StdLogger.cpp \
+    priv/LoggerHook.cpp
 HEADERS += ILogger.h \
     ILoggable.h \
     IEntry.h \
@@ -26,4 +27,6 @@ HEADERS += ILogger.h \
     priv/Logger.h \
     priv/Entry.h \
     priv/QtLogger.h \
-    priv/StdLogger.h
+    priv/StdLogger.h \
+    priv/LoggerHook.h \
+    ILoggerHook.h

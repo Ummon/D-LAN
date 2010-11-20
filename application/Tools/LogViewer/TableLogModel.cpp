@@ -41,7 +41,7 @@ QVariant TableLogModel::data(const QModelIndex& index, int role) const
    case 2: return entry->getName();
    case 3: return entry->getThread();
    case 4: return entry->getSource();
-   case 5: return entry->getMessage().replace("<lf>", "\n");
+   case 5: return entry->getMessage();
    default: return QVariant();
    }
 }

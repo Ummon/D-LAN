@@ -16,6 +16,7 @@
 #include <Common/Network.h>
 #include <Common/LogManager/Builder.h>
 #include <Common/LogManager/ILogger.h>
+#include <Common/LogManager/ILoggerHook.h>
 #include <Core/FileManager/IFileManager.h>
 #include <Core/PeerManager/IPeerManager.h>
 #include <Core/PeerManager/IGetEntriesResult.h>
@@ -54,6 +55,8 @@ namespace RCM
       void getEntriesResult(const Protos::Common::Entries& entries);
       void getEntriesTimeout();
 
+      void newLogEntry(QSharedPointer<const LM::IEntry> entry);
+
    private:
       bool readMessage();
       void send(Common::Network::GUIMessageType type, const google::protobuf::Message& message);
@@ -64,6 +67,8 @@ namespace RCM
       QSharedPointer<UM::IUploadManager> uploadManager;
       QSharedPointer<DM::IDownloadManager> downloadManager;
       QSharedPointer<NL::INetworkListener> networkListener;
+
+      QSharedPointer<LM::ILoggerHook> loggerHook;
 
       QTcpSocket* socket;
       QTimer timerRefresh;

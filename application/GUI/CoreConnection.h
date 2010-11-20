@@ -5,12 +5,12 @@
 #include <QTcpSocket>
 #include <QSharedPointer>
 
-#include <Common/Timeoutable.h>
-
 #include <Protos/gui_protocol.pb.h>
 #include <Protos/common.pb.h>
 
+#include <Common/Timeoutable.h>
 #include <Common/Network.h>
+#include <Common/LogManager/IEntry.h>
 
 namespace GUI
 {
@@ -108,6 +108,7 @@ namespace GUI
 
       void newState(const Protos::GUI::State&);
       void newChatMessage(const Common::Hash& peerID, const QString& message);
+      void newLogMessage(QSharedPointer<const LM::IEntry> entry);
       void browseResult(quint64 tag, const Protos::Common::Entries& entries);
       void searchResult(const Protos::Common::FindResult& findResult);
 

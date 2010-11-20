@@ -15,12 +15,13 @@ using namespace GUI;
 #include <StatusBar.h>
 
 MainWindow::MainWindow(QWidget* parent) :
-    QMainWindow(parent),
-    ui(new Ui::MainWindow),
-    widgetChat(0),
-    widgetDownloads(0),
-    widgetUploads(0),
-    peerListModel(coreConnection)
+   QMainWindow(parent),
+   ui(new Ui::MainWindow),
+   widgetChat(0),
+   widgetDownloads(0),
+   widgetUploads(0),
+   peerListModel(coreConnection),
+   logModel(coreConnection)
 {
     this->ui->setupUi(this);
 
@@ -47,6 +48,23 @@ MainWindow::MainWindow(QWidget* parent) :
 
     connect(this->ui->tblPeers, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(displayContextMenuPeers(const QPoint&)));
     connect(this->ui->tblPeers, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(browse()));
+
+    this->ui->tblLog->setModel(&this->logModel);
+
+    this->ui->tblLog->horizontalHeader()->setResizeMode(0, QHeaderView::ResizeToContents);
+    this->ui->tblLog->horizontalHeader()->setResizeMode(1, QHeaderView::Stretch);
+    this->ui->tblLog->horizontalHeader()->setVisible(false);
+
+    this->ui->tblLog->verticalHeader()->setResizeMode(QHeaderView::Fixed);
+    this->ui->tblLog->verticalHeader()->setDefaultSectionSize(QApplication::fontMetrics().height() + 2);
+
+    this->ui->tblLog->verticalHeader()->setVisible(false);
+    this->ui->tblLog->setSelectionBehavior(QAbstractItemView::SelectRows);
+    this->ui->tblLog->setSelectionMode(QAbstractItemView::SingleSelection);
+    this->ui->tblLog->setShowGrid(false);
+    this->ui->tblLog->setAlternatingRowColors(true);
+
+    connect(&this->logModel, SIGNAL(rowsInserted(const QModelIndex&, int, int)), this, SLOT(newLogMessage()));
 
     connect(this->ui->butSearch, SIGNAL(clicked()), this, SLOT(search()));
     connect(this->ui->txtSearch, SIGNAL(returnPressed()), this, SLOT(search()));
@@ -135,6 +153,11 @@ void MainWindow::removeWidget(QWidget* widget)
       this->widgetsSearch.removeOne(widgetSearch);
 
    this->removeMdiSubWindow(dynamic_cast<QMdiSubWindow*>(widget->parent()));
+}
+
+void MainWindow::newLogMessage()
+{
+   this->ui->tblLog->scrollToBottom();
 }
 
 void MainWindow::keyPressEvent(QKeyEvent* event)
