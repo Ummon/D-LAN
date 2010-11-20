@@ -20,6 +20,8 @@ namespace GUI
       int columnCount(const QModelIndex& parent = QModelIndex()) const;
       QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const;
 
+      LM::Severity getSeverity(int row) const;
+
    private slots:
       void newLogEntry(QSharedPointer<const LM::IEntry> entry);
 

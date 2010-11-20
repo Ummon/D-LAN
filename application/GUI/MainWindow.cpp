@@ -51,6 +51,7 @@ MainWindow::MainWindow(QWidget* parent) :
 
     this->ui->tblLog->setModel(&this->logModel);
 
+    this->ui->tblLog->setItemDelegate(new LogDelegate());
     this->ui->tblLog->horizontalHeader()->setResizeMode(0, QHeaderView::ResizeToContents);
     this->ui->tblLog->horizontalHeader()->setResizeMode(1, QHeaderView::Stretch);
     this->ui->tblLog->horizontalHeader()->setVisible(false);
@@ -347,6 +348,34 @@ void PeerTableDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opt
 
    if (model->isOurself(index.row()))
       painter->fillRect(option.rect, QColor(192, 255, 192));
+
+   QStyledItemDelegate::paint(painter, newOption, index);
+}
+
+/////
+
+void LogDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
+{
+   const LogModel* model = static_cast<const LogModel*>(index.model());
+
+   QStyleOptionViewItemV4 newOption(option);
+   newOption.state = option.state & (~QStyle::State_HasFocus);
+
+   switch (model->getSeverity(index.row()))
+   {
+   case LM::SV_WARNING:
+      painter->fillRect(option.rect, QColor(235, 199, 199));
+      break;
+   case LM::SV_ERROR:
+      painter->fillRect(option.rect, QColor(200, 0, 0));
+      newOption.palette.setColor(QPalette::Text, QColor(255, 255, 255));
+      break;
+   case LM::SV_FATAL_ERROR:
+      painter->fillRect(option.rect, QColor(50, 0, 0));
+      newOption.palette.setColor(QPalette::Text, QColor(255, 255, 0));
+      break;
+   default:;
+   }
 
    QStyledItemDelegate::paint(painter, newOption, index);
 }
