@@ -94,6 +94,13 @@ namespace GUI
       void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const;
    };
 
+   class LogDelegate : public QStyledItemDelegate
+   {
+      Q_OBJECT
+   public:
+      void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const;
+   };
+
    /**
      * @class TabCloseButton
      * Copied from 'qtabbar_p.h'.

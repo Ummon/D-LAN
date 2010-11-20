@@ -30,12 +30,30 @@ QVariant LogModel::data(const QModelIndex& index, int role) const
 
    QSharedPointer<const LM::IEntry> entry = this->entries[index.row()];
 
+   QString messagePrefix;
+   switch(entry->getSeverity())
+   {
+   case LM::SV_FATAL_ERROR:
+      messagePrefix = "[Fatal Error] ";
+      break;
+   case LM::SV_ERROR:
+      messagePrefix = "[Error] ";
+      break;
+   }
+
    switch (index.column())
    {
    case 0: return entry->getDateStr(false);
-   case 1: return entry->getMessage();
+   case 1: return messagePrefix + entry->getMessage();
    default: return QVariant();
    }
+}
+
+LM::Severity LogModel::getSeverity(int row) const
+{
+   if (row >= this->entries.size())
+      return LM::SV_UNKNOWN;
+   return this->entries[row]->getSeverity();
 }
 
 void LogModel::newLogEntry(QSharedPointer<const LM::IEntry> entry)
