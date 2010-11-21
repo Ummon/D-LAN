@@ -154,6 +154,8 @@ void WidgetSettings::saveGUISettings()
 {
    //Common::ProtoHelper::setStr(*settings.mutable_myself(), &Protos::GUI::Settings::set_core_address, this->ui->txtCoreAddress->text());
 
+   this->ui->txtCoreAddress->setText(this->ui->txtCoreAddress->text().trimmed());
+
    QString previousAddress = SETTINGS.get<QString>("core_address");
    SETTINGS.set("core_address", this->ui->txtCoreAddress->text());
    SETTINGS.save();

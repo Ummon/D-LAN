@@ -4,10 +4,13 @@ using namespace GUI;
 #include <QHostAddress>
 #include <QCoreApplication>
 
+#include <Libs/qtservice/src/QtServiceController>
+
 #include <Common/LogManager/Builder.h>
 #include <Common/ZeroCopyStreamQIODevice.h>
 #include <Common/Settings.h>
 #include <Common/ProtoHelper.h>
+#include <Common/Constants.h>
 
 #include <Log.h>
 
@@ -154,16 +157,8 @@ void CoreConnection::connectToCore()
    this->connecting = true;
 
    this->socket.close();
-   QHostAddress address(SETTINGS.get<QString>("core_address"));
 
-   // If the address is local check if the core is launched, if not try to launch it.
-   if (address == QHostAddress::LocalHost)
-   {
-      // TODO
-   }
-
-   this->socket.connectToHost(SETTINGS.get<QString>("core_address"), SETTINGS.get<quint32>("core_port"));
-   this->connecting = false;
+   QHostInfo::lookupHost(SETTINGS.get<QString>("core_address"), this, SLOT(adressResolved(QHostInfo)));
 }
 
 void CoreConnection::stateChanged(QAbstractSocket::SocketState socketState)
@@ -171,12 +166,20 @@ void CoreConnection::stateChanged(QAbstractSocket::SocketState socketState)
    switch(socketState)
    {
    case QAbstractSocket::UnconnectedState:
-      L_USER("Unable to connect to the core");
-      this->connectToCore();
+      if (!this->addressesToTry.isEmpty())
+      {
+         this->tryToConnectToTheNextAddress();
+      }
+      else
+      {
+         L_USER("Unable to connect to the core");
+         this->connectToCore();
+      }
       break;
    case QAbstractSocket::ConnectedState:
       L_USER("Connected to the core");
       break;
+   default:;
    }
 }
 
@@ -199,6 +202,73 @@ void CoreConnection::dataReceived()
             L_WARN(QString("Unable to read message : %1").arg(this->currentHeader.toStr()));
          this->currentHeader.setNull();
       }
+   }
+}
+
+void CoreConnection::adressResolved(QHostInfo hostInfo)
+{
+   if (hostInfo.addresses().isEmpty())
+   {
+      L_USER(QString("Unable to resolve the address : %1").arg(hostInfo.errorString()));
+      return;
+   }
+
+   this->addressesToTry = hostInfo.addresses();
+
+   this->tryToConnectToTheNextAddress();
+
+   // Search an IPv4 address. (Old code).
+   /*for (QListIterator<QHostAddress> i(hostInfo.addresses()); i.hasNext();)
+   {
+      QHostAddress currentAddress = i.next();
+      if (currentAddress.protocol() == QAbstractSocket::IPv4Protocol)
+      {
+         address = currentAddress;
+         break;
+      }
+   }*/
+}
+
+void CoreConnection::tryToConnectToTheNextAddress()
+{
+   if (this->addressesToTry.isEmpty())
+      return;
+
+   QHostAddress address;
+
+   // Search for an IPv4 address first.
+   for (QMutableListIterator<QHostAddress> i(this->addressesToTry); i.hasNext();)
+   {
+      QHostAddress currentAddress = i.next();
+      if (currentAddress.protocol() == QAbstractSocket::IPv4Protocol)
+      {
+         address = currentAddress;
+         i.remove();
+         break;
+      }
+   }
+   if (address.isNull())
+      address = this->addressesToTry.first();
+
+   // If the address is local check if the core is launched, if not try to launch it.
+   if (address == QHostAddress::LocalHost || address == QHostAddress::LocalHostIPv6)
+      this->startLocalCore();
+
+   this->socket.connectToHost(address, SETTINGS.get<quint32>("core_port"));
+   this->connecting = false;
+}
+
+void CoreConnection::startLocalCore()
+{
+   QtServiceController controller(Common::SERVICE_NAME);
+   if (!controller.isInstalled())
+   {
+      QtServiceController::install("AybabtuCore.exe");
+   }
+
+   if (!controller.isRunning())
+   {
+      controller.start();
    }
 }
 

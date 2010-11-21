@@ -512,7 +512,7 @@ void Cache::createSharedDirs(const QStringList& dirs, const QList<SharedDirector
       }
       catch (DirAlreadySharedException&)
       {
-         L_WARN(QString("Directory already shared : %1").arg(path));
+         L_DEBU(QString("Directory already shared : %1").arg(path));
       }
    }
 

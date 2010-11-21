@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include <QTcpSocket>
+#include <QHostInfo>
 #include <QSharedPointer>
 
 #include <Protos/gui_protocol.pb.h>
@@ -115,10 +116,14 @@ namespace GUI
    private slots:
       void stateChanged(QAbstractSocket::SocketState socketState);
       void dataReceived();
+      void adressResolved(QHostInfo hostInfo);
 
    private:
       friend class BrowseResult;
       friend class SearchResult;
+
+      void tryToConnectToTheNextAddress();
+      void startLocalCore();
 
       void send(Common::Network::GUIMessageType type, const google::protobuf::Message& message);
       bool readMessage();
@@ -126,6 +131,8 @@ namespace GUI
       QTcpSocket socket;
       Common::Hash ourID;
       Common::Network::MessageHeader<Common::Network::GUIMessageType> currentHeader;
+
+      QList<QHostAddress> addressesToTry; // When a name is resolved many addresses can be returned, we will try all of them until a connection is successfuly established.
 
       QList< QSharedPointer<BrowseResult> > browseResultsWithoutTag;
       QList< QSharedPointer<SearchResult> > searchResultsWithoutTag;
