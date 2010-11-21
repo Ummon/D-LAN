@@ -86,6 +86,8 @@ MainWindow::~MainWindow()
    this->saveWindowsSettings();
 
    disconnect(&this->coreConnection, SIGNAL(coreDisconnected()), this, SLOT(coreDisconnected())); // To avoid calling 'coreDisconnected' after deleted 'this->ui'.
+   disconnect(&this->logModel, SIGNAL(rowsInserted(const QModelIndex&, int, int)), this, SLOT(newLogMessage()));
+
    delete this->ui;
 }
 

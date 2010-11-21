@@ -7,16 +7,17 @@ using namespace Core;
 
 #include <Protos/core_settings.pb.h>
 
+#include <Common/PersistentData.h>
+#include <Common/Constants.h>
 #include <FileManager/Builder.h>
 #include <PeerManager/Builder.h>
 #include <UploadManager/Builder.h>
 #include <DownloadManager/Builder.h>
 #include <NetworkListener/Builder.h>
 #include <RemoteControlManager/Builder.h>
-#include <Common/PersistentData.h>
 
 ::Core::Core(int argc, char **argv)
-   : QtService<QCoreApplication>(argc, argv, "AybabtuCore")
+   : QtService<QCoreApplication>(argc, argv, Common::SERVICE_NAME)
 {
    GOOGLE_PROTOBUF_VERIFY_VERSION;
 

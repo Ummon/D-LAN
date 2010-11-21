@@ -18,10 +18,15 @@ RemoteControlManager::RemoteControlManager(
    downloadManager(downloadManager),
    networkListener(networkListener)
 {
-   this->tcpServer.listen(QHostAddress::Any, SETTINGS.get<quint32>("remote_control_port"));
+   const quint32 PORT = SETTINGS.get<quint32>("remote_control_port");
+
+   if (!this->tcpServer.listen(QHostAddress::Any, PORT))
+      if (!this->tcpServer.listen(QHostAddress::AnyIPv6, PORT))
+         L_ERRO(QString("Unable to listen on port %1").arg(PORT));
+
    connect(&this->tcpServer, SIGNAL(newConnection()), this, SLOT(newConnection()));
 
-   L_DEBU(QString("Listen new remoteConnection on port %1").arg(SETTINGS.get<quint32>("remote_control_port")));
+   L_DEBU(QString("Listen new remoteConnection on port %1").arg(PORT));
 }
 
 void RemoteControlManager::newConnection()
