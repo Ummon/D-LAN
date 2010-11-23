@@ -560,18 +560,18 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="11.313709"
-     inkscape:cx="150.28993"
-     inkscape:cy="556.98762"
+     inkscape:cx="131.89431"
+     inkscape:cy="612.59752"
      inkscape:document-units="px"
-     inkscape:current-layer="layer1"
+     inkscape:current-layer="layer5"
      showgrid="false"
      inkscape:snap-global="true"
      inkscape:snap-to-guides="false"
-     inkscape:window-width="1087"
-     inkscape:window-height="873"
-     inkscape:window-x="47"
-     inkscape:window-y="552"
-     inkscape:window-maximized="0"
+     inkscape:window-width="1920"
+     inkscape:window-height="1034"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
      inkscape:snap-grids="false"
      showguides="true"
      inkscape:guide-bbox="true"
@@ -588,7 +588,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title />
+        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -596,7 +596,7 @@
      inkscape:groupmode="layer"
      id="layer2"
      inkscape:label="Background1"
-     style="display:inline">
+     style="display:none">
     <rect
        style="fill:#000000;fill-opacity:1;stroke:none"
        id="rect3704"
@@ -634,7 +634,7 @@
      inkscape:label="Background transparent"
      style="display:none">
     <rect
-       style="opacity:0;fill:#000000;fill-opacity:1;stroke:none"
+       style="fill:none;stroke:none"
        id="rect3704-1"
        width="32"
        height="32"
@@ -643,6 +643,41 @@
        inkscape:export-filename="C:\Users\gburri\Desktop\aybabtu_logo.png"
        inkscape:export-xdpi="225"
        inkscape:export-ydpi="225" />
+    <rect
+       inkscape:export-ydpi="225"
+       inkscape:export-xdpi="225"
+       inkscape:export-filename="C:\Users\gburri\Desktop\aybabtu_logo.png"
+       y="418.61218"
+       x="127.75"
+       height="32"
+       width="32"
+       id="rect3912"
+       style="fill:none;stroke:none" />
+  </g>
+  <g
+     inkscape:groupmode="layer"
+     id="layer5"
+     inkscape:label="Backgound export ico">
+    <rect
+       inkscape:export-ydpi="47.354382"
+       inkscape:export-xdpi="47.354382"
+       inkscape:export-filename="C:\Users\gburri\Desktop\aybabtu_ico16.png"
+       y="419.23093"
+       x="128.5455"
+       height="30.40901"
+       width="30.40901"
+       id="rect3914"
+       style="fill:none;stroke:none;display:inline" />
+    <rect
+       style="fill:none;stroke:none;display:inline"
+       id="rect3916"
+       width="30.40901"
+       height="30.40901"
+       x="128.5455"
+       y="419.23093"
+       inkscape:export-filename="C:\Users\gburri\Desktop\aybabtu_ico16.png"
+       inkscape:export-xdpi="47.354382"
+       inkscape:export-ydpi="47.354382" />
   </g>
   <g
      inkscape:label="Main"
@@ -701,12 +736,13 @@
        inkscape:export-ydpi="235.20076"
        inkscape:connector-curvature="0" />
     <path
-       style="opacity:0.81999971999999999;fill:url(#linearGradient3721);fill-opacity:1;stroke:none"
-       d="M 143.75 439.09375 C 138.35081 439.09375 133.75952 439.54464 132 440.21875 C 131.74439 440.49619 131.60912 440.83109 131.53125 441.21875 C 132.78723 442.00573 137.78008 442.625 143.75 442.625 C 149.91358 442.625 155.01918 441.98166 156.0625 441.15625 C 155.95832 440.81854 155.76774 440.50939 155.46875 440.25 C 155.47187 440.24064 155.46565 440.22812 155.46875 440.21875 C 154.26229 439.7653 151.78122 439.40666 148.625 439.21875 C 148.4351 439.20744 148.2258 439.19751 148.03125 439.1875 C 146.69067 439.11855 145.26015 439.09375 143.75 439.09375 z "
+       style="opacity:0.81999972;fill:url(#linearGradient3721);fill-opacity:1;stroke:none"
+       d="m 143.75,439.09375 c -5.39919,0 -9.99048,0.45089 -11.75,1.125 -0.25561,0.27744 -0.39088,0.61234 -0.46875,1 1.25598,0.78698 6.24883,1.40625 12.21875,1.40625 6.16358,0 11.26918,-0.64334 12.3125,-1.46875 -0.10418,-0.33771 -0.29476,-0.64686 -0.59375,-0.90625 0.003,-0.009 -0.003,-0.0219 0,-0.0312 -1.20646,-0.45345 -3.68753,-0.81209 -6.84375,-1 -0.1899,-0.0113 -0.3992,-0.0212 -0.59375,-0.0312 -1.34058,-0.0689 -2.7711,-0.0937 -4.28125,-0.0937 z"
        id="path3713"
        inkscape:export-filename="C:\Users\gburri\Desktop\aybabtu_logo.png"
        inkscape:export-xdpi="235.20076"
-       inkscape:export-ydpi="235.20076" />
+       inkscape:export-ydpi="235.20076"
+       inkscape:connector-curvature="0" />
     <path
        style="fill:none;stroke:#000000;stroke-width:0.5;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
        d="m 140.19779,445.72129 c 1.5621,0.17776 2.21278,-0.72064 3.58589,-1.52267 1.45203,0.85525 2.07604,1.7211 3.63779,1.47763"
@@ -975,7 +1011,7 @@
      inkscape:label="Vision system"
      style="display:inline">
     <path
-       style="fill:#000000;fill-opacity:1;stroke:none;display:inline;opacity:0.38053097000000002;filter:url(#filter4172)"
+       style="opacity:0.38053098;fill:#000000;fill-opacity:1;stroke:none;display:inline;filter:url(#filter4172)"
        d="m 133.8125,425.65625 c -0.34721,-0.0107 -0.65625,0.0625 -0.65625,0.0625 l -0.96875,5.6875 -0.3125,1.46875 -0.28125,1 -0.28125,4.53125 0.0312,0 4.90625,4.0625 0.21875,-0.15625 0.0312,0.0312 6.40625,-1.75 0.65625,-3.96875 -0.625,-1.90625 -0.0312,-0.3125 -7.84375,-0.71875 -2.15625,-0.59375 0.46875,-2.3125 c 0,0 0.83548,-1.28186 1.21875,-1.75 0.38327,-0.46813 0.89145,-1.78683 0.1875,-2.875 -0.23552,-0.3827 -0.62154,-0.48932 -0.96875,-0.5 z m -3.375,15.75 -0.34375,1.4375 1,2.625 2.3125,1.78125 0.84375,-0.96875 2.09375,0.5 0.0312,0 1.1875,-0.21875 -0.0937,-0.21875 0.6875,0.0312 c 0.52766,-0.0619 0.34588,-0.73085 0,-0.78125 l -0.8125,-0.0625 0,-0.25 -1.625,-0.8125 0,-0.0312 -0.0312,0 -1.8125,-0.75 -0.96875,-2.125 -2.46875,-0.15625 z"
        id="path4151"
        inkscape:connector-curvature="0"
