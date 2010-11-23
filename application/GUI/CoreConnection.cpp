@@ -248,7 +248,7 @@ void CoreConnection::tryToConnectToTheNextAddress()
       }
    }
    if (address.isNull())
-      address = this->addressesToTry.first();
+      address = this->addressesToTry.takeFirst();
 
    // If the address is local check if the core is launched, if not try to launch it.
    if (address == QHostAddress::LocalHost || address == QHostAddress::LocalHostIPv6)
