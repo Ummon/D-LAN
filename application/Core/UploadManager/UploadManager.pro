@@ -36,7 +36,8 @@ OBJECTS_DIR = ".tmp/debug"
 DEFINES += UPLOADMANAGER_LIBRARY
 SOURCES += priv/UploadManager.cpp \
     priv/Uploader.cpp \
-    Builder.cpp
+    Builder.cpp \
+    priv/Log.cpp
 HEADERS += IUploadManager.h \
     IUpload.h \
     priv/UploadManager.h \

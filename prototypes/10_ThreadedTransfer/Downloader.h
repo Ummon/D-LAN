@@ -8,6 +8,7 @@ class Downloader : public QThread
 {
    static const int BUFFER_SIZE;
    static const int SOCKET_TIMEOUT;
+
    Q_OBJECT
 public:
    explicit Downloader(QObject *parent, const int port);

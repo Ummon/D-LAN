@@ -44,7 +44,8 @@ SOURCES += main.cpp\
     WidgetUploads.cpp \
     UploadsModel.cpp \
     DialogAbout.cpp \
-    LogModel.cpp
+    LogModel.cpp \
+    Log.cpp
 
 HEADERS  += MainWindow.h \
     ../Protos/gui_protocol.pb.h \

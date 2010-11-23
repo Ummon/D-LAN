@@ -9,6 +9,7 @@ class Uploader : public QThread
    static const int BUFFER_SIZE;
    static const int SOCKET_BUFFER_SIZE;
    static const int SOCKET_TIMEOUT;
+
    Q_OBJECT
 public:
    Uploader(QObject* parent, QTcpSocket* socket);

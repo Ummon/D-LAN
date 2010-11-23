@@ -20,7 +20,8 @@ SOURCES += priv/PeerManager.cpp \
     priv/Socket.cpp \
     priv/GetEntriesResult.cpp \
     priv/GetHashesResult.cpp \
-    priv/GetChunkResult.cpp
+    priv/GetChunkResult.cpp \
+    priv/Log.cpp
 HEADERS += IPeerManager.h \
     IPeer.h \
     priv/PeerManager.h \
