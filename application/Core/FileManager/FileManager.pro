@@ -40,7 +40,8 @@ SOURCES += priv/Builder.cpp \
     priv/FileUpdater/WaitCondition.cpp \
     priv/FileUpdater/WaitConditionWin.cpp \
     priv/FileUpdater/WaitConditionLinux.cpp \
-    priv/GetHashesResult.cpp
+    priv/GetHashesResult.cpp \
+    priv/Log.cpp
 HEADERS += IGetHashesResult.h \
     IFileManager.h \
     IChunk.h \

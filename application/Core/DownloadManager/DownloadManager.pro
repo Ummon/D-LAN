@@ -39,7 +39,8 @@ SOURCES += priv/FileDownload.cpp \
     ../../Protos/common.pb.cc \
     priv/Builder.cpp \
     priv/OccupiedPeers.cpp \
-    ../../Protos/queue.pb.cc
+    ../../Protos/queue.pb.cc \
+    priv/Log.cpp
 HEADERS += IDownloadManager.h \
     IDownload.h \
     IChunkDownload.h \

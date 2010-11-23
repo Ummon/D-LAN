@@ -5,12 +5,11 @@
 #include <QSharedPointer>
 
 #include "IEntry.h"
+#include "ILogger.h"
 #include "ILoggerHook.h"
 
 namespace LM
 {
-   class ILogger;
-
    class Builder
    {
    public:

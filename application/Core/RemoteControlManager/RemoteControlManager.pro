@@ -21,7 +21,8 @@ SOURCES += priv/RemoteControlManager.cpp \
     priv/RemoteConnection.cpp \
     priv/Builder.cpp \
     ../../Protos/gui_protocol.pb.cc \
-    ../../Protos/common.pb.cc
+    ../../Protos/common.pb.cc \
+    priv/Log.cpp
 HEADERS += IRemoteControlManager.h \
     priv/RemoteControlManager.h \
     priv/RemoteConnection.h \

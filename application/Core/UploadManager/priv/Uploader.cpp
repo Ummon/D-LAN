@@ -78,7 +78,7 @@ void Uploader::run()
 
       while (bytesRead = reader->read(buffer, this->offset))
       {
-         int bytesSent = socket->getQSocket()->write(buffer, bytesRead);
+         int bytesSent = this->socket->getQSocket()->write(buffer, bytesRead);
          if (bytesSent == -1)
          {
             L_ERRO(QString("Socket : cannot send data : %1").arg(this->chunk->toStr()));

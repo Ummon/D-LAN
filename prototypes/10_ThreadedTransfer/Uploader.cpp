@@ -45,7 +45,7 @@ void Uploader::run()
 
       if (timer.elapsed() > 1000)
       {
-         qDebug() << "Downloader : Total bytes sent : " << totalBytesSent;
+         qDebug() << "Uploader : Total bytes sent : " << totalBytesSent;
          timer.restart();
       }
 
@@ -53,7 +53,7 @@ void Uploader::run()
       {
          if (!socket->waitForBytesWritten(SOCKET_TIMEOUT))
          {
-            qDebug() << "Downloader : Cannot write data, timeout, error :" << socket->errorString();
+            qDebug() << "Uploader : Cannot write data, timeout, error :" << socket->errorString();
             break;
          }
       }

@@ -13,6 +13,7 @@ using namespace GUI;
 #include <Common/Settings.h>
 
 #include <StatusBar.h>
+#include <Log.h>
 
 MainWindow::MainWindow(QWidget* parent) :
    QMainWindow(parent),
@@ -37,7 +38,6 @@ MainWindow::MainWindow(QWidget* parent) :
     // TODO : is there an another way to reduce the row size?
     this->ui->tblPeers->verticalHeader()->setResizeMode(QHeaderView::Fixed);
     this->ui->tblPeers->verticalHeader()->setDefaultSectionSize(QApplication::fontMetrics().height() + 2);
-
     this->ui->tblPeers->verticalHeader()->setVisible(false);
     this->ui->tblPeers->setSelectionBehavior(QAbstractItemView::SelectRows);
     this->ui->tblPeers->setSelectionMode(QAbstractItemView::SingleSelection);
@@ -58,7 +58,6 @@ MainWindow::MainWindow(QWidget* parent) :
 
     this->ui->tblLog->verticalHeader()->setResizeMode(QHeaderView::Fixed);
     this->ui->tblLog->verticalHeader()->setDefaultSectionSize(QApplication::fontMetrics().height() + 2);
-
     this->ui->tblLog->verticalHeader()->setVisible(false);
     this->ui->tblLog->setSelectionBehavior(QAbstractItemView::SelectRows);
     this->ui->tblLog->setSelectionMode(QAbstractItemView::SingleSelection);

@@ -29,4 +29,5 @@ HEADERS += ILogger.h \
     priv/QtLogger.h \
     priv/StdLogger.h \
     priv/LoggerHook.h \
-    ILoggerHook.h
+    ILoggerHook.h \
+    LogMacros.h
