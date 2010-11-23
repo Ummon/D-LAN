@@ -52,6 +52,9 @@ namespace GUI
 
       QString askADirectory();
 
+   protected:
+      virtual void showEvent(QShowEvent* event);
+
    private:
       Ui::WidgetSettings *ui;
 

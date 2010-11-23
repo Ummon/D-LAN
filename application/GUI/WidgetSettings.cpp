@@ -226,3 +226,9 @@ QString WidgetSettings::askADirectory()
    }
    return QString();
 }
+
+void WidgetSettings::showEvent(QShowEvent* event)
+{
+   this->ui->tabWidget->setCurrentIndex(0);
+   QWidget::showEvent(event);
+}
