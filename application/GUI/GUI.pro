@@ -45,7 +45,8 @@ SOURCES += main.cpp\
     UploadsModel.cpp \
     DialogAbout.cpp \
     LogModel.cpp \
-    Log.cpp
+    Log.cpp \
+    AybabtuGUI.cpp
 
 HEADERS  += MainWindow.h \
     ../Protos/gui_protocol.pb.h \
@@ -68,7 +69,8 @@ HEADERS  += MainWindow.h \
     UploadsModel.h \
     WidgetUploads.h \
     DialogAbout.h \
-    LogModel.h
+    LogModel.h \
+    AybabtuGUI.h
 
 FORMS    += MainWindow.ui \
     WidgetChat.ui \

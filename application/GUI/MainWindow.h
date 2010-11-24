@@ -50,6 +50,7 @@ namespace GUI
 
    protected:
       void keyPressEvent(QKeyEvent* event);
+      void closeEvent(QCloseEvent * event);
 
    private:
       void saveWindowsSettings();

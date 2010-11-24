@@ -177,6 +177,11 @@ void MainWindow::keyPressEvent(QKeyEvent* event)
    }
 }
 
+void MainWindow::closeEvent(QCloseEvent * event)
+{
+   delete this;
+}
+
 void MainWindow::saveWindowsSettings()
 {
    QSettings settings("EKSoft", "Aybabtu");

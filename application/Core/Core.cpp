@@ -17,7 +17,7 @@ using namespace CoreSpace;
 #include <RemoteControlManager/Builder.h>
 
 Core::Core(int argc, char **argv)
-   : QtService<QApplication>(argc, argv, Common::SERVICE_NAME), trayIconMenu(0), trayIcon(0)
+   : QtService<QCoreApplication>(argc, argv, Common::SERVICE_NAME)
 {
    GOOGLE_PROTOBUF_VERIFY_VERSION;
 
@@ -45,7 +45,7 @@ void Core::start()
 
    this->checkSettingsIntegrity();
 
-   L_USER("Core starting ..");
+   L_USER("Starting..");
 
    this->fileManager = FM::Builder::newFileManager();
    this->peerManager = PM::Builder::newPeerManager(this->fileManager);
@@ -54,29 +54,12 @@ void Core::start()
    this->networkListener = NL::Builder::newNetworkListener(this->fileManager, this->peerManager, this->downloadManager);
    this->remoteControlManager = RCM::Builder::newRemoteControlManager(this->fileManager, this->peerManager, this->uploadManager, this->downloadManager, this->networkListener);
 
-   this->trayIconMenu = new QMenu();
-   this->trayIconMenu->addAction("Exit", this, SLOT(exit()));
-   this->trayIcon = new QSystemTrayIcon(QIcon(":/icons/ressources/aybabtu_icon.ico"), this->application());
-   this->trayIcon->setContextMenu(this->trayIconMenu);
-   this->trayIcon->show();
-
    L_USER("Ready to serve");
 }
 
 void Core::stop()
 {
-   if (this->trayIcon)
-   {
-      this->trayIcon->hide();
-      //delete this->trayIconMenu;
-   }
-
    this->application()->quit();
-}
-
-void Core::exit()
-{
-   this->stop();
 }
 
 /**

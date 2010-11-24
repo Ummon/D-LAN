@@ -11,5 +11,6 @@
         <file>ressources/upload.png</file>
         <file>ressources/help.png</file>
         <file>ressources/logo.png</file>
+        <file>ressources/aybabtu_icon.ico</file>
     </qresource>
 </RCC>
