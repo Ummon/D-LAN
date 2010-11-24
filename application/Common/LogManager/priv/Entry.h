@@ -17,7 +17,6 @@ namespace LM
    public:
       Entry(const QString& line);
       Entry(const QDateTime& dateTime, Severity severity, const QString& name, const QString& thread, const QString& source, const QString& message);
-      virtual ~Entry() {};
 
       QString toStrLine() const;
 

@@ -14,6 +14,19 @@ namespace LM
 {
    const int NB_LOGFILE = 10; ///< The maximum number of log file, if there is more file the oldest will be deleted.
 
+   class LoggerHooks
+   {
+   public:
+      int size() const;
+      QWeakPointer<LoggerHook> operator<< (const QWeakPointer<LoggerHook> hook);
+      QWeakPointer<LoggerHook> operator[] (int i);
+
+   private:
+      void removeDeletedHooks();
+
+      QList< QWeakPointer<LoggerHook> > loggerHooks;
+   };
+
    class Logger : public ILogger
    {
       static QTextStream* out;
@@ -22,7 +35,7 @@ namespace LM
       static int nbLogger;
       static QString logDirName;
 
-      static QList< QSharedPointer<LoggerHook> > loggerHooks;
+      static LoggerHooks loggerHooks;
 
    public:
       static void setLogDirName(const QString& logDirName);
