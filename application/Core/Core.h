@@ -2,7 +2,9 @@
 #define CORE_CORE_H
 
 #include <QSharedPointer>
-#include <QCoreApplication>
+#include <QApplication>
+#include <QSystemTrayIcon>
+#include <QMenu>
 
 #include <Libs/qtservice/src/qtservice.h>
 
@@ -16,10 +18,12 @@
 
 #include <Log.h>
 
-namespace Core // Best than the Arm.
+namespace CoreSpace
 {
-   class Core : public QtService<QCoreApplication>
+   // Best than the Arm.
+   class Core : public QObject, public QtService<QApplication>
    {
+      Q_OBJECT
    public:
       Core(int argc, char **argv);
 
@@ -27,11 +31,17 @@ namespace Core // Best than the Arm.
       void start();
       void stop();
 
+   private slots:
+      void exit();
+
    private:
       void checkSettingsIntegrity();
 
       template <typename T>
       void checkSetting(const QString name, T min, T max, bool mustBeAPowerOf32 = false);
+
+      // This objet will be the last destroyed.
+      struct ProtobufCleaner { ~ProtobufCleaner() { google::protobuf::ShutdownProtobufLibrary(); } } protobufCleaner;
 
       QSharedPointer<FM::IFileManager> fileManager;
       QSharedPointer<PM::IPeerManager> peerManager;
@@ -39,11 +49,14 @@ namespace Core // Best than the Arm.
       QSharedPointer<DM::IDownloadManager> downloadManager;
       QSharedPointer<NL::INetworkListener> networkListener;
       QSharedPointer<RCM::IRemoteControlManager> remoteControlManager;
+
+      QSystemTrayIcon* trayIcon;
+      QMenu* trayIconMenu;
    };
 }
 
 /***** Definitions *****/
-using namespace Core;
+using namespace CoreSpace;
 
 template <typename T>
 void ::Core::checkSetting(const QString name, T min, T max, bool mustBeAPowerOf32)

@@ -66,27 +66,13 @@ QList<File*> Directory::restoreFromFileCache(const Protos::FileCache::Hashes_Dir
             ret << d.next()->restoreFromFileCache(dir.dir(i));
 
       // .. And files.
-      QList<File*> filesExistPhysically;
       for (int i = 0; i < dir.file_size(); i++)
          for (QListIterator<File*> j(this->files); j.hasNext();)
          {
             File* f = j.next();
-            if (f->restoreFromFileCache(dir.file(i)))
-            {
-               filesExistPhysically << f;
-               if (f->hasAllHashes())
-                  ret << f;
-            }
+            if (f->restoreFromFileCache(dir.file(i)) && f->hasAllHashes())
+               ret << f;
          }
-
-      // Removes incomplete file we don't know.
-      foreach (File* f, this->files)
-         if (!filesExistPhysically.contains(f) && !f->isComplete())
-         {
-            f->physicallyRemoveUnfinished();
-            delete f;
-         }
-
    }
 
    return ret;
@@ -122,6 +108,22 @@ void Directory::populateEntry(Protos::Common::Entry* dir, bool setSharedDir) con
    Entry::populateEntry(dir, setSharedDir);
    dir->set_is_empty(this->subDirs.isEmpty() && this->files.isEmpty());
    dir->set_type(Protos::Common::Entry_Type_DIR);
+}
+
+/**
+  * Remove recursively all incomplete files which don't have all theirs hashes. The file is physically removed.
+  */
+void Directory::removeIncompleteFiles()
+{
+   QMutexLocker locker(&this->mutex);
+
+   // Removes incomplete file we don't know.
+   foreach (File* f, this->files)
+      if (!f->isComplete() && !f->hasAllHashes())
+         delete f;
+
+   foreach (Directory* d, this->subDirs)
+      d->removeIncompleteFiles();
 }
 
 /**

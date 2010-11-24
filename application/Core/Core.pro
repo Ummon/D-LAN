@@ -71,3 +71,6 @@ HEADERS += Core.h \
 
 OTHER_FILES += \
     ../Libs/protobuf.pri
+
+RESOURCES += \
+    ressources.qrc

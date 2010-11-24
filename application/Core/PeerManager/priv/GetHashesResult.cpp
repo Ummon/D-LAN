@@ -6,7 +6,7 @@ using namespace PM;
 #include <priv/Log.h>
 
 GetHashesResult::GetHashesResult(const Protos::Common::Entry& file, QSharedPointer<Socket> socket)
-   : IGetHashesResult(SETTINGS.get<quint32>("socket_timeout")), file(file), socket(socket)
+   : IGetHashesResult(SETTINGS.get<quint32>("get_hashes_timeout")), file(file), socket(socket)
 {
 }
 
@@ -32,7 +32,7 @@ void GetHashesResult::newMessage(Common::Network::CoreMessageType type, const go
    case Common::Network::CORE_GET_HASHES_RESULT:
       {
          const Protos::Core::GetHashesResult& hashesResult = dynamic_cast<const Protos::Core::GetHashesResult&>(message);
-         this->stopTimer();
+         this->startTimer(); // Restart the timer.
          emit result(hashesResult);
       }
       break;
@@ -40,7 +40,7 @@ void GetHashesResult::newMessage(Common::Network::CoreMessageType type, const go
    case Common::Network::CORE_HASH:
       {
          const Protos::Common::Hash& hash = dynamic_cast<const Protos::Common::Hash&>(message);
-         this->stopTimer();
+         this->startTimer(); // Restart the timer.
          emit nextHash(Common::Hash(hash.hash().data()));
       }
       break;

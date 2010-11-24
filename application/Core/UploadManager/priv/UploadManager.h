@@ -20,6 +20,7 @@ namespace UM
       Q_OBJECT
    public:
       UploadManager(QSharedPointer<FM::IFileManager> fileManager, QSharedPointer<PM::IPeerManager> peerManager);
+      ~UploadManager();
 
       QList<IUpload*> getUploads();
 

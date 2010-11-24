@@ -3,7 +3,7 @@
 
 #include <Common/LogManager/Builder.h>
 
-namespace Core
+namespace CoreSpace
 {
    #include <Common/LogManager/LogMacros.h>
 }

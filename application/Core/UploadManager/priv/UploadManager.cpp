@@ -19,6 +19,11 @@ UploadManager::UploadManager(QSharedPointer<FM::IFileManager> fileManager, QShar
    connect(this->peerManager.data(), SIGNAL(getChunk(Common::Hash, int, QSharedPointer<PM::ISocket>)), this, SLOT(getChunk(Common::Hash, int, QSharedPointer<PM::ISocket>)), Qt::DirectConnection);
 }
 
+UploadManager::~UploadManager()
+{
+   L_DEBU("UploadManager deleted");
+}
+
 QList<IUpload*> UploadManager::getUploads()
 {
    QList<IUpload*> uploads;

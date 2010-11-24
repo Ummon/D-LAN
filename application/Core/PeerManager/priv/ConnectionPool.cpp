@@ -14,6 +14,12 @@ ConnectionPool::ConnectionPool(PeerManager* peerManager, QSharedPointer<FM::IFil
 {
 }
 
+ConnectionPool::~ConnectionPool()
+{
+   foreach (QSharedPointer<Socket> s, this->sockets)
+      s->close();
+}
+
 void ConnectionPool::setIP(const QHostAddress& IP, quint16 port)
 {
    this->peerIP = IP;

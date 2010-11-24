@@ -46,6 +46,14 @@ PeerManager::PeerManager(QSharedPointer<FM::IFileManager> fileManager)
    L_USER(QString("Our current ID: %1").arg(this->ID.toStr()));
 }
 
+PeerManager::~PeerManager()
+{
+   for (QListIterator<Peer*> i(this->peers); i.hasNext();)
+      delete i.next();
+
+   L_DEBU("PeerManager deleted");
+}
+
 Common::Hash PeerManager::getID()
 {
    return this->ID;
