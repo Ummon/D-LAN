@@ -94,13 +94,14 @@ bool Socket::isIdle()
 
 void Socket::setActive()
 {
+   this->activityTimer.start(); // Some transactions (like GET_HASHES) can go for a long time, we have to restart the timer even for an active connection.
+
    if (!this->idle)
       return;
 
    L_DEBU(QString("Socket[%1] set to active >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>").arg(this->num));
 
    this->idle = false;
-   this->activityTimer.start();
 }
 
 void Socket::send(Common::Network::CoreMessageType type, const google::protobuf::Message& message)

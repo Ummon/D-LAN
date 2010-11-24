@@ -88,6 +88,8 @@ namespace GUI
       Q_OBJECT
    public:
       CoreConnection();
+      ~CoreConnection();
+
       Common::Hash getOurID() const;
       void sendChatMessage(const QString& message);
       void setCoreSettings(const Protos::GUI::CoreSettings settings);
@@ -131,6 +133,8 @@ namespace GUI
       QTcpSocket socket;
       Common::Hash ourID;
       Common::Network::MessageHeader<Common::Network::GUIMessageType> currentHeader;
+
+      int currentHostLookupID;
 
       QList<QHostAddress> addressesToTry; // When a name is resolved many addresses can be returned, we will try all of them until a connection is successfuly established.
 

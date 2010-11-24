@@ -23,6 +23,11 @@ NetworkListener::NetworkListener(
 {
 }
 
+NetworkListener::~NetworkListener()
+{
+   L_DEBU("NetworkListener deleted");
+}
+
 IChat& NetworkListener::getChat()
 {
    return this->chat;

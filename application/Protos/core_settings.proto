@@ -26,6 +26,7 @@ message Settings {
    optional uint32 peer_timeout_factor = 12 [default = 2]; // [ms]. (20 s). If we don't receive any 'IMAlive' message from a peer during peer_timeout_factor * peer_imalive_period the peer is considering as dead.
    optional uint32 idle_socket_timeout = 13 [default = 60000]; // [ms], (1 min). Idle connections can exist for this duration.
    optional uint32 max_number_idle_socket = 14 [default = 3]; // The maximum number of idle socket per distant peer.
+   optional uint32 get_hashes_timeout = 33 [default = 10000];
    
    // DownloadManager.
    optional uint32 number_of_downloader = 15 [default = 3];

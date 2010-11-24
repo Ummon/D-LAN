@@ -29,6 +29,18 @@ RemoteControlManager::RemoteControlManager(
    L_DEBU(QString("Listen new remoteConnection on port %1").arg(PORT));
 }
 
+RemoteControlManager::~RemoteControlManager()
+{
+   for (QListIterator<RemoteConnection*> i(this->connections); i.hasNext();)
+   {
+      RemoteConnection* connection = i.next();
+      disconnect(connection, SIGNAL(deleted(RemoteConnection*)), this, SLOT(connectionDeleted(RemoteConnection*)));
+      delete connection;
+   }
+
+   L_DEBU("RemoteControlManager deleted");
+}
+
 void RemoteControlManager::newConnection()
 {
    QTcpSocket* socket = this->tcpServer.nextPendingConnection();

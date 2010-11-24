@@ -1,5 +1,5 @@
 #include <Core.h>
-using namespace Core;
+using namespace CoreSpace;
 
 #include <QObject>
 #include <QThread>
@@ -16,8 +16,8 @@ using namespace Core;
 #include <NetworkListener/Builder.h>
 #include <RemoteControlManager/Builder.h>
 
-::Core::Core(int argc, char **argv)
-   : QtService<QCoreApplication>(argc, argv, Common::SERVICE_NAME)
+Core::Core(int argc, char **argv)
+   : QtService<QApplication>(argc, argv, Common::SERVICE_NAME), trayIconMenu(0), trayIcon(0)
 {
    GOOGLE_PROTOBUF_VERIFY_VERSION;
 
@@ -39,7 +39,7 @@ using namespace Core;
    this->setServiceFlags(QtServiceBase::Default);
 }
 
-void ::Core::start()
+void Core::start()
 {
    QThread::currentThread()->setObjectName("Core");
 
@@ -54,18 +54,35 @@ void ::Core::start()
    this->networkListener = NL::Builder::newNetworkListener(this->fileManager, this->peerManager, this->downloadManager);
    this->remoteControlManager = RCM::Builder::newRemoteControlManager(this->fileManager, this->peerManager, this->uploadManager, this->downloadManager, this->networkListener);
 
+   this->trayIconMenu = new QMenu();
+   this->trayIconMenu->addAction("Exit", this, SLOT(exit()));
+   this->trayIcon = new QSystemTrayIcon(QIcon(":/icons/ressources/aybabtu_icon.ico"), this->application());
+   this->trayIcon->setContextMenu(this->trayIconMenu);
+   this->trayIcon->show();
+
    L_USER("Ready to serve");
 }
 
-void ::Core::stop()
+void Core::stop()
 {
-   google::protobuf::ShutdownProtobufLibrary();
+   if (this->trayIcon)
+   {
+      this->trayIcon->hide();
+      //delete this->trayIconMenu;
+   }
+
+   this->application()->quit();
+}
+
+void Core::exit()
+{
+   this->stop();
 }
 
 /**
   * Check if each value settings is valid, for example buffer_size cannot be one byte or 3 TiB..
   */
-void ::Core::checkSettingsIntegrity()
+void Core::checkSettingsIntegrity()
 {
    SETTINGS.rm("chunk_size"); // The size of the chunks must never change.
 

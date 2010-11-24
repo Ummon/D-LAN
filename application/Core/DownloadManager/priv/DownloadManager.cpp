@@ -29,6 +29,15 @@ DownloadManager::DownloadManager(QSharedPointer<FM::IFileManager> fileManager, Q
 DownloadManager::~DownloadManager()
 {
    this->saveQueueToFile();
+
+   for (QListIterator<Download*> i(this->downloads); i.hasNext();)
+   {
+      Download* download = i.next();
+      disconnect(download, SIGNAL(deleted(Download*)), this, SLOT(downloadDeleted(Download*)));
+      delete download;
+   }
+
+   L_DEBU("DownloadManager deleted");
 }
 
 /**

@@ -166,6 +166,7 @@ void FileUpdater::run()
       {
          this->scan(dir, true);
          this->restoreFromFileCache(static_cast<SharedDirectory*>(dir));
+         dir->removeIncompleteFiles();
       }
       this->dirsToScan.clear();
 
@@ -233,6 +234,7 @@ void FileUpdater::run()
 
       if (this->toStop)
       {
+         emit persistCache();
          L_DEBU("FileUpdater mainloop finished");
          return;
       }

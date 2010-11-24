@@ -11,6 +11,6 @@ int main(int argc, char *argv[])
 {
    QTextCodec::setCodecForLocale(QTextCodec::codecForName("UTF-8"));
 
-   ::Core::Core core(argc, argv);
+   CoreSpace::Core core(argc, argv);
    return core.exec();
 }

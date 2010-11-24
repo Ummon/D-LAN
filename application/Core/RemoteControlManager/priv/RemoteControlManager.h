@@ -30,6 +30,8 @@ namespace RCM
          QSharedPointer<NL::INetworkListener> networkListener
       );
 
+      ~RemoteControlManager();
+
    private slots:
       void newConnection();
       void connectionDeleted(RemoteConnection* sender);

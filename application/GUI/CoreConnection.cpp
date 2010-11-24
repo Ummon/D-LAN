@@ -88,12 +88,20 @@ void SearchResult::searchResult(const Protos::Common::FindResult& findResult)
 /////
 
 CoreConnection::CoreConnection()
-   : connecting(false)
+   : currentHostLookupID(-1), connecting(false)
 {
    connect(&this->socket, SIGNAL(readyRead()), this, SLOT(dataReceived()));
    connect(&this->socket, SIGNAL(connected()), this, SIGNAL(coreConnected()));
    connect(&this->socket, SIGNAL(disconnected()), this, SIGNAL(coreDisconnected()));
    connect(&this->socket, SIGNAL(stateChanged(QAbstractSocket::SocketState)), this, SLOT(stateChanged(QAbstractSocket::SocketState)));
+}
+
+CoreConnection::~CoreConnection()
+{
+   if (this->currentHostLookupID != -1)
+      QHostInfo::abortHostLookup(this->currentHostLookupID);
+
+   this->addressesToTry.clear();
 }
 
 Common::Hash CoreConnection::getOurID() const
@@ -158,7 +166,7 @@ void CoreConnection::connectToCore()
 
    this->socket.close();
 
-   QHostInfo::lookupHost(SETTINGS.get<QString>("core_address"), this, SLOT(adressResolved(QHostInfo)));
+   this->currentHostLookupID = QHostInfo::lookupHost(SETTINGS.get<QString>("core_address"), this, SLOT(adressResolved(QHostInfo)));
 }
 
 void CoreConnection::stateChanged(QAbstractSocket::SocketState socketState)
@@ -207,6 +215,7 @@ void CoreConnection::dataReceived()
 
 void CoreConnection::adressResolved(QHostInfo hostInfo)
 {
+   this->currentHostLookupID = -1;
    if (hostInfo.addresses().isEmpty())
    {
       L_USER(QString("Unable to resolve the address : %1").arg(hostInfo.errorString()));
@@ -258,8 +267,12 @@ void CoreConnection::tryToConnectToTheNextAddress()
    this->connecting = false;
 }
 
+/**
+  * Only in release mode.
+  */
 void CoreConnection::startLocalCore()
 {
+#ifndef DEBUG
    QtServiceController controller(Common::SERVICE_NAME);
    if (!controller.isInstalled())
    {
@@ -270,6 +283,7 @@ void CoreConnection::startLocalCore()
    {
       controller.start();
    }
+#endif
 }
 
 void CoreConnection::send(Common::Network::GUIMessageType type, const google::protobuf::Message& message)

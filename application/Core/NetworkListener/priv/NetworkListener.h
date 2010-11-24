@@ -26,6 +26,8 @@ namespace NL
          QSharedPointer<DM::IDownloadManager> downloadManager
       );
 
+      ~NetworkListener();
+
       IChat& getChat();
       QSharedPointer<ISearch> newSearch();
 
