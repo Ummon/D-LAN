@@ -10,12 +10,39 @@ using namespace LM;
 
 #include <priv/Entry.h>
 
+int LoggerHooks::size() const
+{
+   const_cast<LoggerHooks*>(this)->removeDeletedHooks();
+   return this->loggerHooks.size();
+}
+
+QWeakPointer<LoggerHook> LoggerHooks::operator<< (const QWeakPointer<LoggerHook> hook)
+{
+   this->loggerHooks << hook;
+   return hook;
+}
+
+QWeakPointer<LoggerHook> LoggerHooks::operator[] (int i)
+{
+   this->removeDeletedHooks();
+   return this->loggerHooks[i];
+}
+
+void LoggerHooks::removeDeletedHooks()
+{
+   for (QMutableListIterator< QWeakPointer<LoggerHook> > i(this->loggerHooks); i.hasNext();)
+      if (!i.next().data())
+         i.remove();
+}
+
+/////
+
 QTextStream* Logger::out(0);
 QMutex Logger::mutex(QMutex::Recursive);
 int Logger::nbLogger(0);
 QString Logger::logDirName;
 
-QList< QSharedPointer<LoggerHook> > Logger::loggerHooks;
+LoggerHooks Logger::loggerHooks;
 
 void Logger::setLogDirName(const QString& logDirName)
 {
@@ -25,7 +52,7 @@ void Logger::setLogDirName(const QString& logDirName)
 void Logger::addALoggerHook(QSharedPointer<LoggerHook> loggerHook)
 {
    QMutexLocker lock(&Logger::mutex);
-   Logger::loggerHooks << loggerHook;
+   Logger::loggerHooks << loggerHook.toWeakRef();
 }
 
 /**
@@ -63,8 +90,8 @@ void Logger::log(const QString& message, Severity severity, const char* filename
    QSharedPointer<Entry> entry(new Entry(QDateTime::currentDateTime(), severity, this->name, threadName, filenameLine, message));
 
    // Say to all hooks there is a new message.
-   foreach (QSharedPointer<LoggerHook> loggerHook, Logger::loggerHooks)
-      loggerHook->newMessage(entry);
+   for (int i = 0; i < this->loggerHooks.size(); i++)
+      this->loggerHooks[i].data()->newMessage(entry);
 
    Logger::createFileLog();
    if (Logger::out)

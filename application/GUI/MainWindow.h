@@ -73,7 +73,7 @@ namespace GUI
       void addWidgetSearch(const QString& term);
       void removeAllWidgets();
 
-      Ui::MainWindow *ui;
+      Ui::MainWindow* ui;
 
       WidgetSettings* widgetSettings;
       WidgetChat* widgetChat;

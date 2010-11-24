@@ -30,7 +30,7 @@ namespace GUI
       ~WidgetUploads();
 
    private:
-      Ui::WidgetUploads *ui;
+      Ui::WidgetUploads* ui;
 
       UploadsModel uploadsModel;
       UploadsDelegate uploadsDelegate;

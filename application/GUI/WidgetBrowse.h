@@ -35,7 +35,7 @@ namespace GUI
       void download();
 
    private:
-      Ui::WidgetBrowse *ui;
+      Ui::WidgetBrowse* ui;
 
       CoreConnection& coreConnection;
       PeerListModel& peerListModel;
