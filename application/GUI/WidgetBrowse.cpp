@@ -46,6 +46,9 @@ Common::Hash WidgetBrowse::getPeerID() const
 
 void WidgetBrowse::displayContextMenuPeers(const QPoint& point)
 {
+   if (this->coreConnection.getOurID() == this->peerID)
+      return;
+
    QMenu menu;
    menu.addAction(QIcon(":/icons/ressources/download.png"), "Download selected entries", this, SLOT(download()));
    menu.exec(this->ui->treeView->mapToGlobal(point));
