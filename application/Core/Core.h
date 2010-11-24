@@ -2,9 +2,7 @@
 #define CORE_CORE_H
 
 #include <QSharedPointer>
-#include <QApplication>
-#include <QSystemTrayIcon>
-#include <QMenu>
+#include <QCoreApplication>
 
 #include <Libs/qtservice/src/qtservice.h>
 
@@ -21,18 +19,14 @@
 namespace CoreSpace
 {
    // Best than the Arm.
-   class Core : public QObject, public QtService<QApplication>
+   class Core : public QtService<QCoreApplication>
    {
-      Q_OBJECT
    public:
       Core(int argc, char **argv);
 
    protected:
       void start();
       void stop();
-
-   private slots:
-      void exit();
 
    private:
       void checkSettingsIntegrity();
@@ -49,9 +43,6 @@ namespace CoreSpace
       QSharedPointer<DM::IDownloadManager> downloadManager;
       QSharedPointer<NL::INetworkListener> networkListener;
       QSharedPointer<RCM::IRemoteControlManager> remoteControlManager;
-
-      QSystemTrayIcon* trayIcon;
-      QMenu* trayIconMenu;
    };
 }
 

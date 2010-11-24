@@ -1,11 +1,11 @@
 #include <QtGui/QApplication>
-#include <MainWindow.h>
-using namespace GUI;
 
 #include <Protos/gui_settings.pb.h>
 
 #include <Common/LogManager/Builder.h>
 #include <Common/Settings.h>
+
+#include <AybabtuGUI.h>
 
 int main(int argc, char *argv[])
 {
@@ -16,9 +16,6 @@ int main(int argc, char *argv[])
 
    LM::Builder::setLogDirName("log_gui");
 
-   QApplication a(argc, argv);
-   MainWindow w;
-   w.show();
-
-   return a.exec();
+   GUI::AybabtuGUI gui(argc, argv);
+   return gui.exec();
 }

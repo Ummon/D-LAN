@@ -1,8 +1,7 @@
 # -------------------------------------------------
 # Project created by QtCreator 2009-10-05T21:20:26
 # -------------------------------------------------
-#QT -= gui
-QT += network gui # 'gui' is only needed for the trayicon :/.
+QT += network
 TARGET = AybabtuCore
 CONFIG += link_prl
 
@@ -72,5 +71,4 @@ HEADERS += Core.h \
 OTHER_FILES += \
     ../Libs/protobuf.pri
 
-RESOURCES += \
-    ressources.qrc
+RESOURCES +=

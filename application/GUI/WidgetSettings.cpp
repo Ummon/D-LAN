@@ -104,7 +104,7 @@ WidgetSettings::WidgetSettings(CoreConnection& coreConnection, QWidget *parent)
 
 WidgetSettings::~WidgetSettings()
 {
-   delete ui;
+   delete this->ui;
 }
 
 void WidgetSettings::coreConnected()
