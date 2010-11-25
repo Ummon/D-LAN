@@ -172,3 +172,8 @@ message Download {
 message ChatMessage {
    required string message = 1;
 }
+
+message MoveDownloads {
+   required uint32 offset = 1;
+   repeated uint64 id = 2;
+}

@@ -7,6 +7,9 @@ using namespace GUI;
 
 void DownloadsDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
+   if (!index.isValid())
+      return;
+
    if (index.column() == 2)
    {
       Progress progress = index.data().value<Progress>();
@@ -70,6 +73,11 @@ WidgetDownloads::WidgetDownloads(CoreConnection& coreConnection, PeerListModel& 
 
    this->ui->tblDownloads->setModel(&this->downloadsModel);
    this->ui->tblDownloads->setItemDelegate(&this->downloadsDelegate);
+
+   this->ui->tblDownloads->setDragEnabled(true);
+   this->ui->tblDownloads->setDragDropMode(QAbstractItemView::InternalMove);
+   this->ui->tblDownloads->setDropIndicatorShown(true);
+
    this->ui->tblDownloads->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
    this->ui->tblDownloads->horizontalHeader()->setVisible(false);
    this->ui->tblDownloads->horizontalHeader()->setResizeMode(0, QHeaderView::Stretch);

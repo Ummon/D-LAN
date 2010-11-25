@@ -2,6 +2,7 @@
 #define GUI_DOWNLOADSMODEL_H
 
 #include <QAbstractTableModel>
+#include <QDragEnterEvent>
 
 #include <Protos/gui_protocol.pb.h>
 
@@ -16,11 +17,17 @@ namespace GUI
    public:
       explicit DownloadsModel(CoreConnection& coreConnection, PeerListModel& peerListModel);
 
+      quint64 getDownloadID(int row) const;
+      QList<quint64> getCompletedDownloadIDs() const;
+
       int rowCount(const QModelIndex& parent = QModelIndex()) const;
       int columnCount(const QModelIndex& parent = QModelIndex()) const;
       QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const;
-      quint64 getDownloadID(int row) const;
-      QList<quint64> getCompletedDownloadIDs() const;
+      Qt::DropActions supportedDropActions() const;
+      Qt::ItemFlags flags(const QModelIndex& index) const;
+
+  protected:
+      bool dropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex & parent);
 
    private slots:
       void newState(const Protos::GUI::State& state);
@@ -40,6 +47,9 @@ namespace GUI
       quint32 progress;
       Protos::GUI::State_Download_Status status;
    };
+
+   QDataStream& operator<<(QDataStream& out, const Progress& progress);
+   QDataStream& operator>>(QDataStream& in, Progress& progress);
 
    bool operator==(const Protos::GUI::State_Download& d1, const Protos::GUI::State_Download& d2);
    bool operator!=(const Protos::GUI::State_Download& d1, const Protos::GUI::State_Download& d2);
