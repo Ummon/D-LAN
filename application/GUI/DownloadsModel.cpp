@@ -6,10 +6,29 @@ using namespace GUI;
 #include <Common/ProtoHelper.h>
 #include <Common/Global.h>
 
+#include <Log.h>
+
 DownloadsModel::DownloadsModel(CoreConnection& coreConnection, PeerListModel& peerListModel)
    : coreConnection(coreConnection), peerListModel(peerListModel)
 {
+   qRegisterMetaTypeStreamOperators<Progress>("Progress"); // Don't know where to put this call..
    connect(&this->coreConnection, SIGNAL(newState(Protos::GUI::State)), this, SLOT(newState(Protos::GUI::State)));
+}
+
+quint64 DownloadsModel::getDownloadID(int row) const
+{
+   if (row >= this->downloads.size())
+      return 0;
+   return this->downloads[row].id();
+}
+
+QList<quint64> DownloadsModel::getCompletedDownloadIDs() const
+{
+   QList<quint64> IDs;
+   for (int i = 0; i < this->downloads.size(); i++)
+      if (this->downloads[i].status() == Protos::GUI::State_Download_Status_COMPLETE)
+         IDs << this->downloads[i].id();
+   return IDs;
 }
 
 int DownloadsModel::rowCount(const QModelIndex& parent) const
@@ -95,20 +114,78 @@ QVariant DownloadsModel::data(const QModelIndex& index, int role) const
    }
 }
 
-quint64 DownloadsModel::getDownloadID(int row) const
+Qt::DropActions DownloadsModel::supportedDropActions() const
 {
-   if (row >= this->downloads.size())
-      return 0;
-   return this->downloads[row].id();
+   return Qt::MoveAction;
 }
 
-QList<quint64> DownloadsModel::getCompletedDownloadIDs() const
+Qt::ItemFlags DownloadsModel::flags(const QModelIndex& index) const
 {
-   QList<quint64> IDs;
-   for (int i = 0; i < this->downloads.size(); i++)
-      if (this->downloads[i].status() == Protos::GUI::State_Download_Status_COMPLETE)
-         IDs << this->downloads[i].id();
-   return IDs;
+   Qt::ItemFlags defaultFlags = QAbstractItemModel::flags(index);
+
+   if (index.isValid())
+       return Qt::ItemIsDragEnabled | defaultFlags;
+   else
+       return Qt::ItemIsDropEnabled | defaultFlags;
+
+   return defaultFlags;
+}
+
+bool DownloadsModel::removeRows ( int row, int count, const QModelIndex & parent) const
+{
+   L_DEBU("OMG 4");
+   return false;
+}
+
+bool DownloadsModel::dropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex & parent)
+{
+   //return QAbstractTableModel::dropMimeData(data, action, row, column, parent);
+
+   if (!data || action != Qt::MoveAction)
+       return false;
+
+   QStringList types = this->mimeTypes();
+   if (types.isEmpty())
+       return false;
+   QString format = types.at(0);
+   if (!data->hasFormat(format))
+       return false;
+
+   QByteArray encoded = data->data(format);
+   QDataStream stream(&encoded, QIODevice::ReadOnly);
+
+
+   QList<quint64> downloadIDs;
+   int top = INT_MAX;
+
+   int previousRow = -1;
+   while (!stream.atEnd())
+   {
+       int currentRow;
+       int currentCol;
+       QMap<int, QVariant> value;
+       stream >> currentRow >> currentCol >> value;
+
+       if (currentRow != previousRow)
+       {
+          previousRow = currentRow;
+          top = qMin(currentRow, top);
+          if (currentRow >= 0 && currentRow < this->downloads.size())
+             downloadIDs << this->downloads[currentRow].id();
+       }
+   }
+
+   int offset = row - top;
+   if (offset > 0)
+      offset -= 1;
+
+   if (offset == 0)
+      return false;
+
+   // TODO : send a message to the core to move the downloads.
+   L_DEBU(QString("Offset = %1, nb = %2").arg(offset).arg(downloadIDs.size()));
+
+   return false;
 }
 
 void DownloadsModel::newState(const Protos::GUI::State& state)
@@ -144,6 +221,28 @@ void DownloadsModel::newState(const Protos::GUI::State& state)
          this->downloads.removeLast();
       this->endRemoveRows();
    }
+}
+
+/**
+  * Used when drag'n dropping some downloads.
+  */
+QDataStream& GUI::operator<<(QDataStream& out, const Progress& progress)
+{
+   out << progress.progress;
+   out << static_cast<int>(progress.status);
+   return out;
+}
+
+/**
+  * Used when drag'n dropping some downloads.
+  */
+QDataStream& GUI::operator>>(QDataStream& in, Progress& progress)
+{
+   in >> progress.progress;
+   int status;
+   in >> status;
+   progress.status = static_cast<Protos::GUI::State_Download_Status>(status);
+   return in;
 }
 
 bool GUI::operator==(const Protos::GUI::State_Download& d1, const Protos::GUI::State_Download& d2)

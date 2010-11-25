@@ -64,5 +64,11 @@ void AybabtuGUI::exit()
    if (controller.isRunning())
       controller.stop();
 
+   if (this->mainWindow)
+   {
+      disconnect(this->mainWindow, SIGNAL(destroyed()), this, SLOT(mainWindowClosed()));
+      delete this->mainWindow;
+   }
+
    this->quit();
 }

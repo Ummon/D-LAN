@@ -29,6 +29,20 @@ namespace Ui {
 
 namespace GUI
 {
+   class PeerTableDelegate : public QStyledItemDelegate
+   {
+      Q_OBJECT
+   public:
+      void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const;
+   };
+
+   class LogDelegate : public QStyledItemDelegate
+   {
+      Q_OBJECT
+   public:
+      void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const;
+   };
+
    class MainWindow : public QMainWindow
    {
       Q_OBJECT
@@ -85,21 +99,10 @@ namespace GUI
       CoreConnection coreConnection;
 
       PeerListModel peerListModel;
+      PeerTableDelegate peerTableDelegate;
+
       LogModel logModel;
-   };
-
-   class PeerTableDelegate : public QStyledItemDelegate
-   {
-      Q_OBJECT
-   public:
-      void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const;
-   };
-
-   class LogDelegate : public QStyledItemDelegate
-   {
-      Q_OBJECT
-   public:
-      void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const;
+      LogDelegate logDelegate;
    };
 
    /**

@@ -218,7 +218,8 @@ void CoreConnection::adressResolved(QHostInfo hostInfo)
    this->currentHostLookupID = -1;
    if (hostInfo.addresses().isEmpty())
    {
-      L_USER(QString("Unable to resolve the address : %1").arg(hostInfo.errorString()));
+      L_USER(QString("Unable to resolve the address : %1").arg(hostInfo.hostName()));
+      this->connecting = false;
       return;
    }
 
