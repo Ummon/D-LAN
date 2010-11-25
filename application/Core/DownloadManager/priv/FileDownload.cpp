@@ -147,22 +147,22 @@ QSharedPointer<ChunkDownload> FileDownload::getAChunkToDownload()
    }
    catch(FM::NoReadWriteSharedDirectoryException&)
    {
-      L_WARN(QString("There is no shared directory with writting rights for this download : %1").arg(Common::ProtoHelper::getStr(this->entry, &Protos::Common::Entry::name)));
+      L_DEBU(QString("There is no shared directory with writting rights for this download : %1").arg(Common::ProtoHelper::getStr(this->entry, &Protos::Common::Entry::name)));
       this->status = NO_SHARED_DIRECTORY_TO_WRITE;
    }
    catch(FM::InsufficientStorageSpaceException&)
    {
-      L_WARN(QString("There is no enough space storage available for this download : %1").arg(Common::ProtoHelper::getStr(this->entry, &Protos::Common::Entry::name)));
+      L_DEBU(QString("There is no enough space storage available for this download : %1").arg(Common::ProtoHelper::getStr(this->entry, &Protos::Common::Entry::name)));
       this->status = NO_ENOUGH_FREE_SPACE;
    }
    catch(FM::FilePhysicallyAlreadyExistsException)
    {
-      L_WARN(QString("The file already exists, download : %1").arg(Common::ProtoHelper::getStr(this->entry, &Protos::Common::Entry::name)));
+      L_DEBU(QString("The file already exists, download : %1").arg(Common::ProtoHelper::getStr(this->entry, &Protos::Common::Entry::name)));
       this->status = THE_FILE_ALREADY_EXISTS;
    }
    catch(FM::UnableToCreateNewFileException&)
    {
-      L_WARN(QString("Unable to create the file, download : %1").arg(Common::ProtoHelper::getStr(this->entry, &Protos::Common::Entry::name)));
+      L_DEBU(QString("Unable to create the file, download : %1").arg(Common::ProtoHelper::getStr(this->entry, &Protos::Common::Entry::name)));
       this->status = UNABLE_TO_CREATE_THE_FILE;
    }
 
