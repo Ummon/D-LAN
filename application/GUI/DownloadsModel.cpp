@@ -131,12 +131,6 @@ Qt::ItemFlags DownloadsModel::flags(const QModelIndex& index) const
    return defaultFlags;
 }
 
-bool DownloadsModel::removeRows ( int row, int count, const QModelIndex & parent) const
-{
-   L_DEBU("OMG 4");
-   return false;
-}
-
 bool DownloadsModel::dropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex & parent)
 {
    //return QAbstractTableModel::dropMimeData(data, action, row, column, parent);
