@@ -3,7 +3,7 @@ using namespace Common;
 
 #include <QDir>
 #include <QDirIterator>
-#include <qDebug>
+#include <QDebug>
 #include <QtGlobal>
 
 #ifdef Q_OS_WIN32

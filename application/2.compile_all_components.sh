@@ -1,17 +1,23 @@
 #!/usr/bin/env bash
 # Generates makefiles and compile all components and theirs tests.
 
-SPEC=win32-g++
-MAKE=mingw32-make.exe
+if [ `uname -s` = "Linux" ] ; then
+	SPEC=linux-g++
+	MAKE=make
+else
+	SPEC=win32-g++
+	MAKE=mingw32-make.exe
+fi
+
 
 cd Tools
 ./update_version.sh
 cd ..
 
 # To force to recompile the Common/Version.rs and DialogAbout.
-rm Core/.tmp/release/version_res.o
-rm GUI/.tmp/release/version_res.o
-rm GUI/.tmp/release/DialogAbout.o
+rm -f Core/.tmp/release/version_res.o
+rm -f GUI/.tmp/release/version_res.o
+rm -f GUI/.tmp/release/DialogAbout.o
 
 # Common.
 cd Common
