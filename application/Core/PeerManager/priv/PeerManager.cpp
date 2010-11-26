@@ -8,8 +8,8 @@ using namespace PM;
 #include <Common/PersistentData.h>
 #include <Common/Settings.h>
 
-#include <Priv/Log.h>
-#include <Priv/Constants.h>
+#include <priv/Log.h>
+#include <priv/Constants.h>
 
 /**
   * @class PeerManager
