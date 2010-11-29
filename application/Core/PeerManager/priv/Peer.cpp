@@ -91,7 +91,6 @@ QSharedPointer<IGetEntriesResult> Peer::getEntries(const Protos::Core::GetEntrie
    );
 }
 
-
 QSharedPointer<IGetHashesResult> Peer::getHashes(const Protos::Common::Entry& file)
 {
    return QSharedPointer<IGetHashesResult>(
