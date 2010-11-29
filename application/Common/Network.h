@@ -58,10 +58,11 @@ namespace Common
          GUI_BROWSE_RESULT = 0x43,
 
          GUI_CANCEL_DOWNLOADS = 0x61,
+         GUI_MOVE_DOWNLOADS = 0x71,
 
-         GUI_DOWNLOAD = 0x71,
+         GUI_DOWNLOAD = 0x81,
 
-         GUI_CHAT_MESSAGE = 0x81,
+         GUI_CHAT_MESSAGE = 0x91,
       };
 
       static QString messToStr(CoreMessageType type);

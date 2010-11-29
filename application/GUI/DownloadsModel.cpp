@@ -133,14 +133,13 @@ Qt::ItemFlags DownloadsModel::flags(const QModelIndex& index) const
 
 bool DownloadsModel::dropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex & parent)
 {
-   //return QAbstractTableModel::dropMimeData(data, action, row, column, parent);
-
-   if (!data || action != Qt::MoveAction)
+   if (row == -1 || !data || action != Qt::MoveAction)
        return false;
 
    QStringList types = this->mimeTypes();
    if (types.isEmpty())
        return false;
+
    QString format = types.at(0);
    if (!data->hasFormat(format))
        return false;
@@ -148,9 +147,9 @@ bool DownloadsModel::dropMimeData(const QMimeData* data, Qt::DropAction action, 
    QByteArray encoded = data->data(format);
    QDataStream stream(&encoded, QIODevice::ReadOnly);
 
-
    QList<quint64> downloadIDs;
-   int top = INT_MAX;
+   quint64 placeToMove = row >= this->downloads.size() ? 0 : this->downloads[row].id();
+   QList<int> rowsToRemove;
 
    int previousRow = -1;
    while (!stream.atEnd())
@@ -163,23 +162,38 @@ bool DownloadsModel::dropMimeData(const QMimeData* data, Qt::DropAction action, 
        if (currentRow != previousRow)
        {
           previousRow = currentRow;
-          top = qMin(currentRow, top);
           if (currentRow >= 0 && currentRow < this->downloads.size())
+          {
              downloadIDs << this->downloads[currentRow].id();
+             rowsToRemove << currentRow;
+          }
        }
    }
 
-   int offset = row - top;
-   if (offset > 0)
-      offset -= 1;
+   if (!rowsToRemove.isEmpty())
+   {
+      qSort(rowsToRemove.begin(), rowsToRemove.end());
 
-   if (offset == 0)
-      return false;
+      int rowBegin = rowsToRemove.size() - 1;
+      int rowEnd = rowBegin;
+      for (int i = rowEnd - 1; i >= -1 ; i--)
+      {
+         if (i >= 0 && rowsToRemove[i] == rowsToRemove[rowBegin] - 1)
+            rowBegin--;
+         else
+         {
+            this->beginRemoveRows(QModelIndex(), rowsToRemove[rowBegin], rowsToRemove[rowEnd]);
+            for (int j = rowsToRemove[rowEnd]; j >= rowsToRemove[rowBegin]; j--)
+               this->downloads.removeAt(j);
+            this->endRemoveRows();
 
-   // TODO : send a message to the core to move the downloads.
-   L_DEBU(QString("Offset = %1, nb = %2").arg(offset).arg(downloadIDs.size()));
+            rowBegin = rowEnd = i;
+         }
+      }
+   }
 
-   return false;
+   this->coreConnection.moveDownloads(placeToMove, downloadIDs);
+   return true;
 }
 
 void DownloadsModel::newState(const Protos::GUI::State& state)

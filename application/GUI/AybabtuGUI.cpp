@@ -34,7 +34,7 @@ void AybabtuGUI::trayIconActivated(QSystemTrayIcon::ActivationReason reason)
 
 void AybabtuGUI::mainWindowClosed()
 {
-   this->trayIcon.showMessage("Aybabtu GUI closed", "The Core is still running. Call 'exit' from the contextual menu to stop it.");
+   this->trayIcon.showMessage("Aybabtu GUI closed", "Aybabtu Core is still running in background. Select 'exit' from the contextual menu if you want to stop it.");
    this->mainWindow = 0;
 }
 

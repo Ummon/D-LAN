@@ -16,6 +16,10 @@ DialogAbout::DialogAbout(QWidget *parent)
    this->ui->lblTitle->setText(QString("%1 %2 %3").arg(this->ui->lblTitle->text()).arg(VERSION).arg(VERSION_TAG));
    this->ui->lblBuiltOn->setText(QString("%1 %2 UTC").arg(this->ui->lblBuiltOn->text()).arg(buildTime.toString()));
    this->ui->lblFromRevision->setText(QString("%1 %2").arg(this->ui->lblFromRevision->text()).arg(GIT_VERSION));
+
+#ifdef DEBUG
+   this->ui->lblTitle->setText(this->ui->lblTitle->text() + " (DEBUG)");
+#endif
 }
 
 DialogAbout::~DialogAbout()

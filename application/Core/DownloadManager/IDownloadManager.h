@@ -29,6 +29,12 @@ namespace DM
         */
       virtual QList<IDownload*> getDownloads() = 0;
 
+      /**
+        * Move all downloads from 'downloadIDs' before 'downloadIDRef'.
+        * If downloadIDRef == 0 then the downloads are moved at the end of the list.
+        */
+      virtual void moveDownloads(quint64 downloadIDRef, const QList<quint64>& downloadIDs) = 0;
+
       virtual QList< QSharedPointer<IChunkDownload> > getUnfinishedChunks(int n) = 0;
 
       /**
