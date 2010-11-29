@@ -3,7 +3,7 @@
 #include <QMutexLocker>
 
 #if defined(Q_OS_WIN32)
-#include <priv/FileUpdater/DirWatcherWin.h>
+   #include <priv/FileUpdater/DirWatcherWin.h>
 using namespace FM;
 
 #include <priv/Exceptions.h>

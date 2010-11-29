@@ -38,6 +38,8 @@ namespace FM
 
       virtual ~File();
 
+      void setToUnfinished(qint64 size, const Common::Hashes& hashes = Common::Hashes());
+
       bool restoreFromFileCache(const Protos::FileCache::Hashes_File& file);
 
       void populateHashesFile(Protos::FileCache::Hashes_File& fileToFill) const;
@@ -81,6 +83,8 @@ namespace FM
 
    private:
       void deleteAllChunks();
+      void createPhysicalFile();
+      void setHashes(const Common::Hashes& hashes);
 
       const int CHUNK_SIZE;
       const int BUFFER_SIZE;

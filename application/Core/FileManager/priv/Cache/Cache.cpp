@@ -196,14 +196,25 @@ QList< QSharedPointer<IChunk> > Cache::newFile(const Protos::Common::Entry& remo
    for (int i = 0; i < remoteEntry.chunk_size(); i++)
       hashes << (remoteEntry.chunk(i).has_hash() ? Common::Hash(remoteEntry.chunk(i).hash().data()) : Common::Hash());
 
-   File* file = new File(
-      dir,
-      Common::ProtoHelper::getStr(remoteEntry, &Protos::Common::Entry::name),
-      remoteEntry.size(),
-      QDateTime::currentDateTime(),
-      hashes,
-      true
-   );
+   const QString name = Common::ProtoHelper::getStr(remoteEntry, &Protos::Common::Entry::name);
+
+   // If a file with the same name already exists it will be reset.
+   File* file;
+   if (file = dir->getFile(name))
+   {
+      file->setToUnfinished(remoteEntry.size(), hashes);
+   }
+   else
+   {
+      file = new File(
+         dir,
+         name,
+         remoteEntry.size(),
+         QDateTime::currentDateTime(),
+         hashes,
+         true
+      );
+   }
 
    // TODO : is there a better way to up cast ?
    QList< QSharedPointer<IChunk> > chunks;

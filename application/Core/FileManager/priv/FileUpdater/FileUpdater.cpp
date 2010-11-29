@@ -273,7 +273,11 @@ bool FileUpdater::computeSomeHashes()
       this->currentHashingFile = i.next();
 
       this->hashingMutex.unlock();
-      bool completed = this->currentHashingFile->computeHashes();
+      bool completed = false;
+      if (!this->currentHashingFile->isComplete()) // A file can change its state from 'completed' to 'unfinished' if it's redownloaded.
+         i.remove();
+      else
+         completed = this->currentHashingFile->computeHashes();
       this->hashingMutex.lock();
 
       this->currentHashingFile = 0;
@@ -377,7 +381,19 @@ void FileUpdater::scan(Directory* dir, bool addUnfinished)
             }
 
             if (!file)
-               file = new File(currentDir, entry.fileName(), entry.size(), entry.lastModified());
+            {
+               // Very special case : there is a file 'a' without File* in cache and a file 'a.unfinished'.
+               // This case occure when a file is redownloaded, the File* 'a' is renamed as 'a.unfinished' but the physical file 'a'
+               // is not deleted.
+               File* unfinishedFile;
+               if (!(unfinishedFile = currentDir->getFile(entry.fileName().append(SETTINGS.get<QString>("unfinished_suffix_term")))))
+                  file = new File(currentDir, entry.fileName(), entry.size(), entry.lastModified());
+               else
+               {
+                  currentFiles.removeOne(unfinishedFile);
+                  continue;
+               }
+            }
 
             // If a file is incomplete (unfinished) we can't compute its hashes because we don't have all data.
             if (!file->hasAllHashes() && file->isComplete() && !this->filesWithoutHashes.contains(file))
