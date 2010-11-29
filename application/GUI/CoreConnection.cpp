@@ -158,6 +158,15 @@ void CoreConnection::cancelDownloads(const QList<quint64>& downloadIDs)
    this->send(Common::Network::GUI_CANCEL_DOWNLOADS, cancelDownloadsMessage);
 }
 
+void CoreConnection::moveDownloads(quint64 downloadIDRef, const QList<quint64>& downloadIDs)
+{
+   Protos::GUI::MoveDownloads moveDownloadsMessage;
+   moveDownloadsMessage.set_id_ref(downloadIDRef);
+   for(QListIterator<quint64> i(downloadIDs); i.hasNext();)
+      moveDownloadsMessage.add_id_to_move(i.next());
+   this->send(Common::Network::GUI_MOVE_DOWNLOADS, moveDownloadsMessage);
+}
+
 void CoreConnection::connectToCore()
 {
    if (this->connecting)

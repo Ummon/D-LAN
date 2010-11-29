@@ -101,6 +101,7 @@ namespace GUI
 
       void download(const Common::Hash& peerID, const Protos::Common::Entry& entry);
       void cancelDownloads(const QList<quint64>& downloadIDs);
+      void moveDownloads(quint64 downloadIDRef, const QList<quint64>& downloadIDs);
 
    public slots:
       void connectToCore();

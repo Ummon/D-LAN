@@ -34,6 +34,7 @@ namespace DM
       void addDownload(const Protos::Common::Entry& entry, Common::Hash peerSource, bool complete, QMutableListIterator<Download*> iterator);
 
       QList<IDownload*> getDownloads();
+      void moveDownloads(quint64 downloadIDRef, const QList<quint64>& downloadIDs);
       QList< QSharedPointer<IChunkDownload> > getUnfinishedChunks(int n);
 
       int getDownloadRate() const;

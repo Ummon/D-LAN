@@ -159,8 +159,33 @@ message CancelDownloads {
 }
 
 // GUI -> Core
-// Says to the core to download a file or a directory.
+// Tell the core to move one or more downloads in the list right before a given download.
+// If id_ref == 0 then the downloads will be moved at the end of the list.
+// The order of the moved downloads are kept unchanged.
+// For example : id_ref = 21, id = [16, 18]
+// Initial list :
+// id
+// 34
+// 21
+// 18
+// 54
+// 16
+// After the operation :
+// id
+// 34
+// 18
+// 16
+// 21
+// 54
 // id : 0x71
+message MoveDownloads {
+   required uint64 id_ref = 1;
+   repeated uint64 id_to_move = 2;
+}
+
+// GUI -> Core
+// Says to the core to download a file or a directory.
+// id : 0x81
 message Download {
    required Common.Hash peer_id = 1; // From where the file/dir is.
    required Common.Entry entry = 2;
@@ -168,12 +193,7 @@ message Download {
 
 // GUI -> Core
 // Send a chat message to everyone.
-// id : 0x81
+// id : 0x91
 message ChatMessage {
    required string message = 1;
-}
-
-message MoveDownloads {
-   required uint32 offset = 1;
-   repeated uint64 id = 2;
 }

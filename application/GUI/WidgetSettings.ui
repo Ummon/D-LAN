@@ -177,7 +177,7 @@
          <item>
           <widget class="QPushButton" name="butResetCoreAddress">
            <property name="text">
-            <string>Reset</string>
+            <string>Reset to local</string>
            </property>
           </widget>
          </item>

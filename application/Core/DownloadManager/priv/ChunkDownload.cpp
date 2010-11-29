@@ -211,12 +211,11 @@ void ChunkDownload::run()
          }
          this->mutex.unlock();
 
-
          bytesRead = this->socket->getQSocket()->read(buffer, BUFFER_SIZE);
 
          if (bytesRead == 0)
          {
-            if (!socket->getQSocket()->waitForReadyRead(SOCKET_TIMEOUT))
+            if (!this->socket->getQSocket()->waitForReadyRead(SOCKET_TIMEOUT))
             {
                L_WARN(QString("Connection dropped, error = %1, bytesAvailable = %2").arg(socket->getQSocket()->errorString()).arg(socket->getQSocket()->bytesAvailable()));
                this->networkTransferError = true;

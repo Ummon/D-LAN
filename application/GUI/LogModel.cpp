@@ -58,6 +58,12 @@ LM::Severity LogModel::getSeverity(int row) const
 
 void LogModel::newLogEntry(QSharedPointer<const LM::IEntry> entry)
 {
+   // Report Warnings only in DEBUG mode.
+#ifndef DEBUG
+   if (entry->getSeverity() == LM::SV_WARNING)
+      return;
+#endif
+
    // Do not repeat several same messages.
    if (!this->entries.isEmpty() && this->entries.last()->getMessage() == entry->getMessage())
       return;

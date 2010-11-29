@@ -108,6 +108,53 @@ QList<IDownload*> DownloadManager::getDownloads()
    return listDownloads;
 }
 
+void DownloadManager::moveDownloads(quint64 downloadIDRef, const QList<quint64>& downloadIDs)
+{
+   QList<quint64> downloadIDsCopy(downloadIDs);
+   int iRef = -1;
+   QList<int> iToMove;
+
+   for (int i = 0; i < this->downloads.size(); i++)
+   {
+      int j;
+      if ((j = downloadIDsCopy.indexOf(this->downloads[i]->getID())) != -1)
+      {
+         if (iRef != -1)
+         {
+            this->downloads.insert(iRef++, this->downloads[i]);
+            this->downloads.removeAt(i+1);
+            continue;
+         }
+         else
+            iToMove << i;
+
+         downloadIDsCopy.removeAt(j);
+      }
+
+      // "downloadIDRef == 0" means we want to put the downloads at the end.
+      if (this->downloads[i]->getID() == downloadIDRef || (i == this->downloads.size() - 1 && downloadIDRef == 0))
+      {
+         iRef = i;
+         if (downloadIDRef == 0)
+            iRef += 1; // Move iRef after the end of the list.
+
+         int shift = 0;
+         for (int j = 0; j < iToMove.size(); j++)
+         {
+            if (iToMove[j] == iRef)
+               iRef++;
+            else
+            {
+               this->downloads.insert(iRef, this->downloads[iToMove[j] + shift]);
+               this->downloads.removeAt(iToMove[j] + shift);
+               shift--;
+            }
+         }
+         iToMove.clear();
+      }
+   }
+}
+
 QList< QSharedPointer<IChunkDownload> > DownloadManager::getUnfinishedChunks(int n)
 {
    QList< QSharedPointer<IChunkDownload> > unfinishedChunks;
@@ -224,7 +271,7 @@ void DownloadManager::scanTheQueue()
 
       QSharedPointer<ChunkDownload> chunkDownload = fileDownload->getAChunkToDownload();
 
-      if (fileDownload->getStatus() >= 0x20) // TODO : a bit ugly as usual.
+      if (fileDownload->getStatus() >= 0x20) // TODO : a bit ugly.
          this->timer.start();
 
       if (chunkDownload.isNull())
@@ -242,6 +289,8 @@ void DownloadManager::scanTheQueue()
          numberOfDownloadCopy = this->numberOfDownload;
       }
    }
+
+   L_DEBU("Scanning terminated");
 }
 
 /**

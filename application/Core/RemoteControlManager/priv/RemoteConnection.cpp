@@ -53,7 +53,7 @@ RemoteConnection::RemoteConnection(
    connect(&this->networkListener->getChat(), SIGNAL(newMessage(const Common::Hash&, const Protos::Core::ChatMessage&)), this, SLOT(newChatMessage(const Common::Hash&, const Protos::Core::ChatMessage&)));
 
    this->loggerHook = LM::Builder::newLoggerHook(LM::Severity(LM::SV_FATAL_ERROR | LM::SV_ERROR | LM::SV_END_USER | LM::SV_WARNING));
-   connect(this->loggerHook.data(), SIGNAL(newLogEntry(QSharedPointer<const LM::IEntry>)), this, SLOT(newLogEntry(QSharedPointer<const LM::IEntry>)));
+   connect(this->loggerHook.data(), SIGNAL(newLogEntry(QSharedPointer<const LM::IEntry>)), this, SLOT(newLogEntry(QSharedPointer<const LM::IEntry>)), Qt::QueuedConnection);
 }
 
 RemoteConnection::~RemoteConnection()
@@ -334,6 +334,24 @@ bool RemoteConnection::readMessage()
                if (IDs.contains(download->getID()))
                   download->remove();
             }
+         }
+      }
+      break;
+
+   case Common::Network::GUI_MOVE_DOWNLOADS:
+      {
+         Protos::GUI::MoveDownloads moveDownloadsMessage;
+         {
+            Common::ZeroCopyInputStreamQIODevice inputStream(this->socket);
+            readOK = moveDownloadsMessage.ParseFromBoundedZeroCopyStream(&inputStream, this->currentHeader.size);
+         }
+
+         if (readOK)
+         {
+            QList<quint64> downloadIDs;
+            for (int i = 0; i < moveDownloadsMessage.id_to_move_size(); i++)
+               downloadIDs << moveDownloadsMessage.id_to_move(i);
+            this->downloadManager->moveDownloads(moveDownloadsMessage.id_ref(), downloadIDs);
          }
       }
       break;

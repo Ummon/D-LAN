@@ -13,6 +13,11 @@ using namespace Common;
 #include <Constants.h>
 
 /**
+  * @class Global
+  * Some generic global functions.
+  */
+
+/**
   * The number of k-combinations (each of size k) from a set S with n elements (size n).
   * @link http://en.wikipedia.org/wiki/Combination
   */
@@ -70,9 +75,19 @@ qint64 Global::availableDiskSpace(const QString& path)
 }
 
 /**
-  * @class Global
-  * Some generic global functions.
+  * TODO : Linux
+  * Rename a file, if 'newFile' already exists, it will be replaced by 'existingFile'.
+  * @remarks Qt doesn't offer any way to replace a file by an other in one operation.
+  * @return false if the rename didn't work.
   */
+bool Global::rename(const QString& existingFile, const QString& newFile)
+{
+#ifdef Q_OS_WIN32
+   return MoveFileEx((LPCTSTR)existingFile.utf16(), (LPCTSTR)newFile.utf16(), MOVEFILE_REPLACE_EXISTING);
+#else
+   return false;
+#endif
+}
 
 bool Global::createApplicationFolder()
 {
