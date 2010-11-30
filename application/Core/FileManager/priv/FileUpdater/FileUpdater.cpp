@@ -76,6 +76,8 @@ void FileUpdater::addRoot(SharedDirectory* dir)
 {
    QMutexLocker locker(&this->mutex);
 
+   emit persistCache();
+
    bool watchable = false;
    if (this->dirWatcher)
       watchable = this->dirWatcher->addDir(dir->getFullPath());
@@ -100,6 +102,8 @@ void FileUpdater::rmRoot(SharedDirectory* dir, Directory* dir2)
    this->stopScanning(dir);
 
    QMutexLocker locker(&this->mutex);
+
+   emit persistCache();
 
    // Stop the hashing to modify 'this->fileWithoutHashes'.
    // TODO : A suspend/resume hashing methods would be more readable.
@@ -309,6 +313,8 @@ bool FileUpdater::computeSomeHashes()
 void FileUpdater::stopHashing()
 {
    QMutexLocker lockerHashing(&this->hashingMutex);
+   L_DEBU("Stop hashing...");
+
    if (this->currentHashingFile)
    {
       this->currentHashingFile->stopHashing();

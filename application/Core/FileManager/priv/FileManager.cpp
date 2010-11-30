@@ -27,7 +27,7 @@ using namespace FM;
 #include <priv/Cache/Chunk.h>
 
 FileManager::FileManager()
-   : CHUNK_SIZE(SETTINGS.get<quint32>("chunk_size")), fileUpdater(this), cache(this)
+   : CHUNK_SIZE(SETTINGS.get<quint32>("chunk_size")), fileUpdater(this), cache(this), cacheLoading(false)
 {
    connect(&this->cache, SIGNAL(entryAdded(Entry*)),     this, SLOT(entryAdded(Entry*)),     Qt::DirectConnection);
    connect(&this->cache, SIGNAL(entryRemoved(Entry*)),   this, SLOT(entryRemoved(Entry*)),   Qt::DirectConnection);
@@ -305,6 +305,8 @@ QStringList FileManager::splitInWords(const QString& words)
   */
 void FileManager::loadCacheFromFile()
 {
+   this->cacheLoading = true;
+
    // This hashes will be unallocated by the fileUpdater.
    Protos::FileCache::Hashes* savedCache = new Protos::FileCache::Hashes();
 
@@ -315,7 +317,7 @@ void FileManager::loadCacheFromFile()
       {
          L_ERRO(QString("The version (%1) of the file cache \"%2\" doesn't match the current version (%3)").arg(savedCache->version()).arg(Common::FILE_CACHE).arg(FILE_CACHE_VERSION));
          Common::PersistentData::rmValue(Common::FILE_CACHE);
-         return;
+         goto end;
       }
 
       // Scan the shared directories and try to match the files against the saved cache.
@@ -339,6 +341,9 @@ void FileManager::loadCacheFromFile()
    }
 
    this->fileUpdater.setFileCache(savedCache);
+
+end:
+   this->cacheLoading = false;
 }
 
 /**
@@ -348,8 +353,10 @@ void FileManager::loadCacheFromFile()
   */
 void FileManager::persistCacheToFile()
 {
-   L_DEBU("Persists cache..");
-   L_DEBU("#######################################");
+   if (this->cacheLoading)
+      return;
+
+   L_DEBU("Persisting cache..");
 
    Protos::FileCache::Hashes hashes;
    this->cache.saveInFile(hashes);
@@ -362,4 +369,6 @@ void FileManager::persistCacheToFile()
    {
       L_ERRO(err.message);
    }
+
+   L_DEBU("Persisting cache finished");
 }

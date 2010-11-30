@@ -69,8 +69,9 @@ namespace FM
       const quint32 CHUNK_SIZE;
       FileUpdater fileUpdater;
       Cache cache; ///< The files and directories.
-      Chunks chunks; ///< The indexed chunks.
+      Chunks chunks; ///< The indexed chunks. It contains only completed chunks.
       WordIndex<Entry*> wordIndex; ///< The word index.
+      bool cacheLoading; ///< Set to 'true' during cache loading. It avoids to persist the cache during loading.
    };
 }
 #endif
