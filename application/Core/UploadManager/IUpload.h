@@ -3,6 +3,8 @@
 
 #include <QSharedPointer>
 
+#include <Core/FileManager/IChunk.h>
+
 #include <Common/Hash.h>
 
 namespace UM
