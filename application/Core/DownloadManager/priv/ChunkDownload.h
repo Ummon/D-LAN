@@ -47,7 +47,7 @@ namespace DM
       bool hasAtLeastAPeer() const;
 
       int getDownloadedBytes() const;
-      QList<Common::Hash> getPeers() const;
+      QList<Common::Hash> getPeers();
 
       bool startDownloading();
 

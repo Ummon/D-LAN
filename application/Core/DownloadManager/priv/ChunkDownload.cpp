@@ -141,11 +141,19 @@ int ChunkDownload::getDownloadedBytes() const
    return this->chunk->getKnownBytes();
 }
 
-QList<Common::Hash> ChunkDownload::getPeers() const
+QList<Common::Hash> ChunkDownload::getPeers()
 {
+   QMutexLocker lock(&this->mutex);
+
    QList<Common::Hash> peerIDs;
-   for (QListIterator<PM::IPeer*> i(this->peers); i.hasNext();)
-      peerIDs << i.next()->getID();
+   for (QMutableListIterator<PM::IPeer*> i(this->peers); i.hasNext();)
+   {
+      PM::IPeer* peer = i.next();
+      if (peer->isAlive())
+         peerIDs << peer->getID();
+      else
+         i.remove();
+   }
    return peerIDs;
 }
 
@@ -161,7 +169,7 @@ bool ChunkDownload::startDownloading()
       return false;
    }
 
-   L_DEBU(QString("Starting downloading a chunk : %1").arg(this->chunk->toStr()));
+   L_DEBU(QString("Starting downloading a chunk : %1 from %2").arg(this->chunk->toStr()).arg(this->currentDownloadingPeer->getID().toStr()));
 
    this->downloading = true;
    emit downloadStarted();
