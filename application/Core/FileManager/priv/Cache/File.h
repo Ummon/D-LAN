@@ -71,7 +71,7 @@ namespace FM
 
       bool isComplete();
       void setAsComplete();
-      void chunkComplete();
+      void chunkComplete(const Chunk* chunk);
 
       int getNbChunks();
       bool correspondTo(const QFileInfo& fileInfo);

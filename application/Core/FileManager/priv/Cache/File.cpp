@@ -107,11 +107,11 @@ void File::setToUnfinished(qint64 size, const Common::Hashes& hashes)
 {
    const QString oldPath(this->getFullPath());
 
+   this->complete = false;
    this->stopHashing();
    this->tryToRename = false;
    this->cache->onEntryRemoved(this);
    this->name.append(SETTINGS.get<QString>("unfinished_suffix_term"));
-   this->complete = false;
    this->dateLastModified = QDateTime::currentDateTime();
    this->nbChunkComplete = 0;
    this->deleteAllChunks();
@@ -472,6 +472,7 @@ QList< QSharedPointer<Chunk> > File::getChunks() const
 
 bool File::hasAllHashes()
 {
+   QMutexLocker lock(&this->mutex);
    if (this->size == 0)
       return false;
 
@@ -548,9 +549,17 @@ void File::setAsComplete()
    }
 }
 
-void File::chunkComplete()
+void File::chunkComplete(const Chunk* chunk)
 {
    QMutexLocker lock(&this->mutex);
+
+   // TODO : very cpu consumer! We have to find a better way!
+   for (int i = 0; i < this->chunks.size(); i++)
+      if (this->chunks[i].data() == chunk)
+      {
+         this->cache->onChunkHashKnown(this->chunks[i]);
+         break;
+      }
 
    if (++this->nbChunkComplete == this->getNbChunks())
    {
@@ -645,7 +654,8 @@ void File::setHashes(const Common::Hashes& hashes)
       {
          QSharedPointer<Chunk> chunk(new Chunk(this, i, chunkKnownBytes, hashes[i]));
          this->chunks << chunk;
-         this->cache->onChunkHashKnown(chunk);
+         if (chunk->isComplete())
+            this->cache->onChunkHashKnown(chunk);
       }
       else
          // If there is too few hashes then null hashes are added.
