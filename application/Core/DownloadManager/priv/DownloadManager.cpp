@@ -263,13 +263,18 @@ void DownloadManager::scanTheQueue()
       numberOfDownloadCopy = this->numberOfDownload;
    }
 
+   QSharedPointer<ChunkDownload> chunkDownload;
+   FileDownload* fileDownload = 0;
+
    for (QListIterator<Download*> i(this->downloads); i.hasNext() && numberOfDownloadCopy < NUMBER_OF_DOWNLOADER;)
    {
-      FileDownload* fileDownload = dynamic_cast<FileDownload*>(i.next());
-      if (!fileDownload)
-         continue;
+      if (chunkDownload.isNull()) // We can ask many chunks to download from the same file.
+      {
+         if (!(fileDownload = dynamic_cast<FileDownload*>(i.next())))
+            continue;
+      }
 
-      QSharedPointer<ChunkDownload> chunkDownload = fileDownload->getAChunkToDownload();
+      chunkDownload = fileDownload->getAChunkToDownload();
 
       if (fileDownload->getStatus() >= 0x20) // TODO : a bit ugly.
          this->timer.start();
