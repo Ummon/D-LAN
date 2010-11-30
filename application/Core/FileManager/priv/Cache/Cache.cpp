@@ -513,8 +513,8 @@ void Cache::createSharedDirs(const QStringList& dirs, const QList<SharedDirector
             new SharedDirectory(this, path, currentRights);
 
          L_DEBU(QString("Add a new shared directory : %1").arg(path));
-         emit newSharedDirectory(dir);
          this->sharedDirs << dir;
+         emit newSharedDirectory(dir);
       }
       catch (DirNotFoundException& e)
       {
