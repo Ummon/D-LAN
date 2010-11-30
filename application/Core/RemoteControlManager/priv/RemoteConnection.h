@@ -15,6 +15,7 @@
 
 #include <Common/Network.h>
 #include <Common/LogManager/Builder.h>
+#include <Common/LogManager/IEntry.h>
 #include <Common/LogManager/ILogger.h>
 #include <Common/LogManager/ILoggerHook.h>
 #include <Core/FileManager/IFileManager.h>

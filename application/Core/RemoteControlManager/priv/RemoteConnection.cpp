@@ -53,6 +53,8 @@ RemoteConnection::RemoteConnection(
    connect(&this->networkListener->getChat(), SIGNAL(newMessage(const Common::Hash&, const Protos::Core::ChatMessage&)), this, SLOT(newChatMessage(const Common::Hash&, const Protos::Core::ChatMessage&)));
 
    this->loggerHook = LM::Builder::newLoggerHook(LM::Severity(LM::SV_FATAL_ERROR | LM::SV_ERROR | LM::SV_END_USER | LM::SV_WARNING));
+
+   qRegisterMetaType< QSharedPointer<const LM::IEntry> >("QSharedPointer<const LM::IEntry>");
    connect(this->loggerHook.data(), SIGNAL(newLogEntry(QSharedPointer<const LM::IEntry>)), this, SLOT(newLogEntry(QSharedPointer<const LM::IEntry>)), Qt::QueuedConnection);
 }
 
@@ -100,7 +102,7 @@ void RemoteConnection::refresh()
       Protos::GUI::State_Upload* protoUpload = state.add_upload();
       upload->getChunk()->populateEntry(protoUpload->mutable_file());
       protoUpload->set_id(upload->getID());
-      protoUpload->set_current_part(upload->getChunk()->getNum());
+      protoUpload->set_current_part(upload->getChunk()->getNum() + 1); // "+ 1" to begin ar 1 and not 0.
       protoUpload->set_nb_part(upload->getChunk()->getNbTotalChunk());
       protoUpload->set_progress(upload->getProgress());
       protoUpload->mutable_peer_id()->set_hash(upload->getPeerID().getData(), Common::Hash::HASH_SIZE);

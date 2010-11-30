@@ -43,7 +43,7 @@ Common::Hash Uploader::getPeerID() const
 int Uploader::getProgress() const
 {
    QMutexLocker locker(&this->mutex);
-   return 100 * this->offset / this->chunk->getChunkSize();
+   return 100LL * this->offset / this->chunk->getChunkSize();
 }
 
 QSharedPointer<FM::IChunk> Uploader::getChunk() const
@@ -115,6 +115,10 @@ void Uploader::run()
    catch (FM::ChunkDeletedException)
    {
       L_ERRO("ChunkDeletedException");
+   }
+   catch (FM::ChunkNotCompletedException)
+   {
+      L_ERRO("ChunkNotCompletedException");
    }
 
    this->socket->getQSocket()->moveToThread(this->mainThread);
