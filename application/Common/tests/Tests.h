@@ -12,6 +12,7 @@ public:
    Tests();
 
 private slots:
+   void initTestCase();
    void writePersistentData();
    void readPersistentData();
    void removePersistentData();

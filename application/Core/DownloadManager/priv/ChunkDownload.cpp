@@ -55,7 +55,7 @@ int ChunkDownload::getDownloadRate() const
    return this->transferRateCalculator.getTransferRate();
 }
 
-Common::Hash ChunkDownload::getHash()
+Common::Hash ChunkDownload::getHash() const
 {
    return this->chunkHash;
 }

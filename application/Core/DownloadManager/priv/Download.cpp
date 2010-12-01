@@ -34,6 +34,11 @@ Status Download::getStatus() const
    return this->status;
 }
 
+bool Download::isStatusErroneous() const
+{
+   return this->status >= 0x20;
+}
+
 int Download::getProgress() const
 {
    return 0;
@@ -68,6 +73,10 @@ void Download::retrievePeer()
       L_DEBU(QString("Unable to retrieve the peer, peerID = %1").arg(this->peerSourceID.toStr()));
       this->status = UNKNOWN_PEER;
       QTimer::singleShot(CHECK_DEAD_PEER_PERIOD, this, SLOT(retrievePeer()));
+   }
+   else
+   {
+      this->status = QUEUED;
    }
 }
 

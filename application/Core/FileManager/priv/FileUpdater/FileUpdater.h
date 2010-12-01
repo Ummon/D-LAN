@@ -37,7 +37,6 @@ namespace FM
       void rmRoot(SharedDirectory* dir, Directory* dir2 = 0);
 
    signals:
-      void persistCache();
       void fileCacheLoaded();
 
    protected:

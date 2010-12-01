@@ -15,6 +15,16 @@ namespace FM
    class IChunk;
    class IGetHashesResult;
 
+   /**
+     * The file manager controls all shared directories and files. It offers these fonctions :
+     * - Add or remove one ore more shared directory. A directory can be have read or read-write rights.
+     * - Watch the shared directories recursively to update the model if a file/directory is addes, changed, renamed or removed.
+     * - Browse the cache.
+     * - Offer a quick indexed multi-term search based on the names of files and directories.
+     * - Offer a way to indentify each chunk of a file by a hash.
+     * - Read or write a file chunk.
+     * - Persist data to avoid re-hashing.
+     */
    class IFileManager : public QObject
    {
       Q_OBJECT
@@ -37,7 +47,12 @@ namespace FM
       /**
         * Returns a chunk. If no chunk is found return a empty pointer.
         */
-      virtual QSharedPointer<IChunk> getChunk(const Common::Hash& hash) = 0;
+      virtual QSharedPointer<IChunk> getChunk(const Common::Hash& hash) const = 0;
+
+      /**
+        * Get all chunks from the file which owns the given hash.
+        */
+      virtual QList< QSharedPointer<IChunk> > getAllChunks(const Common::Hash& hash) const = 0;
 
       /**
         * Create a new empty file. It will be automatically create in the same path than the remote.
@@ -48,7 +63,6 @@ namespace FM
         * @remarks Entry.shared_dir is not used.
         * @exception NoReadWriteSharedDirectoryException
         * @exception InsufficientStorageSpaceException
-        * @exception FilePhysicallyAlreadyExistsException
         * @exception UnableToCreateNewFileException
         */
       virtual QList< QSharedPointer<IChunk> > newFile(const Protos::Common::Entry& remoteEntry) = 0;
@@ -77,8 +91,14 @@ namespace FM
         */
       virtual QList<Protos::Common::FindResult> find(const QString& words, int maxNbResult, int maxSize) = 0;
 
+      /**
+        * Ask if we have the given hashes. For each hashes a bit is set (1 if the hash is known or 0 otherwise) into the returned QBitArray.
+        */
       virtual QBitArray haveChunks(const QList<Common::Hash>& hashes) = 0;
 
+      /**
+        * Return the amount of shared data.
+        */
       virtual quint64 getAmount() = 0;
 
    signals:

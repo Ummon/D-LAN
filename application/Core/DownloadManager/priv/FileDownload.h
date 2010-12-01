@@ -33,6 +33,8 @@ namespace DM
       );
       ~FileDownload();
 
+      void populateEntry(Protos::Queue::Queue_Entry* entry) const;
+
       void start();
 
       int getDownloadRate() const;

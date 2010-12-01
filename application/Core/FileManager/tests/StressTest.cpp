@@ -468,10 +468,6 @@ void StressTest::newFile()
    {
       qDebug() << "InsufficientStorageSpaceException";
    }
-   catch(FilePhysicallyAlreadyExistsException)
-   {
-      qDebug() << "FilePhysicallyAlreadyExistsException";
-   }
    catch(UnableToCreateNewFileException&)
    {
       qDebug() << "UnableToCreateNewFileException";

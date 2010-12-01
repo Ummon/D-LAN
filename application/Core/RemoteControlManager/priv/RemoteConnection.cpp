@@ -336,6 +336,9 @@ bool RemoteConnection::readMessage()
                if (IDs.contains(download->getID()))
                   download->remove();
             }
+
+            this->refresh();
+            this->timerRefresh.start();
          }
       }
       break;
@@ -354,6 +357,9 @@ bool RemoteConnection::readMessage()
             for (int i = 0; i < moveDownloadsMessage.id_to_move_size(); i++)
                downloadIDs << moveDownloadsMessage.id_to_move(i);
             this->downloadManager->moveDownloads(moveDownloadsMessage.id_ref(), downloadIDs);
+
+            this->refresh();
+            this->timerRefresh.start();
          }
       }
       break;
@@ -370,6 +376,9 @@ bool RemoteConnection::readMessage()
          {
             Common::Hash peerID(downloadMessage.peer_id().hash().data());
             this->downloadManager->addDownload(downloadMessage.entry(), peerID);
+
+            this->refresh();
+            this->timerRefresh.start();
          }
       }
       break;
