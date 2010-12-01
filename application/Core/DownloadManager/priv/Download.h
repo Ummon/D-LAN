@@ -5,6 +5,7 @@
 #include <QTimer>
 #include <QFlags>
 
+#include <Common/Uncopyable.h>
 #include <Core/FileManager/IFileManager.h>
 #include <Core/PeerManager/IPeerManager.h>
 #include <Core/PeerManager/IPeer.h>
@@ -18,7 +19,7 @@ namespace PM { class IPeer; }
 
 namespace DM
 {
-   class Download : public QObject, public IDownload
+   class Download : public QObject, public IDownload, Common::Uncopyable
    {
       Q_OBJECT
       static quint64 currentID;

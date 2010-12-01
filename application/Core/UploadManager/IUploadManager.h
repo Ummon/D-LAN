@@ -11,7 +11,7 @@ namespace UM
    public:
       virtual ~IUploadManager() {}
 
-      virtual QList<IUpload*> getUploads() = 0;
+      virtual QList<IUpload*> getUploads() const = 0;
 
       /**
         * @return Byte/s.

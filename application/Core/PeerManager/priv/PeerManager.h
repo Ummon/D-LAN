@@ -9,6 +9,7 @@
 #include <QTcpSocket>
 
 #include <Common/Hash.h>
+#include <Common/Uncopyable.h>
 
 #include <Core/FileManager/IFileManager.h>
 
@@ -28,7 +29,7 @@ namespace PM
       QTime t;
    };
 
-   class PeerManager : public IPeerManager
+   class PeerManager : public IPeerManager, Common::Uncopyable
    {
       Q_OBJECT
    public:

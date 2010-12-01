@@ -54,5 +54,5 @@ message Settings {
    optional uint32 remote_control_port = 29 [default = 59485];
    optional uint32 remote_refresh_rate = 30 [default = 1000]; // [ms].
    optional uint32 remote_max_nb_connection = 31 [default = 5];
-   optional uint32 search_lifetime = 32 [default = 10000]; // [ms]. (10s)
+   optional uint32 search_lifetime = 32 [default = 5000]; // [ms]. (5s)
 }

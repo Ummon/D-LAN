@@ -7,6 +7,8 @@
 #include <QChar>
 #include <QMutex>
 
+#include <Common/Uncopyable.h>
+
 #include <priv/WordIndex/Node.h>
 
 namespace FM
@@ -15,7 +17,7 @@ namespace FM
      * An collection of T indexed by word.
      */
    template<typename T>
-   class WordIndex
+   class WordIndex : Common::Uncopyable
    {
       static const int MIN_WORD_SIZE_PARTIAL_MATCH; ///< During a search, the words which have a size below this value must match entirely, for exemple 'of' match "conspiracy of one" and not "offspring".
    public:

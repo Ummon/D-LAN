@@ -43,7 +43,7 @@ namespace DM
 
       QSharedPointer<ChunkDownload> getAChunkToDownload();
 
-      void getUnfinishedChunks(QList< QSharedPointer<IChunkDownload> >& chunks, int n);
+      void getUnfinishedChunks(QList< QSharedPointer<IChunkDownload> >& chunks, int n) const;
 
    public slots:
       bool retreiveHashes();

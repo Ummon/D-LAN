@@ -76,7 +76,7 @@ void DownloadManager::addDownload(const Protos::Common::Entry& entry, Common::Ha
       return;
    }
 
-   Download* newDownload;
+   Download* newDownload = 0;
 
    switch (entry.type())
    {
@@ -100,12 +100,13 @@ void DownloadManager::addDownload(const Protos::Common::Entry& entry, Common::Ha
       break;
    }
 
-   connect(newDownload, SIGNAL(deleted(Download*)), this, SLOT(downloadDeleted(Download*)), Qt::DirectConnection);
+   if (newDownload)
+      connect(newDownload, SIGNAL(deleted(Download*)), this, SLOT(downloadDeleted(Download*)), Qt::DirectConnection);
 
    this->queueChanged();
 }
 
-QList<IDownload*> DownloadManager::getDownloads()
+QList<IDownload*> DownloadManager::getDownloads() const
 {
    QList<IDownload*> listDownloads;
 
@@ -165,7 +166,7 @@ void DownloadManager::moveDownloads(quint64 downloadIDRef, const QList<quint64>&
    this->queueChanged();
 }
 
-QList< QSharedPointer<IChunkDownload> > DownloadManager::getUnfinishedChunks(int n)
+QList< QSharedPointer<IChunkDownload> > DownloadManager::getUnfinishedChunks(int n) const
 {
    QList< QSharedPointer<IChunkDownload> > unfinishedChunks;
 

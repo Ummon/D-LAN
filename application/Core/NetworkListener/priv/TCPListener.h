@@ -6,11 +6,13 @@
 #include <QTcpServer>
 #include <QSharedPointer>
 
+#include <Common/Uncopyable.h>
+
 #include <Core/PeerManager/IPeerManager.h>
 
 namespace NL
 {
-   class TCPListener : QObject
+   class TCPListener : public QObject, Common::Uncopyable
    {
       Q_OBJECT
       static const int MAX_LISTEN_ATTEMPT;

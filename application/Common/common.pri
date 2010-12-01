@@ -13,3 +13,5 @@ MOC_DIR = .tmp/$$FOLDER
 OBJECTS_DIR = .tmp/$$FOLDER
 RCC_DIR = .tmp/$$FOLDER
 UI_DIR = .tmp/$$FOLDER
+
+QMAKE_CXXFLAGS_WARN_ON = -Wall -Wno-parentheses

@@ -5,12 +5,14 @@
 
 #include <Protos/core_protocol.pb.h>
 
+#include <Common/Uncopyable.h>
+
 #include <IChat.h>
 #include <priv/UDPListener.h>
 
 namespace NL
 {
-   class Chat : public IChat
+   class Chat : public IChat, Common::Uncopyable
    {
       Q_OBJECT
    public:
