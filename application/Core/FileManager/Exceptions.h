@@ -70,8 +70,6 @@ namespace FM
    class InsufficientStorageSpaceException {};
 
    class UnableToCreateNewFileException {};
-
-   class FilePhysicallyAlreadyExistsException {};
 }
 
 #endif

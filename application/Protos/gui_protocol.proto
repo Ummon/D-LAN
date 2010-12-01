@@ -46,8 +46,8 @@ message State {
          // All the following status will pause the download.
          NO_SHARED_DIRECTORY_TO_WRITE = 0x20;
          NO_ENOUGH_FREE_SPACE = 0x21;
-         THE_FILE_ALREADY_EXISTS = 0x22;
-         UNABLE_TO_CREATE_THE_FILE = 0x23;
+         UNABLE_TO_CREATE_THE_FILE = 0x22;
+         UNABLE_TO_RETRIEVE_THE_HASHES = 0x23;
       }
       required uint64 id = 1;
       required Common.Entry entry = 2; // Can be remote or local. When we know all the hashes and the local file exists (.unfinished) the entry becomes local, otherwise the entry is a remote one.

@@ -99,10 +99,10 @@ QVariant DownloadsModel::data(const QModelIndex& index, int role) const
          return "No incoming folder";
       case Protos::GUI::State_Download_Status_NO_ENOUGH_FREE_SPACE:
          return "Not enough free space left";
-      case Protos::GUI::State_Download_Status_THE_FILE_ALREADY_EXISTS:
-         return "The file alreasy exists";
       case Protos::GUI::State_Download_Status_UNABLE_TO_CREATE_THE_FILE:
          return "Unable to create the file";
+      case Protos::GUI::State_Download_Status_UNABLE_TO_RETRIEVE_THE_HASHES:
+         return "Unable to retrieve the hashes";
       default:
          return QVariant();
       }

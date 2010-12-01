@@ -4,6 +4,7 @@ using namespace FM;
 #include <QString>
 #include <QFile>
 #include <QCryptographicHash>
+#include <QElapsedTimer>
 
 #include <Common/Global.h>
 #include <Common/Settings.h>
@@ -30,8 +31,6 @@ using namespace FM;
   * The file may or may not have a correponding local file.
   * If 'createPhysically' is true then the file is created as unfinished with no byte known.
   * @param hashes Optional hashes, if given it must contain ALL hashes.
-  * @exception FileAlreadyExistsException : TODO!!!
-  * @exception FilePhysicallyAlreadyExistsException : TODO!!!
   */
 File::File(
    Directory* dir,
@@ -125,7 +124,7 @@ bool File::restoreFromFileCache(const Protos::FileCache::Hashes_File& file)
    if (
       Common::ProtoHelper::getStr(file, &Protos::FileCache::Hashes_File::filename) == this->getName() &&
       (qint64)file.size() == this->size &&
-      file.date_last_modified() == this->getDateLastModified().toMSecsSinceEpoch() &&
+      // file.date_last_modified() == this->getDateLastModified().toMSecsSinceEpoch() &&
       this->chunks.size() == file.chunk_size()
    )
    {
@@ -134,8 +133,9 @@ bool File::restoreFromFileCache(const Protos::FileCache::Hashes_File& file)
       for (int i = 0; i < file.chunk_size(); i++)
       {
          this->chunks[i]->restoreFromFileCache(file.chunk(i));
-         if (file.chunk(i).has_hash())
+         if (this->chunks[i]->hasHash() && this->chunks[i]->isComplete())
          {
+            this->nbChunkComplete++;
             this->cache->onChunkHashKnown(this->chunks[i]);
          }
       }
@@ -317,7 +317,7 @@ qint64 File::read(char* buffer, qint64 offset, int maxBytesToRead)
   */
 bool File::computeHashes(int n)
 {
-   QMutexLocker lock(&this->hashingMutex);
+   QMutexLocker locker(&this->hashingMutex);
 
    if (this->toStopHashing)
    {
@@ -356,8 +356,8 @@ bool File::computeHashes(int n)
    }
 
 #if DEBUG
-   QTime time;
-   time.start();
+   QElapsedTimer timer;
+   timer.start();
 #endif
 
    char buffer[this->BUFFER_SIZE];
@@ -366,8 +366,8 @@ bool File::computeHashes(int n)
    while (!endOfFile)
    {
       // See 'stopHashing()'.
-      this->hashingMutex.unlock();
-      this->hashingMutex.lock();
+      locker.unlock();
+      locker.relock();
 
       if (this->toStopHashing)
       {
@@ -419,13 +419,13 @@ bool File::computeHashes(int n)
    }
 
 #ifdef DEBUG
-   const int delta = time.elapsed();
+   const int delta = timer.elapsed();
    if (delta < 50)
       L_DEBU("Hashing speed : ?? MB/s (delta too small)");
    else
    {
-      const double speed = static_cast<double>(bytesReadTotal) / 1024 / 1024 / (static_cast<double>(delta) / 1000);
-      L_DEBU(QString("Hashing speed : %1 MB/s").arg(speed < 0.1 ? "< 0.1" : QString::number(speed)));
+      const int speed = 1000LL * bytesReadTotal / delta;
+      L_DEBU(QString("Hashing speed : %1").arg(Common::Global::formatByteSize(speed)));
    }
 #endif
 
@@ -616,27 +616,21 @@ void File::deleteAllChunks()
 }
 
 /**
-  * Create a new physical file, using when a new download begins. The new file end with ".unfinished".
-  * @exception FilePhysicallyAlreadyExistsException
+  * Create a new physical file, using when a new download begins. The new filename must end with ".unfinished".
   * @exception UnableToCreateNewFileException
   */
 void File::createPhysicalFile()
 {
-   if (static_cast<SharedDirectory*>(this->getRoot())->getRights() == SharedDirectory::READ_ONLY)
-      L_ERRO(QString("File::File(..) : Cannot create a file (%1) in a read only shared directory (%2)").arg(this->getPath()).arg(static_cast<SharedDirectory*>(this->getRoot())->getFullPath()));
+   if (!Cache::isFileUnfinished(this->name))
+      L_ERRO(QString("File::createPhysicalFile(..) : Cannot create a file (%1) without the 'unfinished' suffix").arg(this->getPath()));
+   else if (static_cast<SharedDirectory*>(this->getRoot())->getRights() == SharedDirectory::READ_ONLY)
+      L_ERRO(QString("File::createPhysicalFile(..) : Cannot create a file (%1) in a read only shared directory (%2)").arg(this->getPath()).arg(static_cast<SharedDirectory*>(this->getRoot())->getFullPath()));
    else
    {
       QFile file(this->getFullPath());
-      if (file.exists() && this->isComplete()) // We avoid to erase existing files (only unfinished ones).
-      {
-         throw FilePhysicallyAlreadyExistsException();
-      }
-      else
-      {
-         if (!file.open(QIODevice::WriteOnly) || !file.resize(this->size))
-            throw UnableToCreateNewFileException();
-         this->dateLastModified = QFileInfo(file).lastModified();
-      }
+      if (!file.open(QIODevice::WriteOnly) || !file.resize(this->size))
+         throw UnableToCreateNewFileException();
+      this->dateLastModified = QFileInfo(file).lastModified();
    }
 }
 

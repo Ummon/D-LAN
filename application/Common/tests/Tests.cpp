@@ -18,6 +18,11 @@ Tests::Tests()
 {
 }
 
+void Tests::initTestCase()
+{
+   qDebug() << "Application folder path (where is put the settings file) : " << Common::APPLICATION_FOLDER_PATH;
+}
+
 void Tests::writePersistentData()
 {
    //PersistentData::setValue("paul", "42 years old");

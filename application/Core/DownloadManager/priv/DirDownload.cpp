@@ -6,7 +6,7 @@ using namespace DM;
 #include <priv/Log.h>
 
 DirDownload::DirDownload(QSharedPointer<FM::IFileManager> fileManager, QSharedPointer<PM::IPeerManager> peerManager, Common::Hash peerSourceID, const Protos::Common::Entry& entry)
-   : Download(fileManager, peerManager, peerSourceID, entry)
+   : Download(fileManager, peerManager, peerSourceID, entry), retrieveEntriesOK(false)
 {
    L_DEBU(QString("New DirDownload : path = %1%2 source = %3").
       arg(Common::ProtoHelper::getStr(entry, &Protos::Common::Entry::path)).
@@ -30,10 +30,12 @@ QSet<Common::Hash> DirDownload::getPeers() const
   * Ask the DirDownload to get its content.
   * The signal 'newEntries' will be emitted when the answer is received.
   */
-void DirDownload::retrieveEntries()
+bool DirDownload::retrieveEntries()
 {
+   this->retrieveEntriesOK = true;
+
    if (!this->hasAValidPeer())
-      return;
+      return false;
 
    Protos::Core::GetEntries getEntries;
    getEntries.mutable_dir()->CopyFrom(this->entry);
@@ -41,6 +43,16 @@ void DirDownload::retrieveEntries()
    connect(this->getEntriesResult.data(), SIGNAL(result(Protos::Common::Entries)), this, SLOT(result(Protos::Common::Entries)));
    connect(this->getEntriesResult.data(), SIGNAL(timeout()), this, SLOT(resultTimeout()));
    this->getEntriesResult->start();
+
+   return true;
+}
+
+void DirDownload::retrievePeer()
+{
+   Download::retrievePeer();
+
+   if (this->retrieveEntriesOK)
+      this->retrieveEntries();
 }
 
 void DirDownload::result(const Protos::Common::Entries& entries)

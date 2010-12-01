@@ -27,9 +27,8 @@ namespace DM
      // Error status :
      NO_SHARED_DIRECTORY_TO_WRITE = 0x20,
      NO_ENOUGH_FREE_SPACE = 0x21,
-     THE_FILE_ALREADY_EXISTS = 0x22,
-     UNABLE_TO_CREATE_THE_FILE = 0x23,
-     UNABLE_TO_RETRIEVE_THE_HASHES = 0x24,
+     UNABLE_TO_CREATE_THE_FILE = 0x22,
+     UNABLE_TO_RETRIEVE_THE_HASHES = 0x23,
    };
 
    class IDownload
@@ -37,9 +36,17 @@ namespace DM
    public:
       virtual ~IDownload() {}
 
+      /**
+        * Identify a download, useful to move or remove downloads.
+        */
       virtual quint64 getID() const = 0;
 
       virtual Status getStatus() const = 0;
+
+      /**
+        * Is a status is erroneous? See the enum 'Status' for more information.
+        */
+      virtual bool isStatusErroneous() const = 0;
 
       /**
         * Return a value between 0 and 100.
@@ -53,6 +60,15 @@ namespace DM
         */
       virtual QSet<Common::Hash> getPeers() const = 0;
 
+      /**
+        * Return the associated entry to the download, it contains :
+        * - The type (directory or file)
+        * - The path
+        * - The name
+        * - The size
+        * The entry can be remote or local, once the download is completed (see 'getStatus')
+        * the remote becomes local and the path corresponds to the local file.
+        */
       virtual const Protos::Common::Entry& getEntry() = 0;
 
       /**

@@ -76,8 +76,6 @@ void FileUpdater::addRoot(SharedDirectory* dir)
 {
    QMutexLocker locker(&this->mutex);
 
-   emit persistCache();
-
    bool watchable = false;
    if (this->dirWatcher)
       watchable = this->dirWatcher->addDir(dir->getFullPath());
@@ -102,8 +100,6 @@ void FileUpdater::rmRoot(SharedDirectory* dir, Directory* dir2)
    this->stopScanning(dir);
 
    QMutexLocker locker(&this->mutex);
-
-   emit persistCache();
 
    // Stop the hashing to modify 'this->fileWithoutHashes'.
    // TODO : A suspend/resume hashing methods would be more readable.
@@ -170,7 +166,8 @@ void FileUpdater::run()
       {
          this->scan(dir, true);
          this->restoreFromFileCache(static_cast<SharedDirectory*>(dir));
-         dir->removeIncompleteFiles();
+
+         // dir->removeIncompleteFiles(); // Commented -> Uncompleted file can be resumed.
       }
       this->dirsToScan.clear();
 
@@ -182,8 +179,7 @@ void FileUpdater::run()
 
    forever
    {
-      if (this->computeSomeHashes())
-         emit persistCache();
+      this->computeSomeHashes();
 
       this->mutex.lock();
 
@@ -238,7 +234,6 @@ void FileUpdater::run()
 
       if (this->toStop)
       {
-         emit persistCache();
          L_DEBU("FileUpdater mainloop finished");
          return;
       }

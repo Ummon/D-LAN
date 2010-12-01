@@ -5,6 +5,7 @@
 #include <QSet>
 #include <QSharedPointer>
 #include <QTimer>
+#include <QElapsedTimer>
 
 #include <Core/FileManager/IFileManager.h>
 #include <Core/PeerManager/IPeerManager.h>
@@ -56,9 +57,12 @@ namespace DM
    private:
       void loadQueueFromFile();
       void saveQueueToFile();
+      void queueChanged();
+
       bool isEntryAlreadyQueued(const Protos::Common::Entry& entry);
 
       const int NUMBER_OF_DOWNLOADER;
+      const int SAVE_QUEUE_PERIOD;
 
       QSharedPointer<FM::IFileManager> fileManager;
       QSharedPointer<PM::IPeerManager> peerManager;
@@ -74,6 +78,8 @@ namespace DM
       bool retrievingEntries; // TODO : if the socket is closed then retrievingEntries = false
 
       QTimer timer; // When a download has an error status, the queue will be rescaned periodically.
+
+      QElapsedTimer saveTimer; // To know when to save the queue, for exemple each 5min.
    };
 }
 #endif

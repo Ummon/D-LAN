@@ -13,8 +13,13 @@ using namespace DM;
 #include <priv/DirDownload.h>
 #include <priv/Constants.h>
 
-DownloadManager::DownloadManager(QSharedPointer<FM::IFileManager> fileManager, QSharedPointer<PM::IPeerManager> peerManager)
-   : NUMBER_OF_DOWNLOADER(static_cast<int>(SETTINGS.get<quint32>("number_of_downloader"))), fileManager(fileManager), peerManager(peerManager), numberOfDownload(0), retrievingEntries(false)
+DownloadManager::DownloadManager(QSharedPointer<FM::IFileManager> fileManager, QSharedPointer<PM::IPeerManager> peerManager) :
+   NUMBER_OF_DOWNLOADER(static_cast<int>(SETTINGS.get<quint32>("number_of_downloader"))),
+   SAVE_QUEUE_PERIOD(static_cast<int>(SETTINGS.get<quint32>("save_queue_period"))),
+   fileManager(fileManager),
+   peerManager(peerManager),
+   numberOfDownload(0),
+   retrievingEntries(false)
 {
    connect(&this->occupiedPeersAskingForHashes, SIGNAL(newFreePeer(PM::IPeer*)), this, SLOT(peerNoLongerAskingForHashes(PM::IPeer*)));
    connect(&this->occupiedPeersDownloadingChunk, SIGNAL(newFreePeer(PM::IPeer*)), this, SLOT(peerNoLongerDownloadingChunk(PM::IPeer*)));
@@ -24,6 +29,8 @@ DownloadManager::DownloadManager(QSharedPointer<FM::IFileManager> fileManager, Q
    this->timer.setInterval(RESCAN_QUEUE_PERIOD_IF_ERROR);
    this->timer.setSingleShot(true);
    connect(&this->timer, SIGNAL(timeout()), this, SLOT(scanTheQueue()));
+
+   this->saveTimer.start();
 }
 
 DownloadManager::~DownloadManager()
@@ -41,8 +48,7 @@ DownloadManager::~DownloadManager()
 }
 
 /**
-  * Insert a new download at the end.
-  *
+  * Insert a new download at the end of the queue.
   */
 void DownloadManager::addDownload(const Protos::Common::Entry& entry, Common::Hash peerSource)
 {
@@ -95,6 +101,8 @@ void DownloadManager::addDownload(const Protos::Common::Entry& entry, Common::Ha
    }
 
    connect(newDownload, SIGNAL(deleted(Download*)), this, SLOT(downloadDeleted(Download*)), Qt::DirectConnection);
+
+   this->queueChanged();
 }
 
 QList<IDownload*> DownloadManager::getDownloads()
@@ -153,6 +161,8 @@ void DownloadManager::moveDownloads(quint64 downloadIDRef, const QList<quint64>&
          iToMove.clear();
       }
    }
+
+   this->queueChanged();
 }
 
 QList< QSharedPointer<IChunkDownload> > DownloadManager::getUnfinishedChunks(int n)
@@ -210,6 +220,7 @@ void DownloadManager::newEntries(const Protos::Common::Entries& entries)
 void DownloadManager::downloadDeleted(Download* download)
 {
    this->downloads.removeOne(download);
+   this->queueChanged();
 }
 
 /**
@@ -241,13 +252,22 @@ void DownloadManager::scanTheQueueToRetrieveEntries()
 
    L_DEBU("Scanning the queue to retrieve entries");
 
+   Common::Hash peerID;
+
    for (QListIterator<Download*> i(this->downloads); i.hasNext();)
    {
       DirDownload* dirDownload = dynamic_cast<DirDownload*>(i.next());
-      if (!dirDownload)
+      if (!dirDownload || dirDownload->getPeerSourceID() == peerID)
          continue;
 
-      dirDownload->retrieveEntries();
+      if (!dirDownload->retrieveEntries())
+      {
+         // If we can't retrieve entries from 'dirDownload' because its peer is unknown we save its peerID to prevent
+         // to reask to the same peer twice.
+         peerID = dirDownload->getPeerSourceID();
+         continue;
+      }
+
       this->retrievingEntries = true;
       return;
    }
@@ -276,7 +296,7 @@ void DownloadManager::scanTheQueue()
 
       chunkDownload = fileDownload->getAChunkToDownload();
 
-      if (fileDownload->getStatus() >= 0x20) // TODO : a bit ugly.
+      if (fileDownload->isStatusErroneous())
          this->timer.start();
 
       if (chunkDownload.isNull())
@@ -357,6 +377,19 @@ void DownloadManager::saveQueueToFile()
    catch (Common::PersistentDataIOException& err)
    {
       L_ERRO(err.message);
+   }
+}
+
+/**
+  * Called each time the queue is modified.
+  * It may persist the queue.
+  */
+void DownloadManager::queueChanged()
+{
+   if (this->saveTimer.elapsed() >= SAVE_QUEUE_PERIOD)
+   {
+      this->saveQueueToFile();
+      this->saveTimer.start();
    }
 }
 

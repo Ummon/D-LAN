@@ -313,10 +313,6 @@ void Tests::createAnEmptyFile()
    {
       QFAIL("InsufficientStorageSpaceException");
    }
-   catch(FilePhysicallyAlreadyExistsException)
-   {
-      QFAIL("FilePhysicallyAlreadyExistsException");
-   }
    catch(UnableToCreateNewFileException&)
    {
       QFAIL("UnableToCreateNewFileException");

@@ -32,7 +32,8 @@ namespace DM
 
       int getDownloadRate() const;
 
-      Common::Hash getHash();
+      Common::Hash getHash() const;
+
       void addPeerID(const Common::Hash& peerID);
       void rmPeerID(const Common::Hash& peerID);
 

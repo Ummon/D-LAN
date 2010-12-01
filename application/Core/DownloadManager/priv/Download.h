@@ -33,6 +33,7 @@ namespace DM
 
       quint64 getID() const;
       Status getStatus() const;
+      bool isStatusErroneous() const;
       virtual int getProgress() const;
       Common::Hash getPeerSourceID() const;
       const Protos::Common::Entry& getEntry();

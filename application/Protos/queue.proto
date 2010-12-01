@@ -11,7 +11,7 @@ package Protos.Queue;
 
 message Queue {
    message Entry {
-      required Common.Entry entry = 1;
+      required Common.Entry entry = 1; // May contain hashes.
       required Common.Hash peer_id = 3;
       optional bool complete = 2 [default = false]; // Only for Common.Entry.type == FILE
    }

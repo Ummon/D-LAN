@@ -23,10 +23,13 @@ namespace DM
 
       QSet<Common::Hash> getPeers() const;
 
-      void retrieveEntries();
+      bool retrieveEntries();
 
    signals:
       void newEntries(const Protos::Common::Entries& entries);
+
+   protected slots:
+      void retrievePeer();
 
    private slots:
       void result(const Protos::Common::Entries& entries);
@@ -34,6 +37,7 @@ namespace DM
 
    private:
       QSharedPointer<PM::IGetEntriesResult> getEntriesResult;
+      bool retrieveEntriesOK;
    };
 }
 #endif
