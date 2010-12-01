@@ -48,6 +48,11 @@ namespace DM
       virtual void retrievePeer();
 
    protected:
+      /**
+        * This method permits to change the behaviour by a subclass when Download change the status.
+        */
+      virtual void setStatus(Status newStatus);
+
       const quint64 ID;
 
       QSharedPointer<FM::IFileManager> fileManager;

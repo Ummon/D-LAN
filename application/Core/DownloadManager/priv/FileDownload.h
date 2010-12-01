@@ -61,7 +61,11 @@ namespace DM
       void chunkDownloadStarted();
       void chunkDownloadFinished();
 
+   protected:
+      void setStatus(Status newStatus);
+
    private:
+      void updateStatus();
       void connectChunkDownloadSignals(QSharedPointer<ChunkDownload> chunkDownload);
 
       const int NB_CHUNK;
