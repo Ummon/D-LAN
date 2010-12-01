@@ -5,6 +5,8 @@
 #include <QSet>
 #include <QChar>
 
+#include <Common/Uncopyable.h>
+
 namespace FM
 {
    template<typename T>
@@ -48,7 +50,7 @@ namespace FM
    /////
 
    template<typename T>
-   class Node
+   class Node : Common::Uncopyable
    {
    public:
       /**

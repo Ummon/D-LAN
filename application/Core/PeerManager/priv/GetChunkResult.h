@@ -10,13 +10,14 @@
 #include <Protos/core_protocol.pb.h>
 
 #include <Common/Network.h>
+#include <Common/Uncopyable.h>
 
 #include <IGetChunkResult.h>
 #include <priv/Socket.h>
 
 namespace PM
 {
-   class GetChunkResult : public IGetChunkResult
+   class GetChunkResult : public IGetChunkResult, Common::Uncopyable
    {
       Q_OBJECT
    public:

@@ -51,7 +51,7 @@ QSharedPointer<FM::IChunk> Uploader::getChunk() const
    return this->chunk;
 }
 
-QSharedPointer<PM::ISocket> Uploader::getSocket()
+QSharedPointer<PM::ISocket> Uploader::getSocket() const
 {
    return this->socket;
 }

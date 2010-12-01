@@ -87,7 +87,7 @@ void Socket::stopListening()
    this->listening = false;
 }
 
-bool Socket::isIdle()
+bool Socket::isIdle() const
 {
    return this->idle;
 }

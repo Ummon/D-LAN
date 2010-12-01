@@ -82,11 +82,13 @@ void Core::checkSettingsIntegrity()
       SETTINGS.rm("unfinished_suffix_term");
    }
    this->checkSetting("minimum_free_space", 0u, 4294967295u);
+   this->checkSetting("save_cache_period", 1000u, 4294967295u);
 
    this->checkSetting("pending_socket_timeout", 10u, 30u * 1000u);
    this->checkSetting("peer_timeout_factor", 1u, 10u);
    this->checkSetting("idle_socket_timeout", 1000u, 60u * 60u * 1000u);
    this->checkSetting("max_number_idle_socket", 0u, 10u);
+   this->checkSetting("get_hashes_timeout", 1000u, 60u * 1000u);
 
    this->checkSetting("number_of_downloader", 1u, 10u);
    this->checkSetting("lan_speed", 1024u * 1024u, 1024u * 1024u * 1024u);
@@ -94,6 +96,7 @@ void Core::checkSettingsIntegrity()
    this->checkSetting("switch_to_another_peer_factor", 1.0, 10.0);
    this->checkSetting("download_rate_valid_time_factor", 100u, 100000u);
    this->checkSetting("peer_imalive_period", 1000u, 60u * 1000u);
+   this->checkSetting("save_queue_period", 1000u, 4294967295u);
 
    this->checkSetting("upload_live_time", 0u, 30u * 1000u);
 
@@ -104,6 +107,11 @@ void Core::checkSettingsIntegrity()
    this->checkSetting("number_of_hashes_sent_imalive", 1u, 1000u);
    this->checkSetting("protocol_version", 1u, 10000u);
    this->checkSetting("max_number_of_search_result_to_send", 1u, 10000u);
+
+   this->checkSetting("remote_control_port", 1u, 65535u);
+   this->checkSetting("remote_refresh_rate", 500u, 10u * 1000u);
+   this->checkSetting("remote_max_nb_connection", 1u, 1000u);
+   this->checkSetting("search_lifetime", 1000u, 60 * 1000u);
 }
 
 

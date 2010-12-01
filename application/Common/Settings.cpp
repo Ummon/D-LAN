@@ -78,7 +78,7 @@ void Settings::setSettingsMessage(google::protobuf::Message* settings)
 /**
   * @exception PersistentDataIOException see the class 'PersistentData'.
   */
-void Settings::save()
+void Settings::save() const
 {
    QMutexLocker lock(&this->mutex);
    if (!this->settings)
@@ -108,7 +108,7 @@ void Settings::remove()
    PersistentData::rmValue(this->filename);
 }
 
-bool Settings::isSet(const QString& name)
+bool Settings::isSet(const QString& name) const
 {
    QMutexLocker lock(&this->mutex);
    if (!this->settings)
@@ -204,7 +204,7 @@ void Settings::set(const QString& name, const Hash& hash)
    this->settings->GetReflection()->MutableMessage(this->settings, fieldDescriptor)->CopyFrom(hashMessage);
 }
 
-void Settings::get(const QString& name, quint32& value)
+void Settings::get(const QString& name, quint32& value) const
 {
    QMutexLocker lock(&this->mutex);
    if (!this->settings)
@@ -218,7 +218,7 @@ void Settings::get(const QString& name, quint32& value)
    value = this->settings->GetReflection()->GetUInt32(*this->settings, fieldDescriptor);
 }
 
-void Settings::get(const QString& name, double& value)
+void Settings::get(const QString& name, double& value) const
 {
    QMutexLocker lock(&this->mutex);
    if (!this->settings)
@@ -232,7 +232,7 @@ void Settings::get(const QString& name, double& value)
    value = this->settings->GetReflection()->GetDouble(*this->settings, fieldDescriptor);
 }
 
-void Settings::get(const QString& name, QString& value)
+void Settings::get(const QString& name, QString& value) const
 {
    QMutexLocker lock(&this->mutex);
    if (!this->settings)
@@ -246,7 +246,7 @@ void Settings::get(const QString& name, QString& value)
    value = QString::fromUtf8(this->settings->GetReflection()->GetString(*this->settings, fieldDescriptor).data());
 }
 
-void Settings::get(const QString& name, Hash& hash)
+void Settings::get(const QString& name, Hash& hash) const
 {
    QMutexLocker lock(&this->mutex);
    if (!this->settings)

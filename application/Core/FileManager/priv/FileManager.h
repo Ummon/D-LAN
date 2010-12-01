@@ -11,6 +11,8 @@
 #include <Protos/common.pb.h>
 #include <Protos/core_protocol.pb.h>
 
+#include <Common/Uncopyable.h>
+
 #include <IFileManager.h>
 #include <priv/FileUpdater/FileUpdater.h>
 #include <priv/Cache/Cache.h>
@@ -25,7 +27,7 @@ namespace FM
    class IChunk;
    class IGetHashesResult;
 
-   class FileManager : public IFileManager
+   class FileManager : public IFileManager, Common::Uncopyable
    {
       Q_OBJECT
    public:

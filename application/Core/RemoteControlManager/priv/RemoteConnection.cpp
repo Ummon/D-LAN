@@ -403,7 +403,7 @@ bool RemoteConnection::readMessage()
    return readOK;
 }
 
-void RemoteConnection::send(Common::Network::GUIMessageType type, const google::protobuf::Message& message)
+void RemoteConnection::send(Common::Network::GUIMessageType type, const google::protobuf::Message& message) const
 {
    const Common::Network::MessageHeader<Common::Network::GUIMessageType> header(type, message.ByteSize(), this->peerManager->getID());
 

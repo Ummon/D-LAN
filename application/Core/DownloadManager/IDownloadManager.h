@@ -27,7 +27,7 @@ namespace DM
       /**
         * @remarks The returned download pointers must not be retained.
         */
-      virtual QList<IDownload*> getDownloads() = 0;
+      virtual QList<IDownload*> getDownloads() const = 0;
 
       /**
         * Move all downloads from 'downloadIDs' before 'downloadIDRef'.
@@ -35,7 +35,7 @@ namespace DM
         */
       virtual void moveDownloads(quint64 downloadIDRef, const QList<quint64>& downloadIDs) = 0;
 
-      virtual QList< QSharedPointer<IChunkDownload> > getUnfinishedChunks(int n) = 0;
+      virtual QList< QSharedPointer<IChunkDownload> > getUnfinishedChunks(int n) const = 0;
 
       /**
         * @return Byte/s.

@@ -10,13 +10,14 @@
 #include <Protos/core_protocol.pb.h>
 
 #include <Common/Network.h>
+#include <Common/Uncopyable.h>
 
 #include <IGetHashesResult.h>
 #include <priv/Socket.h>
 
 namespace PM
 {
-   class GetHashesResult : public IGetHashesResult
+   class GetHashesResult : public IGetHashesResult, Common::Uncopyable
    {
       Q_OBJECT
    public:

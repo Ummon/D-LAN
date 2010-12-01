@@ -56,7 +56,7 @@ QString Global::formatByteSize(qint64 bytes)
 
 qint64 Global::availableDiskSpace(const QString& path)
 {
-   const qint64 max = 9223372036854775807LL;
+   const qint64 MAX = 9223372036854775807LL;
 
 #ifdef Q_OS_WIN32
    ULARGE_INTEGER space;
@@ -66,12 +66,12 @@ qint64 Global::availableDiskSpace(const QString& path)
    buffer[l] = 0;
 
    if (!GetDiskFreeSpaceEx(buffer, &space, NULL, NULL))
-      return max;
+      return MAX;
    return space.QuadPart;
 #endif
 
    // TODO : Linux
-   return max;
+   return MAX;
 }
 
 /**

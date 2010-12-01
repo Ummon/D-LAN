@@ -11,6 +11,7 @@
 
 #include <Common/Network.h>
 #include <Common/Hash.h>
+#include <Common/Uncopyable.h>
 #include <Core/FileManager/IFileManager.h>
 
 #include <ISocket.h>
@@ -19,7 +20,7 @@ namespace PM
 {
    class PeerManager;
 
-   class Socket : public QObject, public ISocket
+   class Socket : public QObject, public ISocket, Common::Uncopyable
    {
       Q_OBJECT
    public:
@@ -33,7 +34,7 @@ namespace PM
 
       void startListening();
       void stopListening();
-      bool isIdle();
+      bool isIdle() const;
       void setActive();
 
       void send(Common::Network::CoreMessageType type, const google::protobuf::Message& message);

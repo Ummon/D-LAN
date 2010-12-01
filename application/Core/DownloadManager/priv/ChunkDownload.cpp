@@ -107,6 +107,7 @@ void ChunkDownload::setPeerSource(PM::IPeer* peer, bool informOccupiedPeers)
   * - It must be have at least one peer.
   * - It isn't finished.
   * - It isn't currently downloading.
+  * @remarks This method may remove dead peers from the list.
   */
 bool ChunkDownload::isReadyToDownload()
 {
@@ -141,6 +142,9 @@ int ChunkDownload::getDownloadedBytes() const
    return this->chunk->getKnownBytes();
 }
 
+/**
+  * @remarks This method may remove dead peers from the list.
+  */
 QList<Common::Hash> ChunkDownload::getPeers()
 {
    QMutexLocker lock(&this->mutex);

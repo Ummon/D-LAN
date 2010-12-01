@@ -4,6 +4,7 @@
 #include <QSharedPointer>
 #include <QList>
 
+#include <Common/Uncopyable.h>
 #include <Common/Hash.h>
 #include <Core/FileManager/IFileManager.h>
 #include <Core/PeerManager/IPeerManager.h>
@@ -15,14 +16,14 @@ namespace UM
 {
    class Upload;
 
-   class UploadManager : public QObject, public IUploadManager
+   class UploadManager : public QObject, public IUploadManager, Common::Uncopyable
    {
       Q_OBJECT
    public:
       UploadManager(QSharedPointer<FM::IFileManager> fileManager, QSharedPointer<PM::IPeerManager> peerManager);
       ~UploadManager();
 
-      QList<IUpload*> getUploads();
+      QList<IUpload*> getUploads() const;
 
       int getUploadRate() const;
 

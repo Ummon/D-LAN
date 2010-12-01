@@ -8,12 +8,14 @@
 
 #include <Protos/core_protocol.pb.h>
 
+#include <Common/Uncopyable.h>
+
 #include <ISearch.h>
 #include <priv/UDPListener.h>
 
 namespace NL
 {
-   class Search : public ISearch
+   class Search : public ISearch, Common::Uncopyable
    {
       Q_OBJECT
    public:

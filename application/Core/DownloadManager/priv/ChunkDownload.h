@@ -10,6 +10,7 @@
 
 #include <Common/TransferRateCalculator.h>
 #include <Common/Hash.h>
+#include <Common/Uncopyable.h>
 #include <Core/FileManager/IChunk.h>
 #include <Core/FileManager/IDataWriter.h>
 #include <Core/PeerManager/IPeerManager.h>
@@ -23,7 +24,7 @@ namespace PM { class IPeer; }
 
 namespace DM
 {
-   class ChunkDownload : public QThread, public IChunkDownload
+   class ChunkDownload : public QThread, public IChunkDownload, Common::Uncopyable
    {
       Q_OBJECT
    public:

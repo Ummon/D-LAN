@@ -8,6 +8,7 @@
 
 #include <IRemoteControlManager.h>
 
+#include <Common/Uncopyable.h>
 #include <Core/FileManager/IFileManager.h>
 #include <Core/PeerManager/IPeerManager.h>
 #include <Core/UploadManager/IUploadManager.h>
@@ -18,7 +19,7 @@
 
 namespace RCM
 {
-   class RemoteControlManager : public QObject, public IRemoteControlManager
+   class RemoteControlManager : public QObject, public IRemoteControlManager, Common::Uncopyable
    {
       Q_OBJECT
    public:

@@ -6,6 +6,8 @@
 
 #include <Protos/core_protocol.pb.h>
 
+#include <Common/Uncopyable.h>
+
 #include <IGetHashesResult.h>
 #include <priv/Cache/Cache.h>
 #include <priv/FileUpdater/FileUpdater.h>
@@ -16,7 +18,7 @@ namespace FM
    class File;
    class FileUpdater;
 
-   class GetHashesResult : public IGetHashesResult
+   class GetHashesResult : public IGetHashesResult, Common::Uncopyable
    {
       Q_OBJECT
    public:

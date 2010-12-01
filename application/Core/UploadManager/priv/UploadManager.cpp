@@ -24,7 +24,7 @@ UploadManager::~UploadManager()
    L_DEBU("UploadManager deleted");
 }
 
-QList<IUpload*> UploadManager::getUploads()
+QList<IUpload*> UploadManager::getUploads() const
 {
    QList<IUpload*> uploads;
 

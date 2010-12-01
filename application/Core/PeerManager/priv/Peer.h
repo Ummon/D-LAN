@@ -12,6 +12,7 @@
 
 #include <Common/Hash.h>
 #include <Common/Network.h>
+#include <Common/Uncopyable.h>
 
 #include <Core/FileManager/IGetHashesResult.h>
 #include <Core/FileManager/IFileManager.h>
@@ -24,7 +25,7 @@ namespace PM
    class Socket;
    class PeerManager;
 
-   class Peer : public QObject, public IPeer
+   class Peer : public QObject, public IPeer, Common::Uncopyable
    {
       Q_OBJECT
       static const quint32 MAX_SPEED;

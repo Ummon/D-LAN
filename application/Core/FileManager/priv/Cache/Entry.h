@@ -3,6 +3,8 @@
 
 #include <QString>
 
+#include <Common/Uncopyable.h>
+
 #include <Protos/common.pb.h>
 
 namespace FM
@@ -10,7 +12,7 @@ namespace FM
    class Directory;
    class Cache;
 
-   class Entry
+   class Entry : Common::Uncopyable
    {
    public:
       Entry(Cache* cache, const QString& name, qint64 size = 0);
