@@ -47,6 +47,8 @@ FileDownload::FileDownload(
       this->connectChunkDownloadSignals(this->chunkDownloads.last());
    }
    this->nbHashesKnown = this->chunkDownloads.size();
+
+   this->updateStatus();
 }
 
 FileDownload::~FileDownload()
@@ -287,7 +289,22 @@ void FileDownload::chunkDownloadStarted()
 
 void FileDownload::chunkDownloadFinished()
 {
-   if (this->status == DELETED)
+   this->updateStatus();
+}
+
+void FileDownload::setStatus(Status newStatus)
+{
+   if (this->status == COMPLETE)
+      return;
+
+   // We don't care about the source peer if we have all the hashes.
+   if (newStatus == UNKNOWN_PEER && nbHashesKnown == this->NB_CHUNK)
+      return;
+}
+
+void FileDownload::updateStatus()
+{
+   if (this->status == DELETED || this->status == COMPLETE)
       return;
 
    this->status = COMPLETE;
