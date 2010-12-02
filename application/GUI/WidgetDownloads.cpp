@@ -97,6 +97,15 @@ WidgetDownloads::WidgetDownloads(CoreConnection& coreConnection, PeerListModel& 
 
    this->ui->tblDownloads->setContextMenuPolicy(Qt::CustomContextMenu);
    connect(this->ui->tblDownloads, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(displayContextMenuDownloads(const QPoint&)));
+
+   connect(this->ui->butRemoveComplete, SIGNAL(clicked()), this, SLOT(removeCompletedFiles()));
+
+   this->filterStatusList = new CheckBoxList(this);
+   this->filterStatusList->addElement("Complete", true);
+   this->filterStatusList->addElement("Downloading", true);
+   this->filterStatusList->addElement("Queued", true);
+   this->filterStatusList->addElement("Error", true);
+   this->ui->layTools->insertWidget(1, this->filterStatusList);
 }
 
 WidgetDownloads::~WidgetDownloads()

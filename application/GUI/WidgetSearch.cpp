@@ -78,7 +78,7 @@ void SearchDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option
    }
 }
 
-QSize SearchDelegate::sizeHint ( const QStyleOptionViewItem & option, const QModelIndex & index ) const
+QSize SearchDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index ) const
 {
    switch(index.column())
    {

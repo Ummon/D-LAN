@@ -35,7 +35,11 @@
    <item>
     <layout class="QHBoxLayout" name="layTools">
      <item>
-      <widget class="QComboBox" name="cmbFilter"/>
+      <widget class="QLabel" name="lblFilter">
+       <property name="text">
+        <string>Item shown :</string>
+       </property>
+      </widget>
      </item>
      <item>
       <widget class="QPushButton" name="butRemoveComplete">
