@@ -8,6 +8,7 @@
 #include <DownloadsModel.h>
 #include <PeerListModel.h>
 #include <CoreConnection.h>
+#include <CheckBoxList.h>
 
 namespace Ui {
    class WidgetDownloads;
@@ -36,6 +37,8 @@ namespace GUI
 
    private:
       Ui::WidgetDownloads *ui;
+
+      CheckBoxList* filterStatusList;
 
       CoreConnection& coreConnection;
 

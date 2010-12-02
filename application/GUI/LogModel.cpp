@@ -39,6 +39,7 @@ QVariant LogModel::data(const QModelIndex& index, int role) const
    case LM::SV_ERROR:
       messagePrefix = "[Error] ";
       break;
+   default:;
    }
 
    switch (index.column())

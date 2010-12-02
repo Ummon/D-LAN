@@ -46,7 +46,8 @@ SOURCES += main.cpp\
     DialogAbout.cpp \
     LogModel.cpp \
     Log.cpp \
-    AybabtuGUI.cpp
+    AybabtuGUI.cpp \
+    CheckBoxList.cpp
 
 HEADERS  += MainWindow.h \
     ../Protos/gui_protocol.pb.h \
@@ -70,7 +71,8 @@ HEADERS  += MainWindow.h \
     WidgetUploads.h \
     DialogAbout.h \
     LogModel.h \
-    AybabtuGUI.h
+    AybabtuGUI.h \
+    CheckBoxList.h
 
 FORMS    += MainWindow.ui \
     WidgetChat.ui \
