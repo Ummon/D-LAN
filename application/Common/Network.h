@@ -85,9 +85,6 @@ namespace Common
                return QString("MessageHeader : type = %1, size = %2, senderID = %3").arg(messToStr(this->type)).arg(this->size).arg(this->senderID.toStr());
          }
 
-         inline CoreMessageType getTypeCore() const { return static_cast<CoreMessageType>(this->type); }
-         inline GUIMessageType getTypeGUI() const { return static_cast<GUIMessageType>(this->type); }
-
          T type;
          quint32 size;
          Common::Hash senderID;
