@@ -280,7 +280,7 @@ void DownloadManager::scanTheQueue()
 
    int numberOfDownloadCopy;
    {
-      QMutexLocker lock(&this->mutexNumberOfDownload);
+      QMutexLocker locker(&this->mutexNumberOfDownload);
       numberOfDownloadCopy = this->numberOfDownload;
    }
 
@@ -304,13 +304,13 @@ void DownloadManager::scanTheQueue()
          continue;
 
       {
-         QMutexLocker lock(&this->mutexNumberOfDownload);
+         QMutexLocker locker(&this->mutexNumberOfDownload);
          connect(chunkDownload.data(), SIGNAL(downloadFinished()), this, SLOT(chunkDownloadFinished()), Qt::DirectConnection);
       }
 
       if (chunkDownload->startDownloading())
       {
-         QMutexLocker lock(&this->mutexNumberOfDownload);
+         QMutexLocker locker(&this->mutexNumberOfDownload);
          this->numberOfDownload++;
          numberOfDownloadCopy = this->numberOfDownload;
       }
@@ -324,7 +324,7 @@ void DownloadManager::scanTheQueue()
   */
 void DownloadManager::chunkDownloadFinished()
 {
-   QMutexLocker lock(&this->mutexNumberOfDownload);
+   QMutexLocker locker(&this->mutexNumberOfDownload);
 
    //L_DEBU(QString("DownloadManager::chunkDownloadFinished, numberOfDownload = %1").arg(this->numberOfDownload));
    this->sender()->disconnect(this, SLOT(chunkDownloadFinished()));

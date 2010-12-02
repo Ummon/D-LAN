@@ -472,7 +472,7 @@ QList< QSharedPointer<Chunk> > File::getChunks() const
 
 bool File::hasAllHashes()
 {
-   QMutexLocker lock(&this->mutex);
+   QMutexLocker locker(&this->mutex);
    if (this->size == 0)
       return false;
 
@@ -497,7 +497,7 @@ bool File::hasOneOrMoreHashes()
   */
 bool File::isComplete()
 {
-   QMutexLocker lock(&this->mutex);
+   QMutexLocker locker(&this->mutex);
    return this->complete;
 }
 
@@ -510,7 +510,7 @@ bool File::isComplete()
   */
 void File::setAsComplete()
 {
-   QMutexLocker lock(&this->mutex);
+   QMutexLocker locker(&this->mutex);
 
    L_DEBU(QString("File set as complete : %1").arg(this->getFullPath()));
 
@@ -551,7 +551,7 @@ void File::setAsComplete()
 
 void File::chunkComplete(const Chunk* chunk)
 {
-   QMutexLocker lock(&this->mutex);
+   QMutexLocker locker(&this->mutex);
 
    // TODO : very cpu consumer! We have to find a better way!
    for (int i = 0; i < this->chunks.size(); i++)

@@ -84,7 +84,7 @@ void GetHashesResult::chunkHashKnown(QSharedPointer<Chunk> chunk)
 
 void GetHashesResult::sendNextHash(QSharedPointer<Chunk> chunk)
 {
-   QMutexLocker lock(&this->mutex);
+   QMutexLocker locker(&this->mutex);
 
    if (chunk->getNum() == this->lastHashNumSent)
       return;

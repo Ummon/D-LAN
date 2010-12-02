@@ -64,7 +64,7 @@ using namespace Common;
 template <typename T>
 T Settings::get(const QString& name) const
 {
-   QMutexLocker lock(&this->mutex);
+   QMutexLocker locker(&this->mutex);
    T value;
    this->get(name, value);
    return value;

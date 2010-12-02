@@ -16,7 +16,7 @@ DirWatcherWin::DirWatcherWin()
 
 DirWatcherWin::~DirWatcherWin()
 {
-   QMutexLocker lock(&this->mutex);
+   QMutexLocker locker(&this->mutex);
 
    foreach (Dir* d, this->dirs)
       delete d;
@@ -24,7 +24,7 @@ DirWatcherWin::~DirWatcherWin()
 
 bool DirWatcherWin::addDir(const QString& path)
 {
-   QMutexLocker lock(&this->mutex);
+   QMutexLocker locker(&this->mutex);
 
    if (this->dirs.size() > MAXIMUM_WAIT_OBJECTS - MAX_WAIT_CONDITION)
       return false;
@@ -63,7 +63,7 @@ bool DirWatcherWin::addDir(const QString& path)
 
 void DirWatcherWin::rmDir(const QString& path)
 {
-   QMutexLocker lock(&this->mutex);
+   QMutexLocker locker(&this->mutex);
 
    for (QListIterator<Dir*> i(this->dirs); i.hasNext();)
    {
@@ -78,7 +78,7 @@ void DirWatcherWin::rmDir(const QString& path)
 
 int DirWatcherWin::nbWatchedDir()
 {
-   QMutexLocker lock(&this->mutex);
+   QMutexLocker locker(&this->mutex);
    return this->dirs.size();
 }
 
@@ -132,7 +132,7 @@ const QList<WatcherEvent> DirWatcherWin::waitEvent(int timeout, QList<WaitCondit
 
    DWORD waitStatus = WaitForMultipleObjects(m, eventsArray, FALSE, timeout);
 
-   QMutexLocker lock(&this->mutex);
+   QMutexLocker locker(&this->mutex);
 
    if (!dirsCopy.empty() && waitStatus >= WAIT_OBJECT_0 && waitStatus <= WAIT_OBJECT_0 + (DWORD)n - 1)
    {
