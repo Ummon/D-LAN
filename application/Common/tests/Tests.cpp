@@ -8,6 +8,7 @@
 #include <Protos/common.pb.h>
 #include <Protos/core_settings.pb.h>
 
+#include <Network.h>
 #include <PersistentData.h>
 #include <Settings.h>
 #include <Global.h>
@@ -21,6 +22,35 @@ Tests::Tests()
 void Tests::initTestCase()
 {
    qDebug() << "Application folder path (where is put the settings file) : " << Common::APPLICATION_FOLDER_PATH;
+}
+
+void Tests::nCombinations()
+{
+   QVERIFY(Global::nCombinations(5, 4) == 5);
+   QVERIFY(Global::nCombinations(4, 2) == 6);
+   QVERIFY(Global::nCombinations(4, 4) == 1);
+   QVERIFY(Global::nCombinations(2, 4) == 0);
+}
+
+void Tests::formatByteSize()
+{
+   QCOMPARE(Global::formatByteSize(0), QString("0 B"));
+   QCOMPARE(Global::formatByteSize(42), QString("42 B"));
+   QCOMPARE(Global::formatByteSize(1023), QString("1023 B"));
+   QCOMPARE(Global::formatByteSize(1024), QString("1.0 KiB"));
+   QCOMPARE(Global::formatByteSize(1484), QString("1.4 KiB"));
+   QCOMPARE(Global::formatByteSize(1485), QString("1.5 KiB"));
+   QCOMPARE(Global::formatByteSize(1996), QString("1.9 KiB"));
+   QCOMPARE(Global::formatByteSize(1997), QString("2.0 KiB"));
+   QCOMPARE(Global::formatByteSize(1024 * 1484), QString("1.4 MiB"));
+   QCOMPARE(Global::formatByteSize(1024 * 1485), QString("1.5 MiB"));
+   QCOMPARE(Global::formatByteSize(1024 * 1996), QString("1.9 MiB"));
+   QCOMPARE(Global::formatByteSize(1024 * 1997), QString("2.0 MiB"));
+}
+
+void Tests::availableDiskSpace()
+{
+   qDebug() << "Available disk space [Mo] : " << Global::availableDiskSpace(".") / 1024 / 1024;
 }
 
 void Tests::writePersistentData()
@@ -73,7 +103,7 @@ void Tests::readSettings()
 
    QString nick;
    SETTINGS.get("nick", nick);
-   Common::Hash hash;
+   Hash hash;
    SETTINGS.get("peerID", hash);
 
    QCOMPARE(nick, QString("paul"));
@@ -87,7 +117,7 @@ void Tests::removeSettings()
 
 void Tests::generateAHash()
 {
-   char array[] = {
+   const char array[20] = {
       0x2d, 0x73, 0x73, 0x6f,
       0x34, 0xa7, 0x38, 0x37,
       0xd4, 0x22, 0xf7, 0xab,
@@ -98,18 +128,18 @@ void Tests::generateAHash()
 
    qDebug() << "Reference            : " << byteArray.toHex();;
 
-   Common::Hash h1 = Common::Hash::rand();
+   Hash h1 = Common::Hash::rand();
    qDebug() << "h1 (Generated hash)  : " << h1.toStr();
 
-   Common::Hash h2(byteArray);
+   Hash h2(byteArray);
    qDebug() << "h2 (from QByteArray) : " << h2.toStr();
    QVERIFY(memcmp(h2.getData(), array, 20) == 0);
 
-   Common::Hash h3(h2);
+   Hash h3(h2);
    qDebug() << "h3 (copied from h2)  : " << h3.toStr();
    QVERIFY(memcmp(h3.getData(), array, 20) == 0);
 
-   Common::Hash h4(array);
+   Hash h4(array);
    qDebug() << "h4 (from char[])     : " << h4.toStr();
    QVERIFY(memcmp(h4.getData(), array, 20) == 0);
 }
@@ -117,13 +147,13 @@ void Tests::generateAHash()
 void Tests::buildAnHashFromAString()
 {
    QString str("2d73736f34a73837d422f7aba2740d8409ac60df");
-   Common::Hash h = Common::Hash::fromStr(str);
+   Hash h = Hash::fromStr(str);
    QCOMPARE(h.toStr(), str);
 }
 
 void Tests::compareTwoHash()
 {
-   char array[] = {
+   const char array[20] = {
       0x2d, 0x73, 0x73, 0x6f,
       0x34, 0xa7, 0x38, 0x37,
       0xd4, 0x22, 0xf7, 0xab,
@@ -133,10 +163,10 @@ void Tests::compareTwoHash()
    QByteArray byteArray(array, 20);
    QString str("2d73736f34a73837d422f7aba2740d8409ac60df");
 
-   Common::Hash h1 = Common::Hash::fromStr(str);
-   Common::Hash h2(byteArray);
-   Common::Hash h3 = h1;
-   Common::Hash h4;
+   Hash h1 = Hash::fromStr(str);
+   Hash h2(byteArray);
+   Hash h3 = h1;
+   Hash h4;
    h4 = h1;
 
    QVERIFY(h1 == h1);
@@ -147,17 +177,35 @@ void Tests::compareTwoHash()
    QVERIFY(h2 == h4);
 }
 
-void Tests::nCombinations()
+void Tests::messageHeader()
 {
-   QVERIFY(Common::Global::nCombinations(5, 4) == 5);
-   QVERIFY(Common::Global::nCombinations(4, 2) == 6);
-   QVERIFY(Common::Global::nCombinations(4, 4) == 1);
-   QVERIFY(Common::Global::nCombinations(2, 4) == 0);
-}
+   const char data[28] = {
+      0x00, 0x00, 0x00, 0x01,
+      0x00, 0x00, 0x00, 0x2a,
+      0x2d, 0x73, 0x73, 0x6f,
+      0x34, 0xa7, 0x38, 0x37,
+      0xd4, 0x22, 0xf7, 0xab,
+      0xa2, 0x74, 0x0d, 0x84,
+      0x09, 0xac, 0x60, 0xdf
+   };
 
-void Tests::availableDiskSpace()
-{
-   qDebug() << "Available disk space [Mo] : " << Common::Global::availableDiskSpace(".") / 1024 / 1024;
+   const QString peerID("2d73736f34a73837d422f7aba2740d8409ac60df");
+
+   Network::MessageHeader<Network::CoreMessageType> header = Network::readHeader<Network::CoreMessageType>(data);
+   qDebug() << header.toStr();
+
+   QVERIFY(!header.isNull());
+   QCOMPARE(header.type, Network::CORE_IM_ALIVE);
+   QCOMPARE(header.size, 42u);
+   QCOMPARE(header.senderID.toStr(), peerID);
+
+   // We use a larger buffer to check if the last four bytes has been alterate.
+   char buffer[32];
+   memset(buffer, 0, sizeof(buffer));
+
+   Network::writeHeader<Network::CoreMessageType>(buffer, header);
+   QVERIFY(qstrncmp(data, buffer, 28) == 0);
+   QVERIFY(qstrncmp(buffer + 28, "\0\0\0\0", 4) == 0);
 }
 
 void Tests::readAndWriteWithZeroCopyStreamQIODevice()

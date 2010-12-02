@@ -274,7 +274,7 @@ bool Socket::readMessage()
 
          if (readOK)
          {
-            emit newMessage(this->currentHeader.getTypeCore(), getEntriesResult);
+            emit newMessage(this->currentHeader.type, getEntriesResult);
          }
       }
       break;
@@ -317,7 +317,7 @@ bool Socket::readMessage()
          if (readOK)
          {
             this->nbHash = getHashesResult.nb_hash();
-            emit newMessage(this->currentHeader.getTypeCore(), getHashesResult);
+            emit newMessage(this->currentHeader.type, getHashesResult);
          }
       }
       break;
@@ -335,7 +335,7 @@ bool Socket::readMessage()
             if (--this->nbHash == 0)
                this->finished();
 
-            emit newMessage(this->currentHeader.getTypeCore(), hash);
+            emit newMessage(this->currentHeader.type, hash);
          }
       }
       break;
@@ -364,7 +364,7 @@ bool Socket::readMessage()
          }
 
          if (readOK)
-            emit newMessage(this->currentHeader.getTypeCore(), getChunkResult);
+            emit newMessage(this->currentHeader.type, getChunkResult);
       }
       break;
 
