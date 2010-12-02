@@ -56,11 +56,6 @@ namespace FM
       void onChunkHashKnown(QSharedPointer<Chunk> chunk);
       void onChunkRemoved(QSharedPointer<Chunk> chunk);
 
-      /**
-        * Return the big cache lock.
-        */
-      QMutex& getMutex() { return this->lock; }
-
    signals:
       void entryAdded(Entry* entry);
       void entryRemoved(Entry* entry);
@@ -81,7 +76,7 @@ namespace FM
 
       FileManager* fileManager;
 
-      mutable QMutex lock; ///< To protect all the data into the cache, files and directories.
+      mutable QMutex mutex; ///< To protect all the data into the cache, files and directories.
    };
 }
 #endif
