@@ -47,8 +47,6 @@ FileDownload::FileDownload(
       this->connectChunkDownloadSignals(this->chunkDownloads.last());
    }
    this->nbHashesKnown = this->chunkDownloads.size();
-
-   this->updateStatus();
 }
 
 FileDownload::~FileDownload()
@@ -279,6 +277,7 @@ void FileDownload::nextHash(const Common::Hash& hash)
       this->connectChunkDownloadSignals(chunkDownload);
       chunkDownload->setPeerSource(this->peerSource); // May start a download.
       this->entry.add_chunk()->set_hash(hash.getData(), Common::Hash::HASH_SIZE); // Used during the saving of the queue, see Download::populateEntry(..).
+      emit newHashKnown();
    }
 }
 
@@ -300,6 +299,8 @@ void FileDownload::setStatus(Status newStatus)
    // We don't care about the source peer if we have all the hashes.
    if (newStatus == UNKNOWN_PEER && nbHashesKnown == this->NB_CHUNK)
       return;
+
+   Download::setStatus(newStatus);
 }
 
 void FileDownload::updateStatus()

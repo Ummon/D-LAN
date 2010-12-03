@@ -28,10 +28,9 @@ using namespace FM;
 
 FileManager::FileManager() :
    CHUNK_SIZE(SETTINGS.get<quint32>("chunk_size")),
-   SAVE_CACHE_PERIOD(SETTINGS.get<quint32>("save_cache_period")),
    fileUpdater(this),
    cache(this),
-   cacheLoading(false)
+   cacheChanged(false)
 {
    connect(&this->cache, SIGNAL(entryAdded(Entry*)),     this, SLOT(entryAdded(Entry*)),     Qt::DirectConnection);
    connect(&this->cache, SIGNAL(entryRemoved(Entry*)),   this, SLOT(entryRemoved(Entry*)),   Qt::DirectConnection);
@@ -46,13 +45,16 @@ FileManager::FileManager() :
    this->loadCacheFromFile();
 
    this->fileUpdater.start();
-   this->timerPersistCache.start();
+
+   this->timerPersistCache.setInterval(SETTINGS.get<quint32>("save_cache_period"));
+   connect(&this->timerPersistCache, SIGNAL(timeout()), this, SLOT(persistCacheToFile()));
 }
 
 FileManager::~FileManager()
 {
    L_DEBU("~FileManager : Stopping the file updater..");
    this->fileUpdater.stop();
+   this->cacheChanged = true;
    this->persistCacheToFile();
    L_DEBU("FileManager deleted");
 }
@@ -307,13 +309,14 @@ void FileManager::chunkHashKnown(QSharedPointer<Chunk> chunk)
 {
    L_DEBU(QString("Adding chunk '%1' to the index..").arg(chunk->getHash().toStr()));
    this->chunks.add(chunk);
-   this->tryToPersistCacheToFile();
+   this->setCacheChanged();
 }
 
 void FileManager::chunkRemoved(QSharedPointer<Chunk> chunk)
 {
    L_DEBU(QString("Removing chunk '%1' from the index ..").arg(chunk->getHash().toStr()));
    this->chunks.rm(chunk);
+   this->setCacheChanged();
 }
 
 /**
@@ -332,11 +335,10 @@ QStringList FileManager::splitInWords(const QString& words)
   * Load the cache from a file. Called at start, by the constructor.
   * It will give the file cache to the fileUpdater and ask it
   * to load the cache.
+  * It will also start the timer to persist the cache.
   */
 void FileManager::loadCacheFromFile()
 {
-   this->cacheLoading = true;
-
    // This hashes will be unallocated by the fileUpdater.
    Protos::FileCache::Hashes* savedCache = new Protos::FileCache::Hashes();
 
@@ -373,7 +375,7 @@ void FileManager::loadCacheFromFile()
    this->fileUpdater.setFileCache(savedCache);
 
 end:
-   this->cacheLoading = false;
+   this->timerPersistCache.start();
 }
 
 /**
@@ -382,36 +384,33 @@ end:
   */
 void FileManager::persistCacheToFile()
 {
-   if (this->cacheLoading)
-      return;
-
-   L_DEBU("Persisting cache..");
-
-   Protos::FileCache::Hashes hashes;
-   this->cache.saveInFile(hashes);
-
-   try
+   QMutexLocker locker(&this->mutexPersistCache);
+   if (this->cacheChanged)
    {
-      Common::PersistentData::setValue(Common::FILE_CACHE, hashes);
-   }
-   catch (Common::PersistentDataIOException& err)
-   {
-      L_ERRO(err.message);
-   }
+      L_DEBU("Persisting cache..");
 
-   L_DEBU("Persisting cache finished");
+      Protos::FileCache::Hashes hashes;
+      this->cache.saveInFile(hashes);
+
+      try
+      {
+         Common::PersistentData::setValue(Common::FILE_CACHE, hashes);
+      }
+      catch (Common::PersistentDataIOException& err)
+      {
+         L_ERRO(err.message);
+      }
+      this->cacheChanged = false;
+
+      L_DEBU("Persisting cache finished");
+   }
 }
 
 /**
   * @warning Can be called from differents thread like a 'Downloader' or the 'FileUpdater'.
   */
-void FileManager::tryToPersistCacheToFile()
+void FileManager::setCacheChanged()
 {
    QMutexLocker locker(&this->mutexPersistCache);
-
-   if (this->timerPersistCache.hasExpired(SAVE_CACHE_PERIOD))
-   {
-      this->timerPersistCache.start();
-      this->persistCacheToFile();
-   }
+   this->cacheChanged = true;
 }

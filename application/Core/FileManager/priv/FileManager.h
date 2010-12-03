@@ -6,7 +6,7 @@
 #include <QList>
 #include <QBitArray>
 #include <QMutex>
-#include <QElapsedTimer>
+#include <QTimer>
 
 #include <Protos/common.pb.h>
 #include <Protos/core_protocol.pb.h>
@@ -69,11 +69,10 @@ namespace FM
 
    private slots:
       void persistCacheToFile();
-      void tryToPersistCacheToFile();
+      void setCacheChanged();
 
    private:
       const quint32 CHUNK_SIZE;
-      const quint32 SAVE_CACHE_PERIOD;
 
       FileUpdater fileUpdater;
       Cache cache; ///< The files and directories.
@@ -81,8 +80,9 @@ namespace FM
       WordIndex<Entry*> wordIndex; ///< The word index.
       bool cacheLoading; ///< Set to 'true' during cache loading. It avoids to persist the cache during loading.
 
-      QElapsedTimer timerPersistCache;
+      QTimer timerPersistCache;
       QMutex mutexPersistCache;
+      bool cacheChanged;
    };
 }
 #endif
