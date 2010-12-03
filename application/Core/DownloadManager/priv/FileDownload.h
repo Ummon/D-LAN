@@ -49,7 +49,7 @@ namespace DM
       bool retreiveHashes();
 
    signals:
-      void changeOccurs();
+      void newHashKnown();
 
    protected slots:
       void retrievePeer();
