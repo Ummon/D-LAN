@@ -11,7 +11,7 @@
 
 namespace Common
 {
-   class ZeroCopyOutputStreamQIODevice : public google::protobuf::io::ZeroCopyOutputStream, Common::Uncopyable
+   class ZeroCopyOutputStreamQIODevice : public google::protobuf::io::ZeroCopyOutputStream, Uncopyable
    {
    public:
       ZeroCopyOutputStreamQIODevice(QIODevice* device);
@@ -27,7 +27,7 @@ namespace Common
       google::protobuf::int64 bytesWritten;
    };
 
-   class ZeroCopyInputStreamQIODevice : public google::protobuf::io::ZeroCopyInputStream, Common::Uncopyable
+   class ZeroCopyInputStreamQIODevice : public google::protobuf::io::ZeroCopyInputStream, Uncopyable
    {
    public:
       ZeroCopyInputStreamQIODevice(QIODevice* device);

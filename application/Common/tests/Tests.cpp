@@ -21,19 +21,25 @@ Tests::Tests()
 
 void Tests::initTestCase()
 {
-   qDebug() << "Application folder path (where is put the settings file) : " << Common::APPLICATION_FOLDER_PATH;
+   qDebug() << "Application folder path (where is put the settings and persistent data) : " << APPLICATION_FOLDER_PATH;
 }
 
 void Tests::nCombinations()
 {
-   QVERIFY(Global::nCombinations(5, 4) == 5);
-   QVERIFY(Global::nCombinations(4, 2) == 6);
-   QVERIFY(Global::nCombinations(4, 4) == 1);
-   QVERIFY(Global::nCombinations(2, 4) == 0);
+   QCOMPARE(Global::nCombinations(5, 4), 5);
+   QCOMPARE(Global::nCombinations(4, 2), 6);
+   QCOMPARE(Global::nCombinations(4, 4), 1);
+   QCOMPARE(Global::nCombinations(42, 6), 5245786);
+
+   QCOMPARE(Global::nCombinations(2, 4), 0);
+   QCOMPARE(Global::nCombinations(-1, 1), 0);
+   QCOMPARE(Global::nCombinations(1, -1), 0);
+   QCOMPARE(Global::nCombinations(-1, -1), 0);
 }
 
 void Tests::formatByteSize()
 {
+   QCOMPARE(Global::formatByteSize(-42), QString("0 B"));
    QCOMPARE(Global::formatByteSize(0), QString("0 B"));
    QCOMPARE(Global::formatByteSize(42), QString("42 B"));
    QCOMPARE(Global::formatByteSize(1023), QString("1023 B"));
@@ -55,34 +61,38 @@ void Tests::availableDiskSpace()
 
 void Tests::writePersistentData()
 {
-   //PersistentData::setValue("paul", "42 years old");
+   this->hash = Hash::rand();
+   Protos::Common::Hash hashMessage;
+   hashMessage.set_hash(this->hash.getData(), Hash::HASH_SIZE);
+   PersistentData::setValue("paul", hashMessage);
 }
 
 void Tests::readPersistentData()
 {
-   /* TODO :
-   QByteArray value = PersistentData::getValue("paul");
-   qDebug() << "read value : " << value;
-   QVERIFY(value == "42 years old");
+   Protos::Common::Hash hashMessage;
+   PersistentData::getValue("paul", hashMessage);
+   Hash hashRead(hashMessage.hash().data());
+
+   QVERIFY(this->hash == hashRead);
 
    try
    {
-      PersistentData::getValue("john");
+      PersistentData::getValue("john", hashMessage);
+      QFAIL("'john' shouldn't exist");
    }
-   catch (Common::UnknownValueException)
+   catch (UnknownValueException)
    {
       qDebug() << "Ok, exception UnknownValueException catched for the value 'john'";
    }
    catch (...)
    {
       QFAIL("Unknown exception occured");
-   }*/
+   }
 }
 
 void Tests::removePersistentData()
 {
-   /*QVERIFY(PersistentData::rmValue("paul"));
-   QVERIFY(!PersistentData::rmValue("john"));*/
+   QVERIFY(PersistentData::rmValue("paul"));
 }
 
 void Tests::writeSettings()
