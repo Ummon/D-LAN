@@ -95,7 +95,7 @@ void Settings::load()
    {
       PersistentData::getValue(this->filename, *this->settings, true);
    }
-   catch (Common::UnknownValueException&)
+   catch (UnknownValueException&)
    {
    }
 }
@@ -281,5 +281,5 @@ void Settings::printErrorNameNotFound(const QString& name)
 
 void Settings::printErrorBadType(const google::protobuf::FieldDescriptor* field, const QString& excepted)
 {   
-   QTextStream(stderr) << QString("Settings : bad type, field name = \"%1\", expected type : \"%2\"").arg(Common::ProtoHelper::getStr(*field, &google::protobuf::FieldDescriptor::name)).arg(excepted) << endl;
+   QTextStream(stderr) << QString("Settings : bad type, field name = \"%1\", expected type : \"%2\"").arg(ProtoHelper::getStr(*field, &google::protobuf::FieldDescriptor::name)).arg(excepted) << endl;
 }

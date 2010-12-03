@@ -47,17 +47,22 @@ QString Global::formatByteSize(qint64 bytes)
    const bool IS_BELOW_1024 = bytes < 1024;
    int current = 0;
    int rest = 0;
-   while (bytes >= 1024)
-   {
-      rest = ((bytes % 1024) * 1000 / 1024 + 50) / 100;
-      bytes /= 1024;
-      if (rest >= 10)
+
+   if (bytes > 0)
+      while (bytes >= 1024)
       {
-         bytes++;
-         rest = 0;
+         rest = ((bytes % 1024) * 1000 / 1024 + 50) / 100;
+         bytes /= 1024;
+         if (rest >= 10)
+         {
+            bytes++;
+            rest = 0;
+         }
+         current++;
       }
-      current++;
-   }
+   else
+      bytes = 0;
+
    return QString::number(bytes).append(IS_BELOW_1024 ? "" : QString(".").append(QString::number(rest))).append(" ").append(BINARY_PREFIXS[current]);
 }
 

@@ -87,7 +87,7 @@ namespace Common
 
          T type;
          quint32 size;
-         Common::Hash senderID;
+         Hash senderID;
       };
 
       static const int HEADER_SIZE = sizeof(MessageHeader<quint32>::type) + sizeof(MessageHeader<quint32>::size) + Hash::HASH_SIZE;

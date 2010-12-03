@@ -54,7 +54,7 @@ void PersistentData::setValue(const QString& name, const google::protobuf::Messa
 #endif
       }
 
-      Common::Global::rename(TEMP_FILEPATH, FILEPATH);
+      Global::rename(TEMP_FILEPATH, FILEPATH);
    }
 }
 
