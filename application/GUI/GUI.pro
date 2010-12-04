@@ -72,7 +72,10 @@ HEADERS  += MainWindow.h \
     DialogAbout.h \
     LogModel.h \
     AybabtuGUI.h \
-    CheckBoxList.h
+    CheckBoxList.h \
+    DownloadFilterStatus.h \
+    CheckBoxModel.h \
+    IFilter.h
 
 FORMS    += MainWindow.ui \
     WidgetChat.ui \

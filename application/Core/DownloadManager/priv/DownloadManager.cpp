@@ -120,10 +120,10 @@ QList<IDownload*> DownloadManager::getDownloads() const
    return listDownloads;
 }
 
-void DownloadManager::moveDownloads(quint64 downloadIDRef, const QList<quint64>& downloadIDs)
+void DownloadManager::moveDownloads(quint64 downloadIDRef, bool moveBefore, const QList<quint64>& downloadIDs)
 {
    QList<quint64> downloadIDsCopy(downloadIDs);
-   int iRef = -1;
+   int iRef = -1; // Index of the download reference, -1 if unkown.
    QList<int> iToMove;
 
    for (int i = 0; i < this->downloads.size(); i++)
@@ -133,7 +133,7 @@ void DownloadManager::moveDownloads(quint64 downloadIDRef, const QList<quint64>&
       {
          if (iRef != -1)
          {
-            this->downloads.insert(iRef++, this->downloads[i]);
+            this->downloads.insert(moveBefore ? iRef++ : ++iRef, this->downloads[i]);
             this->downloads.removeAt(i+1);
             continue;
          }
@@ -143,21 +143,17 @@ void DownloadManager::moveDownloads(quint64 downloadIDRef, const QList<quint64>&
          downloadIDsCopy.removeAt(j);
       }
 
-      // "downloadIDRef == 0" means we want to put the downloads at the end.
-      if (this->downloads[i]->getID() == downloadIDRef || (i == this->downloads.size() - 1 && downloadIDRef == 0))
+      if (this->downloads[i]->getID() == downloadIDRef)
       {
          iRef = i;
-         if (downloadIDRef == 0)
-            iRef += 1; // Move iRef after the end of the list.
-
          int shift = 0;
          for (int j = 0; j < iToMove.size(); j++)
          {
-            if (iToMove[j] == iRef)
+            if (iToMove[j] == iRef && moveBefore)
                iRef++;
             else
             {
-               this->downloads.insert(iRef, this->downloads[iToMove[j] + shift]);
+               this->downloads.insert(j == 0 && !moveBefore ? ++iRef : iRef, this->downloads[iToMove[j] + shift]);
                this->downloads.removeAt(iToMove[j] + shift);
                shift--;
             }

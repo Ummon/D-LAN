@@ -1,7 +1,7 @@
 
 CONFIG(debug, debug|release) {
-   QMAKE_CXXFLAGS += -pg
-   QMAKE_LFLAGS += -pg
+   #QMAKE_CXXFLAGS += -pg
+   #QMAKE_LFLAGS += -pg
    FOLDER = debug
    DEFINES += DEBUG
 } else {

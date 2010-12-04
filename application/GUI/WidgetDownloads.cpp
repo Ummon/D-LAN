@@ -67,7 +67,7 @@ QSize DownloadsDelegate::sizeHint(const QStyleOptionViewItem& option, const QMod
 /////
 
 WidgetDownloads::WidgetDownloads(CoreConnection& coreConnection, PeerListModel& peerListModel, QWidget *parent)
-   : QWidget(parent), ui(new Ui::WidgetDownloads), coreConnection(coreConnection), downloadsModel(coreConnection, peerListModel)
+   : QWidget(parent), ui(new Ui::WidgetDownloads), coreConnection(coreConnection), downloadsModel(coreConnection, peerListModel, checkBoxModel)
 {
    this->ui->setupUi(this);
 
@@ -101,11 +101,14 @@ WidgetDownloads::WidgetDownloads(CoreConnection& coreConnection, PeerListModel& 
    connect(this->ui->butRemoveComplete, SIGNAL(clicked()), this, SLOT(removeCompletedFiles()));
 
    this->filterStatusList = new CheckBoxList(this);
-   this->filterStatusList->addElement("Complete", true);
-   this->filterStatusList->addElement("Downloading", true);
-   this->filterStatusList->addElement("Queued", true);
-   this->filterStatusList->addElement("Error", true);
+   this->filterStatusList->setModel(&this->checkBoxModel);
+   this->checkBoxModel.addElement("Complete", true, STATUS_COMPLETE);
+   this->checkBoxModel.addElement("Downloading", true, STATUS_DOWNLOADING);
+   this->checkBoxModel.addElement("Queued", true, STATUS_QUEUED);
+   this->checkBoxModel.addElement("Error", true, STATUS_ERROR);
    this->ui->layTools->insertWidget(1, this->filterStatusList);
+
+   connect(&this->checkBoxModel, SIGNAL(dataChanged(QModelIndex,QModelIndex)), this, SLOT(filterChanged()));
 }
 
 WidgetDownloads::~WidgetDownloads()
@@ -150,4 +153,9 @@ void WidgetDownloads::removeSelectedEntries()
 void WidgetDownloads::removeCompletedFiles()
 {
    this->coreConnection.cancelDownloads(this->downloadsModel.getCompletedDownloadIDs());
+}
+
+void WidgetDownloads::filterChanged()
+{
+   this->coreConnection.refresh();
 }

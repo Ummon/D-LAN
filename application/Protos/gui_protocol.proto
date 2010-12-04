@@ -159,28 +159,17 @@ message CancelDownloads {
 }
 
 // GUI -> Core
-// Tell the core to move one or more downloads in the list right before a given download.
-// If id_ref == 0 then the downloads will be moved at the end of the list.
+// Tell the core to move one or more downloads in the list right before or after a given download.
+// 'id_ref' must exist.
 // The order of the moved downloads are kept unchanged.
-// For example : id_ref = 21, id = [16, 18]
-// Initial list :
-// id
-// 34
-// 21
-// 18
-// 54
-// 16
-// After the operation :
-// id
-// 34
-// 18
-// 16
-// 21
-// 54
+// For example : id_ref = 21, move_before = true, id = [16, 18]
+// Initial list : [34, 21, 18, 54, 16]
+// After the operation : [34, 18, 16, 21, 54]
 // id : 0x71
 message MoveDownloads {
    required uint64 id_ref = 1;
-   repeated uint64 id_to_move = 2;
+   optional bool move_before = 2 [default = true];
+   repeated uint64 id_to_move = 3;
 }
 
 // GUI -> Core
@@ -197,3 +186,8 @@ message Download {
 message ChatMessage {
    required string message = 1;
 }
+
+// GUI -> Core
+// Ask to receive a new state.
+// This message doesn't have a body.
+// id : 0xa1
