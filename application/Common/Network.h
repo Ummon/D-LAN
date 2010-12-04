@@ -63,6 +63,8 @@ namespace Common
          GUI_DOWNLOAD = 0x81,
 
          GUI_CHAT_MESSAGE = 0x91,
+
+         GUI_REFRESH = 0xa1,
       };
 
       static QString messToStr(CoreMessageType type);

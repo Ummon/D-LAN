@@ -356,7 +356,7 @@ bool RemoteConnection::readMessage()
             QList<quint64> downloadIDs;
             for (int i = 0; i < moveDownloadsMessage.id_to_move_size(); i++)
                downloadIDs << moveDownloadsMessage.id_to_move(i);
-            this->downloadManager->moveDownloads(moveDownloadsMessage.id_ref(), downloadIDs);
+            this->downloadManager->moveDownloads(moveDownloadsMessage.id_ref(), moveDownloadsMessage.move_before(), downloadIDs);
 
             this->refresh();
             this->timerRefresh.start();
@@ -393,6 +393,13 @@ bool RemoteConnection::readMessage()
 
          if (readOK)
             this->networkListener->getChat().send(Common::ProtoHelper::getStr(chatMessage, &Protos::GUI::ChatMessage::message));
+      }
+      break;
+
+   case Common::Network::GUI_REFRESH:
+      {
+         this->refresh();
+         this->timerRefresh.start();
       }
       break;
 

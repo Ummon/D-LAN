@@ -8,8 +8,8 @@ using namespace GUI;
 
 #include <Log.h>
 
-DownloadsModel::DownloadsModel(CoreConnection& coreConnection, PeerListModel& peerListModel)
-   : coreConnection(coreConnection), peerListModel(peerListModel)
+DownloadsModel::DownloadsModel(CoreConnection& coreConnection, PeerListModel& peerListModel, const IFilter<DownloadFilterStatus>& filter)
+   : coreConnection(coreConnection), peerListModel(peerListModel), filter(filter)
 {
    qRegisterMetaTypeStreamOperators<Progress>("Progress"); // Don't know where to put this call..
    connect(&this->coreConnection, SIGNAL(newState(Protos::GUI::State)), this, SLOT(newState(Protos::GUI::State)));
@@ -144,12 +144,25 @@ bool DownloadsModel::dropMimeData(const QMimeData* data, Qt::DropAction action, 
    if (!data->hasFormat(format))
        return false;
 
+   if (this->downloads.isEmpty())
+      return false;
+
    QByteArray encoded = data->data(format);
    QDataStream stream(&encoded, QIODevice::ReadOnly);
 
    QList<quint64> downloadIDs;
-   quint64 placeToMove = row >= this->downloads.size() ? 0 : this->downloads[row].id();
    QList<int> rowsToRemove;
+
+   bool moveBefore = true;
+   quint64 placeToMove = 0;
+   if (row >= this->downloads.size())
+   {
+      moveBefore = false;
+      placeToMove = this->downloads.last().id();
+   }
+   else
+      placeToMove = this->downloads[row].id();
+
 
    int previousRow = -1;
    while (!stream.atEnd())
@@ -192,29 +205,69 @@ bool DownloadsModel::dropMimeData(const QMimeData* data, Qt::DropAction action, 
       }
    }
 
-   this->coreConnection.moveDownloads(placeToMove, downloadIDs);
+   this->coreConnection.moveDownloads(placeToMove, downloadIDs, moveBefore);
    return true;
 }
 
 void DownloadsModel::newState(const Protos::GUI::State& state)
 {
-   int i = 0;
-   for (; i < state.download_size() && i < this->downloads.size(); i++)
+   int statusToFilter = 0;
+   const QList<DownloadFilterStatus>& filterStatus = this->filter.getFilteredValues();
+   for (int i = 0; i < filterStatus.size(); i++)
+      statusToFilter |= filterStatus[i];
+
+   QList<int> indexToInsert;
+   for (int i = 0; i < state.download_size(); i++)
    {
-      if (state.download(i) != this->downloads[i])
+      switch (state.download(i).status())
       {
-         this->downloads[i].CopyFrom(state.download(i));
+      case Protos::GUI::State_Download_Status_QUEUED:
+      case Protos::GUI::State_Download_Status_PAUSED:
+         if (!(statusToFilter & STATUS_QUEUED))
+            indexToInsert << i;
+         break;
+
+      case Protos::GUI::State_Download_Status_INITIALIZING:
+      case Protos::GUI::State_Download_Status_DOWNLOADING:
+         if (!(statusToFilter & STATUS_DOWNLOADING))
+            indexToInsert << i;
+         break;
+
+      case Protos::GUI::State_Download_Status_COMPLETE:
+         if (!(statusToFilter & STATUS_COMPLETE))
+            indexToInsert << i;
+         break;
+
+      case Protos::GUI::State_Download_Status_UNKNOWN_PEER:
+      case Protos::GUI::State_Download_Status_ENTRY_NOT_FOUND:
+      case Protos::GUI::State_Download_Status_NO_SOURCE:
+      case Protos::GUI::State_Download_Status_NO_SHARED_DIRECTORY_TO_WRITE:
+      case Protos::GUI::State_Download_Status_NO_ENOUGH_FREE_SPACE:
+      case Protos::GUI::State_Download_Status_UNABLE_TO_CREATE_THE_FILE:
+      case Protos::GUI::State_Download_Status_UNABLE_TO_RETRIEVE_THE_HASHES:
+         if (!(statusToFilter & STATUS_ERROR))
+            indexToInsert << i;
+         break;
+      }
+   }
+
+   int i = 0;
+   for (; i < indexToInsert.size() && i < this->downloads.size(); i++)
+   {
+      if (state.download(indexToInsert[i]) != this->downloads[i])
+      {
+         this->downloads[i].CopyFrom(state.download(indexToInsert[i]));
          emit dataChanged(this->createIndex(i, 0), this->createIndex(i, 3));
       }
    }
 
    // Insert new elements.
-   if (i < state.download_size())
+   if (i < indexToInsert.size())
    {
-      this->beginInsertRows(QModelIndex(), i, state.download_size() - 1);
-      while (i < state.download_size())
+      this->beginInsertRows(QModelIndex(), i, indexToInsert.size() - 1);
+      while (i < indexToInsert.size())
       {
-         const Protos::GUI::State_Download& download = state.download(i++);
+         const Protos::GUI::State_Download& download = state.download(indexToInsert[i++]);
          this->downloads << download;
       }
       this->endInsertRows();

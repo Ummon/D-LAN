@@ -8,6 +8,8 @@
 
 #include <CoreConnection.h>
 #include <PeerListModel.h>
+#include <DownloadFilterStatus.h>
+#include <IFilter.h>
 
 namespace GUI
 {
@@ -15,7 +17,7 @@ namespace GUI
    {
       Q_OBJECT
    public:
-      explicit DownloadsModel(CoreConnection& coreConnection, PeerListModel& peerListModel);
+      explicit DownloadsModel(CoreConnection& coreConnection, PeerListModel& peerListModel, const IFilter<DownloadFilterStatus>& filter);
 
       quint64 getDownloadID(int row) const;
       QList<quint64> getCompletedDownloadIDs() const;
@@ -35,6 +37,7 @@ namespace GUI
    private:
       CoreConnection& coreConnection;
       PeerListModel& peerListModel;
+      const IFilter<DownloadFilterStatus>& filter;
 
       QList<Protos::GUI::State_Download> downloads;
    };

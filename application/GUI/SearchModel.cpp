@@ -177,7 +177,7 @@ void SearchModel::result(const Protos::Common::FindResult& findResult)
                // Search the better name (node with the lowest level) to display it on the top.
                for (int i = 0; i <= similarNode->getNbChildren(); i++)
                {
-                  if (i == similarNode->getNbChildren() || dynamic_cast<SearchNode*>(similarNode->getChild(i))->getLevel() > entry.level())
+                  if (i == similarNode->getNbChildren() || dynamic_cast<SearchNode*>(similarNode->getChild(i))->getLevel() > static_cast<int>(entry.level()))
                   {
                      this->beginInsertRows(this->createIndex(0, 0, similarNode), i, i);
                      Common::Hash peerID = findResult.peer_id().hash().data();
