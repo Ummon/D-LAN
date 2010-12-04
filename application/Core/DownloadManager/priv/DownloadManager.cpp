@@ -205,8 +205,6 @@ void DownloadManager::fileCacheLoaded()
 
 void DownloadManager::newEntries(const Protos::Common::Entries& entries)
 {
-   this->retrievingEntries = false;
-
    DirDownload* dirDownload = dynamic_cast<DirDownload*>(this->sender());
    QMutableListIterator<Download*> i(this->downloads);
    if (!i.findNext(dirDownload))
@@ -218,6 +216,7 @@ void DownloadManager::newEntries(const Protos::Common::Entries& entries)
 
    delete dirDownload;
 
+   this->retrievingEntries = false;
    this->scanTheQueueToRetrieveEntries();
 }
 
