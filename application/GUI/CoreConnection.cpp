@@ -307,6 +307,7 @@ void CoreConnection::send(Common::Network::GUIMessageType type)
    const Common::Network::MessageHeader<Common::Network::GUIMessageType> header(type, 0, this->ourID);
    L_DEBU(QString("CoreConnection::send : %1").arg(header.toStr()));
    Common::Network::writeHeader(this->socket, header);
+
    if (this->socket.state() == QAbstractSocket::ConnectedState)
       this->socket.flush();
 }
