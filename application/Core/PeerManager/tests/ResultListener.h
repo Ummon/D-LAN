@@ -2,6 +2,7 @@
 #define TESTS_PEERMANAGER_RESULTLISTENER_H
 
 #include <QObject>
+#include <QSharedPointer>
 
 #include <Protos/core_protocol.pb.h>
 
