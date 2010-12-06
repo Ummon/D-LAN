@@ -33,6 +33,8 @@ namespace DM
       );
       ~FileDownload();
 
+      void populateEntry(Protos::Queue::Queue_Entry* entry) const;
+
       void start();
 
       int getDownloadRate() const;
@@ -41,13 +43,13 @@ namespace DM
 
       QSharedPointer<ChunkDownload> getAChunkToDownload();
 
-      void getUnfinishedChunks(QList< QSharedPointer<IChunkDownload> >& chunks, int n);
+      void getUnfinishedChunks(QList< QSharedPointer<IChunkDownload> >& chunks, int n) const;
 
    public slots:
       bool retreiveHashes();
 
    signals:
-      void changeOccurs();
+      void newHashKnown();
 
    protected slots:
       void retrievePeer();
@@ -59,7 +61,11 @@ namespace DM
       void chunkDownloadStarted();
       void chunkDownloadFinished();
 
+   protected:
+      void setStatus(Status newStatus);
+
    private:
+      void updateStatus();
       void connectChunkDownloadSignals(QSharedPointer<ChunkDownload> chunkDownload);
 
       const int NB_CHUNK;

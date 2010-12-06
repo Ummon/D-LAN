@@ -8,6 +8,9 @@
 #include <DownloadsModel.h>
 #include <PeerListModel.h>
 #include <CoreConnection.h>
+#include <CheckBoxList.h>
+#include <CheckBoxModel.h>
+#include <DownloadFilterStatus.h>
 
 namespace Ui {
    class WidgetDownloads;
@@ -33,12 +36,15 @@ namespace GUI
       void displayContextMenuDownloads(const QPoint& point);
       void removeSelectedEntries();
       void removeCompletedFiles();
+      void filterChanged();
 
    private:
       Ui::WidgetDownloads *ui;
+      CheckBoxList* filterStatusList;
 
       CoreConnection& coreConnection;
 
+      CheckBoxModel<DownloadFilterStatus> checkBoxModel;
       DownloadsModel downloadsModel;
       DownloadsDelegate downloadsDelegate;
    };

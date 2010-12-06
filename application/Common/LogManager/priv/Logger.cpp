@@ -51,7 +51,7 @@ void Logger::setLogDirName(const QString& logDirName)
 
 void Logger::addALoggerHook(QSharedPointer<LoggerHook> loggerHook)
 {
-   QMutexLocker lock(&Logger::mutex);
+   QMutexLocker locker(&Logger::mutex);
    Logger::loggerHooks << loggerHook.toWeakRef();
 }
 
@@ -78,7 +78,7 @@ Logger::~Logger()
 
 void Logger::log(const QString& message, Severity severity, const char* filename, int line) const
 {
-   QMutexLocker lock(&Logger::mutex);
+   QMutexLocker locker(&Logger::mutex);
 
    QString threadName = QThread::currentThread()->objectName();
    threadName = threadName.isEmpty() ? QString::number((quint32)QThread::currentThreadId()) : threadName;

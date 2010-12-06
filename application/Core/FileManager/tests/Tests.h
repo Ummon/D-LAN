@@ -74,9 +74,6 @@ private slots:
    /***** Ask for the amount of shared byte *****/
    void printAmount();
 
-   /***** Simulating of a real usage with all previous tests running concurrently *****/
-   void stressTest();
-
    /***** Removing shared directories *****/
    void rmSharedDirectory();
 

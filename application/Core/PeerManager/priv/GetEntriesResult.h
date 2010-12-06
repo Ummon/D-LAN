@@ -9,13 +9,14 @@
 #include <Protos/core_protocol.pb.h>
 
 #include <Common/Network.h>
+#include <Common/Uncopyable.h>
 
 #include <IGetEntriesResult.h>
 #include <priv/Socket.h>
 
 namespace PM
 {
-   class GetEntriesResult : public IGetEntriesResult
+   class GetEntriesResult : public IGetEntriesResult, Common::Uncopyable
    {
       Q_OBJECT
    public:

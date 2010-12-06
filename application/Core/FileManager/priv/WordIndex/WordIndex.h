@@ -7,6 +7,8 @@
 #include <QChar>
 #include <QMutex>
 
+#include <Common/Uncopyable.h>
+
 #include <priv/WordIndex/Node.h>
 
 namespace FM
@@ -15,7 +17,7 @@ namespace FM
      * An collection of T indexed by word.
      */
    template<typename T>
-   class WordIndex
+   class WordIndex : Common::Uncopyable
    {
       static const int MIN_WORD_SIZE_PARTIAL_MATCH; ///< During a search, the words which have a size below this value must match entirely, for exemple 'of' match "conspiracy of one" and not "offspring".
    public:
@@ -45,7 +47,7 @@ WordIndex<T>::WordIndex()
 template<typename T>
 void WordIndex<T>::addItem(const QStringList& words, T item)
 {
-   QMutexLocker lock(&mutex);
+   QMutexLocker locker(&mutex);
 
    for (QListIterator<QString> i(words); i.hasNext();)
    {
@@ -60,7 +62,7 @@ void WordIndex<T>::addItem(const QStringList& words, T item)
 template<typename T>
 void WordIndex<T>::rmItem(const QStringList& words, T item)
 {
-   QMutexLocker lock(&mutex);
+   QMutexLocker locker(&mutex);
 
    for (QListIterator<QString> i(words); i.hasNext();)
    {
@@ -102,7 +104,7 @@ void WordIndex<T>::rmItem(const QStringList& words, T item)
 template<typename T>
 QSet< NodeResult<T> > WordIndex<T>::search(const QStringList& words) const
 {
-   QMutexLocker lock(&mutex);
+   QMutexLocker locker(&mutex);
 
    QSet< NodeResult<T> > result;
    foreach (QString word, words)
@@ -124,17 +126,6 @@ template<typename T>
 QSet< NodeResult<T> > WordIndex<T>::search(const QString& word) const
 {
    return this->search(QStringList() << word);
-
-   /*
-   //QMutexLocker lock(&mutex);
-
-   Node<T>* currentNode = &this->node;
-
-   for (int i = 0; i < word.size(); i++)
-      if (!(currentNode = currentNode->getNode(word[i])))
-         return QSet<T>();
-
-   return currentNode->getItems();*/
 }
 
 #endif

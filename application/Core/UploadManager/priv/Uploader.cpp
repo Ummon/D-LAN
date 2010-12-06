@@ -43,7 +43,7 @@ Common::Hash Uploader::getPeerID() const
 int Uploader::getProgress() const
 {
    QMutexLocker locker(&this->mutex);
-   return 100 * this->offset / this->chunk->getChunkSize();
+   return 100LL * this->offset / this->chunk->getChunkSize();
 }
 
 QSharedPointer<FM::IChunk> Uploader::getChunk() const
@@ -51,7 +51,7 @@ QSharedPointer<FM::IChunk> Uploader::getChunk() const
    return this->chunk;
 }
 
-QSharedPointer<PM::ISocket> Uploader::getSocket()
+QSharedPointer<PM::ISocket> Uploader::getSocket() const
 {
    return this->socket;
 }
@@ -91,7 +91,7 @@ void Uploader::run()
          this->mutex.unlock();
 
          // Sometimes it will block when data are send between the 'bytesToWrite' call and the 'waitForBytesWritten' call.
-         /*if (socket->getQSocket()->bytesToWrite() > SETTINGS.get<quint32>("socket_buffer_size"))
+         if (socket->getQSocket()->bytesToWrite() > SETTINGS.get<quint32>("socket_buffer_size"))
          {
             if (!socket->getQSocket()->waitForBytesWritten(SETTINGS.get<quint32>("socket_timeout")))
             {
@@ -99,7 +99,7 @@ void Uploader::run()
                networkError = true;
                break;
             }
-         }*/
+         }
 
          this->transferRateCalculator.addData(bytesSent);
       }
@@ -115,6 +115,10 @@ void Uploader::run()
    catch (FM::ChunkDeletedException)
    {
       L_ERRO("ChunkDeletedException");
+   }
+   catch (FM::ChunkNotCompletedException)
+   {
+      L_ERRO("ChunkNotCompletedException");
    }
 
    this->socket->getQSocket()->moveToThread(this->mainThread);

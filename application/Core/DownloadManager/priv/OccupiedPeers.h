@@ -5,6 +5,8 @@
 #include <QSet>
 #include <QMutex>
 
+#include <Common/Uncopyable.h>
+
 namespace PM
 {
    class IPeer;
@@ -12,7 +14,7 @@ namespace PM
 
 namespace DM
 {
-   class OccupiedPeers : public QObject
+   class OccupiedPeers : public QObject, Common::Uncopyable
    {
       Q_OBJECT
    public:

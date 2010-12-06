@@ -25,25 +25,24 @@ namespace Common
       void setFilename(const QString& filename);
       void setSettingsMessage(google::protobuf::Message* settings);
 
-      bool arePersisted();
-      void save();
+      void save() const;
       void load();
       void remove();
 
-      bool isSet(const QString& name);
+      bool isSet(const QString& name) const;
 
       void set(const QString& name, quint32 value);
       void set(const QString& name, double hash);
       void set(const QString& name, const QString& value);
       void set(const QString& name, const Hash& hash);
 
-      void get(const QString& name, quint32& value);
-      void get(const QString& name, double& value);
-      void get(const QString& name, QString& value);
-      void get(const QString& name, Hash& hash);
+      void get(const QString& name, quint32& value) const;
+      void get(const QString& name, double& value) const;
+      void get(const QString& name, QString& value) const;
+      void get(const QString& name, Hash& hash) const;
 
       template <typename T>
-      T get(const QString& name);
+      T get(const QString& name) const;
 
       void rm(const QString& name);
 
@@ -53,7 +52,7 @@ namespace Common
 
       QString filename; ///< The name of the file cache saved in the home directory.
       google::protobuf::Message* settings;
-      QMutex mutex;
+      mutable QMutex mutex;
 
       const google::protobuf::Descriptor* descriptor;
    };
@@ -63,9 +62,9 @@ namespace Common
 using namespace Common;
 
 template <typename T>
-T Settings::get(const QString& name)
+T Settings::get(const QString& name) const
 {
-   QMutexLocker lock(&this->mutex);
+   QMutexLocker locker(&this->mutex);
    T value;
    this->get(name, value);
    return value;

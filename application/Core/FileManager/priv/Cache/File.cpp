@@ -4,6 +4,7 @@ using namespace FM;
 #include <QString>
 #include <QFile>
 #include <QCryptographicHash>
+#include <QElapsedTimer>
 
 #include <Common/Global.h>
 #include <Common/Settings.h>
@@ -18,7 +19,6 @@ using namespace FM;
 #include <priv/Cache/SharedDirectory.h>
 #include <priv/Cache/Chunk.h>
 
-
 /**
   * @class File
   * A file can be finished or unfinished.
@@ -31,8 +31,6 @@ using namespace FM;
   * The file may or may not have a correponding local file.
   * If 'createPhysically' is true then the file is created as unfinished with no byte known.
   * @param hashes Optional hashes, if given it must contain ALL hashes.
-  * @exception FileAlreadyExistsException : TODO!!!
-  * @exception FilePhysicallyAlreadyExistsException : TODO!!!
   */
 File::File(
    Directory* dir,
@@ -60,52 +58,12 @@ File::File(
 {
    // QMutexLocker locker(&this->getCache()->getMutex());
 
-   L_DEBU(QString("New file : %1 (%2)").arg(this->getFullPath()).arg(Common::Global::formatByteSize(this->size)));
-
-   // Test if the file already exists.
-   /*
-   foreach (File* f, this->dir->getFiles())
-      if (f->getName() == this->name)
-         throw FileAlreadyExistsException();*/
+   L_DEBU(QString("New file : %1 (%2), createPhysically = %3").arg(this->getFullPath()).arg(Common::Global::formatByteSize(this->size)).arg(createPhysically));
 
    if (createPhysically)
-   {
-      if (static_cast<SharedDirectory*>(this->getRoot())->getRights() == SharedDirectory::READ_ONLY)
-         L_ERRO(QString("File::File(..) : Cannot create a file (%1) in a read only shared directory (%2)").arg(this->getPath()).arg(static_cast<SharedDirectory*>(this->getRoot())->getFullPath()));
-      else
-      {
-         QFile file(this->getFullPath());
-         if (file.exists() && this->isComplete()) // We avoid to erase existing files (only unfinished ones).
-         {
-            throw FilePhysicallyAlreadyExistsException();
-         }
-         else
-         {
-            if (!file.open(QIODevice::WriteOnly) || !file.resize(this->size))
-               throw UnableToCreateNewFileException();
-            this->dateLastModified = QFileInfo(file).lastModified();
-         }
-      }
-   }
+      this->createPhysicalFile();
 
-   if (!hashes.isEmpty())
-      if (this->getNbChunks() != hashes.size()) // It can occur when IFileManager::newFile(..) is called with an entry not owning all its hashes.
-         L_WARN(QString("File::File(..) : The number of hashes (%1) doesn't correspond to the calculate number of chunk (%2)").arg(hashes.size()).arg(this->getNbChunks()));
-
-   for (int i = 0; i < this->getNbChunks(); i++)
-   {
-      int chunkKnownBytes = !this->isComplete() ? 0 : i == this->getNbChunks() - 1 && this->size % CHUNK_SIZE != 0 ? this->size % CHUNK_SIZE : CHUNK_SIZE;
-
-      if (i < hashes.size())
-      {
-         QSharedPointer<Chunk> chunk(new Chunk(this, i, chunkKnownBytes, hashes[i]));
-         this->chunks << chunk;
-         this->cache->onChunkHashKnown(chunk);
-      }
-      else
-         // If there is too few hashes then null hashes are added.
-         this->chunks.append(QSharedPointer<Chunk>(new Chunk(this, i, chunkKnownBytes)));
-   }
+   this->setHashes(hashes);
 
    this->dir->addFile(this);
 }
@@ -115,6 +73,10 @@ File::~File()
    // QMutexLocker(&this->cache->getMutex()); // TODO : Is it necessary ?
 
    this->dir->fileDeleted(this);
+
+   foreach (QSharedPointer<Chunk> c, this->chunks)
+      c->fileDeleted();
+
    this->deleteAllChunks();
 
    if (!this->isComplete())
@@ -134,12 +96,35 @@ File::~File()
    L_DEBU(QString("File deleted : %1").arg(this->getFullPath()));
 }
 
+/**
+  * Set the file as unfinished, this is use when an existing file is re-downloaded.
+  * The file is removed from the index and a new physcally file named "<name>.unfinished" is created.
+  * The old physical file is not removed and will be replaced only when this one is finished.
+  * @exception UnableToCreateNewFileException
+  */
+void File::setToUnfinished(qint64 size, const Common::Hashes& hashes)
+{
+   const QString oldPath(this->getFullPath());
+
+   this->complete = false;
+   this->stopHashing();
+   this->tryToRename = false;
+   this->cache->onEntryRemoved(this);
+   this->name.append(SETTINGS.get<QString>("unfinished_suffix_term"));
+   this->dateLastModified = QDateTime::currentDateTime();
+   this->nbChunkComplete = 0;
+   this->deleteAllChunks();
+   this->setHashes(hashes);
+
+   this->createPhysicalFile();
+}
+
 bool File::restoreFromFileCache(const Protos::FileCache::Hashes_File& file)
 {
    if (
       Common::ProtoHelper::getStr(file, &Protos::FileCache::Hashes_File::filename) == this->getName() &&
       (qint64)file.size() == this->size &&
-      file.date_last_modified() == this->getDateLastModified().toMSecsSinceEpoch() &&
+      // file.date_last_modified() == this->getDateLastModified().toMSecsSinceEpoch() &&
       this->chunks.size() == file.chunk_size()
    )
    {
@@ -148,8 +133,9 @@ bool File::restoreFromFileCache(const Protos::FileCache::Hashes_File& file)
       for (int i = 0; i < file.chunk_size(); i++)
       {
          this->chunks[i]->restoreFromFileCache(file.chunk(i));
-         if (file.chunk(i).has_hash())
+         if (this->chunks[i]->hasHash() && this->chunks[i]->isComplete())
          {
+            this->nbChunkComplete++;
             this->cache->onChunkHashKnown(this->chunks[i]);
          }
       }
@@ -161,6 +147,8 @@ bool File::restoreFromFileCache(const Protos::FileCache::Hashes_File& file)
 
 void File::populateHashesFile(Protos::FileCache::Hashes_File& fileToFill) const
 {
+   QMutexLocker locker(&this->mutex);
+
    Common::ProtoHelper::setStr(fileToFill, &Protos::FileCache::Hashes_File::set_filename, this->name);
    fileToFill.set_size(this->size);
    fileToFill.set_date_last_modified(this->getDateLastModified().toMSecsSinceEpoch());
@@ -289,11 +277,6 @@ qint64 File::write(const char* buffer, int nbBytes, qint64 offset)
    if (n == -1)
       throw IOErrorException();
 
-   if (this->isComplete())
-   {
-      this->setAsComplete();
-   }
-
    return n;
 }
 
@@ -331,7 +314,7 @@ qint64 File::read(char* buffer, qint64 offset, int maxBytesToRead)
   */
 bool File::computeHashes(int n)
 {
-   QMutexLocker lock(&this->hashingMutex);
+   QMutexLocker locker(&this->hashingMutex);
 
    if (this->toStopHashing)
    {
@@ -370,8 +353,8 @@ bool File::computeHashes(int n)
    }
 
 #if DEBUG
-   QTime time;
-   time.start();
+   QElapsedTimer timer;
+   timer.start();
 #endif
 
    char buffer[this->BUFFER_SIZE];
@@ -380,8 +363,8 @@ bool File::computeHashes(int n)
    while (!endOfFile)
    {
       // See 'stopHashing()'.
-      this->hashingMutex.unlock();
-      this->hashingMutex.lock();
+      locker.unlock();
+      locker.relock();
 
       if (this->toStopHashing)
       {
@@ -433,13 +416,13 @@ bool File::computeHashes(int n)
    }
 
 #ifdef DEBUG
-   const int delta = time.elapsed();
+   const int delta = timer.elapsed();
    if (delta < 50)
       L_DEBU("Hashing speed : ?? MB/s (delta too small)");
    else
    {
-      const double speed = static_cast<double>(bytesReadTotal) / 1024 / 1024 / (static_cast<double>(delta) / 1000);
-      L_DEBU(QString("Hashing speed : %1 MB/s").arg(speed < 0.1 ? "< 0.1" : QString::number(speed)));
+      const int speed = 1000LL * bytesReadTotal / delta;
+      L_DEBU(QString("Hashing speed : %1").arg(Common::Global::formatByteSize(speed)));
    }
 #endif
 
@@ -486,6 +469,7 @@ QList< QSharedPointer<Chunk> > File::getChunks() const
 
 bool File::hasAllHashes()
 {
+   QMutexLocker locker(&this->mutex);
    if (this->size == 0)
       return false;
 
@@ -504,18 +488,28 @@ bool File::hasOneOrMoreHashes()
    return false;
 }
 
+/**
+  * A file is complete when all its chunk has been downloaded.
+  * The '.unfinished' suffix of the complete file will be removed later, see 'setAsComplete'.
+  */
 bool File::isComplete()
 {
-   QMutexLocker lock(&this->mutex);
+   QMutexLocker locker(&this->mutex);
    return this->complete;
 }
 
 /**
   * Called from a downloading thread.
+  * Set the file as complete, change its name from "<name>.unfinished" to "<name>".
+  * If a file with the same name already exists it will be deleted.
+  * The rename process can be only made if there is no reader, in a such case we will wait for the last reader finished.
+  * TODO : if the rename fail must we attempt later ? With a timer ?
   */
 void File::setAsComplete()
 {
-   QMutexLocker lock(&this->mutex);
+   QMutexLocker locker(&this->mutex);
+
+   L_DEBU(QString("File set as complete : %1").arg(this->getFullPath()));
 
    this->complete = true;
 
@@ -527,36 +521,42 @@ void File::setAsComplete()
          this->tryToRename = true;
          return;
       }
+      this->tryToRename = false;
 
-      // TODO how can we handle one or more reader ?
       if (this->fileInWriteMode)
       {
          this->fileInWriteMode->close();
          this->fileInWriteMode = 0;
       }
 
-      QString path = this->getFullPath();
-      QDateTime oldDate = this->dateLastModified;
-      QString oldname = this->name;
+      const int PREFIX_SIZE = SETTINGS.get<QString>("unfinished_suffix_term").size();
+      const QString oldPath = this->getFullPath();
+      const QString newPath = oldPath.left(oldPath.size() - PREFIX_SIZE);
 
-      this->dateLastModified = QFileInfo(this->getFullPath()).lastModified();
-      this->name = this->name.left(this->name.size() - SETTINGS.get<QString>("unfinished_suffix_term").size());
-
-      if (!QFile(path).rename(this->getFullPath()))
+      if (!Common::Global::rename(oldPath, newPath))
       {
-         this->dateLastModified = oldDate;
-         this->name = oldname;
-         L_ERRO(QString("Unable to rename the file %1").arg(path));
-         this->tryToRename = true;
+         L_ERRO(QString("Unable to rename the file %1 to %2").arg(oldPath).arg(newPath));
       }
       else
-         this->tryToRename = false;
+      {
+         this->dateLastModified = QFileInfo(newPath).lastModified();
+         this->name = this->name.left(this->name.size() - PREFIX_SIZE);
+         this->cache->onEntryAdded(this); // To add the name to the index. (a bit tricky).
+      }
    }
 }
 
-void File::chunkComplete()
+void File::chunkComplete(const Chunk* chunk)
 {
-   QMutexLocker lock(&this->mutex);
+   QMutexLocker locker(&this->mutex);
+
+   // TODO : very cpu consumer! We have to find a better way!
+   for (int i = 0; i < this->chunks.size(); i++)
+      if (this->chunks[i].data() == chunk)
+      {
+         this->cache->onChunkHashKnown(this->chunks[i]);
+         break;
+      }
 
    if (++this->nbChunkComplete == this->getNbChunks())
    {
@@ -608,9 +608,48 @@ bool File::hasAParentDir(Directory* dir)
 void File::deleteAllChunks()
 {
    foreach (QSharedPointer<Chunk> c, this->chunks)
-   {
-      c->fileDeleted();
       this->cache->onChunkRemoved(c);
+   this->chunks.clear();
+}
+
+/**
+  * Create a new physical file, using when a new download begins. The new filename must end with ".unfinished".
+  * @exception UnableToCreateNewFileException
+  */
+void File::createPhysicalFile()
+{
+   if (!Cache::isFileUnfinished(this->name))
+      L_ERRO(QString("File::createPhysicalFile(..) : Cannot create a file (%1) without the 'unfinished' suffix").arg(this->getPath()));
+   else if (static_cast<SharedDirectory*>(this->getRoot())->getRights() == SharedDirectory::READ_ONLY)
+      L_ERRO(QString("File::createPhysicalFile(..) : Cannot create a file (%1) in a read only shared directory (%2)").arg(this->getPath()).arg(static_cast<SharedDirectory*>(this->getRoot())->getFullPath()));
+   else
+   {
+      QFile file(this->getFullPath());
+      if (!file.open(QIODevice::WriteOnly) || !file.resize(this->size))
+         throw UnableToCreateNewFileException();
+      this->dateLastModified = QFileInfo(file).lastModified();
    }
 }
 
+void File::setHashes(const Common::Hashes& hashes)
+{
+   if (!hashes.isEmpty())
+      if (this->getNbChunks() != hashes.size()) // It can occur when IFileManager::newFile(..) is called with an entry not owning all its hashes.
+         L_WARN(QString("File::File(..) : The number of hashes (%1) doesn't correspond to the calculate number of chunk (%2)").arg(hashes.size()).arg(this->getNbChunks()));
+
+   for (int i = 0; i < this->getNbChunks(); i++)
+   {
+      int chunkKnownBytes = !this->isComplete() ? 0 : i == this->getNbChunks() - 1 && this->size % CHUNK_SIZE != 0 ? this->size % CHUNK_SIZE : CHUNK_SIZE;
+
+      if (i < hashes.size())
+      {
+         QSharedPointer<Chunk> chunk(new Chunk(this, i, chunkKnownBytes, hashes[i]));
+         this->chunks << chunk;
+         if (chunk->isComplete())
+            this->cache->onChunkHashKnown(chunk);
+      }
+      else
+         // If there is too few hashes then null hashes are added.
+         this->chunks.append(QSharedPointer<Chunk>(new Chunk(this, i, chunkKnownBytes)));
+   }
+}

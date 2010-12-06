@@ -26,7 +26,6 @@ using namespace std;
 #include <Exceptions.h>
 #include <priv/Constants.h>
 
-#include <StressTest.h>
 #include <HashesReceiver.h>
 
 Tests::Tests()
@@ -36,11 +35,23 @@ Tests::Tests()
 void Tests::initTestCase()
 {
    LM::Builder::initMsgHandler();
+
    qDebug() << "===== initTestCase() =====";
+
+   try
+   {
+      QString tempFolder = Common::Global::setCurrentDirToTemp("FileManagerTests");
+      qDebug() << "Application folder path (where is put the persistent data) : " << APPLICATION_FOLDER_PATH;
+      qDebug() << "The file created during this test are put in : " << tempFolder;
+   }
+   catch(Common::Global::UnableToSetTempDirException& e)
+   {
+      QFAIL(e.what());
+   }
 
    Common::PersistentData::rmValue(Common::FILE_CACHE); // Reset the stored cache.
 
-   SETTINGS.setFilename("core_settings.txt");
+   SETTINGS.setFilename("core_settings_file_manager_tests.txt");
    SETTINGS.setSettingsMessage(new Protos::Core::Settings());
 }
 
@@ -313,10 +324,6 @@ void Tests::createAnEmptyFile()
    {
       QFAIL("InsufficientStorageSpaceException");
    }
-   catch(FilePhysicallyAlreadyExistsException)
-   {
-      QFAIL("FilePhysicallyAlreadyExistsException");
-   }
    catch(UnableToCreateNewFileException&)
    {
       QFAIL("UnableToCreateNewFileException");
@@ -408,13 +415,15 @@ void Tests::browseSomedirectories()
 
    // Get the shared directories.
    Protos::Common::Entries entries1 = this->fileManager->getEntries();
-   QString entries1Str = Common::ProtoHelper::getDebugStr(entries1);
-   /*Tests::compareStrRegexp(
+   /*QString entries1Str = Common::ProtoHelper::getDebugStr(entries1);
+   Tests::compareStrRegexp(
       "dir\\s*\\{\n\\s*shared_dir\\s*\\{\n\\s*id\\s*\\{\n\\s*hash:\\s*\".+\"\n\\s*\\}\n\\s*\\}\n\\s*path:\\s*\"\"\n\\s*name:\\s*\"sharedDirs\"\n\\s*size:\\s*\\d+\n\\}\ndir\\s*\\{\n\\s*shared_dir\\s*\\{\n\\s*id\\s*\\{\n\\s*hash:\\s*\".+\"\n\\s*\\}\n\\s*\\}\n\\s*path:\\s*\"\"\n\\s*name:\\s*\"incoming\"\n\\s*size:\\s*\\d+\n\\}.*",
       entries1Str
-   );*/
+   );
    QVERIFY(entries1Str != "");
-   qDebug() << entries1Str;
+   qDebug() << entries1Str;*/
+   QVERIFY(entries1.entry_size() != 0);
+   qDebug() << Common::ProtoHelper::getDebugStr(entries1);
 
    // Ask for the files and directories of the first shared directory
    Protos::Common::Entries entries2 = this->fileManager->getEntries(entries1.entry(0));
@@ -557,17 +566,6 @@ void Tests::rmSharedDirectory()
 
    this->sharedDirsReadOnly.clear();
    this->fileManager->setSharedDirsReadOnly(this->sharedDirsReadOnly);
-}
-
-/**
-  * Some tasks will be performed concurrently.
-  */
-void Tests::stressTest()
-{
-   qDebug() << "===== stressTest() =====";
-
-   Common::PersistentData::rmValue(Common::FILE_CACHE);
-   StressTest test;
 }
 
 void Tests::cleanupTestCase()

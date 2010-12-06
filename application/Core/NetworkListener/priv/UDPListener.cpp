@@ -82,6 +82,7 @@ UDPListener::UDPListener(
 
    connect(&this->timerIMAlive, SIGNAL(timeout()), this, SLOT(sendIMAliveMessage()));
    this->timerIMAlive.start(static_cast<int>(SETTINGS.get<quint32>("peer_imalive_period")));
+
    this->sendIMAliveMessage();
 }
 
@@ -178,11 +179,13 @@ void UDPListener::processPendingMulticastDatagrams()
 
             if (IMAliveMessage.version() != SETTINGS.get<quint32>("protocol_version"))
             {
-               L_WARN(QString("Peer protocol (%1) doesn't match the current one (%2)").arg(IMAliveMessage.version()).arg(SETTINGS.get<quint32>("protocol_version")));
+               L_WARN(QString("Peer protocol (%1) doesn't match our current one (%2)").arg(IMAliveMessage.version()).arg(SETTINGS.get<quint32>("protocol_version")));
                continue;
             }
 
+            // If we don't know the peer, he may not know us.
             PM::IPeer* peer = this->peerManager->getPeer(header.senderID);
+            bool sendIMAlive = !peer || !peer->isAlive();
 
             this->peerManager->updatePeer(
                header.senderID,
@@ -207,8 +210,7 @@ void UDPListener::processPendingMulticastDatagrams()
                this->send(Common::Network::CORE_CHUNKS_OWNED, header.senderID, chunkOwnedMessage);
             }
 
-            // If we don't know the peer, he may not know us.
-            if (!peer || !peer->isAlive())
+            if (sendIMAlive)
             {
                this->timerIMAlive.start();
                this->sendIMAliveMessage();

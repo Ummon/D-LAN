@@ -5,12 +5,15 @@
 #include <QSharedPointer>
 #include <QList>
 #include <QBitArray>
+#include <QMutex>
+#include <QTimer>
 
 #include <Protos/common.pb.h>
 #include <Protos/core_protocol.pb.h>
 
+#include <Common/Uncopyable.h>
+
 #include <IFileManager.h>
-#include <priv/Cache/SharedDirectory.h>
 #include <priv/FileUpdater/FileUpdater.h>
 #include <priv/Cache/Cache.h>
 #include <priv/ChunkIndex/Chunks.h>
@@ -20,12 +23,11 @@ namespace FM
 {
    class Entry;
    class Chunk;
-   class File;
    class Directory;
    class IChunk;
    class IGetHashesResult;
 
-   class FileManager : public IFileManager
+   class FileManager : public IFileManager, Common::Uncopyable
    {
       Q_OBJECT
    public:
@@ -37,8 +39,9 @@ namespace FM
       QStringList getSharedDirsReadOnly();
       QStringList getSharedDirsReadWrite();
 
-      QSharedPointer<IChunk> getChunk(const Common::Hash& hash);
-      virtual QList< QSharedPointer<IChunk> > newFile(const Protos::Common::Entry& remoteEntry);
+      QSharedPointer<IChunk> getChunk(const Common::Hash& hash) const;
+      QList< QSharedPointer<IChunk> > getAllChunks(const Common::Hash& hash) const;
+      QList< QSharedPointer<IChunk> > newFile(const Protos::Common::Entry& remoteEntry);
       QSharedPointer<IGetHashesResult> getHashes(const Protos::Common::Entry& file);
 
       Protos::Common::Entries getEntries(const Protos::Common::Entry& dir);
@@ -52,6 +55,8 @@ namespace FM
       Entry* getEntry(const QString& path);
 
    private slots:
+      void newSharedDirectory(SharedDirectory*);
+      void sharedDirectoryRemoved(SharedDirectory*, Directory*);
       void entryAdded(Entry* entry);
       void entryRemoved(Entry* entry);
       void chunkHashKnown(QSharedPointer<Chunk> chunk);
@@ -64,13 +69,21 @@ namespace FM
 
    private slots:
       void persistCacheToFile();
+      void forcePersistCacheToFile();
+      void setCacheChanged();
 
    private:
       const quint32 CHUNK_SIZE;
+
       FileUpdater fileUpdater;
       Cache cache; ///< The files and directories.
-      Chunks chunks; ///< The indexed chunks.
+      Chunks chunks; ///< The indexed chunks. It contains only completed chunks.
       WordIndex<Entry*> wordIndex; ///< The word index.
+      bool cacheLoading; ///< Set to 'true' during cache loading. It avoids to persist the cache during loading.
+
+      QTimer timerPersistCache;
+      QMutex mutexPersistCache;
+      bool cacheChanged;
    };
 }
 #endif

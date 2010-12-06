@@ -10,13 +10,13 @@ OccupiedPeers::OccupiedPeers()
 
 bool OccupiedPeers::isPeerFree(PM::IPeer* peer) const
 {
-   QMutexLocker lock(&this->mutex);
+   QMutexLocker locker(&this->mutex);
    return !this->occupiedPeers.contains(peer);
 }
 
 bool OccupiedPeers::setPeerAsOccupied(PM::IPeer* peer)
 {
-   QMutexLocker lock(&this->mutex);
+   QMutexLocker locker(&this->mutex);
    if (this->occupiedPeers.contains(peer))
       return false;
 
@@ -27,7 +27,7 @@ bool OccupiedPeers::setPeerAsOccupied(PM::IPeer* peer)
 void OccupiedPeers::setPeerAsFree(PM::IPeer* peer)
 {
    {
-      QMutexLocker lock(&this->mutex);
+      QMutexLocker locker(&this->mutex);
       this->occupiedPeers.remove(peer);
    }
    emit newFreePeer(peer);

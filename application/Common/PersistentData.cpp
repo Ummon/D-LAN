@@ -31,13 +31,13 @@ void PersistentData::setValue(const QString& name, const google::protobuf::Messa
 {
    if (Global::createApplicationFolder())
    {
-      const QString tempName(name + TEMP_SUFFIX_TERM);
+      const QString FILEPATH(APPLICATION_FOLDER_PATH + '/' + name);
+      const QString TEMP_FILEPATH(FILEPATH + TEMP_SUFFIX_TERM);
 
       {
-         const QString filename(APPLICATION_FOLDER_PATH + '/' + tempName);
-         QFile file(filename);
+         QFile file(TEMP_FILEPATH);
          if (!file.open(QIODevice::WriteOnly))
-            throw PersistentDataIOException(QString("Unable to open the file in write mode : %1, error : %2").arg(filename).arg(file.errorString()));
+            throw PersistentDataIOException(QString("Unable to open the file in write mode : %1, error : %2").arg(TEMP_FILEPATH).arg(file.errorString()));
 
 #if !DEBUG
          if (humanReadable)
@@ -54,11 +54,7 @@ void PersistentData::setValue(const QString& name, const google::protobuf::Messa
 #endif
       }
 
-      // TODO : Some data loss can occure here, we must remove the file first
-      // because 'rename' cannot overwrite an existing file.
-      // Using a system primitive can help!?
-      QFile::remove(APPLICATION_FOLDER_PATH + '/' + name);
-      QFile::rename(APPLICATION_FOLDER_PATH + '/' + tempName, APPLICATION_FOLDER_PATH + QDir::separator() + name);
+      Global::rename(TEMP_FILEPATH, FILEPATH);
    }
 }
 

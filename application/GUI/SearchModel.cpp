@@ -177,14 +177,14 @@ void SearchModel::result(const Protos::Common::FindResult& findResult)
                // Search the better name (node with the lowest level) to display it on the top.
                for (int i = 0; i <= similarNode->getNbChildren(); i++)
                {
-                  if (i == similarNode->getNbChildren() || dynamic_cast<SearchNode*>(similarNode->getChild(i))->getLevel() > entry.level())
+                  if (i == similarNode->getNbChildren() || dynamic_cast<SearchNode*>(similarNode->getChild(i))->getLevel() > static_cast<int>(entry.level()))
                   {
                      this->beginInsertRows(this->createIndex(0, 0, similarNode), i, i);
                      Common::Hash peerID = findResult.peer_id().hash().data();
                      SearchNode* newNode = similarNode->insertChild(i, entry, peerID, this->peerListModel.getNick(peerID));
                      this->endInsertRows();
 
-                     if (entry.level() < similarNode->getLevel())
+                     if (static_cast<int>(entry.level()) < similarNode->getLevel())
                      {
                         const int row = similarNode->getRow();
                         similarNode->copyFrom(newNode);
@@ -255,7 +255,7 @@ int SearchModel::insertNode(const Protos::Common::FindResult_EntryLevel& entry, 
    {
       // Search the first entry with the same level or, at least, a greater level.
       if (currentIndex < root->getNbChildren())
-         while (dynamic_cast<SearchNode*>(root->getChild(currentIndex))->getLevel() < entry.level())
+         while (dynamic_cast<SearchNode*>(root->getChild(currentIndex))->getLevel() < static_cast<int>(entry.level()))
          {
             currentIndex += 1;
             if (currentIndex == root->getNbChildren() || root->getChild(currentIndex)->getEntry().type() != entry.entry().type())
@@ -273,7 +273,7 @@ int SearchModel::insertNode(const Protos::Common::FindResult_EntryLevel& entry, 
             break;
 
          nodeToInsertBefore += 1;
-         if (nodeToInsertBefore == root->getNbChildren() || dynamic_cast<SearchNode*>(root->getChild(nodeToInsertBefore))->getLevel() > entry.level())
+         if (nodeToInsertBefore == root->getNbChildren() || dynamic_cast<SearchNode*>(root->getChild(nodeToInsertBefore))->getLevel() > static_cast<int>(entry.level()))
             break;
       }
 

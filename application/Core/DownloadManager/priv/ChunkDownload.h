@@ -10,6 +10,7 @@
 
 #include <Common/TransferRateCalculator.h>
 #include <Common/Hash.h>
+#include <Common/Uncopyable.h>
 #include <Core/FileManager/IChunk.h>
 #include <Core/FileManager/IDataWriter.h>
 #include <Core/PeerManager/IPeerManager.h>
@@ -23,7 +24,7 @@ namespace PM { class IPeer; }
 
 namespace DM
 {
-   class ChunkDownload : public QThread, public IChunkDownload
+   class ChunkDownload : public QThread, public IChunkDownload, Common::Uncopyable
    {
       Q_OBJECT
    public:
@@ -32,7 +33,8 @@ namespace DM
 
       int getDownloadRate() const;
 
-      Common::Hash getHash();
+      Common::Hash getHash() const;
+
       void addPeerID(const Common::Hash& peerID);
       void rmPeerID(const Common::Hash& peerID);
 
@@ -47,7 +49,7 @@ namespace DM
       bool hasAtLeastAPeer() const;
 
       int getDownloadedBytes() const;
-      QList<Common::Hash> getPeers() const;
+      QList<Common::Hash> getPeers();
 
       bool startDownloading();
 

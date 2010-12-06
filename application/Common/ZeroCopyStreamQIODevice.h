@@ -7,10 +7,11 @@
 #include <google/protobuf/stubs/common.h>
 
 #include "Constants.h"
+#include "Uncopyable.h"
 
 namespace Common
 {
-   class ZeroCopyOutputStreamQIODevice : public google::protobuf::io::ZeroCopyOutputStream
+   class ZeroCopyOutputStreamQIODevice : public google::protobuf::io::ZeroCopyOutputStream, Uncopyable
    {
    public:
       ZeroCopyOutputStreamQIODevice(QIODevice* device);
@@ -26,7 +27,7 @@ namespace Common
       google::protobuf::int64 bytesWritten;
    };
 
-   class ZeroCopyInputStreamQIODevice : public google::protobuf::io::ZeroCopyInputStream
+   class ZeroCopyInputStreamQIODevice : public google::protobuf::io::ZeroCopyInputStream, Uncopyable
    {
    public:
       ZeroCopyInputStreamQIODevice(QIODevice* device);

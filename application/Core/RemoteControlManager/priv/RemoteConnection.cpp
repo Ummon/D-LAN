@@ -32,8 +32,10 @@ RemoteConnection::RemoteConnection(
    uploadManager(uploadManager),
    downloadManager(downloadManager),
    networkListener(networkListener),
-   socket(socket),
-   loggerRefreshState(LM::Builder::newLogger("RemoteConnection (State)"))
+   socket(socket)
+ #if DEBUG
+   ,loggerRefreshState(LM::Builder::newLogger("RemoteConnection (State)"))
+ #endif
 {
    L_DEBU(QString("New RemoteConnection from %1").arg(socket->peerAddress().toString()));
 
@@ -53,7 +55,9 @@ RemoteConnection::RemoteConnection(
    connect(&this->networkListener->getChat(), SIGNAL(newMessage(const Common::Hash&, const Protos::Core::ChatMessage&)), this, SLOT(newChatMessage(const Common::Hash&, const Protos::Core::ChatMessage&)));
 
    this->loggerHook = LM::Builder::newLoggerHook(LM::Severity(LM::SV_FATAL_ERROR | LM::SV_ERROR | LM::SV_END_USER | LM::SV_WARNING));
-   connect(this->loggerHook.data(), SIGNAL(newLogEntry(QSharedPointer<const LM::IEntry>)), this, SLOT(newLogEntry(QSharedPointer<const LM::IEntry>)));
+
+   qRegisterMetaType< QSharedPointer<const LM::IEntry> >("QSharedPointer<const LM::IEntry>");
+   connect(this->loggerHook.data(), SIGNAL(newLogEntry(QSharedPointer<const LM::IEntry>)), this, SLOT(newLogEntry(QSharedPointer<const LM::IEntry>)), Qt::QueuedConnection);
 }
 
 RemoteConnection::~RemoteConnection()
@@ -100,7 +104,7 @@ void RemoteConnection::refresh()
       Protos::GUI::State_Upload* protoUpload = state.add_upload();
       upload->getChunk()->populateEntry(protoUpload->mutable_file());
       protoUpload->set_id(upload->getID());
-      protoUpload->set_current_part(upload->getChunk()->getNum());
+      protoUpload->set_current_part(upload->getChunk()->getNum() + 1); // "+ 1" to begin ar 1 and not 0.
       protoUpload->set_nb_part(upload->getChunk()->getNbTotalChunk());
       protoUpload->set_progress(upload->getProgress());
       protoUpload->mutable_peer_id()->set_hash(upload->getPeerID().getData(), Common::Hash::HASH_SIZE);
@@ -334,6 +338,30 @@ bool RemoteConnection::readMessage()
                if (IDs.contains(download->getID()))
                   download->remove();
             }
+
+            this->refresh();
+            this->timerRefresh.start();
+         }
+      }
+      break;
+
+   case Common::Network::GUI_MOVE_DOWNLOADS:
+      {
+         Protos::GUI::MoveDownloads moveDownloadsMessage;
+         {
+            Common::ZeroCopyInputStreamQIODevice inputStream(this->socket);
+            readOK = moveDownloadsMessage.ParseFromBoundedZeroCopyStream(&inputStream, this->currentHeader.size);
+         }
+
+         if (readOK)
+         {
+            QList<quint64> downloadIDs;
+            for (int i = 0; i < moveDownloadsMessage.id_to_move_size(); i++)
+               downloadIDs << moveDownloadsMessage.id_to_move(i);
+            this->downloadManager->moveDownloads(moveDownloadsMessage.id_ref(), moveDownloadsMessage.move_before(), downloadIDs);
+
+            this->refresh();
+            this->timerRefresh.start();
          }
       }
       break;
@@ -350,6 +378,9 @@ bool RemoteConnection::readMessage()
          {
             Common::Hash peerID(downloadMessage.peer_id().hash().data());
             this->downloadManager->addDownload(downloadMessage.entry(), peerID);
+
+            this->refresh();
+            this->timerRefresh.start();
          }
       }
       break;
@@ -367,6 +398,13 @@ bool RemoteConnection::readMessage()
       }
       break;
 
+   case Common::Network::GUI_REFRESH:
+      {
+         this->refresh();
+         this->timerRefresh.start();
+      }
+      break;
+
    default:
       readOK = false;
    }
@@ -374,22 +412,27 @@ bool RemoteConnection::readMessage()
    return readOK;
 }
 
-void RemoteConnection::send(Common::Network::GUIMessageType type, const google::protobuf::Message& message)
+void RemoteConnection::send(Common::Network::GUIMessageType type, const google::protobuf::Message& message) const
 {
    const Common::Network::MessageHeader<Common::Network::GUIMessageType> header(type, message.ByteSize(), this->peerManager->getID());
 
 #if DEBUG
-   QString logMess = QString("RemoteConnection::send : %2\n%3").arg(header.toStr()).arg(Common::ProtoHelper::getDebugStr(message));
    if (type == Common::Network::GUI_STATE)
-      ; // LOG_DEBU(this->loggerRefreshState, logMess); // Commented -> too heavy...
+      // Don't log the message body, to heavy
+      LOG_DEBU(this->loggerRefreshState, QString("RemoteConnection::send : %2").arg(header.toStr()));
    else
-      L_DEBU(logMess);
+      L_DEBU(QString("RemoteConnection::send : %2\n%3").arg(header.toStr()).arg(Common::ProtoHelper::getDebugStr(message)));
 #endif
 
-   Common::Network::writeHeader(*this->socket, header);
-   Common::ZeroCopyOutputStreamQIODevice outputStream(this->socket);
-   if (!message.SerializeToZeroCopyStream(&outputStream))
-      L_WARN(QString("Unable to send %1").arg(Common::ProtoHelper::getDebugStr(message)));
+   {
+      Common::Network::writeHeader(*this->socket, header);
+      Common::ZeroCopyOutputStreamQIODevice outputStream(this->socket);
+      if (!message.SerializeToZeroCopyStream(&outputStream))
+         L_WARN(QString("Unable to send %1").arg(Common::ProtoHelper::getDebugStr(message)));
+   }
+
+   if (this->socket->state() == QAbstractSocket::ConnectedState)
+      this->socket->flush();
 }
 
 void RemoteConnection::removeGetEntriesResult(const PM::IGetEntriesResult* getEntriesResult)

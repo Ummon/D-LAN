@@ -49,11 +49,23 @@ qmake FileManager.pro -r -spec $SPEC CONFIG+=release
 $MAKE -w
 cd ../..
 
+# TestsFileManager.
+cd Core/FileManager/tests
+qmake TestsFileManager.pro -r -spec $SPEC CONFIG+=release
+$MAKE -w
+cd ../../..
+
 # PeerManager.
 cd Core/PeerManager
 qmake PeerManager.pro -r -spec $SPEC CONFIG+=release
 $MAKE -w
 cd ../..
+
+# TestsPeerManager.
+cd Core/PeerManager/tests
+qmake TestsPeerManager.pro -r -spec $SPEC CONFIG+=release
+$MAKE -w
+cd ../../..
 
 # UploadManager.
 cd Core/UploadManager
@@ -90,5 +102,3 @@ cd GUI
 qmake GUI.pro -r -spec $SPEC CONFIG+=release
 $MAKE -w
 cd ..
-
-

@@ -15,7 +15,7 @@ namespace Common
 
    const int PROTOBUF_STREAMING_BUFFER_SIZE(4 * 1024); ///< 4kB.
 
-   const QString BINARY_PREFIXS[] = {"B", "KiB", "MiB", "GiB", "TiB", "Pi", "Ei", "Zi"};
+   const QString BINARY_PREFIXS[] = {"B", "KiB", "MiB", "GiB", "TiB", "PiB", "EiB", "ZiB"};
 }
 
 #endif

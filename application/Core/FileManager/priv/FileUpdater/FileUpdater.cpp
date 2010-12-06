@@ -166,7 +166,8 @@ void FileUpdater::run()
       {
          this->scan(dir, true);
          this->restoreFromFileCache(static_cast<SharedDirectory*>(dir));
-         dir->removeIncompleteFiles();
+
+         // dir->removeIncompleteFiles(); // Commented -> Uncompleted file can be resumed.
       }
       this->dirsToScan.clear();
 
@@ -178,8 +179,7 @@ void FileUpdater::run()
 
    forever
    {
-      if (this->computeSomeHashes())
-         emit persistCache();
+      this->computeSomeHashes();
 
       this->mutex.lock();
 
@@ -234,7 +234,6 @@ void FileUpdater::run()
 
       if (this->toStop)
       {
-         emit persistCache();
          L_DEBU("FileUpdater mainloop finished");
          return;
       }
@@ -273,7 +272,11 @@ bool FileUpdater::computeSomeHashes()
       this->currentHashingFile = i.next();
 
       this->hashingMutex.unlock();
-      bool completed = this->currentHashingFile->computeHashes();
+      bool completed = false;
+      if (!this->currentHashingFile->isComplete()) // A file can change its state from 'completed' to 'unfinished' if it's redownloaded.
+         i.remove();
+      else
+         completed = this->currentHashingFile->computeHashes();
       this->hashingMutex.lock();
 
       this->currentHashingFile = 0;
@@ -305,6 +308,8 @@ bool FileUpdater::computeSomeHashes()
 void FileUpdater::stopHashing()
 {
    QMutexLocker lockerHashing(&this->hashingMutex);
+   L_DEBU("Stop hashing...");
+
    if (this->currentHashingFile)
    {
       this->currentHashingFile->stopHashing();
@@ -312,6 +317,7 @@ void FileUpdater::stopHashing()
       this->filesWithoutHashes.append(this->currentHashingFile);
    }
 
+   L_DEBU("Hashing stopped");
    this->toStopHashing = true;
 }
 
@@ -377,7 +383,19 @@ void FileUpdater::scan(Directory* dir, bool addUnfinished)
             }
 
             if (!file)
-               file = new File(currentDir, entry.fileName(), entry.size(), entry.lastModified());
+            {
+               // Very special case : there is a file 'a' without File* in cache and a file 'a.unfinished'.
+               // This case occure when a file is redownloaded, the File* 'a' is renamed as 'a.unfinished' but the physical file 'a'
+               // is not deleted.
+               File* unfinishedFile;
+               if (!(unfinishedFile = currentDir->getFile(entry.fileName().append(SETTINGS.get<QString>("unfinished_suffix_term")))))
+                  file = new File(currentDir, entry.fileName(), entry.size(), entry.lastModified());
+               else
+               {
+                  currentFiles.removeOne(unfinishedFile);
+                  continue;
+               }
+            }
 
             // If a file is incomplete (unfinished) we can't compute its hashes because we don't have all data.
             if (!file->hasAllHashes() && file->isComplete() && !this->filesWithoutHashes.contains(file))

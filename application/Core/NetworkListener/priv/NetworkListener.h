@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QSharedPointer>
 
+#include <Common/Uncopyable.h>
 #include <Core/FileManager/IFileManager.h>
 #include <Core/PeerManager/IPeerManager.h>
 #include <Core/DownloadManager/IDownloadManager.h>
@@ -16,7 +17,7 @@
 
 namespace NL
 {
-   class NetworkListener : public QObject, public INetworkListener
+   class NetworkListener : public QObject, public INetworkListener, Common::Uncopyable
    {
       Q_OBJECT
    public:

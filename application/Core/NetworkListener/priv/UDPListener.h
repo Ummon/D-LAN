@@ -15,6 +15,7 @@
 #include <Protos/core_protocol.pb.h>
 #include <Protos/common.pb.h>
 
+#include <Common/Uncopyable.h>
 #include <Common/Network.h>
 #include <Common/LogManager/Builder.h>
 #include <Common/LogManager/ILogger.h>
@@ -24,10 +25,12 @@
 
 namespace NL
 {
-   class UDPListener : public QObject
+   class UDPListener : public QObject, Common::Uncopyable
    {
       Q_OBJECT
-      static const int BUFFER_SIZE = 65536; // The size max of an UDP datagram : 2^16.
+      // The size max of an UDP datagram : 2^16.
+      // Usually the size of an UDP datagram is smaller, see 'Protos::CoreSettings::max_udp_datagram_size'.
+      static const int BUFFER_SIZE = 65536;
 
    public:
       UDPListener(

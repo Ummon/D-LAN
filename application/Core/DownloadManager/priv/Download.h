@@ -5,6 +5,7 @@
 #include <QTimer>
 #include <QFlags>
 
+#include <Common/Uncopyable.h>
 #include <Core/FileManager/IFileManager.h>
 #include <Core/PeerManager/IPeerManager.h>
 #include <Core/PeerManager/IPeer.h>
@@ -18,7 +19,7 @@ namespace PM { class IPeer; }
 
 namespace DM
 {
-   class Download : public QObject, public IDownload
+   class Download : public QObject, public IDownload, Common::Uncopyable
    {
       Q_OBJECT
       static quint64 currentID;
@@ -33,6 +34,7 @@ namespace DM
 
       quint64 getID() const;
       Status getStatus() const;
+      bool isStatusErroneous() const;
       virtual int getProgress() const;
       Common::Hash getPeerSourceID() const;
       const Protos::Common::Entry& getEntry();
@@ -47,6 +49,11 @@ namespace DM
       virtual void retrievePeer();
 
    protected:
+      /**
+        * This method permits to change the behaviour by a subclass when Download change the status.
+        */
+      virtual void setStatus(Status newStatus);
+
       const quint64 ID;
 
       QSharedPointer<FM::IFileManager> fileManager;

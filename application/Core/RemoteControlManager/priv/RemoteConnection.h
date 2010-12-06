@@ -13,8 +13,10 @@
 
 #include <Protos/common.pb.h>
 
+#include <Common/Uncopyable.h>
 #include <Common/Network.h>
 #include <Common/LogManager/Builder.h>
+#include <Common/LogManager/IEntry.h>
 #include <Common/LogManager/ILogger.h>
 #include <Common/LogManager/ILoggerHook.h>
 #include <Core/FileManager/IFileManager.h>
@@ -27,7 +29,7 @@
 
 namespace RCM
 {
-   class RemoteConnection : public QObject
+   class RemoteConnection : public QObject, Common::Uncopyable
    {
       Q_OBJECT
    public:
@@ -59,7 +61,7 @@ namespace RCM
 
    private:
       bool readMessage();
-      void send(Common::Network::GUIMessageType type, const google::protobuf::Message& message);
+      void send(Common::Network::GUIMessageType type, const google::protobuf::Message& message) const;
       void removeGetEntriesResult(const PM::IGetEntriesResult* getEntriesResult);
 
       QSharedPointer<FM::IFileManager> fileManager;
@@ -80,7 +82,9 @@ namespace RCM
 
       MTRand mtrand;
 
+#ifdef DEBUG
       QSharedPointer<LM::ILogger> loggerRefreshState; // A logger especially for the state message.
+#endif
    };
 }
 #endif

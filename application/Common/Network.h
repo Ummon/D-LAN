@@ -58,10 +58,13 @@ namespace Common
          GUI_BROWSE_RESULT = 0x43,
 
          GUI_CANCEL_DOWNLOADS = 0x61,
+         GUI_MOVE_DOWNLOADS = 0x71,
 
-         GUI_DOWNLOAD = 0x71,
+         GUI_DOWNLOAD = 0x81,
 
-         GUI_CHAT_MESSAGE = 0x81,
+         GUI_CHAT_MESSAGE = 0x91,
+
+         GUI_REFRESH = 0xa1,
       };
 
       static QString messToStr(CoreMessageType type);
@@ -84,12 +87,9 @@ namespace Common
                return QString("MessageHeader : type = %1, size = %2, senderID = %3").arg(messToStr(this->type)).arg(this->size).arg(this->senderID.toStr());
          }
 
-         inline CoreMessageType getTypeCore() const { return static_cast<CoreMessageType>(this->type); }
-         inline GUIMessageType getTypeGUI() const { return static_cast<GUIMessageType>(this->type); }
-
          T type;
          quint32 size;
-         Common::Hash senderID;
+         Hash senderID;
       };
 
       static const int HEADER_SIZE = sizeof(MessageHeader<quint32>::type) + sizeof(MessageHeader<quint32>::size) + Hash::HASH_SIZE;

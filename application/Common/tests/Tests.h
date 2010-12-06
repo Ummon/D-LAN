@@ -12,17 +12,31 @@ public:
    Tests();
 
 private slots:
+   void initTestCase();
+
+   // Global class.
+   void nCombinations();
+   void formatByteSize();
+   void availableDiskSpace();
+
+   // PersistentData class.
    void writePersistentData();
    void readPersistentData();
    void removePersistentData();
+
+   // Settings class.
    void writeSettings();
    void readSettings();
    void removeSettings();
+
+   // Hash class.
    void generateAHash();
    void buildAnHashFromAString();
    void compareTwoHash();
-   void nCombinations();
-   void availableDiskSpace();
+
+   void messageHeader();
+
+   // ZeroCopyOutputStreamQIODevice and ZeroCopyInputStreamQIODevice classes.
    void readAndWriteWithZeroCopyStreamQIODevice();
 
 private:

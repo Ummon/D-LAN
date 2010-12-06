@@ -6,6 +6,8 @@
 #include <QDateTime>
 #include <QSharedPointer>
 
+#include <Common/Uncopyable.h>
+
 #include <Core/FileManager/IFileManager.h>
 
 #include <priv/Socket.h>
@@ -15,7 +17,7 @@ namespace PM
    class Socket;
    class PeerManager;
 
-   class ConnectionPool : public QObject
+   class ConnectionPool : public QObject, Common::Uncopyable
    {
       Q_OBJECT
 

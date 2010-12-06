@@ -26,29 +26,37 @@ using namespace FM;
 #include <priv/Cache/SharedDirectory.h>
 #include <priv/Cache/Chunk.h>
 
-FileManager::FileManager()
-   : CHUNK_SIZE(SETTINGS.get<quint32>("chunk_size")), fileUpdater(this), cache(this)
+FileManager::FileManager() :
+   CHUNK_SIZE(SETTINGS.get<quint32>("chunk_size")),
+   fileUpdater(this),
+   cache(this),
+   mutexPersistCache(QMutex::Recursive),
+   cacheChanged(false)
 {
    connect(&this->cache, SIGNAL(entryAdded(Entry*)),     this, SLOT(entryAdded(Entry*)),     Qt::DirectConnection);
    connect(&this->cache, SIGNAL(entryRemoved(Entry*)),   this, SLOT(entryRemoved(Entry*)),   Qt::DirectConnection);
    connect(&this->cache, SIGNAL(chunkHashKnown(QSharedPointer<Chunk>)), this, SLOT(chunkHashKnown(QSharedPointer<Chunk>)), Qt::DirectConnection);
    connect(&this->cache, SIGNAL(chunkRemoved(QSharedPointer<Chunk>)),   this, SLOT(chunkRemoved(QSharedPointer<Chunk>)),   Qt::DirectConnection);
 
-   connect(&this->cache, SIGNAL(newSharedDirectory(SharedDirectory*)),                 &this->fileUpdater, SLOT(addRoot(SharedDirectory*)),              Qt::DirectConnection);
-   connect(&this->cache, SIGNAL(sharedDirectoryRemoved(SharedDirectory*, Directory*)), &this->fileUpdater, SLOT(rmRoot(SharedDirectory*, Directory*)),   Qt::DirectConnection);
+   connect(&this->cache, SIGNAL(newSharedDirectory(SharedDirectory*)),                 this, SLOT(newSharedDirectory(SharedDirectory*)),                 Qt::DirectConnection);
+   connect(&this->cache, SIGNAL(sharedDirectoryRemoved(SharedDirectory*, Directory*)), this, SLOT(sharedDirectoryRemoved(SharedDirectory*, Directory*)), Qt::DirectConnection);
 
-   connect(&this->fileUpdater, SIGNAL(persistCache()),    this, SLOT(persistCacheToFile()), Qt::DirectConnection);
    connect(&this->fileUpdater, SIGNAL(fileCacheLoaded()), this, SIGNAL(fileCacheLoaded()),  Qt::QueuedConnection);
 
    this->loadCacheFromFile();
 
    this->fileUpdater.start();
+
+   this->timerPersistCache.setInterval(SETTINGS.get<quint32>("save_cache_period"));
+   connect(&this->timerPersistCache, SIGNAL(timeout()), this, SLOT(persistCacheToFile()));
 }
 
 FileManager::~FileManager()
 {
    L_DEBU("~FileManager : Stopping the file updater..");
    this->fileUpdater.stop();
+   this->cacheChanged = true;
+   this->persistCacheToFile();
    L_DEBU("FileManager deleted");
 }
 
@@ -82,9 +90,23 @@ QStringList FileManager::getSharedDirsReadWrite()
    return this->cache.getSharedDirs(SharedDirectory::READ_WRITE);
 }
 
-QSharedPointer<IChunk> FileManager::getChunk(const Common::Hash& hash)
+QSharedPointer<IChunk> FileManager::getChunk(const Common::Hash& hash) const
 {
    return this->chunks.value(hash);
+}
+
+QList< QSharedPointer<IChunk> > FileManager::getAllChunks(const Common::Hash& hash) const
+{
+   QSharedPointer<Chunk> chunk = this->chunks.value(hash);
+   if (chunk.isNull())
+      return QList< QSharedPointer<IChunk> >();
+   else
+   {
+      QList< QSharedPointer<IChunk> > ret;
+      for (QListIterator< QSharedPointer<Chunk> > i(chunk->getOtherChunks()); i.hasNext();)
+         ret << i.next();
+      return ret;
+   }
 }
 
 QList< QSharedPointer<IChunk> > FileManager::newFile(const Protos::Common::Entry& remoteEntry)
@@ -256,6 +278,18 @@ Entry* FileManager::getEntry(const QString& path)
    return this->cache.getEntry(path);
 }
 
+void FileManager::newSharedDirectory(SharedDirectory* sharedDir)
+{
+   this->fileUpdater.addRoot(sharedDir);
+   this->forcePersistCacheToFile();
+}
+
+void FileManager::sharedDirectoryRemoved(SharedDirectory* sharedDir, Directory* dir)
+{
+   this->fileUpdater.rmRoot(sharedDir, dir);
+   this->forcePersistCacheToFile();
+}
+
 void FileManager::entryAdded(Entry* entry)
 {
    if (entry->getName().isEmpty() || Cache::isFileUnfinished(entry->getName()))
@@ -278,12 +312,14 @@ void FileManager::chunkHashKnown(QSharedPointer<Chunk> chunk)
 {
    L_DEBU(QString("Adding chunk '%1' to the index..").arg(chunk->getHash().toStr()));
    this->chunks.add(chunk);
+   this->setCacheChanged();
 }
 
 void FileManager::chunkRemoved(QSharedPointer<Chunk> chunk)
 {
    L_DEBU(QString("Removing chunk '%1' from the index ..").arg(chunk->getHash().toStr()));
    this->chunks.rm(chunk);
+   this->setCacheChanged();
 }
 
 /**
@@ -302,6 +338,7 @@ QStringList FileManager::splitInWords(const QString& words)
   * Load the cache from a file. Called at start, by the constructor.
   * It will give the file cache to the fileUpdater and ask it
   * to load the cache.
+  * It will also start the timer to persist the cache.
   */
 void FileManager::loadCacheFromFile()
 {
@@ -315,7 +352,7 @@ void FileManager::loadCacheFromFile()
       {
          L_ERRO(QString("The version (%1) of the file cache \"%2\" doesn't match the current version (%3)").arg(savedCache->version()).arg(Common::FILE_CACHE).arg(FILE_CACHE_VERSION));
          Common::PersistentData::rmValue(Common::FILE_CACHE);
-         return;
+         goto end;
       }
 
       // Scan the shared directories and try to match the files against the saved cache.
@@ -339,27 +376,52 @@ void FileManager::loadCacheFromFile()
    }
 
    this->fileUpdater.setFileCache(savedCache);
+
+end:
+   this->timerPersistCache.start();
 }
 
 /**
   * Save the cache to a file.
   * Called by the fileUpdater when it needs to persist the cache.
-  * @warning Called in the fileUpdater thread.
   */
 void FileManager::persistCacheToFile()
 {
-   L_DEBU("Persists cache..");
-   L_DEBU("#######################################");
-
-   Protos::FileCache::Hashes hashes;
-   this->cache.saveInFile(hashes);
-
-   try
+   QMutexLocker locker(&this->mutexPersistCache);
+   if (this->cacheChanged)
    {
-      Common::PersistentData::setValue(Common::FILE_CACHE, hashes);
+      L_DEBU("Persisting cache..");
+
+      Protos::FileCache::Hashes hashes;
+      this->cache.saveInFile(hashes);
+
+      try
+      {
+         Common::PersistentData::setValue(Common::FILE_CACHE, hashes);
+      }
+      catch (Common::PersistentDataIOException& err)
+      {
+         L_ERRO(err.message);
+      }
+      this->cacheChanged = false;
+
+      L_DEBU("Persisting cache finished");
    }
-   catch (Common::PersistentDataIOException& err)
-   {
-      L_ERRO(err.message);
-   }
+}
+
+void FileManager::forcePersistCacheToFile()
+{
+   QMutexLocker locker(&this->mutexPersistCache);
+   this->cacheChanged = true;
+   this->persistCacheToFile();
+   this->timerPersistCache.start();
+}
+
+/**
+  * @warning Can be called from differents thread like a 'Downloader' or the 'FileUpdater'.
+  */
+void FileManager::setCacheChanged()
+{
+   QMutexLocker locker(&this->mutexPersistCache);
+   this->cacheChanged = true;
 }

@@ -31,10 +31,11 @@ namespace DM
 
       void addDownload(const Protos::Common::Entry& entry, Common::Hash peerSource);
       void addDownload(const Protos::Common::Entry& entry, Common::Hash peerSource, bool complete);
-      void addDownload(const Protos::Common::Entry& entry, Common::Hash peerSource, bool complete, QMutableListIterator<Download*> iterator);
+      void addDownload(const Protos::Common::Entry& entry, Common::Hash peerSource, bool complete, QMutableListIterator<Download*>& iterator);
 
-      QList<IDownload*> getDownloads();
-      QList< QSharedPointer<IChunkDownload> > getUnfinishedChunks(int n);
+      QList<IDownload*> getDownloads() const;
+      void moveDownloads(quint64 downloadIDRef, bool moveBefore, const QList<quint64>& downloadIDs);
+      QList< QSharedPointer<IChunkDownload> > getUnfinishedChunks(int n) const;
 
       int getDownloadRate() const;
 
@@ -54,7 +55,12 @@ namespace DM
 
    private:
       void loadQueueFromFile();
+
+   private slots:
       void saveQueueToFile();
+      void setQueueChanged();
+
+   private:
       bool isEntryAlreadyQueued(const Protos::Common::Entry& entry);
 
       const int NUMBER_OF_DOWNLOADER;
@@ -68,11 +74,13 @@ namespace DM
       QList<Download*> downloads;
 
       int numberOfDownload;
-      QMutex mutexNumberOfDownload;
 
       bool retrievingEntries; // TODO : if the socket is closed then retrievingEntries = false
 
-      QTimer timer; // When a download has an error status, the queue will be rescaned periodically.
+      QTimer rescanTimer; // When a download has an error status, the queue will be rescaned periodically.
+
+      QTimer saveTimer; // To know when to save the queue, for exemple each 5min.
+      bool queueChanged;
    };
 }
 #endif

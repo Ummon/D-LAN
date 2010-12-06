@@ -115,6 +115,11 @@ void Chunk::fileDeleted()
    this->file = 0;
 }
 
+/**
+  * @exception IOErrorException
+  * @exception ChunkDeletedException
+  * @exception ChunkNotCompletedException
+  */
 int Chunk::read(char* buffer, int offset)
 {
    QMutexLocker locker(&this->mutex);
@@ -157,7 +162,7 @@ bool Chunk::write(const char* buffer, int nbBytes)
    bool complete = this->knownBytes == this->getChunkSize();
 
    if (complete)
-      this->file->chunkComplete();
+      this->file->chunkComplete(this);
 
    return complete;
 }
@@ -183,6 +188,16 @@ int Chunk::getNbTotalChunk() const
       return this->file->getNbChunks();
 
    return 0;
+}
+
+QList< QSharedPointer<Chunk> > Chunk::getOtherChunks() const
+{
+   QMutexLocker locker(&this->mutex);
+
+   if (this->file)
+      return this->file->getChunks();
+   else
+      return QList< QSharedPointer<Chunk> >();
 }
 
 bool Chunk::hasHash() const

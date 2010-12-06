@@ -87,7 +87,7 @@ void Socket::stopListening()
    this->listening = false;
 }
 
-bool Socket::isIdle()
+bool Socket::isIdle() const
 {
    return this->idle;
 }
@@ -113,7 +113,7 @@ void Socket::send(Common::Network::CoreMessageType type, const google::protobuf:
 
    this->setActive();
 
-   L_DEBU(QString("Socket[%1]::send : %2\n%3").arg(this->num).arg(header.toStr()).arg(Common::ProtoHelper::getDebugStr(message)));
+   L_DEBU(QString("Socket[%1]::send : %2 to %3\n%4").arg(this->num).arg(header.toStr()).arg(this->peerID.toStr()).arg(Common::ProtoHelper::getDebugStr(message)));
 
    {
       Common::Network::writeHeader(*this->socket, header);
@@ -131,6 +131,7 @@ void Socket::dataReceived()
    // TODO : it will loop infinetly if not enough data is provided.
    while (!this->socket->atEnd() && this->listening)
    {
+      // We can't do that, if this socket is closed during this call it will be deleted..
       QCoreApplication::processEvents(); // To read from the native socket to the internal QTcpSocket buffer. TODO : more elegant way?
       this->setActive();
 
@@ -273,7 +274,7 @@ bool Socket::readMessage()
 
          if (readOK)
          {
-            emit newMessage(this->currentHeader.getTypeCore(), getEntriesResult);
+            emit newMessage(this->currentHeader.type, getEntriesResult);
          }
       }
       break;
@@ -316,7 +317,7 @@ bool Socket::readMessage()
          if (readOK)
          {
             this->nbHash = getHashesResult.nb_hash();
-            emit newMessage(this->currentHeader.getTypeCore(), getHashesResult);
+            emit newMessage(this->currentHeader.type, getHashesResult);
          }
       }
       break;
@@ -334,7 +335,7 @@ bool Socket::readMessage()
             if (--this->nbHash == 0)
                this->finished();
 
-            emit newMessage(this->currentHeader.getTypeCore(), hash);
+            emit newMessage(this->currentHeader.type, hash);
          }
       }
       break;
@@ -363,7 +364,7 @@ bool Socket::readMessage()
          }
 
          if (readOK)
-            emit newMessage(this->currentHeader.getTypeCore(), getChunkResult);
+            emit newMessage(this->currentHeader.type, getChunkResult);
       }
       break;
 

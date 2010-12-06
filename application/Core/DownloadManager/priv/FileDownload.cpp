@@ -43,14 +43,6 @@ FileDownload::FileDownload(
       Common::Hash chunkHash(entry.chunk(i).hash().data());
       QSharedPointer<ChunkDownload> chunkDownload = QSharedPointer<ChunkDownload>(new ChunkDownload(this->peerManager, this->occupiedPeersDownloadingChunk, chunkHash));
 
-      /* A same file can exist somewhere else... don't care.
-      QSharedPointer<FM::IChunk> chunk = this->fileManager->getChunk(chunkHash);
-      if (!chunk.isNull())
-      {
-         this->fileCreated = true; // If we know the chunks we considere the file as already created.
-         chunkDownload->setChunk(chunk);
-      }*/
-
       this->chunkDownloads << chunkDownload;
       this->connectChunkDownloadSignals(this->chunkDownloads.last());
    }
@@ -64,6 +56,20 @@ FileDownload::~FileDownload()
    this->getHashesResult.clear();
    this->chunksWithoutDownload.clear();
    this->chunkDownloads.clear();
+}
+
+/**
+  * Add the known hashes.
+  */
+void FileDownload::populateEntry(Protos::Queue::Queue_Entry* entry) const
+{
+   Download::populateEntry(entry);
+
+   for (int i = entry->entry().chunk_size(); i < this->chunkDownloads.size(); i++)
+   {
+      Protos::Common::Hash* hash = entry->mutable_entry()->add_chunk();
+      hash->set_hash(this->chunkDownloads[i]->getHash().getData(), Common::Hash::HASH_SIZE);
+   }
 }
 
 void FileDownload::start()
@@ -90,6 +96,9 @@ int FileDownload::getDownloadRate() const
 
 int FileDownload::getProgress() const
 {
+   if (this->status == COMPLETE)
+      return 100;
+
    quint64 knownBytes = 0;
    for (QListIterator< QSharedPointer<ChunkDownload> > i(this->chunkDownloads); i.hasNext();)
    {
@@ -127,12 +136,16 @@ QSharedPointer<ChunkDownload> FileDownload::getAChunkToDownload()
          {
             if (!this->fileCreated)
             {
-               this->chunksWithoutDownload = this->fileManager->newFile(this->entry);
+               // First try to get the chunks from an existing file, it's useful when a download is taken from the saved queue.
+               if (!this->chunkDownloads.isEmpty())
+                  this->chunksWithoutDownload = this->fileManager->getAllChunks(this->chunkDownloads.first()->getHash());
+
+               // If the file doesn't exist we create it.
+               if (this->chunksWithoutDownload.isEmpty())
+                  this->chunksWithoutDownload = this->fileManager->newFile(this->entry);
 
                for (int i = 0; !this->chunksWithoutDownload.isEmpty() && i < this->chunkDownloads.size(); i++)
-               {
                   this->chunkDownloads[i]->setChunk(this->chunksWithoutDownload.takeFirst());
-               }
 
                // If we got all the chunks, remote entry becomes a local entry.
                if (!this->chunksWithoutDownload.isEmpty() && this->nbHashesKnown == this->NB_CHUNK)
@@ -155,11 +168,6 @@ QSharedPointer<ChunkDownload> FileDownload::getAChunkToDownload()
       L_DEBU(QString("There is no enough space storage available for this download : %1").arg(Common::ProtoHelper::getStr(this->entry, &Protos::Common::Entry::name)));
       this->status = NO_ENOUGH_FREE_SPACE;
    }
-   catch(FM::FilePhysicallyAlreadyExistsException)
-   {
-      L_DEBU(QString("The file already exists, download : %1").arg(Common::ProtoHelper::getStr(this->entry, &Protos::Common::Entry::name)));
-      this->status = THE_FILE_ALREADY_EXISTS;
-   }
    catch(FM::UnableToCreateNewFileException&)
    {
       L_DEBU(QString("Unable to create the file, download : %1").arg(Common::ProtoHelper::getStr(this->entry, &Protos::Common::Entry::name)));
@@ -169,7 +177,7 @@ QSharedPointer<ChunkDownload> FileDownload::getAChunkToDownload()
    return QSharedPointer<ChunkDownload>();
 }
 
-void FileDownload::getUnfinishedChunks(QList< QSharedPointer<IChunkDownload> >& chunks, int n)
+void FileDownload::getUnfinishedChunks(QList< QSharedPointer<IChunkDownload> >& chunks, int n) const
 {
    for (QListIterator< QSharedPointer<ChunkDownload> > i(this->chunkDownloads); i.hasNext() && this->status != COMPLETE;)
    {
@@ -190,6 +198,10 @@ bool FileDownload::retreiveHashes()
       return false;
 
    if (!this->occupiedPeersAskingForHashes.setPeerAsOccupied(this->peerSource))
+      return false;
+
+   // We already fail to retrieve hashes a little time before.
+   if (this->timer.isActive())
       return false;
 
    if (!this->sender() && this->status == UNABLE_TO_RETRIEVE_THE_HASHES) // Not called by the timer.
@@ -222,7 +234,6 @@ void FileDownload::result(const Protos::Core::GetHashesResult& result)
    else
    {
       L_DEBU(QString("Unable to retrieve the hashes, error = %1").arg(result.status()));
-      this->status = ENTRY_NOT_FOUND;
       this->getHashesResult.clear();
       this->occupiedPeersAskingForHashes.setPeerAsFree(this->peerSource);
       this->status = UNABLE_TO_RETRIEVE_THE_HASHES;
@@ -242,6 +253,8 @@ void FileDownload::nextHash(const Common::Hash& hash)
       // If we got all the chunks, remote entry becomes a local entry.
       if (this->fileCreated && !this->chunkDownloads.isEmpty())
          this->chunkDownloads.first()->getChunk()->populateEntry(&this->entry);
+
+      this->status = QUEUED;
    }
 
    if (this->chunkDownloads.size() >= this->nbHashesKnown && this->chunkDownloads[this->nbHashesKnown-1]->getHash() != hash)
@@ -265,6 +278,7 @@ void FileDownload::nextHash(const Common::Hash& hash)
       this->connectChunkDownloadSignals(chunkDownload);
       chunkDownload->setPeerSource(this->peerSource); // May start a download.
       this->entry.add_chunk()->set_hash(hash.getData(), Common::Hash::HASH_SIZE); // Used during the saving of the queue, see Download::populateEntry(..).
+      emit newHashKnown();
    }
 }
 
@@ -275,7 +289,24 @@ void FileDownload::chunkDownloadStarted()
 
 void FileDownload::chunkDownloadFinished()
 {
-   if (this->status == DELETED)
+   this->updateStatus();
+}
+
+void FileDownload::setStatus(Status newStatus)
+{
+   if (this->status == COMPLETE)
+      return;
+
+   // We don't care about the source peer if we have all the hashes.
+   if (newStatus == UNKNOWN_PEER && nbHashesKnown == this->NB_CHUNK)
+      return;
+
+   Download::setStatus(newStatus);
+}
+
+void FileDownload::updateStatus()
+{
+   if (this->status == DELETED || this->status == COMPLETE)
       return;
 
    this->status = COMPLETE;

@@ -7,6 +7,7 @@
 #include <Libs/qtservice/src/qtservice.h>
 
 #include <Common/Settings.h>
+#include <Common/Uncopyable.h>
 #include <FileManager/IFileManager.h>
 #include <PeerManager/IPeerManager.h>
 #include <UploadManager/IUploadManager.h>
@@ -19,7 +20,7 @@
 namespace CoreSpace
 {
    // Best than the Arm.
-   class Core : public QtService<QCoreApplication>
+   class Core : public QtService<QCoreApplication>, Common::Uncopyable
    {
    public:
       Core(int argc, char **argv);

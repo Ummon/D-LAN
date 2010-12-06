@@ -39,6 +39,7 @@ QVariant LogModel::data(const QModelIndex& index, int role) const
    case LM::SV_ERROR:
       messagePrefix = "[Error] ";
       break;
+   default:;
    }
 
    switch (index.column())
@@ -58,6 +59,12 @@ LM::Severity LogModel::getSeverity(int row) const
 
 void LogModel::newLogEntry(QSharedPointer<const LM::IEntry> entry)
 {
+   // Report Warnings only in DEBUG mode.
+#ifndef DEBUG
+   if (entry->getSeverity() == LM::SV_WARNING)
+      return;
+#endif
+
    // Do not repeat several same messages.
    if (!this->entries.isEmpty() && this->entries.last()->getMessage() == entry->getMessage())
       return;

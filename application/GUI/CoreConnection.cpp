@@ -158,6 +158,21 @@ void CoreConnection::cancelDownloads(const QList<quint64>& downloadIDs)
    this->send(Common::Network::GUI_CANCEL_DOWNLOADS, cancelDownloadsMessage);
 }
 
+void CoreConnection::moveDownloads(quint64 downloadIDRef, const QList<quint64>& downloadIDs, bool moveBefore)
+{
+   Protos::GUI::MoveDownloads moveDownloadsMessage;
+   moveDownloadsMessage.set_id_ref(downloadIDRef);
+   moveDownloadsMessage.set_move_before(moveBefore);
+   for(QListIterator<quint64> i(downloadIDs); i.hasNext();)
+      moveDownloadsMessage.add_id_to_move(i.next());
+   this->send(Common::Network::GUI_MOVE_DOWNLOADS, moveDownloadsMessage);
+}
+
+void CoreConnection::refresh()
+{
+   this->send(Common::Network::GUI_REFRESH);
+}
+
 void CoreConnection::connectToCore()
 {
    if (this->connecting)
@@ -285,6 +300,16 @@ void CoreConnection::startLocalCore()
       controller.start();
    }
 #endif
+}
+
+void CoreConnection::send(Common::Network::GUIMessageType type)
+{
+   const Common::Network::MessageHeader<Common::Network::GUIMessageType> header(type, 0, this->ourID);
+   L_DEBU(QString("CoreConnection::send : %1").arg(header.toStr()));
+   Common::Network::writeHeader(this->socket, header);
+
+   if (this->socket.state() == QAbstractSocket::ConnectedState)
+      this->socket.flush();
 }
 
 void CoreConnection::send(Common::Network::GUIMessageType type, const google::protobuf::Message& message)

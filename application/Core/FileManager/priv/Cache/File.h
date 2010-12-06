@@ -38,6 +38,8 @@ namespace FM
 
       virtual ~File();
 
+      void setToUnfinished(qint64 size, const Common::Hashes& hashes = Common::Hashes());
+
       bool restoreFromFileCache(const Protos::FileCache::Hashes_File& file);
 
       void populateHashesFile(Protos::FileCache::Hashes_File& fileToFill) const;
@@ -69,7 +71,7 @@ namespace FM
 
       bool isComplete();
       void setAsComplete();
-      void chunkComplete();
+      void chunkComplete(const Chunk* chunk);
 
       int getNbChunks();
       bool correspondTo(const QFileInfo& fileInfo);
@@ -81,6 +83,8 @@ namespace FM
 
    private:
       void deleteAllChunks();
+      void createPhysicalFile();
+      void setHashes(const Common::Hashes& hashes);
 
       const int CHUNK_SIZE;
       const int BUFFER_SIZE;
@@ -100,7 +104,7 @@ namespace FM
       QFile* fileInReadMode;
       QMutex writeLock; ///< Protect the file from concurrent access from different downloaders.
       QMutex readLock; ///< Protect the file from concurrent access from different uploaders.
-      QMutex mutex;
+      mutable QMutex mutex;
 
       // Mutex and wait condition used during hashing.
       // (TODO : It's a bit heavy, try to reduce the memory footprint).

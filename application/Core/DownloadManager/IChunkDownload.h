@@ -18,7 +18,7 @@ namespace DM
       /**
         * Gets the hash of the associated chunk.
         */
-      virtual Common::Hash getHash() = 0;
+      virtual Common::Hash getHash() const = 0;
 
       /**
         * Define (or redefine) the peers which have the chunk.

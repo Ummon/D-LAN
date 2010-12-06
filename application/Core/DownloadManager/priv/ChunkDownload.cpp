@@ -55,14 +55,14 @@ int ChunkDownload::getDownloadRate() const
    return this->transferRateCalculator.getTransferRate();
 }
 
-Common::Hash ChunkDownload::getHash()
+Common::Hash ChunkDownload::getHash() const
 {
    return this->chunkHash;
 }
 
 void ChunkDownload::addPeerID(const Common::Hash& peerID)
 {
-   QMutexLocker lock(&this->mutex);
+   QMutexLocker locker(&this->mutex);
    PM::IPeer* peer = this->peerManager->getPeer(peerID);
    if (peer && !this->peers.contains(peer))
    {
@@ -73,7 +73,7 @@ void ChunkDownload::addPeerID(const Common::Hash& peerID)
 
 void ChunkDownload::rmPeerID(const Common::Hash& peerID)
 {
-   QMutexLocker lock(&this->mutex);
+   QMutexLocker locker(&this->mutex);
    PM::IPeer* peer = this->peerManager->getPeer(peerID);
    if (peer)
       this->peers.removeOne(peer);
@@ -92,7 +92,7 @@ QSharedPointer<FM::IChunk> ChunkDownload::getChunk() const
 
 void ChunkDownload::setPeerSource(PM::IPeer* peer, bool informOccupiedPeers)
 {
-   QMutexLocker lock(&this->mutex);
+   QMutexLocker locker(&this->mutex);
    if (!this->peers.contains(peer))
    {
       this->peers << peer;
@@ -107,6 +107,7 @@ void ChunkDownload::setPeerSource(PM::IPeer* peer, bool informOccupiedPeers)
   * - It must be have at least one peer.
   * - It isn't finished.
   * - It isn't currently downloading.
+  * @remarks This method may remove dead peers from the list.
   */
 bool ChunkDownload::isReadyToDownload()
 {
@@ -141,11 +142,22 @@ int ChunkDownload::getDownloadedBytes() const
    return this->chunk->getKnownBytes();
 }
 
-QList<Common::Hash> ChunkDownload::getPeers() const
+/**
+  * @remarks This method may remove dead peers from the list.
+  */
+QList<Common::Hash> ChunkDownload::getPeers()
 {
+   QMutexLocker locker(&this->mutex);
+
    QList<Common::Hash> peerIDs;
-   for (QListIterator<PM::IPeer*> i(this->peers); i.hasNext();)
-      peerIDs << i.next()->getID();
+   for (QMutableListIterator<PM::IPeer*> i(this->peers); i.hasNext();)
+   {
+      PM::IPeer* peer = i.next();
+      if (peer->isAlive())
+         peerIDs << peer->getID();
+      else
+         i.remove();
+   }
    return peerIDs;
 }
 
@@ -161,7 +173,7 @@ bool ChunkDownload::startDownloading()
       return false;
    }
 
-   L_DEBU(QString("Starting downloading a chunk : %1").arg(this->chunk->toStr()));
+   L_DEBU(QString("Starting downloading a chunk : %1 from %2").arg(this->chunk->toStr()).arg(this->currentDownloadingPeer->getID().toStr()));
 
    this->downloading = true;
    emit downloadStarted();
@@ -211,12 +223,11 @@ void ChunkDownload::run()
          }
          this->mutex.unlock();
 
-
          bytesRead = this->socket->getQSocket()->read(buffer, BUFFER_SIZE);
 
          if (bytesRead == 0)
          {
-            if (!socket->getQSocket()->waitForReadyRead(SOCKET_TIMEOUT))
+            if (!this->socket->getQSocket()->waitForReadyRead(SOCKET_TIMEOUT))
             {
                L_WARN(QString("Connection dropped, error = %1, bytesAvailable = %2").arg(socket->getQSocket()->errorString()).arg(socket->getQSocket()->bytesAvailable()));
                this->networkTransferError = true;
@@ -345,7 +356,7 @@ void ChunkDownload::downloadingEnded()
   */
 PM::IPeer* ChunkDownload::getTheFastestFreePeer()
 {
-   QMutexLocker lock(&this->mutex);
+   QMutexLocker locker(&this->mutex);
 
    PM::IPeer* current = 0;
    for (QMutableListIterator<PM::IPeer*> i(this->peers); i.hasNext();)

@@ -46,8 +46,8 @@ message State {
          // All the following status will pause the download.
          NO_SHARED_DIRECTORY_TO_WRITE = 0x20;
          NO_ENOUGH_FREE_SPACE = 0x21;
-         THE_FILE_ALREADY_EXISTS = 0x22;
-         UNABLE_TO_CREATE_THE_FILE = 0x23;
+         UNABLE_TO_CREATE_THE_FILE = 0x22;
+         UNABLE_TO_RETRIEVE_THE_HASHES = 0x23;
       }
       required uint64 id = 1;
       required Common.Entry entry = 2; // Can be remote or local. When we know all the hashes and the local file exists (.unfinished) the entry becomes local, otherwise the entry is a remote one.
@@ -159,8 +159,22 @@ message CancelDownloads {
 }
 
 // GUI -> Core
-// Says to the core to download a file or a directory.
+// Tell the core to move one or more downloads in the list right before or after a given download.
+// 'id_ref' must exist.
+// The order of the moved downloads are kept unchanged.
+// For example : id_ref = 21, move_before = true, id = [16, 18]
+// Initial list : [34, 21, 18, 54, 16]
+// After the operation : [34, 18, 16, 21, 54]
 // id : 0x71
+message MoveDownloads {
+   required uint64 id_ref = 1;
+   optional bool move_before = 2 [default = true];
+   repeated uint64 id_to_move = 3;
+}
+
+// GUI -> Core
+// Says to the core to download a file or a directory.
+// id : 0x81
 message Download {
    required Common.Hash peer_id = 1; // From where the file/dir is.
    required Common.Entry entry = 2;
@@ -168,12 +182,12 @@ message Download {
 
 // GUI -> Core
 // Send a chat message to everyone.
-// id : 0x81
+// id : 0x91
 message ChatMessage {
    required string message = 1;
 }
 
-message MoveDownloads {
-   required uint32 offset = 1;
-   repeated uint64 id = 2;
-}
+// GUI -> Core
+// Ask to receive a new state.
+// This message doesn't have a body.
+// id : 0xa1

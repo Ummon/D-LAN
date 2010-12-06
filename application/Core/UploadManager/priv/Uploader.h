@@ -6,6 +6,7 @@
 #include <QTimer>
 #include <QMutex>
 
+#include <Common/Uncopyable.h>
 #include <Common/TransferRateCalculator.h>
 #include <Core/FileManager/IChunk.h>
 #include <Core/FileManager/IDataReader.h>
@@ -15,7 +16,7 @@
 
 namespace UM
 {
-   class Uploader : public QThread, public IUpload
+   class Uploader : public QThread, public IUpload, Common::Uncopyable
    {
       Q_OBJECT
       static quint64 currentID;
@@ -24,17 +25,11 @@ namespace UM
       Uploader(QSharedPointer<FM::IChunk> chunk, int offset, QSharedPointer<PM::ISocket> socket);
 
       quint64 getID() const;
-
       int getUploadRate() const;
-
       Common::Hash getPeerID() const;
-
       int getProgress() const;
-
       QSharedPointer<FM::IChunk> getChunk() const;
-
-      QSharedPointer<PM::ISocket> getSocket();
-
+      QSharedPointer<PM::ISocket> getSocket() const;
       void startTimer();
 
    signals:

@@ -1,6 +1,6 @@
 [code]
 #define QtDir "C:/Qt/4.7.1"
-#define MingwDir "C:/Qt/qtcreator-2.0.93/mingw"
+#define MingwDir "C:/Qt/qtcreator-2.0.94/mingw"
 
 #define AppName "Aybabtu"
 #define ExePath ".\Core\output\release\AybabtuCore.exe"
