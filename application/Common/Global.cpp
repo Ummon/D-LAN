@@ -44,16 +44,9 @@ int Global::nCombinations(int n, int k)
 }
 
 /**
-  * Will return a formated size with the unit prefix and one digit folowing the point.
-  * For example :
-  * - 1 -> "1 B"
-  * - 1024 -> "1.0 KiB"
-  * - 1024^2 -> "1.0 MiB"
-  * - 1024^3 -> "1.0 GiB"
-  * - 1024^4 -> "1.0 TiB"
-  * - etc.. to ZiB
+  * Old implementation, see the other 'formatByteSize(..)' function.
   */
-QString Global::formatByteSize(qint64 bytes)
+/*QString Global::formatByteSize(qint64 bytes)
 {
    const bool IS_BELOW_1024 = bytes < 1024;
    int current = 0;
@@ -75,7 +68,35 @@ QString Global::formatByteSize(qint64 bytes)
       bytes = 0;
 
    return QString::number(bytes).append(IS_BELOW_1024 ? "" : QString(".").append(QString::number(rest))).append(" ").append(BINARY_PREFIXS[current]);
+}*/
+
+/**
+  * Will return a formated size with the unit prefix and one digit folowing the point.
+  * For example :
+  * - 1 -> "1 B"
+  * - 1024 -> "1.0 KiB"
+  * - 1024^2 -> "1.0 MiB"
+  * - 1024^3 -> "1.0 GiB"
+  * - 1024^4 -> "1.0 TiB"
+  * - etc.. to ZiB
+  * The speed of this implementation is equal to the old above : ~1 µs (mesured with 1 millions calls in release (-O2)).
+  */
+QString Global::formatByteSize(qint64 bytes, int precision)
+{
+   for (int i = 0; i < 8; i++)
+   {
+      qint64 size = 1;
+      for (int j = 0; j < i; j++)
+         size *= 1024;
+
+      if (bytes < 1024 * size)
+         return bytes < 1024 ?
+            QString::number(bytes <= 0 ? 0 : bytes).append(" ").append(BINARY_PREFIXS[i]) :
+            QString::number((double)bytes / size, 'f', precision).append(" ").append(BINARY_PREFIXS[i]);
+   }
+   return QString();
 }
+
 
 qint64 Global::availableDiskSpace(const QString& path)
 {
