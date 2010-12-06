@@ -43,7 +43,6 @@ SOURCES += main.cpp \
     ../../../Protos/core_settings.pb.cc
 HEADERS += Tests.h \
     ../../../Protos/common.pb.h \
-    debug_new.h \
     TestServer.h \
     PeerUpdater.h \
     ResultListener.h \
