@@ -69,7 +69,7 @@ void DownloadManager::addDownload(const Protos::Common::Entry& entry, Common::Ha
 /**
   * Insert a new download at the given position.
   */
-void DownloadManager::addDownload(const Protos::Common::Entry& entry, Common::Hash peerSource, bool complete, QMutableListIterator<Download*> iterator)
+void DownloadManager::addDownload(const Protos::Common::Entry& entry, Common::Hash peerSource, bool complete, QMutableListIterator<Download*>& iterator)
 {
    // If there is a lot of file in queue it can be a bit CPU consumer.
    if (this->isEntryAlreadyQueued(entry))
