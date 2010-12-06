@@ -317,6 +317,7 @@ void FileUpdater::stopHashing()
       this->filesWithoutHashes.append(this->currentHashingFile);
    }
 
+   L_DEBU("Hashing stopped");
    this->toStopHashing = true;
 }
 
