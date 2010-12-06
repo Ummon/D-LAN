@@ -15,10 +15,11 @@ Directory::Directory(Directory* parent, const QString& name, bool createPhysical
    : Entry(parent->cache, name), parent(parent), mutex(QMutex::Recursive)
 {
    QMutexLocker locker(&this->mutex);
-   L_DEBU(QString("New Directory : %1").arg(this->getFullPath()));
+   L_DEBU(QString("New Directory : %1, createPhysically = %2").arg(this->getFullPath()).arg(createPhysically));
 
    if (createPhysically)
-      QDir(this->parent->getFullPath()).mkdir(this->name);
+      if (!QDir(this->parent->getFullPath()).mkdir(this->name))
+         L_ERRO(QString("Unable to create the directory : %1").arg(this->getFullPath()));
 
    this->parent->append(this);
 }
@@ -80,11 +81,17 @@ QList<File*> Directory::restoreFromFileCache(const Protos::FileCache::Hashes_Dir
 
 void Directory::populateHashesDir(Protos::FileCache::Hashes_Dir& dirToFill) const
 {
-   QMutexLocker locker(&this->mutex);
+   QList<Directory*> subDirsCopy;
+   QList<File*> filesCopy;
 
-   Common::ProtoHelper::setStr(dirToFill, &Protos::FileCache::Hashes_Dir::set_name, this->getName());
+   {
+      QMutexLocker locker(&this->mutex);
+      Common::ProtoHelper::setStr(dirToFill, &Protos::FileCache::Hashes_Dir::set_name, this->getName());
+      subDirsCopy = this->subDirs;
+      filesCopy = this->files;
+   }
 
-   for (QListIterator<File*> i(this->files); i.hasNext();)
+   for (QListIterator<File*> i(filesCopy); i.hasNext();)
    {
       File* f = i.next();
 
@@ -95,7 +102,7 @@ void Directory::populateHashesDir(Protos::FileCache::Hashes_Dir& dirToFill) cons
       }
    }
 
-   for (QListIterator<Directory*> dir(this->subDirs); dir.hasNext();)
+   for (QListIterator<Directory*> dir(subDirsCopy); dir.hasNext();)
    {
       dir.next()->populateHashesDir(*dirToFill.add_dir());
    }
@@ -257,31 +264,6 @@ Directory* Directory::physicallyCreateSubDirectory(const QString& name)
 
    return new Directory(this, name, true);
 }
-
-/**
-  * Creates a new file if none exists already otherwise
-  * checks if the size and the modification date match, if not then delete the
-  * file and create a new one.
-  */
-//File* Directory::createFile(const QFileInfo& fileInfo, File** oldFile)
-//{
-//   *oldFile = 0;
-//   foreach (File* f, this->files)
-//   {
-//      if (f->getName() == fileInfo.fileName())
-//      {
-//         // If the file is uncompleted its size and date may change.
-//         if (!f->isComplete() || f->correspondTo(fileInfo))
-//            return f;
-
-//         *oldFile = f;
-//         delete f;
-//         break;
-//      }
-//   }
-
-//   return new File(this, fileInfo.fileName(), fileInfo.size(), fileInfo.lastModified());
-//}
 
 File* Directory::getFile(const QString& name) const
 {

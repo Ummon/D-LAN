@@ -104,7 +104,7 @@ namespace FM
       QFile* fileInReadMode;
       QMutex writeLock; ///< Protect the file from concurrent access from different downloaders.
       QMutex readLock; ///< Protect the file from concurrent access from different uploaders.
-      QMutex mutex;
+      mutable QMutex mutex;
 
       // Mutex and wait condition used during hashing.
       // (TODO : It's a bit heavy, try to reduce the memory footprint).

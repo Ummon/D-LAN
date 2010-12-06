@@ -30,6 +30,7 @@ FileManager::FileManager() :
    CHUNK_SIZE(SETTINGS.get<quint32>("chunk_size")),
    fileUpdater(this),
    cache(this),
+   mutexPersistCache(QMutex::Recursive),
    cacheChanged(false)
 {
    connect(&this->cache, SIGNAL(entryAdded(Entry*)),     this, SLOT(entryAdded(Entry*)),     Qt::DirectConnection);
@@ -280,11 +281,13 @@ Entry* FileManager::getEntry(const QString& path)
 void FileManager::newSharedDirectory(SharedDirectory* sharedDir)
 {
    this->fileUpdater.addRoot(sharedDir);
+   this->forcePersistCacheToFile();
 }
 
 void FileManager::sharedDirectoryRemoved(SharedDirectory* sharedDir, Directory* dir)
 {
    this->fileUpdater.rmRoot(sharedDir, dir);
+   this->forcePersistCacheToFile();
 }
 
 void FileManager::entryAdded(Entry* entry)
@@ -404,6 +407,14 @@ void FileManager::persistCacheToFile()
 
       L_DEBU("Persisting cache finished");
    }
+}
+
+void FileManager::forcePersistCacheToFile()
+{
+   QMutexLocker locker(&this->mutexPersistCache);
+   this->cacheChanged = true;
+   this->persistCacheToFile();
+   this->timerPersistCache.start();
 }
 
 /**

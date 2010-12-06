@@ -58,7 +58,7 @@ File::File(
 {
    // QMutexLocker locker(&this->getCache()->getMutex());
 
-   L_DEBU(QString("New file : %1 (%2)").arg(this->getFullPath()).arg(Common::Global::formatByteSize(this->size)));
+   L_DEBU(QString("New file : %1 (%2), createPhysically = %3").arg(this->getFullPath()).arg(Common::Global::formatByteSize(this->size)).arg(createPhysically));
 
    if (createPhysically)
       this->createPhysicalFile();
@@ -147,6 +147,8 @@ bool File::restoreFromFileCache(const Protos::FileCache::Hashes_File& file)
 
 void File::populateHashesFile(Protos::FileCache::Hashes_File& fileToFill) const
 {
+   QMutexLocker locker(&this->mutex);
+
    Common::ProtoHelper::setStr(fileToFill, &Protos::FileCache::Hashes_File::set_filename, this->name);
    fileToFill.set_size(this->size);
    fileToFill.set_date_last_modified(this->getDateLastModified().toMSecsSinceEpoch());
@@ -274,11 +276,6 @@ qint64 File::write(const char* buffer, int nbBytes, qint64 offset)
 
    if (n == -1)
       throw IOErrorException();
-
-   if (this->isComplete())
-   {
-      this->setAsComplete();
-   }
 
    return n;
 }
