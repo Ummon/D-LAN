@@ -2,6 +2,7 @@
 #define TESTS_PEERMANAGER_RESULTLISTENER_H
 
 #include <QObject>
+#include <QSharedPointer>
 
 #include <Protos/core_protocol.pb.h>
 
@@ -26,7 +27,7 @@ public slots:
    void nextHash(const Common::Hash& hash);
 
    void result(const Protos::Core::GetChunkResult& result);
-   void stream(QSharedPointer<ISocket> socket);
+   void stream(QSharedPointer<PM::ISocket> socket);
    void getChunk(Common::Hash hash, int offset, QSharedPointer<PM::ISocket> socket);
 
 private:

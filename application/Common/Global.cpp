@@ -17,6 +17,17 @@ using namespace Common;
   * Some generic global functions.
   */
 
+
+Global::UnableToSetTempDirException::UnableToSetTempDirException(const QString& dir)
+   : errorMessage(QString("Unable to create the temporary directory %1").arg(dir).toUtf8())
+{
+}
+
+const char* Global::UnableToSetTempDirException::what() const throw()
+{
+   return this->errorMessage.constData();
+}
+
 /**
   * The number of k-combinations (each of size k) from a set S with n elements (size n).
   * @link http://en.wikipedia.org/wiki/Combination
@@ -111,7 +122,7 @@ bool Global::createApplicationFolder()
 
 /**
   * Create a file containing its name. Parents directories are created if needed.
-  * For testing puprose.
+  * For testing purpose.
   */
 void Global::createFile(const QString& path)
 {
@@ -126,6 +137,9 @@ void Global::createFile(const QString& path)
    stream << fileInfo.fileName();
 }
 
+/**
+  * For testing purpose.
+  */
 bool Global::recursiveDeleteDirectoryContent(const QString& dir)
 {
    bool success = true;
@@ -141,7 +155,9 @@ bool Global::recursiveDeleteDirectoryContent(const QString& dir)
    return success;
 
 }
-
+/**
+  * For testing purpose.
+  */
 bool Global::recursiveDeleteDirectory(const QString& dir)
 {
    bool success = Global::recursiveDeleteDirectoryContent(dir);
@@ -150,5 +166,23 @@ bool Global::recursiveDeleteDirectory(const QString& dir)
       success = false;
 
    return success;
+}
+
+/**
+  * Create a directory into the temp directory and set as the current one.
+  * For testing purpose.
+  */
+QString Global::setCurrentDirToTemp(const QString& dirname)
+{
+   const QString TEMP_DIRNAME("Aybabtu" + dirname);
+   QDir::setCurrent(QDir::tempPath());
+   if (!QDir::current().exists(TEMP_DIRNAME))
+      if (!QDir::current().mkdir(TEMP_DIRNAME))
+         throw UnableToSetTempDirException(QDir(TEMP_DIRNAME).absolutePath());
+
+   QDir dir;
+   dir.cd(TEMP_DIRNAME);
+   QDir::setCurrent(dir.absolutePath());
+   return dir.absolutePath();
 }
 
