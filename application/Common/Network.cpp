@@ -38,6 +38,7 @@ QString Network::messToStr(GUIMessageType type)
    case GUI_CANCEL_DOWNLOADS: return "CANCEL_DOWNLOADS";
    case GUI_DOWNLOAD: return "DOWNLOAD";
    case GUI_CHAT_MESSAGE: return "CHAT_MESSAGE";
+   case GUI_REFRESH: return "REFRESH";
    default: return "<UNKNOWN_GUI_MESSAGE_TYPE>";
    }
 }
