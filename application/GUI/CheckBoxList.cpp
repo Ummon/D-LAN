@@ -1,7 +1,7 @@
 #include <CheckBoxList.h>
 using namespace GUI;
 
-#include <QCHeckBox>
+#include <QCheckBox>
 #include <QApplication>
 #include <QStylePainter>
 #include <QAbstractItemView>
