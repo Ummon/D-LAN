@@ -19,6 +19,10 @@ GetHashesResult::GetHashesResult(const Protos::Common::Entry& fileEntry, Cache& 
 
 GetHashesResult::~GetHashesResult()
 {
+   // After the 'emit nextHash(chunk->getHash());' the receiver (in an other thread) can decide to clear the QSharedPointer, if it does and it's the last reference the
+   // object will be destroyed by an another thread and 'mutex' will be unlock by this other thread..
+   QMutexLocker locker(&this->mutex);
+
    disconnect(&this->cache, SIGNAL(chunkHashKnown(QSharedPointer<Chunk>)), this, SLOT(chunkHashKnown(QSharedPointer<Chunk>)));
 }
 
@@ -78,14 +82,13 @@ void GetHashesResult::chunkHashKnown(QSharedPointer<Chunk> chunk)
 {
    if (chunk->isOwnedBy(this->file))
    {
+      QMutexLocker locker(&this->mutex);
       this->sendNextHash(chunk);
    }
 }
 
 void GetHashesResult::sendNextHash(QSharedPointer<Chunk> chunk)
 {
-   QMutexLocker locker(&this->mutex);
-
    if (chunk->getNum() == this->lastHashNumSent)
       return;
 
