@@ -28,10 +28,12 @@ SOURCES += main.cpp \
     ../../../Protos/common.pb.cc \
     HashesReceiver.cpp \
     StressTest.cpp \
-    ../../../Protos/core_settings.pb.cc
+    ../../../Protos/core_settings.pb.cc \
+    StressTests.cpp
 HEADERS += Tests.h \
     ../../../Protos/common.pb.h \
     debug_new.h \
     HashesReceiver.h \
     StressTest.h \
-    ../../../Protos/core_settings.pb.h
+    ../../../Protos/core_settings.pb.h \
+    StressTests.h

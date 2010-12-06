@@ -30,16 +30,31 @@ void Tests::initTestCase()
 {
    LM::Builder::initMsgHandler();
    qDebug() << "===== initTestCase() =====";
+   try
+   {
+      QString tempFolder = Common::Global::setCurrentDirToTemp("PeerManagerTests");
+      qDebug() << "Application folder path (where is put the persistent data) : " << APPLICATION_FOLDER_PATH;
+      qDebug() << "The file created during this test are put in : " << tempFolder;
+   }
+   catch(Common::Global::UnableToSetTempDirException& e)
+   {
+      QFAIL(e.what());
+   }
 
    Common::PersistentData::rmValue(Common::FILE_CACHE); // Reset the stored cache.
 
-   SETTINGS.setFilename("core_settings.txt");
+   SETTINGS.setFilename("core_settings_peer_manager_tests.txt");
    SETTINGS.setSettingsMessage(new Protos::Core::Settings());
 
    this->createInitialFiles();
 
    this->fileManagers << FM::Builder::newFileManager() << FM::Builder::newFileManager();
-   this->peerManagers << Builder::newPeerManager(this->fileManagers[0]) << Builder::newPeerManager(this->fileManagers[1]);
+
+   SETTINGS.set("peerID", Hash("1111111111111111111111111111111111111111"));
+   this->peerManagers << Builder::newPeerManager(this->fileManagers[0]);
+
+   SETTINGS.set("peerID", Hash("2222222222222222222222222222222222222222"));
+   this->peerManagers << Builder::newPeerManager(this->fileManagers[1]);
 
    this->fileManagers[0]->setSharedDirsReadOnly(QStringList() << QDir::currentPath().append("/sharedDirs/peer1"));
    this->fileManagers[1]->setSharedDirsReadOnly(QStringList() << QDir::currentPath().append("/sharedDirs/peer2"));
@@ -161,7 +176,7 @@ void Tests::askForAChunk()
    getChunkMessage.set_offset(0);
    QSharedPointer<IGetChunkResult> result = this->peerManagers[0]->getPeers()[0]->getChunk(getChunkMessage);
    connect(result.data(), SIGNAL(result(const Protos::Core::GetChunkResult&)), &this->resultListener, SLOT(result(const Protos::Core::GetChunkResult&)));
-   connect(result.data(), SIGNAL(stream(QSharedPointer<ISocket>)), &this->resultListener, SLOT(stream(QSharedPointer<ISocket>)));
+   connect(result.data(), SIGNAL(stream(QSharedPointer<PM::ISocket>)), &this->resultListener, SLOT(stream(QSharedPointer<PM::ISocket>)));
    result->start();
    QTest::qWait(1000);
 }
