@@ -60,7 +60,7 @@ void PersistentData::setValue(const QString& name, const google::protobuf::Messa
 
 /**
   * Retrieve the data associated to a given name.
-  * @exception UnknownValueException Throwed if the value doesn't exist
+  * @exception UnknownValueException Thrown if the value doesn't exist
   */
 void PersistentData::getValue(const QString& name, google::protobuf::Message& data, bool humanReadable)
 {
