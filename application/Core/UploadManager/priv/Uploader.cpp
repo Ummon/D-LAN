@@ -91,7 +91,7 @@ void Uploader::run()
          this->mutex.unlock();
 
          // Sometimes it will block when data are send between the 'bytesToWrite' call and the 'waitForBytesWritten' call.
-         /*if (socket->getQSocket()->bytesToWrite() > SETTINGS.get<quint32>("socket_buffer_size"))
+         if (socket->getQSocket()->bytesToWrite() > SETTINGS.get<quint32>("socket_buffer_size"))
          {
             if (!socket->getQSocket()->waitForBytesWritten(SETTINGS.get<quint32>("socket_timeout")))
             {
@@ -99,7 +99,7 @@ void Uploader::run()
                networkError = true;
                break;
             }
-         }*/
+         }
 
          this->transferRateCalculator.addData(bytesSent);
       }

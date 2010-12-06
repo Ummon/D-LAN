@@ -32,8 +32,10 @@ RemoteConnection::RemoteConnection(
    uploadManager(uploadManager),
    downloadManager(downloadManager),
    networkListener(networkListener),
-   socket(socket),
-   loggerRefreshState(LM::Builder::newLogger("RemoteConnection (State)"))
+   socket(socket)
+ #if DEBUG
+   ,loggerRefreshState(LM::Builder::newLogger("RemoteConnection (State)"))
+ #endif
 {
    L_DEBU(QString("New RemoteConnection from %1").arg(socket->peerAddress().toString()));
 
@@ -415,17 +417,22 @@ void RemoteConnection::send(Common::Network::GUIMessageType type, const google::
    const Common::Network::MessageHeader<Common::Network::GUIMessageType> header(type, message.ByteSize(), this->peerManager->getID());
 
 #if DEBUG
-   QString logMess = QString("RemoteConnection::send : %2\n%3").arg(header.toStr()).arg(Common::ProtoHelper::getDebugStr(message));
    if (type == Common::Network::GUI_STATE)
-      ; // LOG_DEBU(this->loggerRefreshState, logMess); // Commented -> too heavy...
+      // Don't log the message body, to heavy
+      LOG_DEBU(this->loggerRefreshState, QString("RemoteConnection::send : %2").arg(header.toStr()));
    else
-      L_DEBU(logMess);
+      L_DEBU(QString("RemoteConnection::send : %2\n%3").arg(header.toStr()).arg(Common::ProtoHelper::getDebugStr(message)));
 #endif
 
-   Common::Network::writeHeader(*this->socket, header);
-   Common::ZeroCopyOutputStreamQIODevice outputStream(this->socket);
-   if (!message.SerializeToZeroCopyStream(&outputStream))
-      L_WARN(QString("Unable to send %1").arg(Common::ProtoHelper::getDebugStr(message)));
+   {
+      Common::Network::writeHeader(*this->socket, header);
+      Common::ZeroCopyOutputStreamQIODevice outputStream(this->socket);
+      if (!message.SerializeToZeroCopyStream(&outputStream))
+         L_WARN(QString("Unable to send %1").arg(Common::ProtoHelper::getDebugStr(message)));
+   }
+
+   if (this->socket->state() == QAbstractSocket::ConnectedState)
+      this->socket->flush();
 }
 
 void RemoteConnection::removeGetEntriesResult(const PM::IGetEntriesResult* getEntriesResult)

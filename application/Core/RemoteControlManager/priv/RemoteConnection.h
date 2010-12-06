@@ -82,7 +82,9 @@ namespace RCM
 
       MTRand mtrand;
 
+#ifdef DEBUG
       QSharedPointer<LM::ILogger> loggerRefreshState; // A logger especially for the state message.
+#endif
    };
 }
 #endif

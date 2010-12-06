@@ -14,7 +14,7 @@ GetChunkResult::~GetChunkResult()
 {
    // We must disconnect because 'this->socket->finished' can read some data and emit 'newMessage'.
    disconnect(this->socket.data(), SIGNAL(newMessage(Common::Network::CoreMessageType, const google::protobuf::Message&)), this, SLOT(newMessage(Common::Network::CoreMessageType, const google::protobuf::Message&)));
-   this->socket->finished(this->error | this->isTimeouted());
+   this->socket->finished(this->error || this->isTimeouted());
 }
 
 void GetChunkResult::start()
