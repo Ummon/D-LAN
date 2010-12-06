@@ -4,6 +4,7 @@
 #include <QByteArray>
 #include <QFile>
 #include <QDir>
+#include <QElapsedTimer>
 
 #include <Protos/common.pb.h>
 #include <Protos/core_settings.pb.h>
@@ -52,6 +53,25 @@ void Tests::formatByteSize()
    QCOMPARE(Global::formatByteSize(1024 * 1485), QString("1.5 MiB"));
    QCOMPARE(Global::formatByteSize(1024 * 1996), QString("1.9 MiB"));
    QCOMPARE(Global::formatByteSize(1024 * 1997), QString("2.0 MiB"));
+   QCOMPARE(Global::formatByteSize(42LL * 1024 * 1024 * 1024 * 1024 * 1024), QString("42.0 PiB"));
+   QCOMPARE(Global::formatByteSize(42LL * 1020 * 1024 * 1024 * 1024 * 1024), QString("41.8 PiB"));
+
+
+   QCOMPARE(Global::formatByteSize(-42, 2), QString("0 B"));
+   QCOMPARE(Global::formatByteSize(0, 2), QString("0 B"));
+   QCOMPARE(Global::formatByteSize(42, 2), QString("42 B"));
+   QCOMPARE(Global::formatByteSize(1023, 2), QString("1023 B"));
+   QCOMPARE(Global::formatByteSize(1024, 2), QString("1.00 KiB"));
+   QCOMPARE(Global::formatByteSize(1484, 2), QString("1.45 KiB"));
+   QCOMPARE(Global::formatByteSize(1485, 2), QString("1.45 KiB"));
+   QCOMPARE(Global::formatByteSize(1996, 2), QString("1.95 KiB"));
+   QCOMPARE(Global::formatByteSize(1997, 2), QString("1.95 KiB"));
+   QCOMPARE(Global::formatByteSize(1024 * 1484, 2), QString("1.45 MiB"));
+   QCOMPARE(Global::formatByteSize(1024 * 1485, 2), QString("1.45 MiB"));
+   QCOMPARE(Global::formatByteSize(1024 * 1996, 2), QString("1.95 MiB"));
+   QCOMPARE(Global::formatByteSize(1024 * 1997, 2), QString("1.95 MiB"));
+   QCOMPARE(Global::formatByteSize(42LL * 1024 * 1024 * 1024 * 1024 * 1024, 2), QString("42.00 PiB"));
+   QCOMPARE(Global::formatByteSize(42LL * 1020 * 1024 * 1024 * 1024 * 1024, 2), QString("41.84 PiB"));
 }
 
 void Tests::availableDiskSpace()
