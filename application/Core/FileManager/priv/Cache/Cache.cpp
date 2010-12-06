@@ -426,6 +426,8 @@ void Cache::retrieveFromFile(const Protos::FileCache::Hashes& hashes)
   */
 void Cache::saveInFile(Protos::FileCache::Hashes& hashes) const
 {
+   QMutexLocker locker(&this->mutex);
+
    hashes.set_version(FILE_CACHE_VERSION);
    hashes.set_chunksize(SETTINGS.get<quint32>("chunk_size"));
 
@@ -514,6 +516,7 @@ void Cache::createSharedDirs(const QStringList& dirs, const QList<SharedDirector
 
          L_DEBU(QString("Add a new shared directory : %1").arg(path));
          this->sharedDirs << dir;
+
          emit newSharedDirectory(dir);
       }
       catch (DirNotFoundException& e)

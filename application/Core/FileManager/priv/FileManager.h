@@ -69,6 +69,7 @@ namespace FM
 
    private slots:
       void persistCacheToFile();
+      void forcePersistCacheToFile();
       void setCacheChanged();
 
    private:
