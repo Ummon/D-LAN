@@ -7,13 +7,13 @@
 const int Downloader::BUFFER_SIZE(16 * 1024);
 const int Downloader::SOCKET_TIMEOUT(5000);
 
-Downloader::Downloader(QObject *parent, const int port)
+Downloader::Downloader(QObject *parent, const QString& address, const int port)
    : QThread(parent)
 {
    qDebug() << "New downloader";
 
    connect(&this->socket, SIGNAL(connected()), this, SLOT(connected()));
-   this->socket.connectToHost(QHostAddress::LocalHost, port);
+   this->socket.connectToHost(address, port);
 }
 
 void Downloader::run()
@@ -30,13 +30,15 @@ void Downloader::run()
 
    forever
    {
+      this->msleep(100);
       bytesRead = this->socket.read(buffer, BUFFER_SIZE);
 
       if (bytesRead == 0)
       {
+         qDebug() << "waitForReadyRead";
          if (!this->socket.waitForReadyRead(SOCKET_TIMEOUT))
          {
-            qDebug() << "Downloader : Connection dropped! erro = " << this->socket.errorString();
+            qDebug() << "Downloader : Connection dropped! error = " << this->socket.errorString();
             break;
          }
          continue;
@@ -44,6 +46,7 @@ void Downloader::run()
       else if (bytesRead == -1)
       {
          qDebug() << "Downloader : Cannot read data from the socket";
+         break;
       }
 
       totalBytesRead += bytesRead;
@@ -54,6 +57,8 @@ void Downloader::run()
          timer.restart();
       }
    }
+
+   qDebug() << "Download ended";
 
    this->socket.moveToThread(this->mainThread);
 }

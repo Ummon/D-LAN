@@ -11,7 +11,7 @@ class Downloader : public QThread
 
    Q_OBJECT
 public:
-   explicit Downloader(QObject *parent, const int port);
+   explicit Downloader(QObject *parent, const QString& address, const int port);
 
 protected:
    void run();
