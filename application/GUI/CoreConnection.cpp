@@ -79,10 +79,7 @@ void SearchResult::setTag(quint64 tag)
 void SearchResult::searchResult(const Protos::Common::FindResult& findResult)
 {
    if (findResult.tag() == this->tag) // Is this message for us?
-   {
-      this->tag = 0; // To avoid multi emit (should not occurs).
       emit result(findResult);
-   }
 }
 
 /////
@@ -211,12 +208,15 @@ void CoreConnection::dataReceived()
    // TODO : it will loop infinetly if not enough data is provided.
    while (!this->socket.atEnd())
    {
-      QCoreApplication::processEvents(); // To read from the native socket to the internal QTcpSocket buffer. TODO : more elegant way?
+      // To read from the native socket to the internal QTcpSocket buffer. TODO : more elegant way? See : http://bugreports.qt.nokia.com/browse/QTBUG-15903
+      QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
 
       if (this->currentHeader.isNull() && this->socket.bytesAvailable() >= Common::Network::HEADER_SIZE)
       {
          this->currentHeader = Common::Network::readHeader<Common::Network::GUIMessageType>(this->socket);
          this->ourID = this->currentHeader.senderID;
+
+         L_DEBU(QString("Data received : %1").arg(this->currentHeader.toStr()));
       }
 
       if (!this->currentHeader.isNull() && this->socket.bytesAvailable() >= this->currentHeader.size)
