@@ -234,7 +234,6 @@ void FileDownload::result(const Protos::Core::GetHashesResult& result)
    else
    {
       L_DEBU(QString("Unable to retrieve the hashes, error = %1").arg(result.status()));
-      this->status = ENTRY_NOT_FOUND;
       this->getHashesResult.clear();
       this->occupiedPeersAskingForHashes.setPeerAsFree(this->peerSource);
       this->status = UNABLE_TO_RETRIEVE_THE_HASHES;
@@ -254,6 +253,8 @@ void FileDownload::nextHash(const Common::Hash& hash)
       // If we got all the chunks, remote entry becomes a local entry.
       if (this->fileCreated && !this->chunkDownloads.isEmpty())
          this->chunkDownloads.first()->getChunk()->populateEntry(&this->entry);
+
+      this->status = QUEUED;
    }
 
    if (this->chunkDownloads.size() >= this->nbHashesKnown && this->chunkDownloads[this->nbHashesKnown-1]->getHash() != hash)
