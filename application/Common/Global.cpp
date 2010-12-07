@@ -8,6 +8,8 @@ using namespace Common;
 
 #ifdef Q_OS_WIN32
    #include <windows.h>
+#else
+   #include <cstdio>
 #endif
 
 #include <Constants.h>
@@ -119,7 +121,6 @@ qint64 Global::availableDiskSpace(const QString& path)
 }
 
 /**
-  * TODO : Linux
   * Rename a file, if 'newFile' already exists, it will be replaced by 'existingFile'.
   * @remarks Qt doesn't offer any way to replace a file by an other in one operation.
   * @return false if the rename didn't work.
@@ -129,7 +130,7 @@ bool Global::rename(const QString& existingFile, const QString& newFile)
 #ifdef Q_OS_WIN32
    return MoveFileEx((LPCTSTR)existingFile.utf16(), (LPCTSTR)newFile.utf16(), MOVEFILE_REPLACE_EXISTING);
 #else
-   return false;
+   return std::rename(qPrintable(existingFile), qPrintable(newFile));
 #endif
 }
 
