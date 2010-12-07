@@ -3,7 +3,7 @@
 #-------------------------------------------------
 QT += testlib network
 QT -= gui
-TARGET = Tests
+TARGET = TestsPeerManager
 CONFIG += link_prl console
 CONFIG -= app_bundle
 

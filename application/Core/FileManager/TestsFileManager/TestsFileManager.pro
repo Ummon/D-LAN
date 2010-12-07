@@ -3,7 +3,7 @@
 # -------------------------------------------------
 QT += testlib
 QT -= gui
-TARGET = Tests
+TARGET = TestsFileManager
 CONFIG += link_prl console
 CONFIG -= app_bundle
 

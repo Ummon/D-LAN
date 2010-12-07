@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-
 # Generate all .h/.cpp from the proto files.
+set -o errexit
 
 PROTOS_DIR=Protos
 

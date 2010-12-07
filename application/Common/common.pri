@@ -1,11 +1,13 @@
 
 CONFIG(debug, debug|release) {
-   #QMAKE_CXXFLAGS += -pg
-   #QMAKE_LFLAGS += -pg
    FOLDER = debug
    DEFINES += DEBUG
 } else {
    FOLDER = release
+   prof {
+      QMAKE_CXXFLAGS += -pg
+      QMAKE_LFLAGS += -pg
+   }
 }
 
 DESTDIR = output/$$FOLDER

@@ -1,26 +1,23 @@
 #!/usr/bin/env bash
-
 # Runs all tests. They must exist.
 
-# Common.
-cd Common/tests/output/release
-./Tests.exe
-ERR=$?
-cd ../../../..
-if (( $ERR )); then exit 1; fi
+set -o errexit
 
+TESTS=(
+   Common/TestsCommon/output/release/TestsCommon.exe
+   Core/FileManager/TestsFileManager/output/release/TestsFileManager.exe
+   Core/PeerManager/TestsPeerManager/output/release/TestsPeerManager.exe
+   # Core/DownloadManager/TestsDownloadManager/output/release/TestsDownloadManager.exe
+)
 
-# FileManager.
-cd Core/FileManager/tests/output/release
-./Tests.exe
-ERR=$?
-cd ../../../../..
-if (( $ERR )); then exit 1; fi
+for i in ${TESTS[@]}
+do
+   pushd .
+   cd `dirname ${i}`
+   TEST=`echo ${i} | awk -F"/" '{print $NF}'`
+   echo "Executing $TEST.."
+   $TEST
+   popd
+done
 
-
-# PeerManager.
-cd Core/PeerManager/tests/output/release
-./Tests.exe
-ERR=$?
-cd ../../../../..
-if (( $ERR )); then exit 1; fi
+Echo "All tests finished successfully"

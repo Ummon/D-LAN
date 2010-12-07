@@ -1,100 +1,64 @@
 #!/usr/bin/env bash
 # Generates makefiles and compile all components and theirs tests.
 
+set -o errexit
+
+PROJECTS=(
+   Common Common/TestsCommon
+   Common/LogManager
+   Tools/LogViewer
+   Core/FileManager
+   Core/FileManager/TestsFileManager
+   Core/PeerManager
+   Core/PeerManager/TestsPeerManager
+   Core/UploadManager
+   Core/DownloadManager
+   Core/NetworkListener
+   Core/RemoteControlManager
+   Core
+   GUI
+)
 SPEC=win32-g++
 MAKE=mingw32-make.exe
+
+# Read the script arguments.
+for arg in $@
+do
+   if [ $@ == "--prof" ]
+   then
+      PROF=prof
+      echo "Profling activated"
+   elif [ $@ == "--clean" ]
+   then
+      CLEAN_COMMAND="$MAKE release-clean -w"
+      echo "Clean activated"
+   elif [ $@ == "-h" ] || [ $@ == "--help" ]
+   then
+      echo "Usage : $0 [--prof] [--clean]"
+      echo " --prof : To active profiling"
+      echo " --clean : Clean temporary objects before each compilation"
+   fi
+done
 
 cd Tools
 ./update_version.sh
 cd ..
 
 # To force to recompile the Common/Version.rs and DialogAbout.
-rm Core/.tmp/release/version_res.o
-rm GUI/.tmp/release/version_res.o
-rm GUI/.tmp/release/DialogAbout.o
+rm -f Core/.tmp/release/version_res.o
+rm -f GUI/.tmp/release/version_res.o
+rm -f GUI/.tmp/release/DialogAbout.o
 
-# Common.
-cd Common
-qmake Common.pro -r -spec $SPEC CONFIG+=release
-$MAKE -w
-cd ..
+for i in ${PROJECTS[@]}
+do
+   pushd .
+   cd ${i}
+   $CLEAN_COMMAND
+   PROJECT_NAME=`echo ${i} | awk -F"/" '{print $NF}'`
+   echo Compiling $PROJECT_NAME..
+   qmake ${PROJECT_NAME}.pro -r -spec $SPEC CONFIG+="release $PROF"      
+   $MAKE -w
+   popd
+done
 
-# TestsCommon.
-cd Common/tests
-qmake TestsCommon.pro -r -spec $SPEC CONFIG+=release
-$MAKE -w
-cd ../..
-
-# LogManager.
-cd Common/LogManager
-qmake LogManager.pro -r -spec $SPEC CONFIG+=release
-$MAKE -w
-cd ../..
-
-# LogViewer.
-cd Tools/LogViewer
-qmake LogViewer.pro -r -spec $SPEC CONFIG+=release
-$MAKE -w
-cd ../..
-
-# FileManager.
-cd Core/FileManager
-qmake FileManager.pro -r -spec $SPEC CONFIG+=release
-$MAKE -w
-cd ../..
-
-# TestsFileManager.
-cd Core/FileManager/tests
-qmake TestsFileManager.pro -r -spec $SPEC CONFIG+=release
-$MAKE -w
-cd ../../..
-
-# PeerManager.
-cd Core/PeerManager
-qmake PeerManager.pro -r -spec $SPEC CONFIG+=release
-$MAKE -w
-cd ../..
-
-# TestsPeerManager.
-cd Core/PeerManager/tests
-qmake TestsPeerManager.pro -r -spec $SPEC CONFIG+=release
-$MAKE -w
-cd ../../..
-
-# UploadManager.
-cd Core/UploadManager
-qmake UploadManager.pro -r -spec $SPEC CONFIG+=release
-$MAKE -w
-cd ../..
-
-# DownloadManager.
-cd Core/DownloadManager
-qmake DownloadManager.pro -r -spec $SPEC CONFIG+=release
-$MAKE -w
-cd ../..
-
-# NetworkListener.
-cd Core/NetworkListener
-qmake NetworkListener.pro -r -spec $SPEC CONFIG+=release
-$MAKE -w
-cd ../..
-
-# RemoteControlManager.
-cd Core/RemoteControlManager
-qmake RemoteControlManager.pro -r -spec $SPEC CONFIG+=release
-$MAKE -w
-cd ../..
-
-#Core
-cd Core
-qmake Core.pro -r -spec $SPEC CONFIG+=release
-$MAKE -w
-cd ..
-
-# GUI
-cd GUI
-qmake GUI.pro -r -spec $SPEC CONFIG+=release
-$MAKE -w
-cd ..
-
-
+echo "Compilation finished successfully"
