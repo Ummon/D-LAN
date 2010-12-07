@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -o errexit
+
 # Will update the two fields 'BUILD_TIME' and 'GIT_VERSION' from the file 'application/Common/Version.h'.
 CURRENT_DATE=`date -u +%Y-%m-%d_%H-%M`
 CURRENT_GIT_VERSION=`git show --pretty="%T" HEAD | head -n 1`
