@@ -24,15 +24,15 @@ MAKE=mingw32-make.exe
 # Read the script arguments.
 for arg in $@
 do
-   if [ $@ == "--prof" ]
+   if [ $arg == "--prof" ]
    then
       PROF=prof
       echo "Profling activated"
-   elif [ $@ == "--clean" ]
+   elif [ $arg == "--clean" ]
    then
       CLEAN_COMMAND="$MAKE release-clean -w"
       echo "Clean activated"
-   elif [ $@ == "-h" ] || [ $@ == "--help" ]
+   elif [ $arg == "-h" ] || [ $@ == "--help" ]
    then
       echo "Usage : $0 [--prof] [--clean]"
       echo " --prof : To active profiling"
