@@ -4,9 +4,9 @@
 set -o errexit
 
 PROJECTS=(
-   Common Common/TestsCommon
+   Common
+   Common/TestsCommon
    Common/LogManager
-   Tools/LogViewer
    Core/FileManager
    Core/FileManager/TestsFileManager
    Core/PeerManager
@@ -30,7 +30,7 @@ do
       echo "Profling activated"
    elif [ $arg == "--clean" ]
    then
-      CLEAN_COMMAND="$MAKE release-clean -w"
+      CLEAN_COMMAND=on
       echo "Clean activated"
    elif [ $arg == "-h" ] || [ $@ == "--help" ]
    then
@@ -53,10 +53,13 @@ for i in ${PROJECTS[@]}
 do
    pushd .
    cd ${i}
-   $CLEAN_COMMAND
    PROJECT_NAME=`echo ${i} | awk -F"/" '{print $NF}'`
    echo Compiling $PROJECT_NAME..
-   qmake ${PROJECT_NAME}.pro -r -spec $SPEC CONFIG+="release $PROF"      
+   if [ $CLEAN_COMMAND == on ]
+   then
+      $MAKE release-clean -w || { echo "nothing to clean"; } # To avoid the command to fail.
+   fi
+   qmake ${PROJECT_NAME}.pro -r -spec $SPEC "CONFIG+=release $PROF"
    $MAKE -w
    popd
 done
