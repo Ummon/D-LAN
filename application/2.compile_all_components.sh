@@ -55,11 +55,11 @@ do
    cd ${i}
    PROJECT_NAME=`echo ${i} | awk -F"/" '{print $NF}'`
    echo Compiling $PROJECT_NAME..
+   qmake ${PROJECT_NAME}.pro -r -spec $SPEC "CONFIG+=release $PROF"
    if [ $CLEAN_COMMAND == on ]
    then
       $MAKE release-clean -w || { echo "nothing to clean"; } # To avoid the command to fail.
    fi
-   qmake ${PROJECT_NAME}.pro -r -spec $SPEC "CONFIG+=release $PROF"
    $MAKE -w
    popd
 done
