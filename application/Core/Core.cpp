@@ -16,7 +16,7 @@ using namespace CoreSpace;
 #include <NetworkListener/Builder.h>
 #include <RemoteControlManager/Builder.h>
 
-Core::Core(int argc, char **argv)
+Core::Core(int argc, char** argv)
    : QtService<QCoreApplication>(argc, argv, Common::SERVICE_NAME)
 {
    GOOGLE_PROTOBUF_VERIFY_VERSION;
@@ -37,6 +37,18 @@ Core::Core(int argc, char **argv)
    this->setServiceDescription("A LAN file sharing system");
    this->setStartupType(QtServiceController::ManualStartup);
    this->setServiceFlags(QtServiceBase::Default);
+
+   // If AybabtuCore is launched from the console we read user input.
+   for (int i = 1; i < argc; i++)
+   {
+      QString currentArg = QString::fromAscii(argv[i]);
+      if (currentArg == "-e" || currentArg == "-exec")
+      {
+         connect(&this->consoleReader, SIGNAL(newLine(QString)), this, SLOT(treatUserInput(QString)), Qt::QueuedConnection);
+         this->consoleReader.start();
+         break;
+      }
+   }
 }
 
 void Core::start()
@@ -61,6 +73,22 @@ void Core::stop()
 {
    this->application()->quit();
 }
+
+void Core::treatUserInput(QString input)
+{
+   if (input == "quit")
+   {
+      this->consoleReader.stop();
+      this->stop();
+   }
+   else
+   {
+      QTextStream out(stdout);
+      out << "Commands:" << endl
+          << " - quit : stop the core" << endl;
+   }
+}
+
 
 /**
   * Check if each value settings is valid, for example buffer_size cannot be one byte or 3 TiB..
