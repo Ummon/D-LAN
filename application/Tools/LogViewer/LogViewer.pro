@@ -4,16 +4,9 @@
 TARGET = LogViewer
 TEMPLATE = app
 CONFIG += link_prl
-CONFIG(debug, debug|release) { 
-    FOLDER = debug
-    DEFINES += DEBUG
-}
-else:FOLDER = release
-DESTDIR = output/$$FOLDER
-MOC_DIR = ".tmp/$$FOLDER"
-OBJECTS_DIR = ".tmp/$$FOLDER"
-RCC_DIR = ".tmp/$$FOLDER"
-UI_DIR = ".tmp/$$FOLDER"
+
+include(../../Common/common.pri)
+
 INCLUDEPATH += . \
     ../..
 LIBS += -L../../Common/LogManager/output/$$FOLDER \

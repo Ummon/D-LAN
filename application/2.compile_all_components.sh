@@ -17,9 +17,11 @@ PROJECTS=(
    Core/RemoteControlManager
    Core
    GUI
+   Tools/LogViewer
 )
 SPEC=win32-g++
 MAKE=mingw32-make.exe
+CLEAN_COMMAND=off
 
 # Read the script arguments.
 for arg in $@
