@@ -79,10 +79,10 @@ namespace FM
       Cache cache; ///< The files and directories.
       Chunks chunks; ///< The indexed chunks. It contains only completed chunks.
       WordIndex<Entry*> wordIndex; ///< The word index.
-      bool cacheLoading; ///< Set to 'true' during cache loading. It avoids to persist the cache during loading.
 
       QTimer timerPersistCache;
       QMutex mutexPersistCache;
+      bool cacheLoading; ///< Set to 'true' during cache loading. It avoids to persist the cache during loading.
       bool cacheChanged;
    };
 }
