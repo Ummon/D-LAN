@@ -31,6 +31,7 @@ FileManager::FileManager() :
    fileUpdater(this),
    cache(this),
    mutexPersistCache(QMutex::Recursive),
+   cacheLoading(false),
    cacheChanged(false)
 {
    connect(&this->cache, SIGNAL(entryAdded(Entry*)),     this, SLOT(entryAdded(Entry*)),     Qt::DirectConnection);
@@ -342,6 +343,8 @@ QStringList FileManager::splitInWords(const QString& words)
   */
 void FileManager::loadCacheFromFile()
 {
+   this->cacheLoading = true;
+
    // This hashes will be unallocated by the fileUpdater.
    Protos::FileCache::Hashes* savedCache = new Protos::FileCache::Hashes();
 
@@ -379,6 +382,7 @@ void FileManager::loadCacheFromFile()
 
 end:
    this->timerPersistCache.start();
+   this->cacheLoading = false;
 }
 
 /**
@@ -388,7 +392,8 @@ end:
 void FileManager::persistCacheToFile()
 {
    QMutexLocker locker(&this->mutexPersistCache);
-   if (this->cacheChanged)
+
+   if (this->cacheChanged && !this->cacheLoading)
    {
       L_DEBU("Persisting cache..");
 
