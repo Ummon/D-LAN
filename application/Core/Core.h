@@ -16,18 +16,23 @@
 #include <RemoteControlManager/IRemoteControlManager.h>
 
 #include <Log.h>
+#include <ConsoleReader.h>
 
 namespace CoreSpace
 {
    // Best than the Arm.
-   class Core : public QtService<QCoreApplication>, Common::Uncopyable
+   class Core : public QObject, public QtService<QCoreApplication>, Common::Uncopyable
    {
+      Q_OBJECT
    public:
-      Core(int argc, char **argv);
+      Core(int argc, char** argv);
 
    protected:
       void start();
       void stop();
+
+   private slots:
+      void treatUserInput(QString);
 
    private:
       void checkSettingsIntegrity();
@@ -44,6 +49,8 @@ namespace CoreSpace
       QSharedPointer<DM::IDownloadManager> downloadManager;
       QSharedPointer<NL::INetworkListener> networkListener;
       QSharedPointer<RCM::IRemoteControlManager> remoteControlManager;
+
+      ConsoleReader consoleReader;
    };
 }
 
