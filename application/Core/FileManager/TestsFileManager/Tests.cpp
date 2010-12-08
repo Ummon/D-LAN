@@ -224,6 +224,8 @@ void Tests::createASubFile()
 
    Common::Global::createFile("sharedDirs/share1/v.txt");
    QTest::qSleep(100);
+
+   // TODO : check if cache own v.txt (only for watchable shared dir).
 }
 
 void Tests::createABigFile()
@@ -362,7 +364,7 @@ void Tests::getHashesFromAFileEntry1()
 
    Protos::Common::Entry entry;
    entry.set_path("/share1/");
-   entry.set_name("v.txt");
+   entry.set_name("r.txt");
    entry.mutable_shared_dir()->mutable_id()->set_hash(sharedDirId);
    QSharedPointer<IGetHashesResult> result = this->fileManager->getHashes(entry);
 
@@ -372,6 +374,7 @@ void Tests::getHashesFromAFileEntry1()
    Protos::Core::GetHashesResult res = result->start();
 
    QCOMPARE(res.status(), Protos::Core::GetHashesResult_Status_OK);
+   QVERIFY(hashesReceiver.waitToReceive(QList<Common::Hash>() << Common::Hash::fromStr("97d464813598e2e4299b5fe7db29aefffdf2641d"), 500));
 }
 
 void Tests::getHashesFromAFileEntry2()
