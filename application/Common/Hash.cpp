@@ -87,15 +87,6 @@ Hash& Hash::operator=(const Hash& h)
 }
 
 /**
-  * Return a pointer to its internal data.
-  * The length of the returned value is exactly HASH_SIZE.
-  */
-const char* Hash::getData() const
-{
-   return this->data->hash;
-}
-
-/**
   * Return a human readable string.
   * For example : 16bd4b1e656129eb9ddaa2ce0f0705f1cc161f77.
   * @see fromStr to decode a such string.

@@ -4,7 +4,6 @@
 QT -= gui
 TARGET = Common
 
-
 include(common.pri)
 include(../Libs/protobuf.pri)
 

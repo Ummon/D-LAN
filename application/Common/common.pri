@@ -5,8 +5,9 @@ CONFIG(debug, debug|release) {
 } else {
    FOLDER = release
    prof {
-      QMAKE_CXXFLAGS += -pg
+      QMAKE_CXXFLAGS += -pg -g
       QMAKE_LFLAGS += -pg
+      QMAKE_LFLAGS_RELEASE -= -Wl,-s
    }
 }
 
