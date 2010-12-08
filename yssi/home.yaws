@@ -2,7 +2,7 @@
    out(A) -> aybabtu_common:image("aybabtu_search", "Search feature").
 </erl>
 
-<p><em>Aybabtu is an open source decentralized LAN file sharing software.</em></p>
+<p><em>Aybabtu is an open source LAN file sharing software.</em></p>
 
 <p>The goal is to easily share some files and folders in a local area network environment like a LAN-Party. All clients are full-trusted. After you launched Aybabtu, you will see all other people and theirs sharing automatically without special configuration.</p>
 

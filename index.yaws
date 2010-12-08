@@ -42,7 +42,13 @@
          <!-- Somebody set up us the bomb. -->
          <div id="footer">
             <span class="aybabtu">all your byte are belong to us</span>
-            <span class="copyright">copyright 2010 Greg Burri</span>
+            <span class="copyright">
+            <erl>
+               out(A) -> 
+                  {Year, _, _} = date(),
+               {html, "copyright 2010-" ++ integer_to_list(Year)}.
+            </erl>
+            Greg Burri</span>
             <a href="http://yaws.hyber.org"><img src="img/powered-by-yaws.gif" alt="powered by Yaws" /></a>
          </div>
       </div>
