@@ -31,7 +31,13 @@ namespace Common
       ~Hash();
 
       Hash& operator=(const Hash&);
-      const char* getData() const;
+
+      /**
+        * Return a pointer to its internal data.
+        * The length of the returned value is exactly HASH_SIZE.
+        */
+      inline const char* getData() const { return this->data->hash; }
+
       QString toStr() const;
       bool isNull() const;
 
