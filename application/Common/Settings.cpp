@@ -181,6 +181,28 @@ void Settings::set(const QString& name, const QString& value)
    this->settings->GetReflection()->SetString(this->settings, fieldDescriptor, array.data());
 }
 
+void Settings::set(const QString& name, const QByteArray& value)
+{
+   QMutexLocker locker(&this->mutex);
+   if (!this->settings)
+      return;
+   const google::protobuf::FieldDescriptor* fieldDescriptor = this->descriptor->FindFieldByName(name.toStdString());
+   if (!fieldDescriptor)
+   {
+      printErrorNameNotFound(name);
+      return;
+   }
+   if (fieldDescriptor->type() != google::protobuf::FieldDescriptor::TYPE_BYTES)
+   {
+      printErrorBadType(fieldDescriptor, "bytes");
+      return;
+   }
+
+   std::string valueStr;
+   valueStr.assign(value.constData(), value.size());
+   this->settings->GetReflection()->SetString(this->settings, fieldDescriptor, valueStr);
+}
+
 void Settings::set(const QString& name, const Hash& hash)
 {
    QMutexLocker locker(&this->mutex);
@@ -244,6 +266,21 @@ void Settings::get(const QString& name, QString& value) const
       return;
    }
    value = QString::fromUtf8(this->settings->GetReflection()->GetString(*this->settings, fieldDescriptor).data());
+}
+
+void Settings::get(const QString& name, QByteArray& value) const
+{
+   QMutexLocker locker(&this->mutex);
+   if (!this->settings)
+      return;
+   const google::protobuf::FieldDescriptor* fieldDescriptor = this->descriptor->FindFieldByName(name.toStdString());
+   if (!fieldDescriptor)
+   {
+      printErrorNameNotFound(name);
+      return;
+   }
+   std::string valueStr = this->settings->GetReflection()->GetString(*this->settings, fieldDescriptor);
+   value = QByteArray::fromRawData(valueStr.data(), valueStr.size());
 }
 
 void Settings::get(const QString& name, Hash& hash) const

@@ -34,11 +34,13 @@ namespace Common
       void set(const QString& name, quint32 value);
       void set(const QString& name, double hash);
       void set(const QString& name, const QString& value);
+      void set(const QString& name, const QByteArray& value);
       void set(const QString& name, const Hash& hash);
 
       void get(const QString& name, quint32& value) const;
       void get(const QString& name, double& value) const;
       void get(const QString& name, QString& value) const;
+      void get(const QString& name, QByteArray& value) const;
       void get(const QString& name, Hash& hash) const;
 
       template <typename T>
