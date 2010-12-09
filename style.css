@@ -3,7 +3,7 @@
 body {
 	font-family: verdana, sans-serif;
 	font-size: 13px;
-	background-color: #111111;
+	background-color: #000000;
 	color: #000000;
 	margin: 0px
 }
@@ -42,6 +42,10 @@ a {
 
 a:hover {
 	color: #e480e4
+}
+
+#main {	
+	background-color: #1B1B1B;
 }
 
 
@@ -89,6 +93,11 @@ ul#menu {
 	padding: 10px 10px 14px 10px;
 }
 
+#menu li a.external {
+	padding-right: 15px;
+	background: url("img/external_link.png") no-repeat scroll right center transparent;
+}
+
 #menu li a.currentPage {
 	background-color: #bc3e04;
 }
@@ -102,7 +111,6 @@ ul#menu {
 	color: #e4d8e4;
 	background-color: #bc643b;
 }
-
 
 /*** Content ***/
 

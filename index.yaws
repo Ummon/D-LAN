@@ -27,8 +27,8 @@
             <erl>
                out(A) -> aybabtu_common:menu(A).
             </erl>
-            <li><a href="http://dev.aybabtu.org/projects/pmp/boards">forums</a></li>
-            <li><a href="http://dev.aybabtu.org/projects/pmp/wiki">development</a></li>
+            <li><a class="external" href="http://dev.aybabtu.org/projects/pmp/boards">forums</a></li>
+            <li><a class="external" href="http://dev.aybabtu.org/projects/pmp/wiki">development</a></li>
          </ul>
          <div id="content" class="<erl>
             out(A) ->
