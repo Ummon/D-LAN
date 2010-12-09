@@ -11,4 +11,8 @@ message Settings {
    optional uint32 reconnect_period = 5 [default = 1000]; // [ms].
    optional uint32 search_time = 6 [default = 3000]; // [ms].
    optional uint32 socket_timeout = 7 [default = 5000]; // [ms].
+   
+   optional bytes windows_state = 8;
+   optional uint32 main_window_width = 9 [default = 900];
+   optional uint32 main_window_height = 10 [default = 600];
 }
