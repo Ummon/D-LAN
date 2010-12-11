@@ -9,6 +9,7 @@
 
 #include <Protos/common.pb.h>
 
+#include <Common/Hash.h>
 #include <Core/FileManager/Builder.h>
 #include <Core/FileManager/IFileManager.h>
 
@@ -49,6 +50,9 @@ private:
    PeerUpdater* peerUpdater;
 
    ResultListener resultListener;
+
+   QList<Common::Hash> peerIDs;
+   QList<QString> peerSharedDirs;
 };
 
 #endif
