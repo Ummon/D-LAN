@@ -50,10 +50,9 @@ void Tests::initTestCase()
 
    this->fileManagers << FM::Builder::newFileManager() << FM::Builder::newFileManager();
 
-   SETTINGS.set("peerID", Hash("1111111111111111111111111111111111111111"));
+   SETTINGS.set("peerID", Hash::fromStr("11111111111111111111111111111111111111111111111111111111"));
    this->peerManagers << Builder::newPeerManager(this->fileManagers[0]);
-
-   SETTINGS.set("peerID", Hash("2222222222222222222222222222222222222222"));
+   SETTINGS.set("peerID", Hash::fromStr("22222222222222222222222222222222222222222222222222222222"));
    this->peerManagers << Builder::newPeerManager(this->fileManagers[1]);
 
    this->fileManagers[0]->setSharedDirsReadOnly(QStringList() << QDir::currentPath().append("/sharedDirs/peer1"));
