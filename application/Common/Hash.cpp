@@ -103,6 +103,31 @@ QString Hash::toStr() const
    return ret;
 }
 
+/**
+  * Return a C Array, for example :
+  * "{
+  * 0x4f, 0xb9, 0x6c, 0x68,
+  * 0xa4, 0xe8, 0xcd, 0x5b,
+  * 0x6e, 0xb0, 0xb7, 0x44,
+  * 0x36, 0x77, 0x2a, 0x6a,
+  * 0x09, 0x4c, 0xa5, 0xfc,
+  * 0xfc, 0x46, 0x33, 0x3a,
+  * 0x30, 0xa4, 0xc1, 0x12,
+  * }"
+  */
+QString Hash::toStrCArray() const
+{
+   QString str("{");
+   for (int i = 0; i < HASH_SIZE; i++)
+   {
+      if (i % 4 == 0)
+         str += "\n";
+      str += QString("0x%1, ").arg((unsigned char)this->data->hash[i], 2, 16, QLatin1Char('0'));
+   }
+   str += "\n}";
+   return str;
+}
+
 bool Hash::isNull() const
 {
    for (int i = 0; i < HASH_SIZE; i++)
@@ -163,21 +188,48 @@ Hasher::Hasher()
 }
 
 /**
+  * May be called right after the constructor or the 'reset()' method.
+  * @param salt Must be Hash::HASH_SIZE bytes length.
+  */
+void Hasher::addSalt(const char* salt)
+{
+   Blake::AddSalt(&this->state, (const Blake::BitSequence*)salt);
+}
+
+/**
+  * May be called right after the constructor or the 'reset()' method.
+  * @param salt Must be Hash::HASH_SIZE bytes length.
+  */
+void Hasher::addPredefinedSalt()
+{
+   static const char salt[] = {
+      0xe4, 0x91, 0x51, 0xb1,
+      0xdd, 0x2a, 0x45, 0xa7,
+      0x30, 0x89, 0x64, 0x88,
+      0x81, 0x15, 0x9a, 0x4f,
+      0x5e, 0x55, 0x02, 0xad,
+      0x1d, 0x48, 0x47, 0xe8,
+      0x60, 0x5d, 0xff, 0x86,
+   };
+   this->addSalt(salt);
+}
+
+/**
   * @param size In bytes.
   */
 void Hasher::addData(const char* data, int size)
 {
-   Blake::HashReturn ret = Blake::Update(&this->state, (const Blake::BitSequence*)data, 8 * size);
+   Blake::Update(&this->state, (const Blake::BitSequence*)data, 8 * size);
 }
 
 Hash Hasher::getResult()
 {
    Hash result;
-   Blake::HashReturn ret = Blake::Final(&this->state, (Blake::BitSequence*)result.data->hash);
+   Blake::Final(&this->state, (Blake::BitSequence*)result.data->hash);
    return result;
 }
 
 void Hasher::reset()
 {
-   Blake::HashReturn ret = Blake::Init(&this->state, Hash::HASH_SIZE * 8);
+   Blake::Init(&this->state, Hash::HASH_SIZE * 8);
 }
