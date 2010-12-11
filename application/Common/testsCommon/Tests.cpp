@@ -147,8 +147,6 @@ void Tests::removeSettings()
 
 void Tests::generateAHash()
 {
-   qDebug() << Hash::rand().toStrCArray();
-
    const char array[Hash::HASH_SIZE] = {
       0x2d, 0x73, 0x73, 0x6f,
       0x34, 0xa7, 0x38, 0x37,
