@@ -336,7 +336,7 @@ void Tests::getAExistingChunk()
 {
    qDebug() << "===== getAExistingChunk() =====";
 
-   QSharedPointer<IChunk> chunk = this->fileManager->getChunk(Common::Hash::fromStr("97d464813598e2e4299b5fe7db29aefffdf2641d"));
+   QSharedPointer<IChunk> chunk = this->fileManager->getChunk(Common::Hash::fromStr("b517ecb7fa169dce06d927eec3d76eb18fe5ab94ae71e419ecb41b41"));
    if (chunk.isNull())
       QFAIL("Chunk not found");
    else
@@ -347,7 +347,7 @@ void Tests::getAUnexistingChunk()
 {
    qDebug() << "===== getAUnexistingChunk() =====";
 
-   QSharedPointer<IChunk> chunk = this->fileManager->getChunk(Common::Hash::fromStr("47ddfe38b8c66c0f9d98b9d802f220c84b4b30d4"));
+   QSharedPointer<IChunk> chunk = this->fileManager->getChunk(Common::Hash::fromStr("257d947f01432173420e8e9e2c4f147352a1ac4f02c36de87e2df44d"));
    if (chunk.isNull())
       qDebug() << "Chunk not found : ok";
    else
@@ -374,7 +374,7 @@ void Tests::getHashesFromAFileEntry1()
    Protos::Core::GetHashesResult res = result->start();
 
    QCOMPARE(res.status(), Protos::Core::GetHashesResult_Status_OK);
-   QVERIFY(hashesReceiver.waitToReceive(QList<Common::Hash>() << Common::Hash::fromStr("97d464813598e2e4299b5fe7db29aefffdf2641d"), 500));
+   QVERIFY(hashesReceiver.waitToReceive(QList<Common::Hash>() << Common::Hash::fromStr("b517ecb7fa169dce06d927eec3d76eb18fe5ab94ae71e419ecb41b41"), 500));
 }
 
 void Tests::getHashesFromAFileEntry2()
@@ -535,10 +535,10 @@ void Tests::haveChunks()
 
    QList<Common::Hash> hashes;
    hashes
-      << Common::Hash::fromStr("f6126deaa5e1d9692d54e3bef0507721372ee7f8") // "/sharedDirs/share3/aaaa bbbb cccc.txt"
-      << Common::Hash::fromStr("4c24e58c47746ea04296df9342185d9b3a447899") // "/sharedDirs/share1/v.txt"
-      << Common::Hash::fromStr("954531aef8ac193ad62f4de783da9d7e6ebd59dd") // "/sharedDirs/share1/y.txt" (deleted)
-      << Common::Hash::fromStr("8374d82e993012aa23b293f319eef2c21d2da3b9"); // Random hash
+      << Common::Hash::fromStr("6098c5814b7d8992d95eda818201e70030ac7307c74ac3d626510e8f") // "/sharedDirs/share3/aaaa bbbb cccc.txt"
+      << Common::Hash::fromStr("6401ba7d306bc96bd265b9bdca0616a708dd3ef81613a48cb372b484") // "/sharedDirs/share1/v.txt"
+      << Common::Hash::fromStr("20208efaf5528b5bca38f07d78513aa90f58cfd588ff3683fc6e35ff") // "/sharedDirs/share1/y.txt" (deleted)
+      << Common::Hash::fromStr("257d947f01432173420e8e9e2c4f147352a1ac4f02c36de87e2df44d"); // Random hash
 
    QBitArray excpectedResult(hashes.size());
    excpectedResult[0] = true;
@@ -547,7 +547,7 @@ void Tests::haveChunks()
    excpectedResult[3] = false;
 
    QBitArray result = this->fileManager->haveChunks(hashes);
-   QVERIFY(result.size() == hashes.size());
+   QCOMPARE(result.size(), hashes.size());
 
    for (int i = 0; i < result.size(); i++)
    {

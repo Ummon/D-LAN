@@ -3,9 +3,18 @@
 
 #define WITH_MUTEX false
 
+#include "Uncopyable.h"
+
 #include <QString>
 #include <QByteArray>
 #include <QDataStream>
+
+namespace Blake
+{
+   extern "C" {
+      #include <Libs/blake/blake_opt.h>
+   }
+}
 
 #include <Libs/MersenneTwister.h>
 
@@ -15,13 +24,14 @@
 
 namespace Common
 {
+   class Hasher;
    class Hash
    {
    private:
       static MTRand mtrand;
 
    public:
-      static const int HASH_SIZE = 20; ///< 20 bytes.
+      static const int HASH_SIZE = 28; ///< 28 bytes.
 
       Hash();
       Hash(const Hash& h);
@@ -54,6 +64,7 @@ namespace Common
 
       friend QDataStream& operator>>(QDataStream&, Hash&);
       friend QDataStream& operator<<(QDataStream& stream, const Hash& hash);
+      friend class Hasher;
 
       struct SharedData
       {
@@ -114,5 +125,17 @@ namespace Common
    {
       return *(const uint*)(h.getData());
    }
+
+   class Hasher : Uncopyable
+   {
+   public:
+      Hasher();
+      void addData(const char*, int size);
+      Hash getResult();
+      void reset();
+
+   private:
+      Blake::hashState state;
+   };
 }
 #endif

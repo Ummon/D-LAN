@@ -6,8 +6,7 @@ using namespace Common;
 
 /**
   * @class Hash
-  * An Über-optimized SHA-1 hash.
-  * see : http://fr.wikipedia.org/wiki/SHA-1
+  * An Über-optimized hash.
   */
 
 MTRand Hash::mtrand;
@@ -93,7 +92,7 @@ Hash& Hash::operator=(const Hash& h)
   */
 QString Hash::toStr() const
 {
-   QString ret(40);
+   QString ret(HASH_SIZE * 2);
    for (int i = 0; i < HASH_SIZE; i++)
    {
       char p1 = (this->data->hash[i] & 0xF0) >> 4;
@@ -154,4 +153,31 @@ void Hash::dereference()
    this->data->nbRef -= 1;
    if (this->data->nbRef == 0)
       delete this->data;
+}
+
+/////
+
+Hasher::Hasher()
+{
+   this->reset();
+}
+
+/**
+  * @param size In bytes.
+  */
+void Hasher::addData(const char* data, int size)
+{
+   Blake::HashReturn ret = Blake::Update(&this->state, (const Blake::BitSequence*)data, 8 * size);
+}
+
+Hash Hasher::getResult()
+{
+   Hash result;
+   Blake::HashReturn ret = Blake::Final(&this->state, (Blake::BitSequence*)result.data->hash);
+   return result;
+}
+
+void Hasher::reset()
+{
+   Blake::HashReturn ret = Blake::Init(&this->state, Hash::HASH_SIZE * 8);
 }

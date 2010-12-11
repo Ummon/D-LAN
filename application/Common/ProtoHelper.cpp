@@ -47,6 +47,7 @@ QString ProtoHelper::getDebugStr(const google::protobuf::Message& mess)
                pos += 2;
                break;
             case '"':
+            case '\'':
             case '\\':
                hashHex.append(QString::number(str[pos+1].toAscii(), 16));
                pos += 2;
