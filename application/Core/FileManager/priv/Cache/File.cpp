@@ -3,7 +3,6 @@ using namespace FM;
 
 #include <QString>
 #include <QFile>
-#include <QCryptographicHash>
 #include <QElapsedTimer>
 
 #include <Common/Global.h>
@@ -328,7 +327,7 @@ bool File::computeHashes(int n)
 
    QList<QByteArray> result;
 
-   QCryptographicHash crypto(QCryptographicHash::Sha1);
+   Common::Hasher hasher;
 
    QFile file(this->getFullPath());
    if (!file.open(QIODevice::ReadOnly))
@@ -387,7 +386,7 @@ bool File::computeHashes(int n)
             goto endReading;
          }
 
-         crypto.addData(buffer, bytesRead);
+         hasher.addData(buffer, bytesRead);
 
          bytesReadChunk += bytesRead;
       }
@@ -398,20 +397,20 @@ bool File::computeHashes(int n)
       if (bytesReadChunk > 0)
       {
          if (this->chunks.size() <= chunkNum) // The size of the file has increased during the read..
-            this->chunks.append(QSharedPointer<Chunk>(new Chunk(this, chunkNum, bytesReadChunk, crypto.result())));
+            this->chunks.append(QSharedPointer<Chunk>(new Chunk(this, chunkNum, bytesReadChunk, hasher.getResult())));
          else
          {
             if (this->chunks[chunkNum]->hasHash())
                this->cache->onChunkRemoved(this->chunks[chunkNum]); // To remove the chunk from the chunk index (TODO : fin a more elegant way).
 
-            this->chunks[chunkNum]->setHash(crypto.result());
+            this->chunks[chunkNum]->setHash(hasher.getResult());
             this->chunks[chunkNum]->setKnownBytes(bytesReadChunk);
          }
 
          this->cache->onChunkHashKnown(this->chunks[chunkNum]);
       }
 
-      crypto.reset();
+      hasher.reset();
       chunkNum += 1;
    }
 
