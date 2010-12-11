@@ -50,17 +50,30 @@ void Tests::initTestCase()
 
    this->fileManagers << FM::Builder::newFileManager() << FM::Builder::newFileManager();
 
-   SETTINGS.set("peerID", Hash::fromStr("11111111111111111111111111111111111111111111111111111111"));
-   this->peerManagers << Builder::newPeerManager(this->fileManagers[0]);
-   SETTINGS.set("peerID", Hash::fromStr("22222222222222222222222222222222222222222222222222222222"));
-   this->peerManagers << Builder::newPeerManager(this->fileManagers[1]);
+   this->peerIDs << Hash::fromStr("11111111111111111111111111111111111111111111111111111111") << Hash::fromStr("22222222222222222222222222222222222222222222222222222222");
+   this->peerSharedDirs << "/sharedDirs/peer1" << "/sharedDirs/peer2";
 
-   this->fileManagers[0]->setSharedDirsReadOnly(QStringList() << QDir::currentPath().append("/sharedDirs/peer1"));
-   this->fileManagers[1]->setSharedDirsReadOnly(QStringList() << QDir::currentPath().append("/sharedDirs/peer2"));
+   // 1) Create eache peer manager.
+   for (int i = 0; i < this->peerIDs.size(); i++)
+   {
+      SETTINGS.set("peerID", this->peerIDs[i]);
+      this->peerManagers << Builder::newPeerManager(this->fileManagers[i]);
+   }
 
+   // 2) Set the shared directories.
+   for (int i = 0; i < this->peerIDs.size(); i++)
+   {
+      this->fileManagers[i]->setSharedDirsReadOnly(QStringList() << QDir::currentPath().append(this->peerSharedDirs[i]));
+   }
+
+   // 3) Create the peer update (simulate the periodic update).
    this->peerUpdater = new PeerUpdater(this->fileManagers, this->peerManagers, PORT);
 
-   this->servers << new TestServer(this->peerManagers[0], PORT) << new TestServer(this->peerManagers[1], PORT + 1);
+   // 4) Create the servers to listen new TCP connections and forward them to the right peer manager.
+   for (int i = 0; i < this->peerIDs.size(); i++)
+   {
+      this->servers << new TestServer(this->peerManagers[i], PORT + i);
+   }
 }
 
 void Tests::updatePeers()
@@ -69,28 +82,69 @@ void Tests::updatePeers()
 
    this->peerUpdater->start();
 
-   QTest::qWait(2000);
+   // This test shouldn't take less than ~3 s.
+   QElapsedTimer timer;
+   timer.start();
 
    // Check if each peer know the other.
-   QCOMPARE(this->peerManagers[0]->getPeers().size(), 1);
-   QCOMPARE(this->peerManagers[1]->getPeers().size(), 1);
+   for (int i = 0; i < this->peerIDs.size(); i++)
+   {
+      QList<IPeer*> peers = this->peerManagers[i]->getPeers();
 
-   QCOMPARE(this->peerManagers[1]->getPeers()[0]->getID(), this->peerManagers[0]->getID());
-   QCOMPARE(this->peerManagers[1]->getPeers()[0]->getNick(), this->peerManagers[0]->getNick());
-   QCOMPARE(this->peerManagers[1]->getPeers()[0]->getSharingAmount(), this->fileManagers[0]->getAmount());
+      // Wait peer i knows other peers.
+      if (peers.size() != this->peerIDs.size() - 1)
+      {
+         i--;
+         QTest::qWait(100);
+         if (timer.elapsed() > 3000)
+            QFAIL("Update peers failed..");
+         continue;
+      }
 
-   QCOMPARE(this->peerManagers[0]->getPeers()[0]->getID(), this->peerManagers[1]->getID());
-   QCOMPARE(this->peerManagers[0]->getPeers()[0]->getNick(), this->peerManagers[1]->getNick());
-   QCOMPARE(this->peerManagers[0]->getPeers()[0]->getSharingAmount(), this->fileManagers[1]->getAmount());
+      for (int j = 0; j < this->peerIDs.size(); j++)
+      {
+         if (j == i)
+            continue;
+
+         bool found = false;
+         for (int k = 0; k < peers.size(); k++)
+            if (peers[k]->getID() == this->peerManagers[j]->getID())
+            {
+               found = true;
+               QCOMPARE(peers[k]->getNick(), this->peerManagers[j]->getNick());
+
+               // Wait peer j knows peer k amount (amount increase concurrently during the scanning process).
+               if (peers[k]->getSharingAmount() != this->fileManagers[j]->getAmount())
+               {
+                  k--;
+                  QTest::qWait(100);
+                  if (timer.elapsed() > 3000)
+                     QFAIL("Sharing amount not equals..");
+                  continue;
+               }
+               break;
+            }
+
+         QVERIFY(found);
+      }
+   }
 }
 
 void Tests::getPeerFromID()
 {
    qDebug() << "===== getPeerFromID() =====";
 
-   QCOMPARE(this->peerManagers[0]->getID(), this->peerManagers[1]->getPeer(this->peerManagers[0]->getID())->getID());
-   QCOMPARE(this->peerManagers[1]->getID(), this->peerManagers[0]->getPeer(this->peerManagers[1]->getID())->getID());
-   QVERIFY(this->peerManagers[0]->getPeer(Common::Hash::rand()) == 0);
+   for (int i = 0; i < this->peerIDs.size(); i++)
+   {
+      for (int j = 0; j < this->peerIDs.size(); j++)
+      {
+         if (j == i)
+            continue;
+         QCOMPARE(this->peerManagers[i]->getID(), this->peerManagers[j]->getPeer(this->peerManagers[i]->getID())->getID());
+      }
+
+      QVERIFY(this->peerManagers[i]->getPeer(Common::Hash::rand()) == 0);
+   }
 }
 
 void Tests::askForRootEntries()

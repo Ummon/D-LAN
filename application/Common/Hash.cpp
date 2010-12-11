@@ -182,6 +182,11 @@ void Hash::dereference()
 
 /////
 
+/**
+  * @class Hasher
+  * To create hash from row data.
+  */
+
 Hasher::Hasher()
 {
    this->reset();
