@@ -147,6 +147,8 @@ void Tests::removeSettings()
 
 void Tests::generateAHash()
 {
+   qDebug() << Hash::rand().toStrCArray();
+
    const char array[Hash::HASH_SIZE] = {
       0x2d, 0x73, 0x73, 0x6f,
       0x34, 0xa7, 0x38, 0x37,
@@ -158,21 +160,21 @@ void Tests::generateAHash()
    };
    QByteArray byteArray(array, Hash::HASH_SIZE);
 
-   qDebug() << "Reference            : " << byteArray.toHex();;
+   qDebug() << "Reference                     : " << byteArray.toHex();;
 
-   Hash h1 = Common::Hash::rand();
-   qDebug() << "h1 (Generated hash)  : " << h1.toStr();
+   Hash h1 = Hash::rand();
+   qDebug() << "h1 (Randomly generated hash)  : " << h1.toStr();
 
    Hash h2(byteArray);
-   qDebug() << "h2 (from QByteArray) : " << h2.toStr();
+   qDebug() << "h2 (from QByteArray)          : " << h2.toStr();
    QVERIFY(memcmp(h2.getData(), array, Hash::HASH_SIZE) == 0);
 
    Hash h3(h2);
-   qDebug() << "h3 (copied from h2)  : " << h3.toStr();
+   qDebug() << "h3 (copied from h2)           : " << h3.toStr();
    QVERIFY(memcmp(h3.getData(), array, Hash::HASH_SIZE) == 0);
 
    Hash h4(array);
-   qDebug() << "h4 (from char[])     : " << h4.toStr();
+   qDebug() << "h4 (from char[])              : " << h4.toStr();
    QVERIFY(memcmp(h4.getData(), array, Hash::HASH_SIZE) == 0);
 }
 
@@ -231,9 +233,21 @@ void Tests::hasher()
    hasher.addData(str3, sizeof(str3));
    Hash h3 = hasher.getResult();
 
+   hasher.reset();
+   hasher.addPredefinedSalt();
+   hasher.addData(str1, sizeof(str1));
+   Hash h4 = hasher.getResult();
+
+   hasher.reset();
+   hasher.addPredefinedSalt();
+   hasher.addData(str2, sizeof(str2));
+   Hash h5 = hasher.getResult();
+
    QVERIFY(h1 == h2);
    QVERIFY(h1 != h3);
    QVERIFY(h2 != h3);
+   QVERIFY(h4 != h1);
+   QVERIFY(h4 == h5);
 }
 
 void Tests::messageHeader()

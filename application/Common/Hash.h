@@ -49,6 +49,7 @@ namespace Common
       inline const char* getData() const { return this->data->hash; }
 
       QString toStr() const;
+      QString toStrCArray() const;
       bool isNull() const;
 
       static Hash rand();
@@ -130,6 +131,8 @@ namespace Common
    {
    public:
       Hasher();
+      void addSalt(const char* salt);
+      void addPredefinedSalt();
       void addData(const char*, int size);
       Hash getResult();
       void reset();
