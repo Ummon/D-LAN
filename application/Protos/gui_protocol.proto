@@ -113,6 +113,26 @@ message EventLogMessage {
 }
 
 /***** Commands. *****/
+// Authentication.
+// Must be send for non-local connection as the first message.
+// All other messages can't be sent or received without a proper authentication.
+// Authentication tries from a local connection will be ignored by the core.
+// GUI -> Core
+// id : 0xb1
+message Authentication {
+   required Common.Hash password = 1; // Salt should be added.
+}
+// Core -> GUI
+// id : 0xb2
+message AuthenticationResult {
+   enum Status {
+      OK = 0x01;
+      BAD_PASSWORD = 0x02;
+      ERROR = 0x03;
+   }
+   required Status status = 1;
+}
+
 // Set the settings
 // Peer.peer_id and Peer.sharing_amount are ignored.
 // GUI -> Core
