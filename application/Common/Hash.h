@@ -31,7 +31,8 @@ namespace Common
       static MTRand mtrand;
 
    public:
-      static const int HASH_SIZE = 28; ///< 28 bytes.
+      // HASH_SIZE can be 28, 32, 48 or 64 bytes.
+      static const int HASH_SIZE = 28;
 
       Hash();
       Hash(const Hash& h);
