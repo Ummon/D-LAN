@@ -104,8 +104,7 @@ namespace Common
      */
    inline QDataStream& operator<<(QDataStream& stream, const Hash& hash)
    {
-      if (!hash.isNull())
-         stream.writeRawData(hash.data->hash, Hash::HASH_SIZE);
+      stream.writeRawData(hash.data->hash, Hash::HASH_SIZE);
 
       return stream;
    }
@@ -137,6 +136,9 @@ namespace Common
       void addData(const char*, int size);
       Hash getResult();
       void reset();
+
+      static Common::Hash hash(const QString& str);
+      static Common::Hash hashWithSalt(const QString& str);
 
    private:
       Blake::hashState state;

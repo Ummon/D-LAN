@@ -56,7 +56,7 @@ void Tests::initTestCase()
    // 1) Create eache peer manager.
    for (int i = 0; i < this->peerIDs.size(); i++)
    {
-      SETTINGS.set("peerID", this->peerIDs[i]);
+      SETTINGS.set("peer_id", this->peerIDs[i]);
       this->peerManagers << Builder::newPeerManager(this->fileManagers[i]);
    }
 

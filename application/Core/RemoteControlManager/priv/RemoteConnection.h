@@ -59,6 +59,8 @@ namespace RCM
 
       void newLogEntry(QSharedPointer<const LM::IEntry> entry);
 
+      void sendBadPasswordResult();
+
    private:
       bool readMessage();
       void send(Common::Network::GUIMessageType type, const google::protobuf::Message& message) const;
@@ -81,6 +83,8 @@ namespace RCM
       QList< QSharedPointer<PM::IGetEntriesResult> > getEntriesResults;
 
       MTRand mtrand;
+
+      bool authenticated;
 
 #ifdef DEBUG
       QSharedPointer<LM::ILogger> loggerRefreshState; // A logger especially for the state message.

@@ -1,18 +1,23 @@
 /**
   * All the GUI settings.
   */
+  
+import "common.proto";
+  
 package Protos.GUI;
 
 message Settings {
    optional string core_address = 1 [default = "localhost"];
    optional uint32 core_port = 2 [default = 59485];
-   optional uint32 max_chat_message_displayed = 3 [default = 500];
-   optional uint32 max_log_message_displayed = 4 [default = 500];
-   optional uint32 reconnect_period = 5 [default = 1000]; // [ms].
-   optional uint32 search_time = 6 [default = 3000]; // [ms].
-   optional uint32 socket_timeout = 7 [default = 5000]; // [ms].
+   optional Common.Hash password = 3; // Hashed with salt.
    
-   optional bytes windows_state = 8;
-   optional uint32 main_window_width = 9 [default = 900];
-   optional uint32 main_window_height = 10 [default = 600];
+   optional uint32 max_chat_message_displayed = 4 [default = 500];
+   optional uint32 max_log_message_displayed = 5 [default = 500];
+   optional uint32 reconnect_period = 6 [default = 1000]; // [ms].
+   optional uint32 search_time = 7 [default = 3000]; // [ms].
+   optional uint32 socket_timeout = 8 [default = 5000]; // [ms].
+   
+   optional bytes windows_state = 9;
+   optional uint32 main_window_width = 10 [default = 900];
+   optional uint32 main_window_height = 11 [default = 600];
 }

@@ -191,7 +191,11 @@
         </widget>
        </item>
        <item>
-        <widget class="QLineEdit" name="txtPassword"/>
+        <widget class="QLineEdit" name="txtPassword">
+         <property name="echoMode">
+          <enum>QLineEdit::Password</enum>
+         </property>
+        </widget>
        </item>
        <item>
         <spacer name="spacerAdvancedSettings">

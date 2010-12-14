@@ -85,11 +85,11 @@ void SearchResult::searchResult(const Protos::Common::FindResult& findResult)
 /////
 
 CoreConnection::CoreConnection()
-   : currentHostLookupID(-1), connecting(false)
+   : currentHostLookupID(-1), connecting(false), authenticated(false)
 {
    connect(&this->socket, SIGNAL(readyRead()), this, SLOT(dataReceived()));
-   connect(&this->socket, SIGNAL(connected()), this, SIGNAL(coreConnected()));
-   connect(&this->socket, SIGNAL(disconnected()), this, SIGNAL(coreDisconnected()));
+   connect(&this->socket, SIGNAL(connected()), this, SLOT(connected()));
+   connect(&this->socket, SIGNAL(disconnected()), this, SLOT(disconnected()));
    connect(&this->socket, SIGNAL(stateChanged(QAbstractSocket::SocketState)), this, SLOT(stateChanged(QAbstractSocket::SocketState)));
 }
 
@@ -170,6 +170,11 @@ void CoreConnection::refresh()
    this->send(Common::Network::GUI_REFRESH);
 }
 
+bool CoreConnection::isConnected()
+{
+   return this->socket.state() == QAbstractSocket::ConnectedState;
+}
+
 void CoreConnection::connectToCore()
 {
    if (this->connecting)
@@ -196,9 +201,12 @@ void CoreConnection::stateChanged(QAbstractSocket::SocketState socketState)
          this->connectToCore();
       }
       break;
+
    case QAbstractSocket::ConnectedState:
-      L_USER("Connected to the core");
+      if (this->authenticated)
+         L_USER("Connected to the core");
       break;
+
    default:;
    }
 }
@@ -252,6 +260,28 @@ void CoreConnection::adressResolved(QHostInfo hostInfo)
          break;
       }
    }*/
+}
+
+void CoreConnection::connected()
+{
+   if (this->socket.peerAddress() == QHostAddress::LocalHost || this->socket.peerAddress() == QHostAddress::LocalHostIPv6)
+   {
+      this->authenticated = true;
+      emit coreConnected();
+   }
+   else
+   {
+      Common::Hash password = SETTINGS.get<Common::Hash>("password");
+      Protos::GUI::Authentication authMessage;
+      authMessage.mutable_password()->set_hash(password.getData(), Common::Hash::HASH_SIZE);
+      this->send(Common::Network::GUI_AUTHENTICATION, authMessage);
+   }
+}
+
+void CoreConnection::disconnected()
+{
+   this->authenticated = false;
+   emit coreDisconnected();
 }
 
 void CoreConnection::tryToConnectToTheNextAddress()
@@ -334,18 +364,50 @@ bool CoreConnection::readMessage()
 
    switch (this->currentHeader.type)
    {
-   case Common::Network::GUI_STATE:
+   case Common::Network::GUI_AUTHENTICATION_RESULT:
       {
-         Protos::GUI::State state;
+         Protos::GUI::AuthenticationResult authenticationResult;
 
          // This scope (and the others ones below) is here to force the input stream to read all the bytes.
          // See Common::ZeroCopyInputStreamQIODevice::~ZeroCopyInputStreamQIODevice.
          {
             Common::ZeroCopyInputStreamQIODevice inputStream(&this->socket);
-            readOK = state.ParseFromBoundedZeroCopyStream(&inputStream, this->currentHeader.size);
+            readOK = authenticationResult.ParseFromBoundedZeroCopyStream(&inputStream, this->currentHeader.size);
          }
 
          if (readOK)
+         {
+            switch (authenticationResult.status())
+            {
+            case Protos::GUI::AuthenticationResult_Status_BAD_PASSWORD:
+               L_USER("Authentication failed, bad password");
+               break;
+
+            case Protos::GUI::AuthenticationResult_Status_ERROR:
+               L_USER("Authentication failed");
+               break;
+
+            case Protos::GUI::AuthenticationResult_Status_OK:
+               this->authenticated = true;
+               L_USER("Connected to the core");
+               emit coreConnected();
+               break;
+            }
+         }
+      }
+      break;
+
+
+   case Common::Network::GUI_STATE:
+      {
+         Protos::GUI::State state;
+
+         {
+            Common::ZeroCopyInputStreamQIODevice inputStream(&this->socket);
+            readOK = state.ParseFromBoundedZeroCopyStream(&inputStream, this->currentHeader.size);
+         }
+
+         if (readOK && this->authenticated)
             emit newState(state);
       }
       break;
@@ -359,7 +421,7 @@ bool CoreConnection::readMessage()
             readOK = eventChatMessage.ParseFromBoundedZeroCopyStream(&inputStream, this->currentHeader.size);
          }
 
-         if (readOK)
+         if (readOK && this->authenticated)
          {
             Common::Hash peerID(eventChatMessage.peer_id().hash().data());
             emit newChatMessage(peerID, Common::ProtoHelper::getStr(eventChatMessage, &Protos::GUI::EventChatMessage::message));
@@ -376,7 +438,7 @@ bool CoreConnection::readMessage()
             readOK = eventLogMessage.ParseFromBoundedZeroCopyStream(&inputStream, this->currentHeader.size);
          }
 
-         if (readOK)
+         if (readOK && this->authenticated)
          {
             QDateTime dateTime = QDateTime::fromMSecsSinceEpoch(eventLogMessage.time());
             QString message = Common::ProtoHelper::getStr(eventLogMessage, &Protos::GUI::EventLogMessage::message);
@@ -407,7 +469,7 @@ bool CoreConnection::readMessage()
             readOK = findResultMessage.ParseFromBoundedZeroCopyStream(&inputStream, this->currentHeader.size);
          }
 
-         if (readOK)
+         if (readOK && this->authenticated)
             emit searchResult(findResultMessage);
       }
       break;
@@ -420,7 +482,7 @@ bool CoreConnection::readMessage()
             readOK = tagMessage.ParseFromBoundedZeroCopyStream(&inputStream, this->currentHeader.size);
          }
 
-         if (readOK && !this->browseResultsWithoutTag.isEmpty())
+         if (readOK && this->authenticated && !this->browseResultsWithoutTag.isEmpty())
             this->browseResultsWithoutTag.takeFirst()->setTag(tagMessage.tag());
       }
       break;
@@ -433,7 +495,7 @@ bool CoreConnection::readMessage()
             readOK = browseResultMessage.ParseFromBoundedZeroCopyStream(&inputStream, this->currentHeader.size);
          }
 
-         if (readOK)
+         if (readOK && this->authenticated)
             emit browseResult(browseResultMessage.tag(), browseResultMessage.entries());
       }
       break;
