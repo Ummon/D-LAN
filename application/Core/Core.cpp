@@ -21,7 +21,7 @@ Core::Core(int argc, char** argv)
 {
    GOOGLE_PROTOBUF_VERIFY_VERSION;
 
-   SETTINGS.setFilename("core_settings.txt");
+   SETTINGS.setFilename(Common::CORE_SETTINGS_FILENAME);
    SETTINGS.setSettingsMessage(new Protos::Core::Settings());
    SETTINGS.load();
 

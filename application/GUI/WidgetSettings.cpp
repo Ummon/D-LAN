@@ -110,6 +110,7 @@ WidgetSettings::~WidgetSettings()
 
 void WidgetSettings::coreConnected()
 {
+   this->ui->txtPassword->clear();
    this->ui->tabWidget->setTabEnabled(0, true);
 }
 

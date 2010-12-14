@@ -18,6 +18,7 @@ PROJECTS=(
    Core
    GUI
    Tools/LogViewer
+   Tools/PasswordHasher
 )
 SPEC=win32-g++
 MAKE=mingw32-make.exe

@@ -147,7 +147,6 @@ namespace GUI
 
       QList< QSharedPointer<BrowseResult> > browseResultsWithoutTag;
       QList< QSharedPointer<SearchResult> > searchResultsWithoutTag;
-      bool connecting;
       bool authenticated;
    };
 }

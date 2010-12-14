@@ -35,6 +35,7 @@ RemoteControlManager::~RemoteControlManager()
    {
       RemoteConnection* connection = i.next();
       disconnect(connection, SIGNAL(deleted(RemoteConnection*)), this, SLOT(connectionDeleted(RemoteConnection*)));
+      disconnect(connection, SIGNAL(chatMessageSent(const QString&)), this, SLOT(chatMessageSent(const QString&)));
       delete connection;
    }
 
@@ -61,11 +62,26 @@ void RemoteControlManager::newConnection()
       socket
    );
 
-   connect(remoteConnection, SIGNAL(deleted(RemoteConnection*)), this, SLOT(connectionDeleted(RemoteConnection*)));
+   connect(remoteConnection, SIGNAL(deleted(RemoteConnection*)), this, SLOT(connectionDeleted(RemoteConnection*)), Qt::DirectConnection);
+   connect(remoteConnection, SIGNAL(chatMessageSent(const QString&)), this, SLOT(chatMessageSent(const QString&)), Qt::DirectConnection);
    connections << remoteConnection;
 }
 
 void RemoteControlManager::connectionDeleted(RemoteConnection* connection)
 {
    this->connections.removeOne(connection);
+}
+
+/**
+  * When a message is sent to the other peers, is must also be sent to the other remote connections.
+  */
+void RemoteControlManager::chatMessageSent(const QString& message)
+{
+   RemoteConnection* sender = static_cast<RemoteConnection*>(this->sender());
+   for (QListIterator<RemoteConnection*> i(this->connections); i.hasNext();)
+   {
+      RemoteConnection* remoteConnection = i.next();
+      if (remoteConnection != sender)
+         remoteConnection->sendMessageToItself(message);
+   }
 }

@@ -43,8 +43,11 @@ namespace RCM
       );
       ~RemoteConnection();
 
+      void sendMessageToItself(const QString& message);
+
    signals:
       void deleted(RemoteConnection*);
+      void chatMessageSent(const QString&);
 
    private slots:
       void refresh();
