@@ -32,7 +32,8 @@ RemoteConnection::RemoteConnection(
    uploadManager(uploadManager),
    downloadManager(downloadManager),
    networkListener(networkListener),
-   socket(socket)
+   socket(socket),
+   authenticated(false)
  #if DEBUG
    ,loggerRefreshState(LM::Builder::newLogger("RemoteConnection (State)"))
  #endif
@@ -58,6 +59,11 @@ RemoteConnection::RemoteConnection(
 
    qRegisterMetaType< QSharedPointer<const LM::IEntry> >("QSharedPointer<const LM::IEntry>");
    connect(this->loggerHook.data(), SIGNAL(newLogEntry(QSharedPointer<const LM::IEntry>)), this, SLOT(newLogEntry(QSharedPointer<const LM::IEntry>)), Qt::QueuedConnection);
+
+   if (this->socket->peerAddress() == QHostAddress::LocalHost || this->socket->peerAddress() == QHostAddress::LocalHostIPv6)
+   {
+      this->authenticated = true;
+   }
 }
 
 RemoteConnection::~RemoteConnection()
@@ -156,6 +162,7 @@ void RemoteConnection::dataReceived()
 void RemoteConnection::disconnected()
 {
    L_DEBU("Connection dropped");
+   this->authenticated = false;
 
    this->deleteLater();
 }
@@ -202,12 +209,53 @@ void RemoteConnection::newLogEntry(QSharedPointer<const LM::IEntry> entry)
    this->send(Common::Network::GUI_EVENT_LOG_MESSAGE, eventLogMessage);
 }
 
+void RemoteConnection::sendBadPasswordResult()
+{
+   Protos::GUI::AuthenticationResult authResultMessage;
+   authResultMessage.set_status(Protos::GUI::AuthenticationResult_Status_BAD_PASSWORD);
+   this->send(Common::Network::GUI_AUTHENTICATION_RESULT, authResultMessage);
+   this->socket->close();
+}
+
 bool RemoteConnection::readMessage()
 {
    bool readOK = false;
 
    switch (this->currentHeader.type)
    {
+   case Common::Network::GUI_AUTHENTICATION:
+      {
+         Protos::GUI::Authentication authenticationMessage;
+         {
+            Common::ZeroCopyInputStreamQIODevice inputStream(this->socket);
+            readOK = authenticationMessage.ParseFromBoundedZeroCopyStream(&inputStream, this->currentHeader.size);
+         }
+
+         if (readOK)
+         {
+            if (this->socket->peerAddress() == QHostAddress::LocalHost || this->socket->peerAddress() == QHostAddress::LocalHostIPv6)
+               this->authenticated = true;
+            else
+            {
+               Common::Hash passwordHashReceived(authenticationMessage.password().hash().data());
+               Common::Hash actualPasswordHash = SETTINGS.get<Common::Hash>("remote_password");
+
+               if (passwordHashReceived == actualPasswordHash)
+               {
+                  Protos::GUI::AuthenticationResult authResultMessage;
+                  authResultMessage.set_status(Protos::GUI::AuthenticationResult_Status_OK);
+                  this->send(Common::Network::GUI_AUTHENTICATION_RESULT, authResultMessage);
+                  this->authenticated = true;
+               }
+               else
+               {
+                  QTimer::singleShot(1000, this, SLOT(sendBadPasswordResult()));
+               }
+            }
+         }
+      }
+      break;
+
    case Common::Network::GUI_SETTINGS:
       {
          Protos::GUI::CoreSettings coreSettingsMessage;
@@ -216,7 +264,7 @@ bool RemoteConnection::readMessage()
             readOK = coreSettingsMessage.ParseFromBoundedZeroCopyStream(&inputStream, this->currentHeader.size);
          }
 
-         if (readOK)
+         if (readOK && this->authenticated)
          {
             this->peerManager->setNick(Common::ProtoHelper::getStr(coreSettingsMessage.myself(), &Protos::GUI::Peer::nick));
 
@@ -253,7 +301,7 @@ bool RemoteConnection::readMessage()
             readOK = searchMessage.ParseFromBoundedZeroCopyStream(&inputStream, this->currentHeader.size);
          }
 
-         if (readOK)
+         if (readOK && this->authenticated)
          {
             QSharedPointer<NL::ISearch> search = this->networkListener->newSearch();
             connect(search.data(), SIGNAL(found(const Protos::Common::FindResult&)), this, SLOT(searchFound(const Protos::Common::FindResult&)));
@@ -275,7 +323,7 @@ bool RemoteConnection::readMessage()
             readOK = browseMessage.ParseFromBoundedZeroCopyStream(&inputStream, this->currentHeader.size);
          }
 
-         if (readOK)
+         if (readOK && this->authenticated)
          {
             Common::Hash peerID(browseMessage.peer_id().hash().data());
             PM::IPeer* peer = this->peerManager->getPeer(peerID);
@@ -324,7 +372,7 @@ bool RemoteConnection::readMessage()
             readOK = cancelDownloadsMessage.ParseFromBoundedZeroCopyStream(&inputStream, this->currentHeader.size);
          }
 
-         if (readOK)
+         if (readOK && this->authenticated)
          {
             // To avoid O(n^2).
             QSet<quint64> IDs;
@@ -353,7 +401,7 @@ bool RemoteConnection::readMessage()
             readOK = moveDownloadsMessage.ParseFromBoundedZeroCopyStream(&inputStream, this->currentHeader.size);
          }
 
-         if (readOK)
+         if (readOK && this->authenticated)
          {
             QList<quint64> downloadIDs;
             for (int i = 0; i < moveDownloadsMessage.id_to_move_size(); i++)
@@ -374,7 +422,7 @@ bool RemoteConnection::readMessage()
             readOK = downloadMessage.ParseFromBoundedZeroCopyStream(&inputStream, this->currentHeader.size);
          }
 
-         if (readOK)
+         if (readOK && this->authenticated)
          {
             Common::Hash peerID(downloadMessage.peer_id().hash().data());
             this->downloadManager->addDownload(downloadMessage.entry(), peerID);
@@ -393,15 +441,18 @@ bool RemoteConnection::readMessage()
             readOK = chatMessage.ParseFromBoundedZeroCopyStream(&inputStream, this->currentHeader.size);
          }
 
-         if (readOK)
+         if (readOK && this->authenticated)
             this->networkListener->getChat().send(Common::ProtoHelper::getStr(chatMessage, &Protos::GUI::ChatMessage::message));
       }
       break;
 
    case Common::Network::GUI_REFRESH:
       {
-         this->refresh();
-         this->timerRefresh.start();
+         if (this->authenticated)
+         {
+            this->refresh();
+            this->timerRefresh.start();
+         }
       }
       break;
 
@@ -414,6 +465,10 @@ bool RemoteConnection::readMessage()
 
 void RemoteConnection::send(Common::Network::GUIMessageType type, const google::protobuf::Message& message) const
 {
+   // When not authenticated we can only send messages of type 'GUI_AUTHENTICATION_RESULT'.
+   if (!this->authenticated && type != Common::Network::GUI_AUTHENTICATION_RESULT)
+      return;
+
    const Common::Network::MessageHeader<Common::Network::GUIMessageType> header(type, message.ByteSize(), this->peerManager->getID());
 
 #if DEBUG

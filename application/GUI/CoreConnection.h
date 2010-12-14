@@ -104,6 +104,8 @@ namespace GUI
       void moveDownloads(quint64 downloadIDRef, const QList<quint64>& downloadIDs, bool moveBefore = true);
       void refresh();
 
+      bool isConnected();
+
    public slots:
       void connectToCore();
 
@@ -121,6 +123,8 @@ namespace GUI
       void stateChanged(QAbstractSocket::SocketState socketState);
       void dataReceived();
       void adressResolved(QHostInfo hostInfo);
+      void connected();
+      void disconnected();
 
    private:
       friend class BrowseResult;
@@ -144,6 +148,7 @@ namespace GUI
       QList< QSharedPointer<BrowseResult> > browseResultsWithoutTag;
       QList< QSharedPointer<SearchResult> > searchResultsWithoutTag;
       bool connecting;
+      bool authenticated;
    };
 }
 

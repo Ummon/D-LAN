@@ -250,3 +250,20 @@ void Hasher::reset()
 {
    Blake::Init(&this->state, Hash::HASH_SIZE * 8);
 }
+
+Common::Hash Hasher::hash(const QString& str)
+{
+   const QByteArray data = str.toUtf8();
+   Hasher hasher;
+   hasher.addData(data.constData(), data.size());
+   return hasher.getResult();
+}
+
+Common::Hash Hasher::hashWithSalt(const QString& str)
+{
+   const QByteArray data = str.toUtf8();
+   Hasher hasher;
+   hasher.addPredefinedSalt();
+   hasher.addData(data.constData(), data.size());
+   return hasher.getResult();
+}

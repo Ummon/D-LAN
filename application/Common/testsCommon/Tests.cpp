@@ -123,7 +123,7 @@ void Tests::writeSettings()
    SETTINGS.setSettingsMessage(new Protos::Core::Settings());
 
    SETTINGS.set("nick", QString("paul"));
-   SETTINGS.set("peerID", this->hash);
+   SETTINGS.set("peer_id", this->hash);
    SETTINGS.save();
 }
 
@@ -134,7 +134,7 @@ void Tests::readSettings()
    QString nick;
    SETTINGS.get("nick", nick);
    Hash hash;
-   SETTINGS.get("peerID", hash);
+   SETTINGS.get("peer_id", hash);
 
    QCOMPARE(nick, QString("paul"));
    QCOMPARE(hash.toStr(), this->hash.toStr());

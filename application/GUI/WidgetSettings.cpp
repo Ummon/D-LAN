@@ -99,6 +99,7 @@ WidgetSettings::WidgetSettings(CoreConnection& coreConnection, QWidget *parent)
    connect(this->ui->butRemoveShared, SIGNAL(clicked()), this, SLOT(removeShared()));
 
    connect(this->ui->txtCoreAddress, SIGNAL(editingFinished()), this, SLOT(saveGUISettings()));
+   connect(this->ui->txtPassword, SIGNAL(editingFinished()), this, SLOT(saveGUISettings()));
    connect(this->ui->butResetCoreAddress, SIGNAL(clicked()), this, SLOT(resetCoreAddress()));
 }
 
@@ -152,15 +153,16 @@ void WidgetSettings::saveCoreSettings()
 
 void WidgetSettings::saveGUISettings()
 {
-   //Common::ProtoHelper::setStr(*settings.mutable_myself(), &Protos::GUI::Settings::set_core_address, this->ui->txtCoreAddress->text());
-
    this->ui->txtCoreAddress->setText(this->ui->txtCoreAddress->text().trimmed());
 
    QString previousAddress = SETTINGS.get<QString>("core_address");
    SETTINGS.set("core_address", this->ui->txtCoreAddress->text());
+
+   SETTINGS.set("password", Common::Hasher::hashWithSalt(this->ui->txtPassword->text()));
+
    SETTINGS.save();
 
-   if (previousAddress != SETTINGS.get<QString>("core_address"))
+   if (previousAddress != SETTINGS.get<QString>("core_address") || !this->coreConnection.isConnected())
    {
       this->coreConnection.connectToCore();
    }
