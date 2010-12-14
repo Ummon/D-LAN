@@ -18,8 +18,14 @@ namespace PasswordHasher
 
    private slots:
       void computeHash();
+      void savePassword();
 
    private:
+      void setButtonText();
+      QString checkPasswords() const;
+
+   private:
+      const QString CORE_SETTINGS_PATH;
 
       Ui::MainWindow *ui;
    };

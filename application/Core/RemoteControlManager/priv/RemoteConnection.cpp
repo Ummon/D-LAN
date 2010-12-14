@@ -40,6 +40,9 @@ RemoteConnection::RemoteConnection(
 {
    L_DEBU(QString("New RemoteConnection from %1").arg(socket->peerAddress().toString()));
 
+   if (this->socket->peerAddress() == QHostAddress::LocalHost || this->socket->peerAddress() == QHostAddress::LocalHostIPv6)
+      this->authenticated = true;
+
    this->timerRefresh.setInterval(SETTINGS.get<quint32>("remote_refresh_rate"));
    connect(&this->timerRefresh, SIGNAL(timeout()), this, SLOT(refresh()));
    this->timerRefresh.start();
@@ -59,11 +62,6 @@ RemoteConnection::RemoteConnection(
 
    qRegisterMetaType< QSharedPointer<const LM::IEntry> >("QSharedPointer<const LM::IEntry>");
    connect(this->loggerHook.data(), SIGNAL(newLogEntry(QSharedPointer<const LM::IEntry>)), this, SLOT(newLogEntry(QSharedPointer<const LM::IEntry>)), Qt::QueuedConnection);
-
-   if (this->socket->peerAddress() == QHostAddress::LocalHost || this->socket->peerAddress() == QHostAddress::LocalHostIPv6)
-   {
-      this->authenticated = true;
-   }
 }
 
 RemoteConnection::~RemoteConnection()
@@ -71,6 +69,18 @@ RemoteConnection::~RemoteConnection()
    L_DEBU(QString("RemoteConnection deleted, %1").arg(socket->peerAddress().toString()));
    emit deleted(this);
    delete this->socket;
+}
+
+/**
+  * @see RemoteControlManager::chatMessageSent
+  */
+void RemoteConnection::sendMessageToItself(const QString& message)
+{
+   Protos::GUI::EventChatMessage eventChatMessage;
+   eventChatMessage.mutable_peer_id()->set_hash(this->peerManager->getID().getData(), Common::Hash::HASH_SIZE);
+   Common::ProtoHelper::setStr(eventChatMessage, &Protos::GUI::EventChatMessage::set_message, message);
+
+   this->send(Common::Network::GUI_EVENT_CHAT_MESSAGE, eventChatMessage);
 }
 
 void RemoteConnection::refresh()
@@ -240,7 +250,7 @@ bool RemoteConnection::readMessage()
                Common::Hash passwordHashReceived(authenticationMessage.password().hash().data());
                Common::Hash actualPasswordHash = SETTINGS.get<Common::Hash>("remote_password");
 
-               if (passwordHashReceived == actualPasswordHash)
+               if (!actualPasswordHash.isNull() && passwordHashReceived == actualPasswordHash)
                {
                   Protos::GUI::AuthenticationResult authResultMessage;
                   authResultMessage.set_status(Protos::GUI::AuthenticationResult_Status_OK);
@@ -442,7 +452,11 @@ bool RemoteConnection::readMessage()
          }
 
          if (readOK && this->authenticated)
-            this->networkListener->getChat().send(Common::ProtoHelper::getStr(chatMessage, &Protos::GUI::ChatMessage::message));
+         {
+            const QString message = Common::ProtoHelper::getStr(chatMessage, &Protos::GUI::ChatMessage::message);
+            emit chatMessageSent(message);
+            this->networkListener->getChat().send(message);
+         }
       }
       break;
 

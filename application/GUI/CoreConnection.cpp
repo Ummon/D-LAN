@@ -85,7 +85,7 @@ void SearchResult::searchResult(const Protos::Common::FindResult& findResult)
 /////
 
 CoreConnection::CoreConnection()
-   : currentHostLookupID(-1), connecting(false), authenticated(false)
+   : currentHostLookupID(-1), authenticated(false)
 {
    connect(&this->socket, SIGNAL(readyRead()), this, SLOT(dataReceived()));
    connect(&this->socket, SIGNAL(connected()), this, SLOT(connected()));
@@ -177,11 +177,10 @@ bool CoreConnection::isConnected()
 
 void CoreConnection::connectToCore()
 {
-   if (this->connecting)
-      return;
-   this->connecting = true;
-
    this->socket.close();
+
+   if (this->currentHostLookupID != -1)
+      QHostInfo::abortHostLookup(this->currentHostLookupID);
 
    this->currentHostLookupID = QHostInfo::lookupHost(SETTINGS.get<QString>("core_address"), this, SLOT(adressResolved(QHostInfo)));
 }
@@ -239,10 +238,10 @@ void CoreConnection::dataReceived()
 void CoreConnection::adressResolved(QHostInfo hostInfo)
 {
    this->currentHostLookupID = -1;
+
    if (hostInfo.addresses().isEmpty())
-   {
+   {      
       L_USER(QString("Unable to resolve the address : %1").arg(hostInfo.hostName()));
-      this->connecting = false;
       return;
    }
 
@@ -310,7 +309,6 @@ void CoreConnection::tryToConnectToTheNextAddress()
       this->startLocalCore();
 
    this->socket.connectToHost(address, SETTINGS.get<quint32>("core_port"));
-   this->connecting = false;
 }
 
 /**
@@ -322,12 +320,14 @@ void CoreConnection::startLocalCore()
    QtServiceController controller(Common::SERVICE_NAME);
    if (!controller.isInstalled())
    {
-      QtServiceController::install("AybabtuCore.exe");
+      if (!QtServiceController::install("AybabtuCore.exe"))
+         L_ERRO("Aybabtu Core cannot be installed as a service");
    }
 
    if (!controller.isRunning())
    {
-      controller.start();
+      if (!controller.start())
+         L_ERRO("Aybabtu Core service cannot be launched");
    }
 #endif
 }

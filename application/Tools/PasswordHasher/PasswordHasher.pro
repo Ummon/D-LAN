@@ -18,7 +18,9 @@ LIBS += -L../../Common/output/$$FOLDER -lCommon
 POST_TARGETDEPS += ../../Common/output/$$FOLDER/libCommon.a
 
 SOURCES += main.cpp MainWindow.cpp \
-    ../../Protos/common.pb.cc
+    ../../Protos/common.pb.cc \
+    ../../Protos/core_settings.pb.cc
 HEADERS  += MainWindow.h \
-    ../../Protos/common.pb.h
+    ../../Protos/common.pb.h \
+    ../../Protos/core_settings.pb.h
 FORMS    += MainWindow.ui
