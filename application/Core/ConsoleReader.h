@@ -11,6 +11,8 @@ namespace CoreSpace
    {
       Q_OBJECT
    public:
+      static const QString QUIT_COMMAND;
+
       explicit ConsoleReader(QObject* parent = 0);
       void stop();
 

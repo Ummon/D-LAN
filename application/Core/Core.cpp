@@ -76,7 +76,7 @@ void Core::stop()
 
 void Core::treatUserInput(QString input)
 {
-   if (input == "quit")
+   if (input == ConsoleReader::QUIT_COMMAND)
    {
       this->consoleReader.stop();
       this->stop();
@@ -85,7 +85,7 @@ void Core::treatUserInput(QString input)
    {
       QTextStream out(stdout);
       out << "Commands:" << endl
-          << " - quit : stop the core" << endl;
+          << " - " << ConsoleReader::QUIT_COMMAND << " : stop the core" << endl;
    }
 }
 
