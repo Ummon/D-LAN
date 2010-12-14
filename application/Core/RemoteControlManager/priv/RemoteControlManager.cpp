@@ -73,7 +73,7 @@ void RemoteControlManager::connectionDeleted(RemoteConnection* connection)
 }
 
 /**
-  * When a message is sent to the other peers, is must also be sent to the other remote connections.
+  * When a message is sent to the other peers, it must also be forwarded to the other remote connections.
   */
 void RemoteControlManager::chatMessageSent(const QString& message)
 {

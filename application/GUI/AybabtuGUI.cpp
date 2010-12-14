@@ -1,9 +1,9 @@
 #include <AybabtuGUI.h>
 using namespace GUI;
 
-#include <QtServiceController>
-
 #include <Common/Constants.h>
+
+#include <CoreController.h>
 
 /**
   * @class AybabtuGUI
@@ -60,9 +60,7 @@ void AybabtuGUI::exit()
 {
    this->trayIcon.hide();
 
-   QtServiceController controller(Common::SERVICE_NAME);
-   if (controller.isRunning())
-      controller.stop();
+   CoreController::StopCore();
 
    if (this->mainWindow)
    {

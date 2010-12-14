@@ -4,14 +4,13 @@ using namespace GUI;
 #include <QHostAddress>
 #include <QCoreApplication>
 
-#include <Libs/qtservice/src/QtServiceController>
-
 #include <Common/LogManager/Builder.h>
 #include <Common/ZeroCopyStreamQIODevice.h>
 #include <Common/Settings.h>
 #include <Common/ProtoHelper.h>
 #include <Common/Constants.h>
 
+#include <CoreController.h>
 #include <Log.h>
 
 BrowseResult::BrowseResult(CoreConnection* coreConnection, const Common::Hash& peerID)
@@ -305,31 +304,12 @@ void CoreConnection::tryToConnectToTheNextAddress()
       address = this->addressesToTry.takeFirst();
 
    // If the address is local check if the core is launched, if not try to launch it.
+#ifndef DEBUG
    if (address == QHostAddress::LocalHost || address == QHostAddress::LocalHostIPv6)
-      this->startLocalCore();
+      CoreController::StartCore();
+#endif
 
    this->socket.connectToHost(address, SETTINGS.get<quint32>("core_port"));
-}
-
-/**
-  * Only in release mode.
-  */
-void CoreConnection::startLocalCore()
-{
-#ifndef DEBUG
-   QtServiceController controller(Common::SERVICE_NAME);
-   if (!controller.isInstalled())
-   {
-      if (!QtServiceController::install("AybabtuCore.exe"))
-         L_ERRO("Aybabtu Core cannot be installed as a service");
-   }
-
-   if (!controller.isRunning())
-   {
-      if (!controller.start())
-         L_ERRO("Aybabtu Core service cannot be launched");
-   }
-#endif
 }
 
 void CoreConnection::send(Common::Network::GUIMessageType type)

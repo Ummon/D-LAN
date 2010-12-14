@@ -7,6 +7,7 @@ using namespace CoreSpace;
 #include <io.h> // From MingW.
 #include <windows.h>
 
+const QString ConsoleReader::QUIT_COMMAND("quit");
 
 ConsoleReader::ConsoleReader(QObject *parent) :
     QThread(parent), inputStream(stdin), stopping(false)
@@ -30,11 +31,22 @@ void ConsoleReader::run()
 {
    while(!this->stopping)
    {
-      QString str = this->inputStream.device()->readLine().trimmed();
-      L_DEBU(QString("Commnand line : %1").arg(str));
-      emit newLine(str);
+      // If AybabtuCore is a child process of AybabtuGUI and the latter is killed stdin is closed
+      // In this case AybabtuCore must be terminated.
+      if (feof(stdin))
+      {
+         emit newLine(QUIT_COMMAND);
+         this->stopping = true;
+         return;
+      }
 
-      if (str == "quit") // Cheating, see the 'stop()' method above.
+      QString str = this->inputStream.device()->readLine().trimmed();
+      L_DEBU(QString("Command line : %1").arg(str));
+
+      if (str.size() > 0)
+         emit newLine(str);
+
+      if (str == QUIT_COMMAND) // Cheating, see the 'stop()' method above.
          this->stopping = true;
    }
 }

@@ -5,6 +5,7 @@
 #include <QTcpSocket>
 #include <QHostInfo>
 #include <QSharedPointer>
+#include <QProcess>
 
 #include <Protos/gui_protocol.pb.h>
 #include <Protos/common.pb.h>
@@ -131,7 +132,6 @@ namespace GUI
       friend class SearchResult;
 
       void tryToConnectToTheNextAddress();
-      void startLocalCore();
 
       void send(Common::Network::GUIMessageType type);
       void send(Common::Network::GUIMessageType type, const google::protobuf::Message& message);
