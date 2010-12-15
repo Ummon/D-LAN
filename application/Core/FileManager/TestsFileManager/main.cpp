@@ -19,7 +19,7 @@ int main(int argc, char *argv[])
    if (stressMode)
    {
       StressTests tests;
-      return QTest::qExec(&tests, argc, argv);
+      return QTest::qExec(&tests);
    }
    else
    {
