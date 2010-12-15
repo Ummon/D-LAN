@@ -10,6 +10,8 @@ public:
     StressTests();
 
 private slots:
+    void initTestCase();
+
     /***** Simulating of a real usage with all previous tests running concurrently *****/
     void stressTest();
 };

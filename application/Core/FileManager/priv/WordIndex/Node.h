@@ -140,8 +140,8 @@ Node<T>::Node()
 template <typename T>
 Node<T>::~Node()
 {
-   foreach (Node* n, this->children)
-      delete n;
+   for (QListIterator<Node<T>*>i(this->children); i.hasNext();)
+      delete i.next();
 }
 
 template <typename T>
@@ -167,10 +167,11 @@ void Node<T>::rmNode(Node<T>* const node)
 template <typename T>
 Node<T>* Node<T>::getNode(QChar letter) const
 {
-   foreach (Node* n, this->children)
+   for (QListIterator<Node<T>*>i(this->children); i.hasNext();)
    {
-      if (n->letter == letter)
-         return n;
+      Node<T>* node = i.next();
+      if (node->letter == letter)
+         return node;
    }
    return 0;
 }
