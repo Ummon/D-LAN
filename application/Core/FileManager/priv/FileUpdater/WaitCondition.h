@@ -29,8 +29,10 @@ namespace FM
         * Wait for a release.
         * If a release has previously be asked then the first call will not block.
         * /!\ It's not the same behaviour than QWaitCondition!
+        * @param timeout After the given time the condition will be auto released. -1 means wait forever (no timeout).
+        * @return true if timeouted
         */
-      virtual void wait() = 0;
+      virtual bool wait(int timeout = -1) = 0;
          
       /**
         * Return a pointer to a native structure.

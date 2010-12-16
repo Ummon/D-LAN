@@ -6,7 +6,7 @@
 #include <QMutex>
 #include <QString>
 #include <QList>
-#include <QTime>
+#include <QElapsedTimer>
 
 #include <Protos/files_cache.pb.h>
 #include <priv/FileUpdater/DirWatcher.h>
@@ -59,7 +59,9 @@ namespace FM
 
       void restoreFromFileCache(SharedDirectory* dir);
 
-      void treatEvents(const QList<WatcherEvent>& events);
+      bool treatEvents(const QList<WatcherEvent>& events);
+
+      const int SCAN_PERIOD_UNWATCHABLE_DIRS;
 
       FileManager* fileManager;
       DirWatcher* dirWatcher;
@@ -71,6 +73,8 @@ namespace FM
       WaitCondition* dirEvent; ///< Using to wait when a sharing directory is added or deleted.
       QMutex mutex; ///< Prevent the access from many thread to the internal data like 'filesWithoutHashes' for example.
 
+      QList<Directory*> unwatchableDirs;
+      QElapsedTimer timerScanUnwatchable;
       QList<Directory*> dirsToScan; ///< When a new shared directory is added, it is put in this list until it is scanned.
       Directory* currentScanningDir;
       QWaitCondition scanningStopped;
