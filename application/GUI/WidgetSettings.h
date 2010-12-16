@@ -18,6 +18,7 @@ namespace GUI
    public:
       void setDirs(const QStringList& dirs);
       void addDir(const QString& dir);
+      void addDirs(const QStringList& dirs);
       void rmDir(int row);
       const QStringList& getDirs() const;
 
@@ -50,7 +51,7 @@ namespace GUI
 
       void resetCoreAddress();
 
-      QString askADirectory();
+      QStringList askForDirectories();
 
    protected:
       virtual void showEvent(QShowEvent* event);
@@ -62,6 +63,8 @@ namespace GUI
       DirListModel sharedDirsModel;
 
       CoreConnection& coreConnection;
+
+      bool initialState;
    };
 }
 
