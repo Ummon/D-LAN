@@ -21,15 +21,16 @@ using namespace FM;
   *
   */
 
-FileUpdater::FileUpdater(FileManager* fileManager)
-   : fileManager(fileManager),
-     dirWatcher(DirWatcher::getNewWatcher()),
-     fileCache(0),
-     toStop(false),
-     mutex(QMutex::Recursive),
-     currentScanningDir(0),
-     currentHashingFile(0),
-     toStopHashing(false)
+FileUpdater::FileUpdater(FileManager* fileManager) :
+   SCAN_PERIOD_UNWATCHABLE_DIRS(SETTINGS.get<quint32>("scan_period_unwatchable_dirs")),
+   fileManager(fileManager),
+   dirWatcher(DirWatcher::getNewWatcher()),
+   fileCache(0),
+   toStop(false),
+   mutex(QMutex::Recursive),
+   currentScanningDir(0),
+   currentHashingFile(0),
+   toStopHashing(false)
 {
    this->dirEvent = WaitCondition::getNewWaitCondition();
 }
@@ -62,10 +63,7 @@ void FileUpdater::stop()
    // Simulate a dirEvent to stop the main loop.
    this->dirEvent->release();
 
-   L_DEBU("OK4");
    this->wait();
-
-   L_DEBU("OK5");
 }
 
 /**
@@ -80,11 +78,13 @@ void FileUpdater::addRoot(SharedDirectory* dir)
    if (this->dirWatcher)
       watchable = this->dirWatcher->addDir(dir->getFullPath());
 
-   // TODO : treat the unwatchable directory
-   if (!watchable)
-      L_WARN(QString("This directory is not watchable : %1").arg(dir->getFullPath()));
-
    this->dirsToScan << dir;
+
+   if (!watchable)
+   {
+      L_WARN(QString("This directory is not watchable : %1").arg(dir->getFullPath()));
+      this->unwatchableDirs << dir;
+   }
 
    this->dirEvent->release();
 }
@@ -116,6 +116,7 @@ void FileUpdater::rmRoot(SharedDirectory* dir, Directory* dir2)
 
       this->removeFromFilesWithoutHashes(dir);
       this->removeFromDirsToScan(dir);
+      this->unwatchableDirs.removeOne(dir);
       this->dirsToRemove << dir;
    }
 
@@ -151,6 +152,8 @@ void FileUpdater::prioritizeAFileToHash(File* file)
 
 void FileUpdater::run()
 {
+   this->timerScanUnwatchable.start();
+
    QString threadName = "FileUpdater";
 #if DEBUG
    threadName.append("_").append(QString::number((quint32)QThread::currentThreadId()));
@@ -201,7 +204,7 @@ void FileUpdater::run()
          {
             L_DEBU("Waiting for a new shared directory added..");
             this->mutex.unlock();
-            this->dirEvent->wait();
+            this->dirEvent->wait(this->unwatchableDirs.isEmpty() ? -1 : SCAN_PERIOD_UNWATCHABLE_DIRS);
          }
          else
             this->mutex.unlock();
@@ -214,7 +217,9 @@ void FileUpdater::run()
 
          // Synchronize the new directory.
          if (addedDir)
+         {
             this->scan(addedDir);
+         }
       }
       else // Wait for filesystem modifications.
       {
@@ -223,12 +228,26 @@ void FileUpdater::run()
          if (this->dirsToScan.isEmpty() && this->filesWithoutHashes.isEmpty())
          {
             this->mutex.unlock();
-            this->treatEvents(this->dirWatcher->waitEvent(QList<WaitCondition*>() << this->dirEvent));
+            this->treatEvents(this->dirWatcher->waitEvent(this->unwatchableDirs.isEmpty() ? -1 : SCAN_PERIOD_UNWATCHABLE_DIRS, QList<WaitCondition*>() << this->dirEvent));
          }
          else
          {
             this->mutex.unlock();
             this->treatEvents(this->dirWatcher->waitEvent(0));
+         }
+      }
+
+      if (timerScanUnwatchable.elapsed() >= SCAN_PERIOD_UNWATCHABLE_DIRS)
+      {
+         this->mutex.lock();
+         QList<Directory*> unwatchableDirsCopy = this->unwatchableDirs;
+         this->mutex.unlock();
+
+         // Synchronize the new directory.
+         for (QListIterator<Directory*> i(unwatchableDirsCopy); i.hasNext();)
+         {
+            Directory* dir = i.next();
+               this->scan(dir);
          }
       }
 
@@ -418,6 +437,11 @@ void FileUpdater::scan(Directory* dir, bool addUnfinished)
    this->scanningStopped.wakeOne();
    this->scanningMutex.unlock();
 
+   this->mutex.lock();
+   if (this->unwatchableDirs.contains(dir))
+      this->timerScanUnwatchable.start();
+   this->mutex.unlock();
+
    L_DEBU("Scanning terminated : " + dir->getFullPath());
 }
 
@@ -442,7 +466,6 @@ void FileUpdater::stopScanning(Directory* dir)
          this->dirsToScan.clear();
    }
 }
-
 
 /**
   * Delete an entry and if it's a directory remove it and its sub childs from dirsToScan.
@@ -522,18 +545,20 @@ void FileUpdater::restoreFromFileCache(SharedDirectory* dir)
 
 /**
   * Event from the filesystem like a new created file or a renamed file.
+  * return true is at least one event is a timeout.
   */
-void FileUpdater::treatEvents(const QList<WatcherEvent>& events)
+bool FileUpdater::treatEvents(const QList<WatcherEvent>& events)
 {
    if (events.isEmpty())
-      return;
+      return false;
 
    foreach (WatcherEvent event, events)
    {
-      if (
-         event.type == WatcherEvent::TIMEOUT || // Don't care about this event type.
-         Cache::isFileUnfinished(event.path1) // Don't care about unfinished files.
-      )
+      if (event.type == WatcherEvent::TIMEOUT)
+         return true;
+
+      // Don't care about unfinished files.
+      if (Cache::isFileUnfinished(event.path1))
          continue;
 
       L_DEBU(QString("A file structure event occurs :\n%1").arg(event.toStr()));
@@ -569,4 +594,6 @@ void FileUpdater::treatEvents(const QList<WatcherEvent>& events)
          break; // Do nothing.
       }
    }
+
+   return false;
 }

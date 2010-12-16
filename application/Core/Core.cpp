@@ -102,7 +102,7 @@ void Core::checkSettingsIntegrity()
    this->checkSetting("socket_timeout", 1000u, 60u * 1000u);
 
    this->checkSetting("minimum_duration_when_hashing", 100u, 30u * 1000u);
-   this->checkSetting("time_between_rescan", 1000u, 60u * 60u * 1000u);
+   this->checkSetting("scan_period_unwatchable_dirs", 1000u, 60u * 60u * 1000u);
    QRegExp unfinishedSuffixExp("^\\.\\S+$");
    if (!unfinishedSuffixExp.exactMatch(SETTINGS.get<QString>("unfinished_suffix_term")))
    {

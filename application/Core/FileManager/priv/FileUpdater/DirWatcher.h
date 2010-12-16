@@ -64,7 +64,7 @@ namespace FM
 
       /**
         * Wait a new event from the listened directories or from a given wait condition.
-        * @param timeout A timeout in milliseconds.
+        * @param timeout A timeout in milliseconds. -1 means forever.
         */
       virtual const QList<WatcherEvent> waitEvent(int timeout, QList<WaitCondition*> ws = QList<WaitCondition*>()) = 0;
    };

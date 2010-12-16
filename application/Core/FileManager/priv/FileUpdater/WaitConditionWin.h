@@ -20,7 +20,7 @@ namespace FM
       ~WaitConditionWin();
 
       void release();
-      void wait();
+      bool wait(int timeout = -1);
       void* getHandle();
 
    private:

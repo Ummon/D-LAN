@@ -130,7 +130,7 @@ const QList<WatcherEvent> DirWatcherWin::waitEvent(int timeout, QList<WaitCondit
 
    this->mutex.unlock();
 
-   DWORD waitStatus = WaitForMultipleObjects(m, eventsArray, FALSE, timeout);
+   DWORD waitStatus = WaitForMultipleObjects(m, eventsArray, FALSE, timeout == -1 ? INFINITE : timeout);
 
    QMutexLocker locker(&this->mutex);
 

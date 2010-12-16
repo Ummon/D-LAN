@@ -19,9 +19,9 @@ void WaitConditionWin::release()
    SetEvent(this->handle);
 }
 
-void WaitConditionWin::wait()
+bool WaitConditionWin::wait(int timeout)
 {
-   WaitForSingleObject(this->handle, INFINITE);
+   return WaitForSingleObject(this->handle, timeout == -1 ? INFINITE : timeout) == WAIT_TIMEOUT;
 }
 
 void* WaitConditionWin::getHandle()
