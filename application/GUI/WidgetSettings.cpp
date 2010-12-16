@@ -3,6 +3,7 @@
 using namespace GUI;
 
 #include <QFileDialog>
+#include <QMessageBox>
 
 #include <Common/ProtoHelper.h>
 #include <Common/Settings.h>
@@ -50,6 +51,12 @@ void DirListModel::addDir(const QString& dir)
    this->endInsertRows();
 }
 
+void DirListModel::addDirs(const QStringList& dirs)
+{
+   foreach (QString dir, dirs)
+      this->addDir(dir);
+}
+
 void DirListModel::rmDir(int row)
 {
    if (row >= this->dirs.size())
@@ -80,7 +87,7 @@ QVariant DirListModel::data(const QModelIndex& index, int role) const
 //////
 
 WidgetSettings::WidgetSettings(CoreConnection& coreConnection, QWidget *parent)
-   : QWidget(parent), ui(new Ui::WidgetSettings), coreConnection(coreConnection)
+   : QWidget(parent), ui(new Ui::WidgetSettings), coreConnection(coreConnection), initialState(true)
 {
    this->ui->setupUi(this);
 
@@ -116,6 +123,7 @@ void WidgetSettings::coreConnected()
 
 void WidgetSettings::coreDisconnected()
 {
+   this->initialState = true;
    this->ui->tabWidget->setTabEnabled(0, false);
 }
 
@@ -134,6 +142,25 @@ void WidgetSettings::newState(const Protos::GUI::State& state)
    for (int i = 0; i < settings.shared_directory_size(); i++)
       sharedDirs << Common::ProtoHelper::getRepeatedStr(settings, &Protos::GUI::CoreSettings::shared_directory, i);
    this->sharedDirsModel.setDirs(sharedDirs);
+
+   // If this is the first message state received and there is no incoming folder defined we ask the user to choose one.
+   if (this->initialState)
+   {
+      this->initialState = false;
+      if (this->incomingDirsModel.rowCount() == 0)
+      {
+         if (QMessageBox::question(
+               this,
+               "No incoming folder",
+               "You don't have any incoming folder, would you like to choose one?\n All downloaded files will be put in this folder",
+               QMessageBox::Yes,
+               QMessageBox::No
+            ) == QMessageBox::Yes)
+         {
+            this->addIncoming();
+         }
+      }
+   }
 }
 
 void WidgetSettings::saveCoreSettings()
@@ -171,20 +198,20 @@ void WidgetSettings::saveGUISettings()
 
 void WidgetSettings::addIncoming()
 {
-   QString dir = askADirectory();
-   if (!dir.isNull())
+   QStringList dirs = askForDirectories();
+   if (!dirs.isEmpty())
    {
-      this->incomingDirsModel.addDir(dir);
+      this->incomingDirsModel.addDirs(dirs);
       this->saveCoreSettings();
    }
 }
 
 void WidgetSettings::addShared()
 {
-   QString dir = askADirectory();
-   if (!dir.isNull())
+   QStringList dirs = askForDirectories();
+   if (!dirs.isEmpty())
    {
-      this->sharedDirsModel.addDir(dir);
+      this->sharedDirsModel.addDirs(dirs);
       this->saveCoreSettings();
    }
 }
@@ -218,21 +245,28 @@ void WidgetSettings::resetCoreAddress()
 /**
   * TODO : browse the remotes directories (Core) not the local ones.
   */
-QString WidgetSettings::askADirectory()
+QStringList WidgetSettings::askForDirectories()
 {
    QFileDialog fileDialog(this);
-   fileDialog.setOptions(QFileDialog::ShowDirsOnly | QFileDialog::ReadOnly);
-   fileDialog.setFileMode(QFileDialog::DirectoryOnly);
+   fileDialog.setOption(QFileDialog::DontUseNativeDialog,true);
+   //fileDialog.setOptions(QFileDialog::ShowDirsOnly);
+   fileDialog.setFileMode(QFileDialog::Directory);
+
+   QListView* l = fileDialog.findChild<QListView*>("listView");
+   if (l)
+      l->setSelectionMode(QAbstractItemView::ExtendedSelection);
+
    if (fileDialog.exec())
    {
-      return fileDialog.selectedFiles().first();
+      return fileDialog.selectedFiles();
    }
-   return QString();
+   return QStringList();
 }
 
 void WidgetSettings::showEvent(QShowEvent* event)
 {
    if (this->ui->tabWidget->isTabEnabled(0))
       this->ui->tabWidget->setCurrentIndex(0);
+
    QWidget::showEvent(event);
 }
