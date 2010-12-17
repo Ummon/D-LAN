@@ -23,6 +23,7 @@ do
    if [ "$LICENSE" != "`head -n $LICENSE_SIZE $CURRENT_FILE`" ]
    then
       NB_FILE_UPDATED=`expr $NB_FILE_UPDATED + 1`
+      # We only match a part (lines 5 to 8) of the copyright to know if the header exists or not in the current file.
       if [ "`sed -n '5,8p' $LICENSE_FILENAME`" = "`sed -n '5,8p' \"$CURRENT_FILE\"`" ]
       then
          echo "$LICENSE" > "$TMP_FILE"
