@@ -4,7 +4,6 @@
 QT -= gui
 TARGET = Common
 
-
 include(common.pri)
 include(../Libs/protobuf.pri)
 
@@ -24,7 +23,8 @@ SOURCES += Hash.cpp \
     TransferRateCalculator.cpp \
     ProtoHelper.cpp \
     Timeoutable.cpp \
-    PersistentData.cpp
+    PersistentData.cpp \
+    ../Libs/blake/blake_opt.c
 HEADERS += Hashes.h \
     Hash.h \
     Deletable.h \
@@ -38,4 +38,6 @@ HEADERS += Hashes.h \
     ProtoHelper.h \
     Timeoutable.h \
     Version.h \
-    PersistentData.h
+    PersistentData.h \
+    ../Libs/blake/blake_opt.h \
+    ../Libs/MersenneTwister.h

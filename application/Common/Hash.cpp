@@ -6,8 +6,7 @@ using namespace Common;
 
 /**
   * @class Hash
-  * An Über-optimized SHA-1 hash.
-  * see : http://fr.wikipedia.org/wiki/SHA-1
+  * An Über-optimized hash.
   */
 
 MTRand Hash::mtrand;
@@ -87,22 +86,13 @@ Hash& Hash::operator=(const Hash& h)
 }
 
 /**
-  * Return a pointer to its internal data.
-  * The length of the returned value is exactly HASH_SIZE.
-  */
-const char* Hash::getData() const
-{
-   return this->data->hash;
-}
-
-/**
   * Return a human readable string.
   * For example : 16bd4b1e656129eb9ddaa2ce0f0705f1cc161f77.
   * @see fromStr to decode a such string.
   */
 QString Hash::toStr() const
 {
-   QString ret(40);
+   QString ret(HASH_SIZE * 2);
    for (int i = 0; i < HASH_SIZE; i++)
    {
       char p1 = (this->data->hash[i] & 0xF0) >> 4;
@@ -111,6 +101,31 @@ QString Hash::toStr() const
       ret[i*2 + 1] = p2 <= 9 ? '0' + p2 : 'a' + (p2-10);
    }
    return ret;
+}
+
+/**
+  * Return a C Array, for example :
+  * "{
+  * 0x4f, 0xb9, 0x6c, 0x68,
+  * 0xa4, 0xe8, 0xcd, 0x5b,
+  * 0x6e, 0xb0, 0xb7, 0x44,
+  * 0x36, 0x77, 0x2a, 0x6a,
+  * 0x09, 0x4c, 0xa5, 0xfc,
+  * 0xfc, 0x46, 0x33, 0x3a,
+  * 0x30, 0xa4, 0xc1, 0x12,
+  * }"
+  */
+QString Hash::toStrCArray() const
+{
+   QString str("{");
+   for (int i = 0; i < HASH_SIZE; i++)
+   {
+      if (i % 4 == 0)
+         str += "\n";
+      str += QString("0x%1, ").arg((unsigned char)this->data->hash[i], 2, 16, QLatin1Char('0'));
+   }
+   str += "\n}";
+   return str;
 }
 
 bool Hash::isNull() const
@@ -163,4 +178,92 @@ void Hash::dereference()
    this->data->nbRef -= 1;
    if (this->data->nbRef == 0)
       delete this->data;
+}
+
+/////
+
+/**
+  * @class Hasher
+  * To create hash from row data.
+  */
+
+Hasher::Hasher()
+{
+   this->reset();
+}
+
+/**
+  * May be called right after the constructor or the 'reset()' method.
+  * @param salt Must be 16 bytes for Hash::HASH_SIZE = 28 or 32 and 32 bytes for Hash::HASH_SIZE = 48 or 64.
+  */
+void Hasher::addSalt(const char* salt)
+{
+   Blake::AddSalt(&this->state, (const Blake::BitSequence*)salt);
+}
+
+/**
+  * May be called right after the constructor or the 'reset()' method.
+  * @param salt Must be Hash::HASH_SIZE bytes length.
+  */
+void Hasher::addPredefinedSalt()
+{
+   static const char salt16[] = {
+      0xe4, 0x91, 0x51, 0xb1,
+      0xdd, 0x2a, 0x45, 0xa7,
+      0x30, 0x89, 0x64, 0x88,
+      0x81, 0x15, 0x9a, 0x4f
+   };
+
+   static const char salt32[] = {
+      0xba, 0xe5, 0x4d, 0xf2,
+      0xab, 0x84, 0xb5, 0xce,
+      0xf9, 0x9a, 0x6c, 0x78,
+      0x86, 0x7f, 0x6d, 0x7b,
+      0xcb, 0xdc, 0xc1, 0x6a,
+      0xe5, 0x03, 0x9a, 0x3c,
+      0x75, 0xca, 0x4d, 0xdc,
+      0x90, 0x96, 0x10, 0xef
+   };
+
+   if (Hash::HASH_SIZE == 28 || Hash::HASH_SIZE == 32)
+      this->addSalt(salt16);
+   else
+      this->addSalt(salt32);
+}
+
+/**
+  * @param size In bytes.
+  */
+void Hasher::addData(const char* data, int size)
+{
+   Blake::Update(&this->state, (const Blake::BitSequence*)data, 8 * size);
+}
+
+Hash Hasher::getResult()
+{
+   Hash result;
+   Blake::Final(&this->state, (Blake::BitSequence*)result.data->hash);
+   return result;
+}
+
+void Hasher::reset()
+{
+   Blake::Init(&this->state, Hash::HASH_SIZE * 8);
+}
+
+Common::Hash Hasher::hash(const QString& str)
+{
+   const QByteArray data = str.toUtf8();
+   Hasher hasher;
+   hasher.addData(data.constData(), data.size());
+   return hasher.getResult();
+}
+
+Common::Hash Hasher::hashWithSalt(const QString& str)
+{
+   const QByteArray data = str.toUtf8();
+   Hasher hasher;
+   hasher.addPredefinedSalt();
+   hasher.addData(data.constData(), data.size());
+   return hasher.getResult();
 }

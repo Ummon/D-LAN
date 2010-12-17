@@ -43,8 +43,11 @@ namespace RCM
       );
       ~RemoteConnection();
 
+      void sendMessageToItself(const QString& message);
+
    signals:
       void deleted(RemoteConnection*);
+      void chatMessageSent(const QString&);
 
    private slots:
       void refresh();
@@ -58,6 +61,8 @@ namespace RCM
       void getEntriesTimeout();
 
       void newLogEntry(QSharedPointer<const LM::IEntry> entry);
+
+      void sendBadPasswordResult();
 
    private:
       bool readMessage();
@@ -81,6 +86,8 @@ namespace RCM
       QList< QSharedPointer<PM::IGetEntriesResult> > getEntriesResults;
 
       MTRand mtrand;
+
+      bool authenticated;
 
 #ifdef DEBUG
       QSharedPointer<LM::ILogger> loggerRefreshState; // A logger especially for the state message.

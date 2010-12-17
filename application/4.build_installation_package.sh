@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
-
 # Makes the installation package, depending the platform it can be an .exe, deb, rpm, etc..
+
+set -o errexit
 
 
 if [ `uname -s` = "Linux" ] ; then

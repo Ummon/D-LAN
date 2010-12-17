@@ -28,6 +28,8 @@ QString Network::messToStr(GUIMessageType type)
    case GUI_STATE: return "STATE";
    case GUI_EVENT_CHAT_MESSAGE:  return "EVENT_CHAT_MESSAGE";
    case GUI_EVENT_LOG_MESSAGE: return "EVENT_LOG_MESSAGE";
+   case GUI_AUTHENTICATION: return "AUTHENTICATION";
+   case GUI_AUTHENTICATION_RESULT: return "AUTHENTICATION_RESULT";
    case GUI_SETTINGS: return "SETTINGS";
    case GUI_SEARCH: return "SEARCH";
    case GUI_SEARCH_TAG: return "SEARCH_TAG";

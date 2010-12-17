@@ -6,8 +6,6 @@
 #include <QList>
 #include <QTcpServer>
 
-#include <IRemoteControlManager.h>
-
 #include <Common/Uncopyable.h>
 #include <Core/FileManager/IFileManager.h>
 #include <Core/PeerManager/IPeerManager.h>
@@ -15,6 +13,7 @@
 #include <Core/DownloadManager/IDownloadManager.h>
 #include <Core/NetworkListener/INetworkListener.h>
 
+#include <IRemoteControlManager.h>
 #include <priv/RemoteConnection.h>
 
 namespace RCM
@@ -36,6 +35,7 @@ namespace RCM
    private slots:
       void newConnection();
       void connectionDeleted(RemoteConnection* sender);
+      void chatMessageSent(const QString& message);
 
    private:
       QSharedPointer<FM::IFileManager> fileManager;

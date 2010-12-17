@@ -95,7 +95,7 @@ const QList<WatcherEvent> DirWatcherWin::waitEvent(int timeout, QList<WaitCondit
    {
       L_ERRO(QString("DirWatcherWin::waitEvent : No more than %1 condition(s), some directory will not be watched any more.").arg(MAX_WAIT_CONDITION));
       int n = this->dirs.size() + ws.size() - MAXIMUM_WAIT_OBJECTS;
-      while (n --> 0) // The better C++ operator!
+      while (n --> 0) // The best C++ operator!
          this->dirsToDelete << this->dirs.takeLast();
    }
 
@@ -130,7 +130,7 @@ const QList<WatcherEvent> DirWatcherWin::waitEvent(int timeout, QList<WaitCondit
 
    this->mutex.unlock();
 
-   DWORD waitStatus = WaitForMultipleObjects(m, eventsArray, FALSE, timeout);
+   DWORD waitStatus = WaitForMultipleObjects(m, eventsArray, FALSE, timeout == -1 ? INFINITE : timeout);
 
    QMutexLocker locker(&this->mutex);
 

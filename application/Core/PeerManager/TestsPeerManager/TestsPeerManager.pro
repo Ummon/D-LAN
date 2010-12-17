@@ -3,24 +3,16 @@
 #-------------------------------------------------
 QT += testlib network
 QT -= gui
-TARGET = Tests
-CONFIG += link_prl \
-    console
+TARGET = TestsPeerManager
+CONFIG += link_prl console
 CONFIG -= app_bundle
 
+include(../../../Libs/protobuf.pri)
 include(../../../Common/common.pri)
 
 LIBS += -L../output/$$FOLDER \
-    -lDownloadManager
-POST_TARGETDEPS += ../output/$$FOLDER/libDownloadManager.a
-
-LIBS += -L../../UploadManager/output/$$FOLDER \
-    -lUploadManager
-POST_TARGETDEPS += ../../UploadManager/output/$$FOLDER/libUploadManager.a
-
-LIBS += -L../../PeerManager/output/$$FOLDER \
     -lPeerManager
-POST_TARGETDEPS += ../../PeerManager/output/$$FOLDER/libPeerManager.a
+POST_TARGETDEPS += ../output/$$FOLDER/libPeerManager.a
 
 LIBS += -L../../FileManager/output/$$FOLDER \
     -lFileManager
@@ -39,21 +31,19 @@ LIBS += -L${PROTOBUF}/src/.libs \
     -lprotobuf
 INCLUDEPATH += . \
     .. \
-    ../../PeerManager \ # Because Core/PeerManager/tests/PeerUpdater needs to include Core/PeerManager/priv/PeerManager.h.
     ../../.. \ # For the 'Common' component.
     ${PROTOBUF}/src
-
-# LIBS += -L${QTDIR}/../mingw/lib -lws2_32
-
 TEMPLATE = app
 SOURCES += main.cpp \
     Tests.cpp \
     ../../../Protos/common.pb.cc \
-    ../../PeerManager/tests/TestServer.cpp \
-    ../../PeerManager/tests/PeerUpdater.cpp \
+    TestServer.cpp \
+    PeerUpdater.cpp \
+    ResultListener.cpp \
     ../../../Protos/core_settings.pb.cc
 HEADERS += Tests.h \
     ../../../Protos/common.pb.h \
-    ../../PeerManager/tests/TestServer.h \
-    ../../PeerManager/tests/PeerUpdater.h \
+    TestServer.h \
+    PeerUpdater.h \
+    ResultListener.h \
     ../../../Protos/core_settings.pb.h

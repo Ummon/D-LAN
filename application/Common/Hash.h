@@ -3,9 +3,18 @@
 
 #define WITH_MUTEX false
 
+#include "Uncopyable.h"
+
 #include <QString>
 #include <QByteArray>
 #include <QDataStream>
+
+namespace Blake
+{
+   extern "C" {
+      #include <Libs/blake/blake_opt.h>
+   }
+}
 
 #include <Libs/MersenneTwister.h>
 
@@ -15,13 +24,15 @@
 
 namespace Common
 {
+   class Hasher;
    class Hash
    {
    private:
       static MTRand mtrand;
 
    public:
-      static const int HASH_SIZE = 20; ///< 20 bytes.
+      // HASH_SIZE can be 28, 32, 48 or 64 bytes.
+      static const int HASH_SIZE = 28;
 
       Hash();
       Hash(const Hash& h);
@@ -31,8 +42,15 @@ namespace Common
       ~Hash();
 
       Hash& operator=(const Hash&);
-      const char* getData() const;
+
+      /**
+        * Return a pointer to its internal data.
+        * The length of the returned value is exactly HASH_SIZE.
+        */
+      inline const char* getData() const { return this->data->hash; }
+
       QString toStr() const;
+      QString toStrCArray() const;
       bool isNull() const;
 
       static Hash rand();
@@ -48,6 +66,7 @@ namespace Common
 
       friend QDataStream& operator>>(QDataStream&, Hash&);
       friend QDataStream& operator<<(QDataStream& stream, const Hash& hash);
+      friend class Hasher;
 
       struct SharedData
       {
@@ -85,8 +104,7 @@ namespace Common
      */
    inline QDataStream& operator<<(QDataStream& stream, const Hash& hash)
    {
-      if (!hash.isNull())
-         stream.writeRawData(hash.data->hash, Hash::HASH_SIZE);
+      stream.writeRawData(hash.data->hash, Hash::HASH_SIZE);
 
       return stream;
    }
@@ -108,5 +126,22 @@ namespace Common
    {
       return *(const uint*)(h.getData());
    }
+
+   class Hasher : Uncopyable
+   {
+   public:
+      Hasher();
+      void addSalt(const char* salt);
+      void addPredefinedSalt();
+      void addData(const char*, int size);
+      Hash getResult();
+      void reset();
+
+      static Common::Hash hash(const QString& str);
+      static Common::Hash hashWithSalt(const QString& str);
+
+   private:
+      Blake::hashState state;
+   };
 }
 #endif

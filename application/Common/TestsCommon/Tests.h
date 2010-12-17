@@ -33,6 +33,7 @@ private slots:
    void generateAHash();
    void buildAnHashFromAString();
    void compareTwoHash();
+   void hasher();
 
    void messageHeader();
 

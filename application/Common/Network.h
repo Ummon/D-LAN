@@ -48,14 +48,18 @@ namespace Common
          GUI_EVENT_CHAT_MESSAGE = 0x11,
          GUI_EVENT_LOG_MESSAGE = 0x12,
 
-         GUI_SETTINGS = 0x21,
-         GUI_SEARCH = 0x31,
-         GUI_SEARCH_TAG = 0x32,
-         GUI_SEARCH_RESULT = 0x33,
+         GUI_AUTHENTICATION = 0x21,
+         GUI_AUTHENTICATION_RESULT = 0x22,
 
-         GUI_BROWSE = 0x41,
-         GUI_BROWSE_TAG = 0x42,
-         GUI_BROWSE_RESULT = 0x43,
+         GUI_SETTINGS = 0x31,
+
+         GUI_SEARCH = 0x41,
+         GUI_SEARCH_TAG = 0x42,
+         GUI_SEARCH_RESULT = 0x43,
+
+         GUI_BROWSE = 0x51,
+         GUI_BROWSE_TAG = 0x52,
+         GUI_BROWSE_RESULT = 0x53,
 
          GUI_CANCEL_DOWNLOADS = 0x61,
          GUI_MOVE_DOWNLOADS = 0x71,

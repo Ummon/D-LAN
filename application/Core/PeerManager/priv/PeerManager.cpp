@@ -24,10 +24,10 @@ PeerManager::PeerManager(QSharedPointer<FM::IFileManager> fileManager)
 
    SETTINGS.get("nick", this->nick);
 
-   if (!SETTINGS.isSet("peerID"))
+   if (!SETTINGS.isSet("peer_id"))
    {
       this->ID = Common::Hash::rand();
-      SETTINGS.set("peerID", this->ID);
+      SETTINGS.set("peer_id", this->ID);
 
       try
       {
@@ -40,7 +40,7 @@ PeerManager::PeerManager(QSharedPointer<FM::IFileManager> fileManager)
    }
    else
    {
-      SETTINGS.get("peerID", this->ID);
+      SETTINGS.get("peer_id", this->ID);
    }
 
    L_USER(QString("Our current ID: %1").arg(this->ID.toStr()));

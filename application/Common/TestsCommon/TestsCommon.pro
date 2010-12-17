@@ -3,7 +3,7 @@
 # -------------------------------------------------
 QT += testlib
 QT -= gui
-TARGET = Tests
+TARGET = TestsCommon
 
 CONFIG += link_prl
 

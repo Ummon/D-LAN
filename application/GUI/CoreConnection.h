@@ -5,6 +5,7 @@
 #include <QTcpSocket>
 #include <QHostInfo>
 #include <QSharedPointer>
+#include <QProcess>
 
 #include <Protos/gui_protocol.pb.h>
 #include <Protos/common.pb.h>
@@ -104,6 +105,8 @@ namespace GUI
       void moveDownloads(quint64 downloadIDRef, const QList<quint64>& downloadIDs, bool moveBefore = true);
       void refresh();
 
+      bool isConnected();
+
    public slots:
       void connectToCore();
 
@@ -121,13 +124,14 @@ namespace GUI
       void stateChanged(QAbstractSocket::SocketState socketState);
       void dataReceived();
       void adressResolved(QHostInfo hostInfo);
+      void connected();
+      void disconnected();
 
    private:
       friend class BrowseResult;
       friend class SearchResult;
 
       void tryToConnectToTheNextAddress();
-      void startLocalCore();
 
       void send(Common::Network::GUIMessageType type);
       void send(Common::Network::GUIMessageType type, const google::protobuf::Message& message);
@@ -143,7 +147,7 @@ namespace GUI
 
       QList< QSharedPointer<BrowseResult> > browseResultsWithoutTag;
       QList< QSharedPointer<SearchResult> > searchResultsWithoutTag;
-      bool connecting;
+      bool authenticated;
    };
 }
 

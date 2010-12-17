@@ -19,7 +19,6 @@ using namespace Common;
   * Some generic global functions.
   */
 
-
 Global::UnableToSetTempDirException::UnableToSetTempDirException(const QString& dir)
    : errorMessage(QString("Unable to create the temporary directory %1").arg(dir).toUtf8())
 {
@@ -81,7 +80,7 @@ int Global::nCombinations(int n, int k)
   * - 1024^3 -> "1.0 GiB"
   * - 1024^4 -> "1.0 TiB"
   * - etc.. to ZiB
-  * The speed of this implementation is equal to the old above : ~1 µs (mesured with 1 millions calls in release (-O2)).
+  * The speed of this implementation is equal to the old above : ~1 µs per call (mesured with 1 millions calls in release (-O2)).
   */
 QString Global::formatByteSize(qint64 bytes, int precision)
 {

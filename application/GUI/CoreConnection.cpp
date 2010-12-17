@@ -4,14 +4,13 @@ using namespace GUI;
 #include <QHostAddress>
 #include <QCoreApplication>
 
-#include <Libs/qtservice/src/QtServiceController>
-
 #include <Common/LogManager/Builder.h>
 #include <Common/ZeroCopyStreamQIODevice.h>
 #include <Common/Settings.h>
 #include <Common/ProtoHelper.h>
 #include <Common/Constants.h>
 
+#include <CoreController.h>
 #include <Log.h>
 
 BrowseResult::BrowseResult(CoreConnection* coreConnection, const Common::Hash& peerID)
@@ -79,20 +78,17 @@ void SearchResult::setTag(quint64 tag)
 void SearchResult::searchResult(const Protos::Common::FindResult& findResult)
 {
    if (findResult.tag() == this->tag) // Is this message for us?
-   {
-      this->tag = 0; // To avoid multi emit (should not occurs).
       emit result(findResult);
-   }
 }
 
 /////
 
 CoreConnection::CoreConnection()
-   : currentHostLookupID(-1), connecting(false)
+   : currentHostLookupID(-1), authenticated(false)
 {
    connect(&this->socket, SIGNAL(readyRead()), this, SLOT(dataReceived()));
-   connect(&this->socket, SIGNAL(connected()), this, SIGNAL(coreConnected()));
-   connect(&this->socket, SIGNAL(disconnected()), this, SIGNAL(coreDisconnected()));
+   connect(&this->socket, SIGNAL(connected()), this, SLOT(connected()));
+   connect(&this->socket, SIGNAL(disconnected()), this, SLOT(disconnected()));
    connect(&this->socket, SIGNAL(stateChanged(QAbstractSocket::SocketState)), this, SLOT(stateChanged(QAbstractSocket::SocketState)));
 }
 
@@ -173,13 +169,17 @@ void CoreConnection::refresh()
    this->send(Common::Network::GUI_REFRESH);
 }
 
+bool CoreConnection::isConnected()
+{
+   return this->socket.state() == QAbstractSocket::ConnectedState;
+}
+
 void CoreConnection::connectToCore()
 {
-   if (this->connecting)
-      return;
-   this->connecting = true;
-
    this->socket.close();
+
+   if (this->currentHostLookupID != -1)
+      QHostInfo::abortHostLookup(this->currentHostLookupID);
 
    this->currentHostLookupID = QHostInfo::lookupHost(SETTINGS.get<QString>("core_address"), this, SLOT(adressResolved(QHostInfo)));
 }
@@ -199,9 +199,12 @@ void CoreConnection::stateChanged(QAbstractSocket::SocketState socketState)
          this->connectToCore();
       }
       break;
+
    case QAbstractSocket::ConnectedState:
-      L_USER("Connected to the core");
+      if (this->authenticated)
+         L_USER("Connected to the core");
       break;
+
    default:;
    }
 }
@@ -211,12 +214,15 @@ void CoreConnection::dataReceived()
    // TODO : it will loop infinetly if not enough data is provided.
    while (!this->socket.atEnd())
    {
-      QCoreApplication::processEvents(); // To read from the native socket to the internal QTcpSocket buffer. TODO : more elegant way?
+      // To read from the native socket to the internal QTcpSocket buffer. TODO : more elegant way? See : http://bugreports.qt.nokia.com/browse/QTBUG-15903
+      QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
 
       if (this->currentHeader.isNull() && this->socket.bytesAvailable() >= Common::Network::HEADER_SIZE)
       {
          this->currentHeader = Common::Network::readHeader<Common::Network::GUIMessageType>(this->socket);
          this->ourID = this->currentHeader.senderID;
+
+         L_DEBU(QString("Data received : %1").arg(this->currentHeader.toStr()));
       }
 
       if (!this->currentHeader.isNull() && this->socket.bytesAvailable() >= this->currentHeader.size)
@@ -231,10 +237,10 @@ void CoreConnection::dataReceived()
 void CoreConnection::adressResolved(QHostInfo hostInfo)
 {
    this->currentHostLookupID = -1;
+
    if (hostInfo.addresses().isEmpty())
-   {
+   {      
       L_USER(QString("Unable to resolve the address : %1").arg(hostInfo.hostName()));
-      this->connecting = false;
       return;
    }
 
@@ -252,6 +258,28 @@ void CoreConnection::adressResolved(QHostInfo hostInfo)
          break;
       }
    }*/
+}
+
+void CoreConnection::connected()
+{
+   if (this->socket.peerAddress() == QHostAddress::LocalHost || this->socket.peerAddress() == QHostAddress::LocalHostIPv6)
+   {
+      this->authenticated = true;
+      emit coreConnected();
+   }
+   else
+   {
+      Common::Hash password = SETTINGS.get<Common::Hash>("password");
+      Protos::GUI::Authentication authMessage;
+      authMessage.mutable_password()->set_hash(password.getData(), Common::Hash::HASH_SIZE);
+      this->send(Common::Network::GUI_AUTHENTICATION, authMessage);
+   }
+}
+
+void CoreConnection::disconnected()
+{
+   this->authenticated = false;
+   emit coreDisconnected();
 }
 
 void CoreConnection::tryToConnectToTheNextAddress()
@@ -276,30 +304,12 @@ void CoreConnection::tryToConnectToTheNextAddress()
       address = this->addressesToTry.takeFirst();
 
    // If the address is local check if the core is launched, if not try to launch it.
+#ifndef DEBUG
    if (address == QHostAddress::LocalHost || address == QHostAddress::LocalHostIPv6)
-      this->startLocalCore();
+      CoreController::StartCore();
+#endif
 
    this->socket.connectToHost(address, SETTINGS.get<quint32>("core_port"));
-   this->connecting = false;
-}
-
-/**
-  * Only in release mode.
-  */
-void CoreConnection::startLocalCore()
-{
-#ifndef DEBUG
-   QtServiceController controller(Common::SERVICE_NAME);
-   if (!controller.isInstalled())
-   {
-      QtServiceController::install("AybabtuCore.exe");
-   }
-
-   if (!controller.isRunning())
-   {
-      controller.start();
-   }
-#endif
 }
 
 void CoreConnection::send(Common::Network::GUIMessageType type)
@@ -334,18 +344,50 @@ bool CoreConnection::readMessage()
 
    switch (this->currentHeader.type)
    {
-   case Common::Network::GUI_STATE:
+   case Common::Network::GUI_AUTHENTICATION_RESULT:
       {
-         Protos::GUI::State state;
+         Protos::GUI::AuthenticationResult authenticationResult;
 
          // This scope (and the others ones below) is here to force the input stream to read all the bytes.
          // See Common::ZeroCopyInputStreamQIODevice::~ZeroCopyInputStreamQIODevice.
          {
             Common::ZeroCopyInputStreamQIODevice inputStream(&this->socket);
-            readOK = state.ParseFromBoundedZeroCopyStream(&inputStream, this->currentHeader.size);
+            readOK = authenticationResult.ParseFromBoundedZeroCopyStream(&inputStream, this->currentHeader.size);
          }
 
          if (readOK)
+         {
+            switch (authenticationResult.status())
+            {
+            case Protos::GUI::AuthenticationResult_Status_BAD_PASSWORD:
+               L_USER("Authentication failed, bad password");
+               break;
+
+            case Protos::GUI::AuthenticationResult_Status_ERROR:
+               L_USER("Authentication failed");
+               break;
+
+            case Protos::GUI::AuthenticationResult_Status_OK:
+               this->authenticated = true;
+               L_USER("Connected to the core");
+               emit coreConnected();
+               break;
+            }
+         }
+      }
+      break;
+
+
+   case Common::Network::GUI_STATE:
+      {
+         Protos::GUI::State state;
+
+         {
+            Common::ZeroCopyInputStreamQIODevice inputStream(&this->socket);
+            readOK = state.ParseFromBoundedZeroCopyStream(&inputStream, this->currentHeader.size);
+         }
+
+         if (readOK && this->authenticated)
             emit newState(state);
       }
       break;
@@ -359,7 +401,7 @@ bool CoreConnection::readMessage()
             readOK = eventChatMessage.ParseFromBoundedZeroCopyStream(&inputStream, this->currentHeader.size);
          }
 
-         if (readOK)
+         if (readOK && this->authenticated)
          {
             Common::Hash peerID(eventChatMessage.peer_id().hash().data());
             emit newChatMessage(peerID, Common::ProtoHelper::getStr(eventChatMessage, &Protos::GUI::EventChatMessage::message));
@@ -376,7 +418,7 @@ bool CoreConnection::readMessage()
             readOK = eventLogMessage.ParseFromBoundedZeroCopyStream(&inputStream, this->currentHeader.size);
          }
 
-         if (readOK)
+         if (readOK && this->authenticated)
          {
             QDateTime dateTime = QDateTime::fromMSecsSinceEpoch(eventLogMessage.time());
             QString message = Common::ProtoHelper::getStr(eventLogMessage, &Protos::GUI::EventLogMessage::message);
@@ -407,7 +449,7 @@ bool CoreConnection::readMessage()
             readOK = findResultMessage.ParseFromBoundedZeroCopyStream(&inputStream, this->currentHeader.size);
          }
 
-         if (readOK)
+         if (readOK && this->authenticated)
             emit searchResult(findResultMessage);
       }
       break;
@@ -420,7 +462,7 @@ bool CoreConnection::readMessage()
             readOK = tagMessage.ParseFromBoundedZeroCopyStream(&inputStream, this->currentHeader.size);
          }
 
-         if (readOK && !this->browseResultsWithoutTag.isEmpty())
+         if (readOK && this->authenticated && !this->browseResultsWithoutTag.isEmpty())
             this->browseResultsWithoutTag.takeFirst()->setTag(tagMessage.tag());
       }
       break;
@@ -433,7 +475,7 @@ bool CoreConnection::readMessage()
             readOK = browseResultMessage.ParseFromBoundedZeroCopyStream(&inputStream, this->currentHeader.size);
          }
 
-         if (readOK)
+         if (readOK && this->authenticated)
             emit browseResult(browseResultMessage.tag(), browseResultMessage.entries());
       }
       break;

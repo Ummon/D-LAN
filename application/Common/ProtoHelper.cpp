@@ -5,42 +5,65 @@ using namespace Common;
 
 QString ProtoHelper::getDebugStr(const google::protobuf::Message& mess)
 {
-   QString str = QString::fromUtf8(mess.DebugString().data());
+   return QString("");
+
+   std::string debugString = mess.DebugString();
+   QString str = QString::fromStdString(debugString);
+
+   //return str;
+
+   QString test;
+   test.append(QString("%1").arg(5, 2, 16, QLatin1Char('0')));
 
    // Very dirty : substitute the bytes representation (ascii + escaped octal number) with a hexadecimal representation.
-   // hash: "ID\214\351\t\003\312w\213u\320\236@0o\032\220\016(\033"
+   // hash: "ID\214\351\t\003\312w\213u\320\236@0o\032\220\"(\033"
 
-   QRegExp rx("hash: \"([^\"]+)\"");
+   const QString prefix("hash: \"");
 
    int pos = 0;
-   while ((pos = rx.indexIn(str, pos)) != -1)
+   while ((pos = str.indexOf(prefix, pos)) != -1)
    {
-      QString hash = rx.cap(1);
+      pos += prefix.size();
+      const int initialPos = pos;
       QString hashHex;
-      for (int i = 0; i < hash.size(); i++)
+      hashHex.reserve(40);
+      while (str[pos] != '"')
       {
-         if (hash[i] != '\\')
+         if (str[pos] != '\\')
          {
-            hashHex.append(QString::number(hash[i].toAscii(), 16));
+            hashHex.append(QString::number(str[pos].toAscii(), 16));
+            pos++;
          }
          else
          {
-            if (hash[i+1] == 'n')
+            switch (str[pos+1].toAscii())
             {
-               hashHex.append(QString::number(QChar('\n').toAscii(), 16));
-               i += 1;
-            }
-            else
-            {
+            case 'r':
+               hashHex.append("0d");
+               pos += 2;
+               break;
+            case 'n':
+               hashHex.append("0a");
+               pos += 2;
+               break;
+            case '"':
+            case '\'':
+            case '\\':
+               hashHex.append(QString::number(str[pos+1].toAscii(), 16));
+               pos += 2;
+               break;
+            default: // It's an octal number, for example : "\123"
                bool ok;
-               hashHex.append(QString::number(hash.mid(i+1, 3).toInt(&ok, 8), 16));
-               i += 3;
+               hashHex.append(QString("%1").arg(str.mid(pos+1, 3).toInt(&ok, 8), 2, 16, QLatin1Char('0')));
+               pos += 4;
             }
          }
       }
-      QString newHash = QString("hash: \"%1\"").arg(hashHex);
-      str.replace(pos, rx.matchedLength(), newHash);
-      pos += newHash.size();
+      /* Used during debugging :
+      const int length = hashHex.size();
+      const QString hash = str.mid(initialPos, pos - initialPos);*/
+
+      str.replace(initialPos, pos - initialPos, hashHex);
   }
 
    return str;

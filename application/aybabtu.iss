@@ -23,6 +23,7 @@ OutputBaseFilename={#AppName}-{#Version}{#VersionTag}-{#BuildTime}-Setup
 Source: Core/output/release/AybabtuCore.exe; DestDir: {app}; Flags: comparetimestamp; 
 Source: GUI/output/release/AybabtuGUI.exe; DestDir: {app}; Flags: comparetimestamp; 
 Source: Tools/LogViewer/output/release/LogViewer.exe; DestDir: {app}; Flags: comparetimestamp; 
+Source: Tools/PasswordHasher/output/release/PasswordHasher.exe; DestDir: {app}; Flags: comparetimestamp; 
 Source: {#QtDir}/bin/QtCore4.dll; DestDir: {app}; Flags: comparetimestamp; 
 Source: {#QtDir}/bin/QtGui4.dll; DestDir: {app}; Flags: comparetimestamp; 
 Source: {#QtDir}/bin/QtNetwork4.dll; DestDir: {app}; Flags: comparetimestamp; 

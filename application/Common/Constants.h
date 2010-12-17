@@ -11,6 +11,9 @@ namespace Common
    const QString FILE_CACHE("cache.bin"); ///< The name of the file cache saved in the home directory.
    const QString FILE_QUEUE("queue.bin"); ///< This file contains the current downloads.
 
+   const QString CORE_SETTINGS_FILENAME("core_settings.txt");
+   const QString GUI_SETTINGS_FILENAME("gui_settings.txt");
+
    const QString SERVICE_NAME("AybabtuCore");
 
    const int PROTOBUF_STREAMING_BUFFER_SIZE(4 * 1024); ///< 4kB.
