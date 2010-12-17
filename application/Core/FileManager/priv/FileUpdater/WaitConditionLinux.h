@@ -41,7 +41,7 @@ namespace FM
       ~WaitConditionLinux();
 
       void release();
-      void wait(int timeout = -1);
+      bool wait(int timeout = -1);
       void* getHandle();
 
    private:
