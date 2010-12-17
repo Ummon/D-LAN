@@ -249,7 +249,6 @@ QStringList WidgetSettings::askForDirectories()
 {
    QFileDialog fileDialog(this);
    fileDialog.setOption(QFileDialog::DontUseNativeDialog,true);
-   //fileDialog.setOptions(QFileDialog::ShowDirsOnly);
    fileDialog.setFileMode(QFileDialog::Directory);
 
    QListView* l = fileDialog.findChild<QListView*>("listView");

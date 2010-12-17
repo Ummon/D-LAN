@@ -5,10 +5,6 @@
 #include <QSharedPointer>
 #include <QtNetwork>
 
-#include <google/protobuf/message.h>
-
-#include <Protos/common.pb.h>
-
 #include <Core/FileManager/Builder.h>
 #include <Core/FileManager/IFileManager.h>
 
@@ -22,8 +18,8 @@
 #include <IDownloadManager.h>
 using namespace DM;
 
-#include <Core/PeerManager/tests/TestServer.h>
-#include <Core/PeerManager/tests/PeerUpdater.h>
+#include <Core/PeerManager/TestsPeerManager/TestServer.h>
+#include <Core/PeerManager/TestsPeerManager/PeerUpdater.h>
 
 class Tests : public QObject
 {
