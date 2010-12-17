@@ -41,13 +41,15 @@ void WaitConditionLinux::release()
 
 bool WaitConditionLinux::wait(int timeout)
 {
+   bool timeouted = false;
+
    this->mutex.lock();
    if (!this->released)
-      return !this->waitCondition.wait(&this->mutex, timeout == -1 ? ULONG_MAX : timeout);
-   
+      timeouted = !this->waitCondition.wait(&this->mutex, timeout == -1 ? ULONG_MAX : timeout);
+
    this->released = false;
    this->mutex.unlock();
-   return false;
+   return timeouted;
 }
 
 void* WaitConditionLinux::getHandle()
