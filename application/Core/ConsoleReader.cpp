@@ -19,10 +19,11 @@
 #include <ConsoleReader.h>
 using namespace CoreSpace;
 
+#include <cstdio>
+
 #include <QCoreApplication>
 
 #include <Log.h>
-#include <io.h> // From MingW.
 #include <windows.h>
 
 const QString ConsoleReader::QUIT_COMMAND("quit");
@@ -51,7 +52,7 @@ void ConsoleReader::run()
    {
       // If AybabtuCore is a child process of AybabtuGUI and the latter is killed stdin is closed
       // In this case AybabtuCore must be terminated.
-      if (feof(stdin))
+      if (std::feof(stdin))
       {
          emit newLine(QUIT_COMMAND);
          this->stopping = true;
