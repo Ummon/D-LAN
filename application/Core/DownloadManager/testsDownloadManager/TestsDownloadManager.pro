@@ -8,6 +8,7 @@ CONFIG += link_prl \
     console
 CONFIG -= app_bundle
 
+include(../../../Libs/protobuf.pri)
 include(../../../Common/common.pri)
 
 LIBS += -L../output/$$FOLDER \
@@ -40,8 +41,7 @@ LIBS += -L${PROTOBUF}/src/.libs \
 INCLUDEPATH += . \
     .. \
     ../../PeerManager \ # Because Core/PeerManager/tests/PeerUpdater needs to include Core/PeerManager/priv/PeerManager.h.
-    ../../.. \ # For the 'Common' component.
-    ${PROTOBUF}/src
+    ../../.. # For the 'Common' component.
 
 # LIBS += -L${QTDIR}/../mingw/lib -lws2_32
 
@@ -49,11 +49,11 @@ TEMPLATE = app
 SOURCES += main.cpp \
     Tests.cpp \
     ../../../Protos/common.pb.cc \
-    ../../PeerManager/tests/TestServer.cpp \
-    ../../PeerManager/tests/PeerUpdater.cpp \
-    ../../../Protos/core_settings.pb.cc
+    ../../../Protos/core_settings.pb.cc \
+    ../../PeerManager/TestsPeerManager/TestServer.cpp \
+    ../../PeerManager/TestsPeerManager/PeerUpdater.cpp
 HEADERS += Tests.h \
     ../../../Protos/common.pb.h \
-    ../../PeerManager/tests/TestServer.h \
-    ../../PeerManager/tests/PeerUpdater.h \
-    ../../../Protos/core_settings.pb.h
+    ../../../Protos/core_settings.pb.h \
+    ../../PeerManager/TestsPeerManager/TestServer.h \
+    ../../PeerManager/TestsPeerManager/PeerUpdater.h
