@@ -4,9 +4,9 @@
 set -o errexit
 
 if [ `uname -s` = "Linux" ] ; then
-	EXTENSION=
+   EXTENSION=
 else
-	EXTENSION=.exe
+   EXTENSION=.exe
 fi
 
 TESTS=(

@@ -21,11 +21,11 @@ PROJECTS=(
    Tools/PasswordHasher
 )
 if [ `uname -s` = "Linux" ] ; then
-	SPEC=linux-g++
-	MAKE=make
+   SPEC=linux-g++
+   MAKE=make
 else
-	SPEC=win32-g++
-	MAKE=mingw32-make.exe
+   SPEC=win32-g++
+   MAKE=mingw32-make.exe
 fi
 CLEAN_COMMAND=off
 
