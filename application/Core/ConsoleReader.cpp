@@ -24,7 +24,11 @@ using namespace CoreSpace;
 #include <QCoreApplication>
 
 #include <Log.h>
-#include <windows.h>
+#ifdef Q_OS_WIN32
+   #include <windows.h>
+#else
+   #include <cstdio>
+#endif
 
 const QString ConsoleReader::QUIT_COMMAND("quit");
 
