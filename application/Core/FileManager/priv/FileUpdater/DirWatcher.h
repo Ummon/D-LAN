@@ -116,7 +116,7 @@ namespace FM
 
       const Type type;
       const QString path1;
-      const QString path2; // Only used with type 'RENAME_*'.
+      const QString path2; // Only used when type == RENAME.
    };
 }
 
