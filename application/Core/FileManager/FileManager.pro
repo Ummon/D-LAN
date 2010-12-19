@@ -21,57 +21,67 @@ POST_TARGETDEPS += ../../Common/output/$$FOLDER/libCommon.a
 
 DEFINES += FILEMANAGER_LIBRARY
 SOURCES += priv/Builder.cpp \
-    priv/FileManager.cpp \
-    priv/FileUpdater/FileUpdater.cpp \
-    priv/FileUpdater/DirWatcherWin.cpp \
-    priv/FileUpdater/DirWatcher.cpp \
-    priv/Cache/Entry.cpp \
-    priv/Cache/File.cpp \
-    priv/Cache/Directory.cpp \
-    priv/Cache/SharedDirectory.cpp \
-    priv/ChunkIndex/Chunks.cpp \
-    ../../Protos/core_protocol.pb.cc \
-    ../../Protos/common.pb.cc \
-    priv/Cache/Chunk.cpp \
-    priv/Cache/DataReader.cpp \
-    priv/Cache/DataWriter.cpp \
-    priv/Cache/Cache.cpp \
-    ../../Protos/files_cache.pb.cc \
-    priv/FileUpdater/WaitCondition.cpp \
-    priv/FileUpdater/WaitConditionWin.cpp \
-    priv/FileUpdater/WaitConditionLinux.cpp \
-    priv/GetHashesResult.cpp \
-    priv/Log.cpp
+   priv/FileManager.cpp \
+   priv/FileUpdater/FileUpdater.cpp \
+   priv/FileUpdater/DirWatcher.cpp \
+   priv/Cache/Entry.cpp \
+   priv/Cache/File.cpp \
+   priv/Cache/Directory.cpp \
+   priv/Cache/SharedDirectory.cpp \
+   priv/ChunkIndex/Chunks.cpp \
+   ../../Protos/core_protocol.pb.cc \
+   ../../Protos/common.pb.cc \
+   priv/Cache/Chunk.cpp \
+   priv/Cache/DataReader.cpp \
+   priv/Cache/DataWriter.cpp \
+   priv/Cache/Cache.cpp \
+   ../../Protos/files_cache.pb.cc \
+   priv/FileUpdater/WaitCondition.cpp \
+   priv/GetHashesResult.cpp \
+   priv/Log.cpp
+win32 {
+   SOURCES += priv/FileUpdater/WaitConditionWin.cpp \
+   priv/FileUpdater/DirWatcherWin.cpp
+}
+linux {
+   SOURCES += priv/FileUpdater/WaitConditionWin.cpp \
+      priv/FileUpdater/DirWatcherLinux.cpp
+}
 HEADERS += IGetHashesResult.h \
-    IFileManager.h \
-    IChunk.h \
-    Builder.h \
-    priv/Log.h \
-    priv/FileManager.h \
-    priv/FileUpdater/FileUpdater.h \
-    priv/FileUpdater/DirWatcherWin.h \
-    priv/FileUpdater/DirWatcher.h \
-    priv/Cache/Entry.h \
-    priv/Cache/File.h \
-    priv/Cache/Directory.h \
-    priv/Cache/SharedDirectory.h \
-    priv/ChunkIndex/Chunks.h \
-    priv/WordIndex/WordIndex.h \
-    priv/WordIndex/Node.h \
-    ../../Protos/core_protocol.pb.h \
-    ../../Protos/common.pb.h \
-    IDataReader.h \
-    IDataWriter.h \
-    priv/Cache/Chunk.h \
-    priv/Cache/DataReader.h \
-    priv/Cache/DataWriter.h \
-    priv/Cache/Cache.h \
-    priv/Exceptions.h \
-    Exceptions.h \
-    ../../Protos/files_cache.pb.h \
-    priv/FileUpdater/WaitCondition.h \
-    priv/FileUpdater/WaitConditionWin.h \
-    priv/FileUpdater/WaitConditionLinux.h \
-    priv/Constants.h \
-    priv/GetHashesResult.h
+   IFileManager.h \
+   IChunk.h \
+   Builder.h \
+   priv/Log.h \
+   priv/FileManager.h \
+   priv/FileUpdater/FileUpdater.h \
+   priv/FileUpdater/DirWatcher.h \
+   priv/Cache/Entry.h \
+   priv/Cache/File.h \
+   priv/Cache/Directory.h \
+   priv/Cache/SharedDirectory.h \
+   priv/ChunkIndex/Chunks.h \
+   priv/WordIndex/WordIndex.h \
+   priv/WordIndex/Node.h \
+   ../../Protos/core_protocol.pb.h \
+   ../../Protos/common.pb.h \
+   IDataReader.h \
+   IDataWriter.h \
+   priv/Cache/Chunk.h \
+   priv/Cache/DataReader.h \
+   priv/Cache/DataWriter.h \
+   priv/Cache/Cache.h \
+   priv/Exceptions.h \
+   Exceptions.h \
+   ../../Protos/files_cache.pb.h \
+   priv/FileUpdater/WaitCondition.h \
+   priv/Constants.h \
+   priv/GetHashesResult.h
+win32 {
+   HEADERS += priv/FileUpdater/WaitConditionWin.h \
+      priv/FileUpdater/DirWatcherWin.h
+}
+linux {
+   HEADERS += priv/FileUpdater/WaitConditionLinux.h \
+      priv/FileUpdater/DirWatcherLinux.h
+}
 OTHER_FILES +=

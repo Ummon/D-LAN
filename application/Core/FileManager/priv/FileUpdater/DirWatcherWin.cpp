@@ -16,13 +16,12 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
+#include <priv/FileUpdater/DirWatcherWin.h>
+using namespace FM;
+
 #include <QtCore/QDebug>
 
 #include <QMutexLocker>
-
-#if defined(Q_OS_WIN32)
-   #include <priv/FileUpdater/DirWatcherWin.h>
-using namespace FM;
 
 #include <priv/Exceptions.h>
 #include <priv/FileUpdater/WaitConditionWin.h>
