@@ -102,7 +102,7 @@ int DirWatcherWin::nbWatchedDir()
 
 const QList<WatcherEvent> DirWatcherWin::waitEvent(QList<WaitCondition*> ws)
 {
-   return this->waitEvent(INFINITE, ws);
+   return this->waitEvent(-1, ws);
 }
 
 const QList<WatcherEvent> DirWatcherWin::waitEvent(int timeout, QList<WaitCondition*> ws)
@@ -133,28 +133,31 @@ const QList<WatcherEvent> DirWatcherWin::waitEvent(int timeout, QList<WaitCondit
 
    QList<Dir*> dirsCopy(this->dirs);
 
-   int n = dirsCopy.size();
-   int m = n + ws.size();
+   // Builds an array of HANDLEs which will be given to the 'WaitForMultipleObjects' function.
 
-   HANDLE eventsArray[m];
-   for(int i = 0; i < n; i++)
+   int numberOfDirs = dirsCopy.size();
+   int numberOfHandles = numberOfDirs + ws.size(); // The total number of HANDLEs (watched directories + given wait conditions (ws)).
+
+   HANDLE eventsArray[numberOfHandles];
+   for(int i = 0; i < numberOfDirs; i++)
       eventsArray[i] = dirsCopy[i]->overlapped.hEvent;
 
    for (int i = 0; i < ws.size(); i++)
    {
       HANDLE hdl = ws[i]->getHandle();
-      eventsArray[i+n] = hdl;
+      eventsArray[i + numberOfDirs] = hdl;
    }
 
    this->mutex.unlock();
 
-   DWORD waitStatus = WaitForMultipleObjects(m, eventsArray, FALSE, timeout == -1 ? INFINITE : timeout);
+   DWORD waitStatus = WaitForMultipleObjects(numberOfHandles, eventsArray, FALSE, timeout == -1 ? INFINITE : timeout);
 
    QMutexLocker locker(&this->mutex);
 
-   if (!dirsCopy.empty() && waitStatus >= WAIT_OBJECT_0 && waitStatus <= WAIT_OBJECT_0 + (DWORD)n - 1)
+   // The cause of the wake up comes from a watched directory.
+   if (!dirsCopy.empty() && waitStatus >= WAIT_OBJECT_0 && waitStatus <= WAIT_OBJECT_0 + (DWORD)numberOfDirs - 1)
    {
-      int n = waitStatus - WAIT_OBJECT_0;
+      Dir* dir = dirsCopy[waitStatus - WAIT_OBJECT_0]; // The dir where a modification occurred.
 
       QList<WatcherEvent> events;
 
@@ -177,7 +180,7 @@ const QList<WatcherEvent> DirWatcherWin::waitEvent(int timeout, QList<WaitCondit
 //         L_WARN(QString("offset = %1").arg(notifyInformation->NextEntryOffset));
 //         L_WARN("---------");
 
-         QString path = dirsCopy[n]->fullPath;
+         QString path = dir->fullPath;
          path.append('/').append(filename);
 
          switch (notifyInformation->Action)
@@ -204,14 +207,16 @@ const QList<WatcherEvent> DirWatcherWin::waitEvent(int timeout, QList<WaitCondit
          if (!notifyInformation->NextEntryOffset)
             break;
 
+         // The next notify information data is given in the current notify information..
          notifyInformation = (FILE_NOTIFY_INFORMATION*)((LPBYTE)notifyInformation + notifyInformation->NextEntryOffset);
       }
 
-      this->watch(dirsCopy[n]);
+      this->watch(dir);
 
       return events;
    }
-   else if (!ws.isEmpty() && waitStatus >= WAIT_OBJECT_0 + (DWORD)n && waitStatus <= WAIT_OBJECT_0 + (DWORD)m - 1)
+   // The cause of the wake up comes from a given wait condition.
+   else if (!ws.isEmpty() && waitStatus >= WAIT_OBJECT_0 + (DWORD)numberOfDirs && waitStatus <= WAIT_OBJECT_0 + (DWORD)numberOfHandles - 1)
    {
       return QList<WatcherEvent>();
    }
@@ -240,7 +245,7 @@ bool DirWatcherWin::watch(Dir* dir)
    return ReadDirectoryChangesW(
       dir->file, // The file handle;
       &this->notifyBuffer, // The buffer where the information is put when an event occur.
-      NOTIFY_BUFFER_SIZE,
+      NOTIFY_BUFFER_SIZE, // Size of the previous buffer.
       TRUE, // Watch subtree.
       FILE_NOTIFY_CHANGE_FILE_NAME | FILE_NOTIFY_CHANGE_DIR_NAME | FILE_NOTIFY_CHANGE_SIZE | FILE_NOTIFY_CHANGE_LAST_WRITE | FILE_NOTIFY_CHANGE_CREATION,
       &this->nbBytesNotifyBuffer, // Not used in asynchronous mode.
