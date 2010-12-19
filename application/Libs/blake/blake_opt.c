@@ -239,9 +239,9 @@ HashReturn Init( hashState * state, int hashbitlen ) {
     /* 224- and 256-bit versions (32-bit words) */
 
     if (hashbitlen == 224) 
-      memcpy( state->h32, IV28, sizeof(IV28) );      
+      memcpy( state->h32, IV224, sizeof(IV224) );      
     else 
-      memcpy( state->h32, IV32, sizeof(IV32) );
+      memcpy( state->h32, IV256, sizeof(IV256) );
 
     state->t32[0] = 0;
     state->t32[1] = 0;
@@ -259,9 +259,9 @@ HashReturn Init( hashState * state, int hashbitlen ) {
     /* 384- and 512-bit versions (64-bit words) */
 
     if (hashbitlen == 384) 
-      memcpy( state->h64, IV48, sizeof(IV48) );      
+      memcpy( state->h64, IV384, sizeof(IV384) );      
     else 
-      memcpy( state->h64, IV64, sizeof(IV64) );
+      memcpy( state->h64, IV512, sizeof(IV512) );
 
     state->t64[0] = 0;
     state->t64[1] = 0;
@@ -721,22 +721,22 @@ int main() {
 
   printf("\none-block message:\n");
 
-  printf("\nBLAKE-32\n");
+  printf("\nBLAKE-256\n");
   Hash( 256, data, 8, hash );    
   for(i=0; i<32; ++i)
     printf("%02X", hash[i]);
   printf("\n");
-  printf("\nBLAKE-28\n");
+  printf("\nBLAKE-224\n");
   Hash( 224, data, 8, hash );    
   for(i=0; i<28; ++i)
     printf("%02X", hash[i]);
   printf("\n");
-  printf("\nBLAKE-64\n");
+  printf("\nBLAKE-512\n");
   Hash( 512, data, 8, hash );    
   for(i=0; i<64; ++i)
     printf("%02X", hash[i]);
   printf("\n");
-  printf("\nBLAKE-48\n");
+  printf("\nBLAKE-384\n");
   Hash( 384, data, 8, hash );    
   for(i=0; i<48; ++i)
     printf("%02X", hash[i]);
@@ -744,22 +744,22 @@ int main() {
 
   printf("\ntwo-block message:\n");
 
-  printf("\nBLAKE-32\n");
+  printf("\nBLAKE-256\n");
   Hash( 256, data, 576, hash );    
   for(i=0; i<32; ++i)
     printf("%02X", hash[i]);
   printf("\n");
-  printf("\nBLAKE-28\n");
+  printf("\nBLAKE-224\n");
   Hash( 224, data, 576, hash );    
   for(i=0; i<28; ++i)
     printf("%02X", hash[i]);
   printf("\n");
-  printf("\nBLAKE-64\n");
+  printf("\nBLAKE-512\n");
   Hash( 512, data, 1152, hash );    
   for(i=0; i<64; ++i)
     printf("%02X", hash[i]);
   printf("\n");
-  printf("\nBLAKE-48\n");
+  printf("\nBLAKE-384\n");
   Hash( 384, data, 1152, hash );    
   for(i=0; i<48; ++i)
     printf("%02X", hash[i]);
