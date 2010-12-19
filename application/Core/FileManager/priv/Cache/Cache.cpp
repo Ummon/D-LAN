@@ -300,10 +300,9 @@ void Cache::setSharedDirs(const QStringList& dirs, SharedDirectory::Rights right
          if (sharedDir->getFullPath() == dir)
          {
             j.remove();
-            goto next;
+            break;
          }
       }
-      next:;
    }
 
    // Remove shared directories.
