@@ -107,7 +107,7 @@ void Tests::logSomeBasicMessages()
 void Tests::logSomeMessagesWithSpecialCharacters()
 {
    LOG_USER(this->loggers[0], "line return : \naaa");
-   LOG_USER(this->loggers[0], "e-acute : é");
+   LOG_USER(this->loggers[0], "e-acute : Ã©");
 }
 
 /**
