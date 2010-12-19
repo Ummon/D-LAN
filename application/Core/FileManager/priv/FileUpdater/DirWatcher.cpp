@@ -25,15 +25,18 @@ using namespace FM;
 
 #if defined(Q_OS_WIN32)
    #include <priv/FileUpdater/DirWatcherWin.h>
+#elif defined(Q_OS_LINUX)
+   #include <priv/FileUpdater/DirWatcherLinux.h>
 #endif
 
 DirWatcher* DirWatcher::getNewWatcher()
 {
 #if defined(Q_OS_WIN32)
    return new DirWatcherWin();
+#elif defined(Q_OS_LINUX)
+   return new DirWatcherLinux();
 #else
    L_WARN("Cannot create a watcher for the current platform, no implementation.");
-   return 0;
 #endif
 }
 
@@ -41,9 +44,9 @@ WatcherEvent::WatcherEvent()
    : type(WatcherEvent::UNKNOWN)
 {}
 
- WatcherEvent::WatcherEvent(const WatcherEvent& e)
+WatcherEvent::WatcherEvent(const WatcherEvent& e)
    : type(e.type), path1(e.path1), path2(e.path2)
- {}
+{}
 
 WatcherEvent::WatcherEvent(Type type)
    : type(type)
