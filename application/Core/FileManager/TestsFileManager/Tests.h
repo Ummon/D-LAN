@@ -67,8 +67,8 @@ private slots:
    void createAnEmptyFile();
 
    /***** Ask for chunks by hash *****/
-   void getAExistingChunk();
-   void getAUnexistingChunk();
+   void getAnExistingChunk();
+   void getAnUnexistingChunk();
 
    /***** Get Hashes from a FileEntry which the hash is already computed *****/
    void getHashesFromAFileEntry1();
