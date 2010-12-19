@@ -142,7 +142,7 @@ namespace FM
    template <typename T>
    inline uint qHash(const NodeResult<T>& r)
    {
-      return uint((ulong)r.value);
+      return reinterpret_cast<uint>(r.value);
    }
 }
 

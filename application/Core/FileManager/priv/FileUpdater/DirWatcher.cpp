@@ -65,8 +65,6 @@ QString WatcherEvent::toStr()
    QString str;
    switch (this->type)
    {
-   /*case RENAME_DIR : str += "RENAME_DIR"; break;
-   case RENAME_FILE : str += "RENAME_FILE"; break;*/
    case RENAME : str += "RENAME"; break;
    case NEW : str += "NEW"; break;
    case DELETED : str += "DELETED"; break;
