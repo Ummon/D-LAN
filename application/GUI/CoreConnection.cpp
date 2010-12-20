@@ -218,11 +218,6 @@ void CoreConnection::stateChanged(QAbstractSocket::SocketState socketState)
       }
       break;
 
-   case QAbstractSocket::ConnectedState:
-      if (this->authenticated)
-         L_USER("Connected to the core");
-      break;
-
    default:;
    }
 }
@@ -283,7 +278,9 @@ void CoreConnection::connected()
    if (this->socket.peerAddress() == QHostAddress::LocalHost || this->socket.peerAddress() == QHostAddress::LocalHostIPv6)
    {
       this->authenticated = true;
-      emit coreConnected();
+      L_USER("Connected to the core");
+      L_DEBU(QString("Core address : %1").arg(this->socket.peerAddress().toString()));
+      emit coreConnected();      
    }
    else
    {
