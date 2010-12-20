@@ -146,14 +146,9 @@ void Socket::send(Common::Network::CoreMessageType type, const google::protobuf:
 
 void Socket::dataReceived()
 {
-   // TODO : it will loop infinetly if not enough data is provided.
    while (!this->socket->atEnd() && this->listening)
    {
-      // We can't do that, if this socket is closed during this call it will be deleted..
-      QCoreApplication::processEvents(); // To read from the native socket to the internal QTcpSocket buffer. TODO : more elegant way?
       this->setActive();
-
-      //L_DEBU(QString("Socket[%1]::dataReceived() : bytesAvailable = %2").arg(this->num).arg(this->socket->bytesAvailable()));
 
       if (this->currentHeader.isNull() && this->socket->bytesAvailable() >= Common::Network::HEADER_SIZE)
       {
@@ -183,6 +178,8 @@ void Socket::dataReceived()
          }
          this->currentHeader.setNull();
       }
+      else
+         return;
    }
 }
 
