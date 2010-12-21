@@ -583,8 +583,9 @@ bool FileUpdater::treatEvents(const QList<WatcherEvent>& events)
 
       switch (event.type)
       {
-      case WatcherEvent::RENAME:
+      case WatcherEvent::MOVE:
          {
+            // TODO : move the entry if needed.
             Entry* entry = this->fileManager->getEntry(event.path1);
             if (entry)
                entry->changeName(event.path2.split('/', QString::SkipEmptyParts).last());

@@ -62,7 +62,7 @@ QString WatcherEvent::toStr()
    QString str;
    switch (this->type)
    {
-   case RENAME : str += "RENAME"; break;
+   case MOVE : str += "MOVE"; break;
    case NEW : str += "NEW"; break;
    case DELETED : str += "DELETED"; break;
    case CONTENT_CHANGED : str += "CONTENT_CHANGED"; break;

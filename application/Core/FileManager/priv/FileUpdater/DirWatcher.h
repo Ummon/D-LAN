@@ -93,7 +93,14 @@ namespace FM
    struct WatcherEvent
    {
       enum Type {
-         RENAME,
+         // A file moved into the shared directory. The file can be renamed.
+         // Some examples :
+         // - shared/a/x.txt -> shared/a/y.txt
+         // - shared/a/x.txt -> shared/a/b/x.txt
+         // - shared/a/x.txt -> shared/a/b/y.txt
+         // If a file is moved from outside to a shared dir you may use NEW
+         // If a file is moved from a shared dir to outside you may use DELETED
+         MOVE,
          NEW,
          DELETED,
          CONTENT_CHANGED,
@@ -116,7 +123,7 @@ namespace FM
 
       const Type type;
       const QString path1;
-      const QString path2; // Only used when type == RENAME.
+      const QString path2; // Only used when type == MOVE.
    };
 }
 
