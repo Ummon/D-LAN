@@ -201,7 +201,7 @@ const QList<WatcherEvent> DirWatcherWin::waitEvent(int timeout, QList<WaitCondit
             previousPath = path;
             break;
          case FILE_ACTION_RENAMED_NEW_NAME:
-            events << WatcherEvent(WatcherEvent::RENAME, previousPath, path);
+            events << WatcherEvent(WatcherEvent::MOVE, previousPath, path);
             break;
          default:
             L_WARN(QString("File event action unkown : %1").arg(notifyInformation->Action));

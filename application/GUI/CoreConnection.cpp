@@ -218,11 +218,6 @@ void CoreConnection::stateChanged(QAbstractSocket::SocketState socketState)
       }
       break;
 
-   case QAbstractSocket::ConnectedState:
-      if (this->authenticated)
-         L_USER("Connected to the core");
-      break;
-
    default:;
    }
 }
@@ -232,9 +227,6 @@ void CoreConnection::dataReceived()
    // TODO : it will loop infinetly if not enough data is provided.
    while (!this->socket.atEnd())
    {
-      // To read from the native socket to the internal QTcpSocket buffer. TODO : more elegant way? See : http://bugreports.qt.nokia.com/browse/QTBUG-15903
-      QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
-
       if (this->currentHeader.isNull() && this->socket.bytesAvailable() >= Common::Network::HEADER_SIZE)
       {
          this->currentHeader = Common::Network::readHeader<Common::Network::GUIMessageType>(this->socket);
@@ -249,6 +241,8 @@ void CoreConnection::dataReceived()
             L_WARN(QString("Unable to read message : %1").arg(this->currentHeader.toStr()));
          this->currentHeader.setNull();
       }
+      else
+         return;
    }
 }
 
@@ -283,7 +277,9 @@ void CoreConnection::connected()
    if (this->socket.peerAddress() == QHostAddress::LocalHost || this->socket.peerAddress() == QHostAddress::LocalHostIPv6)
    {
       this->authenticated = true;
-      emit coreConnected();
+      L_USER("Connected to the core");
+      L_DEBU(QString("Core address : %1").arg(this->socket.peerAddress().toString()));
+      emit coreConnected();      
    }
    else
    {

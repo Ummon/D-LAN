@@ -48,7 +48,8 @@ SOURCES += main.cpp\
     Log.cpp \
     AybabtuGUI.cpp \
     CheckBoxList.cpp \
-    CoreController.cpp
+    CoreController.cpp \
+    TabButtons.cpp
 
 HEADERS  += MainWindow.h \
     ../Protos/gui_protocol.pb.h \
@@ -77,7 +78,8 @@ HEADERS  += MainWindow.h \
     DownloadFilterStatus.h \
     CheckBoxModel.h \
     IFilter.h \
-    CoreController.h
+    CoreController.h \
+    TabButtons.h
 
 FORMS    += MainWindow.ui \
     WidgetChat.ui \

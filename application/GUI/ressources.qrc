@@ -13,5 +13,8 @@
         <file>ressources/logo.png</file>
         <file>ressources/aybabtu_icon.ico</file>
         <file>ressources/remove_complete_files.png</file>
+        <file>ressources/refresh.png</file>
+        <file>ressources/refresh-down.png</file>
+        <file>ressources/refresh-hover.png</file>
     </qresource>
 </RCC>
