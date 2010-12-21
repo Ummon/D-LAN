@@ -26,8 +26,15 @@ namespace Common
    const QString APPLICATION_FOLDER_NAME(".aybabtu");
    const QString APPLICATION_FOLDER_PATH(QDir::homePath() + '/' + APPLICATION_FOLDER_NAME);
    const QString LOG_FOLDER_NAME("log");
-   const QString FILE_CACHE("cache.bin"); ///< The name of the file cache saved in the home directory.
-   const QString FILE_QUEUE("queue.bin"); ///< This file contains the current downloads.
+
+#ifdef DEBUG
+   const QString FILE_EXTENSION("txt");
+#else
+   const QString FILE_EXTENSION("bin");
+#endif
+
+   const QString FILE_CACHE("cache." + FILE_EXTENSION); ///< The name of the file cache saved in the home directory.
+   const QString FILE_QUEUE("queue." + FILE_EXTENSION); ///< This file contains the current downloads.
 
    const QString CORE_SETTINGS_FILENAME("core_settings.txt");
    const QString GUI_SETTINGS_FILENAME("gui_settings.txt");
