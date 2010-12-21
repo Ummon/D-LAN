@@ -16,7 +16,9 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
 
-#ifndef FILEMANAGER_DIRWATCHERLINUX_H
+#include <QtCore/QtCore> // For the Q_OS_* defines.
+
+#if !defined(FILEMANAGER_DIRWATCHERLINUX_H) and defined(Q_OS_LINUX)
 #define FILEMANAGER_DIRWATCHERLINUX_H
 
 #include <priv/FileUpdater/DirWatcher.h>
@@ -38,6 +40,30 @@ namespace FM
        int nbWatchedDir();
        const QList<WatcherEvent> waitEvent(QList<WaitCondition*> ws = QList<WaitCondition*>());
        const QList<WatcherEvent> waitEvent(int timeout, QList<WaitCondition*> ws = QList<WaitCondition*>());
+
+   private:
+       struct Dir
+       {
+          Dir(QString fullPath, int watcher) : fullPath(fullPath), watcher(watcher)
+          {
+          }
+          ~Dir()
+          {
+          }
+
+          QString fullPath;
+          int watcher;
+       };
+
+       bool initialized;
+       int fileDescriptor;
+
+       QList<Dir*> dirs; // The watched dirs.
+
+       void rmWatcher(int watcher);
+       QString getWatcherPath(int watcher);
+
+       QMutex mutex;
    };
 }
 

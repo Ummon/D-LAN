@@ -19,10 +19,10 @@
 #include <priv/UDPListener.h>
 using namespace NL;
 
-#if defined(Q_OS_LINUX)
-   #include <netinet/in.h>
-#elif defined(Q_OS_WIN32)
+#if defined(Q_OS_WIN32)
    #include <Winsock.h>
+#elif defined(Q_OS_LINUX)
+   #include <netinet/in.h>
 #endif
 
 #include <google/protobuf/message.h>
@@ -87,10 +87,10 @@ UDPListener::UDPListener(
    struct ip_mreq mreq;
    mreq.imr_multiaddr.s_addr = htonl(MULTICAST_GROUP.toIPv4Address());
    mreq.imr_interface.s_addr = htonl(INADDR_ANY);
-#if defined(Q_OS_LINUX)
-   if (int error = setsockopt(socketDescriptor, IPPROTO_IP, IP_ADD_MEMBERSHIP, &mreq, sizeof mreq))
-#elif defined(Q_OS_WIN32)
+#if defined(Q_OS_WIN32)
    if (int error = setsockopt(socketDescriptor, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char*)&mreq, sizeof mreq))
+#elif defined(Q_OS_LINUX)
+   if (int error = setsockopt(socketDescriptor, IPPROTO_IP, IP_ADD_MEMBERSHIP, &mreq, sizeof mreq))
 #endif
       L_ERRO(QString("Can't set socket option : IP_ADD_MEMBERSHIP : %1").arg(error));
 

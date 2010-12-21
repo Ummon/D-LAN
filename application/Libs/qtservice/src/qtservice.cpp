@@ -51,7 +51,6 @@
 #include <QtCore/QTimer>
 #include <QtCore/QVector>
 #include <QtCore/QProcess>
-
 #if defined(QTSERVICE_DEBUG)
 #include <QDebug>
 #include <QtCore/QFile>

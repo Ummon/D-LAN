@@ -16,9 +16,12 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#include <QtCore/QDebug>
+#include <QtCore/QtCore> // For the Q_OS_* defines.
 
 #if defined(Q_OS_LINUX)
+
+#include <QtCore/QDebug>
+
 #include <priv/FileUpdater/WaitConditionLinux.h>
 using namespace FM;
 
@@ -58,3 +61,4 @@ void* WaitConditionLinux::getHandle()
 }
 
 #endif
+

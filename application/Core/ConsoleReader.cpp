@@ -26,7 +26,7 @@ using namespace CoreSpace;
 #include <Log.h>
 #ifdef Q_OS_WIN32
    #include <windows.h>
-#else
+#elif defined(Q_OS_LINUX)
    #include <cstdio>
 #endif
 

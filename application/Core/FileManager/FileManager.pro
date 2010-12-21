@@ -20,10 +20,13 @@ LIBS += -L../../Common/output/$$FOLDER -lCommon
 POST_TARGETDEPS += ../../Common/output/$$FOLDER/libCommon.a
 
 DEFINES += FILEMANAGER_LIBRARY
-SOURCES += priv/Builder.cpp \
+SOURCES += \
+   priv/Builder.cpp \
    priv/FileManager.cpp \
    priv/FileUpdater/FileUpdater.cpp \
    priv/FileUpdater/DirWatcher.cpp \
+   priv/FileUpdater/DirWatcherWin.cpp \
+   priv/FileUpdater/DirWatcherLinux.cpp \
    priv/Cache/Entry.cpp \
    priv/Cache/File.cpp \
    priv/Cache/Directory.cpp \
@@ -37,17 +40,12 @@ SOURCES += priv/Builder.cpp \
    priv/Cache/Cache.cpp \
    ../../Protos/files_cache.pb.cc \
    priv/FileUpdater/WaitCondition.cpp \
+   priv/FileUpdater/WaitConditionWin.cpp \
+   priv/FileUpdater/WaitConditionLinux.cpp \
    priv/GetHashesResult.cpp \
    priv/Log.cpp
-win32 {
-   SOURCES += priv/FileUpdater/WaitConditionWin.cpp \
-   priv/FileUpdater/DirWatcherWin.cpp
-}
-linux {
-   SOURCES += priv/FileUpdater/WaitConditionWin.cpp \
-      priv/FileUpdater/DirWatcherLinux.cpp
-}
-HEADERS += IGetHashesResult.h \
+HEADERS += \
+   IGetHashesResult.h \
    IFileManager.h \
    IChunk.h \
    Builder.h \
@@ -55,6 +53,8 @@ HEADERS += IGetHashesResult.h \
    priv/FileManager.h \
    priv/FileUpdater/FileUpdater.h \
    priv/FileUpdater/DirWatcher.h \
+   priv/FileUpdater/DirWatcherWin.h \
+   priv/FileUpdater/DirWatcherLinux.h \
    priv/Cache/Entry.h \
    priv/Cache/File.h \
    priv/Cache/Directory.h \
@@ -74,14 +74,8 @@ HEADERS += IGetHashesResult.h \
    Exceptions.h \
    ../../Protos/files_cache.pb.h \
    priv/FileUpdater/WaitCondition.h \
+   priv/FileUpdater/WaitConditionWin.h \
+   priv/FileUpdater/WaitConditionLinux.h \
    priv/Constants.h \
    priv/GetHashesResult.h
-win32 {
-   HEADERS += priv/FileUpdater/WaitConditionWin.h \
-      priv/FileUpdater/DirWatcherWin.h
-}
-linux {
-   HEADERS += priv/FileUpdater/WaitConditionLinux.h \
-      priv/FileUpdater/DirWatcherLinux.h
-}
 OTHER_FILES +=

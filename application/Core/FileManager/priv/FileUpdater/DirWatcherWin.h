@@ -16,12 +16,10 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef FILEMANAGER_DIRWATCHERWIN_H
+#include <QtCore/QtCore> // For the Q_OS_* defines.
+
+#if !defined(FILEMANAGER_DIRWATCHERWIN_H) and defined(Q_OS_WIN32)
 #define FILEMANAGER_DIRWATCHERWIN_H
-
-#include <QtCore/QtCore> // Only for the Q_OS_* defines.
-
-#include <QMutex>
 
 #include <priv/FileUpdater/DirWatcher.h>
 #include <priv/Log.h>
