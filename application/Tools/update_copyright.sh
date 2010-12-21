@@ -16,7 +16,7 @@ echo
 
 NB_FILE_UPDATED=0
 
-for CURRENT_FILE in `find . -not -path "./Libs*" -and -not -path "*/.tmp*" -and \( -name '*.cpp' -or -name '*.h' \)`
+for CURRENT_FILE in `find . -not -path "./Libs*" -and -not -path "*/.tmp*" -and -not -path "./Protos*" -and \( -name '*.cpp' -or -name '*.h' \)`
 do
    echo "Current File : $CURRENT_FILE"
    TMP_FILE="${CURRENT_FILE}.tmp"
