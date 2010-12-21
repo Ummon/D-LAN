@@ -22,7 +22,6 @@
 #include <QMainWindow>
 #include <QLabel>
 #include <QStyledItemDelegate>
-#include <QPushButton>
 #include <QIcon>
 #include <QMdiSubWindow>
 #include <QKeyEvent>
@@ -121,32 +120,6 @@ namespace GUI
 
       LogModel logModel;
       LogDelegate logDelegate;
-   };
-
-   /**
-     * @class TabCloseButton
-     * Copied from 'qtabbar_p.h'.
-     */
-   class TabCloseButton : public QAbstractButton
-   {
-       Q_OBJECT
-   public:
-       TabCloseButton(QWidget* widget);
-
-       QSize sizeHint() const;
-       inline QSize minimumSizeHint() const { return sizeHint(); }
-       void enterEvent(QEvent *event);
-       void leaveEvent(QEvent *event);
-       void paintEvent(QPaintEvent *event);
-
-   signals:
-      void clicked(QWidget* widget);
-
-   private slots:
-      void buttonClicked();
-
-   private:
-       QWidget* widget;
    };
 }
 

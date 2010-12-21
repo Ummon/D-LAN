@@ -21,6 +21,7 @@
 using namespace GUI;
 
 #include <QMenu>
+#include <QPainter>
 #include <QIcon>
 
 void BrowseDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
