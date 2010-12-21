@@ -20,6 +20,7 @@
 #define GUI_WIDGETBROWSE_H
 
 #include <QWidget>
+#include <QAbstractButton>
 #include <QStyledItemDelegate>
 
 #include <Common/Hash.h>

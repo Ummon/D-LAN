@@ -25,11 +25,13 @@ using namespace GUI;
 #include <QPainter>
 #include <QMenu>
 #include <QSettings>
+#include <QHBoxLayout>
 
 #include <Protos/gui_settings.pb.h>
 
 #include <Common/Settings.h>
 
+#include <TabButtons.h>
 #include <StatusBar.h>
 #include <Log.h>
 
@@ -295,12 +297,6 @@ void MainWindow::addWidgetSettings()
    this->widgetSettings = new WidgetSettings(this->coreConnection, this);
    this->ui->mdiArea->addSubWindow(this->widgetSettings, Qt::CustomizeWindowHint);
    this->widgetSettings->setWindowState(Qt::WindowMaximized);
-
-   /* To see the close button on the tab.
-   foreach (QTabBar* tab, ui->mdiArea->findChildren<QTabBar*>())
-   {
-      tab->setTabsClosable(true);
-   }*/
 }
 
 void MainWindow::addWidgetChat()
@@ -374,9 +370,21 @@ void MainWindow::addWidgetBrowse(const Common::Hash& peerID)
    this->widgetsBrowse << widgetBrowse;
 
    QTabBar* tab = ui->mdiArea->findChild<QTabBar*>();
-   TabCloseButton* closeButton = new TabCloseButton(widgetBrowse);
+
+   QWidget* buttons = new QWidget();
+
+   TabCloseButton* closeButton = new TabCloseButton(widgetBrowse, buttons);
    connect(closeButton, SIGNAL(clicked(QWidget*)), this, SLOT(removeWidget(QWidget*)));
-   tab->setTabButton(tab->count() - 1, QTabBar::RightSide, closeButton);
+
+   TabRefreshButton* refreshButton = new TabRefreshButton(buttons);
+//   connect(refreshButton, SIGNAL(clicked()), widgetBrowse, SLOT()); // TODO
+
+   QHBoxLayout* layButtons = new QHBoxLayout(buttons);
+   layButtons->setContentsMargins(0, 0, 0, 0);
+   layButtons->addWidget(refreshButton);
+   layButtons->addWidget(closeButton);
+
+   tab->setTabButton(tab->count() - 1, QTabBar::RightSide, buttons);
 }
 
 void MainWindow::addWidgetSearch(const QString& term)
@@ -400,71 +408,4 @@ void MainWindow::removeAllWidgets()
 
    foreach (WidgetSearch* widget, this->widgetsSearch)
       this->removeWidget(widget);
-}
-
-/////
-
-TabCloseButton::TabCloseButton(QWidget* widget)
-   : widget(widget)
-{
-    setFocusPolicy(Qt::NoFocus);
-#ifndef QT_NO_CURSOR
-    setCursor(Qt::ArrowCursor);
-#endif
-#ifndef QT_NO_TOOLTIP
-    setToolTip(tr("Close Tab"));
-#endif
-    resize(sizeHint());
-
-    connect (this, SIGNAL(clicked()), this, SLOT(buttonClicked()));
-}
-
-QSize TabCloseButton::sizeHint() const
-{
-    ensurePolished();
-    int width = style()->pixelMetric(QStyle::PM_TabCloseIndicatorWidth, 0, this);
-    int height = style()->pixelMetric(QStyle::PM_TabCloseIndicatorHeight, 0, this);
-    return QSize(width, height);
-}
-
-void TabCloseButton::enterEvent(QEvent *event)
-{
-    if (isEnabled())
-        update();
-    QAbstractButton::enterEvent(event);
-}
-
-void TabCloseButton::leaveEvent(QEvent *event)
-{
-    if (isEnabled())
-        update();
-    QAbstractButton::leaveEvent(event);
-}
-
-void TabCloseButton::paintEvent(QPaintEvent *)
-{
-    QPainter p(this);
-    QStyleOption opt;
-    opt.init(this);
-    opt.state |= QStyle::State_AutoRaise;
-    if (isEnabled() && underMouse() && !isChecked() && !isDown())
-        opt.state |= QStyle::State_Raised;
-    if (isChecked())
-        opt.state |= QStyle::State_On;
-    if (isDown())
-        opt.state |= QStyle::State_Sunken;
-
-    if (const QTabBar *tb = qobject_cast<const QTabBar *>(parent())) {
-        int index = tb->currentIndex();
-        QTabBar::ButtonPosition position = (QTabBar::ButtonPosition)style()->styleHint(QStyle::SH_TabBar_CloseButtonPosition, 0, tb);
-        if (tb->tabButton(index, position) == this)
-            opt.state |= QStyle::State_Selected;
-    }
-
-    style()->drawPrimitive(QStyle::PE_IndicatorTabClose, &opt, &p, this);
-}
-
-void TabCloseButton::buttonClicked()
-{
-   emit clicked(this->widget);
 }
