@@ -37,7 +37,7 @@ namespace UM
    class Uploader : public QThread, public IUpload, Common::Uncopyable
    {
       Q_OBJECT
-      static quint64 currentID;
+      static quint64 currentID; ///< Used to generate the new upload ID.
 
    public:
       Uploader(QSharedPointer<FM::IChunk> chunk, int offset, QSharedPointer<PM::ISocket> socket);
@@ -58,15 +58,13 @@ namespace UM
       void run();
 
    private:
-      const quint64 ID;
-      QSharedPointer<FM::IChunk> chunk;
-      int offset;
-      QSharedPointer<PM::ISocket> socket;
-      QTimer timer;
-      mutable QMutex mutex;
-
-      Common::TransferRateCalculator transferRateCalculator;
-
+      const quint64 ID; ///< Each uploader has an ID to identified it.
+      QSharedPointer<FM::IChunk> chunk; ///< The chunk uploaded.
+      int offset; ///< The current offset into the chunk.
+      QSharedPointer<PM::ISocket> socket; ///< The socket to send data.
+      QTimer timer; ///< Timer to enable a timeout for the uploader. See the settings "upload_live_time".
+      mutable QMutex mutex; ///< A mutex to protect the 'offset' data member.
+      Common::TransferRateCalculator transferRateCalculator; /// To compute the transfer rate.
       QThread* mainThread;
    };
 }

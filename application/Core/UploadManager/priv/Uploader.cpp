@@ -30,6 +30,14 @@ using namespace UM;
 #include <priv/Constants.h>
 #include <priv/Log.h>
 
+/**
+  * @class Uploader
+  * An uploader is used to send one chunk to one peer via one socket.
+  * The transfert is threaded.
+  * The signal 'uploadFinished' is emitted when the upload is finished or if the socket is closed,
+  * in this latter case or if any error appears the signal error flag is set to true.
+  */
+
 quint64 Uploader::currentID(1);
 
 Uploader::Uploader(QSharedPointer<FM::IChunk> chunk, int offset, QSharedPointer<PM::ISocket> socket)
