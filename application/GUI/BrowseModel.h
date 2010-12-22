@@ -49,7 +49,7 @@ namespace GUI
       virtual Protos::Common::Entry getEntry(const QModelIndex& index);
 
    protected slots:
-      virtual void result(const Protos::Common::Entries& entries);
+      virtual void result(const google::protobuf::RepeatedPtrField<Protos::Common::Entries>& entries);
       virtual void resultTimeout();
 
    protected:

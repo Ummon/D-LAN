@@ -65,7 +65,7 @@ namespace PM
       bool isAlive();
       void update(const QHostAddress& IP, quint16 port, const QString& nick, const quint64& sharingAmount);
 
-      QSharedPointer<IGetEntriesResult> getEntries(const Protos::Core::GetEntries& dir);
+      QSharedPointer<IGetEntriesResult> getEntries(const Protos::Core::GetEntries& dirs);
       QSharedPointer<IGetHashesResult> getHashes(const Protos::Common::Entry& file);
       QSharedPointer<IGetChunkResult> getChunk(const Protos::Core::GetChunk& chunk);
 

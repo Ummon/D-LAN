@@ -47,7 +47,7 @@ namespace GUI
       virtual void start() = 0;
 
    signals:
-      void result(const Protos::Common::Entries& entries);
+      void result(const google::protobuf::RepeatedPtrField<Protos::Common::Entries>&);
    };
 
    class ISearchResult : public Common::Timeoutable
@@ -70,18 +70,19 @@ namespace GUI
    public:
       BrowseResult(CoreConnection* coreConnection, const Common::Hash& peerID);
       BrowseResult(CoreConnection* coreConnection, const Common::Hash& peerID, const Protos::Common::Entry& entry);
+      BrowseResult(CoreConnection* coreConnection, const Common::Hash& peerID, const Protos::Common::Entries& entries, bool withRoots = true);
       void start();
       void setTag(quint64 tag);
 
    private slots:
-      void browseResult(quint64 tag, const Protos::Common::Entries& entries);
+      void browseResult(const Protos::GUI::BrowseResult& browseResult);
 
    private:
       void init(CoreConnection* coreConnection);
 
       CoreConnection* coreConnection;
       const Common::Hash peerID;
-      const Protos::Common::Entry entry; // Not sure if it's save to not copy the entry...
+      Protos::GUI::Browse browseMessage;
       quint64 tag;
    };
 
@@ -115,6 +116,7 @@ namespace GUI
 
       QSharedPointer<IBrowseResult> browse(const Common::Hash& peerID);
       QSharedPointer<IBrowseResult> browse(const Common::Hash& peerID, const Protos::Common::Entry& entry);
+      QSharedPointer<IBrowseResult> browse(const Common::Hash& peerID, const Protos::Common::Entries& entries, bool withRoots = true);
 
       QSharedPointer<ISearchResult> search(const QString& terms);
 
@@ -135,7 +137,7 @@ namespace GUI
       void newState(const Protos::GUI::State&);
       void newChatMessage(const Common::Hash& peerID, const QString& message);
       void newLogMessage(QSharedPointer<const LM::IEntry> entry);
-      void browseResult(quint64 tag, const Protos::Common::Entries& entries);
+      void browseResult(const Protos::GUI::BrowseResult& browseResult);
       void searchResult(const Protos::Common::FindResult& findResult);
 
    private slots:

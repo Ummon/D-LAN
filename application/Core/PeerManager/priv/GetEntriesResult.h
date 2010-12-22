@@ -38,7 +38,7 @@ namespace PM
    {
       Q_OBJECT
    public:
-      GetEntriesResult(const Protos::Core::GetEntries& dir, QSharedPointer<Socket> socket);
+      GetEntriesResult(const Protos::Core::GetEntries& dirs, QSharedPointer<Socket> socket);
       ~GetEntriesResult();
       void start();
 
@@ -46,7 +46,7 @@ namespace PM
       void newMessage(Common::Network::CoreMessageType type, const google::protobuf::Message& message);
 
    private:
-      const Protos::Core::GetEntries dir;
+      const Protos::Core::GetEntries dirs;
       QSharedPointer<Socket> socket;
    };
 }
