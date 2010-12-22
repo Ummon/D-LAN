@@ -2,3 +2,4 @@
 *.cpp eol=lf
 *.proto eol=lf
 *.sh eol=lf
+*.ui eol=lf
