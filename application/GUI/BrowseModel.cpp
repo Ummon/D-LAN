@@ -39,7 +39,7 @@ BrowseModel::BrowseModel(CoreConnection& coreConnection, const Common::Hash& pee
 BrowseModel::~BrowseModel()
 {
    if (!this->browseResult.isNull())
-      disconnect(this->browseResult.data(), SIGNAL(result(const Protos::Common::Entries&)), this, SLOT(result(const Protos::Common::Entries&)));
+      disconnect(this->browseResult.data(), SIGNAL(result(const google::protobuf::RepeatedPtrField<Protos::Common::Entries>&)), this, SLOT(result(const google::protobuf::RepeatedPtrField<Protos::Common::Entries>&)));
 
    delete this->root;
 }
@@ -146,19 +146,22 @@ Protos::Common::Entry BrowseModel::getEntry(const QModelIndex& index)
    return node->getEntry();
 }
 
-void BrowseModel::result(const Protos::Common::Entries& entries)
+void BrowseModel::result(const google::protobuf::RepeatedPtrField<Protos::Common::Entries>& entries)
 {
-   if (entries.entry_size() > 0)
+   if (entries.size() == 0)
+      return;
+
+   if (entries.Get(0).entry_size() > 0)
    {
-      this->beginInsertRows(this->currentBrowseIndex, 0, entries.entry_size() - 1);
+      this->beginInsertRows(this->currentBrowseIndex, 0, entries.Get(0).entry_size() - 1);
 
       if (this->currentBrowseIndex.internalPointer())
       {
          Node* node = static_cast<Node*>(this->currentBrowseIndex.internalPointer());
-         node->insertChildren(entries);
+         node->insertChildren(entries.Get(0));
       }
       else
-         this->root->insertChildren(entries);
+         this->root->insertChildren(entries.Get(0));
 
       this->endInsertRows();
    }
@@ -175,7 +178,7 @@ void BrowseModel::resultTimeout()
 void BrowseModel::browse(const Common::Hash& peerID, Node* node)
 {
    this->browseResult = node ? this->coreConnection.browse(this->peerID, node->getEntry()) : this->coreConnection.browse(this->peerID);
-   connect(this->browseResult.data(), SIGNAL(result(const Protos::Common::Entries&)), this, SLOT(result(const Protos::Common::Entries&)));
+   connect(this->browseResult.data(), SIGNAL(result(const google::protobuf::RepeatedPtrField<Protos::Common::Entries>&)), this, SLOT(result(const google::protobuf::RepeatedPtrField<Protos::Common::Entries>&)));
    connect(this->browseResult.data(), SIGNAL(timeout()), this, SLOT(resultTimeout()));
    this->browseResult->start();
 }

@@ -50,7 +50,7 @@ namespace DM
       void retrievePeer();
 
    private slots:
-      void result(const Protos::Common::Entries& entries);
+      void result(const Protos::Core::GetEntriesResult& entries);
       void resultTimeout();
 
    private:

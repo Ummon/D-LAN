@@ -102,10 +102,10 @@ void Peer::update(const QHostAddress&  IP, quint16 port, const QString& nick, co
    this->connectionPool.setIP(this->IP, this->port);
 }
 
-QSharedPointer<IGetEntriesResult> Peer::getEntries(const Protos::Core::GetEntries& dir)
+QSharedPointer<IGetEntriesResult> Peer::getEntries(const Protos::Core::GetEntries& dirs)
 {
    return QSharedPointer<IGetEntriesResult>(
-      new GetEntriesResult(dir, this->connectionPool.getASocket())
+      new GetEntriesResult(dirs, this->connectionPool.getASocket())
    );
 }
 

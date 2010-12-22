@@ -33,20 +33,23 @@ ResultListener::ResultListener()
 {
 }
 
-QList<Protos::Common::Entries> ResultListener::getEntriesResultList() const
+QList<Protos::Core::GetEntriesResult> ResultListener::getEntriesResultList() const
 {
    return this->entriesResultList;
 }
 
-int ResultListener::getNbEntriesResultReceived() const
+/**
+  * @param n The nth received entry.
+  */
+int ResultListener::getNbEntriesResultReceived(int n) const
 {
-   return this->entriesResultList.size();
+   return this->entriesResultList.last().entries(n).entry_size();
 }
 
-void ResultListener::entriesResult(const Protos::Common::Entries& entries)
+void ResultListener::entriesResult(const Protos::Core::GetEntriesResult& result)
 {
-   this->entriesResultList << entries;
-   qDebug() << "ResultListener::entriesResult : " << Common::ProtoHelper::getDebugStr(entries);
+   this->entriesResultList << result;
+   qDebug() << "ResultListener::entriesResult : " << Common::ProtoHelper::getDebugStr(result);
 }
 
 void ResultListener::result(const Protos::Core::GetHashesResult& result)

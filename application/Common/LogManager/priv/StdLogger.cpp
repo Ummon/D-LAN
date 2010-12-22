@@ -48,7 +48,7 @@ StdLogger::StdLogger(FILE* file, const QString& name) :
 {
    /*#if defined( Q_OS_WIN )
       _pipe(this->input, 0x1000, O_TEXT);
-   #else
+   #elif defined( Q_OS_LINUX )
       pipe(this->input);
    #endif
 

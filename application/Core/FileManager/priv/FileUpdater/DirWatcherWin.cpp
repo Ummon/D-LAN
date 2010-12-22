@@ -30,6 +30,12 @@ using namespace FM;
 #include <priv/Exceptions.h>
 #include <priv/FileUpdater/WaitConditionWin.h>
 
+/**
+  * @class DirWatcherWin
+  * Implementation of 'DirWatcher' for the windows platform.
+  * Inspired by : http://stackoverflow.com/questions/863135/why-does-readdirectorychangesw-omit-events.
+  */
+
 DirWatcherWin::DirWatcherWin()
    : mutex(QMutex::Recursive)
 {
@@ -43,6 +49,9 @@ DirWatcherWin::~DirWatcherWin()
       delete d;
 }
 
+/**
+  * @exception DirNotFoundException
+  */
 bool DirWatcherWin::addDir(const QString& path)
 {
    QMutexLocker locker(&this->mutex);

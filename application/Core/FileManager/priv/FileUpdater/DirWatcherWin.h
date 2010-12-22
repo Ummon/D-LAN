@@ -31,19 +31,12 @@ namespace FM
    static const int NOTIFY_BUFFER_SIZE = 2048;
    static const int MAX_WAIT_CONDITION = 4;
 
-   /**
-     * Implementation of 'DirWatcher' for the windows platform.
-     * Inspired by : http://stackoverflow.com/questions/863135/why-does-readdirectorychangesw-omit-events.
-     */
    class DirWatcherWin : public DirWatcher
    {
    public:
       DirWatcherWin();
       ~DirWatcherWin();
 
-      /**
-        * @exception DirNotFoundException
-        */
       bool addDir(const QString& path);
       void rmDir(const QString& path);
       int nbWatchedDir();
@@ -63,11 +56,10 @@ namespace FM
 
       bool watch(Dir* dir);
 
-      QList<Dir*> dirs; // The watched dirs.
-      QList<Dir*> dirsToDelete; // Dirs to delete.
+      QList<Dir*> dirs; ///< The watched dirs.
+      QList<Dir*> dirsToDelete; ///< Dirs to delete.
 
-      // Is this data can be shares among some 'ReadDirectoryChangesW'?
-      char notifyBuffer[NOTIFY_BUFFER_SIZE];
+      char notifyBuffer[NOTIFY_BUFFER_SIZE]; ///< Is this data can be shares among some 'ReadDirectoryChangesW'?
       DWORD nbBytesNotifyBuffer;
 
       QMutex mutex;

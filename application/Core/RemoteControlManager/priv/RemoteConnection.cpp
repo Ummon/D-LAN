@@ -210,12 +210,12 @@ void RemoteConnection::searchFound(const Protos::Common::FindResult& result)
    this->send(Common::Network::GUI_SEARCH_RESULT, result);
 }
 
-void RemoteConnection::getEntriesResult(const Protos::Common::Entries& entries)
+void RemoteConnection::getEntriesResult(const Protos::Core::GetEntriesResult& entries)
 {
    PM::IGetEntriesResult* getEntriesResult = dynamic_cast<PM::IGetEntriesResult*>(this->sender());
 
    Protos::GUI::BrowseResult result;
-   result.mutable_entries()->CopyFrom(entries);
+   result.mutable_entries()->MergeFrom(entries.entries());
    result.set_tag(getEntriesResult->property("tag").toULongLong());
    this->send(Common::Network::GUI_BROWSE_RESULT, result);
 
@@ -365,11 +365,11 @@ bool RemoteConnection::readMessage()
             if (peer)
             {
                Protos::Core::GetEntries getEntries;
-               if (browseMessage.has_dir())
-                  getEntries.mutable_dir()->CopyFrom(browseMessage.dir());
+               getEntries.mutable_dirs()->CopyFrom(browseMessage.dirs());
+               getEntries.set_get_roots(browseMessage.get_roots());
                QSharedPointer<PM::IGetEntriesResult> entries = peer->getEntries(getEntries);
                entries->setProperty("tag", tag);
-               connect(entries.data(), SIGNAL(result(const Protos::Common::Entries&)), this, SLOT(getEntriesResult(const Protos::Common::Entries&)));
+               connect(entries.data(), SIGNAL(result(const Protos::Core::GetEntriesResult&)), this, SLOT(getEntriesResult(const Protos::Core::GetEntriesResult&)));
                connect(entries.data(), SIGNAL(timeout()), this, SLOT(getEntriesTimeout()));
                entries->start();
                this->getEntriesResults << entries;
@@ -381,10 +381,13 @@ bool RemoteConnection::readMessage()
                // If we want to browse our files.
                if (peerID == this->peerManager->getID())
                {
-                  result.mutable_entries()->CopyFrom(browseMessage.has_dir() ? this->fileManager->getEntries(browseMessage.dir()) : this->fileManager->getEntries());
+                  for (int i = 0; i < browseMessage.dirs().entry_size(); i++)
+                     result.add_entries()->CopyFrom(this->fileManager->getEntries(browseMessage.dirs().entry(i)));
+
+                  // Add the root directories if asked.
+                  if (browseMessage.dirs().entry_size() == 0 || browseMessage.get_roots())
+                     result.add_entries()->CopyFrom(this->fileManager->getEntries());
                }
-               else
-                  result.mutable_entries(); // To create an empty 'entries' field.
 
                result.set_tag(tag);
                this->send(Common::Network::GUI_BROWSE_RESULT, result);

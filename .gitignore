@@ -11,6 +11,7 @@ moc_*.cpp
 *.Debug
 *.exe
 *.dll
+*.orig
 Makefile
 output/
 .tmp/

@@ -343,8 +343,6 @@ bool File::computeHashes(int n)
 
    L_DEBU("Computing the hash for " + this->getFullPath());
 
-   QList<QByteArray> result;
-
    Common::Hasher hasher;
 
    QFile file(this->getFullPath());

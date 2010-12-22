@@ -159,7 +159,8 @@ message Tag  {
 // id : 0x51
 message Browse {
    required Common.Hash peer_id = 1;
-   optional Common.Entry dir = 2;
+   optional Common.Entries dirs = 2;
+   optional bool get_roots = 3 [default = false]; // If true the roots directories will be appended to the entries result. If the Dir field above is empty then the roots folders will always be sent whatever get_roots is true or false.
 }
 // Core -> GUI (directly)
 // id : 0x52
@@ -167,8 +168,8 @@ message Browse {
 // Core -> GUI (deffered)
 // id : 0x53
 message BrowseResult {
-   required Common.Entries entries = 1;
-   required uint64 tag = 2;
+   required uint64 tag = 1;
+   repeated Common.Entries entries = 2;
 }
 
 // GUI -> Core

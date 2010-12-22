@@ -56,9 +56,9 @@ bool DirDownload::retrieveEntries()
       return false;
 
    Protos::Core::GetEntries getEntries;
-   getEntries.mutable_dir()->CopyFrom(this->entry);
+   getEntries.mutable_dirs()->add_entry()->CopyFrom(this->entry);
    this->getEntriesResult = this->peerSource->getEntries(getEntries);
-   connect(this->getEntriesResult.data(), SIGNAL(result(Protos::Common::Entries)), this, SLOT(result(Protos::Common::Entries)));
+   connect(this->getEntriesResult.data(), SIGNAL(result(const Protos::Core::GetEntriesResult&)), this, SLOT(result(const Protos::Core::GetEntriesResult&)));
    connect(this->getEntriesResult.data(), SIGNAL(timeout()), this, SLOT(resultTimeout()));
    this->getEntriesResult->start();
 
@@ -73,13 +73,16 @@ void DirDownload::retrievePeer()
       this->retrieveEntries();
 }
 
-void DirDownload::result(const Protos::Common::Entries& entries)
+void DirDownload::result(const Protos::Core::GetEntriesResult& entries)
 {
    this->getEntriesResult.clear(); // Is the 'IGetEntriesResult' object is deleted? Must we disconnect the signal? Answer : No the signal is automatically disconnected.
 
+   if (entries.entries_size() == 0)
+      return;
+
    // We need to specify the shared directory for each entry.
-   Protos::Common::Entries entriesCopy(entries);
-   for (int i = 0; i < entries.entry_size(); i++)
+   Protos::Common::Entries entriesCopy(entries.entries(0));
+   for (int i = 0; i < entriesCopy.entry_size(); i++)
       entriesCopy.mutable_entry(i)->mutable_shared_dir()->CopyFrom(this->entry.shared_dir());
 
    emit newEntries(entriesCopy);
