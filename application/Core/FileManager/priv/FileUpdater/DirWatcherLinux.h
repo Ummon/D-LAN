@@ -24,6 +24,8 @@
 #include <priv/FileUpdater/DirWatcher.h>
 #include <priv/Log.h>
 
+#include <sys/inotify.h>
+
 namespace FM
 {
    /**
@@ -44,24 +46,27 @@ namespace FM
    private:
        struct Dir
        {
-          Dir(QString fullPath, int watcher) : fullPath(fullPath), watcher(watcher)
-          {
-          }
-          ~Dir()
-          {
-          }
+          DirWatcherLinux* dwl;
+          Dir* parent;
+          QMap<QString, Dir*> childs;
+          QString name;
+          int wd; // inotify watch descriptor
 
-          QString fullPath;
-          int watcher;
+          Dir(DirWatcherLinux* dwl, Dir* parent, const QString& name);
+          ~Dir();
+          QString getFullPath();
+          void rename(const QString& newName);
+          void move(Dir* from, Dir* to);
        };
 
        bool initialized;
        int fileDescriptor;
 
-       QList<Dir*> dirs; // The watched dirs.
+       QMap<int, Dir*> dirs; // The watched dirs, indexed by watch descriptor.
+       QMap<QString, Dir*> rootDirs; // The watched root dirs, indexed by full path.
 
        void rmWatcher(int watcher);
-       QString getWatcherPath(int watcher);
+       QString getEventPath(inotify_event *event);
 
        QMutex mutex;
    };
