@@ -3,3 +3,4 @@
 *.proto eol=lf
 *.sh eol=lf
 *.ui eol=lf
+*.pro eol=lf
