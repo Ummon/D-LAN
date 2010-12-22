@@ -240,6 +240,22 @@ const QList<WatcherEvent> DirWatcherWin::waitEvent(int timeout, QList<WaitCondit
    return QList<WatcherEvent>();
 }
 
+DirWatcherWin::Dir::Dir(const HANDLE file, const HANDLE event, const QString& fullPath)
+   : file(file), fullPath(fullPath)
+{
+   memset(&this->overlapped, 0, sizeof(OVERLAPPED));
+   overlapped.hEvent = event;
+}
+
+DirWatcherWin::Dir::~Dir()
+{
+   // Should we wait with GetOverlappedResult or do a test with HasOverlappedIoCompleted ?
+   CancelIo(this->file);
+
+   if (!CloseHandle(this->file)) L_ERRO(QString("CloseHandle(dir.file) return an error : %1").arg(GetLastError()));
+   if (!CloseHandle(this->overlapped.hEvent)) L_ERRO(QString("CloseHandle(dir.overlapped.hEvent) return an error : %1").arg(GetLastError()));
+}
+
 bool DirWatcherWin::watch(Dir* dir)
 {
    return ReadDirectoryChangesW(

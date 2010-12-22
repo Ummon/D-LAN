@@ -55,23 +55,12 @@ namespace FM
    private:
       struct Dir
       {
-         Dir(HANDLE file, HANDLE event, QString fullPath) : file(file), fullPath(fullPath)
-         {
-            memset(&this->overlapped, 0, sizeof(OVERLAPPED));
-            overlapped.hEvent = event;
-         }
-         ~Dir()
-         {
-            // Should we wait with GetOverlappedResult or do a test with HasOverlappedIoCompleted ?
-            CancelIo(this->file);
+         Dir(const HANDLE file, const HANDLE event, const QString& fullPath);
+         ~Dir();
 
-            if (!CloseHandle(this->file)) L_ERRO(QString("CloseHandle(dir.file) return an error : %1").arg(GetLastError()));
-            if (!CloseHandle(this->overlapped.hEvent)) L_ERRO(QString("CloseHandle(dir.overlapped.hEvent) return an error : %1").arg(GetLastError()));
-         }
-
-         HANDLE file;
+         const HANDLE file;
          OVERLAPPED overlapped;
-         QString fullPath;
+         const QString fullPath;
       };
 
       bool watch(Dir* dir);
