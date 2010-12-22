@@ -28,9 +28,6 @@
 
 namespace FM
 {
-   /**
-     * Implementation of 'DirWatcher' for the linux platform.
-     */
    class DirWatcherLinux : public DirWatcher
    {
    public:
@@ -56,7 +53,7 @@ namespace FM
           ~Dir();
           QString getFullPath();
           void rename(const QString& newName);
-          void move(Dir* from, Dir* to);
+          void move(Dir* to);
        };
 
        bool initialized;

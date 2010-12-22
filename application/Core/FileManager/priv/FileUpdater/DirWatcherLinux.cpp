@@ -23,6 +23,14 @@ using namespace FM;
 /* Inotify events catched for root directories. */
 #define ROOT_EVENTS_OBS EVENTS_OBS|IN_MOVE_SELF|IN_DELETE_SELF
 
+/**
+ * @class DirWatcherLinux
+ * Implementation of 'DirWatcher' for the linux platform with inotify.
+ */
+
+/**
+ * Constructor.
+ */
 DirWatcherLinux::DirWatcherLinux()
    : mutex(QMutex::Recursive)
 {
@@ -35,6 +43,9 @@ DirWatcherLinux::DirWatcherLinux()
    }
 }
 
+/**
+ * Destructor.
+ */
 DirWatcherLinux::~DirWatcherLinux()
 {
    QMutexLocker locker(&this->mutex);
@@ -45,6 +56,9 @@ DirWatcherLinux::~DirWatcherLinux()
    }
 }
 
+/**
+ * @inheritDoc
+ */
 bool DirWatcherLinux::addDir(const QString& path)
 {
    QMutexLocker locker(&this->mutex);
@@ -58,6 +72,9 @@ bool DirWatcherLinux::addDir(const QString& path)
    return true;
 }
 
+/**
+ * @inheritDoc
+ */
 void DirWatcherLinux::rmDir(const QString& path)
 {
    QMutexLocker locker(&this->mutex);
@@ -66,6 +83,10 @@ void DirWatcherLinux::rmDir(const QString& path)
    delete dir;
 }
 
+/**
+ * Return the full path of the file notified by an inotify event.
+ * @param path the full path
+ */
 QString DirWatcherLinux::getEventPath(inotify_event *event) {
    QMutexLocker locker(&this->mutex);
 
@@ -76,17 +97,26 @@ QString DirWatcherLinux::getEventPath(inotify_event *event) {
    return p;
 }
 
+/**
+ * @inheritDoc
+ */
 int DirWatcherLinux::nbWatchedDir()
 {
    QMutexLocker locker(&this->mutex);
    return this->rootDirs.size();
 }
 
+/**
+ * @inheritDoc
+ */
 const QList<WatcherEvent> DirWatcherLinux::waitEvent(QList<WaitCondition*> ws)
 {
    return this->waitEvent(-1, ws);
 }
 
+/**
+ * @inheritDoc
+ */
 const QList<WatcherEvent> DirWatcherLinux::waitEvent(int timeout, QList<WaitCondition*> ws)
 {
    this->mutex.lock();
@@ -162,21 +192,20 @@ const QList<WatcherEvent> DirWatcherLinux::waitEvent(int timeout, QList<WaitCond
                   /* If moved object is a directory, apply change to the local directory index */
                   if (event->mask & IN_ISDIR)
                   {
-                     /* Retrieve from and to directory by watch descriptor. */
-                     Dir* fromDir = dirs.value(fromEvent->wd);
+                     /* Retrieve to directory by watch descriptor. */
                      Dir* toDir = dirs.value(event->wd);
 
                      /* Retrieve moved directory by child map of from directory,
-                        because actually the name isn't changed. */
-                     Dir* movedDir = fromDir->childs.value(fromEvent->name);
+                        because actually the name hasn't changed. */
+                     Dir* movedDir = dirs.value(fromEvent->wd)->childs.value(fromEvent->name);
 
                      /* If the name of moved directory has changed, rename it. */
                      if (fromEvent->name != event->name)
                         movedDir->rename(event->name);
 
                      /* If the path of moved directosy has changed, move it. */
-                     if (fromDir->getFullPath() != toDir->getFullPath())
-                        movedDir->move(fromDir, toDir);
+                     if (movedDir->parent->getFullPath() != toDir->getFullPath())
+                        movedDir->move(toDir);
                   }
                   i.remove();
                   /* exit the IN_MOVED_TO process */
@@ -225,6 +254,18 @@ const QList<WatcherEvent> DirWatcherLinux::waitEvent(int timeout, QList<WaitCond
    return QList<WatcherEvent>();
 }
 
+/**
+ * @struct Dir
+ * Implementation of a node for the directory tree index. A node
+ * represent a directory.
+ */
+
+/**
+ * Contructor.
+ * @param dwl     the DirWatcherLinux who use the directory tree index
+ * @param parent  the parent Dir
+ * @param name    the name of the Dir
+ */
 DirWatcherLinux::Dir::Dir(DirWatcherLinux* dwl, Dir* parent, const QString& name) : dwl(dwl), parent(parent), name(name)
 {
    if (this->parent)
@@ -241,6 +282,9 @@ DirWatcherLinux::Dir::Dir(DirWatcherLinux* dwl, Dir* parent, const QString& name
       new Dir(this->dwl, this, (QString) i.next());
 }
 
+/**
+ * Destructor. Used to delete a branch.
+ */
 DirWatcherLinux::Dir::~Dir()
 {
    dwl->dirs.remove(wd);
@@ -251,6 +295,10 @@ DirWatcherLinux::Dir::~Dir()
       delete ((Dir*) i.next());
 }
 
+/**
+ * Return the full path of the directory.
+ * @return QString the full path
+ */
 QString DirWatcherLinux::Dir::getFullPath()
 {
    QString fullPath = this->name;
@@ -261,6 +309,10 @@ QString DirWatcherLinux::Dir::getFullPath()
    return fullPath;
 }
 
+/**
+ * Rename the directory.
+ * @param newName the new name
+ */
 void DirWatcherLinux::Dir::rename(const QString& newName)
 {
    this->parent->childs.remove(this->name);
@@ -268,9 +320,13 @@ void DirWatcherLinux::Dir::rename(const QString& newName)
    this->parent->childs.insert(this->name, this);
 }
 
-void DirWatcherLinux::Dir::move(Dir* from, Dir* to)
+/**
+ * Move a directory in the tree.
+ * @param to the new parent of the directory
+ */
+void DirWatcherLinux::Dir::move(Dir* to)
 {
-   from->childs.remove(this->name);
+   this->parent->childs.remove(this->name);
    this->parent = to;
    to->childs.insert(this->name, this);
 }
