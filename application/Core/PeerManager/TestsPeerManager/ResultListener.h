@@ -35,11 +35,11 @@ class ResultListener : public QObject
 public:
    ResultListener();
 
-   QList<Protos::Common::Entries> getEntriesResultList() const;
-   int getNbEntriesResultReceived() const;
+   QList<Protos::Core::GetEntriesResult> getEntriesResultList() const;
+   int getNbEntriesResultReceived(int n) const;
 
 public slots:
-   void entriesResult(const Protos::Common::Entries& entries);
+   void entriesResult(const Protos::Core::GetEntriesResult& result);
 
    void result(const Protos::Core::GetHashesResult& result);
    void nextHash(const Common::Hash& hash);
@@ -49,7 +49,7 @@ public slots:
    void getChunk(Common::Hash hash, int offset, QSharedPointer<PM::ISocket> socket);
 
 private:
-   QList<Protos::Common::Entries> entriesResultList;
+   QList<Protos::Core::GetEntriesResult> entriesResultList;
    int nbHashes;
    int currentHash;
 };

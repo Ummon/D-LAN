@@ -38,19 +38,24 @@ BrowseResult::BrowseResult(CoreConnection* coreConnection, const Common::Hash& p
 }
 
 BrowseResult::BrowseResult(CoreConnection* coreConnection, const Common::Hash& peerID, const Protos::Common::Entry& entry)
-   : IBrowseResult(SETTINGS.get<quint32>("socket_timeout")), peerID(peerID), entry(entry), tag(0)
+   : IBrowseResult(SETTINGS.get<quint32>("socket_timeout")), peerID(peerID), tag(0)
 {
+   this->browseMessage.mutable_dirs()->add_entry()->CopyFrom(entry);
+   this->init(coreConnection);
+}
+
+BrowseResult::BrowseResult(CoreConnection* coreConnection, const Common::Hash& peerID, const Protos::Common::Entries& entries, bool withRoots)
+   : IBrowseResult(SETTINGS.get<quint32>("socket_timeout")), peerID(peerID), tag(0)
+{
+   this->browseMessage.mutable_dirs()->CopyFrom(entries);
+   this->browseMessage.set_get_roots(withRoots);
    this->init(coreConnection);
 }
 
 void BrowseResult::start()
 {
-   Protos::GUI::Browse browseMessage;
-   browseMessage.mutable_peer_id()->set_hash(this->peerID.getData(), Common::Hash::HASH_SIZE);
-   if (this->entry.IsInitialized())
-      browseMessage.mutable_dir()->CopyFrom(this->entry);
-
-   this->coreConnection->send(Common::Network::GUI_BROWSE, browseMessage);
+   this->browseMessage.mutable_peer_id()->set_hash(this->peerID.getData(), Common::Hash::HASH_SIZE);
+   this->coreConnection->send(Common::Network::GUI_BROWSE, this->browseMessage);
 }
 
 void BrowseResult::setTag(quint64 tag)
@@ -58,19 +63,19 @@ void BrowseResult::setTag(quint64 tag)
    this->tag = tag;
 }
 
-void BrowseResult::browseResult(quint64 tag, const Protos::Common::Entries& entries)
+void BrowseResult::browseResult(const Protos::GUI::BrowseResult& browseResult)
 {
-   if (tag == this->tag) // Is this message for us?
+   if (browseResult.tag() == this->tag) // Is this message for us?
    {
       this->tag = 0; // To avoid multi emit (should not occurs).
-      emit result(entries);
+      emit result(browseResult.entries());
    }
 }
 
 void BrowseResult::init(CoreConnection* coreConnection)
 {
    this->coreConnection = coreConnection;
-   connect(this->coreConnection, SIGNAL(browseResult(quint64, const Protos::Common::Entries&)), this, SLOT(browseResult(quint64, const Protos::Common::Entries&)));
+   connect(this->coreConnection, SIGNAL(browseResult(const Protos::GUI::BrowseResult&)), this, SLOT(browseResult(const Protos::GUI::BrowseResult&)));
 }
 
 /////
@@ -145,6 +150,13 @@ QSharedPointer<IBrowseResult> CoreConnection::browse(const Common::Hash& peerID)
 QSharedPointer<IBrowseResult> CoreConnection::browse(const Common::Hash& peerID, const Protos::Common::Entry& entry)
 {
    QSharedPointer<BrowseResult> browseResult = QSharedPointer<BrowseResult>(new BrowseResult(this, peerID, entry));
+   this->browseResultsWithoutTag << browseResult;
+   return browseResult;
+}
+
+QSharedPointer<IBrowseResult> CoreConnection::browse(const Common::Hash& peerID, const Protos::Common::Entries& entries, bool withRoots)
+{
+   QSharedPointer<BrowseResult> browseResult = QSharedPointer<BrowseResult>(new BrowseResult(this, peerID, entries, withRoots));
    this->browseResultsWithoutTag << browseResult;
    return browseResult;
 }
@@ -490,7 +502,7 @@ bool CoreConnection::readMessage()
          }
 
          if (readOK && this->authenticated)
-            emit browseResult(browseResultMessage.tag(), browseResultMessage.entries());
+            emit browseResult(browseResultMessage);
       }
       break;
 

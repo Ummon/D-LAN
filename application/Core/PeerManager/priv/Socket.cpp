@@ -264,14 +264,21 @@ bool Socket::readMessage()
          // See Common::ZeroCopyInputStreamQIODevice::~ZeroCopyInputStreamQIODevice.
          {
             Common::ZeroCopyInputStreamQIODevice inputStream(this->socket);
-            readOK = this->currentHeader.size == 0 || getEntries.ParseFromBoundedZeroCopyStream(&inputStream, this->currentHeader.size);
+            readOK = getEntries.ParseFromBoundedZeroCopyStream(&inputStream, this->currentHeader.size);
          }
 
          if (readOK)
-            this->send(
-               Common::Network::CORE_GET_ENTRIES_RESULT,
-               getEntries.has_dir() ? this->fileManager->getEntries(getEntries.dir()) : this->fileManager->getEntries()
-            );
+         {
+            Protos::Core::GetEntriesResult result;
+            for (int i = 0; i < getEntries.dirs().entry_size(); i++)
+               result.add_entries()->CopyFrom(this->fileManager->getEntries(getEntries.dirs().entry(i)));
+
+            // Add the root directories if asked.
+            if (getEntries.dirs().entry_size() == 0 || getEntries.get_roots())
+               result.add_entries()->CopyFrom(this->fileManager->getEntries());
+
+            this->send(Common::Network::CORE_GET_ENTRIES_RESULT, result);
+         }
 
          this->finished();
       }
@@ -279,7 +286,7 @@ bool Socket::readMessage()
 
    case Common::Network::CORE_GET_ENTRIES_RESULT:
       {
-         Protos::Common::Entries getEntriesResult;
+         Protos::Core::GetEntriesResult getEntriesResult;
          {
             Common::ZeroCopyInputStreamQIODevice inputStream(this->socket);
             readOK = getEntriesResult.ParseFromBoundedZeroCopyStream(&inputStream, this->currentHeader.size);

@@ -75,7 +75,7 @@ namespace RCM
       void newChatMessage(const Common::Hash& peerID, const Protos::Core::ChatMessage&);
       void searchFound(const Protos::Common::FindResult& result);
 
-      void getEntriesResult(const Protos::Common::Entries& entries);
+      void getEntriesResult(const Protos::Core::GetEntriesResult&);
       void getEntriesTimeout();
 
       void newLogEntry(QSharedPointer<const LM::IEntry> entry);
