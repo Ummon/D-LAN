@@ -31,6 +31,12 @@ using namespace UM;
 #include <priv/Log.h>
 #include <priv/Uploader.h>
 
+/**
+  * @class UploaderManager
+  * Will listen the signal 'getChunk' of the peerManager, when this signal is received an Uploader is created and data is sent to the peer.
+  * After the chunk was sent to the peer the Uploader is deleted.
+  */
+
 UploadManager::UploadManager(QSharedPointer<FM::IFileManager> fileManager, QSharedPointer<PM::IPeerManager> peerManager)
    : fileManager(fileManager), peerManager(peerManager)
 {
@@ -97,7 +103,7 @@ void UploadManager::uploadFinished(bool networkError)
    L_DEBU(QString("Upload finished, chunk : %1").arg(uploader->getChunk()->toStr()));
 
    uploader->getSocket()->finished(networkError);
-   uploader->startTimer();
+   uploader->startTimer(); // Will delay the call to 'deleteUploade'.
 }
 
 void UploadManager::deleteUpload()
