@@ -27,8 +27,8 @@
 
 #include <Common/Hash.h>
 
-#include <CoreConnection.h>
-#include <PeerListModel.h>
+#include <CoreConnection/CoreConnection.h>
+#include <PeerList/PeerListModel.h>
 
 namespace GUI
 {
