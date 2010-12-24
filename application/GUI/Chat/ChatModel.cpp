@@ -16,7 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#include <ChatModel.h>
+#include <Chat/ChatModel.h>
 using namespace GUI;
 
 #include <QtAlgorithms>

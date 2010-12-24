@@ -32,77 +32,13 @@
 #include <Common/Network.h>
 #include <Common/LogManager/IEntry.h>
 
+#include <CoreConnection/IBrowseResult.h>
+#include <CoreConnection/ISearchResult.h>
+
 namespace GUI
 {
-   class CoreConnection;
-
-   class IBrowseResult : public Common::Timeoutable
-   {
-      Q_OBJECT
-   protected:
-      IBrowseResult(int time) : Common::Timeoutable(time) {}
-
-   public:
-      virtual ~IBrowseResult() {}
-      virtual void start() = 0;
-
-   signals:
-      void result(const google::protobuf::RepeatedPtrField<Protos::Common::Entries>&);
-   };
-
-   class ISearchResult : public Common::Timeoutable
-   {
-      Q_OBJECT
-   protected:
-      ISearchResult(int time) : Common::Timeoutable(time) {}
-
-   public:
-      virtual ~ISearchResult() {}
-      virtual void start() = 0;
-
-   signals:
-      void result(const Protos::Common::FindResult&);
-   };
-
-   class BrowseResult : public IBrowseResult
-   {
-      Q_OBJECT
-   public:
-      BrowseResult(CoreConnection* coreConnection, const Common::Hash& peerID);
-      BrowseResult(CoreConnection* coreConnection, const Common::Hash& peerID, const Protos::Common::Entry& entry);
-      BrowseResult(CoreConnection* coreConnection, const Common::Hash& peerID, const Protos::Common::Entries& entries, bool withRoots = true);
-      void start();
-      void setTag(quint64 tag);
-
-   private slots:
-      void browseResult(const Protos::GUI::BrowseResult& browseResult);
-
-   private:
-      void init(CoreConnection* coreConnection);
-
-      CoreConnection* coreConnection;
-      const Common::Hash peerID;
-      Protos::GUI::Browse browseMessage;
-      quint64 tag;
-   };
-
-   class SearchResult : public ISearchResult
-   {
-      Q_OBJECT
-   public:
-      SearchResult(CoreConnection* coreConnection, const QString& terms);
-      void start();
-      void setTag(quint64 tag);
-
-   private slots:
-      void searchResult(const Protos::Common::FindResult& findResult);
-
-   private:
-      CoreConnection* coreConnection;
-      const QString terms;
-      quint64 tag;
-   };
-
+   class BrowseResult;
+   class SearchResult;
    class CoreConnection : public QObject
    {
       Q_OBJECT
