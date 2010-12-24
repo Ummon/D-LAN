@@ -16,40 +16,58 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef GUI_UPLOADSMODEL_H
-#define GUI_UPLOADSMODEL_H
+#ifndef GUI_WIDGETSETTINGS_H
+#define GUI_WIDGETSETTINGS_H
 
-#include <QAbstractTableModel>
+#include <QWidget>
+#include <QDir>
 
-#include <Protos/gui_protocol.pb.h>
+#include <CoreConnection/CoreConnection.h>
+#include <Settings/DirListModel.h>
 
-#include <CoreConnection.h>
-#include <PeerListModel.h>
+namespace Ui {
+   class WidgetSettings;
+}
 
 namespace GUI
 {
-   class UploadsModel : public QAbstractTableModel
+   class WidgetSettings : public QWidget
    {
       Q_OBJECT
    public:
-      explicit UploadsModel(CoreConnection& coreConnection, PeerListModel& peerListModel);
+      explicit WidgetSettings(CoreConnection& coreConnection, QWidget *parent = 0);
+      ~WidgetSettings();
 
-      int rowCount(const QModelIndex& parent = QModelIndex()) const;
-      int columnCount(const QModelIndex& parent = QModelIndex()) const;
-      QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const;
+      void coreConnected();
+      void coreDisconnected();
 
    private slots:
       void newState(const Protos::GUI::State& state);
+      void saveCoreSettings();
+      void saveGUISettings();
+
+      void addIncoming();
+      void addShared();
+      void removeIncoming();
+      void removeShared();
+
+      void resetCoreAddress();
+
+      QStringList askForDirectories();
+
+   protected:
+      virtual void showEvent(QShowEvent* event);
 
    private:
+      Ui::WidgetSettings *ui;
+
+      DirListModel incomingDirsModel;
+      DirListModel sharedDirsModel;
+
       CoreConnection& coreConnection;
-      PeerListModel& peerListModel;
 
-      QList<Protos::GUI::State_Upload> uploads;
+      bool initialState;
    };
-
-   bool operator==(const Protos::GUI::State_Upload& u1, const Protos::GUI::State_Upload& u2);
-   bool operator!=(const Protos::GUI::State_Upload& u1, const Protos::GUI::State_Upload& u2);
 }
 
 #endif

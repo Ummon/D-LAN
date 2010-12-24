@@ -16,7 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#include <BrowseModel.h>
+#include <Browse/BrowseModel.h>
 using namespace GUI;
 
 #include <QPixmap>

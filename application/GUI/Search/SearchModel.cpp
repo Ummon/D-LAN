@@ -16,7 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#include <SearchModel.h>
+#include <Search/SearchModel.h>
 using namespace GUI;
 
 #include <Common/Settings.h>

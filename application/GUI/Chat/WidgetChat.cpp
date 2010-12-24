@@ -16,7 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#include <WidgetChat.h>
+#include <Chat/WidgetChat.h>
 #include <ui_WidgetChat.h>
 using namespace GUI;
 

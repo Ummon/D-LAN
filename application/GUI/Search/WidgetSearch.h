@@ -16,52 +16,57 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef GUI_WIDGETBROWSE_H
-#define GUI_WIDGETBROWSE_H
+#ifndef GUI_WIDGETSEARCH_H
+#define GUI_WIDGETSEARCH_H
 
 #include <QWidget>
-#include <QAbstractButton>
+#include <QString>
 #include <QStyledItemDelegate>
+#include <QPainter>
 
-#include <Common/Hash.h>
-
-#include <PeerListModel.h>
-#include <CoreConnection.h>
-#include <BrowseModel.h>
+#include <CoreConnection/CoreConnection.h>
+#include <Search/SearchModel.h>
 
 namespace Ui {
-   class WidgetBrowse;
+   class WidgetSearch;
 }
 
 namespace GUI
 {
-   class BrowseDelegate : public QStyledItemDelegate
+   class SearchDelegate : public QStyledItemDelegate
    {
+      static const QString MARKUP_FIRST_PART;
+      static const QString MARKUP_SECOND_PART;
+
    public:
       void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const;
+      QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const;
+      void setTerms(const QString& terms);
+
+   private:
+      QString toHtmlText(const QString& text) const;
+      QStringList currentTerms;
    };
 
-   class WidgetBrowse : public QWidget
+   class WidgetSearch : public QWidget
    {
       Q_OBJECT
    public:
-      explicit WidgetBrowse(CoreConnection& coreConnection, PeerListModel& peerListModel, const Common::Hash& peerID, QWidget *parent = 0);
-      ~WidgetBrowse();
-      Common::Hash getPeerID() const;
+      explicit WidgetSearch(CoreConnection& coreConnection, PeerListModel& peerListModel, const QString& terms, QWidget *parent = 0);
+      ~WidgetSearch();
 
    private slots:
       void displayContextMenuPeers(const QPoint& point);
       void download();
+      void progress(int value);
 
    private:
-      Ui::WidgetBrowse* ui;
-
+      Ui::WidgetSearch *ui;
       CoreConnection& coreConnection;
-      PeerListModel& peerListModel;
-      const Common::Hash peerID;
 
-      BrowseModel browseModel;
-      BrowseDelegate browseDelegate;
+      SearchModel searchModel;
+      SearchDelegate searchDelegate;
    };
 }
+
 #endif

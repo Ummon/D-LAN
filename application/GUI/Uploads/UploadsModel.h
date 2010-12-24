@@ -16,38 +16,40 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef GUI_LOGMODEL_H
-#define GUI_LOGMODEL_H
+#ifndef GUI_UPLOADSMODEL_H
+#define GUI_UPLOADSMODEL_H
 
 #include <QAbstractTableModel>
 
-#include <Common/LogManager/IEntry.h>
-#include <Common/LogManager/ILoggerHook.h>
+#include <Protos/gui_protocol.pb.h>
 
-#include <CoreConnection.h>
+#include <CoreConnection/CoreConnection.h>
+#include <PeerList/PeerListModel.h>
 
 namespace GUI
 {
-   class LogModel : public QAbstractTableModel
+   class UploadsModel : public QAbstractTableModel
    {
       Q_OBJECT
    public:
-      LogModel(CoreConnection& coreConnection);
+      explicit UploadsModel(CoreConnection& coreConnection, PeerListModel& peerListModel);
 
       int rowCount(const QModelIndex& parent = QModelIndex()) const;
       int columnCount(const QModelIndex& parent = QModelIndex()) const;
       QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const;
 
-      LM::Severity getSeverity(int row) const;
-
    private slots:
-      void newLogEntry(QSharedPointer<const LM::IEntry> entry);
+      void newState(const Protos::GUI::State& state);
 
    private:
       CoreConnection& coreConnection;
-      QSharedPointer<LM::ILoggerHook> loggerHook;
-      QList< QSharedPointer<const LM::IEntry> > entries;
+      PeerListModel& peerListModel;
+
+      QList<Protos::GUI::State_Upload> uploads;
    };
+
+   bool operator==(const Protos::GUI::State_Upload& u1, const Protos::GUI::State_Upload& u2);
+   bool operator!=(const Protos::GUI::State_Upload& u1, const Protos::GUI::State_Upload& u2);
 }
 
 #endif
