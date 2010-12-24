@@ -16,7 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#include <WidgetSearch.h>
+#include <Search/WidgetSearch.h>
 #include <ui_WidgetSearch.h>
 using namespace GUI;
 

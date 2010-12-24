@@ -16,7 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#include <WidgetUploads.h>
+#include <Uploads/WidgetUploads.h>
 #include <ui_WidgetUploads.h>
 using namespace GUI;
 

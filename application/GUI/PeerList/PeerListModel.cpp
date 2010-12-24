@@ -16,7 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#include <PeerListModel.h>
+#include <PeerList/PeerListModel.h>
 using namespace GUI;
 
 #include <QtAlgorithms>

@@ -16,57 +16,45 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef GUI_WIDGETSEARCH_H
-#define GUI_WIDGETSEARCH_H
+#ifndef GUI_WIDGETCHAT_H
+#define GUI_WIDGETCHAT_H
 
 #include <QWidget>
-#include <QString>
 #include <QStyledItemDelegate>
-#include <QPainter>
 
-#include <CoreConnection.h>
-#include <SearchModel.h>
+#include <CoreConnection/CoreConnection.h>
+#include <PeerList/PeerListModel.h>
+#include <Chat/ChatModel.h>
 
 namespace Ui {
-   class WidgetSearch;
+  class WidgetChat;
 }
 
 namespace GUI
 {
-   class SearchDelegate : public QStyledItemDelegate
+   class ChatDelegate : public QStyledItemDelegate
    {
-      static const QString MARKUP_FIRST_PART;
-      static const QString MARKUP_SECOND_PART;
-
    public:
       void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const;
-      QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const;
-      void setTerms(const QString& terms);
-
-   private:
-      QString toHtmlText(const QString& text) const;
-      QStringList currentTerms;
    };
 
-   class WidgetSearch : public QWidget
+   class WidgetChat : public QWidget
    {
       Q_OBJECT
    public:
-      explicit WidgetSearch(CoreConnection& coreConnection, PeerListModel& peerListModel, const QString& terms, QWidget *parent = 0);
-      ~WidgetSearch();
+      explicit WidgetChat(CoreConnection& coreConnection, PeerListModel& peerListModel, QWidget *parent = 0);
+      ~WidgetChat();
 
    private slots:
-      void displayContextMenuPeers(const QPoint& point);
-      void download();
-      void progress(int value);
+      void sendMessage();
+      void newRows();
 
    private:
-      Ui::WidgetSearch *ui;
-      CoreConnection& coreConnection;
+      Ui::WidgetChat *ui;
 
-      SearchModel searchModel;
-      SearchDelegate searchDelegate;
+      CoreConnection& coreConnection;
+      ChatModel chatModel;
+      ChatDelegate chatDelegate;
    };
 }
-
 #endif

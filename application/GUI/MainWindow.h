@@ -29,16 +29,16 @@
 #include <Protos/gui_protocol.pb.h>
 #include <Protos/common.pb.h>
 
-#include <PeerListModel.h>
-#include <LogModel.h>
-#include <CoreConnection.h>
+#include <PeerList/PeerListModel.h>
+#include <Log/LogModel.h>
+#include <CoreConnection/CoreConnection.h>
 
-#include <WidgetSettings.h>
-#include <WidgetChat.h>
-#include <WidgetDownloads.h>
-#include <WidgetUploads.h>
-#include <WidgetBrowse.h>
-#include <WidgetSearch.h>
+#include <Settings/WidgetSettings.h>
+#include <Chat/WidgetChat.h>
+#include <Downloads/WidgetDownloads.h>
+#include <Uploads/WidgetUploads.h>
+#include <Browse/WidgetBrowse.h>
+#include <Search/WidgetSearch.h>
 
 namespace Ui {
    class MainWindow;

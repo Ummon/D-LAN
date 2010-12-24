@@ -16,7 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#include <WidgetBrowse.h>
+#include <Browse/WidgetBrowse.h>
 #include <ui_WidgetBrowse.h>
 using namespace GUI;
 

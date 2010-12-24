@@ -16,42 +16,55 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef GUI_WIDGETUPLOADS_H
-#define GUI_WIDGETUPLOADS_H
+#ifndef GUI_WIDGETDOWNLOADS_H
+#define GUI_WIDGETDOWNLOADS_H
 
 #include <QWidget>
+#include <QPoint>
 #include <QStyledItemDelegate>
 
-#include <UploadsModel.h>
-#include <PeerListModel.h>
-#include <CoreConnection.h>
+#include <CheckBoxList.h>
+#include <CheckBoxModel.h>
+#include <PeerList/PeerListModel.h>
+#include <CoreConnection/CoreConnection.h>
+#include <Downloads/DownloadFilterStatus.h>
+#include <Downloads/DownloadsModel.h>
 
 namespace Ui {
-   class WidgetUploads;
+   class WidgetDownloads;
 }
 
 namespace GUI
 {
-   class UploadsDelegate : public QStyledItemDelegate
+   class DownloadsDelegate : public QStyledItemDelegate
    {
    public:
       void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const;
       QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const;
-      void drawFocus(QPainter*, const QStyleOptionViewItem&, const QRect&) const {}
    };
 
-   class WidgetUploads : public QWidget
+   class WidgetDownloads : public QWidget
    {
       Q_OBJECT
    public:
-      explicit WidgetUploads(CoreConnection& coreConnection, PeerListModel& peerListModel, QWidget *parent = 0);
-      ~WidgetUploads();
+      explicit WidgetDownloads(CoreConnection& coreConnection, PeerListModel& peerListModel, QWidget *parent = 0);
+      ~WidgetDownloads();
+
+   private slots:
+      void displayContextMenuDownloads(const QPoint& point);
+      void removeSelectedEntries();
+      void removeCompletedFiles();
+      void filterChanged();
 
    private:
-      Ui::WidgetUploads* ui;
+      Ui::WidgetDownloads *ui;
+      CheckBoxList* filterStatusList;
 
-      UploadsModel uploadsModel;
-      UploadsDelegate uploadsDelegate;
+      CoreConnection& coreConnection;
+
+      CheckBoxModel<DownloadFilterStatus> checkBoxModel;
+      DownloadsModel downloadsModel;
+      DownloadsDelegate downloadsDelegate;
    };
 }
 

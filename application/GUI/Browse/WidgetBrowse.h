@@ -16,45 +16,52 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef GUI_WIDGETCHAT_H
-#define GUI_WIDGETCHAT_H
+#ifndef GUI_WIDGETBROWSE_H
+#define GUI_WIDGETBROWSE_H
 
 #include <QWidget>
+#include <QAbstractButton>
 #include <QStyledItemDelegate>
 
-#include <CoreConnection.h>
-#include <PeerListModel.h>
-#include <ChatModel.h>
+#include <Common/Hash.h>
+
+#include <PeerList/PeerListModel.h>
+#include <CoreConnection/CoreConnection.h>
+#include <Browse/BrowseModel.h>
 
 namespace Ui {
-  class WidgetChat;
+   class WidgetBrowse;
 }
 
 namespace GUI
 {
-   class ChatDelegate : public QStyledItemDelegate
+   class BrowseDelegate : public QStyledItemDelegate
    {
    public:
       void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const;
    };
 
-   class WidgetChat : public QWidget
+   class WidgetBrowse : public QWidget
    {
       Q_OBJECT
    public:
-      explicit WidgetChat(CoreConnection& coreConnection, PeerListModel& peerListModel, QWidget *parent = 0);
-      ~WidgetChat();
+      explicit WidgetBrowse(CoreConnection& coreConnection, PeerListModel& peerListModel, const Common::Hash& peerID, QWidget *parent = 0);
+      ~WidgetBrowse();
+      Common::Hash getPeerID() const;
 
    private slots:
-      void sendMessage();
-      void newRows();
+      void displayContextMenuPeers(const QPoint& point);
+      void download();
 
    private:
-      Ui::WidgetChat *ui;
+      Ui::WidgetBrowse* ui;
 
       CoreConnection& coreConnection;
-      ChatModel chatModel;
-      ChatDelegate chatDelegate;
+      PeerListModel& peerListModel;
+      const Common::Hash peerID;
+
+      BrowseModel browseModel;
+      BrowseDelegate browseDelegate;
    };
 }
 #endif

@@ -23,8 +23,9 @@
 #include <QVariant>
 
 #include <Common/ProtoHelper.h>
+#include <Common/Hash.h>
 
-#include <CoreConnection.h>
+#include <CoreConnection/CoreConnection.h>
 
 namespace GUI
 {

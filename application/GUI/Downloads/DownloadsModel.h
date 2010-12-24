@@ -24,10 +24,10 @@
 
 #include <Protos/gui_protocol.pb.h>
 
-#include <CoreConnection.h>
-#include <PeerListModel.h>
-#include <DownloadFilterStatus.h>
 #include <IFilter.h>
+#include <CoreConnection/CoreConnection.h>
+#include <PeerList/PeerListModel.h>
+#include <Downloads/DownloadFilterStatus.h>
 
 namespace GUI
 {
@@ -75,6 +75,7 @@ namespace GUI
    bool operator==(const Protos::GUI::State_Download& d1, const Protos::GUI::State_Download& d2);
    bool operator!=(const Protos::GUI::State_Download& d1, const Protos::GUI::State_Download& d2);
 }
+
 Q_DECLARE_METATYPE(GUI::Progress)
 
 #endif

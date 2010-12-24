@@ -16,55 +16,42 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef GUI_WIDGETDOWNLOADS_H
-#define GUI_WIDGETDOWNLOADS_H
+#ifndef GUI_WIDGETUPLOADS_H
+#define GUI_WIDGETUPLOADS_H
 
 #include <QWidget>
-#include <QPoint>
 #include <QStyledItemDelegate>
 
-#include <DownloadsModel.h>
-#include <PeerListModel.h>
-#include <CoreConnection.h>
-#include <CheckBoxList.h>
-#include <CheckBoxModel.h>
-#include <DownloadFilterStatus.h>
+#include <Uploads/UploadsModel.h>
+#include <PeerList/PeerListModel.h>
+#include <CoreConnection/CoreConnection.h>
 
 namespace Ui {
-   class WidgetDownloads;
+   class WidgetUploads;
 }
 
 namespace GUI
 {
-   class DownloadsDelegate : public QStyledItemDelegate
+   class UploadsDelegate : public QStyledItemDelegate
    {
    public:
       void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const;
       QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const;
+      void drawFocus(QPainter*, const QStyleOptionViewItem&, const QRect&) const {}
    };
 
-   class WidgetDownloads : public QWidget
+   class WidgetUploads : public QWidget
    {
       Q_OBJECT
    public:
-      explicit WidgetDownloads(CoreConnection& coreConnection, PeerListModel& peerListModel, QWidget *parent = 0);
-      ~WidgetDownloads();
-
-   private slots:
-      void displayContextMenuDownloads(const QPoint& point);
-      void removeSelectedEntries();
-      void removeCompletedFiles();
-      void filterChanged();
+      explicit WidgetUploads(CoreConnection& coreConnection, PeerListModel& peerListModel, QWidget *parent = 0);
+      ~WidgetUploads();
 
    private:
-      Ui::WidgetDownloads *ui;
-      CheckBoxList* filterStatusList;
+      Ui::WidgetUploads* ui;
 
-      CoreConnection& coreConnection;
-
-      CheckBoxModel<DownloadFilterStatus> checkBoxModel;
-      DownloadsModel downloadsModel;
-      DownloadsDelegate downloadsDelegate;
+      UploadsModel uploadsModel;
+      UploadsDelegate uploadsDelegate;
    };
 }
 
