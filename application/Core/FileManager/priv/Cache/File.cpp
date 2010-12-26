@@ -82,7 +82,7 @@ File::File(
 
    this->setHashes(hashes);
 
-   this->dir->addFile(this);
+   this->dir->add(this);
 }
 
 File::~File()
@@ -213,6 +213,12 @@ QString File::getFullPath() const
 Directory* File::getRoot() const
 {
    return this->dir->getRoot();
+}
+
+void File::changeName(const QString& newName)
+{
+   Entry::changeName(newName);
+   this->dir->fileNameChanged(this);
 }
 
 QDateTime File::getDateLastModified() const
