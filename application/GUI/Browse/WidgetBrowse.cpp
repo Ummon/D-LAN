@@ -63,6 +63,11 @@ Common::Hash WidgetBrowse::getPeerID() const
    return this->peerID;
 }
 
+void WidgetBrowse::refresh()
+{
+   this->browseModel.refresh();
+}
+
 void WidgetBrowse::displayContextMenuPeers(const QPoint& point)
 {
    if (this->coreConnection.getOurID() == this->peerID)
