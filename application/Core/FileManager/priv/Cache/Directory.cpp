@@ -39,7 +39,7 @@ Directory::Directory(Directory* parent, const QString& name, bool createPhysical
       if (!QDir(this->parent->getFullPath()).mkdir(this->name))
          L_ERRO(QString("Unable to create the directory : %1").arg(this->getFullPath()));
 
-   this->parent->append(this);
+   this->parent->add(this);
 }
 
 /**
@@ -199,6 +199,13 @@ Directory* Directory::getRoot() const
    return const_cast<Directory*>(this);
 }
 
+void Directory::changeName(const QString& newName)
+{
+   Entry::changeName(newName);
+   if (this->parent)
+      this->parent->subdirNameChanged(this);
+}
+
 bool Directory::isAChildOf(const Directory* dir) const
 {
    if (this->parent)
@@ -296,13 +303,10 @@ File* Directory::getFile(const QString& name) const
 /**
   * Only called by the class File.
   */
-void Directory::addFile(File* file)
+void Directory::add(File* file)
 {
    QMutexLocker locker(&this->mutex);
-   if (this->files.contains(file))
-      return;
-   this->files << file;
-
+   sortedAdd(file, this->files);
    (*this) += file->getSize();
 }
 
@@ -327,8 +331,8 @@ void Directory::stealContent(Directory* dir)
 
    // L_DEBU(QString("this = %1, dir = %2").arg(this->getFullPath()).arg(dir->getFullPath()));
 
-   this->subDirs.append(dir->subDirs);
-   this->files.append(dir->files);
+   this->add(dir->subDirs);
+   this->add(dir->files);
 
    foreach (Directory* d, dir->subDirs)
    {
@@ -344,10 +348,40 @@ void Directory::stealContent(Directory* dir)
    dir->files.clear();
 }
 
-void Directory::append(Directory* dir)
+void Directory::add(Directory* dir)
 {
    QMutexLocker locker(&this->mutex);
-   this->subDirs << dir;
+   sortedAdd(dir, this->subDirs);
+}
+
+/**
+  *
+  */
+void Directory::subdirNameChanged(Directory* dir)
+{
+   QMutexLocker locker(&this->mutex);
+   this->subDirs.removeOne(dir);
+   sortedAdd(dir, this->subDirs);
+}
+
+/**
+  * Must be called only by a file.
+  */
+void Directory::fileNameChanged(File* file)
+{
+   QMutexLocker locker(&this->mutex);
+   this->files.removeOne(file);
+   sortedAdd(file, this->files);
+}
+
+void Directory::add(QList<Directory*> dirs)
+{
+   sortedAdd(dirs, this->subDirs);
+}
+
+void Directory::add(QList<File*> files)
+{
+   sortedAdd(files, this->files);
 }
 
 /**
