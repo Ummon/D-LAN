@@ -146,6 +146,66 @@ Protos::Common::Entry BrowseModel::getEntry(const QModelIndex& index)
    return node->getEntry();
 }
 
+void BrowseModel::refresh()
+{
+   Protos::Common::Entries entries;
+
+   Node::NodeBreadthIterator i(this->root);
+   Node* currentNode;
+   while ((currentNode = i.next()) && currentNode->getNbChildren() > 0)
+      entries.add_entry()->CopyFrom(currentNode->getEntry());
+
+   this->browseResult = this->coreConnection.browse(this->peerID, entries, true);
+   connect(this->browseResult.data(), SIGNAL(result(const google::protobuf::RepeatedPtrField<Protos::Common::Entries>&)), this, SLOT(resultRefresh(const google::protobuf::RepeatedPtrField<Protos::Common::Entries>&)));
+   connect(this->browseResult.data(), SIGNAL(timeout()), this, SLOT(resultTimeout()));
+   this->browseResult->start();
+
+   /*QList<Node*> nodesToVisit;
+   nodesToVisit << this->root;
+
+   while (!nodesToVisit.isEmpty())
+   {
+      Node* currentNode = nodesToVisit.takeFirst();
+      for (QListIterator<Node*> i(currentNode->children); i.hasNext();)
+      {
+         Node* child = i.next();
+         if (child->entry.type() == Protos::Common::Entry_Type_DIR)
+            nodesToVisit << child;
+      }
+      currentNode
+   }*/
+
+   /*this->browseResult = node ? this->coreConnection.browse(this->peerID, node->getEntry()) : this->coreConnection.browse(this->peerID);
+   connect(this->browseResult.data(), SIGNAL(result(const google::protobuf::RepeatedPtrField<Protos::Common::Entries>&)), this, SLOT(result(const google::protobuf::RepeatedPtrField<Protos::Common::Entries>&)));
+   connect(this->browseResult.data(), SIGNAL(timeout()), this, SLOT(resultTimeout()));
+   this->browseResult->start();*/
+}
+
+void BrowseModel::resultRefresh(const google::protobuf::RepeatedPtrField<Protos::Common::Entries>& entries)
+{
+   if (entries.size() == 0)
+      return;
+
+   QList<Node*> nodesToDelete;
+
+   // Synchronize the root.
+   nodesToDelete << this->synchronize(this->root, entries.Get(entries.size() - 1));
+
+   // Synchronize the content of all directories.
+   Node::NodeBreadthIterator i(this->root);
+   int j = -1;
+   Node* currentNode;
+   while ((currentNode = i.next()) && currentNode->getNbChildren() > 0 && ++j < entries.size() - 1)
+      nodesToDelete << this->synchronize(currentNode, entries.Get(j));
+
+   QListIterator<Node*> k(nodesToDelete);
+   k.toBack();
+   while (k.hasPrevious())
+   {
+      delete k.previous();
+   }
+}
+
 void BrowseModel::result(const google::protobuf::RepeatedPtrField<Protos::Common::Entries>& entries)
 {
    if (entries.size() == 0)
@@ -187,6 +247,72 @@ void BrowseModel::loadChildren(const QPersistentModelIndex &index)
 {
    this->currentBrowseIndex = index;
    this->browse(this->peerID, static_cast<Node*>(index.internalPointer()));
+}
+
+
+/**
+  * Add the new elements in 'entries' and return the entries in 'node->children' which dont exist in 'entries'.
+  * 'entries' and 'node->children' must be sorted in the same way.
+  */
+QList<BrowseModel::Node*> BrowseModel::synchronize(BrowseModel::Node* node, const Protos::Common::Entries& entries)
+{
+   QModelIndex parentIndex = this->createIndex(node->getRow(), 0, node);
+
+   QList<Node*> nodesToDelete;
+
+   int i = 0;
+   int j = 0;
+
+   while (i < node->getNbChildren() || j < entries.entry_size())
+   {
+      if (i >= node->getNbChildren() || node->getChild(i)->getEntry() > entries.entry(j)) // New entry.
+      {
+         this->beginInsertRows(parentIndex, j, j);
+         node->insertChild(entries.entry(j++), ++i);
+         this->endInsertRows();
+      }
+      else if (j >= entries.entry_size() || node->getChild(i)->getEntry() < entries.entry(j)) // Entry deleted.
+      {
+         nodesToDelete << node->getChild(i++);
+      }
+      else // Entries are equal.
+      {
+         i++;
+         j++;
+      }
+   }
+
+   return nodesToDelete;
+}
+
+/**
+  * @class NodeBreadthIterator
+  * To iterate into a node structure.
+  */
+
+BrowseModel::Node::NodeBreadthIterator::NodeBreadthIterator(BrowseModel::Node* node)
+{
+   this->readChildren(node);
+}
+
+BrowseModel::Node* BrowseModel::Node::NodeBreadthIterator::next()
+{
+   if (this->nextNodes.isEmpty())
+      return 0;
+
+   BrowseModel::Node* node = this->nextNodes.takeFirst();
+   this->readChildren(node);
+   return node;
+}
+
+void BrowseModel::Node::NodeBreadthIterator::readChildren(Node* parentNode)
+{
+   for (QListIterator<BrowseModel::Node*> i(parentNode->children); i.hasNext();)
+   {
+      BrowseModel::Node* child = i.next();
+      if (child->entry.type() == Protos::Common::Entry_Type_DIR)
+         this->nextNodes << child;
+   }
 }
 
 /**
@@ -242,6 +368,11 @@ void BrowseModel::Node::insertChildren(const Protos::Common::Entries& entries)
       this->newNode(entries.entry(i));
 }
 
+void BrowseModel::Node::insertChild(const Protos::Common::Entry& entry, int pos)
+{
+   this->newNode(entry, pos);
+}
+
 bool BrowseModel::Node::hasUnloadedChildren()
 {
    return this->entry.type() == Protos::Common::Entry_Type_DIR && this->children.isEmpty() && !this->entry.is_empty();
@@ -279,5 +410,29 @@ BrowseModel::Node* BrowseModel::Node::newNode(const Protos::Common::Entry& entry
    return this->children.last();
 }
 
+BrowseModel::Node* BrowseModel::Node::newNode(const Protos::Common::Entry& entry, int pos)
+{
+   if (pos > this->children.size())
+      pos = this->children.size();
 
+   Node* newNode = new Node(entry, this);
+   this->children.insert(pos, newNode);
+   return newNode;
+}
+
+bool GUI::operator>(const Protos::Common::Entry& e1, const Protos::Common::Entry& e2)
+{
+   if (e1.type() != e2.type() || e1.size() != e2.size())
+      return false;
+
+   return Common::ProtoHelper::getStr(e1, &Protos::Common::Entry::name) > Common::ProtoHelper::getStr(e2, &Protos::Common::Entry::name);
+}
+
+bool GUI::operator<(const Protos::Common::Entry& e1, const Protos::Common::Entry& e2)
+{
+   if (e1.type() != e2.type() || e1.size() != e2.size())
+      return false;
+
+   return Common::ProtoHelper::getStr(e1, &Protos::Common::Entry::name) < Common::ProtoHelper::getStr(e2, &Protos::Common::Entry::name);
+}
 

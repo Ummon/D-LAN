@@ -377,7 +377,7 @@ void MainWindow::addWidgetBrowse(const Common::Hash& peerID)
    connect(closeButton, SIGNAL(clicked(QWidget*)), this, SLOT(removeWidget(QWidget*)));
 
    TabRefreshButton* refreshButton = new TabRefreshButton(buttons);
-//   connect(refreshButton, SIGNAL(clicked()), widgetBrowse, SLOT()); // TODO
+   connect(refreshButton, SIGNAL(clicked()), widgetBrowse, SLOT(refresh()));
 
    QHBoxLayout* layButtons = new QHBoxLayout(buttons);
    layButtons->setContentsMargins(0, 0, 0, 0);

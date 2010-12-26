@@ -22,6 +22,8 @@
 #include <QAbstractItemModel>
 #include <QVariant>
 
+#include <Protos/common.pb.h>
+
 #include <Common/ProtoHelper.h>
 #include <Common/Hash.h>
 
@@ -49,25 +51,42 @@ namespace GUI
 
       virtual Protos::Common::Entry getEntry(const QModelIndex& index);
 
+      void refresh();
+
    protected slots:
+      virtual void resultRefresh(const google::protobuf::RepeatedPtrField<Protos::Common::Entries>& entries);
       virtual void result(const google::protobuf::RepeatedPtrField<Protos::Common::Entries>& entries);
       virtual void resultTimeout();
 
    protected:
       virtual void browse(const Common::Hash& peerID, Node* node = 0);
       virtual void loadChildren(const QPersistentModelIndex &index);
+      virtual QList<Node*> synchronize(BrowseModel::Node* node, const Protos::Common::Entries& entries);
 
       class Node
       {
       public:
+         class NodeBreadthIterator
+         {
+         public:
+            NodeBreadthIterator(Node* node);
+            Node* next();
+
+         private:
+            void readChildren(Node* parentNode);
+
+            QList<Node*> nextNodes;
+         };
+
          Node();
          Node(const Protos::Common::Entry& entry, Node* parent);
-         virtual ~Node();
+         ~Node();
 
          virtual Node* getParent();
          virtual int getNbChildren() const;
          virtual Node* getChild(int row) const;
          virtual void insertChildren(const Protos::Common::Entries& entries);
+         virtual void insertChild(const Protos::Common::Entry& entry, int pos);
          virtual bool hasUnloadedChildren();
 
          virtual int getRow() const;
@@ -76,6 +95,7 @@ namespace GUI
 
       protected:
          virtual Node* newNode(const Protos::Common::Entry& entry);
+         virtual Node* newNode(const Protos::Common::Entry& entry, int pos);
 
          Protos::Common::Entry entry;
          Node* parent;
@@ -90,6 +110,9 @@ namespace GUI
 
       Node* root;
    };
+
+   bool operator>(const Protos::Common::Entry& e1, const Protos::Common::Entry& e2);
+   bool operator<(const Protos::Common::Entry& e1, const Protos::Common::Entry& e2);
 }
 
 #endif

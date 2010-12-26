@@ -49,6 +49,9 @@ namespace GUI
       ~WidgetBrowse();
       Common::Hash getPeerID() const;
 
+   public slots:
+      void refresh();
+
    private slots:
       void displayContextMenuPeers(const QPoint& point);
       void download();
