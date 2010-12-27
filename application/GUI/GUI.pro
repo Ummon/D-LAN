@@ -27,69 +27,77 @@ SOURCES += main.cpp\
         MainWindow.cpp \
     ../Protos/gui_protocol.pb.cc \
     ../Protos/common.pb.cc \
-    PeerListModel.cpp \
-    WidgetChat.cpp \
-    CoreConnection.cpp \
     ../Protos/gui_settings.pb.cc \
     ../Protos/core_settings.pb.cc \
-    ChatModel.cpp \
-    WidgetSettings.cpp \
-    WidgetBrowse.cpp \
-    WidgetSearch.cpp \
-    BrowseModel.cpp \
     StatusBar.cpp \
-    SearchModel.cpp \
-    WidgetDownloads.cpp \
-    DownloadsModel.cpp \
-    WidgetUploads.cpp \
-    UploadsModel.cpp \
     DialogAbout.cpp \
-    LogModel.cpp \
     Log.cpp \
     AybabtuGUI.cpp \
     CheckBoxList.cpp \
     CoreController.cpp \
-    TabButtons.cpp
+    TabButtons.cpp \
+    Browse/WidgetBrowse.cpp \
+    Browse/BrowseModel.cpp \
+    Chat/WidgetChat.cpp \
+    Chat/ChatModel.cpp \
+    CoreConnection/CoreConnection.cpp \
+    Downloads/WidgetDownloads.cpp \
+    Downloads/DownloadsModel.cpp \
+    Log/LogModel.cpp \
+    PeerList/PeerListModel.cpp \
+    Search/WidgetSearch.cpp \
+    Search/SearchModel.cpp \
+    Settings/WidgetSettings.cpp \
+    Uploads/WidgetUploads.cpp \
+    Uploads/UploadsModel.cpp \
+    CoreConnection/BrowseResult.cpp \
+    CoreConnection/SearchResult.cpp \
+    Settings/DirListModel.cpp
 
 HEADERS  += MainWindow.h \
     ../Protos/gui_protocol.pb.h \
     ../Protos/common.pb.h \
-    PeerListModel.h \
-    WidgetChat.h \
-    CoreConnection.h \
     ../Protos/gui_settings.pb.h \
     ../Protos/core_settings.pb.h \
-    ChatModel.h \
-    WidgetSettings.h \
-    WidgetBrowse.h \
-    WidgetSearch.h \
-    BrowseModel.h \
     StatusBar.h \
-    SearchModel.h \
     Log.h \
-    WidgetDownloads.h \
-    DownloadsModel.h \
-    UploadsModel.h \
-    WidgetUploads.h \
     DialogAbout.h \
-    LogModel.h \
     AybabtuGUI.h \
     CheckBoxList.h \
-    DownloadFilterStatus.h \
     CheckBoxModel.h \
     IFilter.h \
     CoreController.h \
-    TabButtons.h
+    TabButtons.h \
+    Browse/WidgetBrowse.h \
+    Browse/BrowseModel.h \
+    Chat/WidgetChat.h \
+    Chat/ChatModel.h \
+    CoreConnection/CoreConnection.h \
+    Downloads/WidgetDownloads.h \
+    Downloads/DownloadsModel.h \
+    Downloads/DownloadFilterStatus.h \
+    Log/LogModel.h \
+    PeerList/PeerListModel.h \
+    Search/WidgetSearch.h \
+    Search/SearchModel.h \
+    Settings/WidgetSettings.h \
+    Uploads/WidgetUploads.h \
+    Uploads/UploadsModel.h \
+    CoreConnection/IBrowseResult.h \
+    CoreConnection/ISearchResult.h \
+    CoreConnection/BrowseResult.h \
+    CoreConnection/SearchResult.h \
+    Settings/DirListModel.h
 
 FORMS    += MainWindow.ui \
-    WidgetChat.ui \
-    WidgetSettings.ui \
-    WidgetBrowse.ui \
-    WidgetSearch.ui \
     StatusBar.ui \
-    WidgetDownloads.ui \
-    WidgetUploads.ui \
-    DialogAbout.ui
+    DialogAbout.ui \
+    Browse/WidgetBrowse.ui \
+    Chat/WidgetChat.ui \
+    Downloads/WidgetDownloads.ui \
+    Search/WidgetSearch.ui \
+    Settings/WidgetSettings.ui \
+    Uploads/WidgetUploads.ui
 
 RESOURCES += \
     ressources.qrc

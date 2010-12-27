@@ -23,7 +23,7 @@
 
 #include <Protos/gui_protocol.pb.h>
 
-#include <CoreConnection.h>
+#include <CoreConnection/CoreConnection.h>
 
 namespace Ui {
    class StatusBar;

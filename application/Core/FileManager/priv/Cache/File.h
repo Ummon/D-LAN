@@ -67,6 +67,7 @@ namespace FM
       QString getPath() const;
       QString getFullPath() const;
       Directory* getRoot() const;
+      void changeName(const QString& newName);
       QDateTime getDateLastModified() const;
 
       void newDataWriterCreated();

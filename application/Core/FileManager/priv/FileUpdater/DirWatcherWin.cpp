@@ -119,7 +119,7 @@ const QList<WatcherEvent> DirWatcherWin::waitEvent(QList<WaitCondition*> ws)
 
 const QList<WatcherEvent> DirWatcherWin::waitEvent(int timeout, QList<WaitCondition*> ws)
 {
-   this->mutex.lock();
+   QMutexLocker locker(&this->mutex);
 
    if (ws.size() > MAX_WAIT_CONDITION)
    {
@@ -160,11 +160,11 @@ const QList<WatcherEvent> DirWatcherWin::waitEvent(int timeout, QList<WaitCondit
       eventsArray[i + numberOfDirs] = hdl;
    }
 
-   this->mutex.unlock();
+   locker.unlock();
 
    DWORD waitStatus = WaitForMultipleObjects(numberOfHandles, eventsArray, FALSE, timeout == -1 ? INFINITE : timeout);
 
-   QMutexLocker locker(&this->mutex);
+   locker.relock();
 
    // The cause of the wake up comes from a watched directory.
    if (!dirsCopy.empty() && waitStatus >= WAIT_OBJECT_0 && waitStatus <= WAIT_OBJECT_0 + (DWORD)numberOfDirs - 1)

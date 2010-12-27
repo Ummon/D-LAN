@@ -30,7 +30,7 @@ namespace GUI
       static void StopCore();
 
    private:
-      static QProcess coreProcess; ///< Only used when unable to use service system.
+      static QProcess coreProcess; ///< Only used when unable to lauche the core as a service.
    };
 }
 
