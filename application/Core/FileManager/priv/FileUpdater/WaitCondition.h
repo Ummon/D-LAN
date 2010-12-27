@@ -57,7 +57,7 @@ namespace FM
         * For example, on Windows it will return a HANDLE on the event.
         * It can then be used with primitive like 'WaitForMultipleObjects'.
         */
-      virtual void* getHandle() = 0;
+      //virtual T getHandle() = 0;
    };
 }
 #endif

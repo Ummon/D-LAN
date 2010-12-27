@@ -25,39 +25,54 @@
 #include <priv/FileUpdater/WaitConditionLinux.h>
 using namespace FM;
 
+//#include <sys/select.h>
+
 WaitConditionLinux::WaitConditionLinux()
    : released(false)
 {
+   int fds[2];
+   if (pipe(fds) == -1 ) {
+       /* an error occurred */
+   }
+   this->fd = fds[1];
+   close(fds[2]);
 }
 
 WaitConditionLinux::~WaitConditionLinux()
 {
+   close(this->fd);
 }
 
 void WaitConditionLinux::release()
 {
-   this->mutex.lock();
-   this->released = true;
-   this->waitCondition.wakeOne();
-   this->mutex.unlock();      
+   char b = '0';
+   write(this->fd, &b, sizeof(b));
 }
 
 bool WaitConditionLinux::wait(int timeout)
 {
-   bool timeouted = false;
+   struct timeval time;
+   fd_set fds;
 
-   this->mutex.lock();
-   if (!this->released)
-      timeouted = !this->waitCondition.wait(&this->mutex, timeout == -1 ? ULONG_MAX : timeout);
+   /* Convert timeout in timeval */
+   time.tv_sec = timeout / 1000;
+   time.tv_usec = (timeout % 1000) * 1000;
 
-   this->released = false;
-   this->mutex.unlock();
-   return timeouted;
+   /* Zero-out the fd_set. */
+   FD_ZERO(&fds);
+
+   /* Add the inotify fd to the fd_set. */
+   FD_SET(this->fd, &fds);
+
+   if(select(this->fd + 1, &fds, NULL, NULL, (timeout==-1 ? 0 : &time)))
+      return false;
+
+   return true;
 }
 
-void* WaitConditionLinux::getHandle()
+int WaitConditionLinux::getHandle()
 {
-   return 0;
+   return fd;
 }
 
 #endif

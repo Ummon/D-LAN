@@ -42,9 +42,10 @@ namespace FM
 
       void release();
       bool wait(int timeout = -1);
-      void* getHandle();
+      int getHandle();
 
    private:
+      int fd;
       bool released;
       QMutex mutex;
       QWaitCondition waitCondition;

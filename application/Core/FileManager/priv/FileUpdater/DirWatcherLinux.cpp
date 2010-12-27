@@ -6,27 +6,22 @@
 using namespace FM;
 
 #include <QMutexLocker>
+#include "WaitConditionLinux.h"
 
 #include <sys/select.h>
 #include <sys/inotify.h>
 #include <errno.h>
 
-/* Size of the event structure, not counting name. */
-#define EVENT_SIZE (sizeof (struct inotify_event))
-
-/* Reasonable guess as to size of 1024 events. */
-#define BUF_LEN (1024 * (EVENT_SIZE + 16))
-
-/* Inotify events catched for subdirectories. */
-#define EVENTS_OBS IN_MOVE|IN_DELETE|IN_CREATE|IN_DELETE
-
-/* Inotify events catched for root directories. */
-#define ROOT_EVENTS_OBS EVENTS_OBS|IN_MOVE_SELF|IN_DELETE_SELF
-
 /**
  * @class DirWatcherLinux
  * Implementation of 'DirWatcher' for the linux platform with inotify.
  */
+
+const int DirWatcherLinux::EVENT_SIZE = (sizeof (struct inotify_event));
+const size_t DirWatcherLinux::BUF_LEN = (1024 * (EVENT_SIZE + 16));
+const uint32_t DirWatcherLinux::EVENTS_OBS = IN_MOVE|IN_DELETE|IN_CREATE|IN_CLOSE_WRITE;
+const uint32_t DirWatcherLinux::ROOT_EVENTS_OBS = EVENTS_OBS|IN_MOVE_SELF|IN_DELETE_SELF;
+
 
 /**
  * Constructor.
@@ -38,7 +33,7 @@ DirWatcherLinux::DirWatcherLinux()
    initialized = true;
    fileDescriptor = inotify_init();
    if (fileDescriptor < 0) {
-      L_WARN(QString("Unable to initialize inotify, DirWatcher not use."));
+      L_WARN(QString("Unable to initialize inotify, DirWatcher not used."));
       initialized = false;
    }
 }
@@ -46,7 +41,7 @@ DirWatcherLinux::DirWatcherLinux()
 /**
  * Destructor.
  */
-DirWatcherLinux::~DirWatcherLinux()
+DirWatcherLinux::~DirWatcherLinux ()
 {
    QMutexLocker locker(&this->mutex);
 
@@ -122,6 +117,7 @@ const QList<WatcherEvent> DirWatcherLinux::waitEvent(int timeout, QList<WaitCond
    this->mutex.lock();
 
    fd_set fds;
+   int fd_max;
    char buf[BUF_LEN];
    struct timeval time;
 
@@ -135,10 +131,18 @@ const QList<WatcherEvent> DirWatcherLinux::waitEvent(int timeout, QList<WaitCond
       FD_ZERO(&fds);
 
       /* Add the inotify fd to the fd_set. */
-      FD_SET(fileDescriptor, &fds);
+      FD_SET(this->fileDescriptor, &fds);
+      fd_max = this->fileDescriptor;
+
+      for (int i = 0; i < ws.size(); i++)
+      {
+         int ws_fd = ((WaitConditionLinux*)ws[i])->getHandle();
+         FD_SET(ws_fd, &fds);
+         if (ws_fd > fd_max) fd_max = ws_fd;
+      }
 
       this->mutex.unlock();
-      int sel = select(fileDescriptor + 1, &fds, NULL, NULL, (timeout==-1 ? 0 : &time));
+      int sel = select(fd_max + 1, &fds, NULL, NULL, (timeout==-1 ? 0 : &time));
       this->mutex.lock();
       if (sel < 0)
       {
@@ -150,6 +154,12 @@ const QList<WatcherEvent> DirWatcherLinux::waitEvent(int timeout, QList<WaitCond
          QList<WatcherEvent> events;
          events.append(WatcherEvent(WatcherEvent::TIMEOUT));
          return events;
+      }
+
+      for (int i = 0; i < ws.size(); i++)
+      {
+         if(FD_ISSET(((WaitConditionLinux*)ws[i])->getHandle(), &fds))
+            return QList<WatcherEvent>();
       }
 
       int len = read(fileDescriptor, buf, BUF_LEN);
