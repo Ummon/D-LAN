@@ -29,10 +29,6 @@ LIBS += -L../PeerManager/output/$$FOLDER \
      -lPeerManager
 POST_TARGETDEPS += ../PeerManager/output/$$FOLDER/libPeerManager.a
 
-
-DESTDIR = "output/debug"
-MOC_DIR = ".tmp/debug"
-OBJECTS_DIR = ".tmp/debug"
 DEFINES += UPLOADMANAGER_LIBRARY
 SOURCES += priv/UploadManager.cpp \
     priv/Uploader.cpp \
