@@ -23,6 +23,13 @@ using namespace DM;
 
 #include <priv/Log.h>
 
+/**
+  * @class DirDownload
+  * A DirDownload will try, when the method 'retrieveEntries' is called, to retreive all the sub entries of a remote directory.
+  * The sub entries can be a mix of files and directories.
+  * Once the content is know, the signal 'newEntries' is emmited.
+  */
+
 DirDownload::DirDownload(QSharedPointer<FM::IFileManager> fileManager, QSharedPointer<PM::IPeerManager> peerManager, Common::Hash peerSourceID, const Protos::Common::Entry& entry)
    : Download(fileManager, peerManager, peerSourceID, entry), retrieveEntriesOK(false)
 {
@@ -77,11 +84,12 @@ void DirDownload::result(const Protos::Core::GetEntriesResult& entries)
 {
    this->getEntriesResult.clear(); // Is the 'IGetEntriesResult' object is deleted? Must we disconnect the signal? Answer : No the signal is automatically disconnected.
 
+   // We asked for one directory, we shouldn't have zero result.
    if (entries.entries_size() == 0)
       return;
 
    // We need to specify the shared directory for each entry.
-   Protos::Common::Entries entriesCopy(entries.entries(0));
+   Protos::Common::Entries entriesCopy(entries.entries(0)); // We take the first one which should be the only set of entries.
    for (int i = 0; i < entriesCopy.entry_size(); i++)
       entriesCopy.mutable_entry(i)->mutable_shared_dir()->CopyFrom(this->entry.shared_dir());
 

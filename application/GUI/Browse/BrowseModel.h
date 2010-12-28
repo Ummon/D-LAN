@@ -92,10 +92,12 @@ namespace GUI
          virtual int getRow() const;
          virtual QVariant getData(int column) const;
          virtual const Protos::Common::Entry& getEntry() const;
+         virtual void setEntry(const Protos::Common::Entry& entry);
 
       protected:
          virtual Node* newNode(const Protos::Common::Entry& entry);
          virtual Node* newNode(const Protos::Common::Entry& entry, int pos);
+         virtual void copySharedDirFromParent();
 
          Protos::Common::Entry entry;
          Node* parent;
@@ -113,6 +115,8 @@ namespace GUI
 
    bool operator>(const Protos::Common::Entry& e1, const Protos::Common::Entry& e2);
    bool operator<(const Protos::Common::Entry& e1, const Protos::Common::Entry& e2);
+   bool operator==(const Protos::Common::Entry& e1, const Protos::Common::Entry& e2);
+   bool operator!=(const Protos::Common::Entry& e1, const Protos::Common::Entry& e2);
 }
 
 #endif
