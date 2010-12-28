@@ -44,7 +44,7 @@ namespace Common
       static qint64 availableDiskSpace(const QString& path);
       static bool rename(const QString& existingFile, const QString& newFile);
       static bool createApplicationFolder();
-      static void createFile(const QString& path);
+      static bool createFile(const QString& path);
 
       static bool recursiveDeleteDirectoryContent(const QString& dir);
       static bool recursiveDeleteDirectory(const QString& dir);

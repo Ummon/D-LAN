@@ -162,18 +162,25 @@ bool Global::createApplicationFolder()
 /**
   * Create a file containing its name. Parents directories are created if needed.
   * For testing purpose.
+  * @return true if the file has been created successfuly or false if an error has occured.
   */
-void Global::createFile(const QString& path)
+bool Global::createFile(const QString& path)
 {
    QFileInfo fileInfo(path);
-   QDir::current().mkpath(fileInfo.path());
+   if (!QDir::current().mkpath(fileInfo.path()))
+      return false;
+
    if (fileInfo.fileName().isEmpty())
-      return;
+      return false;
 
    QFile file(path);
-   file.open(QIODevice::WriteOnly);
+   if (!file.open(QIODevice::WriteOnly))
+      return false;
+
    QTextStream stream(&file);
    stream << fileInfo.fileName();
+
+   return true;
 }
 
 /**

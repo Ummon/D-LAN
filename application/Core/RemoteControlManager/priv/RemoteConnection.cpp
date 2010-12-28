@@ -180,7 +180,8 @@ void RemoteConnection::dataReceived()
 
       if (!this->currentHeader.isNull() && this->socket->bytesAvailable() >= this->currentHeader.size)
       {
-         this->readMessage();
+         if (!this->readMessage())
+            L_DEBU(QString("Cannot read the message body : %1").arg(this->currentHeader.toStr()));
          this->currentHeader.setNull();
       }
       else

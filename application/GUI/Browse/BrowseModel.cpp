@@ -152,33 +152,13 @@ void BrowseModel::refresh()
 
    Node::NodeBreadthIterator i(this->root);
    Node* currentNode;
-   while ((currentNode = i.next()) && currentNode->getNbChildren() > 0)
+   while (currentNode = i.next())
       entries.add_entry()->CopyFrom(currentNode->getEntry());
 
    this->browseResult = this->coreConnection.browse(this->peerID, entries, true);
    connect(this->browseResult.data(), SIGNAL(result(const google::protobuf::RepeatedPtrField<Protos::Common::Entries>&)), this, SLOT(resultRefresh(const google::protobuf::RepeatedPtrField<Protos::Common::Entries>&)));
    connect(this->browseResult.data(), SIGNAL(timeout()), this, SLOT(resultTimeout()));
    this->browseResult->start();
-
-   /*QList<Node*> nodesToVisit;
-   nodesToVisit << this->root;
-
-   while (!nodesToVisit.isEmpty())
-   {
-      Node* currentNode = nodesToVisit.takeFirst();
-      for (QListIterator<Node*> i(currentNode->children); i.hasNext();)
-      {
-         Node* child = i.next();
-         if (child->entry.type() == Protos::Common::Entry_Type_DIR)
-            nodesToVisit << child;
-      }
-      currentNode
-   }*/
-
-   /*this->browseResult = node ? this->coreConnection.browse(this->peerID, node->getEntry()) : this->coreConnection.browse(this->peerID);
-   connect(this->browseResult.data(), SIGNAL(result(const google::protobuf::RepeatedPtrField<Protos::Common::Entries>&)), this, SLOT(result(const google::protobuf::RepeatedPtrField<Protos::Common::Entries>&)));
-   connect(this->browseResult.data(), SIGNAL(timeout()), this, SLOT(resultTimeout()));
-   this->browseResult->start();*/
 }
 
 void BrowseModel::resultRefresh(const google::protobuf::RepeatedPtrField<Protos::Common::Entries>& entries)
@@ -195,14 +175,17 @@ void BrowseModel::resultRefresh(const google::protobuf::RepeatedPtrField<Protos:
    Node::NodeBreadthIterator i(this->root);
    int j = -1;
    Node* currentNode;
-   while ((currentNode = i.next()) && currentNode->getNbChildren() > 0 && ++j < entries.size() - 1)
+   while ((currentNode = i.next()) && ++j < entries.size() - 1)
       nodesToDelete << this->synchronize(currentNode, entries.Get(j));
 
    QListIterator<Node*> k(nodesToDelete);
    k.toBack();
    while (k.hasPrevious())
    {
-      delete k.previous();
+      Node* node = k.previous();
+      this->beginRemoveRows(this->createIndex(node->getParent()->getRow(), 0, node->getParent()), node->getRow(), node->getRow()); // Root cannot be deleted, so the node must have a parent.
+      delete node;
+      this->endRemoveRows();
    }
 }
 
@@ -252,7 +235,7 @@ void BrowseModel::loadChildren(const QPersistentModelIndex &index)
 
 /**
   * Add the new elements in 'entries' and return the entries in 'node->children' which dont exist in 'entries'.
-  * 'entries' and 'node->children' must be sorted in the same way.
+  * 'entries' and 'node->children' must be sorted in their name.
   */
 QList<BrowseModel::Node*> BrowseModel::synchronize(BrowseModel::Node* node, const Protos::Common::Entries& entries)
 {
@@ -260,23 +243,29 @@ QList<BrowseModel::Node*> BrowseModel::synchronize(BrowseModel::Node* node, cons
 
    QList<Node*> nodesToDelete;
 
-   int i = 0;
-   int j = 0;
+   int i = 0; // Children of 'node'.
+   int j = 0; // Entries.
 
    while (i < node->getNbChildren() || j < entries.entry_size())
    {
-      if (i >= node->getNbChildren() || node->getChild(i)->getEntry() > entries.entry(j)) // New entry.
+      if (i >= node->getNbChildren() || j < entries.entry_size() && node->getChild(i)->getEntry() > entries.entry(j)) // New entry.
       {
-         this->beginInsertRows(parentIndex, j, j);
-         node->insertChild(entries.entry(j++), ++i);
+         this->beginInsertRows(parentIndex, i, i);
+         node->insertChild(entries.entry(j++), i++);
          this->endInsertRows();
       }
       else if (j >= entries.entry_size() || node->getChild(i)->getEntry() < entries.entry(j)) // Entry deleted.
       {
          nodesToDelete << node->getChild(i++);
       }
-      else // Entries are equal.
+      else // Entry paths are equal.
       {
+         if (node->getChild(i)->getEntry() != entries.entry(j))
+         {
+            node->getChild(i)->setEntry(entries.entry(j));
+            emit dataChanged(parentIndex.child(i, 0), parentIndex.child(i, 1));
+         }
+
          i++;
          j++;
       }
@@ -329,12 +318,7 @@ BrowseModel::Node::Node()
 BrowseModel::Node::Node(const Protos::Common::Entry& entry, Node* parent)
    : entry(entry), parent(parent)
 {
-   // Copy the shared directory ID from the parent.
-   if (!this->entry.has_shared_dir())
-   {
-      if (this->parent->parent)
-         this->entry.mutable_shared_dir()->CopyFrom(this->parent->entry.shared_dir());
-   }
+   this->copySharedDirFromParent();
    if (!this->entry.shared_dir().has_shared_name())
       this->entry.mutable_shared_dir()->set_shared_name(this->entry.name()); // For the root.
 }
@@ -343,6 +327,13 @@ BrowseModel::Node::~Node()
 {
    for (QListIterator<Node*> i(this->children); i.hasNext();)
       delete i.next();
+
+   if (this->parent)
+   {
+      this->parent->children.removeOne(this);
+      if (this->parent->children.isEmpty())
+         this->parent->entry.set_is_empty(true);
+   }
 }
 
 BrowseModel::Node* BrowseModel::Node::getParent()
@@ -404,6 +395,12 @@ const Protos::Common::Entry& BrowseModel::Node::getEntry() const
    return this->entry;
 }
 
+void BrowseModel::Node::setEntry(const Protos::Common::Entry& entry)
+{
+   this->entry.CopyFrom(entry);
+   this->copySharedDirFromParent();
+}
+
 BrowseModel::Node* BrowseModel::Node::newNode(const Protos::Common::Entry& entry)
 {
    this->children << new Node(entry, this);
@@ -420,9 +417,16 @@ BrowseModel::Node* BrowseModel::Node::newNode(const Protos::Common::Entry& entry
    return newNode;
 }
 
+void BrowseModel::Node::copySharedDirFromParent()
+{
+   // Copy the shared directory ID from the parent.
+   if (!this->entry.has_shared_dir() && this->parent && this->parent->parent)
+      this->entry.mutable_shared_dir()->CopyFrom(this->parent->entry.shared_dir());
+}
+
 bool GUI::operator>(const Protos::Common::Entry& e1, const Protos::Common::Entry& e2)
 {
-   if (e1.type() != e2.type() || e1.size() != e2.size())
+   if (e1.type() != e2.type() || e1.size() != e2.size() || e1.is_empty() != e2.is_empty())
       return false;
 
    return Common::ProtoHelper::getStr(e1, &Protos::Common::Entry::name) > Common::ProtoHelper::getStr(e2, &Protos::Common::Entry::name);
@@ -430,9 +434,21 @@ bool GUI::operator>(const Protos::Common::Entry& e1, const Protos::Common::Entry
 
 bool GUI::operator<(const Protos::Common::Entry& e1, const Protos::Common::Entry& e2)
 {
-   if (e1.type() != e2.type() || e1.size() != e2.size())
+   if (e1.type() != e2.type() || e1.size() != e2.size() || e1.is_empty() != e2.is_empty())
       return false;
 
    return Common::ProtoHelper::getStr(e1, &Protos::Common::Entry::name) < Common::ProtoHelper::getStr(e2, &Protos::Common::Entry::name);
 }
 
+bool GUI::operator==(const Protos::Common::Entry& e1, const Protos::Common::Entry& e2)
+{
+   return Common::ProtoHelper::getStr(e1, &Protos::Common::Entry::name) == Common::ProtoHelper::getStr(e2, &Protos::Common::Entry::name) &&
+      e1.type() == e2.type() &&
+      e1.size() == e2.size() &&
+      e1.is_empty() == e2.is_empty();
+}
+
+bool GUI::operator!=(const Protos::Common::Entry& e1, const Protos::Common::Entry& e2)
+{
+   return !(e1 == e2);
+}

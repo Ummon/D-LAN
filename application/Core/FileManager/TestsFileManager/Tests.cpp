@@ -603,32 +603,32 @@ void Tests::createInitialFiles()
 {
    this->deleteAllFiles();
 
-   Common::Global::createFile("sharedDirs/share1/subdir/o.txt");
-   Common::Global::createFile("sharedDirs/share1/subdir/p.txt");
-   Common::Global::createFile("sharedDirs/share1/another subdir/q.txt");
-   Common::Global::createFile("sharedDirs/share1/empty subdir/");
-   Common::Global::createFile("sharedDirs/share1/r.txt");
-   Common::Global::createFile("sharedDirs/share1/s.txt");
+   QVERIFY(Common::Global::createFile("sharedDirs/share1/subdir/o.txt"));
+   QVERIFY(Common::Global::createFile("sharedDirs/share1/subdir/p.txt"));
+   QVERIFY(Common::Global::createFile("sharedDirs/share1/another subdir/q.txt"));
+   QVERIFY(Common::Global::createFile("sharedDirs/share1/empty subdir/"));
+   QVERIFY(Common::Global::createFile("sharedDirs/share1/r.txt"));
+   QVERIFY(Common::Global::createFile("sharedDirs/share1/s.txt"));
 
-   Common::Global::createFile("sharedDirs/share2/t.txt");
-   Common::Global::createFile("sharedDirs/share2/u.txt");
+   QVERIFY(Common::Global::createFile("sharedDirs/share2/t.txt"));
+   QVERIFY(Common::Global::createFile("sharedDirs/share2/u.txt"));
 
    // "share3" is dedicated to the search feature.
-   Common::Global::createFile("sharedDirs/share3/aaaa bbbb cccc.txt");
-   Common::Global::createFile("sharedDirs/share3/aaaa bbbb.txt");
-   Common::Global::createFile("sharedDirs/share3/aaaaaa bbbb.txt");
-   Common::Global::createFile("sharedDirs/share3/aaaaaa bbbbbb.txt");
-   Common::Global::createFile("sharedDirs/share3/aaaa cccc.txt");
-   Common::Global::createFile("sharedDirs/share3/aaaa dddddd.txt");
-   Common::Global::createFile("sharedDirs/share3/aaaaaa dddddd.txt");
-   Common::Global::createFile("sharedDirs/share3/bbbb cccc.txt");
-   Common::Global::createFile("sharedDirs/share3/cccc bbbb.txt");
-   Common::Global::createFile("sharedDirs/share3/bbbb dddd.txt");
-   Common::Global::createFile("sharedDirs/share3/bbbb.txt");
-   Common::Global::createFile("sharedDirs/share3/cccc bbbbbb.txt");
-   Common::Global::createFile("sharedDirs/share3/dddd.txt");
+   QVERIFY(Common::Global::createFile("sharedDirs/share3/aaaa bbbb cccc.txt"));
+   QVERIFY(Common::Global::createFile("sharedDirs/share3/aaaa bbbb.txt"));
+   QVERIFY(Common::Global::createFile("sharedDirs/share3/aaaaaa bbbb.txt"));
+   QVERIFY(Common::Global::createFile("sharedDirs/share3/aaaaaa bbbbbb.txt"));
+   QVERIFY(Common::Global::createFile("sharedDirs/share3/aaaa cccc.txt"));
+   QVERIFY(Common::Global::createFile("sharedDirs/share3/aaaa dddddd.txt"));
+   QVERIFY(Common::Global::createFile("sharedDirs/share3/aaaaaa dddddd.txt"));
+   QVERIFY(Common::Global::createFile("sharedDirs/share3/bbbb cccc.txt"));
+   QVERIFY(Common::Global::createFile("sharedDirs/share3/cccc bbbb.txt"));
+   QVERIFY(Common::Global::createFile("sharedDirs/share3/bbbb dddd.txt"));
+   QVERIFY(Common::Global::createFile("sharedDirs/share3/bbbb.txt"));
+   QVERIFY(Common::Global::createFile("sharedDirs/share3/cccc bbbbbb.txt"));
+   QVERIFY(Common::Global::createFile("sharedDirs/share3/dddd.txt"));
 
-   Common::Global::createFile("incoming/");
+   QVERIFY(Common::Global::createFile("incoming/"));
 }
 
 void Tests::deleteAllFiles()
