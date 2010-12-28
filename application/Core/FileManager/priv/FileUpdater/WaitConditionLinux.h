@@ -25,6 +25,7 @@
 #include <QWaitCondition>
 
 #include <priv/FileUpdater/WaitCondition.h>
+#include <priv/Log.h>
 
 namespace FM
 {
@@ -42,10 +43,10 @@ namespace FM
 
       void release();
       bool wait(int timeout = -1);
-      int getHandle();
+      int getFd();
 
    private:
-      int fd;
+      int pfd[2];
       bool released;
       QMutex mutex;
       QWaitCondition waitCondition;

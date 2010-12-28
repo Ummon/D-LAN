@@ -22,7 +22,6 @@
 #define FILEMANAGER_DIRWATCHERLINUX_H
 
 #include <priv/FileUpdater/DirWatcher.h>
-#include <priv/Log.h>
 
 #include <sys/inotify.h>
 
@@ -41,17 +40,10 @@ namespace FM
        const QList<WatcherEvent> waitEvent(int timeout, QList<WaitCondition*> ws = QList<WaitCondition*>());
 
    private:
-       /* Size of the event structure, not counting name. */
-       static const int EVENT_SIZE;
-
-       /* Reasonable guess as to size of 1024 events. */
-       static const size_t BUF_LEN;
-
-       /* Inotify events catched for subdirectories. */
-       static const uint32_t EVENTS_OBS;
-
-       /* Inotify events catched for root directories. */
-       static const uint32_t ROOT_EVENTS_OBS;
+       static const int EVENT_SIZE; // Size of the event structure, not counting name.
+       static const size_t BUF_LEN; // Reasonable guess as to size of 1024 events.
+       static const uint32_t EVENTS_OBS; // Inotify events catched for subdirectories.
+       static const uint32_t ROOT_EVENTS_OBS; // Inotify events catched for root directories.
 
        struct Dir
        {
@@ -59,7 +51,7 @@ namespace FM
           Dir* parent;
           QMap<QString, Dir*> childs;
           QString name;
-          int wd; // inotify watch descriptor
+          int wd;
 
           Dir(DirWatcherLinux* dwl, Dir* parent, const QString& name);
           ~Dir();
@@ -68,9 +60,6 @@ namespace FM
           void move(Dir* to);
        };
 
-       bool initialized;
-       int fileDescriptor;
-
        QMap<int, Dir*> dirs; // The watched dirs, indexed by watch descriptor.
        QMap<QString, Dir*> rootDirs; // The watched root dirs, indexed by full path.
 
@@ -78,6 +67,9 @@ namespace FM
        QString getEventPath(inotify_event *event);
 
        QMutex mutex;
+
+       bool initialized;
+       int fileDescriptor;
    };
 }
 

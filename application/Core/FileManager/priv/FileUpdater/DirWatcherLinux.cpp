@@ -6,7 +6,10 @@
 using namespace FM;
 
 #include <QMutexLocker>
+#include <QtCore/QDebug>
+
 #include "WaitConditionLinux.h"
+#include <priv/Log.h>
 
 #include <sys/select.h>
 #include <sys/inotify.h>
@@ -29,7 +32,7 @@ const uint32_t DirWatcherLinux::ROOT_EVENTS_OBS = EVENTS_OBS|IN_MOVE_SELF|IN_DEL
 DirWatcherLinux::DirWatcherLinux()
    : mutex(QMutex::Recursive)
 {
-   /* Initialize inotify */
+   // Initialize inotify
    initialized = true;
    fileDescriptor = inotify_init();
    if (fileDescriptor < 0) {
@@ -45,7 +48,7 @@ DirWatcherLinux::~DirWatcherLinux ()
 {
    QMutexLocker locker(&this->mutex);
 
-   /* Close file descriptor */
+   // Close file descriptor
    if (close(fileDescriptor) < 0) {
        L_ERRO(QString("DirWatcherLinux::~DirWatcherLinux : Unable to close file descriptor (inotify)."));
    }
@@ -114,36 +117,41 @@ const QList<WatcherEvent> DirWatcherLinux::waitEvent(QList<WaitCondition*> ws)
  */
 const QList<WatcherEvent> DirWatcherLinux::waitEvent(int timeout, QList<WaitCondition*> ws)
 {
-   this->mutex.lock();
+   QMutexLocker locker(&this->mutex);
 
    fd_set fds;
    int fd_max;
    char buf[BUF_LEN];
    struct timeval time;
 
-   /* Convert timeout in timeval */
+   // Convert timeout in timeval.
    time.tv_sec = timeout / 1000;
    time.tv_usec = (timeout % 1000) * 1000;
 
 
-   while (1) {
-      /* Zero-out the fd_set. */
+   forever {
+      // Zero-out the fd_set.
       FD_ZERO(&fds);
 
-      /* Add the inotify fd to the fd_set. */
+      // Add the inotify fd to the fd_set.
       FD_SET(this->fileDescriptor, &fds);
       fd_max = this->fileDescriptor;
 
+      // Add fd for all WaitCondition in fd_set and ajust fd_max if needed.
       for (int i = 0; i < ws.size(); i++)
       {
-         int ws_fd = ((WaitConditionLinux*)ws[i])->getHandle();
-         FD_SET(ws_fd, &fds);
-         if (ws_fd > fd_max) fd_max = ws_fd;
+         int wcfd = ((WaitConditionLinux*)ws[i])->getFd();
+         L_DEBU(QString("DirWatcherLinux::waitEvent : add WaitCondition(fd=%1) to select fd_set").arg(wcfd));
+         FD_SET(wcfd, &fds);
+         if (wcfd > fd_max) fd_max = wcfd;
       }
 
-      this->mutex.unlock();
+      // Active select to wait events in unlocked mode.
+      L_DEBU("DirWatcherLinux::waitEvent : active select");
+      locker.unlock();
       int sel = select(fd_max + 1, &fds, NULL, NULL, (timeout==-1 ? 0 : &time));
-      this->mutex.lock();
+      locker.relock();
+
       if (sel < 0)
       {
          L_ERRO(QString("DirWatcherLinux::waitEvent : select error."));
@@ -151,17 +159,29 @@ const QList<WatcherEvent> DirWatcherLinux::waitEvent(int timeout, QList<WaitCond
       }
       else if (!sel)
       {
+         // select is released by timeout.
+         L_DEBU("DirWatcherLinux::waitEvent : exit select by timeout");
          QList<WatcherEvent> events;
          events.append(WatcherEvent(WatcherEvent::TIMEOUT));
          return events;
       }
 
+      // Test if select is released by a WaitCondition.
+      bool wsReleased = false;
       for (int i = 0; i < ws.size(); i++)
       {
-         if(FD_ISSET(((WaitConditionLinux*)ws[i])->getHandle(), &fds))
-            return QList<WatcherEvent>();
+         int wcfd = ((WaitConditionLinux*)ws[i])->getFd();
+         if(FD_ISSET(wcfd, &fds))
+         {
+            L_DEBU(QString("DirWatcherLinux::waitEvent : exit select by WaitCondition release (fd=%1)").arg(wcfd));
+            static char dummy[4096];
+            while (read(wcfd, dummy, sizeof(dummy)) > 0);
+            wsReleased = true;
+         }
       }
+      if (wsReleased) return QList<WatcherEvent>();
 
+      L_DEBU("DirWatcherLinux::waitEvent : exit select by inotify");
       int len = read(fileDescriptor, buf, BUF_LEN);
       if (len < 0)
       {
@@ -185,46 +205,46 @@ const QList<WatcherEvent> DirWatcherLinux::waitEvent(int timeout, QList<WaitCond
 
          if (event->mask & IN_MOVED_FROM)
          {
-            /* Add the event to movedToEvents. */
+            // Add the event to movedToEvents.
             movedFromEvents << event;
          }
          if (event->mask & IN_MOVED_TO)
          {
-            /* Check list of IN_MOVED_FROM events. */
+            // Check list of IN_MOVED_FROM events.
             for (QMutableListIterator<inotify_event*> i(movedFromEvents); i.hasNext();)
             {
                struct inotify_event *fromEvent = i.next();
                if (fromEvent->cookie == event->cookie)
                {
-                  /* If an IN_MOVES_FROM event is linked, create a MOVE WatcherEvent. */
+                  // If an IN_MOVES_FROM event is linked, create a MOVE WatcherEvent.
                   events << WatcherEvent(WatcherEvent::MOVE, getEventPath(fromEvent), getEventPath(event));
 
-                  /* If moved object is a directory, apply change to the local directory index */
+                  // If moved object is a directory, apply change to the local directory index
                   if (event->mask & IN_ISDIR)
                   {
-                     /* Retrieve to directory by watch descriptor. */
+                     // Retrieve to directory by watch descriptor.
                      Dir* toDir = dirs.value(event->wd);
 
-                     /* Retrieve moved directory by child map of from directory,
-                        because actually the name hasn't changed. */
+                     // Retrieve moved directory by child map of from directory,
+                     // because actually the name hasn't changed.
                      Dir* movedDir = dirs.value(fromEvent->wd)->childs.value(fromEvent->name);
 
-                     /* If the name of moved directory has changed, rename it. */
+                     // If the name of moved directory has changed, rename it.
                      if (fromEvent->name != event->name)
                         movedDir->rename(event->name);
 
-                     /* If the path of moved directosy has changed, move it. */
+                     // If the path of moved directosy has changed, move it.
                      if (movedDir->parent->getFullPath() != toDir->getFullPath())
                         movedDir->move(toDir);
                   }
                   i.remove();
-                  /* exit the IN_MOVED_TO process */
+                  // exit the IN_MOVED_TO process
                   goto end_moved_to;
                }
             }
-            /* if no IN_MOVED_FROM event is linked, create a NEW WatcherEvent.
-               IN_MOVED_FROM event without IN_MOVE_TO event have to be processed at
-               the end of the loop, when every IN_MOVED_TO event is processed.  */
+            // if no IN_MOVED_FROM event is linked, create a NEW WatcherEvent.
+            // IN_MOVED_FROM event without IN_MOVE_TO event have to be processed at
+            // the end of the loop, when every IN_MOVED_TO event is processed.
             events << WatcherEvent(WatcherEvent::NEW, getEventPath(event));
          }
          end_moved_to:
@@ -250,8 +270,8 @@ const QList<WatcherEvent> DirWatcherLinux::waitEvent(int timeout, QList<WaitCond
          i += EVENT_SIZE + event->len;
       }
 
-      /* Cause every IN_MOVED_FROM event with a linked IN_MOVED_TO event was removed of
-         the list, it contains only alone IN_MOVED_FROM event. */
+      // Cause every IN_MOVED_FROM event with a linked IN_MOVED_TO event was removed of
+      // the list, it contains only alone IN_MOVED_FROM event.
       for (QMutableListIterator<struct inotify_event*> i(movedFromEvents); i.hasNext();)
       {
          struct inotify_event *e = i.next();
