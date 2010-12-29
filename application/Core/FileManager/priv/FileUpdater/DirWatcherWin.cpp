@@ -156,7 +156,7 @@ const QList<WatcherEvent> DirWatcherWin::waitEvent(int timeout, QList<WaitCondit
 
    for (int i = 0; i < ws.size(); i++)
    {
-      HANDLE hdl = ws[i]->getHandle();
+      HANDLE hdl = dynamic_cast<WaitConditionWin*>(ws[i])->getHandle();
       eventsArray[i + numberOfDirs] = hdl;
    }
 

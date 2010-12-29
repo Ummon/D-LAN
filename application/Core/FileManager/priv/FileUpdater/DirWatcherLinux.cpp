@@ -140,7 +140,7 @@ const QList<WatcherEvent> DirWatcherLinux::waitEvent(int timeout, QList<WaitCond
       // Add fd for all WaitCondition in fd_set and ajust fd_max if needed.
       for (int i = 0; i < ws.size(); i++)
       {
-         int wcfd = ((WaitConditionLinux*)ws[i])->getFd();
+         int wcfd = dynamic_cast<WaitConditionLinux*>(ws[i])->getFd();
          L_DEBU(QString("DirWatcherLinux::waitEvent : add WaitCondition(fd=%1) to select fd_set").arg(wcfd));
          FD_SET(wcfd, &fds);
          if (wcfd > fd_max) fd_max = wcfd;
@@ -170,7 +170,7 @@ const QList<WatcherEvent> DirWatcherLinux::waitEvent(int timeout, QList<WaitCond
       bool wsReleased = false;
       for (int i = 0; i < ws.size(); i++)
       {
-         int wcfd = ((WaitConditionLinux*)ws[i])->getFd();
+         int wcfd = dynamic_cast<WaitConditionLinux*>(ws[i])->getFd();
          if(FD_ISSET(wcfd, &fds))
          {
             L_DEBU(QString("DirWatcherLinux::waitEvent : exit select by WaitCondition release (fd=%1)").arg(wcfd));

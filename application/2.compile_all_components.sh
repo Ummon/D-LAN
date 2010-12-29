@@ -72,4 +72,6 @@ do
    popd
 done
 
+CLEAN_COMMAND=off
+
 echo "Compilation finished successfully"

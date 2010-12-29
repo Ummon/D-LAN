@@ -22,7 +22,7 @@ do
    cd `dirname ${i}`
    TEST=`echo ${i} | awk -F"/" '{print $NF}'`
    echo "Executing $TEST.."
-   $TEST
+   ./$TEST
    popd
 done
 
