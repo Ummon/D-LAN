@@ -52,7 +52,8 @@ SOURCES += main.cpp\
     Uploads/UploadsModel.cpp \
     CoreConnection/BrowseResult.cpp \
     CoreConnection/SearchResult.cpp \
-    Settings/DirListModel.cpp
+    Settings/DirListModel.cpp \
+    Settings/RemoteFileDialog.cpp
 
 HEADERS  += MainWindow.h \
     ../Protos/gui_protocol.pb.h \
@@ -87,7 +88,8 @@ HEADERS  += MainWindow.h \
     CoreConnection/ISearchResult.h \
     CoreConnection/BrowseResult.h \
     CoreConnection/SearchResult.h \
-    Settings/DirListModel.h
+    Settings/DirListModel.h \
+    Settings/RemoteFileDialog.h
 
 FORMS    += MainWindow.ui \
     StatusBar.ui \
@@ -97,7 +99,8 @@ FORMS    += MainWindow.ui \
     Downloads/WidgetDownloads.ui \
     Search/WidgetSearch.ui \
     Settings/WidgetSettings.ui \
-    Uploads/WidgetUploads.ui
+    Uploads/WidgetUploads.ui \
+    Settings/RemoteFileDialog.ui
 
 RESOURCES += \
     ressources.qrc

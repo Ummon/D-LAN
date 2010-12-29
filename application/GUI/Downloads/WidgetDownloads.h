@@ -52,6 +52,7 @@ namespace GUI
 
    private slots:
       void displayContextMenuDownloads(const QPoint& point);
+      void openLocationSelectedEntries();
       void removeSelectedEntries();
       void removeCompletedFiles();
       void filterChanged();

@@ -132,6 +132,11 @@ bool CoreConnection::isConnected()
    return this->socket.state() == QAbstractSocket::ConnectedState;
 }
 
+bool CoreConnection::isLocal()
+{
+   return this->socket.peerAddress() == QHostAddress::LocalHost || this->socket.peerAddress() == QHostAddress::LocalHostIPv6;
+}
+
 void CoreConnection::connectToCore()
 {
    this->socket.close();
@@ -214,7 +219,7 @@ void CoreConnection::adressResolved(QHostInfo hostInfo)
 
 void CoreConnection::connected()
 {
-   if (this->socket.peerAddress() == QHostAddress::LocalHost || this->socket.peerAddress() == QHostAddress::LocalHostIPv6)
+   if (this->isLocal())
    {
       this->authenticated = true;
       L_USER("Connected to the core");

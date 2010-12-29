@@ -19,6 +19,8 @@
 #include <priv/Download.h>
 using namespace DM;
 
+#include <Common/ProtoHelper.h>
+
 #include <priv/Constants.h>
 #include <priv/Log.h>
 
@@ -38,6 +40,7 @@ Download::~Download()
 void Download::populateEntry(Protos::Queue::Queue_Entry* entry) const
 {
    entry->mutable_entry()->CopyFrom(this->entry);
+   Common::ProtoHelper::setStr(*entry, &Protos::Queue::Queue_Entry::set_base_path, this->basePath);
    entry->mutable_peer_id()->set_hash(this->peerSourceID.getData(), Common::Hash::HASH_SIZE);
    entry->set_complete(this->status == COMPLETE);
 }
@@ -70,6 +73,16 @@ Common::Hash Download::getPeerSourceID() const
 const Protos::Common::Entry& Download::getEntry()
 {
    return this->entry;
+}
+
+QString Download::getBasePath() const
+{
+   return this->basePath;
+}
+
+void Download::setBasePath(const QString& path)
+{
+   this->basePath = path;
 }
 
 void Download::remove()

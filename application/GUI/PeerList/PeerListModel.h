@@ -53,7 +53,7 @@ namespace GUI
       void newState(const Protos::GUI::State& state);
 
    private:
-      void setPeers(const google::protobuf::RepeatedPtrField<Protos::GUI::Peer>& peers);
+      void setPeers(const google::protobuf::RepeatedPtrField<Protos::GUI::State_Peer>& peers);
       void sort();
 
       CoreConnection& coreConnection;

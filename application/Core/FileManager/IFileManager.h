@@ -50,12 +50,12 @@ namespace FM
       virtual ~IFileManager() {}
 
       /**
-        * @exception DirNotFoundException
+        * @exception DirsNotFoundException
         */
       virtual void setSharedDirsReadOnly(const QStringList& dirs) = 0;
 
       /**
-        * @exception DirNotFoundException
+        * @exception DirsNotFoundException
         */
       virtual void setSharedDirsReadWrite(const QStringList& dirs) = 0;
 

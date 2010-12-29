@@ -22,6 +22,8 @@ using namespace GUI;
 
 #include <QMenu>
 #include <QMessageBox>
+#include <QDesktopServices>
+#include <QUrl>
 
 void DownloadsDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
@@ -136,10 +138,41 @@ WidgetDownloads::~WidgetDownloads()
 
 void WidgetDownloads::displayContextMenuDownloads(const QPoint& point)
 {
+   // If there is at least one complete or downloading file we show a menu action to open the file location.
+   bool showOpenLocation = false;
+   QModelIndexList selectedRows = this->ui->tblDownloads->selectionModel()->selectedRows();
+   for (QListIterator<QModelIndex> i(selectedRows); i.hasNext();)
+   {
+      int row = i.next().row();
+      if (this->downloadsModel.fileLocationIsKnown(row))
+      {
+         showOpenLocation = true;
+         break;
+      }
+   }
+
    QMenu menu;
+   if (showOpenLocation)
+      menu.addAction("Open location", this, SLOT(openLocationSelectedEntries()));
    menu.addAction("Remove selected entries", this, SLOT(removeSelectedEntries()));
    menu.addAction("Remove completed files", this, SLOT(removeCompletedFiles()));
    menu.exec(this->ui->tblDownloads->mapToGlobal(point));
+}
+
+void WidgetDownloads::openLocationSelectedEntries()
+{
+   QModelIndexList selectedRows = this->ui->tblDownloads->selectionModel()->selectedRows();
+
+   QSet<QString> locations;
+   for (QListIterator<QModelIndex> i(selectedRows); i.hasNext();)
+   {
+      int row = i.next().row();
+      if (this->downloadsModel.fileLocationIsKnown(row))
+         locations.insert("file:///" + this->downloadsModel.getLocationPath(row));
+   }
+
+   for (QSetIterator<QString> i(locations); i.hasNext();)
+      QDesktopServices::openUrl(QUrl(i.next(), QUrl::TolerantMode));
 }
 
 void WidgetDownloads::removeSelectedEntries()

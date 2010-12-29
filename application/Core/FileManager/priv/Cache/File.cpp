@@ -550,9 +550,9 @@ void File::setAsComplete()
          this->fileInWriteMode = 0;
       }
 
-      const int PREFIX_SIZE = SETTINGS.get<QString>("unfinished_suffix_term").size();
+      const int SUFFIX_SIZE = SETTINGS.get<QString>("unfinished_suffix_term").size();
       const QString oldPath = this->getFullPath();
-      const QString newPath = oldPath.left(oldPath.size() - PREFIX_SIZE);
+      const QString newPath = oldPath.left(oldPath.size() - SUFFIX_SIZE);
 
       if (!Common::Global::rename(oldPath, newPath))
       {
@@ -561,7 +561,7 @@ void File::setAsComplete()
       else
       {
          this->dateLastModified = QFileInfo(newPath).lastModified();
-         this->name = this->name.left(this->name.size() - PREFIX_SIZE);
+         this->name = this->name.left(this->name.size() - SUFFIX_SIZE);
          this->cache->onEntryAdded(this); // To add the name to the index. (a bit tricky).
       }
    }

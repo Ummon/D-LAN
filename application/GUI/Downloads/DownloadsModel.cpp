@@ -49,6 +49,27 @@ QList<quint64> DownloadsModel::getCompletedDownloadIDs() const
    return IDs;
 }
 
+bool DownloadsModel::fileLocationIsKnown(int row) const
+{
+   if (row >= this->downloads.size())
+      return false;
+
+   // If we know the base path then we know the location of the file.
+   return !Common::ProtoHelper::getStr(this->downloads[row], &Protos::GUI::State_Download::base_path).isEmpty();
+}
+
+QString DownloadsModel::getLocationPath(int row) const
+{
+   if (row >= this->downloads.size())
+      return QString();
+
+   QString fullPath;
+   fullPath
+      .append(Common::ProtoHelper::getStr(this->downloads[row], &Protos::GUI::State_Download::base_path)) // Base path
+      .append(Common::ProtoHelper::getStr(this->downloads[row].entry(), &Protos::Common::Entry::path)); // Relative path from base path
+   return fullPath;
+}
+
 int DownloadsModel::rowCount(const QModelIndex& parent) const
 {
    return this->downloads.size();

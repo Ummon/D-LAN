@@ -162,12 +162,15 @@ QSharedPointer<ChunkDownload> FileDownload::getAChunkToDownload()
                if (this->chunksWithoutDownload.isEmpty())
                   this->chunksWithoutDownload = this->fileManager->newFile(this->entry);
 
-               for (int i = 0; !this->chunksWithoutDownload.isEmpty() && i < this->chunkDownloads.size(); i++)
-                  this->chunkDownloads[i]->setChunk(this->chunksWithoutDownload.takeFirst());
-
                // If we got all the chunks, remote entry becomes a local entry.
                if (!this->chunksWithoutDownload.isEmpty() && this->nbHashesKnown == this->NB_CHUNK)
+               {
                   this->chunksWithoutDownload.first()->populateEntry(&this->entry);
+                  this->basePath = this->chunksWithoutDownload.first()->getBasePath();
+               }
+
+               for (int i = 0; !this->chunksWithoutDownload.isEmpty() && i < this->chunkDownloads.size(); i++)
+                  this->chunkDownloads[i]->setChunk(this->chunksWithoutDownload.takeFirst());
 
                this->fileCreated = true;
             }
@@ -270,7 +273,10 @@ void FileDownload::nextHash(const Common::Hash& hash)
 
       // If we got all the chunks, remote entry becomes a local entry.
       if (this->fileCreated && !this->chunkDownloads.isEmpty())
+      {
          this->chunkDownloads.first()->getChunk()->populateEntry(&this->entry);
+         this->basePath = this->chunkDownloads.first()->getChunk()->getBasePath();
+      }
 
       this->status = QUEUED;
    }

@@ -77,23 +77,23 @@ void DownloadManager::addDownload(const Protos::Common::Entry& entry, Common::Ha
    this->addDownload(entry, peerSource, false, i);
 }
 
-void DownloadManager::addDownload(const Protos::Common::Entry& entry, Common::Hash peerSource, bool complete)
+Download* DownloadManager::addDownload(const Protos::Common::Entry& entry, Common::Hash peerSource, bool complete)
 {
    QMutableListIterator<Download*> i(this->downloads);
    i.toBack();
-   this->addDownload(entry, peerSource, complete, i);
+   return this->addDownload(entry, peerSource, complete, i);
 }
 
 /**
   * Insert a new download at the given position.
   */
-void DownloadManager::addDownload(const Protos::Common::Entry& entry, Common::Hash peerSource, bool complete, QMutableListIterator<Download*>& iterator)
+Download* DownloadManager::addDownload(const Protos::Common::Entry& entry, Common::Hash peerSource, bool complete, QMutableListIterator<Download*>& iterator)
 {
    // If there is a lot of file in queue it can be a bit CPU consumer.
    if (this->isEntryAlreadyQueued(entry))
    {
       L_WARN(QString("Entry already queued, it will no be added to the queue : %1").arg(Common::ProtoHelper::getStr(entry, &Protos::Common::Entry::name)));
-      return;
+      return 0;
    }
 
    Download* newDownload = 0;
@@ -125,6 +125,8 @@ void DownloadManager::addDownload(const Protos::Common::Entry& entry, Common::Ha
       connect(newDownload, SIGNAL(deleted(Download*)), this, SLOT(downloadDeleted(Download*)), Qt::DirectConnection);
 
    this->setQueueChanged();
+
+   return newDownload;
 }
 
 QList<IDownload*> DownloadManager::getDownloads() const
@@ -358,7 +360,9 @@ void DownloadManager::loadQueueFromFile()
       for (int i = 0; i < savedQueue.entry_size(); i++)
       {
          const Protos::Queue::Queue_Entry& entry = savedQueue.entry(i);
-         this->addDownload(entry.entry(), Common::Hash(entry.peer_id().hash().data()), entry.complete());
+         Download* download = this->addDownload(entry.entry(), Common::Hash(entry.peer_id().hash().data()), entry.complete());
+         if (download)
+            download->setBasePath(Common::ProtoHelper::getStr(entry, &Protos::Queue::Queue_Entry::base_path));
       }
    }
    catch (Common::UnknownValueException& e)
