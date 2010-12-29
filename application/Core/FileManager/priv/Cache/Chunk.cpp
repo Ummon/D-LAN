@@ -87,6 +87,14 @@ void Chunk::populateEntry(Protos::Common::Entry* entry) const
       this->file->populateEntry(entry);
 }
 
+QString Chunk::getBasePath() const
+{
+   QMutexLocker locker(&this->mutex);
+   if (this->file)
+      return this->file->getRoot()->getFullPath();
+   return QString();
+}
+
 QSharedPointer<IDataReader> Chunk::getDataReader()
 {
    QMutexLocker locker(&this->mutex);

@@ -62,6 +62,7 @@ namespace GUI
       void refresh();
 
       bool isConnected();
+      bool isLocal();
 
    public slots:
       void connectToCore();

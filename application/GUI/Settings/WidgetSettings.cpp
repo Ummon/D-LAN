@@ -28,6 +28,8 @@ using namespace GUI;
 
 #include <Protos/gui_settings.pb.h>
 
+#include <Settings/RemoteFileDialog.h>
+
 WidgetSettings::WidgetSettings(CoreConnection& coreConnection, QWidget *parent)
    : QWidget(parent), ui(new Ui::WidgetSettings), coreConnection(coreConnection), initialState(true)
 {
@@ -71,18 +73,17 @@ void WidgetSettings::coreDisconnected()
 
 void WidgetSettings::newState(const Protos::GUI::State& state)
 {
-   const Protos::GUI::CoreSettings& settings = state.settings();
    if (!this->ui->txtNick->hasFocus())
-      this->ui->txtNick->setText(Common::ProtoHelper::getStr(settings.myself(), &Protos::GUI::Peer::nick));
+      this->ui->txtNick->setText(Common::ProtoHelper::getStr(state.myself(), &Protos::GUI::State_Peer::nick));
 
    QStringList incomingDirs;
-   for (int i = 0; i < settings.destination_directory_size(); i++)
-      incomingDirs << Common::ProtoHelper::getRepeatedStr(settings, &Protos::GUI::CoreSettings::destination_directory, i);
+   for (int i = 0; i < state.destination_directory_size(); i++)
+      incomingDirs << Common::ProtoHelper::getRepeatedStr(state, &Protos::GUI::State::destination_directory, i);
    this->incomingDirsModel.setDirs(incomingDirs);
 
    QStringList sharedDirs;
-   for (int i = 0; i < settings.shared_directory_size(); i++)
-      sharedDirs << Common::ProtoHelper::getRepeatedStr(settings, &Protos::GUI::CoreSettings::shared_directory, i);
+   for (int i = 0; i < state.shared_directory_size(); i++)
+      sharedDirs << Common::ProtoHelper::getRepeatedStr(state, &Protos::GUI::State::shared_directory, i);
    this->sharedDirsModel.setDirs(sharedDirs);
 
    // If this is the first message state received and there is no incoming folder defined we ask the user to choose one.
@@ -108,15 +109,13 @@ void WidgetSettings::newState(const Protos::GUI::State& state)
 void WidgetSettings::saveCoreSettings()
 {
    Protos::GUI::CoreSettings settings;
-   Common::ProtoHelper::setStr(*settings.mutable_myself(), &Protos::GUI::Peer::set_nick, this->ui->txtNick->text());
+   Common::ProtoHelper::setStr(settings, &Protos::GUI::CoreSettings::set_nick, this->ui->txtNick->text());
 
    for (QStringListIterator i(this->incomingDirsModel.getDirs()); i.hasNext();)
       Common::ProtoHelper::addRepeatedStr(settings, &Protos::GUI::CoreSettings::add_destination_directory, i.next());
 
    for (QStringListIterator i(this->sharedDirsModel.getDirs()); i.hasNext();)
       Common::ProtoHelper::addRepeatedStr(settings, &Protos::GUI::CoreSettings::add_shared_directory, i.next());
-
-   Common::ProtoHelper::setStr(*settings.mutable_myself(), &Protos::GUI::Peer::set_nick, this->ui->txtNick->text());
 
    this->coreConnection.setCoreSettings(settings);
 }
@@ -189,19 +188,33 @@ void WidgetSettings::resetCoreAddress()
   */
 QStringList WidgetSettings::askForDirectories()
 {
-   QFileDialog fileDialog(this);
-   fileDialog.setOption(QFileDialog::DontUseNativeDialog,true);
-   fileDialog.setFileMode(QFileDialog::Directory);
-
-   QListView* l = fileDialog.findChild<QListView*>("listView");
-   if (l)
-      l->setSelectionMode(QAbstractItemView::ExtendedSelection);
-
-   if (fileDialog.exec())
+   if (this->coreConnection.isLocal())
    {
-      return fileDialog.selectedFiles();
+      QFileDialog fileDialog(this);
+      fileDialog.setOption(QFileDialog::DontUseNativeDialog,true);
+      fileDialog.setFileMode(QFileDialog::Directory);
+
+      QListView* l = fileDialog.findChild<QListView*>("listView");
+      if (l)
+         l->setSelectionMode(QAbstractItemView::ExtendedSelection);
+
+      if (fileDialog.exec())
+      {
+         return fileDialog.selectedFiles();
+      }
+      return QStringList();
    }
-   return QStringList();
+   else
+   {
+      RemoteFileDialog fileDialog(this);
+      fileDialog.setWindowTitle("Remote folder");
+      fileDialog.setText("Remote folder to share : ");
+      if (fileDialog.exec())
+      {
+         return QStringList() << fileDialog.getFolder();
+      }
+      return QStringList();
+   }
 }
 
 void WidgetSettings::showEvent(QShowEvent* event)

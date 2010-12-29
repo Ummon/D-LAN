@@ -56,6 +56,8 @@ namespace FM
 
       void populateEntry(Protos::Common::Entry* entry) const;
 
+      QString getBasePath() const;
+
       QSharedPointer<IDataReader> getDataReader();
       QSharedPointer<IDataWriter> getDataWriter();
 

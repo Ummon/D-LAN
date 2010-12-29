@@ -105,14 +105,18 @@ void RemoteConnection::refresh()
 {
    Protos::GUI::State state;
 
+   state.mutable_myself()->mutable_peer_id()->set_hash(this->peerManager->getID().getData(), Common::Hash::HASH_SIZE);
+   Common::ProtoHelper::setStr(*state.mutable_myself(), &Protos::GUI::State_Peer::set_nick, this->peerManager->getNick());
+   state.mutable_myself()->set_sharing_amount(this->fileManager->getAmount());
+
    // Peers.
    QList<PM::IPeer*> peers = this->peerManager->getPeers();
    for (QListIterator<PM::IPeer*> i(peers); i.hasNext();)
    {
       PM::IPeer* peer = i.next();
-      Protos::GUI::Peer* protoPeer = state.add_peer();
+      Protos::GUI::State_Peer* protoPeer = state.add_peer();
       protoPeer->mutable_peer_id()->set_hash(peer->getID().getData(), Common::Hash::HASH_SIZE);
-      Common::ProtoHelper::setStr(*protoPeer, &Protos::GUI::Peer::set_nick, peer->getNick());
+      Common::ProtoHelper::setStr(*protoPeer, &Protos::GUI::State_Peer::set_nick, peer->getNick());
       protoPeer->set_sharing_amount(peer->getSharingAmount());
    }
 
@@ -124,6 +128,7 @@ void RemoteConnection::refresh()
       Protos::GUI::State_Download* protoDownload = state.add_download();
       protoDownload->set_id(download->getID());
       protoDownload->mutable_entry()->CopyFrom(download->getEntry());
+      Common::ProtoHelper::setStr(*protoDownload, &Protos::GUI::State_Download::set_base_path, download->getBasePath());
       protoDownload->set_status(static_cast<Protos::GUI::State_Download_Status>(download->getStatus())); // Warning, enums must be compatible.
       protoDownload->set_progress(download->getProgress());
       for (QSetIterator<Common::Hash> j(download->getPeers()); j.hasNext();)
@@ -144,15 +149,11 @@ void RemoteConnection::refresh()
       protoUpload->mutable_peer_id()->set_hash(upload->getPeerID().getData(), Common::Hash::HASH_SIZE);
    }
 
-   // Core settings.
-   Protos::GUI::CoreSettings* coreSettings = state.mutable_settings();
-   coreSettings->mutable_myself()->mutable_peer_id()->set_hash(this->peerManager->getID().getData(), Common::Hash::HASH_SIZE);
-   Common::ProtoHelper::setStr(*coreSettings->mutable_myself(), &Protos::GUI::Peer::set_nick, this->peerManager->getNick());
-   coreSettings->mutable_myself()->set_sharing_amount(this->fileManager->getAmount());
+   // Shared Dirs.
    for (QStringListIterator i(this->fileManager->getSharedDirsReadOnly()); i.hasNext();)
-      Common::ProtoHelper::setStr(*coreSettings, &Protos::GUI::CoreSettings::add_shared_directory, i.next());
+      Common::ProtoHelper::setStr(state, &Protos::GUI::State::add_shared_directory, i.next());
    for (QStringListIterator i(this->fileManager->getSharedDirsReadWrite()); i.hasNext();)
-      Common::ProtoHelper::setStr(*coreSettings, &Protos::GUI::CoreSettings::add_destination_directory, i.next());
+      Common::ProtoHelper::setStr(state, &Protos::GUI::State::add_destination_directory, i.next());
 
    // Stats.
    Protos::GUI::State_Stats* stats = state.mutable_stats();
@@ -296,7 +297,7 @@ bool RemoteConnection::readMessage()
 
          if (readOK && this->authenticated)
          {
-            this->peerManager->setNick(Common::ProtoHelper::getStr(coreSettingsMessage.myself(), &Protos::GUI::Peer::nick));
+            this->peerManager->setNick(Common::ProtoHelper::getStr(coreSettingsMessage, &Protos::GUI::CoreSettings::nick));
 
             try
             {
@@ -313,6 +314,11 @@ bool RemoteConnection::readMessage()
             catch(FM::SuperDirectoryExistsException& e)
             {
                L_WARN(QString("There is already a super directory : %1 for this directory : %2").arg(e.superDirectory).arg(e.subDirectory));
+            }
+            catch(FM::DirsNotFoundException& e)
+            {
+               foreach (QString path, e.paths)
+                  L_WARN(QString("Directory not found : %1").arg(path));
             }
          }
       }

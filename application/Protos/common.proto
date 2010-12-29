@@ -33,8 +33,9 @@ message Entry {
    required uint64 size = 4; // [bytes].
    
    optional SharedDir shared_dir = 5; // The shared directory of the entry.
-   optional bool is_empty = 7 [default = true]; // Only for a Dir. Warning a directory can be not empty and has a size of 0.
-   repeated Hash chunk = 6; // Only for a file. No chunk means that the peer doesn't know the hashes.
+   optional bool is_empty = 6 [default = true]; // Only for a Dir. Warning a directory can be not empty and has a size of 0.
+   
+   repeated Hash chunk = 7; // Only for a file. No chunk means that the peer doesn't know the hashes.
 }
 
 message Entries

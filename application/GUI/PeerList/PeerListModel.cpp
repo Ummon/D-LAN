@@ -61,7 +61,7 @@ Common::Hash PeerListModel::getPeerID(int rowNum) const
 
 void PeerListModel::clear()
 {
-   google::protobuf::RepeatedPtrField<Protos::GUI::Peer> peers;
+   google::protobuf::RepeatedPtrField<Protos::GUI::State_Peer> peers;
    this->setPeers(peers);
 }
 
@@ -100,13 +100,13 @@ QVariant PeerListModel::data(const QModelIndex& index, int role) const
 void PeerListModel::newState(const Protos::GUI::State& state)
 {
    // TODO : not very efficient!?
-   google::protobuf::RepeatedPtrField<Protos::GUI::Peer> peers;
+   google::protobuf::RepeatedPtrField<Protos::GUI::State_Peer> peers;
    peers.MergeFrom(state.peer());
-   peers.Add()->CopyFrom(state.settings().myself());
+   peers.Add()->CopyFrom(state.myself());
    this->setPeers(peers);
 }
 
-void PeerListModel::setPeers(const google::protobuf::RepeatedPtrField<Protos::GUI::Peer>& peers)
+void PeerListModel::setPeers(const google::protobuf::RepeatedPtrField<Protos::GUI::State_Peer>& peers)
 {
    bool stateChanged = false;
 
@@ -118,7 +118,7 @@ void PeerListModel::setPeers(const google::protobuf::RepeatedPtrField<Protos::GU
       Peer peer =
          Peer(
             peers.Get(i).peer_id().hash().data(),
-            ProtoHelper::getStr(peers.Get(i), &Protos::GUI::Peer::nick),
+            ProtoHelper::getStr(peers.Get(i), &Protos::GUI::State_Peer::nick),
             peers.Get(i).sharing_amount()
          );
 

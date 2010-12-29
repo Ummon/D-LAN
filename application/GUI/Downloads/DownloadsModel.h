@@ -40,6 +40,9 @@ namespace GUI
       quint64 getDownloadID(int row) const;
       QList<quint64> getCompletedDownloadIDs() const;
 
+      bool fileLocationIsKnown(int row) const;
+      QString getLocationPath(int row) const;
+
       int rowCount(const QModelIndex& parent = QModelIndex()) const;
       int columnCount(const QModelIndex& parent = QModelIndex()) const;
       QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const;

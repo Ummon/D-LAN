@@ -60,7 +60,7 @@ void StatusBar::newState(const Protos::GUI::State& state)
    qint64 totalSharing = 0;
    for (int i = 0; i < state.peer_size(); i++)
       totalSharing += state.peer(i).sharing_amount();
-   totalSharing += state.settings().myself().sharing_amount();
+   totalSharing += state.myself().sharing_amount();
 
    this->ui->lblTotalSharing->setText(Common::Global::formatByteSize(totalSharing));
 }

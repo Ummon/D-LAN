@@ -56,6 +56,8 @@ namespace DM
       virtual int getProgress() const;
       Common::Hash getPeerSourceID() const;
       const Protos::Common::Entry& getEntry();
+      QString getBasePath() const;
+      void setBasePath(const QString& path);
       void remove();
 
       bool hasAValidPeer();
@@ -80,6 +82,7 @@ namespace DM
       Common::Hash peerSourceID;
       PM::IPeer* peerSource;
       Protos::Common::Entry entry;
+      QString basePath;
 
       Status status;
    };

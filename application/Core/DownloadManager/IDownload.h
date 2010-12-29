@@ -89,6 +89,8 @@ namespace DM
         */
       virtual const Protos::Common::Entry& getEntry() = 0;
 
+      virtual QString getBasePath() const = 0;
+
       /**
         * Stop and delete the download.
         * If the download has begun the downloaded data are removed.
