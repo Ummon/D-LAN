@@ -23,7 +23,7 @@
 #define VERSION_TAG "Alpha"
 
 // These two values are automatically updated during the release building process. See the script 'Application/Tools/update_version.sh'
-#define BUILD_TIME "2010-12-29_06-09"
-#define GIT_VERSION "a6b8a67a88d2892e10e1ca482824ab604c35697a"
+#define BUILD_TIME "2010-12-29_10-04"
+#define GIT_VERSION "cebe5c05fc85cb976837d4dd71320124d6f495a2"
 
 #endif
