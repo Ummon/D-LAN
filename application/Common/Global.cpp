@@ -170,7 +170,7 @@ bool Global::createFile(const QString& path)
       return false;
 
    if (fileInfo.fileName().isEmpty())
-      return false;
+      return true;
 
    QFile file(path);
    if (!file.open(QIODevice::WriteOnly))
