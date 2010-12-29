@@ -160,9 +160,9 @@ bool Global::createApplicationFolder()
 }
 
 /**
-  * Create a file containing its name. Parents directories are created if needed.
+  * Create a file containing its name or just a folder. Parents directories are created if needed.
   * For testing purpose.
-  * @return true if the file has been created successfuly or false if an error has occured.
+  * @return true if the file/folder has been created successfuly or false if an error has occured.
   */
 bool Global::createFile(const QString& path)
 {
@@ -170,6 +170,8 @@ bool Global::createFile(const QString& path)
    if (!QDir::current().mkpath(fileInfo.path()))
       return false;
 
+   // If fileName is empty, the job is just to
+   // create a new folder, then we can exit now.
    if (fileInfo.fileName().isEmpty())
       return true;
 
