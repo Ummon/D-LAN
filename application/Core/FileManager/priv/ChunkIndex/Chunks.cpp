@@ -22,6 +22,13 @@ using namespace FM;
 #include <priv/Cache/Chunk.h>
 #include <priv/Log.h>
 
+/**
+  * @class Chunks
+  * We must allow multiple chunk with the same hash. Considering this case :
+  * - Add identical files 'a' and 'b'.
+  * - remove 'a'. 'b' wouldn't be remove from Chunks in the same time.
+  */
+
 void Chunks::add(QSharedPointer<Chunk> chunk)
 {
    QMutexLocker locker(&this->mutex);
@@ -31,17 +38,32 @@ void Chunks::add(QSharedPointer<Chunk> chunk)
 void Chunks::rm(QSharedPointer<Chunk> chunk)
 {
    QMutexLocker locker(&this->mutex);
-   this->remove(chunk->getHash());
+   this->remove(chunk->getHash(), chunk);
 }
 
 const QSharedPointer<Chunk> Chunks::value(const Common::Hash& hash) const
 {
    QMutexLocker locker(&this->mutex);
-   return QHash< Common::Hash, QSharedPointer<Chunk> >::value(hash);
+   return QMultiHash< Common::Hash, QSharedPointer<Chunk> >::value(hash);
+}
+
+const QList< QSharedPointer<Chunk> > Chunks::values(const Common::Hash& hash) const
+{
+   QMutexLocker locker(&this->mutex);
+   QList< QSharedPointer<Chunk> > values;
+
+   QMultiHash< Common::Hash, QSharedPointer<Chunk> >::const_iterator i = this->find(hash);
+   while (i != this->end() && i.key() == hash)
+   {
+      values << i.value();
+      i++;
+   }
+
+   return values;
 }
 
 bool Chunks::contains(const Common::Hash& hash) const
 {
    QMutexLocker locker(&this->mutex);
-   return QHash< Common::Hash, QSharedPointer<Chunk> >::contains(hash);
+   return QMultiHash< Common::Hash, QSharedPointer<Chunk> >::contains(hash);
 }

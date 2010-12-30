@@ -69,8 +69,9 @@ namespace FM
 
       /**
         * Get all chunks from the file which owns the given hash.
+        * The name and the path of the owner of the returned chunk must match the given entry.
         */
-      virtual QList< QSharedPointer<IChunk> > getAllChunks(const Common::Hash& hash) const = 0;
+      virtual QList< QSharedPointer<IChunk> > getAllChunks(const Protos::Common::Entry& entry, const Common::Hash& hash) const = 0;
 
       /**
         * Create a new empty file. It will be automatically create in the same path than the remote.

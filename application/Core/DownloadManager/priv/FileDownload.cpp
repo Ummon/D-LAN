@@ -154,9 +154,9 @@ QSharedPointer<ChunkDownload> FileDownload::getAChunkToDownload()
          {
             if (!this->fileCreated)
             {
-               // First try to get the chunks from an existing file, it's useful when a download is taken from the saved queue.
+               // First, try to get the chunks from an existing file, it's useful when a download is taken from the saved queue.
                if (!this->chunkDownloads.isEmpty())
-                  this->chunksWithoutDownload = this->fileManager->getAllChunks(this->chunkDownloads.first()->getHash());
+                  this->chunksWithoutDownload = this->fileManager->getAllChunks(this->entry, this->chunkDownloads.first()->getHash());
 
                // If the file doesn't exist we create it.
                if (this->chunksWithoutDownload.isEmpty())
@@ -233,6 +233,7 @@ bool FileDownload::retreiveHashes()
    this->getHashesResult = this->peerSource->getHashes(this->entry);
    connect(this->getHashesResult.data(), SIGNAL(result(const Protos::Core::GetHashesResult&)), this, SLOT(result(const Protos::Core::GetHashesResult&)));
    connect(this->getHashesResult.data(), SIGNAL(nextHash(const Common::Hash&)), this, SLOT(nextHash(const Common::Hash&)));
+   // TODO : connect the timeout signal
    this->getHashesResult->start();
    return true;
 }
@@ -357,6 +358,9 @@ void FileDownload::updateStatus()
 
    if (this->chunkDownloads.size() != this->NB_CHUNK)
       this->status = INITIALIZING;
+
+   if (this->status == COMPLETE)
+      this->chunkDownloads.first()->getChunk()->populateEntry(&this->entry); // To remove the ".unfinished".
 }
 
 void FileDownload::connectChunkDownloadSignals(QSharedPointer<ChunkDownload> chunkDownload)
