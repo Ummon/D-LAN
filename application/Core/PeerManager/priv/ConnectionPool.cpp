@@ -104,11 +104,17 @@ void ConnectionPool::socketGetIdle(Socket* socket)
 void ConnectionPool::socketClosed(Socket* socket)
 {
    for (QMutableListIterator< QSharedPointer<Socket> > i(this->sockets); i.hasNext();)
+   {
       if (i.next().data() == socket)
       {
+         disconnect(socket, SIGNAL(getIdle(Socket*)), this, SLOT(socketGetIdle(Socket*)));
+         disconnect(socket, SIGNAL(closed(Socket*)), this, SLOT(socketClosed(Socket*)));
+         disconnect(socket, SIGNAL(getChunk(const Common::Hash&, int, Socket*)), this, SLOT(socketGetChunk(const Common::Hash&, int, Socket*)));
+
          i.remove();
          break;
       }
+   }
 }
 
 void ConnectionPool::socketGetChunk(const Common::Hash& hash, int offset, Socket* socket)

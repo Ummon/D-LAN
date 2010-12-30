@@ -42,12 +42,6 @@ void Entry::populateEntry(Protos::Common::Entry* entry, bool setSharedDir) const
 {
    QString name = this->getName();
 
-   // Remove the suffix ".unfinished"
-   // TODO : maybe 'File' shouldn't add the suffix to 'Entry::name' !?.
-   const QString UNFINISHED_SUFFIX = SETTINGS.get<QString>("unfinished_suffix_term");
-   if (name.endsWith(UNFINISHED_SUFFIX))
-      name.remove(name.size() - UNFINISHED_SUFFIX.size(), UNFINISHED_SUFFIX.size());
-
    Common::ProtoHelper::setStr(*entry, &Protos::Common::Entry::set_path, this->getPath());
    Common::ProtoHelper::setStr(*entry, &Protos::Common::Entry::set_name, name);
    entry->set_size(this->getSize());

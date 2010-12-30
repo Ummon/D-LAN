@@ -29,12 +29,13 @@ namespace FM
 {
    class Chunk;
 
-   class Chunks : private QHash< Common::Hash, QSharedPointer<Chunk> >
+   class Chunks : private QMultiHash< Common::Hash, QSharedPointer<Chunk> >
    {
    public:
       void add(QSharedPointer<Chunk> chunk);
       void rm(QSharedPointer<Chunk> chunk);
       const QSharedPointer<Chunk> value(const Common::Hash& hash) const;
+      const QList< QSharedPointer<Chunk> > values(const Common::Hash& hash) const;
       bool contains(const Common::Hash& hash) const;
 
    private:

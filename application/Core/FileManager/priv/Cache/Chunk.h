@@ -112,6 +112,8 @@ namespace FM
 
       bool isOwnedBy(File* file) const;
 
+      bool matchesEntry(const Protos::Common::Entry& entry) const;
+
       QString toStr() const;
 
    private:

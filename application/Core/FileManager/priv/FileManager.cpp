@@ -114,18 +114,26 @@ QSharedPointer<IChunk> FileManager::getChunk(const Common::Hash& hash) const
    return this->chunks.value(hash);
 }
 
-QList< QSharedPointer<IChunk> > FileManager::getAllChunks(const Common::Hash& hash) const
-{
-   QSharedPointer<Chunk> chunk = this->chunks.value(hash);
-   if (chunk.isNull())
-      return QList< QSharedPointer<IChunk> >();
-   else
+QList< QSharedPointer<IChunk> > FileManager::getAllChunks(const Protos::Common::Entry& entry, const Common::Hash& hash) const
+{   
+   QList< QSharedPointer<IChunk> > ret;
+   QList< QSharedPointer<Chunk> > chunks = this->chunks.values(hash);
+
+   if (!chunks.isEmpty())
    {
-      QList< QSharedPointer<IChunk> > ret;
-      for (QListIterator< QSharedPointer<Chunk> > i(chunk->getOtherChunks()); i.hasNext();)
-         ret << i.next();
-      return ret;
+      for (QListIterator< QSharedPointer<Chunk> > i(chunks); i.hasNext();)
+      {
+         QSharedPointer<Chunk> chunk = i.next();
+         if (chunk->matchesEntry(entry))
+         {
+            for (QListIterator< QSharedPointer<Chunk> > j(chunk->getOtherChunks()); j.hasNext();)
+               ret << j.next();
+            break;
+         }
+      }
    }
+
+   return ret;
 }
 
 QList< QSharedPointer<IChunk> > FileManager::newFile(const Protos::Common::Entry& remoteEntry)
@@ -411,8 +419,11 @@ void FileManager::persistCacheToFile()
 {
    QMutexLocker locker(&this->mutexPersistCache);
 
+   QMutexLocker lockerCacheChanged(&this->mutexCacheChanged);
    if (this->cacheChanged && !this->cacheLoading)
    {
+      lockerCacheChanged.unlock();
+
       L_DEBU("Persisting cache..");
 
       Protos::FileCache::Hashes hashes;
@@ -426,6 +437,8 @@ void FileManager::persistCacheToFile()
       {
          L_ERRO(err.message);
       }
+
+      lockerCacheChanged.relock();
       this->cacheChanged = false;
 
       L_DEBU("Persisting cache finished");
@@ -434,8 +447,11 @@ void FileManager::persistCacheToFile()
 
 void FileManager::forcePersistCacheToFile()
 {
-   QMutexLocker locker(&this->mutexPersistCache);
+   this->mutexCacheChanged.lock();
    this->cacheChanged = true;
+   this->mutexCacheChanged.unlock();
+
+   QMutexLocker locker(&this->mutexPersistCache);
    this->persistCacheToFile();
    this->timerPersistCache.start();
 }
@@ -445,6 +461,6 @@ void FileManager::forcePersistCacheToFile()
   */
 void FileManager::setCacheChanged()
 {
-   QMutexLocker locker(&this->mutexPersistCache);
+   QMutexLocker locker(&this->mutexCacheChanged);
    this->cacheChanged = true;
 }

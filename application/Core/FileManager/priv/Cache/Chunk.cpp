@@ -20,6 +20,7 @@
 using namespace FM;
 
 #include <Common/Settings.h>
+#include <Common/ProtoHelper.h>
 
 #include <IDataReader.h>
 #include <IDataWriter.h>
@@ -283,6 +284,13 @@ bool Chunk::isComplete() const
 bool Chunk::isOwnedBy(File* file) const
 {
    return this->file == file;
+}
+
+bool Chunk::matchesEntry(const Protos::Common::Entry& entry) const
+{
+   QMutexLocker locker(&this->mutex);
+   return this->file->getPath() == Common::ProtoHelper::getStr(entry, &Protos::Common::Entry::path) &&
+      this->file->getName() == Common::ProtoHelper::getStr(entry, &Protos::Common::Entry::name);
 }
 
 QString Chunk::toStr() const
