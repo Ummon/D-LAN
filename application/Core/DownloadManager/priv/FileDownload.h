@@ -75,6 +75,7 @@ namespace DM
    private slots:
       void result(const Protos::Core::GetHashesResult& result);
       void nextHash(const Common::Hash& hash);
+      void getHashTimeout();
 
       void chunkDownloadStarted();
       void chunkDownloadFinished();
