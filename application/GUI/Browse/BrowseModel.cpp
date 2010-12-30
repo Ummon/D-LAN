@@ -239,7 +239,7 @@ void BrowseModel::loadChildren(const QPersistentModelIndex &index)
   */
 QList<BrowseModel::Node*> BrowseModel::synchronize(BrowseModel::Node* node, const Protos::Common::Entries& entries)
 {
-   QModelIndex parentIndex = this->createIndex(node->getRow(), 0, node);
+   QModelIndex parentIndex = node->getParent() ? this->createIndex(node->getRow(), 0, node) : QModelIndex(); // Special case for the root.
 
    QList<Node*> nodesToDelete;
 
