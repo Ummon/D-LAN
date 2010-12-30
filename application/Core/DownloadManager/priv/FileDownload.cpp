@@ -233,7 +233,7 @@ bool FileDownload::retreiveHashes()
    this->getHashesResult = this->peerSource->getHashes(this->entry);
    connect(this->getHashesResult.data(), SIGNAL(result(const Protos::Core::GetHashesResult&)), this, SLOT(result(const Protos::Core::GetHashesResult&)));
    connect(this->getHashesResult.data(), SIGNAL(nextHash(const Common::Hash&)), this, SLOT(nextHash(const Common::Hash&)));
-   // TODO : connect the timeout signal
+   connect(this->getHashesResult.data(), SIGNAL(timeout()), this, SLOT(getHashTimeout()));
    this->getHashesResult->start();
    return true;
 }
@@ -305,6 +305,15 @@ void FileDownload::nextHash(const Common::Hash& hash)
       this->entry.add_chunk()->set_hash(hash.getData(), Common::Hash::HASH_SIZE); // Used during the saving of the queue, see Download::populateEntry(..).
       emit newHashKnown();
    }
+}
+
+void FileDownload::getHashTimeout()
+{
+   L_DEBU("Unable to retrieve the hashes : timeout");
+   this->getHashesResult.clear();
+   this->occupiedPeersAskingForHashes.setPeerAsFree(this->peerSource);
+   this->status = UNABLE_TO_RETRIEVE_THE_HASHES;
+   this->timer.start(); // Retry later.
 }
 
 void FileDownload::chunkDownloadStarted()
