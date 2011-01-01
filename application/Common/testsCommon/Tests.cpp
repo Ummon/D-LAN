@@ -40,7 +40,7 @@ Tests::Tests()
 
 void Tests::initTestCase()
 {
-   qDebug() << "Application folder path (where is put the settings and persistent data) : " << APPLICATION_FOLDER_PATH;
+   qDebug() << "Application folder path (where the settings and persistent data are put) : " << Global::getDataFolder(Common::Global::ROAMING, false);
 }
 
 void Tests::nCombinations()
@@ -102,20 +102,20 @@ void Tests::writePersistentData()
    this->hash = Hash::rand();
    Protos::Common::Hash hashMessage;
    hashMessage.set_hash(this->hash.getData(), Hash::HASH_SIZE);
-   PersistentData::setValue("paul", hashMessage);
+   PersistentData::setValue("paul", hashMessage, Global::ROAMING);
 }
 
 void Tests::readPersistentData()
 {
    Protos::Common::Hash hashMessage;
-   PersistentData::getValue("paul", hashMessage);
+   PersistentData::getValue("paul", hashMessage, Global::ROAMING);
    Hash hashRead(hashMessage.hash().data());
 
    QVERIFY(this->hash == hashRead);
 
    try
    {
-      PersistentData::getValue("john", hashMessage);
+      PersistentData::getValue("john", hashMessage, Global::ROAMING);
       QFAIL("'john' shouldn't exist");
    }
    catch (UnknownValueException)
@@ -130,7 +130,7 @@ void Tests::readPersistentData()
 
 void Tests::removePersistentData()
 {
-   QVERIFY(PersistentData::rmValue("paul"));
+   QVERIFY(PersistentData::rmValue("paul", Global::ROAMING));
 }
 
 void Tests::writeSettings()

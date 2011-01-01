@@ -26,6 +26,7 @@ using namespace Common;
 
 #ifdef Q_OS_WIN32
    #include <windows.h>
+   #include <Shlobj.h>
 #endif
 
 #include <Constants.h>
@@ -34,6 +35,12 @@ using namespace Common;
   * @class Global
   * Some generic global functions.
   */
+
+#ifdef Q_OS_WIN32
+   const QString Global::APPLICATION_FOLDER_NAME("Aybabtu");
+#else
+   const QString Global::APPLICATION_FOLDER_NAME(".aybabtu");
+#endif
 
 Global::UnableToSetTempDirException::UnableToSetTempDirException(const QString& dir)
    : errorMessage(QString("Unable to create the temporary directory %1").arg(dir).toUtf8())
@@ -150,12 +157,36 @@ bool Global::rename(const QString& existingFile, const QString& newFile)
 #endif
 }
 
-bool Global::createApplicationFolder()
+/**
+  * Returns the absolute path to the aybabtu roaming data folder.
+  * For example under Windows :
+  * - type == ROAMING : "C:/Users/john/AppData/Roaming/Aybabtu"
+  * - type == LOCAL : "C:/Users/john/AppData/Local/Aybabtu"
+  * Create the folder "Aybabtu" if needed.
+  * @exception UnableToGetFolder
+  */
+QString Global::getDataFolder(DataFolderType type, bool create)
 {
-   if (!QDir::home().exists(APPLICATION_FOLDER_NAME))
-      return QDir::home().mkdir(APPLICATION_FOLDER_NAME);
+#ifdef Q_OS_WIN32
+   TCHAR dataPath[MAX_PATH];
+   if (!SUCCEEDED(SHGetFolderPath(NULL, type == ROAMING ? CSIDL_APPDATA : CSIDL_LOCAL_APPDATA, NULL, 0, dataPath)))
+      throw UnableToGetFolder();
 
-   return true;
+   const QString dataFolderPath = QString::fromUtf16((ushort*)dataPath);
+   const QDir dataFolder(dataFolderPath);
+
+   if (create && !dataFolder.exists(APPLICATION_FOLDER_NAME))
+      if (!dataFolder.mkdir(APPLICATION_FOLDER_NAME))
+         throw UnableToGetFolder();
+
+   return dataFolder.absoluteFilePath(APPLICATION_FOLDER_NAME);
+#else
+   if (create && !QDir::home().exists(APPLICATION_FOLDER_NAME))
+      if (!QDir::home().mkdir(APPLICATION_FOLDER_NAME))
+         throw UnableToGetFolder();
+
+   return QDir::home().absoluteFilePath(APPLICATION_FOLDER_NAME);
+#endif
 }
 
 /**
@@ -198,8 +229,8 @@ bool Global::recursiveDeleteDirectoryContent(const QString& dir)
          success = false;
 
    return success;
-
 }
+
 /**
   * For testing purpose.
   */

@@ -23,6 +23,7 @@
 #include <QFileInfo>
 
 #include <Common/Constants.h>
+#include <Common/Global.h>
 #include <TableLogItemDelegate.h>
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -91,7 +92,7 @@ void MainWindow::openDir()
    QString dir = QFileDialog::getExistingDirectory(
       this,
       "Choose a directory",
-      Common::APPLICATION_FOLDER_PATH + '/' + Common::LOG_FOLDER_NAME
+      Common::Global::getDataFolder(Common::Global::LOCAL, false) + '/' + Common::LOG_FOLDER_NAME
    );
 
    if (!dir.isNull())

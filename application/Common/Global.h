@@ -28,6 +28,8 @@ namespace Common
 {
    class Global
    {
+      static const QString APPLICATION_FOLDER_NAME;
+
    public:
       class UnableToSetTempDirException : public std::exception
       {
@@ -43,9 +45,12 @@ namespace Common
       static QString formatByteSize(qint64 bytes, int precision = 1);
       static qint64 availableDiskSpace(const QString& path);
       static bool rename(const QString& existingFile, const QString& newFile);
-      static bool createApplicationFolder();
-      static bool createFile(const QString& path);
 
+      enum DataFolderType { ROAMING, LOCAL };
+      class UnableToGetFolder {};
+      static QString getDataFolder(DataFolderType type, bool create = true);
+
+      static bool createFile(const QString& path);
       static bool recursiveDeleteDirectoryContent(const QString& dir);
       static bool recursiveDeleteDirectory(const QString& dir);
       static QString setCurrentDirToTemp(const QString& dir);

@@ -59,7 +59,7 @@ void Tests::initTestCase()
    try
    {
       QString tempFolder = Common::Global::setCurrentDirToTemp("FileManagerTests");
-      qDebug() << "Application folder path (where is put the persistent data) : " << APPLICATION_FOLDER_PATH;
+      qDebug() << "Application folder path (where the persistent data is put) : " <<  Global::getDataFolder(Common::Global::LOCAL, false);
       qDebug() << "The file created during this test are put in : " << tempFolder;
    }
    catch(Common::Global::UnableToSetTempDirException& e)
@@ -67,7 +67,7 @@ void Tests::initTestCase()
       QFAIL(e.what());
    }
 
-   Common::PersistentData::rmValue(Common::FILE_CACHE); // Reset the stored cache.
+   Common::PersistentData::rmValue(Common::FILE_CACHE, Common::Global::LOCAL); // Reset the stored cache.
 
    SETTINGS.setFilename("core_settings_file_manager_tests.txt");
    SETTINGS.setSettingsMessage(new Protos::Core::Settings());

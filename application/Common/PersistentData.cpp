@@ -45,11 +45,11 @@ const QString PersistentData::TEMP_SUFFIX_TERM(".temp");
   * You can use an extension in the name like "settings.conf".
   * @exception PersistentDataIOException if the value can't be persisted.
   */
-void PersistentData::setValue(const QString& name, const google::protobuf::Message& data, bool humanReadable)
+void PersistentData::setValue(const QString& name, const google::protobuf::Message& data, Global::DataFolderType dataFolderType, bool humanReadable)
 {
-   if (Global::createApplicationFolder())
+   try
    {
-      const QString FILEPATH(APPLICATION_FOLDER_PATH + '/' + name);
+      const QString FILEPATH(Global::getDataFolder(dataFolderType) + '/' + name);
       const QString TEMP_FILEPATH(FILEPATH + TEMP_SUFFIX_TERM);
 
       {
@@ -74,38 +74,59 @@ void PersistentData::setValue(const QString& name, const google::protobuf::Messa
 
       Global::rename(TEMP_FILEPATH, FILEPATH);
    }
+   catch(Global::UnableToGetFolder&)
+   {
+      throw PersistentDataIOException("Unable to get the data folder");
+   }
 }
 
 /**
   * Retrieve the data associated to a given name.
+  * @exception PersistentDataIOException
   * @exception UnknownValueException Throwed if the value doesn't exist
   */
-void PersistentData::getValue(const QString& name, google::protobuf::Message& data, bool humanReadable)
+void PersistentData::getValue(const QString& name, google::protobuf::Message& data, Global::DataFolderType dataFolderType, bool humanReadable)
 {
-   QFile file(APPLICATION_FOLDER_PATH + '/' + name);
-   if (!file.open(QIODevice::ReadOnly))
-      throw UnknownValueException();
+   try
+   {
+      QFile file(Global::getDataFolder(dataFolderType) + '/' + name);
+      if (!file.open(QIODevice::ReadOnly))
+         throw UnknownValueException();
 
-#if !DEBUG
-   if (humanReadable)
-   {
-#endif
-      google::protobuf::io::FileInputStream fileStream(file.handle());
-      google::protobuf::TextFormat::Parse(&fileStream, &data);
-#if !DEBUG
+   #if !DEBUG
+      if (humanReadable)
+      {
+   #endif
+         google::protobuf::io::FileInputStream fileStream(file.handle());
+         google::protobuf::TextFormat::Parse(&fileStream, &data);
+   #if !DEBUG
+      }
+      else
+      {
+         data.ParsePartialFromFileDescriptor(file.handle());
+      }
+   #endif
    }
-   else
+   catch(Global::UnableToGetFolder&)
    {
-      data.ParsePartialFromFileDescriptor(file.handle());
+      throw PersistentDataIOException("Unable to get the data folder");
    }
-#endif
 }
 
 /**
   * Remove a data.
+  * @exception PersistentDataIOException
   * @return Return false if the data didn't exist.
   */
-bool PersistentData::rmValue(const QString& name)
+bool PersistentData::rmValue(const QString& name, Global::DataFolderType dataFolderType)
 {
-   return QFile::remove(APPLICATION_FOLDER_PATH + '/' + name);
+   try
+   {
+      return QFile::remove(Global::getDataFolder(dataFolderType) + '/' + name);
+   }
+   catch(Global::UnableToGetFolder&)
+   {
+      throw PersistentDataIOException("Unable to get the data folder");
+   }
+   return false;
 }
