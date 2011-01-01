@@ -26,6 +26,7 @@ using namespace PasswordHasher;
 #include <google/protobuf/text_format.h>
 
 #include <Common/Hash.h>
+#include <Common/Global.h>
 #include <Common/Constants.h>
 #include <Common/Settings.h>
 #include <Common/PersistentData.h>
@@ -33,7 +34,7 @@ using namespace PasswordHasher;
 #include <ui_MainWindow.h>
 
 MainWindow::MainWindow(QWidget *parent)
-   : QMainWindow(parent), CORE_SETTINGS_PATH(Common::APPLICATION_FOLDER_PATH + '/' + Common::CORE_SETTINGS_FILENAME), ui(new Ui::MainWindow)
+   : QMainWindow(parent), CORE_SETTINGS_PATH(Common::Global::getDataFolder(Common::Global::ROAMING, false) + '/' + Common::CORE_SETTINGS_FILENAME), ui(new Ui::MainWindow)
 {
    ui->setupUi(this);
    this->setButtonText();

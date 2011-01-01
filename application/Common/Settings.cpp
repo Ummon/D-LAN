@@ -101,7 +101,7 @@ void Settings::save() const
    QMutexLocker locker(&this->mutex);
    if (!this->settings)
       return;
-   PersistentData::setValue(this->filename, *this->settings, true);
+   PersistentData::setValue(this->filename, *this->settings, Common::Global::ROAMING, true);
 }
 
 void Settings::load()
@@ -111,7 +111,7 @@ void Settings::load()
       return;
    try
    {
-      PersistentData::getValue(this->filename, *this->settings, true);
+      PersistentData::getValue(this->filename, *this->settings, Common::Global::ROAMING, true);
    }
    catch (UnknownValueException&)
    {
@@ -123,7 +123,7 @@ void Settings::remove()
    QMutexLocker locker(&this->mutex);
    if (!this->settings)
       return;
-   PersistentData::rmValue(this->filename);
+   PersistentData::rmValue(this->filename, Common::Global::ROAMING);
 }
 
 bool Settings::isSet(const QString& name) const

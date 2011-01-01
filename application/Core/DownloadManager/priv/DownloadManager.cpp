@@ -227,8 +227,15 @@ void DownloadManager::newEntries(const Protos::Common::Entries& entries)
       return;
    i.remove();
 
+   // Add files first.
    for (int n = 0; n < entries.entry_size(); n++)
-      this->addDownload(entries.entry(n), dirDownload->getPeerSourceID(), false, i);
+      if (entries.entry(n).type() == Protos::Common::Entry_Type_FILE)
+         this->addDownload(entries.entry(n), dirDownload->getPeerSourceID(), false, i);
+
+   // Then directories.
+   for (int n = 0; n < entries.entry_size(); n++)
+      if (entries.entry(n).type() == Protos::Common::Entry_Type_DIR)
+         this->addDownload(entries.entry(n), dirDownload->getPeerSourceID(), false, i);
 
    delete dirDownload;
 
@@ -349,11 +356,11 @@ void DownloadManager::loadQueueFromFile()
 
    try
    {
-      Common::PersistentData::getValue(Common::FILE_QUEUE, savedQueue);
+      Common::PersistentData::getValue(Common::FILE_QUEUE, savedQueue, Common::Global::LOCAL);
       if (static_cast<int>(savedQueue.version()) != FILE_QUEUE_VERSION)
       {
          L_ERRO(QString("The version (%1) of the queue file \"%2\" doesn't match the current version (%3)").arg(savedQueue.version()).arg(Common::FILE_QUEUE).arg(FILE_QUEUE_VERSION));
-         Common::PersistentData::rmValue(Common::FILE_QUEUE);
+         Common::PersistentData::rmValue(Common::FILE_QUEUE, Common::Global::LOCAL);
          goto end;
       }
 
@@ -394,7 +401,7 @@ void DownloadManager::saveQueueToFile()
 
       try
       {
-         Common::PersistentData::setValue(Common::FILE_QUEUE, savedQueue);
+         Common::PersistentData::setValue(Common::FILE_QUEUE, savedQueue, Common::Global::LOCAL);
       }
       catch (Common::PersistentDataIOException& err)
       {

@@ -143,20 +143,17 @@ void Logger::createFileLog()
 
       QTextStream out(stderr);
 
-      if (!Common::Global::createApplicationFolder())
+      try
       {
-         out << "Error, cannot create application directory : " << Common::APPLICATION_FOLDER_PATH << endl;
-      }
-      else
-      {
-         QDir appDir(Common::APPLICATION_FOLDER_PATH);
+         QDir appDir(Common::Global::getDataFolder(Common::Global::LOCAL));
+
          if (!appDir.exists(logDirName) && !appDir.mkdir(logDirName))
          {
-            out << "Error, cannot create log directory : " << Common::APPLICATION_FOLDER_PATH << "/" << logDirName << endl;
+            out << "Error, cannot create log directory : " << appDir.absoluteFilePath(logDirName) << endl;
          }
          else
          {
-            QDir logDir(Common::APPLICATION_FOLDER_PATH + '/' + logDirName);
+            QDir logDir(appDir.absoluteFilePath(logDirName));
 
             QString filename = QDateTime::currentDateTime().toString("yyyy_MM_dd-hh_mm_ss") + ".log";
 
@@ -173,6 +170,10 @@ void Logger::createFileLog()
                Logger::out->setCodec("UTF-8");
             }
          }
+      }
+      catch(Common::Global::UnableToGetFolder& e)
+      {
+         out << "Error, cannot create the application data directory" << endl;
       }
    }
 }
