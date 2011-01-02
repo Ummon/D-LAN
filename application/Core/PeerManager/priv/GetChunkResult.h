@@ -42,7 +42,7 @@ namespace PM
       GetChunkResult(const Protos::Core::GetChunk& chunk, QSharedPointer<Socket> socket);
       ~GetChunkResult();
       void start();
-      void setError();
+      void setStatus(PM::SocketFinishedStatus status);
 
    private slots:
       void newMessage(Common::Network::CoreMessageType type, const google::protobuf::Message& message);
@@ -50,7 +50,7 @@ namespace PM
    private:
       const Protos::Core::GetChunk chunk;
       QSharedPointer<Socket> socket;
-      bool error;
+      PM::SocketFinishedStatus status;
    };
 }
 

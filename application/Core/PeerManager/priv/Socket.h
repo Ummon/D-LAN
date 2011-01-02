@@ -56,7 +56,7 @@ namespace PM
       void setActive();
 
       void send(Common::Network::CoreMessageType type, const google::protobuf::Message& message);
-      void finished(bool error = false);
+      void finished(SocketFinishedStatus status = SFS_OK);
 
    public slots:
       void close();

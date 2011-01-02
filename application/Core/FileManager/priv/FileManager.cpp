@@ -324,6 +324,7 @@ void FileManager::entryAdded(Entry* entry)
 
    L_DEBU(QString("Adding entry '%1' to the index ..").arg(entry->getName()));
    this->wordIndex.addItem(FileManager::splitInWords(entry->getName()), entry);
+   L_DEBU("Entry added to the index ..");
 }
 
 void FileManager::entryRemoved(Entry* entry)
@@ -333,12 +334,14 @@ void FileManager::entryRemoved(Entry* entry)
 
    L_DEBU(QString("Removing entry '%1' from the index..").arg(entry->getName()));
    this->wordIndex.rmItem(FileManager::splitInWords(entry->getName()), entry);
+   L_DEBU("Entry removed from the index..");
 }
 
 void FileManager::chunkHashKnown(QSharedPointer<Chunk> chunk)
 {
    L_DEBU(QString("Adding chunk '%1' to the index..").arg(chunk->getHash().toStr()));
    this->chunks.add(chunk);
+   L_DEBU("Chunk added to the index..");
    this->setCacheChanged();
 }
 
@@ -346,6 +349,7 @@ void FileManager::chunkRemoved(QSharedPointer<Chunk> chunk)
 {
    L_DEBU(QString("Removing chunk '%1' from the index ..").arg(chunk->getHash().toStr()));
    this->chunks.rm(chunk);
+   L_DEBU("Chunk removed from the index..");
    this->setCacheChanged();
 }
 

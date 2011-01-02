@@ -24,7 +24,7 @@ using namespace PM;
 #include <priv/Log.h>
 
 GetChunkResult::GetChunkResult(const Protos::Core::GetChunk& chunk, QSharedPointer<Socket> socket)
-   : IGetChunkResult(SETTINGS.get<quint32>("socket_timeout")), chunk(chunk), socket(socket), error(false)
+   : IGetChunkResult(SETTINGS.get<quint32>("socket_timeout")), chunk(chunk), socket(socket), status(SFS_OK)
 {
 }
 
@@ -32,7 +32,7 @@ GetChunkResult::~GetChunkResult()
 {
    // We must disconnect because 'this->socket->finished' can read some data and emit 'newMessage'.
    disconnect(this->socket.data(), SIGNAL(newMessage(Common::Network::CoreMessageType, const google::protobuf::Message&)), this, SLOT(newMessage(Common::Network::CoreMessageType, const google::protobuf::Message&)));
-   this->socket->finished(this->error || this->isTimeouted());
+   this->socket->finished(this->isTimeouted() ? SFS_ERROR : this->status);
 }
 
 void GetChunkResult::start()
@@ -42,9 +42,9 @@ void GetChunkResult::start()
    this->startTimer();
 }
 
-void GetChunkResult::setError()
+void GetChunkResult::setStatus(SocketFinishedStatus status)
 {
-   this->error = true;
+   this->status = status;
 }
 
 void GetChunkResult::newMessage(Common::Network::CoreMessageType type, const google::protobuf::Message& message)
@@ -63,7 +63,7 @@ void GetChunkResult::newMessage(Common::Network::CoreMessageType type, const goo
    }
    else
    {
-      this->error = true;
+      this->status = SFS_ERROR;
       disconnect(this->socket.data(), SIGNAL(newMessage(Common::Network::CoreMessageType, const google::protobuf::Message&)), this, SLOT(newMessage(Common::Network::CoreMessageType, const google::protobuf::Message&)));
    }
 }

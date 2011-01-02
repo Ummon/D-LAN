@@ -107,7 +107,7 @@ File::~File()
          this->fileInWriteMode->close();
 
       if (!QFile::remove(this->getFullPath()))
-         L_ERRO(QString("File::~File() : cannot delete an unfinished file : %1").arg(this->getFullPath()));
+         L_ERRO(QString("File::~File() : unable to delete an unfinished file : %1").arg(this->getFullPath()));
    }
 
    L_DEBU(QString("File deleted : %1").arg(this->getFullPath()));
@@ -510,8 +510,7 @@ bool File::hasOneOrMoreHashes()
 }
 
 /**
-  * A file is complete when all its chunk has been downloaded.
-  * The '.unfinished' suffix of the complete file will be removed later, see 'setAsComplete'.
+  * A file is complete when all its chunk has been downloaded and the ".unfinished" suffix has been removed.
   */
 bool File::isComplete()
 {
@@ -531,8 +530,6 @@ void File::setAsComplete()
    QMutexLocker locker(&this->mutex);
 
    L_DEBU(QString("File set as complete : %1").arg(this->getFullPath()));
-
-   this->complete = true;
 
    if (Cache::isFileUnfinished(this->name))
    {
@@ -560,6 +557,7 @@ void File::setAsComplete()
       }
       else
       {
+         this->complete = true;
          this->dateLastModified = QFileInfo(newPath).lastModified();
          this->name = this->name.left(this->name.size() - SUFFIX_SIZE);
          this->cache->onEntryAdded(this); // To add the name to the index. (a bit tricky).
