@@ -40,7 +40,7 @@ ChunkDownload::ChunkDownload(QSharedPointer<PM::IPeerManager> peerManager, Occup
    chunkHash(chunkHash),
    socket(0),
    downloading(false),
-   networkTransferError(false),
+   networkTransferStatus(PM::SFS_OK),
    mutex(QMutex::Recursive)
 {
    L_DEBU(QString("New ChunkDownload : %1").arg(this->chunkHash.toStr()));
@@ -187,7 +187,7 @@ bool ChunkDownload::startDownloading()
 {
    if (this->chunk.isNull())
    {
-      L_ERRO(QString("Unable to download without the chunk. Hash : %1").arg(this->chunkHash.toStr()));
+      L_WARN(QString("Unable to download without the chunk. Hash : %1").arg(this->chunkHash.toStr()));
       return false;
    }
 
@@ -241,22 +241,23 @@ void ChunkDownload::run()
          }
          this->mutex.unlock();
 
-         bytesRead = this->socket->getQSocket()->read(buffer, BUFFER_SIZE);
+         const int bytesToRead = this->chunkSize - initialKnownBytes - bytesReadTotal;
+         bytesRead = this->socket->getQSocket()->read(buffer, bytesToRead < BUFFER_SIZE ? bytesToRead : BUFFER_SIZE);
 
          if (bytesRead == 0)
          {
             if (!this->socket->getQSocket()->waitForReadyRead(SOCKET_TIMEOUT))
             {
                L_WARN(QString("Connection dropped, error = %1, bytesAvailable = %2").arg(socket->getQSocket()->errorString()).arg(socket->getQSocket()->bytesAvailable()));
-               this->networkTransferError = true;
+               this->networkTransferStatus = PM::SFS_ERROR;
                break;
             }
             continue;
          }
          else if (bytesRead == -1)
          {
-            L_ERRO(QString("Socket : cannot receive data : %1").arg(this->chunk->toStr()));
-            this->networkTransferError = true;
+            L_WARN(QString("Socket : cannot receive data : %1").arg(this->chunk->toStr()));
+            this->networkTransferStatus = PM::SFS_ERROR;
             break;
          }
 
@@ -278,7 +279,8 @@ void ChunkDownload::run()
                peer->getSpeed() > SETTINGS.get<double>("switch_to_another_peer_factor") * this->currentDownloadingPeer->getSpeed()
             )
             {
-               L_DEBU("Switch to a better peer..");
+               L_DEBU(QString("Switch to a better peer : %1").arg(peer->toStringLog()));
+               this->networkTransferStatus = PM::SFS_TO_CLOSE; // We ask to close the socket to avoid to get garbage data.
                break;
             }
          }
@@ -293,19 +295,19 @@ void ChunkDownload::run()
    }
    catch(FM::UnableToOpenFileInWriteModeException)
    {
-      L_ERRO("UnableToOpenFileInWriteModeException");
+      L_WARN("UnableToOpenFileInWriteModeException");
    }
    catch(FM::IOErrorException&)
    {
-      L_ERRO("IOErrorException");
+      L_WARN("IOErrorException");
    }
    catch (FM::ChunkDeletedException&)
    {
-      L_ERRO("ChunkDeletedException");
+      L_WARN("ChunkDeletedException");
    }
    catch (FM::TryToWriteBeyondTheEndOfChunkException&)
    {
-      L_ERRO("TryToWriteBeyondTheEndOfChunkException");
+      L_WARN("TryToWriteBeyondTheEndOfChunkException");
    }
 
    this->transferRateCalculator.reset();
@@ -355,9 +357,8 @@ void ChunkDownload::downloadingEnded()
    if (!this->socket.isNull())
       this->socket.clear();
 
-   if (this->networkTransferError)
-      this->getChunkResult->setError();
-   this->networkTransferError = false;
+   this->getChunkResult->setStatus(this->networkTransferStatus);
+   this->networkTransferStatus = PM::SFS_OK;
    this->getChunkResult.clear();
 
    this->downloading = false;

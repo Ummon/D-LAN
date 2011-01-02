@@ -69,7 +69,12 @@ Common::Hash Uploader::getPeerID() const
 int Uploader::getProgress() const
 {
    QMutexLocker locker(&this->mutex);
-   return 100LL * this->offset / this->chunk->getChunkSize();
+
+   const int chunkSize = this->chunk->getChunkSize();
+   if (chunkSize != 0)
+      return 100LL * this->offset / this->chunk->getChunkSize();
+   else
+      return 0;
 }
 
 QSharedPointer<FM::IChunk> Uploader::getChunk() const
@@ -105,9 +110,10 @@ void Uploader::run()
       while (bytesRead = reader->read(buffer, this->offset))
       {
          int bytesSent = this->socket->getQSocket()->write(buffer, bytesRead);
+
          if (bytesSent == -1)
          {
-            L_ERRO(QString("Socket : cannot send data : %1").arg(this->chunk->toStr()));
+            L_WARN(QString("Socket : cannot send data : %1").arg(this->chunk->toStr()));
             networkError = true;
             break;
          }
@@ -116,15 +122,12 @@ void Uploader::run()
          this->offset += bytesSent;
          this->mutex.unlock();
 
-         // Sometimes it will block when data are send between the 'bytesToWrite' call and the 'waitForBytesWritten' call.
-         if (socket->getQSocket()->bytesToWrite() > SETTINGS.get<quint32>("socket_buffer_size"))
+         if (socket->getQSocket()->bytesToWrite() > SETTINGS.get<quint32>("socket_buffer_size") &&
+            !socket->getQSocket()->waitForBytesWritten(SETTINGS.get<quint32>("socket_timeout")))
          {
-            if (!socket->getQSocket()->waitForBytesWritten(SETTINGS.get<quint32>("socket_timeout")))
-            {
-               L_ERRO(QString("Socket : cannot write data, timeout, chunk : %1, error : %2").arg(this->chunk->toStr()).arg(socket->getQSocket()->errorString()));
-               networkError = true;
-               break;
-            }
+            L_WARN(QString("Socket : cannot write data, timeout, chunk : %1, error : %2").arg(this->chunk->toStr()).arg(socket->getQSocket()->errorString()));
+            networkError = true;
+            break;
          }
 
          this->transferRateCalculator.addData(bytesSent);
@@ -132,19 +135,19 @@ void Uploader::run()
    }
    catch(FM::UnableToOpenFileInReadModeException&)
    {
-      L_ERRO("UnableToOpenFileInReadModeException");
+      L_WARN("UnableToOpenFileInReadModeException");
    }
    catch(FM::IOErrorException&)
    {
-      L_ERRO("IOErrorException");
+      L_WARN("IOErrorException");
    }
    catch (FM::ChunkDeletedException)
    {
-      L_ERRO("ChunkDeletedException");
+      L_WARN("ChunkDeletedException");
    }
    catch (FM::ChunkNotCompletedException)
    {
-      L_ERRO("ChunkNotCompletedException");
+      L_WARN("ChunkNotCompletedException");
    }
 
    this->socket->getQSocket()->moveToThread(this->mainThread);

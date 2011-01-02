@@ -47,8 +47,8 @@ void Tests::initTestCase()
    LM::Builder::initMsgHandler();
    qDebug() << "===== initTestCase() =====";
 
-   Common::PersistentData::rmValue(Common::FILE_CACHE); // Reset the stored cache.
-   Common::PersistentData::rmValue(Common::FILE_QUEUE); // Reset the stored queue.
+   Common::PersistentData::rmValue(Common::FILE_CACHE, Common::Global::LOCAL); // Reset the stored cache.
+   Common::PersistentData::rmValue(Common::FILE_QUEUE, Common::Global::LOCAL); // Reset the stored queue.
 
    SETTINGS.setFilename("core_settings.txt");
    SETTINGS.setSettingsMessage(new Protos::Core::Settings());

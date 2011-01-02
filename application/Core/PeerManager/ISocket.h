@@ -28,6 +28,13 @@
 
 namespace PM
 {
+   enum SocketFinishedStatus
+   {
+      SFS_OK,
+      SFS_ERROR,
+      SFS_TO_CLOSE
+   };
+
    class ISocket
    {
    public:
@@ -42,7 +49,7 @@ namespace PM
         * The listening is restored by a call to 'finished(..)'.
         */
       virtual void stopListening() = 0;
-      virtual void finished(bool error = false) = 0;
+      virtual void finished(SocketFinishedStatus status = SFS_OK) = 0;
    };
 }
 

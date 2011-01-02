@@ -77,7 +77,7 @@ void UploadManager::getChunk(Common::Hash hash, int offset, QSharedPointer<PM::I
       socket->send(Common::Network::CORE_GET_CHUNK_RESULT, result);
       socket->finished();
 
-      L_ERRO(QString("UploadManager::getChunk(..) : Chunk unknown : %1").arg(hash.toStr()));
+      L_WARN(QString("UploadManager::getChunk(..) : Chunk unknown : %1").arg(hash.toStr()));
    }
    else
    {
@@ -102,7 +102,7 @@ void UploadManager::uploadFinished(bool networkError)
 
    L_DEBU(QString("Upload finished, chunk : %1").arg(uploader->getChunk()->toStr()));
 
-   uploader->getSocket()->finished(networkError);
+   uploader->getSocket()->finished(networkError ? PM::SFS_ERROR : PM::SFS_OK);
    uploader->startTimer(); // Will delay the call to 'deleteUploade'.
 }
 

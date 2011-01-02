@@ -359,7 +359,7 @@ void DownloadManager::loadQueueFromFile()
       Common::PersistentData::getValue(Common::FILE_QUEUE, savedQueue, Common::Global::LOCAL);
       if (static_cast<int>(savedQueue.version()) != FILE_QUEUE_VERSION)
       {
-         L_ERRO(QString("The version (%1) of the queue file \"%2\" doesn't match the current version (%3)").arg(savedQueue.version()).arg(Common::FILE_QUEUE).arg(FILE_QUEUE_VERSION));
+         L_USER(QString("The version (%1) of the queue file \"%2\" doesn't match the current version (%3). Queue will be reset.").arg(savedQueue.version()).arg(Common::FILE_QUEUE).arg(FILE_QUEUE_VERSION));
          Common::PersistentData::rmValue(Common::FILE_QUEUE, Common::Global::LOCAL);
          goto end;
       }

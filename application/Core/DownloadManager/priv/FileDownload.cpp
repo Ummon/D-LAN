@@ -251,7 +251,7 @@ void FileDownload::result(const Protos::Core::GetHashesResult& result)
    if (result.status() == Protos::Core::GetHashesResult_Status_OK)
    {
       if (this->nbHashesKnown + static_cast<int>(result.nb_hash()) != this->NB_CHUNK)
-         L_ERRO(QString("The received hashes (%1) plus the known hashes (%2) is not equal to the number of chunks (%3)").arg(result.nb_hash()).arg(this->nbHashesKnown).arg(this->NB_CHUNK));
+         L_WARN(QString("The received hashes (%1) plus the known hashes (%2) is not equal to the number of chunks (%3)").arg(result.nb_hash()).arg(this->nbHashesKnown).arg(this->NB_CHUNK));
    }
    else
    {
@@ -284,7 +284,7 @@ void FileDownload::nextHash(const Common::Hash& hash)
 
    if (this->chunkDownloads.size() >= this->nbHashesKnown && this->chunkDownloads[this->nbHashesKnown-1]->getHash() != hash)
    {
-      L_ERRO(
+      L_WARN(
          QString("The hash (%1) num %2 received doesn't match the hash (%3) in the entry").
             arg(hash.toStr()).
             arg(this->nbHashesKnown-1).

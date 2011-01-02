@@ -163,7 +163,7 @@ void Socket::dataReceived()
          if (this->currentHeader.senderID != this->peerID)
          {
             L_DEBU(QString("Socket[%1]: Peer ID from message (%2) doesn't match the known peer ID (%3)").arg(this->num).arg(this->currentHeader.senderID.toStr()).arg(this->peerID.toStr()));
-            this->finished(true);
+            this->finished(SFS_ERROR);
             this->currentHeader.setNull();
             return;
          }
@@ -174,7 +174,7 @@ void Socket::dataReceived()
          if (!this->readMessage())
          {
             L_DEBU("Can't read the message -> finished");
-            this->finished(true);
+            this->finished(SFS_ERROR);
          }
          this->currentHeader.setNull();
       }
@@ -183,22 +183,28 @@ void Socket::dataReceived()
    }
 }
 
-void Socket::finished(bool error)
+void Socket::finished(SocketFinishedStatus status)
 {
    if (this->idle)
       return;
 
-   L_DEBU(QString("Socket[%1] set to idle%2<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<").arg(this->num).arg(error ? " with error " : " "));
+   L_DEBU(QString("Socket[%1] set to idle%2<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<").arg(this->num).arg(status == SFS_ERROR ? " with error " : " "));
 
-   if (error && ++this->nbError > 5) // TODO : -> constant
+   if (status == SFS_TO_CLOSE)
+   {
+      L_WARN("Socket forced to close..");
+      this->close();
+      return;
+   }
+   else if (status == SFS_ERROR && ++this->nbError > 5) // TODO : -> constant
    {
       L_WARN("Socket with too many error, closed");
       this->close();
       return;
    }
-
-   if (!this->socket->isValid())
+   else if (!this->socket->isValid())
    {
+      L_WARN("Socket non-valid, closed");
       this->close();
       return;
    }
