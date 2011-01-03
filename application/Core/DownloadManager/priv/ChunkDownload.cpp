@@ -64,7 +64,7 @@ ChunkDownload::~ChunkDownload()
 
    if (!this->chunk.isNull())
    {
-      this->chunk->removeItsFile(); // (only if incomplete).
+      this->chunk->removeItsIncompleteFile();
    }
 }
 
@@ -386,5 +386,8 @@ PM::IPeer* ChunkDownload::getTheFastestFreePeer()
       else if (this->occupiedPeersDownloadingChunk.isPeerFree(peer) && (!current || peer->getSpeed() > current->getSpeed()))
          current = peer;
    }
+
+   L_DEBU(QString("getTheFastestFreePeer : %1").arg(current ? current->toStringLog() : "No peer"));
+
    return current;
 }

@@ -125,7 +125,7 @@ void UDPListener::send(Common::Network::CoreMessageType type, const Common::Hash
    );
 
    if (this->unicastSocket.writeDatagram(this->buffer, messageSize, peer->getIP(), peer->getPort()) == -1)
-      L_ERRO("Unable to send datagram");
+      L_WARN("Unable to send datagram");
 }
 
 /**
@@ -150,7 +150,7 @@ void UDPListener::send(Common::Network::CoreMessageType type, const google::prot
 #endif
 
    if (this->multicastSocket.writeDatagram(this->buffer, messageSize, MULTICAST_GROUP, MULTICAST_PORT) == -1)
-      L_ERRO("Unable to send datagram");
+      L_WARN("Unable to send datagram");
 }
 
 void UDPListener::sendIMAliveMessage()

@@ -23,6 +23,9 @@
 
 namespace FM
 {
+   /**
+     * To read data from a chunk.
+     */
    class IDataReader
    {
    public:

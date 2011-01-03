@@ -48,14 +48,12 @@ namespace FM
    public:
       ~Chunk();
 
-      void removeItsFile();
-
       Chunk* restoreFromFileCache(const Protos::FileCache::Hashes_Chunk& chunk);
 
       void populateHashesChunk(Protos::FileCache::Hashes_Chunk& chunk) const;
 
+      void removeItsIncompleteFile();
       void populateEntry(Protos::Common::Entry* entry) const;
-
       QString getBasePath() const;
 
       QSharedPointer<IDataReader> getDataReader();
@@ -87,9 +85,6 @@ namespace FM
         * @return 'true' if end of chunk reached.
         */
       bool write(const char* buffer, int nbBytes);
-
-      //void sendContentToSocket(QAbstractSocket& socket);
-      //void getContentFromSocket(QAbstractSocket& socket);
 
       int getNum() const;
 

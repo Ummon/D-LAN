@@ -30,16 +30,23 @@ namespace FM
    class IDataReader;
    class IDataWriter;
 
+   /**
+     * A chunk of data that can be read or write.
+     */
    class IChunk
    {
    public:
       virtual ~IChunk() {}
 
       /**
-        * Remove only the file if it's incomplete.
+        * Ask the chunk to delete its own file. The file will be deleted only if unfinished.
+        * Useful when user remove an unfinished download.
         */
-      virtual void removeItsFile() = 0;
+      virtual void removeItsIncompleteFile() = 0;
 
+      /**
+        * Fill the entry object with its own file information.
+        */
       virtual void populateEntry(Protos::Common::Entry* entry) const = 0;
 
       /**
@@ -62,20 +69,39 @@ namespace FM
         */
       virtual QSharedPointer<IDataWriter> getDataWriter() = 0;
 
+      /**
+        * Number of the chunk, start at 0.
+        * The chunk number 0 is the first data chunk in a file and the chunk number 'getNbTotalChunk() - 1' is the last one.
+        */
       virtual int getNum() const = 0;
 
+      /**
+        * Returns the total number of chunk.
+        */
       virtual int getNbTotalChunk() const = 0;
 
+      /**
+        * Returns the hash of the chunk, can be null.
+        */
       virtual Common::Hash getHash() const = 0;
 
+      /**
+        * Set the hash of the chunk.
+        */
       virtual void setHash(const Common::Hash&) = 0;
 
       virtual int getKnownBytes() const = 0;
 
       virtual int getChunkSize() const = 0;
 
+      /**
+        * Returns 'true' if 'getKnownBytes()' == 'getChunkSize()'.
+        */
       virtual bool isComplete() const = 0;
 
+      /**
+        * For debug purpose.
+        */
       virtual QString toStr() const = 0;
    };
 }

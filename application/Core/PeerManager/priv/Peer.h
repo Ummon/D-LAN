@@ -75,8 +75,6 @@ namespace PM
       void consideredDead();
 
    private:
-      QString toStr();
-
       PeerManager* peerManager;
       QSharedPointer<FM::IFileManager> fileManager;
 

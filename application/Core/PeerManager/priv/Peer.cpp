@@ -20,6 +20,7 @@
 using namespace PM;
 
 #include <Common/Settings.h>
+#include <Common/Global.h>
 #include <Common/LogManager/Builder.h>
 
 #include <priv/PeerManager.h>
@@ -39,9 +40,12 @@ Peer::Peer(PeerManager* peerManager, QSharedPointer<FM::IFileManager> fileManage
    connect(&this->aliveTimer, SIGNAL(timeout()), this, SLOT(consideredDead()));
 }
 
+/**
+  * Mainly for debugging purpose.
+  */
 QString Peer::toStringLog() const
 {
-   return QString("%1 %2 %3:%4 %5").arg(this->nick).arg(this->ID.toStr()).arg(this->IP.toString()).arg(this->port).arg(this->alive ? "<alive>" : "<dead>");
+   return QString("%1 %2 %3:%4 %5 %6/s").arg(this->nick).arg(this->ID.toStr()).arg(this->IP.toString()).arg(this->port).arg(this->alive ? "<alive>" : "<dead>").arg(Common::Global::formatByteSize(this->speed, 4));
 }
 
 Common::Hash Peer::getID() const
@@ -125,16 +129,8 @@ QSharedPointer<IGetChunkResult> Peer::getChunk(const Protos::Core::GetChunk& chu
 
 void Peer::newConnexion(QTcpSocket* tcpSocket)
 {
-   L_DEBU(QString("New Connection from %1").arg(this->toStr()));
+   L_DEBU(QString("New Connection from %1").arg(this->toStringLog()));
    this->connectionPool.newConnexion(tcpSocket);
-}
-
-/**
-  * Mainly for debugging purpose.
-  */
-QString Peer::toStr()
-{
-   return QString("%1 - %2 - %3").arg(this->nick).arg(this->ID.toStr()).arg(this->IP.toString());
 }
 
 void Peer::consideredDead()

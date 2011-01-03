@@ -58,13 +58,6 @@ Chunk::~Chunk()
    );
 }
 
-void Chunk::removeItsFile()
-{
-   QMutexLocker locker(&this->mutex);
-   if (this->file && !this->file->isComplete())
-      delete this->file;
-}
-
 Chunk* Chunk::restoreFromFileCache(const Protos::FileCache::Hashes_Chunk& chunk)
 {
    this->knownBytes = chunk.known_bytes();
@@ -79,6 +72,13 @@ void Chunk::populateHashesChunk(Protos::FileCache::Hashes_Chunk& chunk) const
    chunk.set_known_bytes(this->knownBytes);
    if (!this->hash.isNull())
       chunk.mutable_hash()->set_hash(this->hash.getData(), Common::Hash::HASH_SIZE);
+}
+
+void Chunk::removeItsIncompleteFile()
+{
+   QMutexLocker locker(&this->mutex);
+   if (this->file && !this->file->isComplete())
+      delete this->file;
 }
 
 void Chunk::populateEntry(Protos::Common::Entry* entry) const
@@ -193,14 +193,6 @@ bool Chunk::write(const char* buffer, int nbBytes)
 
    return complete;
 }
-
-/*void Chunk::sendContentToSocket(QAbstractSocket& socket)
-{
-}
-
-void Chunk::getContentFromSocket(QAbstractSocket& socket)
-{
-}*/
 
 int Chunk::getNum() const
 {

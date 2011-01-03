@@ -21,6 +21,9 @@
 
 namespace FM
 {
+   /**
+     * To write data into a chunk.
+     */
    class IDataWriter
    {
    public:

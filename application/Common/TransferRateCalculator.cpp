@@ -32,6 +32,9 @@ void TransferRateCalculator::addData(int bytes)
    this->bytesTransmitted += bytes;
 }
 
+/**
+  * @return Rate in [B/s].
+  */
 int TransferRateCalculator::getTransferRate() const
 {
    QMutexLocker locker(&this->mutex);

@@ -336,7 +336,6 @@ bool CoreConnection::readMessage()
       }
       break;
 
-
    case Common::Network::GUI_STATE:
       {
          Protos::GUI::State state;
