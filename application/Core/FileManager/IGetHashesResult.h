@@ -42,9 +42,6 @@ namespace FM
         * give the caller the time to treat the 'start()' return value.
         */
       void nextHash(Common::Hash hash);
-
-      //void error(/*QString message*/);
-      //void result(Protos::Core::GetHashesResult& result);
    };
 }
 #endif
