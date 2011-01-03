@@ -25,13 +25,14 @@ namespace Common
 {
    const QString LOG_FOLDER_NAME("log");
 
+// Some files are saved as text format in debug and as binary in release.
 #ifdef DEBUG
    const QString FILE_EXTENSION("txt");
 #else
    const QString FILE_EXTENSION("bin");
 #endif
 
-   const QString FILE_CACHE("cache." + FILE_EXTENSION); ///< The name of the file cache saved in the home directory.
+   const QString FILE_CACHE("cache." + FILE_EXTENSION); ///< The name of the file cache saved in the local data directory.
    const QString FILE_QUEUE("queue." + FILE_EXTENSION); ///< This file contains the current downloads.
 
    const QString CORE_SETTINGS_FILENAME("core_settings.txt");

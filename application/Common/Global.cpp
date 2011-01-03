@@ -43,13 +43,13 @@ using namespace Common;
 #endif
 
 Global::UnableToSetTempDirException::UnableToSetTempDirException(const QString& dir)
-   : errorMessage(QString("Unable to create the temporary directory %1").arg(dir).toUtf8())
+   : errorMessage(QString("Unable to create the temporary directory %1").arg(dir))
 {
 }
 
-const char* Global::UnableToSetTempDirException::what() const throw()
+QString Global::UnableToSetTempDirException::getMessage() const throw()
 {
-   return this->errorMessage.constData();
+   return this->errorMessage;
 }
 
 /**

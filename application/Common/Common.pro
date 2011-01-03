@@ -27,7 +27,6 @@ SOURCES += Hash.cpp \
     ../Libs/blake/blake_opt.c
 HEADERS += Hashes.h \
     Hash.h \
-    Deletable.h \
     Constants.h \
     Global.h \
     Uncopyable.h \

@@ -45,7 +45,7 @@ namespace PasswordHasher
    private:
       const QString CORE_SETTINGS_PATH;
 
-      Ui::MainWindow *ui;
+      Ui::MainWindow* ui;
    };
 }
 

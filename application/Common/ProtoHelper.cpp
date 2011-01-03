@@ -23,15 +23,10 @@ using namespace Common;
 
 QString ProtoHelper::getDebugStr(const google::protobuf::Message& mess)
 {
-   return QString("");
+   // return QString("");
 
    std::string debugString = mess.DebugString();
-   QString str = QString::fromStdString(debugString);
-
-   //return str;
-
-   QString test;
-   test.append(QString("%1").arg(5, 2, 16, QLatin1Char('0')));
+   QString str = QString::fromUtf8(debugString.data());
 
    // Very dirty : substitute the bytes representation (ascii + escaped octal number) with a hexadecimal representation.
    // hash: "ID\214\351\t\003\312w\213u\320\236@0o\032\220\"(\033"
@@ -62,6 +57,10 @@ QString ProtoHelper::getDebugStr(const google::protobuf::Message& mess)
                break;
             case 'n':
                hashHex.append("0a");
+               pos += 2;
+               break;
+            case 't':
+               hashHex.append("09");
                pos += 2;
                break;
             case '"':

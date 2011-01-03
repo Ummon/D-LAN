@@ -32,7 +32,7 @@ using namespace Common;
 /**
   * @class PersistentData
   * Some little functions to persist data and retrieve it.
-  * The data are persisted in the user directory.
+  * The data are persisted in the user directory (roaming or local, see Common::Global::getDataFolder(..) method for more information).
   * The data are described by a Protocol Buffer message.
   * Theses functions can be used for the application settings.
   */
@@ -41,7 +41,7 @@ const QString PersistentData::TEMP_SUFFIX_TERM(".temp");
 
 /**
   * Define a value associated to a name.
-  * You may refer to the name policy of the platform. Try to avoir special characters or space.
+  * You may refer to the name policy of the platform. Try to avoid special characters or space.
   * You can use an extension in the name like "settings.conf".
   * @exception PersistentDataIOException if the value can't be persisted.
   */

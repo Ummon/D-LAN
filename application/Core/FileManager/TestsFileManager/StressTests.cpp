@@ -49,7 +49,7 @@ void StressTests::initTestCase()
    }
    catch(Common::Global::UnableToSetTempDirException& e)
    {
-      QFAIL(e.what());
+      QFAIL(e.getMessage());
    }
 
    Common::PersistentData::rmValue(Common::FILE_CACHE, Common::Global::LOCAL); // Reset the stored cache.

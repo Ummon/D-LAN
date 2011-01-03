@@ -29,6 +29,11 @@ namespace Common
 {
    class notEnoughData {};
 
+   /**
+     * Contains all type of messages that can be exchange between peers.
+     * Can read or write header message.
+     * See the *.proto files in "/application/Protos" for more information.
+     */
    class Network
    {
    public:

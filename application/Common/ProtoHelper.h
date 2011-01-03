@@ -27,6 +27,7 @@ namespace Common
 {
    /**
      * The ugliest class ever!
+     * Has some methods to read and write string field from Protocol Buffer objects.
      */
    class ProtoHelper
    {

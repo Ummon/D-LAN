@@ -19,10 +19,7 @@
 #ifndef COMMON_COMMON_H
 #define COMMON_COMMON_H
 
-#include <exception>
-
-#include <QtGlobal>
-#include <QByteArray>
+#include <QString>
 
 namespace Common
 {
@@ -31,14 +28,21 @@ namespace Common
       static const QString APPLICATION_FOLDER_NAME;
 
    public:
-      class UnableToSetTempDirException : public std::exception
+      class MessageException
+      {
+      public:
+         virtual QString getMessage() const throw() = 0;
+      };
+
+      class UnableToSetTempDirException : public MessageException
       {
       public:
          UnableToSetTempDirException(const QString& dir);
          ~UnableToSetTempDirException() throw() {};
-         const char* what() const throw();
+         QString getMessage() const throw();
+
       private:
-         QByteArray errorMessage;
+         QString errorMessage;
       };
 
       static int nCombinations(int n, int k);
