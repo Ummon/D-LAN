@@ -650,12 +650,11 @@ void File::createPhysicalFile()
    }
 }
 
+/**
+  * The number of given hashes may not match the total number of chunk.
+  */
 void File::setHashes(const Common::Hashes& hashes)
 {
-   if (!hashes.isEmpty())
-      if (this->getNbChunks() != hashes.size()) // It can occur when IFileManager::newFile(..) is called with an entry not owning all its hashes.
-         L_WARN(QString("File::File(..) : The number of hashes (%1) doesn't correspond to the calculate number of chunk (%2)").arg(hashes.size()).arg(this->getNbChunks()));
-
    for (int i = 0; i < this->getNbChunks(); i++)
    {
       int chunkKnownBytes = !this->isComplete() ? 0 : i == this->getNbChunks() - 1 && this->size % CHUNK_SIZE != 0 ? this->size % CHUNK_SIZE : CHUNK_SIZE;

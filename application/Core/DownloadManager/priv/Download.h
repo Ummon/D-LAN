@@ -82,7 +82,7 @@ namespace DM
       Common::Hash peerSourceID;
       PM::IPeer* peerSource;
       Protos::Common::Entry entry; ///< The remote entry given by searching or browsing.
-      QString basePath;
+      QString basePath; ///< The absolute path to the local shared directory containing the download. Only set when the local file is known (created).
 
       Status status;
    };

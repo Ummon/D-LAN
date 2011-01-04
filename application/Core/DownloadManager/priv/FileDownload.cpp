@@ -74,6 +74,7 @@ FileDownload::~FileDownload()
    this->getHashesResult.clear();
    this->chunksWithoutDownload.clear();
    this->chunkDownloads.clear();
+   this->occupiedPeersAskingForHashes.setPeerAsFree(this->peerSource);
 }
 
 /**
@@ -162,8 +163,8 @@ QSharedPointer<ChunkDownload> FileDownload::getAChunkToDownload()
                if (this->chunksWithoutDownload.isEmpty())
                   this->chunksWithoutDownload = this->fileManager->newFile(this->entry);
 
-               // If we got all the chunks, remote entry becomes a local entry.
-               if (!this->chunksWithoutDownload.isEmpty() && this->nbHashesKnown == this->NB_CHUNK)
+               // Set the local base path.
+               if (!this->chunksWithoutDownload.isEmpty())
                   this->basePath = this->chunksWithoutDownload.first()->getBasePath();
 
                for (int i = 0; !this->chunksWithoutDownload.isEmpty() && i < this->chunkDownloads.size(); i++)
@@ -219,7 +220,7 @@ bool FileDownload::retreiveHashes()
 {
    // If we've already got all the chunk hashes it's unecessary to re-ask them.
    // Or if we'v got anyone to ask the chunk hashes..
-   if (this->nbHashesKnown == this->NB_CHUNK || !this->hasAValidPeer() || this->status == COMPLETE)
+   if (this->nbHashesKnown == this->NB_CHUNK || !this->hasAValidPeer() || this->status == COMPLETE || this->status == DELETED)
       return false;
 
    // We already fail to retrieve hashes a little time before.
@@ -272,10 +273,6 @@ void FileDownload::nextHash(const Common::Hash& hash)
    {
       this->getHashesResult.clear();
       this->occupiedPeersAskingForHashes.setPeerAsFree(this->peerSource);
-
-      // If we got all the chunks, remote entry becomes a local entry.
-      if (this->fileCreated && !this->chunkDownloads.isEmpty())
-         this->basePath = this->chunkDownloads.first()->getChunk()->getBasePath();
 
       this->status = QUEUED;
    }
