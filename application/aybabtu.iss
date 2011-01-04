@@ -33,6 +33,7 @@ Source: {#MingwDir}/bin/libgcc_s_dw2-1.dll; DestDir: {app}; Flags: comparetimest
 
 [Icons]
 Name: "{group}\Aybabtu GUI"; Filename: {app}\AybabtuGUI.exe; WorkingDir: "{app}"
+Name: "{group}\Password Hasher"; Filename: {app}\PasswordHasher.exe; WorkingDir: "{app}"
 
 [Run]
 Filename: {app}\AybabtuCore.exe; Parameters: -i; Description: Install the Aybabtu service; Flags: RunHidden; 
