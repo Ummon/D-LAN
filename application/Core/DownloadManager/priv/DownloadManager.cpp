@@ -254,6 +254,8 @@ void DownloadManager::downloadDeleted(Download* download)
   */
 void DownloadManager::peerNoLongerAskingForHashes(PM::IPeer* peer)
 {
+   L_DEBU(QString("A peer has finish to ask hashes : %1").arg(peer->getID().toStr()));
+
    for (QListIterator<Download*> i(this->downloads); i.hasNext();)
    {
       FileDownload* fileDownload = dynamic_cast<FileDownload*>(i.next());

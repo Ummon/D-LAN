@@ -222,14 +222,11 @@ bool FileDownload::retreiveHashes()
    if (this->nbHashesKnown == this->NB_CHUNK || !this->hasAValidPeer() || this->status == COMPLETE)
       return false;
 
-   if (!this->occupiedPeersAskingForHashes.setPeerAsOccupied(this->peerSource))
-      return false;
-
    // We already fail to retrieve hashes a little time before.
    if (this->timer.isActive())
       return false;
 
-   if (!this->sender() && this->status == UNABLE_TO_RETRIEVE_THE_HASHES) // Not called by the timer.
+   if (!this->occupiedPeersAskingForHashes.setPeerAsOccupied(this->peerSource))
       return false;
 
    this->status = INITIALIZING;
@@ -261,9 +258,9 @@ void FileDownload::result(const Protos::Core::GetHashesResult& result)
    {
       L_DEBU(QString("Unable to retrieve the hashes, error = %1").arg(result.status()));
       this->getHashesResult.clear();
-      this->occupiedPeersAskingForHashes.setPeerAsFree(this->peerSource);
       this->status = UNABLE_TO_RETRIEVE_THE_HASHES;
       this->timer.start(); // Retry later.
+      this->occupiedPeersAskingForHashes.setPeerAsFree(this->peerSource);
    }
 }
 
@@ -312,9 +309,9 @@ void FileDownload::getHashTimeout()
 {
    L_DEBU("Unable to retrieve the hashes : timeout");
    this->getHashesResult.clear();
-   this->occupiedPeersAskingForHashes.setPeerAsFree(this->peerSource);
    this->status = UNABLE_TO_RETRIEVE_THE_HASHES;
    this->timer.start(); // Retry later.
+   this->occupiedPeersAskingForHashes.setPeerAsFree(this->peerSource);
 }
 
 void FileDownload::chunkDownloadStarted()

@@ -15,7 +15,7 @@ message Settings {
    optional uint32 socket_timeout = 6 [default = 5000]; // [ms].
       
    // FileManager.
-   optional uint32 minimum_duration_when_hashing = 7 [default = 1000]; // [ms].
+   optional uint32 minimum_duration_when_hashing = 7 [default = 3000]; // [ms].
    optional uint32 scan_period_unwatchable_dirs = 8 [default = 30000]; // [ms].
    optional string unfinished_suffix_term = 9 [default = ".unfinished"];
    optional uint32 minimum_free_space = 10 [default = 1048576]; // (1 MiB) After creating a file in a directory this is the minimum space it must be left.
