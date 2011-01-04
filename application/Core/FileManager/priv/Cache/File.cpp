@@ -28,6 +28,7 @@ using namespace FM;
 #include <Common/ProtoHelper.h>
 
 #include <Exceptions.h>
+#include <priv/Global.h>
 #include <priv/Exceptions.h>
 #include <priv/Log.h>
 #include <priv/Constants.h>
@@ -57,13 +58,13 @@ File::File(
    const Common::Hashes& hashes,
    bool createPhysically
 )
-   : Entry(dir->getCache(), name + (createPhysically ? SETTINGS.get<QString>("unfinished_suffix_term") : ""), size),
+   : Entry(dir->getCache(), name + (createPhysically ? Global::getUnfinishedSuffix() : ""), size),
      CHUNK_SIZE(SETTINGS.get<quint32>("chunk_size")),
      BUFFER_SIZE(SETTINGS.get<quint32>("buffer_size")),
      dir(dir),
      dateLastModified(dateLastModified),
      nbChunkComplete(0),
-     complete(!Cache::isFileUnfinished(Entry::getName())),
+     complete(!Global::isFileUnfinished(Entry::getName())),
      tryToRename(false),
      numDataWriter(0),
      numDataReader(0),
@@ -127,7 +128,7 @@ void File::setToUnfinished(qint64 size, const Common::Hashes& hashes)
    this->stopHashing();
    this->tryToRename = false;
    this->cache->onEntryRemoved(this);
-   this->name.append(SETTINGS.get<QString>("unfinished_suffix_term"));
+   this->name.append(Global::getUnfinishedSuffix());
    this->dateLastModified = QDateTime::currentDateTime();
    this->nbChunkComplete = 0;
    this->deleteAllChunks();
@@ -531,7 +532,7 @@ void File::setAsComplete()
 
    L_DEBU(QString("File set as complete : %1").arg(this->getFullPath()));
 
-   if (Cache::isFileUnfinished(this->name))
+   if (Global::isFileUnfinished(this->name))
    {
       if (this->numDataReader > 0)
       {
@@ -547,9 +548,8 @@ void File::setAsComplete()
          this->fileInWriteMode = 0;
       }
 
-      const int SUFFIX_SIZE = SETTINGS.get<QString>("unfinished_suffix_term").size();
       const QString oldPath = this->getFullPath();
-      const QString newPath = oldPath.left(oldPath.size() - SUFFIX_SIZE);
+      const QString newPath = Global::removeUnfinishedSuffix(oldPath);
 
       if (!Common::Global::rename(oldPath, newPath))
       {
@@ -559,7 +559,7 @@ void File::setAsComplete()
       {
          this->complete = true;
          this->dateLastModified = QFileInfo(newPath).lastModified();
-         this->name = this->name.left(this->name.size() - SUFFIX_SIZE);
+         this->name = Global::removeUnfinishedSuffix(this->name);
          this->cache->onEntryAdded(this); // To add the name to the index. (a bit tricky).
       }
    }
@@ -637,7 +637,7 @@ void File::deleteAllChunks()
   */
 void File::createPhysicalFile()
 {
-   if (!Cache::isFileUnfinished(this->name))
+   if (!Global::isFileUnfinished(this->name))
       L_ERRO(QString("File::createPhysicalFile(..) : Cannot create a file (%1) without the 'unfinished' suffix").arg(this->getPath()));
    else if (static_cast<SharedDirectory*>(this->getRoot())->getRights() == SharedDirectory::READ_ONLY)
       L_ERRO(QString("File::createPhysicalFile(..) : Cannot create a file (%1) in a read only shared directory (%2)").arg(this->getPath()).arg(static_cast<SharedDirectory*>(this->getRoot())->getFullPath()));

@@ -35,6 +35,7 @@ using namespace FM;
 #include <Common/Constants.h>
 #include <Common/Global.h>
 #include <Exceptions.h>
+#include <priv/Global.h>
 #include <priv/Log.h>
 #include <priv/Constants.h>
 #include <priv/GetHashesResult.h>
@@ -319,7 +320,7 @@ void FileManager::sharedDirectoryRemoved(SharedDirectory* sharedDir, Directory* 
 
 void FileManager::entryAdded(Entry* entry)
 {
-   if (entry->getName().isEmpty() || Cache::isFileUnfinished(entry->getName()))
+   if (entry->getName().isEmpty() || Global::isFileUnfinished(entry->getName()))
       return;
 
    L_DEBU(QString("Adding entry '%1' to the index ..").arg(entry->getName()));

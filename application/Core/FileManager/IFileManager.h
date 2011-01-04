@@ -70,6 +70,7 @@ namespace FM
       /**
         * Get all chunks from the file which owns the given hash.
         * The name and the path of the owner of the returned chunk must match the given entry.
+        * ".unfinished" suffix is ignored in both side.
         */
       virtual QList< QSharedPointer<IChunk> > getAllChunks(const Protos::Common::Entry& entry, const Common::Hash& hash) const = 0;
 
@@ -77,7 +78,7 @@ namespace FM
         * Create a new empty file. It will be automatically create in the same path than the remote.
         * It will take the shared directory which has enought storage space and matches paths the closest.
         * The file will have the exact final size and filled with 0.
-        * The filename will end with .unfinished.
+        * The filename will end with ".unfinished".
         * Some or all hashes can be null (see Protos.Common.Hash). They can be set later with IChunk::setHash(..).
         * @remarks Entry.shared_dir is not used.
         * @exception NoReadWriteSharedDirectoryException

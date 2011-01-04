@@ -25,8 +25,9 @@ using namespace FM;
 
 #include <Common/Settings.h>
 
-#include <priv/Log.h>
+#include <priv/Global.h>
 #include <priv/Exceptions.h>
+#include <priv/Log.h>
 #include <priv/Constants.h>
 #include <priv/FileManager.h>
 #include <priv/Cache/SharedDirectory.h>
@@ -402,7 +403,7 @@ void FileUpdater::scan(Directory* dir, bool addUnfinished)
 
             currentSubDirs.removeOne(dir);
          }
-         else if (entry.size() > 0 && (addUnfinished || !Cache::isFileUnfinished(entry.fileName())))
+         else if (entry.size() > 0 && (addUnfinished || !Global::isFileUnfinished(entry.fileName())))
          {
             File* file = currentDir->getFile(entry.fileName());
             QMutexLocker locker(&this->mutex);
@@ -425,7 +426,7 @@ void FileUpdater::scan(Directory* dir, bool addUnfinished)
                // This case occure when a file is redownloaded, the File* 'a' is renamed as 'a.unfinished' but the physical file 'a'
                // is not deleted.
                File* unfinishedFile;
-               if (!(unfinishedFile = currentDir->getFile(entry.fileName().append(SETTINGS.get<QString>("unfinished_suffix_term")))))
+               if (!(unfinishedFile = currentDir->getFile(entry.fileName().append(Global::getUnfinishedSuffix()))))
                   file = new File(currentDir, entry.fileName(), entry.size(), entry.lastModified());
                else
                {
@@ -576,7 +577,7 @@ bool FileUpdater::treatEvents(const QList<WatcherEvent>& events)
          return true;
 
       // Don't care about unfinished files.
-      if (Cache::isFileUnfinished(event.path1))
+      if (Global::isFileUnfinished(event.path1))
          continue;
 
       L_DEBU(QString("A file structure event occurs :\n%1").arg(event.toStr()));

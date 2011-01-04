@@ -387,7 +387,5 @@ PM::IPeer* ChunkDownload::getTheFastestFreePeer()
          current = peer;
    }
 
-   L_DEBU(QString("getTheFastestFreePeer : %1").arg(current ? current->toStringLog() : "No peer"));
-
    return current;
 }

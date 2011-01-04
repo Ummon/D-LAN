@@ -38,14 +38,6 @@ Cache::Cache(FileManager* fileManager)
 {
 }
 
-bool Cache::isFileUnfinished(const QString filename)
-{
-   static const QString suffix = SETTINGS.get<QString>("unfinished_suffix_term");
-   if (suffix.isEmpty())
-      L_ERRO("Setting 'unfinished_suffix_term' is empty");
-   return filename.size() > suffix.size() && filename.endsWith(suffix);
-}
-
 /**
   * a) Search among their shared directory the one who match the given entry.
   * b) In the shared directory try to find the directory corresponding to 'entry.dir.path'.
@@ -203,8 +195,10 @@ QList< QSharedPointer<IChunk> > Cache::newFile(const Protos::Common::Entry& remo
    QMutexLocker locker(&this->mutex);
 
    QString dirPath = QDir::cleanPath(Common::ProtoHelper::getStr(remoteEntry, &Protos::Common::Entry::path));
+
+   /* Uncomment this to create a directory named as the remote shared dir to put the new entry.
    if (remoteEntry.has_shared_dir() && !remoteEntry.shared_dir().shared_name().empty())
-      dirPath.prepend(Common::ProtoHelper::getStr(remoteEntry.shared_dir(), &Protos::Common::SharedDir::shared_name)).prepend('/');
+      dirPath.prepend(Common::ProtoHelper::getStr(remoteEntry.shared_dir(), &Protos::Common::SharedDir::shared_name)).prepend('/');*/
 
    Directory* dir = this->getWriteableDirectory(dirPath, remoteEntry.size() + SETTINGS.get<quint32>("minimum_free_space"));
    if (!dir)

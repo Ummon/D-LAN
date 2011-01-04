@@ -164,15 +164,19 @@ QSharedPointer<ChunkDownload> FileDownload::getAChunkToDownload()
 
                // If we got all the chunks, remote entry becomes a local entry.
                if (!this->chunksWithoutDownload.isEmpty() && this->nbHashesKnown == this->NB_CHUNK)
-               {
-                  this->chunksWithoutDownload.first()->populateEntry(&this->entry);
                   this->basePath = this->chunksWithoutDownload.first()->getBasePath();
-               }
 
                for (int i = 0; !this->chunksWithoutDownload.isEmpty() && i < this->chunkDownloads.size(); i++)
                   this->chunkDownloads[i]->setChunk(this->chunksWithoutDownload.takeFirst());
 
                this->fileCreated = true;
+
+               // 'getAllChunks(..)' above can return some completed chunks.
+               if (!chunkDownload->getChunk().isNull() && chunkDownload->getChunk()->isComplete())
+               {
+                  this->updateStatus(); // Maybe all the file is complete, so we update the status.
+                  continue;
+               }
             }
 
             return chunkDownload;
@@ -274,10 +278,7 @@ void FileDownload::nextHash(const Common::Hash& hash)
 
       // If we got all the chunks, remote entry becomes a local entry.
       if (this->fileCreated && !this->chunkDownloads.isEmpty())
-      {
-         this->chunkDownloads.first()->getChunk()->populateEntry(&this->entry);
          this->basePath = this->chunkDownloads.first()->getChunk()->getBasePath();
-      }
 
       this->status = QUEUED;
    }
@@ -369,7 +370,14 @@ void FileDownload::updateStatus()
       this->status = INITIALIZING;
 
    if (this->status == COMPLETE)
-      this->chunkDownloads.first()->getChunk()->populateEntry(&this->entry); // To remove the ".unfinished".
+   {
+      // this->chunkDownloads.first()->getChunk()->populateEntry(&this->entry); // To remove the ".unfinished".
+      L_USER(QString("File completed : %1%2%3")
+         .arg(this->basePath)
+         .arg(Common::ProtoHelper::getStr(this->entry, &Protos::Common::Entry::path))
+         .arg(Common::ProtoHelper::getStr(this->entry, &Protos::Common::Entry::name))
+      );
+   }
 }
 
 void FileDownload::connectChunkDownloadSignals(QSharedPointer<ChunkDownload> chunkDownload)

@@ -25,6 +25,7 @@ using namespace FM;
 #include <IDataReader.h>
 #include <IDataWriter.h>
 #include <Exceptions.h>
+#include <priv/Global.h>
 #include <priv/Log.h>
 #include <priv/Cache/File.h>
 #include <priv/Cache/SharedDirectory.h>
@@ -282,7 +283,7 @@ bool Chunk::matchesEntry(const Protos::Common::Entry& entry) const
 {
    QMutexLocker locker(&this->mutex);
    return this->file->getPath() == Common::ProtoHelper::getStr(entry, &Protos::Common::Entry::path) &&
-      this->file->getName() == Common::ProtoHelper::getStr(entry, &Protos::Common::Entry::name);
+      Global::removeUnfinishedSuffix(this->file->getName()) == Global::removeUnfinishedSuffix(Common::ProtoHelper::getStr(entry, &Protos::Common::Entry::name));
 }
 
 QString Chunk::toStr() const

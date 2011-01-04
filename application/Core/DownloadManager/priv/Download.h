@@ -81,7 +81,7 @@ namespace DM
 
       Common::Hash peerSourceID;
       PM::IPeer* peerSource;
-      Protos::Common::Entry entry;
+      Protos::Common::Entry entry; ///< The remote entry given by searching or browsing.
       QString basePath;
 
       Status status;
