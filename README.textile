@@ -7,6 +7,7 @@ The goal is to easily share some files and folders in a local area network envir
 * "Website":http://www.aybabtu.org
 * "Development wiki":http://dev.aybabtu.org/projects/pmp/wiki
 * "Forums":http://dev.aybabtu.org/projects/pmp/boards
+* "Issues":http://dev.aybabtu.org/projects/pmp/issues
 
 
 h2. Features
