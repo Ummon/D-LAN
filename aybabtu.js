@@ -26,7 +26,8 @@ aybabtu.rot13 = function(chaine) {
 $(document).ready(
    function() { 
       $('.gallery a').colorbox();
-      var email = aybabtu.rot13("tert.oheev@tznvy.pbz");
-      $("#emailLink").attr("href", aybabtu.rot13("znvygb:") + email);
+      var mailTo = aybabtu.rot13("znvygb:");
+      $("#emailLinkGB").attr("href", mailTo + aybabtu.rot13("tert.oheev@tznvy.pbz"));
+      $("#emailLinkHM").attr("href", mailTo + aybabtu.rot13("ureir.znegvarg@tznvy.pbz"));
    }
 );

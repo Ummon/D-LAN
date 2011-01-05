@@ -1,4 +1,6 @@
-<p>Author : <a id="emailLink" href="">Greg Burri</a></p>
+<p>Author : <a id="emailLinkGB" href="">Greg Burri</a></p>
+
+<p>Linux maintainer : <a id="emailLinkHM" href="">Hervé Martinet</a></p>
 
 <p>Thanks to Maximilien Cuony ("The Glu") and <a href="http://twitter.com/algorithme">Olivier Morel</a> for their support.</p>
 
@@ -10,6 +12,7 @@
    <li>Compiler : <a href="http://gcc.gnu.org/">GCC</a> + <a href="http://www.mingw.org/">MinGW</a></li>
    <li>Message serializer : <a href="http://code.google.com/p/protobuf/">Protocol Buffers</a></li>
    <li>Random number generator : <a href="http://www-personal.umich.edu/~wagnerr/MersenneTwister.html">Mersenne Twister</a></li>
+   <li>Cryptographic hash function : <a href="http://www.131002.net/blake/">BLAKE</a></li>
    <li>Icons library : <a href="http://www.fatcow.com/free-icons">FatCow</a></li>
 </ul>
 
