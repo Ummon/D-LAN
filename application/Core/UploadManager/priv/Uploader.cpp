@@ -150,6 +150,8 @@ void Uploader::run()
       L_WARN("ChunkNotCompletedException");
    }
 
+   this->transferRateCalculator.reset();
+
    this->socket->getQSocket()->moveToThread(this->mainThread);
 
    emit uploadFinished(networkError);
