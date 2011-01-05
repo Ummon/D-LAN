@@ -408,6 +408,13 @@ void FileUpdater::scan(Directory* dir, bool addUnfinished)
             File* file = currentDir->getFile(entry.fileName());
             QMutexLocker locker(&this->mutex);
 
+            // If an unfinished file doesn't have a file in cache we delete it.
+            if (addUnfinished && !file && Global::isFileUnfinished(entry.fileName()))
+            {
+               QFile::remove(entry.absoluteFilePath());
+               continue;
+            }
+
             if (file)
             {
                if (
