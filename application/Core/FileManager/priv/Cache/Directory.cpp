@@ -131,7 +131,17 @@ void Directory::populateEntry(Protos::Common::Entry* dir, bool setSharedDir) con
    QMutexLocker locker(&this->mutex);
 
    Entry::populateEntry(dir, setSharedDir);
-   dir->set_is_empty(this->subDirs.isEmpty() && this->files.isEmpty());
+
+   // Do not count the unfinished files.
+   bool isEmpty = true;
+   for (QListIterator<File*> i(this->files); i.hasNext();)
+      if (i.next()->isComplete())
+      {
+         isEmpty = false;
+         break;
+      }
+
+   dir->set_is_empty(this->subDirs.isEmpty() && isEmpty);
    dir->set_type(Protos::Common::Entry_Type_DIR);
 }
 
