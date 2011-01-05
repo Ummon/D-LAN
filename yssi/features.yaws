@@ -15,5 +15,5 @@
 <p>Don't forget to support us. It will help to maintain and add new features.</p>
 
 <erl>
-   out(A) -> aybabtu_common:images([{"aybabtu_search", "Browsing"}, {"aybabtu_search", "Download queue"}, {"aybabtu_search", "Search result"}]).
+   out(A) -> aybabtu_common:images([{"aybabtu_browse", "Browsing"}, {"aybabtu_downloads", "Download queue"}, {"aybabtu_search", "Search result"}]).
 </erl>

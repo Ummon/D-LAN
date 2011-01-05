@@ -7,5 +7,7 @@
 <p>The goal is to easily share some files and folders in a local area network environment like a LAN-Party. All clients are full-trusted. After you launched Aybabtu, you will see all other people and theirs sharing automatically without special configuration.</p>
 
 <erl>
-   out(A) -> aybabtu_common:download_button(A).
+   out(A) -> aybabtu_common:download_button(A, "windows").
 </erl>
+
+<div class="spacer"> </div>

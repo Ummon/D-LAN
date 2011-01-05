@@ -1,5 +1,5 @@
 -module(aybabtu_common).
--export([current_page/1, page_name/1, menu/1, image/2, images/1, download_button/1, send_file/2]).
+-export([current_page/1, page_name/1, menu/1, image/2, images/1, download_button/2, send_release/3]).
  
 -include("/usr/lib/yaws/include/yaws_api.hrl"). 
 -include("../include/aybabtu_defines.hrl").
@@ -64,18 +64,21 @@ images(Filename_caption_list) ->
       )
    }.
 
-download_button(A) ->
-   {ok, Filenames} = file:list_dir(A#arg.docroot ++ "/" ++ ?RELEASES_FOLDER),
+download_button(A, Platform) ->
+   {Maj, Platform_maj_rest} = lists:split(1, Platform),
+   Platform_maj = string:to_upper(Maj) ++ Platform_maj_rest,
+   Relase_platform_folder = A#arg.docroot ++ "/" ++ ?RELEASES_FOLDER ++ "/" ++ Platform,
+   {ok, Filenames} = file:list_dir(Relase_platform_folder),
    Filename = lists:last(lists:sort(lists:filter(fun(F) -> string:right(F, 4) =:= ".exe" end, Filenames))),
    {match, [Version, Version_tag, Year, Month, Day]} = re:run(Filename, "Aybabtu-((?:\\d|\\.)+)([^-]*)-(\\d+)-(\\d+)-(\\d+).*", [{capture, all_but_first, list}]),
-   File_size = filelib:file_size(A#arg.docroot ++ "/" ++ ?RELEASES_FOLDER ++ Filename),
+   File_size = filelib:file_size(Relase_platform_folder ++ "/" ++ Filename),
    File_size_kb = trunc(File_size / 1024),
    {ehtml,
       [{'div', [{class, "download"}],
-         [{a, [{href, atom_to_list(current_page(A)) ++ ".html&amp;dl=" ++ Filename}], 
+         [{a, [{href, atom_to_list(current_page(A)) ++ ".html&amp;dl=" ++ Filename ++ "&amp;platform=" ++ Platform}], 
             [
                {em, [], ["Download Aybabtu (" ++ integer_to_list(trunc(File_size_kb / 1024)) ++ "." ++ integer_to_list(trunc(((File_size_kb rem 1024) + 50) / 100)) ++ " MiB)"]}, {br},
-               "Version " ++ Version ++ if Version_tag =/= [] -> " " ++ Version_tag; true -> [] end ++ " for Windows", {br},
+               "Version " ++ Version ++ if Version_tag =/= [] -> " " ++ Version_tag; true -> [] end ++ " for " ++ Platform_maj, {br},
                "Released on " ++ httpd_util:month(list_to_integer(Month)) ++ " " ++ Day ++ " " ++ Year, {br}
                %"Number of download : " ++ integer_to_list(aybabtu_download_counter:nb_download(Filename))
             ]
@@ -85,8 +88,8 @@ download_button(A) ->
 
 % Send a file to the HTTP agent.
 % See http://yaws.hyber.org/stream.yaws for more informations.
-send_file(A, Filename) ->
-   Filepath = A#arg.docroot ++ "/" ++ ?RELEASES_FOLDER ++ Filename,
+send_release(A, Filename, Platform) ->
+   Filepath = A#arg.docroot ++ "/" ++ ?RELEASES_FOLDER  ++ "/" ++ Platform ++ "/" ++ Filename,
    case file:open(Filepath, [read, binary]) of
       {ok, IoDevice} ->
          File_size = filelib:file_size(Filepath),
