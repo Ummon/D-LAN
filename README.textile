@@ -1,0 +1,22 @@
+h1. Aybabtu
+
+Aybabtu is an open source LAN file sharing software.
+
+The goal is to easily share some files and folders in a local area network environment like a LAN-Party. All clients are full-trusted. After you launched Aybabtu, you will see all other people and theirs sharing automatically without special configuration.
+
+* Website : http://www.aybabtu.org
+* Development wiki : http://dev.aybabtu.org/projects/pmp/wiki
+* Forums : http://dev.aybabtu.org/projects/pmp/boards
+
+
+h2. Features
+
+* Share files and folders in a local area network environment (LAN). Subnets are supported.
+* Manage the download queue. It includes adding, deleting or reordering.
+* Distributed transfers to increase performance and reliability.
+* Use without configuration. There is no central server or authentication system.
+* Browse all files and folders of any other peer.
+* Fast indexed search among all other peers.
+* Global chatting.
+* Aybabtu can run without graphic interface (GUI) and be controlled remotly.
+* Open source. Code source distributed under GPLv3 license.
