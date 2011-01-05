@@ -71,10 +71,13 @@ FileDownload::~FileDownload()
 {
    this->status = DELETED;
    this->timer.stop();
+
+   if (!this->getHashesResult.isNull())
+      this->occupiedPeersAskingForHashes.setPeerAsFree(this->peerSource);
+
    this->getHashesResult.clear();
    this->chunksWithoutDownload.clear();
    this->chunkDownloads.clear();
-   this->occupiedPeersAskingForHashes.setPeerAsFree(this->peerSource);
 }
 
 /**
