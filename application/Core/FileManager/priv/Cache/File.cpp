@@ -657,6 +657,7 @@ void File::createPhysicalFile()
       HANDLE hdl = (HANDLE)_get_osfhandle(file.handle());
       // To avoid to initialize all the file, when you seek at the end of a file then you write some data the file will be initialized without this call.
       // File initialization can take several minutes for a large file (> 5 GiB).
+      // See : http://msdn.microsoft.com/en-us/library/aa364596%28v=vs.85%29.aspx
       if (!DeviceIoControl(hdl, FSCTL_SET_SPARSE, NULL, 0, NULL, 0, &bytesWritten, NULL))
          L_WARN("DeviceIoControl(..) failed");
 #endif

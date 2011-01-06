@@ -61,7 +61,7 @@ namespace DM
 
       void setPeerSource(PM::IPeer* peer, bool informOccupiedPeers = true);
 
-      quint32 isReadyToDownload();
+      int isReadyToDownload();
       bool isDownloading() const;
       bool isComplete() const;
       bool hasAtLeastAPeer() const;

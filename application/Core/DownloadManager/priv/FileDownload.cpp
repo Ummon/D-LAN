@@ -19,6 +19,8 @@
 #include <priv/FileDownload.h>
 using namespace DM;
 
+#include <limits>
+
 #include <Common/Settings.h>
 #include <Common/ProtoHelper.h>
 
@@ -153,22 +155,22 @@ QSharedPointer<ChunkDownload> FileDownload::getAChunkToDownload()
 
    try
    {
-      // Choose a chunk with the best speed.
+      // Choose a chunk with the less number of peer. (rarest first).
       QList< QSharedPointer<ChunkDownload> > chunksReadyToDownload;
-      quint32 bestSpeed = 0;
+      int bestNbPeer = std::numeric_limits<int>::max();
       for (QListIterator< QSharedPointer<ChunkDownload> > i(this->chunkDownloads); i.hasNext();)
       {
          QSharedPointer<ChunkDownload> chunkDownload = i.next();
-         quint32 speed = chunkDownload->isReadyToDownload();
-         if (speed == 0)
+         int nbPeer = chunkDownload->isReadyToDownload();
+         if (nbPeer == 0)
             continue;
-         else if (speed == bestSpeed)
+         else if (nbPeer == bestNbPeer)
             chunksReadyToDownload << chunkDownload;
-         else if (speed > bestSpeed)
+         else if (nbPeer < bestNbPeer)
          {
             chunksReadyToDownload.clear();
             chunksReadyToDownload << chunkDownload;
-            bestSpeed = speed;
+            bestNbPeer = nbPeer;
          }
       }
 

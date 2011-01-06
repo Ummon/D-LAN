@@ -125,19 +125,15 @@ void ChunkDownload::setPeerSource(PM::IPeer* peer, bool informOccupiedPeers)
   * - It must be have at least one peer.
   * - It isn't finished.
   * - It isn't currently downloading.
-  * @return The speed of the fastest free peer, if the chunk isn't ready then returns 0
+  * @return The number of free peer.
   * @remarks This method may remove dead peers from the list.
   */
-quint32 ChunkDownload::isReadyToDownload()
+int ChunkDownload::isReadyToDownload()
 {
    if (this->peers.isEmpty() || this->downloading || (!this->chunk.isNull() && this->chunk->isComplete()))
       return 0;
 
-   PM::IPeer* fastestPeer = this->getTheFastestFreePeer();
-   if (!fastestPeer)
-      return 0;
-
-   return fastestPeer->getSpeed();
+   return this->getPeers().size();
 }
 
 bool ChunkDownload::isDownloading() const

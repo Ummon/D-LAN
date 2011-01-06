@@ -19,6 +19,8 @@
 #include <priv/Peer.h>
 using namespace PM;
 
+#include <limits>
+
 #include <Common/Settings.h>
 #include <Common/Global.h>
 #include <Common/LogManager/Builder.h>
@@ -30,7 +32,7 @@ using namespace PM;
 #include <priv/GetHashesResult.h>
 #include <priv/GetChunkResult.h>
 
-const quint32 Peer::MAX_SPEED = 4294967295u;
+const quint32 Peer::MAX_SPEED = std::numeric_limits<quint32>::max();
 
 Peer::Peer(PeerManager* peerManager, QSharedPointer<FM::IFileManager> fileManager, Common::Hash ID)
    : peerManager(peerManager), fileManager(fileManager), connectionPool(peerManager, fileManager, ID), ID(ID), speed(MAX_SPEED), alive(false)
