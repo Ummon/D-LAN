@@ -71,7 +71,7 @@ void Tests::initTestCase()
    this->peerIDs << Hash::fromStr("11111111111111111111111111111111111111111111111111111111") << Hash::fromStr("22222222222222222222222222222222222222222222222222222222");
    this->peerSharedDirs << "/sharedDirs/peer1" << "/sharedDirs/peer2";
 
-   // 1) Create eache peer manager.
+   // 1) Create each peer manager.
    for (int i = 0; i < this->peerIDs.size(); i++)
    {
       SETTINGS.set("peer_id", this->peerIDs[i]);

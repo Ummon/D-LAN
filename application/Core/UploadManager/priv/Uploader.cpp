@@ -103,7 +103,7 @@ void Uploader::run()
       QSharedPointer<FM::IDataReader> reader = this->chunk->getDataReader();
 
       char buffer[SETTINGS.get<quint32>("buffer_size")];
-      qint64 bytesRead = 0;
+      int bytesRead = 0;
 
       this->transferRateCalculator.reset();
 

@@ -36,7 +36,7 @@ namespace FM
         * @exception ChunkDeletedException
         * @exception ChunkNotCompletedException
         */
-      virtual quint64 read(char* buffer, uint offset) = 0;
+      virtual int read(char* buffer, uint offset) = 0;
    };
 }
 

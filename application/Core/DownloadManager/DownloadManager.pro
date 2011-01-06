@@ -54,4 +54,5 @@ HEADERS += IDownloadManager.h \
     priv/Constants.h \
     priv/OccupiedPeers.h \
     priv/Log.h \
-    ../../Protos/queue.pb.h
+    ../../Protos/queue.pb.h \
+    ../../Libs/MersenneTwister.h

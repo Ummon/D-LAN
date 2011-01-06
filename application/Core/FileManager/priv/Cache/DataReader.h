@@ -32,7 +32,7 @@ namespace FM
       DataReader(Chunk& chunk);
       ~DataReader();
 
-      quint64 read(char* buffer, uint offset);
+      int read(char* buffer, uint offset);
 
    protected:
       void run();

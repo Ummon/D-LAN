@@ -22,6 +22,8 @@
 #include <QList>
 #include <QSharedPointer>
 
+#include <Libs/MersenneTwister.h>
+
 #include <Core/FileManager/IFileManager.h>
 #include <Core/FileManager/IChunk.h>
 #include <Core/PeerManager/IPeerManager.h>
@@ -39,6 +41,7 @@ namespace DM
    class FileDownload : public Download
    {
       Q_OBJECT
+      static MTRand mtrand;
    public:
       FileDownload(
          QSharedPointer<FM::IFileManager> fileManager,

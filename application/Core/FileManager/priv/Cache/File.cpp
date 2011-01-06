@@ -19,6 +19,12 @@
 #include <priv/Cache/File.h>
 using namespace FM;
 
+#ifdef Q_OS_WIN32
+   #include <io.h>
+   #include <windows.h>
+   #include <WinIoCtl.h>
+#endif
+
 #include <QString>
 #include <QFile>
 #include <QElapsedTimer>
@@ -646,6 +652,14 @@ void File::createPhysicalFile()
       QFile file(this->getFullPath());
       if (!file.open(QIODevice::WriteOnly) || !file.resize(this->size))
          throw UnableToCreateNewFileException();
+#ifdef Q_OS_WIN32
+      DWORD bytesWritten;
+      HANDLE hdl = (HANDLE)_get_osfhandle(file.handle());
+      // To avoid to initialize all the file, when you seek at the end of a file then you write some data the file will be initialized without this call.
+      // File initialization can take several minutes for a large file (> 5 GiB).
+      if (!DeviceIoControl(hdl, FSCTL_SET_SPARSE, NULL, 0, NULL, 0, &bytesWritten, NULL))
+         L_WARN("DeviceIoControl(..) failed");
+#endif
       this->dateLastModified = QFileInfo(file).lastModified();
    }
 }

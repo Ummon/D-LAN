@@ -125,16 +125,19 @@ void ChunkDownload::setPeerSource(PM::IPeer* peer, bool informOccupiedPeers)
   * - It must be have at least one peer.
   * - It isn't finished.
   * - It isn't currently downloading.
+  * @return The speed of the fastest free peer, if the chunk isn't ready then returns 0
   * @remarks This method may remove dead peers from the list.
   */
-bool ChunkDownload::isReadyToDownload()
+quint32 ChunkDownload::isReadyToDownload()
 {
    if (this->peers.isEmpty() || this->downloading || (!this->chunk.isNull() && this->chunk->isComplete()))
-      return false;
+      return 0;
 
-   this->currentDownloadingPeer = this->getTheFastestFreePeer();
+   PM::IPeer* fastestPeer = this->getTheFastestFreePeer();
+   if (!fastestPeer)
+      return 0;
 
-   return this->currentDownloadingPeer != 0;
+   return fastestPeer->getSpeed();
 }
 
 bool ChunkDownload::isDownloading() const
@@ -191,6 +194,10 @@ bool ChunkDownload::startDownloading()
       return false;
    }
 
+   this->currentDownloadingPeer = this->getTheFastestFreePeer();
+   if (!this->currentDownloadingPeer)
+      return false;
+
    L_DEBU(QString("Starting downloading a chunk : %1 from %2").arg(this->chunk->toStr()).arg(this->currentDownloadingPeer->getID().toStr()));
 
    this->downloading = true;
@@ -221,9 +228,10 @@ void ChunkDownload::run()
 
       const int initialKnownBytes = this->chunk->getKnownBytes();
       int bytesRead = 0;
-      qint64 bytesReadTotal = 0;
-
-      qint64 deltaRead = 0;
+      int bytesToRead = this->chunkSize - initialKnownBytes;
+      int bytesToWrite = 0;
+      int bytesWritten = 0;
+      int deltaRead = 0;
 
       this->transferRateCalculator.reset();
 
@@ -241,8 +249,8 @@ void ChunkDownload::run()
          }
          this->mutex.unlock();
 
-         const int bytesToRead = this->chunkSize - initialKnownBytes - bytesReadTotal;
-         bytesRead = this->socket->getQSocket()->read(buffer, bytesToRead < BUFFER_SIZE ? bytesToRead : BUFFER_SIZE);
+         bytesRead = this->socket->getQSocket()->read(buffer + bytesToWrite, bytesToRead < BUFFER_SIZE - bytesToWrite ? bytesToRead : BUFFER_SIZE - bytesToWrite);
+         bytesToRead -= bytesRead;
 
          if (bytesRead == 0)
          {
@@ -261,8 +269,8 @@ void ChunkDownload::run()
             break;
          }
 
-         bytesReadTotal += bytesRead;
          deltaRead += bytesRead;
+         bytesToWrite += bytesRead;
 
          if (timer.elapsed() > 1000)
          {
@@ -285,11 +293,18 @@ void ChunkDownload::run()
             }
          }
 
-         writer->write(buffer, bytesRead);
+         // If the buffer is full or there is no more byte to read.
+         if (bytesToWrite == BUFFER_SIZE || bytesToRead == 0)
+         {
+            //L_DEBU(QString("bytesRead = %1, bytesToWrite = %2, bytesWritten = %3, bytesToRead = %4").arg(bytesRead).arg(bytesToWrite).arg(bytesWritten).arg(bytesToRead));
+            writer->write(buffer, bytesToWrite);
+            bytesWritten += bytesToWrite;
+            bytesToWrite = 0;
+         }
 
          this->transferRateCalculator.addData(bytesRead);
 
-         if (initialKnownBytes + bytesReadTotal >= this->chunkSize)
+         if (initialKnownBytes + bytesWritten >= this->chunkSize)
             break;
       }
    }

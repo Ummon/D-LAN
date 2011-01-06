@@ -32,7 +32,7 @@ DataReader::~DataReader()
    this->chunk.dataReaderDeleted();
 }
 
-quint64 DataReader::read(char* buffer, uint offset)
+int DataReader::read(char* buffer, uint offset)
 {
    return this->chunk.read(buffer, offset);
 }

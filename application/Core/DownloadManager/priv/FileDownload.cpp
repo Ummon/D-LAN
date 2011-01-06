@@ -27,6 +27,8 @@ using namespace DM;
 #include <priv/Log.h>
 #include <priv/Constants.h>
 
+MTRand FileDownload::mtrand;
+
 FileDownload::FileDownload(
    QSharedPointer<FM::IFileManager> fileManager,
    QSharedPointer<PM::IPeerManager> peerManager,
@@ -151,41 +153,67 @@ QSharedPointer<ChunkDownload> FileDownload::getAChunkToDownload()
 
    try
    {
+      // Choose a chunk with the best speed.
+      QList< QSharedPointer<ChunkDownload> > chunksReadyToDownload;
+      quint32 bestSpeed = 0;
       for (QListIterator< QSharedPointer<ChunkDownload> > i(this->chunkDownloads); i.hasNext();)
       {
          QSharedPointer<ChunkDownload> chunkDownload = i.next();
-         if (chunkDownload->isReadyToDownload())
+         quint32 speed = chunkDownload->isReadyToDownload();
+         if (speed == 0)
+            continue;
+         else if (speed == bestSpeed)
+            chunksReadyToDownload << chunkDownload;
+         else if (speed > bestSpeed)
          {
-            if (!this->fileCreated)
-            {
-               // First, try to get the chunks from an existing file, it's useful when a download is taken from the saved queue.
-               if (!this->chunkDownloads.isEmpty())
-                  this->chunksWithoutDownload = this->fileManager->getAllChunks(this->entry, this->chunkDownloads.first()->getHash());
-
-               // If the file doesn't exist we create it.
-               if (this->chunksWithoutDownload.isEmpty())
-                  this->chunksWithoutDownload = this->fileManager->newFile(this->entry);
-
-               // Set the local base path.
-               if (!this->chunksWithoutDownload.isEmpty())
-                  this->basePath = this->chunksWithoutDownload.first()->getBasePath();
-
-               for (int i = 0; !this->chunksWithoutDownload.isEmpty() && i < this->chunkDownloads.size(); i++)
-                  this->chunkDownloads[i]->setChunk(this->chunksWithoutDownload.takeFirst());
-
-               this->fileCreated = true;
-
-               // 'getAllChunks(..)' above can return some completed chunks.
-               if (!chunkDownload->getChunk().isNull() && chunkDownload->getChunk()->isComplete())
-               {
-                  this->updateStatus(); // Maybe all the file is complete, so we update the status.
-                  continue;
-               }
-            }
-
-            return chunkDownload;
+            chunksReadyToDownload.clear();
+            chunksReadyToDownload << chunkDownload;
+            bestSpeed = speed;
          }
       }
+
+      // If there is many chunk with the same best speed we choose randomly one of them.
+      QSharedPointer<ChunkDownload> chunkDownload;
+      switch (chunksReadyToDownload.size())
+      {
+      case 0:
+         break;
+      case 1:
+         chunkDownload = chunksReadyToDownload.first();
+         break;
+      default:
+         chunkDownload = chunksReadyToDownload[mtrand.randInt(chunksReadyToDownload.size() - 1)];
+      }
+
+      if (!chunkDownload.isNull() && !this->fileCreated)
+      {
+         // First, try to get the chunks from an existing file, it's useful when a download is taken from the saved queue.
+         if (!this->chunkDownloads.isEmpty())
+            this->chunksWithoutDownload = this->fileManager->getAllChunks(this->entry, this->chunkDownloads.first()->getHash());
+
+         // If the file doesn't exist we create it.
+         if (this->chunksWithoutDownload.isEmpty())
+            this->chunksWithoutDownload = this->fileManager->newFile(this->entry);
+
+         // Set the local base path.
+         if (!this->chunksWithoutDownload.isEmpty())
+            this->basePath = this->chunksWithoutDownload.first()->getBasePath();
+
+         for (int i = 0; !this->chunksWithoutDownload.isEmpty() && i < this->chunkDownloads.size(); i++)
+            this->chunkDownloads[i]->setChunk(this->chunksWithoutDownload.takeFirst());
+
+         this->fileCreated = true;
+
+         // 'getAllChunks(..)' above can return some completed chunks.
+         if (!chunkDownload->getChunk().isNull() && chunkDownload->getChunk()->isComplete())
+         {
+            this->updateStatus(); // Maybe all the file is complete, so we update the status.
+            return QSharedPointer<ChunkDownload>();
+         }
+      }
+
+      return chunkDownload;
+
    }
    catch(FM::NoReadWriteSharedDirectoryException&)
    {
