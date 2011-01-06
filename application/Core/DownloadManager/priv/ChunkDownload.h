@@ -90,6 +90,7 @@ namespace DM
 
    private:
       PM::IPeer* getTheFastestFreePeer();
+      int getNumberOfFreePeer();
 
       const int SOCKET_TIMEOUT;
 

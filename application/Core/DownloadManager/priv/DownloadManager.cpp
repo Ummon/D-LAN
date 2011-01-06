@@ -318,10 +318,13 @@ void DownloadManager::scanTheQueue()
             continue;
       }
 
-      chunkDownload = fileDownload->getAChunkToDownload();
-
       if (fileDownload->isStatusErroneous())
+      {
          this->rescanTimer.start();
+         continue;
+      }
+
+      chunkDownload = fileDownload->getAChunkToDownload();
 
       if (chunkDownload.isNull())
          continue;

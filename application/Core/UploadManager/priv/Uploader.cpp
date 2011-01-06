@@ -125,7 +125,7 @@ void Uploader::run()
          if (socket->getQSocket()->bytesToWrite() > SETTINGS.get<quint32>("socket_buffer_size") &&
             !socket->getQSocket()->waitForBytesWritten(SETTINGS.get<quint32>("socket_timeout")))
          {
-            L_WARN(QString("Socket : cannot write data, timeout, chunk : %1, error : %2").arg(this->chunk->toStr()).arg(socket->getQSocket()->errorString()));
+            L_WARN(QString("Socket : cannot write data, error : %1, chunk : %2").arg(socket->getQSocket()->errorString()).arg(this->chunk->toStr()));
             networkError = true;
             break;
          }

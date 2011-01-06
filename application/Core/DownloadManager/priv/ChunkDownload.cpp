@@ -133,7 +133,7 @@ int ChunkDownload::isReadyToDownload()
    if (this->peers.isEmpty() || this->downloading || (!this->chunk.isNull() && this->chunk->isComplete()))
       return 0;
 
-   return this->getPeers().size();
+   return this->getNumberOfFreePeer();
 }
 
 bool ChunkDownload::isDownloading() const
@@ -292,7 +292,6 @@ void ChunkDownload::run()
          // If the buffer is full or there is no more byte to read.
          if (bytesToWrite == BUFFER_SIZE || bytesToRead == 0)
          {
-            //L_DEBU(QString("bytesRead = %1, bytesToWrite = %2, bytesWritten = %3, bytesToRead = %4").arg(bytesRead).arg(bytesToWrite).arg(bytesWritten).arg(bytesToRead));
             writer->write(buffer, bytesToWrite);
             bytesWritten += bytesToWrite;
             bytesToWrite = 0;
@@ -399,4 +398,20 @@ PM::IPeer* ChunkDownload::getTheFastestFreePeer()
    }
 
    return current;
+}
+
+int ChunkDownload::getNumberOfFreePeer()
+{
+   QMutexLocker locker(&this->mutex);
+
+   int n = 0;
+   for (QMutableListIterator<PM::IPeer*> i(this->peers); i.hasNext();)
+   {
+      PM::IPeer* peer = i.next();
+      if (!peer->isAlive())
+         i.remove();
+      else if (this->occupiedPeersDownloadingChunk.isPeerFree(peer))
+         n++;
+   }
+   return n;
 }

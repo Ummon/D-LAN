@@ -55,12 +55,16 @@ namespace PM
       void socketGetChunk(const Common::Hash& hash, int offset, Socket* socket);
 
    private:
-      QSharedPointer<Socket> addNewSocket(QSharedPointer<Socket> socket);
+      enum Direction { TO_PEER, FROM_PEER };
+      QSharedPointer<Socket> addNewSocket(QSharedPointer<Socket> socket, Direction direction);
+      QList< QSharedPointer<Socket> > getAllSockets() const;
 
       PeerManager* peerManager;
       QSharedPointer<FM::IFileManager> fileManager;
 
-      QList< QSharedPointer<Socket> > sockets;
+      QList< QSharedPointer<Socket> > socketsToPeer;
+      QList< QSharedPointer<Socket> > socketsFromPeer;
+
       QHostAddress peerIP;
       quint16 port;
       const Common::Hash peerID;
