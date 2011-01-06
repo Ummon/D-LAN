@@ -52,6 +52,10 @@ void PersistentData::setValue(const QString& name, const google::protobuf::Messa
       const QString FILEPATH(Global::getDataFolder(dataFolderType) + '/' + name);
       const QString TEMP_FILEPATH(FILEPATH + TEMP_SUFFIX_TERM);
 
+      // To avoid ::Print(..) to crash, see defect #153.
+      if (Global::availableDiskSpace(Global::getDataFolder(dataFolderType)) < 20 * 1024 * 1024)
+         return;
+
       {
          QFile file(TEMP_FILEPATH);
          if (!file.open(QIODevice::WriteOnly))

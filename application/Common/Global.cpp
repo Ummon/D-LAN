@@ -19,6 +19,8 @@
 #include <Common/Global.h>
 using namespace Common;
 
+#include <limits>
+
 #include <QDir>
 #include <QDirIterator>
 #include <qDebug>
@@ -124,8 +126,6 @@ QString Global::formatByteSize(qint64 bytes, int precision)
 
 qint64 Global::availableDiskSpace(const QString& path)
 {
-   const qint64 MAX = 9223372036854775807LL;
-
 #ifdef Q_OS_WIN32
    ULARGE_INTEGER space;
    wchar_t buffer[path.size()];
@@ -134,12 +134,12 @@ qint64 Global::availableDiskSpace(const QString& path)
    buffer[l] = 0;
 
    if (!GetDiskFreeSpaceEx(buffer, &space, NULL, NULL))
-      return MAX;
+      return std::numeric_limits<qint64>::max();
    return space.QuadPart;
 #endif
 
    // TODO : Linux
-   return MAX;
+   return std::numeric_limits<qint64>::max();
 }
 
 /**
