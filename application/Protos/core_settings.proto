@@ -10,9 +10,9 @@ message Settings {
    optional string nick = 1 [default = "Bob"];
    optional Common.Hash peer_id = 2;
    
-   optional uint32 chunk_size = 3 [default = 67108864]; // (64MiB).
-   optional uint32 buffer_size = 4 [default = 131072]; // (128KiB), Buffer used when reading/writting files.
-   optional uint32 socket_buffer_size = 5 [default = 4194304]; // 4 MiB. Max size of the socket buffer, using when receiving or sending data over the sockets.
+   optional uint32 chunk_size = 3 [default = 67108864]; // (64 MiB).
+   optional uint32 buffer_size = 4 [default = 65536]; // (64 KiB). Buffer used when reading/writting files.
+   optional uint32 socket_buffer_size = 5 [default = 32768]; // (32 KiB). Max size of the socket buffer, using when receiving or sending data over the sockets.
    optional uint32 socket_timeout = 6 [default = 5000]; // [ms].
       
    // FileManager.

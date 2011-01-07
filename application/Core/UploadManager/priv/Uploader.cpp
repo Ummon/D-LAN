@@ -96,13 +96,17 @@ void Uploader::run()
 {
    L_DEBU(QString("Starting uploading a chunk from offset %1 : %2").arg(this->offset).arg(this->chunk->toStr()));
 
+   static const quint32 BUFFER_SIZE = SETTINGS.get<quint32>("buffer_size");
+   static const quint32 SOCKET_BUFFER_SIZE = SETTINGS.get<quint32>("socket_buffer_size");
+   static const quint32 SOCKET_TIMEOUT = SETTINGS.get<quint32>("socket_timeout");
+
    bool networkError = false;
 
    try
    {
       QSharedPointer<FM::IDataReader> reader = this->chunk->getDataReader();
 
-      char buffer[SETTINGS.get<quint32>("buffer_size")];
+      char buffer[BUFFER_SIZE];
       int bytesRead = 0;
 
       this->transferRateCalculator.reset();
@@ -122,12 +126,14 @@ void Uploader::run()
          this->offset += bytesSent;
          this->mutex.unlock();
 
-         if (socket->getQSocket()->bytesToWrite() > SETTINGS.get<quint32>("socket_buffer_size") &&
-            !socket->getQSocket()->waitForBytesWritten(SETTINGS.get<quint32>("socket_timeout")))
+         while (socket->getQSocket()->bytesToWrite() > SOCKET_BUFFER_SIZE)
          {
-            L_WARN(QString("Socket : cannot write data, error : %1, chunk : %2").arg(socket->getQSocket()->errorString()).arg(this->chunk->toStr()));
-            networkError = true;
-            break;
+            if (!socket->getQSocket()->waitForBytesWritten(SOCKET_TIMEOUT))
+            {
+               L_WARN(QString("Socket : cannot write data, error : %1, chunk : %2").arg(socket->getQSocket()->errorString()).arg(this->chunk->toStr()));
+               networkError = true;
+               break;
+            }
          }
 
          this->transferRateCalculator.addData(bytesSent);
