@@ -378,7 +378,28 @@ bool Socket::readMessage()
 
          if (readOK)
          {
-            emit getChunk(Common::Hash(getChunkMessage.chunk().hash().data()), getChunkMessage.offset(), this);
+            const Common::Hash hash(getChunkMessage.chunk().hash().data());
+            QSharedPointer<FM::IChunk> chunk = this->fileManager->getChunk(hash);
+            if (chunk.isNull())
+            {
+               Protos::Core::GetChunkResult result;
+               result.set_status(Protos::Core::GetChunkResult_Status_DONT_HAVE);
+               this->send(Common::Network::CORE_GET_CHUNK_RESULT, result);
+               this->finished();
+
+               L_WARN(QString("GET_CHUNK : Chunk unknown : %1").arg(hash.toStr()));
+            }
+            else
+            {
+               Protos::Core::GetChunkResult result;
+               result.set_status(Protos::Core::GetChunkResult_Status_OK);
+               result.set_chunk_size(chunk->getKnownBytes());
+               this->send(Common::Network::CORE_GET_CHUNK_RESULT, result);
+
+               this->stopListening();
+
+               emit getChunk(chunk, getChunkMessage.offset(), this);
+            }
          }
       }
       break;

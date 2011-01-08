@@ -28,7 +28,7 @@ using namespace UM;
 /**
   * Create ans return a new UploadManager.
   */
-QSharedPointer<IUploadManager> Builder::newUploadManager(QSharedPointer<FM::IFileManager> fileManager, QSharedPointer<PM::IPeerManager> peerManager)
+QSharedPointer<IUploadManager> Builder::newUploadManager(QSharedPointer<PM::IPeerManager> peerManager)
 {
-   return QSharedPointer<IUploadManager>(new UploadManager(fileManager, peerManager));
+   return QSharedPointer<IUploadManager>(new UploadManager(peerManager));
 }

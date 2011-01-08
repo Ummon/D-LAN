@@ -29,7 +29,7 @@ using namespace PM;
 #include <ISocket.h>
 
 ResultListener::ResultListener()
-   : nbHashes(0), currentHash(0)
+   : nbHashes(0), currentHash(0), streamReceived(false)
 {
 }
 
@@ -39,11 +39,35 @@ QList<Protos::Core::GetEntriesResult> ResultListener::getEntriesResultList() con
 }
 
 /**
+  * Return the lest number of received entries.
   * @param n The nth received entry.
   */
 int ResultListener::getNbEntriesResultReceived(int n) const
 {
+   if (n >= this->entriesResultList.size())
+      return 0;
+
    return this->entriesResultList.last().entries(n).entry_size();
+}
+
+const Protos::Core::GetHashesResult& ResultListener::getLastGetHashesResult()
+{
+   return this->lastGesHashesResult;
+}
+
+const Common::Hash& ResultListener::getLastReceivedHash()
+{
+   return this->lastHashReceived;
+}
+
+quint32 ResultListener::getNbHashReceivedFromLastGetHashes()
+{
+   return this->currentHash;
+}
+
+bool ResultListener::isStreamReceived()
+{
+   return this->streamReceived;
 }
 
 void ResultListener::entriesResult(const Protos::Core::GetEntriesResult& result)
@@ -61,6 +85,7 @@ void ResultListener::result(const Protos::Core::GetHashesResult& result)
 
 void ResultListener::nextHash(const Common::Hash& hash)
 {
+   this->lastHashReceived = hash;
    qDebug() << "ResultListener::nextHash : [" << this->currentHash + 1 << "/" << this->nbHashes << "] " << hash.toStr();
    this->currentHash++;
 }
@@ -70,22 +95,19 @@ void ResultListener::result(const Protos::Core::GetChunkResult& result)
    qDebug() << "ResultListener::result : " << Common::ProtoHelper::getDebugStr(result);
 }
 
-static const QByteArray CHUNK_DATA("HELLO");
+static const QByteArray CHUNK_DATA("ALL YOUR BYTE ARE BELONG TO US");
 
 void ResultListener::stream(QSharedPointer<PM::ISocket> socket)
 {
    QByteArray data = socket->getQSocket()->readAll();
    qDebug() << "ResultListener::stream : " << data;
    QCOMPARE(data, CHUNK_DATA);
-   socket->finished();
+   socket->finished(PM::SFS_OK);
+   this->streamReceived = true;
 }
 
-void ResultListener::getChunk(Common::Hash hash, int offset, QSharedPointer<ISocket> socket)
+void ResultListener::getChunk(QSharedPointer<FM::IChunk> chunk, int offset, QSharedPointer<ISocket> socket)
 {
-   Protos::Core::GetChunkResult result;
-   result.set_status(Protos::Core::GetChunkResult_Status_OK);
-   socket->send(Common::Network::CORE_GET_CHUNK_RESULT, result);
-
    socket->getQSocket()->write(CHUNK_DATA);
-   socket->finished();
+   socket->finished(PM::SFS_OK);
 }

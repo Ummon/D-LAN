@@ -23,8 +23,9 @@
 #include <QtNetwork>
 #include <QSharedPointer>
 
-#include <Core/PeerManager/ISocket.h>
+#include <Core/FileManager/IChunk.h>
 
+#include <Core/PeerManager/ISocket.h>
 #include <Common/Hash.h>
 #include <Protos/common.pb.h>
 
@@ -67,15 +68,16 @@ namespace PM
       virtual void updatePeer(const Common::Hash& ID, const QHostAddress& IP, quint16 port, const QString& nick, const quint64& sharingAmount) = 0;
 
       /**
-        * @param socket PeerManager will care about deleting the socket.
+        * @param tcpSocket PeerManager will care about deleting the socket.
         */
       virtual void newConnection(QTcpSocket* tcpSocket) = 0;
 
    signals:
       /**
         * When a remote peer want a chunk, this signal is emitted.
+        * The chunk will be sent using the socket object. Once the data is finished to send the method 'ISocket::finished()' must be called.
         */
-      void getChunk(Common::Hash hash, int offset, QSharedPointer<PM::ISocket> socket);
+      void getChunk(QSharedPointer<FM::IChunk> chunk, int offset, QSharedPointer<PM::ISocket> socket);
    };
 }
 #endif

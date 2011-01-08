@@ -348,7 +348,6 @@ void ChunkDownload::result(const Protos::Core::GetChunkResult& result)
 void ChunkDownload::stream(QSharedPointer<PM::ISocket> socket)
 {
    this->socket = socket;
-   this->socket->stopListening();
    this->socket->getQSocket()->moveToThread(this);
 
    this->start();

@@ -171,10 +171,10 @@ Hash Hash::fromStr(const QString& str)
    Hash hash;
    QString strLower = str.toLower();
 
-   for (int i = 0; i < HASH_SIZE; i++)
+   for (int i = 0; i < HASH_SIZE && 2*i + 1 < strLower.size(); i++)
    {
-      char c1 = strLower[i*2].toAscii();
-      char c2 = strLower[i*2 + 1].toAscii();
+      char c1 = strLower[2*i].toAscii();
+      char c2 = strLower[2*i + 1].toAscii();
 
       char p1 = c1 <= '9' ? c1 - '0' : c1 - 'a' + 10;
       char p2 = c2 <= '9' ? c2 - '0' : c2 - 'a' + 10;

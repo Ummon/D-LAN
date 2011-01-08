@@ -27,6 +27,20 @@ using namespace PM;
 #include <priv/Socket.h>
 #include <priv/PeerManager.h>
 
+/**
+  * @class ConnectionPool
+  * Manage a set of opened sockets to a remote peer.
+  *
+  * There is two kind of socket .
+  * 1) Socket opened by another peer.
+  * 2) Socket opened by yourself.
+  * When we want to send a message (for example 'GetHashes' to ask for some hashes) we must use the second kind.
+  * This constraint exists to avoid sending two messages simultaneously, when one of the message (or both) is a GetChunk
+  * The socket will be occupied for a moment to receive or send the stream of data and cannot handle others messages.
+  *
+  * The method 'getASocket()' may reuse a existing socket or create a new connection to the peer.
+  */
+
 ConnectionPool::ConnectionPool(PeerManager* peerManager, QSharedPointer<FM::IFileManager> fileManager, const Common::Hash& peerID)
    : peerManager(peerManager), fileManager(fileManager), peerID(peerID)
 {
@@ -112,7 +126,7 @@ void ConnectionPool::socketClosed(Socket* socket)
          {
             disconnect(socket, SIGNAL(getIdle(Socket*)), this, SLOT(socketGetIdle(Socket*)));
             disconnect(socket, SIGNAL(closed(Socket*)), this, SLOT(socketClosed(Socket*)));
-            disconnect(socket, SIGNAL(getChunk(const Common::Hash&, int, Socket*)), this, SLOT(socketGetChunk(const Common::Hash&, int, Socket*)));
+            disconnect(socket, SIGNAL(getChunk(QSharedPointer<FM::IChunk>, int, Socket*)), this, SLOT(socketGetChunk(QSharedPointer<FM::IChunk>, int, Socket*)));
 
             i.remove();
             return;
@@ -121,14 +135,14 @@ void ConnectionPool::socketClosed(Socket* socket)
    }
 }
 
-void ConnectionPool::socketGetChunk(const Common::Hash& hash, int offset, Socket* socket)
+void ConnectionPool::socketGetChunk(QSharedPointer<FM::IChunk> chunk, int offset, Socket* socket)
 {
    for (QListIterator< QSharedPointer<Socket> > i(this->socketsFromPeer); i.hasNext();)
    {
       QSharedPointer<Socket> socketShared = i.next();
       if (socketShared.data() == socket)
       {
-         this->peerManager->onGetChunk(hash, offset, socketShared);
+         this->peerManager->onGetChunk(chunk, offset, socketShared);
          break;
       }
    }
@@ -146,7 +160,7 @@ QSharedPointer<Socket> ConnectionPool::addNewSocket(QSharedPointer<Socket> socke
       break;
    case FROM_PEER:
       this->socketsFromPeer << socket;
-      connect(socket.data(), SIGNAL(getChunk(const Common::Hash&, int, Socket*)), this, SLOT(socketGetChunk(const Common::Hash&, int, Socket*)), Qt::DirectConnection);
+      connect(socket.data(), SIGNAL(getChunk(QSharedPointer<FM::IChunk>, int, Socket*)), this, SLOT(socketGetChunk(QSharedPointer<FM::IChunk>, int, Socket*)), Qt::DirectConnection);
       break;
    }
 

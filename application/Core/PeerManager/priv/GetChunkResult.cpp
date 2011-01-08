@@ -59,6 +59,7 @@ void GetChunkResult::newMessage(Common::Network::CoreMessageType type, const goo
 
    if (chunkResult.status() == Protos::Core::GetChunkResult_Status_OK)
    {
+      socket->stopListening();
       emit stream(this->socket);
    }
    else

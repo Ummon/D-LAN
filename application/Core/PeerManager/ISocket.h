@@ -21,10 +21,10 @@
 
 #include <QAbstractSocket>
 
+#include <Protos/core_protocol.pb.h>
+
 #include <Common/Hash.h>
 #include <Common/Network.h>
-
-#include <google/protobuf/message.h>
 
 namespace PM
 {
@@ -41,14 +41,9 @@ namespace PM
       virtual ~ISocket() {}
 
       virtual QAbstractSocket* getQSocket() const = 0;
-      virtual Common::Hash getPeerID() const = 0;
-      virtual void send(Common::Network::CoreMessageType type, const google::protobuf::Message& message) = 0;
 
-      /**
-        * Called before an upload or a download to take the control of the socket.
-        * The listening is restored by a call to 'finished(..)'.
-        */
-      virtual void stopListening() = 0;
+      virtual Common::Hash getPeerID() const = 0;
+
       virtual void finished(SocketFinishedStatus status = SFS_OK) = 0;
    };
 }

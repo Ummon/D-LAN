@@ -31,7 +31,7 @@ namespace UM
    class Builder
    {
    public:
-      static QSharedPointer<IUploadManager> newUploadManager(QSharedPointer<FM::IFileManager> fileManager, QSharedPointer<PM::IPeerManager> peerManager);
+      static QSharedPointer<IUploadManager> newUploadManager(QSharedPointer<PM::IPeerManager> peerManager);
    };
 }
 #endif

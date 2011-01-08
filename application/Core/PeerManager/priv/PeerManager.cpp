@@ -179,9 +179,9 @@ void PeerManager::newConnection(QTcpSocket* tcpSocket)
       this->dataReceived(tcpSocket); // The case where some data arrived before the 'connect' above.
 }
 
-void PeerManager::onGetChunk(Common::Hash hash, int offset, QSharedPointer<Socket> socket)
+void PeerManager::onGetChunk(QSharedPointer<FM::IChunk> chunk, int offset, QSharedPointer<Socket> socket)
 {
-   if (this->receivers(SIGNAL(getChunk(Common::Hash, int, QSharedPointer<PM::ISocket>))) < 1)
+   if (this->receivers(SIGNAL(getChunk(QSharedPointer<FM::IChunk>, int, QSharedPointer<PM::ISocket>))) < 1)
    {
       Protos::Core::GetChunkResult mess;
       mess.set_status(Protos::Core::GetChunkResult_Status_ERROR_UNKNOWN);
@@ -191,7 +191,7 @@ void PeerManager::onGetChunk(Common::Hash hash, int offset, QSharedPointer<Socke
       return;
    }
 
-   emit getChunk(hash, offset, socket);
+   emit getChunk(chunk, offset, socket);
 }
 
 void PeerManager::dataReceived(QTcpSocket* tcpSocket)

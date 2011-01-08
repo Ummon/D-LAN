@@ -27,6 +27,7 @@
 #include <Common/Uncopyable.h>
 
 #include <Core/FileManager/IFileManager.h>
+#include <Core/FileManager/IChunk.h>
 
 #include <priv/Socket.h>
 
@@ -52,7 +53,7 @@ namespace PM
    private slots:
       void socketGetIdle(Socket* socket);
       void socketClosed(Socket* socket);
-      void socketGetChunk(const Common::Hash& hash, int offset, Socket* socket);
+      void socketGetChunk(QSharedPointer<FM::IChunk> chunk, int offset, Socket* socket);
 
    private:
       enum Direction { TO_PEER, FROM_PEER };

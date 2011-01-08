@@ -40,6 +40,11 @@ using namespace PM;
 
 const int Tests::PORT = 59487;
 
+/**
+  * @class Tests
+  * Create some fileManager and associated peerManager.
+  */
+
 Tests::Tests()
 {
 }
@@ -68,14 +73,18 @@ void Tests::initTestCase()
 
    this->fileManagers << FM::Builder::newFileManager() << FM::Builder::newFileManager();
 
-   this->peerIDs << Hash::fromStr("11111111111111111111111111111111111111111111111111111111") << Hash::fromStr("22222222222222222222222222222222222222222222222222222222");
+   this->peerIDs << Hash::fromStr("11111111111111111111111111111111111111111111111111111111") <<
+                    Hash::fromStr("22222222222222222222222222222222222222222222222222222222");
+
    this->peerSharedDirs << "/sharedDirs/peer1" << "/sharedDirs/peer2";
 
    // 1) Create each peer manager.
    for (int i = 0; i < this->peerIDs.size(); i++)
    {
       SETTINGS.set("peer_id", this->peerIDs[i]);
-      this->peerManagers << Builder::newPeerManager(this->fileManagers[i]);
+      QSharedPointer<IPeerManager> peerManager = Builder::newPeerManager(this->fileManagers[i]);
+      peerManager->setNick(QString("peer#%1").arg(i + 1));
+      this->peerManagers << peerManager;
    }
 
    // 2) Set the shared directories.
@@ -165,6 +174,9 @@ void Tests::getPeerFromID()
    }
 }
 
+/**
+  * Peer#1 asking for the root entries of peer#2.
+  */
 void Tests::askForRootEntries()
 {
    qDebug() << "===== askForRootEntries() =====";
@@ -173,16 +185,27 @@ void Tests::askForRootEntries()
    QSharedPointer<IGetEntriesResult> result = this->peerManagers[0]->getPeers()[0]->getEntries(getEntriesMessage);
    connect(result.data(), SIGNAL(result(Protos::Core::GetEntriesResult)), &this->resultListener, SLOT(entriesResult(Protos::Core::GetEntriesResult)));
    result->start();
-   QTest::qWait(1500);
-   QCOMPARE(this->resultListener.getNbEntriesResultReceived(0), 1);
+
+   QElapsedTimer timer;
+   timer.start();
+
+   while (this->resultListener.getNbEntriesResultReceived(0) != 1)
+   {
+      QTest::qWait(100);
+      if (timer.elapsed() > 3000)
+         QFAIL("We don't receive the right number of root entry.");
+   }
 }
 
 /**
-  * Use the same socket as the previous request.
+  * Peer#1 browsing the content of the first shared directory of peer#2.
+  * Uses the same socket as the previous request.
   */
 void Tests::askForSomeEntries()
 {
    qDebug() << "===== askForSomeEntries() =====";
+
+   QElapsedTimer timer;
 
    QVERIFY(!this->resultListener.getEntriesResultList().isEmpty());
 
@@ -191,8 +214,14 @@ void Tests::askForSomeEntries()
    QSharedPointer<IGetEntriesResult> result1 = this->peerManagers[0]->getPeers()[0]->getEntries(getEntriesMessage1);
    connect(result1.data(), SIGNAL(result(Protos::Core::GetEntriesResult)), &this->resultListener, SLOT(entriesResult(Protos::Core::GetEntriesResult)));
    result1->start();
-   QTest::qWait(1000);
-   QCOMPARE(this->resultListener.getNbEntriesResultReceived(0), 4);
+
+   timer.start();
+   while (this->resultListener.getNbEntriesResultReceived(0) != 4)
+   {
+      QTest::qWait(100);
+      if (timer.elapsed() > 3000)
+         QFAIL("We don't receive the right number of entry after sending 'getEntriesMessage1'.");
+   }
 
    Protos::Core::GetEntries getEntriesMessage2;
    Protos::Common::Entry* entry = getEntriesMessage2.mutable_dirs()->add_entry();
@@ -201,13 +230,21 @@ void Tests::askForSomeEntries()
    QSharedPointer<IGetEntriesResult> result2 = this->peerManagers[0]->getPeers()[0]->getEntries(getEntriesMessage2);
    connect(result2.data(), SIGNAL(result(Protos::Core::GetEntriesResult)), &this->resultListener, SLOT(entriesResult(Protos::Core::GetEntriesResult)));
    result2->start();
-   QTest::qWait(1000);
-   QCOMPARE(this->resultListener.getNbEntriesResultReceived(0), 3);
+
+   timer.start();
+   while (this->resultListener.getNbEntriesResultReceived(0) != 3)
+   {
+      QTest::qWait(100);
+      if (timer.elapsed() > 3000)
+         QFAIL("We don't receive the right number of entry after sending 'getEntriesMessage2'.");
+   }
 }
 
 void Tests::askForHashes()
 {
    qDebug() << "===== askForHashes() =====";
+
+   const quint32 NUMBER_OF_CHUNK = 4;
 
    // 1) Create a big file.
    {
@@ -215,42 +252,77 @@ void Tests::askForHashes()
       file.open(QIODevice::WriteOnly);
 
       // To have four different hashes.
-      for (int i = 0; i < 4; i++)
+      for (quint32 i = 0; i < NUMBER_OF_CHUNK; i++)
       {
-         QByteArray randomData(32 * 1024 * 1024, i);
+         QByteArray randomData(SETTINGS.get<quint32>("chunk_size"), i);
          file.write(randomData);
       }
    }
-   QTest::qWait(200);
+
+   QElapsedTimer timer;
+
+   // Wait till the peer#2 has begun to read 'big.bin'.
+   timer.start();
+   while (this->fileManagers[1]->getAmount() < 32 * 1024)
+   {
+      QTest::qWait(100);
+      if (timer.elapsed() > 3000)
+         QFAIL("After adding the big file 'big.bin' the amount of data must be greater the 32KiB");
+   }
 
    Protos::Common::Entry fileEntry;
    fileEntry.set_type(Protos::Common::Entry_Type_FILE);
    fileEntry.set_path("/");
    fileEntry.set_name("big.bin");
    fileEntry.set_size(0);
+   // Sets the root directory.
    fileEntry.mutable_shared_dir()->CopyFrom(this->resultListener.getEntriesResultList().first().entries(0).entry(0).shared_dir());
 
    QSharedPointer<IGetHashesResult> result = this->peerManagers[0]->getPeers()[0]->getHashes(fileEntry);
    connect(result.data(), SIGNAL(result(const Protos::Core::GetHashesResult&)), &this->resultListener, SLOT(result(const Protos::Core::GetHashesResult&)));
    connect(result.data(), SIGNAL(nextHash(const Common::Hash&)), &this->resultListener, SLOT(nextHash(const Common::Hash&)));
    result->start();
-   QTest::qWait(5000);
+
+   timer.start();
+   while (this->resultListener.getLastGetHashesResult().status() != Protos::Core::GetHashesResult_Status_OK && this->resultListener.getLastGetHashesResult().nb_hash() != NUMBER_OF_CHUNK)
+   {
+      QTest::qWait(100);
+      if (timer.elapsed() > 3000)
+         QFAIL("We don't receive the correct receive after asking for hashes");
+   }
+
+   // Wait to have all the hashes.
+   timer.start();
+   while (this->resultListener.getNbHashReceivedFromLastGetHashes() != NUMBER_OF_CHUNK)
+   {
+      QTest::qWait(100);
+      if (timer.elapsed() > 10000)
+         QFAIL("We don't receive all the hashes");
+   }
 }
 
 void Tests::askForAChunk()
 {
    qDebug() << "===== askForAChunk() =====";
 
-   connect(this->peerManagers[1].data(), SIGNAL(getChunk(Common::Hash, int, QSharedPointer<PM::ISocket>)), &this->resultListener, SLOT(getChunk(Common::Hash, int, QSharedPointer<PM::ISocket>)));
+   connect(this->peerManagers[1].data(), SIGNAL(getChunk(QSharedPointer<FM::IChunk>, int, QSharedPointer<PM::ISocket>)), &this->resultListener, SLOT(getChunk(QSharedPointer<FM::IChunk>, int, QSharedPointer<PM::ISocket>)));
 
    Protos::Core::GetChunk getChunkMessage;
-   getChunkMessage.mutable_chunk()->set_hash(Common::Hash::rand().getData(), Common::Hash::HASH_SIZE);
+   getChunkMessage.mutable_chunk()->set_hash(this->resultListener.getLastReceivedHash().getData(), Common::Hash::HASH_SIZE);
    getChunkMessage.set_offset(0);
    QSharedPointer<IGetChunkResult> result = this->peerManagers[0]->getPeers()[0]->getChunk(getChunkMessage);
    connect(result.data(), SIGNAL(result(const Protos::Core::GetChunkResult&)), &this->resultListener, SLOT(result(const Protos::Core::GetChunkResult&)));
    connect(result.data(), SIGNAL(stream(QSharedPointer<PM::ISocket>)), &this->resultListener, SLOT(stream(QSharedPointer<PM::ISocket>)));
    result->start();
-   QTest::qWait(1000);
+
+   QElapsedTimer timer;
+   timer.start();
+   while (!this->resultListener.isStreamReceived())
+   {
+      QTest::qWait(100);
+      if (timer.elapsed() > 3000)
+         QFAIL("We don't receive the stream");
+   }
 }
 
 void Tests::cleanupTestCase()

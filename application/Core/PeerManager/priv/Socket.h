@@ -24,6 +24,7 @@
 #include <QHostAddress>
 #include <QTimer>
 #include <QQueue>
+#include <QSharedPointer>
 
 #include <google/protobuf/message.h>
 
@@ -31,6 +32,7 @@
 #include <Common/Hash.h>
 #include <Common/Uncopyable.h>
 #include <Core/FileManager/IFileManager.h>
+#include <Core/FileManager/IChunk.h>
 
 #include <ISocket.h>
 
@@ -52,6 +54,7 @@ namespace PM
 
       void startListening();
       void stopListening();
+
       bool isIdle() const;
       void setActive();
 
@@ -65,7 +68,7 @@ namespace PM
       void newMessage(Common::Network::CoreMessageType type, const google::protobuf::Message& message);
       void getIdle(Socket*);
       void closed(Socket*);
-      void getChunk(const Common::Hash&, int, Socket*);
+      void getChunk(QSharedPointer<FM::IChunk>, int, Socket*);
 
    private slots:
       void dataReceived();

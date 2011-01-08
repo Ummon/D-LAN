@@ -26,6 +26,8 @@
 
 #include <Common/Hash.h>
 
+#include <Core/FileManager/IChunk.h>
+
 #include <ISocket.h>
 using namespace PM;
 
@@ -38,6 +40,12 @@ public:
    QList<Protos::Core::GetEntriesResult> getEntriesResultList() const;
    int getNbEntriesResultReceived(int n) const;
 
+   const Protos::Core::GetHashesResult& getLastGetHashesResult();
+   const Common::Hash& getLastReceivedHash();
+   quint32 getNbHashReceivedFromLastGetHashes();
+
+   bool isStreamReceived();
+
 public slots:
    void entriesResult(const Protos::Core::GetEntriesResult& result);
 
@@ -46,12 +54,18 @@ public slots:
 
    void result(const Protos::Core::GetChunkResult& result);
    void stream(QSharedPointer<PM::ISocket> socket);
-   void getChunk(Common::Hash hash, int offset, QSharedPointer<PM::ISocket> socket);
+   void getChunk(QSharedPointer<FM::IChunk> chunk, int offset, QSharedPointer<PM::ISocket> socket);
 
 private:
    QList<Protos::Core::GetEntriesResult> entriesResultList;
-   int nbHashes;
-   int currentHash;
+
+   Protos::Core::GetHashesResult lastGesHashesResult;
+
+   quint32 nbHashes;
+   quint32 currentHash;
+   Common::Hash lastHashReceived;
+
+   bool streamReceived;
 };
 
 #endif
