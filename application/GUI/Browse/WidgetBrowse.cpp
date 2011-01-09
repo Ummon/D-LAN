@@ -52,7 +52,10 @@ WidgetBrowse::WidgetBrowse(CoreConnection& coreConnection, PeerListModel& peerLi
    this->ui->treeView->setContextMenuPolicy(Qt::CustomContextMenu);
    connect(this->ui->treeView, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(displayContextMenuPeers(const QPoint&)));
 
-   connect(this->ui->butDownload, SIGNAL(clicked()), this, SLOT(download()));
+   if (this->coreConnection.getOurID() == this->peerID)
+      this->ui->butDownload->hide();
+   else
+      connect(this->ui->butDownload, SIGNAL(clicked()), this, SLOT(download()));
 
    this->setWindowTitle(QString("[%1]").arg(this->peerListModel.getNick(this->peerID)));
 }
