@@ -140,10 +140,23 @@ QVariant BrowseModel::data(const QModelIndex& index, int role) const
    }
 }
 
-Protos::Common::Entry BrowseModel::getEntry(const QModelIndex& index)
+Protos::Common::Entry BrowseModel::getEntry(const QModelIndex& index) const
 {
    Node* node = static_cast<Node*>(index.internalPointer());
    return node->getEntry();
+}
+
+QString BrowseModel::getLocationPath(const QModelIndex& index) const
+{
+   const Protos::Common::Entry entry = this->getEntry(index);
+   QString path = Common::ProtoHelper::getStr(entry.shared_dir(), &Protos::Common::SharedDir::base_path);
+   QString relativePath = Common::ProtoHelper::getStr(entry, &Protos::Common::Entry::path);
+   path.append(relativePath);
+
+   // Empty relative path means the directory is a shared directory (root), see "application/Protos/common.proto" for more information.
+   if (entry.type() == Protos::Common::Entry_Type_DIR && !relativePath.isEmpty())
+      path.append(Common::ProtoHelper::getStr(entry, &Protos::Common::Entry::name));
+   return path;
 }
 
 void BrowseModel::refresh()

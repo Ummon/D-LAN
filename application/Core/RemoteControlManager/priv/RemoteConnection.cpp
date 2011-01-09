@@ -128,7 +128,6 @@ void RemoteConnection::refresh()
       Protos::GUI::State_Download* protoDownload = state.add_download();
       protoDownload->set_id(download->getID());
       protoDownload->mutable_entry()->CopyFrom(download->getEntry());
-      Common::ProtoHelper::setStr(*protoDownload, &Protos::GUI::State_Download::set_base_path, download->getBasePath());
       protoDownload->set_status(static_cast<Protos::GUI::State_Download_Status>(download->getStatus())); // Warning, enums must be compatible.
       protoDownload->set_progress(download->getProgress());
       for (QSetIterator<Common::Hash> j(download->getPeers()); j.hasNext();)
@@ -391,9 +390,9 @@ bool RemoteConnection::readMessage()
                   for (int i = 0; i < browseMessage.dirs().entry_size(); i++)
                      result.add_entries()->CopyFrom(this->fileManager->getEntries(browseMessage.dirs().entry(i)));
 
-                  // Add the root directories if asked.
+                  // Add the root directories if asked. Populate shared dirs with their base path.
                   if (browseMessage.dirs().entry_size() == 0 || browseMessage.get_roots())
-                     result.add_entries()->CopyFrom(this->fileManager->getEntries());
+                     result.add_entries()->CopyFrom(this->fileManager->getEntries(true));
                }
 
                result.set_tag(tag);

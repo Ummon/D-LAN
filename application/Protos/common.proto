@@ -19,6 +19,7 @@ message Hash {
 message SharedDir {
    required Hash id = 1; // Identify a shared directory.
    optional string shared_name = 2; // An optional name to identify the shared directory by human. It may correspond to the name of the shared directory itself. It may be used when creating the directories of a new downloading file.
+   optional string base_path = 3; // Useful in certain circumstances (for local files).
 }
 
 // Used for a directory or a file.

@@ -373,9 +373,7 @@ void DownloadManager::loadQueueFromFile()
       for (int i = 0; i < savedQueue.entry_size(); i++)
       {
          const Protos::Queue::Queue_Entry& entry = savedQueue.entry(i);
-         Download* download = this->addDownload(entry.entry(), Common::Hash(entry.peer_id().hash().data()), entry.complete());
-         if (download)
-            download->setBasePath(Common::ProtoHelper::getStr(entry, &Protos::Queue::Queue_Entry::base_path));
+         this->addDownload(entry.entry(), Common::Hash(entry.peer_id().hash().data()), entry.complete());
       }
    }
    catch (Common::UnknownValueException& e)

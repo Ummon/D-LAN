@@ -38,11 +38,14 @@ message State {
          UNABLE_TO_RETRIEVE_THE_HASHES = 0x23;
       }
       required uint64 id = 1;
-      required Common.Entry entry = 2; // Can be remote or local. When we know all the hashes and the local file exists (.unfinished) the entry becomes local, otherwise the entry is a remote one.
-      required string base_path = 3; // The base path of the shared directory where the file is put. Not ending with a slash '/'. Only set for a download with the status DOWNLOADING or COMPLETE.
-      required Status status = 4;
-      required uint32 progress = 5; // 0 to 100.
-      repeated Common.Hash peer_id = 6;
+      
+      // Can be remote or local. When we know all the hashes and the local file exists (.unfinished) the entry becomes local, otherwise the entry is a remote one.
+      // The base path of the shared directory where the file is put is set in entry.shared_dir.base_path. Not ending with a slash '/'. Only set for a download with the status DOWNLOADING or COMPLETE.            
+      required Common.Entry entry = 2;
+      
+      required Status status = 3;
+      required uint32 progress = 4; // 0 to 100.
+      repeated Common.Hash peer_id = 5;
    }
    message Upload {
       required uint64 id = 1;

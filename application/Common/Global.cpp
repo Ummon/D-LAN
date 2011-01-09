@@ -29,6 +29,7 @@ using namespace Common;
 #ifdef Q_OS_WIN32
    #include <windows.h>
    #include <Shlobj.h>
+   #include <Lmcons.h>
 #endif
 
 #include <Constants.h>
@@ -186,6 +187,18 @@ QString Global::getDataFolder(DataFolderType type, bool create)
          throw UnableToGetFolder();
 
    return QDir::home().absoluteFilePath(APPLICATION_FOLDER_NAME);
+#endif
+}
+
+QString Global::getCurrenUserName()
+{
+#ifdef Q_OS_WIN32
+   TCHAR userName[UNLEN + 1]; // UNLEN is from Lmcons.h
+   DWORD userNameSize = sizeof(userName);
+   GetUserName(userName, &userNameSize);
+   return QString::fromUtf16((ushort*)userName);
+#else // TODO
+   return "Bob";
 #endif
 }
 

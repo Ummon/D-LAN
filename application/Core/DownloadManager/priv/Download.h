@@ -56,8 +56,6 @@ namespace DM
       virtual int getProgress() const;
       Common::Hash getPeerSourceID() const;
       const Protos::Common::Entry& getEntry();
-      QString getBasePath() const;
-      void setBasePath(const QString& path);
       void remove();
 
       bool hasAValidPeer();
@@ -82,7 +80,6 @@ namespace DM
       Common::Hash peerSourceID;
       PM::IPeer* peerSource;
       Protos::Common::Entry entry; ///< The remote entry given by searching or browsing.
-      QString basePath; ///< The absolute path to the local shared directory containing the download. Only set when the local file is known (created).
 
       Status status;
    };

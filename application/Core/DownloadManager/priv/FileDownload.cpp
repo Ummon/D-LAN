@@ -192,7 +192,7 @@ QSharedPointer<ChunkDownload> FileDownload::getAChunkToDownload()
 
          // Set the local base path.
          if (!this->chunksWithoutDownload.isEmpty())
-            this->basePath = this->chunksWithoutDownload.first()->getBasePath();
+            Common::ProtoHelper::setStr(*this->entry.mutable_shared_dir(), &Protos::Common::SharedDir::set_base_path, this->chunksWithoutDownload.first()->getBasePath());
 
          for (int i = 0; !this->chunksWithoutDownload.isEmpty() && i < this->chunkDownloads.size(); i++)
             this->chunkDownloads[i]->setChunk(this->chunksWithoutDownload.takeFirst());
@@ -393,7 +393,7 @@ void FileDownload::updateStatus()
    {
       // this->chunkDownloads.first()->getChunk()->populateEntry(&this->entry); // To remove the ".unfinished".
       L_USER(QString("File completed : %1%2%3")
-         .arg(this->basePath)
+         .arg(Common::ProtoHelper::getStr(this->entry.shared_dir(), &Protos::Common::SharedDir::base_path))
          .arg(Common::ProtoHelper::getStr(this->entry, &Protos::Common::Entry::path))
          .arg(Common::ProtoHelper::getStr(this->entry, &Protos::Common::Entry::name))
       );

@@ -55,7 +55,7 @@ bool DownloadsModel::fileLocationIsKnown(int row) const
       return false;
 
    // If we know the base path then we know the location of the file.
-   return !Common::ProtoHelper::getStr(this->downloads[row], &Protos::GUI::State_Download::base_path).isEmpty();
+   return !Common::ProtoHelper::getStr(this->downloads[row].entry().shared_dir(), &Protos::Common::SharedDir::base_path).isEmpty();
 }
 
 QString DownloadsModel::getLocationPath(int row) const
@@ -65,7 +65,7 @@ QString DownloadsModel::getLocationPath(int row) const
 
    QString fullPath;
    fullPath
-      .append(Common::ProtoHelper::getStr(this->downloads[row], &Protos::GUI::State_Download::base_path)) // Base path
+      .append(Common::ProtoHelper::getStr(this->downloads[row].entry().shared_dir(), &Protos::Common::SharedDir::base_path)) // Base path
       .append(Common::ProtoHelper::getStr(this->downloads[row].entry(), &Protos::Common::Entry::path)); // Relative path from base path
    return fullPath;
 }

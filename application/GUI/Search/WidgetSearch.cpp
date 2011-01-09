@@ -166,6 +166,8 @@ WidgetSearch::WidgetSearch(CoreConnection& coreConnection, PeerListModel& peerLi
     this->ui->treeView->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(this->ui->treeView, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(displayContextMenuPeers(const QPoint&)));
 
+    connect(this->ui->butDownload, SIGNAL(clicked()), this, SLOT(download()));
+
     this->setWindowTitle(QString("\"%1\"").arg(terms));
 }
 

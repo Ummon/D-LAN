@@ -90,13 +90,13 @@ void Core::start()
 void Core::stop()
 {
    this->application()->quit();
+   this->consoleReader.stop();
 }
 
 void Core::treatUserInput(QString input)
 {
    if (input == ConsoleReader::QUIT_COMMAND)
    {
-      this->consoleReader.stop();
       this->stop();
    }
    else
@@ -114,6 +114,9 @@ void Core::treatUserInput(QString input)
 void Core::checkSettingsIntegrity()
 {
    SETTINGS.rm("chunk_size"); // The size of the chunks must never change.
+
+   if (SETTINGS.get<QString>("nick").isEmpty())
+      SETTINGS.set("nick", Common::Global::getCurrenUserName());
 
    this->checkSetting("buffer_size", 1024u, 32u * 1024u * 1024u, true);
    this->checkSetting("socket_buffer_size", 1024u, 32u * 1024u * 1024u, true);

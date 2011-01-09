@@ -86,14 +86,19 @@ Protos::Common::Entries Cache::getEntries(const Protos::Common::Entry& dir) cons
    return result;
 }
 
-Protos::Common::Entries Cache::getEntries() const
+Protos::Common::Entries Cache::getEntries(bool setBasePath) const
 {
    QMutexLocker locker(&this->mutex);
 
    Protos::Common::Entries result;
 
    foreach (SharedDirectory* sharedDir, this->sharedDirs)
-      sharedDir->populateEntry(result.add_entry());
+   {
+      Protos::Common::Entry* entry = result.add_entry();
+      sharedDir->populateEntry(entry);
+      if (setBasePath)
+         sharedDir->populateEntryBasePath(entry);
+   }
 
    return result;
 }

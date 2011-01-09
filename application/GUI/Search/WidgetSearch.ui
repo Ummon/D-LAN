@@ -34,6 +34,20 @@
     </widget>
    </item>
    <item>
+    <widget class="QPushButton" name="butDownload">
+     <property name="enabled">
+      <bool>true</bool>
+     </property>
+     <property name="text">
+      <string>Download selected items</string>
+     </property>
+     <property name="icon">
+      <iconset resource="../ressources.qrc">
+       <normaloff>:/icons/ressources/download.png</normaloff>:/icons/ressources/download.png</iconset>
+     </property>
+    </widget>
+   </item>
+   <item>
     <widget class="QProgressBar" name="prgSearch">
      <property name="maximumSize">
       <size>
@@ -57,6 +71,8 @@
    </item>
   </layout>
  </widget>
- <resources/>
+ <resources>
+  <include location="../ressources.qrc"/>
+ </resources>
  <connections/>
 </ui>

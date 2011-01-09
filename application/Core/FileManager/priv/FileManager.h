@@ -56,6 +56,7 @@ namespace FM
       void setSharedDirsReadWrite(const QStringList& dirs);
       QStringList getSharedDirsReadOnly();
       QStringList getSharedDirsReadWrite();
+      QString getSharedDir(const Common::Hash& ID) const;
 
       QSharedPointer<IChunk> getChunk(const Common::Hash& hash) const;
       QList< QSharedPointer<IChunk> > getAllChunks(const Protos::Common::Entry& entry, const Common::Hash& hash) const;
@@ -63,7 +64,7 @@ namespace FM
       QSharedPointer<IGetHashesResult> getHashes(const Protos::Common::Entry& file);
 
       Protos::Common::Entries getEntries(const Protos::Common::Entry& dir);
-      Protos::Common::Entries getEntries();
+      Protos::Common::Entries getEntries(bool setBasePath = false);
 
       QList<Protos::Common::FindResult> find(const QString& words, int maxNbResult, int maxSize);
       QBitArray haveChunks(const QList<Common::Hash>& hashes);

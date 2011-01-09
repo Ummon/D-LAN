@@ -49,7 +49,9 @@ namespace GUI
       virtual int columnCount(const QModelIndex& parent = QModelIndex()) const;
       virtual QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const;
 
-      virtual Protos::Common::Entry getEntry(const QModelIndex& index);
+      virtual Protos::Common::Entry getEntry(const QModelIndex& index) const;
+
+      virtual QString getLocationPath(const QModelIndex& index) const;
 
       void refresh();
 

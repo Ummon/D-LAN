@@ -46,7 +46,7 @@ namespace FM
       Cache(FileManager* fileManager);
 
       Protos::Common::Entries getEntries(const Protos::Common::Entry& dir) const;
-      Protos::Common::Entries getEntries() const;
+      Protos::Common::Entries getEntries(bool setBasePath) const;
       Entry* getEntry(const QString& path) const;
       File* getFile(const Protos::Common::Entry&) const;
       QList< QSharedPointer<IChunk> > newFile(const Protos::Common::Entry& remoteEntry);

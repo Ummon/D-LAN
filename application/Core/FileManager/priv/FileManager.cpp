@@ -152,9 +152,9 @@ Protos::Common::Entries FileManager::getEntries(const Protos::Common::Entry& dir
    return this->cache.getEntries(dir);
 }
 
-Protos::Common::Entries FileManager::getEntries()
+Protos::Common::Entries FileManager::getEntries(bool setBasePath)
 {
-   return this->cache.getEntries();
+   return this->cache.getEntries(setBasePath);
 }
 
 /**

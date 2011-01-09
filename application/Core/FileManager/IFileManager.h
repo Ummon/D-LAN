@@ -100,8 +100,9 @@ namespace FM
 
       /**
         * Returns the shared directories (roots).
+        * @param setBasePath When true set the field of entry.shared_dir.base_path to the absolute path. Only use when browsing local folders, there is no reason to give the path of remote ones.
         */
-      virtual Protos::Common::Entries getEntries() = 0;
+      virtual Protos::Common::Entries getEntries(bool setBasePath = false) = 0;
 
       /**
         * Find some entry from a given words.

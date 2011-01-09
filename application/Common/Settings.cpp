@@ -76,6 +76,11 @@ void Settings::setSettingsMessage(google::protobuf::Message* settings)
    for (int i = 0; i < this->descriptor->field_count(); i++)
    {
       const google::protobuf::FieldDescriptor* fieldDescriptor = this->descriptor->field(i);
+
+      // It doesn't work, an optional field with a default value is defined as non-set (HasField returns 'false').
+      /*if (!this->settings->GetReflection()->HasField(*this->settings, fieldDescriptor))
+         continue;*/
+
       switch(fieldDescriptor->type())
       {
       case google::protobuf::FieldDescriptor::TYPE_UINT32:

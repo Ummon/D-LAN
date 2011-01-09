@@ -21,11 +21,12 @@ using namespace FM;
 
 #include <QDir>
 
+#include <Common/ProtoHelper.h>
+
 #include <Exceptions.h>
 #include <priv/Log.h>
 #include <priv/Exceptions.h>
 #include <priv/Cache/Cache.h>
-
 
 /**
   * Create from a saved shared directory (file cache).
@@ -50,6 +51,12 @@ void SharedDirectory::populateEntry(Protos::Common::Entry* entry, bool setShared
 {
    Directory::populateEntry(entry, setSharedDir);
    entry->mutable_shared_dir()->mutable_id()->set_hash(static_cast<SharedDirectory*>(this->getRoot())->getId().getData(), Common::Hash::HASH_SIZE);
+}
+
+void SharedDirectory::populateEntryBasePath(Protos::Common::Entry* entry) const
+{
+   Protos::Common::SharedDir* dir = entry->mutable_shared_dir();
+   Common::ProtoHelper::setStr(*dir, &Protos::Common::SharedDir::set_base_path, this->getFullPath());
 }
 
 void SharedDirectory::init()

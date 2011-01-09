@@ -22,6 +22,7 @@
 #include <QWidget>
 #include <QAbstractButton>
 #include <QStyledItemDelegate>
+#include <QItemSelection>
 
 #include <Common/Hash.h>
 
@@ -55,6 +56,7 @@ namespace GUI
    private slots:
       void displayContextMenuPeers(const QPoint& point);
       void download();
+      void openLocation();
 
    private:
       Ui::WidgetBrowse* ui;

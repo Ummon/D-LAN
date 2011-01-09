@@ -23,6 +23,8 @@ using namespace GUI;
 #include <QMenu>
 #include <QPainter>
 #include <QIcon>
+#include <QDesktopServices>
+#include <QUrl>
 
 void BrowseDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
@@ -50,6 +52,8 @@ WidgetBrowse::WidgetBrowse(CoreConnection& coreConnection, PeerListModel& peerLi
    this->ui->treeView->setContextMenuPolicy(Qt::CustomContextMenu);
    connect(this->ui->treeView, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(displayContextMenuPeers(const QPoint&)));
 
+   connect(this->ui->butDownload, SIGNAL(clicked()), this, SLOT(download()));
+
    this->setWindowTitle(QString("[%1]").arg(this->peerListModel.getNick(this->peerID)));
 }
 
@@ -71,11 +75,20 @@ void WidgetBrowse::refresh()
 void WidgetBrowse::displayContextMenuPeers(const QPoint& point)
 {
    if (this->coreConnection.getOurID() == this->peerID)
-      return;
-
-   QMenu menu;
-   menu.addAction(QIcon(":/icons/ressources/download.png"), "Download selected entries", this, SLOT(download()));
-   menu.exec(this->ui->treeView->mapToGlobal(point));
+   {
+      if (this->coreConnection.isLocal())
+      {
+         QMenu menu;
+         menu.addAction("Open location", this, SLOT(openLocation()));
+         menu.exec(this->ui->treeView->mapToGlobal(point));
+      }
+   }
+   else
+   {
+      QMenu menu;
+      menu.addAction(QIcon(":/icons/ressources/download.png"), "Download selected entries", this, SLOT(download()));
+      menu.exec(this->ui->treeView->mapToGlobal(point));
+   }
 }
 
 void WidgetBrowse::download()
@@ -85,4 +98,19 @@ void WidgetBrowse::download()
    {
       this->coreConnection.download(this->peerID, this->browseModel.getEntry(i.next()));
    }
+}
+
+void WidgetBrowse::openLocation()
+{
+   QModelIndexList selectedRows = this->ui->treeView->selectionModel()->selectedRows();
+
+   QSet<QString> locations;
+   for (QListIterator<QModelIndex> i(selectedRows); i.hasNext();)
+   {
+      QModelIndex index = i.next();
+      locations.insert("file:///" + this->browseModel.getLocationPath(index));
+   }
+
+   for (QSetIterator<QString> i(locations); i.hasNext();)
+      QDesktopServices::openUrl(QUrl(i.next(), QUrl::TolerantMode));
 }

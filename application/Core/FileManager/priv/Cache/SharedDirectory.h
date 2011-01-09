@@ -41,6 +41,7 @@ namespace FM
       SharedDirectory(Cache* cache, const QString& path, Rights rights);
 
       void populateEntry(Protos::Common::Entry* entry, bool setSharedDir = false) const;
+      void populateEntryBasePath(Protos::Common::Entry* entry) const;
 
    private:
       void init();
