@@ -112,7 +112,16 @@ Download* DownloadManager::addDownload(const Protos::Common::Entry& entry, Commo
 
    case Protos::Common::Entry_Type_FILE :
       {
-         FileDownload* fileDownload = new FileDownload(this->fileManager, this->peerManager, this->occupiedPeersAskingForHashes, this->occupiedPeersDownloadingChunk, peerSource, entry, complete);
+         FileDownload* fileDownload = new FileDownload(
+            this->fileManager,
+            this->peerManager,
+            this->occupiedPeersAskingForHashes,
+            this->occupiedPeersDownloadingChunk,
+            peerSource,
+            entry,
+            this->transferRateCalculator,
+            complete
+         );
          newDownload = fileDownload;
          connect(fileDownload, SIGNAL(newHashKnown()), this, SLOT(setQueueChanged()), Qt::DirectConnection);
          iterator.insert(fileDownload);
@@ -201,17 +210,9 @@ QList< QSharedPointer<IChunkDownload> > DownloadManager::getUnfinishedChunks(int
    return unfinishedChunks;
 }
 
-int DownloadManager::getDownloadRate() const
+int DownloadManager::getDownloadRate()
 {
-   int downloadRate = 0;
-   for (QListIterator<Download*> i(this->downloads); i.hasNext();)
-   {
-      FileDownload* fileDownload = dynamic_cast<FileDownload*>(i.next());
-
-      if (fileDownload && fileDownload->getStatus() == DOWNLOADING)
-         downloadRate += fileDownload->getDownloadRate();
-   }
-   return downloadRate;
+   return this->transferRateCalculator.getTransferRate();
 }
 
 void DownloadManager::fileCacheLoaded()

@@ -50,6 +50,7 @@ namespace DM
          OccupiedPeers& occupiedPeersDownloadingChunk,
          Common::Hash peerSourceID,
          const Protos::Common::Entry& entry,
+         Common::TransferRateCalculator& transferRateCalculator,
          bool complete = false
       );
       ~FileDownload();
@@ -58,7 +59,6 @@ namespace DM
 
       void start();
 
-      int getDownloadRate() const;
       int getProgress() const;
       QSet<Common::Hash> getPeers() const;
 
@@ -105,6 +105,8 @@ namespace DM
       bool fileCreated;
 
       QTimer timer; // Used to periodically try to retrieve hashes.
+
+      Common::TransferRateCalculator& transferRateCalculator;
    };
 }
 #endif

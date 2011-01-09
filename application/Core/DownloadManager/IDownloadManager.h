@@ -57,7 +57,7 @@ namespace DM
       /**
         * @return Byte/s.
         */
-      virtual int getDownloadRate() const = 0;
+      virtual int getDownloadRate() = 0;
    };
 }
 #endif

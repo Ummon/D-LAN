@@ -40,10 +40,9 @@ namespace UM
       static quint64 currentID; ///< Used to generate the new upload ID.
 
    public:
-      Uploader(QSharedPointer<FM::IChunk> chunk, int offset, QSharedPointer<PM::ISocket> socket);
+      Uploader(QSharedPointer<FM::IChunk> chunk, int offset, QSharedPointer<PM::ISocket> socket, Common::TransferRateCalculator& transferRateCalculator);
 
       quint64 getID() const;
-      int getUploadRate() const;
       Common::Hash getPeerID() const;
       int getProgress() const;
       QSharedPointer<FM::IChunk> getChunk() const;
@@ -64,7 +63,7 @@ namespace UM
       QSharedPointer<PM::ISocket> socket; ///< The socket to send data.
       QTimer timer; ///< Timer to enable a timeout for the uploader. See the settings "upload_live_time".
       mutable QMutex mutex; ///< A mutex to protect the 'offset' data member.
-      Common::TransferRateCalculator transferRateCalculator; /// To compute the transfer rate.
+      Common::TransferRateCalculator& transferRateCalculator; /// To compute the transfer rate.
       QThread* mainThread;
    };
 }

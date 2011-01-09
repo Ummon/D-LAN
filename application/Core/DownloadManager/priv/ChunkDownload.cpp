@@ -33,7 +33,7 @@ using namespace DM;
   * It can be created when a new FileDownload is added for each chunk known in the given entry or when a FileDownload receive a hash.
   */
 
-ChunkDownload::ChunkDownload(QSharedPointer<PM::IPeerManager> peerManager, OccupiedPeers& occupiedPeersDownloadingChunk, Common::Hash chunkHash) :
+ChunkDownload::ChunkDownload(QSharedPointer<PM::IPeerManager> peerManager, OccupiedPeers& occupiedPeersDownloadingChunk, Common::Hash chunkHash, Common::TransferRateCalculator& transferRateCalculator) :
    SOCKET_TIMEOUT(SETTINGS.get<quint32>("socket_timeout")),
    peerManager(peerManager),
    occupiedPeersDownloadingChunk(occupiedPeersDownloadingChunk),
@@ -41,6 +41,7 @@ ChunkDownload::ChunkDownload(QSharedPointer<PM::IPeerManager> peerManager, Occup
    socket(0),
    downloading(false),
    networkTransferStatus(PM::SFS_OK),
+   transferRateCalculator(transferRateCalculator),
    mutex(QMutex::Recursive)
 {
    L_DEBU(QString("New ChunkDownload : %1").arg(this->chunkHash.toStr()));
@@ -66,11 +67,6 @@ ChunkDownload::~ChunkDownload()
    {
       this->chunk->removeItsIncompleteFile();
    }
-}
-
-int ChunkDownload::getDownloadRate() const
-{
-   return this->transferRateCalculator.getTransferRate();
 }
 
 Common::Hash ChunkDownload::getHash() const
@@ -229,8 +225,6 @@ void ChunkDownload::run()
       int bytesWritten = 0;
       int deltaRead = 0;
 
-      this->transferRateCalculator.reset();
-
       QElapsedTimer timer;
       timer.start();
 
@@ -320,7 +314,6 @@ void ChunkDownload::run()
       L_WARN("TryToWriteBeyondTheEndOfChunkException");
    }
 
-   this->transferRateCalculator.reset();
    this->socket->getQSocket()->moveToThread(this->mainThread);
 }
 

@@ -40,8 +40,8 @@ using namespace UM;
 
 quint64 Uploader::currentID(1);
 
-Uploader::Uploader(QSharedPointer<FM::IChunk> chunk, int offset, QSharedPointer<PM::ISocket> socket)
-   : ID(currentID++), chunk(chunk), offset(offset), socket(socket)
+Uploader::Uploader(QSharedPointer<FM::IChunk> chunk, int offset, QSharedPointer<PM::ISocket> socket, Common::TransferRateCalculator& transferRateCalculator)
+   : ID(currentID++), chunk(chunk), offset(offset), socket(socket), transferRateCalculator(transferRateCalculator)
 {
    this->mainThread = QThread::currentThread();
    this->socket->getQSocket()->moveToThread(this);
@@ -54,11 +54,6 @@ Uploader::Uploader(QSharedPointer<FM::IChunk> chunk, int offset, QSharedPointer<
 quint64 Uploader::getID() const
 {
    return this->ID;
-}
-
-int Uploader::getUploadRate() const
-{
-   return this->transferRateCalculator.getTransferRate();
 }
 
 Common::Hash Uploader::getPeerID() const
@@ -109,8 +104,6 @@ void Uploader::run()
       char buffer[BUFFER_SIZE];
       int bytesRead = 0;
 
-      this->transferRateCalculator.reset();
-
       while (bytesRead = reader->read(buffer, this->offset))
       {
          int bytesSent = this->socket->getQSocket()->write(buffer, bytesRead);
@@ -132,7 +125,7 @@ void Uploader::run()
             {
                L_WARN(QString("Socket : cannot write data, error : %1, chunk : %2").arg(socket->getQSocket()->errorString()).arg(this->chunk->toStr()));
                networkError = true;
-               break;
+               goto end;
             }
          }
 
@@ -156,8 +149,7 @@ void Uploader::run()
       L_WARN("ChunkNotCompletedException");
    }
 
-   this->transferRateCalculator.reset();
-
+end:
    this->socket->getQSocket()->moveToThread(this->mainThread);
 
    emit uploadFinished(networkError);

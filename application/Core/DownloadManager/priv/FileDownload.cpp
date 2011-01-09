@@ -38,6 +38,7 @@ FileDownload::FileDownload(
    OccupiedPeers& occupiedPeersDownloadingChunk,
    Common::Hash peerSourceID,
    const Protos::Common::Entry& entry,
+   Common::TransferRateCalculator& transferRateCalculator,
    bool complete
 )
    : Download(fileManager, peerManager, peerSourceID, entry),
@@ -45,7 +46,8 @@ FileDownload::FileDownload(
    occupiedPeersAskingForHashes(occupiedPeersAskingForHashes),
    occupiedPeersDownloadingChunk(occupiedPeersDownloadingChunk),
    nbHashesKnown(0),
-   fileCreated(false)
+   fileCreated(false),
+   transferRateCalculator(transferRateCalculator)
 {
    L_DEBU(QString("New FileDownload : source = %1, entry : \n%2").
       arg(this->peerSourceID.toStr()).
@@ -63,7 +65,7 @@ FileDownload::FileDownload(
    for (int i = 0; i < entry.chunk_size(); i++)
    {
       Common::Hash chunkHash(entry.chunk(i).hash().data());
-      QSharedPointer<ChunkDownload> chunkDownload = QSharedPointer<ChunkDownload>(new ChunkDownload(this->peerManager, this->occupiedPeersDownloadingChunk, chunkHash));
+      QSharedPointer<ChunkDownload> chunkDownload = QSharedPointer<ChunkDownload>(new ChunkDownload(this->peerManager, this->occupiedPeersDownloadingChunk, chunkHash, this->transferRateCalculator));
 
       this->chunkDownloads << chunkDownload;
       this->connectChunkDownloadSignals(this->chunkDownloads.last());
@@ -109,15 +111,6 @@ void FileDownload::start()
    }
 
    this->retreiveHashes();
-}
-
-int FileDownload::getDownloadRate() const
-{
-   int downloadRate = 0;
-   for (QListIterator< QSharedPointer<ChunkDownload> > i(this->chunkDownloads); i.hasNext();)
-      downloadRate += i.next()->getDownloadRate();
-
-   return downloadRate;
 }
 
 int FileDownload::getProgress() const
@@ -321,7 +314,7 @@ void FileDownload::nextHash(const Common::Hash& hash)
    }
    else
    {
-      QSharedPointer<ChunkDownload> chunkDownload = QSharedPointer<ChunkDownload>(new ChunkDownload(this->peerManager, this->occupiedPeersDownloadingChunk, hash));
+      QSharedPointer<ChunkDownload> chunkDownload = QSharedPointer<ChunkDownload>(new ChunkDownload(this->peerManager, this->occupiedPeersDownloadingChunk, hash, transferRateCalculator));
 
       // If the file has already been created, the chunks are known.
       if (!this->chunksWithoutDownload.isEmpty())

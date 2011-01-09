@@ -34,7 +34,7 @@ namespace UM
       /**
         * @return Byte/s.
         */
-      virtual int getUploadRate() const = 0;
+      virtual int getUploadRate() = 0;
    };
 }
 #endif

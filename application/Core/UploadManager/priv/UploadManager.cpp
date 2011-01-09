@@ -59,18 +59,14 @@ QList<IUpload*> UploadManager::getUploads() const
    return uploads;
 }
 
-int UploadManager::getUploadRate() const
+int UploadManager::getUploadRate()
 {
-   int uploadRate = 0;
-   for (QListIterator<Uploader*> i(this->uploaders); i.hasNext();)
-      uploadRate += i.next()->getUploadRate();
-
-   return uploadRate;
+   return this->transferRateCalculator.getTransferRate();
 }
 
 void UploadManager::getChunk(QSharedPointer<FM::IChunk> chunk, int offset, QSharedPointer<PM::ISocket> socket)
 {
-   Uploader* uploader = new Uploader(chunk, offset, socket);
+   Uploader* uploader = new Uploader(chunk, offset, socket, this->transferRateCalculator);
    connect(uploader, SIGNAL(uploadFinished(bool)), this, SLOT(uploadFinished(bool)), Qt::QueuedConnection);
    connect(uploader, SIGNAL(uploadTimeout()), this, SLOT(deleteUpload()));
    this->uploaders << uploader;

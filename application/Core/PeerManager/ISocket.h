@@ -40,10 +40,20 @@ namespace PM
    public:
       virtual ~ISocket() {}
 
+      /**
+        * Used by downloaders or uploaders to read or write data.
+        */
       virtual QAbstractSocket* getQSocket() const = 0;
 
+      /**
+        * Returns the ID of the remote peer on which the socket is connected.
+        */
       virtual Common::Hash getPeerID() const = 0;
 
+      /**
+        * Used by uploader to tell when an upload is finished.
+        * TODO : should be removed and only be called by the peerManager (as with downloads).
+        */
       virtual void finished(SocketFinishedStatus status = SFS_OK) = 0;
    };
 }

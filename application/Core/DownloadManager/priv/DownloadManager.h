@@ -24,6 +24,8 @@
 #include <QSharedPointer>
 #include <QTimer>
 
+#include <Common/TransferRateCalculator.h>
+
 #include <Core/FileManager/IFileManager.h>
 #include <Core/PeerManager/IPeerManager.h>
 
@@ -55,7 +57,7 @@ namespace DM
       void moveDownloads(quint64 downloadIDRef, bool moveBefore, const QList<quint64>& downloadIDs);
       QList< QSharedPointer<IChunkDownload> > getUnfinishedChunks(int n) const;
 
-      int getDownloadRate() const;
+      int getDownloadRate();
 
    private slots:
       void fileCacheLoaded();
@@ -99,6 +101,8 @@ namespace DM
 
       QTimer saveTimer; // To know when to save the queue, for exemple each 5min.
       bool queueChanged;
+
+     Common::TransferRateCalculator transferRateCalculator;
    };
 }
 #endif

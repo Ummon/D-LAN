@@ -35,15 +35,24 @@ namespace UM
    public:
       virtual ~IUpload() {}
 
+      /**
+        * Returns the upload ID, it can be use later to retrieve an upload.
+        */
       virtual quint64 getID() const = 0;
 
+      /**
+        * Returns the ID of the remote peer.
+        */
       virtual Common::Hash getPeerID() const = 0;
 
       /**
-        * Return a value between 0 and 100.
+        * Returns a value between 0 and 100.
         */
       virtual int getProgress() const = 0;
 
+      /**
+        * Returns the chunk being uploaded.
+        */
       virtual QSharedPointer<FM::IChunk> getChunk() const = 0;
    };
 }

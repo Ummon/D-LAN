@@ -46,10 +46,8 @@ namespace DM
    {
       Q_OBJECT
    public:
-      ChunkDownload(QSharedPointer<PM::IPeerManager> peerManager, OccupiedPeers& occupiedPeersDownloadingChunk, Common::Hash chunkHash);
+      ChunkDownload(QSharedPointer<PM::IPeerManager> peerManager, OccupiedPeers& occupiedPeersDownloadingChunk, Common::Hash chunkHash, Common::TransferRateCalculator& transferRateCalculator);
       ~ChunkDownload();
-
-      int getDownloadRate() const;
 
       Common::Hash getHash() const;
 
@@ -114,7 +112,7 @@ namespace DM
       bool downloading;
       PM::SocketFinishedStatus networkTransferStatus;
 
-      Common::TransferRateCalculator transferRateCalculator;
+      Common::TransferRateCalculator& transferRateCalculator;
 
       mutable QMutex mutex; // To protect 'peers' and 'downloading'.
    };

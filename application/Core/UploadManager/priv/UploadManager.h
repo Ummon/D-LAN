@@ -24,6 +24,7 @@
 
 #include <Common/Uncopyable.h>
 #include <Common/Hash.h>
+#include <Common/TransferRateCalculator.h>
 #include <Core/PeerManager/IPeerManager.h>
 
 #include <IUploadManager.h>
@@ -42,7 +43,7 @@ namespace UM
 
       QList<IUpload*> getUploads() const;
 
-      int getUploadRate() const;
+      int getUploadRate();
 
    private slots:
       void getChunk(QSharedPointer<FM::IChunk> chunk, int offset, QSharedPointer<PM::ISocket> socket);
@@ -53,6 +54,8 @@ namespace UM
       QSharedPointer<PM::IPeerManager> peerManager;
 
       QList<Uploader*> uploaders;
+
+      Common::TransferRateCalculator transferRateCalculator;
    };
 }
 #endif

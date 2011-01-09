@@ -22,22 +22,44 @@
 #include <QMutex>
 #include <QElapsedTimer>
 
+#include <Common/Uncopyable.h>
+
 namespace Common
 {
-   class TransferRateCalculator
+   class TransferRateCalculator : Common::Uncopyable
    {
+      static int const PERIOD = 1000; // [ms].
+      static int const NB_VALUE = 10;
+      static int const DELTA_T = PERIOD / NB_VALUE;
+
    public:
       TransferRateCalculator();
 
       void addData(int bytes);
-      int getTransferRate() const;
-      void reset();
+      int getTransferRate();
 
    private:
+      void reset();
+      void update(int value);
+      inline void stepForwardCurrentValuePos();
+
       mutable QMutex mutex;
       QElapsedTimer timer;
-      int bytesTransmitted;
+
+      int currentValue;
+      int currentValuePos;
+      int values[NB_VALUE];
+
+      int total; // Sum of all values.
    };
 }
 
+using namespace Common;
+
+inline void TransferRateCalculator::stepForwardCurrentValuePos()
+{
+   this->currentValuePos++;
+   if (this->currentValuePos >= NB_VALUE)
+      this->currentValuePos = 0;
+}
 #endif

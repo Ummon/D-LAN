@@ -71,9 +71,9 @@ void Tests::initTestCase()
    this->fileManagers[2]->setSharedDirsReadOnly(QStringList() << QDir::currentPath().append("/sharedDirs/peer3"));
 
    this->uploadManagers <<
-      UM::Builder::newUploadManager(this->fileManagers[0], this->peerManagers[0]) <<
-      UM::Builder::newUploadManager(this->fileManagers[1], this->peerManagers[1]) <<
-      UM::Builder::newUploadManager(this->fileManagers[2], this->peerManagers[2]);
+      UM::Builder::newUploadManager(this->peerManagers[0]) <<
+      UM::Builder::newUploadManager(this->peerManagers[1]) <<
+      UM::Builder::newUploadManager(this->peerManagers[2]);
 
    this->downloadManagers <<
       Builder::newDownloadManager(this->fileManagers[0], this->peerManagers[0]) <<
