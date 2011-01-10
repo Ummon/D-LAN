@@ -24,3 +24,6 @@ HEADERS  += MainWindow.h \
     ../../Protos/common.pb.h \
     ../../Protos/core_settings.pb.h
 FORMS    += MainWindow.ui
+
+RESOURCES += \
+    ressources.qrc
