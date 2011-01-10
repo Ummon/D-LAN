@@ -28,6 +28,15 @@
           var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
         })();
       </script>
+      <script type="text/javascript">
+       (function() {
+           var s = document.createElement('script'), t = document.getElementsByTagName('script')[0];
+           s.type = 'text/javascript';
+           s.async = true;
+           s.src = 'http://api.flattr.com/js/0.6/load.js?mode=auto';
+           t.parentNode.insertBefore(s, t);
+       })();
+      </script>
    </head>
    <!-- For great justice. -->
    <body>
@@ -38,8 +47,10 @@
             <erl>
                out(A) -> aybabtu_common:menu(A).
             </erl>
+            <li><a class="external" href="https://github.com/Ummon/Aybabtu">github</a></li>
+            <li><a class="external" href="http://dev.aybabtu.org/projects/pmp/wiki">wiki</a></li>
             <li><a class="external" href="http://dev.aybabtu.org/projects/pmp/boards">forums</a></li>
-            <li><a class="external" href="http://dev.aybabtu.org/projects/pmp/wiki">development</a></li>
+            <li><a class="FlattrButton" style="display:none;" rev="flattr;button:compact;" href="http://www.aybabtu.org"></a></li>
          </ul>
          <div id="content" class="<erl>
             out(A) ->

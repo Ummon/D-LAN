@@ -115,6 +115,10 @@ ul#menu {
 	background-color: #bc643b;
 }
 
+#menu .FlattrButton {
+	margin-left: 20px;
+}
+
 /*** Content ***/
 
 #content {
@@ -178,6 +182,15 @@ ul#menu {
 	margin: 0px 5px 0px 5px;
 	font-style: italic;
 	font-size: 11px;
+}
+
+.gallery img {
+	border: 1px solid #bc3e04;
+}
+
+.gallery img:hover,
+.gallery img:active {
+	border: 1px solid #bc6d48;
 }
 
 .home .gallery {
