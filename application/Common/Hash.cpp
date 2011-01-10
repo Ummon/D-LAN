@@ -185,19 +185,6 @@ Hash Hash::fromStr(const QString& str)
    return hash;
 }
 
-/**
-  * Dereference the pointed data.
-  */
-void Hash::dereference()
-{
-#if WITH_MUTEX
-   QMutexLocker locker(&this->data->mutex);
-#endif
-   this->data->nbRef -= 1;
-   if (this->data->nbRef == 0)
-      delete this->data;
-}
-
 /////
 
 /**

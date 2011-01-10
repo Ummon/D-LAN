@@ -76,11 +76,7 @@ namespace Common
 
    private:
       inline void dereference();
-      inline void newData()
-      {
-         this->data = new SharedData;
-         this->data->nbRef = 1;
-      }
+      inline void newData();
 
       friend QDataStream& operator>>(QDataStream&, Hash&);
       friend QDataStream& operator<<(QDataStream& stream, const Hash& hash);
@@ -162,4 +158,24 @@ namespace Common
       Blake::hashState state;
    };
 }
+
+using namespace Common;
+
+inline void Hash::dereference()
+{
+#if WITH_MUTEX
+   QMutexLocker locker(&this->data->mutex);
 #endif
+   this->data->nbRef -= 1;
+   if (this->data->nbRef == 0)
+      delete this->data;
+}
+
+inline void Hash::newData()
+{
+   this->data = new SharedData;
+   this->data->nbRef = 1;
+}
+
+#endif
+

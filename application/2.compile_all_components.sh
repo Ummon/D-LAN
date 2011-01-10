@@ -35,11 +35,12 @@ do
    then
       CLEAN_COMMAND=on
       echo "Clean activated"
-   elif [ $arg == "-h" ] || [ $@ == "--help" ]
+   elif [ $arg == "-h" ] || [ $arg == "--help" ]
    then
       echo "Usage : $0 [--prof] [--clean]"
       echo " --prof : To active profiling"
       echo " --clean : Clean temporary objects before each compilation"
+      exit
    fi
 done
 
