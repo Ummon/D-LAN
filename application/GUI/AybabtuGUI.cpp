@@ -30,7 +30,7 @@ using namespace GUI;
   */
 
 AybabtuGUI::AybabtuGUI(int argc, char *argv[]) :
-    QApplication(argc, argv), mainWindow(0), trayIcon(QIcon(":/icons/ressources/aybabtu_icon.ico"))
+    QApplication(argc, argv), mainWindow(0), trayIcon(QIcon(":/icons/ressources/aybabtu_icon.png"))
 {
    this->setQuitOnLastWindowClosed(false);
 

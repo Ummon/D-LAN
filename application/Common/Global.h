@@ -53,7 +53,9 @@ namespace Common
       enum DataFolderType { ROAMING, LOCAL };
       class UnableToGetFolder {};
       static QString getDataFolder(DataFolderType type, bool create = true);
+
       static QString getCurrenUserName();
+      static QString getCurrenMachineName();
 
       static bool createFile(const QString& path);
       static bool recursiveDeleteDirectoryContent(const QString& dir);

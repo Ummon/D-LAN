@@ -116,7 +116,7 @@ void Core::checkSettingsIntegrity()
    SETTINGS.rm("chunk_size"); // The size of the chunks must never change.
 
    if (SETTINGS.get<QString>("nick").isEmpty())
-      SETTINGS.set("nick", Common::Global::getCurrenUserName());
+      SETTINGS.set("nick", Common::Global::getCurrenMachineName());
 
    this->checkSetting("buffer_size", 1024u, 32u * 1024u * 1024u, true);
    this->checkSetting("socket_buffer_size", 1024u, 32u * 1024u * 1024u, true);

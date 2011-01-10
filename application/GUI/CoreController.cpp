@@ -39,7 +39,7 @@ void CoreController::StartCore()
    {
       if (!controller.start())
       {
-         L_USER("Aybabtu Core service cannot be launched. Trying to launch it as a subprocess..");
+         L_WARN("Aybabtu Core service cannot be launched. Trying to launch it as a subprocess..");
          if (coreProcess.state() == QProcess::NotRunning)
          {
             coreProcess.start("AybabtuCore.exe -e");

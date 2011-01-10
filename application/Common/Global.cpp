@@ -202,6 +202,18 @@ QString Global::getCurrenUserName()
 #endif
 }
 
+QString Global::getCurrenMachineName()
+{
+#ifdef Q_OS_WIN32
+   TCHAR machineName[MAX_COMPUTERNAME_LENGTH + 1];
+   DWORD machineNameSize = sizeof(machineName);
+   GetComputerName(machineName, &machineNameSize);
+   return QString::fromUtf16((ushort*)machineName);
+#else // TODO
+   return "CPU";
+#endif
+}
+
 /**
   * Create a file containing its name. Parents directories are created if needed.
   * For testing purpose.
