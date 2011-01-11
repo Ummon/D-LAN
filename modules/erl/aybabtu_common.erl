@@ -5,7 +5,7 @@
 -include("../include/aybabtu_defines.hrl").
  
 pages() ->
-   [home, features, about].
+   [home, features, faq, about].
    
 hidden_pages() -> [stats].
    
@@ -23,6 +23,7 @@ current_page(A) ->
    
 page_name(home) -> "home";
 page_name(features) -> "features";
+page_name(faq) -> "FAQ";
 page_name(about) -> "about";
 page_name(_) -> "unknown".
 

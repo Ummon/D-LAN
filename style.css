@@ -3,7 +3,7 @@
 body {
 	font-family: verdana, sans-serif;
 	font-size: 13px;
-	background-color: #000000;
+	background-color: #555555;
 	color: #000000;
 	margin: 0px
 }
@@ -37,15 +37,15 @@ em {
 
 a {
 	text-decoration:none;
-	color: #c43fc4
+	color: #888add
 }
 
 a:hover {
-	color: #e480e4
+	color: #71c1e7
 }
 
 #main {	
-	background-color: #1B1B1B;
+	background-color: #2B2B2B;
 }
 
 .spacer {
@@ -78,7 +78,7 @@ ul#menu {
 	text-align: left;
 	list-style-type:none; 
 	height: 20px;
-	background-color: #3c023c;
+	background-color: #001039;
 	border-top: 1px solid #bc3e04;
 	border-bottom: 1px solid #bc3e04;
 	margin-top: 30px;
@@ -86,13 +86,13 @@ ul#menu {
 }
 
 #menu li {
-	vertical-align: top;
 	display: inline;
 	text-align: center;
 }
 
 #menu li a {
-	color: #e4b9e4;
+	vertical-align: top;
+	color: #888add;
 	padding: 10px 10px 14px 10px;
 }
 
@@ -102,28 +102,30 @@ ul#menu {
 }
 
 #menu li a.currentPage {
+	color: #71c1e7;
 	background-color: #bc3e04;
 }
 
 #menu li a:hover {
-	color: #e4d8e4;
+	color: #71c1e7;
 	background-color: #bc3e04;
 }
 
 #menu li a:active {
-	color: #e4d8e4;
+	color: #71c1e7;
 	background-color: #bc643b;
 }
 
 #menu .FlattrButton {
-	margin-left: 20px;
+	margin-left: 20px; 
 }
 
 /*** Content ***/
 
 #content {
 	background-color: #dfdfdf;
-	margin: 20px 8% 20px 8%;
+
+	margin: 20px 6% 20px 6%;
 	padding: 10px 20px 10px 20px;
 	/* border: 1px solid #bc3e04; */
 	-moz-border-radius: 15px;
@@ -144,7 +146,7 @@ ul#menu {
 	-moz-border-radius: 10px;
 	border-radius: 10px;
 	width: 300px;
-	background-color: #3c023c;
+	background-color: #001039;
 	margin-left: 15px;
 	margin-right: 15px;
 	background-image: url("img/download_arrow.png");
@@ -202,6 +204,24 @@ ul#menu {
 }
 
 
+/*** FAQ Page ***/
+
+#content.faq div {
+	margin-bottom: 25px;
+}
+
+#content.faq .question {
+	margin-bottom: 0px;
+}
+
+#content.faq .answer {
+	margin-top: 5px;
+}
+	
+#content.faq p.answer {
+	margin-left: 15px;
+}
+
 /*** Footer ***/
 
 #footer {
@@ -211,7 +231,7 @@ ul#menu {
 	margin-bottom: 5px;
 	font-size: 9px;
 	text-align: right;
-	background-color: #3c023c;
+	background-color: #001039;
 	border-top: 1px solid #bc3e04;
 	border-bottom: 1px solid #bc3e04;
 }
@@ -225,5 +245,5 @@ ul#menu {
 }
 
 #footer a img {	
-	vertical-align: sub;
+	vertical-align: middle;
 }

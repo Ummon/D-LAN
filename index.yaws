@@ -11,7 +11,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="fr" >
    <head>
       <meta http-equiv="Content-Type" content="text/html; charset=utf-8" /> <!-- just for IE ... -->
-      <title>Aybabtu</title>
+      <title>Aybabtu - A LAN file sharing software</title>
       <link rel="stylesheet" href="style.css" type="text/css" />
       <link rel="stylesheet" href="colorbox/colorbox.css" type="text/css" />
       <script type="text/javascript" src="jquery-1.4.4.min.js"></script>

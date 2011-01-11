@@ -1,0 +1,31 @@
+
+<div>
+   <p class="question"><em>A new file sharing tool is neat but I can already share some files with my system tools. What are the benefits to use Aybabtu?.</em></p>
+   <p class="answer">Aybabtu is designed for massive transfers, you can manage a queue of files to be downloaded. A file may be downloaded automatically from many peers at the same time to speed up the transfer and prevent peer downtime. Aybabtu has a fast global search feature which default system file sharing doesn't have. You will find more information from the <a href="features.html">feature page</a>.</p>
+</div>
+
+<div>
+   <p class="question"><em>I don't see other computers in my network</em></p>
+   <ul class="answer">
+      <li>Check you have the latest version of Aybabtu.</li>
+      <li>Be sure the ports 59486 (UDP) and 59487 (UDP + TCP) are opened in your firewall.</li>
+      <li>Be sure UDP multicast is allowed in your network.</li>
+   </ul>
+</div>
+
+<div>
+   <p class="question"><em>There is no Linux version!?</em></p>
+   <p class="answer">A Linux version will come soon after the final 1.0 Windows release.</p>
+</div>
+
+<div>
+   <p class="question"><em>There is no Mac OS X version!?</em></p>
+   <p class="answer">Not yet, we are looking for a Mac OS X programmer.</p>
+</div>
+
+<div>
+   <p class="question"><em>Can I configure Aybabtu to start automatically when my computer starting?</em></p>
+   <ul class="answer">
+      <li><i>Windows 7</i> : Go to <i>Control Panel</i> &gt; <i>Administrative Tools</i> &gt; <i>Services</i> . Open the properties of <i>Aybabtu Core</i> and set the <i>Statup type</i> from <i>Manual</i> to <i>Automatic</i>.</li>
+   </ul>
+</div>
