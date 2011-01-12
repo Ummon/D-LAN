@@ -42,7 +42,6 @@
    <body>
       <div id="main">
          <div id="logo"></div>
-         <div id="logoText"></div>
          <ul id="menu">
             <erl>
                out(A) -> aybabtu_common:menu(A).
