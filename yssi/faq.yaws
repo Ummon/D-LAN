@@ -14,6 +14,11 @@
 </div>
 
 <div>
+   <p class="question"><em>Where are put the downloaded files?</em></p>
+   <p class="answer">In the first incoming folder which has enough free space. You can define these folders in the <i>Settings</i> tab. Usually one folder is common.</p>
+</div>
+
+<div>
    <p class="question"><em>There is no Linux version!?</em></p>
    <p class="answer">A Linux version will come soon after the final 1.0 Windows release.</p>
 </div>

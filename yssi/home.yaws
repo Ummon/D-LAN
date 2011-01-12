@@ -4,7 +4,7 @@
 
 <p><em>Aybabtu is an open source <acronym title="Local Area Network">LAN</acronym> file sharing software.</em></p>
 
-<p>The goal is to easily share some files and folders in a local area network environment like a LAN-Party. All clients are full-trusted. After you launched Aybabtu, you will see all other people and theirs sharing automatically without special configuration.</p>
+<p>The goal is to easily exchange a massive amount of data in a local area network environment like a LAN-Party. After you launched Aybabtu, you will see all other people and theirs sharing automatically without special configuration. See the <a href="features.html">features list</a> for more information.</p>
 
 <p><em>Warning :</em> The actual version of Aybabtu is a beta, it's only for test purpose. You can report any defect <a href="http://dev.aybabtu.org/projects/pmp/issues">here</a>. The latest beta may not be compatible with the previous ones.</p>
 
