@@ -12,11 +12,11 @@ using namespace CoreSpace;
 #include <NetworkListener/Builder.h>
 #include <RemoteControlManager/Builder.h>
 
-Core::Core()
+Core::Core(const QString& settingsFileName)
 {
    GOOGLE_PROTOBUF_VERIFY_VERSION;
 
-   SETTINGS.setFilename(Common::CORE_SETTINGS_FILENAME);
+   SETTINGS.setFilename(settingsFileName.isEmpty() ? Common::CORE_SETTINGS_FILENAME : settingsFileName);
    SETTINGS.setSettingsMessage(new Protos::Core::Settings());
    SETTINGS.load();
 

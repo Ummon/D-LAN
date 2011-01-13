@@ -21,7 +21,7 @@ namespace CoreSpace
    class Core : Common::Uncopyable
    {
    public:
-      Core();
+      Core(const QString& settingsFileName = QString());
       void start();
 
    private:
