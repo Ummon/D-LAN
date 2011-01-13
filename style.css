@@ -13,7 +13,7 @@ img {
 }
 
 h1 {
-	margin-top: 20px;
+	margin-top: 10px;
 	margin-bottom: 8px;
 	font-size: 15px;
 }
@@ -37,11 +37,11 @@ em {
 
 a {
 	text-decoration:none;
-	color: #888add
+	color: #4c4ea8
 }
 
 a:hover {
-	color: #71c1e7
+	color: #8e90dd
 }
 
 #main {	
@@ -161,11 +161,13 @@ ul#menu {
 .download a {
 	display:block;
 	text-decoration:none;
+	color: #888add;
 	padding: 10px 10px 10px 70px;
+	font-size: 11px;
 }
 
-.download a {
-	font-size: 11px;
+.download a:hover {
+	color: #71c1e7;
 }
 
 .download a em {

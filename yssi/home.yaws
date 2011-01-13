@@ -2,7 +2,10 @@
    out(A) -> aybabtu_common:image("aybabtu_search", "Search feature").
 </erl>
 
-<p><em>Aybabtu is an open source <acronym title="Local Area Network">LAN</acronym> file sharing software.</em></p>
+<h1><em><erl>Aybabtu - The ultimate <acronym title="Local Area Network">LAN</acronym> file sharing software.</erl>
+
+</em></h1>
+
 
 <p>The goal is to easily exchange a massive amount of data in a local area network environment like a LAN-Party. After you launched Aybabtu, you will see all other people and theirs sharing automatically without special configuration. See the <a href="features.html">features list</a> for more information.</p>
 
