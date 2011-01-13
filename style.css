@@ -119,6 +119,16 @@ ul#menu {
 	margin-left: 20px; 
 }
 
+#langs {
+	margin-right: 5px;
+	margin-top: 5px;
+	float: right
+}
+
+#langs a {
+	margin-left: 3px;
+}
+
 /*** Content ***/
 
 #content {

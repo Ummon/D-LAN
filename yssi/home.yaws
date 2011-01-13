@@ -1,18 +1,17 @@
 <erl>
-   out(A) -> aybabtu_common:image("aybabtu_search", "Search feature").
+   -import(aybabtu_lang, [tr/3, tr/4]).
+   
+   out(A) -> 
+      {ehtml,
+         [
+            aybabtu_common:image("aybabtu_search", tr(gallery, search_feature, A)),
+            {h1, [],
+               {em, [], tr(home, title, A)}
+            },
+            {p, [], tr(home, description, A, ["features.html"])},
+            {p, [], tr(home, warning_beta, A, ["http://dev.aybabtu.org/projects/pmp/issues"])},
+            aybabtu_common:download_button(A, "windows"),
+            {'div', [{class, "spacer"}]}
+         ]
+      }. 
 </erl>
-
-<h1><em><erl>Aybabtu - The ultimate <acronym title="Local Area Network">LAN</acronym> file sharing software.</erl>
-
-</em></h1>
-
-
-<p>The goal is to easily exchange a massive amount of data in a local area network environment like a LAN-Party. After you launched Aybabtu, you will see all other people and theirs sharing automatically without special configuration. See the <a href="features.html">features list</a> for more information.</p>
-
-<p><em>Warning :</em> The actual version of Aybabtu is a beta, it's only for test purpose. You can report any defect <a href="http://dev.aybabtu.org/projects/pmp/issues">here</a>. The latest beta may not be compatible with the previous ones.</p>
-
-<erl>
-   out(A) -> aybabtu_common:download_button(A, "windows").
-</erl>
-
-<div class="spacer"> </div>

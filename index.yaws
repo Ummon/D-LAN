@@ -3,7 +3,11 @@
    out(A) ->
       case {yaws_api:queryvar(A, "dl"), yaws_api:queryvar(A, "platform")} of
          {{ok, Filename}, {ok, Platform}} -> aybabtu_common:send_release(A, Filename, Platform);
-         _ -> ok
+         _ ->
+            case yaws_api:queryvar(A, "lang") of
+               {ok, L} -> yaws_api:setcookie("lang", L, "/");
+               _ -> ok
+            end
       end.
 </erl><?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
@@ -42,6 +46,15 @@
    <body>
       <div id="main">
          <div id="logo"></div>
+         <div id="langs">
+            <erl>
+               out(A) ->
+                  P = atom_to_list(aybabtu_common:current_page(A)),
+                  {ehtml,
+                     lists:map(fun(L) -> {a, [{href, P ++ ".html&amp;lang=" ++ atom_to_list(L)}], string:to_upper(atom_to_list(L))} end, aybabtu_lang:langs())
+                  }.
+            </erl>
+         </div>
          <ul id="menu">
             <erl>
                out(A) -> aybabtu_common:menu(A).

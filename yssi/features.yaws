@@ -1,19 +1,24 @@
-<p><em>Here is the main features of the actual release.</em> Aybabtu is constantly under development, you can see <a href="http://dev.aybabtu.org/projects/pmp/wiki/Brainstorming#Future-versions">here</a> the planned features.</p> 
-
-<ul>
-   <li>Share files and folders in a local area network environment (LAN). Subnets are supported.</li>
-   <li>Distributed transfers to increase performance and reliability.</li>
-   <li>Very easy to use: no configuration, no central server.</li>
-   <li>Fast indexed search among all other peers.</li>
-   <li>Browse all files and folders of any other peer.</li>
-   <li>Manage the download queue. It includes adding, deleting or reordering.</li>
-   <li>Global chatting.</li>
-   <li>Aybabtu can run without graphic interface (GUI) and be controlled remotly.</li>
-   <li>Open source. Code source distributed under GPLv3 license.</li>
-</ul>
-
-<p>Don't forget to <a href="https://flattr.com/thing/114810/Aybabtu">support us</a>. It will help to maintain and add new features.</p>
-
 <erl>
-   out(A) -> aybabtu_common:images([{"aybabtu_browse", "Browsing"}, {"aybabtu_downloads", "Download queue"}, {"aybabtu_search", "Search result"}]).
+   -import(aybabtu_lang, [tr/3, tr/4]).
+   
+   out(A) ->
+      {ehtml,
+         [
+            {p, [], tr(features, disclaimer, A, ["http://dev.aybabtu.org/projects/pmp/wiki/Brainstorming#Future-versions"])},
+            {ul, [], [
+               {li, [], tr(features, feat_1, A)},
+               {li, [], tr(features, feat_2, A)},
+               {li, [], tr(features, feat_3, A)},
+               {li, [], tr(features, feat_4, A)},
+               {li, [], tr(features, feat_5, A)},
+               {li, [], tr(features, feat_6, A)},
+               {li, [], tr(features, feat_7, A)},
+               {li, [], tr(features, feat_8, A)},
+               {li, [], tr(features, feat_9, A)}
+            ]},
+            {p, [], tr(features, help_us, A, ["https://flattr.com/thing/114810/Aybabtu"])}
+         ] ++ aybabtu_common:images([{"aybabtu_browse", tr(gallery, browsing, A)}, {"aybabtu_downloads", tr(gallery, download, A)}, {"aybabtu_search", tr(gallery, search_result, A)}])
+      }.
+
 </erl>
+
