@@ -16,19 +16,39 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#include <QtCore/QCoreApplication>
-#include <QString>
-#include <QTextCodec>
-#include <QTextStream>
+#ifndef CORE_CORE_SERVICE_H
+#define CORE_CORE_SERVICE_H
 
-#include <Common/Version.h>
+#include <QSharedPointer>
+#include <QCoreApplication>
 
-#include <CoreService.h>
+#include <Libs/qtservice/src/qtservice.h>
 
-int main(int argc, char *argv[])
+#include <Common/Settings.h>
+#include <Common/Uncopyable.h>
+
+#include <Log.h>
+#include <ConsoleReader.h>
+#include <Core.h>
+
+namespace CoreSpace
 {
-   QTextCodec::setCodecForLocale(QTextCodec::codecForName("UTF-8"));
+   class CoreService : public QObject, public QtService<QCoreApplication>, Common::Uncopyable
+   {
+      Q_OBJECT
+   public:
+      CoreService(int argc, char** argv);
 
-   CoreSpace::CoreService core(argc, argv);
-   return core.exec();
+   protected:
+      void start();
+      void stop();
+
+   private slots:
+      void treatUserInput(QString);
+
+   private:
+      Core core;
+      ConsoleReader consoleReader;
+   };
 }
+#endif

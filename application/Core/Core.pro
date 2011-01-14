@@ -61,14 +61,17 @@ CONFIG += console
 CONFIG -= app_bundle
 TEMPLATE = app
 SOURCES += main.cpp \
-    Core.cpp \
     ../Protos/core_settings.pb.cc \
     Log.cpp \
-    ConsoleReader.cpp
-HEADERS += Core.h \
+    ConsoleReader.cpp \
+    CoreService.cpp \
+    Core.cpp
+HEADERS += \
     Log.h \
     ../Protos/core_settings.pb.h \
-    ConsoleReader.h
+    ConsoleReader.h \
+    CoreService.h \
+    Core.h
 
 OTHER_FILES += \
     ../Libs/protobuf.pri

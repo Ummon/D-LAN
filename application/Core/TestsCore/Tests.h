@@ -16,19 +16,26 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#include <QtCore/QCoreApplication>
-#include <QString>
-#include <QTextCodec>
-#include <QTextStream>
+#ifndef TESTS_CORE_H
+#define TESTS_CORE_H
 
-#include <Common/Version.h>
+#include <QTest>
 
-#include <CoreService.h>
+#include <CoreTest.h>
+using namespace CoreSpace;
 
-int main(int argc, char *argv[])
+class Tests : public QObject
 {
-   QTextCodec::setCodecForLocale(QTextCodec::codecForName("UTF-8"));
+   Q_OBJECT
+public:
+   Tests();
 
-   CoreSpace::CoreService core(argc, argv);
-   return core.exec();
-}
+private slots:
+   void initTestCase();
+   void cleanupTestCase();
+
+private:
+   CoreTest core;
+};
+
+#endif

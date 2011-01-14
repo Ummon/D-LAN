@@ -16,19 +16,15 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#include <QtCore/QCoreApplication>
-#include <QString>
-#include <QTextCodec>
-#include <QTextStream>
+#include <QCoreApplication>
+#include <QTest>
 
-#include <Common/Version.h>
-
-#include <CoreService.h>
+#include <Tests.h>
 
 int main(int argc, char *argv[])
 {
-   QTextCodec::setCodecForLocale(QTextCodec::codecForName("UTF-8"));
+   QCoreApplication a(argc, argv);
 
-   CoreSpace::CoreService core(argc, argv);
-   return core.exec();
+   Tests tests;
+   return QTest::qExec(&tests, argc, argv);
 }
