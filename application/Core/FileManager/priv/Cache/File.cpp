@@ -437,6 +437,9 @@ bool File::computeHashes(int n)
          }
 
          this->cache->onChunkHashKnown(this->chunks[chunkNum]);
+
+         if (--n == 0)
+            break;
       }
 
       hasher.reset();

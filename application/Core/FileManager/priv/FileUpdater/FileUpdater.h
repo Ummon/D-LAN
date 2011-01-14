@@ -61,7 +61,7 @@ namespace FM
       void run();
 
    private:
-      bool computeSomeHashes();
+      void computeSomeHashes();
 
       void stopHashing();
       /*void suspendHashing();
@@ -105,6 +105,7 @@ namespace FM
       QList<SharedDirectory*> dirsToRemove;
 
       QList<File*> filesWithoutHashes;
+      QList<File*> filesWithoutHashesPrioritized;
    };
 }
 #endif

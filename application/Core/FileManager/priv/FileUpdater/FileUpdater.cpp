@@ -162,11 +162,17 @@ void FileUpdater::prioritizeAFileToHash(File* file)
    if (!file->hasAllHashes() && file->isComplete())
    {
       QMutexLocker lockerHashing(&this->hashingMutex);
-      this->filesWithoutHashes.removeOne(file);
-      this->filesWithoutHashes.prepend(file);
-   }
 
-   this->stopHashing();
+      this->filesWithoutHashes.removeOne(file);
+      if (!this->filesWithoutHashesPrioritized.contains(file))
+         this->filesWithoutHashesPrioritized.prepend(file);
+
+      if (this->currentHashingFile)
+      {
+         this->currentHashingFile->stopHashing();
+         this->toStopHashing = true;
+      }
+   }
 }
 
 void FileUpdater::run()
@@ -244,7 +250,7 @@ void FileUpdater::run()
       {
          // If we have no dir to scan and no file to hash we wait for a new shared file
          // or a filesystem event.
-         if (this->dirsToScan.isEmpty() && this->filesWithoutHashes.isEmpty())
+         if (this->dirsToScan.isEmpty() && this->filesWithoutHashes.isEmpty() && this->filesWithoutHashesPrioritized.isEmpty())
          {
             this->mutex.unlock();
             this->treatEvents(this->dirWatcher->waitEvent(this->unwatchableDirs.isEmpty() ? -1 : SCAN_PERIOD_UNWATCHABLE_DIRS, QList<WaitCondition*>() << this->dirEvent));
@@ -281,62 +287,87 @@ void FileUpdater::run()
 /**
   * It will take some file from 'fileWithoutHashes' and compute theirs hashes.
   * The duration of the compuation is minimum 'minimumDurationWhenHashing'.
-  * @return true if some file has been hashed
   */
-bool FileUpdater::computeSomeHashes()
+void FileUpdater::computeSomeHashes()
 {
-   this->hashingMutex.lock();
+   QMutexLocker locker(&this->hashingMutex);
    if (this->toStopHashing)
    {
       this->toStopHashing = false;
-      L_DEBU("Computing some hashes aborted");
-      this->hashingMutex.unlock();
-      return false;
+      return;
    }
 
-   if (this->filesWithoutHashes.isEmpty())
-   {
-      this->hashingMutex.unlock();
-      return false;
-   }
+   if (this->filesWithoutHashes.isEmpty() && this->filesWithoutHashesPrioritized.isEmpty())
+      return;
 
    L_DEBU("Start computing some hashes..");
 
    QElapsedTimer timer;
    timer.start();
 
-   for (QMutableListIterator<File*> i(this->filesWithoutHashes); i.hasNext();)
+   for (int i = 0; i < this->filesWithoutHashesPrioritized.size(); i++)
    {
-      this->currentHashingFile = i.next();
+      this->currentHashingFile = this->filesWithoutHashesPrioritized.first();
 
-      this->hashingMutex.unlock();
-      bool completed = false;
-      if (!this->currentHashingFile->isComplete()) // A file can change its state from 'completed' to 'unfinished' if it's redownloaded.
-         i.remove();
+      if (this->currentHashingFile->isComplete()) // A file can change its state from 'completed' to 'unfinished' if it's redownloaded.
+      {
+         locker.unlock();
+         bool complete = this->currentHashingFile->computeHashes(1);
+         locker.relock();
+         if (complete)
+         {
+            this->filesWithoutHashesPrioritized.removeFirst();
+            i--;
+         }
+         else
+            this->filesWithoutHashesPrioritized.move(0, this->filesWithoutHashesPrioritized.size() - 1);
+      }
       else
-         completed = this->currentHashingFile->computeHashes();
-      this->hashingMutex.lock();
+      {
+         this->filesWithoutHashesPrioritized.removeFirst();
+         i--;
+      }
 
       this->currentHashingFile = 0;
       if (this->toStopHashing)
       {
          this->toStopHashing = false;
-         L_DEBU("Computing some hashes aborted");
-         this->hashingMutex.unlock();
-         return false;
+         goto end;
       }
 
-      if (completed)
-         i.remove();
-
       if (static_cast<quint32>(timer.elapsed()) >= SETTINGS.get<quint32>("minimum_duration_when_hashing"))
-         break;
+         goto end;
    }
 
-   L_DEBU("Computing some hashes terminated");
+   for (int i = 0; i < this->filesWithoutHashes.size(); i++)
+   {
+      this->currentHashingFile = this->filesWithoutHashes[i];
 
-   this->hashingMutex.unlock();
-   return true;
+       // A file can change its state from 'completed' to 'unfinished' if it's redownloaded.
+      if (this->currentHashingFile->isComplete())
+      {
+         locker.unlock();
+         bool complete = this->currentHashingFile->computeHashes();
+         locker.relock();
+         if (complete)
+            this->filesWithoutHashes.removeAt(i--);
+      }
+      else
+         this->filesWithoutHashes.removeAt(i--);
+
+      this->currentHashingFile = 0;
+      if (this->toStopHashing)
+      {
+         this->toStopHashing = false;
+         goto end;
+      }
+
+      if (static_cast<quint32>(timer.elapsed()) >= SETTINGS.get<quint32>("minimum_duration_when_hashing"))
+         goto end;
+   }
+
+end:
+   L_DEBU("Computing some hashes ended");
 }
 
 /**
@@ -349,11 +380,7 @@ void FileUpdater::stopHashing()
    L_DEBU("Stop hashing...");
 
    if (this->currentHashingFile)
-   {
       this->currentHashingFile->stopHashing();
-      QMutexLocker locker(&this->mutex);
-      this->filesWithoutHashes.append(this->currentHashingFile);
-   }
 
    L_DEBU("Hashing stopped");
    this->toStopHashing = true;
@@ -419,6 +446,7 @@ void FileUpdater::scan(Directory* dir, bool addUnfinished)
             {
                if (
                    !this->filesWithoutHashes.contains(file) && // The case where a file is being copied and a lot of modification event is thrown (thus the file is in this->filesWithoutHashes).
+                   !this->filesWithoutHashesPrioritized.contains(file) &&
                    file->isComplete() &&
                    !file->correspondTo(entry)
                )
@@ -443,7 +471,7 @@ void FileUpdater::scan(Directory* dir, bool addUnfinished)
             }
 
             // If a file is incomplete (unfinished) we can't compute its hashes because we don't have all data.
-            if (!file->hasAllHashes() && file->isComplete() && !this->filesWithoutHashes.contains(file))
+            if (!file->hasAllHashes() && file->isComplete() && !this->filesWithoutHashes.contains(file) && !this->filesWithoutHashesPrioritized.contains(file))
             {
                this->filesWithoutHashes << file;
             }
@@ -518,6 +546,7 @@ void FileUpdater::deleteEntry(Entry* entry)
    else if (File* file = dynamic_cast<File*>(entry))
    {
       this->filesWithoutHashes.removeOne(file);
+      this->filesWithoutHashesPrioritized.removeOne(file);
       delete file;
    }
    else
@@ -541,6 +570,10 @@ void FileUpdater::removeFromDirsToScan(Directory* dir)
 void FileUpdater::removeFromFilesWithoutHashes(Directory* dir)
 {
    for (QMutableListIterator<File*> i(this->filesWithoutHashes); i.hasNext();)
+      if (i.next()->hasAParentDir(dir))
+         i.remove();
+
+   for (QMutableListIterator<File*> i(this->filesWithoutHashesPrioritized); i.hasNext();)
       if (i.next()->hasAParentDir(dir))
          i.remove();
 }
