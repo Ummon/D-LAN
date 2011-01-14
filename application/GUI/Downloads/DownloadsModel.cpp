@@ -103,7 +103,7 @@ QVariant DownloadsModel::data(const QModelIndex& index, int role) const
                {
                   if (i != 0)
                      peersStr.append(" ");
-                  peersStr.append(this->peerListModel.getNick(currentDownload.peer_id(i).hash().data()));
+                  peersStr.append('[').append(this->peerListModel.getNick(currentDownload.peer_id(i).hash().data())).append(']');
                }
                return peersStr;
             }

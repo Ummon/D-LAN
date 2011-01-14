@@ -559,16 +559,16 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="11.313709"
-     inkscape:cx="131.89431"
-     inkscape:cy="612.59752"
+     inkscape:zoom="45.254836"
+     inkscape:cx="116.31537"
+     inkscape:cy="574.36321"
      inkscape:document-units="px"
-     inkscape:current-layer="layer5"
+     inkscape:current-layer="layer1"
      showgrid="false"
      inkscape:snap-global="true"
      inkscape:snap-to-guides="false"
      inkscape:window-width="1920"
-     inkscape:window-height="1034"
+     inkscape:window-height="1038"
      inkscape:window-x="-8"
      inkscape:window-y="-8"
      inkscape:window-maximized="1"
@@ -938,15 +938,18 @@
        inkscape:export-ydpi="202.49971"
        inkscape:connector-curvature="0" />
     <rect
-       style="fill:#3c023b;fill-opacity:1;stroke:#000000;stroke-width:0.08037188;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       style="fill:#8c8c8c;fill-opacity:1;stroke:#000000;stroke-width:0.05080912;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
        id="rect4226"
-       width="37.489471"
-       height="15.382435"
-       x="99.07692"
-       y="472.00284" />
+       width="21.941998"
+       height="10.503484"
+       x="132.85893"
+       y="475.38141" />
     <g
        id="g4228"
-       transform="translate(-6.0546214,7.9549185)">
+       transform="translate(20.638658,8.6620252)"
+       inkscape:export-filename="C:\Users\gburri\aybabtu_text.png"
+       inkscape:export-xdpi="728.27588"
+       inkscape:export-ydpi="728.27588">
       <path
          inkscape:connector-curvature="0"
          inkscape:export-ydpi="728.27588"
@@ -954,14 +957,14 @@
          inkscape:export-filename="F:\web\www\aybabtu_pre\img\aybabtu_text.png"
          id="path2995-4"
          d="m 116.47169,471.0253 0,0.28439 1.53315,0 0,0.28439 -1.53315,0 0,0.88477 1.84288,0 0,-0.72677 0,-0.158 0,-0.28439 0,-0.0948 0,-0.18959 -1.84288,0 z m 0.30973,0.85317 1.22342,0 0,0.28439 -1.22342,0 0,-0.28439 z"
-         style="font-size:4.23455143px;font-style:normal;font-weight:normal;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.07078838;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;display:inline;font-family:Unsteady Oversteer;-inkscape-font-specification:Unsteady Oversteer" />
+         style="font-size:4.23455143px;font-style:normal;font-weight:normal;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.1;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;marker-start:none;display:inline;font-family:Unsteady Oversteer;-inkscape-font-specification:Unsteady Oversteer" />
       <path
          inkscape:connector-curvature="0"
          inkscape:export-ydpi="728.27588"
          inkscape:export-xdpi="728.27588"
          inkscape:export-filename="F:\web\www\aybabtu_pre\img\aybabtu_text.png"
          d="m 120.48096,473.04808 -1.85351,0 0,-0.29087 1.54456,0 0,-0.29091 -1.54456,0 0,-1.45435 0.30894,0 0,1.16346 1.23562,0 0,-1.16346 0.30895,0 z"
-         style="font-size:4.23455143px;font-style:normal;font-weight:normal;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.07078838;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;display:inline;font-family:Unsteady Oversteer;-inkscape-font-specification:Unsteady Oversteer"
+         style="font-size:4.23455143px;font-style:normal;font-weight:normal;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.1;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;marker-start:none;display:inline;font-family:Unsteady Oversteer;-inkscape-font-specification:Unsteady Oversteer"
          id="path2997-2" />
       <path
          inkscape:connector-curvature="0"
@@ -969,7 +972,7 @@
          inkscape:export-xdpi="728.27588"
          inkscape:export-filename="F:\web\www\aybabtu_pre\img\aybabtu_text.png"
          d="m 122.64093,472.4663 -1.85349,0 0,-2.03613 0.30892,0 0,0.58178 1.54457,0 z m -0.30892,-0.29089 0,-0.87258 -1.23565,0 0,0.87258 z"
-         style="font-size:4.23455143px;font-style:normal;font-weight:normal;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.07078838;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;display:inline;font-family:Unsteady Oversteer;-inkscape-font-specification:Unsteady Oversteer"
+         style="font-size:4.23455143px;font-style:normal;font-weight:normal;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.1;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;marker-start:none;display:inline;font-family:Unsteady Oversteer;-inkscape-font-specification:Unsteady Oversteer"
          id="path2999-4" />
       <path
          inkscape:connector-curvature="0"
@@ -978,14 +981,14 @@
          inkscape:export-filename="F:\web\www\aybabtu_pre\img\aybabtu_text.png"
          id="path3001-8"
          d="m 122.94499,471.0253 0,0.28439 1.54863,0 0,0.28439 -1.54863,0 0,0.88477 1.85836,0 0,-0.72677 0,-0.158 0,-0.28439 0,-0.12641 0,-0.15798 -1.85836,0 z m 0.30971,0.85317 1.23892,0 0,0.28439 -1.23892,0 0,-0.28439 z"
-         style="font-size:4.23455143px;font-style:normal;font-weight:normal;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.07078838;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;display:inline;font-family:Unsteady Oversteer;-inkscape-font-specification:Unsteady Oversteer" />
+         style="font-size:4.23455143px;font-style:normal;font-weight:normal;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.1;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;marker-start:none;display:inline;font-family:Unsteady Oversteer;-inkscape-font-specification:Unsteady Oversteer" />
       <path
          inkscape:connector-curvature="0"
          inkscape:export-ydpi="728.27588"
          inkscape:export-xdpi="728.27588"
          inkscape:export-filename="F:\web\www\aybabtu_pre\img\aybabtu_text.png"
          d="m 126.96089,472.4663 -1.8535,0 0,-2.03613 0.30894,0 0,0.58178 1.54456,0 z m -0.30892,-0.29089 0,-0.87258 -1.23564,0 0,0.87258 z"
-         style="font-size:4.23455143px;font-style:normal;font-weight:normal;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.07078838;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;display:inline;font-family:Unsteady Oversteer;-inkscape-font-specification:Unsteady Oversteer"
+         style="font-size:4.23455143px;font-style:normal;font-weight:normal;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.1;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;marker-start:none;display:inline;font-family:Unsteady Oversteer;-inkscape-font-specification:Unsteady Oversteer"
          id="path3003-9" />
       <path
          inkscape:connector-curvature="0"
@@ -993,7 +996,7 @@
          inkscape:export-xdpi="728.27588"
          inkscape:export-filename="F:\web\www\aybabtu_pre\img\aybabtu_text.png"
          d="m 129.12088,472.4663 -1.8535,0 0,-2.03613 0.30893,0 0,0.58178 1.54457,0 0,0.29088 -1.54457,0 0,0.87258 1.54457,0 z"
-         style="font-size:4.23455143px;font-style:normal;font-weight:normal;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.07078838;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;display:inline;font-family:Unsteady Oversteer;-inkscape-font-specification:Unsteady Oversteer"
+         style="font-size:4.23455143px;font-style:normal;font-weight:normal;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.1;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;marker-start:none;display:inline;font-family:Unsteady Oversteer;-inkscape-font-specification:Unsteady Oversteer"
          id="path3005-4" />
       <path
          inkscape:connector-curvature="0"
@@ -1001,8 +1004,136 @@
          inkscape:export-xdpi="728.27588"
          inkscape:export-filename="F:\web\www\aybabtu_pre\img\aybabtu_text.png"
          d="m 129.42736,472.4663 0,-1.45435 0.30892,0 0,1.16346 1.23563,0 0,-1.16346 0.30895,0 0,1.45435 z"
-         style="font-size:4.23455143px;font-style:normal;font-weight:normal;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.07078838;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;display:inline;font-family:Unsteady Oversteer;-inkscape-font-specification:Unsteady Oversteer"
+         style="font-size:4.23455143px;font-style:normal;font-weight:normal;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.1;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;marker-start:none;display:inline;font-family:Unsteady Oversteer;-inkscape-font-specification:Unsteady Oversteer"
          id="path3007-3" />
+    </g>
+    <g
+       style="display:inline"
+       id="g4228-0"
+       transform="matrix(0,-1,1,0,-351.92663,602.11348)"
+       inkscape:export-filename="C:\Users\gburri\aybabtu_text_vert.png"
+       inkscape:export-xdpi="1026.2069"
+       inkscape:export-ydpi="1026.2069">
+      <path
+         inkscape:connector-curvature="0"
+         inkscape:export-ydpi="728.27588"
+         inkscape:export-xdpi="728.27588"
+         inkscape:export-filename="F:\web\www\aybabtu_pre\img\aybabtu_text.png"
+         id="path2995-4-3"
+         d="m 116.47169,471.0253 0,0.28439 1.53315,0 0,0.28439 -1.53315,0 0,0.88477 1.84288,0 0,-0.72677 0,-0.158 0,-0.28439 0,-0.0948 0,-0.18959 -1.84288,0 z m 0.30973,0.85317 1.22342,0 0,0.28439 -1.22342,0 0,-0.28439 z"
+         style="font-size:4.23455142999999980px;font-style:normal;font-weight:normal;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.08;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;marker-start:none;display:inline;font-family:Unsteady Oversteer;-inkscape-font-specification:Unsteady Oversteer" />
+      <path
+         inkscape:connector-curvature="0"
+         inkscape:export-ydpi="728.27588"
+         inkscape:export-xdpi="728.27588"
+         inkscape:export-filename="F:\web\www\aybabtu_pre\img\aybabtu_text.png"
+         d="m 120.48096,473.04808 -1.85351,0 0,-0.29087 1.54456,0 0,-0.29091 -1.54456,0 0,-1.45435 0.30894,0 0,1.16346 1.23562,0 0,-1.16346 0.30895,0 z"
+         style="font-size:4.23455142999999980px;font-style:normal;font-weight:normal;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.08;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;marker-start:none;display:inline;font-family:Unsteady Oversteer;-inkscape-font-specification:Unsteady Oversteer"
+         id="path2997-2-7" />
+      <path
+         inkscape:connector-curvature="0"
+         inkscape:export-ydpi="728.27588"
+         inkscape:export-xdpi="728.27588"
+         inkscape:export-filename="F:\web\www\aybabtu_pre\img\aybabtu_text.png"
+         d="m 122.64093,472.4663 -1.85349,0 0,-2.03613 0.30892,0 0,0.58178 1.54457,0 z m -0.30892,-0.29089 0,-0.87258 -1.23565,0 0,0.87258 z"
+         style="font-size:4.23455142999999980px;font-style:normal;font-weight:normal;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.08;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;marker-start:none;display:inline;font-family:Unsteady Oversteer;-inkscape-font-specification:Unsteady Oversteer"
+         id="path2999-4-9" />
+      <path
+         inkscape:connector-curvature="0"
+         inkscape:export-ydpi="728.27588"
+         inkscape:export-xdpi="728.27588"
+         inkscape:export-filename="F:\web\www\aybabtu_pre\img\aybabtu_text.png"
+         id="path3001-8-6"
+         d="m 122.94499,471.0253 0,0.28439 1.54863,0 0,0.28439 -1.54863,0 0,0.88477 1.85836,0 0,-0.72677 0,-0.158 0,-0.28439 0,-0.12641 0,-0.15798 -1.85836,0 z m 0.30971,0.85317 1.23892,0 0,0.28439 -1.23892,0 0,-0.28439 z"
+         style="font-size:4.23455142999999980px;font-style:normal;font-weight:normal;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.08;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;marker-start:none;display:inline;font-family:Unsteady Oversteer;-inkscape-font-specification:Unsteady Oversteer" />
+      <path
+         inkscape:connector-curvature="0"
+         inkscape:export-ydpi="728.27588"
+         inkscape:export-xdpi="728.27588"
+         inkscape:export-filename="F:\web\www\aybabtu_pre\img\aybabtu_text.png"
+         d="m 126.96089,472.4663 -1.8535,0 0,-2.03613 0.30894,0 0,0.58178 1.54456,0 z m -0.30892,-0.29089 0,-0.87258 -1.23564,0 0,0.87258 z"
+         style="font-size:4.23455142999999980px;font-style:normal;font-weight:normal;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.08;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;marker-start:none;display:inline;font-family:Unsteady Oversteer;-inkscape-font-specification:Unsteady Oversteer"
+         id="path3003-9-2" />
+      <path
+         inkscape:connector-curvature="0"
+         inkscape:export-ydpi="728.27588"
+         inkscape:export-xdpi="728.27588"
+         inkscape:export-filename="F:\web\www\aybabtu_pre\img\aybabtu_text.png"
+         d="m 129.12088,472.4663 -1.8535,0 0,-2.03613 0.30893,0 0,0.58178 1.54457,0 0,0.29088 -1.54457,0 0,0.87258 1.54457,0 z"
+         style="font-size:4.23455142999999980px;font-style:normal;font-weight:normal;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.08;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;marker-start:none;display:inline;font-family:Unsteady Oversteer;-inkscape-font-specification:Unsteady Oversteer"
+         id="path3005-4-2" />
+      <path
+         inkscape:connector-curvature="0"
+         inkscape:export-ydpi="728.27588"
+         inkscape:export-xdpi="728.27588"
+         inkscape:export-filename="F:\web\www\aybabtu_pre\img\aybabtu_text.png"
+         d="m 129.42736,472.4663 0,-1.45435 0.30892,0 0,1.16346 1.23563,0 0,-1.16346 0.30895,0 0,1.45435 z"
+         style="font-size:4.23455142999999980px;font-style:normal;font-weight:normal;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.08;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;marker-start:none;display:inline;font-family:Unsteady Oversteer;-inkscape-font-specification:Unsteady Oversteer"
+         id="path3007-3-7" />
+    </g>
+    <g
+       inkscape:export-ydpi="1026.2069"
+       inkscape:export-xdpi="1026.2069"
+       inkscape:export-filename="C:\Users\gburri\aybabtu_text_vert.png"
+       transform="matrix(0,-1,1,0,-356.16927,602.11348)"
+       id="g3151"
+       style="display:inline;fill:#888888;fill-opacity:1;stroke:none">
+      <path
+         style="font-size:4.23455142999999980px;font-style:normal;font-weight:normal;fill:#888888;fill-opacity:1;stroke:none;stroke-width:0.08000000000000000;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;marker-start:none;display:inline;font-family:Unsteady Oversteer;-inkscape-font-specification:Unsteady Oversteer"
+         d="m 116.47169,471.0253 0,0.28439 1.53315,0 0,0.28439 -1.53315,0 0,0.88477 1.84288,0 0,-0.72677 0,-0.158 0,-0.28439 0,-0.0948 0,-0.18959 -1.84288,0 z m 0.30973,0.85317 1.22342,0 0,0.28439 -1.22342,0 0,-0.28439 z"
+         id="path3153"
+         inkscape:export-filename="F:\web\www\aybabtu_pre\img\aybabtu_text.png"
+         inkscape:export-xdpi="728.27588"
+         inkscape:export-ydpi="728.27588"
+         inkscape:connector-curvature="0" />
+      <path
+         id="path3155"
+         style="font-size:4.23455142999999980px;font-style:normal;font-weight:normal;fill:#888888;fill-opacity:1;stroke:none;stroke-width:0.08000000000000000;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;marker-start:none;display:inline;font-family:Unsteady Oversteer;-inkscape-font-specification:Unsteady Oversteer"
+         d="m 120.48096,473.04808 -1.85351,0 0,-0.29087 1.54456,0 0,-0.29091 -1.54456,0 0,-1.45435 0.30894,0 0,1.16346 1.23562,0 0,-1.16346 0.30895,0 z"
+         inkscape:export-filename="F:\web\www\aybabtu_pre\img\aybabtu_text.png"
+         inkscape:export-xdpi="728.27588"
+         inkscape:export-ydpi="728.27588"
+         inkscape:connector-curvature="0" />
+      <path
+         id="path3157"
+         style="font-size:4.23455142999999980px;font-style:normal;font-weight:normal;fill:#888888;fill-opacity:1;stroke:none;stroke-width:0.08000000000000000;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;marker-start:none;display:inline;font-family:Unsteady Oversteer;-inkscape-font-specification:Unsteady Oversteer"
+         d="m 122.64093,472.4663 -1.85349,0 0,-2.03613 0.30892,0 0,0.58178 1.54457,0 z m -0.30892,-0.29089 0,-0.87258 -1.23565,0 0,0.87258 z"
+         inkscape:export-filename="F:\web\www\aybabtu_pre\img\aybabtu_text.png"
+         inkscape:export-xdpi="728.27588"
+         inkscape:export-ydpi="728.27588"
+         inkscape:connector-curvature="0" />
+      <path
+         style="font-size:4.23455142999999980px;font-style:normal;font-weight:normal;fill:#888888;fill-opacity:1;stroke:none;stroke-width:0.08000000000000000;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;marker-start:none;display:inline;font-family:Unsteady Oversteer;-inkscape-font-specification:Unsteady Oversteer"
+         d="m 122.94499,471.0253 0,0.28439 1.54863,0 0,0.28439 -1.54863,0 0,0.88477 1.85836,0 0,-0.72677 0,-0.158 0,-0.28439 0,-0.12641 0,-0.15798 -1.85836,0 z m 0.30971,0.85317 1.23892,0 0,0.28439 -1.23892,0 0,-0.28439 z"
+         id="path3159"
+         inkscape:export-filename="F:\web\www\aybabtu_pre\img\aybabtu_text.png"
+         inkscape:export-xdpi="728.27588"
+         inkscape:export-ydpi="728.27588"
+         inkscape:connector-curvature="0" />
+      <path
+         id="path3161"
+         style="font-size:4.23455142999999980px;font-style:normal;font-weight:normal;fill:#888888;fill-opacity:1;stroke:none;stroke-width:0.08000000000000000;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;marker-start:none;display:inline;font-family:Unsteady Oversteer;-inkscape-font-specification:Unsteady Oversteer"
+         d="m 126.96089,472.4663 -1.8535,0 0,-2.03613 0.30894,0 0,0.58178 1.54456,0 z m -0.30892,-0.29089 0,-0.87258 -1.23564,0 0,0.87258 z"
+         inkscape:export-filename="F:\web\www\aybabtu_pre\img\aybabtu_text.png"
+         inkscape:export-xdpi="728.27588"
+         inkscape:export-ydpi="728.27588"
+         inkscape:connector-curvature="0" />
+      <path
+         id="path3163"
+         style="font-size:4.23455142999999980px;font-style:normal;font-weight:normal;fill:#888888;fill-opacity:1;stroke:none;stroke-width:0.08000000000000000;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;marker-start:none;display:inline;font-family:Unsteady Oversteer;-inkscape-font-specification:Unsteady Oversteer"
+         d="m 129.12088,472.4663 -1.8535,0 0,-2.03613 0.30893,0 0,0.58178 1.54457,0 0,0.29088 -1.54457,0 0,0.87258 1.54457,0 z"
+         inkscape:export-filename="F:\web\www\aybabtu_pre\img\aybabtu_text.png"
+         inkscape:export-xdpi="728.27588"
+         inkscape:export-ydpi="728.27588"
+         inkscape:connector-curvature="0" />
+      <path
+         id="path3165"
+         style="font-size:4.23455142999999980px;font-style:normal;font-weight:normal;fill:#888888;fill-opacity:1;stroke:none;stroke-width:0.08000000000000000;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;marker-start:none;display:inline;font-family:Unsteady Oversteer;-inkscape-font-specification:Unsteady Oversteer"
+         d="m 129.42736,472.4663 0,-1.45435 0.30892,0 0,1.16346 1.23563,0 0,-1.16346 0.30895,0 0,1.45435 z"
+         inkscape:export-filename="F:\web\www\aybabtu_pre\img\aybabtu_text.png"
+         inkscape:export-xdpi="728.27588"
+         inkscape:export-ydpi="728.27588"
+         inkscape:connector-curvature="0" />
     </g>
   </g>
   <g

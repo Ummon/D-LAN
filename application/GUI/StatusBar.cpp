@@ -21,6 +21,7 @@
 using namespace GUI;
 
 #include <Common/Global.h>
+#include <Common/Settings.h>
 
 #include <DialogAbout.h>
 
@@ -44,7 +45,11 @@ StatusBar::~StatusBar()
 
 void StatusBar::coreConnected()
 {
-   this->ui->lblCoreStatus->setText("Connected");
+   QString str("Connected");
+   if (!this->coreConnection.isLocal())
+      str.append(" to ").append(SETTINGS.get<QString>("core_address"));
+
+   this->ui->lblCoreStatus->setText(str);
 }
 
 void StatusBar::coreDisconnected()

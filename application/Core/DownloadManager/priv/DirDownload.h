@@ -44,6 +44,9 @@ namespace DM
       bool retrieveEntries();
 
    signals:
+      /**
+        * Emitted when the content of the folder has been retrieved.
+        */
       void newEntries(const Protos::Common::Entries& entries);
 
    protected slots:
