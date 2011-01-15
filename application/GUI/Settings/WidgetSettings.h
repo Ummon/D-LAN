@@ -22,7 +22,8 @@
 #include <QWidget>
 #include <QDir>
 
-#include <CoreConnection/CoreConnection.h>
+#include <Common/RemoteCoreController/ICoreConnection.h>
+
 #include <Settings/DirListModel.h>
 
 namespace Ui {
@@ -35,7 +36,7 @@ namespace GUI
    {
       Q_OBJECT
    public:
-      explicit WidgetSettings(CoreConnection& coreConnection, QWidget *parent = 0);
+      explicit WidgetSettings(QSharedPointer<RCC::ICoreConnection> coreConnection, QWidget *parent = 0);
       ~WidgetSettings();
 
       void coreConnected();
@@ -64,7 +65,7 @@ namespace GUI
       DirListModel incomingDirsModel;
       DirListModel sharedDirsModel;
 
-      CoreConnection& coreConnection;
+      QSharedPointer<RCC::ICoreConnection> coreConnection;
 
       bool initialState;
    };

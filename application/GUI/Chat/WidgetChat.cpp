@@ -29,7 +29,7 @@ void ChatDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, 
 
 /////
 
-WidgetChat::WidgetChat(CoreConnection& coreConnection, PeerListModel& peerListModel, QWidget *parent)
+WidgetChat::WidgetChat(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel, QWidget *parent)
    :  QWidget(parent), ui(new Ui::WidgetChat), coreConnection(coreConnection), chatModel(coreConnection, peerListModel)
 {
    this->ui->setupUi(this);
@@ -69,9 +69,9 @@ void WidgetChat::sendMessage()
    if (this->ui->txtMessage->text().isEmpty())
       return;
 
-   static_cast<ChatModel*>(this->ui->tblChat->model())->newChatMessage(this->coreConnection.getOurID(), this->ui->txtMessage->text());
+   static_cast<ChatModel*>(this->ui->tblChat->model())->newChatMessage(this->coreConnection->getOurID(), this->ui->txtMessage->text());
 
-   this->coreConnection.sendChatMessage(this->ui->txtMessage->text());
+   this->coreConnection->sendChatMessage(this->ui->txtMessage->text());
    this->ui->txtMessage->clear();
 }
 

@@ -26,8 +26,8 @@
 #include <Protos/gui_protocol.pb.h>
 
 #include <Common/Hash.h>
+#include <Common/RemoteCoreController/ICoreConnection.h>
 
-#include <CoreConnection/CoreConnection.h>
 #include <PeerList/PeerListModel.h>
 
 namespace GUI
@@ -36,7 +36,7 @@ namespace GUI
    {
       Q_OBJECT
    public:
-      ChatModel(CoreConnection& coreConnection, PeerListModel& peerListModel);
+      ChatModel(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel);
 
       int rowCount(const QModelIndex& parent = QModelIndex()) const;
       int columnCount(const QModelIndex& parent = QModelIndex()) const;
@@ -46,7 +46,7 @@ namespace GUI
       void newChatMessage(const Common::Hash& peerID, const QString& message);
 
    private:
-      CoreConnection& coreConnection;
+      QSharedPointer<RCC::ICoreConnection> coreConnection;
       PeerListModel& peerListModel;
 
       struct Message

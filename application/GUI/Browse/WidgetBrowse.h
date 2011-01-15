@@ -25,9 +25,9 @@
 #include <QItemSelection>
 
 #include <Common/Hash.h>
+#include <Common/RemoteCoreController/ICoreConnection.h>
 
 #include <PeerList/PeerListModel.h>
-#include <CoreConnection/CoreConnection.h>
 #include <Browse/BrowseModel.h>
 
 namespace Ui {
@@ -46,7 +46,7 @@ namespace GUI
    {
       Q_OBJECT
    public:
-      explicit WidgetBrowse(CoreConnection& coreConnection, PeerListModel& peerListModel, const Common::Hash& peerID, QWidget *parent = 0);
+      explicit WidgetBrowse(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel, const Common::Hash& peerID, QWidget *parent = 0);
       ~WidgetBrowse();
       Common::Hash getPeerID() const;
 
@@ -61,7 +61,7 @@ namespace GUI
    private:
       Ui::WidgetBrowse* ui;
 
-      CoreConnection& coreConnection;
+      QSharedPointer<RCC::ICoreConnection> coreConnection;
       PeerListModel& peerListModel;
       const Common::Hash peerID;
 

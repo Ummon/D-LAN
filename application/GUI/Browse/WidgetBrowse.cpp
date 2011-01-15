@@ -35,7 +35,7 @@ void BrowseDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option
 
 /////
 
-WidgetBrowse::WidgetBrowse(CoreConnection& coreConnection, PeerListModel& peerListModel, const Common::Hash& peerID, QWidget *parent)
+WidgetBrowse::WidgetBrowse(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel, const Common::Hash& peerID, QWidget *parent)
    : QWidget(parent), ui(new Ui::WidgetBrowse), coreConnection(coreConnection), peerListModel(peerListModel), peerID(peerID), browseModel(coreConnection, peerID)
 {
    this->ui->setupUi(this);
@@ -52,7 +52,7 @@ WidgetBrowse::WidgetBrowse(CoreConnection& coreConnection, PeerListModel& peerLi
    this->ui->treeView->setContextMenuPolicy(Qt::CustomContextMenu);
    connect(this->ui->treeView, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(displayContextMenuPeers(const QPoint&)));
 
-   if (this->coreConnection.getOurID() == this->peerID)
+   if (this->coreConnection->getOurID() == this->peerID)
       this->ui->butDownload->hide();
    else
       connect(this->ui->butDownload, SIGNAL(clicked()), this, SLOT(download()));
@@ -77,9 +77,9 @@ void WidgetBrowse::refresh()
 
 void WidgetBrowse::displayContextMenuPeers(const QPoint& point)
 {
-   if (this->coreConnection.getOurID() == this->peerID)
+   if (this->coreConnection->getOurID() == this->peerID)
    {
-      if (this->coreConnection.isLocal())
+      if (this->coreConnection->isLocal())
       {
          QMenu menu;
          menu.addAction("Open location", this, SLOT(openLocation()));
@@ -99,7 +99,7 @@ void WidgetBrowse::download()
    QModelIndexList selectedRows = this->ui->treeView->selectionModel()->selectedRows();
    for (QListIterator<QModelIndex> i(selectedRows); i.hasNext();)
    {
-      this->coreConnection.download(this->peerID, this->browseModel.getEntry(i.next()));
+      this->coreConnection->download(this->peerID, this->browseModel.getEntry(i.next()));
    }
 }
 

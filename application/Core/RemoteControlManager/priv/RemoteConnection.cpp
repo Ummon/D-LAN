@@ -319,6 +319,9 @@ bool RemoteConnection::readMessage()
                foreach (QString path, e.paths)
                   L_WARN(QString("Directory not found : %1").arg(path));
             }
+
+            this->refresh();
+            this->timerRefresh.start();
          }
       }
       break;

@@ -30,6 +30,7 @@ using namespace GUI;
 #include <Protos/gui_settings.pb.h>
 
 #include <Common/Settings.h>
+#include <Common/RemoteCoreController/Builder.h>
 
 #include <TabButtons.h>
 #include <StatusBar.h>
@@ -87,6 +88,7 @@ MainWindow::MainWindow(QWidget* parent) :
    widgetChat(0),
    widgetDownloads(0),
    widgetUploads(0),
+   coreConnection(RCC::Builder::newCoreConnection()),
    peerListModel(coreConnection),
    logModel(coreConnection)
 {
@@ -141,16 +143,16 @@ MainWindow::MainWindow(QWidget* parent) :
 
     this->restoreWindowsSettings();
 
-    connect(&this->coreConnection, SIGNAL(coreConnected()), this, SLOT(coreConnected()));
-    connect(&this->coreConnection, SIGNAL(coreDisconnected()), this, SLOT(coreDisconnected()));
-    this->coreConnection.connectToCore();
+    connect(this->coreConnection.data(), SIGNAL(coreConnected()), this, SLOT(coreConnected()));
+    connect(this->coreConnection.data(), SIGNAL(coreDisconnected()), this, SLOT(coreDisconnected()));
+    this->coreConnection->connectToCore();
 }
 
 MainWindow::~MainWindow()
 {
    this->saveWindowsSettings();
 
-   disconnect(&this->coreConnection, SIGNAL(coreDisconnected()), this, SLOT(coreDisconnected())); // To avoid calling 'coreDisconnected' after deleted 'this->ui'.
+   disconnect(this->coreConnection.data(), SIGNAL(coreDisconnected()), this, SLOT(coreDisconnected())); // To avoid calling 'coreDisconnected' after deleted 'this->ui'.
    disconnect(&this->logModel, SIGNAL(rowsInserted(const QModelIndex&, int, int)), this, SLOT(newLogMessage()));
 
    delete this->ui;

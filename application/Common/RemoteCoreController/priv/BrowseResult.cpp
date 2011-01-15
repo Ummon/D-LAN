@@ -16,12 +16,12 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#include <CoreConnection/BrowseResult.h>
-using namespace GUI;
+#include <priv/BrowseResult.h>
+using namespace RCC;
 
 #include <Common/Settings.h>
 
-#include <CoreConnection/CoreConnection.h>
+#include <priv/CoreConnection.h>
 
 BrowseResult::BrowseResult(CoreConnection* coreConnection, const Common::Hash& peerID)
    : IBrowseResult(SETTINGS.get<quint32>("socket_timeout")), peerID(peerID), tag(0)

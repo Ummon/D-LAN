@@ -16,15 +16,15 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#include <CoreController.h>
-using namespace GUI;
+#include <priv/CoreController.h>
+using namespace RCC;
 
 #include <QtServiceController>
 #include <QProcessEnvironment>
 
 #include <Common/Constants.h>
 
-#include <Log.h>
+#include <priv/Log.h>
 
 void CoreController::StartCore()
 {

@@ -22,9 +22,10 @@
 #include <QWidget>
 #include <QStyledItemDelegate>
 
+#include <Common/RemoteCoreController/ICoreConnection.h>
+
 #include <Uploads/UploadsModel.h>
 #include <PeerList/PeerListModel.h>
-#include <CoreConnection/CoreConnection.h>
 
 namespace Ui {
    class WidgetUploads;
@@ -44,7 +45,7 @@ namespace GUI
    {
       Q_OBJECT
    public:
-      explicit WidgetUploads(CoreConnection& coreConnection, PeerListModel& peerListModel, QWidget *parent = 0);
+      explicit WidgetUploads(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel, QWidget *parent = 0);
       ~WidgetUploads();
 
    private:

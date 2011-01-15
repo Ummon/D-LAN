@@ -24,8 +24,7 @@
 #include <Protos/gui_protocol.pb.h>
 
 #include <Common/Hash.h>
-
-#include <CoreConnection/CoreConnection.h>
+#include <Common/RemoteCoreController/ICoreConnection.h>
 
 namespace GUI
 {
@@ -33,7 +32,7 @@ namespace GUI
    {
       Q_OBJECT
    public:
-      PeerListModel(CoreConnection& coreConnection);
+      PeerListModel(QSharedPointer<RCC::ICoreConnection> coreConnection);
       QString getNick(const Common::Hash& peerID);
       bool isOurself(int rowNum) const;
       Common::Hash getPeerID(int rowNum) const;
@@ -56,7 +55,7 @@ namespace GUI
       void setPeers(const google::protobuf::RepeatedPtrField<Protos::GUI::State_Peer>& peers);
       void sort();
 
-      CoreConnection& coreConnection;
+      QSharedPointer<RCC::ICoreConnection> coreConnection;
 
       struct Peer
       {

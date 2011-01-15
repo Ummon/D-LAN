@@ -144,7 +144,7 @@ QString SearchDelegate::toHtmlText(const QString& text) const
 
 /////
 
-WidgetSearch::WidgetSearch(CoreConnection& coreConnection, PeerListModel& peerListModel, const QString& terms, QWidget *parent)
+WidgetSearch::WidgetSearch(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel, const QString& terms, QWidget *parent)
    : QWidget(parent), ui(new Ui::WidgetSearch), coreConnection(coreConnection), searchModel(coreConnection, peerListModel)
 {
     this->ui->setupUi(this);
@@ -189,7 +189,7 @@ void WidgetSearch::download()
    QModelIndex i = this->ui->treeView->currentIndex();
    if (i.isValid())
    {
-      this->coreConnection.download(this->searchModel.getPeerID(i), this->searchModel.getEntry(i));
+      this->coreConnection->download(this->searchModel.getPeerID(i), this->searchModel.getEntry(i));
    }
 }
 

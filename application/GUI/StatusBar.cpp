@@ -25,15 +25,15 @@ using namespace GUI;
 
 #include <DialogAbout.h>
 
-StatusBar::StatusBar(CoreConnection& coreConnection, QWidget *parent)
+StatusBar::StatusBar(QSharedPointer<RCC::ICoreConnection> coreConnection, QWidget *parent)
    : QWidget(parent), ui(new Ui::StatusBar), coreConnection(coreConnection)
 {
    this->ui->setupUi(this);
    this->coreDisconnected();
 
-   connect(&coreConnection, SIGNAL(newState(const Protos::GUI::State&)), this, SLOT(newState(const Protos::GUI::State&)));
-   connect(&coreConnection, SIGNAL(coreConnected()), this, SLOT(coreConnected()));
-   connect(&coreConnection, SIGNAL(coreDisconnected()), this, SLOT(coreDisconnected()));
+   connect(coreConnection.data(), SIGNAL(newState(const Protos::GUI::State&)), this, SLOT(newState(const Protos::GUI::State&)));
+   connect(coreConnection.data(), SIGNAL(coreConnected()), this, SLOT(coreConnected()));
+   connect(coreConnection.data(), SIGNAL(coreDisconnected()), this, SLOT(coreDisconnected()));
 
    connect(this->ui->butHelp, SIGNAL(clicked()), this, SLOT(showAbout()));
 }
@@ -46,7 +46,7 @@ StatusBar::~StatusBar()
 void StatusBar::coreConnected()
 {
    QString str("Connected");
-   if (!this->coreConnection.isLocal())
+   if (!this->coreConnection->isLocal())
       str.append(" to ").append(SETTINGS.get<QString>("core_address"));
 
    this->ui->lblCoreStatus->setText(str);

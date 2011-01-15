@@ -12,13 +12,17 @@ RC_FILE = ../Common/version.rc
 
 include(../Common/common.pri)
 include(../Libs/protobuf.pri)
-include(../Libs/qtservice/src/qtservice.pri)
 
 INCLUDEPATH += . ..
+
+LIBS += -L../Common/RemoteCoreController/output/$$FOLDER \
+    -lRemoteCoreController
+POST_TARGETDEPS += ../Common/RemoteCoreController/output/$$FOLDER/libRemoteCoreController.a
 
 LIBS += -L../Common/LogManager/output/$$FOLDER \
     -lLogManager
 POST_TARGETDEPS += ../Common/LogManager/output/$$FOLDER/libLogManager.a
+
 LIBS += -L../Common/output/$$FOLDER \
     -lCommon
 POST_TARGETDEPS += ../Common/output/$$FOLDER/libCommon.a
@@ -34,13 +38,11 @@ SOURCES += main.cpp\
     Log.cpp \
     AybabtuGUI.cpp \
     CheckBoxList.cpp \
-    CoreController.cpp \
     TabButtons.cpp \
     Browse/WidgetBrowse.cpp \
     Browse/BrowseModel.cpp \
     Chat/WidgetChat.cpp \
     Chat/ChatModel.cpp \
-    CoreConnection/CoreConnection.cpp \
     Downloads/WidgetDownloads.cpp \
     Downloads/DownloadsModel.cpp \
     Log/LogModel.cpp \
@@ -50,8 +52,6 @@ SOURCES += main.cpp\
     Settings/WidgetSettings.cpp \
     Uploads/WidgetUploads.cpp \
     Uploads/UploadsModel.cpp \
-    CoreConnection/BrowseResult.cpp \
-    CoreConnection/SearchResult.cpp \
     Settings/DirListModel.cpp \
     Settings/RemoteFileDialog.cpp
 
@@ -67,13 +67,11 @@ HEADERS  += MainWindow.h \
     CheckBoxList.h \
     CheckBoxModel.h \
     IFilter.h \
-    CoreController.h \
     TabButtons.h \
     Browse/WidgetBrowse.h \
     Browse/BrowseModel.h \
     Chat/WidgetChat.h \
     Chat/ChatModel.h \
-    CoreConnection/CoreConnection.h \
     Downloads/WidgetDownloads.h \
     Downloads/DownloadsModel.h \
     Downloads/DownloadFilterStatus.h \
@@ -84,10 +82,6 @@ HEADERS  += MainWindow.h \
     Settings/WidgetSettings.h \
     Uploads/WidgetUploads.h \
     Uploads/UploadsModel.h \
-    CoreConnection/IBrowseResult.h \
-    CoreConnection/ISearchResult.h \
-    CoreConnection/BrowseResult.h \
-    CoreConnection/SearchResult.h \
     Settings/DirListModel.h \
     Settings/RemoteFileDialog.h
 

@@ -29,9 +29,10 @@
 #include <Protos/gui_protocol.pb.h>
 #include <Protos/common.pb.h>
 
+#include <Common/RemoteCoreController/ICoreConnection.h>
+
 #include <PeerList/PeerListModel.h>
 #include <Log/LogModel.h>
-#include <CoreConnection/CoreConnection.h>
 
 #include <Settings/WidgetSettings.h>
 #include <Chat/WidgetChat.h>
@@ -113,7 +114,7 @@ namespace GUI
       QList<WidgetBrowse*> widgetsBrowse;
       QList<WidgetSearch*> widgetsSearch;
 
-      CoreConnection coreConnection;
+      QSharedPointer<RCC::ICoreConnection> coreConnection;
 
       PeerListModel peerListModel;
       PeerTableDelegate peerTableDelegate;

@@ -25,10 +25,10 @@ using namespace GUI;
 #include <Common/Global.h>
 #include <Common/Settings.h>
 
-ChatModel::ChatModel(CoreConnection& coreConnection, PeerListModel& peerListModel)
+ChatModel::ChatModel(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel)
    : coreConnection(coreConnection), peerListModel(peerListModel)
 {
-   connect(&this->coreConnection, SIGNAL(newChatMessage(const Common::Hash&, const QString&)), this, SLOT(newChatMessage(const Common::Hash&, const QString&)));
+   connect(this->coreConnection.data(), SIGNAL(newChatMessage(const Common::Hash&, const QString&)), this, SLOT(newChatMessage(const Common::Hash&, const QString&)));
 }
 
 int ChatModel::rowCount(const QModelIndex& parent) const

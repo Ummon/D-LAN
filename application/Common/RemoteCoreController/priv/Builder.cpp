@@ -16,41 +16,29 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef GUI_STATUSBAR_H
-#define GUI_STATUSBAR_H
+#include <Builder.h>
+using namespace RCC;
 
-#include <QWidget>
+#include <priv/CoreController.h>
+#include <priv/CoreConnection.h>
 
-#include <Protos/gui_protocol.pb.h>
-
-#include <Common/RemoteCoreController/ICoreConnection.h>
-
-namespace Ui {
-   class StatusBar;
-}
-
-namespace GUI
+QSharedPointer<ICoreConnection> Builder::newCoreConnection()
 {
-   class StatusBar : public QWidget
-   {
-      Q_OBJECT
-
-   public:
-      explicit StatusBar(QSharedPointer<RCC::ICoreConnection> coreConnection, QWidget *parent = 0);
-      ~StatusBar();
-
-   private slots:
-      void coreConnected();
-      void coreDisconnected();
-      void newState(const Protos::GUI::State& state);
-
-      void showAbout();
-
-   private:
-      Ui::StatusBar *ui;
-
-      QSharedPointer<RCC::ICoreConnection> coreConnection;
-   };
+   return QSharedPointer<ICoreConnection>(new CoreConnection());
 }
 
-#endif
+/**
+  * @remarks Works only in local.
+  */
+void Builder::StartCore()
+{
+   CoreController::StartCore();
+}
+
+/**
+  * @remarks Works only in local.
+  */
+void Builder::StopCore()
+{
+   CoreController::StopCore();
+}

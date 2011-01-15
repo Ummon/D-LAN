@@ -22,7 +22,8 @@
 #include <QWidget>
 #include <QStyledItemDelegate>
 
-#include <CoreConnection/CoreConnection.h>
+#include <Common/RemoteCoreController/ICoreConnection.h>
+
 #include <PeerList/PeerListModel.h>
 #include <Chat/ChatModel.h>
 
@@ -42,7 +43,7 @@ namespace GUI
    {
       Q_OBJECT
    public:
-      explicit WidgetChat(CoreConnection& coreConnection, PeerListModel& peerListModel, QWidget *parent = 0);
+      explicit WidgetChat(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel, QWidget *parent = 0);
       ~WidgetChat();
 
    private slots:
@@ -52,7 +53,7 @@ namespace GUI
    private:
       Ui::WidgetChat *ui;
 
-      CoreConnection& coreConnection;
+      QSharedPointer<RCC::ICoreConnection> coreConnection;
       ChatModel chatModel;
       ChatDelegate chatDelegate;
    };

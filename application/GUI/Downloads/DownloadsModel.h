@@ -24,8 +24,9 @@
 
 #include <Protos/gui_protocol.pb.h>
 
+#include <Common/RemoteCoreController/ICoreConnection.h>
+
 #include <IFilter.h>
-#include <CoreConnection/CoreConnection.h>
 #include <PeerList/PeerListModel.h>
 #include <Downloads/DownloadFilterStatus.h>
 
@@ -35,7 +36,7 @@ namespace GUI
    {
       Q_OBJECT
    public:
-      explicit DownloadsModel(CoreConnection& coreConnection, PeerListModel& peerListModel, const IFilter<DownloadFilterStatus>& filter);
+      explicit DownloadsModel(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel, const IFilter<DownloadFilterStatus>& filter);
 
       quint64 getDownloadID(int row) const;
       QList<quint64> getCompletedDownloadIDs() const;
@@ -56,7 +57,7 @@ namespace GUI
       void newState(const Protos::GUI::State& state);
 
    private:
-      CoreConnection& coreConnection;
+      QSharedPointer<RCC::ICoreConnection> coreConnection;
       PeerListModel& peerListModel;
       const IFilter<DownloadFilterStatus>& filter;
 

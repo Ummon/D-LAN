@@ -26,8 +26,8 @@
 
 #include <Common/ProtoHelper.h>
 #include <Common/Hash.h>
-
-#include <CoreConnection/CoreConnection.h>
+#include <Common/RemoteCoreController/ICoreConnection.h>
+#include <Common/RemoteCoreController/IBrowseResult.h>
 
 namespace GUI
 {
@@ -40,7 +40,7 @@ namespace GUI
       Q_OBJECT
 
    public:
-      BrowseModel(CoreConnection& coreConnection, const Common::Hash& peerID);
+      BrowseModel(QSharedPointer<RCC::ICoreConnection> coreConnection, const Common::Hash& peerID);
       virtual ~BrowseModel();
 
       virtual QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const;
@@ -106,11 +106,11 @@ namespace GUI
          QList<Node*> children;
       };
 
-      CoreConnection& coreConnection;
+      QSharedPointer<RCC::ICoreConnection> coreConnection;
       Common::Hash peerID;
 
       QPersistentModelIndex currentBrowseIndex; // When we receive some entries after a browse query, they will be added as children to this index.
-      QSharedPointer<IBrowseResult> browseResult;
+      QSharedPointer<RCC::IBrowseResult> browseResult;
 
       Node* root;
    };

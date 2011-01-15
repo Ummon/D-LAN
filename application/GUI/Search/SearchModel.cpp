@@ -30,7 +30,7 @@ const int SearchModel::NB_SIGNAL_PROGRESS(50);
   * The directories from the result can be browsed, thus this model inherits from the 'BrowseModel'.
   */
 
-SearchModel::SearchModel(CoreConnection& coreConnection, PeerListModel& peerListModel)
+SearchModel::SearchModel(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel)
    : BrowseModel(coreConnection, Common::Hash()), peerListModel(peerListModel), maxLevel(0), nbFolders(0), nbFiles(0), currentProgress(0)
 {
    delete this->root;
@@ -60,7 +60,7 @@ void SearchModel::search(const QString& terms)
    if (!this->searchResult.isNull())
       return;
 
-   this->searchResult = this->coreConnection.search(terms);
+   this->searchResult = this->coreConnection->search(terms);
    connect(this->searchResult.data(), SIGNAL(result(const Protos::Common::FindResult&)), this, SLOT(result(const Protos::Common::FindResult&)));
    // We don't use the 'timout' signal from 'ISearchResult', not useful.
    this->searchResult->start();

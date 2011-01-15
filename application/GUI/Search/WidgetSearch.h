@@ -24,7 +24,8 @@
 #include <QStyledItemDelegate>
 #include <QPainter>
 
-#include <CoreConnection/CoreConnection.h>
+#include <Common/RemoteCoreController/ICoreConnection.h>
+
 #include <Search/SearchModel.h>
 
 namespace Ui {
@@ -52,7 +53,7 @@ namespace GUI
    {
       Q_OBJECT
    public:
-      explicit WidgetSearch(CoreConnection& coreConnection, PeerListModel& peerListModel, const QString& terms, QWidget *parent = 0);
+      explicit WidgetSearch(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel, const QString& terms, QWidget *parent = 0);
       ~WidgetSearch();
 
    private slots:
@@ -62,7 +63,7 @@ namespace GUI
 
    private:
       Ui::WidgetSearch *ui;
-      CoreConnection& coreConnection;
+      QSharedPointer<RCC::ICoreConnection> coreConnection;
 
       SearchModel searchModel;
       SearchDelegate searchDelegate;

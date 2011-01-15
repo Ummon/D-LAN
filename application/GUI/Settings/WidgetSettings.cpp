@@ -30,7 +30,7 @@ using namespace GUI;
 
 #include <Settings/RemoteFileDialog.h>
 
-WidgetSettings::WidgetSettings(CoreConnection& coreConnection, QWidget *parent)
+WidgetSettings::WidgetSettings(QSharedPointer<RCC::ICoreConnection> coreConnection, QWidget *parent)
    : QWidget(parent), ui(new Ui::WidgetSettings), coreConnection(coreConnection), initialState(true)
 {
    this->ui->setupUi(this);
@@ -40,7 +40,7 @@ WidgetSettings::WidgetSettings(CoreConnection& coreConnection, QWidget *parent)
 
    this->ui->txtCoreAddress->setText(SETTINGS.get<QString>("core_address"));
 
-   connect(&this->coreConnection, SIGNAL(newState(Protos::GUI::State)), this, SLOT(newState(Protos::GUI::State)));
+   connect(this->coreConnection.data(), SIGNAL(newState(Protos::GUI::State)), this, SLOT(newState(Protos::GUI::State)));
 
    connect(this->ui->txtNick, SIGNAL(editingFinished()), this, SLOT(saveCoreSettings()));
 
@@ -117,7 +117,7 @@ void WidgetSettings::saveCoreSettings()
    for (QStringListIterator i(this->sharedDirsModel.getDirs()); i.hasNext();)
       Common::ProtoHelper::addRepeatedStr(settings, &Protos::GUI::CoreSettings::add_shared_directory, i.next());
 
-   this->coreConnection.setCoreSettings(settings);
+   this->coreConnection->setCoreSettings(settings);
 }
 
 void WidgetSettings::saveGUISettings()
@@ -131,9 +131,9 @@ void WidgetSettings::saveGUISettings()
 
    SETTINGS.save();
 
-   if (previousAddress != SETTINGS.get<QString>("core_address") || !this->coreConnection.isConnected())
+   if (previousAddress != SETTINGS.get<QString>("core_address") || !this->coreConnection->isConnected())
    {
-      this->coreConnection.connectToCore();
+      this->coreConnection->connectToCore();
    }
 }
 
@@ -188,7 +188,7 @@ void WidgetSettings::resetCoreAddress()
   */
 QStringList WidgetSettings::askForDirectories()
 {
-   if (this->coreConnection.isLocal())
+   if (this->coreConnection->isLocal())
    {
       QFileDialog fileDialog(this);
       fileDialog.setOption(QFileDialog::DontUseNativeDialog,true);

@@ -16,8 +16,8 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef GUI_CORECONNECTION_H
-#define GUI_CORECONNECTION_H
+#ifndef RCC_CORECONNECTION_H
+#define RCC_CORECONNECTION_H
 
 #include <QObject>
 #include <QTcpSocket>
@@ -32,14 +32,15 @@
 #include <Common/Network.h>
 #include <Common/LogManager/IEntry.h>
 
-#include <CoreConnection/IBrowseResult.h>
-#include <CoreConnection/ISearchResult.h>
+#include <ICoreConnection.h>
+#include <IBrowseResult.h>
+#include <ISearchResult.h>
 
-namespace GUI
+namespace RCC
 {
    class BrowseResult;
    class SearchResult;
-   class CoreConnection : public QObject
+   class CoreConnection : public ICoreConnection
    {
       Q_OBJECT
    public:
@@ -66,16 +67,6 @@ namespace GUI
 
    public slots:
       void connectToCore();
-
-   signals:
-      void coreConnected();
-      void coreDisconnected();
-
-      void newState(const Protos::GUI::State&);
-      void newChatMessage(const Common::Hash& peerID, const QString& message);
-      void newLogMessage(QSharedPointer<const LM::IEntry> entry);
-      void browseResult(const Protos::GUI::BrowseResult& browseResult);
-      void searchResult(const Protos::Common::FindResult& findResult);
 
    private slots:
       void stateChanged(QAbstractSocket::SocketState socketState);

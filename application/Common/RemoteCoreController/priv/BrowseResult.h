@@ -16,8 +16,8 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef GUI_BROWSERESULT_H
-#define GUI_BROWSERESULT_H
+#ifndef RCC_BROWSERESULT_H
+#define RCC_BROWSERESULT_H
 
 #include <QtCore>
 
@@ -26,9 +26,9 @@
 
 #include <Common/Hash.h>
 
-#include <CoreConnection/IBrowseResult.h>
+#include <IBrowseResult.h>
 
-namespace GUI
+namespace RCC
 {
    class CoreConnection;
 

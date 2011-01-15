@@ -16,23 +16,22 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#include <CoreConnection/CoreConnection.h>
-using namespace GUI;
+#include <priv/CoreConnection.h>
+using namespace RCC;
 
 #include <QHostAddress>
 #include <QCoreApplication>
 
-#include <Common/LogManager/Builder.h>
-#include <Common/ZeroCopyStreamQIODevice.h>
-#include <Common/Settings.h>
-#include <Common/ProtoHelper.h>
-#include <Common/Constants.h>
+#include <LogManager/Builder.h>
+#include <ZeroCopyStreamQIODevice.h>
+#include <Settings.h>
+#include <ProtoHelper.h>
+#include <Constants.h>
 
-#include <CoreController.h>
-#include <Log.h>
-
-#include <CoreConnection/BrowseResult.h>
-#include <CoreConnection/SearchResult.h>
+#include <priv/CoreController.h>
+#include <priv/Log.h>
+#include <priv/BrowseResult.h>
+#include <priv/SearchResult.h>
 
 CoreConnection::CoreConnection()
    : currentHostLookupID(-1), authenticated(false)
@@ -204,17 +203,6 @@ void CoreConnection::adressResolved(QHostInfo hostInfo)
    this->addressesToTry = hostInfo.addresses();
 
    this->tryToConnectToTheNextAddress();
-
-   // Search an IPv4 address. (Old code).
-   /*for (QListIterator<QHostAddress> i(hostInfo.addresses()); i.hasNext();)
-   {
-      QHostAddress currentAddress = i.next();
-      if (currentAddress.protocol() == QAbstractSocket::IPv4Protocol)
-      {
-         address = currentAddress;
-         break;
-      }
-   }*/
 }
 
 void CoreConnection::connected()

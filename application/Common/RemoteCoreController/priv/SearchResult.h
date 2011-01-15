@@ -16,16 +16,16 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef GUI_SEARCHRESULT_H
-#define GUI_SEARCHRESULT_H
+#ifndef RCC_SEARCHRESULT_H
+#define RCC_SEARCHRESULT_H
 
 #include <QString>
 
 #include <Protos/common.pb.h>
 
-#include <CoreConnection/ISearchResult.h>
+#include <ISearchResult.h>
 
-namespace GUI
+namespace RCC
 {
    class CoreConnection;
 

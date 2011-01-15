@@ -21,7 +21,7 @@ using namespace GUI;
 
 #include <Common/Constants.h>
 
-#include <CoreController.h>
+#include <Common/RemoteCoreController/Builder.h>
 
 /**
   * @class AybabtuGUI
@@ -78,7 +78,7 @@ void AybabtuGUI::exit()
 {
    this->trayIcon.hide();
 
-   CoreController::StopCore();
+   RCC::Builder::StopCore();
 
    if (this->mainWindow)
    {

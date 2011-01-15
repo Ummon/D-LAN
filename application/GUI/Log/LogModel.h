@@ -23,8 +23,7 @@
 
 #include <Common/LogManager/IEntry.h>
 #include <Common/LogManager/ILoggerHook.h>
-
-#include <CoreConnection/CoreConnection.h>
+#include <Common/RemoteCoreController/ICoreConnection.h>
 
 namespace GUI
 {
@@ -32,7 +31,7 @@ namespace GUI
    {
       Q_OBJECT
    public:
-      LogModel(CoreConnection& coreConnection);
+      LogModel(QSharedPointer<RCC::ICoreConnection> coreConnection);
 
       int rowCount(const QModelIndex& parent = QModelIndex()) const;
       int columnCount(const QModelIndex& parent = QModelIndex()) const;
@@ -44,7 +43,7 @@ namespace GUI
       void newLogEntry(QSharedPointer<const LM::IEntry> entry);
 
    private:
-      CoreConnection& coreConnection;
+      QSharedPointer<RCC::ICoreConnection> coreConnection;
       QSharedPointer<LM::ILoggerHook> loggerHook;
       QList< QSharedPointer<const LM::IEntry> > entries;
    };

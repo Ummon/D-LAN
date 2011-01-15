@@ -26,8 +26,9 @@
 #include <Protos/common.pb.h>
 
 #include <Common/Hash.h>
+#include <Common/RemoteCoreController/ICoreConnection.h>
+#include <Common/RemoteCoreController/ISearchResult.h>
 
-#include <CoreConnection/CoreConnection.h>
 #include <Browse/BrowseModel.h>
 #include <PeerList/PeerListModel.h>
 
@@ -39,7 +40,7 @@ namespace GUI
       static const int NB_SIGNAL_PROGRESS; // The number of signal progress sent during a search.
       Q_OBJECT
    public:
-      SearchModel(CoreConnection& coreConnection, PeerListModel& peerListModel);
+      SearchModel(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel);
       ~SearchModel();
 
       Common::Hash getPeerID(const QModelIndex& index);
@@ -74,7 +75,7 @@ namespace GUI
 
       PeerListModel& peerListModel;
 
-      QSharedPointer<ISearchResult> searchResult;
+      QSharedPointer<RCC::ISearchResult> searchResult;
 
       int maxLevel;
 

@@ -86,7 +86,7 @@ QSize DownloadsDelegate::sizeHint(const QStyleOptionViewItem& option, const QMod
 
 /////
 
-WidgetDownloads::WidgetDownloads(CoreConnection& coreConnection, PeerListModel& peerListModel, QWidget *parent)
+WidgetDownloads::WidgetDownloads(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel, QWidget *parent)
    : QWidget(parent), ui(new Ui::WidgetDownloads), coreConnection(coreConnection), downloadsModel(coreConnection, peerListModel, checkBoxModel)
 {
    this->ui->setupUi(this);
@@ -196,17 +196,17 @@ void WidgetDownloads::removeSelectedEntries()
       msgBox.setDefaultButton(QMessageBox::Ok);
       if (msgBox.exec() == QMessageBox::Ok)
       {
-         this->coreConnection.cancelDownloads(downloadIDs);
+         this->coreConnection->cancelDownloads(downloadIDs);
       }
    }
 }
 
 void WidgetDownloads::removeCompletedFiles()
 {
-   this->coreConnection.cancelDownloads(this->downloadsModel.getCompletedDownloadIDs());
+   this->coreConnection->cancelDownloads(this->downloadsModel.getCompletedDownloadIDs());
 }
 
 void WidgetDownloads::filterChanged()
 {
-   this->coreConnection.refresh();
+   this->coreConnection->refresh();
 }

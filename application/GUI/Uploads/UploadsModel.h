@@ -23,7 +23,8 @@
 
 #include <Protos/gui_protocol.pb.h>
 
-#include <CoreConnection/CoreConnection.h>
+#include <Common/RemoteCoreController/ICoreConnection.h>
+
 #include <PeerList/PeerListModel.h>
 
 namespace GUI
@@ -32,7 +33,7 @@ namespace GUI
    {
       Q_OBJECT
    public:
-      explicit UploadsModel(CoreConnection& coreConnection, PeerListModel& peerListModel);
+      UploadsModel(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel);
 
       int rowCount(const QModelIndex& parent = QModelIndex()) const;
       int columnCount(const QModelIndex& parent = QModelIndex()) const;
@@ -42,7 +43,7 @@ namespace GUI
       void newState(const Protos::GUI::State& state);
 
    private:
-      CoreConnection& coreConnection;
+      QSharedPointer<RCC::ICoreConnection> coreConnection;
       PeerListModel& peerListModel;
 
       QList<Protos::GUI::State_Upload> uploads;

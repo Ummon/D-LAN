@@ -29,7 +29,7 @@ using namespace GUI;
   * Used by 'WidgetBrowse'.
   */
 
-BrowseModel::BrowseModel(CoreConnection& coreConnection, const Common::Hash& peerID) :
+BrowseModel::BrowseModel(QSharedPointer<RCC::ICoreConnection> coreConnection, const Common::Hash& peerID) :
     coreConnection(coreConnection), peerID(peerID), root(new Node())
 {
    if (!peerID.isNull())
@@ -168,7 +168,7 @@ void BrowseModel::refresh()
    while (currentNode = i.next())
       entries.add_entry()->CopyFrom(currentNode->getEntry());
 
-   this->browseResult = this->coreConnection.browse(this->peerID, entries, true);
+   this->browseResult = this->coreConnection->browse(this->peerID, entries, true);
    connect(this->browseResult.data(), SIGNAL(result(const google::protobuf::RepeatedPtrField<Protos::Common::Entries>&)), this, SLOT(resultRefresh(const google::protobuf::RepeatedPtrField<Protos::Common::Entries>&)));
    connect(this->browseResult.data(), SIGNAL(timeout()), this, SLOT(resultTimeout()));
    this->browseResult->start();
@@ -233,7 +233,7 @@ void BrowseModel::resultTimeout()
 
 void BrowseModel::browse(const Common::Hash& peerID, Node* node)
 {
-   this->browseResult = node ? this->coreConnection.browse(this->peerID, node->getEntry()) : this->coreConnection.browse(this->peerID);
+   this->browseResult = node ? this->coreConnection->browse(this->peerID, node->getEntry()) : this->coreConnection->browse(this->peerID);
    connect(this->browseResult.data(), SIGNAL(result(const google::protobuf::RepeatedPtrField<Protos::Common::Entries>&)), this, SLOT(result(const google::protobuf::RepeatedPtrField<Protos::Common::Entries>&)));
    connect(this->browseResult.data(), SIGNAL(timeout()), this, SLOT(resultTimeout()));
    this->browseResult->start();

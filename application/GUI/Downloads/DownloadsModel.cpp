@@ -26,11 +26,11 @@ using namespace GUI;
 
 #include <Log.h>
 
-DownloadsModel::DownloadsModel(CoreConnection& coreConnection, PeerListModel& peerListModel, const IFilter<DownloadFilterStatus>& filter)
+DownloadsModel::DownloadsModel(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel, const IFilter<DownloadFilterStatus>& filter)
    : coreConnection(coreConnection), peerListModel(peerListModel), filter(filter)
 {
    qRegisterMetaTypeStreamOperators<Progress>("Progress"); // Don't know where to put this call..
-   connect(&this->coreConnection, SIGNAL(newState(Protos::GUI::State)), this, SLOT(newState(Protos::GUI::State)));
+   connect(this->coreConnection.data(), SIGNAL(newState(Protos::GUI::State)), this, SLOT(newState(Protos::GUI::State)));
 }
 
 quint64 DownloadsModel::getDownloadID(int row) const
@@ -244,7 +244,7 @@ bool DownloadsModel::dropMimeData(const QMimeData* data, Qt::DropAction action, 
       }
    }
 
-   this->coreConnection.moveDownloads(placeToMove, downloadIDs, moveBefore);
+   this->coreConnection->moveDownloads(placeToMove, downloadIDs, moveBefore);
    return true;
 }
 

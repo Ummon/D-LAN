@@ -22,10 +22,10 @@ using namespace GUI;
 #include <Common/Settings.h>
 #include <Common/LogManager/Builder.h>
 
-LogModel::LogModel(CoreConnection& coreConnection)
+LogModel::LogModel(QSharedPointer<RCC::ICoreConnection> coreConnection)
    : coreConnection(coreConnection)
 {
-   connect(&this->coreConnection, SIGNAL(newLogMessage(QSharedPointer<const LM::IEntry>)), this, SLOT(newLogEntry(QSharedPointer<const LM::IEntry>)));
+   connect(this->coreConnection.data(), SIGNAL(newLogMessage(QSharedPointer<const LM::IEntry>)), this, SLOT(newLogEntry(QSharedPointer<const LM::IEntry>)));
 
    this->loggerHook = LM::Builder::newLoggerHook(LM::Severity(LM::SV_FATAL_ERROR | LM::SV_ERROR | LM::SV_END_USER | LM::SV_WARNING));
    connect(this->loggerHook.data(), SIGNAL(newLogEntry(QSharedPointer<const LM::IEntry>)), this, SLOT(newLogEntry(QSharedPointer<const LM::IEntry>)));

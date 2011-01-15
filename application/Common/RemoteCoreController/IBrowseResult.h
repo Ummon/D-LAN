@@ -16,40 +16,29 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef GUI_STATUSBAR_H
-#define GUI_STATUSBAR_H
+#ifndef RCC_IBROWSERESULT_H
+#define RCC_IBROWSERESULT_H
 
-#include <QWidget>
+#include <google/protobuf/repeated_field.h>
 
-#include <Protos/gui_protocol.pb.h>
+#include <Protos/common.pb.h>
 
-#include <Common/RemoteCoreController/ICoreConnection.h>
+#include <Common/Timeoutable.h>
 
-namespace Ui {
-   class StatusBar;
-}
-
-namespace GUI
+namespace RCC
 {
-   class StatusBar : public QWidget
+   class IBrowseResult : public Common::Timeoutable
    {
       Q_OBJECT
+   protected:
+      IBrowseResult(int time) : Common::Timeoutable(time) {}
 
    public:
-      explicit StatusBar(QSharedPointer<RCC::ICoreConnection> coreConnection, QWidget *parent = 0);
-      ~StatusBar();
+      virtual ~IBrowseResult() {}
+      virtual void start() = 0;
 
-   private slots:
-      void coreConnected();
-      void coreDisconnected();
-      void newState(const Protos::GUI::State& state);
-
-      void showAbout();
-
-   private:
-      Ui::StatusBar *ui;
-
-      QSharedPointer<RCC::ICoreConnection> coreConnection;
+   signals:
+      void result(const google::protobuf::RepeatedPtrField<Protos::Common::Entries>&);
    };
 }
 

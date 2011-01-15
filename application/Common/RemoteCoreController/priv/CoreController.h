@@ -16,27 +16,21 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef GUI_ISEARCHRESULT_H
-#define GUI_ISEARCHRESULT_H
+#ifndef RCC_CORECONTROLLER_H
+#define RCC_CORECONTROLLER_H
 
-#include <Protos/common.pb.h>
+#include <QProcess>
 
-#include <Common/Timeoutable.h>
-
-namespace GUI
+namespace RCC
 {
-   class ISearchResult : public Common::Timeoutable
+   class CoreController
    {
-      Q_OBJECT
-   protected:
-      ISearchResult(int time) : Common::Timeoutable(time) {}
-
    public:
-      virtual ~ISearchResult() {}
-      virtual void start() = 0;
+      static void StartCore();
+      static void StopCore();
 
-   signals:
-      void result(const Protos::Common::FindResult&);
+   private:
+      static QProcess coreProcess; ///< Only used when unable to lauche the core as a service.
    };
 }
 

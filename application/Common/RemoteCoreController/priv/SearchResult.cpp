@@ -16,15 +16,15 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#include <CoreConnection/SearchResult.h>
-using namespace GUI;
+#include <priv/SearchResult.h>
+using namespace RCC;
 
 #include <Protos/gui_protocol.pb.h>
 
 #include <Common/Settings.h>
 #include <Common/ProtoHelper.h>
 
-#include <CoreConnection/CoreConnection.h>
+#include <priv/CoreConnection.h>
 
 SearchResult::SearchResult(CoreConnection* coreConnection, const QString& terms)
    : ISearchResult(SETTINGS.get<quint32>("socket_timeout")), coreConnection(coreConnection), terms(terms)

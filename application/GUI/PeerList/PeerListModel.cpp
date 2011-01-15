@@ -24,10 +24,10 @@ using namespace GUI;
 #include <Common/ProtoHelper.h>
 #include <Common/Global.h>
 
-PeerListModel::PeerListModel(CoreConnection& coreConnection)
+PeerListModel::PeerListModel(QSharedPointer<RCC::ICoreConnection> coreConnection)
    : coreConnection(coreConnection)
 {
-   connect(&this->coreConnection, SIGNAL(newState(Protos::GUI::State)), this, SLOT(newState(Protos::GUI::State)));
+   connect(this->coreConnection.data(), SIGNAL(newState(Protos::GUI::State)), this, SLOT(newState(Protos::GUI::State)));
 }
 
 /**
@@ -49,7 +49,7 @@ bool PeerListModel::isOurself(int rowNum) const
 {
    if (rowNum >= this->peers.size())
       return false;
-   return this->peers[rowNum].peerID == this->coreConnection.getOurID();
+   return this->peers[rowNum].peerID == this->coreConnection->getOurID();
 }
 
 Common::Hash PeerListModel::getPeerID(int rowNum) const

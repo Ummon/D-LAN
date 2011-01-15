@@ -16,29 +16,27 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef GUI_IBROWSERESULT_H
-#define GUI_IBROWSERESULT_H
+#ifndef REMOTECORECONTROLLER_BUILDER_H
+#define REMOTECORECONTROLLER_BUILDER_H
 
-#include <google/protobuf/repeated_field.h>
+#include "ICoreConnection.h"
 
-#include <Protos/common.pb.h>
-
-#include <Common/Timeoutable.h>
-
-namespace GUI
+namespace RCC
 {
-   class IBrowseResult : public Common::Timeoutable
+   class Builder
    {
-      Q_OBJECT
-   protected:
-      IBrowseResult(int time) : Common::Timeoutable(time) {}
-
    public:
-      virtual ~IBrowseResult() {}
-      virtual void start() = 0;
+      static QSharedPointer<ICoreConnection> newCoreConnection();
 
-   signals:
-      void result(const google::protobuf::RepeatedPtrField<Protos::Common::Entries>&);
+      /**
+        * @remarks Works only in local.
+        */
+      static void StartCore();
+
+      /**
+        * @remarks Works only in local.
+        */
+      static void StopCore();
    };
 }
 

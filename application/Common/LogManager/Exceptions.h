@@ -19,16 +19,13 @@
 #ifndef LOGMANAGER_EXCEPTIONS_H
 #define LOGMANAGER_EXCEPTIONS_H
 
-#include <exception>
-using namespace std;
-
 #include <QString>
 
 namespace LM
 {
-   class LoggerAlreadyExistsException : public exception {};
+   class LoggerAlreadyExistsException {};
 
-   class MalformedEntryLog : public exception
+   class MalformedEntryLog
    {
    public:
       MalformedEntryLog(const QString& message) :

@@ -23,10 +23,11 @@
 #include <QPoint>
 #include <QStyledItemDelegate>
 
+#include <Common/RemoteCoreController/ICoreConnection.h>
+
 #include <CheckBoxList.h>
 #include <CheckBoxModel.h>
 #include <PeerList/PeerListModel.h>
-#include <CoreConnection/CoreConnection.h>
 #include <Downloads/DownloadFilterStatus.h>
 #include <Downloads/DownloadsModel.h>
 
@@ -47,7 +48,7 @@ namespace GUI
    {
       Q_OBJECT
    public:
-      explicit WidgetDownloads(CoreConnection& coreConnection, PeerListModel& peerListModel, QWidget *parent = 0);
+      explicit WidgetDownloads(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel, QWidget *parent = 0);
       ~WidgetDownloads();
 
    private slots:
@@ -61,7 +62,7 @@ namespace GUI
       Ui::WidgetDownloads *ui;
       CheckBoxList* filterStatusList;
 
-      CoreConnection& coreConnection;
+      QSharedPointer<RCC::ICoreConnection> coreConnection;
 
       CheckBoxModel<DownloadFilterStatus> checkBoxModel;
       DownloadsModel downloadsModel;

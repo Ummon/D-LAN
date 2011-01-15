@@ -16,22 +16,14 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef GUI_CORECONTROLLER_H
-#define GUI_CORECONTROLLER_H
+#ifndef RCC_LOG_H
+#define RCC_LOG_H
 
-#include <QProcess>
+#include <LogManager/Builder.h>
 
-namespace GUI
+namespace RCC
 {
-   class CoreController
-   {
-   public:
-      static void StartCore();
-      static void StopCore();
-
-   private:
-      static QProcess coreProcess; ///< Only used when unable to lauche the core as a service.
-   };
+   #include <LogManager/LogMacros.h>
 }
 
 #endif
