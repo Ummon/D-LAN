@@ -46,7 +46,7 @@ namespace GUI
    {
       Q_OBJECT
    public:
-      explicit WidgetBrowse(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel, const Common::Hash& peerID, QWidget *parent = 0);
+      explicit WidgetBrowse(QSharedPointer<RCC::ICoreConnection> coreConnection, const PeerListModel& peerListModel, const Common::Hash& peerID, QWidget *parent = 0);
       ~WidgetBrowse();
       Common::Hash getPeerID() const;
 
@@ -65,7 +65,6 @@ namespace GUI
       Ui::WidgetBrowse* ui;
 
       QSharedPointer<RCC::ICoreConnection> coreConnection;
-      PeerListModel& peerListModel;
       const Common::Hash peerID;
 
       BrowseModel browseModel;

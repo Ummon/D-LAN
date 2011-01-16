@@ -27,7 +27,7 @@ using namespace GUI;
 UploadsModel::UploadsModel(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel)
    : coreConnection(coreConnection), peerListModel(peerListModel)
 {
-   connect(this->coreConnection.data(), SIGNAL(newState(Protos::GUI::State&)), this, SLOT(newState(Protos::GUI::State&)));
+   connect(this->coreConnection.data(), SIGNAL(newState(Protos::GUI::State)), this, SLOT(newState(Protos::GUI::State)));
 }
 
 int UploadsModel::rowCount(const QModelIndex& parent) const

@@ -33,7 +33,7 @@ PeerListModel::PeerListModel(QSharedPointer<RCC::ICoreConnection> coreConnection
 /**
   * Return "<unknown>" string if not found.
   */
-QString PeerListModel::getNick(const Common::Hash& peerID)
+QString PeerListModel::getNick(const Common::Hash& peerID) const
 {
    for (QListIterator<Peer> i(this->peers); i.hasNext();)
    {

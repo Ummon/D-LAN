@@ -35,11 +35,10 @@ void BrowseDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option
 
 /////
 
-WidgetBrowse::WidgetBrowse(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel, const Common::Hash& peerID, QWidget *parent) :
+WidgetBrowse::WidgetBrowse(QSharedPointer<RCC::ICoreConnection> coreConnection, const PeerListModel& peerListModel, const Common::Hash& peerID, QWidget *parent) :
    QWidget(parent),
    ui(new Ui::WidgetBrowse),
    coreConnection(coreConnection),
-   peerListModel(peerListModel),
    peerID(peerID),
    browseModel(coreConnection, peerID, false) // 'false' because the model is automatically refreshed when the widget is shown, see 'WidgetBrowse::showEvent(..)'.
 {
@@ -62,7 +61,7 @@ WidgetBrowse::WidgetBrowse(QSharedPointer<RCC::ICoreConnection> coreConnection, 
    else
       connect(this->ui->butDownload, SIGNAL(clicked()), this, SLOT(download()));
 
-   this->setWindowTitle(QString("[%1]").arg(this->peerListModel.getNick(this->peerID)));
+   this->setWindowTitle(QString("[%1]").arg(peerListModel.getNick(this->peerID)));
 }
 
 WidgetBrowse::~WidgetBrowse()

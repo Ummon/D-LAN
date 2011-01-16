@@ -153,8 +153,8 @@ MainWindow::~MainWindow()
 {
    this->saveWindowsSettings();
 
-   disconnect(this->coreConnection.data(), SIGNAL(coreDisconnected()), this, SLOT(coreDisconnected())); // To avoid calling 'coreDisconnected' after deleted 'this->ui'.
-   disconnect(&this->logModel, SIGNAL(rowsInserted(const QModelIndex&, int, int)), this, SLOT(newLogMessage()));
+   this->coreConnection->disconnect(this); // To avoid calling 'coreDisconnected' after deleted 'this->ui'.
+   this->logModel.disconnect(this);
 
    delete this->ui;
 }
@@ -377,6 +377,7 @@ void MainWindow::addWidgetBrowse(const Common::Hash& peerID)
    QTabBar* tab = ui->mdiArea->findChild<QTabBar*>();
 
    QWidget* buttons = new QWidget();
+   buttons->setObjectName("BOUTTONS");
 
    TabCloseButton* closeButton = new TabCloseButton(widgetBrowse, buttons);
    connect(closeButton, SIGNAL(clicked(QWidget*)), this, SLOT(removeWidget(QWidget*)));
