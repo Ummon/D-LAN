@@ -7,6 +7,7 @@ PROJECTS=(
    Common
    Common/TestsCommon
    Common/LogManager
+   Common/RemoteCoreController
    Core/FileManager
    Core/FileManager/TestsFileManager
    Core/PeerManager
