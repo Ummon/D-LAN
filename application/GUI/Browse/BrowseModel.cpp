@@ -49,7 +49,7 @@ QModelIndex BrowseModel::index(int row, int column, const QModelIndex &parent) c
    if (!this->hasIndex(row, column, parent))
        return QModelIndex();
 
-   Node* parentNode;
+   const Node* parentNode;
 
     if (!parent.isValid())
        parentNode = this->root;
@@ -82,7 +82,7 @@ QModelIndex BrowseModel::parent(const QModelIndex& index) const
 
 int BrowseModel::rowCount(const QModelIndex& parent) const
 {
-   Node* parentNode;
+   const Node* parentNode;
    if (parent.column() > 0)
        return 0;
 
@@ -377,7 +377,7 @@ void BrowseModel::Node::insertChild(const Protos::Common::Entry& entry, int pos)
    this->newNode(entry, pos);
 }
 
-bool BrowseModel::Node::hasUnloadedChildren()
+bool BrowseModel::Node::hasUnloadedChildren() const
 {
    return this->entry.type() == Protos::Common::Entry_Type_DIR && this->children.isEmpty() && !this->entry.is_empty();
 }

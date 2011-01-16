@@ -89,7 +89,7 @@ namespace GUI
          virtual Node* getChild(int row) const;
          virtual void insertChildren(const Protos::Common::Entries& entries);
          virtual void insertChild(const Protos::Common::Entry& entry, int pos);
-         virtual bool hasUnloadedChildren();
+         virtual bool hasUnloadedChildren() const;
 
          virtual int getRow() const;
          virtual QVariant getData(int column) const;
