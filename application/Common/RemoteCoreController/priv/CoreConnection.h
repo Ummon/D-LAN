@@ -47,6 +47,11 @@ namespace RCC
       CoreConnection();
       ~CoreConnection();
 
+      void connectToCore();
+      void connectToCore(const QString& address);
+      void connectToCore(const QString& address, quint16 port);
+      void connectToCore(const QString& address, quint16 port, Common::Hash password);
+
       Common::Hash getOurID() const;
       void sendChatMessage(const QString& message);
       void setCoreSettings(const Protos::GUI::CoreSettings settings);
@@ -65,10 +70,8 @@ namespace RCC
       bool isConnected();
       bool isLocal();
 
-   public slots:
-      void connectToCore();
-
    private slots:
+      void connectToCoreSlot();
       void stateChanged(QAbstractSocket::SocketState socketState);
       void dataReceived();
       void adressResolved(QHostInfo hostInfo);
@@ -84,6 +87,10 @@ namespace RCC
       void send(Common::Network::GUIMessageType type);
       void send(Common::Network::GUIMessageType type, const google::protobuf::Message& message);
       bool readMessage();
+
+      QString currentAddress;
+      quint16 currentPort;
+      Common::Hash currentPassword;
 
       QTcpSocket socket;
       Common::Hash ourID;

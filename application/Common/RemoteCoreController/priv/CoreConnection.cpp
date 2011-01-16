@@ -24,7 +24,6 @@ using namespace RCC;
 
 #include <LogManager/Builder.h>
 #include <ZeroCopyStreamQIODevice.h>
-#include <Settings.h>
 #include <ProtoHelper.h>
 #include <Constants.h>
 
@@ -48,6 +47,29 @@ CoreConnection::~CoreConnection()
       QHostInfo::abortHostLookup(this->currentHostLookupID);
 
    this->addressesToTry.clear();
+}
+
+void CoreConnection::connectToCore()
+{
+   this->connectToCore("localhost");
+}
+
+void CoreConnection::connectToCore(const QString& address)
+{
+   this->connectToCore(address, 59485);
+}
+
+void CoreConnection::connectToCore(const QString& address, quint16 port)
+{
+   this->connectToCore(address, port, Common::Hash());
+}
+
+void CoreConnection::connectToCore(const QString& address, quint16 port, Common::Hash password)
+{
+   this->currentAddress = address;
+   this->currentPort = port;
+   this->currentPassword = password;
+   this->connectToCoreSlot();
 }
 
 Common::Hash CoreConnection::getOurID() const
@@ -136,14 +158,14 @@ bool CoreConnection::isLocal()
    return this->socket.peerAddress() == QHostAddress::LocalHost || this->socket.peerAddress() == QHostAddress::LocalHostIPv6;
 }
 
-void CoreConnection::connectToCore()
+void CoreConnection::connectToCoreSlot()
 {
    this->socket.close();
 
    if (this->currentHostLookupID != -1)
       QHostInfo::abortHostLookup(this->currentHostLookupID);
 
-   this->currentHostLookupID = QHostInfo::lookupHost(SETTINGS.get<QString>("core_address"), this, SLOT(adressResolved(QHostInfo)));
+   this->currentHostLookupID = QHostInfo::lookupHost(this->currentAddress, this, SLOT(adressResolved(QHostInfo)));
 }
 
 void CoreConnection::stateChanged(QAbstractSocket::SocketState socketState)
@@ -158,7 +180,7 @@ void CoreConnection::stateChanged(QAbstractSocket::SocketState socketState)
       else
       {
          L_USER("Unable to connect to the core");
-         this->connectToCore();
+         this->connectToCoreSlot();
       }
       break;
 
@@ -216,9 +238,8 @@ void CoreConnection::connected()
    }
    else
    {
-      Common::Hash password = SETTINGS.get<Common::Hash>("password");
       Protos::GUI::Authentication authMessage;
-      authMessage.mutable_password()->set_hash(password.getData(), Common::Hash::HASH_SIZE);
+      authMessage.mutable_password()->set_hash(this->currentPassword.getData(), Common::Hash::HASH_SIZE);
       this->send(Common::Network::GUI_AUTHENTICATION, authMessage);
    }
 }
@@ -256,7 +277,7 @@ void CoreConnection::tryToConnectToTheNextAddress()
       CoreController::StartCore();
 #endif
 
-   this->socket.connectToHost(address, SETTINGS.get<quint32>("core_port"));
+   this->socket.connectToHost(address, this->currentPort);
 }
 
 void CoreConnection::send(Common::Network::GUIMessageType type)

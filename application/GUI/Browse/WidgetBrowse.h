@@ -58,6 +58,9 @@ namespace GUI
       void download();
       void openLocation();
 
+   protected:
+      void showEvent(QShowEvent* event);
+
    private:
       Ui::WidgetBrowse* ui;
 

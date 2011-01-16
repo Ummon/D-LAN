@@ -133,7 +133,7 @@ void WidgetSettings::saveGUISettings()
 
    if (previousAddress != SETTINGS.get<QString>("core_address") || !this->coreConnection->isConnected())
    {
-      this->coreConnection->connectToCore();
+      this->coreConnection->connectToCore(SETTINGS.get<QString>("core_address"), SETTINGS.get<quint32>("core_port"), SETTINGS.get<Common::Hash>("password"));
    }
 }
 

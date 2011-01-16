@@ -145,7 +145,8 @@ MainWindow::MainWindow(QWidget* parent) :
 
     connect(this->coreConnection.data(), SIGNAL(coreConnected()), this, SLOT(coreConnected()));
     connect(this->coreConnection.data(), SIGNAL(coreDisconnected()), this, SLOT(coreDisconnected()));
-    this->coreConnection->connectToCore();
+
+    this->coreConnection->connectToCore(SETTINGS.get<QString>("core_address"), SETTINGS.get<quint32>("core_port"), SETTINGS.get<Common::Hash>("password"));
 }
 
 MainWindow::~MainWindow()

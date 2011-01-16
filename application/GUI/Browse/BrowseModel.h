@@ -40,7 +40,7 @@ namespace GUI
       Q_OBJECT
 
    public:
-      BrowseModel(QSharedPointer<RCC::ICoreConnection> coreConnection, const Common::Hash& peerID);
+      BrowseModel(QSharedPointer<RCC::ICoreConnection> coreConnection, const Common::Hash& peerID, bool loadRoots = true);
       virtual ~BrowseModel();
 
       virtual QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const;

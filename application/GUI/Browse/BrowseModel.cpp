@@ -29,10 +29,10 @@ using namespace GUI;
   * Used by 'WidgetBrowse'.
   */
 
-BrowseModel::BrowseModel(QSharedPointer<RCC::ICoreConnection> coreConnection, const Common::Hash& peerID) :
+BrowseModel::BrowseModel(QSharedPointer<RCC::ICoreConnection> coreConnection, const Common::Hash& peerID, bool loadRoots) :
     coreConnection(coreConnection), peerID(peerID), root(new Node())
 {
-   if (!peerID.isNull())
+   if (loadRoots && !peerID.isNull())
       this->browse(this->peerID);
 }
 

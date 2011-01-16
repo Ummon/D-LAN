@@ -33,18 +33,44 @@ namespace RCC
    class IBrowseResult;
    class ISearchResult;
 
+   /**
+     * The main interface to control a remote core.
+     * If the
+     */
    class ICoreConnection : public QObject
    {
       Q_OBJECT
    public:
       virtual ~ICoreConnection() {};
 
+      virtual void connectToCore() = 0;
+      virtual void connectToCore(const QString& address) = 0;
+      virtual void connectToCore(const QString& address, quint16 port) = 0;
+      virtual void connectToCore(const QString& address, quint16 port, Common::Hash password) = 0;
+
       virtual Common::Hash getOurID() const = 0;
       virtual void sendChatMessage(const QString& message) = 0;
       virtual void setCoreSettings(const Protos::GUI::CoreSettings settings) = 0;
 
+      /**
+        * Get the roots folders (shared directories) of a given peer.
+        * @param peerID Can be yourself.
+        */
       virtual QSharedPointer<IBrowseResult> browse(const Common::Hash& peerID) = 0;
+
+      /**
+        * Get files and folders from one folder.
+        * @param peerID Can be yourself.
+        * @param entry A folder from the remote peer.
+        */
       virtual QSharedPointer<IBrowseResult> browse(const Common::Hash& peerID, const Protos::Common::Entry& entry) = 0;
+
+      /**
+        * Get files and folders from some folders. Plus the root folders if asked.
+        * @param peerID Can be yourself.
+        * @param entries One or more folders frome the remote peer.
+        * @param withRoots
+        */
       virtual QSharedPointer<IBrowseResult> browse(const Common::Hash& peerID, const Protos::Common::Entries& entries, bool withRoots = true) = 0;
 
       virtual QSharedPointer<ISearchResult> search(const QString& terms) = 0;
@@ -56,9 +82,6 @@ namespace RCC
 
       virtual bool isConnected() = 0;
       virtual bool isLocal() = 0;
-
-   public slots:
-      virtual void connectToCore() = 0;
 
    signals:
       void coreConnected();
