@@ -377,7 +377,6 @@ void MainWindow::addWidgetBrowse(const Common::Hash& peerID)
    QTabBar* tab = ui->mdiArea->findChild<QTabBar*>();
 
    QWidget* buttons = new QWidget();
-   buttons->setObjectName("BOUTTONS");
 
    TabCloseButton* closeButton = new TabCloseButton(widgetBrowse, buttons);
    connect(closeButton, SIGNAL(clicked(QWidget*)), this, SLOT(removeWidget(QWidget*)));

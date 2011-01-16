@@ -39,7 +39,7 @@ BrowseModel::BrowseModel(QSharedPointer<RCC::ICoreConnection> coreConnection, co
 BrowseModel::~BrowseModel()
 {
    if (!this->browseResult.isNull())
-      disconnect(this->browseResult.data(), SIGNAL(result(const google::protobuf::RepeatedPtrField<Protos::Common::Entries>&)), this, SLOT(result(const google::protobuf::RepeatedPtrField<Protos::Common::Entries>&)));
+      this->browseResult->disconnect(this);
 
    delete this->root;
 }
