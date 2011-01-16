@@ -35,7 +35,8 @@ namespace RCC
 
    /**
      * The main interface to control a remote core.
-     * If the
+     * The signal 'newState' is periodically emitted, for exemple each second. It can be emitted right after certain action, like 'setCoreSettings(..)'.
+     * See the prototype file "application/Protos/gui_protocol.proto" for more information.
      */
    class ICoreConnection : public QObject
    {
@@ -43,13 +44,31 @@ namespace RCC
    public:
       virtual ~ICoreConnection() {};
 
+      /**
+        * Connect to a local core with the default port (59485).
+        * When the connection is ready, the signal 'coreConnected' is emitted.
+        */
       virtual void connectToCore() = 0;
-      virtual void connectToCore(const QString& address) = 0;
-      virtual void connectToCore(const QString& address, quint16 port) = 0;
+
+      /**
+        * Connect to a local core with a given port.
+        * When the connection is ready, the signal 'coreConnected' is emitted.
+        */
+      virtual void connectToCore(quint16 port) = 0;
+
+      /**
+        * Connect to a remote core. Password is mendatory and should be hashed and salted, see the class 'Common::Hasher'.
+        * When the connection is ready, the signal 'coreConnected' is emitted.
+        */
       virtual void connectToCore(const QString& address, quint16 port, Common::Hash password) = 0;
 
       virtual Common::Hash getOurID() const = 0;
+
       virtual void sendChatMessage(const QString& message) = 0;
+
+      /**
+        * @remarks The signal 'newState' will be emitted right after a call.
+        */
       virtual void setCoreSettings(const Protos::GUI::CoreSettings settings) = 0;
 
       /**
@@ -73,14 +92,35 @@ namespace RCC
         */
       virtual QSharedPointer<IBrowseResult> browse(const Common::Hash& peerID, const Protos::Common::Entries& entries, bool withRoots = true) = 0;
 
+      /**
+        * Search some files and folders to the entire network, do not search in our own folders.
+        */
       virtual QSharedPointer<ISearchResult> search(const QString& terms) = 0;
 
+      /**
+        * Queue an entry to download, it can be a folder or a file.
+        * @remarks The signal 'newState' will be emitted right after a call.
+        */
       virtual void download(const Common::Hash& peerID, const Protos::Common::Entry& entry) = 0;
+
+      /**
+        * Cancel one or more download. IDs are given by the signal 'newState'.
+        * @remarks The signal 'newState' will be emitted right after a call.
+        */
       virtual void cancelDownloads(const QList<quint64>& downloadIDs) = 0;
+
+      /**
+        * @remarks The signal 'newState' will be emitted right after a call.
+        */
       virtual void moveDownloads(quint64 downloadIDRef, const QList<quint64>& downloadIDs, bool moveBefore = true) = 0;
+
+      /**
+        * Ask to emit the signal 'newState'.
+        */
       virtual void refresh() = 0;
 
       virtual bool isConnected() = 0;
+
       virtual bool isLocal() = 0;
 
    signals:
@@ -90,8 +130,6 @@ namespace RCC
       void newState(const Protos::GUI::State&);
       void newChatMessage(const Common::Hash& peerID, const QString& message);
       void newLogMessage(QSharedPointer<const LM::IEntry> entry);
-      void browseResult(const Protos::GUI::BrowseResult& browseResult);
-      void searchResult(const Protos::Common::FindResult& findResult);
    };
 }
 

@@ -51,17 +51,12 @@ CoreConnection::~CoreConnection()
 
 void CoreConnection::connectToCore()
 {
-   this->connectToCore("localhost");
+   this->connectToCore(59485);
 }
 
-void CoreConnection::connectToCore(const QString& address)
+void CoreConnection::connectToCore(quint16 port)
 {
-   this->connectToCore(address, 59485);
-}
-
-void CoreConnection::connectToCore(const QString& address, quint16 port)
-{
-   this->connectToCore(address, port, Common::Hash());
+   this->connectToCore("localhost", port, Common::Hash());
 }
 
 void CoreConnection::connectToCore(const QString& address, quint16 port, Common::Hash password)

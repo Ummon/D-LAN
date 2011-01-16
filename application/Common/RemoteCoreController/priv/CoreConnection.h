@@ -48,8 +48,7 @@ namespace RCC
       ~CoreConnection();
 
       void connectToCore();
-      void connectToCore(const QString& address);
-      void connectToCore(const QString& address, quint16 port);
+      void connectToCore(quint16 port);
       void connectToCore(const QString& address, quint16 port, Common::Hash password);
 
       Common::Hash getOurID() const;
@@ -69,6 +68,10 @@ namespace RCC
 
       bool isConnected();
       bool isLocal();
+
+   signals:
+      void browseResult(const Protos::GUI::BrowseResult& browseResult);
+      void searchResult(const Protos::Common::FindResult& findResult);
 
    private slots:
       void connectToCoreSlot();
