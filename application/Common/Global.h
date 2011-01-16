@@ -50,9 +50,14 @@ namespace Common
       static qint64 availableDiskSpace(const QString& path);
       static bool rename(const QString& existingFile, const QString& newFile);
 
-      enum DataFolderType { ROAMING, LOCAL };
+      enum DataFolderType { ROAMING = 0, LOCAL = 1 };
+   private:
+      static QString dataFolders[2];
+   public:
       class UnableToGetFolder {};
       static QString getDataFolder(DataFolderType type, bool create = true);
+      static void setDataFolder(DataFolderType type, const QString& folder);
+      static void setDataFolderToDefault(DataFolderType type);
 
       static QString getCurrenUserName();
       static QString getCurrenMachineName();

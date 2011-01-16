@@ -158,6 +158,8 @@ bool Global::rename(const QString& existingFile, const QString& newFile)
 #endif
 }
 
+QString Global::dataFolders[2];
+
 /**
   * Returns the absolute path to the aybabtu roaming data folder.
   * For example under Windows :
@@ -168,26 +170,48 @@ bool Global::rename(const QString& existingFile, const QString& newFile)
   */
 QString Global::getDataFolder(DataFolderType type, bool create)
 {
+   if (!Global::dataFolders[type].isEmpty())
+   {
+      if (create)
+         QDir::current().mkpath(Global::dataFolders[type]);
+      return Global::dataFolders[type];
+   }
+   else
+   {
 #ifdef Q_OS_WIN32
-   TCHAR dataPath[MAX_PATH];
-   if (!SUCCEEDED(SHGetFolderPath(NULL, type == ROAMING ? CSIDL_APPDATA : CSIDL_LOCAL_APPDATA, NULL, 0, dataPath)))
-      throw UnableToGetFolder();
-
-   const QString dataFolderPath = QString::fromUtf16((ushort*)dataPath);
-   const QDir dataFolder(dataFolderPath);
-
-   if (create && !dataFolder.exists(APPLICATION_FOLDER_NAME))
-      if (!dataFolder.mkdir(APPLICATION_FOLDER_NAME))
+      TCHAR dataPath[MAX_PATH];
+      if (!SUCCEEDED(SHGetFolderPath(NULL, type == ROAMING ? CSIDL_APPDATA : CSIDL_LOCAL_APPDATA, NULL, 0, dataPath)))
          throw UnableToGetFolder();
 
-   return dataFolder.absoluteFilePath(APPLICATION_FOLDER_NAME);
+      const QString dataFolderPath = QString::fromUtf16((ushort*)dataPath);
+      const QDir dataFolder(dataFolderPath);
+
+      if (create && !dataFolder.exists(APPLICATION_FOLDER_NAME))
+         if (!dataFolder.mkdir(APPLICATION_FOLDER_NAME))
+            throw UnableToGetFolder();
+
+      return dataFolder.absoluteFilePath(APPLICATION_FOLDER_NAME);
 #else
-   if (create && !QDir::home().exists(APPLICATION_FOLDER_NAME))
-      if (!QDir::home().mkdir(APPLICATION_FOLDER_NAME))
-         throw UnableToGetFolder();
+      if (create && !QDir::home().exists(APPLICATION_FOLDER_NAME))
+         if (!QDir::home().mkdir(APPLICATION_FOLDER_NAME))
+            throw UnableToGetFolder();
 
-   return QDir::home().absoluteFilePath(APPLICATION_FOLDER_NAME);
+      return QDir::home().absoluteFilePath(APPLICATION_FOLDER_NAME);
 #endif
+   }
+}
+
+/**
+  * It's possible to override the default data folder for a given type.
+  */
+void Global::setDataFolder(DataFolderType type, const QString& folder)
+{
+   Global::dataFolders[type] = folder;
+}
+
+void Global::setDataFolderToDefault(DataFolderType type)
+{
+   Global::dataFolders[type].clear();
 }
 
 QString Global::getCurrenUserName()

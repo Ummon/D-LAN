@@ -22,12 +22,27 @@
 #include <QTextStream>
 
 #include <Common/Version.h>
+#include <Common/Global.h>
 
 #include <CoreService.h>
 
+/**
+  * Arguments : [-r <roaming data folder>] [-l <local data folder>]
+  *  <roaming data folder> : Where settings are put.
+  *  <local data folder> : Where logs, download queue, and files cache are put.
+  */
 int main(int argc, char *argv[])
 {
    QTextCodec::setCodecForLocale(QTextCodec::codecForName("UTF-8"));
+
+   for (int i = 1; i < argc; i++)
+   {
+      const QString arg = QString::fromLatin1(argv[i]);
+      if (arg == "-r" && i < argc - 1 && i++)
+         Common::Global::setDataFolder(Common::Global::ROAMING, QString::fromLatin1(argv[i]));
+      else if (arg == "-l" && i < argc - 1 && i++)
+         Common::Global::setDataFolder(Common::Global::LOCAL, QString::fromLatin1(argv[i]));
+   }
 
    CoreSpace::CoreService core(argc, argv);
    return core.exec();
