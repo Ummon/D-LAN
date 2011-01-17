@@ -156,7 +156,7 @@ void RemoteConnection::refresh()
 
    // Stats.
    Protos::GUI::State_Stats* stats = state.mutable_stats();
-   stats->set_cache_status(Protos::GUI::State_Stats_CacheStatus_UP_TO_DATE); // TODO : not implemented.
+   stats->set_cache_status(static_cast<Protos::GUI::State_Stats_CacheStatus>(this->fileManager->getCacheStatus())); // Warning: IFileManager::CacheStatus and Protos::GUI::State_Stats_CacheStatus must be compatible.
    stats->set_progress(100); // TODO : not implemented.
    stats->set_download_rate(this->downloadManager->getDownloadRate());
    stats->set_upload_rate(this->uploadManager->getUploadRate());

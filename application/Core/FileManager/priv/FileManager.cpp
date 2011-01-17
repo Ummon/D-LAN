@@ -293,6 +293,17 @@ quint64 FileManager::getAmount()
    return this->cache.getAmount();
 }
 
+FileManager::CacheStatus FileManager::getCacheStatus() const
+{
+   if (this->fileUpdater.isScanning())
+      return SCANNING_IN_PROGRESS;
+
+   if (this->fileUpdater.isHashing())
+      return HASHING_IN_PROGRESS;
+
+   return UP_TO_DATE;
+}
+
 Directory* FileManager::getFittestDirectory(const QString& path)
 {
    return this->cache.getFittestDirectory(path);

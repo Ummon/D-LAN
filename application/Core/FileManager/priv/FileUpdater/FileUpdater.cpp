@@ -175,6 +175,18 @@ void FileUpdater::prioritizeAFileToHash(File* file)
    }
 }
 
+bool FileUpdater::isScanning() const
+{
+   QMutexLocker scanningLocker(&this->scanningMutex);
+   return this->currentScanningDir != 0;
+}
+
+bool FileUpdater::isHashing() const
+{
+   QMutexLocker locker(&this->mutex);
+   return !this->filesWithoutHashes.isEmpty() || !this->filesWithoutHashesPrioritized.isEmpty();
+}
+
 void FileUpdater::run()
 {
    this->timerScanUnwatchable.start();

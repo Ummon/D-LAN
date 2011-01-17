@@ -46,16 +46,12 @@ StatusBar::~StatusBar()
 
 void StatusBar::coreConnected()
 {
-   QString str("Connected");
-   if (!this->coreConnection->isLocal())
-      str.append(" to ").append(SETTINGS.get<QString>("core_address"));
-
-   this->ui->lblCoreStatus->setText(str);
+   this->updateCoreStatus();
 }
 
 void StatusBar::coreDisconnected()
 {
-   this->ui->lblCoreStatus->setText("Disconnected");
+   this->updateCoreStatus();
 }
 
 void StatusBar::newState(const Protos::GUI::State& state)
@@ -69,10 +65,45 @@ void StatusBar::newState(const Protos::GUI::State& state)
    totalSharing += state.myself().sharing_amount();
 
    this->ui->lblTotalSharing->setText(Common::Global::formatByteSize(totalSharing));
+
+   this->updateCoreStatus(state.stats().cache_status());
 }
 
 void StatusBar::showAbout()
 {
    DialogAbout about(this);
    about.exec();
+}
+
+void StatusBar::updateCoreStatus(Protos::GUI::State_Stats_CacheStatus status)
+{
+   QString statusMess("Core: ");
+
+   if (this->coreConnection->isConnected())
+   {
+      statusMess.append("connected");
+      if (!this->coreConnection->isLocal())
+         statusMess.append(" to ").append(SETTINGS.get<QString>("core_address"));
+
+      switch (status)
+      {
+      case Protos::GUI::State_Stats_CacheStatus_SCANNING_IN_PROGRESS:
+         statusMess.append(" - scanning in progress..");
+         break;
+      case Protos::GUI::State_Stats_CacheStatus_HASHING_IN_PROGRESS:
+         statusMess.append(" - hashing in progress..");
+         break;
+      case Protos::GUI::State_Stats_CacheStatus_UP_TO_DATE:
+         statusMess.append(" - cache is up to date");
+         break;
+      case Protos::GUI::State_Stats_CacheStatus_UNKNOWN: // Nothing to display.
+      default:;
+      }
+   }
+   else
+   {
+      statusMess.append("disconnected");
+   }
+
+   this->ui->lblCoreStatus->setText(statusMess);
 }

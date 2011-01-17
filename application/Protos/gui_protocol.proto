@@ -60,6 +60,7 @@ message State {
          SCANNING_IN_PROGRESS = 0; // 1st pass : grab all file/dir names and their size and index it.
          HASHING_IN_PROGRESS = 1;
          UP_TO_DATE = 2;
+         UNKNOWN = 3;
       }
       required CacheStatus cache_status = 1;
       required uint32 progress = 2; // 0 to 100

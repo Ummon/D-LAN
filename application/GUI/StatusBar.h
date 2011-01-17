@@ -47,6 +47,8 @@ namespace GUI
       void showAbout();
 
    private:
+      void updateCoreStatus(Protos::GUI::State_Stats_CacheStatus status = Protos::GUI::State_Stats_CacheStatus_UNKNOWN);
+
       Ui::StatusBar *ui;
 
       QSharedPointer<RCC::ICoreConnection> coreConnection;
