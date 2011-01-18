@@ -58,16 +58,7 @@ namespace FM
       const QString subDirectory;
    };
 
-   // TODO : add some additionnals informations
-   class SubDirectoriesWithDifferentRightsExistsException
-   {
-   public:
-      SubDirectoriesWithDifferentRightsExistsException(const QString& super, const QStringList& subs)
-         : superDirectory(super), subDirectories(subs) {}
-      virtual ~SubDirectoriesWithDifferentRightsExistsException() throw() {}
-      const QString superDirectory;
-      const QStringList subDirectories;
-   };
+   class NoWriteableDirectoryException{};
 
    class IOErrorException {};
 
@@ -82,8 +73,6 @@ namespace FM
    class ChunkDeletedException {};
 
    class ChunkNotCompletedException {};
-
-   class NoReadWriteSharedDirectoryException {};
 
    class InsufficientStorageSpaceException {};
 

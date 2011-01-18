@@ -31,6 +31,7 @@
 
 #include <Browse/BrowseModel.h>
 #include <PeerList/PeerListModel.h>
+#include <Settings/DirListModel.h>
 
 namespace GUI
 {
@@ -40,7 +41,7 @@ namespace GUI
       static const int NB_SIGNAL_PROGRESS; // The number of signal progress sent during a search.
       Q_OBJECT
    public:
-      SearchModel(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel);
+      SearchModel(QSharedPointer<RCC::ICoreConnection> coreConnection, const PeerListModel& peerListModel, const DirListModel& sharedDirsModel);
       ~SearchModel();
 
       Common::Hash getPeerID(const QModelIndex& index);
@@ -73,7 +74,7 @@ namespace GUI
       int insertNode(const Protos::Common::FindResult_EntryLevel& entry, const Common::Hash& peerID, int currentIndex);
       void setMaxLevel(int newLevel);
 
-      PeerListModel& peerListModel;
+      const PeerListModel& peerListModel;
 
       QSharedPointer<RCC::ISearchResult> searchResult;
 

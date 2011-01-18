@@ -16,5 +16,7 @@
         <file>ressources/refresh-down.png</file>
         <file>ressources/refresh-hover.png</file>
         <file>ressources/aybabtu_icon.png</file>
+        <file>ressources/settings.png</file>
+        <file>ressources/chat.png</file>
     </qresource>
 </RCC>

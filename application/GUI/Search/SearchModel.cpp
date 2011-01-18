@@ -30,8 +30,8 @@ const int SearchModel::NB_SIGNAL_PROGRESS(50);
   * The directories from the result can be browsed, thus this model inherits from the 'BrowseModel'.
   */
 
-SearchModel::SearchModel(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel)
-   : BrowseModel(coreConnection, Common::Hash()), peerListModel(peerListModel), maxLevel(0), nbFolders(0), nbFiles(0), currentProgress(0)
+SearchModel::SearchModel(QSharedPointer<RCC::ICoreConnection> coreConnection, const PeerListModel& peerListModel, const DirListModel& sharedDirsModel)
+   : BrowseModel(coreConnection, sharedDirsModel, Common::Hash()), peerListModel(peerListModel), maxLevel(0), nbFolders(0), nbFiles(0), currentProgress(0)
 {
    delete this->root;
    this->root = new SearchNode();

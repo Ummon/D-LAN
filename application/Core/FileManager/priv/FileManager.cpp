@@ -82,32 +82,24 @@ FileManager::~FileManager()
 
 /**
   * @exception SuperDirectoryExistsException Thrown when a super shared directory already exists.
-  * @exception SubDirectoriesWithDifferentRightsExistsException Thrown when one or more sub directory already exists with different rights.
-  * @exception SuperDirectoryExistsException Thrown when a super directory already exists regardless of the rights.
   */
-void FileManager::setSharedDirsReadOnly(const QStringList& dirs)
+void FileManager::setSharedDirs(const QStringList& dirs)
 {
-   this->cache.setSharedDirs(dirs, SharedDirectory::READ_ONLY);
+   this->cache.setSharedDirs(dirs);
 }
 
-/**
-  * @exception SuperDirectoryExistsException Thrown when a super shared directory already exists.
-  * @exception SubDirectoriesWithDifferentRightsExistsException Thrown when one or more sub directory already exists with different rights.
-  * @exception SuperDirectoryExistsException Thrown when a super directory already exists regardless of the rights.
-  */
-void FileManager::setSharedDirsReadWrite(const QStringList& dirs)
+QList<Common::SharedDir> FileManager::getSharedDirs() const
 {
-   this->cache.setSharedDirs(dirs, SharedDirectory::READ_WRITE);
+   return this->cache.getSharedDirs();
 }
 
-QStringList FileManager::getSharedDirsReadOnly()
+QString FileManager::getSharedDir(const Common::Hash& ID) const
 {
-   return this->cache.getSharedDirs(SharedDirectory::READ_ONLY);
-}
-
-QStringList FileManager::getSharedDirsReadWrite()
-{
-   return this->cache.getSharedDirs(SharedDirectory::READ_WRITE);
+   SharedDirectory* dir = this->cache.getSharedDirectory(ID);
+   if (dir)
+      return dir->getFullPath();
+   else
+      return QString();
 }
 
 QSharedPointer<IChunk> FileManager::getChunk(const Common::Hash& hash) const
@@ -115,7 +107,7 @@ QSharedPointer<IChunk> FileManager::getChunk(const Common::Hash& hash) const
    return this->chunks.value(hash);
 }
 
-QList< QSharedPointer<IChunk> > FileManager::getAllChunks(const Protos::Common::Entry& entry, const Common::Hash& hash) const
+QList< QSharedPointer<IChunk> > FileManager::getAllChunks(const Protos::Common::Entry& localEntry, const Common::Hash& hash) const
 {   
    QList< QSharedPointer<IChunk> > ret;
    QList< QSharedPointer<Chunk> > chunks = this->chunks.values(hash);
@@ -125,7 +117,7 @@ QList< QSharedPointer<IChunk> > FileManager::getAllChunks(const Protos::Common::
       for (QListIterator< QSharedPointer<Chunk> > i(chunks); i.hasNext();)
       {
          QSharedPointer<Chunk> chunk = i.next();
-         if (chunk->matchesEntry(entry))
+         if (chunk->matchesEntry(localEntry))
          {
             for (QListIterator< QSharedPointer<Chunk> > j(chunk->getOtherChunks()); j.hasNext();)
                ret << j.next();
@@ -137,9 +129,9 @@ QList< QSharedPointer<IChunk> > FileManager::getAllChunks(const Protos::Common::
    return ret;
 }
 
-QList< QSharedPointer<IChunk> > FileManager::newFile(const Protos::Common::Entry& remoteEntry)
+QList< QSharedPointer<IChunk> > FileManager::newFile(Protos::Common::Entry& entry)
 {
-   return this->cache.newFile(remoteEntry);
+   return this->cache.newFile(entry);
 }
 
 QSharedPointer<IGetHashesResult> FileManager::getHashes(const Protos::Common::Entry& file)
@@ -152,9 +144,9 @@ Protos::Common::Entries FileManager::getEntries(const Protos::Common::Entry& dir
    return this->cache.getEntries(dir);
 }
 
-Protos::Common::Entries FileManager::getEntries(bool setBasePath)
+Protos::Common::Entries FileManager::getEntries()
 {
-   return this->cache.getEntries(setBasePath);
+   return this->cache.getEntries();
 }
 
 /**

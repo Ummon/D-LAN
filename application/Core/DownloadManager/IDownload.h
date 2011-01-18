@@ -87,7 +87,7 @@ namespace DM
         * The entry can be remote or local, once the download is completed (see 'getStatus')
         * the remote becomes local and the path corresponds to the local file.
         */
-      virtual const Protos::Common::Entry& getEntry() = 0;
+      virtual const Protos::Common::Entry& getLocalEntry() const = 0;
 
       /**
         * Stop and delete the download.

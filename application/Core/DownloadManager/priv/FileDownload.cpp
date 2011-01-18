@@ -37,21 +37,23 @@ FileDownload::FileDownload(
    OccupiedPeers& occupiedPeersAskingForHashes,
    OccupiedPeers& occupiedPeersDownloadingChunk,
    Common::Hash peerSourceID,
-   const Protos::Common::Entry& entry,
+   const Protos::Common::Entry& remoteEntry,
+   const Protos::Common::Entry& localEntry,
    Common::TransferRateCalculator& transferRateCalculator,
    bool complete
 )
-   : Download(fileManager, peerManager, peerSourceID, entry),
-   NB_CHUNK(this->entry.size() / SETTINGS.get<quint32>("chunk_size") + (this->entry.size() % SETTINGS.get<quint32>("chunk_size") == 0 ? 0 : 1)),
+   : Download(fileManager, peerManager, peerSourceID, remoteEntry, localEntry),
+   NB_CHUNK(this->remoteEntry.size() / SETTINGS.get<quint32>("chunk_size") + (this->remoteEntry.size() % SETTINGS.get<quint32>("chunk_size") == 0 ? 0 : 1)),
    occupiedPeersAskingForHashes(occupiedPeersAskingForHashes),
    occupiedPeersDownloadingChunk(occupiedPeersDownloadingChunk),
    nbHashesKnown(0),
    fileCreated(false),
    transferRateCalculator(transferRateCalculator)
 {
-   L_DEBU(QString("New FileDownload : source = %1, entry : \n%2").
+   L_DEBU(QString("New FileDownload : source = %1, remoteEntry : \n%2\nlocalEntry : \n%3").
       arg(this->peerSourceID.toStr()).
-      arg(Common::ProtoHelper::getDebugStr(this->entry))
+      arg(Common::ProtoHelper::getDebugStr(this->remoteEntry)).
+      arg(Common::ProtoHelper::getDebugStr(this->localEntry))
    );
 
    if (complete)
@@ -62,9 +64,9 @@ FileDownload::FileDownload(
    connect(&this->timer, SIGNAL(timeout()), this, SLOT(retreiveHashes()));
 
    // We create a ChunkDownload for each known hash in the entry.
-   for (int i = 0; i < entry.chunk_size(); i++)
+   for (int i = 0; i < this->remoteEntry.chunk_size(); i++)
    {
-      Common::Hash chunkHash(entry.chunk(i).hash().data());
+      Common::Hash chunkHash(this->remoteEntry.chunk(i).hash().data());
       QSharedPointer<ChunkDownload> chunkDownload = QSharedPointer<ChunkDownload>(new ChunkDownload(this->peerManager, this->occupiedPeersDownloadingChunk, chunkHash, this->transferRateCalculator));
 
       this->chunkDownloads << chunkDownload;
@@ -89,13 +91,13 @@ FileDownload::~FileDownload()
 /**
   * Add the known hashes.
   */
-void FileDownload::populateEntry(Protos::Queue::Queue_Entry* entry) const
+void FileDownload::populateRemoteEntry(Protos::Queue::Queue_Entry* entry) const
 {
-   Download::populateEntry(entry);
+   Download::populateRemoteEntry(entry);
 
-   for (int i = entry->entry().chunk_size(); i < this->chunkDownloads.size(); i++)
+   for (int i = entry->remote_entry().chunk_size(); i < this->chunkDownloads.size(); i++)
    {
-      Protos::Common::Hash* hash = entry->mutable_entry()->add_chunk();
+      Protos::Common::Hash* hash = entry->mutable_remote_entry()->add_chunk();
       hash->set_hash(this->chunkDownloads[i]->getHash().getData(), Common::Hash::HASH_SIZE);
    }
 }
@@ -124,7 +126,7 @@ int FileDownload::getProgress() const
       knownBytes += i.next()->getDownloadedBytes();
    }
 
-   return 100LL * knownBytes / this->entry.size();
+   return 100LL * knownBytes / this->remoteEntry.size();
 }
 
 QSet<Common::Hash> FileDownload::getPeers() const
@@ -184,15 +186,11 @@ QSharedPointer<ChunkDownload> FileDownload::getAChunkToDownload()
       {
          // First, try to get the chunks from an existing file, it's useful when a download is taken from the saved queue.
          if (!this->chunkDownloads.isEmpty())
-            this->chunksWithoutDownload = this->fileManager->getAllChunks(this->entry, this->chunkDownloads.first()->getHash());
+            this->chunksWithoutDownload = this->fileManager->getAllChunks(this->localEntry, this->chunkDownloads.first()->getHash());
 
          // If the file doesn't exist we create it.
          if (this->chunksWithoutDownload.isEmpty())
-            this->chunksWithoutDownload = this->fileManager->newFile(this->entry);
-
-         // Set the local base path.
-         if (!this->chunksWithoutDownload.isEmpty())
-            Common::ProtoHelper::setStr(*this->entry.mutable_shared_dir(), &Protos::Common::SharedDir::set_base_path, this->chunksWithoutDownload.first()->getBasePath());
+            this->chunksWithoutDownload = this->fileManager->newFile(this->localEntry);
 
          for (int i = 0; !this->chunksWithoutDownload.isEmpty() && i < this->chunkDownloads.size(); i++)
             this->chunkDownloads[i]->setChunk(this->chunksWithoutDownload.takeFirst());
@@ -210,19 +208,19 @@ QSharedPointer<ChunkDownload> FileDownload::getAChunkToDownload()
       return chunkDownload;
 
    }
-   catch(FM::NoReadWriteSharedDirectoryException&)
+   catch(FM::NoWriteableDirectoryException&)
    {
-      L_DEBU(QString("There is no shared directory with writting rights for this download : %1").arg(Common::ProtoHelper::getStr(this->entry, &Protos::Common::Entry::name)));
+      L_DEBU(QString("There is no shared directory with writting rights for this download : %1").arg(Common::ProtoHelper::getStr(this->remoteEntry, &Protos::Common::Entry::name)));
       this->status = NO_SHARED_DIRECTORY_TO_WRITE;
    }
    catch(FM::InsufficientStorageSpaceException&)
    {
-      L_DEBU(QString("There is no enough space storage available for this download : %1").arg(Common::ProtoHelper::getStr(this->entry, &Protos::Common::Entry::name)));
+      L_DEBU(QString("There is no enough space storage available for this download : %1").arg(Common::ProtoHelper::getStr(this->remoteEntry, &Protos::Common::Entry::name)));
       this->status = NO_ENOUGH_FREE_SPACE;
    }
    catch(FM::UnableToCreateNewFileException&)
    {
-      L_DEBU(QString("Unable to create the file, download : %1").arg(Common::ProtoHelper::getStr(this->entry, &Protos::Common::Entry::name)));
+      L_DEBU(QString("Unable to create the file, download : %1").arg(Common::ProtoHelper::getStr(this->remoteEntry, &Protos::Common::Entry::name)));
       this->status = UNABLE_TO_CREATE_THE_FILE;
    }
 
@@ -258,7 +256,7 @@ bool FileDownload::retreiveHashes()
 
    this->status = INITIALIZING;
 
-   this->getHashesResult = this->peerSource->getHashes(this->entry);
+   this->getHashesResult = this->peerSource->getHashes(this->remoteEntry);
    connect(this->getHashesResult.data(), SIGNAL(result(const Protos::Core::GetHashesResult&)), this, SLOT(result(const Protos::Core::GetHashesResult&)));
    connect(this->getHashesResult.data(), SIGNAL(nextHash(const Common::Hash&)), this, SLOT(nextHash(const Common::Hash&)));
    connect(this->getHashesResult.data(), SIGNAL(timeout()), this, SLOT(getHashTimeout()));
@@ -323,7 +321,7 @@ void FileDownload::nextHash(const Common::Hash& hash)
       this->chunkDownloads << chunkDownload;
       this->connectChunkDownloadSignals(chunkDownload);
       chunkDownload->setPeerSource(this->peerSource); // May start a download.
-      this->entry.add_chunk()->set_hash(hash.getData(), Common::Hash::HASH_SIZE); // Used during the saving of the queue, see Download::populateEntry(..).
+      this->remoteEntry.add_chunk()->set_hash(hash.getData(), Common::Hash::HASH_SIZE); // Used during the saving of the queue, see Download::populateEntry(..).
       emit newHashKnown();
    }
 }
@@ -391,11 +389,10 @@ void FileDownload::updateStatus()
 
    if (this->status == COMPLETE)
    {
-      // this->chunkDownloads.first()->getChunk()->populateEntry(&this->entry); // To remove the ".unfinished".
       L_USER(QString("File completed : %1%2%3")
-         .arg(Common::ProtoHelper::getStr(this->entry.shared_dir(), &Protos::Common::SharedDir::base_path))
-         .arg(Common::ProtoHelper::getStr(this->entry, &Protos::Common::Entry::path))
-         .arg(Common::ProtoHelper::getStr(this->entry, &Protos::Common::Entry::name))
+         .arg(this->fileManager->getSharedDir(this->localEntry.shared_dir().id().hash().data()))
+         .arg(Common::ProtoHelper::getStr(this->localEntry, &Protos::Common::Entry::path))
+         .arg(Common::ProtoHelper::getStr(this->localEntry, &Protos::Common::Entry::name))
       );
    }
 }

@@ -648,8 +648,6 @@ void File::createPhysicalFile()
 {
    if (!Global::isFileUnfinished(this->name))
       L_ERRO(QString("File::createPhysicalFile(..) : Cannot create a file (%1) without the 'unfinished' suffix").arg(this->getPath()));
-   else if (static_cast<SharedDirectory*>(this->getRoot())->getRights() == SharedDirectory::READ_ONLY)
-      L_ERRO(QString("File::createPhysicalFile(..) : Cannot create a file (%1) in a read only shared directory (%2)").arg(this->getPath()).arg(static_cast<SharedDirectory*>(this->getRoot())->getFullPath()));
    else
    {
       QFile file(this->getFullPath());

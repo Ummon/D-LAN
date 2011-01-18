@@ -27,6 +27,7 @@
 #include <Common/RemoteCoreController/ICoreConnection.h>
 
 #include <Search/SearchModel.h>
+#include <Settings/DirListModel.h>
 
 namespace Ui {
    class WidgetSearch;
@@ -53,7 +54,7 @@ namespace GUI
    {
       Q_OBJECT
    public:
-      explicit WidgetSearch(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel, const QString& terms, QWidget *parent = 0);
+      explicit WidgetSearch(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel, const DirListModel& sharedDirsModel, const QString& terms, QWidget *parent = 0);
       ~WidgetSearch();
 
    private slots:

@@ -32,16 +32,10 @@ namespace FM
    class SharedDirectory : public Directory
    {
    public:
-      enum Rights {
-         READ_ONLY,
-         READ_WRITE
-      };
-
-      SharedDirectory(Cache* cache, const QString& path, Rights rights, const Common::Hash& id);
-      SharedDirectory(Cache* cache, const QString& path, Rights rights);
+      SharedDirectory(Cache* cache, const QString& path, const Common::Hash& id);
+      SharedDirectory(Cache* cache, const QString& path);
 
       void populateEntry(Protos::Common::Entry* entry, bool setSharedDir = false) const;
-      void populateEntryBasePath(Protos::Common::Entry* entry) const;
 
    private:
       void init();
@@ -71,13 +65,10 @@ namespace FM
         */
       QString getFullPath() const;
 
-      Rights getRights() const;
-
       Common::Hash getId() const;
 
    private:
       QString path;
-      Rights rights;
       Common::Hash id;
    };
 }

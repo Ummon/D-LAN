@@ -23,14 +23,9 @@ message Hashes {
    }
    
    message SharedDir {
-      enum Type {
-         READ = 0;
-         READ_WRITE = 1;
-      }
       required Common.Hash id = 1;
-      required Type type = 2;
-      required string path = 3;
-      required Dir root = 4;
+      required string path = 2;
+      required Dir root = 3;
    }
 
    message Dir {

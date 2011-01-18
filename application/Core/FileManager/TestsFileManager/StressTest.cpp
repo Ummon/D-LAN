@@ -116,8 +116,7 @@ void FilesAndDirs::createADir()
    PROB_100(30);
 
    QStringList dirs;
-   dirs.append(this->stressTest->getSharedDirsReadOnly());
-   dirs.append(this->stressTest->getSharedDirsReadWrite());
+   dirs.append(this->stressTest->getSharedDirs());
    dirs.append(this->directories);
 
    if (dirs.empty())
@@ -155,8 +154,7 @@ void FilesAndDirs::createAFile()
    PROB_100(60);
 
    QStringList dirs;
-   dirs.append(this->stressTest->getSharedDirsReadOnly());
-   dirs.append(this->stressTest->getSharedDirsReadWrite());
+   dirs.append(this->stressTest->getSharedDirs());
    dirs.append(this->directories);
 
    if (dirs.empty())
@@ -266,14 +264,9 @@ StressTest::StressTest()
    }
 }
 
-QStringList StressTest::getSharedDirsReadOnly() const
+QStringList StressTest::getSharedDirs() const
 {
-   return this->sharedDirsReadOnly;
-}
-
-QStringList StressTest::getSharedDirsReadWrite() const
-{
-   return this->sharedDirsReadWrite;
+   return this->sharedDirs;
 }
 
 void (StressTest::*StressTest::actions[])() =
@@ -297,7 +290,7 @@ void StressTest::createASharedDir()
    PROB_100(10);
 
    // No more than 30 shared directory
-   if (this->sharedDirsReadOnly.size() + this->sharedDirsReadWrite.size() >= 30)
+   if (this->sharedDirs.size() >= 30)
       return;
 
    qDebug() << "===== StressTest::createASharedDir() =====";
@@ -307,16 +300,8 @@ void StressTest::createASharedDir()
 
    try
    {
-      if (this->randGen.percentRand() <= 75)
-      {
-         this->sharedDirsReadOnly << ROOT_DIR.dirName().append("/").append(name);
-         this->fileManager->setSharedDirsReadOnly(this->sharedDirsReadOnly);
-      }
-      else
-      {
-         this->sharedDirsReadWrite << ROOT_DIR.dirName().append("/").append(name);;
-         this->fileManager->setSharedDirsReadWrite(this->sharedDirsReadWrite);
-      }
+      this->sharedDirs << ROOT_DIR.dirName().append("/").append(name);
+      this->fileManager->setSharedDirs(this->sharedDirs);
    }
    catch (DirsNotFoundException& e)
    {
@@ -331,24 +316,12 @@ void StressTest::removeASharedDir()
    qDebug() << "===== StressTest::removeASharedDir() =====";
    try
    {
-      if (this->randGen.percentRand() <= 75)
-      {
-         if (this->sharedDirsReadOnly.isEmpty())
-            return;
-         int i = this->randGen.rand(this->sharedDirsReadOnly.size()-1);
-         this->dirsToDelete << this->sharedDirsReadOnly[i];
-         this->sharedDirsReadOnly.removeAt(i);
-         this->fileManager->setSharedDirsReadOnly(this->sharedDirsReadOnly);
-      }
-      else
-      {
-         if (this->sharedDirsReadWrite.isEmpty())
-            return;
-         int i = this->randGen.rand(this->sharedDirsReadWrite.size()-1);
-         this->dirsToDelete << this->sharedDirsReadWrite[i];
-         this->sharedDirsReadWrite.removeAt(i);
-         this->fileManager->setSharedDirsReadWrite(this->sharedDirsReadWrite);
-      }
+      if (this->sharedDirs.isEmpty())
+         return;
+      int i = this->randGen.rand(this->sharedDirs.size()-1);
+      this->dirsToDelete << this->sharedDirs[i];
+      this->sharedDirs.removeAt(i);
+      this->fileManager->setSharedDirs(this->sharedDirs);
    }
    catch (DirsNotFoundException& e)
    {
@@ -478,9 +451,9 @@ void StressTest::newFile()
          downloader->start();
       }
    }
-   catch(NoReadWriteSharedDirectoryException&)
+   catch(NoWriteableDirectoryException&)
    {
-      qDebug() << "NoReadWriteSharedDirectoryException";
+      qDebug() << "NoWriteableDirectoryException";
    }
    catch(InsufficientStorageSpaceException&)
    {

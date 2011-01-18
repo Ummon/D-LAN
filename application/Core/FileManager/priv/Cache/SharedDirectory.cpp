@@ -32,17 +32,15 @@ using namespace FM;
   * Create from a saved shared directory (file cache).
   * If a existing shared directory is a sub directory then it will be merged.
   * @exception SuperDirectoryExistsException Thrown when a super shared directory already exists.
-  * @exception SubDirectoriesWithDifferentRightsExistsException Thrown when one or more sub directory already exists with different rights.
-  * @exception SuperDirectoryExistsException Thrown when a super directory already exists regardless of the rights.
   */
-SharedDirectory::SharedDirectory(Cache* cache, const QString& path, Rights rights)
-   : Directory(cache, QDir(path).dirName()), path(QDir::cleanPath(path)), rights(rights), id(Common::Hash::rand())
+SharedDirectory::SharedDirectory(Cache* cache, const QString& path)
+   : Directory(cache, QDir(path).dirName()), path(QDir::cleanPath(path)), id(Common::Hash::rand())
 {
    this->init();
 }
 
-SharedDirectory::SharedDirectory(Cache* cache, const QString& path, Rights rights, const Common::Hash& id)
-   : Directory(cache, QDir(path).dirName()), path(QDir::cleanPath(path)), rights(rights), id(id)
+SharedDirectory::SharedDirectory(Cache* cache, const QString& path, const Common::Hash& id)
+   : Directory(cache, QDir(path).dirName()), path(QDir::cleanPath(path)), id(id)
 {
    this->init();
 }
@@ -51,12 +49,6 @@ void SharedDirectory::populateEntry(Protos::Common::Entry* entry, bool setShared
 {
    Directory::populateEntry(entry, setSharedDir);
    entry->mutable_shared_dir()->mutable_id()->set_hash(static_cast<SharedDirectory*>(this->getRoot())->getId().getData(), Common::Hash::HASH_SIZE);
-}
-
-void SharedDirectory::populateEntryBasePath(Protos::Common::Entry* entry) const
-{
-   Protos::Common::SharedDir* dir = entry->mutable_shared_dir();
-   Common::ProtoHelper::setStr(*dir, &Protos::Common::SharedDir::set_base_path, this->getFullPath());
 }
 
 void SharedDirectory::init()
@@ -72,19 +64,8 @@ void SharedDirectory::init()
    if (SharedDirectory* dir = this->cache->getSuperSharedDirectory(this->path))
       throw SuperDirectoryExistsException(dir->getFullPath(), this->getFullPath());
 
-   // Gets the sub directories and checks the rights matches.
-   QList<SharedDirectory*> subDirs = this->cache->getSubSharedDirectories(this->path);
-   foreach (SharedDirectory* subDir, subDirs)
-   {
-      QStringList subs;
-      if (subDir->rights != this->rights)
-         subs << subDir->getFullPath();
-      if (!subs.isEmpty())
-         throw SubDirectoriesWithDifferentRightsExistsException(this->path, subs);
-   }
-
    // Merges the sub-directories of each directory found.
-   foreach (SharedDirectory* subDir, subDirs)
+   foreach (SharedDirectory* subDir, this->cache->getSubSharedDirectories(this->path))
    {
       // Create the missing directories.
       const QStringList& parentFolders = this->getFullPath().split('/', QString::SkipEmptyParts);
@@ -121,11 +102,6 @@ QString SharedDirectory::getPath() const
 QString SharedDirectory::getFullPath() const
 {
    return this->path;
-}
-
-SharedDirectory::Rights SharedDirectory::getRights() const
-{
-   return this->rights;
 }
 
 Common::Hash SharedDirectory::getId() const

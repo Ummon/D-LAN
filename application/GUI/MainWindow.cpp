@@ -299,7 +299,7 @@ void MainWindow::removeMdiSubWindow(QMdiSubWindow* mdiSubWindow)
 
 void MainWindow::addWidgetSettings()
 {
-   this->widgetSettings = new WidgetSettings(this->coreConnection, this);
+   this->widgetSettings = new WidgetSettings(this->coreConnection, this->sharedDirsModel, this);
    this->ui->mdiArea->addSubWindow(this->widgetSettings, Qt::CustomizeWindowHint);
    this->widgetSettings->setWindowState(Qt::WindowMaximized);
 }
@@ -308,7 +308,6 @@ void MainWindow::addWidgetChat()
 {
    this->widgetChat = new WidgetChat(this->coreConnection, this->peerListModel, this);
    this->ui->mdiArea->addSubWindow(this->widgetChat, Qt::CustomizeWindowHint);
-   //this->mdiChat->setAttribute(Qt::WA_DeleteOnClose);
    this->widgetChat->setWindowState(Qt::WindowMaximized);
 }
 
@@ -323,9 +322,8 @@ void MainWindow::removeWidgetChat()
 
 void MainWindow::addWidgetDownloads()
 {
-   this->widgetDownloads = new WidgetDownloads(this->coreConnection, this->peerListModel, this);
+   this->widgetDownloads = new WidgetDownloads(this->coreConnection, this->peerListModel, this->sharedDirsModel, this);
    this->ui->mdiArea->addSubWindow(this->widgetDownloads, Qt::CustomizeWindowHint);
-   //this->mdiChat->setAttribute(Qt::WA_DeleteOnClose);
    this->widgetDownloads->setWindowState(Qt::WindowMaximized);
 }
 
@@ -342,7 +340,6 @@ void MainWindow::addWidgetUploads()
 {
    this->widgetUploads = new WidgetUploads(this->coreConnection, this->peerListModel, this);
    this->ui->mdiArea->addSubWindow(this->widgetUploads, Qt::CustomizeWindowHint);
-   //this->mdiChat->setAttribute(Qt::WA_DeleteOnClose);
    this->widgetUploads->setWindowState(Qt::WindowMaximized);
 }
 
@@ -368,7 +365,7 @@ void MainWindow::addWidgetBrowse(const Common::Hash& peerID)
       }
    }
 
-   WidgetBrowse* widgetBrowse = new WidgetBrowse(this->coreConnection, this->peerListModel, peerID, this);
+   WidgetBrowse* widgetBrowse = new WidgetBrowse(this->coreConnection, this->peerListModel, this->sharedDirsModel, peerID, this);
    this->ui->mdiArea->addSubWindow(widgetBrowse, Qt::CustomizeWindowHint);
    //this->mdiChat->setAttribute(Qt::WA_DeleteOnClose);
    widgetBrowse->setWindowState(Qt::WindowMaximized);
@@ -394,9 +391,8 @@ void MainWindow::addWidgetBrowse(const Common::Hash& peerID)
 
 void MainWindow::addWidgetSearch(const QString& term)
 {
-   WidgetSearch* widgetSearch = new WidgetSearch(this->coreConnection, this->peerListModel, term, this);
+   WidgetSearch* widgetSearch = new WidgetSearch(this->coreConnection, this->peerListModel, this->sharedDirsModel, term, this);
    this->ui->mdiArea->addSubWindow(widgetSearch, Qt::CustomizeWindowHint);
-   //this->mdiChat->setAttribute(Qt::WA_DeleteOnClose);
    widgetSearch->setWindowState(Qt::WindowMaximized);
    this->widgetsSearch << widgetSearch;
 

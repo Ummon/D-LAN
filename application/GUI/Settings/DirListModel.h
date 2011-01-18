@@ -23,22 +23,26 @@
 #include <QStringList>
 #include <QAbstractListModel>
 
+#include <Common/SharedDir.h>
+
 namespace GUI
 {
    class DirListModel : public QAbstractListModel
    {
    public:
-      void setDirs(const QStringList& dirs);
-      void addDir(const QString& dir);
+      void setDirs(const QList<Common::SharedDir>& dirs);
+      void addDir(const Common::SharedDir& dir);
       void addDirs(const QStringList& dirs);
       void rmDir(int row);
-      const QStringList& getDirs() const;
+
+      const QList<Common::SharedDir>& getDirs() const;
+      Common::SharedDir getDir(const Common::Hash& ID) const;
 
       int rowCount(const QModelIndex& parent = QModelIndex()) const;
       QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const;
 
    private:
-      QStringList dirs;
+      QList<Common::SharedDir> dirs;
    };
 }
 

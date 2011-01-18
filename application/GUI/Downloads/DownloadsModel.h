@@ -29,6 +29,7 @@
 #include <IFilter.h>
 #include <PeerList/PeerListModel.h>
 #include <Downloads/DownloadFilterStatus.h>
+#include <Settings/DirListModel.h>
 
 namespace GUI
 {
@@ -36,12 +37,13 @@ namespace GUI
    {
       Q_OBJECT
    public:
-      explicit DownloadsModel(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel, const IFilter<DownloadFilterStatus>& filter);
+      explicit DownloadsModel(QSharedPointer<RCC::ICoreConnection> coreConnection, const PeerListModel& peerListModel, const DirListModel& sharedDirsModel, const IFilter<DownloadFilterStatus>& filter);
 
       quint64 getDownloadID(int row) const;
       QList<quint64> getCompletedDownloadIDs() const;
 
       bool fileLocationIsKnown(int row) const;
+      bool fileIsComplete(int row) const;
       QString getLocationPath(int row) const;
 
       int rowCount(const QModelIndex& parent = QModelIndex()) const;
@@ -58,7 +60,8 @@ namespace GUI
 
    private:
       QSharedPointer<RCC::ICoreConnection> coreConnection;
-      PeerListModel& peerListModel;
+      const PeerListModel& peerListModel;
+      const DirListModel& sharedDirsModel;
       const IFilter<DownloadFilterStatus>& filter;
 
       QList<Protos::GUI::State_Download> downloads;

@@ -246,7 +246,7 @@ QList<Directory*> Directory::getSubDirs() const
 {
    QMutexLocker locker(&this->mutex);
    // TODO : it create a deadlock, rethink serously about the concurency problems ..
-   // - main thread (MT) : setSharedDirsReadOnly(..) with a super shared directory -> Cache::lock
+   // - main thread (MT) : setSharedDirs(..) with a super shared directory -> Cache::lock
    // - FileUpdater thread (FT) : Scan some directories and be locked by the call currentDir->getSubDirs() -> Cache::lock;
    // - (MT) : SharedDirectory::init() call this->getCache()->removeSharedDir(subDir, current); and emit sharedDirectoryRemoved
    //          which will call FileUpdater::rmRoot which will try to stop scanning -> deadlock
@@ -279,25 +279,28 @@ QList<File*> Directory::getCompleteFiles() const
   * Creates a new sub-directory if none exists already otherwise
   * returns an already existing.
   */
-Directory* Directory::createSubDirectory(const QString& name)
+Directory* Directory::createSubDirectory(const QString& name, bool physically)
 {
    QMutexLocker locker(&this->mutex);
    if (Directory* subDir = this->getSubDir(name))
       return subDir;
-   return new Directory(this, name);
+   return new Directory(this, name, physically);
 }
 
 /**
-  * Creates a new sub-directory if none exists already otherwise
-  * returns an already existing.
+  * Create the all sub-directories, sub-dirs may already exist.
+  * @return the last directory.
   */
-Directory* Directory::physicallyCreateSubDirectory(const QString& name)
+Directory* Directory::createSubDirectories(const QStringList& names, bool physically)
 {
-   QMutexLocker locker(&this->mutex);
-   if (Directory* subDir = this->getSubDir(name))
-      return subDir;
-
-   return new Directory(this, name, true);
+   Directory* currentDir = this;
+   foreach (QString name, names)
+   {
+      currentDir = currentDir->createSubDirectory(name, physically);
+      if (!currentDir)
+         return 0;
+   }
+   return currentDir;
 }
 
 File* Directory::getFile(const QString& name) const

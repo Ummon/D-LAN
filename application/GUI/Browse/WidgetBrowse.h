@@ -28,6 +28,7 @@
 #include <Common/RemoteCoreController/ICoreConnection.h>
 
 #include <PeerList/PeerListModel.h>
+#include <Settings/DirListModel.h>
 #include <Browse/BrowseModel.h>
 
 namespace Ui {
@@ -46,7 +47,7 @@ namespace GUI
    {
       Q_OBJECT
    public:
-      explicit WidgetBrowse(QSharedPointer<RCC::ICoreConnection> coreConnection, const PeerListModel& peerListModel, const Common::Hash& peerID, QWidget *parent = 0);
+      explicit WidgetBrowse(QSharedPointer<RCC::ICoreConnection> coreConnection, const PeerListModel& peerListModel, const DirListModel& sharedDirsModel, const Common::Hash& peerID, QWidget *parent = 0);
       ~WidgetBrowse();
       Common::Hash getPeerID() const;
 

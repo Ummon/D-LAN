@@ -30,13 +30,19 @@ using namespace DM;
   * Once the content is know, the signal 'newEntries' is emmited.
   */
 
-DirDownload::DirDownload(QSharedPointer<FM::IFileManager> fileManager, QSharedPointer<PM::IPeerManager> peerManager, Common::Hash peerSourceID, const Protos::Common::Entry& entry)
-   : Download(fileManager, peerManager, peerSourceID, entry), retrieveEntriesOK(false)
+DirDownload::DirDownload(
+   QSharedPointer<FM::IFileManager> fileManager,
+   QSharedPointer<PM::IPeerManager> peerManager,
+   Common::Hash peerSourceID,
+   const Protos::Common::Entry& remoteEntry,
+   const Protos::Common::Entry& localEntry
+)
+   : Download(fileManager, peerManager, peerSourceID, remoteEntry, localEntry), retrieveEntriesOK(false)
 {
-   L_DEBU(QString("New DirDownload : path = %1%2 source = %3").
-      arg(Common::ProtoHelper::getStr(entry, &Protos::Common::Entry::path)).
-      arg(Common::ProtoHelper::getStr(entry, &Protos::Common::Entry::name)).
-      arg(this->peerSourceID.toStr())
+   L_DEBU(QString("New DirDownload : source = %1, remoteEntry : \n%2\nlocalEntry : \n%3").
+      arg(this->peerSourceID.toStr()).
+      arg(Common::ProtoHelper::getDebugStr(this->remoteEntry)).
+      arg(Common::ProtoHelper::getDebugStr(this->localEntry))
    );
 }
 
@@ -63,7 +69,7 @@ bool DirDownload::retrieveEntries()
       return false;
 
    Protos::Core::GetEntries getEntries;
-   getEntries.mutable_dirs()->add_entry()->CopyFrom(this->entry);
+   getEntries.mutable_dirs()->add_entry()->CopyFrom(this->remoteEntry);
    this->getEntriesResult = this->peerSource->getEntries(getEntries);
    connect(this->getEntriesResult.data(), SIGNAL(result(const Protos::Core::GetEntriesResult&)), this, SLOT(result(const Protos::Core::GetEntriesResult&)));
    connect(this->getEntriesResult.data(), SIGNAL(timeout()), this, SLOT(resultTimeout()));
@@ -91,7 +97,7 @@ void DirDownload::result(const Protos::Core::GetEntriesResult& entries)
    // We need to specify the shared directory for each entry.
    Protos::Common::Entries entriesCopy(entries.entries(0)); // We take the first one which should be the only set of entries.
    for (int i = 0; i < entriesCopy.entry_size(); i++)
-      entriesCopy.mutable_entry(i)->mutable_shared_dir()->CopyFrom(this->entry.shared_dir());
+      entriesCopy.mutable_entry(i)->mutable_shared_dir()->CopyFrom(this->remoteEntry.shared_dir());
 
    emit newEntries(entriesCopy);
 }

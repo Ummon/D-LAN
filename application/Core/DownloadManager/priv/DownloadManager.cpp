@@ -70,39 +70,71 @@ DownloadManager::~DownloadManager()
 /**
   * Insert a new download at the end of the queue.
   */
-void DownloadManager::addDownload(const Protos::Common::Entry& entry, Common::Hash peerSource)
+void DownloadManager::addDownload(const Protos::Common::Entry& remoteEntry, const Common::Hash& peerSource)
 {
    QMutableListIterator<Download*> i(this->downloads);
    i.toBack();
-   this->addDownload(entry, peerSource, false, i);
+   this->addDownload(remoteEntry, peerSource, Common::Hash(), "/", false, i);
 }
 
-Download* DownloadManager::addDownload(const Protos::Common::Entry& entry, Common::Hash peerSource, bool complete)
+void DownloadManager::addDownload(const Protos::Common::Entry& remoteEntry, const Common::Hash& peerSource, const Common::Hash& destinationDirectoryID, const QString& relativePath)
 {
    QMutableListIterator<Download*> i(this->downloads);
    i.toBack();
-   return this->addDownload(entry, peerSource, complete, i);
+   this->addDownload(remoteEntry, peerSource, destinationDirectoryID, relativePath, false, i);
+}
+
+Download* DownloadManager::addDownload(const Protos::Common::Entry& remoteEntry, const Common::Hash& peerSource, const Common::Hash& destinationDirectoryID, const QString& localRelativePath, bool complete)
+{
+   QMutableListIterator<Download*> i(this->downloads);
+   i.toBack();
+   return this->addDownload(remoteEntry, peerSource, destinationDirectoryID, localRelativePath, complete, i);
 }
 
 /**
   * Insert a new download at the given position.
   */
-Download* DownloadManager::addDownload(const Protos::Common::Entry& entry, Common::Hash peerSource, bool complete, QMutableListIterator<Download*>& iterator)
+Download* DownloadManager::addDownload(const Protos::Common::Entry& remoteEntry, const Common::Hash& peerSource, const Common::Hash& destinationDirectoryID, const QString& localRelativePath, bool complete, QMutableListIterator<Download*>& iterator)
+{
+   Protos::Common::Entry localEntry(remoteEntry);
+   Common::ProtoHelper::setStr(localEntry, &Protos::Common::Entry::set_path, localRelativePath);
+   if (!destinationDirectoryID.isNull())
+      localEntry.mutable_shared_dir()->mutable_id()->set_hash(destinationDirectoryID.getData(), Common::Hash::HASH_SIZE);
+   localEntry.set_exists(false);
+
+   return this->addDownload(remoteEntry, localEntry, peerSource, complete, iterator);
+}
+
+Download* DownloadManager::addDownload(const Protos::Common::Entry& remoteEntry, const Protos::Common::Entry& localEntry, const Common::Hash& peerSource, bool complete)
+{
+   QMutableListIterator<Download*> i(this->downloads);
+   i.toBack();
+   return this->addDownload(remoteEntry, localEntry, peerSource, complete, i);
+}
+
+Download* DownloadManager::addDownload(const Protos::Common::Entry& remoteEntry, const Protos::Common::Entry& localEntry, const Common::Hash& peerSource, bool complete,  QMutableListIterator<Download*>& iterator)
 {
    // If there is a lot of file in queue it can be a bit CPU consumer.
-   if (this->isEntryAlreadyQueued(entry))
+   // Commented: We don't check anymore...
+   /*if (this->isEntryAlreadyQueued(remoteEntry, peerSource))
    {
-      L_WARN(QString("Entry already queued, it will no be added to the queue : %1").arg(Common::ProtoHelper::getStr(entry, &Protos::Common::Entry::name)));
+      L_WARN(QString("Entry already queued, it will no be added to the queue : %1").arg(Common::ProtoHelper::getStr(remoteEntry, &Protos::Common::Entry::name)));
       return 0;
-   }
+   }*/
 
    Download* newDownload = 0;
 
-   switch (entry.type())
+   switch (remoteEntry.type())
    {
    case Protos::Common::Entry_Type_DIR :
       {
-         DirDownload* dirDownload = new DirDownload(this->fileManager, this->peerManager, peerSource, entry);
+         DirDownload* dirDownload = new DirDownload(
+            this->fileManager,
+            this->peerManager,
+            peerSource,
+            remoteEntry,
+            localEntry
+         );
          newDownload = dirDownload;
          connect(dirDownload, SIGNAL(newEntries(const Protos::Common::Entries&)), this, SLOT(newEntries(const Protos::Common::Entries&)), Qt::DirectConnection);
          iterator.insert(dirDownload);
@@ -118,7 +150,8 @@ Download* DownloadManager::addDownload(const Protos::Common::Entry& entry, Commo
             this->occupiedPeersAskingForHashes,
             this->occupiedPeersDownloadingChunk,
             peerSource,
-            entry,
+            remoteEntry,
+            localEntry,
             this->transferRateCalculator,
             complete
          );
@@ -220,7 +253,7 @@ void DownloadManager::fileCacheLoaded()
    this->loadQueueFromFile();
 }
 
-void DownloadManager::newEntries(const Protos::Common::Entries& entries)
+void DownloadManager::newEntries(const Protos::Common::Entries& remoteEntries)
 {
    DirDownload* dirDownload = dynamic_cast<DirDownload*>(this->sender());
    QMutableListIterator<Download*> i(this->downloads);
@@ -229,14 +262,22 @@ void DownloadManager::newEntries(const Protos::Common::Entries& entries)
    i.remove();
 
    // Add files first.
-   for (int n = 0; n < entries.entry_size(); n++)
-      if (entries.entry(n).type() == Protos::Common::Entry_Type_FILE)
-         this->addDownload(entries.entry(n), dirDownload->getPeerSourceID(), false, i);
+   for (int n = 0; n < remoteEntries.entry_size(); n++)
+      if (remoteEntries.entry(n).type() == Protos::Common::Entry_Type_FILE)
+      {
+         const Protos::Common::Entry& localEntry = dirDownload->getLocalEntry();
+         QString relativePath = Common::ProtoHelper::getStr(localEntry, &Protos::Common::Entry::path).append(Common::ProtoHelper::getStr(localEntry, &Protos::Common::Entry::name)).append("/");
+         this->addDownload(remoteEntries.entry(n), dirDownload->getPeerSourceID(), localEntry.has_shared_dir() ? localEntry.shared_dir().id().hash().data() : Common::Hash(), relativePath, false, i);
+      }
 
-   // Then directories.
-   for (int n = 0; n < entries.entry_size(); n++)
-      if (entries.entry(n).type() == Protos::Common::Entry_Type_DIR)
-         this->addDownload(entries.entry(n), dirDownload->getPeerSourceID(), false, i);
+   // Then directories. TODO : code to refactor with the one above.
+   for (int n = 0; n < remoteEntries.entry_size(); n++)
+      if (remoteEntries.entry(n).type() == Protos::Common::Entry_Type_DIR)
+      {
+         const Protos::Common::Entry& localEntry = dirDownload->getLocalEntry();
+         QString relativePath = Common::ProtoHelper::getStr(localEntry, &Protos::Common::Entry::path).append(Common::ProtoHelper::getStr(localEntry, &Protos::Common::Entry::name)).append("/");
+         this->addDownload(remoteEntries.entry(n), dirDownload->getPeerSourceID(), localEntry.has_shared_dir() ? localEntry.shared_dir().id().hash().data() : Common::Hash(), relativePath,false, i);
+      }
 
    delete dirDownload;
 
@@ -373,7 +414,7 @@ void DownloadManager::loadQueueFromFile()
       for (int i = 0; i < savedQueue.entry_size(); i++)
       {
          const Protos::Queue::Queue_Entry& entry = savedQueue.entry(i);
-         this->addDownload(entry.entry(), Common::Hash(entry.peer_id().hash().data()), entry.complete());
+         this->addDownload(entry.remote_entry(), entry.local_entry(), Common::Hash(entry.peer_id().hash().data()), entry.complete());
       }
    }
    catch (Common::UnknownValueException& e)
@@ -400,7 +441,11 @@ void DownloadManager::saveQueueToFile()
 
       for (QListIterator<Download*> i(this->downloads); i.hasNext();)
       {
-         i.next()->populateEntry(savedQueue.add_entry());
+         Protos::Queue::Queue_Entry* queueEntry = savedQueue.add_entry();
+         Download* download = i.next();
+         download->populateRemoteEntry(queueEntry);
+         download->populateLocalEntry(queueEntry);
+         queueEntry->mutable_peer_id()->set_hash(download->getPeerSourceID().getData(), Common::Hash::HASH_SIZE);
       }
 
       try
@@ -426,17 +471,18 @@ void DownloadManager::setQueueChanged()
    this->queueChanged = true;
 }
 
-bool DownloadManager::isEntryAlreadyQueued(const Protos::Common::Entry& entry)
+bool DownloadManager::isEntryAlreadyQueued(const Protos::Common::Entry& remoteEntry, const Common::Hash& peerSource)
 {
    for (QListIterator<Download*> i(this->downloads); i.hasNext();)
    {
       Download* download = i.next();
       // TODO : Do we should check peer_id also?
       if (
-         download->getEntry().type() == entry.type() &&
-         download->getEntry().path() == entry.path() &&
-         download->getEntry().name() == entry.name() &&
-         download->getEntry().size() == entry.size()
+         download->getPeerSourceID() == peerSource &&
+         download->getRemoteEntry().type() == remoteEntry.type() &&
+         download->getRemoteEntry().path() == remoteEntry.path() &&
+         download->getRemoteEntry().name() == remoteEntry.name() &&
+         download->getRemoteEntry().size() == remoteEntry.size()
       )
          return true;
    }

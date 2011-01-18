@@ -31,6 +31,8 @@
 #include <Downloads/DownloadFilterStatus.h>
 #include <Downloads/DownloadsModel.h>
 
+#include <Settings/DirListModel.h>
+
 namespace Ui {
    class WidgetDownloads;
 }
@@ -48,14 +50,14 @@ namespace GUI
    {
       Q_OBJECT
    public:
-      explicit WidgetDownloads(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel, QWidget *parent = 0);
+      explicit WidgetDownloads(QSharedPointer<RCC::ICoreConnection> coreConnection, const PeerListModel& peerListModel, const DirListModel& sharedDirsModel, QWidget *parent = 0);
       ~WidgetDownloads();
 
    private slots:
       void displayContextMenuDownloads(const QPoint& point);
       void openLocationSelectedEntries();
-      void removeSelectedEntries();
       void removeCompletedFiles();
+      void removeSelectedEntries();
       void filterChanged();
 
    private:

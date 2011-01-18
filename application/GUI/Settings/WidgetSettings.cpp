@@ -30,12 +30,11 @@ using namespace GUI;
 
 #include <Settings/RemoteFileDialog.h>
 
-WidgetSettings::WidgetSettings(QSharedPointer<RCC::ICoreConnection> coreConnection, QWidget *parent)
-   : QWidget(parent), ui(new Ui::WidgetSettings), coreConnection(coreConnection), initialState(true)
+WidgetSettings::WidgetSettings(QSharedPointer<RCC::ICoreConnection> coreConnection, DirListModel& sharedDirsModel, QWidget *parent)
+   : QWidget(parent), ui(new Ui::WidgetSettings), coreConnection(coreConnection), sharedDirsModel(sharedDirsModel), initialState(true)
 {
    this->ui->setupUi(this);
 
-   this->ui->lstIncoming->setModel(&this->incomingDirsModel);
    this->ui->lstShared->setModel(&this->sharedDirsModel);
 
    this->ui->txtCoreAddress->setText(SETTINGS.get<QString>("core_address"));
@@ -44,9 +43,7 @@ WidgetSettings::WidgetSettings(QSharedPointer<RCC::ICoreConnection> coreConnecti
 
    connect(this->ui->txtNick, SIGNAL(editingFinished()), this, SLOT(saveCoreSettings()));
 
-   connect(this->ui->butAddIncoming, SIGNAL(clicked()), this, SLOT(addIncoming()));
    connect(this->ui->butAddShared, SIGNAL(clicked()), this, SLOT(addShared()));
-   connect(this->ui->butRemoveIncoming, SIGNAL(clicked()), this, SLOT(removeIncoming()));
    connect(this->ui->butRemoveShared, SIGNAL(clicked()), this, SLOT(removeShared()));
 
    connect(this->ui->txtCoreAddress, SIGNAL(editingFinished()), this, SLOT(saveGUISettings()));
@@ -76,31 +73,26 @@ void WidgetSettings::newState(const Protos::GUI::State& state)
    if (!this->ui->txtNick->hasFocus())
       this->ui->txtNick->setText(Common::ProtoHelper::getStr(state.myself(), &Protos::GUI::State_Peer::nick));
 
-   QStringList incomingDirs;
-   for (int i = 0; i < state.destination_directory_size(); i++)
-      incomingDirs << Common::ProtoHelper::getRepeatedStr(state, &Protos::GUI::State::destination_directory, i);
-   this->incomingDirsModel.setDirs(incomingDirs);
-
-   QStringList sharedDirs;
+   QList<Common::SharedDir> sharedDirs;
    for (int i = 0; i < state.shared_directory_size(); i++)
-      sharedDirs << Common::ProtoHelper::getRepeatedStr(state, &Protos::GUI::State::shared_directory, i);
+      sharedDirs << Common::SharedDir(state.shared_directory(i).id().hash().data(), Common::ProtoHelper::getStr(state.shared_directory(i), &Protos::GUI::State_SharedDir::path));
    this->sharedDirsModel.setDirs(sharedDirs);
 
    // If this is the first message state received and there is no incoming folder defined we ask the user to choose one.
    if (this->initialState)
    {
       this->initialState = false;
-      if (this->incomingDirsModel.rowCount() == 0)
+      if (this->sharedDirsModel.rowCount() == 0)
       {
          if (QMessageBox::question(
                this,
-               "No incoming folder",
-               "You don't have any incoming folder, would you like to choose one?\n All downloaded files will be put in this folder",
+               "No shared folder",
+               "You don't have any shared folder, would you like to choose one?",
                QMessageBox::Yes,
                QMessageBox::No
             ) == QMessageBox::Yes)
          {
-            this->addIncoming();
+            this->addShared();
          }
       }
    }
@@ -111,11 +103,8 @@ void WidgetSettings::saveCoreSettings()
    Protos::GUI::CoreSettings settings;
    Common::ProtoHelper::setStr(settings, &Protos::GUI::CoreSettings::set_nick, this->ui->txtNick->text());
 
-   for (QStringListIterator i(this->incomingDirsModel.getDirs()); i.hasNext();)
-      Common::ProtoHelper::addRepeatedStr(settings, &Protos::GUI::CoreSettings::add_destination_directory, i.next());
-
-   for (QStringListIterator i(this->sharedDirsModel.getDirs()); i.hasNext();)
-      Common::ProtoHelper::addRepeatedStr(settings, &Protos::GUI::CoreSettings::add_shared_directory, i.next());
+   for (QListIterator<Common::SharedDir> i(this->sharedDirsModel.getDirs()); i.hasNext();)
+      Common::ProtoHelper::addRepeatedStr(settings, &Protos::GUI::CoreSettings::add_shared_directory, i.next().path);
 
    this->coreConnection->setCoreSettings(settings);
 }
@@ -137,32 +126,12 @@ void WidgetSettings::saveGUISettings()
    }
 }
 
-void WidgetSettings::addIncoming()
-{
-   QStringList dirs = askForDirectories();
-   if (!dirs.isEmpty())
-   {
-      this->incomingDirsModel.addDirs(dirs);
-      this->saveCoreSettings();
-   }
-}
-
 void WidgetSettings::addShared()
 {
    QStringList dirs = askForDirectories();
    if (!dirs.isEmpty())
    {
       this->sharedDirsModel.addDirs(dirs);
-      this->saveCoreSettings();
-   }
-}
-
-void WidgetSettings::removeIncoming()
-{
-   QModelIndex index = this->ui->lstIncoming->selectionModel()->currentIndex();
-   if (index.isValid())
-   {
-      this->incomingDirsModel.rmDir(index.row());
       this->saveCoreSettings();
    }
 }

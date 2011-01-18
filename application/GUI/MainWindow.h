@@ -35,6 +35,7 @@
 #include <Log/LogModel.h>
 
 #include <Settings/WidgetSettings.h>
+#include <Settings/DirListModel.h>
 #include <Chat/WidgetChat.h>
 #include <Downloads/WidgetDownloads.h>
 #include <Uploads/WidgetUploads.h>
@@ -118,6 +119,8 @@ namespace GUI
 
       PeerListModel peerListModel;
       PeerTableDelegate peerTableDelegate;
+
+      DirListModel sharedDirsModel;
 
       LogModel logModel;
       LogDelegate logDelegate;

@@ -282,7 +282,8 @@ bool Chunk::isOwnedBy(File* file) const
 bool Chunk::matchesEntry(const Protos::Common::Entry& entry) const
 {
    QMutexLocker locker(&this->mutex);
-   return this->file->getPath() == Common::ProtoHelper::getStr(entry, &Protos::Common::Entry::path) &&
+   return
+      this->file->getPath() == Common::ProtoHelper::getStr(entry, &Protos::Common::Entry::path) &&
       Global::removeUnfinishedSuffix(this->file->getName()) == Global::removeUnfinishedSuffix(Common::ProtoHelper::getStr(entry, &Protos::Common::Entry::name));
 }
 

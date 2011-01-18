@@ -39,9 +39,8 @@ message State {
       }
       required uint64 id = 1;
       
-      // Can be remote or local. When we know all the hashes and the local file exists (.unfinished) the entry becomes local, otherwise the entry is a remote one.
-      // The base path of the shared directory where the file is put is set in entry.shared_dir.base_path. Not ending with a slash '/'. Only set for a download with the status DOWNLOADING or COMPLETE.            
-      required Common.Entry entry = 2;
+      // When the entry is physically created, Common.Entry.exists is set to true.
+      required Common.Entry local_entry = 2;
       
       required Status status = 3;
       required uint32 progress = 4; // 0 to 100.
@@ -72,17 +71,20 @@ message State {
       required string nick = 2;
       required uint64 sharing_amount = 3; // [byte].
    }
+   message SharedDir {
+      required Common.Hash id = 1;
+      required string path = 2;
+   }
    
    required Peer myself = 1;
    repeated Peer peer = 2;
    
-   repeated string shared_directory = 3;
-   repeated string destination_directory = 4;
+   repeated SharedDir shared_directory = 3;
    
-   repeated Download download = 5;
-   repeated Upload upload = 6;
+   repeated Download download = 4;
+   repeated Upload upload = 5;
    
-   optional Stats stats = 7;
+   optional Stats stats = 6;
 }
 
 /***** Events *****/
@@ -142,7 +144,6 @@ message AuthenticationResult {
 message CoreSettings {
    required string nick = 1;
    repeated string shared_directory = 2;
-   repeated string destination_directory = 3;
 }
 
 // GUI -> Core
@@ -174,7 +175,7 @@ message Browse {
 // id : 0x53
 message BrowseResult {
    required uint64 tag = 1;
-   repeated Common.Entries entries = 2;
+   repeated Common.Entries entries = 2; 
 }
 
 // GUI -> Core
@@ -205,6 +206,9 @@ message MoveDownloads {
 message Download {
    required Common.Hash peer_id = 1; // From where the file/dir is.
    required Common.Entry entry = 2;
+   
+   optional Common.Hash destination_directory_id = 3; // Where to put the folder/file. It must one of the directory of State.destination_directory. If this directory is not set, the first directory with enough free space will be taken.
+   optional string destination_path = 4 [default="/"]; // Must only be set if 'destination_directory_id' is set too. Must ended with an '/'.
 }
 
 // GUI -> Core

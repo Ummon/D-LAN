@@ -144,8 +144,8 @@ QString SearchDelegate::toHtmlText(const QString& text) const
 
 /////
 
-WidgetSearch::WidgetSearch(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel, const QString& terms, QWidget *parent)
-   : QWidget(parent), ui(new Ui::WidgetSearch), coreConnection(coreConnection), searchModel(coreConnection, peerListModel)
+WidgetSearch::WidgetSearch(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel, const DirListModel& sharedDirsModel, const QString& terms, QWidget *parent)
+   : QWidget(parent), ui(new Ui::WidgetSearch), coreConnection(coreConnection), searchModel(coreConnection, peerListModel, sharedDirsModel)
 {
     this->ui->setupUi(this);
     this->searchDelegate.setTerms(terms);
@@ -160,6 +160,9 @@ WidgetSearch::WidgetSearch(QSharedPointer<RCC::ICoreConnection> coreConnection, 
     this->ui->treeView->header()->setResizeMode(2, QHeaderView::ResizeToContents);
     this->ui->treeView->header()->setResizeMode(3, QHeaderView::ResizeToContents);
     this->ui->treeView->header()->setResizeMode(4, QHeaderView::Stretch);
+
+    this->ui->treeView->setSelectionBehavior(QAbstractItemView::SelectRows);
+    this->ui->treeView->setSelectionMode(QAbstractItemView::ExtendedSelection);
 
     this->searchModel.search(terms);
 
@@ -186,10 +189,11 @@ void WidgetSearch::displayContextMenuPeers(const QPoint& point)
 
 void WidgetSearch::download()
 {
-   QModelIndex i = this->ui->treeView->currentIndex();
-   if (i.isValid())
+   QModelIndexList selectedRows = this->ui->treeView->selectionModel()->selectedRows();
+   for (QListIterator<QModelIndex> i(selectedRows); i.hasNext();)
    {
-      this->coreConnection->download(this->searchModel.getPeerID(i), this->searchModel.getEntry(i));
+      QModelIndex index = i.next();
+      this->coreConnection->download(this->searchModel.getPeerID(index), this->searchModel.getEntry(index));
    }
 }
 

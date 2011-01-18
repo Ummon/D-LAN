@@ -39,4 +39,5 @@ HEADERS += Hashes.h \
     Version.h \
     PersistentData.h \
     ../Libs/blake/blake_opt.h \
-    ../Libs/MersenneTwister.h
+    ../Libs/MersenneTwister.h \
+    SharedDir.h

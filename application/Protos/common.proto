@@ -18,8 +18,7 @@ message Hash {
 // A shared directory matches an existing handle, thus there is no need to have the complete path to it.
 message SharedDir {
    required Hash id = 1; // Identify a shared directory.
-   optional string shared_name = 2; // An optional name to identify the shared directory by human. It may correspond to the name of the shared directory itself. It may be used when creating the directories of a new downloading file.
-   optional string base_path = 3; // Useful in certain circumstances (for local files).
+   optional string shared_name = 2; // A name to identify the shared directory by human. It may correspond to the name of the shared directory itself. It may be used when creating the directories of a new downloading file.
 }
 
 // Used for a directory or a file.
@@ -34,9 +33,10 @@ message Entry {
    required uint64 size = 4; // [bytes].
    
    optional SharedDir shared_dir = 5; // The shared directory of the entry.
-   optional bool is_empty = 6 [default = true]; // Only for a Dir. Warning a directory can be not empty and has a size of 0.
+   optional bool exists = 6 [default = true]; // An entry may not yet be created.
+   optional bool is_empty = 7 [default = true]; // Only for a Dir. Warning: a directory can be not empty and has a size of 0.
    
-   repeated Hash chunk = 7; // Only for a file. No chunk means that the peer doesn't know the hashes.
+   repeated Hash chunk = 8; // Only for a file. No chunk means that the peer doesn't know the hashes.
 }
 
 message Entries

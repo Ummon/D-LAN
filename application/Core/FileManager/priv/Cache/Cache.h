@@ -29,6 +29,8 @@
 #include <Protos/core_protocol.pb.h>
 
 #include <Common/Uncopyable.h>
+#include <Common/SharedDir.h>
+
 #include <priv/FileUpdater/DirWatcher.h>
 #include <priv/Cache/SharedDirectory.h>
 #include <priv/Cache/Chunk.h>
@@ -46,14 +48,15 @@ namespace FM
       Cache(FileManager* fileManager);
 
       Protos::Common::Entries getEntries(const Protos::Common::Entry& dir) const;
-      Protos::Common::Entries getEntries(bool setBasePath) const;
+      Protos::Common::Entries getEntries() const;
       Entry* getEntry(const QString& path) const;
       File* getFile(const Protos::Common::Entry&) const;
-      QList< QSharedPointer<IChunk> > newFile(const Protos::Common::Entry& remoteEntry);
+      QList< QSharedPointer<IChunk> > newFile(Protos::Common::Entry& fileEntry);
       QList< QSharedPointer<Chunk> > getChunks(const Protos::Common::Entry& fileEntry);
 
-      QStringList getSharedDirs(SharedDirectory::Rights rights) const;
-      void setSharedDirs(const QStringList& dirs, SharedDirectory::Rights rights);
+      QList<Common::SharedDir> getSharedDirs() const;
+      SharedDirectory* getSharedDirectory(const Common::Hash& ID) const;
+      void setSharedDirs(const QStringList& dirs);
       void removeSharedDir(SharedDirectory* dir, Directory* dir2 = 0);
 
       SharedDirectory* getSuperSharedDirectory(const QString& path) const;
@@ -82,8 +85,7 @@ namespace FM
       void sharedDirectoryRemoved(SharedDirectory* dir, Directory* dir2);
 
    private:
-      void createSharedDirs(const QStringList& dirs, const QList<SharedDirectory::Rights>& rights, const QList<Common::Hash>& ids = QList<Common::Hash>());
-      void createSharedDirs(const QStringList& dirs, SharedDirectory::Rights rights);
+      void createSharedDirs(const QStringList& dirs, const QList<Common::Hash>& ids = QList<Common::Hash>());
       void createSharedDirs(const Protos::FileCache::Hashes& hashes);
 
       Directory* getWriteableDirectory(const QString& path, qint64 spaceNeeded) const;

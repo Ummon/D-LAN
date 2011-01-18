@@ -13,6 +13,10 @@
   <property name="windowTitle">
    <string>Settings</string>
   </property>
+  <property name="windowIcon">
+   <iconset resource="../ressources.qrc">
+    <normaloff>:/icons/ressources/settings.png</normaloff>:/icons/ressources/settings.png</iconset>
+  </property>
   <layout class="QVBoxLayout" name="verticalLayout_3">
    <property name="leftMargin">
     <number>0</number>
@@ -35,7 +39,7 @@
       <attribute name="title">
        <string>Basic</string>
       </attribute>
-      <layout class="QVBoxLayout" name="layBasic" stretch="0,0,0,2,0,1">
+      <layout class="QVBoxLayout" name="layBasic" stretch="0,0,0,2">
        <item>
         <widget class="QLabel" name="lblNick">
          <property name="text">
@@ -66,7 +70,7 @@
               <string/>
              </property>
              <property name="icon">
-              <iconset resource="ressources.qrc">
+              <iconset resource="../ressources.qrc">
                <normaloff>:/icons/ressources/add.png</normaloff>:/icons/ressources/add.png</iconset>
              </property>
             </widget>
@@ -77,73 +81,13 @@
               <string/>
              </property>
              <property name="icon">
-              <iconset resource="ressources.qrc">
+              <iconset resource="../ressources.qrc">
                <normaloff>:/icons/ressources/delete.png</normaloff>:/icons/ressources/delete.png</iconset>
              </property>
             </widget>
            </item>
            <item>
             <spacer name="spacerShared">
-             <property name="orientation">
-              <enum>Qt::Vertical</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>20</width>
-               <height>20</height>
-              </size>
-             </property>
-            </spacer>
-           </item>
-          </layout>
-         </item>
-        </layout>
-       </item>
-       <item>
-        <widget class="QLabel" name="lblIncoming">
-         <property name="text">
-          <string>Incoming folders</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <layout class="QHBoxLayout" name="layIncoming">
-         <item>
-          <widget class="QListView" name="lstIncoming">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <layout class="QVBoxLayout" name="layIncomingButtons">
-           <item>
-            <widget class="QPushButton" name="butAddIncoming">
-             <property name="text">
-              <string/>
-             </property>
-             <property name="icon">
-              <iconset resource="ressources.qrc">
-               <normaloff>:/icons/ressources/add.png</normaloff>:/icons/ressources/add.png</iconset>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QPushButton" name="butRemoveIncoming">
-             <property name="text">
-              <string/>
-             </property>
-             <property name="icon">
-              <iconset resource="ressources.qrc">
-               <normaloff>:/icons/ressources/delete.png</normaloff>:/icons/ressources/delete.png</iconset>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <spacer name="spacerIncoming">
              <property name="orientation">
               <enum>Qt::Vertical</enum>
              </property>
@@ -224,7 +168,7 @@
   </layout>
  </widget>
  <resources>
-  <include location="ressources.qrc"/>
+  <include location="../ressources.qrc"/>
  </resources>
  <connections/>
 </ui>

@@ -36,7 +36,7 @@ namespace GUI
    {
       Q_OBJECT
    public:
-      explicit WidgetSettings(QSharedPointer<RCC::ICoreConnection> coreConnection, QWidget *parent = 0);
+      explicit WidgetSettings(QSharedPointer<RCC::ICoreConnection> coreConnection, DirListModel& sharedDirsModel, QWidget *parent = 0);
       ~WidgetSettings();
 
       void coreConnected();
@@ -47,9 +47,7 @@ namespace GUI
       void saveCoreSettings();
       void saveGUISettings();
 
-      void addIncoming();
       void addShared();
-      void removeIncoming();
       void removeShared();
 
       void resetCoreAddress();
@@ -62,10 +60,9 @@ namespace GUI
    private:
       Ui::WidgetSettings *ui;
 
-      DirListModel incomingDirsModel;
-      DirListModel sharedDirsModel;
-
       QSharedPointer<RCC::ICoreConnection> coreConnection;
+
+      DirListModel& sharedDirsModel;
 
       bool initialState;
    };

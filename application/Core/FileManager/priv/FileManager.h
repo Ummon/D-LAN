@@ -52,19 +52,17 @@ namespace FM
       FileManager();
       ~FileManager();
 
-      void setSharedDirsReadOnly(const QStringList& dirs);
-      void setSharedDirsReadWrite(const QStringList& dirs);
-      QStringList getSharedDirsReadOnly();
-      QStringList getSharedDirsReadWrite();
+      void setSharedDirs(const QStringList& dirs);
+      QList<Common::SharedDir> getSharedDirs() const;
       QString getSharedDir(const Common::Hash& ID) const;
 
       QSharedPointer<IChunk> getChunk(const Common::Hash& hash) const;
-      QList< QSharedPointer<IChunk> > getAllChunks(const Protos::Common::Entry& entry, const Common::Hash& hash) const;
-      QList< QSharedPointer<IChunk> > newFile(const Protos::Common::Entry& remoteEntry);
+      QList< QSharedPointer<IChunk> > getAllChunks(const Protos::Common::Entry& localEntry, const Common::Hash& hash) const;
+      QList< QSharedPointer<IChunk> > newFile(Protos::Common::Entry& entry);
       QSharedPointer<IGetHashesResult> getHashes(const Protos::Common::Entry& file);
 
       Protos::Common::Entries getEntries(const Protos::Common::Entry& dir);
-      Protos::Common::Entries getEntries(bool setBasePath = false);
+      Protos::Common::Entries getEntries();
 
       QList<Protos::Common::FindResult> find(const QString& words, int maxNbResult, int maxSize);
       QBitArray haveChunks(const QList<Common::Hash>& hashes);

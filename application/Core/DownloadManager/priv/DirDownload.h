@@ -36,7 +36,13 @@ namespace DM
    {
       Q_OBJECT
    public:
-      DirDownload(QSharedPointer<FM::IFileManager> fileManager, QSharedPointer<PM::IPeerManager> peerManager, Common::Hash peerSourceID, const Protos::Common::Entry& entry);
+      DirDownload(
+         QSharedPointer<FM::IFileManager> fileManager,
+         QSharedPointer<PM::IPeerManager> peerManager,
+         Common::Hash peerSourceID,
+         const Protos::Common::Entry& remoteEntry,
+         const Protos::Common::Entry& localEntry
+      );
       ~DirDownload();
 
       QSet<Common::Hash> getPeers() const;

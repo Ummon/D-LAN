@@ -86,8 +86,8 @@ QSize DownloadsDelegate::sizeHint(const QStyleOptionViewItem& option, const QMod
 
 /////
 
-WidgetDownloads::WidgetDownloads(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel, QWidget *parent)
-   : QWidget(parent), ui(new Ui::WidgetDownloads), coreConnection(coreConnection), downloadsModel(coreConnection, peerListModel, checkBoxModel)
+WidgetDownloads::WidgetDownloads(QSharedPointer<RCC::ICoreConnection> coreConnection, const PeerListModel& peerListModel, const DirListModel& sharedDirsModel, QWidget *parent)
+   : QWidget(parent), ui(new Ui::WidgetDownloads), coreConnection(coreConnection), downloadsModel(coreConnection, peerListModel, sharedDirsModel, checkBoxModel)
 {
    this->ui->setupUi(this);
 
@@ -119,6 +119,7 @@ WidgetDownloads::WidgetDownloads(QSharedPointer<RCC::ICoreConnection> coreConnec
    connect(this->ui->tblDownloads, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(displayContextMenuDownloads(const QPoint&)));
 
    connect(this->ui->butRemoveComplete, SIGNAL(clicked()), this, SLOT(removeCompletedFiles()));
+   connect(this->ui->butRemoveSelected, SIGNAL(clicked()), this, SLOT(removeSelectedEntries()));
 
    this->filterStatusList = new CheckBoxList(this);
    this->filterStatusList->setModel(&this->checkBoxModel);
@@ -175,35 +176,42 @@ void WidgetDownloads::openLocationSelectedEntries()
       QDesktopServices::openUrl(QUrl(i.next(), QUrl::TolerantMode));
 }
 
+void WidgetDownloads::removeCompletedFiles()
+{
+   this->coreConnection->cancelDownloads(this->downloadsModel.getCompletedDownloadIDs());
+}
+
 void WidgetDownloads::removeSelectedEntries()
 {
    QList<quint64> downloadIDs;
 
    QModelIndexList selectedRows = this->ui->tblDownloads->selectionModel()->selectedRows();
+   bool allComplete = true;
    for (QListIterator<QModelIndex> i(selectedRows); i.hasNext();)
    {
-      quint64 ID = this->downloadsModel.getDownloadID(i.next().row());
+      const int row = i.next().row();
+      quint64 ID = this->downloadsModel.getDownloadID(row);
       if (ID != 0)
          downloadIDs << ID;
+      if (!this->downloadsModel.fileIsComplete(row))
+         allComplete = false;
    }
 
    if (!downloadIDs.isEmpty())
    {
-      QMessageBox msgBox(this);
-      msgBox.setText("Are you sure to remove the selected downloads?");
-      msgBox.setIcon(QMessageBox::Question);
-      msgBox.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
-      msgBox.setDefaultButton(QMessageBox::Ok);
-      if (msgBox.exec() == QMessageBox::Ok)
+      if (!allComplete)
       {
-         this->coreConnection->cancelDownloads(downloadIDs);
+         QMessageBox msgBox(this);
+         msgBox.setText("Are you sure to remove the selected downloads? There is one or more unfinished download.");
+         msgBox.setIcon(QMessageBox::Question);
+         msgBox.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
+         msgBox.setDefaultButton(QMessageBox::Ok);
+         if (msgBox.exec() == QMessageBox::Ok)
+            this->coreConnection->cancelDownloads(downloadIDs);
       }
+      else
+         this->coreConnection->cancelDownloads(downloadIDs);
    }
-}
-
-void WidgetDownloads::removeCompletedFiles()
-{
-   this->coreConnection->cancelDownloads(this->downloadsModel.getCompletedDownloadIDs());
 }
 
 void WidgetDownloads::filterChanged()

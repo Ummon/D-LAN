@@ -49,13 +49,14 @@ namespace DM
          OccupiedPeers& occupiedPeersAskingForHashes,
          OccupiedPeers& occupiedPeersDownloadingChunk,
          Common::Hash peerSourceID,
-         const Protos::Common::Entry& entry,
+         const Protos::Common::Entry& remoteEntry,
+         const Protos::Common::Entry& localEntry,
          Common::TransferRateCalculator& transferRateCalculator,
          bool complete = false
       );
       ~FileDownload();
 
-      void populateEntry(Protos::Queue::Queue_Entry* entry) const;
+      void populateRemoteEntry(Protos::Queue::Queue_Entry* entry) const;
 
       void start();
 

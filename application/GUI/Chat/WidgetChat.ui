@@ -13,6 +13,10 @@
   <property name="windowTitle">
    <string>Chat</string>
   </property>
+  <property name="windowIcon">
+   <iconset resource="../ressources.qrc">
+    <normaloff>:/icons/ressources/chat.png</normaloff>:/icons/ressources/chat.png</iconset>
+  </property>
   <layout class="QVBoxLayout" name="layMain">
    <property name="leftMargin">
     <number>0</number>
@@ -48,6 +52,8 @@
    </item>
   </layout>
  </widget>
- <resources/>
+ <resources>
+  <include location="../ressources.qrc"/>
+ </resources>
  <connections/>
 </ui>

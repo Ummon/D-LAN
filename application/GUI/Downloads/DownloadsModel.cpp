@@ -25,9 +25,10 @@ using namespace GUI;
 #include <Common/Global.h>
 
 #include <Log.h>
+#include <Settings/DirListModel.h>
 
-DownloadsModel::DownloadsModel(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel, const IFilter<DownloadFilterStatus>& filter)
-   : coreConnection(coreConnection), peerListModel(peerListModel), filter(filter)
+DownloadsModel::DownloadsModel(QSharedPointer<RCC::ICoreConnection> coreConnection, const PeerListModel& peerListModel, const DirListModel& sharedDirsModel, const IFilter<DownloadFilterStatus>& filter)
+   : coreConnection(coreConnection), peerListModel(peerListModel), sharedDirsModel(sharedDirsModel), filter(filter)
 {
    qRegisterMetaTypeStreamOperators<Progress>("Progress"); // Don't know where to put this call..
    connect(this->coreConnection.data(), SIGNAL(newState(Protos::GUI::State)), this, SLOT(newState(Protos::GUI::State)));
@@ -55,7 +56,15 @@ bool DownloadsModel::fileLocationIsKnown(int row) const
       return false;
 
    // If we know the base path then we know the location of the file.
-   return !Common::ProtoHelper::getStr(this->downloads[row].entry().shared_dir(), &Protos::Common::SharedDir::base_path).isEmpty();
+   return this->downloads[row].local_entry().exists();
+}
+
+bool DownloadsModel::fileIsComplete(int row) const
+{
+   if (row >= this->downloads.size())
+      return false;
+
+   return this->downloads[row].status() == Protos::GUI::State_Download_Status_COMPLETE;
 }
 
 QString DownloadsModel::getLocationPath(int row) const
@@ -63,10 +72,15 @@ QString DownloadsModel::getLocationPath(int row) const
    if (row >= this->downloads.size())
       return QString();
 
+   const Common::SharedDir sharedDir = this->sharedDirsModel.getDir(this->downloads[row].local_entry().shared_dir().id().hash().data());
+   if (sharedDir.isNull())
+      return QString();
+
    QString fullPath;
    fullPath
-      .append(Common::ProtoHelper::getStr(this->downloads[row].entry().shared_dir(), &Protos::Common::SharedDir::base_path)) // Base path
-      .append(Common::ProtoHelper::getStr(this->downloads[row].entry(), &Protos::Common::Entry::path)); // Relative path from base path
+      .append(sharedDir.path)
+      .append('/')
+      .append(Common::ProtoHelper::getStr(this->downloads[row].local_entry(), &Protos::Common::Entry::path)); // Relative path from base path
    return fullPath;
 }
 
@@ -92,8 +106,8 @@ QVariant DownloadsModel::data(const QModelIndex& index, int role) const
          const Protos::GUI::State_Download& currentDownload = this->downloads[index.row()];
          switch (index.column())
          {
-         case 0: return Common::ProtoHelper::getStr(currentDownload.entry(), &Protos::Common::Entry::name);
-         case 1: return Common::Global::formatByteSize(currentDownload.entry().size());
+         case 0: return Common::ProtoHelper::getStr(currentDownload.local_entry(), &Protos::Common::Entry::name);
+         case 1: return Common::Global::formatByteSize(currentDownload.local_entry().size());
          case 2: return QVariant::fromValue(Progress(currentDownload.progress(), currentDownload.status()));
          case 3:
             {
@@ -117,7 +131,7 @@ QVariant DownloadsModel::data(const QModelIndex& index, int role) const
          {
             if (this->downloads[index.row()].status() >= Protos::GUI::State_Download_Status_UNKNOWN_PEER)
                return QPixmap(":/icons/ressources/error.png");
-            else if (this->downloads[index.row()].entry().type() == Protos::Common::Entry_Type_DIR)
+            else if (this->downloads[index.row()].local_entry().type() == Protos::Common::Entry_Type_DIR)
                return QPixmap(":/icons/ressources/folder.png");
             else
                return QPixmap(":/icons/ressources/file.png");
@@ -349,10 +363,10 @@ bool GUI::operator==(const Protos::GUI::State_Download& d1, const Protos::GUI::S
 {
    if (
       d1.id() != d2.id() ||
-      d1.entry().type() != d2.entry().type() ||
-      d1.entry().path() != d2.entry().path() ||
-      d1.entry().name() != d2.entry().name() ||
-      d1.entry().size() != d2.entry().size() ||
+      d1.local_entry().type() != d2.local_entry().type() ||
+      d1.local_entry().path() != d2.local_entry().path() ||
+      d1.local_entry().name() != d2.local_entry().name() ||
+      d1.local_entry().size() != d2.local_entry().size() ||
       d1.status() != d2.status() ||
       d1.progress() != d2.progress() ||
       d1.peer_id_size() != d2.peer_id_size()

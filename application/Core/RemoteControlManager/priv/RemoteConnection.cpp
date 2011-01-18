@@ -28,6 +28,7 @@ using namespace RCM;
 #include <Common/Settings.h>
 #include <Common/ProtoHelper.h>
 #include <Common/Hash.h>
+#include <Common/SharedDir.h>
 #include <Core/FileManager/IChunk.h>
 #include <Core/FileManager/Exceptions.h>
 #include <Core/PeerManager/IPeer.h>
@@ -127,7 +128,7 @@ void RemoteConnection::refresh()
       DM::IDownload* download = i.next();
       Protos::GUI::State_Download* protoDownload = state.add_download();
       protoDownload->set_id(download->getID());
-      protoDownload->mutable_entry()->CopyFrom(download->getEntry());
+      protoDownload->mutable_local_entry()->CopyFrom(download->getLocalEntry());
       protoDownload->set_status(static_cast<Protos::GUI::State_Download_Status>(download->getStatus())); // Warning, enums must be compatible.
       protoDownload->set_progress(download->getProgress());
       for (QSetIterator<Common::Hash> j(download->getPeers()); j.hasNext();)
@@ -149,10 +150,13 @@ void RemoteConnection::refresh()
    }
 
    // Shared Dirs.
-   for (QStringListIterator i(this->fileManager->getSharedDirsReadOnly()); i.hasNext();)
-      Common::ProtoHelper::setStr(state, &Protos::GUI::State::add_shared_directory, i.next());
-   for (QStringListIterator i(this->fileManager->getSharedDirsReadWrite()); i.hasNext();)
-      Common::ProtoHelper::setStr(state, &Protos::GUI::State::add_destination_directory, i.next());
+   for (QListIterator<Common::SharedDir> i(this->fileManager->getSharedDirs()); i.hasNext();)
+   {
+      Common::SharedDir sharedDir = i.next();
+      Protos::GUI::State_SharedDir* sharedDirProto = state.add_shared_directory();
+      Common::ProtoHelper::setStr(*sharedDirProto, &Protos::GUI::State_SharedDir::set_path, sharedDir.path);
+      sharedDirProto->mutable_id()->set_hash(sharedDir.ID.getData(), Common::Hash::HASH_SIZE);
+   }
 
    // Stats.
    Protos::GUI::State_Stats* stats = state.mutable_stats();
@@ -300,15 +304,10 @@ bool RemoteConnection::readMessage()
 
             try
             {
-               QStringList sharedDirsReadOnly;
+               QStringList sharedDirs;
                for (int i = 0; i < coreSettingsMessage.shared_directory_size(); i++)
-                  sharedDirsReadOnly << Common::ProtoHelper::getRepeatedStr(coreSettingsMessage, &Protos::GUI::CoreSettings::shared_directory, i);
-               this->fileManager->setSharedDirsReadOnly(sharedDirsReadOnly);
-
-               QStringList sharedDirsReadWrite;
-               for (int i = 0; i < coreSettingsMessage.destination_directory_size(); i++)
-                  sharedDirsReadWrite << Common::ProtoHelper::getRepeatedStr(coreSettingsMessage, &Protos::GUI::CoreSettings::destination_directory, i);
-               this->fileManager->setSharedDirsReadWrite(sharedDirsReadWrite);
+                  sharedDirs << Common::ProtoHelper::getRepeatedStr(coreSettingsMessage, &Protos::GUI::CoreSettings::shared_directory, i);
+               this->fileManager->setSharedDirs(sharedDirs);
             }
             catch(FM::SuperDirectoryExistsException& e)
             {
@@ -395,7 +394,7 @@ bool RemoteConnection::readMessage()
 
                   // Add the root directories if asked. Populate shared dirs with their base path.
                   if (browseMessage.dirs().entry_size() == 0 || browseMessage.get_roots())
-                     result.add_entries()->CopyFrom(this->fileManager->getEntries(true));
+                     result.add_entries()->CopyFrom(this->fileManager->getEntries());
                }
 
                result.set_tag(tag);
@@ -466,7 +465,10 @@ bool RemoteConnection::readMessage()
          if (readOK && this->authenticated)
          {
             Common::Hash peerID(downloadMessage.peer_id().hash().data());
-            this->downloadManager->addDownload(downloadMessage.entry(), peerID);
+            if (downloadMessage.has_destination_directory_id())
+               this->downloadManager->addDownload(downloadMessage.entry(), peerID, downloadMessage.destination_directory_id().hash().data(), Common::ProtoHelper::getStr(downloadMessage, &Protos::GUI::Download::destination_path));
+            else
+               this->downloadManager->addDownload(downloadMessage.entry(), peerID);
 
             this->refresh();
             this->timerRefresh.start();

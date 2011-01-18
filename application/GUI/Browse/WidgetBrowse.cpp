@@ -25,6 +25,7 @@ using namespace GUI;
 #include <QIcon>
 #include <QDesktopServices>
 #include <QUrl>
+#include <QShowEvent>
 
 void BrowseDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
@@ -35,12 +36,12 @@ void BrowseDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option
 
 /////
 
-WidgetBrowse::WidgetBrowse(QSharedPointer<RCC::ICoreConnection> coreConnection, const PeerListModel& peerListModel, const Common::Hash& peerID, QWidget *parent) :
+WidgetBrowse::WidgetBrowse(QSharedPointer<RCC::ICoreConnection> coreConnection, const PeerListModel& peerListModel, const DirListModel& sharedDirsModel, const Common::Hash& peerID, QWidget *parent) :
    QWidget(parent),
    ui(new Ui::WidgetBrowse),
    coreConnection(coreConnection),
    peerID(peerID),
-   browseModel(coreConnection, peerID, false) // 'false' because the model is automatically refreshed when the widget is shown, see 'WidgetBrowse::showEvent(..)'.
+   browseModel(coreConnection, sharedDirsModel, peerID, false) // 'false' because the model is automatically refreshed when the widget is shown, see 'WidgetBrowse::showEvent(..)'.
 {
    this->ui->setupUi(this);
 
@@ -124,5 +125,6 @@ void WidgetBrowse::openLocation()
 
 void WidgetBrowse::showEvent(QShowEvent* event)
 {
-   this->refresh();
+   if (!event->spontaneous())
+      this->refresh();
 }

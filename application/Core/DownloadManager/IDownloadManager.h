@@ -38,9 +38,13 @@ namespace DM
       virtual ~IDownloadManager() {}
 
       /**
-        * @param entry It must have the field 'shared_dir' and 'shared_dir.shared_name' should be set.
+        * @remarks entry.path is not taken into account .
+        * The entry will be put in the root of the first shared directory with enough space.
         */
-      virtual void addDownload(const Protos::Common::Entry& entry, Common::Hash peerSource) = 0;
+      virtual void addDownload(const Protos::Common::Entry& remoteEntry, const Common::Hash& peerSource) = 0;
+
+
+      virtual void addDownload(const Protos::Common::Entry& remoteEntry, const Common::Hash& peerSource, const Common::Hash& destinationDirectoryID, const QString& relativePath) = 0;
 
       /**
         * @remarks The returned download pointers must not be retained.

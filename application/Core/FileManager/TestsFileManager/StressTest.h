@@ -79,8 +79,7 @@ class StressTest : public QObject
    static const int NB_FILES_AND_DIR_THREAD;
 public:
    StressTest();
-   QStringList getSharedDirsReadOnly() const;
-   QStringList getSharedDirsReadWrite() const;
+   QStringList getSharedDirs() const;
 
 private:
    static void (StressTest::*actions[])();
@@ -107,8 +106,7 @@ private:
 
    QSharedPointer<IFileManager> fileManager;
    QList<FilesAndDirs*> filesAndDirs;
-   QStringList sharedDirsReadOnly;
-   QStringList sharedDirsReadWrite;
+   QStringList sharedDirs;
    QStringList dirsToDelete;
 
    QList<Common::Hash> someHashes;

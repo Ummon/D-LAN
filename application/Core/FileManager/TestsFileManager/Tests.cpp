@@ -38,6 +38,7 @@ using namespace std;
 #include <Common/Global.h>
 #include <Common/ProtoHelper.h>
 #include <Common/Settings.h>
+#include <Common/SharedDir.h>
 
 #include <IChunk.h>
 #include <IGetHashesResult.h>
@@ -81,114 +82,95 @@ void Tests::createFileManager()
    this->fileManager = Builder::newFileManager();
 }
 
+void Tests::addASharedDirectoryIncoming()
+{
+   qDebug() << "===== addASharedDirectoryIncoming() =====";
+
+   this->sharedDirs << QDir::currentPath().append("/incoming");
+   this->fileManager->setSharedDirs(this->sharedDirs);
+   QList<SharedDir> paths = this->fileManager->getSharedDirs();
+   QVERIFY(paths.size() == 1);
+   QCOMPARE(paths.at(0).path, QDir::cleanPath(this->sharedDirs.at(0)));
+}
+
 void Tests::addASharedDirectory()
 {
    qDebug() << "===== addASharedDirectory() =====";
 
-   this->sharedDirsReadOnly << QDir::currentPath().append("/sharedDirs/share1");
-   this->fileManager->setSharedDirsReadOnly(this->sharedDirsReadOnly);
-   QStringList paths = this->fileManager->getSharedDirsReadOnly();
-   QVERIFY(paths.size() == 1);
-   QCOMPARE(paths.at(0), QDir::cleanPath(this->sharedDirsReadOnly.at(0)));
-   QVERIFY(this->fileManager->getSharedDirsReadWrite().size() == 0);
+   this->sharedDirs << QDir::currentPath().append("/sharedDirs/share1");
+   this->fileManager->setSharedDirs(this->sharedDirs);
+   QList<SharedDir> paths = this->fileManager->getSharedDirs();
+   QVERIFY(paths.size() == 2);
+   QCOMPARE(paths.at(1).path, QDir::cleanPath(this->sharedDirs.at(1)));
 }
 
 void Tests::addAnAlreadySharedDirectory()
 {
    qDebug() << "===== addAnAlreadySharedDirectory() =====";
 
-   this->fileManager->setSharedDirsReadOnly(this->sharedDirsReadOnly);
-   QStringList paths = this->fileManager->getSharedDirsReadOnly();
-   QVERIFY(paths.size() == 1);
-   QCOMPARE(paths.at(0), QDir::cleanPath(this->sharedDirsReadOnly.at(0)));
-   QVERIFY(this->fileManager->getSharedDirsReadWrite().size() == 0);
+   this->fileManager->setSharedDirs(this->sharedDirs);
+   QList<SharedDir> paths = this->fileManager->getSharedDirs();
+   QVERIFY(paths.size() == 2);
+   QCOMPARE(paths.at(1).path, QDir::cleanPath(this->sharedDirs.at(1)));
 }
 
 void Tests::addInexistingSharedDirectory()
 {
    qDebug() << "===== addInexistingSharedDirectory() =====";
 
-   this->sharedDirsReadOnly << QDir::currentPath().append("/this_is_spartaaaaaa"); // This directory doesn't exit.
+   this->sharedDirs << QDir::currentPath().append("/this_is_spartaaaaaa"); // This directory doesn't exit.
    try
    {
-      this->fileManager->setSharedDirsReadOnly(this->sharedDirsReadOnly);
+      this->fileManager->setSharedDirs(this->sharedDirs);
       QFAIL("An exception must be thrown");
    }
    catch (DirsNotFoundException& e)
    {
       QVERIFY(e.paths.size() == 1);
-      QCOMPARE(e.paths.at(0), QDir::cleanPath(this->sharedDirsReadOnly.last()));
+      QCOMPARE(e.paths.at(0), QDir::cleanPath(this->sharedDirs.last()));
       qDebug() << "This directory hasn't been found : " << e.paths.at(0) << " (Exception thrown)";
    }
-   this->sharedDirsReadOnly.removeLast();
+   this->sharedDirs.removeLast();
 }
 
 void Tests::addSubSharedDirectories()
 {
    qDebug() << "===== addSubSharedDirectories() =====";
 
-   this->sharedDirsReadOnly << QDir::currentPath().append("/sharedDirs/share1/subdir");
-   this->sharedDirsReadOnly << QDir::currentPath().append("/sharedDirs/share1/another subdir");
+   this->sharedDirs << QDir::currentPath().append("/sharedDirs/share1/subdir");
+   this->sharedDirs << QDir::currentPath().append("/sharedDirs/share1/another subdir");
    try
    {
-      this->fileManager->setSharedDirsReadOnly(this->sharedDirsReadOnly);
+      this->fileManager->setSharedDirs(this->sharedDirs);
       QFAIL("An exception must be thrown");
    }
    catch(SuperDirectoryExistsException& e)
    {
-      QCOMPARE(e.superDirectory, QDir::cleanPath(this->sharedDirsReadOnly.at(0)));
-      QCOMPARE(e.subDirectory, QDir::cleanPath(this->sharedDirsReadOnly.at(this->sharedDirsReadOnly.size()-2)));
+      QCOMPARE(e.superDirectory, QDir::cleanPath(this->sharedDirs.at(1)));
+      QCOMPARE(e.subDirectory, QDir::cleanPath(this->sharedDirs.at(this->sharedDirs.size()-2)));
 
       qDebug() << "There is already a super directory : " << e.superDirectory <<
             " for this directory : " << e.subDirectory;
    }
-   this->sharedDirsReadOnly.removeLast();
-   this->sharedDirsReadOnly.removeLast();
-}
-
-void Tests::addSuperSharedDirectoriesWithDifferentRights()
-{
-   qDebug() << "===== addSuperSharedDirectoriesWithDifferentRights() =====";
-
-   QStringList sharedWriteDirs;
-   sharedWriteDirs << QDir::currentPath().append("/sharedDirs");
-
-   try
-   {
-      this->fileManager->setSharedDirsReadWrite(sharedWriteDirs);
-      QFAIL("An exception must be thrown");
-   }
-   catch(SubDirectoriesWithDifferentRightsExistsException& e)
-   {
-      qDebug() << "This directory : " << e.superDirectory <<
-            " has sub directories with different rights : " << e.subDirectories;
-   }
+   this->sharedDirs.removeLast();
+   this->sharedDirs.removeLast();
 }
 
 /**
   * The subs directories of each subdirectory must be merged into the super directory.
   */
-void Tests::addSuperSharedDirectoriesWithSameRights()
+void Tests::addSuperSharedDirectories()
 {
-   qDebug() << "===== addSuperSharedDirectoriesWithSameRights() =====";
+   qDebug() << "===== addSuperSharedDirectories() =====";
 
-   this->sharedDirsReadOnly << QDir::currentPath().append("/sharedDirs");
-   this->fileManager->setSharedDirsReadOnly(this->sharedDirsReadOnly);
+   this->sharedDirs << QDir::currentPath().append("/sharedDirs");
+   this->fileManager->setSharedDirs(this->sharedDirs);
 
    QTest::qSleep(100);
 
    /*
    qsrand(QTime(0,0,0).secsTo(QTime::currentTime()));
    QTest::qSleep(qrand() % 10 + 1);*/
-}
-
-void Tests::addASharedDirectoryReadWrite()
-{
-   qDebug() << "===== addASharedDirectoryReadWrite() =====";
-
-   QStringList sharedWriteDirs;
-   sharedWriteDirs << QDir::currentPath().append("/incoming");
-   this->fileManager->setSharedDirsReadWrite(sharedWriteDirs);
 }
 
 void Tests::createAFile()
@@ -336,9 +318,9 @@ void Tests::createAnEmptyFile()
       for (int i = 0; i < chunks.size(); i++)
          QVERIFY(chunks[i]->getHash().isNull());
    }
-   catch(NoReadWriteSharedDirectoryException&)
+   catch(NoWriteableDirectoryException&)
    {
-      QFAIL("NoReadWriteSharedDirectoryException");
+      QFAIL("NoWriteableDirectoryException");
    }
    catch(InsufficientStorageSpaceException&)
    {
@@ -378,7 +360,7 @@ void Tests::getHashesFromAFileEntry1()
 
    // Find the id of the first shared directory.
    Protos::Common::Entries sharedDirs = this->fileManager->getEntries();
-   const string sharedDirId = sharedDirs.entry(0).shared_dir().id().hash();
+   const string sharedDirId = sharedDirs.entry(1).shared_dir().id().hash();
 
    Protos::Common::Entry entry;
    entry.set_path("/share1/");
@@ -412,7 +394,7 @@ void Tests::getHashesFromAFileEntry2()
    QTest::qWait(2000); // Begin the computing of the big2.bin hashes.
 
    Protos::Common::Entries sharedDirs = this->fileManager->getEntries();
-   const string sharedDirId = sharedDirs.entry(0).shared_dir().id().hash();
+   const string sharedDirId = sharedDirs.entry(1).shared_dir().id().hash();
 
    Protos::Common::Entry entry;
    entry.set_path("/");
@@ -585,8 +567,8 @@ void Tests::rmSharedDirectory()
 {
    qDebug() << "===== rmSharedDirectory() =====";
 
-   this->sharedDirsReadOnly.clear();
-   this->fileManager->setSharedDirsReadOnly(this->sharedDirsReadOnly);
+   this->sharedDirs.clear();
+   this->fileManager->setSharedDirs(this->sharedDirs);
 }
 
 void Tests::cleanupTestCase()

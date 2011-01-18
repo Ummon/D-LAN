@@ -185,6 +185,8 @@ Hash Hash::fromStr(const QString& str)
    return hash;
 }
 
+const Hash Hash::null;
+
 /////
 
 /**

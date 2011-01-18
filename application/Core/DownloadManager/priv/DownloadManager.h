@@ -49,9 +49,14 @@ namespace DM
       DownloadManager(QSharedPointer<FM::IFileManager> fileManager, QSharedPointer<PM::IPeerManager> peerManager);
       ~DownloadManager();
 
-      void addDownload(const Protos::Common::Entry& entry, Common::Hash peerSource);
-      Download* addDownload(const Protos::Common::Entry& entry, Common::Hash peerSource, bool complete);
-      Download* addDownload(const Protos::Common::Entry& entry, Common::Hash peerSource, bool complete, QMutableListIterator<Download*>& iterator);
+      void addDownload(const Protos::Common::Entry& remoteEntry, const Common::Hash& peerSource);
+      void addDownload(const Protos::Common::Entry& remoteEntry, const Common::Hash& peerSource, const Common::Hash& destinationDirectoryID, const QString& relativePath);
+
+      Download* addDownload(const Protos::Common::Entry& remoteEntry, const Common::Hash& peerSource, const Common::Hash& destinationDirectoryID, const QString& localRelativePath, bool complete);
+      Download* addDownload(const Protos::Common::Entry& remoteEntry, const Common::Hash& peerSource, const Common::Hash& destinationDirectoryID, const QString& localRelativePath, bool complete, QMutableListIterator<Download*>& iterator);
+
+      Download* addDownload(const Protos::Common::Entry& remoteEntry, const Protos::Common::Entry& localEntry, const Common::Hash& peerSource, bool complete);
+      Download* addDownload(const Protos::Common::Entry& remoteEntry, const Protos::Common::Entry& localEntry, const Common::Hash& peerSource, bool complete,  QMutableListIterator<Download*>& iterator);
 
       QList<IDownload*> getDownloads() const;
       void moveDownloads(quint64 downloadIDRef, bool moveBefore, const QList<quint64>& downloadIDs);
@@ -62,7 +67,7 @@ namespace DM
    private slots:
       void fileCacheLoaded();
 
-      void newEntries(const Protos::Common::Entries& entries);
+      void newEntries(const Protos::Common::Entries& remoteEntries);
 
       void downloadDeleted(Download* download);
 
@@ -81,7 +86,7 @@ namespace DM
       void setQueueChanged();
 
    private:
-      bool isEntryAlreadyQueued(const Protos::Common::Entry& entry);
+      bool isEntryAlreadyQueued(const Protos::Common::Entry& remoteEntry, const Common::Hash& peerSource);
 
       const int NUMBER_OF_DOWNLOADER;
 

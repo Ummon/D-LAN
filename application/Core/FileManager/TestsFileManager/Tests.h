@@ -41,13 +41,12 @@ private slots:
    void createFileManager();
 
    /***** Adding shared directories *****/
+   void addASharedDirectoryIncoming();
    void addASharedDirectory();
    void addAnAlreadySharedDirectory();
    void addInexistingSharedDirectory();
    void addSubSharedDirectories();
-   void addSuperSharedDirectoriesWithDifferentRights();
-   void addSuperSharedDirectoriesWithSameRights();
-   void addASharedDirectoryReadWrite();
+   void addSuperSharedDirectories();
 
    /***** Modification of the file system *****/
    void createAFile();
@@ -108,8 +107,7 @@ private:
 
    static void compareStrRegexp(const QString& regexp, const QString& str);
 
-   QStringList sharedDirsReadOnly;
-   QStringList sharedDirsReadWrite;
+   QStringList sharedDirs;
    QSharedPointer<IFileManager> fileManager;
 };
 

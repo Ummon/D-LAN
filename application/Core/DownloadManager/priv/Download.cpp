@@ -26,8 +26,14 @@ using namespace DM;
 
 quint64 Download::currentID(1);
 
-Download::Download(QSharedPointer<FM::IFileManager> fileManager, QSharedPointer<PM::IPeerManager> peerManager, Common::Hash peerSourceID, const Protos::Common::Entry& entry)
-   : ID(currentID++), fileManager(fileManager), peerManager(peerManager), peerSourceID(peerSourceID), peerSource(0), entry(entry), status(QUEUED)
+Download::Download(
+   QSharedPointer<FM::IFileManager> fileManager,
+   QSharedPointer<PM::IPeerManager> peerManager,
+   Common::Hash peerSourceID,
+   const Protos::Common::Entry& remoteEntry,
+   const Protos::Common::Entry& localEntry
+)
+   : ID(currentID++), fileManager(fileManager), peerManager(peerManager), peerSourceID(peerSourceID), peerSource(0), remoteEntry(remoteEntry), localEntry(localEntry), status(QUEUED)
 {
    this->retrievePeer();
 }
@@ -37,10 +43,14 @@ Download::~Download()
    emit deleted(this);
 }
 
-void Download::populateEntry(Protos::Queue::Queue_Entry* entry) const
+void Download::populateRemoteEntry(Protos::Queue::Queue_Entry* entry) const
 {
-   entry->mutable_entry()->CopyFrom(this->entry);
-   entry->mutable_peer_id()->set_hash(this->peerSourceID.getData(), Common::Hash::HASH_SIZE);
+   entry->mutable_remote_entry()->CopyFrom(this->remoteEntry);
+}
+
+void Download::populateLocalEntry(Protos::Queue::Queue_Entry* entry) const
+{
+   entry->mutable_local_entry()->CopyFrom(this->localEntry);
    entry->set_complete(this->status == COMPLETE);
 }
 
@@ -69,9 +79,14 @@ Common::Hash Download::getPeerSourceID() const
    return this->peerSourceID;
 }
 
-const Protos::Common::Entry& Download::getEntry()
+const Protos::Common::Entry& Download::getRemoteEntry() const
 {
-   return this->entry;
+   return this->remoteEntry;
+}
+
+const Protos::Common::Entry& Download::getLocalEntry() const
+{
+   return this->localEntry;
 }
 
 void Download::remove()

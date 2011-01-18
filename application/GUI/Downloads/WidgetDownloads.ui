@@ -13,6 +13,10 @@
   <property name="windowTitle">
    <string>Downloads</string>
   </property>
+  <property name="windowIcon">
+   <iconset resource="../ressources.qrc">
+    <normaloff>:/icons/ressources/download.png</normaloff>:/icons/ressources/download.png</iconset>
+  </property>
   <layout class="QVBoxLayout" name="layMain">
    <property name="spacing">
     <number>6</number>
@@ -50,8 +54,22 @@
         <string/>
        </property>
        <property name="icon">
-        <iconset resource="ressources.qrc">
+        <iconset resource="../ressources.qrc">
          <normaloff>:/icons/ressources/remove_complete_files.png</normaloff>:/icons/ressources/remove_complete_files.png</iconset>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="butRemoveSelected">
+       <property name="toolTip">
+        <string>Removed selected downloads</string>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+       <property name="icon">
+        <iconset resource="../ressources.qrc">
+         <normaloff>:/icons/ressources/delete.png</normaloff>:/icons/ressources/delete.png</iconset>
        </property>
       </widget>
      </item>
@@ -73,7 +91,7 @@
   </layout>
  </widget>
  <resources>
-  <include location="ressources.qrc"/>
+  <include location="../ressources.qrc"/>
  </resources>
  <connections/>
 </ui>

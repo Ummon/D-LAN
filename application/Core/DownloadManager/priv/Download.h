@@ -43,19 +43,27 @@ namespace DM
       static quint64 currentID;
 
    protected:
-      Download(QSharedPointer<FM::IFileManager> fileManager, QSharedPointer<PM::IPeerManager> peerManager, Common::Hash peerSourceID, const Protos::Common::Entry& entry);
+      Download(
+         QSharedPointer<FM::IFileManager> fileManager,
+         QSharedPointer<PM::IPeerManager> peerManager,
+         Common::Hash peerSourceID,
+         const Protos::Common::Entry& remoteEntry,
+         const Protos::Common::Entry& localEntry
+      );
 
    public:
       virtual ~Download();
 
-      virtual void populateEntry(Protos::Queue::Queue_Entry* entry) const;
+      virtual void populateRemoteEntry(Protos::Queue::Queue_Entry* entry) const;
+      virtual void populateLocalEntry(Protos::Queue::Queue_Entry* entry) const;
 
       quint64 getID() const;
       Status getStatus() const;
       bool isStatusErroneous() const;
       virtual int getProgress() const;
       Common::Hash getPeerSourceID() const;
-      const Protos::Common::Entry& getEntry();
+      const Protos::Common::Entry& getRemoteEntry() const;
+      const Protos::Common::Entry& getLocalEntry() const;
       void remove();
 
       bool hasAValidPeer();
@@ -79,7 +87,9 @@ namespace DM
 
       Common::Hash peerSourceID;
       PM::IPeer* peerSource;
-      Protos::Common::Entry entry; ///< The remote entry given by searching or browsing.
+
+      Protos::Common::Entry remoteEntry; ///< From.
+      Protos::Common::Entry localEntry; ///< To.
 
       Status status;
    };

@@ -19,13 +19,13 @@
 #include <Settings/DirListModel.h>
 using namespace GUI;
 
-void DirListModel::setDirs(const QStringList& dirs)
+   void DirListModel::setDirs(const QList<Common::SharedDir>& dirs)
 {
-   QStringList dirsToRemove = this->dirs;
+   QList<Common::SharedDir> dirsToRemove = this->dirs;
 
-   for (QStringListIterator i(dirs); i.hasNext();)
+   for (QListIterator<Common::SharedDir> i(dirs); i.hasNext();)
    {
-      QString dir = i.next();
+      Common::SharedDir dir = i.next();
       if (this->dirs.contains(dir))
       {
          dirsToRemove.removeOne(dir);
@@ -38,7 +38,7 @@ void DirListModel::setDirs(const QStringList& dirs)
       }
    }
 
-   for (QStringListIterator i(dirsToRemove); i.hasNext();)
+   for (QListIterator<Common::SharedDir> i(dirsToRemove); i.hasNext();)
    {
       int j = this->dirs.indexOf(i.next());
       if (j != -1)
@@ -50,7 +50,7 @@ void DirListModel::setDirs(const QStringList& dirs)
    }
 }
 
-void DirListModel::addDir(const QString& dir)
+void DirListModel::addDir(const Common::SharedDir& dir)
 {
    if (this->dirs.contains(dir))
       return;
@@ -63,7 +63,7 @@ void DirListModel::addDir(const QString& dir)
 void DirListModel::addDirs(const QStringList& dirs)
 {
    foreach (QString dir, dirs)
-      this->addDir(dir);
+      this->addDir(Common::SharedDir(Common::Hash::null, dir));
 }
 
 void DirListModel::rmDir(int row)
@@ -76,9 +76,20 @@ void DirListModel::rmDir(int row)
    this->endRemoveRows();
 }
 
-const QStringList& DirListModel::getDirs() const
+const QList<Common::SharedDir>& DirListModel::getDirs() const
 {
    return this->dirs;
+}
+
+Common::SharedDir DirListModel::getDir(const Common::Hash& ID) const
+{
+   for (QListIterator<Common::SharedDir> i(this->dirs); i.hasNext();)
+   {
+      Common::SharedDir dir = i.next();
+      if (dir.ID == ID)
+         return dir;
+   }
+   return Common::SharedDir();
 }
 
 int DirListModel::rowCount(const QModelIndex& parent) const
@@ -90,5 +101,5 @@ QVariant DirListModel::data(const QModelIndex& index, int role) const
 {
    if (role != Qt::DisplayRole || index.row() >= this->dirs.size())
       return QVariant();
-   return this->dirs[index.row()];
+   return this->dirs[index.row()].path;
 }

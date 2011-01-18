@@ -47,13 +47,16 @@ void Entry::populateEntry(Protos::Common::Entry* entry, bool setSharedDir) const
    entry->set_size(this->getSize());
 
    if (setSharedDir)
+      this->populateEntrySharedDir(entry);
+}
+
+void Entry::populateEntrySharedDir(Protos::Common::Entry* entry) const
+{
+   SharedDirectory* dir = dynamic_cast<SharedDirectory*>(this->getRoot());
+   if (dir)
    {
-      SharedDirectory* dir = dynamic_cast<SharedDirectory*>(this->getRoot());
-      if (dir)
-      {
-         entry->mutable_shared_dir()->mutable_id()->set_hash(dir->getId().getData(), Common::Hash::HASH_SIZE);
-         Common::ProtoHelper::setStr(*entry->mutable_shared_dir(), &Protos::Common::SharedDir::set_shared_name, dir->getName());
-      }
+      entry->mutable_shared_dir()->mutable_id()->set_hash(dir->getId().getData(), Common::Hash::HASH_SIZE);
+      Common::ProtoHelper::setStr(*entry->mutable_shared_dir(), &Protos::Common::SharedDir::set_shared_name, dir->getName());
    }
 }
 

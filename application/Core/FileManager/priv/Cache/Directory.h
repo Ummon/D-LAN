@@ -73,9 +73,8 @@ namespace FM
       QList<File*> getFiles() const;
       QList<File*> getCompleteFiles() const;
 
-      Directory* createSubDirectory(const QString& name);
-
-      Directory* physicallyCreateSubDirectory(const QString& name);
+      Directory* createSubDirectory(const QString& name, bool physically = false);
+      Directory* createSubDirectories(const QStringList& names, bool physically = false);
 
       File* getFile(const QString& name) const;      
       void add(File* file);

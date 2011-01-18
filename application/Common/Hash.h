@@ -73,6 +73,7 @@ namespace Common
 
       static Hash rand();
       static Hash fromStr(const QString& str);
+      static const Hash null;
 
    private:
       inline void dereference();

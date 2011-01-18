@@ -29,6 +29,8 @@
 #include <Common/RemoteCoreController/ICoreConnection.h>
 #include <Common/RemoteCoreController/IBrowseResult.h>
 
+#include <Settings/DirListModel.h>
+
 namespace GUI
 {
    class BrowseModel : public QAbstractItemModel
@@ -40,7 +42,7 @@ namespace GUI
       Q_OBJECT
 
    public:
-      BrowseModel(QSharedPointer<RCC::ICoreConnection> coreConnection, const Common::Hash& peerID, bool loadRoots = true);
+      BrowseModel(QSharedPointer<RCC::ICoreConnection> coreConnection, const DirListModel& sharedDirsModel, const Common::Hash& peerID, bool loadRoots = true);
       virtual ~BrowseModel();
 
       virtual QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const;
@@ -107,6 +109,7 @@ namespace GUI
       };
 
       QSharedPointer<RCC::ICoreConnection> coreConnection;
+      const DirListModel& sharedDirsModel;
       Common::Hash peerID;
 
       QPersistentModelIndex currentBrowseIndex; // When we receive some entries after a browse query, they will be added as children to this index.

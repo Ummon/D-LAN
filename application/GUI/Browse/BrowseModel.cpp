@@ -29,8 +29,8 @@ using namespace GUI;
   * Used by 'WidgetBrowse'.
   */
 
-BrowseModel::BrowseModel(QSharedPointer<RCC::ICoreConnection> coreConnection, const Common::Hash& peerID, bool loadRoots) :
-    coreConnection(coreConnection), peerID(peerID), root(new Node())
+BrowseModel::BrowseModel(QSharedPointer<RCC::ICoreConnection> coreConnection, const DirListModel& sharedDirsModel, const Common::Hash& peerID, bool loadRoots) :
+    coreConnection(coreConnection), sharedDirsModel(sharedDirsModel), peerID(peerID), root(new Node())
 {
    if (loadRoots && !peerID.isNull())
       this->browse(this->peerID);
@@ -149,9 +149,13 @@ Protos::Common::Entry BrowseModel::getEntry(const QModelIndex& index) const
 QString BrowseModel::getLocationPath(const QModelIndex& index) const
 {
    const Protos::Common::Entry entry = this->getEntry(index);
-   QString path = Common::ProtoHelper::getStr(entry.shared_dir(), &Protos::Common::SharedDir::base_path);
+   const Common::SharedDir sharedDir = this->sharedDirsModel.getDir(entry.shared_dir().id().hash().data());
+   if (sharedDir.isNull())
+      return QString();
+
+   QString path = sharedDir.path;
    QString relativePath = Common::ProtoHelper::getStr(entry, &Protos::Common::Entry::path);
-   path.append(relativePath);
+   path.append('/').append(relativePath);
 
    // Empty relative path means the directory is a shared directory (root), see "application/Protos/common.proto" for more information.
    if (entry.type() == Protos::Common::Entry_Type_DIR && !relativePath.isEmpty())
@@ -161,6 +165,9 @@ QString BrowseModel::getLocationPath(const QModelIndex& index) const
 
 void BrowseModel::refresh()
 {
+   if (!this->browseResult.isNull())
+      return;
+
    Protos::Common::Entries entries;
 
    Node::NodeBreadthIterator i(this->root);
@@ -200,6 +207,7 @@ void BrowseModel::resultRefresh(const google::protobuf::RepeatedPtrField<Protos:
       delete node;
       this->endRemoveRows();
    }
+   this->browseResult.clear();
 }
 
 void BrowseModel::result(const google::protobuf::RepeatedPtrField<Protos::Common::Entries>& entries)

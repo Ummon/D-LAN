@@ -24,6 +24,7 @@
 #include <QSharedPointer>
 
 #include <Common/Hash.h>
+#include <Common/SharedDir.h>
 
 #include <Protos/common.pb.h>
 #include <Protos/core_protocol.pb.h>
@@ -52,15 +53,15 @@ namespace FM
       /**
         * @exception DirsNotFoundException
         */
-      virtual void setSharedDirsReadOnly(const QStringList& dirs) = 0;
+      virtual void setSharedDirs(const QStringList& dirs) = 0;
+
+      virtual QList<Common::SharedDir> getSharedDirs() const = 0;
 
       /**
-        * @exception DirsNotFoundException
+        * Returns the absolute path to the corresponding shared directory.
+        * If the directory is not found an empty string is returned.
         */
-      virtual void setSharedDirsReadWrite(const QStringList& dirs) = 0;
-
-      virtual QStringList getSharedDirsReadOnly() = 0;
-      virtual QStringList getSharedDirsReadWrite() = 0;
+      virtual QString getSharedDir(const Common::Hash& ID) const = 0;
 
       /**
         * Returns a chunk. If no chunk is found return a empty pointer.
@@ -72,20 +73,19 @@ namespace FM
         * The name and the path of the owner of the returned chunk must match the given entry.
         * ".unfinished" suffix is ignored in both side.
         */
-      virtual QList< QSharedPointer<IChunk> > getAllChunks(const Protos::Common::Entry& entry, const Common::Hash& hash) const = 0;
+      virtual QList< QSharedPointer<IChunk> > getAllChunks(const Protos::Common::Entry& localEntry, const Common::Hash& hash) const = 0;
 
       /**
-        * Create a new empty file. It will be automatically create in the same path than the remote.
+        * Create a new empty file.
         * It will take the shared directory which has enought storage space and matches paths the closest.
         * The file will have the exact final size and filled with 0.
         * The filename will end with ".unfinished".
         * Some or all hashes can be null (see Protos.Common.Hash). They can be set later with IChunk::setHash(..).
-        * @remarks Entry.shared_dir is not used.
-        * @exception NoReadWriteSharedDirectoryException
+        * @exception NoWriteableDirectoryException
         * @exception InsufficientStorageSpaceException
         * @exception UnableToCreateNewFileException
         */
-      virtual QList< QSharedPointer<IChunk> > newFile(const Protos::Common::Entry& remoteEntry) = 0;
+      virtual QList< QSharedPointer<IChunk> > newFile(Protos::Common::Entry& entry) = 0;
 
       /**
         * Return the hashes from a FileEntry. If the hashes don't exist they will be computed on the fly. However this
@@ -100,9 +100,8 @@ namespace FM
 
       /**
         * Returns the shared directories (roots).
-        * @param setBasePath When true set the field of entry.shared_dir.base_path to the absolute path. Only use when browsing local folders, there is no reason to give the path of remote ones.
         */
-      virtual Protos::Common::Entries getEntries(bool setBasePath = false) = 0;
+      virtual Protos::Common::Entries getEntries() = 0;
 
       /**
         * Find some entry from a given words.
