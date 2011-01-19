@@ -217,7 +217,7 @@ QList< QSharedPointer<IChunk> > Cache::newFile(Protos::Common::Entry& fileEntry)
 
    Common::Hashes hashes;
    for (int i = 0; i < fileEntry.chunk_size(); i++)
-      hashes << (fileEntry.chunk(i).has_hash() ? Common::Hash(fileEntry.chunk(i).hash().data()) : Common::Hash());
+      hashes << (fileEntry.chunk(i).has_hash() ? Common::Hash(fileEntry.chunk(i).hash().data()) : Common::Hash::null);
 
    const QString name = Common::ProtoHelper::getStr(fileEntry, &Protos::Common::Entry::name);
 

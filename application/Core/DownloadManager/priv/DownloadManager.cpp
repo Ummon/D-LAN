@@ -74,7 +74,7 @@ void DownloadManager::addDownload(const Protos::Common::Entry& remoteEntry, cons
 {
    QMutableListIterator<Download*> i(this->downloads);
    i.toBack();
-   this->addDownload(remoteEntry, peerSource, Common::Hash(), "/", false, i);
+   this->addDownload(remoteEntry, peerSource, Common::Hash::null, "/", false, i);
 }
 
 void DownloadManager::addDownload(const Protos::Common::Entry& remoteEntry, const Common::Hash& peerSource, const Common::Hash& destinationDirectoryID, const QString& relativePath)
@@ -267,7 +267,7 @@ void DownloadManager::newEntries(const Protos::Common::Entries& remoteEntries)
       {
          const Protos::Common::Entry& localEntry = dirDownload->getLocalEntry();
          QString relativePath = Common::ProtoHelper::getStr(localEntry, &Protos::Common::Entry::path).append(Common::ProtoHelper::getStr(localEntry, &Protos::Common::Entry::name)).append("/");
-         this->addDownload(remoteEntries.entry(n), dirDownload->getPeerSourceID(), localEntry.has_shared_dir() ? localEntry.shared_dir().id().hash().data() : Common::Hash(), relativePath, false, i);
+         this->addDownload(remoteEntries.entry(n), dirDownload->getPeerSourceID(), localEntry.has_shared_dir() ? localEntry.shared_dir().id().hash().data() : Common::Hash::null, relativePath, false, i);
       }
 
    // Then directories. TODO : code to refactor with the one above.
@@ -276,7 +276,7 @@ void DownloadManager::newEntries(const Protos::Common::Entries& remoteEntries)
       {
          const Protos::Common::Entry& localEntry = dirDownload->getLocalEntry();
          QString relativePath = Common::ProtoHelper::getStr(localEntry, &Protos::Common::Entry::path).append(Common::ProtoHelper::getStr(localEntry, &Protos::Common::Entry::name)).append("/");
-         this->addDownload(remoteEntries.entry(n), dirDownload->getPeerSourceID(), localEntry.has_shared_dir() ? localEntry.shared_dir().id().hash().data() : Common::Hash(), relativePath,false, i);
+         this->addDownload(remoteEntries.entry(n), dirDownload->getPeerSourceID(), localEntry.has_shared_dir() ? localEntry.shared_dir().id().hash().data() : Common::Hash::null, relativePath,false, i);
       }
 
    delete dirDownload;

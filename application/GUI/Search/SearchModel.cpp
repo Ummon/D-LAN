@@ -31,7 +31,7 @@ const int SearchModel::NB_SIGNAL_PROGRESS(50);
   */
 
 SearchModel::SearchModel(QSharedPointer<RCC::ICoreConnection> coreConnection, const PeerListModel& peerListModel, const DirListModel& sharedDirsModel) :
-   BrowseModel(coreConnection, sharedDirsModel, Common::Hash()), peerListModel(peerListModel), maxLevel(0), nbFolders(0), nbFiles(0), currentProgress(0)
+   BrowseModel(coreConnection, sharedDirsModel, Common::Hash::null), peerListModel(peerListModel), maxLevel(0), nbFolders(0), nbFiles(0), currentProgress(0)
 {
    delete this->root;
    this->root = new SearchNode();
