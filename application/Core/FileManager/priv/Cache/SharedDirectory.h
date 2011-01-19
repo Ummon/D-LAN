@@ -58,14 +58,16 @@ namespace FM
 
       /**
         * Return the full path to the shared directory.
-        * There is no slash at the end, only for the root.
+        * There is always a slash at the end.
         * For exemple :
-        *  - '/home/paul/movies'
+        *  - '/home/paul/movies/'
         *  - '/'.
-        *  - 'C:/Users/Paul/My Movies'
+        *  - 'C:/Users/Paul/My Movies/'
         *  - 'G:/'
         */
       QString getFullPath() const;
+
+      SharedDirectory* getRoot() const;
 
       Common::Hash getId() const;
 

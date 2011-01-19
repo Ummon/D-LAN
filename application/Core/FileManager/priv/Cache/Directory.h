@@ -33,6 +33,7 @@ namespace FM
 {
    class File;
    class Cache;
+   class SharedDirectory;
 
    class Directory : public Entry
    {
@@ -63,8 +64,8 @@ namespace FM
    public:
       virtual QString getPath() const;
       virtual QString getFullPath() const;
+      virtual SharedDirectory* getRoot() const;
 
-      Directory* getRoot() const;
       void changeName(const QString& newName);
       bool isAChildOf(const Directory* dir) const;
 

@@ -40,6 +40,7 @@ namespace FM
    class IChunk;
    class Chunk;
    class Directory;
+   class SharedDirectory;
    class Cache;
 
    class File : public Entry
@@ -66,7 +67,7 @@ namespace FM
 
       QString getPath() const;
       QString getFullPath() const;
-      Directory* getRoot() const;
+      SharedDirectory* getRoot() const;
       void changeName(const QString& newName);
       QDateTime getDateLastModified() const;
 

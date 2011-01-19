@@ -65,7 +65,7 @@ Cache* Entry::getCache()
    return this->cache;
 }
 
-const QString& Entry::getName() const
+QString Entry::getName() const
 {
    return this->name;
 }

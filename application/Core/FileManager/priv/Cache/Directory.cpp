@@ -197,16 +197,14 @@ QString Directory::getFullPath() const
    // In case of a partially constructed ShareDirectory.
    // (When a exception is thrown from the SharedDirectory ctor).
    if (!this->parent)
-      return this->getName();
+      return this->getName().append('/');
 
-   return this->parent->getFullPath().append('/').append(this->getName());
+   return this->parent->getFullPath().append(this->getName()).append('/');
 }
 
-Directory* Directory::getRoot() const
+SharedDirectory* Directory::getRoot() const
 {
-   if (this->parent)
-      return this->parent->getRoot();
-   return const_cast<Directory*>(this);
+   return this->parent->getRoot(); // A directory MUST have a parent.
 }
 
 void Directory::changeName(const QString& newName)

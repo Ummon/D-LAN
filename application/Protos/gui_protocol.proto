@@ -73,7 +73,7 @@ message State {
    }
    message SharedDir {
       required Common.Hash id = 1;
-      required string path = 2;
+      required string path = 2; // Always ended with a '/'.
    }
    
    required Peer myself = 1;

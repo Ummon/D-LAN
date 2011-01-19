@@ -86,22 +86,22 @@ void Tests::addASharedDirectoryIncoming()
 {
    qDebug() << "===== addASharedDirectoryIncoming() =====";
 
-   this->sharedDirs << QDir::currentPath().append("/incoming");
+   this->sharedDirs << QDir::currentPath().append("/incoming/");
    this->fileManager->setSharedDirs(this->sharedDirs);
    QList<SharedDir> paths = this->fileManager->getSharedDirs();
    QVERIFY(paths.size() == 1);
-   QCOMPARE(paths.at(0).path, QDir::cleanPath(this->sharedDirs.at(0)));
+   QCOMPARE(paths.at(0).path, this->sharedDirs.at(0));
 }
 
 void Tests::addASharedDirectory()
 {
    qDebug() << "===== addASharedDirectory() =====";
 
-   this->sharedDirs << QDir::currentPath().append("/sharedDirs/share1");
+   this->sharedDirs << QDir::currentPath().append("/sharedDirs/share1/");
    this->fileManager->setSharedDirs(this->sharedDirs);
    QList<SharedDir> paths = this->fileManager->getSharedDirs();
    QVERIFY(paths.size() == 2);
-   QCOMPARE(paths.at(1).path, QDir::cleanPath(this->sharedDirs.at(1)));
+   QCOMPARE(paths.at(1).path, this->sharedDirs.at(1));
 }
 
 void Tests::addAnAlreadySharedDirectory()
@@ -111,7 +111,7 @@ void Tests::addAnAlreadySharedDirectory()
    this->fileManager->setSharedDirs(this->sharedDirs);
    QList<SharedDir> paths = this->fileManager->getSharedDirs();
    QVERIFY(paths.size() == 2);
-   QCOMPARE(paths.at(1).path, QDir::cleanPath(this->sharedDirs.at(1)));
+   QCOMPARE(paths.at(1).path, this->sharedDirs.at(1));
 }
 
 void Tests::swapTwoDirectories()
@@ -119,21 +119,21 @@ void Tests::swapTwoDirectories()
    this->sharedDirs.move(1, 0);
    this->fileManager->setSharedDirs(this->sharedDirs);
    QList<SharedDir> paths = this->fileManager->getSharedDirs();
-   QCOMPARE(paths.at(0).path, QDir::cleanPath(this->sharedDirs.at(0)));
-   QCOMPARE(paths.at(1).path, QDir::cleanPath(this->sharedDirs.at(1)));
+   QCOMPARE(paths.at(0).path, this->sharedDirs.at(0));
+   QCOMPARE(paths.at(1).path, this->sharedDirs.at(1));
 
    this->sharedDirs.move(1, 0);
    this->fileManager->setSharedDirs(this->sharedDirs);
    QList<SharedDir> paths2 = this->fileManager->getSharedDirs();
-   QCOMPARE(paths2.at(0).path, QDir::cleanPath(this->sharedDirs.at(0)));
-   QCOMPARE(paths2.at(1).path, QDir::cleanPath(this->sharedDirs.at(1)));
+   QCOMPARE(paths2.at(0).path, this->sharedDirs.at(0));
+   QCOMPARE(paths2.at(1).path, this->sharedDirs.at(1));
 }
 
 void Tests::addInexistingSharedDirectory()
 {
    qDebug() << "===== addInexistingSharedDirectory() =====";
 
-   this->sharedDirs << QDir::currentPath().append("/this_is_spartaaaaaa"); // This directory doesn't exit.
+   this->sharedDirs << QDir::currentPath().append("/this_is_spartaaaaaa/"); // This directory doesn't exit.
    try
    {
       this->fileManager->setSharedDirs(this->sharedDirs);
@@ -142,7 +142,7 @@ void Tests::addInexistingSharedDirectory()
    catch (DirsNotFoundException& e)
    {
       QVERIFY(e.paths.size() == 1);
-      QCOMPARE(e.paths.at(0), QDir::cleanPath(this->sharedDirs.last()));
+      QCOMPARE(e.paths.at(0), this->sharedDirs.last());
       qDebug() << "This directory hasn't been found : " << e.paths.at(0) << " (Exception thrown)";
    }
    this->sharedDirs.removeLast();
@@ -152,8 +152,8 @@ void Tests::addSubSharedDirectories()
 {
    qDebug() << "===== addSubSharedDirectories() =====";
 
-   this->sharedDirs << QDir::currentPath().append("/sharedDirs/share1/subdir");
-   this->sharedDirs << QDir::currentPath().append("/sharedDirs/share1/another subdir");
+   this->sharedDirs << QDir::currentPath().append("/sharedDirs/share1/subdir/");
+   this->sharedDirs << QDir::currentPath().append("/sharedDirs/share1/another subdir/");
 
    this->fileManager->setSharedDirs(this->sharedDirs);
 
@@ -170,7 +170,7 @@ void Tests::addSuperSharedDirectories()
 {
    qDebug() << "===== addSuperSharedDirectories() =====";
 
-   this->sharedDirs << QDir::currentPath().append("/sharedDirs");
+   this->sharedDirs << QDir::currentPath().append("/sharedDirs/");
    this->fileManager->setSharedDirs(this->sharedDirs);
 
    QTest::qSleep(100);

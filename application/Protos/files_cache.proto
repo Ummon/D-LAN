@@ -24,7 +24,7 @@ message Hashes {
    
    message SharedDir {
       required Common.Hash id = 1;
-      required string path = 2;
+      required string path = 2; // Always ended with a '/'.
       required Dir root = 3;
    }
 

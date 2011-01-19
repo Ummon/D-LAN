@@ -214,10 +214,10 @@ QString File::getPath() const
 
 QString File::getFullPath() const
 {
-   return this->dir->getFullPath().append('/').append(this->name);
+   return this->dir->getFullPath().append(this->name);
 }
 
-Directory* File::getRoot() const
+SharedDirectory* File::getRoot() const
 {
    return this->dir->getRoot();
 }

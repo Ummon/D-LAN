@@ -28,6 +28,7 @@
 namespace FM
 {
    class Directory;
+   class SharedDirectory;
    class Cache;
 
    class Entry : Common::Uncopyable
@@ -52,11 +53,12 @@ namespace FM
 
       /**
         * Return the full absolute path to the entry.
+        * Directories always end with a '/'.
         */
       virtual QString getFullPath() const = 0;
-      virtual Directory* getRoot() const = 0;
+      virtual SharedDirectory* getRoot() const = 0;
 
-      const QString& getName() const;
+      QString getName() const;
 
       /**
         * When a file or a directory is renamed.

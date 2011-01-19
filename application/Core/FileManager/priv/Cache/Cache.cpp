@@ -302,7 +302,8 @@ void Cache::setSharedDirs(const QStringList& dirs)
    {
       for (int j2 = j; j2 < this->sharedDirs.size(); j2++)
       {
-         if (dirs[i] == this->sharedDirs[j2]->getFullPath())
+         const QString dir = Common::Global::cleanDirPath(dirs[i]);
+         if (dir == this->sharedDirs[j2]->getFullPath())
          {
             this->sharedDirs.move(j2, j++);
             goto nextDir;

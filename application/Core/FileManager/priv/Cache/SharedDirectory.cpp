@@ -22,6 +22,7 @@ using namespace FM;
 #include <QDir>
 
 #include <Common/ProtoHelper.h>
+#include <Common/Global.h>
 
 #include <Exceptions.h>
 #include <priv/Log.h>
@@ -34,13 +35,13 @@ using namespace FM;
   * @exception SuperDirectoryExistsException Thrown when a super shared directory already exists.
   */
 SharedDirectory::SharedDirectory(Cache* cache, const QString& path) :
-   Directory(cache, QDir(path).dirName()), path(QDir::cleanPath(path)), id(Common::Hash::rand())
+   Directory(cache, QDir(path).dirName()), path(Common::Global::cleanDirPath(path)), id(Common::Hash::rand())
 {
    this->init();
 }
 
 SharedDirectory::SharedDirectory(Cache* cache, const QString& path, const Common::Hash& id) :
-   Directory(cache, QDir(path).dirName()), path(QDir::cleanPath(path)), id(id)
+   Directory(cache, QDir(path).dirName()), path(QDir::cleanPath(path) + "/"), id(id)
 {
    this->init();
 }
@@ -110,6 +111,11 @@ QString SharedDirectory::getPath() const
 QString SharedDirectory::getFullPath() const
 {
    return this->path;
+}
+
+SharedDirectory* SharedDirectory::getRoot() const
+{
+   return const_cast<SharedDirectory*>(this);
 }
 
 Common::Hash SharedDirectory::getId() const
