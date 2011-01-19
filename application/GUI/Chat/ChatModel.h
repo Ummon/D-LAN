@@ -51,8 +51,8 @@ namespace GUI
 
       struct Message
       {
-         Message(const Common::Hash& peerID, const QString& nick, const QDateTime& dateTime, const QString& message)
-            : peerID(peerID), nick(nick), dateTime(dateTime), message(message) {}
+         Message(const Common::Hash& peerID, const QString& nick, const QDateTime& dateTime, const QString& message) :
+            peerID(peerID), nick(nick), dateTime(dateTime), message(message) {}
 
          Common::Hash peerID;
          QString nick;

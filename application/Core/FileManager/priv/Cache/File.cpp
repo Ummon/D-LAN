@@ -63,22 +63,22 @@ File::File(
    const QDateTime& dateLastModified,
    const Common::Hashes& hashes,
    bool createPhysically
-)
-   : Entry(dir->getCache(), name + (createPhysically ? Global::getUnfinishedSuffix() : ""), size),
-     CHUNK_SIZE(SETTINGS.get<quint32>("chunk_size")),
-     BUFFER_SIZE(SETTINGS.get<quint32>("buffer_size")),
-     dir(dir),
-     dateLastModified(dateLastModified),
-     nbChunkComplete(0),
-     complete(!Global::isFileUnfinished(Entry::getName())),
-     tryToRename(false),
-     numDataWriter(0),
-     numDataReader(0),
-     fileInWriteMode(0),
-     fileInReadMode(0),
-     mutex(QMutex::Recursive),
-     hashing(false),
-     toStopHashing(false)
+) :
+   Entry(dir->getCache(), name + (createPhysically ? Global::getUnfinishedSuffix() : ""), size),
+   CHUNK_SIZE(SETTINGS.get<quint32>("chunk_size")),
+   BUFFER_SIZE(SETTINGS.get<quint32>("buffer_size")),
+   dir(dir),
+   dateLastModified(dateLastModified),
+   nbChunkComplete(0),
+   complete(!Global::isFileUnfinished(Entry::getName())),
+   tryToRename(false),
+   numDataWriter(0),
+   numDataReader(0),
+   fileInWriteMode(0),
+   fileInReadMode(0),
+   mutex(QMutex::Recursive),
+   hashing(false),
+   toStopHashing(false)
 {
    // QMutexLocker locker(&this->getCache()->getMutex());
 

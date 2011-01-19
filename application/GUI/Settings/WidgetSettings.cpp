@@ -30,8 +30,8 @@ using namespace GUI;
 
 #include <Settings/RemoteFileDialog.h>
 
-WidgetSettings::WidgetSettings(QSharedPointer<RCC::ICoreConnection> coreConnection, DirListModel& sharedDirsModel, QWidget *parent)
-   : QWidget(parent), ui(new Ui::WidgetSettings), coreConnection(coreConnection), sharedDirsModel(sharedDirsModel), initialState(true)
+WidgetSettings::WidgetSettings(QSharedPointer<RCC::ICoreConnection> coreConnection, DirListModel& sharedDirsModel, QWidget *parent) :
+   QWidget(parent), ui(new Ui::WidgetSettings), coreConnection(coreConnection), sharedDirsModel(sharedDirsModel), initialState(true)
 {
    this->ui->setupUi(this);
 

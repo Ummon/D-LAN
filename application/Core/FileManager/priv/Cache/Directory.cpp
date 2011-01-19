@@ -29,8 +29,8 @@ using namespace FM;
 #include <priv/Cache/File.h>
 #include <priv/Cache/SharedDirectory.h>
 
-Directory::Directory(Directory* parent, const QString& name, bool createPhysically)
-   : Entry(parent->cache, name), parent(parent), mutex(QMutex::Recursive)
+Directory::Directory(Directory* parent, const QString& name, bool createPhysically) :
+   Entry(parent->cache, name), parent(parent), mutex(QMutex::Recursive)
 {
    QMutexLocker locker(&this->mutex);
    L_DEBU(QString("New Directory : %1, createPhysically = %2").arg(this->getFullPath()).arg(createPhysically));
@@ -45,8 +45,8 @@ Directory::Directory(Directory* parent, const QString& name, bool createPhysical
 /**
   * Called by the root (SharedDirectory) which will not have parent and name.
   */
-Directory::Directory(Cache* cache, const QString& name)
-   : Entry(cache, name), parent(0), mutex(QMutex::Recursive)
+Directory::Directory(Cache* cache, const QString& name) :
+   Entry(cache, name), parent(0), mutex(QMutex::Recursive)
 {
 }
 

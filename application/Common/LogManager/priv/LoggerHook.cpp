@@ -19,8 +19,8 @@
 #include <priv/LoggerHook.h>
 using namespace LM;
 
-LoggerHook::LoggerHook(Severity severities)
-   : severities(severities)
+LoggerHook::LoggerHook(Severity severities) :
+   severities(severities)
 {
 }
 

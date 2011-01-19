@@ -40,8 +40,8 @@ using namespace UM;
 
 quint64 Uploader::currentID(1);
 
-Uploader::Uploader(QSharedPointer<FM::IChunk> chunk, int offset, QSharedPointer<PM::ISocket> socket, Common::TransferRateCalculator& transferRateCalculator)
-   : ID(currentID++), chunk(chunk), offset(offset), socket(socket), transferRateCalculator(transferRateCalculator)
+Uploader::Uploader(QSharedPointer<FM::IChunk> chunk, int offset, QSharedPointer<PM::ISocket> socket, Common::TransferRateCalculator& transferRateCalculator) :
+   ID(currentID++), chunk(chunk), offset(offset), socket(socket), transferRateCalculator(transferRateCalculator)
 {
    this->mainThread = QThread::currentThread();
    this->socket->getQSocket()->moveToThread(this);

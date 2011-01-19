@@ -33,8 +33,8 @@ using namespace PasswordHasher;
 
 #include <ui_MainWindow.h>
 
-MainWindow::MainWindow(QWidget *parent)
-   : QMainWindow(parent), CORE_SETTINGS_PATH(Common::Global::getDataFolder(Common::Global::ROAMING, false) + '/' + Common::CORE_SETTINGS_FILENAME), ui(new Ui::MainWindow)
+MainWindow::MainWindow(QWidget *parent) :
+   QMainWindow(parent), CORE_SETTINGS_PATH(Common::Global::getDataFolder(Common::Global::ROAMING, false) + '/' + Common::CORE_SETTINGS_FILENAME), ui(new Ui::MainWindow)
 {
    ui->setupUi(this);
    this->setButtonText();

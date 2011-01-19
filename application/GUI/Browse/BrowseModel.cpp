@@ -330,14 +330,14 @@ void BrowseModel::Node::NodeBreadthIterator::readChildren(Node* parentNode)
   * Either a file or a directory in the tree view structure.
   */
 
-BrowseModel::Node::Node()
-   : parent(0)
+BrowseModel::Node::Node() :
+   parent(0)
 {
    this->entry.set_type(Protos::Common::Entry_Type_DIR);
 }
 
-BrowseModel::Node::Node(const Protos::Common::Entry& entry, Node* parent)
-   : entry(entry), parent(parent)
+BrowseModel::Node::Node(const Protos::Common::Entry& entry, Node* parent) :
+   entry(entry), parent(parent)
 {
    this->copySharedDirFromParent();
    if (!this->entry.shared_dir().has_shared_name())

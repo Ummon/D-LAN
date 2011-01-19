@@ -59,8 +59,8 @@ namespace GUI
 
       struct Peer
       {
-         Peer(const Common::Hash& peerID, const QString& nick, quint64 sharingAmount)
-            : peerID(peerID), nick(nick), sharingAmount(sharingAmount) {}
+         Peer(const Common::Hash& peerID, const QString& nick, quint64 sharingAmount) :
+            peerID(peerID), nick(nick), sharingAmount(sharingAmount) {}
 
          bool operator==(const Peer& p) const { return this->peerID == p.peerID; }
          bool operator!=(const Peer& p) const { return this->peerID != p.peerID; }

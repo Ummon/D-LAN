@@ -71,8 +71,8 @@ QString RandGenerator::generateAName()
    return str;
 }
 
-FilesAndDirs::FilesAndDirs(QSharedPointer<IFileManager> fileManager, StressTest* stressTest)
-   : fileManager(fileManager), stressTest(stressTest)
+FilesAndDirs::FilesAndDirs(QSharedPointer<IFileManager> fileManager, StressTest* stressTest) :
+   fileManager(fileManager), stressTest(stressTest)
 {
 }
 
@@ -630,8 +630,8 @@ QString StressTest::entryToStr(const Protos::Common::Entry& entry)
    return str;
 }
 
-Downloader::Downloader(QSharedPointer<IChunk> chunk, QString filePath)
-   : chunk(chunk), filePath(filePath)
+Downloader::Downloader(QSharedPointer<IChunk> chunk, QString filePath) :
+   chunk(chunk), filePath(filePath)
 {
 }
 
@@ -670,8 +670,8 @@ void Downloader::run()
    qDebug() << "Downloader::run() finished, file" << this->filePath;
 }
 
-Uploader::Uploader(QSharedPointer<IChunk> chunk)
-   : chunk(chunk)
+Uploader::Uploader(QSharedPointer<IChunk> chunk) :
+   chunk(chunk)
 {
 }
 

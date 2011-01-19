@@ -45,8 +45,8 @@ using namespace Common;
    const QString Global::APPLICATION_FOLDER_NAME(".aybabtu");
 #endif
 
-Global::UnableToSetTempDirException::UnableToSetTempDirException(const QString& dir)
-   : errorMessage(QString("Unable to create the temporary directory %1").arg(dir))
+Global::UnableToSetTempDirException::UnableToSetTempDirException(const QString& dir) :
+   errorMessage(QString("Unable to create the temporary directory %1").arg(dir))
 {
 }
 

@@ -31,8 +31,8 @@ using namespace NL;
 
 const int TCPListener::MAX_LISTEN_ATTEMPT(10);
 
-TCPListener::TCPListener(QSharedPointer<PM::IPeerManager> peerManager)
-   : peerManager(peerManager)
+TCPListener::TCPListener(QSharedPointer<PM::IPeerManager> peerManager) :
+   peerManager(peerManager)
 {   
    this->currentPort = SETTINGS.get<quint32>("unicast_base_port");
 

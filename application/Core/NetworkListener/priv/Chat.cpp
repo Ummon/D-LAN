@@ -31,8 +31,8 @@ using namespace NL;
   * @author gburri
   */
 
-Chat::Chat(UDPListener& uDPListener)
-   : uDPListener(uDPListener)
+Chat::Chat(UDPListener& uDPListener) :
+   uDPListener(uDPListener)
 {
    // Listening for new messages and forward them to our own signal.
    Chat::connect(

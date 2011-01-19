@@ -23,21 +23,21 @@ using namespace RCC;
 
 #include <priv/CoreConnection.h>
 
-BrowseResult::BrowseResult(CoreConnection* coreConnection, const Common::Hash& peerID)
-   : IBrowseResult(SETTINGS.get<quint32>("socket_timeout")), peerID(peerID), tag(0)
+BrowseResult::BrowseResult(CoreConnection* coreConnection, const Common::Hash& peerID) :
+   IBrowseResult(SETTINGS.get<quint32>("socket_timeout")), peerID(peerID), tag(0)
 {
    this->init(coreConnection);
 }
 
-BrowseResult::BrowseResult(CoreConnection* coreConnection, const Common::Hash& peerID, const Protos::Common::Entry& entry)
-   : IBrowseResult(SETTINGS.get<quint32>("socket_timeout")), peerID(peerID), tag(0)
+BrowseResult::BrowseResult(CoreConnection* coreConnection, const Common::Hash& peerID, const Protos::Common::Entry& entry) :
+   IBrowseResult(SETTINGS.get<quint32>("socket_timeout")), peerID(peerID), tag(0)
 {
    this->browseMessage.mutable_dirs()->add_entry()->CopyFrom(entry);
    this->init(coreConnection);
 }
 
-BrowseResult::BrowseResult(CoreConnection* coreConnection, const Common::Hash& peerID, const Protos::Common::Entries& entries, bool withRoots)
-   : IBrowseResult(SETTINGS.get<quint32>("socket_timeout")), peerID(peerID), tag(0)
+BrowseResult::BrowseResult(CoreConnection* coreConnection, const Common::Hash& peerID, const Protos::Common::Entries& entries, bool withRoots) :
+   IBrowseResult(SETTINGS.get<quint32>("socket_timeout")), peerID(peerID), tag(0)
 {
    this->browseMessage.mutable_dirs()->CopyFrom(entries);
    this->browseMessage.set_get_roots(withRoots);

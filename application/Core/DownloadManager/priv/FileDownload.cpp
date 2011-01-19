@@ -41,8 +41,8 @@ FileDownload::FileDownload(
    const Protos::Common::Entry& localEntry,
    Common::TransferRateCalculator& transferRateCalculator,
    bool complete
-)
-   : Download(fileManager, peerManager, peerSourceID, remoteEntry, localEntry),
+) :
+   Download(fileManager, peerManager, peerSourceID, remoteEntry, localEntry),
    NB_CHUNK(this->remoteEntry.size() / SETTINGS.get<quint32>("chunk_size") + (this->remoteEntry.size() % SETTINGS.get<quint32>("chunk_size") == 0 ? 0 : 1)),
    occupiedPeersAskingForHashes(occupiedPeersAskingForHashes),
    occupiedPeersDownloadingChunk(occupiedPeersDownloadingChunk),

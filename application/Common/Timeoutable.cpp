@@ -19,8 +19,8 @@
 #include <Common/Timeoutable.h>
 using namespace Common;
 
-Timeoutable::Timeoutable(int time)
-   : timeouted(false)
+Timeoutable::Timeoutable(int time) :
+   timeouted(false)
 {
    this->timer.setInterval(time);
    this->timer.setSingleShot(true);

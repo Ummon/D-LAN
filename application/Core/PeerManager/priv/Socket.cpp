@@ -32,8 +32,8 @@ using namespace PM;
 #include <priv/PeerManager.h>
 #include <priv/Constants.h>
 
-Socket::Socket(PeerManager* peerManager, QSharedPointer<FM::IFileManager> fileManager, const Common::Hash& peerID, QTcpSocket* socket)
-   : peerManager(peerManager), fileManager(fileManager), peerID(peerID), socket(socket), idle(false), listening(false), nbError(0)
+Socket::Socket(PeerManager* peerManager, QSharedPointer<FM::IFileManager> fileManager, const Common::Hash& peerID, QTcpSocket* socket) :
+   peerManager(peerManager), fileManager(fileManager), peerID(peerID), socket(socket), idle(false), listening(false), nbError(0)
 {
 #ifdef DEBUG
    this->num = ++Socket::currentNum;
@@ -44,8 +44,8 @@ Socket::Socket(PeerManager* peerManager, QSharedPointer<FM::IFileManager> fileMa
    this->initActivityTimer();
 }
 
-Socket::Socket(PeerManager* peerManager, QSharedPointer<FM::IFileManager> fileManager, const Common::Hash& peerID, const QHostAddress& address, quint16 port)
-   : peerManager(peerManager), fileManager(fileManager), peerID(peerID), idle(false), listening(false), nbError(0)
+Socket::Socket(PeerManager* peerManager, QSharedPointer<FM::IFileManager> fileManager, const Common::Hash& peerID, const QHostAddress& address, quint16 port) :
+   peerManager(peerManager), fileManager(fileManager), peerID(peerID), idle(false), listening(false), nbError(0)
 {   
 #ifdef DEBUG
    this->num = ++Socket::currentNum;

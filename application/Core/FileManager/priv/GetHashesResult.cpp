@@ -29,8 +29,8 @@
 
 using namespace FM;
 
-GetHashesResult::GetHashesResult(const Protos::Common::Entry& fileEntry, Cache& cache, FileUpdater& fileUpdater)
-   : fileEntry(fileEntry), file(0), cache(cache), fileUpdater(fileUpdater), nbHash(0), lastHashNumSent(-1)
+GetHashesResult::GetHashesResult(const Protos::Common::Entry& fileEntry, Cache& cache, FileUpdater& fileUpdater) :
+   fileEntry(fileEntry), file(0), cache(cache), fileUpdater(fileUpdater), nbHash(0), lastHashNumSent(-1)
 {
    qRegisterMetaType<Common::Hash>("Common::Hash");
 }

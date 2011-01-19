@@ -23,8 +23,8 @@ using namespace Common;
 
 #include <QMutexLocker>
 
-TransferRateCalculator::TransferRateCalculator()
-   : mutex(QMutex::Recursive), currentValue(0), currentValuePos(0), total(0)
+TransferRateCalculator::TransferRateCalculator() :
+   mutex(QMutex::Recursive), currentValue(0), currentValuePos(0), total(0)
 {
    this->reset();
 }

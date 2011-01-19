@@ -54,8 +54,8 @@ void QtLogger::initMsgHandler()
    qInstallMsgHandler(handler);
 }
 
-QtLogger::QtLogger()
-   : Logger("Qt")
+QtLogger::QtLogger() :
+   Logger("Qt")
 {
    QtLogger::initMsgHandler();
 }

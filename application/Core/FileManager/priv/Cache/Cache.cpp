@@ -32,8 +32,8 @@ using namespace FM;
 #include <priv/Cache/SharedDirectory.h>
 #include <priv/Cache/File.h>
 
-Cache::Cache(FileManager* fileManager)
-   : fileManager(fileManager), mutex(QMutex::Recursive)
+Cache::Cache(FileManager* fileManager) :
+   fileManager(fileManager), mutex(QMutex::Recursive)
 {
 }
 

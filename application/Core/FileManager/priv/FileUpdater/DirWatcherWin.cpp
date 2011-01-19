@@ -33,8 +33,8 @@ using namespace FM;
   * Inspired by : http://stackoverflow.com/questions/863135/why-does-readdirectorychangesw-omit-events.
   */
 
-DirWatcherWin::DirWatcherWin()
-   : mutex(QMutex::Recursive)
+DirWatcherWin::DirWatcherWin() :
+   mutex(QMutex::Recursive)
 {
 }
 
@@ -249,8 +249,8 @@ const QList<WatcherEvent> DirWatcherWin::waitEvent(int timeout, QList<WaitCondit
    return QList<WatcherEvent>();
 }
 
-DirWatcherWin::Dir::Dir(const HANDLE file, const HANDLE event, const QString& fullPath)
-   : file(file), fullPath(fullPath)
+DirWatcherWin::Dir::Dir(const HANDLE file, const HANDLE event, const QString& fullPath) :
+   file(file), fullPath(fullPath)
 {
    memset(&this->overlapped, 0, sizeof(OVERLAPPED));
    overlapped.hEvent = event;

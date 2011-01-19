@@ -29,8 +29,8 @@
   * This class is also used by /Core/DownloadManager/tests
   */
 
-PeerUpdater::PeerUpdater(QList< QSharedPointer<FM::IFileManager> > fileManagers, QList< QSharedPointer<PM::IPeerManager> > peerManagers, int port)
-   : fileManagers(fileManagers), peerManagers(peerManagers), port(port)
+PeerUpdater::PeerUpdater(QList< QSharedPointer<FM::IFileManager> > fileManagers, QList< QSharedPointer<PM::IPeerManager> > peerManagers, int port) :
+   fileManagers(fileManagers), peerManagers(peerManagers), port(port)
 {
    this->timer.setInterval(1000);
    connect(&this->timer, SIGNAL(timeout()), this, SLOT(update()));

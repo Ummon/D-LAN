@@ -41,8 +41,8 @@ using namespace PM;
   * The method 'getASocket()' may reuse a existing socket or create a new connection to the peer.
   */
 
-ConnectionPool::ConnectionPool(PeerManager* peerManager, QSharedPointer<FM::IFileManager> fileManager, const Common::Hash& peerID)
-   : peerManager(peerManager), fileManager(fileManager), peerID(peerID)
+ConnectionPool::ConnectionPool(PeerManager* peerManager, QSharedPointer<FM::IFileManager> fileManager, const Common::Hash& peerID) :
+   peerManager(peerManager), fileManager(fileManager), peerID(peerID)
 {
 }
 

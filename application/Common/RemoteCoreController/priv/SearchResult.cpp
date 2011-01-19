@@ -26,8 +26,8 @@ using namespace RCC;
 
 #include <priv/CoreConnection.h>
 
-SearchResult::SearchResult(CoreConnection* coreConnection, const QString& terms)
-   : ISearchResult(SETTINGS.get<quint32>("socket_timeout")), coreConnection(coreConnection), terms(terms)
+SearchResult::SearchResult(CoreConnection* coreConnection, const QString& terms) :
+   ISearchResult(SETTINGS.get<quint32>("socket_timeout")), coreConnection(coreConnection), terms(terms)
 {
    connect(this->coreConnection, SIGNAL(searchResult(const Protos::Common::FindResult&)), this, SLOT(searchResult(const Protos::Common::FindResult&)));
 }

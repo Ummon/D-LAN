@@ -21,8 +21,8 @@ using namespace FM;
 
 #include <Common/Settings.h>
 
-DataWriter::DataWriter(Chunk& chunk)
-   : chunk(chunk)
+DataWriter::DataWriter(Chunk& chunk) :
+   chunk(chunk)
 {
    this->chunk.newDataWriterCreated();
 }

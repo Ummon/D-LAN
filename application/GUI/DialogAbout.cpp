@@ -24,8 +24,8 @@ using namespace GUI;
 
 #include <Common/Version.h>
 
-DialogAbout::DialogAbout(QWidget *parent)
-   : QDialog(parent), ui(new Ui::DialogAbout)
+DialogAbout::DialogAbout(QWidget *parent) :
+   QDialog(parent), ui(new Ui::DialogAbout)
 {
    this->ui->setupUi(this);
 

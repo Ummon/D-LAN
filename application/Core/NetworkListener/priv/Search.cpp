@@ -30,8 +30,8 @@ using namespace NL;
   * @author gburri
   */
 
-Search::Search(UDPListener& uDPListener)
-   : uDPListener(uDPListener), tag(0)
+Search::Search(UDPListener& uDPListener) :
+   uDPListener(uDPListener), tag(0)
 {
 }
 

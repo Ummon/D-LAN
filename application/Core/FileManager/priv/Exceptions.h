@@ -54,8 +54,7 @@ namespace FM
    class SuperDirectoryExistsException
    {
    public:
-      SuperDirectoryExistsException(const QString& super, const QString& sub)
-         : superDirectory(super), subDirectory(sub) {}
+      SuperDirectoryExistsException(const QString& super, const QString& sub) : superDirectory(super), subDirectory(sub) {}
       virtual ~SuperDirectoryExistsException() throw() {}
       const QString superDirectory;
       const QString subDirectory;

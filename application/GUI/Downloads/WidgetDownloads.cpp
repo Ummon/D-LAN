@@ -86,8 +86,8 @@ QSize DownloadsDelegate::sizeHint(const QStyleOptionViewItem& option, const QMod
 
 /////
 
-WidgetDownloads::WidgetDownloads(QSharedPointer<RCC::ICoreConnection> coreConnection, const PeerListModel& peerListModel, const DirListModel& sharedDirsModel, QWidget *parent)
-   : QWidget(parent), ui(new Ui::WidgetDownloads), coreConnection(coreConnection), downloadsModel(coreConnection, peerListModel, sharedDirsModel, checkBoxModel)
+WidgetDownloads::WidgetDownloads(QSharedPointer<RCC::ICoreConnection> coreConnection, const PeerListModel& peerListModel, const DirListModel& sharedDirsModel, QWidget *parent) :
+   QWidget(parent), ui(new Ui::WidgetDownloads), coreConnection(coreConnection), downloadsModel(coreConnection, peerListModel, sharedDirsModel, checkBoxModel)
 {
    this->ui->setupUi(this);
 

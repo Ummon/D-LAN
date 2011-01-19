@@ -27,8 +27,8 @@ using namespace GUI;
 #include <Log.h>
 #include <Settings/DirListModel.h>
 
-DownloadsModel::DownloadsModel(QSharedPointer<RCC::ICoreConnection> coreConnection, const PeerListModel& peerListModel, const DirListModel& sharedDirsModel, const IFilter<DownloadFilterStatus>& filter)
-   : coreConnection(coreConnection), peerListModel(peerListModel), sharedDirsModel(sharedDirsModel), filter(filter)
+DownloadsModel::DownloadsModel(QSharedPointer<RCC::ICoreConnection> coreConnection, const PeerListModel& peerListModel, const DirListModel& sharedDirsModel, const IFilter<DownloadFilterStatus>& filter) :
+   coreConnection(coreConnection), peerListModel(peerListModel), sharedDirsModel(sharedDirsModel), filter(filter)
 {
    qRegisterMetaTypeStreamOperators<Progress>("Progress"); // Don't know where to put this call..
    connect(this->coreConnection.data(), SIGNAL(newState(Protos::GUI::State)), this, SLOT(newState(Protos::GUI::State)));

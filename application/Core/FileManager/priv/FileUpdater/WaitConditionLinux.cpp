@@ -22,8 +22,8 @@
 #include <priv/FileUpdater/WaitConditionLinux.h>
 using namespace FM;
 
-WaitConditionLinux::WaitConditionLinux()
-   : released(false)
+WaitConditionLinux::WaitConditionLinux() :
+   released(false)
 {
 }
 

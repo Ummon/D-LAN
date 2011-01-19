@@ -22,7 +22,6 @@ using namespace DM;
 #include <QMutexLocker>
 
 OccupiedPeers::OccupiedPeers()
-//   : mutex(QMutex::Recursive)
 {
 }
 

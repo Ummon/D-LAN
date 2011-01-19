@@ -22,8 +22,8 @@ using namespace GUI;
 #include <Common/Settings.h>
 #include <Common/LogManager/Builder.h>
 
-LogModel::LogModel(QSharedPointer<RCC::ICoreConnection> coreConnection)
-   : coreConnection(coreConnection)
+LogModel::LogModel(QSharedPointer<RCC::ICoreConnection> coreConnection) :
+   coreConnection(coreConnection)
 {
    connect(this->coreConnection.data(), SIGNAL(newLogMessage(QSharedPointer<const LM::IEntry>)), this, SLOT(newLogEntry(QSharedPointer<const LM::IEntry>)));
 

@@ -28,8 +28,8 @@ const QString Entry::DATE_TIME_FORMAT("dd-MM-yyyy HH:mm:ss");
 const QString Entry::SEVERITIES_STR[] = {"Fatal", "Error", "Warning", "Debug", "User", "Unkown"};
 QRegExp Entry::lineRegExp("(\\S{10} \\S{8})\\.(\\d{3}) \\[(.+)\\] \\{(.+)\\} \\((\\w+)\\) (?:<(\\S+:\\d+)> )?: (.*)");
 
-Entry::Entry(const QString& line)
-   : severity(SV_UNKNOWN)
+Entry::Entry(const QString& line) :
+   severity(SV_UNKNOWN)
 {
    //lineRegExp.setMinimal(true); // Non-greedy.
    if (!Entry::lineRegExp.exactMatch(line))
@@ -58,8 +58,8 @@ Entry::Entry(const QString& line)
    this->message.replace("<lf>", "\n");
 }
 
-Entry::Entry(const QDateTime& dateTime, Severity severity, const QString& name, const QString& thread, const QString& source, const QString& message)
-   : date(dateTime), severity(severity), name(name), thread(thread), source(source), message(message)
+Entry::Entry(const QDateTime& dateTime, Severity severity, const QString& name, const QString& thread, const QString& source, const QString& message) :
+   date(dateTime), severity(severity), name(name), thread(thread), source(source), message(message)
 {
 }
 

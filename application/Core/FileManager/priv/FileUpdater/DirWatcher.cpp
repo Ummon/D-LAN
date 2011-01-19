@@ -37,24 +37,24 @@ DirWatcher* DirWatcher::getNewWatcher()
 #endif
 }
 
-WatcherEvent::WatcherEvent()
-   : type(WatcherEvent::UNKNOWN)
+WatcherEvent::WatcherEvent() :
+   type(WatcherEvent::UNKNOWN)
 {}
 
- WatcherEvent::WatcherEvent(const WatcherEvent& e)
-   : type(e.type), path1(e.path1), path2(e.path2)
+ WatcherEvent::WatcherEvent(const WatcherEvent& e) :
+    type(e.type), path1(e.path1), path2(e.path2)
  {}
 
-WatcherEvent::WatcherEvent(Type type)
-   : type(type)
+WatcherEvent::WatcherEvent(Type type) :
+   type(type)
 {}
 
-WatcherEvent::WatcherEvent(WatcherEvent::Type type, const QString& path1)
-      : type(type), path1(QDir::cleanPath(path1))
+WatcherEvent::WatcherEvent(WatcherEvent::Type type, const QString& path1) :
+   type(type), path1(QDir::cleanPath(path1))
 {}
 
-WatcherEvent::WatcherEvent(WatcherEvent::Type type, const QString& path1, const QString& path2)
-      : type(type), path1(QDir::cleanPath(path1)), path2(QDir::cleanPath(path2))
+WatcherEvent::WatcherEvent(WatcherEvent::Type type, const QString& path1, const QString& path2) :
+   type(type), path1(QDir::cleanPath(path1)), path2(QDir::cleanPath(path2))
 {}
 
 QString WatcherEvent::toStr()

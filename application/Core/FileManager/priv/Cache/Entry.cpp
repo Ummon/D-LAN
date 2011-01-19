@@ -27,8 +27,8 @@ using namespace FM;
 #include <priv/Cache/Cache.h>
 #include <priv/Cache/SharedDirectory.h>
 
-Entry::Entry(Cache* cache, const QString& name, qint64 size)
-   : cache(cache), name(name), size(size)
+Entry::Entry(Cache* cache, const QString& name, qint64 size) :
+   cache(cache), name(name), size(size)
 {
    this->cache->onEntryAdded(this);
 }

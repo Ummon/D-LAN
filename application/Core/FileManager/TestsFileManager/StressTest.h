@@ -115,8 +115,7 @@ private:
 
    struct HashesResult
    {
-      HashesResult(QSharedPointer<IGetHashesResult> result, int nb, QString filename)
-         : result(result), nb(nb), filename(filename) {}
+      HashesResult(QSharedPointer<IGetHashesResult> result, int nb, QString filename) : result(result), nb(nb), filename(filename) {}
       QSharedPointer<IGetHashesResult> result;
       int nb;
       QString filename;

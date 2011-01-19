@@ -34,8 +34,8 @@ using namespace PM;
 
 const quint32 Peer::MAX_SPEED = std::numeric_limits<quint32>::max();
 
-Peer::Peer(PeerManager* peerManager, QSharedPointer<FM::IFileManager> fileManager, Common::Hash ID)
-   : peerManager(peerManager), fileManager(fileManager), connectionPool(peerManager, fileManager, ID), ID(ID), speed(MAX_SPEED), alive(false)
+Peer::Peer(PeerManager* peerManager, QSharedPointer<FM::IFileManager> fileManager, Common::Hash ID) :
+   peerManager(peerManager), fileManager(fileManager), connectionPool(peerManager, fileManager, ID), ID(ID), speed(MAX_SPEED), alive(false)
 {
    this->aliveTimer.setSingleShot(true);
    this->aliveTimer.setInterval(SETTINGS.get<quint32>("peer_timeout_factor") * SETTINGS.get<quint32>("peer_imalive_period"));

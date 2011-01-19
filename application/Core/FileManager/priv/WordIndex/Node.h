@@ -150,8 +150,8 @@ namespace FM
 using namespace FM;
 
 template <typename T>
-Node<T>::Node()
-   : letter('\0')
+Node<T>::Node() :
+   letter('\0')
 {
 }
 
@@ -249,8 +249,8 @@ bool Node<T>::haveItems() const
 }
 
 template <typename T>
-Node<T>::Node(const QChar& letter)
-   : letter(letter)
+Node<T>::Node(const QChar& letter) :
+   letter(letter)
 {}
 
 #endif

@@ -25,8 +25,8 @@ using namespace GUI;
 
 #include <DialogAbout.h>
 
-StatusBar::StatusBar(QSharedPointer<RCC::ICoreConnection> coreConnection, QWidget *parent)
-   : QWidget(parent), ui(new Ui::StatusBar), coreConnection(coreConnection)
+StatusBar::StatusBar(QSharedPointer<RCC::ICoreConnection> coreConnection, QWidget *parent) :
+   QWidget(parent), ui(new Ui::StatusBar), coreConnection(coreConnection)
 {
    this->ui->setupUi(this);
    this->coreDisconnected();

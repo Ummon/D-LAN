@@ -28,8 +28,8 @@ using namespace PM;
 
 #include <ISocket.h>
 
-ResultListener::ResultListener()
-   : nbHashes(0), currentHash(0), streamReceived(false)
+ResultListener::ResultListener() :
+   nbHashes(0), currentHash(0), streamReceived(false)
 {
 }
 

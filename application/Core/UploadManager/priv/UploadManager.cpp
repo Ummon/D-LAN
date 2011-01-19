@@ -38,8 +38,8 @@ using namespace UM;
   * After the chunk was sent to the peer the Uploader is deleted.
   */
 
-UploadManager::UploadManager(QSharedPointer<PM::IPeerManager> peerManager)
-   : peerManager(peerManager)
+UploadManager::UploadManager(QSharedPointer<PM::IPeerManager> peerManager) :
+   peerManager(peerManager)
 {
    connect(this->peerManager.data(), SIGNAL(getChunk(QSharedPointer<FM::IChunk>, int, QSharedPointer<PM::ISocket>)), this, SLOT(getChunk(QSharedPointer<FM::IChunk>, int, QSharedPointer<PM::ISocket>)), Qt::DirectConnection);
 }

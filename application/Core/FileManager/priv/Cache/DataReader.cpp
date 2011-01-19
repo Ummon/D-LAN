@@ -21,8 +21,8 @@ using namespace FM;
 
 #include <Common/Settings.h>
 
-DataReader::DataReader(Chunk& chunk)
-   : chunk(chunk)
+DataReader::DataReader(Chunk& chunk) :
+   chunk(chunk)
 {
    this->chunk.newDataReaderCreated();
 }

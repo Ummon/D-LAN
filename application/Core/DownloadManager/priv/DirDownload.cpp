@@ -36,8 +36,8 @@ DirDownload::DirDownload(
    Common::Hash peerSourceID,
    const Protos::Common::Entry& remoteEntry,
    const Protos::Common::Entry& localEntry
-)
-   : Download(fileManager, peerManager, peerSourceID, remoteEntry, localEntry), retrieveEntriesOK(false)
+) :
+   Download(fileManager, peerManager, peerSourceID, remoteEntry, localEntry), retrieveEntriesOK(false)
 {
    L_DEBU(QString("New DirDownload : source = %1, remoteEntry : \n%2\nlocalEntry : \n%3").
       arg(this->peerSourceID.toStr()).

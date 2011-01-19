@@ -25,8 +25,8 @@ using namespace GUI;
 #include <Common/Global.h>
 #include <Common/Settings.h>
 
-ChatModel::ChatModel(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel)
-   : coreConnection(coreConnection), peerListModel(peerListModel)
+ChatModel::ChatModel(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel) :
+   coreConnection(coreConnection), peerListModel(peerListModel)
 {
    connect(this->coreConnection.data(), SIGNAL(newChatMessage(const Common::Hash&, const QString&)), this, SLOT(newChatMessage(const Common::Hash&, const QString&)));
 }

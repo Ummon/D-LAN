@@ -32,8 +32,8 @@ Download::Download(
    Common::Hash peerSourceID,
    const Protos::Common::Entry& remoteEntry,
    const Protos::Common::Entry& localEntry
-)
-   : ID(currentID++), fileManager(fileManager), peerManager(peerManager), peerSourceID(peerSourceID), peerSource(0), remoteEntry(remoteEntry), localEntry(localEntry), status(QUEUED)
+) :
+   ID(currentID++), fileManager(fileManager), peerManager(peerManager), peerSourceID(peerSourceID), peerSource(0), remoteEntry(remoteEntry), localEntry(localEntry), status(QUEUED)
 {
    this->retrievePeer();
 }

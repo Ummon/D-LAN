@@ -32,8 +32,8 @@ using namespace RCC;
 #include <priv/BrowseResult.h>
 #include <priv/SearchResult.h>
 
-CoreConnection::CoreConnection()
-   : currentHostLookupID(-1), authenticated(false)
+CoreConnection::CoreConnection() :
+   currentHostLookupID(-1), authenticated(false)
 {
    connect(&this->socket, SIGNAL(readyRead()), this, SLOT(dataReceived()));
    connect(&this->socket, SIGNAL(connected()), this, SLOT(connected()));

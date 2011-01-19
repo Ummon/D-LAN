@@ -20,8 +20,8 @@
 using namespace GUI;
 
 
-TabButton::TabButton(QWidget* parent)
-   : QAbstractButton(parent)
+TabButton::TabButton(QWidget* parent) :
+   QAbstractButton(parent)
 {
    this->setFocusPolicy(Qt::NoFocus);
    this->resize(this->sizeHint());
@@ -91,8 +91,8 @@ void TabButton::paintEvent(QPaintEvent* pe)
 
 /////
 
-TabCloseButton::TabCloseButton(QWidget* widget, QWidget* parent)
-   : TabButton(parent), widget(widget)
+TabCloseButton::TabCloseButton(QWidget* widget, QWidget* parent) :
+   TabButton(parent), widget(widget)
 {
    this->setToolTip(tr("Close Tab"));
    connect(this, SIGNAL(clicked()), this, SLOT(buttonClicked()));
@@ -117,8 +117,8 @@ void TabCloseButton::drawPrimitive(const QStyleOption& opt, QPainter& p)
 
 /////
 
-TabRefreshButton::TabRefreshButton(QWidget* parent)
-   : TabButton(parent)
+TabRefreshButton::TabRefreshButton(QWidget* parent) :
+   TabButton(parent)
 {
    this->icon.addPixmap(QPixmap(":/icons/ressources/refresh.png"), QIcon::Normal, QIcon::Off);
    this->icon.addPixmap(QPixmap(":/icons/ressources/refresh-down.png"), QIcon::Normal, QIcon::On);

@@ -22,8 +22,8 @@
 #include <priv/FileUpdater/WaitConditionWin.h>
 using namespace FM;
 
-WaitConditionWin::WaitConditionWin()
-   : handle(CreateEvent(NULL, FALSE, FALSE, NULL))
+WaitConditionWin::WaitConditionWin() :
+   handle(CreateEvent(NULL, FALSE, FALSE, NULL))
 {
 }
 

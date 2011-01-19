@@ -28,8 +28,8 @@
   * the class 'FM::IGetHashesResult' and print them.
   */
 
-HashesReceiver::HashesReceiver()
-   : num(0)
+HashesReceiver::HashesReceiver() :
+   num(0)
 {
 }
 

@@ -25,8 +25,8 @@
 #include <Common/ZeroCopyStreamQIODevice.h>
 using namespace Common;
 
-ZeroCopyOutputStreamQIODevice::ZeroCopyOutputStreamQIODevice(QIODevice* device)
-   : device(device), bytesWritten(0)
+ZeroCopyOutputStreamQIODevice::ZeroCopyOutputStreamQIODevice(QIODevice* device) :
+   device(device), bytesWritten(0)
 {
    this->pos = this->buffer;
 }
@@ -80,8 +80,8 @@ google::protobuf::int64 ZeroCopyOutputStreamQIODevice::ByteCount() const
   * Warning : The data will be effectively read when the object is destroyed.
   */
 
-ZeroCopyInputStreamQIODevice::ZeroCopyInputStreamQIODevice(QIODevice* device)
-   : device(device), nbLastRead(0), pos(buffer), bytesRead(0)
+ZeroCopyInputStreamQIODevice::ZeroCopyInputStreamQIODevice(QIODevice* device) :
+   device(device), nbLastRead(0), pos(buffer), bytesRead(0)
 {
 }
 

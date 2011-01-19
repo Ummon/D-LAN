@@ -24,8 +24,8 @@ using namespace GUI;
 #include <Common/ProtoHelper.h>
 #include <Common/Global.h>
 
-UploadsModel::UploadsModel(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel)
-   : coreConnection(coreConnection), peerListModel(peerListModel)
+UploadsModel::UploadsModel(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel) :
+   coreConnection(coreConnection), peerListModel(peerListModel)
 {
    connect(this->coreConnection.data(), SIGNAL(newState(Protos::GUI::State)), this, SLOT(newState(Protos::GUI::State)));
 }

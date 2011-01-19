@@ -20,8 +20,8 @@
 #include <ui_RemoteFileDialog.h>
 using namespace GUI;
 
-RemoteFileDialog::RemoteFileDialog(QWidget *parent)
-   : QDialog(parent), ui(new Ui::RemoteFileDialog)
+RemoteFileDialog::RemoteFileDialog(QWidget *parent) :
+   QDialog(parent), ui(new Ui::RemoteFileDialog)
 {
    this->ui->setupUi(this);
 }
