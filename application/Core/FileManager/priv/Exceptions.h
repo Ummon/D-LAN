@@ -47,6 +47,19 @@ namespace FM
       DirNotFoundException(const QString& path) : FileSystemEntryNotFoundException(path) {}
       virtual ~DirNotFoundException() throw () {}
    };
+
+   /**
+     * Thrown when adding a shared directory when a super directory is already shared.
+     */
+   class SuperDirectoryExistsException
+   {
+   public:
+      SuperDirectoryExistsException(const QString& super, const QString& sub)
+         : superDirectory(super), subDirectory(sub) {}
+      virtual ~SuperDirectoryExistsException() throw() {}
+      const QString superDirectory;
+      const QString subDirectory;
+   };
 }
 
 #endif

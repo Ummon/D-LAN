@@ -35,6 +35,8 @@ namespace FM
       SharedDirectory(Cache* cache, const QString& path, const Common::Hash& id);
       SharedDirectory(Cache* cache, const QString& path);
 
+      void mergeSubSharedDirectories();
+
       void populateEntry(Protos::Common::Entry* entry, bool setSharedDir = false) const;
 
    private:

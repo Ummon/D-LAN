@@ -295,38 +295,40 @@ void Cache::setSharedDirs(const QStringList& dirs)
 {
    QMutexLocker locker(&this->mutex);
 
-   // Filter the actual shared directories by looking theirs rights.
-   QList<SharedDirectory*> sharedDirsCopy(this->sharedDirs);
+   QStringList dirsNotFound;
 
-   QMutableListIterator<SharedDirectory*> j(sharedDirsCopy);
-
-   // Remove already shared directories from 'sharedDirsCopy'.
-   // /!\ O(n^2).
-   for(QListIterator<QString> i(dirs); i.hasNext();)
+   int j = 0; // currentDirs.
+   for (int i = 0; i < dirs.size(); i++) // dirs.
    {
-      QString dir =  QDir::cleanPath(i.next());
-      j.toFront();
-      while(j.hasNext())
+      for (int j2 = j; j2 < this->sharedDirs.size(); j2++)
       {
-         SharedDirectory* sharedDir = j.next();
-         if (sharedDir->getFullPath() == dir)
+         if (dirs[i] == this->sharedDirs[j2]->getFullPath())
          {
-            j.remove();
-            break;
+            this->sharedDirs.move(j2, j++);
+            goto nextDir;
          }
       }
+      try
+      {
+         // dirs[i] not found -> we create a new one.
+         if (this->createSharedDir(dirs[i], Common::Hash::null, j))
+            j++;
+      }
+      catch (DirNotFoundException& e)
+      {
+         dirsNotFound << e.path;
+      }
+   nextDir:;
    }
 
-   // Remove shared directories.
-   for (j.toFront(); j.hasNext();)
-   {
-      SharedDirectory* dir = j.next();
-      L_DEBU("Remove a shared directory : " + dir->getFullPath());
-      this->removeSharedDir(dir);
-   }
+   while (j < this->sharedDirs.size())
+      this->removeSharedDir(this->sharedDirs[j]);
 
-   // The duplicate dirs are found further.
-   this->createSharedDirs(dirs);
+   for (int k = 0; k < this->sharedDirs.size(); k++)
+      this->sharedDirs[k]->mergeSubSharedDirectories();
+
+   if (!dirsNotFound.isEmpty())
+      throw DirsNotFoundException(dirsNotFound);
 }
 
 /**
@@ -506,6 +508,43 @@ void Cache::onChunkRemoved(QSharedPointer<Chunk> chunk)
    emit chunkRemoved(chunk);
 }
 
+
+/**
+  * Create a new shared directory.
+  * The other shared directories may not be merged with the new one, use SharedDirectory::mergeSubSharedDirectories to do that after this call.
+  * @exceptions DirNotFoundException
+  */
+SharedDirectory* Cache::createSharedDir(const QString path, const Common::Hash& ID, int pos)
+{
+   try
+   {
+      SharedDirectory* dir = !ID.isNull() ?
+         new SharedDirectory(this, path, ID) :
+         new SharedDirectory(this, path);
+
+      L_DEBU(QString("Add a new shared directory : %1").arg(path));
+
+      if (pos == -1 || pos > this->sharedDirs.size())
+         this->sharedDirs << dir;
+      else
+         this->sharedDirs.insert(pos, dir);
+
+      emit newSharedDirectory(dir);
+
+      return dir;
+   }
+   catch (DirAlreadySharedException&)
+   {
+      L_DEBU(QString("Directory already shared : %1").arg(path));
+   }
+   catch (SuperDirectoryExistsException& e)
+   {
+      L_WARN(QString("There is already a super directory: %1 for this directory : %2").arg(e.superDirectory).arg(e.subDirectory));
+   }
+
+   return 0;
+}
+
 /**
   * Create new shared directories and inform the fileUpdater.
   * @exception DirsNotFoundException
@@ -525,22 +564,15 @@ void Cache::createSharedDirs(const QStringList& dirs, const QList<Common::Hash>&
       try
       {
          SharedDirectory* dir = k.hasNext() ?
-            new SharedDirectory(this, path, k.next()) :
-            new SharedDirectory(this, path);
+            this->createSharedDir(path, k.next()) :
+            this->createSharedDir(path);
 
-         L_DEBU(QString("Add a new shared directory : %1").arg(path));
-         this->sharedDirs << dir;
-
-         emit newSharedDirectory(dir);
+         if (dir)
+            dir->mergeSubSharedDirectories();
       }
       catch (DirNotFoundException& e)
       {
-         L_WARN(QString("Directory not found : %1").arg(e.path));
          dirsNotFound << e.path;
-      }
-      catch (DirAlreadySharedException&)
-      {
-         L_DEBU(QString("Directory already shared : %1").arg(path));
       }
    }
 

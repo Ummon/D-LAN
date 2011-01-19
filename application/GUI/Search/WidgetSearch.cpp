@@ -144,8 +144,12 @@ QString SearchDelegate::toHtmlText(const QString& text) const
 
 /////
 
-WidgetSearch::WidgetSearch(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel, const DirListModel& sharedDirsModel, const QString& terms, QWidget *parent)
-   : QWidget(parent), ui(new Ui::WidgetSearch), coreConnection(coreConnection), searchModel(coreConnection, peerListModel, sharedDirsModel)
+WidgetSearch::WidgetSearch(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel, const DirListModel& sharedDirsModel, const QString& terms, QWidget *parent) :
+   QWidget(parent),
+   ui(new Ui::WidgetSearch),
+   downloadMenu(coreConnection, sharedDirsModel),
+   coreConnection(coreConnection),
+   searchModel(coreConnection, peerListModel, sharedDirsModel)
 {
     this->ui->setupUi(this);
     this->searchDelegate.setTerms(terms);
@@ -167,9 +171,10 @@ WidgetSearch::WidgetSearch(QSharedPointer<RCC::ICoreConnection> coreConnection, 
     this->searchModel.search(terms);
 
     this->ui->treeView->setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(this->ui->treeView, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(displayContextMenuPeers(const QPoint&)));
+    connect(this->ui->treeView, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(displayContextMenuDownload(const QPoint&)));
 
-    connect(this->ui->butDownload, SIGNAL(clicked()), this, SLOT(download()));
+    connect(this->ui->butDownload, SIGNAL(clicked()), this, SLOT(download()));    
+    connect(&this->downloadMenu, SIGNAL(downloadTo(const Common::Hash&, const QString&)), this, SLOT(downloadTo(const Common::Hash&, const QString&)));
 
     this->setWindowTitle(QString("\"%1\"").arg(terms));
 }
@@ -180,11 +185,9 @@ WidgetSearch::~WidgetSearch()
    delete this->ui;
 }
 
-void WidgetSearch::displayContextMenuPeers(const QPoint& point)
-{
-   QMenu menu;
-   menu.addAction(QIcon(":/icons/ressources/download.png"), "Download", this, SLOT(download()));
-   menu.exec(this->ui->treeView->mapToGlobal(point));
+void WidgetSearch::displayContextMenuDownload(const QPoint& point)
+{   
+   this->downloadMenu.show(this->ui->treeView->mapToGlobal(point));
 }
 
 void WidgetSearch::download()
@@ -196,6 +199,17 @@ void WidgetSearch::download()
       this->coreConnection->download(this->searchModel.getPeerID(index), this->searchModel.getEntry(index));
    }
 }
+
+void WidgetSearch::downloadTo(const Common::Hash& sharedDirID, const QString& path)
+{
+   QModelIndexList selectedRows = this->ui->treeView->selectionModel()->selectedRows();
+   for (QListIterator<QModelIndex> i(selectedRows); i.hasNext();)
+   {
+      QModelIndex index = i.next();
+      this->coreConnection->download(this->searchModel.getPeerID(index), this->searchModel.getEntry(index), sharedDirID, path);
+   }
+}
+
 
 void WidgetSearch::progress(int value)
 {

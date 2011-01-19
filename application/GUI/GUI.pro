@@ -53,7 +53,8 @@ SOURCES += main.cpp\
     Uploads/WidgetUploads.cpp \
     Uploads/UploadsModel.cpp \
     Settings/DirListModel.cpp \
-    Settings/RemoteFileDialog.cpp
+    Settings/RemoteFileDialog.cpp \
+    DownloadMenu.cpp
 
 HEADERS  += MainWindow.h \
     ../Protos/gui_protocol.pb.h \
@@ -83,7 +84,8 @@ HEADERS  += MainWindow.h \
     Uploads/WidgetUploads.h \
     Uploads/UploadsModel.h \
     Settings/DirListModel.h \
-    Settings/RemoteFileDialog.h
+    Settings/RemoteFileDialog.h \
+    DownloadMenu.h
 
 FORMS    += MainWindow.ui \
     StatusBar.ui \

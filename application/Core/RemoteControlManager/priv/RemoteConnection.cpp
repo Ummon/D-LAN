@@ -309,10 +309,6 @@ bool RemoteConnection::readMessage()
                   sharedDirs << Common::ProtoHelper::getRepeatedStr(coreSettingsMessage, &Protos::GUI::CoreSettings::shared_directory, i);
                this->fileManager->setSharedDirs(sharedDirs);
             }
-            catch(FM::SuperDirectoryExistsException& e)
-            {
-               L_WARN(QString("There is already a super directory : %1 for this directory : %2").arg(e.superDirectory).arg(e.subDirectory));
-            }
             catch(FM::DirsNotFoundException& e)
             {
                foreach (QString path, e.paths)

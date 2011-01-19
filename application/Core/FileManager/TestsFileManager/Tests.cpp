@@ -114,6 +114,21 @@ void Tests::addAnAlreadySharedDirectory()
    QCOMPARE(paths.at(1).path, QDir::cleanPath(this->sharedDirs.at(1)));
 }
 
+void Tests::swapTwoDirectories()
+{
+   this->sharedDirs.move(1, 0);
+   this->fileManager->setSharedDirs(this->sharedDirs);
+   QList<SharedDir> paths = this->fileManager->getSharedDirs();
+   QCOMPARE(paths.at(0).path, QDir::cleanPath(this->sharedDirs.at(0)));
+   QCOMPARE(paths.at(1).path, QDir::cleanPath(this->sharedDirs.at(1)));
+
+   this->sharedDirs.move(1, 0);
+   this->fileManager->setSharedDirs(this->sharedDirs);
+   QList<SharedDir> paths2 = this->fileManager->getSharedDirs();
+   QCOMPARE(paths2.at(0).path, QDir::cleanPath(this->sharedDirs.at(0)));
+   QCOMPARE(paths2.at(1).path, QDir::cleanPath(this->sharedDirs.at(1)));
+}
+
 void Tests::addInexistingSharedDirectory()
 {
    qDebug() << "===== addInexistingSharedDirectory() =====";
@@ -139,19 +154,11 @@ void Tests::addSubSharedDirectories()
 
    this->sharedDirs << QDir::currentPath().append("/sharedDirs/share1/subdir");
    this->sharedDirs << QDir::currentPath().append("/sharedDirs/share1/another subdir");
-   try
-   {
-      this->fileManager->setSharedDirs(this->sharedDirs);
-      QFAIL("An exception must be thrown");
-   }
-   catch(SuperDirectoryExistsException& e)
-   {
-      QCOMPARE(e.superDirectory, QDir::cleanPath(this->sharedDirs.at(1)));
-      QCOMPARE(e.subDirectory, QDir::cleanPath(this->sharedDirs.at(this->sharedDirs.size()-2)));
 
-      qDebug() << "There is already a super directory : " << e.superDirectory <<
-            " for this directory : " << e.subDirectory;
-   }
+   this->fileManager->setSharedDirs(this->sharedDirs);
+
+   QCOMPARE(this->fileManager->getSharedDirs().size(), 2);
+
    this->sharedDirs.removeLast();
    this->sharedDirs.removeLast();
 }
@@ -167,10 +174,6 @@ void Tests::addSuperSharedDirectories()
    this->fileManager->setSharedDirs(this->sharedDirs);
 
    QTest::qSleep(100);
-
-   /*
-   qsrand(QTime(0,0,0).secsTo(QTime::currentTime()));
-   QTest::qSleep(qrand() % 10 + 1);*/
 }
 
 void Tests::createAFile()

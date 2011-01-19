@@ -25,9 +25,11 @@
 #include <QPainter>
 
 #include <Common/RemoteCoreController/ICoreConnection.h>
+#include <Common/Hash.h>
 
 #include <Search/SearchModel.h>
 #include <Settings/DirListModel.h>
+#include <DownloadMenu.h>
 
 namespace Ui {
    class WidgetSearch;
@@ -58,12 +60,15 @@ namespace GUI
       ~WidgetSearch();
 
    private slots:
-      void displayContextMenuPeers(const QPoint& point);
+      void displayContextMenuDownload(const QPoint& point);
       void download();
+      void downloadTo(const Common::Hash& sharedDirID, const QString& path);
       void progress(int value);
 
    private:
       Ui::WidgetSearch *ui;
+      DownloadMenu downloadMenu;
+
       QSharedPointer<RCC::ICoreConnection> coreConnection;
 
       SearchModel searchModel;

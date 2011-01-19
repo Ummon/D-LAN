@@ -33,7 +33,10 @@ namespace GUI
       void setDirs(const QList<Common::SharedDir>& dirs);
       void addDir(const Common::SharedDir& dir);
       void addDirs(const QStringList& dirs);
+
       void rmDir(int row);
+      void mvUpDir(int row);
+      void mvDownDir(int row);
 
       const QList<Common::SharedDir>& getDirs() const;
       Common::SharedDir getDir(const Common::Hash& ID) const;

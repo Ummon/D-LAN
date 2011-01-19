@@ -62,6 +62,7 @@ namespace RCC
       QSharedPointer<ISearchResult> search(const QString& terms);
 
       void download(const Common::Hash& peerID, const Protos::Common::Entry& entry);
+      void download(const Common::Hash& peerID, const Protos::Common::Entry& entry, const Common::Hash& sharedFolderID, const QString& relativePath = "/");
       void cancelDownloads(const QList<quint64>& downloadIDs);
       void moveDownloads(quint64 downloadIDRef, const QList<quint64>& downloadIDs, bool moveBefore = true);
       void refresh();

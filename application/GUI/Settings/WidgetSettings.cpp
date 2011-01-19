@@ -46,6 +46,9 @@ WidgetSettings::WidgetSettings(QSharedPointer<RCC::ICoreConnection> coreConnecti
    connect(this->ui->butAddShared, SIGNAL(clicked()), this, SLOT(addShared()));
    connect(this->ui->butRemoveShared, SIGNAL(clicked()), this, SLOT(removeShared()));
 
+   connect(this->ui->butMoveUpShared, SIGNAL(clicked()), this, SLOT(moveUpShared()));
+   connect(this->ui->butMoveDownShared, SIGNAL(clicked()), this, SLOT(moveDownShared()));
+
    connect(this->ui->txtCoreAddress, SIGNAL(editingFinished()), this, SLOT(saveGUISettings()));
    connect(this->ui->txtPassword, SIGNAL(editingFinished()), this, SLOT(saveGUISettings()));
    connect(this->ui->butResetCoreAddress, SIGNAL(clicked()), this, SLOT(resetCoreAddress()));
@@ -142,6 +145,26 @@ void WidgetSettings::removeShared()
    if (index.isValid())
    {
       this->sharedDirsModel.rmDir(index.row());
+      this->saveCoreSettings();
+   }
+}
+
+void WidgetSettings::moveUpShared()
+{
+   QModelIndex index = this->ui->lstShared->selectionModel()->currentIndex();
+   if (index.isValid())
+   {
+      this->sharedDirsModel.mvUpDir(index.row());
+      this->saveCoreSettings();
+   }
+}
+
+void WidgetSettings::moveDownShared()
+{
+   QModelIndex index = this->ui->lstShared->selectionModel()->currentIndex();
+   if (index.isValid())
+   {
+      this->sharedDirsModel.mvDownDir(index.row());
       this->saveCoreSettings();
    }
 }

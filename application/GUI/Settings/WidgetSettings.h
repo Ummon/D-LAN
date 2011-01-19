@@ -50,6 +50,9 @@ namespace GUI
       void addShared();
       void removeShared();
 
+      void moveUpShared();
+      void moveDownShared();
+
       void resetCoreAddress();
 
       QStringList askForDirectories();

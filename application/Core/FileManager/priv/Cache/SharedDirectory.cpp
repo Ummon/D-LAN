@@ -45,6 +45,27 @@ SharedDirectory::SharedDirectory(Cache* cache, const QString& path, const Common
    this->init();
 }
 
+/**
+  * Try to merge other shared directory with this one.
+  * For exemple /sharing/folder1 can be merged with /sharing.
+  * Should be called after each new SharedDirectory created.
+  */
+void SharedDirectory::mergeSubSharedDirectories()
+{
+   // Merges the sub-directories of each directory found.
+   foreach (SharedDirectory* subDir, this->cache->getSubSharedDirectories(this->path))
+   {
+      // Create the missing directories.
+      const QStringList& parentFolders = this->getFullPath().split('/', QString::SkipEmptyParts);
+      const QStringList& childFolders = subDir->getFullPath().split('/', QString::SkipEmptyParts);
+      Directory* current = this;
+      for (int i = parentFolders.size(); i < childFolders.size(); i++)
+         current = new Directory(current, childFolders[i]);
+
+      this->getCache()->removeSharedDir(subDir, current);
+   }
+}
+
 void SharedDirectory::populateEntry(Protos::Common::Entry* entry, bool setSharedDir) const
 {
    Directory::populateEntry(entry, setSharedDir);
@@ -63,19 +84,6 @@ void SharedDirectory::init()
 
    if (SharedDirectory* dir = this->cache->getSuperSharedDirectory(this->path))
       throw SuperDirectoryExistsException(dir->getFullPath(), this->getFullPath());
-
-   // Merges the sub-directories of each directory found.
-   foreach (SharedDirectory* subDir, this->cache->getSubSharedDirectories(this->path))
-   {
-      // Create the missing directories.
-      const QStringList& parentFolders = this->getFullPath().split('/', QString::SkipEmptyParts);
-      const QStringList& childFolders = subDir->getFullPath().split('/', QString::SkipEmptyParts);
-      Directory* current = this;
-      for (int i = parentFolders.size(); i < childFolders.size(); i++)
-         current = new Directory(current, childFolders[i]);
-
-      this->getCache()->removeSharedDir(subDir, current);
-   }
 }
 
 SharedDirectory::~SharedDirectory()

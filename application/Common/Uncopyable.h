@@ -16,11 +16,15 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef UNCOPYABLE_H
-#define UNCOPYABLE_H
+#ifndef COMMON_UNCOPYABLE_H
+#define COMMON_UNCOPYABLE_H
 
 namespace Common
 {
+   /**
+     * Prevent a class to be copied.
+     * Just do a private inheritance with this class.
+     */
    class Uncopyable
    {
    protected:

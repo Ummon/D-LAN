@@ -63,9 +63,12 @@
           <widget class="QListView" name="lstShared"/>
          </item>
          <item>
-          <layout class="QVBoxLayout" name="laySharedButtons" stretch="0,0,0">
+          <layout class="QVBoxLayout" name="laySharedButtons" stretch="0,0,0,0,0">
            <item>
             <widget class="QPushButton" name="butAddShared">
+             <property name="toolTip">
+              <string>Add a new shared directory</string>
+             </property>
              <property name="text">
               <string/>
              </property>
@@ -73,16 +76,50 @@
               <iconset resource="../ressources.qrc">
                <normaloff>:/icons/ressources/add.png</normaloff>:/icons/ressources/add.png</iconset>
              </property>
+             <property name="flat">
+              <bool>false</bool>
+             </property>
             </widget>
            </item>
            <item>
             <widget class="QPushButton" name="butRemoveShared">
+             <property name="toolTip">
+              <string>Remove the selected shared directory</string>
+             </property>
              <property name="text">
               <string/>
              </property>
              <property name="icon">
               <iconset resource="../ressources.qrc">
                <normaloff>:/icons/ressources/delete.png</normaloff>:/icons/ressources/delete.png</iconset>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="butMoveUpShared">
+             <property name="toolTip">
+              <string>Move up the selected shared directory</string>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+             <property name="icon">
+              <iconset resource="../ressources.qrc">
+               <normaloff>:/icons/ressources/arrow_up.png</normaloff>:/icons/ressources/arrow_up.png</iconset>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="butMoveDownShared">
+             <property name="toolTip">
+              <string>Move down the selected shared directory</string>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+             <property name="icon">
+              <iconset resource="../ressources.qrc">
+               <normaloff>:/icons/ressources/arrow_down.png</normaloff>:/icons/ressources/arrow_down.png</iconset>
              </property>
             </widget>
            </item>

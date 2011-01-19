@@ -76,6 +76,26 @@ void DirListModel::rmDir(int row)
    this->endRemoveRows();
 }
 
+void DirListModel::mvUpDir(int row)
+{
+   if (row >= this->dirs.size() || row == 0)
+      return;
+
+   this->beginMoveRows(QModelIndex(), row, row, QModelIndex(), row - 1);
+   this->dirs.move(row, row - 1);
+   this->endMoveRows();
+}
+
+void DirListModel::mvDownDir(int row)
+{
+   if (row >= this->dirs.size() - 1)
+      return;
+
+   this->beginMoveRows(QModelIndex(), row, row, QModelIndex(), row + 2);
+   this->dirs.move(row, row + 1);
+   this->endMoveRows();
+}
+
 const QList<Common::SharedDir>& DirListModel::getDirs() const
 {
    return this->dirs;

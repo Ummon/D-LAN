@@ -30,6 +30,7 @@
 #include <PeerList/PeerListModel.h>
 #include <Settings/DirListModel.h>
 #include <Browse/BrowseModel.h>
+#include <DownloadMenu.h>
 
 namespace Ui {
    class WidgetBrowse;
@@ -55,8 +56,9 @@ namespace GUI
       void refresh();
 
    private slots:
-      void displayContextMenuPeers(const QPoint& point);
+      void displayContextMenuDownload(const QPoint& point);
       void download();
+      void downloadTo(const Common::Hash& sharedDirID, const QString& path);
       void openLocation();
 
    protected:
@@ -64,6 +66,7 @@ namespace GUI
 
    private:
       Ui::WidgetBrowse* ui;
+      DownloadMenu downloadMenu;
 
       QSharedPointer<RCC::ICoreConnection> coreConnection;
       const Common::Hash peerID;

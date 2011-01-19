@@ -41,6 +41,9 @@
      <property name="enabled">
       <bool>true</bool>
      </property>
+     <property name="toolTip">
+      <string>Download selected items to the first shared folder with enough free space</string>
+     </property>
      <property name="text">
       <string>Download selected items</string>
      </property>

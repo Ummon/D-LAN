@@ -85,6 +85,7 @@ namespace FM
       void sharedDirectoryRemoved(SharedDirectory* dir, Directory* dir2);
 
    private:
+      SharedDirectory* createSharedDir(const QString path, const Common::Hash& ID = Common::Hash::null, int pos = -1);
       void createSharedDirs(const QStringList& dirs, const QList<Common::Hash>& ids = QList<Common::Hash>());
       void createSharedDirs(const Protos::FileCache::Hashes& hashes);
 

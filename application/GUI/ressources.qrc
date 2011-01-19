@@ -18,5 +18,7 @@
         <file>ressources/aybabtu_icon.png</file>
         <file>ressources/settings.png</file>
         <file>ressources/chat.png</file>
+        <file>ressources/arrow_down.png</file>
+        <file>ressources/arrow_up.png</file>
     </qresource>
 </RCC>

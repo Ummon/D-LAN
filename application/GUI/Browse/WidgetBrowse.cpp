@@ -39,6 +39,7 @@ void BrowseDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option
 WidgetBrowse::WidgetBrowse(QSharedPointer<RCC::ICoreConnection> coreConnection, const PeerListModel& peerListModel, const DirListModel& sharedDirsModel, const Common::Hash& peerID, QWidget *parent) :
    QWidget(parent),
    ui(new Ui::WidgetBrowse),
+   downloadMenu(coreConnection, sharedDirsModel),
    coreConnection(coreConnection),
    peerID(peerID),
    browseModel(coreConnection, sharedDirsModel, peerID, false) // 'false' because the model is automatically refreshed when the widget is shown, see 'WidgetBrowse::showEvent(..)'.
@@ -55,12 +56,14 @@ WidgetBrowse::WidgetBrowse(QSharedPointer<RCC::ICoreConnection> coreConnection, 
    this->ui->treeView->setSelectionMode(QAbstractItemView::ExtendedSelection);
 
    this->ui->treeView->setContextMenuPolicy(Qt::CustomContextMenu);
-   connect(this->ui->treeView, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(displayContextMenuPeers(const QPoint&)));
+   connect(this->ui->treeView, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(displayContextMenuDownload(const QPoint&)));
 
    if (this->coreConnection->getOurID() == this->peerID)
       this->ui->butDownload->hide();
    else
       connect(this->ui->butDownload, SIGNAL(clicked()), this, SLOT(download()));
+
+   connect(&this->downloadMenu, SIGNAL(downloadTo(const Common::Hash&, const QString&)), this, SLOT(downloadTo(const Common::Hash&, const QString&)));
 
    this->setWindowTitle(QString("[%1]").arg(peerListModel.getNick(this->peerID)));
 }
@@ -80,22 +83,21 @@ void WidgetBrowse::refresh()
    this->browseModel.refresh();
 }
 
-void WidgetBrowse::displayContextMenuPeers(const QPoint& point)
+void WidgetBrowse::displayContextMenuDownload(const QPoint& point)
 {
+   QPoint globalPosition = this->ui->treeView->mapToGlobal(point);
    if (this->coreConnection->getOurID() == this->peerID)
    {
       if (this->coreConnection->isLocal())
       {
          QMenu menu;
          menu.addAction("Open location", this, SLOT(openLocation()));
-         menu.exec(this->ui->treeView->mapToGlobal(point));
+         menu.exec(globalPosition);
       }
    }
    else
    {
-      QMenu menu;
-      menu.addAction(QIcon(":/icons/ressources/download.png"), "Download selected entries", this, SLOT(download()));
-      menu.exec(this->ui->treeView->mapToGlobal(point));
+      this->downloadMenu.show(globalPosition);
    }
 }
 
@@ -103,9 +105,14 @@ void WidgetBrowse::download()
 {
    QModelIndexList selectedRows = this->ui->treeView->selectionModel()->selectedRows();
    for (QListIterator<QModelIndex> i(selectedRows); i.hasNext();)
-   {
       this->coreConnection->download(this->peerID, this->browseModel.getEntry(i.next()));
-   }
+}
+
+void WidgetBrowse::downloadTo(const Common::Hash& sharedDirID, const QString& path)
+{
+   QModelIndexList selectedRows = this->ui->treeView->selectionModel()->selectedRows();
+   for (QListIterator<QModelIndex> i(selectedRows); i.hasNext();)
+      this->coreConnection->download(this->peerID, this->browseModel.getEntry(i.next()), sharedDirID, path);
 }
 
 void WidgetBrowse::openLocation()
