@@ -158,6 +158,15 @@ bool Global::rename(const QString& existingFile, const QString& newFile)
 #endif
 }
 
+/**
+  * See QDir::cleanPath(..) documentation.
+  * Add a slash at the end.
+  */
+QString Global::cleanDirPath(const QString& path)
+{
+   return QDir::cleanPath(path).append('/');
+}
+
 QString Global::dataFolders[2];
 
 /**
