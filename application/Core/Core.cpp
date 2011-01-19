@@ -112,7 +112,6 @@ void Core::checkSettingsIntegrity()
    this->checkSetting("multicast_ttl", 1u, 255u);
    this->checkSetting("max_udp_datagram_size", 255u, 65535u);
    this->checkSetting("number_of_hashes_sent_imalive", 1u, 1000u);
-   this->checkSetting("protocol_version", 1u, 10000u);
    this->checkSetting("max_number_of_search_result_to_send", 1u, 10000u);
 
    this->checkSetting("remote_control_port", 1u, 65535u);

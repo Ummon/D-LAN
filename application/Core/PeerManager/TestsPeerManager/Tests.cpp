@@ -90,7 +90,7 @@ void Tests::initTestCase()
    // 2) Set the shared directories.
    for (int i = 0; i < this->peerIDs.size(); i++)
    {
-      this->fileManagers[i]->setSharedDirsReadOnly(QStringList() << QDir::currentPath().append(this->peerSharedDirs[i]));
+      this->fileManagers[i]->setSharedDirs(QStringList() << QDir::currentPath().append(this->peerSharedDirs[i]));
    }
 
    // 3) Create the peer update (simulate the periodic update).

@@ -23,7 +23,7 @@
 
 namespace FM
 {
-   const int FILE_CACHE_VERSION = 1;
+   const int FILE_CACHE_VERSION = 2;
 }
 
 #endif

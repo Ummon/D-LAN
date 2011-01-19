@@ -156,7 +156,7 @@ void UDPListener::send(Common::Network::CoreMessageType type, const google::prot
 void UDPListener::sendIMAliveMessage()
 {
    Protos::Core::IMAlive IMAliveMessage;
-   IMAliveMessage.set_version(SETTINGS.get<quint32>("protocol_version"));
+   IMAliveMessage.set_version(PROTOCOL_VERSION);
    IMAliveMessage.set_port(this->UNICAST_PORT);
    Common::ProtoHelper::setStr(IMAliveMessage, &Protos::Core::IMAlive::set_nick, this->peerManager->getNick());
    IMAliveMessage.set_amount(this->fileManager->getAmount());
@@ -193,12 +193,24 @@ void UDPListener::processPendingMulticastDatagrams()
       case Common::Network::CORE_IM_ALIVE:
          {
             Protos::Core::IMAlive IMAliveMessage;
-            IMAliveMessage.ParseFromArray(this->bodyBuffer, header.size);
+            const bool readOk = IMAliveMessage.ParseFromArray(this->bodyBuffer, header.size);
 
-            if (IMAliveMessage.version() != SETTINGS.get<quint32>("protocol_version"))
+            if (!readOk)
             {
-               L_WARN(QString("Peer protocol (%1) doesn't match our current one (%2)").arg(IMAliveMessage.version()).arg(SETTINGS.get<quint32>("protocol_version")));
-               continue;
+               L_WARN(QString("Unable to read the IMAlive message from peer %1 %2").arg(header.senderID.toStr()).arg(peerAddress.toString()));
+               break;
+            }
+            else if (IMAliveMessage.version() != PROTOCOL_VERSION) // If the protocol version doesn't match we don't add the peer.
+            {
+               L_WARN(
+                  QString("The peer %1 %2 %3 doesn't have the same protocol version (%4) as us (%5). It will be ignored.")
+                     .arg(Common::ProtoHelper::getStr(IMAliveMessage, &Protos::Core::IMAlive::nick))
+                     .arg(header.senderID.toStr())
+                     .arg(peerAddress.toString())
+                     .arg(IMAliveMessage.version())
+                     .arg(PROTOCOL_VERSION)
+               );
+               break;
             }
 
             // If we don't know the peer, he may not know us.

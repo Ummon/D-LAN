@@ -1,7 +1,7 @@
  /**
   * The persisted queued.
   * The entry status is not saved, it's defined during the download process.
-  * Version : 1
+  * Version : 2
   * All string are encoded in UTF-8.
   */
 
