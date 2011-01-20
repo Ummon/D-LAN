@@ -155,6 +155,8 @@ void RemoteConnection::refresh()
       Common::SharedDir sharedDir = i.next();
       Protos::GUI::State_SharedDir* sharedDirProto = state.add_shared_directory();
       Common::ProtoHelper::setStr(*sharedDirProto, &Protos::GUI::State_SharedDir::set_path, sharedDir.path);
+      sharedDirProto->set_size(sharedDir.size);
+      sharedDirProto->set_free_space(sharedDir.freeSpace);
       sharedDirProto->mutable_id()->set_hash(sharedDir.ID.getData(), Common::Hash::HASH_SIZE);
    }
 

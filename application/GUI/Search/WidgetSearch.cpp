@@ -164,7 +164,6 @@ WidgetSearch::WidgetSearch(QSharedPointer<RCC::ICoreConnection> coreConnection, 
     this->ui->treeView->header()->setResizeMode(2, QHeaderView::ResizeToContents);
     this->ui->treeView->header()->setResizeMode(3, QHeaderView::ResizeToContents);
     this->ui->treeView->header()->setResizeMode(4, QHeaderView::Stretch);
-
     this->ui->treeView->setSelectionBehavior(QAbstractItemView::SelectRows);
     this->ui->treeView->setSelectionMode(QAbstractItemView::ExtendedSelection);
 

@@ -20,7 +20,8 @@ namespace Common
         */
       SharedDir() {};
 
-      SharedDir(const Common::Hash& ID, const QString& path) : ID(ID), path(path) {}
+      SharedDir(const Common::Hash& ID, const QString& path, quint64 size, quint64 freeSpace) :
+         ID(ID), path(path), size(size), freeSpace(freeSpace) {}
 
       bool isNull() const { return ID.isNull(); }
 
@@ -28,6 +29,8 @@ namespace Common
 
       Common::Hash ID; ///< The unique identifier of the shared directory.
       QString path; ///< The absolute path of the shared directory.
+      quint64 size;
+      quint64 freeSpace;
    };
 }
 

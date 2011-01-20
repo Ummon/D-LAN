@@ -367,7 +367,6 @@ void MainWindow::addWidgetBrowse(const Common::Hash& peerID)
 
    WidgetBrowse* widgetBrowse = new WidgetBrowse(this->coreConnection, this->peerListModel, this->sharedDirsModel, peerID, this);
    this->ui->mdiArea->addSubWindow(widgetBrowse, Qt::CustomizeWindowHint);
-   //this->mdiChat->setAttribute(Qt::WA_DeleteOnClose);
    widgetBrowse->setWindowState(Qt::WindowMaximized);
    this->widgetsBrowse << widgetBrowse;
 

@@ -118,7 +118,6 @@ QVariant BrowseModel::data(const QModelIndex& index, int role) const
          Node* node = static_cast<Node*>(index.internalPointer());
          return node->getData(index.column());
       }
-      break;
 
    case Qt::DecorationRole:
       {
@@ -136,7 +135,8 @@ QVariant BrowseModel::data(const QModelIndex& index, int role) const
    case Qt::TextAlignmentRole:
       return static_cast<int>((index.column() < this->columnCount(QModelIndex()) - 1 ? Qt::AlignLeft : Qt::AlignRight) | Qt::AlignVCenter);
 
-   default: return QVariant();
+   default:
+      return QVariant();
    }
 }
 

@@ -272,7 +272,7 @@ QList<Common::SharedDir> Cache::getSharedDirs() const
    for (QListIterator<SharedDirectory*> i(this->sharedDirs); i.hasNext();)
    {
       SharedDirectory* dir = i.next();
-      list << Common::SharedDir(dir->getId(), dir->getFullPath());
+      list << Common::SharedDir(dir->getId(), dir->getFullPath(), dir->getSize(), Common::Global::availableDiskSpace(dir->getFullPath()));
    }
    return list;
 }

@@ -21,13 +21,13 @@
 
 #include <QString>
 #include <QStringList>
-#include <QAbstractListModel>
+#include <QAbstractTableModel>
 
 #include <Common/SharedDir.h>
 
 namespace GUI
 {
-   class DirListModel : public QAbstractListModel
+   class DirListModel : public QAbstractTableModel
    {
    public:
       void setDirs(const QList<Common::SharedDir>& dirs);
@@ -42,7 +42,9 @@ namespace GUI
       Common::SharedDir getDir(const Common::Hash& ID) const;
 
       int rowCount(const QModelIndex& parent = QModelIndex()) const;
+      int columnCount(const QModelIndex& parent = QModelIndex()) const;
       QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const;
+      QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const;
 
    private:
       QList<Common::SharedDir> dirs;

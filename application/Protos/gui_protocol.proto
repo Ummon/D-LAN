@@ -74,6 +74,8 @@ message State {
    message SharedDir {
       required Common.Hash id = 1;
       required string path = 2; // Always ended with a '/'.
+      required uint64 size = 3;
+      required uint64 free_space = 4;
    }
    
    required Peer myself = 1;

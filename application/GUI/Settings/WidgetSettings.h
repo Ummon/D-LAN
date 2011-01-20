@@ -21,6 +21,7 @@
 
 #include <QWidget>
 #include <QDir>
+#include <QStyledItemDelegate>
 
 #include <Common/RemoteCoreController/ICoreConnection.h>
 
@@ -32,6 +33,13 @@ namespace Ui {
 
 namespace GUI
 {
+   class DirListDelegate : public QStyledItemDelegate
+   {
+      Q_OBJECT
+   public:
+      void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const;
+   };
+
    class WidgetSettings : public QWidget
    {
       Q_OBJECT
@@ -66,6 +74,8 @@ namespace GUI
       QSharedPointer<RCC::ICoreConnection> coreConnection;
 
       DirListModel& sharedDirsModel;
+
+      DirListDelegate dirListDelegate;
 
       bool initialState;
    };

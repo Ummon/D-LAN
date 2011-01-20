@@ -19,16 +19,21 @@
 #include <Settings/DirListModel.h>
 using namespace GUI;
 
-   void DirListModel::setDirs(const QList<Common::SharedDir>& dirs)
+#include <Common/Global.h>
+
+void DirListModel::setDirs(const QList<Common::SharedDir>& dirs)
 {
    QList<Common::SharedDir> dirsToRemove = this->dirs;
 
    for (QListIterator<Common::SharedDir> i(dirs); i.hasNext();)
    {
       Common::SharedDir dir = i.next();
-      if (this->dirs.contains(dir))
+      int posDir = this->dirs.indexOf(dir);
+      if (posDir != -1)
       {
          dirsToRemove.removeOne(dir);
+         this->dirs[posDir] = dir;
+         this->dataChanged(this->index(posDir, 0), this->index(posDir, this->columnCount() - 1));
       }
       else
       {
@@ -63,7 +68,7 @@ void DirListModel::addDir(const Common::SharedDir& dir)
 void DirListModel::addDirs(const QStringList& dirs)
 {
    foreach (QString dir, dirs)
-      this->addDir(Common::SharedDir(Common::Hash::null, dir));
+      this->addDir(Common::SharedDir(Common::Hash::null, dir, 0 ,0));
 }
 
 void DirListModel::rmDir(int row)
@@ -117,9 +122,57 @@ int DirListModel::rowCount(const QModelIndex& parent) const
    return this->dirs.size();
 }
 
+int DirListModel::columnCount(const QModelIndex& parent) const
+{
+   return 3;
+}
+
 QVariant DirListModel::data(const QModelIndex& index, int role) const
 {
-   if (role != Qt::DisplayRole || index.row() >= this->dirs.size())
+   if (index.row() >= this->dirs.size())
       return QVariant();
-   return this->dirs[index.row()].path;
+
+   switch(role)
+   {
+   case Qt::DisplayRole:
+      switch (index.column())
+      {
+      case 0:
+         return this->dirs[index.row()].path;
+      case 1:
+         return Common::Global::formatByteSize(this->dirs[index.row()].size);
+      case 2:
+         return Common::Global::formatByteSize(this->dirs[index.row()].freeSpace);
+      default:
+         return QVariant();
+      }
+
+   case Qt::TextAlignmentRole:
+      return index.column() == 0 ? Qt::AlignLeft : Qt::AlignRight;
+
+   default: return QVariant();
+   }
+}
+
+QVariant DirListModel::headerData(int section, Qt::Orientation orientation, int role) const
+{
+   if (orientation == Qt::Vertical)
+      return QAbstractTableModel::headerData(section, orientation, role);
+
+   switch(role)
+   {
+   case Qt::DisplayRole:
+      switch(section)
+      {
+      case 0: return "Folder";
+      case 1: return "Size";
+      case 2: return "Free space";
+      default: return QAbstractTableModel::headerData(section, orientation, role);
+      }
+
+   case Qt::TextAlignmentRole:
+      return section == 0 ? Qt::AlignLeft : Qt::AlignRight;
+   }
+
+   return QAbstractTableModel::headerData(section, orientation, role);
 }

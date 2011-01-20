@@ -22,6 +22,7 @@ using namespace GUI;
 
 #include <QFileDialog>
 #include <QMessageBox>
+#include <QListView>
 
 #include <Common/ProtoHelper.h>
 #include <Common/Settings.h>
@@ -30,12 +31,35 @@ using namespace GUI;
 
 #include <Settings/RemoteFileDialog.h>
 
+void DirListDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
+{
+   QStyleOptionViewItemV4 newOption(option);
+   newOption.state = option.state & (~QStyle::State_HasFocus);
+   QStyledItemDelegate::paint(painter, newOption, index);
+}
+
+/////
+
 WidgetSettings::WidgetSettings(QSharedPointer<RCC::ICoreConnection> coreConnection, DirListModel& sharedDirsModel, QWidget *parent) :
    QWidget(parent), ui(new Ui::WidgetSettings), coreConnection(coreConnection), sharedDirsModel(sharedDirsModel), initialState(true)
 {
    this->ui->setupUi(this);
 
-   this->ui->lstShared->setModel(&this->sharedDirsModel);
+   this->ui->tblShareDirs->setItemDelegate(&this->dirListDelegate);
+   this->ui->tblShareDirs->setModel(&this->sharedDirsModel);
+   this->ui->tblShareDirs->horizontalHeader()->setResizeMode(0, QHeaderView::Stretch);
+   this->ui->tblShareDirs->horizontalHeader()->setResizeMode(1, QHeaderView::ResizeToContents);
+   this->ui->tblShareDirs->horizontalHeader()->setResizeMode(2, QHeaderView::ResizeToContents);
+   this->ui->tblShareDirs->horizontalHeader()->setClickable(false);
+   this->ui->tblShareDirs->horizontalHeader()->setVisible(true);
+
+   this->ui->tblShareDirs->verticalHeader()->setResizeMode(QHeaderView::Fixed);
+   this->ui->tblShareDirs->verticalHeader()->setDefaultSectionSize(QApplication::fontMetrics().height() + 2);
+   this->ui->tblShareDirs->verticalHeader()->setVisible(false);
+   this->ui->tblShareDirs->setSelectionBehavior(QAbstractItemView::SelectRows);
+   this->ui->tblShareDirs->setSelectionMode(QAbstractItemView::SingleSelection);
+   this->ui->tblShareDirs->setShowGrid(false);
+   this->ui->tblShareDirs->setAlternatingRowColors(true);
 
    this->ui->txtCoreAddress->setText(SETTINGS.get<QString>("core_address"));
 
@@ -78,7 +102,13 @@ void WidgetSettings::newState(const Protos::GUI::State& state)
 
    QList<Common::SharedDir> sharedDirs;
    for (int i = 0; i < state.shared_directory_size(); i++)
-      sharedDirs << Common::SharedDir(state.shared_directory(i).id().hash().data(), Common::ProtoHelper::getStr(state.shared_directory(i), &Protos::GUI::State_SharedDir::path));
+      sharedDirs <<
+         Common::SharedDir(
+            state.shared_directory(i).id().hash().data(),
+            Common::ProtoHelper::getStr(state.shared_directory(i), &Protos::GUI::State_SharedDir::path),
+            state.shared_directory(i).size(),
+            state.shared_directory(i).free_space()
+         );
    this->sharedDirsModel.setDirs(sharedDirs);
 
    // If this is the first message state received and there is no incoming folder defined we ask the user to choose one.
@@ -141,7 +171,7 @@ void WidgetSettings::addShared()
 
 void WidgetSettings::removeShared()
 {
-   QModelIndex index = this->ui->lstShared->selectionModel()->currentIndex();
+   QModelIndex index = this->ui->tblShareDirs->selectionModel()->currentIndex();
    if (index.isValid())
    {
       this->sharedDirsModel.rmDir(index.row());
@@ -151,7 +181,7 @@ void WidgetSettings::removeShared()
 
 void WidgetSettings::moveUpShared()
 {
-   QModelIndex index = this->ui->lstShared->selectionModel()->currentIndex();
+   QModelIndex index = this->ui->tblShareDirs->selectionModel()->currentIndex();
    if (index.isValid())
    {
       this->sharedDirsModel.mvUpDir(index.row());
@@ -161,7 +191,7 @@ void WidgetSettings::moveUpShared()
 
 void WidgetSettings::moveDownShared()
 {
-   QModelIndex index = this->ui->lstShared->selectionModel()->currentIndex();
+   QModelIndex index = this->ui->tblShareDirs->selectionModel()->currentIndex();
    if (index.isValid())
    {
       this->sharedDirsModel.mvDownDir(index.row());
