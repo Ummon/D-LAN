@@ -66,6 +66,7 @@ namespace GUI
       virtual void browse(const Common::Hash& peerID, Node* node = 0);
       virtual void loadChildren(const QPersistentModelIndex &index);
       virtual QList<Node*> synchronize(BrowseModel::Node* node, const Protos::Common::Entries& entries);
+      virtual QList<Node*> synchronizeRoot(const Protos::Common::Entries& entries);
 
       class Node
       {
@@ -89,6 +90,7 @@ namespace GUI
          virtual Node* getParent();
          virtual int getNbChildren() const;
          virtual Node* getChild(int row) const;
+         virtual void moveChild(int from, int to);
          virtual void insertChildren(const Protos::Common::Entries& entries);
          virtual void insertChild(const Protos::Common::Entry& entry, int pos);
          virtual bool hasUnloadedChildren() const;
@@ -115,7 +117,7 @@ namespace GUI
       QPersistentModelIndex currentBrowseIndex; // When we receive some entries after a browse query, they will be added as children to this index.
       QSharedPointer<RCC::IBrowseResult> browseResult;
 
-      Node* root;
+      Node* root; // The corresponding index is null: QModelIndex().
    };
 
    bool operator>(const Protos::Common::Entry& e1, const Protos::Common::Entry& e2);

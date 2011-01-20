@@ -74,7 +74,7 @@ QModelIndex BrowseModel::parent(const QModelIndex& index) const
    Node* node = static_cast<Node*>(index.internalPointer());
    Node* parentItem = node->getParent();
 
-   if (!parentItem)
+   if (!parentItem || parentItem == this->root)
        return QModelIndex();
 
    return this->createIndex(parentItem->getRow(), 0, parentItem);
@@ -133,7 +133,7 @@ QVariant BrowseModel::data(const QModelIndex& index, int role) const
       }
 
    case Qt::TextAlignmentRole:
-      return static_cast<int>((index.column() < this->columnCount(QModelIndex()) - 1 ? Qt::AlignLeft : Qt::AlignRight) | Qt::AlignVCenter);
+      return static_cast<int>((index.column() < this->columnCount() - 1 ? Qt::AlignLeft : Qt::AlignRight) | Qt::AlignVCenter);
 
    default:
       return QVariant();
@@ -188,9 +188,6 @@ void BrowseModel::resultRefresh(const google::protobuf::RepeatedPtrField<Protos:
 
    QList<Node*> nodesToDelete;
 
-   // Synchronize the root.
-   nodesToDelete << this->synchronize(this->root, entries.Get(entries.size() - 1));
-
    // Synchronize the content of all directories.
    Node::NodeBreadthIterator i(this->root);
    int j = -1;
@@ -198,12 +195,16 @@ void BrowseModel::resultRefresh(const google::protobuf::RepeatedPtrField<Protos:
    while ((currentNode = i.next()) && ++j < entries.size() - 1)
       nodesToDelete << this->synchronize(currentNode, entries.Get(j));
 
+   // Synchronize the root.
+   for (QListIterator<Node*> i(this->synchronizeRoot(entries.Get(entries.size() - 1))); i.hasNext();)
+      nodesToDelete.prepend(i.next());
+
    QListIterator<Node*> k(nodesToDelete);
    k.toBack();
    while (k.hasPrevious())
    {
       Node* node = k.previous();
-      this->beginRemoveRows(this->createIndex(node->getParent()->getRow(), 0, node->getParent()), node->getRow(), node->getRow()); // Root cannot be deleted, so the node must have a parent.
+      this->beginRemoveRows(node->getParent() == this->root ? QModelIndex() : this->createIndex(node->getParent()->getRow(), 0, node->getParent()), node->getRow(), node->getRow()); // Root cannot be deleted, so the node must have a parent.
       delete node;
       this->endRemoveRows();
    }
@@ -256,13 +257,16 @@ void BrowseModel::loadChildren(const QPersistentModelIndex &index)
 
 /**
   * Add the new elements in 'entries' and return the entries in 'node->children' which dont exist in 'entries'.
-  * 'entries' and 'node->children' must be sorted in their name.
+  * 'entries' and 'node->children' must be sorted by their name.
   */
 QList<BrowseModel::Node*> BrowseModel::synchronize(BrowseModel::Node* node, const Protos::Common::Entries& entries)
 {
-   QModelIndex parentIndex = node->getParent() ? this->createIndex(node->getRow(), 0, node) : QModelIndex(); // Special case for the root.
-
    QList<Node*> nodesToDelete;
+
+   if (!node->getParent())
+      return nodesToDelete;
+
+   QModelIndex parentIndex = this->createIndex(node->getRow(), 0, node);
 
    int i = 0; // Children of 'node'.
    int j = 0; // Entries.
@@ -292,6 +296,48 @@ QList<BrowseModel::Node*> BrowseModel::synchronize(BrowseModel::Node* node, cons
       }
    }
 
+   return nodesToDelete;
+}
+
+/**
+  * Special case for the roots shared directory. They may not be sorted in a alphabetic way.
+  */
+QList<BrowseModel::Node*> BrowseModel::synchronizeRoot(const Protos::Common::Entries& entries)
+{
+   QModelIndex parentIndex = QModelIndex(); //this->createIndex(0, 0, this->root);
+
+   int j = 0; // Root's children.
+   for (int i = 0 ; i < entries.entry_size(); i++)
+   {
+      for (int j2 = j; j2 < this->root->getNbChildren(); j2++)
+      {
+         if (entries.entry(i).shared_dir().id().hash() == this->root->getChild(j2)->getEntry().shared_dir().id().hash())
+         {
+            if (entries.entry(i) != this->root->getChild(j2)->getEntry())
+            {
+               this->root->getChild(j2)->setEntry(entries.entry(i));
+               emit dataChanged(this->index(j2, 0), this->index(j2, this->columnCount() - 1));
+            }
+
+            if (j2 != j)
+            {
+               this->beginMoveRows(parentIndex, j2, j2, parentIndex, j);
+               this->root->moveChild(j2, j);
+               this->endMoveRows();
+            }
+            j++;
+            goto nextEntry;
+         }
+      }
+      this->beginInsertRows(parentIndex, j, j);
+      this->root->insertChild(entries.entry(i), j++);
+      this->endInsertRows();
+      nextEntry:;
+   }
+
+   QList<Node*> nodesToDelete;
+   while (j < this->root->getNbChildren())
+      nodesToDelete << this->root->getChild(j++);
    return nodesToDelete;
 }
 
@@ -372,6 +418,13 @@ BrowseModel::Node* BrowseModel::Node::getChild(int row) const
    if (row >= this->children.size())
       return 0;
    return this->children[row];
+}
+
+void BrowseModel::Node::moveChild(int from, int to)
+{
+   if (from >= this->children.size() || to >= this->children.size())
+      return;
+   this->children.move(from, to);
 }
 
 void BrowseModel::Node::insertChildren(const Protos::Common::Entries& entries)
