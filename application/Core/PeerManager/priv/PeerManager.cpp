@@ -82,7 +82,11 @@ Common::Hash PeerManager::getID()
   */
 void PeerManager::setNick(const QString& nick)
 {
-    this->nick = nick;
+   if (nick.length() > MAX_NICK_LENGTH)
+      this->nick = nick.left(MAX_NICK_LENGTH);
+   else
+      this->nick = nick;
+
     SETTINGS.set("nick", this->nick);
 
     try
