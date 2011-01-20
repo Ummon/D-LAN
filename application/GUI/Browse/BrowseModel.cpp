@@ -183,9 +183,6 @@ void BrowseModel::refresh()
 
 void BrowseModel::resultRefresh(const google::protobuf::RepeatedPtrField<Protos::Common::Entries>& entries)
 {
-   if (entries.size() == 0)
-      return;
-
    QList<Node*> nodesToDelete;
 
    // Synchronize the content of all directories.
@@ -213,9 +210,6 @@ void BrowseModel::resultRefresh(const google::protobuf::RepeatedPtrField<Protos:
 
 void BrowseModel::result(const google::protobuf::RepeatedPtrField<Protos::Common::Entries>& entries)
 {
-   if (entries.size() == 0)
-      return;
-
    if (entries.Get(0).entry_size() > 0)
    {
       this->beginInsertRows(this->currentBrowseIndex, 0, entries.Get(0).entry_size() - 1);
