@@ -285,6 +285,7 @@ bool Chunk::matchesEntry(const Protos::Common::Entry& entry) const
    return
       this->file->getRoot()->getId() == Common::Hash(entry.shared_dir().id().hash().data()) &&
       this->file->getPath() == Common::ProtoHelper::getStr(entry, &Protos::Common::Entry::path) &&
+      this->file->getSize() == entry.size() &&
       Global::removeUnfinishedSuffix(this->file->getName()) == Global::removeUnfinishedSuffix(Common::ProtoHelper::getStr(entry, &Protos::Common::Entry::name));
 }
 

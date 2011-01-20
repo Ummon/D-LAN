@@ -128,13 +128,12 @@ File::~File()
   */
 void File::setToUnfinished(qint64 size, const Common::Hashes& hashes)
 {
-   const QString oldPath(this->getFullPath());
-
    this->complete = false;
    this->stopHashing();
    this->tryToRename = false;
    this->cache->onEntryRemoved(this);
    this->name.append(Global::getUnfinishedSuffix());
+   this->size = size;
    this->dateLastModified = QDateTime::currentDateTime();
    this->nbChunkComplete = 0;
    this->deleteAllChunks();
