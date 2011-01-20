@@ -27,9 +27,9 @@ message State {
          COMPLETE = 0x4;
          PAUSED = 0x5;
          
-         UNKNOWN_PEER = 0x10; // When the peer is online the download will (re)start automatically.
-         ENTRY_NOT_FOUND = 0x11; // When the entry is found the download will start automatically
-         NO_SOURCE = 0x12; // When a new source is available the download will start automatically.
+         UNKNOWN_PEER = 0x10; // The source peer isn't found and we don't have all the hashes.
+         ENTRY_NOT_FOUND = 0x11; // The entry isn't found in the source peer shared directories.
+         NO_SOURCE = 0x12; // All the hashes are known but one ore more chunk are not present among the other peers.
          
          // All the following status will pause the download.
          NO_SHARED_DIRECTORY_TO_WRITE = 0x20;
@@ -56,8 +56,8 @@ message State {
    }
    message Stats {
       enum CacheStatus {
-         SCANNING_IN_PROGRESS = 0; // 1st pass : grab all file/dir names and their size and index it.
-         HASHING_IN_PROGRESS = 1;
+         SCANNING_IN_PROGRESS = 0; // 1st pass: grab all file/dir names and their size and index it.
+         HASHING_IN_PROGRESS = 1; // 2nd pass: compute the hashes of all files.
          UP_TO_DATE = 2;
          UNKNOWN = 3;
       }

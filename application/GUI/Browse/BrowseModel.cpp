@@ -294,7 +294,7 @@ QList<BrowseModel::Node*> BrowseModel::synchronize(BrowseModel::Node* node, cons
 }
 
 /**
-  * Special case for the roots shared directory. They may not be sorted in a alphabetic way.
+  * Special case for the shared directories (roots). They may not be sorted in a alphabetic way and identified by their ID.
   */
 QList<BrowseModel::Node*> BrowseModel::synchronizeRoot(const Protos::Common::Entries& entries)
 {
@@ -303,6 +303,7 @@ QList<BrowseModel::Node*> BrowseModel::synchronizeRoot(const Protos::Common::Ent
    int j = 0; // Root's children.
    for (int i = 0 ; i < entries.entry_size(); i++)
    {
+      // We've searching if the entry alredy exists.
       for (int j2 = j; j2 < this->root->getNbChildren(); j2++)
       {
          if (entries.entry(i).shared_dir().id().hash() == this->root->getChild(j2)->getEntry().shared_dir().id().hash())
@@ -323,6 +324,7 @@ QList<BrowseModel::Node*> BrowseModel::synchronizeRoot(const Protos::Common::Ent
             goto nextEntry;
          }
       }
+      // The entry doesn't exist, we create it.
       this->beginInsertRows(parentIndex, j, j);
       this->root->insertChild(entries.entry(i), j++);
       this->endInsertRows();
