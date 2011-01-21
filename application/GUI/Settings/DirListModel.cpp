@@ -23,35 +23,41 @@ using namespace GUI;
 
 void DirListModel::setDirs(const QList<Common::SharedDir>& dirs)
 {
-   QList<Common::SharedDir> dirsToRemove = this->dirs;
-
-   for (QListIterator<Common::SharedDir> i(dirs); i.hasNext();)
+   // TODO: Try to factor this code with the one in BrowseModel::synchronizeRoot
+   int j = 0;
+   for (int i = 0; i < dirs.size(); i++)
    {
-      Common::SharedDir dir = i.next();
-      int posDir = this->dirs.indexOf(dir);
-      if (posDir != -1)
+      for (int j2 = j; j2 < this->dirs.size(); j2++)
       {
-         dirsToRemove.removeOne(dir);
-         this->dirs[posDir] = dir;
-         this->dataChanged(this->index(posDir, 0), this->index(posDir, this->columnCount() - 1));
+         if (dirs[i] == this->dirs[j2]) // ID's are equal -> same dir.
+         {
+            if (!this->dirs[j2].equalTo(dirs[i])) // Data are not the same -> we refresh it.
+            {
+               this->dirs[j2] = dirs[i];
+               emit dataChanged(this->index(j2, 0), this->index(j2, this->columnCount() - 1));
+            }
+
+            if (j2 != j)
+            {
+               this->beginMoveRows(QModelIndex(), j2, j2, QModelIndex(), j);
+               this->dirs.move(j2, j);
+               this->endMoveRows();
+            }
+            j++;
+            goto nextEntry;
+         }
       }
-      else
-      {
-         this->beginInsertRows(QModelIndex(), this->dirs.size(), this->dirs.size());
-         this->dirs << dir;
-         this->endInsertRows();
-      }
+      this->beginInsertRows(QModelIndex(), j, j);
+      this->dirs.insert(j++, dirs[i]);
+      this->endInsertRows();
+      nextEntry:;
    }
 
-   for (QListIterator<Common::SharedDir> i(dirsToRemove); i.hasNext();)
+   while (j < this->dirs.size())
    {
-      int j = this->dirs.indexOf(i.next());
-      if (j != -1)
-      {
-         this->beginRemoveRows(QModelIndex(), j, j);
-         this->dirs.removeAt(j);
-         this->endRemoveRows();
-      }
+      this->beginRemoveRows(QModelIndex(), j, j);
+      this->dirs.removeAt(j);
+      this->endRemoveRows();
    }
 }
 

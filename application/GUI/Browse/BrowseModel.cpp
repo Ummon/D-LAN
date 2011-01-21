@@ -294,7 +294,7 @@ QList<BrowseModel::Node*> BrowseModel::synchronize(BrowseModel::Node* node, cons
 }
 
 /**
-  * Special case for the shared directories (roots). They may not be sorted in a alphabetic way and identified by their ID.
+  * Special case for the shared directories (roots). They may not be sorted in a alphabetic way. They are identified by their ID.
   */
 QList<BrowseModel::Node*> BrowseModel::synchronizeRoot(const Protos::Common::Entries& entries)
 {
@@ -306,15 +306,15 @@ QList<BrowseModel::Node*> BrowseModel::synchronizeRoot(const Protos::Common::Ent
       // We've searching if the entry alredy exists.
       for (int j2 = j; j2 < this->root->getNbChildren(); j2++)
       {
-         if (entries.entry(i).shared_dir().id().hash() == this->root->getChild(j2)->getEntry().shared_dir().id().hash())
+         if (entries.entry(i).shared_dir().id().hash() == this->root->getChild(j2)->getEntry().shared_dir().id().hash()) // ID's are equal -> same entry.
          {
-            if (entries.entry(i) != this->root->getChild(j2)->getEntry())
+            if (entries.entry(i) != this->root->getChild(j2)->getEntry()) // The entry data may have changed.
             {
                this->root->getChild(j2)->setEntry(entries.entry(i));
                emit dataChanged(this->index(j2, 0), this->index(j2, this->columnCount() - 1));
             }
 
-            if (j2 != j)
+            if (j2 != j) // 'beginMoveRows(..)' crashes if j2 == j.
             {
                this->beginMoveRows(parentIndex, j2, j2, parentIndex, j);
                this->root->moveChild(j2, j);

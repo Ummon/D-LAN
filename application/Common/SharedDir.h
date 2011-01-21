@@ -26,6 +26,7 @@ namespace Common
       bool isNull() const { return ID.isNull(); }
 
       bool operator==(const SharedDir& other) const { return this->ID == other.ID; }
+      bool equalTo(const SharedDir& other) const { return this->ID == other.ID && this->path == other.path && this->size == other.size && this->freeSpace == other.freeSpace; }
 
       Common::Hash ID; ///< The unique identifier of the shared directory.
       QString path; ///< The absolute path of the shared directory.
