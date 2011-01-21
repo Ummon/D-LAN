@@ -80,7 +80,7 @@ namespace FM
       qint64 write(const char* buffer, int nbBytes, qint64 offset);
       qint64 read(char* buffer, qint64 offset, int maxBytesToRead);
 
-      bool computeHashes(int n = 0);
+      bool computeHashes(int n = -1);
 
       void stopHashing();
 

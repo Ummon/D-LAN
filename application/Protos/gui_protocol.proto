@@ -26,6 +26,7 @@ message State {
          DOWNLOADING = 0x3;
          COMPLETE = 0x4;
          PAUSED = 0x5;
+         DELETED = 0x6; // Should not be seen by the user.
          
          UNKNOWN_PEER = 0x10; // The source peer isn't found and we don't have all the hashes.
          ENTRY_NOT_FOUND = 0x11; // The entry isn't found in the source peer shared directories.

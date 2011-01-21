@@ -46,8 +46,9 @@ namespace FM
 
       /**
         * Fill the entry object with its own file information.
+        * @return false if the entry hasn't been populated.
         */
-      virtual void populateEntry(Protos::Common::Entry* entry) const = 0;
+      virtual bool populateEntry(Protos::Common::Entry* entry) const = 0;
 
       /**
         * Returns the base path of the file. Not ending by a '/'.

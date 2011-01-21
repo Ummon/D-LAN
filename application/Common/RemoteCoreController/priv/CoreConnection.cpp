@@ -87,28 +87,28 @@ void CoreConnection::setCoreSettings(const Protos::GUI::CoreSettings settings)
 QSharedPointer<IBrowseResult> CoreConnection::browse(const Common::Hash& peerID)
 {
    QSharedPointer<BrowseResult> browseResult = QSharedPointer<BrowseResult>(new BrowseResult(this, peerID));
-   this->browseResultsWithoutTag << browseResult;
+   this->browseResultsWithoutTag << browseResult.toWeakRef();
    return browseResult;
 }
 
 QSharedPointer<IBrowseResult> CoreConnection::browse(const Common::Hash& peerID, const Protos::Common::Entry& entry)
 {
    QSharedPointer<BrowseResult> browseResult = QSharedPointer<BrowseResult>(new BrowseResult(this, peerID, entry));
-   this->browseResultsWithoutTag << browseResult;
+   this->browseResultsWithoutTag << browseResult.toWeakRef();
    return browseResult;
 }
 
 QSharedPointer<IBrowseResult> CoreConnection::browse(const Common::Hash& peerID, const Protos::Common::Entries& entries, bool withRoots)
 {
    QSharedPointer<BrowseResult> browseResult = QSharedPointer<BrowseResult>(new BrowseResult(this, peerID, entries, withRoots));
-   this->browseResultsWithoutTag << browseResult;
+   this->browseResultsWithoutTag << browseResult.toWeakRef();
    return browseResult;
 }
 
 QSharedPointer<ISearchResult> CoreConnection::search(const QString& terms)
 {
    QSharedPointer<SearchResult> searchResult = QSharedPointer<SearchResult>(new SearchResult(this, terms));
-   this->searchResultsWithoutTag << searchResult;
+   this->searchResultsWithoutTag << searchResult.toWeakRef();
    return searchResult;
 }
 
@@ -408,8 +408,17 @@ bool CoreConnection::readMessage()
             readOK = tagMessage.ParseFromBoundedZeroCopyStream(&inputStream, this->currentHeader.size);
          }
 
-         if (readOK && !this->searchResultsWithoutTag.isEmpty())
-            this->searchResultsWithoutTag.takeFirst()->setTag(tagMessage.tag());
+         if (readOK && this->authenticated)
+            while (!this->searchResultsWithoutTag.isEmpty())
+            {
+               QWeakPointer<SearchResult> searchResult = this->searchResultsWithoutTag.takeFirst();
+               if (!searchResult.isNull())
+               {
+                  searchResult.data()->setTag(tagMessage.tag());
+                  break;
+               }
+            }
+
       }
       break;
 
@@ -434,8 +443,16 @@ bool CoreConnection::readMessage()
             readOK = tagMessage.ParseFromBoundedZeroCopyStream(&inputStream, this->currentHeader.size);
          }
 
-         if (readOK && this->authenticated && !this->browseResultsWithoutTag.isEmpty())
-            this->browseResultsWithoutTag.takeFirst()->setTag(tagMessage.tag());
+         if (readOK && this->authenticated)
+            while (!this->browseResultsWithoutTag.isEmpty())
+            {
+               QWeakPointer<BrowseResult> browseResult = this->browseResultsWithoutTag.takeFirst();
+               if (!browseResult.isNull())
+               {
+                  browseResult.data()->setTag(tagMessage.tag());
+                  break;
+               }
+            }
       }
       break;
 

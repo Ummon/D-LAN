@@ -60,6 +60,7 @@ void BrowseResult::browseResult(const Protos::GUI::BrowseResult& browseResult)
    if (browseResult.tag() == this->tag) // Is this message for us?
    {
       this->tag = 0; // To avoid multi emit (should not occurs).
+      this->stopTimer();
       emit result(browseResult.entries());
    }
 }

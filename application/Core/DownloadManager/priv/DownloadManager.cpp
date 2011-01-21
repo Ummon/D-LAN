@@ -115,12 +115,11 @@ Download* DownloadManager::addDownload(const Protos::Common::Entry& remoteEntry,
 Download* DownloadManager::addDownload(const Protos::Common::Entry& remoteEntry, const Protos::Common::Entry& localEntry, const Common::Hash& peerSource, bool complete,  QMutableListIterator<Download*>& iterator)
 {
    // If there is a lot of file in queue it can be a bit CPU consumer.
-   // Commented: We don't check anymore...
-   /*if (this->isEntryAlreadyQueued(remoteEntry, peerSource))
+   if (this->isEntryAlreadyQueued(localEntry, peerSource))
    {
       L_WARN(QString("Entry already queued, it will no be added to the queue : %1").arg(Common::ProtoHelper::getStr(remoteEntry, &Protos::Common::Entry::name)));
       return 0;
-   }*/
+   }
 
    Download* newDownload = 0;
 
@@ -177,7 +176,11 @@ QList<IDownload*> DownloadManager::getDownloads() const
 
    // TODO : very heavy!
    for (QListIterator<Download*> i(this->downloads); i.hasNext();)
-      listDownloads << i.next();
+   {
+      Download* download = i.next();
+      if (download->getStatus() != DELETED)
+         listDownloads << download;
+   }
 
    return listDownloads;
 }
@@ -471,19 +474,12 @@ void DownloadManager::setQueueChanged()
    this->queueChanged = true;
 }
 
-bool DownloadManager::isEntryAlreadyQueued(const Protos::Common::Entry& remoteEntry, const Common::Hash& peerSource)
+bool DownloadManager::isEntryAlreadyQueued(const Protos::Common::Entry& localEntry, const Common::Hash& peerSource)
 {
    for (QListIterator<Download*> i(this->downloads); i.hasNext();)
    {
       Download* download = i.next();
-      // TODO : Do we should check peer_id also?
-      if (
-         download->getPeerSourceID() == peerSource &&
-         download->getRemoteEntry().type() == remoteEntry.type() &&
-         download->getRemoteEntry().path() == remoteEntry.path() &&
-         download->getRemoteEntry().name() == remoteEntry.name() &&
-         download->getRemoteEntry().size() == remoteEntry.size()
-      )
+      if (download->getLocalEntry().path() == localEntry.path() && download->getLocalEntry().name() == localEntry.name())
          return true;
    }
    return false;

@@ -141,12 +141,16 @@ void RemoteConnection::refresh()
    {
       UM::IUpload* upload = i.next();
       Protos::GUI::State_Upload* protoUpload = state.add_upload();
-      upload->getChunk()->populateEntry(protoUpload->mutable_file());
-      protoUpload->set_id(upload->getID());
-      protoUpload->set_current_part(upload->getChunk()->getNum() + 1); // "+ 1" to begin at 1 and not 0.
-      protoUpload->set_nb_part(upload->getChunk()->getNbTotalChunk());
-      protoUpload->set_progress(upload->getProgress());
-      protoUpload->mutable_peer_id()->set_hash(upload->getPeerID().getData(), Common::Hash::HASH_SIZE);
+      if (upload->getChunk()->populateEntry(protoUpload->mutable_file()))
+      {
+         protoUpload->set_id(upload->getID());
+         protoUpload->set_current_part(upload->getChunk()->getNum() + 1); // "+ 1" to begin at 1 and not 0.
+         protoUpload->set_nb_part(upload->getChunk()->getNbTotalChunk());
+         protoUpload->set_progress(upload->getProgress());
+         protoUpload->mutable_peer_id()->set_hash(upload->getPeerID().getData(), Common::Hash::HASH_SIZE);
+      }
+      else
+         state.mutable_upload()->RemoveLast();
    }
 
    // Shared Dirs.
@@ -517,10 +521,10 @@ void RemoteConnection::send(Common::Network::GUIMessageType type, const google::
    const Common::Network::MessageHeader<Common::Network::GUIMessageType> header(type, message.ByteSize(), this->peerManager->getID());
 
 #if DEBUG
-   if (type == Common::Network::GUI_STATE)
+   /*if (type == Common::Network::GUI_STATE)
       // Don't log the message body, to heavy
       LOG_DEBU(this->loggerRefreshState, QString("RemoteConnection::send : %2").arg(header.toStr()));
-   else
+   else*/
       L_DEBU(QString("RemoteConnection::send : %2\n%3").arg(header.toStr()).arg(Common::ProtoHelper::getDebugStr(message)));
 #endif
 

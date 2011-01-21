@@ -86,7 +86,7 @@ namespace DM
       void setQueueChanged();
 
    private:
-      bool isEntryAlreadyQueued(const Protos::Common::Entry& remoteEntry, const Common::Hash& peerSource);
+      bool isEntryAlreadyQueued(const Protos::Common::Entry& localEntry, const Common::Hash& peerSource);
 
       const int NUMBER_OF_DOWNLOADER;
 

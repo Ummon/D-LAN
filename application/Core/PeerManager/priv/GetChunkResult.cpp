@@ -65,6 +65,7 @@ void GetChunkResult::newMessage(Common::Network::CoreMessageType type, const goo
    else
    {
       this->status = SFS_ERROR;
-      disconnect(this->socket.data(), SIGNAL(newMessage(Common::Network::CoreMessageType, const google::protobuf::Message&)), this, SLOT(newMessage(Common::Network::CoreMessageType, const google::protobuf::Message&)));
+      // Segfault, maybe we cannot disconnect a signal during a call to the connected slot (this method)!?.
+      //disconnect(this->socket.data(), SIGNAL(newMessage(Common::Network::CoreMessageType, const google::protobuf::Message&)), this, SLOT(newMessage(Common::Network::CoreMessageType, const google::protobuf::Message&)));
    }
 }

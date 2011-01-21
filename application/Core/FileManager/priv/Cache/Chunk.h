@@ -53,7 +53,7 @@ namespace FM
       void populateHashesChunk(Protos::FileCache::Hashes_Chunk& chunk) const;
 
       void removeItsIncompleteFile();
-      void populateEntry(Protos::Common::Entry* entry) const;
+      bool populateEntry(Protos::Common::Entry* entry) const;
       QString getBasePath() const;
 
       QSharedPointer<IDataReader> getDataReader();

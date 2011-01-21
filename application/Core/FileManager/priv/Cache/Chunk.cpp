@@ -82,11 +82,15 @@ void Chunk::removeItsIncompleteFile()
       delete this->file;
 }
 
-void Chunk::populateEntry(Protos::Common::Entry* entry) const
+bool Chunk::populateEntry(Protos::Common::Entry* entry) const
 {
    QMutexLocker locker(&this->mutex);
    if (this->file)
+   {
       this->file->populateEntry(entry);
+      return true;
+   }
+   return false;
 }
 
 QString Chunk::getBasePath() const
@@ -285,7 +289,7 @@ bool Chunk::matchesEntry(const Protos::Common::Entry& entry) const
    return
       this->file->getRoot()->getId() == Common::Hash(entry.shared_dir().id().hash().data()) &&
       this->file->getPath() == Common::ProtoHelper::getStr(entry, &Protos::Common::Entry::path) &&
-      this->file->getSize() == entry.size() &&
+      this->file->getSize() == static_cast<qint64>(entry.size()) &&
       Global::removeUnfinishedSuffix(this->file->getName()) == Global::removeUnfinishedSuffix(Common::ProtoHelper::getStr(entry, &Protos::Common::Entry::name));
 }
 

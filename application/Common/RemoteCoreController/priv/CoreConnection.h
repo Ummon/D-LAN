@@ -23,6 +23,7 @@
 #include <QTcpSocket>
 #include <QHostInfo>
 #include <QSharedPointer>
+#include <QWeakPointer>
 #include <QProcess>
 
 #include <Protos/gui_protocol.pb.h>
@@ -104,8 +105,8 @@ namespace RCC
 
       QList<QHostAddress> addressesToTry; // When a name is resolved many addresses can be returned, we will try all of them until a connection is successfuly established.
 
-      QList< QSharedPointer<BrowseResult> > browseResultsWithoutTag;
-      QList< QSharedPointer<SearchResult> > searchResultsWithoutTag;
+      QList< QWeakPointer<BrowseResult> > browseResultsWithoutTag;
+      QList< QWeakPointer<SearchResult> > searchResultsWithoutTag;
       bool authenticated;
    };
 }

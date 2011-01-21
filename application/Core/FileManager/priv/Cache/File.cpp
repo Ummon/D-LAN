@@ -459,19 +459,23 @@ bool File::computeHashes(int n)
    this->toStopHashing = false;
    this->hashing = false;
 
+   // TODO: seriously rethink this part, a file being written shouldn't be shared or hashed...
    if (bytesReadTotal + bytesSkipped != this->size)
    {
-      L_DEBU(QString("The file content has changed during the hashes computing process. File = %1, bytes read = %2, previous size = %3").arg(this->getFullPath()).arg(bytesReadTotal).arg(this->size));
-      this->dir->fileSizeChanged(this->size, bytesReadTotal + bytesSkipped);
-      this->size = bytesReadTotal + bytesSkipped;
-      this->dateLastModified = QFileInfo(this->getFullPath()).lastModified();
+      if (n != 0)
+      {
+         L_DEBU(QString("The file content has changed during the hashes computing process. File = %1, bytes read = %2, previous size = %3").arg(this->getFullPath()).arg(bytesReadTotal).arg(this->size));
+         this->dir->fileSizeChanged(this->size, bytesReadTotal + bytesSkipped);
+         this->size = bytesReadTotal + bytesSkipped;
+         this->dateLastModified = QFileInfo(this->getFullPath()).lastModified();
 
-      if (bytesReadTotal + bytesSkipped < this->size) // In this case, maybe some chunk must be deleted.
-         for (int i = this->getNbChunks(); i < this->chunks.size(); i++)
-         {
-            QSharedPointer<Chunk> c = this->chunks.takeLast();
-            this->cache->onChunkRemoved(c);
-         }
+         if (bytesReadTotal + bytesSkipped < this->size) // In this case, maybe some chunk must be deleted.
+            for (int i = this->getNbChunks(); i < this->chunks.size(); i++)
+            {
+               QSharedPointer<Chunk> c = this->chunks.takeLast();
+               this->cache->onChunkRemoved(c);
+            }
+      }
 
       return false;
    }
