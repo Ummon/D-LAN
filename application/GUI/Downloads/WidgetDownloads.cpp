@@ -155,8 +155,8 @@ void WidgetDownloads::displayContextMenuDownloads(const QPoint& point)
    QMenu menu;
    if (showOpenLocation)
       menu.addAction("Open location", this, SLOT(openLocationSelectedEntries()));
-   menu.addAction("Remove selected entries", this, SLOT(removeSelectedEntries()));
-   menu.addAction("Remove completed files", this, SLOT(removeCompletedFiles()));
+   menu.addAction(QIcon(":/icons/ressources/remove_complete_files.png"), "Remove completed files", this, SLOT(removeCompletedFiles()));
+   menu.addAction(QIcon(":/icons/ressources/delete.png"), "Remove selected entries", this, SLOT(removeSelectedEntries()));
    menu.exec(this->ui->tblDownloads->mapToGlobal(point));
 }
 

@@ -215,7 +215,8 @@ QString Global::getDataFolder(DataFolderType type, bool create)
   */
 void Global::setDataFolder(DataFolderType type, const QString& folder)
 {
-   Global::dataFolders[type] = folder;
+   if (QDir(folder).exists())
+      Global::dataFolders[type] = folder;
 }
 
 void Global::setDataFolderToDefault(DataFolderType type)

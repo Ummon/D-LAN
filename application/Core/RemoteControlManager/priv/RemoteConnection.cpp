@@ -521,10 +521,10 @@ void RemoteConnection::send(Common::Network::GUIMessageType type, const google::
    const Common::Network::MessageHeader<Common::Network::GUIMessageType> header(type, message.ByteSize(), this->peerManager->getID());
 
 #if DEBUG
-   /*if (type == Common::Network::GUI_STATE)
+   if (type == Common::Network::GUI_STATE)
       // Don't log the message body, to heavy
       LOG_DEBU(this->loggerRefreshState, QString("RemoteConnection::send : %2").arg(header.toStr()));
-   else*/
+   else
       L_DEBU(QString("RemoteConnection::send : %2\n%3").arg(header.toStr()).arg(Common::ProtoHelper::getDebugStr(message)));
 #endif
 

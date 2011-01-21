@@ -479,7 +479,7 @@ bool DownloadManager::isEntryAlreadyQueued(const Protos::Common::Entry& localEnt
    for (QListIterator<Download*> i(this->downloads); i.hasNext();)
    {
       Download* download = i.next();
-      if (download->getLocalEntry().path() == localEntry.path() && download->getLocalEntry().name() == localEntry.name())
+      if (download->getLocalEntry().shared_dir().id().hash() == localEntry.shared_dir().id().hash() && download->getLocalEntry().path() == localEntry.path() && download->getLocalEntry().name() == localEntry.name())
          return true;
    }
    return false;
