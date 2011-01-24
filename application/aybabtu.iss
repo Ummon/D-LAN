@@ -1,6 +1,7 @@
 [code]
 #define QtDir "C:/Qt/4.7.1"
 #define MingwDir "C:/Qt/qtcreator-2.0.94/mingw"
+#define ProtoBufDir "C:/protobuf"
 
 #define AppName "Aybabtu"
 #define ExePath ".\Core\output\release\AybabtuCore.exe"
@@ -30,6 +31,7 @@ Source: {#QtDir}/bin/QtNetwork4.dll; DestDir: {app}; Flags: comparetimestamp;
 Source: {#QtDir}/bin/QtNetwork4.dll; DestDir: {app}; Flags: comparetimestamp; 
 Source: {#MingwDir}/bin/mingwm10.dll; DestDir: {app}; Flags: comparetimestamp; 
 Source: {#MingwDir}/bin/libgcc_s_dw2-1.dll; DestDir: {app}; Flags: comparetimestamp; 
+Source: {#ProtoBufDir}/src/.libs/libprotobuf-7.dll; DestDir: {app}; Flags: comparetimestamp; 
 
 [Icons]
 Name: "{group}\Aybabtu GUI"; Filename: {app}\AybabtuGUI.exe; WorkingDir: "{app}"
