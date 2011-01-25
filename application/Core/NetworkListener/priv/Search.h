@@ -19,6 +19,7 @@
 #ifndef NETWORKLISTENER_SEARCH_H
 #define NETWORKLISTENER_SEARCH_H
 
+
 #include <QSharedPointer>
 #include <QElapsedTimer>
 

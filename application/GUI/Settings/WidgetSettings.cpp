@@ -40,7 +40,7 @@ void DirListDelegate::paint(QPainter* painter, const QStyleOptionViewItem& optio
 
 /////
 
-WidgetSettings::WidgetSettings(QSharedPointer<RCC::ICoreConnection> coreConnection, DirListModel& sharedDirsModel, QWidget *parent) :
+WidgetSettings::WidgetSettings(QSharedPointer<RCC::ICoreConnection> coreConnection, DirListModel& sharedDirsModel, QWidget* parent) :
    QWidget(parent), ui(new Ui::WidgetSettings), coreConnection(coreConnection), sharedDirsModel(sharedDirsModel), initialState(true)
 {
    this->ui->setupUi(this);

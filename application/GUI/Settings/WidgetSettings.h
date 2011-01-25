@@ -69,7 +69,7 @@ namespace GUI
       virtual void showEvent(QShowEvent* event);
 
    private:
-      Ui::WidgetSettings *ui;
+      Ui::WidgetSettings* ui;
 
       QSharedPointer<RCC::ICoreConnection> coreConnection;
 

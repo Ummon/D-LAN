@@ -32,6 +32,7 @@
 #include <priv/UDPListener.h>
 #include <priv/TCPListener.h>
 #include <priv/Chat.h>
+#include <priv/Log.h>
 
 namespace NL
 {
@@ -50,7 +51,9 @@ namespace NL
       IChat& getChat();
       QSharedPointer<ISearch> newSearch();
 
-   private:
+   private:      
+      LOG_INIT("NetworkListener");
+
       QSharedPointer<FM::IFileManager> fileManager;
       QSharedPointer<PM::IPeerManager> peerManager;
       QSharedPointer<DM::IDownloadManager> downloadManager;

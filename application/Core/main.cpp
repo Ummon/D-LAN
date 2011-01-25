@@ -15,8 +15,9 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #include <QtCore/QCoreApplication>
+
 #include <QString>
 #include <QTextCodec>
 #include <QTextStream>
@@ -26,6 +27,11 @@
 
 #include <CoreService.h>
 
+#ifdef DEBUG
+   // For Common/debug_new.cpp.
+   extern const char* new_progname;
+#endif
+
 /**
   * Arguments : [-r <roaming data folder>] [-l <local data folder>]
   *  <roaming data folder> : Where settings are put.
@@ -33,6 +39,10 @@
   */
 int main(int argc, char *argv[])
 {
+#ifdef DEBUG
+   new_progname = argv[0];
+#endif
+
    QTextCodec::setCodecForLocale(QTextCodec::codecForName("UTF-8"));
 
    for (int i = 1; i < argc; i++)

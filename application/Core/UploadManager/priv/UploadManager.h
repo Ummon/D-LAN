@@ -29,6 +29,7 @@
 
 #include <IUploadManager.h>
 #include <priv/Uploader.h>
+#include <priv/Log.h>
 
 namespace UM
 {
@@ -51,6 +52,8 @@ namespace UM
       void deleteUpload();
 
    private:
+      LOG_INIT("UploadManager");
+
       QSharedPointer<PM::IPeerManager> peerManager;
 
       QList<Uploader*> uploaders;

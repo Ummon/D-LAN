@@ -23,7 +23,7 @@
      <verstretch>0</verstretch>
     </sizepolicy>
    </property>
-   <layout class="QHBoxLayout" name="horizontalLayout_3">
+   <layout class="QHBoxLayout" name="layCentral">
     <property name="spacing">
      <number>3</number>
     </property>
@@ -183,7 +183,7 @@
       <height>0</height>
      </size>
     </property>
-    <layout class="QHBoxLayout" name="horizontalLayout">
+    <layout class="QHBoxLayout" name="layPeers">
      <property name="spacing">
       <number>2</number>
      </property>

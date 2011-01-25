@@ -32,6 +32,7 @@
 #include <Common/Uncopyable.h>
 
 #include <IFileManager.h>
+#include <priv/Log.h>
 #include <priv/FileUpdater/FileUpdater.h>
 #include <priv/Cache/Cache.h>
 #include <priv/ChunkIndex/Chunks.h>
@@ -91,6 +92,8 @@ namespace FM
       void setCacheChanged();
 
    private:
+      LOG_INIT("FileManager");
+
       const quint32 CHUNK_SIZE;
 
       FileUpdater fileUpdater;

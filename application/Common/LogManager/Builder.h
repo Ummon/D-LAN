@@ -57,4 +57,7 @@ namespace LM
    #define LOG_FATA(logger, mess) logger->log((mess), LM::SV_FATAL_ERROR)
 #endif
 
+// Insert this macro on the top of a class to initialize (and delete) a logger Log::logger, see FileManager.h for example.
+#define LOG_INIT(NAME) struct LogInitializer { LogInitializer() { Log::logger = LM::Builder::newLogger(NAME); } ~LogInitializer() { Log::logger.clear(); } } logInitializer;
+
 #endif

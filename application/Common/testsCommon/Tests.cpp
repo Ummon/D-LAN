@@ -149,10 +149,8 @@ void Tests::readSettings()
 {
    SETTINGS.load();
 
-   QString nick;
-   SETTINGS.get("nick", nick);
-   Hash hash;
-   SETTINGS.get("peer_id", hash);
+   QString nick = SETTINGS.get<QString>("nick");
+   Hash hash = SETTINGS.get<Hash>("peer_id");
 
    QCOMPARE(nick, QString("paul"));
    QCOMPARE(hash.toStr(), this->hash.toStr());

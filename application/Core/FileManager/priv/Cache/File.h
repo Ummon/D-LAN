@@ -30,9 +30,11 @@
 #include <QSharedPointer>
 #include <QDateTime>
 
-#include <Common/Hashes.h>
 #include <Protos/common.pb.h>
 #include <Protos/files_cache.pb.h>
+
+#include <Common/Hashes.h>
+
 #include <priv/Cache/Entry.h>
 
 namespace FM
@@ -96,7 +98,7 @@ namespace FM
       int getNbChunks();
       bool correspondTo(const QFileInfo& fileInfo);
 
-      void physicallyRemoveUnfinished();
+      void removeUnfinishedFiles();
 
       void changeDirectory(Directory* dir);
       bool hasAParentDir(Directory* dir);
@@ -120,8 +122,8 @@ namespace FM
 
       int numDataWriter;
       int numDataReader;
-      QFile* fileInWriteMode;
-      QFile* fileInReadMode;
+      QFile fileInWriteMode;
+      QFile fileInReadMode;
       QMutex writeLock; ///< Protect the file from concurrent access from different downloaders.
       QMutex readLock; ///< Protect the file from concurrent access from different uploaders.
       mutable QMutex mutex;

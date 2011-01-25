@@ -17,7 +17,7 @@
    <iconset resource="../ressources.qrc">
     <normaloff>:/icons/ressources/settings.png</normaloff>:/icons/ressources/settings.png</iconset>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout_3">
+  <layout class="QVBoxLayout" name="layMain">
    <property name="leftMargin">
     <number>0</number>
    </property>

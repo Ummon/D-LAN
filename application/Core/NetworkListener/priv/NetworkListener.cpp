@@ -24,7 +24,6 @@ using namespace NL;
 #include <Common/LogManager/Builder.h>
 
 #include <priv/Chat.h>
-#include <priv/Log.h>
 #include <priv/Search.h>
 
 NetworkListener::NetworkListener(

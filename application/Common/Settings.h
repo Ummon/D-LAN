@@ -47,6 +47,8 @@ namespace Common
       void load();
       void remove();
 
+      void free();
+
       bool isSet(const QString& name) const;
 
       void set(const QString& name, quint32 value);
@@ -55,18 +57,18 @@ namespace Common
       void set(const QString& name, const QByteArray& value);
       void set(const QString& name, const Hash& hash);
 
-      void get(const QString& name, quint32& value) const;
-      void get(const QString& name, double& value) const;
-      void get(const QString& name, QString& value) const;
-      void get(const QString& name, QByteArray& value) const;
-      void get(const QString& name, Hash& hash) const;
-
       template <typename T>
       T get(const QString& name) const;
 
       void rm(const QString& name);
 
    private:
+      void get(const google::protobuf::FieldDescriptor* fieldDescriptor, quint32& value) const;
+      void get(const google::protobuf::FieldDescriptor* fieldDescriptor, double& value) const;
+      void get(const google::protobuf::FieldDescriptor* fieldDescriptor, QString& value) const;
+      void get(const google::protobuf::FieldDescriptor* fieldDescriptor, QByteArray& value) const;
+      void get(const google::protobuf::FieldDescriptor* fieldDescriptor, Hash& hash) const;
+
       static void printErrorNameNotFound(const QString& name);
       static void printErrorBadType(const google::protobuf::FieldDescriptor* field, const QString& excepted);
 
@@ -85,8 +87,19 @@ template <typename T>
 T Settings::get(const QString& name) const
 {
    QMutexLocker locker(&this->mutex);
+
+   if (!this->settings)
+      return T();
+
+   const google::protobuf::FieldDescriptor* fieldDescriptor = this->descriptor->FindFieldByName(name.toStdString());
+   if (!fieldDescriptor)
+   {
+      printErrorNameNotFound(name);
+      return T();
+   }
+
    T value;
-   this->get(name, value);
+   this->get(fieldDescriptor, value);
    return value;
 }
 

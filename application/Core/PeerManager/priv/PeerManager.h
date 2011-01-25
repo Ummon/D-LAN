@@ -34,6 +34,7 @@
 #include <IPeerManager.h>
 #include <Common/LogManager/ILogger.h>
 #include <priv/Peer.h>
+#include <priv/Log.h>
 
 namespace PM
 {
@@ -74,6 +75,8 @@ namespace PM
 
    private:
       void removeFromPending(QTcpSocket* socket);
+
+      LOG_INIT("PeerManager");
 
       QSharedPointer<FM::IFileManager> fileManager;
 

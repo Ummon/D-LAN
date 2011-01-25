@@ -91,7 +91,10 @@ QSharedPointer<Socket> ConnectionPool::getASocket()
 void ConnectionPool::closeAllSocket()
 {
    for (QListIterator< QSharedPointer<Socket> > i(this->getAllSockets()); i.hasNext();)
-      i.next()->close();
+   {
+      QSharedPointer<Socket> socket = i.next();
+      socket->close();
+   }
 }
 
 void ConnectionPool::socketGetIdle(Socket* socket)
@@ -124,10 +127,7 @@ void ConnectionPool::socketClosed(Socket* socket)
       {
          if (i.next().data() == socket)
          {
-            disconnect(socket, SIGNAL(getIdle(Socket*)), this, SLOT(socketGetIdle(Socket*)));
-            disconnect(socket, SIGNAL(closed(Socket*)), this, SLOT(socketClosed(Socket*)));
-            disconnect(socket, SIGNAL(getChunk(QSharedPointer<FM::IChunk>, int, Socket*)), this, SLOT(socketGetChunk(QSharedPointer<FM::IChunk>, int, Socket*)));
-
+            socket->disconnect(this);
             i.remove();
             return;
          }

@@ -26,7 +26,6 @@ using namespace PM;
 #include <Common/PersistentData.h>
 #include <Common/Settings.h>
 
-#include <Priv/Log.h>
 #include <Priv/Constants.h>
 
 /**
@@ -40,7 +39,7 @@ PeerManager::PeerManager(QSharedPointer<FM::IFileManager> fileManager) :
    this->timer.setInterval(SETTINGS.get<quint32>("pending_socket_timeout") / 10);
    connect(&this->timer, SIGNAL(timeout()), this, SLOT(checkIdlePendingSockets()));
 
-   SETTINGS.get("nick", this->nick);
+   this->nick = SETTINGS.get<QString>("nick");
 
    if (!SETTINGS.isSet("peer_id"))
    {
@@ -58,7 +57,7 @@ PeerManager::PeerManager(QSharedPointer<FM::IFileManager> fileManager) :
    }
    else
    {
-      SETTINGS.get("peer_id", this->ID);
+      this->ID = SETTINGS.get<Common::Hash>("peer_id");
    }
 
    L_USER(QString("Our current ID: %1").arg(this->ID.toStr()));

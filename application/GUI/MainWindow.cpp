@@ -85,6 +85,7 @@ void LogDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, c
 MainWindow::MainWindow(QWidget* parent) :
    QMainWindow(parent),
    ui(new Ui::MainWindow),
+   widgetSettings(0),
    widgetChat(0),
    widgetDownloads(0),
    widgetUploads(0),
@@ -156,6 +157,8 @@ MainWindow::~MainWindow()
    this->coreConnection->disconnect(this); // To avoid calling 'coreDisconnected' after deleted 'this->ui'.
    this->logModel.disconnect(this);
 
+   this->removeWidgetSettings();
+
    delete this->ui;
 }
 
@@ -164,7 +167,8 @@ void MainWindow::coreConnected()
    this->addWidgetChat();
    this->addWidgetDownloads();
    this->addWidgetUploads();
-   this->widgetSettings->coreConnected();
+   if (this->widgetSettings)
+      this->widgetSettings->coreConnected();
    this->ui->txtSearch->setDisabled(false);
    this->ui->butSearch->setDisabled(false);
    this->ui->mdiArea->setActiveSubWindow(dynamic_cast<QMdiSubWindow*>(this->widgetChat->parent()));
@@ -176,7 +180,8 @@ void MainWindow::coreDisconnected()
    this->removeWidgetDownloads();
    this->removeWidgetChat();
    this->removeAllWidgets();
-   this->widgetSettings->coreDisconnected();
+   if (this->widgetSettings)
+      this->widgetSettings->coreDisconnected();
    this->ui->txtSearch->setDisabled(true);
    this->ui->butSearch->setDisabled(true);
    this->peerListModel.clear();
@@ -282,7 +287,7 @@ void MainWindow::removeMdiSubWindow(QMdiSubWindow* mdiSubWindow)
       if (mdiSubWindow == this->ui->mdiArea->currentSubWindow());
       {
          QList<QMdiSubWindow*> subWindows = this->ui->mdiArea->subWindowList();
-         if (!subWindows.isEmpty())
+         if (subWindows.size() > 1)
          {
             int i = subWindows.indexOf(mdiSubWindow);
             if (i <= 0)
@@ -302,6 +307,15 @@ void MainWindow::addWidgetSettings()
    this->widgetSettings = new WidgetSettings(this->coreConnection, this->sharedDirsModel, this);
    this->ui->mdiArea->addSubWindow(this->widgetSettings, Qt::CustomizeWindowHint);
    this->widgetSettings->setWindowState(Qt::WindowMaximized);
+}
+
+void MainWindow::removeWidgetSettings()
+{
+   if (this->widgetSettings)
+   {
+      this->removeMdiSubWindow(dynamic_cast<QMdiSubWindow*>(this->widgetSettings->parent()));
+      this->widgetSettings = 0;
+   }
 }
 
 void MainWindow::addWidgetChat()

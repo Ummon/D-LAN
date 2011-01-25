@@ -62,7 +62,10 @@ Socket::~Socket()
 {
    L_DEBU(QString("Socket[%1] deleted").arg(this->num));
 
-   this->socket->deleteLater();
+   if (QCoreApplication::instance())
+      this->socket->deleteLater();
+   else // When the application shut down this object may be deleted after QCoreApplication (event loop).
+      delete this->socket;
 }
 
 QAbstractSocket* Socket::getQSocket() const

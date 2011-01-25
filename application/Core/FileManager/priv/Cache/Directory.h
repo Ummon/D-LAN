@@ -54,7 +54,7 @@ namespace FM
 
       virtual void populateEntry(Protos::Common::Entry* dir, bool setSharedDir = false) const;
 
-      void removeIncompleteFiles();
+      virtual void removeUnfinishedFiles();
 
       void fileDeleted(File* file);
 

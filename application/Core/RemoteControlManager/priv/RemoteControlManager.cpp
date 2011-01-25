@@ -21,8 +21,6 @@ using namespace RCM;
 
 #include <Common/Settings.h>
 
-#include <priv/Log.h>
-
 RemoteControlManager::RemoteControlManager(
    QSharedPointer<FM::IFileManager> fileManager,
    QSharedPointer<PM::IPeerManager> peerManager,

@@ -74,8 +74,6 @@ File::File(
    tryToRename(false),
    numDataWriter(0),
    numDataReader(0),
-   fileInWriteMode(0),
-   fileInReadMode(0),
    mutex(QMutex::Recursive),
    hashing(false),
    toStopHashing(false)
@@ -102,20 +100,6 @@ File::~File()
       c->fileDeleted();
 
    this->deleteAllChunks();
-
-   if (!this->isComplete())
-   {
-      QMutexLocker lockerWrite(&this->writeLock);
-      QMutexLocker lockerRead(&this->readLock);
-
-      if (this->fileInReadMode)
-         this->fileInReadMode->close();
-      if (this->fileInWriteMode)
-         this->fileInWriteMode->close();
-
-      if (!QFile::remove(this->getFullPath()))
-         L_ERRO(QString("File::~File() : unable to delete an unfinished file : %1").arg(this->getFullPath()));
-   }
 
    L_DEBU(QString("File deleted : %1").arg(this->getFullPath()));
 }
@@ -236,37 +220,35 @@ void File::newDataWriterCreated()
 {
    QMutexLocker locker(&this->writeLock);
 
-   if (this->numDataWriter == 0)
+   this->numDataWriter++;
+   if (this->numDataWriter == 1)
    {
-      this->fileInWriteMode = new QFile(this->getFullPath());
-      if (!this->fileInWriteMode->open(QIODevice::ReadWrite))
+      this->fileInWriteMode.setFileName(this->getFullPath());
+      if (!this->fileInWriteMode.open(QIODevice::ReadWrite))
          throw UnableToOpenFileInWriteModeException();
    }
-   this->numDataWriter += 1;
 }
 
 void File::newDataReaderCreated()
 {
    QMutexLocker locker(&this->readLock);
 
-   if (this->numDataReader == 0)
+   this->numDataReader++;
+   if (this->numDataReader == 1)
    {
-      this->fileInReadMode = new QFile(this->getFullPath());
-      if (!this->fileInReadMode->open(QIODevice::ReadOnly))
+      this->fileInReadMode.setFileName(this->getFullPath());
+      if (!this->fileInReadMode.open(QIODevice::ReadOnly))
          throw UnableToOpenFileInReadModeException();
    }
-   this->numDataReader += 1;
 }
 
 void File::dataWriterDeleted()
 {
    QMutexLocker locker(&this->writeLock);
 
-   this->numDataWriter -= 1;
-   if  (this->numDataWriter == 0)
+   if (--this->numDataWriter == 0)
    {
-      delete this->fileInWriteMode;
-      this->fileInWriteMode = 0;
+      this->fileInWriteMode.close();
    }
 }
 
@@ -274,11 +256,9 @@ void File::dataReaderDeleted()
 {
    QMutexLocker locker(&this->readLock);
 
-   this->numDataReader -= 1;
-   if  (this->numDataReader == 0)
+   if (--this->numDataReader == 0)
    {
-      delete this->fileInReadMode;
-      this->fileInReadMode = 0;
+      this->fileInReadMode.close();
 
       if (this->tryToRename)
          this->setAsComplete();
@@ -297,11 +277,11 @@ qint64 File::write(const char* buffer, int nbBytes, qint64 offset)
 {
    QMutexLocker locker(&this->writeLock);
 
-   if (offset >= this->size || !this->fileInWriteMode->seek(offset))
+   if (offset >= this->size || !this->fileInWriteMode.seek(offset))
       throw IOErrorException();
 
    qint64 maxSize = this->size - offset;
-   qint64 n = this->fileInWriteMode->write(buffer, nbBytes > maxSize ? maxSize : nbBytes);
+   qint64 n = this->fileInWriteMode.write(buffer, nbBytes > maxSize ? maxSize : nbBytes);
 
    if (n == -1)
       throw IOErrorException();
@@ -323,8 +303,8 @@ qint64 File::read(char* buffer, qint64 offset, int maxBytesToRead)
    if (offset >= this->size)
       return 0;
 
-   this->fileInReadMode->seek(offset);
-   qint64 bytesRead = this->fileInReadMode->read(buffer, maxBytesToRead);
+   this->fileInReadMode.seek(offset);
+   qint64 bytesRead = this->fileInReadMode.read(buffer, maxBytesToRead);
 
    if (bytesRead == -1)
       throw IOErrorException();
@@ -554,11 +534,7 @@ void File::setAsComplete()
       }
       this->tryToRename = false;
 
-      if (this->fileInWriteMode)
-      {
-         this->fileInWriteMode->close();
-         this->fileInWriteMode = 0;
-      }
+      this->fileInWriteMode.close();
 
       const QString oldPath = this->getFullPath();
       const QString newPath = Global::removeUnfinishedSuffix(oldPath);
@@ -612,12 +588,20 @@ bool File::correspondTo(const QFileInfo& fileInfo)
   * Remove the file physically only if it's not complete.
   * The file removed must ended by the setting "unfinished_suffix_term".
   */
-void File::physicallyRemoveUnfinished()
+void File::removeUnfinishedFiles()
 {
+   QMutexLocker locker(&this->mutex);
+
    if (!this->isComplete())
    {
+      QMutexLocker lockerWrite(&this->writeLock);
+      QMutexLocker lockerRead(&this->readLock);
+
+      this->fileInReadMode.close();
+      this->fileInWriteMode.close();
+
       if (!QFile::remove(this->getFullPath()))
-         L_WARN(QString("File::physicallyRemoveUnfinished() : Cannot remove the file '%1'").arg(this->getFullPath()));
+         L_ERRO(QString("File::~File() : unable to delete an unfinished file : %1").arg(this->getFullPath()));
    }
 }
 

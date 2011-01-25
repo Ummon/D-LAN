@@ -34,7 +34,6 @@ bool Global::isFileUnfinished(const QString& filename)
 
 QString Global::removeUnfinishedSuffix(const QString& filename)
 {
-   // Very special case : if this is an unfinished file and we didn't find the corresponding file in the cache (see 'getAllChunks' above'), we transform the local entry to a remote one.
    if (Global::isFileUnfinished(filename))
       return filename.left(filename.size() - Global::getUnfinishedSuffix().size());
    return filename;

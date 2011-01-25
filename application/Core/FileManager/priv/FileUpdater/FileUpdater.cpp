@@ -206,8 +206,6 @@ void FileUpdater::run()
       {
          this->scan(dir, true);
          this->restoreFromFileCache(static_cast<SharedDirectory*>(dir));
-
-         // dir->removeIncompleteFiles(); // Commented -> Uncompleted file can be resumed.
       }
       this->dirsToScan.clear();
 
@@ -229,6 +227,7 @@ void FileUpdater::run()
          if (this->dirWatcher)
             this->dirWatcher->rmDir(dir->getFullPath());
 
+         dir->removeUnfinishedFiles();
          delete dir;
       }
       this->dirsToRemove.clear();
@@ -559,10 +558,14 @@ void FileUpdater::deleteEntry(Entry* entry)
    {
       this->filesWithoutHashes.removeOne(file);
       this->filesWithoutHashesPrioritized.removeOne(file);
+      file->removeUnfinishedFiles();
       delete file;
    }
    else
+   {
+      entry->removeUnfinishedFiles();
       delete entry;
+   }
 }
 
 /**

@@ -4,12 +4,14 @@
 QT -= gui
 TARGET = LogManager
 
-INCLUDEPATH += . \
-   ..
+INCLUDEPATH += . .. ../..
 TEMPLATE = lib
 CONFIG += staticlib create_prl
 
 include(../common.pri)
+
+LIBS += -L../output/$$FOLDER -lCommon
+POST_TARGETDEPS += ../output/$$FOLDER/libCommon.a
 
 DEFINES += LOGMANAGER_LIBRARY
 

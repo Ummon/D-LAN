@@ -19,14 +19,11 @@
 #ifndef FILEMANAGER_PRIV_EXCEPTIONS_H
 #define FILEMANAGER_PRIV_EXCEPTIONS_H
 
-#include <exception>
-using namespace std;
-
 #include <QString>
 
 namespace FM
 {
-   class FileSystemEntryNotFoundException : public exception
+   class FileSystemEntryNotFoundException
    {
    public :
       FileSystemEntryNotFoundException(const QString& path) : path(path) {}

@@ -37,6 +37,12 @@ Cache::Cache(FileManager* fileManager) :
 {
 }
 
+Cache::~Cache()
+{
+   for (QListIterator<SharedDirectory*> i(this->sharedDirs); i.hasNext();)
+      delete i.next();
+}
+
 /**
   * a) Search among their shared directory the one who match the given entry.
   * b) In the shared directory try to find the directory corresponding to 'entry.dir.path'.
@@ -217,7 +223,7 @@ QList< QSharedPointer<IChunk> > Cache::newFile(Protos::Common::Entry& fileEntry)
 
    Common::Hashes hashes;
    for (int i = 0; i < fileEntry.chunk_size(); i++)
-      hashes << (fileEntry.chunk(i).has_hash() ? Common::Hash(fileEntry.chunk(i).hash().data()) : Common::Hash::null);
+      hashes << (fileEntry.chunk(i).has_hash() ? Common::Hash(fileEntry.chunk(i).hash().data()) : Common::Hash());
 
    const QString name = Common::ProtoHelper::getStr(fileEntry, &Protos::Common::Entry::name);
 
@@ -312,7 +318,7 @@ void Cache::setSharedDirs(const QStringList& dirs)
       try
       {
          // dirs[i] not found -> we create a new one.
-         if (this->createSharedDir(dirs[i], Common::Hash::null, j))
+         if (this->createSharedDir(dirs[i], Common::Hash(), j))
             j++;
       }
       catch (DirNotFoundException& e)

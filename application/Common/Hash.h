@@ -73,7 +73,6 @@ namespace Common
 
       static Hash rand();
       static Hash fromStr(const QString& str);
-      static const Hash null;
 
    private:
       inline void dereference();
@@ -107,6 +106,7 @@ namespace Common
 
       if (qstrncmp(hash.data->hash, data, Hash::HASH_SIZE) != 0)
       {
+         hash.dereference();
          hash.newData();
          memcpy(hash.data->hash, data, Hash::HASH_SIZE);
       }

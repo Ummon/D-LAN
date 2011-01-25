@@ -146,19 +146,18 @@ void Directory::populateEntry(Protos::Common::Entry* dir, bool setSharedDir) con
 }
 
 /**
-  * Remove recursively all incomplete files which don't have all theirs hashes. The file is physically removed.
+  * Remove physically all unfinished file.
   */
-void Directory::removeIncompleteFiles()
+void Directory::removeUnfinishedFiles()
 {
    QMutexLocker locker(&this->mutex);
 
    // Removes incomplete file we don't know.
    foreach (File* f, this->files)
-      if (!f->isComplete() && !f->hasAllHashes())
-         delete f;
+      f->removeUnfinishedFiles();
 
    foreach (Directory* d, this->subDirs)
-      d->removeIncompleteFiles();
+      d->removeUnfinishedFiles();
 }
 
 /**

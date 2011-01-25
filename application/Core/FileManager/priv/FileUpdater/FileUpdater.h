@@ -27,6 +27,7 @@
 #include <QElapsedTimer>
 
 #include <Protos/files_cache.pb.h>
+
 #include <priv/FileUpdater/DirWatcher.h>
 
 namespace FM

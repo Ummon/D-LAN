@@ -55,7 +55,7 @@ bool PeerListModel::isOurself(int rowNum) const
 Common::Hash PeerListModel::getPeerID(int rowNum) const
 {
    if (rowNum >= this->peers.size())
-      return Common::Hash::null;
+      return Common::Hash();
    return this->peers[rowNum].peerID;
 }
 

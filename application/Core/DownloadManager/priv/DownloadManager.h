@@ -31,6 +31,7 @@
 
 #include <IDownloadManager.h>
 #include <priv/OccupiedPeers.h>
+#include <priv/Log.h>
 
 namespace PM
 {
@@ -87,6 +88,8 @@ namespace DM
 
    private:
       bool isEntryAlreadyQueued(const Protos::Common::Entry& localEntry, const Common::Hash& peerSource);
+
+      LOG_INIT("DownloadManager");
 
       const int NUMBER_OF_DOWNLOADER;
 

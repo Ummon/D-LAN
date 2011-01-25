@@ -19,10 +19,11 @@
 #ifndef LOGMANAGER_ENTRY_H
 #define LOGMANAGER_ENTRY_H
 
-#include <IEntry.h>
 #include <QString>
 #include <QDateTime>
 #include <QRegExp>
+
+#include <IEntry.h>
 
 namespace LM
 {

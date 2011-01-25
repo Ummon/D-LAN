@@ -55,9 +55,9 @@ void LoggerHooks::removeDeletedHooks()
 
 /////
 
-QTextStream* Logger::out(0);
+QTextStream Logger::out;
+QFile Logger::file;
 QMutex Logger::mutex(QMutex::Recursive);
-int Logger::nbLogger(0);
 QString Logger::logDirName;
 
 LoggerHooks Logger::loggerHooks;
@@ -80,18 +80,6 @@ void Logger::addALoggerHook(QSharedPointer<LoggerHook> loggerHook)
 Logger::Logger(const QString& name) :
    name(name)
 {
-   Logger::nbLogger += 1;
-}
-
-Logger::~Logger()
-{
-   Logger::nbLogger -= 1;
-
-   if (Logger::nbLogger == 0 && Logger::out)
-   {
-      delete Logger::out->device(); // Is this necessary?
-      delete Logger::out;
-   }
 }
 
 void Logger::log(const QString& message, Severity severity, const char* filename, int line) const
@@ -112,8 +100,7 @@ void Logger::log(const QString& message, Severity severity, const char* filename
       this->loggerHooks[i].data()->newMessage(entry);
 
    Logger::createFileLog();
-   if (Logger::out)
-      (*Logger::out) << entry->toStrLine() << endl;
+   Logger::out << entry->toStrLine() << endl;
 }
 
 void Logger::log(const ILoggable& object, Severity severity, const char* filename, int line) const
@@ -136,12 +123,12 @@ bool fileInfoLessThan(const QFileInfo& f1, const QFileInfo& f2)
   */
 void Logger::createFileLog()
 {
-   if (!Logger::out)
+   if (!Logger::file.isOpen())
    {
       if (logDirName.isEmpty())
          logDirName = Common::LOG_FOLDER_NAME;
 
-      QTextStream out(stderr);
+      QTextStream outErr(stderr);
 
       try
       {
@@ -149,7 +136,7 @@ void Logger::createFileLog()
 
          if (!appDir.exists(logDirName) && !appDir.mkdir(logDirName))
          {
-            out << "Error, cannot create log directory : " << appDir.absoluteFilePath(logDirName) << endl;
+            outErr << "Error, cannot create log directory : " << appDir.absoluteFilePath(logDirName) << endl;
          }
          else
          {
@@ -157,23 +144,22 @@ void Logger::createFileLog()
 
             QString filename = QDateTime::currentDateTime().toString("yyyy_MM_dd-hh_mm_ss") + ".log";
 
-            QFile* file = new QFile(logDir.absoluteFilePath(filename));
-            if (!file->open(QIODevice::WriteOnly))
+            Logger::file.setFileName(logDir.absoluteFilePath(filename));
+            if (!Logger::file.open(QIODevice::WriteOnly))
             {
-               out << "Error, cannot create log file : " << logDir.absoluteFilePath(filename) << endl;
-               delete file;
+               outErr << "Error, cannot create log file : " << logDir.absoluteFilePath(filename) << endl;
             }
             else
             {
                Logger::deleteOldestLog(logDir);
-               Logger::out = new QTextStream(file);
-               Logger::out->setCodec("UTF-8");
+               Logger::out.setDevice(&Logger::file);
+               Logger::out.setCodec("UTF-8");
             }
          }
       }
       catch(Common::Global::UnableToGetFolder& e)
       {
-         out << "Error, cannot create the application data directory" << endl;
+         outErr << "Error, cannot create the application data directory" << endl;
       }
    }
 }

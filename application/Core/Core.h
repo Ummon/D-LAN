@@ -46,10 +46,15 @@ namespace CoreSpace
       void checkSettingsIntegrity();
 
       template <typename T>
-      void checkSetting(const QString name, T min, T max, bool mustBeAPowerOf32 = false);
+      void checkSetting(const QString& name, T min, T max, bool mustBeAPowerOf32 = false);
 
       // This objet will be the last destroyed.
-      struct ProtobufCleaner { ~ProtobufCleaner() { google::protobuf::ShutdownProtobufLibrary(); } } protobufCleaner;
+      struct Cleaner { ~Cleaner() {
+         SETTINGS.free();
+         google::protobuf::ShutdownProtobufLibrary();
+      } } cleaner;
+
+      LOG_INIT("Core");
 
    protected:
       QSharedPointer<FM::IFileManager> fileManager;
@@ -66,7 +71,7 @@ namespace CoreSpace
 using namespace CoreSpace;
 
 template <typename T>
-void Core::checkSetting(const QString name, T min, T max, bool mustBeAPowerOf32)
+void Core::checkSetting(const QString& name, T min, T max, bool mustBeAPowerOf32)
 {
    T actualValue = SETTINGS.get<T>(name);
    T newValue;

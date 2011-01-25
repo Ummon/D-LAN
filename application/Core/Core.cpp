@@ -38,6 +38,8 @@ Core::Core()
    SETTINGS.setSettingsMessage(new Protos::Core::Settings());
    SETTINGS.load();
 
+   this->checkSettingsIntegrity();
+
    try
    {
       SETTINGS.save(); // To automatically create the file if it doesn't exist.
@@ -51,8 +53,6 @@ Core::Core()
 void Core::start()
 {
    QThread::currentThread()->setObjectName("Core");
-
-   this->checkSettingsIntegrity();
 
    L_USER("Starting..");
 

@@ -15,7 +15,7 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #include <priv/FileManager.h>
 using namespace FM;
 
@@ -36,7 +36,6 @@ using namespace FM;
 #include <Common/Global.h>
 #include <Exceptions.h>
 #include <priv/Global.h>
-#include <priv/Log.h>
 #include <priv/Constants.h>
 #include <priv/GetHashesResult.h>
 #include <priv/Cache/Entry.h>
@@ -77,6 +76,7 @@ FileManager::~FileManager()
    this->fileUpdater.stop();
    this->cacheChanged = true;
    this->persistCacheToFile();
+   this->cache.disconnect(this);
    L_DEBU("FileManager deleted");
 }
 

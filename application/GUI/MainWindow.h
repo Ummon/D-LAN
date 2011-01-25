@@ -92,6 +92,7 @@ namespace GUI
       void removeMdiSubWindow(QMdiSubWindow* mdiSubWindow);
 
       void addWidgetSettings();
+      void removeWidgetSettings();
 
       void addWidgetChat();      
       void removeWidgetChat();

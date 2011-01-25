@@ -27,12 +27,9 @@ LIBS += -L../../../Common/LogManager/output/$$FOLDER \
     -lLogManager
 POST_TARGETDEPS += ../../../Common/LogManager/output/$$FOLDER/libLogManager.a
 
-LIBS += -L${PROTOBUF}/src/.libs \
-    -lprotobuf
 INCLUDEPATH += . \
     .. \
-    ../../.. \ # For the 'Common' component.
-    ${PROTOBUF}/src
+    ../../.. # For the 'Common' component.
 TEMPLATE = app
 SOURCES += main.cpp \
     Tests.cpp \

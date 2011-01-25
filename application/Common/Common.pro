@@ -13,8 +13,9 @@ TEMPLATE = lib
 CONFIG += staticlib \
     create_prl
 
-INCLUDEPATH += .
+INCLUDEPATH += . ..
 DEFINES += COMMON_LIBRARY
+
 SOURCES += Hash.cpp \
     Global.cpp \
     Network.cpp \

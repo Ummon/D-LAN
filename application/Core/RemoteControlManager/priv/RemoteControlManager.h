@@ -33,6 +33,7 @@
 
 #include <IRemoteControlManager.h>
 #include <priv/RemoteConnection.h>
+#include <priv/Log.h>
 
 namespace RCM
 {
@@ -55,7 +56,9 @@ namespace RCM
       void connectionDeleted(RemoteConnection* sender);
       void chatMessageSent(const QString& message);
 
-   private:
+   private:      
+      LOG_INIT("RemoteControlManager");
+
       QSharedPointer<FM::IFileManager> fileManager;
       QSharedPointer<PM::IPeerManager> peerManager;
       QSharedPointer<UM::IUploadManager> uploadManager;

@@ -20,6 +20,7 @@
 #define FILEMANAGER_GLOBAL_H
 
 #include <QString>
+
 namespace FM
 {
    class Global

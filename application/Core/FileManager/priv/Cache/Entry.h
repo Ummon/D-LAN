@@ -58,6 +58,8 @@ namespace FM
       virtual QString getFullPath() const = 0;
       virtual SharedDirectory* getRoot() const = 0;
 
+      virtual void removeUnfinishedFiles() = 0;
+
       QString getName() const;
 
       /**
@@ -66,6 +68,7 @@ namespace FM
       virtual void changeName(const QString& newName);
 
       virtual qint64 getSize() const;
+
 
    protected:
       Cache* cache;

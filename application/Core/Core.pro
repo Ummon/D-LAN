@@ -12,29 +12,29 @@ include(../Libs/protobuf.pri)
 
 INCLUDEPATH += . ..
 
-LIBS += -LFileManager/output/$$FOLDER \
-    -lFileManager
-POST_TARGETDEPS += FileManager/output/$$FOLDER/libFileManager.a
-
-LIBS += -LPeerManager/output/$$FOLDER \
-    -lPeerManager
-POST_TARGETDEPS += PeerManager/output/$$FOLDER/libPeerManager.a
-
-LIBS += -LUploadManager/output/$$FOLDER \
-    -lUploadManager
-POST_TARGETDEPS += UploadManager/output/$$FOLDER/libUploadManager.a
-
-LIBS += -LDownloadManager/output/$$FOLDER \
-    -lDownloadManager
-POST_TARGETDEPS += DownloadManager/output/$$FOLDER/libDownloadManager.a
+LIBS += -LRemoteControlManager/output/$$FOLDER \
+    -lRemoteControlManager
+POST_TARGETDEPS += RemoteControlManager/output/$$FOLDER/libRemoteControlManager.a
 
 LIBS += -LNetworkListener/output/$$FOLDER \
     -lNetworkListener
 POST_TARGETDEPS += NetworkListener/output/$$FOLDER/libNetworkListener.a
 
-LIBS += -LRemoteControlManager/output/$$FOLDER \
-    -lRemoteControlManager
-POST_TARGETDEPS += RemoteControlManager/output/$$FOLDER/libRemoteControlManager.a
+LIBS += -LDownloadManager/output/$$FOLDER \
+    -lDownloadManager
+POST_TARGETDEPS += DownloadManager/output/$$FOLDER/libDownloadManager.a
+
+LIBS += -LUploadManager/output/$$FOLDER \
+    -lUploadManager
+POST_TARGETDEPS += UploadManager/output/$$FOLDER/libUploadManager.a
+
+LIBS += -LPeerManager/output/$$FOLDER \
+    -lPeerManager
+POST_TARGETDEPS += PeerManager/output/$$FOLDER/libPeerManager.a
+
+LIBS += -LFileManager/output/$$FOLDER \
+    -lFileManager
+POST_TARGETDEPS += FileManager/output/$$FOLDER/libFileManager.a
 
 LIBS += -L../Common/LogManager/output/$$FOLDER \
     -lLogManager
@@ -44,9 +44,7 @@ LIBS += -L../Common/output/$$FOLDER \
     -lCommon
 POST_TARGETDEPS += ../Common/output/$$FOLDER/libCommon.a
 
-
 include(../Libs/qtservice/src/qtservice.pri)
-
 
 # FIXME : Theses declarations should not be here, all dependencies are read from the prl files of each library (see link_prl):
 win32 {
@@ -55,6 +53,10 @@ win32 {
     #LIBS += "$$(QTDIR)/../mingw/lib/libwsock32.a"
     INCLUDEPATH += "C:/Qt/qtcreator-2.0.94/mingw/include"
     LIBS += "C:/Qt/qtcreator-2.0.94/mingw/lib/libwsock32.a"
+}
+
+CONFIG(debug) {
+   SOURCES += ../Libs/Nvwa/debug_new.cpp
 }
 
 CONFIG += console

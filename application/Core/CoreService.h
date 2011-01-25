@@ -38,6 +38,7 @@ namespace CoreSpace
       Q_OBJECT
    public:
       CoreService(int argc, char** argv);
+      virtual ~CoreService();
 
    protected:
       void start();

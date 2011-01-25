@@ -29,7 +29,6 @@ using namespace UM;
 #include <Core/FileManager/IChunk.h>
 #include <Core/PeerManager/ISocket.h>
 
-#include <priv/Log.h>
 #include <priv/Uploader.h>
 
 /**
@@ -46,6 +45,8 @@ UploadManager::UploadManager(QSharedPointer<PM::IPeerManager> peerManager) :
 
 UploadManager::~UploadManager()
 {
+   foreach (Uploader* u, this->uploaders)
+      delete u;
    L_DEBU("UploadManager deleted");
 }
 

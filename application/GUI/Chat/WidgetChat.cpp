@@ -29,7 +29,7 @@ void ChatDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, 
 
 /////
 
-WidgetChat::WidgetChat(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel, QWidget *parent) :
+WidgetChat::WidgetChat(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel, QWidget* parent) :
    QWidget(parent), ui(new Ui::WidgetChat), coreConnection(coreConnection), chatModel(coreConnection, peerListModel)
 {
    this->ui->setupUi(this);
@@ -60,7 +60,7 @@ WidgetChat::WidgetChat(QSharedPointer<RCC::ICoreConnection> coreConnection, Peer
 
 WidgetChat::~WidgetChat()
 {
-   delete ui;
+   delete this->ui;
 }
 
 void WidgetChat::sendMessage()

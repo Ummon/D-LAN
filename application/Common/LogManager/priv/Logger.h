@@ -47,10 +47,11 @@ namespace LM
 
    class Logger : public ILogger
    {
-      static QTextStream* out;
+      static QTextStream out;
+      static QFile file;
+
       static QMutex mutex;
 
-      static int nbLogger;
       static QString logDirName;
 
       static LoggerHooks loggerHooks;
@@ -60,7 +61,6 @@ namespace LM
       static void addALoggerHook(QSharedPointer<LoggerHook> loggerHook);
 
       Logger(const QString& name);
-      virtual ~Logger();
 
       void log(const QString& message, Severity severity, const char* filename = 0, int line = 0) const;
       void log(const ILoggable& object, Severity severity, const char* filename = 0, int line = 0) const;
