@@ -37,7 +37,8 @@ namespace GUI
       void trayIconActivated(QSystemTrayIcon::ActivationReason reason);
       void mainWindowClosed();
       void showMainWindow();
-      void exit();
+      void exitGUI();
+      void exit(bool stopTheCore = true);
 
    private:
       MainWindow* mainWindow;

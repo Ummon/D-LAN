@@ -55,7 +55,7 @@ win32 {
     LIBS += "C:/Qt/qtcreator-2.0.94/mingw/lib/libwsock32.a"
 }
 
-CONFIG(debug) {
+CONFIG(debug, debug|release) {
    SOURCES += ../Libs/Nvwa/debug_new.cpp
 }
 

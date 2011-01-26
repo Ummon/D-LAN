@@ -19,15 +19,12 @@
 #ifndef CORE_CORE_SERVICE_H
 #define CORE_CORE_SERVICE_H
 
-#include <QSharedPointer>
 #include <QCoreApplication>
 
 #include <Libs/qtservice/src/qtservice.h>
 
-#include <Common/Settings.h>
 #include <Common/Uncopyable.h>
 
-#include <Log.h>
 #include <ConsoleReader.h>
 #include <Core.h>
 

@@ -38,6 +38,8 @@ AybabtuGUI::AybabtuGUI(int argc, char *argv[]) :
 
    connect(&this->trayIcon, SIGNAL(activated(QSystemTrayIcon::ActivationReason)), this, SLOT(trayIconActivated(QSystemTrayIcon::ActivationReason)));
    this->trayIconMenu.addAction("Show the GUI", this, SLOT(showMainWindow()));
+   this->trayIconMenu.addAction("Stop the GUI", this, SLOT(exitGUI()));
+   this->trayIconMenu.addSeparator();
    this->trayIconMenu.addAction("Exit", this, SLOT(exit()));
    this->trayIcon.setContextMenu(&this->trayIconMenu);
    this->trayIcon.setToolTip("Aybabtu");
@@ -72,13 +74,19 @@ void AybabtuGUI::showMainWindow()
 }
 
 /**
-  * Stop the Core and the GUI.
+  * Stop only the GUI.
   */
-void AybabtuGUI::exit()
+void AybabtuGUI::exitGUI()
+{
+   this->exit(false);
+}
+
+void AybabtuGUI::exit(bool stopTheCore)
 {
    this->trayIcon.hide();
 
-   RCC::Builder::StopCore();
+   if (stopTheCore)
+      RCC::Builder::StopCore();
 
    if (this->mainWindow)
    {
