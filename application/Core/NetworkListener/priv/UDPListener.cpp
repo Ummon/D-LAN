@@ -61,14 +61,14 @@ UDPListener::UDPListener(
    currentIMAliveTag(0),
    loggerIMAlive(LM::Builder::newLogger("NetworkListener (IMAlive)"))
 {
+   /**** Mutlicast Socket ****/
+
    if (!this->multicastSocket.bind(MULTICAST_PORT, QUdpSocket::ReuseAddressHint))
-   {
       L_ERRO("Can't bind the multicast socket");
-   }
 
    connect(&this->multicastSocket, SIGNAL(readyRead()), this, SLOT(processPendingMulticastDatagrams()));
 
-   int socketDescriptor = this->multicastSocket.socketDescriptor();
+   const int multicastSocketDescriptor = this->multicastSocket.socketDescriptor();
 
    // 'loop' is activated only for tests.
 #if DEBUG
@@ -76,11 +76,11 @@ UDPListener::UDPListener(
 #else
    const char loop = 0;
 #endif
-   if (setsockopt(socketDescriptor, IPPROTO_IP, IP_MULTICAST_LOOP, &loop, sizeof loop))
+   if (setsockopt(multicastSocketDescriptor, IPPROTO_IP, IP_MULTICAST_LOOP, &loop, sizeof loop))
       L_ERRO("Can't set socket option : IP_MULTICAST_LOOP");
 
    const char TTL = SETTINGS.get<quint32>("multicast_ttl");
-   if (int error = setsockopt(socketDescriptor, IPPROTO_IP, IP_MULTICAST_TTL, &TTL, sizeof TTL))
+   if (int error = setsockopt(multicastSocketDescriptor, IPPROTO_IP, IP_MULTICAST_TTL, &TTL, sizeof TTL))
       L_ERRO(QString("Can't set socket option : IP_MULTICAST_TTL : %1").arg(error));
 
    // 'htonl' reverse the order of the bytes, see : http://www.opengroup.org/onlinepubs/007908799/xns/htonl.html
@@ -90,12 +90,22 @@ UDPListener::UDPListener(
 #if defined(Q_OS_LINUX)
    if (int error = setsockopt(socketDescriptor, IPPROTO_IP, IP_ADD_MEMBERSHIP, &mreq, sizeof mreq))
 #elif defined(Q_OS_WIN32)
-   if (int error = setsockopt(socketDescriptor, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char*)&mreq, sizeof mreq))
+   if (int error = setsockopt(multicastSocketDescriptor, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char*)&mreq, sizeof mreq))
 #endif
       L_ERRO(QString("Can't set socket option : IP_ADD_MEMBERSHIP : %1").arg(error));
 
+   const int BUFFER_SIZE_UDP = SETTINGS.get<quint32>("udp_read_buffer_size");
+   if (int error = setsockopt(multicastSocketDescriptor, SOL_SOCKET, SO_RCVBUF, (char*)&BUFFER_SIZE_UDP, sizeof BUFFER_SIZE_UDP))
+      L_ERRO(QString("Can't set socket option (multicast socket) : SO_RCVBUF : %1").arg(error));
+
+   /**** Unicast Socket ****/
+
    if (!this->unicastSocket.bind(UNICAST_PORT, QUdpSocket::ReuseAddressHint))
       L_ERRO("Can't bind the unicast socket");
+
+   if (int error = setsockopt(this->unicastSocket.socketDescriptor(), SOL_SOCKET, SO_RCVBUF, (char*)&BUFFER_SIZE_UDP, sizeof BUFFER_SIZE_UDP))
+      L_ERRO(QString("Can't set socket option (uncast socket) : SO_RCVBUF : %1").arg(error));
+
    connect(&this->unicastSocket, SIGNAL(readyRead()), this, SLOT(processPendingUnicastDatagrams()));
 
    connect(&this->timerIMAlive, SIGNAL(timeout()), this, SLOT(sendIMAliveMessage()));
@@ -346,7 +356,7 @@ int UDPListener::writeMessageToBuffer(Common::Network::CoreMessageType type, con
 
    if (Common::Network::HEADER_SIZE + bodySize > static_cast<int>(SETTINGS.get<quint32>("max_udp_datagram_size")))
    {
-      L_ERRO(QString("Datagram size too big : %1").arg(BUFFER_SIZE + bodySize));
+      L_ERRO(QString("Datagram size too big : %1").arg(Common::Network::HEADER_SIZE + bodySize));
       return 0;
    }
 

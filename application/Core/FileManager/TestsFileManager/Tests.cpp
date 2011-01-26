@@ -519,15 +519,15 @@ void Tests::findFilesWithResultFragmentation()
 {
    qDebug() << "===== findFilesWithResultFragmentation() =====";
 
-   const int FRAGMENT_MAX_SIZE = 120;
+   const int FRAGMENT_MAX_SIZE = 200;
 
    QString terms("bbb");
    QList<Protos::Common::FindResult> results = this->fileManager->find(terms, 10000, FRAGMENT_MAX_SIZE);
    qDebug() << "Nb fragment : " << results.size();
    for (int i = 0; i < results.size(); i++)
    {
-      QVERIFY(results[i].ByteSize() <= FRAGMENT_MAX_SIZE);
       qDebug() << "Fragment number " << i << ", size = " << results[i].ByteSize();
+      QVERIFY(results[i].ByteSize() <= FRAGMENT_MAX_SIZE);
       this->printSearch(terms, results[i]);
    }
 }

@@ -298,7 +298,7 @@ QList<BrowseModel::Node*> BrowseModel::synchronize(BrowseModel::Node* node, cons
   */
 QList<BrowseModel::Node*> BrowseModel::synchronizeRoot(const Protos::Common::Entries& entries)
 {
-   QModelIndex parentIndex = QModelIndex(); //this->createIndex(0, 0, this->root);
+   QModelIndex parentIndex = QModelIndex();
 
    int j = 0; // Root's children.
    for (int i = 0 ; i < entries.entry_size(); i++)

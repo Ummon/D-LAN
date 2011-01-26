@@ -19,6 +19,8 @@
 #include <priv/FileManager.h>
 using namespace FM;
 
+#include <limits>
+
 #include <QSharedPointer>
 #include <QStringList>
 #include <QList>
@@ -245,6 +247,7 @@ QList<Protos::Common::FindResult> FileManager::find(const QString& words, int ma
          Protos::Common::FindResult_EntryLevel* entryLevel = findResults.last().add_entry();
          entryLevel->set_level(entry.level);
          entry.value->populateEntry(entryLevel->mutable_entry(), true);
+         findResults.last().set_tag(std::numeric_limits<quint64>::max()); // Worst case to compute the size.
 
          if (findResults.last().ByteSize() > maxSize)
          {
