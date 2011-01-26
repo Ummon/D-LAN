@@ -173,7 +173,8 @@ void BrowseModel::refresh()
    Node::NodeBreadthIterator i(this->root);
    Node* currentNode;
    while (currentNode = i.next())
-      entries.add_entry()->CopyFrom(currentNode->getEntry());
+      if (currentNode->getNbChildren() > 0)
+         entries.add_entry()->CopyFrom(currentNode->getEntry());
 
    this->browseResult = this->coreConnection->browse(this->peerID, entries, true);
    connect(this->browseResult.data(), SIGNAL(result(const google::protobuf::RepeatedPtrField<Protos::Common::Entries>&)), this, SLOT(resultRefresh(const google::protobuf::RepeatedPtrField<Protos::Common::Entries>&)));
@@ -189,8 +190,13 @@ void BrowseModel::resultRefresh(const google::protobuf::RepeatedPtrField<Protos:
    Node::NodeBreadthIterator i(this->root);
    int j = -1;
    Node* currentNode;
-   while ((currentNode = i.next()) && ++j < entries.size() - 1)
-      nodesToDelete << this->synchronize(currentNode, entries.Get(j));
+   while (currentNode = i.next())
+      if (currentNode->getNbChildren() > 0)
+      {
+         if (++j >= entries.size() - 1)
+            break;
+         nodesToDelete << this->synchronize(currentNode, entries.Get(j));
+      }
 
    // Synchronize the root.
    for (QListIterator<Node*> i(this->synchronizeRoot(entries.Get(entries.size() - 1))); i.hasNext();)
@@ -247,7 +253,6 @@ void BrowseModel::loadChildren(const QPersistentModelIndex &index)
    this->currentBrowseIndex = index;
    this->browse(this->peerID, static_cast<Node*>(index.internalPointer()));
 }
-
 
 /**
   * Add the new elements in 'entries' and return the entries in 'node->children' which dont exist in 'entries'.
