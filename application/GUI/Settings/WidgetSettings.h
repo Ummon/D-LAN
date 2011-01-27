@@ -63,6 +63,9 @@ namespace GUI
 
       void resetCoreAddress();
 
+      void displayContextMenuDownload(const QPoint& point);
+      void openLocation();
+
       QStringList askForDirectories();
 
    protected:

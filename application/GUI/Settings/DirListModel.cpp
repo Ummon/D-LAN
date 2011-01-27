@@ -107,6 +107,14 @@ void DirListModel::mvDownDir(int row)
    this->endMoveRows();
 }
 
+QString DirListModel::getLocationPath(const QModelIndex& index) const
+{
+   if (index.row() >= this->dirs.size())
+      return QString();
+
+   return this->dirs[index.row()].path;
+}
+
 const QList<Common::SharedDir>& DirListModel::getDirs() const
 {
    return this->dirs;

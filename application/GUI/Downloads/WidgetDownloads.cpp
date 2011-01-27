@@ -154,7 +154,7 @@ void WidgetDownloads::displayContextMenuDownloads(const QPoint& point)
 
    QMenu menu;
    if (showOpenLocation)
-      menu.addAction("Open location", this, SLOT(openLocationSelectedEntries()));
+      menu.addAction(QIcon(":/icons/ressources/explore_folder.png"), "Open location", this, SLOT(openLocationSelectedEntries()));
    menu.addAction(QIcon(":/icons/ressources/remove_complete_files.png"), "Remove completed files", this, SLOT(removeCompletedFiles()));
    menu.addAction(QIcon(":/icons/ressources/delete.png"), "Remove selected entries", this, SLOT(removeSelectedEntries()));
    menu.exec(this->ui->tblDownloads->mapToGlobal(point));
@@ -202,6 +202,7 @@ void WidgetDownloads::removeSelectedEntries()
       if (!allComplete)
       {
          QMessageBox msgBox(this);
+         msgBox.setWindowTitle("Remove selected downloads");
          msgBox.setText("Are you sure to remove the selected downloads? There is one or more unfinished download.");
          msgBox.setIcon(QMessageBox::Question);
          msgBox.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);

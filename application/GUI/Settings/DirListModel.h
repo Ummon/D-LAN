@@ -38,6 +38,7 @@ namespace GUI
       void mvUpDir(int row);
       void mvDownDir(int row);
 
+      QString getLocationPath(const QModelIndex& index) const;
       const QList<Common::SharedDir>& getDirs() const;
       Common::SharedDir getDir(const Common::Hash& ID) const;
 

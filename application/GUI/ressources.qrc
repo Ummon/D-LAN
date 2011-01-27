@@ -20,5 +20,6 @@
         <file>ressources/chat.png</file>
         <file>ressources/arrow_down.png</file>
         <file>ressources/arrow_up.png</file>
+        <file>ressources/explore_folder.png</file>
     </qresource>
 </RCC>

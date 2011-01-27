@@ -70,7 +70,7 @@
           </widget>
          </item>
          <item>
-          <layout class="QVBoxLayout" name="laySharedButtons" stretch="0,0,0,0,0">
+          <layout class="QVBoxLayout" name="laySharedButtons" stretch="0,0,0,0,0,0">
            <item>
             <widget class="QPushButton" name="butAddShared">
              <property name="toolTip">
@@ -127,6 +127,17 @@
              <property name="icon">
               <iconset resource="../ressources.qrc">
                <normaloff>:/icons/ressources/arrow_down.png</normaloff>:/icons/ressources/arrow_down.png</iconset>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="butOpenFolder">
+             <property name="text">
+              <string/>
+             </property>
+             <property name="icon">
+              <iconset resource="../ressources.qrc">
+               <normaloff>:/icons/ressources/explore_folder.png</normaloff>:/icons/ressources/explore_folder.png</iconset>
              </property>
             </widget>
            </item>

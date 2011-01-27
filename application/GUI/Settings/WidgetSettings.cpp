@@ -23,6 +23,9 @@ using namespace GUI;
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QListView>
+#include <QMenu>
+#include <QDesktopServices>
+#include <QUrl>
 
 #include <Common/ProtoHelper.h>
 #include <Common/Settings.h>
@@ -73,9 +76,14 @@ WidgetSettings::WidgetSettings(QSharedPointer<RCC::ICoreConnection> coreConnecti
    connect(this->ui->butMoveUpShared, SIGNAL(clicked()), this, SLOT(moveUpShared()));
    connect(this->ui->butMoveDownShared, SIGNAL(clicked()), this, SLOT(moveDownShared()));
 
+   connect(this->ui->butOpenFolder, SIGNAL(clicked()), this, SLOT(openLocation()));
+
    connect(this->ui->txtCoreAddress, SIGNAL(editingFinished()), this, SLOT(saveGUISettings()));
    connect(this->ui->txtPassword, SIGNAL(editingFinished()), this, SLOT(saveGUISettings()));
    connect(this->ui->butResetCoreAddress, SIGNAL(clicked()), this, SLOT(resetCoreAddress()));
+
+   this->ui->tblShareDirs->setContextMenuPolicy(Qt::CustomContextMenu);
+   connect(this->ui->tblShareDirs, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(displayContextMenuDownload(const QPoint&)));
 }
 
 WidgetSettings::~WidgetSettings()
@@ -174,8 +182,17 @@ void WidgetSettings::removeShared()
    QModelIndex index = this->ui->tblShareDirs->selectionModel()->currentIndex();
    if (index.isValid())
    {
-      this->sharedDirsModel.rmDir(index.row());
-      this->saveCoreSettings();
+      QMessageBox msgBox(this);
+      msgBox.setWindowTitle("Remove selected shared directory");
+      msgBox.setText("Are you sure to remove the selected shared directory? All computed hashes will be lost.");
+      msgBox.setIcon(QMessageBox::Question);
+      msgBox.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
+      msgBox.setDefaultButton(QMessageBox::Ok);
+      if (msgBox.exec() == QMessageBox::Ok)
+      {
+         this->sharedDirsModel.rmDir(index.row());
+         this->saveCoreSettings();
+      }
    }
 }
 
@@ -203,6 +220,35 @@ void WidgetSettings::resetCoreAddress()
 {
    this->ui->txtCoreAddress->setText("localhost");
    this->saveGUISettings();
+}
+
+void WidgetSettings::displayContextMenuDownload(const QPoint& point)
+{
+   QPoint globalPosition = this->ui->tblShareDirs->mapToGlobal(point);
+   globalPosition.setY(globalPosition.y() + this->ui->tblShareDirs->horizontalHeader()->height());
+   if (this->coreConnection->isLocal())
+   {
+      QMenu menu;
+      menu.addAction(QIcon(":/icons/ressources/delete.png"), "Remove the shared folder", this, SLOT(removeShared()));
+      QAction* actionUp = menu.addAction(QIcon(":/icons/ressources/arrow_up.png"), "Move up", this, SLOT(moveUpShared()));
+      QAction* actionDown = menu.addAction(QIcon(":/icons/ressources/arrow_down.png"), "Move down", this, SLOT(moveDownShared()));
+      menu.addAction(QIcon(":/icons/ressources/explore_folder.png"), "Open location", this, SLOT(openLocation()));
+
+      if (this->ui->tblShareDirs->currentIndex().row() == 0)
+         actionUp->setDisabled(true);
+
+      if (this->ui->tblShareDirs->currentIndex().row() >= this->sharedDirsModel.rowCount() - 1)
+         actionDown->setDisabled(true);
+
+      menu.exec(globalPosition);
+   }
+}
+
+void WidgetSettings::openLocation()
+{
+   QModelIndexList selectedRows = this->ui->tblShareDirs->selectionModel()->selectedRows();
+   foreach (QModelIndex index, selectedRows)
+      QDesktopServices::openUrl(QUrl("file:///" + this->sharedDirsModel.getLocationPath(index), QUrl::TolerantMode));
 }
 
 /**
