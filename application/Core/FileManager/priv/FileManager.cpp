@@ -109,26 +109,36 @@ QSharedPointer<IChunk> FileManager::getChunk(const Common::Hash& hash) const
    return this->chunks.value(hash);
 }
 
-QList< QSharedPointer<IChunk> > FileManager::getAllChunks(const Protos::Common::Entry& localEntry, const Common::Hash& hash) const
-{   
-   QList< QSharedPointer<IChunk> > ret;
-   QList< QSharedPointer<Chunk> > chunks = this->chunks.values(hash);
-
-   if (!chunks.isEmpty())
+QList< QSharedPointer<IChunk> > FileManager::getAllChunks(const Protos::Common::Entry& localEntry, const Common::Hashes& hashes) const
+{
+   for (QListIterator<Common::Hash> h(hashes); h.hasNext();)
    {
+      // Chunks from different files, usually one chunk.
+      QList< QSharedPointer<Chunk> > chunks = this->chunks.values(h.next());
+
       for (QListIterator< QSharedPointer<Chunk> > i(chunks); i.hasNext();)
       {
          QSharedPointer<Chunk> chunk = i.next();
-         if (chunk->matchesEntry(localEntry))
+         if (chunk->matchesEntry(localEntry)) // The name, the path and the size of the file are the same?
          {
-            for (QListIterator< QSharedPointer<Chunk> > j(chunk->getOtherChunks()); j.hasNext();)
-               ret << j.next();
-            break;
+            // We verify that all hashes of all chunks match the given hashes. If it's not the case, the files are not the same.
+            QList< QSharedPointer<Chunk> > allChunks = chunk->getOtherChunks();
+            if (allChunks.size() != hashes.size())
+               return QList< QSharedPointer<IChunk> >();
+
+            QList< QSharedPointer<IChunk> > ret;
+            for (int j = 0; j < allChunks.size(); j++)
+            {
+               if (allChunks[j]->getHash() != hashes[j]) // Only one hashes doesn't match -> all the file doesn't match.
+                  return QList< QSharedPointer<IChunk> >();
+               ret << allChunks[j];
+            }
+            return ret;
          }
       }
    }
 
-   return ret;
+   return QList< QSharedPointer<IChunk> >();
 }
 
 QList< QSharedPointer<IChunk> > FileManager::newFile(Protos::Common::Entry& entry)

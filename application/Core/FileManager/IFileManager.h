@@ -24,6 +24,7 @@
 #include <QSharedPointer>
 
 #include <Common/Hash.h>
+#include <Common/Hashes.h>
 #include <Common/SharedDir.h>
 
 #include <Protos/common.pb.h>
@@ -69,11 +70,11 @@ namespace FM
       virtual QSharedPointer<IChunk> getChunk(const Common::Hash& hash) const = 0;
 
       /**
-        * Get all chunks from the file which owns the given hash.
+        * Get all chunks from the file which owns the given hashes.
         * The name and the path of the owner of the returned chunk must match the given entry.
         * ".unfinished" suffix is ignored in both side.
         */
-      virtual QList< QSharedPointer<IChunk> > getAllChunks(const Protos::Common::Entry& localEntry, const Common::Hash& hash) const = 0;
+      virtual QList< QSharedPointer<IChunk> > getAllChunks(const Protos::Common::Entry& localEntry, const Common::Hashes& hashes) const = 0;
 
       /**
         * Create a new empty file.

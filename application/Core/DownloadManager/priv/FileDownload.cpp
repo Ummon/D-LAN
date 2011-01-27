@@ -23,6 +23,7 @@ using namespace DM;
 
 #include <Common/Settings.h>
 #include <Common/ProtoHelper.h>
+#include <Common/Hashes.h>
 
 #include <Core/FileManager/Exceptions.h>
 
@@ -186,7 +187,12 @@ QSharedPointer<ChunkDownload> FileDownload::getAChunkToDownload()
       {
          // First, try to get the chunks from an existing file, it's useful when a download is taken from the saved queue.
          if (!this->chunkDownloads.isEmpty())
-            this->chunksWithoutDownload = this->fileManager->getAllChunks(this->localEntry, this->chunkDownloads.first()->getHash());
+         {
+            Common::Hashes hashes;
+            for (QListIterator< QSharedPointer<ChunkDownload> > i(this->chunkDownloads); i.hasNext();)
+               hashes << i.next()->getHash();
+            this->chunksWithoutDownload = this->fileManager->getAllChunks(this->localEntry, hashes);
+         }
 
          // If the file doesn't exist we create it.
          if (this->chunksWithoutDownload.isEmpty())
