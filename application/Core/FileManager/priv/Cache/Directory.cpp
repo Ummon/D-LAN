@@ -23,6 +23,7 @@ using namespace FM;
 
 #include <Common/ProtoHelper.h>
 
+#include <priv/Global.h>
 #include <priv/Constants.h>
 #include <priv/Log.h>
 #include <priv/FileManager.h>
@@ -85,13 +86,28 @@ QList<File*> Directory::restoreFromFileCache(const Protos::FileCache::Hashes_Dir
             ret << d.next()->restoreFromFileCache(dir.dir(i));
 
       // .. And files.
+      QList<File*> filesNotInDir = this->files;
       for (int i = 0; i < dir.file_size(); i++)
          for (QListIterator<File*> j(this->files); j.hasNext();)
          {
             File* f = j.next();
             if (f->restoreFromFileCache(dir.file(i)) && f->hasAllHashes())
+            {
+               filesNotInDir.removeOne(f);
                ret << f;
+            }
          }
+
+      // Remove unfinished files not in 'dir'.
+      for (QListIterator<File*> i(filesNotInDir); i.hasNext();)
+      {
+         File* file = i.next();
+         if (!file->isComplete())
+         {
+            file->removeUnfinishedFiles();
+            delete file;
+         }
+      }
    }
 
    return ret;

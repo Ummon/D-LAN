@@ -79,7 +79,10 @@ void Chunk::removeItsIncompleteFile()
 {
    QMutexLocker locker(&this->mutex);
    if (this->file && !this->file->isComplete())
+   {
+      this->file->removeUnfinishedFiles();
       delete this->file;
+   }
 }
 
 bool Chunk::populateEntry(Protos::Common::Entry* entry) const
