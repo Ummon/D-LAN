@@ -61,7 +61,6 @@ Socket::Socket(PeerManager* peerManager, QSharedPointer<FM::IFileManager> fileMa
 Socket::~Socket()
 {
    L_DEBU(QString("Socket[%1] deleted").arg(this->num));
-
    this->socket->deleteLater();
 }
 
@@ -223,8 +222,7 @@ void Socket::close()
 {
    L_DEBU(QString("Socket[%1] closing..").arg(this->num));
 
-   disconnect(this->socket, SIGNAL(readyRead()), this, SLOT(dataReceived()));
-   disconnect(this->socket, SIGNAL(disconnected()), this, SLOT(disconnected()));
+   this->socket->disconnect(this);
 
    this->idle = true;
    emit closed(this);

@@ -18,6 +18,8 @@
   
 #include <Tests.h>
 
+#include <iostream>
+
 #include <QTest>
 #include <QtGlobal>
 
@@ -42,7 +44,7 @@ void ThreadLogger::run()
    const QString mess("A random message from thread");
 
    qsrand(QTime::currentTime().msec());
-   for (int i = 0; i < 300; i++)
+   for (int i = 0; i < 100; i++)
    {
       int severity = mtrand.randInt(5);
       switch (severity)
@@ -67,7 +69,7 @@ void ThreadLogger::run()
          break;
       }
 
-      QTest::qSleep(this->delta);
+      QTest::qWait(this->delta);
    }
 }
 
@@ -89,7 +91,7 @@ void Tests::createLoggers()
    this->loggers << Builder::newLogger("Logger 3");
 
    for (int i = 0; i < 8; i++)
-      this->threadLoggers << QSharedPointer<ThreadLogger>(new ThreadLogger(QString("Thread logger %1").arg(i), 1000 + i * 100));
+      this->threadLoggers << QSharedPointer<ThreadLogger>(new ThreadLogger(QString("Thread logger %1").arg(i), 100 + i * 10));
 }
 
 void Tests::logSomeBasicMessages()
@@ -110,6 +112,18 @@ void Tests::logSomeMessagesWithSpecialCharacters()
    LOG_USER(this->loggers[0], "e-acute : é");
 }
 
+void Tests::logFromStdout()
+{
+   std::cout << "Message from stdout" << std::endl;
+   QTest::qWait(1000);
+}
+
+void Tests::logFromStderr()
+{
+   std::cerr << "Message from stderr" << std::endl;
+   QTest::qWait(1000);
+}
+
 /**
   * Start all the thread loggers.
   */
@@ -118,7 +132,7 @@ void Tests::startTheThreadLoggers()
    foreach (QSharedPointer<ThreadLogger> logger, this->threadLoggers)
    {
       logger->start();
-      QTest::qSleep(100);
+      QTest::qWait(100);
    }
    foreach (QSharedPointer<ThreadLogger> logger, this->threadLoggers)
    {

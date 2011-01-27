@@ -3,7 +3,7 @@
 # -------------------------------------------------
 QT += testlib
 QT -= gui
-TARGET = Tests
+TARGET = TestsLogManager
 CONFIG += link_prl
 
 include(../../common.pri)

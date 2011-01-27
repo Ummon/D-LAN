@@ -20,11 +20,11 @@
 using namespace CoreSpace;
 
 #include <cstdio>
+#include <windows.h>
 
 #include <QCoreApplication>
 
 #include <Log.h>
-#include <windows.h>
 
 const QString ConsoleReader::QUIT_COMMAND("quit");
 

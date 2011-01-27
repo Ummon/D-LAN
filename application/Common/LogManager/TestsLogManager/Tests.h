@@ -52,6 +52,8 @@ private slots:
    void createLoggers();
    void logSomeBasicMessages();
    void logSomeMessagesWithSpecialCharacters();
+   void logFromStdout();
+   void logFromStderr();
    void startTheThreadLoggers();
 
 private:

@@ -16,13 +16,9 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
 
-#include <QtCore/QCoreApplication>
-
 #include <QString>
 #include <QTextCodec>
-#include <QTextStream>
 
-#include <Common/Version.h>
 #include <Common/Global.h>
 
 #include <CoreService.h>
@@ -48,10 +44,10 @@ int main(int argc, char *argv[])
    for (int i = 1; i < argc; i++)
    {
       const QString arg = QString::fromLatin1(argv[i]);
-      if (arg == "-r" && i < argc - 1 && i++)
-         Common::Global::setDataFolder(Common::Global::ROAMING, QString::fromLatin1(argv[i]));
-      else if (arg == "-l" && i < argc - 1 && i++)
-         Common::Global::setDataFolder(Common::Global::LOCAL, QString::fromLatin1(argv[i]));
+      if (arg == "-r" && i < argc - 1)
+         Common::Global::setDataFolder(Common::Global::ROAMING, QString::fromLatin1(argv[i++]));
+      else if (arg == "-l" && i < argc - 1)
+         Common::Global::setDataFolder(Common::Global::LOCAL, QString::fromLatin1(argv[i++]));
    }
 
    CoreSpace::CoreService core(argc, argv);

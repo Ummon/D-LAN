@@ -19,17 +19,20 @@
 #include <priv/StdLogger.h>
 using namespace LM;
 
+#if defined( Q_OS_WIN32 )
+   #include <fcntl.h>
+#endif
+
 #include <IEntry.h>
 
 /**
   * @class StdLogger
   * A special logger created to handle all stdout or stderr text line and log them.
-  * TODO: It doesn't work because SIGNAL(readyRead()) can't be apply to a QFile.
-  *  see : http://lists.trolltech.com/qt-interest/2004-12/thread00816-0.html
+  * Disable for the moment..
   */
 
-const StdLogger StdLogger::stdoutLogger(stdout, "stdout");
-const StdLogger StdLogger::stderrLogger(stderr, "stderr");
+// const StdLogger StdLogger::stdoutLogger(STDOUT_FILENO, "stdout");
+// const StdLogger StdLogger::stderrLogger(STDERR_FILENO, "stderr");
 
 /**
   * Fake class method to avoid the case where this compilation unit (.o)
@@ -39,34 +42,33 @@ void StdLogger::init()
 {
 }
 
-#if defined( Q_OS_WIN )
-   #include <fcntl.h>
-#endif
-
-StdLogger::StdLogger(FILE* file, const QString& name) :
-   Logger(name)
+void StdLogger::run()
 {
-   /*#if defined( Q_OS_WIN )
-      _pipe(this->input, 0x1000, O_TEXT);
+   qint64 size;
+   while((size = this->stdoutIn.readLine(this->buffer, BUFFER_SIZE)) != -1)
+      this->log(QString::fromAscii(this->buffer, size), SV_DEBUG);
+}
+
+StdLogger::StdLogger(int channel, const QString& name) :
+   Logger(name), channel(channel)
+{
+   #if defined( Q_OS_WIN32 )
+      _pipe(this->input, BUFFER_SIZE, O_TEXT);
    #elif defined( Q_OS_LINUX )
       pipe(this->input);
    #endif
 
-   dup2(input[STDOUT_FILENO], STDOUT_FILENO);
-   close(input[STDOUT_FILENO]);
+   //this->channel = dup(this->channel);
+   dup2(this->input[1], this->channel);
+   close(this->input[1]);
 
-   stdoutIn.open(input[STDIN_FILENO], QIODevice::ReadOnly);*/
+   this->stdoutIn.open(this->input[0], QIODevice::ReadOnly);
 
-   stdoutIn.open(file, QIODevice::ReadOnly);
-
-   connect(&this->stdoutIn, SIGNAL(readyRead()), this, SLOT(newData()));
+   this->start();
 }
 
-void StdLogger::newData()
+StdLogger::~StdLogger()
 {
-   if (this->stdoutIn.canReadLine())
-   {
-      this->stdoutIn.readLine(this->buffer, BUFFER_SIZE);
-      this->log(this->buffer, SV_DEBUG);
-   }
+   close(this->channel);
+   this->wait();
 }

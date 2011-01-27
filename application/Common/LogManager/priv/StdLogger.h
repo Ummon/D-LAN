@@ -20,15 +20,16 @@
 #define STDOUTLOGGER_H
 
 #include <QObject>
+#include <QThread>
 #include <QFile>
+#include <QTextStream>
 
 #include <priv/Logger.h>
 
 namespace LM
 {
-   class StdLogger : public QObject, public Logger
+   class StdLogger : public QThread, public Logger
    {
-      Q_OBJECT
    private:
       static const int BUFFER_SIZE = 512;
 
@@ -37,13 +38,15 @@ namespace LM
       static const StdLogger stderrLogger;
       static void init();
 
-   private:
-       StdLogger(FILE* file, const QString& name);
-
-   private slots:
-       void newData();
+   protected:
+      void run();
 
    private:
+       StdLogger(int file, const QString& name);
+       virtual ~StdLogger();
+
+   private:
+      int channel;
       int input[2];
       QFile stdoutIn;
       char buffer[BUFFER_SIZE];
