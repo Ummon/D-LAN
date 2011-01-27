@@ -132,6 +132,9 @@
            </item>
            <item>
             <widget class="QPushButton" name="butOpenFolder">
+             <property name="toolTip">
+              <string>Open location of the selected shared directory</string>
+             </property>
              <property name="text">
               <string/>
              </property>
