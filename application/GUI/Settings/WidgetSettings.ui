@@ -48,7 +48,11 @@
         </widget>
        </item>
        <item>
-        <widget class="QLineEdit" name="txtNick"/>
+        <widget class="QLineEdit" name="txtNick">
+         <property name="maxLength">
+          <number>256</number>
+         </property>
+        </widget>
        </item>
        <item>
         <widget class="QLabel" name="lblShared">

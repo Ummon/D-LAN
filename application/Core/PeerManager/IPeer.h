@@ -36,6 +36,9 @@ namespace PM
 {
    class IGetHashes;
 
+   /**
+     * A remote peer. Use the interface 'IPeeManager' to get all the peers.
+     */
    class IPeer : public LM::ILoggable
    {
    public:
@@ -54,8 +57,16 @@ namespace PM
         */
       virtual quint32 getSpeed() = 0;
 
+      /**
+        * When we download a file from a peer we can set its current speed with this method.
+        * If this method isn't called for some time, the speed will be reset to its default value.
+        * See 'DownloadRateValidTime' from this wiki page: http://dev.aybabtu.org/projects/pmp/wiki/Protocol_core-core#Parameters to show the computation.
+        */
       virtual void setSpeed(quint32 speed) = 0;
 
+      /**
+        * If we don't receive an IMAlive message from a peer during a certain time (for example 20 seconds), it will be concidered as dead.
+        */
       virtual bool isAlive() = 0;
 
       /**

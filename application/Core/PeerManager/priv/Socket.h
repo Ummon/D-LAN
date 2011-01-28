@@ -78,6 +78,8 @@ namespace PM
 
    private:
       bool readMessage();
+      bool readProtoMessage(google::protobuf::Message& message);
+
       void initActivityTimer();
 
       PeerManager* peerManager;

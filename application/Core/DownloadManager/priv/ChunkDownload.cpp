@@ -314,6 +314,7 @@ void ChunkDownload::run()
       L_WARN("TryToWriteBeyondTheEndOfChunkException");
    }
 
+   this->socket->getQSocket()->setReadBufferSize(0);
    this->socket->getQSocket()->moveToThread(this->mainThread);
 }
 
@@ -341,6 +342,7 @@ void ChunkDownload::result(const Protos::Core::GetChunkResult& result)
 void ChunkDownload::stream(QSharedPointer<PM::ISocket> socket)
 {
    this->socket = socket;
+   this->socket->getQSocket()->setReadBufferSize(SETTINGS.get<quint32>("socket_buffer_size"));
    this->socket->getQSocket()->moveToThread(this);
 
    this->start();

@@ -52,7 +52,8 @@ namespace PM
       virtual QString getNick() = 0;
 
       /**
-        * Return all connected peers.
+        * Return all alive peers. A peer is never deleted but can become inactive.
+        * @remarks This list doesn't include us.
         */
       virtual QList<IPeer*> getPeers() = 0;
 
@@ -64,6 +65,7 @@ namespace PM
 
       /**
         * The method must be call frequently to tell that a peer (ID) is still alive.
+        * @see The protobuf message 'Protos.Core.IMAlive' in "Protos/core_protocol.proto".
         */
       virtual void updatePeer(const Common::Hash& ID, const QHostAddress& IP, quint16 port, const QString& nick, const quint64& sharingAmount) = 0;
 

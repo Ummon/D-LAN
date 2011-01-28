@@ -195,7 +195,6 @@ void CoreConnection::stateChanged(QAbstractSocket::SocketState socketState)
 
 void CoreConnection::dataReceived()
 {
-   // TODO : it will loop infinetly if not enough data is provided.
    while (!this->socket.atEnd())
    {
       if (this->currentHeader.isNull() && this->socket.bytesAvailable() >= Common::Network::HEADER_SIZE)

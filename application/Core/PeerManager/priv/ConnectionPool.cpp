@@ -51,6 +51,9 @@ ConnectionPool::~ConnectionPool()
    this->closeAllSocket();
 }
 
+/**
+  * Set the IP and the port of the remote peer.
+  */
 void ConnectionPool::setIP(const QHostAddress& IP, quint16 port)
 {
    this->peerIP = IP;

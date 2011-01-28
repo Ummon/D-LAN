@@ -40,7 +40,6 @@ Socket::Socket(PeerManager* peerManager, QSharedPointer<FM::IFileManager> fileMa
    L_DEBU(QString("New Socket[%1] (connection from %2:%3)").arg(this->num).arg(socket->peerAddress().toString()).arg(socket->peerPort()));
 #endif
 
-   this->socket->setReadBufferSize(SETTINGS.get<quint32>("socket_buffer_size"));
    this->initActivityTimer();
 }
 
@@ -53,7 +52,6 @@ Socket::Socket(PeerManager* peerManager, QSharedPointer<FM::IFileManager> fileMa
 #endif
 
    this->socket = new QTcpSocket();
-   this->socket->setReadBufferSize(SETTINGS.get<quint32>("socket_buffer_size"));
    this->socket->connectToHost(address, port);
    this->initActivityTimer();
 }
@@ -152,12 +150,6 @@ void Socket::dataReceived()
       if (this->currentHeader.isNull() && this->socket->bytesAvailable() >= Common::Network::HEADER_SIZE)
       {
          this->currentHeader = Common::Network::readHeader<Common::Network::CoreMessageType>(*this->socket);
-
-         L_DEBU(QString("Socket[%1]: Data received from %2, %3")
-            .arg(this->num)
-            .arg(this->socket->peerAddress().toString())
-            .arg(this->currentHeader.toStr())
-         );
 
          if (this->currentHeader.senderID != this->peerID)
          {
@@ -263,15 +255,7 @@ bool Socket::readMessage()
    case Common::Network::CORE_GET_ENTRIES:
       {
          Protos::Core::GetEntries getEntries;
-
-         // This scope (and the others ones below) is here to force the input stream to read all the bytes.
-         // See Common::ZeroCopyInputStreamQIODevice::~ZeroCopyInputStreamQIODevice.
-         {
-            Common::ZeroCopyInputStreamQIODevice inputStream(this->socket);
-            readOK = getEntries.ParseFromBoundedZeroCopyStream(&inputStream, this->currentHeader.size);
-         }
-
-         if (readOK)
+         if (readOK = this->readProtoMessage(getEntries))
          {
             Protos::Core::GetEntriesResult result;
             for (int i = 0; i < getEntries.dirs().entry_size(); i++)
@@ -291,10 +275,7 @@ bool Socket::readMessage()
    case Common::Network::CORE_GET_ENTRIES_RESULT:
       {
          Protos::Core::GetEntriesResult getEntriesResult;
-         {
-            Common::ZeroCopyInputStreamQIODevice inputStream(this->socket);
-            readOK = getEntriesResult.ParseFromBoundedZeroCopyStream(&inputStream, this->currentHeader.size);
-         }
+         readOK = this->readProtoMessage(getEntriesResult);
 
          this->finished();
 
@@ -308,12 +289,7 @@ bool Socket::readMessage()
    case Common::Network::CORE_GET_HASHES:
       {
          Protos::Core::GetHashes getHashes;
-         {
-            Common::ZeroCopyInputStreamQIODevice inputStream(this->socket);
-            readOK = getHashes.ParseFromBoundedZeroCopyStream(&inputStream, this->currentHeader.size);
-         }
-
-         if (readOK)
+         if (readOK = this->readProtoMessage(getHashes))
          {
             this->currentHashesResult = this->fileManager->getHashes(getHashes.file());
             connect(this->currentHashesResult.data(), SIGNAL(nextHash(Common::Hash)), this, SLOT(nextAskedHash(Common::Hash)), Qt::QueuedConnection);
@@ -335,12 +311,7 @@ bool Socket::readMessage()
    case Common::Network::CORE_GET_HASHES_RESULT:
       {
          Protos::Core::GetHashesResult getHashesResult;
-         {
-            Common::ZeroCopyInputStreamQIODevice inputStream(this->socket);
-            readOK = getHashesResult.ParseFromBoundedZeroCopyStream(&inputStream, this->currentHeader.size);
-         }
-
-         if (readOK)
+         if (readOK = this->readProtoMessage(getHashesResult))
          {
             this->nbHash = getHashesResult.nb_hash();
             emit newMessage(this->currentHeader.type, getHashesResult);
@@ -351,12 +322,7 @@ bool Socket::readMessage()
    case Common::Network::CORE_HASH:
       {
          Protos::Common::Hash hash;
-         {
-            Common::ZeroCopyInputStreamQIODevice inputStream(this->socket);
-            readOK = hash.ParseFromBoundedZeroCopyStream(&inputStream, this->currentHeader.size);
-         }
-
-         if (readOK)
+         if (readOK = this->readProtoMessage(hash))
          {
             if (--this->nbHash == 0)
                this->finished();
@@ -369,12 +335,7 @@ bool Socket::readMessage()
    case Common::Network::CORE_GET_CHUNK:
       {
          Protos::Core::GetChunk getChunkMessage;
-         {
-            Common::ZeroCopyInputStreamQIODevice inputStream(this->socket);
-            readOK = getChunkMessage.ParseFromBoundedZeroCopyStream(&inputStream, this->currentHeader.size);
-         }
-
-         if (readOK)
+         if (readOK = this->readProtoMessage(getChunkMessage))
          {
             const Common::Hash hash(getChunkMessage.chunk().hash().data());
             QSharedPointer<FM::IChunk> chunk = this->fileManager->getChunk(hash);
@@ -405,12 +366,7 @@ bool Socket::readMessage()
    case Common::Network::CORE_GET_CHUNK_RESULT:
       {
          Protos::Core::GetChunkResult getChunkResult;
-         {
-            Common::ZeroCopyInputStreamQIODevice inputStream(this->socket);
-            readOK = getChunkResult.ParseFromBoundedZeroCopyStream(&inputStream, this->currentHeader.size);
-         }
-
-         if (readOK)
+         if (readOK = this->readProtoMessage(getChunkResult))
             emit newMessage(this->currentHeader.type, getChunkResult);
       }
       break;
@@ -419,6 +375,27 @@ bool Socket::readMessage()
       readOK = false;
    }
 
+   return readOK;
+}
+
+// TODO : use the same fonction in the remote connection. (or factor all this shit).
+bool Socket::readProtoMessage(google::protobuf::Message& message)
+{
+   bool readOK = false;
+   {
+      Common::ZeroCopyInputStreamQIODevice inputStream(this->socket);
+      readOK = message.ParseFromBoundedZeroCopyStream(&inputStream, this->currentHeader.size);
+   }
+
+   if (readOK)
+   {
+      L_DEBU(QString("Socket[%1]: Data received from %2, %3\n%4")
+         .arg(this->num)
+         .arg(this->socket->peerAddress().toString())
+         .arg(this->currentHeader.toStr())
+         .arg(Common::ProtoHelper::getDebugStr(message))
+      );
+   }
    return readOK;
 }
 
