@@ -50,7 +50,12 @@ namespace GUI
       void sendMessage();
       void newRows();
 
+   protected:
+      void showEvent(QShowEvent* event);
+
    private:
+      void setNewMessageState(bool newMessage);
+
       Ui::WidgetChat *ui;
 
       QSharedPointer<RCC::ICoreConnection> coreConnection;

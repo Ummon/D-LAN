@@ -77,5 +77,25 @@ void WidgetChat::sendMessage()
 
 void WidgetChat::newRows()
 {
-   this->ui->tblChat->scrollToBottom();
+   this->ui->tblChat->scrollToBottom();   
+   this->setNewMessageState(true);
+}
+
+void WidgetChat::showEvent(QShowEvent* event)
+{
+   this->setNewMessageState(false);
+}
+
+void WidgetChat::setNewMessageState(bool newMessage)
+{
+   if (newMessage && !this->isAncestorOf(QApplication::focusWidget()))
+   {
+      this->setWindowIcon(QIcon(":/icons/ressources/chat_new_message.png"));
+      this->parentWidget()->setWindowIcon(QIcon(":/icons/ressources/chat_new_message.png"));
+   }
+   else
+   {
+      this->setWindowIcon(QIcon(":/icons/ressources/chat.png"));
+      this->parentWidget()->setWindowIcon(QIcon(":/icons/ressources/chat.png"));
+   }
 }
