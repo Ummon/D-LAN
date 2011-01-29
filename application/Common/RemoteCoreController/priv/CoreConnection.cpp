@@ -33,7 +33,7 @@ using namespace RCC;
 #include <priv/SearchResult.h>
 
 CoreConnection::CoreConnection() :
-   currentHostLookupID(-1), authenticated(false)
+   coreStatus(NOT_RUNNING), currentHostLookupID(-1), authenticated(false)
 {
    connect(&this->socket, SIGNAL(readyRead()), this, SLOT(dataReceived()));
    connect(&this->socket, SIGNAL(connected()), this, SLOT(connected()));
@@ -163,6 +163,11 @@ bool CoreConnection::isLocal()
    return this->socket.peerAddress() == QHostAddress::LocalHost || this->socket.peerAddress() == QHostAddress::LocalHostIPv6;
 }
 
+bool CoreConnection::isRunningAsSubProcess()
+{
+   return this->coreStatus == RUNNING_AS_SUB_PROCESS;
+}
+
 void CoreConnection::connectToCoreSlot()
 {
    this->socket.close();
@@ -278,7 +283,7 @@ void CoreConnection::tryToConnectToTheNextAddress()
    // If the address is local check if the core is launched, if not try to launch it.
 #ifndef DEBUG
    if (address == QHostAddress::LocalHost || address == QHostAddress::LocalHostIPv6)
-      CoreController::StartCore();
+      this->coreStatus = CoreController::StartCore();
 #endif
 
    this->socket.connectToHost(address, this->currentPort);

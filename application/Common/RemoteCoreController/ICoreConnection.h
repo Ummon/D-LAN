@@ -128,6 +128,8 @@ namespace RCC
 
       virtual bool isLocal() = 0;
 
+      virtual bool isRunningAsSubProcess() = 0;
+
    signals:
       void coreConnected();
       void coreDisconnected();

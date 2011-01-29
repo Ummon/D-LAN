@@ -30,7 +30,7 @@ QSharedPointer<ICoreConnection> Builder::newCoreConnection()
 /**
   * @remarks Works only in local.
   */
-void Builder::StartCore()
+CoreStatus Builder::StartCore()
 {
    CoreController::StartCore();
 }

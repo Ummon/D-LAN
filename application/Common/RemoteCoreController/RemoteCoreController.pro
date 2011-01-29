@@ -41,4 +41,5 @@ HEADERS += \
     ../../Protos/common.pb.h \
     priv/CoreController.h \
     ../../Protos/gui_protocol.pb.h \
-    priv/Log.h
+    priv/Log.h \
+    Types.h

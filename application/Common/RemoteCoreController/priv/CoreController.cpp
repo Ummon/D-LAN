@@ -26,7 +26,7 @@ using namespace RCC;
 
 #include <priv/Log.h>
 
-void CoreController::StartCore()
+CoreStatus CoreController::StartCore()
 {
    QtServiceController controller(Common::SERVICE_NAME);
    if (!controller.isInstalled())
@@ -35,17 +35,24 @@ void CoreController::StartCore()
          L_USER("Aybabtu Core cannot be installed as a service");
    }
 
-   if (!controller.isRunning())
+   bool isRunning = false;
+
+   if (!(isRunning = controller.isRunning()))
    {
-      if (!controller.start())
+      if (!(isRunning = controller.start()))
       {
          L_WARN("Aybabtu Core service cannot be launched. Trying to launch it as a subprocess..");
          if (coreProcess.state() == QProcess::NotRunning)
          {
             coreProcess.start("AybabtuCore.exe -e");
+            return RUNNING_AS_SUB_PROCESS;
          }
       }
    }
+
+   if (isRunning)
+      return RUNNING_AS_SERVICE;
+   return NOT_RUNNING;
 }
 
 void CoreController::StopCore()

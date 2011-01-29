@@ -36,6 +36,7 @@
 #include <ICoreConnection.h>
 #include <IBrowseResult.h>
 #include <ISearchResult.h>
+#include <Types.h>
 
 namespace RCC
 {
@@ -70,6 +71,7 @@ namespace RCC
 
       bool isConnected();
       bool isLocal();
+      bool isRunningAsSubProcess();
 
    signals:
       void browseResult(const Protos::GUI::BrowseResult& browseResult);
@@ -92,6 +94,8 @@ namespace RCC
       void send(Common::Network::GUIMessageType type);
       void send(Common::Network::GUIMessageType type, const google::protobuf::Message& message);
       bool readMessage();
+
+      CoreStatus coreStatus;
 
       QString currentAddress;
       quint16 currentPort;

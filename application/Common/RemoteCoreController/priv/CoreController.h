@@ -20,13 +20,14 @@
 #define RCC_CORECONTROLLER_H
 
 #include <QProcess>
+#include <Types.h>
 
 namespace RCC
 {
    class CoreController
    {
    public:
-      static void StartCore();
+      static CoreStatus StartCore();
       static void StopCore();
 
    private:

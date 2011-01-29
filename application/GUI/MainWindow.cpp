@@ -82,14 +82,14 @@ void LogDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, c
 
 /////
 
-MainWindow::MainWindow(QWidget* parent) :
+MainWindow::MainWindow(QSharedPointer<RCC::ICoreConnection> coreConnection, QWidget* parent) :
    QMainWindow(parent),
    ui(new Ui::MainWindow),
    widgetSettings(0),
    widgetChat(0),
    widgetDownloads(0),
    widgetUploads(0),
-   coreConnection(RCC::Builder::newCoreConnection()),
+   coreConnection(coreConnection),
    peerListModel(coreConnection),
    logModel(coreConnection)
 {

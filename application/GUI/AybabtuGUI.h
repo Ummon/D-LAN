@@ -25,6 +25,8 @@
 
 #include <MainWindow.h>
 
+#include <Common/RemoteCoreController/Types.h>
+
 namespace GUI
 {
    class AybabtuGUI : public QApplication
@@ -42,6 +44,8 @@ namespace GUI
 
    private:
       MainWindow* mainWindow;
+
+      QSharedPointer<RCC::ICoreConnection> coreConnection;
 
       QSystemTrayIcon trayIcon;
       QMenu trayIconMenu;

@@ -30,7 +30,10 @@ using namespace GUI;
   */
 
 AybabtuGUI::AybabtuGUI(int argc, char *argv[]) :
-    QApplication(argc, argv), mainWindow(0), trayIcon(QIcon(":/icons/ressources/aybabtu_icon.png"))
+   QApplication(argc, argv),
+   mainWindow(0),
+   coreConnection(RCC::Builder::newCoreConnection()),
+   trayIcon(QIcon(":/icons/ressources/aybabtu_icon.png"))
 {
    this->setQuitOnLastWindowClosed(false);
 
@@ -38,7 +41,8 @@ AybabtuGUI::AybabtuGUI(int argc, char *argv[]) :
 
    connect(&this->trayIcon, SIGNAL(activated(QSystemTrayIcon::ActivationReason)), this, SLOT(trayIconActivated(QSystemTrayIcon::ActivationReason)));
    this->trayIconMenu.addAction("Show the GUI", this, SLOT(showMainWindow()));
-   this->trayIconMenu.addAction("Stop the GUI", this, SLOT(exitGUI()));
+   if (!this->coreConnection->isRunningAsSubProcess()) // We cannot stop a parent process without killing his child.
+      this->trayIconMenu.addAction("Stop the GUI", this, SLOT(exitGUI()));
    this->trayIconMenu.addSeparator();
    this->trayIconMenu.addAction("Exit", this, SLOT(exit()));
    this->trayIcon.setContextMenu(&this->trayIconMenu);
@@ -67,7 +71,7 @@ void AybabtuGUI::showMainWindow()
    }
    else
    {
-      this->mainWindow = new MainWindow();
+      this->mainWindow = new MainWindow(this->coreConnection);
       connect(this->mainWindow, SIGNAL(destroyed()), this, SLOT(mainWindowClosed()));
       this->mainWindow->show();
    }

@@ -20,6 +20,7 @@
 #define REMOTECORECONTROLLER_BUILDER_H
 
 #include "ICoreConnection.h"
+#include "Types.h"
 
 namespace RCC
 {
@@ -31,7 +32,7 @@ namespace RCC
       /**
         * @remarks Works only in local.
         */
-      static void StartCore();
+      static CoreStatus StartCore();
 
       /**
         * @remarks Works only in local.
