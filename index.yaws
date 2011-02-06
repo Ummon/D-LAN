@@ -1,4 +1,4 @@
-<erl>
+<erl>   
    % If a download is requested we ask the module 'aybabtu_common' to send the file.
    out(A) ->
       case {yaws_api:queryvar(A, "dl"), yaws_api:queryvar(A, "platform")} of
@@ -15,7 +15,9 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="fr" >
    <head>
       <meta http-equiv="Content-Type" content="text/html; charset=utf-8" /> <!-- just for IE ... -->
-      <title>Aybabtu - A LAN file sharing software</title>
+      <erl>
+         out(A) -> {ehtml, {title, [], aybabtu_lang:tr(global, title, A)}}.
+      </erl>
       <link rel="stylesheet" href="style.css" type="text/css" />
       <link rel="stylesheet" href="colorbox/colorbox.css" type="text/css" />
       <script type="text/javascript" src="jquery-1.4.4.min.js"></script>

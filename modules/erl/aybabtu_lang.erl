@@ -1,21 +1,45 @@
 -module(aybabtu_lang).
--export([langs/0, tr/3, tr/4]).
+-export([langs/0, tr/3, tr/4, accepted_langs/1]).
  
 -include("/usr/lib/yaws/include/yaws_api.hrl"). 
 -include("../include/aybabtu_defines.hrl").
 
+% See here for the language codes : http://en.wikipedia.org/wiki/List_of_ISO_639-1_codes
 langs() ->
    [en, fr].
+   
+accepted_langs(A) -> [].
+   %~ case lists:filter(fun({http_header, _, Name, _, _}) -> Name =:= 'Accept-Encoding' end, (A#arg.headers)#headers.other) of
+      %~ [{http_header, _, _, _, Values}] ->
+         %~ map(
+            %~ fun(Val) ->
+               %~ Val2 = string:strip(Val),
+               %~ case string:tokens(Val2, ";") of
+                  %~ [Lang, ["q=" | Quality]] -> ...
+                  %~ [Lang] ->
+            %~ end,
+            %~ string:tokens(Values, ",")
+         %~ )
+      %~ _ -> []
+   %~ end.
 
 tr(Page, Section, A) ->
    tr(Page, Section, A, []).
 
 tr(Page, Section, A, Params) ->
+   % 1) Looks if a GET variable 'lang' is defined
    Current_lang = case yaws_api:queryvar(A, "lang") of
       {ok, L} -> L;
       _ ->
+         % 2) Looks if a 'lang' value exist in a cookie.
          case yaws_api:find_cookie_val("lang", (A#arg.headers)#headers.cookie) of
-         [] -> null;
+         [] ->
+            % 3) Looks in the "Accept-Language" HTTP header field.
+            %case lists:keyfind(accept_language, 0, (A#arg.headers)#headers.other) of
+            %   false -> null;
+              % Langs -> fr
+            %end;$
+            null;
          C -> C
       end
    end,
@@ -29,11 +53,16 @@ tr(Page, Section, A, Params) ->
       Params
    ).
    
+translate(en, global, title) -> "Aybabtu - A LAN file sharing software";
+translate(fr, global, title) -> "Aybabtu - Un logiciel de partage de fichiers en LAN";
+
+%%%%%%%%%%
+   
 translate(en, menu, home) -> "home";
 translate(fr, menu, home) -> "home";
 
 translate(en, menu, features) -> "features";
-translate(fr, menu, features) -> "fonctionnalité";
+translate(fr, menu, features) -> "fonctionnalités";
 
 translate(en, menu, faq) -> "FAQ";
 translate(fr, menu, faq) -> "FAQ";
@@ -43,14 +72,14 @@ translate(fr, menu, about) -> "à propos";
 
 %%%%%%%%%%
 
-translate(en, home, title) -> "Aybabtu - The ultimate <acronym title=\"Local Area Network\">LAN</acronym> file sharing software.";
-translate(fr, home, title) -> "Aybabtu - Le logiciel ultime de partage de fichiers en <acronym title=\"Local Area Network (Réseau local)\">LAN</acronym>.";
+translate(en, home, title) -> "Aybabtu - A free <acronym title=\"Local Area Network\">LAN</acronym> file sharing software.";
+translate(fr, home, title) -> "Aybabtu - Un logiciel libre de partage de fichiers en <acronym title=\"Local Area Network (Réseau local)\">LAN</acronym>.";
 
-translate(en, home, description) -> "The goal is to easily exchange a massive amount of data in a local area network environment like a LAN-Party. After you launched Aybabtu, you will see all other people and theirs sharing automatically without special configuration. See the <a href=\"~s\">features list</a> for more information.";
-translate(fr, home, description) -> "Le but est de permettre l'échange massif et facile de fichier sur un réseau local, par exemple lors d'une LAN-Party. Après avoir lancé Aybabtu, les autres personnes présentes sur le réseau sont visibles automatiquement sans aucune configuration particulière. Voir la <a href=\"~s\">page des fonctionnalités</a> pour plus d'informations.";
+translate(en, home, description) -> "The goal is to easily exchange a large amount of data in a local area network environment like a LAN-Party. After you launched Aybabtu, you will see all other people and theirs sharing automatically without special configuration. See the <a href=\"~s\">features list</a> for more information.";
+translate(fr, home, description) -> "Le but est de permettre l'échange massif et facile de fichiers sur un réseau local, par exemple lors d'une LAN-Party. Après avoir lancé Aybabtu, les autres personnes présentes sur le réseau sont visibles automatiquement sans aucune configuration particulière. Voir la <a href=\"~s\">page des fonctionnalités</a> pour plus d'informations.";
 
 translate(en, home, warning_beta) -> "<em>Warning :</em> The actual version of Aybabtu is a beta, it's only for test purpose. You can report any defect <a href=\"~s\">here</a>. The latest beta may not be compatible with the previous ones.</p>";
-translate(fr, home, warning_beta) -> "Attention : La version actuelle d'Aybabtu est une bêta, elle ne doit être utilisé qu'a des fins de tests. Il est possible de rapporter les anomalies rencontrées <a href=\"~s\">ici</a>. La compatibilité de la dernière bêta avec les précédentes n'est pas garanti.";
+translate(fr, home, warning_beta) -> "Attention : La version actuelle d'Aybabtu est une bêta, elle ne doit être utilisée qu'à des fins de tests. Il est possible de rapporter les anomalies rencontrées <a href=\"~s\">ici</a>. La compatibilité de la dernière bêta avec les précédentes n'est pas garantie.";
 
 %%%%%%%%%%
 
@@ -61,7 +90,7 @@ translate(en, features, feat_1) -> "Share files and folders in a local area netw
 translate(fr, features, feat_1) -> "Partage de fichiers et dossiers sur un réseau local (LAN). Les sous-réseaux (<i>subnet</i>) sont supportés.";
 
 translate(en, features, feat_2) -> "Distributed transfers to increase performance and reliability.";
-translate(fr, features, feat_2) -> "Transferts distribués pour de meilleures performances et une meilleure fiabilité.";
+translate(fr, features, feat_2) -> "Transferts distribués pour de meilleures performances et une meilleure fiabilitée.";
 
 translate(en, features, feat_3) -> "Very easy to use: no configuration, no central server.";
 translate(fr, features, feat_3) -> "Très facile à utiliser, pas de configuration ni de serveur central.";
@@ -85,7 +114,7 @@ translate(en, features, feat_9) -> "Open source. Code source distributed under G
 translate(fr, features, feat_9) -> "Open source. Le code est distribué sous la licence GPLv3.";
 
 translate(en, features, help_us) -> "Don't forget to <a href=\"~s\">support us</a>. It will help to maintain and add new features.";
-translate(fr, features, help_us) -> "N'oubliez pas de nous <a href=\"~s\">aider</a>, cela permettra la maintenance et l'ajout de nouvelles fonctionnalités";
+translate(fr, features, help_us) -> "N'oubliez pas de nous <a href=\"~s\">aider</a>, cela permettra la maintenance et l'ajout de nouvelles fonctionnalités.";
 
 %%%%%%%%%%
 
@@ -93,7 +122,7 @@ translate(en, faq, q1) -> "A new file sharing tool is neat but I can already sha
 translate(fr, faq, q1) -> "Un nouvel outil de partage de fichier c'est bien mais je peux déjà faire des partages avec les outils de mon système. Quels sont les avantages d'utiliser Aybabtu?";
 
 translate(en, faq, a1) -> "Aybabtu is designed for massive transfers, you can manage a queue of files to be downloaded. A file may be downloaded automatically from many peers at the same time to speed up the transfer and prevent peer downtime. Aybabtu has a fast global search feature which default system file sharing doesn't have. You will find more information from the <a href=\"features.html\">feature page</a>.";
-translate(fr, faq, a1) -> "Aybabtu est conçu pour des transfers massifs, il est possible de gérer une liste des fichiers à transferer. Un fichier peut être transferé depuis plusieurs pairs simultanément pour augmenter la vitesse ainsi que la fiabilité. Il est possible d'effectuer une recherche globale ce que les partages système par défaut n'ont pas. Pour plus d'informations voir la <a href=\"features.html\">page des fonctionnalités</a>.";
+translate(fr, faq, a1) -> "Aybabtu est conçu pour des transfers massifs, il est possible de gérer une liste des fichiers à transferer. Un fichier peut être transferé depuis plusieurs pairs simultanément pour augmenter la vitesse ainsi que la fiabilité. Il est possible d'effectuer une recherche globale, ce que les partages système par défaut n'ont pas. Pour plus d'informations voir la <a href=\"features.html\">page des fonctionnalités</a>.";
 
 translate(en, faq, q2) -> "I don't see other computers in my network.";
 translate(fr, faq, q2) -> "Je ne vois pas les autres ordinateurs de mon réseau.";
@@ -111,29 +140,23 @@ translate(fr, faq, a2) ->
    "<li>S'assurer que l'UDP multicast est autorisé sur le réseau.</li>"
    "</ul>";
    
-translate(en, faq, q3) -> "Where are put the downloaded files?";
-translate(fr, faq, q3) -> "Où sont placés les fichiers transférés?";
+translate(en, faq, q3) -> "There is no Linux version!?";
+translate(fr, faq, q3) -> "Il n'y a pas de version pour Linux!?";
 
-translate(en, faq, a3) -> "In the first incoming folder which has enough free space. You can define these folders in the <i>Settings</i> tab. Usually one folder is common.";
-translate(fr, faq, a3) -> "Dans le premier dossier de destination qui a assez d'espace libre. Les dossiers de destination sont définis dans l'onglet <i>Paramètres</i>. En général un seul dossier est suffisant.";
+translate(en, faq, a3) -> "A Linux version will come soon after the final 1.0 Windows release.";
+translate(fr, faq, a3) -> "Une version Linux sera disponible après la sortie de la version 1.0 sous Windows.";
 
-translate(en, faq, q4) -> "There is no Linux version!?";
-translate(fr, faq, q4) -> "Il n'y a pas de version pour Linux!?";
+translate(en, faq, q4) -> "There is no Mac OS X version!?";
+translate(fr, faq, q4) -> "Il n'y a pas de version pour Mac OS X!?";
 
-translate(en, faq, a4) -> "A Linux version will come soon after the final 1.0 Windows release.";
-translate(fr, faq, a4) -> "Une version Linux sera disponible après la sortie de la version 1.0 sous Windows.";
+translate(en, faq, a4) -> "Not yet, we are looking for a Mac OS X programmer.";
+translate(fr, faq, a4) -> "Pas encore. Nous cherchons un développeur Mac OS X";
 
-translate(en, faq, q5) -> "There is no Mac OS X version!?";
-translate(fr, faq, q5) -> "Il n'y a pas de version pour Mac OS X!?";
+translate(en, faq, q5) -> "Can I configure Aybabtu to start automatically when my computer starting?";
+translate(fr, faq, q5) -> "Est-il possible de configurer Aybabtu pour qu'il démarre automatiquement au démarrage de la machine?";
 
-translate(en, faq, a5) -> "Not yet, we are looking for a Mac OS X programmer.";
-translate(fr, faq, a5) -> "Pas encore. Nous cherchons un développeur Mac OS X";
-
-translate(en, faq, q6) -> "Can I configure Aybabtu to start automatically when my computer starting?";
-translate(fr, faq, q6) -> "Est-il possible de configurer Aybabtu pour qu'il démarre automatiquement au démarrage de la machine?";
-
-translate(en, faq, a6) -> "<i>Windows 7</i> : Go to <i>Control Panel</i> &gt; <i>Administrative Tools</i> &gt; <i>Services</i> . Open the properties of <i>Aybabtu Core</i> and set the <i>Statup type</i> from <i>Manual</i> to <i>Automatic</i>.";
-translate(fr, faq, a6) -> "<i>Windows 7</i> : Allez dans <i>Panneau de configuration</i> > <i>Outils d'administrations</i> &gt; <i>Services</i>. Ouvrir la fenêtre de propriétés de <i>Aybabtu Core</i> et définir le <i>Type de Démarrage</i> à <i>Automatique</i>.";
+translate(en, faq, a5) -> "<i>Windows 7</i> : Go to <i>Control Panel</i> &gt; <i>Administrative Tools</i> &gt; <i>Services</i> . Open the properties of <i>Aybabtu Core</i> and set the <i>Statup type</i> from <i>Manual</i> to <i>Automatic</i>.";
+translate(fr, faq, a5) -> "<i>Windows 7</i> : Allez dans <i>Panneau de configuration</i> > <i>Outils d'administrations</i> &gt; <i>Services</i>. Ouvrir la fenêtre de propriétés de <i>Aybabtu Core</i> et définir le <i>Type de Démarrage</i> à <i>Automatique</i>.";
 
 %%%%%%%%%%
 
