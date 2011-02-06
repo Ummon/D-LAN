@@ -32,7 +32,7 @@ QSharedPointer<ICoreConnection> Builder::newCoreConnection()
   */
 CoreStatus Builder::StartCore()
 {
-   CoreController::StartCore();
+   return CoreController::StartCore();
 }
 
 /**

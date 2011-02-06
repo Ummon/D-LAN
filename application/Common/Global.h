@@ -25,9 +25,10 @@ namespace Common
 {
    class Global
    {
-      static const QString APPLICATION_FOLDER_NAME;
-
    public:
+      /**
+        * Exception which can give a message shoulg inherit from this class.
+        */
       class MessageException
       {
       public:
@@ -52,8 +53,10 @@ namespace Common
       static QString cleanDirPath(const QString& path);
 
       enum DataFolderType { ROAMING = 0, LOCAL = 1 };
+
    private:
       static QString dataFolders[2];
+
    public:
       class UnableToGetFolder {};
       static QString getDataFolder(DataFolderType type, bool create = true);

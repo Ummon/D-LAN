@@ -192,18 +192,10 @@ Hash Hash::fromStr(const QString& str)
   * To create hash from row data.
   */
 
-Hasher::Hasher()
+Hasher::Hasher() :
+   cryptographicHash(QCryptographicHash::Sha1)
 {
    this->reset();
-}
-
-/**
-  * May be called right after the constructor or the 'reset()' method.
-  * @param salt Must be 16 bytes for Hash::HASH_SIZE = 28 or 32 and 32 bytes for Hash::HASH_SIZE = 48 or 64.
-  */
-void Hasher::addSalt(const char* salt)
-{
-   Blake::AddSalt(&this->state, (const Blake::BitSequence*)salt);
 }
 
 /**
@@ -212,14 +204,7 @@ void Hasher::addSalt(const char* salt)
   */
 void Hasher::addPredefinedSalt()
 {
-   static const char salt16[] = {
-      0xe4, 0x91, 0x51, 0xb1,
-      0xdd, 0x2a, 0x45, 0xa7,
-      0x30, 0x89, 0x64, 0x88,
-      0x81, 0x15, 0x9a, 0x4f
-   };
-
-   static const char salt32[] = {
+   static const char salt[] = {
       0xba, 0xe5, 0x4d, 0xf2,
       0xab, 0x84, 0xb5, 0xce,
       0xf9, 0x9a, 0x6c, 0x78,
@@ -230,10 +215,7 @@ void Hasher::addPredefinedSalt()
       0x90, 0x96, 0x10, 0xef
    };
 
-   if (Hash::HASH_SIZE == 28 || Hash::HASH_SIZE == 32)
-      this->addSalt(salt16);
-   else
-      this->addSalt(salt32);
+   this->cryptographicHash.addData(salt, sizeof(salt));
 }
 
 /**
@@ -241,24 +223,25 @@ void Hasher::addPredefinedSalt()
   */
 void Hasher::addData(const char* data, int size)
 {
-   Blake::Update(&this->state, (const Blake::BitSequence*)data, 8 * size);
+   this->cryptographicHash.addData(data, size);
 }
 
 Hash Hasher::getResult()
 {
    Hash result;
-   Blake::Final(&this->state, (Blake::BitSequence*)result.data->hash);
+   memcpy(result.data->hash, this->cryptographicHash.result().constData(), Hash::HASH_SIZE);
    return result;
 }
 
 void Hasher::reset()
 {
-   Blake::Init(&this->state, Hash::HASH_SIZE * 8);
+   this->cryptographicHash.reset();
 }
 
 Common::Hash Hasher::hash(const QString& str)
 {
    const QByteArray data = str.toUtf8();
+
    Hasher hasher;
    hasher.addData(data.constData(), data.size());
    return hasher.getResult();

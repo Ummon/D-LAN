@@ -23,7 +23,8 @@
 
 namespace FM
 {
-   const int FILE_CACHE_VERSION = 2;
+   // 2 -> 3 : BLAKE -> Sha-1
+   const int FILE_CACHE_VERSION = 3;
 }
 
 #endif

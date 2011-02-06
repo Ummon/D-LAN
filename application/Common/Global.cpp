@@ -39,12 +39,6 @@ using namespace Common;
   * Some generic global functions.
   */
 
-#ifdef Q_OS_WIN32
-   const QString Global::APPLICATION_FOLDER_NAME("Aybabtu");
-#else
-   const QString Global::APPLICATION_FOLDER_NAME(".aybabtu");
-#endif
-
 Global::UnableToSetTempDirException::UnableToSetTempDirException(const QString& dir) :
    errorMessage(QString("Unable to create the temporary directory %1").arg(dir))
 {
@@ -124,7 +118,10 @@ QString Global::formatByteSize(qint64 bytes, int precision)
    return QString();
 }
 
-
+/**
+  * Return the remaining free space for the given path.
+  * TODO : Linux
+  */
 qint64 Global::availableDiskSpace(const QString& path)
 {
 #ifdef Q_OS_WIN32
@@ -139,13 +136,12 @@ qint64 Global::availableDiskSpace(const QString& path)
    return space.QuadPart;
 #endif
 
-   // TODO : Linux
    return std::numeric_limits<qint64>::max();
 }
 
 /**
-  * TODO : Linux
   * Rename a file, if 'newFile' already exists, it will be replaced by 'existingFile'.
+  * TODO : Linux
   * @remarks Qt doesn't offer any way to replace a file by an other in one operation.
   * @return false if the rename didn't work.
   */
@@ -167,7 +163,7 @@ QString Global::cleanDirPath(const QString& path)
    return QDir::cleanPath(path).append('/');
 }
 
-QString Global::dataFolders[2];
+QString Global::dataFolders[2]; // The two folders (roaming and local), see DataFolderType enum.
 
 /**
   * Returns the absolute path to the aybabtu roaming data folder.
@@ -306,6 +302,7 @@ bool Global::recursiveDeleteDirectory(const QString& dir)
 /**
   * Create a directory into the temp directory and set as the current one.
   * For testing purpose.
+  * @exception UnableToSetTempDirException
   */
 QString Global::setCurrentDirToTemp(const QString& dirname)
 {
@@ -320,4 +317,3 @@ QString Global::setCurrentDirToTemp(const QString& dirname)
    QDir::setCurrent(dir.absolutePath());
    return dir.absolutePath();
 }
-

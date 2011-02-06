@@ -33,7 +33,7 @@
   *  <roaming data folder> : Where settings are put.
   *  <local data folder> : Where logs, download queue, and files cache are put.
   */
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
 #ifdef DEBUG
    new_progname = argv[0];

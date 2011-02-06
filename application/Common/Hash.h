@@ -26,13 +26,7 @@
 #include <QString>
 #include <QByteArray>
 #include <QDataStream>
-
-namespace Blake
-{
-   extern "C" {
-      #include <Libs/blake/blake_opt.h>
-   }
-}
+#include <QCryptographicHash>
 
 #include <Libs/MersenneTwister.h>
 
@@ -49,8 +43,7 @@ namespace Common
       static MTRand mtrand;
 
    public:
-      // HASH_SIZE can be 28, 32, 48 or 64 bytes.
-      static const int HASH_SIZE = 28;
+      static const int HASH_SIZE = 20;
 
       Hash();
       Hash(const Hash& h);
@@ -146,7 +139,6 @@ namespace Common
    {
    public:
       Hasher();
-      void addSalt(const char* salt);
       void addPredefinedSalt();
       void addData(const char*, int size);
       Hash getResult();
@@ -156,7 +148,7 @@ namespace Common
       static Common::Hash hashWithSalt(const QString& str);
 
    private:
-      Blake::hashState state;
+      QCryptographicHash cryptographicHash;
    };
 }
 

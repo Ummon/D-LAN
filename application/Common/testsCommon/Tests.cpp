@@ -168,9 +168,7 @@ void Tests::generateAHash()
       0x34, 0xa7, 0x38, 0x37,
       0xd4, 0x22, 0xf7, 0xab,
       0xa2, 0x74, 0x0d, 0x84,
-      0x09, 0xac, 0x60, 0xdf,
-      0x34, 0x41, 0xa8, 0x12,
-      0x0e, 0xca, 0x3b, 0x83
+      0x09, 0xac, 0x60, 0xdf
    };
    QByteArray byteArray(array, Hash::HASH_SIZE);
 
@@ -194,7 +192,7 @@ void Tests::generateAHash()
 
 void Tests::buildAnHashFromAString()
 {
-   QString str("12d733783b6f34a2637e3f83732afd422f7aba2b740d8409ac60dfd3");
+   QString str("2d73736f34a73837d422f7aba2740d8409ac60df");
    Hash h = Hash::fromStr(str);
    QCOMPARE(h.toStr(), str);
 }
@@ -206,12 +204,10 @@ void Tests::compareTwoHash()
       0x34, 0xa7, 0x38, 0x37,
       0xd4, 0x22, 0xf7, 0xab,
       0xa2, 0x74, 0x0d, 0x84,
-      0x09, 0xac, 0x60, 0xdf,
-      0x34, 0x41, 0xa8, 0x12,
-      0x0e, 0xca, 0x3b, 0x83
+      0x09, 0xac, 0x60, 0xdf
    };
    QByteArray byteArray(array, Hash::HASH_SIZE);
-   QString str("2d73736f34a73837d422f7aba2740d8409ac60df3441a8120eca3b83");
+   QString str("2d73736f34a73837d422f7aba2740d8409ac60df");
 
    Hash h1 = Hash::fromStr(str);
    Hash h2(byteArray);
@@ -273,12 +269,10 @@ void Tests::messageHeader()
       0x34, 0xa7, 0x38, 0x37,
       0xd4, 0x22, 0xf7, 0xab,
       0xa2, 0x74, 0x0d, 0x84,
-      0x09, 0xac, 0x60, 0xdf,
-      0x34, 0x41, 0xa8, 0x12,
-      0x0e, 0xca, 0x3b, 0x83
+      0x09, 0xac, 0x60, 0xdf
    };
 
-   const QString peerID("2d73736f34a73837d422f7aba2740d8409ac60df3441a8120eca3b83");
+   const QString peerID("2d73736f34a73837d422f7aba2740d8409ac60df");
 
    Network::MessageHeader<Network::CoreMessageType> header = Network::readHeader<Network::CoreMessageType>(data);
    qDebug() << header.toStr();
@@ -303,8 +297,8 @@ void Tests::readAndWriteWithZeroCopyStreamQIODevice()
    QFile file(filePath);
    file.remove();
 
-   Hash hash1 = Hash::fromStr("3178e82063eb9399667a3fd13c5ad856db40189977bf9c40f3e03b42");
-   Hash hash2 = Hash::fromStr("c5bacce0dca8c6a48f3b60d758c7bc9ee1ced3b423d6f7835877c65a");
+   Hash hash1 = Hash::fromStr("2c583d414e4a9eb956228209b367e48f59078a4b");
+   Hash hash2 = Hash::fromStr("5c9c3741bded231f84b8a8200eaf3e30a9c0a951");
 
    qDebug() << "hash1 : " << hash1.toStr();
    qDebug() << "hash2 : " << hash2.toStr();

@@ -23,6 +23,12 @@
 
 namespace Common
 {
+#ifdef Q_OS_WIN32
+   const QString APPLICATION_FOLDER_NAME("Aybabtu");
+#else
+   const QString APPLICATION_FOLDER_NAME(".aybabtu");
+#endif
+
    const QString LOG_FOLDER_NAME("log");
 
 // Some files are saved as text format in debug and as binary in release.

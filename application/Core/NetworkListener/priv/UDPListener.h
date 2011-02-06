@@ -49,7 +49,9 @@ namespace NL
       // The size max of an UDP datagram : 2^16.
       // Usually the size of an UDP datagram is smaller, see 'Protos::CoreSettings::max_udp_datagram_size'.
       static const int BUFFER_SIZE = 65536;
-      static const quint32 PROTOCOL_VERSION = 2;
+
+      // 2 -> 3 : BLAKE -> Sha-1
+      static const quint32 PROTOCOL_VERSION = 3;
 
    public:
       UDPListener(

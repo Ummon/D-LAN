@@ -301,6 +301,8 @@ void DownloadsModel::newState(const Protos::GUI::State& state)
          if (!(statusToFilter & STATUS_ERROR))
             indexToInsert << i;
          break;
+
+      case Protos::GUI::State_Download_Status_DELETED:; // We don't care about deleted entries.
       }
    }
 

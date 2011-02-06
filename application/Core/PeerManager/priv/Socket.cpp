@@ -134,7 +134,7 @@ void Socket::send(Common::Network::CoreMessageType type, const google::protobuf:
       Common::Network::writeHeader(*this->socket, header);
       Common::ZeroCopyOutputStreamQIODevice outputStream(this->socket);
       if (!message.SerializeToZeroCopyStream(&outputStream))
-         L_WARN(QString("Unable to send %1").arg(Common::ProtoHelper::getDebugStr(message)));
+         L_WARN(QString("Unable to send\n%1").arg(Common::ProtoHelper::getDebugStr(message)));
    }
 
    if (this->socket->state() == QAbstractSocket::ConnectedState)
