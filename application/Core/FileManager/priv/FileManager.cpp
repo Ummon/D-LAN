@@ -77,7 +77,8 @@ FileManager::~FileManager()
    L_DEBU("~FileManager : Stopping the file updater..");
    this->fileUpdater.stop();
    this->cacheChanged = true;
-   this->persistCacheToFile();
+   this->forcePersistCacheToFile();
+   this->timerPersistCache.stop();
    this->cache.disconnect(this);
    L_DEBU("FileManager deleted");
 }

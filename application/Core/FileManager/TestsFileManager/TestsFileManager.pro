@@ -23,6 +23,7 @@ INCLUDEPATH += . \
     .. \
     ../../.. # For the 'Common' component.
 TEMPLATE = app
+
 SOURCES += main.cpp \
     Tests.cpp \
     ../../../Protos/common.pb.cc \

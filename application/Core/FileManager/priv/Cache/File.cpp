@@ -318,8 +318,8 @@ qint64 File::read(char* buffer, qint64 offset, int maxBytesToRead)
   * This method can be called from an another thread than the main one. For example,
   * from 'FileUpdated' thread.
   * @param n number of hashes to compute, 0 if we want to compute all the hashes.
-  * @return Return true if all the hashes as been computed.
-  * @exception FileNotFoundException
+  * @return Return true if all the hashes as been computed or the computation has been aborted.
+  * @exceptions FileNotFoundException
   */
 bool File::computeHashes(int n)
 {
@@ -328,7 +328,7 @@ bool File::computeHashes(int n)
    if (this->toStopHashing)
    {
       this->toStopHashing = false;
-      return false;
+      return true;
    }
 
    this->hashing = true;
@@ -343,7 +343,7 @@ bool File::computeHashes(int n)
       this->toStopHashing = false;
       this->hashing = false;
       L_WARN(QString("Unable to open this file : %1").arg(this->getFullPath()));
-      return false;
+      return true;
    }
 
    // Skip the already known full hashes.
@@ -378,7 +378,7 @@ bool File::computeHashes(int n)
          this->hashingStopped.wakeOne();
          this->toStopHashing = false;
          this->hashing = false;
-         return false;
+         return true;
       }
 
       int bytesReadChunk = 0;

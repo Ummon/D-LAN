@@ -302,6 +302,7 @@ void FileUpdater::run()
 void FileUpdater::computeSomeHashes()
 {
    QMutexLocker locker(&this->hashingMutex);
+
    if (this->toStopHashing)
    {
       this->toStopHashing = false;
