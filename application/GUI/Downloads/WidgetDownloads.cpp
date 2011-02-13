@@ -59,7 +59,7 @@ void DownloadsDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opt
          progressBarOption.text = "Paused";
          break;
       default:
-         progressBarOption.text = "Error";
+         progressBarOption.text = "Waiting..";
          break;
       }
 
