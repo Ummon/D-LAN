@@ -44,7 +44,7 @@ namespace PM
       /**
         * If there is an error during the streaming, it can reported by calling this method.
         */
-      virtual void setStatus(SocketFinishedStatus status) = 0;
+      virtual void setStatus(ISocket::FinishedStatus status) = 0;
 
    signals:
       void result(const Protos::Core::GetChunkResult& result);

@@ -58,7 +58,7 @@ quint64 Uploader::getID() const
 
 Common::Hash Uploader::getPeerID() const
 {
-   return this->socket->getPeerID();
+   return this->socket->getRemotePeerID();
 }
 
 int Uploader::getProgress() const

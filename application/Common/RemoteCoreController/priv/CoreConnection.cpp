@@ -35,10 +35,11 @@ using namespace RCC;
 CoreConnection::CoreConnection() :
    coreStatus(NOT_RUNNING), currentHostLookupID(-1), authenticated(false)
 {
-   connect(&this->socket, SIGNAL(readyRead()), this, SLOT(dataReceived()));
-   connect(&this->socket, SIGNAL(connected()), this, SLOT(connected()));
-   connect(&this->socket, SIGNAL(disconnected()), this, SLOT(disconnected()));
-   connect(&this->socket, SIGNAL(stateChanged(QAbstractSocket::SocketState)), this, SLOT(stateChanged(QAbstractSocket::SocketState)));
+   connect(this->getQSocket(), SIGNAL(connected()), this, SLOT(connected()));
+   connect(this->getQSocket(), SIGNAL(disconnected()), this, SLOT(disconnected()));
+   connect(this->getQSocket(), SIGNAL(stateChanged(QAbstractSocket::SocketState)), this, SLOT(stateChanged(QAbstractSocket::SocketState)));
+
+   this->startListening();
 }
 
 CoreConnection::~CoreConnection()
@@ -69,19 +70,19 @@ void CoreConnection::connectToCore(const QString& address, quint16 port, Common:
 
 Common::Hash CoreConnection::getOurID() const
 {
-   return this->ourID;
+   return this->getOurID();
 }
 
 void CoreConnection::sendChatMessage(const QString& message)
 {
    Protos::GUI::ChatMessage chatMessage;
    Common::ProtoHelper::setStr(chatMessage, &Protos::GUI::ChatMessage::set_message, message);
-   this->send(Common::Network::GUI_CHAT_MESSAGE, chatMessage);
+   this->send(Common::MessageHeader::GUI_CHAT_MESSAGE, chatMessage);
 }
 
 void CoreConnection::setCoreSettings(const Protos::GUI::CoreSettings settings)
 {
-   this->send(Common::Network::GUI_SETTINGS, settings);
+   this->send(Common::MessageHeader::GUI_SETTINGS, settings);
 }
 
 QSharedPointer<IBrowseResult> CoreConnection::browse(const Common::Hash& peerID)
@@ -117,7 +118,7 @@ void CoreConnection::download(const Common::Hash& peerID, const Protos::Common::
    Protos::GUI::Download downloadMessage;
    downloadMessage.mutable_peer_id()->set_hash(peerID.getData(), Common::Hash::HASH_SIZE);
    downloadMessage.mutable_entry()->CopyFrom(entry);
-   this->send(Common::Network::GUI_DOWNLOAD, downloadMessage);
+   this->send(Common::MessageHeader::GUI_DOWNLOAD, downloadMessage);
 }
 
 void CoreConnection::download(const Common::Hash& peerID, const Protos::Common::Entry& entry, const Common::Hash& sharedFolderID, const QString& relativePath)
@@ -127,7 +128,7 @@ void CoreConnection::download(const Common::Hash& peerID, const Protos::Common::
    downloadMessage.mutable_entry()->CopyFrom(entry);
    downloadMessage.mutable_destination_directory_id()->set_hash(sharedFolderID.getData(), Common::Hash::HASH_SIZE);
    Common::ProtoHelper::setStr(downloadMessage, &Protos::GUI::Download::set_destination_path, relativePath);
-   this->send(Common::Network::GUI_DOWNLOAD, downloadMessage);
+   this->send(Common::MessageHeader::GUI_DOWNLOAD, downloadMessage);
 }
 
 void CoreConnection::cancelDownloads(const QList<quint64>& downloadIDs)
@@ -135,7 +136,7 @@ void CoreConnection::cancelDownloads(const QList<quint64>& downloadIDs)
    Protos::GUI::CancelDownloads cancelDownloadsMessage;
    for(QListIterator<quint64> i(downloadIDs); i.hasNext();)
       cancelDownloadsMessage.add_id(i.next());
-   this->send(Common::Network::GUI_CANCEL_DOWNLOADS, cancelDownloadsMessage);
+   this->send(Common::MessageHeader::GUI_CANCEL_DOWNLOADS, cancelDownloadsMessage);
 }
 
 void CoreConnection::moveDownloads(quint64 downloadIDRef, const QList<quint64>& downloadIDs, bool moveBefore)
@@ -145,22 +146,12 @@ void CoreConnection::moveDownloads(quint64 downloadIDRef, const QList<quint64>& 
    moveDownloadsMessage.set_move_before(moveBefore);
    for(QListIterator<quint64> i(downloadIDs); i.hasNext();)
       moveDownloadsMessage.add_id_to_move(i.next());
-   this->send(Common::Network::GUI_MOVE_DOWNLOADS, moveDownloadsMessage);
+   this->send(Common::MessageHeader::GUI_MOVE_DOWNLOADS, moveDownloadsMessage);
 }
 
 void CoreConnection::refresh()
 {
-   this->send(Common::Network::GUI_REFRESH);
-}
-
-bool CoreConnection::isConnected()
-{
-   return this->socket.state() == QAbstractSocket::ConnectedState;
-}
-
-bool CoreConnection::isLocal()
-{
-   return this->socket.peerAddress() == QHostAddress::LocalHost || this->socket.peerAddress() == QHostAddress::LocalHostIPv6;
+   this->send(Common::MessageHeader::GUI_REFRESH);
 }
 
 bool CoreConnection::isRunningAsSubProcess()
@@ -168,9 +159,129 @@ bool CoreConnection::isRunningAsSubProcess()
    return this->coreStatus == RUNNING_AS_SUB_PROCESS;
 }
 
+void CoreConnection::onNewMessage(Common::MessageHeader::MessageType type, const google::protobuf::Message& message)
+{
+   if (type != Common::MessageHeader::GUI_AUTHENTICATION_RESULT && !this->authenticated)
+      return;
+
+   switch (type)
+   {
+   case Common::MessageHeader::GUI_AUTHENTICATION_RESULT:
+      {
+         const Protos::GUI::AuthenticationResult& authenticationResult = static_cast<const Protos::GUI::AuthenticationResult&>(message);
+
+         switch (authenticationResult.status())
+         {
+         case Protos::GUI::AuthenticationResult_Status_BAD_PASSWORD:
+            L_USER("Authentication failed, bad password");
+            break;
+
+         case Protos::GUI::AuthenticationResult_Status_ERROR:
+            L_USER("Authentication failed");
+            break;
+
+         case Protos::GUI::AuthenticationResult_Status_OK:
+            this->authenticated = true;
+            L_USER("Connected to the core");
+            emit coreConnected();
+            break;
+         }
+      }
+      break;
+
+   case Common::MessageHeader::GUI_STATE:
+      {
+         const Protos::GUI::State& state = static_cast<const Protos::GUI::State&>(message);
+
+         emit newState(state);
+      }
+      break;
+
+   case Common::MessageHeader::GUI_EVENT_CHAT_MESSAGE:
+      {
+         const Protos::GUI::EventChatMessage& eventChatMessage = static_cast<const Protos::GUI::EventChatMessage&>(message);
+
+         Common::Hash peerID(eventChatMessage.peer_id().hash().data());
+         emit newChatMessage(peerID, Common::ProtoHelper::getStr(eventChatMessage, &Protos::GUI::EventChatMessage::message));
+      }
+      break;
+
+   case Common::MessageHeader::GUI_EVENT_LOG_MESSAGE:
+      {
+         const Protos::GUI::EventLogMessage& eventLogMessage = static_cast<const Protos::GUI::EventLogMessage&>(message);
+
+         QDateTime dateTime = QDateTime::fromMSecsSinceEpoch(eventLogMessage.time());
+         QString message = Common::ProtoHelper::getStr(eventLogMessage, &Protos::GUI::EventLogMessage::message);
+         LM::Severity severity = LM::Severity(eventLogMessage.severity());
+         emit newLogMessage(LM::Builder::newEntry(dateTime, severity, message));
+      }
+      break;
+
+   case Common::MessageHeader::GUI_SEARCH_TAG:
+      {
+         const Protos::GUI::Tag& tagMessage = static_cast<const Protos::GUI::Tag&>(message);
+
+         while (!this->searchResultsWithoutTag.isEmpty())
+         {
+            QWeakPointer<SearchResult> searchResult = this->searchResultsWithoutTag.takeFirst();
+            if (!searchResult.isNull())
+            {
+               searchResult.data()->setTag(tagMessage.tag());
+               break;
+            }
+         }
+      }
+      break;
+
+   case Common::MessageHeader::GUI_SEARCH_RESULT:
+      {
+         const Protos::Common::FindResult& findResultMessage = static_cast<const Protos::Common::FindResult&>(message);
+
+         emit searchResult(findResultMessage);
+      }
+      break;
+
+   case Common::MessageHeader::GUI_BROWSE_TAG:
+      {
+         const Protos::GUI::Tag& tagMessage = static_cast<const Protos::GUI::Tag&>(message);
+
+         while (!this->browseResultsWithoutTag.isEmpty())
+         {
+            QWeakPointer<BrowseResult> browseResult = this->browseResultsWithoutTag.takeFirst();
+            if (!browseResult.isNull())
+            {
+               browseResult.data()->setTag(tagMessage.tag());
+               break;
+            }
+         }
+      }
+      break;
+
+   case Common::MessageHeader::GUI_BROWSE_RESULT:
+      {
+         const Protos::GUI::BrowseResult& browseResultMessage = static_cast<const Protos::GUI::BrowseResult&>(message);
+
+         emit browseResult(browseResultMessage);
+      }
+      break;
+
+   default:;
+   }
+}
+
+void CoreConnection::logDebug(const QString& message)
+{
+   L_DEBU(message);
+}
+
+void CoreConnection::logError(const QString& message)
+{
+   L_WARN(message);
+}
+
 void CoreConnection::connectToCoreSlot()
 {
-   this->socket.close();
+   this->getQSocket()->close();
 
    if (this->currentHostLookupID != -1)
       QHostInfo::abortHostLookup(this->currentHostLookupID);
@@ -198,29 +309,6 @@ void CoreConnection::stateChanged(QAbstractSocket::SocketState socketState)
    }
 }
 
-void CoreConnection::dataReceived()
-{
-   while (!this->socket.atEnd())
-   {
-      if (this->currentHeader.isNull() && this->socket.bytesAvailable() >= Common::Network::HEADER_SIZE)
-      {
-         this->currentHeader = Common::Network::readHeader<Common::Network::GUIMessageType>(this->socket);
-         this->ourID = this->currentHeader.senderID;
-
-         L_DEBU(QString("Data received : %1").arg(this->currentHeader.toStr()));
-      }
-
-      if (!this->currentHeader.isNull() && this->socket.bytesAvailable() >= this->currentHeader.size)
-      {
-         if (!this->readMessage())
-            L_WARN(QString("Unable to read message : %1").arg(this->currentHeader.toStr()));
-         this->currentHeader.setNull();
-      }
-      else
-         return;
-   }
-}
-
 void CoreConnection::adressResolved(QHostInfo hostInfo)
 {
    this->currentHostLookupID = -1;
@@ -242,14 +330,14 @@ void CoreConnection::connected()
    {
       this->authenticated = true;
       L_USER("Connected to the core");
-      L_DEBU(QString("Core address : %1").arg(this->socket.peerAddress().toString()));
+      L_DEBU(QString("Core address : %1").arg(this->getQSocket()->peerAddress().toString()));
       emit coreConnected();      
    }
    else
    {
       Protos::GUI::Authentication authMessage;
       authMessage.mutable_password()->set_hash(this->currentPassword.getData(), Common::Hash::HASH_SIZE);
-      this->send(Common::Network::GUI_AUTHENTICATION, authMessage);
+      this->send(Common::MessageHeader::GUI_AUTHENTICATION, authMessage);
    }
 }
 
@@ -286,196 +374,5 @@ void CoreConnection::tryToConnectToTheNextAddress()
       this->coreStatus = CoreController::StartCore();
 #endif
 
-   this->socket.connectToHost(address, this->currentPort);
-}
-
-void CoreConnection::send(Common::Network::GUIMessageType type)
-{
-   const Common::Network::MessageHeader<Common::Network::GUIMessageType> header(type, 0, this->ourID);
-   L_DEBU(QString("CoreConnection::send : %1").arg(header.toStr()));
-   Common::Network::writeHeader(this->socket, header);
-
-   if (this->socket.state() == QAbstractSocket::ConnectedState)
-      this->socket.flush();
-}
-
-void CoreConnection::send(Common::Network::GUIMessageType type, const google::protobuf::Message& message)
-{
-   const Common::Network::MessageHeader<Common::Network::GUIMessageType> header(type, message.ByteSize(), this->ourID);
-
-   L_DEBU(QString("CoreConnection::send : %1\n%2").arg(header.toStr()).arg(Common::ProtoHelper::getDebugStr(message)));
-
-   {
-      Common::Network::writeHeader(this->socket, header);
-      Common::ZeroCopyOutputStreamQIODevice outputStream(&this->socket);
-      message.SerializeToZeroCopyStream(&outputStream);
-   }
-
-   if (this->socket.state() == QAbstractSocket::ConnectedState)
-      this->socket.flush();
-}
-
-bool CoreConnection::readMessage()
-{
-   bool readOK = false;
-
-   switch (this->currentHeader.type)
-   {
-   case Common::Network::GUI_AUTHENTICATION_RESULT:
-      {
-         Protos::GUI::AuthenticationResult authenticationResult;
-
-         // This scope (and the others ones below) is here to force the input stream to read all the bytes.
-         // See Common::ZeroCopyInputStreamQIODevice::~ZeroCopyInputStreamQIODevice.
-         {
-            Common::ZeroCopyInputStreamQIODevice inputStream(&this->socket);
-            readOK = authenticationResult.ParseFromBoundedZeroCopyStream(&inputStream, this->currentHeader.size);
-         }
-
-         if (readOK)
-         {
-            switch (authenticationResult.status())
-            {
-            case Protos::GUI::AuthenticationResult_Status_BAD_PASSWORD:
-               L_USER("Authentication failed, bad password");
-               break;
-
-            case Protos::GUI::AuthenticationResult_Status_ERROR:
-               L_USER("Authentication failed");
-               break;
-
-            case Protos::GUI::AuthenticationResult_Status_OK:
-               this->authenticated = true;
-               L_USER("Connected to the core");
-               emit coreConnected();
-               break;
-            }
-         }
-      }
-      break;
-
-   case Common::Network::GUI_STATE:
-      {
-         Protos::GUI::State state;
-
-         {
-            Common::ZeroCopyInputStreamQIODevice inputStream(&this->socket);
-            readOK = state.ParseFromBoundedZeroCopyStream(&inputStream, this->currentHeader.size);
-         }
-
-         if (readOK && this->authenticated)
-            emit newState(state);
-      }
-      break;
-
-   case Common::Network::GUI_EVENT_CHAT_MESSAGE:
-      {
-         Protos::GUI::EventChatMessage eventChatMessage;
-
-         {
-            Common::ZeroCopyInputStreamQIODevice inputStream(&this->socket);
-            readOK = eventChatMessage.ParseFromBoundedZeroCopyStream(&inputStream, this->currentHeader.size);
-         }
-
-         if (readOK && this->authenticated)
-         {
-            Common::Hash peerID(eventChatMessage.peer_id().hash().data());
-            emit newChatMessage(peerID, Common::ProtoHelper::getStr(eventChatMessage, &Protos::GUI::EventChatMessage::message));
-         }
-      }
-      break;
-
-   case Common::Network::GUI_EVENT_LOG_MESSAGE:
-      {
-         Protos::GUI::EventLogMessage eventLogMessage;
-
-         {
-            Common::ZeroCopyInputStreamQIODevice inputStream(&this->socket);
-            readOK = eventLogMessage.ParseFromBoundedZeroCopyStream(&inputStream, this->currentHeader.size);
-         }
-
-         if (readOK && this->authenticated)
-         {
-            QDateTime dateTime = QDateTime::fromMSecsSinceEpoch(eventLogMessage.time());
-            QString message = Common::ProtoHelper::getStr(eventLogMessage, &Protos::GUI::EventLogMessage::message);
-            LM::Severity severity = LM::Severity(eventLogMessage.severity());
-            emit newLogMessage(LM::Builder::newEntry(dateTime, severity, message));
-         }
-      }
-      break;
-
-   case Common::Network::GUI_SEARCH_TAG:
-      {
-         Protos::GUI::Tag tagMessage;
-         {
-            Common::ZeroCopyInputStreamQIODevice inputStream(&this->socket);
-            readOK = tagMessage.ParseFromBoundedZeroCopyStream(&inputStream, this->currentHeader.size);
-         }
-
-         if (readOK && this->authenticated)
-            while (!this->searchResultsWithoutTag.isEmpty())
-            {
-               QWeakPointer<SearchResult> searchResult = this->searchResultsWithoutTag.takeFirst();
-               if (!searchResult.isNull())
-               {
-                  searchResult.data()->setTag(tagMessage.tag());
-                  break;
-               }
-            }
-
-      }
-      break;
-
-   case Common::Network::GUI_SEARCH_RESULT:
-      {
-         Protos::Common::FindResult findResultMessage;
-         {
-            Common::ZeroCopyInputStreamQIODevice inputStream(&this->socket);
-            readOK = findResultMessage.ParseFromBoundedZeroCopyStream(&inputStream, this->currentHeader.size);
-         }
-
-         if (readOK && this->authenticated)
-            emit searchResult(findResultMessage);
-      }
-      break;
-
-   case Common::Network::GUI_BROWSE_TAG:
-      {
-         Protos::GUI::Tag tagMessage;
-         {
-            Common::ZeroCopyInputStreamQIODevice inputStream(&this->socket);
-            readOK = tagMessage.ParseFromBoundedZeroCopyStream(&inputStream, this->currentHeader.size);
-         }
-
-         if (readOK && this->authenticated)
-            while (!this->browseResultsWithoutTag.isEmpty())
-            {
-               QWeakPointer<BrowseResult> browseResult = this->browseResultsWithoutTag.takeFirst();
-               if (!browseResult.isNull())
-               {
-                  browseResult.data()->setTag(tagMessage.tag());
-                  break;
-               }
-            }
-      }
-      break;
-
-   case Common::Network::GUI_BROWSE_RESULT:
-      {
-         Protos::GUI::BrowseResult browseResultMessage;
-         {
-            Common::ZeroCopyInputStreamQIODevice inputStream(&this->socket);
-            readOK = browseResultMessage.ParseFromBoundedZeroCopyStream(&inputStream, this->currentHeader.size);
-         }
-
-         if (readOK && this->authenticated)
-            emit browseResult(browseResultMessage);
-      }
-      break;
-
-   default:
-      readOK = false;
-   }
-
-   return readOK;
+   this->getQSocket()->connectToHost(address, this->currentPort);
 }

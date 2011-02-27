@@ -6,6 +6,9 @@
 
 package Protos.Common;
 
+message Null {
+}
+
 message Error {
    optional string message = 1;
 }

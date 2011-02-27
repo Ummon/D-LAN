@@ -28,9 +28,10 @@
 
 #include <google/protobuf/message.h>
 
-#include <Common/Network.h>
 #include <Common/Hash.h>
 #include <Common/Uncopyable.h>
+#include <Common/Network/MessageHeader.h>
+#include <Common/Network/MessageSocket.h>
 #include <Core/FileManager/IFileManager.h>
 #include <Core/FileManager/IChunk.h>
 
@@ -40,71 +41,56 @@ namespace PM
 {
    class PeerManager;
 
-   class Socket : public QObject, public ISocket, Common::Uncopyable
+   class Socket : public Common::MessageSocket, public ISocket
    {
       Q_OBJECT
    public:
-      Socket(PeerManager* peerManager, QSharedPointer<FM::IFileManager> fileManager, const Common::Hash& peerID, QTcpSocket* socket);
-      Socket(PeerManager* peerManager, QSharedPointer<FM::IFileManager> fileManager, const Common::Hash& peerID, const QHostAddress& address, quint16 port);
+      Socket(PeerManager* peerManager, QSharedPointer<FM::IFileManager> fileManager, const Common::Hash& remotePeerID, QTcpSocket* socket);
+      Socket(PeerManager* peerManager, QSharedPointer<FM::IFileManager> fileManager, const Common::Hash& remotePeerID, const QHostAddress& address, quint16 port);
       ~Socket();
 
       QAbstractSocket* getQSocket() const;
+      Common::Hash getRemotePeerID() const;
 
-      Common::Hash getPeerID() const;
+      void send(MessageHeader::MessageType type, const google::protobuf::Message& message);
 
-      void startListening();
-      void stopListening();
-
-      bool isIdle() const;
+      bool isActive() const;
       void setActive();
 
-      void send(Common::Network::CoreMessageType type, const google::protobuf::Message& message);
-      void finished(SocketFinishedStatus status = SFS_OK);
+      void finished(FinishedStatus status = SFS_OK);
 
    public slots:
       void close();
 
    signals:
-      void newMessage(Common::Network::CoreMessageType type, const google::protobuf::Message& message);
-      void getIdle(Socket*);
-      void closed(Socket*);
       void getChunk(QSharedPointer<FM::IChunk>, int, Socket*);
+      void becomeIdle(Socket*);
+      void closed(Socket*);
 
-   private slots:
-      void dataReceived();
+   protected:
+      void onNewMessage(Common::MessageHeader::MessageType type, const google::protobuf::Message& message);
+      void onNewDataReceived();
+      void logDebug(const QString& message);
+      void logError(const QString& message);
+
+   protected slots:
       void disconnected();
 
+   private slots:
       void nextAskedHash(Common::Hash hash);
 
    private:
-      bool readMessage();
-      bool readProtoMessage(google::protobuf::Message& message);
+      void initUnactiveTimer();
 
-      void initActivityTimer();
-
-      PeerManager* peerManager;
       QSharedPointer<FM::IFileManager> fileManager;
-      const Common::Hash peerID;
 
-      Common::Network::MessageHeader<Common::Network::CoreMessageType> currentHeader;
-
-      QTcpSocket* socket;
-
-      QTimer activityTimer; ///< When there is no activity during some time the socket is automatically closed.
-      bool idle;
-      bool listening;
+      bool active;
+      QTimer inactiveTimer;
+      int nbError;
 
       // Used when asking hashes to the fileManager.
       QSharedPointer<FM::IGetHashesResult> currentHashesResult;
       int nbHash;
-
-      int nbError;
-
-#ifdef DEBUG
-      // To identify the sockets in debug mode.
-      int num;
-      static int currentNum;
-#endif
    };
 }
 

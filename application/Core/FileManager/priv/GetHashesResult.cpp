@@ -52,7 +52,7 @@ Protos::Core::GetHashesResult GetHashesResult::start()
    Protos::Core::GetHashesResult result;
 
    this->file = this->cache.getFile(this->fileEntry);
-   QList< QSharedPointer<Chunk> > chunks = this->cache.getChunks(this->fileEntry);
+   QList< QSharedPointer<Chunk> > chunks = this->file->getChunks();
 
    if (chunks.isEmpty())
    {

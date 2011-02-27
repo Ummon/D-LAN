@@ -24,20 +24,20 @@
 #include <Protos/core_protocol.pb.h>
 
 #include <Common/Hash.h>
-#include <Common/Network.h>
+#include <Common/Network/MessageSocket.h>
 
 namespace PM
 {
-   enum SocketFinishedStatus
-   {
-      SFS_OK,
-      SFS_ERROR,
-      SFS_TO_CLOSE
-   };
-
    class ISocket
    {
    public:
+      enum FinishedStatus
+      {
+         SFS_OK,
+         SFS_ERROR,
+         SFS_TO_CLOSE
+      };
+
       virtual ~ISocket() {}
 
       /**
@@ -48,13 +48,13 @@ namespace PM
       /**
         * Returns the ID of the remote peer on which the socket is connected.
         */
-      virtual Common::Hash getPeerID() const = 0;
+      virtual Common::Hash getRemotePeerID() const = 0;
 
       /**
         * Used by uploader to tell when an upload is finished.
         * TODO : should be removed and only be called by the peerManager (as with downloads).
         */
-      virtual void finished(SocketFinishedStatus status = SFS_OK) = 0;
+      virtual void finished(FinishedStatus status = SFS_OK) = 0;
    };
 }
 

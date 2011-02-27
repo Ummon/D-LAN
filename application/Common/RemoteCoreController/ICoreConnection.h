@@ -26,6 +26,7 @@
 #include <Protos/gui_protocol.pb.h>
 
 #include <Common/Hash.h>
+#include <Common/Network/MessageSocket.h>
 #include <Common/LogManager/IEntry.h>
 
 namespace RCC
@@ -38,7 +39,7 @@ namespace RCC
      * The signal 'newState' is periodically emitted, for exemple each second. It can be emitted right after certain action, like 'setCoreSettings(..)'.
      * See the prototype file "application/Protos/gui_protocol.proto" for more information.
      */
-   class ICoreConnection : public QObject
+   class ICoreConnection : public Common::MessageSocket
    {
       Q_OBJECT
    public:
@@ -61,8 +62,6 @@ namespace RCC
         * When the connection is ready, the signal 'coreConnected' is emitted.
         */
       virtual void connectToCore(const QString& address, quint16 port, Common::Hash password) = 0;
-
-      virtual Common::Hash getOurID() const = 0;
 
       virtual void sendChatMessage(const QString& message) = 0;
 
@@ -123,10 +122,6 @@ namespace RCC
         * Ask to emit the signal 'newState'.
         */
       virtual void refresh() = 0;
-
-      virtual bool isConnected() = 0;
-
-      virtual bool isLocal() = 0;
 
       virtual bool isRunningAsSubProcess() = 0;
 

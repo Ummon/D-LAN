@@ -36,7 +36,7 @@ void SearchResult::start()
 {
    Protos::GUI::Search search;
    Common::ProtoHelper::setStr(search, &Protos::GUI::Search::set_pattern, this->terms);
-   this->coreConnection->send(Common::Network::GUI_SEARCH, search);
+   this->coreConnection->send(Common::MessageHeader::GUI_SEARCH, search);
 }
 
 void SearchResult::setTag(quint64 tag)

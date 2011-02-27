@@ -24,32 +24,32 @@ using namespace PM;
 #include <priv/Log.h>
 
 GetChunkResult::GetChunkResult(const Protos::Core::GetChunk& chunk, QSharedPointer<Socket> socket) :
-   IGetChunkResult(SETTINGS.get<quint32>("socket_timeout")), chunk(chunk), socket(socket), status(SFS_OK)
+   IGetChunkResult(SETTINGS.get<quint32>("socket_timeout")), chunk(chunk), socket(socket), status(ISocket::SFS_OK)
 {
 }
 
 GetChunkResult::~GetChunkResult()
 {
    // We must disconnect because 'this->socket->finished' can read some data and emit 'newMessage'.
-   disconnect(this->socket.data(), SIGNAL(newMessage(Common::Network::CoreMessageType, const google::protobuf::Message&)), this, SLOT(newMessage(Common::Network::CoreMessageType, const google::protobuf::Message&)));
-   this->socket->finished(this->isTimeouted() ? SFS_ERROR : this->status);
+   disconnect(this->socket.data(), SIGNAL(newMessage(Common::MessageHeader::MessageType, const google::protobuf::Message&)), this, SLOT(newMessage(Common::MessageHeader::MessageType, const google::protobuf::Message&)));
+   this->socket->finished(this->isTimeouted() ? ISocket::SFS_ERROR : this->status);
 }
 
 void GetChunkResult::start()
 {
-   connect(this->socket.data(), SIGNAL(newMessage(Common::Network::CoreMessageType, const google::protobuf::Message&)), this, SLOT(newMessage(Common::Network::CoreMessageType, const google::protobuf::Message&)), Qt::DirectConnection);
-   socket->send(Common::Network::CORE_GET_CHUNK, this->chunk);
+   connect(this->socket.data(), SIGNAL(newMessage(Common::MessageHeader::MessageType, const google::protobuf::Message&)), this, SLOT(newMessage(Common::MessageHeader::MessageType, const google::protobuf::Message&)), Qt::DirectConnection);
+   socket->send(Common::MessageHeader::CORE_GET_CHUNK, this->chunk);
    this->startTimer();
 }
 
-void GetChunkResult::setStatus(SocketFinishedStatus status)
+void GetChunkResult::setStatus(ISocket::FinishedStatus status)
 {
    this->status = status;
 }
 
-void GetChunkResult::newMessage(Common::Network::CoreMessageType type, const google::protobuf::Message& message)
+void GetChunkResult::newMessage(Common::MessageHeader::MessageType type, const google::protobuf::Message& message)
 {
-   if (type != Common::Network::CORE_GET_CHUNK_RESULT)
+   if (type != Common::MessageHeader::CORE_GET_CHUNK_RESULT)
       return;
 
    this->stopTimer();
@@ -64,8 +64,8 @@ void GetChunkResult::newMessage(Common::Network::CoreMessageType type, const goo
    }
    else
    {
-      this->status = SFS_ERROR;
+      this->status = ISocket::SFS_ERROR;
       // Segfault, maybe we cannot disconnect a signal during a call to the connected slot (this method)!?.
-      //disconnect(this->socket.data(), SIGNAL(newMessage(Common::Network::CoreMessageType, const google::protobuf::Message&)), this, SLOT(newMessage(Common::Network::CoreMessageType, const google::protobuf::Message&)));
+      //disconnect(this->socket.data(), SIGNAL(newMessage(Common::MessageHeader::MessageType, const google::protobuf::Message&)), this, SLOT(newMessage(Common::MessageHeader::MessageType, const google::protobuf::Message&)));
    }
 }

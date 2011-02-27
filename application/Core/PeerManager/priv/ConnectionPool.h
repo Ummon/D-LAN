@@ -25,6 +25,7 @@
 #include <QSharedPointer>
 
 #include <Common/Uncopyable.h>
+#include <Common/Network/MessageSocket.h>
 
 #include <Core/FileManager/IFileManager.h>
 #include <Core/FileManager/IChunk.h>
@@ -51,7 +52,7 @@ namespace PM
       void closeAllSocket();
 
    private slots:
-      void socketGetIdle(Socket* socket);
+      void socketBecomeIdle(Socket* socket);
       void socketClosed(Socket* socket);
       void socketGetChunk(QSharedPointer<FM::IChunk> chunk, int offset, Socket* socket);
 

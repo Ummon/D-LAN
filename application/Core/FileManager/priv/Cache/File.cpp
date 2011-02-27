@@ -409,7 +409,7 @@ bool File::computeHashes(int n)
          else
          {
             if (this->chunks[chunkNum]->hasHash())
-               this->cache->onChunkRemoved(this->chunks[chunkNum]); // To remove the chunk from the chunk index (TODO : fin a more elegant way).
+               this->cache->onChunkRemoved(this->chunks[chunkNum]); // To remove the chunk from the chunk index (TODO : find a more elegant way).
 
             this->chunks[chunkNum]->setHash(hasher.getResult());
             this->chunks[chunkNum]->setKnownBytes(bytesReadChunk);
@@ -432,7 +432,7 @@ bool File::computeHashes(int n)
    else
    {
       const int speed = 1000LL * bytesReadTotal / delta;
-      L_DEBU(QString("Hashing speed : %1").arg(Common::Global::formatByteSize(speed)));
+      L_DEBU(QString("Hashing speed : %1/s").arg(Common::Global::formatByteSize(speed)));
    }
 #endif
 

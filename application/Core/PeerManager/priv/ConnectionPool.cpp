@@ -77,7 +77,7 @@ QSharedPointer<Socket> ConnectionPool::getASocket()
    for (QListIterator< QSharedPointer<Socket> > i(this->socketsToPeer); i.hasNext();)
    {
       QSharedPointer<Socket> socket = i.next();
-      if (socket->isIdle())
+      if (!socket->isActive())
       {
          socket->setActive();
          return socket;
@@ -100,7 +100,7 @@ void ConnectionPool::closeAllSocket()
    }
 }
 
-void ConnectionPool::socketGetIdle(Socket* socket)
+void ConnectionPool::socketBecomeIdle(Socket* socket)
 {
    quint32 n = 0;
    QList< QSharedPointer<Socket> > socketsToClose;
@@ -108,7 +108,7 @@ void ConnectionPool::socketGetIdle(Socket* socket)
    for (QListIterator< QSharedPointer<Socket> > i(this->getAllSockets()); i.hasNext();)
    {
      QSharedPointer<Socket> currentSocket = i.next();
-     if (currentSocket.data()->isIdle())
+     if (!currentSocket.data()->isActive())
      {
         n += 1;
         if (n > SETTINGS.get<quint32>("max_number_idle_socket"))
@@ -167,7 +167,7 @@ QSharedPointer<Socket> ConnectionPool::addNewSocket(QSharedPointer<Socket> socke
       break;
    }
 
-   connect(socket.data(), SIGNAL(getIdle(Socket*)), this, SLOT(socketGetIdle(Socket*)));
+   connect(socket.data(), SIGNAL(becomeIdle(Socket*)), this, SLOT(socketBecomeIdle(Socket*)));
    connect(socket.data(), SIGNAL(closed(Socket*)), this, SLOT(socketClosed(Socket*)), Qt::QueuedConnection);
    socket->startListening();
    return socket;

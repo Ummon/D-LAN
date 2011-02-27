@@ -30,7 +30,6 @@
 #include <Protos/common.pb.h>
 
 #include <Common/Timeoutable.h>
-#include <Common/Network.h>
 #include <Common/LogManager/IEntry.h>
 
 #include <ICoreConnection.h>
@@ -42,6 +41,7 @@ namespace RCC
 {
    class BrowseResult;
    class SearchResult;
+
    class CoreConnection : public ICoreConnection
    {
       Q_OBJECT
@@ -69,18 +69,20 @@ namespace RCC
       void moveDownloads(quint64 downloadIDRef, const QList<quint64>& downloadIDs, bool moveBefore = true);
       void refresh();
 
-      bool isConnected();
-      bool isLocal();
       bool isRunningAsSubProcess();
 
    signals:
       void browseResult(const Protos::GUI::BrowseResult& browseResult);
       void searchResult(const Protos::Common::FindResult& findResult);
 
+   protected:
+      void onNewMessage(Common::MessageHeader::MessageType type, const google::protobuf::Message& message);
+      void logDebug(const QString& message);
+      void logError(const QString& message);
+
    private slots:
       void connectToCoreSlot();
       void stateChanged(QAbstractSocket::SocketState socketState);
-      void dataReceived();
       void adressResolved(QHostInfo hostInfo);
       void connected();
       void disconnected();
@@ -91,19 +93,11 @@ namespace RCC
 
       void tryToConnectToTheNextAddress();
 
-      void send(Common::Network::GUIMessageType type);
-      void send(Common::Network::GUIMessageType type, const google::protobuf::Message& message);
-      bool readMessage();
-
       CoreStatus coreStatus;
 
       QString currentAddress;
       quint16 currentPort;
       Common::Hash currentPassword;
-
-      QTcpSocket socket;
-      Common::Hash ourID;
-      Common::Network::MessageHeader<Common::Network::GUIMessageType> currentHeader;
 
       int currentHostLookupID;
 

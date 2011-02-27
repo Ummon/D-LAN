@@ -32,197 +32,224 @@ using namespace PM;
 #include <priv/PeerManager.h>
 #include <priv/Constants.h>
 
-Socket::Socket(PeerManager* peerManager, QSharedPointer<FM::IFileManager> fileManager, const Common::Hash& peerID, QTcpSocket* socket) :
-   peerManager(peerManager), fileManager(fileManager), peerID(peerID), socket(socket), idle(false), listening(false), nbError(0)
+Socket::Socket(PeerManager* peerManager, QSharedPointer<FM::IFileManager> fileManager, const Common::Hash& remotePeerID, QTcpSocket* socket) :
+   MessageSocket(socket, peerManager->getID(), remotePeerID), fileManager(fileManager), active(true), nbError(0)
 {
-#ifdef DEBUG
-   this->num = ++Socket::currentNum;
-   L_DEBU(QString("New Socket[%1] (connection from %2:%3)").arg(this->num).arg(socket->peerAddress().toString()).arg(socket->peerPort()));
-#endif
-
-   this->initActivityTimer();
+   this->initUnactiveTimer();
 }
 
-Socket::Socket(PeerManager* peerManager, QSharedPointer<FM::IFileManager> fileManager, const Common::Hash& peerID, const QHostAddress& address, quint16 port) :
-   peerManager(peerManager), fileManager(fileManager), peerID(peerID), idle(false), listening(false), nbError(0)
-{   
-#ifdef DEBUG
-   this->num = ++Socket::currentNum;
-   L_DEBU(QString("New Socket[%1] (connection to %2:%3)").arg(this->num).arg(address.toString()).arg(port));
-#endif
-
-   this->socket = new QTcpSocket();
-   this->socket->connectToHost(address, port);
-   this->initActivityTimer();
+Socket::Socket(PeerManager* peerManager, QSharedPointer<FM::IFileManager> fileManager, const Common::Hash& remotePeerID, const QHostAddress& address, quint16 port) :
+   MessageSocket(address, port, peerManager->getID(), remotePeerID), fileManager(fileManager), active(true), nbError(0)
+{
+   this->initUnactiveTimer();
 }
 
 Socket::~Socket()
 {
-   L_DEBU(QString("Socket[%1] deleted").arg(this->num));
-   this->socket->deleteLater();
 }
 
 QAbstractSocket* Socket::getQSocket() const
 {
-   return this->socket;
+   return this->MessageSocket::getQSocket();
 }
 
-Common::Hash Socket::getPeerID() const
+Common::Hash Socket::getRemotePeerID() const
 {
-   return this->peerID;
+   return this->MessageSocket::getRemoteID();
 }
 
-void Socket::startListening()
+void Socket::send(MessageHeader::MessageType type, const google::protobuf::Message& message)
 {
-   // To prevent multi listening.
-   if (this->listening)
+   if (!this->isListening())
       return;
-
-   L_DEBU(QString("Socket[%1] starting to listen").arg(this->num));
-
-   this->listening = true;
-
-   if (!this->socket->isValid())
-      this->close();
-   else
-   {
-      connect(this->socket, SIGNAL(readyRead()), this, SLOT(dataReceived()), Qt::DirectConnection);
-      connect(this->socket, SIGNAL(disconnected()), this, SLOT(disconnected()), Qt::DirectConnection);
-      this->dataReceived();
-   }
-}
-
-void Socket::stopListening()
-{
-   L_DEBU(QString("Socket[%1] stopping to listen").arg(this->num));
-
-   disconnect(this->socket, SIGNAL(readyRead()), this, SLOT(dataReceived()));
-   disconnect(this->socket, SIGNAL(disconnected()), this, SLOT(disconnected()));
-
-   this->listening = false;
-}
-
-bool Socket::isIdle() const
-{
-   return this->idle;
-}
-
-void Socket::setActive()
-{
-   this->activityTimer.start(); // Some transactions (like GET_HASHES) can go for a long time, we have to restart the timer even for an active connection.
-
-   if (!this->idle)
-      return;
-
-   L_DEBU(QString("Socket[%1] set to active >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>").arg(this->num));
-
-   this->idle = false;
-}
-
-void Socket::send(Common::Network::CoreMessageType type, const google::protobuf::Message& message)
-{
-   if (!this->listening)
-      return;
-
-   Common::Network::MessageHeader<Common::Network::CoreMessageType> header(type, message.ByteSize(), this->peerManager->getID());
 
    this->setActive();
 
-   L_DEBU(QString("Socket[%1]::send : %2 to %3\n%4").arg(this->num).arg(header.toStr()).arg(this->peerID.toStr()).arg(Common::ProtoHelper::getDebugStr(message)));
-
-   {
-      Common::Network::writeHeader(*this->socket, header);
-      Common::ZeroCopyOutputStreamQIODevice outputStream(this->socket);
-      if (!message.SerializeToZeroCopyStream(&outputStream))
-         L_WARN(QString("Unable to send\n%1").arg(Common::ProtoHelper::getDebugStr(message)));
-   }
-
-   if (this->socket->state() == QAbstractSocket::ConnectedState)
-      this->socket->flush();
+   this->MessageSocket::send(type, message);
 }
 
-void Socket::dataReceived()
+/**
+  * Is the socket currently been used?
+  */
+bool Socket::isActive() const
 {
-   while (!this->socket->atEnd() && this->listening)
-   {
-      this->setActive();
-
-      if (this->currentHeader.isNull() && this->socket->bytesAvailable() >= Common::Network::HEADER_SIZE)
-      {
-         this->currentHeader = Common::Network::readHeader<Common::Network::CoreMessageType>(*this->socket);
-
-         if (this->currentHeader.senderID != this->peerID)
-         {
-            L_DEBU(QString("Socket[%1]: Peer ID from message (%2) doesn't match the known peer ID (%3)").arg(this->num).arg(this->currentHeader.senderID.toStr()).arg(this->peerID.toStr()));
-            this->finished(SFS_ERROR);
-            this->currentHeader.setNull();
-            return;
-         }
-      }
-
-      if (!this->currentHeader.isNull() && this->socket->bytesAvailable() >= this->currentHeader.size)
-      {
-         if (!this->readMessage())
-         {
-            L_DEBU("Can't read the message -> finished");
-            this->finished(SFS_ERROR);
-         }
-         this->currentHeader.setNull();
-      }
-      else
-         return;
-   }
+   return this->active;
 }
 
-void Socket::finished(SocketFinishedStatus status)
+/**
+  * Change the status of the socket to active. Automatically called when a message is sent.
+  */
+void Socket::setActive()
 {
-   if (this->idle)
+   this->inactiveTimer.start(); // Some transactions (like GET_HASHES) can go for a long time, we have to restart the timer even for an active connection.
+
+   if (this->active)
       return;
 
-   L_DEBU(QString("Socket[%1] set to idle%2<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<").arg(this->num).arg(status == SFS_ERROR ? " with error " : " "));
+   MESSAGE_SOCKET_LOG_DEBUG(QString("Socket[%1] set to active >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>").arg(this->num));
+
+   this->active = true;
+}
+
+/**
+  * Mus be called when a transaction is terminated.
+  */
+void Socket::finished(FinishedStatus status)
+{
+   if (!this->active)
+      return;
+
+   MESSAGE_SOCKET_LOG_DEBUG(QString("Socket[%1] set to idle%2<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<").arg(this->num).arg(status == SFS_ERROR ? " with error " : " "));
 
    if (status == SFS_TO_CLOSE)
    {
-      L_WARN("Socket forced to close..");
+      MESSAGE_SOCKET_LOG_ERROR("Socket forced to close..");
       this->close();
       return;
    }
    else if (status == SFS_ERROR && ++this->nbError > 5) // TODO : -> constant
    {
-      L_WARN("Socket with too many error, closed");
+      MESSAGE_SOCKET_LOG_ERROR("Socket with too many error, closed");
       this->close();
       return;
    }
-   else if (!this->socket->isValid())
+   else if (!this->getQSocket()->isValid())
    {
-      L_WARN("Socket non-valid, closed");
+      MESSAGE_SOCKET_LOG_ERROR("Socket non-valid, closed");
       this->close();
       return;
    }
 
-   this->socket->flush();
-   this->idle = true;
+   this->getQSocket()->flush();
+   this->active = false;
 
    this->startListening();
-   emit getIdle(this);
+   emit becomeIdle(this);
 }
 
-/**
-  * Close remove from the connection pool.
-  */
 void Socket::close()
 {
-   L_DEBU(QString("Socket[%1] closing..").arg(this->num));
+   this->active = false;
 
-   this->socket->disconnect(this);
+   this->stopListening();
 
-   this->idle = true;
    emit closed(this);
 }
 
+/**
+  * @return 'true' if the message has been handled properly otherwise return 'false'.
+  */
+void Socket::onNewMessage(Common::MessageHeader::MessageType type, const google::protobuf::Message& message)
+{
+   switch (type)
+   {
+   case Common::MessageHeader::CORE_GET_ENTRIES:
+      {
+         const Protos::Core::GetEntries& getEntries = static_cast<const Protos::Core::GetEntries&>(message);
+
+         Protos::Core::GetEntriesResult result;
+         for (int i = 0; i < getEntries.dirs().entry_size(); i++)
+            result.add_entries()->CopyFrom(this->fileManager->getEntries(getEntries.dirs().entry(i)));
+
+         // Add the root directories if asked.
+         if (getEntries.dirs().entry_size() == 0 || getEntries.get_roots())
+            result.add_entries()->CopyFrom(this->fileManager->getEntries());
+
+         this->send(Common::MessageHeader::CORE_GET_ENTRIES_RESULT, result);
+
+         this->finished();
+      }
+      break;
+
+   case Common::MessageHeader::CORE_GET_ENTRIES_RESULT:
+      this->finished();
+      break;
+
+   case Common::MessageHeader::CORE_GET_HASHES:
+      {
+         const Protos::Core::GetHashes& getHashes = static_cast<const Protos::Core::GetHashes&>(message);
+
+         this->currentHashesResult = this->fileManager->getHashes(getHashes.file());
+         connect(this->currentHashesResult.data(), SIGNAL(nextHash(Common::Hash)), this, SLOT(nextAskedHash(Common::Hash)), Qt::QueuedConnection);
+         Protos::Core::GetHashesResult res = this->currentHashesResult->start();
+
+         this->nbHash = res.nb_hash();
+
+         this->send(Common::MessageHeader::CORE_GET_HASHES_RESULT, res);
+
+         if (res.status() != Protos::Core::GetHashesResult_Status_OK)
+         {
+            this->currentHashesResult.clear();
+            this->finished();
+         }
+      }
+      break;
+
+   case Common::MessageHeader::CORE_GET_HASHES_RESULT:
+      {
+         const Protos::Core::GetHashesResult& getHashesResult = static_cast<const Protos::Core::GetHashesResult&>(message);
+         this->nbHash = getHashesResult.nb_hash();
+      }
+      break;
+
+   case Common::MessageHeader::CORE_HASH:
+      {
+         if (--this->nbHash == 0)
+            this->finished();
+      }
+      break;
+
+   case Common::MessageHeader::CORE_GET_CHUNK:
+      {
+         const Protos::Core::GetChunk& getChunkMessage = static_cast<const Protos::Core::GetChunk&>(message);
+
+         const Common::Hash hash(getChunkMessage.chunk().hash().data());
+         QSharedPointer<FM::IChunk> chunk = this->fileManager->getChunk(hash);
+         if (chunk.isNull())
+         {
+            Protos::Core::GetChunkResult result;
+            result.set_status(Protos::Core::GetChunkResult_Status_DONT_HAVE);
+            this->send(Common::MessageHeader::CORE_GET_CHUNK_RESULT, result);
+            this->finished();
+
+            L_WARN(QString("GET_CHUNK : Chunk unknown : %1").arg(hash.toStr()));
+         }
+         else
+         {
+            Protos::Core::GetChunkResult result;
+            result.set_status(Protos::Core::GetChunkResult_Status_OK);
+            result.set_chunk_size(chunk->getKnownBytes());
+            this->send(Common::MessageHeader::CORE_GET_CHUNK_RESULT, result);
+
+            this->stopListening();
+
+            emit getChunk(chunk, getChunkMessage.offset(), this);
+         }
+      }
+      break;
+
+   default:; // Do nothing
+   }
+}
+
+void Socket::onNewDataReceived()
+{
+   this->setActive();
+}
+
+void Socket::logDebug(const QString& message)
+{
+   L_DEBU(message);
+}
+
+void Socket::logError(const QString& message)
+{
+   L_WARN(message);
+}
+
 void Socket::disconnected()
-{   
-   L_DEBU(QString("Socket[%1] disconnected").arg(this->num));
+{
+   this->MessageSocket::disconnected();
    this->close();
 }
 
@@ -234,7 +261,7 @@ void Socket::nextAskedHash(Common::Hash hash)
 {
    Protos::Common::Hash hashProto;
    hashProto.set_hash(hash.getData(), Common::Hash::HASH_SIZE);
-   this->send(Common::Network::CORE_HASH, hashProto);
+   this->send(Common::MessageHeader::CORE_HASH, hashProto);
 
    if (--this->nbHash == 0)
    {
@@ -243,170 +270,10 @@ void Socket::nextAskedHash(Common::Hash hash)
    }
 }
 
-/**
-  * @return 'true' if the message has been handled properly otherwise return 'false'.
-  */
-bool Socket::readMessage()
+void Socket::initUnactiveTimer()
 {
-   bool readOK = false;
-
-   switch (this->currentHeader.type)
-   {
-   case Common::Network::CORE_GET_ENTRIES:
-      {
-         Protos::Core::GetEntries getEntries;
-         if (readOK = this->readProtoMessage(getEntries))
-         {
-            Protos::Core::GetEntriesResult result;
-            for (int i = 0; i < getEntries.dirs().entry_size(); i++)
-               result.add_entries()->CopyFrom(this->fileManager->getEntries(getEntries.dirs().entry(i)));
-
-            // Add the root directories if asked.
-            if (getEntries.dirs().entry_size() == 0 || getEntries.get_roots())
-               result.add_entries()->CopyFrom(this->fileManager->getEntries());
-
-            this->send(Common::Network::CORE_GET_ENTRIES_RESULT, result);
-         }
-
-         this->finished();
-      }
-      break;
-
-   case Common::Network::CORE_GET_ENTRIES_RESULT:
-      {
-         Protos::Core::GetEntriesResult getEntriesResult;
-         readOK = this->readProtoMessage(getEntriesResult);
-
-         this->finished();
-
-         if (readOK)
-         {
-            emit newMessage(this->currentHeader.type, getEntriesResult);
-         }
-      }
-      break;
-
-   case Common::Network::CORE_GET_HASHES:
-      {
-         Protos::Core::GetHashes getHashes;
-         if (readOK = this->readProtoMessage(getHashes))
-         {
-            this->currentHashesResult = this->fileManager->getHashes(getHashes.file());
-            connect(this->currentHashesResult.data(), SIGNAL(nextHash(Common::Hash)), this, SLOT(nextAskedHash(Common::Hash)), Qt::QueuedConnection);
-            Protos::Core::GetHashesResult res = this->currentHashesResult->start();
-
-            this->nbHash = res.nb_hash();
-
-            this->send(Common::Network::CORE_GET_HASHES_RESULT, res);
-
-            if (res.status() != Protos::Core::GetHashesResult_Status_OK)
-            {
-               this->currentHashesResult.clear();
-               this->finished();
-            }
-         }
-      }
-      break;
-
-   case Common::Network::CORE_GET_HASHES_RESULT:
-      {
-         Protos::Core::GetHashesResult getHashesResult;
-         if (readOK = this->readProtoMessage(getHashesResult))
-         {
-            this->nbHash = getHashesResult.nb_hash();
-            emit newMessage(this->currentHeader.type, getHashesResult);
-         }
-      }
-      break;
-
-   case Common::Network::CORE_HASH:
-      {
-         Protos::Common::Hash hash;
-         if (readOK = this->readProtoMessage(hash))
-         {
-            if (--this->nbHash == 0)
-               this->finished();
-
-            emit newMessage(this->currentHeader.type, hash);
-         }
-      }
-      break;
-
-   case Common::Network::CORE_GET_CHUNK:
-      {
-         Protos::Core::GetChunk getChunkMessage;
-         if (readOK = this->readProtoMessage(getChunkMessage))
-         {
-            const Common::Hash hash(getChunkMessage.chunk().hash().data());
-            QSharedPointer<FM::IChunk> chunk = this->fileManager->getChunk(hash);
-            if (chunk.isNull())
-            {
-               Protos::Core::GetChunkResult result;
-               result.set_status(Protos::Core::GetChunkResult_Status_DONT_HAVE);
-               this->send(Common::Network::CORE_GET_CHUNK_RESULT, result);
-               this->finished();
-
-               L_WARN(QString("GET_CHUNK : Chunk unknown : %1").arg(hash.toStr()));
-            }
-            else
-            {
-               Protos::Core::GetChunkResult result;
-               result.set_status(Protos::Core::GetChunkResult_Status_OK);
-               result.set_chunk_size(chunk->getKnownBytes());
-               this->send(Common::Network::CORE_GET_CHUNK_RESULT, result);
-
-               this->stopListening();
-
-               emit getChunk(chunk, getChunkMessage.offset(), this);
-            }
-         }
-      }
-      break;
-
-   case Common::Network::CORE_GET_CHUNK_RESULT:
-      {
-         Protos::Core::GetChunkResult getChunkResult;
-         if (readOK = this->readProtoMessage(getChunkResult))
-            emit newMessage(this->currentHeader.type, getChunkResult);
-      }
-      break;
-
-   default:
-      readOK = false;
-   }
-
-   return readOK;
+   this->inactiveTimer.setSingleShot(true);
+   this->inactiveTimer.setInterval(SETTINGS.get<quint32>("idle_socket_timeout"));
+   connect(&this->inactiveTimer, SIGNAL(timeout()), this, SLOT(close()));
+   this->inactiveTimer.start();
 }
-
-// TODO : use the same fonction in the remote connection. (or factor all this shit).
-bool Socket::readProtoMessage(google::protobuf::Message& message)
-{
-   bool readOK = false;
-   {
-      Common::ZeroCopyInputStreamQIODevice inputStream(this->socket);
-      readOK = message.ParseFromBoundedZeroCopyStream(&inputStream, this->currentHeader.size);
-   }
-
-   if (readOK)
-   {
-      L_DEBU(QString("Socket[%1]: Data received from %2, %3\n%4")
-         .arg(this->num)
-         .arg(this->socket->peerAddress().toString())
-         .arg(this->currentHeader.toStr())
-         .arg(Common::ProtoHelper::getDebugStr(message))
-      );
-   }
-   return readOK;
-}
-
-void Socket::initActivityTimer()
-{
-   this->activityTimer.setSingleShot(true);
-   this->activityTimer.setInterval(SETTINGS.get<quint32>("idle_socket_timeout"));
-   connect(&this->activityTimer, SIGNAL(timeout()), this, SLOT(close()));
-   this->activityTimer.start();
-}
-
-#ifdef DEBUG
-   int Socket::currentNum(0);
-#endif

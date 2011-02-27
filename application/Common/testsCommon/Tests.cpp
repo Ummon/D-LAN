@@ -27,7 +27,7 @@
 #include <Protos/common.pb.h>
 #include <Protos/core_settings.pb.h>
 
-#include <Network.h>
+#include <Network/MessageHeader.h>
 #include <PersistentData.h>
 #include <Settings.h>
 #include <Global.h>
@@ -262,7 +262,7 @@ void Tests::hasher()
 
 void Tests::messageHeader()
 {
-   const char data[Network::HEADER_SIZE] = {
+   const char data[MessageHeader::HEADER_SIZE] = {
       0x00, 0x00, 0x00, 0x01,
       0x00, 0x00, 0x00, 0x2a,
       0x2d, 0x73, 0x73, 0x6f,
@@ -274,21 +274,21 @@ void Tests::messageHeader()
 
    const QString peerID("2d73736f34a73837d422f7aba2740d8409ac60df");
 
-   Network::MessageHeader<Network::CoreMessageType> header = Network::readHeader<Network::CoreMessageType>(data);
+   MessageHeader header = MessageHeader::readHeader(data);
    qDebug() << header.toStr();
 
    QVERIFY(!header.isNull());
-   QCOMPARE(header.type, Network::CORE_IM_ALIVE);
-   QCOMPARE(header.size, 42u);
-   QCOMPARE(header.senderID.toStr(), peerID);
+   QCOMPARE(header.getType(), MessageHeader::CORE_IM_ALIVE);
+   QCOMPARE(header.getSize(), 42u);
+   QCOMPARE(header.getSenderID().toStr(), peerID);
 
    // We use a larger buffer to check if the last four bytes has been alterate.
-   char buffer[Network::HEADER_SIZE + 4];
+   char buffer[MessageHeader::HEADER_SIZE + 4];
    memset(buffer, 0, sizeof(buffer));
 
-   Network::writeHeader<Network::CoreMessageType>(buffer, header);
-   QVERIFY(qstrncmp(data, buffer, Network::HEADER_SIZE) == 0);
-   QVERIFY(qstrncmp(buffer + Network::HEADER_SIZE, "\0\0\0\0", 4) == 0);
+   MessageHeader::writeHeader(buffer, header);
+   QVERIFY(qstrncmp(data, buffer, MessageHeader::HEADER_SIZE) == 0);
+   QVERIFY(qstrncmp(buffer + MessageHeader::HEADER_SIZE, "\0\0\0\0", 4) == 0);
 }
 
 void Tests::readAndWriteWithZeroCopyStreamQIODevice()

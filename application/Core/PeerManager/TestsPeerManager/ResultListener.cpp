@@ -24,7 +24,6 @@ using namespace PM;
 #include <QString>
 
 #include <Common/ProtoHelper.h>
-#include <Common/Network.h>
 
 #include <ISocket.h>
 
@@ -102,12 +101,12 @@ void ResultListener::stream(QSharedPointer<PM::ISocket> socket)
    QByteArray data = socket->getQSocket()->readAll();
    qDebug() << "ResultListener::stream : " << data;
    QCOMPARE(data, CHUNK_DATA);
-   socket->finished(PM::SFS_OK);
+   socket->finished(Common::MessageSocket::SFS_OK);
    this->streamReceived = true;
 }
 
 void ResultListener::getChunk(QSharedPointer<FM::IChunk> chunk, int offset, QSharedPointer<ISocket> socket)
 {
    socket->getQSocket()->write(CHUNK_DATA);
-   socket->finished(PM::SFS_OK);
+   socket->finished(Common::MessageSocket::SFS_OK);
 }

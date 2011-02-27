@@ -69,7 +69,7 @@ void WidgetChat::sendMessage()
    if (this->ui->txtMessage->text().isEmpty())
       return;
 
-   static_cast<ChatModel*>(this->ui->tblChat->model())->newChatMessage(this->coreConnection->getOurID(), this->ui->txtMessage->text());
+   static_cast<ChatModel*>(this->ui->tblChat->model())->newChatMessage(this->coreConnection->getID(), this->ui->txtMessage->text());
 
    this->coreConnection->sendChatMessage(this->ui->txtMessage->text());
    this->ui->txtMessage->clear();

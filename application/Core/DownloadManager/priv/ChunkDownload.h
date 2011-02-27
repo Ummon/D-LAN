@@ -110,7 +110,7 @@ namespace DM
       QSharedPointer<PM::IGetChunkResult> getChunkResult;
 
       bool downloading;
-      PM::SocketFinishedStatus networkTransferStatus;
+      PM::ISocket::FinishedStatus networkTransferStatus;
 
       Common::TransferRateCalculator& transferRateCalculator;
 

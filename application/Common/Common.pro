@@ -19,20 +19,23 @@ DEFINES += COMMON_LIBRARY
 
 SOURCES += Hash.cpp \
     Global.cpp \
-    Network.cpp \
     ZeroCopyStreamQIODevice.cpp \
     Settings.cpp \
     TransferRateCalculator.cpp \
     ProtoHelper.cpp \
     Timeoutable.cpp \
-    PersistentData.cpp
+    PersistentData.cpp \
+    Network/MessageSocket.cpp \
+    Network/MessageHeader.cpp \
+    ../Protos/gui_protocol.pb.cc \
+    ../Protos/core_protocol.pb.cc \
+    ../Protos/common.pb.cc
 
 HEADERS += Hashes.h \
     Hash.h \
     Constants.h \
     Global.h \
     Uncopyable.h \
-    Network.h \
     ZeroCopyStreamQIODevice.h \
     Settings.h \
     TransferRateCalculator.h \
@@ -41,4 +44,9 @@ HEADERS += Hashes.h \
     Version.h \
     PersistentData.h \
     ../Libs/MersenneTwister.h \
-    SharedDir.h
+    SharedDir.h \
+    Network/MessageSocket.h \
+    Network/MessageHeader.h \
+    ../Protos/gui_protocol.pb.h \
+    ../Protos/core_protocol.pb.h \
+    ../Protos/common.pb.h

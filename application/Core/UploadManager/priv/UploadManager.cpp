@@ -81,7 +81,7 @@ void UploadManager::uploadFinished(bool networkError)
 
    L_DEBU(QString("Upload finished, chunk : %1").arg(uploader->getChunk()->toStr()));
 
-   uploader->getSocket()->finished(networkError ? PM::SFS_ERROR : PM::SFS_OK);
+   uploader->getSocket()->finished(networkError ? PM::ISocket::SFS_ERROR : PM::ISocket::SFS_OK);
    uploader->startTimer(); // Will delay the call to 'deleteUploade'.
 }
 

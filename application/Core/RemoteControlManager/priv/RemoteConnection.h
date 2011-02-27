@@ -32,7 +32,8 @@
 #include <Protos/common.pb.h>
 
 #include <Common/Uncopyable.h>
-#include <Common/Network.h>
+#include <Common/Network/MessageHeader.h>
+#include <Common/Network/MessageSocket.h>
 #include <Common/LogManager/Builder.h>
 #include <Common/LogManager/IEntry.h>
 #include <Common/LogManager/ILogger.h>
@@ -47,7 +48,7 @@
 
 namespace RCM
 {
-   class RemoteConnection : public QObject, Common::Uncopyable
+   class RemoteConnection : public Common::MessageSocket
    {
       Q_OBJECT
    public:
@@ -61,16 +62,24 @@ namespace RCM
       );
       ~RemoteConnection();
 
+      void send(Common::MessageHeader::MessageType type, const google::protobuf::Message& message);
+
       void sendMessageToItself(const QString& message);
 
    signals:
       void deleted(RemoteConnection*);
       void chatMessageSent(const QString&);
 
+   protected:
+      void onNewMessage(Common::MessageHeader::MessageType type, const google::protobuf::Message& message);
+      void logDebug(const QString& message);
+      void logError(const QString& message);
+
+   protected slots:
+      void disconnected();
+
    private slots:
       void refresh();
-      void dataReceived();
-      void disconnected();
 
       void newChatMessage(const Common::Hash& peerID, const Protos::Core::ChatMessage&);
       void searchFound(const Protos::Common::FindResult& result);
@@ -83,8 +92,6 @@ namespace RCM
       void sendBadPasswordResult();
 
    private:
-      bool readMessage();
-      void send(Common::Network::GUIMessageType type, const google::protobuf::Message& message) const;
       void removeGetEntriesResult(const PM::IGetEntriesResult* getEntriesResult);
 
       QSharedPointer<FM::IFileManager> fileManager;
@@ -95,10 +102,7 @@ namespace RCM
 
       QSharedPointer<LM::ILoggerHook> loggerHook;
 
-      QTcpSocket* socket;
       QTimer timerRefresh;
-
-      Common::Network::MessageHeader<Common::Network::GUIMessageType> currentHeader;
 
       QList< QSharedPointer<NL::ISearch> > currentSearches;
       QList< QSharedPointer<PM::IGetEntriesResult> > getEntriesResults;

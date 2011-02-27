@@ -30,7 +30,6 @@ using namespace PM;
 #include <Common/PersistentData.h>
 #include <Common/Constants.h>
 #include <Common/Global.h>
-#include <Common/Network.h>
 #include <Common/ZeroCopyStreamQIODevice.h>
 #include <Common/Settings.h>
 
@@ -250,6 +249,7 @@ void Tests::askForHashes()
    {
       QFile file("sharedDirs/peer2/big.bin");
       file.open(QIODevice::WriteOnly);
+      file.resize(NUMBER_OF_CHUNK * SETTINGS.get<quint32>("chunk_size"));
 
       // To have four different hashes.
       for (quint32 i = 0; i < NUMBER_OF_CHUNK; i++)
@@ -261,7 +261,7 @@ void Tests::askForHashes()
 
    QElapsedTimer timer;
 
-   // Wait till the peer#2 has begun to read 'big.bin'.
+   // Wait until the peer#2 has begun to read 'big.bin'.
    timer.start();
    while (this->fileManagers[1]->getAmount() < 32 * 1024)
    {

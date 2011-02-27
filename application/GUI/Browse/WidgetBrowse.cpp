@@ -58,7 +58,7 @@ WidgetBrowse::WidgetBrowse(QSharedPointer<RCC::ICoreConnection> coreConnection, 
    this->ui->treeView->setContextMenuPolicy(Qt::CustomContextMenu);
    connect(this->ui->treeView, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(displayContextMenuDownload(const QPoint&)));
 
-   if (this->coreConnection->getOurID() == this->peerID)
+   if (this->coreConnection->getID() == this->peerID)
       this->ui->butDownload->hide();
    else
       connect(this->ui->butDownload, SIGNAL(clicked()), this, SLOT(download()));
@@ -86,7 +86,7 @@ void WidgetBrowse::refresh()
 void WidgetBrowse::displayContextMenuDownload(const QPoint& point)
 {
    QPoint globalPosition = this->ui->treeView->mapToGlobal(point);
-   if (this->coreConnection->getOurID() == this->peerID)
+   if (this->coreConnection->getID() == this->peerID)
    {
       if (this->coreConnection->isLocal())
       {

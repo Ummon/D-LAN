@@ -22,9 +22,9 @@ using namespace PM;
 #include <Protos/common.pb.h>
 
 #include <Common/Hash.h>
-#include <Common/Network.h>
 #include <Common/PersistentData.h>
 #include <Common/Settings.h>
+#include <Common/Network/MessageHeader.h>
 
 #include <Priv/Constants.h>
 
@@ -188,7 +188,7 @@ void PeerManager::onGetChunk(QSharedPointer<FM::IChunk> chunk, int offset, QShar
    {
       Protos::Core::GetChunkResult mess;
       mess.set_status(Protos::Core::GetChunkResult_Status_ERROR_UNKNOWN);
-      socket->send(Common::Network::CORE_GET_CHUNK_RESULT, mess);
+      socket->send(Common::MessageHeader::CORE_GET_CHUNK_RESULT, mess);
       socket->finished();
       L_ERRO("PeerManager::onGetChunk(..) : no slot connected to the signal 'getChunk(..)'");
       return;
@@ -202,10 +202,10 @@ void PeerManager::dataReceived(QTcpSocket* tcpSocket)
    if (!tcpSocket)
       tcpSocket = dynamic_cast<QTcpSocket*>(this->sender());
 
-   if (tcpSocket->bytesAvailable() >= Common::Network::HEADER_SIZE)
+   if (tcpSocket->bytesAvailable() >= Common::MessageHeader::HEADER_SIZE)
    {
-      const Common::Network::MessageHeader<Common::Network::CoreMessageType>& header = Common::Network::readHeader<Common::Network::CoreMessageType>(*tcpSocket, false);
-      Peer* p = this->getPeer_(header.senderID);
+      const Common::MessageHeader header = Common::MessageHeader::readHeader(*tcpSocket, false);
+      Peer* p = this->getPeer_(header.getSenderID());
 
       this->removeFromPending(tcpSocket);
       disconnect(tcpSocket, SIGNAL(readyRead()), 0, 0);
