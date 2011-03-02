@@ -28,8 +28,8 @@ namespace Common
 {
    class TransferRateCalculator : Common::Uncopyable
    {
-      static int const PERIOD = 1000; // [ms].
-      static int const NB_VALUE = 10;
+      static int const PERIOD = 2000; // [ms].
+      static int const NB_VALUE = 20;
       static int const DELTA_T = PERIOD / NB_VALUE;
 
    public:
