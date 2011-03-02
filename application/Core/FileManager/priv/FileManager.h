@@ -92,7 +92,7 @@ namespace FM
       void setCacheChanged();
 
    private:
-      LOG_INIT("FileManager");
+      LOG_INIT_H("FileManager");
 
       const quint32 CHUNK_SIZE;
 

@@ -26,6 +26,8 @@ using namespace NL;
 #include <priv/Chat.h>
 #include <priv/Search.h>
 
+LOG_INIT_CPP(NetworkListener);
+
 NetworkListener::NetworkListener(
    QSharedPointer<FM::IFileManager> fileManager,
    QSharedPointer<PM::IPeerManager> peerManager,

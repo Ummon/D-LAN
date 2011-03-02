@@ -91,7 +91,7 @@ namespace DM
    private:
       bool isEntryAlreadyQueued(const Protos::Common::Entry& localEntry, const Common::Hash& peerSource);
 
-      LOG_INIT("DownloadManager");
+      LOG_INIT_H("DownloadManager");
 
       const int NUMBER_OF_DOWNLOADER;
 

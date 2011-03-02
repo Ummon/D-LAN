@@ -52,7 +52,7 @@ namespace UM
       void deleteUpload();
 
    private:
-      LOG_INIT("UploadManager");
+      LOG_INIT_H("UploadManager");
 
       QSharedPointer<PM::IPeerManager> peerManager;
 

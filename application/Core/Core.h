@@ -54,7 +54,7 @@ namespace CoreSpace
          google::protobuf::ShutdownProtobufLibrary();
       } } cleaner;
 
-      LOG_INIT("Core");
+      LOG_INIT_H("Core");
 
    protected:
       QSharedPointer<FM::IFileManager> fileManager;

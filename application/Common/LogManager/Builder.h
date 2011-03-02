@@ -58,6 +58,10 @@ namespace LM
 #endif
 
 // Insert this macro on the top of a class to initialize (and delete) a logger Log::logger, see FileManager.h for example.
-#define LOG_INIT(NAME) struct LogInitializer { LogInitializer() { Log::logger = LM::Builder::newLogger(NAME); } ~LogInitializer() { Log::logger.clear(); } } logInitializer;
+#define LOG_INIT_H(NAME) \
+   static int logNbRef; \
+   struct LogInitializer { LogInitializer() { logNbRef++; Log::logger = LM::Builder::newLogger(NAME); } ~LogInitializer() { if (--logNbRef == 0) Log::logger.clear(); } } logInitializer;
+
+#define LOG_INIT_CPP(CLASS) int CLASS::logNbRef(0);
 
 #endif

@@ -46,6 +46,8 @@ using namespace FM;
 #include <priv/Cache/SharedDirectory.h>
 #include <priv/Cache/Chunk.h>
 
+LOG_INIT_CPP(FileManager);
+
 FileManager::FileManager() :
    CHUNK_SIZE(SETTINGS.get<quint32>("chunk_size")),
    fileUpdater(this),

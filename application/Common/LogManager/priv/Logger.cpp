@@ -82,6 +82,10 @@ Logger::Logger(const QString& name) :
 {
 }
 
+Logger::~Logger()
+{
+}
+
 void Logger::log(const QString& message, Severity severity, const char* filename, int line) const
 {
    QMutexLocker locker(&Logger::mutex);

@@ -30,6 +30,8 @@ using namespace CoreSpace;
 #include <NetworkListener/Builder.h>
 #include <RemoteControlManager/Builder.h>
 
+LOG_INIT_CPP(Core);
+
 Core::Core()
 {
    GOOGLE_PROTOBUF_VERIFY_VERSION;

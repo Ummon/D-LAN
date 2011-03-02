@@ -37,6 +37,8 @@ using namespace UM;
   * After the chunk was sent to the peer the Uploader is deleted.
   */
 
+LOG_INIT_CPP(UploadManager);
+
 UploadManager::UploadManager(QSharedPointer<PM::IPeerManager> peerManager) :
    peerManager(peerManager)
 {

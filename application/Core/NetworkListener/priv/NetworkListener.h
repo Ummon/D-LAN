@@ -52,7 +52,7 @@ namespace NL
       QSharedPointer<ISearch> newSearch();
 
    private:      
-      LOG_INIT("NetworkListener");
+      LOG_INIT_H("NetworkListener");
 
       QSharedPointer<FM::IFileManager> fileManager;
       QSharedPointer<PM::IPeerManager> peerManager;

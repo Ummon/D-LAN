@@ -57,7 +57,7 @@ namespace RCM
       void chatMessageSent(const QString& message);
 
    private:      
-      LOG_INIT("RemoteControlManager");
+      LOG_INIT_H("RemoteControlManager");
 
       QSharedPointer<FM::IFileManager> fileManager;
       QSharedPointer<PM::IPeerManager> peerManager;

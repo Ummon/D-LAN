@@ -30,6 +30,8 @@ using namespace DM;
 #include <priv/DirDownload.h>
 #include <priv/Constants.h>
 
+LOG_INIT_CPP(DownloadManager);
+
 DownloadManager::DownloadManager(QSharedPointer<FM::IFileManager> fileManager, QSharedPointer<PM::IPeerManager> peerManager) :
    NUMBER_OF_DOWNLOADER(static_cast<int>(SETTINGS.get<quint32>("number_of_downloader"))),
    fileManager(fileManager),

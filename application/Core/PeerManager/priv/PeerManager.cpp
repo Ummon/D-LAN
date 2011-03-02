@@ -33,6 +33,8 @@ using namespace PM;
   *
   */
 
+LOG_INIT_CPP(PeerManager);
+
 PeerManager::PeerManager(QSharedPointer<FM::IFileManager> fileManager) :
    fileManager(fileManager)
 {
