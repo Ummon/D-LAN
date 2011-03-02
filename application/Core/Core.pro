@@ -1,6 +1,10 @@
 # -------------------------------------------------
 # Project created by QtCreator 2009-10-05T21:20:26
 # -------------------------------------------------
+
+# Uncomment this line to enable the leak detector.
+# DEFINES += ENABLE_NVWA
+
 QT += network
 TARGET = AybabtuCore
 CONFIG += link_prl
@@ -56,7 +60,9 @@ win32 {
 }
 
 CONFIG(debug, debug|release) {
-   SOURCES += ../Libs/Nvwa/debug_new.cpp
+   contains(DEFINES, ENABLE_NVWA) {
+      SOURCES += ../Libs/Nvwa/debug_new.cpp
+   }
 }
 
 CONFIG += console
