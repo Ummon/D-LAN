@@ -156,7 +156,13 @@ void PeerManager::updatePeer(const Common::Hash& ID, const QHostAddress& IP, qui
       peer = new Peer(this, this->fileManager, ID);
       this->peers << peer;
    }
+
+   const bool wasDead = !peer->isAlive();
+
    peer->update(IP, port, nick, sharingAmount);
+
+   if (wasDead)
+      emit peerBecomesAlive(peer);
 }
 
 void PeerManager::newConnection(QTcpSocket* tcpSocket)

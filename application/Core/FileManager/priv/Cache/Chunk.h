@@ -119,7 +119,7 @@ namespace FM
       mutable QMutex mutex; ///< Protect 'file' against multiple access.
 
       File* file;
-      int num;
+      int num; // First is 0.
       int knownBytes; ///< Relative offset, 0 means we don't have any byte and CHUNK_SIZE means we have all the chunk data.
       Common::Hash hash;
    };

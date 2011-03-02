@@ -60,10 +60,6 @@ FileDownload::FileDownload(
    if (complete)
       this->status = COMPLETE;
 
-   this->timer.setInterval(CHECK_ENTRY_PERIOD);
-   this->timer.setSingleShot(true);
-   connect(&this->timer, SIGNAL(timeout()), this, SLOT(retreiveHashes()));
-
    // We create a ChunkDownload for each known hash in the entry.
    for (int i = 0; i < this->remoteEntry.chunk_size(); i++)
    {
@@ -79,10 +75,8 @@ FileDownload::FileDownload(
 FileDownload::~FileDownload()
 {
    this->status = DELETED;
-   this->timer.stop();
 
-   if (!this->getHashesResult.isNull())
-      this->occupiedPeersAskingForHashes.setPeerAsFree(this->peerSource);
+   this->occupiedPeersAskingForHashes.setPeerAsFree(this->peerSource);
 
    this->getHashesResult.clear();
    this->chunksWithoutDownload.clear();
@@ -253,10 +247,6 @@ bool FileDownload::retreiveHashes()
    if (this->nbHashesKnown == this->NB_CHUNK || !this->hasAValidPeer() || this->status == COMPLETE || this->status == DELETED)
       return false;
 
-   // We already fail to retrieve hashes a little time before.
-   if (this->timer.isActive())
-      return false;
-
    if (!this->occupiedPeersAskingForHashes.setPeerAsOccupied(this->peerSource))
       return false;
 
@@ -268,14 +258,6 @@ bool FileDownload::retreiveHashes()
    connect(this->getHashesResult.data(), SIGNAL(timeout()), this, SLOT(getHashTimeout()));
    this->getHashesResult->start();
    return true;
-}
-
-void FileDownload::retrievePeer()
-{
-   Download::retrievePeer();
-
-   // Right after we got the peer we can ask him the hashes.
-   this->retreiveHashes();
 }
 
 void FileDownload::result(const Protos::Core::GetHashesResult& result)
@@ -290,8 +272,9 @@ void FileDownload::result(const Protos::Core::GetHashesResult& result)
       L_DEBU(QString("Unable to retrieve the hashes, error = %1").arg(result.status()));
       this->getHashesResult.clear();
       this->status = UNABLE_TO_RETRIEVE_THE_HASHES;
-      this->timer.start(); // Retry later.
-      this->occupiedPeersAskingForHashes.setPeerAsFree(this->peerSource);
+
+      // We delay to free the peer to avoid a continously stream of request in the case where the error will occur again.
+      QTimer::singleShot(RETRY_PEER_GET_HASHES_PERIOD, this, SLOT(setPeerAsFree()));
    }
 }
 
@@ -337,7 +320,11 @@ void FileDownload::getHashTimeout()
    L_DEBU("Unable to retrieve the hashes : timeout");
    this->getHashesResult.clear();
    this->status = UNABLE_TO_RETRIEVE_THE_HASHES;
-   this->timer.start(); // Retry later.
+   this->occupiedPeersAskingForHashes.setPeerAsFree(this->peerSource);
+}
+
+void FileDownload::setPeerAsFree()
+{
    this->occupiedPeersAskingForHashes.setPeerAsFree(this->peerSource);
 }
 

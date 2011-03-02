@@ -269,7 +269,7 @@ void FileUpdater::run()
          else
          {
             this->mutex.unlock();
-            this->treatEvents(this->dirWatcher->waitEvent(0));
+            this->treatEvents(this->dirWatcher->waitEvent(0)); // Just pick the new events. (Don't wait for new event).
          }
       }
 
@@ -296,7 +296,7 @@ void FileUpdater::run()
 }
 
 /**
-  * It will take some file from 'fileWithoutHashes' and compute theirs hashes.
+  * It will take some files from 'fileWithoutHashes' and compute theirs hashes.
   * The duration of the compuation is minimum 'minimumDurationWhenHashing'.
   */
 void FileUpdater::computeSomeHashes()
@@ -331,7 +331,7 @@ void FileUpdater::computeSomeHashes()
             this->filesWithoutHashesPrioritized.removeFirst();
             i--;
          }
-         else
+         else if (!this->filesWithoutHashesPrioritized.isEmpty()) // The current hashing file may have been removed from 'filesWithoutHashesPrioritized' by 'rmRoot(..)'.
             this->filesWithoutHashesPrioritized.move(0, this->filesWithoutHashesPrioritized.size() - 1);
       }
       else

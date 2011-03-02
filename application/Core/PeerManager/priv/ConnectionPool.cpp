@@ -168,7 +168,7 @@ QSharedPointer<Socket> ConnectionPool::addNewSocket(QSharedPointer<Socket> socke
    }
 
    connect(socket.data(), SIGNAL(becomeIdle(Socket*)), this, SLOT(socketBecomeIdle(Socket*)));
-   connect(socket.data(), SIGNAL(closed(Socket*)), this, SLOT(socketClosed(Socket*)), Qt::QueuedConnection);
+   connect(socket.data(), SIGNAL(closed(Socket*)), this, SLOT(socketClosed(Socket*)) /*, Qt::QueuedConnection*/);
    socket->startListening();
    return socket;
 }

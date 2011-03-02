@@ -51,14 +51,12 @@ Protos::Core::GetHashesResult GetHashesResult::start()
 {
    Protos::Core::GetHashesResult result;
 
-   this->file = this->cache.getFile(this->fileEntry);
-   QList< QSharedPointer<Chunk> > chunks = this->file->getChunks();
-
-   if (chunks.isEmpty())
+   if (!(this->file = this->cache.getFile(this->fileEntry)))
    {
       result.set_status(Protos::Core::GetHashesResult_Status_DONT_HAVE);
       return result;
    }
+   QList< QSharedPointer<Chunk> > chunks = this->file->getChunks();
 
    if (this->fileEntry.chunk_size() > chunks.size())
    {
@@ -69,6 +67,7 @@ Protos::Core::GetHashesResult GetHashesResult::start()
 
    connect(&this->cache, SIGNAL(chunkHashKnown(QSharedPointer<Chunk>)), this, SLOT(chunkHashKnown(QSharedPointer<Chunk>)), Qt::DirectConnection);
    this->nbHash = chunks.size() - this->fileEntry.chunk_size();
+   this->lastHashNumSent = this->fileEntry.chunk_size() - 1;
 
    result.set_nb_hash(this->nbHash);
 
@@ -107,7 +106,7 @@ void GetHashesResult::chunkHashKnown(QSharedPointer<Chunk> chunk)
 
 void GetHashesResult::sendNextHash(QSharedPointer<Chunk> chunk)
 {
-   if (chunk->getNum() == this->lastHashNumSent)
+   if (chunk->getNum() <= this->lastHashNumSent)
       return;
 
    this->lastHashNumSent = chunk->getNum();

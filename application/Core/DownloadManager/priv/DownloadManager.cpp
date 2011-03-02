@@ -49,6 +49,8 @@ DownloadManager::DownloadManager(QSharedPointer<FM::IFileManager> fileManager, Q
 
    this->saveTimer.setInterval(SETTINGS.get<quint32>("save_queue_period"));
    connect(&this->saveTimer, SIGNAL(timeout()), this, SLOT(saveQueueToFile()));
+
+   connect(this->peerManager.data(), SIGNAL(peerBecomesAlive(PM::IPeer*)), this, SLOT(peerBecomesAlive(PM::IPeer*)));
 }
 
 DownloadManager::~DownloadManager()
@@ -250,6 +252,12 @@ int DownloadManager::getDownloadRate()
    return this->transferRateCalculator.getTransferRate();
 }
 
+void DownloadManager::peerBecomesAlive(PM::IPeer* peer)
+{
+   // To handle the case where the peers source of some downloads without all the hashes become alive after being dead for a while. The hashes must be reasked.
+   this->occupiedPeersAskingForHashes.newPeer(peer);
+}
+
 void DownloadManager::fileCacheLoaded()
 {
    this->loadQueueFromFile();
@@ -303,8 +311,8 @@ void DownloadManager::peerNoLongerAskingForHashes(PM::IPeer* peer)
    for (QListIterator<Download*> i(this->downloads); i.hasNext();)
    {
       FileDownload* fileDownload = dynamic_cast<FileDownload*>(i.next());
-      if (fileDownload && fileDownload->retreiveHashes())
-         break;
+      if (fileDownload)
+         fileDownload->retreiveHashes();
    }
 }
 

@@ -101,7 +101,7 @@ bool Download::hasAValidPeer()
 
 void Download::retrievePeer()
 {
-   if (this->status == COMPLETE)
+   if (this->status == COMPLETE || this->peerSource)
       return;
 
    this->peerSource = this->peerManager->getPeer(this->peerSourceID);

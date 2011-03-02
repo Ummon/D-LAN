@@ -70,7 +70,6 @@ MessageSocket::MessageSocket(const QHostAddress& address, quint16 port, const Ha
 
 MessageSocket::~MessageSocket()
 {
-   MESSAGE_SOCKET_LOG_DEBUG(QString("Socket[%1] deleted").arg(this->num));
    this->stopListening();
    this->socket->deleteLater();
 }

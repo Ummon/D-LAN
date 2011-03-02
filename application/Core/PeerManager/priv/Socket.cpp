@@ -46,6 +46,7 @@ Socket::Socket(PeerManager* peerManager, QSharedPointer<FM::IFileManager> fileMa
 
 Socket::~Socket()
 {
+   L_DEBU(QString("Socket[%1] deleted").arg(this->num));
 }
 
 QAbstractSocket* Socket::getQSocket() const
@@ -86,7 +87,7 @@ void Socket::setActive()
    if (this->active)
       return;
 
-   MESSAGE_SOCKET_LOG_DEBUG(QString("Socket[%1] set to active >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>").arg(this->num));
+   L_DEBU(QString("Socket[%1] set to active >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>").arg(this->num));
 
    this->active = true;
 }
@@ -99,23 +100,23 @@ void Socket::finished(FinishedStatus status)
    if (!this->active)
       return;
 
-   MESSAGE_SOCKET_LOG_DEBUG(QString("Socket[%1] set to idle%2<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<").arg(this->num).arg(status == SFS_ERROR ? " with error " : " "));
+   L_DEBU(QString("Socket[%1] set to idle%2<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<").arg(this->num).arg(status == SFS_ERROR ? " with error " : " "));
 
    if (status == SFS_TO_CLOSE)
    {
-      MESSAGE_SOCKET_LOG_ERROR("Socket forced to close..");
+      L_WARN("Socket forced to close..");
       this->close();
       return;
    }
    else if (status == SFS_ERROR && ++this->nbError > 5) // TODO : -> constant
    {
-      MESSAGE_SOCKET_LOG_ERROR("Socket with too many error, closed");
+      L_WARN("Socket with too many error, closed");
       this->close();
       return;
    }
    else if (!this->getQSocket()->isValid())
    {
-      MESSAGE_SOCKET_LOG_ERROR("Socket non-valid, closed");
+      L_WARN("Socket non-valid, closed");
       this->close();
       return;
    }
@@ -131,7 +132,7 @@ void Socket::close()
 {
    this->active = false;
 
-   this->stopListening();
+   //this->stopListening();
 
    emit closed(this);
 }

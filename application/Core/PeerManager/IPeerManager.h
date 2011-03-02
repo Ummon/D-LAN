@@ -80,6 +80,11 @@ namespace PM
         * The chunk will be sent using the socket object. Once the data is finished to send the method 'ISocket::finished()' must be called.
         */
       void getChunk(QSharedPointer<FM::IChunk> chunk, int offset, QSharedPointer<PM::ISocket> socket);
+
+      /**
+        * Emitted when a peer becomes alive.
+        */
+      void peerBecomesAlive(PM::IPeer* peer);
    };
 }
 #endif

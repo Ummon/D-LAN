@@ -66,6 +66,8 @@ namespace DM
       int getDownloadRate();
 
    private slots:
+      void peerBecomesAlive(PM::IPeer* peer);
+
       void fileCacheLoaded();
 
       void newEntries(const Protos::Common::Entries& remoteEntries);

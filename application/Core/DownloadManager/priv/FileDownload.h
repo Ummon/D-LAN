@@ -73,13 +73,11 @@ namespace DM
    signals:
       void newHashKnown();
 
-   protected slots:
-      void retrievePeer();
-
    private slots:
       void result(const Protos::Core::GetHashesResult& result);
       void nextHash(const Common::Hash& hash);
       void getHashTimeout();
+      void setPeerAsFree();
 
       void chunkDownloadStarted();
       void chunkDownloadFinished();
@@ -105,7 +103,7 @@ namespace DM
 
       bool fileCreated;
 
-      QTimer timer; // Used to periodically try to retrieve hashes.
+      //QTimer timer; // Used to periodically try to retrieve hashes.
 
       Common::TransferRateCalculator& transferRateCalculator;
    };
