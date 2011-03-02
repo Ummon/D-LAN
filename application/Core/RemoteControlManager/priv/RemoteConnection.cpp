@@ -46,7 +46,6 @@ RemoteConnection::RemoteConnection(
    QSharedPointer<NL::INetworkListener> networkListener,
    QTcpSocket* socket
 ) :
-   MessageSocket(socket, peerManager->getID()),
    fileManager(fileManager),
    peerManager(peerManager),
    uploadManager(uploadManager),
@@ -58,6 +57,8 @@ RemoteConnection::RemoteConnection(
  #endif
 {
    L_DEBU(QString("New RemoteConnection from %1").arg(socket->peerAddress().toString()));
+
+   this->init(socket, peerManager->getID());
 
    this->authenticated = this->isLocal();
 

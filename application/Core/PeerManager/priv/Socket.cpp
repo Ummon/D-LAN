@@ -33,14 +33,16 @@ using namespace PM;
 #include <priv/Constants.h>
 
 Socket::Socket(PeerManager* peerManager, QSharedPointer<FM::IFileManager> fileManager, const Common::Hash& remotePeerID, QTcpSocket* socket) :
-   MessageSocket(socket, peerManager->getID(), remotePeerID), fileManager(fileManager), active(true), nbError(0)
+   fileManager(fileManager), active(true), nbError(0)
 {
+   this->init(socket, peerManager->getID(), remotePeerID);
    this->initUnactiveTimer();
 }
 
 Socket::Socket(PeerManager* peerManager, QSharedPointer<FM::IFileManager> fileManager, const Common::Hash& remotePeerID, const QHostAddress& address, quint16 port) :
-   MessageSocket(address, port, peerManager->getID(), remotePeerID), fileManager(fileManager), active(true), nbError(0)
+   fileManager(fileManager), active(true), nbError(0)
 {
+   this->init(address, port, peerManager->getID(), remotePeerID);
    this->initUnactiveTimer();
 }
 

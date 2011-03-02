@@ -43,11 +43,18 @@ namespace Common
    class MessageSocket : public QObject, Uncopyable
    {
       Q_OBJECT
+   protected:
+      MessageSocket();
+
    public:
-      MessageSocket(const Hash& ID = Hash(), const Hash& remoteID = Hash());
-      MessageSocket(QAbstractSocket* socket, const Hash& ID = Hash(), const Hash& remoteID = Hash());
-      MessageSocket(const QHostAddress& address, quint16 port, const Hash& ID = Hash(), const Hash& remoteID = Hash());
       virtual ~MessageSocket();
+
+   protected:
+      void init(const Hash& ID = Hash(), const Hash& remoteID = Hash());
+      void init(QAbstractSocket* socket, const Hash& ID = Hash(), const Hash& remoteID = Hash());
+      void init(const QHostAddress& address, quint16 port, const Hash& ID = Hash(), const Hash& remoteID = Hash());
+
+   public:
 
       virtual QAbstractSocket* getQSocket() const;
       virtual Hash getID() const;
@@ -72,6 +79,7 @@ namespace Common
       void newMessage(Common::MessageHeader::MessageType type, const google::protobuf::Message& message);
 
    protected:
+
       /**
         * Call when a new message arrived. Do nothing by default.
         * The signal 'newMessage' is also emitted after this called.

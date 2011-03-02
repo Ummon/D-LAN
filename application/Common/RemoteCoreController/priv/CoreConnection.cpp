@@ -35,6 +35,8 @@ using namespace RCC;
 CoreConnection::CoreConnection() :
    coreStatus(NOT_RUNNING), currentHostLookupID(-1), authenticated(false)
 {
+   this->init();
+
    connect(this->getQSocket(), SIGNAL(connected()), this, SLOT(connected()));
    connect(this->getQSocket(), SIGNAL(disconnected()), this, SLOT(disconnected()));
    connect(this->getQSocket(), SIGNAL(stateChanged(QAbstractSocket::SocketState)), this, SLOT(stateChanged(QAbstractSocket::SocketState)));

@@ -55,8 +55,8 @@ win32 {
     INCLUDEPATH += "."
     #INCLUDEPATH += "$$(QTDIR)/../mingw/include"
     #LIBS += "$$(QTDIR)/../mingw/lib/libwsock32.a"
-    INCLUDEPATH += "E:/Qt/qtcreator-2.0.94/mingw/include"
-    LIBS += "E:/Qt/qtcreator-2.0.94/mingw/lib/libwsock32.a"
+    INCLUDEPATH += "E:/Qt/qtcreator-2.1.0/mingw/include"
+    LIBS += "E:/Qt/qtcreator-2.1.0/mingw/lib/libwsock32.a"
 }
 
 CONFIG(debug, debug|release) {
