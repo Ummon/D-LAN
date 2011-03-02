@@ -61,9 +61,6 @@ namespace GUI
       void downloadTo(const Common::Hash& sharedDirID, const QString& path);
       void openLocation();
 
-   protected:
-      void showEvent(QShowEvent* event);
-
    private:
       Ui::WidgetBrowse* ui;
       DownloadMenu downloadMenu;

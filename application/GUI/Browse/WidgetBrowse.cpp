@@ -42,7 +42,7 @@ WidgetBrowse::WidgetBrowse(QSharedPointer<RCC::ICoreConnection> coreConnection, 
    downloadMenu(coreConnection, sharedDirsModel),
    coreConnection(coreConnection),
    peerID(peerID),
-   browseModel(coreConnection, sharedDirsModel, peerID, false) // 'false' because the model is automatically refreshed when the widget is shown, see 'WidgetBrowse::showEvent(..)'.
+   browseModel(coreConnection, sharedDirsModel, peerID)
 {
    this->ui->setupUi(this);
 
@@ -128,10 +128,4 @@ void WidgetBrowse::openLocation()
 
    for (QSetIterator<QString> i(locations); i.hasNext();)
       QDesktopServices::openUrl(QUrl(i.next(), QUrl::TolerantMode));
-}
-
-void WidgetBrowse::showEvent(QShowEvent* event)
-{
-   if (!event->spontaneous())
-      this->refresh();
 }
