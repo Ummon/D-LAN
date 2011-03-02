@@ -96,7 +96,7 @@ message GetHashesResult {
       ERROR_UNKNOWN = 255;
    }
    required Status status = 1; // If status != OK nb_hash is not set.
-   optional uint32 nb_hash = 2; // Only the unknown hashes are sent, not the total. Depend of GetHashes.file.chunk.
+   optional uint32 nb_hash = 2; // The number of hashe that will be sent. Only the unknown hashes are sent, not the total. Depend of GetHashes.file.chunk.
 }
 // For each hash, this message is sent. Only if GetHashesResult.status == OK.
 // b -> a
@@ -121,6 +121,6 @@ message GetChunkResult {
       ERROR_UNKNOWN = 255;
    }
    required Status status = 1;
-   optional uint32 chunk_size = 2;
+   optional uint32 chunk_size = 2; // This value must be between 1 and Proto.Core.Settings.chunk_size.
 }
 // b -> a : stream of data..
