@@ -650,7 +650,6 @@ bool FileUpdater::treatEvents(const QList<WatcherEvent>& events)
             break;
          }
 
-      case WatcherEvent::NEW:
       case WatcherEvent::CONTENT_CHANGED:
          {
             Directory* dir = this->fileManager->getFittestDirectory(event.path1);
@@ -659,6 +658,7 @@ bool FileUpdater::treatEvents(const QList<WatcherEvent>& events)
             break;
          }
 
+      case WatcherEvent::NEW:
       case WatcherEvent::UNKNOWN:
       case WatcherEvent::TIMEOUT:
          break; // Do nothing.

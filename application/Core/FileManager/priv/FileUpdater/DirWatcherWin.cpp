@@ -272,7 +272,7 @@ bool DirWatcherWin::watch(Dir* dir)
       &this->notifyBuffer, // The buffer where the information is put when an event occur.
       NOTIFY_BUFFER_SIZE, // Size of the previous buffer.
       TRUE, // Watch subtree.
-      FILE_NOTIFY_CHANGE_FILE_NAME | FILE_NOTIFY_CHANGE_DIR_NAME | FILE_NOTIFY_CHANGE_SIZE | FILE_NOTIFY_CHANGE_LAST_WRITE | FILE_NOTIFY_CHANGE_CREATION,
+      FILE_NOTIFY_CHANGE_FILE_NAME | FILE_NOTIFY_CHANGE_DIR_NAME | FILE_NOTIFY_CHANGE_LAST_WRITE /* | FILE_NOTIFY_CHANGE_CREATION | FILE_NOTIFY_CHANGE_SIZE*/,
       &this->nbBytesNotifyBuffer, // Not used in asynchronous mode.
       &dir->overlapped,
       NULL

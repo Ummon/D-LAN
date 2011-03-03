@@ -249,7 +249,6 @@ void Tests::askForHashes()
    {
       QFile file("sharedDirs/peer2/big.bin");
       file.open(QIODevice::WriteOnly);
-      file.resize(NUMBER_OF_CHUNK * SETTINGS.get<quint32>("chunk_size"));
 
       // To have four different hashes.
       for (quint32 i = 0; i < NUMBER_OF_CHUNK; i++)
