@@ -1,6 +1,6 @@
 [code]
-#define QtDir "E:/Qt/4.7.1"
-#define MingwDir "E:/Qt/qtcreator-2.0.94/mingw"
+#define QtDir "E:/Qt/4.7.2"
+#define MingwDir "E:/Qt/qtcreator-2.1.0/mingw"
 #define ProtoBufDir "E:/protobuf"
 
 #define AppName "Aybabtu"
