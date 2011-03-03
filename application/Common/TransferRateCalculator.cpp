@@ -23,6 +23,15 @@ using namespace Common;
 
 #include <QMutexLocker>
 
+/**
+  * @class TransferRateCalculator
+  * Compute an average value for a transfert rate in byte/s.
+  * The period value is set in the header: PERIOD.
+  * When some data are received or sent the method 'addData(..)' is called with the amount of data in bytes.
+  * The current transfert rate can be retreived with the method 'getTransferRate()'.
+  * An instance of 'TransferRateCalculator' can be shared among several threads.
+  */
+
 TransferRateCalculator::TransferRateCalculator() :
    mutex(QMutex::Recursive), currentValue(0), currentValuePos(0), total(0)
 {

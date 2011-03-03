@@ -48,7 +48,7 @@ namespace Common
 
       int currentValue;
       int currentValuePos;
-      int values[NB_VALUE];
+      int values[NB_VALUE]; // Previous values during the current period.
 
       int total; // Sum of all values.
    };
