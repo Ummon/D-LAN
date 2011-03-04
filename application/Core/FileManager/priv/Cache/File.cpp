@@ -45,6 +45,12 @@ using namespace FM;
 
 /**
   * @class File
+  * Represents a physical file, it knows its name, size and last modified date.
+  * Capabilities :
+  *  - Create a new file (which becomes an unfinished file). It's used when downloading a remote file.
+  *  - Read or write the file.
+  *  - Compute some hashes by reading the file. It stores the hahes in a chunk list, see the Chunk class.
+  *
   * A file can be finished or unfinished.
   * If it is an unfinished one, the name ends with ".unfinished" (see setting "unfinished_suffix_term").
   * When a file is just finished the suffix ".unfinished" is removed and the file is renamed.
@@ -184,6 +190,25 @@ void File::populateEntry(Protos::Common::Entry* entry, bool setSharedDir) const
          break;
       entry->add_chunk()->set_hash(hash.getData(), Common::Hash::HASH_SIZE);
    }
+}
+
+bool File::matchesEntry(const Protos::Common::Entry& entry) const
+{
+   QMutexLocker locker(&this->mutex);
+
+   return
+      this->getRoot()->getId() == Common::Hash(entry.shared_dir().id().hash().data()) &&
+      this->getPath() == Common::ProtoHelper::getStr(entry, &Protos::Common::Entry::path) &&
+      this->getSize() == static_cast<qint64>(entry.size()) &&
+      Global::removeUnfinishedSuffix(this->getName()) == Global::removeUnfinishedSuffix(Common::ProtoHelper::getStr(entry, &Protos::Common::Entry::name));
+}
+
+/**
+  * Return true if the size and the last modification date correspond to the given file information
+  */
+bool File::correspondTo(const QFileInfo& fileInfo)
+{
+   return this->getSize() == fileInfo.size() && this->getDateLastModified() == fileInfo.lastModified();
 }
 
 QString File::getPath() const
@@ -333,7 +358,7 @@ bool File::computeHashes(int n)
 
    this->hashing = true;
 
-   L_DEBU("Computing the hash for " + this->getFullPath());
+   L_DEBU(QString("Computing the hash for %1").arg(this->getFullPath()));
 
    Common::Hasher hasher;
 
@@ -574,14 +599,6 @@ void File::chunkComplete(const Chunk* chunk)
 int File::getNbChunks()
 {
    return this->size / CHUNK_SIZE + (this->size % CHUNK_SIZE == 0 ? 0 : 1);
-}
-
-/**
-  * Return true if the size and the last modification date correspond to the given file information
-  */
-bool File::correspondTo(const QFileInfo& fileInfo)
-{
-   return this->getSize() == fileInfo.size() && this->getDateLastModified() == fileInfo.lastModified();
 }
 
 /**

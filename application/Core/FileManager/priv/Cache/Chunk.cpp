@@ -32,6 +32,13 @@ using namespace FM;
 #include <priv/Cache/DataReader.h>
 #include <priv/Cache/DataWriter.h>
 
+/**
+  * @class Chunk
+  * A chunk is a part of a file. It's identified by a hash which can be unknown when a chunk is created and be set later by 'setHash(..)'.
+  * A chunk can be read or write, when a chunk is written the 'knownBytes' member is increased.
+  * Each chunk of a file has a unique number which begins at 0 and define the order of data, chunk#1 represents the data right after chunk#0 and so on.
+  */
+
 Chunk::Chunk(File* file, int num, quint32 knownBytes) :
    CHUNK_SIZE(SETTINGS.get<quint32>("chunk_size")),
    BUFFER_SIZE(SETTINGS.get<quint32>("buffer_size")),
@@ -144,6 +151,9 @@ void Chunk::dataReaderDeleted()
       this->file->dataReaderDeleted();
 }
 
+/**
+  * Called by a deleted file just before dying.
+  */
 void Chunk::fileDeleted()
 {
    QMutexLocker locker(&this->mutex);
@@ -151,9 +161,15 @@ void Chunk::fileDeleted()
 }
 
 /**
+  * Fill the given buffer with read bytes.
+  *
   * @exception IOErrorException
   * @exception ChunkDeletedException
   * @exception ChunkNotCompletedException
+  * @param buffer The buffer.
+  * @param offset The offset relative to the chunk.
+  * @return The number of read bytes. If lesser than 'buffer.size' the end of file has been reached
+  *         and the buffer will be partially filled.
   */
 int Chunk::read(char* buffer, int offset)
 {
@@ -176,10 +192,10 @@ int Chunk::read(char* buffer, int offset)
   * @exception IOErrorException
   * @exception ChunkDeletedException
   * @exception TryToWriteBeyondTheEndOfChunkException
+  * @return 'true' if end of chunk reached.
   */
 bool Chunk::write(const char* buffer, int nbBytes)
 {
-   //L_WARN(QString("Chunk::write, nbBytes = %1").arg(nbBytes));
    QMutexLocker locker(&this->mutex);
    if (!this->file)
       throw ChunkDeletedException();
@@ -264,7 +280,6 @@ int Chunk::getChunkSize() const
    if (!this->file)
       return 0;
 
-   //L_WARN(QString("this->file->getNbChunks() = %1").arg(this->file->getNbChunks()));
    if (this->num < this->file->getNbChunks() - 1)
       return this->CHUNK_SIZE;
 
@@ -289,11 +304,7 @@ bool Chunk::isOwnedBy(File* file) const
 bool Chunk::matchesEntry(const Protos::Common::Entry& entry) const
 {
    QMutexLocker locker(&this->mutex);
-   return
-      this->file->getRoot()->getId() == Common::Hash(entry.shared_dir().id().hash().data()) &&
-      this->file->getPath() == Common::ProtoHelper::getStr(entry, &Protos::Common::Entry::path) &&
-      this->file->getSize() == static_cast<qint64>(entry.size()) &&
-      Global::removeUnfinishedSuffix(this->file->getName()) == Global::removeUnfinishedSuffix(Common::ProtoHelper::getStr(entry, &Protos::Common::Entry::name));
+   return this->file->matchesEntry(entry);
 }
 
 QString Chunk::toStr() const

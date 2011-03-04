@@ -345,7 +345,7 @@ void DownloadManager::scanTheQueueToRetrieveEntries()
       if (!dirDownload->retrieveEntries())
       {
          // If we can't retrieve entries from 'dirDownload' because its peer is unknown we save its peerID to prevent
-         // to reask to the same peer twice.
+         // to re-ask to the same peer twice.
          peerID = dirDownload->getPeerSourceID();
          continue;
       }

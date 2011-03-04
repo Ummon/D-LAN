@@ -66,44 +66,23 @@ namespace FM
       void dataWriterDeleted();
       void dataReaderDeleted();
 
-      /**
-        * Called by a deleted file just before dying.
-        */
       void fileDeleted();
 
-      /**
-        * Fill the given buffer with read bytes.
-        *
-        * @param buffer The buffer.
-        * @param offset The offset relative to the chunk.
-        * @return The number of read bytes. If lesser than 'buffer.size' the end of file has been reached
-        *         and the buffer will be partially filled.
-        * @exception ChunkNotCompletedException
-        */
       int read(char* buffer, int offset);
-
-      /**
-        * @return 'true' if end of chunk reached.
-        */
       bool write(const char* buffer, int nbBytes);
 
       int getNum() const;
-
       int getNbTotalChunk() const;
-
       QList< QSharedPointer<Chunk> > getOtherChunks() const;
 
       bool hasHash() const;
-
       Common::Hash getHash() const;
-
       void setHash(const Common::Hash& hash);
 
       int getKnownBytes() const;
       void setKnownBytes(int bytes);
 
       int getChunkSize() const;
-
       bool isComplete() const;
 
       bool isOwnedBy(File* file) const;

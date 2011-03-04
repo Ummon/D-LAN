@@ -62,10 +62,12 @@ namespace FM
       void setToUnfinished(qint64 size, const Common::Hashes& hashes = Common::Hashes());
 
       bool restoreFromFileCache(const Protos::FileCache::Hashes_File& file);
-
       void populateHashesFile(Protos::FileCache::Hashes_File& fileToFill) const;
 
       void populateEntry(Protos::Common::Entry* entry, bool setSharedDir = false) const;
+      bool matchesEntry(const Protos::Common::Entry& entry) const;
+
+      bool correspondTo(const QFileInfo& fileInfo);
 
       QString getPath() const;
       QString getFullPath() const;
@@ -83,11 +85,8 @@ namespace FM
       qint64 read(char* buffer, qint64 offset, int maxBytesToRead);
 
       bool computeHashes(int n = -1);
-
       void stopHashing();
-
       QList< QSharedPointer<Chunk> > getChunks() const;
-
       bool hasAllHashes();
       bool hasOneOrMoreHashes();
 
@@ -96,7 +95,6 @@ namespace FM
       void chunkComplete(const Chunk* chunk);
 
       int getNbChunks();
-      bool correspondTo(const QFileInfo& fileInfo);
 
       void removeUnfinishedFiles();
 
