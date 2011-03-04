@@ -55,8 +55,6 @@ namespace Common
       void init(const QHostAddress& address, quint16 port, const Hash& ID = Hash(), const Hash& remoteID = Hash());
 
    public:
-
-      virtual QAbstractSocket* getQSocket() const;
       virtual Hash getID() const;
       virtual Hash getRemoteID() const;
 
@@ -109,8 +107,10 @@ namespace Common
       template<typename MessT> bool readMessage();
       bool readProtoMessage(google::protobuf::Message& message);
 
+   protected:
       QAbstractSocket* socket;
 
+   private:
       Hash ID;
       Hash remoteID;
 

@@ -49,7 +49,21 @@ namespace PM
       Socket(PeerManager* peerManager, QSharedPointer<FM::IFileManager> fileManager, const Common::Hash& remotePeerID, const QHostAddress& address, quint16 port);
       ~Socket();
 
-      QAbstractSocket* getQSocket() const;
+      void setReadBufferSize(qint64 size);
+
+      qint64 bytesAvailable() const;
+      qint64 read(char* data, qint64 maxSize);
+      QByteArray readAll();
+      bool waitForReadyRead(int msecs);
+
+      qint64 bytesToWrite() const;
+      qint64 write(const char* data, qint64 maxSize);
+      qint64 write(const QByteArray& byteArray);
+      bool waitForBytesWritten(int msecs);
+
+      void moveToThread(QThread* targetThread);
+      QString errorString() const;
+
       Common::Hash getRemotePeerID() const;
 
       void send(MessageHeader::MessageType type, const google::protobuf::Message& message);
@@ -65,6 +79,10 @@ namespace PM
    signals:
       void getChunk(QSharedPointer<FM::IChunk>, int, Socket*);
       void becomeIdle(Socket*);
+
+      /**
+        * Emitted when the socket is disconnected or explicitly closed by callinf 'close()'.
+        */
       void closed(Socket*);
 
    protected:

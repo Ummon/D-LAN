@@ -51,9 +51,59 @@ Socket::~Socket()
    L_DEBU(QString("Socket[%1] deleted").arg(this->num));
 }
 
-QAbstractSocket* Socket::getQSocket() const
+void Socket::setReadBufferSize(qint64 size)
 {
-   return this->MessageSocket::getQSocket();
+   this->socket->setReadBufferSize(size);
+}
+
+qint64 Socket::bytesAvailable() const
+{
+   return this->socket->bytesAvailable();
+}
+
+qint64 Socket::read(char* data, qint64 maxSize)
+{
+   return this->socket->read(data, maxSize);
+}
+
+QByteArray Socket::readAll()
+{
+   return this->socket->readAll();
+}
+
+bool Socket::waitForReadyRead(int msecs)
+{
+   return this->socket->waitForReadyRead(msecs);
+}
+
+qint64 Socket::bytesToWrite() const
+{
+   return this->socket->bytesToWrite();
+}
+
+qint64 Socket::write(const char* data, qint64 maxSize)
+{
+   return this->socket->write(data, maxSize);
+}
+
+qint64 Socket::write(const QByteArray& byteArray)
+{
+   return this->socket->write(byteArray);
+}
+
+bool Socket::waitForBytesWritten(int msecs)
+{
+   return this->socket->waitForBytesWritten(msecs);
+}
+
+void Socket::moveToThread(QThread* targetThread)
+{
+   this->socket->moveToThread(targetThread);
+}
+
+QString Socket::errorString() const
+{
+   return this->socket->errorString();
 }
 
 Common::Hash Socket::getRemotePeerID() const
@@ -116,14 +166,14 @@ void Socket::finished(FinishedStatus status)
       this->close();
       return;
    }
-   else if (!this->getQSocket()->isValid())
+   else if (!this->socket->isValid())
    {
       L_WARN("Socket non-valid, closed");
       this->close();
       return;
    }
 
-   this->getQSocket()->flush();
+   this->socket->flush();
    this->active = false;
 
    this->startListening();
@@ -133,8 +183,6 @@ void Socket::finished(FinishedStatus status)
 void Socket::close()
 {
    this->active = false;
-
-   //this->stopListening();
 
    emit closed(this);
 }

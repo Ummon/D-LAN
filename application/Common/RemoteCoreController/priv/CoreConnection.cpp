@@ -37,9 +37,9 @@ CoreConnection::CoreConnection() :
 {
    this->init();
 
-   connect(this->getQSocket(), SIGNAL(connected()), this, SLOT(connected()));
-   connect(this->getQSocket(), SIGNAL(disconnected()), this, SLOT(disconnected()));
-   connect(this->getQSocket(), SIGNAL(stateChanged(QAbstractSocket::SocketState)), this, SLOT(stateChanged(QAbstractSocket::SocketState)));
+   connect(this->socket, SIGNAL(connected()), this, SLOT(connected()));
+   connect(this->socket, SIGNAL(disconnected()), this, SLOT(disconnected()));
+   connect(this->socket, SIGNAL(stateChanged(QAbstractSocket::SocketState)), this, SLOT(stateChanged(QAbstractSocket::SocketState)));
 
    this->startListening();
 }
@@ -283,7 +283,7 @@ void CoreConnection::logError(const QString& message)
 
 void CoreConnection::connectToCoreSlot()
 {
-   this->getQSocket()->close();
+   this->socket->close();
 
    if (this->currentHostLookupID != -1)
       QHostInfo::abortHostLookup(this->currentHostLookupID);
@@ -332,7 +332,7 @@ void CoreConnection::connected()
    {
       this->authenticated = true;
       L_USER("Connected to the core");
-      L_DEBU(QString("Core address : %1").arg(this->getQSocket()->peerAddress().toString()));
+      L_DEBU(QString("Core address : %1").arg(this->socket->peerAddress().toString()));
       emit coreConnected();      
    }
    else
@@ -376,5 +376,5 @@ void CoreConnection::tryToConnectToTheNextAddress()
       this->coreStatus = CoreController::StartCore();
 #endif
 
-   this->getQSocket()->connectToHost(address, this->currentPort);
+   this->socket->connectToHost(address, this->currentPort);
 }

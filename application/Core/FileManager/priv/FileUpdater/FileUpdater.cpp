@@ -165,7 +165,7 @@ void FileUpdater::prioritizeAFileToHash(File* file)
 
       this->filesWithoutHashes.removeOne(file);
       if (!this->filesWithoutHashesPrioritized.contains(file))
-         this->filesWithoutHashesPrioritized.prepend(file);
+         this->filesWithoutHashesPrioritized << file;
 
       if (this->currentHashingFile)
       {
@@ -173,6 +173,9 @@ void FileUpdater::prioritizeAFileToHash(File* file)
          this->toStopHashing = true;
       }
    }
+   else
+      L_DEBU(QString("FileUpdater::prioritizeAFileToHash, unable to prioritize : %1").arg(file->getFullPath()));
+
 }
 
 bool FileUpdater::isScanning() const
@@ -324,7 +327,7 @@ void FileUpdater::computeSomeHashes()
       if (this->currentHashingFile->isComplete()) // A file can change its state from 'completed' to 'unfinished' if it's redownloaded.
       {
          locker.unlock();
-         bool complete = this->currentHashingFile->computeHashes(1);
+         bool complete = this->currentHashingFile->computeHashes(1); // Be carreful of methods 'prioritizeAFileToHash(..)' and 'rmRoot(..)' called concurrently here.
          locker.relock();
          if (complete)
          {

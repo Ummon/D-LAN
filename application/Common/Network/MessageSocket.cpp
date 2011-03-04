@@ -39,7 +39,12 @@ MessageSocket::MessageSocket() :
 MessageSocket::~MessageSocket()
 {
    this->stopListening();
-   this->socket->deleteLater();
+
+   if (this->socket)
+   {
+      this->socket->close();
+      this->socket->deleteLater();
+   }
 }
 
 /**
@@ -88,15 +93,6 @@ void MessageSocket::init(const QHostAddress& address, quint16 port, const Hash& 
    this->socket->connectToHost(address, port);
    this->ID = ID;
    this->remoteID = remoteID;
-}
-
-/**
-  * Get the Qt socket. Used to stream custom data for example.
-  * 'stopListening' may be called to stop reporting new message.
-  */
-QAbstractSocket* MessageSocket::getQSocket() const
-{
-   return this->socket;
 }
 
 Hash MessageSocket::getID() const

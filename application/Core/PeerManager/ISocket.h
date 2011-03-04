@@ -19,7 +19,8 @@
 #ifndef PEERMANAGER_ISOCKET_H
 #define PEERMANAGER_ISOCKET_H
 
-#include <QAbstractSocket>
+#include <QtGlobal>
+#include <QByteArray>
 
 #include <Protos/core_protocol.pb.h>
 
@@ -40,10 +41,20 @@ namespace PM
 
       virtual ~ISocket() {}
 
-      /**
-        * Used by downloaders or uploaders to read or write data.
-        */
-      virtual QAbstractSocket* getQSocket() const = 0;
+      virtual void setReadBufferSize(qint64 size) = 0;
+
+      virtual qint64 bytesAvailable() const = 0;
+      virtual qint64 read(char* data, qint64 maxSize) = 0;
+      virtual QByteArray readAll() = 0;
+      virtual bool waitForReadyRead(int msecs) = 0;
+
+      virtual qint64 bytesToWrite () const = 0;
+      virtual qint64 write(const char* data, qint64 maxSize) = 0;
+      virtual qint64 write (const QByteArray& byteArray) = 0;
+      virtual bool waitForBytesWritten(int msecs) = 0;
+
+      virtual void moveToThread(QThread* targetThread) = 0;
+      virtual QString errorString() const = 0;
 
       /**
         * Returns the ID of the remote peer on which the socket is connected.

@@ -239,14 +239,14 @@ void ChunkDownload::run()
          }
          this->mutex.unlock();
 
-         bytesRead = this->socket->getQSocket()->read(buffer + bytesToWrite, bytesToRead < BUFFER_SIZE - bytesToWrite ? bytesToRead : BUFFER_SIZE - bytesToWrite);
+         bytesRead = this->socket->read(buffer + bytesToWrite, bytesToRead < BUFFER_SIZE - bytesToWrite ? bytesToRead : BUFFER_SIZE - bytesToWrite);
          bytesToRead -= bytesRead;
 
          if (bytesRead == 0)
          {
-            if (!this->socket->getQSocket()->waitForReadyRead(SOCKET_TIMEOUT))
+            if (!this->socket->waitForReadyRead(SOCKET_TIMEOUT))
             {
-               L_WARN(QString("Connection dropped, error = %1, bytesAvailable = %2").arg(socket->getQSocket()->errorString()).arg(socket->getQSocket()->bytesAvailable()));
+               L_WARN(QString("Connection dropped, error = %1, bytesAvailable = %2").arg(socket->errorString()).arg(socket->bytesAvailable()));
                this->networkTransferStatus = PM::ISocket::SFS_ERROR;
                break;
             }
@@ -314,8 +314,8 @@ void ChunkDownload::run()
       L_WARN("TryToWriteBeyondTheEndOfChunkException");
    }
 
-   this->socket->getQSocket()->setReadBufferSize(0);
-   this->socket->getQSocket()->moveToThread(this->mainThread);
+   this->socket->setReadBufferSize(0);
+   this->socket->moveToThread(this->mainThread);
 }
 
 void ChunkDownload::result(const Protos::Core::GetChunkResult& result)
@@ -342,8 +342,8 @@ void ChunkDownload::result(const Protos::Core::GetChunkResult& result)
 void ChunkDownload::stream(QSharedPointer<PM::ISocket> socket)
 {
    this->socket = socket;
-   this->socket->getQSocket()->setReadBufferSize(SETTINGS.get<quint32>("socket_buffer_size"));
-   this->socket->getQSocket()->moveToThread(this);
+   this->socket->setReadBufferSize(SETTINGS.get<quint32>("socket_buffer_size"));
+   this->socket->moveToThread(this);
 
    this->start();
 }

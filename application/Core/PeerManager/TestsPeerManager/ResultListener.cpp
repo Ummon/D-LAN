@@ -98,7 +98,7 @@ static const QByteArray CHUNK_DATA("ALL YOUR BYTE ARE BELONG TO US");
 
 void ResultListener::stream(QSharedPointer<PM::ISocket> socket)
 {
-   QByteArray data = socket->getQSocket()->readAll();
+   QByteArray data = socket->readAll();
    qDebug() << "ResultListener::stream : " << data;
    QCOMPARE(data, CHUNK_DATA);
    socket->finished(PM::ISocket::SFS_OK);
@@ -107,6 +107,6 @@ void ResultListener::stream(QSharedPointer<PM::ISocket> socket)
 
 void ResultListener::getChunk(QSharedPointer<FM::IChunk> chunk, int offset, QSharedPointer<ISocket> socket)
 {
-   socket->getQSocket()->write(CHUNK_DATA);
+   socket->write(CHUNK_DATA);
    socket->finished(PM::ISocket::SFS_OK);
 }

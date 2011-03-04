@@ -84,7 +84,7 @@ RemoteConnection::RemoteConnection(
 
 RemoteConnection::~RemoteConnection()
 {
-   L_DEBU(QString("RemoteConnection deleted, %1").arg(this->getQSocket()->peerAddress().toString()));
+   L_DEBU(QString("RemoteConnection[%1] deleted").arg(this->num));
    emit deleted(this);
 }
 
@@ -437,7 +437,7 @@ void RemoteConnection::sendBadPasswordResult()
    Protos::GUI::AuthenticationResult authResultMessage;
    authResultMessage.set_status(Protos::GUI::AuthenticationResult_Status_BAD_PASSWORD);
    this->send(Common::MessageHeader::GUI_AUTHENTICATION_RESULT, authResultMessage);
-   this->getQSocket()->close();
+   this->socket->close();
 }
 
 void RemoteConnection::removeGetEntriesResult(const PM::IGetEntriesResult* getEntriesResult)

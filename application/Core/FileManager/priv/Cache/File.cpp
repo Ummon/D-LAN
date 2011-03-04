@@ -116,6 +116,8 @@ File::~File()
   */
 void File::setToUnfinished(qint64 size, const Common::Hashes& hashes)
 {
+   L_DEBU(QString("File::setToUnfinished : %1").arg(this->getFullPath()));
+
    this->complete = false;
    this->stopHashing();
    this->tryToRename = false;

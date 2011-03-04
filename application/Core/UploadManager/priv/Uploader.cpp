@@ -44,7 +44,7 @@ Uploader::Uploader(QSharedPointer<FM::IChunk> chunk, int offset, QSharedPointer<
    ID(currentID++), chunk(chunk), offset(offset), socket(socket), transferRateCalculator(transferRateCalculator)
 {
    this->mainThread = QThread::currentThread();
-   this->socket->getQSocket()->moveToThread(this);
+   this->socket->moveToThread(this);
 
    this->timer.setInterval(SETTINGS.get<quint32>("upload_live_time"));
    this->timer.setSingleShot(true);
@@ -106,7 +106,7 @@ void Uploader::run()
 
       while (bytesRead = reader->read(buffer, this->offset))
       {
-         int bytesSent = this->socket->getQSocket()->write(buffer, bytesRead);
+         int bytesSent = this->socket->write(buffer, bytesRead);
 
          if (bytesSent == -1)
          {
@@ -119,11 +119,11 @@ void Uploader::run()
          this->offset += bytesSent;
          this->mutex.unlock();
 
-         while (socket->getQSocket()->bytesToWrite() > SOCKET_BUFFER_SIZE)
+         while (socket->bytesToWrite() > SOCKET_BUFFER_SIZE)
          {
-            if (!socket->getQSocket()->waitForBytesWritten(SOCKET_TIMEOUT))
+            if (!socket->waitForBytesWritten(SOCKET_TIMEOUT))
             {
-               L_WARN(QString("Socket : cannot write data, error : %1, chunk : %2").arg(socket->getQSocket()->errorString()).arg(this->chunk->toStr()));
+               L_WARN(QString("Socket : cannot write data, error : %1, chunk : %2").arg(socket->errorString()).arg(this->chunk->toStr()));
                networkError = true;
                goto end;
             }
@@ -150,7 +150,7 @@ void Uploader::run()
    }
 
 end:
-   this->socket->getQSocket()->moveToThread(this->mainThread);
+   this->socket->moveToThread(this->mainThread);
 
    emit uploadFinished(networkError);
 }
