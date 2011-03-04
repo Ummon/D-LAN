@@ -84,8 +84,6 @@ File::File(
    hashing(false),
    toStopHashing(false)
 {
-   // QMutexLocker locker(&this->getCache()->getMutex());
-
    L_DEBU(QString("New file : %1 (%2), createPhysically = %3").arg(this->getFullPath()).arg(Common::Global::formatByteSize(this->size)).arg(createPhysically));
 
    if (createPhysically)
@@ -204,7 +202,7 @@ bool File::matchesEntry(const Protos::Common::Entry& entry) const
 }
 
 /**
-  * Return true if the size and the last modification date correspond to the given file information
+  * Return true if the size and the last modification date correspond to the given file information.
   */
 bool File::correspondTo(const QFileInfo& fileInfo)
 {
@@ -295,8 +293,9 @@ void File::dataReaderDeleted()
   * If the buffer exceed the file size then only the begining of the buffer is
   * used, the file is not resizing.
   * @exception IOErrorException
-  * @param buffer The buffer.
-  * @param offset An offset.
+  * @param buffer The buffer containing the data to write.
+  * @param nbBytes The number of bytes my buffer contains.
+  * @param offset The offset into the file where the data will be written.
   */
 qint64 File::write(const char* buffer, int nbBytes, qint64 offset)
 {
@@ -317,8 +316,9 @@ qint64 File::write(const char* buffer, int nbBytes, qint64 offset)
 /**
   * Fill the buffer with the read bytes from the given offset.
   * If the end of file is reached the buffer will be partialy filled.
-  * @param buffer The buffer.
-  * @param offset An offset.
+  * @param buffer The buffer where my data will be put after the reading.
+  * @param offset An offset into the file where the data will be read.
+  * @param maxBytesToRead The number of bytes to read, the buffer size must be at least this value.
   * @return the number of bytes read.
   */
 qint64 File::read(char* buffer, qint64 offset, int maxBytesToRead)
