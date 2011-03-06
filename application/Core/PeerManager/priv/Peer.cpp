@@ -47,7 +47,7 @@ Peer::Peer(PeerManager* peerManager, QSharedPointer<FM::IFileManager> fileManage
   */
 QString Peer::toStringLog() const
 {
-   return QString("%1 %2 %3:%4 %5 %6/s").arg(this->nick).arg(this->ID.toStr()).arg(this->IP.toString()).arg(this->port).arg(this->alive ? "<alive>" : "<dead>").arg(Common::Global::formatByteSize(this->speed, 4));
+   return QString("%1 %2 %3:%4 %5 %6/s").arg(this->nick).arg(this->ID.toStr()).arg(this->IP.toString()).arg(this->port).arg(this->alive ? "<alive>" : "<dead>").arg(Common::Global::formatByteSize(const_cast<Peer*>(this)->getSpeed(), 4));
 }
 
 Common::Hash Peer::getID() const
