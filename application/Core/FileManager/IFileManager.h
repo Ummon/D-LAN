@@ -114,6 +114,7 @@ namespace FM
 
       /**
         * Ask if we have the given hashes. For each hashes a bit is set (1 if the hash is known or 0 otherwise) into the returned QBitArray.
+        * Returns a null QBitArray if we own any of the given hashes.
         */
       virtual QBitArray haveChunks(const QList<Common::Hash>& hashes) = 0;
 

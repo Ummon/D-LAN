@@ -239,14 +239,17 @@ void UDPListener::processPendingMulticastDatagrams()
                QList<Common::Hash> hashes;
                for (int i = 0; i < IMAliveMessage.chunk_size(); i++)
                   hashes << Common::Hash(IMAliveMessage.chunk(i).hash().data());
+
                QBitArray bitArray = this->fileManager->haveChunks(hashes);
 
-               Protos::Core::ChunksOwned chunkOwnedMessage;
-               chunkOwnedMessage.set_tag(IMAliveMessage.tag());
-               for (int i = 0; i < bitArray.size(); i++)
-                  chunkOwnedMessage.add_chunk_state(bitArray[i]);
-
-               this->send(Common::MessageHeader::CORE_CHUNKS_OWNED, header.getSenderID(), chunkOwnedMessage);
+               if (!bitArray.isNull()) // If we own at least one chunk we reply with a CHUNKS_OWNED message.
+               {
+                  Protos::Core::ChunksOwned chunkOwnedMessage;
+                  chunkOwnedMessage.set_tag(IMAliveMessage.tag());
+                  for (int i = 0; i < bitArray.size(); i++)
+                     chunkOwnedMessage.add_chunk_state(bitArray[i]);
+                  this->send(Common::MessageHeader::CORE_CHUNKS_OWNED, header.getSenderID(), chunkOwnedMessage);
+               }
             }
 
             if (sendIMAlive)
