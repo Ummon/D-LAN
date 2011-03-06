@@ -227,13 +227,18 @@ QSharedPointer<ChunkDownload> FileDownload::getAChunkToDownload()
    return QSharedPointer<ChunkDownload>();
 }
 
-void FileDownload::getUnfinishedChunks(QList< QSharedPointer<IChunkDownload> >& chunks, int n) const
+/**
+  * Fills 'chunks' with the unfinished chunk of the file. Do not add more than 'nMax' chunk to chunks.
+  */
+void FileDownload::getUnfinishedChunks(QList< QSharedPointer<IChunkDownload> >& chunks, int nMax) const
 {
-   for (QListIterator< QSharedPointer<ChunkDownload> > i(this->chunkDownloads); i.hasNext() && this->status != COMPLETE;)
+   if (this->status == COMPLETE || this->status == DELETED)
+      return;
+
+   for (int i = 0; i < this->chunkDownloads.size() && i < nMax; i++)
    {
-      const QSharedPointer<ChunkDownload>& chunkDownload = i.next();
-      if (!chunkDownload->isComplete())
-         chunks << chunkDownload;
+      if (!this->chunkDownloads[i]->isComplete())
+         chunks << this->chunkDownloads[i];
    }
 }
 

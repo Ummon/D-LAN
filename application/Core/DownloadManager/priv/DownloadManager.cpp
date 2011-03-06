@@ -243,7 +243,7 @@ QList< QSharedPointer<IChunkDownload> > DownloadManager::getUnfinishedChunks(int
       if (!fileDownload)
          continue;
 
-      fileDownload->getUnfinishedChunks(unfinishedChunks, n);
+      fileDownload->getUnfinishedChunks(unfinishedChunks, n - unfinishedChunks.size());
    }
 
    return unfinishedChunks;
