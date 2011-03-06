@@ -15,7 +15,7 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-
+  
 struct Log { static QSharedPointer<LM::ILogger> logger; };
 #define L_USER(mess) LOG_USER(Log::logger, mess)
 #define L_DEBU(mess) LOG_DEBU(Log::logger, mess)
