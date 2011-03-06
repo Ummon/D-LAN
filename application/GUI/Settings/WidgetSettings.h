@@ -22,6 +22,7 @@
 #include <QWidget>
 #include <QDir>
 #include <QStyledItemDelegate>
+#include <QItemSelection>
 
 #include <Common/RemoteCoreController/ICoreConnection.h>
 
@@ -64,6 +65,8 @@ namespace GUI
       void resetCoreAddress();
 
       void displayContextMenuDownload(const QPoint& point);
+      void refreshButtonsAvailability(const QItemSelection& selected);
+      void refreshButtonsAvailability();
       void openLocation();
 
       QStringList askForDirectories();

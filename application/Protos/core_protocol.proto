@@ -27,10 +27,9 @@ message IMAlive {
    optional uint64 tag = 5; // A random number, all results must repeat this number.
    repeated Common.Hash chunk = 6; // Can be empty.
 }
-// This message is only sent if some chunks are requested.
+// This message is only sent if at least one requested chunks is known.
 // Return an array with a bool value for each
 // given chunks. 'true' means "I have this chunk".
-// Not sent if the peer doesn't own any requested chunk.
 // all -> a
 // id : 0x02
 message ChunksOwned {

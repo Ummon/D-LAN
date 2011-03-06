@@ -83,7 +83,14 @@ WidgetSettings::WidgetSettings(QSharedPointer<RCC::ICoreConnection> coreConnecti
    connect(this->ui->butResetCoreAddress, SIGNAL(clicked()), this, SLOT(resetCoreAddress()));
 
    this->ui->tblShareDirs->setContextMenuPolicy(Qt::CustomContextMenu);
-   connect(this->ui->tblShareDirs, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(displayContextMenuDownload(const QPoint&)));
+   connect(this->ui->tblShareDirs, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(displayContextMenuDownload(const QPoint&)));   
+
+   // When the selection change or a shared dir is moved/deleted/inserted we must set the availability of the action buttons.
+   connect(this->ui->tblShareDirs->selectionModel(), SIGNAL(selectionChanged(const QItemSelection&, const QItemSelection&)), this, SLOT(refreshButtonsAvailability(const QItemSelection&)));
+   connect(&this->sharedDirsModel, SIGNAL(layoutChanged()), this, SLOT(refreshButtonsAvailability()));
+   connect(&this->sharedDirsModel, SIGNAL(rowsInserted(const QModelIndex&, int, int)), this, SLOT(refreshButtonsAvailability()));
+   connect(&this->sharedDirsModel, SIGNAL(rowsRemoved(const QModelIndex&, int, int)), this, SLOT(refreshButtonsAvailability()));
+   this->refreshButtonsAvailability();
 }
 
 WidgetSettings::~WidgetSettings()
@@ -242,6 +249,29 @@ void WidgetSettings::displayContextMenuDownload(const QPoint& point)
 
       menu.exec(globalPosition);
    }
+}
+
+void WidgetSettings::refreshButtonsAvailability(const QItemSelection& selected)
+{
+   if (selected.indexes().isEmpty() || !selected.indexes().first().isValid())
+   {
+      this->ui->butMoveUpShared->setDisabled(true);
+      this->ui->butMoveDownShared->setDisabled(true);
+      this->ui->butRemoveShared->setDisabled(true);
+      this->ui->butOpenFolder->setDisabled(true);
+   }
+   else
+   {
+      this->ui->butMoveUpShared->setDisabled(selected.indexes().first().row() == 0);
+      this->ui->butMoveDownShared->setDisabled(selected.indexes().first().row() == this->sharedDirsModel.rowCount() - 1);
+      this->ui->butRemoveShared->setDisabled(false);
+      this->ui->butOpenFolder->setDisabled(false);
+   }
+}
+
+void WidgetSettings::refreshButtonsAvailability()
+{
+   this->refreshButtonsAvailability(QItemSelection(this->ui->tblShareDirs->selectionModel()->selection()));
 }
 
 void WidgetSettings::openLocation()
