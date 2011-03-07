@@ -26,14 +26,16 @@
 
 #include <AybabtuGUI.h>
 
-#ifdef DEBUG
+#if defined(DEBUG) && defined(ENABLE_NVWA)
    // For Common/debug_new.cpp.
-   //extern const char* new_progname;
+   extern const char* new_progname;
 #endif
 
 int main(int argc, char *argv[])
 {
-   //new_progname = argv[0];
+#if defined(DEBUG) && defined(ENABLE_NVWA)
+   new_progname = argv[0];
+#endif
 
    SETTINGS.setFilename(Common::GUI_SETTINGS_FILENAME);
    SETTINGS.setSettingsMessage(new Protos::GUI::Settings());

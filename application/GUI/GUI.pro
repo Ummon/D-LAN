@@ -4,6 +4,9 @@
 #
 #-------------------------------------------------
 
+# Uncomment this line to enable the leak detector.
+# DEFINES += ENABLE_NVWA
+
 QT       += core gui network
 TARGET = AybabtuGUI
 TEMPLATE = app
@@ -27,8 +30,14 @@ LIBS += -L../Common/output/$$FOLDER \
     -lCommon
 POST_TARGETDEPS += ../Common/output/$$FOLDER/libCommon.a
 
+CONFIG(debug, debug|release) {
+   contains(DEFINES, ENABLE_NVWA) {
+      SOURCES += ../Libs/Nvwa/debug_new.cpp
+   }
+}
+
 SOURCES += main.cpp\
-        MainWindow.cpp \
+    MainWindow.cpp \
     ../Protos/gui_protocol.pb.cc \
     ../Protos/common.pb.cc \
     ../Protos/gui_settings.pb.cc \
