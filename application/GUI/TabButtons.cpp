@@ -123,6 +123,7 @@ TabRefreshButton::TabRefreshButton(QWidget* parent) :
    this->icon.addPixmap(QPixmap(":/icons/ressources/refresh.png"), QIcon::Normal, QIcon::Off);
    this->icon.addPixmap(QPixmap(":/icons/ressources/refresh-down.png"), QIcon::Normal, QIcon::On);
    this->icon.addPixmap(QPixmap(":/icons/ressources/refresh-hover.png"), QIcon::Active, QIcon::Off);
+   this->setToolTip("Refresh");
 }
 
 void TabRefreshButton::drawPrimitive(const QStyleOption& opt, QPainter& p)
