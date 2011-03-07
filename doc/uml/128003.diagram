@@ -1,28 +1,28 @@
-format 69
+format 75
 
 componentcanvas 128259 component_ref 128003 // FileManager
   draw_component_as_icon default show_component_req_prov default show_component_rea default show_stereotype_properties default
-  xyzwh 297 22 2000 145 137
+  xyzwh 237 15 2000 135 139
 end
 componentcanvas 128387 component_ref 129283 // DownloadManager
   draw_component_as_icon default show_component_req_prov default show_component_rea default show_stereotype_properties default
-  xyzwh 268 241 2000 145 251
+  xyzwh 238 262 2000 139 229
 end
 componentcanvas 133251 component_ref 128131 // PeerManager
   draw_component_as_icon default show_component_req_prov default show_component_rea default show_stereotype_properties default
-  xyzwh 530 453 2000 145 157
+  xyzwh 449 360 2000 145 215
 end
 componentcanvas 133379 component_ref 129411 // UploadManager
   draw_component_as_icon default show_component_req_prov default show_component_rea default show_stereotype_properties default
-  xyzwh 526 117 2000 145 195
+  xyzwh 454 77 2000 139 169
 end
 componentcanvas 133763 component_ref 129667 // NetworkListener
   draw_component_as_icon default show_component_req_prov default show_component_rea default show_stereotype_properties default
-  xyzwh 45 253 2000 145 251
+  xyzwh 21 275 2000 147 203
 end
 componentcanvas 133891 component_ref 129795 // RemoteControlManager
   draw_component_as_icon default show_component_req_prov default show_component_rea default show_stereotype_properties default
-  xyzwh 53 12 2000 151 213
+  xyzwh 11 14 2000 153 229
 end
 simplerelationcanvas 128006 simplerelation_ref 128006
   from ref 128387 z 2001 to ref 128259
@@ -44,7 +44,8 @@ simplerelationcanvas 129414 simplerelation_ref 135814
 end
 simplerelationcanvas 129926 simplerelation_ref 135942
   geometry VH
-  from ref 133763 z 2001 to point 115 529
+  decenter_end 800
+  from ref 133763 z 2001 to point 91 530
   line 130310 z 2001 to ref 133251
 end
 simplerelationcanvas 130438 simplerelation_ref 142470

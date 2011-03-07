@@ -1,16 +1,16 @@
-format 73
+format 75
 "Core" // Aybabtu::Core
-  revision 18
+  revision 19
   modified_by 42 "gburri"
   // class settings
   //class diagram settings
-  draw_all_relations default hide_attributes default hide_operations default hide_getset_operations default show_members_full_definition default show_members_visibility default show_members_stereotype default show_members_multiplicity default show_members_initialization default show_attribute_modifiers default member_max_width 0 show_parameter_dir default show_parameter_name default package_name_in_tab default class_drawing_mode default drawing_language default show_context_mode default auto_label_position default show_relation_modifiers default show_relation_visibility default show_infonote default shadow default show_stereotype_properties default
+  draw_all_relations default hide_attributes default hide_operations default hide_getset_operations default show_members_full_definition default show_members_visibility default show_members_stereotype default show_members_context default show_members_multiplicity default show_members_initialization default show_attribute_modifiers default member_max_width 0 show_parameter_dir default show_parameter_name default package_name_in_tab default class_drawing_mode default drawing_language default show_context_mode default auto_label_position default show_relation_modifiers default show_relation_visibility default show_infonote default shadow default show_stereotype_properties default
   //use case diagram settings
   package_name_in_tab default show_context default auto_label_position default draw_all_relations default class_drawing_mode default shadow default show_stereotype_properties default
   //sequence diagram settings
-  show_full_operations_definition default write_horizontally default class_drawing_mode default drawing_language default draw_all_relations default shadow default show_stereotype_properties default
+  show_full_operations_definition default write_horizontally default class_drawing_mode default drawing_language default draw_all_relations default shadow default show_stereotype_properties default show_class_context_mode default show_msg_context_mode default
   //collaboration diagram settings
-  show_full_operations_definition default show_hierarchical_rank default write_horizontally default drawing_language default package_name_in_tab default show_context default draw_all_relations default shadow default show_stereotype_properties default
+  show_full_operations_definition default show_hierarchical_rank default write_horizontally default drawing_language default package_name_in_tab default show_context default show_msg_context default draw_all_relations default shadow default show_stereotype_properties default
   //object diagram settings
    write_horizontally default package_name_in_tab default show_context default auto_label_position default draw_all_relations default shadow default show_stereotype_properties default
   //component diagram settings
@@ -29,13 +29,13 @@ format 73
   cpp_namespace "Core"
   classview 128006 "Sequences"
     //class diagram settings
-    draw_all_relations default hide_attributes default hide_operations default hide_getset_operations default show_members_full_definition default show_members_visibility default show_members_stereotype default show_members_multiplicity default show_members_initialization default show_attribute_modifiers default member_max_width 0 show_parameter_dir default show_parameter_name default package_name_in_tab default class_drawing_mode default drawing_language default show_context_mode default auto_label_position default show_relation_modifiers default show_relation_visibility default show_infonote default shadow default show_stereotype_properties default
+    draw_all_relations default hide_attributes default hide_operations default hide_getset_operations default show_members_full_definition default show_members_visibility default show_members_stereotype default show_members_context default show_members_multiplicity default show_members_initialization default show_attribute_modifiers default member_max_width 0 show_parameter_dir default show_parameter_name default package_name_in_tab default class_drawing_mode default drawing_language default show_context_mode default auto_label_position default show_relation_modifiers default show_relation_visibility default show_infonote default shadow default show_stereotype_properties default
     //collaboration diagram settings
-    show_full_operations_definition default show_hierarchical_rank default write_horizontally default drawing_language default package_name_in_tab default show_context default draw_all_relations default shadow default show_stereotype_properties default
+    show_full_operations_definition default show_hierarchical_rank default write_horizontally default drawing_language default package_name_in_tab default show_context default show_msg_context default draw_all_relations default shadow default show_stereotype_properties default
     //object diagram settings
      write_horizontally default package_name_in_tab default show_context default auto_label_position default draw_all_relations default shadow default show_stereotype_properties default
     //sequence diagram settings
-    show_full_operations_definition default write_horizontally default class_drawing_mode default drawing_language default draw_all_relations default shadow default show_stereotype_properties default
+    show_full_operations_definition default write_horizontally default class_drawing_mode default drawing_language default draw_all_relations default shadow default show_stereotype_properties default show_class_context_mode default show_msg_context_mode default
     //state diagram settings
     package_name_in_tab default show_context default auto_label_position default write_trans_label_horizontally default show_trans_definition default draw_all_relations default shadow default
     show_activities default region_horizontally default drawing_language default show_stereotype_properties default
@@ -44,62 +44,62 @@ format 73
     package_name_in_tab default show_context default show_opaque_action_definition default auto_label_position default write_flow_label_horizontally default draw_all_relations default shadow default
     show_infonote default drawing_language default show_stereotype_properties default
     sequencediagram 128006 "Sent HaveChunks"
-      show_full_operations_definition default write_horizontally default class_drawing_mode default drawing_language default draw_all_relations default shadow default show_stereotype_properties default
+      show_full_operations_definition default write_horizontally default class_drawing_mode default drawing_language default draw_all_relations default shadow default show_stereotype_properties default show_class_context_mode default show_msg_context_mode default
       overlapping_bars size A4
     end
 
     sequencediagram 128134 "Received HaveChunks"
-      show_full_operations_definition default write_horizontally default class_drawing_mode default drawing_language default draw_all_relations default shadow default show_stereotype_properties default
+      show_full_operations_definition default write_horizontally default class_drawing_mode default drawing_language default draw_all_relations default shadow default show_stereotype_properties default show_class_context_mode default show_msg_context_mode default
       overlapping_bars size A4
     end
 
     sequencediagram 137987 "Sent ChatMessage"
-      show_full_operations_definition default write_horizontally default class_drawing_mode default drawing_language default draw_all_relations default shadow default show_stereotype_properties default
+      show_full_operations_definition default write_horizontally default class_drawing_mode default drawing_language default draw_all_relations default shadow default show_stereotype_properties default show_class_context_mode default show_msg_context_mode default
       overlapping_bars size A4
     end
 
     sequencediagram 138115 "Received ChatMessage"
-      show_full_operations_definition default write_horizontally default class_drawing_mode default drawing_language default draw_all_relations default shadow default show_stereotype_properties default
+      show_full_operations_definition default write_horizontally default class_drawing_mode default drawing_language default draw_all_relations default shadow default show_stereotype_properties default show_class_context_mode default show_msg_context_mode default
       overlapping_bars size A4
     end
 
     sequencediagram 138243 "Sent Find"
-      show_full_operations_definition default write_horizontally default class_drawing_mode default drawing_language default draw_all_relations default shadow default show_stereotype_properties default
+      show_full_operations_definition default write_horizontally default class_drawing_mode default drawing_language default draw_all_relations default shadow default show_stereotype_properties default show_class_context_mode default show_msg_context_mode default
       overlapping_bars size A4
     end
 
     sequencediagram 144771 "Received Find"
-      show_full_operations_definition default write_horizontally default class_drawing_mode default drawing_language default draw_all_relations default shadow default show_stereotype_properties default
+      show_full_operations_definition default write_horizontally default class_drawing_mode default drawing_language default draw_all_relations default shadow default show_stereotype_properties default show_class_context_mode default show_msg_context_mode default
       overlapping_bars size A4
     end
 
     sequencediagram 144899 "Sent GetHashes"
-      show_full_operations_definition default write_horizontally default class_drawing_mode default drawing_language default draw_all_relations default shadow default show_stereotype_properties default
+      show_full_operations_definition default write_horizontally default class_drawing_mode default drawing_language default draw_all_relations default shadow default show_stereotype_properties default show_class_context_mode default show_msg_context_mode default
       overlapping_bars size A4
     end
 
     sequencediagram 145027 "Received GetHashes"
-      show_full_operations_definition default write_horizontally default class_drawing_mode default drawing_language default draw_all_relations default shadow default show_stereotype_properties default
+      show_full_operations_definition default write_horizontally default class_drawing_mode default drawing_language default draw_all_relations default shadow default show_stereotype_properties default show_class_context_mode default show_msg_context_mode default
       overlapping_bars size A4
     end
 
     sequencediagram 151555 "Sent GetEntries"
-      show_full_operations_definition default write_horizontally default class_drawing_mode default drawing_language default draw_all_relations default shadow default show_stereotype_properties default
+      show_full_operations_definition default write_horizontally default class_drawing_mode default drawing_language default draw_all_relations default shadow default show_stereotype_properties default show_class_context_mode default show_msg_context_mode default
       overlapping_bars size A4
     end
 
     sequencediagram 151683 "Received GetEntries"
-      show_full_operations_definition default write_horizontally default class_drawing_mode default drawing_language default draw_all_relations default shadow default show_stereotype_properties default
+      show_full_operations_definition default write_horizontally default class_drawing_mode default drawing_language default draw_all_relations default shadow default show_stereotype_properties default show_class_context_mode default show_msg_context_mode default
       overlapping_bars size A4
     end
 
     sequencediagram 151811 "Sent GetChunk"
-      show_full_operations_definition default write_horizontally default class_drawing_mode default drawing_language default draw_all_relations default shadow default show_stereotype_properties default
+      show_full_operations_definition default write_horizontally default class_drawing_mode default drawing_language default draw_all_relations default shadow default show_stereotype_properties default show_class_context_mode default show_msg_context_mode default
       overlapping_bars size A4
     end
 
     sequencediagram 151939 "Received GetChunk"
-      show_full_operations_definition default write_horizontally default class_drawing_mode default drawing_language default draw_all_relations default shadow default show_stereotype_properties default
+      show_full_operations_definition default write_horizontally default class_drawing_mode default drawing_language default draw_all_relations default shadow default show_stereotype_properties default show_class_context_mode default show_msg_context_mode default
       overlapping_bars size A4
     end
   end
@@ -114,7 +114,10 @@ format 73
       end
       provided_classes
 	class_ref 130307 // IChunk
+	class_ref 128170 // IDataReader
+	class_ref 128042 // IDataWriter
 	class_ref 129795 // IFileManager
+	class_ref 153603 // IGetHashesResult
       end
     end
 
@@ -126,11 +129,17 @@ format 73
 
     component 128131 "PeerManager"
       provided_classes
+	class_ref 135722 // IGetChunkResult
+	class_ref 160131 // IGetEntriesResult
+	class_ref 135850 // IGetHashesResult
 	class_ref 131331 // IPeer
 	class_ref 131203 // IPeerManager
+	class_ref 135594 // ISocket
       end
       required_classes
+	class_ref 130307 // IChunk
 	class_ref 129795 // IFileManager
+	class_ref 153603 // IGetHashesResult
       end
       simplerelation 135814
 	-_->
@@ -143,11 +152,14 @@ format 73
 	class_ref 130691 // IChunkDownload
 	class_ref 130819 // IDownload
 	class_ref 129667 // IDownloadManager
-	class_ref 137091 // Status
       end
       required_classes
 	class_ref 130307 // IChunk
+	class_ref 128170 // IDataReader
 	class_ref 129795 // IFileManager
+	class_ref 135722 // IGetChunkResult
+	class_ref 160131 // IGetEntriesResult
+	class_ref 135850 // IGetHashesResult
 	class_ref 131331 // IPeer
       end
       simplerelation 128006
@@ -163,13 +175,14 @@ format 73
 
     component 129411 "UploadManager"
       provided_classes
+	class_ref 128006 // IUpload
 	class_ref 130947 // IUploadManager
       end
       required_classes
-	class_ref 130051 // Hash
 	class_ref 130307 // IChunk
-	class_ref 131331 // IPeer
-	class_ref 130947 // IUploadManager
+	class_ref 128042 // IDataWriter
+	class_ref 131203 // IPeerManager
+	class_ref 135594 // ISocket
       end
       simplerelation 128134
 	-_->
@@ -189,10 +202,10 @@ format 73
 	class_ref 131715 // ISearch
       end
       required_classes
-	class_ref 130051 // Hash
 	class_ref 130691 // IChunkDownload
 	class_ref 129667 // IDownloadManager
 	class_ref 129795 // IFileManager
+	class_ref 131331 // IPeer
 	class_ref 131203 // IPeerManager
       end
       simplerelation 129158
@@ -214,11 +227,15 @@ format 73
     component 129795 "RemoteControlManager"
       required_classes
 	class_ref 131587 // IChat
+	class_ref 130819 // IDownload
 	class_ref 129667 // IDownloadManager
 	class_ref 129795 // IFileManager
+	class_ref 160131 // IGetEntriesResult
 	class_ref 131459 // INetworkListener
+	class_ref 131331 // IPeer
 	class_ref 131203 // IPeerManager
 	class_ref 131715 // ISearch
+	class_ref 128006 // IUpload
 	class_ref 130947 // IUploadManager
       end
       simplerelation 128262

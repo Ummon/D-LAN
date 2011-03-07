@@ -1,0 +1,18 @@
+format 75
+
+componentcanvas 128042 component_ref 128042 // GUI
+  draw_component_as_icon default show_component_req_prov default show_component_rea default show_stereotype_properties default
+  xyzwh 34 24 2000 123 109
+end
+componentcanvas 128170 component_ref 128170 // RemoteCoreController
+  draw_component_as_icon default show_component_req_prov default show_component_rea default show_stereotype_properties default
+  xyzwh 33 221 2000 125 109
+end
+note 128426 "From ::Common"
+  xyzwh 151 169 2000 93 35
+simplerelationcanvas 128298 simplerelation_ref 128042
+  from ref 128042 z 2001 to ref 128170
+end
+line 128554 -_-_
+  from ref 128426 z 2001 to ref 128170
+end

@@ -1,6 +1,6 @@
 format 75
-"Common" // Aybabtu::Common
-  revision 7
+"RemoteCoreController" // Aybabtu::Common::RemoteCoreController
+  revision 1
   modified_by 42 "gburri"
   // class settings
   //class diagram settings
@@ -26,12 +26,7 @@ format 75
   package_name_in_tab default show_context default show_opaque_action_definition default auto_label_position default write_flow_label_horizontally default draw_all_relations default shadow default
   show_infonote default drawing_language default show_stereotype_properties default
   
-  cpp_h_dir "Common/"
-  cpp_src_dir "Common/"
-  cpp_namespace "Common"
-  package_ref 129667 // LogManager
-
-  classview 129283 "Classes"
+  classview 128042 "Classes"
     //class diagram settings
     draw_all_relations default hide_attributes default hide_operations default hide_getset_operations default show_members_full_definition default show_members_visibility default show_members_stereotype default show_members_context default show_members_multiplicity default show_members_initialization default show_attribute_modifiers default member_max_width 0 show_parameter_dir default show_parameter_name default package_name_in_tab default class_drawing_mode default drawing_language default show_context_mode default auto_label_position default show_relation_modifiers default show_relation_visibility default show_infonote default shadow default show_stereotype_properties default
     //collaboration diagram settings
@@ -47,129 +42,67 @@ format 75
     //activity diagram settings
     package_name_in_tab default show_context default show_opaque_action_definition default auto_label_position default write_flow_label_horizontally default draw_all_relations default shadow default
     show_infonote default drawing_language default show_stereotype_properties default
-    associated_deployment_view deploymentview_ref 129442 // Classes
-    classdiagram 129411 "classes"
-      draw_all_relations default hide_attributes default hide_operations default hide_getset_operations default show_members_full_definition default show_members_visibility default show_members_stereotype default show_members_context default show_members_multiplicity default show_members_initialization default show_attribute_modifiers default member_max_width 0 show_parameter_dir default show_parameter_name default package_name_in_tab default class_drawing_mode default drawing_language default show_context_mode default auto_label_position default show_relation_modifiers default show_relation_visibility default show_infonote default shadow default show_stereotype_properties default
-      size A4
-    end
-
-    class 130051 "Hash"
-      visibility package 
+    class 135210 "IBrowseResult"
+      visibility package stereotype "interface"
       cpp_decl "${comment}${template}class ${name}${inherit}
 {
 ${members}};
 ${inlines}
 "
-      java_decl ""
-      php_decl ""
+      java_decl "${comment}${@}${visibility}interface ${name}${extends} {
+${members}}
+"
+      php_decl "${comment}${visibility}interface ${name} {
+${members}}
+"
       python_2_2 python_decl ""
-      idl_decl ""
+      idl_decl "${comment}${abstract}${local}interface ${name}${inherit} {
+${members}};
+"
       explicit_switch_type ""
       
-      classrelation 134531 // <generalisation>
-	relation 134403 ---|>
-	  a public
-	    cpp default "${type}"
-	    classrelation_ref 134531 // <generalisation>
-	  b parent class_ref 134787 // QByteArray
-      end
     end
 
-    class 135299 "Hashes"
-      visibility package 
+    class 135338 "ICoreConnection"
+      visibility package stereotype "interface"
       cpp_decl "${comment}${template}class ${name}${inherit}
 {
 ${members}};
 ${inlines}
 "
-      java_decl ""
-      php_decl ""
+      java_decl "${comment}${@}${visibility}interface ${name}${extends} {
+${members}}
+"
+      php_decl "${comment}${visibility}interface ${name} {
+${members}}
+"
       python_2_2 python_decl ""
-      idl_decl ""
+      idl_decl "${comment}${abstract}${local}interface ${name}${inherit} {
+${members}};
+"
       explicit_switch_type ""
       
-      classrelation 134659 // <directional composition>
-	relation 134531 *-->
-	  a role_name "" multiplicity "*" private
-	    cpp default "    ${comment}${static}${mutable}${volatile}${const}${type} ${name}${value};
+    end
+
+    class 135466 "ISearchResult"
+      visibility package stereotype "interface"
+      cpp_decl "${comment}${template}class ${name}${inherit}
+{
+${members}};
+${inlines}
 "
-	    classrelation_ref 134659 // <directional composition>
-	  b parent class_ref 130051 // Hash
-      end
+      java_decl "${comment}${@}${visibility}interface ${name}${extends} {
+${members}}
+"
+      php_decl "${comment}${visibility}interface ${name} {
+${members}}
+"
+      python_2_2 python_decl ""
+      idl_decl "${comment}${abstract}${local}interface ${name}${inherit} {
+${members}};
+"
+      explicit_switch_type ""
+      
     end
   end
-
-  componentview 129155 "Components"
-    //component diagram settings
-    package_name_in_tab default show_context default auto_label_position default draw_all_relations default shadow default
-    draw_component_as_icon default show_component_req_prov default show_component_rea default show_stereotype_properties default
-    component 129539 "LogManager"
-      provided_classes
-	class_ref 132227 // IEntry
-	class_ref 132099 // ILogger
-	class_ref 131971 // ILogManager
-      end
-    end
-
-    component 128170 "RemoteCoreController"
-      provided_classes
-	class_ref 135210 // IBrowseResult
-	class_ref 135338 // ICoreConnection
-	class_ref 135466 // ISearchResult
-      end
-    end
-  end
-
-  deploymentview 129442 "Classes"
-    //deployment diagram settings
-    package_name_in_tab default show_context default write_horizontally default auto_label_position default draw_all_relations default shadow default
-    draw_component_as_icon default show_component_req_prov default show_component_rea default show_stereotype_properties default
-    artifact 136354 "Hash"
-      stereotype "source"
-      cpp_h "#ifndef ${NAMESPACE}_${NAME}_H
-#define ${NAMESPACE}_${NAME}_H
-
-${comment}
-${includes}
-${declarations}
-${namespace_start}
-   ${definition}
-${namespace_end}
-#endif
-"
-      cpp_src "${comment}
-${includes}
-${namespace_start}
-   ${members}
-${namespace_end}"
-      associated_classes
-	class_ref 130051 // Hash
-      end
-    end
-
-    artifact 136482 "Hashes"
-      stereotype "source"
-      cpp_h "#ifndef ${NAMESPACE}_${NAME}_H
-#define ${NAMESPACE}_${NAME}_H
-
-${comment}
-${includes}
-${declarations}
-${namespace_start}
-   ${definition}
-${namespace_end}
-#endif
-"
-      cpp_src "${comment}
-${includes}
-${namespace_start}
-   ${members}
-${namespace_end}"
-      associated_classes
-	class_ref 135299 // Hashes
-      end
-    end
-  end
-
-  package_ref 128042 // RemoteCoreController
 end
