@@ -249,7 +249,7 @@ void File::newDataWriterCreated()
    if (this->numDataWriter == 1)
    {
       this->fileInWriteMode.setFileName(this->getFullPath());
-      if (!this->fileInWriteMode.open(QIODevice::ReadWrite))
+      if (!this->fileInWriteMode.open(QIODevice::ReadWrite | QIODevice::Unbuffered)) // We have the same performance with or without "QIODevice::Unbuffered".
          throw UnableToOpenFileInWriteModeException();
    }
 }
@@ -368,7 +368,7 @@ bool File::computeHashes(int n)
    Common::Hasher hasher;
 
    QFile file(this->getFullPath());
-   if (!file.open(QIODevice::ReadOnly))
+   if (!file.open(QIODevice::ReadOnly | QIODevice::Unbuffered)) // Same performance with or without "QIODevice::Unbuffered".
    {
       this->toStopHashing = false;
       this->hashing = false;
