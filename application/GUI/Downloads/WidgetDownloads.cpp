@@ -69,6 +69,7 @@ void DownloadsDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opt
    }
    else
    {
+      // Remove the focus box, not very useful.
       QStyleOptionViewItemV4 newOption(option);
       newOption.state = option.state & (~QStyle::State_HasFocus);
       QStyledItemDelegate::paint(painter, newOption, index);

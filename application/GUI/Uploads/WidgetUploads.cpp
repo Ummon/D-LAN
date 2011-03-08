@@ -22,6 +22,9 @@ using namespace GUI;
 
 void UploadsDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
+   if (!index.isValid())
+      return;
+
    if (index.column() == 2)
    {
        QStyleOptionProgressBar progressBarOption;
@@ -36,7 +39,10 @@ void UploadsDelegate::paint(QPainter* painter, const QStyleOptionViewItem& optio
    }
    else
    {
-      QStyledItemDelegate::paint(painter, option, index);
+      // Remove the focus box, not very useful.
+      QStyleOptionViewItemV4 newOption(option);
+      newOption.state = option.state & (~QStyle::State_HasFocus);
+      QStyledItemDelegate::paint(painter, newOption, index);
    }
 }
 
