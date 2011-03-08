@@ -41,6 +41,7 @@ namespace UM
 
    public:
       Uploader(QSharedPointer<FM::IChunk> chunk, int offset, QSharedPointer<PM::ISocket> socket, Common::TransferRateCalculator& transferRateCalculator);
+      ~Uploader();
 
       quint64 getID() const;
       Common::Hash getPeerID() const;

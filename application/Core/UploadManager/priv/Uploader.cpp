@@ -51,6 +51,11 @@ Uploader::Uploader(QSharedPointer<FM::IChunk> chunk, int offset, QSharedPointer<
    connect(&this->timer, SIGNAL(timeout()), this, SIGNAL(uploadTimeout()));
 }
 
+Uploader::~Uploader()
+{
+   L_DEBU(QString("Uploader#%1 deleted").arg(this->ID));
+}
+
 quint64 Uploader::getID() const
 {
    return this->ID;

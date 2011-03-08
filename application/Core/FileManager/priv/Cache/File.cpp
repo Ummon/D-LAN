@@ -262,7 +262,10 @@ void File::newDataReaderCreated()
    if (this->numDataReader == 1)
    {
       this->fileInReadMode.setFileName(this->getFullPath());
-      if (!this->fileInReadMode.open(QIODevice::ReadOnly))
+
+      // Why a file in readonly need to be buffered? Without the flag "QIODevice::Unbuffered" a lot of memory is consumed for nothing
+      // and this memory is not freed when the file is closed ('close()') but only when the QFile is deleted.
+      if (!this->fileInReadMode.open(QIODevice::ReadOnly | QIODevice::Unbuffered))
          throw UnableToOpenFileInReadModeException();
    }
 }
