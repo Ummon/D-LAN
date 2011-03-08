@@ -288,7 +288,7 @@ QStringList WidgetSettings::askForDirectories()
 {
    if (this->coreConnection->isLocal())
    {
-      QFileDialog fileDialog(this);
+      QFileDialog fileDialog(this, "Choose a directory to share");
       fileDialog.setOption(QFileDialog::DontUseNativeDialog,true);
       fileDialog.setFileMode(QFileDialog::Directory);
 
