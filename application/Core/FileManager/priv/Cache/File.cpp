@@ -349,7 +349,7 @@ qint64 File::read(char* buffer, qint64 offset, int maxBytesToRead)
   * from 'FileUpdated' thread.
   * @param n number of hashes to compute, 0 if we want to compute all the hashes.
   * @return Return true if all the hashes as been computed.
-  * @exceptions FileNotFoundException
+  * @exception IOErrorException Thrown when the file cannot be opened or read.
   */
 bool File::computeHashes(int n)
 {
@@ -373,7 +373,7 @@ bool File::computeHashes(int n)
       this->toStopHashing = false;
       this->hashing = false;
       L_WARN(QString("Unable to open this file : %1").arg(this->getFullPath()));
-      return true;
+      throw IOErrorException();
    }
 
    // Skip the already known full hashes.
@@ -419,6 +419,7 @@ bool File::computeHashes(int n)
          {
          case -1:
             L_ERRO(QString("Error during reading the file %1").arg(this->getFullPath()));
+            throw IOErrorException();
          case 0:
             endOfFile = true;
             goto endReading;

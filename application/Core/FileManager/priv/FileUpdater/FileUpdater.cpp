@@ -25,6 +25,7 @@ using namespace FM;
 
 #include <Common/Settings.h>
 
+#include <Exceptions.h>
 #include <priv/Global.h>
 #include <priv/Exceptions.h>
 #include <priv/Log.h>
@@ -327,8 +328,14 @@ void FileUpdater::computeSomeHashes()
       if (this->currentHashingFile->isComplete()) // A file can change its state from 'completed' to 'unfinished' if it's redownloaded.
       {
          locker.unlock();
-         bool complete = this->currentHashingFile->computeHashes(1); // Be carreful of methods 'prioritizeAFileToHash(..)' and 'rmRoot(..)' called concurrently here.
+         bool complete;
+         try {
+            complete = this->currentHashingFile->computeHashes(1); // Be carreful of methods 'prioritizeAFileToHash(..)' and 'rmRoot(..)' called concurrently here.
+         } catch (IOErrorException&) {
+            complete = true; // TODO : we set complete to true to remove the file from the list, maybe it should be better to retry in a while..
+         }
          locker.relock();
+
          if (complete)
          {
             this->filesWithoutHashesPrioritized.removeFirst();
@@ -362,8 +369,14 @@ void FileUpdater::computeSomeHashes()
       if (this->currentHashingFile->isComplete())
       {
          locker.unlock();
-         bool complete = this->currentHashingFile->computeHashes();
+         bool complete;
+         try {
+            complete = this->currentHashingFile->computeHashes();
+         } catch (IOErrorException&) {
+            complete = true; // TODO : we set complete to true to remove the file from the list, maybe it should be better to retry in a while..
+         }
          locker.relock();
+
          if (complete)
             this->filesWithoutHashes.removeAt(i--);
       }

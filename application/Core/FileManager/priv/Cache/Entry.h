@@ -69,7 +69,6 @@ namespace FM
 
       virtual qint64 getSize() const;
 
-
    protected:
       Cache* cache;
 

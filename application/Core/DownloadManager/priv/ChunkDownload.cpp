@@ -273,7 +273,7 @@ void ChunkDownload::run()
             timer.start();
             deltaRead = 0;
 
-            // If a another peer exists and our speed is lesser than 'lan_speed' / 'time_recheck_chunk_factor' and the other peer speed is greater than our
+            // If a another peer exists and its speed is greater than our by a factor 'switch_to_another_peer_factor'
             // then we will try to switch to this peer.
             PM::IPeer* peer = this->getTheFastestFreePeer();
             if (
