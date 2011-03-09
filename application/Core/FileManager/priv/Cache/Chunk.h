@@ -49,6 +49,8 @@ namespace FM
    public:
       ~Chunk();
 
+      QString toStringLog() const;
+
       Chunk* restoreFromFileCache(const Protos::FileCache::Hashes_Chunk& chunk);
 
       void populateHashesChunk(Protos::FileCache::Hashes_Chunk& chunk) const;
@@ -88,8 +90,6 @@ namespace FM
       bool isOwnedBy(File* file) const;
 
       bool matchesEntry(const Protos::Common::Entry& entry) const;
-
-      QString toStr() const;
 
    private:
       const int CHUNK_SIZE;

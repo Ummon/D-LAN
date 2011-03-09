@@ -66,6 +66,11 @@ Chunk::~Chunk()
    );
 }
 
+QString Chunk::toStringLog() const
+{
+   return QString("num = [%1], hash = %2, knownBytes = %3, size = %4").arg(this->num).arg(this->getHash().toStr()).arg(this->getKnownBytes()).arg(this->getChunkSize());
+}
+
 Chunk* Chunk::restoreFromFileCache(const Protos::FileCache::Hashes_Chunk& chunk)
 {
    this->knownBytes = chunk.known_bytes();
@@ -305,9 +310,4 @@ bool Chunk::matchesEntry(const Protos::Common::Entry& entry) const
 {
    QMutexLocker locker(&this->mutex);
    return this->file->matchesEntry(entry);
-}
-
-QString Chunk::toStr() const
-{
-   return QString("num = [%1], hash = %2, knownBytes = %3, size = %4").arg(this->num).arg(this->getHash().toStr()).arg(this->getKnownBytes()).arg(this->getChunkSize());
 }

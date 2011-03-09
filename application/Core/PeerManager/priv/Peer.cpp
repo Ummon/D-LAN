@@ -35,7 +35,12 @@ using namespace PM;
 const quint32 Peer::MAX_SPEED = std::numeric_limits<quint32>::max();
 
 Peer::Peer(PeerManager* peerManager, QSharedPointer<FM::IFileManager> fileManager, Common::Hash ID) :
-   peerManager(peerManager), fileManager(fileManager), connectionPool(peerManager, fileManager, ID), ID(ID), speed(MAX_SPEED), alive(false)
+   peerManager(peerManager),
+   fileManager(fileManager),
+   connectionPool(peerManager, fileManager, ID),
+   ID(ID),
+   speed(MAX_SPEED),
+   alive(false)
 {
    this->aliveTimer.setSingleShot(true);
    this->aliveTimer.setInterval(SETTINGS.get<quint32>("peer_timeout_factor") * SETTINGS.get<quint32>("peer_imalive_period"));
@@ -76,18 +81,22 @@ quint64 Peer::getSharingAmount() const
 }
 
 quint32 Peer::getSpeed()
-{
-   if (static_cast<quint32>(this->lastSpeedUpdate.restart()) > 1000 * SETTINGS.get<quint32>("download_rate_valid_time_factor") / (SETTINGS.get<quint32>("lan_speed") / 1024 / 1024))
+{   
+   // In [ms].
+   static const quint32 SPEED_VALIDITY_PERIOD = 1000 * SETTINGS.get<quint32>("download_rate_valid_time_factor") / (SETTINGS.get<quint32>("lan_speed") / 1024 / 1024);
+
+   if (this->speedTimer.elapsed() > SPEED_VALIDITY_PERIOD)
       this->speed = MAX_SPEED;
    return this->speed;
 }
 
-void Peer::setSpeed(quint32 speed)
-{
-   if (speed == MAX_SPEED)
-      this->speed = speed;
+void Peer::setSpeed(quint32 newSpeed)
+{   
+   this->speedTimer.start();
+   if (this->speed == MAX_SPEED)
+      this->speed = newSpeed;
    else
-      this->speed = (this->speed + speed) / 2;
+      this->speed = (this->speed + newSpeed) / 2;
 }
 
 bool Peer::isAlive()

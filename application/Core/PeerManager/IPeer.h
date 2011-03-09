@@ -62,7 +62,7 @@ namespace PM
         * If this method isn't called for some time, the speed will be reset to its default value.
         * See 'DownloadRateValidTime' from this wiki page: http://dev.aybabtu.org/projects/pmp/wiki/Protocol_core-core#Parameters to show the computation.
         */
-      virtual void setSpeed(quint32 speed) = 0;
+      virtual void setSpeed(quint32 newSpeed) = 0;
 
       /**
         * If we don't receive an IMAlive message from a peer during a certain time (for example 20 seconds), it will be concidered as dead.

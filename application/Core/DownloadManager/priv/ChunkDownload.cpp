@@ -33,8 +33,9 @@ using namespace DM;
   * It can be created when a new FileDownload is added for each chunk known in the given entry or when a FileDownload receive a hash.
   */
 
+const int ChunkDownload::MINIMUM_DELTA_TIME_TO_COMPUTE_SPEED(100); // [ms]
+
 ChunkDownload::ChunkDownload(QSharedPointer<PM::IPeerManager> peerManager, OccupiedPeers& occupiedPeersDownloadingChunk, Common::Hash chunkHash, Common::TransferRateCalculator& transferRateCalculator) :
-   SOCKET_TIMEOUT(SETTINGS.get<quint32>("socket_timeout")),
    peerManager(peerManager),
    occupiedPeersDownloadingChunk(occupiedPeersDownloadingChunk),
    chunkHash(chunkHash),
@@ -190,7 +191,7 @@ bool ChunkDownload::startDownloading()
    if (!this->currentDownloadingPeer)
       return false;
 
-   L_DEBU(QString("Starting downloading a chunk : %1 from %2").arg(this->chunk->toStr()).arg(this->currentDownloadingPeer->getID().toStr()));
+   L_DEBU(QString("Starting downloading a chunk : %1 from %2").arg(this->chunk->toStringLog()).arg(this->currentDownloadingPeer->getID().toStr()));
 
    this->downloading = true;
    emit downloadStarted();
@@ -211,11 +212,18 @@ bool ChunkDownload::startDownloading()
 
 void ChunkDownload::run()
 {
+   int deltaRead = 0;
+   QElapsedTimer timer;
+   timer.start();
+
    try
    {
       QSharedPointer<FM::IDataWriter> writer = this->chunk->getDataWriter();
 
-      const int BUFFER_SIZE = SETTINGS.get<quint32>("buffer_size");
+      static const int SOCKET_TIMEOUT = SETTINGS.get<quint32>("socket_timeout");
+      static const int TIME_PERIOD_CHOOSE_ANOTHER_PEER = 1000.0 * SETTINGS.get<double>("time_recheck_chunk_factor") * SETTINGS.get<quint32>("chunk_size") / SETTINGS.get<quint32>("lan_speed");
+
+      static const int BUFFER_SIZE = SETTINGS.get<quint32>("buffer_size");
       char buffer[BUFFER_SIZE];
 
       const int initialKnownBytes = this->chunk->getKnownBytes();
@@ -223,17 +231,13 @@ void ChunkDownload::run()
       int bytesToRead = this->chunkSize - initialKnownBytes;
       int bytesToWrite = 0;
       int bytesWritten = 0;
-      int deltaRead = 0;
-
-      QElapsedTimer timer;
-      timer.start();
 
       forever
       {
          this->mutex.lock();
          if (!this->downloading)
          {
-            L_DEBU(QString("Downloading aborted, chunk : %1%2").arg(this->chunk->toStr()).arg(this->chunk->isComplete() ? "" : " Not complete!"));
+            L_DEBU(QString("Downloading aborted, chunk : %1%2").arg(this->chunk->toStringLog()).arg(this->chunk->isComplete() ? "" : " Not complete!"));
             this->mutex.unlock();
             break;
          }
@@ -254,7 +258,7 @@ void ChunkDownload::run()
          }
          else if (bytesRead == -1)
          {
-            L_WARN(QString("Socket : cannot receive data : %1").arg(this->chunk->toStr()));
+            L_WARN(QString("Socket : cannot receive data : %1").arg(this->chunk->toStringLog()));
             this->networkTransferStatus = PM::ISocket::SFS_ERROR;
             break;
          }
@@ -262,9 +266,10 @@ void ChunkDownload::run()
          deltaRead += bytesRead;
          bytesToWrite += bytesRead;
 
-         if (timer.elapsed() > 1000)
+         if (timer.elapsed() > TIME_PERIOD_CHOOSE_ANOTHER_PEER)
          {
             this->currentDownloadingPeer->setSpeed(deltaRead / timer.elapsed() * 1000);
+            L_DEBU(QString("Check for a better peer for the chunk: %1, current peer: %2 ..").arg(this->chunk->toStringLog()).arg(this->currentDownloadingPeer->toStringLog()));
             timer.start();
             deltaRead = 0;
 
@@ -272,12 +277,12 @@ void ChunkDownload::run()
             // then we will try to switch to this peer.
             PM::IPeer* peer = this->getTheFastestFreePeer();
             if (
-               peer && peer != this->currentDownloadingPeer &&
-               this->currentDownloadingPeer->getSpeed() < SETTINGS.get<quint32>("lan_speed") / SETTINGS.get<double>("time_recheck_chunk_factor") &&
-               peer->getSpeed() > SETTINGS.get<double>("switch_to_another_peer_factor") * this->currentDownloadingPeer->getSpeed()
+               peer &&
+               peer != this->currentDownloadingPeer &&
+               peer->getSpeed() / SETTINGS.get<double>("switch_to_another_peer_factor") > this->currentDownloadingPeer->getSpeed()
             )
             {
-               L_DEBU(QString("Switch to a better peer : %1").arg(peer->toStringLog()));
+               L_DEBU(QString("Switch to a better peer: %1").arg(peer->toStringLog()));
                this->networkTransferStatus = PM::ISocket::SFS_TO_CLOSE; // We ask to close the socket to avoid to get garbage data.
                break;
             }
@@ -313,6 +318,9 @@ void ChunkDownload::run()
    {
       L_WARN("TryToWriteBeyondTheEndOfChunkException");
    }
+
+   if (timer.elapsed() > MINIMUM_DELTA_TIME_TO_COMPUTE_SPEED)
+      this->currentDownloadingPeer->setSpeed(deltaRead / timer.elapsed() * 1000);
 
    this->socket->setReadBufferSize(0);
    this->socket->moveToThread(this->mainThread);
@@ -356,7 +364,7 @@ void ChunkDownload::getChunkTimeout()
 
 void ChunkDownload::downloadingEnded()
 {
-   L_DEBU(QString("Downloading ended, chunk : %1%2").arg(this->chunk->toStr()).arg(this->chunk->isComplete() ? "" : " Not complete!"));
+   L_DEBU(QString("Downloading ended, chunk : %1%2").arg(this->chunk->toStringLog()).arg(this->chunk->isComplete() ? "" : " Not complete!"));
 
    if (!this->socket.isNull())
       this->socket.clear();

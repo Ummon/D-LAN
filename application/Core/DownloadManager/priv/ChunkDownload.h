@@ -44,6 +44,8 @@ namespace DM
 {
    class ChunkDownload : public QThread, public IChunkDownload, Common::Uncopyable
    {
+      static const int MINIMUM_DELTA_TIME_TO_COMPUTE_SPEED;
+
       Q_OBJECT
    public:
       ChunkDownload(QSharedPointer<PM::IPeerManager> peerManager, OccupiedPeers& occupiedPeersDownloadingChunk, Common::Hash chunkHash, Common::TransferRateCalculator& transferRateCalculator);
@@ -89,8 +91,6 @@ namespace DM
    private:
       PM::IPeer* getTheFastestFreePeer();
       int getNumberOfFreePeer();
-
-      const int SOCKET_TIMEOUT;
 
       QSharedPointer<PM::IPeerManager> peerManager; // To retrieve the peers from their ID.
 

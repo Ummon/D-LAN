@@ -81,7 +81,7 @@ void UploadManager::uploadFinished(bool networkError)
    Uploader* uploader = dynamic_cast<Uploader*>(this->sender());
    uploader->wait(); // TODO : wait for the finished signal instead, like the downloaders : connect(this, SIGNAL(finished()), this, SLOT(downloadingEnded()), Qt::QueuedConnection);
 
-   L_DEBU(QString("Upload finished, chunk : %1").arg(uploader->getChunk()->toStr()));
+   L_DEBU(QString("Upload finished, chunk : %1").arg(uploader->getChunk()->toStringLog()));
 
    uploader->getSocket()->finished(networkError ? PM::ISocket::SFS_ERROR : PM::ISocket::SFS_OK);
    uploader->startTimer(); // Will delay the call to 'deleteUploade'.

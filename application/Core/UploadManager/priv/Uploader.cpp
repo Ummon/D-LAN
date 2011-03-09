@@ -94,7 +94,7 @@ void Uploader::startTimer()
 
 void Uploader::run()
 {
-   L_DEBU(QString("Starting uploading a chunk from offset %1 : %2").arg(this->offset).arg(this->chunk->toStr()));
+   L_DEBU(QString("Starting uploading a chunk from offset %1 : %2").arg(this->offset).arg(this->chunk->toStringLog()));
 
    static const quint32 BUFFER_SIZE = SETTINGS.get<quint32>("buffer_size");
    static const quint32 SOCKET_BUFFER_SIZE = SETTINGS.get<quint32>("socket_buffer_size");
@@ -115,7 +115,7 @@ void Uploader::run()
 
          if (bytesSent == -1)
          {
-            L_WARN(QString("Socket : cannot send data : %1").arg(this->chunk->toStr()));
+            L_WARN(QString("Socket : cannot send data : %1").arg(this->chunk->toStringLog()));
             networkError = true;
             break;
          }
@@ -128,7 +128,7 @@ void Uploader::run()
          {
             if (!socket->waitForBytesWritten(SOCKET_TIMEOUT))
             {
-               L_WARN(QString("Socket : cannot write data, error : %1, chunk : %2").arg(socket->errorString()).arg(this->chunk->toStr()));
+               L_WARN(QString("Socket : cannot write data, error : %1, chunk : %2").arg(socket->errorString()).arg(this->chunk->toStringLog()));
                networkError = true;
                goto end;
             }

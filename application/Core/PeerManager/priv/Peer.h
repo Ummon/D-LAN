@@ -19,7 +19,7 @@
 #ifndef PEERMANAGER_PEER_H
 #define PEERMANAGER_PEER_H
 
-#include <QDate>
+#include <QElapsedTimer>
 #include <QTimer>
 #include <QString>
 #include <QTcpSocket>
@@ -59,7 +59,7 @@ namespace PM
       quint64 getSharingAmount() const;
 
       quint32 getSpeed();
-      void setSpeed(quint32 speed);
+      void setSpeed(quint32 newSpeed);
 
       bool isAlive();
       void update(const QHostAddress& IP, quint16 port, const QString& nick, const quint64& sharingAmount);
@@ -85,7 +85,7 @@ namespace PM
       QString nick;
       quint64 sharingAmount;
 
-      QTime lastSpeedUpdate;
+      QElapsedTimer speedTimer;
       quint32 speed; // [bytes/s]
 
       bool alive;

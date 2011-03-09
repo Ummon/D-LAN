@@ -24,6 +24,7 @@
 #include <Protos/common.pb.h>
 
 #include <Common/Hash.h>
+#include <Common/LogManager/ILoggable.h>
 
 namespace FM
 {
@@ -33,7 +34,7 @@ namespace FM
    /**
      * A chunk of data that can be read or write.
      */
-   class IChunk
+   class IChunk : public LM::ILoggable
    {
    public:
       virtual ~IChunk() {}
@@ -99,11 +100,6 @@ namespace FM
         * Returns 'true' if 'getKnownBytes()' == 'getChunkSize()'.
         */
       virtual bool isComplete() const = 0;
-
-      /**
-        * For debug purpose.
-        */
-      virtual QString toStr() const = 0;
    };
 }
 #endif
