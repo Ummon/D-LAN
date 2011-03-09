@@ -20,6 +20,7 @@
 #include <QTextCodec>
 
 #include <Common/Global.h>
+#include <Common/LogManager/Builder.h>
 
 #include <CoreService.h>
 
@@ -49,6 +50,8 @@ int main(int argc, char* argv[])
       else if (arg == "-l" && i < argc - 1)
          Common::Global::setDataFolder(Common::Global::LOCAL, QString::fromLatin1(argv[i++]));
    }
+
+   LM::Builder::setLogDirName("log_core");
 
    CoreSpace::CoreService core(argc, argv);
    return core.exec();

@@ -55,6 +55,7 @@ void LoggerHooks::removeDeletedHooks()
 
 /////
 
+const QString Logger::DEFAULT_LOG_FOLDER_NAME("log");
 QTextStream Logger::out;
 QFile Logger::file;
 QMutex Logger::mutex(QMutex::Recursive);
@@ -130,7 +131,7 @@ void Logger::createFileLog()
    if (!Logger::file.isOpen())
    {
       if (logDirName.isEmpty())
-         logDirName = Common::LOG_FOLDER_NAME;
+         logDirName = DEFAULT_LOG_FOLDER_NAME;
 
       QTextStream outErr(stderr);
 

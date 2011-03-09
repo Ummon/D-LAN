@@ -47,6 +47,8 @@ namespace LM
 
    class Logger : public ILogger
    {
+      static const QString DEFAULT_LOG_FOLDER_NAME;
+
       static QTextStream out;
       static QFile file;
 
