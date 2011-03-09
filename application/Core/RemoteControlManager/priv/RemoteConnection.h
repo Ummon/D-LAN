@@ -51,6 +51,14 @@ namespace RCM
    class RemoteConnection : public Common::MessageSocket
    {
       Q_OBJECT
+   protected:
+      class Logger : public ILogger
+      {
+      public:
+         void logDebug(const QString& message);
+         void logError(const QString& message);
+      };
+
    public:
       RemoteConnection(
          QSharedPointer<FM::IFileManager> fileManager,
@@ -72,8 +80,6 @@ namespace RCM
 
    protected:
       void onNewMessage(Common::MessageHeader::MessageType type, const google::protobuf::Message& message);
-      void logDebug(const QString& message);
-      void logError(const QString& message);
 
    protected slots:
       void disconnected();

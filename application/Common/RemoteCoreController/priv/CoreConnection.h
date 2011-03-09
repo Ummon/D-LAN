@@ -45,6 +45,14 @@ namespace RCC
    class CoreConnection : public ICoreConnection
    {
       Q_OBJECT
+   protected:
+      class Logger : public ILogger
+      {
+      public:
+         void logDebug(const QString& message);
+         void logError(const QString& message);
+      };
+
    public:
       CoreConnection();
       ~CoreConnection();
@@ -77,8 +85,6 @@ namespace RCC
 
    protected:
       void onNewMessage(Common::MessageHeader::MessageType type, const google::protobuf::Message& message);
-      void logDebug(const QString& message);
-      void logError(const QString& message);
 
    private slots:
       void connectToCoreSlot();

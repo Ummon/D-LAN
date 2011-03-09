@@ -38,6 +38,16 @@ using namespace RCM;
 
 #include <priv/Log.h>
 
+void RemoteConnection::Logger::logDebug(const QString& message)
+{
+   L_DEBU(message);
+}
+
+void RemoteConnection::Logger::logError(const QString& message)
+{
+   L_WARN(message);
+}
+
 RemoteConnection::RemoteConnection(
    QSharedPointer<FM::IFileManager> fileManager,
    QSharedPointer<PM::IPeerManager> peerManager,
@@ -46,6 +56,7 @@ RemoteConnection::RemoteConnection(
    QSharedPointer<NL::INetworkListener> networkListener,
    QTcpSocket* socket
 ) :
+   MessageSocket(new RemoteConnection::Logger(), socket, peerManager->getID()),
    fileManager(fileManager),
    peerManager(peerManager),
    uploadManager(uploadManager),
@@ -57,8 +68,6 @@ RemoteConnection::RemoteConnection(
  #endif
 {
    L_DEBU(QString("New RemoteConnection from %1").arg(socket->peerAddress().toString()));
-
-   this->init(socket, peerManager->getID());
 
    this->authenticated = this->isLocal();
 
@@ -301,16 +310,6 @@ void RemoteConnection::onNewMessage(Common::MessageHeader::MessageType type, con
 
    default:;
    }
-}
-
-void RemoteConnection::logDebug(const QString& message)
-{
-   L_DEBU(message);
-}
-
-void RemoteConnection::logError(const QString& message)
-{
-   L_WARN(message);
 }
 
 void RemoteConnection::disconnected()

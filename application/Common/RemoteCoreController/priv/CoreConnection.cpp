@@ -32,11 +32,19 @@ using namespace RCC;
 #include <priv/BrowseResult.h>
 #include <priv/SearchResult.h>
 
-CoreConnection::CoreConnection() :
-   coreStatus(NOT_RUNNING), currentHostLookupID(-1), authenticated(false)
+void CoreConnection::Logger::logDebug(const QString& message)
 {
-   this->init();
+   L_DEBU(message);
+}
 
+void CoreConnection::Logger::logError(const QString& message)
+{
+   L_WARN(message);
+}
+
+CoreConnection::CoreConnection() :
+   ICoreConnection(new CoreConnection::Logger()), coreStatus(NOT_RUNNING), currentHostLookupID(-1), authenticated(false)
+{
    connect(this->socket, SIGNAL(connected()), this, SLOT(connected()));
    connect(this->socket, SIGNAL(disconnected()), this, SLOT(disconnected()));
    connect(this->socket, SIGNAL(stateChanged(QAbstractSocket::SocketState)), this, SLOT(stateChanged(QAbstractSocket::SocketState)));
@@ -269,16 +277,6 @@ void CoreConnection::onNewMessage(Common::MessageHeader::MessageType type, const
 
    default:;
    }
-}
-
-void CoreConnection::logDebug(const QString& message)
-{
-   L_DEBU(message);
-}
-
-void CoreConnection::logError(const QString& message)
-{
-   L_WARN(message);
 }
 
 void CoreConnection::connectToCoreSlot()

@@ -32,17 +32,25 @@ using namespace PM;
 #include <priv/PeerManager.h>
 #include <priv/Constants.h>
 
-Socket::Socket(PeerManager* peerManager, QSharedPointer<FM::IFileManager> fileManager, const Common::Hash& remotePeerID, QTcpSocket* socket) :
-   fileManager(fileManager), active(true), nbError(0)
+void Socket::Logger::logDebug(const QString& message)
 {
-   this->init(socket, peerManager->getID(), remotePeerID);
+   L_DEBU(message);
+}
+
+void Socket::Logger::logError(const QString& message)
+{
+   L_WARN(message);
+}
+
+Socket::Socket(PeerManager* peerManager, QSharedPointer<FM::IFileManager> fileManager, const Common::Hash& remotePeerID, QTcpSocket* socket) :
+   MessageSocket(new Socket::Logger(), socket, peerManager->getID(), remotePeerID), fileManager(fileManager), active(true), nbError(0)
+{
    this->initUnactiveTimer();
 }
 
 Socket::Socket(PeerManager* peerManager, QSharedPointer<FM::IFileManager> fileManager, const Common::Hash& remotePeerID, const QHostAddress& address, quint16 port) :
-   fileManager(fileManager), active(true), nbError(0)
+   MessageSocket(new Socket::Logger(), address, port, peerManager->getID(), remotePeerID), fileManager(fileManager), active(true), nbError(0)
 {
-   this->init(address, port, peerManager->getID(), remotePeerID);
    this->initUnactiveTimer();
 }
 
@@ -286,16 +294,6 @@ void Socket::onNewMessage(Common::MessageHeader::MessageType type, const google:
 void Socket::onNewDataReceived()
 {
    this->setActive();
-}
-
-void Socket::logDebug(const QString& message)
-{
-   L_DEBU(message);
-}
-
-void Socket::logError(const QString& message)
-{
-   L_WARN(message);
 }
 
 void Socket::disconnected()

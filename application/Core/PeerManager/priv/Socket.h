@@ -44,6 +44,14 @@ namespace PM
    class Socket : public Common::MessageSocket, public ISocket
    {
       Q_OBJECT
+   protected:
+      class Logger : public ILogger
+      {
+      public:
+         void logDebug(const QString& message);
+         void logError(const QString& message);
+      };
+
    public:
       Socket(PeerManager* peerManager, QSharedPointer<FM::IFileManager> fileManager, const Common::Hash& remotePeerID, QTcpSocket* socket);
       Socket(PeerManager* peerManager, QSharedPointer<FM::IFileManager> fileManager, const Common::Hash& remotePeerID, const QHostAddress& address, quint16 port);
@@ -88,8 +96,6 @@ namespace PM
    protected:
       void onNewMessage(Common::MessageHeader::MessageType type, const google::protobuf::Message& message);
       void onNewDataReceived();
-      void logDebug(const QString& message);
-      void logError(const QString& message);
 
    protected slots:
       void disconnected();

@@ -31,35 +31,16 @@ using namespace Common;
   * An abstract class which is capable to send and receive protocol buffer messages over a QAbstractSocket.
   */
 
-MessageSocket::MessageSocket() :
-   socket(0), listening(false)
-{
-}
-
-MessageSocket::~MessageSocket()
-{
-   this->stopListening();
-
-   if (this->socket)
-   {
-      this->socket->close();
-      this->socket->deleteLater();
-   }
-}
-
 /**
-  * 'init' must be called in the child constructor.
+  * Take ownership of 'logger'.
   */
-void MessageSocket::init(const Hash& ID, const Hash& remoteID)
+MessageSocket::MessageSocket(MessageSocket::ILogger* logger, const Hash& ID, const Hash& remoteID) :
+   logger(logger), socket(new QTcpSocket()), ID(ID), remoteID(remoteID), listening(false)
 {
 #ifdef DEBUG
    this->num = ++MessageSocket::currentNum;
    MESSAGE_SOCKET_LOG_DEBUG(QString("New Socket[%1] (not connected)").arg(this->num));
 #endif
-
-   this->socket = new QTcpSocket();
-   this->ID = ID;
-   this->remoteID = remoteID;
 }
 
 /**
@@ -67,32 +48,37 @@ void MessageSocket::init(const Hash& ID, const Hash& remoteID)
   * If remoteID isn't given, it will be initialized by the ID of the first received message.
   * If ID isn't given, it will be set to the remoteID when the first message is received.
   */
-void MessageSocket::init(QAbstractSocket* socket, const Hash& ID, const Hash& remoteID)
+MessageSocket::MessageSocket(MessageSocket::ILogger* logger, QAbstractSocket* socket, const Hash& ID, const Hash& remoteID) :
+   logger(logger), socket(socket), ID(ID), remoteID(remoteID), listening(false)
 {
 #ifdef DEBUG
    this->num = ++MessageSocket::currentNum;
    MESSAGE_SOCKET_LOG_DEBUG(QString("New Socket[%1] (connection from %2:%3)").arg(this->num).arg(socket->peerAddress().toString()).arg(socket->peerPort()));
 #endif
-
-   this->socket = socket;
-   this->ID = ID;
-   this->remoteID = remoteID;
 }
 
 /**
   * Will automatically create a connection to the given address and port.
   */
-void MessageSocket::init(const QHostAddress& address, quint16 port, const Hash& ID, const Hash& remoteID)
+MessageSocket::MessageSocket(MessageSocket::ILogger* logger, const QHostAddress& address, quint16 port, const Hash& ID, const Hash& remoteID) :
+   logger(logger), socket(new QTcpSocket()), ID(ID), remoteID(remoteID), listening(false)
 {
 #ifdef DEBUG
    this->num = ++MessageSocket::currentNum;
    MESSAGE_SOCKET_LOG_DEBUG(QString("New Socket[%1] (connection to %2:%3)").arg(this->num).arg(address.toString()).arg(port));
 #endif
 
-   this->socket = new QTcpSocket();
    this->socket->connectToHost(address, port);
-   this->ID = ID;
-   this->remoteID = remoteID;
+}
+
+MessageSocket::~MessageSocket()
+{
+   this->stopListening();
+
+   this->socket->close();
+   this->socket->deleteLater();
+
+   delete this->logger;
 }
 
 Hash MessageSocket::getID() const
@@ -123,7 +109,7 @@ void MessageSocket::send(MessageHeader::MessageType type)
 
 void MessageSocket::send(MessageHeader::MessageType type, const google::protobuf::Message* message)
 {
-   if (!this->listening || !this->socket)
+   if (!this->listening)
       return;
 
    MessageHeader header(type, message ? message->ByteSize() : 0, this->ID);
@@ -148,7 +134,7 @@ void MessageSocket::send(MessageHeader::MessageType type, const google::protobuf
 void MessageSocket::startListening()
 {
    // To prevent multi listening.
-   if (this->listening || !this->socket)
+   if (this->listening)
       return;
 
    MESSAGE_SOCKET_LOG_DEBUG(QString("Socket[%1] starting to listen").arg(this->num));
@@ -165,9 +151,6 @@ void MessageSocket::startListening()
   */
 void MessageSocket::stopListening()
 {
-   if (!this->socket)
-      return;
-
    MESSAGE_SOCKET_LOG_DEBUG(QString("Socket[%1] stopping to listen").arg(this->num));
 
    disconnect(this->socket, SIGNAL(readyRead()), this, SLOT(dataReceived()));
@@ -178,12 +161,12 @@ void MessageSocket::stopListening()
 
 bool MessageSocket::isLocal() const
 {
-   return this->socket && (this->socket->peerAddress() == QHostAddress::LocalHost || this->socket->peerAddress() == QHostAddress::LocalHostIPv6);
+   return this->socket->peerAddress() == QHostAddress::LocalHost || this->socket->peerAddress() == QHostAddress::LocalHostIPv6;
 }
 
 bool MessageSocket::isConnected() const
 {
-   return this->socket && (this->socket->state() == QAbstractSocket::ConnectedState);
+   return this->socket->state() == QAbstractSocket::ConnectedState;
 }
 
 bool MessageSocket::isListening() const

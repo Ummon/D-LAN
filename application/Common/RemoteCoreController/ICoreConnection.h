@@ -42,6 +42,9 @@ namespace RCC
    class ICoreConnection : public Common::MessageSocket
    {
       Q_OBJECT
+   protected:
+      ICoreConnection(Common::MessageSocket::ILogger* logger) : Common::MessageSocket(logger) {}
+
    public:
       virtual ~ICoreConnection() {};
 

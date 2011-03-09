@@ -32,11 +32,11 @@
 #include <Common/Uncopyable.h>
 
 #ifdef DEBUG
-   #define MESSAGE_SOCKET_LOG_DEBUG(mess) this->logDebug(mess)
+   #define MESSAGE_SOCKET_LOG_DEBUG(mess) this->logger->logDebug(mess)
 #else
    #define MESSAGE_SOCKET_LOG_DEBUG(mess)
 #endif
-#define MESSAGE_SOCKET_LOG_ERROR(mess) this->logError(mess)
+#define MESSAGE_SOCKET_LOG_ERROR(mess) this->logger->logError(mess)
 
 namespace Common
 {
@@ -44,15 +44,20 @@ namespace Common
    {
       Q_OBJECT
    protected:
-      MessageSocket();
+      class ILogger
+      {
+      public:
+         virtual ~ILogger() {}
+         virtual void logDebug(const QString& message) = 0;
+         virtual void logError(const QString& message) = 0;
+      };
+
+      MessageSocket(ILogger* logger, const Hash& ID = Hash(), const Hash& remoteID = Hash());
+      MessageSocket(ILogger* logger, QAbstractSocket* socket, const Hash& ID = Hash(), const Hash& remoteID = Hash());
+      MessageSocket(ILogger* logger, const QHostAddress& address, quint16 port, const Hash& ID = Hash(), const Hash& remoteID = Hash());
 
    public:
       virtual ~MessageSocket();
-
-   protected:
-      void init(const Hash& ID = Hash(), const Hash& remoteID = Hash());
-      void init(QAbstractSocket* socket, const Hash& ID = Hash(), const Hash& remoteID = Hash());
-      void init(const QHostAddress& address, quint16 port, const Hash& ID = Hash(), const Hash& remoteID = Hash());
 
    public:
       virtual Hash getID() const;
@@ -86,16 +91,6 @@ namespace Common
 
       virtual void onNewDataReceived() {};
 
-      /**
-        * Do nothing if not redefined.
-        */
-      virtual void logDebug(const QString& message) {};
-
-      /**
-        * Do nothing if not redefined.
-        */
-      virtual void logError(const QString& message) {};
-
       bool isListening() const;
 
    protected slots:
@@ -106,6 +101,8 @@ namespace Common
       bool readMessage();
       template<typename MessT> bool readMessage();
       bool readProtoMessage(google::protobuf::Message& message);
+
+      ILogger* logger;
 
    protected:
       QAbstractSocket* socket;
