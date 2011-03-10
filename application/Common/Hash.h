@@ -93,8 +93,7 @@ namespace Common
    inline QDataStream& operator>>(QDataStream& stream, Hash& hash)
    {
       char data[Hash::HASH_SIZE];
-      int length = stream.readRawData(data, Hash::HASH_SIZE);
-      if (length != Hash::HASH_SIZE)
+      if (stream.readRawData(data, Hash::HASH_SIZE) != Hash::HASH_SIZE)
          return stream;
 
       if (qstrncmp(hash.data->hash, data, Hash::HASH_SIZE) != 0)

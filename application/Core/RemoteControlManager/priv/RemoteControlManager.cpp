@@ -52,8 +52,7 @@ RemoteControlManager::~RemoteControlManager()
    for (QListIterator<RemoteConnection*> i(this->connections); i.hasNext();)
    {
       RemoteConnection* connection = i.next();
-      disconnect(connection, SIGNAL(deleted(RemoteConnection*)), this, SLOT(connectionDeleted(RemoteConnection*)));
-      disconnect(connection, SIGNAL(chatMessageSent(const QString&)), this, SLOT(chatMessageSent(const QString&)));
+      connection->disconnect(this);
       delete connection;
    }
 

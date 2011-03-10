@@ -21,6 +21,11 @@
 
 namespace RCM
 {
+   /**
+     * When a new remote control manager is created it will automatically listen the port set in
+     * 'Protos.Core.Settings.remote_control_port' (see "application/Protos/core_settings.proto").
+     * This is the only way to interact with this component.
+     */
    class IRemoteControlManager
    {
    public:
