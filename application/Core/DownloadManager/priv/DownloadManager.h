@@ -23,6 +23,7 @@
 #include <QSet>
 #include <QSharedPointer>
 #include <QTimer>
+#include <QMultiHash>
 
 #include <Common/TransferRateCalculator.h>
 
@@ -75,9 +76,9 @@ namespace DM
       void downloadDeleted(Download* download);
 
       void peerNoLongerAskingForHashes(PM::IPeer* peer);
+      void peerNoLongerAskingForEntries(PM::IPeer* peer);
       void peerNoLongerDownloadingChunk(PM::IPeer* peer);
 
-      void scanTheQueueToRetrieveEntries();
       void scanTheQueue();
       void chunkDownloadFinished();
 
@@ -89,7 +90,7 @@ namespace DM
       void setQueueChanged();
 
    private:
-      bool isEntryAlreadyQueued(const Protos::Common::Entry& localEntry, const Common::Hash& peerSource);
+      bool isEntryAlreadyQueued(const Protos::Common::Entry& localEntry, const Common::Hash& peerSourceID);
 
       LOG_INIT_H("DownloadManager");
 
@@ -99,13 +100,13 @@ namespace DM
       QSharedPointer<PM::IPeerManager> peerManager;
 
       OccupiedPeers occupiedPeersAskingForHashes;
+      OccupiedPeers occupiedPeersAskingForEntries;
       OccupiedPeers occupiedPeersDownloadingChunk;
 
       QList<Download*> downloads;
+      QMultiHash<Common::Hash, Download*> downloadsIndexedBySourcePeerID;
 
       int numberOfDownload;
-
-      bool retrievingEntries; // TODO : if the socket is closed then retrievingEntries = false
 
       QTimer rescanTimer; // When a download has an error status, the queue will be rescaned periodically.
 

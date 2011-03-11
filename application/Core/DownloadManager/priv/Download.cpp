@@ -54,6 +54,11 @@ void Download::populateLocalEntry(Protos::Queue::Queue_Entry* entry) const
    entry->set_complete(this->status == COMPLETE);
 }
 
+void Download::setPeer(PM::IPeer* peer)
+{
+   this->peerSource = peer;
+}
+
 quint64 Download::getID() const
 {
    return this->ID;
@@ -79,6 +84,11 @@ Common::Hash Download::getPeerSourceID() const
    return this->peerSourceID;
 }
 
+QSet<Common::Hash> Download::getPeers() const
+{
+   return QSet<Common::Hash>();
+}
+
 const Protos::Common::Entry& Download::getRemoteEntry() const
 {
    return this->remoteEntry;
@@ -99,27 +109,26 @@ bool Download::hasAValidPeer()
    return this->peerSource && this->peerSource->isAlive();
 }
 
+void Download::setStatus(Status newStatus)
+{
+   this->status = newStatus;
+}
+
 void Download::retrievePeer()
 {
-   if (this->status == COMPLETE || this->peerSource)
+   if (this->peerSource || this->status == COMPLETE)
       return;
 
    this->peerSource = this->peerManager->getPeer(this->peerSourceID);
 
-   if (!this->hasAValidPeer())
+   if (!this->peerSource || !this->peerSource->isAlive())
    {
-      L_DEBU(QString("Unable to retrieve the peer, peerID = %1").arg(this->peerSourceID.toStr()));
+      L_DEBU(QString("Download::retrievePeer: Peer %1 = %2").arg(this->peerSource ? "dead" : "unknown").arg(this->peerSourceID.toStr()));
       this->setStatus(UNKNOWN_PEER);
-      QTimer::singleShot(CHECK_DEAD_PEER_PERIOD, this, SLOT(retrievePeer()));
    }
    else
    {
       this->setStatus(QUEUED);
    }
-}
-
-void Download::setStatus(Status newStatus)
-{
-   this->status = newStatus;
 }
 

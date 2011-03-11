@@ -33,28 +33,30 @@ using namespace DM;
 DirDownload::DirDownload(
    QSharedPointer<FM::IFileManager> fileManager,
    QSharedPointer<PM::IPeerManager> peerManager,
+   OccupiedPeers& occupiedPeersAskingForEntries,
    Common::Hash peerSourceID,
    const Protos::Common::Entry& remoteEntry,
    const Protos::Common::Entry& localEntry
 ) :
-   Download(fileManager, peerManager, peerSourceID, remoteEntry, localEntry), retrieveEntriesOK(false)
+   Download(fileManager, peerManager, peerSourceID, remoteEntry, localEntry),
+   occupiedPeersAskingForEntries(occupiedPeersAskingForEntries)
 {
    L_DEBU(QString("New DirDownload : source = %1, remoteEntry : \n%2\nlocalEntry : \n%3").
       arg(this->peerSourceID.toStr()).
       arg(Common::ProtoHelper::getDebugStr(this->remoteEntry)).
       arg(Common::ProtoHelper::getDebugStr(this->localEntry))
    );
+
+   this->retrieveEntries();
 }
 
 DirDownload::~DirDownload()
 {
    this->status = DELETED;
-   this->getEntriesResult.clear();
-}
 
-QSet<Common::Hash> DirDownload::getPeers() const
-{
-   return QSet<Common::Hash>() << this->peerSourceID;
+   this->occupiedPeersAskingForEntries.setPeerAsFree(this->peerSource);
+
+   this->getEntriesResult.clear();
 }
 
 /**
@@ -63,9 +65,10 @@ QSet<Common::Hash> DirDownload::getPeers() const
   */
 bool DirDownload::retrieveEntries()
 {
-   this->retrieveEntriesOK = true;
-
    if (!this->hasAValidPeer())
+      return false;
+
+   if (!this->occupiedPeersAskingForEntries.setPeerAsOccupied(this->peerSource))
       return false;
 
    Protos::Core::GetEntries getEntries;
@@ -78,18 +81,8 @@ bool DirDownload::retrieveEntries()
    return true;
 }
 
-void DirDownload::retrievePeer()
-{
-   Download::retrievePeer();
-
-   if (this->retrieveEntriesOK)
-      this->retrieveEntries();
-}
-
 void DirDownload::result(const Protos::Core::GetEntriesResult& entries)
 {
-   this->getEntriesResult.clear(); // Is the 'IGetEntriesResult' object is deleted? Must we disconnect the signal? Answer: No the signal is automatically disconnected.
-
    Protos::Common::Entries entriesCopy;
 
    // We asked for one directory, we shouldn't have zero result.
@@ -102,11 +95,14 @@ void DirDownload::result(const Protos::Core::GetEntriesResult& entries)
    }
 
    emit newEntries(entriesCopy);
+
+   this->getEntriesResult.clear(); // Is the 'IGetEntriesResult' object is deleted? Must we disconnect the signal? Answer: No the signal is automatically disconnected.
+   this->occupiedPeersAskingForEntries.setPeerAsFree(this->peerSource);
 }
 
 void DirDownload::resultTimeout()
 {
+   L_DEBU("Unable to retrieve the entries : timeout");
    this->getEntriesResult.clear();
-   this->retrieveEntries();
+   this->occupiedPeersAskingForEntries.setPeerAsFree(this->peerSource);
 }
-

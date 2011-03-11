@@ -29,6 +29,7 @@
 #include <Protos/core_protocol.pb.h>
 
 #include <priv/Download.h>
+#include <priv/OccupiedPeers.h>
 
 namespace DM
 {
@@ -39,13 +40,12 @@ namespace DM
       DirDownload(
          QSharedPointer<FM::IFileManager> fileManager,
          QSharedPointer<PM::IPeerManager> peerManager,
+         OccupiedPeers& occupiedPeersAskingForEntries,
          Common::Hash peerSourceID,
          const Protos::Common::Entry& remoteEntry,
          const Protos::Common::Entry& localEntry
       );
       ~DirDownload();
-
-      QSet<Common::Hash> getPeers() const;
 
       bool retrieveEntries();
 
@@ -55,16 +55,13 @@ namespace DM
         */
       void newEntries(const Protos::Common::Entries& entries);
 
-   protected slots:
-      void retrievePeer();
-
    private slots:
       void result(const Protos::Core::GetEntriesResult& entries);
       void resultTimeout();
 
    private:
+      OccupiedPeers& occupiedPeersAskingForEntries;
       QSharedPointer<PM::IGetEntriesResult> getEntriesResult;
-      bool retrieveEntriesOK;
    };
 }
 #endif

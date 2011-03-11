@@ -68,16 +68,16 @@ namespace DM
       void getUnfinishedChunks(QList< QSharedPointer<IChunkDownload> >& chunks, int nMax) const;
 
    public slots:
-      bool retreiveHashes();
+      bool retrieveHashes();
 
    signals:
       void newHashKnown();
 
    private slots:
+      void retryToRetrieveHashes();
       void result(const Protos::Core::GetHashesResult& result);
       void nextHash(const Common::Hash& hash);
       void getHashTimeout();
-      void setPeerAsFree();
 
       void chunkDownloadStarted();
       void chunkDownloadFinished();
@@ -102,8 +102,6 @@ namespace DM
       QSharedPointer<PM::IGetHashesResult> getHashesResult;
 
       bool fileCreated;
-
-      //QTimer timer; // Used to periodically try to retrieve hashes.
 
       Common::TransferRateCalculator& transferRateCalculator;
    };

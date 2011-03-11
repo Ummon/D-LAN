@@ -143,9 +143,9 @@ bool ChunkDownload::isComplete() const
    return !this->chunk.isNull() && this->chunk->isComplete();
 }
 
-bool ChunkDownload::hasAtLeastAPeer() const
+bool ChunkDownload::hasAtLeastAPeer()
 {
-   return !this->peers.isEmpty();
+   return !this->getPeers().isEmpty();
 }
 
 int ChunkDownload::getDownloadedBytes() const
@@ -331,6 +331,7 @@ void ChunkDownload::result(const Protos::Core::GetChunkResult& result)
    if (result.status() != Protos::Core::GetChunkResult_Status_OK)
    {
       L_WARN(QString("Status error from GetChunkResult : %1. Download aborted.").arg(result.status()));
+      this->peers.removeOne(this->currentDownloadingPeer);
       this->downloadingEnded();
    }
    else
@@ -338,6 +339,7 @@ void ChunkDownload::result(const Protos::Core::GetChunkResult& result)
       if (!result.has_chunk_size())
       {
          L_ERRO(QString("Message 'GetChunkResult' doesn't contain the size of the chunk : %1. Download aborted.").arg(this->chunk->getHash().toStr()));
+         this->networkTransferStatus = PM::ISocket::SFS_ERROR;
          this->downloadingEnded();
       }
       else
@@ -379,6 +381,7 @@ void ChunkDownload::downloadingEnded()
    // occupiedPeersDownloadingChunk can relaunch the download, so we have to set this->currentDownloadingPeer to 0 before.
    PM::IPeer* currentPeer = this->currentDownloadingPeer;
    this->currentDownloadingPeer = 0;
+
    this->occupiedPeersDownloadingChunk.setPeerAsFree(currentPeer);
 }
 

@@ -19,6 +19,8 @@
 #include <priv/FileDownload.h>
 using namespace DM;
 
+#include <QTimer>
+
 #include <limits>
 
 #include <Common/Settings.h>
@@ -51,7 +53,7 @@ FileDownload::FileDownload(
    fileCreated(false),
    transferRateCalculator(transferRateCalculator)
 {
-   L_DEBU(QString("New FileDownload : source = %1, remoteEntry : \n%2\nlocalEntry : \n%3").
+   L_DEBU(QString("New FileDownload : peer source = %1, remoteEntry : \n%2\nlocalEntry : \n%3").
       arg(this->peerSourceID.toStr()).
       arg(Common::ProtoHelper::getDebugStr(this->remoteEntry)).
       arg(Common::ProtoHelper::getDebugStr(this->localEntry))
@@ -107,7 +109,7 @@ void FileDownload::start()
       this->occupiedPeersDownloadingChunk.newPeer(this->peerSource);
    }
 
-   this->retreiveHashes();
+   this->retrieveHashes();
 }
 
 int FileDownload::getProgress() const
@@ -245,11 +247,11 @@ void FileDownload::getUnfinishedChunks(QList< QSharedPointer<IChunkDownload> >& 
 /**
   * Return true if a GetHashes request has been sent to the peer.
   */
-bool FileDownload::retreiveHashes()
+bool FileDownload::retrieveHashes()
 {
    // If we've already got all the chunk hashes it's unecessary to re-ask them.
    // Or if we'v got anyone to ask the chunk hashes..
-   if (this->nbHashesKnown == this->NB_CHUNK || !this->hasAValidPeer() || this->status == COMPLETE || this->status == DELETED)
+   if (this->nbHashesKnown == this->NB_CHUNK || !this->hasAValidPeer() || this->status == COMPLETE || this->status == DELETED || this->status == UNABLE_TO_RETRIEVE_THE_HASHES)
       return false;
 
    if (!this->occupiedPeersAskingForHashes.setPeerAsOccupied(this->peerSource))
@@ -262,7 +264,15 @@ bool FileDownload::retreiveHashes()
    connect(this->getHashesResult.data(), SIGNAL(nextHash(const Common::Hash&)), this, SLOT(nextHash(const Common::Hash&)));
    connect(this->getHashesResult.data(), SIGNAL(timeout()), this, SLOT(getHashTimeout()));
    this->getHashesResult->start();
+
    return true;
+}
+
+void FileDownload::retryToRetrieveHashes()
+{
+   this->status = QUEUED;
+   if (!this->retrieveHashes())
+      this->updateStatus();
 }
 
 void FileDownload::result(const Protos::Core::GetHashesResult& result)
@@ -277,9 +287,8 @@ void FileDownload::result(const Protos::Core::GetHashesResult& result)
       L_DEBU(QString("Unable to retrieve the hashes, error = %1").arg(result.status()));
       this->getHashesResult.clear();
       this->status = UNABLE_TO_RETRIEVE_THE_HASHES;
-
-      // We delay to free the peer to avoid a continously stream of request in the case where the error will occur again.
-      QTimer::singleShot(RETRY_PEER_GET_HASHES_PERIOD, this, SLOT(setPeerAsFree()));
+      this->occupiedPeersAskingForHashes.setPeerAsFree(this->peerSource);
+      QTimer::singleShot(RETRY_PEER_GET_HASHES_PERIOD, this, SLOT(retryToRetrieveHashes()));
    }
 }
 
@@ -292,7 +301,7 @@ void FileDownload::nextHash(const Common::Hash& hash)
       this->getHashesResult.clear();
       this->occupiedPeersAskingForHashes.setPeerAsFree(this->peerSource);
 
-      this->status = QUEUED;
+      this->updateStatus();
    }
 
    if (this->chunkDownloads.size() >= this->nbHashesKnown && this->chunkDownloads[this->nbHashesKnown-1]->getHash() != hash)
@@ -326,11 +335,7 @@ void FileDownload::getHashTimeout()
    this->getHashesResult.clear();
    this->status = UNABLE_TO_RETRIEVE_THE_HASHES;
    this->occupiedPeersAskingForHashes.setPeerAsFree(this->peerSource);
-}
-
-void FileDownload::setPeerAsFree()
-{
-   this->occupiedPeersAskingForHashes.setPeerAsFree(this->peerSource);
+   QTimer::singleShot(RETRY_PEER_GET_HASHES_PERIOD, this, SLOT(retryToRetrieveHashes()));
 }
 
 void FileDownload::chunkDownloadStarted()
@@ -375,14 +380,12 @@ void FileDownload::updateStatus()
       {
          if (!chunkDownload->hasAtLeastAPeer())
             this->status = NO_SOURCE;
-         else if (!this->getHashesResult.isNull())
-            this->status = INITIALIZING;
          else
             this->status = QUEUED;
       }
    }
 
-   if (this->chunkDownloads.size() != this->NB_CHUNK)
+   if (!this->getHashesResult.isNull())
       this->status = INITIALIZING;
 
    if (this->status == COMPLETE)

@@ -57,29 +57,33 @@ namespace DM
       virtual void populateRemoteEntry(Protos::Queue::Queue_Entry* entry) const;
       virtual void populateLocalEntry(Protos::Queue::Queue_Entry* entry) const;
 
+      void setPeer(PM::IPeer* peer);
+
       quint64 getID() const;
       Status getStatus() const;
       bool isStatusErroneous() const;
       virtual int getProgress() const;
       Common::Hash getPeerSourceID() const;
+      QSet<Common::Hash> getPeers() const;
       const Protos::Common::Entry& getRemoteEntry() const;
       const Protos::Common::Entry& getLocalEntry() const;
       void remove();
 
-      bool hasAValidPeer();
-
    signals:
       void deleted(Download*);
 
-   protected slots:
-      virtual void retrievePeer();
-
    protected:
+      bool hasAValidPeer();
+
       /**
         * This method permits to change the behaviour by a subclass when Download change the status.
         */
       virtual void setStatus(Status newStatus);
 
+   private:
+      void retrievePeer();
+
+   protected:
       const quint64 ID;
 
       QSharedPointer<FM::IFileManager> fileManager;
