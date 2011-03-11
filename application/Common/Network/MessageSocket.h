@@ -82,22 +82,21 @@ namespace Common
       void newMessage(Common::MessageHeader::MessageType type, const google::protobuf::Message& message);
 
    protected:
+      bool isListening() const;
 
+   private slots:
+      void dataReceived();
+      void disconnected();
+
+   private:
       /**
         * Call when a new message arrived. Do nothing by default.
         * The signal 'newMessage' is also emitted after this called.
         */
       virtual void onNewMessage(MessageHeader::MessageType type, const google::protobuf::Message& message) {};
-
       virtual void onNewDataReceived() {};
+      virtual void onDisconnected() {};
 
-      bool isListening() const;
-
-   protected slots:
-      virtual void dataReceived();
-      virtual void disconnected();
-
-   private:
       bool readMessage();
       template<typename MessT> bool readMessage();
       bool readProtoMessage(google::protobuf::Message& message);

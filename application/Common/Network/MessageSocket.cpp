@@ -213,7 +213,9 @@ void MessageSocket::dataReceived()
 
 void MessageSocket::disconnected()
 {
+   this->currentHeader.setNull();
    MESSAGE_SOCKET_LOG_DEBUG(QString("Socket[%1] disconnected").arg(this->num));
+   this->onDisconnected();
 }
 
 /**

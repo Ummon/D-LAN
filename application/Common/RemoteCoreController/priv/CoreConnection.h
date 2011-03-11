@@ -83,17 +83,16 @@ namespace RCC
       void browseResult(const Protos::GUI::BrowseResult& browseResult);
       void searchResult(const Protos::Common::FindResult& findResult);
 
-   protected:
-      void onNewMessage(Common::MessageHeader::MessageType type, const google::protobuf::Message& message);
-
    private slots:
       void connectToCoreSlot();
       void stateChanged(QAbstractSocket::SocketState socketState);
       void adressResolved(QHostInfo hostInfo);
       void connected();
-      void disconnected();
 
-   private:
+   private:      
+      void onNewMessage(Common::MessageHeader::MessageType type, const google::protobuf::Message& message);
+      void onDisconnected();
+
       friend class BrowseResult;
       friend class SearchResult;
 

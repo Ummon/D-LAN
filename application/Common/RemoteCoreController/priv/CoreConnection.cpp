@@ -46,7 +46,6 @@ CoreConnection::CoreConnection() :
    ICoreConnection(new CoreConnection::Logger()), coreStatus(NOT_RUNNING), currentHostLookupID(-1), authenticated(false)
 {
    connect(this->socket, SIGNAL(connected()), this, SLOT(connected()));
-   connect(this->socket, SIGNAL(disconnected()), this, SLOT(disconnected()));
    connect(this->socket, SIGNAL(stateChanged(QAbstractSocket::SocketState)), this, SLOT(stateChanged(QAbstractSocket::SocketState)));
 
    this->startListening();
@@ -169,6 +168,68 @@ bool CoreConnection::isRunningAsSubProcess()
    return this->coreStatus == RUNNING_AS_SUB_PROCESS;
 }
 
+void CoreConnection::connectToCoreSlot()
+{
+   this->socket->close();
+
+   if (this->currentHostLookupID != -1)
+      QHostInfo::abortHostLookup(this->currentHostLookupID);
+
+   this->currentHostLookupID = QHostInfo::lookupHost(this->currentAddress, this, SLOT(adressResolved(QHostInfo)));
+}
+
+void CoreConnection::stateChanged(QAbstractSocket::SocketState socketState)
+{
+   switch(socketState)
+   {
+   case QAbstractSocket::UnconnectedState:
+      if (!this->addressesToTry.isEmpty())
+      {
+         this->tryToConnectToTheNextAddress();
+      }
+      else
+      {
+         L_USER("Unable to connect to the core");
+         this->connectToCoreSlot();
+      }
+      break;
+
+   default:;
+   }
+}
+
+void CoreConnection::adressResolved(QHostInfo hostInfo)
+{
+   this->currentHostLookupID = -1;
+
+   if (hostInfo.addresses().isEmpty())
+   {      
+      L_USER(QString("Unable to resolve the address : %1").arg(hostInfo.hostName()));
+      return;
+   }
+
+   this->addressesToTry = hostInfo.addresses();
+
+   this->tryToConnectToTheNextAddress();
+}
+
+void CoreConnection::connected()
+{
+   if (this->isLocal())
+   {
+      this->authenticated = true;
+      L_USER("Connected to the core");
+      L_DEBU(QString("Core address : %1").arg(this->socket->peerAddress().toString()));
+      emit coreConnected();      
+   }
+   else
+   {
+      Protos::GUI::Authentication authMessage;
+      authMessage.mutable_password()->set_hash(this->currentPassword.getData(), Common::Hash::HASH_SIZE);
+      this->send(Common::MessageHeader::GUI_AUTHENTICATION, authMessage);
+   }
+}
+
 void CoreConnection::onNewMessage(Common::MessageHeader::MessageType type, const google::protobuf::Message& message)
 {
    if (type != Common::MessageHeader::GUI_AUTHENTICATION_RESULT && !this->authenticated)
@@ -279,69 +340,7 @@ void CoreConnection::onNewMessage(Common::MessageHeader::MessageType type, const
    }
 }
 
-void CoreConnection::connectToCoreSlot()
-{
-   this->socket->close();
-
-   if (this->currentHostLookupID != -1)
-      QHostInfo::abortHostLookup(this->currentHostLookupID);
-
-   this->currentHostLookupID = QHostInfo::lookupHost(this->currentAddress, this, SLOT(adressResolved(QHostInfo)));
-}
-
-void CoreConnection::stateChanged(QAbstractSocket::SocketState socketState)
-{
-   switch(socketState)
-   {
-   case QAbstractSocket::UnconnectedState:
-      if (!this->addressesToTry.isEmpty())
-      {
-         this->tryToConnectToTheNextAddress();
-      }
-      else
-      {
-         L_USER("Unable to connect to the core");
-         this->connectToCoreSlot();
-      }
-      break;
-
-   default:;
-   }
-}
-
-void CoreConnection::adressResolved(QHostInfo hostInfo)
-{
-   this->currentHostLookupID = -1;
-
-   if (hostInfo.addresses().isEmpty())
-   {      
-      L_USER(QString("Unable to resolve the address : %1").arg(hostInfo.hostName()));
-      return;
-   }
-
-   this->addressesToTry = hostInfo.addresses();
-
-   this->tryToConnectToTheNextAddress();
-}
-
-void CoreConnection::connected()
-{
-   if (this->isLocal())
-   {
-      this->authenticated = true;
-      L_USER("Connected to the core");
-      L_DEBU(QString("Core address : %1").arg(this->socket->peerAddress().toString()));
-      emit coreConnected();      
-   }
-   else
-   {
-      Protos::GUI::Authentication authMessage;
-      authMessage.mutable_password()->set_hash(this->currentPassword.getData(), Common::Hash::HASH_SIZE);
-      this->send(Common::MessageHeader::GUI_AUTHENTICATION, authMessage);
-   }
-}
-
-void CoreConnection::disconnected()
+void CoreConnection::onDisconnected()
 {
    this->authenticated = false;
    emit coreDisconnected();
