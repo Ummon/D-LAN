@@ -4,7 +4,7 @@
 QT -= gui
 TARGET = LogManager
 
-INCLUDEPATH += . .. ../..
+INCLUDEPATH += . ../..
 TEMPLATE = lib
 CONFIG += staticlib create_prl
 
@@ -32,4 +32,5 @@ HEADERS += ILogger.h \
     priv/StdLogger.h \
     priv/LoggerHook.h \
     ILoggerHook.h \
-    LogMacros.h
+    LogMacros.h \
+    Constants.h

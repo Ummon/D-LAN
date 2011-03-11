@@ -23,8 +23,10 @@ using namespace LM;
 #include <QThread>
 #include <QSharedPointer>
 
+#include <Common/Constants.h>
+#include <Common/Global.h>
+
 #include <Constants.h>
-#include <Global.h>
 
 #include <priv/Entry.h>
 
@@ -55,7 +57,6 @@ void LoggerHooks::removeDeletedHooks()
 
 /////
 
-const QString Logger::DEFAULT_LOG_FOLDER_NAME("log");
 QTextStream Logger::out;
 QFile Logger::file;
 QMutex Logger::mutex(QMutex::Recursive);

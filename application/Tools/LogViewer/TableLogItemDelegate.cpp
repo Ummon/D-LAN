@@ -56,6 +56,10 @@ void TableLogItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& 
       painter->fillRect(option.rect, QColor(50, 0, 0));
       newOption.palette.setColor(QPalette::Text, QColor(255, 255, 0));
       break;
+   // No special color for these cases.
+   case LM::SV_DEBUG :
+   case LM::SV_UNKNOWN :
+   default:;
    }
 
    QItemDelegate::paint(painter, newOption, index);
