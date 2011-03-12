@@ -323,14 +323,16 @@ void SearchModel::setMaxLevel(int newLevel)
   */
 QString SearchModel::SearchNode::entryPath(const Protos::Common::Entry& entry)
 {
-   QString path = Common::ProtoHelper::getStr(entry, &Protos::Common::Entry::path);
-   QString sharedName = Common::ProtoHelper::getStr(entry.shared_dir(), &Protos::Common::SharedDir::shared_name);
+   const QString path = Common::ProtoHelper::getStr(entry, &Protos::Common::Entry::path);
 
    QString completePath;
    if (path.isEmpty())
       completePath.append("/");
    else
+   {
+      const QString sharedName = Common::ProtoHelper::getStr(entry.shared_dir(), &Protos::Common::SharedDir::shared_name);
       completePath.append("/").append(sharedName).append(path);
+   }
 
    return completePath;
 }

@@ -64,6 +64,7 @@ namespace GUI
       void download();
       void downloadTo(const Common::Hash& sharedDirID, const QString& path);
       void progress(int value);
+      void treeviewSectionResized(int logicalIndex, int oldSize, int newSize);
 
    private:
       Ui::WidgetSearch *ui;

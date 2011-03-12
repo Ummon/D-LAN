@@ -26,6 +26,8 @@ using namespace GUI;
 #include <QMenu>
 #include <QIcon>
 
+#include <Common/Settings.h>
+
 const QString SearchDelegate::MARKUP_FIRST_PART("<b>");
 const QString SearchDelegate::MARKUP_SECOND_PART("</b>");
 
@@ -159,11 +161,13 @@ WidgetSearch::WidgetSearch(QSharedPointer<RCC::ICoreConnection> coreConnection, 
     this->ui->treeView->setModel(&this->searchModel);
     this->ui->treeView->setItemDelegate(&this->searchDelegate);
     this->ui->treeView->header()->setVisible(true);
-    this->ui->treeView->header()->setResizeMode(0, QHeaderView::ResizeToContents);
-    this->ui->treeView->header()->setResizeMode(1, QHeaderView::ResizeToContents);
-    this->ui->treeView->header()->setResizeMode(2, QHeaderView::ResizeToContents);
-    this->ui->treeView->header()->setResizeMode(3, QHeaderView::ResizeToContents);
-    this->ui->treeView->header()->setResizeMode(4, QHeaderView::Stretch);
+    this->ui->treeView->header()->resizeSection(0, SETTINGS.get<quint32>("search_column_size_0"));
+    this->ui->treeView->header()->resizeSection(1, SETTINGS.get<quint32>("search_column_size_1"));
+    this->ui->treeView->header()->resizeSection(2, SETTINGS.get<quint32>("search_column_size_2"));
+    this->ui->treeView->header()->resizeSection(3, SETTINGS.get<quint32>("search_column_size_3"));
+    this->ui->treeView->header()->resizeSection(4, SETTINGS.get<quint32>("search_column_size_4"));
+    connect(this->ui->treeView->header(), SIGNAL(sectionResized(int, int, int)), this, SLOT(treeviewSectionResized(int, int, int)));
+
     this->ui->treeView->setSelectionBehavior(QAbstractItemView::SelectRows);
     this->ui->treeView->setSelectionMode(QAbstractItemView::ExtendedSelection);
 
@@ -216,4 +220,17 @@ void WidgetSearch::progress(int value)
    const int nbFolders = this->searchModel.getNbFolders();
    const int nbFiles = this->searchModel.getNbFiles();
    this->ui->prgSearch->setFormat(QString("%1 folder%2 / %3 file%4").arg(nbFolders).arg(nbFolders > 1 ? "s" : "").arg(nbFiles).arg(nbFiles > 1 ? "s" : ""));
+}
+
+void WidgetSearch::treeviewSectionResized(int logicalIndex, int oldSize, int newSize)
+{
+   // TODO: use an array instead of multiple field.
+   switch (logicalIndex)
+   {
+   case 0: SETTINGS.set("search_column_size_0", static_cast<quint32>(newSize)); break;
+   case 1: SETTINGS.set("search_column_size_1", static_cast<quint32>(newSize)); break;
+   case 2: SETTINGS.set("search_column_size_2", static_cast<quint32>(newSize)); break;
+   case 3: SETTINGS.set("search_column_size_3", static_cast<quint32>(newSize)); break;
+   case 4: SETTINGS.set("search_column_size_4", static_cast<quint32>(newSize)); break;
+   }
 }

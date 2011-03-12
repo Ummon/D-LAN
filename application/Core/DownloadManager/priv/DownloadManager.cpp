@@ -117,7 +117,6 @@ Download* DownloadManager::addDownload(const Protos::Common::Entry& remoteEntry,
 
 Download* DownloadManager::addDownload(const Protos::Common::Entry& remoteEntry, const Protos::Common::Entry& localEntry, const Common::Hash& peerSource, bool complete,  QMutableListIterator<Download*>& iterator)
 {
-   // If there is a lot of file in queue it can be a bit CPU consumer.
    if (this->isEntryAlreadyQueued(localEntry, peerSource))
    {
       L_WARN(QString("Entry already queued, it will no be added to the queue : %1").arg(Common::ProtoHelper::getStr(remoteEntry, &Protos::Common::Entry::name)));
@@ -323,7 +322,7 @@ void DownloadManager::peerNoLongerAskingForHashes(PM::IPeer* peer)
    if (!this->downloadsIndexedBySourcePeerID.contains(peer->getID()))
       return;
 
-   // We can use 'downloadsIndexedBySourcePeerID' because the order matters.
+   // We can't use 'downloadsIndexedBySourcePeerID' because the order matters.
    for (QListIterator<Download*> i(this->downloads); i.hasNext();)
    {
       FileDownload* fileDownload = dynamic_cast<FileDownload*>(i.next());
@@ -339,7 +338,7 @@ void DownloadManager::peerNoLongerAskingForEntries(PM::IPeer* peer)
    if (!this->downloadsIndexedBySourcePeerID.contains(peer->getID()))
       return;
 
-   // We can use 'downloadsIndexedBySourcePeerID' because the order matters.
+   // We can't use 'downloadsIndexedBySourcePeerID' because the order matters.
    for (QListIterator<Download*> i(this->downloads); i.hasNext();)
    {
       DirDownload* dirDownload = dynamic_cast<DirDownload*>(i.next());
