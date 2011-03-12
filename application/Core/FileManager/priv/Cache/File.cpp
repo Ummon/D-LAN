@@ -348,7 +348,6 @@ qint64 File::read(char* buffer, qint64 offset, int maxBytesToRead)
   * This method can be called from an another thread than the main one. For example,
   * from 'FileUpdated' thread.
   * @param n number of hashes to compute, 0 if we want to compute all the hashes.
-  * @return Return true if all the hashes as been computed.
   * @exception IOErrorException Thrown when the file cannot be opened or read.
   */
 bool File::computeHashes(int n)

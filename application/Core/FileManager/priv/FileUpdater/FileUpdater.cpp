@@ -321,7 +321,7 @@ void FileUpdater::computeSomeHashes()
    QElapsedTimer timer;
    timer.start();
 
-   for (int i = 0; i < this->filesWithoutHashesPrioritized.size(); i++)
+   while (!this->filesWithoutHashesPrioritized.empty())
    {
       this->currentHashingFile = this->filesWithoutHashesPrioritized.first();
 
@@ -336,19 +336,15 @@ void FileUpdater::computeSomeHashes()
          }
          locker.relock();
 
+         L_DEBU(QString("OK5, complete = %1").arg(complete));
+
          if (complete)
-         {
             this->filesWithoutHashesPrioritized.removeFirst();
-            i--;
-         }
-         else if (!this->filesWithoutHashesPrioritized.isEmpty()) // The current hashing file may have been removed from 'filesWithoutHashesPrioritized' by 'rmRoot(..)'.
+         else if (this->filesWithoutHashesPrioritized.size() > 1) // The current hashing file may have been removed from 'filesWithoutHashesPrioritized' by 'rmRoot(..)'.
             this->filesWithoutHashesPrioritized.move(0, this->filesWithoutHashesPrioritized.size() - 1);
       }
       else
-      {
          this->filesWithoutHashesPrioritized.removeFirst();
-         i--;
-      }
 
       this->currentHashingFile = 0;
       if (this->toStopHashing)

@@ -369,7 +369,7 @@ void FileDownload::updateStatus()
    if (this->status == DELETED || this->status == COMPLETE)
       return;
 
-   this->status = COMPLETE;
+   this->status = this->chunkDownloads.size() == NB_CHUNK ? COMPLETE : QUEUED;
 
    for (QListIterator< QSharedPointer<ChunkDownload> > i(this->chunkDownloads); i.hasNext();)
    {
