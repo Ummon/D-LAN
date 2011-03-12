@@ -131,8 +131,6 @@ Download* DownloadManager::addDownload(const Protos::Common::Entry& remoteEntry,
    case Protos::Common::Entry_Type_DIR :
       {
          DirDownload* dirDownload = new DirDownload(
-            this->fileManager,
-            this->peerManager,
             this->occupiedPeersAskingForEntries,
             peerSource,
             remoteEntry,
@@ -167,6 +165,8 @@ Download* DownloadManager::addDownload(const Protos::Common::Entry& remoteEntry,
 
    iterator.insert(newDownload);
    this->downloadsIndexedBySourcePeerID.insert(peerSource, newDownload);
+
+   newDownload->setPeer(this->peerManager->getPeer(peerSource));
 
    connect(newDownload, SIGNAL(deleted(Download*)), this, SLOT(downloadDeleted(Download*)), Qt::DirectConnection);
 

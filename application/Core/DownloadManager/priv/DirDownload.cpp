@@ -31,14 +31,12 @@ using namespace DM;
   */
 
 DirDownload::DirDownload(
-   QSharedPointer<FM::IFileManager> fileManager,
-   QSharedPointer<PM::IPeerManager> peerManager,
    OccupiedPeers& occupiedPeersAskingForEntries,
    Common::Hash peerSourceID,
    const Protos::Common::Entry& remoteEntry,
    const Protos::Common::Entry& localEntry
 ) :
-   Download(fileManager, peerManager, peerSourceID, remoteEntry, localEntry),
+   Download(peerSourceID, remoteEntry, localEntry),
    occupiedPeersAskingForEntries(occupiedPeersAskingForEntries)
 {
    L_DEBU(QString("New DirDownload : source = %1, remoteEntry : \n%2\nlocalEntry : \n%3").

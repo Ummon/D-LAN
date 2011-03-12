@@ -89,6 +89,9 @@ namespace DM
       void updateStatus();
       void connectChunkDownloadSignals(QSharedPointer<ChunkDownload> chunkDownload);
 
+      QSharedPointer<FM::IFileManager> fileManager;
+      QSharedPointer<PM::IPeerManager> peerManager;
+
       const int NB_CHUNK;
       DownloadManager* downloadManager;
 

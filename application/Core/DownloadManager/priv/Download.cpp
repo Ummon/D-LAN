@@ -27,15 +27,12 @@ using namespace DM;
 quint64 Download::currentID(1);
 
 Download::Download(
-   QSharedPointer<FM::IFileManager> fileManager,
-   QSharedPointer<PM::IPeerManager> peerManager,
    Common::Hash peerSourceID,
    const Protos::Common::Entry& remoteEntry,
    const Protos::Common::Entry& localEntry
 ) :
-   ID(currentID++), fileManager(fileManager), peerManager(peerManager), peerSourceID(peerSourceID), peerSource(0), remoteEntry(remoteEntry), localEntry(localEntry), status(QUEUED)
+   ID(currentID++), peerSourceID(peerSourceID), peerSource(0), remoteEntry(remoteEntry), localEntry(localEntry), status(QUEUED)
 {
-   this->retrievePeer();
 }
 
 Download::~Download()
@@ -57,6 +54,11 @@ void Download::populateLocalEntry(Protos::Queue::Queue_Entry* entry) const
 void Download::setPeer(PM::IPeer* peer)
 {
    this->peerSource = peer;
+
+   if (!this->peerSource || !this->peerSource->isAlive())
+      this->setStatus(UNKNOWN_PEER);
+   else
+      this->setStatus(QUEUED);
 }
 
 quint64 Download::getID() const
@@ -113,22 +115,3 @@ void Download::setStatus(Status newStatus)
 {
    this->status = newStatus;
 }
-
-void Download::retrievePeer()
-{
-   if (this->peerSource || this->status == COMPLETE)
-      return;
-
-   this->peerSource = this->peerManager->getPeer(this->peerSourceID);
-
-   if (!this->peerSource || !this->peerSource->isAlive())
-   {
-      L_DEBU(QString("Download::retrievePeer: Peer %1 = %2").arg(this->peerSource ? "dead" : "unknown").arg(this->peerSourceID.toStr()));
-      this->setStatus(UNKNOWN_PEER);
-   }
-   else
-   {
-      this->setStatus(QUEUED);
-   }
-}
-

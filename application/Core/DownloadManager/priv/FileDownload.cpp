@@ -45,7 +45,9 @@ FileDownload::FileDownload(
    Common::TransferRateCalculator& transferRateCalculator,
    bool complete
 ) :
-   Download(fileManager, peerManager, peerSourceID, remoteEntry, localEntry),
+   Download(peerSourceID, remoteEntry, localEntry),
+   fileManager(fileManager),
+   peerManager(peerManager),
    NB_CHUNK(this->remoteEntry.size() / SETTINGS.get<quint32>("chunk_size") + (this->remoteEntry.size() % SETTINGS.get<quint32>("chunk_size") == 0 ? 0 : 1)),
    occupiedPeersAskingForHashes(occupiedPeersAskingForHashes),
    occupiedPeersDownloadingChunk(occupiedPeersDownloadingChunk),

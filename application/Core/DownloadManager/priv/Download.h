@@ -24,8 +24,6 @@
 #include <QFlags>
 
 #include <Common/Uncopyable.h>
-#include <Core/FileManager/IFileManager.h>
-#include <Core/PeerManager/IPeerManager.h>
 #include <Core/PeerManager/IPeer.h>
 
 #include <Protos/common.pb.h>
@@ -44,8 +42,6 @@ namespace DM
 
    protected:
       Download(
-         QSharedPointer<FM::IFileManager> fileManager,
-         QSharedPointer<PM::IPeerManager> peerManager,
          Common::Hash peerSourceID,
          const Protos::Common::Entry& remoteEntry,
          const Protos::Common::Entry& localEntry
@@ -55,7 +51,7 @@ namespace DM
       virtual ~Download();
 
       /**
-        * Start the download as active.
+        * Set the download as active.
         */
       virtual void start() = 0;
 
@@ -85,14 +81,8 @@ namespace DM
         */
       virtual void setStatus(Status newStatus);
 
-   private:
-      void retrievePeer();
-
    protected:
       const quint64 ID;
-
-      QSharedPointer<FM::IFileManager> fileManager;
-      QSharedPointer<PM::IPeerManager> peerManager;
 
       Common::Hash peerSourceID;
       PM::IPeer* peerSource;
