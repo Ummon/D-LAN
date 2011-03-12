@@ -140,8 +140,6 @@ Download* DownloadManager::addDownload(const Protos::Common::Entry& remoteEntry,
          );
          newDownload = dirDownload;
          connect(dirDownload, SIGNAL(newEntries(const Protos::Common::Entries&)), this, SLOT(newEntries(const Protos::Common::Entries&)), Qt::DirectConnection);
-         iterator.insert(dirDownload);
-         this->downloadsIndexedBySourcePeerID.insert(peerSource, dirDownload);
       }
       break;
 
@@ -160,15 +158,19 @@ Download* DownloadManager::addDownload(const Protos::Common::Entry& remoteEntry,
          );
          newDownload = fileDownload;
          connect(fileDownload, SIGNAL(newHashKnown()), this, SLOT(setQueueChanged()), Qt::DirectConnection);
-         iterator.insert(fileDownload);
-         this->downloadsIndexedBySourcePeerID.insert(peerSource, fileDownload);
-         fileDownload->start();
       }
       break;
+
+   default:
+      return 0;
    }
 
-   if (newDownload)
-      connect(newDownload, SIGNAL(deleted(Download*)), this, SLOT(downloadDeleted(Download*)), Qt::DirectConnection);
+   iterator.insert(newDownload);
+   this->downloadsIndexedBySourcePeerID.insert(peerSource, newDownload);
+
+   connect(newDownload, SIGNAL(deleted(Download*)), this, SLOT(downloadDeleted(Download*)), Qt::DirectConnection);
+
+   newDownload->start();
 
    this->setQueueChanged();
 
@@ -271,6 +273,10 @@ void DownloadManager::fileCacheLoaded()
    this->loadQueueFromFile();
 }
 
+/**
+  * Called when a directory knows its children. The children replace the directory.
+  * The directory is removed from the queue and deleted.
+  */
 void DownloadManager::newEntries(const Protos::Common::Entries& remoteEntries)
 {
    DirDownload* dirDownload = dynamic_cast<DirDownload*>(this->sender());
@@ -294,7 +300,7 @@ void DownloadManager::newEntries(const Protos::Common::Entries& remoteEntries)
       {
          const Protos::Common::Entry& localEntry = dirDownload->getLocalEntry();
          QString relativePath = Common::ProtoHelper::getStr(localEntry, &Protos::Common::Entry::path).append(Common::ProtoHelper::getStr(localEntry, &Protos::Common::Entry::name)).append("/");
-         this->addDownload(remoteEntries.entry(n), dirDownload->getPeerSourceID(), localEntry.has_shared_dir() ? localEntry.shared_dir().id().hash().data() : Common::Hash(), relativePath,false, i);
+         this->addDownload(remoteEntries.entry(n), dirDownload->getPeerSourceID(), localEntry.has_shared_dir() ? localEntry.shared_dir().id().hash().data() : Common::Hash(), relativePath, false, i);
       }
 
    delete dirDownload;
@@ -314,11 +320,15 @@ void DownloadManager::peerNoLongerAskingForHashes(PM::IPeer* peer)
 {
    L_DEBU(QString("Finish to ask hashes from peer: %1").arg(peer->getID().toStr()));
 
-   for (QMultiHash<Common::Hash, Download*>::iterator i = this->downloadsIndexedBySourcePeerID.find(peer->getID()); i != this->downloadsIndexedBySourcePeerID.end() && i.key() == peer->getID(); i++)
+   if (!this->downloadsIndexedBySourcePeerID.contains(peer->getID()))
+      return;
+
+   // We can use 'downloadsIndexedBySourcePeerID' because the order matters.
+   for (QListIterator<Download*> i(this->downloads); i.hasNext();)
    {
-      FileDownload* fileDownload = dynamic_cast<FileDownload*>(i.value());
-      if (fileDownload)
-         fileDownload->retrieveHashes();
+      FileDownload* fileDownload = dynamic_cast<FileDownload*>(i.next());
+      if (fileDownload && fileDownload->retrieveHashes())
+         break;
    }
 }
 
@@ -326,11 +336,15 @@ void DownloadManager::peerNoLongerAskingForEntries(PM::IPeer* peer)
 {
    L_DEBU(QString("Finish to ask entries from peer: %1").arg(peer->getID().toStr()));
 
-   for (QMultiHash<Common::Hash, Download*>::iterator i = this->downloadsIndexedBySourcePeerID.find(peer->getID()); i != this->downloadsIndexedBySourcePeerID.end() && i.key() == peer->getID(); i++)
+   if (!this->downloadsIndexedBySourcePeerID.contains(peer->getID()))
+      return;
+
+   // We can use 'downloadsIndexedBySourcePeerID' because the order matters.
+   for (QListIterator<Download*> i(this->downloads); i.hasNext();)
    {
-      DirDownload* dirDownload = dynamic_cast<DirDownload*>(i.value());
-      if (dirDownload)
-         dirDownload->retrieveEntries();
+      DirDownload* dirDownload = dynamic_cast<DirDownload*>(i.next());
+      if (dirDownload && dirDownload->retrieveEntries())
+         break;
    }
 }
 

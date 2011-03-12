@@ -47,6 +47,8 @@ namespace DM
       );
       ~DirDownload();
 
+      void start();
+
       bool retrieveEntries();
 
    signals:

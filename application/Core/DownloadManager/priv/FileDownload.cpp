@@ -85,6 +85,19 @@ FileDownload::~FileDownload()
    this->chunkDownloads.clear();
 }
 
+void FileDownload::start()
+{
+   if (this->hasAValidPeer())
+   {
+      for (QListIterator< QSharedPointer<ChunkDownload> > i(this->chunkDownloads); i.hasNext();)
+         i.next()->setPeerSource(this->peerSource, false); // 'false' : to avoid to send unnecessary 'newFreePeer'.
+
+      this->occupiedPeersDownloadingChunk.newPeer(this->peerSource);
+   }
+
+   this->retrieveHashes();
+}
+
 /**
   * Add the known hashes.
   */
@@ -97,19 +110,6 @@ void FileDownload::populateRemoteEntry(Protos::Queue::Queue_Entry* entry) const
       Protos::Common::Hash* hash = entry->mutable_remote_entry()->add_chunk();
       hash->set_hash(this->chunkDownloads[i]->getHash().getData(), Common::Hash::HASH_SIZE);
    }
-}
-
-void FileDownload::start()
-{
-   if (this->hasAValidPeer())
-   {
-      for (QListIterator< QSharedPointer<ChunkDownload> > i(this->chunkDownloads); i.hasNext();)
-         i.next()->setPeerSource(this->peerSource, false); // 'false' : to avoid to send unnecessary 'newFreePeer'.
-
-      this->occupiedPeersDownloadingChunk.newPeer(this->peerSource);
-   }
-
-   this->retrieveHashes();
 }
 
 int FileDownload::getProgress() const
@@ -251,10 +251,12 @@ bool FileDownload::retrieveHashes()
 {
    // If we've already got all the chunk hashes it's unecessary to re-ask them.
    // Or if we'v got anyone to ask the chunk hashes..
-   if (this->nbHashesKnown == this->NB_CHUNK || !this->hasAValidPeer() || this->status == COMPLETE || this->status == DELETED || this->status == UNABLE_TO_RETRIEVE_THE_HASHES)
-      return false;
-
-   if (!this->occupiedPeersAskingForHashes.setPeerAsOccupied(this->peerSource))
+   if (
+      this->nbHashesKnown == this->NB_CHUNK ||
+      !this->hasAValidPeer() ||
+      this->status == COMPLETE || this->status == DELETED || this->status == UNABLE_TO_RETRIEVE_THE_HASHES ||
+      !this->occupiedPeersAskingForHashes.setPeerAsOccupied(this->peerSource)
+   )
       return false;
 
    this->status = INITIALIZING;

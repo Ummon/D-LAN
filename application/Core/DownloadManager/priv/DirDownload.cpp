@@ -46,8 +46,6 @@ DirDownload::DirDownload(
       arg(Common::ProtoHelper::getDebugStr(this->remoteEntry)).
       arg(Common::ProtoHelper::getDebugStr(this->localEntry))
    );
-
-   this->retrieveEntries();
 }
 
 DirDownload::~DirDownload()
@@ -59,16 +57,18 @@ DirDownload::~DirDownload()
    this->getEntriesResult.clear();
 }
 
+void DirDownload::start()
+{
+   this->retrieveEntries();
+}
+
 /**
   * Ask the DirDownload to get its content.
   * The signal 'newEntries' will be emitted when the answer is received.
   */
 bool DirDownload::retrieveEntries()
 {
-   if (!this->hasAValidPeer())
-      return false;
-
-   if (!this->occupiedPeersAskingForEntries.setPeerAsOccupied(this->peerSource))
+   if (!this->hasAValidPeer() || this->status == DELETED || !this->occupiedPeersAskingForEntries.setPeerAsOccupied(this->peerSource))
       return false;
 
    Protos::Core::GetEntries getEntries;
@@ -94,10 +94,9 @@ void DirDownload::result(const Protos::Core::GetEntriesResult& entries)
          entriesCopy.mutable_entry(i)->mutable_shared_dir()->CopyFrom(this->remoteEntry.shared_dir());
    }
 
-   emit newEntries(entriesCopy);
+   this->getEntriesResult.clear();
 
-   this->getEntriesResult.clear(); // Is the 'IGetEntriesResult' object is deleted? Must we disconnect the signal? Answer: No the signal is automatically disconnected.
-   this->occupiedPeersAskingForEntries.setPeerAsFree(this->peerSource);
+   emit newEntries(entriesCopy);
 }
 
 void DirDownload::resultTimeout()

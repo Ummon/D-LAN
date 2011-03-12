@@ -56,9 +56,9 @@ namespace DM
       );
       ~FileDownload();
 
-      void populateRemoteEntry(Protos::Queue::Queue_Entry* entry) const;
-
       void start();
+
+      void populateRemoteEntry(Protos::Queue::Queue_Entry* entry) const;
 
       int getProgress() const;
       QSet<Common::Hash> getPeers() const;

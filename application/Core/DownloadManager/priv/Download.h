@@ -54,6 +54,11 @@ namespace DM
    public:
       virtual ~Download();
 
+      /**
+        * Start the download as active.
+        */
+      virtual void start() = 0;
+
       virtual void populateRemoteEntry(Protos::Queue::Queue_Entry* entry) const;
       virtual void populateLocalEntry(Protos::Queue::Queue_Entry* entry) const;
 
