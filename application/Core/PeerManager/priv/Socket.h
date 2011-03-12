@@ -93,17 +93,13 @@ namespace PM
         */
       void closed(Socket*);
 
-   protected:
-      void onNewMessage(Common::MessageHeader::MessageType type, const google::protobuf::Message& message);
-      void onNewDataReceived();
-
-   protected slots:
-      void disconnected();
-
    private slots:
       void nextAskedHash(Common::Hash hash);
 
    private:
+      void onNewMessage(Common::MessageHeader::MessageType type, const google::protobuf::Message& message);
+      void onNewDataReceived();
+      void onDisconnected();
       void initUnactiveTimer();
 
       QSharedPointer<FM::IFileManager> fileManager;

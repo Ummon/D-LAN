@@ -196,6 +196,23 @@ void Socket::close()
 }
 
 /**
+  * When we ask to the fileManager some hashes for a given file this
+  * slot will be called each time a new hash is available.
+  */
+void Socket::nextAskedHash(Common::Hash hash)
+{
+   Protos::Common::Hash hashProto;
+   hashProto.set_hash(hash.getData(), Common::Hash::HASH_SIZE);
+   this->send(Common::MessageHeader::CORE_HASH, hashProto);
+
+   if (--this->nbHash == 0)
+   {
+      this->currentHashesResult.clear();
+      this->finished();
+   }
+}
+
+/**
   * @return 'true' if the message has been handled properly otherwise return 'false'.
   */
 void Socket::onNewMessage(Common::MessageHeader::MessageType type, const google::protobuf::Message& message)
@@ -296,27 +313,9 @@ void Socket::onNewDataReceived()
    this->setActive();
 }
 
-void Socket::disconnected()
+void Socket::onDisconnected()
 {
-   this->MessageSocket::disconnected();
    this->close();
-}
-
-/**
-  * When we ask to the fileManager some hashes for a given file this
-  * slot will be called each time a new hash is available.
-  */
-void Socket::nextAskedHash(Common::Hash hash)
-{
-   Protos::Common::Hash hashProto;
-   hashProto.set_hash(hash.getData(), Common::Hash::HASH_SIZE);
-   this->send(Common::MessageHeader::CORE_HASH, hashProto);
-
-   if (--this->nbHash == 0)
-   {
-      this->currentHashesResult.clear();
-      this->finished();
-   }
 }
 
 void Socket::initUnactiveTimer()
