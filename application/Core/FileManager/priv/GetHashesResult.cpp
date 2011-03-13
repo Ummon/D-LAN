@@ -83,7 +83,6 @@ Protos::Core::GetHashesResult GetHashesResult::start()
 
       if (chunk->hasHash())
       {
-         L_DEBU(QString("OK1, this->nbHash = %1").arg(this->nbHash));
          this->sendNextHash(chunk);
       }
       else // If only one hash is missing we tell the FileUpdater to compute the remaining ones.
@@ -102,11 +101,9 @@ Protos::Core::GetHashesResult GetHashesResult::start()
   */
 void GetHashesResult::chunkHashKnown(QSharedPointer<Chunk> chunk)
 {
-   L_DEBU(QString("OK3"));
    if (chunk->isOwnedBy(this->file))
    {
       QMutexLocker locker(&this->mutex);
-      L_DEBU(QString("OK2, this->nbHash = %1").arg(this->nbHash));
       this->sendNextHash(chunk);
    }
 }

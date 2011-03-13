@@ -336,8 +336,6 @@ void FileUpdater::computeSomeHashes()
          }
          locker.relock();
 
-         L_DEBU(QString("OK5, complete = %1").arg(complete));
-
          if (complete)
             this->filesWithoutHashesPrioritized.removeFirst();
          else if (this->filesWithoutHashesPrioritized.size() > 1) // The current hashing file may have been removed from 'filesWithoutHashesPrioritized' by 'rmRoot(..)'.
