@@ -51,20 +51,22 @@ void StatusBar::coreConnected()
 
 void StatusBar::coreDisconnected()
 {
+   this->setDownloadRate(0);
+   this->setUploadRate(0);
+   this->setTotalSharing(0);
    this->updateCoreStatus();
 }
 
 void StatusBar::newState(const Protos::GUI::State& state)
 {
-   this->ui->lblDownloadRate->setText(Common::Global::formatByteSize(state.stats().download_rate()).append("/s"));
-   this->ui->lblUploadRate->setText(Common::Global::formatByteSize(state.stats().upload_rate()).append("/s"));
+   this->setDownloadRate(state.stats().download_rate());
+   this->setUploadRate(state.stats().upload_rate());
 
    qint64 totalSharing = 0;
    for (int i = 0; i < state.peer_size(); i++)
       totalSharing += state.peer(i).sharing_amount();
    totalSharing += state.myself().sharing_amount();
-
-   this->ui->lblTotalSharing->setText(Common::Global::formatByteSize(totalSharing));
+   this->setTotalSharing(totalSharing);
 
    this->updateCoreStatus(state.stats().cache_status());
 }
@@ -73,6 +75,21 @@ void StatusBar::showAbout()
 {
    DialogAbout about(this);
    about.exec();
+}
+
+void StatusBar::setDownloadRate(qint64 rate)
+{
+   this->ui->lblDownloadRate->setText(Common::Global::formatByteSize(rate).append("/s"));
+}
+
+void StatusBar::setUploadRate(qint64 rate)
+{
+   this->ui->lblUploadRate->setText(Common::Global::formatByteSize(rate).append("/s"));
+}
+
+void StatusBar::setTotalSharing(qint64 amount)
+{
+   this->ui->lblTotalSharing->setText(Common::Global::formatByteSize(amount));
 }
 
 void StatusBar::updateCoreStatus(Protos::GUI::State_Stats_CacheStatus status)

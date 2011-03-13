@@ -47,6 +47,9 @@ namespace GUI
       void showAbout();
 
    private:
+      void setDownloadRate(qint64 rate);
+      void setUploadRate(qint64 rate);
+      void setTotalSharing(qint64 amount);
       void updateCoreStatus(Protos::GUI::State_Stats_CacheStatus status = Protos::GUI::State_Stats_CacheStatus_UNKNOWN);
 
       Ui::StatusBar *ui;

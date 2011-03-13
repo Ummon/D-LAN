@@ -77,6 +77,13 @@ void CoreConnection::connectToCore(const QString& address, quint16 port, Common:
    this->connectToCoreSlot();
 }
 
+void CoreConnection::disconnectFromCore()
+{
+   this->addressesToTry.clear();
+   this->currentAddress = QString();
+   this->socket->close();
+}
+
 Common::Hash CoreConnection::getOurID() const
 {
    return this->getOurID();
@@ -175,7 +182,8 @@ void CoreConnection::connectToCoreSlot()
    if (this->currentHostLookupID != -1)
       QHostInfo::abortHostLookup(this->currentHostLookupID);
 
-   this->currentHostLookupID = QHostInfo::lookupHost(this->currentAddress, this, SLOT(adressResolved(QHostInfo)));
+   if (!this->currentAddress.isNull())
+      this->currentHostLookupID = QHostInfo::lookupHost(this->currentAddress, this, SLOT(adressResolved(QHostInfo)));
 }
 
 void CoreConnection::stateChanged(QAbstractSocket::SocketState socketState)

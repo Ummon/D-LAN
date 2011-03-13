@@ -61,6 +61,8 @@ namespace RCC
       void connectToCore(quint16 port);
       void connectToCore(const QString& address, quint16 port, Common::Hash password);
 
+      void disconnectFromCore();
+
       Common::Hash getOurID() const;
       void sendChatMessage(const QString& message);
       void setCoreSettings(const Protos::GUI::CoreSettings settings);
