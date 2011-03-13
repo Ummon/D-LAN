@@ -32,9 +32,9 @@ message Settings {
    // DownloadManager.
    optional uint32 number_of_downloader = 17 [default = 3]; // Maximum number of simultaneous download.
    optional uint32 lan_speed = 18 [default = 52428800]; // [B/s]. (50 MiB/s).
-   optional double time_recheck_chunk_factor = 19 [default = 4];
-   optional double switch_to_another_peer_factor = 20 [default = 1.5];
-   optional uint32 download_rate_valid_time_factor = 21 [default = 15000];
+   optional double time_recheck_chunk_factor = 19 [default = 4]; // If a chunk download take more than 4 times it should ('chunk_size' / 'lan_speed' is the minimum download time of a chunk) a better peer will be looking for.
+   optional double switch_to_another_peer_factor = 20 [default = 1.5]; // To switch from the current peer to another the other download speed must be superior to this factor of the current speed.
+   optional uint32 download_rate_valid_time_factor = 21 [default = 30000]; // A download rate for a peer is valid for a time period of 'download_rate_valid_time_factor' / 'lan_speed' [s].
    optional uint32 save_queue_period = 23 [default = 60000]; // [ms]. (1 min).
    
    // UploadManager.
