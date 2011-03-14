@@ -469,26 +469,35 @@ void StressTest::haveChunk()
 {
    PROB_100(80);
 
-   if (this->someHashes.isEmpty())
-      return;
-
    qDebug() << "===== StressTest::haveChunk() =====";
 
    QList<Common::Hash> hashes;
 
-   int n = this->randGen.rand(2000) + 500;
-   for (int i = 0; i < n && i < this->someHashes.size(); i++)
-      hashes << this->someHashes[i];
+   int n = this->randGen.rand(10000) + 1000;
+   while (n--)
+   {
+      if (!this->someHashes.isEmpty() && this->randGen.rand(5) == 0)
+         hashes << this->someHashes[this->randGen.rand(this->someHashes.size()-1)];
+      else
+         hashes << Common::Hash::rand();
+   }
 
    QTime time;
    time.start();
    QBitArray result = this->fileManager->haveChunks(hashes);
 
    qDebug() << "Ask for " << hashes.size() << " hashe(s). Request time : " << time.elapsed() << " ms";
-   QString resultStr(result.size(), '0');
-   for (int i = 0; i < result.size(); i++)
-      resultStr[i] = result[i] ? '1' : '0';
-   qDebug() << resultStr;
+   if (result.isNull())
+   {
+      qDebug() << " -> " << "Don't have any hashes";
+   }
+   else
+   {
+      QString resultStr(result.size(), '0');
+      for (int i = 0; i < result.size(); i++)
+         resultStr[i] = result[i] ? '1' : '0';
+      qDebug() << " -> " << resultStr;
+   }
 }
 
 void StressTest::getRootEntries()
