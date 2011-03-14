@@ -294,7 +294,7 @@ QBitArray FileManager::haveChunks(const QList<Common::Hash>& hashes)
    bool ownsAtLeastOneChunk = false;
    for (int i = 0; i < hashes.size(); i++)
    {
-      bool owned = this->chunks.contains(hashes[i]);
+      const bool owned = this->chunks.contains(hashes[i]);
       result.setBit(i, owned);
       if (owned)
          ownsAtLeastOneChunk = true;

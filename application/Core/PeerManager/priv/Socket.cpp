@@ -153,7 +153,7 @@ void Socket::setActive()
 }
 
 /**
-  * Mus be called when a transaction is terminated.
+  * Must be called when a transaction is terminated.
   */
 void Socket::finished(FinishedStatus status)
 {
@@ -188,6 +188,9 @@ void Socket::finished(FinishedStatus status)
    emit becomeIdle(this);
 }
 
+/**
+  * Only emit the 'closed(..)' signal, do not close the socket.
+  */
 void Socket::close()
 {
    this->active = false;
@@ -304,7 +307,7 @@ void Socket::onNewMessage(Common::MessageHeader::MessageType type, const google:
       }
       break;
 
-   default:; // Do nothing
+   default:; // Do nothing.
    }
 }
 

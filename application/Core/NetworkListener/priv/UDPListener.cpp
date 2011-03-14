@@ -175,7 +175,8 @@ void UDPListener::sendIMAliveMessage()
    this->currentIMAliveTag |= this->mtrand.randInt();
    IMAliveMessage.set_tag(this->currentIMAliveTag);
 
-   this->currentChunkDownloads = this->downloadManager->getUnfinishedChunks(SETTINGS.get<quint32>("number_of_hashes_sent_imalive"));
+   static const quint32 NUMBER_OF_HASHES_TO_SEND = SETTINGS.get<quint32>("number_of_hashes_sent_imalive");
+   this->currentChunkDownloads = this->downloadManager->getUnfinishedChunks(NUMBER_OF_HASHES_TO_SEND);
    IMAliveMessage.mutable_chunk()->Reserve(this->currentChunkDownloads.size());
    for (QListIterator< QSharedPointer<DM::IChunkDownload> > i(this->currentChunkDownloads); i.hasNext();)
    {
@@ -237,6 +238,7 @@ void UDPListener::processPendingMulticastDatagrams()
             if (IMAliveMessage.chunk_size() > 0)
             {
                QList<Common::Hash> hashes;
+               hashes.reserve(IMAliveMessage.chunk_size());
                for (int i = 0; i < IMAliveMessage.chunk_size(); i++)
                   hashes << Common::Hash(IMAliveMessage.chunk(i).hash().data());
 

@@ -48,9 +48,9 @@ namespace PM
       virtual QByteArray readAll() = 0;
       virtual bool waitForReadyRead(int msecs) = 0;
 
-      virtual qint64 bytesToWrite () const = 0;
+      virtual qint64 bytesToWrite() const = 0;
       virtual qint64 write(const char* data, qint64 maxSize) = 0;
-      virtual qint64 write (const QByteArray& byteArray) = 0;
+      virtual qint64 write(const QByteArray& byteArray) = 0;
       virtual bool waitForBytesWritten(int msecs) = 0;
 
       virtual void moveToThread(QThread* targetThread) = 0;

@@ -89,7 +89,7 @@ namespace PM
       void becomeIdle(Socket*);
 
       /**
-        * Emitted when the socket is disconnected or explicitly closed by callinf 'close()'.
+        * Emitted when the socket is disconnected or explicitly closed by calling 'close()'.
         */
       void closed(Socket*);
 
