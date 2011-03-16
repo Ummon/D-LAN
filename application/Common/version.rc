@@ -3,7 +3,7 @@
 
 // For more information : http://msdn.microsoft.com/en-us/library/aa381058%28VS.85%29.aspx .
  
-IDI_ICON1 ICON DISCARDABLE "ressources/aybabtu_icon.ico"
+IDI_ICON1 ICON DISCARDABLE "ressources/icon.ico"
 
 VS_VERSION_INFO VERSIONINFO
 BEGIN
@@ -12,14 +12,14 @@ BEGIN
         BLOCK "040904b0"
         BEGIN
             VALUE "CompanyName",      "Ek Dev"
-            VALUE "FileDescription",  "Aybabtu - A LAN file sharing software"
+            VALUE "FileDescription",  "D-LAN - A distributed LAN file sharing software"
             VALUE "FileVersion",      VERSION
-            VALUE "InternalName",     "Aybabtu"
-            VALUE "LegalCopyright",   "2010"
+            VALUE "InternalName",     "D-LAN"
+            VALUE "LegalCopyright",   "2010-2011"
             VALUE "LegalTrademarks1", ""
             VALUE "LegalTrademarks2", ""
             VALUE "OriginalFilename", ""
-            VALUE "ProductName",      "Aybabtu"
+            VALUE "ProductName",      "D-LAN"
             VALUE "ProductVersion",   VERSION
             VALUE "VersionTag",       VERSION_TAG
             VALUE "BuildTime",        BUILD_TIME

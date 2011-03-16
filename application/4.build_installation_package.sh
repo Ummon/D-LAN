@@ -4,4 +4,4 @@
 set -o errexit
 
 # MS.Windows. Inno Setup (isetup) + QuickStart Pack (ispack) must be both installed. The Inno Setup directory must be placed in the PATH variable environnment.
-iscc aybabtu.iss
+iscc windows_setup.iss

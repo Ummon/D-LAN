@@ -15,12 +15,12 @@
         <file>ressources/refresh.png</file>
         <file>ressources/refresh-down.png</file>
         <file>ressources/refresh-hover.png</file>
-        <file>ressources/aybabtu_icon.png</file>
         <file>ressources/settings.png</file>
         <file>ressources/chat.png</file>
         <file>ressources/arrow_down.png</file>
         <file>ressources/arrow_up.png</file>
         <file>ressources/explore_folder.png</file>
         <file>ressources/chat_new_message.png</file>
+        <file>ressources/icon.png</file>
     </qresource>
 </RCC>

@@ -1,5 +1,5 @@
 /**
-  * Aybabtu - A decentralized LAN file sharing software.
+  * D-LAN - A decentralized LAN file sharing software.
   * Copyright (C) 2010-2011 Greg Burri <greg.burri@gmail.com>
   *
   * This program is free software: you can redistribute it and/or modify
@@ -16,13 +16,10 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef TESTS_CORE_H
-#define TESTS_CORE_H
 
 #include <QTest>
 
-#include <CoreTest.h>
-using namespace CoreSpace;
+#include <Common/RemoteCoreController/ICoreConnection.h>
 
 class Tests : public QObject
 {
@@ -35,7 +32,6 @@ private slots:
    void cleanupTestCase();
 
 private:
-   CoreTest core;
 };
 
 #endif

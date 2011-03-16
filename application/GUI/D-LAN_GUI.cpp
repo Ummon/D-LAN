@@ -1,5 +1,5 @@
 /**
-  * Aybabtu - A decentralized LAN file sharing software.
+  * D-LAN - A decentralized LAN file sharing software.
   * Copyright (C) 2010-2011 Greg Burri <greg.burri@gmail.com>
   *
   * This program is free software: you can redistribute it and/or modify
@@ -16,7 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#include <AybabtuGUI.h>
+#include <D-LAN_GUI.h>
 using namespace GUI;
 
 #include <Common/Constants.h>
@@ -24,16 +24,16 @@ using namespace GUI;
 #include <Common/RemoteCoreController/Builder.h>
 
 /**
-  * @class AybabtuGUI
+  * @class D_LAN_GUI
   * This class control the trayIcon and create the main window.
   * The main window can be hid and deleted, the tray icon will still remain and will permit to relaunch the main window.
   */
 
-AybabtuGUI::AybabtuGUI(int argc, char *argv[]) :
+D_LAN_GUI::D_LAN_GUI(int argc, char *argv[]) :
    QApplication(argc, argv),
    mainWindow(0),
    coreConnection(RCC::Builder::newCoreConnection()),
-   trayIcon(QIcon(":/icons/ressources/aybabtu_icon.png"))
+   trayIcon(QIcon(":/icons/ressources/icon.png"))
 {
    this->setQuitOnLastWindowClosed(false);
 
@@ -46,23 +46,23 @@ AybabtuGUI::AybabtuGUI(int argc, char *argv[]) :
    this->trayIconMenu.addSeparator();
    this->trayIconMenu.addAction("Exit", this, SLOT(exit()));
    this->trayIcon.setContextMenu(&this->trayIconMenu);
-   this->trayIcon.setToolTip("Aybabtu");
+   this->trayIcon.setToolTip("D-LAN");
    this->trayIcon.show();
 }
 
-void AybabtuGUI::trayIconActivated(QSystemTrayIcon::ActivationReason reason)
+void D_LAN_GUI::trayIconActivated(QSystemTrayIcon::ActivationReason reason)
 {
    if (reason == QSystemTrayIcon::Trigger)
       this->showMainWindow();
 }
 
-void AybabtuGUI::mainWindowClosed()
+void D_LAN_GUI::mainWindowClosed()
 {
-   this->trayIcon.showMessage("Aybabtu GUI closed", "Aybabtu Core is still running in background. Select 'exit' from the contextual menu if you want to stop it.");
+   this->trayIcon.showMessage("D-LAN GUI closed", "D-LAN Core is still running in background. Select 'exit' from the contextual menu if you want to stop it.");
    this->mainWindow = 0;
 }
 
-void AybabtuGUI::showMainWindow()
+void D_LAN_GUI::showMainWindow()
 {
    if (this->mainWindow)
    {
@@ -80,12 +80,12 @@ void AybabtuGUI::showMainWindow()
 /**
   * Stop only the GUI.
   */
-void AybabtuGUI::exitGUI()
+void D_LAN_GUI::exitGUI()
 {
    this->exit(false);
 }
 
-void AybabtuGUI::exit(bool stopTheCore)
+void D_LAN_GUI::exit(bool stopTheCore)
 {
    this->trayIcon.hide();
 

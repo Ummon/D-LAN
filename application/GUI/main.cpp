@@ -1,5 +1,5 @@
 /**
-  * Aybabtu - A decentralized LAN file sharing software.
+  * D-LAN - A decentralized LAN file sharing software.
   * Copyright (C) 2010-2011 Greg Burri <greg.burri@gmail.com>
   *
   * This program is free software: you can redistribute it and/or modify
@@ -24,7 +24,7 @@
 #include <Common/Settings.h>
 #include <Common/Constants.h>
 
-#include <AybabtuGUI.h>
+#include <D-LAN_GUI.h>
 
 #if defined(DEBUG) && defined(ENABLE_NVWA)
    // For Common/debug_new.cpp.
@@ -44,6 +44,6 @@ int main(int argc, char *argv[])
 
    LM::Builder::setLogDirName("log_gui");
 
-   GUI::AybabtuGUI gui(argc, argv);
+   GUI::D_LAN_GUI gui(argc, argv);
    return gui.exec();
 }

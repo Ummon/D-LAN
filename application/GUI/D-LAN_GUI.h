@@ -1,5 +1,5 @@
 /**
-  * Aybabtu - A decentralized LAN file sharing software.
+  * D-LAN - A decentralized LAN file sharing software.
   * Copyright (C) 2010-2011 Greg Burri <greg.burri@gmail.com>
   *
   * This program is free software: you can redistribute it and/or modify
@@ -16,8 +16,8 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef GUI_AYBABTUGUI_H
-#define GUI_AYBABTUGUI_H
+#ifndef GUI_D_LAN_GUI_H
+#define GUI_D_LAN_GUI_H
 
 #include <QApplication>
 #include <QMenu>
@@ -29,11 +29,11 @@
 
 namespace GUI
 {
-   class AybabtuGUI : public QApplication
+   class D_LAN_GUI : public QApplication
    {
       Q_OBJECT
    public:
-      AybabtuGUI(int argc, char *argv[]);
+      D_LAN_GUI(int argc, char *argv[]);
 
    private slots:
       void trayIconActivated(QSystemTrayIcon::ActivationReason reason);

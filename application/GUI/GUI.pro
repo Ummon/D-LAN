@@ -8,7 +8,7 @@
 # DEFINES += ENABLE_NVWA
 
 QT       += core gui network
-TARGET = AybabtuGUI
+TARGET = "D-LAN.GUI"
 TEMPLATE = app
 
 RC_FILE = ../Common/version.rc
@@ -45,7 +45,6 @@ SOURCES += main.cpp\
     StatusBar.cpp \
     DialogAbout.cpp \
     Log.cpp \
-    AybabtuGUI.cpp \
     CheckBoxList.cpp \
     TabButtons.cpp \
     Browse/WidgetBrowse.cpp \
@@ -63,7 +62,8 @@ SOURCES += main.cpp\
     Uploads/UploadsModel.cpp \
     Settings/DirListModel.cpp \
     Settings/RemoteFileDialog.cpp \
-    DownloadMenu.cpp
+    DownloadMenu.cpp \
+    D-LAN_GUI.cpp
 
 HEADERS  += MainWindow.h \
     ../Protos/gui_protocol.pb.h \
@@ -73,7 +73,6 @@ HEADERS  += MainWindow.h \
     StatusBar.h \
     Log.h \
     DialogAbout.h \
-    AybabtuGUI.h \
     CheckBoxList.h \
     CheckBoxModel.h \
     IFilter.h \
@@ -94,7 +93,8 @@ HEADERS  += MainWindow.h \
     Uploads/UploadsModel.h \
     Settings/DirListModel.h \
     Settings/RemoteFileDialog.h \
-    DownloadMenu.h
+    DownloadMenu.h \
+    D-LAN_GUI.h
 
 FORMS    += MainWindow.ui \
     StatusBar.ui \

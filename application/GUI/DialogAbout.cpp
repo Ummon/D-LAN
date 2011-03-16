@@ -1,5 +1,5 @@
 /**
-  * Aybabtu - A decentralized LAN file sharing software.
+  * D-LAN - A decentralized LAN file sharing software.
   * Copyright (C) 2010-2011 Greg Burri <greg.burri@gmail.com>
   *
   * This program is free software: you can redistribute it and/or modify
@@ -20,7 +20,8 @@
 #include <ui_DialogAbout.h>
 using namespace GUI;
 
-#include<QDateTime>
+#include <QPainter>
+#include <QDateTime>
 
 #include <Common/Version.h>
 
@@ -43,4 +44,18 @@ DialogAbout::DialogAbout(QWidget *parent) :
 DialogAbout::~DialogAbout()
 {
    delete this->ui;
+}
+
+/**
+  * Draw a nice gradient sky as background.
+  */
+void DialogAbout::paintEvent(QPaintEvent* event)
+{
+   QPainter p(this);
+   QRadialGradient gradient(QPointF(0, 0), 2, QPointF(0, 0));
+   gradient.setCoordinateMode(QGradient::StretchToDeviceMode);
+   gradient.setColorAt(0, QColor(16, 83, 188));
+   gradient.setColorAt(1, QColor(158, 202, 247));
+   QBrush brush(gradient);
+   p.fillRect(QRect(0, 0, width(), height()), brush);
 }

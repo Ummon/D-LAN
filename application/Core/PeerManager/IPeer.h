@@ -1,5 +1,5 @@
 /**
-  * Aybabtu - A decentralized LAN file sharing software.
+  * D-LAN - A decentralized LAN file sharing software.
   * Copyright (C) 2010-2011 Greg Burri <greg.burri@gmail.com>
   *
   * This program is free software: you can redistribute it and/or modify
@@ -60,7 +60,7 @@ namespace PM
       /**
         * When we download a file from a peer we can set its current speed with this method.
         * If this method isn't called for some time, the speed will be reset to its default value.
-        * See 'DownloadRateValidTime' from this wiki page: http://dev.aybabtu.org/projects/pmp/wiki/Protocol_core-core#Parameters to show the computation.
+        * See 'DownloadRateValidTime' from this wiki page: http://dev.d-lan.net/projects/pmp/wiki/Protocol_core-core#Parameters to show the computation.
         */
       virtual void setSpeed(quint32 newSpeed) = 0;
 

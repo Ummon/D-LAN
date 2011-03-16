@@ -1,5 +1,5 @@
 /**
-  * Aybabtu - A decentralized LAN file sharing software.
+  * D-LAN - A decentralized LAN file sharing software.
   * Copyright (C) 2010-2011 Greg Burri <greg.burri@gmail.com>
   *
   * This program is free software: you can redistribute it and/or modify
@@ -53,7 +53,7 @@ void StatusBar::coreDisconnected()
 {
    this->setDownloadRate(0);
    this->setUploadRate(0);
-   this->setTotalSharing(0);
+   this->setTotalSharing(0, 0);
    this->updateCoreStatus();
 }
 
@@ -66,7 +66,7 @@ void StatusBar::newState(const Protos::GUI::State& state)
    for (int i = 0; i < state.peer_size(); i++)
       totalSharing += state.peer(i).sharing_amount();
    totalSharing += state.myself().sharing_amount();
-   this->setTotalSharing(totalSharing);
+   this->setTotalSharing(state.peer_size() + 1, totalSharing);
 
    this->updateCoreStatus(state.stats().cache_status());
 }
@@ -87,9 +87,9 @@ void StatusBar::setUploadRate(qint64 rate)
    this->ui->lblUploadRate->setText(Common::Global::formatByteSize(rate).append("/s"));
 }
 
-void StatusBar::setTotalSharing(qint64 amount)
+void StatusBar::setTotalSharing(int nbPeer, qint64 amount)
 {
-   this->ui->lblTotalSharing->setText(Common::Global::formatByteSize(amount));
+   this->ui->lblTotalSharing->setText(QString::number(nbPeer).append(" peer").append(nbPeer > 1 ? "s" : "").append(": ").append(Common::Global::formatByteSize(amount)));
 }
 
 void StatusBar::updateCoreStatus(Protos::GUI::State_Stats_CacheStatus status)

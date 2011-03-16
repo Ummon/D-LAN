@@ -1,5 +1,5 @@
 /**
-  * Aybabtu - A decentralized LAN file sharing software.
+  * D-LAN - A decentralized LAN file sharing software.
   * Copyright (C) 2010-2011 Greg Burri <greg.burri@gmail.com>
   *
   * This program is free software: you can redistribute it and/or modify
@@ -166,11 +166,11 @@ QString Global::cleanDirPath(const QString& path)
 QString Global::dataFolders[2]; // The two folders (roaming and local), see DataFolderType enum.
 
 /**
-  * Returns the absolute path to the aybabtu roaming data folder.
+  * Returns the absolute path to the roaming data folder.
   * For example under Windows :
-  * - type == ROAMING : "C:/Users/john/AppData/Roaming/Aybabtu"
-  * - type == LOCAL : "C:/Users/john/AppData/Local/Aybabtu"
-  * Create the folder "Aybabtu" if needed.
+  * - type == ROAMING : "C:/Users/john/AppData/Roaming/D-LAN"
+  * - type == LOCAL : "C:/Users/john/AppData/Local/D-LAN"
+  * Create the folder "D-LAN" if needed.
   * @exception UnableToGetFolder
   */
 QString Global::getDataFolder(DataFolderType type, bool create)
@@ -306,7 +306,7 @@ bool Global::recursiveDeleteDirectory(const QString& dir)
   */
 QString Global::setCurrentDirToTemp(const QString& dirname)
 {
-   const QString TEMP_DIRNAME("Aybabtu" + dirname);
+   const QString TEMP_DIRNAME("D-LAN " + dirname);
    QDir::setCurrent(QDir::tempPath());
    if (!QDir::current().exists(TEMP_DIRNAME))
       if (!QDir::current().mkdir(TEMP_DIRNAME))

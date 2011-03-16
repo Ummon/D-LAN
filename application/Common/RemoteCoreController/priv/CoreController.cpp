@@ -1,5 +1,5 @@
 /**
-  * Aybabtu - A decentralized LAN file sharing software.
+  * D-LAN - A decentralized LAN file sharing software.
   * Copyright (C) 2010-2011 Greg Burri <greg.burri@gmail.com>
   *
   * This program is free software: you can redistribute it and/or modify
@@ -31,8 +31,8 @@ CoreStatus CoreController::StartCore()
    QtServiceController controller(Common::SERVICE_NAME);
    if (!controller.isInstalled())
    {
-      if (!QtServiceController::install("AybabtuCore.exe"))
-         L_USER("Aybabtu Core cannot be installed as a service");
+      if (!QtServiceController::install("D-LAN.Core.exe"))
+         L_USER("D-LAN Core cannot be installed as a service");
    }
 
    bool isRunning = false;
@@ -41,10 +41,10 @@ CoreStatus CoreController::StartCore()
    {
       if (!(isRunning = controller.start()))
       {
-         L_WARN("Aybabtu Core service cannot be launched. Trying to launch it as a subprocess..");
+         L_WARN("D-LAN Core service cannot be launched. Trying to launch it as a subprocess..");
          if (coreProcess.state() == QProcess::NotRunning)
          {
-            coreProcess.start("AybabtuCore.exe -e");
+            coreProcess.start("D-LAN.Core.exe -e");
             return RUNNING_AS_SUB_PROCESS;
          }
       }

@@ -1,5 +1,5 @@
 /**
-  * Aybabtu - A decentralized LAN file sharing software.
+  * D-LAN - A decentralized LAN file sharing software.
   * Copyright (C) 2010-2011 Greg Burri <greg.burri@gmail.com>
   *
   * This program is free software: you can redistribute it and/or modify
@@ -24,9 +24,9 @@
 namespace Common
 {
 #ifdef Q_OS_WIN32
-   const QString APPLICATION_FOLDER_NAME("Aybabtu");
+   const QString APPLICATION_FOLDER_NAME("D-LAN");
 #else
-   const QString APPLICATION_FOLDER_NAME(".aybabtu");
+   const QString APPLICATION_FOLDER_NAME(".d-lan");
 #endif
 
 // Some files are saved as text format in debug and as binary in release.
@@ -42,7 +42,7 @@ namespace Common
    const QString CORE_SETTINGS_FILENAME("core_settings.txt");
    const QString GUI_SETTINGS_FILENAME("gui_settings.txt");
 
-   const QString SERVICE_NAME("AybabtuCore");
+   const QString SERVICE_NAME("D-LAN Core");
 
    const int PROTOBUF_STREAMING_BUFFER_SIZE(4 * 1024); ///< 4kB.
 

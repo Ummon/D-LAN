@@ -1,5 +1,5 @@
 /**
-  * Aybabtu - A decentralized LAN file sharing software.
+  * D-LAN - A decentralized LAN file sharing software.
   * Copyright (C) 2010-2011 Greg Burri <greg.burri@gmail.com>
   *
   * This program is free software: you can redistribute it and/or modify
@@ -20,10 +20,10 @@
 #define COMMON_VERSION_H
 
 #define VERSION "1.0.0"
-#define VERSION_TAG "Beta9"
+#define VERSION_TAG "Beta10"
 
 // These two values are automatically updated during the release building process. See the script 'Application/Tools/update_version.sh'
-#define BUILD_TIME "2011-03-12_23-36"
-#define GIT_VERSION "2de04fa2c871b9cba898077a41cc4b53d30ac0f0"
+#define BUILD_TIME "2011-03-16_18-02"
+#define GIT_VERSION "d95667c422c53c67353299de443bfa4ad905a162"
 
 #endif
