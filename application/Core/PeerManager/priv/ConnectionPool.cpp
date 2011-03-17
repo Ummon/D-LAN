@@ -28,14 +28,15 @@ using namespace PM;
 #include <priv/PeerManager.h>
 
 /**
-  * @class ConnectionPool
-  * Manage a set of opened sockets to a remote peer.
+  * @class PM::ConnectionPool
   *
-  * There is two kind of socket .
+  * @brief Manage a set of opened sockets to a remote peer.
+  *
+  * There is two kind of socket.
   * 1) Socket opened by another peer.
   * 2) Socket opened by yourself.
   * When we want to send a message (for example 'GetHashes' to ask for some hashes) we must use the second kind.
-  * This constraint exists to avoid sending two messages simultaneously, when one of the message (or both) is a GetChunk
+  * This constraint exists to avoid sending two messages simultaneously, when one of the message (or both) is a 'GetChunk'.
   * The socket will be occupied for a moment to receive or send the stream of data and cannot handle others messages.
   *
   * The method 'getASocket()' may reuse a existing socket or create a new connection to the peer.

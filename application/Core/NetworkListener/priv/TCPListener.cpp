@@ -24,7 +24,7 @@ using namespace NL;
 #include <priv/Log.h>
 
 /**
-  * @class TCPListener
+  * @class NL::TCPListener
   * @author mcuony
   * @author gburri
   */

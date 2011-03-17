@@ -33,7 +33,8 @@ using namespace FM;
 #include <priv/Cache/DataWriter.h>
 
 /**
-  * @class Chunk
+  * @class FM::Chunk
+  *
   * A chunk is a part of a file. It's identified by a hash which can be unknown when a chunk is created and be set later by 'setHash(..)'.
   * A chunk can be read or write, when a chunk is written the 'knownBytes' member is increased.
   * Each chunk of a file has a unique number which begins at 0 and define the order of data, chunk#1 represents the data right after chunk#0 and so on.

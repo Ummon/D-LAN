@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
+
 <svg
    xmlns:dc="http://purl.org/dc/elements/1.1/"
    xmlns:cc="http://creativecommons.org/ns#"
@@ -12,7 +13,7 @@
    height="1052.3622"
    id="svg2"
    sodipodi:version="0.32"
-   inkscape:version="0.46"
+   inkscape:version="0.48.1 "
    sodipodi:docname="gui.svg"
    inkscape:output_extension="org.inkscape.output.svg.inkscape"
    version="1.0"
@@ -318,14 +319,14 @@
      inkscape:pageshadow="2"
      inkscape:zoom="2.8284272"
      inkscape:cx="323.59029"
-     inkscape:cy="745.39832"
+     inkscape:cy="1028.241"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
-     inkscape:window-width="1280"
-     inkscape:window-height="943"
-     inkscape:window-x="1280"
-     inkscape:window-y="24"
+     inkscape:window-width="1920"
+     inkscape:window-height="1024"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
      showguides="true"
      inkscape:guide-bbox="true"
      inkscape:snap-bbox="false"
@@ -537,7 +538,8 @@
        sodipodi:nodetypes="cc"
        inkscape:export-filename="/home/gburri/temp/gui.png"
        inkscape:export-xdpi="130"
-       inkscape:export-ydpi="130" />
+       inkscape:export-ydpi="130"
+       inkscape:connector-curvature="0" />
     <rect
        style="opacity:1;fill:#f0f0f0;fill-opacity:1;stroke:#000000;stroke-width:0.49999991;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        id="rect3182"
@@ -839,23 +841,25 @@
          x="109.2856"
          y="346.29077">A tooltip show the folder</tspan></text>
     <path
-       style="fill:none;fill-rule:evenodd;stroke:#757575;stroke-width:0.30000001;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       d="M 154.57707,373.00863 L 161.66717,348.06929"
+       style="fill:none;stroke:#757575;stroke-width:0.30000001;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       d="m 154.57707,373.00863 7.0901,-24.93934"
        id="path2524"
        inkscape:connector-type="polyline"
        sodipodi:nodetypes="cc"
        inkscape:export-filename="/home/gburri/temp/gui.png"
        inkscape:export-xdpi="130"
-       inkscape:export-ydpi="130" />
+       inkscape:export-ydpi="130"
+       inkscape:connector-curvature="0" />
     <path
-       style="fill:none;fill-rule:evenodd;stroke:#757575;stroke-width:0.30000001;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       d="M 212.45575,370.53375 L 240.55626,348.42284"
+       style="fill:none;stroke:#757575;stroke-width:0.30000001;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       d="m 212.45575,370.53375 28.10051,-22.11091"
        id="path2526"
        inkscape:connector-type="polyline"
        sodipodi:nodetypes="cc"
        inkscape:export-filename="/home/gburri/temp/gui.png"
        inkscape:export-xdpi="130"
-       inkscape:export-ydpi="130" />
+       inkscape:export-ydpi="130"
+       inkscape:connector-curvature="0" />
     <text
        xml:space="preserve"
        style="font-size:8px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
@@ -874,14 +878,15 @@
          y="345.36218"
          id="tspan3171">the progress (with a progress bar) otherwise a status text</tspan></text>
     <path
-       style="fill:none;fill-rule:evenodd;stroke:#757575;stroke-width:0.30000001;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;display:inline"
-       d="M 264.99991,397.36218 L 293.61911,393.76593"
+       style="fill:none;stroke:#757575;stroke-width:0.30000001;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;display:inline"
+       d="m 264.99991,397.36218 28.6192,-3.59625"
        id="path2532"
        inkscape:connector-type="polyline"
        sodipodi:nodetypes="cc"
        inkscape:export-filename="/home/gburri/temp/gui.png"
        inkscape:export-xdpi="130"
-       inkscape:export-ydpi="130" />
+       inkscape:export-ydpi="130"
+       inkscape:connector-curvature="0" />
     <text
        xml:space="preserve"
        style="font-size:8px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
@@ -937,14 +942,15 @@
          x="400"
          y="272.36218">Status bar</tspan></text>
     <path
-       style="fill:none;fill-rule:evenodd;stroke:#757575;stroke-width:0.30000001;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       d="M 377,272.36218 L 399,269.36218"
+       style="fill:none;stroke:#757575;stroke-width:0.30000001;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       d="m 377,272.36218 22,-3"
        id="path2548"
        inkscape:connector-type="polyline"
        sodipodi:nodetypes="cc"
        inkscape:export-filename="/home/gburri/temp/gui.png"
        inkscape:export-xdpi="130"
-       inkscape:export-ydpi="130" />
+       inkscape:export-ydpi="130"
+       inkscape:connector-curvature="0" />
     <path
        style="fill:none;stroke:#000000;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
        d="m 175.99991,367.3622 0,68.875"
@@ -1093,14 +1099,15 @@
          x="112.99989"
          y="499.36218">Open  containing folder</tspan></text>
     <path
-       style="fill:none;fill-rule:evenodd;stroke:#757575;stroke-width:0.30000001;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;display:inline"
-       d="M 228,517.36218 L 241.6192,513.76593"
+       style="fill:none;stroke:#757575;stroke-width:0.30000001;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;display:inline"
+       d="m 228,517.36218 13.6192,-3.59625"
        id="path2493"
        inkscape:connector-type="polyline"
        sodipodi:nodetypes="cc"
        inkscape:export-filename="/home/gburri/temp/gui.png"
        inkscape:export-xdpi="130"
-       inkscape:export-ydpi="130" />
+       inkscape:export-ydpi="130"
+       inkscape:connector-curvature="0" />
     <text
        xml:space="preserve"
        style="font-size:8px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
@@ -1649,7 +1656,8 @@
        sodipodi:nodetypes="cc"
        inkscape:export-filename="/home/gburri/temp/gui.png"
        inkscape:export-xdpi="130"
-       inkscape:export-ydpi="130" />
+       inkscape:export-ydpi="130"
+       inkscape:connector-curvature="0" />
     <text
        xml:space="preserve"
        style="font-size:8px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
@@ -1672,14 +1680,15 @@
          y="867.45972"
          id="tspan3691">folders</tspan></text>
     <path
-       style="fill:none;fill-rule:evenodd;stroke:#757575;stroke-width:0.30000001;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;display:inline"
-       d="M 90.049051,857.45972 L 108.04905,874.45972"
+       style="fill:none;stroke:#757575;stroke-width:0.30000001;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;display:inline"
+       d="m 90.049051,857.45972 17.999999,17"
        id="path3687"
        inkscape:connector-type="polyline"
        sodipodi:nodetypes="cc"
        inkscape:export-filename="/home/gburri/temp/gui.png"
        inkscape:export-xdpi="130"
-       inkscape:export-ydpi="130" />
+       inkscape:export-ydpi="130"
+       inkscape:connector-curvature="0" />
     <text
        xml:space="preserve"
        style="font-size:8px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
@@ -1702,14 +1711,15 @@
          y="917.45972"
          id="tspan3712">for files</tspan></text>
     <path
-       style="fill:none;fill-rule:evenodd;stroke:#757575;stroke-width:0.30000001;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;display:inline"
-       d="M 82.049048,897.45972 L 108.04905,889.45972"
+       style="fill:none;stroke:#757575;stroke-width:0.30000001;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;display:inline"
+       d="m 82.049048,897.45972 26.000002,-8"
        id="path3714"
        inkscape:connector-type="polyline"
        sodipodi:nodetypes="cc"
        inkscape:export-filename="/home/gburri/temp/gui.png"
        inkscape:export-xdpi="130"
-       inkscape:export-ydpi="130" />
+       inkscape:export-ydpi="130"
+       inkscape:connector-curvature="0" />
     <text
        xml:space="preserve"
        style="font-size:6px;font-style:normal;font-weight:normal;opacity:1;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
@@ -1740,7 +1750,7 @@
          id="tspan3722">&lt;total peers sharing&gt;</tspan></text>
     <text
        xml:space="preserve"
-       style="font-size:20px;font-style:normal;font-weight:bold;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans;-inkscape-font-specification:Bitstream Vera Sans Bold"
+       style="font-size:20px;font-style:normal;font-weight:bold;line-height:125%;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans;-inkscape-font-specification:Bitstream Vera Sans Bold"
        x="120"
        y="22.362183"
        id="text3724"
@@ -1752,7 +1762,7 @@
          id="tspan3726"
          x="120"
          y="22.362183"
-         style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Aksharyogini;-inkscape-font-specification:Aksharyogini Italic;font-size:22px;text-anchor:start;text-align:start;writing-mode:lr;line-height:125%">Aybabtu - GUI design document</tspan></text>
+         style="font-size:22px;font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;font-family:Aksharyogini;-inkscape-font-specification:Aksharyogini Italic">D-LAN - GUI design document</tspan></text>
     <text
        xml:space="preserve"
        style="font-size:8px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
@@ -1767,14 +1777,15 @@
          x="294.99982"
          y="397.36218">Multi row selection</tspan></text>
     <path
-       style="fill:none;fill-rule:evenodd;stroke:#757575;stroke-width:0.30000001;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;display:inline"
-       d="M 266.7465,373.66543 L 297.42826,362.00863"
+       style="fill:none;stroke:#757575;stroke-width:0.30000001;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;display:inline"
+       d="m 266.7465,373.66543 30.68176,-11.6568"
        id="path2602"
        inkscape:connector-type="polyline"
        sodipodi:nodetypes="cc"
        inkscape:export-filename="/home/gburri/temp/gui.png"
        inkscape:export-xdpi="130"
-       inkscape:export-ydpi="130" />
+       inkscape:export-ydpi="130"
+       inkscape:connector-curvature="0" />
     <text
        xml:space="preserve"
        style="font-size:8px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
@@ -1805,14 +1816,15 @@
          y="462.36218"
          id="tspan2612">drag'n drop</tspan></text>
     <path
-       style="fill:none;fill-rule:evenodd;stroke:#757575;stroke-width:0.30000001;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;display:inline"
-       d="M 264.99991,417.36218 L 293.61911,418.76593"
+       style="fill:none;stroke:#757575;stroke-width:0.30000001;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;display:inline"
+       d="m 264.99991,417.36218 28.6192,1.40375"
        id="path2614"
        inkscape:connector-type="polyline"
        sodipodi:nodetypes="cc"
        inkscape:export-filename="/home/gburri/temp/gui.png"
        inkscape:export-xdpi="130"
-       inkscape:export-ydpi="130" />
+       inkscape:export-ydpi="130"
+       inkscape:connector-curvature="0" />
     <path
        style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        d="M 179.99985,267.45771 L 179.99985,277.45771"
@@ -1855,14 +1867,15 @@
          x="344.99982"
          y="294.02103">Can be : connected | disconnected</tspan></text>
     <path
-       style="fill:none;fill-rule:evenodd;stroke:#757575;stroke-width:0.30000001;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       d="M 346.99987,287.02103 L 335.99987,276.02103"
+       style="fill:none;stroke:#757575;stroke-width:0.30000001;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       d="m 346.99987,287.02103 -11,-11"
        id="path3378"
        inkscape:connector-type="polyline"
        sodipodi:nodetypes="cc"
        inkscape:export-filename="/home/gburri/temp/gui.png"
        inkscape:export-xdpi="130"
-       inkscape:export-ydpi="130" />
+       inkscape:export-ydpi="130"
+       inkscape:connector-curvature="0" />
     <rect
        style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.49999979;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
        id="rect3384"
@@ -2104,14 +2117,15 @@
          id="tspan2647"
          style="font-size:6px" /></text>
     <path
-       style="fill:none;fill-rule:evenodd;stroke:#757575;stroke-width:0.30000001;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       d="M 259.99979,287.34214 L 267.99979,275.34214"
+       style="fill:none;stroke:#757575;stroke-width:0.30000001;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       d="m 259.99979,287.34214 8,-12"
        id="path2655"
        inkscape:connector-type="polyline"
        sodipodi:nodetypes="cc"
        inkscape:export-filename="/home/gburri/temp/gui.png"
        inkscape:export-xdpi="130"
-       inkscape:export-ydpi="130" />
+       inkscape:export-ydpi="130"
+       inkscape:connector-curvature="0" />
     <rect
        style="opacity:1;fill:none;fill-opacity:1;stroke:#000000;stroke-width:0.49999988;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        id="rect2646"
@@ -2222,14 +2236,15 @@
          y="135.34215"
          id="tspan2670">in the list too</tspan></text>
     <path
-       style="fill:none;fill-rule:evenodd;stroke:#757575;stroke-width:0.30000001;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       d="M 89.999771,132.34214 L 109.99977,132.34214"
+       style="fill:none;stroke:#757575;stroke-width:0.30000001;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       d="m 89.999771,132.34214 19.999999,0"
        id="path2674"
        inkscape:connector-type="polyline"
        sodipodi:nodetypes="cc"
        inkscape:export-filename="/home/gburri/temp/gui.png"
        inkscape:export-xdpi="130"
-       inkscape:export-ydpi="130" />
+       inkscape:export-ydpi="130"
+       inkscape:connector-curvature="0" />
     <rect
        style="opacity:1;fill:#f0f0f0;fill-opacity:1;stroke:#000000;stroke-width:0.52867562;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        id="rect2676"
@@ -2496,7 +2511,8 @@
        sodipodi:nodetypes="cc"
        inkscape:export-filename="/home/gburri/temp/gui.png"
        inkscape:export-xdpi="130"
-       inkscape:export-ydpi="130" />
+       inkscape:export-ydpi="130"
+       inkscape:connector-curvature="0" />
     <text
        xml:space="preserve"
        style="font-size:8px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
@@ -2649,14 +2665,15 @@
        inkscape:export-xdpi="130"
        inkscape:export-ydpi="130" />
     <path
-       style="fill:none;fill-rule:evenodd;stroke:#757575;stroke-width:0.30000001;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       d="M 96,89.362183 L 108,87.362183"
+       style="fill:none;stroke:#757575;stroke-width:0.30000001;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       d="m 96,89.362183 12,-2"
        id="path3517"
        inkscape:connector-type="polyline"
        sodipodi:nodetypes="cc"
        inkscape:export-filename="/home/gburri/temp/gui.png"
        inkscape:export-xdpi="130"
-       inkscape:export-ydpi="130" />
+       inkscape:export-ydpi="130"
+       inkscape:connector-curvature="0" />
     <rect
        style="opacity:1;fill:#cbcbcb;fill-opacity:1;stroke:#000000;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
        id="rect3521"
@@ -2749,23 +2766,25 @@
          x="63"
          y="304.69461">Browse</tspan></text>
     <path
-       style="fill:none;fill-rule:evenodd;stroke:#757575;stroke-width:0.30000001;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       d="M 94,285.36218 L 112,249.36218"
+       style="fill:none;stroke:#757575;stroke-width:0.30000001;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       d="m 94,285.36218 18,-36"
        id="path2727"
        inkscape:connector-type="polyline"
        sodipodi:nodetypes="cc"
        inkscape:export-filename="/home/gburri/temp/gui.png"
        inkscape:export-xdpi="130"
-       inkscape:export-ydpi="130" />
+       inkscape:export-ydpi="130"
+       inkscape:connector-curvature="0" />
     <path
-       style="fill:none;fill-rule:evenodd;stroke:#757575;stroke-width:0.30000001;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;display:inline"
-       d="M 337.99703,244.49271 L 388.20161,220.80463"
+       style="fill:none;stroke:#757575;stroke-width:0.30000001;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;display:inline"
+       d="m 337.99703,244.49271 50.20458,-23.68808"
        id="path2729"
        inkscape:connector-type="polyline"
        sodipodi:nodetypes="cc"
        inkscape:export-filename="/home/gburri/temp/gui.png"
        inkscape:export-xdpi="130"
-       inkscape:export-ydpi="130" />
+       inkscape:export-ydpi="130"
+       inkscape:connector-curvature="0" />
     <rect
        style="opacity:1;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.49999979;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        id="rect2723"
@@ -2824,23 +2843,25 @@
          x="322.99988"
          y="1359.4626">Add</tspan></text>
     <path
-       style="fill:none;fill-rule:evenodd;stroke:#757575;stroke-width:0.30000001;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;display:inline"
-       d="M 259.99988,1314.4627 L 308.99988,1343.4627"
+       style="fill:none;stroke:#757575;stroke-width:0.30000001;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;display:inline"
+       d="m 259.99988,1314.4627 49,29"
        id="path2740"
        inkscape:connector-type="polyline"
        sodipodi:nodetypes="cc"
        inkscape:export-filename="/home/gburri/temp/gui.png"
        inkscape:export-xdpi="130"
-       inkscape:export-ydpi="130" />
+       inkscape:export-ydpi="130"
+       inkscape:connector-curvature="0" />
     <path
-       style="fill:none;fill-rule:evenodd;stroke:#757575;stroke-width:0.30000001;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;display:inline"
-       d="M 259.99988,1337.4627 L 308.99988,1343.4627"
+       style="fill:none;stroke:#757575;stroke-width:0.30000001;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;display:inline"
+       d="m 259.99988,1337.4627 49,6"
        id="path2742"
        inkscape:connector-type="polyline"
        sodipodi:nodetypes="cc"
        inkscape:export-filename="/home/gburri/temp/gui.png"
        inkscape:export-xdpi="130"
-       inkscape:export-ydpi="130" />
+       inkscape:export-ydpi="130"
+       inkscape:connector-curvature="0" />
     <rect
        style="opacity:1;fill:none;fill-opacity:1;stroke:#000000;stroke-width:0.49999991;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        id="rect2744"
@@ -2908,23 +2929,25 @@
          x="293.99988"
          y="1308.4626">Remove</tspan></text>
     <path
-       style="fill:none;fill-rule:evenodd;stroke:#757575;stroke-width:0.30000001;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;display:inline"
-       d="M 271.99988,1301.4627 L 291.99988,1299.4627"
+       style="fill:none;stroke:#757575;stroke-width:0.30000001;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;display:inline"
+       d="m 271.99988,1301.4627 20,-2"
        id="path2762"
        inkscape:connector-type="polyline"
        sodipodi:nodetypes="cc"
        inkscape:export-filename="/home/gburri/temp/gui.png"
        inkscape:export-xdpi="130"
-       inkscape:export-ydpi="130" />
+       inkscape:export-ydpi="130"
+       inkscape:connector-curvature="0" />
     <path
        sodipodi:nodetypes="cc"
        inkscape:connector-type="polyline"
        id="path2764"
-       d="M 271.99988,1311.4627 L 292.99988,1307.4627"
-       style="fill:none;fill-rule:evenodd;stroke:#757575;stroke-width:0.30000001;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;display:inline"
+       d="m 271.99988,1311.4627 21,-4"
+       style="fill:none;stroke:#757575;stroke-width:0.30000001;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;display:inline"
        inkscape:export-filename="/home/gburri/temp/gui.png"
        inkscape:export-xdpi="130"
-       inkscape:export-ydpi="130" />
+       inkscape:export-ydpi="130"
+       inkscape:connector-curvature="0" />
     <text
        xml:space="preserve"
        style="font-size:8px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
@@ -2943,14 +2966,15 @@
          y="812.46271"
          id="tspan2772">message owner</tspan></text>
     <path
-       style="fill:none;fill-rule:evenodd;stroke:#757575;stroke-width:0.30000001;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;display:inline"
-       d="M 221.99988,799.4627 L 238.99988,799.4627"
+       style="fill:none;stroke:#757575;stroke-width:0.30000001;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;display:inline"
+       d="m 221.99988,799.4627 17,0"
        id="path2770"
        inkscape:connector-type="polyline"
        sodipodi:nodetypes="cc"
        inkscape:export-filename="/home/gburri/temp/gui.png"
        inkscape:export-xdpi="130"
-       inkscape:export-ydpi="130" />
+       inkscape:export-ydpi="130"
+       inkscape:connector-curvature="0" />
     <rect
        style="opacity:1;fill:#f0f0f0;fill-opacity:1;stroke:#000000;stroke-width:0.43007934;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        id="rect3277"
@@ -3129,14 +3153,15 @@
          x="113"
          y="664.36212">Open  containing folder</tspan></text>
     <path
-       style="fill:none;fill-rule:evenodd;stroke:#757575;stroke-width:0.30000001;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;display:inline"
-       d="M 196.54546,565.16502 L 191.24216,540.76983"
+       style="fill:none;stroke:#757575;stroke-width:0.30000001;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;display:inline"
+       d="m 196.54546,565.16502 -5.3033,-24.39519"
        id="path3386"
        inkscape:connector-type="polyline"
        sodipodi:nodetypes="cc"
        inkscape:export-filename="/home/gburri/temp/gui.png"
        inkscape:export-xdpi="130"
-       inkscape:export-ydpi="130" />
+       inkscape:export-ydpi="130"
+       inkscape:connector-curvature="0" />
     <text
        xml:space="preserve"
        style="font-size:8px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
@@ -3201,14 +3226,15 @@
          id="tspan3674"
          sodipodi:role="line">12 MB</tspan></text>
     <path
-       style="fill:none;fill-rule:evenodd;stroke:#757575;stroke-width:0.30000001;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;display:inline"
-       d="M 292.74998,900.86219 L 271.74998,918.61219"
+       style="fill:none;stroke:#757575;stroke-width:0.30000001;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;display:inline"
+       d="m 292.74998,900.86219 -21,17.75"
        id="path4454"
        inkscape:connector-type="polyline"
        sodipodi:nodetypes="cc"
        inkscape:export-filename="/home/gburri/temp/gui.png"
        inkscape:export-xdpi="130"
-       inkscape:export-ydpi="130" />
+       inkscape:export-ydpi="130"
+       inkscape:connector-curvature="0" />
     <rect
        style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.49999985;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
        id="rect2474-1"
@@ -3729,13 +3755,14 @@
          id="tspan4361">It shows the most used filename on the main entry.</tspan></text>
     <path
        style="fill:none;stroke:#757575;stroke-width:0.30000001;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;display:inline"
-       d="m 95,1022.3622 0,50 12,10"
+       d="m 95,1022.3622 12,60"
        id="path2722-1"
        inkscape:connector-type="polyline"
        sodipodi:nodetypes="ccc"
        inkscape:export-filename="/home/gburri/temp/gui.png"
        inkscape:export-xdpi="130"
-       inkscape:export-ydpi="130" />
+       inkscape:export-ydpi="130"
+       inkscape:connector-curvature="0" />
     <text
        xml:space="preserve"
        style="font-size:6px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
@@ -3774,7 +3801,8 @@
        sodipodi:nodetypes="cc"
        inkscape:export-filename="/home/gburri/temp/gui.png"
        inkscape:export-xdpi="130"
-       inkscape:export-ydpi="130" />
+       inkscape:export-ydpi="130"
+       inkscape:connector-curvature="0" />
     <text
        inkscape:export-ydpi="130"
        inkscape:export-xdpi="130"

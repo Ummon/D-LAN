@@ -23,7 +23,8 @@ using namespace FM;
 #include <priv/Log.h>
 
 /**
-  * @class Chunks
+  * @class FM::Chunks
+  *
   * We must allow multiple chunk with the same hash. Considering this case :
   * - Add identical files 'a' and 'b'.
   * - remove 'a'. 'b' wouldn't be remove from Chunks in the same time.

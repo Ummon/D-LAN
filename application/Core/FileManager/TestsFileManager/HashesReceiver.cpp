@@ -24,6 +24,7 @@
 
 /**
   * @class HashesReceiver
+  *
   * The objects from this class will be able to receive the signals from
   * the class 'FM::IGetHashesResult' and print them.
   */

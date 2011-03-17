@@ -37,7 +37,7 @@ using namespace FM;
 #include <priv/FileUpdater/WaitCondition.h>
 
 /**
-  * @class FileUpdater
+  * @class FM::FileUpdater
   *
   */
 

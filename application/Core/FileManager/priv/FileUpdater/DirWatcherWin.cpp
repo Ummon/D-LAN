@@ -28,7 +28,8 @@ using namespace FM;
 #include <priv/FileUpdater/WaitConditionWin.h>
 
 /**
-  * @class DirWatcherWin
+  * @class FM::DirWatcherWin
+  *
   * Implementation of 'DirWatcher' for the windows platform.
   * Inspired by : http://stackoverflow.com/questions/863135/why-does-readdirectorychangesw-omit-events.
   */

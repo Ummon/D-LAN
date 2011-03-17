@@ -36,7 +36,7 @@ using namespace NL;
 #include <priv/Log.h>
 
 /**
-  * @class UDPListener
+  * @class NL::UDPListener
   * @author mcuony
   * @author gburri
   */

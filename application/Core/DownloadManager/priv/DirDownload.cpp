@@ -24,7 +24,8 @@ using namespace DM;
 #include <priv/Log.h>
 
 /**
-  * @class DirDownload
+  * @class DM::DirDownload
+  *
   * A DirDownload will try, when the method 'retrieveEntries' is called, to retreive all the sub entries of a remote directory.
   * The sub entries can be a mix of files and directories.
   * Once the content is know, the signal 'newEntries' is emmited.

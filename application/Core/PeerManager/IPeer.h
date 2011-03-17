@@ -37,7 +37,16 @@ namespace PM
    class IGetHashes;
 
    /**
-     * A remote peer. Use the interface 'IPeeManager' to get all the peers.
+     * @brief A remote peer.
+     *
+     * This class owns some information about a remote peer like its ID, IP, nick, etc.
+     *
+     * It's possible to ask to a remote peer three things:
+     *  - The sub entries of a given entry (browse).
+     *  - The hashes of a given entry. This entry must be a file.
+     *  - The data of a given chunk hash.
+     *
+     * A peer is never deleted, it's safe to keep a pointer.
      */
    class IPeer : public LM::ILoggable
    {

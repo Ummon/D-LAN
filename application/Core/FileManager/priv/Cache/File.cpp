@@ -44,7 +44,8 @@ using namespace FM;
 #include <priv/Cache/Chunk.h>
 
 /**
-  * @class File
+  * @class FM::File
+  *
   * Represents a physical file, it knows its name, size and last modified date.
   * Capabilities :
   *  - Create a new file (which becomes an unfinished file). It's used when downloading a remote file.

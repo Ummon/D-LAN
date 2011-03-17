@@ -50,8 +50,8 @@ void ConsoleReader::run()
 {
    while(!this->stopping)
    {
-      // If AybabtuCore is a child process of AybabtuGUI and the latter is killed stdin is closed
-      // In this case AybabtuCore must be terminated.
+      // If D-LAN.Core is a child process of D-LAN.GUI. and the latter is killed stdin is closed
+      // In this case D-LAN.Core must be terminated.
       if (std::feof(stdin))
       {
          emit newLine(QUIT_COMMAND);

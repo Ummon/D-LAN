@@ -25,7 +25,7 @@ using namespace NL;
 #include <priv/Log.h>
 
 /**
-  * @class Search
+  * @class NL::Search
   * @author mcuony
   * @author gburri
   */

@@ -435,7 +435,8 @@ Directory& Directory::operator-=(qint64 size)
 }
 
 /**
-  * @class DirIterator
+  * @class FM::DirIterator
+  *
   * Iterate recursively over a directory tree structure.
   */
 

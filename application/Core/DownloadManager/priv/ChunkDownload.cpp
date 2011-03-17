@@ -28,7 +28,8 @@ using namespace DM;
 #include <priv/Log.h>
 
 /**
-  * @class ChunkDownload
+  * @class DM::ChunkDownload
+  *
   * A class to download a file chunk. A ChunkDownload can exist only if we know its hash.
   * It can be created when a new FileDownload is added for each chunk known in the given entry or when a FileDownload receive a hash.
   */

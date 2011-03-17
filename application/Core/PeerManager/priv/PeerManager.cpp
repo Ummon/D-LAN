@@ -29,7 +29,7 @@ using namespace PM;
 #include <Priv/Constants.h>
 
 /**
-  * @class PeerManager
+  * @class PM::PeerManager
   *
   */
 

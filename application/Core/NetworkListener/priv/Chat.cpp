@@ -26,7 +26,7 @@ using namespace NL;
 #include <priv/UDPListener.h>
 
 /**
-  * @class Chat
+  * @class NL::Chat
   * @author mcuony
   * @author gburri
   */
