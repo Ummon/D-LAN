@@ -24,7 +24,7 @@ using namespace GUI;
 #include <Common/RemoteCoreController/Builder.h>
 
 /**
-  * @class D_LAN_GUI
+  * @class GUI::D_LAN_GUI
   * This class control the trayIcon and create the main window.
   * The main window can be hid and deleted, the tray icon will still remain and will permit to relaunch the main window.
   */

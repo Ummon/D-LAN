@@ -30,7 +30,8 @@ using namespace Common;
 #include <Global.h>
 
 /**
-  * @class PersistentData
+  * @class Common::PersistentData
+  *
   * Some little functions to persist data and retrieve it.
   * The data are persisted in the user directory (roaming or local, see Common::Global::getDataFolder(..) method for more information).
   * The data are described by a Protocol Buffer message.

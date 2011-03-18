@@ -23,7 +23,8 @@ using namespace Common;
 #include <QTime>
 
 /**
-  * @class Hash
+  * @class Common::Hash
+  *
   * An Über-optimized hash.
   */
 
@@ -188,7 +189,8 @@ Hash Hash::fromStr(const QString& str)
 /////
 
 /**
-  * @class Hasher
+  * @class Common::Hasher
+  *
   * To create hash from row data.
   */
 

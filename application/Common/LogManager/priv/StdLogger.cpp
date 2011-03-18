@@ -26,7 +26,8 @@ using namespace LM;
 #include <IEntry.h>
 
 /**
-  * @class StdLogger
+  * @class LM::StdLogger
+  *
   * A special logger created to handle all stdout or stderr text line and log them.
   * Disable for the moment..
   */

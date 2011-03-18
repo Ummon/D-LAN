@@ -17,7 +17,8 @@
   */
   
 /**
-  * @class ZeroCopyOutputStreamQIODevice
+  * @class Common::ZeroCopyOutputStreamQIODevice
+  *
   * A bridge to write data to a QIODevice from a google::protobuf::message.
   * Warning : The data will be effectively written when the object is destroyed.
   */
@@ -75,7 +76,8 @@ google::protobuf::int64 ZeroCopyOutputStreamQIODevice::ByteCount() const
 }
 
 /**
-  * @class ZeroCopyInputStreamQIODevice
+  * @class Common::ZeroCopyInputStreamQIODevice
+  *
   * A bridge to read data from a QIODevice by a google::protobuf::message.
   * Warning : The data will be effectively read when the object is destroyed.
   */

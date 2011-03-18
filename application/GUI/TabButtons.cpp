@@ -19,6 +19,11 @@
 #include <TabButtons.h>
 using namespace GUI;
 
+/**
+  * @class GUI::TabButton
+  *
+  * Inspired from 'qtabbar_p.h'.
+  */
 
 TabButton::TabButton(QWidget* parent) :
    QAbstractButton(parent)

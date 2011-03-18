@@ -26,7 +26,8 @@ using namespace Common;
 #include <ZeroCopyStreamQIODevice.h>
 
 /**
-  * @class MessageHeader
+  * @class Common::MessageHeader
+  *
   * Contains all type of messages that can be exchange between cores and between gui and core.
   * Can read or write header message.
   * See the *.proto files in "/application/Protos" for more information.

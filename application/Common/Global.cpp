@@ -35,7 +35,8 @@ using namespace Common;
 #include <Constants.h>
 
 /**
-  * @class Global
+  * @class Common::Global
+  *
   * Some generic global functions.
   */
 

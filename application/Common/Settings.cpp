@@ -28,7 +28,8 @@ using namespace Common;
 #include <ProtoHelper.h>
 
 /**
-  * @class Settings
+  * @class Common::Settings
+  *
   * Store some settings into a file via PersistentData.
   * Singleton.
   */

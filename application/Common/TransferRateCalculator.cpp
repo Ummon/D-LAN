@@ -24,7 +24,8 @@ using namespace Common;
 #include <QMutexLocker>
 
 /**
-  * @class TransferRateCalculator
+  * @class Common::TransferRateCalculator
+  *
   * Compute an average value for a transfert rate in byte/s.
   * The period value is set in the header: PERIOD.
   * When some data are received or sent the method 'addData(..)' is called with the amount of data in bytes.

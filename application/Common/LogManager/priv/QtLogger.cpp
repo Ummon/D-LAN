@@ -24,7 +24,8 @@ using namespace LM;
 #include <IEntry.h>
 
 /**
-  * @class QtLogger
+  * @class LM::QtLogger
+  *
   * A special objet is create to handle all Qt message. For example
   * when a signal is connected to an unknown slot, the warning will be
   * catched and logged here.

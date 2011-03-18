@@ -27,7 +27,8 @@ using namespace GUI;
 #include <Log.h>
 
 /**
-  * @class CheckBoxList
+  * @class GUI::CheckBoxList
+  *
   * From : http://da-crystal.net/2008/06/checkbox-in-qcombobox/
   * The model given to CheckBoxList must have :
   * - Values of type bool for UserRole.

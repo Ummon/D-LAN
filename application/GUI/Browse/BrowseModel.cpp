@@ -26,7 +26,8 @@ using namespace GUI;
 #include <Log.h>
 
 /**
-  * @class BrowseModel
+  * @class GUI::BrowseModel
+  *
   * The model of a distant peer file system. The directory content is lazy loaded, see the method 'loadChildren()'.
   * Used by 'WidgetBrowse'.
   */
@@ -348,7 +349,8 @@ QList<BrowseModel::Node*> BrowseModel::synchronizeRoot(const Protos::Common::Ent
 }
 
 /**
-  * @class NodeBreadthIterator
+  * @class GUI::NodeBreadthIterator
+  *
   * To iterate into a node structure.
   */
 
@@ -378,7 +380,8 @@ void BrowseModel::Node::NodeBreadthIterator::readChildren(Node* parentNode)
 }
 
 /**
-  * @class Node
+  * @class GUI::Node
+  *
   * Either a file or a directory in the tree view structure.
   */
 

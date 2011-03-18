@@ -25,10 +25,6 @@
 
 namespace GUI
 {
-   /**
-     * @class TabButton
-     * Inspired from 'qtabbar_p.h'.
-     */
    class TabButton : public QAbstractButton
    {
       Q_OBJECT

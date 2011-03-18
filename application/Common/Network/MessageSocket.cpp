@@ -27,7 +27,8 @@ using namespace Common;
 #include <ProtoHelper.h>
 
 /**
-  * @class MessageSocket
+  * @class Common::MessageSocket
+  *
   * An abstract class which is capable to send and receive protocol buffer messages over a QAbstractSocket.
   */
 

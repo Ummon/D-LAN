@@ -62,7 +62,8 @@ namespace GUI
 using namespace GUI;
 
 /**
-  * @class CheckBoxModel
+  * @class GUI::CheckBoxModel
+  *
   * Owns the items. Each item has a state checked or unchecked.
   * The first item is "<all>" and permits to check all other items.
   */

@@ -25,7 +25,8 @@ using namespace GUI;
 const int SearchModel::NB_SIGNAL_PROGRESS(50);
 
 /**
-  * @class SearchModel
+  * @class GUI::SearchModel
+  *
   * The result of a search. A search can only be performed once and for a limited period of time, see the setting "search_time".
   * The directories from the result can be browsed, thus this model inherits from the 'BrowseModel'.
   */
