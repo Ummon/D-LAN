@@ -29,6 +29,7 @@ using namespace LM;
 
 /**
   * @class Logger
+  *
   * A thread to logg some random messages.
   */
 

@@ -26,6 +26,7 @@
 
 /**
   * @class TestServer
+  *
   * Listen for new connection and forward them to the given peerManager.
   * This class is also used by /Core/DownloadManager/tests
   */

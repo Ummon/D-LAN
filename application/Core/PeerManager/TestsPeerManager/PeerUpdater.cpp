@@ -25,6 +25,7 @@
 
 /**
   * @class PeerUpdater
+  *
   * Simulate a periodic update, each peerManager will know the information of each other.
   * This class is also used by /Core/DownloadManager/tests
   */

@@ -41,6 +41,7 @@ const int Tests::PORT = 59487;
 
 /**
   * @class Tests
+  *
   * Create some fileManager and associated peerManager.
   */
 

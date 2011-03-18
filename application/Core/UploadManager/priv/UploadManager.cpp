@@ -32,7 +32,8 @@ using namespace UM;
 #include <priv/Uploader.h>
 
 /**
-  * @class UploaderManager
+  * @class UM::UploaderManager
+  *
   * Will listen the signal 'getChunk' of the peerManager, when this signal is received an Uploader is created and data is sent to the peer.
   * After the chunk was sent to the peer the Uploader is deleted.
   */

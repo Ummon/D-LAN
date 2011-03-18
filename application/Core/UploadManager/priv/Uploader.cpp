@@ -31,7 +31,8 @@ using namespace UM;
 #include <priv/Log.h>
 
 /**
-  * @class Uploader
+  * @class UM::Uploader
+  *
   * An uploader is used to send one chunk to one peer via one socket.
   * The transfert is threaded.
   * The signal 'uploadFinished' is emitted when the upload is finished or if the socket is closed,
