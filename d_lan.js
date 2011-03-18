@@ -1,5 +1,5 @@
 // all aybabtu is contained in this object
-var aybabtu = {};
+var d_lan = {};
    
 $(function() { 
       $('.gallery a').colorbox();

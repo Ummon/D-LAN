@@ -1,9 +1,9 @@
--module(aybabtu_common).
+-module(d_lan_common).
 -export([current_page/1, page_name/2, menu/1, image/2, images/1, download_button/2, send_release/3]).
--import(aybabtu_lang, [tr/3, tr/4]).
+-import(d_lan_lang, [tr/3, tr/4]).
  
 -include("/usr/lib/yaws/include/yaws_api.hrl"). 
--include("../include/aybabtu_defines.hrl").
+-include("../include/d_lan_defines.hrl").
  
 pages() ->
    [home, features, faq, about].
@@ -30,7 +30,7 @@ menu(A) ->
       lists:map(
          fun(E) ->
             {li, [], [
-               {a, [{href, atom_to_list(E) ++ ".html"}] ++ if Current_page =:= E -> [{class, "currentPage"}]; true -> [] end, page_name(A, E)}]}
+               {a, [{href, atom_to_list(E) ++ ".html"}] ++ if Current_page =:= E -> [{class, "current-page"}]; true -> [] end, page_name(A, E)}]}
          end,
          pages()
       )
@@ -62,16 +62,16 @@ download_button(A, Platform) ->
    Relase_platform_folder = A#arg.docroot ++ "/" ++ ?RELEASES_FOLDER ++ "/" ++ Platform,
    {ok, Filenames} = file:list_dir(Relase_platform_folder),
    Filename = lists:last(lists:sort(lists:filter(fun(F) -> string:right(F, 4) =:= ".exe" end, Filenames))),
-   {match, [Version, Version_tag, Year, Month, Day]} = re:run(Filename, "Aybabtu-((?:\\d|\\.)+)([^-]*)-(\\d+)-(\\d+)-(\\d+).*", [{capture, all_but_first, list}]),
+   {match, [Version, Version_tag, Year, Month, Day]} = re:run(Filename, "D-LAN-((?:\\d|\\.)+)([^-]*)-(\\d+)-(\\d+)-(\\d+).*", [{capture, all_but_first, list}]),
    File_size = filelib:file_size(Relase_platform_folder ++ "/" ++ Filename),
    File_size_kb = trunc(File_size / 1024),
    {'div', [{class, "download"}],
       [{a, [{href, atom_to_list(current_page(A)) ++ ".html&amp;dl=" ++ Filename ++ "&amp;platform=" ++ Platform}], 
          [
-            {em, [], [tr(download_button, download, A) ++ " (" ++ integer_to_list(trunc(File_size_kb / 1024)) ++ "." ++ integer_to_list(trunc(((File_size_kb rem 1024) + 50) / 100)) ++ " MiB)"]}, {br},
+            {em, [], [tr(download_button, download, A) ++ " (" ++ integer_to_list(trunc(File_size_kb / 1024)) ++ "." ++ integer_to_list(trunc((File_size_kb rem 1024) / 100)) ++ " MiB)"]}, {br},
             tr(download_button, version, A, [Version ++ if Version_tag =/= [] -> " " ++ Version_tag; true -> [] end, Platform_maj]), {br},
             tr(download_button, released, A, [httpd_util:month(list_to_integer(Month)) ++ " " ++ Day ++ " " ++ Year])
-            %"Number of download : " ++ integer_to_list(aybabtu_download_counter:nb_download(Filename))
+            %"Number of download : " ++ integer_to_list(d_lan_download_counter:nb_download(Filename))
          ]
       }]
    }.
@@ -102,7 +102,7 @@ send_stream_loop(Filename, IoDevice, YawsPid) ->
       eof ->
          yaws_api:stream_chunk_end(YawsPid),
          % Increment the number of download
-         aybabtu_download_counter:new_download(Filename);
+         d_lan_download_counter:new_download(Filename);
       _ ->
          yaws_api:stream_chunk_end(YawsPid)
    end.

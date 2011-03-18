@@ -1,4 +1,4 @@
--module(aybabtu_urlrewrite).
+-module(d_lan_urlrewrite).
 -export([arg_rewrite/1]).
 
 -include("/usr/lib/yaws/include/yaws_api.hrl"). % Should use 'include_lib' but code: code:lib_dir(yaws). return {error,bad_name}.

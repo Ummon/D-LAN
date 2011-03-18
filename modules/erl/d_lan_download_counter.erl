@@ -1,21 +1,21 @@
--module(aybabtu_download_counter).
+-module(d_lan_download_counter).
 -export([start/1, stop/0, new_download/1, nb_download/1, all_files/0, reset/1]).
 
 -include("/usr/lib/yaws/include/yaws.hrl"). 
--include("../include/aybabtu_defines.hrl").
+-include("../include/d_lan_defines.hrl").
 
 % Start the download counter service.
 % Should be started as 'start_mod' by Yaws, see http://yaws.hyber.org/yman.yaws?page=yaws.conf.
 start(Conf) ->
    % Prevent to start the service twice.
-   case whereis(aybabtu_download_counter_process) of
+   case whereis(d_lan_download_counter_process) of
       undefined ->
          Filepath = Conf#sconf.docroot ++ "/" ++ ?DOWNLOAD_DB_FILEPATH,
          io:format("Opening dets table :~p~n", [Filepath]),
          case dets:open_file(?MODULE, [{file, Filepath}]) of
             {ok, ?MODULE} -> 
                %Pid = spawn(fun loop/0),
-               register(aybabtu_download_counter_process, self()),
+               register(d_lan_download_counter_process, self()),
                loop();
             {error, _Reason} ->
                io:format("Cannot open/create dets table :~p/~n", [Filepath])
@@ -25,13 +25,13 @@ start(Conf) ->
    end.
 
 stop() ->
-   aybabtu_download_counter_process ! stop,
+   d_lan_download_counter_process ! stop,
    dets:close(?MODULE).
 
 new_download(Filename) ->
-   aybabtu_download_counter_process ! {new_download, Filename}.
+   d_lan_download_counter_process ! {new_download, Filename}.
 
-% We don't use the process 'aybabtu_download_counter_proc' because there is no concurrent access problem to just read a value.
+% We don't use the process 'd_lan_download_counter_proc' because there is no concurrent access problem to just read a value.
 nb_download(Filename) ->
    case dets:lookup(?MODULE, Filename) of
       [] -> 0;
@@ -42,7 +42,7 @@ all_files() ->
    dets:foldl(fun(File, Acc) -> [File | Acc] end, [], ?MODULE).
 
 reset(Filename) ->
-   aybabtu_download_counter_process ! {reset, Filename}.
+   d_lan_download_counter_process ! {reset, Filename}.
 
 loop() ->
    receive

@@ -1,5 +1,5 @@
 <erl>
-   -import(aybabtu_lang, [tr/3, tr/4]).
+   -import(d_lan_lang, [tr/3, tr/4]).
    
    out(A) ->
       {ehtml, [
@@ -7,8 +7,8 @@
          {p, [], tr(about, linux, A, ["<a href=\"mailto:herve.martinet@gmail.com\">Hervé Martinet</a>"])},
          {p, [], tr(about, thanks, A, ["Maximilien Cuony (\"The Glu\")", "<a href=\"http://twitter.com/algorithme\">Olivier Morel</a>"])},
          {h2, [], tr(about, tech, A)},
-         {h3, [], tr(about, tech_used_aybabtu_title, A)},
-         {ul, [], tr(about, tech_used_aybabtu, A)},
+         {h3, [], tr(about, tech_used_d_lan_title, A)},
+         {ul, [], tr(about, tech_used_d_lan, A)},
          {h3, [], tr(about, tech_used_tools_title, A)},
          {ul, [], tr(about, tech_used_tools, A)},
          {h3, [], tr(about, tech_used_website_title, A)},

@@ -1,5 +1,5 @@
 <erl>
-   -import(aybabtu_lang, [tr/3, tr/4]).
+   -import(d_lan_lang, [tr/3, tr/4]).
 
    out(A) ->
       {ehtml,

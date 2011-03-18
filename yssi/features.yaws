@@ -1,10 +1,10 @@
 <erl>
-   -import(aybabtu_lang, [tr/3, tr/4]).
+   -import(d_lan_lang, [tr/3, tr/4]).
    
    out(A) ->
       {ehtml,
          [
-            {p, [], tr(features, disclaimer, A, ["http://dev.aybabtu.org/projects/pmp/wiki/Brainstorming#Future-versions"])},
+            {p, [], tr(features, disclaimer, A, ["http://dev.d-lan.net/projects/pmp/wiki/Brainstorming#Future-versions"])},
             {ul, [], [
                {li, [], tr(features, feat_1, A)},
                {li, [], tr(features, feat_2, A)},
@@ -16,8 +16,8 @@
                {li, [], tr(features, feat_8, A)},
                {li, [], tr(features, feat_9, A)}
             ]},
-            {p, [], tr(features, help_us, A, ["https://flattr.com/thing/114810/Aybabtu"])}
-         ] ++ aybabtu_common:images([{"aybabtu_browse", tr(gallery, browsing, A)}, {"aybabtu_downloads", tr(gallery, download, A)}, {"aybabtu_search", tr(gallery, search_result, A)}])
+            {p, [], tr(features, help_us, A, ["https://flattr.com/thing/114810/D-LAN"])}
+         ] ++ d_lan_common:images([{"browse", tr(gallery, browsing, A)}, {"downloads", tr(gallery, download, A)}, {"search", tr(gallery, search_result, A)}])
       }.
 
 </erl>

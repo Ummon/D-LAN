@@ -5,7 +5,7 @@
       {ehtml,
          {table, [{class, "nb-download"}], [
             {tr, [], [{th, [], "Filename"}, {th, [], "Nb of d/l"}]} |
-            lists:map(fun({File, N}) -> {tr, [], [{td, [], File}, {td, [{class, "nb"}], integer_to_list(N)}]} end, aybabtu_download_counter:all_files())
+            lists:map(fun({File, N}) -> {tr, [], [{td, [], File}, {td, [{class, "nb"}], integer_to_list(N)}]} end, d_lan_download_counter:all_files())
          ]}
       }.
 </erl>
