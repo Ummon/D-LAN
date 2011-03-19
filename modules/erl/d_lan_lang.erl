@@ -58,17 +58,17 @@ translate(fr, global, title) -> "D-LAN - Un logiciel de partage de fichiers en L
 
 %%%%%%%%%%
    
-translate(en, menu, home) -> "home";
-translate(fr, menu, home) -> "home";
+translate(en, menu, home) -> "HOME";
+translate(fr, menu, home) -> "HOME";
 
-translate(en, menu, features) -> "features";
-translate(fr, menu, features) -> "fonctionnalités";
+translate(en, menu, features) -> "FEATURES";
+translate(fr, menu, features) -> "FONCTIONNALITÉS";
 
 translate(en, menu, faq) -> "FAQ";
 translate(fr, menu, faq) -> "FAQ";
 
-translate(en, menu, about) -> "about";
-translate(fr, menu, about) -> "à propos";
+translate(en, menu, about) -> "ABOUT";
+translate(fr, menu, about) -> "À PROPOS";
 
 %%%%%%%%%%
 

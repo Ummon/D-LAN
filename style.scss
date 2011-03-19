@@ -1,12 +1,20 @@
+$blue-dark: #182430;
+$blue-light: #6596c9;
 
-$blue-dark: #1053bc;
-$blue-light: #9ecaf7;
+// Old blue.
+// $blue-dark: #1053bc;
+// $blue-light: #9ecaf7;
 
 $red-dark: #6e0404;
 $red-light: #fd2435;
 
 $opacity1: 0.42;
 $opacity2: 0.6;
+
+// Flat colors. Use for browser which do not support gradient and/or opacity
+$color-bg-body: mix($blue-dark, $blue-light);
+$color-bg-content: desaturate(lighten(mix($blue-dark, $blue-light), 20%), 15%); 
+$color-bg-box: desaturate(lighten(mix($blue-dark, $blue-light), 50%), 15%); /* For download and gallery */
 
 @mixin border-radius($r) {
 	border-radius: $r;
@@ -54,105 +62,7 @@ body {
        $blue-dark 0%,
        $blue-light 100%
    ) fixed;
-   background-color: #5c93dc;
-}
-
-#header {
-	a {
-		color: $red-dark;
-		&:hover { color: lighten($red-dark, 20%); }
-	}
-	font-style: italic;
-	background-color:rgba(255, 255, 255, $opacity1);
-	ul#langs {
-		@include vertical-list;
-		margin-left: 10px;
-		height: 20px;
-		li a {
-			vertical-align: top;
-		}
-	}
-	ul#external-links {
-		float: right;
-		height: 20px;
-		margin-right: 10px;
-		li a {
-			vertical-align: top;
-			margin-right: 15px;
-		}
-		@include vertical-list;
-		.FlattrButton {
-			margin-bottom: -3px;
-		}
-	}
-} 
-.ie #header {
-	background-color: #a3c2eb;
-}
-
-#menu {
-	#logo {
-		display: block;
-		margin-top: 20px;
-		margin-bottom: 10px;
-	}
-	ul {
-		@include vertical-list;
-		float: right; 
-		margin-top: 75px;
-		a {
-			color: white;
-			font-style: italic;
-			font-size: 16px;
-			margin-right: 18px;
-			&:hover, &.current-page {
-				color: $red-light;
-			}
-		}
-	}
-	@include central-part;
-}
-
-#content-bg {
-	background-color:rgba(255, 255, 255, $opacity1);	 
-	#content {
-		@include central-part;
-		padding-top: 15px;
-		padding-bottom: 15px;
-		&.home .gallery {
-			float: right;
-			margin-right: 0px;
-		}
-		&.features .gallery {
-			display: inline-block;
-		}	
-		&.faq {
-			div {
-				margin-bottom: 25px;
-			}
-			.answer {
-				margin-left: 15px;
-			}
-		}
-		ul {		
-			margin-bottom: 10px;
-			margin-left: 40px;
-		} 
-	}
-}
-.ie #content-bg {	
-	background-color: #a3c2eb;
-}
-
-#footer {
-	@include central-part;
-	text-align: right;
-	
-	.copyright {
-		margin-right: 20px;
-		color: white;
-		font-size: 11px;
-	}
+   background-color: $color-bg-body;
 }
 
 img {
@@ -166,7 +76,7 @@ em {
 a {
 	color: $red-light;
 	text-decoration: none;
-	&:hover { color: lighten($red-light, 20%); }	
+	&:hover { color: lighten($red-light, 10%); }	
 }
 
 h1 {
@@ -224,7 +134,7 @@ p {
 	}
 }
 .ie .download {
-	background-color: #d9e6f7;
+	background-color: $color-bg-box;
 }
 
 .gallery {
@@ -235,10 +145,111 @@ p {
 	p {
 		font-style: italic;
 		font-size: 11px;
-		margin-left: 10px;
+		margin-left: 6px;
 		margin-bottom: 0px;
 	}
 }
 .ie .gallery {
-	background-color: #d9e6f7;
+	background-color: $color-bg-box;
+}
+
+#header {
+	a {
+		color: $red-dark;
+		&:hover { color: lighten($red-dark, 20%); }
+	}
+	font-style: italic;
+	background-color:rgba(255, 255, 255, $opacity1);
+	ul#langs {
+		@include vertical-list;
+		margin-left: 10px;
+		height: 20px;
+		li a {
+			vertical-align: top;
+		}
+	}
+	ul#external-links {
+		float: right;
+		height: 20px;
+		margin-right: 10px;
+		li a {
+			vertical-align: top;
+			margin-right: 15px;
+		}
+		@include vertical-list;
+		.FlattrButton {
+			margin-bottom: -3px;
+		}
+	}
+} 
+.ie #header {
+	background-color: $color-bg-content;
+}
+
+#menu {
+	#logo {
+		display: block;
+		margin-top: 20px;
+		margin-bottom: 10px;
+	}
+	ul {
+		@include vertical-list;
+		float: right; 
+		margin-top: 75px;
+		a {
+			color: white;
+			font-style: italic;
+			font-size: 14px;
+			margin-right: 18px;
+			&:hover, &.current-page {
+				color: $red-light;
+			}
+		}
+	}
+	@include central-part;
+}
+
+#content-bg {
+	background-color:rgba(255, 255, 255, $opacity1);	 
+	#content {
+		@include central-part;
+		padding-top: 15px;
+		padding-bottom: 15px;
+		&.home .gallery {
+			float: right;
+			margin-right: 0px;
+		}
+		&.features .gallery {
+			display: inline-block;
+		}	
+		&.faq {
+			div {
+				margin-bottom: 25px;
+			}
+			.answer {
+				margin-left: 15px;
+			}
+		}
+		&.stats .nb-download .nb {
+			text-align: right
+		}
+		ul {		
+			margin-bottom: 10px;
+			margin-left: 40px;
+		} 
+	}
+}
+.ie #content-bg {	
+	background-color: $color-bg-content;
+}
+
+#footer {
+	@include central-part;
+	text-align: right;
+	
+	.copyright {
+		margin-right: 20px;
+		color: white;
+		font-size: 11px;
+	}
 }
