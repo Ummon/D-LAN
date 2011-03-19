@@ -54,8 +54,8 @@ void DialogAbout::paintEvent(QPaintEvent* event)
    QPainter p(this);
    QRadialGradient gradient(QPointF(0, 0), 2, QPointF(0, 0));
    gradient.setCoordinateMode(QGradient::StretchToDeviceMode);
-   gradient.setColorAt(0, QColor(16, 83, 188));
-   gradient.setColorAt(1, QColor(158, 202, 247));
+   gradient.setColorAt(0, QColor(24, 36, 48));
+   gradient.setColorAt(1, QColor(102, 150, 201));
    QBrush brush(gradient);
    p.fillRect(QRect(0, 0, width(), height()), brush);
 }
