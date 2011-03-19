@@ -17,45 +17,45 @@ $color-bg-content: desaturate(lighten(mix($blue-dark, $blue-light), 20%), 15%);
 $color-bg-box: desaturate(lighten(mix($blue-dark, $blue-light), 50%), 15%); /* For download and gallery */
 
 @mixin border-radius($r) {
-	border-radius: $r;
-	-moz-border-radius: $r;
+   border-radius: $r;
+   -moz-border-radius: $r;
 }
 
-@mixin vertical-list {	
-	list-style-type:none; 
-	li {
-		display: inline;
-	}	
+@mixin vertical-list {   
+   list-style-type:none; 
+   li {
+      display: inline;
+   }   
 } 
 
 @mixin central-part {
-	width: 600px;
-	margin-left: auto;
-	margin-right: auto;		
+   width: 600px;
+   margin-left: auto;
+   margin-right: auto;      
 }
 
 * {
-	margin: 0px;
-	padding: 0px;
+   margin: 0px;
+   padding: 0px;
 }
 
 html {
-	height: 100%;
+   height: 100%;
 }
 
-body {	
-	font-family: verdana, sans-serif;
-	font-size: 13px;
-	line-height: 18px;
-	color: $red-dark;
-	margin: 0px;	
-		
-	background: -webkit-gradient(
+body {   
+   font-family: verdana, sans-serif;
+   font-size: 13px;
+   line-height: 18px;
+   color: $red-dark;
+   margin: 0px;   
+      
+   background: -webkit-gradient(
        linear,
        left top,
        right bottom,
        color-stop(0, $blue-dark),
-       color-stop(1, $blue-light)	   
+       color-stop(1, $blue-light)      
    ) fixed; 
    background: -moz-linear-gradient( 
        left top,
@@ -66,42 +66,42 @@ body {
 }
 
 img {
-	border: 0px
+   border: 0px
 }
 
 em {
-	font-weight: bold;
+   font-weight: bold;
 }
 
 a {
-	color: $red-light;
-	text-decoration: none;
-	&:hover { color: lighten($red-light, 10%); }	
+   color: $red-light;
+   text-decoration: none;
+   &:hover { color: lighten($red-light, 10%); }   
 }
 
 h1 {
-	font-style: italic;
-	font-size: 16px;
-	margin-top: 7px;
-	margin-bottom: 8px;
+   font-style: italic;
+   font-size: 16px;
+   margin-top: 7px;
+   margin-bottom: 8px;
 }
 
 h2 {
-	font-style: italic;
-	font-size: 14px;
-	margin-top: 3px;
-	margin-bottom: 8px;
+   font-style: italic;
+   font-size: 14px;
+   margin-top: 3px;
+   margin-bottom: 8px;
 }
 
 h3 {
-	font-style: italic;
-	font-size: 12px;
-	margin-top: 1px;
-	margin-bottom: 8px;
+   font-style: italic;
+   font-size: 12px;
+   margin-top: 1px;
+   margin-bottom: 8px;
 }
 
-p {	
-	margin-bottom: 10px;
+p {   
+   margin-bottom: 10px;
 }
 
 .spacer {
@@ -109,147 +109,147 @@ p {
 }
 
 .download {
-	border: 3px solid lighten($red-light, 20%);
-	&:hover {
-		border-color: $red-light;
-	}
-	@include border-radius(40px);
-	width: 300px;
-	background-color: rgba(255, 255, 255, $opacity2);
-	margin: 15px 15px 0px 15px;
-	background-image: url("img/download_arrow.png");
-	background-repeat: no-repeat;
-	background-position: 9px 7px;
-	a {
-		height: 56px; 
-		color: $red-dark;
-		display: block;
-		padding: 3px 10px 3px 70px; 
-		font-size: 11px; 
-		&:hover { color: lighten($red-dark, 20%); }
-		em {
-			font-size: 13px;
-			font-weight: bold;
-		} 
-	}
+   border: 3px solid white;
+   &:hover {
+      border-color: $red-light;
+   }
+   @include border-radius(40px);
+   width: 300px;
+   background-color: rgba(255, 255, 255, $opacity2);
+   margin: 15px 15px 0px 15px;
+   background-image: url("img/download_arrow.png");
+   background-repeat: no-repeat;
+   background-position: 9px 7px;
+   a {
+      height: 56px; 
+      color: $red-dark;
+      display: block;
+      padding: 3px 10px 3px 70px; 
+      font-size: 11px; 
+      &:hover { color: lighten($red-dark, 20%); }
+      em {
+         font-size: 13px;
+         font-weight: bold;
+      } 
+   }
 }
 .ie .download {
-	background-color: $color-bg-box;
+   background-color: $color-bg-box;
 }
 
 .gallery {
-	margin: 10px;
-	padding: 12px;
-	background-color: rgba(255, 255, 255, $opacity2);	
-	@include border-radius(16px);
-	p {
-		font-style: italic;
-		font-size: 11px;
-		margin-left: 6px;
-		margin-bottom: 0px;
-	}
+   margin: 10px;
+   padding: 12px;
+   background-color: rgba(255, 255, 255, $opacity2);   
+   @include border-radius(16px);
+   p {
+      font-style: italic;
+      font-size: 11px;
+      margin-left: 6px;
+      margin-bottom: 0px;
+   }
 }
 .ie .gallery {
-	background-color: $color-bg-box;
+   background-color: $color-bg-box;
 }
 
 #header {
-	a {
-		color: $red-dark;
-		&:hover { color: lighten($red-dark, 20%); }
-	}
-	font-style: italic;
-	background-color:rgba(255, 255, 255, $opacity1);
-	ul#langs {
-		@include vertical-list;
-		margin-left: 10px;
-		height: 20px;
-		li a {
-			vertical-align: top;
-		}
-	}
-	ul#external-links {
-		float: right;
-		height: 20px;
-		margin-right: 10px;
-		li a {
-			vertical-align: top;
-			margin-right: 15px;
-		}
-		@include vertical-list;
-		.FlattrButton {
-			margin-bottom: -3px;
-		}
-	}
+   a {
+      color: $red-dark;
+      &:hover { color: lighten($red-dark, 20%); }
+   }
+   font-style: italic;
+   background-color:rgba(255, 255, 255, $opacity1);
+   ul#langs {
+      @include vertical-list;
+      margin-left: 10px;
+      height: 20px;
+      li a {
+         vertical-align: top;
+      }
+   }
+   ul#external-links {
+      float: right;
+      height: 20px;
+      margin-right: 10px;
+      li a {
+         vertical-align: top;
+         margin-right: 15px;
+      }
+      @include vertical-list;
+      .FlattrButton {
+         margin-bottom: -3px;
+      }
+   }
 } 
 .ie #header {
-	background-color: $color-bg-content;
+   background-color: $color-bg-content;
 }
 
 #menu {
-	#logo {
-		display: block;
-		margin-top: 20px;
-		margin-bottom: 10px;
-	}
-	ul {
-		@include vertical-list;
-		float: right; 
-		margin-top: 75px;
-		a {
-			color: white;
-			font-style: italic;
-			font-size: 14px;
-			margin-right: 18px;
-			&:hover, &.current-page {
-				color: $red-light;
-			}
-		}
-	}
-	@include central-part;
+   #logo {
+      display: block;
+      margin-top: 20px;
+      margin-bottom: 10px;
+   }
+   ul {
+      @include vertical-list;
+      float: right; 
+      margin-top: 75px;
+      a {
+         color: white;
+         font-style: italic;
+         font-size: 14px;
+         margin-right: 18px;
+         &:hover, &.current-page {
+            color: $red-light;
+         }
+      }
+   }
+   @include central-part;
 }
 
 #content-bg {
-	background-color:rgba(255, 255, 255, $opacity1);	 
-	#content {
-		@include central-part;
-		padding-top: 15px;
-		padding-bottom: 15px;
-		&.home .gallery {
-			float: right;
-			margin-right: 0px;
-		}
-		&.features .gallery {
-			display: inline-block;
-		}	
-		&.faq {
-			div {
-				margin-bottom: 25px;
-			}
-			.answer {
-				margin-left: 15px;
-			}
-		}
-		&.stats .nb-download .nb {
-			text-align: right
-		}
-		ul {		
-			margin-bottom: 10px;
-			margin-left: 40px;
-		} 
-	}
+   background-color:rgba(255, 255, 255, $opacity1);    
+   #content {
+      @include central-part;
+      padding-top: 15px;
+      padding-bottom: 15px;
+      &.home .gallery {
+         float: right;
+         margin-right: 0px;
+      }
+      &.features .gallery {
+         display: inline-block;
+      }   
+      &.faq {
+         div {
+            margin-bottom: 25px;
+         }
+         .answer {
+            margin-left: 15px;
+         }
+      }
+      &.stats .nb-download .nb {
+         text-align: right
+      }
+      ul {      
+         margin-bottom: 10px;
+         margin-left: 40px;
+      } 
+   }
 }
-.ie #content-bg {	
-	background-color: $color-bg-content;
+.ie #content-bg {   
+   background-color: $color-bg-content;
 }
 
 #footer {
-	@include central-part;
-	text-align: right;
-	
-	.copyright {
-		margin-right: 20px;
-		color: white;
-		font-size: 11px;
-	}
+   @include central-part;
+   text-align: right;
+   
+   .copyright {
+      margin-right: 20px;
+      color: white;
+      font-size: 11px;
+   }
 }
