@@ -5,9 +5,9 @@
       {ehtml,
          lists:map(
             fun(N) ->
-               {'div', [], [
-                  {p, [{class, "question"}], {em, [], tr(faq, list_to_atom("q" ++ integer_to_list(N)), A)}},
-                  {p, [{class, "answer"}], tr(faq, list_to_atom("a" ++ integer_to_list(N)), A)}
+               {'div', [{class, "qa"}], [
+                  {'div', [{class, "question"}], {em, [], tr(faq, list_to_atom("q" ++ integer_to_list(N)), A)}},
+                  {'div', [{class, "answer"}], tr(faq, list_to_atom("a" ++ integer_to_list(N)), A)}
                ]}
             end,
             lists:seq(1, 5)

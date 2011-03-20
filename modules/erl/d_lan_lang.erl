@@ -72,13 +72,13 @@ translate(fr, menu, about) -> "À PROPOS";
 
 %%%%%%%%%%
 
-translate(en, home, title) -> "D-LAN - A free <acronym title=\"Local Area Network\">LAN</acronym> file sharing software.";
-translate(fr, home, title) -> "D-LAN - Un logiciel libre de partage de fichiers en <acronym title=\"Local Area Network (Réseau local)\">LAN</acronym>.";
+translate(en, home, title) -> "D-LAN - A free <abbr title=\"Local Area Network\">LAN</abbr> file sharing software.";
+translate(fr, home, title) -> "D-LAN - Un logiciel libre de partage de fichiers en <abbr title=\"Local Area Network (Réseau local)\">LAN</abbr>.";
 
 translate(en, home, description) -> "The goal is to easily exchange a large amount of data in a local area network environment like a LAN-Party. After you launched D-LAN, you will see all other people and their sharing automatically without special configuration. See the <a href=\"~s\">features list</a> for more information.";
 translate(fr, home, description) -> "Le but est de permettre l'échange massif et facile de fichiers sur un réseau local, par exemple lors d'une LAN-Party. Après avoir lancé D-LAN, les autres personnes présentes sur le réseau sont visibles automatiquement sans aucune configuration particulière. Voir la <a href=\"~s\">page des fonctionnalités</a> pour plus d'informations.";
 
-translate(en, home, warning_beta) -> "<em>Warning :</em> The actual version of D-LAN is a beta, it's only for test purpose. You can report any defect <a href=\"~s\">here</a>. The latest beta may not be compatible with the previous ones.</p>";
+translate(en, home, warning_beta) -> "<em>Warning :</em> The actual version of D-LAN is a beta, it's only for test purpose. You can report any defect <a href=\"~s\">here</a>. The latest beta may not be compatible with the previous ones.";
 translate(fr, home, warning_beta) -> "Attention : La version actuelle de D-LAN est une bêta, elle ne doit être utilisée qu'à des fins de tests. Il est possible de rapporter les anomalies rencontrées <a href=\"~s\">ici</a>. La compatibilité de la dernière bêta avec les précédentes n'est pas garantie.";
 
 %%%%%%%%%%
@@ -223,15 +223,15 @@ translate(en, about, tech_used_website_title) -> "Web site";
 translate(fr, about, tech_used_website_title) -> "Site web";
 
 translate(en, about, tech_used_website) ->
-   "<li>Document structure : <a href=\"http://www.w3.org/TR/xhtml11/\">XHTML 1.1</a></li>"
+   "<li>Document structure : <a href=\"http://www.w3.org/TR/xhtml11/\">HTML 1.1</a></li>"
    "<li>Document presentation : <a href=\"http://www.w3.org/TR/CSS21/\">CSS 2.1</a> + <a href=\"http://sass-lang.com\">Sass</a></li>"
    "<li>Client side dynamic language : <a href=\"http://fr.wikipedia.org/wiki/JavaScript\">JavaScript</a></li>"
    "<li>JavaScript libraries : <a href=\"http://jquery.com/\">JQuery</a> + <a href=\"http://colorpowered.com/colorbox/\">ColorBox</a></li>"
    "<li>Server side language : <a href=\"http://www.erlang.org/\">Erlang</a></li>"
    "<li>Web server : <a href=\"http://yaws.hyber.org/\">Yaws</a></li>";
 translate(fr, about, tech_used_website) ->
-   "<li>Structure : <a href=\"http://www.w3.org/TR/xhtml11/\">XHTML 1.1</a></li>"
-   "<li>Présentation : <a href=\"http://www.w3.org/TR/CSS21/\">CSS 2.1</a> + <a href=\"http://sass-lang.com\">Sass</a></li>"
+   "<li>Structure : <a href=\"http://dev.w3.org/html5/spec/Overview.html\">HTML 5</a></li>"
+   "<li>Présentation : <a href=\"http://www.w3.org/TR/css3-roadmap/\">CSS3</a> + <a href=\"http://sass-lang.com\">Sass</a></li>"
    "<li>Langage dynamque coté client : <a href=\"http://fr.wikipedia.org/wiki/JavaScript\">JavaScript</a></li>"
    "<li>Bibliothèques JavaScript : <a href=\"http://jquery.com/\">JQuery</a> + <a href=\"http://colorpowered.com/colorbox/\">ColorBox</a></li>"
    "<li>Langage coté serveur : <a href=\"http://www.erlang.org/\">Erlang</a></li>"

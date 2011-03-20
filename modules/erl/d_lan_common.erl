@@ -40,9 +40,7 @@ image(Filename, Caption) ->
    {'div', [{class, "gallery"}],
       [
          {a, [{href, "img/gallery/" ++ Filename ++ ".png"}, {rel, "group"}, {title, Caption}],
-            [
-               {img, [{src, "img/gallery/" ++ Filename ++ "_thumb.png"}, {alt, Caption}]}
-            ]
+               "<img src = \"img/gallery/" ++ Filename ++ "_thumb.png\" alt=\"" ++ Caption ++ "\" />"
          },
          {p, [], Caption}
       ]

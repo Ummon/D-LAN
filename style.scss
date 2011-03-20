@@ -31,7 +31,7 @@ $color-bg-box: desaturate(lighten(mix($blue-dark, $blue-light), 50%), 15%); /* F
 @mixin central-part {
    width: 600px;
    margin-left: auto;
-   margin-right: auto;      
+   margin-right: auto;
 }
 
 * {
@@ -48,7 +48,7 @@ body {
    font-size: 13px;
    line-height: 18px;
    color: $red-dark;
-   margin: 0px;   
+   margin: 0px;
       
    background: -webkit-gradient(
        linear,
@@ -72,11 +72,11 @@ img {
 em {
    font-weight: bold;
 }
-
+ 
 a {
-   color: $red-light;
+   color: darken($red-light, 20%);
    text-decoration: none;
-   &:hover { color: lighten($red-light, 10%); }   
+   &:hover { color: $red-light }   
 }
 
 h1 {
@@ -223,8 +223,11 @@ p {
          display: inline-block;
       }   
       &.faq {
-         div {
+         div.qa {
             margin-bottom: 25px;
+         }
+         div.question, div.answer {
+            margin-bottom: 10px;
          }
          .answer {
             margin-left: 15px;
