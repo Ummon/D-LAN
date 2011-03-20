@@ -93,7 +93,6 @@ namespace FM
 
    private:
       const int CHUNK_SIZE;
-      const int BUFFER_SIZE;
 
       mutable QMutex mutex; ///< Protect 'file' against multiple access.
 

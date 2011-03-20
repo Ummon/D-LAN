@@ -42,7 +42,6 @@ using namespace FM;
 
 Chunk::Chunk(File* file, int num, quint32 knownBytes) :
    CHUNK_SIZE(SETTINGS.get<quint32>("chunk_size")),
-   BUFFER_SIZE(SETTINGS.get<quint32>("buffer_size")),
    mutex(QMutex::Recursive), file(file), num(num), knownBytes(knownBytes)
 {
    QMutexLocker locker(&this->mutex);
@@ -51,7 +50,6 @@ Chunk::Chunk(File* file, int num, quint32 knownBytes) :
 
 Chunk::Chunk(File* file, int num, quint32 knownBytes, const Common::Hash& hash) :
    CHUNK_SIZE(SETTINGS.get<quint32>("chunk_size")),
-   BUFFER_SIZE(SETTINGS.get<quint32>("buffer_size")),
    mutex(QMutex::Recursive), file(file), num(num), knownBytes(knownBytes), hash(hash)
 {
    QMutexLocker locker(&this->mutex);
@@ -179,6 +177,8 @@ void Chunk::fileDeleted()
   */
 int Chunk::read(char* buffer, int offset)
 {
+   static const int BUFFER_SIZE_READING = SETTINGS.get<quint32>("buffer_size_reading");
+
    QMutexLocker locker(&this->mutex);
    if (!this->file)
       throw ChunkDeletedException();
@@ -190,7 +190,7 @@ int Chunk::read(char* buffer, int offset)
       return 0;
 
    int bytesRemaining = this->getChunkSize() - offset;
-   return this->file->read(buffer, offset + static_cast<qint64>(this->num) * CHUNK_SIZE, bytesRemaining >= this->BUFFER_SIZE ? this->BUFFER_SIZE : bytesRemaining);
+   return this->file->read(buffer, offset + static_cast<qint64>(this->num) * CHUNK_SIZE, bytesRemaining >= BUFFER_SIZE_READING ? BUFFER_SIZE_READING : bytesRemaining);
 }
 
 /**

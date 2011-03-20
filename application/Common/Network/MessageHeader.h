@@ -61,7 +61,7 @@ namespace Common
          /***** GUI *****/
          GUI_STATE =                   0x1001,
 
-         GUI_EVENT_CHAT_MESSAGE =      0x1011,
+         GUI_EVENT_CHAT_MESSAGES =     0x1011,
          GUI_EVENT_LOG_MESSAGE =       0x1012,
 
          GUI_AUTHENTICATION =          0x1021,

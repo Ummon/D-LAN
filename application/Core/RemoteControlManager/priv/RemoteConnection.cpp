@@ -111,11 +111,14 @@ void RemoteConnection::send(Common::MessageHeader::MessageType type, const googl
   */
 void RemoteConnection::sendMessageToItself(const QString& message)
 {
-   Protos::GUI::EventChatMessage eventChatMessage;
-   eventChatMessage.mutable_peer_id()->set_hash(this->peerManager->getID().getData(), Common::Hash::HASH_SIZE);
-   Common::ProtoHelper::setStr(eventChatMessage, &Protos::GUI::EventChatMessage::set_message, message);
+   Protos::GUI::EventChatMessages eventChatMessages;
+   eventChatMessages.mutable_peer_id()->set_hash(this->peerManager->getID().getData(), Common::Hash::HASH_SIZE);
 
-   this->send(Common::MessageHeader::GUI_EVENT_CHAT_MESSAGE, eventChatMessage);
+   Protos::GUI::EventChatMessages_Message* eventChatMessage = eventChatMessages.add_message();
+   Common::ProtoHelper::setStr(*eventChatMessage, &Protos::GUI::EventChatMessages_Message::set_message, message);
+   eventChatMessage->set_time(0);
+
+   this->send(Common::MessageHeader::GUI_EVENT_CHAT_MESSAGES, eventChatMessages);
 }
 
 void RemoteConnection::onNewMessage(Common::MessageHeader::MessageType type, const google::protobuf::Message& message)
@@ -391,11 +394,14 @@ void RemoteConnection::refresh()
 
 void RemoteConnection::newChatMessage(const Common::Hash& peerID, const Protos::Core::ChatMessage& message)
 {
-   Protos::GUI::EventChatMessage eventChatMessage;
-   eventChatMessage.mutable_peer_id()->set_hash(peerID.getData(), Common::Hash::HASH_SIZE);
-   eventChatMessage.set_message(message.message());
+   Protos::GUI::EventChatMessages eventChatMessages;
+   eventChatMessages.mutable_peer_id()->set_hash(peerID.getData(), Common::Hash::HASH_SIZE);
 
-   this->send(Common::MessageHeader::GUI_EVENT_CHAT_MESSAGE, eventChatMessage);
+   Protos::GUI::EventChatMessages_Message* eventChatMessage = eventChatMessages.add_message();
+   eventChatMessage->set_message(message.message());
+   eventChatMessage->set_time(0);
+
+   this->send(Common::MessageHeader::GUI_EVENT_CHAT_MESSAGES, eventChatMessages);
 }
 
 void RemoteConnection::searchFound(const Protos::Common::FindResult& result)

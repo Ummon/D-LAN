@@ -78,7 +78,8 @@ void Core::checkSettingsIntegrity()
    if (SETTINGS.get<QString>("nick").isEmpty())
       SETTINGS.set("nick", Common::Global::getCurrenMachineName());
 
-   this->checkSetting("buffer_size", 1024u, 32u * 1024u * 1024u, true);
+   this->checkSetting("buffer_size_reading", 1024u, 32u * 1024u * 1024u, true);
+   this->checkSetting("buffer_size_writing", 1024u, 32u * 1024u * 1024u, true);
    this->checkSetting("socket_buffer_size", 1024u, 32u * 1024u * 1024u, true);
    this->checkSetting("socket_timeout", 1000u, 60u * 1000u);
 

@@ -97,7 +97,7 @@ void Uploader::run()
 {
    L_DEBU(QString("Starting uploading a chunk from offset %1 : %2").arg(this->offset).arg(this->chunk->toStringLog()));
 
-   static const quint32 BUFFER_SIZE = SETTINGS.get<quint32>("buffer_size");
+   static const quint32 BUFFER_SIZE = SETTINGS.get<quint32>("buffer_size_reading");
    static const quint32 SOCKET_BUFFER_SIZE = SETTINGS.get<quint32>("socket_buffer_size");
    static const quint32 SOCKET_TIMEOUT = SETTINGS.get<quint32>("socket_timeout");
 

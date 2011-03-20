@@ -93,9 +93,13 @@ message State {
 /***** Events *****/
 // Core -> GUI
 // id : 0x11
-message EventChatMessage {
+message EventChatMessages {
+   message Message {
+      required uint64 time = 1; // ms since Epoc.
+      required string message = 2;
+   }
    required Common.Hash peer_id = 1;
-   required string message = 2;
+   repeated Message message = 2;
 }
 
 // Core -> GUI

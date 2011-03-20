@@ -652,7 +652,7 @@ void Downloader::run()
    {
       QSharedPointer<IDataWriter> writer = chunk->getDataWriter();
 
-      const int BUFFER_SIZE = SETTINGS.get<quint32>("buffer_size");
+      const int BUFFER_SIZE = SETTINGS.get<quint32>("buffer_size_writing");
       char buffer[BUFFER_SIZE];
       for (int i = 0; i < BUFFER_SIZE; i++)
          buffer[i] = this->chunk->getNum() + 1;
@@ -692,7 +692,7 @@ void Uploader::run()
    {
       QSharedPointer<FM::IDataReader> reader = this->chunk->getDataReader();
 
-      char buffer[SETTINGS.get<quint32>("buffer_size")];
+      char buffer[SETTINGS.get<quint32>("buffer_size_reading")];
 
       qint64 bytesReadTotal = 0;
       qint64 bytesRead = 0;

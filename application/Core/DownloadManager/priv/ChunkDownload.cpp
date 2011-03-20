@@ -224,7 +224,7 @@ void ChunkDownload::run()
       static const int SOCKET_TIMEOUT = SETTINGS.get<quint32>("socket_timeout");
       static const int TIME_PERIOD_CHOOSE_ANOTHER_PEER = 1000.0 * SETTINGS.get<double>("time_recheck_chunk_factor") * SETTINGS.get<quint32>("chunk_size") / SETTINGS.get<quint32>("lan_speed");
 
-      static const int BUFFER_SIZE = SETTINGS.get<quint32>("buffer_size");
+      static const int BUFFER_SIZE = SETTINGS.get<quint32>("buffer_size_writing");
       char buffer[BUFFER_SIZE];
 
       const int initialKnownBytes = this->chunk->getKnownBytes();

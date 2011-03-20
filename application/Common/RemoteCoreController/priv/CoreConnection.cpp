@@ -276,12 +276,14 @@ void CoreConnection::onNewMessage(Common::MessageHeader::MessageType type, const
       }
       break;
 
-   case Common::MessageHeader::GUI_EVENT_CHAT_MESSAGE:
+   case Common::MessageHeader::GUI_EVENT_CHAT_MESSAGES:
       {
-         const Protos::GUI::EventChatMessage& eventChatMessage = static_cast<const Protos::GUI::EventChatMessage&>(message);
-
-         Common::Hash peerID(eventChatMessage.peer_id().hash().data());
-         emit newChatMessage(peerID, Common::ProtoHelper::getStr(eventChatMessage, &Protos::GUI::EventChatMessage::message));
+         const Protos::GUI::EventChatMessages& eventChatMessages = static_cast<const Protos::GUI::EventChatMessages&>(message);
+         if (eventChatMessages.message_size() > 0)
+         {
+            Common::Hash peerID(eventChatMessages.peer_id().hash().data());
+            emit newChatMessage(peerID, Common::ProtoHelper::getStr(eventChatMessages.message(0), &Protos::GUI::EventChatMessages_Message::message));
+         }
       }
       break;
 

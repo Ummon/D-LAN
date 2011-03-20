@@ -107,7 +107,6 @@ namespace FM
       void setHashes(const Common::Hashes& hashes);
 
       const int CHUNK_SIZE;
-      const int BUFFER_SIZE;
 
       Directory* dir;
       QList< QSharedPointer<Chunk> > chunks;

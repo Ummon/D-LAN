@@ -73,7 +73,6 @@ File::File(
 ) :
    Entry(dir->getCache(), name + (createPhysically ? Global::getUnfinishedSuffix() : ""), size),
    CHUNK_SIZE(SETTINGS.get<quint32>("chunk_size")),
-   BUFFER_SIZE(SETTINGS.get<quint32>("buffer_size")),
    dir(dir),
    dateLastModified(dateLastModified),
    nbChunkComplete(0),
@@ -394,7 +393,8 @@ bool File::computeHashes(int n)
    timer.start();
 #endif
 
-   char buffer[this->BUFFER_SIZE];
+   static const int BUFFER_SIZE = SETTINGS.get<quint32>("buffer_size_reading");
+   char buffer[BUFFER_SIZE];
    bool endOfFile = false;
    qint64 bytesReadTotal = 0;
    while (!endOfFile)
@@ -414,7 +414,7 @@ bool File::computeHashes(int n)
       int bytesReadChunk = 0;
       while (bytesReadChunk < CHUNK_SIZE)
       {
-         int bytesRead = file.read(buffer, this->BUFFER_SIZE);
+         int bytesRead = file.read(buffer, BUFFER_SIZE);
          switch (bytesRead)
          {
          case -1:

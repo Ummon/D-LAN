@@ -235,7 +235,7 @@ bool MessageSocket::readMessage()
    case MessageHeader::CORE_GET_CHUNK_RESULT: return this->readMessage<Protos::Core::GetChunkResult>();
 
    case MessageHeader::GUI_STATE: return this->readMessage<Protos::GUI::State>();
-   case MessageHeader::GUI_EVENT_CHAT_MESSAGE: return this->readMessage<Protos::GUI::EventChatMessage>();
+   case MessageHeader::GUI_EVENT_CHAT_MESSAGES: return this->readMessage<Protos::GUI::EventChatMessages>();
    case MessageHeader::GUI_EVENT_LOG_MESSAGE: return this->readMessage<Protos::GUI::EventLogMessage>();
    case MessageHeader::GUI_AUTHENTICATION: return this->readMessage<Protos::GUI::Authentication>();
    case MessageHeader::GUI_AUTHENTICATION_RESULT: return this->readMessage<Protos::GUI::AuthenticationResult>();
