@@ -662,7 +662,10 @@ void File::createPhysicalFile()
    {
       QFile file(this->getFullPath());
       if (!file.open(QIODevice::WriteOnly) || !file.resize(this->size))
+      {
+         QFile::remove(this->getFullPath());
          throw UnableToCreateNewFileException();
+      }
 #ifdef Q_OS_WIN32
       DWORD bytesWritten;
       HANDLE hdl = (HANDLE)_get_osfhandle(file.handle());

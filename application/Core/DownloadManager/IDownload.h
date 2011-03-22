@@ -62,11 +62,6 @@ namespace DM
       virtual Status getStatus() const = 0;
 
       /**
-        * Is a status is erroneous? See the enum 'Status' for more information.
-        */
-      virtual bool isStatusErroneous() const = 0;
-
-      /**
         * Return a value between 0 and 100.
         */
       virtual int getProgress() const = 0;

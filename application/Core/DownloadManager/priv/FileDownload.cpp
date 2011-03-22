@@ -288,9 +288,18 @@ void FileDownload::result(const Protos::Core::GetHashesResult& result)
    }
    else
    {
-      L_DEBU(QString("Unable to retrieve the hashes, error = %1").arg(result.status()));
+      if (result.status() == Protos::Core::GetHashesResult_Status_DONT_HAVE)
+      {
+         L_DEBU("Unable to retrieve the hashes: DONT_HAVE");
+         this->status = ENTRY_NOT_FOUND;
+      }
+      else
+      {
+         L_DEBU("Unable to retrieve the hashes: ERROR_UNKNOWN");
+         this->status = UNABLE_TO_RETRIEVE_THE_HASHES;
+      }
+
       this->getHashesResult.clear();
-      this->status = UNABLE_TO_RETRIEVE_THE_HASHES;
       this->occupiedPeersAskingForHashes.setPeerAsFree(this->peerSource);
       QTimer::singleShot(RETRY_PEER_GET_HASHES_PERIOD, this, SLOT(retryToRetrieveHashes()));
    }
@@ -364,6 +373,14 @@ void FileDownload::setStatus(Status newStatus)
    Download::setStatus(newStatus);
 }
 
+/**
+  * Update the file status depending of the states of its chunks.
+  * If all chunks are complete -> COMPLETE
+  * If there is downloading chunk -> DOWNLOADING
+  * If a GET_HASHES request is running -> INITIALIZING
+  * If all the incomplete chunks have no peer -> NO_SOURCE
+  * Else -> QUEUED
+  */
 void FileDownload::updateStatus()
 {
    if (this->status == DELETED || this->status == COMPLETE)
@@ -371,6 +388,7 @@ void FileDownload::updateStatus()
 
    this->status = this->chunkDownloads.size() == NB_CHUNK ? COMPLETE : QUEUED;
 
+   bool hasAtLeastAPeer = false;
    for (QListIterator< QSharedPointer<ChunkDownload> > i(this->chunkDownloads); i.hasNext();)
    {
       QSharedPointer<ChunkDownload> chunkDownload = i.next();
@@ -380,17 +398,19 @@ void FileDownload::updateStatus()
          this->status = DOWNLOADING;
          return;
       }
-      else if (!chunkDownload->isComplete())
+      else if (!hasAtLeastAPeer && !chunkDownload->isComplete())
       {
-         if (!chunkDownload->hasAtLeastAPeer())
-            this->status = NO_SOURCE;
-         else
+         if (chunkDownload->hasAtLeastAPeer())
+         {
+            hasAtLeastAPeer = true;
             this->status = QUEUED;
+         }
+         else
+         {
+            this->status = NO_SOURCE;
+         }
       }
    }
-
-   if (!this->getHashesResult.isNull())
-      this->status = INITIALIZING;
 
    if (this->status == COMPLETE)
    {
@@ -400,6 +420,10 @@ void FileDownload::updateStatus()
          .arg(Common::ProtoHelper::getStr(this->localEntry, &Protos::Common::Entry::path))
          .arg(Common::ProtoHelper::getStr(this->localEntry, &Protos::Common::Entry::name))
       );
+   }
+   else if(!this->getHashesResult.isNull())
+   {
+      this->status = INITIALIZING;
    }
 }
 

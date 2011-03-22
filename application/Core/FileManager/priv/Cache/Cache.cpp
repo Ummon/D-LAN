@@ -198,25 +198,37 @@ File* Cache::getFile(const Protos::Common::Entry& fileEntry) const
    return 0;
 }
 
+/**
+  * @exception NoWriteableDirectoryException
+  * @exception InsufficientStorageSpaceException
+  * @exception UnableToCreateNewFileException
+  */
 QList< QSharedPointer<IChunk> > Cache::newFile(Protos::Common::Entry& fileEntry)
 {
    QMutexLocker locker(&this->mutex);
 
    const QString dirPath = QDir::cleanPath(Common::ProtoHelper::getStr(fileEntry, &Protos::Common::Entry::path));
+   const qint64 spaceNeeded = fileEntry.size() + SETTINGS.get<quint32>("minimum_free_space");
 
    // If we know where to put the file.
    Directory* dir = 0;
    if (fileEntry.has_shared_dir())
    {
       SharedDirectory* sharedDir = this->getSharedDirectory(fileEntry.shared_dir().id().hash().data());
+
       if (sharedDir)
+      {
+         if (Common::Global::availableDiskSpace(sharedDir->getFullPath()) < spaceNeeded)
+            throw InsufficientStorageSpaceException();
+
          dir = sharedDir->createSubDirectories(dirPath.split('/', QString::SkipEmptyParts), true);
+      }
       else
          fileEntry.clear_shared_dir(); // The shared directory is invalid.
    }
 
    if (!dir)
-      dir = this->getWriteableDirectory(dirPath, fileEntry.size() + SETTINGS.get<quint32>("minimum_free_space"));
+      dir = this->getWriteableDirectory(dirPath, spaceNeeded);
 
    if (!dir)
       throw UnableToCreateNewFileException();
