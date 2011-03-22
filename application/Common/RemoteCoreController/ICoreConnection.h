@@ -135,7 +135,7 @@ namespace RCC
       void coreDisconnected();
 
       void newState(const Protos::GUI::State&);
-      void newChatMessage(const Common::Hash& peerID, const QString& message);
+      void newChatMessages(const Protos::GUI::EventChatMessages&);
       void newLogMessage(QSharedPointer<const LM::IEntry> entry);
    };
 }

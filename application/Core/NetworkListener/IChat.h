@@ -22,7 +22,7 @@
 #include <QObject>
 #include <QString>
 
-#include <Protos/core_protocol.pb.h>
+#include <Protos/gui_protocol.pb.h>
 
 #include <Common/Hash.h>
 
@@ -34,9 +34,10 @@ namespace NL
    public:
       virtual ~IChat() {}
       virtual void send(const QString& message) = 0;
+      virtual Protos::GUI::EventChatMessages getLastMessages() const = 0;
 
    signals:
-      void newMessage(const Common::Hash& peerID, const Protos::Core::ChatMessage& message);
+      void newMessage(const Protos::GUI::EventChatMessages_Message&);
    };
 }
 #endif

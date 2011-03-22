@@ -96,10 +96,10 @@ message State {
 message EventChatMessages {
    message Message {
       required uint64 time = 1; // In [ms] since Epoch.
-      required string message = 2;
+      required Common.Hash peer_id = 2;
+      required string message = 3;
    }
-   required Common.Hash peer_id = 1;
-   repeated Message message = 2;
+   repeated Message message = 1;
 }
 
 // Core -> GUI

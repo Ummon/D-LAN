@@ -21,6 +21,7 @@ using namespace NL;
 
 #include <Common/ProtoHelper.h>
 #include <Common/Network/MessageHeader.h>
+#include <Common/Settings.h>
 
 #include <priv/Log.h>
 
@@ -31,7 +32,7 @@ using namespace NL;
   */
 
 Search::Search(UDPListener& uDPListener) :
-   uDPListener(uDPListener), tag(0)
+   uDPListener(uDPListener), nbResult(0), tag(0)
 {
 }
 
@@ -43,6 +44,7 @@ quint64 Search::search(const QString& words)
       return 0;
    }
 
+   this->nbResult = 0;
    this->timer.start();
 
    Protos::Core::Find findMessage;
@@ -69,6 +71,9 @@ qint64 Search::elapsed()
   */
 void Search::newFindResult(const Protos::Common::FindResult& result)
 {
-   if (result.tag() == this->tag)
+   if (result.tag() == this->tag && this->nbResult + result.entry_size() <= SETTINGS.get<quint32>("max_number_of_result_shown"))
+   {
+      this->nbResult += result.entry_size();
       emit found(result);
+   }
 }

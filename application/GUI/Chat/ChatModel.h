@@ -22,6 +22,7 @@
 #include <QAbstractTableModel>
 #include <QString>
 #include <QDateTime>
+#include <QList>
 
 #include <Protos/gui_protocol.pb.h>
 
@@ -42,8 +43,10 @@ namespace GUI
       int columnCount(const QModelIndex& parent = QModelIndex()) const;
       QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const;
 
-   public slots:
       void newChatMessage(const Common::Hash& peerID, const QString& message);
+
+   private slots:
+      void newChatMessages(const Protos::GUI::EventChatMessages& messages);
 
    private:
       QSharedPointer<RCC::ICoreConnection> coreConnection;

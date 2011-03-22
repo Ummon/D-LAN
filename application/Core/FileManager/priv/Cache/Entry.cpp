@@ -70,6 +70,9 @@ QString Entry::getName() const
    return this->name;
 }
 
+/**
+  * When a file or a directory is renamed.
+  */
 void Entry::changeName(const QString& newName)
 {
    this->cache->onEntryRemoved(this);

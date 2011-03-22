@@ -29,6 +29,7 @@
 
 #include <google/protobuf/message.h>
 
+#include <Protos/gui_protocol.pb.h>
 #include <Protos/common.pb.h>
 
 #include <Common/Uncopyable.h>
@@ -87,7 +88,7 @@ namespace RCM
    private slots:
       void refresh();
 
-      void newChatMessage(const Common::Hash& peerID, const Protos::Core::ChatMessage&);
+      void newChatMessage(const Protos::GUI::EventChatMessages_Message& message);
       void searchFound(const Protos::Common::FindResult& result);
 
       void getEntriesResult(const Protos::Core::GetEntriesResult&);

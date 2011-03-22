@@ -36,10 +36,10 @@ namespace FM
    public:
       Entry(Cache* cache, const QString& name, qint64 size = 0);
       virtual ~Entry();
+
       virtual void populateEntry(Protos::Common::Entry* entry, bool setSharedDir = false) const;
       void populateEntrySharedDir(Protos::Common::Entry* entry) const;
 
-   public:
       Cache* getCache();
 
       /**
@@ -56,15 +56,12 @@ namespace FM
         * Directories always end with a '/'.
         */
       virtual QString getFullPath() const = 0;
+
       virtual SharedDirectory* getRoot() const = 0;
 
       virtual void removeUnfinishedFiles() = 0;
 
       QString getName() const;
-
-      /**
-        * When a file or a directory is renamed.
-        */
       virtual void changeName(const QString& newName);
 
       virtual qint64 getSize() const;

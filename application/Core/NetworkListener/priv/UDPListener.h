@@ -64,6 +64,8 @@ namespace NL
       void send(Common::MessageHeader::MessageType type, const Common::Hash& peerID, const google::protobuf::Message& message);
       void send(Common::MessageHeader::MessageType type, const google::protobuf::Message& message);
 
+      Common::Hash getOwnID() const;
+
    signals:
       void newChatMessage(const Common::Hash&, const Protos::Core::ChatMessage& chatMessage);
       void newFindResultMessage(const Protos::Common::FindResult& findResult);

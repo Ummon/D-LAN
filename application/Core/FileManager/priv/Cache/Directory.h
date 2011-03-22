@@ -49,7 +49,6 @@ namespace FM
       virtual ~Directory();
 
       QList<File*> restoreFromFileCache(const Protos::FileCache::Hashes_Dir& dir);
-
       void populateHashesDir(Protos::FileCache::Hashes_Dir& dirToFill) const;
 
       virtual void populateEntry(Protos::Common::Entry* dir, bool setSharedDir = false) const;

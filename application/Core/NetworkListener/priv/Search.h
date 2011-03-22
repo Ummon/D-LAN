@@ -51,6 +51,8 @@ namespace NL
       bool searchLaunched;
       QDateTime dateOfLaunch;
 
+      int nbResult;
+
       quint64 tag;
       MTRand mtrand;
 

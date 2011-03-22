@@ -21,6 +21,8 @@ using namespace GUI;
 
 #include <QtAlgorithms>
 
+#include <Protos/gui_protocol.pb.h>
+
 #include <Common/ProtoHelper.h>
 #include <Common/Global.h>
 #include <Common/Settings.h>
@@ -28,7 +30,7 @@ using namespace GUI;
 ChatModel::ChatModel(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel) :
    coreConnection(coreConnection), peerListModel(peerListModel)
 {
-   connect(this->coreConnection.data(), SIGNAL(newChatMessage(const Common::Hash&, const QString&)), this, SLOT(newChatMessage(const Common::Hash&, const QString&)));
+   connect(this->coreConnection.data(), SIGNAL(newChatMessages(const Protos::GUI::EventChatMessages&)), this, SLOT(newChatMessages(const Protos::GUI::EventChatMessages&)));
 }
 
 int ChatModel::rowCount(const QModelIndex& parent) const
@@ -73,6 +75,39 @@ void ChatModel::newChatMessage(const Common::Hash& peerID, const QString& messag
    {
       this->beginRemoveRows(QModelIndex(), 0, 0);
       this->messages.removeFirst();
+      this->endRemoveRows();
+   }
+}
+
+void ChatModel::newChatMessages(const Protos::GUI::EventChatMessages& messages)
+{
+   if (messages.message_size() < 1)
+      return;
+
+   this->beginInsertRows(QModelIndex(), this->messages.size(), this->messages.size() + messages.message_size() - 1);
+   for (int i = 0; i < messages.message_size(); i++)
+   {
+      const Common::Hash peerID(messages.message(i).peer_id().hash().data());
+      const QString nick = this->peerListModel.getNick(peerID);
+      this->messages << Message(
+         peerID,
+         nick,
+         QDateTime::fromMSecsSinceEpoch(messages.message(i).time()),
+         Common::ProtoHelper::getStr(messages.message(i), &Protos::GUI::EventChatMessages_Message::message)
+      );
+   }
+   this->endInsertRows();
+
+   const int nbMessageToDelete = this->messages.size() - SETTINGS.get<quint32>("max_chat_message_displayed");
+
+   if (nbMessageToDelete > 0)
+   {
+      this->beginRemoveRows(QModelIndex(), 0, nbMessageToDelete - 1);
+
+      QList<Message>::iterator i = this->messages.begin();
+      for (int n = 0; n < nbMessageToDelete && i != this->messages.end(); n++, i++);
+      this->messages.erase(this->messages.begin(), i);
+
       this->endRemoveRows();
    }
 }

@@ -280,10 +280,7 @@ void CoreConnection::onNewMessage(Common::MessageHeader::MessageType type, const
       {
          const Protos::GUI::EventChatMessages& eventChatMessages = static_cast<const Protos::GUI::EventChatMessages&>(message);
          if (eventChatMessages.message_size() > 0)
-         {
-            Common::Hash peerID(eventChatMessages.peer_id().hash().data());
-            emit newChatMessage(peerID, Common::ProtoHelper::getStr(eventChatMessages.message(0), &Protos::GUI::EventChatMessages_Message::message));
-         }
+            emit newChatMessages(eventChatMessages);
       }
       break;
 

@@ -186,6 +186,11 @@ void UDPListener::sendIMAliveMessage()
    this->send(Common::MessageHeader::CORE_IM_ALIVE, IMAliveMessage);
 }
 
+Common::Hash UDPListener::getOwnID() const
+{
+   return this->peerManager->getID();
+}
+
 /**
   *
   */

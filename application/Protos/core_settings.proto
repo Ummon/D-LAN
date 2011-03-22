@@ -51,11 +51,13 @@ message Settings {
    optional uint32 udp_read_buffer_size = 66 [default = 81640]; // (10 * 8KiB).
    optional uint32 number_of_hashes_sent_imalive = 67 [default = 128];
    optional uint32 max_number_of_search_result_to_send = 68 [default = 300];
+   optional uint32 max_number_of_result_shown = 69 [default = 5000]; // For one search we accept a maximum of 5000 result.
+   optional uint32 max_number_of_chat_message_saved = 70 [default = 500]; // When a chat message arrive we saved it into a queue. When a GUI connects this queue is sent.
    
    // RemoteControlManager
-   optional uint32 remote_control_port = 70 [default = 59485];
-   optional Common.Hash remote_password = 71; // Only used for non-local connection.
-   optional uint32 remote_refresh_rate = 72 [default = 1000]; // [ms].
-   optional uint32 remote_max_nb_connection = 73 [default = 5];
-   optional uint32 search_lifetime = 74 [default = 5000]; // [ms]. (5s)
+   optional uint32 remote_control_port = 80 [default = 59485];
+   optional Common.Hash remote_password = 81; // Only used for non-local connection.
+   optional uint32 remote_refresh_rate = 82 [default = 1000]; // [ms].
+   optional uint32 remote_max_nb_connection = 83 [default = 5];
+   optional uint32 search_lifetime = 84 [default = 5000]; // [ms]. (5s)
 }
