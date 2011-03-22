@@ -95,7 +95,7 @@ message State {
 // id : 0x11
 message EventChatMessages {
    message Message {
-      required uint64 time = 1; // ms since Epoc.
+      required uint64 time = 1; // In [ms] since Epoch.
       required string message = 2;
    }
    required Common.Hash peer_id = 1;

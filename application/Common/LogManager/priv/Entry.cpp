@@ -94,9 +94,9 @@ QDateTime Entry::getDate() const
 QString Entry::getDateStr(bool withMs) const
 {
    if (withMs)
-      return date.toString("dd-MM-yyyy HH:mm:ss.zzz");
+      return date.toString("yyyy-MM-dd HH:mm:ss.zzz");
    else
-      return date.toString("dd-MM-yyyy HH:mm:ss");
+      return date.toString("yyyy-MM-dd HH:mm:ss");
 }
 
 Severity Entry::getSeverity() const
