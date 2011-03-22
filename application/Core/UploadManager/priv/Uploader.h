@@ -63,6 +63,7 @@ namespace UM
       int offset; ///< The current offset into the chunk.
       QSharedPointer<PM::ISocket> socket; ///< The socket to send data.
       QTimer timer; ///< Timer to enable a timeout for the uploader. See the settings "upload_live_time".
+      bool toStop;
       mutable QMutex mutex; ///< A mutex to protect the 'offset' data member.
       Common::TransferRateCalculator& transferRateCalculator; /// To compute the transfer rate.
       QThread* mainThread;

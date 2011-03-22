@@ -42,7 +42,7 @@ using namespace UM;
 quint64 Uploader::currentID(1);
 
 Uploader::Uploader(QSharedPointer<FM::IChunk> chunk, int offset, QSharedPointer<PM::ISocket> socket, Common::TransferRateCalculator& transferRateCalculator) :
-   ID(currentID++), chunk(chunk), offset(offset), socket(socket), transferRateCalculator(transferRateCalculator)
+   ID(currentID++), chunk(chunk), offset(offset), socket(socket), toStop(false), transferRateCalculator(transferRateCalculator)
 {
    this->mainThread = QThread::currentThread();
    this->socket->moveToThread(this);
@@ -54,6 +54,10 @@ Uploader::Uploader(QSharedPointer<FM::IChunk> chunk, int offset, QSharedPointer<
 
 Uploader::~Uploader()
 {
+   this->mutex.lock();
+   this->toStop = true;
+   this->mutex.unlock();
+   this->wait();
    L_DEBU(QString("Uploader#%1 deleted").arg(this->ID));
 }
 
@@ -122,6 +126,8 @@ void Uploader::run()
          }
 
          this->mutex.lock();
+         if (this->toStop)
+            return;
          this->offset += bytesSent;
          this->mutex.unlock();
 
