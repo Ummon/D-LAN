@@ -23,7 +23,6 @@ using namespace NL;
 
 #include <Common/ProtoHelper.h>
 #include <Common/Network/MessageHeader.h>
-#include <Common/LogManager/Builder.h>
 #include <Common/Settings.h>
 
 #include <priv/UDPListener.h>
@@ -38,7 +37,6 @@ using namespace NL;
 Chat::Chat(UDPListener& uDPListener) :
    uDPListener(uDPListener)
 {
-   // Listening for new messages and forward them to our own signal.
    Chat::connect(
       &this->uDPListener,
       SIGNAL(newChatMessage(const Common::Hash&, const Protos::Core::ChatMessage&)),
@@ -47,6 +45,9 @@ Chat::Chat(UDPListener& uDPListener) :
    );
 }
 
+/**
+  * Send a message to all other peers and save it into our list of messages.
+  */
 void Chat::send(const QString& message)
 {
    Protos::Core::ChatMessage chatMessage;
@@ -58,15 +59,15 @@ void Chat::send(const QString& message)
    eventMessage.mutable_peer_id()->set_hash(this->uDPListener.getOwnID().getData(), Common::Hash::HASH_SIZE);
    eventMessage.set_time(QDateTime::currentMSecsSinceEpoch());
    eventMessage.set_message(chatMessage.message());
-   this->messages.append(eventMessage);
+   this->messagesHistory.append(eventMessage);
 }
 
 Protos::GUI::EventChatMessages Chat::getLastMessages() const
 {
    Protos::GUI::EventChatMessages eventMessages;
-   eventMessages.mutable_message()->Reserve(this->messages.size());
+   eventMessages.mutable_message()->Reserve(this->messagesHistory.size());
 
-   for (QLinkedListIterator<Protos::GUI::EventChatMessages_Message> i(this->messages); i.hasNext();)
+   for (QLinkedListIterator<Protos::GUI::EventChatMessages_Message> i(this->messagesHistory); i.hasNext();)
       eventMessages.mutable_message()->Add()->CopyFrom(i.next());
    return eventMessages;
 }
@@ -80,7 +81,7 @@ void Chat::newChatMessage(const Common::Hash& peerID, const Protos::Core::ChatMe
 
    emit newMessage(eventMessage);
 
-   this->messages.append(eventMessage);
-   if (static_cast<quint32>(this->messages.size()) > SETTINGS.get<quint32>("max_number_of_chat_message_saved"))
-      this->messages.removeFirst();
+   this->messagesHistory.append(eventMessage);
+   if (static_cast<quint32>(this->messagesHistory.size()) > SETTINGS.get<quint32>("max_number_of_chat_message_saved"))
+      this->messagesHistory.removeFirst();
 }

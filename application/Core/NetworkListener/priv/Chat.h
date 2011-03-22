@@ -23,6 +23,7 @@
 #include <QLinkedList>
 
 #include <Protos/core_protocol.pb.h>
+#include <Protos/gui_protocol.pb.h>
 
 #include <Common/Uncopyable.h>
 
@@ -44,7 +45,7 @@ namespace NL
       void newChatMessage(const Common::Hash&, const Protos::Core::ChatMessage&);
 
    private:
-      QLinkedList<Protos::GUI::EventChatMessages_Message> messages; ///< The last messages. The first is the older.
+      QLinkedList<Protos::GUI::EventChatMessages_Message> messagesHistory; ///< The last messages. The first is the older.
 
       UDPListener& uDPListener;
    };
