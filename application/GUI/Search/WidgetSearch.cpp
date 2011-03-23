@@ -33,42 +33,39 @@ const QString SearchDelegate::MARKUP_SECOND_PART("</b>");
 
 void SearchDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
+   QStyleOptionViewItemV4 newOption(option);
+   newOption.state = option.state & (~QStyle::State_HasFocus);
+
    switch(index.column())
    {
    case 0:
       {
-         QStyleOptionViewItemV4 optionV4 = option;
-         initStyleOption(&optionV4, index);
+         initStyleOption(&newOption, index);
 
-         const QWidget *widget = optionV4.widget;
+         const QWidget *widget = newOption.widget;
          QStyle *style = widget ? widget->style() : QApplication::style();
 
          QTextDocument doc;
-         doc.setHtml(this->toHtmlText(optionV4.text));
+         doc.setHtml(this->toHtmlText(newOption.text));
 
-         /// Painting item without text
-         optionV4.text = QString();
-         style->drawControl(QStyle::CE_ItemViewItem, &optionV4, painter, widget);
+         // Painting item without text.
+         newOption.text = QString();
+         style->drawControl(QStyle::CE_ItemViewItem, &newOption, painter, widget);
 
          QAbstractTextDocumentLayout::PaintContext ctx;
 
-         // Highlighting text if item is selected
-         if (optionV4.state & QStyle::State_Selected)
-             ctx.palette.setColor(QPalette::Text, optionV4.palette.color(QPalette::Active, QPalette::HighlightedText));
-
-         QRect textRect = style->subElementRect(QStyle::SE_ItemViewItemText, &optionV4);
+         QRect textRect = style->subElementRect(QStyle::SE_ItemViewItemText, &newOption);
          painter->save();
          painter->translate(textRect.topLeft());
          painter->setClipRect(textRect.translated(-textRect.topLeft()));
          doc.documentLayout()->draw(painter, ctx);
          painter->restore();
-
       }
       break;
 
    case 2: // Match rate.
       {
-         QStyledItemDelegate::paint(painter, option, index);
+         QStyledItemDelegate::paint(painter, newOption, index);
 
          if (index.data().isNull())
             return;
@@ -94,7 +91,7 @@ void SearchDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option
       break;
 
    default:
-      QStyledItemDelegate::paint(painter, option, index);
+      QStyledItemDelegate::paint(painter, newOption, index);
    }
 }
 
