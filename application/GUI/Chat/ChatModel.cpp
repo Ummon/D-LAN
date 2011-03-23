@@ -45,7 +45,7 @@ int ChatModel::columnCount(const QModelIndex& parent) const
 
 QVariant ChatModel::data(const QModelIndex& index, int role) const
 {
-   if (role != Qt::DisplayRole || index.row() >= this->messages.size())
+   if (role != Qt::DisplayRole && role != Qt::EditRole || index.row() >= this->messages.size())
       return QVariant();
 
    switch (index.column())
@@ -61,6 +61,14 @@ QVariant ChatModel::data(const QModelIndex& index, int role) const
    case 2: return this->messages[index.row()].message;
    default: return QVariant();
    }
+}
+
+Qt::ItemFlags ChatModel::flags(const QModelIndex& index) const
+{
+   if (index.column() == 0)
+      return Qt::ItemIsSelectable | Qt::ItemIsEnabled;
+   else
+      return Qt::ItemIsSelectable | Qt::ItemIsEditable | Qt::ItemIsEnabled;
 }
 
 void ChatModel::newChatMessage(const Common::Hash& peerID, const QString& message)

@@ -31,8 +31,8 @@ namespace GUI
    public:
       explicit CheckBoxList(QWidget* parent = 0);
 
-      bool eventFilter(QObject *object, QEvent *event);
-      void paintEvent(QPaintEvent *);
+      bool eventFilter(QObject* object, QEvent* event);
+      void paintEvent(QPaintEvent* );
       QSize sizeHint() const;
    };
 

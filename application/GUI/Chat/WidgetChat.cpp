@@ -20,11 +20,32 @@
 #include <ui_WidgetChat.h>
 using namespace GUI;
 
+/**
+  * @class GUI::ChatDelegate
+  *
+  * To be able to select some message text via a QLineEdit and copy it.
+  */
+
 void ChatDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
    QStyleOptionViewItemV4 newOption(option);
    newOption.state = option.state & (~QStyle::State_HasFocus);
    QStyledItemDelegate::paint(painter, newOption, index);
+}
+
+QWidget* ChatDelegate::createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const
+{
+   QLineEdit* line = new QLineEdit(parent);
+   line->setFrame(false);
+   line->setReadOnly(true);
+   return line;
+}
+
+void ChatDelegate::setEditorData(QWidget* editor, const QModelIndex& index) const
+{
+   // Set editor data.
+   QLineEdit* line = static_cast<QLineEdit*>(editor);
+   line->setText(index.model()->data(index, Qt::DisplayRole).toString());
 }
 
 /////
@@ -48,9 +69,11 @@ WidgetChat::WidgetChat(QSharedPointer<RCC::ICoreConnection> coreConnection, Peer
 
    this->ui->tblChat->verticalHeader()->setVisible(false);
    this->ui->tblChat->setSelectionBehavior(QAbstractItemView::SelectRows);
-   this->ui->tblChat->setSelectionMode(QAbstractItemView::SingleSelection);
+   this->ui->tblChat->setSelectionMode(QAbstractItemView::ExtendedSelection);
    this->ui->tblChat->setShowGrid(false);
    this->ui->tblChat->setAlternatingRowColors(true);
+
+   this->ui->tblChat->setEditTriggers(QAbstractItemView::AllEditTriggers);
 
    connect(&this->chatModel, SIGNAL(rowsInserted(const QModelIndex&, int, int)), this, SLOT(newRows()));
 
