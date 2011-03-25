@@ -415,7 +415,7 @@ void FileDownload::updateStatus()
    if (this->status == COMPLETE)
    {
       const QString sharedDir = this->fileManager->getSharedDir(this->localEntry.shared_dir().id().hash().data());
-      L_USER(QString("File completed : %1%2%3")
+      L_USER(QString("File completed: %1%2%3")
          .arg(sharedDir.left(sharedDir.size() - 1)) // remove the ending '/'.
          .arg(Common::ProtoHelper::getStr(this->localEntry, &Protos::Common::Entry::path))
          .arg(Common::ProtoHelper::getStr(this->localEntry, &Protos::Common::Entry::name))

@@ -40,6 +40,7 @@ void Chunks::rm(QSharedPointer<Chunk> chunk)
 {
    QMutexLocker locker(&this->mutex);
    this->remove(chunk->getHash(), chunk);
+   L_DEBU(QString("Nb chunks: %1").arg(this->size()));
 }
 
 const QSharedPointer<Chunk> Chunks::value(const Common::Hash& hash) const
