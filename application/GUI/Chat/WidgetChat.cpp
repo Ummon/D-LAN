@@ -23,6 +23,9 @@ using namespace GUI;
 #include <QMenu>
 #include <QClipboard>
 #include <QKeyEvent>
+#include <QScrollBar>
+
+#include <Log.h>
 
 /**
   * @class GUI::ChatDelegate
@@ -55,7 +58,7 @@ void ChatDelegate::setEditorData(QWidget* editor, const QModelIndex& index) cons
 /////
 
 WidgetChat::WidgetChat(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel, QWidget* parent) :
-   QWidget(parent), ui(new Ui::WidgetChat), coreConnection(coreConnection), chatModel(coreConnection, peerListModel)
+   QWidget(parent), ui(new Ui::WidgetChat), coreConnection(coreConnection), chatModel(coreConnection, peerListModel), autoScroll(true)
 {
    this->ui->setupUi(this);
 
@@ -82,7 +85,8 @@ WidgetChat::WidgetChat(QSharedPointer<RCC::ICoreConnection> coreConnection, Peer
    this->ui->tblChat->setContextMenuPolicy(Qt::CustomContextMenu);
    connect(this->ui->tblChat, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(displayContextMenuDownloads(const QPoint&)));
 
-   connect(&this->chatModel, SIGNAL(rowsInserted(const QModelIndex&, int, int)), this, SLOT(newRows()));
+   connect(&this->chatModel, SIGNAL(rowsInserted(const QModelIndex&, int, int)), this, SLOT(newRows(const QModelIndex&, int, int)));
+   connect(this->ui->tblChat->verticalScrollBar(), SIGNAL(valueChanged(int)), this, SLOT(scrollChanged(int)));
 
    connect(this->ui->butSend, SIGNAL(clicked()), this, SLOT(sendMessage()));
    connect(this->ui->txtMessage, SIGNAL(returnPressed()), this, SLOT(sendMessage()));
@@ -105,10 +109,23 @@ void WidgetChat::sendMessage()
    this->ui->txtMessage->clear();
 }
 
-void WidgetChat::newRows()
+void WidgetChat::newRows(const QModelIndex& parent, int start, int end)
 {
-   this->ui->tblChat->scrollToBottom();   
+   for (int i = start; i <= end; i++)
+      if (this->chatModel.isMessageIsOurs(i))
+      {
+         this->autoScroll = true;
+         break;
+      }
+
+   if (this->autoScroll)
+      this->ui->tblChat->scrollToBottom();
    this->setNewMessageState(true);
+}
+
+void WidgetChat::scrollChanged(int value)
+{
+   this->autoScroll = value == this->ui->tblChat->verticalScrollBar()->maximum();
 }
 
 void WidgetChat::displayContextMenuDownloads(const QPoint& point)

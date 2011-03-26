@@ -79,6 +79,7 @@ namespace GUI
 
       void removeWidget(QWidget* widget);
 
+      void logScrollChanged(int value);
       void newLogMessage();
 
    protected:
@@ -123,6 +124,7 @@ namespace GUI
 
       DirListModel sharedDirsModel;
 
+      bool autoScroll;
       LogModel logModel;
       LogDelegate logDelegate;
    };

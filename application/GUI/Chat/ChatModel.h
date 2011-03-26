@@ -40,6 +40,7 @@ namespace GUI
       ChatModel(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel);
 
       QString getLineStr(int row) const;
+      bool isMessageIsOurs(int row) const;
 
       int rowCount(const QModelIndex& parent = QModelIndex()) const;
       int columnCount(const QModelIndex& parent = QModelIndex()) const;

@@ -26,6 +26,7 @@ using namespace GUI;
 #include <QMenu>
 #include <QSettings>
 #include <QHBoxLayout>
+#include <QScrollBar>
 
 #include <Protos/gui_settings.pb.h>
 
@@ -91,6 +92,7 @@ MainWindow::MainWindow(QSharedPointer<RCC::ICoreConnection> coreConnection, QWid
    widgetUploads(0),
    coreConnection(coreConnection),
    peerListModel(coreConnection),
+   autoScroll(true),
    logModel(coreConnection)
 {
     this->ui->setupUi(this);
@@ -134,6 +136,7 @@ MainWindow::MainWindow(QSharedPointer<RCC::ICoreConnection> coreConnection, QWid
     this->ui->tblLog->setAlternatingRowColors(true);
 
     connect(&this->logModel, SIGNAL(rowsInserted(const QModelIndex&, int, int)), this, SLOT(newLogMessage()));
+    connect(this->ui->tblLog->verticalScrollBar(), SIGNAL(valueChanged(int)), this, SLOT(logScrollChanged(int)));
 
     connect(this->ui->butSearch, SIGNAL(clicked()), this, SLOT(search()));
     connect(this->ui->txtSearch, SIGNAL(returnPressed()), this, SLOT(search()));
@@ -232,9 +235,15 @@ void MainWindow::removeWidget(QWidget* widget)
    this->removeMdiSubWindow(dynamic_cast<QMdiSubWindow*>(widget->parent()));
 }
 
+void MainWindow::logScrollChanged(int value)
+{
+   this->autoScroll = value == this->ui->tblLog->verticalScrollBar()->maximum();
+}
+
 void MainWindow::newLogMessage()
 {
-   this->ui->tblLog->scrollToBottom();
+   if (this->autoScroll)
+      this->ui->tblLog->scrollToBottom();
 }
 
 void MainWindow::keyPressEvent(QKeyEvent* event)

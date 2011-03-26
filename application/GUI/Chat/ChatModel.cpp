@@ -45,6 +45,14 @@ QString ChatModel::getLineStr(int row) const
       .append(this->data(this->index(row, 2)).toString());
 }
 
+bool ChatModel::isMessageIsOurs(int row) const
+{
+   if (row >= this->messages.size())
+      return false;
+
+   return this->messages[row].peerID == this->coreConnection->getRemoteID();
+}
+
 int ChatModel::rowCount(const QModelIndex& parent) const
 {
    return this->messages.size();

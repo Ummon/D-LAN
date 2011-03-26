@@ -118,9 +118,6 @@ QVariant BrowseModel::data(const QModelIndex& index, int role) const
    {
    case Qt::DisplayRole:
       {
-         const int row = index.row();
-         const int col = index.column();
-         L_DEBU(QString("data, row = %1, col = %2").arg(row).arg(col));
          Node* node = static_cast<Node*>(index.internalPointer());
          return node->getData(index.column());
       }

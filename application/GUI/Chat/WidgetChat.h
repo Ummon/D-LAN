@@ -50,7 +50,8 @@ namespace GUI
 
    private slots:
       void sendMessage();
-      void newRows();
+      void newRows(const QModelIndex& parent, int start, int end);
+      void scrollChanged(int value);
 
       void displayContextMenuDownloads(const QPoint& point);
       void copySelectedLineToClipboard();
@@ -67,6 +68,8 @@ namespace GUI
       QSharedPointer<RCC::ICoreConnection> coreConnection;
       ChatModel chatModel;
       ChatDelegate chatDelegate;
+
+      bool autoScroll;
    };
 }
 #endif
