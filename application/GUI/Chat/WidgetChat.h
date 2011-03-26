@@ -52,8 +52,12 @@ namespace GUI
       void sendMessage();
       void newRows();
 
+      void displayContextMenuDownloads(const QPoint& point);
+      void copySelectedLineToClipboard();
+
    protected:
       void showEvent(QShowEvent* event);
+      void keyPressEvent(QKeyEvent* event);
 
    private:
       void setNewMessageState(bool newMessage);

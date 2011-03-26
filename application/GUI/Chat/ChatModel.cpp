@@ -33,6 +33,18 @@ ChatModel::ChatModel(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerLi
    connect(this->coreConnection.data(), SIGNAL(newChatMessages(const Protos::GUI::EventChatMessages&)), this, SLOT(newChatMessages(const Protos::GUI::EventChatMessages&)));
 }
 
+/**
+  * Return a string with all the field: "<date> <nick> <message>".
+  */
+QString ChatModel::getLineStr(int row) const
+{
+   return QString().append(this->data(this->index(row, 0)).toString())
+      .append(" ")
+      .append(this->data(this->index(row, 1)).toString())
+      .append(" ")
+      .append(this->data(this->index(row, 2)).toString());
+}
+
 int ChatModel::rowCount(const QModelIndex& parent) const
 {
    return this->messages.size();

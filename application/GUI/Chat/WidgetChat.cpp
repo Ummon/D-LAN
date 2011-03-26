@@ -20,6 +20,10 @@
 #include <ui_WidgetChat.h>
 using namespace GUI;
 
+#include <QMenu>
+#include <QClipboard>
+#include <QKeyEvent>
+
 /**
   * @class GUI::ChatDelegate
   *
@@ -75,6 +79,9 @@ WidgetChat::WidgetChat(QSharedPointer<RCC::ICoreConnection> coreConnection, Peer
 
    this->ui->tblChat->setEditTriggers(QAbstractItemView::AllEditTriggers);
 
+   this->ui->tblChat->setContextMenuPolicy(Qt::CustomContextMenu);
+   connect(this->ui->tblChat, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(displayContextMenuDownloads(const QPoint&)));
+
    connect(&this->chatModel, SIGNAL(rowsInserted(const QModelIndex&, int, int)), this, SLOT(newRows()));
 
    connect(this->ui->butSend, SIGNAL(clicked()), this, SLOT(sendMessage()));
@@ -104,9 +111,41 @@ void WidgetChat::newRows()
    this->setNewMessageState(true);
 }
 
+void WidgetChat::displayContextMenuDownloads(const QPoint& point)
+{
+   QMenu menu;
+   menu.addAction("Copy selected lines", this, SLOT(copySelectedLineToClipboard()));
+   menu.exec(this->ui->tblChat->mapToGlobal(point));
+}
+
+void WidgetChat::copySelectedLineToClipboard()
+{
+   QString lines;
+   QModelIndexList selection = this->ui->tblChat->selectionModel()->selectedRows();
+   for (QListIterator<QModelIndex> i(selection); i.hasNext();)
+   {
+      lines.append(this->chatModel.getLineStr(i.next().row())).append('\n');
+   }
+   QApplication::clipboard()->setText(lines);
+}
+
 void WidgetChat::showEvent(QShowEvent* event)
 {
    this->setNewMessageState(false);
+}
+
+void WidgetChat::keyPressEvent(QKeyEvent* event)
+{
+   // CTRL.
+   if (event->modifiers().testFlag(Qt::ControlModifier))
+   {
+      switch (event->key())
+      {
+      case 'c':
+      case 'C':
+         this->copySelectedLineToClipboard();
+      }
+   }
 }
 
 void WidgetChat::setNewMessageState(bool newMessage)
