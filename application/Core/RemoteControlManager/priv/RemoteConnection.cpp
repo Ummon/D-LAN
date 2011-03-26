@@ -348,6 +348,7 @@ void RemoteConnection::refresh()
       Protos::GUI::State_Download* protoDownload = state.add_download();
       protoDownload->set_id(download->getID());
       protoDownload->mutable_local_entry()->CopyFrom(download->getLocalEntry());
+      protoDownload->mutable_local_entry()->mutable_chunk()->Clear(); // We don't need to send the hashes.
       protoDownload->set_status(static_cast<Protos::GUI::State_Download_Status>(download->getStatus())); // Warning, enums must be compatible.
       protoDownload->set_progress(download->getProgress());
       for (QSetIterator<Common::Hash> j(download->getPeers()); j.hasNext();)

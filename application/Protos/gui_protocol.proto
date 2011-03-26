@@ -41,6 +41,7 @@ message State {
       required uint64 id = 1;
       
       // When the entry is physically created, Common.Entry.exists is set to true.
+      // The hashes are never sent to save a bit of bandwith.
       required Common.Entry local_entry = 2;
       
       required Status status = 3;
