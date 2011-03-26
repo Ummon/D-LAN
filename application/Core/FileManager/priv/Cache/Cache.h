@@ -53,7 +53,6 @@ namespace FM
       Entry* getEntry(const QString& path) const;
       File* getFile(const Protos::Common::Entry&) const;
       QList< QSharedPointer<IChunk> > newFile(Protos::Common::Entry& fileEntry);
-      //QList< QSharedPointer<Chunk> > getChunks(const Protos::Common::Entry& fileEntry);
 
       QList<Common::SharedDir> getSharedDirs() const;
       SharedDirectory* getSharedDirectory(const Common::Hash& ID) const;

@@ -375,6 +375,7 @@ void MainWindow::addWidgetBrowse(const Common::Hash& peerID)
       WidgetBrowse* widget = i.next();
       if (widget->getPeerID() == peerID)
       {
+         widget->refresh();
          this->ui->mdiArea->setActiveSubWindow(static_cast<QMdiSubWindow*>(widget->parent()));
          return;
       }
