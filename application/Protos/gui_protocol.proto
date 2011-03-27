@@ -192,6 +192,7 @@ message BrowseResult {
 // id : 0x61
 message CancelDownloads {
    repeated uint64 id = 1;
+   optional bool complete= 2 [default = false];
 }
 
 // GUI -> Core

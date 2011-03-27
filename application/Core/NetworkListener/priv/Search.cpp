@@ -71,7 +71,7 @@ qint64 Search::elapsed()
   */
 void Search::newFindResult(const Protos::Common::FindResult& result)
 {
-   if (result.tag() == this->tag && this->nbResult + result.entry_size() <= SETTINGS.get<quint32>("max_number_of_result_shown"))
+   if (result.tag() == this->tag && this->nbResult + static_cast<quint32>(result.entry_size()) <= SETTINGS.get<quint32>("max_number_of_result_shown"))
    {
       this->nbResult += result.entry_size();
       emit found(result);

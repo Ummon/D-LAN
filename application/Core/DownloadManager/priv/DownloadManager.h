@@ -62,6 +62,7 @@ namespace DM
 
       QList<IDownload*> getDownloads() const;
       void moveDownloads(quint64 downloadIDRef, bool moveBefore, const QList<quint64>& downloadIDs);
+      void removeAllCompleteDownload();
       QList< QSharedPointer<IChunkDownload> > getUnfinishedChunks(int n) const;
 
       int getDownloadRate();

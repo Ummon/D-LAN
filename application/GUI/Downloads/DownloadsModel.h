@@ -40,7 +40,6 @@ namespace GUI
       explicit DownloadsModel(QSharedPointer<RCC::ICoreConnection> coreConnection, const PeerListModel& peerListModel, const DirListModel& sharedDirsModel, const IFilter<DownloadFilterStatus>& filter);
 
       quint64 getDownloadID(int row) const;
-      QList<quint64> getCompletedDownloadIDs() const;
 
       bool fileLocationIsKnown(int row) const;
       bool fileIsComplete(int row) const;

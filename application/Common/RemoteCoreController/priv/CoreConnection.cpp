@@ -147,11 +147,12 @@ void CoreConnection::download(const Common::Hash& peerID, const Protos::Common::
    this->send(Common::MessageHeader::GUI_DOWNLOAD, downloadMessage);
 }
 
-void CoreConnection::cancelDownloads(const QList<quint64>& downloadIDs)
+void CoreConnection::cancelDownloads(const QList<quint64>& downloadIDs, bool complete)
 {
    Protos::GUI::CancelDownloads cancelDownloadsMessage;
    for(QListIterator<quint64> i(downloadIDs); i.hasNext();)
       cancelDownloadsMessage.add_id(i.next());
+   cancelDownloadsMessage.set_complete(complete);
    this->send(Common::MessageHeader::GUI_CANCEL_DOWNLOADS, cancelDownloadsMessage);
 }
 

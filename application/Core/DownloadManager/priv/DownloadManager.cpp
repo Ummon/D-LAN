@@ -236,6 +236,43 @@ void DownloadManager::moveDownloads(quint64 downloadIDRef, bool moveBefore, cons
    this->setQueueChanged();
 }
 
+/**
+  * Use the method "QList::erase(..)" to remove many downloads in one call. The goal is to be more efficient than using only 'Download::remove()'.
+  */
+void DownloadManager::removeAllCompleteDownload()
+{
+   QList<Download*> downloadsToDelete;
+   QList<Download*>::iterator i = this->downloads.begin();
+   QList<Download*>::iterator j = i;
+   while (j != this->downloads.end())
+   {
+      if ((*j)->getStatus() == COMPLETE)
+      {
+         this->setQueueChanged();
+         (*j)->disconnect(this); // We will manually remove the items from the lists;
+         this->downloadsIndexedBySourcePeerID.remove((*j)->getPeerSourceID(), *j);
+         downloadsToDelete << *j;
+         j++;
+      }
+      else if (i != j)
+      {
+         j = this->downloads.erase(i, j);
+         i = j;
+      }
+      else
+      {
+         j++;
+         i++;
+      }
+   }
+
+   if (i != j)
+      this->downloads.erase(i, j);
+
+   for (QListIterator<Download*> k(downloadsToDelete); k.hasNext();)
+      k.next()->remove();
+}
+
 QList< QSharedPointer<IChunkDownload> > DownloadManager::getUnfinishedChunks(int n) const
 {
    QList< QSharedPointer<IChunkDownload> > unfinishedChunks;

@@ -179,7 +179,7 @@ void WidgetDownloads::openLocationSelectedEntries()
 
 void WidgetDownloads::removeCompletedFiles()
 {
-   this->coreConnection->cancelDownloads(this->downloadsModel.getCompletedDownloadIDs());
+   this->coreConnection->cancelDownloads(QList<quint64>(), true);
 }
 
 void WidgetDownloads::removeSelectedEntries()

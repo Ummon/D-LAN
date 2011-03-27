@@ -248,6 +248,9 @@ void RemoteConnection::onNewMessage(Common::MessageHeader::MessageType type, con
       {
          const Protos::GUI::CancelDownloads& cancelDownloadsMessage = static_cast<const Protos::GUI::CancelDownloads&>(message);
 
+         if (cancelDownloadsMessage.complete())
+            this->downloadManager->removeAllCompleteDownload();
+
          // To avoid O(n^2).
          QSet<quint64> IDs;
          for (int i = 0; i < cancelDownloadsMessage.id_size(); i++)
