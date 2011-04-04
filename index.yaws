@@ -57,8 +57,15 @@
             <erl>
                out(A) ->
                   P = atom_to_list(d_lan_common:current_page(A)),
+                  Current_lang = d_lan_lang:current_lang(A),
                   {ehtml,
-                     lists:map(fun(L) -> {li, [], [{a, [{href, P ++ ".html&amp;lang=" ++ atom_to_list(L)}], atom_to_list(L)}]} end, d_lan_lang:langs())
+                     lists:map(fun(L) -> {li, [], [
+                        {a, 
+                           [
+                              {href, P ++ ".html&amp;lang=" ++ atom_to_list(L)}
+                           ] ++ if L =:= Current_lang -> [{class, "current-lang"}]; true -> [] end, atom_to_list(L)
+                        }
+                     ]} end, d_lan_lang:langs())
                   }.
             </erl>         
          </ul>

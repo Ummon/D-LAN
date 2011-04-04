@@ -51,16 +51,16 @@ body {
    margin: 0px;
       
    background: -webkit-gradient(
-       linear,
-       left top,
-       right bottom,
-       color-stop(0, $blue-dark),
-       color-stop(1, $blue-light)      
+      linear,
+      left top,
+      right bottom,
+      color-stop(0, $blue-dark),
+      color-stop(1, $blue-light)      
    ) fixed; 
    background: -moz-linear-gradient( 
-       left top,
-       $blue-dark 0%,
-       $blue-light 100%
+      left top,
+      $blue-dark 0%,
+      $blue-light 100%
    ) fixed;
    background-color: $color-bg-body;
 }
@@ -157,6 +157,9 @@ p {
    a {
       color: $red-dark;
       &:hover { color: lighten($red-dark, 20%); }
+   }
+   a.current-lang {
+      font-weight: bold;
    }
    font-style: italic;
    background-color:rgba(255, 255, 255, $opacity1);

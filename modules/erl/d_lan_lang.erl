@@ -1,5 +1,5 @@
 -module(d_lan_lang).
--export([langs/0, tr/3, tr/4]).
+-export([langs/0, current_lang/1, tr/3, tr/4]).
  
 -include("/usr/lib/yaws/include/yaws_api.hrl"). 
 -include("../include/d_lan_defines.hrl").
@@ -8,6 +8,27 @@
 % Return a list of all accepted languages.
 langs() ->
    [en, fr].
+   
+current_lang(A) ->
+   % 1) Looks if a GET variable 'lang' is defined
+   Current_lang = case yaws_api:queryvar(A, "lang") of
+      {ok, L} -> list_to_atom(L);
+      _ ->
+         % 2) Looks if a 'lang' value exist in a cookie.
+         case yaws_api:find_cookie_val("lang", (A#arg.headers)#headers.cookie) of
+         [] ->
+            % 3) Looks in the "Accept-Language" HTTP header field.
+            case accepted_langs_by_user_agent(A) of
+               [Lang | _] -> Lang;
+               _ -> null
+            end;
+         C -> list_to_atom(C)
+      end
+   end,
+   case lists:member(Current_lang, langs()) of
+      true -> Current_lang;
+      _ -> [First | _] = langs(), First % The language isn't defined (or known) we take the first of the list.
+   end.
 
 % Return a list of accepted languages by the user agent. Return only known languages from 'langs/0'.
 % Read the HTTP field 'Accept-Language'.
@@ -43,26 +64,7 @@ tr(Page, Section, A) ->
    tr(Page, Section, A, []).
 
 tr(Page, Section, A, Params) ->
-   % 1) Looks if a GET variable 'lang' is defined
-   Current_lang = case yaws_api:queryvar(A, "lang") of
-      {ok, L} -> list_to_atom(L);
-      _ ->
-         % 2) Looks if a 'lang' value exist in a cookie.
-         case yaws_api:find_cookie_val("lang", (A#arg.headers)#headers.cookie) of
-         [] ->
-            % 3) Looks in the "Accept-Language" HTTP header field.
-            case accepted_langs_by_user_agent(A) of
-               [Lang | _] -> Lang;
-               _ -> null
-            end;
-         C -> list_to_atom(C)
-      end
-   end,
-   Current_known_lang = case lists:member(Current_lang, langs()) of
-      true -> Current_lang;
-      _ -> [First | _] = langs(), First % The language isn't defined (or known) we take the first of the list.
-   end,   
-   io_lib:format(translate(Current_known_lang, Page, Section), Params).
+   io_lib:format(translate(current_lang(A), Page, Section), Params).
 
 translate(en, global, title) -> "D-LAN - A LAN file sharing software";
 translate(fr, global, title) -> "D-LAN - Un logiciel de partage de fichiers en LAN";
