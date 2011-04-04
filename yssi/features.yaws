@@ -4,7 +4,7 @@
    out(A) ->
       {ehtml,
          [
-            {p, [], tr(features, disclaimer, A, ["http://dev.d-lan.net/projects/pmp/wiki/Brainstorming#Future-versions"])},
+            {p, [], tr(features, disclaimer, A, ["http://dev.d-lan.net/projects/pmp/roadmap"])},
             {ul, [], [
                {li, [], tr(features, feat_1, A)},
                {li, [], tr(features, feat_2, A)},

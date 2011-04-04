@@ -4,6 +4,7 @@
       case {yaws_api:queryvar(A, "dl"), yaws_api:queryvar(A, "platform")} of
          {{ok, Filename}, {ok, Platform}} -> d_lan_common:send_release(A, Filename, Platform);
          _ ->
+            % The cookier 'lang' is a two letters word defining the current language. See http://en.wikipedia.org/wiki/List_of_ISO_639-1_codes .
             case yaws_api:queryvar(A, "lang") of
                {ok, L} -> yaws_api:setcookie("lang", L, "/");
                _ -> ok

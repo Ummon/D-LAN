@@ -1,27 +1,43 @@
 -module(d_lan_lang).
--export([langs/0, tr/3, tr/4, accepted_langs/1]).
+-export([langs/0, tr/3, tr/4]).
  
 -include("/usr/lib/yaws/include/yaws_api.hrl"). 
 -include("../include/d_lan_defines.hrl").
 
 % See here for the language codes : http://en.wikipedia.org/wiki/List_of_ISO_639-1_codes
+% Return a list of all accepted languages.
 langs() ->
    [en, fr].
-   
-accepted_langs(A) -> [].
-   %~ case lists:filter(fun({http_header, _, Name, _, _}) -> Name =:= 'Accept-Encoding' end, (A#arg.headers)#headers.other) of
-      %~ [{http_header, _, _, _, Values}] ->
-         %~ map(
-            %~ fun(Val) ->
-               %~ Val2 = string:strip(Val),
-               %~ case string:tokens(Val2, ";") of
-                  %~ [Lang, ["q=" | Quality]] -> ...
-                  %~ [Lang] ->
-            %~ end,
-            %~ string:tokens(Values, ",")
-         %~ )
-      %~ _ -> []
-   %~ end.
+
+% Return a list of accepted languages by the user agent. Return only known languages from 'langs/0'.
+% Read the HTTP field 'Accept-Language'.
+accepted_langs_by_user_agent(A) ->
+   lists:map(
+      fun ({Lang, _}) -> Lang end, % Remove the quality information.
+      lists:reverse(lists:keysort(2, % Sort by quality, bigger first.
+         case lists:filter(fun({http_header, _, Name, _, _}) -> Name =:= 'Accept-Language' end, (A#arg.headers)#headers.other) of
+            [{http_header, _, _, _, Values} | _] ->
+               % erlang:display(Values), % For debug purpose.
+               lists:foldr(
+                  fun(Val, Acc) ->
+                     {Lang_str_with_subtag, Quality} = case string:tokens(string:strip(Val), ";") of
+                        [L, "q=" ++ Q] -> {L, list_to_float(Q)};
+                        [L | _] -> {L, 1.0}
+                     end,
+                     [Lang_str | _] = string:tokens(Lang_str_with_subtag, "-"), % We don't care about the subtags.
+                     Lang = list_to_atom(Lang_str),
+                     case lists:member(Lang, langs()) of
+                        true -> [{Lang, Quality} | Acc]; % We keep only known languages.
+                        _ -> Acc
+                     end
+                  end,
+                  [],
+                  string:tokens(Values, ",")
+               );
+            _ -> []
+         end
+      ))
+   ).
 
 tr(Page, Section, A) ->
    tr(Page, Section, A, []).
@@ -29,30 +45,25 @@ tr(Page, Section, A) ->
 tr(Page, Section, A, Params) ->
    % 1) Looks if a GET variable 'lang' is defined
    Current_lang = case yaws_api:queryvar(A, "lang") of
-      {ok, L} -> L;
+      {ok, L} -> list_to_atom(L);
       _ ->
          % 2) Looks if a 'lang' value exist in a cookie.
          case yaws_api:find_cookie_val("lang", (A#arg.headers)#headers.cookie) of
          [] ->
             % 3) Looks in the "Accept-Language" HTTP header field.
-            %case lists:keyfind(accept_language, 0, (A#arg.headers)#headers.other) of
-            %   false -> null;
-              % Langs -> fr
-            %end;$
-            null;
-         C -> C
+            case accepted_langs_by_user_agent(A) of
+               [Lang | _] -> Lang;
+               _ -> null
+            end;
+         C -> list_to_atom(C)
       end
    end,
-   io_lib:format(
-      case Current_lang of
-         "fr" ->
-            translate(fr, Page, Section);
-         _ ->
-            translate(en, Page, Section)
-      end,
-      Params
-   ).
-   
+   Current_known_lang = case lists:member(Current_lang, langs()) of
+      true -> Current_lang;
+      _ -> [First | _] = langs(), First % The language isn't defined (or known) we take the first of the list.
+   end,   
+   io_lib:format(translate(Current_known_lang, Page, Section), Params).
+
 translate(en, global, title) -> "D-LAN - A LAN file sharing software";
 translate(fr, global, title) -> "D-LAN - Un logiciel de partage de fichiers en LAN";
 
@@ -149,8 +160,8 @@ translate(fr, faq, a3) -> "Une version Linux sera disponible après la sortie de
 translate(en, faq, q4) -> "There is no Mac OS X version!?";
 translate(fr, faq, q4) -> "Il n'y a pas de version pour Mac OS X!?";
 
-translate(en, faq, a4) -> "Not yet, we are looking for a Mac OS X programmer.";
-translate(fr, faq, a4) -> "Pas encore. Nous cherchons un développeur Mac OS X";
+translate(en, faq, a4) -> "A Mac OS X version is planned for summer 2011.";
+translate(fr, faq, a4) -> "Une version Mac OS X est prévue pour l'été 2011.";
 
 translate(en, faq, q5) -> "Can I configure D-LAN to start automatically when my computer starting?";
 translate(fr, faq, q5) -> "Est-il possible de configurer D-LAN pour qu'il démarre automatiquement au démarrage de la machine?";
@@ -223,8 +234,8 @@ translate(en, about, tech_used_website_title) -> "Web site";
 translate(fr, about, tech_used_website_title) -> "Site web";
 
 translate(en, about, tech_used_website) ->
-   "<li>Document structure : <a href=\"http://www.w3.org/TR/xhtml11/\">HTML 1.1</a></li>"
-   "<li>Document presentation : <a href=\"http://www.w3.org/TR/CSS21/\">CSS 2.1</a> + <a href=\"http://sass-lang.com\">Sass</a></li>"
+   "<li>Document structure : <a href=\"http://www.w3.org/TR/html5/\">HTML5</a></li>"
+   "<li>Document presentation : <a href=\"http://www.w3.org/Style/CSS/current-work\">CSS 3</a> + <a href=\"http://sass-lang.com\">Sass</a></li>"
    "<li>Client side dynamic language : <a href=\"http://fr.wikipedia.org/wiki/JavaScript\">JavaScript</a></li>"
    "<li>JavaScript libraries : <a href=\"http://jquery.com/\">JQuery</a> + <a href=\"http://colorpowered.com/colorbox/\">ColorBox</a></li>"
    "<li>Server side language : <a href=\"http://www.erlang.org/\">Erlang</a></li>"
