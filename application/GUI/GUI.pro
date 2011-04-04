@@ -20,15 +20,15 @@ INCLUDEPATH += . ..
 
 LIBS += -L../Common/RemoteCoreController/output/$$FOLDER \
     -lRemoteCoreController
-POST_TARGETDEPS += ../Common/RemoteCoreController/output/$$FOLDER/libRemoteCoreController.a
+PRE_TARGETDEPS += ../Common/RemoteCoreController/output/$$FOLDER/libRemoteCoreController.a
 
 LIBS += -L../Common/LogManager/output/$$FOLDER \
     -lLogManager
-POST_TARGETDEPS += ../Common/LogManager/output/$$FOLDER/libLogManager.a
+PRE_TARGETDEPS += ../Common/LogManager/output/$$FOLDER/libLogManager.a
 
 LIBS += -L../Common/output/$$FOLDER \
     -lCommon
-POST_TARGETDEPS += ../Common/output/$$FOLDER/libCommon.a
+PRE_TARGETDEPS += ../Common/output/$$FOLDER/libCommon.a
 
 CONFIG(debug, debug|release) {
    contains(DEFINES, ENABLE_NVWA) {

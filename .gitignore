@@ -11,7 +11,7 @@ moc_*.cpp
 *.Debug
 *.exe
 *.dll
-Makefile
+Makefile*
 output/
 .tmp/
 /doc/doxygen/html

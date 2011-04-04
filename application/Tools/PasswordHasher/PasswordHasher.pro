@@ -15,7 +15,7 @@ include(../../Common/common.pri)
 include(../../Libs/protobuf.pri)
 
 LIBS += -L../../Common/output/$$FOLDER -lCommon
-POST_TARGETDEPS += ../../Common/output/$$FOLDER/libCommon.a
+PRE_TARGETDEPS += ../../Common/output/$$FOLDER/libCommon.a
 
 SOURCES += main.cpp MainWindow.cpp \
     ../../Protos/common.pb.cc \

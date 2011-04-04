@@ -14,21 +14,6 @@ CONFIG += staticlib create_prl link_prl
 INCLUDEPATH += . \
     ../..
 
-LIBS += -L../DownloadManager/output/$$FOLDER -lDownloadManager
-POST_TARGETDEPS += ../DownloadManager/output/$$FOLDER/libDownloadManager.a
-
-LIBS += -L../PeerManager/output/$$FOLDER -lPeerManager
-POST_TARGETDEPS += ../PeerManager/output/$$FOLDER/libPeerManager.a
-
-LIBS += -L../FileManager/output/$$FOLDER -lFileManager
-POST_TARGETDEPS += ../FileManager/output/$$FOLDER/libFileManager.a
-
-LIBS += -L../../Common/LogManager/output/$$FOLDER -lLogManager
-POST_TARGETDEPS += ../../Common/LogManager/output/$$FOLDER/libLogManager.a
-
-LIBS += -L../../Common/output/$$FOLDER -lCommon
-POST_TARGETDEPS += ../../Common/output/$$FOLDER/libCommon.a
-
 DEFINES += NETWORKLISTENER_LIBRARY
 SOURCES += priv/UDPListener.cpp \
     priv/TCPListener.cpp \

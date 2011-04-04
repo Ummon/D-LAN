@@ -13,12 +13,6 @@ CONFIG += staticlib link_prl create_prl
 
 INCLUDEPATH += . ../..
 
-LIBS += -L../../Common/LogManager/output/$$FOLDER -lLogManager
-POST_TARGETDEPS += ../../Common/LogManager/output/$$FOLDER/libLogManager.a
-
-LIBS += -L../../Common/output/$$FOLDER -lCommon
-POST_TARGETDEPS += ../../Common/output/$$FOLDER/libCommon.a
-
 DEFINES += FILEMANAGER_LIBRARY
 SOURCES += priv/Builder.cpp \
     priv/FileManager.cpp \

@@ -16,19 +16,6 @@ CONFIG += staticlib \
 INCLUDEPATH += . \
     ../..
 
-LIBS += -L../../Common/LogManager/output/$$FOLDER \
-     -lLogManager
-POST_TARGETDEPS += ../../Common/LogManager/output/$$FOLDER/libLogManager.a
-LIBS += -L../../Common/output/$$FOLDER \
-     -lCommon
-POST_TARGETDEPS += ../../Common/output/$$FOLDER/libCommon.a
-LIBS += -L../FileManager/output/$$FOLDER \
-     -lFileManager
-POST_TARGETDEPS += ../FileManager/output/$$FOLDER/libFileManager.a
-LIBS += -L../PeerManager/output/$$FOLDER \
-     -lPeerManager
-POST_TARGETDEPS += ../PeerManager/output/$$FOLDER/libPeerManager.a
-
 DEFINES += UPLOADMANAGER_LIBRARY
 SOURCES += priv/UploadManager.cpp \
     priv/Uploader.cpp \

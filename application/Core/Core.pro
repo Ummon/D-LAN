@@ -18,35 +18,35 @@ INCLUDEPATH += . ..
 
 LIBS += -LRemoteControlManager/output/$$FOLDER \
     -lRemoteControlManager
-POST_TARGETDEPS += RemoteControlManager/output/$$FOLDER/libRemoteControlManager.a
+PRE_TARGETDEPS += RemoteControlManager/output/$$FOLDER/libRemoteControlManager.a
 
 LIBS += -LNetworkListener/output/$$FOLDER \
     -lNetworkListener
-POST_TARGETDEPS += NetworkListener/output/$$FOLDER/libNetworkListener.a
+PRE_TARGETDEPS += NetworkListener/output/$$FOLDER/libNetworkListener.a
 
 LIBS += -LDownloadManager/output/$$FOLDER \
     -lDownloadManager
-POST_TARGETDEPS += DownloadManager/output/$$FOLDER/libDownloadManager.a
+PRE_TARGETDEPS += DownloadManager/output/$$FOLDER/libDownloadManager.a
 
 LIBS += -LUploadManager/output/$$FOLDER \
     -lUploadManager
-POST_TARGETDEPS += UploadManager/output/$$FOLDER/libUploadManager.a
+PRE_TARGETDEPS += UploadManager/output/$$FOLDER/libUploadManager.a
 
 LIBS += -LPeerManager/output/$$FOLDER \
     -lPeerManager
-POST_TARGETDEPS += PeerManager/output/$$FOLDER/libPeerManager.a
+PRE_TARGETDEPS += PeerManager/output/$$FOLDER/libPeerManager.a
 
 LIBS += -LFileManager/output/$$FOLDER \
     -lFileManager
-POST_TARGETDEPS += FileManager/output/$$FOLDER/libFileManager.a
+PRE_TARGETDEPS += FileManager/output/$$FOLDER/libFileManager.a
 
 LIBS += -L../Common/LogManager/output/$$FOLDER \
     -lLogManager
-POST_TARGETDEPS += ../Common/LogManager/output/$$FOLDER/libLogManager.a
+PRE_TARGETDEPS += ../Common/LogManager/output/$$FOLDER/libLogManager.a
 
 LIBS += -L../Common/output/$$FOLDER \
     -lCommon
-POST_TARGETDEPS += ../Common/output/$$FOLDER/libCommon.a
+PRE_TARGETDEPS += ../Common/output/$$FOLDER/libCommon.a
 
 include(../Libs/qtservice/src/qtservice.pri)
 
