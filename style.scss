@@ -1,17 +1,13 @@
 $blue-dark: #182430;
 $blue-light: #6596c9;
 
-// Old blue.
-// $blue-dark: #1053bc;
-// $blue-light: #9ecaf7;
-
 $red-dark: #6e0404;
 $red-light: #fd2435;
 
-$opacity1: 0.42;
-$opacity2: 0.6;
+$opacity1: 0.48;
+$opacity2: 0.62;
 
-// Flat colors. Use for browser which do not support gradient and/or opacity
+// Flat colors. Used for browser which do not support gradient and/or opacity.
 $color-bg-body: mix($blue-dark, $blue-light);
 $color-bg-content: desaturate(lighten(mix($blue-dark, $blue-light), 20%), 15%); 
 $color-bg-box: desaturate(lighten(mix($blue-dark, $blue-light), 50%), 15%); /* For download and gallery */
