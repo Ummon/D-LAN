@@ -43,7 +43,8 @@ void TransferRateCalculator::addData(int bytes)
 {
    QMutexLocker locker(&this->mutex);
 
-   this->update(bytes);
+   if (bytes > 0)
+      this->update(bytes);
 }
 
 /**

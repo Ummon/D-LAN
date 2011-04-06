@@ -49,11 +49,6 @@ void Tests::nCombinations()
    QCOMPARE(Global::nCombinations(4, 2), 6);
    QCOMPARE(Global::nCombinations(4, 4), 1);
    QCOMPARE(Global::nCombinations(42, 6), 5245786);
-
-   QCOMPARE(Global::nCombinations(2, 4), 0);
-   QCOMPARE(Global::nCombinations(-1, 1), 0);
-   QCOMPARE(Global::nCombinations(1, -1), 0);
-   QCOMPARE(Global::nCombinations(-1, -1), 0);
 }
 
 void Tests::formatByteSize()

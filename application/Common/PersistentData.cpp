@@ -48,6 +48,8 @@ const QString PersistentData::TEMP_SUFFIX_TERM(".temp");
   */
 void PersistentData::setValue(const QString& name, const google::protobuf::Message& data, Global::DataFolderType dataFolderType, bool humanReadable)
 {
+   Q_ASSERT(!name.isEmpty());
+
    try
    {
       const QString FILEPATH(Global::getDataFolder(dataFolderType) + '/' + name);
@@ -92,6 +94,8 @@ void PersistentData::setValue(const QString& name, const google::protobuf::Messa
   */
 void PersistentData::getValue(const QString& name, google::protobuf::Message& data, Global::DataFolderType dataFolderType, bool humanReadable)
 {
+   Q_ASSERT(!name.isEmpty());
+
    try
    {
       QFile file(Global::getDataFolder(dataFolderType) + '/' + name);
@@ -125,6 +129,8 @@ void PersistentData::getValue(const QString& name, google::protobuf::Message& da
   */
 bool PersistentData::rmValue(const QString& name, Global::DataFolderType dataFolderType)
 {
+   Q_ASSERT(!name.isEmpty());
+
    try
    {
       return QFile::remove(Global::getDataFolder(dataFolderType) + '/' + name);

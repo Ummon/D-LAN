@@ -55,7 +55,10 @@ QString Global::UnableToSetTempDirException::getMessage() const throw()
   * @link http://en.wikipedia.org/wiki/Combination
   */
 int Global::nCombinations(int n, int k)
-{
+{   
+   Q_ASSERT(n >= 0);
+   Q_ASSERT(k >= 0);
+
    if (n < 0 || k < 0)
       return 0;
 
@@ -105,6 +108,8 @@ int Global::nCombinations(int n, int k)
   */
 QString Global::formatByteSize(qint64 bytes, int precision)
 {
+   Q_ASSERT(precision >= 0);
+
    for (int i = 0; i < 8; i++)
    {
       qint64 size = 1;
@@ -125,6 +130,8 @@ QString Global::formatByteSize(qint64 bytes, int precision)
   */
 qint64 Global::availableDiskSpace(const QString& path)
 {
+   Q_ASSERT(!path.isEmpty());
+
 #ifdef Q_OS_WIN32
    ULARGE_INTEGER space;
    wchar_t buffer[path.size()];
@@ -148,6 +155,9 @@ qint64 Global::availableDiskSpace(const QString& path)
   */
 bool Global::rename(const QString& existingFile, const QString& newFile)
 {
+   Q_ASSERT(!existingFile.isEmpty());
+   Q_ASSERT(!newFile.isEmpty());
+
 #ifdef Q_OS_WIN32
    return MoveFileEx((LPCTSTR)existingFile.utf16(), (LPCTSTR)newFile.utf16(), MOVEFILE_REPLACE_EXISTING);
 #else
@@ -161,6 +171,8 @@ bool Global::rename(const QString& existingFile, const QString& newFile)
   */
 QString Global::cleanDirPath(const QString& path)
 {
+   Q_ASSERT(!path.isEmpty());
+
    return QDir::cleanPath(path).append('/');
 }
 
@@ -252,6 +264,8 @@ QString Global::getCurrenMachineName()
   */
 bool Global::createFile(const QString& path)
 {
+   Q_ASSERT(!path.isEmpty());
+
    QFileInfo fileInfo(path);
    if (!QDir::current().mkpath(fileInfo.path()))
       return false;
@@ -274,6 +288,8 @@ bool Global::createFile(const QString& path)
   */
 bool Global::recursiveDeleteDirectoryContent(const QString& dir)
 {
+   Q_ASSERT(!dir.isEmpty());
+
    bool success = true;
 
    for (QDirIterator i(dir, QDir::Files, QDirIterator::Subdirectories); i.hasNext();)
@@ -292,6 +308,8 @@ bool Global::recursiveDeleteDirectoryContent(const QString& dir)
   */
 bool Global::recursiveDeleteDirectory(const QString& dir)
 {
+   Q_ASSERT(!dir.isEmpty());
+
    bool success = Global::recursiveDeleteDirectoryContent(dir);
 
    if (QDir::current().exists(dir) && !QDir(dir).rmdir("."))
@@ -307,6 +325,8 @@ bool Global::recursiveDeleteDirectory(const QString& dir)
   */
 QString Global::setCurrentDirToTemp(const QString& dirname)
 {
+   Q_ASSERT(!dirname.isEmpty());
+
    const QString TEMP_DIRNAME("D-LAN " + dirname);
    QDir::setCurrent(QDir::tempPath());
    if (!QDir::current().exists(TEMP_DIRNAME))

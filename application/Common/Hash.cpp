@@ -59,6 +59,8 @@ Hash::Hash(const Hash& h)
   */
 Hash::Hash(const char* h)
 {
+   Q_ASSERT(h);
+
    this->newData();
    memcpy(this->data->hash, h, HASH_SIZE);
 }
@@ -69,9 +71,8 @@ Hash::Hash(const char* h)
   * The data are copied, no pointer is keept to 'a'.
   */
 Hash::Hash(const QByteArray& a)
-{
-   if (a.size() != HASH_SIZE)
-      throw QString("The given QByteArray must have a size of %1").arg(HASH_SIZE);
+{   
+   Q_ASSERT_X(a.size() == HASH_SIZE, "Hash::Hash", QString("The given QByteArray must have a size of %1").arg(HASH_SIZE).toUtf8().constData());
 
    this->newData();
    memcpy(this->data->hash, a.constData(), HASH_SIZE);
@@ -111,7 +112,7 @@ Hash& Hash::operator=(const Hash& h)
   */
 QString Hash::toStr() const
 {
-   QString ret(HASH_SIZE * 2);
+   QString ret(2 * HASH_SIZE);
    for (int i = 0; i < HASH_SIZE; i++)
    {
       char p1 = (this->data->hash[i] & 0xF0) >> 4;
@@ -147,6 +148,9 @@ QString Hash::toStrCArray() const
    return str;
 }
 
+/**
+  * The special hash value with all bytes to 0 is defined as a null value.
+  */
 bool Hash::isNull() const
 {
    for (int i = 0; i < HASH_SIZE; i++)
@@ -169,6 +173,8 @@ Hash Hash::rand()
 
 Hash Hash::fromStr(const QString& str)
 {
+   Q_ASSERT_X(str.size() == 2 * HASH_SIZE, "Hash::fromStr", "The string representation of an hash must have twice as character as the size (in byte) of the hash.");
+
    Hash hash;
    QString strLower = str.toLower();
 
@@ -225,6 +231,9 @@ void Hasher::addPredefinedSalt()
   */
 void Hasher::addData(const char* data, int size)
 {
+   Q_ASSERT(data);
+   Q_ASSERT(size > 0);
+
    this->cryptographicHash.addData(data, size);
 }
 
@@ -242,6 +251,8 @@ void Hasher::reset()
 
 Common::Hash Hasher::hash(const QString& str)
 {
+   Q_ASSERT(!str.isEmpty());
+
    const QByteArray data = str.toUtf8();
 
    Hasher hasher;
@@ -251,6 +262,8 @@ Common::Hash Hasher::hash(const QString& str)
 
 Common::Hash Hasher::hashWithSalt(const QString& str)
 {
+   Q_ASSERT(!str.isEmpty());
+
    const QByteArray data = str.toUtf8();
    Hasher hasher;
    hasher.addPredefinedSalt();

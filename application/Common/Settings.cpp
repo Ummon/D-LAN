@@ -58,6 +58,8 @@ Settings::~Settings()
 
 void Settings::setFilename(const QString& filename)
 {
+   Q_ASSERT(!filename.isEmpty());
+
    this->filename = filename;
 }
 
@@ -67,6 +69,8 @@ void Settings::setFilename(const QString& filename)
   */
 void Settings::setSettingsMessage(google::protobuf::Message* settings)
 {
+   Q_ASSERT(settings);
+
    if (this->settings)
       delete this->settings;
 
@@ -105,14 +109,21 @@ void Settings::setSettingsMessage(google::protobuf::Message* settings)
 void Settings::save() const
 {
    QMutexLocker locker(&this->mutex);
+
+   Q_ASSERT(this->settings);
+
    if (!this->settings)
       return;
+
    PersistentData::setValue(this->filename, *this->settings, Common::Global::ROAMING, true);
 }
 
 void Settings::load()
 {
    QMutexLocker locker(&this->mutex);
+
+   Q_ASSERT(this->settings);
+
    if (!this->settings)
       return;
 
@@ -128,8 +139,12 @@ void Settings::load()
 void Settings::remove()
 {
    QMutexLocker locker(&this->mutex);
+
+   Q_ASSERT(this->settings);
+
    if (!this->settings)
       return;
+
    PersistentData::rmValue(this->filename, Common::Global::ROAMING);
 }
 
@@ -145,6 +160,10 @@ void Settings::free()
 bool Settings::isSet(const QString& name) const
 {
    QMutexLocker locker(&this->mutex);
+
+   Q_ASSERT(!name.isEmpty());
+   Q_ASSERT(this->settings);
+
    if (!this->settings)
       return false;
 
@@ -157,9 +176,14 @@ bool Settings::isSet(const QString& name) const
 
 void Settings::set(const QString& name, quint32 value)
 {
-   QMutexLocker locker(&this->mutex);
+   QMutexLocker locker(&this->mutex);   
+
+   Q_ASSERT(!name.isEmpty());
+   Q_ASSERT(this->settings);
+
    if (!this->settings)
       return;
+
    const google::protobuf::FieldDescriptor* fieldDescriptor = this->descriptor->FindFieldByName(name.toStdString());
    if (!fieldDescriptor)
    {
@@ -178,8 +202,13 @@ void Settings::set(const QString& name, quint32 value)
 void Settings::set(const QString& name, double value)
 {
    QMutexLocker locker(&this->mutex);
+
+   Q_ASSERT(!name.isEmpty());
+   Q_ASSERT(this->settings);
+
    if (!this->settings)
       return;
+
    const google::protobuf::FieldDescriptor* fieldDescriptor = this->descriptor->FindFieldByName(name.toStdString());
    if (!fieldDescriptor)
    {
@@ -198,8 +227,13 @@ void Settings::set(const QString& name, double value)
 void Settings::set(const QString& name, const QString& value)
 {
    QMutexLocker locker(&this->mutex);
+
+   Q_ASSERT(!name.isEmpty());
+   Q_ASSERT(this->settings);
+
    if (!this->settings)
       return;
+
    const google::protobuf::FieldDescriptor* fieldDescriptor = this->descriptor->FindFieldByName(name.toStdString());
    if (!fieldDescriptor)
    {
@@ -218,8 +252,13 @@ void Settings::set(const QString& name, const QString& value)
 void Settings::set(const QString& name, const QByteArray& value)
 {
    QMutexLocker locker(&this->mutex);
+
+   Q_ASSERT(!name.isEmpty());
+   Q_ASSERT(this->settings);
+
    if (!this->settings)
       return;
+
    const google::protobuf::FieldDescriptor* fieldDescriptor = this->descriptor->FindFieldByName(name.toStdString());
    if (!fieldDescriptor)
    {
@@ -240,8 +279,13 @@ void Settings::set(const QString& name, const QByteArray& value)
 void Settings::set(const QString& name, const Hash& hash)
 {
    QMutexLocker locker(&this->mutex);
+
+   Q_ASSERT(!name.isEmpty());
+   Q_ASSERT(this->settings);
+
    if (!this->settings)
       return;
+
    const google::protobuf::FieldDescriptor* fieldDescriptor = this->descriptor->FindFieldByName(name.toStdString());
    if (!fieldDescriptor)
    {
@@ -261,36 +305,46 @@ void Settings::set(const QString& name, const Hash& hash)
 }
 
 void Settings::get(const google::protobuf::FieldDescriptor* fieldDescriptor, quint32& value) const
-{
+{   
+   Q_ASSERT(fieldDescriptor);
    value = this->settings->GetReflection()->GetUInt32(*this->settings, fieldDescriptor);
 }
 
 void Settings::get(const google::protobuf::FieldDescriptor* fieldDescriptor, double& value) const
 {
+   Q_ASSERT(fieldDescriptor);
    value = this->settings->GetReflection()->GetDouble(*this->settings, fieldDescriptor);
 }
 
 void Settings::get(const google::protobuf::FieldDescriptor* fieldDescriptor, QString& value) const
 {
+   Q_ASSERT(fieldDescriptor);
    value = QString::fromUtf8(this->settings->GetReflection()->GetString(*this->settings, fieldDescriptor).data());
 }
 
 void Settings::get(const google::protobuf::FieldDescriptor* fieldDescriptor, QByteArray& value) const
 {
+   Q_ASSERT(fieldDescriptor);
    std::string valueStr = this->settings->GetReflection()->GetString(*this->settings, fieldDescriptor);
    value = QByteArray::fromRawData(valueStr.data(), valueStr.size());
 }
 
 void Settings::get(const google::protobuf::FieldDescriptor* fieldDescriptor, Hash& hash) const
 {
+   Q_ASSERT(fieldDescriptor);
    hash = static_cast<const Protos::Common::Hash&>(this->settings->GetReflection()->GetMessage(*this->settings, fieldDescriptor)).hash().data();
 }
 
 void Settings::rm(const QString& name)
 {
    QMutexLocker locker(&this->mutex);
+
+   Q_ASSERT(!name.isEmpty());
+   Q_ASSERT(this->settings);
+
    if (!this->settings)
       return;
+
    const google::protobuf::FieldDescriptor* fieldDescriptor = this->descriptor->FindFieldByName(name.toStdString());
    if (!fieldDescriptor)
    {
