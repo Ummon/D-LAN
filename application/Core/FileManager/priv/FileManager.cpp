@@ -420,7 +420,7 @@ void FileManager::loadCacheFromFile()
       // Scan the shared directories and try to match the files against the saved cache.
       try
       {
-         this->cache.retrieveFromFile(*savedCache);
+         this->cache.createSharedDirs(*savedCache);
       }
       catch (DirsNotFoundException& e)
       {
@@ -460,7 +460,7 @@ void FileManager::persistCacheToFile()
       L_DEBU("Persisting cache..");
 
       Protos::FileCache::Hashes hashes;
-      this->cache.saveInFile(hashes);
+      this->cache.populateHashes(hashes);
 
       try
       {

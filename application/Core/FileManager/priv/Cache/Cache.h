@@ -51,7 +51,7 @@ namespace FM
       Protos::Common::Entries getEntries(const Protos::Common::Entry& dir) const;
       Protos::Common::Entries getEntries() const;
       Entry* getEntry(const QString& path) const;
-      File* getFile(const Protos::Common::Entry&) const;
+      File* getFile(const Protos::Common::Entry& fileEntry) const;
       QList< QSharedPointer<IChunk> > newFile(Protos::Common::Entry& fileEntry);
 
       QList<Common::SharedDir> getSharedDirs() const;
@@ -65,8 +65,8 @@ namespace FM
 
       Directory* getFittestDirectory(const QString& path) const;
 
-      void retrieveFromFile(const Protos::FileCache::Hashes& hashes);
-      void saveInFile(Protos::FileCache::Hashes& hashes) const;
+      void createSharedDirs(const Protos::FileCache::Hashes& hashes);
+      void populateHashes(Protos::FileCache::Hashes& hashes) const;
 
       quint64 getAmount() const;
 
@@ -87,7 +87,6 @@ namespace FM
    private:
       SharedDirectory* createSharedDir(const QString path, const Common::Hash& ID = Common::Hash(), int pos = -1);
       void createSharedDirs(const QStringList& dirs, const QList<Common::Hash>& ids = QList<Common::Hash>());
-      void createSharedDirs(const Protos::FileCache::Hashes& hashes);
 
       Directory* getWriteableDirectory(const QString& path, qint64 spaceNeeded) const;
 

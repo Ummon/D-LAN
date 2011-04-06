@@ -53,7 +53,7 @@ using namespace FM;
   *  - Compute some hashes by reading the file. It stores the hahes in a chunk list, see the Chunk class.
   *
   * A file can be finished or unfinished.
-  * If it is an unfinished one, the name ends with ".unfinished" (see setting "unfinished_suffix_term").
+  * If it is an unfinished one, the name ends with ".unfinished" (see setting 'unfinished_suffix_term').
   * When a file is just finished the suffix ".unfinished" is removed and the file is renamed.
   */
 

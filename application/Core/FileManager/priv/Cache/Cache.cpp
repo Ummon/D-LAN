@@ -32,9 +32,21 @@ using namespace FM;
 #include <priv/Cache/SharedDirectory.h>
 #include <priv/Cache/File.h>
 
+/**
+  * @class Cache
+  *
+  * Owns all the shared directories (roots), their content (directories and file) and the chunks.
+  * Here are the main capabilities:
+  *  - Browse directories and files.
+  *  - Create a new file.
+  *  - Add or remove a shared directory (root).
+  *  - Serialize or deserialize the hashes of the files in a 'Protos::FileCache::Hashes' structure (to be saved/loaded in/from a physical file).
+  */
+
 Cache::Cache(FileManager* fileManager) :
    fileManager(fileManager), mutex(QMutex::Recursive)
 {
+   Q_ASSERT(fileManager);
 }
 
 Cache::~Cache()
@@ -44,7 +56,7 @@ Cache::~Cache()
 }
 
 /**
-  * a) Search among their shared directory the one who match the given entry.
+  * a) Search among their shared directory the one who match the given directory.
   * b) In the shared directory try to find the directory corresponding to 'entry.dir.path'.
   * c) Populate the result with directories and files.
   */
@@ -91,6 +103,9 @@ Protos::Common::Entries Cache::getEntries(const Protos::Common::Entry& dir) cons
    return result;
 }
 
+/**
+  * Gets the roots directories.
+  */
 Protos::Common::Entries Cache::getEntries() const
 {
    QMutexLocker locker(&this->mutex);
@@ -107,7 +122,7 @@ Protos::Common::Entries Cache::getEntries() const
 }
 
 /**
-  * @path the absolute path to a directory or a file.
+  * @param path The absolute path to a directory or a file.
   * @return Returns 0 if no entry found.
   */
 Entry* Cache::getEntry(const QString& path) const
@@ -199,6 +214,8 @@ File* Cache::getFile(const Protos::Common::Entry& fileEntry) const
 }
 
 /**
+  * Creates a new file in the path defined in 'fileEntry' and returns its chunks.
+  *
   * @exception NoWriteableDirectoryException
   * @exception InsufficientStorageSpaceException
   * @exception UnableToCreateNewFileException
@@ -451,15 +468,25 @@ Directory* Cache::getFittestDirectory(const QString& path) const
   * Define the shared directories from the persisted given data.
   * The directories and files are not created here but later by the fileUpdater, see the FileManager ctor.
   */
-void Cache::retrieveFromFile(const Protos::FileCache::Hashes& hashes)
+void Cache::createSharedDirs(const Protos::FileCache::Hashes& hashes)
 {
-   this->createSharedDirs(hashes);
+   QStringList paths;
+   QList<Common::Hash> ids;
+
+   // Add the shared directories from the file cache.
+   for (int i = 0; i < hashes.shareddir_size(); i++)
+   {
+      const Protos::FileCache::Hashes_SharedDir& dir = hashes.shareddir(i);
+      paths << Common::ProtoHelper::getStr(dir, &Protos::FileCache::Hashes_SharedDir::path);
+      ids << Common::Hash(dir.id().hash().data());
+   }
+   this->createSharedDirs(paths, ids);
 }
 
 /**
   * Populate the given structure to be persisted later.
   */
-void Cache::saveInFile(Protos::FileCache::Hashes& hashes) const
+void Cache::populateHashes(Protos::FileCache::Hashes& hashes) const
 {
    QMutexLocker locker(&this->mutex);
 
@@ -517,6 +544,7 @@ void Cache::onChunkRemoved(QSharedPointer<Chunk> chunk)
 /**
   * Create a new shared directory.
   * The other shared directories may not be merged with the new one, use SharedDirectory::mergeSubSharedDirectories to do that after this call.
+  *
   * @exceptions DirNotFoundException
   */
 SharedDirectory* Cache::createSharedDir(const QString path, const Common::Hash& ID, int pos)
@@ -551,7 +579,8 @@ SharedDirectory* Cache::createSharedDir(const QString path, const Common::Hash& 
 }
 
 /**
-  * Create new shared directories and inform the fileUpdater.
+  * Create new shared directories.
+  *
   * @exception DirsNotFoundException
   */
 void Cache::createSharedDirs(const QStringList& dirs, const QList<Common::Hash>& ids)
@@ -583,21 +612,6 @@ void Cache::createSharedDirs(const QStringList& dirs, const QList<Common::Hash>&
 
    if (!dirsNotFound.isEmpty())
       throw DirsNotFoundException(dirsNotFound);
-}
-
-void Cache::createSharedDirs(const Protos::FileCache::Hashes& hashes)
-{
-   QStringList paths;
-   QList<Common::Hash> ids;
-
-   // Add the shared directories from the file cache.
-   for (int i = 0; i < hashes.shareddir_size(); i++)
-   {
-      const Protos::FileCache::Hashes_SharedDir& dir = hashes.shareddir(i);
-      paths << Common::ProtoHelper::getStr(dir, &Protos::FileCache::Hashes_SharedDir::path);
-      ids << Common::Hash(dir.id().hash().data());
-   }
-   this->createSharedDirs(paths, ids);
 }
 
 /**

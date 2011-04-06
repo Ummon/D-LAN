@@ -164,7 +164,7 @@ message Search  {
 message Tag  {
    required uint64 tag = 2;
 }
-// Core -> GUI (deffered)
+// Core -> GUI (deferred)
 // This message is sent for each UDP datagram received.
 // id : 0x43
 // Common.FindResult
@@ -179,7 +179,7 @@ message Browse {
 // Core -> GUI (directly)
 // id : 0x52
 // Tag
-// Core -> GUI (deffered)
+// Core -> GUI (deferred)
 // id : 0x53
 message BrowseResult {
    required uint64 tag = 1;
