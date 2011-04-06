@@ -95,7 +95,7 @@ void Core::checkSettingsIntegrity()
    this->checkSetting("save_cache_period", 1000u, 4294967295u);
 
    this->checkSetting("pending_socket_timeout", 10u, 30u * 1000u);
-   this->checkSetting("peer_timeout_factor", 1u, 10u);
+   this->checkSetting("peer_timeout_factor", 1.0, 10.0);
    this->checkSetting("idle_socket_timeout", 1000u, 60u * 60u * 1000u);
    this->checkSetting("max_number_idle_socket", 0u, 10u);
    this->checkSetting("get_hashes_timeout", 1000u, 60u * 1000u);

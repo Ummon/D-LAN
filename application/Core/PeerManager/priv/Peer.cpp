@@ -43,7 +43,7 @@ Peer::Peer(PeerManager* peerManager, QSharedPointer<FM::IFileManager> fileManage
    alive(false)
 {
    this->aliveTimer.setSingleShot(true);
-   this->aliveTimer.setInterval(SETTINGS.get<quint32>("peer_timeout_factor") * SETTINGS.get<quint32>("peer_imalive_period"));
+   this->aliveTimer.setInterval(SETTINGS.get<double>("peer_timeout_factor") * SETTINGS.get<quint32>("peer_imalive_period"));
    connect(&this->aliveTimer, SIGNAL(timeout()), this, SLOT(consideredDead()));
 }
 
