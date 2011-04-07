@@ -146,9 +146,10 @@ bool File::restoreFromFileCache(const Protos::FileCache::Hashes_File& file)
       for (int i = 0; i < file.chunk_size(); i++)
       {
          this->chunks[i]->restoreFromFileCache(file.chunk(i));
-         if (this->chunks[i]->hasHash() && this->chunks[i]->isComplete())
+         if (this->chunks[i]->hasHash())
          {
-            this->nbChunkComplete++;
+            if (this->chunks[i]->isComplete())
+               this->nbChunkComplete++;
             this->cache->onChunkHashKnown(this->chunks[i]);
          }
       }

@@ -70,6 +70,7 @@ namespace DM
       QList<Common::Hash> getPeers();
 
       bool startDownloading();
+      void tryToRemoveItsIncompleteFile();
 
    signals:
       void downloadStarted();

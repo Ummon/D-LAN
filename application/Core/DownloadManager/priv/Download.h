@@ -69,7 +69,7 @@ namespace DM
       QSet<Common::Hash> getPeers() const;
       const Protos::Common::Entry& getRemoteEntry() const;
       const Protos::Common::Entry& getLocalEntry() const;
-      void remove();
+      virtual void remove();
 
    signals:
       void deleted(Download*);

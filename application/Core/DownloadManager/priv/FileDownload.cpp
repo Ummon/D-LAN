@@ -247,6 +247,15 @@ void FileDownload::getUnfinishedChunks(QList< QSharedPointer<IChunkDownload> >& 
 }
 
 /**
+  * When we explicitly remove a download, we must remove all unfinished files.
+  */
+void FileDownload::remove()
+{
+   for (QListIterator< QSharedPointer<ChunkDownload> > i(this->chunkDownloads); i.hasNext();)
+      i.next()->tryToRemoveItsIncompleteFile();
+}
+
+/**
   * Return true if a GetHashes request has been sent to the peer.
   */
 bool FileDownload::retrieveHashes()

@@ -64,11 +64,6 @@ ChunkDownload::~ChunkDownload()
       this->wait();
       this->downloadingEnded();
    }
-
-   if (!this->chunk.isNull())
-   {
-      this->chunk->removeItsIncompleteFile();
-   }
 }
 
 Common::Hash ChunkDownload::getHash() const
@@ -209,6 +204,12 @@ bool ChunkDownload::startDownloading()
 
    this->getChunkResult->start();
    return true;
+}
+
+void ChunkDownload::tryToRemoveItsIncompleteFile()
+{
+   if (!this->chunk.isNull())
+      this->chunk->removeItsIncompleteFile();
 }
 
 void ChunkDownload::run()

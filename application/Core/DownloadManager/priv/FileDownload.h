@@ -67,6 +67,8 @@ namespace DM
 
       void getUnfinishedChunks(QList< QSharedPointer<IChunkDownload> >& chunks, int nMax) const;
 
+      void remove();
+
    public slots:
       bool retrieveHashes();
 
