@@ -433,7 +433,7 @@ void FileUpdater::scan(Directory* dir, bool addUnfinished)
       QList<Directory*> currentSubDirs = currentDir->getSubDirs();
       QList<File*> currentFiles = currentDir->getCompleteFiles(); // We don't care about the unfinished files.
 
-      foreach (QFileInfo entry, QDir(currentDir->getFullPath()).entryInfoList(QDir::AllEntries | QDir::NoDotAndDotDot | QDir::NoSymLinks))
+      foreach (QFileInfo entry, QDir(currentDir->getFullPath()).entryInfoList(QDir::AllEntries | QDir::NoDotAndDotDot /*| QDir::NoSymLinks*/)) // TODO: Add an option to follow or not symlinks.
       {
          QMutexLocker locker(&this->scanningMutex);
 
