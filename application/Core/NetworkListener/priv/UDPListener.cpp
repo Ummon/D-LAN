@@ -240,6 +240,12 @@ void UDPListener::processPendingMulticastDatagrams()
                IMAliveMessage.amount()
             );
 
+            if (sendIMAlive)
+            {
+               this->timerIMAlive.start();
+               this->sendIMAliveMessage();
+            }
+
             if (IMAliveMessage.chunk_size() > 0)
             {
                QList<Common::Hash> hashes;
@@ -257,12 +263,6 @@ void UDPListener::processPendingMulticastDatagrams()
                      chunkOwnedMessage.add_chunk_state(bitArray[i]);
                   this->send(Common::MessageHeader::CORE_CHUNKS_OWNED, header.getSenderID(), chunkOwnedMessage);
                }
-            }
-
-            if (sendIMAlive)
-            {
-               this->timerIMAlive.start();
-               this->sendIMAliveMessage();
             }
          }
          break;
