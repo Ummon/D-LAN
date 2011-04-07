@@ -253,6 +253,8 @@ void FileDownload::remove()
 {
    for (QListIterator< QSharedPointer<ChunkDownload> > i(this->chunkDownloads); i.hasNext();)
       i.next()->tryToRemoveItsIncompleteFile();
+
+   Download::remove();
 }
 
 /**
