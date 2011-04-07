@@ -1,5 +1,5 @@
 -module(d_lan_download_counter).
--export([start/1, stop/0, new_download/1, nb_download/1, all_files/0, reset/1]).
+-export([start/1, stop/0, new_download/1, stats/1, all_files/0]).
 
 -include("/usr/lib/yaws/include/yaws.hrl"). 
 -include("../include/d_lan_defines.hrl").
@@ -31,33 +31,38 @@ stop() ->
 new_download(Filename) ->
    d_lan_download_counter_process ! {new_download, Filename}.
 
+% Return a list of tuple: [[<date>, <number of d/l], ...]. The list is sorted from the yougest to the oldest record.
 % We don't use the process 'd_lan_download_counter_proc' because there is no concurrent access problem to just read a value.
-nb_download(Filename) ->
-   case dets:lookup(?MODULE, Filename) of
-      [] -> 0;
-      [{_, N}] -> N
-   end.
+stats(Filename) ->
+   lists:sort(
+      fun([D1 | _], [D2 | _]) -> D1 < D2 end,
+      case dets:match(?MODULE, {{Filename, '$1'}, '$2'}) of
+         {error, _} -> [];
+         R -> R
+      end
+   ).
    
+% Returns a list of all the files.
 all_files() ->
-   dets:foldl(fun(File, Acc) -> [File | Acc] end, [], ?MODULE).
-
-reset(Filename) ->
-   d_lan_download_counter_process ! {reset, Filename}.
+   dets:foldl(fun({{Filename, _}, _}, Acc) -> case lists:member(Filename, Acc) of true -> Acc; _ -> [Filename | Acc] end end, [], ?MODULE).
 
 loop() ->
    receive
-      {new_download, Filename} ->
-         case dets:lookup(?MODULE, Filename) of
+      {new_download, Filename} ->        
+         Date = now_utc(),
+         case dets:lookup(?MODULE, {Filename, Date}) of
             [] ->
-               dets:insert(?MODULE, [{Filename, 1}]),
+               dets:insert(?MODULE, [{{Filename, Date}, 1}]),
                loop();
             [{_, N}] ->
-               dets:insert(?MODULE, [{Filename, N + 1}]),
+               dets:insert(?MODULE, [{{Filename, Date}, N + 1}]),
                loop()
          end;
-      {reset, Filename} ->
-         dets:insert(?MODULE, [{Filename, 0}]),
-         loop();
       stop ->
          ok
    end.
+   
+now_utc() ->
+   {Date, _} = calendar:now_to_universal_time(now()),
+   Date.
+   

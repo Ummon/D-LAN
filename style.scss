@@ -232,8 +232,14 @@ p {
             margin-left: 15px;
          }
       }
-      &.stats .nb-download .nb {
-         text-align: right
+      &.stats {
+         .filename {
+            vertical-align: top;
+         }
+         .nb {
+            padding-left: 10px;
+            text-align: right;
+         }
       }
       ul {      
          margin-bottom: 10px;
