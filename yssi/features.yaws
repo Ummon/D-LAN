@@ -16,7 +16,7 @@
                {li, [], tr(features, feat_8, A)},
                {li, [], tr(features, feat_9, A)}
             ]},
-            {p, [], tr(features, help_us, A, ["https://flattr.com/thing/114810/D-LAN"])}
+            {p, [], tr(features, help_us, A, ["https://flattr.com/thing/150434/D-LAN"])}
          ] ++ d_lan_common:images([{"browse", tr(gallery, browsing, A)}, {"downloads", tr(gallery, download, A)}, {"search", tr(gallery, search_result, A)}])
       }.
 

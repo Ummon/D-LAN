@@ -1,4 +1,4 @@
-// all aybabtu is contained in this object
+// All D-LAN is contained in this object.
 var d_lan = {};
    
 $(function() { 
