@@ -9,62 +9,7 @@
 langs() ->
    [en, fr].
    
-current_lang(A) ->
-   % 1) Looks if a GET variable 'lang' is defined
-   Current_lang = case yaws_api:queryvar(A, "lang") of
-      {ok, L} -> list_to_atom(L);
-      _ ->
-         % 2) Looks if a 'lang' value exist in a cookie.
-         case yaws_api:find_cookie_val("lang", (A#arg.headers)#headers.cookie) of
-         [] ->
-            % 3) Looks in the "Accept-Language" HTTP header field.
-            case accepted_langs_by_user_agent(A) of
-               [Lang | _] -> Lang;
-               _ -> null
-            end;
-         C -> list_to_atom(C)
-      end
-   end,
-   case lists:member(Current_lang, langs()) of
-      true -> Current_lang;
-      _ -> [First | _] = langs(), First % The language isn't defined (or known) we take the first of the list.
-   end.
-
-% Return a list of accepted languages by the user agent. Return only known languages from 'langs/0'.
-% Read the HTTP field 'Accept-Language'.
-accepted_langs_by_user_agent(A) ->
-   lists:map(
-      fun ({Lang, _}) -> Lang end, % Remove the quality information.
-      lists:reverse(lists:keysort(2, % Sort by quality, bigger first.
-         case lists:filter(fun({http_header, _, Name, _, _}) -> Name =:= 'Accept-Language' end, (A#arg.headers)#headers.other) of
-            [{http_header, _, _, _, Values} | _] ->
-               % erlang:display(Values), % For debug purpose.
-               lists:foldr(
-                  fun(Val, Acc) ->
-                     {Lang_str_with_subtag, Quality} = case string:tokens(string:strip(Val), ";") of
-                        [L, "q=" ++ Q] -> {L, list_to_float(Q)};
-                        [L | _] -> {L, 1.0}
-                     end,
-                     [Lang_str | _] = string:tokens(Lang_str_with_subtag, "-"), % We don't care about the subtags.
-                     Lang = list_to_atom(Lang_str),
-                     case lists:member(Lang, langs()) of
-                        true -> [{Lang, Quality} | Acc]; % We keep only known languages.
-                        _ -> Acc
-                     end
-                  end,
-                  [],
-                  string:tokens(Values, ",")
-               );
-            _ -> []
-         end
-      ))
-   ).
-
-tr(Page, Section, A) ->
-   tr(Page, Section, A, []).
-
-tr(Page, Section, A, Params) ->
-   io_lib:format(translate(current_lang(A), Page, Section), Params).
+%%%%%%%%%%
 
 translate(en, global, title) -> "D-LAN - A LAN file sharing software";
 translate(fr, global, title) -> "D-LAN - Un logiciel de partage de fichiers en LAN";
@@ -280,4 +225,62 @@ translate(fr, _, _) -> "Pas de traduction";
 
 translate(_, _, _) -> "".
 
+%%%%%%%%%%
+   
+current_lang(A) ->
+   % 1) Looks if a GET variable 'lang' is defined
+   Current_lang = case yaws_api:queryvar(A, "lang") of
+      {ok, L} -> list_to_atom(L);
+      _ ->
+         % 2) Looks if a 'lang' value exist in a cookie.
+         case yaws_api:find_cookie_val("lang", (A#arg.headers)#headers.cookie) of
+         [] ->
+            % 3) Looks in the "Accept-Language" HTTP header field.
+            case accepted_langs_by_user_agent(A) of
+               [Lang | _] -> Lang;
+               _ -> null
+            end;
+         C -> list_to_atom(C)
+      end
+   end,
+   case lists:member(Current_lang, langs()) of
+      true -> Current_lang;
+      _ -> [First | _] = langs(), First % The language isn't defined (or known) we take the first of the list.
+   end.
+
+% Return a list of accepted languages by the user agent. Return only known languages from 'langs/0'.
+% Read the HTTP field 'Accept-Language'.
+accepted_langs_by_user_agent(A) ->
+   lists:map(
+      fun ({Lang, _}) -> Lang end, % Remove the quality information.
+      lists:reverse(lists:keysort(2, % Sort by quality, bigger first.
+         case lists:filter(fun({http_header, _, Name, _, _}) -> Name =:= 'Accept-Language' end, (A#arg.headers)#headers.other) of
+            [{http_header, _, _, _, Values} | _] ->
+               % erlang:display(Values), % For debug purpose.
+               lists:foldr(
+                  fun(Val, Acc) ->
+                     {Lang_str_with_subtag, Quality} = case string:tokens(string:strip(Val), ";") of
+                        [L, "q=" ++ Q] -> {L, list_to_float(Q)};
+                        [L | _] -> {L, 1.0}
+                     end,
+                     [Lang_str | _] = string:tokens(Lang_str_with_subtag, "-"), % We don't care about the subtags.
+                     Lang = list_to_atom(Lang_str),
+                     case lists:member(Lang, langs()) of
+                        true -> [{Lang, Quality} | Acc]; % We keep only known languages.
+                        _ -> Acc
+                     end
+                  end,
+                  [],
+                  string:tokens(Values, ",")
+               );
+            _ -> []
+         end
+      ))
+   ).
+
+tr(Page, Section, A) ->
+   tr(Page, Section, A, []).
+
+tr(Page, Section, A, Params) ->
+   io_lib:format(translate(current_lang(A), Page, Section), Params).
 

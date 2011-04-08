@@ -31,7 +31,7 @@ stop() ->
 new_download(Filename) ->
    d_lan_download_counter_process ! {new_download, Filename}.
 
-% Return a list of tuple: [[<date>, <number of d/l], ...]. The list is sorted from the yougest to the oldest record.
+% Return a list of list: [[<date>, <number of d/l>], ...]. The list is sorted from the yougest to the oldest record.
 % We don't use the process 'd_lan_download_counter_proc' because there is no concurrent access problem to just read a value.
 stats(Filename) ->
    lists:sort(
