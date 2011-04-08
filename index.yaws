@@ -63,7 +63,7 @@
                         {a, 
                            [
                               {href, P ++ ".html&amp;lang=" ++ atom_to_list(L)}
-                           ] ++ if L =:= Current_lang -> [{class, "current-lang"}]; true -> [] end, atom_to_list(L)
+                           ] ++ if L =:= Current_lang -> [{class, "current-lang"}]; true -> [] end, d_lan_lang:plain_lang(L)
                         }
                      ]} end, d_lan_lang:langs())
                   }.

@@ -1,5 +1,5 @@
 -module(d_lan_lang).
--export([langs/0, current_lang/1, tr/3, tr/4]).
+-export([langs/0, plain_lang/1, current_lang/1, tr/3, tr/4]).
  
 -include("/usr/lib/yaws/include/yaws_api.hrl"). 
 -include("../include/d_lan_defines.hrl").
@@ -9,13 +9,16 @@
 langs() ->
    [en, fr].
    
+plain_lang(en) -> "English";
+plain_lang(fr) -> "Français".
+   
 %%%%%%%%%%
 
 translate(en, global, title) -> "D-LAN - A LAN file sharing software";
 translate(fr, global, title) -> "D-LAN - Un logiciel de partage de fichiers en LAN";
 
 %%%%%%%%%%
-   
+
 translate(en, menu, home) -> "HOME";
 translate(fr, menu, home) -> "HOME";
 
