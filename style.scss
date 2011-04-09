@@ -10,7 +10,7 @@ $opacity2: 0.62;
 // Flat colors. Used for browser which do not support gradient and/or opacity.
 $color-bg-body: mix($blue-dark, $blue-light);
 $color-bg-content: desaturate(lighten(mix($blue-dark, $blue-light), 20%), 15%); 
-$color-bg-box: desaturate(lighten(mix($blue-dark, $blue-light), 50%), 15%); /* For download and gallery */
+$color-bg-box: desaturate(lighten(mix($blue-dark, $blue-light), 50%), 15%); // For download and gallery
 
 @mixin border-radius($r) {
    border-radius: $r;

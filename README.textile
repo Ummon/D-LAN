@@ -1,0 +1,17 @@
+h1. D-LAN Website
+
+This is the website of the "D-LAN software":http://www.d-lan.net .
+
+It designed to be run on the "Yaws webserver":http://yaws.hyber.org .
+
+When developping the script @/tools/start_yaws_debug.sh@ may be used to start a _Yaws_ instance.
+
+h2. Folder descriptions
+
+* *colobox*: The _jQuery_ plugin to show images in a modal window.
+* *files*: Empty at started, may be filled with releases of _D-LAN_.
+* *img*: All the images needed by the website.
+* *modules*: All the server-side code in _Erlang_.
+* *tools*: Some useful tools.
+* *yaws_conf*: A _Yaws_ configuration used when launching _Yaws_ in developpment mode. Useful to help setting up the production _Yaws_ configuration.
+* *yssi*: Contains all pages.
