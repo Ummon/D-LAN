@@ -31,13 +31,15 @@ LOG_INIT_CPP(NetworkListener);
 NetworkListener::NetworkListener(
    QSharedPointer<FM::IFileManager> fileManager,
    QSharedPointer<PM::IPeerManager> peerManager,
+   QSharedPointer<UM::IUploadManager> uploadManager,
    QSharedPointer<DM::IDownloadManager> downloadManager
 ) :
    fileManager(fileManager),
    peerManager(peerManager),
+   uploadManager(uploadManager),
    downloadManager(downloadManager),
    tCPListener(peerManager),
-   uDPListener(fileManager, peerManager, downloadManager, tCPListener.getCurrentPort()),
+   uDPListener(fileManager, peerManager, uploadManager, downloadManager, tCPListener.getCurrentPort()),
    chat(uDPListener)
 {
 }

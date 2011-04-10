@@ -58,7 +58,7 @@ bool DownloadsModel::fileIsComplete(int row) const
    return this->downloads[row].status() == Protos::GUI::State_Download_Status_COMPLETE;
 }
 
-QString DownloadsModel::getLocationPath(int row) const
+QString DownloadsModel::getPath(int row, bool appendFilename) const
 {
    if (row >= this->downloads.size())
       return QString();
@@ -67,12 +67,8 @@ QString DownloadsModel::getLocationPath(int row) const
    if (sharedDir.isNull())
       return QString();
 
-   QString fullPath;
-   fullPath
-      .append(sharedDir.path)
-      .append('/')
-      .append(Common::ProtoHelper::getStr(this->downloads[row].local_entry(), &Protos::Common::Entry::path)); // Relative path from base path
-   return fullPath;
+   QString path = sharedDir.path;
+   return path.append(Common::ProtoHelper::getRelativePath(this->downloads[row].local_entry(), appendFilename));
 }
 
 int DownloadsModel::rowCount(const QModelIndex& parent) const

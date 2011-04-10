@@ -118,6 +118,7 @@ WidgetDownloads::WidgetDownloads(QSharedPointer<RCC::ICoreConnection> coreConnec
 
    this->ui->tblDownloads->setContextMenuPolicy(Qt::CustomContextMenu);
    connect(this->ui->tblDownloads, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(displayContextMenuDownloads(const QPoint&)));
+   connect(this->ui->tblDownloads, SIGNAL(doubleClicked(const QModelIndex&)), this, SLOT(downloadDoubleClicked(const QModelIndex&)));
 
    connect(this->ui->butRemoveComplete, SIGNAL(clicked()), this, SLOT(removeCompletedFiles()));
    connect(this->ui->butRemoveSelected, SIGNAL(clicked()), this, SLOT(removeSelectedEntries()));
@@ -161,6 +162,12 @@ void WidgetDownloads::displayContextMenuDownloads(const QPoint& point)
    menu.exec(this->ui->tblDownloads->mapToGlobal(point));
 }
 
+void WidgetDownloads::downloadDoubleClicked(const QModelIndex& index)
+{
+   if (this->downloadsModel.fileLocationIsKnown(index.row()))
+      QDesktopServices::openUrl(QUrl("file:///" + this->downloadsModel.getPath(index.row())));
+}
+
 void WidgetDownloads::openLocationSelectedEntries()
 {
    QModelIndexList selectedRows = this->ui->tblDownloads->selectionModel()->selectedRows();
@@ -170,7 +177,7 @@ void WidgetDownloads::openLocationSelectedEntries()
    {
       int row = i.next().row();
       if (this->downloadsModel.fileLocationIsKnown(row))
-         locations.insert("file:///" + this->downloadsModel.getLocationPath(row));
+         locations.insert("file:///" + this->downloadsModel.getPath(row, false));
    }
 
    for (QSetIterator<QString> i(locations); i.hasNext();)

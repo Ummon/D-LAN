@@ -21,6 +21,18 @@ using namespace Common;
 
 #include <QRegExp>
 
+QString ProtoHelper::getRelativePath(const Protos::Common::Entry& entry, bool appendFilename)
+{
+   QString path = Common::ProtoHelper::getStr(entry, &Protos::Common::Entry::path);
+
+   // Empty relative path means the directory is a shared directory (root), see "application/Protos/common.proto" for more information.
+   if (path.isEmpty())
+      path = "/";
+   else if (appendFilename || entry.type() == Protos::Common::Entry_Type_DIR)
+      path.append(Common::ProtoHelper::getStr(entry, &Protos::Common::Entry::name));
+   return path;
+}
+
 QString ProtoHelper::getDebugStr(const google::protobuf::Message& mess)
 {
    // return QString("");

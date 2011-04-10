@@ -43,6 +43,7 @@ namespace NL
       NetworkListener(
          QSharedPointer<FM::IFileManager> fileManager,
          QSharedPointer<PM::IPeerManager> peerManager,
+         QSharedPointer<UM::IUploadManager> uploadManager,
          QSharedPointer<DM::IDownloadManager> downloadManager
       );
 
@@ -56,6 +57,7 @@ namespace NL
 
       QSharedPointer<FM::IFileManager> fileManager;
       QSharedPointer<PM::IPeerManager> peerManager;
+      QSharedPointer<UM::IUploadManager> uploadManager;
       QSharedPointer<DM::IDownloadManager> downloadManager;
 
       TCPListener tCPListener;

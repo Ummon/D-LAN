@@ -57,6 +57,7 @@ namespace GUI
 
    private slots:
       void displayContextMenuDownload(const QPoint& point);
+      void entryDoubleClicked(const QModelIndex& index);
       void download();
       void downloadTo(const Common::Hash& sharedDirID, const QString& path);
       void openLocation();

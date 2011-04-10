@@ -23,6 +23,8 @@
 
 #include <google/protobuf/message.h>
 
+#include <Protos/common.pb.h>
+
 namespace Common
 {
    /**
@@ -43,6 +45,15 @@ namespace Common
 
       template <typename T>
       static void addRepeatedStr(T& mess, void (T::*adder)(const char*), const QString& str);
+
+      /**
+        * Return the relative path of an entry, for exemple:
+        *  - entry is a root: "/".
+        *  - entry is a directory: "/abc/xyz/".
+        *  - entry is a file: "/abc/xyz/file.txt" (with 'appendFilename' == true).
+        *  - entry is a file: "/abc/xyz/" (with 'appendFilename' == false).
+        */
+      static QString getRelativePath(const Protos::Common::Entry& entry, bool appendFilename = true);
 
       static QString getDebugStr(const google::protobuf::Message& mess);
    };

@@ -1,5 +1,6 @@
 TEMPLATE = subdirs
 CONFIG += ordered
+MAKEFILE = Makefile-Core
 SUBDIRS = Common/Common.pro \
    Common/LogManager/LogManager.pro \
    Core/FileManager/FileManager.pro \

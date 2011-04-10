@@ -57,6 +57,7 @@ WidgetBrowse::WidgetBrowse(QSharedPointer<RCC::ICoreConnection> coreConnection, 
 
    this->ui->treeView->setContextMenuPolicy(Qt::CustomContextMenu);
    connect(this->ui->treeView, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(displayContextMenuDownload(const QPoint&)));
+   connect(this->ui->treeView, SIGNAL(doubleClicked(const QModelIndex&)), this, SLOT(entryDoubleClicked(const QModelIndex&)));
 
    if (this->coreConnection->getID() == this->peerID)
       this->ui->butDownload->hide();
@@ -101,6 +102,12 @@ void WidgetBrowse::displayContextMenuDownload(const QPoint& point)
    }
 }
 
+void WidgetBrowse::entryDoubleClicked(const QModelIndex& index)
+{
+   if (this->coreConnection->getID() == this->peerID && !this->browseModel.isDir(index))
+      QDesktopServices::openUrl(QUrl("file:///" + this->browseModel.getPath(index), QUrl::TolerantMode));
+}
+
 void WidgetBrowse::download()
 {
    QModelIndexList selectedRows = this->ui->treeView->selectionModel()->selectedRows();
@@ -123,7 +130,7 @@ void WidgetBrowse::openLocation()
    for (QListIterator<QModelIndex> i(selectedRows); i.hasNext();)
    {
       QModelIndex index = i.next();
-      locations.insert("file:///" + this->browseModel.getLocationPath(index));
+      locations.insert("file:///" + this->browseModel.getPath(index, false));
    }
 
    for (QSetIterator<QString> i(locations); i.hasNext();)

@@ -39,6 +39,7 @@
 #include <Common/LogManager/ILogger.h>
 #include <Core/FileManager/IFileManager.h>
 #include <Core/PeerManager/IPeerManager.h>
+#include <Core/UploadManager/IUploadManager.h>
 #include <Core/DownloadManager/IDownloadManager.h>
 
 namespace NL
@@ -57,6 +58,7 @@ namespace NL
       UDPListener(
          QSharedPointer<FM::IFileManager> fileManager,
          QSharedPointer<PM::IPeerManager> peerManager,
+         QSharedPointer<UM::IUploadManager> uploadManager,
          QSharedPointer<DM::IDownloadManager> downloadManager,
          quint16 unicastPort
       );
@@ -88,6 +90,7 @@ namespace NL
 
       QSharedPointer<FM::IFileManager> fileManager;
       QSharedPointer<PM::IPeerManager> peerManager;
+      QSharedPointer<UM::IUploadManager> uploadManager;
       QSharedPointer<DM::IDownloadManager> downloadManager;
 
       QUdpSocket multicastSocket;

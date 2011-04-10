@@ -62,7 +62,7 @@ void Core::start()
    this->peerManager = PM::Builder::newPeerManager(this->fileManager);
    this->uploadManager = UM::Builder::newUploadManager(this->peerManager);
    this->downloadManager = DM::Builder::newDownloadManager(this->fileManager, this->peerManager);
-   this->networkListener = NL::Builder::newNetworkListener(this->fileManager, this->peerManager, this->downloadManager);
+   this->networkListener = NL::Builder::newNetworkListener(this->fileManager, this->peerManager, this->uploadManager, this->downloadManager);
    this->remoteControlManager = RCM::Builder::newRemoteControlManager(this->fileManager, this->peerManager, this->uploadManager, this->downloadManager, this->networkListener);
 
    L_USER("Ready to serve");

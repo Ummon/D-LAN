@@ -47,6 +47,7 @@ using namespace NL;
 UDPListener::UDPListener(
    QSharedPointer<FM::IFileManager> fileManager,
    QSharedPointer<PM::IPeerManager> peerManager,
+   QSharedPointer<UM::IUploadManager> uploadManager,
    QSharedPointer<DM::IDownloadManager> downloadManager,
    quint16 unicastPort
 ) :
@@ -56,6 +57,7 @@ UDPListener::UDPListener(
    MULTICAST_PORT(SETTINGS.get<quint32>("multicast_port")),
    fileManager(fileManager),
    peerManager(peerManager),
+   uploadManager(uploadManager),
    downloadManager(downloadManager),
    currentIMAliveTag(0),
    loggerIMAlive(LM::Builder::newLogger("NetworkListener (IMAlive)"))
@@ -168,7 +170,10 @@ void UDPListener::sendIMAliveMessage()
    IMAliveMessage.set_version(PROTOCOL_VERSION);
    IMAliveMessage.set_port(this->UNICAST_PORT);
    Common::ProtoHelper::setStr(IMAliveMessage, &Protos::Core::IMAlive::set_nick, this->peerManager->getNick());
+
    IMAliveMessage.set_amount(this->fileManager->getAmount());
+   IMAliveMessage.set_download_rate(this->downloadManager->getDownloadRate());
+   IMAliveMessage.set_upload_rate(this->uploadManager->getUploadRate());
 
    this->currentIMAliveTag = this->mtrand.randInt();
    this->currentIMAliveTag <<= 32;

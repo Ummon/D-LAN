@@ -53,7 +53,8 @@ namespace GUI
 
       virtual Protos::Common::Entry getEntry(const QModelIndex& index) const;
 
-      virtual QString getLocationPath(const QModelIndex& index) const;
+      virtual bool isDir(const QModelIndex& index) const;
+      virtual QString getPath(const QModelIndex& index, bool appendFilename = true) const;
 
       void refresh();
 

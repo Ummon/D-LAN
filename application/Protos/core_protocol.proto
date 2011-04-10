@@ -22,7 +22,10 @@ message IMAlive {
    required uint32 version = 1; // The version of the protocol used. If 'version' from another peer doesn't correspond to our own version, this peer is ignored.
    required uint32 port = 2; // The port listened by the core.
    required string nick = 3;
+   
    required uint64 amount = 4; // [byte] Amount of sharing.
+   optional uint32 download_rate = 7;
+   optional uint32 upload_rate = 8;
    
    optional uint64 tag = 5; // A random number, all results must repeat this number.
    repeated Common.Hash chunk = 6; // Can be empty.

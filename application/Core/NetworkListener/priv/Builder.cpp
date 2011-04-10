@@ -24,8 +24,9 @@ using namespace NL;
 QSharedPointer<INetworkListener> Builder::newNetworkListener(
    QSharedPointer<FM::IFileManager> fileManager,
    QSharedPointer<PM::IPeerManager> peerManager,
+   QSharedPointer<UM::IUploadManager> uploadManager,
    QSharedPointer<DM::IDownloadManager> downloadManager
 )
 {
-   return QSharedPointer<INetworkListener>(new NetworkListener(fileManager, peerManager, downloadManager));
+   return QSharedPointer<INetworkListener>(new NetworkListener(fileManager, peerManager, uploadManager, downloadManager));
 }

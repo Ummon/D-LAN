@@ -43,7 +43,7 @@ namespace GUI
 
       bool fileLocationIsKnown(int row) const;
       bool fileIsComplete(int row) const;
-      QString getLocationPath(int row) const;
+      QString getPath(int row, bool appendFilename = true) const;
 
       int rowCount(const QModelIndex& parent = QModelIndex()) const;
       int columnCount(const QModelIndex& parent = QModelIndex()) const;
