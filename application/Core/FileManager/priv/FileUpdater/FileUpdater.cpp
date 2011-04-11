@@ -611,12 +611,18 @@ void FileUpdater::restoreFromFileCache(SharedDirectory* dir)
       return;
    }
 
-   QList<File*> filesWithHashes = dir->restoreFromFileCache(*this->fileCache);
+   for (int i = 0; i < this->fileCache->shareddir_size(); i++)
+      if (Common::Hash(this->fileCache->shareddir(i).id().hash().data()) == dir->getId())
+      {
+         QList<File*> filesWithHashes = dir->restoreFromFileCache(this->fileCache->shareddir(i).root());
 
-   // Remove the files which have a hash.
-   // TODO : O(n^2) can be a bit long...
-   for (QListIterator<File*>i(filesWithHashes); i.hasNext();)
-      this->filesWithoutHashes.removeOne(i.next());
+         // Remove the files which have a hash.
+         // TODO : O(n^2) can be a bit long...
+         for (QListIterator<File*>i(filesWithHashes); i.hasNext();)
+            this->filesWithoutHashes.removeOne(i.next());
+
+         break;
+      }
 
    L_DEBU("Restoring terminated : " + dir->getFullPath());
 }

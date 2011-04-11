@@ -92,17 +92,6 @@ SharedDirectory::~SharedDirectory()
    L_DEBU(QString("SharedDirectory deleted : %1").arg(this->path));
 }
 
-QList<File*> SharedDirectory::restoreFromFileCache(const Protos::FileCache::Hashes& hashes)
-{
-   QList<File*> ret;
-
-   // Give each root to each sub directory. We don't match the full path.
-   for (int i = 0; i < hashes.shareddir_size(); i++)
-      ret << Directory::restoreFromFileCache(hashes.shareddir(i).root());
-
-   return ret;
-}
-
 QString SharedDirectory::getPath() const
 {
    return "";
