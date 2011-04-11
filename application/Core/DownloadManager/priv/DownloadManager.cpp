@@ -60,9 +60,9 @@ DownloadManager::~DownloadManager()
    this->queueChanged = true;
    this->saveQueueToFile();
 
-   for (QListIterator<Download*> i(this->downloads); i.hasNext();)
+   while (!this->downloads.isEmpty())
    {
-      Download* download = i.next();
+      Download* download = this->downloads.takeFirst();
       disconnect(download, SIGNAL(deleted(Download*)), this, SLOT(downloadDeleted(Download*)));
       delete download;
    }
