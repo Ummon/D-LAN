@@ -39,7 +39,7 @@ namespace CoreSpace
    class Core : Common::Uncopyable
    {
    public:
-      Core();
+      Core(int argc, char** argv);
       void start();
 
    private:

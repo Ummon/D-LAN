@@ -77,36 +77,18 @@ void Settings::setSettingsMessage(google::protobuf::Message* settings)
    this->settings = settings;
    this->descriptor = this->settings->GetDescriptor();
 
-   // Very ugly : to force the optional field to be written. TODO : find a another way.
-   for (int i = 0; i < this->descriptor->field_count(); i++)
-   {
-      const google::protobuf::FieldDescriptor* fieldDescriptor = this->descriptor->field(i);
-
-      // It doesn't work, an optional field with a default value is defined as non-set (HasField returns 'false').
-      /*if (!this->settings->GetReflection()->HasField(*this->settings, fieldDescriptor))
-         continue;*/
-
-      switch(fieldDescriptor->type())
-      {
-      case google::protobuf::FieldDescriptor::TYPE_UINT32:
-         this->settings->GetReflection()->SetUInt32(this->settings, fieldDescriptor, fieldDescriptor->default_value_uint32());
-         break;
-      case google::protobuf::FieldDescriptor::TYPE_DOUBLE:
-         this->settings->GetReflection()->SetDouble(this->settings, fieldDescriptor, fieldDescriptor->default_value_double());
-         break;
-      case google::protobuf::FieldDescriptor::TYPE_STRING:
-         this->settings->GetReflection()->SetString(this->settings, fieldDescriptor, fieldDescriptor->default_value_string());
-         break;
-      default:
-         break;
-      }
-   }
+   this->setDefaultValues();
 }
 
 /**
   * @exception PersistentDataIOException see the class 'PersistentData'.
   */
 void Settings::save() const
+{
+   this->saveTo(this->filename);
+}
+
+void Settings::saveTo(const QString& filename) const
 {
    QMutexLocker locker(&this->mutex);
 
@@ -115,7 +97,7 @@ void Settings::save() const
    if (!this->settings)
       return;
 
-   PersistentData::setValue(this->filename, *this->settings, Common::Global::ROAMING, true);
+   PersistentData::setValue(filename, *this->settings, Common::Global::ROAMING, true);
 }
 
 void Settings::load()
@@ -335,6 +317,34 @@ void Settings::get(const google::protobuf::FieldDescriptor* fieldDescriptor, Has
    hash = static_cast<const Protos::Common::Hash&>(this->settings->GetReflection()->GetMessage(*this->settings, fieldDescriptor)).hash().data();
 }
 
+void Settings::setDefaultValues()
+{
+   // Very ugly : to force the optional field to be written. TODO : find a another way.
+   for (int i = 0; i < this->descriptor->field_count(); i++)
+   {
+      const google::protobuf::FieldDescriptor* fieldDescriptor = this->descriptor->field(i);
+
+      // It doesn't work, an optional field with a default value is defined as non-set (HasField returns 'false').
+      /*if (!this->settings->GetReflection()->HasField(*this->settings, fieldDescriptor))
+         continue;*/
+
+      switch(fieldDescriptor->type())
+      {
+      case google::protobuf::FieldDescriptor::TYPE_UINT32:
+         this->settings->GetReflection()->SetUInt32(this->settings, fieldDescriptor, fieldDescriptor->default_value_uint32());
+         break;
+      case google::protobuf::FieldDescriptor::TYPE_DOUBLE:
+         this->settings->GetReflection()->SetDouble(this->settings, fieldDescriptor, fieldDescriptor->default_value_double());
+         break;
+      case google::protobuf::FieldDescriptor::TYPE_STRING:
+         this->settings->GetReflection()->SetString(this->settings, fieldDescriptor, fieldDescriptor->default_value_string());
+         break;
+      default:
+         break;
+      }
+   }
+}
+
 void Settings::rm(const QString& name)
 {
    QMutexLocker locker(&this->mutex);
@@ -352,6 +362,25 @@ void Settings::rm(const QString& name)
       return;
    }
    this->settings->GetReflection()->ClearField(this->settings, fieldDescriptor);
+}
+
+void Settings::rmAll()
+{
+   QMutexLocker locker(&this->mutex);
+
+   Q_ASSERT(this->settings);
+
+   if (!this->settings)
+      return;
+
+   /* ClearField doesn't work, because if we save the settings the fields will not be written in it.
+   for (int i = 0; i < this->descriptor->field_count(); i++)
+   {
+      const google::protobuf::FieldDescriptor* fieldDescriptor = this->descriptor->field(i);
+      this->settings->GetReflection()->ClearField(this->settings, fieldDescriptor);
+   }*/
+
+   this->setDefaultValues();
 }
 
 void Settings::printErrorNameNotFound(const QString& name)

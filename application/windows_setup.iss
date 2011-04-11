@@ -43,7 +43,7 @@ Name: Firewall; Description: "Add an exception to the Windows Firewall"; MinVers
 
 [Run]
 Filename: {sys}\netsh.exe; Parameters: "firewall add allowedprogram ""{app}\D-LAN.Core.exe"" ""D-LAN.Core"" ENABLE ALL"; Flags: runhidden; MinVersion: 0,5.01.2600sp2; Tasks: Firewall; 
-Filename: {app}\D-LAN.Core.exe; Parameters: -i; Description: Install the D-LAN service; Flags: RunHidden; 
+Filename: {app}\D-LAN.Core.exe; Parameters: --reset-settings -i; Description: Install the D-LAN service; Flags: RunHidden; 
 
 [UninstallRun]
 Filename: {app}\D-LAN.Core.exe; Parameters: -u;

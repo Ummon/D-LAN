@@ -44,6 +44,7 @@ namespace Common
       void setSettingsMessage(google::protobuf::Message* settings);
 
       void save() const;
+      void saveTo(const QString& filename) const;
       void load();
       void remove();
 
@@ -61,6 +62,7 @@ namespace Common
       T get(const QString& name) const;
 
       void rm(const QString& name);
+      void rmAll();
 
    private:
       void get(const google::protobuf::FieldDescriptor* fieldDescriptor, quint32& value) const;
@@ -68,6 +70,8 @@ namespace Common
       void get(const google::protobuf::FieldDescriptor* fieldDescriptor, QString& value) const;
       void get(const google::protobuf::FieldDescriptor* fieldDescriptor, QByteArray& value) const;
       void get(const google::protobuf::FieldDescriptor* fieldDescriptor, Hash& hash) const;
+
+      void setDefaultValues();
 
       static void printErrorNameNotFound(const QString& name);
       static void printErrorBadType(const google::protobuf::FieldDescriptor* field, const QString& excepted);

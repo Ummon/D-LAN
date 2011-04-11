@@ -23,6 +23,7 @@ using namespace CoreSpace;
 
 #include <Common/PersistentData.h>
 #include <Common/Constants.h>
+#include <Common/Hash.h>
 #include <FileManager/Builder.h>
 #include <PeerManager/Builder.h>
 #include <UploadManager/Builder.h>
@@ -32,13 +33,31 @@ using namespace CoreSpace;
 
 LOG_INIT_CPP(Core);
 
-Core::Core()
+Core::Core(int argc, char** argv)
 {
-   GOOGLE_PROTOBUF_VERIFY_VERSION;
+   bool resetSettings = false;
+   for (int i = 1; i < argc; i++)
+   {
+      const QString arg = QString::fromLatin1(argv[i]);
+      if (arg == "--reset-settings")
+         resetSettings = true;
+   }
 
+   GOOGLE_PROTOBUF_VERIFY_VERSION;
    SETTINGS.setFilename(Common::CORE_SETTINGS_FILENAME);
    SETTINGS.setSettingsMessage(new Protos::Core::Settings());
    SETTINGS.load();
+
+   if (resetSettings)
+   {
+      const QString nick = SETTINGS.get<QString>("nick");
+      const Common::Hash peerID = SETTINGS.get<Common::Hash>("peer_id");
+      SETTINGS.saveTo(Common::CORE_SETTINGS_FILENAME + ".backup");
+      SETTINGS.rmAll();
+      SETTINGS.set("nick", nick);
+      SETTINGS.set("peer_id", peerID);
+      SETTINGS.save();
+   }
 
    this->checkSettingsIntegrity();
 

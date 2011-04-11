@@ -30,9 +30,11 @@
 #endif
 
 /**
-  * Arguments : [-r <roaming data folder>] [-l <local data folder>]
+  * Arguments : [-r <roaming data folder>] [-l <local data folder>] [--reset-settings] [<arguments from QtService>]
   *  <roaming data folder> : Where settings are put.
   *  <local data folder> : Where logs, download queue, and files cache are put.
+  *  --reset-settings : Remove all settings but "nick" and "ID", other settings are set to their default values.
+  *  <arguments from QtService> : Type "D-LAN.Core.exe -h" to see them.
   */
 int main(int argc, char* argv[])
 {
