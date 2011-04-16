@@ -233,6 +233,22 @@ void Global::setDataFolderToDefault(DataFolderType type)
    Global::dataFolders[type].clear();
 }
 
+QString Global::getDataSystemFolder(DataFolderType type)
+{
+// TODO: other platforms.
+#ifdef Q_OS_WIN32
+   TCHAR dataPathSystem[MAX_PATH];
+   if (!SUCCEEDED(SHGetFolderPath(NULL, CSIDL_SYSTEMX86, NULL, 0, dataPathSystem)))
+      return QString();
+
+   const QString dataFolderPath = QString::fromUtf16((ushort*)dataPathSystem);
+
+   return dataFolderPath + "/config/systemprofile/AppData" + (type == ROAMING ? "/Roaming/" : "/local/") + APPLICATION_FOLDER_NAME;
+#else
+   return QString();
+#endif
+}
+
 QString Global::getCurrenUserName()
 {
 #ifdef Q_OS_WIN32

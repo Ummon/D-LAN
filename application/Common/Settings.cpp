@@ -100,21 +100,27 @@ void Settings::saveTo(const QString& filename) const
    PersistentData::setValue(filename, *this->settings, Common::Global::ROAMING, true);
 }
 
-void Settings::load()
+bool Settings::load()
 {
    QMutexLocker locker(&this->mutex);
 
    Q_ASSERT(this->settings);
 
    if (!this->settings)
-      return;
+      return false;
 
    try
    {
       PersistentData::getValue(this->filename, *this->settings, Common::Global::ROAMING, true);
+      return true;
    }
    catch (UnknownValueException&)
    {
+      return false;
+   }
+   catch (PersistentDataIOException&)
+   {
+      return false;
    }
 }
 

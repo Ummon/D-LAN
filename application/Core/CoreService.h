@@ -34,7 +34,7 @@ namespace CoreSpace
    {
       Q_OBJECT
    public:
-      CoreService(int argc, char** argv);
+      CoreService(bool resetSettings, int argc, char** argv);
       virtual ~CoreService() {};
 
    protected:

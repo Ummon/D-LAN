@@ -232,7 +232,7 @@ QSet< NodeResult<T> > Node<T>::getItems(bool alsoFromSubNodes) const
       QSet< NodeResult<T> > currentItems = current->items;
 
       for (QSetIterator< NodeResult<T> > i(currentItems); i.hasNext();)
-         // 'level' == 1 means the item matches exactly, it's a bit tricky..
+         // 'level' == 0 means the item matches exactly, it's a bit tricky..
          const_cast< NodeResult<T>& >(i.next()).level = (current == this ? 0 : 1); // Const cast is valid because 'level' is not used by QSet. See 'uint qHash(const NodeResult<T>& r)'.
 
       result += currentItems;

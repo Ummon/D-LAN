@@ -33,16 +33,8 @@ using namespace CoreSpace;
 
 LOG_INIT_CPP(Core);
 
-Core::Core(int argc, char** argv)
+Core::Core(bool resetSettings)
 {
-   bool resetSettings = false;
-   for (int i = 1; i < argc; i++)
-   {
-      const QString arg = QString::fromLatin1(argv[i]);
-      if (arg == "--reset-settings")
-         resetSettings = true;
-   }
-
    GOOGLE_PROTOBUF_VERIFY_VERSION;
    SETTINGS.setFilename(Common::CORE_SETTINGS_FILENAME);
    SETTINGS.setSettingsMessage(new Protos::Core::Settings());
@@ -50,13 +42,30 @@ Core::Core(int argc, char** argv)
 
    if (resetSettings)
    {
-      const QString nick = SETTINGS.get<QString>("nick");
-      const Common::Hash peerID = SETTINGS.get<Common::Hash>("peer_id");
-      SETTINGS.saveTo(Common::CORE_SETTINGS_FILENAME + ".backup");
-      SETTINGS.rmAll();
-      SETTINGS.set("nick", nick);
-      SETTINGS.set("peer_id", peerID);
-      SETTINGS.save();
+      QString originalRoamingFolder = Common::Global::getDataFolder(Common::Global::ROAMING);
+      for (int i = 0; i < 2; i++)
+      {
+         if (i == 1)
+         {
+            QString roamingSystem = Common::Global::getDataSystemFolder(Common::Global::ROAMING);
+            if (!QDir(roamingSystem).exists())
+               break;
+            Common::Global::setDataFolder(Common::Global::ROAMING, roamingSystem);
+         }
+
+         if (SETTINGS.load())
+         {
+            const QString nick = SETTINGS.get<QString>("nick");
+            const Common::Hash peerID = SETTINGS.get<Common::Hash>("peer_id");
+            SETTINGS.saveTo(Common::CORE_SETTINGS_FILENAME + ".backup");
+            SETTINGS.rmAll();
+            SETTINGS.set("nick", nick);
+            SETTINGS.set("peer_id", peerID);
+            SETTINGS.save();
+         }
+      }
+      Common::Global::setDataFolder(Common::Global::ROAMING, originalRoamingFolder);
+      SETTINGS.load();
    }
 
    this->checkSettingsIntegrity();

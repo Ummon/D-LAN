@@ -33,7 +33,7 @@
   * Arguments : [-r <roaming data folder>] [-l <local data folder>] [--reset-settings] [<arguments from QtService>]
   *  <roaming data folder> : Where settings are put.
   *  <local data folder> : Where logs, download queue, and files cache are put.
-  *  --reset-settings : Remove all settings but "nick" and "ID", other settings are set to their default values.
+  *  --reset-settings : Remove all settings except "nick" and "peerID", other settings are set to their default values. Core exist directly after.
   *  <arguments from QtService> : Type "D-LAN.Core.exe -h" to see them.
   */
 int main(int argc, char* argv[])
@@ -44,6 +44,7 @@ int main(int argc, char* argv[])
 
    QTextCodec::setCodecForLocale(QTextCodec::codecForName("UTF-8"));
 
+   bool resetSettings = false;
    for (int i = 1; i < argc; i++)
    {
       const QString arg = QString::fromLatin1(argv[i]);
@@ -51,10 +52,16 @@ int main(int argc, char* argv[])
          Common::Global::setDataFolder(Common::Global::ROAMING, QString::fromLatin1(argv[i++]));
       else if (arg == "-l" && i < argc - 1)
          Common::Global::setDataFolder(Common::Global::LOCAL, QString::fromLatin1(argv[i++]));
+      else if (arg == "--reset-settings")
+         resetSettings = true;
    }
 
    LM::Builder::setLogDirName("log_core");
 
-   CoreSpace::CoreService core(argc, argv);
-   return core.exec();
+   CoreSpace::CoreService core(resetSettings, argc, argv);
+
+   if (resetSettings)
+      return 0;
+   else
+      return core.exec();
 }

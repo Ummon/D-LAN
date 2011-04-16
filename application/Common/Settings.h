@@ -45,7 +45,7 @@ namespace Common
 
       void save() const;
       void saveTo(const QString& filename) const;
-      void load();
+      bool load();
       void remove();
 
       void free();
