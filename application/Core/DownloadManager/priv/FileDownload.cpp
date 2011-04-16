@@ -80,9 +80,12 @@ FileDownload::~FileDownload()
 {
    this->status = DELETED;
 
-   this->occupiedPeersAskingForHashes.setPeerAsFree(this->peerSource);
+   if (!this->getHashesResult.isNull())
+   {
+      this->getHashesResult.clear();
+      this->occupiedPeersAskingForHashes.setPeerAsFree(this->peerSource);
+   }
 
-   this->getHashesResult.clear();
    this->chunksWithoutDownload.clear();
    this->chunkDownloads.clear();
 }

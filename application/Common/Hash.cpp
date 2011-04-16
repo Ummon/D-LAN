@@ -251,8 +251,6 @@ void Hasher::reset()
 
 Common::Hash Hasher::hash(const QString& str)
 {
-   Q_ASSERT(!str.isEmpty());
-
    const QByteArray data = str.toUtf8();
 
    Hasher hasher;
@@ -262,8 +260,6 @@ Common::Hash Hasher::hash(const QString& str)
 
 Common::Hash Hasher::hashWithSalt(const QString& str)
 {
-   Q_ASSERT(!str.isEmpty());
-
    const QByteArray data = str.toUtf8();
    Hasher hasher;
    hasher.addPredefinedSalt();
