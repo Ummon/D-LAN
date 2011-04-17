@@ -27,6 +27,7 @@ using namespace GUI;
 #include <QIcon>
 
 #include <Common/Settings.h>
+#include <Log.h>
 
 const QString SearchDelegate::MARKUP_FIRST_PART("<b>");
 const QString SearchDelegate::MARKUP_SECOND_PART("</b>");
@@ -143,10 +144,17 @@ QString SearchDelegate::toHtmlText(const QString& text) const
 
 /////
 
+void SearchMenu::onShowMenu(QMenu& menu)
+{
+   menu.addAction(QIcon(":/icons/ressources/folder.png"), "Browse", this, SIGNAL(browse()));
+}
+
+/////
+
 WidgetSearch::WidgetSearch(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel, const DirListModel& sharedDirsModel, const QString& terms, QWidget *parent) :
    QWidget(parent),
    ui(new Ui::WidgetSearch),
-   downloadMenu(coreConnection, sharedDirsModel),
+   menu(coreConnection, sharedDirsModel),
    coreConnection(coreConnection),
    searchModel(coreConnection, peerListModel, sharedDirsModel)
 {
@@ -174,7 +182,8 @@ WidgetSearch::WidgetSearch(QSharedPointer<RCC::ICoreConnection> coreConnection, 
     connect(this->ui->treeView, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(displayContextMenuDownload(const QPoint&)));
 
     connect(this->ui->butDownload, SIGNAL(clicked()), this, SLOT(download()));    
-    connect(&this->downloadMenu, SIGNAL(downloadTo(const Common::Hash&, const QString&)), this, SLOT(downloadTo(const Common::Hash&, const QString&)));
+    connect(&this->menu, SIGNAL(downloadTo(const Common::Hash&, const QString&)), this, SLOT(downloadTo(const Common::Hash&, const QString&)));
+    connect(&this->menu, SIGNAL(browse()), this, SLOT(browseCurrents()));
 
     this->setWindowTitle(QString("\"%1\"").arg(terms));
 }
@@ -187,7 +196,7 @@ WidgetSearch::~WidgetSearch()
 
 void WidgetSearch::displayContextMenuDownload(const QPoint& point)
 {   
-   this->downloadMenu.show(this->ui->treeView->mapToGlobal(point));
+   this->menu.show(this->ui->treeView->viewport()->mapToGlobal(point));
 }
 
 void WidgetSearch::download()
@@ -210,6 +219,15 @@ void WidgetSearch::downloadTo(const Common::Hash& sharedDirID, const QString& pa
    }
 }
 
+void WidgetSearch::browseCurrents()
+{
+   QModelIndexList indexes = this->ui->treeView->selectionModel()->selectedRows();
+   for (QListIterator<QModelIndex> i(indexes); i.hasNext();)
+   {
+      QModelIndex index = i.next();
+      emit browse(this->searchModel.getPeerID(index), this->searchModel.getEntry(index));
+   }
+}
 
 void WidgetSearch::progress(int value)
 {

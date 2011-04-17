@@ -184,6 +184,25 @@ void BrowseModel::refresh()
    this->browseResult->start();
 }
 
+QModelIndex BrowseModel::searchChild(const QString name, const QModelIndex& parent)
+{
+   Node* node = parent.isValid() ? static_cast<Node*>(parent.internalPointer()) : this->root;
+
+   for (int i = 0; i < node->getNbChildren(); i++)
+   {
+      if (Common::ProtoHelper::getStr(node->getChild(i)->getEntry(), &Protos::Common::Entry::name) == name)
+      {
+         return this->index(i, 0, parent);
+      }
+   }
+   return QModelIndex();
+}
+
+bool BrowseModel::isWaitingResult() const
+{
+   return !this->browseResult.isNull();
+}
+
 void BrowseModel::resultRefresh(const google::protobuf::RepeatedPtrField<Protos::Common::Entries>& entries)
 {
    QList<Node*> nodesToDelete;
@@ -214,6 +233,7 @@ void BrowseModel::resultRefresh(const google::protobuf::RepeatedPtrField<Protos:
       this->endRemoveRows();
    }
    this->browseResult.clear();
+   emit loadingResultFinished();
 }
 
 void BrowseModel::result(const google::protobuf::RepeatedPtrField<Protos::Common::Entries>& entries)
@@ -235,11 +255,13 @@ void BrowseModel::result(const google::protobuf::RepeatedPtrField<Protos::Common
 
    this->currentBrowseIndex = QModelIndex();
    this->browseResult.clear();
+   emit loadingResultFinished();
 }
 
 void BrowseModel::resultTimeout()
 {
    this->browseResult.clear();
+   emit loadingResultFinished();
 }
 
 void BrowseModel::browse(const Common::Hash& peerID, Node* node)

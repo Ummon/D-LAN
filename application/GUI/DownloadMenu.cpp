@@ -19,7 +19,6 @@
 #include <DownloadMenu.h>
 using namespace GUI;
 
-#include <QMenu>
 #include <QAction>
 
 DownloadMenu::DownloadMenu(QSharedPointer<RCC::ICoreConnection> coreConnection, const DirListModel& sharedDirsModel) :
@@ -44,6 +43,8 @@ void DownloadMenu::show(const QPoint& globalPosition)
       connect(action, SIGNAL(triggered()), this, SLOT(actionTriggered()));
       menu.addAction(action);
    }
+
+   this->onShowMenu(menu);
 
    menu.exec(globalPosition);
 }

@@ -27,6 +27,10 @@ using namespace GUI;
 #include <QUrl>
 #include <QShowEvent>
 
+#include <Common/ProtoHelper.h>
+
+#include <Log.h>
+
 void BrowseDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
    QStyleOptionViewItemV4 newOption(option);
@@ -42,7 +46,8 @@ WidgetBrowse::WidgetBrowse(QSharedPointer<RCC::ICoreConnection> coreConnection, 
    downloadMenu(coreConnection, sharedDirsModel),
    coreConnection(coreConnection),
    peerID(peerID),
-   browseModel(coreConnection, sharedDirsModel, peerID)
+   browseModel(coreConnection, sharedDirsModel, peerID),
+   tryingToReachEntryToBrowse(false)
 {
    this->ui->setupUi(this);
 
@@ -66,6 +71,8 @@ WidgetBrowse::WidgetBrowse(QSharedPointer<RCC::ICoreConnection> coreConnection, 
 
    connect(&this->downloadMenu, SIGNAL(downloadTo(const Common::Hash&, const QString&)), this, SLOT(downloadTo(const Common::Hash&, const QString&)));
 
+   connect(&this->browseModel, SIGNAL(loadingResultFinished()), this, SLOT(tryToReachEntryToBrowse()));
+
    this->setWindowTitle(QString("[%1]").arg(peerListModel.getNick(this->peerID)));
 }
 
@@ -77,6 +84,15 @@ WidgetBrowse::~WidgetBrowse()
 Common::Hash WidgetBrowse::getPeerID() const
 {
    return this->peerID;
+}
+
+void WidgetBrowse::browseTo(const Protos::Common::Entry& remoteEntry)
+{
+   this->tryingToReachEntryToBrowse = true;
+   this->remoteEntryToBrowse = remoteEntry;
+
+   if (!this->browseModel.isWaitingResult())
+      this->tryToReachEntryToBrowse();
 }
 
 void WidgetBrowse::refresh()
@@ -135,4 +151,46 @@ void WidgetBrowse::openLocation()
 
    for (QSetIterator<QString> i(locations); i.hasNext();)
       QDesktopServices::openUrl(QUrl(i.next(), QUrl::TolerantMode));
+}
+
+/**
+  * Try to select an entry from a remote peer in the browse tab.
+  * The entry to browse is set in 'this->remoteEntryToBrowse'.
+  */
+void WidgetBrowse::tryToReachEntryToBrowse()
+{
+   if (!this->tryingToReachEntryToBrowse)
+      return;
+
+   // First we search for the shared directory of the entry.
+   for (int r = 0; r < this->browseModel.rowCount(); r++)
+   {
+      QModelIndex currentIndex = this->browseModel.index(r, 0);
+      Protos::Common::Entry root = this->browseModel.getEntry(currentIndex);
+      if (root.has_shared_dir() && this->remoteEntryToBrowse.has_shared_dir() && root.shared_dir().id().hash() == this->remoteEntryToBrowse.shared_dir().id().hash())
+      {
+         // Then we try to match each folder name. If a folder cannot be reached then we ask to expand the last folder.
+         // After the folder entries are loaded, 'tryToReachEntryToBrowse()' will be recalled via the signal 'BrowseModel::loadingResultFinished()'.
+         QStringList path = Common::ProtoHelper::getStr(this->remoteEntryToBrowse, &Protos::Common::Entry::path).append(Common::ProtoHelper::getStr(this->remoteEntryToBrowse, &Protos::Common::Entry::name)).split('/', QString::SkipEmptyParts);
+         for (QStringListIterator i(path); i.hasNext();)
+         {
+            QModelIndex childIndex = this->browseModel.searchChild(i.next(), currentIndex);
+            if (!childIndex.isValid())
+            {
+               this->ui->treeView->expand(currentIndex);
+               return;
+            }
+            currentIndex = childIndex;
+
+            // We reach the last entry name (file or directory), we just have to show and select it.
+            if (!i.hasNext())
+            {
+               this->ui->treeView->scrollTo(currentIndex);
+               this->ui->treeView->selectionModel()->select(currentIndex, QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Rows);
+            }
+         }
+      }
+   }
+
+   this->tryingToReachEntryToBrowse = false;
 }

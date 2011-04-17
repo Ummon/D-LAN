@@ -52,6 +52,18 @@ namespace GUI
       QStringList currentTerms;
    };
 
+   class SearchMenu : public DownloadMenu
+   {
+      Q_OBJECT
+   public:
+      SearchMenu(QSharedPointer<RCC::ICoreConnection> coreConnection, const DirListModel& sharedDirsModel) :
+         DownloadMenu(coreConnection, sharedDirsModel) {}
+   signals:
+      void browse();
+   private:
+      virtual void onShowMenu(QMenu& menu);
+   };
+
    class WidgetSearch : public QWidget
    {
       Q_OBJECT
@@ -59,16 +71,20 @@ namespace GUI
       explicit WidgetSearch(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel, const DirListModel& sharedDirsModel, const QString& terms, QWidget *parent = 0);
       ~WidgetSearch();
 
+   signals:
+      void browse(const Common::Hash&, const Protos::Common::Entry&);
+
    private slots:
       void displayContextMenuDownload(const QPoint& point);
       void download();
       void downloadTo(const Common::Hash& sharedDirID, const QString& path);
+      void browseCurrents();
       void progress(int value);
       void treeviewSectionResized(int logicalIndex, int oldSize, int newSize);
 
    private:
       Ui::WidgetSearch *ui;
-      DownloadMenu downloadMenu;
+      SearchMenu menu;
 
       QSharedPointer<RCC::ICoreConnection> coreConnection;
 

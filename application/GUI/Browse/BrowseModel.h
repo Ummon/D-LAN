@@ -58,6 +58,13 @@ namespace GUI
 
       void refresh();
 
+      QModelIndex searchChild(const QString name, const QModelIndex& parent = QModelIndex());
+
+      bool isWaitingResult() const;
+
+   signals:
+      void loadingResultFinished();
+
    protected slots:
       virtual void resultRefresh(const google::protobuf::RepeatedPtrField<Protos::Common::Entries>& entries);
       virtual void result(const google::protobuf::RepeatedPtrField<Protos::Common::Entries>& entries);

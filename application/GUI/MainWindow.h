@@ -104,8 +104,11 @@ namespace GUI
       void addWidgetUploads();
       void removeWidgetUploads();
 
-      void addWidgetBrowse(const Common::Hash& peerID);
-      void addWidgetSearch(const QString& term);
+      WidgetBrowse* addWidgetBrowse(const Common::Hash& peerID);
+      private slots: WidgetBrowse* addWidgetBrowse(const Common::Hash& peerID, const Protos::Common::Entry& remoteEntry);
+
+   private:
+      WidgetSearch* addWidgetSearch(const QString& term);
       void removeAllWidgets();
 
       Ui::MainWindow* ui;

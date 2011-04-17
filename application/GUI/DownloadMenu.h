@@ -22,6 +22,7 @@
 #include <QObject>
 #include <QSharedPointer>
 #include <QPoint>
+#include <QMenu>
 
 #include <Common/Hash.h>
 #include <Common/RemoteCoreController/ICoreConnection.h>
@@ -44,6 +45,8 @@ namespace GUI
       void actionTriggered();
 
    private:
+      virtual void onShowMenu(QMenu& menu) {};
+
       QSharedPointer<RCC::ICoreConnection> coreConnection;
       const DirListModel& sharedDirsModel;
    };

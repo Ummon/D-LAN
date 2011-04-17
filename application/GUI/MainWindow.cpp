@@ -376,7 +376,7 @@ void MainWindow::removeWidgetUploads()
    }
 }
 
-void MainWindow::addWidgetBrowse(const Common::Hash& peerID)
+WidgetBrowse* MainWindow::addWidgetBrowse(const Common::Hash& peerID)
 {
    // If there is already a browse for the given peer we show it.
    for (QListIterator<WidgetBrowse*> i(this->widgetsBrowse); i.hasNext();)
@@ -386,7 +386,7 @@ void MainWindow::addWidgetBrowse(const Common::Hash& peerID)
       {
          widget->refresh();
          this->ui->mdiArea->setActiveSubWindow(static_cast<QMdiSubWindow*>(widget->parent()));
-         return;
+         return widget;
       }
    }
 
@@ -411,19 +411,31 @@ void MainWindow::addWidgetBrowse(const Common::Hash& peerID)
    layButtons->addWidget(closeButton);
 
    tab->setTabButton(tab->count() - 1, QTabBar::RightSide, buttons);
+
+   return widgetBrowse;
 }
 
-void MainWindow::addWidgetSearch(const QString& term)
+WidgetBrowse* MainWindow::addWidgetBrowse(const Common::Hash& peerID, const Protos::Common::Entry& remoteEntry)
+{
+   WidgetBrowse* widgetBrowse = this->addWidgetBrowse(peerID);
+   widgetBrowse->browseTo(remoteEntry);
+   return widgetBrowse;
+}
+
+WidgetSearch* MainWindow::addWidgetSearch(const QString& term)
 {
    WidgetSearch* widgetSearch = new WidgetSearch(this->coreConnection, this->peerListModel, this->sharedDirsModel, term, this);
    this->ui->mdiArea->addSubWindow(widgetSearch, Qt::CustomizeWindowHint);
    widgetSearch->setWindowState(Qt::WindowMaximized);
    this->widgetsSearch << widgetSearch;
+   connect(widgetSearch, SIGNAL(browse(const Common::Hash&, const Protos::Common::Entry&)), this, SLOT(addWidgetBrowse(const Common::Hash&, const Protos::Common::Entry&)));
 
    QTabBar* tab = ui->mdiArea->findChild<QTabBar*>();
    TabCloseButton* closeButton = new TabCloseButton(widgetSearch);
    connect(closeButton, SIGNAL(clicked(QWidget*)), this, SLOT(removeWidget(QWidget*)));
    tab->setTabButton(tab->count() - 1, QTabBar::RightSide, closeButton);
+
+   return widgetSearch;
 }
 
 void MainWindow::removeAllWidgets()

@@ -51,6 +51,7 @@ namespace GUI
       explicit WidgetBrowse(QSharedPointer<RCC::ICoreConnection> coreConnection, const PeerListModel& peerListModel, const DirListModel& sharedDirsModel, const Common::Hash& peerID, QWidget *parent = 0);
       ~WidgetBrowse();
       Common::Hash getPeerID() const;
+      void browseTo(const Protos::Common::Entry& remoteEntry);
 
    public slots:
       void refresh();
@@ -61,6 +62,7 @@ namespace GUI
       void download();
       void downloadTo(const Common::Hash& sharedDirID, const QString& path);
       void openLocation();
+      void tryToReachEntryToBrowse();
 
    private:
       Ui::WidgetBrowse* ui;
@@ -71,6 +73,9 @@ namespace GUI
 
       BrowseModel browseModel;
       BrowseDelegate browseDelegate;
+
+      bool tryingToReachEntryToBrowse;
+      Protos::Common::Entry remoteEntryToBrowse;
    };
 }
 #endif
