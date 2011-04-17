@@ -34,6 +34,9 @@ namespace GUI
       bool eventFilter(QObject* object, QEvent* event);
       void paintEvent(QPaintEvent* );
       QSize sizeHint() const;
+
+   protected:
+      void mousePressEvent(QMouseEvent* e);
    };
 
 /////

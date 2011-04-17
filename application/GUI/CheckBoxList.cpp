@@ -54,7 +54,7 @@ CheckBoxList::CheckBoxList(QWidget *parent ) :
 bool CheckBoxList::eventFilter(QObject* object, QEvent* event)
 {
    // Don't close items view after we release the mouse button
-   // by simple eating MouseButtonRelease in viewport of items view
+   // by simple eating MouseButtonRelease in viewport of items view.
    if(event->type() == QEvent::MouseButtonRelease && object == this->view()->viewport())
    {
       return true;
@@ -126,6 +126,16 @@ QSize CheckBoxList::sizeHint() const
 
    size.setWidth(fontMetrics.boundingRect(label).width());
    return size;
+}
+
+/**
+  * A dirty trick to enable the edition of the first element.
+  * @see CheckBoxList::CheckBoxList(..).
+  */
+void CheckBoxList::mousePressEvent(QMouseEvent* e)
+{
+   QComboBox::mousePressEvent(e);
+   this->view()->edit(this->view()->model()->index(0, 0));
 }
 
 /////
