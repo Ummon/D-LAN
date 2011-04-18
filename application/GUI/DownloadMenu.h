@@ -25,7 +25,6 @@
 #include <QMenu>
 
 #include <Common/Hash.h>
-#include <Common/RemoteCoreController/ICoreConnection.h>
 
 #include <Settings/DirListModel.h>
 
@@ -35,7 +34,7 @@ namespace GUI
    {
       Q_OBJECT
    public:
-      DownloadMenu(QSharedPointer<RCC::ICoreConnection> coreConnection, const DirListModel& sharedDirsModel);
+      DownloadMenu(const DirListModel& sharedDirsModel);
       void show(const QPoint& globalPosition);
 
    signals:
@@ -47,7 +46,6 @@ namespace GUI
    private:
       virtual void onShowMenu(QMenu& menu) {};
 
-      QSharedPointer<RCC::ICoreConnection> coreConnection;
       const DirListModel& sharedDirsModel;
    };
 }

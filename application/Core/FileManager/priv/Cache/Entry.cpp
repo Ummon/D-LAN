@@ -75,6 +75,7 @@ QString Entry::getName() const
   */
 void Entry::changeName(const QString& newName)
 {
+   // TODO: create a method 'onEntryRenamed' instead of using these two methods.
    this->cache->onEntryRemoved(this);
    this->name = newName;
    this->cache->onEntryAdded(this);

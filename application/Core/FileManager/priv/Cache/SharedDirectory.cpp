@@ -33,6 +33,8 @@ using namespace FM;
   * Create from a saved shared directory (file cache).
   * If a existing shared directory is a sub directory then it will be merged.
   * @exception SuperDirectoryExistsException Thrown when a super shared directory already exists.
+  * @exception DirAlreadySharedException
+  * @exception DirNotFoundException
   */
 SharedDirectory::SharedDirectory(Cache* cache, const QString& path) :
    Directory(cache, QDir(path).dirName()), path(Common::Global::cleanDirPath(path)), id(Common::Hash::rand())
@@ -40,6 +42,11 @@ SharedDirectory::SharedDirectory(Cache* cache, const QString& path) :
    this->init();
 }
 
+/**
+  * @exception SuperDirectoryExistsException Thrown when a super shared directory already exists.
+  * @exception DirAlreadySharedException
+  * @exception DirNotFoundException
+  */
 SharedDirectory::SharedDirectory(Cache* cache, const QString& path, const Common::Hash& id) :
    Directory(cache, QDir(path).dirName()), path(QDir::cleanPath(path) + "/"), id(id)
 {

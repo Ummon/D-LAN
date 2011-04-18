@@ -33,7 +33,7 @@ using namespace FM;
 #include <priv/Cache/File.h>
 
 /**
-  * @class Cache
+  * @class FM::Cache
   *
   * Owns all the shared directories (roots), their content (directories and file) and the chunks.
   * Here are the main capabilities:
