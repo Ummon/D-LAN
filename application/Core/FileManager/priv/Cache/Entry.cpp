@@ -85,3 +85,8 @@ qint64 Entry::getSize() const
 {
    return this->size;
 }
+
+bool FM::operator<(const Entry& e1, const Entry& e2)
+{
+   return e1.getName().toLower() < e2.getName().toLower();
+}

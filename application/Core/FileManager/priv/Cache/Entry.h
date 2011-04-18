@@ -72,5 +72,7 @@ namespace FM
       QString name;
       qint64 size;
    };
+
+   bool operator<(const Entry& e1, const Entry& e2);
 }
 #endif

@@ -84,6 +84,10 @@ namespace Common
 
 using namespace Common;
 
+/**
+  * T must implement the < operator.
+  * @param list Must be sorted.
+  */
 template <typename T>
 void Global::sortedAdd(T* entry, QList<T*>& list)
 {
@@ -92,7 +96,7 @@ void Global::sortedAdd(T* entry, QList<T*>& list)
       T* e = i.peekNext();
       if (e == entry)
          return;
-      if (entry->getName().toLower() < e->getName().toLower())
+      if (*entry < *e)
       {
          i.insert(entry);
          return;
@@ -102,6 +106,10 @@ void Global::sortedAdd(T* entry, QList<T*>& list)
    list << entry;
 }
 
+/**
+  * T must implement the < operator.
+  * @param list Must be sorted.
+  */
 template <typename T>
 void Global::sortedAdd(const QList<T*>& entries, QList<T*>& list)
 {
@@ -116,7 +124,7 @@ void Global::sortedAdd(const QList<T*>& entries, QList<T*>& list)
       while (j.hasNext())
       {
          T* ej = j.peekNext();
-         if (ej->getName().toLower() > ei->getName().toLower())
+         if (*ei < *ej)
          {
             j.insert(ei);
             i.next();
