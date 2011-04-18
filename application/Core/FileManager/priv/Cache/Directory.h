@@ -93,11 +93,6 @@ namespace FM
       void add(QList<Directory*> dirs);
       void add(QList<File*> files);
 
-      template <typename T>
-      static void sortedAdd(T* entry, QList<T*>& list);
-      template <typename T>
-      static void sortedAdd(const QList<T*>& entries, QList<T*>& list);
-
       Directory& operator+=(qint64);
       Directory& operator-=(qint64);
 
@@ -119,55 +114,6 @@ namespace FM
    private:
       QList<Directory*> dirsToVisit;
    };
-}
-
-using namespace FM;
-
-template <typename T>
-void Directory::sortedAdd(T* entry, QList<T*>& list)
-{
-   for (QMutableListIterator<T*> i(list); i.hasNext(); i.next())
-   {
-      T* e = i.peekNext();
-      if (e == entry)
-         return;
-      if (entry->getName() < e->getName())
-      {
-         i.insert(entry);
-         return;
-      }
-   }
-
-   list << entry;
-}
-
-template <typename T>
-void Directory::sortedAdd(const QList<T*>& entries, QList<T*>& list)
-{
-   QListIterator<T*> i(entries);
-   QMutableListIterator<T*> j(list);
-
-   while(i.hasNext())
-   {
-      T* ei = i.next();
-
-      bool inserted = false;
-      while (j.hasNext())
-      {
-         T* ej = j.peekNext();
-         if (ej->getName() > ei->getName())
-         {
-            j.insert(ei);
-            i.next();
-            inserted = true;
-            break;
-         }
-         j.next();
-      }
-
-      if (!inserted)
-         j.insert(ei);
-   }
 }
 
 #endif

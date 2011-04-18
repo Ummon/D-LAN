@@ -39,13 +39,12 @@ namespace FM
 {
    class Entry;
    class FileUpdater;
-   class FileManager;
 
    class Cache : public QObject, Common::Uncopyable
    {
       Q_OBJECT
    public:
-      Cache(FileManager* fileManager);
+      Cache();
       ~Cache();
 
       Protos::Common::Entries getEntries(const Protos::Common::Entry& dir) const;
@@ -91,8 +90,6 @@ namespace FM
       Directory* getWriteableDirectory(const QString& path, qint64 spaceNeeded) const;
 
       QList<SharedDirectory*> sharedDirs;
-
-      FileManager* fileManager;
 
       mutable QMutex mutex; ///< To protect all the data into the cache, files and directories.
    };

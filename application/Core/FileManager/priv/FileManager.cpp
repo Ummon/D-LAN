@@ -51,7 +51,7 @@ LOG_INIT_CPP(FileManager);
 FileManager::FileManager() :
    CHUNK_SIZE(SETTINGS.get<quint32>("chunk_size")),
    fileUpdater(this),
-   cache(this),
+   cache(),
    mutexPersistCache(QMutex::Recursive),
    cacheLoading(false),
    cacheChanged(false)
