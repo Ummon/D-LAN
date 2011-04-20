@@ -85,35 +85,37 @@ namespace Common
 using namespace Common;
 
 /**
+  * Add an item into a sorted list. The list is kept sorted.
   * T must implement the < operator.
   * @param list Must be sorted.
   */
 template <typename T>
-void Global::sortedAdd(T* entry, QList<T*>& list)
+void Global::sortedAdd(T* item, QList<T*>& list)
 {
    for (QMutableListIterator<T*> i(list); i.hasNext(); i.next())
    {
       T* e = i.peekNext();
-      if (e == entry)
+      if (e == item)
          return;
-      if (*entry < *e)
+      if (*item < *e)
       {
-         i.insert(entry);
+         i.insert(item);
          return;
       }
    }
 
-   list << entry;
+   list << item;
 }
 
 /**
+  * Merge some items into a sorted list. The list is kept sorted.
   * T must implement the < operator.
   * @param list Must be sorted.
   */
 template <typename T>
-void Global::sortedAdd(const QList<T*>& entries, QList<T*>& list)
+void Global::sortedAdd(const QList<T*>& items, QList<T*>& list)
 {
-   QListIterator<T*> i(entries);
+   QListIterator<T*> i(items);
    QMutableListIterator<T*> j(list);
 
    while(i.hasNext())

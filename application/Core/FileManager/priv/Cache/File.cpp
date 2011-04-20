@@ -334,7 +334,9 @@ qint64 File::read(char* buffer, qint64 offset, int maxBytesToRead)
    if (offset >= this->size)
       return 0;
 
-   this->fileInReadMode.seek(offset);
+   if (!this->fileInReadMode.seek(offset))
+      throw IOErrorException();
+
    qint64 bytesRead = this->fileInReadMode.read(buffer, maxBytesToRead);
 
    if (bytesRead == -1)

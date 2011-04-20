@@ -177,7 +177,7 @@ void Chunk::fileDeleted()
   */
 int Chunk::read(char* buffer, int offset)
 {
-   static const int BUFFER_SIZE_READING = SETTINGS.get<quint32>("buffer_size_reading");
+   static const quint32 BUFFER_SIZE_READING = SETTINGS.get<quint32>("buffer_size_reading");
 
    QMutexLocker locker(&this->mutex);
    if (!this->file)
