@@ -66,12 +66,11 @@ FileManager::FileManager() :
 
    connect(&this->fileUpdater, SIGNAL(fileCacheLoaded()), this, SLOT(fileCacheLoadingComplete()),  Qt::QueuedConnection);
 
-   this->loadCacheFromFile();
-
-   this->fileUpdater.start();
-
    this->timerPersistCache.setInterval(SETTINGS.get<quint32>("save_cache_period"));
    connect(&this->timerPersistCache, SIGNAL(timeout()), this, SLOT(persistCacheToFile()));
+
+   this->loadCacheFromFile();
+   this->fileUpdater.start();
 }
 
 FileManager::~FileManager()
@@ -412,6 +411,7 @@ void FileManager::loadCacheFromFile()
       {
          L_ERRO(QString("The version (%1) of the file cache \"%2\" doesn't match the current version (%3)").arg(savedCache->version()).arg(Common::FILE_CACHE).arg(FILE_CACHE_VERSION));
          Common::PersistentData::rmValue(Common::FILE_CACHE, Common::Global::LOCAL);
+         delete savedCache;
          return;
       }
 

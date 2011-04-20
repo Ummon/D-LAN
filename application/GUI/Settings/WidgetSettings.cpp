@@ -70,7 +70,7 @@ WidgetSettings::WidgetSettings(QSharedPointer<RCC::ICoreConnection> coreConnecti
 
    connect(this->ui->txtNick, SIGNAL(editingFinished()), this, SLOT(saveCoreSettings()));
 
-   connect(this->ui->chkEnableIntegrityCheck, SIGNAL(stateChanged(int)), this, SLOT(saveCoreSettings()));
+   connect(this->ui->chkEnableIntegrityCheck, SIGNAL(clicked()), this, SLOT(saveCoreSettings()));
 
    connect(this->ui->butAddShared, SIGNAL(clicked()), this, SLOT(addShared()));
    connect(this->ui->butRemoveShared, SIGNAL(clicked()), this, SLOT(removeShared()));
