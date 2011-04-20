@@ -116,7 +116,7 @@ void Uploader::run()
 
       while (bytesRead = reader->read(buffer, this->offset))
       {
-         int bytesSent = this->socket->write(buffer, bytesRead);
+         int bytesSent = this->socket->write(buffer, BUFFER_SIZE);
 
          if (bytesSent == -1)
          {

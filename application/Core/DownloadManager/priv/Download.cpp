@@ -60,7 +60,7 @@ void Download::setPeer(PM::IPeer* peer)
 {
    this->peerSource = peer;
 
-   if (!this->peerSource || !this->peerSource->isAlive())
+   if (!this->peerSource || !this->peerSource->isAvailable())
       this->setStatus(UNKNOWN_PEER);
    else
       this->setStatus(QUEUED);

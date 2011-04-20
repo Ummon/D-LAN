@@ -25,6 +25,7 @@
 #include <QTcpSocket>
 #include <QHostAddress>
 #include <QSharedPointer>
+#include <QMutex>
 
 #include <google/protobuf/text_format.h>
 
@@ -61,7 +62,10 @@ namespace PM
       quint32 getSpeed();
       void setSpeed(quint32 newSpeed);
 
-      bool isAlive();
+      void ban(int duration, const QString& reason = QString());
+
+      bool isAlive() const;
+      bool isAvailable() const;
       void update(const QHostAddress& IP, quint16 port, const QString& nick, const quint64& sharingAmount);
 
       QSharedPointer<IGetEntriesResult> getEntries(const Protos::Core::GetEntries& dirs);
@@ -70,10 +74,16 @@ namespace PM
 
       void newConnexion(QTcpSocket* tcpSocket);
 
+   signals:
+      void unbanned();
+
    private slots:
       void consideredDead();
+      void unban();
 
    private:
+      mutable QMutex mutex;
+
       PeerManager* peerManager;
       QSharedPointer<FM::IFileManager> fileManager;
 
@@ -90,6 +100,10 @@ namespace PM
 
       bool alive;
       QTimer aliveTimer;
+
+      bool banned;
+      QString bannedReason;
+      QTimer bannedTimer;
 
       quint32 averageSpeed;
       QDateTime lastUpdateAverageSpeed;

@@ -82,9 +82,9 @@ namespace PM
       void getChunk(QSharedPointer<FM::IChunk> chunk, int offset, QSharedPointer<PM::ISocket> socket);
 
       /**
-        * Emitted when a peer becomes alive.
+        * Emitted when a peer becomes alive or is not banned anymore.
         */
-      void peerBecomesAlive(PM::IPeer* peer);
+      void peerBecomesAvailable(PM::IPeer* peer);
    };
 }
 #endif

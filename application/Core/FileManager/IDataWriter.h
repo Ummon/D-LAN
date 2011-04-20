@@ -33,6 +33,7 @@ namespace FM
         * @exception IOErrorException
         * @exception ChunkDeletedException
         * @exception TryToWriteBeyondTheEndOfChunkException
+        * @exception hashMissmatchException
         */
       virtual bool write(const char* buffer, int nbBytes) = 0;
    };

@@ -21,6 +21,9 @@ using namespace FM;
 
 #include <Common/Settings.h>
 
+/**
+  * @exception UnableToOpenFileInReadModeException
+  */
 DataReader::DataReader(Chunk& chunk) :
    chunk(chunk)
 {

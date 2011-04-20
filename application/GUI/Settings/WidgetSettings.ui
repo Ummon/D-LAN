@@ -33,7 +33,7 @@
    <item>
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>0</number>
+      <number>1</number>
      </property>
      <widget class="QWidget" name="tabBasicSettings">
       <attribute name="title">
@@ -171,47 +171,63 @@
       <attribute name="title">
        <string>Advanced</string>
       </attribute>
-      <layout class="QVBoxLayout" name="layAdvanced">
-       <property name="sizeConstraint">
-        <enum>QLayout::SetDefaultConstraint</enum>
-       </property>
+      <layout class="QVBoxLayout" name="layAdvanced" stretch="0,0,0">
        <item>
-        <widget class="QLabel" name="lblCoreAddress">
+        <widget class="QCheckBox" name="chkEnableIntegrityCheck">
+         <property name="toolTip">
+          <string>When activated all received data will be verified against their hashes. It can be CPU consumer.</string>
+         </property>
          <property name="text">
-          <string>Core address</string>
+          <string>Data integrity check</string>
          </property>
         </widget>
        </item>
        <item>
-        <layout class="QHBoxLayout" name="layCoreAddress">
-         <item>
-          <widget class="QLineEdit" name="txtCoreAddress"/>
-         </item>
-         <item>
-          <widget class="QPushButton" name="butResetCoreAddress">
-           <property name="text">
-            <string>Reset to local</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-       <item>
-        <widget class="QLabel" name="lblPassword">
-         <property name="text">
-          <string>Password</string>
+        <widget class="QGroupBox" name="grpCoreConnection">
+         <property name="title">
+          <string>Core connection</string>
          </property>
+         <layout class="QVBoxLayout" name="verticalLayout">
+          <item>
+           <widget class="QLabel" name="lblCoreAddress">
+            <property name="text">
+             <string>address</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout">
+            <item>
+             <widget class="QLineEdit" name="txtCoreAddress"/>
+            </item>
+            <item>
+             <widget class="QPushButton" name="butResetCoreAddress">
+              <property name="text">
+               <string>Reset to local</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <widget class="QLabel" name="lblPassword">
+            <property name="text">
+             <string>Password</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLineEdit" name="txtPassword">
+            <property name="echoMode">
+             <enum>QLineEdit::Password</enum>
+            </property>
+           </widget>
+          </item>
+         </layout>
         </widget>
        </item>
        <item>
-        <widget class="QLineEdit" name="txtPassword">
-         <property name="echoMode">
-          <enum>QLineEdit::Password</enum>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <spacer name="spacerAdvancedSettings">
+        <spacer name="verticalSpacer">
          <property name="orientation">
           <enum>Qt::Vertical</enum>
          </property>

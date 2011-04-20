@@ -255,6 +255,9 @@ void File::newDataWriterCreated()
    }
 }
 
+/**
+  * @exception UnableToOpenFileInReadModeException
+  */
 void File::newDataReaderCreated()
 {
    QMutexLocker locker(&this->readLock);

@@ -156,6 +156,7 @@ void PeerManager::updatePeer(const Common::Hash& ID, const QHostAddress& IP, qui
    if (!peer)
    {
       peer = new Peer(this, this->fileManager, ID);
+      connect(peer, SIGNAL(unbanned()), this, SLOT(peerUnbanned()));
       this->peers << peer;
    }
 
@@ -163,8 +164,8 @@ void PeerManager::updatePeer(const Common::Hash& ID, const QHostAddress& IP, qui
 
    peer->update(IP, port, nick, sharingAmount);
 
-   if (wasDead)
-      emit peerBecomesAlive(peer);
+   if (wasDead && peer->isAvailable())
+      emit peerBecomesAvailable(peer);
 }
 
 void PeerManager::newConnection(QTcpSocket* tcpSocket)
@@ -255,6 +256,13 @@ void PeerManager::checkIdlePendingSockets()
 
    if (this->pendingSockets.isEmpty())
       this->timer.stop();
+}
+
+void PeerManager::peerUnbanned()
+{
+   Peer* peer = static_cast<Peer*>(this->sender());
+   if (peer->isAvailable())
+      emit peerBecomesAvailable(peer);
 }
 
 void PeerManager::removeFromPending(QTcpSocket* socket)

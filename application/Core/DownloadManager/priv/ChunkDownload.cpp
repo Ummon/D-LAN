@@ -163,7 +163,7 @@ QList<Common::Hash> ChunkDownload::getPeers()
    for (QMutableListIterator<PM::IPeer*> i(this->peers); i.hasNext();)
    {
       PM::IPeer* peer = i.next();
-      if (peer->isAlive())
+      if (peer->isAvailable())
          peerIDs << peer->getID();
       else
          i.remove();
@@ -320,6 +320,11 @@ void ChunkDownload::run()
    {
       L_WARN("TryToWriteBeyondTheEndOfChunkException");
    }
+   catch (FM::hashMissmatchException)
+   {
+      L_WARN("hashMissmatchException");
+      this->currentDownloadingPeer->ban(SETTINGS.get<quint32>("ban_duration_corrupted_data"), "Has sent corrupted data");
+   }
 
    if (timer.elapsed() > MINIMUM_DELTA_TIME_TO_COMPUTE_SPEED)
       this->currentDownloadingPeer->setSpeed(deltaRead / timer.elapsed() * 1000);
@@ -398,7 +403,7 @@ PM::IPeer* ChunkDownload::getTheFastestFreePeer()
    for (QMutableListIterator<PM::IPeer*> i(this->peers); i.hasNext();)
    {
       PM::IPeer* peer = i.next();
-      if (!peer->isAlive())
+      if (!peer->isAvailable())
          i.remove();
       else if (this->occupiedPeersDownloadingChunk.isPeerFree(peer) && (!current || peer->getSpeed() > current->getSpeed()))
          current = peer;
@@ -415,7 +420,7 @@ int ChunkDownload::getNumberOfFreePeer()
    for (QMutableListIterator<PM::IPeer*> i(this->peers); i.hasNext();)
    {
       PM::IPeer* peer = i.next();
-      if (!peer->isAlive())
+      if (!peer->isAvailable())
          i.remove();
       else if (this->occupiedPeersDownloadingChunk.isPeerFree(peer))
          n++;
