@@ -53,7 +53,7 @@ FileManager::FileManager() :
    fileUpdater(this),
    cache(),
    mutexPersistCache(QMutex::Recursive),
-   cacheLoading(false),
+   cacheLoading(true),
    cacheChanged(false)
 {
    connect(&this->cache, SIGNAL(entryAdded(Entry*)),     this, SLOT(entryAdded(Entry*)),     Qt::DirectConnection);
@@ -64,7 +64,7 @@ FileManager::FileManager() :
    connect(&this->cache, SIGNAL(newSharedDirectory(SharedDirectory*)),                 this, SLOT(newSharedDirectory(SharedDirectory*)),                 Qt::DirectConnection);
    connect(&this->cache, SIGNAL(sharedDirectoryRemoved(SharedDirectory*, Directory*)), this, SLOT(sharedDirectoryRemoved(SharedDirectory*, Directory*)), Qt::DirectConnection);
 
-   connect(&this->fileUpdater, SIGNAL(fileCacheLoaded()), this, SIGNAL(fileCacheLoaded()),  Qt::QueuedConnection);
+   connect(&this->fileUpdater, SIGNAL(fileCacheLoaded()), this, SLOT(fileCacheLoadingComplete()),  Qt::QueuedConnection);
 
    this->loadCacheFromFile();
 
@@ -402,8 +402,6 @@ QStringList FileManager::splitInWords(const QString& words)
   */
 void FileManager::loadCacheFromFile()
 {
-   this->cacheLoading = true;
-
    // This hashes will be unallocated by the fileUpdater.
    Protos::FileCache::Hashes* savedCache = new Protos::FileCache::Hashes();
 
@@ -414,7 +412,7 @@ void FileManager::loadCacheFromFile()
       {
          L_ERRO(QString("The version (%1) of the file cache \"%2\" doesn't match the current version (%3)").arg(savedCache->version()).arg(Common::FILE_CACHE).arg(FILE_CACHE_VERSION));
          Common::PersistentData::rmValue(Common::FILE_CACHE, Common::Global::LOCAL);
-         goto end;
+         return;
       }
 
       // Scan the shared directories and try to match the files against the saved cache.
@@ -438,10 +436,6 @@ void FileManager::loadCacheFromFile()
    }
 
    this->fileUpdater.setFileCache(savedCache);
-
-end:
-   this->timerPersistCache.start();
-   this->cacheLoading = false;
 }
 
 /**
@@ -496,4 +490,12 @@ void FileManager::setCacheChanged()
 {
    QMutexLocker locker(&this->mutexCacheChanged);
    this->cacheChanged = true;
+}
+
+void FileManager::fileCacheLoadingComplete()
+{
+   this->timerPersistCache.start();
+   this->cacheLoading = false;
+
+   emit fileCacheLoaded();
 }

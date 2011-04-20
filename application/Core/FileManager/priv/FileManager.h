@@ -90,6 +90,7 @@ namespace FM
       void persistCacheToFile();
       void forcePersistCacheToFile();
       void setCacheChanged();
+      void fileCacheLoadingComplete();
 
    private:
       LOG_INIT_H("FileManager");
