@@ -11,8 +11,8 @@ message Settings {
    optional Common.Hash peer_id = 2;
    
    optional uint32 chunk_size = 3 [default = 67108864]; // (64 MiB).
-   optional uint32 buffer_size_reading = 4 [default = 32768]; // (32 KiB). Buffer used when reading files (uploading and computing hashes).
-   optional uint32 buffer_size_writing = 5 [default = 32768]; // (32 KiB). Buffer used when writing files (downloading).
+   optional uint32 buffer_size_reading = 4 [default = 65536]; // (64 KiB). Buffer used when reading files (uploading and computing hashes).
+   optional uint32 buffer_size_writing = 5 [default = 65536]; // (64 KiB). Buffer used when writing files (downloading).
    optional uint32 socket_buffer_size = 6 [default = 65536]; // (64 KiB). Max size of the socket buffer, using when receiving or sending data over the sockets.
    optional uint32 socket_timeout = 7 [default = 5000]; // [ms].
       
