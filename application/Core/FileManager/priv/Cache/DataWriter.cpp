@@ -80,12 +80,11 @@ bool DataWriter::write(const char* buffer, int nbBytes)
    if (this->CHECK_DATA_INTEGRITY)
    {
       this->hasher.addData(buffer, nbBytes);
-      if (this->chunk.getKnownBytes() + nbBytes == this->chunk.getChunkSize())
-         if (this->hasher.getResult() != this->chunk.getHash())
-         {
-            this->chunk.setKnownBytes(0);
-            throw hashMissmatchException();
-         }
+      if (this->chunk.getKnownBytes() + nbBytes == this->chunk.getChunkSize() && this->hasher.getResult() != this->chunk.getHash())
+      {
+         this->chunk.setKnownBytes(0);
+         throw hashMissmatchException();
+      }
    }
 
    return this->chunk.write(buffer, nbBytes);
