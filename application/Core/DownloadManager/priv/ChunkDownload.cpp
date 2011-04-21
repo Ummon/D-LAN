@@ -322,7 +322,7 @@ void ChunkDownload::run()
    }
    catch (FM::hashMissmatchException)
    {
-      L_WARN("hashMissmatchException");
+      L_USER(QString("Corrupted data received from %1").arg(this->currentDownloadingPeer->getNick()));
       this->currentDownloadingPeer->ban(SETTINGS.get<quint32>("ban_duration_corrupted_data"), "Has sent corrupted data");
    }
 
