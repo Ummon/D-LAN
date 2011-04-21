@@ -206,22 +206,25 @@ bool Chunk::write(const char* buffer, int nbBytes)
    if (!this->file)
       throw ChunkDeletedException();
 
-   if (this->knownBytes + nbBytes > this->getChunkSize())
+   const int CURRENT_CHUNK_SIZE = this->getChunkSize();
+
+   if (this->knownBytes + nbBytes > CURRENT_CHUNK_SIZE)
       throw TryToWriteBeyondTheEndOfChunkException();
 
    this->knownBytes += this->file->write(buffer, nbBytes, this->knownBytes + static_cast<qint64>(this->num) * CHUNK_SIZE);
 
-   if (this->knownBytes > this->getChunkSize()) // Should never be true.
+   if (this->knownBytes > CURRENT_CHUNK_SIZE) // Should never be true.
    {
       L_ERRO("Chunk::write : this->knownBytes > getChunkSize");
-      this->knownBytes = this->getChunkSize();
+      this->knownBytes = CURRENT_CHUNK_SIZE;
    }
-   bool complete = this->knownBytes == this->getChunkSize();
 
-   if (complete)
+   const bool COMPLETE = this->knownBytes == CURRENT_CHUNK_SIZE;
+
+   if (COMPLETE)
       this->file->chunkComplete(this);
 
-   return complete;
+   return COMPLETE;
 }
 
 int Chunk::getNum() const
@@ -289,7 +292,7 @@ int Chunk::getChunkSize() const
    if (this->num < this->file->getNbChunks() - 1)
       return this->CHUNK_SIZE;
 
-   int size = this->file->getSize() % this->CHUNK_SIZE;
+   const int size = this->file->getSize() % this->CHUNK_SIZE;
    if (!size)
       return this->CHUNK_SIZE;
    else
