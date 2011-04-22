@@ -154,7 +154,7 @@ void SearchMenu::onShowMenu(QMenu& menu)
 WidgetSearch::WidgetSearch(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel, const DirListModel& sharedDirsModel, const QString& terms, QWidget *parent) :
    QWidget(parent),
    ui(new Ui::WidgetSearch),
-   menu(coreConnection, sharedDirsModel),
+   menu(sharedDirsModel),
    coreConnection(coreConnection),
    searchModel(coreConnection, peerListModel, sharedDirsModel)
 {

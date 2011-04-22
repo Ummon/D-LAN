@@ -40,11 +40,15 @@ Peer::Peer(PeerManager* peerManager, QSharedPointer<FM::IFileManager> fileManage
    connectionPool(peerManager, fileManager, ID),
    ID(ID),
    speed(MAX_SPEED),
-   alive(false)
+   alive(false),
+   banned(false)
 {
    this->aliveTimer.setSingleShot(true);
    this->aliveTimer.setInterval(SETTINGS.get<double>("peer_timeout_factor") * SETTINGS.get<quint32>("peer_imalive_period"));
    connect(&this->aliveTimer, SIGNAL(timeout()), this, SLOT(consideredDead()));
+
+   this->bannedTimer.setSingleShot(true);
+   connect(&this->bannedTimer, SIGNAL(timeout()), this, SLOT(unban()));
 }
 
 /**
@@ -81,7 +85,9 @@ quint64 Peer::getSharingAmount() const
 }
 
 quint32 Peer::getSpeed()
-{   
+{
+   QMutexLocker locker(&this->mutex);
+
    // In [ms].
    static const quint32 SPEED_VALIDITY_PERIOD = 1000 * SETTINGS.get<quint32>("download_rate_valid_time_factor") / (SETTINGS.get<quint32>("lan_speed") / 1024 / 1024);
 
@@ -91,7 +97,9 @@ quint32 Peer::getSpeed()
 }
 
 void Peer::setSpeed(quint32 newSpeed)
-{   
+{
+   QMutexLocker locker(&this->mutex);
+
    this->speedTimer.start();
    if (this->speed == MAX_SPEED)
       this->speed = newSpeed;
@@ -99,9 +107,27 @@ void Peer::setSpeed(quint32 newSpeed)
       this->speed = (this->speed + newSpeed) / 2;
 }
 
-bool Peer::isAlive()
+void Peer::ban(int duration, const QString& reason)
 {
+   QMutexLocker locker(&this->mutex);
+
+   this->banned = true;
+   this->bannedReason = reason;
+   this->bannedTimer.setInterval(1000 * duration);
+
+   QMetaObject::invokeMethod(&this->bannedTimer, "start");
+}
+
+bool Peer::isAlive() const
+{
+   QMutexLocker locker(&this->mutex);
    return this->alive;
+}
+
+bool Peer::isAvailable() const
+{
+   QMutexLocker locker(&this->mutex);
+   return this->alive && !this->banned;
 }
 
 void Peer::update(const QHostAddress&  IP, quint16 port, const QString& nick, const quint64& sharingAmount)
@@ -149,5 +175,11 @@ void Peer::consideredDead()
    L_DEBU(QString("Peer \"%1\" is dead").arg(this->nick));
    this->connectionPool.closeAllSocket();
    this->alive = false;
+}
+
+void Peer::unban()
+{
+   this->banned = false;
+   emit unbanned();
 }
 

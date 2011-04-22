@@ -56,8 +56,7 @@ namespace GUI
    {
       Q_OBJECT
    public:
-      SearchMenu(QSharedPointer<RCC::ICoreConnection> coreConnection, const DirListModel& sharedDirsModel) :
-         DownloadMenu(coreConnection, sharedDirsModel) {}
+      SearchMenu(const DirListModel& sharedDirsModel) : DownloadMenu(sharedDirsModel) {}
    signals:
       void browse();
    private:

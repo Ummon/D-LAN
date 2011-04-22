@@ -20,6 +20,7 @@
 #define FILEMANAGER_DATAWRITER_H
 
 #include <Common/Uncopyable.h>
+#include <Common/Hash.h>
 
 #include <IDataWriter.h>
 #include <priv/Cache/Chunk.h>
@@ -35,6 +36,9 @@ namespace FM
       bool write(const char* buffer, int nbBytes);
 
    private:
+      const bool CHECK_DATA_INTEGRITY;
+
+      Common::Hasher hasher;
       Chunk& chunk;
    };
 }

@@ -21,8 +21,17 @@ using namespace GUI;
 
 #include <QAction>
 
-DownloadMenu::DownloadMenu(QSharedPointer<RCC::ICoreConnection> coreConnection, const DirListModel& sharedDirsModel) :
-   coreConnection(coreConnection), sharedDirsModel(sharedDirsModel)
+/**
+  * @class GUI::DownloadMenu
+  *
+  * Show the list of shared directory as a menu.
+  * - The menu can be shown by calling 'show(..)'.
+  * - When the user select an action, the signal 'downloadTo(..)' is emmited.
+  * - Can be sub-classed to add some entries. In this case 'onShowMenu(..)' must be overridden.
+  */
+
+DownloadMenu::DownloadMenu(const DirListModel& sharedDirsModel) :
+   sharedDirsModel(sharedDirsModel)
 {
 }
 

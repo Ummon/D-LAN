@@ -33,7 +33,7 @@ using namespace FM;
 #include <priv/Cache/File.h>
 
 /**
-  * @class Cache
+  * @class FM::Cache
   *
   * Owns all the shared directories (roots), their content (directories and file) and the chunks.
   * Here are the main capabilities:
@@ -43,10 +43,9 @@ using namespace FM;
   *  - Serialize or deserialize the hashes of the files in a 'Protos::FileCache::Hashes' structure (to be saved/loaded in/from a physical file).
   */
 
-Cache::Cache(FileManager* fileManager) :
-   fileManager(fileManager), mutex(QMutex::Recursive)
+Cache::Cache() :
+   mutex(QMutex::Recursive)
 {
-   Q_ASSERT(fileManager);
 }
 
 Cache::~Cache()

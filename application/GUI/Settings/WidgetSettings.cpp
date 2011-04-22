@@ -70,6 +70,8 @@ WidgetSettings::WidgetSettings(QSharedPointer<RCC::ICoreConnection> coreConnecti
 
    connect(this->ui->txtNick, SIGNAL(editingFinished()), this, SLOT(saveCoreSettings()));
 
+   connect(this->ui->chkEnableIntegrityCheck, SIGNAL(clicked()), this, SLOT(saveCoreSettings()));
+
    connect(this->ui->butAddShared, SIGNAL(clicked()), this, SLOT(addShared()));
    connect(this->ui->butRemoveShared, SIGNAL(clicked()), this, SLOT(removeShared()));
 
@@ -102,18 +104,23 @@ void WidgetSettings::coreConnected()
 {
    this->ui->txtPassword->clear();
    this->ui->tabWidget->setTabEnabled(0, true);
+   this->ui->chkEnableIntegrityCheck->setEnabled(true);
 }
 
 void WidgetSettings::coreDisconnected()
 {
    this->initialState = true;
    this->ui->tabWidget->setTabEnabled(0, false);
+   this->ui->chkEnableIntegrityCheck->setEnabled(false);
 }
 
 void WidgetSettings::newState(const Protos::GUI::State& state)
 {
    if (!this->ui->txtNick->hasFocus())
       this->ui->txtNick->setText(Common::ProtoHelper::getStr(state.myself(), &Protos::GUI::State_Peer::nick));
+
+   if (!this->ui->chkEnableIntegrityCheck->hasFocus())
+      this->ui->chkEnableIntegrityCheck->setChecked(state.integrity_check_enabled());
 
    QList<Common::SharedDir> sharedDirs;
    for (int i = 0; i < state.shared_directory_size(); i++)
@@ -150,6 +157,7 @@ void WidgetSettings::saveCoreSettings()
 {
    Protos::GUI::CoreSettings settings;
    Common::ProtoHelper::setStr(settings, &Protos::GUI::CoreSettings::set_nick, this->ui->txtNick->text());
+   settings.set_enable_integrity_check(this->ui->chkEnableIntegrityCheck->isChecked());
 
    for (QListIterator<Common::SharedDir> i(this->sharedDirsModel.getDirs()); i.hasNext();)
       Common::ProtoHelper::addRepeatedStr(settings, &Protos::GUI::CoreSettings::add_shared_directory, i.next().path);

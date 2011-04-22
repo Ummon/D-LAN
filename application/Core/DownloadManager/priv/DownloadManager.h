@@ -68,7 +68,7 @@ namespace DM
       int getDownloadRate();
 
    private slots:
-      void peerBecomesAlive(PM::IPeer* peer);
+      void peerBecomesAvailable(PM::IPeer* peer);
 
       void fileCacheLoaded();
 

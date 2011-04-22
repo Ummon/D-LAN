@@ -22,6 +22,7 @@ message Settings {
    optional string unfinished_suffix_term = 22 [default = ".unfinished"];
    optional uint32 minimum_free_space = 23 [default = 1048576]; // (1 MiB) After creating a file in a directory this is the minimum space it must be left.
    optional uint32 save_cache_period = 24 [default = 60000]; // [ms]. (1 min).
+   optional bool check_received_data_integrity = 25 [default = true]; // All chunk data received will be checked against their hash if true.
    
    // PeerManager.
    optional uint32 pending_socket_timeout = 30 [default = 10000]; // [ms]. When a new connection is created we wait a maximum of this period before data incoming.
@@ -37,6 +38,7 @@ message Settings {
    optional double switch_to_another_peer_factor = 43 [default = 1.5]; // To switch from the current peer to another the other download speed must be superior to this factor of the current speed.
    optional uint32 download_rate_valid_time_factor = 44 [default = 3000]; // A download rate for a peer is valid for a time period of 'download_rate_valid_time_factor' / 'lan_speed' [s].
    optional uint32 save_queue_period = 45 [default = 60000]; // [ms]. (1 min).
+   optional uint32 ban_duration_corrupted_data = 46 [default = 30]; // 30 [s]. // When a received chunk do not match its hash, the sender is banned for a while.
    
    // UploadManager.
    optional uint32 upload_live_time = 50 [default = 5000]; // [ms].

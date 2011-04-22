@@ -74,9 +74,20 @@ namespace PM
       virtual void setSpeed(quint32 newSpeed) = 0;
 
       /**
+        * Ban a peer for a given duration [s].
+        * 'isAvailable()' will return false while the duration.
+        */
+      virtual void ban(int duration, const QString& reason = QString()) = 0;
+
+      /**
         * If we don't receive an IMAlive message from a peer during a certain time (for example 20 seconds), it will be concidered as dead.
         */
-      virtual bool isAlive() = 0;
+      virtual bool isAlive() const = 0;
+
+      /**
+        * True if the peer is alive and not banned.
+        */
+      virtual bool isAvailable() const = 0;
 
       /**
         * Ask for the entries in a given directories.

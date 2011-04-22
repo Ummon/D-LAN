@@ -85,6 +85,8 @@ message State {
    
    repeated SharedDir shared_directory = 3;
    
+   required bool integrity_check_enabled = 7;
+   
    repeated Download download = 4;
    repeated Upload upload = 5;
    
@@ -152,6 +154,7 @@ message AuthenticationResult {
 message CoreSettings {
    required string nick = 1;
    repeated string shared_directory = 2;
+   required bool enable_integrity_check = 3;
 }
 
 // GUI -> Core

@@ -22,6 +22,7 @@ using namespace FM;
 #include <QDir>
 
 #include <Common/ProtoHelper.h>
+#include <Common/Global.h>
 
 #include <priv/Global.h>
 #include <priv/Constants.h>
@@ -332,7 +333,7 @@ File* Directory::getFile(const QString& name) const
 void Directory::add(File* file)
 {
    QMutexLocker locker(&this->mutex);
-   sortedAdd(file, this->files);
+   Common::Global::sortedAdd(file, this->files);
    (*this) += file->getSize();
 }
 
@@ -377,7 +378,7 @@ void Directory::stealContent(Directory* dir)
 void Directory::add(Directory* dir)
 {
    QMutexLocker locker(&this->mutex);
-   sortedAdd(dir, this->subDirs);
+   Common::Global::sortedAdd(dir, this->subDirs);
 }
 
 /**
@@ -387,7 +388,7 @@ void Directory::subdirNameChanged(Directory* dir)
 {
    QMutexLocker locker(&this->mutex);
    this->subDirs.removeOne(dir);
-   sortedAdd(dir, this->subDirs);
+   Common::Global::sortedAdd(dir, this->subDirs);
 }
 
 /**
@@ -397,17 +398,17 @@ void Directory::fileNameChanged(File* file)
 {
    QMutexLocker locker(&this->mutex);
    this->files.removeOne(file);
-   sortedAdd(file, this->files);
+   Common::Global::sortedAdd(file, this->files);
 }
 
 void Directory::add(QList<Directory*> dirs)
 {
-   sortedAdd(dirs, this->subDirs);
+   Common::Global::sortedAdd(dirs, this->subDirs);
 }
 
 void Directory::add(QList<File*> files)
 {
-   sortedAdd(files, this->files);
+   Common::Global::sortedAdd(files, this->files);
 }
 
 /**

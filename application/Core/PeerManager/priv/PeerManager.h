@@ -72,6 +72,7 @@ namespace PM
       void dataReceived(QTcpSocket* tcpSocket = 0);
       void disconnected(QTcpSocket* tcpSocket = 0);
       void checkIdlePendingSockets();
+      void peerUnbanned();
 
    private:
       void removeFromPending(QTcpSocket* socket);

@@ -160,6 +160,7 @@ void RemoteConnection::onNewMessage(Common::MessageHeader::MessageType type, con
          const Protos::GUI::CoreSettings& coreSettingsMessage = static_cast<const Protos::GUI::CoreSettings&>(message);
 
          this->peerManager->setNick(Common::ProtoHelper::getStr(coreSettingsMessage, &Protos::GUI::CoreSettings::nick));
+         SETTINGS.set("check_received_data_integrity", coreSettingsMessage.enable_integrity_check());
 
          try
          {
@@ -329,7 +330,8 @@ void RemoteConnection::refresh()
    Protos::GUI::State state;
 
    state.mutable_myself()->mutable_peer_id()->set_hash(this->peerManager->getID().getData(), Common::Hash::HASH_SIZE);
-   Common::ProtoHelper::setStr(*state.mutable_myself(), &Protos::GUI::State_Peer::set_nick, this->peerManager->getNick());
+   Common::ProtoHelper::setStr(*state.mutable_myself(), &Protos::GUI::State_Peer::set_nick, this->peerManager->getNick());   
+   state.set_integrity_check_enabled(SETTINGS.get<bool>("check_received_data_integrity"));
    state.mutable_myself()->set_sharing_amount(this->fileManager->getAmount());
 
    // Peers.

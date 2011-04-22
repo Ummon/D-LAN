@@ -20,6 +20,8 @@
 #define COMMON_COMMON_H
 
 #include <QString>
+#include <QList>
+#include <QMutableListIterator>
 
 namespace Common
 {
@@ -45,6 +47,11 @@ namespace Common
       private:
          QString errorMessage;
       };
+
+      template <typename T>
+      static void sortedAdd(T* entry, QList<T*>& list);
+      template <typename T>
+      static void sortedAdd(const QList<T*>& entries, QList<T*>& list);
 
       static int nCombinations(int n, int k);
       static QString formatByteSize(qint64 bytes, int precision = 1);
@@ -73,6 +80,65 @@ namespace Common
       static bool recursiveDeleteDirectory(const QString& dir);
       static QString setCurrentDirToTemp(const QString& dir);
    };
+}
+
+using namespace Common;
+
+/**
+  * Add an item into a sorted list. The list is kept sorted.
+  * T must implement the < operator.
+  * @param list Must be sorted.
+  */
+template <typename T>
+void Global::sortedAdd(T* item, QList<T*>& list)
+{
+   for (QMutableListIterator<T*> i(list); i.hasNext(); i.next())
+   {
+      T* e = i.peekNext();
+      if (e == item)
+         return;
+      if (*item < *e)
+      {
+         i.insert(item);
+         return;
+      }
+   }
+
+   list << item;
+}
+
+/**
+  * Merge some items into a sorted list. The list is kept sorted.
+  * T must implement the < operator.
+  * @param list Must be sorted.
+  */
+template <typename T>
+void Global::sortedAdd(const QList<T*>& items, QList<T*>& list)
+{
+   QListIterator<T*> i(items);
+   QMutableListIterator<T*> j(list);
+
+   while(i.hasNext())
+   {
+      T* ei = i.next();
+
+      bool inserted = false;
+      while (j.hasNext())
+      {
+         T* ej = j.peekNext();
+         if (*ei < *ej)
+         {
+            j.insert(ei);
+            i.next();
+            inserted = true;
+            break;
+         }
+         j.next();
+      }
+
+      if (!inserted)
+         j.insert(ei);
+   }
 }
 
 #endif

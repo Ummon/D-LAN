@@ -232,7 +232,7 @@ void Hasher::addPredefinedSalt()
 void Hasher::addData(const char* data, int size)
 {
    Q_ASSERT(data);
-   Q_ASSERT(size > 0);
+   Q_ASSERT(size >= 0);
 
    this->cryptographicHash.addData(data, size);
 }

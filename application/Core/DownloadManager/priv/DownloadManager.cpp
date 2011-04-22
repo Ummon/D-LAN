@@ -52,7 +52,7 @@ DownloadManager::DownloadManager(QSharedPointer<FM::IFileManager> fileManager, Q
    this->saveTimer.setInterval(SETTINGS.get<quint32>("save_queue_period"));
    connect(&this->saveTimer, SIGNAL(timeout()), this, SLOT(saveQueueToFile()));
 
-   connect(this->peerManager.data(), SIGNAL(peerBecomesAlive(PM::IPeer*)), this, SLOT(peerBecomesAlive(PM::IPeer*)));
+   connect(this->peerManager.data(), SIGNAL(peerBecomesAvailable(PM::IPeer*)), this, SLOT(peerBecomesAvailable(PM::IPeer*)));
 }
 
 DownloadManager::~DownloadManager()
@@ -294,7 +294,7 @@ int DownloadManager::getDownloadRate()
    return this->transferRateCalculator.getTransferRate();
 }
 
-void DownloadManager::peerBecomesAlive(PM::IPeer* peer)
+void DownloadManager::peerBecomesAvailable(PM::IPeer* peer)
 {
    for (QMultiHash<Common::Hash, Download*>::iterator i = this->downloadsIndexedBySourcePeerID.find(peer->getID()); i != this->downloadsIndexedBySourcePeerID.end() && i.key() == peer->getID(); i++)
       i.value()->setPeer(peer);

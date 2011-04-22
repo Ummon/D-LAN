@@ -53,6 +53,7 @@ namespace Common
       bool isSet(const QString& name) const;
 
       void set(const QString& name, quint32 value);
+      void set(const QString& name, bool value);
       void set(const QString& name, double hash);
       void set(const QString& name, const QString& value);
       void set(const QString& name, const QByteArray& value);
@@ -66,6 +67,7 @@ namespace Common
 
    private:
       void get(const google::protobuf::FieldDescriptor* fieldDescriptor, quint32& value) const;
+      void get(const google::protobuf::FieldDescriptor* fieldDescriptor, bool& value) const;
       void get(const google::protobuf::FieldDescriptor* fieldDescriptor, double& value) const;
       void get(const google::protobuf::FieldDescriptor* fieldDescriptor, QString& value) const;
       void get(const google::protobuf::FieldDescriptor* fieldDescriptor, QByteArray& value) const;
