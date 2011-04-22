@@ -20,9 +20,7 @@
 #define STDOUTLOGGER_H
 
 #include <QObject>
-#include <QThread>
 #include <QFile>
-#include <QTextStream>
 
 #include <priv/Logger.h>
 

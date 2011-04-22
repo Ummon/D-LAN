@@ -23,13 +23,15 @@ using namespace Common;
 
 #include <QDir>
 #include <QDirIterator>
-#include <qDebug>
+#include <QDebug>
 #include <QtGlobal>
 
 #ifdef Q_OS_WIN32
    #include <windows.h>
    #include <Shlobj.h>
    #include <Lmcons.h>
+#elif defined (Q_OS_LINUX)
+   #include <cstdio>
 #endif
 
 #include <Constants.h>
@@ -160,7 +162,7 @@ bool Global::rename(const QString& existingFile, const QString& newFile)
 
 #ifdef Q_OS_WIN32
    return MoveFileEx((LPCTSTR)existingFile.utf16(), (LPCTSTR)newFile.utf16(), MOVEFILE_REPLACE_EXISTING);
-#else
+#elif defined(Q_OS_LINUX)
    return false;
 #endif
 }
@@ -286,6 +288,8 @@ bool Global::createFile(const QString& path)
    if (!QDir::current().mkpath(fileInfo.path()))
       return false;
 
+   // If fileName is empty, the job is just to
+   // create a new folder, then we can exit now.
    if (fileInfo.fileName().isEmpty())
       return true;
 

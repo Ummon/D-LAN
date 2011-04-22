@@ -21,8 +21,13 @@ PROJECTS=(
    Tools/LogViewer
    Tools/PasswordHasher
 )
-SPEC=win32-g++
-MAKE=mingw32-make.exe
+if [ `uname -s` = "Linux" ] ; then
+   SPEC=linux-g++
+   MAKE=make
+else
+   SPEC=win32-g++
+   MAKE=mingw32-make.exe
+fi
 CLEAN_COMMAND=off
 
 # Read the script arguments.

@@ -16,45 +16,81 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#include <QtCore/QDebug>
+#include <QtCore/QtCore> // For the Q_OS_* defines.
 
 #if defined(Q_OS_LINUX)
+
 #include <priv/FileUpdater/WaitConditionLinux.h>
 using namespace FM;
 
-WaitConditionLinux::WaitConditionLinux() :
-   released(false)
-{
+#include <QtCore/QDebug>
+
+#include <stdint.h>
+#include <signal.h>
+#include <fcntl.h>
+
+WaitConditionLinux::WaitConditionLinux()
+   : released(false)
+{   
+   if(0 != pipe(this->pfd))
+      L_ERRO("WaitConditionLinux::WaitConditionLinux : Unable to create pipe.");
+
+   fcntl(this->pfd[0],F_SETFL,fcntl(this->pfd[0],F_GETFL)|O_NONBLOCK);
+   fcntl(this->pfd[1],F_SETFL,fcntl(this->pfd[1],F_GETFL)|O_NONBLOCK);
 }
 
 WaitConditionLinux::~WaitConditionLinux()
 {
+   close(this->pfd[0]);
+   close(this->pfd[1]);
 }
 
 void WaitConditionLinux::release()
 {
-   this->mutex.lock();
+   L_DEBU(QString("WaitConditionLinux::release : begin write in pipe for read in fd=%1").arg(this->pfd[0]));
+   write(this->pfd[1], "",1);
+   L_DEBU(QString("WaitConditionLinux::release : end write in pipe for read in fd=%1").arg(this->pfd[0]));
+
    this->released = true;
-   this->waitCondition.wakeOne();
-   this->mutex.unlock();      
 }
 
 bool WaitConditionLinux::wait(int timeout)
 {
-   bool timeouted = false;
+   if(this->released)
+   {
+      this->released = false;
+      return true;
+   }
 
-   this->mutex.lock();
-   if (!this->released)
-      timeouted = !this->waitCondition.wait(&this->mutex, timeout == -1 ? ULONG_MAX : timeout);
+   struct timeval time;
+   fd_set fds;
 
-   this->released = false;
-   this->mutex.unlock();
-   return timeouted;
+   // Convert timeout in timeval
+   time.tv_sec = timeout / 1000;
+   time.tv_usec = (timeout % 1000) * 1000;
+
+   // Zero-out the fd_set.
+   FD_ZERO(&fds);
+
+   // Add the inotify fd to the fd_set.
+   FD_SET(this->pfd[0], &fds);
+
+   L_DEBU(QString("WaitConditionLinux::wait : active select for fd=%1").arg(this->pfd[0]));
+   if(select(this->pfd[0] + 1, &fds, NULL, NULL, (timeout==-1 ? 0 : &time)))
+   {
+      L_DEBU(QString("WaitConditionLinux::wait : exit select by release (fd=%1)").arg(this->pfd[0]));
+      static char dummy[4096];
+      while (read(this->pfd[0], dummy, sizeof(dummy)) > 0);
+      return false;
+   }
+
+   return true;
 }
 
-void* WaitConditionLinux::getHandle()
+int WaitConditionLinux::getFd()
 {
-   return 0;
+   return this->pfd[0];
 }
 
 #endif
+

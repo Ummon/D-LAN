@@ -15,14 +15,17 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
+#include <QtCore/QtCore> // For the Q_OS_* defines.
+
+#ifdef Q_OS_WIN32
+
+#include <priv/FileUpdater/DirWatcherWin.h>
+using namespace FM;
+
 #include <QtCore/QDebug>
 
 #include <QMutexLocker>
-
-#if defined(Q_OS_WIN32)
-   #include <priv/FileUpdater/DirWatcherWin.h>
-using namespace FM;
 
 #include <priv/Exceptions.h>
 #include <priv/FileUpdater/WaitConditionWin.h>

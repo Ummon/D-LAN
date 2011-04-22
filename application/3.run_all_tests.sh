@@ -3,11 +3,17 @@
 
 set -o errexit
 
+if [ `uname -s` = "Linux" ] ; then
+   EXTENSION=
+else
+   EXTENSION=.exe
+fi
+
 TESTS=(
-   Common/TestsCommon/output/release/TestsCommon.exe
-   Core/FileManager/TestsFileManager/output/release/TestsFileManager.exe
-   Core/PeerManager/TestsPeerManager/output/release/TestsPeerManager.exe
-   # Core/DownloadManager/TestsDownloadManager/output/release/TestsDownloadManager.exe
+   Common/TestsCommon/output/release/TestsCommon$EXTENSION
+   Core/FileManager/TestsFileManager/output/release/TestsFileManager$EXTENSION
+   Core/PeerManager/TestsPeerManager/output/release/TestsPeerManager$EXTENSION
+   # Core/DownloadManager/TestsDownloadManager/output/release/TestsDownloadManager$EXTENSION
 )
 
 for i in ${TESTS[@]}
@@ -16,7 +22,7 @@ do
    cd `dirname ${i}`
    TEST=`echo ${i} | awk -F"/" '{print $NF}'`
    echo "Executing $TEST.."
-   $TEST
+   ./$TEST
    popd
 done
 
