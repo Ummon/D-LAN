@@ -75,8 +75,6 @@ int Uploader::getProgress() const
 {
    QMutexLocker locker(&this->mutex);
 
-   int pouet = 100LL * this->offset / this->chunk->getChunkSize();
-
    const int chunkSize = this->chunk->getChunkSize();
    if (chunkSize != 0)
       return 100LL * this->offset / this->chunk->getChunkSize();
