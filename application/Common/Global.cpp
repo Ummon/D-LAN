@@ -163,7 +163,7 @@ bool Global::rename(const QString& existingFile, const QString& newFile)
 #ifdef Q_OS_WIN32
    return MoveFileEx((LPCTSTR)existingFile.utf16(), (LPCTSTR)newFile.utf16(), MOVEFILE_REPLACE_EXISTING);
 #elif defined(Q_OS_LINUX)
-   return false;
+   return std::rename(qPrintable(existingFile), qPrintable(newFile)) == 0;
 #endif
 }
 

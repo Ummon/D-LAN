@@ -51,13 +51,6 @@ namespace FM
         * @return true if timeouted
         */
       virtual bool wait(int timeout = -1) = 0;
-         
-      /**
-        * Return a pointer to a native structure.
-        * For example, on Windows it will return a HANDLE on the event.
-        * It can then be used with primitive like 'WaitForMultipleObjects'.
-        */
-      virtual void* getHandle() = 0;
    };
 }
 #endif

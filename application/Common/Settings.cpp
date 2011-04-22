@@ -15,7 +15,7 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #include <Common/Settings.h>
 using namespace Common;
 
@@ -164,7 +164,7 @@ bool Settings::isSet(const QString& name) const
 
 void Settings::set(const QString& name, quint32 value)
 {
-   QMutexLocker locker(&this->mutex);   
+   QMutexLocker locker(&this->mutex);
 
    Q_ASSERT(!name.isEmpty());
    Q_ASSERT(this->settings);
@@ -293,7 +293,7 @@ void Settings::set(const QString& name, const Hash& hash)
 }
 
 void Settings::get(const google::protobuf::FieldDescriptor* fieldDescriptor, quint32& value) const
-{   
+{
    Q_ASSERT(fieldDescriptor);
    value = this->settings->GetReflection()->GetUInt32(*this->settings, fieldDescriptor);
 }
@@ -329,6 +329,11 @@ void Settings::setDefaultValues()
    for (int i = 0; i < this->descriptor->field_count(); i++)
    {
       const google::protobuf::FieldDescriptor* fieldDescriptor = this->descriptor->field(i);
+
+      // It doesn't work, an optional field with a default value is defined as non-set (HasField returns 'false').
+      /*if (!this->settings->GetReflection()->HasField(*this->settings, fieldDescriptor))
+         continue;*/
+
       switch(fieldDescriptor->type())
       {
       case google::protobuf::FieldDescriptor::TYPE_UINT32:
@@ -362,22 +367,24 @@ void Settings::rm(const QString& name)
       printErrorNameNotFound(name);
       return;
    }
-   value = this->settings->GetReflection()->GetUInt32(*this->settings, fieldDescriptor);
+   this->settings->GetReflection()->ClearField(this->settings, fieldDescriptor);
 }
 
-void Settings::get(const QString& name, double& value) const
+void Settings::rmAll()
 {
    QMutexLocker locker(&this->mutex);
+
+   Q_ASSERT(this->settings);
+
    if (!this->settings)
       return;
-   const google::protobuf::FieldDescriptor* fieldDescriptor = this->descriptor->FindFieldByName(name.toStdString());
-   if (!fieldDescriptor)
+
+   /* ClearField doesn't work, because if we save the settings the fields will not be written in it.
+   for (int i = 0; i < this->descriptor->field_count(); i++)
    {
-      printErrorNameNotFound(name);
-      return;
-   }
-   value = this->settings->GetReflection()->GetDouble(*this->settings, fieldDescriptor);
-}
+      const google::protobuf::FieldDescriptor* fieldDescriptor = this->descriptor->field(i);
+      this->settings->GetReflection()->ClearField(this->settings, fieldDescriptor);
+   }*/
 
    this->setDefaultValues();
 }
@@ -388,6 +395,6 @@ void Settings::printErrorNameNotFound(const QString& name)
 }
 
 void Settings::printErrorBadType(const google::protobuf::FieldDescriptor* field, const QString& excepted)
-{   
+{
    QTextStream(stderr) << QString("Settings : bad type, field name = \"%1\", expected type : \"%2\"").arg(ProtoHelper::getStr(*field, &google::protobuf::FieldDescriptor::name)).arg(excepted) << endl;
 }

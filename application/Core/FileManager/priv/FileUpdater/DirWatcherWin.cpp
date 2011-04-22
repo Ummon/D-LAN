@@ -1,5 +1,5 @@
 /**
-  * D-LAN - A decentralized LAN file sharing software.
+  * Aybabtu - A decentralized LAN file sharing software.
   * Copyright (C) 2010-2011 Greg Burri <greg.burri@gmail.com>
   *
   * This program is free software: you can redistribute it and/or modify
@@ -31,14 +31,13 @@ using namespace FM;
 #include <priv/FileUpdater/WaitConditionWin.h>
 
 /**
-  * @class FM::DirWatcherWin
-  *
+  * @class DirWatcherWin
   * Implementation of 'DirWatcher' for the windows platform.
   * Inspired by : http://stackoverflow.com/questions/863135/why-does-readdirectorychangesw-omit-events.
   */
 
-DirWatcherWin::DirWatcherWin() :
-   mutex(QMutex::Recursive)
+DirWatcherWin::DirWatcherWin()
+   : mutex(QMutex::Recursive)
 {
 }
 
@@ -157,7 +156,7 @@ const QList<WatcherEvent> DirWatcherWin::waitEvent(int timeout, QList<WaitCondit
 
    for (int i = 0; i < ws.size(); i++)
    {
-      HANDLE hdl = ws[i]->getHandle();
+      HANDLE hdl = dynamic_cast<WaitConditionWin*>(ws[i])->getHandle();
       eventsArray[i + numberOfDirs] = hdl;
    }
 
@@ -253,8 +252,8 @@ const QList<WatcherEvent> DirWatcherWin::waitEvent(int timeout, QList<WaitCondit
    return QList<WatcherEvent>();
 }
 
-DirWatcherWin::Dir::Dir(const HANDLE file, const HANDLE event, const QString& fullPath) :
-   file(file), fullPath(fullPath)
+DirWatcherWin::Dir::Dir(const HANDLE file, const HANDLE event, const QString& fullPath)
+   : file(file), fullPath(fullPath)
 {
    memset(&this->overlapped, 0, sizeof(OVERLAPPED));
    overlapped.hEvent = event;
@@ -276,7 +275,7 @@ bool DirWatcherWin::watch(Dir* dir)
       &this->notifyBuffer, // The buffer where the information is put when an event occur.
       NOTIFY_BUFFER_SIZE, // Size of the previous buffer.
       TRUE, // Watch subtree.
-      FILE_NOTIFY_CHANGE_FILE_NAME | FILE_NOTIFY_CHANGE_DIR_NAME | FILE_NOTIFY_CHANGE_LAST_WRITE /* | FILE_NOTIFY_CHANGE_CREATION | FILE_NOTIFY_CHANGE_SIZE*/,
+      FILE_NOTIFY_CHANGE_FILE_NAME | FILE_NOTIFY_CHANGE_DIR_NAME | FILE_NOTIFY_CHANGE_SIZE | FILE_NOTIFY_CHANGE_LAST_WRITE | FILE_NOTIFY_CHANGE_CREATION,
       &this->nbBytesNotifyBuffer, // Not used in asynchronous mode.
       &dir->overlapped,
       NULL

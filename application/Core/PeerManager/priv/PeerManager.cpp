@@ -26,7 +26,7 @@ using namespace PM;
 #include <Common/Settings.h>
 #include <Common/Network/MessageHeader.h>
 
-#include <Priv/Constants.h>
+#include <priv/Constants.h>
 
 /**
   * @class PM::PeerManager

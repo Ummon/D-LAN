@@ -142,7 +142,8 @@ namespace FM
    template <typename T>
    inline uint qHash(const NodeResult<T>& r)
    {
-      return reinterpret_cast<uint>(r.value);
+      // TODO: if sizeof(void*) != sizeof(T) it can be a bit dangerous.
+      return (uint)(intptr_t)r.value;
    }
 }
 

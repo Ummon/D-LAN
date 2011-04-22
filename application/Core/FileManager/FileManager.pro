@@ -36,7 +36,8 @@ SOURCES += priv/Builder.cpp \
     priv/FileUpdater/WaitConditionLinux.cpp \
     priv/GetHashesResult.cpp \
     priv/Log.cpp \
-    priv/Global.cpp
+    priv/Global.cpp \
+    priv/FileUpdater/DirWatcherLinux.cpp
 HEADERS += IGetHashesResult.h \
     IFileManager.h \
     IChunk.h \
@@ -69,5 +70,6 @@ HEADERS += IGetHashesResult.h \
     priv/FileUpdater/WaitConditionLinux.h \
     priv/Constants.h \
     priv/GetHashesResult.h \
-    priv/Global.h
+    priv/Global.h \
+    priv/FileUpdater/DirWatcherLinux.h
 OTHER_FILES +=

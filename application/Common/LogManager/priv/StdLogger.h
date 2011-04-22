@@ -15,12 +15,14 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #ifndef STDOUTLOGGER_H
 #define STDOUTLOGGER_H
 
 #include <QObject>
+#include <QThread>
 #include <QFile>
+#include <QTextStream>
 
 #include <priv/Logger.h>
 
