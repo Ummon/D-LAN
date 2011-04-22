@@ -75,6 +75,8 @@ int Uploader::getProgress() const
 {
    QMutexLocker locker(&this->mutex);
 
+   int pouet = 100LL * this->offset / this->chunk->getChunkSize();
+
    const int chunkSize = this->chunk->getChunkSize();
    if (chunkSize != 0)
       return 100LL * this->offset / this->chunk->getChunkSize();
@@ -116,7 +118,7 @@ void Uploader::run()
 
       while (bytesRead = reader->read(buffer, this->offset))
       {
-         int bytesSent = this->socket->write(buffer, BUFFER_SIZE);
+         int bytesSent = this->socket->write(buffer, bytesRead);
 
          if (bytesSent == -1)
          {
