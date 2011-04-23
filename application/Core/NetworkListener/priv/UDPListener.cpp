@@ -233,10 +233,6 @@ void UDPListener::processPendingMulticastDatagrams()
                break;
             }
 
-            // If we don't know the peer, he may not know us.
-            PM::IPeer* peer = this->peerManager->getPeer(header.getSenderID());
-            bool sendIMAlive = !peer || !peer->isAlive();
-
             this->peerManager->updatePeer(
                header.getSenderID(),
                peerAddress,
@@ -244,12 +240,6 @@ void UDPListener::processPendingMulticastDatagrams()
                Common::ProtoHelper::getStr(IMAliveMessage, &Protos::Core::IMAlive::nick),
                IMAliveMessage.amount()
             );
-
-            if (sendIMAlive)
-            {
-               this->timerIMAlive.start();
-               this->sendIMAliveMessage();
-            }
 
             if (IMAliveMessage.chunk_size() > 0)
             {
