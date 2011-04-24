@@ -253,10 +253,9 @@ void UDPListener::processPendingMulticastDatagrams()
                if (!bitArray.isNull()) // If we own at least one chunk we reply with a CHUNKS_OWNED message.
                {
                   Protos::Core::ChunksOwned chunkOwnedMessage;
-                  chunkOwnedMessage.mutable_chunk_state()->Reserve(bitArray.size());
                   chunkOwnedMessage.set_tag(IMAliveMessage.tag());
                   for (int i = 0; i < bitArray.size(); i++)
-                     chunkOwnedMessage.set_chunk_state(i, bitArray[i]);
+                     chunkOwnedMessage.add_chunk_state(bitArray[i]);
                   this->send(Common::MessageHeader::CORE_CHUNKS_OWNED, header.getSenderID(), chunkOwnedMessage);
                }
             }
