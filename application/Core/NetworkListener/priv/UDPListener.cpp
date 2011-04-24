@@ -95,7 +95,7 @@ UDPListener::UDPListener(
 #endif
       L_ERRO(QString("Can't set socket option : IP_ADD_MEMBERSHIP : %1").arg(error));
 
-   const int BUFFER_SIZE_UDP = SETTINGS.get<quint32>("udp_read_buffer_size");
+   static const int BUFFER_SIZE_UDP = SETTINGS.get<quint32>("udp_read_buffer_size");
    if (int error = setsockopt(multicastSocketDescriptor, SOL_SOCKET, SO_RCVBUF, (char*)&BUFFER_SIZE_UDP, sizeof BUFFER_SIZE_UDP))
       L_ERRO(QString("Can't set socket option (multicast socket) : SO_RCVBUF : %1").arg(error));
 
