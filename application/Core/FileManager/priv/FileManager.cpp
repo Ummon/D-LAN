@@ -289,15 +289,15 @@ QList<Protos::Common::FindResult> FileManager::find(const QString& words, int ma
 
 QBitArray FileManager::haveChunks(const QList<Common::Hash>& hashes)
 {
-   QBitArray result(hashes.size());
+   QBitArray result(hashes.size()); // All bits to 0 by default.
    bool ownsAtLeastOneChunk = false;
    for (int i = 0; i < hashes.size(); i++)
-   {
-      const bool owned = this->chunks.contains(hashes[i]);
-      result.setBit(i, owned);
-      if (owned)
+      if (this->chunks.contains(hashes[i]))
+      {
+         result.setBit(i, true);
          ownsAtLeastOneChunk = true;
-   }
+      }
+
    if (!ownsAtLeastOneChunk)
       return QBitArray();
 
