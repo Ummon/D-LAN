@@ -31,9 +31,9 @@ namespace FM
 
       /**
         * @exception IOErrorException
-        * @exception ChunkDeletedException
+        * @exception ChunkDeletedException When trying to write to a deleted chunk.
         * @exception TryToWriteBeyondTheEndOfChunkException
-        * @exception hashMissmatchException
+        * @exception hashMissmatchException This occurs only when the setting 'check_received_data_integrity' is enabled. When this exception is thrown the chunk data are reset.
         */
       virtual bool write(const char* buffer, int nbBytes) = 0;
    };
