@@ -81,9 +81,9 @@ void PersistentData::setValue(const QString& name, const google::protobuf::Messa
 
       Global::rename(TEMP_FILEPATH, FILEPATH);
    }
-   catch(Global::UnableToGetFolder&)
+   catch(Global::UnableToGetFolder& e)
    {
-      throw PersistentDataIOException("Unable to get the data folder");
+      throw PersistentDataIOException(e.getMessage());
    }
 }
 
@@ -116,9 +116,9 @@ void PersistentData::getValue(const QString& name, google::protobuf::Message& da
       }
    #endif
    }
-   catch(Global::UnableToGetFolder&)
+   catch(Global::UnableToGetFolder& e)
    {
-      throw PersistentDataIOException("Unable to get the data folder");
+      throw PersistentDataIOException(e.getMessage());
    }
 }
 
@@ -135,9 +135,9 @@ bool PersistentData::rmValue(const QString& name, Global::DataFolderType dataFol
    {
       return QFile::remove(Global::getDataFolder(dataFolderType) + '/' + name);
    }
-   catch(Global::UnableToGetFolder&)
+   catch(Global::UnableToGetFolder& e)
    {
-      throw PersistentDataIOException("Unable to get the data folder");
+      throw PersistentDataIOException(e.getMessage());
    }
    return false;
 }

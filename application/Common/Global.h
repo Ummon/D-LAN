@@ -29,7 +29,7 @@ namespace Common
    {
    public:
       /**
-        * Exception which can give a message shoulg inherit from this class.
+        * Exception which can give a message should inherit from this class.
         */
       class MessageException
       {
@@ -41,11 +41,11 @@ namespace Common
       {
       public:
          UnableToSetTempDirException(const QString& dir);
-         ~UnableToSetTempDirException() throw() {};
+         ~UnableToSetTempDirException() throw() {}
          QString getMessage() const throw();
 
       private:
-         QString errorMessage;
+         const QString errorMessage;
       };
 
       template <typename T>
@@ -65,7 +65,17 @@ namespace Common
       static QString dataFolders[2];
 
    public:
-      class UnableToGetFolder {};
+      class UnableToGetFolder : public MessageException
+      {
+      public:
+         UnableToGetFolder(const QString& message) : errorMessage(message) {}
+         ~UnableToGetFolder() throw() {}
+         QString getMessage() const throw() { return this->errorMessage; }
+
+      private:
+         const QString errorMessage;
+      };
+
       static QString getDataFolder(DataFolderType type, bool create = true);
       static void setDataFolder(DataFolderType type, const QString& folder);
       static void setDataFolderToDefault(DataFolderType type);
