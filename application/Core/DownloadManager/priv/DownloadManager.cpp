@@ -63,7 +63,6 @@ DownloadManager::~DownloadManager()
    while (!this->downloads.isEmpty())
    {
       Download* download = this->downloads.takeFirst();
-      disconnect(download, SIGNAL(deleted(Download*)), this, SLOT(downloadDeleted(Download*)));
       delete download;
    }
 
@@ -167,8 +166,6 @@ Download* DownloadManager::addDownload(const Protos::Common::Entry& remoteEntry,
 
    newDownload->setPeer(this->peerManager->getPeer(peerSource));
 
-   connect(newDownload, SIGNAL(deleted(Download*)), this, SLOT(downloadDeleted(Download*)), Qt::DirectConnection);
-
    newDownload->start();
 
    this->setQueueChanged();
@@ -239,17 +236,36 @@ void DownloadManager::moveDownloads(quint64 downloadIDRef, bool moveBefore, cons
 /**
   * Use the method "QList::erase(..)" to remove many downloads in one call. The goal is to be more efficient than using only 'Download::remove()'.
   */
-void DownloadManager::removeAllCompleteDownload()
+void DownloadManager::removeAllCompleteDownloads()
+{
+   IsComplete isComplete;
+   this->removeDownloads(isComplete);
+}
+
+void DownloadManager::removeDownloads(QList<quint64> IDs)
+{
+   if (IDs.isEmpty())
+      return;
+
+   IsContainedInAList isContainedInAList(IDs);
+   this->removeDownloads(isContainedInAList);
+}
+
+/**
+  * Remove all download for which the given predicate is true.
+  * It uses QList::erase(iterator begin, iterator end) to improve the performance.
+  */
+void DownloadManager::removeDownloads(DownloadPredicate& predicate)
 {
    QList<Download*> downloadsToDelete;
    QList<Download*>::iterator i = this->downloads.begin();
    QList<Download*>::iterator j = i;
    while (j != this->downloads.end())
    {
-      if ((*j)->getStatus() == COMPLETE)
+      if (predicate(*j))
       {
          this->setQueueChanged();
-         (*j)->disconnect(this); // We will manually remove the items from the lists;
+         (*j)->setAsDeleted();
          this->downloadsIndexedBySourcePeerID.remove((*j)->getPeerSourceID(), *j);
          downloadsToDelete << *j;
          j++;
@@ -320,6 +336,7 @@ void DownloadManager::newEntries(const Protos::Common::Entries& remoteEntries)
    if (!i.findNext(dirDownload))
       return;
    i.remove();
+   this->downloadsIndexedBySourcePeerID.remove(dirDownload->getPeerSourceID(), dirDownload);
 
    // Add files first.
    for (int n = 0; n < remoteEntries.entry_size(); n++)
@@ -340,13 +357,6 @@ void DownloadManager::newEntries(const Protos::Common::Entries& remoteEntries)
       }
 
    delete dirDownload;
-}
-
-void DownloadManager::downloadDeleted(Download* download)
-{
-   this->downloads.removeOne(download);
-   this->downloadsIndexedBySourcePeerID.remove(download->getPeerSourceID(), download);
-   this->setQueueChanged();
 }
 
 /**

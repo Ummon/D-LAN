@@ -56,7 +56,9 @@ namespace DM
         */
       virtual void moveDownloads(quint64 downloadIDRef, bool moveBefore, const QList<quint64>& downloadIDs) = 0;
 
-      virtual void removeAllCompleteDownload() = 0;
+      virtual void removeAllCompleteDownloads() = 0;
+
+      virtual void removeDownloads(QList<quint64> IDs) = 0;
 
       virtual QList< QSharedPointer<IChunkDownload> > getUnfinishedChunks(int n) const = 0;
 

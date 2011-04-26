@@ -249,20 +249,13 @@ void RemoteConnection::onNewMessage(Common::MessageHeader::MessageType type, con
          const Protos::GUI::CancelDownloads& cancelDownloadsMessage = static_cast<const Protos::GUI::CancelDownloads&>(message);
 
          if (cancelDownloadsMessage.complete())
-            this->downloadManager->removeAllCompleteDownload();
+            this->downloadManager->removeAllCompleteDownloads();
 
-         // To avoid O(n^2).
-         QSet<quint64> IDs;
+         QList<quint64> IDs;
          for (int i = 0; i < cancelDownloadsMessage.id_size(); i++)
-            IDs.insert(cancelDownloadsMessage.id(i));
+            IDs << cancelDownloadsMessage.id(i);
 
-         QList<DM::IDownload*> downloads = this->downloadManager->getDownloads();
-         for (QListIterator<DM::IDownload*> i(downloads); i.hasNext();)
-         {
-            DM::IDownload* download = i.next();
-            if (IDs.contains(download->getID()))
-               download->remove();
-         }
+         this->downloadManager->removeDownloads(IDs);
 
          this->refresh();
       }

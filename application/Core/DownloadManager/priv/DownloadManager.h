@@ -31,6 +31,7 @@
 #include <Core/PeerManager/IPeerManager.h>
 
 #include <IDownloadManager.h>
+#include <priv/DownloadPredicate.h>
 #include <priv/OccupiedPeers.h>
 #include <priv/Log.h>
 
@@ -62,7 +63,13 @@ namespace DM
 
       QList<IDownload*> getDownloads() const;
       void moveDownloads(quint64 downloadIDRef, bool moveBefore, const QList<quint64>& downloadIDs);
-      void removeAllCompleteDownload();
+
+      void removeAllCompleteDownloads();
+      void removeDownloads(QList<quint64> IDs);
+   private:
+      void removeDownloads(DownloadPredicate& predicate);
+
+   public:
       QList< QSharedPointer<IChunkDownload> > getUnfinishedChunks(int n) const;
 
       int getDownloadRate();
@@ -73,8 +80,6 @@ namespace DM
       void fileCacheLoaded();
 
       void newEntries(const Protos::Common::Entries& remoteEntries);
-
-      void downloadDeleted(Download* download);
 
       void peerNoLongerAskingForHashes(PM::IPeer* peer);
       void peerNoLongerAskingForEntries(PM::IPeer* peer);
