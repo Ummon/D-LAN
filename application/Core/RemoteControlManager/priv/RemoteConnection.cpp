@@ -176,7 +176,6 @@ void RemoteConnection::onNewMessage(Common::MessageHeader::MessageType type, con
          }
 
          this->refresh();
-         this->timerRefresh.start();
       }
       break;
 
@@ -266,7 +265,6 @@ void RemoteConnection::onNewMessage(Common::MessageHeader::MessageType type, con
          }
 
          this->refresh();
-         this->timerRefresh.start();
       }
       break;
 
@@ -280,7 +278,6 @@ void RemoteConnection::onNewMessage(Common::MessageHeader::MessageType type, con
          this->downloadManager->moveDownloads(moveDownloadsMessage.id_ref(), moveDownloadsMessage.move_before(), downloadIDs);
 
          this->refresh();
-         this->timerRefresh.start();
       }
       break;
 
@@ -295,7 +292,6 @@ void RemoteConnection::onNewMessage(Common::MessageHeader::MessageType type, con
             this->downloadManager->addDownload(downloadMessage.entry(), peerID);
 
          this->refresh();
-         this->timerRefresh.start();
       }
       break;
 
@@ -312,7 +308,6 @@ void RemoteConnection::onNewMessage(Common::MessageHeader::MessageType type, con
    case Common::MessageHeader::GUI_REFRESH:
       {
          this->refresh();
-         this->timerRefresh.start();
       }
       break;
 
