@@ -254,6 +254,7 @@ void UDPListener::processPendingMulticastDatagrams()
                {
                   Protos::Core::ChunksOwned chunkOwnedMessage;
                   chunkOwnedMessage.set_tag(IMAliveMessage.tag());
+                  chunkOwnedMessage.mutable_chunk_state()->Reserve(bitArray.size());
                   for (int i = 0; i < bitArray.size(); i++)
                      chunkOwnedMessage.add_chunk_state(bitArray[i]);
                   this->send(Common::MessageHeader::CORE_CHUNKS_OWNED, header.getSenderID(), chunkOwnedMessage);
