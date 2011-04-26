@@ -78,8 +78,8 @@ RemoteConnection::RemoteConnection(
    }
 
    this->timerRefresh.setInterval(SETTINGS.get<quint32>("remote_refresh_rate"));
+   this->timerRefresh.setSingleShot(true);
    connect(&this->timerRefresh, SIGNAL(timeout()), this, SLOT(refresh()));
-   this->timerRefresh.start();
    this->refresh();
 
    connect(&this->networkListener->getChat(), SIGNAL(newMessage(const Protos::GUI::EventChatMessages_Message&)), this, SLOT(newChatMessage(const Protos::GUI::EventChatMessages_Message&)));
@@ -397,6 +397,8 @@ void RemoteConnection::refresh()
    stats->set_upload_rate(this->uploadManager->getUploadRate());
 
    this->send(Common::MessageHeader::GUI_STATE, state);
+
+   this->timerRefresh.start();
 }
 
 void RemoteConnection::newChatMessage(const Protos::GUI::EventChatMessages_Message& message)
