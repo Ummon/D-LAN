@@ -332,7 +332,7 @@ void FileUpdater::computeSomeHashes()
          try {
             complete = this->currentHashingFile->computeHashes(1); // Be carreful of methods 'prioritizeAFileToHash(..)' and 'rmRoot(..)' called concurrently here.
          } catch (IOErrorException&) {
-            complete = true; // TODO : we set complete to true to remove the file from the list, maybe it should be better to retry in a while..
+            complete = true; // The hashes may be recomputed when a peer ask the hashes with a GET_HASHES request.
          }
          locker.relock();
 
@@ -367,7 +367,7 @@ void FileUpdater::computeSomeHashes()
          try {
             complete = this->currentHashingFile->computeHashes();
          } catch (IOErrorException&) {
-            complete = true; // TODO : we set complete to true to remove the file from the list, maybe it should be better to retry in a while..
+            complete = true; // The hashes may be recomputed when a peer ask the hashes with a GET_HASHES request.
          }
          locker.relock();
 
