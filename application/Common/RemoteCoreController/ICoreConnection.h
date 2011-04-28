@@ -46,7 +46,7 @@ namespace RCC
       ICoreConnection(Common::MessageSocket::ILogger* logger) : Common::MessageSocket(logger) {}
 
    public:
-      virtual ~ICoreConnection() {};
+      virtual ~ICoreConnection() {}
 
       /**
         * Connect to a local core with the default port (59485).
