@@ -31,8 +31,9 @@ using namespace FM;
 #include <priv/FileUpdater/WaitConditionWin.h>
 
 /**
-  * @class DirWatcherWin
-  * Implementation of 'DirWatcher' for the windows platform.
+  * @class FM::DirWatcherWin
+  *
+  * Implementation of 'DirWatcher' for the Windows platform.
   * Inspired by : http://stackoverflow.com/questions/863135/why-does-readdirectorychangesw-omit-events.
   */
 
@@ -156,7 +157,7 @@ const QList<WatcherEvent> DirWatcherWin::waitEvent(int timeout, QList<WaitCondit
 
    for (int i = 0; i < ws.size(); i++)
    {
-      HANDLE hdl = dynamic_cast<WaitConditionWin*>(ws[i])->getHandle();
+      HANDLE hdl = static_cast<WaitConditionWin*>(ws[i])->getHandle();
       eventsArray[i + numberOfDirs] = hdl;
    }
 

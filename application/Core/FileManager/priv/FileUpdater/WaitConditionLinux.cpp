@@ -29,6 +29,13 @@ using namespace FM;
 #include <signal.h>
 #include <fcntl.h>
 
+/**
+  * @class FM::WaitConditionLinux
+  * @author Hervé Martinet
+  *
+  * Implementation of 'WaitCondition' for the Linux platform.
+  */
+
 WaitConditionLinux::WaitConditionLinux()
    : released(false)
 {   

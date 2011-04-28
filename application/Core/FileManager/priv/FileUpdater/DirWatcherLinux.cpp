@@ -17,6 +17,8 @@ using namespace FM;
 
 /**
  * @class DirWatcherLinux
+ * @author Hervé Martinet
+ *
  * Implementation of 'DirWatcher' for the linux platform with inotify.
  */
 

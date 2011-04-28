@@ -29,12 +29,6 @@
 
 namespace FM
 {
-   /**
-     * Implementation of 'WaitCondition' for the Linux platform.
-     * For the moment it uses Qt classes but in the future it should use native
-     * primitives to permit DirWatcherLinux to wait on a filesystem event AND on a WaitConditionLinux.
-     * See the Windows implementation for more information.
-     */
    class WaitConditionLinux : public WaitCondition
    {
    public:
