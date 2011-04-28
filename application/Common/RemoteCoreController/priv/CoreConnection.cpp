@@ -198,7 +198,7 @@ void CoreConnection::stateChanged(QAbstractSocket::SocketState socketState)
       }
       else
       {
-         L_USER("Unable to connect to the core");
+         L_USER(tr("Unable to connect to the core"));
          this->connectToCoreSlot();
       }
       break;
