@@ -69,6 +69,7 @@ namespace FM
       QBitArray haveChunks(const QList<Common::Hash>& hashes);
       quint64 getAmount();
       CacheStatus getCacheStatus() const;
+      int getProgress() const;
 
       Directory* getFittestDirectory(const QString& path);
       Entry* getEntry(const QString& path);

@@ -68,7 +68,7 @@ void StatusBar::newState(const Protos::GUI::State& state)
    totalSharing += state.myself().sharing_amount();
    this->setTotalSharing(state.peer_size() + 1, totalSharing);
 
-   this->updateCoreStatus(state.stats().cache_status());
+   this->updateCoreStatus(state.stats().cache_status(), state.stats().progress());
 }
 
 void StatusBar::showAbout()
@@ -92,7 +92,7 @@ void StatusBar::setTotalSharing(int nbPeer, qint64 amount)
    this->ui->lblTotalSharing->setText(QString::number(nbPeer).append(" peer").append(nbPeer > 1 ? "s" : "").append(": ").append(Common::Global::formatByteSize(amount)));
 }
 
-void StatusBar::updateCoreStatus(Protos::GUI::State_Stats_CacheStatus status)
+void StatusBar::updateCoreStatus(Protos::GUI::State_Stats_CacheStatus status, int progress)
 {
    QString statusMess("Core: ");
 
@@ -104,22 +104,34 @@ void StatusBar::updateCoreStatus(Protos::GUI::State_Stats_CacheStatus status)
 
       switch (status)
       {
+      case Protos::GUI::State_Stats_CacheStatus_LOADING_CACHE_IN_PROGRESS:
+         statusMess.append(" - loading cache..");
+         this->ui->prgCurrentAction->setVisible(true);
+         this->ui->prgCurrentAction->setValue(progress);
+         break;
       case Protos::GUI::State_Stats_CacheStatus_SCANNING_IN_PROGRESS:
          statusMess.append(" - scanning in progress..");
+         this->ui->prgCurrentAction->setVisible(false);
          break;
       case Protos::GUI::State_Stats_CacheStatus_HASHING_IN_PROGRESS:
          statusMess.append(" - hashing in progress..");
+         this->ui->prgCurrentAction->setVisible(true);
+         this->ui->prgCurrentAction->setValue(progress);
          break;
       case Protos::GUI::State_Stats_CacheStatus_UP_TO_DATE:
          statusMess.append(" - cache is up to date");
+         this->ui->prgCurrentAction->setVisible(false);
+         this->ui->prgCurrentAction->setValue(progress);
          break;
       case Protos::GUI::State_Stats_CacheStatus_UNKNOWN: // Nothing to display.
       default:;
+         this->ui->prgCurrentAction->setVisible(false);
       }
    }
    else
    {
       statusMess.append("disconnected");
+      this->ui->prgCurrentAction->setVisible(false);
    }
 
    this->ui->lblCoreStatus->setText(statusMess);

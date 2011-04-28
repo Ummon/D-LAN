@@ -58,13 +58,14 @@ message State {
    }
    message Stats {
       enum CacheStatus {
-         SCANNING_IN_PROGRESS = 0; // 1st pass: grab all file/dir names and their size and index it.
-         HASHING_IN_PROGRESS = 1; // 2nd pass: compute the hashes of all files.
-         UP_TO_DATE = 2;
-         UNKNOWN = 3;
+         LOADING_CACHE_IN_PROGRESS = 0; // Initial pass: synchronize the cache with the file system.
+         SCANNING_IN_PROGRESS = 1; // 1st pass: grab all file/dir names and their size and index it.
+         HASHING_IN_PROGRESS = 2; // 2nd pass: compute the hashes of all files.
+         UP_TO_DATE = 3;
+         UNKNOWN = 4;
       }
       required CacheStatus cache_status = 1;
-      required uint32 progress = 2; // 0 to 100
+      required uint32 progress = 2; // 0 to 10000.
       required uint32 download_rate = 3; // [byte/s].
       required uint32 upload_rate = 4; // [byte/s].
    }

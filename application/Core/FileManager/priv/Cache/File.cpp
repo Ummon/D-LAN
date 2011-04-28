@@ -406,20 +406,22 @@ bool File::computeHashes(int n)
    while (!endOfFile)
    {
       // See 'stopHashing()'.
-      locker.unlock();
-      locker.relock();
-
-      if (this->toStopHashing)
-      {
-         this->hashingStopped.wakeOne();
-         this->toStopHashing = false;
-         this->hashing = false;
-         return false;
-      }
 
       int bytesReadChunk = 0;
       while (bytesReadChunk < CHUNK_SIZE)
       {
+         locker.unlock();
+         locker.relock();
+
+         if (this->toStopHashing)
+         {
+            this->hashingStopped.wakeOne();
+            this->toStopHashing = false;
+            this->hashing = false;
+            return false;
+         }
+
+
          int bytesRead = file.read(buffer, BUFFER_SIZE);
          switch (bytesRead)
          {
@@ -503,7 +505,6 @@ bool File::computeHashes(int n)
 void File::stopHashing()
 {
    QMutexLocker locker(&this->hashingMutex);
-
    this->toStopHashing = true;
    if (this->hashing)
    {

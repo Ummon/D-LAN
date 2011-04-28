@@ -50,8 +50,10 @@ namespace FM
       void stop();
       void setFileCache(const Protos::FileCache::Hashes* fileCache);
       void prioritizeAFileToHash(File* file);
+
       bool isScanning() const;
       bool isHashing() const;
+      int getProgress() const;
 
    public slots:
       void addRoot(SharedDirectory* dir);
@@ -91,6 +93,8 @@ namespace FM
 
       bool toStop; ///< Set to true when the service must be stopped.
 
+      int progress;
+
       WaitCondition* dirEvent; ///< Using to wait when a sharing directory is added or deleted.
       mutable QMutex mutex; ///< Prevent the access from many thread to the internal data like 'filesWithoutHashes' for example.
 
@@ -109,6 +113,8 @@ namespace FM
 
       QList<File*> filesWithoutHashes;
       QList<File*> filesWithoutHashesPrioritized;
+      qint64 totalSizeToHash;
+      qint64 remainingSizeToHash;
    };
 }
 #endif

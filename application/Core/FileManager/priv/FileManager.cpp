@@ -70,6 +70,7 @@ FileManager::FileManager() :
    connect(&this->timerPersistCache, SIGNAL(timeout()), this, SLOT(persistCacheToFile()));
 
    this->loadCacheFromFile();
+
    this->fileUpdater.start();
 }
 
@@ -311,6 +312,9 @@ quint64 FileManager::getAmount()
 
 FileManager::CacheStatus FileManager::getCacheStatus() const
 {
+   if (this->cacheLoading)
+      return LOADING_CACHE_IN_PROGRSS;
+
    if (this->fileUpdater.isScanning())
       return SCANNING_IN_PROGRESS;
 
@@ -318,6 +322,11 @@ FileManager::CacheStatus FileManager::getCacheStatus() const
       return HASHING_IN_PROGRESS;
 
    return UP_TO_DATE;
+}
+
+int FileManager::getProgress() const
+{
+   return this->fileUpdater.getProgress();
 }
 
 Directory* FileManager::getFittestDirectory(const QString& path)
