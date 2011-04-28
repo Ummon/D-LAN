@@ -47,10 +47,13 @@ FileUpdater::FileUpdater(FileManager* fileManager) :
    dirWatcher(DirWatcher::getNewWatcher()),
    fileCache(0),
    toStop(false),
+   progress(0),
    mutex(QMutex::Recursive),
    currentScanningDir(0),
    currentHashingFile(0),
-   toStopHashing(false)
+   toStopHashing(false),
+   totalSizeToHash(0),
+   remainingSizeToHash(0)
 {
    this->dirEvent = WaitCondition::getNewWaitCondition();
 }
@@ -164,9 +167,18 @@ void FileUpdater::prioritizeAFileToHash(File* file)
    {
       QMutexLocker lockerHashing(&this->hashingMutex);
 
-      this->filesWithoutHashes.removeOne(file);
+      if (this->filesWithoutHashes.removeOne(file))
+      {
+         this->totalSizeToHash -= file->getSize();
+         this->remainingSizeToHash -= file->getSize();
+      }
+
       if (!this->filesWithoutHashesPrioritized.contains(file))
+      {
          this->filesWithoutHashesPrioritized << file;
+         this->totalSizeToHash += file->getSize();
+         this->remainingSizeToHash += file->getSize();
+      }
 
       if (this->currentHashingFile)
       {
@@ -191,6 +203,12 @@ bool FileUpdater::isHashing() const
    return !this->filesWithoutHashes.isEmpty() || !this->filesWithoutHashesPrioritized.isEmpty();
 }
 
+int FileUpdater::getProgress() const
+{
+   QMutexLocker locker(&this->mutex);
+   return this->progress;
+}
+
 void FileUpdater::run()
 {
    this->timerScanUnwatchable.start();
@@ -205,19 +223,23 @@ void FileUpdater::run()
    // synchronize it with the file system.
    if (this->fileCache)
    {
+      const int nbDirsToScan = this->dirsToScan.size();
       // TODO : the mutex should be used ?
-      foreach (Directory* dir, this->dirsToScan)
+      while (!this->dirsToScan.isEmpty())
       {
+         Directory* dir = this->dirsToScan.takeFirst();
          this->scan(dir, true);
          this->restoreFromFileCache(static_cast<SharedDirectory*>(dir));
+         this->progress = 10000 * (nbDirsToScan - this->dirsToScan.size()) / nbDirsToScan;
       }
-      this->dirsToScan.clear();
 
       delete this->fileCache;
       this->fileCache = 0;
    }
 
    emit fileCacheLoaded();
+
+   this->progress = 0;
 
    forever
    {
@@ -328,21 +350,27 @@ void FileUpdater::computeSomeHashes()
       if (this->currentHashingFile->isComplete()) // A file can change its state from 'completed' to 'unfinished' if it's redownloaded.
       {
          locker.unlock();
-         bool complete;
+         bool gotAllHashes;
          try {
-            complete = this->currentHashingFile->computeHashes(1); // Be carreful of methods 'prioritizeAFileToHash(..)' and 'rmRoot(..)' called concurrently here.
+            gotAllHashes = this->currentHashingFile->computeHashes(1); // Be carreful of methods 'prioritizeAFileToHash(..)' and 'rmRoot(..)' called concurrently here.
          } catch (IOErrorException&) {
-            complete = true; // TODO : we set complete to true to remove the file from the list, maybe it should be better to retry in a while..
+            gotAllHashes = true; // The hashes may be recomputed when a peer ask the hashes with a GET_HASHES request.
          }
          locker.relock();
 
-         if (complete)
+         if (gotAllHashes)
+         {
+            this->remainingSizeToHash -= this->filesWithoutHashesPrioritized[0]->getSize();
             this->filesWithoutHashesPrioritized.removeFirst();
+         }
          else if (this->filesWithoutHashesPrioritized.size() > 1) // The current hashing file may have been removed from 'filesWithoutHashesPrioritized' by 'rmRoot(..)'.
             this->filesWithoutHashesPrioritized.move(0, this->filesWithoutHashesPrioritized.size() - 1);
       }
       else
+      {
+         this->remainingSizeToHash -= this->filesWithoutHashesPrioritized[0]->getSize();
          this->filesWithoutHashesPrioritized.removeFirst();
+      }
 
       this->currentHashingFile = 0;
       if (this->toStopHashing)
@@ -359,23 +387,28 @@ void FileUpdater::computeSomeHashes()
    {
       this->currentHashingFile = this->filesWithoutHashes[i];
 
-       // A file can change its state from 'completed' to 'unfinished' if it's redownloaded.
-      if (this->currentHashingFile->isComplete())
+      if (this->currentHashingFile->isComplete()) // A file can change its state from 'completed' to 'unfinished' if it's redownloaded.
       {
          locker.unlock();
-         bool complete;
+         bool gotAllHashes;
          try {
-            complete = this->currentHashingFile->computeHashes();
+            gotAllHashes = this->currentHashingFile->computeHashes(1);
          } catch (IOErrorException&) {
-            complete = true; // TODO : we set complete to true to remove the file from the list, maybe it should be better to retry in a while..
+            gotAllHashes = true; // The hashes may be recomputed when a peer ask the hashes with a GET_HASHES request.
          }
          locker.relock();
 
-         if (complete)
+         if (gotAllHashes)
+         {
+            this->remainingSizeToHash -= this->filesWithoutHashes[i]->getSize();
             this->filesWithoutHashes.removeAt(i--);
+         }
       }
       else
+      {
+         this->remainingSizeToHash -= this->filesWithoutHashes[i]->getSize();
          this->filesWithoutHashes.removeAt(i--);
+      }
 
       this->currentHashingFile = 0;
       if (this->toStopHashing)
@@ -390,6 +423,16 @@ void FileUpdater::computeSomeHashes()
 
 end:
    L_DEBU("Computing some hashes ended");
+   if (this->filesWithoutHashes.isEmpty() && this->filesWithoutHashesPrioritized.isEmpty())
+   {
+      this->totalSizeToHash = 0;
+      this->remainingSizeToHash = 0;
+      this->progress = 0;
+   }
+   else
+   {
+      this->progress = 10000LL * (this->totalSizeToHash - this->remainingSizeToHash) / this->totalSizeToHash;
+   }
 }
 
 /**
@@ -489,6 +532,8 @@ void FileUpdater::scan(Directory* dir, bool addUnfinished)
             if (!file->hasAllHashes() && file->isComplete() && !this->filesWithoutHashes.contains(file) && !this->filesWithoutHashesPrioritized.contains(file))
             {
                this->filesWithoutHashes << file;
+               this->totalSizeToHash += file->getSize();
+               this->remainingSizeToHash += file->getSize();
             }
          }
       }
@@ -560,8 +605,15 @@ void FileUpdater::deleteEntry(Entry* entry)
    }
    else if (File* file = dynamic_cast<File*>(entry))
    {
-      this->filesWithoutHashes.removeOne(file);
-      this->filesWithoutHashesPrioritized.removeOne(file);
+      bool fileInAList = this->filesWithoutHashes.removeOne(file);
+      fileInAList |= this->filesWithoutHashesPrioritized.removeOne(file);
+
+      if (fileInAList)
+      {
+         this->totalSizeToHash -= file->getSize();
+         this->remainingSizeToHash -= file->getSize();
+      }
+
       file->removeUnfinishedFiles();
       delete file;
    }
@@ -589,12 +641,26 @@ void FileUpdater::removeFromDirsToScan(Directory* dir)
 void FileUpdater::removeFromFilesWithoutHashes(Directory* dir)
 {
    for (QMutableListIterator<File*> i(this->filesWithoutHashes); i.hasNext();)
-      if (i.next()->hasAParentDir(dir))
+   {
+      File* f = i.next();
+      if (f->hasAParentDir(dir))
+      {
+         this->totalSizeToHash -= f->getSize();
+         this->remainingSizeToHash -= f->getSize();
          i.remove();
+      }
+   }
 
    for (QMutableListIterator<File*> i(this->filesWithoutHashesPrioritized); i.hasNext();)
-      if (i.next()->hasAParentDir(dir))
+   {
+      File* f = i.next();
+      if (f->hasAParentDir(dir))
+      {
+         this->totalSizeToHash -= f->getSize();
+         this->remainingSizeToHash -= f->getSize();
          i.remove();
+      }
+   }
 }
 
 /**
@@ -614,12 +680,18 @@ void FileUpdater::restoreFromFileCache(SharedDirectory* dir)
    for (int i = 0; i < this->fileCache->shareddir_size(); i++)
       if (Common::Hash(this->fileCache->shareddir(i).id().hash().data()) == dir->getId())
       {
-         QList<File*> filesWithHashes = dir->restoreFromFileCache(this->fileCache->shareddir(i).root());
+         QSet<File*> filesWithHashes = dir->restoreFromFileCache(this->fileCache->shareddir(i).root()).toSet();
 
-         // Remove the files which have a hash.
-         // TODO : O(n^2) can be a bit long...
-         for (QListIterator<File*>i(filesWithHashes); i.hasNext();)
-            this->filesWithoutHashes.removeOne(i.next());
+         for (QMutableListIterator<File*> i(this->filesWithoutHashes); i.hasNext();)
+         {
+            File* f = i.next();
+            if (filesWithHashes.contains(f))
+            {
+               this->totalSizeToHash -= f->getSize();
+               this->remainingSizeToHash -= f->getSize();
+               i.remove();
+            }
+         }
 
          break;
       }

@@ -201,14 +201,14 @@ QString Global::getDataFolder(DataFolderType type, bool create)
 #ifdef Q_OS_WIN32
       TCHAR dataPath[MAX_PATH];
       if (!SUCCEEDED(SHGetFolderPath(NULL, type == ROAMING ? CSIDL_APPDATA : CSIDL_LOCAL_APPDATA, NULL, 0, dataPath)))
-         throw UnableToGetFolder();
+         throw UnableToGetFolder(QString("Unable to get the %1 user folder path: SHGetFolderPath failed").arg(type == ROAMING ? "roaming" : "local"));
 
       const QString dataFolderPath = QString::fromUtf16((ushort*)dataPath);
       const QDir dataFolder(dataFolderPath);
 
       if (create && !dataFolder.exists(APPLICATION_FOLDER_NAME))
          if (!dataFolder.mkdir(APPLICATION_FOLDER_NAME))
-            throw UnableToGetFolder();
+            throw UnableToGetFolder(QString("Unable to create the folder %1 in %2").arg(APPLICATION_FOLDER_NAME).arg(dataFolder.absolutePath()));
 
       return dataFolder.absoluteFilePath(APPLICATION_FOLDER_NAME);
 #else

@@ -69,10 +69,9 @@ namespace DM
       QSet<Common::Hash> getPeers() const;
       const Protos::Common::Entry& getRemoteEntry() const;
       const Protos::Common::Entry& getLocalEntry() const;
-      virtual void remove();
 
-   signals:
-      void deleted(Download*);
+      void setAsDeleted();
+      virtual void remove();
 
    protected:
       bool hasAValidPeer();
@@ -85,7 +84,7 @@ namespace DM
    protected:
       const quint64 ID;
 
-      Common::Hash peerSourceID;
+      const Common::Hash peerSourceID;
       PM::IPeer* peerSource;
 
       Protos::Common::Entry remoteEntry; ///< From.

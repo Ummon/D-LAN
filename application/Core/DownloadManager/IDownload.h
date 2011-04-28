@@ -83,12 +83,6 @@ namespace DM
         * the remote becomes local and the path corresponds to the local file.
         */
       virtual const Protos::Common::Entry& getLocalEntry() const = 0;
-
-      /**
-        * Stop and delete the download.
-        * If the download has begun the downloaded data are removed.
-        */
-      virtual void remove() = 0;
    };
 }
 #endif

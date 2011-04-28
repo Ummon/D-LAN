@@ -27,7 +27,8 @@ SOURCES += priv/FileDownload.cpp \
     priv/Builder.cpp \
     priv/OccupiedPeers.cpp \
     ../../Protos/queue.pb.cc \
-    priv/Log.cpp
+    priv/Log.cpp \
+    priv/DownloadPredicate.cpp
 HEADERS += IDownloadManager.h \
     IDownload.h \
     IChunkDownload.h \
@@ -42,4 +43,5 @@ HEADERS += IDownloadManager.h \
     priv/OccupiedPeers.h \
     priv/Log.h \
     ../../Protos/queue.pb.h \
-    ../../Libs/MersenneTwister.h
+    ../../Libs/MersenneTwister.h \
+    priv/DownloadPredicate.h

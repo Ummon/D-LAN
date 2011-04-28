@@ -354,7 +354,7 @@ qint64 File::read(char* buffer, qint64 offset, int maxBytesToRead)
   * This method can be called from an another thread than the main one. For example,
   * from 'FileUpdated' thread.
   * @param n number of hashes to compute, 0 if we want to compute all the hashes.
-  * @exception IOErrorException Thrown when the file cannot be opened or read.
+  * @exception IOErrorException Thrown when the file cannot be opened or read. Some chunk may be computed before this exception is thrown.
   */
 bool File::computeHashes(int n)
 {
@@ -406,20 +406,22 @@ bool File::computeHashes(int n)
    while (!endOfFile)
    {
       // See 'stopHashing()'.
-      locker.unlock();
-      locker.relock();
-
-      if (this->toStopHashing)
-      {
-         this->hashingStopped.wakeOne();
-         this->toStopHashing = false;
-         this->hashing = false;
-         return false;
-      }
 
       int bytesReadChunk = 0;
       while (bytesReadChunk < CHUNK_SIZE)
       {
+         locker.unlock();
+         locker.relock();
+
+         if (this->toStopHashing)
+         {
+            this->hashingStopped.wakeOne();
+            this->toStopHashing = false;
+            this->hashing = false;
+            return false;
+         }
+
+
          int bytesRead = file.read(buffer, BUFFER_SIZE);
          switch (bytesRead)
          {
@@ -503,7 +505,6 @@ bool File::computeHashes(int n)
 void File::stopHashing()
 {
    QMutexLocker locker(&this->hashingMutex);
-
    this->toStopHashing = true;
    if (this->hashing)
    {
@@ -533,8 +534,8 @@ bool File::hasAllHashes()
 
 bool File::hasOneOrMoreHashes()
 {
-   foreach (QSharedPointer<Chunk> c, this->chunks)
-     if (c->hasHash())
+   for (QListIterator< QSharedPointer<Chunk> > i(this->chunks); i.hasNext();)
+     if (i.next()->hasHash())
          return true;
    return false;
 }
@@ -651,8 +652,8 @@ bool File::hasAParentDir(Directory* dir)
 
 void File::deleteAllChunks()
 {
-   foreach (QSharedPointer<Chunk> c, this->chunks)
-      this->cache->onChunkRemoved(c);
+   for (QListIterator< QSharedPointer<Chunk> > i(this->chunks); i.hasNext();)
+      this->cache->onChunkRemoved(i.next());
    this->chunks.clear();
 }
 

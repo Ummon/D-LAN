@@ -165,7 +165,7 @@ void Logger::createFileLog()
       }
       catch(Common::Global::UnableToGetFolder& e)
       {
-         outErr << "Error, cannot create the application data directory" << endl;
+         outErr << "Error, cannot create the application data directory: " << e.getMessage() << endl;
       }
    }
 }

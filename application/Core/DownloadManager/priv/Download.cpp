@@ -41,8 +41,6 @@ Download::~Download()
       .arg(Common::ProtoHelper::getStr(this->localEntry, &Protos::Common::Entry::path))
       .arg(Common::ProtoHelper::getStr(this->localEntry, &Protos::Common::Entry::name))
    );
-
-   emit deleted(this);
 }
 
 void Download::populateRemoteEntry(Protos::Queue::Queue_Entry* entry) const
@@ -110,6 +108,11 @@ const Protos::Common::Entry& Download::getRemoteEntry() const
 const Protos::Common::Entry& Download::getLocalEntry() const
 {
    return this->localEntry;
+}
+
+void Download::setAsDeleted()
+{
+   this->status = DELETED;
 }
 
 void Download::remove()

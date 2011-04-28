@@ -78,8 +78,8 @@ RemoteConnection::RemoteConnection(
    }
 
    this->timerRefresh.setInterval(SETTINGS.get<quint32>("remote_refresh_rate"));
+   this->timerRefresh.setSingleShot(true);
    connect(&this->timerRefresh, SIGNAL(timeout()), this, SLOT(refresh()));
-   this->timerRefresh.start();
    this->refresh();
 
    connect(&this->networkListener->getChat(), SIGNAL(newMessage(const Protos::GUI::EventChatMessages_Message&)), this, SLOT(newChatMessage(const Protos::GUI::EventChatMessages_Message&)));
@@ -176,7 +176,6 @@ void RemoteConnection::onNewMessage(Common::MessageHeader::MessageType type, con
          }
 
          this->refresh();
-         this->timerRefresh.start();
       }
       break;
 
@@ -250,23 +249,15 @@ void RemoteConnection::onNewMessage(Common::MessageHeader::MessageType type, con
          const Protos::GUI::CancelDownloads& cancelDownloadsMessage = static_cast<const Protos::GUI::CancelDownloads&>(message);
 
          if (cancelDownloadsMessage.complete())
-            this->downloadManager->removeAllCompleteDownload();
+            this->downloadManager->removeAllCompleteDownloads();
 
-         // To avoid O(n^2).
-         QSet<quint64> IDs;
+         QList<quint64> IDs;
          for (int i = 0; i < cancelDownloadsMessage.id_size(); i++)
-            IDs.insert(cancelDownloadsMessage.id(i));
+            IDs << cancelDownloadsMessage.id(i);
 
-         QList<DM::IDownload*> downloads = this->downloadManager->getDownloads();
-         for (QListIterator<DM::IDownload*> i(downloads); i.hasNext();)
-         {
-            DM::IDownload* download = i.next();
-            if (IDs.contains(download->getID()))
-               download->remove();
-         }
+         this->downloadManager->removeDownloads(IDs);
 
          this->refresh();
-         this->timerRefresh.start();
       }
       break;
 
@@ -280,7 +271,6 @@ void RemoteConnection::onNewMessage(Common::MessageHeader::MessageType type, con
          this->downloadManager->moveDownloads(moveDownloadsMessage.id_ref(), moveDownloadsMessage.move_before(), downloadIDs);
 
          this->refresh();
-         this->timerRefresh.start();
       }
       break;
 
@@ -295,7 +285,6 @@ void RemoteConnection::onNewMessage(Common::MessageHeader::MessageType type, con
             this->downloadManager->addDownload(downloadMessage.entry(), peerID);
 
          this->refresh();
-         this->timerRefresh.start();
       }
       break;
 
@@ -312,7 +301,6 @@ void RemoteConnection::onNewMessage(Common::MessageHeader::MessageType type, con
    case Common::MessageHeader::GUI_REFRESH:
       {
          this->refresh();
-         this->timerRefresh.start();
       }
       break;
 
@@ -392,11 +380,13 @@ void RemoteConnection::refresh()
    // Stats.
    Protos::GUI::State_Stats* stats = state.mutable_stats();
    stats->set_cache_status(static_cast<Protos::GUI::State_Stats_CacheStatus>(this->fileManager->getCacheStatus())); // Warning: IFileManager::CacheStatus and Protos::GUI::State_Stats_CacheStatus must be compatible.
-   stats->set_progress(100); // TODO : not implemented.
+   stats->set_progress(this->fileManager->getProgress());
    stats->set_download_rate(this->downloadManager->getDownloadRate());
    stats->set_upload_rate(this->uploadManager->getUploadRate());
 
    this->send(Common::MessageHeader::GUI_STATE, state);
+
+   this->timerRefresh.start();
 }
 
 void RemoteConnection::newChatMessage(const Protos::GUI::EventChatMessages_Message& message)

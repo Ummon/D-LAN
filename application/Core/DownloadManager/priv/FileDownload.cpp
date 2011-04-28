@@ -135,8 +135,7 @@ QSet<Common::Hash> FileDownload::getPeers() const
 {
    QSet<Common::Hash> peerIDs;
    for (QListIterator< QSharedPointer<ChunkDownload> > i(this->chunkDownloads); i.hasNext();)
-      for (QListIterator<Common::Hash> j(i.next()->getPeers()); j.hasNext();)
-         peerIDs << j.next();
+      peerIDs += i.next()->getPeers().toSet();
    return peerIDs;
 }
 
