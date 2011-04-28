@@ -533,8 +533,8 @@ bool File::hasAllHashes()
 
 bool File::hasOneOrMoreHashes()
 {
-   foreach (QSharedPointer<Chunk> c, this->chunks)
-     if (c->hasHash())
+   for (QListIterator< QSharedPointer<Chunk> > i(this->chunks); i.hasNext();)
+     if (i.next()->hasHash())
          return true;
    return false;
 }
@@ -651,8 +651,8 @@ bool File::hasAParentDir(Directory* dir)
 
 void File::deleteAllChunks()
 {
-   foreach (QSharedPointer<Chunk> c, this->chunks)
-      this->cache->onChunkRemoved(c);
+   for (QListIterator< QSharedPointer<Chunk> > i(this->chunks); i.hasNext();)
+      this->cache->onChunkRemoved(i.next());
    this->chunks.clear();
 }
 
