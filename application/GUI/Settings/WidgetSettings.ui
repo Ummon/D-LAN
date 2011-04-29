@@ -175,7 +175,7 @@
        <item>
         <widget class="QCheckBox" name="chkEnableIntegrityCheck">
          <property name="toolTip">
-          <string>When activated all received data will be verified against their hashes. It can be CPU consumer.</string>
+          <string>When activated all received data will be verified against their hashes.  It may consume CPU resources.</string>
          </property>
          <property name="text">
           <string>Data integrity check</string>
