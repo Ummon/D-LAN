@@ -5,6 +5,7 @@ using namespace DM;
 #include <Common/Constants.h>
 
 #include <priv/Download.h>
+#include <priv/FileDownload.h>
 #include <priv/Log.h>
 #include <priv/Constants.h>
 
@@ -16,6 +17,11 @@ using namespace DM;
   *  - Index queue by download peers to improve performance.
   *  - Persist/load the queue to/from a file.
   */
+
+DownloadQueue::DownloadQueue() :
+   firstUnfinished(0)
+{
+}
 
 DownloadQueue::~DownloadQueue()
 {
@@ -30,6 +36,17 @@ int DownloadQueue::size() const
 
 void DownloadQueue::insert(int position, Download* download)
 {
+   if (download->getStatus() == COMPLETE || download->getStatus() == DELETED)
+   {
+      if (position <= this->firstUnfinished)
+         this->firstUnfinished++;
+   }
+   else
+   {
+      if (position < this->firstUnfinished)
+         this->firstUnfinished = position;
+   }
+
    this->downloads.insert(position, download);
    this->downloadsIndexedBySourcePeerID.insert(download->getPeerSourceID(), download);
 }
@@ -46,6 +63,9 @@ int DownloadQueue::find(Download* download) const
 
 void DownloadQueue::remove(int position)
 {
+   if (position < this->firstUnfinished)
+      this->firstUnfinished--;
+
    Download* download = (*this)[position];
    this->downloadsIndexedBySourcePeerID.remove(download->getPeerSourceID(), download);
    this->downloads.removeAt(position);
@@ -75,8 +95,13 @@ void DownloadQueue::moveDownloads(quint64 downloadIDRef, bool moveBefore, const 
       {
          if (iRef != -1)
          {
-            this->downloads.insert(moveBefore ? iRef++ : ++iRef, this->downloads[i]);
-            this->downloads.removeAt(i+1);
+            int whereToInsert = moveBefore ? iRef++ : ++iRef;
+            int whereToRemove = i + 1;
+
+            this->updateFirstUnfinishedMove(this->downloads[i]->getStatus(), whereToInsert, whereToRemove);
+
+            this->downloads.insert(whereToInsert, this->downloads[i]);
+            this->downloads.removeAt(whereToRemove);
             continue;
          }
          else
@@ -95,8 +120,13 @@ void DownloadQueue::moveDownloads(quint64 downloadIDRef, bool moveBefore, const 
                iRef++;
             else
             {
-               this->downloads.insert(j == 0 && !moveBefore ? ++iRef : iRef, this->downloads[iToMove[j] + shift]);
-               this->downloads.removeAt(iToMove[j] + shift);
+               int whereToInsert = j == 0 && !moveBefore ? ++iRef : iRef;
+               int whereToRemove = iToMove[j] + shift;
+
+               this->updateFirstUnfinishedMove(this->downloads[whereToRemove]->getStatus(), whereToInsert, whereToRemove);
+
+               this->downloads.insert(whereToInsert, this->downloads[iToMove[j] + shift]);
+               this->downloads.removeAt(whereToRemove);
                shift--;
             }
          }
@@ -116,6 +146,7 @@ bool DownloadQueue::removeDownloads(DownloadPredicate& predicate)
    QList<Download*> downloadsToDelete;
    QList<Download*>::iterator i = this->downloads.begin();
    QList<Download*>::iterator j = i;
+   int position = 0; // Only used to update 'this->firstUnfinished'.
    while (j != this->downloads.end())
    {
       if (predicate(*j))
@@ -125,6 +156,9 @@ bool DownloadQueue::removeDownloads(DownloadPredicate& predicate)
          this->downloadsIndexedBySourcePeerID.remove((*j)->getPeerSourceID(), *j);
          downloadsToDelete << *j;
          j++;
+
+         if (position < this->firstUnfinished)
+            this->firstUnfinished--;
       }
       else if (i != j)
       {
@@ -136,6 +170,7 @@ bool DownloadQueue::removeDownloads(DownloadPredicate& predicate)
          j++;
          i++;
       }
+      position++;
    }
 
    if (i != j)
@@ -210,3 +245,47 @@ void DownloadQueue::saveToFile() const
    }
 }
 
+void DownloadQueue::updateFirstUnfinishedMove(Status status, int insertPosition, int removePosition)
+{
+   if (status == COMPLETE || status == DELETED)
+   {
+      if (insertPosition <= this->firstUnfinished)
+         this->firstUnfinished++;
+      if (removePosition < this->firstUnfinished)
+         this->firstUnfinished--;
+   }
+   else
+   {
+      if (removePosition > this->firstUnfinished && insertPosition < this->firstUnfinished)
+         this->firstUnfinished = insertPosition;
+      if (removePosition < this->firstUnfinished && insertPosition > this->firstUnfinished)
+         this->firstUnfinished--;
+   }
+}
+
+/**
+  * @class DM::ScanningIterator
+  *
+  * Iterate only on non-deleted and non-complete downloads.
+  */
+DownloadQueue::ScanningIterator::ScanningIterator(DownloadQueue& queue) :
+   queue(queue), position(queue.firstUnfinished)
+{
+}
+
+FileDownload* DownloadQueue::ScanningIterator::next()
+{
+   while (this->position < this->queue.size())
+   {
+      FileDownload* fileDownload = dynamic_cast<FileDownload*>(this->queue[this->position++]);
+      if (!fileDownload || fileDownload->getStatus() == COMPLETE || fileDownload->getStatus() == DELETED)
+      {
+         if (this->position - 1 == queue.firstUnfinished)
+            queue.firstUnfinished++;
+         continue;
+      }
+
+      return fileDownload;
+   }
+   return 0;
+}

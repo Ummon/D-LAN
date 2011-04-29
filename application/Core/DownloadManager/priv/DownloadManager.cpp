@@ -250,7 +250,7 @@ void DownloadManager::newEntries(const Protos::Common::Entries& remoteEntries)
       {
          const Protos::Common::Entry& localEntry = dirDownload->getLocalEntry();
          QString relativePath = Common::ProtoHelper::getStr(localEntry, &Protos::Common::Entry::path).append(Common::ProtoHelper::getStr(localEntry, &Protos::Common::Entry::name)).append("/");
-         this->addDownload(remoteEntries.entry(n), dirDownload->getPeerSourceID(), localEntry.has_shared_dir() ? localEntry.shared_dir().id().hash().data() : Common::Hash(), relativePath, false, position);
+         this->addDownload(remoteEntries.entry(n), dirDownload->getPeerSourceID(), localEntry.has_shared_dir() ? localEntry.shared_dir().id().hash().data() : Common::Hash(), relativePath, false, position++);
       }
 
    // Then directories. TODO : code to refactor with the one above.
@@ -259,7 +259,7 @@ void DownloadManager::newEntries(const Protos::Common::Entries& remoteEntries)
       {
          const Protos::Common::Entry& localEntry = dirDownload->getLocalEntry();
          QString relativePath = Common::ProtoHelper::getStr(localEntry, &Protos::Common::Entry::path).append(Common::ProtoHelper::getStr(localEntry, &Protos::Common::Entry::name)).append("/");
-         this->addDownload(remoteEntries.entry(n), dirDownload->getPeerSourceID(), localEntry.has_shared_dir() ? localEntry.shared_dir().id().hash().data() : Common::Hash(), relativePath, false, position);
+         this->addDownload(remoteEntries.entry(n), dirDownload->getPeerSourceID(), localEntry.has_shared_dir() ? localEntry.shared_dir().id().hash().data() : Common::Hash(), relativePath, false, position++);
       }
 
    delete dirDownload;
@@ -317,14 +317,13 @@ void DownloadManager::scanTheQueue()
 
    QSharedPointer<ChunkDownload> chunkDownload;
    FileDownload* fileDownload = 0;
+   DownloadQueue::ScanningIterator i(this->downloadQueue);
 
-   for (int i = 0; i < this->downloadQueue.size() && numberOfDownloadThreadRunningCopy < NUMBER_OF_DOWNLOADER; i++)
+   while (numberOfDownloadThreadRunningCopy < NUMBER_OF_DOWNLOADER)
    {
       if (chunkDownload.isNull()) // We can ask many chunks to download from the same file.
-      {
-         if (!(fileDownload = dynamic_cast<FileDownload*>(this->downloadQueue[i])))
-            continue;
-      }
+         if (!(fileDownload = i.next()))
+             break;
 
       fileDownload->removeErroneousStatus();
 
