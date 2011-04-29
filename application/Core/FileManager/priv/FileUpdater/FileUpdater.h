@@ -67,10 +67,9 @@ namespace FM
 
    private:
       void computeSomeHashes();
+      void updateHashingProgress();
 
       void stopHashing();
-      /*void suspendHashing();
-      void resumeHashing();*/
 
       void scan(Directory* dir, bool addUnfinished = false);
 
@@ -113,7 +112,6 @@ namespace FM
 
       QList<File*> filesWithoutHashes;
       QList<File*> filesWithoutHashesPrioritized;
-      qint64 totalSizeToHash;
       qint64 remainingSizeToHash;
    };
 }

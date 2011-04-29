@@ -63,7 +63,8 @@ SOURCES += main.cpp\
     Settings/DirListModel.cpp \
     Settings/RemoteFileDialog.cpp \
     DownloadMenu.cpp \
-    D-LAN_GUI.cpp
+    D-LAN_GUI.cpp \
+    ProgressBar.cpp
 
 HEADERS  += MainWindow.h \
     ../Protos/gui_protocol.pb.h \
@@ -94,7 +95,8 @@ HEADERS  += MainWindow.h \
     Settings/DirListModel.h \
     Settings/RemoteFileDialog.h \
     DownloadMenu.h \
-    D-LAN_GUI.h
+    D-LAN_GUI.h \
+    ProgressBar.h
 
 FORMS    += MainWindow.ui \
     StatusBar.ui \

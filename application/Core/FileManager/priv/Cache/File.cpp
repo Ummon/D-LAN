@@ -356,7 +356,7 @@ qint64 File::read(char* buffer, qint64 offset, int maxBytesToRead)
   * @param n number of hashes to compute, 0 if we want to compute all the hashes.
   * @exception IOErrorException Thrown when the file cannot be opened or read. Some chunk may be computed before this exception is thrown.
   */
-bool File::computeHashes(int n)
+bool File::computeHashes(int n, int* amountHashed)
 {
    QMutexLocker locker(&this->hashingMutex);
 
@@ -421,7 +421,6 @@ bool File::computeHashes(int n)
             return false;
          }
 
-
          int bytesRead = file.read(buffer, BUFFER_SIZE);
          switch (bytesRead)
          {
@@ -443,6 +442,9 @@ bool File::computeHashes(int n)
 
       if (bytesReadChunk > 0)
       {
+         if (amountHashed != 0)
+            *amountHashed += bytesReadChunk;
+
          if (this->chunks.size() <= chunkNum) // The size of the file has increased during the read..
             this->chunks.append(QSharedPointer<Chunk>(new Chunk(this, chunkNum, bytesReadChunk, hasher.getResult())));
          else

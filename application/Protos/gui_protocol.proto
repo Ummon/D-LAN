@@ -45,7 +45,7 @@ message State {
       required Common.Entry local_entry = 2;
       
       required Status status = 3;
-      required uint32 progress = 4; // 0 to 100.
+      required uint32 progress = 4; // 0 to 10000.
       repeated Common.Hash peer_id = 5;
    }
    message Upload {
@@ -53,7 +53,7 @@ message State {
       required Common.Entry file = 2;
       required uint32 current_part = 3;
       required uint32 nb_part = 4;
-      required uint32 progress = 5; // 0 to 100.
+      required uint32 progress = 5; // 0 to 10000.
       required Common.Hash peer_id = 6;
    }
    message Stats {

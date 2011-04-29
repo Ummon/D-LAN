@@ -16,34 +16,28 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef DOWNLOADMANAGER_DOWNLOADPREDICATE_H
-#define DOWNLOADMANAGER_DOWNLOADPREDICATE_H
+#include <ProgressBar.h>
+using namespace GUI;
 
-#include <QSet>
-#include <QList>
+#include <QStylePainter>
+#include <QStyleOptionProgressBarV2>
 
-namespace DM
+/**
+  * @class GUI::ProgressBar
+  *
+  * Print the percentage with two decimals after the point.
+  */
+
+ProgressBar::ProgressBar(QWidget *parent) :
+   QProgressBar(parent)
 {
-   class Download;
-
-   struct DownloadPredicate
-   {
-      virtual bool operator() (Download* download) = 0;
-   };
-
-   struct IsComplete : public DownloadPredicate
-   {
-      bool operator() (Download* download);
-   };
-
-   struct IsContainedInAList : public DownloadPredicate
-   {
-      IsContainedInAList(QList<quint64> downloadIDs);
-      bool operator() (Download* download);
-
-   private:
-      QSet<quint64> downloadIDs;
-   };
 }
 
-#endif
+void ProgressBar::paintEvent(QPaintEvent* paintEvent)
+{
+   QStylePainter paint(this);
+   QStyleOptionProgressBarV2 opt;
+   initStyleOption(&opt);
+   opt.text = QString("%1%").arg(static_cast<double>(this->value()) / 100);
+   paint.drawControl(QStyle::CE_ProgressBar, opt);
+}

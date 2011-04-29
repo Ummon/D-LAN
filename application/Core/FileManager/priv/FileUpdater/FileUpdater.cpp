@@ -52,7 +52,6 @@ FileUpdater::FileUpdater(FileManager* fileManager) :
    currentScanningDir(0),
    currentHashingFile(0),
    toStopHashing(false),
-   totalSizeToHash(0),
    remainingSizeToHash(0)
 {
    this->dirEvent = WaitCondition::getNewWaitCondition();
@@ -169,14 +168,12 @@ void FileUpdater::prioritizeAFileToHash(File* file)
 
       if (this->filesWithoutHashes.removeOne(file))
       {
-         this->totalSizeToHash -= file->getSize();
          this->remainingSizeToHash -= file->getSize();
       }
 
       if (!this->filesWithoutHashesPrioritized.contains(file))
       {
          this->filesWithoutHashesPrioritized << file;
-         this->totalSizeToHash += file->getSize();
          this->remainingSizeToHash += file->getSize();
       }
 
@@ -352,17 +349,17 @@ void FileUpdater::computeSomeHashes()
          locker.unlock();
          bool gotAllHashes;
          try {
-            gotAllHashes = this->currentHashingFile->computeHashes(1); // Be carreful of methods 'prioritizeAFileToHash(..)' and 'rmRoot(..)' called concurrently here.
+            int hashedAmount = 0;
+            gotAllHashes = this->currentHashingFile->computeHashes(1, &hashedAmount); // Be carreful of methods 'prioritizeAFileToHash(..)' and 'rmRoot(..)' called concurrently here.
+            this->remainingSizeToHash -= hashedAmount;
+            this->updateHashingProgress();
          } catch (IOErrorException&) {
             gotAllHashes = true; // The hashes may be recomputed when a peer ask the hashes with a GET_HASHES request.
          }
          locker.relock();
 
          if (gotAllHashes)
-         {
-            this->remainingSizeToHash -= this->filesWithoutHashesPrioritized[0]->getSize();
             this->filesWithoutHashesPrioritized.removeFirst();
-         }
          else if (this->filesWithoutHashesPrioritized.size() > 1) // The current hashing file may have been removed from 'filesWithoutHashesPrioritized' by 'rmRoot(..)'.
             this->filesWithoutHashesPrioritized.move(0, this->filesWithoutHashesPrioritized.size() - 1);
       }
@@ -392,17 +389,17 @@ void FileUpdater::computeSomeHashes()
          locker.unlock();
          bool gotAllHashes;
          try {
-            gotAllHashes = this->currentHashingFile->computeHashes(1);
+            int hashedAmount = 0;
+            gotAllHashes = this->currentHashingFile->computeHashes(1, &hashedAmount);
+            this->remainingSizeToHash -= hashedAmount;
+            this->updateHashingProgress();
          } catch (IOErrorException&) {
             gotAllHashes = true; // The hashes may be recomputed when a peer ask the hashes with a GET_HASHES request.
          }
          locker.relock();
 
          if (gotAllHashes)
-         {
-            this->remainingSizeToHash -= this->filesWithoutHashes[i]->getSize();
             this->filesWithoutHashes.removeAt(i--);
-         }
       }
       else
       {
@@ -425,14 +422,17 @@ end:
    L_DEBU("Computing some hashes ended");
    if (this->filesWithoutHashes.isEmpty() && this->filesWithoutHashesPrioritized.isEmpty())
    {
-      this->totalSizeToHash = 0;
       this->remainingSizeToHash = 0;
       this->progress = 0;
    }
-   else
-   {
-      this->progress = 10000LL * (this->totalSizeToHash - this->remainingSizeToHash) / this->totalSizeToHash;
-   }
+}
+
+void FileUpdater::updateHashingProgress()
+{
+   QMutexLocker locker(&this->mutex);
+
+   quint64 totalAmountOfData = this->fileManager->getAmount();
+   this->progress = totalAmountOfData == 0 ? 0 : 10000LL * (totalAmountOfData - this->remainingSizeToHash) / totalAmountOfData;
 }
 
 /**
@@ -532,7 +532,6 @@ void FileUpdater::scan(Directory* dir, bool addUnfinished)
             if (!file->hasAllHashes() && file->isComplete() && !this->filesWithoutHashes.contains(file) && !this->filesWithoutHashesPrioritized.contains(file))
             {
                this->filesWithoutHashes << file;
-               this->totalSizeToHash += file->getSize();
                this->remainingSizeToHash += file->getSize();
             }
          }
@@ -610,7 +609,6 @@ void FileUpdater::deleteEntry(Entry* entry)
 
       if (fileInAList)
       {
-         this->totalSizeToHash -= file->getSize();
          this->remainingSizeToHash -= file->getSize();
       }
 
@@ -645,7 +643,6 @@ void FileUpdater::removeFromFilesWithoutHashes(Directory* dir)
       File* f = i.next();
       if (f->hasAParentDir(dir))
       {
-         this->totalSizeToHash -= f->getSize();
          this->remainingSizeToHash -= f->getSize();
          i.remove();
       }
@@ -656,7 +653,6 @@ void FileUpdater::removeFromFilesWithoutHashes(Directory* dir)
       File* f = i.next();
       if (f->hasAParentDir(dir))
       {
-         this->totalSizeToHash -= f->getSize();
          this->remainingSizeToHash -= f->getSize();
          i.remove();
       }
@@ -687,7 +683,6 @@ void FileUpdater::restoreFromFileCache(SharedDirectory* dir)
             File* f = i.next();
             if (filesWithHashes.contains(f))
             {
-               this->totalSizeToHash -= f->getSize();
                this->remainingSizeToHash -= f->getSize();
                i.remove();
             }

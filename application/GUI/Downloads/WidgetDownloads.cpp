@@ -37,7 +37,7 @@ void DownloadsDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opt
       QStyleOptionProgressBarV2 progressBarOption;
       progressBarOption.rect = option.rect;
       progressBarOption.minimum = 0;
-      progressBarOption.maximum = 100;
+      progressBarOption.maximum = 10000;
       progressBarOption.textAlignment = Qt::AlignHCenter;
       progressBarOption.progress = progress.progress;
 
@@ -50,7 +50,7 @@ void DownloadsDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opt
          progressBarOption.text = "Initializing..";
          break;
       case Protos::GUI::State_Download_Status_DOWNLOADING:
-         progressBarOption.text = QString("%1%").arg(progress.progress);
+         progressBarOption.text = QString("%1%").arg(static_cast<double>(progress.progress) / 100);
          break;
       case Protos::GUI::State_Download_Status_COMPLETE:
          progressBarOption.text = "Complete";

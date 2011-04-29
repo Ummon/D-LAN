@@ -16,33 +16,22 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef DOWNLOADMANAGER_DOWNLOADPREDICATE_H
-#define DOWNLOADMANAGER_DOWNLOADPREDICATE_H
+#ifndef GUI_PROGRESSBAR_H
+#define GUI_PROGRESSBAR_H
 
-#include <QSet>
-#include <QList>
+#include <QProgressBar>
+#include <QPaintEvent>
 
-namespace DM
+namespace GUI
 {
-   class Download;
-
-   struct DownloadPredicate
+   class ProgressBar : public QProgressBar
    {
-      virtual bool operator() (Download* download) = 0;
-   };
+      Q_OBJECT
+   public:
+      explicit ProgressBar(QWidget *parent = 0);
 
-   struct IsComplete : public DownloadPredicate
-   {
-      bool operator() (Download* download);
-   };
-
-   struct IsContainedInAList : public DownloadPredicate
-   {
-      IsContainedInAList(QList<quint64> downloadIDs);
-      bool operator() (Download* download);
-
-   private:
-      QSet<quint64> downloadIDs;
+   protected:
+      void paintEvent(QPaintEvent* paintEvent);
    };
 }
 

@@ -62,7 +62,7 @@ namespace DM
       virtual Status getStatus() const = 0;
 
       /**
-        * Return a value between 0 and 100.
+        * Return a value between 0 and 10000.
         */
       virtual int getProgress() const = 0;
 
