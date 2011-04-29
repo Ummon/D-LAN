@@ -22,7 +22,6 @@ using namespace DM;
 #include <Protos/queue.pb.h>
 
 #include <Common/Settings.h>
-#include <Common/PersistentData.h>
 #include <Common/Constants.h>
 #include <Common/ProtoHelper.h>
 
@@ -36,7 +35,7 @@ DownloadManager::DownloadManager(QSharedPointer<FM::IFileManager> fileManager, Q
    NUMBER_OF_DOWNLOADER(static_cast<int>(SETTINGS.get<quint32>("number_of_downloader"))),
    fileManager(fileManager),
    peerManager(peerManager),
-   numberOfDownload(0),
+   numberOfDownloadThreadRunning(0),
    queueChanged(false)
 {
    connect(&this->occupiedPeersAskingForHashes, SIGNAL(newFreePeer(PM::IPeer*)), this, SLOT(peerNoLongerAskingForHashes(PM::IPeer*)));
@@ -60,12 +59,6 @@ DownloadManager::~DownloadManager()
    this->queueChanged = true;
    this->saveQueueToFile();
 
-   while (!this->downloads.isEmpty())
-   {
-      Download* download = this->downloads.takeFirst();
-      delete download;
-   }
-
    L_DEBU("DownloadManager deleted");
 }
 
@@ -74,29 +67,23 @@ DownloadManager::~DownloadManager()
   */
 void DownloadManager::addDownload(const Protos::Common::Entry& remoteEntry, const Common::Hash& peerSource)
 {
-   QMutableListIterator<Download*> i(this->downloads);
-   i.toBack();
-   this->addDownload(remoteEntry, peerSource, Common::Hash(), "/", false, i);
+   this->addDownload(remoteEntry, peerSource, Common::Hash(), "/", false, this->downloadQueue.size());
 }
 
 void DownloadManager::addDownload(const Protos::Common::Entry& remoteEntry, const Common::Hash& peerSource, const Common::Hash& destinationDirectoryID, const QString& relativePath)
 {
-   QMutableListIterator<Download*> i(this->downloads);
-   i.toBack();
-   this->addDownload(remoteEntry, peerSource, destinationDirectoryID, relativePath, false, i);
+   this->addDownload(remoteEntry, peerSource, destinationDirectoryID, relativePath, false, this->downloadQueue.size());
 }
 
 Download* DownloadManager::addDownload(const Protos::Common::Entry& remoteEntry, const Common::Hash& peerSource, const Common::Hash& destinationDirectoryID, const QString& localRelativePath, bool complete)
 {
-   QMutableListIterator<Download*> i(this->downloads);
-   i.toBack();
-   return this->addDownload(remoteEntry, peerSource, destinationDirectoryID, localRelativePath, complete, i);
+   return this->addDownload(remoteEntry, peerSource, destinationDirectoryID, localRelativePath, complete, this->downloadQueue.size());
 }
 
 /**
   * Insert a new download at the given position.
   */
-Download* DownloadManager::addDownload(const Protos::Common::Entry& remoteEntry, const Common::Hash& peerSource, const Common::Hash& destinationDirectoryID, const QString& localRelativePath, bool complete, QMutableListIterator<Download*>& iterator)
+Download* DownloadManager::addDownload(const Protos::Common::Entry& remoteEntry, const Common::Hash& peerSource, const Common::Hash& destinationDirectoryID, const QString& localRelativePath, bool complete, int position)
 {
    Protos::Common::Entry localEntry(remoteEntry);
    Common::ProtoHelper::setStr(localEntry, &Protos::Common::Entry::set_path, localRelativePath);
@@ -104,19 +91,17 @@ Download* DownloadManager::addDownload(const Protos::Common::Entry& remoteEntry,
       localEntry.mutable_shared_dir()->mutable_id()->set_hash(destinationDirectoryID.getData(), Common::Hash::HASH_SIZE);
    localEntry.set_exists(false);
 
-   return this->addDownload(remoteEntry, localEntry, peerSource, complete, iterator);
+   return this->addDownload(remoteEntry, localEntry, peerSource, complete, position);
 }
 
 Download* DownloadManager::addDownload(const Protos::Common::Entry& remoteEntry, const Protos::Common::Entry& localEntry, const Common::Hash& peerSource, bool complete)
 {
-   QMutableListIterator<Download*> i(this->downloads);
-   i.toBack();
-   return this->addDownload(remoteEntry, localEntry, peerSource, complete, i);
+   return this->addDownload(remoteEntry, localEntry, peerSource, complete, this->downloadQueue.size());
 }
 
-Download* DownloadManager::addDownload(const Protos::Common::Entry& remoteEntry, const Protos::Common::Entry& localEntry, const Common::Hash& peerSource, bool complete,  QMutableListIterator<Download*>& iterator)
+Download* DownloadManager::addDownload(const Protos::Common::Entry& remoteEntry, const Protos::Common::Entry& localEntry, const Common::Hash& peerSource, bool complete, int position)
 {
-   if (this->isEntryAlreadyQueued(localEntry, peerSource))
+   if (this->downloadQueue.isEntryAlreadyQueued(localEntry, peerSource))
    {
       L_WARN(QString("Entry already queued, it will no be added to the queue : %1").arg(Common::ProtoHelper::getStr(remoteEntry, &Protos::Common::Entry::name)));
       return 0;
@@ -161,11 +146,8 @@ Download* DownloadManager::addDownload(const Protos::Common::Entry& remoteEntry,
       return 0;
    }
 
-   iterator.insert(newDownload);
-   this->downloadsIndexedBySourcePeerID.insert(peerSource, newDownload);
-
+   this->downloadQueue.insert(position, newDownload);
    newDownload->setPeer(this->peerManager->getPeer(peerSource));
-
    newDownload->start();
 
    this->setQueueChanged();
@@ -177,10 +159,10 @@ QList<IDownload*> DownloadManager::getDownloads() const
 {
    QList<IDownload*> listDownloads;
 
-   // TODO : very heavy!
-   for (QListIterator<Download*> i(this->downloads); i.hasNext();)
+   // TODO: very heavy!
+   for (int i = 0; i < this->downloadQueue.size(); i++)
    {
-      Download* download = i.next();
+      Download* download = this->downloadQueue[i];
       if (download->getStatus() != DELETED)
          listDownloads << download;
    }
@@ -190,45 +172,7 @@ QList<IDownload*> DownloadManager::getDownloads() const
 
 void DownloadManager::moveDownloads(quint64 downloadIDRef, bool moveBefore, const QList<quint64>& downloadIDs)
 {
-   QList<quint64> downloadIDsCopy(downloadIDs);
-   int iRef = -1; // Index of the download reference, -1 if unkown.
-   QList<int> iToMove;
-
-   for (int i = 0; i < this->downloads.size(); i++)
-   {
-      int j;
-      if ((j = downloadIDsCopy.indexOf(this->downloads[i]->getID())) != -1)
-      {
-         if (iRef != -1)
-         {
-            this->downloads.insert(moveBefore ? iRef++ : ++iRef, this->downloads[i]);
-            this->downloads.removeAt(i+1);
-            continue;
-         }
-         else
-            iToMove << i;
-
-         downloadIDsCopy.removeAt(j);
-      }
-
-      if (this->downloads[i]->getID() == downloadIDRef)
-      {
-         iRef = i;
-         int shift = 0;
-         for (int j = 0; j < iToMove.size(); j++)
-         {
-            if (iToMove[j] == iRef && moveBefore)
-               iRef++;
-            else
-            {
-               this->downloads.insert(j == 0 && !moveBefore ? ++iRef : iRef, this->downloads[iToMove[j] + shift]);
-               this->downloads.removeAt(iToMove[j] + shift);
-               shift--;
-            }
-         }
-         iToMove.clear();
-      }
-   }
+   this->downloadQueue.moveDownloads(downloadIDRef, moveBefore, downloadIDs);
 
    this->setQueueChanged();
 }
@@ -239,7 +183,8 @@ void DownloadManager::moveDownloads(quint64 downloadIDRef, bool moveBefore, cons
 void DownloadManager::removeAllCompleteDownloads()
 {
    IsComplete isComplete;
-   this->removeDownloads(isComplete);
+   if (this->downloadQueue.removeDownloads(isComplete))
+      this->setQueueChanged();
 }
 
 void DownloadManager::removeDownloads(QList<quint64> IDs)
@@ -248,54 +193,17 @@ void DownloadManager::removeDownloads(QList<quint64> IDs)
       return;
 
    IsContainedInAList isContainedInAList(IDs);
-   this->removeDownloads(isContainedInAList);
-}
-
-/**
-  * Remove all download for which the given predicate is true.
-  * It uses QList::erase(iterator begin, iterator end) to improve the performance.
-  */
-void DownloadManager::removeDownloads(DownloadPredicate& predicate)
-{
-   QList<Download*> downloadsToDelete;
-   QList<Download*>::iterator i = this->downloads.begin();
-   QList<Download*>::iterator j = i;
-   while (j != this->downloads.end())
-   {
-      if (predicate(*j))
-      {
-         this->setQueueChanged();
-         (*j)->setAsDeleted();
-         this->downloadsIndexedBySourcePeerID.remove((*j)->getPeerSourceID(), *j);
-         downloadsToDelete << *j;
-         j++;
-      }
-      else if (i != j)
-      {
-         j = this->downloads.erase(i, j);
-         i = j;
-      }
-      else
-      {
-         j++;
-         i++;
-      }
-   }
-
-   if (i != j)
-      this->downloads.erase(i, j);
-
-   for (QListIterator<Download*> k(downloadsToDelete); k.hasNext();)
-      k.next()->remove();
+   if (this->downloadQueue.removeDownloads(isContainedInAList))
+      this->setQueueChanged();
 }
 
 QList< QSharedPointer<IChunkDownload> > DownloadManager::getUnfinishedChunks(int n) const
 {
    QList< QSharedPointer<IChunkDownload> > unfinishedChunks;
 
-   for (QListIterator<Download*> i(this->downloads); i.hasNext() && unfinishedChunks.size() < n;)
+   for (int i = 0; i < this->downloadQueue.size(); i++)
    {
-      FileDownload* fileDownload = dynamic_cast<FileDownload*>(i.next());
+      FileDownload* fileDownload = dynamic_cast<FileDownload*>(this->downloadQueue[i]);
       if (!fileDownload)
          continue;
 
@@ -312,8 +220,7 @@ int DownloadManager::getDownloadRate()
 
 void DownloadManager::peerBecomesAvailable(PM::IPeer* peer)
 {
-   for (QMultiHash<Common::Hash, Download*>::iterator i = this->downloadsIndexedBySourcePeerID.find(peer->getID()); i != this->downloadsIndexedBySourcePeerID.end() && i.key() == peer->getID(); i++)
-      i.value()->setPeer(peer);
+   this->downloadQueue.setPeer(peer);
 
    // To handle the case where the peers source of some downloads without all the hashes become alive after being dead for a while. The hashes must be reasked.
    this->occupiedPeersAskingForEntries.newPeer(peer);
@@ -332,11 +239,10 @@ void DownloadManager::fileCacheLoaded()
 void DownloadManager::newEntries(const Protos::Common::Entries& remoteEntries)
 {
    DirDownload* dirDownload = dynamic_cast<DirDownload*>(this->sender());
-   QMutableListIterator<Download*> i(this->downloads);
-   if (!i.findNext(dirDownload))
+   int position = this->downloadQueue.find(dirDownload);
+   if (position == -1)
       return;
-   i.remove();
-   this->downloadsIndexedBySourcePeerID.remove(dirDownload->getPeerSourceID(), dirDownload);
+   this->downloadQueue.remove(position);
 
    // Add files first.
    for (int n = 0; n < remoteEntries.entry_size(); n++)
@@ -344,7 +250,7 @@ void DownloadManager::newEntries(const Protos::Common::Entries& remoteEntries)
       {
          const Protos::Common::Entry& localEntry = dirDownload->getLocalEntry();
          QString relativePath = Common::ProtoHelper::getStr(localEntry, &Protos::Common::Entry::path).append(Common::ProtoHelper::getStr(localEntry, &Protos::Common::Entry::name)).append("/");
-         this->addDownload(remoteEntries.entry(n), dirDownload->getPeerSourceID(), localEntry.has_shared_dir() ? localEntry.shared_dir().id().hash().data() : Common::Hash(), relativePath, false, i);
+         this->addDownload(remoteEntries.entry(n), dirDownload->getPeerSourceID(), localEntry.has_shared_dir() ? localEntry.shared_dir().id().hash().data() : Common::Hash(), relativePath, false, position);
       }
 
    // Then directories. TODO : code to refactor with the one above.
@@ -353,7 +259,7 @@ void DownloadManager::newEntries(const Protos::Common::Entries& remoteEntries)
       {
          const Protos::Common::Entry& localEntry = dirDownload->getLocalEntry();
          QString relativePath = Common::ProtoHelper::getStr(localEntry, &Protos::Common::Entry::path).append(Common::ProtoHelper::getStr(localEntry, &Protos::Common::Entry::name)).append("/");
-         this->addDownload(remoteEntries.entry(n), dirDownload->getPeerSourceID(), localEntry.has_shared_dir() ? localEntry.shared_dir().id().hash().data() : Common::Hash(), relativePath, false, i);
+         this->addDownload(remoteEntries.entry(n), dirDownload->getPeerSourceID(), localEntry.has_shared_dir() ? localEntry.shared_dir().id().hash().data() : Common::Hash(), relativePath, false, position);
       }
 
    delete dirDownload;
@@ -366,13 +272,13 @@ void DownloadManager::peerNoLongerAskingForHashes(PM::IPeer* peer)
 {
    L_DEBU(QString("Finish to ask hashes from peer: %1").arg(peer->getID().toStr()));
 
-   if (!this->downloadsIndexedBySourcePeerID.contains(peer->getID()))
+   if (!this->downloadQueue.isAPeerSource(peer->getID()))
       return;
 
    // We can't use 'downloadsIndexedBySourcePeerID' because the order matters.
-   for (QListIterator<Download*> i(this->downloads); i.hasNext();)
+   for (int i = 0; i < this->downloadQueue.size(); i++)
    {
-      FileDownload* fileDownload = dynamic_cast<FileDownload*>(i.next());
+      FileDownload* fileDownload = dynamic_cast<FileDownload*>(this->downloadQueue[i]);
       if (fileDownload && fileDownload->retrieveHashes())
          break;
    }
@@ -382,13 +288,13 @@ void DownloadManager::peerNoLongerAskingForEntries(PM::IPeer* peer)
 {
    L_DEBU(QString("Finish to ask entries from peer: %1").arg(peer->getID().toStr()));
 
-   if (!this->downloadsIndexedBySourcePeerID.contains(peer->getID()))
+   if (!this->downloadQueue.isAPeerSource(peer->getID()))
       return;
 
    // We can't use 'downloadsIndexedBySourcePeerID' because the order matters.
-   for (QListIterator<Download*> i(this->downloads); i.hasNext();)
+   for (int i = 0; i < this->downloadQueue.size(); i++)
    {
-      DirDownload* dirDownload = dynamic_cast<DirDownload*>(i.next());
+      DirDownload* dirDownload = dynamic_cast<DirDownload*>(this->downloadQueue[i]);
       if (dirDownload && dirDownload->retrieveEntries())
          break;
    }
@@ -399,7 +305,7 @@ void DownloadManager::peerNoLongerAskingForEntries(PM::IPeer* peer)
   */
 void DownloadManager::peerNoLongerDownloadingChunk(PM::IPeer* peer)
 {
-   L_DEBU(QString("A peer is free: %1, number of downloading thread : %2").arg(peer->getID().toStr()).arg(this->numberOfDownload));
+   L_DEBU(QString("A peer is free: %1, number of downloading thread : %2").arg(peer->getID().toStr()).arg(this->numberOfDownloadThreadRunning));
    this->scanTheQueue();
 }
 
@@ -407,16 +313,16 @@ void DownloadManager::scanTheQueue()
 {
    L_DEBU("Scanning the queue..");
 
-   int numberOfDownloadCopy = this->numberOfDownload;
+   int numberOfDownloadThreadRunningCopy = this->numberOfDownloadThreadRunning;
 
    QSharedPointer<ChunkDownload> chunkDownload;
    FileDownload* fileDownload = 0;
 
-   for (QListIterator<Download*> i(this->downloads); i.hasNext() && numberOfDownloadCopy < NUMBER_OF_DOWNLOADER;)
+   for (int i = 0; i < this->downloadQueue.size() && numberOfDownloadThreadRunningCopy < NUMBER_OF_DOWNLOADER; i++)
    {
       if (chunkDownload.isNull()) // We can ask many chunks to download from the same file.
       {
-         if (!(fileDownload = dynamic_cast<FileDownload*>(i.next())))
+         if (!(fileDownload = dynamic_cast<FileDownload*>(this->downloadQueue[i])))
             continue;
       }
 
@@ -438,8 +344,8 @@ void DownloadManager::scanTheQueue()
 
       if (chunkDownload->startDownloading())
       {
-         this->numberOfDownload++;
-         numberOfDownloadCopy = this->numberOfDownload;
+         this->numberOfDownloadThreadRunning++;
+         numberOfDownloadThreadRunningCopy = this->numberOfDownloadThreadRunning;
       }
    }
 
@@ -451,9 +357,9 @@ void DownloadManager::scanTheQueue()
   */
 void DownloadManager::chunkDownloadFinished()
 {
-   L_DEBU(QString("DownloadManager::chunkDownloadFinished, numberOfDownload = %1").arg(this->numberOfDownload));
+   L_DEBU(QString("DownloadManager::chunkDownloadFinished, numberOfDownloadThreadRunning = %1").arg(this->numberOfDownloadThreadRunning));
    this->sender()->disconnect(this, SLOT(chunkDownloadFinished()));
-   this->numberOfDownload--;
+   this->numberOfDownloadThreadRunning--;
 }
 
 /**
@@ -462,34 +368,14 @@ void DownloadManager::chunkDownloadFinished()
   */
 void DownloadManager::loadQueueFromFile()
 {
-   Protos::Queue::Queue savedQueue;
+   Protos::Queue::Queue savedQueue = this->downloadQueue.loadFromFile();
 
-   try
+   for (int i = 0; i < savedQueue.entry_size(); i++)
    {
-      Common::PersistentData::getValue(Common::FILE_QUEUE, savedQueue, Common::Global::LOCAL);
-      if (static_cast<int>(savedQueue.version()) != FILE_QUEUE_VERSION)
-      {
-         L_USER(QString("The version (%1) of the queue file \"%2\" doesn't match the current version (%3). Queue will be reset.").arg(savedQueue.version()).arg(Common::FILE_QUEUE).arg(FILE_QUEUE_VERSION));
-         Common::PersistentData::rmValue(Common::FILE_QUEUE, Common::Global::LOCAL);
-         goto end;
-      }
-
-      for (int i = 0; i < savedQueue.entry_size(); i++)
-      {
-         const Protos::Queue::Queue_Entry& entry = savedQueue.entry(i);
-         this->addDownload(entry.remote_entry(), entry.local_entry(), Common::Hash(entry.peer_id().hash().data()), entry.complete());
-      }
-   }
-   catch (Common::UnknownValueException& e)
-   {
-      L_WARN(QString("The download queue file cache cannot be retrived (the file doesn't exist) : %1").arg(Common::FILE_QUEUE));
-   }
-   catch (...)
-   {
-      L_WARN(QString("The download queue file cache cannot be retrived (Unkown exception) : %1").arg(Common::FILE_QUEUE));
+      const Protos::Queue::Queue_Entry& entry = savedQueue.entry(i);
+      this->addDownload(entry.remote_entry(), entry.local_entry(), Common::Hash(entry.peer_id().hash().data()), entry.complete());
    }
 
-end:
    this->saveTimer.start();
 }
 
@@ -499,26 +385,7 @@ void DownloadManager::saveQueueToFile()
    {
       L_DEBU("Persisting queue ..");
 
-      Protos::Queue::Queue savedQueue;
-      savedQueue.set_version(FILE_QUEUE_VERSION);
-
-      for (QListIterator<Download*> i(this->downloads); i.hasNext();)
-      {
-         Protos::Queue::Queue_Entry* queueEntry = savedQueue.add_entry();
-         Download* download = i.next();
-         download->populateRemoteEntry(queueEntry);
-         download->populateLocalEntry(queueEntry);
-         queueEntry->mutable_peer_id()->set_hash(download->getPeerSourceID().getData(), Common::Hash::HASH_SIZE);
-      }
-
-      try
-      {
-         Common::PersistentData::setValue(Common::FILE_QUEUE, savedQueue, Common::Global::LOCAL);
-      }
-      catch (Common::PersistentDataIOException& err)
-      {
-         L_ERRO(err.message);
-      }
+      this->downloadQueue.saveToFile();
       this->queueChanged = false;
 
       L_DEBU("Persisting queue finished");
@@ -532,15 +399,4 @@ void DownloadManager::saveQueueToFile()
 void DownloadManager::setQueueChanged()
 {
    this->queueChanged = true;
-}
-
-bool DownloadManager::isEntryAlreadyQueued(const Protos::Common::Entry& localEntry, const Common::Hash& peerSourceID)
-{
-   for (QMultiHash<Common::Hash, Download*>::iterator i = this->downloadsIndexedBySourcePeerID.find(peerSourceID); i != this->downloadsIndexedBySourcePeerID.end() && i.key() == peerSourceID; i++)
-   {
-      Download* download = i.value();
-      if (download->getLocalEntry().shared_dir().id().hash() == localEntry.shared_dir().id().hash() && download->getLocalEntry().path() == localEntry.path() && download->getLocalEntry().name() == localEntry.name())
-         return true;
-   }
-   return false;
 }

@@ -31,6 +31,7 @@
 #include <Core/PeerManager/IPeerManager.h>
 
 #include <IDownloadManager.h>
+#include <priv/DownloadQueue.h>
 #include <priv/DownloadPredicate.h>
 #include <priv/OccupiedPeers.h>
 #include <priv/Log.h>
@@ -56,18 +57,16 @@ namespace DM
       void addDownload(const Protos::Common::Entry& remoteEntry, const Common::Hash& peerSource, const Common::Hash& destinationDirectoryID, const QString& relativePath);
 
       Download* addDownload(const Protos::Common::Entry& remoteEntry, const Common::Hash& peerSource, const Common::Hash& destinationDirectoryID, const QString& localRelativePath, bool complete);
-      Download* addDownload(const Protos::Common::Entry& remoteEntry, const Common::Hash& peerSource, const Common::Hash& destinationDirectoryID, const QString& localRelativePath, bool complete, QMutableListIterator<Download*>& iterator);
+      Download* addDownload(const Protos::Common::Entry& remoteEntry, const Common::Hash& peerSource, const Common::Hash& destinationDirectoryID, const QString& localRelativePath, bool complete, int position);
 
       Download* addDownload(const Protos::Common::Entry& remoteEntry, const Protos::Common::Entry& localEntry, const Common::Hash& peerSource, bool complete);
-      Download* addDownload(const Protos::Common::Entry& remoteEntry, const Protos::Common::Entry& localEntry, const Common::Hash& peerSource, bool complete,  QMutableListIterator<Download*>& iterator);
+      Download* addDownload(const Protos::Common::Entry& remoteEntry, const Protos::Common::Entry& localEntry, const Common::Hash& peerSource, bool complete,  int position);
 
       QList<IDownload*> getDownloads() const;
       void moveDownloads(quint64 downloadIDRef, bool moveBefore, const QList<quint64>& downloadIDs);
 
       void removeAllCompleteDownloads();
       void removeDownloads(QList<quint64> IDs);
-   private:
-      void removeDownloads(DownloadPredicate& predicate);
 
    public:
       QList< QSharedPointer<IChunkDownload> > getUnfinishedChunks(int n) const;
@@ -96,8 +95,6 @@ namespace DM
       void setQueueChanged();
 
    private:
-      bool isEntryAlreadyQueued(const Protos::Common::Entry& localEntry, const Common::Hash& peerSourceID);
-
       LOG_INIT_H("DownloadManager");
 
       const int NUMBER_OF_DOWNLOADER;
@@ -109,10 +106,9 @@ namespace DM
       OccupiedPeers occupiedPeersAskingForEntries;
       OccupiedPeers occupiedPeersDownloadingChunk;
 
-      QList<Download*> downloads;
-      QMultiHash<Common::Hash, Download*> downloadsIndexedBySourcePeerID;
+      DownloadQueue downloadQueue;
 
-      int numberOfDownload;
+      int numberOfDownloadThreadRunning;
 
       QTimer rescanTimer; // When a download has an error status, the queue will be rescaned periodically.
 
