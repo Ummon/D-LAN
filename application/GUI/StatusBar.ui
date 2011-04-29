@@ -112,7 +112,7 @@
     </widget>
    </item>
    <item>
-    <widget class="QProgressBar" name="prgCurrentAction">
+    <widget class="GUI::ProgressBar" name="prgCurrentAction">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
        <horstretch>0</horstretch>
@@ -136,6 +136,9 @@
      </property>
      <property name="textVisible">
       <bool>true</bool>
+     </property>
+     <property name="format">
+      <string notr="true"/>
      </property>
     </widget>
    </item>
@@ -170,6 +173,13 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>GUI::ProgressBar</class>
+   <extends>QProgressBar</extends>
+   <header>ProgressBar.h</header>
+  </customwidget>
+ </customwidgets>
  <resources>
   <include location="ressources.qrc"/>
  </resources>
