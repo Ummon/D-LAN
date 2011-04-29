@@ -187,8 +187,8 @@ bool DownloadQueue::removeDownloads(DownloadPredicate& predicate)
       {
          j++;
          i++;
+         position++;
       }
-      position++;
    }
 
    if (i != j)
