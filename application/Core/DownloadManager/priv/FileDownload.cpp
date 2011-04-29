@@ -120,7 +120,7 @@ void FileDownload::populateRemoteEntry(Protos::Queue::Queue_Entry* entry) const
 int FileDownload::getProgress() const
 {
    if (this->status == COMPLETE)
-      return 100;
+      return 10000;
 
    quint64 knownBytes = 0;
    for (QListIterator< QSharedPointer<ChunkDownload> > i(this->chunkDownloads); i.hasNext();)
@@ -128,7 +128,7 @@ int FileDownload::getProgress() const
       knownBytes += i.next()->getDownloadedBytes();
    }
 
-   return 100LL * knownBytes / this->remoteEntry.size();
+   return 10000LL * knownBytes / this->remoteEntry.size();
 }
 
 QSet<Common::Hash> FileDownload::getPeers() const

@@ -46,7 +46,7 @@ namespace UM
       virtual Common::Hash getPeerID() const = 0;
 
       /**
-        * Returns a value between 0 and 100.
+        * Returns a value between 0 and 10000.
         */
       virtual int getProgress() const = 0;
 

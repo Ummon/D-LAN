@@ -77,7 +77,7 @@ int Uploader::getProgress() const
 
    const int chunkSize = this->chunk->getChunkSize();
    if (chunkSize != 0)
-      return 100LL * this->offset / this->chunk->getChunkSize();
+      return 10000LL * this->offset / this->chunk->getChunkSize();
    else
       return 0;
 }
