@@ -8,6 +8,15 @@ using namespace DM;
 #include <priv/Log.h>
 #include <priv/Constants.h>
 
+/**
+  * @class DM::DownloadQueue
+  *
+  * Goals:
+  *  - Manage a queue of downloads.
+  *  - Index queue by download peers to improve performance.
+  *  - Persist/load the queue to/from a file.
+  */
+
 DownloadQueue::~DownloadQueue()
 {
    while (!this->downloads.isEmpty())
@@ -42,7 +51,7 @@ void DownloadQueue::remove(int position)
    this->downloads.removeAt(position);
 }
 
-void DownloadQueue::setPeer(PM::IPeer* peer)
+void DownloadQueue::setPeerSource(PM::IPeer* peer)
 {
    for (QMultiHash<Common::Hash, Download*>::iterator i = this->downloadsIndexedBySourcePeerID.find(peer->getID()); i != this->downloadsIndexedBySourcePeerID.end() && i.key() == peer->getID(); i++)
       i.value()->setPeer(peer);
