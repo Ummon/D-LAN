@@ -26,4 +26,4 @@ do
    popd
 done
 
-Echo "All tests finished successfully"
+echo "All tests finished successfully"

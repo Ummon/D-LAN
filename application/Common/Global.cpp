@@ -214,7 +214,7 @@ QString Global::getDataFolder(DataFolderType type, bool create)
 #else
       if (create && !QDir::home().exists(APPLICATION_FOLDER_NAME))
          if (!QDir::home().mkdir(APPLICATION_FOLDER_NAME))
-            throw UnableToGetFolder();
+             throw UnableToGetFolder(QString("Unable to create the folder %1 in %2").arg(APPLICATION_FOLDER_NAME).arg(QDir::home().absolutePath()));
 
       return QDir::home().absoluteFilePath(APPLICATION_FOLDER_NAME);
 #endif
