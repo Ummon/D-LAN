@@ -243,7 +243,7 @@ SearchModel::SearchNode* SearchModel::getRoot()
 
 /**
   * Create a new node, it can be a directory or a file. It will be inserted in the structure depending its level and its path+name.
-  * Return the first node of the group (directories or files).
+  * Return the index of the first entry of the same level.
   */
 int SearchModel::insertNode(const Protos::Common::FindResult_EntryLevel& entry, const Common::Hash& peerID, int currentIndex)
 {

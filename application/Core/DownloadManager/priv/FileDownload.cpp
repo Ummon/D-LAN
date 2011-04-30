@@ -157,7 +157,7 @@ QSharedPointer<ChunkDownload> FileDownload::getAChunkToDownload()
       for (QListIterator< QSharedPointer<ChunkDownload> > i(this->chunkDownloads); i.hasNext();)
       {
          QSharedPointer<ChunkDownload> chunkDownload = i.next();
-         int nbPeer = chunkDownload->isReadyToDownload();
+         const int nbPeer = chunkDownload->isReadyToDownload();
          if (nbPeer == 0)
             continue;
          else if (nbPeer == bestNbPeer)

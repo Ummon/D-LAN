@@ -42,6 +42,7 @@ namespace DM
       bool setPeerAsOccupied(PM::IPeer* peer);
       void setPeerAsFree(PM::IPeer* peer);
       void newPeer(PM::IPeer* peer);
+      int nbOccupiedPeers() const;
 
    signals:
       void newFreePeer(PM::IPeer*);
