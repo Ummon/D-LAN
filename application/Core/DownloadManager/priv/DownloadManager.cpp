@@ -286,13 +286,10 @@ void DownloadManager::peerNoLongerAskingForEntries(PM::IPeer* peer)
    if (!this->downloadQueue.isAPeerSource(peer->getID()))
       return;
 
-   // We can't use 'downloadsIndexedBySourcePeerID' because the order matters.
-   for (int i = 0; i < this->downloadQueue.size(); i++)
-   {
-      DirDownload* dirDownload = dynamic_cast<DirDownload*>(this->downloadQueue[i]);
-      if (dirDownload && dirDownload->retrieveEntries())
+   DownloadQueue::ScanningIterator<IsADirectory> i(this->downloadQueue);
+   while (DirDownload* dirDownload = static_cast<DirDownload*>(i.next()))
+      if (dirDownload->retrieveEntries())
          break;
-   }
 }
 
 void DownloadManager::peerNoLongerDownloadingChunk(PM::IPeer* peer)
