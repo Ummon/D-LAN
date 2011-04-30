@@ -196,7 +196,7 @@ void SearchModel::result(const Protos::Common::FindResult& findResult)
                // Search the better name (node with the lowest level) to display it on the top.
                for (int i = 0; i <= similarNode->getNbChildren(); i++)
                {
-                  if (i == similarNode->getNbChildren() || dynamic_cast<SearchNode*>(similarNode->getChild(i))->getLevel() > static_cast<int>(entry.level()))
+                  if (i == similarNode->getNbChildren() || static_cast<SearchNode*>(similarNode->getChild(i))->getLevel() > static_cast<int>(entry.level()))
                   {
                      this->beginInsertRows(this->createIndex(0, 0, similarNode), i, i);
                      Common::Hash peerID = findResult.peer_id().hash().data();
@@ -238,11 +238,12 @@ void SearchModel::stopSearching()
 
 SearchModel::SearchNode* SearchModel::getRoot()
 {
-   return dynamic_cast<SearchNode*>(this->root);
+   return static_cast<SearchNode*>(this->root);
 }
 
 /**
   * Create a new node, it can be a directory or a file. It will be inserted in the structure depending its level and its path+name.
+  * Return the first node of the group (directories or files).
   */
 int SearchModel::insertNode(const Protos::Common::FindResult_EntryLevel& entry, const Common::Hash& peerID, int currentIndex)
 {
@@ -259,6 +260,8 @@ int SearchModel::insertNode(const Protos::Common::FindResult_EntryLevel& entry, 
    {
       if (currentIndex == -1)
          currentIndex = 0;
+
+      // We skip the directories.
       while (currentIndex < root->getNbChildren() && root->getChild(currentIndex)->getEntry().type() == Protos::Common::Entry_Type_DIR)
          currentIndex += 1;
    }
@@ -274,7 +277,7 @@ int SearchModel::insertNode(const Protos::Common::FindResult_EntryLevel& entry, 
    {
       // Search the first entry with the same level or, at least, a greater level.
       if (currentIndex < root->getNbChildren())
-         while (dynamic_cast<SearchNode*>(root->getChild(currentIndex))->getLevel() < static_cast<int>(entry.level()))
+         while (static_cast<SearchNode*>(root->getChild(currentIndex))->getLevel() < static_cast<int>(entry.level()))
          {
             currentIndex += 1;
             if (currentIndex == root->getNbChildren() || root->getChild(currentIndex)->getEntry().type() != entry.entry().type())
@@ -283,17 +286,18 @@ int SearchModel::insertNode(const Protos::Common::FindResult_EntryLevel& entry, 
 
       // Search a place to insert the new directory node among nodes of the same level, the alphabetic order must be kept.
       int nodeToInsertBefore = currentIndex;
-      while (nodeToInsertBefore < root->getNbChildren())
+      while (nodeToInsertBefore < root->getNbChildren() && root->getChild(nodeToInsertBefore)->getEntry().type() == entry.entry().type() && static_cast<SearchNode*>(root->getChild(nodeToInsertBefore))->getLevel() == static_cast<int>(entry.level()))
       {
-         QString entryPath = SearchNode::entryPath(entry.entry()).toLower();
-         QString nodePath = SearchNode::entryPath(root->getChild(nodeToInsertBefore)->getEntry()).toLower();
+         const QString entryPath = SearchNode::entryPath(entry.entry()).toLower();
+         const QString nodePath = SearchNode::entryPath(root->getChild(nodeToInsertBefore)->getEntry()).toLower();
 
-         if (root->getChild(nodeToInsertBefore)->getEntry().type() != entry.entry().type() || entryPath <= nodePath || (entryPath == nodePath && Common::ProtoHelper::getStr(entry.entry(), &Protos::Common::Entry::name).toLower() <= Common::ProtoHelper::getStr(root->getChild(nodeToInsertBefore)->getEntry(), &Protos::Common::Entry::name).toLower()))
+         if (
+            entryPath <= nodePath ||
+            (entryPath == nodePath && Common::ProtoHelper::getStr(entry.entry(), &Protos::Common::Entry::name).toLower() <= Common::ProtoHelper::getStr(root->getChild(nodeToInsertBefore)->getEntry(), &Protos::Common::Entry::name).toLower())
+         )
             break;
 
-         nodeToInsertBefore += 1;
-         if (nodeToInsertBefore == root->getNbChildren() || dynamic_cast<SearchNode*>(root->getChild(nodeToInsertBefore))->getLevel() > static_cast<int>(entry.level()))
-            break;
+         nodeToInsertBefore++;
       }
 
       this->beginInsertRows(QModelIndex(), nodeToInsertBefore, nodeToInsertBefore);
@@ -307,6 +311,10 @@ int SearchModel::insertNode(const Protos::Common::FindResult_EntryLevel& entry, 
    return currentIndex;
 }
 
+/**
+  * The relevance is a percentage of the current level against the max level, thus if the max level change
+  * we have to recompute all percentage values.
+  */
 void SearchModel::setMaxLevel(int newLevel)
 {
    if (newLevel > this->maxLevel)
@@ -404,7 +412,7 @@ QVariant SearchModel::SearchNode::getData(int column) const
       if (this->entry.type() == Protos::Common::Entry_Type_FILE && this->getNbChildren() > 0)
       {
          for (int i = 0; i < this->getNbChildren(); i++)
-            if (this->peerNick != dynamic_cast<const SearchNode*>(this->getChild(i))->peerNick)
+            if (this->peerNick != static_cast<const SearchNode*>(this->getChild(i))->peerNick)
                return QVariant();
       }
       return this->peerNick;
