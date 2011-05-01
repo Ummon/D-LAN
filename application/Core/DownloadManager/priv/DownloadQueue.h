@@ -62,7 +62,7 @@ namespace DM
       void saveToFile() const;
 
    private:
-      struct Marker { Marker(DownloadPredicate* p) : predicate(p), position(0) {} DownloadPredicate* predicate; int position; };
+      struct Marker;
 
    public:
       template <typename P>
@@ -83,6 +83,7 @@ namespace DM
       void updateMarkersRemove(int position);
       void updateMarkersMove(int insertPosition, int removePosition, Download* download);
 
+      struct Marker { Marker(DownloadPredicate* p) : predicate(p), position(0) {} DownloadPredicate* predicate; int position; };
       QList<Marker> markers; ///< Saved some positions like the first downloadable file or the first directory. The goal is to speed up the scan. See the class 'ScanningIterator'.
 
       QList<Download*> downloads;
