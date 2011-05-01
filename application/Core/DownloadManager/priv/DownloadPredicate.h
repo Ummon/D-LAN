@@ -29,6 +29,7 @@ namespace DM
    struct DownloadPredicate
    {
       virtual bool operator() (Download* download) = 0;
+      virtual ~DownloadPredicate() {}
    };
 
    struct IsDownloable : public DownloadPredicate

@@ -22,7 +22,6 @@
 #include <typeinfo>
 
 #include <QList>
-#include <QMap>
 #include <QMultiHash>
 
 #include <Protos/common.pb.h>
@@ -91,6 +90,7 @@ namespace DM
    };
 }
 
+/***** Definitions *****/
 using namespace DM;
 
 /**
@@ -117,6 +117,9 @@ DownloadQueue::ScanningIterator<P>::ScanningIterator(DownloadQueue& queue) :
    this->position = this->marker->position;
 }
 
+/**
+  * @return Return 0 at the end of the list.
+  */
 template <typename P>
 Download* DownloadQueue::ScanningIterator<P>::next()
 {
