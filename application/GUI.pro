@@ -1,6 +1,6 @@
 TEMPLATE = subdirs
 CONFIG += ordered
-MAKEFILE = Makefile-Gui
+MAKEFILE = Makefile-GUI
 SUBDIRS = Common/Common.pro \
    Common/LogManager \
    Common/RemoteCoreController \

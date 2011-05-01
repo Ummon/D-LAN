@@ -70,3 +70,8 @@ void OccupiedPeers::newPeer(PM::IPeer* peer)
    else
       this->mutex.unlock();
 }
+
+int OccupiedPeers::nbOccupiedPeers() const
+{
+   return this->occupiedPeers.size();
+}

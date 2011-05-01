@@ -21,6 +21,19 @@ using namespace DM;
 
 #include <IDownload.h>
 #include <priv/Download.h>
+#include <priv/FileDownload.h>
+#include <priv/DirDownload.h>
+
+bool IsDownloable::operator() (Download* download)
+{
+   FileDownload* fileDownload = dynamic_cast<FileDownload*>(download);
+   return fileDownload && fileDownload->getStatus() != COMPLETE && fileDownload->getStatus() != DELETED;
+}
+
+bool IsADirectory::operator() (Download* download)
+{
+   return dynamic_cast<DirDownload*>(download) != 0;
+}
 
 bool IsComplete::operator() (Download* download)
 {

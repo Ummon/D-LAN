@@ -19,6 +19,8 @@
 #ifndef DOWNLOADMANAGER_DOWNLOADQUEUE_H
 #define DOWNLOADMANAGER_DOWNLOADQUEUE_H
 
+#include <typeinfo>
+
 #include <QList>
 #include <QMultiHash>
 
@@ -59,29 +61,81 @@ namespace DM
       Protos::Queue::Queue loadFromFile();
       void saveToFile() const;
 
-      /**
-        * @class DM::DownloadQueue::ScanningIterator
-        *
-        * An iterator to search a file to download. It will only iterate on 'FileDownload' which are not finished an not deleted.
-        */
+   private:
+      struct Marker { Marker(DownloadPredicate* p) : predicate(p), position(0) {} DownloadPredicate* predicate; int position; };
+
+   public:
+      template <typename P>
       class ScanningIterator
       {
       public:
          ScanningIterator(DownloadQueue& queue);
-         FileDownload* next();
+         Download* next();
 
       private:
+         Marker* marker;
          DownloadQueue& queue;
          int position;
       };
 
    private:
-      void updateFirstUnfinishedMove(Status status, int insertPosition, int removePosition);
+      void updateMarkersInsert(int position, Download* download);
+      void updateMarkersRemove(int position);
+      void updateMarkersMove(int insertPosition, int removePosition, Download* download);
 
-      int firstUnfinished; ///< The position of the first download not complete. It may be a equal to 'this->downloads.size()'. The goal is to avoid to scan complete download. For example, if the three first downloads are complete then the 'firstUnfininshed' will be the fourth.
+      QList<Marker> markers; ///< Saved some positions like the first downloadable file or the first directory. The goal is to speed up the scan. See the class 'ScanningIterator'.
+
       QList<Download*> downloads;
       QMultiHash<Common::Hash, Download*> downloadsIndexedBySourcePeerID;
    };
+}
+
+/***** Definitions *****/
+using namespace DM;
+
+/**
+  * @class DM::DownloadQueue::ScanningIterator
+  *
+  * To iterate over the queue for all downloads which match a predicate 'P'.
+  */
+template <typename P>
+DownloadQueue::ScanningIterator<P>::ScanningIterator(DownloadQueue& queue) :
+   queue(queue)
+{
+   // Search if a marker of type 'P' already exists.
+   for (QMutableListIterator<Marker> i(this->queue.markers); i.hasNext();)
+   {
+      this->marker = &i.next();
+      this->position = this->marker->position;
+      if (typeid(P) == typeid(*this->marker->predicate))
+         return;
+   }
+
+   // No marker found, we create a new one.
+   this->queue.markers << Marker(new P);
+   this->marker = &this->queue.markers.last();
+   this->position = this->marker->position;
+}
+
+/**
+  * @return Return 0 at the end of the list.
+  */
+template <typename P>
+Download* DownloadQueue::ScanningIterator<P>::next()
+{
+   while (this->position < this->queue.size())
+   {
+      Download* download = this->queue[this->position++];
+      if (!(*this->marker->predicate)(download))
+      {
+         if (this->position - 1 == this->marker->position)
+            this->marker->position++;
+         continue;
+      }
+
+      return download;
+   }
+   return 0;
 }
 
 #endif

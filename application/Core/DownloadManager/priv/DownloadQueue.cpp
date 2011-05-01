@@ -36,8 +36,7 @@ using namespace DM;
   *  - Persist/load the queue to/from a file.
   */
 
-DownloadQueue::DownloadQueue() :
-   firstUnfinished(0)
+DownloadQueue::DownloadQueue()
 {
 }
 
@@ -45,6 +44,9 @@ DownloadQueue::~DownloadQueue()
 {
    while (!this->downloads.isEmpty())
       delete this->downloads.takeFirst();
+
+   for (QListIterator<Marker> i(this->markers); i.hasNext();)
+      delete i.next().predicate;
 }
 
 int DownloadQueue::size() const
@@ -54,16 +56,7 @@ int DownloadQueue::size() const
 
 void DownloadQueue::insert(int position, Download* download)
 {
-   if (download->getStatus() == COMPLETE || download->getStatus() == DELETED)
-   {
-      if (position <= this->firstUnfinished)
-         this->firstUnfinished++;
-   }
-   else
-   {
-      if (position < this->firstUnfinished)
-         this->firstUnfinished = position;
-   }
+   this->updateMarkersInsert(position, download);
 
    this->downloads.insert(position, download);
    this->downloadsIndexedBySourcePeerID.insert(download->getPeerSourceID(), download);
@@ -81,8 +74,7 @@ int DownloadQueue::find(Download* download) const
 
 void DownloadQueue::remove(int position)
 {
-   if (position < this->firstUnfinished)
-      this->firstUnfinished--;
+   this->updateMarkersRemove(position);
 
    Download* download = (*this)[position];
    this->downloadsIndexedBySourcePeerID.remove(download->getPeerSourceID(), download);
@@ -116,7 +108,7 @@ void DownloadQueue::moveDownloads(quint64 downloadIDRef, bool moveBefore, const 
             int whereToInsert = moveBefore ? iRef++ : ++iRef;
             int whereToRemove = i + 1;
 
-            this->updateFirstUnfinishedMove(this->downloads[i]->getStatus(), whereToInsert, whereToRemove);
+            this->updateMarkersMove(whereToInsert, whereToRemove, this->downloads[i]);
 
             this->downloads.insert(whereToInsert, this->downloads[i]);
             this->downloads.removeAt(whereToRemove);
@@ -141,7 +133,7 @@ void DownloadQueue::moveDownloads(quint64 downloadIDRef, bool moveBefore, const 
                int whereToInsert = j == 0 && !moveBefore ? ++iRef : iRef;
                int whereToRemove = iToMove[j] + shift;
 
-               this->updateFirstUnfinishedMove(this->downloads[whereToRemove]->getStatus(), whereToInsert, whereToRemove);
+               this->updateMarkersMove(whereToInsert, whereToRemove, this->downloads[whereToRemove]);
 
                this->downloads.insert(whereToInsert, this->downloads[iToMove[j] + shift]);
                this->downloads.removeAt(whereToRemove);
@@ -164,7 +156,7 @@ bool DownloadQueue::removeDownloads(DownloadPredicate& predicate)
    QList<Download*> downloadsToDelete;
    QList<Download*>::iterator i = this->downloads.begin();
    QList<Download*>::iterator j = i;
-   int position = 0; // Only used to update 'this->firstUnfinished'.
+   int position = 0; // Only used to update the markers.
    while (j != this->downloads.end())
    {
       if (predicate(*j))
@@ -175,8 +167,7 @@ bool DownloadQueue::removeDownloads(DownloadPredicate& predicate)
          downloadsToDelete << *j;
          j++;
 
-         if (position < this->firstUnfinished)
-            this->firstUnfinished--;
+         this->updateMarkersRemove(position);
       }
       else if (i != j)
       {
@@ -263,47 +254,52 @@ void DownloadQueue::saveToFile() const
    }
 }
 
-void DownloadQueue::updateFirstUnfinishedMove(Status status, int insertPosition, int removePosition)
+void DownloadQueue::updateMarkersInsert(int position, Download* download)
 {
-   if (status == COMPLETE || status == DELETED)
+   for (QMutableListIterator<Marker> i(this->markers); i.hasNext();)
    {
-      if (insertPosition <= this->firstUnfinished)
-         this->firstUnfinished++;
-      if (removePosition < this->firstUnfinished)
-         this->firstUnfinished--;
-   }
-   else
-   {
-      if (removePosition > this->firstUnfinished && insertPosition < this->firstUnfinished)
-         this->firstUnfinished = insertPosition;
-      if (removePosition < this->firstUnfinished && insertPosition > this->firstUnfinished)
-         this->firstUnfinished--;
-   }
-}
-
-/**
-  * @class DM::ScanningIterator
-  *
-  * Iterate only on non-deleted and non-complete downloads.
-  */
-DownloadQueue::ScanningIterator::ScanningIterator(DownloadQueue& queue) :
-   queue(queue), position(queue.firstUnfinished)
-{
-}
-
-FileDownload* DownloadQueue::ScanningIterator::next()
-{
-   while (this->position < this->queue.size())
-   {
-      FileDownload* fileDownload = dynamic_cast<FileDownload*>(this->queue[this->position++]);
-      if (!fileDownload || fileDownload->getStatus() == COMPLETE || fileDownload->getStatus() == DELETED)
+      Marker& m = i.next();
+      if (!(*m.predicate)(download))
       {
-         if (this->position - 1 == queue.firstUnfinished)
-            queue.firstUnfinished++;
-         continue;
+         if (position <= m.position)
+            m.position++;
       }
-
-      return fileDownload;
+      else
+      {
+         if (position < m.position)
+            m.position = position;
+      }
    }
-   return 0;
+}
+
+void DownloadQueue::updateMarkersRemove(int position)
+{
+   for (QMutableListIterator<Marker> i(this->markers); i.hasNext();)
+   {
+      Marker& m = i.next();
+      if (position < m.position)
+         m.position--;
+   }
+}
+
+void DownloadQueue::updateMarkersMove(int insertPosition, int removePosition, Download* download)
+{
+   for (QMutableListIterator<Marker> i(this->markers); i.hasNext();)
+   {
+      Marker& m = i.next();
+      if (!(*m.predicate)(download))
+      {
+         if (insertPosition <= m.position)
+            m.position++;
+         if (removePosition < m.position)
+            m.position--;
+      }
+      else
+      {
+         if (removePosition > m.position && insertPosition < m.position)
+            m.position = insertPosition;
+         if (removePosition < m.position && insertPosition > m.position)
+            m.position--;
+      }
+   }
 }

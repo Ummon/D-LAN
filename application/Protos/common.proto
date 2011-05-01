@@ -48,6 +48,7 @@ message Entries
 }
 
 // A result following a search.
+// Entries must be sorted by their level, the smallers first.
 // See 'Network.Find' and 'GUI.GUINetwork' for more information.
 message FindResult {
    message EntryLevel {

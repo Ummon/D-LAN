@@ -106,6 +106,7 @@ namespace FM
 
       /**
         * Find some entry from a given words.
+        * The result is sorted by level.
         * @param maxSize This is the size in bytes each 'FindResult' can't exceed. (Because UDP datagrams have a maximum size).
         * It should not be here but it's far more harder to split the result outside this method.
         * @remarks Will not fill the fields 'FindResult.tag' and 'FindResult.peer_id'.

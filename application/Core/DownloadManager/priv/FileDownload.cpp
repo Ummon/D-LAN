@@ -149,88 +149,84 @@ QSharedPointer<ChunkDownload> FileDownload::getAChunkToDownload()
    if (this->status == COMPLETE || this->status == DELETED)
       return QSharedPointer<ChunkDownload>();
 
-   try
+   // Choose a chunk with the less number of peer. (rarest first).
+   QList< QSharedPointer<ChunkDownload> > chunksReadyToDownload;
+   int bestNbPeer = std::numeric_limits<int>::max();
+   for (QListIterator< QSharedPointer<ChunkDownload> > i(this->chunkDownloads); i.hasNext();)
    {
-      // Choose a chunk with the less number of peer. (rarest first).
-      QList< QSharedPointer<ChunkDownload> > chunksReadyToDownload;
-      int bestNbPeer = std::numeric_limits<int>::max();
-      for (QListIterator< QSharedPointer<ChunkDownload> > i(this->chunkDownloads); i.hasNext();)
+      QSharedPointer<ChunkDownload> chunkDownload = i.next();
+      const int nbPeer = chunkDownload->isReadyToDownload();
+      if (nbPeer == 0)
+         continue;
+      else if (nbPeer == bestNbPeer)
+         chunksReadyToDownload << chunkDownload;
+      else if (nbPeer < bestNbPeer)
       {
-         QSharedPointer<ChunkDownload> chunkDownload = i.next();
-         int nbPeer = chunkDownload->isReadyToDownload();
-         if (nbPeer == 0)
-            continue;
-         else if (nbPeer == bestNbPeer)
-            chunksReadyToDownload << chunkDownload;
-         else if (nbPeer < bestNbPeer)
-         {
-            chunksReadyToDownload.clear();
-            chunksReadyToDownload << chunkDownload;
-            bestNbPeer = nbPeer;
-         }
+         chunksReadyToDownload.clear();
+         chunksReadyToDownload << chunkDownload;
+         bestNbPeer = nbPeer;
+      }
+   }
+
+   if (chunksReadyToDownload.isEmpty())
+      return QSharedPointer<ChunkDownload>();
+
+   // If there is many chunk with the same best speed we choose randomly one of them.
+   QSharedPointer<ChunkDownload> chunkDownload =
+         chunksReadyToDownload.size() == 1 ? chunksReadyToDownload.first() : chunksReadyToDownload[mtrand.randInt(chunksReadyToDownload.size() - 1)];
+
+   if (!this->fileCreated)
+   {
+      // First, try to get the chunks from an existing file, it's useful when a download is taken from the saved queue.
+      if (!this->chunkDownloads.isEmpty())
+      {
+         Common::Hashes hashes;
+         for (QListIterator< QSharedPointer<ChunkDownload> > i(this->chunkDownloads); i.hasNext();)
+            hashes << i.next()->getHash();
+         this->chunksWithoutDownload = this->fileManager->getAllChunks(this->localEntry, hashes);
       }
 
-      // If there is many chunk with the same best speed we choose randomly one of them.
-      QSharedPointer<ChunkDownload> chunkDownload;
-      switch (chunksReadyToDownload.size())
+      // If the file doesn't exist we create it.
+      if (this->chunksWithoutDownload.isEmpty())
       {
-      case 0:
-         break;
-      case 1:
-         chunkDownload = chunksReadyToDownload.first();
-         break;
-      default:
-         chunkDownload = chunksReadyToDownload[mtrand.randInt(chunksReadyToDownload.size() - 1)];
-      }
-
-      if (!chunkDownload.isNull() && !this->fileCreated)
-      {
-         // First, try to get the chunks from an existing file, it's useful when a download is taken from the saved queue.
-         if (!this->chunkDownloads.isEmpty())
+         try
          {
-            Common::Hashes hashes;
-            for (QListIterator< QSharedPointer<ChunkDownload> > i(this->chunkDownloads); i.hasNext();)
-               hashes << i.next()->getHash();
-            this->chunksWithoutDownload = this->fileManager->getAllChunks(this->localEntry, hashes);
-         }
-
-         // If the file doesn't exist we create it.
-         if (this->chunksWithoutDownload.isEmpty())
             this->chunksWithoutDownload = this->fileManager->newFile(this->localEntry);
-
-         for (int i = 0; !this->chunksWithoutDownload.isEmpty() && i < this->chunkDownloads.size(); i++)
-            this->chunkDownloads[i]->setChunk(this->chunksWithoutDownload.takeFirst());
-
-         this->fileCreated = true;
-
-         // 'getAllChunks(..)' above can return some completed chunks.
-         if (!chunkDownload->getChunk().isNull() && chunkDownload->getChunk()->isComplete())
+         }
+         catch(FM::NoWriteableDirectoryException&)
          {
-            this->updateStatus(); // Maybe all the file is complete, so we update the status.
+            L_DEBU(QString("There is no shared directory with writting rights for this download : %1").arg(Common::ProtoHelper::getStr(this->remoteEntry, &Protos::Common::Entry::name)));
+            this->status = NO_SHARED_DIRECTORY_TO_WRITE;
+            return QSharedPointer<ChunkDownload>();
+         }
+         catch(FM::InsufficientStorageSpaceException&)
+         {
+            L_DEBU(QString("There is no enough space storage available for this download : %1").arg(Common::ProtoHelper::getStr(this->remoteEntry, &Protos::Common::Entry::name)));
+            this->status = NO_ENOUGH_FREE_SPACE;
+            return QSharedPointer<ChunkDownload>();
+         }
+         catch(FM::UnableToCreateNewFileException&)
+         {
+            L_DEBU(QString("Unable to create the file, download : %1").arg(Common::ProtoHelper::getStr(this->remoteEntry, &Protos::Common::Entry::name)));
+            this->status = UNABLE_TO_CREATE_THE_FILE;
             return QSharedPointer<ChunkDownload>();
          }
       }
 
-      return chunkDownload;
+      for (int i = 0; !this->chunksWithoutDownload.isEmpty() && i < this->chunkDownloads.size(); i++)
+         this->chunkDownloads[i]->setChunk(this->chunksWithoutDownload.takeFirst());
 
-   }
-   catch(FM::NoWriteableDirectoryException&)
-   {
-      L_DEBU(QString("There is no shared directory with writting rights for this download : %1").arg(Common::ProtoHelper::getStr(this->remoteEntry, &Protos::Common::Entry::name)));
-      this->status = NO_SHARED_DIRECTORY_TO_WRITE;
-   }
-   catch(FM::InsufficientStorageSpaceException&)
-   {
-      L_DEBU(QString("There is no enough space storage available for this download : %1").arg(Common::ProtoHelper::getStr(this->remoteEntry, &Protos::Common::Entry::name)));
-      this->status = NO_ENOUGH_FREE_SPACE;
-   }
-   catch(FM::UnableToCreateNewFileException&)
-   {
-      L_DEBU(QString("Unable to create the file, download : %1").arg(Common::ProtoHelper::getStr(this->remoteEntry, &Protos::Common::Entry::name)));
-      this->status = UNABLE_TO_CREATE_THE_FILE;
+      this->fileCreated = true;
+
+      // 'getAllChunks(..)' above can return some completed chunks.
+      if (!chunkDownload->getChunk().isNull() && chunkDownload->getChunk()->isComplete())
+      {
+         this->updateStatus(); // Maybe all the file is complete, so we update the status.
+         return QSharedPointer<ChunkDownload>();
+      }
    }
 
-   return QSharedPointer<ChunkDownload>();
+   return chunkDownload;
 }
 
 /**

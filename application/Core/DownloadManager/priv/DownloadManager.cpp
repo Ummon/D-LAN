@@ -27,6 +27,7 @@ using namespace DM;
 
 #include <priv/FileDownload.h>
 #include <priv/DirDownload.h>
+#include <priv/DownloadPredicate.h>
 #include <priv/Constants.h>
 
 LOG_INIT_CPP(DownloadManager);
@@ -101,12 +102,6 @@ Download* DownloadManager::addDownload(const Protos::Common::Entry& remoteEntry,
 
 Download* DownloadManager::addDownload(const Protos::Common::Entry& remoteEntry, const Protos::Common::Entry& localEntry, const Common::Hash& peerSource, bool complete, int position)
 {
-   if (this->downloadQueue.isEntryAlreadyQueued(localEntry, peerSource))
-   {
-      L_WARN(QString("Entry already queued, it will no be added to the queue : %1").arg(Common::ProtoHelper::getStr(remoteEntry, &Protos::Common::Entry::name)));
-      return 0;
-   }
-
    Download* newDownload = 0;
 
    switch (remoteEntry.type())
@@ -291,24 +286,21 @@ void DownloadManager::peerNoLongerAskingForEntries(PM::IPeer* peer)
    if (!this->downloadQueue.isAPeerSource(peer->getID()))
       return;
 
-   // We can't use 'downloadsIndexedBySourcePeerID' because the order matters.
-   for (int i = 0; i < this->downloadQueue.size(); i++)
-   {
-      DirDownload* dirDownload = dynamic_cast<DirDownload*>(this->downloadQueue[i]);
-      if (dirDownload && dirDownload->retrieveEntries())
+   DownloadQueue::ScanningIterator<IsADirectory> i(this->downloadQueue);
+   while (DirDownload* dirDownload = static_cast<DirDownload*>(i.next()))
+      if (dirDownload->retrieveEntries())
          break;
-   }
 }
 
-/**
-  * Search a chunk to download.
-  */
 void DownloadManager::peerNoLongerDownloadingChunk(PM::IPeer* peer)
 {
    L_DEBU(QString("A peer is free: %1, number of downloading thread : %2").arg(peer->getID().toStr()).arg(this->numberOfDownloadThreadRunning));
    this->scanTheQueue();
 }
 
+/**
+  * Search a chunk to download.
+  */
 void DownloadManager::scanTheQueue()
 {
    L_DEBU("Scanning the queue..");
@@ -317,12 +309,13 @@ void DownloadManager::scanTheQueue()
 
    QSharedPointer<ChunkDownload> chunkDownload;
    FileDownload* fileDownload = 0;
-   DownloadQueue::ScanningIterator i(this->downloadQueue);
+   DownloadQueue::ScanningIterator<IsDownloable> i(this->downloadQueue);
 
-   while (numberOfDownloadThreadRunningCopy < NUMBER_OF_DOWNLOADER)
+   const int nbPeers = this->peerManager->getPeers().size();
+   while (numberOfDownloadThreadRunningCopy < NUMBER_OF_DOWNLOADER && nbPeers > this->occupiedPeersDownloadingChunk.nbOccupiedPeers())
    {
       if (chunkDownload.isNull()) // We can ask many chunks to download from the same file.
-         if (!(fileDownload = i.next()))
+         if (!(fileDownload = static_cast<FileDownload*>(i.next())))
              break;
 
       fileDownload->removeErroneousStatus();
