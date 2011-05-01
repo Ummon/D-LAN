@@ -44,7 +44,7 @@ namespace GUI
       void actionTriggered();
 
    private:
-      virtual void onShowMenu(QMenu& menu) {};
+      virtual void onShowMenu(QMenu&) {}
 
       const DirListModel& sharedDirsModel;
    };

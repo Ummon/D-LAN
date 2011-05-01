@@ -238,7 +238,7 @@ void BrowseModel::resultRefresh(const google::protobuf::RepeatedPtrField<Protos:
 
 void BrowseModel::result(const google::protobuf::RepeatedPtrField<Protos::Common::Entries>& entries)
 {
-   if (entries.Get(0).entry_size() > 0)
+   if (entries.size() > 0 && entries.Get(0).entry_size() > 0)
    {
       this->beginInsertRows(this->currentBrowseIndex, 0, entries.Get(0).entry_size() - 1);
 
