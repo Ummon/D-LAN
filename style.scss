@@ -72,7 +72,7 @@ em {
 a {
    color: darken($red-light, 20%);
    text-decoration: none;
-   &:hover { color: $red-light }   
+   &:hover { color: $red-light } 
 }
 
 h1 {
@@ -102,35 +102,6 @@ p {
 
 .spacer {
   clear: both;
-}
-
-.download {
-   border: 3px solid white;
-   &:hover {
-      border-color: $red-light;
-   }
-   @include border-radius(40px);
-   width: 300px;
-   background-color: rgba(255, 255, 255, $opacity2);
-   margin: 15px 15px 0px 15px;
-   background-image: url("img/download_arrow.png");
-   background-repeat: no-repeat;
-   background-position: 9px 7px;
-   a {
-      height: 56px; 
-      color: $red-dark;
-      display: block;
-      padding: 3px 10px 3px 70px; 
-      font-size: 11px; 
-      &:hover { color: lighten($red-dark, 20%); }
-      em {
-         font-size: 13px;
-         font-weight: bold;
-      } 
-   }
-}
-.ie .download {
-   background-color: $color-bg-box;
 }
 
 .gallery {
@@ -213,7 +184,41 @@ p {
    #content {
       @include central-part;
       padding-top: 15px;
-      padding-bottom: 15px;
+      padding-bottom: 15px;      
+      a {
+         text-shadow: 0 0 3px #FFFFFF;
+         font-weight: bold;
+      }
+      .download {
+         border: 3px solid white;
+         &:hover {
+            border-color: $red-light;
+         }
+         @include border-radius(40px);
+         width: 300px;
+         background-color: rgba(255, 255, 255, $opacity2);
+         margin: 15px 15px 0px 15px;
+         background-image: url("img/download_arrow.png");
+         background-repeat: no-repeat;
+         background-position: 9px 7px;
+         a {
+            font-weight: normal;
+            text-shadow: none;
+            height: 56px; 
+            color: $red-dark;
+            display: block;
+            padding: 3px 10px 3px 70px; 
+            font-size: 11px; 
+            &:hover { color: lighten($red-dark, 20%); }
+            em {
+               font-size: 13px;
+               font-weight: bold;
+            } 
+         }
+      }
+      .ie .download {
+         background-color: $color-bg-box;
+      }      
       &.home .gallery {
          float: right;
          margin-right: 0px;

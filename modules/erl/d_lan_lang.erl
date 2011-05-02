@@ -39,8 +39,8 @@ translate(fr, home, title) -> "D-LAN - Un logiciel libre de partage de fichiers 
 translate(en, home, description) -> "The goal is to easily exchange a large amount of data in a local area network environment like a LAN-Party. After you launched D-LAN, you will see all other people and their sharing automatically without special configuration. See the <a href=\"~s\">features list</a> for more information.";
 translate(fr, home, description) -> "Le but est de permettre l'échange massif et facile de fichiers sur un réseau local, par exemple lors d'une LAN-Party. Après avoir lancé D-LAN, les autres personnes présentes sur le réseau sont visibles automatiquement sans aucune configuration particulière. Voir la <a href=\"~s\">page des fonctionnalités</a> pour plus d'informations.";
 
-translate(en, home, warning_beta) -> "<em>Warning :</em> The actual version of D-LAN is a beta, it's only for test purpose. You can report any defect <a href=\"~s\">here</a>. The latest beta may not be compatible with the previous ones.";
-translate(fr, home, warning_beta) -> "Attention : La version actuelle de D-LAN est une bêta, elle ne doit être utilisée qu'à des fins de tests. Il est possible de rapporter les anomalies rencontrées <a href=\"~s\">ici</a>. La compatibilité de la dernière bêta avec les précédentes n'est pas garantie.";
+translate(en, home, warning_beta) -> "<em>Warning:</em> The actual version of D-LAN is a beta, it's only for test purpose. You can report any defect <a href=\"~s\">here</a>. The latest beta may not be compatible with the previous ones.";
+translate(fr, home, warning_beta) -> "<em>Attention :</em> La version actuelle de D-LAN est une bêta, elle ne doit être utilisée qu'à des fins de tests. Il est possible de rapporter les anomalies rencontrées <a href=\"~s\">ici</a>. La compatibilité de la dernière bêta avec les précédentes n'est pas garantie.";
 
 %%%%%%%%%%
 
@@ -176,7 +176,7 @@ translate(fr, about, tech_used_tools) ->
    "<li>Gestion de projet : <a href=\"http://www.redmine.org/\">Redmine</a></li>"
    "<li>Génération de la documentation : <a href=\"http://www.doxygen.org/\">Doxygen</a></li>"
    "<li>Éditeur UML : <a href=\"http://bouml.free.fr/\">Bouml</a></li>"
-   "<li>Constructeur d'installeur : <a href=\"http://www.jrsoftware.org/isinfo.php\">Inno Setup</a></li>"
+   "<li>Système d'installation : <a href=\"http://www.jrsoftware.org/isinfo.php\">Inno Setup</a></li>"
    "<li>Éditeur vectoriel : <a href=\"http://inkscape.org/\">Inkscape</a></li>"
    "<li>Éditeur bitmap : <a href=\"http://www.gimp.org/\">GIMP</a></li>";
    

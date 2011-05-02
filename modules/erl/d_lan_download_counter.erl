@@ -34,17 +34,17 @@ new_download(Filename) ->
 % Return a list of list: [[<date>, <number of d/l>], ...]. The list is sorted from the yougest to the oldest record.
 % We don't use the process 'd_lan_download_counter_proc' because there is no concurrent access problem to just read a value.
 stats(Filename) ->
-   lists:sort(
+   lists:reverse(lists:sort(
       fun([D1 | _], [D2 | _]) -> D1 < D2 end,
       case dets:match(?MODULE, {{Filename, '$1'}, '$2'}) of
          {error, _} -> [];
          R -> R
       end
-   ).
+   )).
    
 % Returns a list of all the files.
 all_files() ->
-   dets:foldl(fun({{Filename, _}, _}, Acc) -> case lists:member(Filename, Acc) of true -> Acc; _ -> [Filename | Acc] end end, [], ?MODULE).
+   lists:reverse(lists:sort(dets:foldl(fun({{Filename, _}, _}, Acc) -> case lists:member(Filename, Acc) of true -> Acc; _ -> [Filename | Acc] end end, [], ?MODULE))).
 
 loop() ->
    receive
