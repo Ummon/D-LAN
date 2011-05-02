@@ -29,6 +29,7 @@ using namespace GUI;
 #include <QUrl>
 #include <QWindowsXPStyle>
 
+#include <Common/Global.h>
 #include <Common/Settings.h>
 #include <Log.h>
 
@@ -123,7 +124,7 @@ QSize SearchDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelI
 
 void SearchDelegate::setTerms(const QString& terms)
 {
-   this->currentTerms = terms.split(' ', QString::SkipEmptyParts);
+   this->currentTerms =  Common::Global::splitInWords(terms);
 }
 
 QString SearchDelegate::toHtmlText(const QString& text) const

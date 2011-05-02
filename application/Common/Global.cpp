@@ -25,6 +25,7 @@ using namespace Common;
 #include <QDirIterator>
 #include <qDebug>
 #include <QtGlobal>
+#include <QRegExp>
 
 #ifdef Q_OS_WIN32
    #include <windows.h>
@@ -174,6 +175,19 @@ QString Global::cleanDirPath(const QString& path)
    Q_ASSERT(!path.isEmpty());
 
    return QDir::cleanPath(path).append('/');
+}
+
+/**
+  * Take raw terms in a string and split, trim and filter to
+  * return a list of keyword.
+  * Some character or word can be removed.
+  * Maybe a class "WordSplitter" should be created.
+  * @example " The little  DUCK " => ["little", "duck"].
+  */
+QStringList Global::splitInWords(const QString& words)
+{
+   const static QRegExp regExp("(\\W+|_)");
+   return words.toLower().split(regExp, QString::SkipEmptyParts);
 }
 
 QString Global::dataFolders[2]; // The two folders (roaming and local), see DataFolderType enum.
