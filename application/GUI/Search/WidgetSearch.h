@@ -75,8 +75,10 @@ namespace GUI
 
    private slots:
       void displayContextMenuDownload(const QPoint& point);
+      void entryDoubleClicked(const QModelIndex& index);
       void download();
       void downloadTo(const Common::Hash& sharedDirID, const QString& path);
+      void openLocation();
       void browseCurrents();
       void progress(int value);
       void treeviewSectionResized(int logicalIndex, int oldSize, int newSize);

@@ -83,8 +83,6 @@ namespace FM
       void chunkRemoved(QSharedPointer<Chunk> chunk);
 
    private:
-      static QStringList splitInWords(const QString& words);
-
       void loadCacheFromFile();
 
    private slots:

@@ -25,7 +25,11 @@ using namespace GUI;
 #include <QRegExp>
 #include <QMenu>
 #include <QIcon>
+#include <QDesktopServices>
+#include <QUrl>
+#include <QWindowsXPStyle>
 
+#include <Common/Global.h>
 #include <Common/Settings.h>
 #include <Log.h>
 
@@ -41,21 +45,22 @@ void SearchDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option
    {
    case 0:
       {
-         initStyleOption(&newOption, index);
-
-         const QWidget *widget = newOption.widget;
-         QStyle *style = widget ? widget->style() : QApplication::style();
+         this->initStyleOption(&newOption, index);
 
          QTextDocument doc;
          doc.setHtml(this->toHtmlText(newOption.text));
 
          // Painting item without text.
          newOption.text = QString();
-         style->drawControl(QStyle::CE_ItemViewItem, &newOption, painter, widget);
+         QApplication::style()->drawControl(QStyle::CE_ItemViewItem, &newOption, painter, newOption.widget);
 
          QAbstractTextDocumentLayout::PaintContext ctx;
 
-         QRect textRect = style->subElementRect(QStyle::SE_ItemViewItemText, &newOption);
+         // Highlighting text if item is selected and we are on Windows XP. TODO: find a better way.
+         if (QString(QApplication::style()->metaObject()->className()) == "QWindowsXPStyle" && (newOption.state & QStyle::State_Selected))
+            ctx.palette.setColor(QPalette::Text, newOption.palette.color(QPalette::Active, QPalette::HighlightedText));
+
+         const QRect textRect = QApplication::style()->subElementRect(QStyle::SE_ItemViewItemText, &newOption);
          painter->save();
          painter->translate(textRect.topLeft());
          painter->setClipRect(textRect.translated(-textRect.topLeft()));
@@ -74,7 +79,7 @@ void SearchDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option
          int value = index.data().toInt();
 
          QStyleOptionProgressBar progressBarOption;
-         progressBarOption.rect = option.rect;
+         progressBarOption.QStyleOption::operator=(option);
          progressBarOption.minimum = 0;
          progressBarOption.maximum = 100;
          progressBarOption.textAlignment = Qt::AlignHCenter;
@@ -119,7 +124,7 @@ QSize SearchDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelI
 
 void SearchDelegate::setTerms(const QString& terms)
 {
-   this->currentTerms = terms.split(' ', QString::SkipEmptyParts);
+   this->currentTerms =  Common::Global::splitInWords(terms);
 }
 
 QString SearchDelegate::toHtmlText(const QString& text) const
@@ -180,6 +185,7 @@ WidgetSearch::WidgetSearch(QSharedPointer<RCC::ICoreConnection> coreConnection, 
 
     this->ui->treeView->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(this->ui->treeView, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(displayContextMenuDownload(const QPoint&)));
+    connect(this->ui->treeView, SIGNAL(doubleClicked(const QModelIndex&)), this, SLOT(entryDoubleClicked(const QModelIndex&)));
 
     connect(this->ui->butDownload, SIGNAL(clicked()), this, SLOT(download()));    
     connect(&this->menu, SIGNAL(downloadTo(const Common::Hash&, const QString&)), this, SLOT(downloadTo(const Common::Hash&, const QString&)));
@@ -196,7 +202,41 @@ WidgetSearch::~WidgetSearch()
 
 void WidgetSearch::displayContextMenuDownload(const QPoint& point)
 {   
-   this->menu.show(this->ui->treeView->viewport()->mapToGlobal(point));
+   QPoint globalPosition = this->ui->treeView->viewport()->mapToGlobal(point);
+
+   bool oneOfSeletedIsOur = false;
+   QModelIndexList selectedRows = this->ui->treeView->selectionModel()->selectedRows();
+   for (QListIterator<QModelIndex> i(selectedRows); i.hasNext();)
+   {
+      QModelIndex index = i.next();
+      if (this->coreConnection->getID() == this->searchModel.getPeerID(index))
+      {
+         oneOfSeletedIsOur = true;
+         break;
+      }
+   }
+
+   // Special case: one of a selected entries is our.
+   if (oneOfSeletedIsOur)
+   {
+      if (this->coreConnection->isLocal())
+      {
+         QMenu menu;
+         menu.addAction(QIcon(":/icons/ressources/explore_folder.png"), "Open location", this, SLOT(openLocation()));
+         menu.addAction(QIcon(":/icons/ressources/folder.png"), "Browse", this, SLOT(browseCurrents()));
+         menu.exec(globalPosition);
+      }
+   }
+   else
+   {
+      this->menu.show(globalPosition);
+   }
+}
+
+void WidgetSearch::entryDoubleClicked(const QModelIndex& index)
+{
+   if (this->coreConnection->getID() == this->searchModel.getPeerID(index) && !this->searchModel.isDir(index))
+      QDesktopServices::openUrl(QUrl("file:///" + this->searchModel.getPath(index), QUrl::TolerantMode));
 }
 
 void WidgetSearch::download()
@@ -217,6 +257,21 @@ void WidgetSearch::downloadTo(const Common::Hash& sharedDirID, const QString& pa
       QModelIndex index = i.next();
       this->coreConnection->download(this->searchModel.getPeerID(index), this->searchModel.getEntry(index), sharedDirID, path);
    }
+}
+
+void WidgetSearch::openLocation()
+{
+   QModelIndexList selectedRows = this->ui->treeView->selectionModel()->selectedRows();
+
+   QSet<QString> locations;
+   for (QListIterator<QModelIndex> i(selectedRows); i.hasNext();)
+   {
+      QModelIndex index = i.next();
+      locations.insert("file:///" + this->searchModel.getPath(index, false));
+   }
+
+   for (QSetIterator<QString> i(locations); i.hasNext();)
+      QDesktopServices::openUrl(QUrl(i.next(), QUrl::TolerantMode));
 }
 
 void WidgetSearch::browseCurrents()

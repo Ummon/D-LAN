@@ -135,8 +135,11 @@ void Core::checkSettingsIntegrity()
    this->checkSetting("download_rate_valid_time_factor", 100u, 100000u);
    this->checkSetting("peer_imalive_period", 1000u, 60u * 1000u);
    this->checkSetting("save_queue_period", 1000u, 4294967295u);
+   this->checkSetting("ban_duration_corrupted_data", 0u, 60u * 60u * 1000u);
 
-   this->checkSetting("upload_live_time", 0u, 30u * 1000u);
+   this->checkSetting("upload_lifetime", 0u, 30u * 1000u);
+   this->checkSetting("upload_min_nb_thread", 1u, 1000u);
+   this->checkSetting("upload_thread_lifetime", 0u, 60u * 60u * 1000u);
 
    this->checkSetting("unicast_base_port", 1u, 65535u);
    this->checkSetting("multicast_port", 1u, 65535u);

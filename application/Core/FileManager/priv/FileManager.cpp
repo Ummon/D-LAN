@@ -25,7 +25,6 @@ using namespace FM;
 #include <QStringList>
 #include <QList>
 #include <QDir>
-#include <QRegExp>
 #include <QMutableListIterator>
 
 #include <google/protobuf/text_format.h>
@@ -169,7 +168,7 @@ Protos::Common::Entries FileManager::getEntries()
   */
 QList<Protos::Common::FindResult> FileManager::find(const QString& words, int maxNbResult, int maxSize)
 {
-   QStringList terms = FileManager::splitInWords(words);
+   QStringList terms = Common::Global::splitInWords(words);
    const int n = terms.size();
 
    // Launch a search for each term.
@@ -360,7 +359,7 @@ void FileManager::entryAdded(Entry* entry)
       return;
 
    L_DEBU(QString("Adding entry '%1' to the index ..").arg(entry->getName()));
-   this->wordIndex.addItem(FileManager::splitInWords(entry->getName()), entry);
+   this->wordIndex.addItem(Common::Global::splitInWords(entry->getName()), entry);
    L_DEBU("Entry added to the index ..");
 }
 
@@ -370,7 +369,7 @@ void FileManager::entryRemoved(Entry* entry)
       return;
 
    L_DEBU(QString("Removing entry '%1' from the index..").arg(entry->getName()));
-   this->wordIndex.rmItem(FileManager::splitInWords(entry->getName()), entry);
+   this->wordIndex.rmItem(Common::Global::splitInWords(entry->getName()), entry);
    L_DEBU("Entry removed from the index..");
 }
 
@@ -388,18 +387,6 @@ void FileManager::chunkRemoved(QSharedPointer<Chunk> chunk)
    this->chunks.rm(chunk);
    L_DEBU("Chunk removed from the index..");
    this->setCacheChanged();
-}
-
-/**
-  * Take raw terms in a string and split, trim and filter to
-  * return a list of keyword.
-  * Some character or word can be removed.
-  * @example " The little  DUCK " => ["little", "duck"].
-  */
-QStringList FileManager::splitInWords(const QString& words)
-{
-   const static QRegExp regExp("(\\W+|_)");
-   return words.toLower().split(regExp, QString::SkipEmptyParts);
 }
 
 /**

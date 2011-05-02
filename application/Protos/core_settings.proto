@@ -38,10 +38,12 @@ message Settings {
    optional double switch_to_another_peer_factor = 43 [default = 1.5]; // To switch from the current peer to another the other download speed must be superior to this factor of the current speed.
    optional uint32 download_rate_valid_time_factor = 44 [default = 3000]; // A download rate for a peer is valid for a time period of 'download_rate_valid_time_factor' / 'lan_speed' [s].
    optional uint32 save_queue_period = 45 [default = 60000]; // [ms]. (1 min).
-   optional uint32 ban_duration_corrupted_data = 46 [default = 30]; // 30 [s]. // When a received chunk do not match its hash, the sender is banned for a while.
+   optional uint32 ban_duration_corrupted_data = 46 [default = 30000]; // [ms]. // When a received chunk do not match its hash, the sender is banned for a while.
    
    // UploadManager.
-   optional uint32 upload_live_time = 50 [default = 5000]; // [ms].
+   optional uint32 upload_lifetime = 50 [default = 5000]; // [ms].
+   optional uint32 upload_min_nb_thread = 51 [default = 3]; // To be efficiant, there is always this number of thread prepared to upload a chunk.
+   optional uint32 upload_thread_lifetime = 52 [default = 30000]; // [ms]
    
    // NetworkListener.
    optional uint32 peer_imalive_period = 60 [default = 10000]; // [ms]. Send an IMAlive message each 10 s.
@@ -53,7 +55,7 @@ message Settings {
    optional uint32 udp_read_buffer_size = 66 [default = 81640]; // (10 * 8KiB).
    optional uint32 number_of_hashes_sent_imalive = 67 [default = 128];
    optional uint32 max_number_of_search_result_to_send = 68 [default = 300];
-   optional uint32 max_number_of_result_shown = 69 [default = 5000]; // For one search we accept a maximum of 5000 result.
+   optional uint32 max_number_of_result_shown = 69 [default = 1500]; // For one search we accept a maximum of 1500 results.
    optional uint32 max_number_of_chat_message_saved = 70 [default = 500]; // When a chat message arrive we saved it into a queue. When a GUI connects this queue is sent.
    
    // RemoteControlManager

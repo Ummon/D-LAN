@@ -58,6 +58,7 @@ namespace Common
       static qint64 availableDiskSpace(const QString& path);
       static bool rename(const QString& existingFile, const QString& newFile);
       static QString cleanDirPath(const QString& path);
+      static QStringList splitInWords(const QString& words);
 
       enum DataFolderType { ROAMING = 0, LOCAL = 1 };
 

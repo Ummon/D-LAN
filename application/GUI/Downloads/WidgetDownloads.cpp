@@ -35,7 +35,8 @@ void DownloadsDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opt
       Progress progress = index.data().value<Progress>();
 
       QStyleOptionProgressBarV2 progressBarOption;
-      progressBarOption.rect = option.rect;
+      progressBarOption.QStyleOption::operator=(option);
+
       progressBarOption.minimum = 0;
       progressBarOption.maximum = 10000;
       progressBarOption.textAlignment = Qt::AlignHCenter;

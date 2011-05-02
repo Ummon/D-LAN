@@ -29,6 +29,7 @@ using namespace UM;
 #include <Core/FileManager/IChunk.h>
 #include <Core/PeerManager/ISocket.h>
 
+#include <priv/Upload.h>
 #include <priv/Uploader.h>
 
 /**
@@ -48,8 +49,12 @@ UploadManager::UploadManager(QSharedPointer<PM::IPeerManager> peerManager) :
 
 UploadManager::~UploadManager()
 {
-   foreach (Uploader* u, this->uploaders)
+   foreach (Uploader* u, this->activeUploaders + this->inactiveUploaders)
       delete u;
+
+   foreach (Upload* u, this->uploads)
+      delete u;
+
    L_DEBU("UploadManager deleted");
 }
 
@@ -57,7 +62,7 @@ QList<IUpload*> UploadManager::getUploads() const
 {
    QList<IUpload*> uploads;
 
-   for (QListIterator<Uploader*> i(this->uploaders); i.hasNext();)
+   for (QListIterator<Upload*> i(this->uploads); i.hasNext();)
       uploads << i.next();
 
    return uploads;
@@ -70,27 +75,56 @@ int UploadManager::getUploadRate()
 
 void UploadManager::getChunk(QSharedPointer<FM::IChunk> chunk, int offset, QSharedPointer<PM::ISocket> socket)
 {
-   Uploader* uploader = new Uploader(chunk, offset, socket, this->transferRateCalculator);
-   connect(uploader, SIGNAL(uploadFinished(bool)), this, SLOT(uploadFinished(bool)), Qt::QueuedConnection);
-   connect(uploader, SIGNAL(uploadTimeout()), this, SLOT(deleteUpload()));
-   this->uploaders << uploader;
-   uploader->start();
+   L_DEBU(QString("UploadManager::getChunk(..), this->activeUploaders.size = %1, this->inactiveUploaders.size = %2").arg(this->activeUploaders.size()).arg(this->inactiveUploaders.size()));
+
+   Upload* upload = new Upload(chunk, offset, socket, this->transferRateCalculator);
+   connect(upload, SIGNAL(timeout()), this, SLOT(uploadTimeout()));
+   this->uploads << upload;
+
+   Uploader* uploader;
+   if (!this->inactiveUploaders.isEmpty())
+   {
+      uploader = this->inactiveUploaders.takeLast();
+   }
+   else
+   {
+      uploader = new Uploader();
+      connect(uploader, SIGNAL(uploadFinished()), this, SLOT(uploadFinished()), Qt::QueuedConnection);
+      connect(uploader, SIGNAL(timeout()), this, SLOT(uploaderTimeout()));
+   }
+   this->activeUploaders << uploader;
+   uploader->startUploading(upload);
 }
 
-void UploadManager::uploadFinished(bool networkError)
+void UploadManager::uploadFinished()
 {
    Uploader* uploader = dynamic_cast<Uploader*>(this->sender());
-   uploader->wait(); // TODO : wait for the finished signal instead, like the downloaders : connect(this, SIGNAL(finished()), this, SLOT(downloadingEnded()), Qt::QueuedConnection);
+   Upload* upload = uploader->getUpload();
 
-   L_DEBU(QString("Upload finished, chunk : %1").arg(uploader->getChunk()->toStringLog()));
+   L_DEBU(QString("Upload finished, chunk : %1").arg(upload->getChunk()->toStringLog()));
+   this->activeUploaders.removeOne(uploader);
+   this->inactiveUploaders << uploader;
+   uploader->startTimer();
 
-   uploader->getSocket()->finished(networkError ? PM::ISocket::SFS_ERROR : PM::ISocket::SFS_OK);
-   uploader->startTimer(); // Will delay the call to 'deleteUploade'.
+   upload->setAsFinished();
 }
 
-void UploadManager::deleteUpload()
+void UploadManager::uploaderTimeout()
 {
    Uploader* uploader = dynamic_cast<Uploader*>(this->sender());
-   this->uploaders.removeOne(uploader);
-   delete uploader;
+
+   L_DEBU(QString("An upload timeouts, this->activeUploaders.size = %1, this->inactiveUploaders.size = %2").arg(this->activeUploaders.size()).arg(this->inactiveUploaders.size()));
+
+   if (this->activeUploaders.size() + this->inactiveUploaders.size() > static_cast<int>(SETTINGS.get<quint32>("upload_min_nb_thread")))
+   {
+      this->inactiveUploaders.removeOne(uploader);
+      delete uploader;
+   }
+}
+
+void UploadManager::uploadTimeout()
+{
+   Upload* upload = dynamic_cast<Upload*>(this->sender());
+   this->uploads.removeOne(upload);
+   delete upload;
 }

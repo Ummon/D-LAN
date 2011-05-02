@@ -26,7 +26,7 @@ Timeoutable::Timeoutable(int time) :
    this->timer.setSingleShot(true);
 }
 
-bool Timeoutable::isTimeouted() const
+bool Timeoutable::isTimedout() const
 {
    return this->timeouted;
 }

@@ -48,15 +48,19 @@ namespace UM
 
    private slots:
       void getChunk(QSharedPointer<FM::IChunk> chunk, int offset, QSharedPointer<PM::ISocket> socket);
-      void uploadFinished(bool networkError);
-      void deleteUpload();
+      void uploadFinished();
+      void uploaderTimeout();
+      void uploadTimeout();
 
    private:
       LOG_INIT_H("UploadManager");
 
       QSharedPointer<PM::IPeerManager> peerManager;
 
-      QList<Uploader*> uploaders;
+      QList<Upload*> uploads;
+
+      QList<Uploader*> activeUploaders;
+      QList<Uploader*> inactiveUploaders;
 
       Common::TransferRateCalculator transferRateCalculator;
    };

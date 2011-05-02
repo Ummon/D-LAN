@@ -23,49 +23,44 @@
 #include <QSharedPointer>
 #include <QTimer>
 #include <QMutex>
+#include <QWaitCondition>
 
 #include <Common/Uncopyable.h>
-#include <Common/TransferRateCalculator.h>
-#include <Core/FileManager/IChunk.h>
-#include <Core/FileManager/IDataReader.h>
-#include <Core/PeerManager/ISocket.h>
-
-#include <IUpload.h>
 
 namespace UM
 {
-   class Uploader : public QThread, public IUpload, Common::Uncopyable
+   class Upload;
+
+   class Uploader : public QThread, Common::Uncopyable
    {
       Q_OBJECT
-      static quint64 currentID; ///< Used to generate the new upload ID.
 
    public:
-      Uploader(QSharedPointer<FM::IChunk> chunk, int offset, QSharedPointer<PM::ISocket> socket, Common::TransferRateCalculator& transferRateCalculator);
+      Uploader();
       ~Uploader();
 
-      quint64 getID() const;
-      Common::Hash getPeerID() const;
-      int getProgress() const;
-      QSharedPointer<FM::IChunk> getChunk() const;
-      QSharedPointer<PM::ISocket> getSocket() const;
+      void startUploading(Upload* upload);
+      Upload* getUpload() const;
+
       void startTimer();
 
    signals:
-      void uploadFinished(bool error);
-      void uploadTimeout();
+      void uploadFinished();
+      void timeout();
 
    protected:
       void run();
 
    private:
-      const quint64 ID; ///< Each uploader has an ID to identified it.
-      QSharedPointer<FM::IChunk> chunk; ///< The chunk uploaded.
-      int offset; ///< The current offset into the chunk.
-      QSharedPointer<PM::ISocket> socket; ///< The socket to send data.
-      QTimer timer; ///< Timer to enable a timeout for the uploader. See the settings "upload_live_time".
+      mutable QWaitCondition waitCondition;
+      mutable QMutex mutex;
+
       bool toStop;
-      mutable QMutex mutex; ///< A mutex to protect the 'offset' data member.
-      Common::TransferRateCalculator& transferRateCalculator; /// To compute the transfer rate.
+      bool active;
+
+      Upload* upload;
+
+      QTimer timer;
       QThread* mainThread;
    };
 }
