@@ -113,7 +113,7 @@ void Peer::ban(int duration, const QString& reason)
 
    this->banned = true;
    this->bannedReason = reason;
-   this->bannedTimer.setInterval(1000 * duration);
+   this->bannedTimer.setInterval(duration);
 
    QMetaObject::invokeMethod(&this->bannedTimer, "start");
 }

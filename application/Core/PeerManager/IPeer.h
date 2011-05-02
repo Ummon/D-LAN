@@ -74,7 +74,7 @@ namespace PM
       virtual void setSpeed(quint32 newSpeed) = 0;
 
       /**
-        * Ban a peer for a given duration [s].
+        * Ban a peer for a given duration [ms].
         * 'isAvailable()' will return false while the duration.
         */
       virtual void ban(int duration, const QString& reason = QString()) = 0;
