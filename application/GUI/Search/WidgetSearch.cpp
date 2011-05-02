@@ -27,6 +27,7 @@ using namespace GUI;
 #include <QIcon>
 #include <QDesktopServices>
 #include <QUrl>
+#include <QWindowsXPStyle>
 
 #include <Common/Settings.h>
 #include <Log.h>
@@ -43,21 +44,22 @@ void SearchDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option
    {
    case 0:
       {
-         initStyleOption(&newOption, index);
-
-         const QWidget *widget = newOption.widget;
-         QStyle *style = widget ? widget->style() : QApplication::style();
+         this->initStyleOption(&newOption, index);
 
          QTextDocument doc;
          doc.setHtml(this->toHtmlText(newOption.text));
 
          // Painting item without text.
          newOption.text = QString();
-         style->drawControl(QStyle::CE_ItemViewItem, &newOption, painter, widget);
+         QApplication::style()->drawControl(QStyle::CE_ItemViewItem, &newOption, painter, newOption.widget);
 
          QAbstractTextDocumentLayout::PaintContext ctx;
 
-         QRect textRect = style->subElementRect(QStyle::SE_ItemViewItemText, &newOption);
+         // Highlighting text if item is selected and we are on Windows XP. TODO: find a better way.
+         if (QString(QApplication::style()->metaObject()->className()) == "QWindowsXPStyle" && (newOption.state & QStyle::State_Selected))
+            ctx.palette.setColor(QPalette::Text, newOption.palette.color(QPalette::Active, QPalette::HighlightedText));
+
+         const QRect textRect = QApplication::style()->subElementRect(QStyle::SE_ItemViewItemText, &newOption);
          painter->save();
          painter->translate(textRect.topLeft());
          painter->setClipRect(textRect.translated(-textRect.topLeft()));
@@ -76,7 +78,7 @@ void SearchDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option
          int value = index.data().toInt();
 
          QStyleOptionProgressBar progressBarOption;
-         progressBarOption.rect = option.rect;
+         progressBarOption.QStyleOption::operator=(option);
          progressBarOption.minimum = 0;
          progressBarOption.maximum = 100;
          progressBarOption.textAlignment = Qt::AlignHCenter;
