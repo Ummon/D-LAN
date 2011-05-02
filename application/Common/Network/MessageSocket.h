@@ -93,9 +93,9 @@ namespace Common
         * Call when a new message arrived. Do nothing by default.
         * The signal 'newMessage' is also emitted after this called.
         */
-      virtual void onNewMessage(MessageHeader::MessageType type, const google::protobuf::Message& message) {};
-      virtual void onNewDataReceived() {};
-      virtual void onDisconnected() {};
+      virtual void onNewMessage(MessageHeader::MessageType type, const google::protobuf::Message& message) {}
+      virtual void onNewDataReceived() {}
+      virtual void onDisconnected() {}
 
       bool readMessage();
       template<typename MessT> bool readMessage();

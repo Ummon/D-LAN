@@ -194,7 +194,7 @@ void RemoteConnection::onNewMessage(Common::MessageHeader::MessageType type, con
          // Special syntax to search in your own files.
          if (pattern.startsWith('<'))
          {
-            QList<Protos::Common::FindResult> results = this->fileManager->find(pattern, SETTINGS.get<quint32>("max_number_of_search_result_to_send"), std::numeric_limits<int>::max());
+            QList<Protos::Common::FindResult> results = this->fileManager->find(pattern, SETTINGS.get<quint32>("max_number_of_result_shown"), std::numeric_limits<int>::max());
 
             if (!results.isEmpty())
             {

@@ -41,7 +41,9 @@ message Settings {
    optional uint32 ban_duration_corrupted_data = 46 [default = 30]; // 30 [s]. // When a received chunk do not match its hash, the sender is banned for a while.
    
    // UploadManager.
-   optional uint32 upload_live_time = 50 [default = 5000]; // [ms].
+   optional uint32 upload_lifetime = 50 [default = 5000]; // [ms].
+   optional uint32 upload_min_nb_thread = 51 [default = 3];
+   optional uint32 upload_thread_lifetime = 52 [default = 30000]; // [ms]
    
    // NetworkListener.
    optional uint32 peer_imalive_period = 60 [default = 10000]; // [ms]. Send an IMAlive message each 10 s.

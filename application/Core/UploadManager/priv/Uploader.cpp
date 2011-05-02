@@ -24,145 +24,94 @@ using namespace UM;
 
 #include <Common/Settings.h>
 
-#include <Core/FileManager/Exceptions.h>
-#include <Core/PeerManager/ISocket.h>
-
 #include <priv/Constants.h>
 #include <priv/Log.h>
+#include <priv/Upload.h>
 
 /**
   * @class UM::Uploader
   *
   * An uploader is used to send one chunk to one peer via one socket.
   * The transfert is threaded.
-  * The signal 'uploadFinished' is emitted when the upload is finished or if the socket is closed,
-  * in this latter case or if any error appears the signal error flag is set to true.
+  * The signal 'uploadFinished' is emitted when the upload is finished or if there is an error with the socket.
   */
 
-quint64 Uploader::currentID(1);
-
-Uploader::Uploader(QSharedPointer<FM::IChunk> chunk, int offset, QSharedPointer<PM::ISocket> socket, Common::TransferRateCalculator& transferRateCalculator) :
-   ID(currentID++), chunk(chunk), offset(offset), socket(socket), toStop(false), transferRateCalculator(transferRateCalculator)
+Uploader::Uploader() :
+   toStop(false), active(false), upload(0)
 {
    this->mainThread = QThread::currentThread();
-   this->socket->moveToThread(this);
 
-   this->timer.setInterval(SETTINGS.get<quint32>("upload_live_time"));
+   this->timer.setInterval(SETTINGS.get<quint32>("upload_thread_lifetime"));
    this->timer.setSingleShot(true);
-   connect(&this->timer, SIGNAL(timeout()), this, SIGNAL(uploadTimeout()));
+   connect(&this->timer, SIGNAL(timeout()), this, SIGNAL(timeout()));
+   this->start();
 }
 
 Uploader::~Uploader()
 {
+   if (this->upload)
+      this->upload->stop();
+
    this->mutex.lock();
    this->toStop = true;
+   this->waitCondition.wakeOne();
    this->mutex.unlock();
+
    this->wait();
-   L_DEBU(QString("Uploader#%1 deleted").arg(this->ID));
+
+   L_DEBU(QString("Uploader deleted"));
 }
 
-quint64 Uploader::getID() const
+void Uploader::startUploading(Upload* upload)
 {
-   return this->ID;
+   this->mutex.lock();
+   if (this->active)
+   {
+      L_DEBU("Uploader::start(..): Error, already active");
+      this->mutex.unlock();
+      return;
+   }
+
+   this->timer.stop();
+
+   this->upload = upload;
+   this->upload->moveSocketToThread(this);
+
+   this->active = true;
+   this->waitCondition.wakeOne();
+   this->mutex.unlock();
 }
 
-Common::Hash Uploader::getPeerID() const
+Upload* Uploader::getUpload() const
 {
-   return this->socket->getRemotePeerID();
-}
-
-int Uploader::getProgress() const
-{
-   QMutexLocker locker(&this->mutex);
-
-   const int chunkSize = this->chunk->getChunkSize();
-   if (chunkSize != 0)
-      return 10000LL * this->offset / this->chunk->getChunkSize();
-   else
-      return 0;
-}
-
-QSharedPointer<FM::IChunk> Uploader::getChunk() const
-{
-   return this->chunk;
-}
-
-QSharedPointer<PM::ISocket> Uploader::getSocket() const
-{
-   return this->socket;
+   return this->upload;
 }
 
 void Uploader::startTimer()
 {
    this->timer.start();
+   this->upload = 0;
 }
 
 void Uploader::run()
 {
-   L_DEBU(QString("Starting uploading a chunk from offset %1 : %2").arg(this->offset).arg(this->chunk->toStringLog()));
-
-   static const quint32 BUFFER_SIZE = SETTINGS.get<quint32>("buffer_size_reading");
-   static const quint32 SOCKET_BUFFER_SIZE = SETTINGS.get<quint32>("socket_buffer_size");
-   static const quint32 SOCKET_TIMEOUT = SETTINGS.get<quint32>("socket_timeout");
-
-   bool networkError = false;
-
-   try
+   forever
    {
-      QSharedPointer<FM::IDataReader> reader = this->chunk->getDataReader();
+      this->mutex.lock();
+      if (!this->active && !this->toStop)
+         this->waitCondition.wait(&this->mutex);
+      if (this->toStop)
+         return;
+      this->mutex.unlock();
 
-      char buffer[BUFFER_SIZE];
-      int bytesRead = 0;
+      this->upload->upload();
 
-      while (bytesRead = reader->read(buffer, this->offset))
-      {
-         int bytesSent = this->socket->write(buffer, bytesRead);
+      this->upload->moveSocketToThread(this->mainThread);
 
-         if (bytesSent == -1)
-         {
-            L_WARN(QString("Socket : cannot send data : %1").arg(this->chunk->toStringLog()));
-            networkError = true;
-            break;
-         }
+      this->mutex.lock();
+      this->active = false;
+      this->mutex.unlock();
 
-         this->mutex.lock();
-         if (this->toStop)
-            return;
-         this->offset += bytesSent;
-         this->mutex.unlock();
-
-         while (socket->bytesToWrite() > SOCKET_BUFFER_SIZE)
-         {
-            if (!socket->waitForBytesWritten(SOCKET_TIMEOUT))
-            {
-               L_WARN(QString("Socket : cannot write data, error : %1, chunk : %2").arg(socket->errorString()).arg(this->chunk->toStringLog()));
-               networkError = true;
-               goto end;
-            }
-         }
-
-         this->transferRateCalculator.addData(bytesSent);
-      }
+      emit uploadFinished();
    }
-   catch(FM::UnableToOpenFileInReadModeException&)
-   {
-      L_WARN("UnableToOpenFileInReadModeException");
-   }
-   catch(FM::IOErrorException&)
-   {
-      L_WARN("IOErrorException");
-   }
-   catch (FM::ChunkDeletedException)
-   {
-      L_WARN("ChunkDeletedException");
-   }
-   catch (FM::ChunkNotCompletedException)
-   {
-      L_WARN("ChunkNotCompletedException");
-   }
-
-end:
-   this->socket->moveToThread(this->mainThread);
-
-   emit uploadFinished(networkError);
 }

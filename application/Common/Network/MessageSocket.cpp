@@ -29,7 +29,7 @@ using namespace Common;
 /**
   * @class Common::MessageSocket
   *
-  * An abstract class which is capable to send and receive protocol buffer messages over a QAbstractSocket.
+  * An abstract class which is able to send and receive protocol buffer messages over a QAbstractSocket.
   */
 
 /**

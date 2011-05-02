@@ -33,14 +33,14 @@ namespace Common
 
    public:
       virtual ~Timeoutable() {}
-      bool isTimeouted() const;
+      bool isTimedout() const;
 
    signals:
       void timeout();
 
    protected:
-      void startTimer();
-      void stopTimer();
+      virtual void startTimer();
+      virtual void stopTimer();
 
    private slots:
       void timeoutSlot();
