@@ -53,7 +53,7 @@ namespace UM
 
    private:
       mutable QWaitCondition waitCondition;
-      mutable QMutex mutex; ///< A mutex to protect the 'offset' data member.
+      mutable QMutex mutex;
 
       bool toStop;
       bool active;
