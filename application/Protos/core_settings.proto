@@ -50,7 +50,7 @@ message Settings {
    optional uint32 unicast_base_port = 61 [default = 59487]; // If it's already taken we will look further to a free port. (UDP + TCP).
    optional uint32 multicast_port = 62 [default = 59486]; // (UDP)
    optional uint32 multicast_group = 63 [default = 3960285976]; // 236.123.43.24
-   optional uint32 multicast_ttl = 64 [default = 3];
+   optional uint32 multicast_ttl = 64 [default = 31];
    optional uint32 max_udp_datagram_size = 65 [default = 8164]; // (~8 KiB). It doesn't include the IP+UDP header (28 bits).
    optional uint32 udp_read_buffer_size = 66 [default = 81640]; // (10 * 8KiB).
    optional uint32 number_of_hashes_sent_imalive = 67 [default = 128];
