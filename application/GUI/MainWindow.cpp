@@ -95,62 +95,62 @@ MainWindow::MainWindow(QSharedPointer<RCC::ICoreConnection> coreConnection, QWid
    autoScroll(true),
    logModel(coreConnection)
 {
-    this->ui->setupUi(this);
+   this->ui->setupUi(this);
 
-    ui->statusBar->addWidget(new StatusBar(this->coreConnection), 1);
+   ui->statusBar->addWidget(new StatusBar(this->coreConnection), 1);
 
-    this->ui->tblPeers->setModel(&this->peerListModel);
+   this->ui->tblPeers->setModel(&this->peerListModel);
 
-    this->ui->tblPeers->setItemDelegate(&this->peerTableDelegate);
-    this->ui->tblPeers->horizontalHeader()->setResizeMode(0, QHeaderView::Stretch);
-    this->ui->tblPeers->horizontalHeader()->setResizeMode(1, QHeaderView::ResizeToContents);
-    this->ui->tblPeers->horizontalHeader()->setVisible(false);
+   this->ui->tblPeers->setItemDelegate(&this->peerTableDelegate);
+   this->ui->tblPeers->horizontalHeader()->setResizeMode(0, QHeaderView::Stretch);
+   this->ui->tblPeers->horizontalHeader()->setResizeMode(1, QHeaderView::ResizeToContents);
+   this->ui->tblPeers->horizontalHeader()->setVisible(false);
 
-    // TODO : is there an another way to reduce the row size?
-    this->ui->tblPeers->verticalHeader()->setResizeMode(QHeaderView::Fixed);
-    this->ui->tblPeers->verticalHeader()->setDefaultSectionSize(QApplication::fontMetrics().height() + 2);
-    this->ui->tblPeers->verticalHeader()->setVisible(false);
-    this->ui->tblPeers->setSelectionBehavior(QAbstractItemView::SelectRows);
-    this->ui->tblPeers->setSelectionMode(QAbstractItemView::SingleSelection);
-    this->ui->tblPeers->setShowGrid(false);
-    this->ui->tblPeers->setAlternatingRowColors(true);
+   // TODO : is there an another way to reduce the row size?
+   this->ui->tblPeers->verticalHeader()->setResizeMode(QHeaderView::Fixed);
+   this->ui->tblPeers->verticalHeader()->setDefaultSectionSize(QApplication::fontMetrics().height() + 2);
+   this->ui->tblPeers->verticalHeader()->setVisible(false);
+   this->ui->tblPeers->setSelectionBehavior(QAbstractItemView::SelectRows);
+   this->ui->tblPeers->setSelectionMode(QAbstractItemView::SingleSelection);
+   this->ui->tblPeers->setShowGrid(false);
+   this->ui->tblPeers->setAlternatingRowColors(true);
 
-    this->ui->tblPeers->setContextMenuPolicy(Qt::CustomContextMenu);
+   this->ui->tblPeers->setContextMenuPolicy(Qt::CustomContextMenu);
 
-    connect(this->ui->tblPeers, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(displayContextMenuPeers(const QPoint&)));
-    connect(this->ui->tblPeers, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(browse()));
+   connect(this->ui->tblPeers, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(displayContextMenuPeers(const QPoint&)));
+   connect(this->ui->tblPeers, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(browse()));
 
-    this->ui->tblLog->setModel(&this->logModel);
+   this->ui->tblLog->setModel(&this->logModel);
 
-    this->ui->tblLog->setItemDelegate(&this->logDelegate);
-    this->ui->tblLog->horizontalHeader()->setResizeMode(0, QHeaderView::ResizeToContents);
-    this->ui->tblLog->horizontalHeader()->setResizeMode(1, QHeaderView::Stretch);
-    this->ui->tblLog->horizontalHeader()->setVisible(false);
+   this->ui->tblLog->setItemDelegate(&this->logDelegate);
+   this->ui->tblLog->horizontalHeader()->setResizeMode(0, QHeaderView::ResizeToContents);
+   this->ui->tblLog->horizontalHeader()->setResizeMode(1, QHeaderView::Stretch);
+   this->ui->tblLog->horizontalHeader()->setVisible(false);
 
-    this->ui->tblLog->verticalHeader()->setResizeMode(QHeaderView::Fixed);
-    this->ui->tblLog->verticalHeader()->setDefaultSectionSize(QApplication::fontMetrics().height() + 2);
-    this->ui->tblLog->verticalHeader()->setVisible(false);
-    this->ui->tblLog->setSelectionBehavior(QAbstractItemView::SelectRows);
-    this->ui->tblLog->setSelectionMode(QAbstractItemView::SingleSelection);
-    this->ui->tblLog->setShowGrid(false);
-    this->ui->tblLog->setAlternatingRowColors(true);
+   this->ui->tblLog->verticalHeader()->setResizeMode(QHeaderView::Fixed);
+   this->ui->tblLog->verticalHeader()->setDefaultSectionSize(QApplication::fontMetrics().height() + 2);
+   this->ui->tblLog->verticalHeader()->setVisible(false);
+   this->ui->tblLog->setSelectionBehavior(QAbstractItemView::SelectRows);
+   this->ui->tblLog->setSelectionMode(QAbstractItemView::SingleSelection);
+   this->ui->tblLog->setShowGrid(false);
+   this->ui->tblLog->setAlternatingRowColors(true);
 
-    connect(&this->logModel, SIGNAL(rowsInserted(const QModelIndex&, int, int)), this, SLOT(newLogMessage()));
-    connect(this->ui->tblLog->verticalScrollBar(), SIGNAL(valueChanged(int)), this, SLOT(logScrollChanged(int)));
+   connect(&this->logModel, SIGNAL(rowsInserted(const QModelIndex&, int, int)), this, SLOT(newLogMessage()));
+   connect(this->ui->tblLog->verticalScrollBar(), SIGNAL(valueChanged(int)), this, SLOT(logScrollChanged(int)));
 
-    connect(this->ui->butSearch, SIGNAL(clicked()), this, SLOT(search()));
-    connect(this->ui->txtSearch, SIGNAL(returnPressed()), this, SLOT(search()));
+   connect(this->ui->butSearch, SIGNAL(clicked()), this, SLOT(search()));
+   connect(this->ui->txtSearch, SIGNAL(returnPressed()), this, SLOT(search()));
 
-    this->addWidgetSettings();
+   this->addWidgetSettings();
 
-    this->coreDisconnected(); // Initial state.
+   this->coreDisconnected(); // Initial state.
 
-    this->restoreWindowsSettings();
+   this->restoreWindowsSettings();
 
-    connect(this->coreConnection.data(), SIGNAL(coreConnected()), this, SLOT(coreConnected()));
-    connect(this->coreConnection.data(), SIGNAL(coreDisconnected()), this, SLOT(coreDisconnected()));
+   connect(this->coreConnection.data(), SIGNAL(coreConnected()), this, SLOT(coreConnected()));
+   connect(this->coreConnection.data(), SIGNAL(coreDisconnected()), this, SLOT(coreDisconnected()));
 
-    this->coreConnection->connectToCore(SETTINGS.get<QString>("core_address"), SETTINGS.get<quint32>("core_port"), SETTINGS.get<Common::Hash>("password"));
+   this->coreConnection->connectToCore(SETTINGS.get<QString>("core_address"), SETTINGS.get<quint32>("core_port"), SETTINGS.get<Common::Hash>("password"));
 }
 
 MainWindow::~MainWindow()
@@ -253,17 +253,53 @@ void MainWindow::keyPressEvent(QKeyEvent* event)
    {
       switch (event->key())
       {
+      // Search
       case 'f':
       case 'F':
          this->ui->txtSearch->setFocus();
          this->ui->txtSearch->selectAll();
+         return;
+
+      // Close the current window.
+      case 'w':
+      case 'W':
+         if (this->ui->mdiArea->currentSubWindow())
+         {
+            QWidget* widget = this->ui->mdiArea->currentSubWindow()->widget();
+
+            if (dynamic_cast<WidgetBrowse*>(widget) || dynamic_cast<WidgetSearch*>(widget))
+               this->removeWidget(widget);
+         }
+         return;
+
+      default:
+         // Focus the nth window.
+         if (event->key() >= '1' && event->key() <= '9')
+         {
+            const int num = event->key() - '1';
+            if (num < this->ui->mdiArea->subWindowList().size())
+               this->ui->mdiArea->setActiveSubWindow(this->ui->mdiArea->subWindowList()[num]);
+            return;
+         }
       }
    }
+
+   QMainWindow::keyPressEvent(event);
 }
 
 void MainWindow::closeEvent(QCloseEvent* event)
 {
    delete this;
+}
+
+bool MainWindow::eventFilter(QObject* obj, QEvent* event)
+{
+   if (event->type() == QEvent::KeyPress)
+   {
+      this->keyPressEvent(static_cast<QKeyEvent*>(event));
+      return event->isAccepted();
+   }
+   return QMainWindow::eventFilter(obj, event);
 }
 
 void MainWindow::saveWindowsSettings()
@@ -331,6 +367,7 @@ void MainWindow::removeWidgetSettings()
 void MainWindow::addWidgetChat()
 {
    this->widgetChat = new WidgetChat(this->coreConnection, this->peerListModel, this);
+   this->widgetChat->installEventFilterOnInput(this);
    this->ui->mdiArea->addSubWindow(this->widgetChat, Qt::CustomizeWindowHint);
    this->widgetChat->setWindowState(Qt::WindowMaximized);
 }
@@ -395,7 +432,7 @@ WidgetBrowse* MainWindow::addWidgetBrowse(const Common::Hash& peerID)
    widgetBrowse->setWindowState(Qt::WindowMaximized);
    this->widgetsBrowse << widgetBrowse;
 
-   QTabBar* tab = ui->mdiArea->findChild<QTabBar*>();
+   QTabBar* tab = this->ui->mdiArea->findChild<QTabBar*>();
 
    QWidget* buttons = new QWidget();
 
