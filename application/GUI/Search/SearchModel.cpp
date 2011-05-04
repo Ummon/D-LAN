@@ -285,23 +285,23 @@ int SearchModel::insertNode(const Protos::Common::FindResult_EntryLevel& entry, 
          }
 
       // Search a place to insert the new directory node among nodes of the same level, the alphabetic order must be kept.
-      int nodeToInsertBefore = currentIndex;
-      while (nodeToInsertBefore < root->getNbChildren() && root->getChild(nodeToInsertBefore)->getEntry().type() == entry.entry().type() && static_cast<SearchNode*>(root->getChild(nodeToInsertBefore))->getLevel() == static_cast<int>(entry.level()))
+      // The new item is inserted before 'currentIndex'.
+      while (currentIndex < root->getNbChildren() && root->getChild(currentIndex)->getEntry().type() == entry.entry().type() && static_cast<SearchNode*>(root->getChild(currentIndex))->getLevel() == static_cast<int>(entry.level()))
       {
          const QString entryPath = SearchNode::entryPath(entry.entry()).toLower();
-         const QString nodePath = SearchNode::entryPath(root->getChild(nodeToInsertBefore)->getEntry()).toLower();
+         const QString nodePath = SearchNode::entryPath(root->getChild(currentIndex)->getEntry()).toLower();
 
          if (
             entryPath <= nodePath ||
-            (entryPath == nodePath && Common::ProtoHelper::getStr(entry.entry(), &Protos::Common::Entry::name).toLower() <= Common::ProtoHelper::getStr(root->getChild(nodeToInsertBefore)->getEntry(), &Protos::Common::Entry::name).toLower())
+            (entryPath == nodePath && Common::ProtoHelper::getStr(entry.entry(), &Protos::Common::Entry::name).toLower() <= Common::ProtoHelper::getStr(root->getChild(currentIndex)->getEntry(), &Protos::Common::Entry::name).toLower())
          )
             break;
 
-         nodeToInsertBefore++;
+         currentIndex++;
       }
 
-      this->beginInsertRows(QModelIndex(), nodeToInsertBefore, nodeToInsertBefore);
-      newNode = root->insertChild(nodeToInsertBefore, entry, peerID, this->peerListModel.getNick(peerID));
+      this->beginInsertRows(QModelIndex(), currentIndex, currentIndex);
+      newNode = root->insertChild(currentIndex, entry, peerID, this->peerListModel.getNick(peerID));
       this->endInsertRows();
    }
 

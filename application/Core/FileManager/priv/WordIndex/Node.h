@@ -31,10 +31,10 @@ namespace FM
    struct NodeResult
    {
       NodeResult() : level(0) {}
-      NodeResult(const T v, bool level = 0) : value(v), level(level) {}
+      NodeResult(T* v, bool level = 0) : value(v), level(level) {}
       static void intersect(QSet< NodeResult<T> >& s1, const QSet< NodeResult<T> >& s2, int matchValue);
 
-      T value; // Should be const but QList must be able to change a NodeResult in place...
+      T* value; // Should be const but QList must be able to change a NodeResult in place...
       int level;
    };
 
@@ -62,7 +62,7 @@ namespace FM
    template <typename T>
    inline bool operator<(const NodeResult<T>& nr1, const NodeResult<T>& nr2)
    {
-      return nr1.level < nr2.level;
+      return nr1.level == nr2.level ? operator<(*nr1.value, *nr2.value) : nr1.level < nr2.level;
    }
 
    /////
@@ -105,13 +105,13 @@ namespace FM
         * Add an item to the node.
         * If the item already exists (using operator==) nothing is added.
         */
-      void addItem(T item);
+      void addItem(T* item);
 
       /**
         * Remove the item from the node.
         * If the item doesn'exist nothing happen.
         */
-      void rmItem(T item);
+      void rmItem(T* item);
 
       /**
         * Return all items from the current node and its sub nodes (recursively) if 'alsoFromSubNodes' is true.
@@ -201,7 +201,7 @@ bool Node<T>::haveChildren() const
 }
 
 template <typename T>
-void Node<T>::addItem(T item)
+void Node<T>::addItem(T* item)
 {
    // Do not add an existing item.
    if (this->items.contains(NodeResult<T>(item)))
@@ -210,7 +210,7 @@ void Node<T>::addItem(T item)
 }
 
 template <typename T>
-void Node<T>::rmItem(T item)
+void Node<T>::rmItem(T* item)
 {
    this->items.remove(NodeResult<T>(item));
 }

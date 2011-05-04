@@ -41,8 +41,8 @@ namespace FM
    public:
       WordIndex();
 
-      void addItem(const QStringList& words, T item);
-      void rmItem(const QStringList& words, T item);
+      void addItem(const QStringList& words, T* item);
+      void rmItem(const QStringList& words, T* item);
       QSet< NodeResult<T> > search(const QStringList& words) const;
       QSet< NodeResult<T> > search(const QString& word) const;
 
@@ -63,7 +63,7 @@ WordIndex<T>::WordIndex()
 {}
 
 template<typename T>
-void WordIndex<T>::addItem(const QStringList& words, T item)
+void WordIndex<T>::addItem(const QStringList& words, T* item)
 {
    QMutexLocker locker(&mutex);
 
@@ -78,7 +78,7 @@ void WordIndex<T>::addItem(const QStringList& words, T item)
 }
 
 template<typename T>
-void WordIndex<T>::rmItem(const QStringList& words, T item)
+void WordIndex<T>::rmItem(const QStringList& words, T* item)
 {
    QMutexLocker locker(&mutex);
 
