@@ -55,7 +55,7 @@ message Settings {
    optional uint32 udp_read_buffer_size = 66 [default = 81640]; // (10 * 8KiB).
    optional uint32 number_of_hashes_sent_imalive = 67 [default = 128];
    optional uint32 max_number_of_search_result_to_send = 68 [default = 300];
-   optional uint32 max_number_of_result_shown = 69 [default = 1500]; // For one search we accept a maximum of 1500 results.
+   optional uint32 max_number_of_result_shown = 69 [default = 5000]; // For one search we accept a maximum of 1500 results.
    optional uint32 max_number_of_chat_message_saved = 70 [default = 500]; // When a chat message arrive we saved it into a queue. When a GUI connects this queue is sent.
    
    // RemoteControlManager

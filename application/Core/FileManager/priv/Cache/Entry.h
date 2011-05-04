@@ -74,5 +74,6 @@ namespace FM
    };
 
    bool operator<(const Entry& e1, const Entry& e2);
+   bool operator>(const Entry& e1, const Entry& e2);
 }
 #endif
