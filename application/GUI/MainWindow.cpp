@@ -307,14 +307,28 @@ void MainWindow::saveWindowsSettings()
    L_DEBU(QString("Save state : %1").arg(QString::fromAscii(this->saveState().toHex().data())));
 
    SETTINGS.set("windows_state", this->saveState());
-   SETTINGS.set("main_window_width", static_cast<quint32>(this->size().width()));
-   SETTINGS.set("main_window_height", static_cast<quint32>(this->size().height()));
+
+   // Qt doc says maximized property only works on Windows.
+#ifdef Q_OS_WIN32
+   SETTINGS.set("main_window_maximized", this->isMaximized());
+   if (!this->isMaximized())
+#endif
+   {
+      SETTINGS.set("main_window_width", static_cast<quint32>(this->size().width()));
+      SETTINGS.set("main_window_height", static_cast<quint32>(this->size().height()));
+   }
+
    SETTINGS.save();
 }
 
 void MainWindow::restoreWindowsSettings()
 {
    this->resize(QSize(SETTINGS.get<quint32>("main_window_width"), SETTINGS.get<quint32>("main_window_height")));
+
+#ifdef Q_OS_WIN32
+   if (SETTINGS.get<bool>("main_window_maximized"))
+      this->showMaximized();
+#endif
 
    QByteArray state = SETTINGS.get<QByteArray>("windows_state");
    if (state.isEmpty())
