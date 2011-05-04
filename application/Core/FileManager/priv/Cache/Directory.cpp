@@ -216,7 +216,7 @@ QString Directory::getFullPath() const
    // In case of a partially constructed ShareDirectory.
    // (When a exception is thrown from the SharedDirectory ctor).
    if (!this->parent)
-      return this->name.append('/');
+      return this->getName().append('/');
 
    return this->parent->getFullPath().append(this->name).append('/');
 }
