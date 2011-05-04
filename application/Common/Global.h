@@ -49,9 +49,9 @@ namespace Common
       };
 
       template <typename T>
-      static void sortedAdd(T* entry, QList<T*>& list);
+      static void sortedAdd(T* entry, QList<T*>& list, bool (*lesserThan)(const T&, const T&) = 0);
       template <typename T>
-      static void sortedAdd(const QList<T*>& entries, QList<T*>& list);
+      static void sortedAdd(const QList<T*>& entries, QList<T*>& list, bool (*lesserThan)(const T&, const T&) = 0);
 
       static int nCombinations(int n, int k);
       static QString formatByteSize(qint64 bytes, int precision = 1);
@@ -101,14 +101,14 @@ using namespace Common;
   * @param list Must be sorted.
   */
 template <typename T>
-void Global::sortedAdd(T* item, QList<T*>& list)
+void Global::sortedAdd(T* item, QList<T*>& list, bool (*lesserThan)(const T&, const T&))
 {
    for (QMutableListIterator<T*> i(list); i.hasNext(); i.next())
    {
       T* e = i.peekNext();
       if (e == item)
          return;
-      if (*item < *e)
+      if (lesserThan ? lesserThan(*item, *e) : *item < *e)
       {
          i.insert(item);
          return;
@@ -124,7 +124,7 @@ void Global::sortedAdd(T* item, QList<T*>& list)
   * @param list Must be sorted.
   */
 template <typename T>
-void Global::sortedAdd(const QList<T*>& items, QList<T*>& list)
+void Global::sortedAdd(const QList<T*>& items, QList<T*>& list, bool (*lesserThan)(const T&, const T&))
 {
    QListIterator<T*> i(items);
    QMutableListIterator<T*> j(list);
@@ -137,7 +137,7 @@ void Global::sortedAdd(const QList<T*>& items, QList<T*>& list)
       while (j.hasNext())
       {
          T* ej = j.peekNext();
-         if (*ei < *ej)
+         if (lesserThan ? lesserThan(*ei, *ej) : *ei < *ej)
          {
             j.insert(ei);
             i.next();

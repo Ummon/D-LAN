@@ -208,14 +208,17 @@ QString Directory::getPath() const
    return path;
 }
 
+/**
+  * We use "this->name" instead of "this->getName()" to improve a bit the performance during searching (See 'QSort(..)' in 'FileManager::find(..)').
+  */
 QString Directory::getFullPath() const
 {
    // In case of a partially constructed ShareDirectory.
    // (When a exception is thrown from the SharedDirectory ctor).
    if (!this->parent)
-      return this->getName().append('/');
+      return this->name.append('/');
 
-   return this->parent->getFullPath().append(this->getName()).append('/');
+   return this->parent->getFullPath().append(this->name).append('/');
 }
 
 SharedDirectory* Directory::getRoot() const
@@ -333,7 +336,7 @@ File* Directory::getFile(const QString& name) const
 void Directory::add(File* file)
 {
    QMutexLocker locker(&this->mutex);
-   Common::Global::sortedAdd(file, this->files);
+   Common::Global::sortedAdd(file, this->files, &lesserThanOnlyName);
    (*this) += file->getSize();
 }
 
@@ -378,7 +381,7 @@ void Directory::stealContent(Directory* dir)
 void Directory::add(Directory* dir)
 {
    QMutexLocker locker(&this->mutex);
-   Common::Global::sortedAdd(dir, this->subDirs);
+   Common::Global::sortedAdd(dir, this->subDirs, lesserThanOnlyName);
 }
 
 /**
@@ -388,7 +391,7 @@ void Directory::subdirNameChanged(Directory* dir)
 {
    QMutexLocker locker(&this->mutex);
    this->subDirs.removeOne(dir);
-   Common::Global::sortedAdd(dir, this->subDirs);
+   Common::Global::sortedAdd(dir, this->subDirs, lesserThanOnlyName);
 }
 
 /**
@@ -398,17 +401,17 @@ void Directory::fileNameChanged(File* file)
 {
    QMutexLocker locker(&this->mutex);
    this->files.removeOne(file);
-   Common::Global::sortedAdd(file, this->files);
+   Common::Global::sortedAdd(file, this->files, lesserThanOnlyName);
 }
 
 void Directory::add(QList<Directory*> dirs)
 {
-   Common::Global::sortedAdd(dirs, this->subDirs);
+   Common::Global::sortedAdd(dirs, this->subDirs, lesserThanOnlyName);
 }
 
 void Directory::add(QList<File*> files)
 {
-   Common::Global::sortedAdd(files, this->files);
+   Common::Global::sortedAdd(files, this->files, lesserThanOnlyName);
 }
 
 /**
@@ -460,3 +463,7 @@ Directory* DirIterator::next()
    return dir;
 }
 
+bool FM::lesserThanOnlyName(const Directory& d1, const Directory& d2)
+{
+   return d1.getName().toLower() < d2.getName().toLower();
+}

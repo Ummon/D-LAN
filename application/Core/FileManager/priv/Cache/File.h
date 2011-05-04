@@ -132,5 +132,7 @@ namespace FM
       QWaitCondition hashingStopped;
       QMutex hashingMutex;
    };
+
+   bool lesserThanOnlyName(const File& f1, const File& f2);
 }
 #endif

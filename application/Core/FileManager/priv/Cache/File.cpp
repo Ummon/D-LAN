@@ -709,3 +709,8 @@ void File::setHashes(const Common::Hashes& hashes)
          this->chunks.append(QSharedPointer<Chunk>(new Chunk(this, i, chunkKnownBytes)));
    }
 }
+
+bool FM::lesserThanOnlyName(const File& f1, const File& f2)
+{
+   return f1.getName().toLower() < f2.getName().toLower();
+}

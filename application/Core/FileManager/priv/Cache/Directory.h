@@ -114,6 +114,8 @@ namespace FM
    private:
       QList<Directory*> dirsToVisit;
    };
+
+   bool lesserThanOnlyName(const Directory& d1, const Directory& d2);
 }
 
 #endif

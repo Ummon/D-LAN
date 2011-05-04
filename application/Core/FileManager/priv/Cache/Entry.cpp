@@ -85,13 +85,3 @@ qint64 Entry::getSize() const
 {
    return this->size;
 }
-
-bool FM::operator<(const Entry& e1, const Entry& e2)
-{
-   return e1.getFullPath().toLower() < e2.getFullPath().toLower();
-}
-
-bool FM::operator>(const Entry& e1, const Entry& e2)
-{
-   return e1.getFullPath().toLower() > e2.getFullPath().toLower();
-}

@@ -73,7 +73,14 @@ namespace FM
       qint64 size;
    };
 
-   bool operator<(const Entry& e1, const Entry& e2);
-   bool operator>(const Entry& e1, const Entry& e2);
+   inline bool operator<(const Entry& e1, const Entry& e2)
+   {
+      return e1.getFullPath().toLower() < e2.getFullPath().toLower();
+   }
+
+   inline bool operator>(const Entry& e1, const Entry& e2)
+   {
+      return e1.getFullPath().toLower() > e2.getFullPath().toLower();
+   }
 }
 #endif
