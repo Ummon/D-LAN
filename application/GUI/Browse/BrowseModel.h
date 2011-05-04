@@ -93,7 +93,7 @@ namespace GUI
 
          Node();
          Node(const Protos::Common::Entry& entry, Node* parent);
-         ~Node();
+         virtual ~Node();
 
          virtual Node* getParent();
          virtual int getNbChildren() const;
