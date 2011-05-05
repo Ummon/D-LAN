@@ -202,7 +202,7 @@ bool findEntryLessThan(const Protos::Common::FindResult_EntryLevel* e1, const Pr
          return e1->level() < e2->level();
    }
    else
-      return e1->entry().type() > e2->entry().type();
+      return e1->entry().type() >= e2->entry().type();
 }
 
 /**
@@ -307,11 +307,11 @@ int SearchModel::insertNode(const Protos::Common::FindResult_EntryLevel& entry, 
    SearchNode* root = this->getRoot();
 
    // Search a place to insert the new entry, order (type > level > path > name) must be kept.
-   while (currentIndex < root->getNbChildren() && root->getChild(currentIndex)->getEntry().type() > entry.entry().type())
-      currentIndex++;
-   while (currentIndex < root->getNbChildren() && static_cast<SearchNode*>(root->getChild(currentIndex))->getLevel() < static_cast<int>(entry.level()))
-      currentIndex++;
-   while (currentIndex < root->getNbChildren() && entryLessThan(root->getChild(currentIndex)->getEntry(), entry.entry()))
+   while (currentIndex < root->getNbChildren() && (
+      root->getChild(currentIndex)->getEntry().type() > entry.entry().type() ||
+      root->getChild(currentIndex)->getEntry().type() == entry.entry().type() && static_cast<SearchNode*>(root->getChild(currentIndex))->getLevel() < static_cast<int>(entry.level()) ||
+      root->getChild(currentIndex)->getEntry().type() == entry.entry().type() && static_cast<SearchNode*>(root->getChild(currentIndex))->getLevel() == static_cast<int>(entry.level()) && entryLessThan(root->getChild(currentIndex)->getEntry(), entry.entry())
+   ))
       currentIndex++;
 
    this->beginInsertRows(QModelIndex(), currentIndex, currentIndex);
