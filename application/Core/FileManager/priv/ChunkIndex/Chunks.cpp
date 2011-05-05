@@ -58,7 +58,7 @@ const QList< QSharedPointer<Chunk> > Chunks::values(const Common::Hash& hash) co
    while (i != this->end() && i.key() == hash)
    {
       values << i.value();
-      i++;
+      ++i;
    }
 
    return values;

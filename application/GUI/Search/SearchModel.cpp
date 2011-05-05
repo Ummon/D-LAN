@@ -47,6 +47,8 @@ SearchModel::SearchModel(QSharedPointer<RCC::ICoreConnection> coreConnection, co
 
 SearchModel::~SearchModel()
 {
+   if (!this->searchResult.isNull())
+      this->searchResult->disconnect(this);
 }
 
 Common::Hash SearchModel::getPeerID(const QModelIndex& index)

@@ -83,7 +83,7 @@ void DownloadQueue::remove(int position)
 
 void DownloadQueue::setPeerSource(PM::IPeer* peer)
 {
-   for (QMultiHash<Common::Hash, Download*>::iterator i = this->downloadsIndexedBySourcePeerID.find(peer->getID()); i != this->downloadsIndexedBySourcePeerID.end() && i.key() == peer->getID(); i++)
+   for (QMultiHash<Common::Hash, Download*>::iterator i = this->downloadsIndexedBySourcePeerID.find(peer->getID()); i != this->downloadsIndexedBySourcePeerID.end() && i.key() == peer->getID(); ++i)
       i.value()->setPeer(peer);
 }
 
@@ -165,7 +165,7 @@ bool DownloadQueue::removeDownloads(DownloadPredicate& predicate)
          (*j)->setAsDeleted();
          this->downloadsIndexedBySourcePeerID.remove((*j)->getPeerSourceID(), *j);
          downloadsToDelete << *j;
-         j++;
+         ++j;
 
          this->updateMarkersRemove(position);
       }
@@ -176,8 +176,8 @@ bool DownloadQueue::removeDownloads(DownloadPredicate& predicate)
       }
       else
       {
-         j++;
-         i++;
+         ++j;
+         ++i;
          position++;
       }
    }
@@ -193,7 +193,7 @@ bool DownloadQueue::removeDownloads(DownloadPredicate& predicate)
 
 bool DownloadQueue::isEntryAlreadyQueued(const Protos::Common::Entry& localEntry, const Common::Hash& peerSourceID)
 {
-   for (QMultiHash<Common::Hash, Download*>::iterator i = this->downloadsIndexedBySourcePeerID.find(peerSourceID); i != this->downloadsIndexedBySourcePeerID.end() && i.key() == peerSourceID; i++)
+   for (QMultiHash<Common::Hash, Download*>::iterator i = this->downloadsIndexedBySourcePeerID.find(peerSourceID); i != this->downloadsIndexedBySourcePeerID.end() && i.key() == peerSourceID; ++i)
    {
       Download* download = i.value();
       if (download->getLocalEntry().shared_dir().id().hash() == localEntry.shared_dir().id().hash() && download->getLocalEntry().path() == localEntry.path() && download->getLocalEntry().name() == localEntry.name())
