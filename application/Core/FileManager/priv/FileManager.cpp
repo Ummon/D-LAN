@@ -174,15 +174,19 @@ QList<Protos::Common::FindResult> FileManager::find(const QString& words, int ma
    // Launch a search for each term.
    QSet< NodeResult<Entry> > results[n];
    for (int i = 0; i < n; i++)
-      results[i] += this->wordIndex.search(terms[i], maxNbResult).toSet();
+      // We can only limit the number of result for one term. When there is more than one term and thus some results set, say [a, b, c] for example, some good result may be contained in intersect, for example a & b or a & c.
+      results[i] += this->wordIndex.search(terms[i], n == 1 ? maxNbResult : -1).toSet();
 
    QList<Protos::Common::FindResult> findResults;
    findResults << Protos::Common::FindResult();
    findResults.last().set_tag(std::numeric_limits<quint64>::max()); // Worst case to compute the size.
+
    const int constantFindResultsSize = findResults.last().ByteSize();
+   int findResultCurrentSize = constantFindResultsSize; // [Byte].
 
    int numberOfResult = 0;
    bool end = false;
+
 
    int level = 0;
    // For each group of intersection number.
@@ -252,9 +256,7 @@ QList<Protos::Common::FindResult> FileManager::find(const QString& words, int ma
          level += 1;
       }
 
-      qSort(nodesToSort);
-
-      int findResultCurrentSize = constantFindResultsSize; // [Byte].
+      qSort(nodesToSort); // TODO: the slow part of this method.
 
       // Populate the result.
       for (QListIterator< NodeResult<Entry> > k(nodesToSort); k.hasNext();)
@@ -265,7 +267,7 @@ QList<Protos::Common::FindResult> FileManager::find(const QString& words, int ma
          entry.value->populateEntry(entryLevel->mutable_entry(), true);
 
          // We wouldn't use 'findResults.last().ByteSize()' because is too slow. Instead we call 'ByteSize()' for each entry and sum it.
-         const int entryByteSize = entryLevel->ByteSize() + 4; // Each entry take a bit of memory... (Value found with an empiric way..).
+         const int entryByteSize = entryLevel->ByteSize() + 8; // Each entry take a bit of memory... (Value found with an empiric way..).
          findResultCurrentSize += entryByteSize;
 
          if (findResultCurrentSize > maxSize)
