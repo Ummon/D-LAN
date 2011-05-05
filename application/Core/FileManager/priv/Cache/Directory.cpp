@@ -336,7 +336,7 @@ File* Directory::getFile(const QString& name) const
 void Directory::add(File* file)
 {
    QMutexLocker locker(&this->mutex);
-   Common::Global::sortedAdd(file, this->files, &lesserThanOnlyName);
+   Common::Global::sortedAdd(file, this->files);
    (*this) += file->getSize();
 }
 
@@ -381,7 +381,7 @@ void Directory::stealContent(Directory* dir)
 void Directory::add(Directory* dir)
 {
    QMutexLocker locker(&this->mutex);
-   Common::Global::sortedAdd(dir, this->subDirs, lesserThanOnlyName);
+   Common::Global::sortedAdd(dir, this->subDirs);
 }
 
 /**
@@ -391,7 +391,7 @@ void Directory::subdirNameChanged(Directory* dir)
 {
    QMutexLocker locker(&this->mutex);
    this->subDirs.removeOne(dir);
-   Common::Global::sortedAdd(dir, this->subDirs, lesserThanOnlyName);
+   Common::Global::sortedAdd(dir, this->subDirs);
 }
 
 /**
@@ -401,17 +401,17 @@ void Directory::fileNameChanged(File* file)
 {
    QMutexLocker locker(&this->mutex);
    this->files.removeOne(file);
-   Common::Global::sortedAdd(file, this->files, lesserThanOnlyName);
+   Common::Global::sortedAdd(file, this->files);
 }
 
 void Directory::add(QList<Directory*> dirs)
 {
-   Common::Global::sortedAdd(dirs, this->subDirs, lesserThanOnlyName);
+   Common::Global::sortedAdd(dirs, this->subDirs);
 }
 
 void Directory::add(QList<File*> files)
 {
-   Common::Global::sortedAdd(files, this->files, lesserThanOnlyName);
+   Common::Global::sortedAdd(files, this->files);
 }
 
 /**
@@ -461,9 +461,4 @@ Directory* DirIterator::next()
    this->dirsToVisit.removeFirst();
    this->dirsToVisit.append(dir->subDirs);
    return dir;
-}
-
-bool FM::lesserThanOnlyName(const Directory& d1, const Directory& d2)
-{
-   return d1.getName().toLower() < d2.getName().toLower();
 }

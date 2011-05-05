@@ -256,7 +256,7 @@ QList<Protos::Common::FindResult> FileManager::find(const QString& words, int ma
          level += 1;
       }
 
-      qSort(nodesToSort); // TODO: the slow part of this method.
+      qSort(nodesToSort); // Sort by level
 
       // Populate the result.
       for (QListIterator< NodeResult<Entry> > k(nodesToSort); k.hasNext();)

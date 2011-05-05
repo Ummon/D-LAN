@@ -62,7 +62,7 @@ namespace FM
    template <typename T>
    inline bool operator<(const NodeResult<T>& nr1, const NodeResult<T>& nr2)
    {
-      return nr1.level == nr2.level ? *nr1.value > *nr2.value : nr1.level < nr2.level;
+      return nr1.level < nr2.level;
    }
 
    /////

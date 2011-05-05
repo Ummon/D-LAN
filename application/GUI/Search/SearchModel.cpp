@@ -19,6 +19,11 @@
 #include <Search/SearchModel.h>
 using namespace GUI;
 
+#include <algorithm>
+#include <string>
+
+#include <QtAlgorithms>
+
 #include <Common/Settings.h>
 #include <Common/Global.h>
 
@@ -150,6 +155,56 @@ void SearchModel::loadChildren(const QPersistentModelIndex &index)
    BrowseModel::loadChildren(index);
 }
 
+bool entryLessThan(const Protos::Common::Entry& e1, const Protos::Common::Entry& e2)
+{
+   std::string s1;
+   std::string s2;
+
+   if (e1.has_shared_dir() && e2.has_shared_dir())
+   {
+      s1 = e1.shared_dir().shared_name();
+      s2 = e2.shared_dir().shared_name();
+      std::transform(s1.begin(), s1.end(), s1.begin(), tolower);
+      std::transform(s2.begin(), s2.end(), s2.begin(), tolower);
+   }
+
+   if (s1 == s2)
+   {
+      std::string p1 = e1.path();
+      std::string p2 = e2.path();
+      std::transform(p1.begin(), p1.end(), p1.begin(), tolower);
+      std::transform(p2.begin(), p2.end(), p2.begin(), tolower);
+
+      if (p1 == p2)
+      {
+         std::string n1 = e1.name();
+         std::string n2 = e2.name();
+         std::transform(n1.begin(), n1.end(), n1.begin(), tolower);
+         std::transform(n2.begin(), n2.end(), n2.begin(), tolower);
+         return n1 < n2;
+      }
+      else
+         return p1 < p2;
+   }
+   else
+      return s1 < s2;
+}
+
+bool findEntryLessThan(const Protos::Common::FindResult_EntryLevel* e1, const Protos::Common::FindResult_EntryLevel* e2)
+{
+   if (e1->entry().type() == e2->entry().type())
+   {
+      if (e1->level() == e2->level())
+      {
+         return entryLessThan(e1->entry(), e2->entry());
+      }
+      else
+         return e1->level() < e2->level();
+   }
+   else
+      return e1->entry().type() > e2->entry().type();
+}
+
 /**
   * This method is called several times, one by received entries. The entries are inserted into the model.
   * The given entries are sorted by their level, we will keep the sort when inserting the entry but with some modifications :
@@ -159,34 +214,29 @@ void SearchModel::loadChildren(const QPersistentModelIndex &index)
   */
 void SearchModel::result(const Protos::Common::FindResult& findResult)
 {
-   SearchNode* root = this->getRoot();
+   if (findResult.entry_size() == 0)
+      return;
 
-   int currentDirNode = -1; // Will point to the first directory of a group of same level directory.
-   if (root->getNbChildren() != 0 && root->getChild(0)->getEntry().type() == Protos::Common::Entry_Type_DIR)
-      currentDirNode = 0;
-
-   int currentFileNode = -1; // Same as the directories.
-   if (root->getNbChildren() != 0 && root->getChild(0)->getEntry().type() == Protos::Common::Entry_Type_FILE)
-      currentFileNode = 0;
-
+   QList<const Protos::Common::FindResult_EntryLevel*> sortedEntries;
    for (int i = 0; i < findResult.entry_size(); i++)
-   {
-      const Protos::Common::FindResult_EntryLevel entry = findResult.entry(i);
-      this->setMaxLevel(entry.level());
+      sortedEntries << &findResult.entry(i);
+   qSort(sortedEntries.begin(), sortedEntries.end(), &findEntryLessThan);
 
-      if (entry.entry().type() == Protos::Common::Entry_Type_DIR)
-      {
-         currentDirNode = this->insertNode(entry, findResult.peer_id().hash().data(), currentDirNode);         
-         currentFileNode += 1;
-      }
-      else // It's a file.
+   int currentIndex = 0;
+
+   for (QListIterator<const Protos::Common::FindResult_EntryLevel*> i(sortedEntries); i.hasNext();)
+   {
+      const Protos::Common::FindResult_EntryLevel* entry = i.next();
+      this->setMaxLevel(entry->level());
+
+      if (entry->entry().type() == Protos::Common::Entry_Type_FILE)
       {
          // Search if a similar entry already exists. If so then insert the new node as child.
-         if (entry.entry().chunk_size() > 0)
+         if (entry->entry().chunk_size() > 0)
          {
-            Common::Hash firstChunk = entry.entry().chunk(0).hash().data();
+            Common::Hash firstChunk = entry->entry().chunk(0).hash().data();
             SearchNode* similarNode = 0;
-            if ((similarNode = this->indexedFile.value(firstChunk)) && similarNode->isSameAs(entry.entry()))
+            if ((similarNode = this->indexedFile.value(firstChunk)) && similarNode->isSameAs(entry->entry()))
             {
                if (similarNode->getNbChildren() == 0)
                {
@@ -198,14 +248,14 @@ void SearchModel::result(const Protos::Common::FindResult& findResult)
                // Search the better name (node with the lowest level) to display it on the top.
                for (int i = 0; i <= similarNode->getNbChildren(); i++)
                {
-                  if (i == similarNode->getNbChildren() || static_cast<SearchNode*>(similarNode->getChild(i))->getLevel() > static_cast<int>(entry.level()))
+                  if (i == similarNode->getNbChildren() || static_cast<SearchNode*>(similarNode->getChild(i))->getLevel() > static_cast<int>(entry->level()))
                   {
                      this->beginInsertRows(this->createIndex(0, 0, similarNode), i, i);
                      Common::Hash peerID = findResult.peer_id().hash().data();
-                     SearchNode* newNode = similarNode->insertChild(i, entry, peerID, this->peerListModel.getNick(peerID));
+                     SearchNode* newNode = similarNode->insertChild(i, *entry, peerID, this->peerListModel.getNick(peerID));
                      this->endInsertRows();
 
-                     if (static_cast<int>(entry.level()) < similarNode->getLevel())
+                     if (static_cast<int>(entry->level()) < similarNode->getLevel())
                      {
                         const int row = similarNode->getRow();
                         similarNode->copyFrom(newNode);
@@ -219,9 +269,9 @@ void SearchModel::result(const Protos::Common::FindResult& findResult)
                continue;
             }
          }
-
-         currentFileNode = this->insertNode(entry, findResult.peer_id().hash().data(), currentFileNode);
       }
+
+      currentIndex = this->insertNode(*entry, findResult.peer_id().hash().data(), currentIndex);
    }
 }
 
@@ -255,59 +305,20 @@ int SearchModel::insertNode(const Protos::Common::FindResult_EntryLevel& entry, 
       this->nbFolders++;
 
    SearchNode* root = this->getRoot();
-   SearchNode* newNode = 0;
 
-   // We skip directories to keep them first when inserting a file.
-   if (entry.entry().type() == Protos::Common::Entry_Type_FILE && root->getNbChildren() > 0)
-   {
-      if (currentIndex == -1)
-         currentIndex = 0;
+   // Search a place to insert the new entry, order (type > level > path > name) must be kept.
+   while (currentIndex < root->getNbChildren() && root->getChild(currentIndex)->getEntry().type() > entry.entry().type())
+      currentIndex++;
+   while (currentIndex < root->getNbChildren() && static_cast<SearchNode*>(root->getChild(currentIndex))->getLevel() < static_cast<int>(entry.level()))
+      currentIndex++;
+   while (currentIndex < root->getNbChildren() && entryLessThan(root->getChild(currentIndex)->getEntry(), entry.entry()))
+      currentIndex++;
 
-      // We skip the directories.
-      while (currentIndex < root->getNbChildren() && root->getChild(currentIndex)->getEntry().type() == Protos::Common::Entry_Type_DIR)
-         currentIndex += 1;
-   }
+   this->beginInsertRows(QModelIndex(), currentIndex, currentIndex);
+   SearchNode* newNode = root->insertChild(currentIndex++, entry, peerID, this->peerListModel.getNick(peerID));
+   this->endInsertRows();
 
-   if (currentIndex == -1)
-   {
-      currentIndex = 0;
-      this->beginInsertRows(QModelIndex(), 0, 0);
-      newNode = this->getRoot()->insertChild(currentIndex, entry, peerID, this->peerListModel.getNick(peerID));
-      this->endInsertRows();
-   }
-   else
-   {
-      // Search the first entry with the same level or, at least, a greater level.
-      if (currentIndex < root->getNbChildren())
-         while (static_cast<SearchNode*>(root->getChild(currentIndex))->getLevel() < static_cast<int>(entry.level()))
-         {
-            currentIndex += 1;
-            if (currentIndex == root->getNbChildren() || root->getChild(currentIndex)->getEntry().type() != entry.entry().type())
-               break;
-         }
-
-      // Search a place to insert the new directory node among nodes of the same level, the alphabetic order must be kept.
-      // The new item is inserted before 'currentIndex'.
-      while (currentIndex < root->getNbChildren() && root->getChild(currentIndex)->getEntry().type() == entry.entry().type() && static_cast<SearchNode*>(root->getChild(currentIndex))->getLevel() == static_cast<int>(entry.level()))
-      {
-         const QString entryPath = SearchNode::entryPath(entry.entry()).toLower();
-         const QString nodePath = SearchNode::entryPath(root->getChild(currentIndex)->getEntry()).toLower();
-
-         if (
-            entryPath <= nodePath ||
-            (entryPath == nodePath && Common::ProtoHelper::getStr(entry.entry(), &Protos::Common::Entry::name).toLower() <= Common::ProtoHelper::getStr(root->getChild(currentIndex)->getEntry(), &Protos::Common::Entry::name).toLower())
-         )
-            break;
-
-         currentIndex++;
-      }
-
-      this->beginInsertRows(QModelIndex(), currentIndex, currentIndex);
-      newNode = root->insertChild(currentIndex, entry, peerID, this->peerListModel.getNick(peerID));
-      this->endInsertRows();
-   }
-
-   if (newNode && newNode->getEntry().type() == Protos::Common::Entry_Type_FILE && newNode->getEntry().chunk_size() > 0)
+   if (newNode->getEntry().type() == Protos::Common::Entry_Type_FILE && newNode->getEntry().chunk_size() > 0)
       this->indexedFile.insert(newNode->getEntry().chunk(0).hash().data(), newNode);
 
    return currentIndex;
