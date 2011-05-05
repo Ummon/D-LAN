@@ -174,7 +174,7 @@ QList<Protos::Common::FindResult> FileManager::find(const QString& words, int ma
    // Launch a search for each term.
    QSet< NodeResult<Entry> > results[n];
    for (int i = 0; i < n; i++)
-      results[i] += this->wordIndex.search(terms[i]);
+      results[i] += this->wordIndex.search(terms[i], maxNbResult).toSet();
 
    QList<Protos::Common::FindResult> findResults;
    findResults << Protos::Common::FindResult();
