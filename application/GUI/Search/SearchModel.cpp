@@ -94,6 +94,7 @@ QVariant SearchModel::data(const QModelIndex& index, int role) const
                return QVariant();
 
             int percentMatch = 100 - 100 * node->getLevel() / (this->maxLevel + 1);
+
             return percentMatch > 100 ? 100 : percentMatch;
          }
       default: return QVariant();
@@ -224,10 +225,13 @@ void SearchModel::result(const Protos::Common::FindResult& findResult)
 
    int currentIndex = 0;
 
+   bool maxLevelChange = false;
+
    for (QListIterator<const Protos::Common::FindResult_EntryLevel*> i(sortedEntries); i.hasNext();)
    {
       const Protos::Common::FindResult_EntryLevel* entry = i.next();
-      this->setMaxLevel(entry->level());
+      if (this->setMaxLevel(entry->level()))
+         maxLevelChange = true;
 
       if (entry->entry().type() == Protos::Common::Entry_Type_FILE)
       {
@@ -273,6 +277,9 @@ void SearchModel::result(const Protos::Common::FindResult& findResult)
 
       currentIndex = this->insertNode(*entry, findResult.peer_id().hash().data(), currentIndex);
    }
+
+   if (maxLevelChange && this->rowCount() > 0)
+      emit dataChanged(this->createIndex(0, 2), this->createIndex(this->rowCount() - 1, 2));
 }
 
 void SearchModel::sendNextProgress()
@@ -328,14 +335,14 @@ int SearchModel::insertNode(const Protos::Common::FindResult_EntryLevel& entry, 
   * The relevance is a percentage of the current level against the max level, thus if the max level change
   * we have to recompute all percentage values.
   */
-void SearchModel::setMaxLevel(int newLevel)
+bool SearchModel::setMaxLevel(int newLevel)
 {
    if (newLevel > this->maxLevel)
    {
       this->maxLevel = newLevel;
-      if (this->rowCount() > 0)
-         emit dataChanged(this->createIndex(0, 2), this->createIndex(this->rowCount() - 1, 2));
+      return true;
    }
+   return false;
 }
 
 /////
