@@ -233,45 +233,42 @@ void SearchModel::result(const Protos::Common::FindResult& findResult)
       if (this->setMaxLevel(entry->level()))
          maxLevelChange = true;
 
-      if (entry->entry().type() == Protos::Common::Entry_Type_FILE)
+      // Search if a similar entry already exists. If so then insert the new node as child.
+      if (entry->entry().type() == Protos::Common::Entry_Type_FILE && entry->entry().chunk_size() > 0)
       {
-         // Search if a similar entry already exists. If so then insert the new node as child.
-         if (entry->entry().chunk_size() > 0)
+         Common::Hash firstChunk = entry->entry().chunk(0).hash().data();
+         SearchNode* similarNode = 0;
+         if ((similarNode = this->indexedFile.value(firstChunk)) && similarNode->isSameAs(entry->entry()))
          {
-            Common::Hash firstChunk = entry->entry().chunk(0).hash().data();
-            SearchNode* similarNode = 0;
-            if ((similarNode = this->indexedFile.value(firstChunk)) && similarNode->isSameAs(entry->entry()))
+            if (similarNode->getNbChildren() == 0)
             {
-               if (similarNode->getNbChildren() == 0)
-               {
-                  this->beginInsertRows(this->createIndex(0, 0, similarNode), 0, 0);
-                  similarNode->insertChild(similarNode);
-                  this->endInsertRows();
-               }
-
-               // Search the better name (node with the lowest level) to display it on the top.
-               for (int i = 0; i <= similarNode->getNbChildren(); i++)
-               {
-                  if (i == similarNode->getNbChildren() || static_cast<SearchNode*>(similarNode->getChild(i))->getLevel() > static_cast<int>(entry->level()))
-                  {
-                     this->beginInsertRows(this->createIndex(0, 0, similarNode), i, i);
-                     Common::Hash peerID = findResult.peer_id().hash().data();
-                     SearchNode* newNode = similarNode->insertChild(i, *entry, peerID, this->peerListModel.getNick(peerID));
-                     this->endInsertRows();
-
-                     if (static_cast<int>(entry->level()) < similarNode->getLevel())
-                     {
-                        const int row = similarNode->getRow();
-                        similarNode->copyFrom(newNode);
-                        emit dataChanged(this->createIndex(row, 0, similarNode), this->createIndex(row, 3, similarNode));
-                     }
-
-                     break;
-                  }
-               }
-
-               continue;
+               this->beginInsertRows(this->createIndex(0, 0, similarNode), 0, 0);
+               similarNode->insertChild(similarNode);
+               this->endInsertRows();
             }
+
+            // Search the better name (node with the lowest level) to display it on the top.
+            for (int i = 0; i <= similarNode->getNbChildren(); i++)
+            {
+               if (i == similarNode->getNbChildren() || static_cast<SearchNode*>(similarNode->getChild(i))->getLevel() > static_cast<int>(entry->level()))
+               {
+                  this->beginInsertRows(this->createIndex(0, 0, similarNode), i, i);
+                  Common::Hash peerID = findResult.peer_id().hash().data();
+                  SearchNode* newNode = similarNode->insertChild(i, *entry, peerID, this->peerListModel.getNick(peerID));
+                  this->endInsertRows();
+
+                  if (static_cast<int>(entry->level()) < similarNode->getLevel())
+                  {
+                     const int row = similarNode->getRow();
+                     similarNode->copyFrom(newNode);
+                     emit dataChanged(this->createIndex(row, 0, similarNode), this->createIndex(row, 3, similarNode));
+                  }
+
+                  break;
+               }
+            }
+
+            continue;
          }
       }
 
