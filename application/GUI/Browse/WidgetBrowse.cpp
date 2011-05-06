@@ -40,7 +40,7 @@ void BrowseDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option
 
 /////
 
-WidgetBrowse::WidgetBrowse(QSharedPointer<RCC::ICoreConnection> coreConnection, const PeerListModel& peerListModel, const DirListModel& sharedDirsModel, const Common::Hash& peerID, QWidget *parent) :
+WidgetBrowse::WidgetBrowse(QSharedPointer<RCC::ICoreConnection> coreConnection, const PeerListModel& peerListModel, const DirListModel& sharedDirsModel, const Common::Hash& peerID, QWidget* parent) :
    QWidget(parent),
    ui(new Ui::WidgetBrowse),
    downloadMenu(sharedDirsModel),

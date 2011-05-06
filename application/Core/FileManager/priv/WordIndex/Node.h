@@ -31,10 +31,10 @@ namespace FM
    struct NodeResult
    {
       NodeResult() : level(0) {}
-      NodeResult(const T v, bool level = 0) : value(v), level(level) {}
+      NodeResult(T* v, bool level = 0) : value(v), level(level) {}
       static void intersect(QSet< NodeResult<T> >& s1, const QSet< NodeResult<T> >& s2, int matchValue);
 
-      T value; // Should be const but QList must be able to change a NodeResult in place...
+      T* value; // Should be const but QList must be able to change a NodeResult in place...
       int level;
    };
 
@@ -105,18 +105,18 @@ namespace FM
         * Add an item to the node.
         * If the item already exists (using operator==) nothing is added.
         */
-      void addItem(T item);
+      void addItem(T* item);
 
       /**
         * Remove the item from the node.
         * If the item doesn'exist nothing happen.
         */
-      void rmItem(T item);
+      void rmItem(T* item);
 
       /**
         * Return all items from the current node and its sub nodes (recursively) if 'alsoFromSubNodes' is true.
         */
-      QSet< NodeResult<T> > getItems(bool alsoFromSubNodes = false) const;
+      QList< NodeResult<T> > getItems(bool alsoFromSubNodes = false, int maxNbResult = -1) const;
 
       /**
         * Does the node own some items?
@@ -130,7 +130,7 @@ namespace FM
 
       QList<Node<T>*> children; ///< The children nodes.
 
-      QSet< NodeResult<T> > items; ///< The indexed items.
+      QList< NodeResult<T> > items; ///< The indexed items.
    };
 
    template <typename T>
@@ -202,27 +202,27 @@ bool Node<T>::haveChildren() const
 }
 
 template <typename T>
-void Node<T>::addItem(T item)
+void Node<T>::addItem(T* item)
 {
    // Do not add an existing item.
-   if (this->items.contains(NodeResult<T>(item)))
-      return;
+   /*if (this->items.contains(NodeResult<T>(item)))
+      return;*/
    this->items << item;
 }
 
 template <typename T>
-void Node<T>::rmItem(T item)
+void Node<T>::rmItem(T* item)
 {
-   this->items.remove(NodeResult<T>(item));
+   this->items.removeAll(NodeResult<T>(item));
 }
 
 template <typename T>
-QSet< NodeResult<T> > Node<T>::getItems(bool alsoFromSubNodes) const
+QList< NodeResult<T> > Node<T>::getItems(bool alsoFromSubNodes, int maxNbResult) const
 {
    if (!alsoFromSubNodes)
       return this->items;
 
-   QSet< NodeResult<T> > result;
+   QList< NodeResult<T> > result;
    QList<Node<T>*> nodesToVisit;
 
    nodesToVisit.append(const_cast<Node<T>*>(this));
@@ -230,13 +230,23 @@ QSet< NodeResult<T> > Node<T>::getItems(bool alsoFromSubNodes) const
    while (!nodesToVisit.empty())
    {
       const Node<T>* current = nodesToVisit.takeFirst();
-      QSet< NodeResult<T> > currentItems = current->items;
+      QList< NodeResult<T> > currentItems = current->items;
 
-      for (QSetIterator< NodeResult<T> > i(currentItems); i.hasNext();)
+      for (QMutableListIterator< NodeResult<T> > i(currentItems); i.hasNext();)
          // 'level' == 0 means the item matches exactly, it's a bit tricky..
-         const_cast< NodeResult<T>& >(i.next()).level = (current == this ? 0 : 1); // Const cast is valid because 'level' is not used by QSet. See 'uint qHash(const NodeResult<T>& r)'.
+         i.next().level = (current == this ? 0 : 1); // Const cast is valid because 'level' is not used by QSet. See 'uint qHash(const NodeResult<T>& r)'.
+
+      if (maxNbResult != -1)
+      {
+         while (result.size() + currentItems.size() > maxNbResult)
+            currentItems.removeLast();
+      }
 
       result += currentItems;
+
+      if (result.size() == maxNbResult)
+         break;
+
       nodesToVisit.append(current->children);
    }
 

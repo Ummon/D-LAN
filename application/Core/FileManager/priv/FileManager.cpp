@@ -172,15 +172,21 @@ QList<Protos::Common::FindResult> FileManager::find(const QString& words, int ma
    const int n = terms.size();
 
    // Launch a search for each term.
-   QSet< NodeResult<Entry*> > results[n];
+   QSet< NodeResult<Entry> > results[n];
    for (int i = 0; i < n; i++)
-      results[i] += this->wordIndex.search(terms[i]);
+      // We can only limit the number of result for one term. When there is more than one term and thus some results set, say [a, b, c] for example, some good result may be contained in intersect, for example a & b or a & c.
+      results[i] += this->wordIndex.search(terms[i], n == 1 ? maxNbResult : -1).toSet();
 
    QList<Protos::Common::FindResult> findResults;
    findResults << Protos::Common::FindResult();
+   findResults.last().set_tag(std::numeric_limits<quint64>::max()); // Worst case to compute the size.
+
+   const int constantFindResultsSize = findResults.last().ByteSize();
+   int findResultCurrentSize = constantFindResultsSize; // [Byte].
 
    int numberOfResult = 0;
    bool end = false;
+
 
    int level = 0;
    // For each group of intersection number.
@@ -202,23 +208,23 @@ QList<Protos::Common::FindResult> FileManager::find(const QString& words, int ma
       //  * (a, b)
       //  * (a, c)
       //  * (b, c)
-      QList< NodeResult<Entry*> > nodesToSort;
+      QList< NodeResult<Entry> > nodesToSort;
       const int nCombinations = Common::Global::nCombinations(n, nbIntersect);
       for (int j = 0; j < nCombinations && !end; j++)
       {
-         QSet< NodeResult<Entry*> > currentLevelSet;
+         QSet< NodeResult<Entry> > currentLevelSet;
 
          // Apply intersects.
          currentLevelSet = results[intersect[0]];
 
-         for (QSetIterator< NodeResult<Entry*> > k(currentLevelSet); k.hasNext();)
+         for (QSetIterator< NodeResult<Entry> > k(currentLevelSet); k.hasNext();)
          {
-            NodeResult<Entry*>& node = const_cast<NodeResult<Entry*>&>(k.next());
+            NodeResult<Entry>& node = const_cast<NodeResult<Entry>&>(k.next());
             node.level = node.level ? nCombinations : 0;
          }
 
          for (int k = 1; k < nbIntersect; k++)
-            NodeResult<Entry*>::intersect(currentLevelSet, results[intersect[k]], nCombinations);
+            NodeResult<Entry>::intersect(currentLevelSet, results[intersect[k]], nCombinations);
 
          // Apply substracts.
          for (int k = -1; k < nbIntersect; k++)
@@ -231,8 +237,8 @@ QList<Protos::Common::FindResult> FileManager::find(const QString& words, int ma
                currentLevelSet -= results[l];
          }
 
-         for (QSetIterator< NodeResult<Entry*> > k(currentLevelSet); k.hasNext();)
-            const_cast<NodeResult<Entry*>&>(k.next()).level += level;
+         for (QSetIterator< NodeResult<Entry> > k(currentLevelSet); k.hasNext();)
+            const_cast<NodeResult<Entry>&>(k.next()).level += level;
 
          // Sort by level.
          nodesToSort << currentLevelSet.toList();
@@ -250,18 +256,21 @@ QList<Protos::Common::FindResult> FileManager::find(const QString& words, int ma
          level += 1;
       }
 
-      qSort(nodesToSort);
+      qSort(nodesToSort); // Sort by level
 
       // Populate the result.
-      for (QListIterator< NodeResult<Entry*> > k(nodesToSort); k.hasNext();)
+      for (QListIterator< NodeResult<Entry> > k(nodesToSort); k.hasNext();)
       {
-         NodeResult<Entry*> entry = k.next();
+         NodeResult<Entry> entry = k.next();
          Protos::Common::FindResult_EntryLevel* entryLevel = findResults.last().add_entry();
          entryLevel->set_level(entry.level);
          entry.value->populateEntry(entryLevel->mutable_entry(), true);
-         findResults.last().set_tag(std::numeric_limits<quint64>::max()); // Worst case to compute the size.
 
-         if (findResults.last().ByteSize() > maxSize)
+         // We wouldn't use 'findResults.last().ByteSize()' because is too slow. Instead we call 'ByteSize()' for each entry and sum it.
+         const int entryByteSize = entryLevel->ByteSize() + 8; // Each entry take a bit of memory... (Value found with an empiric way..).
+         findResultCurrentSize += entryByteSize;
+
+         if (findResultCurrentSize > maxSize)
          {
             google::protobuf::RepeatedPtrField<Protos::Common::FindResult_EntryLevel>* entries = findResults.last().mutable_entry();
             findResults << Protos::Common::FindResult();
@@ -270,6 +279,7 @@ QList<Protos::Common::FindResult> FileManager::find(const QString& words, int ma
                findResults.last().add_entry()->CopyFrom(entries->Get(entries->size()-1));
                entries->RemoveLast();
             }
+            findResultCurrentSize = constantFindResultsSize + entryByteSize;
          }
 
          if (++numberOfResult >= maxNbResult)

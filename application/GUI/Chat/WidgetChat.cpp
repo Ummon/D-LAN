@@ -97,6 +97,14 @@ WidgetChat::~WidgetChat()
    delete this->ui;
 }
 
+/**
+  * Install a event filter to the input widget (QLineEdit). For exemple, it allows to grap some key sequence as shortcut like CTRL-S to search.
+  */
+void WidgetChat::installEventFilterOnInput(QObject* filterObj)
+{
+   this->ui->txtMessage->installEventFilter(filterObj);
+}
+
 void WidgetChat::sendMessage()
 {
    this->ui->txtMessage->setText(this->ui->txtMessage->text().trimmed());
@@ -149,6 +157,7 @@ void WidgetChat::copySelectedLineToClipboard()
 void WidgetChat::showEvent(QShowEvent* event)
 {
    this->setNewMessageState(false);
+   this->ui->txtMessage->setFocus();
 }
 
 void WidgetChat::keyPressEvent(QKeyEvent* event)

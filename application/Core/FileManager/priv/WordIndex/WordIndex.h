@@ -20,7 +20,6 @@
 #define FILEMANAGER_WORDINDEX_H
 
 #include <QList>
-#include <QSet>
 #include <QString>
 #include <QChar>
 #include <QMutex>
@@ -41,10 +40,10 @@ namespace FM
    public:
       WordIndex();
 
-      void addItem(const QStringList& words, T item);
-      void rmItem(const QStringList& words, T item);
-      QSet< NodeResult<T> > search(const QStringList& words) const;
-      QSet< NodeResult<T> > search(const QString& word) const;
+      void addItem(const QStringList& words, T* item);
+      void rmItem(const QStringList& words, T* item);
+      QList< NodeResult<T> > search(const QStringList& words, int maxNbResultPerWord = -1) const;
+      QList< NodeResult<T> > search(const QString& word, int maxNbResult = -1) const;
 
    private:
       Node<T> node;
@@ -63,7 +62,7 @@ WordIndex<T>::WordIndex()
 {}
 
 template<typename T>
-void WordIndex<T>::addItem(const QStringList& words, T item)
+void WordIndex<T>::addItem(const QStringList& words, T* item)
 {
    QMutexLocker locker(&mutex);
 
@@ -78,7 +77,7 @@ void WordIndex<T>::addItem(const QStringList& words, T item)
 }
 
 template<typename T>
-void WordIndex<T>::rmItem(const QStringList& words, T item)
+void WordIndex<T>::rmItem(const QStringList& words, T* item)
 {
    QMutexLocker locker(&mutex);
 
@@ -121,11 +120,11 @@ void WordIndex<T>::rmItem(const QStringList& words, T item)
 }
 
 template<typename T>
-QSet< NodeResult<T> > WordIndex<T>::search(const QStringList& words) const
+QList< NodeResult<T> > WordIndex<T>::search(const QStringList& words, int maxNbResultPerWord) const
 {
    QMutexLocker locker(&mutex);
 
-   QSet< NodeResult<T> > result;
+   QList< NodeResult<T> > result;
    foreach (QString word, words)
    {
       const Node<T>* currentNode = &this->node;
@@ -135,16 +134,16 @@ QSet< NodeResult<T> > WordIndex<T>::search(const QStringList& words) const
             goto nextWord;
       }
 
-      result += currentNode->getItems(word.size() >= MIN_WORD_SIZE_PARTIAL_MATCH);
+      result << currentNode->getItems(word.size() >= MIN_WORD_SIZE_PARTIAL_MATCH, maxNbResultPerWord);
       nextWord :;
    }
    return result;
 }
 
 template<typename T>
-QSet< NodeResult<T> > WordIndex<T>::search(const QString& word) const
+QList< NodeResult<T> > WordIndex<T>::search(const QString& word, int maxNbResult) const
 {
-   return this->search(QStringList() << word);
+   return this->search(QStringList() << word, maxNbResult);
 }
 
 #endif

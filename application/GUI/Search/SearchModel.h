@@ -72,7 +72,7 @@ namespace GUI
    private:
       SearchNode* getRoot();
       int insertNode(const Protos::Common::FindResult_EntryLevel& entry, const Common::Hash& peerID, int currentIndex);
-      void setMaxLevel(int newLevel);
+      bool setMaxLevel(int newLevel);
 
       const PeerListModel& peerListModel;
 

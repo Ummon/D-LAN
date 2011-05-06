@@ -84,7 +84,7 @@ namespace GUI
       void treeviewSectionResized(int logicalIndex, int oldSize, int newSize);
 
    private:
-      Ui::WidgetSearch *ui;
+      Ui::WidgetSearch* ui;
       SearchMenu menu;
 
       QSharedPointer<RCC::ICoreConnection> coreConnection;

@@ -208,6 +208,9 @@ QString Directory::getPath() const
    return path;
 }
 
+/**
+  * We use "this->name" instead of "this->getName()" to improve a bit the performance during searching (See 'QSort(..)' in 'FileManager::find(..)').
+  */
 QString Directory::getFullPath() const
 {
    // In case of a partially constructed ShareDirectory.
@@ -215,7 +218,7 @@ QString Directory::getFullPath() const
    if (!this->parent)
       return this->getName().append('/');
 
-   return this->parent->getFullPath().append(this->getName()).append('/');
+   return this->parent->getFullPath().append(this->name).append('/');
 }
 
 SharedDirectory* Directory::getRoot() const
@@ -459,4 +462,3 @@ Directory* DirIterator::next()
    this->dirsToVisit.append(dir->subDirs);
    return dir;
 }
-

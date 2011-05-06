@@ -85,6 +85,7 @@ namespace GUI
    protected:
       void keyPressEvent(QKeyEvent* event);
       void closeEvent(QCloseEvent * event);
+      bool eventFilter(QObject* obj, QEvent* event);
 
    private:
       void saveWindowsSettings();

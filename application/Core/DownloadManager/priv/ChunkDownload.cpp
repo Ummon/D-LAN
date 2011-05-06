@@ -229,7 +229,6 @@ void ChunkDownload::run()
       char buffer[BUFFER_SIZE];
 
       const int initialKnownBytes = this->chunk->getKnownBytes();
-      int bytesRead = 0;
       int bytesToRead = this->chunkSize - initialKnownBytes;
       int bytesToWrite = 0;
       int bytesWritten = 0;
@@ -245,7 +244,7 @@ void ChunkDownload::run()
          }
          this->mutex.unlock();
 
-         bytesRead = this->socket->read(buffer + bytesToWrite, bytesToRead < BUFFER_SIZE - bytesToWrite ? bytesToRead : BUFFER_SIZE - bytesToWrite);
+         int bytesRead = this->socket->read(buffer + bytesToWrite, bytesToRead < BUFFER_SIZE - bytesToWrite ? bytesToRead : BUFFER_SIZE - bytesToWrite);
          bytesToRead -= bytesRead;
 
          if (bytesRead == 0)

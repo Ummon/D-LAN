@@ -140,6 +140,14 @@ WidgetDownloads::~WidgetDownloads()
    delete this->ui;
 }
 
+void WidgetDownloads::keyPressEvent(QKeyEvent* event)
+{
+   if (event->key() == Qt::Key_Delete || event->key() == Qt::Key_Backspace)
+      this->removeSelectedEntries();
+   else
+      QWidget::keyPressEvent(event);
+}
+
 void WidgetDownloads::displayContextMenuDownloads(const QPoint& point)
 {
    // If there is at least one complete or downloading file we show a menu action to open the file location.

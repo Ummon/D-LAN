@@ -53,6 +53,9 @@ namespace GUI
       explicit WidgetDownloads(QSharedPointer<RCC::ICoreConnection> coreConnection, const PeerListModel& peerListModel, const DirListModel& sharedDirsModel, QWidget *parent = 0);
       ~WidgetDownloads();
 
+   protected:
+      void keyPressEvent(QKeyEvent* event);
+
    private slots:
       void displayContextMenuDownloads(const QPoint& point);
       void downloadDoubleClicked(const QModelIndex& index);

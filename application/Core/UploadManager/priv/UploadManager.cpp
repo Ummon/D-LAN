@@ -37,6 +37,8 @@ using namespace UM;
   *
   * Will listen the signal 'getChunk' of the peerManager, when this signal is received an Uploader is created and data is sent to the peer.
   * After the chunk was sent to the peer the Uploader is deleted.
+  *
+  * We cannot use a QThreadPool object instead of the class 'Uploader' because we have to use the method 'PM::ISocket::moveToThread' when using a socket in a thread. This isn't possible with the 'QRunnable' class.
   */
 
 LOG_INIT_CPP(UploadManager);
