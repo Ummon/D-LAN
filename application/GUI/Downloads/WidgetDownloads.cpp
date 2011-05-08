@@ -47,8 +47,8 @@ void DownloadsDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opt
       case Protos::GUI::State_Download_Status_QUEUED:
          progressBarOption.text = "Queued";
          break;
-      case Protos::GUI::State_Download_Status_INITIALIZING:
-         progressBarOption.text = "Initializing..";
+      case Protos::GUI::State_Download_Status_GETTING_THE_HASHES:
+         progressBarOption.text = "Getting the hashes..";
          break;
       case Protos::GUI::State_Download_Status_DOWNLOADING:
          progressBarOption.text = QString("%1%").arg(static_cast<double>(progress.progress) / 100);
@@ -82,7 +82,7 @@ QSize DownloadsDelegate::sizeHint(const QStyleOptionViewItem& option, const QMod
    QSize size = QStyledItemDelegate::sizeHint(option, index);
 
    if (index.column() == 2)
-      size.setWidth(100);
+      size.setWidth(120);
    return size;
 }
 

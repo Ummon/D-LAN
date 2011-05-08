@@ -48,7 +48,7 @@ message Entries
 }
 
 // A result following a search.
-// Entries may not be sorted in any particular was.
+// Entries may not be sorted in any particular way.
 // See 'Network.Find' and 'GUI.GUINetwork' for more information.
 message FindResult {
    message EntryLevel {

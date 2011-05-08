@@ -131,6 +131,10 @@ QSharedPointer<ISearchResult> CoreConnection::search(const QString& terms)
 
 void CoreConnection::download(const Common::Hash& peerID, const Protos::Common::Entry& entry)
 {
+   // We cannot download our entries.
+   if (peerID == this->getID())
+      return;
+
    Protos::GUI::Download downloadMessage;
    downloadMessage.mutable_peer_id()->set_hash(peerID.getData(), Common::Hash::HASH_SIZE);
    downloadMessage.mutable_entry()->CopyFrom(entry);
@@ -139,6 +143,10 @@ void CoreConnection::download(const Common::Hash& peerID, const Protos::Common::
 
 void CoreConnection::download(const Common::Hash& peerID, const Protos::Common::Entry& entry, const Common::Hash& sharedFolderID, const QString& relativePath)
 {
+   // We cannot download our entries.
+   if (peerID == this->getID())
+      return;
+
    Protos::GUI::Download downloadMessage;
    downloadMessage.mutable_peer_id()->set_hash(peerID.getData(), Common::Hash::HASH_SIZE);
    downloadMessage.mutable_entry()->CopyFrom(entry);

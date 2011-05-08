@@ -44,7 +44,7 @@ namespace GUI
       SearchModel(QSharedPointer<RCC::ICoreConnection> coreConnection, const PeerListModel& peerListModel, const DirListModel& sharedDirsModel);
       ~SearchModel();
 
-      Common::Hash getPeerID(const QModelIndex& index);
+      Common::Hash getPeerID(const QModelIndex& index) const;
 
       void search(const QString& terms);
 

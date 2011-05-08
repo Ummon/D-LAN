@@ -267,7 +267,7 @@ void DownloadsModel::newState(const Protos::GUI::State& state)
             indexToInsert << i;
          break;
 
-      case Protos::GUI::State_Download_Status_INITIALIZING:
+      case Protos::GUI::State_Download_Status_GETTING_THE_HASHES:
       case Protos::GUI::State_Download_Status_DOWNLOADING:
          if (!(statusToFilter & STATUS_DOWNLOADING))
             indexToInsert << i;

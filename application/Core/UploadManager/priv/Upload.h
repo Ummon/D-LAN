@@ -6,6 +6,7 @@
 
 #include <Common/Timeoutable.h>
 #include <Common/TransferRateCalculator.h>
+#include <Common/IRunnable.h>
 #include <Core/FileManager/Exceptions.h>
 #include <Core/FileManager/IChunk.h>
 #include <Core/FileManager/IDataReader.h>
@@ -15,7 +16,7 @@
 
 namespace UM
 {
-   class Upload : public IUpload, public Common::Timeoutable
+   class Upload : public Common::IRunnable, public IUpload, public Common::Timeoutable
    {
       static quint64 currentID; ///< Used to generate the new upload ID.
 
@@ -28,10 +29,9 @@ namespace UM
       int getProgress() const;
       QSharedPointer<FM::IChunk> getChunk() const;
 
-      void setAsFinished();
-      void moveSocketToThread(QThread* thread);
-
-      void upload();
+      void init(QThread* thread);
+      void run();
+      void finished();
       void stop();
 
    private:
@@ -46,6 +46,7 @@ namespace UM
       Common::TransferRateCalculator& transferRateCalculator;
 
       bool networkError;
+      QThread* mainThread;
    };
 }
 

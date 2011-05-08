@@ -139,6 +139,11 @@ bool ChunkDownload::isComplete() const
    return !this->chunk.isNull() && this->chunk->isComplete();
 }
 
+bool ChunkDownload::isPartiallyDownloaded() const
+{
+   return !this->chunk.isNull() && !this->chunk->isComplete() && this->chunk->getKnownBytes() > 0;
+}
+
 bool ChunkDownload::hasAtLeastAPeer()
 {
    return !this->getPeers().isEmpty();

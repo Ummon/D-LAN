@@ -24,11 +24,11 @@
 
 #include <Common/Uncopyable.h>
 #include <Common/Hash.h>
+#include <Common/ThreadPool.h>
 #include <Common/TransferRateCalculator.h>
 #include <Core/PeerManager/IPeerManager.h>
 
 #include <IUploadManager.h>
-#include <priv/Uploader.h>
 #include <priv/Log.h>
 
 namespace UM
@@ -48,8 +48,6 @@ namespace UM
 
    private slots:
       void getChunk(QSharedPointer<FM::IChunk> chunk, int offset, QSharedPointer<PM::ISocket> socket);
-      void uploadFinished();
-      void uploaderTimeout();
       void uploadTimeout();
 
    private:
@@ -59,8 +57,7 @@ namespace UM
 
       QList<Upload*> uploads;
 
-      QList<Uploader*> activeUploaders;
-      QList<Uploader*> inactiveUploaders;
+      Common::ThreadPool threadPool;
 
       Common::TransferRateCalculator transferRateCalculator;
    };
