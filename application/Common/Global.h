@@ -59,7 +59,7 @@ namespace Common
       static bool rename(const QString& existingFile, const QString& newFile);
       static QString cleanDirPath(const QString& path);
 
-      static QString removeAccents(const QString& str);
+      static QString toLowerAndRemoveAccents(const QString& str);
       static QStringList splitInWords(const QString& words);
 
       enum DataFolderType { ROAMING = 0, LOCAL = 1 };

@@ -177,7 +177,7 @@ QString Global::cleanDirPath(const QString& path)
    return QDir::cleanPath(path).append('/');
 }
 
-QString Global::removeAccents(const QString& str)
+QString Global::toLowerAndRemoveAccents(const QString& str)
 {
    QString strLower = str.toLower();
 
@@ -238,7 +238,7 @@ QString Global::removeAccents(const QString& str)
 QStringList Global::splitInWords(const QString& words)
 {
    const static QRegExp regExp("(\\W+|_)");
-   return Global::removeAccents(words).split(regExp, QString::SkipEmptyParts);
+   return Global::toLowerAndRemoveAccents(words).split(regExp, QString::SkipEmptyParts);
 }
 
 QString Global::dataFolders[2]; // The two folders (roaming and local), see DataFolderType enum.

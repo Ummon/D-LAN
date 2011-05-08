@@ -127,10 +127,8 @@ namespace FM
       Node(const QChar& letter);
 
       QChar letter; ///< The letter from an indexed word.
-
       QList<Node<T>*> children; ///< The children nodes.
-
-      QList< NodeResult<T> > items; ///< The indexed items.
+      QList<T*> items; ///< The indexed items.
    };
 
    template <typename T>
@@ -203,24 +201,18 @@ bool Node<T>::haveChildren() const
 template <typename T>
 void Node<T>::addItem(T* item)
 {
-   // Do not add an existing item.
-   /*if (this->items.contains(NodeResult<T>(item)))
-      return;*/
    this->items << item;
 }
 
 template <typename T>
 void Node<T>::rmItem(T* item)
 {
-   this->items.removeAll(NodeResult<T>(item));
+   this->items.removeAll(item);
 }
 
 template <typename T>
 QList< NodeResult<T> > Node<T>::getItems(bool alsoFromSubNodes, int maxNbResult) const
 {
-   if (!alsoFromSubNodes)
-      return this->items;
-
    QList< NodeResult<T> > result;
    QList<Node<T>*> nodesToVisit;
 
@@ -229,21 +221,16 @@ QList< NodeResult<T> > Node<T>::getItems(bool alsoFromSubNodes, int maxNbResult)
    while (!nodesToVisit.empty())
    {
       const Node<T>* current = nodesToVisit.takeFirst();
-      QList< NodeResult<T> > currentItems = current->items;
 
-      for (QMutableListIterator< NodeResult<T> > i(currentItems); i.hasNext();)
-         // 'level' == 0 means the item matches exactly, it's a bit tricky..
-         i.next().level = (current == this ? 0 : 1); // Const cast is valid because 'level' is not used by QSet. See 'uint qHash(const NodeResult<T>& r)'.
-
-      if (maxNbResult != -1)
+      for (QListIterator<T*> i(current->items); i.hasNext();)
       {
-         while (result.size() + currentItems.size() > maxNbResult)
-            currentItems.removeLast();
+         // 'level' == 0 means the item matches exactly, it's a bit tricky..
+         result << NodeResult<T>(i.next(), current == this ? 0 : 1);
+         if (result.size() == maxNbResult)
+            return result;
       }
 
-      result += currentItems;
-
-      if (result.size() == maxNbResult)
+      if (!alsoFromSubNodes)
          break;
 
       nodesToVisit.append(current->children);

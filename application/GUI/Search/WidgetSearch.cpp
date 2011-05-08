@@ -129,7 +129,7 @@ void SearchDelegate::setTerms(const QString& terms)
 
 QString SearchDelegate::toHtmlText(const QString& text) const
 {
-   QString textWithoutAccent = Global::removeAccents(text);
+   QString textWithoutAccent = Global::toLowerAndRemoveAccents(text);
 
    QString htmlText(text);
 
