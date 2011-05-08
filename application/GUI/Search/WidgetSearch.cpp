@@ -129,19 +129,25 @@ void SearchDelegate::setTerms(const QString& terms)
 
 QString SearchDelegate::toHtmlText(const QString& text) const
 {
+   QString textWithoutAccent = Global::removeAccents(text);
+
    QString htmlText(text);
+
    for (QStringListIterator i(this->currentTerms); i.hasNext();)
    {
       const QString& term = i.next();
       int pos = 0;
-      while(-1 != (pos = htmlText.indexOf(term, pos, Qt::CaseInsensitive)))
+      while(-1 != (pos = textWithoutAccent.indexOf(term, pos)))
       {
          if (pos == 0 || !htmlText.at(pos-1).isLetter())
          {
             htmlText.insert(pos + term.size(), MARKUP_SECOND_PART);
             htmlText.insert(pos, MARKUP_FIRST_PART);
+            textWithoutAccent.insert(pos + term.size(), MARKUP_SECOND_PART);
+            textWithoutAccent.insert(pos, MARKUP_FIRST_PART);
+            pos += MARKUP_FIRST_PART.size() + MARKUP_SECOND_PART.size();
          }
-         pos += term.size() + MARKUP_FIRST_PART.size() + MARKUP_SECOND_PART.size();
+         pos += term.size();
       }
    }
    return htmlText;
