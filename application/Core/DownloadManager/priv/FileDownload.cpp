@@ -283,7 +283,7 @@ bool FileDownload::retrieveHashes()
    )
       return false;
 
-   this->status = INITIALIZING;
+   this->status = GETTING_THE_HASHES;
 
    this->getHashesResult = this->peerSource->getHashes(this->remoteEntry);
    connect(this->getHashesResult.data(), SIGNAL(result(const Protos::Core::GetHashesResult&)), this, SLOT(result(const Protos::Core::GetHashesResult&)));
@@ -445,7 +445,7 @@ void FileDownload::updateStatus()
    }
    else if(!this->getHashesResult.isNull())
    {
-      this->status = INITIALIZING;
+      this->status = GETTING_THE_HASHES;
    }
 }
 

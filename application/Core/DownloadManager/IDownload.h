@@ -31,7 +31,7 @@ namespace DM
    enum Status
    {
      QUEUED = 0x1,
-     INITIALIZING = 0x2,
+     GETTING_THE_HASHES = 0x2,
      DOWNLOADING = 0x3,
      COMPLETE = 0x4,
      PAUSED = 0x5,
