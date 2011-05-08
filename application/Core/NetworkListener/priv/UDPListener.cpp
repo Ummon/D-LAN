@@ -62,52 +62,8 @@ UDPListener::UDPListener(
    currentIMAliveTag(0),
    loggerIMAlive(LM::Builder::newLogger("NetworkListener (IMAlive)"))
 {
-   /**** Mutlicast Socket ****/
-
-   if (!this->multicastSocket.bind(MULTICAST_PORT, QUdpSocket::ReuseAddressHint))
-      L_ERRO("Can't bind the multicast socket");
-
-   connect(&this->multicastSocket, SIGNAL(readyRead()), this, SLOT(processPendingMulticastDatagrams()));
-
-   const int multicastSocketDescriptor = this->multicastSocket.socketDescriptor();
-
-   // 'loop' is activated only for tests.
-#if DEBUG
-   const char loop = 1;
-#else
-   const char loop = 0;
-#endif
-   if (setsockopt(multicastSocketDescriptor, IPPROTO_IP, IP_MULTICAST_LOOP, &loop, sizeof loop))
-      L_ERRO("Can't set socket option : IP_MULTICAST_LOOP");
-
-   const char TTL = SETTINGS.get<quint32>("multicast_ttl");
-   if (int error = setsockopt(multicastSocketDescriptor, IPPROTO_IP, IP_MULTICAST_TTL, &TTL, sizeof TTL))
-      L_ERRO(QString("Can't set socket option : IP_MULTICAST_TTL : %1").arg(error));
-
-   // 'htonl' reverse the order of the bytes, see : http://www.opengroup.org/onlinepubs/007908799/xns/htonl.html
-   struct ip_mreq mreq;
-   mreq.imr_multiaddr.s_addr = htonl(MULTICAST_GROUP.toIPv4Address());
-   mreq.imr_interface.s_addr = htonl(INADDR_ANY);
-#if defined(Q_OS_LINUX)
-   if (int error = setsockopt(socketDescriptor, IPPROTO_IP, IP_ADD_MEMBERSHIP, &mreq, sizeof mreq))
-#elif defined(Q_OS_WIN32)
-   if (int error = setsockopt(multicastSocketDescriptor, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char*)&mreq, sizeof mreq))
-#endif
-      L_ERRO(QString("Can't set socket option : IP_ADD_MEMBERSHIP : %1").arg(error));
-
-   static const int BUFFER_SIZE_UDP = SETTINGS.get<quint32>("udp_read_buffer_size");
-   if (int error = setsockopt(multicastSocketDescriptor, SOL_SOCKET, SO_RCVBUF, (char*)&BUFFER_SIZE_UDP, sizeof BUFFER_SIZE_UDP))
-      L_ERRO(QString("Can't set socket option (multicast socket) : SO_RCVBUF : %1").arg(error));
-
-   /**** Unicast Socket ****/
-
-   if (!this->unicastSocket.bind(UNICAST_PORT, QUdpSocket::ReuseAddressHint))
-      L_ERRO("Can't bind the unicast socket");
-
-   if (int error = setsockopt(this->unicastSocket.socketDescriptor(), SOL_SOCKET, SO_RCVBUF, (char*)&BUFFER_SIZE_UDP, sizeof BUFFER_SIZE_UDP))
-      L_ERRO(QString("Can't set socket option (uncast socket) : SO_RCVBUF : %1").arg(error));
-
-   connect(&this->unicastSocket, SIGNAL(readyRead()), this, SLOT(processPendingUnicastDatagrams()));
+   this->initMulticastUDPSocket();
+   this->initUnicastUDPSocket();
 
    connect(&this->timerIMAlive, SIGNAL(timeout()), this, SLOT(sendIMAliveMessage()));
    this->timerIMAlive.start(static_cast<int>(SETTINGS.get<quint32>("peer_imalive_period")));
@@ -352,6 +308,82 @@ void UDPListener::processPendingUnicastDatagrams()
          L_WARN(QString("Unkown header type from unicast socket : %1").arg(header.getType(), 0, 16));
       }
    }
+}
+
+void UDPListener::initMulticastUDPSocket()
+{
+   this->multicastSocket.close();
+   this->multicastSocket.disconnect(this);
+
+   if (!this->multicastSocket.bind(MULTICAST_PORT, QUdpSocket::ReuseAddressHint))
+   {
+      L_ERRO("Can't bind the multicast socket");
+      QTimer::singleShot(SOCKET_RETRY_TIME, this, SLOT(initMulticastUDPSocket));
+      return;
+   }
+
+   const int multicastSocketDescriptor = this->multicastSocket.socketDescriptor();
+
+   // 'loop' is activated only for tests.
+#if DEBUG
+   const char loop = 1;
+#else
+   const char loop = 0;
+#endif
+   if (setsockopt(multicastSocketDescriptor, IPPROTO_IP, IP_MULTICAST_LOOP, &loop, sizeof loop))
+   {
+      L_ERRO("Can't set socket option : IP_MULTICAST_LOOP");
+      QTimer::singleShot(SOCKET_RETRY_TIME, this, SLOT(initMulticastUDPSocket));
+      return;
+   }
+
+   const char TTL = SETTINGS.get<quint32>("multicast_ttl");
+   if (int error = setsockopt(multicastSocketDescriptor, IPPROTO_IP, IP_MULTICAST_TTL, &TTL, sizeof TTL))
+   {
+      L_ERRO(QString("Can't set socket option : IP_MULTICAST_TTL : %1").arg(error));
+      QTimer::singleShot(SOCKET_RETRY_TIME, this, SLOT(initMulticastUDPSocket));
+      return;
+   }
+
+   // 'htonl' reverse the order of the bytes, see : http://www.opengroup.org/onlinepubs/007908799/xns/htonl.html
+   struct ip_mreq mreq;
+   mreq.imr_multiaddr.s_addr = htonl(MULTICAST_GROUP.toIPv4Address());
+   mreq.imr_interface.s_addr = htonl(INADDR_ANY);
+#if defined(Q_OS_LINUX)
+   if (int error = setsockopt(socketDescriptor, IPPROTO_IP, IP_ADD_MEMBERSHIP, &mreq, sizeof mreq))
+#elif defined(Q_OS_WIN32)
+   if (int error = setsockopt(multicastSocketDescriptor, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char*)&mreq, sizeof mreq))
+#endif
+   {
+      L_ERRO(QString("Can't set socket option : IP_ADD_MEMBERSHIP : %1").arg(error));
+      QTimer::singleShot(SOCKET_RETRY_TIME, this, SLOT(initMulticastUDPSocket));
+      return;
+   }
+
+   static const int BUFFER_SIZE_UDP = SETTINGS.get<quint32>("udp_read_buffer_size");
+   if (int error = setsockopt(multicastSocketDescriptor, SOL_SOCKET, SO_RCVBUF, (char*)&BUFFER_SIZE_UDP, sizeof BUFFER_SIZE_UDP))
+   {
+      L_ERRO(QString("Can't set socket option (multicast socket) : SO_RCVBUF : %1").arg(error));
+      QTimer::singleShot(SOCKET_RETRY_TIME, this, SLOT(initMulticastUDPSocket));
+      return;
+   }
+
+   connect(&this->multicastSocket, SIGNAL(readyRead()), this, SLOT(processPendingMulticastDatagrams()));
+}
+
+void UDPListener::initUnicastUDPSocket()
+{
+   this->unicastSocket.close();
+   this->unicastSocket.disconnect(this);
+
+   if (!this->unicastSocket.bind(UNICAST_PORT, QUdpSocket::ReuseAddressHint))
+      L_ERRO("Can't bind the unicast socket");
+
+   static const int BUFFER_SIZE_UDP = SETTINGS.get<quint32>("udp_read_buffer_size");
+   if (int error = setsockopt(this->unicastSocket.socketDescriptor(), SOL_SOCKET, SO_RCVBUF, (char*)&BUFFER_SIZE_UDP, sizeof BUFFER_SIZE_UDP))
+      L_ERRO(QString("Can't set socket option (uncast socket) : SO_RCVBUF : %1").arg(error));
+
+   connect(&this->unicastSocket, SIGNAL(readyRead()), this, SLOT(processPendingUnicastDatagrams()));
 }
 
 int UDPListener::writeMessageToBuffer(Common::MessageHeader::MessageType type, const google::protobuf::Message& message)

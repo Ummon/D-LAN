@@ -186,7 +186,10 @@ void PeerManager::newConnection(QTcpSocket* tcpSocket)
    connect(tcpSocket, SIGNAL(disconnected()), this, SLOT(disconnected()));
 
    if (!tcpSocket->isValid())
+   {
+      L_DEBU("PeerManager::newConnection(..): socket isn't valid, disconnecting");
       this->disconnect(tcpSocket);
+   }
    else
       this->dataReceived(tcpSocket); // The case where some data arrived before the 'connect' above.
 }
@@ -223,7 +226,10 @@ void PeerManager::dataReceived(QTcpSocket* tcpSocket)
       if (p)
          p->newConnexion(tcpSocket);
       else
+      {
+         L_DEBU(QString("PeerManager::dataReceived(..): No peer. Header: ").arg(header.toStr()));
          this->disconnected(tcpSocket);
+      }
    }
 }
 

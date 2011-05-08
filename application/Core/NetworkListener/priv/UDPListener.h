@@ -54,6 +54,8 @@ namespace NL
       // 2 -> 3 : BLAKE -> Sha-1
       static const quint32 PROTOCOL_VERSION = 3;
 
+      static const int SOCKET_RETRY_TIME = 1000; // [ms]. When an udp socket is disconnected (network interface is down), we try to reconnect after 1 second.
+
    public:
       UDPListener(
          QSharedPointer<FM::IFileManager> fileManager,
@@ -76,6 +78,9 @@ namespace NL
       void sendIMAliveMessage();
       void processPendingMulticastDatagrams();
       void processPendingUnicastDatagrams();
+
+      void initMulticastUDPSocket();
+      void initUnicastUDPSocket();
 
    private:
       int writeMessageToBuffer(Common::MessageHeader::MessageType type, const google::protobuf::Message& message);
