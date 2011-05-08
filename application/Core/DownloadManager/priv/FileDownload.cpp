@@ -150,21 +150,34 @@ QSharedPointer<ChunkDownload> FileDownload::getAChunkToDownload()
       return QSharedPointer<ChunkDownload>();
 
    // Choose a chunk with the less number of peer. (rarest first).
+   // Choose first a partially downloaded chunk.
    QList< QSharedPointer<ChunkDownload> > chunksReadyToDownload;
    int bestNbPeer = std::numeric_limits<int>::max();
    for (QListIterator< QSharedPointer<ChunkDownload> > i(this->chunkDownloads); i.hasNext();)
    {
       QSharedPointer<ChunkDownload> chunkDownload = i.next();
       const int nbPeer = chunkDownload->isReadyToDownload();
+
       if (nbPeer == 0)
-         continue;
-      else if (nbPeer == bestNbPeer)
-         chunksReadyToDownload << chunkDownload;
-      else if (nbPeer < bestNbPeer)
       {
-         chunksReadyToDownload.clear();
-         chunksReadyToDownload << chunkDownload;
-         bestNbPeer = nbPeer;
+         continue;
+      }
+      else
+      {
+         if (chunkDownload->isPartiallyDownloaded())
+         {
+            chunksReadyToDownload.clear();
+            chunksReadyToDownload << chunkDownload;
+            break;
+         }
+         else if (nbPeer == bestNbPeer)
+            chunksReadyToDownload << chunkDownload;
+         else if (nbPeer < bestNbPeer)
+         {
+            chunksReadyToDownload.clear();
+            chunksReadyToDownload << chunkDownload;
+            bestNbPeer = nbPeer;
+         }
       }
    }
 
@@ -173,7 +186,7 @@ QSharedPointer<ChunkDownload> FileDownload::getAChunkToDownload()
 
    // If there is many chunk with the same best speed we choose randomly one of them.
    QSharedPointer<ChunkDownload> chunkDownload =
-         chunksReadyToDownload.size() == 1 ? chunksReadyToDownload.first() : chunksReadyToDownload[mtrand.randInt(chunksReadyToDownload.size() - 1)];
+      chunksReadyToDownload.size() == 1 ? chunksReadyToDownload.first() : chunksReadyToDownload[mtrand.randInt(chunksReadyToDownload.size() - 1)];
 
    if (!this->fileCreated)
    {
