@@ -176,6 +176,7 @@ WidgetSearch::WidgetSearch(QSharedPointer<RCC::ICoreConnection> coreConnection, 
     this->ui->treeView->header()->resizeSection(2, SETTINGS.get<quint32>("search_column_size_2"));
     this->ui->treeView->header()->resizeSection(3, SETTINGS.get<quint32>("search_column_size_3"));
     this->ui->treeView->header()->resizeSection(4, SETTINGS.get<quint32>("search_column_size_4"));
+    connect(this->ui->treeView->selectionModel(), SIGNAL(selectionChanged(QItemSelection, QItemSelection)), this, SLOT(treeviewSelectionChanged(QItemSelection, QItemSelection)));
     connect(this->ui->treeView->header(), SIGNAL(sectionResized(int, int, int)), this, SLOT(treeviewSectionResized(int, int, int)));
 
     this->ui->treeView->setSelectionBehavior(QAbstractItemView::SelectRows);
@@ -187,7 +188,9 @@ WidgetSearch::WidgetSearch(QSharedPointer<RCC::ICoreConnection> coreConnection, 
     connect(this->ui->treeView, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(displayContextMenuDownload(const QPoint&)));
     connect(this->ui->treeView, SIGNAL(doubleClicked(const QModelIndex&)), this, SLOT(entryDoubleClicked(const QModelIndex&)));
 
+    this->ui->butDownload->setEnabled(false);
     connect(this->ui->butDownload, SIGNAL(clicked()), this, SLOT(download()));    
+
     connect(&this->menu, SIGNAL(downloadTo(const Common::Hash&, const QString&)), this, SLOT(downloadTo(const Common::Hash&, const QString&)));
     connect(&this->menu, SIGNAL(browse()), this, SLOT(browseCurrents()));
 
@@ -204,20 +207,12 @@ void WidgetSearch::displayContextMenuDownload(const QPoint& point)
 {   
    QPoint globalPosition = this->ui->treeView->viewport()->mapToGlobal(point);
 
-   bool oneOfSeletedIsOur = false;
-   QModelIndexList selectedRows = this->ui->treeView->selectionModel()->selectedRows();
-   for (QListIterator<QModelIndex> i(selectedRows); i.hasNext();)
+   // Special case: one of a selected entries is a remote peer.
+   if (this->atLeastOneRemotePeer(this->ui->treeView->selectionModel()->selectedRows()))
    {
-      QModelIndex index = i.next();
-      if (this->coreConnection->getID() == this->searchModel.getPeerID(index))
-      {
-         oneOfSeletedIsOur = true;
-         break;
-      }
+      this->menu.show(globalPosition);
    }
-
-   // Special case: one of a selected entries is our.
-   if (oneOfSeletedIsOur)
+   else
    {
       if (this->coreConnection->isLocal())
       {
@@ -226,10 +221,6 @@ void WidgetSearch::displayContextMenuDownload(const QPoint& point)
          menu.addAction(QIcon(":/icons/ressources/folder.png"), "Browse", this, SLOT(browseCurrents()));
          menu.exec(globalPosition);
       }
-   }
-   else
-   {
-      this->menu.show(globalPosition);
    }
 }
 
@@ -292,6 +283,11 @@ void WidgetSearch::progress(int value)
    this->ui->prgSearch->setFormat(QString("%1 folder%2 / %3 file%4").arg(nbFolders).arg(nbFolders > 1 ? "s" : "").arg(nbFiles).arg(nbFiles > 1 ? "s" : ""));
 }
 
+void WidgetSearch::treeviewSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected)
+{
+   this->ui->butDownload->setEnabled(this->atLeastOneRemotePeer(selected.indexes()));
+}
+
 void WidgetSearch::treeviewSectionResized(int logicalIndex, int oldSize, int newSize)
 {
    // TODO: use an array instead of multiple field.
@@ -303,4 +299,13 @@ void WidgetSearch::treeviewSectionResized(int logicalIndex, int oldSize, int new
    case 3: SETTINGS.set("search_column_size_3", static_cast<quint32>(newSize)); break;
    case 4: SETTINGS.set("search_column_size_4", static_cast<quint32>(newSize)); break;
    }
+}
+
+bool WidgetSearch::atLeastOneRemotePeer(const QModelIndexList& indexes) const
+{
+   for (QListIterator<QModelIndex> i(indexes); i.hasNext();)
+      if (this->searchModel.getPeerID(i.next()) != this->coreConnection->getID())
+         return true;
+
+   return false;
 }

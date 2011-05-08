@@ -56,7 +56,7 @@ SearchModel::~SearchModel()
       this->searchResult->disconnect(this);
 }
 
-Common::Hash SearchModel::getPeerID(const QModelIndex& index)
+Common::Hash SearchModel::getPeerID(const QModelIndex& index) const
 {
    SearchNode* node = static_cast<SearchNode*>(index.internalPointer());
    return node->getPeerID();

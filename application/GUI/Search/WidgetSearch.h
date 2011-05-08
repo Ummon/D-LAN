@@ -23,6 +23,7 @@
 #include <QString>
 #include <QStyledItemDelegate>
 #include <QPainter>
+#include <QItemSelection>
 
 #include <Common/RemoteCoreController/ICoreConnection.h>
 #include <Common/Hash.h>
@@ -81,9 +82,12 @@ namespace GUI
       void openLocation();
       void browseCurrents();
       void progress(int value);
+      void treeviewSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected);
       void treeviewSectionResized(int logicalIndex, int oldSize, int newSize);
 
    private:
+      bool atLeastOneRemotePeer(const QModelIndexList& indexes) const;
+
       Ui::WidgetSearch* ui;
       SearchMenu menu;
 
