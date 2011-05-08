@@ -102,6 +102,8 @@ namespace DM
       QSharedPointer<FM::IFileManager> fileManager;
       QSharedPointer<PM::IPeerManager> peerManager;
 
+      Common::TransferRateCalculator transferRateCalculator;
+
       OccupiedPeers occupiedPeersAskingForHashes;
       OccupiedPeers occupiedPeersAskingForEntries;
       OccupiedPeers occupiedPeersDownloadingChunk;
@@ -114,8 +116,6 @@ namespace DM
 
       QTimer saveTimer; // To know when to save the queue, for exemple each 5min.
       bool queueChanged;
-
-     Common::TransferRateCalculator transferRateCalculator;
    };
 }
 #endif
