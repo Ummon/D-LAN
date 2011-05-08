@@ -227,7 +227,7 @@ void PeerManager::dataReceived(QTcpSocket* tcpSocket)
          p->newConnexion(tcpSocket);
       else
       {
-         L_DEBU(QString("PeerManager::dataReceived(..): No peer. Header: ").arg(header.toStr()));
+         L_DEBU(QString("PeerManager::dataReceived(..): No peer. Header: %1").arg(header.toStr()));
          this->disconnected(tcpSocket);
       }
    }

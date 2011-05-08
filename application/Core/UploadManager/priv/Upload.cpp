@@ -10,51 +10,47 @@ quint64 Upload::currentID(1);
 Upload::Upload(QSharedPointer<FM::IChunk> chunk, int offset, QSharedPointer<PM::ISocket> socket, Common::TransferRateCalculator& transferRateCalculator) :
    Common::Timeoutable(SETTINGS.get<quint32>("upload_lifetime")), toStop(false), ID(currentID++), chunk(chunk), offset(offset), socket(socket), transferRateCalculator(transferRateCalculator), networkError(false)
 {
+   this->mainThread = QThread::currentThread();
 }
 
 Upload::~Upload()
 {
+   this->stop();
    L_DEBU(QString("Upload#%1 deleted").arg(this->ID));
 }
 
- quint64 Upload::getID() const
- {
-    return this->ID;
- }
+quint64 Upload::getID() const
+{
+   return this->ID;
+}
 
- Common::Hash Upload::getPeerID() const
- {
-    return this->socket->getRemotePeerID();
- }
+Common::Hash Upload::getPeerID() const
+{
+   return this->socket->getRemotePeerID();
+}
 
- int Upload::getProgress() const
- {
-    QMutexLocker locker(&this->mutex);
+int Upload::getProgress() const
+{
+   QMutexLocker locker(&this->mutex);
 
-    const int chunkSize = this->chunk->getChunkSize();
-    if (chunkSize != 0)
-       return 10000LL * this->offset / this->chunk->getChunkSize();
-    else
-       return 0;
- }
+   const int chunkSize = this->chunk->getChunkSize();
+   if (chunkSize != 0)
+      return 10000LL * this->offset / this->chunk->getChunkSize();
+   else
+      return 0;
+}
 
- QSharedPointer<FM::IChunk> Upload::getChunk() const
- {
-    return this->chunk;
- }
+QSharedPointer<FM::IChunk> Upload::getChunk() const
+{
+   return this->chunk;
+}
 
-void Upload::setAsFinished()
- {
-   this->socket->finished(this->networkError ? PM::ISocket::SFS_ERROR : PM::ISocket::SFS_OK);
-   this->startTimer();
- }
+void Upload::init(QThread* thread)
+{
+  this->socket->moveToThread(thread);
+}
 
- void Upload::moveSocketToThread(QThread* thread)
- {
-    this->socket->moveToThread(thread);
- }
-
-void Upload::upload()
+void Upload::run()
 {
    L_DEBU(QString("Starting uploading a chunk from offset %1 : %2").arg(this->offset).arg(this->chunk->toStringLog()));
 
@@ -77,12 +73,15 @@ void Upload::upload()
          {
             L_WARN(QString("Socket : cannot send data : %1").arg(this->chunk->toStringLog()));
             this->networkError = true;
-            return;
+            goto end;
          }
 
          this->mutex.lock();
          if (this->toStop)
-            return;
+         {
+            this->mutex.unlock();
+            goto end;
+         }
          this->offset += bytesSent;
          this->mutex.unlock();
 
@@ -92,7 +91,7 @@ void Upload::upload()
             {
                L_WARN(QString("Socket : cannot write data, error : %1, chunk : %2").arg(socket->errorString()).arg(this->chunk->toStringLog()));
                this->networkError = true;
-               return;
+               goto end;
             }
          }
 
@@ -115,6 +114,15 @@ void Upload::upload()
    {
       L_WARN("ChunkNotCompletedException");
    }
+
+end:
+   this->socket->moveToThread(this->mainThread);
+}
+
+void Upload::finished()
+{
+   this->socket->finished(this->networkError ? PM::ISocket::SFS_ERROR : PM::ISocket::SFS_OK);
+   this->startTimer();
 }
 
 /**
