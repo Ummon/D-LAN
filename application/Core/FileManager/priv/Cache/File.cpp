@@ -80,6 +80,8 @@ File::File(
    tryToRename(false),
    numDataWriter(0),
    numDataReader(0),
+   fileInWriteMode(0),
+   fileInReadMode(0),
    mutex(QMutex::Recursive),
    hashing(false),
    toStopHashing(false)
@@ -249,9 +251,13 @@ void File::newDataWriterCreated()
    this->numDataWriter++;
    if (this->numDataWriter == 1)
    {
-      this->fileInWriteMode.setFileName(this->getFullPath());
-      if (!this->fileInWriteMode.open(QIODevice::ReadWrite | QIODevice::Unbuffered)) // We have the same performance with or without "QIODevice::Unbuffered".
+      this->fileInWriteMode = new QFile(this->getFullPath());
+      if (!this->fileInWriteMode->open(QIODevice::ReadWrite | QIODevice::Unbuffered)) // We have the same performance with or without "QIODevice::Unbuffered".
+      {
+         delete this->fileInWriteMode;
+         this->fileInWriteMode = 0;
          throw UnableToOpenFileInWriteModeException();
+      }
    }
 }
 
@@ -265,12 +271,16 @@ void File::newDataReaderCreated()
    this->numDataReader++;
    if (this->numDataReader == 1)
    {
-      this->fileInReadMode.setFileName(this->getFullPath());
+      this->fileInReadMode = new QFile(this->getFullPath());
 
       // Why a file in readonly need to be buffered? Without the flag "QIODevice::Unbuffered" a lot of memory is consumed for nothing
       // and this memory is not freed when the file is closed ('close()') but only when the QFile is deleted.
-      if (!this->fileInReadMode.open(QIODevice::ReadOnly | QIODevice::Unbuffered))
+      if (!this->fileInReadMode->open(QIODevice::ReadOnly | QIODevice::Unbuffered))
+      {
+         delete this->fileInReadMode;
+         this->fileInReadMode = 0;
          throw UnableToOpenFileInReadModeException();
+      }
    }
 }
 
@@ -280,7 +290,7 @@ void File::dataWriterDeleted()
 
    if (--this->numDataWriter == 0)
    {
-      this->fileInWriteMode.close();
+      delete this->fileInWriteMode;
    }
 }
 
@@ -290,7 +300,8 @@ void File::dataReaderDeleted()
 
    if (--this->numDataReader == 0)
    {
-      this->fileInReadMode.close();
+      delete this->fileInReadMode;
+      this->fileInReadMode = 0;
 
       if (this->tryToRename)
          this->setAsComplete();
@@ -310,11 +321,11 @@ qint64 File::write(const char* buffer, int nbBytes, qint64 offset)
 {
    QMutexLocker locker(&this->writeLock);
 
-   if (offset >= this->size || !this->fileInWriteMode.seek(offset))
+   if (this->numDataWriter == 0 || offset >= this->size || !this->fileInWriteMode->seek(offset))
       throw IOErrorException();
 
    qint64 maxSize = this->size - offset;
-   qint64 n = this->fileInWriteMode.write(buffer, nbBytes > maxSize ? maxSize : nbBytes);
+   qint64 n = this->fileInWriteMode->write(buffer, nbBytes > maxSize ? maxSize : nbBytes);
 
    if (n == -1)
       throw IOErrorException();
@@ -334,13 +345,13 @@ qint64 File::read(char* buffer, qint64 offset, int maxBytesToRead)
 {
    QMutexLocker locker(&this->readLock);
 
-   if (offset >= this->size)
+   if (this->numDataReader == 0 || offset >= this->size)
       return 0;
 
-   if (!this->fileInReadMode.seek(offset))
+   if (!this->fileInReadMode->seek(offset))
       throw IOErrorException();
 
-   qint64 bytesRead = this->fileInReadMode.read(buffer, maxBytesToRead);
+   qint64 bytesRead = this->fileInReadMode->read(buffer, maxBytesToRead);
 
    if (bytesRead == -1)
       throw IOErrorException();
@@ -574,7 +585,8 @@ void File::setAsComplete()
       }
       this->tryToRename = false;
 
-      this->fileInWriteMode.close();
+      delete this->fileInWriteMode;
+      this->fileInWriteMode = 0;
 
       const QString oldPath = this->getFullPath();
       const QString newPath = Global::removeUnfinishedSuffix(oldPath);
@@ -629,8 +641,10 @@ void File::removeUnfinishedFiles()
       QMutexLocker lockerWrite(&this->writeLock);
       QMutexLocker lockerRead(&this->readLock);
 
-      this->fileInReadMode.close();
-      this->fileInWriteMode.close();
+      delete this->fileInReadMode;
+      this->fileInReadMode = 0;
+      delete this->fileInWriteMode;
+      this->fileInWriteMode = 0;
 
       if (!QFile::remove(this->getFullPath()))
          L_ERRO(QString("File::~File() : unable to delete an unfinished file : %1").arg(this->getFullPath()));
