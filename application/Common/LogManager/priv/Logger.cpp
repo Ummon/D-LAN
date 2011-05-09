@@ -93,7 +93,7 @@ void Logger::log(const QString& message, Severity severity, const char* filename
    QMutexLocker locker(&Logger::mutex);
 
    QString threadName = QThread::currentThread()->objectName();
-   threadName = threadName.isEmpty() ? QString::number((quint32)QThread::currentThreadId()) : threadName;
+   threadName = threadName.isEmpty() ? QString::number((intptr_t)QThread::currentThreadId()) : threadName;
 
    QString filenameLine;
    if (filename && line)

@@ -212,7 +212,7 @@ void FileUpdater::run()
 
    QString threadName = "FileUpdater";
 #if DEBUG
-   threadName.append("_").append(QString::number((quint32)QThread::currentThreadId()));
+   threadName.append("_").append(QString::number((intptr_t)QThread::currentThreadId()));
 #endif
    QThread::currentThread()->setObjectName(threadName);
 

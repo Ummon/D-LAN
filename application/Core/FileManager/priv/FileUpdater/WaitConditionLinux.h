@@ -18,7 +18,7 @@
   
 #include <QtCore/QtCore> // For the Q_OS_* defines.
 
-#if !defined(FILEMANAGER_WAITCONDITIONLINUX_H) and defined(Q_OS_LINUX)
+#if !defined(FILEMANAGER_WAITCONDITIONLINUX_H) && defined(Q_OS_LINUX)
 #define FILEMANAGER_WAITCONDITIONLINUX_H
 
 #include <QMutex>
