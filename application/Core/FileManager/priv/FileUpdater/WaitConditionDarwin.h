@@ -1,7 +1,4 @@
-
-#include <QtCore/QtCore> // For the Q_OS_* defines.
-
-#if !defined(FILEMANAGER_WAITCONDITIONDARWIN_H) && defined(Q_OS_DARWIN)
+#ifndef FILEMANAGER_WAITCONDITIONDARWIN_H
 #define FILEMANAGER_WAITCONDITIONDARWIN_H
 
 #include <QMutex>
@@ -19,7 +16,6 @@ namespace FM
 
       void release();
       bool wait(int timeout = -1);
-      void* getHandle();
 
    private:
       bool released;

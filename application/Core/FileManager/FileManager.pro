@@ -14,6 +14,22 @@ CONFIG += staticlib link_prl create_prl
 INCLUDEPATH += . ../..
 
 DEFINES += FILEMANAGER_LIBRARY
+
+win32 {
+   SOURCES += priv/FileUpdater/WaitConditionWin.cpp
+   HEADERS += priv/FileUpdater/DirWatcherWin.h
+}
+
+linux {
+   SOURCES += priv/FileUpdater/WaitConditionLinux.cpp
+   HEADERS += priv/FileUpdater/DirWatcherLinux.h
+}
+
+macx {
+   SOURCES += priv/FileUpdater/WaitConditionDarwin.cpp
+   HEADERS += priv/FileUpdater/DirWatcherDarwin.h
+}
+
 SOURCES += priv/Builder.cpp \
     priv/FileManager.cpp \
     priv/FileUpdater/FileUpdater.cpp \
@@ -32,13 +48,10 @@ SOURCES += priv/Builder.cpp \
     priv/Cache/Cache.cpp \
     ../../Protos/files_cache.pb.cc \
     priv/FileUpdater/WaitCondition.cpp \
-    priv/FileUpdater/WaitConditionWin.cpp \
-    priv/FileUpdater/WaitConditionLinux.cpp \
     priv/GetHashesResult.cpp \
     priv/Log.cpp \
     priv/Global.cpp \
-    priv/FileUpdater/DirWatcherLinux.cpp \
-    priv/FileUpdater/WaitConditionDarwin.cpp
+    priv/FileUpdater/DirWatcherLinux.cpp
 HEADERS += IGetHashesResult.h \
     IFileManager.h \
     IChunk.h \
@@ -46,7 +59,6 @@ HEADERS += IGetHashesResult.h \
     priv/Log.h \
     priv/FileManager.h \
     priv/FileUpdater/FileUpdater.h \
-    priv/FileUpdater/DirWatcherWin.h \
     priv/FileUpdater/DirWatcher.h \
     priv/Cache/Entry.h \
     priv/Cache/File.h \
@@ -67,11 +79,8 @@ HEADERS += IGetHashesResult.h \
     Exceptions.h \
     ../../Protos/files_cache.pb.h \
     priv/FileUpdater/WaitCondition.h \
-    priv/FileUpdater/WaitConditionWin.h \
-    priv/FileUpdater/WaitConditionLinux.h \
     priv/Constants.h \
     priv/GetHashesResult.h \
     priv/Global.h \
-    priv/FileUpdater/DirWatcherLinux.h \
-    priv/FileUpdater/WaitConditionDarwin.h
+    priv/FileUpdater/DirWatcherLinux.h
 OTHER_FILES +=
