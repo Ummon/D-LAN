@@ -25,6 +25,7 @@
 #include <QSharedPointer>
 #include <QWeakPointer>
 #include <QProcess>
+#include <QElapsedTimer>
 
 #include <Protos/gui_protocol.pb.h>
 #include <Protos/common.pb.h>
@@ -45,6 +46,9 @@ namespace RCC
    class CoreConnection : public ICoreConnection
    {
       Q_OBJECT
+
+      static const int RETRY_PERIOD = 1000; // [ms]. When a connection failed, we automatically retry each 1s.
+
    protected:
       class Logger : public ILogger
       {
@@ -107,6 +111,8 @@ namespace RCC
       QString currentAddress;
       quint16 currentPort;
       Common::Hash currentPassword;
+
+      QElapsedTimer timerFromLastConnectionTry;
 
       int currentHostLookupID;
 

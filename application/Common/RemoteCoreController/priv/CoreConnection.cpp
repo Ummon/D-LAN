@@ -193,6 +193,8 @@ void CoreConnection::connectToCoreSlot()
 {
    this->socket->close();
 
+   this->timerFromLastConnectionTry.start();
+
    if (this->currentHostLookupID != -1)
       QHostInfo::abortHostLookup(this->currentHostLookupID);
 
@@ -212,7 +214,8 @@ void CoreConnection::stateChanged(QAbstractSocket::SocketState socketState)
       else
       {
          L_USER(tr("Unable to connect to the core"));
-         this->connectToCoreSlot();
+         const qint64 durationFromLastConnect = this->timerFromLastConnectionTry.elapsed();
+         QTimer::singleShot(durationFromLastConnect > RETRY_PERIOD ? 0 : RETRY_PERIOD - durationFromLastConnect, this, SLOT(connectToCoreSlot()));
       }
       break;
 
