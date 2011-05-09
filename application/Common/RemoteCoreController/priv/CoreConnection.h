@@ -113,6 +113,7 @@ namespace RCC
       Common::Hash currentPassword;
 
       QElapsedTimer timerFromLastConnectionTry;
+      QTimer retryTimer;
 
       int currentHostLookupID;
 

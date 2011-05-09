@@ -110,6 +110,9 @@ namespace Common
       Hash ID;
       Hash remoteID;
 
+      bool IDDefined;
+      bool remoteIDDefined;
+
       bool listening;
 
       MessageHeader currentHeader;
