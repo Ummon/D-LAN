@@ -113,7 +113,7 @@ namespace Common
       Hash senderID;
 
    public:
-      static const int HEADER_SIZE = sizeof(MessageHeader::type) + sizeof(MessageHeader::size) + Hash::HASH_SIZE;
+      static const int HEADER_SIZE;
    };
 }
 

@@ -24,6 +24,9 @@ PROJECTS=(
 if [ `uname -s` = "Linux" ] ; then
    SPEC=linux-g++
    MAKE=make
+elif [ `uname -s` = "Darwin" ] ; then # Mac OS X.
+   SPEC=macx-g++
+   MAKE=make
 else
    SPEC=win32-g++
    MAKE=mingw32-make.exe

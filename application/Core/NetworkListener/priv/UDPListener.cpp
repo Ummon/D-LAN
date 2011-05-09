@@ -21,6 +21,9 @@ using namespace NL;
 
 #if defined(Q_OS_LINUX)
    #include <netinet/in.h>
+#elif defined(Q_OS_DARWIN)
+   #include <sys/types.h>
+   #include <sys/socket.h>
 #elif defined(Q_OS_WIN32)
    #include <Winsock.h>
 #endif
@@ -330,7 +333,12 @@ void UDPListener::initMulticastUDPSocket()
 #else
    const char loop = 0;
 #endif
+
+#if defined(Q_OS_DARWIN)
+   if (false) // TODO
+#else
    if (setsockopt(multicastSocketDescriptor, IPPROTO_IP, IP_MULTICAST_LOOP, &loop, sizeof loop))
+#endif
    {
       L_ERRO("Can't set socket option : IP_MULTICAST_LOOP");
       QTimer::singleShot(SOCKET_RETRY_TIME, this, SLOT(initMulticastUDPSocket));
@@ -338,21 +346,30 @@ void UDPListener::initMulticastUDPSocket()
    }
 
    const char TTL = SETTINGS.get<quint32>("multicast_ttl");
+
+#if defined(Q_OS_DARWIN)
+   if (int error = 0) // TODO
+#else
    if (int error = setsockopt(multicastSocketDescriptor, IPPROTO_IP, IP_MULTICAST_TTL, &TTL, sizeof TTL))
+#endif
    {
       L_ERRO(QString("Can't set socket option : IP_MULTICAST_TTL : %1").arg(error));
       QTimer::singleShot(SOCKET_RETRY_TIME, this, SLOT(initMulticastUDPSocket));
       return;
    }
 
+#if defined(Q_OS_LINUX) || defined(Q_OS_WIN32)
    // 'htonl' reverse the order of the bytes, see : http://www.opengroup.org/onlinepubs/007908799/xns/htonl.html
    struct ip_mreq mreq;
    mreq.imr_multiaddr.s_addr = htonl(MULTICAST_GROUP.toIPv4Address());
    mreq.imr_interface.s_addr = htonl(INADDR_ANY);
-#if defined(Q_OS_LINUX)
+   #if defined(Q_OS_LINUX)
    if (int error = setsockopt(socketDescriptor, IPPROTO_IP, IP_ADD_MEMBERSHIP, &mreq, sizeof mreq))
-#elif defined(Q_OS_WIN32)
+   #elif defined(Q_OS_WIN32)
    if (int error = setsockopt(multicastSocketDescriptor, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char*)&mreq, sizeof mreq))
+   #endif
+#elif defined(Q_OS_DARWIN)
+   if (int error = 0) // TODO
 #endif
    {
       L_ERRO(QString("Can't set socket option : IP_ADD_MEMBERSHIP : %1").arg(error));
@@ -361,7 +378,12 @@ void UDPListener::initMulticastUDPSocket()
    }
 
    static const int BUFFER_SIZE_UDP = SETTINGS.get<quint32>("udp_read_buffer_size");
+
+#if defined(Q_OS_DARWIN)
+   if (int error = 0) // TODO
+#else
    if (int error = setsockopt(multicastSocketDescriptor, SOL_SOCKET, SO_RCVBUF, (char*)&BUFFER_SIZE_UDP, sizeof BUFFER_SIZE_UDP))
+#endif
    {
       L_ERRO(QString("Can't set socket option (multicast socket) : SO_RCVBUF : %1").arg(error));
       QTimer::singleShot(SOCKET_RETRY_TIME, this, SLOT(initMulticastUDPSocket));
@@ -380,7 +402,12 @@ void UDPListener::initUnicastUDPSocket()
       L_ERRO("Can't bind the unicast socket");
 
    static const int BUFFER_SIZE_UDP = SETTINGS.get<quint32>("udp_read_buffer_size");
+
+#if defined(Q_OS_DARWIN)
+   if (int error = 0) // TODO
+#else
    if (int error = setsockopt(this->unicastSocket.socketDescriptor(), SOL_SOCKET, SO_RCVBUF, (char*)&BUFFER_SIZE_UDP, sizeof BUFFER_SIZE_UDP))
+#endif
       L_ERRO(QString("Can't set socket option (uncast socket) : SO_RCVBUF : %1").arg(error));
 
    connect(&this->unicastSocket, SIGNAL(readyRead()), this, SLOT(processPendingUnicastDatagrams()));

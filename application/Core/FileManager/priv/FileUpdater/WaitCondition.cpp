@@ -27,6 +27,8 @@ using namespace FM;
    #include <priv/FileUpdater/WaitConditionWin.h>
 #elif defined(Q_OS_LINUX)
    #include <priv/FileUpdater/WaitConditionLinux.h>
+#elif defined (Q_OS_DARWIN)
+   #include <priv/FileUpdater/WaitConditionDarwin.h>
 #endif
 
 WaitCondition* WaitCondition::getNewWaitCondition()
@@ -34,9 +36,11 @@ WaitCondition* WaitCondition::getNewWaitCondition()
 #if defined(Q_OS_WIN32)
    return new WaitConditionWin();
 #elif defined(Q_OS_LINUX)
-   return new WaitConditionLinux();   
+   return new WaitConditionLinux();
+#elif defined(Q_OS_DARWIN)
+   return new WaitConditionDarwin();
 #else
-   LOG_WARN("Cannot create a WaitCondition for the current platform, no implementation.");
+   L_WARN("Cannot create a WaitCondition for the current platform, no implementation.");
    return 0;
 #endif
 }
