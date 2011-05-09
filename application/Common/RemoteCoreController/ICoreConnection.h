@@ -66,6 +66,11 @@ namespace RCC
         */
       virtual void connectToCore(const QString& address, quint16 port, Common::Hash password) = 0;
 
+      /**
+        * If connected to the core AND authenticated.
+        */
+      virtual bool isConnected() const = 0;
+
       virtual void disconnectFromCore() = 0;
 
       virtual void sendChatMessage(const QString& message) = 0;

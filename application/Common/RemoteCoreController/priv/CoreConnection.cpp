@@ -77,6 +77,11 @@ void CoreConnection::connectToCore(const QString& address, quint16 port, Common:
    this->connectToCoreSlot();
 }
 
+bool CoreConnection::isConnected() const
+{
+   return MessageSocket::isConnected() && this->authenticated;
+}
+
 void CoreConnection::disconnectFromCore()
 {
    this->addressesToTry.clear();
