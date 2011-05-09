@@ -15,10 +15,8 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
-#include <QtCore/QtCore> // For the Q_OS_* defines.
 
-#if !defined(FILEMANAGER_WAITCONDITIONLINUX_H) && defined(Q_OS_LINUX)
+#ifndef FILEMANAGER_WAITCONDITIONLINUX_H
 #define FILEMANAGER_WAITCONDITIONLINUX_H
 
 #include <QMutex>

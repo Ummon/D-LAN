@@ -15,10 +15,8 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
-#include <QtCore/QtCore> // For the Q_OS_* defines.
 
-#if !defined(FILEMANAGER_WAITCONDITIONWIN_H) and defined(Q_OS_WIN32)
+#ifndef FILEMANAGER_WAITCONDITIONWIN_H
 #define FILEMANAGER_WAITCONDITIONWIN_H
 
 #include <priv/FileUpdater/WaitCondition.h>

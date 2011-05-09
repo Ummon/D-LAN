@@ -61,6 +61,8 @@ namespace RCC
       void connectToCore(quint16 port);
       void connectToCore(const QString& address, quint16 port, Common::Hash password);
 
+      bool isConnected() const;
+
       void disconnectFromCore();
 
       Common::Hash getOurID() const;

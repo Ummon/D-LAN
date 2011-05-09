@@ -165,6 +165,7 @@ Protos::Common::Entries FileManager::getEntries()
 
 /**
   * @see http://dev.euphorik.ch/wiki/pmp/Algorithms#Word-indexing for more information.
+  * TODO: A large part of this function code should be owned by 'WordIndex'.
   */
 QList<Protos::Common::FindResult> FileManager::find(const QString& words, int maxNbResult, int maxSize)
 {
@@ -186,7 +187,6 @@ QList<Protos::Common::FindResult> FileManager::find(const QString& words, int ma
 
    int numberOfResult = 0;
    bool end = false;
-
 
    int level = 0;
    // For each group of intersection number.
@@ -228,14 +228,8 @@ QList<Protos::Common::FindResult> FileManager::find(const QString& words, int ma
 
          // Apply substracts.
          for (int k = -1; k < nbIntersect; k++)
-         {
-            for (
-               int l = (k == -1 ? 0 : intersect[k] + 1);
-                l < (k == nbIntersect - 1 ? n : intersect[k+1]);
-                l++
-            )
+            for (int l = (k == -1 ? 0 : intersect[k] + 1); l < (k == nbIntersect - 1 ? n : intersect[k+1]); l++)
                currentLevelSet -= results[l];
-         }
 
          for (QSetIterator< NodeResult<Entry> > k(currentLevelSet); k.hasNext();)
             const_cast<NodeResult<Entry>&>(k.next()).level += level;

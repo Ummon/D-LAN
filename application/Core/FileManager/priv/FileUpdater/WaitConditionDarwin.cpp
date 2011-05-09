@@ -1,7 +1,3 @@
-#include <QtCore/QtCore> // For the Q_OS_* defines.
-
-#if defined(Q_OS_DARWIN)
-
 #include <priv/FileUpdater/WaitConditionDarwin.h>
 using namespace FM;
 
@@ -35,9 +31,3 @@ bool WaitConditionDarwin::wait(int timeout)
    return timeouted;
 }
 
-void* WaitConditionDarwin::getHandle()
-{
-   return 0;
-}
-
-#endif
