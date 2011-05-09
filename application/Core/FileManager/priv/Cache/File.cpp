@@ -707,6 +707,7 @@ void File::createPhysicalFile()
   */
 void File::setHashes(const Common::Hashes& hashes)
 {
+   this->chunks.reserve(this->getNbChunks());
    for (int i = 0; i < this->getNbChunks(); i++)
    {
       int chunkKnownBytes = !this->isComplete() ? 0 : i == this->getNbChunks() - 1 && this->size % CHUNK_SIZE != 0 ? this->size % CHUNK_SIZE : CHUNK_SIZE;
