@@ -36,7 +36,7 @@ using namespace Common;
   * Take ownership of 'logger'.
   */
 MessageSocket::MessageSocket(MessageSocket::ILogger* logger, const Hash& ID, const Hash& remoteID) :
-   logger(logger), socket(new QTcpSocket()), ID(ID), remoteID(remoteID), listening(false)
+   logger(logger), socket(new QTcpSocket()), ID(ID), remoteID(remoteID), IDDefined(!ID.isNull()), remoteIDDefined(!remoteID.isNull()), listening(false)
 {
 #ifdef DEBUG
    this->num = ++MessageSocket::currentNum;
@@ -50,7 +50,7 @@ MessageSocket::MessageSocket(MessageSocket::ILogger* logger, const Hash& ID, con
   * If ID isn't given, it will be set to the remoteID when the first message is received.
   */
 MessageSocket::MessageSocket(MessageSocket::ILogger* logger, QAbstractSocket* socket, const Hash& ID, const Hash& remoteID) :
-   logger(logger), socket(socket), ID(ID), remoteID(remoteID), listening(false)
+   logger(logger), socket(socket), ID(ID), remoteID(remoteID), IDDefined(!ID.isNull()), remoteIDDefined(!remoteID.isNull()), listening(false)
 {
 #ifdef DEBUG
    this->num = ++MessageSocket::currentNum;
@@ -62,7 +62,7 @@ MessageSocket::MessageSocket(MessageSocket::ILogger* logger, QAbstractSocket* so
   * Will automatically create a connection to the given address and port.
   */
 MessageSocket::MessageSocket(MessageSocket::ILogger* logger, const QHostAddress& address, quint16 port, const Hash& ID, const Hash& remoteID) :
-   logger(logger), socket(new QTcpSocket()), ID(ID), remoteID(remoteID), listening(false)
+   logger(logger), socket(new QTcpSocket()), ID(ID), remoteID(remoteID), IDDefined(!ID.isNull()), remoteIDDefined(!remoteID.isNull()), listening(false)
 {
 #ifdef DEBUG
    this->num = ++MessageSocket::currentNum;
@@ -214,6 +214,11 @@ void MessageSocket::dataReceived()
 
 void MessageSocket::disconnected()
 {
+   if (!this->IDDefined)
+      this->ID = Common::Hash();
+   if (!this->remoteIDDefined)
+      this->remoteID = Common::Hash();
+
    this->currentHeader.setNull();
    MESSAGE_SOCKET_LOG_DEBUG(QString("Socket[%1] disconnected").arg(this->num));
    this->onDisconnected();

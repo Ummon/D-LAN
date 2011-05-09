@@ -46,7 +46,9 @@ CoreConnection::CoreConnection() :
    ICoreConnection(new CoreConnection::Logger()), coreStatus(NOT_RUNNING), currentHostLookupID(-1), authenticated(false)
 {
    connect(this->socket, SIGNAL(connected()), this, SLOT(connected()));
-   connect(this->socket, SIGNAL(stateChanged(QAbstractSocket::SocketState)), this, SLOT(stateChanged(QAbstractSocket::SocketState)));
+
+   this->retryTimer.setSingleShot(true);
+   connect(&this->retryTimer, SIGNAL(timeout()), this, SLOT(connectToCoreSlot()));
 
    this->startListening();
 }
@@ -191,9 +193,12 @@ bool CoreConnection::isRunningAsSubProcess()
 
 void CoreConnection::connectToCoreSlot()
 {
-   this->socket->close();
+   this->retryTimer.stop();
+   this->timerFromLastConnectionTry.restart();
 
-   this->timerFromLastConnectionTry.start();
+   disconnect(this->socket, SIGNAL(stateChanged(QAbstractSocket::SocketState)), this, SLOT(stateChanged(QAbstractSocket::SocketState)));
+   this->socket->close();
+   connect(this->socket, SIGNAL(stateChanged(QAbstractSocket::SocketState)), this, SLOT(stateChanged(QAbstractSocket::SocketState)));
 
    if (this->currentHostLookupID != -1)
       QHostInfo::abortHostLookup(this->currentHostLookupID);
@@ -215,7 +220,8 @@ void CoreConnection::stateChanged(QAbstractSocket::SocketState socketState)
       {
          L_USER("Unable to connect to the core");
          const qint64 durationFromLastConnect = this->timerFromLastConnectionTry.elapsed();
-         QTimer::singleShot(durationFromLastConnect > RETRY_PERIOD ? 0 : RETRY_PERIOD - durationFromLastConnect, this, SLOT(connectToCoreSlot()));
+         this->retryTimer.setInterval(durationFromLastConnect > RETRY_PERIOD ? 0 : RETRY_PERIOD - durationFromLastConnect);
+         this->retryTimer.start();
       }
       break;
 
