@@ -115,6 +115,7 @@ namespace FM
 
       /**
         * Return all items from the current node and its sub nodes (recursively) if 'alsoFromSubNodes' is true.
+        * For all direct sub nodes NodeResult::level is set to 0, for other sub nodes level is set to 1.
         */
       QList< NodeResult<T> > getItems(bool alsoFromSubNodes = false, int maxNbResult = -1) const;
 
