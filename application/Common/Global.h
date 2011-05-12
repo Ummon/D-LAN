@@ -28,23 +28,10 @@ namespace Common
    class Global
    {
    public:
-      /**
-        * Exception which can give a message should inherit from this class.
-        */
-      class MessageException
-      {
-      public:
-         virtual QString getMessage() const throw() = 0;
-      };
-
-      class UnableToSetTempDirException : public MessageException
+      class UnableToSetTempDirException
       {
       public:
          UnableToSetTempDirException(const QString& dir);
-         ~UnableToSetTempDirException() throw() {}
-         QString getMessage() const throw();
-
-      private:
          const QString errorMessage;
       };
 
@@ -68,14 +55,10 @@ namespace Common
       static QString dataFolders[2];
 
    public:
-      class UnableToGetFolder : public MessageException
+      class UnableToGetFolder
       {
       public:
          UnableToGetFolder(const QString& message) : errorMessage(message) {}
-         ~UnableToGetFolder() throw() {}
-         QString getMessage() const throw() { return this->errorMessage; }
-
-      private:
          const QString errorMessage;
       };
 

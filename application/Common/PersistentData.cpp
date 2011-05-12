@@ -83,7 +83,7 @@ void PersistentData::setValue(const QString& name, const google::protobuf::Messa
    }
    catch(Global::UnableToGetFolder& e)
    {
-      throw PersistentDataIOException(e.getMessage());
+      throw PersistentDataIOException(e.errorMessage);
    }
 }
 
@@ -118,7 +118,7 @@ void PersistentData::getValue(const QString& name, google::protobuf::Message& da
    }
    catch(Global::UnableToGetFolder& e)
    {
-      throw PersistentDataIOException(e.getMessage());
+      throw PersistentDataIOException(e.errorMessage);
    }
 }
 
@@ -137,7 +137,7 @@ bool PersistentData::rmValue(const QString& name, Global::DataFolderType dataFol
    }
    catch(Global::UnableToGetFolder& e)
    {
-      throw PersistentDataIOException(e.getMessage());
+      throw PersistentDataIOException(e.errorMessage);
    }
    return false;
 }

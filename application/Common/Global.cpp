@@ -48,11 +48,6 @@ Global::UnableToSetTempDirException::UnableToSetTempDirException(const QString& 
 {
 }
 
-QString Global::UnableToSetTempDirException::getMessage() const throw()
-{
-   return this->errorMessage;
-}
-
 /**
   * The number of k-combinations (each of size k) from a set S with n elements (size n).
   * @link http://en.wikipedia.org/wiki/Combination

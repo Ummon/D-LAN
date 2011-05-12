@@ -14,6 +14,7 @@ CONFIG   -= app_bundle
 
 TEMPLATE = app
 
+INCLUDEPATH += .
 
 SOURCES += main.cpp \
     Downloader.cpp \
