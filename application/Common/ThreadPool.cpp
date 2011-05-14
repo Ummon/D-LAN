@@ -95,6 +95,16 @@ IRunnable* Thread::getRunnable() const
    return this->runnable;
 }
 
+/**
+  * @class Common::ThreadPool
+  *
+  * A ThreadPool object can run runnable objects (see 'Common::IRunnable'), each thread dedicated to a runnable object will be created if needed.
+  * At the begining there is no thread, when the first runnable object is given to the method 'run(..)' the first thread is created.
+  * After the task of the runnable object is completed the thread will become inactive and can be reused by another runnable object for
+  * a given period ('threadInactiveLifetime'). If the thread is not reused after this period and there is more thread than 'nbMinThread'
+  * the thread is deleted.
+  */
+
 ThreadPool::ThreadPool(int nbMinThread, int threadInactiveLifetime) :
    nbMinThread(nbMinThread), threadInactiveLifetime(threadInactiveLifetime)
 {
