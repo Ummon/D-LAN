@@ -33,7 +33,9 @@ namespace Common
       virtual ~IRunnable() {}
 
       virtual void init(QThread* thread) = 0;
+
       virtual void run() = 0;
+
       virtual void finished() = 0;
    };
 }

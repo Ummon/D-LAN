@@ -26,6 +26,7 @@
 #include <QMultiHash>
 
 #include <Common/TransferRateCalculator.h>
+#include <Common/ThreadPool.h>
 
 #include <Core/FileManager/IFileManager.h>
 #include <Core/PeerManager/IPeerManager.h>
@@ -68,10 +69,11 @@ namespace DM
       void removeAllCompleteDownloads();
       void removeDownloads(QList<quint64> IDs);
 
-   public:
       QList< QSharedPointer<IChunkDownload> > getUnfinishedChunks(int n) const;
 
       int getDownloadRate();
+
+      Common::ThreadPool& getThreadPool();
 
    private slots:
       void peerBecomesAvailable(PM::IPeer* peer);
@@ -107,6 +109,8 @@ namespace DM
       OccupiedPeers occupiedPeersAskingForHashes;
       OccupiedPeers occupiedPeersAskingForEntries;
       OccupiedPeers occupiedPeersDownloadingChunk;
+
+      Common::ThreadPool threadPool;
 
       DownloadQueue downloadQueue;
 

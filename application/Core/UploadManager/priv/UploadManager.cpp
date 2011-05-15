@@ -50,9 +50,6 @@ UploadManager::UploadManager(QSharedPointer<PM::IPeerManager> peerManager) :
 
 UploadManager::~UploadManager()
 {
-   foreach (Upload* u, this->uploads)
-      delete u;
-
    L_DEBU("UploadManager deleted");
 }
 
@@ -60,8 +57,8 @@ QList<IUpload*> UploadManager::getUploads() const
 {
    QList<IUpload*> uploads;
 
-   for (QListIterator<Upload*> i(this->uploads); i.hasNext();)
-      uploads << i.next();
+   for (QListIterator< QSharedPointer<Upload> > i(this->uploads); i.hasNext();)
+      uploads << i.next().data();
 
    return uploads;
 }
@@ -73,15 +70,20 @@ int UploadManager::getUploadRate()
 
 void UploadManager::getChunk(QSharedPointer<FM::IChunk> chunk, int offset, QSharedPointer<PM::ISocket> socket)
 {
-   Upload* upload = new Upload(chunk, offset, socket, this->transferRateCalculator);
-   connect(upload, SIGNAL(timeout()), this, SLOT(uploadTimeout()));
+   QSharedPointer<Upload> upload(new Upload(chunk, offset, socket, this->transferRateCalculator));
+   connect(upload.data(), SIGNAL(timeout()), this, SLOT(uploadTimeout()));
    this->uploads << upload;
-   this->threadPool.run(upload);
+   this->threadPool.run(upload.toWeakRef());
 }
 
 void UploadManager::uploadTimeout()
 {
    Upload* upload = dynamic_cast<Upload*>(this->sender());
-   this->uploads.removeOne(upload);
-   delete upload;
+
+   for (QMutableListIterator< QSharedPointer<Upload> > i(this->uploads); i.hasNext();)
+      if (i.next().data() == upload)
+      {
+         i.remove();
+         break;
+      }
 }

@@ -36,6 +36,7 @@ DownloadManager::DownloadManager(QSharedPointer<FM::IFileManager> fileManager, Q
    NUMBER_OF_DOWNLOADER(static_cast<int>(SETTINGS.get<quint32>("number_of_downloader"))),
    fileManager(fileManager),
    peerManager(peerManager),
+   threadPool(NUMBER_OF_DOWNLOADER, SETTINGS.get<quint32>("download_thread_lifetime")),
    numberOfDownloadThreadRunning(0),
    queueChanged(false)
 {
@@ -213,6 +214,11 @@ int DownloadManager::getDownloadRate()
    return this->transferRateCalculator.getTransferRate();
 }
 
+Common::ThreadPool& DownloadManager::getThreadPool()
+{
+   return this->threadPool;
+}
+
 void DownloadManager::peerBecomesAvailable(PM::IPeer* peer)
 {
    this->downloadQueue.setPeerSource(peer);
@@ -334,7 +340,7 @@ void DownloadManager::scanTheQueue()
 
       connect(chunkDownload.data(), SIGNAL(downloadFinished()), this, SLOT(chunkDownloadFinished()), Qt::DirectConnection);
 
-      if (chunkDownload->startDownloading())
+      if (chunkDownload->startDownloading(&this->threadPool))
       {
          this->numberOfDownloadThreadRunning++;
          numberOfDownloadThreadRunningCopy = this->numberOfDownloadThreadRunning;

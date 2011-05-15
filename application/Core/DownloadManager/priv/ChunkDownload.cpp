@@ -41,29 +41,34 @@ ChunkDownload::ChunkDownload(QSharedPointer<PM::IPeerManager> peerManager, Occup
    occupiedPeersDownloadingChunk(occupiedPeersDownloadingChunk),
    chunkHash(chunkHash),
    socket(0),
+   threadPool(0),
    downloading(false),
    networkTransferStatus(PM::ISocket::SFS_OK),
    transferRateCalculator(transferRateCalculator),
    mutex(QMutex::Recursive)
 {
    L_DEBU(QString("New ChunkDownload : %1").arg(this->chunkHash.toStr()));
-   connect(this, SIGNAL(finished()), this, SLOT(downloadingEnded()), Qt::QueuedConnection);
    this->mainThread = QThread::currentThread();
 }
 
 ChunkDownload::~ChunkDownload()
 {
-   disconnect(this, SIGNAL(finished()), this, SLOT(downloadingEnded()));
-
    if (this->downloading)
    {
       this->mutex.lock();
       this->downloading = false;
       this->mutex.unlock();
 
-      this->wait();
+      this->threadPool->wait(this->ownRef);
+
       this->downloadingEnded();
    }
+   L_DEBU(QString("ChunkDownload deleted : %1").arg(this->chunkHash.toStr()));
+}
+
+void ChunkDownload::setRef(QWeakPointer<ChunkDownload> ownRef)
+{
+   this->ownRef = ownRef;
 }
 
 Common::Hash ChunkDownload::getHash() const
@@ -90,131 +95,9 @@ void ChunkDownload::rmPeerID(const Common::Hash& peerID)
       this->peers.removeOne(peer);
 }
 
-void ChunkDownload::setChunk(QSharedPointer<FM::IChunk> chunk)
+void ChunkDownload::init(QThread* thread)
 {
-   this->chunk = chunk;
-   this->chunk->setHash(this->chunkHash);
-}
-
-QSharedPointer<FM::IChunk> ChunkDownload::getChunk() const
-{
-   return this->chunk;
-}
-
-void ChunkDownload::setPeerSource(PM::IPeer* peer, bool informOccupiedPeers)
-{
-   QMutexLocker locker(&this->mutex);
-   if (!this->peers.contains(peer))
-   {
-      this->peers << peer;
-
-      if (informOccupiedPeers)
-         this->occupiedPeersDownloadingChunk.newPeer(peer);
-   }
-}
-
-/**
-  * To be ready :
-  * - It must be have at least one peer.
-  * - It isn't finished.
-  * - It isn't currently downloading.
-  * @return The number of free peer.
-  * @remarks This method may remove dead peers from the list.
-  */
-int ChunkDownload::isReadyToDownload()
-{
-   if (this->peers.isEmpty() || this->downloading || (!this->chunk.isNull() && this->chunk->isComplete()))
-      return 0;
-
-   return this->getNumberOfFreePeer();
-}
-
-bool ChunkDownload::isDownloading() const
-{
-   return this->downloading;
-}
-
-bool ChunkDownload::isComplete() const
-{
-   return !this->chunk.isNull() && this->chunk->isComplete();
-}
-
-bool ChunkDownload::isPartiallyDownloaded() const
-{
-   return !this->chunk.isNull() && !this->chunk->isComplete() && this->chunk->getKnownBytes() > 0;
-}
-
-bool ChunkDownload::hasAtLeastAPeer()
-{
-   return !this->getPeers().isEmpty();
-}
-
-int ChunkDownload::getDownloadedBytes() const
-{
-   if (this->chunk.isNull())
-      return 0;
-
-   return this->chunk->getKnownBytes();
-}
-
-/**
-  * @remarks This method may remove dead peers from the list.
-  */
-QList<Common::Hash> ChunkDownload::getPeers()
-{
-   QMutexLocker locker(&this->mutex);
-
-   QList<Common::Hash> peerIDs;
-   for (QMutableListIterator<PM::IPeer*> i(this->peers); i.hasNext();)
-   {
-      PM::IPeer* peer = i.next();
-      if (peer->isAvailable())
-         peerIDs << peer->getID();
-      else
-         i.remove();
-   }
-   return peerIDs;
-}
-
-/**
-  * Tell the chunkDownload to download the chunk from one of its peer.
-  * @return true if the downloading has been started.
-  */
-bool ChunkDownload::startDownloading()
-{
-   if (this->chunk.isNull())
-   {
-      L_WARN(QString("Unable to download without the chunk. Hash : %1").arg(this->chunkHash.toStr()));
-      return false;
-   }
-
-   this->currentDownloadingPeer = this->getTheFastestFreePeer();
-   if (!this->currentDownloadingPeer)
-      return false;
-
-   L_DEBU(QString("Starting downloading a chunk : %1 from %2").arg(this->chunk->toStringLog()).arg(this->currentDownloadingPeer->getID().toStr()));
-
-   this->downloading = true;
-   emit downloadStarted();
-
-   this->occupiedPeersDownloadingChunk.setPeerAsOccupied(this->currentDownloadingPeer);
-
-   Protos::Core::GetChunk getChunkMess;
-   getChunkMess.mutable_chunk()->set_hash(this->chunkHash.getData(), Common::Hash::HASH_SIZE);
-   getChunkMess.set_offset(this->chunk->getKnownBytes());
-   this->getChunkResult = this->currentDownloadingPeer->getChunk(getChunkMess);
-   connect(this->getChunkResult.data(), SIGNAL(result(const Protos::Core::GetChunkResult&)), this, SLOT(result(const Protos::Core::GetChunkResult&)), Qt::DirectConnection);
-   connect(this->getChunkResult.data(), SIGNAL(stream(QSharedPointer<PM::ISocket>)), this, SLOT(stream(QSharedPointer<PM::ISocket>)), Qt::DirectConnection);
-   connect(this->getChunkResult.data(), SIGNAL(timeout()), this, SLOT(getChunkTimeout()), Qt::DirectConnection);
-
-   this->getChunkResult->start();
-   return true;
-}
-
-void ChunkDownload::tryToRemoveItsIncompleteFile()
-{
-   if (!this->chunk.isNull())
-      this->chunk->removeItsIncompleteFile();
+   this->socket->moveToThread(thread);
 }
 
 void ChunkDownload::run()
@@ -338,6 +221,140 @@ void ChunkDownload::run()
    this->socket->moveToThread(this->mainThread);
 }
 
+void ChunkDownload::finished()
+{
+   this->downloadingEnded();
+}
+
+void ChunkDownload::setChunk(QSharedPointer<FM::IChunk> chunk)
+{
+   this->chunk = chunk;
+   this->chunk->setHash(this->chunkHash);
+}
+
+QSharedPointer<FM::IChunk> ChunkDownload::getChunk() const
+{
+   return this->chunk;
+}
+
+void ChunkDownload::setPeerSource(PM::IPeer* peer, bool informOccupiedPeers)
+{
+   QMutexLocker locker(&this->mutex);
+   if (!this->peers.contains(peer))
+   {
+      this->peers << peer;
+
+      if (informOccupiedPeers)
+         this->occupiedPeersDownloadingChunk.newPeer(peer);
+   }
+}
+
+/**
+  * To be ready :
+  * - It must be have at least one peer.
+  * - It isn't finished.
+  * - It isn't currently downloading.
+  * @return The number of free peer.
+  * @remarks This method may remove dead peers from the list.
+  */
+int ChunkDownload::isReadyToDownload()
+{
+   if (this->peers.isEmpty() || this->downloading || (!this->chunk.isNull() && this->chunk->isComplete()))
+      return 0;
+
+   return this->getNumberOfFreePeer();
+}
+
+bool ChunkDownload::isDownloading() const
+{
+   return this->downloading;
+}
+
+bool ChunkDownload::isComplete() const
+{
+   return !this->chunk.isNull() && this->chunk->isComplete();
+}
+
+bool ChunkDownload::isPartiallyDownloaded() const
+{
+   return !this->chunk.isNull() && !this->chunk->isComplete() && this->chunk->getKnownBytes() > 0;
+}
+
+bool ChunkDownload::hasAtLeastAPeer()
+{
+   return !this->getPeers().isEmpty();
+}
+
+int ChunkDownload::getDownloadedBytes() const
+{
+   if (this->chunk.isNull())
+      return 0;
+
+   return this->chunk->getKnownBytes();
+}
+
+/**
+  * @remarks This method may remove dead peers from the list.
+  */
+QList<Common::Hash> ChunkDownload::getPeers()
+{
+   QMutexLocker locker(&this->mutex);
+
+   QList<Common::Hash> peerIDs;
+   for (QMutableListIterator<PM::IPeer*> i(this->peers); i.hasNext();)
+   {
+      PM::IPeer* peer = i.next();
+      if (peer->isAvailable())
+         peerIDs << peer->getID();
+      else
+         i.remove();
+   }
+   return peerIDs;
+}
+
+/**
+  * Tell the chunkDownload to download the chunk from one of its peer.
+  * @return true if the downloading has been started.
+  */
+bool ChunkDownload::startDownloading(Common::ThreadPool* threadPool)
+{
+   if (this->chunk.isNull())
+   {
+      L_WARN(QString("Unable to download without the chunk. Hash : %1").arg(this->chunkHash.toStr()));
+      return false;
+   }
+
+   this->threadPool = threadPool;
+
+   this->currentDownloadingPeer = this->getTheFastestFreePeer();
+   if (!this->currentDownloadingPeer)
+      return false;
+
+   L_DEBU(QString("Starting downloading a chunk : %1 from %2").arg(this->chunk->toStringLog()).arg(this->currentDownloadingPeer->getID().toStr()));
+
+   this->downloading = true;
+   emit downloadStarted();
+
+   this->occupiedPeersDownloadingChunk.setPeerAsOccupied(this->currentDownloadingPeer);
+
+   Protos::Core::GetChunk getChunkMess;
+   getChunkMess.mutable_chunk()->set_hash(this->chunkHash.getData(), Common::Hash::HASH_SIZE);
+   getChunkMess.set_offset(this->chunk->getKnownBytes());
+   this->getChunkResult = this->currentDownloadingPeer->getChunk(getChunkMess);
+   connect(this->getChunkResult.data(), SIGNAL(result(const Protos::Core::GetChunkResult&)), this, SLOT(result(const Protos::Core::GetChunkResult&)), Qt::DirectConnection);
+   connect(this->getChunkResult.data(), SIGNAL(stream(QSharedPointer<PM::ISocket>)), this, SLOT(stream(QSharedPointer<PM::ISocket>)), Qt::DirectConnection);
+   connect(this->getChunkResult.data(), SIGNAL(timeout()), this, SLOT(getChunkTimeout()), Qt::DirectConnection);
+
+   this->getChunkResult->start();
+   return true;
+}
+
+void ChunkDownload::tryToRemoveItsIncompleteFile()
+{
+   if (!this->chunk.isNull())
+      this->chunk->removeItsIncompleteFile();
+}
+
 void ChunkDownload::result(const Protos::Core::GetChunkResult& result)
 {
    if (result.status() != Protos::Core::GetChunkResult_Status_OK)
@@ -365,9 +382,8 @@ void ChunkDownload::stream(QSharedPointer<PM::ISocket> socket)
 {
    this->socket = socket;
    this->socket->setReadBufferSize(SETTINGS.get<quint32>("socket_buffer_size"));
-   this->socket->moveToThread(this);
 
-   this->start();
+   threadPool->run(this->ownRef);
 }
 
 void ChunkDownload::getChunkTimeout()

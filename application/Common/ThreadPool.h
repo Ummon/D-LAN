@@ -22,6 +22,7 @@
 #include <QTimer>
 #include <QThread>
 #include <QWaitCondition>
+#include <QWeakPointer>
 #include <QMutex>
 
 namespace Common
@@ -36,7 +37,8 @@ namespace Common
    public:
       ThreadPool(int nbMinThread, int threadInactiveLifetime);
       ~ThreadPool();
-      void run(IRunnable* runnable);
+      void run(QWeakPointer<IRunnable> runnable);
+      void wait(QWeakPointer<IRunnable> runnable);
 
    private slots:
       void runnableFinished();
@@ -56,19 +58,20 @@ namespace Common
    public:
       Thread(int lifetime);
       ~Thread();
-      void setRunnable(IRunnable* runnable);
+      void setRunnable(QWeakPointer<IRunnable> runnable);
+      void waitRunnableFinished();
       void startTimer();
-      IRunnable* getRunnable() const;
+      QWeakPointer<IRunnable> getRunnable() const;
 
    signals:
       void timeout();
-      void runnableFininshed();
+      void runnableFinished();
 
    protected:
       void run();
 
    private:
-      IRunnable* runnable;
+      QWeakPointer<IRunnable> runnable;
       QTimer timer;
       QThread* mainThread;
 

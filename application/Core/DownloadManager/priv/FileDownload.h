@@ -37,7 +37,6 @@
 
 namespace DM
 {
-   class DownloadManager;
    class FileDownload : public Download
    {
       Q_OBJECT
@@ -95,7 +94,6 @@ namespace DM
       QSharedPointer<PM::IPeerManager> peerManager;
 
       const int NB_CHUNK;
-      DownloadManager* downloadManager;
 
       QList< QSharedPointer<FM::IChunk> > chunksWithoutDownload;
       QList< QSharedPointer<ChunkDownload> > chunkDownloads;
