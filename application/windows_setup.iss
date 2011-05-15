@@ -1,6 +1,6 @@
 [code]
 #define QtDir "E:/Qt/4.7.2"
-#define MingwDir "E:/Qt/qtcreator-2.1.84/mingw"
+#define MingwDir "E:/Qt/qtcreator-2.2.0/mingw"
 #define ProtoBufDir "E:/protobuf"
 
 #define AppName "D-LAN"

@@ -654,7 +654,7 @@ void File::removeUnfinishedFiles()
       this->fileInWriteMode = 0;
 
       if (!QFile::remove(this->getFullPath()))
-         L_ERRO(QString("File::~File() : unable to delete an unfinished file : %1").arg(this->getFullPath()));
+         L_WARN(QString("File::removeUnfinishedFiles() : unable to delete an unfinished file : %1").arg(this->getFullPath()));
    }
 }
 

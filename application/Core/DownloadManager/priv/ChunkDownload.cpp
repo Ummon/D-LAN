@@ -140,7 +140,7 @@ void ChunkDownload::run()
             if (!this->socket->waitForReadyRead(SOCKET_TIMEOUT))
             {
                L_WARN(QString("Connection dropped, error = %1, bytesAvailable = %2").arg(socket->errorString()).arg(socket->bytesAvailable()));
-               this->networkTransferStatus = PM::ISocket::SFS_ERROR;
+               this->networkTransferStatus = PM::ISocket::SFS_TO_CLOSE;
                break;
             }
             continue;
