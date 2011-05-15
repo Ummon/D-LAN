@@ -39,11 +39,12 @@ message Settings {
    optional uint32 download_rate_valid_time_factor = 44 [default = 3000]; // A download rate for a peer is valid for a time period of 'download_rate_valid_time_factor' / 'lan_speed' [s].
    optional uint32 save_queue_period = 45 [default = 60000]; // [ms]. (1 min).
    optional uint32 ban_duration_corrupted_data = 46 [default = 30000]; // [ms]. // When a received chunk do not match its hash, the sender is banned for a while.
+   optional uint32 download_thread_lifetime = 47 [default = 30000]; // [ms].
    
    // UploadManager.
    optional uint32 upload_lifetime = 50 [default = 5000]; // [ms].
    optional uint32 upload_min_nb_thread = 51 [default = 3]; // To be efficiant, there is always this number of thread prepared to upload a chunk.
-   optional uint32 upload_thread_lifetime = 52 [default = 30000]; // [ms]
+   optional uint32 upload_thread_lifetime = 52 [default = 30000]; // [ms].
    
    // NetworkListener.
    optional uint32 peer_imalive_period = 60 [default = 10000]; // [ms]. Send an IMAlive message each 10 s.

@@ -35,7 +35,7 @@ Source: {#MingwDir}/bin/libgcc_s_dw2-1.dll; DestDir: {app}; Flags: comparetimest
 ;Source: {#ProtoBufDir}/src/.libs/libprotobuf-7.dll; DestDir: {app}; Flags: comparetimestamp; 
 
 [Icons]
-Name: "{group}\D-LAN GUI"; Filename: {app}\D-LAN.GUI.exe; WorkingDir: "{app}"
+Name: "{group}\D-LAN"; Filename: {app}\D-LAN.GUI.exe; WorkingDir: "{app}"
 Name: "{group}\Password Hasher"; Filename: {app}\PasswordHasher.exe; WorkingDir: "{app}"
 
 [Tasks]
