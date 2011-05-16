@@ -167,6 +167,7 @@ void ThreadPool::runnableFinished()
 {
    Thread* thread = dynamic_cast<Thread*>(this->sender());
 
+   // The runnable object may have been deleted right after the call to 'run()'.
    if (!thread->getRunnable().isNull())
       thread->getRunnable().data()->finished();
 

@@ -352,6 +352,7 @@ void FileDownload::nextHash(const Common::Hash& hash)
    else
    {
       QSharedPointer<ChunkDownload> chunkDownload = QSharedPointer<ChunkDownload>(new ChunkDownload(this->peerManager, this->occupiedPeersDownloadingChunk, hash, transferRateCalculator));
+      chunkDownload->setRef(chunkDownload.toWeakRef());
 
       // If the file has already been created, the chunks are known.
       if (!this->chunksWithoutDownload.isEmpty())
