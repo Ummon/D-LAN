@@ -53,7 +53,7 @@ namespace DM
       bool operator() (Download* download);
 
    private:
-      QSet<quint64> downloadIDs;
+      QSet<quint64> downloadIDs; // We us a QSet to decrease the complexity.
    };
 }
 

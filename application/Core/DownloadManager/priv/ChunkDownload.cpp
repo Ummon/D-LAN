@@ -41,29 +41,29 @@ ChunkDownload::ChunkDownload(QSharedPointer<PM::IPeerManager> peerManager, Occup
    occupiedPeersDownloadingChunk(occupiedPeersDownloadingChunk),
    chunkHash(chunkHash),
    socket(0),
+   threadPool(0),
    downloading(false),
    networkTransferStatus(PM::ISocket::SFS_OK),
    transferRateCalculator(transferRateCalculator),
    mutex(QMutex::Recursive)
 {
    L_DEBU(QString("New ChunkDownload : %1").arg(this->chunkHash.toStr()));
-   connect(this, SIGNAL(finished()), this, SLOT(downloadingEnded()), Qt::QueuedConnection);
    this->mainThread = QThread::currentThread();
 }
 
 ChunkDownload::~ChunkDownload()
 {
-   disconnect(this, SIGNAL(finished()), this, SLOT(downloadingEnded()));
-
    if (this->downloading)
    {
       this->mutex.lock();
       this->downloading = false;
       this->mutex.unlock();
 
-      this->wait();
+      this->threadPool->wait(this);
+
       this->downloadingEnded();
    }
+   L_DEBU(QString("ChunkDownload deleted : %1").arg(this->chunkHash.toStr()));
 }
 
 Common::Hash ChunkDownload::getHash() const
@@ -88,6 +88,137 @@ void ChunkDownload::rmPeerID(const Common::Hash& peerID)
    PM::IPeer* peer = this->peerManager->getPeer(peerID);
    if (peer)
       this->peers.removeOne(peer);
+}
+
+void ChunkDownload::init(QThread* thread)
+{
+   this->socket->moveToThread(thread);
+}
+
+void ChunkDownload::run()
+{
+   int deltaRead = 0;
+   QElapsedTimer timer;
+   timer.start();
+
+   try
+   {
+      QSharedPointer<FM::IDataWriter> writer = this->chunk->getDataWriter();
+
+      static const int SOCKET_TIMEOUT = SETTINGS.get<quint32>("socket_timeout");
+      static const int TIME_PERIOD_CHOOSE_ANOTHER_PEER = 1000.0 * SETTINGS.get<double>("time_recheck_chunk_factor") * SETTINGS.get<quint32>("chunk_size") / SETTINGS.get<quint32>("lan_speed");
+
+      static const int BUFFER_SIZE = SETTINGS.get<quint32>("buffer_size_writing");
+      char buffer[BUFFER_SIZE];
+
+      const int initialKnownBytes = this->chunk->getKnownBytes();
+      int bytesToRead = this->chunkSize - initialKnownBytes;
+      int bytesToWrite = 0;
+      int bytesWritten = 0;
+
+      forever
+      {
+         this->mutex.lock();
+         if (!this->downloading)
+         {
+            L_DEBU(QString("Downloading aborted, chunk : %1%2").arg(this->chunk->toStringLog()).arg(this->chunk->isComplete() ? "" : " Not complete!"));
+            this->mutex.unlock();
+            break;
+         }
+         this->mutex.unlock();
+
+         int bytesRead = this->socket->read(buffer + bytesToWrite, bytesToRead < BUFFER_SIZE - bytesToWrite ? bytesToRead : BUFFER_SIZE - bytesToWrite);
+         bytesToRead -= bytesRead;
+
+         if (bytesRead == 0)
+         {
+            if (!this->socket->waitForReadyRead(SOCKET_TIMEOUT))
+            {
+               L_WARN(QString("Connection dropped, error = %1, bytesAvailable = %2").arg(socket->errorString()).arg(socket->bytesAvailable()));
+               this->networkTransferStatus = PM::ISocket::SFS_TO_CLOSE;
+               break;
+            }
+            continue;
+         }
+         else if (bytesRead == -1)
+         {
+            L_WARN(QString("Socket : cannot receive data : %1").arg(this->chunk->toStringLog()));
+            this->networkTransferStatus = PM::ISocket::SFS_ERROR;
+            break;
+         }
+
+         deltaRead += bytesRead;
+         bytesToWrite += bytesRead;
+
+         if (timer.elapsed() > TIME_PERIOD_CHOOSE_ANOTHER_PEER)
+         {
+            this->currentDownloadingPeer->setSpeed(deltaRead / timer.elapsed() * 1000);
+            L_DEBU(QString("Check for a better peer for the chunk: %1, current peer: %2 ..").arg(this->chunk->toStringLog()).arg(this->currentDownloadingPeer->toStringLog()));
+            timer.start();
+            deltaRead = 0;
+
+            // If a another peer exists and its speed is greater than our by a factor 'switch_to_another_peer_factor'
+            // then we will try to switch to this peer.
+            PM::IPeer* peer = this->getTheFastestFreePeer();
+            if (
+               peer &&
+               peer != this->currentDownloadingPeer &&
+               peer->getSpeed() / SETTINGS.get<double>("switch_to_another_peer_factor") > this->currentDownloadingPeer->getSpeed()
+            )
+            {
+               L_DEBU(QString("Switch to a better peer: %1").arg(peer->toStringLog()));
+               this->networkTransferStatus = PM::ISocket::SFS_TO_CLOSE; // We ask to close the socket to avoid to get garbage data.
+               break;
+            }
+         }
+
+         // If the buffer is full or there is no more byte to read.
+         if (bytesToWrite == BUFFER_SIZE || bytesToRead == 0)
+         {
+            writer->write(buffer, bytesToWrite);
+            bytesWritten += bytesToWrite;
+            bytesToWrite = 0;
+         }
+
+         this->transferRateCalculator.addData(bytesRead);
+
+         if (initialKnownBytes + bytesWritten >= this->chunkSize)
+            break;
+      }
+   }
+   catch(FM::UnableToOpenFileInWriteModeException)
+   {
+      L_WARN("UnableToOpenFileInWriteModeException");
+   }
+   catch(FM::IOErrorException&)
+   {
+      L_WARN("IOErrorException");
+   }
+   catch (FM::ChunkDeletedException&)
+   {
+      L_WARN("ChunkDeletedException");
+   }
+   catch (FM::TryToWriteBeyondTheEndOfChunkException&)
+   {
+      L_WARN("TryToWriteBeyondTheEndOfChunkException");
+   }
+   catch (FM::hashMissmatchException)
+   {
+      const quint32 BAN_DURATION = SETTINGS.get<quint32>("ban_duration_corrupted_data");
+      L_USER(QString("Corrupted data received for the file \"%1\" from peer %2. Peer banned for %3 ms").arg(this->chunk->getBasePath()).arg(this->currentDownloadingPeer->getNick()).arg(BAN_DURATION));
+      this->currentDownloadingPeer->ban(BAN_DURATION, "Has sent corrupted data");
+   }
+
+   if (timer.elapsed() > MINIMUM_DELTA_TIME_TO_COMPUTE_SPEED)
+      this->currentDownloadingPeer->setSpeed(deltaRead / timer.elapsed() * 1000);
+
+   this->socket->setReadBufferSize(0);
+   this->socket->moveToThread(this->mainThread);
+}
+
+void ChunkDownload::finished()
+{
+   this->downloadingEnded();
 }
 
 void ChunkDownload::setChunk(QSharedPointer<FM::IChunk> chunk)
@@ -180,13 +311,15 @@ QList<Common::Hash> ChunkDownload::getPeers()
   * Tell the chunkDownload to download the chunk from one of its peer.
   * @return true if the downloading has been started.
   */
-bool ChunkDownload::startDownloading()
+bool ChunkDownload::startDownloading(Common::ThreadPool* threadPool)
 {
    if (this->chunk.isNull())
    {
       L_WARN(QString("Unable to download without the chunk. Hash : %1").arg(this->chunkHash.toStr()));
       return false;
    }
+
+   this->threadPool = threadPool;
 
    this->currentDownloadingPeer = this->getTheFastestFreePeer();
    if (!this->currentDownloadingPeer)
@@ -217,127 +350,6 @@ void ChunkDownload::tryToRemoveItsIncompleteFile()
       this->chunk->removeItsIncompleteFile();
 }
 
-void ChunkDownload::run()
-{
-   int deltaRead = 0;
-   QElapsedTimer timer;
-   timer.start();
-
-   try
-   {
-      QSharedPointer<FM::IDataWriter> writer = this->chunk->getDataWriter();
-
-      static const int SOCKET_TIMEOUT = SETTINGS.get<quint32>("socket_timeout");
-      static const int TIME_PERIOD_CHOOSE_ANOTHER_PEER = 1000.0 * SETTINGS.get<double>("time_recheck_chunk_factor") * SETTINGS.get<quint32>("chunk_size") / SETTINGS.get<quint32>("lan_speed");
-
-      static const int BUFFER_SIZE = SETTINGS.get<quint32>("buffer_size_writing");
-      char buffer[BUFFER_SIZE];
-
-      const int initialKnownBytes = this->chunk->getKnownBytes();
-      int bytesToRead = this->chunkSize - initialKnownBytes;
-      int bytesToWrite = 0;
-      int bytesWritten = 0;
-
-      forever
-      {
-         this->mutex.lock();
-         if (!this->downloading)
-         {
-            L_DEBU(QString("Downloading aborted, chunk : %1%2").arg(this->chunk->toStringLog()).arg(this->chunk->isComplete() ? "" : " Not complete!"));
-            this->mutex.unlock();
-            break;
-         }
-         this->mutex.unlock();
-
-         int bytesRead = this->socket->read(buffer + bytesToWrite, bytesToRead < BUFFER_SIZE - bytesToWrite ? bytesToRead : BUFFER_SIZE - bytesToWrite);
-         bytesToRead -= bytesRead;
-
-         if (bytesRead == 0)
-         {
-            if (!this->socket->waitForReadyRead(SOCKET_TIMEOUT))
-            {
-               L_WARN(QString("Connection dropped, error = %1, bytesAvailable = %2").arg(socket->errorString()).arg(socket->bytesAvailable()));
-               this->networkTransferStatus = PM::ISocket::SFS_ERROR;
-               break;
-            }
-            continue;
-         }
-         else if (bytesRead == -1)
-         {
-            L_WARN(QString("Socket : cannot receive data : %1").arg(this->chunk->toStringLog()));
-            this->networkTransferStatus = PM::ISocket::SFS_ERROR;
-            break;
-         }
-
-         deltaRead += bytesRead;
-         bytesToWrite += bytesRead;
-
-         if (timer.elapsed() > TIME_PERIOD_CHOOSE_ANOTHER_PEER)
-         {
-            this->currentDownloadingPeer->setSpeed(deltaRead / timer.elapsed() * 1000);
-            L_DEBU(QString("Check for a better peer for the chunk: %1, current peer: %2 ..").arg(this->chunk->toStringLog()).arg(this->currentDownloadingPeer->toStringLog()));
-            timer.start();
-            deltaRead = 0;
-
-            // If a another peer exists and its speed is greater than our by a factor 'switch_to_another_peer_factor'
-            // then we will try to switch to this peer.
-            PM::IPeer* peer = this->getTheFastestFreePeer();
-            if (
-               peer &&
-               peer != this->currentDownloadingPeer &&
-               peer->getSpeed() / SETTINGS.get<double>("switch_to_another_peer_factor") > this->currentDownloadingPeer->getSpeed()
-            )
-            {
-               L_DEBU(QString("Switch to a better peer: %1").arg(peer->toStringLog()));
-               this->networkTransferStatus = PM::ISocket::SFS_TO_CLOSE; // We ask to close the socket to avoid to get garbage data.
-               break;
-            }
-         }
-
-         // If the buffer is full or there is no more byte to read.
-         if (bytesToWrite == BUFFER_SIZE || bytesToRead == 0)
-         {
-            writer->write(buffer, bytesToWrite);
-            bytesWritten += bytesToWrite;
-            bytesToWrite = 0;
-         }
-
-         this->transferRateCalculator.addData(bytesRead);
-
-         if (initialKnownBytes + bytesWritten >= this->chunkSize)
-            break;
-      }
-   }
-   catch(FM::UnableToOpenFileInWriteModeException)
-   {
-      L_WARN("UnableToOpenFileInWriteModeException");
-   }
-   catch(FM::IOErrorException&)
-   {
-      L_WARN("IOErrorException");
-   }
-   catch (FM::ChunkDeletedException&)
-   {
-      L_WARN("ChunkDeletedException");
-   }
-   catch (FM::TryToWriteBeyondTheEndOfChunkException&)
-   {
-      L_WARN("TryToWriteBeyondTheEndOfChunkException");
-   }
-   catch (FM::hashMissmatchException)
-   {
-      const quint32 BAN_DURATION = SETTINGS.get<quint32>("ban_duration_corrupted_data");
-      L_USER(QString("Corrupted data received for the file \"%1\" from peer %2. Peer banned for %3 ms").arg(this->chunk->getBasePath()).arg(this->currentDownloadingPeer->getNick()).arg(BAN_DURATION));
-      this->currentDownloadingPeer->ban(BAN_DURATION, "Has sent corrupted data");
-   }
-
-   if (timer.elapsed() > MINIMUM_DELTA_TIME_TO_COMPUTE_SPEED)
-      this->currentDownloadingPeer->setSpeed(deltaRead / timer.elapsed() * 1000);
-
-   this->socket->setReadBufferSize(0);
-   this->socket->moveToThread(this->mainThread);
-}
-
 void ChunkDownload::result(const Protos::Core::GetChunkResult& result)
 {
    if (result.status() != Protos::Core::GetChunkResult_Status_OK)
@@ -365,9 +377,8 @@ void ChunkDownload::stream(QSharedPointer<PM::ISocket> socket)
 {
    this->socket = socket;
    this->socket->setReadBufferSize(SETTINGS.get<quint32>("socket_buffer_size"));
-   this->socket->moveToThread(this);
 
-   this->start();
+   threadPool->run(this);
 }
 
 void ChunkDownload::getChunkTimeout()

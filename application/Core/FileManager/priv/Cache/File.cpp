@@ -107,6 +107,12 @@ File::~File()
 
    this->deleteAllChunks();
 
+   QMutexLocker lockerWrite(&this->writeLock);
+   delete this->fileInWriteMode;
+
+   QMutexLocker lockerRead(&this->readLock);
+   delete this->fileInReadMode;
+
    L_DEBU(QString("File deleted : %1").arg(this->getFullPath()));
 }
 
@@ -291,6 +297,7 @@ void File::dataWriterDeleted()
    if (--this->numDataWriter == 0)
    {
       delete this->fileInWriteMode;
+      this->fileInWriteMode = 0;
    }
 }
 
@@ -321,7 +328,7 @@ qint64 File::write(const char* buffer, int nbBytes, qint64 offset)
 {
    QMutexLocker locker(&this->writeLock);
 
-   if (this->numDataWriter == 0 || offset >= this->size || !this->fileInWriteMode->seek(offset))
+   if (!this->fileInWriteMode || offset >= this->size || !this->fileInWriteMode->seek(offset))
       throw IOErrorException();
 
    qint64 maxSize = this->size - offset;
@@ -345,7 +352,7 @@ qint64 File::read(char* buffer, qint64 offset, int maxBytesToRead)
 {
    QMutexLocker locker(&this->readLock);
 
-   if (this->numDataReader == 0 || offset >= this->size)
+   if (!this->fileInReadMode || offset >= this->size)
       return 0;
 
    if (!this->fileInReadMode->seek(offset))
@@ -647,7 +654,7 @@ void File::removeUnfinishedFiles()
       this->fileInWriteMode = 0;
 
       if (!QFile::remove(this->getFullPath()))
-         L_ERRO(QString("File::~File() : unable to delete an unfinished file : %1").arg(this->getFullPath()));
+         L_WARN(QString("File::removeUnfinishedFiles() : unable to delete an unfinished file : %1").arg(this->getFullPath()));
    }
 }
 

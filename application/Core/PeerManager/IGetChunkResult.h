@@ -42,7 +42,7 @@ namespace PM
       virtual void start() = 0;
 
       /**
-        * If there is an error during the streaming, it can reported by calling this method.
+        * If there is an error during the streaming, it can be reported by calling this method.
         */
       virtual void setStatus(ISocket::FinishedStatus status) = 0;
 

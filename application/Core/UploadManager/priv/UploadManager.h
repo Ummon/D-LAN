@@ -55,7 +55,7 @@ namespace UM
 
       QSharedPointer<PM::IPeerManager> peerManager;
 
-      QList<Upload*> uploads;
+      QList< QSharedPointer<Upload> > uploads;
 
       Common::ThreadPool threadPool;
 

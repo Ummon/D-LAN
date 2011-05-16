@@ -29,6 +29,8 @@
 #include <Common/TransferRateCalculator.h>
 #include <Common/Hash.h>
 #include <Common/Uncopyable.h>
+#include <Common/IRunnable.h>
+#include <Common/ThreadPool.h>
 #include <Core/FileManager/IChunk.h>
 #include <Core/FileManager/IDataWriter.h>
 #include <Core/PeerManager/IPeerManager.h>
@@ -42,7 +44,7 @@ namespace PM { class IPeer; }
 
 namespace DM
 {
-   class ChunkDownload : public QThread, public IChunkDownload, Common::Uncopyable
+   class ChunkDownload : public QObject, public Common::IRunnable, public IChunkDownload, Common::Uncopyable
    {
       static const int MINIMUM_DELTA_TIME_TO_COMPUTE_SPEED;
 
@@ -55,6 +57,10 @@ namespace DM
 
       void addPeerID(const Common::Hash& peerID);
       void rmPeerID(const Common::Hash& peerID);
+
+      void init(QThread* thread);
+      void run();
+      void finished();
 
       void setChunk(QSharedPointer<FM::IChunk> chunk);
       QSharedPointer<FM::IChunk> getChunk() const;
@@ -70,7 +76,7 @@ namespace DM
       int getDownloadedBytes() const;
       QList<Common::Hash> getPeers();
 
-      bool startDownloading();
+      bool startDownloading(Common::ThreadPool* threadPool);
       void tryToRemoveItsIncompleteFile();
 
    signals:
@@ -79,9 +85,6 @@ namespace DM
         * Emitted when a downlad is terminated (or aborted).
         */
       void downloadFinished();
-
-   protected:
-      void run();
 
    private slots:
       void result(const Protos::Core::GetChunkResult& result);
@@ -107,6 +110,7 @@ namespace DM
       QSharedPointer<PM::ISocket> socket;
 
       QThread* mainThread; // Only use to move the socket from and to the main thread.
+      Common::ThreadPool* threadPool;
 
       int chunkSize;
       QSharedPointer<PM::IGetChunkResult> getChunkResult;

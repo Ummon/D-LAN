@@ -24,6 +24,7 @@
 namespace Common
 {
    /**
+     * A runnable object is executed in a dedicated thead from a thread pool, see the class Common::ThreadPool.
      * Methods 'init(..)' and 'finished()' are called in the main thread. Method 'run()' is called in a thread dedicated to the runnable object.
      */
    class IRunnable
@@ -32,9 +33,10 @@ namespace Common
       virtual ~IRunnable() {}
 
       virtual void init(QThread* thread) = 0;
+
       virtual void run() = 0;
+
       virtual void finished() = 0;
-      //virtual void stop() = 0;
    };
 }
 
