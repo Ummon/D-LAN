@@ -115,6 +115,9 @@ QWeakPointer<IRunnable> Thread::getRunnable() const
   * the thread is deleted.
   */
 
+/**
+  * Default life time: 1 min.
+  */
 ThreadPool::ThreadPool(int nbMinThread, int threadInactiveLifetime) :
    nbMinThread(nbMinThread), threadInactiveLifetime(threadInactiveLifetime)
 {
