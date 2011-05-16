@@ -36,7 +36,7 @@ DownloadManager::DownloadManager(QSharedPointer<FM::IFileManager> fileManager, Q
    NUMBER_OF_DOWNLOADER(static_cast<int>(SETTINGS.get<quint32>("number_of_downloader"))),
    fileManager(fileManager),
    peerManager(peerManager),
-   threadPool(NUMBER_OF_DOWNLOADER, SETTINGS.get<quint32>("download_thread_lifetime")),
+   threadPool(NUMBER_OF_DOWNLOADER),
    numberOfDownloadThreadRunning(0),
    queueChanged(false)
 {
