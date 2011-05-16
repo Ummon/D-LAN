@@ -1,0 +1,13 @@
+<erl>
+   -import(d_lan_lang, [tr/3, tr/4]).
+   
+   out(A) ->
+      {ehtml,
+         [
+            {h2, [], tr(donate, title, A)},
+            {p, [], [{img, [{src, "img/bitcoin_icon.png"}]}, tr(donate, bitcoin_address, A), {a, [{href, "bitcoin:1H5CjVZj6Sm4mYxevYSbiMYdv6kgdD1ThX"}], "1H5CjVZj6Sm4mYxevYSbiMYdv6kgdD1ThX"}]}
+         ]
+      }.
+
+</erl>
+

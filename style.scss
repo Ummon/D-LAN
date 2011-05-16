@@ -79,14 +79,14 @@ h1 {
    font-style: italic;
    font-size: 16px;
    margin-top: 7px;
-   margin-bottom: 8px;
+   margin-bottom: 10px;
 }
 
 h2 {
    font-style: italic;
    font-size: 14px;
    margin-top: 3px;
-   margin-bottom: 8px;
+   margin-bottom: 10px;
 }
 
 h3 {
@@ -184,7 +184,7 @@ p {
    #content {
       @include central-part;
       padding-top: 15px;
-      padding-bottom: 15px;      
+      padding-bottom: 15px;    
       a {
          text-shadow: 0 0 3px #FFFFFF;
          font-weight: bold;
@@ -235,6 +235,12 @@ p {
          }
          .answer {
             margin-left: 15px;
+         }
+      }
+      &.donate {         
+         img {
+            vertical-align: text-bottom;
+            margin-right: 10px;
          }
       }
       &.stats {

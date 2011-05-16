@@ -200,6 +200,14 @@ translate(fr, about, tech_used_website) ->
 
 %%%%%%%%%%
 
+translate(en, donate, title) -> "The more you give, the more you get!";
+translate(fr, donate, title) -> "Au plus vous donnez au plus vous avez!";
+
+translate(en, donate, bitcoin_address) -> "Bitcoin address: ";
+translate(fr, donate, bitcoin_address) -> "Adresse bitcoin : ";
+
+%%%%%%%%%%
+
 translate(en, gallery, browsing) -> "Browsing";
 translate(fr, gallery, browsing) -> "Navigation";
 

@@ -8,7 +8,7 @@
 pages() ->
    [home, features, faq, about].
    
-hidden_pages() -> [stats].
+hidden_pages() -> [stats, donate].
    
 % Return the current page depending the page parameters -> atom()
 current_page(A) ->
@@ -62,11 +62,11 @@ download_button(A, Platform) ->
    Filename = lists:last(lists:sort(lists:filter(fun(F) -> string:right(F, 4) =:= ".exe" end, Filenames))),
    {match, [Version, Version_tag, Year, Month, Day]} = re:run(Filename, "D-LAN-((?:\\d|\\.)+)([^-]*)-(\\d+)-(\\d+)-(\\d+).*", [{capture, all_but_first, list}]),
    File_size = filelib:file_size(Relase_platform_folder ++ "/" ++ Filename),
-   File_size_kb = trunc(File_size / 1024),
+   File_size_mb = float(File_size) / 1048576,
    {'div', [{class, "download"}],
       [{a, [{href, atom_to_list(current_page(A)) ++ ".html&amp;dl=" ++ Filename ++ "&amp;platform=" ++ Platform}], 
          [
-            {em, [], [tr(download_button, download, A) ++ " (" ++ integer_to_list(trunc(File_size_kb / 1024)) ++ "." ++ integer_to_list(trunc((File_size_kb rem 1024) / 100)) ++ " MiB)"]}, {br},
+            {em, [], [tr(download_button, download, A) ++ " (" ++ io_lib:format("~.2f", [File_size_mb]) ++ " MiB)"]}, {br},
             tr(download_button, version, A, [Version ++ if Version_tag =/= [] -> " " ++ Version_tag; true -> [] end, Platform_maj]), {br},
             tr(download_button, released, A, [httpd_util:month(list_to_integer(Month)) ++ " " ++ Day ++ " " ++ Year])
             %"Number of download : " ++ integer_to_list(d_lan_download_counter:nb_download(Filename))
