@@ -59,16 +59,11 @@ ChunkDownload::~ChunkDownload()
       this->downloading = false;
       this->mutex.unlock();
 
-      this->threadPool->wait(this->ownRef);
+      this->threadPool->wait(this);
 
       this->downloadingEnded();
    }
    L_DEBU(QString("ChunkDownload deleted : %1").arg(this->chunkHash.toStr()));
-}
-
-void ChunkDownload::setRef(QWeakPointer<ChunkDownload> ownRef)
-{
-   this->ownRef = ownRef;
 }
 
 Common::Hash ChunkDownload::getHash() const
@@ -383,7 +378,7 @@ void ChunkDownload::stream(QSharedPointer<PM::ISocket> socket)
    this->socket = socket;
    this->socket->setReadBufferSize(SETTINGS.get<quint32>("socket_buffer_size"));
 
-   threadPool->run(this->ownRef);
+   threadPool->run(this);
 }
 
 void ChunkDownload::getChunkTimeout()

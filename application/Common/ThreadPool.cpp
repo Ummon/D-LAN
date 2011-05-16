@@ -129,6 +129,9 @@ ThreadPool::~ThreadPool()
       delete thread;
 }
 
+/**
+  * @param runnable A QWeakPointer is needed to know if the object is deleted. A 'QObject' can be given without being itself a 'QWeakPointer'.
+  */
 void ThreadPool::run(QWeakPointer<IRunnable> runnable)
 {
    Thread* thread;

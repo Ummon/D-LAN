@@ -53,8 +53,6 @@ namespace DM
       ChunkDownload(QSharedPointer<PM::IPeerManager> peerManager, OccupiedPeers& occupiedPeersDownloadingChunk, Common::Hash chunkHash, Common::TransferRateCalculator& transferRateCalculator);
       ~ChunkDownload();
 
-      void setRef(QWeakPointer<ChunkDownload> ownRef);
-
       Common::Hash getHash() const;
 
       void addPeerID(const Common::Hash& peerID);
@@ -98,8 +96,6 @@ namespace DM
    private:
       PM::IPeer* getTheFastestFreePeer();
       int getNumberOfFreePeer();
-
-      QWeakPointer<ChunkDownload> ownRef;
 
       QSharedPointer<PM::IPeerManager> peerManager; // To retrieve the peers from their ID.
 
