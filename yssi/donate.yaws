@@ -5,7 +5,7 @@
       {ehtml,
          [
             {h2, [], tr(donate, title, A)},
-            {p, [], [{img, [{src, "img/bitcoin_icon.png"}]}, tr(donate, bitcoin_address, A), {a, [{href, "bitcoin:1H5CjVZj6Sm4mYxevYSbiMYdv6kgdD1ThX"}], "1H5CjVZj6Sm4mYxevYSbiMYdv6kgdD1ThX"}]}
+            {p, [], [{a, [{href, "http://www.bitcoin.org"}], ["<img src=\"img/bitcoin_icon.png\" alt=\"Bitcoin\" />"]}, tr(donate, bitcoin_address, A), {a, [{href, "bitcoin:1H5CjVZj6Sm4mYxevYSbiMYdv6kgdD1ThX"}], "1H5CjVZj6Sm4mYxevYSbiMYdv6kgdD1ThX"}]}
          ]
       }.
 
