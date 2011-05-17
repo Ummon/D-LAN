@@ -39,6 +39,7 @@ FileDownload::FileDownload(
    QSharedPointer<PM::IPeerManager> peerManager,
    OccupiedPeers& occupiedPeersAskingForHashes,
    OccupiedPeers& occupiedPeersDownloadingChunk,
+   Common::ThreadPool& threadPool,
    Common::Hash peerSourceID,
    const Protos::Common::Entry& remoteEntry,
    const Protos::Common::Entry& localEntry,
@@ -51,6 +52,7 @@ FileDownload::FileDownload(
    NB_CHUNK(this->remoteEntry.size() / SETTINGS.get<quint32>("chunk_size") + (this->remoteEntry.size() % SETTINGS.get<quint32>("chunk_size") == 0 ? 0 : 1)),
    occupiedPeersAskingForHashes(occupiedPeersAskingForHashes),
    occupiedPeersDownloadingChunk(occupiedPeersDownloadingChunk),
+   threadPool(threadPool),
    nbHashesKnown(0),
    fileCreated(false),
    transferRateCalculator(transferRateCalculator)
@@ -68,7 +70,7 @@ FileDownload::FileDownload(
    for (int i = 0; i < this->remoteEntry.chunk_size(); i++)
    {
       Common::Hash chunkHash(this->remoteEntry.chunk(i).hash().data());
-      QSharedPointer<ChunkDownload> chunkDownload = QSharedPointer<ChunkDownload>(new ChunkDownload(this->peerManager, this->occupiedPeersDownloadingChunk, chunkHash, this->transferRateCalculator));
+      QSharedPointer<ChunkDownload> chunkDownload = QSharedPointer<ChunkDownload>(new ChunkDownload(this->peerManager, this->occupiedPeersDownloadingChunk, this->transferRateCalculator, this->threadPool, chunkHash));
 
       this->chunkDownloads << chunkDownload;
       this->connectChunkDownloadSignals(this->chunkDownloads.last());
@@ -350,7 +352,7 @@ void FileDownload::nextHash(const Common::Hash& hash)
    }
    else
    {
-      QSharedPointer<ChunkDownload> chunkDownload = QSharedPointer<ChunkDownload>(new ChunkDownload(this->peerManager, this->occupiedPeersDownloadingChunk, hash, transferRateCalculator));
+      QSharedPointer<ChunkDownload> chunkDownload = QSharedPointer<ChunkDownload>(new ChunkDownload(this->peerManager, this->occupiedPeersDownloadingChunk, this->transferRateCalculator, this->threadPool, hash));
 
       // If the file has already been created, the chunks are known.
       if (!this->chunksWithoutDownload.isEmpty())

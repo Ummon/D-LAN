@@ -127,6 +127,7 @@ Download* DownloadManager::addDownload(const Protos::Common::Entry& remoteEntry,
             this->peerManager,
             this->occupiedPeersAskingForHashes,
             this->occupiedPeersDownloadingChunk,
+            this->threadPool,
             peerSource,
             remoteEntry,
             localEntry,
@@ -212,11 +213,6 @@ QList< QSharedPointer<IChunkDownload> > DownloadManager::getUnfinishedChunks(int
 int DownloadManager::getDownloadRate()
 {
    return this->transferRateCalculator.getTransferRate();
-}
-
-Common::ThreadPool& DownloadManager::getThreadPool()
-{
-   return this->threadPool;
 }
 
 void DownloadManager::peerBecomesAvailable(PM::IPeer* peer)
@@ -340,7 +336,7 @@ void DownloadManager::scanTheQueue()
 
       connect(chunkDownload.data(), SIGNAL(downloadFinished()), this, SLOT(chunkDownloadFinished()), Qt::DirectConnection);
 
-      if (chunkDownload->startDownloading(&this->threadPool))
+      if (chunkDownload->startDownloading())
       {
          this->numberOfDownloadThreadRunning++;
          numberOfDownloadThreadRunningCopy = this->numberOfDownloadThreadRunning;

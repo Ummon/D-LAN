@@ -36,15 +36,15 @@ using namespace DM;
 
 const int ChunkDownload::MINIMUM_DELTA_TIME_TO_COMPUTE_SPEED(100); // [ms]
 
-ChunkDownload::ChunkDownload(QSharedPointer<PM::IPeerManager> peerManager, OccupiedPeers& occupiedPeersDownloadingChunk, Common::Hash chunkHash, Common::TransferRateCalculator& transferRateCalculator) :
+ChunkDownload::ChunkDownload(QSharedPointer<PM::IPeerManager> peerManager, OccupiedPeers& occupiedPeersDownloadingChunk, Common::TransferRateCalculator& transferRateCalculator, Common::ThreadPool& threadPool, Common::Hash chunkHash) :
    peerManager(peerManager),
    occupiedPeersDownloadingChunk(occupiedPeersDownloadingChunk),
+   transferRateCalculator(transferRateCalculator),
+   threadPool(threadPool),
    chunkHash(chunkHash),
    socket(0),
-   threadPool(0),
    downloading(false),
    networkTransferStatus(PM::ISocket::SFS_OK),
-   transferRateCalculator(transferRateCalculator),
    mutex(QMutex::Recursive)
 {
    L_DEBU(QString("New ChunkDownload : %1").arg(this->chunkHash.toStr()));
@@ -58,7 +58,7 @@ ChunkDownload::~ChunkDownload()
       this->downloading = false;
       this->mutex.unlock();
 
-      this->threadPool->wait(this);
+      this->threadPool.wait(this);
 
       this->downloadingEnded();
    }
@@ -310,15 +310,13 @@ QList<Common::Hash> ChunkDownload::getPeers()
   * Tell the chunkDownload to download the chunk from one of its peer.
   * @return true if the downloading has been started.
   */
-bool ChunkDownload::startDownloading(Common::ThreadPool* threadPool)
+bool ChunkDownload::startDownloading()
 {
    if (this->chunk.isNull())
    {
       L_WARN(QString("Unable to download without the chunk. Hash : %1").arg(this->chunkHash.toStr()));
       return false;
    }
-
-   this->threadPool = threadPool;
 
    this->currentDownloadingPeer = this->getTheFastestFreePeer();
    if (!this->currentDownloadingPeer)
@@ -377,7 +375,7 @@ void ChunkDownload::stream(QSharedPointer<PM::ISocket> socket)
    this->socket = socket;
    this->socket->setReadBufferSize(SETTINGS.get<quint32>("socket_buffer_size"));
 
-   threadPool->run(this);
+   threadPool.run(this);
 }
 
 void ChunkDownload::getChunkTimeout()

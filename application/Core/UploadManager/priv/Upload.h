@@ -54,7 +54,6 @@ namespace UM
 
    private:
       mutable QMutex mutex;
-      bool toStop;
 
       const quint64 ID; ///< Each uploader has an ID to identified it.
       QSharedPointer<FM::IChunk> chunk; ///< The chunk uploaded.
@@ -64,6 +63,7 @@ namespace UM
       Common::TransferRateCalculator& transferRateCalculator;
 
       bool networkError;
+      bool toStop;
    };
 }
 
