@@ -64,7 +64,6 @@ namespace UM
       Common::TransferRateCalculator& transferRateCalculator;
 
       bool networkError;
-      QThread* mainThread;
    };
 }
 

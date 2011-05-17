@@ -109,7 +109,6 @@ namespace DM
 
       QSharedPointer<PM::ISocket> socket;
 
-      QThread* mainThread; // Only use to move the socket from and to the main thread.
       Common::ThreadPool* threadPool;
 
       int chunkSize;
