@@ -77,6 +77,8 @@ Hash::Hash(const char* h)
   */
 Hash::Hash(const std::string& str)
 {
+   Q_ASSERT_X(static_cast<int>(str.size()) == HASH_SIZE, "Hash::Hash", QString("The given std::string must have a size of %1").arg(HASH_SIZE).toUtf8().constData());
+
    this->newData();
    if (static_cast<int>(str.size()) != HASH_SIZE)
       memset(this->data->hash, 0, HASH_SIZE);
@@ -94,7 +96,10 @@ Hash::Hash(const QByteArray& a)
    Q_ASSERT_X(a.size() == HASH_SIZE, "Hash::Hash", QString("The given QByteArray must have a size of %1").arg(HASH_SIZE).toUtf8().constData());
 
    this->newData();
-   memcpy(this->data->hash, a.constData(), HASH_SIZE);
+   if (a.size() != HASH_SIZE)
+      memset(this->data->hash, 0, HASH_SIZE);
+   else
+      memcpy(this->data->hash, a.constData(), HASH_SIZE);
 }
 
 /**
