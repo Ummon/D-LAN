@@ -202,7 +202,7 @@ void UDPListener::processPendingMulticastDatagrams()
                QList<Common::Hash> hashes;
                hashes.reserve(IMAliveMessage.chunk_size());
                for (int i = 0; i < IMAliveMessage.chunk_size(); i++)
-                  hashes << Common::Hash(IMAliveMessage.chunk(i).hash().data());
+                  hashes << IMAliveMessage.chunk(i).hash();
 
                QBitArray bitArray = this->fileManager->haveChunks(hashes);
 

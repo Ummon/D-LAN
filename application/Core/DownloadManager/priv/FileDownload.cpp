@@ -69,7 +69,7 @@ FileDownload::FileDownload(
    // We create a ChunkDownload for each known hash in the entry.
    for (int i = 0; i < this->remoteEntry.chunk_size(); i++)
    {
-      Common::Hash chunkHash(this->remoteEntry.chunk(i).hash().data());
+      Common::Hash chunkHash(this->remoteEntry.chunk(i).hash());
       QSharedPointer<ChunkDownload> chunkDownload = QSharedPointer<ChunkDownload>(new ChunkDownload(this->peerManager, this->occupiedPeersDownloadingChunk, this->transferRateCalculator, this->threadPool, chunkHash));
 
       this->chunkDownloads << chunkDownload;
@@ -438,7 +438,7 @@ void FileDownload::updateStatus()
 
    if (this->status == COMPLETE)
    {
-      const QString sharedDir = this->fileManager->getSharedDir(this->localEntry.shared_dir().id().hash().data());
+      const QString sharedDir = this->fileManager->getSharedDir(this->localEntry.shared_dir().id().hash());
       L_USER(QString("File completed: %1%2%3")
          .arg(sharedDir.left(sharedDir.size() - 1)) // remove the ending '/'.
          .arg(Common::ProtoHelper::getStr(this->localEntry, &Protos::Common::Entry::path))

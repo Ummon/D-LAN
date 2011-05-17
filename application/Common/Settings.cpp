@@ -351,7 +351,7 @@ void Settings::get(const google::protobuf::FieldDescriptor* fieldDescriptor, QBy
 void Settings::get(const google::protobuf::FieldDescriptor* fieldDescriptor, Hash& hash) const
 {
    Q_ASSERT(fieldDescriptor);
-   hash = static_cast<const Protos::Common::Hash&>(this->settings->GetReflection()->GetMessage(*this->settings, fieldDescriptor)).hash().data();
+   hash = static_cast<const Protos::Common::Hash&>(this->settings->GetReflection()->GetMessage(*this->settings, fieldDescriptor)).hash();
 }
 
 void Settings::setDefaultValues()

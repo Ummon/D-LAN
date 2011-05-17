@@ -66,6 +66,25 @@ Hash::Hash(const char* h)
 }
 
 /**
+  * Build a new hash from a string.
+  *
+  * This two following lines are nearly the same except the second will checks the size of the
+  * string and set the hash to null if not equals to 'HASH_SIZE'.
+  *
+  * // 'str' is a std:string.
+  * Hash h(str.data()); // Use the constructor 'Hash::Hash(const char* h)'.
+  * Hash h(str); // Use this constructor, safer.
+  */
+Hash::Hash(const std::string& str)
+{
+   this->newData();
+   if (static_cast<int>(str.size()) != HASH_SIZE)
+      memset(this->data->hash, 0, HASH_SIZE);
+   else
+      memcpy(this->data->hash, str.data(), HASH_SIZE);
+}
+
+/**
   * Build a new hash from a QByteArray.
   * 'a' must have a length equal or bigger to HASH_SIZE!
   * The data are copied, no pointer is keept to 'a'.
@@ -266,3 +285,4 @@ Common::Hash Hasher::hashWithSalt(const QString& str)
    hasher.addData(data.constData(), data.size());
    return hasher.getResult();
 }
+

@@ -247,7 +247,7 @@ void DownloadManager::newEntries(const Protos::Common::Entries& remoteEntries)
       {
          const Protos::Common::Entry& localEntry = dirDownload->getLocalEntry();
          QString relativePath = Common::ProtoHelper::getStr(localEntry, &Protos::Common::Entry::path).append(Common::ProtoHelper::getStr(localEntry, &Protos::Common::Entry::name)).append("/");
-         this->addDownload(remoteEntries.entry(n), dirDownload->getPeerSourceID(), localEntry.has_shared_dir() ? localEntry.shared_dir().id().hash().data() : Common::Hash(), relativePath, false, position++);
+         this->addDownload(remoteEntries.entry(n), dirDownload->getPeerSourceID(), localEntry.has_shared_dir() ? localEntry.shared_dir().id().hash() : Common::Hash(), relativePath, false, position++);
       }
 
    // Then directories. TODO : code to refactor with the one above.
@@ -256,7 +256,7 @@ void DownloadManager::newEntries(const Protos::Common::Entries& remoteEntries)
       {
          const Protos::Common::Entry& localEntry = dirDownload->getLocalEntry();
          QString relativePath = Common::ProtoHelper::getStr(localEntry, &Protos::Common::Entry::path).append(Common::ProtoHelper::getStr(localEntry, &Protos::Common::Entry::name)).append("/");
-         this->addDownload(remoteEntries.entry(n), dirDownload->getPeerSourceID(), localEntry.has_shared_dir() ? localEntry.shared_dir().id().hash().data() : Common::Hash(), relativePath, false, position++);
+         this->addDownload(remoteEntries.entry(n), dirDownload->getPeerSourceID(), localEntry.has_shared_dir() ? localEntry.shared_dir().id().hash() : Common::Hash(), relativePath, false, position++);
       }
 
    delete dirDownload;
@@ -367,7 +367,7 @@ void DownloadManager::loadQueueFromFile()
    for (int i = 0; i < savedQueue.entry_size(); i++)
    {
       const Protos::Queue::Queue_Entry& entry = savedQueue.entry(i);
-      this->addDownload(entry.remote_entry(), entry.local_entry(), Common::Hash(entry.peer_id().hash().data()), entry.complete());
+      this->addDownload(entry.remote_entry(), entry.local_entry(), Common::Hash(entry.peer_id().hash()), entry.complete());
    }
 
    this->saveTimer.start();

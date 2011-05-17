@@ -117,7 +117,7 @@ void PeerListModel::setPeers(const google::protobuf::RepeatedPtrField<Protos::GU
    {
       Peer peer =
          Peer(
-            peers.Get(i).peer_id().hash().data(),
+            peers.Get(i).peer_id().hash(),
             ProtoHelper::getStr(peers.Get(i), &Protos::GUI::State_Peer::nick),
             peers.Get(i).sharing_amount()
          );

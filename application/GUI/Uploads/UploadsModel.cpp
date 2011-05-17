@@ -55,7 +55,7 @@ QVariant UploadsModel::data(const QModelIndex& index, int role) const
          case 0: return Common::ProtoHelper::getStr(currentUpload.file(), &Protos::Common::Entry::name);
          case 1: return QString("%1/%2").arg(currentUpload.current_part()).arg(currentUpload.nb_part());
          case 2: return currentUpload.progress();
-         case 3: return QString("[").append(this->peerListModel.getNick(currentUpload.peer_id().hash().data())).append("]");
+         case 3: return QString("[").append(this->peerListModel.getNick(currentUpload.peer_id().hash())).append("]");
          default: return QVariant();
          }
       }
