@@ -37,7 +37,7 @@ menu(A) ->
    }.
 
 image(Filename, Caption) ->
-   {'div', [{class, "gallery"}],
+   {'div', [{class, "box gallery"}],
       [
          {a, [{href, "img/gallery/" ++ Filename ++ ".png"}, {rel, "group"}, {title, Caption}],
                "<img src = \"img/gallery/" ++ Filename ++ "_thumb.png\" alt=\"" ++ Caption ++ "\" />"

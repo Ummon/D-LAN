@@ -200,8 +200,11 @@ translate(fr, about, tech_used_website) ->
 
 %%%%%%%%%%
 
-translate(en, donate, title) -> "The more you give, the more you get!";
-translate(fr, donate, title) -> "Au plus vous donnez au plus vous avez!";
+translate(en, donate, title) -> "Support us";
+translate(fr, donate, title) -> "Soutenez-nous";
+
+translate(en, donate, intro) -> "If you like this project and want to see it grow, support us!";
+translate(fr, donate, intro) -> "Si vous aimez ce projet que vous voulez le voir grandir, soutenez-nous !";
 
 translate(en, donate, bitcoin_address) -> "Bitcoin address: ";
 translate(fr, donate, bitcoin_address) -> "Adresse bitcoin : ";

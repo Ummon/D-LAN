@@ -104,20 +104,23 @@ p {
   clear: both;
 }
 
-.gallery {
+.box {
    margin: 10px;
    padding: 12px;
    background-color: rgba(255, 255, 255, $opacity2);   
    @include border-radius(16px);
+}
+.ie .box {
+   background-color: $color-bg-box;
+}
+
+.gallery {   
    p {
       font-style: italic;
       font-size: 11px;
       margin-left: 6px;
       margin-bottom: 0px;
    }
-}
-.ie .gallery {
-   background-color: $color-bg-box;
 }
 
 #header {
@@ -246,10 +249,18 @@ p {
             margin-left: 15px;
          }
       }
-      &.donate {         
+      &.donate {
          img {
-            vertical-align: text-bottom;
+            &.bitcoin {
+               vertical-align: -10px;
+            }
+            &.flattr {
+               vertical-align: -5px;
+            }
             margin-right: 10px;
+         }
+         input {
+            font-family: Monaco, "Courier New", "DejaVu Sans Mono", "Bitstream Vera Sans Mono", monospace;
          }
       }
       &.stats {

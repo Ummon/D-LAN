@@ -79,7 +79,7 @@
                out(A) -> d_lan_common:menu(A).
             </erl>
          </ul>
-         <a id="logo" href="/"><img src="img/logo.png" /></a>
+         <a id="logo" href="/"><img src="img/logo.png" alt="logo" /></a>
       </div>
       
       <div id="content-bg">
