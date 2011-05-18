@@ -8,14 +8,14 @@
             {p, [], tr(donate, intro, A)},
             {'div', [{class, "box"}], [
                {a, [{href, "http://www.bitcoin.org"}], {img, [{src, "img/bitcoin_icon.png"}, {alt, "Bitcoin"}, {class, "bitcoin"}]}},
-               "Bitcoin address: ",
+               tr(donate, bitcoin_address, A),
                {input, [{class, "bitcoin-address-field"}, {type, "text"}, {spellcheck, "false"}, {size, 45}, {value, "1H5CjVZj6Sm4mYxevYSbiMYdv6kgdD1ThX"}]}
             ]}, 
             {'div', [{class, "box"}], [
                {a, [{href, "http://flattr.com/thing/150434/D-LAN"}, {target, "_blank"}],
                   {img, [{src, "http://api.flattr.com/button/flattr-badge-large.png"}, {alt, "Flattr this"}, {title, "Flattr this"}, {class, "flattr"}]}
                },               
-               "Flattr is a social micro-payment system."
+               tr(donate, flattr_info, A)
             ]}
          ]
       }.
