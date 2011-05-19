@@ -74,8 +74,12 @@ translate(fr, features, feat_8) -> "D-LAN peut être lancé sans interface graph
 translate(en, features, feat_9) -> "Open source. Code source distributed under GPLv3 license.";
 translate(fr, features, feat_9) -> "Open source. Le code est distribué sous la licence GPLv3.";
 
+translate(en, features, feat_10) -> "Free of any sort of ads or <a href=\"http://en.wikipedia.org/wiki/Malware\">malwares</a>.";
+translate(fr, features, feat_10) -> "Ne contient aucune sorte de publicité ou de <a href=\"http://fr.wikipedia.org/wiki/Logiciel_malveillant\">'malware'</a>.";
+
 translate(en, features, help_us) -> "Don't forget to <a href=\"~s\">support us</a>. It will help to maintain and add new features.";
 translate(fr, features, help_us) -> "N'oubliez pas de nous <a href=\"~s\">aider</a>, cela permettra la maintenance et l'ajout de nouvelles fonctionnalités.";
+
 
 %%%%%%%%%%
 
