@@ -48,9 +48,9 @@
    
       <div id="header">      
          <ul id="external-links">
-            <li><a href="https://github.com/Ummon/D-LAN">github</a></li>
-            <li><a href="http://dev.d-lan.net/projects/pmp/wiki">wiki</a></li>
-            <li><a href="http://dev.d-lan.net/projects/pmp/boards">forums</a></li>
+            <li><a href="https://github.com/Ummon/D-LAN" target="_blank">github</a></li>
+            <li><a href="http://dev.d-lan.net/projects/pmp/wiki" target="_blank">wiki</a></li>
+            <li><a href="http://dev.d-lan.net/projects/pmp/boards" target="_blank">forums</a></li>
             <li><a class="donate-button" href="donate.html"></a></li>
             <li><a class="FlattrButton" style="display:none;" data-flattr-button="compact" href="http://www.d-lan.net"></a></li>
          </ul>
