@@ -47,9 +47,10 @@ Core::Core(bool resetSettings)
       {
          if (i == 1)
          {
-            QString roamingSystem = Common::Global::getDataSystemFolder(Common::Global::ROAMING);
+            QString roamingSystem = Common::Global::getDataServiceFolder(Common::Global::ROAMING);
             if (!QDir(roamingSystem).exists())
                break;
+
             Common::Global::setDataFolder(Common::Global::ROAMING, roamingSystem);
          }
 

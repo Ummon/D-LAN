@@ -66,6 +66,7 @@ namespace Common
       static void setDataFolder(DataFolderType type, const QString& folder);
       static void setDataFolderToDefault(DataFolderType type);
 
+      static QString getDataServiceFolder(DataFolderType type);
       static QString getDataSystemFolder(DataFolderType type);
 
       static QString getCurrenUserName();
