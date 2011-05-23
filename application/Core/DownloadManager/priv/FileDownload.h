@@ -24,6 +24,8 @@
 
 #include <Libs/MersenneTwister.h>
 
+#include <Common/ThreadPool.h>
+
 #include <Core/FileManager/IFileManager.h>
 #include <Core/FileManager/IChunk.h>
 #include <Core/PeerManager/IPeerManager.h>
@@ -47,6 +49,7 @@ namespace DM
          QSharedPointer<PM::IPeerManager> peerManager,
          OccupiedPeers& occupiedPeersAskingForHashes,
          OccupiedPeers& occupiedPeersDownloadingChunk,
+         Common::ThreadPool& threadPool,
          Common::Hash peerSourceID,
          const Protos::Common::Entry& remoteEntry,
          const Protos::Common::Entry& localEntry,
@@ -100,6 +103,8 @@ namespace DM
 
       OccupiedPeers& occupiedPeersAskingForHashes;
       OccupiedPeers& occupiedPeersDownloadingChunk;
+
+      Common::ThreadPool& threadPool;
 
       int nbHashesKnown;
       QSharedPointer<PM::IGetHashesResult> getHashesResult;

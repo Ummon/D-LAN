@@ -50,7 +50,7 @@ namespace DM
 
       Q_OBJECT
    public:
-      ChunkDownload(QSharedPointer<PM::IPeerManager> peerManager, OccupiedPeers& occupiedPeersDownloadingChunk, Common::Hash chunkHash, Common::TransferRateCalculator& transferRateCalculator);
+      ChunkDownload(QSharedPointer<PM::IPeerManager> peerManager, OccupiedPeers& occupiedPeersDownloadingChunk, Common::TransferRateCalculator& transferRateCalculator, Common::ThreadPool& threadPool, Common::Hash chunkHash);
       ~ChunkDownload();
 
       Common::Hash getHash() const;
@@ -76,7 +76,7 @@ namespace DM
       int getDownloadedBytes() const;
       QList<Common::Hash> getPeers();
 
-      bool startDownloading(Common::ThreadPool* threadPool);
+      bool startDownloading();
       void tryToRemoveItsIncompleteFile();
 
    signals:
@@ -98,8 +98,9 @@ namespace DM
       int getNumberOfFreePeer();
 
       QSharedPointer<PM::IPeerManager> peerManager; // To retrieve the peers from their ID.
-
       OccupiedPeers& occupiedPeersDownloadingChunk; // The peers from where we downloading.
+      Common::TransferRateCalculator& transferRateCalculator;
+      Common::ThreadPool& threadPool;
 
       Common::Hash chunkHash;
       QSharedPointer<FM::IChunk> chunk;
@@ -109,16 +110,11 @@ namespace DM
 
       QSharedPointer<PM::ISocket> socket;
 
-      QThread* mainThread; // Only use to move the socket from and to the main thread.
-      Common::ThreadPool* threadPool;
-
       int chunkSize;
       QSharedPointer<PM::IGetChunkResult> getChunkResult;
 
       bool downloading;
       PM::ISocket::FinishedStatus networkTransferStatus;
-
-      Common::TransferRateCalculator& transferRateCalculator;
 
       mutable QMutex mutex; // To protect 'peers' and 'downloading'.
    };

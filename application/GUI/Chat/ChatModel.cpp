@@ -115,7 +115,7 @@ void ChatModel::newChatMessages(const Protos::GUI::EventChatMessages& messages)
    this->beginInsertRows(QModelIndex(), this->messages.size(), this->messages.size() + messages.message_size() - 1);
    for (int i = 0; i < messages.message_size(); i++)
    {
-      const Common::Hash peerID(messages.message(i).peer_id().hash().data());
+      const Common::Hash peerID(messages.message(i).peer_id().hash());
       const QString nick = this->peerListModel.getNick(peerID);
       this->messages << Message(
          peerID,

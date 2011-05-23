@@ -21,7 +21,9 @@
 
 #define WITH_MUTEX false
 
-#include "Uncopyable.h"
+#include <string>
+
+#include <Common/Uncopyable.h>
 
 #include <QString>
 #include <QByteArray>
@@ -47,7 +49,9 @@ namespace Common
 
       Hash();
       Hash(const Hash& h);
-      Hash(const char* h);
+
+      explicit Hash(const char* h); // It's too dangerous to construct an implicit Hash from a const char*.
+      Hash(const std::string& str);
       Hash(const QByteArray& a);
 
       ~Hash();

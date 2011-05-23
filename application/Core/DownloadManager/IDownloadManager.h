@@ -43,7 +43,6 @@ namespace DM
         */
       virtual void addDownload(const Protos::Common::Entry& remoteEntry, const Common::Hash& peerSource) = 0;
 
-
       virtual void addDownload(const Protos::Common::Entry& remoteEntry, const Common::Hash& peerSource, const Common::Hash& destinationDirectoryID, const QString& relativePath) = 0;
 
       /**

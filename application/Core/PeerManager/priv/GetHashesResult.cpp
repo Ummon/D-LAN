@@ -59,7 +59,7 @@ void GetHashesResult::newMessage(Common::MessageHeader::MessageType type, const 
       {
          const Protos::Common::Hash& hash = dynamic_cast<const Protos::Common::Hash&>(message);
          this->startTimer(); // Restart the timer.
-         emit nextHash(Common::Hash(hash.hash().data()));
+         emit nextHash(Common::Hash(hash.hash()));
       }
       break;
 

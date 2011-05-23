@@ -35,9 +35,6 @@ namespace Common
       Q_OBJECT
 
    public:
-      /**
-        * Default life time: 1 min.
-        */
       ThreadPool(int nbMinThread, int threadInactiveLifetime = 60000);
       ~ThreadPool();
       void run(QWeakPointer<IRunnable> runnable);

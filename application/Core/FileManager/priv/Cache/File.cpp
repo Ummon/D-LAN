@@ -206,7 +206,7 @@ bool File::matchesEntry(const Protos::Common::Entry& entry) const
    QMutexLocker locker(&this->mutex);
 
    return
-      this->getRoot()->getId() == Common::Hash(entry.shared_dir().id().hash().data()) &&
+      this->getRoot()->getId() == entry.shared_dir().id().hash() &&
       this->getPath() == Common::ProtoHelper::getStr(entry, &Protos::Common::Entry::path) &&
       this->getSize() == static_cast<qint64>(entry.size()) &&
       Global::removeUnfinishedSuffix(this->getName()) == Global::removeUnfinishedSuffix(Common::ProtoHelper::getStr(entry, &Protos::Common::Entry::name));

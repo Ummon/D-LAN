@@ -139,7 +139,7 @@ void RemoteConnection::onNewMessage(Common::MessageHeader::MessageType type, con
             this->authenticated = true;
          else
          {
-            Common::Hash passwordHashReceived(authenticationMessage.password().hash().data());
+            Common::Hash passwordHashReceived(authenticationMessage.password().hash());
             Common::Hash actualPasswordHash = SETTINGS.get<Common::Hash>("remote_password");
 
             if (!actualPasswordHash.isNull() && passwordHashReceived == actualPasswordHash)
@@ -227,7 +227,7 @@ void RemoteConnection::onNewMessage(Common::MessageHeader::MessageType type, con
       {
          const Protos::GUI::Browse& browseMessage = static_cast<const Protos::GUI::Browse&>(message);
 
-         Common::Hash peerID(browseMessage.peer_id().hash().data());
+         Common::Hash peerID(browseMessage.peer_id().hash());
          PM::IPeer* peer = this->peerManager->getPeer(peerID);
 
          quint64 tag = (static_cast<quint64>(this->mtrand.randInt()) << 32) | this->mtrand.randInt();
@@ -302,9 +302,9 @@ void RemoteConnection::onNewMessage(Common::MessageHeader::MessageType type, con
       {
          const Protos::GUI::Download& downloadMessage = static_cast<const Protos::GUI::Download&>(message);
 
-         Common::Hash peerID(downloadMessage.peer_id().hash().data());
+         Common::Hash peerID(downloadMessage.peer_id().hash());
          if (downloadMessage.has_destination_directory_id())
-            this->downloadManager->addDownload(downloadMessage.entry(), peerID, downloadMessage.destination_directory_id().hash().data(), Common::ProtoHelper::getStr(downloadMessage, &Protos::GUI::Download::destination_path));
+            this->downloadManager->addDownload(downloadMessage.entry(), peerID, downloadMessage.destination_directory_id().hash(), Common::ProtoHelper::getStr(downloadMessage, &Protos::GUI::Download::destination_path));
          else
             this->downloadManager->addDownload(downloadMessage.entry(), peerID);
 

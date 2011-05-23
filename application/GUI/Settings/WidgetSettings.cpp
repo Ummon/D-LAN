@@ -126,7 +126,7 @@ void WidgetSettings::newState(const Protos::GUI::State& state)
    for (int i = 0; i < state.shared_directory_size(); i++)
       sharedDirs <<
          Common::SharedDir(
-            state.shared_directory(i).id().hash().data(),
+            state.shared_directory(i).id().hash(),
             Common::ProtoHelper::getStr(state.shared_directory(i), &Protos::GUI::State_SharedDir::path),
             state.shared_directory(i).size(),
             state.shared_directory(i).free_space()

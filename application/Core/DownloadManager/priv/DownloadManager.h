@@ -73,8 +73,6 @@ namespace DM
 
       int getDownloadRate();
 
-      Common::ThreadPool& getThreadPool();
-
    private slots:
       void peerBecomesAvailable(PM::IPeer* peer);
 
