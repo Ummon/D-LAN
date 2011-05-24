@@ -24,6 +24,8 @@ using namespace GUI;
 
 #include <QtAlgorithms>
 
+#include <IconProvider.h>
+
 #include <Common/Settings.h>
 #include <Common/Global.h>
 
@@ -96,6 +98,15 @@ QVariant SearchModel::data(const QModelIndex& index, int role) const
             int percentMatch = 100 - 100 * node->getLevel() / (this->maxLevel + 1);
 
             return percentMatch > 100 ? 100 : percentMatch;
+         }
+      case Qt::DecorationRole:
+         {
+            if (index.column() == 0)
+            {
+               SearchNode* node = static_cast<SearchNode*>(index.internalPointer());
+               return IconProvider::getIcon(node->getEntry());
+            }
+            return QVariant();
          }
       default: return QVariant();
       }

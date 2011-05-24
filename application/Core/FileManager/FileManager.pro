@@ -20,7 +20,7 @@ win32 {
    HEADERS += priv/FileUpdater/DirWatcherWin.h
 }
 
-linux {
+unix {
    SOURCES += priv/FileUpdater/WaitConditionLinux.cpp
    HEADERS += priv/FileUpdater/DirWatcherLinux.h
 }

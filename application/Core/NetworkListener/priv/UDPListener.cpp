@@ -364,7 +364,7 @@ void UDPListener::initMulticastUDPSocket()
    mreq.imr_multiaddr.s_addr = htonl(MULTICAST_GROUP.toIPv4Address());
    mreq.imr_interface.s_addr = htonl(INADDR_ANY);
    #if defined(Q_OS_LINUX)
-   if (int error = setsockopt(socketDescriptor, IPPROTO_IP, IP_ADD_MEMBERSHIP, &mreq, sizeof mreq))
+   if (int error = setsockopt(multicastSocketDescriptor, IPPROTO_IP, IP_ADD_MEMBERSHIP, &mreq, sizeof mreq))
    #elif defined(Q_OS_WIN32)
    if (int error = setsockopt(multicastSocketDescriptor, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char*)&mreq, sizeof mreq))
    #endif
