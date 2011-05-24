@@ -1,23 +1,25 @@
-#ifndef ICONPROVIDER_H
-#define ICONPROVIDER_H
+#ifndef GUI_ICONPROVIDER_H
+#define GUI_ICONPROVIDER_H
 
 #include <QIcon>
 #include <QMap>
 #include <QFileIconProvider>
 #include <Protos/common.pb.h>
 
-class IconProvider
+namespace GUI
 {
-private:
-    static QFileIconProvider qtIconProvider;
-    static QMap<QString, QIcon> iconMap;
+   class IconProvider
+   {
+   public:
+      static QIcon getIcon(const Protos::Common::Entry& entry);
 
-    static QIcon getIconNative(QString icon);
-    static QIcon getIconCache(QString icon);
-public:
-    IconProvider();
+   private:
+      static QFileIconProvider qtIconProvider;
+      static QMap<QString, QIcon> iconMap;
 
-    static QIcon getIcon(Protos::Common::Entry entry);
-};
+      static QIcon getIconNative(const QString& icon);
+      static QIcon getIconCache(const QString& icon);
+   };
+}
 
-#endif // ICONPROVIDER_H
+#endif
