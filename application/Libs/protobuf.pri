@@ -3,3 +3,7 @@ win32 {
    LIBS += -L$$PROTOBUF/src/.libs -lprotobuf
    INCLUDEPATH += $$PROTOBUF/src
 }
+
+unix {
+   LIBS += -lprotobuf
+}
