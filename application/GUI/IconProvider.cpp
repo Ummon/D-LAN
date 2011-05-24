@@ -1,4 +1,4 @@
-#include "iconprovider.h"
+#include "IconProvider.h"
 
 #if defined(Q_OS_WIN32)
 #include <shlobj.h>
@@ -56,6 +56,8 @@ QIcon IconProvider::getIconNative(QString extension){
     {
         icon = QIcon(QPixmap::fromWinHICON(psfi.hIcon));
     }
+#else
+    icon = IconProvider::qtIconProvider.icon(QFileIconProvider::File);
 #endif
     return icon;
 }
