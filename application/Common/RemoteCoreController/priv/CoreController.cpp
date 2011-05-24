@@ -41,13 +41,15 @@ CoreStatus CoreController::StartCore()
    {
       if (!(isRunning = controller.start()))
       {
-         L_WARN("D-LAN Core service cannot be launched. Trying to launch it as a subprocess..");
          if (coreProcess.state() == QProcess::NotRunning)
          {
             coreProcess.start("D-LAN.Core.exe -e");
+            L_USER("Core launched as subprocess");
             return RUNNING_AS_SUB_PROCESS;
          }
       }
+      else
+         L_USER("Core service launched");
    }
 
    if (isRunning)

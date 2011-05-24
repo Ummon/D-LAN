@@ -216,7 +216,7 @@ void Socket::nextAskedHash(Common::Hash hash)
 }
 
 /**
-  * @return 'true' if the message has been handled properly otherwise return 'false'.
+  *
   */
 void Socket::onNewMessage(Common::MessageHeader::MessageType type, const google::protobuf::Message& message)
 {
@@ -282,7 +282,14 @@ void Socket::onNewMessage(Common::MessageHeader::MessageType type, const google:
       {
          const Protos::Core::GetChunk& getChunkMessage = static_cast<const Protos::Core::GetChunk&>(message);
 
-         const Common::Hash hash(getChunkMessage.chunk().hash().data());
+         const Common::Hash hash(getChunkMessage.chunk().hash());
+         if (hash.isNull())
+         {
+            L_WARN("GET_CHUNK: Chunk null");
+            this->finished(ISocket::SFS_ERROR);
+            break;
+         }
+
          QSharedPointer<FM::IChunk> chunk = this->fileManager->getChunk(hash);
          if (chunk.isNull())
          {
@@ -291,7 +298,7 @@ void Socket::onNewMessage(Common::MessageHeader::MessageType type, const google:
             this->send(Common::MessageHeader::CORE_GET_CHUNK_RESULT, result);
             this->finished();
 
-            L_WARN(QString("GET_CHUNK : Chunk unknown : %1").arg(hash.toStr()));
+            L_WARN(QString("GET_CHUNK: Chunk unknown : %1").arg(hash.toStr()));
          }
          else
          {

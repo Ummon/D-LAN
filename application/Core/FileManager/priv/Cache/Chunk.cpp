@@ -75,7 +75,7 @@ Chunk* Chunk::restoreFromFileCache(const Protos::FileCache::Hashes_Chunk& chunk)
    this->knownBytes = chunk.known_bytes();
 
    if (chunk.has_hash())
-      this->hash = chunk.hash().hash().data();
+      this->hash = chunk.hash().hash();
    return this;
 }
 

@@ -615,7 +615,7 @@ void StressTest::addEntries(const Protos::Common::Entries& entries)
       {
          this->knownFileEntries << entries.entry(i);
          for (int j = 0; j < entries.entry(i).chunk_size(); j++)
-            this->someHashes << Common::Hash(entries.entry(i).chunk(j).hash().data());
+            this->someHashes << Common::Hash(entries.entry(i).chunk(j).hash());
       }
 
       nextEntryResult:;
@@ -628,13 +628,13 @@ QString StressTest::entryToStr(const Protos::Common::Entry& entry)
       arg(entry.type() == Protos::Common::Entry_Type_DIR ? "DIR" : "FILE").
       arg(Common::ProtoHelper::getStr(entry, &Protos::Common::Entry::path)).
       arg(Common::ProtoHelper::getStr(entry, &Protos::Common::Entry::name)).
-      arg(Common::Hash(entry.shared_dir().id().hash().data()).toStr());
+      arg(Common::Hash(entry.shared_dir().id().hash()).toStr());
 
    if (entry.type() == Protos::Common::Entry_Type_FILE)
    {
       str.append(QString(" number of chunk : %1").arg(entry.chunk_size()));
       for (int i = 0; i < entry.chunk_size(); i++)
-         str.append(" ").append(Common::Hash(entry.chunk(i).hash().data()).toStr());
+         str.append(" ").append(Common::Hash(entry.chunk(i).hash()).toStr());
    }
    return str;
 }

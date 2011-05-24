@@ -674,7 +674,7 @@ void FileUpdater::restoreFromFileCache(SharedDirectory* dir)
    }
 
    for (int i = 0; i < this->fileCache->shareddir_size(); i++)
-      if (Common::Hash(this->fileCache->shareddir(i).id().hash().data()) == dir->getId())
+      if (this->fileCache->shareddir(i).id().hash() == dir->getId())
       {
          QSet<File*> filesWithHashes = dir->restoreFromFileCache(this->fileCache->shareddir(i).root()).toSet();
 

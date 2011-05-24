@@ -63,7 +63,7 @@ QString DownloadsModel::getPath(int row, bool appendFilename) const
    if (row >= this->downloads.size())
       return QString();
 
-   const Common::SharedDir sharedDir = this->sharedDirsModel.getDir(this->downloads[row].local_entry().shared_dir().id().hash().data());
+   const Common::SharedDir sharedDir = this->sharedDirsModel.getDir(this->downloads[row].local_entry().shared_dir().id().hash());
    if (sharedDir.isNull())
       return QString();
 
@@ -104,7 +104,7 @@ QVariant DownloadsModel::data(const QModelIndex& index, int role) const
                {
                   if (i != 0)
                      peersStr.append(" ");
-                  peersStr.append('[').append(this->peerListModel.getNick(currentDownload.peer_id(i).hash().data())).append(']');
+                  peersStr.append('[').append(this->peerListModel.getNick(currentDownload.peer_id(i).hash())).append(']');
                }
                return peersStr;
             }

@@ -156,7 +156,7 @@ bool BrowseModel::isDir(const QModelIndex& index) const
 QString BrowseModel::getPath(const QModelIndex& index, bool appendFilename) const
 {
    const Protos::Common::Entry entry = this->getEntry(index);
-   const Common::SharedDir sharedDir = this->sharedDirsModel.getDir(entry.shared_dir().id().hash().data());
+   const Common::SharedDir sharedDir = this->sharedDirsModel.getDir(entry.shared_dir().id().hash());
    if (sharedDir.isNull())
       return QString();
 

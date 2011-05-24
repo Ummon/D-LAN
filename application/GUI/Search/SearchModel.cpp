@@ -247,7 +247,7 @@ void SearchModel::result(const Protos::Common::FindResult& findResult)
       // Search if a similar entry already exists. If so then insert the new node as child.
       if (entry->entry().type() == Protos::Common::Entry_Type_FILE && entry->entry().chunk_size() > 0)
       {
-         Common::Hash firstChunk = entry->entry().chunk(0).hash().data();
+         Common::Hash firstChunk = entry->entry().chunk(0).hash();
          SearchNode* similarNode = 0;
          if ((similarNode = this->indexedFile.value(firstChunk)) && similarNode->isSameAs(entry->entry()))
          {
@@ -264,7 +264,7 @@ void SearchModel::result(const Protos::Common::FindResult& findResult)
                if (i == similarNode->getNbChildren() || static_cast<SearchNode*>(similarNode->getChild(i))->getLevel() > static_cast<int>(entry->level()))
                {
                   this->beginInsertRows(this->createIndex(0, 0, similarNode), i, i);
-                  Common::Hash peerID = findResult.peer_id().hash().data();
+                  Common::Hash peerID = findResult.peer_id().hash();
                   SearchNode* newNode = similarNode->insertChild(i, *entry, peerID, this->peerListModel.getNick(peerID));
                   this->endInsertRows();
 
@@ -283,7 +283,7 @@ void SearchModel::result(const Protos::Common::FindResult& findResult)
          }
       }
 
-      currentIndex = this->insertNode(*entry, findResult.peer_id().hash().data(), currentIndex);
+      currentIndex = this->insertNode(*entry, findResult.peer_id().hash(), currentIndex);
    }
 
    if (maxLevelChange && this->rowCount() > 0)
@@ -334,7 +334,7 @@ int SearchModel::insertNode(const Protos::Common::FindResult_EntryLevel& entry, 
    this->endInsertRows();
 
    if (newNode->getEntry().type() == Protos::Common::Entry_Type_FILE && newNode->getEntry().chunk_size() > 0)
-      this->indexedFile.insert(newNode->getEntry().chunk(0).hash().data(), newNode);
+      this->indexedFile.insert(newNode->getEntry().chunk(0).hash(), newNode);
 
    return currentIndex;
 }
@@ -470,7 +470,7 @@ bool SearchModel::SearchNode::isSameAs(const Protos::Common::Entry& otherEntry) 
       return false;
 
    for (int i = 0; i < otherEntry.chunk_size(); i++)
-      if (Common::Hash(otherEntry.chunk(i).hash().data()) != Common::Hash(this->entry.chunk(i).hash().data()))
+      if (Common::Hash(otherEntry.chunk(i).hash()) != Common::Hash(this->entry.chunk(i).hash()))
          return false;
 
    return true;

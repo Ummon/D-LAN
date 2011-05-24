@@ -71,7 +71,7 @@ Protos::Common::Entries Cache::getEntries(const Protos::Common::Entry& dir) cons
 
    foreach (SharedDirectory* sharedDir, this->sharedDirs)
    {
-      if (sharedDir->getId() == dir.shared_dir().id().hash().data())
+      if (sharedDir->getId() == dir.shared_dir().id().hash())
       {
          QStringList folders = QDir::cleanPath(Common::ProtoHelper::getStr(dir, &Protos::Common::Entry::path)).split('/', QString::SkipEmptyParts);
 
@@ -176,7 +176,7 @@ File* Cache::getFile(const Protos::Common::Entry& fileEntry) const
 
    foreach (SharedDirectory* sharedDir, this->sharedDirs)
    {
-      if (sharedDir->getId() == fileEntry.shared_dir().id().hash().data())
+      if (sharedDir->getId() == fileEntry.shared_dir().id().hash())
       {
          QString relativePath(Common::ProtoHelper::getStr(fileEntry, &Protos::Common::Entry::path));
          const QStringList folders = relativePath.split('/', QString::SkipEmptyParts);
@@ -230,7 +230,7 @@ QList< QSharedPointer<IChunk> > Cache::newFile(Protos::Common::Entry& fileEntry)
    Directory* dir = 0;
    if (fileEntry.has_shared_dir())
    {
-      SharedDirectory* sharedDir = this->getSharedDirectory(fileEntry.shared_dir().id().hash().data());
+      SharedDirectory* sharedDir = this->getSharedDirectory(fileEntry.shared_dir().id().hash());
 
       if (sharedDir)
       {
@@ -251,7 +251,7 @@ QList< QSharedPointer<IChunk> > Cache::newFile(Protos::Common::Entry& fileEntry)
 
    Common::Hashes hashes;
    for (int i = 0; i < fileEntry.chunk_size(); i++)
-      hashes << (fileEntry.chunk(i).has_hash() ? Common::Hash(fileEntry.chunk(i).hash().data()) : Common::Hash());
+      hashes << (fileEntry.chunk(i).has_hash() ? fileEntry.chunk(i).hash() : Common::Hash());
 
    const QString name = Common::ProtoHelper::getStr(fileEntry, &Protos::Common::Entry::name);
 
@@ -477,7 +477,7 @@ void Cache::createSharedDirs(const Protos::FileCache::Hashes& hashes)
    {
       const Protos::FileCache::Hashes_SharedDir& dir = hashes.shareddir(i);
       paths << Common::ProtoHelper::getStr(dir, &Protos::FileCache::Hashes_SharedDir::path);
-      ids << Common::Hash(dir.id().hash().data());
+      ids << dir.id().hash();
    }
    this->createSharedDirs(paths, ids);
 }
