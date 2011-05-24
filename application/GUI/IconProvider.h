@@ -14,11 +14,11 @@ namespace GUI
       static QIcon getIcon(const Protos::Common::Entry& entry);
 
    private:
+      static QIcon getIconCache(const QString& icon);
+      static QIcon getIconNative(const QString& icon);
+
       static QFileIconProvider qtIconProvider;
       static QMap<QString, QIcon> iconMap;
-
-      static QIcon getIconNative(const QString& icon);
-      static QIcon getIconCache(const QString& icon);
    };
 }
 
