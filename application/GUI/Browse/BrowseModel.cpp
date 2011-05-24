@@ -20,6 +20,8 @@
 using namespace GUI;
 
 #include <QPixmap>
+#include <QFileInfo>
+#include <IconProvider.h>
 
 #include <Common/Global.h>
 
@@ -127,10 +129,7 @@ QVariant BrowseModel::data(const QModelIndex& index, int role) const
          if (index.column() == 0)
          {
             Node* node = static_cast<Node*>(index.internalPointer());
-            if (node->getEntry().type() == Protos::Common::Entry_Type_DIR)
-               return QPixmap(":/icons/ressources/folder.png");
-            else
-               return QPixmap(":/icons/ressources/file.png");
+            return IconProvider::getIcon(node->getEntry());
          }
          return QVariant();
       }
