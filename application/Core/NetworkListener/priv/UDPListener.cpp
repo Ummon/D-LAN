@@ -315,7 +315,7 @@ void UDPListener::initMulticastUDPSocket()
    this->multicastSocket.close();
    this->multicastSocket.disconnect(this);
 
-   if (!this->multicastSocket.bind(MULTICAST_PORT, QUdpSocket::ReuseAddressHint))
+   if (!this->multicastSocket.bind(MULTICAST_PORT))
    {
       L_ERRO("Can't bind the multicast socket");
       QTimer::singleShot(SOCKET_RETRY_TIME, this, SLOT(initMulticastUDPSocket));
