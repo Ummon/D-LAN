@@ -45,6 +45,7 @@ namespace Common
       static qint64 availableDiskSpace(const QString& path);
       static bool rename(const QString& existingFile, const QString& newFile);
       static QString cleanDirPath(const QString& path);
+      static QString dirName(const QString& path);
 
       static QString toLowerAndRemoveAccents(const QString& str);
       static QStringList splitInWords(const QString& words);

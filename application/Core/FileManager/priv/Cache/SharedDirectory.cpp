@@ -37,7 +37,7 @@ using namespace FM;
   * @exception DirNotFoundException
   */
 SharedDirectory::SharedDirectory(Cache* cache, const QString& path) :
-   Directory(cache, QDir(path).dirName()), path(Common::Global::cleanDirPath(path)), id(Common::Hash::rand())
+   Directory(cache, Common::Global::dirName(path)), path(Common::Global::cleanDirPath(path)), id(Common::Hash::rand())
 {
    this->init();
 }
@@ -48,7 +48,7 @@ SharedDirectory::SharedDirectory(Cache* cache, const QString& path) :
   * @exception DirNotFoundException
   */
 SharedDirectory::SharedDirectory(Cache* cache, const QString& path, const Common::Hash& id) :
-   Directory(cache, QDir(path).dirName()), path(QDir::cleanPath(path) + "/"), id(id)
+   Directory(cache, Common::Global::dirName(path)), path(Common::Global::cleanDirPath(path)), id(id)
 {
    this->init();
 }

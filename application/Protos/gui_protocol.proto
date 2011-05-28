@@ -154,7 +154,7 @@ message AuthenticationResult {
 // id : 0x31
 message CoreSettings {
    required string nick = 1;
-   repeated string shared_directory = 2;
+   repeated string shared_directory = 2; // A directory always ends with a slash ('/').
    required bool enable_integrity_check = 3;
 }
 

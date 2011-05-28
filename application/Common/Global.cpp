@@ -169,7 +169,25 @@ QString Global::cleanDirPath(const QString& path)
 {
    Q_ASSERT(!path.isEmpty());
 
-   return QDir::cleanPath(path).append('/');
+   QString cleanedPath = QDir::cleanPath(path);
+   if (!cleanedPath.isEmpty() && cleanedPath[cleanedPath.size()-1] != '/')
+      cleanedPath.append('/');
+
+   return cleanedPath;
+}
+
+/**
+  * Special case for Windows: "C:/" -> "C:"
+  */
+QString Global::dirName(const QString& path)
+{
+   Q_ASSERT(!path.isEmpty());
+
+#ifdef Q_OS_WIN32
+   if (path.size() == 3 && path[1] == ':')
+      return path.left(2);
+#endif
+   return QDir(path).dirName();
 }
 
 QString Global::toLowerAndRemoveAccents(const QString& str)
