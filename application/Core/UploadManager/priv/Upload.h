@@ -55,6 +55,8 @@ namespace UM
    private:
       mutable QMutex mutex;
 
+      QThread* mainThread;
+
       const quint64 ID; ///< Each uploader has an ID to identified it.
       QSharedPointer<FM::IChunk> chunk; ///< The chunk uploaded.
       int offset; ///< The current offset into the chunk.

@@ -116,6 +116,8 @@ namespace DM
       bool downloading;
       PM::ISocket::FinishedStatus networkTransferStatus;
 
+      QThread* mainThread;
+
       mutable QMutex mutex; // To protect 'peers' and 'downloading'.
    };
 }
