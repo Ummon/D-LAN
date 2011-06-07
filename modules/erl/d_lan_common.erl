@@ -8,7 +8,8 @@
 pages() ->
    [home, features, faq, about].
    
-hidden_pages() -> [stats, donate].
+hidden_pages() ->
+   [stats, donate].
    
 % Return the current page depending the page parameters -> atom()
 current_page(A) ->
@@ -54,9 +55,10 @@ images(Filename_caption_list) ->
       Filename_caption_list
    ).
 
+% 'Platform' is a folder where the releases are put.
+% For example: "windows".
 download_button(A, Platform) ->
-   {Maj, Platform_maj_rest} = lists:split(1, Platform),
-   Platform_maj = string:to_upper(Maj) ++ Platform_maj_rest,
+   Platform_maj = [string:to_upper(hd(Platform)) | tl(Platform)],
    Relase_platform_folder = A#arg.docroot ++ "/" ++ ?RELEASES_FOLDER ++ "/" ++ Platform,
    {ok, Filenames} = file:list_dir(Relase_platform_folder),
    Filename = lists:last(lists:sort(lists:filter(fun(F) -> string:right(F, 4) =:= ".exe" end, Filenames))),

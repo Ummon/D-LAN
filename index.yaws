@@ -13,17 +13,17 @@
 </erl><!DOCTYPE html>
 <html>
    <head>
-      <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+      <meta charset="utf-8" />
       <erl>
          out(A) -> {ehtml, {title, [], d_lan_lang:tr(global, title, A)}}.
       </erl>
       <link rel="shortcut icon" href="favicon.ico" />
-      <link rel="stylesheet" href="style.css" type="text/css" />
-      <link rel="stylesheet" href="colorbox/colorbox.css" type="text/css" />
-      <script type="text/javascript" src="jquery-1.4.4.min.js"></script>
-      <script type="text/javascript" src="colorbox/jquery.colorbox-min.js"></script>
-      <script type="text/javascript" src="d_lan.js"></script>
-      <script type="text/javascript">
+      <link rel="stylesheet" href="style.css" />
+      <link rel="stylesheet" href="colorbox/colorbox.css" />
+      <script src="jquery-1.4.4.min.js"></script>
+      <script src="colorbox/jquery.colorbox-min.js"></script>
+      <script src="d_lan.js"></script>
+      <script>
         var _gaq = _gaq || [];
         _gaq.push(['_setAccount', 'UA-19841069-4']);
         _gaq.push(['_trackPageview']);
