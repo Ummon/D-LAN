@@ -260,6 +260,8 @@ void BrowseModel::result(const google::protobuf::RepeatedPtrField<Protos::Common
 void BrowseModel::resultTimeout()
 {
    this->browseResult.clear();
+   this->reset();
+
    emit loadingResultFinished();
 }
 
@@ -363,6 +365,14 @@ QList<BrowseModel::Node*> BrowseModel::synchronizeRoot(const Protos::Common::Ent
    while (j < this->root->getNbChildren())
       nodesToDelete << this->root->getChild(j++);
    return nodesToDelete;
+}
+
+void BrowseModel::reset()
+{
+   this->beginResetModel();
+   delete this->root;
+   this->root = new Node();
+   this->endResetModel();
 }
 
 /**

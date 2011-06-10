@@ -45,6 +45,7 @@ ChunkDownload::ChunkDownload(QSharedPointer<PM::IPeerManager> peerManager, Occup
    socket(0),
    downloading(false),
    networkTransferStatus(PM::ISocket::SFS_OK),
+   mainThread(QThread::currentThread()),
    mutex(QMutex::Recursive)
 {
    L_DEBU(QString("New ChunkDownload : %1").arg(this->chunkHash.toStr()));
@@ -212,7 +213,7 @@ void ChunkDownload::run()
       this->currentDownloadingPeer->setSpeed(deltaRead / timer.elapsed() * 1000);
 
    this->socket->setReadBufferSize(0);
-   this->socket->moveToThread(QCoreApplication::instance()->thread());
+   this->socket->moveToThread(this->mainThread);
 }
 
 void ChunkDownload::finished()

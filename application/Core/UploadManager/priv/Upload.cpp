@@ -28,8 +28,8 @@ using namespace UM;
 quint64 Upload::currentID(1);
 
 Upload::Upload(QSharedPointer<FM::IChunk> chunk, int offset, QSharedPointer<PM::ISocket> socket, Common::TransferRateCalculator& transferRateCalculator) :
-   Common::Timeoutable(SETTINGS.get<quint32>("upload_lifetime")), ID(currentID++), chunk(chunk), offset(offset), socket(socket), transferRateCalculator(transferRateCalculator), networkError(false), toStop(false)
-{
+   Common::Timeoutable(SETTINGS.get<quint32>("upload_lifetime")), mainThread(QThread::currentThread()), ID(currentID++), chunk(chunk), offset(offset), socket(socket), transferRateCalculator(transferRateCalculator), networkError(false), toStop(false)
+{   
 }
 
 Upload::~Upload()
@@ -135,7 +135,7 @@ void Upload::run()
    }
 
 end:
-   this->socket->moveToThread(QCoreApplication::instance()->thread());
+   this->socket->moveToThread(this->mainThread);
 }
 
 void Upload::finished()

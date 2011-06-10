@@ -43,13 +43,19 @@ Core::Core(bool resetSettings)
    if (resetSettings)
    {
       QString originalRoamingFolder = Common::Global::getDataFolder(Common::Global::ROAMING);
+
+      /**
+        * Reset the settings for the current application folder (i==0) and for the service application folder (i==1).
+        * The service folder may not be accessible depending of the rights of the current user.
+        */
       for (int i = 0; i < 2; i++)
       {
          if (i == 1)
          {
-            QString roamingSystem = Common::Global::getDataSystemFolder(Common::Global::ROAMING);
+            QString roamingSystem = Common::Global::getDataServiceFolder(Common::Global::ROAMING);
             if (!QDir(roamingSystem).exists())
                break;
+
             Common::Global::setDataFolder(Common::Global::ROAMING, roamingSystem);
          }
 

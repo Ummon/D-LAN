@@ -48,6 +48,7 @@ void BrowseResult::start()
 {
    this->browseMessage.mutable_peer_id()->set_hash(this->peerID.getData(), Common::Hash::HASH_SIZE);
    this->coreConnection->send(Common::MessageHeader::GUI_BROWSE, this->browseMessage);
+   this->startTimer();
 }
 
 void BrowseResult::setTag(quint64 tag)

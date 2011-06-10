@@ -75,6 +75,7 @@ namespace GUI
       virtual void loadChildren(const QPersistentModelIndex &index);
       virtual QList<Node*> synchronize(BrowseModel::Node* node, const Protos::Common::Entries& entries);
       virtual QList<Node*> synchronizeRoot(const Protos::Common::Entries& entries);
+      virtual void reset();
 
       class Node
       {

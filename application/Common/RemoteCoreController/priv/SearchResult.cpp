@@ -37,6 +37,7 @@ void SearchResult::start()
    Protos::GUI::Search search;
    Common::ProtoHelper::setStr(search, &Protos::GUI::Search::set_pattern, this->terms);
    this->coreConnection->send(Common::MessageHeader::GUI_SEARCH, search);
+   this->startTimer();
 }
 
 void SearchResult::setTag(quint64 tag)
@@ -47,5 +48,8 @@ void SearchResult::setTag(quint64 tag)
 void SearchResult::searchResult(const Protos::Common::FindResult& findResult)
 {
    if (findResult.tag() == this->tag) // Is this message for us?
+   {
+      this->stopTimer();
       emit result(findResult);
+   }
 }

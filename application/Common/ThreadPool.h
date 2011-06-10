@@ -73,7 +73,6 @@ namespace Common
    private:
       QWeakPointer<IRunnable> runnable;
       QTimer timer;
-      QThread* mainThread;
 
       mutable QWaitCondition waitCondition;
       mutable QMutex mutex;

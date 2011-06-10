@@ -171,7 +171,25 @@ QString Global::cleanDirPath(const QString& path)
 {
    Q_ASSERT(!path.isEmpty());
 
-   return QDir::cleanPath(path).append('/');
+   QString cleanedPath = QDir::cleanPath(path);
+   if (!cleanedPath.isEmpty() && cleanedPath[cleanedPath.size()-1] != '/')
+      cleanedPath.append('/');
+
+   return cleanedPath;
+}
+
+/**
+  * Special case for Windows: "C:/" -> "C:"
+  */
+QString Global::dirName(const QString& path)
+{
+   Q_ASSERT(!path.isEmpty());
+
+#ifdef Q_OS_WIN32
+   if (path.size() == 3 && path[1] == ':')
+      return path.left(2);
+#endif
+   return QDir(path).dirName();
 }
 
 QString Global::toLowerAndRemoveAccents(const QString& str)
@@ -295,17 +313,64 @@ void Global::setDataFolderToDefault(DataFolderType type)
    Global::dataFolders[type].clear();
 }
 
+/**
+  * Return where the local services put their data.
+  * It's used to retrieve the data folder of D-LAN.Core when run as a service.
+  */
+QString Global::getDataServiceFolder(DataFolderType type)
+{
+// TODO: other platforms.
+#ifdef Q_OS_WIN32
+   OSVERSIONINFO versionInfo;
+   memset(&versionInfo, 0, sizeof(versionInfo));
+   versionInfo.dwOSVersionInfoSize = sizeof(versionInfo);
+   GetVersionEx(&versionInfo);
+
+   // Vista & Windows 7
+   if (versionInfo.dwMajorVersion >= 6)
+      return Global::getDataSystemFolder(type);
+   else
+   {
+      // For Windows XP, the service data folder is located in C:\Documents and Settings\LocalService.
+
+      TCHAR windowsPathTCHAR[MAX_PATH];
+      if (!SUCCEEDED(SHGetFolderPath(NULL, CSIDL_WINDOWS , NULL, 0, windowsPathTCHAR)))
+         return QString();
+      const QString windowsPath = QString::fromUtf16((ushort*)windowsPathTCHAR);
+      QStringList windowsPathSplit = windowsPath.split('\\');
+      if (windowsPathSplit.isEmpty())
+         return QString();
+
+      return windowsPathSplit.first() + "/Documents and Settings/LocalService" + (type == ROAMING ? "/Application Data/" : "/Local Settings/Application Data/") + APPLICATION_FOLDER_NAME;
+   }
+#else
+   return Global::getDataSystemFolder(type);
+#endif
+}
+
+/**
+  * For example on Windows 7 : "C:\Windows\SysWOW64\config\systemprofile\AppData".
+  */
 QString Global::getDataSystemFolder(DataFolderType type)
 {
 // TODO: other platforms.
 #ifdef Q_OS_WIN32
    TCHAR dataPathSystem[MAX_PATH];
+   // SHGetKnownFolderPath should be use for vista a superior but it doesn't exist in mingw.
    if (!SUCCEEDED(SHGetFolderPath(NULL, CSIDL_SYSTEMX86, NULL, 0, dataPathSystem)))
       return QString();
-
    const QString dataFolderPath = QString::fromUtf16((ushort*)dataPathSystem);
 
-   return dataFolderPath + "/config/systemprofile/AppData" + (type == ROAMING ? "/Roaming/" : "/local/") + APPLICATION_FOLDER_NAME;
+   OSVERSIONINFO versionInfo;
+   memset(&versionInfo, 0, sizeof(versionInfo));
+   versionInfo.dwOSVersionInfoSize = sizeof(versionInfo);
+   GetVersionEx(&versionInfo);
+
+   // Vista & Windows 7
+   if (versionInfo.dwMajorVersion >= 6)
+      return dataFolderPath + "/config/systemprofile/AppData" + (type == ROAMING ? "/Roaming/" : "/local/") + APPLICATION_FOLDER_NAME;
+   else
+      return dataFolderPath + "/config/systemprofile" + (type == ROAMING ? "/Application Data/" : "/Local Settings/Application Data/") + APPLICATION_FOLDER_NAME;
 #else
    return QString();
 #endif
