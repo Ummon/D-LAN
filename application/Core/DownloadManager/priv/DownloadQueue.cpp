@@ -241,7 +241,7 @@ void DownloadQueue::saveToFile() const
       Download* download = i.next();
       download->populateRemoteEntry(queueEntry);
       download->populateLocalEntry(queueEntry);
-      queueEntry->mutable_peer_id()->set_hash(download->getPeerSourceID().getData(), Common::Hash::HASH_SIZE);
+      queueEntry->mutable_peer_source_id()->set_hash(download->getPeerSourceID().getData(), Common::Hash::HASH_SIZE);
    }
 
    try

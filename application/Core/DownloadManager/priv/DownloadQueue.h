@@ -58,7 +58,7 @@ namespace DM
       bool removeDownloads(DownloadPredicate& predicate);
       bool isEntryAlreadyQueued(const Protos::Common::Entry& localEntry, const Common::Hash& peerSourceID);
 
-      Protos::Queue::Queue loadFromFile();
+      static Protos::Queue::Queue loadFromFile();
       void saveToFile() const;
 
    private:

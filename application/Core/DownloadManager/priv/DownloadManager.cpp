@@ -362,12 +362,12 @@ void DownloadManager::chunkDownloadFinished()
   */
 void DownloadManager::loadQueueFromFile()
 {
-   Protos::Queue::Queue savedQueue = this->downloadQueue.loadFromFile();
+   Protos::Queue::Queue savedQueue = DownloadQueue::loadFromFile();
 
    for (int i = 0; i < savedQueue.entry_size(); i++)
    {
       const Protos::Queue::Queue_Entry& entry = savedQueue.entry(i);
-      this->addDownload(entry.remote_entry(), entry.local_entry(), Common::Hash(entry.peer_id().hash()), entry.complete());
+      this->addDownload(entry.remote_entry(), entry.local_entry(), entry.peer_source_id().hash(), entry.complete());
    }
 
    this->saveTimer.start();

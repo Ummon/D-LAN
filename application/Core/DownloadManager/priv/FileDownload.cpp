@@ -76,6 +76,8 @@ FileDownload::FileDownload(
       this->connectChunkDownloadSignals(this->chunkDownloads.last());
    }
    this->nbHashesKnown = this->chunkDownloads.size();
+
+   this->tryToLinkToAnExistingFile();
 }
 
 FileDownload::~FileDownload()
@@ -192,21 +194,17 @@ QSharedPointer<ChunkDownload> FileDownload::getAChunkToDownload()
 
    if (!this->fileCreated)
    {
-      // First, try to get the chunks from an existing file, it's useful when a download is taken from the saved queue.
-      if (!this->chunkDownloads.isEmpty())
-      {
-         Common::Hashes hashes;
-         for (QListIterator< QSharedPointer<ChunkDownload> > i(this->chunkDownloads); i.hasNext();)
-            hashes << i.next()->getHash();
-         this->chunksWithoutDownload = this->fileManager->getAllChunks(this->localEntry, hashes);
-      }
-
-      // If the file doesn't exist we create it.
-      if (this->chunksWithoutDownload.isEmpty())
+      // Try to get the chunks from an existing file, it's useful when a download is taken from the saved queue.
+      if (!this->tryToLinkToAnExistingFile())
       {
          try
          {
             this->chunksWithoutDownload = this->fileManager->newFile(this->localEntry);
+
+            for (int i = 0; !this->chunksWithoutDownload.isEmpty() && i < this->chunkDownloads.size(); i++)
+               this->chunkDownloads[i]->setChunk(this->chunksWithoutDownload.takeFirst());
+
+            this->fileCreated = true;
          }
          catch(FM::NoWriteableDirectoryException&)
          {
@@ -228,12 +226,7 @@ QSharedPointer<ChunkDownload> FileDownload::getAChunkToDownload()
          }
       }
 
-      for (int i = 0; !this->chunksWithoutDownload.isEmpty() && i < this->chunkDownloads.size(); i++)
-         this->chunkDownloads[i]->setChunk(this->chunksWithoutDownload.takeFirst());
-
-      this->fileCreated = true;
-
-      // 'getAllChunks(..)' above can return some completed chunks.
+      // 'tryToLinkToAnExistingFile(..)' above can return some completed chunks.
       if (!chunkDownload->getChunk().isNull() && chunkDownload->getChunk()->isComplete())
       {
          this->updateStatus(); // Maybe all the file is complete, so we update the status.
@@ -449,6 +442,29 @@ void FileDownload::updateStatus()
    {
       this->status = GETTING_THE_HASHES;
    }
+}
+
+/**
+  * Look if a file int the cache owns the known hashes. If so, 'this->fileCreated' is set to true.
+  * @return 'true' is the file exists.
+  */
+bool FileDownload::tryToLinkToAnExistingFile()
+{
+   if (!this->chunkDownloads.isEmpty())
+   {
+      Common::Hashes hashes;
+      for (QListIterator< QSharedPointer<ChunkDownload> > i(this->chunkDownloads); i.hasNext();)
+         hashes << i.next()->getHash();
+      this->chunksWithoutDownload = this->fileManager->getAllChunks(this->localEntry, hashes);
+
+      if (!this->chunksWithoutDownload.isEmpty())
+         this->fileCreated = true;
+
+      for (int i = 0; !this->chunksWithoutDownload.isEmpty() && i < this->chunkDownloads.size(); i++)
+         this->chunkDownloads[i]->setChunk(this->chunksWithoutDownload.takeFirst());
+   }
+
+   return this->fileCreated;
 }
 
 void FileDownload::connectChunkDownloadSignals(QSharedPointer<ChunkDownload> chunkDownload)
