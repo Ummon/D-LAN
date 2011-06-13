@@ -1,9 +1,9 @@
 # coding: utf-8
+
 rep_ebin = ebin
-
 rep_erl = erl
+NATIVE = true
 
-#  $ make NATIVE=true
 ifdef NATIVE 
    erlc_params = +native -o $(rep_ebin) $<
 else

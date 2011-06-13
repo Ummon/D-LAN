@@ -33,7 +33,7 @@
           var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
         })();
       </script>
-   <script type="text/javascript">
+      <script>
        (function() {
            var s = document.createElement('script'), t = document.getElementsByTagName('script')[0];
            s.type = 'text/javascript';
@@ -41,7 +41,7 @@
            s.src = 'http://api.flattr.com/js/0.6/load.js?mode=auto';
            t.parentNode.insertBefore(s, t);
        })();
-   </script>
+      </script>
    </head>   
    <!--[if IE ]><body class="ie"><![endif]-->
    <!--[if !IE]>--><body><!--<![endif]-->
