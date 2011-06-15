@@ -25,10 +25,14 @@ hidden_pages() ->
 current_page(A) ->
    case yaws_api:queryvar(A, "p") of
       {ok, PageStr} ->
-         Page = list_to_atom(PageStr),
-         case member(Page, pages() ++ hidden_pages()) of
-            true -> Page;
-            _ -> unknown
+         try list_to_existing_atom(PageStr) of
+            Page -> 
+               case member(Page, pages() ++ hidden_pages()) of
+                  true -> Page;
+                  _ -> unknown
+               end
+         catch
+            error:_ -> unknown
          end;
       _ -> home
    end.
