@@ -4,6 +4,12 @@
 -include("/usr/lib/yaws/include/yaws_api.hrl"). 
 -include("../include/d_lan_defines.hrl").
 
+-spec langs() -> atom().
+-spec plain_lang(atom()) -> string().
+-spec current_lang(#arg{}) -> atom().
+-spec tr(atom(), atom(), #arg{}) -> string().
+-spec tr(atom(), atom(), #arg{}, [term()]) -> string().
+
 % See here for the language codes : http://en.wikipedia.org/wiki/List_of_ISO_639-1_codes
 % Return a list of all accepted languages.
 langs() ->
