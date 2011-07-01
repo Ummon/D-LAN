@@ -247,11 +247,13 @@ translate(fr, _, _) -> "Pas de traduction";
 translate(_, _, _) -> "".
 
 %%%%%%%%%%
-   
+
+% Return the current language depending the 'lang' GET ou the cookies.
+% Contained in 'langs()'.
 current_lang(A) ->
    % 1) Looks if a GET variable 'lang' is defined
-   Current_lang = case yaws_api:queryvar(A, "lang") of
-      {ok, L} -> list_to_atom(L);
+   case yaws_api:queryvar(A, "lang") of
+      {ok, L} -> list_to_lang(L);
       _ ->
          % 2) Looks if a 'lang' value exist in a cookie.
          case yaws_api:find_cookie_val("lang", (A#arg.headers)#headers.cookie) of
@@ -261,12 +263,22 @@ current_lang(A) ->
                [Lang | _] -> Lang;
                _ -> null
             end;
-         C -> list_to_atom(C)
+         C -> list_to_lang(C)
       end
-   end,
-   case lists:member(Current_lang, langs()) of
-      true -> Current_lang;
-      _ -> [First | _] = langs(), First % The language isn't defined (or known) we take the first of the list.
+   end.
+   
+% Returns a known atom language from a string().
+% Returns the first known language if the given string is unknown.
+% See 'langs()'.
+list_to_lang(LangStr) ->
+   try list_to_existing_atom(LangStr) of
+      Lang ->
+         case lists:member(Lang, langs()) of
+            true -> Lang;
+            _ -> hd(langs()) % The language isn't defined (or known) we take the first of the list.
+         end
+   catch
+      error:_ -> hd(langs())
    end.
 
 % Return a list of accepted languages by the user agent. Return only known languages from 'langs/0'.
