@@ -445,7 +445,7 @@ void FileDownload::updateStatus()
 }
 
 /**
-  * Look if a file in the cache owns the known hashes. If so, the chunks ('FM:IChunk') are given to each 'ChunkDownload' and
+  * Look if a file in the cache ('FM:IFileManager') owns the known hashes. If so, the chunks ('FM:IChunk') are given to each 'ChunkDownload' and
   * 'this->fileCreated' is set to true.
   * @return 'true' is the file exists.
   */
