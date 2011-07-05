@@ -57,7 +57,7 @@
     <string/>
    </property>
    <property name="features">
-    <set>QDockWidget::DockWidgetFloatable|QDockWidget::DockWidgetMovable|QDockWidget::DockWidgetVerticalTitleBar</set>
+    <set>QDockWidget::DockWidgetFeatureMask</set>
    </property>
    <property name="windowTitle">
     <string>Log</string>
