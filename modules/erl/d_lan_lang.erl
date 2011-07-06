@@ -267,7 +267,7 @@ current_lang(A) ->
             % 3) Looks in the "Accept-Language" HTTP header field.
             case accepted_langs_by_user_agent(A) of
                [Lang | _] -> Lang;
-               _ -> null
+               _ -> hd(langs())
             end;
          C -> list_to_lang(C)
       end
@@ -276,8 +276,8 @@ current_lang(A) ->
 % Returns a known atom language from a string().
 % Returns the first known language if the given string is unknown.
 % See 'langs()'.
-list_to_lang(LangStr) ->
-   try list_to_existing_atom(LangStr) of
+list_to_lang(Lang_str) ->
+   try list_to_existing_atom(Lang_str) of
       Lang ->
          case lists:member(Lang, langs()) of
             true -> Lang;
@@ -303,10 +303,14 @@ accepted_langs_by_user_agent(A) ->
                         [L | _] -> {L, 1.0}
                      end,
                      [Lang_str | _] = string:tokens(Lang_str_with_subtag, "-"), % We don't care about the subtags.
-                     Lang = list_to_atom(Lang_str),
-                     case lists:member(Lang, langs()) of
-                        true -> [{Lang, Quality} | Acc]; % We keep only known languages.
-                        _ -> Acc
+                     try list_to_existing_atom(Lang_str) of
+                        Lang -> 
+                           case lists:member(Lang, langs()) of
+                              true -> [{Lang, Quality} | Acc]; % We keep only known languages.
+                              _ -> Acc
+                           end 
+                     catch
+                        error:_ -> Acc
                      end
                   end,
                   [],
