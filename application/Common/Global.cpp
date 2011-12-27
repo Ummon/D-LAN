@@ -197,7 +197,7 @@ QString Global::toLowerAndRemoveAccents(const QString& str)
    for (int i = 0; i < strLower.size(); i++)
       switch (strLower[i].unicode())
       {
-         case 0x00E0: // à.
+         case 0x00E0: // � .
          case 0x00E1: // á.
          case 0x00E2: // â.
          case 0x00E3: // ã.
@@ -246,7 +246,7 @@ QString Global::toLowerAndRemoveAccents(const QString& str)
   * return a list of keyword.
   * Some character or word can be removed.
   * Maybe a class "WordSplitter" should be created.
-  * @example " The little  DUCK " => ["little", "duck"].
+  * @example " The little  DUCK " => ["the", "little", "duck"].
   */
 QStringList Global::splitInWords(const QString& words)
 {

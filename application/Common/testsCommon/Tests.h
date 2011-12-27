@@ -36,6 +36,7 @@ private slots:
    void nCombinations();
    void formatByteSize();
    void availableDiskSpace();
+   void splitInWords();
 
    // PersistentData class.
    void writePersistentData();
