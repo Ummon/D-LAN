@@ -68,7 +68,7 @@ namespace GUI
    {
       Q_OBJECT
    public:
-      explicit WidgetSearch(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel, const DirListModel& sharedDirsModel, const QString& terms, QWidget *parent = 0);
+      explicit WidgetSearch(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel, const DirListModel& sharedDirsModel, const QString& terms, bool searchInOwnFiles = true, QWidget *parent = 0);
       ~WidgetSearch();
 
    signals:
