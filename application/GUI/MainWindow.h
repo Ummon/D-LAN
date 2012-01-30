@@ -75,7 +75,8 @@ namespace GUI
 
       void displayContextMenuPeers(const QPoint& point);
       void browse();
-      void search();
+      void searchOtherPeers();
+      void searchOwnFiles();
 
       void removeWidget(QWidget* widget);
 
@@ -88,6 +89,7 @@ namespace GUI
       bool eventFilter(QObject* obj, QEvent* event);
 
    private:
+      void search(bool ownFiles = false);
       void saveWindowsSettings();
       void restoreWindowsSettings();
 
@@ -109,7 +111,7 @@ namespace GUI
       private slots: WidgetBrowse* addWidgetBrowse(const Common::Hash& peerID, const Protos::Common::Entry& remoteEntry);
 
    private:
-      WidgetSearch* addWidgetSearch(const QString& term);
+      WidgetSearch* addWidgetSearch(const QString& term, bool searchInOwnFiles = false);
       void removeAllWidgets();
 
       Ui::MainWindow* ui;

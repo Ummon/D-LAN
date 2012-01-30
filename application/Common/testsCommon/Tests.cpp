@@ -92,6 +92,17 @@ void Tests::availableDiskSpace()
    qDebug() << "Available disk space [Mo] : " << Global::availableDiskSpace(".") / 1024 / 1024;
 }
 
+void Tests::splitInWords()
+{
+    QCOMPARE(Global::splitInWords("a"), QStringList() << "a");
+    QCOMPARE(Global::splitInWords("a b"), QStringList() << "a" << "b");
+    QCOMPARE(Global::splitInWords("    a    b    "), QStringList() << "a" << "b");
+    QCOMPARE(Global::splitInWords("a_b"), QStringList() << "a" << "b");
+    QCOMPARE(Global::splitInWords("ABC DEF"), QStringList() << "abc" << "def");
+    QCOMPARE(Global::splitInWords("איט"), QStringList() << "aee");
+    QCOMPARE(Global::splitInWords("abc%_-[]def"), QStringList() << "abc" << "def");
+}
+
 void Tests::writePersistentData()
 {
    this->hash = Hash::rand();

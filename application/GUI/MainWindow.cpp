@@ -141,8 +141,9 @@ MainWindow::MainWindow(QSharedPointer<RCC::ICoreConnection> coreConnection, QWid
    connect(this->ui->tblLog->verticalScrollBar(), SIGNAL(valueChanged(int)), this, SLOT(logScrollChanged(int)));
    connect(this->ui->dockLog, SIGNAL(visibilityChanged(bool)), statusBar, SLOT(dockLogVisibilityChanged(bool)));
 
-   connect(this->ui->butSearch, SIGNAL(clicked()), this, SLOT(search()));
-   connect(this->ui->txtSearch, SIGNAL(returnPressed()), this, SLOT(search()));
+   connect(this->ui->butSearch, SIGNAL(clicked()), this, SLOT(searchOtherPeers()));
+   connect(this->ui->butSearchOwnFiles, SIGNAL(clicked()), this, SLOT(searchOwnFiles()));
+   connect(this->ui->txtSearch, SIGNAL(returnPressed()), this, SLOT(searchOtherPeers()));
 
    this->addWidgetSettings();
 
@@ -178,6 +179,7 @@ void MainWindow::coreConnected()
       this->widgetSettings->coreConnected();
    this->ui->txtSearch->setDisabled(false);
    this->ui->butSearch->setDisabled(false);
+   this->ui->butSearchOwnFiles->setDisabled(false);
    this->ui->mdiArea->setActiveSubWindow(dynamic_cast<QMdiSubWindow*>(this->widgetChat->parent()));
 }
 
@@ -191,6 +193,7 @@ void MainWindow::coreDisconnected()
       this->widgetSettings->coreDisconnected();
    this->ui->txtSearch->setDisabled(true);
    this->ui->butSearch->setDisabled(true);
+   this->ui->butSearchOwnFiles->setDisabled(true);
    this->peerListModel.clear();
 }
 
@@ -212,14 +215,14 @@ void MainWindow::browse()
    }
 }
 
-void MainWindow::search()
+void MainWindow::searchOtherPeers()
 {
-   this->ui->txtSearch->setText(this->ui->txtSearch->text().trimmed());
+   this->search(false);
+}
 
-   if (!this->ui->txtSearch->text().isEmpty())
-   {
-      this->addWidgetSearch(this->ui->txtSearch->text());
-   }
+void MainWindow::searchOwnFiles()
+{
+   this->search(true);
 }
 
 /**
@@ -293,6 +296,16 @@ void MainWindow::keyPressEvent(QKeyEvent* event)
 void MainWindow::closeEvent(QCloseEvent* event)
 {
    delete this;
+}
+
+void MainWindow::search(bool ownFiles)
+{
+   this->ui->txtSearch->setText(this->ui->txtSearch->text().trimmed());
+
+   if (!this->ui->txtSearch->text().isEmpty())
+   {
+      this->addWidgetSearch(this->ui->txtSearch->text(), ownFiles);
+   }
 }
 
 bool MainWindow::eventFilter(QObject* obj, QEvent* event)
@@ -476,9 +489,9 @@ WidgetBrowse* MainWindow::addWidgetBrowse(const Common::Hash& peerID, const Prot
    return widgetBrowse;
 }
 
-WidgetSearch* MainWindow::addWidgetSearch(const QString& term)
+WidgetSearch* MainWindow::addWidgetSearch(const QString& term, bool searchInOwnFiles)
 {
-   WidgetSearch* widgetSearch = new WidgetSearch(this->coreConnection, this->peerListModel, this->sharedDirsModel, term, this);
+   WidgetSearch* widgetSearch = new WidgetSearch(this->coreConnection, this->peerListModel, this->sharedDirsModel, term, searchInOwnFiles, this);
    this->ui->mdiArea->addSubWindow(widgetSearch, Qt::CustomizeWindowHint);
    widgetSearch->setWindowState(Qt::WindowMaximized);
    this->widgetsSearch << widgetSearch;
