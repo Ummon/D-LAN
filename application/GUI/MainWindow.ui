@@ -102,9 +102,9 @@
     <number>1</number>
    </attribute>
    <widget class="QWidget" name="dockWidgetSearch">
-    <layout class="QHBoxLayout" name="laySearch" stretch="0,0">
+    <layout class="QHBoxLayout" name="laySearch" stretch="0,0,0">
      <property name="spacing">
-      <number>2</number>
+      <number>0</number>
      </property>
      <property name="margin">
       <number>2</number>
@@ -136,14 +136,8 @@
          <verstretch>0</verstretch>
         </sizepolicy>
        </property>
-       <property name="minimumSize">
-        <size>
-         <width>25</width>
-         <height>0</height>
-        </size>
-       </property>
        <property name="toolTip">
-        <string>Search</string>
+        <string>Search among other peers</string>
        </property>
        <property name="autoFillBackground">
         <bool>false</bool>
@@ -154,6 +148,23 @@
        <property name="icon">
         <iconset resource="ressources.qrc">
          <normaloff>:/icons/ressources/zoom.png</normaloff>:/icons/ressources/zoom.png</iconset>
+       </property>
+       <property name="flat">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="butSearchOwnFiles">
+       <property name="toolTip">
+        <string>Search among own files</string>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+       <property name="icon">
+        <iconset resource="ressources.qrc">
+         <normaloff>:/icons/ressources/zoom_selection.png</normaloff>:/icons/ressources/zoom_selection.png</iconset>
        </property>
        <property name="flat">
         <bool>true</bool>

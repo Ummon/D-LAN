@@ -24,5 +24,6 @@
         <file>ressources/icon.png</file>
         <file>ressources/log.png</file>
         <file>ressources/log_active.png</file>
+        <file>ressources/zoom_selection.png</file>
     </qresource>
 </RCC>

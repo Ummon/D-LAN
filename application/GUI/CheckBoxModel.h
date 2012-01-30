@@ -65,13 +65,13 @@ using namespace GUI;
   * @class GUI::CheckBoxModel
   *
   * Owns the items. Each item has a state checked or unchecked.
-  * The first item is "<all>" and permits to check all other items.
+  * The first item is "<All>" and permits to check all other items.
   */
 
 template <typename T>
 CheckBoxModel<T>::CheckBoxModel()
 {
-   this->items << Item("<all>", true);
+   this->items << Item("<All>", true);
 }
 
 template <typename T>
@@ -138,7 +138,7 @@ QList<T> CheckBoxModel<T>::getFilteredValues() const
 {
    QList<T> values;
    QListIterator<Item> i(this->items);
-   i.next(); // We don't care about "<all>".
+   i.next(); // We don't care about "<All>".
    while (i.hasNext())
    {
       const Item& item = i.next();

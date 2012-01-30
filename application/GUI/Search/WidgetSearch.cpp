@@ -124,7 +124,7 @@ QSize SearchDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelI
 
 void SearchDelegate::setTerms(const QString& terms)
 {
-   this->currentTerms =  Common::Global::splitInWords(terms);
+   this->currentTerms = Common::Global::splitInWords(terms);
 }
 
 QString SearchDelegate::toHtmlText(const QString& text) const
@@ -162,7 +162,7 @@ void SearchMenu::onShowMenu(QMenu& menu)
 
 /////
 
-WidgetSearch::WidgetSearch(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel, const DirListModel& sharedDirsModel, const QString& terms, QWidget *parent) :
+WidgetSearch::WidgetSearch(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel, const DirListModel& sharedDirsModel, const QString& terms, bool searchInOwnFiles, QWidget *parent) :
    QWidget(parent),
    ui(new Ui::WidgetSearch),
    menu(sharedDirsModel),
@@ -188,7 +188,7 @@ WidgetSearch::WidgetSearch(QSharedPointer<RCC::ICoreConnection> coreConnection, 
     this->ui->treeView->setSelectionBehavior(QAbstractItemView::SelectRows);
     this->ui->treeView->setSelectionMode(QAbstractItemView::ExtendedSelection);
 
-    this->searchModel.search(terms);
+    this->searchModel.search((searchInOwnFiles ? "<" : "") + terms);
 
     this->ui->treeView->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(this->ui->treeView, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(displayContextMenuDownload(const QPoint&)));
@@ -200,7 +200,7 @@ WidgetSearch::WidgetSearch(QSharedPointer<RCC::ICoreConnection> coreConnection, 
     connect(&this->menu, SIGNAL(downloadTo(const Common::Hash&, const QString&)), this, SLOT(downloadTo(const Common::Hash&, const QString&)));
     connect(&this->menu, SIGNAL(browse()), this, SLOT(browseCurrents()));
 
-    this->setWindowTitle(QString("\"%1\"").arg(terms));
+    this->setWindowTitle(QString("\"%1\"%2").arg(terms).arg(searchInOwnFiles ? " (Own files)" : ""));
 }
 
 WidgetSearch::~WidgetSearch()
