@@ -36,8 +36,14 @@ namespace GUI
       Q_OBJECT
 
    public:
-      explicit StatusBar(QSharedPointer<RCC::ICoreConnection> coreConnection, QWidget *parent = 0);
+      explicit StatusBar(QSharedPointer<RCC::ICoreConnection> coreConnection, QWidget* parent = 0);
       ~StatusBar();
+
+   signals:
+      void showDockLog(bool);
+
+   public slots:
+      void dockLogVisibilityChanged(bool);
 
    private slots:
       void coreConnected();
@@ -52,7 +58,7 @@ namespace GUI
       void setTotalSharing(int nbPeer, qint64 amount);
       void updateCoreStatus(Protos::GUI::State_Stats_CacheStatus status = Protos::GUI::State_Stats_CacheStatus_UNKNOWN, int progress = 0);
 
-      Ui::StatusBar *ui;
+      Ui::StatusBar* ui;
 
       QSharedPointer<RCC::ICoreConnection> coreConnection;
    };

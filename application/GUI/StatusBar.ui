@@ -18,6 +18,84 @@
     <number>2</number>
    </property>
    <item>
+    <widget class="QPushButton" name="butLog">
+     <property name="maximumSize">
+      <size>
+       <width>16</width>
+       <height>16</height>
+      </size>
+     </property>
+     <property name="toolTip">
+      <string>Show the log window</string>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+     <property name="icon">
+      <iconset resource="ressources.qrc">
+       <normaloff>:/icons/ressources/log.png</normaloff>
+       <activeon>:/icons/ressources/log_active.png</activeon>:/icons/ressources/log.png</iconset>
+     </property>
+     <property name="checkable">
+      <bool>true</bool>
+     </property>
+     <property name="checked">
+      <bool>false</bool>
+     </property>
+     <property name="flat">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QPushButton" name="butHelp">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Fixed" vsizetype="Minimum">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>16</width>
+       <height>16</height>
+      </size>
+     </property>
+     <property name="toolTip">
+      <string>About</string>
+     </property>
+     <property name="text">
+      <string notr="true"/>
+     </property>
+     <property name="icon">
+      <iconset resource="ressources.qrc">
+       <normaloff>:/icons/ressources/help.png</normaloff>:/icons/ressources/help.png</iconset>
+     </property>
+     <property name="default">
+      <bool>false</bool>
+     </property>
+     <property name="flat">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <spacer name="horizontalSpacer">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="sizeType">
+      <enum>QSizePolicy::Expanding</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>30</width>
+       <height>20</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item>
     <widget class="QLabel" name="icoDownloadRate">
      <property name="maximumSize">
       <size>
@@ -38,6 +116,12 @@
    </item>
    <item>
     <widget class="QLabel" name="lblDownloadRate">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+       <horstretch>1</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
      <property name="text">
       <string/>
      </property>
@@ -70,6 +154,12 @@
    </item>
    <item>
     <widget class="QLabel" name="lblUploadRate">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+       <horstretch>1</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
      <property name="text">
       <string/>
      </property>
@@ -96,6 +186,12 @@
    </item>
    <item>
     <widget class="QLabel" name="lblTotalSharing">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+       <horstretch>1</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
      <property name="text">
       <string/>
      </property>
@@ -103,6 +199,12 @@
    </item>
    <item>
     <widget class="QLabel" name="lblCoreStatus">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+       <horstretch>1</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
      <property name="text">
       <string/>
      </property>
@@ -139,35 +241,6 @@
      </property>
      <property name="format">
       <string notr="true"/>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QPushButton" name="butHelp">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Fixed" vsizetype="Minimum">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="maximumSize">
-      <size>
-       <width>16</width>
-       <height>16</height>
-      </size>
-     </property>
-     <property name="toolTip">
-      <string>About</string>
-     </property>
-     <property name="text">
-      <string/>
-     </property>
-     <property name="icon">
-      <iconset resource="ressources.qrc">
-       <normaloff>:/icons/ressources/help.png</normaloff>:/icons/ressources/help.png</iconset>
-     </property>
-     <property name="flat">
-      <bool>true</bool>
      </property>
     </widget>
    </item>

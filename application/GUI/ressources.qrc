@@ -22,5 +22,7 @@
         <file>ressources/explore_folder.png</file>
         <file>ressources/chat_new_message.png</file>
         <file>ressources/icon.png</file>
+        <file>ressources/log.png</file>
+        <file>ressources/log_active.png</file>
     </qresource>
 </RCC>

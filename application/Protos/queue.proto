@@ -14,7 +14,7 @@ message Queue {
       required Common.Entry remote_entry = 1; // May contain hashes.
       required Common.Entry local_entry = 2; // Doesn't have the hashes.
       
-      required Common.Hash peer_id = 3;
+      required Common.Hash peer_source_id = 3;
       optional bool complete = 4 [default = false]; // Only for Common.Entry.type == FILE
    }
    

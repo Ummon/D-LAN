@@ -480,6 +480,7 @@ QString Global::setCurrentDirToTemp(const QString& dirname)
 
    QDir dir;
    dir.cd(TEMP_DIRNAME);
-   QDir::setCurrent(dir.absolutePath());
-   return dir.absolutePath();
+   const QString tempDir = dir.absolutePath();
+   QDir::setCurrent(tempDir);
+   return tempDir;
 }

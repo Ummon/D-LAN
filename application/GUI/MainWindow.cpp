@@ -97,7 +97,9 @@ MainWindow::MainWindow(QSharedPointer<RCC::ICoreConnection> coreConnection, QWid
 {
    this->ui->setupUi(this);
 
-   ui->statusBar->addWidget(new StatusBar(this->coreConnection), 1);
+   StatusBar* statusBar = new StatusBar(this->coreConnection);
+   ui->statusBar->addWidget(statusBar, 1);
+   connect(statusBar, SIGNAL(showDockLog(bool)), this->ui->dockLog, SLOT(setVisible(bool)));
 
    this->ui->tblPeers->setModel(&this->peerListModel);
 
@@ -106,7 +108,7 @@ MainWindow::MainWindow(QSharedPointer<RCC::ICoreConnection> coreConnection, QWid
    this->ui->tblPeers->horizontalHeader()->setResizeMode(1, QHeaderView::ResizeToContents);
    this->ui->tblPeers->horizontalHeader()->setVisible(false);
 
-   // TODO : is there an another way to reduce the row size?
+   // TODO: is there an another way to reduce the row size?
    this->ui->tblPeers->verticalHeader()->setResizeMode(QHeaderView::Fixed);
    this->ui->tblPeers->verticalHeader()->setDefaultSectionSize(QApplication::fontMetrics().height() + 2);
    this->ui->tblPeers->verticalHeader()->setVisible(false);
@@ -137,6 +139,7 @@ MainWindow::MainWindow(QSharedPointer<RCC::ICoreConnection> coreConnection, QWid
 
    connect(&this->logModel, SIGNAL(rowsInserted(const QModelIndex&, int, int)), this, SLOT(newLogMessage()));
    connect(this->ui->tblLog->verticalScrollBar(), SIGNAL(valueChanged(int)), this, SLOT(logScrollChanged(int)));
+   connect(this->ui->dockLog, SIGNAL(visibilityChanged(bool)), statusBar, SLOT(dockLogVisibilityChanged(bool)));
 
    connect(this->ui->butSearch, SIGNAL(clicked()), this, SLOT(search()));
    connect(this->ui->txtSearch, SIGNAL(returnPressed()), this, SLOT(search()));
@@ -332,7 +335,7 @@ void MainWindow::restoreWindowsSettings()
 
    QByteArray state = SETTINGS.get<QByteArray>("windows_state");
    if (state.isEmpty())
-      state = QByteArray::fromHex("000000ff00000000fd0000000200000000000000bf000001defc0200000002fb000000140064006f0063006b00530065006100720063006801000000000000001c0000001c0000001cfb000000120064006f0063006b005000650065007200730100000020000001be0000004b00ffffff00000003000003840000005dfc0100000001fb0000000e0064006f0063006b004c006f00670100000000000003840000006100ffffff000002c1000001de00000004000000040000000800000008fc00000000");
+      state = QByteArray::fromHex("000000ff00000000fd0000000200000000000000bf000000e1fc0200000002fb000000140064006f0063006b00530065006100720063006801000000000000001c0000001c0000001cfb000000120064006f0063006b005000650065007200730100000020000000c10000004b00ffffff00000003000003840000005dfc0100000001fb0000000e0064006f0063006b004c006f00670000000000000003840000006100ffffff000002c1000000e100000004000000040000000800000008fc00000000");
    this->restoreState(state);
 }
 

@@ -77,8 +77,6 @@ Hash::Hash(const char* h)
   */
 Hash::Hash(const std::string& str)
 {
-   Q_ASSERT_X(static_cast<int>(str.size()) == HASH_SIZE, "Hash::Hash", QString("The given std::string must have a size of %1").arg(HASH_SIZE).toUtf8().constData());
-
    this->newData();
    if (static_cast<int>(str.size()) != HASH_SIZE)
       memset(this->data->hash, 0, HASH_SIZE);

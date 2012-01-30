@@ -25,7 +25,7 @@ using namespace GUI;
 
 #include <DialogAbout.h>
 
-StatusBar::StatusBar(QSharedPointer<RCC::ICoreConnection> coreConnection, QWidget *parent) :
+StatusBar::StatusBar(QSharedPointer<RCC::ICoreConnection> coreConnection, QWidget* parent) :
    QWidget(parent), ui(new Ui::StatusBar), coreConnection(coreConnection)
 {
    this->ui->setupUi(this);
@@ -36,12 +36,19 @@ StatusBar::StatusBar(QSharedPointer<RCC::ICoreConnection> coreConnection, QWidge
    connect(this->coreConnection.data(), SIGNAL(coreDisconnected()), this, SLOT(coreDisconnected()));
 
    connect(this->ui->butHelp, SIGNAL(clicked()), this, SLOT(showAbout()));
+
+   connect(this->ui->butLog, SIGNAL(toggled(bool)), this, SIGNAL(showDockLog(bool)));
 }
 
 StatusBar::~StatusBar()
 {
    this->coreConnection->disconnect(this); // Disconnect all signals from coreConnection.
    delete this->ui;
+}
+
+void StatusBar::dockLogVisibilityChanged(bool visibility)
+{
+   this->ui->butLog->setChecked(visibility);
 }
 
 void StatusBar::coreConnected()

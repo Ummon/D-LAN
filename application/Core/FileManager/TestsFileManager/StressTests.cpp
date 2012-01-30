@@ -56,6 +56,7 @@ void StressTests::initTestCase()
 
    SETTINGS.setFilename("core_settings_file_manager_stress_tests.txt");
    SETTINGS.setSettingsMessage(new Protos::Core::Settings());
+   SETTINGS.set("check_received_data_integrity", false);
 }
 
 /**
