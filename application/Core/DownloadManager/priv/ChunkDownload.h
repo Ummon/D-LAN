@@ -72,6 +72,8 @@ namespace DM
       bool isComplete() const;
       bool isPartiallyDownloaded() const;
       bool hasAtLeastAPeer();
+      bool isLastTransfertAttemptFailed() const;
+      void resetLastTransfertAttemptFailed();
 
       int getDownloadedBytes() const;
       QList<Common::Hash> getPeers();
@@ -115,6 +117,7 @@ namespace DM
 
       bool downloading;
       PM::ISocket::FinishedStatus networkTransferStatus;
+      bool lastTransfertAttemptFailed;
 
       QThread* mainThread;
 

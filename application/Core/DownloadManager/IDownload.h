@@ -47,6 +47,7 @@ namespace DM
      NO_ENOUGH_FREE_SPACE = 0x21,
      UNABLE_TO_CREATE_THE_FILE = 0x22,
      UNABLE_TO_RETRIEVE_THE_HASHES = 0x23,
+     TRANSFERT_ERROR = 0x24
    };
 
    class IDownload

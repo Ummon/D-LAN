@@ -45,6 +45,7 @@ ChunkDownload::ChunkDownload(QSharedPointer<PM::IPeerManager> peerManager, Occup
    socket(0),
    downloading(false),
    networkTransferStatus(PM::ISocket::SFS_OK),
+   lastTransfertAttemptFailed(false),
    mainThread(QThread::currentThread()),
    mutex(QMutex::Recursive)
 {
@@ -100,6 +101,7 @@ void ChunkDownload::run()
    int deltaRead = 0;
    QElapsedTimer timer;
    timer.start();
+   this->lastTransfertAttemptFailed = false;
 
    try
    {
@@ -136,6 +138,7 @@ void ChunkDownload::run()
             {
                L_WARN(QString("Connection dropped, error = %1, bytesAvailable = %2").arg(socket->errorString()).arg(socket->bytesAvailable()));
                this->networkTransferStatus = PM::ISocket::SFS_TO_CLOSE;
+               this->lastTransfertAttemptFailed = true;
                break;
             }
             continue;
@@ -144,6 +147,7 @@ void ChunkDownload::run()
          {
             L_WARN(QString("Socket : cannot receive data : %1").arg(this->chunk->toStringLog()));
             this->networkTransferStatus = PM::ISocket::SFS_ERROR;
+            this->lastTransfertAttemptFailed = true;
             break;
          }
 
@@ -278,6 +282,19 @@ bool ChunkDownload::isPartiallyDownloaded() const
 bool ChunkDownload::hasAtLeastAPeer()
 {
    return !this->getPeers().isEmpty();
+}
+
+/**
+  * Return 'true' if the last attempt of downloading this chunk has failed.
+  */
+bool ChunkDownload::isLastTransfertAttemptFailed() const
+{
+    return this->lastTransfertAttemptFailed;
+}
+
+void ChunkDownload::resetLastTransfertAttemptFailed()
+{
+   this->lastTransfertAttemptFailed = false;
 }
 
 int ChunkDownload::getDownloadedBytes() const

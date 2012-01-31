@@ -77,7 +77,8 @@ FileDownload::FileDownload(
    }
    this->nbHashesKnown = this->chunkDownloads.size();
 
-   this->tryToLinkToAnExistingFile();
+   if (this->tryToLinkToAnExistingFile())
+      this->updateStatus(); // Maybe all the file is complete, so we update the status.
 }
 
 FileDownload::~FileDownload()
@@ -160,6 +161,7 @@ QSharedPointer<ChunkDownload> FileDownload::getAChunkToDownload()
    for (QListIterator< QSharedPointer<ChunkDownload> > i(this->chunkDownloads); i.hasNext();)
    {
       QSharedPointer<ChunkDownload> chunkDownload = i.next();
+
       const int nbPeer = chunkDownload->isReadyToDownload();
 
       if (nbPeer == 0)
@@ -168,7 +170,12 @@ QSharedPointer<ChunkDownload> FileDownload::getAChunkToDownload()
       }
       else
       {
-         if (chunkDownload->isPartiallyDownloaded())
+         if (chunkDownload->isLastTransfertAttemptFailed())
+         {
+            chunkDownload->resetLastTransfertAttemptFailed();
+            return QSharedPointer<ChunkDownload>();
+         }
+         else if (chunkDownload->isPartiallyDownloaded())
          {
             chunksReadyToDownload.clear();
             chunksReadyToDownload << chunkDownload;
@@ -410,7 +417,12 @@ void FileDownload::updateStatus()
    {
       QSharedPointer<ChunkDownload> chunkDownload = i.next();
 
-      if (chunkDownload->isDownloading())
+      if (chunkDownload->isLastTransfertAttemptFailed())
+      {
+         this->status = TRANSFERT_ERROR;
+         return;
+      }
+      else if (chunkDownload->isDownloading())
       {
          this->status = DOWNLOADING;
          return;
