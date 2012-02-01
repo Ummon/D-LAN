@@ -320,7 +320,7 @@ void DownloadManager::scanTheQueue()
          if (!(fileDownload = static_cast<FileDownload*>(i.next())))
              break;
 
-      fileDownload->removeErroneousStatus();
+      fileDownload->updateStatus(); // Reset status.
 
       chunkDownload = fileDownload->getAChunkToDownload();
 

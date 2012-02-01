@@ -69,6 +69,8 @@ namespace DM
 
       void getUnfinishedChunks(QList< QSharedPointer<IChunkDownload> >& chunks, int nMax) const;
 
+      void updateStatus();
+
       void remove();
 
    public slots:
@@ -90,7 +92,6 @@ namespace DM
       void setStatus(Status newStatus);
 
    private:
-      void updateStatus();
       bool tryToLinkToAnExistingFile();
       void connectChunkDownloadSignals(QSharedPointer<ChunkDownload> chunkDownload);
 

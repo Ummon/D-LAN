@@ -63,7 +63,6 @@ namespace DM
       quint64 getID() const;
       Status getStatus() const;
       bool isStatusErroneous() const;
-      void removeErroneousStatus();
       virtual int getProgress() const;
       Common::Hash getPeerSourceID() const;
       QSet<Common::Hash> getPeers() const;

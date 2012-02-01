@@ -79,12 +79,6 @@ bool Download::isStatusErroneous() const
    return this->status >= 0x20;
 }
 
-void Download::removeErroneousStatus()
-{
-   if (this->isStatusErroneous())
-      this->status = QUEUED;
-}
-
 int Download::getProgress() const
 {
    return 0;

@@ -77,8 +77,8 @@ FileDownload::FileDownload(
    }
    this->nbHashesKnown = this->chunkDownloads.size();
 
-   if (this->tryToLinkToAnExistingFile())
-      this->updateStatus(); // Maybe all the file is complete, so we update the status.
+   this->tryToLinkToAnExistingFile();
+   this->updateStatus();
 }
 
 FileDownload::~FileDownload()
@@ -260,6 +260,65 @@ void FileDownload::getUnfinishedChunks(QList< QSharedPointer<IChunkDownload> >& 
 }
 
 /**
+  * Update the file status depending of the states of its chunks.
+  * If all chunks are complete -> COMPLETE
+  * If there is downloading chunk -> DOWNLOADING
+  * If a GET_HASHES request is running -> INITIALIZING
+  * If all the incomplete chunks have no peer -> NO_SOURCE
+  * Else -> QUEUED
+  */
+void FileDownload::updateStatus()
+{
+   if (this->status == DELETED || this->status == COMPLETE)
+      return;
+
+   this->status = this->chunkDownloads.size() == NB_CHUNK ? COMPLETE : QUEUED;
+
+   bool hasAtLeastAPeer = false;
+   for (QListIterator< QSharedPointer<ChunkDownload> > i(this->chunkDownloads); i.hasNext();)
+   {
+      QSharedPointer<ChunkDownload> chunkDownload = i.next();
+
+      if (chunkDownload->isLastTransfertAttemptFailed())
+      {
+         this->status = TRANSFERT_ERROR;
+         return;
+      }
+      else if (chunkDownload->isDownloading())
+      {
+         this->status = DOWNLOADING;
+         return;
+      }
+      else if (!hasAtLeastAPeer && !chunkDownload->isComplete())
+      {
+         if (chunkDownload->hasAtLeastAPeer())
+         {
+            hasAtLeastAPeer = true;
+            this->status = QUEUED;
+         }
+         else
+         {
+            this->status = NO_SOURCE;
+         }
+      }
+   }
+
+   if (this->status == COMPLETE)
+   {
+      const QString sharedDir = this->fileManager->getSharedDir(this->localEntry.shared_dir().id().hash());
+      L_USER(QString("File completed: %1%2%3")
+         .arg(sharedDir.left(sharedDir.size() - 1)) // remove the ending '/'.
+         .arg(Common::ProtoHelper::getStr(this->localEntry, &Protos::Common::Entry::path))
+         .arg(Common::ProtoHelper::getStr(this->localEntry, &Protos::Common::Entry::name))
+      );
+   }
+   else if(!this->getHashesResult.isNull())
+   {
+      this->status = GETTING_THE_HASHES;
+   }
+}
+
+/**
   * When we explicitly remove a download, we must remove all unfinished files.
   */
 void FileDownload::remove()
@@ -395,65 +454,6 @@ void FileDownload::setStatus(Status newStatus)
       return;
 
    Download::setStatus(newStatus);
-}
-
-/**
-  * Update the file status depending of the states of its chunks.
-  * If all chunks are complete -> COMPLETE
-  * If there is downloading chunk -> DOWNLOADING
-  * If a GET_HASHES request is running -> INITIALIZING
-  * If all the incomplete chunks have no peer -> NO_SOURCE
-  * Else -> QUEUED
-  */
-void FileDownload::updateStatus()
-{
-   if (this->status == DELETED || this->status == COMPLETE)
-      return;
-
-   this->status = this->chunkDownloads.size() == NB_CHUNK ? COMPLETE : QUEUED;
-
-   bool hasAtLeastAPeer = false;
-   for (QListIterator< QSharedPointer<ChunkDownload> > i(this->chunkDownloads); i.hasNext();)
-   {
-      QSharedPointer<ChunkDownload> chunkDownload = i.next();
-
-      if (chunkDownload->isLastTransfertAttemptFailed())
-      {
-         this->status = TRANSFERT_ERROR;
-         return;
-      }
-      else if (chunkDownload->isDownloading())
-      {
-         this->status = DOWNLOADING;
-         return;
-      }
-      else if (!hasAtLeastAPeer && !chunkDownload->isComplete())
-      {
-         if (chunkDownload->hasAtLeastAPeer())
-         {
-            hasAtLeastAPeer = true;
-            this->status = QUEUED;
-         }
-         else
-         {
-            this->status = NO_SOURCE;
-         }
-      }
-   }
-
-   if (this->status == COMPLETE)
-   {
-      const QString sharedDir = this->fileManager->getSharedDir(this->localEntry.shared_dir().id().hash());
-      L_USER(QString("File completed: %1%2%3")
-         .arg(sharedDir.left(sharedDir.size() - 1)) // remove the ending '/'.
-         .arg(Common::ProtoHelper::getStr(this->localEntry, &Protos::Common::Entry::path))
-         .arg(Common::ProtoHelper::getStr(this->localEntry, &Protos::Common::Entry::name))
-      );
-   }
-   else if(!this->getHashesResult.isNull())
-   {
-      this->status = GETTING_THE_HASHES;
-   }
 }
 
 /**
