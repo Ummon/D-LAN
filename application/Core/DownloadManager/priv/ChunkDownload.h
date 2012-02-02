@@ -1,6 +1,6 @@
 /**
   * D-LAN - A decentralized LAN file sharing software.
-  * Copyright (C) 2010-2011 Greg Burri <greg.burri@gmail.com>
+  * Copyright (C) 2010-2012 Greg Burri <greg.burri@gmail.com>
   *
   * This program is free software: you can redistribute it and/or modify
   * it under the terms of the GNU General Public License as published by
@@ -72,6 +72,8 @@ namespace DM
       bool isComplete() const;
       bool isPartiallyDownloaded() const;
       bool hasAtLeastAPeer();
+      bool isLastTransfertAttemptFailed() const;
+      void resetLastTransfertAttemptFailed();
 
       int getDownloadedBytes() const;
       QList<Common::Hash> getPeers();
@@ -115,6 +117,7 @@ namespace DM
 
       bool downloading;
       PM::ISocket::FinishedStatus networkTransferStatus;
+      bool lastTransfertAttemptFailed;
 
       QThread* mainThread;
 

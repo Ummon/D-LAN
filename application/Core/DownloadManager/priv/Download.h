@@ -1,6 +1,6 @@
 /**
   * D-LAN - A decentralized LAN file sharing software.
-  * Copyright (C) 2010-2011 Greg Burri <greg.burri@gmail.com>
+  * Copyright (C) 2010-2012 Greg Burri <greg.burri@gmail.com>
   *
   * This program is free software: you can redistribute it and/or modify
   * it under the terms of the GNU General Public License as published by
@@ -63,7 +63,6 @@ namespace DM
       quint64 getID() const;
       Status getStatus() const;
       bool isStatusErroneous() const;
-      void removeErroneousStatus();
       virtual int getProgress() const;
       Common::Hash getPeerSourceID() const;
       QSet<Common::Hash> getPeers() const;
