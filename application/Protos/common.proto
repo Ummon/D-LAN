@@ -13,6 +13,11 @@ message Error {
    optional string message = 1;
 }
 
+message Language {
+   required string lang = 1; // ISO-639
+   optional string country = 2; // ISO-3166
+}
+
 // For identify a chunk or a user.
 message Hash {
    optional bytes hash = 1; // 28 bytes. If it doesn't exist the hash is null.

@@ -33,7 +33,7 @@
    <item>
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>0</number>
+      <number>1</number>
      </property>
      <widget class="QWidget" name="tabBasicSettings">
       <attribute name="title">
@@ -171,16 +171,16 @@
       <attribute name="title">
        <string>Advanced</string>
       </attribute>
-      <layout class="QVBoxLayout" name="layAdvanced" stretch="0,0,0">
+      <layout class="QVBoxLayout" name="layAdvanced" stretch="0,0,0,0,0">
        <item>
-        <widget class="QCheckBox" name="chkEnableIntegrityCheck">
-         <property name="toolTip">
-          <string>When activated all received data will be verified against their hashes.  It may consume CPU resources.</string>
-         </property>
+        <widget class="QLabel" name="lblLanguage">
          <property name="text">
-          <string>Data integrity check</string>
+          <string>Language</string>
          </property>
         </widget>
+       </item>
+       <item>
+        <widget class="QComboBox" name="cmbLanguages"/>
        </item>
        <item>
         <widget class="QGroupBox" name="grpCoreConnection">
@@ -224,6 +224,16 @@
            </widget>
           </item>
          </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="chkEnableIntegrityCheck">
+         <property name="toolTip">
+          <string>When activated all received data will be verified against their hashes.  It may consume CPU resources.</string>
+         </property>
+         <property name="text">
+          <string>Data integrity check</string>
+         </property>
         </widget>
        </item>
        <item>

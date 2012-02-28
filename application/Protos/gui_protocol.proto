@@ -149,14 +149,18 @@ message AuthenticationResult {
    required Status status = 1;
 }
 
-// Set the settings
-// Peer.peer_id and Peer.sharing_amount are ignored.
+// Set the settings.
 // GUI -> Core
 // id : 0x31
 message CoreSettings {
-   required string nick = 1;
-   repeated string shared_directory = 2; // A directory always ends with a slash ('/').
-   required bool enable_integrity_check = 3;
+   message SharedDirectories {
+      repeated string dir = 1; // A directory always ends with a slash ('/').
+   }
+   
+   optional string nick = 1;
+   optional SharedDirectories shared_directories = 2;
+   optional bool enable_integrity_check = 3;
+   optional Common.Language language = 4;
 }
 
 // GUI -> Core

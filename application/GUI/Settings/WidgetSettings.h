@@ -44,6 +44,9 @@ namespace GUI
    class WidgetSettings : public QWidget
    {
       Q_OBJECT
+
+      static const QString LANGUAGE_DIRECTORY;
+
    public:
       explicit WidgetSettings(QSharedPointer<RCC::ICoreConnection> coreConnection, DirListModel& sharedDirsModel, QWidget *parent = 0);
       ~WidgetSettings();
@@ -54,6 +57,7 @@ namespace GUI
    private slots:
       void newState(const Protos::GUI::State& state);
       void saveCoreSettings();
+      void saveCoreLanguageSettingOnly();
       void saveGUISettings();
 
       void addShared();
@@ -75,6 +79,8 @@ namespace GUI
       virtual void showEvent(QShowEvent* event);
 
    private:
+      void updateAvailableLanguages();
+
       Ui::WidgetSettings* ui;
 
       QSharedPointer<RCC::ICoreConnection> coreConnection;

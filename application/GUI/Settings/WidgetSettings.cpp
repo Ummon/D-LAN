@@ -43,6 +43,8 @@ void DirListDelegate::paint(QPainter* painter, const QStyleOptionViewItem& optio
 
 /////
 
+const QString WidgetSettings::LANGUAGE_DIRECTORY("languages");
+
 WidgetSettings::WidgetSettings(QSharedPointer<RCC::ICoreConnection> coreConnection, DirListModel& sharedDirsModel, QWidget* parent) :
    QWidget(parent), ui(new Ui::WidgetSettings), coreConnection(coreConnection), sharedDirsModel(sharedDirsModel), initialState(true)
 {
@@ -160,9 +162,19 @@ void WidgetSettings::saveCoreSettings()
    settings.set_enable_integrity_check(this->ui->chkEnableIntegrityCheck->isChecked());
 
    for (QListIterator<Common::SharedDir> i(this->sharedDirsModel.getDirs()); i.hasNext();)
-      Common::ProtoHelper::addRepeatedStr(settings, &Protos::GUI::CoreSettings::add_shared_directory, i.next().path);
+      Common::ProtoHelper::addRepeatedStr(*settings.mutable_shared_directories(), &Protos::GUI::CoreSettings::SharedDirectories::add_dir, i.next().path);
 
    this->coreConnection->setCoreSettings(settings);
+}
+
+/**
+  * Send to the core only the language setting, it's usefull to call this function right after
+  * a connection is established to set the core language.
+  */
+void WidgetSettings::saveCoreLanguageSettingOnly()
+{
+   /*Protos::GUI::CoreSettings settings;
+   settings.*/
 }
 
 void WidgetSettings::saveGUISettings()
@@ -329,4 +341,12 @@ void WidgetSettings::showEvent(QShowEvent* event)
       this->ui->tabWidget->setCurrentIndex(0);
 
    QWidget::showEvent(event);
+}
+
+/**
+  * Update the language list by looking into the language directory.
+  */
+void WidgetSettings::updateAvailableLanguages()
+{
+
 }
