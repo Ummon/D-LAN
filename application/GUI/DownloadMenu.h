@@ -21,6 +21,7 @@
 
 #include <QObject>
 #include <QSharedPointer>
+#include <QStringList>
 #include <QPoint>
 #include <QMenu>
 
@@ -38,6 +39,7 @@ namespace GUI
       void show(const QPoint& globalPosition);
 
    signals:
+      void askDirectories(QStringList& dirs);
       void downloadTo(const Common::Hash&, const QString&);
 
    private slots:

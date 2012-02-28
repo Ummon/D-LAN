@@ -54,6 +54,7 @@ namespace FM
       ~FileManager();
 
       void setSharedDirs(const QStringList& dirs);
+      QPair<Common::SharedDir, QString> addASharedDir(const QString& absoluteDir);
       QList<Common::SharedDir> getSharedDirs() const;
       QString getSharedDir(const Common::Hash& ID) const;
 

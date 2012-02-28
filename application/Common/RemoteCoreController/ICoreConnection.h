@@ -118,6 +118,12 @@ namespace RCC
       virtual void download(const Common::Hash& peerID, const Protos::Common::Entry& entry, const Common::Hash& sharedFolderID, const QString& relativePath = "/") = 0;
 
       /**
+        * Download an entry 'entry' from the peer 'peerID' to a local path 'absolutePath'. If there is no shared directory corresponding
+        * to the given path a new shared directory is automatically created.
+        */
+      virtual void download(const Common::Hash& peerID, const Protos::Common::Entry& entry, const QString& absolutePath) = 0;
+
+      /**
         * Cancel one or more download. IDs are given by the signal 'newState'.        
         * @remarks The signal 'newState' will be emitted right after a call.
         * @param complete If true remove all complete download.

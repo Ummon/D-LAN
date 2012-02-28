@@ -66,6 +66,8 @@ namespace FM
    class InsufficientStorageSpaceException {};
 
    class UnableToCreateNewFileException {};
+
+   class UnableToCreateSharedDirectory {};
 }
 
 #endif

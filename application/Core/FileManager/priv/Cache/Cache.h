@@ -20,6 +20,7 @@
 #define FILEMANAGER_CACHE_H
 
 #include <QObject>
+#include <QPair>
 #include <QList>
 #include <QStringList>
 #include <QMutex>
@@ -56,6 +57,7 @@ namespace FM
       QList<Common::SharedDir> getSharedDirs() const;
       SharedDirectory* getSharedDirectory(const Common::Hash& ID) const;
       void setSharedDirs(const QStringList& dirs);
+      QPair<Common::SharedDir, QString> addASharedDir(const QString& absoluteDir);
       void removeSharedDir(SharedDirectory* dir, Directory* dir2 = 0);
 
       SharedDirectory* getSuperSharedDirectory(const QString& path) const;
@@ -84,6 +86,7 @@ namespace FM
       void sharedDirectoryRemoved(SharedDirectory* dir, Directory* dir2);
 
    private:
+      static Common::SharedDir makeSharedDir(const SharedDirectory* dir);
       SharedDirectory* createSharedDir(const QString path, const Common::Hash& ID = Common::Hash(), int pos = -1);
       void createSharedDirs(const QStringList& dirs, const QList<Common::Hash>& ids = QList<Common::Hash>());
 

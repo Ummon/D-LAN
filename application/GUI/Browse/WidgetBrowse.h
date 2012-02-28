@@ -20,6 +20,7 @@
 #define GUI_WIDGETBROWSE_H
 
 #include <QWidget>
+#include <QStringList>
 #include <QAbstractButton>
 #include <QStyledItemDelegate>
 #include <QItemSelection>
@@ -57,6 +58,7 @@ namespace GUI
       void refresh();
 
    private slots:
+      void askDirectories(QStringList& dirs);
       void displayContextMenuDownload(const QPoint& point);
       void entryDoubleClicked(const QModelIndex& index);
       void download();

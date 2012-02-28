@@ -85,11 +85,19 @@ FileManager::~FileManager()
 }
 
 /**
-  * @exception SuperDirectoryExistsException Thrown when a super shared directory already exists.
+  * @exception DirsNotFoundException
   */
 void FileManager::setSharedDirs(const QStringList& dirs)
 {
    this->cache.setSharedDirs(dirs);
+}
+
+/**
+  * @exception DirsNotFoundException
+  */
+QPair<Common::SharedDir, QString> FileManager::addASharedDir(const QString& absoluteDir)
+{
+   return this->cache.addASharedDir(absoluteDir);
 }
 
 QList<Common::SharedDir> FileManager::getSharedDirs() const

@@ -148,7 +148,7 @@ void CoreConnection::download(const Common::Hash& peerID, const Protos::Common::
    this->send(Common::MessageHeader::GUI_DOWNLOAD, downloadMessage);
 }
 
-void CoreConnection::download(const Common::Hash& peerID, const Protos::Common::Entry& entry, const Common::Hash& sharedFolderID, const QString& relativePath)
+void CoreConnection::download(const Common::Hash& peerID, const Protos::Common::Entry& entry, const Common::Hash& sharedFolderID, const QString& path)
 {
    // We cannot download our entries.
    if (peerID == this->getID())
@@ -157,9 +157,15 @@ void CoreConnection::download(const Common::Hash& peerID, const Protos::Common::
    Protos::GUI::Download downloadMessage;
    downloadMessage.mutable_peer_id()->set_hash(peerID.getData(), Common::Hash::HASH_SIZE);
    downloadMessage.mutable_entry()->CopyFrom(entry);
-   downloadMessage.mutable_destination_directory_id()->set_hash(sharedFolderID.getData(), Common::Hash::HASH_SIZE);
-   Common::ProtoHelper::setStr(downloadMessage, &Protos::GUI::Download::set_destination_path, relativePath);
+   if (!sharedFolderID.isNull())
+      downloadMessage.mutable_destination_directory_id()->set_hash(sharedFolderID.getData(), Common::Hash::HASH_SIZE);
+   Common::ProtoHelper::setStr(downloadMessage, &Protos::GUI::Download::set_destination_path, path);
    this->send(Common::MessageHeader::GUI_DOWNLOAD, downloadMessage);
+}
+
+void CoreConnection::download(const Common::Hash& peerID, const Protos::Common::Entry& entry, const QString& absolutePath)
+{
+   this->download(peerID, entry, Common::Hash(), absolutePath);
 }
 
 void CoreConnection::cancelDownloads(const QList<quint64>& downloadIDs, bool complete)

@@ -21,6 +21,7 @@
 
 #include <QStringList>
 #include <QBitArray>
+#include <QPair>
 #include <QSharedPointer>
 
 #include <Common/Hash.h>
@@ -37,7 +38,7 @@ namespace FM
 
    /**
      * The file manager controls all shared directories and files. It offers these fonctions:
-     * - Add or remove one ore more shared directory. A directory can be have read or read-write rights (not yet implemented).
+     * - Add or remove one ore more shared directory.
      * - Watch the shared directories recursively to update the model if a file/directory is addes, changed, renamed or removed.
      * - Browse the cache.
      * - Offer a quick indexed multi-term search based on the names of files and directories.
@@ -55,6 +56,17 @@ namespace FM
         * @exception DirsNotFoundException
         */
       virtual void setSharedDirs(const QStringList& dirs) = 0;
+
+      /**
+        * Add a shared directory and return a Common::SharedDir object and the relative path to this directory.
+        * If the given absolute directory is a child of an existing shared directory, no new shared directory is created and
+        * the existing one is returned.
+        * If the given absolute directory is a parent of one or more existing directory, all the existing directories are merged into
+        * a new shared directory and this new one is returned. In this case, the relative path is '/'.
+        * @exception DirsNotFoundException
+        * @exception UnableToCreateSharedDirectory
+        */
+      virtual QPair<Common::SharedDir, QString> addASharedDir(const QString& absoluteDir) = 0;
 
       virtual QList<Common::SharedDir> getSharedDirs() const = 0;
 

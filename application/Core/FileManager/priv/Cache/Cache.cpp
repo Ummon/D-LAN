@@ -290,10 +290,8 @@ QList<Common::SharedDir> Cache::getSharedDirs() const
    QList<Common::SharedDir> list;
 
    for (QListIterator<SharedDirectory*> i(this->sharedDirs); i.hasNext();)
-   {
-      SharedDirectory* dir = i.next();
-      list << Common::SharedDir(dir->getId(), dir->getFullPath(), dir->getSize(), Common::Global::availableDiskSpace(dir->getFullPath()));
-   }
+      list << makeSharedDir(i.next());
+
    return list;
 }
 
@@ -350,6 +348,51 @@ void Cache::setSharedDirs(const QStringList& dirs)
 
    if (!dirsNotFound.isEmpty())
       throw DirsNotFoundException(dirsNotFound);
+}
+
+/**
+  * @exception DirsNotFoundException
+  */
+QPair<Common::SharedDir, QString> Cache::addASharedDir(const QString& absoluteDir)
+{
+   QMutexLocker locker(&this->mutex);
+
+   QString absoluteDirCleaned = Common::Global::cleanDirPath(absoluteDir);
+
+   // If the given directory is already a shared directory
+   for (QListIterator<SharedDirectory*> i(this->sharedDirs); i.hasNext();)
+   {
+      SharedDirectory* current = i.next();
+      if (absoluteDirCleaned == current->getFullPath())
+         return qMakePair(makeSharedDir(current), QString("/"));
+   }
+
+   // If the given directory is a sub directory to an existing shared directory
+   SharedDirectory* superDir = this->getSuperSharedDirectory(absoluteDirCleaned);
+   if (superDir && absoluteDirCleaned.indexOf(superDir->getFullPath()) == 0)
+   {
+      QString relativeDir(absoluteDirCleaned);
+      relativeDir.remove(0, superDir->getFullPath().length());
+      relativeDir.prepend('/');
+      return qMakePair(makeSharedDir(superDir), relativeDir);
+   }
+
+   // Else we create a new shared directory
+   try
+   {
+      SharedDirectory* dir = this->createSharedDir(absoluteDirCleaned);
+      if (dir)
+      {
+         dir->mergeSubSharedDirectories();
+         return qMakePair(makeSharedDir(dir), QString("/"));
+      }
+      else
+         throw UnableToCreateSharedDirectory();
+   }
+   catch (DirNotFoundException& e)
+   {
+      throw DirsNotFoundException(QStringList() << e.path);
+   }
 }
 
 /**
@@ -575,6 +618,11 @@ SharedDirectory* Cache::createSharedDir(const QString path, const Common::Hash& 
    }
 
    return 0;
+}
+
+Common::SharedDir Cache::makeSharedDir(const SharedDirectory* dir)
+{
+   return Common::SharedDir(dir->getId(), dir->getFullPath(), dir->getSize(), Common::Global::availableDiskSpace(dir->getFullPath()));
 }
 
 /**

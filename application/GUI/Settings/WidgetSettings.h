@@ -69,8 +69,6 @@ namespace GUI
       void refreshButtonsAvailability();
       void openLocation();
 
-      QStringList askForDirectories();
-
    protected:
       virtual void showEvent(QShowEvent* event);
 

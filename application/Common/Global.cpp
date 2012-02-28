@@ -199,7 +199,7 @@ QString Global::toLowerAndRemoveAccents(const QString& str)
    for (int i = 0; i < strLower.size(); i++)
       switch (strLower[i].unicode())
       {
-         case 0x00E0: // � .
+         case 0x00E0: // à .
          case 0x00E1: // á.
          case 0x00E2: // â.
          case 0x00E3: // ã.

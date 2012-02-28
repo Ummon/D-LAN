@@ -25,6 +25,8 @@ using namespace DM;
 #include <Common/Constants.h>
 #include <Common/ProtoHelper.h>
 
+#include <Core/FileManager/Exceptions.h>
+
 #include <priv/FileDownload.h>
 #include <priv/DirDownload.h>
 #include <priv/DownloadPredicate.h>
@@ -75,6 +77,23 @@ void DownloadManager::addDownload(const Protos::Common::Entry& remoteEntry, cons
 void DownloadManager::addDownload(const Protos::Common::Entry& remoteEntry, const Common::Hash& peerSource, const Common::Hash& destinationDirectoryID, const QString& relativePath)
 {
    this->addDownload(remoteEntry, peerSource, destinationDirectoryID, relativePath, false, this->downloadQueue.size());
+}
+
+void DownloadManager::addDownload(const Protos::Common::Entry& remoteEntry, const Common::Hash& peerSource, const QString& absolutePath)
+{
+   try
+   {
+      QPair<Common::SharedDir, QString> result = this->fileManager->addASharedDir(absolutePath);
+      this->addDownload(remoteEntry, peerSource, result.first.ID, result.second, false, this->downloadQueue.size());
+   }
+   catch(FM::DirsNotFoundException& e)
+   {
+      L_WARN(QString("The following directory isn't found: %1").arg(absolutePath));
+   }
+   catch(FM::UnableToCreateSharedDirectory& e)
+   {
+      L_WARN(QString("Unable to share dthe following directory: %1").arg(absolutePath));
+   }
 }
 
 Download* DownloadManager::addDownload(const Protos::Common::Entry& remoteEntry, const Common::Hash& peerSource, const Common::Hash& destinationDirectoryID, const QString& localRelativePath, bool complete)

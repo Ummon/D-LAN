@@ -32,7 +32,7 @@ using namespace GUI;
 
 #include <Protos/gui_settings.pb.h>
 
-#include <Settings/RemoteFileDialog.h>
+#include <Utils.h>
 
 void DirListDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
@@ -184,7 +184,7 @@ void WidgetSettings::saveGUISettings()
 
 void WidgetSettings::addShared()
 {
-   QStringList dirs = askForDirectories();
+   QStringList dirs = Utils::askForDirectories(this->coreConnection);
    if (!dirs.isEmpty())
    {
       this->sharedDirsModel.addDirs(dirs);
@@ -287,40 +287,6 @@ void WidgetSettings::openLocation()
    QModelIndexList selectedRows = this->ui->tblShareDirs->selectionModel()->selectedRows();
    foreach (QModelIndex index, selectedRows)
       QDesktopServices::openUrl(QUrl("file:///" + this->sharedDirsModel.getLocationPath(index), QUrl::TolerantMode));
-}
-
-/**
-  * TODO : browse the remotes directories (Core) not the local ones.
-  */
-QStringList WidgetSettings::askForDirectories()
-{
-   if (this->coreConnection->isLocal())
-   {
-      QFileDialog fileDialog(this, "Choose a directory to share");
-      fileDialog.setOption(QFileDialog::DontUseNativeDialog,true);
-      fileDialog.setFileMode(QFileDialog::Directory);
-
-      QListView* l = fileDialog.findChild<QListView*>("listView");
-      if (l)
-         l->setSelectionMode(QAbstractItemView::ExtendedSelection);
-
-      if (fileDialog.exec())
-      {
-         return fileDialog.selectedFiles();
-      }
-      return QStringList();
-   }
-   else
-   {
-      RemoteFileDialog fileDialog(this);
-      fileDialog.setWindowTitle("Remote folder");
-      fileDialog.setText("Remote folder to share : ");
-      if (fileDialog.exec())
-      {
-         return QStringList() << fileDialog.getFolder();
-      }
-      return QStringList();
-   }
 }
 
 void WidgetSettings::showEvent(QShowEvent* event)

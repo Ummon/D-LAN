@@ -21,6 +21,8 @@ using namespace GUI;
 
 #include <QAction>
 
+#include <Utils.h>
+
 /**
   * @class GUI::DownloadMenu
   *
@@ -53,6 +55,14 @@ void DownloadMenu::show(const QPoint& globalPosition)
       menu.addAction(action);
    }
 
+   QAction* action = new QAction(
+      QIcon(":/icons/ressources/download.png"),
+      "Download selected entries to ..",
+      &menu
+   );
+   connect(action, SIGNAL(triggered()), this, SLOT(actionTriggered()));
+   menu.addAction(action);
+
    this->onShowMenu(menu);
 
    menu.exec(globalPosition);
@@ -61,6 +71,18 @@ void DownloadMenu::show(const QPoint& globalPosition)
 void DownloadMenu::actionTriggered()
 {
    QAction* action = static_cast<QAction*>(this->sender());
-   Common::SharedDir sharedDir = action->data().value<Common::SharedDir>();
-   emit downloadTo(sharedDir.ID, sharedDir.path);
+
+   // If he dir ID isn't set we ask the user to choose a arbitrary directory.
+   if (action->data().isNull())
+   {
+      QStringList dirs;
+      emit askDirectories(dirs);
+      if (!dirs.isEmpty())
+         emit downloadTo(Common::Hash(), dirs.first());
+   }
+   else
+   {
+      Common::SharedDir sharedDir = action->data().value<Common::SharedDir>();
+      emit downloadTo(sharedDir.ID, sharedDir.path);
+   }
 }

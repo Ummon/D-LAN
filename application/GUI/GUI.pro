@@ -65,7 +65,8 @@ SOURCES += main.cpp\
     DownloadMenu.cpp \
     D-LAN_GUI.cpp \
     ProgressBar.cpp \
-    IconProvider.cpp
+    IconProvider.cpp \
+    Utils.cpp
 
 HEADERS  += MainWindow.h \
     ../Protos/gui_protocol.pb.h \
@@ -98,7 +99,8 @@ HEADERS  += MainWindow.h \
     DownloadMenu.h \
     D-LAN_GUI.h \
     ProgressBar.h \
-    IconProvider.h
+    IconProvider.h \
+    Utils.h
 
 FORMS    += MainWindow.ui \
     StatusBar.ui \
@@ -113,3 +115,5 @@ FORMS    += MainWindow.ui \
 
 RESOURCES += \
     ressources.qrc
+
+
