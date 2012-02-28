@@ -302,7 +302,7 @@ int Chunk::getChunkSize() const
 bool Chunk::isComplete() const
 {
    QMutexLocker locker(&this->mutex);
-   return this->knownBytes >= this->getChunkSize(); // Should be '==' but we are never 100% sure ;).
+   return this->file && this->knownBytes >= this->getChunkSize(); // Should be '==' but we are never 100% sure ;).
 }
 
 bool Chunk::isOwnedBy(File* file) const
