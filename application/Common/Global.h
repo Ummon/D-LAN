@@ -44,6 +44,7 @@ namespace Common
       static QString formatByteSize(qint64 bytes, int precision = 1);
       static qint64 availableDiskSpace(const QString& path);
       static bool rename(const QString& existingFile, const QString& newFile);
+
       static QString cleanDirPath(const QString& path);
       static QString dirName(const QString& path);
 

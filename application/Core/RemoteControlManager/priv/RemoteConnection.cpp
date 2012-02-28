@@ -305,6 +305,8 @@ void RemoteConnection::onNewMessage(Common::MessageHeader::MessageType type, con
          Common::Hash peerID(downloadMessage.peer_id().hash());
          if (downloadMessage.has_destination_directory_id())
             this->downloadManager->addDownload(downloadMessage.entry(), peerID, downloadMessage.destination_directory_id().hash(), Common::ProtoHelper::getStr(downloadMessage, &Protos::GUI::Download::destination_path));
+         else if (downloadMessage.has_destination_path())
+            this->downloadManager->addDownload(downloadMessage.entry(), peerID, Common::ProtoHelper::getStr(downloadMessage, &Protos::GUI::Download::destination_path));
          else
             this->downloadManager->addDownload(downloadMessage.entry(), peerID);
 

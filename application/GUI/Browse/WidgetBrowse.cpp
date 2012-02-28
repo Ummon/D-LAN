@@ -30,6 +30,7 @@ using namespace GUI;
 #include <Common/ProtoHelper.h>
 
 #include <Log.h>
+#include <Utils.h>
 
 void BrowseDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
@@ -69,6 +70,7 @@ WidgetBrowse::WidgetBrowse(QSharedPointer<RCC::ICoreConnection> coreConnection, 
    else
       connect(this->ui->butDownload, SIGNAL(clicked()), this, SLOT(download()));
 
+   connect(&this->downloadMenu, SIGNAL(askDirectories(QStringList&)), this, SLOT(askDirectories(QStringList&)), Qt::DirectConnection);
    connect(&this->downloadMenu, SIGNAL(downloadTo(const Common::Hash&, const QString&)), this, SLOT(downloadTo(const Common::Hash&, const QString&)));
 
    connect(&this->browseModel, SIGNAL(loadingResultFinished()), this, SLOT(tryToReachEntryToBrowse()));
@@ -98,6 +100,11 @@ void WidgetBrowse::browseTo(const Protos::Common::Entry& remoteEntry)
 void WidgetBrowse::refresh()
 {
    this->browseModel.refresh();
+}
+
+void WidgetBrowse::askDirectories(QStringList& dirs)
+{
+   dirs << Utils::askForDirectories(this->coreConnection);
 }
 
 void WidgetBrowse::displayContextMenuDownload(const QPoint& point)
@@ -134,8 +141,17 @@ void WidgetBrowse::download()
 void WidgetBrowse::downloadTo(const Common::Hash& sharedDirID, const QString& path)
 {
    QModelIndexList selectedRows = this->ui->treeView->selectionModel()->selectedRows();
-   for (QListIterator<QModelIndex> i(selectedRows); i.hasNext();)
-      this->coreConnection->download(this->peerID, this->browseModel.getEntry(i.next()), sharedDirID, path);
+
+   if (sharedDirID.isNull())
+   {
+      for (QListIterator<QModelIndex> i(selectedRows); i.hasNext();)
+         this->coreConnection->download(this->peerID, this->browseModel.getEntry(i.next()), path);
+   }
+   else
+   {
+      for (QListIterator<QModelIndex> i(selectedRows); i.hasNext();)
+         this->coreConnection->download(this->peerID, this->browseModel.getEntry(i.next()), sharedDirID, path);
+   }
 }
 
 void WidgetBrowse::openLocation()

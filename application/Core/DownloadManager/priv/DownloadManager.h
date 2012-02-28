@@ -56,6 +56,7 @@ namespace DM
 
       void addDownload(const Protos::Common::Entry& remoteEntry, const Common::Hash& peerSource);
       void addDownload(const Protos::Common::Entry& remoteEntry, const Common::Hash& peerSource, const Common::Hash& destinationDirectoryID, const QString& relativePath);
+      void addDownload(const Protos::Common::Entry& remoteEntry, const Common::Hash& peerSource, const QString& absolutePath);
 
       Download* addDownload(const Protos::Common::Entry& remoteEntry, const Common::Hash& peerSource, const Common::Hash& destinationDirectoryID, const QString& localRelativePath, bool complete);
       Download* addDownload(const Protos::Common::Entry& remoteEntry, const Common::Hash& peerSource, const Common::Hash& destinationDirectoryID, const QString& localRelativePath, bool complete, int position);

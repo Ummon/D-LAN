@@ -43,7 +43,12 @@ namespace DM
         */
       virtual void addDownload(const Protos::Common::Entry& remoteEntry, const Common::Hash& peerSource) = 0;
 
+      /**
+        * 'relativePath' must begin with a '/'.
+        */
       virtual void addDownload(const Protos::Common::Entry& remoteEntry, const Common::Hash& peerSource, const Common::Hash& destinationDirectoryID, const QString& relativePath) = 0;
+
+      virtual void addDownload(const Protos::Common::Entry& remoteEntry, const Common::Hash& peerSource, const QString& absolutePath) = 0;
 
       /**
         * @remarks The returned download pointers must not be retained.

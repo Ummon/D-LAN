@@ -220,13 +220,14 @@ message MoveDownloads {
 
 // GUI -> Core
 // Says to the core to download a file or a directory.
+// The given path can be relative to a shared directory (if destination_directory_id is set)  or absolute (if destination_directory_id is null).
 // id : 0x81
 message Download {
    required Common.Hash peer_id = 1; // From where the file/dir is.
    required Common.Entry entry = 2;
    
    optional Common.Hash destination_directory_id = 3; // Where to put the folder/file. It must one of the directory of State.destination_directory. If this directory is not set, the first directory with enough free space will be taken.
-   optional string destination_path = 4 [default="/"]; // Must only be set if 'destination_directory_id' is set too. Must ended with an '/'.
+   optional string destination_path = 4 [default="/"]; // Must ended with an '/'. If 'Common.Hash destination_directory_id' isn't set then a new shred directory will be created (if needed).
 }
 
 // GUI -> Core
