@@ -152,6 +152,12 @@ Common::Hash UDPListener::getOwnID() const
    return this->peerManager->getID();
 }
 
+void UDPListener::rebindSockets()
+{
+   this->initMulticastUDPSocket();
+   this->initUnicastUDPSocket();
+}
+
 /**
   *
   */
@@ -314,6 +320,8 @@ void UDPListener::initMulticastUDPSocket()
 {
    this->multicastSocket.close();
    this->multicastSocket.disconnect(this);
+
+   connect(&this->multicastSocket, SIGNAL(disconnected()), this, SLOT(initMulticastUDPSocket()));
 
    if (!this->multicastSocket.bind(MULTICAST_PORT))
    {

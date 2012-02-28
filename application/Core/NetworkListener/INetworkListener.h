@@ -33,6 +33,12 @@ namespace NL
 
       virtual IChat& getChat() = 0;
       virtual QSharedPointer<ISearch> newSearch() = 0;
+
+      /**
+        * This is needed when sockets have to be rebound.
+        * On Windows after disable/enable the netowrk interface, the sockets have to be rebound.
+        */
+      virtual void rebindSockets() = 0;
    };
 }
 #endif

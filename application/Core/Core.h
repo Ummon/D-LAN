@@ -41,6 +41,7 @@ namespace CoreSpace
    public:
       Core(bool resetSettings);
       void start();
+      void rebindSockets();
 
    private:
       void checkSettingsIntegrity();

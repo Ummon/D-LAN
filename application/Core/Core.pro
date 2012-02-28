@@ -55,8 +55,8 @@ win32 {
     INCLUDEPATH += "."
     #INCLUDEPATH += "$$(QTDIR)/../mingw/include"
     #LIBS += "$$(QTDIR)/../mingw/lib/libwsock32.a"
-    INCLUDEPATH += "E:/Qt/qtcreator-2.2.0/mingw/include"
-    LIBS += "E:/Qt/qtcreator-2.2.0/mingw/lib/libwsock32.a"
+    INCLUDEPATH += "C:/Qt/mingw/include"
+    LIBS += "C:/Qt/mingw/lib/libwsock32.a"
 }
 
 CONFIG(debug, debug|release) {
@@ -73,15 +73,19 @@ SOURCES += main.cpp \
     Log.cpp \
     ConsoleReader.cpp \
     CoreService.cpp \
-    Core.cpp
+    Core.cpp \
+    CoreApplication.cpp
 HEADERS += \
     Log.h \
     ../Protos/core_settings.pb.h \
     ConsoleReader.h \
     CoreService.h \
-    Core.h
+    Core.h \
+    CoreApplication.h
 
 OTHER_FILES += \
     ../Libs/protobuf.pri
 
 RESOURCES +=
+
+

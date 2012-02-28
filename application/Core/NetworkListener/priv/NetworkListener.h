@@ -51,6 +51,7 @@ namespace NL
 
       IChat& getChat();
       QSharedPointer<ISearch> newSearch();
+      void rebindSockets();
 
    private:      
       LOG_INIT_H("NetworkListener");
