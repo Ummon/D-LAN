@@ -42,6 +42,8 @@ namespace Common
    const QString CORE_SETTINGS_FILENAME("core_settings.txt");
    const QString GUI_SETTINGS_FILENAME("gui_settings.txt");
 
+   const QString LANGUAGE_DIRECTORY("languages");
+
    const QString SERVICE_NAME("D-LAN Core");
 
    const int PROTOBUF_STREAMING_BUFFER_SIZE(4 * 1024); ///< 4kB.

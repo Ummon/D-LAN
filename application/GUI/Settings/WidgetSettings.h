@@ -45,8 +45,6 @@ namespace GUI
    {
       Q_OBJECT
 
-      static const QString LANGUAGE_DIRECTORY;
-
    public:
       explicit WidgetSettings(QSharedPointer<RCC::ICoreConnection> coreConnection, DirListModel& sharedDirsModel, QWidget *parent = 0);
       ~WidgetSettings();
