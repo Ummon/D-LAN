@@ -1,6 +1,6 @@
 /**
   * D-LAN - A decentralized LAN file sharing software.
-  * Copyright (C) 2010-2011 Greg Burri <greg.burri@gmail.com>
+  * Copyright (C) 2010-2012 Greg Burri <greg.burri@gmail.com>
   *
   * This program is free software: you can redistribute it and/or modify
   * it under the terms of the GNU General Public License as published by
@@ -143,6 +143,8 @@ QVariant DownloadsModel::data(const QModelIndex& index, int role) const
          return "Unable to create the file";
       case Protos::GUI::State_Download_Status_UNABLE_TO_RETRIEVE_THE_HASHES:
          return "Unable to retrieve the hashes";
+      case Protos::GUI::State_Download_Status_TRANSFERT_ERROR:
+         return "Transfert error";
       default:
          return QVariant();
       }
@@ -285,6 +287,7 @@ void DownloadsModel::newState(const Protos::GUI::State& state)
       case Protos::GUI::State_Download_Status_NO_ENOUGH_FREE_SPACE:
       case Protos::GUI::State_Download_Status_UNABLE_TO_CREATE_THE_FILE:
       case Protos::GUI::State_Download_Status_UNABLE_TO_RETRIEVE_THE_HASHES:
+      case Protos::GUI::State_Download_Status_TRANSFERT_ERROR:
          if (!(statusToFilter & STATUS_ERROR))
             indexToInsert << i;
          break;

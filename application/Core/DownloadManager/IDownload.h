@@ -1,6 +1,6 @@
 /**
   * D-LAN - A decentralized LAN file sharing software.
-  * Copyright (C) 2010-2011 Greg Burri <greg.burri@gmail.com>
+  * Copyright (C) 2010-2012 Greg Burri <greg.burri@gmail.com>
   *
   * This program is free software: you can redistribute it and/or modify
   * it under the terms of the GNU General Public License as published by
@@ -47,6 +47,7 @@ namespace DM
      NO_ENOUGH_FREE_SPACE = 0x21,
      UNABLE_TO_CREATE_THE_FILE = 0x22,
      UNABLE_TO_RETRIEVE_THE_HASHES = 0x23,
+     TRANSFERT_ERROR = 0x24
    };
 
    class IDownload
