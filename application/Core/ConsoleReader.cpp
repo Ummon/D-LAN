@@ -29,6 +29,7 @@ using namespace CoreSpace;
 #include <Log.h>
 
 const QString ConsoleReader::QUIT_COMMAND("quit");
+const QString ConsoleReader::REBIND_SOCKETS_COMMAND("rebind_sockets");
 
 ConsoleReader::ConsoleReader(QObject *parent) :
     QThread(parent), inputStream(stdin), stopping(false)

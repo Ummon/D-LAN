@@ -35,6 +35,18 @@ TCPListener::TCPListener(QSharedPointer<PM::IPeerManager> peerManager) :
    peerManager(peerManager)
 {   
    this->currentPort = SETTINGS.get<quint32>("unicast_base_port");
+   this->rebindSockets();
+}
+
+quint16 TCPListener::getCurrentPort()
+{
+   return this->currentPort;
+}
+
+void TCPListener::rebindSockets()
+{
+   this->tcpServer.close();
+   this->tcpServer.disconnect(this);
 
    int n = 0;
    while(!this->tcpServer.listen(QHostAddress::Any, this->currentPort))
@@ -47,11 +59,6 @@ TCPListener::TCPListener(QSharedPointer<PM::IPeerManager> peerManager) :
       this->currentPort++;
    }
    connect(&this->tcpServer, SIGNAL(newConnection()), this, SLOT(newConnection()));
-}
-
-quint16 TCPListener::getCurrentPort()
-{
-   return this->currentPort;
 }
 
 void TCPListener::newConnection()

@@ -73,15 +73,19 @@ SOURCES += main.cpp \
     Log.cpp \
     ConsoleReader.cpp \
     CoreService.cpp \
-    Core.cpp
+    Core.cpp \
+    CoreApplication.cpp
 HEADERS += \
     Log.h \
     ../Protos/core_settings.pb.h \
     ConsoleReader.h \
     CoreService.h \
-    Core.h
+    Core.h \
+    CoreApplication.h
 
 OTHER_FILES += \
     ../Libs/protobuf.pri
 
 RESOURCES +=
+
+

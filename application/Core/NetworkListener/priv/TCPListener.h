@@ -38,6 +38,7 @@ namespace NL
    public:
       TCPListener(QSharedPointer<PM::IPeerManager> peerManager);
       quint16 getCurrentPort();
+      void rebindSockets();
 
    private slots:
       void newConnection();

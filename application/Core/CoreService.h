@@ -19,18 +19,17 @@
 #ifndef CORE_CORE_SERVICE_H
 #define CORE_CORE_SERVICE_H
 
-#include <QCoreApplication>
-
 #include <Libs/qtservice/src/qtservice.h>
 
 #include <Common/Uncopyable.h>
 
 #include <ConsoleReader.h>
+#include <CoreApplication.h>
 #include <Core.h>
 
 namespace CoreSpace
 {
-   class CoreService : public QObject, public QtService<QCoreApplication>, Common::Uncopyable
+   class CoreService : public QObject, public QtService<CoreApplication>, Common::Uncopyable
    {
       Q_OBJECT
    public:
@@ -43,6 +42,7 @@ namespace CoreSpace
 
    private slots:
       void treatUserInput(QString);
+      void resumeFromLowPowerState();
 
    private:
       Core core;
