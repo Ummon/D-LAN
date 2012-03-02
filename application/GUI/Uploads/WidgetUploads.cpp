@@ -86,3 +86,12 @@ WidgetUploads::~WidgetUploads()
 {
    delete this->ui;
 }
+
+void WidgetUploads::changeEvent(QEvent* event)
+{
+   if (event->type() == QEvent::LanguageChange)
+      this->ui->retranslateUi(this);
+   else
+      QWidget::changeEvent(event);
+}
+

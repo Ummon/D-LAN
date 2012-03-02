@@ -39,6 +39,7 @@ namespace GUI
       QList<T> getFilteredValues() const;
 
       void addElement(const QString& text, bool checked, T value);
+      void clear(const QString& firstElementName);
 
    private:
       void setChecked(int row, bool checked);
@@ -71,7 +72,6 @@ using namespace GUI;
 template <typename T>
 CheckBoxModel<T>::CheckBoxModel()
 {
-   this->items << Item("<All>", true);
 }
 
 template <typename T>
@@ -153,6 +153,18 @@ void CheckBoxModel<T>::addElement(const QString& text, bool checked, T value)
 {
    this->beginInsertRows(QModelIndex(), this->items.size(), this->items.size());
    this->items << Item(text, checked, value);
+   this->endInsertRows();
+}
+
+template <typename T>
+void CheckBoxModel<T>::clear(const QString& firstElementName)
+{
+   this->beginRemoveRows(QModelIndex(), 0, this->items.size());
+   this->items.clear();
+   this->endRemoveRows();
+
+   this->beginInsertRows(QModelIndex(), 0, 0);
+   this->items << Item(firstElementName, true);
    this->endInsertRows();
 }
 

@@ -74,6 +74,9 @@ namespace GUI
    signals:
       void browse(const Common::Hash&, const Protos::Common::Entry&);
 
+   protected:
+      void changeEvent(QEvent* event);
+
    private slots:
       void displayContextMenuDownload(const QPoint& point);
       void entryDoubleClicked(const QModelIndex& index);

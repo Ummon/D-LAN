@@ -11,6 +11,8 @@ message Settings {
    optional uint32 core_port = 2 [default = 59485];
    optional Common.Hash password = 3; // Hashed with salt.
    
+   optional Common.Language language = 18;
+   
    optional uint32 max_chat_message_displayed = 4 [default = 500];
    optional uint32 max_log_message_displayed = 5 [default = 500];
    optional uint32 reconnect_period = 6 [default = 1000]; // [ms].

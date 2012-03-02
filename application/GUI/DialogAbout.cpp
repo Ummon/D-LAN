@@ -59,3 +59,12 @@ void DialogAbout::paintEvent(QPaintEvent* event)
    QBrush brush(gradient);
    p.fillRect(QRect(0, 0, width(), height()), brush);
 }
+
+
+void DialogAbout::changeEvent(QEvent* event)
+{
+   if (event->type() == QEvent::LanguageChange)
+      this->ui->retranslateUi(this);
+   else
+      QWidget::changeEvent(event);
+}

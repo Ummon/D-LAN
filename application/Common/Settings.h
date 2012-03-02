@@ -58,6 +58,7 @@ namespace Common
       void set(const QString& name, const QString& value);
       void set(const QString& name, const QByteArray& value);
       void set(const QString& name, const Hash& hash);
+      void set(const QString& name, const google::protobuf::Message& message);
 
       template <typename T>
       T get(const QString& name) const;

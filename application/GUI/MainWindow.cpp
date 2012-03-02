@@ -31,6 +31,7 @@ using namespace GUI;
 #include <Protos/gui_settings.pb.h>
 
 #include <Common/Settings.h>
+#include <Common/Constants.h>
 #include <Common/RemoteCoreController/Builder.h>
 
 #include <TabButtons.h>
@@ -95,6 +96,8 @@ MainWindow::MainWindow(QSharedPointer<RCC::ICoreConnection> coreConnection, QWid
    autoScroll(true),
    logModel(coreConnection)
 {
+   QApplication::instance()->installTranslator(&this->translator);
+
    this->ui->setupUi(this);
 
    StatusBar* statusBar = new StatusBar(this->coreConnection);
@@ -168,6 +171,11 @@ MainWindow::~MainWindow()
    this->removeWidgetSettings();
 
    delete this->ui;
+}
+
+void MainWindow::loadLanguage(const QString& filename)
+{
+   this->translator.load(filename, QCoreApplication::applicationDirPath() + "/" + LANGUAGE_DIRECTORY);
 }
 
 void MainWindow::coreConnected()
@@ -318,6 +326,14 @@ bool MainWindow::eventFilter(QObject* obj, QEvent* event)
    return QMainWindow::eventFilter(obj, event);
 }
 
+void MainWindow::changeEvent(QEvent* event)
+{
+   if (event->type() == QEvent::LanguageChange)
+      this->ui->retranslateUi(this);
+   else
+      QWidget::changeEvent(event);
+}
+
 void MainWindow::saveWindowsSettings()
 {
    L_DEBU(QString("Save state : %1").arg(QString::fromAscii(this->saveState().toHex().data())));
@@ -381,6 +397,7 @@ void MainWindow::removeMdiSubWindow(QMdiSubWindow* mdiSubWindow)
 void MainWindow::addWidgetSettings()
 {
    this->widgetSettings = new WidgetSettings(this->coreConnection, this->sharedDirsModel, this);
+   connect(this->widgetSettings, SIGNAL(languageChanged(QString)), this, SLOT(loadLanguage(QString)));
    this->ui->mdiArea->addSubWindow(this->widgetSettings, Qt::CustomizeWindowHint);
    this->widgetSettings->setWindowState(Qt::WindowMaximized);
 }

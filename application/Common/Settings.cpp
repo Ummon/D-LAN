@@ -317,6 +317,34 @@ void Settings::set(const QString& name, const Hash& hash)
    this->settings->GetReflection()->MutableMessage(this->settings, fieldDescriptor)->CopyFrom(hashMessage);
 }
 
+void Settings::set(const QString& name, const google::protobuf::Message& message)
+{
+   QMutexLocker locker(&this->mutex);
+
+   Q_ASSERT(!name.isEmpty());
+   Q_ASSERT(this->settings);
+
+   if (!this->settings)
+      return;
+
+   const google::protobuf::FieldDescriptor* fieldDescriptor = this->descriptor->FindFieldByName(name.toStdString());
+   if (!fieldDescriptor)
+   {
+      printErrorNameNotFound(name);
+      return;
+   }
+   if (fieldDescriptor->type() != google::protobuf::FieldDescriptor::TYPE_MESSAGE ||
+       fieldDescriptor->type() == google::protobuf::FieldDescriptor::TYPE_MESSAGE && fieldDescriptor->message_type()->name() != message.GetTypeName())
+   {
+      printErrorBadType(fieldDescriptor, QString::fromStdString(message.GetTypeName()));
+      return;
+   }
+
+   this->settings->GetReflection()->MutableMessage(this->settings, fieldDescriptor)->CopyFrom(message);
+
+
+}
+
 void Settings::get(const google::protobuf::FieldDescriptor* fieldDescriptor, quint32& value) const
 {
    Q_ASSERT(fieldDescriptor);
@@ -422,10 +450,10 @@ void Settings::rmAll()
 
 void Settings::printErrorNameNotFound(const QString& name)
 {
-   QTextStream(stderr) << QString("Settings : name \"%1\" doesn't exist").arg(name) << endl;
+   QTextStream(stderr) << QString(QObject::tr("Settings : name \"%1\" doesn't exist")).arg(name) << endl;
 }
 
 void Settings::printErrorBadType(const google::protobuf::FieldDescriptor* field, const QString& excepted)
 {
-   QTextStream(stderr) << QString("Settings : bad type, field name = \"%1\", expected type : \"%2\"").arg(ProtoHelper::getStr(*field, &google::protobuf::FieldDescriptor::name)).arg(excepted) << endl;
+   QTextStream(stderr) << QString(QObject::tr("Settings : bad type, field name = \"%1\", expected type : \"%2\"")).arg(ProtoHelper::getStr(*field, &google::protobuf::FieldDescriptor::name)).arg(excepted) << endl;
 }

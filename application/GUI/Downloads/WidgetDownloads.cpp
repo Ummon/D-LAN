@@ -126,10 +126,7 @@ WidgetDownloads::WidgetDownloads(QSharedPointer<RCC::ICoreConnection> coreConnec
 
    this->filterStatusList = new CheckBoxList(this);
    this->filterStatusList->setModel(&this->checkBoxModel);
-   this->checkBoxModel.addElement("Complete", true, STATUS_COMPLETE);
-   this->checkBoxModel.addElement("Downloading", true, STATUS_DOWNLOADING);
-   this->checkBoxModel.addElement("Queued", true, STATUS_QUEUED);
-   this->checkBoxModel.addElement("Error", true, STATUS_ERROR);
+   this->updateCheckBoxElements();
    this->ui->layTools->insertWidget(1, this->filterStatusList);
 
    connect(&this->checkBoxModel, SIGNAL(dataChanged(QModelIndex,QModelIndex)), this, SLOT(filterChanged()));
@@ -146,6 +143,17 @@ void WidgetDownloads::keyPressEvent(QKeyEvent* event)
       this->removeSelectedEntries();
    else
       QWidget::keyPressEvent(event);
+}
+
+void WidgetDownloads::changeEvent(QEvent* event)
+{
+   if (event->type() == QEvent::LanguageChange)
+   {
+      this->ui->retranslateUi(this);
+      this->updateCheckBoxElements();
+   }
+   else
+      QWidget::changeEvent(event);
 }
 
 void WidgetDownloads::displayContextMenuDownloads(const QPoint& point)
@@ -235,4 +243,13 @@ void WidgetDownloads::removeSelectedEntries()
 void WidgetDownloads::filterChanged()
 {
    this->coreConnection->refresh();
+}
+
+void WidgetDownloads::updateCheckBoxElements()
+{
+   this->checkBoxModel.clear(tr("<All>"));
+   this->checkBoxModel.addElement(tr("Complete"), true, STATUS_COMPLETE);
+   this->checkBoxModel.addElement(tr("Downloading"), true, STATUS_DOWNLOADING);
+   this->checkBoxModel.addElement(tr("Queued"), true, STATUS_QUEUED);
+   this->checkBoxModel.addElement(tr("Error"), true, STATUS_ERROR);
 }

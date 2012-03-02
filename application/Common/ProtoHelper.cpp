@@ -35,8 +35,6 @@ QString ProtoHelper::getRelativePath(const Protos::Common::Entry& entry, bool ap
 
 QString ProtoHelper::getDebugStr(const google::protobuf::Message& mess)
 {
-   // return QString("");
-
    std::string debugString = mess.DebugString();
    QString str = QString::fromUtf8(debugString.data());
 

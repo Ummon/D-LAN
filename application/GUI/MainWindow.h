@@ -25,6 +25,7 @@
 #include <QIcon>
 #include <QMdiSubWindow>
 #include <QKeyEvent>
+#include <QTranslator>
 
 #include <Protos/gui_protocol.pb.h>
 #include <Protos/common.pb.h>
@@ -70,6 +71,8 @@ namespace GUI
       ~MainWindow();
 
    private slots:
+      void loadLanguage(const QString& filename);
+
       void coreConnected();
       void coreDisconnected();
 
@@ -87,6 +90,7 @@ namespace GUI
       void keyPressEvent(QKeyEvent* event);
       void closeEvent(QCloseEvent * event);
       bool eventFilter(QObject* obj, QEvent* event);
+      void changeEvent(QEvent* event);
 
    private:
       void search(bool ownFiles = false);
@@ -122,6 +126,8 @@ namespace GUI
       WidgetUploads* widgetUploads;
       QList<WidgetBrowse*> widgetsBrowse;
       QList<WidgetSearch*> widgetsSearch;
+
+      QTranslator translator;
 
       QSharedPointer<RCC::ICoreConnection> coreConnection;
 

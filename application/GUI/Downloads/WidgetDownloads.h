@@ -55,6 +55,7 @@ namespace GUI
 
    protected:
       void keyPressEvent(QKeyEvent* event);
+      void changeEvent(QEvent* event);
 
    private slots:
       void displayContextMenuDownloads(const QPoint& point);
@@ -65,6 +66,8 @@ namespace GUI
       void filterChanged();
 
    private:
+      void updateCheckBoxElements();
+
       Ui::WidgetDownloads *ui;
       CheckBoxList* filterStatusList;
 

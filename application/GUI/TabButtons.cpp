@@ -99,7 +99,7 @@ void TabButton::paintEvent(QPaintEvent* pe)
 TabCloseButton::TabCloseButton(QWidget* widget, QWidget* parent) :
    TabButton(parent), widget(widget)
 {
-   this->setToolTip(tr("Close Tab"));
+   this->setToolTip(TabCloseButton::tr("Close Tab"));
    connect(this, SIGNAL(clicked()), this, SLOT(buttonClicked()));
 }
 

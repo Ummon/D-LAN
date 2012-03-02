@@ -161,21 +161,25 @@ void RemoteConnection::onNewMessage(Common::MessageHeader::MessageType type, con
       {
          const Protos::GUI::CoreSettings& coreSettingsMessage = static_cast<const Protos::GUI::CoreSettings&>(message);
 
-         this->peerManager->setNick(Common::ProtoHelper::getStr(coreSettingsMessage, &Protos::GUI::CoreSettings::nick));
-         SETTINGS.set("check_received_data_integrity", coreSettingsMessage.enable_integrity_check());
+         if (coreSettingsMessage.has_nick())
+            this->peerManager->setNick(Common::ProtoHelper::getStr(coreSettingsMessage, &Protos::GUI::CoreSettings::nick));
 
-         try
-         {
-            QStringList sharedDirs;
-            for (int i = 0; i < coreSettingsMessage.shared_directory_size(); i++)
-               sharedDirs << Common::ProtoHelper::getRepeatedStr(coreSettingsMessage, &Protos::GUI::CoreSettings::shared_directory, i);
-            this->fileManager->setSharedDirs(sharedDirs);
-         }
-         catch(FM::DirsNotFoundException& e)
-         {
-            foreach (QString path, e.paths)
-               L_WARN(QString("Directory not found : %1").arg(path));
-         }
+         if (coreSettingsMessage.has_enable_integrity_check())
+            SETTINGS.set("check_received_data_integrity", coreSettingsMessage.enable_integrity_check());
+
+         if (coreSettingsMessage.has_shared_directories())
+            try
+            {
+               QStringList sharedDirs;
+               for (int i = 0; i < coreSettingsMessage.shared_directories().dir_size(); i++)
+                  sharedDirs << Common::ProtoHelper::getRepeatedStr(coreSettingsMessage.shared_directories(), &Protos::GUI::CoreSettings::SharedDirectories::dir, i);
+               this->fileManager->setSharedDirs(sharedDirs);
+            }
+            catch(FM::DirsNotFoundException& e)
+            {
+               foreach (QString path, e.paths)
+                  L_WARN(QString("Directory not found : %1").arg(path));
+            }
 
          this->refresh();
       }

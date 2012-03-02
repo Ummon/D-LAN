@@ -209,6 +209,14 @@ WidgetSearch::~WidgetSearch()
    delete this->ui;
 }
 
+void WidgetSearch::changeEvent(QEvent* event)
+{
+   if (event->type() == QEvent::LanguageChange)
+      this->ui->retranslateUi(this);
+   else
+      QWidget::changeEvent(event);
+}
+
 void WidgetSearch::displayContextMenuDownload(const QPoint& point)
 {   
    QPoint globalPosition = this->ui->treeView->viewport()->mapToGlobal(point);

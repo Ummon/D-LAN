@@ -102,6 +102,14 @@ void WidgetBrowse::refresh()
    this->browseModel.refresh();
 }
 
+void WidgetBrowse::changeEvent(QEvent* event)
+{
+   if (event->type() == QEvent::LanguageChange)
+      this->ui->retranslateUi(this);
+   else
+      QWidget::changeEvent(event);
+}
+
 void WidgetBrowse::askDirectories(QStringList& dirs)
 {
    dirs << Utils::askForDirectories(this->coreConnection);

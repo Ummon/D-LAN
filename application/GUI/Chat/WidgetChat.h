@@ -60,6 +60,7 @@ namespace GUI
    protected:
       void showEvent(QShowEvent* event);
       void keyPressEvent(QKeyEvent* event);
+      void changeEvent(QEvent* event);
 
    private:
       void setNewMessageState(bool newMessage);

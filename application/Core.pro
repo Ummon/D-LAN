@@ -10,3 +10,7 @@ SUBDIRS = Common \
    Core/NetworkListener \
    Core/RemoteControlManager \
    Core
+
+TRANSLATIONS = translations/d_lan_core.fr.ts \
+   translations/d_lan_core.ko.ts
+CODECFORTR = UTF-8

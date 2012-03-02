@@ -174,6 +174,14 @@ void WidgetChat::keyPressEvent(QKeyEvent* event)
    }
 }
 
+void WidgetChat::changeEvent(QEvent* event)
+{
+   if (event->type() == QEvent::LanguageChange)
+      this->ui->retranslateUi(this);
+   else
+      QWidget::changeEvent(event);
+}
+
 void WidgetChat::setNewMessageState(bool newMessage)
 {
    if (newMessage && !this->isAncestorOf(QApplication::focusWidget()))

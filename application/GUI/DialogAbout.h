@@ -37,6 +37,7 @@ namespace GUI
 
    protected:
       void paintEvent(QPaintEvent* event);
+      void changeEvent(QEvent* event);
 
    private:
       Ui::DialogAbout *ui;

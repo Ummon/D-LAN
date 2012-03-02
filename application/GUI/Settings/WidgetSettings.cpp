@@ -21,12 +21,15 @@
 using namespace GUI;
 
 #include <QFileDialog>
+#include <QTranslator>
 #include <QMessageBox>
 #include <QListView>
 #include <QMenu>
 #include <QDesktopServices>
 #include <QUrl>
 
+#include <Common/Languages.h>
+#include <Common/Constants.h>
 #include <Common/ProtoHelper.h>
 #include <Common/Settings.h>
 
@@ -80,6 +83,8 @@ WidgetSettings::WidgetSettings(QSharedPointer<RCC::ICoreConnection> coreConnecti
 
    connect(this->ui->butOpenFolder, SIGNAL(clicked()), this, SLOT(openLocation()));
 
+   connect(this->ui->cmbLanguages, SIGNAL(currentIndexChanged(int)), this, SLOT(cmbLanguageChanged(int)));
+
    connect(this->ui->txtCoreAddress, SIGNAL(editingFinished()), this, SLOT(saveGUISettings()));
    connect(this->ui->txtPassword, SIGNAL(editingFinished()), this, SLOT(saveGUISettings()));
    connect(this->ui->butResetCoreAddress, SIGNAL(clicked()), this, SLOT(resetCoreAddress()));
@@ -92,7 +97,9 @@ WidgetSettings::WidgetSettings(QSharedPointer<RCC::ICoreConnection> coreConnecti
    connect(&this->sharedDirsModel, SIGNAL(layoutChanged()), this, SLOT(refreshButtonsAvailability()));
    connect(&this->sharedDirsModel, SIGNAL(rowsInserted(const QModelIndex&, int, int)), this, SLOT(refreshButtonsAvailability()));
    connect(&this->sharedDirsModel, SIGNAL(rowsRemoved(const QModelIndex&, int, int)), this, SLOT(refreshButtonsAvailability()));
+
    this->refreshButtonsAvailability();
+   this->fillComboBoxLanguages();
 }
 
 WidgetSettings::~WidgetSettings()
@@ -112,6 +119,21 @@ void WidgetSettings::coreDisconnected()
    this->initialState = true;
    this->ui->tabWidget->setTabEnabled(0, false);
    this->ui->chkEnableIntegrityCheck->setEnabled(false);
+}
+
+/**
+  * Read the available language files and fill the combo box.
+  */
+void WidgetSettings::fillComboBoxLanguages()
+{
+   this->ui->cmbLanguages->addItem("English");
+
+   Common::Languages langs(QCoreApplication::applicationDirPath() + "/" + LANGUAGE_DIRECTORY);
+   for (QListIterator<Common::Language> i(langs.getAvailableLanguages()); i.hasNext();)
+   {
+      Common::Language lang = i.next();
+      this->ui->cmbLanguages->addItem(lang.locale.nativeLanguageName(), lang.filename);
+   }
 }
 
 void WidgetSettings::newState(const Protos::GUI::State& state)
@@ -153,6 +175,9 @@ void WidgetSettings::newState(const Protos::GUI::State& state)
    }
 }
 
+/**
+  * Send the settings to the core. A connection to a core must be established.
+  */
 void WidgetSettings::saveCoreSettings()
 {
    Protos::GUI::CoreSettings settings;
@@ -184,12 +209,23 @@ void WidgetSettings::saveGUISettings()
 
    SETTINGS.set("password", Common::Hasher::hashWithSalt(this->ui->txtPassword->text()));
 
+   /*Protos::Common::Language lang;
+   lang
+   SETTINGS.set*/
+
    SETTINGS.save();
 
    if (previousAddress != SETTINGS.get<QString>("core_address") || !this->coreConnection->isConnected())
    {
       this->coreConnection->connectToCore(SETTINGS.get<QString>("core_address"), SETTINGS.get<quint32>("core_port"), SETTINGS.get<Common::Hash>("password"));
    }
+}
+
+void WidgetSettings::cmbLanguageChanged(int cmbIndex)
+{
+   emit languageChanged(this->ui->cmbLanguages->itemData(cmbIndex).toString());
+
+   this->saveCoreLanguageSettingOnly();
 }
 
 void WidgetSettings::addShared()
@@ -307,10 +343,11 @@ void WidgetSettings::showEvent(QShowEvent* event)
    QWidget::showEvent(event);
 }
 
-/**
-  * Update the language list by looking into the language directory.
-  */
-void WidgetSettings::updateAvailableLanguages()
+void WidgetSettings::changeEvent(QEvent* event)
 {
-
+   if (event->type() == QEvent::LanguageChange)
+      this->ui->retranslateUi(this);
+   else
+      QWidget::changeEvent(event);
 }
+

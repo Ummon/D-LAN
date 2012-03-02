@@ -30,7 +30,8 @@ SOURCES += Hash.cpp \
     ../Protos/gui_protocol.pb.cc \
     ../Protos/core_protocol.pb.cc \
     ../Protos/common.pb.cc \
-    ThreadPool.cpp
+    ThreadPool.cpp \
+    Languages.cpp
 
 HEADERS += Hashes.h \
     Hash.h \
@@ -52,4 +53,7 @@ HEADERS += Hashes.h \
     ../Protos/core_protocol.pb.h \
     ../Protos/common.pb.h \
     ThreadPool.h \
-    IRunnable.h
+    IRunnable.h \
+    Languages.h
+
+

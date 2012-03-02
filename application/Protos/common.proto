@@ -14,7 +14,7 @@ message Error {
 }
 
 message Language {
-   required string lang = 1; // ISO-639
+   required string lang = 1; // ISO-639 (two letters)
    optional string country = 2; // ISO-3166
 }
 

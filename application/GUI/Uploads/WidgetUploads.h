@@ -48,6 +48,9 @@ namespace GUI
       explicit WidgetUploads(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel, QWidget *parent = 0);
       ~WidgetUploads();
 
+   protected:
+      void changeEvent(QEvent* event);
+
    private:
       Ui::WidgetUploads* ui;
 

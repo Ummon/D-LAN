@@ -52,11 +52,18 @@ namespace GUI
       void coreConnected();
       void coreDisconnected();
 
+   signals:
+      void languageChanged(const QString& filename);
+
+   private:
+      void fillComboBoxLanguages();
+
    private slots:
       void newState(const Protos::GUI::State& state);
       void saveCoreSettings();
       void saveCoreLanguageSettingOnly();
       void saveGUISettings();
+      void cmbLanguageChanged(int cmbIndex);
 
       void addShared();
       void removeShared();
@@ -72,11 +79,10 @@ namespace GUI
       void openLocation();
 
    protected:
-      virtual void showEvent(QShowEvent* event);
+      void showEvent(QShowEvent* event);
+      void changeEvent(QEvent* event);
 
    private:
-      void updateAvailableLanguages();
-
       Ui::WidgetSettings* ui;
 
       QSharedPointer<RCC::ICoreConnection> coreConnection;

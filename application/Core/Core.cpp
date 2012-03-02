@@ -90,7 +90,7 @@ void Core::start()
 {
    QThread::currentThread()->setObjectName("Core");
 
-   L_USER("Starting..");
+   L_USER(QObject::tr("Starting.."));
 
    this->fileManager = FM::Builder::newFileManager();
    this->peerManager = PM::Builder::newPeerManager(this->fileManager);
@@ -99,7 +99,7 @@ void Core::start()
    this->networkListener = NL::Builder::newNetworkListener(this->fileManager, this->peerManager, this->uploadManager, this->downloadManager);
    this->remoteControlManager = RCM::Builder::newRemoteControlManager(this->fileManager, this->peerManager, this->uploadManager, this->downloadManager, this->networkListener);
 
-   L_USER("Ready to serve");
+   L_USER(QObject::tr("Ready to serve"));
 }
 
 /**

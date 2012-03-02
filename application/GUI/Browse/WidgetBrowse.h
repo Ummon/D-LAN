@@ -57,6 +57,9 @@ namespace GUI
    public slots:
       void refresh();
 
+   protected:
+      void changeEvent(QEvent* event);
+
    private slots:
       void askDirectories(QStringList& dirs);
       void displayContextMenuDownload(const QPoint& point);

@@ -17,6 +17,9 @@
    <iconset resource="../ressources.qrc">
     <normaloff>:/icons/ressources/settings.png</normaloff>:/icons/ressources/settings.png</iconset>
   </property>
+  <property name="locale">
+   <locale language="English" country="UnitedStates"/>
+  </property>
   <layout class="QVBoxLayout" name="layMain">
    <property name="leftMargin">
     <number>0</number>
@@ -33,7 +36,7 @@
    <item>
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>1</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="tabBasicSettings">
       <attribute name="title">
@@ -62,7 +65,7 @@
         </widget>
        </item>
        <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="0,0,0,0,0,0">
+        <layout class="QHBoxLayout" name="layButtons" stretch="0,0,0,0,0,0">
          <item>
           <widget class="QPushButton" name="butAddShared">
            <property name="toolTip">
