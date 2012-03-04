@@ -52,6 +52,8 @@ namespace GUI
       void coreConnected();
       void coreDisconnected();
 
+      QString getCurrentLanguageFilename();
+
    signals:
       void languageChanged(const QString& filename);
 

@@ -215,7 +215,7 @@ bool Chunk::write(const char* buffer, int nbBytes)
 
    if (this->knownBytes > CURRENT_CHUNK_SIZE) // Should never be true.
    {
-      L_ERRO("Chunk::write : this->knownBytes > getChunkSize");
+      L_ERRO("Chunk::write(..) : this->knownBytes > getChunkSize");
       this->knownBytes = CURRENT_CHUNK_SIZE;
    }
 

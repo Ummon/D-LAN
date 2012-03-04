@@ -9,6 +9,7 @@ namespace Common
 {
    struct Language
    {
+      Language() {}
       Language(QString filename, QLocale locale) : filename(filename), locale(locale) {}
 
       QString filename;
@@ -26,5 +27,7 @@ namespace Common
       QString path;
    };
 }
+
+Q_DECLARE_METATYPE(Common::Language)
 
 #endif

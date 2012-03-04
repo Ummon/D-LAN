@@ -96,7 +96,7 @@ void StatusBar::setUploadRate(qint64 rate)
 
 void StatusBar::setTotalSharing(int nbPeer, qint64 amount)
 {
-   this->ui->lblTotalSharing->setText(QString::number(nbPeer).append(" peer").append(nbPeer > 1 ? "s" : "").append(": ").append(Common::Global::formatByteSize(amount)));
+   this->ui->lblTotalSharing->setText(QString::number(nbPeer).append(" ").append(nbPeer > 1 ? tr("peers") : tr("peer")).append(": ").append(Common::Global::formatByteSize(amount)));
 }
 
 void StatusBar::updateCoreStatus(Protos::GUI::State_Stats_CacheStatus status, int progress)
@@ -105,28 +105,29 @@ void StatusBar::updateCoreStatus(Protos::GUI::State_Stats_CacheStatus status, in
 
    if (this->coreConnection->isConnected())
    {
-      statusMess.append("connected");
       if (!this->coreConnection->isLocal())
-         statusMess.append(" to ").append(SETTINGS.get<QString>("core_address"));
+         statusMess.append(QString(tr("connected to %1").arg(SETTINGS.get<QString>("core_address"))));
+      else
+         statusMess.append(tr("connected"));
 
       switch (status)
       {
       case Protos::GUI::State_Stats_CacheStatus_LOADING_CACHE_IN_PROGRESS:
-         statusMess.append(" - loading cache..");
+         statusMess.append(" - ").append(tr("loading cache.."));
          this->ui->prgCurrentAction->setVisible(true);
          this->ui->prgCurrentAction->setValue(progress);
          break;
       case Protos::GUI::State_Stats_CacheStatus_SCANNING_IN_PROGRESS:
-         statusMess.append(" - scanning in progress..");
+         statusMess.append(" - ").append(tr("scanning in progress.."));
          this->ui->prgCurrentAction->setVisible(false);
          break;
       case Protos::GUI::State_Stats_CacheStatus_HASHING_IN_PROGRESS:
-         statusMess.append(" - hashing in progress..");
+         statusMess.append(" - ").append(tr("hashing in progress.."));
          this->ui->prgCurrentAction->setVisible(true);
          this->ui->prgCurrentAction->setValue(progress);
          break;
       case Protos::GUI::State_Stats_CacheStatus_UP_TO_DATE:
-         statusMess.append(" - cache is up to date");
+         statusMess.append(" - ").append(tr("cache is up to date"));
          this->ui->prgCurrentAction->setVisible(false);
          this->ui->prgCurrentAction->setValue(progress);
          break;
@@ -137,7 +138,7 @@ void StatusBar::updateCoreStatus(Protos::GUI::State_Stats_CacheStatus status, in
    }
    else
    {
-      statusMess.append("disconnected");
+      statusMess.append(tr("disconnected"));
       this->ui->prgCurrentAction->setVisible(false);
    }
 

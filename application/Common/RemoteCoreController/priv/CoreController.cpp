@@ -32,7 +32,7 @@ CoreStatus CoreController::StartCore()
    if (!controller.isInstalled())
    {
       if (!QtServiceController::install("D-LAN.Core.exe"))
-         L_USER("D-LAN Core cannot be installed as a service");
+         L_USER(QObject::tr("D-LAN Core cannot be installed as a service"));
    }
 
    bool isRunning = false;
@@ -44,12 +44,12 @@ CoreStatus CoreController::StartCore()
          if (coreProcess.state() == QProcess::NotRunning)
          {
             coreProcess.start("D-LAN.Core.exe -e");
-            L_USER("Core launched as subprocess");
+            L_USER(QObject::tr("Core launched as subprocess"));
             return RUNNING_AS_SUB_PROCESS;
          }
       }
       else
-         L_USER("Core service launched");
+         L_USER(QObject::tr("Core service launched"));
    }
 
    if (isRunning)

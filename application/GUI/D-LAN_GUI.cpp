@@ -40,14 +40,20 @@ D_LAN_GUI::D_LAN_GUI(int argc, char *argv[]) :
    this->showMainWindow();
 
    connect(&this->trayIcon, SIGNAL(activated(QSystemTrayIcon::ActivationReason)), this, SLOT(trayIconActivated(QSystemTrayIcon::ActivationReason)));
-   this->trayIconMenu.addAction("Show the GUI", this, SLOT(showMainWindow()));
-   if (!this->coreConnection->isRunningAsSubProcess()) // We cannot stop a parent process without killing his child.
-      this->trayIconMenu.addAction("Stop the GUI", this, SLOT(exitGUI()));
-   this->trayIconMenu.addSeparator();
-   this->trayIconMenu.addAction("Exit", this, SLOT(exit()));
+
+   this->updateTrayIconMenu();
+
    this->trayIcon.setContextMenu(&this->trayIconMenu);
    this->trayIcon.setToolTip("D-LAN");
    this->trayIcon.show();
+}
+
+bool D_LAN_GUI::event(QEvent* event)
+{
+   if (event->type() == QEvent::LanguageChange)
+      this->updateTrayIconMenu();
+
+   return QApplication::event(event);
 }
 
 void D_LAN_GUI::trayIconActivated(QSystemTrayIcon::ActivationReason reason)
@@ -99,4 +105,14 @@ void D_LAN_GUI::exit(bool stopTheCore)
    }
 
    this->quit();
+}
+
+void D_LAN_GUI::updateTrayIconMenu()
+{
+   this->trayIconMenu.clear();
+   this->trayIconMenu.addAction(tr("Show the GUI"), this, SLOT(showMainWindow()));
+   if (!this->coreConnection->isRunningAsSubProcess()) // We cannot stop a parent process without killing his child.
+      this->trayIconMenu.addAction(tr("Stop the GUI"), this, SLOT(exitGUI()));
+   this->trayIconMenu.addSeparator();
+   this->trayIconMenu.addAction(tr("Exit"), this, SLOT(exit()));
 }

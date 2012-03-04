@@ -21,6 +21,7 @@
 
 #include <QString>
 #include <QMutex>
+#include <QLocale>
 
 #include <google/protobuf/message.h>
 #include <google/protobuf/descriptor.h>
@@ -58,6 +59,7 @@ namespace Common
       void set(const QString& name, const QString& value);
       void set(const QString& name, const QByteArray& value);
       void set(const QString& name, const Hash& hash);
+      void set(const QString& name, const QLocale& lang);
       void set(const QString& name, const google::protobuf::Message& message);
 
       template <typename T>
@@ -73,6 +75,7 @@ namespace Common
       void get(const google::protobuf::FieldDescriptor* fieldDescriptor, QString& value) const;
       void get(const google::protobuf::FieldDescriptor* fieldDescriptor, QByteArray& value) const;
       void get(const google::protobuf::FieldDescriptor* fieldDescriptor, Hash& hash) const;
+      void get(const google::protobuf::FieldDescriptor* fieldDescriptor, QLocale& lang) const;
 
       void setDefaultValues();
 

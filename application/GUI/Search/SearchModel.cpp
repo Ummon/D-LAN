@@ -118,11 +118,11 @@ QVariant SearchModel::headerData(int section, Qt::Orientation orientation, int r
    case Qt::DisplayRole:
       switch(section)
       {
-      case 0: return "Filename";
-      case 1: return "Folder";
-      case 2: return "Relevance";
-      case 3: return "Peer";
-      case 4: return "Size";
+      case 0: return tr("Filename");
+      case 1: return tr("Folder");
+      case 2: return tr("Relevance");
+      case 3: return tr("Peer");
+      case 4: return tr("Size");
       default: return QAbstractItemModel::headerData(section, orientation, role);
       }
 

@@ -241,7 +241,7 @@ void CoreConnection::adressResolved(QHostInfo hostInfo)
 
    if (hostInfo.addresses().isEmpty())
    {      
-      L_USER(QString("Unable to resolve the address : %1").arg(hostInfo.hostName()));
+      L_USER(QString(tr("Unable to resolve the address : %1")).arg(hostInfo.hostName()));
       return;
    }
 
@@ -255,7 +255,7 @@ void CoreConnection::connected()
    if (this->isLocal())
    {
       this->authenticated = true;
-      L_USER("Connected to the core");
+      L_USER(tr("Connected to the core"));
       L_DEBU(QString("Core address : %1").arg(this->socket->peerAddress().toString()));
       emit coreConnected();      
    }
@@ -281,16 +281,16 @@ void CoreConnection::onNewMessage(Common::MessageHeader::MessageType type, const
          switch (authenticationResult.status())
          {
          case Protos::GUI::AuthenticationResult_Status_BAD_PASSWORD:
-            L_USER("Authentication failed, bad password");
+            L_USER(tr("Authentication failed, bad password"));
             break;
 
          case Protos::GUI::AuthenticationResult_Status_ERROR:
-            L_USER("Authentication failed");
+            L_USER(tr("Authentication failed"));
             break;
 
          case Protos::GUI::AuthenticationResult_Status_OK:
             this->authenticated = true;
-            L_USER("Connected to the core");
+            L_USER(tr("Connected to the core"));
             emit coreConnected();
             break;
          }

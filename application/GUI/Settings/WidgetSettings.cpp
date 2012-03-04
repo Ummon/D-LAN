@@ -83,8 +83,6 @@ WidgetSettings::WidgetSettings(QSharedPointer<RCC::ICoreConnection> coreConnecti
 
    connect(this->ui->butOpenFolder, SIGNAL(clicked()), this, SLOT(openLocation()));
 
-   connect(this->ui->cmbLanguages, SIGNAL(currentIndexChanged(int)), this, SLOT(cmbLanguageChanged(int)));
-
    connect(this->ui->txtCoreAddress, SIGNAL(editingFinished()), this, SLOT(saveGUISettings()));
    connect(this->ui->txtPassword, SIGNAL(editingFinished()), this, SLOT(saveGUISettings()));
    connect(this->ui->butResetCoreAddress, SIGNAL(clicked()), this, SLOT(resetCoreAddress()));
@@ -98,8 +96,10 @@ WidgetSettings::WidgetSettings(QSharedPointer<RCC::ICoreConnection> coreConnecti
    connect(&this->sharedDirsModel, SIGNAL(rowsInserted(const QModelIndex&, int, int)), this, SLOT(refreshButtonsAvailability()));
    connect(&this->sharedDirsModel, SIGNAL(rowsRemoved(const QModelIndex&, int, int)), this, SLOT(refreshButtonsAvailability()));
 
-   this->refreshButtonsAvailability();
    this->fillComboBoxLanguages();
+   connect(this->ui->cmbLanguages, SIGNAL(currentIndexChanged(int)), this, SLOT(cmbLanguageChanged(int)));
+
+   this->refreshButtonsAvailability();
 }
 
 WidgetSettings::~WidgetSettings()
@@ -121,18 +121,38 @@ void WidgetSettings::coreDisconnected()
    this->ui->chkEnableIntegrityCheck->setEnabled(false);
 }
 
+QString WidgetSettings::getCurrentLanguageFilename()
+{
+   return this->ui->cmbLanguages->itemData(this->ui->cmbLanguages->currentIndex()).value<Common::Language>().filename;
+}
+
 /**
   * Read the available language files and fill the combo box.
   */
 void WidgetSettings::fillComboBoxLanguages()
 {
-   this->ui->cmbLanguages->addItem("English");
+   QVariant dataEn;
+   dataEn.setValue(Common::Language("", QLocale("en")));
+   this->ui->cmbLanguages->addItem("English", dataEn);
+
+   QLocale current = QLocale::system();
+   if (SETTINGS.isSet("language"))
+      current = SETTINGS.get<QLocale>("language");
+   bool exactMatchFound = false;
 
    Common::Languages langs(QCoreApplication::applicationDirPath() + "/" + LANGUAGE_DIRECTORY);
    for (QListIterator<Common::Language> i(langs.getAvailableLanguages()); i.hasNext();)
    {
       Common::Language lang = i.next();
-      this->ui->cmbLanguages->addItem(lang.locale.nativeLanguageName(), lang.filename);
+      QVariant data;
+      data.setValue(lang);
+      this->ui->cmbLanguages->addItem(lang.locale.nativeLanguageName(), data);
+
+      if (!exactMatchFound && lang.locale.language() == current.language())
+      {
+         exactMatchFound = lang.locale.country() == current.country();
+         this->ui->cmbLanguages->setCurrentIndex(this->ui->cmbLanguages->count() - 1);
+      }
    }
 }
 
@@ -209,9 +229,7 @@ void WidgetSettings::saveGUISettings()
 
    SETTINGS.set("password", Common::Hasher::hashWithSalt(this->ui->txtPassword->text()));
 
-   /*Protos::Common::Language lang;
-   lang
-   SETTINGS.set*/
+   SETTINGS.set("language", this->ui->cmbLanguages->itemData(this->ui->cmbLanguages->currentIndex()).value<Common::Language>().locale);
 
    SETTINGS.save();
 
@@ -223,7 +241,7 @@ void WidgetSettings::saveGUISettings()
 
 void WidgetSettings::cmbLanguageChanged(int cmbIndex)
 {
-   emit languageChanged(this->ui->cmbLanguages->itemData(cmbIndex).toString());
+   emit languageChanged(this->ui->cmbLanguages->itemData(cmbIndex).value<Common::Language>().filename);
 
    this->saveCoreLanguageSettingOnly();
 }
@@ -290,10 +308,10 @@ void WidgetSettings::displayContextMenuDownload(const QPoint& point)
    if (this->coreConnection->isLocal())
    {
       QMenu menu;
-      menu.addAction(QIcon(":/icons/ressources/delete.png"), "Remove the shared folder", this, SLOT(removeShared()));
-      QAction* actionUp = menu.addAction(QIcon(":/icons/ressources/arrow_up.png"), "Move up", this, SLOT(moveUpShared()));
-      QAction* actionDown = menu.addAction(QIcon(":/icons/ressources/arrow_down.png"), "Move down", this, SLOT(moveDownShared()));
-      menu.addAction(QIcon(":/icons/ressources/explore_folder.png"), "Open location", this, SLOT(openLocation()));
+      menu.addAction(QIcon(":/icons/ressources/delete.png"), tr("Remove the shared folder"), this, SLOT(removeShared()));
+      QAction* actionUp = menu.addAction(QIcon(":/icons/ressources/arrow_up.png"), tr("Move up"), this, SLOT(moveUpShared()));
+      QAction* actionDown = menu.addAction(QIcon(":/icons/ressources/arrow_down.png"), tr("Move down"), this, SLOT(moveDownShared()));
+      menu.addAction(QIcon(":/icons/ressources/explore_folder.png"), tr("Open location"), this, SLOT(openLocation()));
 
       if (this->ui->tblShareDirs->currentIndex().row() == 0)
          actionUp->setDisabled(true);

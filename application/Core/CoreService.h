@@ -42,7 +42,6 @@ namespace CoreSpace
 
    private slots:
       void treatUserInput(QString);
-      void resumeFromLowPowerState();
 
    private:
       Core core;

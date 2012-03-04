@@ -21,6 +21,7 @@ using namespace Common;
 
 #include <QMutexLocker>
 #include <QTextStream>
+#include <QStringList>
 
 #include <Protos/common.pb.h>
 
@@ -317,6 +318,40 @@ void Settings::set(const QString& name, const Hash& hash)
    this->settings->GetReflection()->MutableMessage(this->settings, fieldDescriptor)->CopyFrom(hashMessage);
 }
 
+void Settings::set(const QString& name, const QLocale& lang)
+{
+   QMutexLocker locker(&this->mutex);
+
+   Q_ASSERT(!name.isEmpty());
+   Q_ASSERT(this->settings);
+
+   if (!this->settings)
+      return;
+
+   const google::protobuf::FieldDescriptor* fieldDescriptor = this->descriptor->FindFieldByName(name.toStdString());
+   if (!fieldDescriptor)
+   {
+      printErrorNameNotFound(name);
+      return;
+   }
+   if (fieldDescriptor->type() != google::protobuf::FieldDescriptor::TYPE_MESSAGE ||
+       fieldDescriptor->type() == google::protobuf::FieldDescriptor::TYPE_MESSAGE && fieldDescriptor->message_type()->name() != "Language")
+   {
+      printErrorBadType(fieldDescriptor, "Language");
+      return;
+   }
+
+   QStringList langCountry = lang.name().split('_');
+   if (langCountry.length() == 2)
+   {
+      Protos::Common::Language language;
+      ProtoHelper::setStr(language, &Protos::Common::Language::set_lang, langCountry[0]);
+      ProtoHelper::setStr(language, &Protos::Common::Language::set_country, langCountry[1]);
+
+      this->settings->GetReflection()->MutableMessage(this->settings, fieldDescriptor)->CopyFrom(language);
+   }
+}
+
 void Settings::set(const QString& name, const google::protobuf::Message& message)
 {
    QMutexLocker locker(&this->mutex);
@@ -341,8 +376,6 @@ void Settings::set(const QString& name, const google::protobuf::Message& message
    }
 
    this->settings->GetReflection()->MutableMessage(this->settings, fieldDescriptor)->CopyFrom(message);
-
-
 }
 
 void Settings::get(const google::protobuf::FieldDescriptor* fieldDescriptor, quint32& value) const
@@ -380,6 +413,19 @@ void Settings::get(const google::protobuf::FieldDescriptor* fieldDescriptor, Has
 {
    Q_ASSERT(fieldDescriptor);
    hash = static_cast<const Protos::Common::Hash&>(this->settings->GetReflection()->GetMessage(*this->settings, fieldDescriptor)).hash();
+}
+
+void Settings::get(const google::protobuf::FieldDescriptor* fieldDescriptor, QLocale& lang) const
+{
+   Q_ASSERT(fieldDescriptor);
+
+   Protos::Common::Language langMess = static_cast<const Protos::Common::Language&>(this->settings->GetReflection()->GetMessage(*this->settings, fieldDescriptor));
+
+   QString langStr = ProtoHelper::getStr(langMess, &Protos::Common::Language::lang);
+   if (langMess.has_country())
+      langStr.append("_").append(ProtoHelper::getStr(langMess, &Protos::Common::Language::country));
+
+   lang = QLocale(langStr);
 }
 
 void Settings::setDefaultValues()

@@ -29,6 +29,8 @@ namespace GUI
 {
    class DirListModel : public QAbstractTableModel
    {
+      Q_OBJECT
+
    public:
       void setDirs(const QList<Common::SharedDir>& dirs);
       void addDir(const Common::SharedDir& dir);

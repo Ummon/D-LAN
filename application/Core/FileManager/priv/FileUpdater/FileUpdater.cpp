@@ -669,7 +669,7 @@ void FileUpdater::restoreFromFileCache(SharedDirectory* dir)
 
    if (this->fileCache == 0)
    {
-      L_ERRO("FileUpdater::restoreFromFileCache : this->fileCache must be previously set. Unable to restore from the file cache.");
+      L_ERRO("FileUpdater::restoreFromFileCache(..) : 'this->fileCache' must be previously set. Unable to restore from the file cache.");
       return;
    }
 

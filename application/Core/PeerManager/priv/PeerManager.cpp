@@ -62,7 +62,7 @@ PeerManager::PeerManager(QSharedPointer<FM::IFileManager> fileManager) :
       this->ID = SETTINGS.get<Common::Hash>("peer_id");
    }
 
-   L_USER(QString("Our current ID: %1").arg(this->ID.toStr()));
+   L_USER(QString(tr("Our current ID: %1")).arg(this->ID.toStr()));
 }
 
 PeerManager::~PeerManager()

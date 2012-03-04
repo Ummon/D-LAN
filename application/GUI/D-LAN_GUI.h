@@ -35,6 +35,9 @@ namespace GUI
    public:
       D_LAN_GUI(int argc, char *argv[]);
 
+   protected:
+      bool event(QEvent* event);
+
    private slots:
       void trayIconActivated(QSystemTrayIcon::ActivationReason reason);
       void mainWindowClosed();
@@ -43,6 +46,8 @@ namespace GUI
       void exit(bool stopTheCore = true);
 
    private:
+      void updateTrayIconMenu();
+
       MainWindow* mainWindow;
 
       QSharedPointer<RCC::ICoreConnection> coreConnection;
