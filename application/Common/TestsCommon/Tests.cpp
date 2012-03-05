@@ -99,7 +99,7 @@ void Tests::splitInWords()
     QCOMPARE(Global::splitInWords("    a    b    "), QStringList() << "a" << "b");
     QCOMPARE(Global::splitInWords("a_b"), QStringList() << "a" << "b");
     QCOMPARE(Global::splitInWords("ABC DEF"), QStringList() << "abc" << "def");
-    QCOMPARE(Global::splitInWords("ΰιθ"), QStringList() << "aee");
+    QCOMPARE(Global::splitInWords(QString::fromUtf8("Γ Γ©Γ¨")), QStringList() << "aee");
     QCOMPARE(Global::splitInWords("abc%_-[]def"), QStringList() << "abc" << "def");
 }
 
@@ -268,7 +268,7 @@ void Tests::hasher()
 
 void Tests::messageHeader()
 {
-   const char data[MessageHeader::HEADER_SIZE] = {
+   const char data[] = {
       0x00, 0x00, 0x00, 0x01,
       0x00, 0x00, 0x00, 0x2a,
       0x2d, 0x73, 0x73, 0x6f,

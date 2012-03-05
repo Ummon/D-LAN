@@ -116,6 +116,8 @@ void Core::languageDefined(QLocale locale)
 {
    Common::Languages languages(QCoreApplication::applicationDirPath() + "/" + LANGUAGE_DIRECTORY);
    Common::Language lang = languages.getBestMatchLanguage(Common::Languages::CORE, locale);
+   SETTINGS.set("language", lang.locale);
+   SETTINGS.save();
    this->translator.load(lang.filename);
 }
 

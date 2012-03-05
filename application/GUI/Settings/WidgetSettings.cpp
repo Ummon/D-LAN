@@ -237,6 +237,7 @@ void WidgetSettings::cmbLanguageChanged(int cmbIndex)
    Common::Language lang = this->ui->cmbLanguages->itemData(cmbIndex).value<Common::Language>();
    emit languageChanged(lang.filename);
    this->coreConnection->setCoreLanguage(lang.locale);
+   this->saveGUISettings();
 }
 
 void WidgetSettings::addShared()
