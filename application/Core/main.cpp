@@ -18,6 +18,7 @@
   
 #include <QString>
 #include <QTextCodec>
+#include <QLocale>
 
 #include <Common/Global.h>
 #include <Common/LogManager/Builder.h>
@@ -30,10 +31,11 @@
 #endif
 
 /**
-  * Arguments : [-r <roaming data folder>] [-l <local data folder>] [--reset-settings] [<arguments from QtService>]
+  * Arguments : [-r <roaming data folder>] [-l <local data folder>] [--reset-settings] [--lang <language>] [<arguments from QtService>]
   *  <roaming data folder> : Where settings are put.
   *  <local data folder> : Where logs, download queue, and files cache are put.
   *  --reset-settings : Remove all settings except "nick" and "peerID", other settings are set to their default values. Core exist directly after.
+  *  --lang <language> : set the language and save it to the settings file. (ISO-63, two letters)
   *  <arguments from QtService> : Type "D-LAN.Core.exe -h" to see them.
   */
 int main(int argc, char* argv[])
@@ -45,22 +47,25 @@ int main(int argc, char* argv[])
    QTextCodec::setCodecForLocale(QTextCodec::codecForName("UTF-8"));
 
    bool resetSettings = false;
+   QLocale locale;
    for (int i = 1; i < argc; i++)
    {
       const QString arg = QString::fromLatin1(argv[i]);
       if (arg == "-r" && i < argc - 1)
-         Common::Global::setDataFolder(Common::Global::ROAMING, QString::fromLatin1(argv[i++]));
+         Common::Global::setDataFolder(Common::Global::ROAMING, QString::fromLatin1(argv[++i]));
       else if (arg == "-l" && i < argc - 1)
-         Common::Global::setDataFolder(Common::Global::LOCAL, QString::fromLatin1(argv[i++]));
+         Common::Global::setDataFolder(Common::Global::LOCAL, QString::fromLatin1(argv[++i]));
+      else if (arg == "--lang" && i < argc - 1)
+         locale = QLocale(QString::fromLatin1(argv[++i]));
       else if (arg == "--reset-settings")
          resetSettings = true;
    }
 
    LM::Builder::setLogDirName("log_core");
 
-   CoreSpace::CoreService core(resetSettings, argc, argv);
+   CoreSpace::CoreService core(resetSettings, locale, argc, argv);
 
-   if (resetSettings)
+   if (resetSettings || locale != QLocale::system())
       return 0;
    else
       return core.exec();

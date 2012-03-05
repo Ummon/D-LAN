@@ -43,7 +43,7 @@ PeerManager::PeerManager(QSharedPointer<FM::IFileManager> fileManager) :
 
    this->nick = SETTINGS.get<QString>("nick");
 
-   if (!SETTINGS.isSet("peer_id"))
+   if (!SETTINGS.isSet("peer_id") || SETTINGS.get<Common::Hash>("peer_id").isNull())
    {
       this->ID = Common::Hash::rand();
       SETTINGS.set("peer_id", this->ID);

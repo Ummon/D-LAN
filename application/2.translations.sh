@@ -20,5 +20,5 @@ rm *.qm
 
 lrelease *.ts
 
-mv *gui*.qm ../GUI/output/debug/$QM_DIR
-mv *core*.qm ../Core/output/debug/$QM_DIR
+cp *gui*.qm ../GUI/output/debug/$QM_DIR
+cp *core*.qm ../Core/output/debug/$QM_DIR

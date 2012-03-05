@@ -210,7 +210,7 @@ void MainWindow::coreDisconnected()
 void MainWindow::displayContextMenuPeers(const QPoint& point)
 {
    QMenu menu;
-   menu.addAction(QIcon(":/icons/ressources/folder.png"), "Browse", this, SLOT(browse()));
+   menu.addAction(QIcon(":/icons/ressources/folder.png"), tr("Browse"), this, SLOT(browse()));
    menu.exec(this->ui->tblPeers->mapToGlobal(point));
 }
 

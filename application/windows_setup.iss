@@ -26,6 +26,7 @@ Source: Core/output/release/D-LAN.Core.exe; DestDir: {app}; Flags: comparetimest
 Source: GUI/output/release/D-LAN.GUI.exe; DestDir: {app}; Flags: comparetimestamp; 
 Source: Tools/LogViewer/output/release/LogViewer.exe; DestDir: {app}; Flags: comparetimestamp; 
 Source: Tools/PasswordHasher/output/release/PasswordHasher.exe; DestDir: {app}; Flags: comparetimestamp; 
+Source: translations/*.qm; DestDir: {app}/languages; Flags: comparetimestamp; 
 Source: {#QtDir}/bin/QtCore4.dll; DestDir: {app}; Flags: comparetimestamp; 
 Source: {#QtDir}/bin/QtGui4.dll; DestDir: {app}; Flags: comparetimestamp; 
 Source: {#QtDir}/bin/QtNetwork4.dll; DestDir: {app}; Flags: comparetimestamp; 
@@ -35,18 +36,35 @@ Source: {#MingwDir}/bin/libgcc_s_dw2-1.dll; DestDir: {app}; Flags: comparetimest
 ;Source: {#ProtoBufDir}/src/.libs/libprotobuf-7.dll; DestDir: {app}; Flags: comparetimestamp; 
 
 [Icons]
-Name: "{group}\D-LAN"; Filename: {app}\D-LAN.GUI.exe; WorkingDir: "{app}"
-Name: "{group}\Password Hasher"; Filename: {app}\PasswordHasher.exe; WorkingDir: "{app}"
+Name: "{group}\D-LAN"; Filename: "{app}\D-LAN.GUI.exe"; WorkingDir: "{app}"
+Name: "{group}\Password Hasher"; Filename: "{app}\PasswordHasher.exe"; WorkingDir: "{app}"
+
+[Languages]
+; Name has to be coded as ISO-639 (two letters).
+Name: "en"; MessagesFile: "compiler:Default.isl,translations\d_lan.en.isl"
+Name: "fr"; MessagesFile: "compiler:Languages\French.isl,translations\d_lan.fr.isl"
 
 [Tasks]
-Name: Firewall; Description: "Add an exception to the Windows Firewall"; MinVersion: 0,5.01.2600sp2;
-Name: ResetSettings; Description: "Reset the core settings (keep the nick and the ID)";
+Name: "Firewall"; Description: {cm:firewallException}; MinVersion: 0,5.01.2600sp2;
+Name: "ResetSettings"; Description: {cm:resetSettings}
 
 [Run]
 Filename: {sys}\netsh.exe; Parameters: "firewall add allowedprogram ""{app}\D-LAN.Core.exe"" ""D-LAN.Core"" ENABLE ALL"; Flags: runhidden; MinVersion: 0,5.01.2600sp2; Tasks: Firewall;
 Filename: {app}\D-LAN.Core.exe; Parameters: --reset-settings; Description: Reset settings; Flags: RunHidden; Tasks: ResetSettings;
-Filename: {app}\D-LAN.Core.exe; Parameters: -i; Description: Install the D-LAN service; Flags: RunHidden; 
+Filename: {app}\D-LAN.Core.exe; Parameters: -i --lang {language}; Description: Install the D-LAN service and define the language; Flags: RunHidden; 
+Filename: {app}\D-LAN.GUI.exe;  Parameters: --lang {language}; Description: Define the language for the GUI; Flags: RunHidden;  
 
 [UninstallRun]
 Filename: {app}\D-LAN.Core.exe; Parameters: -u;
 Filename: {sys}\netsh.exe; Parameters: "firewall delete allowedprogram program=""{app}\D-LAN.Core.exe"""; Flags: runhidden; MinVersion: 0,5.01.2600sp2; Tasks: Firewall; 
+
+[code] 
+// Will stop the Core service.
+function PrepareToInstall(var NeedsRestart: Boolean): String;
+var
+  ResultCode: integer;
+begin
+  Exec(ExpandConstant('{sys}\sc.exe'), 'stop "D-LAN Core"', '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
+  NeedsRestart := False;
+  Result := '';
+end;

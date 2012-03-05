@@ -34,7 +34,7 @@ using namespace CoreSpace;
 
 LOG_INIT_CPP(Core);
 
-Core::Core(bool resetSettings)
+Core::Core(bool resetSettings, QLocale locale)
 {
    QCoreApplication::instance()->installTranslator(&this->translator);
 
@@ -43,7 +43,7 @@ Core::Core(bool resetSettings)
    SETTINGS.setSettingsMessage(new Protos::Core::Settings());
    SETTINGS.load();
 
-   if (resetSettings)
+   if (resetSettings || locale != QLocale::system())
    {
       QString originalRoamingFolder = Common::Global::getDataFolder(Common::Global::ROAMING);
 
@@ -62,7 +62,7 @@ Core::Core(bool resetSettings)
             Common::Global::setDataFolder(Common::Global::ROAMING, roamingSystem);
          }
 
-         if (SETTINGS.load())
+         if (resetSettings && SETTINGS.load())
          {
             const QString nick = SETTINGS.get<QString>("nick");
             const Common::Hash peerID = SETTINGS.get<Common::Hash>("peer_id");
@@ -71,6 +71,11 @@ Core::Core(bool resetSettings)
             SETTINGS.set("nick", nick);
             SETTINGS.set("peer_id", peerID);
             SETTINGS.save();
+         }
+
+         if (locale != QLocale::system())
+         {
+            this->setLanguage(locale, false);
          }
       }
       Common::Global::setDataFolder(Common::Global::ROAMING, originalRoamingFolder);
@@ -102,7 +107,7 @@ void Core::start()
    this->networkListener = NL::Builder::newNetworkListener(this->fileManager, this->peerManager, this->uploadManager, this->downloadManager);
    this->remoteControlManager = RCM::Builder::newRemoteControlManager(this->fileManager, this->peerManager, this->uploadManager, this->downloadManager, this->networkListener);
 
-   connect(this->remoteControlManager.data(), SIGNAL(languageDefined(QLocale)), this, SLOT(languageDefined(QLocale)));
+   connect(this->remoteControlManager.data(), SIGNAL(languageDefined(QLocale)), this, SLOT(setLanguage(QLocale)));
 
    L_USER(QObject::tr("Ready to serve"));
 }
@@ -112,13 +117,21 @@ void Core::rebindSockets()
    this->networkListener->rebindSockets();
 }
 
-void Core::languageDefined(QLocale locale)
+void Core::setLanguage(QLocale locale, bool load)
 {
-   Common::Languages languages(QCoreApplication::applicationDirPath() + "/" + LANGUAGE_DIRECTORY);
-   Common::Language lang = languages.getBestMatchLanguage(Common::Languages::CORE, locale);
-   SETTINGS.set("language", lang.locale);
-   SETTINGS.save();
-   this->translator.load(lang.filename);
+   if (load)
+   {
+      Common::Languages languages(QCoreApplication::applicationDirPath() + "/" + LANGUAGE_DIRECTORY);
+      Common::Language lang = languages.getBestMatchLanguage(Common::Languages::CORE, locale);
+      SETTINGS.set("language", lang.locale);
+      SETTINGS.save();
+      this->translator.load(lang.filename);
+   }
+   else
+   {
+      SETTINGS.set("language", locale);
+      SETTINGS.save();
+   }
 }
 
 /**

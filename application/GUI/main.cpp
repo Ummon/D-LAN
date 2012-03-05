@@ -18,6 +18,7 @@
   
 #include <QtGui/QApplication>
 #include <QTextCodec>
+#include <QLocale>
 
 #include <Protos/gui_settings.pb.h>
 
@@ -32,6 +33,10 @@
    extern const char* new_progname;
 #endif
 
+/**
+  * Arguments : [--lang <language>]
+  *  --lang <language> : set the language and save it to the settings file. (ISO-63, two letters). Do not start the gui in this case.
+  */
 int main(int argc, char *argv[])
 {
 #if defined(DEBUG) && defined(ENABLE_NVWA)
@@ -40,12 +45,25 @@ int main(int argc, char *argv[])
 
    QTextCodec::setCodecForLocale(QTextCodec::codecForName("UTF-8"));
 
+   QLocale locale;
+   for (int i = 1; i < argc; i++)
+   {
+      const QString arg = QString::fromLatin1(argv[i]);
+      if (arg == "--lang" && i < argc - 1)
+         locale = QLocale(QString::fromLatin1(argv[++i]));
+   }
+
    SETTINGS.setFilename(Common::GUI_SETTINGS_FILENAME);
    SETTINGS.setSettingsMessage(new Protos::GUI::Settings());
    SETTINGS.load();
+   if (locale != QLocale::system())
+      SETTINGS.set("language", locale);
    SETTINGS.save(); // To automatically create the file if it doesn't exist.
 
    LM::Builder::setLogDirName("log_gui");
+
+   if (locale != QLocale::system())
+      return 0;
 
    GUI::D_LAN_GUI gui(argc, argv);
    return gui.exec();

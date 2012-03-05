@@ -43,12 +43,12 @@ namespace CoreSpace
    {
       Q_OBJECT
    public:
-      Core(bool resetSettings);
+      Core(bool resetSettings, QLocale locale);
       void start();
       void rebindSockets();
 
-   private slots:
-      void languageDefined(QLocale locale);
+   public slots:
+      void setLanguage(QLocale locale, bool load = true);
 
    private:
       void checkSettingsIntegrity();

@@ -7,36 +7,42 @@
     <message>
         <location filename="../GUI/DialogAbout.ui" line="+54"/>
         <location filename="../GUI/.tmp/debug/ui_DialogAbout.h" line="+144"/>
+        <location filename="../GUI/.tmp/release/ui_DialogAbout.h" line="+144"/>
         <source>About</source>
         <translation></translation>
     </message>
     <message>
         <location line="+54"/>
         <location filename="../GUI/.tmp/debug/ui_DialogAbout.h" line="+2"/>
+        <location filename="../GUI/.tmp/release/ui_DialogAbout.h" line="+2"/>
         <source>D-LAN</source>
         <translation></translation>
     </message>
     <message>
         <location line="+10"/>
         <location filename="../GUI/.tmp/debug/ui_DialogAbout.h" line="+1"/>
+        <location filename="../GUI/.tmp/release/ui_DialogAbout.h" line="+1"/>
         <source>Built on</source>
         <translation></translation>
     </message>
     <message>
         <location line="+10"/>
         <location filename="../GUI/.tmp/debug/ui_DialogAbout.h" line="+1"/>
+        <location filename="../GUI/.tmp/release/ui_DialogAbout.h" line="+1"/>
         <source>From revision</source>
         <translation></translation>
     </message>
     <message>
         <location line="+10"/>
         <location filename="../GUI/.tmp/debug/ui_DialogAbout.h" line="+1"/>
+        <location filename="../GUI/.tmp/release/ui_DialogAbout.h" line="+1"/>
         <source>Copyright 2010-2011 Greg Burri. All rights reserved.</source>
         <translation></translation>
     </message>
     <message>
         <location line="+50"/>
         <location filename="../GUI/.tmp/debug/ui_DialogAbout.h" line="+1"/>
+        <location filename="../GUI/.tmp/release/ui_DialogAbout.h" line="+1"/>
         <source>Close</source>
         <translation></translation>
     </message>
@@ -74,6 +80,14 @@
     <message>
         <location line="+1"/>
         <source>Free space</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>GUI::MainWindow</name>
+    <message>
+        <location filename="../GUI/MainWindow.cpp" line="+213"/>
+        <source>Browse</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -156,8 +170,24 @@
 <context>
     <name>GUI::TabCloseButton</name>
     <message>
-        <location filename="../GUI/TabButtons.cpp" line="+102"/>
+        <location filename="../GUI/TabButtons.cpp" line="+133"/>
         <source>Close Tab</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>GUI::TabRefreshButton</name>
+    <message>
+        <location line="+37"/>
+        <source>Refresh</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>GUI::WidgetBrowse</name>
+    <message>
+        <location filename="../GUI/Browse/WidgetBrowse.cpp" line="+126"/>
+        <source>Open location</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -205,9 +235,22 @@
     </message>
 </context>
 <context>
+    <name>GUI::WidgetSearch</name>
+    <message>
+        <location filename="../GUI/Search/WidgetSearch.cpp" line="+234"/>
+        <source>Open location</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Browse</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>GUI::WidgetSettings</name>
     <message>
-        <location filename="../GUI/Settings/WidgetSettings.cpp" line="+311"/>
+        <location filename="../GUI/Settings/WidgetSettings.cpp" line="+305"/>
         <source>Remove the shared folder</source>
         <translation type="unfinished"></translation>
     </message>
@@ -240,12 +283,14 @@
     <message>
         <location filename="../GUI/MainWindow.ui" line="+14"/>
         <location filename="../GUI/.tmp/debug/ui_MainWindow.h" line="+183"/>
+        <location filename="../GUI/.tmp/release/ui_MainWindow.h" line="+183"/>
         <source>D-LAN</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+49"/>
         <location filename="../GUI/.tmp/debug/ui_MainWindow.h" line="+4"/>
+        <location filename="../GUI/.tmp/release/ui_MainWindow.h" line="+4"/>
         <source>Log</source>
         <translation type="unfinished"></translation>
     </message>
@@ -254,24 +299,29 @@
         <location line="+28"/>
         <location filename="../GUI/.tmp/debug/ui_MainWindow.h" line="+1"/>
         <location line="+1"/>
+        <location filename="../GUI/.tmp/release/ui_MainWindow.h" line="+1"/>
+        <location line="+1"/>
         <source>Search</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+13"/>
         <location filename="../GUI/.tmp/debug/ui_MainWindow.h" line="+2"/>
+        <location filename="../GUI/.tmp/release/ui_MainWindow.h" line="+2"/>
         <source>Search among other peers</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+20"/>
         <location filename="../GUI/.tmp/debug/ui_MainWindow.h" line="+4"/>
+        <location filename="../GUI/.tmp/release/ui_MainWindow.h" line="+4"/>
         <source>Search among own files</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+22"/>
         <location filename="../GUI/.tmp/debug/ui_MainWindow.h" line="+3"/>
+        <location filename="../GUI/.tmp/release/ui_MainWindow.h" line="+3"/>
         <source>Peers</source>
         <translation type="unfinished"></translation>
     </message>
@@ -367,30 +417,35 @@
     <message>
         <location filename="../GUI/StatusBar.ui" line="+29"/>
         <location filename="../GUI/.tmp/debug/ui_StatusBar.h" line="+166"/>
+        <location filename="../GUI/.tmp/release/ui_StatusBar.h" line="+166"/>
         <source>Show the log window</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+36"/>
         <location filename="../GUI/.tmp/debug/ui_StatusBar.h" line="+4"/>
+        <location filename="../GUI/.tmp/release/ui_StatusBar.h" line="+4"/>
         <source>About</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+42"/>
         <location filename="../GUI/.tmp/debug/ui_StatusBar.h" line="+3"/>
+        <location filename="../GUI/.tmp/release/ui_StatusBar.h" line="+3"/>
         <source>Download rate</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+38"/>
         <location filename="../GUI/.tmp/debug/ui_StatusBar.h" line="+5"/>
+        <location filename="../GUI/.tmp/release/ui_StatusBar.h" line="+5"/>
         <source>Upload rate</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+32"/>
         <location filename="../GUI/.tmp/debug/ui_StatusBar.h" line="+5"/>
+        <location filename="../GUI/.tmp/release/ui_StatusBar.h" line="+5"/>
         <source>Total sharing</source>
         <translation type="unfinished"></translation>
     </message>
@@ -400,12 +455,14 @@
     <message>
         <location filename="../GUI/Browse/WidgetBrowse.ui" line="+45"/>
         <location filename="../GUI/.tmp/debug/ui_WidgetBrowse.h" line="+66"/>
+        <location filename="../GUI/.tmp/release/ui_WidgetBrowse.h" line="+66"/>
         <source>Download selected items to the first shared folder with enough free space</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+3"/>
         <location filename="../GUI/.tmp/debug/ui_WidgetBrowse.h" line="+2"/>
+        <location filename="../GUI/.tmp/release/ui_WidgetBrowse.h" line="+2"/>
         <source>Download selected items</source>
         <translation type="unfinished"></translation>
     </message>
@@ -415,12 +472,14 @@
     <message>
         <location filename="../GUI/Chat/WidgetChat.ui" line="+14"/>
         <location filename="../GUI/.tmp/debug/ui_WidgetChat.h" line="+76"/>
+        <location filename="../GUI/.tmp/release/ui_WidgetChat.h" line="+76"/>
         <source>Chat</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+33"/>
         <location filename="../GUI/.tmp/debug/ui_WidgetChat.h" line="+1"/>
+        <location filename="../GUI/.tmp/release/ui_WidgetChat.h" line="+1"/>
         <source>Send</source>
         <translation type="unfinished"></translation>
     </message>
@@ -430,24 +489,28 @@
     <message>
         <location filename="../GUI/Downloads/WidgetDownloads.ui" line="+14"/>
         <location filename="../GUI/.tmp/debug/ui_WidgetDownloads.h" line="+94"/>
+        <location filename="../GUI/.tmp/release/ui_WidgetDownloads.h" line="+94"/>
         <source>Downloads</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+30"/>
         <location filename="../GUI/.tmp/debug/ui_WidgetDownloads.h" line="+1"/>
+        <location filename="../GUI/.tmp/release/ui_WidgetDownloads.h" line="+1"/>
         <source>Item shown :</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+7"/>
         <location filename="../GUI/.tmp/debug/ui_WidgetDownloads.h" line="+2"/>
+        <location filename="../GUI/.tmp/release/ui_WidgetDownloads.h" line="+2"/>
         <source>Remove completed files</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+14"/>
         <location filename="../GUI/.tmp/debug/ui_WidgetDownloads.h" line="+4"/>
+        <location filename="../GUI/.tmp/release/ui_WidgetDownloads.h" line="+4"/>
         <source>Removed selected downloads</source>
         <translation type="unfinished"></translation>
     </message>
@@ -457,18 +520,21 @@
     <message>
         <location filename="../GUI/Search/WidgetSearch.ui" line="+14"/>
         <location filename="../GUI/.tmp/debug/ui_WidgetSearch.h" line="+76"/>
+        <location filename="../GUI/.tmp/release/ui_WidgetSearch.h" line="+76"/>
         <source>Search</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+34"/>
         <location filename="../GUI/.tmp/debug/ui_WidgetSearch.h" line="+2"/>
+        <location filename="../GUI/.tmp/release/ui_WidgetSearch.h" line="+2"/>
         <source>Download selected items to the first shared folder with enough free space</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+3"/>
         <location filename="../GUI/.tmp/debug/ui_WidgetSearch.h" line="+2"/>
+        <location filename="../GUI/.tmp/release/ui_WidgetSearch.h" line="+2"/>
         <source>Download selected items</source>
         <translation type="unfinished"></translation>
     </message>
@@ -478,102 +544,119 @@
     <message>
         <location filename="../GUI/Settings/WidgetSettings.ui" line="+14"/>
         <location filename="../GUI/.tmp/debug/ui_WidgetSettings.h" line="+242"/>
+        <location filename="../GUI/.tmp/release/ui_WidgetSettings.h" line="+242"/>
         <source>Settings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+29"/>
         <location filename="../GUI/.tmp/debug/ui_WidgetSettings.h" line="+23"/>
+        <location filename="../GUI/.tmp/release/ui_WidgetSettings.h" line="+23"/>
         <source>Basic</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+6"/>
         <location filename="../GUI/.tmp/debug/ui_WidgetSettings.h" line="-22"/>
+        <location filename="../GUI/.tmp/release/ui_WidgetSettings.h" line="-22"/>
         <source>Nick</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+14"/>
         <location filename="../GUI/.tmp/debug/ui_WidgetSettings.h" line="+1"/>
+        <location filename="../GUI/.tmp/release/ui_WidgetSettings.h" line="+1"/>
         <source>Shared folders</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+9"/>
         <location filename="../GUI/.tmp/debug/ui_WidgetSettings.h" line="+2"/>
+        <location filename="../GUI/.tmp/release/ui_WidgetSettings.h" line="+2"/>
         <source>Add a new shared directory</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+17"/>
         <location filename="../GUI/.tmp/debug/ui_WidgetSettings.h" line="+4"/>
+        <location filename="../GUI/.tmp/release/ui_WidgetSettings.h" line="+4"/>
         <source>Remove the selected shared directory</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+14"/>
         <location filename="../GUI/.tmp/debug/ui_WidgetSettings.h" line="+4"/>
+        <location filename="../GUI/.tmp/release/ui_WidgetSettings.h" line="+4"/>
         <source>Move down the selected shared directory</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+14"/>
         <location filename="../GUI/.tmp/debug/ui_WidgetSettings.h" line="+4"/>
+        <location filename="../GUI/.tmp/release/ui_WidgetSettings.h" line="+4"/>
         <source>Move up the selected shared directory</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+14"/>
         <location filename="../GUI/.tmp/debug/ui_WidgetSettings.h" line="+4"/>
+        <location filename="../GUI/.tmp/release/ui_WidgetSettings.h" line="+4"/>
         <source>Open location of the selected shared directory</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+44"/>
         <location filename="../GUI/.tmp/debug/ui_WidgetSettings.h" line="+13"/>
+        <location filename="../GUI/.tmp/release/ui_WidgetSettings.h" line="+13"/>
         <source>Advanced</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+6"/>
         <location filename="../GUI/.tmp/debug/ui_WidgetSettings.h" line="-9"/>
+        <location filename="../GUI/.tmp/release/ui_WidgetSettings.h" line="-9"/>
         <source>Language</source>
         <translation>언어</translation>
     </message>
     <message>
         <location line="+10"/>
         <location filename="../GUI/.tmp/debug/ui_WidgetSettings.h" line="+1"/>
+        <location filename="../GUI/.tmp/release/ui_WidgetSettings.h" line="+1"/>
         <source>Core connection</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+6"/>
         <location filename="../GUI/.tmp/debug/ui_WidgetSettings.h" line="+1"/>
+        <location filename="../GUI/.tmp/release/ui_WidgetSettings.h" line="+1"/>
         <source>address</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+12"/>
         <location filename="../GUI/.tmp/debug/ui_WidgetSettings.h" line="+1"/>
+        <location filename="../GUI/.tmp/release/ui_WidgetSettings.h" line="+1"/>
         <source>Reset to local</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+9"/>
         <location filename="../GUI/.tmp/debug/ui_WidgetSettings.h" line="+1"/>
+        <location filename="../GUI/.tmp/release/ui_WidgetSettings.h" line="+1"/>
         <source>Password</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+17"/>
         <location filename="../GUI/.tmp/debug/ui_WidgetSettings.h" line="+2"/>
+        <location filename="../GUI/.tmp/release/ui_WidgetSettings.h" line="+2"/>
         <source>When activated all received data will be verified against their hashes.  It may consume CPU resources.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+3"/>
         <location filename="../GUI/.tmp/debug/ui_WidgetSettings.h" line="+2"/>
+        <location filename="../GUI/.tmp/release/ui_WidgetSettings.h" line="+2"/>
         <source>Data integrity check</source>
         <translation type="unfinished"></translation>
     </message>
@@ -583,6 +666,7 @@
     <message>
         <location filename="../GUI/Uploads/WidgetUploads.ui" line="+14"/>
         <location filename="../GUI/.tmp/debug/ui_WidgetUploads.h" line="+54"/>
+        <location filename="../GUI/.tmp/release/ui_WidgetUploads.h" line="+54"/>
         <source>Uploads</source>
         <translation type="unfinished"></translation>
     </message>

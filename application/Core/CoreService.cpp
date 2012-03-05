@@ -25,8 +25,8 @@ using namespace CoreSpace;
 
 #include <Common/Constants.h>
 
-CoreService::CoreService(bool resetSettings, int argc, char** argv) :
-   QtService<CoreApplication>(argc, argv, Common::SERVICE_NAME), core(resetSettings)
+CoreService::CoreService(bool resetSettings, QLocale locale, int argc, char** argv) :
+   QtService<CoreApplication>(argc, argv, Common::SERVICE_NAME), core(resetSettings, locale)
 {
    this->setServiceDescription(tr("A LAN file sharing system"));
    this->setStartupType(QtServiceController::ManualStartup);

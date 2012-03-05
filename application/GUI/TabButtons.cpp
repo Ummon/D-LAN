@@ -99,8 +99,21 @@ void TabButton::paintEvent(QPaintEvent* pe)
 TabCloseButton::TabCloseButton(QWidget* widget, QWidget* parent) :
    TabButton(parent), widget(widget)
 {
-   this->setToolTip(TabCloseButton::tr("Close Tab"));
    connect(this, SIGNAL(clicked()), this, SLOT(buttonClicked()));
+   this->setToolTipTranslate();
+}
+
+void TabCloseButton::changeEvent(QEvent* event)
+{
+   if (event->type() == QEvent::LanguageChange)
+      this->setToolTipTranslate();
+   else
+      TabButton::changeEvent(event);
+}
+
+void TabCloseButton::drawPrimitive(const QStyleOption& opt, QPainter& p)
+{
+   this->style()->drawPrimitive(QStyle::PE_IndicatorTabClose, &opt, &p, this);
 }
 
 void TabCloseButton::buttonClicked()
@@ -115,9 +128,9 @@ void TabCloseButton::buttonClicked()
    delete widgetInTabBar;
 }
 
-void TabCloseButton::drawPrimitive(const QStyleOption& opt, QPainter& p)
+void TabCloseButton::setToolTipTranslate()
 {
-   this->style()->drawPrimitive(QStyle::PE_IndicatorTabClose, &opt, &p, this);
+   this->setToolTip(tr("Close Tab"));
 }
 
 /////
@@ -128,7 +141,15 @@ TabRefreshButton::TabRefreshButton(QWidget* parent) :
    this->icon.addPixmap(QPixmap(":/icons/ressources/refresh.png"), QIcon::Normal, QIcon::Off);
    this->icon.addPixmap(QPixmap(":/icons/ressources/refresh-down.png"), QIcon::Normal, QIcon::On);
    this->icon.addPixmap(QPixmap(":/icons/ressources/refresh-hover.png"), QIcon::Active, QIcon::Off);
-   this->setToolTip("Refresh");
+   this->setToolTipTranslate();
+}
+
+void TabRefreshButton::changeEvent(QEvent* event)
+{
+   if (event->type() == QEvent::LanguageChange)
+      this->setToolTipTranslate();
+   else
+      TabButton::changeEvent(event);
 }
 
 void TabRefreshButton::drawPrimitive(const QStyleOption& opt, QPainter& p)
@@ -142,4 +163,9 @@ void TabRefreshButton::drawPrimitive(const QStyleOption& opt, QPainter& p)
 
    QPixmap pixmap = this->icon.pixmap(16, mode, state);
    style()->proxy()->drawItemPixmap(&p, opt.rect, Qt::AlignCenter, pixmap);
+}
+
+void TabRefreshButton::setToolTipTranslate()
+{
+   this->setToolTip(tr("Refresh"));
 }

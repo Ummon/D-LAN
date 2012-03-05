@@ -22,6 +22,7 @@
 #include <QAbstractButton>
 #include <QStyleOption>
 #include <QPainter>
+#include <QEvent>
 
 namespace GUI
 {
@@ -49,6 +50,7 @@ namespace GUI
        TabCloseButton(QWidget* widget, QWidget* parent = 0);
 
    protected:
+       void changeEvent(QEvent* event);
        void drawPrimitive(const QStyleOption& opt, QPainter& p);
 
    signals:
@@ -58,7 +60,8 @@ namespace GUI
       void buttonClicked();
 
    private:
-       QWidget* widget;
+      void setToolTipTranslate();
+      QWidget* widget;
    };
 
 /////
@@ -69,9 +72,12 @@ namespace GUI
    public:
        TabRefreshButton(QWidget* parent = 0);
 
-   private:
+   protected:
+       void changeEvent(QEvent* event);
        void drawPrimitive(const QStyleOption& option, QPainter& painter);
 
+   private:
+       void setToolTipTranslate();
        QIcon icon;
    };
 }

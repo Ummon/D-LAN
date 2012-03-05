@@ -123,7 +123,7 @@ void WidgetBrowse::displayContextMenuDownload(const QPoint& point)
       if (this->coreConnection->isLocal())
       {
          QMenu menu;
-         menu.addAction(QIcon(":/icons/ressources/explore_folder.png"), "Open location", this, SLOT(openLocation()));
+         menu.addAction(QIcon(":/icons/ressources/explore_folder.png"), tr("Open location"), this, SLOT(openLocation()));
          menu.exec(globalPosition);
       }
    }
