@@ -26,7 +26,7 @@ using namespace CoreSpace;
 #include <Common/Constants.h>
 
 CoreService::CoreService(bool resetSettings, int argc, char** argv) :
-   QtService<QCoreApplication>(argc, argv, Common::SERVICE_NAME), core(resetSettings)
+   QtService<CoreApplication>(argc, argv, Common::SERVICE_NAME), core(resetSettings)
 {
    this->setServiceDescription("A LAN file sharing system");
    this->setStartupType(QtServiceController::ManualStartup);
@@ -62,10 +62,15 @@ void CoreService::treatUserInput(QString input)
    {
       this->stop();
    }
+   else if (input == ConsoleReader::REBIND_SOCKETS_COMMAND)
+   {
+      this->core.rebindSockets();
+   }
    else
    {
       QTextStream out(stdout);
       out << "Commands:" << endl
-          << " - " << ConsoleReader::QUIT_COMMAND << " : stop the core" << endl;
+          << " - " << ConsoleReader::QUIT_COMMAND << " : stop the core" << endl
+          << " - " << ConsoleReader::REBIND_SOCKETS_COMMAND << " : rebind the sockets (unicast + multicast)" << endl;
    }
 }

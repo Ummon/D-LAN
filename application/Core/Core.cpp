@@ -102,6 +102,11 @@ void Core::start()
    L_USER("Ready to serve");
 }
 
+void Core::rebindSockets()
+{
+   this->networkListener->rebindSockets();
+}
+
 /**
   * Check if each value settings is valid, for example buffer_size cannot be one byte or 3 TiB..
   */

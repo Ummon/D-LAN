@@ -59,3 +59,9 @@ QSharedPointer<ISearch> NetworkListener::newSearch()
    return QSharedPointer<ISearch>(new Search(this->uDPListener));
 }
 
+void NetworkListener::rebindSockets()
+{
+   this->uDPListener.rebindSockets();
+   this->tCPListener.rebindSockets();
+}
+

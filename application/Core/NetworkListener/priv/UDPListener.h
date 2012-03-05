@@ -70,6 +70,8 @@ namespace NL
 
       Common::Hash getOwnID() const;
 
+      void rebindSockets();
+
    signals:
       void newChatMessage(const Common::Hash&, const Protos::Core::ChatMessage& chatMessage);
       void newFindResultMessage(const Protos::Common::FindResult& findResult);
