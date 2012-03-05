@@ -341,15 +341,9 @@ void Settings::set(const QString& name, const QLocale& lang)
       return;
    }
 
-   QStringList langCountry = lang.name().split('_');
-   if (langCountry.length() == 2)
-   {
-      Protos::Common::Language language;
-      ProtoHelper::setStr(language, &Protos::Common::Language::set_lang, langCountry[0]);
-      ProtoHelper::setStr(language, &Protos::Common::Language::set_country, langCountry[1]);
-
-      this->settings->GetReflection()->MutableMessage(this->settings, fieldDescriptor)->CopyFrom(language);
-   }
+   Protos::Common::Language language;
+   ProtoHelper::setLang(language, lang);
+   this->settings->GetReflection()->MutableMessage(this->settings, fieldDescriptor)->CopyFrom(language);
 }
 
 void Settings::set(const QString& name, const google::protobuf::Message& message)
@@ -421,11 +415,7 @@ void Settings::get(const google::protobuf::FieldDescriptor* fieldDescriptor, QLo
 
    Protos::Common::Language langMess = static_cast<const Protos::Common::Language&>(this->settings->GetReflection()->GetMessage(*this->settings, fieldDescriptor));
 
-   QString langStr = ProtoHelper::getStr(langMess, &Protos::Common::Language::lang);
-   if (langMess.has_country())
-      langStr.append("_").append(ProtoHelper::getStr(langMess, &Protos::Common::Language::country));
-
-   lang = QLocale(langStr);
+   lang = ProtoHelper::getLang(langMess);
 }
 
 void Settings::setDefaultValues()

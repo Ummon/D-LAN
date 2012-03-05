@@ -24,6 +24,7 @@ using namespace CoreSpace;
 #include <Common/PersistentData.h>
 #include <Common/Constants.h>
 #include <Common/Hash.h>
+#include <Common/Languages.h>
 #include <FileManager/Builder.h>
 #include <PeerManager/Builder.h>
 #include <UploadManager/Builder.h>
@@ -35,6 +36,8 @@ LOG_INIT_CPP(Core);
 
 Core::Core(bool resetSettings)
 {
+   QCoreApplication::instance()->installTranslator(&this->translator);
+
    GOOGLE_PROTOBUF_VERIFY_VERSION;
    SETTINGS.setFilename(Common::CORE_SETTINGS_FILENAME);
    SETTINGS.setSettingsMessage(new Protos::Core::Settings());
@@ -99,12 +102,21 @@ void Core::start()
    this->networkListener = NL::Builder::newNetworkListener(this->fileManager, this->peerManager, this->uploadManager, this->downloadManager);
    this->remoteControlManager = RCM::Builder::newRemoteControlManager(this->fileManager, this->peerManager, this->uploadManager, this->downloadManager, this->networkListener);
 
+   connect(this->remoteControlManager.data(), SIGNAL(languageDefined(QLocale)), this, SLOT(languageDefined(QLocale)));
+
    L_USER(QObject::tr("Ready to serve"));
 }
 
 void Core::rebindSockets()
 {
    this->networkListener->rebindSockets();
+}
+
+void Core::languageDefined(QLocale locale)
+{
+   Common::Languages languages(QCoreApplication::applicationDirPath() + "/" + LANGUAGE_DIRECTORY);
+   Common::Language lang = languages.getBestMatchLanguage(Common::Languages::CORE, locale);
+   this->translator.load(lang.filename);
 }
 
 /**

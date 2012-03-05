@@ -23,6 +23,7 @@
 #include <QSharedPointer>
 #include <QList>
 #include <QTcpServer>
+#include <QLocale>
 
 #include <Common/Uncopyable.h>
 #include <Core/FileManager/IFileManager.h>
@@ -37,7 +38,7 @@
 
 namespace RCM
 {
-   class RemoteControlManager : public QObject, public IRemoteControlManager, Common::Uncopyable
+   class RemoteControlManager : public IRemoteControlManager, Common::Uncopyable
    {
       Q_OBJECT
    public:

@@ -19,7 +19,10 @@
 #ifndef CORE_CORE_H
 #define CORE_CORE_H
 
+#include <QObject>
+#include <QLocale>
 #include <QSharedPointer>
+#include <QTranslator>
 
 #include <Common/Settings.h>
 #include <Common/Uncopyable.h>
@@ -36,12 +39,16 @@
 namespace CoreSpace
 {
    // Better than the Arm.
-   class Core : Common::Uncopyable
+   class Core : public QObject, Common::Uncopyable
    {
+      Q_OBJECT
    public:
       Core(bool resetSettings);
       void start();
       void rebindSockets();
+
+   private slots:
+      void languageDefined(QLocale locale);
 
    private:
       void checkSettingsIntegrity();
@@ -56,6 +63,8 @@ namespace CoreSpace
       } } cleaner;
 
       LOG_INIT_H("Core");
+
+      QTranslator translator;
 
    protected:
       QSharedPointer<FM::IFileManager> fileManager;

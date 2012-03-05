@@ -26,6 +26,7 @@
 #include <QWeakPointer>
 #include <QProcess>
 #include <QElapsedTimer>
+#include <QLocale>
 
 #include <Protos/gui_protocol.pb.h>
 #include <Protos/common.pb.h>
@@ -72,6 +73,7 @@ namespace RCC
       Common::Hash getOurID() const;
       void sendChatMessage(const QString& message);
       void setCoreSettings(const Protos::GUI::CoreSettings settings);
+      void setCoreLanguage(const QLocale locale);
 
       QSharedPointer<IBrowseResult> browse(const Common::Hash& peerID);
       QSharedPointer<IBrowseResult> browse(const Common::Hash& peerID, const Protos::Common::Entry& entry);
@@ -99,8 +101,12 @@ namespace RCC
       void connected();
 
    private:      
+      void connectedAndAuthenticated();
+
       void onNewMessage(Common::MessageHeader::MessageType type, const google::protobuf::Message& message);
       void onDisconnected();
+
+      void sendCurrentLanguage();
 
       friend class BrowseResult;
       friend class SearchResult;
@@ -112,6 +118,7 @@ namespace RCC
       QString currentAddress;
       quint16 currentPort;
       Common::Hash currentPassword;
+      QLocale currentLanguage;
 
       QElapsedTimer timerFromLastConnectionTry;
       QTimer retryTimer;

@@ -20,6 +20,26 @@
 using namespace Common;
 
 #include <QRegExp>
+#include <QStringList>
+
+void ProtoHelper::setLang(Protos::Common::Language& langMess, const QLocale& locale)
+{
+   QStringList langCountry = locale.name().split('_');
+   if (langCountry.length() == 2)
+   {
+      ProtoHelper::setStr(langMess, &Protos::Common::Language::set_lang, langCountry[0]);
+      ProtoHelper::setStr(langMess, &Protos::Common::Language::set_country, langCountry[1]);
+   }
+}
+
+QLocale ProtoHelper::getLang(const Protos::Common::Language& langMess)
+{
+   QString langStr = ProtoHelper::getStr(langMess, &Protos::Common::Language::lang);
+   if (langMess.has_country())
+      langStr.append("_").append(ProtoHelper::getStr(langMess, &Protos::Common::Language::country));
+
+   return QLocale(langStr);
+}
 
 QString ProtoHelper::getRelativePath(const Protos::Common::Entry& entry, bool appendFilename)
 {

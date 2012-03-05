@@ -67,6 +67,8 @@ namespace Common
          GUI_AUTHENTICATION =          0x1021,
          GUI_AUTHENTICATION_RESULT =   0x1022,
 
+         GUI_LANGUAGE =                0x10B1,
+
          GUI_SETTINGS =                0x1031,
 
          GUI_SEARCH =                  0x1041,

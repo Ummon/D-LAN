@@ -81,7 +81,8 @@ void RemoteControlManager::newConnection()
 
    connect(remoteConnection, SIGNAL(deleted(RemoteConnection*)), this, SLOT(connectionDeleted(RemoteConnection*)), Qt::DirectConnection);
    connect(remoteConnection, SIGNAL(chatMessageSent(const QString&)), this, SLOT(chatMessageSent(const QString&)), Qt::DirectConnection);
-   connections << remoteConnection;
+   connect(remoteConnection, SIGNAL(languageDefined(QLocale)), this, SIGNAL(languageDefined(QLocale)));
+   this->connections << remoteConnection;
 }
 
 void RemoteControlManager::connectionDeleted(RemoteConnection* connection)

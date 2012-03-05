@@ -81,6 +81,12 @@ namespace RCC
       virtual void setCoreSettings(const Protos::GUI::CoreSettings settings) = 0;
 
       /**
+        * Define the core language, as soon as a connection to a core is established the language
+        * is sent to it.
+        */
+      virtual void setCoreLanguage(const QLocale locale) = 0;
+
+      /**
         * Get the roots folders (shared directories) of a given peer.
         * @param peerID Can be yourself.
         */

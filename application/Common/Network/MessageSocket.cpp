@@ -244,6 +244,7 @@ bool MessageSocket::readMessage()
    case MessageHeader::GUI_EVENT_LOG_MESSAGE: return this->readMessage<Protos::GUI::EventLogMessage>();
    case MessageHeader::GUI_AUTHENTICATION: return this->readMessage<Protos::GUI::Authentication>();
    case MessageHeader::GUI_AUTHENTICATION_RESULT: return this->readMessage<Protos::GUI::AuthenticationResult>();
+   case MessageHeader::GUI_LANGUAGE: return this->readMessage<Protos::GUI::Language>();
    case MessageHeader::GUI_SETTINGS: return this->readMessage<Protos::GUI::CoreSettings>();
    case MessageHeader::GUI_SEARCH: return this->readMessage<Protos::GUI::Search>();
    case MessageHeader::GUI_SEARCH_TAG: return this->readMessage<Protos::GUI::Tag>();

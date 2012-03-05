@@ -63,7 +63,6 @@ namespace GUI
    private slots:
       void newState(const Protos::GUI::State& state);
       void saveCoreSettings();
-      void saveCoreLanguageSettingOnly();
       void saveGUISettings();
       void cmbLanguageChanged(int cmbIndex);
 

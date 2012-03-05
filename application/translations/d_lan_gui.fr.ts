@@ -309,7 +309,7 @@
         <translation>Impossible d&apos;ouvrir le fichier en écriture : %1, erreur : %2</translation>
     </message>
     <message>
-        <location filename="../Common/Settings.cpp" line="+499"/>
+        <location filename="../Common/Settings.cpp" line="+489"/>
         <source>Settings : name &quot;%1&quot; doesn&apos;t exist</source>
         <translation>Paramètres : name &quot;%1&quot; n&apos;existe pas</translation>
     </message>
@@ -337,7 +337,7 @@
 <context>
     <name>RCC::CoreConnection</name>
     <message>
-        <location filename="../Common/RemoteCoreController/priv/CoreConnection.cpp" line="+227"/>
+        <location filename="../Common/RemoteCoreController/priv/CoreConnection.cpp" line="+235"/>
         <source>Unable to connect to the core</source>
         <translation>Impossible de se connecter au core</translation>
     </message>
@@ -347,13 +347,12 @@
         <translation>Impossible de résoudre l&apos;adresse : %1</translation>
     </message>
     <message>
-        <location line="+14"/>
-        <location line="+35"/>
+        <location line="+26"/>
         <source>Connected to the core</source>
         <translation>Connecté au core</translation>
     </message>
     <message>
-        <location line="-9"/>
+        <location line="+25"/>
         <source>Authentication failed, bad password</source>
         <translation>Authentification échouée, mauvais mot de passe</translation>
     </message>

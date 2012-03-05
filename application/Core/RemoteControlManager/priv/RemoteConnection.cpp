@@ -157,6 +157,13 @@ void RemoteConnection::onNewMessage(Common::MessageHeader::MessageType type, con
       }
       break;
 
+   case Common::MessageHeader::GUI_LANGUAGE:
+      {
+         const Protos::GUI::Language& langMessage = static_cast<const Protos::GUI::Language&>(message);
+         emit languageDefined(ProtoHelper::getLang(langMessage.language()));
+      }
+      break;
+
    case Common::MessageHeader::GUI_SETTINGS:
       {
          const Protos::GUI::CoreSettings& coreSettingsMessage = static_cast<const Protos::GUI::CoreSettings&>(message);

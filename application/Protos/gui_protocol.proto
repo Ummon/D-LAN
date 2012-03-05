@@ -149,6 +149,13 @@ message AuthenticationResult {
    required Status status = 1;
 }
 
+// Set the language of the core.
+// GUI -> Core
+// id : 0xB1
+message Language {
+   required Common.Language language = 1;
+}
+
 // Set the settings.
 // GUI -> Core
 // id : 0x31
@@ -160,7 +167,6 @@ message CoreSettings {
    optional string nick = 1;
    optional SharedDirectories shared_directories = 2;
    optional bool enable_integrity_check = 3;
-   optional Common.Language language = 4;
 }
 
 // GUI -> Core
@@ -240,4 +246,4 @@ message ChatMessage {
 // GUI -> Core
 // Ask to receive a new state.
 // This message doesn't have a body.
-// id : 0xa1
+// id : 0xA1

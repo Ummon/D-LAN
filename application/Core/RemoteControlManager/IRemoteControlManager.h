@@ -19,6 +19,9 @@
 #ifndef REMOTECONTROLMANAGER_IREMOTECONTROLMANAGER_H
 #define REMOTECONTROLMANAGER_IREMOTECONTROLMANAGER_H
 
+#include <QObject>
+#include <QLocale>
+
 namespace RCM
 {
    /**
@@ -26,10 +29,14 @@ namespace RCM
      * 'Protos.Core.Settings.remote_control_port' (see "application/Protos/core_settings.proto").
      * This is the only way to interact with this component.
      */
-   class IRemoteControlManager
+   class IRemoteControlManager : public QObject
    {
+      Q_OBJECT
    public:
       virtual ~IRemoteControlManager() {}
+
+   signals:
+      void languageDefined(QLocale);
    };
 }
 #endif

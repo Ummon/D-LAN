@@ -19,9 +19,12 @@ namespace Common
    class Languages
    {
    public:
+      enum ExeType { CORE, GUI };
+
       Languages(const QString& path);
 
-      QList<Language> getAvailableLanguages();
+      QList<Language> getAvailableLanguages(ExeType exeType);
+      Language getBestMatchLanguage(ExeType exeType, QLocale locale);
 
    private:
       QString path;

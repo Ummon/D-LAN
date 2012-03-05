@@ -138,10 +138,13 @@ void WidgetSettings::fillComboBoxLanguages()
    QLocale current = QLocale::system();
    if (SETTINGS.isSet("language"))
       current = SETTINGS.get<QLocale>("language");
+
+   this->coreConnection->setCoreLanguage(current);
+
    bool exactMatchFound = false;
 
    Common::Languages langs(QCoreApplication::applicationDirPath() + "/" + LANGUAGE_DIRECTORY);
-   for (QListIterator<Common::Language> i(langs.getAvailableLanguages()); i.hasNext();)
+   for (QListIterator<Common::Language> i(langs.getAvailableLanguages(Common::Languages::GUI)); i.hasNext();)
    {
       Common::Language lang = i.next();
       QVariant data;
@@ -210,16 +213,6 @@ void WidgetSettings::saveCoreSettings()
    this->coreConnection->setCoreSettings(settings);
 }
 
-/**
-  * Send to the core only the language setting, it's usefull to call this function right after
-  * a connection is established to set the core language.
-  */
-void WidgetSettings::saveCoreLanguageSettingOnly()
-{
-   /*Protos::GUI::CoreSettings settings;
-   settings.*/
-}
-
 void WidgetSettings::saveGUISettings()
 {
    this->ui->txtCoreAddress->setText(this->ui->txtCoreAddress->text().trimmed());
@@ -241,9 +234,9 @@ void WidgetSettings::saveGUISettings()
 
 void WidgetSettings::cmbLanguageChanged(int cmbIndex)
 {
-   emit languageChanged(this->ui->cmbLanguages->itemData(cmbIndex).value<Common::Language>().filename);
-
-   this->saveCoreLanguageSettingOnly();
+   Common::Language lang = this->ui->cmbLanguages->itemData(cmbIndex).value<Common::Language>();
+   emit languageChanged(lang.filename);
+   this->coreConnection->setCoreLanguage(lang.locale);
 }
 
 void WidgetSettings::addShared()

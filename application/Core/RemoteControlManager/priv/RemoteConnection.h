@@ -24,6 +24,7 @@
 #include <QTcpSocket>
 #include <QTimer>
 #include <QList>
+#include <QLocale>
 
 #include <Libs/MersenneTwister.h>
 
@@ -78,6 +79,7 @@ namespace RCM
    signals:
       void deleted(RemoteConnection*);
       void chatMessageSent(const QString&);
+      void languageDefined(QLocale);
 
    protected:
       void onNewMessage(Common::MessageHeader::MessageType type, const google::protobuf::Message& message);

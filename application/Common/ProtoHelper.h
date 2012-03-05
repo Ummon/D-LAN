@@ -20,6 +20,7 @@
 #define COMMON_PROTOHELPER_H
 
 #include <QString>
+#include <QLocale>
 
 #include <google/protobuf/message.h>
 
@@ -45,6 +46,9 @@ namespace Common
 
       template <typename T>
       static void addRepeatedStr(T& mess, void (T::*adder)(const char*), const QString& str);
+
+      static void setLang(Protos::Common::Language& langMess, const QLocale& locale);
+      static QLocale getLang(const Protos::Common::Language& langMess);
 
       /**
         * Return the relative path of an entry, for exemple:

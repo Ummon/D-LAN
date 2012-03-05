@@ -108,6 +108,14 @@ void CoreConnection::setCoreSettings(const Protos::GUI::CoreSettings settings)
    this->send(Common::MessageHeader::GUI_SETTINGS, settings);
 }
 
+void CoreConnection::setCoreLanguage(const QLocale locale)
+{
+   this->currentLanguage = locale;
+
+   if (this->isConnected())
+      this->sendCurrentLanguage();
+}
+
 QSharedPointer<IBrowseResult> CoreConnection::browse(const Common::Hash& peerID)
 {
    QSharedPointer<BrowseResult> browseResult = QSharedPointer<BrowseResult>(new BrowseResult(this, peerID));
@@ -254,10 +262,7 @@ void CoreConnection::connected()
 {
    if (this->isLocal())
    {
-      this->authenticated = true;
-      L_USER(tr("Connected to the core"));
-      L_DEBU(QString("Core address : %1").arg(this->socket->peerAddress().toString()));
-      emit coreConnected();      
+      this->connectedAndAuthenticated();
    }
    else
    {
@@ -265,6 +270,20 @@ void CoreConnection::connected()
       authMessage.mutable_password()->set_hash(this->currentPassword.getData(), Common::Hash::HASH_SIZE);
       this->send(Common::MessageHeader::GUI_AUTHENTICATION, authMessage);
    }
+}
+
+void CoreConnection::connectedAndAuthenticated()
+{
+   this->authenticated = true;
+   L_USER(tr("Connected to the core"));
+
+#ifdef DEBUG
+   if (!this->isLocal())
+      L_DEBU(QString("Core address : %1").arg(this->socket->peerAddress().toString()));
+#endif
+
+   this->sendCurrentLanguage();
+   emit coreConnected();
 }
 
 void CoreConnection::onNewMessage(Common::MessageHeader::MessageType type, const google::protobuf::Message& message)
@@ -289,9 +308,7 @@ void CoreConnection::onNewMessage(Common::MessageHeader::MessageType type, const
             break;
 
          case Protos::GUI::AuthenticationResult_Status_OK:
-            this->authenticated = true;
-            L_USER(tr("Connected to the core"));
-            emit coreConnected();
+            this->connectedAndAuthenticated();
             break;
          }
       }
@@ -410,4 +427,11 @@ void CoreConnection::tryToConnectToTheNextAddress()
 #endif
 
    this->socket->connectToHost(address, this->currentPort);
+}
+
+void CoreConnection::sendCurrentLanguage()
+{
+   Protos::GUI::Language langMess;
+   ProtoHelper::setLang(*langMess.mutable_language(), this->currentLanguage);
+   this->send(Common::MessageHeader::GUI_LANGUAGE, langMess);
 }
