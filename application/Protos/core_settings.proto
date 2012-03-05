@@ -10,6 +10,8 @@ message Settings {
    optional string nick = 1;
    optional Common.Hash peer_id = 2;
    
+   optional Common.Language language = 85;
+   
    optional uint32 chunk_size = 3 [default = 67108864]; // (64 MiB).
    optional uint32 buffer_size_reading = 4 [default = 65536]; // (64 KiB). Buffer used when reading files (uploading and computing hashes).
    optional uint32 buffer_size_writing = 5 [default = 65536]; // (64 KiB). Buffer used when writing files (downloading).
