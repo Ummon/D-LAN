@@ -33,15 +33,15 @@ using namespace DM;
 
 DirDownload::DirDownload(
    OccupiedPeers& occupiedPeersAskingForEntries,
-   Common::Hash peerSourceID,
+   PM::IPeer* peerSource,
    const Protos::Common::Entry& remoteEntry,
    const Protos::Common::Entry& localEntry
 ) :
-   Download(peerSourceID, remoteEntry, localEntry),
+   Download(peerSource, remoteEntry, localEntry),
    occupiedPeersAskingForEntries(occupiedPeersAskingForEntries)
 {
    L_DEBU(QString("New DirDownload : source = %1, remoteEntry : \n%2\nlocalEntry : \n%3").
-      arg(this->peerSourceID.toStr()).
+      arg(this->peerSource->toStringLog()).
       arg(Common::ProtoHelper::getDebugStr(this->remoteEntry)).
       arg(Common::ProtoHelper::getDebugStr(this->localEntry))
    );

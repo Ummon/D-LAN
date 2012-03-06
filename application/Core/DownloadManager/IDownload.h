@@ -26,6 +26,8 @@
 
 #include <Common/Hash.h>
 
+#include <Core/PeerManager/IPeer.h>
+
 namespace DM
 {
    enum Status
@@ -38,7 +40,7 @@ namespace DM
      DELETED = 0x6,
 
      // All theses status will imply the paused status.
-     UNKNOWN_PEER = 0x10, // The source peer can't be found.
+     UNKNOWN_PEER_SOURCE = 0x10, // The source peer can't be found.
      ENTRY_NOT_FOUND = 0x11, // The source peer can't find the entry.
      NO_SOURCE = 0x12, // Some chunk can't be downloaded. Only when there is no more downloading.
 
@@ -67,10 +69,10 @@ namespace DM
         */
       virtual int getProgress() const = 0;
 
-      virtual Common::Hash getPeerSourceID() const = 0;
+      virtual PM::IPeer* getPeerSource() const = 0;
 
       /**
-        * Return all the peer who own at least one chunk.
+        * Return all the peer who own at least one chunk. It includes the peer source, see 'getPeerSourceID()'.
         */
       virtual QSet<Common::Hash> getPeers() const = 0;
 

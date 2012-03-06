@@ -40,13 +40,13 @@ FileDownload::FileDownload(
    OccupiedPeers& occupiedPeersAskingForHashes,
    OccupiedPeers& occupiedPeersDownloadingChunk,
    Common::ThreadPool& threadPool,
-   Common::Hash peerSourceID,
+   PM::IPeer* peerSource,
    const Protos::Common::Entry& remoteEntry,
    const Protos::Common::Entry& localEntry,
    Common::TransferRateCalculator& transferRateCalculator,
    bool complete
 ) :
-   Download(peerSourceID, remoteEntry, localEntry),
+   Download(peerSource, remoteEntry, localEntry),
    fileManager(fileManager),
    peerManager(peerManager),
    NB_CHUNK(this->remoteEntry.size() / SETTINGS.get<quint32>("chunk_size") + (this->remoteEntry.size() % SETTINGS.get<quint32>("chunk_size") == 0 ? 0 : 1)),
@@ -58,7 +58,7 @@ FileDownload::FileDownload(
    transferRateCalculator(transferRateCalculator)
 {
    L_DEBU(QString("New FileDownload : peer source = %1, remoteEntry : \n%2\nlocalEntry : \n%3").
-      arg(this->peerSourceID.toStr()).
+      arg(this->peerSource->toStringLog()).
       arg(Common::ProtoHelper::getDebugStr(this->remoteEntry)).
       arg(Common::ProtoHelper::getDebugStr(this->localEntry))
    );
@@ -71,6 +71,8 @@ FileDownload::FileDownload(
    {
       Common::Hash chunkHash(this->remoteEntry.chunk(i).hash());
       QSharedPointer<ChunkDownload> chunkDownload = QSharedPointer<ChunkDownload>(new ChunkDownload(this->peerManager, this->occupiedPeersDownloadingChunk, this->transferRateCalculator, this->threadPool, chunkHash));
+      connect(chunkDownload.data(), SIGNAL(newPeer()), this, SLOT(updateStatus()));
+      chunkDownload->setPeerSource(peerSource);
 
       this->chunkDownloads << chunkDownload;
       this->connectChunkDownloadSignals(this->chunkDownloads.last());
@@ -171,11 +173,9 @@ QSharedPointer<ChunkDownload> FileDownload::getAChunkToDownload()
       else
       {
          if (chunkDownload->isLastTransfertAttemptFailed())
-         {
             chunkDownload->resetLastTransfertAttemptFailed();
-            return QSharedPointer<ChunkDownload>();
-         }
-         else if (chunkDownload->isPartiallyDownloaded())
+
+         if (chunkDownload->isPartiallyDownloaded())
          {
             chunksReadyToDownload.clear();
             chunksReadyToDownload << chunkDownload;
@@ -260,6 +260,17 @@ void FileDownload::getUnfinishedChunks(QList< QSharedPointer<IChunkDownload> >& 
 }
 
 /**
+  * When we explicitly remove a download, we must remove all unfinished files.
+  */
+void FileDownload::remove()
+{
+   for (QListIterator< QSharedPointer<ChunkDownload> > i(this->chunkDownloads); i.hasNext();)
+      i.next()->tryToRemoveItsIncompleteFile();
+
+   Download::remove();
+}
+
+/**
   * Update the file status depending of the states of its chunks.
   * If all chunks are complete -> COMPLETE
   * If there is downloading chunk -> DOWNLOADING
@@ -267,27 +278,23 @@ void FileDownload::getUnfinishedChunks(QList< QSharedPointer<IChunkDownload> >& 
   * If all the incomplete chunks have no peer -> NO_SOURCE
   * Else -> QUEUED
   */
-void FileDownload::updateStatus()
+bool FileDownload::updateStatus()
 {
-   if (this->status == DELETED || this->status == COMPLETE)
-      return;
+   if (Download::updateStatus())
+      return true;
 
-   this->status = this->chunkDownloads.size() == NB_CHUNK ? COMPLETE : QUEUED;
+   if (this->chunkDownloads.size() == NB_CHUNK)
+      this->status = COMPLETE;
 
    bool hasAtLeastAPeer = false;
    for (QListIterator< QSharedPointer<ChunkDownload> > i(this->chunkDownloads); i.hasNext();)
    {
       QSharedPointer<ChunkDownload> chunkDownload = i.next();
 
-      if (chunkDownload->isLastTransfertAttemptFailed())
-      {
-         this->status = TRANSFERT_ERROR;
-         return;
-      }
-      else if (chunkDownload->isDownloading())
+      if (chunkDownload->isDownloading())
       {
          this->status = DOWNLOADING;
-         return;
+         return false;
       }
       else if (!hasAtLeastAPeer && !chunkDownload->isComplete())
       {
@@ -300,6 +307,10 @@ void FileDownload::updateStatus()
          {
             this->status = NO_SOURCE;
          }
+      }
+      else if (chunkDownload->isLastTransfertAttemptFailed())
+      {
+         this->status = TRANSFERT_ERROR;
       }
    }
 
@@ -316,17 +327,8 @@ void FileDownload::updateStatus()
    {
       this->status = GETTING_THE_HASHES;
    }
-}
 
-/**
-  * When we explicitly remove a download, we must remove all unfinished files.
-  */
-void FileDownload::remove()
-{
-   for (QListIterator< QSharedPointer<ChunkDownload> > i(this->chunkDownloads); i.hasNext();)
-      i.next()->tryToRemoveItsIncompleteFile();
-
-   Download::remove();
+   return false;
 }
 
 /**
@@ -412,6 +414,7 @@ void FileDownload::nextHash(const Common::Hash& hash)
    else
    {
       QSharedPointer<ChunkDownload> chunkDownload = QSharedPointer<ChunkDownload>(new ChunkDownload(this->peerManager, this->occupiedPeersDownloadingChunk, this->transferRateCalculator, this->threadPool, hash));
+      connect(chunkDownload.data(), SIGNAL(newPeer()), this, SLOT(updateStatus()));
 
       // If the file has already been created, the chunks are known.
       if (!this->chunksWithoutDownload.isEmpty())
@@ -450,14 +453,14 @@ void FileDownload::setStatus(Status newStatus)
       return;
 
    // We don't care about the source peer if we have all the hashes.
-   if (newStatus == UNKNOWN_PEER && nbHashesKnown == this->NB_CHUNK)
+   if (newStatus == UNKNOWN_PEER_SOURCE && nbHashesKnown == this->NB_CHUNK)
       return;
 
    Download::setStatus(newStatus);
 }
 
 /**
-  * Look if a file in the cache ('FM:IFileManager') owns the known hashes. If so, the chunks ('FM:IChunk') are given to each 'ChunkDownload' and
+  * Look if a file in the cache ('FM::IFileManager') owns the known hashes. If so, the chunks ('FM:IChunk') are given to each 'ChunkDownload' and
   * 'this->fileCreated' is set to true.
   * @return 'true' is the file exists.
   */

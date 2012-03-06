@@ -34,11 +34,12 @@ using namespace PM;
 
 const quint32 Peer::MAX_SPEED = std::numeric_limits<quint32>::max();
 
-Peer::Peer(PeerManager* peerManager, QSharedPointer<FM::IFileManager> fileManager, Common::Hash ID) :
+Peer::Peer(PeerManager* peerManager, QSharedPointer<FM::IFileManager> fileManager, Common::Hash ID, const QString& nick) :
    peerManager(peerManager),
    fileManager(fileManager),
    connectionPool(peerManager, fileManager, ID),
    ID(ID),
+   nick(nick),
    speed(MAX_SPEED),
    alive(false),
    banned(false)
@@ -130,7 +131,7 @@ bool Peer::isAvailable() const
    return this->alive && !this->banned;
 }
 
-void Peer::update(const QHostAddress&  IP, quint16 port, const QString& nick, const quint64& sharingAmount)
+void Peer::update(const QHostAddress& IP, quint16 port, const QString& nick, const quint64& sharingAmount)
 {
    this->alive = true;
    this->aliveTimer.start();
@@ -182,4 +183,3 @@ void Peer::unban()
    this->banned = false;
    emit unbanned();
 }
-

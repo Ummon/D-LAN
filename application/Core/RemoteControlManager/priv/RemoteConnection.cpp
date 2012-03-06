@@ -302,11 +302,15 @@ void RemoteConnection::onNewMessage(Common::MessageHeader::MessageType type, con
       {
          const Protos::GUI::Download& downloadMessage = static_cast<const Protos::GUI::Download&>(message);
 
-         Common::Hash peerID(downloadMessage.peer_id().hash());
-         if (downloadMessage.has_destination_directory_id())
-            this->downloadManager->addDownload(downloadMessage.entry(), peerID, downloadMessage.destination_directory_id().hash(), Common::ProtoHelper::getStr(downloadMessage, &Protos::GUI::Download::destination_path));
-         else
-            this->downloadManager->addDownload(downloadMessage.entry(), peerID);
+         PM::IPeer* peer = this->peerManager->getPeer(downloadMessage.peer_id().hash());
+
+         if (peer)
+         {
+            if (downloadMessage.has_destination_directory_id())
+               this->downloadManager->addDownload(downloadMessage.entry(), peer, downloadMessage.destination_directory_id().hash(), Common::ProtoHelper::getStr(downloadMessage, &Protos::GUI::Download::destination_path));
+            else
+               this->downloadManager->addDownload(downloadMessage.entry(), peer);
+         }
 
          this->refresh();
       }
@@ -368,8 +372,17 @@ void RemoteConnection::refresh()
       protoDownload->mutable_local_entry()->mutable_chunk()->Clear(); // We don't need to send the hashes.
       protoDownload->set_status(static_cast<Protos::GUI::State_Download_Status>(download->getStatus())); // Warning, enums must be compatible.
       protoDownload->set_progress(download->getProgress());
-      for (QSetIterator<Common::Hash> j(download->getPeers()); j.hasNext();)
+
+      Common::Hash peerSourceID = download->getPeerSource()->getID();
+      protoDownload->add_peer_id()->set_hash(peerSourceID.getData(), Common::Hash::HASH_SIZE); // The first hash must be the source.
+      QSet<Common::Hash> peerIDs = download->getPeers();
+      peerIDs.remove(peerSourceID);
+      for (QSetIterator<Common::Hash> j(peerIDs); j.hasNext();)
          protoDownload->add_peer_id()->set_hash(j.next().getData(), Common::Hash::HASH_SIZE);
+
+      PM::IPeer* peerSource = this->peerManager->getPeer(peerSourceID);
+      if (peerSource)
+         Common::ProtoHelper::setStr(*protoDownload, &Protos::GUI::State::Download::set_peer_source_nick, peerSource->getNick());
    }
 
    // Uploads.

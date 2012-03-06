@@ -42,7 +42,7 @@ namespace DM
 
    protected:
       Download(
-         Common::Hash peerSourceID,
+         PM::IPeer* peerSource,
          const Protos::Common::Entry& remoteEntry,
          const Protos::Common::Entry& localEntry
       );
@@ -58,13 +58,11 @@ namespace DM
       virtual void populateRemoteEntry(Protos::Queue::Queue_Entry* entry) const;
       virtual void populateLocalEntry(Protos::Queue::Queue_Entry* entry) const;
 
-      void setPeer(PM::IPeer* peer);
-
       quint64 getID() const;
       Status getStatus() const;
       bool isStatusErroneous() const;
       virtual int getProgress() const;
-      Common::Hash getPeerSourceID() const;
+      PM::IPeer* getPeerSource() const;
       QSet<Common::Hash> getPeers() const;
       const Protos::Common::Entry& getRemoteEntry() const;
       const Protos::Common::Entry& getLocalEntry() const;
@@ -72,18 +70,20 @@ namespace DM
       void setAsDeleted();
       virtual void remove();
 
-   protected:
-      bool hasAValidPeer();
+   public slots:
+      virtual bool updateStatus();
 
+   protected:
       /**
         * This method permits to change the behaviour by a subclass when Download change the status.
         */
       virtual void setStatus(Status newStatus);
 
+      bool hasAValidPeer();
+
    protected:
       const quint64 ID;
 
-      const Common::Hash peerSourceID;
       PM::IPeer* peerSource;
 
       Protos::Common::Entry remoteEntry; ///< From.

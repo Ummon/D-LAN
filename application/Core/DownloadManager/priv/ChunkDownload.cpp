@@ -80,6 +80,7 @@ void ChunkDownload::addPeerID(const Common::Hash& peerID)
    {
       this->peers << peer;
       this->occupiedPeersDownloadingChunk.newPeer(peer);
+      emit newPeer();
    }
 }
 

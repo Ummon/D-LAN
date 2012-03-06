@@ -64,6 +64,11 @@ namespace PM
       virtual IPeer* getPeer(const Common::Hash& ID) = 0;
 
       /**
+        * Create an inactive peer and return it. If a peer with the given ID already exists then return this last one.
+        */
+      virtual IPeer* createPeer(const Common::Hash& ID, const QString& nick) = 0;
+
+      /**
         * The method must be call frequently to tell that a peer (ID) is still alive.
         * @see The protobuf message 'Protos.Core.IMAlive' in "Protos/core_protocol.proto".
         */

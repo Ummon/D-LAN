@@ -12,6 +12,11 @@ import "core_settings.proto";
 package Protos.GUI;
 
 /***** Core state *****/
+// GUI -> Core
+// Ask to receive a new state.
+// This message doesn't have a body.
+// id : 0xa1
+
 // Core -> GUI
 // The state is sent periodically to the GUI (each second for example)
 // or right after a GUI command.
@@ -28,7 +33,7 @@ message State {
          PAUSED = 0x5;
          DELETED = 0x6; // Should not be seen by the user.
          
-         UNKNOWN_PEER = 0x10; // The source peer isn't found and we don't have all the hashes.
+         UNKNOWN_PEER_SOURCE = 0x10; // The source peer isn't found and we don't have all the hashes.
          ENTRY_NOT_FOUND = 0x11; // The entry isn't found in the source peer shared directories.
          NO_SOURCE = 0x12; // All the hashes are known but one ore more chunk are not present among the other peers.
          
@@ -47,7 +52,9 @@ message State {
       
       required Status status = 3;
       required uint32 progress = 4; // 0 to 10000.
-      repeated Common.Hash peer_id = 5;
+      
+      repeated Common.Hash peer_id = 5; // The first one always corresponds to the peer source.
+      optional string peer_source_nick = 6;
    }
    message Upload {
       required uint64 id = 1;
@@ -231,8 +238,3 @@ message Download {
 message ChatMessage {
    required string message = 1;
 }
-
-// GUI -> Core
-// Ask to receive a new state.
-// This message doesn't have a body.
-// id : 0xa1

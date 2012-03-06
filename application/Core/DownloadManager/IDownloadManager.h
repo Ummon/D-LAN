@@ -28,6 +28,8 @@
 
 #include <Core/DownloadManager/IChunkDownload.h>
 
+#include <Core/PeerManager/IPeer.h>
+
 namespace DM
 {
    class IDownload;
@@ -41,9 +43,9 @@ namespace DM
         * @remarks entry.path is not taken into account .
         * The entry will be put in the root of the first shared directory with enough space.
         */
-      virtual void addDownload(const Protos::Common::Entry& remoteEntry, const Common::Hash& peerSource) = 0;
+      virtual void addDownload(const Protos::Common::Entry& remoteEntry, PM::IPeer* peerSource) = 0;
 
-      virtual void addDownload(const Protos::Common::Entry& remoteEntry, const Common::Hash& peerSource, const Common::Hash& destinationDirectoryID, const QString& relativePath) = 0;
+      virtual void addDownload(const Protos::Common::Entry& remoteEntry, PM::IPeer* peerSource, const Common::Hash& destinationDirectoryID, const QString& relativePath) = 0;
 
       /**
         * @remarks The returned download pointers must not be retained.
