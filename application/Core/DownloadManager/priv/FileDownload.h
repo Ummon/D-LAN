@@ -71,7 +71,6 @@ namespace DM
 
       void remove();
 
-   public slots:
       bool updateStatus();
 
    public slots:

@@ -70,7 +70,6 @@ namespace DM
       void setAsDeleted();
       virtual void remove();
 
-   public slots:
       virtual bool updateStatus();
 
    protected:

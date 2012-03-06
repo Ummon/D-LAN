@@ -71,7 +71,6 @@ FileDownload::FileDownload(
    {
       Common::Hash chunkHash(this->remoteEntry.chunk(i).hash());
       QSharedPointer<ChunkDownload> chunkDownload = QSharedPointer<ChunkDownload>(new ChunkDownload(this->peerManager, this->occupiedPeersDownloadingChunk, this->transferRateCalculator, this->threadPool, chunkHash));
-      connect(chunkDownload.data(), SIGNAL(newPeer()), this, SLOT(updateStatus()));
       chunkDownload->setPeerSource(peerSource);
 
       this->chunkDownloads << chunkDownload;
@@ -414,7 +413,6 @@ void FileDownload::nextHash(const Common::Hash& hash)
    else
    {
       QSharedPointer<ChunkDownload> chunkDownload = QSharedPointer<ChunkDownload>(new ChunkDownload(this->peerManager, this->occupiedPeersDownloadingChunk, this->transferRateCalculator, this->threadPool, hash));
-      connect(chunkDownload.data(), SIGNAL(newPeer()), this, SLOT(updateStatus()));
 
       // If the file has already been created, the chunks are known.
       if (!this->chunksWithoutDownload.isEmpty())

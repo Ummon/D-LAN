@@ -123,7 +123,7 @@ QVariant DownloadsModel::data(const QModelIndex& index, int role) const
       {
          if (index.column() == 0)
          {
-            if (this->downloads[index.row()].status() >= Protos::GUI::State_Download_Status_UNKNOWN_PEER)
+            if (this->downloads[index.row()].status() >= Protos::GUI::State_Download_Status_UNKNOWN_PEER_SOURCE)
                return QPixmap(":/icons/ressources/error.png");
             else if (this->downloads[index.row()].local_entry().type() == Protos::Common::Entry_Type_DIR)
                return QPixmap(":/icons/ressources/folder.png");

@@ -88,8 +88,6 @@ namespace DM
         */
       void downloadFinished();
 
-      void newPeer();
-
    private slots:
       void result(const Protos::Core::GetChunkResult& result);
       void stream(QSharedPointer<PM::ISocket> socket);
