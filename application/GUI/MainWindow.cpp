@@ -143,7 +143,7 @@ MainWindow::MainWindow(QSharedPointer<RCC::ICoreConnection> coreConnection, QWid
 
    connect(this->ui->butSearch, SIGNAL(clicked()), this, SLOT(searchOtherPeers()));
    connect(this->ui->butSearchOwnFiles, SIGNAL(clicked()), this, SLOT(searchOwnFiles()));
-   connect(this->ui->txtSearch, SIGNAL(returnPressed()), this, SLOT(searchOtherPeers()));
+   connect(this->ui->txtSearch, SIGNAL(returnPressed(Qt::KeyboardModifiers)), this, SLOT(txtSearchReturnPressed(Qt::KeyboardModifiers)));
 
    this->addWidgetSettings();
 
@@ -223,6 +223,14 @@ void MainWindow::searchOtherPeers()
 void MainWindow::searchOwnFiles()
 {
    this->search(true);
+}
+
+void MainWindow::txtSearchReturnPressed(Qt::KeyboardModifiers modifiers)
+{
+   if (modifiers.testFlag(Qt::ShiftModifier))
+      this->searchOwnFiles();
+   else
+      this->searchOtherPeers();
 }
 
 /**

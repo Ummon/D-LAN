@@ -77,6 +77,7 @@ namespace GUI
       void browse();
       void searchOtherPeers();
       void searchOwnFiles();
+      void txtSearchReturnPressed(Qt::KeyboardModifiers modifiers);
 
       void removeWidget(QWidget* widget);
 
