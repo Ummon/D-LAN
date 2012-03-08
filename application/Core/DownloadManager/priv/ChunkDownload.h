@@ -87,6 +87,7 @@ namespace DM
         * Emitted when a downlad is terminated (or aborted).
         */
       void downloadFinished();
+      void numberOfPeersChanged();
 
    private slots:
       void result(const Protos::Core::GetChunkResult& result);

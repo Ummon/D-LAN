@@ -82,6 +82,12 @@ void DownloadQueue::remove(int position)
    this->downloads.removeAt(position);
 }
 
+void DownloadQueue::peerBecomesAvailable(PM::IPeer* peer)
+{
+   for (QMultiHash<Common::Hash, Download*>::iterator i = this->downloadsIndexedBySourcePeerID.find(peer->getID()); i != this->downloadsIndexedBySourcePeerID.end() && i.key() == peer->getID(); ++i)
+      i.value()->peerSourceBecomesAvailable();
+}
+
 bool DownloadQueue::isAPeerSource(const Common::Hash& peerID) const
 {
    return this->downloadsIndexedBySourcePeerID.contains(peerID);

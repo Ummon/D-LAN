@@ -51,6 +51,7 @@ namespace DM
       int find(Download* download) const;
       void remove(int position);
 
+      void peerBecomesAvailable(PM::IPeer* peer);
       bool isAPeerSource(const Common::Hash& peerID) const;
 
       void moveDownloads(quint64 downloadIDRef, bool moveBefore, const QList<quint64>& downloadIDs);

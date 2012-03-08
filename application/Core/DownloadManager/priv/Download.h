@@ -55,6 +55,8 @@ namespace DM
         */
       virtual void start() = 0;
 
+      virtual void peerSourceBecomesAvailable() {}
+
       virtual void populateRemoteEntry(Protos::Queue::Queue_Entry* entry) const;
       virtual void populateLocalEntry(Protos::Queue::Queue_Entry* entry) const;
 
@@ -70,6 +72,7 @@ namespace DM
       void setAsDeleted();
       virtual void remove();
 
+   public slots:
       virtual bool updateStatus();
 
    protected:

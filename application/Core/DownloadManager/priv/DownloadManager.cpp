@@ -215,10 +215,13 @@ int DownloadManager::getDownloadRate()
 }
 
 void DownloadManager::peerBecomesAvailable(PM::IPeer* peer)
-{
+{     
+   this->downloadQueue.peerBecomesAvailable(peer);
+
    // To handle the case where the peers source of some downloads without all the hashes become alive after being dead for a while. The hashes must be reasked.
    this->occupiedPeersAskingForEntries.newPeer(peer);
    this->occupiedPeersAskingForHashes.newPeer(peer);
+   this->occupiedPeersDownloadingChunk.newPeer(peer);
 }
 
 void DownloadManager::fileCacheLoaded()

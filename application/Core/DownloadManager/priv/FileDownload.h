@@ -60,6 +60,8 @@ namespace DM
 
       void start();
 
+      void peerSourceBecomesAvailable();
+
       void populateRemoteEntry(Protos::Queue::Queue_Entry* entry) const;
 
       int getProgress() const;
@@ -71,9 +73,8 @@ namespace DM
 
       void remove();
 
-      bool updateStatus();
-
    public slots:
+      bool updateStatus();
       bool retrieveHashes();
 
    signals:

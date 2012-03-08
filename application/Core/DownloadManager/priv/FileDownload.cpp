@@ -71,7 +71,6 @@ FileDownload::FileDownload(
    {
       Common::Hash chunkHash(this->remoteEntry.chunk(i).hash());
       QSharedPointer<ChunkDownload> chunkDownload = QSharedPointer<ChunkDownload>(new ChunkDownload(this->peerManager, this->occupiedPeersDownloadingChunk, this->transferRateCalculator, this->threadPool, chunkHash));
-      chunkDownload->setPeerSource(peerSource);
 
       this->chunkDownloads << chunkDownload;
       this->connectChunkDownloadSignals(this->chunkDownloads.last());
@@ -100,13 +99,17 @@ void FileDownload::start()
 {
    if (this->hasAValidPeer())
    {
-      for (QListIterator< QSharedPointer<ChunkDownload> > i(this->chunkDownloads); i.hasNext();)
-         i.next()->setPeerSource(this->peerSource, false); // 'false' : to avoid to send unnecessary 'newFreePeer'.
-
+      this->peerSourceBecomesAvailable();
       this->occupiedPeersDownloadingChunk.newPeer(this->peerSource);
    }
 
    this->retrieveHashes();
+}
+
+void FileDownload::peerSourceBecomesAvailable()
+{
+   for (QListIterator< QSharedPointer<ChunkDownload> > i(this->chunkDownloads); i.hasNext();)
+      i.next()->setPeerSource(this->peerSource, false); // 'false' : to avoid to send unnecessary 'newFreePeer'.
 }
 
 /**
@@ -485,4 +488,5 @@ void FileDownload::connectChunkDownloadSignals(QSharedPointer<ChunkDownload> chu
 {
    connect(chunkDownload.data(), SIGNAL(downloadStarted()), this, SLOT(chunkDownloadStarted()), Qt::DirectConnection);
    connect(chunkDownload.data(), SIGNAL(downloadFinished()), this, SLOT(chunkDownloadFinished()), Qt::DirectConnection);
+   connect(chunkDownload.data(), SIGNAL(numberOfPeersChanged()), this, SLOT(updateStatus()), Qt::DirectConnection);
 }
