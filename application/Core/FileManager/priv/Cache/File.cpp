@@ -145,7 +145,10 @@ bool File::restoreFromFileCache(const Protos::FileCache::Hashes_File& file)
    if (
       Common::ProtoHelper::getStr(file, &Protos::FileCache::Hashes_File::filename) == this->getName() &&
       (qint64)file.size() == this->size &&
-      (qint64)file.date_last_modified() == this->getDateLastModified().toMSecsSinceEpoch() &&
+         (
+            Global::isFileUnfinished(this->getName()) ||
+            (qint64)file.date_last_modified() == this->getDateLastModified().toMSecsSinceEpoch() // We test the date only for finished files.
+          ) &&
       this->chunks.size() == file.chunk_size()
    )
    {
