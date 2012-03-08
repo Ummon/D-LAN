@@ -250,6 +250,9 @@ QDateTime File::getDateLastModified() const
    return this->dateLastModified;
 }
 
+/**
+  * @exception UnableToOpenFileInWriteModeException
+  */
 void File::newDataWriterCreated()
 {
    QMutexLocker locker(&this->writeLock);
