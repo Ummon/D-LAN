@@ -27,4 +27,13 @@ message Settings {
    optional uint32 search_column_size_2 = 14 [default = 60]; // Relvance.
    optional uint32 search_column_size_3 = 15 [default = 80]; // Peer.
    optional uint32 search_column_size_4 = 16 [default = 80]; // Size.
+   
+   enum Window {
+      WIN_SETTINGS = 1;
+      WIN_CHAT = 2;
+      WIN_DOWNLOAD = 3;
+      WIN_UPLOAD = 4;
+   }
+   
+   repeated uint32 windowOrder = 18;   
 }

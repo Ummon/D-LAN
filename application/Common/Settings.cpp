@@ -317,6 +317,34 @@ void Settings::set(const QString& name, const Hash& hash)
    this->settings->GetReflection()->MutableMessage(this->settings, fieldDescriptor)->CopyFrom(hashMessage);
 }
 
+void Settings::set(const QString& name, const QList<quint32>& values)
+{
+   QMutexLocker locker(&this->mutex);
+
+   Q_ASSERT(!name.isEmpty());
+   Q_ASSERT(this->settings);
+
+   if (!this->settings)
+      return;
+
+   const google::protobuf::FieldDescriptor* fieldDescriptor = this->descriptor->FindFieldByName(name.toStdString());
+   if (!fieldDescriptor)
+   {
+      printErrorNameNotFound(name);
+      return;
+   }
+
+   if (!fieldDescriptor->is_repeated())
+   {
+      printError(QString("The field '%1' isn't a repeated field").arg(name));
+      return;
+   }
+
+   this->settings->GetReflection()->ClearField(this->settings, fieldDescriptor);
+   for (QListIterator<quint32> i(values); i.hasNext();)
+      this->settings->GetReflection()->AddUInt32(this->settings, fieldDescriptor, i.next());
+}
+
 void Settings::get(const google::protobuf::FieldDescriptor* fieldDescriptor, quint32& value) const
 {   
    Q_ASSERT(fieldDescriptor);
@@ -354,6 +382,14 @@ void Settings::get(const google::protobuf::FieldDescriptor* fieldDescriptor, Has
    hash = static_cast<const Protos::Common::Hash&>(this->settings->GetReflection()->GetMessage(*this->settings, fieldDescriptor)).hash();
 }
 
+void Settings::getRepeated(const google::protobuf::FieldDescriptor* fieldDescriptor, QList<quint32>& values) const
+{
+   Q_ASSERT(fieldDescriptor);
+
+   for (int i = 0; i < this->settings->GetReflection()->FieldSize(*this->settings, fieldDescriptor); i++)
+      values << this->settings->GetReflection()->GetRepeatedUInt32(*this->settings, fieldDescriptor, i);
+}
+
 void Settings::setDefaultValues()
 {
    // Very ugly : to force the optional field to be written. TODO : find a another way.
@@ -365,20 +401,23 @@ void Settings::setDefaultValues()
       /*if (!this->settings->GetReflection()->HasField(*this->settings, fieldDescriptor))
          continue;*/
 
-      switch(fieldDescriptor->type())
-      {
-      case google::protobuf::FieldDescriptor::TYPE_UINT32:
-         this->settings->GetReflection()->SetUInt32(this->settings, fieldDescriptor, fieldDescriptor->default_value_uint32());
-         break;
-      case google::protobuf::FieldDescriptor::TYPE_DOUBLE:
-         this->settings->GetReflection()->SetDouble(this->settings, fieldDescriptor, fieldDescriptor->default_value_double());
-         break;
-      case google::protobuf::FieldDescriptor::TYPE_STRING:
-         this->settings->GetReflection()->SetString(this->settings, fieldDescriptor, fieldDescriptor->default_value_string());
-         break;
-      default:
-         break;
-      }
+      if (fieldDescriptor->is_repeated())
+         this->settings->GetReflection()->ClearField(this->settings, fieldDescriptor);
+      else
+         switch(fieldDescriptor->type())
+         {
+         case google::protobuf::FieldDescriptor::TYPE_UINT32:
+            this->settings->GetReflection()->SetUInt32(this->settings, fieldDescriptor, fieldDescriptor->default_value_uint32());
+            break;
+         case google::protobuf::FieldDescriptor::TYPE_DOUBLE:
+            this->settings->GetReflection()->SetDouble(this->settings, fieldDescriptor, fieldDescriptor->default_value_double());
+            break;
+         case google::protobuf::FieldDescriptor::TYPE_STRING:
+            this->settings->GetReflection()->SetString(this->settings, fieldDescriptor, fieldDescriptor->default_value_string());
+            break;
+         default:
+            break;
+         }
    }
 }
 
@@ -418,6 +457,11 @@ void Settings::rmAll()
    }*/
 
    this->setDefaultValues();
+}
+
+void Settings::printError(const QString& name)
+{
+   QTextStream(stderr) << name << endl;
 }
 
 void Settings::printErrorNameNotFound(const QString& name)

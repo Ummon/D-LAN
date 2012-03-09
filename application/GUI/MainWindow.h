@@ -73,6 +73,8 @@ namespace GUI
       void coreConnected();
       void coreDisconnected();
 
+      void tabMoved(int from, int to);
+
       void displayContextMenuPeers(const QPoint& point);
       void browse();
       void searchOtherPeers();
@@ -116,6 +118,8 @@ namespace GUI
       void removeAllWidgets();
 
       Ui::MainWindow* ui;
+
+      QTabBar* mdiAreaTabBar;
 
       WidgetSettings* widgetSettings;
       WidgetChat* widgetChat;

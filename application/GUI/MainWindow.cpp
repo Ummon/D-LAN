@@ -97,6 +97,10 @@ MainWindow::MainWindow(QSharedPointer<RCC::ICoreConnection> coreConnection, QWid
 {
    this->ui->setupUi(this);
 
+   this->mdiAreaTabBar = this->ui->mdiArea->findChild<QTabBar*>();
+   this->mdiAreaTabBar->setMovable(true);
+   connect(this->mdiAreaTabBar, SIGNAL(tabMoved(int, int)), this, SLOT(tabMoved(int, int)));
+
    StatusBar* statusBar = new StatusBar(this->coreConnection);
    ui->statusBar->addWidget(statusBar, 1);
    connect(statusBar, SIGNAL(showDockLog(bool)), this->ui->dockLog, SLOT(setVisible(bool)));
@@ -151,8 +155,6 @@ MainWindow::MainWindow(QSharedPointer<RCC::ICoreConnection> coreConnection, QWid
 
    this->restoreWindowsSettings();
 
-   this->ui->mdiArea->findChild<QTabBar*>()->setMovable(true);
-
    connect(this->coreConnection.data(), SIGNAL(coreConnected()), this, SLOT(coreConnected()));
    connect(this->coreConnection.data(), SIGNAL(coreDisconnected()), this, SLOT(coreDisconnected()));
 
@@ -174,9 +176,28 @@ MainWindow::~MainWindow()
 
 void MainWindow::coreConnected()
 {
-   this->addWidgetChat();
-   this->addWidgetDownloads();
-   this->addWidgetUploads();
+   QList<quint32> windowsOrder = SETTINGS.getRepeated<quint32>("windowOrder");
+   if (windowsOrder.count() != 4)
+   {
+      windowsOrder.clear();
+      windowsOrder <<
+         Protos::GUI::Settings_Window_WIN_SETTINGS <<
+         Protos::GUI::Settings_Window_WIN_CHAT <<
+         Protos::GUI::Settings_Window_WIN_DOWNLOAD <<
+         Protos::GUI::Settings_Window_WIN_UPLOAD;
+   }
+
+   for (QListIterator<quint32> i(windowsOrder); i.hasNext();)
+   {
+      switch (i.next())
+      {
+         case Protos::GUI::Settings_Window_WIN_SETTINGS: this->mdiAreaTabBar->moveTab(0, this->mdiAreaTabBar->count() - 1); break;
+         case Protos::GUI::Settings_Window_WIN_CHAT: this->addWidgetChat(); break;
+         case Protos::GUI::Settings_Window_WIN_DOWNLOAD: this->addWidgetDownloads(); break;
+         case Protos::GUI::Settings_Window_WIN_UPLOAD: this->addWidgetUploads(); break;
+      }
+   }
+
    if (this->widgetSettings)
       this->widgetSettings->coreConnected();
    this->ui->txtSearch->setDisabled(false);
@@ -197,6 +218,21 @@ void MainWindow::coreDisconnected()
    this->ui->butSearch->setDisabled(true);
    this->ui->butSearchOwnFiles->setDisabled(true);
    this->peerListModel.clear();
+}
+
+void MainWindow::tabMoved(int, int)
+{
+   QList<quint32> values;
+
+   for (int i = 0; i < this->mdiAreaTabBar->count(); i++)
+   {
+      QVariant data = this->mdiAreaTabBar->tabData(i);
+      if (!data.isNull())
+         values << data.toUInt();
+   }
+
+   SETTINGS.set("windowOrder", values);
+   SETTINGS.save();
 }
 
 void MainWindow::displayContextMenuPeers(const QPoint& point)
@@ -384,6 +420,7 @@ void MainWindow::removeMdiSubWindow(QMdiSubWindow* mdiSubWindow)
       }
 
       this->ui->mdiArea->removeSubWindow(mdiSubWindow);
+
       delete mdiSubWindow;
    }
 }
@@ -392,6 +429,7 @@ void MainWindow::addWidgetSettings()
 {
    this->widgetSettings = new WidgetSettings(this->coreConnection, this->sharedDirsModel, this);
    this->ui->mdiArea->addSubWindow(this->widgetSettings, Qt::CustomizeWindowHint);
+   this->mdiAreaTabBar->setTabData(this->mdiAreaTabBar->count() - 1, Protos::GUI::Settings_Window_WIN_SETTINGS);
    this->widgetSettings->setWindowState(Qt::WindowMaximized);
 }
 
@@ -409,6 +447,7 @@ void MainWindow::addWidgetChat()
    this->widgetChat = new WidgetChat(this->coreConnection, this->peerListModel, this);
    this->widgetChat->installEventFilterOnInput(this);
    this->ui->mdiArea->addSubWindow(this->widgetChat, Qt::CustomizeWindowHint);
+   this->mdiAreaTabBar->setTabData(this->mdiAreaTabBar->count() - 1, Protos::GUI::Settings_Window_WIN_CHAT);
    this->widgetChat->setWindowState(Qt::WindowMaximized);
 }
 
@@ -425,6 +464,7 @@ void MainWindow::addWidgetDownloads()
 {
    this->widgetDownloads = new WidgetDownloads(this->coreConnection, this->peerListModel, this->sharedDirsModel, this);
    this->ui->mdiArea->addSubWindow(this->widgetDownloads, Qt::CustomizeWindowHint);
+   this->mdiAreaTabBar->setTabData(this->mdiAreaTabBar->count() - 1, Protos::GUI::Settings_Window_WIN_DOWNLOAD);
    this->widgetDownloads->setWindowState(Qt::WindowMaximized);
 }
 
@@ -441,6 +481,7 @@ void MainWindow::addWidgetUploads()
 {
    this->widgetUploads = new WidgetUploads(this->coreConnection, this->peerListModel, this);
    this->ui->mdiArea->addSubWindow(this->widgetUploads, Qt::CustomizeWindowHint);
+   this->mdiAreaTabBar->setTabData(this->mdiAreaTabBar->count() - 1, Protos::GUI::Settings_Window_WIN_UPLOAD);
    this->widgetUploads->setWindowState(Qt::WindowMaximized);
 }
 
