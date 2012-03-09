@@ -151,6 +151,8 @@ MainWindow::MainWindow(QSharedPointer<RCC::ICoreConnection> coreConnection, QWid
 
    this->restoreWindowsSettings();
 
+   this->ui->mdiArea->findChild<QTabBar*>()->setMovable(true);
+
    connect(this->coreConnection.data(), SIGNAL(coreConnected()), this, SLOT(coreConnected()));
    connect(this->coreConnection.data(), SIGNAL(coreDisconnected()), this, SLOT(coreDisconnected()));
 
