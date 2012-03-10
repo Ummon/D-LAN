@@ -60,6 +60,7 @@ namespace Common
       void set(const QString& name, const Hash& hash);
 
       void set(const QString& name, const QList<quint32>& values);
+      void set(const QString& name, int index, quint32 value);
 
       template <typename T>
       T get(const QString& name) const;

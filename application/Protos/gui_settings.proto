@@ -28,6 +28,8 @@ message Settings {
    optional uint32 search_column_size_3 = 15 [default = 80]; // Peer.
    optional uint32 search_column_size_4 = 16 [default = 80]; // Size.
    
+   repeated uint32 search_column_size = 19; // [Entry name, Folder name, Relvance, Peer, Size].
+   
    enum Window {
       WIN_SETTINGS = 1;
       WIN_CHAT = 2;
@@ -35,5 +37,5 @@ message Settings {
       WIN_UPLOAD = 4;
    }
    
-   repeated uint32 windowOrder = 18;   
+   repeated Window windowOrder = 18;   
 }

@@ -177,15 +177,14 @@ MainWindow::~MainWindow()
 void MainWindow::coreConnected()
 {
    QList<quint32> windowsOrder = SETTINGS.getRepeated<quint32>("windowOrder");
-   if (windowsOrder.count() != 4)
-   {
-      windowsOrder.clear();
-      windowsOrder <<
-         Protos::GUI::Settings_Window_WIN_SETTINGS <<
-         Protos::GUI::Settings_Window_WIN_CHAT <<
-         Protos::GUI::Settings_Window_WIN_DOWNLOAD <<
-         Protos::GUI::Settings_Window_WIN_UPLOAD;
-   }
+   static const QList<quint32> windowsOrderDefault = QList<quint32>() <<
+      Protos::GUI::Settings_Window_WIN_SETTINGS <<
+      Protos::GUI::Settings_Window_WIN_CHAT <<
+      Protos::GUI::Settings_Window_WIN_DOWNLOAD <<
+      Protos::GUI::Settings_Window_WIN_UPLOAD;
+
+   if (!QSet<quint32>::fromList(windowsOrder).contains(QSet<quint32>::fromList(windowsOrderDefault)))
+      windowsOrder = windowsOrderDefault;
 
    for (QListIterator<quint32> i(windowsOrder); i.hasNext();)
    {

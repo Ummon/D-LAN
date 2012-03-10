@@ -341,8 +341,62 @@ void Settings::set(const QString& name, const QList<quint32>& values)
    }
 
    this->settings->GetReflection()->ClearField(this->settings, fieldDescriptor);
-   for (QListIterator<quint32> i(values); i.hasNext();)
-      this->settings->GetReflection()->AddUInt32(this->settings, fieldDescriptor, i.next());
+
+   if (fieldDescriptor->type() == google::protobuf::FieldDescriptor::TYPE_ENUM)
+   {
+      const google::protobuf::EnumDescriptor* enumDescriptor = fieldDescriptor->enum_type();
+      for (QListIterator<quint32> i(values); i.hasNext();)
+      {
+         const google::protobuf::EnumValueDescriptor* enumValue = enumDescriptor->FindValueByNumber(i.next());
+         if (enumValue)
+            this->settings->GetReflection()->AddEnum(this->settings, fieldDescriptor, enumValue);
+      }
+   }
+   else
+   {
+      for (QListIterator<quint32> i(values); i.hasNext();)
+         this->settings->GetReflection()->AddUInt32(this->settings, fieldDescriptor, i.next());
+   }
+}
+
+void Settings::set(const QString& name, int index, quint32 value)
+{
+   QMutexLocker locker(&this->mutex);
+
+   Q_ASSERT(!name.isEmpty());
+   Q_ASSERT(this->settings);
+
+   if (!this->settings)
+      return;
+
+   const google::protobuf::FieldDescriptor* fieldDescriptor = this->descriptor->FindFieldByName(name.toStdString());
+   if (!fieldDescriptor)
+   {
+      printErrorNameNotFound(name);
+      return;
+   }
+
+   if (!fieldDescriptor->is_repeated())
+   {
+      printError(QString("The field '%1' isn't a repeated field").arg(name));
+      return;
+   }
+
+   if (fieldDescriptor->type() == google::protobuf::FieldDescriptor::TYPE_ENUM)
+   {
+      const google::protobuf::EnumDescriptor* enumDescriptor = fieldDescriptor->enum_type();
+      const google::protobuf::EnumValueDescriptor* enumValue = enumDescriptor->FindValueByNumber(value);
+      while (this->settings->GetReflection()->FieldSize(*this->settings, fieldDescriptor) <= index)
+         this->settings->GetReflection()->AddEnum(this->settings, fieldDescriptor, enumDescriptor->value(0));
+      if (enumValue)
+         this->settings->GetReflection()->SetRepeatedEnum(this->settings, fieldDescriptor, index, enumValue);
+   }
+   else
+   {
+      while (this->settings->GetReflection()->FieldSize(*this->settings, fieldDescriptor) <= index)
+         this->settings->GetReflection()->AddUInt32(this->settings, fieldDescriptor, 0);
+      this->settings->GetReflection()->SetRepeatedUInt32(this->settings, fieldDescriptor, index, value);
+   }
 }
 
 void Settings::get(const google::protobuf::FieldDescriptor* fieldDescriptor, quint32& value) const
@@ -386,8 +440,16 @@ void Settings::getRepeated(const google::protobuf::FieldDescriptor* fieldDescrip
 {
    Q_ASSERT(fieldDescriptor);
 
-   for (int i = 0; i < this->settings->GetReflection()->FieldSize(*this->settings, fieldDescriptor); i++)
-      values << this->settings->GetReflection()->GetRepeatedUInt32(*this->settings, fieldDescriptor, i);
+   if (fieldDescriptor->type() == google::protobuf::FieldDescriptor::TYPE_ENUM)
+   {
+      for (int i = 0; i < this->settings->GetReflection()->FieldSize(*this->settings, fieldDescriptor); i++)
+         values << this->settings->GetReflection()->GetRepeatedEnum(*this->settings, fieldDescriptor, i)->number();
+   }
+   else
+   {
+      for (int i = 0; i < this->settings->GetReflection()->FieldSize(*this->settings, fieldDescriptor); i++)
+         values << this->settings->GetReflection()->GetRepeatedUInt32(*this->settings, fieldDescriptor, i);
+   }
 }
 
 void Settings::setDefaultValues()
