@@ -62,8 +62,14 @@ namespace Common
       void set(const QString& name, const QLocale& lang);
       void set(const QString& name, const google::protobuf::Message& message);
 
+      void set(const QString& name, const QList<quint32>& values);
+      void set(const QString& name, int index, quint32 value);
+
       template <typename T>
       T get(const QString& name) const;
+
+      template <typename T>
+      QList<T> getRepeated(const QString& name) const;
 
       void rm(const QString& name);
       void rmAll();
@@ -77,8 +83,11 @@ namespace Common
       void get(const google::protobuf::FieldDescriptor* fieldDescriptor, Hash& hash) const;
       void get(const google::protobuf::FieldDescriptor* fieldDescriptor, QLocale& lang) const;
 
+      void getRepeated(const google::protobuf::FieldDescriptor* fieldDescriptor, QList<quint32>& values) const;
+
       void setDefaultValues();
 
+      static void printError(const QString& error);
       static void printErrorNameNotFound(const QString& name);
       static void printErrorBadType(const google::protobuf::FieldDescriptor* field, const QString& excepted);
 
@@ -92,6 +101,7 @@ namespace Common
 
 /***** Definitions *****/
 using namespace Common;
+
 
 template <typename T>
 T Settings::get(const QString& name) const
@@ -111,6 +121,26 @@ T Settings::get(const QString& name) const
    T value;
    this->get(fieldDescriptor, value);
    return value;
+}
+
+template <typename T>
+QList<T> Settings::getRepeated(const QString& name) const
+{
+   QMutexLocker locker(&this->mutex);
+
+   if (!this->settings)
+      return QList<T>();
+
+   const google::protobuf::FieldDescriptor* fieldDescriptor = this->descriptor->FindFieldByName(name.toStdString());
+   if (!fieldDescriptor)
+   {
+      printErrorNameNotFound(name);
+      return QList<T>();
+   }
+
+   QList<T> values;
+   this->getRepeated(fieldDescriptor, values);
+   return values;
 }
 
 #endif

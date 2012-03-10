@@ -16,31 +16,26 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#include <CoreApplication.h>
+#ifndef GUI_LINEEDIT_H
+#define GUI_LINEEDIT_H
 
-#include <windows.h>
+#include <QLineEdit>
+#include <QKeyEvent>
 
-CoreApplication::CoreApplication(int& argc, char** argv) :
-   QCoreApplication(argc, argv)
+namespace GUI
 {
+   class LineEdit : public QLineEdit
+   {
+      Q_OBJECT
+   public:
+      explicit LineEdit(QWidget* parent = 0);
+
+   signals:
+      void returnPressed(Qt::KeyboardModifiers);
+
+   protected:
+      void keyPressEvent(QKeyEvent* event);
+   };
 }
 
-bool CoreApplication::winEventFilter(MSG* msg, long* result)
-{
-   /* Was used to rebind the sockets when the compute wake up.
-      The issue is more general because if the network interface is restarted, the multicast socket
-      doesn't work anymore...
-   if (msg->message == WM_DEVICECHANGE)
-   {
-      emit resumeFromLowPowerState();
-   }
-
-   if (msg->message == WM_POWERBROADCAST)
-   {
-      if (msg->wParam == PBT_APMRESUMEAUTOMATIC)
-      {
-         emit resumeFromLowPowerState();
-      }
-   }*/
-   return false;
-}
+#endif

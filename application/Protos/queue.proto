@@ -15,6 +15,8 @@ message Queue {
       required Common.Entry local_entry = 2; // Doesn't have the hashes.
       
       required Common.Hash peer_source_id = 3;
+      optional string peer_source_nick = 5;
+      
       optional bool complete = 4 [default = false]; // Only for Common.Entry.type == FILE
    }
    

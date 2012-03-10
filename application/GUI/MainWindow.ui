@@ -110,7 +110,7 @@
       <number>2</number>
      </property>
      <item>
-      <widget class="QLineEdit" name="txtSearch">
+      <widget class="LineEdit" name="txtSearch">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
          <horstretch>0</horstretch>
@@ -137,7 +137,7 @@
         </sizepolicy>
        </property>
        <property name="toolTip">
-        <string>Search among other peers</string>
+        <string>Search among other peers &lt;ENTER&gt;</string>
        </property>
        <property name="autoFillBackground">
         <bool>false</bool>
@@ -157,14 +157,14 @@
      <item>
       <widget class="QPushButton" name="butSearchOwnFiles">
        <property name="toolTip">
-        <string>Search among own files</string>
+        <string>Search among its own files &lt;SHIFT-ENTER&gt;</string>
        </property>
        <property name="text">
         <string/>
        </property>
        <property name="icon">
         <iconset resource="ressources.qrc">
-         <normaloff>:/icons/ressources/zoom_selection.png</normaloff>:/icons/ressources/zoom_selection.png</iconset>
+         <normaloff>:/icons/ressources/zoom_monitor.png</normaloff>:/icons/ressources/zoom_monitor.png</iconset>
        </property>
        <property name="flat">
         <bool>true</bool>
@@ -219,6 +219,13 @@
   </widget>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
+ <customwidgets>
+  <customwidget>
+   <class>LineEdit</class>
+   <extends>QLineEdit</extends>
+   <header>LineEdit.h</header>
+  </customwidget>
+ </customwidgets>
  <resources>
   <include location="ressources.qrc"/>
  </resources>

@@ -79,6 +79,7 @@ void ChunkDownload::addPeerID(const Common::Hash& peerID)
    if (peer && !this->peers.contains(peer))
    {
       this->peers << peer;
+      emit numberOfPeersChanged();
       this->occupiedPeersDownloadingChunk.newPeer(peer);
    }
 }
@@ -88,7 +89,10 @@ void ChunkDownload::rmPeerID(const Common::Hash& peerID)
    QMutexLocker locker(&this->mutex);
    PM::IPeer* peer = this->peerManager->getPeer(peerID);
    if (peer)
+   {
       this->peers.removeOne(peer);
+      emit numberOfPeersChanged();
+   }
 }
 
 void ChunkDownload::init(QThread* thread)
@@ -243,8 +247,9 @@ void ChunkDownload::setPeerSource(PM::IPeer* peer, bool informOccupiedPeers)
    if (!this->peers.contains(peer))
    {
       this->peers << peer;
+      emit numberOfPeersChanged();
 
-      if (informOccupiedPeers)
+      if (informOccupiedPeers && peer->isAvailable())
          this->occupiedPeersDownloadingChunk.newPeer(peer);
    }
 }
@@ -314,14 +319,20 @@ QList<Common::Hash> ChunkDownload::getPeers()
    QMutexLocker locker(&this->mutex);
 
    QList<Common::Hash> peerIDs;
+   bool isTheNmberOfPeersHasChanged = false;
    for (QMutableListIterator<PM::IPeer*> i(this->peers); i.hasNext();)
    {
       PM::IPeer* peer = i.next();
       if (peer->isAvailable())
          peerIDs << peer->getID();
       else
+      {
          i.remove();
+         isTheNmberOfPeersHasChanged = true;
+      }
    }
+   if (isTheNmberOfPeersHasChanged)
+      emit numberOfPeersChanged();
    return peerIDs;
 }
 
@@ -371,7 +382,8 @@ void ChunkDownload::result(const Protos::Core::GetChunkResult& result)
    if (result.status() != Protos::Core::GetChunkResult_Status_OK)
    {
       L_WARN(QString("Status error from GetChunkResult : %1. Download aborted.").arg(result.status()));
-      this->peers.removeOne(this->currentDownloadingPeer);
+      if (this->peers.removeOne(this->currentDownloadingPeer))
+         emit numberOfPeersChanged();
       this->downloadingEnded();
    }
    else
@@ -431,15 +443,22 @@ PM::IPeer* ChunkDownload::getTheFastestFreePeer()
 {
    QMutexLocker locker(&this->mutex);
 
-   PM::IPeer* current = 0;
+   PM::IPeer* current = 0;   
+   bool isTheNmberOfPeersHasChanged = false;
    for (QMutableListIterator<PM::IPeer*> i(this->peers); i.hasNext();)
    {
       PM::IPeer* peer = i.next();
       if (!peer->isAvailable())
+      {
          i.remove();
+         isTheNmberOfPeersHasChanged = true;
+      }
       else if (this->occupiedPeersDownloadingChunk.isPeerFree(peer) && (!current || peer->getSpeed() > current->getSpeed()))
          current = peer;
    }
+
+   if (isTheNmberOfPeersHasChanged)
+      emit numberOfPeersChanged();
 
    return current;
 }
@@ -449,13 +468,21 @@ int ChunkDownload::getNumberOfFreePeer()
    QMutexLocker locker(&this->mutex);
 
    int n = 0;
+   bool isTheNmberOfPeersHasChanged = false;
    for (QMutableListIterator<PM::IPeer*> i(this->peers); i.hasNext();)
    {
       PM::IPeer* peer = i.next();
       if (!peer->isAvailable())
+      {
          i.remove();
+         isTheNmberOfPeersHasChanged = true;
+      }
       else if (this->occupiedPeersDownloadingChunk.isPeerFree(peer))
          n++;
    }
+
+   if (isTheNmberOfPeersHasChanged)
+      emit numberOfPeersChanged();
+
    return n;
 }

@@ -99,8 +99,15 @@ QVariant DownloadsModel::data(const QModelIndex& index, int role) const
          case 3:
             {
                QString peersStr;
+
+               int i = 0;
+               if (currentDownload.has_peer_source_nick())
+               {
+                  i = 1;
+                  peersStr.append('[').append(Common::ProtoHelper::getStr(currentDownload, &Protos::GUI::State::Download::peer_source_nick)).append(']');
+               }
                // O(n^2).
-               for (int i = 0; i < currentDownload.peer_id_size(); i++)
+               for (; i < currentDownload.peer_id_size(); i++)
                {
                   if (i != 0)
                      peersStr.append(" ");
@@ -116,7 +123,7 @@ QVariant DownloadsModel::data(const QModelIndex& index, int role) const
       {
          if (index.column() == 0)
          {
-            if (this->downloads[index.row()].status() >= Protos::GUI::State_Download_Status_UNKNOWN_PEER)
+            if (this->downloads[index.row()].status() >= Protos::GUI::State_Download_Status_UNKNOWN_PEER_SOURCE)
                return QPixmap(":/icons/ressources/error.png");
             else if (this->downloads[index.row()].local_entry().type() == Protos::Common::Entry_Type_DIR)
                return QPixmap(":/icons/ressources/folder.png");
@@ -129,7 +136,7 @@ QVariant DownloadsModel::data(const QModelIndex& index, int role) const
    case Qt::ToolTipRole:
       switch(this->downloads[index.row()].status())
       {
-      case Protos::GUI::State_Download_Status_UNKNOWN_PEER:
+      case Protos::GUI::State_Download_Status_UNKNOWN_PEER_SOURCE:
          return "Unknown source peer";
       case Protos::GUI::State_Download_Status_ENTRY_NOT_FOUND:
          return "The source peer doesn't have the entry";
@@ -280,7 +287,7 @@ void DownloadsModel::newState(const Protos::GUI::State& state)
             indexToInsert << i;
          break;
 
-      case Protos::GUI::State_Download_Status_UNKNOWN_PEER:
+      case Protos::GUI::State_Download_Status_UNKNOWN_PEER_SOURCE:
       case Protos::GUI::State_Download_Status_ENTRY_NOT_FOUND:
       case Protos::GUI::State_Download_Status_NO_SOURCE:
       case Protos::GUI::State_Download_Status_NO_SHARED_DIRECTORY_TO_WRITE:

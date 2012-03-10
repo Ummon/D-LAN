@@ -169,38 +169,42 @@ WidgetSearch::WidgetSearch(QSharedPointer<RCC::ICoreConnection> coreConnection, 
    coreConnection(coreConnection),
    searchModel(coreConnection, peerListModel, sharedDirsModel)
 {
-    this->ui->setupUi(this);
-    this->searchDelegate.setTerms(terms);
+   this->ui->setupUi(this);
+   this->searchDelegate.setTerms(terms);
 
-    connect(&this->searchModel, SIGNAL(progress(int)), this, SLOT(progress(int)));
+   connect(&this->searchModel, SIGNAL(progress(int)), this, SLOT(progress(int)));
 
-    this->ui->treeView->setModel(&this->searchModel);
-    this->ui->treeView->setItemDelegate(&this->searchDelegate);
-    this->ui->treeView->header()->setVisible(true);
-    this->ui->treeView->header()->resizeSection(0, SETTINGS.get<quint32>("search_column_size_0"));
-    this->ui->treeView->header()->resizeSection(1, SETTINGS.get<quint32>("search_column_size_1"));
-    this->ui->treeView->header()->resizeSection(2, SETTINGS.get<quint32>("search_column_size_2"));
-    this->ui->treeView->header()->resizeSection(3, SETTINGS.get<quint32>("search_column_size_3"));
-    this->ui->treeView->header()->resizeSection(4, SETTINGS.get<quint32>("search_column_size_4"));
-    connect(this->ui->treeView->selectionModel(), SIGNAL(selectionChanged(QItemSelection, QItemSelection)), this, SLOT(treeviewSelectionChanged(QItemSelection, QItemSelection)));
-    connect(this->ui->treeView->header(), SIGNAL(sectionResized(int, int, int)), this, SLOT(treeviewSectionResized(int, int, int)));
+   this->ui->treeView->setModel(&this->searchModel);
+   this->ui->treeView->setItemDelegate(&this->searchDelegate);
+   this->ui->treeView->header()->setVisible(true);
 
-    this->ui->treeView->setSelectionBehavior(QAbstractItemView::SelectRows);
-    this->ui->treeView->setSelectionMode(QAbstractItemView::ExtendedSelection);
+   QList<quint32> columnSizes = SETTINGS.getRepeated<quint32>("search_column_size");
+   if (columnSizes.size() != this->ui->treeView->header()->count())
+      columnSizes = QList<quint32>() << 275 << 200 << 60 << 80 << 80;
+   SETTINGS.set("search_column_size", columnSizes);
+   SETTINGS.save();
+   for (int i = 0; i < this->ui->treeView->header()->count(); i++)
+      this->ui->treeView->header()->resizeSection(i, columnSizes[i]);
 
-    this->searchModel.search((searchInOwnFiles ? "<" : "") + terms);
+   connect(this->ui->treeView->selectionModel(), SIGNAL(selectionChanged(QItemSelection, QItemSelection)), this, SLOT(treeviewSelectionChanged(QItemSelection, QItemSelection)));
+   connect(this->ui->treeView->header(), SIGNAL(sectionResized(int, int, int)), this, SLOT(treeviewSectionResized(int, int, int)));
 
-    this->ui->treeView->setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(this->ui->treeView, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(displayContextMenuDownload(const QPoint&)));
-    connect(this->ui->treeView, SIGNAL(doubleClicked(const QModelIndex&)), this, SLOT(entryDoubleClicked(const QModelIndex&)));
+   this->ui->treeView->setSelectionBehavior(QAbstractItemView::SelectRows);
+   this->ui->treeView->setSelectionMode(QAbstractItemView::ExtendedSelection);
 
-    this->ui->butDownload->setEnabled(false);
-    connect(this->ui->butDownload, SIGNAL(clicked()), this, SLOT(download()));    
+   this->searchModel.search((searchInOwnFiles ? "<" : "") + terms);
 
-    connect(&this->menu, SIGNAL(downloadTo(const Common::Hash&, const QString&)), this, SLOT(downloadTo(const Common::Hash&, const QString&)));
-    connect(&this->menu, SIGNAL(browse()), this, SLOT(browseCurrents()));
+   this->ui->treeView->setContextMenuPolicy(Qt::CustomContextMenu);
+   connect(this->ui->treeView, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(displayContextMenuDownload(const QPoint&)));
+   connect(this->ui->treeView, SIGNAL(doubleClicked(const QModelIndex&)), this, SLOT(entryDoubleClicked(const QModelIndex&)));
 
-    this->setWindowTitle(QString("\"%1\"%2").arg(terms).arg(searchInOwnFiles ? " (Own files)" : ""));
+   this->ui->butDownload->setEnabled(false);
+   connect(this->ui->butDownload, SIGNAL(clicked()), this, SLOT(download()));
+
+   connect(&this->menu, SIGNAL(downloadTo(const Common::Hash&, const QString&)), this, SLOT(downloadTo(const Common::Hash&, const QString&)));
+   connect(&this->menu, SIGNAL(browse()), this, SLOT(browseCurrents()));
+
+   this->setWindowTitle(QString("\"%1\"%2").arg(terms).arg(searchInOwnFiles ? " (Own files)" : ""));
 }
 
 WidgetSearch::~WidgetSearch()
@@ -304,15 +308,8 @@ void WidgetSearch::treeviewSelectionChanged(const QItemSelection& selected, cons
 
 void WidgetSearch::treeviewSectionResized(int logicalIndex, int oldSize, int newSize)
 {
-   // TODO: use an array instead of multiple field.
-   switch (logicalIndex)
-   {
-   case 0: SETTINGS.set("search_column_size_0", static_cast<quint32>(newSize)); break;
-   case 1: SETTINGS.set("search_column_size_1", static_cast<quint32>(newSize)); break;
-   case 2: SETTINGS.set("search_column_size_2", static_cast<quint32>(newSize)); break;
-   case 3: SETTINGS.set("search_column_size_3", static_cast<quint32>(newSize)); break;
-   case 4: SETTINGS.set("search_column_size_4", static_cast<quint32>(newSize)); break;
-   }
+   SETTINGS.set("search_column_size", logicalIndex, static_cast<quint32>(newSize));
+   SETTINGS.save();
 }
 
 bool WidgetSearch::atLeastOneRemotePeer(const QModelIndexList& indexes) const

@@ -11,7 +11,7 @@ message Settings {
    optional uint32 core_port = 2 [default = 59485];
    optional Common.Hash password = 3; // Hashed with salt.
    
-   optional Common.Language language = 18;
+   optional Common.Language language = 20;
    
    optional uint32 max_chat_message_displayed = 4 [default = 500];
    optional uint32 max_log_message_displayed = 5 [default = 500];
@@ -29,4 +29,15 @@ message Settings {
    optional uint32 search_column_size_2 = 14 [default = 60]; // Relvance.
    optional uint32 search_column_size_3 = 15 [default = 80]; // Peer.
    optional uint32 search_column_size_4 = 16 [default = 80]; // Size.
+   
+   repeated uint32 search_column_size = 19; // [Entry name, Folder name, Relvance, Peer, Size].
+   
+   enum Window {
+      WIN_SETTINGS = 1;
+      WIN_CHAT = 2;
+      WIN_DOWNLOAD = 3;
+      WIN_UPLOAD = 4;
+   }
+   
+   repeated Window windowOrder = 18;   
 }

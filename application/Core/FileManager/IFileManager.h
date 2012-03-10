@@ -90,7 +90,7 @@ namespace FM
 
       /**
         * Create a new empty file.
-        * It will take the shared directory which has enought storage space and matches paths the closest.
+        * It will take the shared directory which has enough storage space and matches paths the closest.
         * The file will have the exact final size and filled with 0.
         * The filename will end with ".unfinished".
         * Some or all hashes can be null (see Protos.Common.Hash). They can be set later with IChunk::setHash(..).

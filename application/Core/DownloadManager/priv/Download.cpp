@@ -27,11 +27,11 @@ using namespace DM;
 quint64 Download::currentID(1);
 
 Download::Download(
-   Common::Hash peerSourceID,
+   PM::IPeer* peerSource,
    const Protos::Common::Entry& remoteEntry,
    const Protos::Common::Entry& localEntry
 ) :
-   ID(currentID++), peerSourceID(peerSourceID), peerSource(0), remoteEntry(remoteEntry), localEntry(localEntry), status(QUEUED)
+   ID(currentID++), peerSource(peerSource), remoteEntry(remoteEntry), localEntry(localEntry), status(QUEUED)
 {
 }
 
@@ -54,16 +54,6 @@ void Download::populateLocalEntry(Protos::Queue::Queue_Entry* entry) const
    entry->set_complete(this->status == COMPLETE);
 }
 
-void Download::setPeer(PM::IPeer* peer)
-{
-   this->peerSource = peer;
-
-   if (!this->peerSource || !this->peerSource->isAvailable())
-      this->setStatus(UNKNOWN_PEER);
-   else
-      this->setStatus(QUEUED);
-}
-
 quint64 Download::getID() const
 {
    return this->ID;
@@ -84,9 +74,9 @@ int Download::getProgress() const
    return 0;
 }
 
-Common::Hash Download::getPeerSourceID() const
+PM::IPeer* Download::getPeerSource() const
 {
-   return this->peerSourceID;
+   return this->peerSource;
 }
 
 QSet<Common::Hash> Download::getPeers() const
@@ -114,12 +104,25 @@ void Download::remove()
    delete this;
 }
 
-bool Download::hasAValidPeer()
+bool Download::updateStatus()
 {
-   return this->peerSource && this->peerSource->isAlive();
+   if (this->status == DELETED || this->status == COMPLETE)
+      return true;
+
+   if (!this->peerSource->isAvailable())
+      this->setStatus(UNKNOWN_PEER_SOURCE);
+   else
+      this->setStatus(QUEUED);
+
+   return false;
 }
 
 void Download::setStatus(Status newStatus)
 {
    this->status = newStatus;
+}
+
+bool Download::hasAValidPeer()
+{
+   return this->peerSource->isAlive();
 }

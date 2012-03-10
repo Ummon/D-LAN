@@ -39,7 +39,7 @@ namespace DM
    public:
       DirDownload(
          OccupiedPeers& occupiedPeersAskingForEntries,
-         Common::Hash peerSourceID,
+         PM::IPeer* peerSource,
          const Protos::Common::Entry& remoteEntry,
          const Protos::Common::Entry& localEntry
       );

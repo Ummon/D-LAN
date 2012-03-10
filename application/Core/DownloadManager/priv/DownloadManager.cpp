@@ -69,17 +69,17 @@ DownloadManager::~DownloadManager()
 /**
   * Insert a new download at the end of the queue.
   */
-void DownloadManager::addDownload(const Protos::Common::Entry& remoteEntry, const Common::Hash& peerSource)
+void DownloadManager::addDownload(const Protos::Common::Entry& remoteEntry, PM::IPeer* peerSource)
 {
    this->addDownload(remoteEntry, peerSource, Common::Hash(), "/", false, this->downloadQueue.size());
 }
 
-void DownloadManager::addDownload(const Protos::Common::Entry& remoteEntry, const Common::Hash& peerSource, const Common::Hash& destinationDirectoryID, const QString& relativePath)
+void DownloadManager::addDownload(const Protos::Common::Entry& remoteEntry, PM::IPeer* peerSource, const Common::Hash& destinationDirectoryID, const QString& relativePath)
 {
    this->addDownload(remoteEntry, peerSource, destinationDirectoryID, relativePath, false, this->downloadQueue.size());
 }
 
-void DownloadManager::addDownload(const Protos::Common::Entry& remoteEntry, const Common::Hash& peerSource, const QString& absolutePath)
+void DownloadManager::addDownload(const Protos::Common::Entry& remoteEntry, PM::IPeer* peerSource, const QString& absolutePath)
 {
    try
    {
@@ -96,7 +96,7 @@ void DownloadManager::addDownload(const Protos::Common::Entry& remoteEntry, cons
    }
 }
 
-Download* DownloadManager::addDownload(const Protos::Common::Entry& remoteEntry, const Common::Hash& peerSource, const Common::Hash& destinationDirectoryID, const QString& localRelativePath, bool complete)
+Download* DownloadManager::addDownload(const Protos::Common::Entry& remoteEntry, PM::IPeer* peerSource, const Common::Hash& destinationDirectoryID, const QString& localRelativePath, bool complete)
 {
    return this->addDownload(remoteEntry, peerSource, destinationDirectoryID, localRelativePath, complete, this->downloadQueue.size());
 }
@@ -104,7 +104,7 @@ Download* DownloadManager::addDownload(const Protos::Common::Entry& remoteEntry,
 /**
   * Insert a new download at the given position.
   */
-Download* DownloadManager::addDownload(const Protos::Common::Entry& remoteEntry, const Common::Hash& peerSource, const Common::Hash& destinationDirectoryID, const QString& localRelativePath, bool complete, int position)
+Download* DownloadManager::addDownload(const Protos::Common::Entry& remoteEntry, PM::IPeer* peerSource, const Common::Hash& destinationDirectoryID, const QString& localRelativePath, bool complete, int position)
 {
    Protos::Common::Entry localEntry(remoteEntry);
    Common::ProtoHelper::setStr(localEntry, &Protos::Common::Entry::set_path, localRelativePath);
@@ -115,12 +115,12 @@ Download* DownloadManager::addDownload(const Protos::Common::Entry& remoteEntry,
    return this->addDownload(remoteEntry, localEntry, peerSource, complete, position);
 }
 
-Download* DownloadManager::addDownload(const Protos::Common::Entry& remoteEntry, const Protos::Common::Entry& localEntry, const Common::Hash& peerSource, bool complete)
+Download* DownloadManager::addDownload(const Protos::Common::Entry& remoteEntry, const Protos::Common::Entry& localEntry, PM::IPeer* peerSource, bool complete)
 {
    return this->addDownload(remoteEntry, localEntry, peerSource, complete, this->downloadQueue.size());
 }
 
-Download* DownloadManager::addDownload(const Protos::Common::Entry& remoteEntry, const Protos::Common::Entry& localEntry, const Common::Hash& peerSource, bool complete, int position)
+Download* DownloadManager::addDownload(const Protos::Common::Entry& remoteEntry, const Protos::Common::Entry& localEntry, PM::IPeer* peerSource, bool complete, int position)
 {
    Download* newDownload = 0;
 
@@ -163,7 +163,6 @@ Download* DownloadManager::addDownload(const Protos::Common::Entry& remoteEntry,
    }
 
    this->downloadQueue.insert(position, newDownload);
-   newDownload->setPeer(this->peerManager->getPeer(peerSource));
    newDownload->start();
 
    this->setQueueChanged();
@@ -235,12 +234,13 @@ int DownloadManager::getDownloadRate()
 }
 
 void DownloadManager::peerBecomesAvailable(PM::IPeer* peer)
-{
-   this->downloadQueue.setPeerSource(peer);
+{     
+   this->downloadQueue.peerBecomesAvailable(peer);
 
    // To handle the case where the peers source of some downloads without all the hashes become alive after being dead for a while. The hashes must be reasked.
    this->occupiedPeersAskingForEntries.newPeer(peer);
    this->occupiedPeersAskingForHashes.newPeer(peer);
+   this->occupiedPeersDownloadingChunk.newPeer(peer);
 }
 
 void DownloadManager::fileCacheLoaded()
@@ -266,7 +266,7 @@ void DownloadManager::newEntries(const Protos::Common::Entries& remoteEntries)
       {
          const Protos::Common::Entry& localEntry = dirDownload->getLocalEntry();
          QString relativePath = Common::ProtoHelper::getStr(localEntry, &Protos::Common::Entry::path).append(Common::ProtoHelper::getStr(localEntry, &Protos::Common::Entry::name)).append("/");
-         this->addDownload(remoteEntries.entry(n), dirDownload->getPeerSourceID(), localEntry.has_shared_dir() ? localEntry.shared_dir().id().hash() : Common::Hash(), relativePath, false, position++);
+         this->addDownload(remoteEntries.entry(n), dirDownload->getPeerSource(), localEntry.has_shared_dir() ? localEntry.shared_dir().id().hash() : Common::Hash(), relativePath, false, position++);
       }
 
    // Then directories. TODO : code to refactor with the one above.
@@ -275,7 +275,7 @@ void DownloadManager::newEntries(const Protos::Common::Entries& remoteEntries)
       {
          const Protos::Common::Entry& localEntry = dirDownload->getLocalEntry();
          QString relativePath = Common::ProtoHelper::getStr(localEntry, &Protos::Common::Entry::path).append(Common::ProtoHelper::getStr(localEntry, &Protos::Common::Entry::name)).append("/");
-         this->addDownload(remoteEntries.entry(n), dirDownload->getPeerSourceID(), localEntry.has_shared_dir() ? localEntry.shared_dir().id().hash() : Common::Hash(), relativePath, false, position++);
+         this->addDownload(remoteEntries.entry(n), dirDownload->getPeerSource(), localEntry.has_shared_dir() ? localEntry.shared_dir().id().hash() : Common::Hash(), relativePath, false, position++);
       }
 
    delete dirDownload;
@@ -386,7 +386,12 @@ void DownloadManager::loadQueueFromFile()
    for (int i = 0; i < savedQueue.entry_size(); i++)
    {
       const Protos::Queue::Queue_Entry& entry = savedQueue.entry(i);
-      this->addDownload(entry.remote_entry(), entry.local_entry(), entry.peer_source_id().hash(), entry.complete());
+      this->addDownload(
+         entry.remote_entry(),
+         entry.local_entry(),
+         this->peerManager->createPeer(entry.peer_source_id().hash(), Common::ProtoHelper::getStr(entry, &Protos::Queue::Queue::Entry::peer_source_nick)),
+         entry.complete()
+      );
    }
 
    this->saveTimer.start();

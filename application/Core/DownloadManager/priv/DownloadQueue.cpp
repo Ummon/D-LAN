@@ -21,6 +21,7 @@ using namespace DM;
 
 #include <Common/PersistentData.h>
 #include <Common/Constants.h>
+#include <Common/ProtoHelper.h>
 
 #include <priv/Download.h>
 #include <priv/FileDownload.h>
@@ -59,7 +60,7 @@ void DownloadQueue::insert(int position, Download* download)
    this->updateMarkersInsert(position, download);
 
    this->downloads.insert(position, download);
-   this->downloadsIndexedBySourcePeerID.insert(download->getPeerSourceID(), download);
+   this->downloadsIndexedBySourcePeerID.insert(download->getPeerSource()->getID(), download);
 }
 
 Download* DownloadQueue::operator[] (int position) const
@@ -77,14 +78,14 @@ void DownloadQueue::remove(int position)
    this->updateMarkersRemove(position);
 
    Download* download = (*this)[position];
-   this->downloadsIndexedBySourcePeerID.remove(download->getPeerSourceID(), download);
+   this->downloadsIndexedBySourcePeerID.remove(download->getPeerSource()->getID(), download);
    this->downloads.removeAt(position);
 }
 
-void DownloadQueue::setPeerSource(PM::IPeer* peer)
+void DownloadQueue::peerBecomesAvailable(PM::IPeer* peer)
 {
    for (QMultiHash<Common::Hash, Download*>::iterator i = this->downloadsIndexedBySourcePeerID.find(peer->getID()); i != this->downloadsIndexedBySourcePeerID.end() && i.key() == peer->getID(); ++i)
-      i.value()->setPeer(peer);
+      i.value()->peerSourceBecomesAvailable();
 }
 
 bool DownloadQueue::isAPeerSource(const Common::Hash& peerID) const
@@ -163,7 +164,7 @@ bool DownloadQueue::removeDownloads(DownloadPredicate& predicate)
       {
          queueChanged = true;
          (*j)->setAsDeleted();
-         this->downloadsIndexedBySourcePeerID.remove((*j)->getPeerSourceID(), *j);
+         this->downloadsIndexedBySourcePeerID.remove((*j)->getPeerSource()->getID(), *j);
          downloadsToDelete << *j;
          ++j;
 
@@ -241,7 +242,8 @@ void DownloadQueue::saveToFile() const
       Download* download = i.next();
       download->populateRemoteEntry(queueEntry);
       download->populateLocalEntry(queueEntry);
-      queueEntry->mutable_peer_source_id()->set_hash(download->getPeerSourceID().getData(), Common::Hash::HASH_SIZE);
+      queueEntry->mutable_peer_source_id()->set_hash(download->getPeerSource()->getID().getData(), Common::Hash::HASH_SIZE);
+      Common::ProtoHelper::setStr(*queueEntry, &Protos::Queue::Queue::Entry::set_peer_source_nick, download->getPeerSource()->getNick());
    }
 
    try

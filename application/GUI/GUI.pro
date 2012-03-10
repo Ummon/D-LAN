@@ -66,7 +66,8 @@ SOURCES += main.cpp\
     D-LAN_GUI.cpp \
     ProgressBar.cpp \
     IconProvider.cpp \
-    Utils.cpp
+    Utils.cpp \
+    LineEdit.cpp
 
 HEADERS  += MainWindow.h \
     ../Protos/gui_protocol.pb.h \
@@ -100,7 +101,9 @@ HEADERS  += MainWindow.h \
     D-LAN_GUI.h \
     ProgressBar.h \
     IconProvider.h \
-    Utils.h
+    Utils.h \
+    LineEdit.h
+>>>>>>> remotes/origin/1.0
 
 FORMS    += MainWindow.ui \
     StatusBar.ui \

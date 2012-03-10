@@ -76,10 +76,13 @@ namespace GUI
       void coreConnected();
       void coreDisconnected();
 
+      void tabMoved(int from, int to);
+
       void displayContextMenuPeers(const QPoint& point);
       void browse();
       void searchOtherPeers();
       void searchOwnFiles();
+      void txtSearchReturnPressed(Qt::KeyboardModifiers modifiers);
 
       void removeWidget(QWidget* widget);
 
@@ -119,6 +122,8 @@ namespace GUI
       void removeAllWidgets();
 
       Ui::MainWindow* ui;
+
+      QTabBar* mdiAreaTabBar;
 
       WidgetSettings* widgetSettings;
       WidgetChat* widgetChat;

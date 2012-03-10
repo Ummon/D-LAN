@@ -142,6 +142,19 @@ Peer* PeerManager::getPeer_(const Common::Hash& ID)
    return 0;
 }
 
+IPeer* PeerManager::createPeer(const Hash& ID, const QString& nick)
+{
+   IPeer* existingPeer = this->getPeer(ID);
+   if (existingPeer)
+      return existingPeer;
+
+   Peer* peer = new Peer(this, this->fileManager, ID, nick);
+   connect(peer, SIGNAL(unbanned()), this, SLOT(peerUnbanned()));
+   this->peers << peer;
+
+   return peer;
+}
+
 /**
   * A peer just send a IAmAlive packet, we update information about it
   */

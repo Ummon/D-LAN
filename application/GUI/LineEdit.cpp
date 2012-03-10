@@ -16,14 +16,21 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef COMMON_VERSION_H
-#define COMMON_VERSION_H
+#include <LineEdit.h>
+using namespace GUI;
 
-#define VERSION "1.1.0"
-#define VERSION_TAG "Alpha"
+LineEdit::LineEdit(QWidget* parent) :
+   QLineEdit(parent)
+{
+}
 
-// These two values are automatically updated during the release building process. See the script 'Application/Tools/update_version.sh'
-#define BUILD_TIME "2012-01-30_13-16"
-#define GIT_VERSION "3afbaa905fbc061b3ce5a80e433bdffdc17633d5"
+void LineEdit::keyPressEvent(QKeyEvent* event)
+{
+   if (event->key() == Qt::Key_Return)
+   {
+      emit returnPressed(event->modifiers());
+   }
 
-#endif
+   QLineEdit::keyPressEvent(event);
+}
+

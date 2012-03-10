@@ -50,7 +50,7 @@ namespace DM
          OccupiedPeers& occupiedPeersAskingForHashes,
          OccupiedPeers& occupiedPeersDownloadingChunk,
          Common::ThreadPool& threadPool,
-         Common::Hash peerSourceID,
+         PM::IPeer* peerSource,
          const Protos::Common::Entry& remoteEntry,
          const Protos::Common::Entry& localEntry,
          Common::TransferRateCalculator& transferRateCalculator,
@@ -59,6 +59,8 @@ namespace DM
       ~FileDownload();
 
       void start();
+
+      void peerSourceBecomesAvailable();
 
       void populateRemoteEntry(Protos::Queue::Queue_Entry* entry) const;
 
@@ -69,11 +71,10 @@ namespace DM
 
       void getUnfinishedChunks(QList< QSharedPointer<IChunkDownload> >& chunks, int nMax) const;
 
-      void updateStatus();
-
       void remove();
 
    public slots:
+      bool updateStatus();
       bool retrieveHashes();
 
    signals:
