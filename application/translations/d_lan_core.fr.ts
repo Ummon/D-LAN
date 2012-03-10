@@ -77,14 +77,6 @@
         <translation>Impossible d&apos;ouvrir le fichier en mode écriture : %1, erreur : %2</translation>
     </message>
     <message>
-        <source>Settings : name &quot;%1&quot; doesn&apos;t exist</source>
-        <translation>Paramètres : le nom &quot;%1&quot; n&apos;existe pas</translation>
-    </message>
-    <message>
-        <source>Settings : bad type, field name = &quot;%1&quot;, expected type : &quot;%2&quot;</source>
-        <translation>Paramètre : mauvais type, nom du champs = &quot;%1&quot;, type attendu : &quot;%2&quot;</translation>
-    </message>
-    <message>
         <source>The version (%1) of the queue file &quot;%2&quot; doesn&apos;t match the current version (%3). Queue will be reset.</source>
         <translation>La version (%1) du fichier contenant la queue &quot;%2&quot; ne correspond pas à la version courante (%3). La queue va être réinitialisée.</translation>
     </message>

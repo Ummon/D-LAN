@@ -103,7 +103,6 @@ HEADERS  += MainWindow.h \
     IconProvider.h \
     Utils.h \
     LineEdit.h
->>>>>>> remotes/origin/1.0
 
 FORMS    += MainWindow.ui \
     StatusBar.ui \

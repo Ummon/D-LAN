@@ -77,14 +77,6 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Settings : name &quot;%1&quot; doesn&apos;t exist</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Settings : bad type, field name = &quot;%1&quot;, expected type : &quot;%2&quot;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>The version (%1) of the queue file &quot;%2&quot; doesn&apos;t match the current version (%3). Queue will be reset.</source>
         <translation type="unfinished"></translation>
     </message>

@@ -86,7 +86,7 @@
 <context>
     <name>GUI::MainWindow</name>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="+213"/>
+        <location filename="../GUI/MainWindow.cpp" line="+250"/>
         <source>Browse</source>
         <translation>Explorer</translation>
     </message>
@@ -192,6 +192,14 @@
     </message>
 </context>
 <context>
+    <name>GUI::WidgetChat</name>
+    <message>
+        <location filename="../GUI/Chat/WidgetChat.cpp" line="+142"/>
+        <source>Copy selected lines</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>GUI::WidgetDownloads</name>
     <message>
         <location filename="../GUI/Downloads/WidgetDownloads.cpp" line="+176"/>
@@ -237,7 +245,7 @@
 <context>
     <name>GUI::WidgetSearch</name>
     <message>
-        <location filename="../GUI/Search/WidgetSearch.cpp" line="+234"/>
+        <location filename="../GUI/Search/WidgetSearch.cpp" line="+238"/>
         <source>Open location</source>
         <translation>Ouvrir le dossier</translation>
     </message>
@@ -307,19 +315,27 @@
     <message>
         <location line="+13"/>
         <location filename="../GUI/.tmp/debug/ui_MainWindow.h" line="+2"/>
+        <source>Search among other peers &lt;ENTER&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+20"/>
+        <location filename="../GUI/.tmp/debug/ui_MainWindow.h" line="+4"/>
+        <source>Search among its own files &lt;SHIFT-ENTER&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../GUI/.tmp/release/ui_MainWindow.h" line="+2"/>
         <source>Search among other peers</source>
         <translation>Rechercher parmi les autres pairs</translation>
     </message>
     <message>
-        <location line="+20"/>
-        <location filename="../GUI/.tmp/debug/ui_MainWindow.h" line="+4"/>
-        <location filename="../GUI/.tmp/release/ui_MainWindow.h" line="+4"/>
+        <location line="+4"/>
         <source>Search among own files</source>
         <translation>Rechercher parmi nos propres fichiers</translation>
     </message>
     <message>
-        <location line="+22"/>
+        <location filename="../GUI/MainWindow.ui" line="+22"/>
         <location filename="../GUI/.tmp/debug/ui_MainWindow.h" line="+3"/>
         <location filename="../GUI/.tmp/release/ui_MainWindow.h" line="+3"/>
         <source>Peers</source>
@@ -357,16 +373,6 @@
         <location filename="../Common/PersistentData.cpp" line="+65"/>
         <source>Unable to open the file in write mode : %1, error : %2</source>
         <translation>Impossible d&apos;ouvrir le fichier en écriture : %1, erreur : %2</translation>
-    </message>
-    <message>
-        <location filename="../Common/Settings.cpp" line="+489"/>
-        <source>Settings : name &quot;%1&quot; doesn&apos;t exist</source>
-        <translation>Paramètres : name &quot;%1&quot; n&apos;existe pas</translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>Settings : bad type, field name = &quot;%1&quot;, expected type : &quot;%2&quot;</source>
-        <translation>Paramètres : mauvais type, nom du champs = &quot;%1&quot;, type attendu : &quot;%2&quot;</translation>
     </message>
     <message>
         <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="+35"/>
