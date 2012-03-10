@@ -139,7 +139,7 @@ void WidgetChat::scrollChanged(int value)
 void WidgetChat::displayContextMenuDownloads(const QPoint& point)
 {
    QMenu menu;
-   menu.addAction("Copy selected lines", this, SLOT(copySelectedLineToClipboard()));
+   menu.addAction(tr("Copy selected lines"), this, SLOT(copySelectedLineToClipboard()));
    menu.exec(this->ui->tblChat->mapToGlobal(point));
 }
 
