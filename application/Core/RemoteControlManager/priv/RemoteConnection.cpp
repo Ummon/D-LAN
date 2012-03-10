@@ -196,13 +196,13 @@ void RemoteConnection::onNewMessage(Common::MessageHeader::MessageType type, con
          {
             QList<Protos::Common::FindResult> results = this->fileManager->find(pattern, SETTINGS.get<quint32>("max_number_of_result_shown"), std::numeric_limits<int>::max());
 
+            const quint64 tag = (static_cast<quint64>(this->mtrand.randInt()) << 32) | this->mtrand.randInt();
+            Protos::GUI::Tag tagMess;
+            tagMess.set_tag(tag);
+            this->send(Common::MessageHeader::GUI_SEARCH_TAG, tagMess);
+
             if (!results.isEmpty())
             {
-               const quint64 tag = (static_cast<quint64>(this->mtrand.randInt()) << 32) | this->mtrand.randInt();
-               Protos::GUI::Tag tagMess;
-               tagMess.set_tag(tag);
-               this->send(Common::MessageHeader::GUI_SEARCH_TAG, tagMess);
-
                Protos::Common::FindResult& result = results.first();
                result.mutable_peer_id()->set_hash(this->peerManager->getID().getData(), Common::Hash::HASH_SIZE);
                result.set_tag(tag);
