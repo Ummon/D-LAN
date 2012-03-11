@@ -69,7 +69,9 @@ void PersistentData::setValue(const QString& name, const google::protobuf::Messa
          {
 #endif
             google::protobuf::io::FileOutputStream fileStream(file.handle());
-            google::protobuf::TextFormat::Print(data, &fileStream);
+            google::protobuf::TextFormat::Printer printer;
+            printer.SetUseShortRepeatedPrimitives(true);
+            printer.Print(data, &fileStream);
 #if !DEBUG
          }
          else

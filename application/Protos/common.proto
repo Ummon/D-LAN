@@ -64,3 +64,17 @@ message FindResult {
    repeated EntryLevel entry = 2;
    optional Common.Hash peer_id = 3;
 }
+
+message Interface {
+   message Address {
+      enum Protocol {
+         IPv4 = 1;
+         IPv6 = 2;
+      }
+      required string address = 1;
+      required Protocol protocol = 2;
+      required bool listened = 3;
+   }
+   required string name = 1;
+   repeated string address = 2;
+}

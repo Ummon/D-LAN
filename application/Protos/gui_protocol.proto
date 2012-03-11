@@ -95,11 +95,14 @@ message State {
    repeated SharedDir shared_directory = 3;
    
    required bool integrity_check_enabled = 7;
-   
+      
    repeated Download download = 4;
    repeated Upload upload = 5;
    
    optional Stats stats = 6;
+   
+   optional Common.Interface.Address.Protocol listenAny = 8; // If this value is set then all the interfaces of the given protocol are listened. Otherwise see the following repeated 'interface' field.
+   repeated Common.Interface interface = 9;
 }
 
 /***** Events *****/
@@ -173,7 +176,10 @@ message CoreSettings {
    
    optional string nick = 1;
    optional SharedDirectories shared_directories = 2;
-   optional bool enable_integrity_check = 3;
+   optional bool enable_integrity_check = 3;   
+   
+   optional Common.Interface.Address.Protocol listenAny = 4;
+   optional Common.Interface.Address address = 5;
 }
 
 // GUI -> Core

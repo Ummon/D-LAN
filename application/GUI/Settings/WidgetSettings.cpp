@@ -111,6 +111,7 @@ void WidgetSettings::coreConnected()
 {
    this->ui->txtPassword->clear();
    this->ui->tabWidget->setTabEnabled(0, true);
+   this->ui->tabWidget->setTabEnabled(1, true);
    this->ui->chkEnableIntegrityCheck->setEnabled(true);
 }
 
@@ -118,6 +119,7 @@ void WidgetSettings::coreDisconnected()
 {
    this->initialState = true;
    this->ui->tabWidget->setTabEnabled(0, false);
+   this->ui->tabWidget->setTabEnabled(1, false);
    this->ui->chkEnableIntegrityCheck->setEnabled(false);
 }
 

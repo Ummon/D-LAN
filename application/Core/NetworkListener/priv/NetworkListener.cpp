@@ -19,8 +19,6 @@
 #include <priv/NetworkListener.h>
 using namespace NL;
 
-#include <QTimer>
-
 #include <Common/LogManager/Builder.h>
 
 #include <priv/Chat.h>
@@ -42,6 +40,7 @@ NetworkListener::NetworkListener(
    uDPListener(fileManager, peerManager, uploadManager, downloadManager, tCPListener.getCurrentPort()),
    chat(uDPListener)
 {
+   connect(&this->configManager, SIGNAL(onlineStateChanged(bool)), this, SLOT(rebindSockets()));
 }
 
 NetworkListener::~NetworkListener()
@@ -64,4 +63,3 @@ void NetworkListener::rebindSockets()
    this->uDPListener.rebindSockets();
    this->tCPListener.rebindSockets();
 }
-

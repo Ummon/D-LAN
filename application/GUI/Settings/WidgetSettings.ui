@@ -36,7 +36,7 @@
    <item>
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>0</number>
+      <number>1</number>
      </property>
      <widget class="QWidget" name="tabBasicSettings">
       <attribute name="title">
@@ -169,6 +169,11 @@
         </layout>
        </item>
       </layout>
+     </widget>
+     <widget class="QWidget" name="tabNetworkSettings">
+      <attribute name="title">
+       <string>Network</string>
+      </attribute>
      </widget>
      <widget class="QWidget" name="tabAdvancedSettings">
       <attribute name="title">

@@ -21,6 +21,7 @@
 
 #include <QObject>
 #include <QSharedPointer>
+#include <QNetworkConfigurationManager>
 
 #include <Common/Uncopyable.h>
 #include <Core/FileManager/IFileManager.h>
@@ -51,6 +52,8 @@ namespace NL
 
       IChat& getChat();
       QSharedPointer<ISearch> newSearch();
+
+  private slots:
       void rebindSockets();
 
    private:      
@@ -60,6 +63,8 @@ namespace NL
       QSharedPointer<PM::IPeerManager> peerManager;
       QSharedPointer<UM::IUploadManager> uploadManager;
       QSharedPointer<DM::IDownloadManager> downloadManager;
+
+      QNetworkConfigurationManager configManager;
 
       TCPListener tCPListener;
       UDPListener uDPListener;
