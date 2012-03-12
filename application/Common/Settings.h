@@ -82,6 +82,7 @@ namespace Common
       void get(const google::protobuf::FieldDescriptor* fieldDescriptor, QByteArray& value) const;
       void get(const google::protobuf::FieldDescriptor* fieldDescriptor, Hash& hash) const;
       void get(const google::protobuf::FieldDescriptor* fieldDescriptor, QLocale& lang) const;
+      void get(const google::protobuf::FieldDescriptor* fieldDescriptor, google::protobuf::Message& message) const;
 
       void getRepeated(const google::protobuf::FieldDescriptor* fieldDescriptor, QList<quint32>& values) const;
 

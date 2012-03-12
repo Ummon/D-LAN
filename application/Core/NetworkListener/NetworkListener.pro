@@ -23,7 +23,8 @@ SOURCES += priv/UDPListener.cpp \
     priv/Builder.cpp \
     ../../Protos/common.pb.cc \
     ../../Protos/core_protocol.pb.cc \
-    priv/Log.cpp
+    priv/Log.cpp \
+    priv/Utils.cpp
 HEADERS += ISearch.h \
     INetworkListener.h \
     IChat.h \
@@ -35,4 +36,5 @@ HEADERS += ISearch.h \
     Builder.h \
     ../../Protos/common.pb.h \
     ../../Protos/core_protocol.pb.h \
-    priv/Log.h
+    priv/Log.h \
+    priv/Utils.h

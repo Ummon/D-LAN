@@ -24,6 +24,7 @@ using namespace GUI;
 #include <QTranslator>
 #include <QMessageBox>
 #include <QListView>
+#include <QLabel>
 #include <QMenu>
 #include <QDesktopServices>
 #include <QUrl>
@@ -47,7 +48,7 @@ void DirListDelegate::paint(QPainter* painter, const QStyleOptionViewItem& optio
 /////
 
 WidgetSettings::WidgetSettings(QSharedPointer<RCC::ICoreConnection> coreConnection, DirListModel& sharedDirsModel, QWidget* parent) :
-   QWidget(parent), ui(new Ui::WidgetSettings), coreConnection(coreConnection), sharedDirsModel(sharedDirsModel), initialState(true)
+   QWidget(parent), ui(new Ui::WidgetSettings), coreConnection(coreConnection), sharedDirsModel(sharedDirsModel)
 {
    this->ui->setupUi(this);
 
@@ -74,6 +75,8 @@ WidgetSettings::WidgetSettings(QSharedPointer<RCC::ICoreConnection> coreConnecti
    connect(this->ui->txtNick, SIGNAL(editingFinished()), this, SLOT(saveCoreSettings()));
 
    connect(this->ui->chkEnableIntegrityCheck, SIGNAL(clicked()), this, SLOT(saveCoreSettings()));
+
+   this->connectAllAddressButtons();
 
    connect(this->ui->butAddShared, SIGNAL(clicked()), this, SLOT(addShared()));
    connect(this->ui->butRemoveShared, SIGNAL(clicked()), this, SLOT(removeShared()));
@@ -117,7 +120,6 @@ void WidgetSettings::coreConnected()
 
 void WidgetSettings::coreDisconnected()
 {
-   this->initialState = true;
    this->ui->tabWidget->setTabEnabled(0, false);
    this->ui->tabWidget->setTabEnabled(1, false);
    this->ui->chkEnableIntegrityCheck->setEnabled(false);
@@ -161,6 +163,131 @@ void WidgetSettings::fillComboBoxLanguages()
    }
 }
 
+void WidgetSettings::connectAllAddressButtons()
+{
+   for (QListIterator<QRadioButton*> i(this->ui->grpInterfaces->findChildren<QRadioButton*>()); i.hasNext();)
+      connect(i.next(), SIGNAL(toggled(bool)), this, SLOT(buttonAddressToggled(bool)));
+}
+
+void WidgetSettings::disconnectAllAddressButtons()
+{
+
+   for (QListIterator<QRadioButton*> i(this->ui->grpInterfaces->findChildren<QRadioButton*>()); i.hasNext();)
+      i.next()->disconnect(this);
+}
+
+void WidgetSettings::updateNetworkInterfaces(const Protos::GUI::State& state)
+{
+   this->disconnectAllAddressButtons();
+
+   QList<QLabel*> interfaceNotUpdated = this->ui->grpInterfaces->findChildren<QLabel*>("");
+
+   for (int i = 0; i < state.interface_size(); i++)
+   {
+      const QString interfaceName = Common::ProtoHelper::getStr(state.interface(i), &Protos::Common::Interface::name);
+
+      for (QListIterator<QObject*> j(this->ui->grpInterfaces->children()); j.hasNext();)
+      {
+         QLabel* lblInterface = dynamic_cast<QLabel*>(j.next());
+         if (lblInterface && lblInterface->text() == interfaceName)
+         {
+            interfaceNotUpdated.removeOne(lblInterface);
+            this->updateAddresses(state.interface(i), static_cast<QWidget*>(j.next()));
+            goto nextInterface;
+         }
+      }
+
+      {
+         // Interface not found -> add a new one.
+         this->ui->layInterfaces->addWidget(new QLabel(interfaceName, this->ui->grpInterfaces));
+         QWidget* addressesContainer = new QWidget(this->ui->grpInterfaces);
+         this->ui->layInterfaces->addWidget(addressesContainer);
+         this->updateAddresses(state.interface(i), addressesContainer);
+      }
+
+      nextInterface:;
+   }
+
+   // Remove the non-existant interfaces.
+   for (QListIterator<QObject*> i(this->ui->grpInterfaces->children()); i.hasNext();)
+   {
+      QLabel* current = dynamic_cast<QLabel*>(i.next());
+      if (current && interfaceNotUpdated.contains(current))
+      {
+         this->ui->layInterfaces->removeWidget(current);
+         QWidget* addressesContainer = dynamic_cast<QWidget*>(i.next());
+         this->ui->layInterfaces->removeWidget(addressesContainer);
+         delete current;
+         delete addressesContainer;
+      }
+   }
+
+   // Set the current address.
+   if (state.has_listenany())
+   {
+      if (state.listenany() == Protos::Common::Interface::Address::IPv6)
+         this->ui->radIPv6->setChecked(true);
+      else
+         this->ui->radIPv4->setChecked(true);
+   }
+
+   this->connectAllAddressButtons();
+}
+
+void WidgetSettings::updateAddresses(const Protos::Common::Interface& interface, QWidget* container)
+{
+   QVBoxLayout* layout = container->findChild<QVBoxLayout*>();
+   if (!layout)
+   {
+      layout = new QVBoxLayout(container);
+      QMargins margins = layout->contentsMargins();
+      margins.setTop(3);
+      layout->setContentsMargins(margins);
+   }
+
+   QList<QRadioButton*> addressesNotUpdated = container->findChildren<QRadioButton*>();
+
+   for (int i = 0; i < interface.address_size(); i++)
+   {
+      const QString addresseName = Common::ProtoHelper::getStr(interface.address(i), &Protos::Common::Interface::Address::address);
+
+      for (QListIterator<QRadioButton*> j(container->findChildren<QRadioButton*>()); j.hasNext();)
+      {
+         QRadioButton* addressButton = j.next();
+         if (addressButton->text() == addresseName)
+         {
+            addressesNotUpdated.removeOne(addressButton);
+            if (interface.address(i).listened())
+               addressButton->setChecked(true);
+            goto nextAddress;
+         }
+      }
+
+      {
+         // Address not found -> add a new one.
+         QRadioButton* newAddressButton = new QRadioButton(addresseName, container);
+         this->ui->grpAddressesToListenTo->addButton(newAddressButton);
+         if (interface.address(i).listened())
+            newAddressButton->setChecked(true);
+         layout->addWidget(newAddressButton);
+      }
+
+      nextAddress:;
+   }
+
+   // Remove the non-existant addresses.
+   for (QListIterator<QRadioButton*> i(container->findChildren<QRadioButton*>()); i.hasNext();)
+   {
+      QRadioButton* current = i.next();
+      if (addressesNotUpdated.contains(current))
+      {
+         layout->removeWidget(current);
+         this->ui->grpAddressesToListenTo->removeButton(current);
+         delete current;
+      }
+   }
+}
+
 void WidgetSettings::newState(const Protos::GUI::State& state)
 {
    if (!this->ui->txtNick->hasFocus())
@@ -180,8 +307,12 @@ void WidgetSettings::newState(const Protos::GUI::State& state)
          );
    this->sharedDirsModel.setDirs(sharedDirs);
 
+   this->updateNetworkInterfaces(state);
+
+
    // If this is the first message state received and there is no incoming folder defined we ask the user to choose one.
-   if (this->initialState)
+   // Comment cuz the user can know choose a folder right before downloading a file.
+   /*if (this->initialState)
    {
       this->initialState = false;
       if (this->sharedDirsModel.rowCount() == 0)
@@ -197,7 +328,7 @@ void WidgetSettings::newState(const Protos::GUI::State& state)
             this->addShared();
          }
       }
-   }
+   }*/
 }
 
 /**
@@ -211,6 +342,23 @@ void WidgetSettings::saveCoreSettings()
 
    for (QListIterator<Common::SharedDir> i(this->sharedDirsModel.getDirs()); i.hasNext();)
       Common::ProtoHelper::addRepeatedStr(*settings.mutable_shared_directories(), &Protos::GUI::CoreSettings::SharedDirectories::add_dir, i.next().path);
+
+   if (this->ui->radIPv6->isChecked())
+      settings.set_listenany(Protos::Common::Interface::Address::IPv6);
+   else if (this->ui->radIPv4->isChecked())
+      settings.set_listenany(Protos::Common::Interface::Address::IPv4);
+   else
+   {
+      for (QListIterator<QRadioButton*> i(this->ui->grpInterfaces->findChildren<QRadioButton*>()); i.hasNext();)
+      {
+         QRadioButton* button = i.next();
+         if (button->isChecked())
+         {
+            Common::ProtoHelper::setStr(settings, &Protos::GUI::CoreSettings::set_listenaddress, button->text());
+            break;
+         }
+      }
+   }
 
    this->coreConnection->setCoreSettings(settings);
 }
@@ -347,6 +495,12 @@ void WidgetSettings::openLocation()
    QModelIndexList selectedRows = this->ui->tblShareDirs->selectionModel()->selectedRows();
    foreach (QModelIndex index, selectedRows)
       QDesktopServices::openUrl(QUrl("file:///" + this->sharedDirsModel.getLocationPath(index), QUrl::TolerantMode));
+}
+
+void WidgetSettings::buttonAddressToggled(bool checked)
+{
+   if (checked)
+      this->saveCoreSettings();
 }
 
 void WidgetSettings::showEvent(QShowEvent* event)

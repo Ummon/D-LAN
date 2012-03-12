@@ -92,8 +92,8 @@ namespace NL
       char* const bodyBuffer;
 
       const quint16 UNICAST_PORT;
-      const QHostAddress MULTICAST_GROUP;
       const quint16 MULTICAST_PORT;
+      QHostAddress multicastGroup;
 
       QSharedPointer<FM::IFileManager> fileManager;
       QSharedPointer<PM::IPeerManager> peerManager;

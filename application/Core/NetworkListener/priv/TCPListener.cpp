@@ -22,6 +22,7 @@ using namespace NL;
 #include <Common/Settings.h>
 
 #include <priv/Log.h>
+#include <priv/Utils.h>
 
 /**
   * @class NL::TCPListener
@@ -49,7 +50,7 @@ void TCPListener::rebindSockets()
    this->tcpServer.disconnect(this);
 
    int n = 0;
-   while(!this->tcpServer.listen(QHostAddress::Any, this->currentPort))
+   while(!this->tcpServer.listen(Utils::getCurrentAddressToListenTo(), this->currentPort))
    {
       if (++n == MAX_LISTEN_ATTEMPT)
       {

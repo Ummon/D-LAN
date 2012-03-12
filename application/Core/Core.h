@@ -45,7 +45,6 @@ namespace CoreSpace
    public:
       Core(bool resetSettings, QLocale locale);
       void start();
-      void rebindSockets();
 
    public slots:
       void setLanguage(QLocale locale, bool load = true);

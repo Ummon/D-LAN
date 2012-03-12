@@ -178,13 +178,22 @@ void Settings::set(const QString& name, quint32 value)
       printErrorNameNotFound(name);
       return;
    }
-   if (fieldDescriptor->type() != google::protobuf::FieldDescriptor::TYPE_UINT32)
+
+   if (fieldDescriptor->type() == google::protobuf::FieldDescriptor::TYPE_ENUM)
+   {
+      const google::protobuf::EnumDescriptor* enumDescriptor = fieldDescriptor->enum_type();
+      const google::protobuf::EnumValueDescriptor* enumValue = enumDescriptor->FindValueByNumber(value);
+      this->settings->GetReflection()->SetEnum(this->settings, fieldDescriptor, enumValue);
+   }
+   else if (fieldDescriptor->type() == google::protobuf::FieldDescriptor::TYPE_UINT32)
+   {
+      this->settings->GetReflection()->SetUInt32(this->settings, fieldDescriptor, value);
+   }
+   else
    {
       printErrorBadType(fieldDescriptor, "uint32");
       return;
    }
-
-   this->settings->GetReflection()->SetUInt32(this->settings, fieldDescriptor, value);
 }
 
 void Settings::set(const QString& name, bool value)
@@ -362,7 +371,7 @@ void Settings::set(const QString& name, const google::protobuf::Message& message
       return;
    }
    if (fieldDescriptor->type() != google::protobuf::FieldDescriptor::TYPE_MESSAGE ||
-       fieldDescriptor->type() == google::protobuf::FieldDescriptor::TYPE_MESSAGE && fieldDescriptor->message_type()->name() != message.GetTypeName())
+       fieldDescriptor->type() == google::protobuf::FieldDescriptor::TYPE_MESSAGE && fieldDescriptor->message_type()->full_name() != message.GetTypeName())
    {
       printErrorBadType(fieldDescriptor, QString::fromStdString(message.GetTypeName()));
       return;
@@ -456,7 +465,14 @@ void Settings::set(const QString& name, int index, quint32 value)
 void Settings::get(const google::protobuf::FieldDescriptor* fieldDescriptor, quint32& value) const
 {
    Q_ASSERT(fieldDescriptor);
-   value = this->settings->GetReflection()->GetUInt32(*this->settings, fieldDescriptor);
+   if (fieldDescriptor->type() == google::protobuf::FieldDescriptor::TYPE_ENUM)
+   {
+      value = this->settings->GetReflection()->GetEnum(*this->settings, fieldDescriptor)->number();
+   }
+   else
+   {
+      value = this->settings->GetReflection()->GetUInt32(*this->settings, fieldDescriptor);
+   }
 }
 
 void Settings::get(const google::protobuf::FieldDescriptor* fieldDescriptor, bool& value) const
@@ -499,6 +515,13 @@ void Settings::get(const google::protobuf::FieldDescriptor* fieldDescriptor, QLo
    lang = ProtoHelper::getLang(langMess);
 }
 
+void Settings::get(const google::protobuf::FieldDescriptor* fieldDescriptor, google::protobuf::Message& message) const
+{
+   Q_ASSERT(fieldDescriptor);
+
+   message.CopyFrom(this->settings->GetReflection()->GetMessage(*this->settings, fieldDescriptor));
+}
+
 void Settings::getRepeated(const google::protobuf::FieldDescriptor* fieldDescriptor, QList<quint32>& values) const
 {
    Q_ASSERT(fieldDescriptor);
@@ -533,6 +556,9 @@ void Settings::setDefaultValues()
          {
          case google::protobuf::FieldDescriptor::TYPE_UINT32:
             this->settings->GetReflection()->SetUInt32(this->settings, fieldDescriptor, fieldDescriptor->default_value_uint32());
+            break;
+         case google::protobuf::FieldDescriptor::TYPE_ENUM:
+            this->settings->GetReflection()->SetEnum(this->settings, fieldDescriptor, fieldDescriptor->default_value_enum());
             break;
          case google::protobuf::FieldDescriptor::TYPE_DOUBLE:
             this->settings->GetReflection()->SetDouble(this->settings, fieldDescriptor, fieldDescriptor->default_value_double());

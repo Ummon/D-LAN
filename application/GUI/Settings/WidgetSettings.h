@@ -23,6 +23,7 @@
 #include <QDir>
 #include <QStyledItemDelegate>
 #include <QItemSelection>
+#include <QVBoxLayout>
 
 #include <Common/RemoteCoreController/ICoreConnection.h>
 
@@ -60,10 +61,16 @@ namespace GUI
    private:
       void fillComboBoxLanguages();
 
+      void connectAllAddressButtons();
+      void disconnectAllAddressButtons();
+      void updateNetworkInterfaces(const Protos::GUI::State& state);
+      void updateAddresses(const Protos::Common::Interface& interface, QWidget *container);
+
    private slots:
       void newState(const Protos::GUI::State& state);
       void saveCoreSettings();
       void saveGUISettings();
+
       void cmbLanguageChanged(int cmbIndex);
 
       void addShared();
@@ -79,6 +86,8 @@ namespace GUI
       void refreshButtonsAvailability();
       void openLocation();
 
+      void buttonAddressToggled(bool checked);
+
    protected:
       void showEvent(QShowEvent* event);
       void changeEvent(QEvent* event);
@@ -91,8 +100,6 @@ namespace GUI
       DirListModel& sharedDirsModel;
 
       DirListDelegate dirListDelegate;
-
-      bool initialState;
    };
 }
 

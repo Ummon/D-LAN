@@ -34,7 +34,7 @@ namespace CoreSpace
       Q_OBJECT
    public:
       CoreService(bool resetSettings, QLocale locale, int argc, char** argv);
-      virtual ~CoreService() {};
+      virtual ~CoreService();
 
    protected:
       void start();
@@ -44,7 +44,7 @@ namespace CoreSpace
       void treatUserInput(QString);
 
    private:
-      Core core;
+      Core* core;
       ConsoleReader consoleReader;
    };
 }

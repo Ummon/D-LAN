@@ -28,7 +28,7 @@ message Settings {
    
    // PeerManager.
    optional uint32 pending_socket_timeout = 30 [default = 10000]; // [ms]. When a new connection is created we wait a maximum of this period before data incoming.
-   optional double peer_timeout_factor = 31 [default = 2.2]; // If we don't receive any 'IMAlive' message from a peer during peer_timeout_factor * peer_imalive_period the peer is considering as dead.
+   optional double peer_timeout_factor = 31 [default = 2.4]; // If we don't receive any 'IMAlive' message from a peer during peer_timeout_factor * peer_imalive_period the peer is considering as dead.
    optional uint32 idle_socket_timeout = 32 [default = 60000]; // [ms], (1 min). Idle connections can exist for this duration.
    optional uint32 max_number_idle_socket = 33 [default = 6]; // The maximum number of idle socket per distant peer. (one for each TCP message : 'GetEntries',  'GetHashes', 'GetChunk').
    optional uint32 get_hashes_timeout = 34 [default = 20000]; // [ms] (20 s). After sending the message 'GetHashes' we will receive a stream of hashes, if the time between two hashes exceed this value, the request is aborted.
@@ -48,10 +48,10 @@ message Settings {
    optional uint32 upload_thread_lifetime = 52 [default = 30000]; // [ms].
    
    // NetworkListener.
-   optional uint32 peer_imalive_period = 60 [default = 10000]; // [ms]. Send an IMAlive message each 10 s.
+   optional uint32 peer_imalive_period = 60 [default = 8000]; // [ms]. Send an IMAlive message each 8 s.
    optional uint32 unicast_base_port = 61 [default = 59487]; // If it's already taken we will look further to a free port. (UDP + TCP).
    optional uint32 multicast_port = 62 [default = 59486]; // (UDP)
-   optional uint32 multicast_group = 63 [default = 3960285976]; // 236.123.43.24
+   optional uint32 multicast_group = 63 [default = 3960285976]; // IPv4: 236.123.43.24 / IPv6: ff0e:ec0d:2b18::
    optional uint32 multicast_ttl = 64 [default = 31];
    optional uint32 max_udp_datagram_size = 65 [default = 8164]; // (~8 KiB). It doesn't include the IP+UDP header (28 bits).
    optional uint32 udp_read_buffer_size = 66 [default = 81640]; // (10 * 8KiB).
@@ -59,8 +59,8 @@ message Settings {
    optional uint32 max_number_of_search_result_to_send = 68 [default = 300];
    optional uint32 max_number_of_result_shown = 69 [default = 5000]; // For one search we accept a maximum of 5000 results.
    optional uint32 max_number_of_chat_message_saved = 70 [default = 500]; // When a chat message arrive we saved it into a queue. When a GUI connects this queue is sent.
-   optional Common.Interface.Address.Protocol listenAny = 86 [default = IPv6];
-   optional Common.Interface.Address address = 87;
+   optional string listenAddress = 86 [default = ""]; // If address is empty then listen to any adresses, in this case the protocol is given by 'listenAny'.
+   optional Common.Interface.Address.Protocol listenAny = 87 [default = IPv6];
    
    // RemoteControlManager
    optional uint32 remote_control_port = 80 [default = 59485];

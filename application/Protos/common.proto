@@ -76,5 +76,5 @@ message Interface {
       required bool listened = 3;
    }
    required string name = 1;
-   repeated string address = 2;
+   repeated Address address = 2;
 }

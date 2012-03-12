@@ -24,6 +24,7 @@ using namespace RCM;
 #include <QSet>
 #include <QCoreApplication>
 #include <QDateTime>
+#include <QNetworkInterface>
 
 #include <Common/ZeroCopyStreamQIODevice.h>
 #include <Common/Settings.h>
@@ -175,6 +176,7 @@ void RemoteConnection::onNewMessage(Common::MessageHeader::MessageType type, con
             SETTINGS.set("check_received_data_integrity", coreSettingsMessage.enable_integrity_check());
 
          if (coreSettingsMessage.has_shared_directories())
+         {
             try
             {
                QStringList sharedDirs;
@@ -187,6 +189,18 @@ void RemoteConnection::onNewMessage(Common::MessageHeader::MessageType type, con
                foreach (QString path, e.paths)
                   L_WARN(QString("Directory not found : %1").arg(path));
             }
+         }
+
+         QString currentAddressToListenTo = SETTINGS.get<QString>("listenAddress");
+         Protos::Common::Interface::Address::Protocol currentProtocol = static_cast<Protos::Common::Interface::Address::Protocol>(SETTINGS.get<quint32>("listenAny"));
+         QString newAddressToListenTo = ProtoHelper::getStr(coreSettingsMessage, &Protos::GUI::CoreSettings::listenaddress);
+         Protos::Common::Interface::Address::Protocol newProtocol = coreSettingsMessage.listenany();
+         SETTINGS.set("listenAddress", newAddressToListenTo);
+         SETTINGS.set("listenAny", static_cast<quint32>(newProtocol));
+         if (currentAddressToListenTo != newAddressToListenTo || currentProtocol != newProtocol)
+            this->networkListener->rebindSockets();
+
+         SETTINGS.save();
 
          this->refresh();
       }
@@ -359,7 +373,7 @@ void RemoteConnection::refresh()
    Protos::GUI::State state;
 
    state.mutable_myself()->mutable_peer_id()->set_hash(this->peerManager->getID().getData(), Common::Hash::HASH_SIZE);
-   Common::ProtoHelper::setStr(*state.mutable_myself(), &Protos::GUI::State_Peer::set_nick, this->peerManager->getNick());   
+   Common::ProtoHelper::setStr(*state.mutable_myself(), &Protos::GUI::State::Peer::set_nick, this->peerManager->getNick());
    state.set_integrity_check_enabled(SETTINGS.get<bool>("check_received_data_integrity"));
    state.mutable_myself()->set_sharing_amount(this->fileManager->getAmount());
 
@@ -368,9 +382,9 @@ void RemoteConnection::refresh()
    for (QListIterator<PM::IPeer*> i(peers); i.hasNext();)
    {
       PM::IPeer* peer = i.next();
-      Protos::GUI::State_Peer* protoPeer = state.add_peer();
+      Protos::GUI::State::Peer* protoPeer = state.add_peer();
       protoPeer->mutable_peer_id()->set_hash(peer->getID().getData(), Common::Hash::HASH_SIZE);
-      Common::ProtoHelper::setStr(*protoPeer, &Protos::GUI::State_Peer::set_nick, peer->getNick());
+      Common::ProtoHelper::setStr(*protoPeer, &Protos::GUI::State::Peer::set_nick, peer->getNick());
       protoPeer->set_sharing_amount(peer->getSharingAmount());
    }
 
@@ -383,7 +397,7 @@ void RemoteConnection::refresh()
       protoDownload->set_id(download->getID());
       protoDownload->mutable_local_entry()->CopyFrom(download->getLocalEntry());
       protoDownload->mutable_local_entry()->mutable_chunk()->Clear(); // We don't need to send the hashes.
-      protoDownload->set_status(static_cast<Protos::GUI::State_Download_Status>(download->getStatus())); // Warning, enums must be compatible.
+      protoDownload->set_status(static_cast<Protos::GUI::State::Download::Status>(download->getStatus())); // Warning, enums must be compatible.
       protoDownload->set_progress(download->getProgress());
 
       Common::Hash peerSourceID = download->getPeerSource()->getID();
@@ -420,8 +434,8 @@ void RemoteConnection::refresh()
    for (QListIterator<Common::SharedDir> i(this->fileManager->getSharedDirs()); i.hasNext();)
    {
       Common::SharedDir sharedDir = i.next();
-      Protos::GUI::State_SharedDir* sharedDirProto = state.add_shared_directory();
-      Common::ProtoHelper::setStr(*sharedDirProto, &Protos::GUI::State_SharedDir::set_path, sharedDir.path);
+      Protos::GUI::State::SharedDir* sharedDirProto = state.add_shared_directory();
+      Common::ProtoHelper::setStr(*sharedDirProto, &Protos::GUI::State::SharedDir::set_path, sharedDir.path);
       sharedDirProto->set_size(sharedDir.size);
       sharedDirProto->set_free_space(sharedDir.freeSpace);
       sharedDirProto->mutable_id()->set_hash(sharedDir.ID.getData(), Common::Hash::HASH_SIZE);
@@ -429,10 +443,43 @@ void RemoteConnection::refresh()
 
    // Stats.
    Protos::GUI::State_Stats* stats = state.mutable_stats();
-   stats->set_cache_status(static_cast<Protos::GUI::State_Stats_CacheStatus>(this->fileManager->getCacheStatus())); // Warning: IFileManager::CacheStatus and Protos::GUI::State_Stats_CacheStatus must be compatible.
+   stats->set_cache_status(static_cast<Protos::GUI::State::Stats::CacheStatus>(this->fileManager->getCacheStatus())); // Warning: IFileManager::CacheStatus and Protos::GUI::State_Stats_CacheStatus must be compatible.
    stats->set_progress(this->fileManager->getProgress());
    stats->set_download_rate(this->downloadManager->getDownloadRate());
    stats->set_upload_rate(this->uploadManager->getUploadRate());
+
+   // Network interfaces.
+   QString adressToListenStr = SETTINGS.get<QString>("listenAddress");
+   QHostAddress adressToListen(adressToListenStr);
+   if (adressToListenStr.isEmpty())
+      state.set_listenany(static_cast<Protos::Common::Interface::Address::Protocol>(SETTINGS.get<quint32>("listenAny")));
+   for (QListIterator<QNetworkInterface> i(QNetworkInterface::allInterfaces()); i.hasNext();)
+   {
+      QNetworkInterface interface = i.next();
+      if (
+         interface.isValid() &&
+         interface.flags().testFlag(QNetworkInterface::IsUp) &&
+         interface.flags().testFlag(QNetworkInterface::IsRunning) &&
+         interface.flags().testFlag(QNetworkInterface::CanMulticast) &&
+         !interface.flags().testFlag(QNetworkInterface::IsLoopBack)
+      )
+      {
+         QList<QNetworkAddressEntry> addresses = interface.addressEntries();
+         if (!addresses.isEmpty())
+         {
+            Protos::Common::Interface* interfaceMess = state.add_interface();
+            Common::ProtoHelper::setStr(*interfaceMess, &Protos::Common::Interface::set_name, interface.humanReadableName());
+            for (QListIterator<QNetworkAddressEntry> j(addresses); j.hasNext();)
+            {
+               QHostAddress address = j.next().ip();
+               Protos::Common::Interface::Address* addressMess = interfaceMess->add_address();
+               Common::ProtoHelper::setStr(*addressMess, &Protos::Common::Interface::Address::set_address, address.toString());
+               addressMess->set_protocol(address.protocol() == QAbstractSocket::IPv6Protocol ? Protos::Common::Interface::Address::IPv6 : Protos::Common::Interface::Address::IPv4);
+               addressMess->set_listened(address == adressToListen);
+            }
+         }
+      }
+   }
 
    this->send(Common::MessageHeader::GUI_STATE, state);
 

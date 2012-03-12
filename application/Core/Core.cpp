@@ -112,11 +112,6 @@ void Core::start()
    L_USER(QObject::tr("Ready to serve"));
 }
 
-void Core::rebindSockets()
-{
-   this->networkListener->rebindSockets();
-}
-
 void Core::setLanguage(QLocale locale, bool load)
 {
    if (load)
