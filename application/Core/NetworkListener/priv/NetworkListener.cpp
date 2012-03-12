@@ -40,7 +40,7 @@ NetworkListener::NetworkListener(
    uDPListener(fileManager, peerManager, uploadManager, downloadManager, tCPListener.getCurrentPort()),
    chat(uDPListener)
 {
-   connect(&this->configManager, SIGNAL(onlineStateChanged(bool)), this, SLOT(rebindSockets()));
+   connect(&this->configManager, SIGNAL(configurationChanged(const QNetworkConfiguration&)), this, SLOT(rebindSockets()));
 }
 
 NetworkListener::~NetworkListener()

@@ -27,7 +27,7 @@ QHostAddress Utils::getCurrentAddressToListenTo()
          hasAnyIPv6 = true;
    }
 
-   SETTINGS.set("listenAddress", "");
+   SETTINGS.set("listenAddress", QString(""));
 
    if (hasAnyIPv6)
    {

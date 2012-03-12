@@ -31,6 +31,7 @@ using namespace RCM;
 #include <Common/ProtoHelper.h>
 #include <Common/Hash.h>
 #include <Common/SharedDir.h>
+#include <Common/Global.h>
 #include <Core/FileManager/IChunk.h>
 #include <Core/FileManager/Exceptions.h>
 #include <Core/PeerManager/IPeer.h>
@@ -458,8 +459,6 @@ void RemoteConnection::refresh()
       QNetworkInterface interface = i.next();
       if (
          interface.isValid() &&
-         interface.flags().testFlag(QNetworkInterface::IsUp) &&
-         interface.flags().testFlag(QNetworkInterface::IsRunning) &&
          interface.flags().testFlag(QNetworkInterface::CanMulticast) &&
          !interface.flags().testFlag(QNetworkInterface::IsLoopBack)
       )
@@ -468,7 +467,9 @@ void RemoteConnection::refresh()
          if (!addresses.isEmpty())
          {
             Protos::Common::Interface* interfaceMess = state.add_interface();
+            interfaceMess->set_id(interface.index() == 0 ? Common::Global::hashStringToInt(interface.name()) : interface.index());
             Common::ProtoHelper::setStr(*interfaceMess, &Protos::Common::Interface::set_name, interface.humanReadableName());
+            interfaceMess->set_isup(interface.flags().testFlag(QNetworkInterface::IsUp) && interface.flags().testFlag(QNetworkInterface::IsRunning));
             for (QListIterator<QNetworkAddressEntry> j(addresses); j.hasNext();)
             {
                QHostAddress address = j.next().ip();

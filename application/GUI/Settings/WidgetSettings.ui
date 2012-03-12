@@ -174,53 +174,103 @@
       <attribute name="title">
        <string>Network</string>
       </attribute>
-      <layout class="QVBoxLayout" name="layNetwork">
+      <layout class="QVBoxLayout" name="verticalLayout_3">
        <item>
         <widget class="QGroupBox" name="grpInterfaces">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
          <property name="title">
           <string>Interface to listen</string>
          </property>
-         <layout class="QVBoxLayout" name="layInterfaces">
+         <layout class="QVBoxLayout" name="layGrpInterfaces">
           <item>
-           <widget class="QLabel" name="lblAnyInterface">
-            <property name="text">
-             <string>All interfaces</string>
+           <widget class="QScrollArea" name="scoInterfaces">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
             </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QWidget" name="widgetAllInterfaces" native="true">
-            <layout class="QVBoxLayout" name="verticalLayout_2">
-             <property name="topMargin">
-              <number>3</number>
+            <property name="horizontalScrollBarPolicy">
+             <enum>Qt::ScrollBarAlwaysOff</enum>
+            </property>
+            <widget class="QWidget" name="scoInterfacesContent">
+             <property name="geometry">
+              <rect>
+               <x>0</x>
+               <y>0</y>
+               <width>576</width>
+               <height>89</height>
+              </rect>
              </property>
-             <item>
-              <widget class="QRadioButton" name="radIPv6">
-               <property name="text">
-                <string>IPv6</string>
-               </property>
-               <property name="checked">
-                <bool>true</bool>
-               </property>
-               <attribute name="buttonGroup">
-                <string>grpAddressesToListenTo</string>
-               </attribute>
-              </widget>
-             </item>
-             <item>
-              <widget class="QRadioButton" name="radIPv4">
-               <property name="text">
-                <string>IPv4</string>
-               </property>
-               <attribute name="buttonGroup">
-                <string>grpAddressesToListenTo</string>
-               </attribute>
-              </widget>
-             </item>
-            </layout>
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <layout class="QVBoxLayout" name="layInterfaces">
+              <property name="sizeConstraint">
+               <enum>QLayout::SetMinAndMaxSize</enum>
+              </property>
+              <item>
+               <widget class="QLabel" name="lblAnyInterface">
+                <property name="text">
+                 <string>Any</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QWidget" name="widgetAllInterfaces" native="true">
+                <layout class="QVBoxLayout" name="verticalLayout_2">
+                 <property name="topMargin">
+                  <number>3</number>
+                 </property>
+                 <item>
+                  <widget class="QRadioButton" name="radIPv6">
+                   <property name="text">
+                    <string>IPv6</string>
+                   </property>
+                   <property name="checked">
+                    <bool>true</bool>
+                   </property>
+                   <attribute name="buttonGroup">
+                    <string>grpAddressesToListenTo</string>
+                   </attribute>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QRadioButton" name="radIPv4">
+                   <property name="text">
+                    <string>IPv4</string>
+                   </property>
+                   <attribute name="buttonGroup">
+                    <string>grpAddressesToListenTo</string>
+                   </attribute>
+                  </widget>
+                 </item>
+                </layout>
+               </widget>
+              </item>
+             </layout>
+            </widget>
            </widget>
           </item>
          </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="chkEnableIntegrityCheck">
+         <property name="toolTip">
+          <string>When activated all received data will be verified against their hashes.  It may consume CPU resources.</string>
+         </property>
+         <property name="text">
+          <string>Data integrity check</string>
+         </property>
         </widget>
        </item>
        <item>
@@ -228,10 +278,13 @@
          <property name="orientation">
           <enum>Qt::Vertical</enum>
          </property>
+         <property name="sizeType">
+          <enum>QSizePolicy::Preferred</enum>
+         </property>
          <property name="sizeHint" stdset="0">
           <size>
-           <width>20</width>
-           <height>40</height>
+           <width>0</width>
+           <height>0</height>
           </size>
          </property>
         </spacer>
@@ -242,7 +295,7 @@
       <attribute name="title">
        <string>Advanced</string>
       </attribute>
-      <layout class="QVBoxLayout" name="layAdvanced" stretch="0,0,0,0,0">
+      <layout class="QVBoxLayout" name="layAdvanced" stretch="0,0,0,0">
        <item>
         <widget class="QLabel" name="lblLanguage">
          <property name="text">
@@ -295,16 +348,6 @@
            </widget>
           </item>
          </layout>
-        </widget>
-       </item>
-       <item>
-        <widget class="QCheckBox" name="chkEnableIntegrityCheck">
-         <property name="toolTip">
-          <string>When activated all received data will be verified against their hashes.  It may consume CPU resources.</string>
-         </property>
-         <property name="text">
-          <string>Data integrity check</string>
-         </property>
         </widget>
        </item>
        <item>

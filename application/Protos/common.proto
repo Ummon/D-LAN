@@ -75,6 +75,8 @@ message Interface {
       required Protocol protocol = 2;
       required bool listened = 3;
    }
-   required string name = 1;
-   repeated Address address = 2;
+   required uint32 id = 1;
+   required string name = 2;
+   repeated Address address = 3;
+   optional bool isUp = 4;
 }

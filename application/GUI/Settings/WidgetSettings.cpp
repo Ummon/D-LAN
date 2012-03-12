@@ -165,14 +165,14 @@ void WidgetSettings::fillComboBoxLanguages()
 
 void WidgetSettings::connectAllAddressButtons()
 {
-   for (QListIterator<QRadioButton*> i(this->ui->grpInterfaces->findChildren<QRadioButton*>()); i.hasNext();)
+   for (QListIterator<QRadioButton*> i(this->ui->scoInterfacesContent->findChildren<QRadioButton*>()); i.hasNext();)
       connect(i.next(), SIGNAL(toggled(bool)), this, SLOT(buttonAddressToggled(bool)));
 }
 
 void WidgetSettings::disconnectAllAddressButtons()
 {
 
-   for (QListIterator<QRadioButton*> i(this->ui->grpInterfaces->findChildren<QRadioButton*>()); i.hasNext();)
+   for (QListIterator<QRadioButton*> i(this->ui->scoInterfacesContent->findChildren<QRadioButton*>()); i.hasNext();)
       i.next()->disconnect(this);
 }
 
@@ -180,18 +180,19 @@ void WidgetSettings::updateNetworkInterfaces(const Protos::GUI::State& state)
 {
    this->disconnectAllAddressButtons();
 
-   QList<QLabel*> interfaceNotUpdated = this->ui->grpInterfaces->findChildren<QLabel*>("");
+   QList<QLabel*> interfaceNotUpdated = this->ui->scoInterfacesContent->findChildren<QLabel*>("");
 
    for (int i = 0; i < state.interface_size(); i++)
    {
       const QString interfaceName = Common::ProtoHelper::getStr(state.interface(i), &Protos::Common::Interface::name);
 
-      for (QListIterator<QObject*> j(this->ui->grpInterfaces->children()); j.hasNext();)
+      for (QListIterator<QObject*> j(this->ui->scoInterfacesContent->children()); j.hasNext();)
       {
          QLabel* lblInterface = dynamic_cast<QLabel*>(j.next());
-         if (lblInterface && lblInterface->text() == interfaceName)
+         if (lblInterface && lblInterface->property("id").toUInt() == state.interface(i).id())
          {
             interfaceNotUpdated.removeOne(lblInterface);
+            lblInterface->setText(interfaceName + (state.interface(i).isup() ? "" : " <img src= \":/icons/ressources/error.png\" /> <em>" + tr("Interface not active") + "</em>"));
             this->updateAddresses(state.interface(i), static_cast<QWidget*>(j.next()));
             goto nextInterface;
          }
@@ -199,8 +200,10 @@ void WidgetSettings::updateNetworkInterfaces(const Protos::GUI::State& state)
 
       {
          // Interface not found -> add a new one.
-         this->ui->layInterfaces->addWidget(new QLabel(interfaceName, this->ui->grpInterfaces));
-         QWidget* addressesContainer = new QWidget(this->ui->grpInterfaces);
+         QLabel* label = new QLabel(interfaceName, this->ui->scoInterfacesContent);
+         label->setProperty("id", state.interface(i).id());
+         this->ui->layInterfaces->addWidget(label);
+         QWidget* addressesContainer = new QWidget(this->ui->scoInterfacesContent);
          this->ui->layInterfaces->addWidget(addressesContainer);
          this->updateAddresses(state.interface(i), addressesContainer);
       }
@@ -209,7 +212,7 @@ void WidgetSettings::updateNetworkInterfaces(const Protos::GUI::State& state)
    }
 
    // Remove the non-existant interfaces.
-   for (QListIterator<QObject*> i(this->ui->grpInterfaces->children()); i.hasNext();)
+   for (QListIterator<QObject*> i(this->ui->scoInterfacesContent->children()); i.hasNext();)
    {
       QLabel* current = dynamic_cast<QLabel*>(i.next());
       if (current && interfaceNotUpdated.contains(current))
