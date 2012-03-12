@@ -39,8 +39,9 @@ namespace GUI
       void show(const QPoint& globalPosition);
 
    signals:
-      void askDirectories(QStringList& dirs);
-      void downloadTo(const Common::Hash&, const QString&);
+      void download();
+      void downloadTo();
+      void downloadTo(const QString&, const Common::Hash&);
 
    private slots:
       void actionTriggered();

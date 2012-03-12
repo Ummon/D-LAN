@@ -330,7 +330,6 @@ void UDPListener::initMulticastUDPSocket()
    if (!this->multicastSocket.bind(Utils::getCurrentAddressToListenTo(), MULTICAST_PORT))
    {
       L_ERRO("Can't bind the multicast socket");
-      QTimer::singleShot(SOCKET_RETRY_TIME, this, SLOT(initMulticastUDPSocket));
       return;
    }
 
@@ -355,7 +354,6 @@ void UDPListener::initMulticastUDPSocket()
 #endif
    {
       L_ERRO(QString("Can't set socket option (multicast socket) : SO_RCVBUF : %1").arg(error));
-      QTimer::singleShot(SOCKET_RETRY_TIME, this, SLOT(initMulticastUDPSocket));
       return;
    }
 

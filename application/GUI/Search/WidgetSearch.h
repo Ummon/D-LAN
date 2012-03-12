@@ -80,8 +80,11 @@ namespace GUI
    private slots:
       void displayContextMenuDownload(const QPoint& point);
       void entryDoubleClicked(const QModelIndex& index);
+
       void download();
-      void downloadTo(const Common::Hash& sharedDirID, const QString& path);
+      void downloadTo();
+      void downloadTo(const QString& path, const Common::Hash& sharedDirID = Common::Hash());
+
       void openLocation();
       void browseCurrents();
       void progress(int value);
@@ -92,7 +95,7 @@ namespace GUI
       bool atLeastOneRemotePeer(const QModelIndexList& indexes) const;
 
       Ui::WidgetSearch* ui;
-      SearchMenu menu;
+      SearchMenu downloadMenu;
 
       QSharedPointer<RCC::ICoreConnection> coreConnection;
 

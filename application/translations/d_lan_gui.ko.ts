@@ -84,9 +84,35 @@
     </message>
 </context>
 <context>
+    <name>GUI::DownloadMenu</name>
+    <message>
+        <location filename="../GUI/DownloadMenu.cpp" line="+46"/>
+        <source>Download selected entries</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+11"/>
+        <source>Download selected entries to %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+11"/>
+        <source>Download selected entries to ...</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>GUI::MainWindow</name>
     <message>
         <location filename="../GUI/MainWindow.cpp" line="+250"/>
+        <source>Browse</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>GUI::SearchMenu</name>
+    <message>
+        <location filename="../GUI/Search/WidgetSearch.cpp" line="+161"/>
         <source>Browse</source>
         <translation type="unfinished"></translation>
     </message>
@@ -186,7 +212,7 @@
 <context>
     <name>GUI::WidgetBrowse</name>
     <message>
-        <location filename="../GUI/Browse/WidgetBrowse.cpp" line="+126"/>
+        <location filename="../GUI/Browse/WidgetBrowse.cpp" line="+122"/>
         <source>Open location</source>
         <translation type="unfinished"></translation>
     </message>
@@ -245,7 +271,7 @@
 <context>
     <name>GUI::WidgetSearch</name>
     <message>
-        <location filename="../GUI/Search/WidgetSearch.cpp" line="+238"/>
+        <location filename="../GUI/Search/WidgetSearch.cpp" line="+80"/>
         <source>Open location</source>
         <translation type="unfinished"></translation>
     </message>
@@ -258,7 +284,12 @@
 <context>
     <name>GUI::WidgetSettings</name>
     <message>
-        <location filename="../GUI/Settings/WidgetSettings.cpp" line="+455"/>
+        <location filename="../GUI/Settings/WidgetSettings.cpp" line="+195"/>
+        <source>Interface not active</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+263"/>
         <source>Remove the shared folder</source>
         <translation type="unfinished"></translation>
     </message>
@@ -281,7 +312,7 @@
 <context>
     <name>Global</name>
     <message>
-        <location filename="../Common/Global.cpp" line="+295"/>
+        <location filename="../Common/Global.cpp" line="+307"/>
         <source>Unable to create the folder %1 in %2</source>
         <translation type="unfinished"></translation>
     </message>
@@ -337,12 +368,12 @@
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../Common/Global.cpp" line="-248"/>
+        <location filename="../Common/Global.cpp" line="-260"/>
         <source>Unable to create the temporary directory %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+235"/>
+        <location line="+247"/>
         <source>Unable to get the %1: SHGetFolderPath failed</source>
         <translation type="unfinished"></translation>
     </message>
@@ -379,6 +410,11 @@
     <message>
         <location line="+5"/>
         <source>Core service launched</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../GUI/Utils.cpp" line="+55"/>
+        <source>The choosen directory will be shared</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -541,8 +577,8 @@
     <name>WidgetSettings</name>
     <message>
         <location filename="../GUI/Settings/WidgetSettings.ui" line="+14"/>
-        <location filename="../GUI/.tmp/debug/ui_WidgetSettings.h" line="+298"/>
-        <location filename="../GUI/.tmp/release/ui_WidgetSettings.h" line="+246"/>
+        <location filename="../GUI/.tmp/debug/ui_WidgetSettings.h" line="+330"/>
+        <location filename="../GUI/.tmp/release/ui_WidgetSettings.h" line="+298"/>
         <source>Settings</source>
         <translation type="unfinished"></translation>
     </message>
@@ -604,26 +640,27 @@
     </message>
     <message>
         <location line="+44"/>
-        <location filename="../GUI/.tmp/debug/ui_WidgetSettings.h" line="+8"/>
-        <location filename="../GUI/.tmp/release/ui_WidgetSettings.h" line="+4"/>
+        <location filename="../GUI/.tmp/debug/ui_WidgetSettings.h" line="+12"/>
+        <location filename="../GUI/.tmp/release/ui_WidgetSettings.h" line="+8"/>
         <source>Network</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+6"/>
-        <location filename="../GUI/.tmp/debug/ui_WidgetSettings.h" line="-4"/>
+        <location line="+12"/>
+        <location filename="../GUI/.tmp/debug/ui_WidgetSettings.h" line="-8"/>
+        <location filename="../GUI/.tmp/release/ui_WidgetSettings.h" line="-4"/>
         <source>Interface to listen</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+6"/>
-        <location filename="../GUI/.tmp/debug/ui_WidgetSettings.h" line="+1"/>
+        <location filename="../GUI/.tmp/release/ui_WidgetSettings.h" line="+1"/>
         <source>All interfaces</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+13"/>
-        <location filename="../GUI/.tmp/debug/ui_WidgetSettings.h" line="+1"/>
+        <location filename="../GUI/Settings/WidgetSettings.ui" line="+49"/>
+        <location filename="../GUI/.tmp/debug/ui_WidgetSettings.h" line="+2"/>
+        <location filename="../GUI/.tmp/release/ui_WidgetSettings.h" line="+1"/>
         <source>IPv6</source>
         <translation type="unfinished"></translation>
     </message>
@@ -636,19 +673,20 @@
     <message>
         <location line="-3"/>
         <location filename="../GUI/.tmp/debug/ui_WidgetSettings.h" line="+1"/>
+        <location filename="../GUI/.tmp/release/ui_WidgetSettings.h" line="+1"/>
         <source>IPv4</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+30"/>
+        <location line="+47"/>
         <location filename="../GUI/.tmp/debug/ui_WidgetSettings.h" line="+11"/>
-        <location filename="../GUI/.tmp/release/ui_WidgetSettings.h" line="+10"/>
+        <location filename="../GUI/.tmp/release/ui_WidgetSettings.h" line="+11"/>
         <source>Advanced</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+6"/>
-        <location filename="../GUI/.tmp/debug/ui_WidgetSettings.h" line="-9"/>
+        <location filename="../GUI/.tmp/debug/ui_WidgetSettings.h" line="-5"/>
         <location filename="../GUI/.tmp/release/ui_WidgetSettings.h" line="-9"/>
         <source>Language</source>
         <translation>언어</translation>
@@ -682,15 +720,21 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+17"/>
-        <location filename="../GUI/.tmp/debug/ui_WidgetSettings.h" line="+2"/>
+        <location line="-70"/>
+        <location filename="../GUI/.tmp/debug/ui_WidgetSettings.h" line="-8"/>
         <location filename="../GUI/.tmp/release/ui_WidgetSettings.h" line="+2"/>
         <source>When activated all received data will be verified against their hashes.  It may consume CPU resources.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+3"/>
-        <location filename="../GUI/.tmp/debug/ui_WidgetSettings.h" line="+2"/>
+        <location line="-46"/>
+        <location filename="../GUI/.tmp/debug/ui_WidgetSettings.h" line="-4"/>
+        <source>Any</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+49"/>
+        <location filename="../GUI/.tmp/debug/ui_WidgetSettings.h" line="+6"/>
         <location filename="../GUI/.tmp/release/ui_WidgetSettings.h" line="+2"/>
         <source>Data integrity check</source>
         <translation type="unfinished"></translation>

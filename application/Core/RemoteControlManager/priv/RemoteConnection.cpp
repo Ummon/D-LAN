@@ -176,20 +176,17 @@ void RemoteConnection::onNewMessage(Common::MessageHeader::MessageType type, con
          if (coreSettingsMessage.has_enable_integrity_check())
             SETTINGS.set("check_received_data_integrity", coreSettingsMessage.enable_integrity_check());
 
-         if (coreSettingsMessage.has_shared_directories())
+         try
          {
-            try
-            {
-               QStringList sharedDirs;
-               for (int i = 0; i < coreSettingsMessage.shared_directories().dir_size(); i++)
-                  sharedDirs << Common::ProtoHelper::getRepeatedStr(coreSettingsMessage.shared_directories(), &Protos::GUI::CoreSettings::SharedDirectories::dir, i);
-               this->fileManager->setSharedDirs(sharedDirs);
-            }
-            catch(FM::DirsNotFoundException& e)
-            {
-               foreach (QString path, e.paths)
-                  L_WARN(QString("Directory not found : %1").arg(path));
-            }
+            QStringList sharedDirs;
+            for (int i = 0; i < coreSettingsMessage.shared_directories().dir_size(); i++)
+               sharedDirs << Common::ProtoHelper::getRepeatedStr(coreSettingsMessage.shared_directories(), &Protos::GUI::CoreSettings::SharedDirectories::dir, i);
+            this->fileManager->setSharedDirs(sharedDirs);
+         }
+         catch(FM::DirsNotFoundException& e)
+         {
+            foreach (QString path, e.paths)
+               L_WARN(QString("Directory not found : %1").arg(path));
          }
 
          QString currentAddressToListenTo = SETTINGS.get<QString>("listenAddress");

@@ -25,5 +25,6 @@
         <file>ressources/log.png</file>
         <file>ressources/log_active.png</file>
         <file>ressources/zoom_monitor.png</file>
+        <file>ressources/information.png</file>
     </qresource>
 </RCC>

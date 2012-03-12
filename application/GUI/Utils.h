@@ -11,7 +11,8 @@ namespace GUI
    class Utils
    {
    public:
-      static QStringList askForDirectories(QSharedPointer<RCC::ICoreConnection> coreConnection);
+      static QStringList askForDirectories(QSharedPointer<RCC::ICoreConnection> coreConnection, const QString& message = QString());
+      static QStringList askForDirectoriesToDownloadTo(QSharedPointer<RCC::ICoreConnection> coreConnection);
    };
 }
 

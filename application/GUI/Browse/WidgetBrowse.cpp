@@ -70,8 +70,9 @@ WidgetBrowse::WidgetBrowse(QSharedPointer<RCC::ICoreConnection> coreConnection, 
    else
       connect(this->ui->butDownload, SIGNAL(clicked()), this, SLOT(download()));
 
-   connect(&this->downloadMenu, SIGNAL(askDirectories(QStringList&)), this, SLOT(askDirectories(QStringList&)), Qt::DirectConnection);
-   connect(&this->downloadMenu, SIGNAL(downloadTo(const Common::Hash&, const QString&)), this, SLOT(downloadTo(const Common::Hash&, const QString&)));
+   connect(&this->downloadMenu, SIGNAL(download()), this, SLOT(download()));
+   connect(&this->downloadMenu, SIGNAL(downloadTo()), this, SLOT(downloadTo()));
+   connect(&this->downloadMenu, SIGNAL(downloadTo(const QString&, const Common::Hash&)), this, SLOT(downloadTo(const QString&, const Common::Hash&)));
 
    connect(&this->browseModel, SIGNAL(loadingResultFinished()), this, SLOT(tryToReachEntryToBrowse()));
 
@@ -110,11 +111,6 @@ void WidgetBrowse::changeEvent(QEvent* event)
       QWidget::changeEvent(event);
 }
 
-void WidgetBrowse::askDirectories(QStringList& dirs)
-{
-   dirs << Utils::askForDirectories(this->coreConnection);
-}
-
 void WidgetBrowse::displayContextMenuDownload(const QPoint& point)
 {
    QPoint globalPosition = this->ui->treeView->mapToGlobal(point);
@@ -141,25 +137,32 @@ void WidgetBrowse::entryDoubleClicked(const QModelIndex& index)
 
 void WidgetBrowse::download()
 {
+   if (this->browseModel.nbSharedDirs() == 0)
+   {
+      QStringList dirs = Utils::askForDirectoriesToDownloadTo(this->coreConnection);
+      if (!dirs.isEmpty())
+         this->downloadTo(dirs.first(), Common::Hash());
+      return;
+   }
+
    QModelIndexList selectedRows = this->ui->treeView->selectionModel()->selectedRows();
    for (QListIterator<QModelIndex> i(selectedRows); i.hasNext();)
       this->coreConnection->download(this->peerID, this->browseModel.getEntry(i.next()));
 }
 
-void WidgetBrowse::downloadTo(const Common::Hash& sharedDirID, const QString& path)
+void WidgetBrowse::downloadTo()
+{
+   QStringList dirs = Utils::askForDirectoriesToDownloadTo(this->coreConnection);
+   if (!dirs.isEmpty())
+      this->downloadTo(dirs.first());
+}
+
+void WidgetBrowse::downloadTo(const QString& path, const Common::Hash& sharedDirID)
 {
    QModelIndexList selectedRows = this->ui->treeView->selectionModel()->selectedRows();
 
-   if (sharedDirID.isNull())
-   {
-      for (QListIterator<QModelIndex> i(selectedRows); i.hasNext();)
-         this->coreConnection->download(this->peerID, this->browseModel.getEntry(i.next()), path);
-   }
-   else
-   {
-      for (QListIterator<QModelIndex> i(selectedRows); i.hasNext();)
-         this->coreConnection->download(this->peerID, this->browseModel.getEntry(i.next()), sharedDirID, path);
-   }
+   for (QListIterator<QModelIndex> i(selectedRows); i.hasNext();)
+      this->coreConnection->download(this->peerID, this->browseModel.getEntry(i.next()), sharedDirID, path);
 }
 
 void WidgetBrowse::openLocation()

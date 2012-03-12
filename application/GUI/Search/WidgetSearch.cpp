@@ -31,6 +31,7 @@ using namespace GUI;
 
 #include <Common/Global.h>
 #include <Common/Settings.h>
+#include <Utils.h>
 #include <Log.h>
 
 const QString SearchDelegate::MARKUP_FIRST_PART("<b>");
@@ -157,7 +158,7 @@ QString SearchDelegate::toHtmlText(const QString& text) const
 
 void SearchMenu::onShowMenu(QMenu& menu)
 {
-   menu.addAction(QIcon(":/icons/ressources/folder.png"), "Browse", this, SIGNAL(browse()));
+   menu.addAction(QIcon(":/icons/ressources/folder.png"), tr("Browse"), this, SIGNAL(browse()));
 }
 
 /////
@@ -165,7 +166,7 @@ void SearchMenu::onShowMenu(QMenu& menu)
 WidgetSearch::WidgetSearch(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel, const DirListModel& sharedDirsModel, const QString& terms, bool searchInOwnFiles, QWidget *parent) :
    QWidget(parent),
    ui(new Ui::WidgetSearch),
-   menu(sharedDirsModel),
+   downloadMenu(sharedDirsModel),
    coreConnection(coreConnection),
    searchModel(coreConnection, peerListModel, sharedDirsModel)
 {
@@ -201,8 +202,10 @@ WidgetSearch::WidgetSearch(QSharedPointer<RCC::ICoreConnection> coreConnection, 
    this->ui->butDownload->setEnabled(false);
    connect(this->ui->butDownload, SIGNAL(clicked()), this, SLOT(download()));
 
-   connect(&this->menu, SIGNAL(downloadTo(const Common::Hash&, const QString&)), this, SLOT(downloadTo(const Common::Hash&, const QString&)));
-   connect(&this->menu, SIGNAL(browse()), this, SLOT(browseCurrents()));
+   connect(&this->downloadMenu, SIGNAL(download()), this, SLOT(download()));
+   connect(&this->downloadMenu, SIGNAL(downloadTo()), this, SLOT(downloadTo()));
+   connect(&this->downloadMenu, SIGNAL(downloadTo(const QString&, const Common::Hash&)), this, SLOT(downloadTo(const QString&, const Common::Hash&)));
+   connect(&this->downloadMenu, SIGNAL(browse()), this, SLOT(browseCurrents()));
 
    this->setWindowTitle(QString("\"%1\"%2").arg(terms).arg(searchInOwnFiles ? " (Own files)" : ""));
 }
@@ -228,7 +231,7 @@ void WidgetSearch::displayContextMenuDownload(const QPoint& point)
    // Special case: one of a selected entries is a remote peer.
    if (this->atLeastOneRemotePeer(this->ui->treeView->selectionModel()->selectedRows()))
    {
-      this->menu.show(globalPosition);
+      this->downloadMenu.show(globalPosition);
    }
    else
    {
@@ -250,6 +253,14 @@ void WidgetSearch::entryDoubleClicked(const QModelIndex& index)
 
 void WidgetSearch::download()
 {
+   if (this->searchModel.nbSharedDirs() == 0)
+   {
+      QStringList dirs = Utils::askForDirectoriesToDownloadTo(this->coreConnection);
+      if (!dirs.isEmpty())
+         this->downloadTo(dirs.first(), Common::Hash());
+      return;
+   }
+
    QModelIndexList selectedRows = this->ui->treeView->selectionModel()->selectedRows();
    for (QListIterator<QModelIndex> i(selectedRows); i.hasNext();)
    {
@@ -258,7 +269,14 @@ void WidgetSearch::download()
    }
 }
 
-void WidgetSearch::downloadTo(const Common::Hash& sharedDirID, const QString& path)
+void WidgetSearch::downloadTo()
+{
+   QStringList dirs = Utils::askForDirectoriesToDownloadTo(this->coreConnection);
+   if (!dirs.isEmpty())
+      this->downloadTo(dirs.first());
+}
+
+void WidgetSearch::downloadTo(const QString& path, const Common::Hash& sharedDirID)
 {
    QModelIndexList selectedRows = this->ui->treeView->selectionModel()->selectedRows();
    for (QListIterator<QModelIndex> i(selectedRows); i.hasNext();)

@@ -62,6 +62,8 @@ namespace GUI
 
       bool isWaitingResult() const;
 
+      int nbSharedDirs() const;
+
    signals:
       void loadingResultFinished();
 

@@ -41,12 +41,20 @@ void DownloadMenu::show(const QPoint& globalPosition)
 {
    QMenu menu;
 
+   QAction* actionDownload = new QAction(
+      QIcon(":/icons/ressources/download.png"),
+      tr("Download selected items to the first shared folder with enough free space"),
+      &menu
+   );
+   connect(actionDownload, SIGNAL(triggered()), this, SIGNAL(download()));
+   menu.addAction(actionDownload);
+
    for (QListIterator<Common::SharedDir> i(this->sharedDirsModel.getDirs()); i.hasNext();)
    {
       Common::SharedDir sharedDir = i.next();
       QAction* action = new QAction(
          QIcon(":/icons/ressources/download.png"),
-         QString("Download selected entries to %1").arg(sharedDir.path),
+         QString(tr("Download selected items to %1")).arg(sharedDir.path),
          &menu
       );
       sharedDir.path = "/"; // A bit dirty, path semantic change, it's now the relative path (not the absolute path).
@@ -55,13 +63,13 @@ void DownloadMenu::show(const QPoint& globalPosition)
       menu.addAction(action);
    }
 
-   QAction* action = new QAction(
+   QAction* actionChooseAndDownload = new QAction(
       QIcon(":/icons/ressources/download.png"),
-      "Download selected entries to ..",
+      tr("Download selected items to ..."),
       &menu
    );
-   connect(action, SIGNAL(triggered()), this, SLOT(actionTriggered()));
-   menu.addAction(action);
+   connect(actionChooseAndDownload, SIGNAL(triggered()), this, SIGNAL(downloadTo()));
+   menu.addAction(actionChooseAndDownload);
 
    this->onShowMenu(menu);
 
@@ -72,17 +80,9 @@ void DownloadMenu::actionTriggered()
 {
    QAction* action = static_cast<QAction*>(this->sender());
 
-   // If he dir ID isn't set we ask the user to choose a arbitrary directory.
-   if (action->data().isNull())
-   {
-      QStringList dirs;
-      emit askDirectories(dirs);
-      if (!dirs.isEmpty())
-         emit downloadTo(Common::Hash(), dirs.first());
-   }
-   else
+   if (!action->data().isNull())
    {
       Common::SharedDir sharedDir = action->data().value<Common::SharedDir>();
-      emit downloadTo(sharedDir.ID, sharedDir.path);
+      emit downloadTo(sharedDir.path, sharedDir.ID);
    }
 }

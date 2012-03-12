@@ -202,6 +202,11 @@ bool BrowseModel::isWaitingResult() const
    return !this->browseResult.isNull();
 }
 
+int BrowseModel::nbSharedDirs() const
+{
+   return this->sharedDirsModel.getDirs().size();
+}
+
 void BrowseModel::resultRefresh(const google::protobuf::RepeatedPtrField<Protos::Common::Entries>& entries)
 {
    QList<Node*> nodesToDelete;

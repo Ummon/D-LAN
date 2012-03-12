@@ -61,11 +61,13 @@ namespace GUI
       void changeEvent(QEvent* event);
 
    private slots:
-      void askDirectories(QStringList& dirs);
       void displayContextMenuDownload(const QPoint& point);
       void entryDoubleClicked(const QModelIndex& index);
+
       void download();
-      void downloadTo(const Common::Hash& sharedDirID, const QString& path);
+      void downloadTo();
+      void downloadTo(const QString& path, const Common::Hash& sharedDirID = Common::Hash());
+
       void openLocation();
       void tryToReachEntryToBrowse();
 
