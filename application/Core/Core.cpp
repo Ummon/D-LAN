@@ -36,8 +36,6 @@ LOG_INIT_CPP(Core);
 
 Core::Core(bool resetSettings, QLocale locale)
 {
-   QCoreApplication::instance()->installTranslator(&this->translator);
-
    GOOGLE_PROTOBUF_VERIFY_VERSION;
    SETTINGS.setFilename(Common::CORE_SETTINGS_FILENAME);
    SETTINGS.setSettingsMessage(new Protos::Core::Settings());
@@ -98,6 +96,9 @@ void Core::start()
 {
    QThread::currentThread()->setObjectName("Core");
 
+   QCoreApplication::instance()->installTranslator(&this->translator);
+   this->setLanguage(SETTINGS.get<QLocale>("language"), true);
+
    L_USER(QObject::tr("Starting.."));
 
    this->fileManager = FM::Builder::newFileManager();
@@ -120,7 +121,7 @@ void Core::setLanguage(QLocale locale, bool load)
       Common::Language lang = languages.getBestMatchLanguage(Common::Languages::CORE, locale);
       SETTINGS.set("language", lang.locale);
       SETTINGS.save();
-      this->translator.load(lang.filename);
+      this->translator.load(lang.filename, QCoreApplication::applicationDirPath() + "/" + LANGUAGE_DIRECTORY);
    }
    else
    {
