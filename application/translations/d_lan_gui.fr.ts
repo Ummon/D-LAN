@@ -196,7 +196,7 @@
     <message>
         <location filename="../GUI/Chat/WidgetChat.cpp" line="+142"/>
         <source>Copy selected lines</source>
-        <translation type="unfinished"></translation>
+        <translation>Copier les lignes sélectionnés</translation>
     </message>
 </context>
 <context>
@@ -258,7 +258,7 @@
 <context>
     <name>GUI::WidgetSettings</name>
     <message>
-        <location filename="../GUI/Settings/WidgetSettings.cpp" line="+305"/>
+        <location filename="../GUI/Settings/WidgetSettings.cpp" line="+455"/>
         <source>Remove the shared folder</source>
         <translation>Enlever le dossier partagé</translation>
     </message>
@@ -315,27 +315,19 @@
     <message>
         <location line="+13"/>
         <location filename="../GUI/.tmp/debug/ui_MainWindow.h" line="+2"/>
+        <location filename="../GUI/.tmp/release/ui_MainWindow.h" line="+2"/>
         <source>Search among other peers &lt;ENTER&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>Recherché parmi les autres pairs &lt;ENTER&gt;</translation>
     </message>
     <message>
         <location line="+20"/>
         <location filename="../GUI/.tmp/debug/ui_MainWindow.h" line="+4"/>
+        <location filename="../GUI/.tmp/release/ui_MainWindow.h" line="+4"/>
         <source>Search among its own files &lt;SHIFT-ENTER&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>Recherché parmi ses propres fichiers &lt;SHIFT-ENTER&gt;</translation>
     </message>
     <message>
-        <location filename="../GUI/.tmp/release/ui_MainWindow.h" line="+2"/>
-        <source>Search among other peers</source>
-        <translation>Rechercher parmi les autres pairs</translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <source>Search among own files</source>
-        <translation>Rechercher parmi nos propres fichiers</translation>
-    </message>
-    <message>
-        <location filename="../GUI/MainWindow.ui" line="+22"/>
+        <location line="+22"/>
         <location filename="../GUI/.tmp/debug/ui_MainWindow.h" line="+3"/>
         <location filename="../GUI/.tmp/release/ui_MainWindow.h" line="+3"/>
         <source>Peers</source>
@@ -549,8 +541,8 @@
     <name>WidgetSettings</name>
     <message>
         <location filename="../GUI/Settings/WidgetSettings.ui" line="+14"/>
-        <location filename="../GUI/.tmp/debug/ui_WidgetSettings.h" line="+242"/>
-        <location filename="../GUI/.tmp/release/ui_WidgetSettings.h" line="+242"/>
+        <location filename="../GUI/.tmp/debug/ui_WidgetSettings.h" line="+298"/>
+        <location filename="../GUI/.tmp/release/ui_WidgetSettings.h" line="+246"/>
         <source>Settings</source>
         <translation>Paramètres</translation>
     </message>
@@ -612,8 +604,45 @@
     </message>
     <message>
         <location line="+44"/>
-        <location filename="../GUI/.tmp/debug/ui_WidgetSettings.h" line="+13"/>
-        <location filename="../GUI/.tmp/release/ui_WidgetSettings.h" line="+13"/>
+        <location filename="../GUI/.tmp/debug/ui_WidgetSettings.h" line="+8"/>
+        <location filename="../GUI/.tmp/release/ui_WidgetSettings.h" line="+4"/>
+        <source>Network</source>
+        <translation>Réseau</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <location filename="../GUI/.tmp/debug/ui_WidgetSettings.h" line="-4"/>
+        <source>Interface to listen</source>
+        <translation>Interface à écouter</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <location filename="../GUI/.tmp/debug/ui_WidgetSettings.h" line="+1"/>
+        <source>All interfaces</source>
+        <translation>Toutes les interfaces</translation>
+    </message>
+    <message>
+        <location line="+13"/>
+        <location filename="../GUI/.tmp/debug/ui_WidgetSettings.h" line="+1"/>
+        <source>IPv6</source>
+        <translation>IPv6</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <location line="+10"/>
+        <source>grpAddressesToListenTo</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-3"/>
+        <location filename="../GUI/.tmp/debug/ui_WidgetSettings.h" line="+1"/>
+        <source>IPv4</source>
+        <translation>IPv4</translation>
+    </message>
+    <message>
+        <location line="+30"/>
+        <location filename="../GUI/.tmp/debug/ui_WidgetSettings.h" line="+11"/>
+        <location filename="../GUI/.tmp/release/ui_WidgetSettings.h" line="+10"/>
         <source>Advanced</source>
         <translation>Avancé</translation>
     </message>
