@@ -53,13 +53,13 @@ namespace UM
    private:
       LOG_INIT_H("UploadManager");
 
+      Common::TransferRateCalculator transferRateCalculator;
+
       QSharedPointer<PM::IPeerManager> peerManager;
 
       QList< QSharedPointer<Upload> > uploads;
 
       Common::ThreadPool threadPool;
-
-      Common::TransferRateCalculator transferRateCalculator;
    };
 }
 #endif
