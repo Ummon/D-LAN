@@ -51,6 +51,8 @@ namespace Common
       static QString toLowerAndRemoveAccents(const QString& str);
       static QStringList splitInWords(const QString& words);
 
+      static quint32 hashStringToInt(const QString& str);
+
       enum DataFolderType { ROAMING = 0, LOCAL = 1 };
 
    private:

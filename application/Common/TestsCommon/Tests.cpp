@@ -103,6 +103,13 @@ void Tests::splitInWords()
     QCOMPARE(Global::splitInWords("abc%_-[]def"), QStringList() << "abc" << "def");
 }
 
+void Tests::hashStringToInt()
+{
+   QCOMPARE(Global::hashStringToInt(""), 0u);
+   QCOMPARE(Global::hashStringToInt("abcde"), 444281822u);
+   QCOMPARE(Global::hashStringToInt("abcdef"), 3174932005u);
+}
+
 void Tests::writePersistentData()
 {
    this->hash = Hash::rand();

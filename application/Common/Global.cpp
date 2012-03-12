@@ -256,6 +256,18 @@ QStringList Global::splitInWords(const QString& words)
    return Global::toLowerAndRemoveAccents(words).split(regExp, QString::SkipEmptyParts);
 }
 
+quint32 Global::hashStringToInt(const QString& str)
+{
+   QByteArray data = str.toLocal8Bit();
+   if (data.size() <= 1)
+      return qChecksum(data.constData(), data.size());
+
+   const int s = data.size();
+   const quint32 part1 = qChecksum(data.constData(), s / 2);
+   const quint32 part2 = qChecksum(data.constData() + s / 2, s / 2 + (s % 2 == 0 ? 0 : 1));
+   return part1 | part2 << 16;
+}
+
 QString Global::dataFolders[2]; // The two folders (roaming and local), see DataFolderType enum.
 
 /**

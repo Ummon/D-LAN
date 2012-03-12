@@ -37,6 +37,7 @@ private slots:
    void formatByteSize();
    void availableDiskSpace();
    void splitInWords();
+   void hashStringToInt();
 
    // PersistentData class.
    void writePersistentData();
