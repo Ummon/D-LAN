@@ -20,6 +20,10 @@
 #include <ui_WidgetDownloads.h>
 using namespace GUI;
 
+#include <limits>
+
+#include <Common/Global.h>
+
 #include <QMenu>
 #include <QMessageBox>
 #include <QDesktopServices>
@@ -120,6 +124,8 @@ WidgetDownloads::WidgetDownloads(QSharedPointer<RCC::ICoreConnection> coreConnec
    this->ui->tblDownloads->setContextMenuPolicy(Qt::CustomContextMenu);
    connect(this->ui->tblDownloads, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(displayContextMenuDownloads(const QPoint&)));
    connect(this->ui->tblDownloads, SIGNAL(doubleClicked(const QModelIndex&)), this, SLOT(downloadDoubleClicked(const QModelIndex&)));
+
+   connect(&this->downloadsModel, SIGNAL(globalProgressChanged()), this, SLOT(updateGlobalProgressBar()));
 
    connect(this->ui->butRemoveComplete, SIGNAL(clicked()), this, SLOT(removeCompletedFiles()));
    connect(this->ui->butRemoveSelected, SIGNAL(clicked()), this, SLOT(removeSelectedEntries()));
@@ -243,6 +249,21 @@ void WidgetDownloads::removeSelectedEntries()
 void WidgetDownloads::filterChanged()
 {
    this->coreConnection->refresh();
+}
+
+void WidgetDownloads::updateGlobalProgressBar()
+{
+   const quint64 bytesInQueue = this->downloadsModel.getTotalBytesInQueue();
+   const quint64 bytesDownloaded = this->downloadsModel.getTotalBytesDownloadedInQueue();
+   const quint64 eta = this->downloadsModel.getEta();
+
+   this->ui->prgGlobalProgress->setValue(bytesInQueue == 0 ? 0 : bytesDownloaded * 10000LL / bytesInQueue);
+   this->ui->prgGlobalProgress->setFormat(
+      QString("%1 / %2%3")
+         .arg(Common::Global::formatByteSize(bytesDownloaded))
+         .arg(Common::Global::formatByteSize(bytesInQueue))
+         .arg(eta == 0 || eta > 604800 ? "" : " (" + Common::Global::formatTime(eta) + ")")
+   );
 }
 
 void WidgetDownloads::updateCheckBoxElements()

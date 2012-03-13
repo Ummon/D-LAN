@@ -95,7 +95,7 @@ int Global::nCombinations(int n, int k)
 
 /**
   * Will return a formated size with the unit prefix and one digit folowing the point.
-  * For example :
+  * For example:
   * - 1 -> "1 B"
   * - 1024 -> "1.0 KiB"
   * - 1024^2 -> "1.0 MiB"
@@ -120,6 +120,47 @@ QString Global::formatByteSize(qint64 bytes, int precision)
             QString::number((double)bytes / size, 'f', precision).append(" ").append(BINARY_PREFIXS[i]);
    }
    return QString();
+}
+
+/**
+  * Format the given time in a years / months / weeks / days / hours / minutes / seconds format.
+  * Examples:
+  *  - "34s"
+  *  - "12m" (0 second)
+  *  - "12m 3s"
+  *  - "64h 23m"
+  *  - "1y" (0 month)
+  */
+QString Global::formatTime(quint64 seconds)
+{
+   QString output;
+
+   int ymwdhms[7];
+   char units[7] = {'y', 'M', 'w', 'd', 'h', 'm', 's'};
+
+   /* years   */ ymwdhms[0] = seconds / (60 * 60 * 24 * 7 * 4 * 12);
+   /* months  */ ymwdhms[1] = seconds / (60 * 60 * 24 * 7 * 4) - (12 * ymwdhms[0]);
+   /* weeks   */ ymwdhms[2] = seconds / (60 * 60 * 24 * 7) - (4 * 12 * ymwdhms[0] + 4 * ymwdhms[1]);
+   /* days    */ ymwdhms[3] = seconds / (60 * 60 * 24) - (7 * 4 * 12 * ymwdhms[0] + 7 * 4 * ymwdhms[1] + 7 * ymwdhms[2]);
+   /* hours   */ ymwdhms[4] = seconds / (60 * 60) - (24 * 7 * 4 * 12 * ymwdhms[0] + 24 * 7 * 4 * ymwdhms[1] + 24 * 7 * ymwdhms[2] + 24 * ymwdhms[3]);
+   /* minutes */ ymwdhms[5] = seconds / (60) - (60 * 24 * 7 * 4 * 12 * ymwdhms[0] + 60 * 24 * 7 * 4 * ymwdhms[1] + 60 * 24 * 7 * ymwdhms[2] + 60 * 24 * ymwdhms[3] + 60 * ymwdhms[4]);
+   /* seconds */ ymwdhms[6] = seconds  -  (60 * 60 * 24 * 7 * 4 * 12 * ymwdhms[0] + 60 * 60 * 24 * 7 * 4 * ymwdhms[1] + 60 * 60 * 24 * 7 * ymwdhms[2] + 60 * 60 * 24 * ymwdhms[3] + 60 * 60 * ymwdhms[4] + 60 * ymwdhms[5]);
+
+   bool exit = false;
+   for (int i = 0; i < 7; i++)
+   {
+      exit = !output.isEmpty();
+      if (ymwdhms[i] != 0)
+      {
+         if (!output.isEmpty())
+            output.append(' ');
+         output.append(QString::number(ymwdhms[i])).append(QChar(units[i]));
+      }
+      if (exit)
+         break;
+   }
+
+   return output;
 }
 
 /**

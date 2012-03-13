@@ -19,6 +19,8 @@
 #include <Downloads/DownloadsModel.h>
 using namespace GUI;
 
+#include <limits>
+
 #include <QPixmap>
 
 #include <Common/ProtoHelper.h>
@@ -28,10 +30,31 @@ using namespace GUI;
 #include <Settings/DirListModel.h>
 
 DownloadsModel::DownloadsModel(QSharedPointer<RCC::ICoreConnection> coreConnection, const PeerListModel& peerListModel, const DirListModel& sharedDirsModel, const IFilter<DownloadFilterStatus>& filter) :
-   coreConnection(coreConnection), peerListModel(peerListModel), sharedDirsModel(sharedDirsModel), filter(filter)
+   coreConnection(coreConnection),
+   peerListModel(peerListModel),
+   sharedDirsModel(sharedDirsModel),
+   filter(filter),
+   totalBytesInQueue(0),
+   totalBytesDownloadedInQueue(0),
+   eta(0)
 {
    qRegisterMetaTypeStreamOperators<Progress>("Progress"); // Don't know where to put this call..
    connect(this->coreConnection.data(), SIGNAL(newState(Protos::GUI::State)), this, SLOT(newState(Protos::GUI::State)));
+}
+
+quint64 DownloadsModel::getTotalBytesInQueue() const
+{
+   return this->totalBytesInQueue;
+}
+
+quint64 DownloadsModel::getTotalBytesDownloadedInQueue() const
+{
+   return this->totalBytesDownloadedInQueue;
+}
+
+quint64 DownloadsModel::getEta() const
+{
+   return this->eta;
 }
 
 quint64 DownloadsModel::getDownloadID(int row) const
@@ -260,6 +283,12 @@ bool DownloadsModel::dropMimeData(const QMimeData* data, Qt::DropAction action, 
 
 void DownloadsModel::newState(const Protos::GUI::State& state)
 {
+   const quint64 oldTotalBytesInQueue = this->totalBytesInQueue;
+   const quint64 oldTotalBytesDownloadedInQueue = this->totalBytesDownloadedInQueue;
+
+   this->totalBytesInQueue = 0;
+   this->totalBytesDownloadedInQueue = 0;
+
    int statusToFilter = 0;
    const QList<DownloadFilterStatus>& filterStatus = this->filter.getFilteredValues();
    for (int i = 0; i < filterStatus.size(); i++)
@@ -268,6 +297,10 @@ void DownloadsModel::newState(const Protos::GUI::State& state)
    QList<int> indexToInsert;
    for (int i = 0; i < state.download_size(); i++)
    {
+      const quint64 fileSize = state.download(i).local_entry().size();
+      this->totalBytesInQueue += fileSize;
+      this->totalBytesDownloadedInQueue += fileSize * state.download(i).progress() / 10000;
+
       switch (state.download(i).status())
       {
       case Protos::GUI::State_Download_Status_QUEUED:
@@ -334,6 +367,15 @@ void DownloadsModel::newState(const Protos::GUI::State& state)
          this->downloads.removeLast();
       this->endRemoveRows();
    }
+
+   quint64 oldEta = this->eta;
+   if (state.stats().download_rate() == 0)
+      this->eta = std::numeric_limits<quint64>::max();
+   else
+      this->eta = (this->eta + (this->totalBytesInQueue - this->totalBytesDownloadedInQueue) / state.stats().download_rate()) / 2;
+
+   if (this->totalBytesInQueue != oldTotalBytesInQueue || this->totalBytesDownloadedInQueue != oldTotalBytesDownloadedInQueue || this->eta != oldEta)
+      emit globalProgressChanged();
 }
 
 /**

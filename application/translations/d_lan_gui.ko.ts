@@ -87,17 +87,17 @@
     <name>GUI::DownloadMenu</name>
     <message>
         <location filename="../GUI/DownloadMenu.cpp" line="+46"/>
-        <source>Download selected entries</source>
+        <source>Download selected items to the first shared folder with enough free space</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+11"/>
-        <source>Download selected entries to %1</source>
+        <source>Download selected items to %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+11"/>
-        <source>Download selected entries to ...</source>
+        <source>Download selected items to ...</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -228,7 +228,7 @@
 <context>
     <name>GUI::WidgetDownloads</name>
     <message>
-        <location filename="../GUI/Downloads/WidgetDownloads.cpp" line="+176"/>
+        <location filename="../GUI/Downloads/WidgetDownloads.cpp" line="+182"/>
         <source>Open location</source>
         <translation type="unfinished"></translation>
     </message>
@@ -243,7 +243,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+72"/>
+        <location line="+87"/>
         <source>&lt;All&gt;</source>
         <translation type="unfinished"></translation>
     </message>
@@ -312,7 +312,7 @@
 <context>
     <name>Global</name>
     <message>
-        <location filename="../Common/Global.cpp" line="+307"/>
+        <location filename="../Common/Global.cpp" line="+348"/>
         <source>Unable to create the folder %1 in %2</source>
         <translation type="unfinished"></translation>
     </message>
@@ -368,12 +368,12 @@
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../Common/Global.cpp" line="-260"/>
+        <location filename="../Common/Global.cpp" line="-301"/>
         <source>Unable to create the temporary directory %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+247"/>
+        <location line="+288"/>
         <source>Unable to get the %1: SHGetFolderPath failed</source>
         <translation type="unfinished"></translation>
     </message>
@@ -522,7 +522,7 @@
     <name>WidgetDownloads</name>
     <message>
         <location filename="../GUI/Downloads/WidgetDownloads.ui" line="+14"/>
-        <location filename="../GUI/.tmp/debug/ui_WidgetDownloads.h" line="+94"/>
+        <location filename="../GUI/.tmp/debug/ui_WidgetDownloads.h" line="+109"/>
         <location filename="../GUI/.tmp/release/ui_WidgetDownloads.h" line="+94"/>
         <source>Downloads</source>
         <translation type="unfinished"></translation>

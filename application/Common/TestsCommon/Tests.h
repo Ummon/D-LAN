@@ -35,6 +35,7 @@ private slots:
    // Global class.
    void nCombinations();
    void formatByteSize();
+   void formatTime();
    void availableDiskSpace();
    void splitInWords();
    void hashStringToInt();

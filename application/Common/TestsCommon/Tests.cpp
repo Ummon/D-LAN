@@ -87,6 +87,16 @@ void Tests::formatByteSize()
    QCOMPARE(Global::formatByteSize(42LL * 1020 * 1024 * 1024 * 1024 * 1024, 2), QString("41.84 PiB"));
 }
 
+void Tests::formatTime()
+{
+   QCOMPARE(Global::formatTime(0), QString(""));
+   QCOMPARE(Global::formatTime(60), QString("1m"));
+   QCOMPARE(Global::formatTime(120), QString("2m"));
+   QCOMPARE(Global::formatTime(160), QString("2m 40s"));
+   QCOMPARE(Global::formatTime(12312411LL), QString("5M"));
+   QCOMPARE(Global::formatTime(1243151412LL), QString("42y 9M"));
+}
+
 void Tests::availableDiskSpace()
 {
    qDebug() << "Available disk space [Mo] : " << Global::availableDiskSpace(".") / 1024 / 1024;

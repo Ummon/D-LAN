@@ -39,6 +39,10 @@ namespace GUI
    public:
       explicit DownloadsModel(QSharedPointer<RCC::ICoreConnection> coreConnection, const PeerListModel& peerListModel, const DirListModel& sharedDirsModel, const IFilter<DownloadFilterStatus>& filter);
 
+      quint64 getTotalBytesInQueue() const;
+      quint64 getTotalBytesDownloadedInQueue() const;
+      quint64 getEta() const;
+
       quint64 getDownloadID(int row) const;
 
       bool fileLocationIsKnown(int row) const;
@@ -51,7 +55,10 @@ namespace GUI
       Qt::DropActions supportedDropActions() const;
       Qt::ItemFlags flags(const QModelIndex& index) const;
 
-  protected:
+   signals:
+      void globalProgressChanged();
+
+   protected:
       bool dropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex & parent);
 
    private slots:
@@ -62,6 +69,10 @@ namespace GUI
       const PeerListModel& peerListModel;
       const DirListModel& sharedDirsModel;
       const IFilter<DownloadFilterStatus>& filter;
+
+      quint64 totalBytesInQueue;
+      quint64 totalBytesDownloadedInQueue;
+      quint64 eta;
 
       QList<Protos::GUI::State_Download> downloads;
    };

@@ -64,6 +64,7 @@ namespace GUI
       void removeCompletedFiles();
       void removeSelectedEntries();
       void filterChanged();
+      void updateGlobalProgressBar();
 
    private:
       void updateCheckBoxElements();

@@ -42,6 +42,7 @@ namespace Common
 
       static int nCombinations(int n, int k);
       static QString formatByteSize(qint64 bytes, int precision = 1);
+      static QString formatTime(quint64 seconds);
       static qint64 availableDiskSpace(const QString& path);
       static bool rename(const QString& existingFile, const QString& newFile);
 

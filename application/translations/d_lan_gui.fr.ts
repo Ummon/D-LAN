@@ -87,18 +87,18 @@
     <name>GUI::DownloadMenu</name>
     <message>
         <location filename="../GUI/DownloadMenu.cpp" line="+46"/>
-        <source>Download selected entries</source>
-        <translation>Télécharger les éléments sélectionnés</translation>
+        <source>Download selected items to the first shared folder with enough free space</source>
+        <translation>Télécharger les éléments sélectionnés dans le premier dossier partagé avec assez de place libre</translation>
     </message>
     <message>
         <location line="+11"/>
-        <source>Download selected entries to %1</source>
-        <translation>Télécharger les éléments sélectionnés dans %1</translation>
+        <source>Download selected items to %1</source>
+        <translation>Télécharger les éléments dans %1</translation>
     </message>
     <message>
         <location line="+11"/>
-        <source>Download selected entries to ...</source>
-        <translation>Télécharger les éléments sélectionnés dans ...</translation>
+        <source>Download selected items to ...</source>
+        <translation>Télécharger les éléments dans ...</translation>
     </message>
 </context>
 <context>
@@ -228,7 +228,7 @@
 <context>
     <name>GUI::WidgetDownloads</name>
     <message>
-        <location filename="../GUI/Downloads/WidgetDownloads.cpp" line="+176"/>
+        <location filename="../GUI/Downloads/WidgetDownloads.cpp" line="+182"/>
         <source>Open location</source>
         <translation>Ouvrir le dossier</translation>
     </message>
@@ -243,7 +243,7 @@
         <translation>Enlever les éléments sélectionnés</translation>
     </message>
     <message>
-        <location line="+72"/>
+        <location line="+87"/>
         <source>&lt;All&gt;</source>
         <translation>&lt;Tous&gt;</translation>
     </message>
@@ -312,7 +312,7 @@
 <context>
     <name>Global</name>
     <message>
-        <location filename="../Common/Global.cpp" line="+307"/>
+        <location filename="../Common/Global.cpp" line="+348"/>
         <source>Unable to create the folder %1 in %2</source>
         <translation>Impossible de créer le dossier %1 dans %2</translation>
     </message>
@@ -368,12 +368,12 @@
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../Common/Global.cpp" line="-260"/>
+        <location filename="../Common/Global.cpp" line="-301"/>
         <source>Unable to create the temporary directory %1</source>
         <translation>Impossible de créer le dossier temporaire %1</translation>
     </message>
     <message>
-        <location line="+247"/>
+        <location line="+288"/>
         <source>Unable to get the %1: SHGetFolderPath failed</source>
         <translation>Impossible d&apos;avoir le %1: SHGetFolderPath à échoué</translation>
     </message>
@@ -522,7 +522,7 @@
     <name>WidgetDownloads</name>
     <message>
         <location filename="../GUI/Downloads/WidgetDownloads.ui" line="+14"/>
-        <location filename="../GUI/.tmp/debug/ui_WidgetDownloads.h" line="+94"/>
+        <location filename="../GUI/.tmp/debug/ui_WidgetDownloads.h" line="+109"/>
         <location filename="../GUI/.tmp/release/ui_WidgetDownloads.h" line="+94"/>
         <source>Downloads</source>
         <translation>Téléchargements</translation>
