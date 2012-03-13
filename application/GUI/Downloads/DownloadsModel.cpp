@@ -372,7 +372,10 @@ void DownloadsModel::newState(const Protos::GUI::State& state)
    if (state.stats().download_rate() == 0)
       this->eta = std::numeric_limits<quint64>::max();
    else
-      this->eta = (this->eta + (this->totalBytesInQueue - this->totalBytesDownloadedInQueue) / state.stats().download_rate()) / 2;
+   {
+      const int weightLastEta = this->eta == 0 ? 1 : WEIGHT_LAST_ETA;
+      this->eta = (weightLastEta * this->eta + (this->totalBytesInQueue - this->totalBytesDownloadedInQueue) / state.stats().download_rate()) / (weightLastEta + 1);
+   }
 
    if (this->totalBytesInQueue != oldTotalBytesInQueue || this->totalBytesDownloadedInQueue != oldTotalBytesDownloadedInQueue || this->eta != oldEta)
       emit globalProgressChanged();

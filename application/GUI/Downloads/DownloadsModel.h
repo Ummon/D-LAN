@@ -36,6 +36,9 @@ namespace GUI
    class DownloadsModel : public QAbstractTableModel
    {
       Q_OBJECT
+
+      static const int WEIGHT_LAST_ETA = 5; // Used in the weighted mean computation.
+
    public:
       explicit DownloadsModel(QSharedPointer<RCC::ICoreConnection> coreConnection, const PeerListModel& peerListModel, const DirListModel& sharedDirsModel, const IFilter<DownloadFilterStatus>& filter);
 
