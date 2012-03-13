@@ -53,6 +53,8 @@ namespace DM
       ChunkDownload(QSharedPointer<PM::IPeerManager> peerManager, OccupiedPeers& occupiedPeersDownloadingChunk, Common::TransferRateCalculator& transferRateCalculator, Common::ThreadPool& threadPool, Common::Hash chunkHash);
       ~ChunkDownload();
 
+      void stop();
+
       Common::Hash getHash() const;
 
       void addPeerID(const Common::Hash& peerID);

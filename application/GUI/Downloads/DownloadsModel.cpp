@@ -64,7 +64,14 @@ quint64 DownloadsModel::getDownloadID(int row) const
    return this->downloads[row].id();
 }
 
-bool DownloadsModel::fileLocationIsKnown(int row) const
+bool DownloadsModel::isDownloadPaused(int row) const
+{
+   if (row >= this->downloads.size())
+      return false;
+   return this->downloads[row].status() == Protos::GUI::State::Download::PAUSED;
+}
+
+bool DownloadsModel::isFileLocationKnown(int row) const
 {
    if (row >= this->downloads.size())
       return false;
@@ -73,7 +80,7 @@ bool DownloadsModel::fileLocationIsKnown(int row) const
    return this->downloads[row].local_entry().exists();
 }
 
-bool DownloadsModel::fileIsComplete(int row) const
+bool DownloadsModel::isFileComplete(int row) const
 {
    if (row >= this->downloads.size())
       return false;
@@ -403,7 +410,7 @@ QDataStream& GUI::operator>>(QDataStream& in, Progress& progress)
    return in;
 }
 
-bool GUI::operator==(const Protos::GUI::State_Download& d1, const Protos::GUI::State_Download& d2)
+bool GUI::operator==(const Protos::GUI::State::Download& d1, const Protos::GUI::State::Download& d2)
 {
    if (
       d1.id() != d2.id() ||
@@ -424,7 +431,7 @@ bool GUI::operator==(const Protos::GUI::State_Download& d1, const Protos::GUI::S
    return true;
 }
 
-bool GUI::operator!=(const Protos::GUI::State_Download& d1, const Protos::GUI::State_Download& d2)
+bool GUI::operator!=(const Protos::GUI::State::Download& d1, const Protos::GUI::State::Download& d2)
 {
    return !(d1 == d2);
 }

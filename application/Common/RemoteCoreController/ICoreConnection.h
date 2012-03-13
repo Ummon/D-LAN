@@ -130,11 +130,17 @@ namespace RCC
       virtual void download(const Common::Hash& peerID, const Protos::Common::Entry& entry, const QString& absolutePath) = 0;
 
       /**
-        * Cancel one or more download. IDs are given by the signal 'newState'.        
+        * Cancel one or more download. IDs are given by the signal 'newState'.
         * @remarks The signal 'newState' will be emitted right after a call.
         * @param complete If true remove all complete download.
         */
       virtual void cancelDownloads(const QList<quint64>& downloadIDs, bool complete = false) = 0;
+
+      /**
+        * Pause or unpause one or more download. IDs are given by the signal 'newState'.
+        * @remarks The signal 'newState' will be emitted right after a call.
+        */
+      virtual void pauseDownloads(const QList<quint64>& downloadIDs, bool pause = true) = 0;
 
       /**
         * @remarks The signal 'newState' will be emitted right after a call.

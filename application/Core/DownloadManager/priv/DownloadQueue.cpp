@@ -19,6 +19,8 @@
 #include <priv/DownloadQueue.h>
 using namespace DM;
 
+#include <QSet>
+
 #include <Common/PersistentData.h>
 #include <Common/Constants.h>
 #include <Common/ProtoHelper.h>
@@ -190,6 +192,18 @@ bool DownloadQueue::removeDownloads(DownloadPredicate& predicate)
       k.next()->remove();
 
    return queueChanged;
+}
+
+void DownloadQueue::pauseDownloads(QList<quint64> IDs, bool pause)
+{
+   QSet<quint64> IDsRemaining(IDs.toSet());
+
+   for (QListIterator<Download*> i(this->downloads); i.hasNext() && !IDsRemaining.isEmpty();)
+   {
+      Download* download = i.next();
+      if (IDsRemaining.remove(download->getID()))
+         download->pause(pause);
+   }
 }
 
 bool DownloadQueue::isEntryAlreadyQueued(const Protos::Common::Entry& localEntry, const Common::Hash& peerSourceID)

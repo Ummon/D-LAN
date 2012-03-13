@@ -21,6 +21,7 @@
 
 #include <QWidget>
 #include <QPoint>
+#include <QPair>
 #include <QStyledItemDelegate>
 
 #include <Common/RemoteCoreController/ICoreConnection.h>
@@ -63,11 +64,13 @@ namespace GUI
       void openLocationSelectedEntries();
       void removeCompletedFiles();
       void removeSelectedEntries();
+      void pauseSelectedEntries();
       void filterChanged();
       void updateGlobalProgressBar();
 
    private:
       void updateCheckBoxElements();
+      QPair<QList<quint64>, bool> getDownloadIDsToPause() const;
 
       Ui::WidgetDownloads *ui;
       CheckBoxList* filterStatusList;

@@ -106,7 +106,7 @@ void Download::remove()
 
 bool Download::updateStatus()
 {
-   if (this->status == DELETED || this->status == COMPLETE)
+   if (this->status == DELETED || this->status == COMPLETE || this->status == PAUSED)
       return true;
 
    if (!this->peerSource->isAvailable())

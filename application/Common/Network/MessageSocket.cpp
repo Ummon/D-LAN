@@ -253,6 +253,7 @@ bool MessageSocket::readMessage()
    case MessageHeader::GUI_BROWSE_TAG: return this->readMessage<Protos::GUI::Tag>();
    case MessageHeader::GUI_BROWSE_RESULT: return this->readMessage<Protos::GUI::BrowseResult>();
    case MessageHeader::GUI_CANCEL_DOWNLOADS: return this->readMessage<Protos::GUI::CancelDownloads>();
+   case MessageHeader::GUI_PAUSE_DOWNLOADS: return this->readMessage<Protos::GUI::PauseDownloads>();
    case MessageHeader::GUI_MOVE_DOWNLOADS: return this->readMessage<Protos::GUI::MoveDownloads>();
    case MessageHeader::GUI_DOWNLOAD: return this->readMessage<Protos::GUI::Download>();
    case MessageHeader::GUI_CHAT_MESSAGE: return this->readMessage<Protos::GUI::ChatMessage>();

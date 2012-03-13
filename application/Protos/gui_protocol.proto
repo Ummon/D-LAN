@@ -219,8 +219,16 @@ message BrowseResult {
 // is not finished the unfinished file is removed.
 // id : 0x61
 message CancelDownloads {
-   repeated uint64 id = 1;
+   repeated uint64 id = 1 [packed = true];
    optional bool complete= 2 [default = false];
+}
+
+// GUI -> Core
+// Pause or unpause the given downloads.
+// id : 0xC1
+message PauseDownloads {
+   repeated uint64 id = 1 [packed = true];
+   optional bool pause = 2 [default = true]; // Id false -> unpause.
 }
 
 // GUI -> Core

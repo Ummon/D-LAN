@@ -212,6 +212,16 @@ void DownloadManager::removeDownloads(QList<quint64> IDs)
       this->setQueueChanged();
 }
 
+void DownloadManager::pauseDownloads(QList<quint64> IDs, bool pause)
+{
+   if (IDs.isEmpty())
+      return;
+
+   this->downloadQueue.pauseDownloads(IDs, pause);
+   if (!pause)
+      this->scanTheQueue();
+}
+
 QList< QSharedPointer<IChunkDownload> > DownloadManager::getUnfinishedChunks(int n) const
 {
    QList< QSharedPointer<IChunkDownload> > unfinishedChunks;

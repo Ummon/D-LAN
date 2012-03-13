@@ -310,14 +310,6 @@
     </message>
 </context>
 <context>
-    <name>Global</name>
-    <message>
-        <location filename="../Common/Global.cpp" line="+348"/>
-        <source>Unable to create the folder %1 in %2</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
     <name>MainWindow</name>
     <message>
         <location filename="../GUI/MainWindow.ui" line="+14"/>
@@ -367,36 +359,6 @@
 </context>
 <context>
     <name>QObject</name>
-    <message>
-        <location filename="../Common/Global.cpp" line="-301"/>
-        <source>Unable to create the temporary directory %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+288"/>
-        <source>Unable to get the %1: SHGetFolderPath failed</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+0"/>
-        <source>roaming user folder path</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+0"/>
-        <source>local user folder path</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+7"/>
-        <source>Unable to create the folder %1 in %2</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Common/PersistentData.cpp" line="+65"/>
-        <source>Unable to open the file in write mode : %1, error : %2</source>
-        <translation type="unfinished"></translation>
-    </message>
     <message>
         <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="+35"/>
         <source>D-LAN Core cannot be installed as a service</source>
@@ -523,7 +485,7 @@
     <message>
         <location filename="../GUI/Downloads/WidgetDownloads.ui" line="+14"/>
         <location filename="../GUI/.tmp/debug/ui_WidgetDownloads.h" line="+109"/>
-        <location filename="../GUI/.tmp/release/ui_WidgetDownloads.h" line="+94"/>
+        <location filename="../GUI/.tmp/release/ui_WidgetDownloads.h" line="+109"/>
         <source>Downloads</source>
         <translation type="unfinished"></translation>
     </message>
@@ -578,7 +540,7 @@
     <message>
         <location filename="../GUI/Settings/WidgetSettings.ui" line="+14"/>
         <location filename="../GUI/.tmp/debug/ui_WidgetSettings.h" line="+330"/>
-        <location filename="../GUI/.tmp/release/ui_WidgetSettings.h" line="+298"/>
+        <location filename="../GUI/.tmp/release/ui_WidgetSettings.h" line="+330"/>
         <source>Settings</source>
         <translation type="unfinished"></translation>
     </message>
@@ -641,26 +603,21 @@
     <message>
         <location line="+44"/>
         <location filename="../GUI/.tmp/debug/ui_WidgetSettings.h" line="+12"/>
-        <location filename="../GUI/.tmp/release/ui_WidgetSettings.h" line="+8"/>
+        <location filename="../GUI/.tmp/release/ui_WidgetSettings.h" line="+12"/>
         <source>Network</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+12"/>
         <location filename="../GUI/.tmp/debug/ui_WidgetSettings.h" line="-8"/>
-        <location filename="../GUI/.tmp/release/ui_WidgetSettings.h" line="-4"/>
+        <location filename="../GUI/.tmp/release/ui_WidgetSettings.h" line="-8"/>
         <source>Interface to listen</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GUI/.tmp/release/ui_WidgetSettings.h" line="+1"/>
-        <source>All interfaces</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../GUI/Settings/WidgetSettings.ui" line="+49"/>
+        <location line="+49"/>
         <location filename="../GUI/.tmp/debug/ui_WidgetSettings.h" line="+2"/>
-        <location filename="../GUI/.tmp/release/ui_WidgetSettings.h" line="+1"/>
+        <location filename="../GUI/.tmp/release/ui_WidgetSettings.h" line="+2"/>
         <source>IPv6</source>
         <translation type="unfinished"></translation>
     </message>
@@ -687,7 +644,7 @@
     <message>
         <location line="+6"/>
         <location filename="../GUI/.tmp/debug/ui_WidgetSettings.h" line="-5"/>
-        <location filename="../GUI/.tmp/release/ui_WidgetSettings.h" line="-9"/>
+        <location filename="../GUI/.tmp/release/ui_WidgetSettings.h" line="-5"/>
         <source>Language</source>
         <translation>언어</translation>
     </message>
@@ -722,20 +679,21 @@
     <message>
         <location line="-70"/>
         <location filename="../GUI/.tmp/debug/ui_WidgetSettings.h" line="-8"/>
-        <location filename="../GUI/.tmp/release/ui_WidgetSettings.h" line="+2"/>
+        <location filename="../GUI/.tmp/release/ui_WidgetSettings.h" line="-8"/>
         <source>When activated all received data will be verified against their hashes.  It may consume CPU resources.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="-46"/>
         <location filename="../GUI/.tmp/debug/ui_WidgetSettings.h" line="-4"/>
+        <location filename="../GUI/.tmp/release/ui_WidgetSettings.h" line="-4"/>
         <source>Any</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+49"/>
         <location filename="../GUI/.tmp/debug/ui_WidgetSettings.h" line="+6"/>
-        <location filename="../GUI/.tmp/release/ui_WidgetSettings.h" line="+2"/>
+        <location filename="../GUI/.tmp/release/ui_WidgetSettings.h" line="+6"/>
         <source>Data integrity check</source>
         <translation type="unfinished"></translation>
     </message>

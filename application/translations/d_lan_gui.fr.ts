@@ -310,14 +310,6 @@
     </message>
 </context>
 <context>
-    <name>Global</name>
-    <message>
-        <location filename="../Common/Global.cpp" line="+348"/>
-        <source>Unable to create the folder %1 in %2</source>
-        <translation>Impossible de créer le dossier %1 dans %2</translation>
-    </message>
-</context>
-<context>
     <name>MainWindow</name>
     <message>
         <location filename="../GUI/MainWindow.ui" line="+14"/>
@@ -367,36 +359,6 @@
 </context>
 <context>
     <name>QObject</name>
-    <message>
-        <location filename="../Common/Global.cpp" line="-301"/>
-        <source>Unable to create the temporary directory %1</source>
-        <translation>Impossible de créer le dossier temporaire %1</translation>
-    </message>
-    <message>
-        <location line="+288"/>
-        <source>Unable to get the %1: SHGetFolderPath failed</source>
-        <translation>Impossible d&apos;avoir le %1: SHGetFolderPath à échoué</translation>
-    </message>
-    <message>
-        <location line="+0"/>
-        <source>roaming user folder path</source>
-        <translation>chemin du dossier &apos;roaming&apos; de l&apos;utilisateur</translation>
-    </message>
-    <message>
-        <location line="+0"/>
-        <source>local user folder path</source>
-        <translation>chemin du dossier &apos;local&apos;&apos; de l&apos;utilisateur </translation>
-    </message>
-    <message>
-        <location line="+7"/>
-        <source>Unable to create the folder %1 in %2</source>
-        <translation>Impossible de créer le dossier %1 dans %2</translation>
-    </message>
-    <message>
-        <location filename="../Common/PersistentData.cpp" line="+65"/>
-        <source>Unable to open the file in write mode : %1, error : %2</source>
-        <translation>Impossible d&apos;ouvrir le fichier en écriture : %1, erreur : %2</translation>
-    </message>
     <message>
         <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="+35"/>
         <source>D-LAN Core cannot be installed as a service</source>
@@ -523,7 +485,7 @@
     <message>
         <location filename="../GUI/Downloads/WidgetDownloads.ui" line="+14"/>
         <location filename="../GUI/.tmp/debug/ui_WidgetDownloads.h" line="+109"/>
-        <location filename="../GUI/.tmp/release/ui_WidgetDownloads.h" line="+94"/>
+        <location filename="../GUI/.tmp/release/ui_WidgetDownloads.h" line="+109"/>
         <source>Downloads</source>
         <translation>Téléchargements</translation>
     </message>
@@ -578,7 +540,7 @@
     <message>
         <location filename="../GUI/Settings/WidgetSettings.ui" line="+14"/>
         <location filename="../GUI/.tmp/debug/ui_WidgetSettings.h" line="+330"/>
-        <location filename="../GUI/.tmp/release/ui_WidgetSettings.h" line="+298"/>
+        <location filename="../GUI/.tmp/release/ui_WidgetSettings.h" line="+330"/>
         <source>Settings</source>
         <translation>Paramètres</translation>
     </message>
@@ -641,26 +603,21 @@
     <message>
         <location line="+44"/>
         <location filename="../GUI/.tmp/debug/ui_WidgetSettings.h" line="+12"/>
-        <location filename="../GUI/.tmp/release/ui_WidgetSettings.h" line="+8"/>
+        <location filename="../GUI/.tmp/release/ui_WidgetSettings.h" line="+12"/>
         <source>Network</source>
         <translation>Réseau</translation>
     </message>
     <message>
         <location line="+12"/>
         <location filename="../GUI/.tmp/debug/ui_WidgetSettings.h" line="-8"/>
-        <location filename="../GUI/.tmp/release/ui_WidgetSettings.h" line="-4"/>
+        <location filename="../GUI/.tmp/release/ui_WidgetSettings.h" line="-8"/>
         <source>Interface to listen</source>
         <translation>Interface à écouter</translation>
     </message>
     <message>
-        <location filename="../GUI/.tmp/release/ui_WidgetSettings.h" line="+1"/>
-        <source>All interfaces</source>
-        <translation>Toutes les interfaces</translation>
-    </message>
-    <message>
-        <location filename="../GUI/Settings/WidgetSettings.ui" line="+49"/>
+        <location line="+49"/>
         <location filename="../GUI/.tmp/debug/ui_WidgetSettings.h" line="+2"/>
-        <location filename="../GUI/.tmp/release/ui_WidgetSettings.h" line="+1"/>
+        <location filename="../GUI/.tmp/release/ui_WidgetSettings.h" line="+2"/>
         <source>IPv6</source>
         <translation>IPv6</translation>
     </message>
@@ -687,7 +644,7 @@
     <message>
         <location line="+6"/>
         <location filename="../GUI/.tmp/debug/ui_WidgetSettings.h" line="-5"/>
-        <location filename="../GUI/.tmp/release/ui_WidgetSettings.h" line="-9"/>
+        <location filename="../GUI/.tmp/release/ui_WidgetSettings.h" line="-5"/>
         <source>Language</source>
         <translation>Langue</translation>
     </message>
@@ -722,20 +679,21 @@
     <message>
         <location line="-70"/>
         <location filename="../GUI/.tmp/debug/ui_WidgetSettings.h" line="-8"/>
-        <location filename="../GUI/.tmp/release/ui_WidgetSettings.h" line="+2"/>
+        <location filename="../GUI/.tmp/release/ui_WidgetSettings.h" line="-8"/>
         <source>When activated all received data will be verified against their hashes.  It may consume CPU resources.</source>
         <translation>Lorsque activé toutes les données reçues sont vérifiées par rapport à leur empreinte. Consomme un peu de puissance CPU.</translation>
     </message>
     <message>
         <location line="-46"/>
         <location filename="../GUI/.tmp/debug/ui_WidgetSettings.h" line="-4"/>
+        <location filename="../GUI/.tmp/release/ui_WidgetSettings.h" line="-4"/>
         <source>Any</source>
         <translation>Toutes</translation>
     </message>
     <message>
         <location line="+49"/>
         <location filename="../GUI/.tmp/debug/ui_WidgetSettings.h" line="+6"/>
-        <location filename="../GUI/.tmp/release/ui_WidgetSettings.h" line="+2"/>
+        <location filename="../GUI/.tmp/release/ui_WidgetSettings.h" line="+6"/>
         <source>Data integrity check</source>
         <translation>Verification de l&apos;intégrité des données</translation>
     </message>

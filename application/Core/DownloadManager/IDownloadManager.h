@@ -63,6 +63,11 @@ namespace DM
 
       virtual void removeDownloads(QList<quint64> IDs) = 0;
 
+      /**
+        * Pause or unpause some downloads.
+        */
+      virtual void pauseDownloads(QList<quint64> IDs, bool pause = true) = 0;
+
       virtual QList< QSharedPointer<IChunkDownload> > getUnfinishedChunks(int n) const = 0;
 
       /**

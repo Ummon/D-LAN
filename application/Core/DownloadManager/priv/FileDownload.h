@@ -59,6 +59,9 @@ namespace DM
       ~FileDownload();
 
       void start();
+      void stop();
+
+      void pause(bool pause);
 
       void peerSourceBecomesAvailable();
 

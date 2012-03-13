@@ -55,6 +55,8 @@ namespace DM
         */
       virtual void start() = 0;
 
+      virtual void pause(bool) {}
+
       virtual void peerSourceBecomesAvailable() {}
 
       virtual void populateRemoteEntry(Protos::Queue::Queue_Entry* entry) const;

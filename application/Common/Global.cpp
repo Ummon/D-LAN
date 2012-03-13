@@ -44,7 +44,7 @@ using namespace Common;
   */
 
 Global::UnableToSetTempDirException::UnableToSetTempDirException(const QString& dir) :
-   errorMessage(QString(QObject::tr("Unable to create the temporary directory %1")).arg(dir))
+   errorMessage(QString("Unable to create the temporary directory %1").arg(dir))
 {
 }
 
@@ -332,20 +332,20 @@ QString Global::getDataFolder(DataFolderType type, bool create)
 #ifdef Q_OS_WIN32
       TCHAR dataPath[MAX_PATH];
       if (!SUCCEEDED(SHGetFolderPath(NULL, type == ROAMING ? CSIDL_APPDATA : CSIDL_LOCAL_APPDATA, NULL, 0, dataPath)))
-         throw UnableToGetFolder(QString(QObject::tr("Unable to get the %1: SHGetFolderPath failed")).arg(type == ROAMING ? QObject::tr("roaming user folder path") : QObject::tr("local user folder path")));
+         throw UnableToGetFolder(QString("Unable to get the %1: SHGetFolderPath failed").arg(type == ROAMING ? "roaming user folder path" : "local user folder path"));
 
       const QString dataFolderPath = QString::fromUtf16((ushort*)dataPath);
       const QDir dataFolder(dataFolderPath);
 
       if (create && !dataFolder.exists(APPLICATION_FOLDER_NAME))
          if (!dataFolder.mkdir(APPLICATION_FOLDER_NAME))
-            throw UnableToGetFolder(QString(QObject::tr("Unable to create the folder %1 in %2")).arg(APPLICATION_FOLDER_NAME).arg(dataFolder.absolutePath()));
+            throw UnableToGetFolder(QString("Unable to create the folder %1 in %2").arg(APPLICATION_FOLDER_NAME).arg(dataFolder.absolutePath()));
 
       return dataFolder.absoluteFilePath(APPLICATION_FOLDER_NAME);
 #else
       if (create && !QDir::home().exists(APPLICATION_FOLDER_NAME))
          if (!QDir::home().mkdir(APPLICATION_FOLDER_NAME))
-             throw UnableToGetFolder(QString(tr("Unable to create the folder %1 in %2")).arg(APPLICATION_FOLDER_NAME).arg(QDir::home().absolutePath()));
+             throw UnableToGetFolder(QString("Unable to create the folder %1 in %2").arg(APPLICATION_FOLDER_NAME).arg(QDir::home().absolutePath()));
 
       return QDir::home().absoluteFilePath(APPLICATION_FOLDER_NAME);
 #endif

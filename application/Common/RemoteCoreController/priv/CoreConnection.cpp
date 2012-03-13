@@ -185,6 +185,15 @@ void CoreConnection::cancelDownloads(const QList<quint64>& downloadIDs, bool com
    this->send(Common::MessageHeader::GUI_CANCEL_DOWNLOADS, cancelDownloadsMessage);
 }
 
+void CoreConnection::pauseDownloads(const QList<quint64>& downloadIDs, bool pause)
+{
+   Protos::GUI::PauseDownloads pauseDownloadsMessage;
+   for(QListIterator<quint64> i(downloadIDs); i.hasNext();)
+      pauseDownloadsMessage.add_id(i.next());
+   pauseDownloadsMessage.set_pause(pause);
+   this->send(Common::MessageHeader::GUI_PAUSE_DOWNLOADS, pauseDownloadsMessage);
+}
+
 void CoreConnection::moveDownloads(quint64 downloadIDRef, const QList<quint64>& downloadIDs, bool moveBefore)
 {
    Protos::GUI::MoveDownloads moveDownloadsMessage;

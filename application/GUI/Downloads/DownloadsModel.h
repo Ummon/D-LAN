@@ -48,8 +48,10 @@ namespace GUI
 
       quint64 getDownloadID(int row) const;
 
-      bool fileLocationIsKnown(int row) const;
-      bool fileIsComplete(int row) const;
+      bool isDownloadPaused(int row) const;
+      bool isFileLocationKnown(int row) const;
+      bool isFileComplete(int row) const;
+
       QString getPath(int row, bool appendFilename = true) const;
 
       int rowCount(const QModelIndex& parent = QModelIndex()) const;
@@ -77,23 +79,23 @@ namespace GUI
       quint64 totalBytesDownloadedInQueue;
       quint64 eta;
 
-      QList<Protos::GUI::State_Download> downloads;
+      QList<Protos::GUI::State::Download> downloads;
    };
 
    struct Progress
    {
-      Progress() : progress(0), status(Protos::GUI::State_Download_Status_QUEUED) {}
-      Progress(quint32 progress, Protos::GUI::State_Download_Status status) : progress(progress), status(status) {}
+      Progress() : progress(0), status(Protos::GUI::State::Download::QUEUED) {}
+      Progress(quint32 progress, Protos::GUI::State::Download::Status status) : progress(progress), status(status) {}
 
       quint32 progress;
-      Protos::GUI::State_Download_Status status;
+      Protos::GUI::State::Download::Status status;
    };
 
    QDataStream& operator<<(QDataStream& out, const Progress& progress);
    QDataStream& operator>>(QDataStream& in, Progress& progress);
 
-   bool operator==(const Protos::GUI::State_Download& d1, const Protos::GUI::State_Download& d2);
-   bool operator!=(const Protos::GUI::State_Download& d1, const Protos::GUI::State_Download& d2);
+   bool operator==(const Protos::GUI::State::Download& d1, const Protos::GUI::State::Download& d2);
+   bool operator!=(const Protos::GUI::State::Download& d1, const Protos::GUI::State::Download& d2);
 }
 
 Q_DECLARE_METATYPE(GUI::Progress)

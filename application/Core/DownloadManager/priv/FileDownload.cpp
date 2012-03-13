@@ -106,6 +106,35 @@ void FileDownload::start()
    this->retrieveHashes();
 }
 
+void FileDownload::stop()
+{
+   if (!this->getHashesResult.isNull())
+   {
+      this->getHashesResult.clear();
+      this->occupiedPeersAskingForHashes.setPeerAsFree(this->peerSource);
+   }
+
+   for (QListIterator< QSharedPointer<ChunkDownload> > i(this->chunkDownloads); i.hasNext();)
+      i.next()->stop();
+}
+
+void FileDownload::pause(bool pause)
+{
+   if (this->status == COMPLETE || this->status == DELETED)
+      return;
+
+   if (pause)
+   {
+      this->status = PAUSED;
+      this->stop();
+   }
+   else
+   {
+      this->status = QUEUED;
+      this->retrieveHashes();
+   }
+}
+
 void FileDownload::peerSourceBecomesAvailable()
 {
    for (QListIterator< QSharedPointer<ChunkDownload> > i(this->chunkDownloads); i.hasNext();)
@@ -155,7 +184,7 @@ QSet<Common::Hash> FileDownload::getPeers() const
   */
 QSharedPointer<ChunkDownload> FileDownload::getAChunkToDownload()
 {
-   if (this->status == COMPLETE || this->status == DELETED)
+   if (this->status == COMPLETE || this->status == DELETED || this->status == PAUSED)
       return QSharedPointer<ChunkDownload>();
 
    // Choose a chunk with the less number of peer. (rarest first).
@@ -343,7 +372,7 @@ bool FileDownload::retrieveHashes()
    if (
       this->nbHashesKnown == this->NB_CHUNK ||
       !this->hasAValidPeer() ||
-      this->status == COMPLETE || this->status == DELETED || this->status == UNABLE_TO_RETRIEVE_THE_HASHES ||
+      this->status == COMPLETE || this->status == DELETED || this->status == PAUSED || this->status == UNABLE_TO_RETRIEVE_THE_HASHES ||
       !this->occupiedPeersAskingForHashes.setPeerAsOccupied(this->peerSource)
    )
       return false;
