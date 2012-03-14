@@ -228,7 +228,7 @@
 <context>
     <name>GUI::WidgetDownloads</name>
     <message>
-        <location filename="../GUI/Downloads/WidgetDownloads.cpp" line="+182"/>
+        <location filename="../GUI/Downloads/WidgetDownloads.cpp" line="+185"/>
         <source>Open location</source>
         <translation>Ouvrir le dossier</translation>
     </message>
@@ -243,7 +243,17 @@
         <translation>Enlever les éléments sélectionnés</translation>
     </message>
     <message>
-        <location line="+87"/>
+        <location line="+2"/>
+        <source>Pause selected entries</source>
+        <translation>Mettre en pause les éléments sélectionnés</translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Unpause selected entries</source>
+        <translation>Enlever la pause des éléments sélectionnés</translation>
+    </message>
+    <message>
+        <location line="+96"/>
         <source>&lt;All&gt;</source>
         <translation>&lt;Tous&gt;</translation>
     </message>
@@ -383,7 +393,7 @@
 <context>
     <name>RCC::CoreConnection</name>
     <message>
-        <location filename="../Common/RemoteCoreController/priv/CoreConnection.cpp" line="+235"/>
+        <location filename="../Common/RemoteCoreController/priv/CoreConnection.cpp" line="+244"/>
         <source>Unable to connect to the core</source>
         <translation>Impossible de se connecter au core</translation>
     </message>
@@ -484,7 +494,7 @@
     <name>WidgetDownloads</name>
     <message>
         <location filename="../GUI/Downloads/WidgetDownloads.ui" line="+14"/>
-        <location filename="../GUI/.tmp/debug/ui_WidgetDownloads.h" line="+109"/>
+        <location filename="../GUI/.tmp/debug/ui_WidgetDownloads.h" line="+118"/>
         <location filename="../GUI/.tmp/release/ui_WidgetDownloads.h" line="+109"/>
         <source>Downloads</source>
         <translation>Téléchargements</translation>
@@ -509,6 +519,12 @@
         <location filename="../GUI/.tmp/release/ui_WidgetDownloads.h" line="+4"/>
         <source>Removed selected downloads</source>
         <translation>Enlever les fichiers sélectionnés</translation>
+    </message>
+    <message>
+        <location line="+14"/>
+        <location filename="../GUI/.tmp/debug/ui_WidgetDownloads.h" line="+4"/>
+        <source>Pause or unpause selected downloads</source>
+        <translation>Mettre ou enlever la pause des éléments sélectionnés</translation>
     </message>
 </context>
 <context>
