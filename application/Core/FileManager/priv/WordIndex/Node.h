@@ -82,7 +82,7 @@ namespace FM
         * Add a child node and return it.
         * If the node already exists it will returned.
         */
-      Node<T>& addNode(QChar letter);
+      Node<T>& addNode(const QChar& letter);
 
       /**
         * Remove a node for their children.
@@ -94,7 +94,7 @@ namespace FM
         * Get a children node.
         * /!\ If no one exists 0 is returned.
         */
-      Node<T>* getNode(QChar letter) const;
+      Node<T>* getNode(const QChar& letter) const;
 
       /**
         * Does the node have some children?
@@ -127,7 +127,8 @@ namespace FM
    private:
       Node(const QChar& letter);
 
-      QChar letter; ///< The letter from an indexed word.
+      const QChar letter; ///< The letter from an indexed word.
+
       QList<Node<T>*> children; ///< The children nodes.
       QList<T*> items; ///< The indexed items.
    };
@@ -163,7 +164,7 @@ Node<T>::~Node()
 }
 
 template <typename T>
-Node<T>& Node<T>::addNode(QChar letter)
+Node<T>& Node<T>::addNode(const QChar& letter)
 {
    // Search if the letter already exists.
    for (int i = 0; i < this->children.size(); i++)
@@ -183,7 +184,7 @@ void Node<T>::rmNode(Node<T>* const node)
 }
 
 template <typename T>
-Node<T>* Node<T>::getNode(QChar letter) const
+Node<T>* Node<T>::getNode(const QChar& letter) const
 {
    for (QListIterator<Node<T>*>i(this->children); i.hasNext();)
    {

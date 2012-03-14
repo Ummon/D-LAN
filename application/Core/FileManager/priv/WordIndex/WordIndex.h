@@ -125,12 +125,13 @@ QList< NodeResult<T> > WordIndex<T>::search(const QStringList& words, int maxNbR
    QMutexLocker locker(&mutex);
 
    QList< NodeResult<T> > result;
-   foreach (QString word, words)
+   for (QListIterator<QString> i(words); i.hasNext();)
    {
+      const QString& word = i.next();
       const Node<T>* currentNode = &this->node;
-      foreach (QChar letter, word)
+      for (int j = 0; j < word.size(); j++)
       {
-         if (!(currentNode = currentNode->getNode(letter)))
+         if (!(currentNode = currentNode->getNode(word[j])))
             goto nextWord;
       }
 
