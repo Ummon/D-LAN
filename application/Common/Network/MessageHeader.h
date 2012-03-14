@@ -87,7 +87,7 @@ namespace Common
 
          GUI_CHAT_MESSAGE =            0x1091,
 
-         GUI_REFRESH =                 0x10a1,
+         GUI_REFRESH =                 0x10A1,
       };      
 
       MessageHeader();
