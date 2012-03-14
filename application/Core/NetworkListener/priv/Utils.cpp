@@ -12,37 +12,33 @@ using namespace NL;
 
 QHostAddress Utils::getCurrentAddressToListenTo()
 {
+   // Check if IPv6 is available.
+   bool hasAnyIPv6 = false;
+   foreach (QHostAddress address, QNetworkInterface::allAddresses())
+      if (address == QHostAddress::AnyIPv6 || address == QHostAddress::LocalHostIPv6)
+      {
+         hasAnyIPv6 = true;
+         break;
+      }
+
+   if (!hasAnyIPv6 && SETTINGS.get<quint32>("listenAny") == Protos::Common::Interface::Address::IPv6)
+      SETTINGS.set("listenAny", static_cast<quint32>(Protos::Common::Interface::Address::IPv6));
+
    QString adressToListen = SETTINGS.get<QString>("listenAddress");
-   if (adressToListen.isEmpty())
-      return SETTINGS.get<quint32>("listenAny") == Protos::Common::Interface::Address::IPv4 ? QHostAddress::Any : QHostAddress::AnyIPv6;
 
    // Check if the address exists.
-   bool hasAnyIPv6 = false;
-   for (QListIterator<QHostAddress> i(QNetworkInterface::allAddresses()); i.hasNext();)
-   {
-      QHostAddress currentAddress = i.next();
-      if (currentAddress.toString() == adressToListen)
+   foreach (QHostAddress address, QNetworkInterface::allAddresses())
+      if (address.toString() == adressToListen)
          return QHostAddress(adressToListen);
-      if (currentAddress == QHostAddress::AnyIPv6 || currentAddress == QHostAddress::LocalHostIPv6)
-         hasAnyIPv6 = true;
-   }
 
    SETTINGS.set("listenAddress", QString(""));
 
-   if (hasAnyIPv6)
-   {
-      SETTINGS.set("listenAny", static_cast<quint32>(Protos::Common::Interface::Address::IPv6));
-      return QHostAddress::AnyIPv6;
-   }
-   else
-   {
-      SETTINGS.set("listenAny", static_cast<quint32>(Protos::Common::Interface::Address::IPv4));
-      return QHostAddress::Any;
-   }
+   return SETTINGS.get<quint32>("listenAny") == Protos::Common::Interface::Address::IPv4 ? QHostAddress::Any : QHostAddress::AnyIPv6;
 }
 
 /**
   * Return the multicast group. It can be an IPv6 or an IPv4 group, depending of the current address.
+  * The group is stored in the setting variable 'multicast_group'.
   */
 QHostAddress Utils::getMulticastGroup()
 {
