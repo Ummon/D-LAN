@@ -27,7 +27,8 @@ namespace DM
    const int RESCAN_QUEUE_PERIOD_IF_ERROR = 10000; // [ms]. If one or more download has a status >= 0x20 then all the queue will be periodically rescaned.
 
    // 2 -> 3 : BLAKE -> Sha-1
-   const int FILE_QUEUE_VERSION = 3;
+   // 3 -> 4 : Replace Entry::complete by a status.
+   const int FILE_QUEUE_VERSION = 4;
 }
 
 #endif

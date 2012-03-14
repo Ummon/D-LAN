@@ -80,13 +80,14 @@ namespace Common
          GUI_BROWSE_RESULT =           0x1053,
 
          GUI_CANCEL_DOWNLOADS =        0x1061,
+         GUI_PAUSE_DOWNLOADS =         0x10C1,
          GUI_MOVE_DOWNLOADS =          0x1071,
 
          GUI_DOWNLOAD =                0x1081,
 
          GUI_CHAT_MESSAGE =            0x1091,
 
-         GUI_REFRESH =                 0x10a1,
+         GUI_REFRESH =                 0x10A1,
       };      
 
       MessageHeader();

@@ -19,6 +19,8 @@
 #include <priv/DownloadQueue.h>
 using namespace DM;
 
+#include <QSet>
+
 #include <Common/PersistentData.h>
 #include <Common/Constants.h>
 #include <Common/ProtoHelper.h>
@@ -192,6 +194,28 @@ bool DownloadQueue::removeDownloads(DownloadPredicate& predicate)
    return queueChanged;
 }
 
+/**
+  * Return true if one or more download have been paused or unpaused.
+  */
+bool DownloadQueue::pauseDownloads(QList<quint64> IDs, bool pause)
+{
+   QSet<quint64> IDsRemaining(IDs.toSet());
+
+   bool stateChanged = false;
+
+   for (QListIterator<Download*> i(this->downloads); i.hasNext() && !IDsRemaining.isEmpty();)
+   {
+      Download* download = i.next();
+      if (IDsRemaining.remove(download->getID()))
+      {
+         if (download->pause(pause))
+            stateChanged = true;
+      }
+   }
+
+   return stateChanged;
+}
+
 bool DownloadQueue::isEntryAlreadyQueued(const Protos::Common::Entry& localEntry, const Common::Hash& peerSourceID)
 {
    for (QMultiHash<Common::Hash, Download*>::iterator i = this->downloadsIndexedBySourcePeerID.find(peerSourceID); i != this->downloadsIndexedBySourcePeerID.end() && i.key() == peerSourceID; ++i)
@@ -238,12 +262,9 @@ void DownloadQueue::saveToFile() const
 
    for (QListIterator<Download*> i(this->downloads); i.hasNext();)
    {
-      Protos::Queue::Queue_Entry* queueEntry = savedQueue.add_entry();
+      Protos::Queue::Queue::Entry* queueEntry = savedQueue.add_entry();
       Download* download = i.next();
-      download->populateRemoteEntry(queueEntry);
-      download->populateLocalEntry(queueEntry);
-      queueEntry->mutable_peer_source_id()->set_hash(download->getPeerSource()->getID().getData(), Common::Hash::HASH_SIZE);
-      Common::ProtoHelper::setStr(*queueEntry, &Protos::Queue::Queue::Entry::set_peer_source_nick, download->getPeerSource()->getNick());
+      download->populateQueueEntry(queueEntry);
    }
 
    try

@@ -43,15 +43,16 @@ Download::~Download()
    );
 }
 
-void Download::populateRemoteEntry(Protos::Queue::Queue_Entry* entry) const
+void Download::populateQueueEntry(Protos::Queue::Queue::Entry* entry) const
 {
    entry->mutable_remote_entry()->CopyFrom(this->remoteEntry);
-}
-
-void Download::populateLocalEntry(Protos::Queue::Queue_Entry* entry) const
-{
    entry->mutable_local_entry()->CopyFrom(this->localEntry);
-   entry->set_complete(this->status == COMPLETE);
+
+   if (this->status == QUEUED || this->status == COMPLETE || this->status == PAUSED)
+      entry->set_status(static_cast<Protos::Queue::Queue::Entry::Status>(this->status));
+
+   entry->mutable_peer_source_id()->set_hash(this->peerSource->getID().getData(), Common::Hash::HASH_SIZE);
+   Common::ProtoHelper::setStr(*entry, &Protos::Queue::Queue::Entry::set_peer_source_nick, this->peerSource->getNick());
 }
 
 quint64 Download::getID() const
@@ -106,7 +107,7 @@ void Download::remove()
 
 bool Download::updateStatus()
 {
-   if (this->status == DELETED || this->status == COMPLETE)
+   if (this->status == DELETED || this->status == COMPLETE || this->status == PAUSED)
       return true;
 
    if (!this->peerSource->isAvailable())

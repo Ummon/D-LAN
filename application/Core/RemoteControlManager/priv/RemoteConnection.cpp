@@ -308,6 +308,20 @@ void RemoteConnection::onNewMessage(Common::MessageHeader::MessageType type, con
       }
       break;
 
+   case Common::MessageHeader::GUI_PAUSE_DOWNLOADS:
+      {
+         const Protos::GUI::PauseDownloads& pauseDownloadsMessage = static_cast<const Protos::GUI::PauseDownloads&>(message);
+
+         QList<quint64> IDs;
+         for (int i = 0; i < pauseDownloadsMessage.id_size(); i++)
+            IDs << pauseDownloadsMessage.id(i);
+
+         this->downloadManager->pauseDownloads(IDs, pauseDownloadsMessage.pause());
+
+         this->refresh();
+      }
+      break;
+
    case Common::MessageHeader::GUI_MOVE_DOWNLOADS:
       {
          const Protos::GUI::MoveDownloads& moveDownloadsMessage = static_cast<const Protos::GUI::MoveDownloads&>(message);

@@ -129,6 +129,7 @@ WidgetDownloads::WidgetDownloads(QSharedPointer<RCC::ICoreConnection> coreConnec
 
    connect(this->ui->butRemoveComplete, SIGNAL(clicked()), this, SLOT(removeCompletedFiles()));
    connect(this->ui->butRemoveSelected, SIGNAL(clicked()), this, SLOT(removeSelectedEntries()));
+   connect(this->ui->butPause, SIGNAL(clicked()), this, SLOT(pauseSelectedEntries()));
 
    this->filterStatusList = new CheckBoxList(this);
    this->filterStatusList->setModel(&this->checkBoxModel);
@@ -170,24 +171,28 @@ void WidgetDownloads::displayContextMenuDownloads(const QPoint& point)
    for (QListIterator<QModelIndex> i(selectedRows); i.hasNext();)
    {
       int row = i.next().row();
-      if (this->downloadsModel.fileLocationIsKnown(row))
+      if (this->downloadsModel.isFileLocationKnown(row))
       {
          showOpenLocation = true;
          break;
       }
    }
 
+   QPair<QList<quint64>, bool> IDs = this->getDownloadIDsToPause();
+
    QMenu menu;
    if (showOpenLocation)
       menu.addAction(QIcon(":/icons/ressources/explore_folder.png"), tr("Open location"), this, SLOT(openLocationSelectedEntries()));
    menu.addAction(QIcon(":/icons/ressources/remove_complete_files.png"), tr("Remove completed files"), this, SLOT(removeCompletedFiles()));
    menu.addAction(QIcon(":/icons/ressources/delete.png"), tr("Remove selected entries"), this, SLOT(removeSelectedEntries()));
+   if (!IDs.first.isEmpty())
+      menu.addAction(QIcon(":/icons/ressources/pause.png"), IDs.second ? tr("Pause selected entries") : tr("Unpause selected entries"), this, SLOT(pauseSelectedEntries()));
    menu.exec(this->ui->tblDownloads->mapToGlobal(point));
 }
 
 void WidgetDownloads::downloadDoubleClicked(const QModelIndex& index)
 {
-   if (this->downloadsModel.fileLocationIsKnown(index.row()))
+   if (this->downloadsModel.isFileLocationKnown(index.row()))
       QDesktopServices::openUrl(QUrl("file:///" + this->downloadsModel.getPath(index.row())));
 }
 
@@ -199,7 +204,7 @@ void WidgetDownloads::openLocationSelectedEntries()
    for (QListIterator<QModelIndex> i(selectedRows); i.hasNext();)
    {
       int row = i.next().row();
-      if (this->downloadsModel.fileLocationIsKnown(row))
+      if (this->downloadsModel.isFileLocationKnown(row))
          locations.insert("file:///" + this->downloadsModel.getPath(row, false));
    }
 
@@ -224,7 +229,7 @@ void WidgetDownloads::removeSelectedEntries()
       quint64 ID = this->downloadsModel.getDownloadID(row);
       if (ID != 0)
          downloadIDs << ID;
-      if (!this->downloadsModel.fileIsComplete(row))
+      if (!this->downloadsModel.isFileComplete(row))
          allComplete = false;
    }
 
@@ -233,6 +238,7 @@ void WidgetDownloads::removeSelectedEntries()
       if (!allComplete)
       {
          QMessageBox msgBox(this);
+         msgBox.setWindowIcon(QIcon(":/icons/ressources/delete.png"));
          msgBox.setWindowTitle("Remove selected downloads");
          msgBox.setText("Are you sure to remove the selected downloads? There is one or more unfinished download.");
          msgBox.setIcon(QMessageBox::Question);
@@ -244,6 +250,14 @@ void WidgetDownloads::removeSelectedEntries()
       else
          this->coreConnection->cancelDownloads(downloadIDs);
    }
+}
+
+void WidgetDownloads::pauseSelectedEntries()
+{
+   QPair<QList<quint64>, bool> IDs = this->getDownloadIDsToPause();
+
+   if (!IDs.first.isEmpty())
+      this->coreConnection->pauseDownloads(IDs.first, IDs.second);
 }
 
 void WidgetDownloads::filterChanged()
@@ -273,4 +287,25 @@ void WidgetDownloads::updateCheckBoxElements()
    this->checkBoxModel.addElement(tr("Downloading"), true, STATUS_DOWNLOADING);
    this->checkBoxModel.addElement(tr("Queued"), true, STATUS_QUEUED);
    this->checkBoxModel.addElement(tr("Error"), true, STATUS_ERROR);
+}
+
+QPair<QList<quint64>, bool> WidgetDownloads::getDownloadIDsToPause() const
+{
+   QList<quint64> downloadIDs;
+
+   QModelIndexList selectedRows = this->ui->tblDownloads->selectionModel()->selectedRows();
+   bool allPaused = true;
+   for (QListIterator<QModelIndex> i(selectedRows); i.hasNext();)
+   {
+      const int row = i.next().row();
+      quint64 ID = this->downloadsModel.getDownloadID(row);
+      if (ID != 0 && !this->downloadsModel.isFileComplete(row))
+      {
+            downloadIDs << ID;
+         if (!this->downloadsModel.isDownloadPaused(row))
+            allPaused = false;
+      }
+   }
+
+   return qMakePair(downloadIDs, !allPaused);
 }

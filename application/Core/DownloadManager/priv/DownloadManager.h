@@ -58,17 +58,19 @@ namespace DM
       void addDownload(const Protos::Common::Entry& remoteEntry, PM::IPeer* peerSource, const Common::Hash& destinationDirectoryID, const QString& relativePath);
       void addDownload(const Protos::Common::Entry& remoteEntry, PM::IPeer* peerSource, const QString& absolutePath);
 
-      Download* addDownload(const Protos::Common::Entry& remoteEntry, PM::IPeer* peerSource, const Common::Hash& destinationDirectoryID, const QString& localRelativePath, bool complete);
-      Download* addDownload(const Protos::Common::Entry& remoteEntry, PM::IPeer* peerSource, const Common::Hash& destinationDirectoryID, const QString& localRelativePath, bool complete, int position);
+      Download* addDownload(const Protos::Common::Entry& remoteEntry, PM::IPeer* peerSource, const Common::Hash& destinationDirectoryID, const QString& localRelativePath, Protos::Queue::Queue::Entry::Status status);
+      Download* addDownload(const Protos::Common::Entry& remoteEntry, PM::IPeer* peerSource, const Common::Hash& destinationDirectoryID, const QString& localRelativePath, Protos::Queue::Queue::Entry::Status status, int position);
 
-      Download* addDownload(const Protos::Common::Entry& remoteEntry, const Protos::Common::Entry& localEntry, PM::IPeer* peerSource, bool complete);
-      Download* addDownload(const Protos::Common::Entry& remoteEntry, const Protos::Common::Entry& localEntry, PM::IPeer* peerSource, bool complete,  int position);
+      Download* addDownload(const Protos::Common::Entry& remoteEntry, const Protos::Common::Entry& localEntry, PM::IPeer* peerSource, Protos::Queue::Queue::Entry::Status status);
+      Download* addDownload(const Protos::Common::Entry& remoteEntry, const Protos::Common::Entry& localEntry, PM::IPeer* peerSource, Protos::Queue::Queue::Entry::Status status, int position);
 
       QList<IDownload*> getDownloads() const;
       void moveDownloads(quint64 downloadIDRef, bool moveBefore, const QList<quint64>& downloadIDs);
 
       void removeAllCompleteDownloads();
       void removeDownloads(QList<quint64> IDs);
+
+      void pauseDownloads(QList<quint64> IDs, bool pause = true);
 
       QList< QSharedPointer<IChunkDownload> > getUnfinishedChunks(int n) const;
 

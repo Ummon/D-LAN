@@ -85,6 +85,7 @@ namespace RCC
       void download(const Common::Hash& peerID, const Protos::Common::Entry& entry, const Common::Hash& sharedFolderID, const QString& path = "/");
       void download(const Common::Hash& peerID, const Protos::Common::Entry& entry, const QString& absolutePath);
       void cancelDownloads(const QList<quint64>& downloadIDs, bool complete = false);
+      void pauseDownloads(const QList<quint64>& downloadIDs, bool pause = true);
       void moveDownloads(quint64 downloadIDRef, const QList<quint64>& downloadIDs, bool moveBefore = true);
       void refresh();
 

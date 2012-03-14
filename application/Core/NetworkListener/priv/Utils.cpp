@@ -1,3 +1,21 @@
+/**
+  * D-LAN - A decentralized LAN file sharing software.
+  * Copyright (C) 2010-2012 Greg Burri <greg.burri@gmail.com>
+  *
+  * This program is free software: you can redistribute it and/or modify
+  * it under the terms of the GNU General Public License as published by
+  * the Free Software Foundation, either version 3 of the License, or
+  * (at your option) any later version.
+  *
+  * This program is distributed in the hope that it will be useful,
+  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  * GNU General Public License for more details.
+  *
+  * You should have received a copy of the GNU General Public License
+  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  */
+  
 #include <priv/Utils.h>
 using namespace NL;
 
@@ -12,37 +30,33 @@ using namespace NL;
 
 QHostAddress Utils::getCurrentAddressToListenTo()
 {
+   // Check if IPv6 is available.
+   bool hasAnyIPv6 = false;
+   foreach (QHostAddress address, QNetworkInterface::allAddresses())
+      if (address == QHostAddress::AnyIPv6 || address == QHostAddress::LocalHostIPv6)
+      {
+         hasAnyIPv6 = true;
+         break;
+      }
+
+   if (!hasAnyIPv6 && SETTINGS.get<quint32>("listenAny") == Protos::Common::Interface::Address::IPv6)
+      SETTINGS.set("listenAny", static_cast<quint32>(Protos::Common::Interface::Address::IPv6));
+
    QString adressToListen = SETTINGS.get<QString>("listenAddress");
-   if (adressToListen.isEmpty())
-      return SETTINGS.get<quint32>("listenAny") == Protos::Common::Interface::Address::IPv4 ? QHostAddress::Any : QHostAddress::AnyIPv6;
 
    // Check if the address exists.
-   bool hasAnyIPv6 = false;
-   for (QListIterator<QHostAddress> i(QNetworkInterface::allAddresses()); i.hasNext();)
-   {
-      QHostAddress currentAddress = i.next();
-      if (currentAddress.toString() == adressToListen)
+   foreach (QHostAddress address, QNetworkInterface::allAddresses())
+      if (address.toString() == adressToListen)
          return QHostAddress(adressToListen);
-      if (currentAddress == QHostAddress::AnyIPv6 || currentAddress == QHostAddress::LocalHostIPv6)
-         hasAnyIPv6 = true;
-   }
 
    SETTINGS.set("listenAddress", QString(""));
 
-   if (hasAnyIPv6)
-   {
-      SETTINGS.set("listenAny", static_cast<quint32>(Protos::Common::Interface::Address::IPv6));
-      return QHostAddress::AnyIPv6;
-   }
-   else
-   {
-      SETTINGS.set("listenAny", static_cast<quint32>(Protos::Common::Interface::Address::IPv4));
-      return QHostAddress::Any;
-   }
+   return SETTINGS.get<quint32>("listenAny") == Protos::Common::Interface::Address::IPv4 ? QHostAddress::Any : QHostAddress::AnyIPv6;
 }
 
 /**
   * Return the multicast group. It can be an IPv6 or an IPv4 group, depending of the current address.
+  * The group is stored in the setting variable 'multicast_group'.
   */
 QHostAddress Utils::getMulticastGroup()
 {

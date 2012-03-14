@@ -54,6 +54,12 @@ ChunkDownload::ChunkDownload(QSharedPointer<PM::IPeerManager> peerManager, Occup
 
 ChunkDownload::~ChunkDownload()
 {
+   this->stop();
+   L_DEBU(QString("ChunkDownload deleted : %1").arg(this->chunkHash.toStr()));
+}
+
+void ChunkDownload::stop()
+{
    if (this->downloading)
    {
       this->mutex.lock();
@@ -61,10 +67,7 @@ ChunkDownload::~ChunkDownload()
       this->mutex.unlock();
 
       this->threadPool.wait(this);
-
-      this->downloadingEnded();
    }
-   L_DEBU(QString("ChunkDownload deleted : %1").arg(this->chunkHash.toStr()));
 }
 
 Common::Hash ChunkDownload::getHash() const
@@ -128,6 +131,7 @@ void ChunkDownload::run()
          if (!this->downloading)
          {
             L_DEBU(QString("Downloading aborted, chunk : %1%2").arg(this->chunk->toStringLog()).arg(this->chunk->isComplete() ? "" : " Not complete!"));
+            this->networkTransferStatus = PM::ISocket::SFS_TO_CLOSE; // Because some garbage from the remote uploader will continue to come in this socket.
             this->mutex.unlock();
             break;
          }

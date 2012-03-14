@@ -29,13 +29,6 @@
     </message>
 </context>
 <context>
-    <name>Global</name>
-    <message>
-        <source>Unable to create the folder %1 in %2</source>
-        <translation>Impossible de créer le fichier %1 dans %2</translation>
-    </message>
-</context>
-<context>
     <name>PM::PeerManager</name>
     <message>
         <source>Our current ID: %1</source>
@@ -53,67 +46,8 @@
         <translation>Prêt à servir</translation>
     </message>
     <message>
-        <source>Unable to create the temporary directory %1</source>
-        <translation>Impossible de créer le dossier temporaire %1</translation>
-    </message>
-    <message>
-        <source>Unable to get the %1: SHGetFolderPath failed</source>
-        <translation>Impossible d&apos;obtenir le %1: SHGetFolderPath a échoué</translation>
-    </message>
-    <message>
-        <source>roaming user folder path</source>
-        <translation>Chemin vers le dossier &apos;roaming&apos; de l&apos;utilisateur</translation>
-    </message>
-    <message>
-        <source>local user folder path</source>
-        <translation>Chemin vers le dossier &apos;local&apos; de l&apos;utilisateur</translation>
-    </message>
-    <message>
-        <source>Unable to create the folder %1 in %2</source>
-        <translation>Impossible de créer le dossier %1 dans %2</translation>
-    </message>
-    <message>
-        <source>Unable to open the file in write mode : %1, error : %2</source>
-        <translation>Impossible d&apos;ouvrir le fichier en mode écriture : %1, erreur : %2</translation>
-    </message>
-    <message>
         <source>The version (%1) of the queue file &quot;%2&quot; doesn&apos;t match the current version (%3). Queue will be reset.</source>
         <translation>La version (%1) du fichier contenant la queue &quot;%2&quot; ne correspond pas à la version courante (%3). La queue va être réinitialisée.</translation>
-    </message>
-    <message>
-        <source>D-LAN Core cannot be installed as a service</source>
-        <translation>D-LAN ne peut pas être installé comme service</translation>
-    </message>
-    <message>
-        <source>Core launched as subprocess</source>
-        <translation>Le core est lancé comme sous-processus</translation>
-    </message>
-    <message>
-        <source>Core service launched</source>
-        <translation>Le core est lancé comme service</translation>
-    </message>
-</context>
-<context>
-    <name>RCC::CoreConnection</name>
-    <message>
-        <source>Unable to connect to the core</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Unable to resolve the address : %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Connected to the core</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Authentication failed, bad password</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Authentication failed</source>
-        <translation type="unfinished"></translation>
     </message>
 </context>
 </TS>

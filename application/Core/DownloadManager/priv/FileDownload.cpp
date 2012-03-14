@@ -44,7 +44,7 @@ FileDownload::FileDownload(
    const Protos::Common::Entry& remoteEntry,
    const Protos::Common::Entry& localEntry,
    Common::TransferRateCalculator& transferRateCalculator,
-   bool complete
+   Protos::Queue::Queue::Entry::Status status
 ) :
    Download(peerSource, remoteEntry, localEntry),
    fileManager(fileManager),
@@ -63,8 +63,7 @@ FileDownload::FileDownload(
       arg(Common::ProtoHelper::getDebugStr(this->localEntry))
    );
 
-   if (complete)
-      this->status = COMPLETE;
+   this->status = static_cast<Status>(status);
 
    // We create a ChunkDownload for each known hash in the entry.
    for (int i = 0; i < this->remoteEntry.chunk_size(); i++)
@@ -106,6 +105,39 @@ void FileDownload::start()
    this->retrieveHashes();
 }
 
+void FileDownload::stop()
+{
+   if (!this->getHashesResult.isNull())
+   {
+      this->getHashesResult.clear();
+      this->occupiedPeersAskingForHashes.setPeerAsFree(this->peerSource);
+   }
+
+   for (QListIterator< QSharedPointer<ChunkDownload> > i(this->chunkDownloads); i.hasNext();)
+      i.next()->stop();
+}
+
+bool FileDownload::pause(bool pause)
+{
+   if (this->status == COMPLETE || this->status == DELETED)
+      return false;
+
+   if (pause && this->status != PAUSED)
+   {
+      this->status = PAUSED;
+      this->stop();
+      return true;
+   }
+   else if (!pause && this->status == PAUSED)
+   {
+      this->status = QUEUED;
+      this->retrieveHashes();
+      return true;
+   }
+
+   return false;
+}
+
 void FileDownload::peerSourceBecomesAvailable()
 {
    for (QListIterator< QSharedPointer<ChunkDownload> > i(this->chunkDownloads); i.hasNext();)
@@ -115,9 +147,9 @@ void FileDownload::peerSourceBecomesAvailable()
 /**
   * Add the known hashes.
   */
-void FileDownload::populateRemoteEntry(Protos::Queue::Queue_Entry* entry) const
+void FileDownload::populateQueueEntry(Protos::Queue::Queue::Entry* entry) const
 {
-   Download::populateRemoteEntry(entry);
+   Download::populateQueueEntry(entry);
 
    for (int i = entry->remote_entry().chunk_size(); i < this->chunkDownloads.size(); i++)
    {
@@ -155,7 +187,7 @@ QSet<Common::Hash> FileDownload::getPeers() const
   */
 QSharedPointer<ChunkDownload> FileDownload::getAChunkToDownload()
 {
-   if (this->status == COMPLETE || this->status == DELETED)
+   if (this->status == COMPLETE || this->status == DELETED || this->status == PAUSED)
       return QSharedPointer<ChunkDownload>();
 
    // Choose a chunk with the less number of peer. (rarest first).
@@ -343,7 +375,7 @@ bool FileDownload::retrieveHashes()
    if (
       this->nbHashesKnown == this->NB_CHUNK ||
       !this->hasAValidPeer() ||
-      this->status == COMPLETE || this->status == DELETED || this->status == UNABLE_TO_RETRIEVE_THE_HASHES ||
+      this->status == COMPLETE || this->status == DELETED || this->status == PAUSED || this->status == UNABLE_TO_RETRIEVE_THE_HASHES ||
       !this->occupiedPeersAskingForHashes.setPeerAsOccupied(this->peerSource)
    )
       return false;

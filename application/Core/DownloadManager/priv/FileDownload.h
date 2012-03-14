@@ -54,15 +54,18 @@ namespace DM
          const Protos::Common::Entry& remoteEntry,
          const Protos::Common::Entry& localEntry,
          Common::TransferRateCalculator& transferRateCalculator,
-         bool complete = false
+         Protos::Queue::Queue::Entry::Status status = Protos::Queue::Queue::Entry::QUEUED
       );
       ~FileDownload();
 
       void start();
+      void stop();
+
+      bool pause(bool pause);
 
       void peerSourceBecomesAvailable();
 
-      void populateRemoteEntry(Protos::Queue::Queue_Entry* entry) const;
+      void populateQueueEntry(Protos::Queue::Queue::Entry* entry) const;
 
       int getProgress() const;
       QSet<Common::Hash> getPeers() const;
