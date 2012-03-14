@@ -15,7 +15,7 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-
+  
 #ifndef COMMON_VERSION_H
 #define COMMON_VERSION_H
 
@@ -23,7 +23,7 @@
 #define VERSION_TAG "Alpha"
 
 // These two values are automatically updated during the release building process. See the script 'Application/Tools/update_version.sh'
-#define BUILD_TIME "2012-03-10_03-44"
-#define GIT_VERSION "8c05daef8f6abb74b783fb667c500bf2d12cec74"
+#define BUILD_TIME "2012-03-14_00-48"
+#define GIT_VERSION "9ff46b9af2573e240733e39c5f724e17bc102330"
 
 #endif

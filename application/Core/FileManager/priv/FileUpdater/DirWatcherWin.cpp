@@ -15,7 +15,7 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-
+  
 #include <QtCore/QtCore> // For the Q_OS_* defines.
 
 #ifdef Q_OS_WIN32
