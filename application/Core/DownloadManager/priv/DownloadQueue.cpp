@@ -241,6 +241,7 @@ Protos::Queue::Queue DownloadQueue::loadFromFile()
       {
          L_USER(QString(QObject::tr("The version (%1) of the queue file \"%2\" doesn't match the current version (%3). Queue will be reset.")).arg(savedQueue.version()).arg(Common::FILE_QUEUE).arg(FILE_QUEUE_VERSION));
          Common::PersistentData::rmValue(Common::FILE_QUEUE, Common::Global::LOCAL);
+         savedQueue.Clear();
       }
    }
    catch (Common::UnknownValueException& e)
