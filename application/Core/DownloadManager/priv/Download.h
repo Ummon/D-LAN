@@ -55,12 +55,11 @@ namespace DM
         */
       virtual void start() = 0;
 
-      virtual void pause(bool) {}
+      virtual bool pause(bool) { return false; }
 
       virtual void peerSourceBecomesAvailable() {}
 
-      virtual void populateRemoteEntry(Protos::Queue::Queue_Entry* entry) const;
-      virtual void populateLocalEntry(Protos::Queue::Queue_Entry* entry) const;
+      virtual void populateQueueEntry(Protos::Queue::Queue::Entry* entry) const;
 
       quint64 getID() const;
       Status getStatus() const;

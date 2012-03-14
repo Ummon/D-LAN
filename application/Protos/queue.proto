@@ -1,7 +1,7 @@
  /**
   * The persisted queued.
   * The entry status is not saved, it's defined during the download process.
-  * Version : 2
+  * Version : 4
   * All string are encoded in UTF-8.
   */
 
@@ -10,14 +10,20 @@ import "common.proto";
 package Protos.Queue;
 
 message Queue {
-   message Entry {
-      required Common.Entry remote_entry = 1; // May contain hashes.
-      required Common.Entry local_entry = 2; // Doesn't have the hashes.
+   message Entry {  
+      // Values must compatible with GUI::State::Download::Status.
+      enum Status {
+         QUEUED = 0x1;
+         COMPLETE = 0x4;
+         PAUSED = 0x5;
+      }
+      required Common.Entry remote_entry = 1;
+      required Common.Entry local_entry = 2;
       
       required Common.Hash peer_source_id = 3;
-      optional string peer_source_nick = 5;
-      
-      optional bool complete = 4 [default = false]; // Only for Common.Entry.type == FILE
+      optional string peer_source_nick = 4;
+
+      optional Status status = 5 [default = QUEUED]; // Only valid for Common.Entry.type == FILE.
    }
    
    required uint32 version = 1;

@@ -44,7 +44,7 @@ FileDownload::FileDownload(
    const Protos::Common::Entry& remoteEntry,
    const Protos::Common::Entry& localEntry,
    Common::TransferRateCalculator& transferRateCalculator,
-   bool complete
+   Protos::Queue::Queue::Entry::Status status
 ) :
    Download(peerSource, remoteEntry, localEntry),
    fileManager(fileManager),
@@ -63,8 +63,7 @@ FileDownload::FileDownload(
       arg(Common::ProtoHelper::getDebugStr(this->localEntry))
    );
 
-   if (complete)
-      this->status = COMPLETE;
+   this->status = static_cast<Status>(status);
 
    // We create a ChunkDownload for each known hash in the entry.
    for (int i = 0; i < this->remoteEntry.chunk_size(); i++)
@@ -118,21 +117,25 @@ void FileDownload::stop()
       i.next()->stop();
 }
 
-void FileDownload::pause(bool pause)
+bool FileDownload::pause(bool pause)
 {
    if (this->status == COMPLETE || this->status == DELETED)
-      return;
+      return false;
 
-   if (pause)
+   if (pause && this->status != PAUSED)
    {
       this->status = PAUSED;
       this->stop();
+      return true;
    }
-   else
+   else if (!pause && this->status == PAUSED)
    {
       this->status = QUEUED;
       this->retrieveHashes();
+      return true;
    }
+
+   return false;
 }
 
 void FileDownload::peerSourceBecomesAvailable()
@@ -144,9 +147,9 @@ void FileDownload::peerSourceBecomesAvailable()
 /**
   * Add the known hashes.
   */
-void FileDownload::populateRemoteEntry(Protos::Queue::Queue_Entry* entry) const
+void FileDownload::populateQueueEntry(Protos::Queue::Queue::Entry* entry) const
 {
-   Download::populateRemoteEntry(entry);
+   Download::populateQueueEntry(entry);
 
    for (int i = entry->remote_entry().chunk_size(); i < this->chunkDownloads.size(); i++)
    {
