@@ -63,6 +63,7 @@ namespace RCC
       /**
         * Connect to a remote core. Password is mendatory and should be hashed and salted, see the class 'Common::Hasher'.
         * When the connection is ready, the signal 'coreConnected' is emitted.
+        * @param address the IP adress, it can be an IPv4 or IPv6 address.
         */
       virtual void connectToCore(const QString& address, quint16 port, Common::Hash password) = 0;
 

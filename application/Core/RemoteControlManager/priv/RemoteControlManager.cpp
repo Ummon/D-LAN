@@ -38,11 +38,14 @@ RemoteControlManager::RemoteControlManager(
 {
    const quint32 PORT = SETTINGS.get<quint32>("remote_control_port");
 
-   if (!this->tcpServer.listen(QHostAddress::Any, PORT))
-      if (!this->tcpServer.listen(QHostAddress::AnyIPv6, PORT))
-         L_ERRO(QString("Unable to listen on port %1").arg(PORT));
+   const bool okIPv4 = this->tcpServerIPv4.listen(QHostAddress::Any, PORT);
+   const bool okIPv6 = this->tcpServerIPv6.listen(QHostAddress::AnyIPv6, PORT);
 
-   connect(&this->tcpServer, SIGNAL(newConnection()), this, SLOT(newConnection()));
+   if (!okIPv4 && !okIPv6)
+      L_ERRO(QString("Unable to listen on port %1").arg(PORT));
+
+   connect(&this->tcpServerIPv4, SIGNAL(newConnection()), this, SLOT(newConnection()));
+   connect(&this->tcpServerIPv6, SIGNAL(newConnection()), this, SLOT(newConnection()));
 
    L_DEBU(QString("Listen new remoteConnection on port %1").arg(PORT));
 }
@@ -61,7 +64,7 @@ RemoteControlManager::~RemoteControlManager()
 
 void RemoteControlManager::newConnection()
 {
-   QTcpSocket* socket = this->tcpServer.nextPendingConnection();
+   QTcpSocket* socket = static_cast<QTcpServer*>(this->sender())->nextPendingConnection();
 
    if (static_cast<quint32>(this->connections.size()) > SETTINGS.get<quint32>("remote_max_nb_connection"))
    {

@@ -415,17 +415,18 @@ void CoreConnection::tryToConnectToTheNextAddress()
 
    QHostAddress address;
 
-   // Search for an IPv4 address first.
+   // Search for an IPv6 address first.
    for (QMutableListIterator<QHostAddress> i(this->addressesToTry); i.hasNext();)
    {
       QHostAddress currentAddress = i.next();
-      if (currentAddress.protocol() == QAbstractSocket::IPv4Protocol)
+      if (currentAddress.protocol() == QAbstractSocket::IPv6Protocol)
       {
          address = currentAddress;
          i.remove();
          break;
       }
    }
+
    if (address.isNull())
       address = this->addressesToTry.takeFirst();
 
