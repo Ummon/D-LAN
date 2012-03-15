@@ -91,15 +91,20 @@ namespace RCC
 
       bool isRunningAsSubProcess();
 
+      ConnectionInfo getNewConnectionInfo() const;
+      ConnectionInfo getCurrentConnectionInfo() const;
+
    signals:
       void browseResult(const Protos::GUI::BrowseResult& browseResult);
       void searchResult(const Protos::Common::FindResult& findResult);
 
    private slots:
-      void connectToCoreSlot();
-      void stateChanged(QAbstractSocket::SocketState socketState);
       void adressResolved(QHostInfo hostInfo);
-      void connected();
+   private:
+      void tryToConnectToTheNextAddress();
+
+   private slots:
+      void stateChanged(QAbstractSocket::SocketState socketState);
 
    private:      
       void connectedAndAuthenticated();
@@ -109,20 +114,22 @@ namespace RCC
 
       void sendCurrentLanguage();
 
+      void swapSockets();
+      void removeTempSocket();
+
       friend class BrowseResult;
       friend class SearchResult;
 
-      void tryToConnectToTheNextAddress();
+      QAbstractSocket* tempSocket;
+
+      bool isConnecting;
 
       CoreStatus coreStatus;
 
-      QString currentAddress;
-      quint16 currentPort;
-      Common::Hash currentPassword;
-      QLocale currentLanguage;
+      ConnectionInfo newConnectionInfo;
+      ConnectionInfo currentConnectionInfo;
 
-      QElapsedTimer timerFromLastConnectionTry;
-      QTimer retryTimer;
+      QLocale currentLanguage;
 
       int currentHostLookupID;
 

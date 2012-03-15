@@ -154,7 +154,8 @@ message AuthenticationResult {
    enum Status {
       OK = 0x01;
       BAD_PASSWORD = 0x02;
-      ERROR = 0x03;
+      PASSWORD_NOT_DEFINED = 0x03; // The core doesn't have defined a password (empty password).
+      ERROR = 0xFF;
    }
    required Status status = 1;
 }

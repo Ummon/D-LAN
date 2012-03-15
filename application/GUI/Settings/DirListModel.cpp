@@ -146,7 +146,7 @@ QVariant DirListModel::data(const QModelIndex& index, int role) const
    if (index.row() >= this->dirs.size())
       return QVariant();
 
-   switch(role)
+   switch (role)
    {
    case Qt::DisplayRole:
       switch (index.column())
@@ -173,10 +173,10 @@ QVariant DirListModel::headerData(int section, Qt::Orientation orientation, int 
    if (orientation == Qt::Vertical)
       return QAbstractTableModel::headerData(section, orientation, role);
 
-   switch(role)
+   switch (role)
    {
    case Qt::DisplayRole:
-      switch(section)
+      switch (section)
       {
       case 0: return tr("Folder");
       case 1: return tr("Size");

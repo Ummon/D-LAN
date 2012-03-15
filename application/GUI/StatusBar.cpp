@@ -32,8 +32,8 @@ StatusBar::StatusBar(QSharedPointer<RCC::ICoreConnection> coreConnection, QWidge
    this->coreDisconnected();
 
    connect(this->coreConnection.data(), SIGNAL(newState(const Protos::GUI::State&)), this, SLOT(newState(const Protos::GUI::State&)));
-   connect(this->coreConnection.data(), SIGNAL(coreConnected()), this, SLOT(coreConnected()));
-   connect(this->coreConnection.data(), SIGNAL(coreDisconnected()), this, SLOT(coreDisconnected()));
+   connect(this->coreConnection.data(), SIGNAL(connected()), this, SLOT(coreConnected()));
+   connect(this->coreConnection.data(), SIGNAL(disconnected()), this, SLOT(coreDisconnected()));
 
    connect(this->ui->butHelp, SIGNAL(clicked()), this, SLOT(showAbout()));
 

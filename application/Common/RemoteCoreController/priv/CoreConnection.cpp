@@ -43,14 +43,13 @@ void CoreConnection::Logger::logError(const QString& message)
 }
 
 CoreConnection::CoreConnection() :
-   ICoreConnection(new CoreConnection::Logger()), coreStatus(NOT_RUNNING), currentHostLookupID(-1), authenticated(false)
+   ICoreConnection(new CoreConnection::Logger()),
+   tempSocket(0),
+   isConnecting(false),
+   coreStatus(NOT_RUNNING),
+   currentHostLookupID(-1),
+   authenticated(false)
 {
-   connect(this->socket, SIGNAL(connected()), this, SLOT(connected()));
-
-   this->retryTimer.setSingleShot(true);
-   connect(&this->retryTimer, SIGNAL(timeout()), this, SLOT(connectToCoreSlot()));
-
-   this->startListening();
 }
 
 CoreConnection::~CoreConnection()
@@ -59,6 +58,8 @@ CoreConnection::~CoreConnection()
       QHostInfo::abortHostLookup(this->currentHostLookupID);
 
    this->addressesToTry.clear();
+
+   this->removeTempSocket();
 }
 
 void CoreConnection::connectToCore()
@@ -73,10 +74,35 @@ void CoreConnection::connectToCore(quint16 port)
 
 void CoreConnection::connectToCore(const QString& address, quint16 port, Common::Hash password)
 {
-   this->currentAddress = address;
-   this->currentPort = port;
-   this->currentPassword = password;
-   this->connectToCoreSlot();
+   this->newConnectionInfo.address = address;
+   this->newConnectionInfo.port = port;
+   this->newConnectionInfo.password = password;
+
+   if (this->newConnectionInfo.address.isNull() || this->newConnectionInfo.address.isEmpty())
+   {
+      emit connectionError(ERROR_INVALID_ADDRESS);
+      return;
+   }
+
+   if (this->isConnecting)
+   {
+      emit connectionError(ERROR_CONNECTING_IN_PROGRESS);
+      return;
+   }
+
+   if (this->isConnected() && this->currentConnectionInfo.address == address)
+   {
+      emit connectionError(ERROR_ALREADY_CONNECTED_TO_THIS_CORE);
+      return;
+   }
+
+   this->isConnecting = true;
+   emit connecting();
+
+   if (this->currentHostLookupID != -1)
+      QHostInfo::abortHostLookup(this->currentHostLookupID);
+
+   this->currentHostLookupID = QHostInfo::lookupHost(this->newConnectionInfo.address, this, SLOT(adressResolved(QHostInfo)));
 }
 
 bool CoreConnection::isConnected() const
@@ -87,7 +113,8 @@ bool CoreConnection::isConnected() const
 void CoreConnection::disconnectFromCore()
 {
    this->addressesToTry.clear();
-   this->currentAddress = QString();
+   this->newConnectionInfo.clear();
+   this->currentConnectionInfo.clear();
    this->socket->close();
 }
 
@@ -111,9 +138,7 @@ void CoreConnection::setCoreSettings(const Protos::GUI::CoreSettings settings)
 void CoreConnection::setCoreLanguage(const QLocale locale)
 {
    this->currentLanguage = locale;
-
-   if (this->isConnected())
-      this->sendCurrentLanguage();
+   this->sendCurrentLanguage();
 }
 
 QSharedPointer<IBrowseResult> CoreConnection::browse(const Common::Hash& peerID)
@@ -214,42 +239,15 @@ bool CoreConnection::isRunningAsSubProcess()
    return this->coreStatus == RUNNING_AS_SUB_PROCESS;
 }
 
-void CoreConnection::connectToCoreSlot()
+
+ICoreConnection::ConnectionInfo CoreConnection::getNewConnectionInfo() const
 {
-   this->retryTimer.stop();
-   this->timerFromLastConnectionTry.restart();
-
-   disconnect(this->socket, SIGNAL(stateChanged(QAbstractSocket::SocketState)), this, SLOT(stateChanged(QAbstractSocket::SocketState)));
-   this->socket->close();
-   connect(this->socket, SIGNAL(stateChanged(QAbstractSocket::SocketState)), this, SLOT(stateChanged(QAbstractSocket::SocketState)));
-
-   if (this->currentHostLookupID != -1)
-      QHostInfo::abortHostLookup(this->currentHostLookupID);
-
-   if (!this->currentAddress.isNull())
-      this->currentHostLookupID = QHostInfo::lookupHost(this->currentAddress, this, SLOT(adressResolved(QHostInfo)));
+   return this->newConnectionInfo;
 }
 
-void CoreConnection::stateChanged(QAbstractSocket::SocketState socketState)
+ICoreConnection::ConnectionInfo CoreConnection::getCurrentConnectionInfo() const
 {
-   switch(socketState)
-   {
-   case QAbstractSocket::UnconnectedState:
-      if (!this->addressesToTry.isEmpty())
-      {
-         this->tryToConnectToTheNextAddress();
-      }
-      else
-      {
-         L_USER(tr("Unable to connect to the core"));
-         const qint64 durationFromLastConnect = this->timerFromLastConnectionTry.elapsed();
-         this->retryTimer.setInterval(durationFromLastConnect > RETRY_PERIOD ? 0 : RETRY_PERIOD - durationFromLastConnect);
-         this->retryTimer.start();
-      }
-      break;
-
-   default:;
-   }
+   return this->currentConnectionInfo;
 }
 
 void CoreConnection::adressResolved(QHostInfo hostInfo)
@@ -257,8 +255,9 @@ void CoreConnection::adressResolved(QHostInfo hostInfo)
    this->currentHostLookupID = -1;
 
    if (hostInfo.addresses().isEmpty())
-   {      
-      L_USER(QString(tr("Unable to resolve the address : %1")).arg(hostInfo.hostName()));
+   {
+      this->isConnecting = false;
+      emit connectionError(ERROR_HOST_UNKOWN);
       return;
    }
 
@@ -267,32 +266,92 @@ void CoreConnection::adressResolved(QHostInfo hostInfo)
    this->tryToConnectToTheNextAddress();
 }
 
-void CoreConnection::connected()
+void CoreConnection::tryToConnectToTheNextAddress()
 {
-   if (this->isLocal())
+   if (this->addressesToTry.isEmpty())
+      return;
+
+   QHostAddress address;
+
+   // Search for an IPv6 address first.
+   for (QMutableListIterator<QHostAddress> i(this->addressesToTry); i.hasNext();)
    {
-      this->connectedAndAuthenticated();
+      QHostAddress currentAddress = i.next();
+      if (currentAddress.protocol() == QAbstractSocket::IPv6Protocol)
+      {
+         address = currentAddress;
+         i.remove();
+         break;
+      }
    }
-   else
+
+   if (address.isNull())
+      address = this->addressesToTry.takeFirst();
+
+   // If the address is local check if the core is launched, if not try to launch it.
+#ifndef DEBUG
+   if (address == QHostAddress::LocalHost || address == QHostAddress::LocalHostIPv6)
+         this->coreStatus = CoreController::StartCore();
+#endif
+
+   this->removeTempSocket();
+   this->tempSocket = new QTcpSocket();
+   connect(this->tempSocket, SIGNAL(stateChanged(QAbstractSocket::SocketState)), this, SLOT(stateChanged(QAbstractSocket::SocketState)));
+   this->tempSocket->connectToHost(address, this->newConnectionInfo.port);
+}
+
+void CoreConnection::stateChanged(QAbstractSocket::SocketState socketState)
+{
+   switch (socketState)
    {
-      Protos::GUI::Authentication authMessage;
-      authMessage.mutable_password()->set_hash(this->currentPassword.getData(), Common::Hash::HASH_SIZE);
-      this->send(Common::MessageHeader::GUI_AUTHENTICATION, authMessage);
+   case QAbstractSocket::UnconnectedState:
+      if (!this->addressesToTry.isEmpty())
+      {
+         this->tryToConnectToTheNextAddress();
+      }
+      else
+      {
+         this->removeTempSocket();
+         this->isConnecting = false;
+         emit connectionError(ERROR_HOST_TIMEOUT);
+      }
+      break;
+
+   case QAbstractSocket::ConnectedState:
+      this->tempSocket->disconnect(this);
+      this->swapSockets();
+
+      if (this->isLocal())
+      {
+         this->connectedAndAuthenticated();
+      }
+      else
+      {
+         Protos::GUI::Authentication authMessage;
+         authMessage.mutable_password()->set_hash(this->newConnectionInfo.password.getData(), Common::Hash::HASH_SIZE);
+         this->send(Common::MessageHeader::GUI_AUTHENTICATION, authMessage);
+      }
+
+   default:;
    }
 }
 
 void CoreConnection::connectedAndAuthenticated()
 {
-   this->authenticated = true;
-   L_USER(tr("Connected to the core"));
+   // If we were previously disconnected we announce it.
+   if (this->authenticated)
+      emit disconnected();
 
-#ifdef DEBUG
-   if (!this->isLocal())
-      L_DEBU(QString("Core address : %1").arg(this->socket->peerAddress().toString()));
-#endif
+   this->currentConnectionInfo = this->newConnectionInfo;
+   this->newConnectionInfo.clear();
+
+   this->isConnecting = false;
+   this->authenticated = true;
+
+   this->removeTempSocket();
 
    this->sendCurrentLanguage();
-   emit coreConnected();
+   emit connected();
 }
 
 void CoreConnection::onNewMessage(Common::MessageHeader::MessageType type, const google::protobuf::Message& message)
@@ -306,19 +365,32 @@ void CoreConnection::onNewMessage(Common::MessageHeader::MessageType type, const
       {
          const Protos::GUI::AuthenticationResult& authenticationResult = static_cast<const Protos::GUI::AuthenticationResult&>(message);
 
-         switch (authenticationResult.status())
+         if (authenticationResult.status() == Protos::GUI::AuthenticationResult_Status_OK)
          {
-         case Protos::GUI::AuthenticationResult_Status_BAD_PASSWORD:
-            L_USER(tr("Authentication failed, bad password"));
-            break;
-
-         case Protos::GUI::AuthenticationResult_Status_ERROR:
-            L_USER(tr("Authentication failed"));
-            break;
-
-         case Protos::GUI::AuthenticationResult_Status_OK:
             this->connectedAndAuthenticated();
-            break;
+         }
+         else
+         {
+            this->swapSockets();
+            this->removeTempSocket();
+            this->isConnecting = false;
+
+            switch (authenticationResult.status())
+            {
+            case Protos::GUI::AuthenticationResult_Status_PASSWORD_NOT_DEFINED:
+               emit connectionError(ERROR_NO_REMOTE_PASSWORD_DEFINED);
+               break;
+
+            case Protos::GUI::AuthenticationResult_Status_BAD_PASSWORD:
+               emit connectionError(ERROR_WRONG_PASSWORD);
+               break;
+
+            case Protos::GUI::AuthenticationResult_Status_ERROR:
+               emit connectionError(ERROR_UNKNOWN);
+               break;
+
+            default:;
+            }
          }
       }
       break;
@@ -404,38 +476,15 @@ void CoreConnection::onNewMessage(Common::MessageHeader::MessageType type, const
 
 void CoreConnection::onDisconnected()
 {
-   this->authenticated = false;
-   emit coreDisconnected();
-}
-
-void CoreConnection::tryToConnectToTheNextAddress()
-{
-   if (this->addressesToTry.isEmpty())
-      return;
-
-   QHostAddress address;
-
-   // Search for an IPv4 address first.
-   for (QMutableListIterator<QHostAddress> i(this->addressesToTry); i.hasNext();)
+   if (!this->authenticated)
    {
-      QHostAddress currentAddress = i.next();
-      if (currentAddress.protocol() == QAbstractSocket::IPv4Protocol)
-      {
-         address = currentAddress;
-         i.remove();
-         break;
-      }
+      this->isConnecting = false;
+      emit connectionError(ERROR_HOST_TIMEOUT);
+      return;
    }
-   if (address.isNull())
-      address = this->addressesToTry.takeFirst();
 
-   // If the address is local check if the core is launched, if not try to launch it.
-#ifndef DEBUG
-   if (address == QHostAddress::LocalHost || address == QHostAddress::LocalHostIPv6)
-      this->coreStatus = CoreController::StartCore();
-#endif
-
-   this->socket->connectToHost(address, this->currentPort);
+   this->authenticated = false;
+   emit disconnected();
 }
 
 void CoreConnection::sendCurrentLanguage()
@@ -443,4 +492,24 @@ void CoreConnection::sendCurrentLanguage()
    Protos::GUI::Language langMess;
    ProtoHelper::setLang(*langMess.mutable_language(), this->currentLanguage);
    this->send(Common::MessageHeader::GUI_LANGUAGE, langMess);
+}
+
+void CoreConnection::swapSockets()
+{
+   if (this->tempSocket)
+   {
+      this->stopListening();
+      qSwap(this->socket, this->tempSocket);
+      this->startListening();
+   }
+}
+
+void CoreConnection::removeTempSocket()
+{
+   if (this->tempSocket)
+   {
+      this->tempSocket->disconnect(this);
+      this->tempSocket->deleteLater();
+      this->tempSocket = 0;
+   }
 }

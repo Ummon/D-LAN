@@ -66,7 +66,8 @@ namespace RCM
       QSharedPointer<DM::IDownloadManager> downloadManager;
       QSharedPointer<NL::INetworkListener> networkListener;
 
-      QTcpServer tcpServer;
+      QTcpServer tcpServerIPv4;
+      QTcpServer tcpServerIPv6;
       QList<RemoteConnection*> connections;
    };
 }

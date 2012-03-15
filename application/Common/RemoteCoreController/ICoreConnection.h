@@ -38,6 +38,13 @@ namespace RCC
      * The main interface to control a remote core.
      * The signal 'newState' is periodically emitted, for exemple each second. It can be emitted right after certain action, like 'setCoreSettings(..)'.
      * See the prototype file "application/Protos/gui_protocol.proto" for more information.
+     *
+     * Connection process:
+     *  - Call 'connectToCore(..)'.
+     *  - if error: signal 'connectionError()' is emitted.
+     *  - if ok:
+     *    - if previsouly connected: signal 'coreDisconnected()' is emitted.
+     *    - signal 'coreConnected()' is emitted.
      */
    class ICoreConnection : public Common::MessageSocket
    {
@@ -46,23 +53,35 @@ namespace RCC
       ICoreConnection(Common::MessageSocket::ILogger* logger) : Common::MessageSocket(logger) {}
 
    public:
+      enum ConnectionErrorCode
+      {
+         ERROR_ALREADY_CONNECTED_TO_THIS_CORE = 1,
+         ERROR_CONNECTING_IN_PROGRESS = 2,
+         ERROR_HOST_UNKOWN = 3,
+         ERROR_HOST_TIMEOUT = 4,
+         ERROR_NO_REMOTE_PASSWORD_DEFINED = 5,
+         ERROR_WRONG_PASSWORD = 6,
+         ERROR_INVALID_ADDRESS = 7,
+         ERROR_UNKNOWN = 255
+      };
+
       virtual ~ICoreConnection() {}
 
       /**
         * Connect to a local core with the default port (59485).
         * When the connection is ready, the signal 'coreConnected' is emitted.
+        * If the connection fail, the signal 'connectionError(..)' si emitted.
         */
       virtual void connectToCore() = 0;
 
       /**
         * Connect to a local core with a given port.
-        * When the connection is ready, the signal 'coreConnected' is emitted.
         */
       virtual void connectToCore(quint16 port) = 0;
 
       /**
         * Connect to a remote core. Password is mendatory and should be hashed and salted, see the class 'Common::Hasher'.
-        * When the connection is ready, the signal 'coreConnected' is emitted.
+        * @param address the IP adress, it can be an IPv4 or IPv6 address.
         */
       virtual void connectToCore(const QString& address, quint16 port, Common::Hash password) = 0;
 
@@ -154,9 +173,28 @@ namespace RCC
 
       virtual bool isRunningAsSubProcess() = 0;
 
+      struct ConnectionInfo {
+         void clear() { this->address.clear(); this->port = 0; this->password = Common::Hash(); }
+         QString address;
+         quint16 port;
+         Common::Hash password;
+      };
+
+      /**
+        * This data are valid during the signal 'connecting' to the signal 'connected'.
+        */
+      virtual ConnectionInfo getNewConnectionInfo() const = 0;
+
+      /**
+        * This data are valid during the signal 'connected' to the signal 'disconnected'.
+        */
+      virtual ConnectionInfo getCurrentConnectionInfo() const = 0;
+
    signals:
-      void coreConnected();
-      void coreDisconnected();
+      void connecting();
+      void connectionError(RCC::ICoreConnection::ConnectionErrorCode code); // Can only be thrown during the connection process.
+      void connected();
+      void disconnected(); // Can only be thrown if 'coreConnected()' has been previously thrown.
 
       void newState(const Protos::GUI::State&);
       void newChatMessages(const Protos::GUI::EventChatMessages&);

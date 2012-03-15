@@ -92,7 +92,7 @@ QVariant CheckBoxModel<T>::data(const QModelIndex& index, int role) const
    if (!index.isValid() || index.row() >= this->items.size())
       return QVariant();
 
-   switch(role)
+   switch (role)
    {
    case Qt::DisplayRole:
       return this->items[index.row()].text;
@@ -109,7 +109,7 @@ bool CheckBoxModel<T>::setData(const QModelIndex& index, const QVariant& value, 
    if (!index.isValid() || index.row() >= this->items.size())
       return false;
 
-   switch(role)
+   switch (role)
    {
    case Qt::EditRole:
       this->setText(index.row(), value.toString());

@@ -117,7 +117,7 @@ QVariant DownloadsModel::data(const QModelIndex& index, int role) const
    if (!index.isValid() || index.row() >= this->downloads.size())
       return QVariant();
 
-   switch(role)
+   switch (role)
    {
    case Qt::DisplayRole:
       {
@@ -163,7 +163,7 @@ QVariant DownloadsModel::data(const QModelIndex& index, int role) const
       }
 
    case Qt::ToolTipRole:
-      switch(this->downloads[index.row()].status())
+      switch (this->downloads[index.row()].status())
       {
       case Protos::GUI::State_Download_Status_UNKNOWN_PEER_SOURCE:
          return "Unknown source peer";

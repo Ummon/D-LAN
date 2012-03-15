@@ -46,7 +46,7 @@ void DownloadsDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opt
       progressBarOption.textAlignment = Qt::AlignHCenter;
       progressBarOption.progress = progress.progress;
 
-      switch(progress.status)
+      switch (progress.status)
       {
       case Protos::GUI::State_Download_Status_QUEUED:
          progressBarOption.text = "Queued";

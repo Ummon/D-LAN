@@ -240,45 +240,45 @@ QString Global::toLowerAndRemoveAccents(const QString& str)
    for (int i = 0; i < strLower.size(); i++)
       switch (strLower[i].unicode())
       {
-         case 0x00E0: // à .
-         case 0x00E1: // á.
-         case 0x00E2: // â.
-         case 0x00E3: // ã.
-         case 0x00E4: // ä.
-         case 0x00E5: // å.
-            strLower[i] = 'a';
-            break;
-         case 0x00E7: // ç.
-            strLower[i] = 'c';
-            break;
-         case 0x00E8: // è.
-         case 0x00E9: // é.
-         case 0x00EA: // ê.
-         case 0x00EB: // ë.
-            strLower[i] = 'e';
-            break;
-         case 0x00EC: // ì.
-         case 0x00ED: // í.
-         case 0x00EE: // î.
-         case 0x00EF: // ï.
-            strLower[i] = 'i';
-            break;
-         case 0x00F1: // ñ.
-            strLower[i] = 'n';
-            break;
-         case 0x00F2: // ò.
-         case 0x00F3: // ó.
-         case 0x00F4: // ô.
-         case 0x00F5: // õ.
-         case 0x00F6: // ö.
-            strLower[i] = 'o';
-            break;
-         case 0x00F9: // ù.
-         case 0x00FA: // ú.
-         case 0x00FB: // û.
-         case 0x00FC: // ü.
-            strLower[i] = 'u';
-            break;
+      case 0x00E0: // à .
+      case 0x00E1: // á.
+      case 0x00E2: // â.
+      case 0x00E3: // ã.
+      case 0x00E4: // ä.
+      case 0x00E5: // å.
+         strLower[i] = 'a';
+         break;
+      case 0x00E7: // ç.
+         strLower[i] = 'c';
+         break;
+      case 0x00E8: // è.
+      case 0x00E9: // é.
+      case 0x00EA: // ê.
+      case 0x00EB: // ë.
+         strLower[i] = 'e';
+         break;
+      case 0x00EC: // ì.
+      case 0x00ED: // í.
+      case 0x00EE: // î.
+      case 0x00EF: // ï.
+         strLower[i] = 'i';
+         break;
+      case 0x00F1: // ñ.
+         strLower[i] = 'n';
+         break;
+      case 0x00F2: // ò.
+      case 0x00F3: // ó.
+      case 0x00F4: // ô.
+      case 0x00F5: // õ.
+      case 0x00F6: // ö.
+         strLower[i] = 'o';
+         break;
+      case 0x00F9: // ù.
+      case 0x00FA: // ú.
+      case 0x00FB: // û.
+      case 0x00FC: // ü.
+         strLower[i] = 'u';
+         break;
       }
 
    return strLower;

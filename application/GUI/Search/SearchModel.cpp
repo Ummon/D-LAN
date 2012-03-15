@@ -84,7 +84,7 @@ QVariant SearchModel::data(const QModelIndex& index, int role) const
 
    if (index.column() == 2) // Match rate in percent. Cannot be 0%.
    {
-      switch(role)
+      switch (role)
       {
       case Qt::DisplayRole:
          {
@@ -113,10 +113,10 @@ QVariant SearchModel::headerData(int section, Qt::Orientation orientation, int r
    if (orientation == Qt::Vertical)
       return QAbstractItemModel::headerData(section, orientation, role);
 
-   switch(role)
+   switch (role)
    {
    case Qt::DisplayRole:
-      switch(section)
+      switch (section)
       {
       case 0: return tr("Filename");
       case 1: return tr("Folder");
@@ -127,7 +127,7 @@ QVariant SearchModel::headerData(int section, Qt::Orientation orientation, int r
       }
 
    case Qt::TextAlignmentRole:
-      switch(section)
+      switch (section)
       {
       case 4: return Qt::AlignRight;
       default: return QAbstractItemModel::headerData(section, orientation, role);
@@ -413,7 +413,7 @@ Common::Hash SearchModel::SearchNode::getPeerID() const
 
 QVariant SearchModel::SearchNode::getData(int column) const
 {
-   switch(column)
+   switch (column)
    {
    case 0: return Common::ProtoHelper::getStr(this->entry, &Protos::Common::Entry::name);
    case 1:

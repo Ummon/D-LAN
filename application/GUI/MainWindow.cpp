@@ -27,6 +27,7 @@ using namespace GUI;
 #include <QSettings>
 #include <QHBoxLayout>
 #include <QScrollBar>
+#include <QMessageBox>
 
 #include <Protos/gui_settings.pb.h>
 
@@ -154,14 +155,15 @@ MainWindow::MainWindow(QSharedPointer<RCC::ICoreConnection> coreConnection, QWid
 
    this->addWidgetSettings();
 
-   this->coreDisconnected(); // Initial state.
+   this->setApplicationStateAsDisconnected(); // Initial state.
 
    this->restoreWindowsSettings();
 
    this->loadLanguage(this->widgetSettings->getCurrentLanguageFilename());
 
-   connect(this->coreConnection.data(), SIGNAL(coreConnected()), this, SLOT(coreConnected()));
-   connect(this->coreConnection.data(), SIGNAL(coreDisconnected()), this, SLOT(coreDisconnected()));
+   connect(this->coreConnection.data(), SIGNAL(connectionError(RCC::ICoreConnection::ConnectionErrorCode)), this, SLOT(coreConnectionError(RCC::ICoreConnection::ConnectionErrorCode)));
+   connect(this->coreConnection.data(), SIGNAL(connected()), this, SLOT(coreConnected()));
+   connect(this->coreConnection.data(), SIGNAL(disconnected()), this, SLOT(coreDisconnected()));
 
    this->coreConnection->connectToCore(SETTINGS.get<QString>("core_address"), SETTINGS.get<quint32>("core_port"), SETTINGS.get<Common::Hash>("password"));
 }
@@ -184,49 +186,71 @@ void MainWindow::loadLanguage(const QString& filename)
    this->translator.load(filename, QCoreApplication::applicationDirPath() + "/" + LANGUAGE_DIRECTORY);
 }
 
-void MainWindow::coreConnected()
+
+void MainWindow::coreConnectionError(RCC::ICoreConnection::ConnectionErrorCode errorCode)
 {
-   QList<quint32> windowsOrder = SETTINGS.getRepeated<quint32>("windowOrder");
-   static const QList<quint32> windowsOrderDefault = QList<quint32>() <<
-      Protos::GUI::Settings_Window_WIN_SETTINGS <<
-      Protos::GUI::Settings_Window_WIN_CHAT <<
-      Protos::GUI::Settings_Window_WIN_DOWNLOAD <<
-      Protos::GUI::Settings_Window_WIN_UPLOAD;
-
-   if (!QSet<quint32>::fromList(windowsOrder).contains(QSet<quint32>::fromList(windowsOrderDefault)))
-      windowsOrder = windowsOrderDefault;
-
-   for (QListIterator<quint32> i(windowsOrder); i.hasNext();)
+   QString error;
+   switch (errorCode)
    {
-      switch (i.next())
-      {
-         case Protos::GUI::Settings_Window_WIN_SETTINGS: this->mdiAreaTabBar->moveTab(0, this->mdiAreaTabBar->count() - 1); break;
-         case Protos::GUI::Settings_Window_WIN_CHAT: this->addWidgetChat(); break;
-         case Protos::GUI::Settings_Window_WIN_DOWNLOAD: this->addWidgetDownloads(); break;
-         case Protos::GUI::Settings_Window_WIN_UPLOAD: this->addWidgetUploads(); break;
-      }
+   case RCC::ICoreConnection::ERROR_ALREADY_CONNECTED_TO_THIS_CORE:
+      error = tr("Already connected to this address");
+      break;
+   case RCC::ICoreConnection::ERROR_CONNECTING_IN_PROGRESS:
+      error = tr("There is already a connection process in progress");
+      break;
+   case RCC::ICoreConnection::ERROR_HOST_UNKOWN:
+      error = tr("The host is unknow");
+      break;
+   case RCC::ICoreConnection::ERROR_HOST_TIMEOUT:
+      error = tr("Host has timed out");
+      break;
+   case RCC::ICoreConnection::ERROR_NO_REMOTE_PASSWORD_DEFINED:
+      error = tr("The host hasn't defined any password");
+      break;
+   case RCC::ICoreConnection::ERROR_WRONG_PASSWORD:
+      error = tr("Wrong password");
+      break;
+   case RCC::ICoreConnection::ERROR_INVALID_ADDRESS:
+      error = tr("Invalid address");
+      break;
+   case RCC::ICoreConnection::ERROR_UNKNOWN:
+      error = tr("Error unknown");
    }
 
-   if (this->widgetSettings)
-      this->widgetSettings->coreConnected();
-   this->ui->txtSearch->setDisabled(false);
-   this->ui->butSearch->setDisabled(false);
-   this->ui->butSearchOwnFiles->setDisabled(false);
-   this->ui->mdiArea->setActiveSubWindow(dynamic_cast<QMdiSubWindow*>(this->widgetChat->parent()));
+   QMessageBox msgBox(this);
+   msgBox.setWindowTitle(tr("Unable to connect to the core"));
+   msgBox.setText(QString("<p>%1</p><p>%2 <em>%3</em></p>").arg(error).arg(tr("Core address:")).arg(this->coreConnection->getNewConnectionInfo().address + ":" + QString::number(this->coreConnection->getNewConnectionInfo().port)));
+   msgBox.setIcon(QMessageBox::Information);
+   msgBox.setStandardButtons(QMessageBox::Ok);
+   QAbstractButton* retryButton = msgBox.addButton(tr("Retry"), QMessageBox::ActionRole);
+   msgBox.exec();
+   if (msgBox.clickedButton() == retryButton)
+   {
+      this->coreConnection->connectToCore(SETTINGS.get<QString>("core_address"), SETTINGS.get<quint32>("core_port"), SETTINGS.get<Common::Hash>("password"));
+   }
+}
+
+void MainWindow::coreConnected()
+{
+   L_USER(tr("Connected to the core"));
+   this->setApplicationStateAsConnected();
 }
 
 void MainWindow::coreDisconnected()
 {
-   this->removeWidgetUploads();
-   this->removeWidgetDownloads();
-   this->removeWidgetChat();
-   this->removeAllWidgets();
-   if (this->widgetSettings)
-      this->widgetSettings->coreDisconnected();
-   this->ui->txtSearch->setDisabled(true);
-   this->ui->butSearch->setDisabled(true);
-   this->ui->butSearchOwnFiles->setDisabled(true);
-   this->peerListModel.clear();
+   this->setApplicationStateAsDisconnected();
+
+   QMessageBox msgBox(this);
+   msgBox.setWindowTitle(tr("Connection lost"));
+   msgBox.setText(QString("<p>%1</p><p>%2 <em>%3</em></p>").arg(tr("The connection to the core has been lost")).arg(tr("Core address:")).arg(this->coreConnection->getCurrentConnectionInfo().address + ":" + QString::number(this->coreConnection->getCurrentConnectionInfo().port)));
+   msgBox.setIcon(QMessageBox::Information);
+   msgBox.setStandardButtons(QMessageBox::Ok);
+   QAbstractButton* retryButton = msgBox.addButton(tr("Retry"), QMessageBox::ActionRole);
+   msgBox.exec();
+   if (msgBox.clickedButton() == retryButton)
+   {
+      this->coreConnection->connectToCore(SETTINGS.get<QString>("core_address"), SETTINGS.get<quint32>("core_port"), SETTINGS.get<Common::Hash>("password"));
+   }
 }
 
 void MainWindow::tabMoved(int, int)
@@ -379,6 +403,47 @@ void MainWindow::changeEvent(QEvent* event)
       this->ui->retranslateUi(this);
    else
       QWidget::changeEvent(event);
+}
+
+void MainWindow::setApplicationStateAsConnected()
+{
+   QList<quint32> windowsOrder = SETTINGS.getRepeated<quint32>("windowOrder");
+   static const QList<quint32> windowsOrderDefault = QList<quint32>() <<
+      Protos::GUI::Settings_Window_WIN_SETTINGS <<
+      Protos::GUI::Settings_Window_WIN_CHAT <<
+      Protos::GUI::Settings_Window_WIN_DOWNLOAD <<
+      Protos::GUI::Settings_Window_WIN_UPLOAD;
+
+   if (!QSet<quint32>::fromList(windowsOrder).contains(QSet<quint32>::fromList(windowsOrderDefault)))
+      windowsOrder = windowsOrderDefault;
+
+   for (QListIterator<quint32> i(windowsOrder); i.hasNext();)
+   {
+      switch (i.next())
+      {
+         case Protos::GUI::Settings_Window_WIN_SETTINGS: this->mdiAreaTabBar->moveTab(0, this->mdiAreaTabBar->count() - 1); break;
+         case Protos::GUI::Settings_Window_WIN_CHAT: this->addWidgetChat(); break;
+         case Protos::GUI::Settings_Window_WIN_DOWNLOAD: this->addWidgetDownloads(); break;
+         case Protos::GUI::Settings_Window_WIN_UPLOAD: this->addWidgetUploads(); break;
+      }
+   }
+
+   this->ui->txtSearch->setDisabled(false);
+   this->ui->butSearch->setDisabled(false);
+   this->ui->butSearchOwnFiles->setDisabled(false);
+   this->ui->mdiArea->setActiveSubWindow(dynamic_cast<QMdiSubWindow*>(this->widgetChat->parent()));
+}
+
+void MainWindow::setApplicationStateAsDisconnected()
+{
+   this->removeWidgetUploads();
+   this->removeWidgetDownloads();
+   this->removeWidgetChat();
+   this->removeAllWidgets();
+   this->ui->txtSearch->setDisabled(true);
+   this->ui->butSearch->setDisabled(true);
+   this->ui->butSearchOwnFiles->setDisabled(true);
+   this->peerListModel.clear();
 }
 
 void MainWindow::saveWindowsSettings()
