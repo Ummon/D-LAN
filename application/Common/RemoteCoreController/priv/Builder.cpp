@@ -19,11 +19,14 @@
 #include <Builder.h>
 using namespace RCC;
 
+ #include <QMetaType>
+
 #include <priv/CoreController.h>
 #include <priv/CoreConnection.h>
 
 QSharedPointer<ICoreConnection> Builder::newCoreConnection()
 {
+   qRegisterMetaType<RCC::ICoreConnection::ConnectionErrorCode>("RCC::ICoreConnection::ConnectionErrorCode");
    return QSharedPointer<ICoreConnection>(new CoreConnection());
 }
 

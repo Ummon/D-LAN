@@ -81,12 +81,6 @@ namespace RCM
       void chatMessageSent(const QString&);
       void languageDefined(QLocale);
 
-   protected:
-      void onNewMessage(Common::MessageHeader::MessageType type, const google::protobuf::Message& message);
-
-   protected slots:
-      void disconnected();
-
    private slots:
       void refresh();
 
@@ -103,6 +97,9 @@ namespace RCM
 
    private:
       void removeGetEntriesResult(const PM::IGetEntriesResult* getEntriesResult);
+
+      void onNewMessage(Common::MessageHeader::MessageType type, const google::protobuf::Message& message);
+      void onDisconnected();
 
       QSharedPointer<FM::IFileManager> fileManager;
       QSharedPointer<PM::IPeerManager> peerManager;

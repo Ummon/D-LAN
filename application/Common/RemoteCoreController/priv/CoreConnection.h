@@ -67,6 +67,7 @@ namespace RCC
       void connectToCore(const QString& address, quint16 port, Common::Hash password);
 
       bool isConnected() const;
+      bool isConnecting() const;
 
       void disconnectFromCore();
 
@@ -122,7 +123,7 @@ namespace RCC
 
       QAbstractSocket* tempSocket;
 
-      bool isConnecting;
+      bool connectingInProgress;
 
       CoreStatus coreStatus;
 

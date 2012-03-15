@@ -27,6 +27,7 @@ using namespace GUI;
 #include <Common/Global.h>
 
 #include <Log.h>
+#include <IconProvider.h>
 #include <Settings/DirListModel.h>
 
 DownloadsModel::DownloadsModel(QSharedPointer<RCC::ICoreConnection> coreConnection, const PeerListModel& peerListModel, const DirListModel& sharedDirsModel, const IFilter<DownloadFilterStatus>& filter) :
@@ -155,10 +156,8 @@ QVariant DownloadsModel::data(const QModelIndex& index, int role) const
          {
             if (this->downloads[index.row()].status() >= Protos::GUI::State_Download_Status_UNKNOWN_PEER_SOURCE)
                return QPixmap(":/icons/ressources/error.png");
-            else if (this->downloads[index.row()].local_entry().type() == Protos::Common::Entry_Type_DIR)
-               return QPixmap(":/icons/ressources/folder.png");
             else
-               return QPixmap(":/icons/ressources/file.png");
+               return IconProvider::getIcon(this->downloads[index.row()].local_entry());
          }
          return QVariant();
       }
