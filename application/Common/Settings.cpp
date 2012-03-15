@@ -552,7 +552,7 @@ void Settings::setDefaultValues()
       if (fieldDescriptor->is_repeated())
          this->settings->GetReflection()->ClearField(this->settings, fieldDescriptor);
       else
-         switch(fieldDescriptor->type())
+         switch (fieldDescriptor->type())
          {
          case google::protobuf::FieldDescriptor::TYPE_UINT32:
             this->settings->GetReflection()->SetUInt32(this->settings, fieldDescriptor, fieldDescriptor->default_value_uint32());

@@ -45,7 +45,7 @@ QVariant UploadsModel::data(const QModelIndex& index, int role) const
    if (!index.isValid() || index.row() >= this->uploads.size())
       return QVariant();
 
-   switch(role)
+   switch (role)
    {
    case Qt::DisplayRole:
       {

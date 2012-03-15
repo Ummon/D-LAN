@@ -49,7 +49,7 @@ QVariant LogModel::data(const QModelIndex& index, int role) const
    QSharedPointer<const LM::IEntry> entry = this->entries[index.row()];
 
    QString messagePrefix;
-   switch(entry->getSeverity())
+   switch (entry->getSeverity())
    {
    case LM::SV_FATAL_ERROR:
       messagePrefix = "[Fatal Error] ";

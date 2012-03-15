@@ -116,7 +116,7 @@ QVariant BrowseModel::data(const QModelIndex& index, int role) const
    if (!index.isValid())
       return QVariant();
 
-   switch(role)
+   switch (role)
    {
    case Qt::DisplayRole:
       {

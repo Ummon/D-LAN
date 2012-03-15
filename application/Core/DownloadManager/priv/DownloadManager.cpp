@@ -126,7 +126,7 @@ Download* DownloadManager::addDownload(const Protos::Common::Entry& remoteEntry,
 
    switch (remoteEntry.type())
    {
-   case Protos::Common::Entry_Type_DIR :
+   case Protos::Common::Entry_Type_DIR:
       {
          DirDownload* dirDownload = new DirDownload(
             this->occupiedPeersAskingForEntries,
@@ -139,7 +139,7 @@ Download* DownloadManager::addDownload(const Protos::Common::Entry& remoteEntry,
       }
       break;
 
-   case Protos::Common::Entry_Type_FILE :
+   case Protos::Common::Entry_Type_FILE:
       {
          FileDownload* fileDownload = new FileDownload(
             this->fileManager,

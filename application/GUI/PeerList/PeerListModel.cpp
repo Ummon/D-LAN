@@ -80,7 +80,7 @@ QVariant PeerListModel::data(const QModelIndex& index, int role) const
    if (!index.isValid() || index.row() >= this->peers.size())
       return QVariant();
 
-   switch(role)
+   switch (role)
    {
    case Qt::DisplayRole:
       switch (index.column())

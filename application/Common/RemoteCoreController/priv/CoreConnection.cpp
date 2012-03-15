@@ -27,8 +27,6 @@ using namespace RCC;
 #include <ProtoHelper.h>
 #include <Constants.h>
 
-#include <Exceptions.h>
-
 #include <priv/CoreController.h>
 #include <priv/Log.h>
 #include <priv/BrowseResult.h>
@@ -304,7 +302,7 @@ void CoreConnection::tryToConnectToTheNextAddress()
 
 void CoreConnection::stateChanged(QAbstractSocket::SocketState socketState)
 {
-   switch(socketState)
+   switch (socketState)
    {
    case QAbstractSocket::UnconnectedState:
       if (!this->addressesToTry.isEmpty())

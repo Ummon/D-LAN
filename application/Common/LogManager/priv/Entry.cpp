@@ -131,7 +131,7 @@ QString Entry::getMessage() const
 
 QString Entry::severityToStr(Severity severity)
 {
-   switch(severity)
+   switch (severity)
    {
    case SV_FATAL_ERROR: return Entry::SEVERITIES_STR[0];
    case SV_ERROR: return Entry::SEVERITIES_STR[1];
@@ -149,7 +149,7 @@ Severity Entry::severityFromStr(const QString& severity)
       if (Entry::SEVERITIES_STR[i] == severity)
       {
          // Better than a 'while' and a 'shift'?
-         switch(i)
+         switch (i)
          {
          case 0: return SV_FATAL_ERROR;
          case 1: return SV_ERROR;

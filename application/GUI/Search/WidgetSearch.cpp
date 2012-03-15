@@ -42,7 +42,7 @@ void SearchDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option
    QStyleOptionViewItemV4 newOption(option);
    newOption.state = option.state & (~QStyle::State_HasFocus);
 
-   switch(index.column())
+   switch (index.column())
    {
    case 0:
       {
@@ -104,7 +104,7 @@ void SearchDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option
 
 QSize SearchDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index ) const
 {
-   switch(index.column())
+   switch (index.column())
    {
    case 1:
       {
