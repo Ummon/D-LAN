@@ -71,13 +71,12 @@ WidgetSettings::WidgetSettings(QSharedPointer<RCC::ICoreConnection> coreConnecti
    this->ui->txtCoreAddress->setText(SETTINGS.get<QString>("core_address"));
 
    connect(this->coreConnection.data(), SIGNAL(newState(Protos::GUI::State)), this, SLOT(newState(Protos::GUI::State)));
-   connect(this->coreConnection.data(), SIGNAL(connecting()), this, SLOT(coreConnecting()));
-   connect(this->coreConnection.data(), SIGNAL(connectionError(RCC::ICoreConnection::ConnectionErrorCode)), this, SLOT(coreConnectionError()));
-   connect(this->coreConnection.data(), SIGNAL(connected()), this, SLOT(coreConnected()));
-   connect(this->coreConnection.data(), SIGNAL(disconnected()), this, SLOT(coreDisconnected()));
+   connect(this->coreConnection.data(), SIGNAL(connecting()), this, SLOT(coreConnecting()), Qt::QueuedConnection);
+   connect(this->coreConnection.data(), SIGNAL(connectionError(RCC::ICoreConnection::ConnectionErrorCode)), this, SLOT(coreConnectionError()), Qt::QueuedConnection);
+   connect(this->coreConnection.data(), SIGNAL(connected()), this, SLOT(coreConnected()), Qt::QueuedConnection);
+   connect(this->coreConnection.data(), SIGNAL(disconnected()), this, SLOT(coreDisconnected()), Qt::QueuedConnection);
 
    connect(this->ui->txtNick, SIGNAL(editingFinished()), this, SLOT(saveCoreSettings()));
-
    connect(this->ui->chkEnableIntegrityCheck, SIGNAL(clicked()), this, SLOT(saveCoreSettings()));
 
    this->connectAllAddressButtons();
@@ -117,6 +116,23 @@ WidgetSettings::~WidgetSettings()
 QString WidgetSettings::getCurrentLanguageFilename()
 {
    return this->ui->cmbLanguages->itemData(this->ui->cmbLanguages->currentIndex()).value<Common::Language>().filename;
+}
+
+void WidgetSettings::resetCoreAddress()
+{
+   this->ui->txtCoreAddress->setText("localhost");
+   this->connectToCore();
+}
+
+void WidgetSettings::connectToCore()
+{
+   const QString newHost = this->ui->txtCoreAddress->text().trimmed().toLower();
+
+   if (newHost != SETTINGS.get<QString>("core_address") || !this->coreConnection->isConnected())
+   {
+      this->coreConnecting();
+      this->coreConnection->connectToCore(newHost, SETTINGS.get<quint32>("core_port"), Common::Hasher::hashWithSalt(this->ui->txtPassword->text()));
+   }
 }
 
 /**
@@ -448,23 +464,6 @@ void WidgetSettings::moveDownShared()
    {
       this->sharedDirsModel.mvDownDir(index.row());
       this->saveCoreSettings();
-   }
-}
-
-void WidgetSettings::resetCoreAddress()
-{
-   this->ui->txtCoreAddress->setText("localhost");
-   this->connectToCore();
-}
-
-void WidgetSettings::connectToCore()
-{
-   const QString newHost = this->ui->txtCoreAddress->text().trimmed().toLower();
-
-   if (newHost != SETTINGS.get<QString>("core_address") || !this->coreConnection->isConnected())
-   {
-      this->coreConnecting();
-      this->coreConnection->connectToCore(newHost, SETTINGS.get<quint32>("core_port"), Common::Hasher::hashWithSalt(this->ui->txtPassword->text()));
    }
 }
 

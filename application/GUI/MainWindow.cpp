@@ -161,9 +161,9 @@ MainWindow::MainWindow(QSharedPointer<RCC::ICoreConnection> coreConnection, QWid
 
    this->loadLanguage(this->widgetSettings->getCurrentLanguageFilename());
 
-   connect(this->coreConnection.data(), SIGNAL(connectionError(RCC::ICoreConnection::ConnectionErrorCode)), this, SLOT(coreConnectionError(RCC::ICoreConnection::ConnectionErrorCode)));
-   connect(this->coreConnection.data(), SIGNAL(connected()), this, SLOT(coreConnected()));
-   connect(this->coreConnection.data(), SIGNAL(disconnected()), this, SLOT(coreDisconnected()));
+   connect(this->coreConnection.data(), SIGNAL(connectionError(RCC::ICoreConnection::ConnectionErrorCode)), this, SLOT(coreConnectionError(RCC::ICoreConnection::ConnectionErrorCode)), Qt::QueuedConnection);
+   connect(this->coreConnection.data(), SIGNAL(connected()), this, SLOT(coreConnected()), Qt::QueuedConnection);
+   connect(this->coreConnection.data(), SIGNAL(disconnected()), this, SLOT(coreDisconnected()), Qt::QueuedConnection);
 
    this->coreConnection->connectToCore(SETTINGS.get<QString>("core_address"), SETTINGS.get<quint32>("core_port"), SETTINGS.get<Common::Hash>("password"));
 }
@@ -226,7 +226,7 @@ void MainWindow::coreConnectionError(RCC::ICoreConnection::ConnectionErrorCode e
    msgBox.exec();
    if (msgBox.clickedButton() == retryButton)
    {
-      this->coreConnection->connectToCore(SETTINGS.get<QString>("core_address"), SETTINGS.get<quint32>("core_port"), SETTINGS.get<Common::Hash>("password"));
+      this->widgetSettings->connectToCore();
    }
 }
 
@@ -240,16 +240,19 @@ void MainWindow::coreDisconnected()
 {
    this->setApplicationStateAsDisconnected();
 
-   QMessageBox msgBox(this);
-   msgBox.setWindowTitle(tr("Connection lost"));
-   msgBox.setText(QString("<p>%1</p><p>%2 <em>%3</em></p>").arg(tr("The connection to the core has been lost")).arg(tr("Core address:")).arg(this->coreConnection->getCurrentConnectionInfo().address + ":" + QString::number(this->coreConnection->getCurrentConnectionInfo().port)));
-   msgBox.setIcon(QMessageBox::Information);
-   msgBox.setStandardButtons(QMessageBox::Ok);
-   QAbstractButton* retryButton = msgBox.addButton(tr("Retry"), QMessageBox::ActionRole);
-   msgBox.exec();
-   if (msgBox.clickedButton() == retryButton)
+   if (!this->coreConnection->isConnecting())
    {
-      this->coreConnection->connectToCore(SETTINGS.get<QString>("core_address"), SETTINGS.get<quint32>("core_port"), SETTINGS.get<Common::Hash>("password"));
+      QMessageBox msgBox(this);
+      msgBox.setWindowTitle(tr("Connection lost"));
+      msgBox.setText(QString("<p>%1</p><p>%2 <em>%3</em></p>").arg(tr("The connection to the core has been lost")).arg(tr("Core address:")).arg(this->coreConnection->getCurrentConnectionInfo().address + ":" + QString::number(this->coreConnection->getCurrentConnectionInfo().port)));
+      msgBox.setIcon(QMessageBox::Information);
+      msgBox.setStandardButtons(QMessageBox::Ok);
+      QAbstractButton* retryButton = msgBox.addButton(tr("Retry"), QMessageBox::ActionRole);
+      msgBox.exec();
+      if (msgBox.clickedButton() == retryButton)
+      {
+         this->widgetSettings->connectToCore();
+      }
    }
 }
 

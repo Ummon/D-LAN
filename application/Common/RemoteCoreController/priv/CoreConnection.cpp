@@ -45,7 +45,7 @@ void CoreConnection::Logger::logError(const QString& message)
 CoreConnection::CoreConnection() :
    ICoreConnection(new CoreConnection::Logger()),
    tempSocket(0),
-   isConnecting(false),
+   connectingInProgress(false),
    coreStatus(NOT_RUNNING),
    currentHostLookupID(-1),
    authenticated(false)
@@ -84,7 +84,7 @@ void CoreConnection::connectToCore(const QString& address, quint16 port, Common:
       return;
    }
 
-   if (this->isConnecting)
+   if (this->connectingInProgress)
    {
       emit connectionError(ERROR_CONNECTING_IN_PROGRESS);
       return;
@@ -96,7 +96,7 @@ void CoreConnection::connectToCore(const QString& address, quint16 port, Common:
       return;
    }
 
-   this->isConnecting = true;
+   this->connectingInProgress = true;
    emit connecting();
 
    if (this->currentHostLookupID != -1)
@@ -108,6 +108,11 @@ void CoreConnection::connectToCore(const QString& address, quint16 port, Common:
 bool CoreConnection::isConnected() const
 {
    return MessageSocket::isConnected() && this->authenticated;
+}
+
+bool CoreConnection::isConnecting() const
+{
+   return this->connectingInProgress;
 }
 
 void CoreConnection::disconnectFromCore()
@@ -256,7 +261,7 @@ void CoreConnection::adressResolved(QHostInfo hostInfo)
 
    if (hostInfo.addresses().isEmpty())
    {
-      this->isConnecting = false;
+      this->connectingInProgress = false;
       emit connectionError(ERROR_HOST_UNKOWN);
       return;
    }
@@ -312,7 +317,7 @@ void CoreConnection::stateChanged(QAbstractSocket::SocketState socketState)
       else
       {
          this->removeTempSocket();
-         this->isConnecting = false;
+         this->connectingInProgress = false;
          emit connectionError(ERROR_HOST_TIMEOUT);
       }
       break;
@@ -345,7 +350,7 @@ void CoreConnection::connectedAndAuthenticated()
    this->currentConnectionInfo = this->newConnectionInfo;
    this->newConnectionInfo.clear();
 
-   this->isConnecting = false;
+   this->connectingInProgress = false;
    this->authenticated = true;
 
    this->removeTempSocket();
@@ -373,7 +378,7 @@ void CoreConnection::onNewMessage(Common::MessageHeader::MessageType type, const
          {
             this->swapSockets();
             this->removeTempSocket();
-            this->isConnecting = false;
+            this->connectingInProgress = false;
 
             switch (authenticationResult.status())
             {
@@ -382,7 +387,7 @@ void CoreConnection::onNewMessage(Common::MessageHeader::MessageType type, const
                break;
 
             case Protos::GUI::AuthenticationResult_Status_BAD_PASSWORD:
-               emit connectionError(ERROR_WRONG_PASSWORD);
+                emit connectionError(ERROR_WRONG_PASSWORD);
                break;
 
             case Protos::GUI::AuthenticationResult_Status_ERROR:
@@ -476,9 +481,11 @@ void CoreConnection::onNewMessage(Common::MessageHeader::MessageType type, const
 
 void CoreConnection::onDisconnected()
 {
-   if (!this->authenticated)
+   if (this->connectingInProgress)
    {
-      this->isConnecting = false;
+      this->swapSockets();
+      this->removeTempSocket();
+      this->connectingInProgress = false;
       emit connectionError(ERROR_HOST_TIMEOUT);
       return;
    }

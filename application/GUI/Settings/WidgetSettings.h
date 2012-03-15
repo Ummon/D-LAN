@@ -52,6 +52,10 @@ namespace GUI
 
       QString getCurrentLanguageFilename();
 
+   public slots:
+      void resetCoreAddress();
+      void connectToCore();
+
    signals:
       void languageChanged(const QString& filename);
 
@@ -79,9 +83,6 @@ namespace GUI
 
       void moveUpShared();
       void moveDownShared();
-
-      void resetCoreAddress();
-      void connectToCore();
 
       void displayContextMenuDownload(const QPoint& point);
       void refreshButtonsAvailability(const QItemSelection& selected);

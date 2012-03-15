@@ -90,6 +90,8 @@ namespace RCC
         */
       virtual bool isConnected() const = 0;
 
+      virtual bool isConnecting() const = 0;
+
       virtual void disconnectFromCore() = 0;
 
       virtual void sendChatMessage(const QString& message) = 0;
