@@ -59,6 +59,13 @@ Common::Hash PeerListModel::getPeerID(int rowNum) const
    return this->peers[rowNum].peerID;
 }
 
+QHostAddress PeerListModel::getPeerIP(int rowNum) const
+{
+   if (rowNum >= this->peers.size())
+      return QHostAddress();
+   return this->peers[rowNum].ip;
+}
+
 void PeerListModel::clear()
 {
    google::protobuf::RepeatedPtrField<Protos::GUI::State_Peer> peers;
@@ -121,6 +128,9 @@ void PeerListModel::setPeers(const google::protobuf::RepeatedPtrField<Protos::GU
             ProtoHelper::getStr(peers.Get(i), &Protos::GUI::State_Peer::nick),
             peers.Get(i).sharing_amount()
          );
+
+      if (peers.Get(i).has_ip())
+         peer.ip = Common::ProtoHelper::getIP(peers.Get(i).ip());
 
       int j = this->peers.indexOf(peer);
       if (j != -1)

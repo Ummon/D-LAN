@@ -28,6 +28,7 @@ using namespace GUI;
 #include <QHBoxLayout>
 #include <QScrollBar>
 #include <QMessageBox>
+#include <QInputDialog>
 
 #include <Protos/gui_settings.pb.h>
 
@@ -272,6 +273,17 @@ void MainWindow::displayContextMenuPeers(const QPoint& point)
 {
    QMenu menu;
    menu.addAction(QIcon(":/icons/ressources/folder.png"), tr("Browse"), this, SLOT(browse()));
+
+   QModelIndex i = this->ui->tblPeers->currentIndex();
+   if (i.isValid())
+   {
+      QHostAddress addr = this->peerListModel.getPeerIP(i.row());
+      QAction* takeControlAction = menu.addAction(tr("Take control"), this, SLOT(takeControlOfACore()));
+      QVariant data;
+      data.setValue(addr);
+      takeControlAction->setData(data);
+   }
+
    menu.exec(this->ui->tblPeers->mapToGlobal(point));
 }
 
@@ -283,6 +295,17 @@ void MainWindow::browse()
       Common::Hash peerID = this->peerListModel.getPeerID(i.row());
       if (!peerID.isNull())
          this->addWidgetBrowse(peerID);
+   }
+}
+
+void MainWindow::takeControlOfACore()
+{
+   QAction* action = dynamic_cast<QAction*>(this->sender());
+   if (action)
+   {
+      QHostAddress address = action->data().value<QHostAddress>();
+      bool ok;
+      QInputDialog::getText(this, tr("Take control of %1").arg(address.toString()), "Enter a password", QLineEdit::Password, "", &ok);
    }
 }
 

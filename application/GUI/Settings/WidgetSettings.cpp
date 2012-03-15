@@ -338,8 +338,8 @@ void WidgetSettings::coreConnectionError()
 void WidgetSettings::coreConnected()
 {
    SETTINGS.set("core_address", this->coreConnection->getCurrentConnectionInfo().address);
+   SETTINGS.set("core_port", static_cast<quint32>(this->coreConnection->getCurrentConnectionInfo().port));
    SETTINGS.set("password", this->coreConnection->getCurrentConnectionInfo().password);
-   SETTINGS.set("port", static_cast<quint32>(this->coreConnection->getCurrentConnectionInfo().port));
    SETTINGS.save();
 
    this->ui->txtPassword->clear();

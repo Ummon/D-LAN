@@ -20,6 +20,7 @@
 #define GUI_PEERLISTMODEL_H
 
 #include <QAbstractTableModel>
+#include <QHostAddress>
 
 #include <Protos/gui_protocol.pb.h>
 
@@ -36,6 +37,7 @@ namespace GUI
       QString getNick(const Common::Hash& peerID) const;
       bool isOurself(int rowNum) const;
       Common::Hash getPeerID(int rowNum) const;
+      QHostAddress getPeerIP(int rowNum) const;
       void clear();
 
       int rowCount(const QModelIndex& parent = QModelIndex()) const;
@@ -70,6 +72,7 @@ namespace GUI
          Common::Hash peerID;
          QString nick;
          quint64 sharingAmount;
+         QHostAddress ip;
       };
       QList<Peer> peers;
    };

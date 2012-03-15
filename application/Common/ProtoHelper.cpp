@@ -41,6 +41,68 @@ QLocale ProtoHelper::getLang(const Protos::Common::Language& langMess)
    return QLocale(langStr);
 }
 
+void ProtoHelper::setIP(Protos::Common::IP& ipMess, const QHostAddress& address)
+{
+   switch (address.protocol())
+   {
+   case QAbstractSocket::IPv4Protocol:
+      {
+         quint32 ipInt = address.toIPv4Address();
+         char ip[4];
+         ip[0] = (ipInt & 0xFF000000) >> 24;
+         ip[1] = (ipInt & 0x00FF0000) >> 16;
+         ip[2] = (ipInt & 0x0000FF00) >> 8;
+         ip[3] = ipInt & 0x000000FF;
+
+         ipMess.set_type(Protos::Common::IP::IPv4);
+         ipMess.set_ip(ip, sizeof(ip));
+      }
+      break;
+   case QAbstractSocket::IPv6Protocol:
+      {
+         // We can use 'reinterpret_cast<>()' on the Qt type but I guess it's not a good idea.
+         Q_IPV6ADDR qipv6addr = address.toIPv6Address();
+         char ip[16];
+         for (int i = 0; i < 16; i++)
+            ip[i] = qipv6addr[i];
+
+         ipMess.set_type(Protos::Common::IP::IPv6);
+         ipMess.set_ip(ip, sizeof(ip));
+      }
+      break;
+   default:;
+   }
+}
+
+QHostAddress ProtoHelper::getIP(const Protos::Common::IP& ipMess)
+{
+   switch (ipMess.type())
+   {
+   case Protos::Common::IP::IPv4:
+      {
+         const char* ip = ipMess.ip().data();
+         quint32 ipInt =
+            static_cast<quint32>(ip[0]) << 24 & 0xFF000000 |
+            static_cast<quint32>(ip[1]) << 16 & 0x00FF0000 |
+            static_cast<quint32>(ip[2]) << 8 & 0x0000FF00 |
+            static_cast<quint32>(ip[3]) & 0x000000FF;
+         return QHostAddress(ipInt);
+      }
+      break;
+   case Protos::Common::IP::IPv6:
+      {
+         const char* ip = ipMess.ip().data();
+         Q_IPV6ADDR qipv6addr;
+         for (int i = 0; i < 16; i++)
+            qipv6addr[i] = ip[i];
+         return QHostAddress(qipv6addr);
+      }
+      break;
+   default:;
+      return QHostAddress();
+   }
+}
+
 QString ProtoHelper::getRelativePath(const Protos::Common::Entry& entry, bool appendFilename)
 {
    QString path = Common::ProtoHelper::getStr(entry, &Protos::Common::Entry::path);

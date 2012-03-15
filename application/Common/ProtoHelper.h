@@ -21,6 +21,7 @@
 
 #include <QString>
 #include <QLocale>
+#include <QHostAddress>
 
 #include <google/protobuf/message.h>
 
@@ -49,6 +50,9 @@ namespace Common
 
       static void setLang(Protos::Common::Language& langMess, const QLocale& locale);
       static QLocale getLang(const Protos::Common::Language& langMess);
+
+      static void setIP(Protos::Common::IP& ipMess, const QHostAddress& address);
+      static QHostAddress getIP(const Protos::Common::IP& ipMess);
 
       /**
         * Return the relative path of an entry, for exemple:

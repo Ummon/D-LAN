@@ -43,6 +43,9 @@
 #include <Browse/WidgetBrowse.h>
 #include <Search/WidgetSearch.h>
 
+
+Q_DECLARE_METATYPE(QHostAddress)
+
 namespace Ui {
    class MainWindow;
 }
@@ -81,6 +84,7 @@ namespace GUI
 
       void displayContextMenuPeers(const QPoint& point);
       void browse();
+      void takeControlOfACore();
       void searchOtherPeers();
       void searchOwnFiles();
       void txtSearchReturnPressed(Qt::KeyboardModifiers modifiers);

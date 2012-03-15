@@ -402,6 +402,7 @@ void RemoteConnection::refresh()
       protoPeer->mutable_peer_id()->set_hash(peer->getID().getData(), Common::Hash::HASH_SIZE);
       Common::ProtoHelper::setStr(*protoPeer, &Protos::GUI::State::Peer::set_nick, peer->getNick());
       protoPeer->set_sharing_amount(peer->getSharingAmount());
+      Common::ProtoHelper::setIP(*protoPeer->mutable_ip(), peer->getIP());
    }
 
    // Downloads.

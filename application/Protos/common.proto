@@ -23,6 +23,15 @@ message Hash {
    optional bytes hash = 1; // 28 bytes. If it doesn't exist the hash is null.
 }
 
+message IP {
+   enum Type {
+      IPv4 = 0;
+      IPv6 = 1;
+   }
+   required Type type = 1;
+   required bytes ip = 2; // type == IPv4: 4 bytes. type == IPv6: 16 bytes. Big endian.
+}
+
 // A shared directory matches an existing handle, thus there is no need to have the complete path to it.
 message SharedDir {
    required Hash id = 1; // Identify a shared directory.

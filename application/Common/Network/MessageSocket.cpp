@@ -19,6 +19,8 @@
 #include <Common/Network/MessageSocket.h>
 using namespace Common;
 
+#include <QNetworkInterface>
+
 #include <Protos/common.pb.h>
 #include <Protos/core_protocol.pb.h>
 #include <Protos/gui_protocol.pb.h>
@@ -162,7 +164,7 @@ void MessageSocket::stopListening()
 
 bool MessageSocket::isLocal() const
 {
-   return this->socket->peerAddress() == QHostAddress::LocalHost || this->socket->peerAddress() == QHostAddress::LocalHostIPv6;
+   return this->socket->peerAddress() == QHostAddress::LocalHost || this->socket->peerAddress() == QHostAddress::LocalHostIPv6 || QNetworkInterface::allAddresses().contains(this->socket->peerAddress());
 }
 
 bool MessageSocket::isConnected() const
