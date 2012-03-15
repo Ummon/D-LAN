@@ -144,16 +144,20 @@ void RemoteConnection::onNewMessage(Common::MessageHeader::MessageType type, con
             Common::Hash passwordHashReceived(authenticationMessage.password().hash());
             Common::Hash actualPasswordHash = SETTINGS.get<Common::Hash>("remote_password");
 
-            if (!actualPasswordHash.isNull() && passwordHashReceived == actualPasswordHash)
+            if (actualPasswordHash.isNull())
+            {
+               QTimer::singleShot(SETTINGS.get<quint32>("delay_gui_connection_fail"), this, SLOT(sendNoPasswordDefinedResult()));
+            }
+            else if (passwordHashReceived != actualPasswordHash)
+            {
+               QTimer::singleShot(SETTINGS.get<quint32>("delay_gui_connection_fail"), this, SLOT(sendBadPasswordResult()));
+            }
+            else // OK.
             {
                Protos::GUI::AuthenticationResult authResultMessage;
                authResultMessage.set_status(Protos::GUI::AuthenticationResult_Status_OK);
                this->send(Common::MessageHeader::GUI_AUTHENTICATION_RESULT, authResultMessage);
                this->authenticated = true;
-            }
-            else
-            {
-               QTimer::singleShot(1000, this, SLOT(sendBadPasswordResult()));
             }
          }
       }
@@ -539,10 +543,18 @@ void RemoteConnection::newLogEntry(QSharedPointer<const LM::IEntry> entry)
    this->send(Common::MessageHeader::GUI_EVENT_LOG_MESSAGE, eventLogMessage);
 }
 
+void RemoteConnection::sendNoPasswordDefinedResult()
+{
+   Protos::GUI::AuthenticationResult authResultMessage;
+   authResultMessage.set_status(Protos::GUI::AuthenticationResult::PASSWORD_NOT_DEFINED);
+   this->send(Common::MessageHeader::GUI_AUTHENTICATION_RESULT, authResultMessage);
+   this->socket->close();
+}
+
 void RemoteConnection::sendBadPasswordResult()
 {
    Protos::GUI::AuthenticationResult authResultMessage;
-   authResultMessage.set_status(Protos::GUI::AuthenticationResult_Status_BAD_PASSWORD);
+   authResultMessage.set_status(Protos::GUI::AuthenticationResult::BAD_PASSWORD);
    this->send(Common::MessageHeader::GUI_AUTHENTICATION_RESULT, authResultMessage);
    this->socket->close();
 }

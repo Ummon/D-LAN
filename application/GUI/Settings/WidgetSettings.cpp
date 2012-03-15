@@ -71,6 +71,10 @@ WidgetSettings::WidgetSettings(QSharedPointer<RCC::ICoreConnection> coreConnecti
    this->ui->txtCoreAddress->setText(SETTINGS.get<QString>("core_address"));
 
    connect(this->coreConnection.data(), SIGNAL(newState(Protos::GUI::State)), this, SLOT(newState(Protos::GUI::State)));
+   connect(this->coreConnection.data(), SIGNAL(connecting()), this, SLOT(coreConnecting()));
+   connect(this->coreConnection.data(), SIGNAL(connectionError(RCC::ICoreConnection::ConnectionErrorCode)), this, SLOT(coreConnectionError()));
+   connect(this->coreConnection.data(), SIGNAL(connected()), this, SLOT(coreConnected()));
+   connect(this->coreConnection.data(), SIGNAL(disconnected()), this, SLOT(coreDisconnected()));
 
    connect(this->ui->txtNick, SIGNAL(editingFinished()), this, SLOT(saveCoreSettings()));
 
@@ -86,9 +90,8 @@ WidgetSettings::WidgetSettings(QSharedPointer<RCC::ICoreConnection> coreConnecti
 
    connect(this->ui->butOpenFolder, SIGNAL(clicked()), this, SLOT(openLocation()));
 
-   connect(this->ui->txtCoreAddress, SIGNAL(editingFinished()), this, SLOT(saveGUISettings()));
-   connect(this->ui->txtPassword, SIGNAL(editingFinished()), this, SLOT(saveGUISettings()));
    connect(this->ui->butResetCoreAddress, SIGNAL(clicked()), this, SLOT(resetCoreAddress()));
+   connect(this->ui->butConnect, SIGNAL(clicked()), this, SLOT(connectToCore()));
 
    this->ui->tblShareDirs->setContextMenuPolicy(Qt::CustomContextMenu);
    connect(this->ui->tblShareDirs, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(displayContextMenuDownload(const QPoint&)));   
@@ -103,26 +106,12 @@ WidgetSettings::WidgetSettings(QSharedPointer<RCC::ICoreConnection> coreConnecti
    connect(this->ui->cmbLanguages, SIGNAL(currentIndexChanged(int)), this, SLOT(cmbLanguageChanged(int)));
 
    this->refreshButtonsAvailability();
+   this->coreDisconnected(); // To set the initial state.
 }
 
 WidgetSettings::~WidgetSettings()
 {
    delete this->ui;
-}
-
-void WidgetSettings::coreConnected()
-{
-   this->ui->txtPassword->clear();
-   this->ui->tabWidget->setTabEnabled(0, true);
-   this->ui->tabWidget->setTabEnabled(1, true);
-   this->ui->chkEnableIntegrityCheck->setEnabled(true);
-}
-
-void WidgetSettings::coreDisconnected()
-{
-   this->ui->tabWidget->setTabEnabled(0, false);
-   this->ui->tabWidget->setTabEnabled(1, false);
-   this->ui->chkEnableIntegrityCheck->setEnabled(false);
 }
 
 QString WidgetSettings::getCurrentLanguageFilename()
@@ -314,7 +303,7 @@ void WidgetSettings::newState(const Protos::GUI::State& state)
 
 
    // If this is the first message state received and there is no incoming folder defined we ask the user to choose one.
-   // Comment cuz the user can know choose a folder right before downloading a file.
+   // Commented cuz the user can know choose a folder right before downloading a file.
    /*if (this->initialState)
    {
       this->initialState = false;
@@ -332,6 +321,44 @@ void WidgetSettings::newState(const Protos::GUI::State& state)
          }
       }
    }*/
+}
+
+void WidgetSettings::coreConnecting()
+{
+   this->ui->butConnect->setDisabled(true);
+   this->ui->butConnect->setText(tr("Connecting.."));
+}
+
+void WidgetSettings::coreConnectionError()
+{
+   this->ui->butConnect->setDisabled(false);
+   this->ui->butConnect->setText(tr("Connect"));
+}
+
+void WidgetSettings::coreConnected()
+{
+   SETTINGS.set("core_address", this->coreConnection->getCurrentConnectionInfo().address);
+   SETTINGS.set("password", this->coreConnection->getCurrentConnectionInfo().password);
+   SETTINGS.set("port", static_cast<quint32>(this->coreConnection->getCurrentConnectionInfo().port));
+   SETTINGS.save();
+
+   this->ui->txtPassword->clear();
+   this->ui->tabWidget->setTabEnabled(0, true);
+   this->ui->tabWidget->setTabEnabled(1, true);
+   this->ui->chkEnableIntegrityCheck->setEnabled(true);
+
+   this->ui->butConnect->setDisabled(false);
+   this->ui->butConnect->setText(tr("Connect"));
+}
+
+void WidgetSettings::coreDisconnected()
+{
+   this->ui->tabWidget->setTabEnabled(0, false);
+   this->ui->tabWidget->setTabEnabled(1, false);
+   this->ui->chkEnableIntegrityCheck->setEnabled(false);
+
+   this->ui->butConnect->setDisabled(false);
+   this->ui->butConnect->setText(tr("Connect"));
 }
 
 /**
@@ -366,31 +393,13 @@ void WidgetSettings::saveCoreSettings()
    this->coreConnection->setCoreSettings(settings);
 }
 
-void WidgetSettings::saveGUISettings()
-{
-   this->ui->txtCoreAddress->setText(this->ui->txtCoreAddress->text().trimmed());
-
-   QString previousAddress = SETTINGS.get<QString>("core_address");
-   SETTINGS.set("core_address", this->ui->txtCoreAddress->text());
-
-   SETTINGS.set("password", Common::Hasher::hashWithSalt(this->ui->txtPassword->text()));
-
-   SETTINGS.set("language", this->ui->cmbLanguages->itemData(this->ui->cmbLanguages->currentIndex()).value<Common::Language>().locale);
-
-   SETTINGS.save();
-
-   if (previousAddress != SETTINGS.get<QString>("core_address") || !this->coreConnection->isConnected())
-   {
-      this->coreConnection->connectToCore(SETTINGS.get<QString>("core_address"), SETTINGS.get<quint32>("core_port"), SETTINGS.get<Common::Hash>("password"));
-   }
-}
-
 void WidgetSettings::cmbLanguageChanged(int cmbIndex)
 {
    Common::Language lang = this->ui->cmbLanguages->itemData(cmbIndex).value<Common::Language>();
    emit languageChanged(lang.filename);
    this->coreConnection->setCoreLanguage(lang.locale);
-   this->saveGUISettings();
+   SETTINGS.set("language", this->ui->cmbLanguages->itemData(this->ui->cmbLanguages->currentIndex()).value<Common::Language>().locale);
+   SETTINGS.save();
 }
 
 void WidgetSettings::addShared()
@@ -445,7 +454,18 @@ void WidgetSettings::moveDownShared()
 void WidgetSettings::resetCoreAddress()
 {
    this->ui->txtCoreAddress->setText("localhost");
-   this->saveGUISettings();
+   this->connectToCore();
+}
+
+void WidgetSettings::connectToCore()
+{
+   const QString newHost = this->ui->txtCoreAddress->text().trimmed().toLower();
+
+   if (newHost != SETTINGS.get<QString>("core_address") || !this->coreConnection->isConnected())
+   {
+      this->coreConnecting();
+      this->coreConnection->connectToCore(newHost, SETTINGS.get<quint32>("core_port"), Common::Hasher::hashWithSalt(this->ui->txtPassword->text()));
+   }
 }
 
 void WidgetSettings::displayContextMenuDownload(const QPoint& point)

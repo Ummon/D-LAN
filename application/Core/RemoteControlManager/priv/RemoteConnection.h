@@ -98,6 +98,7 @@ namespace RCM
 
       void newLogEntry(QSharedPointer<const LM::IEntry> entry);
 
+      void sendNoPasswordDefinedResult();
       void sendBadPasswordResult();
 
    private:

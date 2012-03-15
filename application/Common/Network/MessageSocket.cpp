@@ -142,9 +142,9 @@ void MessageSocket::startListening()
 
    this->listening = true;
 
-   connect(this->socket, SIGNAL(readyRead()), this, SLOT(dataReceived()), Qt::DirectConnection);
-   connect(this->socket, SIGNAL(disconnected()), this, SLOT(disconnected()), Qt::DirectConnection);
-   this->dataReceived();
+   connect(this->socket, SIGNAL(readyRead()), this, SLOT(dataReceivedSlot()), Qt::DirectConnection);
+   connect(this->socket, SIGNAL(disconnected()), this, SLOT(disconnectedSlot()), Qt::DirectConnection);
+   this->dataReceivedSlot();
 }
 
 /**
@@ -154,8 +154,8 @@ void MessageSocket::stopListening()
 {
    MESSAGE_SOCKET_LOG_DEBUG(QString("Socket[%1] stopping to listen").arg(this->num));
 
-   disconnect(this->socket, SIGNAL(readyRead()), this, SLOT(dataReceived()));
-   disconnect(this->socket, SIGNAL(disconnected()), this, SLOT(disconnected()));
+   disconnect(this->socket, SIGNAL(readyRead()), this, SLOT(dataReceivedSlot()));
+   disconnect(this->socket, SIGNAL(disconnected()), this, SLOT(disconnectedSlot()));
 
    this->listening = false;
 }
@@ -175,7 +175,7 @@ bool MessageSocket::isListening() const
    return this->listening;
 }
 
-void MessageSocket::dataReceived()
+void MessageSocket::dataReceivedSlot()
 {
    while (!this->socket->atEnd() && this->listening)
    {
@@ -212,7 +212,7 @@ void MessageSocket::dataReceived()
    }
 }
 
-void MessageSocket::disconnected()
+void MessageSocket::disconnectedSlot()
 {
    if (!this->IDDefined)
       this->ID = Common::Hash();

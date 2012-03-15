@@ -85,8 +85,8 @@ namespace Common
       bool isListening() const;
 
    private slots:
-      void dataReceived();
-      void disconnected();
+      void dataReceivedSlot();
+      void disconnectedSlot();
 
    private:
       /**

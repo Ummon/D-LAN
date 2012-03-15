@@ -189,4 +189,5 @@ void Core::checkSettingsIntegrity()
    this->checkSetting("remote_refresh_rate", 500u, 10u * 1000u);
    this->checkSetting("remote_max_nb_connection", 1u, 1000u);
    this->checkSetting("search_lifetime", 1000u, 60 * 1000u);
+   this->checkSetting("delay_gui_connection_fail", 0u, 10 * 1000u);
 }

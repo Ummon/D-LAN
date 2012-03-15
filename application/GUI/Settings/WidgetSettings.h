@@ -50,9 +50,6 @@ namespace GUI
       explicit WidgetSettings(QSharedPointer<RCC::ICoreConnection> coreConnection, DirListModel& sharedDirsModel, QWidget *parent = 0);
       ~WidgetSettings();
 
-      void coreConnected();
-      void coreDisconnected();
-
       QString getCurrentLanguageFilename();
 
    signals:
@@ -68,8 +65,12 @@ namespace GUI
 
    private slots:
       void newState(const Protos::GUI::State& state);
+      void coreConnecting();
+      void coreConnectionError();
+      void coreConnected();
+      void coreDisconnected();
+
       void saveCoreSettings();
-      void saveGUISettings();
 
       void cmbLanguageChanged(int cmbIndex);
 
@@ -80,6 +81,7 @@ namespace GUI
       void moveDownShared();
 
       void resetCoreAddress();
+      void connectToCore();
 
       void displayContextMenuDownload(const QPoint& point);
       void refreshButtonsAvailability(const QItemSelection& selected);

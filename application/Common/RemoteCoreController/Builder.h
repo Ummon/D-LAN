@@ -29,14 +29,7 @@ namespace RCC
    public:
       static QSharedPointer<ICoreConnection> newCoreConnection();
 
-      /**
-        * @remarks Works only in local.
-        */
       static CoreStatus StartCore();
-
-      /**
-        * @remarks Works only in local.
-        */
       static void StopCore();
    };
 }

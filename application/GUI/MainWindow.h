@@ -73,6 +73,7 @@ namespace GUI
    private slots:
       void loadLanguage(const QString& filename);
 
+      void coreConnectionError(RCC::ICoreConnection::ConnectionErrorCode errorCode);
       void coreConnected();
       void coreDisconnected();
 
@@ -97,6 +98,10 @@ namespace GUI
 
    private:
       void search(bool ownFiles = false);
+
+      void setApplicationStateAsConnected();
+      void setApplicationStateAsDisconnected();
+
       void saveWindowsSettings();
       void restoreWindowsSettings();
 
