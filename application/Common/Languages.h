@@ -22,6 +22,7 @@
 #include <QString>
 #include <QList>
 #include <QLocale>
+#include <QMetaType>
 
 namespace Common
 {

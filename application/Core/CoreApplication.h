@@ -19,6 +19,10 @@
 #ifndef CORE_COREAPPLICATION_H
 #define CORE_COREAPPLICATION_H
 
+#ifdef Q_OS_WIN32
+   #include <windows.h>
+#endif
+
 #include <QCoreApplication>
 
 class CoreApplication : public QCoreApplication
@@ -27,7 +31,10 @@ class CoreApplication : public QCoreApplication
 
 public:
    CoreApplication(int& argc, char** argv);
+
+#ifdef Q_OS_WIN32
    bool winEventFilter(MSG* msg, long* result);
+#endif
 
 /*signals:
    void resumeFromLowPowerState();*/
