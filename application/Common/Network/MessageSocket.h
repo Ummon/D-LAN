@@ -52,15 +52,15 @@ namespace Common
          virtual void logError(const QString& message) = 0;
       };
 
-      MessageSocket(ILogger* logger, const Hash& ID = Hash(), const Hash& remoteID = Hash());
-      MessageSocket(ILogger* logger, QAbstractSocket* socket, const Hash& ID = Hash(), const Hash& remoteID = Hash());
-      MessageSocket(ILogger* logger, const QHostAddress& address, quint16 port, const Hash& ID = Hash(), const Hash& remoteID = Hash());
+      MessageSocket(ILogger* logger, const Hash& localID = Hash(), const Hash& remoteID = Hash());
+      MessageSocket(ILogger* logger, QAbstractSocket* socket, const Hash& localID = Hash(), const Hash& remoteID = Hash());
+      MessageSocket(ILogger* logger, const QHostAddress& address, quint16 port, const Hash& localID = Hash(), const Hash& remoteID = Hash());
 
    public:
       virtual ~MessageSocket();
 
    public:
-      virtual Hash getID() const;
+      virtual Hash getLocalID() const;
       virtual Hash getRemoteID() const;
 
       virtual void send(MessageHeader::MessageType type, const google::protobuf::Message& message);
@@ -75,11 +75,7 @@ namespace Common
       virtual bool isLocal() const;
       virtual bool isConnected() const;
 
-   signals:
-      /**
-        * Emitted after a message is received. The method 'onNewMessage()' is called previously.
-        */
-      void newMessage(Common::MessageHeader::MessageType type, const google::protobuf::Message& message);
+      virtual void close();
 
    protected:
       bool isListening() const;
@@ -91,6 +87,7 @@ namespace Common
    private:
       /**
         * Call when a new message arrived. Do nothing by default.
+        * Can be inherited by a subclass of 'MessageSocket'.
         * The signal 'newMessage' is also emitted after this called.
         */
       virtual void onNewMessage(MessageHeader::MessageType type, const google::protobuf::Message& message) {}
@@ -107,7 +104,7 @@ namespace Common
       QAbstractSocket* socket;
 
    private:
-      Hash ID;
+      Hash localID;
       Hash remoteID;
 
       bool IDDefined;
@@ -136,7 +133,6 @@ template<typename MessT> bool MessageSocket::readMessage()
    if (this->readProtoMessage(mess))
    {
       this->onNewMessage(this->currentHeader.getType(), mess);
-      emit newMessage(this->currentHeader.getType(), mess);
       return true;
    }
    return false;

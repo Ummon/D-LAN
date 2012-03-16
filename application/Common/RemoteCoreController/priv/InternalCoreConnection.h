@@ -16,8 +16,8 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef RCC_CORECONNECTION_H
-#define RCC_CORECONNECTION_H
+#ifndef RCC_INTERNAL_CORECONNECTION_H
+#define RCC_INTERNAL_CORECONNECTION_H
 
 #include <QObject>
 #include <QTcpSocket>
@@ -31,6 +31,7 @@
 #include <Protos/gui_protocol.pb.h>
 #include <Protos/common.pb.h>
 
+#include <Common/Network/MessageSocket.h>
 #include <Common/Timeoutable.h>
 #include <Common/LogManager/IEntry.h>
 
@@ -38,30 +39,31 @@
 #include <IBrowseResult.h>
 #include <ISearchResult.h>
 #include <Types.h>
-#include <priv/InternalCoreConnection.h>
 
 namespace RCC
 {
    class BrowseResult;
    class SearchResult;
 
-   class CoreConnection : public ICoreConnection
+   class InternalCoreConnection : public Common::MessageSocket
    {
       Q_OBJECT
-   public:
-      CoreConnection();
-      ~CoreConnection();
 
-      void connectToCore();
-      void connectToCore(quint16 port);
+   protected:
+      class Logger : public ILogger
+      {
+      public:
+         void logDebug(const QString& message);
+         void logError(const QString& message);
+      };
+
+   public:
+      InternalCoreConnection();
+      ~InternalCoreConnection();
+
       void connectToCore(const QString& address, quint16 port, Common::Hash password);
 
-      Common::Hash getLocalID() const;
-      Common::Hash getRemoteID() const;
-
-      bool isLocal() const;
       bool isConnected() const;
-      bool isConnecting() const;
 
       void disconnectFromCore();
 
@@ -78,7 +80,6 @@ namespace RCC
 
       void download(const Common::Hash& peerID, const Protos::Common::Entry& entry);
       void download(const Common::Hash& peerID, const Protos::Common::Entry& entry, const Common::Hash& sharedFolderID, const QString& path = "/");
-      void download(const Common::Hash& peerID, const Protos::Common::Entry& entry, const QString& absolutePath);
       void cancelDownloads(const QList<quint64>& downloadIDs, bool complete = false);
       void pauseDownloads(const QList<quint64>& downloadIDs, bool pause = true);
       void moveDownloads(quint64 downloadIDRef, const QList<quint64>& downloadIDs, bool moveBefore = true);
@@ -86,28 +87,52 @@ namespace RCC
       void refresh();
 
       bool isRunningAsSubProcess() const;
+      ICoreConnection::ConnectionInfo getConnectionInfo() const;
 
-      ConnectionInfo getConnectionInfo() const;
-      ConnectionInfo getConnectionInfoConnecting() const;
+   signals:
+      void connectingError(RCC::ICoreConnection::ConnectionErrorCode code);
+      void connected();
+      void disconnected();
+
+      void newState(const Protos::GUI::State&);
+      void newChatMessages(const Protos::GUI::EventChatMessages&);
+      void newLogMessage(QSharedPointer<const LM::IEntry>);
+
+      void browseResult(const Protos::GUI::BrowseResult& browseResult);
+      void searchResult(const Protos::Common::FindResult& findResult);
 
    private slots:
-      void tempConnectingError(RCC::ICoreConnection::ConnectionErrorCode code);
-      void tempConnected();
-      void tempDisconnected();
-
+      void adressResolved(QHostInfo hostInfo);
    private:
-      InternalCoreConnection* current();
-      const InternalCoreConnection* current() const;
+      void tryToConnectToTheNextAddress();
 
-      InternalCoreConnection* temp();
-      const InternalCoreConnection* temp() const;
+   private slots:
+      void stateChanged(QAbstractSocket::SocketState socketState);
 
-      void swap();
+   private:      
+      void connectedAndAuthenticated();
 
-      InternalCoreConnection connections[2];
-      int currentConnected;
+      void sendCurrentLanguage();
 
-      bool connectingInProgress;
+      void onNewMessage(Common::MessageHeader::MessageType type, const google::protobuf::Message& message);
+      void onDisconnected();
+
+      friend class BrowseResult;
+      friend class SearchResult;
+
+      CoreStatus coreStatus;
+
+      ICoreConnection::ConnectionInfo connectionInfo;
+
+      QLocale currentLanguage;
+
+      int currentHostLookupID;
+
+      QList<QHostAddress> addressesToTry; // When a name is resolved many addresses can be returned, we will try all of them until a connection is successfuly established.
+
+      QList< QWeakPointer<BrowseResult> > browseResultsWithoutTag;
+      QList< QWeakPointer<SearchResult> > searchResultsWithoutTag;
+      bool authenticated;
    };
 }
 

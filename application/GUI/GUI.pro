@@ -67,7 +67,8 @@ SOURCES += main.cpp\
     ProgressBar.cpp \
     IconProvider.cpp \
     Utils.cpp \
-    LineEdit.cpp
+    LineEdit.cpp \
+    Settings/AskNewPasswordDialog.cpp
 
 HEADERS  += MainWindow.h \
     ../Protos/gui_protocol.pb.h \
@@ -102,7 +103,8 @@ HEADERS  += MainWindow.h \
     ProgressBar.h \
     IconProvider.h \
     Utils.h \
-    LineEdit.h
+    LineEdit.h \
+    Settings/AskNewPasswordDialog.h
 
 FORMS    += MainWindow.ui \
     StatusBar.ui \
@@ -113,7 +115,8 @@ FORMS    += MainWindow.ui \
     Search/WidgetSearch.ui \
     Settings/WidgetSettings.ui \
     Uploads/WidgetUploads.ui \
-    Settings/RemoteFileDialog.ui
+    Settings/RemoteFileDialog.ui \
+    Settings/AskNewPasswordDialog.ui
 
 RESOURCES += \
     ressources.qrc

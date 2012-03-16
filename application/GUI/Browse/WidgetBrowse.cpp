@@ -65,7 +65,7 @@ WidgetBrowse::WidgetBrowse(QSharedPointer<RCC::ICoreConnection> coreConnection, 
    connect(this->ui->treeView, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(displayContextMenuDownload(const QPoint&)));
    connect(this->ui->treeView, SIGNAL(doubleClicked(const QModelIndex&)), this, SLOT(entryDoubleClicked(const QModelIndex&)));
 
-   if (this->coreConnection->getID() == this->peerID)
+   if (this->coreConnection->getRemoteID() == this->peerID)
       this->ui->butDownload->hide();
    else
       connect(this->ui->butDownload, SIGNAL(clicked()), this, SLOT(download()));
@@ -114,7 +114,7 @@ void WidgetBrowse::changeEvent(QEvent* event)
 void WidgetBrowse::displayContextMenuDownload(const QPoint& point)
 {
    QPoint globalPosition = this->ui->treeView->mapToGlobal(point);
-   if (this->coreConnection->getID() == this->peerID)
+   if (this->coreConnection->getRemoteID() == this->peerID)
    {
       if (this->coreConnection->isLocal())
       {
@@ -131,7 +131,7 @@ void WidgetBrowse::displayContextMenuDownload(const QPoint& point)
 
 void WidgetBrowse::entryDoubleClicked(const QModelIndex& index)
 {
-   if (this->coreConnection->getID() == this->peerID && !this->browseModel.isDir(index))
+   if (this->coreConnection->getRemoteID() == this->peerID && !this->browseModel.isDir(index))
       QDesktopServices::openUrl(QUrl("file:///" + this->browseModel.getPath(index), QUrl::TolerantMode));
 }
 

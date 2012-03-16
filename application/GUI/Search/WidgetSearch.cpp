@@ -247,7 +247,7 @@ void WidgetSearch::displayContextMenuDownload(const QPoint& point)
 
 void WidgetSearch::entryDoubleClicked(const QModelIndex& index)
 {
-   if (this->coreConnection->getID() == this->searchModel.getPeerID(index) && !this->searchModel.isDir(index))
+   if (this->coreConnection->getRemoteID() == this->searchModel.getPeerID(index) && !this->searchModel.isDir(index))
       QDesktopServices::openUrl(QUrl("file:///" + this->searchModel.getPath(index), QUrl::TolerantMode));
 }
 
@@ -333,7 +333,7 @@ void WidgetSearch::treeviewSectionResized(int logicalIndex, int oldSize, int new
 bool WidgetSearch::atLeastOneRemotePeer(const QModelIndexList& indexes) const
 {
    for (QListIterator<QModelIndex> i(indexes); i.hasNext();)
-      if (this->searchModel.getPeerID(i.next()) != this->coreConnection->getID())
+      if (this->searchModel.getPeerID(i.next()) != this->coreConnection->getRemoteID())
          return true;
 
    return false;

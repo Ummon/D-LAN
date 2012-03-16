@@ -20,13 +20,13 @@
 #define RCC_ICORECONNECTION_H
 
 #include <QObject>
+#include <QLocale>
 #include <QSharedPointer>
 
 #include <Protos/common.pb.h>
 #include <Protos/gui_protocol.pb.h>
 
 #include <Common/Hash.h>
-#include <Common/Network/MessageSocket.h>
 #include <Common/LogManager/IEntry.h>
 
 namespace RCC
@@ -41,17 +41,14 @@ namespace RCC
      *
      * Connection process:
      *  - Call 'connectToCore(..)'.
-     *  - if error: signal 'connectionError()' is emitted.
+     *  - if error: signal 'connectingError()' is emitted.
      *  - if ok:
      *    - if previsouly connected: signal 'coreDisconnected()' is emitted.
      *    - signal 'coreConnected()' is emitted.
      */
-   class ICoreConnection : public Common::MessageSocket
+   class ICoreConnection : public QObject
    {
       Q_OBJECT
-   protected:
-      ICoreConnection(Common::MessageSocket::ILogger* logger) : Common::MessageSocket(logger) {}
-
    public:
       enum ConnectionErrorCode
       {
@@ -70,7 +67,7 @@ namespace RCC
       /**
         * Connect to a local core with the default port (59485).
         * When the connection is ready, the signal 'coreConnected' is emitted.
-        * If the connection fail, the signal 'connectionError(..)' si emitted.
+        * If the connection fail, the signal 'connectingError(..)' si emitted.
         */
       virtual void connectToCore() = 0;
 
@@ -84,6 +81,10 @@ namespace RCC
         * @param address the IP adress, it can be an IPv4 or IPv6 address.
         */
       virtual void connectToCore(const QString& address, quint16 port, Common::Hash password) = 0;
+
+      virtual Common::Hash getRemoteID() const = 0;
+
+      virtual bool isLocal() const = 0;
 
       /**
         * If connected to the core AND authenticated.
@@ -106,6 +107,8 @@ namespace RCC
         * is sent to it.
         */
       virtual void setCoreLanguage(const QLocale locale) = 0;
+
+      virtual void setCorePassword(Common::Hash newPassword, Common::Hash oldPassword = Common::Hash()) = 0;
 
       /**
         * Get the roots folders (shared directories) of a given peer.
@@ -173,7 +176,7 @@ namespace RCC
         */
       virtual void refresh() = 0;
 
-      virtual bool isRunningAsSubProcess() = 0;
+      virtual bool isRunningAsSubProcess() const = 0;
 
       struct ConnectionInfo {
          void clear() { this->address.clear(); this->port = 0; this->password = Common::Hash(); }
@@ -182,25 +185,22 @@ namespace RCC
          Common::Hash password;
       };
 
-      /**
-        * This data are valid during the signal 'connecting' to the signal 'connected'.
-        */
-      virtual ConnectionInfo getNewConnectionInfo() const = 0;
+      virtual ConnectionInfo getConnectionInfo() const = 0;
 
       /**
-        * This data are valid during the signal 'connected' to the signal 'disconnected'.
+        * These data are valid during the signal 'connecting' to the signal 'connected'.
         */
-      virtual ConnectionInfo getCurrentConnectionInfo() const = 0;
+      virtual ConnectionInfo getConnectionInfoConnecting() const = 0;
 
    signals:
       void connecting();
-      void connectionError(RCC::ICoreConnection::ConnectionErrorCode code); // Can only be thrown during the connection process.
+      void connectingError(RCC::ICoreConnection::ConnectionErrorCode); // Can only be thrown during the connection process.
       void connected();
       void disconnected(); // Can only be thrown if 'coreConnected()' has been previously thrown.
 
       void newState(const Protos::GUI::State&);
       void newChatMessages(const Protos::GUI::EventChatMessages&);
-      void newLogMessage(QSharedPointer<const LM::IEntry> entry);
+      void newLogMessage(QSharedPointer<const LM::IEntry>);
    };
 }
 

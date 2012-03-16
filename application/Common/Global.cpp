@@ -26,6 +26,8 @@ using namespace Common;
 #include <QDebug>
 #include <QtGlobal>
 #include <QRegExp>
+#include <QHostAddress>
+#include <QNetworkInterface>
 
 #ifdef Q_OS_WIN32
    #include <windows.h>
@@ -163,6 +165,17 @@ QString Global::formatTime(quint64 seconds)
    return output;
 }
 
+QString Global::formatIP(const QHostAddress& address, quint16 port)
+{
+   QString formatedIP;
+   if (address.protocol() == QAbstractSocket::IPv4Protocol)
+      formatedIP.append(address.toString());
+   else
+      formatedIP.append("[").append(address.toString()).append("]");
+   formatedIP.append(":").append(QString::number(port));
+   return formatedIP;
+}
+
 /**
   * Return the remaining free space for the given path.
   * TODO : Linux
@@ -202,6 +215,11 @@ bool Global::rename(const QString& existingFile, const QString& newFile)
 #else
    return std::rename(qPrintable(existingFile), qPrintable(newFile)) == 0;
 #endif
+}
+
+bool Global::isLocal(const QHostAddress& address)
+{
+   return address == QHostAddress::LocalHost || address == QHostAddress::LocalHostIPv6 || QNetworkInterface::allAddresses().contains(address);
 }
 
 /**

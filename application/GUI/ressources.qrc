@@ -27,5 +27,6 @@
         <file>ressources/zoom_monitor.png</file>
         <file>ressources/information.png</file>
         <file>ressources/pause.png</file>
+        <file>ressources/lightning.png</file>
     </qresource>
 </RCC>

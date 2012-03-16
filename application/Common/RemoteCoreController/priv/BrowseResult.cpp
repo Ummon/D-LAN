@@ -21,22 +21,22 @@ using namespace RCC;
 
 #include <Common/Settings.h>
 
-#include <priv/CoreConnection.h>
+#include <priv/InternalCoreConnection.h>
 
-BrowseResult::BrowseResult(CoreConnection* coreConnection, const Common::Hash& peerID) :
+BrowseResult::BrowseResult(InternalCoreConnection* coreConnection, const Common::Hash& peerID) :
    IBrowseResult(SETTINGS.get<quint32>("socket_timeout")), peerID(peerID), tag(0)
 {
    this->init(coreConnection);
 }
 
-BrowseResult::BrowseResult(CoreConnection* coreConnection, const Common::Hash& peerID, const Protos::Common::Entry& entry) :
+BrowseResult::BrowseResult(InternalCoreConnection* coreConnection, const Common::Hash& peerID, const Protos::Common::Entry& entry) :
    IBrowseResult(SETTINGS.get<quint32>("socket_timeout")), peerID(peerID), tag(0)
 {
    this->browseMessage.mutable_dirs()->add_entry()->CopyFrom(entry);
    this->init(coreConnection);
 }
 
-BrowseResult::BrowseResult(CoreConnection* coreConnection, const Common::Hash& peerID, const Protos::Common::Entries& entries, bool withRoots) :
+BrowseResult::BrowseResult(InternalCoreConnection* coreConnection, const Common::Hash& peerID, const Protos::Common::Entries& entries, bool withRoots) :
    IBrowseResult(SETTINGS.get<quint32>("socket_timeout")), peerID(peerID), tag(0)
 {
    this->browseMessage.mutable_dirs()->CopyFrom(entries);
@@ -66,7 +66,7 @@ void BrowseResult::browseResult(const Protos::GUI::BrowseResult& browseResult)
    }
 }
 
-void BrowseResult::init(CoreConnection* coreConnection)
+void BrowseResult::init(InternalCoreConnection* coreConnection)
 {
    this->coreConnection = coreConnection;
    connect(this->coreConnection, SIGNAL(browseResult(const Protos::GUI::BrowseResult&)), this, SLOT(browseResult(const Protos::GUI::BrowseResult&)));

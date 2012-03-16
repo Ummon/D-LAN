@@ -49,7 +49,7 @@ bool PeerListModel::isOurself(int rowNum) const
 {
    if (rowNum >= this->peers.size())
       return false;
-   return this->peers[rowNum].peerID == this->coreConnection->getID();
+   return this->peers[rowNum].peerID == this->coreConnection->getRemoteID();
 }
 
 Common::Hash PeerListModel::getPeerID(int rowNum) const

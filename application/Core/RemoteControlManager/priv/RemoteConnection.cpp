@@ -132,9 +132,12 @@ void RemoteConnection::refresh()
    Protos::GUI::State state;
 
    state.mutable_myself()->mutable_peer_id()->set_hash(this->peerManager->getID().getData(), Common::Hash::HASH_SIZE);
-   Common::ProtoHelper::setStr(*state.mutable_myself(), &Protos::GUI::State::Peer::set_nick, this->peerManager->getNick());
-   state.set_integrity_check_enabled(SETTINGS.get<bool>("check_received_data_integrity"));
    state.mutable_myself()->set_sharing_amount(this->fileManager->getAmount());
+   Common::ProtoHelper::setStr(*state.mutable_myself(), &Protos::GUI::State::Peer::set_nick, this->peerManager->getNick());
+
+   state.set_integrity_check_enabled(SETTINGS.get<bool>("check_received_data_integrity"));
+   if (SETTINGS.isSet("remote_password"))
+      state.mutable_current_password()->set_hash(SETTINGS.get<Common::Hash>("remote_password").getData(), Common::Hash::HASH_SIZE);
 
    // Peers.
    QList<PM::IPeer*> peers = this->peerManager->getPeers();
@@ -352,6 +355,19 @@ void RemoteConnection::onNewMessage(Common::MessageHeader::MessageType type, con
       {
          const Protos::GUI::Language& langMessage = static_cast<const Protos::GUI::Language&>(message);
          emit languageDefined(ProtoHelper::getLang(langMessage.language()));
+      }
+      break;
+
+   case Common::MessageHeader::GUI_CHANGE_PASSWORD:
+      {
+         const Protos::GUI::ChangePassword& passMessage = static_cast<const Protos::GUI::ChangePassword&>(message);
+
+         if (!SETTINGS.isSet("remote_password") || SETTINGS.get<Common::Hash>("remote_password") == Common::Hash(passMessage.old_password().hash().data()))
+         {
+            SETTINGS.set("remote_password", Common::Hash(passMessage.new_password().hash().data()));
+            SETTINGS.save();
+            this->refresh();
+         }
       }
       break;
 

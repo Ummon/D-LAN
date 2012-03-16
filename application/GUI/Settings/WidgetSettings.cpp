@@ -72,7 +72,7 @@ WidgetSettings::WidgetSettings(QSharedPointer<RCC::ICoreConnection> coreConnecti
 
    connect(this->coreConnection.data(), SIGNAL(newState(Protos::GUI::State)), this, SLOT(newState(Protos::GUI::State)));
    connect(this->coreConnection.data(), SIGNAL(connecting()), this, SLOT(coreConnecting()), Qt::QueuedConnection);
-   connect(this->coreConnection.data(), SIGNAL(connectionError(RCC::ICoreConnection::ConnectionErrorCode)), this, SLOT(coreConnectionError()), Qt::QueuedConnection);
+   connect(this->coreConnection.data(), SIGNAL(connectingError(RCC::ICoreConnection::ConnectionErrorCode)), this, SLOT(coreConnectingError()), Qt::QueuedConnection);
    connect(this->coreConnection.data(), SIGNAL(connected()), this, SLOT(coreConnected()), Qt::QueuedConnection);
    connect(this->coreConnection.data(), SIGNAL(disconnected()), this, SLOT(coreDisconnected()), Qt::QueuedConnection);
 
@@ -104,6 +104,8 @@ WidgetSettings::WidgetSettings(QSharedPointer<RCC::ICoreConnection> coreConnecti
    this->fillComboBoxLanguages();
    connect(this->ui->cmbLanguages, SIGNAL(currentIndexChanged(int)), this, SLOT(cmbLanguageChanged(int)));
 
+   connect(this->ui->butChangePassword, SIGNAL(clicked()), this, SLOT(changePassword()));
+
    this->refreshButtonsAvailability();
    this->coreDisconnected(); // To set the initial state.
 }
@@ -129,10 +131,7 @@ void WidgetSettings::connectToCore()
    const QString newHost = this->ui->txtCoreAddress->text().trimmed().toLower();
 
    if (newHost != SETTINGS.get<QString>("core_address") || !this->coreConnection->isConnected())
-   {
-      this->coreConnecting();
       this->coreConnection->connectToCore(newHost, SETTINGS.get<quint32>("core_port"), Common::Hasher::hashWithSalt(this->ui->txtPassword->text()));
-   }
 }
 
 /**
@@ -304,6 +303,17 @@ void WidgetSettings::newState(const Protos::GUI::State& state)
    if (!this->ui->chkEnableIntegrityCheck->hasFocus())
       this->ui->chkEnableIntegrityCheck->setChecked(state.integrity_check_enabled());
 
+   if (state.has_current_password())
+   {
+      this->ui->butChangePassword->setText("Change the password");
+      this->currentPassword = Common::Hash(state.current_password().hash().data());
+   }
+   else
+   {
+      this->ui->butChangePassword->setText("Define a password");
+      this->currentPassword = Common::Hash();
+   }
+
    QList<Common::SharedDir> sharedDirs;
    for (int i = 0; i < state.shared_directory_size(); i++)
       sharedDirs <<
@@ -345,7 +355,7 @@ void WidgetSettings::coreConnecting()
    this->ui->butConnect->setText(tr("Connecting.."));
 }
 
-void WidgetSettings::coreConnectionError()
+void WidgetSettings::coreConnectingError()
 {
    this->ui->butConnect->setDisabled(false);
    this->ui->butConnect->setText(tr("Connect"));
@@ -353,9 +363,9 @@ void WidgetSettings::coreConnectionError()
 
 void WidgetSettings::coreConnected()
 {
-   SETTINGS.set("core_address", this->coreConnection->getCurrentConnectionInfo().address);
-   SETTINGS.set("core_port", static_cast<quint32>(this->coreConnection->getCurrentConnectionInfo().port));
-   SETTINGS.set("password", this->coreConnection->getCurrentConnectionInfo().password);
+   SETTINGS.set("core_address", this->coreConnection->getConnectionInfo().address);
+   SETTINGS.set("core_port", static_cast<quint32>(this->coreConnection->getConnectionInfo().port));
+   SETTINGS.set("password", this->coreConnection->getConnectionInfo().password);
    SETTINGS.save();
 
    this->ui->txtPassword->clear();
@@ -365,6 +375,8 @@ void WidgetSettings::coreConnected()
 
    this->ui->butConnect->setDisabled(false);
    this->ui->butConnect->setText(tr("Connect"));
+
+   this->ui->butChangePassword->setDisabled(false);
 }
 
 void WidgetSettings::coreDisconnected()
@@ -375,6 +387,8 @@ void WidgetSettings::coreDisconnected()
 
    this->ui->butConnect->setDisabled(false);
    this->ui->butConnect->setText(tr("Connect"));
+
+   this->ui->butChangePassword->setDisabled(true);
 }
 
 /**
@@ -416,6 +430,15 @@ void WidgetSettings::cmbLanguageChanged(int cmbIndex)
    this->coreConnection->setCoreLanguage(lang.locale);
    SETTINGS.set("language", this->ui->cmbLanguages->itemData(this->ui->cmbLanguages->currentIndex()).value<Common::Language>().locale);
    SETTINGS.save();
+}
+
+void WidgetSettings::changePassword()
+{
+   AskNewPasswordDialog dia(this->currentPassword, this);
+   if (dia.exec() == QDialog::Accepted)
+   {
+      this->coreConnection->setCorePassword(dia.getNewPassword(), this->currentPassword);
+   }
 }
 
 void WidgetSettings::addShared()

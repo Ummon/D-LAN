@@ -69,6 +69,8 @@ namespace Common
 
          GUI_LANGUAGE =                0x10B1,
 
+         GUI_CHANGE_PASSWORD =         0x10D1,
+
          GUI_SETTINGS =                0x1031,
 
          GUI_SEARCH =                  0x1041,

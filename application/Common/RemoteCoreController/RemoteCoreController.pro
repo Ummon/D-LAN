@@ -21,7 +21,8 @@ SOURCES += priv/Builder.cpp \
     ../../Protos/common.pb.cc \
     priv/CoreController.cpp \
     ../../Protos/gui_protocol.pb.cc \
-    priv/Log.cpp
+    priv/Log.cpp \
+    priv/InternalCoreConnection.cpp
 HEADERS += \
     Builder.h \
     priv/SearchResult.h \
@@ -34,4 +35,5 @@ HEADERS += \
     priv/CoreController.h \
     ../../Protos/gui_protocol.pb.h \
     priv/Log.h \
-    Types.h
+    Types.h \
+    priv/InternalCoreConnection.h

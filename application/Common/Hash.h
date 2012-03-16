@@ -148,6 +148,7 @@ namespace Common
       void reset();
 
       static Common::Hash hash(const QString& str);
+      static Common::Hash hash(const Common::Hash& hash);
       static Common::Hash hashWithSalt(const QString& str);
 
    private:

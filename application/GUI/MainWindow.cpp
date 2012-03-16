@@ -34,6 +34,7 @@ using namespace GUI;
 
 #include <Common/Settings.h>
 #include <Common/Constants.h>
+#include <Common/Global.h>
 #include <Common/RemoteCoreController/Builder.h>
 
 #include <TabButtons.h>
@@ -162,7 +163,7 @@ MainWindow::MainWindow(QSharedPointer<RCC::ICoreConnection> coreConnection, QWid
 
    this->loadLanguage(this->widgetSettings->getCurrentLanguageFilename());
 
-   connect(this->coreConnection.data(), SIGNAL(connectionError(RCC::ICoreConnection::ConnectionErrorCode)), this, SLOT(coreConnectionError(RCC::ICoreConnection::ConnectionErrorCode)), Qt::QueuedConnection);
+   connect(this->coreConnection.data(), SIGNAL(connectingError(RCC::ICoreConnection::ConnectionErrorCode)), this, SLOT(coreConnectionError(RCC::ICoreConnection::ConnectionErrorCode)), Qt::QueuedConnection);
    connect(this->coreConnection.data(), SIGNAL(connected()), this, SLOT(coreConnected()), Qt::QueuedConnection);
    connect(this->coreConnection.data(), SIGNAL(disconnected()), this, SLOT(coreDisconnected()), Qt::QueuedConnection);
 
@@ -218,17 +219,14 @@ void MainWindow::coreConnectionError(RCC::ICoreConnection::ConnectionErrorCode e
       error = tr("Error unknown");
    }
 
+   QHostAddress remoteAddress(this->coreConnection->getConnectionInfoConnecting().address);
+
    QMessageBox msgBox(this);
    msgBox.setWindowTitle(tr("Unable to connect to the core"));
-   msgBox.setText(QString("<p>%1</p><p>%2 <em>%3</em></p>").arg(error).arg(tr("Core address:")).arg(this->coreConnection->getNewConnectionInfo().address + ":" + QString::number(this->coreConnection->getNewConnectionInfo().port)));
+   msgBox.setText(QString("<p>%1</p><p>%2 <em>%3</em></p>").arg(error).arg(tr("Remote core address:")).arg(Common::Global::formatIP(remoteAddress, this->coreConnection->getConnectionInfoConnecting().port)));
    msgBox.setIcon(QMessageBox::Information);
    msgBox.setStandardButtons(QMessageBox::Ok);
-   QAbstractButton* retryButton = msgBox.addButton(tr("Retry"), QMessageBox::ActionRole);
    msgBox.exec();
-   if (msgBox.clickedButton() == retryButton)
-   {
-      this->widgetSettings->connectToCore();
-   }
 }
 
 void MainWindow::coreConnected()
@@ -243,17 +241,14 @@ void MainWindow::coreDisconnected()
 
    if (!this->coreConnection->isConnecting())
    {
+      QHostAddress remoteAddress(this->coreConnection->getConnectionInfo().address);
+
       QMessageBox msgBox(this);
       msgBox.setWindowTitle(tr("Connection lost"));
-      msgBox.setText(QString("<p>%1</p><p>%2 <em>%3</em></p>").arg(tr("The connection to the core has been lost")).arg(tr("Core address:")).arg(this->coreConnection->getCurrentConnectionInfo().address + ":" + QString::number(this->coreConnection->getCurrentConnectionInfo().port)));
+      msgBox.setText(QString("<p>%1</p><p>%2 <em>%3</em></p>").arg(tr("The connection to the core has been lost")).arg(tr("Core address:")).arg(Common::Global::formatIP(remoteAddress, this->coreConnection->getConnectionInfo().port)));
       msgBox.setIcon(QMessageBox::Information);
       msgBox.setStandardButtons(QMessageBox::Ok);
-      QAbstractButton* retryButton = msgBox.addButton(tr("Retry"), QMessageBox::ActionRole);
       msgBox.exec();
-      if (msgBox.clickedButton() == retryButton)
-      {
-         this->widgetSettings->connectToCore();
-      }
    }
 }
 
@@ -278,10 +273,10 @@ void MainWindow::displayContextMenuPeers(const QPoint& point)
    menu.addAction(QIcon(":/icons/ressources/folder.png"), tr("Browse"), this, SLOT(browse()));
 
    QModelIndex i = this->ui->tblPeers->currentIndex();
-   if (i.isValid())
+   if (i.isValid() && this->peerListModel.getPeerID(i.row()) != this->coreConnection->getRemoteID())
    {
       QHostAddress addr = this->peerListModel.getPeerIP(i.row());
-      QAction* takeControlAction = menu.addAction(tr("Take control"), this, SLOT(takeControlOfACore()));
+      QAction* takeControlAction = menu.addAction(QIcon(":/icons/ressources/lightning.png"), tr("Take control"), this, SLOT(takeControlOfACore()));
       QVariant data;
       data.setValue(addr);
       takeControlAction->setData(data);
@@ -307,8 +302,18 @@ void MainWindow::takeControlOfACore()
    if (action)
    {
       QHostAddress address = action->data().value<QHostAddress>();
-      bool ok;
-      QInputDialog::getText(this, tr("Take control of %1").arg(address.toString()), "Enter a password", QLineEdit::Password, "", &ok);
+      Common::Hash hashedPassword;
+
+      if (!Common::Global::isLocal(address))
+      {
+         bool ok;
+         QString password = QInputDialog::getText(this, tr("Take control of %1").arg(address.toString()), "Enter a password", QLineEdit::Password, "", &ok);
+         if (!ok || password.isEmpty())
+            return;
+         hashedPassword = Common::Hasher::hashWithSalt(password);
+      }
+
+      this->coreConnection->connectToCore(address.toString(), SETTINGS.get<quint32>("core_port"), hashedPassword);
    }
 }
 

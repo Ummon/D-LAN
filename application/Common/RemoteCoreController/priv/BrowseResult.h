@@ -30,15 +30,15 @@
 
 namespace RCC
 {
-   class CoreConnection;
+   class InternalCoreConnection;
 
    class BrowseResult : public IBrowseResult
    {
       Q_OBJECT
    public:
-      BrowseResult(CoreConnection* coreConnection, const Common::Hash& peerID);
-      BrowseResult(CoreConnection* coreConnection, const Common::Hash& peerID, const Protos::Common::Entry& entry);
-      BrowseResult(CoreConnection* coreConnection, const Common::Hash& peerID, const Protos::Common::Entries& entries, bool withRoots = true);
+      BrowseResult(InternalCoreConnection* coreConnection, const Common::Hash& peerID);
+      BrowseResult(InternalCoreConnection* coreConnection, const Common::Hash& peerID, const Protos::Common::Entry& entry);
+      BrowseResult(InternalCoreConnection* coreConnection, const Common::Hash& peerID, const Protos::Common::Entries& entries, bool withRoots = true);
       void start();
       void setTag(quint64 tag);
 
@@ -46,9 +46,9 @@ namespace RCC
       void browseResult(const Protos::GUI::BrowseResult& browseResult);
 
    private:
-      void init(CoreConnection* coreConnection);
+      void init(InternalCoreConnection* coreConnection);
 
-      CoreConnection* coreConnection;
+      InternalCoreConnection* coreConnection;
       const Common::Hash peerID;
       Protos::GUI::Browse browseMessage;
       quint64 tag;

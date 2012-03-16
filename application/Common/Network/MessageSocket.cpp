@@ -27,6 +27,7 @@ using namespace Common;
 
 #include <ZeroCopyStreamQIODevice.h>
 #include <ProtoHelper.h>
+#include <Global.h>
 
 /**
   * @class Common::MessageSocket
@@ -37,8 +38,8 @@ using namespace Common;
 /**
   * Take ownership of 'logger'.
   */
-MessageSocket::MessageSocket(MessageSocket::ILogger* logger, const Hash& ID, const Hash& remoteID) :
-   logger(logger), socket(new QTcpSocket()), ID(ID), remoteID(remoteID), IDDefined(!ID.isNull()), remoteIDDefined(!remoteID.isNull()), listening(false)
+MessageSocket::MessageSocket(MessageSocket::ILogger* logger, const Hash& localID, const Hash& remoteID) :
+   logger(logger), socket(new QTcpSocket()), localID(localID), remoteID(remoteID), IDDefined(!localID.isNull()), remoteIDDefined(!remoteID.isNull()), listening(false)
 {
 #ifdef DEBUG
    this->num = ++MessageSocket::currentNum;
@@ -52,7 +53,7 @@ MessageSocket::MessageSocket(MessageSocket::ILogger* logger, const Hash& ID, con
   * If ID isn't given, it will be set to the remoteID when the first message is received.
   */
 MessageSocket::MessageSocket(MessageSocket::ILogger* logger, QAbstractSocket* socket, const Hash& ID, const Hash& remoteID) :
-   logger(logger), socket(socket), ID(ID), remoteID(remoteID), IDDefined(!ID.isNull()), remoteIDDefined(!remoteID.isNull()), listening(false)
+   logger(logger), socket(socket), localID(ID), remoteID(remoteID), IDDefined(!ID.isNull()), remoteIDDefined(!remoteID.isNull()), listening(false)
 {
 #ifdef DEBUG
    this->num = ++MessageSocket::currentNum;
@@ -64,7 +65,7 @@ MessageSocket::MessageSocket(MessageSocket::ILogger* logger, QAbstractSocket* so
   * Will automatically create a connection to the given address and port.
   */
 MessageSocket::MessageSocket(MessageSocket::ILogger* logger, const QHostAddress& address, quint16 port, const Hash& ID, const Hash& remoteID) :
-   logger(logger), socket(new QTcpSocket()), ID(ID), remoteID(remoteID), IDDefined(!ID.isNull()), remoteIDDefined(!remoteID.isNull()), listening(false)
+   logger(logger), socket(new QTcpSocket()), localID(ID), remoteID(remoteID), IDDefined(!ID.isNull()), remoteIDDefined(!remoteID.isNull()), listening(false)
 {
 #ifdef DEBUG
    this->num = ++MessageSocket::currentNum;
@@ -84,9 +85,9 @@ MessageSocket::~MessageSocket()
    delete this->logger;
 }
 
-Hash MessageSocket::getID() const
+Hash MessageSocket::getLocalID() const
 {
-   return this->ID;
+   return this->localID;
 }
 
 /**
@@ -115,7 +116,7 @@ void MessageSocket::send(MessageHeader::MessageType type, const google::protobuf
    if (!this->listening)
       return;
 
-   MessageHeader header(type, message ? message->ByteSize() : 0, this->ID);
+   MessageHeader header(type, message ? message->ByteSize() : 0, this->localID);
 
    MESSAGE_SOCKET_LOG_DEBUG(QString("Socket[%1]::send : %2 to %3\n%4").arg(this->num).arg(header.toStr()).arg(this->remoteID.toStr()).arg(message ? ProtoHelper::getDebugStr(*message) : "<empty message>"));
 
@@ -164,12 +165,17 @@ void MessageSocket::stopListening()
 
 bool MessageSocket::isLocal() const
 {
-   return this->socket->peerAddress() == QHostAddress::LocalHost || this->socket->peerAddress() == QHostAddress::LocalHostIPv6 || QNetworkInterface::allAddresses().contains(this->socket->peerAddress());
+   return Global::isLocal(this->socket->peerAddress());
 }
 
 bool MessageSocket::isConnected() const
 {
    return this->socket->state() == QAbstractSocket::ConnectedState;
+}
+
+void MessageSocket::close()
+{
+   this->socket->close();
 }
 
 bool MessageSocket::isListening() const
@@ -188,12 +194,12 @@ void MessageSocket::dataReceivedSlot()
 
          if (this->remoteID.isNull())
             this->remoteID = this->currentHeader.getSenderID();
-         if (this->ID.isNull())
-            this->ID = this->remoteID;
+         if (this->localID.isNull())
+            this->localID = this->remoteID;
 
          if (this->currentHeader.getSenderID() != this->remoteID)
          {
-            MESSAGE_SOCKET_LOG_DEBUG(QString("Socket[%1]: Peer ID from message (%2) doesn't match the known peer ID (%3)").arg(this->num).arg(this->currentHeader.getSenderID().toStr()).arg(this->ID.toStr()));
+            MESSAGE_SOCKET_LOG_DEBUG(QString("Socket[%1]: Peer ID from message (%2) doesn't match the known peer ID (%3)").arg(this->num).arg(this->currentHeader.getSenderID().toStr()).arg(this->localID.toStr()));
             this->currentHeader.setNull();
             this->socket->close();
             return;
@@ -217,7 +223,7 @@ void MessageSocket::dataReceivedSlot()
 void MessageSocket::disconnectedSlot()
 {
    if (!this->IDDefined)
-      this->ID = Common::Hash();
+      this->localID = Common::Hash();
    if (!this->remoteIDDefined)
       this->remoteID = Common::Hash();
 
@@ -247,6 +253,7 @@ bool MessageSocket::readMessage()
    case MessageHeader::GUI_AUTHENTICATION: return this->readMessage<Protos::GUI::Authentication>();
    case MessageHeader::GUI_AUTHENTICATION_RESULT: return this->readMessage<Protos::GUI::AuthenticationResult>();
    case MessageHeader::GUI_LANGUAGE: return this->readMessage<Protos::GUI::Language>();
+   case MessageHeader::GUI_CHANGE_PASSWORD: return this->readMessage<Protos::GUI::ChangePassword>();
    case MessageHeader::GUI_SETTINGS: return this->readMessage<Protos::GUI::CoreSettings>();
    case MessageHeader::GUI_SEARCH: return this->readMessage<Protos::GUI::Search>();
    case MessageHeader::GUI_SEARCH_TAG: return this->readMessage<Protos::GUI::Tag>();

@@ -27,13 +27,13 @@
 
 namespace RCC
 {
-   class CoreConnection;
+   class InternalCoreConnection;
 
    class SearchResult : public ISearchResult
    {
       Q_OBJECT
    public:
-      SearchResult(CoreConnection* coreConnection, const QString& terms);
+      SearchResult(InternalCoreConnection* coreConnection, const QString& terms);
       void start();
       void setTag(quint64 tag);
 
@@ -41,7 +41,7 @@ namespace RCC
       void searchResult(const Protos::Common::FindResult& findResult);
 
    private:
-      CoreConnection* coreConnection;
+      InternalCoreConnection* coreConnection;
       const QString terms;
       quint64 tag;
    };

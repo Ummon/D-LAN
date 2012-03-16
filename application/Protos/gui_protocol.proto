@@ -13,15 +13,15 @@ package Protos.GUI;
 
 /***** Core state *****/
 // GUI -> Core
+// id : 0xa1
 // Ask to receive a new state.
 // This message doesn't have a body.
-// id : 0xa1
 
 // Core -> GUI
+// id : 0x01
 // The state is sent periodically to the GUI (each second for example)
 // or right after a GUI command.
 // The size of this message should be lesser than 63kB to fit in one IP packet.
-// id : 0x01
 message State {
    // A download can be a file or a directory.
    message Download {
@@ -96,6 +96,10 @@ message State {
    repeated SharedDir shared_directory = 3;
    
    required bool integrity_check_enabled = 7;
+   
+   // Re-hashed hashed password.
+   // Not set if the password has never been set (initial state).
+   optional Common.Hash current_password = 10;
       
    repeated Download download = 4;
    repeated Upload upload = 5;
@@ -139,18 +143,18 @@ message EventLogMessage {
 }
 
 /***** Commands. *****/
+// GUI -> Core
+// id : 0x21
 // Authentication.
 // Must be send for non-local connection as the first message.
 // All other messages can't be sent or received without a proper authentication.
 // Authentication tries from a local connection will be ignored by the core.
-// GUI -> Core
-// id : 0x21
 message Authentication {
-   required Common.Hash password = 1; // Salt should be added.
+   required Common.Hash password = 1; // A salt should be added.
 }
 // Core -> GUI
-// If BAD_PASSWORD the core should wait a bit before sending the result (for example 1s) to avoid dictionary attack.
 // id : 0x22
+// If BAD_PASSWORD the core should wait a bit before sending the result (for example 1s) to avoid dictionary attack.
 message AuthenticationResult {
    enum Status {
       OK = 0x01;
@@ -161,16 +165,25 @@ message AuthenticationResult {
    required Status status = 1;
 }
 
-// Set the language of the core.
 // GUI -> Core
 // id : 0xB1
+// Set the language of the core.
 message Language {
    required Common.Language language = 1;
 }
 
-// Set the settings.
+
+// GUI -> Core
+// id : 0xD1
+// Change the core password.
+message ChangePassword {
+   required Common.Hash new_password = 1;
+   optional Common.Hash old_password = 2; // Only if a password has already been set.
+}
+
 // GUI -> Core
 // id : 0x31
+// Set the settings.
 message CoreSettings {
    message SharedDirectories {
       repeated string dir = 1; // A directory always ends with a slash ('/').
@@ -180,8 +193,7 @@ message CoreSettings {
    optional SharedDirectories shared_directories = 2;
    optional bool enable_integrity_check = 3;   
    
-   optional string listenAddress = 4 [default = ""]; // If address is empty then listen to any adresses, in this case the protocol is given by 'listenAny'.
-   optional Common.Interface.Address.Protocol listenAny = 5 [default = IPv6];
+   optional string listenAddress = 4 [default = ""]; // If address is empty then listen to any adresses, 
 }
 
 // GUI -> Core
@@ -217,30 +229,30 @@ message BrowseResult {
 }
 
 // GUI -> Core
+// id : 0x61
 // Remove one or several download from the queue. If this download
 // is not finished the unfinished file is removed.
-// id : 0x61
 message CancelDownloads {
    repeated uint64 id = 1 [packed = true];
    optional bool complete= 2 [default = false];
 }
 
 // GUI -> Core
-// Pause or unpause the given downloads.
 // id : 0xC1
+// Pause or unpause the given downloads.
 message PauseDownloads {
    repeated uint64 id = 1 [packed = true];
    optional bool pause = 2 [default = true]; // Id false -> unpause.
 }
 
 // GUI -> Core
+// id : 0x71
 // Tell the core to move one or more downloads in the list right before or after a given download.
 // 'id_ref' must exist.
 // The order of the moved downloads are kept unchanged.
 // For example : id_ref = 21, move_before = true, id = [16, 18]
 // Initial list : [34, 21, 18, 54, 16]
 // After the operation : [34, 18, 16, 21, 54]
-// id : 0x71
 message MoveDownloads {
    required uint64 id_ref = 1;
    optional bool move_before = 2 [default = true];
@@ -248,9 +260,9 @@ message MoveDownloads {
 }
 
 // GUI -> Core
+// id : 0x81
 // Says to the core to download a file or a directory.
 // The given path can be relative to a shared directory (if destination_directory_id is set)  or absolute (if destination_directory_id is null).
-// id : 0x81
 message Download {
    required Common.Hash peer_id = 1; // From where the file/dir is.
    required Common.Entry entry = 2;
@@ -260,8 +272,9 @@ message Download {
 }
 
 // GUI -> Core
-// Send a chat message to everyone.
 // id : 0x91
+// Send a chat message to everyone.
 message ChatMessage {
    required string message = 1;
 }
+

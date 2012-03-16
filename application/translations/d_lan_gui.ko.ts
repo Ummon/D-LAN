@@ -104,7 +104,79 @@
 <context>
     <name>GUI::MainWindow</name>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="+250"/>
+        <location filename="../GUI/MainWindow.cpp" line="+196"/>
+        <source>Already connected to this address</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>There is already a connection process in progress</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>The host is unknow</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Host has timed out</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>The host hasn&apos;t defined any password</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Wrong password</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Invalid address</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Error unknown</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Unable to connect to the core</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <location line="+23"/>
+        <source>Core address:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-20"/>
+        <location line="+23"/>
+        <source>Retry</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-13"/>
+        <source>Connected to the core</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Connection lost</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>The connection to the core has been lost</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+29"/>
         <source>Browse</source>
         <translation type="unfinished"></translation>
     </message>
@@ -294,12 +366,24 @@
 <context>
     <name>GUI::WidgetSettings</name>
     <message>
-        <location filename="../GUI/Settings/WidgetSettings.cpp" line="+195"/>
+        <location filename="../GUI/Settings/WidgetSettings.cpp" line="+329"/>
+        <source>Connecting..</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <location line="+11"/>
+        <location line="+10"/>
+        <source>Connect</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-172"/>
         <source>Interface not active</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+263"/>
+        <location line="+298"/>
         <source>Remove the shared folder</source>
         <translation type="unfinished"></translation>
     </message>
@@ -385,36 +469,8 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GUI/Utils.cpp" line="+55"/>
+        <location filename="../GUI/Utils.cpp" line="+73"/>
         <source>The choosen directory will be shared</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>RCC::CoreConnection</name>
-    <message>
-        <location filename="../Common/RemoteCoreController/priv/CoreConnection.cpp" line="+244"/>
-        <source>Unable to connect to the core</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+17"/>
-        <source>Unable to resolve the address : %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+26"/>
-        <source>Connected to the core</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+25"/>
-        <source>Authentication failed, bad password</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <source>Authentication failed</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -495,7 +551,7 @@
     <message>
         <location filename="../GUI/Downloads/WidgetDownloads.ui" line="+14"/>
         <location filename="../GUI/.tmp/debug/ui_WidgetDownloads.h" line="+118"/>
-        <location filename="../GUI/.tmp/release/ui_WidgetDownloads.h" line="+109"/>
+        <location filename="../GUI/.tmp/release/ui_WidgetDownloads.h" line="+118"/>
         <source>Downloads</source>
         <translation type="unfinished"></translation>
     </message>
@@ -523,6 +579,7 @@
     <message>
         <location line="+14"/>
         <location filename="../GUI/.tmp/debug/ui_WidgetDownloads.h" line="+4"/>
+        <location filename="../GUI/.tmp/release/ui_WidgetDownloads.h" line="+4"/>
         <source>Pause or unpause selected downloads</source>
         <translation type="unfinished"></translation>
     </message>
@@ -555,7 +612,7 @@
     <name>WidgetSettings</name>
     <message>
         <location filename="../GUI/Settings/WidgetSettings.ui" line="+14"/>
-        <location filename="../GUI/.tmp/debug/ui_WidgetSettings.h" line="+330"/>
+        <location filename="../GUI/.tmp/debug/ui_WidgetSettings.h" line="+349"/>
         <location filename="../GUI/.tmp/release/ui_WidgetSettings.h" line="+330"/>
         <source>Settings</source>
         <translation type="unfinished"></translation>
@@ -652,14 +709,14 @@
     </message>
     <message>
         <location line="+47"/>
-        <location filename="../GUI/.tmp/debug/ui_WidgetSettings.h" line="+11"/>
+        <location filename="../GUI/.tmp/debug/ui_WidgetSettings.h" line="+12"/>
         <location filename="../GUI/.tmp/release/ui_WidgetSettings.h" line="+11"/>
         <source>Advanced</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+6"/>
-        <location filename="../GUI/.tmp/debug/ui_WidgetSettings.h" line="-5"/>
+        <location filename="../GUI/.tmp/debug/ui_WidgetSettings.h" line="-6"/>
         <location filename="../GUI/.tmp/release/ui_WidgetSettings.h" line="-5"/>
         <source>Language</source>
         <translation>언어</translation>
@@ -672,29 +729,35 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="+8"/>
         <location filename="../GUI/.tmp/debug/ui_WidgetSettings.h" line="+1"/>
         <location filename="../GUI/.tmp/release/ui_WidgetSettings.h" line="+1"/>
         <source>address</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+12"/>
+        <location line="+10"/>
         <location filename="../GUI/.tmp/debug/ui_WidgetSettings.h" line="+1"/>
         <location filename="../GUI/.tmp/release/ui_WidgetSettings.h" line="+1"/>
         <source>Reset to local</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+9"/>
+        <location line="+7"/>
         <location filename="../GUI/.tmp/debug/ui_WidgetSettings.h" line="+1"/>
         <location filename="../GUI/.tmp/release/ui_WidgetSettings.h" line="+1"/>
         <source>Password</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-70"/>
-        <location filename="../GUI/.tmp/debug/ui_WidgetSettings.h" line="-8"/>
+        <location line="+14"/>
+        <location filename="../GUI/.tmp/debug/ui_WidgetSettings.h" line="+1"/>
+        <source>Change password</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-82"/>
+        <location filename="../GUI/.tmp/debug/ui_WidgetSettings.h" line="-9"/>
         <location filename="../GUI/.tmp/release/ui_WidgetSettings.h" line="-8"/>
         <source>When activated all received data will be verified against their hashes.  It may consume CPU resources.</source>
         <translation type="unfinished"></translation>

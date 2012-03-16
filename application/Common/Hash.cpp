@@ -280,6 +280,13 @@ Common::Hash Hasher::hash(const QString& str)
    return hasher.getResult();
 }
 
+Common::Hash Hasher::hash(const Common::Hash& hash)
+{
+   Hasher hasher;
+   hasher.addData(hash.getData(), Hash::HASH_SIZE);
+   return hasher.getResult();
+}
+
 Common::Hash Hasher::hashWithSalt(const QString& str)
 {
    const QByteArray data = str.toUtf8();

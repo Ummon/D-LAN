@@ -28,6 +28,7 @@
 #include <Common/RemoteCoreController/ICoreConnection.h>
 
 #include <Settings/DirListModel.h>
+#include <Settings/AskNewPasswordDialog.h>
 
 namespace Ui {
    class WidgetSettings;
@@ -70,13 +71,15 @@ namespace GUI
    private slots:
       void newState(const Protos::GUI::State& state);
       void coreConnecting();
-      void coreConnectionError();
+      void coreConnectingError();
       void coreConnected();
       void coreDisconnected();
 
       void saveCoreSettings();
 
       void cmbLanguageChanged(int cmbIndex);
+
+      void changePassword();
 
       void addShared();
       void removeShared();
@@ -103,6 +106,8 @@ namespace GUI
       DirListModel& sharedDirsModel;
 
       DirListDelegate dirListDelegate;
+
+      Common::Hash currentPassword;
    };
 }
 
