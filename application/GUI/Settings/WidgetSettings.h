@@ -101,6 +101,9 @@ namespace GUI
    private:
       Ui::WidgetSettings* ui;
 
+      // To avoid to send a state (via 'saveCoreSettings()') without getting at least one state (via 'newState(..)').
+      bool getAtLeastOneState;
+
       QSharedPointer<RCC::ICoreConnection> coreConnection;
 
       DirListModel& sharedDirsModel;

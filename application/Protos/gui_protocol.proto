@@ -193,7 +193,8 @@ message CoreSettings {
    optional SharedDirectories shared_directories = 2;
    optional bool enable_integrity_check = 3;   
    
-   optional string listenAddress = 4 [default = ""]; // If address is empty then listen to any adresses, 
+   optional string listen_address = 4 [default = ""]; // If address is empty then listen to any adresses, in this case the protocol is given by 'listenAny'.
+   optional Common.Interface.Address.Protocol listen_any = 5 [default = IPv6];
 }
 
 // GUI -> Core

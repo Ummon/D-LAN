@@ -3,6 +3,37 @@
 <TS version="2.0" language="fr_FR">
 <defaultcodec>UTF-8</defaultcodec>
 <context>
+    <name>AskNewPasswordDialog</name>
+    <message>
+        <location filename="../GUI/Settings/AskNewPasswordDialog.ui" line="+14"/>
+        <location filename="../GUI/.tmp/debug/ui_AskNewPasswordDialog.h" line="+101"/>
+        <location filename="../GUI/.tmp/release/ui_AskNewPasswordDialog.h" line="+101"/>
+        <source>Change password</source>
+        <translation>Changement de mot de passe</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <location filename="../GUI/.tmp/debug/ui_AskNewPasswordDialog.h" line="+1"/>
+        <location filename="../GUI/.tmp/release/ui_AskNewPasswordDialog.h" line="+1"/>
+        <source>Old password</source>
+        <translation>Ancien mot de passe</translation>
+    </message>
+    <message>
+        <location line="+23"/>
+        <location filename="../GUI/.tmp/debug/ui_AskNewPasswordDialog.h" line="+1"/>
+        <location filename="../GUI/.tmp/release/ui_AskNewPasswordDialog.h" line="+1"/>
+        <source>New password</source>
+        <translation>Nouveau mot de passe</translation>
+    </message>
+    <message>
+        <location line="+14"/>
+        <location filename="../GUI/.tmp/debug/ui_AskNewPasswordDialog.h" line="+1"/>
+        <location filename="../GUI/.tmp/release/ui_AskNewPasswordDialog.h" line="+1"/>
+        <source>Repeat new password</source>
+        <translation>Répétez le nouveau mot de passe</translation>
+    </message>
+</context>
+<context>
     <name>DialogAbout</name>
     <message>
         <location filename="../GUI/DialogAbout.ui" line="+54"/>
@@ -104,79 +135,87 @@
 <context>
     <name>GUI::MainWindow</name>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="+196"/>
+        <location filename="../GUI/MainWindow.cpp" line="+198"/>
         <source>Already connected to this address</source>
-        <translation type="unfinished"></translation>
+        <translation>Déjà connecté à cette addresse</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>There is already a connection process in progress</source>
-        <translation type="unfinished"></translation>
+        <translation>Il y a déjà un processus de connexion en cours</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>The host is unknow</source>
-        <translation type="unfinished"></translation>
+        <translation>L&apos;hôte est inconnu</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Host has timed out</source>
-        <translation type="unfinished"></translation>
+        <translation>L&apos;hôte ne répond pas</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>The host hasn&apos;t defined any password</source>
-        <translation type="unfinished"></translation>
+        <translation>Aucun mot de passe n&apos;est définit chez l&apos;hôte</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Wrong password</source>
-        <translation type="unfinished"></translation>
+        <translation>Mauvais mot de passe</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Invalid address</source>
-        <translation type="unfinished"></translation>
+        <translation>Adresse invalide</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Error unknown</source>
-        <translation type="unfinished"></translation>
+        <translation>Erreur inconnue</translation>
     </message>
     <message>
-        <location line="+4"/>
+        <location line="+6"/>
         <source>Unable to connect to the core</source>
-        <translation type="unfinished">Impossible de se connecter au core</translation>
+        <translation>Impossible de se connecter au core</translation>
     </message>
     <message>
         <location line="+1"/>
-        <location line="+23"/>
+        <source>Remote core address:</source>
+        <translation>Adresse du core distant:</translation>
+    </message>
+    <message>
+        <location line="+22"/>
         <source>Core address:</source>
-        <translation type="unfinished"></translation>
+        <translation>Adresse du core:</translation>
     </message>
     <message>
-        <location line="-20"/>
-        <location line="+23"/>
-        <source>Retry</source>
-        <translation type="unfinished"></translation>
+        <location line="+31"/>
+        <source>Take control</source>
+        <translation>Prendre le contrôle</translation>
     </message>
     <message>
-        <location line="-13"/>
+        <location line="+31"/>
+        <source>Take control of %1</source>
+        <translation>Prendre le contrôle de %1</translation>
+    </message>
+    <message>
+        <location line="-76"/>
         <source>Connected to the core</source>
-        <translation type="unfinished">Connecté au core</translation>
+        <translation>Connecté au core</translation>
     </message>
     <message>
-        <location line="+9"/>
+        <location line="+13"/>
         <source>Connection lost</source>
-        <translation type="unfinished"></translation>
+        <translation>Connexion perdue</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>The connection to the core has been lost</source>
-        <translation type="unfinished"></translation>
+        <translation>La connexion au core a été perdu</translation>
     </message>
     <message>
-        <location line="+29"/>
+        <location line="+25"/>
         <source>Browse</source>
         <translation>Explorer</translation>
     </message>
@@ -325,7 +364,7 @@
         <translation>Enlever la pause des éléments sélectionnés</translation>
     </message>
     <message>
-        <location line="+96"/>
+        <location line="+100"/>
         <source>&lt;All&gt;</source>
         <translation>&lt;Tous&gt;</translation>
     </message>
@@ -366,24 +405,24 @@
 <context>
     <name>GUI::WidgetSettings</name>
     <message>
-        <location filename="../GUI/Settings/WidgetSettings.cpp" line="+329"/>
+        <location filename="../GUI/Settings/WidgetSettings.cpp" line="+356"/>
         <source>Connecting..</source>
-        <translation type="unfinished"></translation>
+        <translation>Connexion..</translation>
     </message>
     <message>
         <location line="+6"/>
-        <location line="+11"/>
-        <location line="+10"/>
+        <location line="+16"/>
+        <location line="+14"/>
         <source>Connect</source>
-        <translation type="unfinished"></translation>
+        <translation>Connecter</translation>
     </message>
     <message>
-        <location line="-172"/>
+        <location line="-194"/>
         <source>Interface not active</source>
         <translation>Interface inactive</translation>
     </message>
     <message>
-        <location line="+298"/>
+        <location line="+308"/>
         <source>Remove the shared folder</source>
         <translation>Enlever le dossier partagé</translation>
     </message>
@@ -612,8 +651,8 @@
     <name>WidgetSettings</name>
     <message>
         <location filename="../GUI/Settings/WidgetSettings.ui" line="+14"/>
-        <location filename="../GUI/.tmp/debug/ui_WidgetSettings.h" line="+349"/>
-        <location filename="../GUI/.tmp/release/ui_WidgetSettings.h" line="+330"/>
+        <location filename="../GUI/.tmp/debug/ui_WidgetSettings.h" line="+365"/>
+        <location filename="../GUI/.tmp/release/ui_WidgetSettings.h" line="+365"/>
         <source>Settings</source>
         <translation>Paramètres</translation>
     </message>
@@ -709,15 +748,15 @@
     </message>
     <message>
         <location line="+47"/>
-        <location filename="../GUI/.tmp/debug/ui_WidgetSettings.h" line="+12"/>
-        <location filename="../GUI/.tmp/release/ui_WidgetSettings.h" line="+11"/>
+        <location filename="../GUI/.tmp/debug/ui_WidgetSettings.h" line="+13"/>
+        <location filename="../GUI/.tmp/release/ui_WidgetSettings.h" line="+13"/>
         <source>Advanced</source>
         <translation>Avancé</translation>
     </message>
     <message>
         <location line="+6"/>
-        <location filename="../GUI/.tmp/debug/ui_WidgetSettings.h" line="-6"/>
-        <location filename="../GUI/.tmp/release/ui_WidgetSettings.h" line="-5"/>
+        <location filename="../GUI/.tmp/debug/ui_WidgetSettings.h" line="-7"/>
+        <location filename="../GUI/.tmp/release/ui_WidgetSettings.h" line="-7"/>
         <source>Language</source>
         <translation>Langue</translation>
     </message>
@@ -750,15 +789,23 @@
         <translation>Mot de passe</translation>
     </message>
     <message>
-        <location line="+14"/>
+        <location line="+17"/>
         <location filename="../GUI/.tmp/debug/ui_WidgetSettings.h" line="+1"/>
-        <source>Change password</source>
+        <location filename="../GUI/.tmp/release/ui_WidgetSettings.h" line="+1"/>
+        <source>Change the password</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-82"/>
-        <location filename="../GUI/.tmp/debug/ui_WidgetSettings.h" line="-9"/>
-        <location filename="../GUI/.tmp/release/ui_WidgetSettings.h" line="-8"/>
+        <location line="+36"/>
+        <location filename="../GUI/.tmp/debug/ui_WidgetSettings.h" line="+1"/>
+        <location filename="../GUI/.tmp/release/ui_WidgetSettings.h" line="+1"/>
+        <source>Disconnect</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-121"/>
+        <location filename="../GUI/.tmp/debug/ui_WidgetSettings.h" line="-10"/>
+        <location filename="../GUI/.tmp/release/ui_WidgetSettings.h" line="-10"/>
         <source>When activated all received data will be verified against their hashes.  It may consume CPU resources.</source>
         <translation>Lorsque activé toutes les données reçues sont vérifiées par rapport à leur empreinte. Consomme un peu de puissance CPU.</translation>
     </message>

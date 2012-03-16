@@ -1,7 +1,7 @@
 # -------------------------------------------------
 # Project created by QtCreator 2009-10-04T02:24:09
 # -------------------------------------------------
-QT += testlib
+QT += network testlib
 QT -= gui
 TARGET = TestsCommon
 

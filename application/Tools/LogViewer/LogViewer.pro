@@ -4,6 +4,7 @@
 TARGET = LogViewer
 TEMPLATE = app
 CONFIG += link_prl
+QT += network
 
 include(../../Common/common.pri)
 

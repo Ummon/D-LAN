@@ -212,10 +212,10 @@ void RemoteConnection::refresh()
    stats->set_upload_rate(this->uploadManager->getUploadRate());
 
    // Network interfaces.
-   QString adressToListenStr = SETTINGS.get<QString>("listenAddress");
+   QString adressToListenStr = SETTINGS.get<QString>("listen_address");
    QHostAddress adressToListen(adressToListenStr);
    if (adressToListenStr.isEmpty())
-      state.set_listenany(static_cast<Protos::Common::Interface::Address::Protocol>(SETTINGS.get<quint32>("listenAny")));
+      state.set_listenany(static_cast<Protos::Common::Interface::Address::Protocol>(SETTINGS.get<quint32>("listen_any")));
    for (QListIterator<QNetworkInterface> i(QNetworkInterface::allInterfaces()); i.hasNext();)
    {
       QNetworkInterface interface = i.next();
@@ -394,12 +394,12 @@ void RemoteConnection::onNewMessage(Common::MessageHeader::MessageType type, con
                L_WARN(QString("Directory not found : %1").arg(path));
          }
 
-         QString currentAddressToListenTo = SETTINGS.get<QString>("listenAddress");
-         Protos::Common::Interface::Address::Protocol currentProtocol = static_cast<Protos::Common::Interface::Address::Protocol>(SETTINGS.get<quint32>("listenAny"));
-         QString newAddressToListenTo = ProtoHelper::getStr(coreSettingsMessage, &Protos::GUI::CoreSettings::listenaddress);
-         Protos::Common::Interface::Address::Protocol newProtocol = coreSettingsMessage.listenany();
-         SETTINGS.set("listenAddress", newAddressToListenTo);
-         SETTINGS.set("listenAny", static_cast<quint32>(newProtocol));
+         QString currentAddressToListenTo = SETTINGS.get<QString>("listen_address");
+         Protos::Common::Interface::Address::Protocol currentProtocol = static_cast<Protos::Common::Interface::Address::Protocol>(SETTINGS.get<quint32>("listen_any"));
+         QString newAddressToListenTo = ProtoHelper::getStr(coreSettingsMessage, &Protos::GUI::CoreSettings::listen_address);
+         Protos::Common::Interface::Address::Protocol newProtocol = coreSettingsMessage.listen_any();
+         SETTINGS.set("listen_address", newAddressToListenTo);
+         SETTINGS.set("listen_any", static_cast<quint32>(newProtocol));
          if (currentAddressToListenTo != newAddressToListenTo || currentProtocol != newProtocol)
             this->networkListener->rebindSockets();
 

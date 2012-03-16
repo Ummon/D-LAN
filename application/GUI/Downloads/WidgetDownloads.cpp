@@ -272,11 +272,15 @@ void WidgetDownloads::updateGlobalProgressBar()
    const quint64 eta = this->downloadsModel.getEta();
 
    this->ui->prgGlobalProgress->setValue(bytesInQueue == 0 ? 0 : bytesDownloaded * 10000LL / bytesInQueue);
-   this->ui->prgGlobalProgress->setFormat(
-      QString("%1 / %2%3")
-         .arg(Common::Global::formatByteSize(bytesDownloaded))
-         .arg(Common::Global::formatByteSize(bytesInQueue))
-         .arg(eta == 0 || eta > 604800 ? "" : " (" + Common::Global::formatTime(eta) + ")")
+
+   if (bytesInQueue == 0)
+      this->ui->prgGlobalProgress->setFormat("");
+   else
+      this->ui->prgGlobalProgress->setFormat(
+         QString("%1 / %2%3")
+            .arg(Common::Global::formatByteSize(bytesDownloaded))
+            .arg(Common::Global::formatByteSize(bytesInQueue))
+            .arg(eta == 0 || eta > 604800 ? "" : " (" + Common::Global::formatTime(eta) + ")")
    );
 }
 

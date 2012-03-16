@@ -48,7 +48,7 @@ void DirListDelegate::paint(QPainter* painter, const QStyleOptionViewItem& optio
 /////
 
 WidgetSettings::WidgetSettings(QSharedPointer<RCC::ICoreConnection> coreConnection, DirListModel& sharedDirsModel, QWidget* parent) :
-   QWidget(parent), ui(new Ui::WidgetSettings), coreConnection(coreConnection), sharedDirsModel(sharedDirsModel)
+   QWidget(parent), ui(new Ui::WidgetSettings), getAtLeastOneState(false), coreConnection(coreConnection), sharedDirsModel(sharedDirsModel)
 {
    this->ui->setupUi(this);
 
@@ -175,7 +175,6 @@ void WidgetSettings::connectAllAddressButtons()
 
 void WidgetSettings::disconnectAllAddressButtons()
 {
-
    for (QListIterator<QRadioButton*> i(this->ui->scoInterfacesContent->findChildren<QRadioButton*>()); i.hasNext();)
       i.next()->disconnect(this);
 }
@@ -327,6 +326,8 @@ void WidgetSettings::newState(const Protos::GUI::State& state)
 
    this->updateNetworkInterfaces(state);
 
+   this->getAtLeastOneState = true;
+
 
    // If this is the first message state received and there is no incoming folder defined we ask the user to choose one.
    // Commented cuz the user can know choose a folder right before downloading a file.
@@ -381,6 +382,8 @@ void WidgetSettings::coreConnected()
 
 void WidgetSettings::coreDisconnected()
 {
+   this->getAtLeastOneState = false;
+
    this->ui->tabWidget->setTabEnabled(0, false);
    this->ui->tabWidget->setTabEnabled(1, false);
    this->ui->chkEnableIntegrityCheck->setEnabled(false);
@@ -396,6 +399,9 @@ void WidgetSettings::coreDisconnected()
   */
 void WidgetSettings::saveCoreSettings()
 {
+   if (!this->getAtLeastOneState)
+      return;
+
    Protos::GUI::CoreSettings settings;
    Common::ProtoHelper::setStr(settings, &Protos::GUI::CoreSettings::set_nick, this->ui->txtNick->text());
    settings.set_enable_integrity_check(this->ui->chkEnableIntegrityCheck->isChecked());
@@ -404,9 +410,9 @@ void WidgetSettings::saveCoreSettings()
       Common::ProtoHelper::addRepeatedStr(*settings.mutable_shared_directories(), &Protos::GUI::CoreSettings::SharedDirectories::add_dir, i.next().path);
 
    if (this->ui->radIPv6->isChecked())
-      settings.set_listenany(Protos::Common::Interface::Address::IPv6);
+      settings.set_listen_any(Protos::Common::Interface::Address::IPv6);
    else if (this->ui->radIPv4->isChecked())
-      settings.set_listenany(Protos::Common::Interface::Address::IPv4);
+      settings.set_listen_any(Protos::Common::Interface::Address::IPv4);
    else
    {
       for (QListIterator<QRadioButton*> i(this->ui->grpInterfaces->findChildren<QRadioButton*>()); i.hasNext();)
@@ -414,7 +420,7 @@ void WidgetSettings::saveCoreSettings()
          QRadioButton* button = i.next();
          if (button->isChecked())
          {
-            Common::ProtoHelper::setStr(settings, &Protos::GUI::CoreSettings::set_listenaddress, button->text());
+            Common::ProtoHelper::setStr(settings, &Protos::GUI::CoreSettings::set_listen_address, button->text());
             break;
          }
       }

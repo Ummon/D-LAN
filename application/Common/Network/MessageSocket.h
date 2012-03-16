@@ -75,7 +75,13 @@ namespace Common
       virtual bool isLocal() const;
       virtual bool isConnected() const;
 
-      virtual void close();
+      virtual void close();   signals:
+
+   signals:
+      /**
+        * Emitted after a message is received. The method 'onNewMessage()' is called previously.
+        */
+      void newMessage(Common::MessageHeader::MessageType type, const google::protobuf::Message& message);
 
    protected:
       bool isListening() const;
@@ -132,6 +138,7 @@ template<typename MessT> bool MessageSocket::readMessage()
    MessT mess;
    if (this->readProtoMessage(mess))
    {
+      emit newMessage(this->currentHeader.getType(), mess);
       this->onNewMessage(this->currentHeader.getType(), mess);
       return true;
    }

@@ -59,8 +59,8 @@ message Settings {
    optional uint32 max_number_of_search_result_to_send = 68 [default = 300];
    optional uint32 max_number_of_result_shown = 69 [default = 5000]; // For one search we accept a maximum of 5000 results.
    optional uint32 max_number_of_chat_message_saved = 70 [default = 500]; // When a chat message arrive we saved it into a queue. When a GUI connects this queue is sent.
-   optional string listenAddress = 86 [default = ""]; // If address is empty then listen to any adresses, in this case the protocol is given by 'listenAny'.
-   optional Common.Interface.Address.Protocol listenAny = 87 [default = IPv6];
+   optional string listen_address = 86 [default = ""]; // If address is empty then listen to any adresses, in this case the protocol is given by 'listenAny'.
+   optional Common.Interface.Address.Protocol listen_any = 87 [default = IPv6];
    
    // RemoteControlManager
    optional uint32 remote_control_port = 80 [default = 59485];

@@ -39,19 +39,19 @@ QHostAddress Utils::getCurrentAddressToListenTo()
          break;
       }
 
-   if (!hasAnyIPv6 && SETTINGS.get<quint32>("listenAny") == Protos::Common::Interface::Address::IPv6)
-      SETTINGS.set("listenAny", static_cast<quint32>(Protos::Common::Interface::Address::IPv6));
+   if (!hasAnyIPv6 && SETTINGS.get<quint32>("listen_any") == Protos::Common::Interface::Address::IPv6)
+      SETTINGS.set("listen_any", static_cast<quint32>(Protos::Common::Interface::Address::IPv6));
 
-   QString adressToListen = SETTINGS.get<QString>("listenAddress");
+   QString adressToListen = SETTINGS.get<QString>("listen_address");
 
    // Check if the address exists.
    foreach (QHostAddress address, QNetworkInterface::allAddresses())
       if (address.toString() == adressToListen)
          return QHostAddress(adressToListen);
 
-   SETTINGS.set("listenAddress", QString(""));
+   SETTINGS.set("listen_address", QString(""));
 
-   return SETTINGS.get<quint32>("listenAny") == Protos::Common::Interface::Address::IPv4 ? QHostAddress::Any : QHostAddress::AnyIPv6;
+   return SETTINGS.get<quint32>("listen_any") == Protos::Common::Interface::Address::IPv4 ? QHostAddress::Any : QHostAddress::AnyIPv6;
 }
 
 /**
