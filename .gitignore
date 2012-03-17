@@ -10,6 +10,7 @@ moc_*.cpp
 *.Release
 *.Debug
 *.exe
+*.qm
 *.dll
 Makefile*
 output/
