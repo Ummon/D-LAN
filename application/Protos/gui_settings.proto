@@ -24,12 +24,6 @@ message Settings {
    optional uint32 main_window_height = 11 [default = 450];
    optional bool main_window_maximized = 17 [default = false];
    
-   optional uint32 search_column_size_0 = 12 [default = 275]; // Entry name.
-   optional uint32 search_column_size_1 = 13 [default = 200]; // Folder name
-   optional uint32 search_column_size_2 = 14 [default = 60]; // Relvance.
-   optional uint32 search_column_size_3 = 15 [default = 80]; // Peer.
-   optional uint32 search_column_size_4 = 16 [default = 80]; // Size.
-   
    repeated uint32 search_column_size = 19; // [Entry name, Folder name, Relvance, Peer, Size].
    
    enum Window {
