@@ -72,21 +72,21 @@ QHostAddress Utils::getMulticastGroup()
    {
       Q_IPV6ADDR groupIPv6;
       groupIPv6[0] = 0xFF;
-      groupIPv6[1] = 0x0e;
-      groupIPv6[2] = (group & 0xFF000000) >> 24;
-      groupIPv6[3] = (group & 0x00FF0000) >> 16;
-      groupIPv6[4] = (group & 0x0000FF00) >> 8;
-      groupIPv6[5] = group & 0x000000FF;
+      groupIPv6[1] = 0x0E;
+      groupIPv6[2] = 0;
+      groupIPv6[3] = 0;
+      groupIPv6[4] = 0;
+      groupIPv6[5] = 0;
       groupIPv6[6] = 0;
       groupIPv6[7] = 0;
       groupIPv6[8] = 0;
       groupIPv6[9] = 0;
       groupIPv6[10] = 0;
       groupIPv6[11] = 0;
-      groupIPv6[12] = 0;
-      groupIPv6[13] = 0;
-      groupIPv6[14] = 0;
-      groupIPv6[15] = 0;
+      groupIPv6[12] = (group & 0xFF000000) >> 24;
+      groupIPv6[13] = (group & 0x00FF0000) >> 16;
+      groupIPv6[14] = (group & 0x0000FF00) >> 8;
+      groupIPv6[15] = group & 0x000000FF;
       return QHostAddress(groupIPv6);
    }
 }
