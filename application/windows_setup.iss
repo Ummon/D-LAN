@@ -1,7 +1,7 @@
 [code]
-#define QtDir "E:/Qt/4.8.0"
-#define MingwDir "E:/Qt/qtcreator-2.4.0/mingw"
-#define ProtoBufDir "E:/protobuf"
+#define QtDir "C:/Qt/4.8.0"
+#define MingwDir "C:/Qt/mingw"
+#define ProtoBufDir "C:/protobuf"
 
 #define AppName "D-LAN"
 #define ExePath ".\Core\output\release\D-LAN.Core.exe"
@@ -49,10 +49,11 @@ Name: "Firewall"; Description: {cm:firewallException}; MinVersion: 0,5.01.2600sp
 Name: "ResetSettings"; Description: {cm:resetSettings}
 
 [Run]
-Filename: {sys}\netsh.exe; Parameters: "firewall add allowedprogram ""{app}\D-LAN.Core.exe"" ""D-LAN.Core"" ENABLE ALL"; Flags: runhidden; MinVersion: 0,5.01.2600sp2; Tasks: Firewall;
-Filename: {app}\D-LAN.Core.exe; Parameters: --reset-settings; Description: Reset settings; Flags: RunHidden; Tasks: ResetSettings;
-Filename: {app}\D-LAN.Core.exe; Parameters: -i --lang {language}; Description: Install the D-LAN service and define the language; Flags: RunHidden; 
-Filename: {app}\D-LAN.GUI.exe;  Parameters: --lang {language}; Description: Define the language for the GUI; Flags: RunHidden;  
+Filename: "{sys}\netsh.exe"; Parameters: "firewall add allowedprogram ""{app}\D-LAN.Core.exe"" ""D-LAN.Core"" ENABLE ALL"; Flags: runhidden; MinVersion: 0,5.01.2600sp2; Tasks: Firewall
+Filename: "{app}\D-LAN.Core.exe"; Parameters: "--reset-settings"; Flags: RunHidden; Description: "Reset settings"; Tasks: ResetSettings
+Filename: "{app}\D-LAN.Core.exe"; Parameters: "-i --lang {language}"; Flags: RunHidden; Description: "Install the D-LAN service and define the language"
+Filename: "{app}\D-LAN.GUI.exe"; Parameters: "--lang {language}"; Flags: RunHidden; Description: "Define the language for the GUI"
+Filename: "{app}\D-LAN.GUI.exe"; Flags: postinstall runasoriginaluser; Description: {cm:launchDLAN}
 
 [UninstallRun]
 Filename: {app}\D-LAN.Core.exe; Parameters: -u;
