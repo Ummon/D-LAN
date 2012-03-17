@@ -44,8 +44,8 @@ namespace Common
       void setFilename(const QString& filename);
       void setSettingsMessage(google::protobuf::Message* settings);
 
-      void save() const;
-      void saveTo(const QString& filename) const;
+      bool save() const;
+      bool saveTo(const QString& filename) const;
       bool load();
       void remove();
 

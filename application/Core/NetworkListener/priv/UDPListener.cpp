@@ -344,7 +344,9 @@ void UDPListener::initMulticastUDPSocket()
    this->multicastSocket.setSocketOption(QAbstractSocket::MulticastLoopbackOption, loop);
 
    this->multicastSocket.setSocketOption(QAbstractSocket::MulticastTtlOption, SETTINGS.get<quint32>("multicast_ttl"));
-   this->multicastSocket.joinMulticastGroup(this->multicastGroup);
+
+   if (!this->multicastSocket.joinMulticastGroup(this->multicastGroup))
+      L_ERRO(QString("Unable to join the multicast group: %1").arg(this->multicastGroup.toString()));
 
    static const int BUFFER_SIZE_UDP = SETTINGS.get<quint32>("udp_read_buffer_size");
 #if defined(Q_OS_DARWIN)

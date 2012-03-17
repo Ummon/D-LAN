@@ -48,14 +48,8 @@ PeerManager::PeerManager(QSharedPointer<FM::IFileManager> fileManager) :
       this->ID = Common::Hash::rand();
       SETTINGS.set("peer_id", this->ID);
 
-      try
-      {
-         SETTINGS.save();
-      }
-      catch(Common::PersistentDataIOException& err)
-      {
-         L_ERRO(err.message);
-      }
+      if (!SETTINGS.save())
+         L_ERRO("Unable to save settings");
    }
    else
    {
@@ -88,16 +82,10 @@ void PeerManager::setNick(const QString& nick)
    else
       this->nick = nick;
 
-    SETTINGS.set("nick", this->nick);
+   SETTINGS.set("nick", this->nick);
 
-    try
-    {
-      SETTINGS.save();
-    }
-    catch(Common::PersistentDataIOException& err)
-    {
-       L_ERRO(err.message);
-    }
+   if (!SETTINGS.save())
+      L_ERRO("Unable to save settings");
 }
 
 /**

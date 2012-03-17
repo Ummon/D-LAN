@@ -80,24 +80,29 @@ void Settings::setSettingsMessage(google::protobuf::Message* settings)
    this->setDefaultValues();
 }
 
-/**
-  * @exception PersistentDataIOException see the class 'PersistentData'.
-  */
-void Settings::save() const
+bool Settings::save() const
 {
-   this->saveTo(this->filename);
+   return this->saveTo(this->filename);
 }
 
-void Settings::saveTo(const QString& filename) const
+bool Settings::saveTo(const QString& filename) const
 {
    QMutexLocker locker(&this->mutex);
 
    Q_ASSERT(this->settings);
 
    if (!this->settings)
-      return;
+      return false;
 
-   PersistentData::setValue(filename, *this->settings, Common::Global::ROAMING, true);
+   try
+   {
+      PersistentData::setValue(filename, *this->settings, Common::Global::ROAMING, true);
+      return true;
+   }
+   catch (PersistentDataIOException&)
+   {
+      return false;
+   }
 }
 
 bool Settings::load()

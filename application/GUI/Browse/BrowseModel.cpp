@@ -49,7 +49,7 @@ BrowseModel::~BrowseModel()
    delete this->root;
 }
 
-QModelIndex BrowseModel::index(int row, int column, const QModelIndex &parent) const
+QModelIndex BrowseModel::index(int row, int column, const QModelIndex& parent) const
 {
    if (!this->hasIndex(row, column, parent))
        return QModelIndex();

@@ -82,13 +82,10 @@ Core::Core(bool resetSettings, QLocale locale)
 
    this->checkSettingsIntegrity();
 
-   try
+   // To automatically create the file if it doesn't exist.
+   if (!SETTINGS.save())
    {
-      SETTINGS.save(); // To automatically create the file if it doesn't exist.
-   }
-   catch(Common::PersistentDataIOException& err)
-   {
-      L_ERRO(err.message);
+      L_ERRO("Unable to save settings");
    }
 }
 
