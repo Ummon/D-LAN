@@ -66,6 +66,8 @@ QHostAddress Utils::getMulticastGroup()
    const quint32 group = SETTINGS.get<quint32>("multicast_group");
    QHostAddress currentAddressToListentTo = Utils::getCurrentAddressToListenTo();
 
+   QByteArray channelHash = Common::Hasher::hash(SETTINGS.get<QString>("channel")).getByteArray();
+
    if (currentAddressToListentTo.protocol() == QAbstractSocket::IPv4Protocol)
       return QHostAddress(group);
    else // IPv6.
@@ -73,16 +75,10 @@ QHostAddress Utils::getMulticastGroup()
       Q_IPV6ADDR groupIPv6;
       groupIPv6[0] = 0xFF;
       groupIPv6[1] = 0x0E;
-      groupIPv6[2] = 0;
-      groupIPv6[3] = 0;
-      groupIPv6[4] = 0;
-      groupIPv6[5] = 0;
-      groupIPv6[6] = 0;
-      groupIPv6[7] = 0;
-      groupIPv6[8] = 0;
-      groupIPv6[9] = 0;
-      groupIPv6[10] = 0;
-      groupIPv6[11] = 0;
+
+      for (int i = 0; i < 10; i++)
+         groupIPv6[i+2] = channelHash[i];
+
       groupIPv6[12] = (group & 0xFF000000) >> 24;
       groupIPv6[13] = (group & 0x00FF0000) >> 16;
       groupIPv6[14] = (group & 0x0000FF00) >> 8;

@@ -510,7 +510,7 @@
     <message>
         <location filename="../GUI/Utils.cpp" line="+73"/>
         <source>The choosen directory will be shared</source>
-        <translation>The dossier choisi sera partagé</translation>
+        <translation>Le dossier choisi sera partagé</translation>
     </message>
 </context>
 <context>
