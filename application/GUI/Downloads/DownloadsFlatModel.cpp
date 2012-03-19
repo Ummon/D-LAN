@@ -1,0 +1,348 @@
+/**
+  * D-LAN - A decentralized LAN file sharing software.
+  * Copyright (C) 2010-2012 Greg Burri <greg.burri@gmail.com>
+  *
+  * This program is free software: you can redistribute it and/or modify
+  * it under the terms of the GNU General Public License as published by
+  * the Free Software Foundation, either version 3 of the License, or
+  * (at your option) any later version.
+  *
+  * This program is distributed in the hope that it will be useful,
+  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  * GNU General Public License for more details.
+  *
+  * You should have received a copy of the GNU General Public License
+  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  */
+  
+#include <Downloads/DownloadsFlatModel.h>
+using namespace GUI;
+
+#include <limits>
+
+#include <QPixmap>
+
+#include <Common/ProtoHelper.h>
+#include <Common/Global.h>
+
+#include <Log.h>
+#include <IconProvider.h>
+#include <Settings/DirListModel.h>
+
+DownloadsFlatModel::DownloadsFlatModel(QSharedPointer<RCC::ICoreConnection> coreConnection, const PeerListModel& peerListModel, const DirListModel& sharedDirsModel, const IFilter<DownloadFilterStatus>& filter) :
+   DownloadsModel(coreConnection, peerListModel, sharedDirsModel, filter),
+   totalBytesInQueue(0),
+   totalBytesDownloadedInQueue(0),
+   eta(0)
+{
+}
+
+quint64 DownloadsFlatModel::getTotalBytesInQueue() const
+{
+   return this->totalBytesInQueue;
+}
+
+quint64 DownloadsFlatModel::getTotalBytesDownloadedInQueue() const
+{
+   return this->totalBytesDownloadedInQueue;
+}
+
+quint64 DownloadsFlatModel::getEta() const
+{
+   return this->eta;
+}
+
+quint64 DownloadsFlatModel::getDownloadID(const QModelIndex& index) const
+{
+   if (index.row() >= this->downloads.size())
+      return 0;
+   return this->downloads[index.row()].id();
+}
+
+bool DownloadsFlatModel::isDownloadPaused(const QModelIndex& index) const
+{
+   if (index.row() >= this->downloads.size())
+      return false;
+   return this->downloads[index.row()].status() == Protos::GUI::State::Download::PAUSED;
+}
+
+bool DownloadsFlatModel::isFileLocationKnown(const QModelIndex& index) const
+{
+   if (index.row() >= this->downloads.size())
+      return false;
+
+   // If we know the base path then we know the location of the file.
+   return this->downloads[index.row()].local_entry().exists();
+}
+
+bool DownloadsFlatModel::isFileComplete(const QModelIndex& index) const
+{
+   if (index.row() >= this->downloads.size())
+      return false;
+
+   return this->downloads[index.row()].status() == Protos::GUI::State_Download_Status_COMPLETE;
+}
+
+QString DownloadsFlatModel::getPath(const QModelIndex& index, bool appendFilename) const
+{
+   if (index.row() >= this->downloads.size())
+      return QString();
+
+   const Common::SharedDir sharedDir = this->sharedDirsModel.getDir(this->downloads[index.row()].local_entry().shared_dir().id().hash());
+   if (sharedDir.isNull())
+      return QString();
+
+   QString path = sharedDir.path;
+   return path.append(Common::ProtoHelper::getRelativePath(this->downloads[index.row()].local_entry(), appendFilename));
+}
+
+int DownloadsFlatModel::rowCount(const QModelIndex& parent) const
+{
+   if (parent.isValid())
+      return 0;
+
+   return this->downloads.size();
+}
+
+int DownloadsFlatModel::columnCount(const QModelIndex& parent) const
+{
+   return 4;
+}
+
+QVariant DownloadsFlatModel::data(const QModelIndex& index, int role) const
+{
+   if (!index.isValid() || index.row() >= this->downloads.size())
+      return QVariant();
+
+   switch (role)
+   {
+   case Qt::DisplayRole:
+      {
+         const Protos::GUI::State_Download& currentDownload = this->downloads[index.row()];
+         switch (index.column())
+         {
+         case 0: return Common::ProtoHelper::getStr(currentDownload.local_entry(), &Protos::Common::Entry::name);
+         case 1: return Common::Global::formatByteSize(currentDownload.local_entry().size());
+         case 2: return QVariant::fromValue(Progress(currentDownload.progress(), currentDownload.status()));
+         case 3:
+            {
+               QString peersStr;
+
+               int i = 0;
+               if (currentDownload.has_peer_source_nick())
+               {
+                  i = 1;
+                  peersStr.append('[').append(Common::ProtoHelper::getStr(currentDownload, &Protos::GUI::State::Download::peer_source_nick)).append(']');
+               }
+               // O(n^2).
+               for (; i < currentDownload.peer_id_size(); i++)
+               {
+                  if (i != 0)
+                     peersStr.append(" ");
+                  peersStr.append('[').append(this->peerListModel.getNick(currentDownload.peer_id(i).hash())).append(']');
+               }
+               return peersStr;
+            }
+         default: return QVariant();
+         }
+      }
+
+   case Qt::DecorationRole:
+      {
+         if (index.column() == 0)
+         {
+            if (this->downloads[index.row()].status() >= Protos::GUI::State_Download_Status_UNKNOWN_PEER_SOURCE)
+               return QPixmap(":/icons/ressources/error.png");
+            else
+               return IconProvider::getIcon(this->downloads[index.row()].local_entry());
+         }
+         return QVariant();
+      }
+
+   case Qt::ToolTipRole:
+      switch (this->downloads[index.row()].status())
+      {
+      case Protos::GUI::State::Download::UNKNOWN_PEER_SOURCE:
+         return "Unknown source peer";
+      case Protos::GUI::State::Download::ENTRY_NOT_FOUND:
+         return "The source peer doesn't have the entry";
+      case Protos::GUI::State::Download::NO_SOURCE:
+         return "There is no source to download from";
+      case Protos::GUI::State::Download::NO_SHARED_DIRECTORY_TO_WRITE:
+         return "No incoming folder";
+      case Protos::GUI::State::Download::NO_ENOUGH_FREE_SPACE:
+         return "Not enough free space left";
+      case Protos::GUI::State::Download::UNABLE_TO_CREATE_THE_FILE:
+         return "Unable to create the file";
+      case Protos::GUI::State::Download::UNABLE_TO_RETRIEVE_THE_HASHES:
+         return "Unable to retrieve the hashes";
+      case Protos::GUI::State::Download::TRANSFERT_ERROR:
+         return "Transfert error";
+      default:
+         return QVariant();
+      }
+
+   case Qt::TextAlignmentRole:
+      return static_cast<int>(index.column() == 1 ? Qt::AlignRight : Qt::AlignLeft) | Qt::AlignVCenter;
+
+   default: return QVariant();
+   }
+}
+
+Qt::DropActions DownloadsFlatModel::supportedDropActions() const
+{
+   return Qt::MoveAction;
+}
+
+Qt::ItemFlags DownloadsFlatModel::flags(const QModelIndex& index) const
+{
+   Qt::ItemFlags defaultFlags = QAbstractItemModel::flags(index);
+
+   if (index.isValid())
+       return Qt::ItemIsDragEnabled | defaultFlags;
+   else
+       return Qt::ItemIsDropEnabled | defaultFlags;
+
+   return defaultFlags;
+}
+
+bool DownloadsFlatModel::dropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex & parent)
+{
+   if (row == -1 || !data || action != Qt::MoveAction)
+       return false;
+
+   QStringList types = this->mimeTypes();
+   if (types.isEmpty())
+       return false;
+
+   QString format = types.at(0);
+   if (!data->hasFormat(format))
+       return false;
+
+   if (this->downloads.isEmpty())
+      return false;
+
+   QByteArray encoded = data->data(format);
+   QDataStream stream(&encoded, QIODevice::ReadOnly);
+
+   QList<quint64> downloadIDs;
+   QList<int> rowsToRemove;
+
+   bool moveBefore = true;
+   quint64 placeToMove = 0;
+   if (row >= this->downloads.size())
+   {
+      moveBefore = false;
+      placeToMove = this->downloads.last().id();
+   }
+   else
+      placeToMove = this->downloads[row].id();
+
+
+   int previousRow = -1;
+   while (!stream.atEnd())
+   {
+       int currentRow;
+       int currentCol;
+       QMap<int, QVariant> value;
+       stream >> currentRow >> currentCol >> value;
+
+       if (currentRow != previousRow)
+       {
+          previousRow = currentRow;
+          if (currentRow >= 0 && currentRow < this->downloads.size())
+          {
+             downloadIDs << this->downloads[currentRow].id();
+             rowsToRemove << currentRow;
+          }
+       }
+   }
+
+   if (!rowsToRemove.isEmpty())
+   {
+      qSort(rowsToRemove.begin(), rowsToRemove.end());
+
+      int rowBegin = rowsToRemove.size() - 1;
+      int rowEnd = rowBegin;
+      for (int i = rowEnd - 1; i >= -1 ; i--)
+      {
+         if (i >= 0 && rowsToRemove[i] == rowsToRemove[rowBegin] - 1)
+            rowBegin--;
+         else
+         {
+            this->beginRemoveRows(QModelIndex(), rowsToRemove[rowBegin], rowsToRemove[rowEnd]);
+            for (int j = rowsToRemove[rowEnd]; j >= rowsToRemove[rowBegin]; j--)
+               this->downloads.removeAt(j);
+            this->endRemoveRows();
+
+            rowBegin = rowEnd = i;
+         }
+      }
+   }
+
+   this->coreConnection->moveDownloads(placeToMove, downloadIDs, moveBefore);
+   return true;
+}
+
+void DownloadsFlatModel::onNewState(const Protos::GUI::State& state)
+{
+   const quint64 oldTotalBytesInQueue = this->totalBytesInQueue;
+   const quint64 oldTotalBytesDownloadedInQueue = this->totalBytesDownloadedInQueue;
+
+   this->totalBytesInQueue = 0;
+   this->totalBytesDownloadedInQueue = 0;
+
+   for (int i = 0; i < state.download_size(); i++)
+   {
+      const quint64 fileSize = state.download(i).local_entry().size();
+      this->totalBytesInQueue += fileSize;
+      this->totalBytesDownloadedInQueue += fileSize * state.download(i).progress() / 10000;
+   }
+
+   QList<int> activeDownloadIndices = this->getNonFilteredDownloadIndices(state);
+
+   int i = 0;
+   for (; i < activeDownloadIndices.size() && i < this->downloads.size(); i++)
+   {
+      if (state.download(activeDownloadIndices[i]) != this->downloads[i])
+      {
+         this->downloads[i].CopyFrom(state.download(activeDownloadIndices[i]));
+         emit dataChanged(this->createIndex(i, 0), this->createIndex(i, 3));
+      }
+   }
+
+   // Insert new elements.
+   if (i < activeDownloadIndices.size())
+   {
+      this->beginInsertRows(QModelIndex(), i, activeDownloadIndices.size() - 1);
+      while (i < activeDownloadIndices.size())
+      {
+         const Protos::GUI::State_Download& download = state.download(activeDownloadIndices[i++]);
+         this->downloads << download;
+      }
+      this->endInsertRows();
+   }
+
+   // Delete some elements.
+   if (i < this->downloads.size())
+   {
+      this->beginRemoveRows(QModelIndex(), i, this->downloads.size() - 1);
+      const int nbDownloads = this->downloads.size();
+      while (i++ < nbDownloads)
+         this->downloads.removeLast();
+      this->endRemoveRows();
+   }
+
+   quint64 oldEta = this->eta;
+   if (state.stats().download_rate() == 0)
+      this->eta = std::numeric_limits<quint64>::max();
+   else
+   {
+      const int weightLastEta = this->eta == 0 ? 1 : WEIGHT_LAST_ETA;
+      this->eta = (weightLastEta * this->eta + (this->totalBytesInQueue - this->totalBytesDownloadedInQueue) / state.stats().download_rate()) / (weightLastEta + 1);
+   }
+
+   if (this->totalBytesInQueue != oldTotalBytesInQueue || this->totalBytesDownloadedInQueue != oldTotalBytesDownloadedInQueue || this->eta != oldEta)
+      emit globalProgressChanged();
+}

@@ -105,20 +105,23 @@ WidgetDownloads::WidgetDownloads(QSharedPointer<RCC::ICoreConnection> coreConnec
    this->ui->tblDownloads->setDropIndicatorShown(true);
 
    this->ui->tblDownloads->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
-   this->ui->tblDownloads->horizontalHeader()->setVisible(false);
-   this->ui->tblDownloads->horizontalHeader()->setResizeMode(0, QHeaderView::Stretch);
-   this->ui->tblDownloads->horizontalHeader()->setResizeMode(1, QHeaderView::ResizeToContents);
-   this->ui->tblDownloads->horizontalHeader()->setResizeMode(2, QHeaderView::ResizeToContents);
-   this->ui->tblDownloads->horizontalHeader()->setResizeMode(3, QHeaderView::ResizeToContents);
+   this->ui->tblDownloads->header()->setStretchLastSection(false);
+   this->ui->tblDownloads->header()->setVisible(false);
+   this->ui->tblDownloads->header()->setResizeMode(0, QHeaderView::Stretch);
+   this->ui->tblDownloads->header()->setResizeMode(1, QHeaderView::ResizeToContents);
+   this->ui->tblDownloads->header()->setResizeMode(2, QHeaderView::ResizeToContents);
+   this->ui->tblDownloads->header()->setResizeMode(3, QHeaderView::ResizeToContents);
 
+   this->ui->tblDownloads->setIndentation(0);
+   this->ui->tblDownloads->setUniformRowHeights(true);
    //this->ui->tblChat->verticalHeader()->setResizeMode(QHeaderView::ResizeToContents);
-   this->ui->tblDownloads->verticalHeader()->setResizeMode(QHeaderView::Fixed);
-   this->ui->tblDownloads->verticalHeader()->setDefaultSectionSize(QApplication::fontMetrics().height() + 2);
+   //this->ui->tblDownloads->verticalHeader()->setResizeMode(QHeaderView::Fixed);
+   //this->ui->tblDownloads->verticalHeader()->setDefaultSectionSize(QApplication::fontMetrics().height() + 2);
+   //this->ui->tblDownloads->verticalHeader()->setVisible(false);
 
-   this->ui->tblDownloads->verticalHeader()->setVisible(false);
    this->ui->tblDownloads->setSelectionBehavior(QAbstractItemView::SelectRows);
    this->ui->tblDownloads->setSelectionMode(QAbstractItemView::ExtendedSelection);
-   this->ui->tblDownloads->setShowGrid(false);
+   //this->ui->tblDownloads->setShowGrid(false);
    this->ui->tblDownloads->setAlternatingRowColors(true);
 
    this->ui->tblDownloads->setContextMenuPolicy(Qt::CustomContextMenu);
@@ -170,8 +173,8 @@ void WidgetDownloads::displayContextMenuDownloads(const QPoint& point)
    QModelIndexList selectedRows = this->ui->tblDownloads->selectionModel()->selectedRows();
    for (QListIterator<QModelIndex> i(selectedRows); i.hasNext();)
    {
-      int row = i.next().row();
-      if (this->downloadsModel.isFileLocationKnown(row))
+      const QModelIndex& index = i.next();
+      if (this->downloadsModel.isFileLocationKnown(index))
       {
          showOpenLocation = true;
          break;
@@ -192,8 +195,8 @@ void WidgetDownloads::displayContextMenuDownloads(const QPoint& point)
 
 void WidgetDownloads::downloadDoubleClicked(const QModelIndex& index)
 {
-   if (this->downloadsModel.isFileLocationKnown(index.row()))
-      QDesktopServices::openUrl(QUrl("file:///" + this->downloadsModel.getPath(index.row())));
+   if (this->downloadsModel.isFileLocationKnown(index))
+      QDesktopServices::openUrl(QUrl("file:///" + this->downloadsModel.getPath(index)));
 }
 
 void WidgetDownloads::openLocationSelectedEntries()
@@ -203,9 +206,9 @@ void WidgetDownloads::openLocationSelectedEntries()
    QSet<QString> locations;
    for (QListIterator<QModelIndex> i(selectedRows); i.hasNext();)
    {
-      int row = i.next().row();
-      if (this->downloadsModel.isFileLocationKnown(row))
-         locations.insert("file:///" + this->downloadsModel.getPath(row, false));
+      const QModelIndex& index = i.next();
+      if (this->downloadsModel.isFileLocationKnown(index))
+         locations.insert("file:///" + this->downloadsModel.getPath(index, false));
    }
 
    for (QSetIterator<QString> i(locations); i.hasNext();)
@@ -225,11 +228,11 @@ void WidgetDownloads::removeSelectedEntries()
    bool allComplete = true;
    for (QListIterator<QModelIndex> i(selectedRows); i.hasNext();)
    {
-      const int row = i.next().row();
-      quint64 ID = this->downloadsModel.getDownloadID(row);
+      const QModelIndex& index = i.next();
+      quint64 ID = this->downloadsModel.getDownloadID(index);
       if (ID != 0)
          downloadIDs << ID;
-      if (!this->downloadsModel.isFileComplete(row))
+      if (!this->downloadsModel.isFileComplete(index))
          allComplete = false;
    }
 
@@ -301,12 +304,12 @@ QPair<QList<quint64>, bool> WidgetDownloads::getDownloadIDsToPause() const
    bool allPaused = true;
    for (QListIterator<QModelIndex> i(selectedRows); i.hasNext();)
    {
-      const int row = i.next().row();
-      quint64 ID = this->downloadsModel.getDownloadID(row);
-      if (ID != 0 && !this->downloadsModel.isFileComplete(row))
+      const QModelIndex& index = i.next();
+      quint64 ID = this->downloadsModel.getDownloadID(index);
+      if (ID != 0 && !this->downloadsModel.isFileComplete(index))
       {
             downloadIDs << ID;
-         if (!this->downloadsModel.isDownloadPaused(row))
+         if (!this->downloadsModel.isDownloadPaused(index))
             allPaused = false;
       }
    }

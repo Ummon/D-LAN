@@ -30,7 +30,7 @@
 #include <CheckBoxModel.h>
 #include <PeerList/PeerListModel.h>
 #include <Downloads/DownloadFilterStatus.h>
-#include <Downloads/DownloadsModel.h>
+#include <Downloads/DownloadsFlatModel.h>
 
 #include <Settings/DirListModel.h>
 
@@ -78,7 +78,7 @@ namespace GUI
       QSharedPointer<RCC::ICoreConnection> coreConnection;
 
       CheckBoxModel<DownloadFilterStatus> checkBoxModel;
-      DownloadsModel downloadsModel;
+      DownloadsFlatModel downloadsModel;
       DownloadsDelegate downloadsDelegate;
    };
 }

@@ -52,7 +52,7 @@ SOURCES += main.cpp\
     Chat/WidgetChat.cpp \
     Chat/ChatModel.cpp \
     Downloads/WidgetDownloads.cpp \
-    Downloads/DownloadsModel.cpp \
+    Downloads/DownloadsFlatModel.cpp \
     Log/LogModel.cpp \
     PeerList/PeerListModel.cpp \
     Search/WidgetSearch.cpp \
@@ -68,7 +68,9 @@ SOURCES += main.cpp\
     IconProvider.cpp \
     Utils.cpp \
     LineEdit.cpp \
-    Settings/AskNewPasswordDialog.cpp
+    Settings/AskNewPasswordDialog.cpp \
+    Downloads/DownloadsTreeModel.cpp \
+    Downloads/DownloadsModel.cpp
 
 HEADERS  += MainWindow.h \
     ../Protos/gui_protocol.pb.h \
@@ -87,7 +89,6 @@ HEADERS  += MainWindow.h \
     Chat/WidgetChat.h \
     Chat/ChatModel.h \
     Downloads/WidgetDownloads.h \
-    Downloads/DownloadsModel.h \
     Downloads/DownloadFilterStatus.h \
     Log/LogModel.h \
     PeerList/PeerListModel.h \
@@ -104,7 +105,10 @@ HEADERS  += MainWindow.h \
     IconProvider.h \
     Utils.h \
     LineEdit.h \
-    Settings/AskNewPasswordDialog.h
+    Settings/AskNewPasswordDialog.h \
+    Downloads/DownloadsFlatModel.h \
+    Downloads/DownloadsTreeModel.h \
+    Downloads/DownloadsModel.h
 
 FORMS    += MainWindow.ui \
     StatusBar.ui \

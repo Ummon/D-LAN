@@ -138,8 +138,8 @@ template<typename MessT> bool MessageSocket::readMessage()
    MessT mess;
    if (this->readProtoMessage(mess))
    {
-      emit newMessage(this->currentHeader.getType(), mess);
       this->onNewMessage(this->currentHeader.getType(), mess);
+      emit newMessage(this->currentHeader.getType(), mess);
       return true;
    }
    return false;

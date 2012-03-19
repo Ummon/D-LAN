@@ -21,6 +21,7 @@
 
 #include <QAbstractTableModel>
 #include <QDragEnterEvent>
+#include <QList>
 
 #include <Protos/gui_protocol.pb.h>
 
@@ -36,50 +37,28 @@ namespace GUI
    class DownloadsModel : public QAbstractTableModel
    {
       Q_OBJECT
-
-      static const int WEIGHT_LAST_ETA = 5; // Used in the weighted mean computation.
-
    public:
-      explicit DownloadsModel(QSharedPointer<RCC::ICoreConnection> coreConnection, const PeerListModel& peerListModel, const DirListModel& sharedDirsModel, const IFilter<DownloadFilterStatus>& filter);
+      DownloadsModel(QSharedPointer<RCC::ICoreConnection> coreConnection, const PeerListModel& peerListModel, const DirListModel& sharedDirsModel, const IFilter<DownloadFilterStatus>& filter);
+      virtual ~DownloadsModel() {}
 
-      quint64 getTotalBytesInQueue() const;
-      quint64 getTotalBytesDownloadedInQueue() const;
-      quint64 getEta() const;
+      virtual quint64 getDownloadID(const QModelIndex& index) const = 0;
 
-      quint64 getDownloadID(int row) const;
+      virtual bool isDownloadPaused(const QModelIndex& index) const = 0;
+      virtual bool isFileLocationKnown(const QModelIndex& index) const = 0;
+      virtual bool isFileComplete(const QModelIndex& index) const = 0;
 
-      bool isDownloadPaused(int row) const;
-      bool isFileLocationKnown(int row) const;
-      bool isFileComplete(int row) const;
+      virtual QString getPath(const QModelIndex& index, bool appendFilename = true) const = 0;
 
-      QString getPath(int row, bool appendFilename = true) const;
-
-      int rowCount(const QModelIndex& parent = QModelIndex()) const;
-      int columnCount(const QModelIndex& parent = QModelIndex()) const;
-      QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const;
-      Qt::DropActions supportedDropActions() const;
-      Qt::ItemFlags flags(const QModelIndex& index) const;
-
-   signals:
-      void globalProgressChanged();
+   protected slots:
+      virtual void onNewState(const Protos::GUI::State& state) = 0;
 
    protected:
-      bool dropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex & parent);
+      QList<int> getNonFilteredDownloadIndices(const Protos::GUI::State& state) const;
 
-   private slots:
-      void newState(const Protos::GUI::State& state);
-
-   private:
       QSharedPointer<RCC::ICoreConnection> coreConnection;
       const PeerListModel& peerListModel;
       const DirListModel& sharedDirsModel;
       const IFilter<DownloadFilterStatus>& filter;
-
-      quint64 totalBytesInQueue;
-      quint64 totalBytesDownloadedInQueue;
-      quint64 eta;
-
-      QList<Protos::GUI::State::Download> downloads;
    };
 
    struct Progress
