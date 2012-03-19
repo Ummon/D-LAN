@@ -333,8 +333,6 @@ void UDPListener::initMulticastUDPSocket()
       return;
    }
 
-   const int multicastSocketDescriptor = this->multicastSocket.socketDescriptor();
-
    // 'loop' is activated only for tests.
 #if DEBUG
    const char loop = 1;
@@ -349,6 +347,7 @@ void UDPListener::initMulticastUDPSocket()
       L_ERRO(QString("Unable to join the multicast group: %1").arg(this->multicastGroup.toString()));
 
    static const int BUFFER_SIZE_UDP = SETTINGS.get<quint32>("udp_read_buffer_size");
+   const int multicastSocketDescriptor = this->multicastSocket.socketDescriptor();
 #if defined(Q_OS_DARWIN)
    if (int error = 0) // TODO
 #else
