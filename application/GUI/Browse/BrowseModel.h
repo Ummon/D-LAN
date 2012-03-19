@@ -26,6 +26,7 @@
 
 #include <Common/ProtoHelper.h>
 #include <Common/Hash.h>
+#include <Common/Tree.h>
 #include <Common/RemoteCoreController/ICoreConnection.h>
 #include <Common/RemoteCoreController/IBrowseResult.h>
 
@@ -36,7 +37,7 @@ namespace GUI
    class BrowseModel : public QAbstractItemModel
    {
    protected:
-      class Node;
+      class Tree;
 
    private:
       Q_OBJECT
@@ -73,52 +74,32 @@ namespace GUI
       virtual void resultTimeout();
 
    protected:
-      virtual void browse(const Common::Hash& peerID, Node* node = 0);
+      virtual void browse(const Common::Hash& peerID, Tree* Tree = 0);
       virtual void loadChildren(const QPersistentModelIndex &index);
-      virtual QList<Node*> synchronize(BrowseModel::Node* node, const Protos::Common::Entries& entries);
-      virtual QList<Node*> synchronizeRoot(const Protos::Common::Entries& entries);
+      virtual QList<Tree*> synchronize(BrowseModel::Tree* Tree, const Protos::Common::Entries& entries);
+      virtual QList<Tree*> synchronizeRoot(const Protos::Common::Entries& entries);
       virtual void reset();
 
-      class Node
+      class Tree : public Common::Tree<Protos::Common::Entry>
       {
       public:
-         class NodeBreadthIterator
-         {
-         public:
-            NodeBreadthIterator(Node* node);
-            Node* next();
-
-         private:
-            void readChildren(Node* parentNode);
-
-            QList<Node*> nextNodes;
-         };
-
-         Node();
-         Node(const Protos::Common::Entry& entry, Node* parent);
-         virtual ~Node();
-
-         virtual Node* getParent();
-         virtual int getNbChildren() const;
-         virtual Node* getChild(int row) const;
-         virtual void moveChild(int from, int to);
+         Tree();
+         Tree(const Protos::Common::Entry& entry, Tree* parent);
+         virtual ~Tree();
          virtual void insertChildren(const Protos::Common::Entries& entries);
-         virtual void insertChild(const Protos::Common::Entry& entry, int pos);
+         virtual void setItem(const Protos::Common::Entry& entry);
          virtual bool hasUnloadedChildren() const;
-
-         virtual int getRow() const;
-         virtual QVariant getData(int column) const;
-         virtual const Protos::Common::Entry& getEntry() const;
-         virtual void setEntry(const Protos::Common::Entry& entry);
+         virtual QVariant data(int column) const;
 
       protected:
-         virtual Node* newNode(const Protos::Common::Entry& entry);
-         virtual Node* newNode(const Protos::Common::Entry& entry, int pos);
+         virtual Common::Tree<Protos::Common::Entry>* newTree(const Protos::Common::Entry& entry);
          virtual void copySharedDirFromParent();
+      };
 
-         Protos::Common::Entry entry;
-         Node* parent;
-         QList<Node*> children;
+      class TreeBreadthIterator : public Common::TreeBreadthIterator<Protos::Common::Entry>
+      {
+      public:
+         TreeBreadthIterator(Tree* tree) : Common::TreeBreadthIterator<Protos::Common::Entry>(tree) { }
       };
 
       QSharedPointer<RCC::ICoreConnection> coreConnection;
@@ -128,7 +109,7 @@ namespace GUI
       QPersistentModelIndex currentBrowseIndex; // When we receive some entries after a browse query, they will be added as children to this index.
       QSharedPointer<RCC::IBrowseResult> browseResult;
 
-      Node* root; // The corresponding index is null: QModelIndex().
+      Tree* root; // The corresponding index is null: QModelIndex().
    };
 
    bool operator>(const Protos::Common::Entry& e1, const Protos::Common::Entry& e2);

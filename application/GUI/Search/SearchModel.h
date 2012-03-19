@@ -37,7 +37,7 @@ namespace GUI
 {
    class SearchModel : public BrowseModel
    {
-      class SearchNode;
+      class SearchTree;
       static const int NB_SIGNAL_PROGRESS; // The number of signal progress sent during a search.
       Q_OBJECT
    public:
@@ -70,8 +70,8 @@ namespace GUI
       void stopSearching();
 
    private:
-      SearchNode* getRoot();
-      int insertNode(const Protos::Common::FindResult_EntryLevel& entry, const Common::Hash& peerID, int currentIndex);
+      SearchTree* getRoot();
+      int insertTree(const Protos::Common::FindResult_EntryLevel& entry, const Common::Hash& peerID, int currentIndex);
       bool setMaxLevel(int newLevel);
 
       const PeerListModel& peerListModel;
@@ -88,30 +88,30 @@ namespace GUI
 
       int currentProgress;
 
-      QHash<Common::Hash, SearchNode*> indexedFile;
+      QHash<Common::Hash, SearchTree*> indexedFile;
 
-      class SearchNode : public Node
+      class SearchTree : public Tree
       {
       public:
          static QString entryPath(const Protos::Common::Entry& entry);
 
-         SearchNode();
-         SearchNode(const Protos::Common::Entry& entry, int level, const Common::Hash& peerID, const QString& peerNick, Node* parent);
-         SearchNode(const Protos::Common::Entry& entry, const Common::Hash& peerID,  Node* parent);
+         SearchTree();
+         SearchTree(const Protos::Common::Entry& entry, int level, const Common::Hash& peerID, const QString& peerNick, SearchTree* parent);
+         SearchTree(const Protos::Common::Entry& entry, const Common::Hash& peerID,  SearchTree* parent);
 
-         SearchNode* insertChild(const Protos::Common::FindResult_EntryLevel& entry, const Common::Hash& peerID, const QString& peerNick);
-         SearchNode* insertChild(int index, const Protos::Common::FindResult_EntryLevel& entry, const Common::Hash& peerID, const QString& peerNick);
-         SearchNode* insertChild(SearchNode* node);
+         SearchTree* insertChild(const Protos::Common::FindResult_EntryLevel& entry, const Common::Hash& peerID, const QString& peerNick);
+         SearchTree* insertChild(int index, const Protos::Common::FindResult_EntryLevel& entry, const Common::Hash& peerID, const QString& peerNick);
+         SearchTree* insertChild(SearchTree* node);
 
          int getLevel() const;
          Common::Hash getPeerID() const;
-         QVariant getData(int column) const;
+         QVariant data(int column) const;
 
-         void copyFrom(const SearchNode* otherNode);
+         void copyFrom(const SearchTree* otherNode);
          bool isSameAs(const Protos::Common::Entry& otherEntry) const;
 
       protected:
-         Node* newNode(const Protos::Common::Entry& entry);
+         Common::Tree<Protos::Common::Entry>* newTree(const Protos::Common::Entry& entry);
 
       private:
          int level;

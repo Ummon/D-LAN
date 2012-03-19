@@ -54,6 +54,7 @@ HEADERS += Hashes.h \
     ../Protos/common.pb.h \
     ThreadPool.h \
     IRunnable.h \
-    Languages.h
+    Languages.h \
+    Tree.h
 
 
