@@ -12,7 +12,7 @@ message Settings {
    optional Common.Hash password = 3; // Hashed with salt.
    
    optional Common.Language language = 20;
-   
+      
    optional uint32 max_chat_message_displayed = 4 [default = 500];
    optional uint32 max_log_message_displayed = 5 [default = 500];
    optional uint32 reconnect_period = 6 [default = 1000]; // [ms].
@@ -34,4 +34,10 @@ message Settings {
    }
    
    repeated Window windowOrder = 18;   
+   
+   enum DownloadView {
+      TREE_VIEW = 1;
+      LIST_VIEW = 2;
+   }
+   optional DownloadView downloadView = 21 [default = TREE_VIEW];
 }

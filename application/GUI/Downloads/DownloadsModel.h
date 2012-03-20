@@ -41,12 +41,15 @@ namespace GUI
       DownloadsModel(QSharedPointer<RCC::ICoreConnection> coreConnection, const PeerListModel& peerListModel, const DirListModel& sharedDirsModel, const IFilter<DownloadFilterStatus>& filter);
       virtual ~DownloadsModel() {}
 
-      virtual quint64 getDownloadID(const QModelIndex& index) const = 0;
+      virtual QList<quint64> getDownloadIDs(const QModelIndex& index) const = 0;
 
       virtual bool isDownloadPaused(const QModelIndex& index) const = 0;
       virtual bool isFileLocationKnown(const QModelIndex& index) const = 0;
       virtual bool isFileComplete(const QModelIndex& index) const = 0;
 
+      /**
+        * @remarks appendFilename is only valid if the index is a file (not a directory).
+        */
       virtual QString getPath(const QModelIndex& index, bool appendFilename = true) const = 0;
 
    protected slots:
@@ -66,7 +69,7 @@ namespace GUI
       Progress() : progress(0), status(Protos::GUI::State::Download::QUEUED) {}
       Progress(quint32 progress, Protos::GUI::State::Download::Status status) : progress(progress), status(status) {}
 
-      quint32 progress;
+      quint32 progress; // 0 to 10'000.
       Protos::GUI::State::Download::Status status;
    };
 

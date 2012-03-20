@@ -109,7 +109,7 @@ bool GUI::operator==(const Protos::GUI::State::Download& d1, const Protos::GUI::
       d1.local_entry().name() != d2.local_entry().name() ||
       d1.local_entry().size() != d2.local_entry().size() ||
       d1.status() != d2.status() ||
-      d1.progress() != d2.progress() ||
+      d1.downloaded_bytes() != d2.downloaded_bytes() ||
       d1.peer_id_size() != d2.peer_id_size()
    )
       return false;

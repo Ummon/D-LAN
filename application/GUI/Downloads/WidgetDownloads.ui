@@ -46,6 +46,20 @@
       </widget>
      </item>
      <item>
+      <widget class="QPushButton" name="butSwitchView">
+       <property name="toolTip">
+        <string/>
+       </property>
+       <property name="text">
+        <string notr="true"/>
+       </property>
+       <property name="icon">
+        <iconset resource="../ressources.qrc">
+         <normaloff>:/icons/ressources/tree_view.png</normaloff>:/icons/ressources/tree_view.png</iconset>
+       </property>
+      </widget>
+     </item>
+     <item>
       <widget class="QPushButton" name="butRemoveComplete">
        <property name="toolTip">
         <string>Remove completed files</string>

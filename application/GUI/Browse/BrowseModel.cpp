@@ -88,7 +88,7 @@ QModelIndex BrowseModel::parent(const QModelIndex& index) const
 int BrowseModel::rowCount(const QModelIndex& parent) const
 {
    const Tree* parentTree;
-   if (parent.column() >    0)
+   if (parent.column() > 0)
        return 0;
 
    if (!parent.isValid())
@@ -236,9 +236,9 @@ void BrowseModel::resultRefresh(const google::protobuf::RepeatedPtrField<Protos:
    k.toBack();
    while (k.hasPrevious())
    {
-      Tree* Tree = k.previous();
-      this->beginRemoveRows(Tree->getParent() == this->root ? QModelIndex() : this->createIndex(Tree->getParent()->getOwnPosition(), 0, Tree->getParent()), Tree->getOwnPosition(), Tree->getOwnPosition()); // Root cannot be deleted, so the Tree must have a parent.
-      delete Tree;
+      Tree* tree = k.previous();
+      this->beginRemoveRows(tree->getParent() == this->root ? QModelIndex() : this->createIndex(tree->getParent()->getOwnPosition(), 0, tree->getParent()), tree->getOwnPosition(), tree->getOwnPosition()); // Root cannot be deleted, so the Tree must have a parent.
+      delete tree;
       this->endRemoveRows();
    }
    this->browseResult.clear();

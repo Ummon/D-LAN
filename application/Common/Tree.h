@@ -20,8 +20,8 @@ namespace Common
       virtual int getNbChildren() const;
       virtual Tree<T>* getChild(int pos) const;
       virtual void moveChild(int from, int to);
-      virtual void insertChild(const T& item);
-      virtual void insertChild(const T& item, int pos);
+      virtual Tree<T>* insertChild(const T& item);
+      virtual Tree<T>* insertChild(const T& item, int pos);
 
       virtual int getOwnPosition() const;
       virtual const T& getItem() const;
@@ -43,6 +43,7 @@ namespace Common
    {
    public:
       TreeBreadthIterator(Tree<T>* tree);
+      bool hasNext() const;
       Tree<T>* next();
 
    private:
@@ -104,18 +105,21 @@ void Tree<T>::moveChild(int from, int to)
 }
 
 template <typename T>
-void Tree<T>::insertChild(const T& item)
+Tree<T>* Tree<T>::insertChild(const T& item)
 {
    this->children << this->newTree(item);
+   return this->children.last();
 }
 
 template <typename T>
-void Tree<T>::insertChild(const T& item, int pos)
+Tree<T>* Tree<T>::insertChild(const T& item, int pos)
 {
    if (pos > this->children.size())
       pos = this->children.size();
 
-   this->children.insert(pos, this->newTree(item));
+   Tree<T>* tree = this->newTree(item);
+   this->children.insert(pos, tree);
+   return tree;
 }
 
 /**
@@ -158,6 +162,12 @@ template <typename T>
 TreeBreadthIterator<T>::TreeBreadthIterator(Tree<T>* tree)
 {
    this->readChildren(tree);
+}
+
+template <typename T>
+bool TreeBreadthIterator<T>::hasNext() const
+{
+   return !this->nextTrees.isEmpty();
 }
 
 template <typename T>

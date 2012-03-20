@@ -37,7 +37,7 @@ namespace GUI
       quint64 getTotalBytesDownloadedInQueue() const;
       quint64 getEta() const;
 
-      quint64 getDownloadID(const QModelIndex& index) const;
+      QList<quint64> getDownloadIDs(const QModelIndex& index) const;
 
       bool isDownloadPaused(const QModelIndex& index) const;
       bool isFileLocationKnown(const QModelIndex& index) const;

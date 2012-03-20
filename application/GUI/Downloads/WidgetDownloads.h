@@ -24,6 +24,8 @@
 #include <QPair>
 #include <QStyledItemDelegate>
 
+#include <Protos/gui_settings.pb.h>
+
 #include <Common/RemoteCoreController/ICoreConnection.h>
 
 #include <CheckBoxList.h>
@@ -31,6 +33,7 @@
 #include <PeerList/PeerListModel.h>
 #include <Downloads/DownloadFilterStatus.h>
 #include <Downloads/DownloadsFlatModel.h>
+#include <Downloads/DownloadsTreeModel.h>
 
 #include <Settings/DirListModel.h>
 
@@ -62,6 +65,7 @@ namespace GUI
       void displayContextMenuDownloads(const QPoint& point);
       void downloadDoubleClicked(const QModelIndex& index);
       void openLocationSelectedEntries();
+      void switchView();
       void removeCompletedFiles();
       void removeSelectedEntries();
       void pauseSelectedEntries();
@@ -69,6 +73,7 @@ namespace GUI
       void updateGlobalProgressBar();
 
    private:
+      void switchView(Protos::GUI::Settings::DownloadView view);
       void updateCheckBoxElements();
       QPair<QList<quint64>, bool> getDownloadIDsToPause() const;
 
@@ -78,7 +83,11 @@ namespace GUI
       QSharedPointer<RCC::ICoreConnection> coreConnection;
 
       CheckBoxModel<DownloadFilterStatus> checkBoxModel;
-      DownloadsFlatModel downloadsModel;
+
+      DownloadsFlatModel downloadsFlatModel;
+      DownloadsTreeModel downloadsTreeModel;
+      DownloadsModel* currentDownloadsModel;
+
       DownloadsDelegate downloadsDelegate;
    };
 }

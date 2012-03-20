@@ -161,7 +161,7 @@ void RemoteConnection::refresh()
       protoDownload->mutable_local_entry()->CopyFrom(download->getLocalEntry());
       protoDownload->mutable_local_entry()->mutable_chunk()->Clear(); // We don't need to send the hashes.
       protoDownload->set_status(static_cast<Protos::GUI::State::Download::Status>(download->getStatus())); // Warning, enums must be compatible.
-      protoDownload->set_progress(download->getProgress());
+      protoDownload->set_downloaded_bytes(download->getDownloadedBytes());
 
       Common::Hash peerSourceID = download->getPeerSource()->getID();
       protoDownload->add_peer_id()->set_hash(peerSourceID.getData(), Common::Hash::HASH_SIZE); // The first hash must be the source.

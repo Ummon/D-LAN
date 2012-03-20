@@ -53,11 +53,11 @@ quint64 DownloadsFlatModel::getEta() const
    return this->eta;
 }
 
-quint64 DownloadsFlatModel::getDownloadID(const QModelIndex& index) const
+QList<quint64> DownloadsFlatModel::getDownloadIDs(const QModelIndex& index) const
 {
    if (index.row() >= this->downloads.size())
-      return 0;
-   return this->downloads[index.row()].id();
+      return QList<quint64>();
+   return QList<quint64>() << this->downloads[index.row()].id();
 }
 
 bool DownloadsFlatModel::isDownloadPaused(const QModelIndex& index) const
@@ -124,7 +124,7 @@ QVariant DownloadsFlatModel::data(const QModelIndex& index, int role) const
          {
          case 0: return Common::ProtoHelper::getStr(currentDownload.local_entry(), &Protos::Common::Entry::name);
          case 1: return Common::Global::formatByteSize(currentDownload.local_entry().size());
-         case 2: return QVariant::fromValue(Progress(currentDownload.progress(), currentDownload.status()));
+         case 2: return QVariant::fromValue(Progress(currentDownload.local_entry().size() == 0 ? 0 : 10000 * currentDownload.downloaded_bytes() / currentDownload.local_entry().size(), currentDownload.status()));
          case 3:
             {
                QString peersStr;
@@ -203,8 +203,6 @@ Qt::ItemFlags DownloadsFlatModel::flags(const QModelIndex& index) const
        return Qt::ItemIsDragEnabled | defaultFlags;
    else
        return Qt::ItemIsDropEnabled | defaultFlags;
-
-   return defaultFlags;
 }
 
 bool DownloadsFlatModel::dropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex & parent)
@@ -295,9 +293,8 @@ void DownloadsFlatModel::onNewState(const Protos::GUI::State& state)
 
    for (int i = 0; i < state.download_size(); i++)
    {
-      const quint64 fileSize = state.download(i).local_entry().size();
-      this->totalBytesInQueue += fileSize;
-      this->totalBytesDownloadedInQueue += fileSize * state.download(i).progress() / 10000;
+      this->totalBytesInQueue += state.download(i).local_entry().size();
+      this->totalBytesDownloadedInQueue += state.download(i).downloaded_bytes();
    }
 
    QList<int> activeDownloadIndices = this->getNonFilteredDownloadIndices(state);

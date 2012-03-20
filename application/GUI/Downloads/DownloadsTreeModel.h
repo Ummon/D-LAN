@@ -21,6 +21,8 @@
 
 #include <QDragEnterEvent>
 
+#include <Common/Tree.h>
+
 #include <Downloads/DownloadsModel.h>
 
 namespace GUI
@@ -33,7 +35,7 @@ namespace GUI
       DownloadsTreeModel(QSharedPointer<RCC::ICoreConnection> coreConnection, const PeerListModel& peerListModel, const DirListModel& sharedDirsModel, const IFilter<DownloadFilterStatus>& filter);
       ~DownloadsTreeModel();
 
-      quint64 getDownloadID(const QModelIndex& index) const;
+      QList<quint64> getDownloadIDs(const QModelIndex& index) const;
 
       bool isDownloadPaused(const QModelIndex& index) const;
       bool isFileLocationKnown(const QModelIndex& index) const;
@@ -45,7 +47,7 @@ namespace GUI
       int columnCount(const QModelIndex& parent = QModelIndex()) const;
       QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const;
       QModelIndex index(int row, int column, const QModelIndex& parent = QModelIndex()) const;
-      QModelIndex parent(const QModelIndex& child) const;
+      QModelIndex parent(const QModelIndex& index) const;
       Qt::DropActions supportedDropActions() const;
       Qt::ItemFlags flags(const QModelIndex& index) const;
 
@@ -56,26 +58,33 @@ namespace GUI
       void onNewState(const Protos::GUI::State& state);
 
    private:
-      class Node
+      class Tree : public Common::Tree<Protos::GUI::State::Download>
       {
       public:
-         Node();
-         Node(const Protos::GUI::State::Download& download, Node* parent);
-         ~Node();
-         Node* getChild(int row) const;
+         Tree();
+         Tree(const Protos::GUI::State::Download& download, Tree* parent);
+         ~Tree();
+
+         void setToDelete(bool toDelete = true);
+         bool isToDelete() const;
+
+      protected:
+         virtual Common::Tree<Protos::GUI::State::Download>* newTree(const Protos::GUI::State::Download& download);
 
       private:
          bool toDelete;
-         Protos::GUI::State::Download download;
-         Node* parent;
-         QList<Node*> children;
       };
 
-      Node* root;
+      Tree* insert(Tree* tree, const QString& dir);
+      Tree* insert(Tree* tree, const Protos::GUI::State::Download& download);
+
+      Tree* root;
    };
 
-   bool operator>(const Protos::GUI::Download& d1, const Protos::GUI::Download& d2);
-   bool operator<(const Protos::GUI::Download& d1, const Protos::GUI::Download& d2);
+   bool operator>(const Protos::GUI::State::Download& d1, const Protos::GUI::State::Download& d2);
+   bool operator<(const Protos::GUI::State::Download& d1, const Protos::GUI::State::Download& d2);
+   /*bool operator==(const Protos::GUI::State::Download& d1, const Protos::GUI::State::Download& d2);
+   bool operator!=(const Protos::GUI::State::Download& d1, const Protos::GUI::State::Download& d2);*/
 }
 
 #endif

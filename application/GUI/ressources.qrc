@@ -28,5 +28,7 @@
         <file>ressources/information.png</file>
         <file>ressources/pause.png</file>
         <file>ressources/lightning.png</file>
+        <file>ressources/tree_view.png</file>
+        <file>ressources/list_view.png</file>
     </qresource>
 </RCC>

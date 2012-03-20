@@ -70,7 +70,7 @@ bool Download::isStatusErroneous() const
    return this->status >= 0x20;
 }
 
-int Download::getProgress() const
+quint64 Download::getDownloadedBytes() const
 {
    return 0;
 }

@@ -51,7 +51,7 @@ message State {
       required Common.Entry local_entry = 2;
       
       required Status status = 3;
-      required uint32 progress = 4; // 0 to 10000.
+      required uint64 downloaded_bytes = 4;
       
       repeated Common.Hash peer_id = 5; // The first one always corresponds to the peer source.
       optional string peer_source_nick = 6;

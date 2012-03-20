@@ -22,12 +22,13 @@ using namespace GUI;
 
 #include <limits>
 
-#include <Common/Global.h>
-
 #include <QMenu>
 #include <QMessageBox>
 #include <QDesktopServices>
 #include <QUrl>
+
+#include <Common/Global.h>
+#include <Common/Settings.h>
 
 void DownloadsDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
@@ -93,11 +94,16 @@ QSize DownloadsDelegate::sizeHint(const QStyleOptionViewItem& option, const QMod
 /////
 
 WidgetDownloads::WidgetDownloads(QSharedPointer<RCC::ICoreConnection> coreConnection, const PeerListModel& peerListModel, const DirListModel& sharedDirsModel, QWidget *parent) :
-   QWidget(parent), ui(new Ui::WidgetDownloads), coreConnection(coreConnection), downloadsModel(coreConnection, peerListModel, sharedDirsModel, checkBoxModel)
+   QWidget(parent),
+   ui(new Ui::WidgetDownloads),
+   coreConnection(coreConnection),
+   downloadsFlatModel(coreConnection, peerListModel, sharedDirsModel, checkBoxModel),
+   downloadsTreeModel(coreConnection, peerListModel, sharedDirsModel, checkBoxModel)
 {
    this->ui->setupUi(this);
 
-   this->ui->tblDownloads->setModel(&this->downloadsModel);
+   this->switchView(static_cast<Protos::GUI::Settings::DownloadView>(SETTINGS.get<quint32>("downloadView")));
+
    this->ui->tblDownloads->setItemDelegate(&this->downloadsDelegate);
 
    this->ui->tblDownloads->setDragEnabled(true);
@@ -112,7 +118,6 @@ WidgetDownloads::WidgetDownloads(QSharedPointer<RCC::ICoreConnection> coreConnec
    this->ui->tblDownloads->header()->setResizeMode(2, QHeaderView::ResizeToContents);
    this->ui->tblDownloads->header()->setResizeMode(3, QHeaderView::ResizeToContents);
 
-   this->ui->tblDownloads->setIndentation(0);
    this->ui->tblDownloads->setUniformRowHeights(true);
    //this->ui->tblChat->verticalHeader()->setResizeMode(QHeaderView::ResizeToContents);
    //this->ui->tblDownloads->verticalHeader()->setResizeMode(QHeaderView::Fixed);
@@ -128,11 +133,12 @@ WidgetDownloads::WidgetDownloads(QSharedPointer<RCC::ICoreConnection> coreConnec
    connect(this->ui->tblDownloads, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(displayContextMenuDownloads(const QPoint&)));
    connect(this->ui->tblDownloads, SIGNAL(doubleClicked(const QModelIndex&)), this, SLOT(downloadDoubleClicked(const QModelIndex&)));
 
-   connect(&this->downloadsModel, SIGNAL(globalProgressChanged()), this, SLOT(updateGlobalProgressBar()));
+   connect(&this->downloadsFlatModel, SIGNAL(globalProgressChanged()), this, SLOT(updateGlobalProgressBar()));
 
    connect(this->ui->butRemoveComplete, SIGNAL(clicked()), this, SLOT(removeCompletedFiles()));
    connect(this->ui->butRemoveSelected, SIGNAL(clicked()), this, SLOT(removeSelectedEntries()));
    connect(this->ui->butPause, SIGNAL(clicked()), this, SLOT(pauseSelectedEntries()));
+   connect(this->ui->butSwitchView, SIGNAL(clicked()), this, SLOT(switchView()));
 
    this->filterStatusList = new CheckBoxList(this);
    this->filterStatusList->setModel(&this->checkBoxModel);
@@ -174,7 +180,7 @@ void WidgetDownloads::displayContextMenuDownloads(const QPoint& point)
    for (QListIterator<QModelIndex> i(selectedRows); i.hasNext();)
    {
       const QModelIndex& index = i.next();
-      if (this->downloadsModel.isFileLocationKnown(index))
+      if (this->currentDownloadsModel->isFileLocationKnown(index))
       {
          showOpenLocation = true;
          break;
@@ -195,8 +201,8 @@ void WidgetDownloads::displayContextMenuDownloads(const QPoint& point)
 
 void WidgetDownloads::downloadDoubleClicked(const QModelIndex& index)
 {
-   if (this->downloadsModel.isFileLocationKnown(index))
-      QDesktopServices::openUrl(QUrl("file:///" + this->downloadsModel.getPath(index)));
+   if (this->currentDownloadsModel->isFileLocationKnown(index))
+      QDesktopServices::openUrl(QUrl("file:///" + this->currentDownloadsModel->getPath(index)));
 }
 
 void WidgetDownloads::openLocationSelectedEntries()
@@ -207,12 +213,20 @@ void WidgetDownloads::openLocationSelectedEntries()
    for (QListIterator<QModelIndex> i(selectedRows); i.hasNext();)
    {
       const QModelIndex& index = i.next();
-      if (this->downloadsModel.isFileLocationKnown(index))
-         locations.insert("file:///" + this->downloadsModel.getPath(index, false));
+      if (this->currentDownloadsModel->isFileLocationKnown(index))
+         locations.insert("file:///" + this->currentDownloadsModel->getPath(index, false));
    }
 
    for (QSetIterator<QString> i(locations); i.hasNext();)
       QDesktopServices::openUrl(QUrl(i.next(), QUrl::TolerantMode));
+}
+
+void WidgetDownloads::switchView()
+{
+   if (this->currentDownloadsModel == &this->downloadsFlatModel)
+      this->switchView(Protos::GUI::Settings::TREE_VIEW);
+   else
+      this->switchView(Protos::GUI::Settings::LIST_VIEW);
 }
 
 void WidgetDownloads::removeCompletedFiles()
@@ -229,10 +243,8 @@ void WidgetDownloads::removeSelectedEntries()
    for (QListIterator<QModelIndex> i(selectedRows); i.hasNext();)
    {
       const QModelIndex& index = i.next();
-      quint64 ID = this->downloadsModel.getDownloadID(index);
-      if (ID != 0)
-         downloadIDs << ID;
-      if (!this->downloadsModel.isFileComplete(index))
+      downloadIDs.append(this->currentDownloadsModel->getDownloadIDs(index));
+      if (!this->currentDownloadsModel->isFileComplete(index))
          allComplete = false;
    }
 
@@ -270,9 +282,9 @@ void WidgetDownloads::filterChanged()
 
 void WidgetDownloads::updateGlobalProgressBar()
 {
-   const quint64 bytesInQueue = this->downloadsModel.getTotalBytesInQueue();
-   const quint64 bytesDownloaded = this->downloadsModel.getTotalBytesDownloadedInQueue();
-   const quint64 eta = this->downloadsModel.getEta();
+   const quint64 bytesInQueue = this->downloadsFlatModel.getTotalBytesInQueue();
+   const quint64 bytesDownloaded = this->downloadsFlatModel.getTotalBytesDownloadedInQueue();
+   const quint64 eta = this->downloadsFlatModel.getEta();
 
    this->ui->prgGlobalProgress->setValue(bytesInQueue == 0 ? 0 : bytesDownloaded * 10000LL / bytesInQueue);
 
@@ -284,7 +296,24 @@ void WidgetDownloads::updateGlobalProgressBar()
             .arg(Common::Global::formatByteSize(bytesDownloaded))
             .arg(Common::Global::formatByteSize(bytesInQueue))
             .arg(eta == 0 || eta > 604800 ? "" : " (" + Common::Global::formatTime(eta) + ")")
-   );
+            );
+}
+
+void WidgetDownloads::switchView(Protos::GUI::Settings::DownloadView view)
+{
+   if (view == Protos::GUI::Settings::TREE_VIEW && this->currentDownloadsModel != &this->downloadsTreeModel)
+   {
+      this->ui->butSwitchView->setIcon(QIcon(":/icons/ressources/tree_view.png"));
+      this->ui->tblDownloads->setIndentation(20);
+      this->currentDownloadsModel = &this->downloadsTreeModel;
+   }
+   else if (view == Protos::GUI::Settings::LIST_VIEW && this->currentDownloadsModel != &this->downloadsFlatModel)
+   {
+      this->ui->butSwitchView->setIcon(QIcon(":/icons/ressources/list_view.png"));
+      this->ui->tblDownloads->setIndentation(0);
+      this->currentDownloadsModel = &this->downloadsFlatModel;
+   }
+   this->ui->tblDownloads->setModel(this->currentDownloadsModel);
 }
 
 void WidgetDownloads::updateCheckBoxElements()
@@ -305,13 +334,13 @@ QPair<QList<quint64>, bool> WidgetDownloads::getDownloadIDsToPause() const
    for (QListIterator<QModelIndex> i(selectedRows); i.hasNext();)
    {
       const QModelIndex& index = i.next();
-      quint64 ID = this->downloadsModel.getDownloadID(index);
-      if (ID != 0 && !this->downloadsModel.isFileComplete(index))
-      {
+      foreach (quint64 ID, this->currentDownloadsModel->getDownloadIDs(index))
+         if (!this->currentDownloadsModel->isFileComplete(index))
+         {
             downloadIDs << ID;
-         if (!this->downloadsModel.isDownloadPaused(index))
-            allPaused = false;
-      }
+            if (!this->currentDownloadsModel->isDownloadPaused(index))
+               allPaused = false;
+         }
    }
 
    return qMakePair(downloadIDs, !allPaused);
