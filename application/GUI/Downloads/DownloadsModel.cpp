@@ -19,6 +19,13 @@
 #include <Downloads/DownloadsModel.h>
 using namespace GUI;
 
+#include <QPixmap>
+
+#include <Common/ProtoHelper.h>
+#include <Common/Global.h>
+
+#include <IconProvider.h>
+
 DownloadsModel::DownloadsModel(QSharedPointer<RCC::ICoreConnection> coreConnection, const PeerListModel& peerListModel, const DirListModel& sharedDirsModel, const IFilter<DownloadFilterStatus>& filter) :
    coreConnection(coreConnection),
    peerListModel(peerListModel),
@@ -27,6 +34,89 @@ DownloadsModel::DownloadsModel(QSharedPointer<RCC::ICoreConnection> coreConnecti
 {
    qRegisterMetaTypeStreamOperators<Progress>("Progress"); // Don't know where to put this call..
    connect(this->coreConnection.data(), SIGNAL(newState(Protos::GUI::State)), this, SLOT(onNewState(Protos::GUI::State)));
+}
+
+QVariant DownloadsModel::data(const Protos::GUI::State::Download& download, int role, int column) const
+{
+   switch (role)
+   {
+   case Qt::DisplayRole:
+      {
+         switch (column)
+         {
+         case 0: return Common::ProtoHelper::getStr(download.local_entry(), &Protos::Common::Entry::name);
+         case 1: return Common::Global::formatByteSize(download.local_entry().size());
+         case 2:
+            return QVariant::fromValue(Progress(
+               download.local_entry().size() == 0 ? 0 : 10000 * download.downloaded_bytes() / download.local_entry().size(),
+               download.status(),
+               download.local_entry().type()
+            ));
+         case 3:
+            {
+               QString peersStr;
+
+               int i = 0;
+               if (download.has_peer_source_nick())
+               {
+                  i = 1;
+                  peersStr.append('[').append(Common::ProtoHelper::getStr(download, &Protos::GUI::State::Download::peer_source_nick)).append(']');
+               }
+               for (; i < download.peer_id_size(); i++)
+               {
+                  const QString nick = this->peerListModel.getNick(download.peer_id(i).hash());
+                  if (nick.isNull())
+                     continue;
+                  if (i != 0)
+                     peersStr.append(" ");
+                  peersStr.append('[').append(nick).append(']');
+               }
+               return peersStr;
+            }
+         default: return QVariant();
+         }
+      }
+
+   case Qt::DecorationRole:
+      {
+         if (column == 0)
+         {
+            if (download.status() >= Protos::GUI::State_Download_Status_UNKNOWN_PEER_SOURCE)
+               return QPixmap(":/icons/ressources/error.png");
+            else
+               return IconProvider::getIcon(download.local_entry());
+         }
+         return QVariant();
+      }
+
+   case Qt::ToolTipRole:
+      switch (download.status())
+      {
+      case Protos::GUI::State::Download::UNKNOWN_PEER_SOURCE:
+         return "Unknown source peer";
+      case Protos::GUI::State::Download::ENTRY_NOT_FOUND:
+         return "The source peer doesn't have the entry";
+      case Protos::GUI::State::Download::NO_SOURCE:
+         return "There is no source to download from";
+      case Protos::GUI::State::Download::NO_SHARED_DIRECTORY_TO_WRITE:
+         return "No incoming folder";
+      case Protos::GUI::State::Download::NO_ENOUGH_FREE_SPACE:
+         return "Not enough free space left";
+      case Protos::GUI::State::Download::UNABLE_TO_CREATE_THE_FILE:
+         return "Unable to create the file";
+      case Protos::GUI::State::Download::UNABLE_TO_RETRIEVE_THE_HASHES:
+         return "Unable to retrieve the hashes";
+      case Protos::GUI::State::Download::TRANSFERT_ERROR:
+         return "Transfert error";
+      default:
+         return QVariant();
+      }
+
+   case Qt::TextAlignmentRole:
+      return static_cast<int>(column == 1 ? Qt::AlignRight : Qt::AlignLeft) | Qt::AlignVCenter;
+
+   default: return QVariant();
+   }
 }
 
 QList<int> DownloadsModel::getNonFilteredDownloadIndices(const Protos::GUI::State& state) const

@@ -56,6 +56,7 @@ namespace GUI
       virtual void onNewState(const Protos::GUI::State& state) = 0;
 
    protected:
+      virtual QVariant data(const Protos::GUI::State::Download& download, int role, int column) const;
       QList<int> getNonFilteredDownloadIndices(const Protos::GUI::State& state) const;
 
       QSharedPointer<RCC::ICoreConnection> coreConnection;
@@ -66,11 +67,12 @@ namespace GUI
 
    struct Progress
    {
-      Progress() : progress(0), status(Protos::GUI::State::Download::QUEUED) {}
-      Progress(quint32 progress, Protos::GUI::State::Download::Status status) : progress(progress), status(status) {}
+      Progress() : progress(0), status(Protos::GUI::State::Download::QUEUED), type(Protos::Common::Entry::FILE) {}
+      Progress(quint32 progress, Protos::GUI::State::Download::Status status, Protos::Common::Entry::Type type) : progress(progress), status(status), type(type) {}
 
       quint32 progress; // 0 to 10'000.
       Protos::GUI::State::Download::Status status;
+      Protos::Common::Entry::Type type;
    };
 
    QDataStream& operator<<(QDataStream& out, const Progress& progress);

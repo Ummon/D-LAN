@@ -21,6 +21,8 @@
 
 #include <QAbstractTableModel>
 #include <QHostAddress>
+#include <QList>
+#include <QHash>
 
 #include <Protos/gui_protocol.pb.h>
 
@@ -34,7 +36,7 @@ namespace GUI
       Q_OBJECT
    public:
       PeerListModel(QSharedPointer<RCC::ICoreConnection> coreConnection);
-      QString getNick(const Common::Hash& peerID) const;
+      QString getNick(const Common::Hash& peerID, const QString& defaultNick = QString()) const;
       bool isOurself(int rowNum) const;
       Common::Hash getPeerID(int rowNum) const;
       QHostAddress getPeerIP(int rowNum) const;
@@ -61,20 +63,21 @@ namespace GUI
 
       struct Peer
       {
-         Peer(const Common::Hash& peerID, const QString& nick, quint64 sharingAmount) :
-            peerID(peerID), nick(nick), sharingAmount(sharingAmount) {}
+         Peer(const Common::Hash& peerID, const QString& nick, quint64 sharingAmount, const QHostAddress& ip) :
+            peerID(peerID), nick(nick), sharingAmount(sharingAmount), ip(ip) {}
 
          bool operator==(const Peer& p) const { return this->peerID == p.peerID; }
          bool operator!=(const Peer& p) const { return this->peerID != p.peerID; }
-         bool operator<(const Peer& p) const { return this->sharingAmount < p.sharingAmount; }
-         bool operator>(const Peer& p) const { return this->sharingAmount > p.sharingAmount; }
+         static bool sortComp(const Peer* p1, const Peer* p2) { return p1->sharingAmount > p2->sharingAmount; }
 
          Common::Hash peerID;
          QString nick;
          quint64 sharingAmount;
          QHostAddress ip;
       };
-      QList<Peer> peers;
+
+      QList<Peer*> peers;
+      QHash<Common::Hash, Peer*> indexedPeers; // Peers indexed by their ID.
    };
 }
 

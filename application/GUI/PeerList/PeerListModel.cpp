@@ -31,39 +31,37 @@ PeerListModel::PeerListModel(QSharedPointer<RCC::ICoreConnection> coreConnection
 }
 
 /**
-  * Return "<unknown>" string if not found.
+  * Return 'defaultNick' if the peer isn't found.
   */
-QString PeerListModel::getNick(const Common::Hash& peerID) const
+QString PeerListModel::getNick(const Common::Hash& peerID, const QString& defaultNick) const
 {
-   for (QListIterator<Peer> i(this->peers); i.hasNext();)
-   {
-      Peer peer = i.next();
-      if (peer.peerID == peerID)
-         return peer.nick;
-   }
+   bool test = defaultNick.isNull();
 
-   return "<unknown>";
+   Peer* peer = this->indexedPeers.value(peerID, 0);
+   if (!peer)
+      return defaultNick;
+   return peer->nick;
 }
 
 bool PeerListModel::isOurself(int rowNum) const
 {
    if (rowNum >= this->peers.size())
       return false;
-   return this->peers[rowNum].peerID == this->coreConnection->getRemoteID();
+   return this->peers[rowNum]->peerID == this->coreConnection->getRemoteID();
 }
 
 Common::Hash PeerListModel::getPeerID(int rowNum) const
 {
    if (rowNum >= this->peers.size())
       return Common::Hash();
-   return this->peers[rowNum].peerID;
+   return this->peers[rowNum]->peerID;
 }
 
 QHostAddress PeerListModel::getPeerIP(int rowNum) const
 {
    if (rowNum >= this->peers.size())
       return QHostAddress();
-   return this->peers[rowNum].ip;
+   return this->peers[rowNum]->ip;
 }
 
 void PeerListModel::clear()
@@ -92,8 +90,8 @@ QVariant PeerListModel::data(const QModelIndex& index, int role) const
    case Qt::DisplayRole:
       switch (index.column())
       {
-      case 0: return this->peers[index.row()].nick;
-      case 1: return Common::Global::formatByteSize(this->peers[index.row()].sharingAmount);
+      case 0: return this->peers[index.row()]->nick;
+      case 1: return Common::Global::formatByteSize(this->peers[index.row()]->sharingAmount);
       default: return QVariant();
       }
 
@@ -107,64 +105,64 @@ QVariant PeerListModel::data(const QModelIndex& index, int role) const
 void PeerListModel::newState(const Protos::GUI::State& state)
 {
    // TODO : not very efficient!?
-   google::protobuf::RepeatedPtrField<Protos::GUI::State_Peer> peers;
+   google::protobuf::RepeatedPtrField<Protos::GUI::State::Peer> peers;
    peers.MergeFrom(state.peer());
    peers.Add()->CopyFrom(state.myself());
    this->setPeers(peers);
 }
 
-void PeerListModel::setPeers(const google::protobuf::RepeatedPtrField<Protos::GUI::State_Peer>& peers)
+void PeerListModel::setPeers(const google::protobuf::RepeatedPtrField<Protos::GUI::State::Peer>& peers)
 {
-   bool stateChanged = false;
+   bool sortNeeded = false;
 
-   QList<Peer> peersToRemove = this->peers;
-   QList<Peer> peersToAdd;
+   QList<Peer*> peersToRemove = this->peers;
+   QList<Peer*> peersToAdd;
 
    for (int i = 0; i < peers.size(); i++)
    {
-      Peer peer =
-         Peer(
-            peers.Get(i).peer_id().hash(),
-            ProtoHelper::getStr(peers.Get(i), &Protos::GUI::State_Peer::nick),
-            peers.Get(i).sharing_amount()
-         );
+      const Common::Hash peerID(peers.Get(i).peer_id().hash());
+      const QString nick(ProtoHelper::getStr(peers.Get(i), &Protos::GUI::State_Peer::nick));
+      const quint64 sharingAmount(peers.Get(i).sharing_amount());
+      const QHostAddress ip =
+         peers.Get(i).has_ip() ?
+            Common::ProtoHelper::getIP(peers.Get(i).ip()) :
+            QHostAddress();
 
-      if (peers.Get(i).has_ip())
-         peer.ip = Common::ProtoHelper::getIP(peers.Get(i).ip());
-
-      int j = this->peers.indexOf(peer);
+      int j = this->peers.indexOf(this->indexedPeers[peerID]);
       if (j != -1)
       {
-         peersToRemove.removeOne(peer);
-         if (this->peers[j].sharingAmount != peer.sharingAmount)
+         peersToRemove.removeOne(this->indexedPeers[peerID]);
+         if (this->peers[j]->nick != nick)
          {
-            this->peers[j].sharingAmount = peer.sharingAmount;
-            stateChanged = true;
+            this->peers[j]->nick = nick;
+            emit dataChanged(this->createIndex(j, 0), this->createIndex(j, 0));
          }
-         if (this->peers[j].nick != peer.nick)
+         if (this->peers[j]->sharingAmount != sharingAmount)
          {
-            this->peers[j].nick = peer.nick;
-            stateChanged = true;
+            this->peers[j]->sharingAmount = sharingAmount;
+            sortNeeded = true;
          }
+         this->peers[j]->ip = ip;
       }
       else
       {
-         peersToAdd << peer;
+         peersToAdd << new Peer(peerID, nick, sharingAmount, ip);
       }
    }
 
-   if (!peersToRemove.isEmpty() || !peersToAdd.isEmpty())
-      stateChanged = true;
+   if(!peersToAdd.isEmpty())
+      sortNeeded = true;
 
    QList<Common::Hash> peerIDsRemoved;
-   for (QListIterator<Peer> i(peersToRemove); i.hasNext();)
+   for (QListIterator<Peer*> i(peersToRemove); i.hasNext();)
    {
-      Peer peer = i.next();
-      peerIDsRemoved << peer.peerID;
+      Peer* const peer = i.next();
+      peerIDsRemoved << peer->peerID;
       int j = this->peers.indexOf(peer);
       if (j != -1)
       {
          this->beginRemoveRows(QModelIndex(), j, j);
+         this->indexedPeers.remove(peer->peerID);
          this->peers.removeAt(j);
          this->endRemoveRows();
       }
@@ -176,19 +174,23 @@ void PeerListModel::setPeers(const google::protobuf::RepeatedPtrField<Protos::GU
    if (!peersToAdd.isEmpty())
    {
       this->beginInsertRows(QModelIndex(), this->peers.size(), this->peers.size() + peersToAdd.size() - 1);
+      for (QListIterator<Peer*> i(peersToAdd); i.hasNext();)
+      {
+         Peer* const peer = i.next();
+         this->indexedPeers.insert(peer->peerID, peer);
+      }
       this->peers.append(peersToAdd);
       this->endInsertRows();
    }
 
-
-   if (stateChanged)
+   if (sortNeeded)
       this->sort();
 }
 
 void PeerListModel::sort()
 {
    emit layoutAboutToBeChanged();
-   qSort(this->peers.begin(), this->peers.end(), qGreater<Peer>());
+   qSort(this->peers.begin(), this->peers.end(), Peer::sortComp);
    emit layoutChanged();
 }
 

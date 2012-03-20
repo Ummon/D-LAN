@@ -78,6 +78,11 @@ namespace GUI
       Tree* insert(Tree* tree, const QString& dir);
       Tree* insert(Tree* tree, const Protos::GUI::State::Download& download);
 
+      void updateDirectoriesEntryDeleted(Tree* file);
+      void updateDirectoriesNewFile(Tree* file);
+      void updateDirectoriesFileModified(Tree* file, const Protos::GUI::State::Download& oldDownload);
+      void updateDirectories(Tree* file, quint64 fileSizeDelta, quint64 fileDownloadedBytesDelta, const google::protobuf::RepeatedPtrField<Protos::Common::Hash>& peers = google::protobuf::RepeatedPtrField<Protos::Common::Hash>());
+
       Tree* root;
    };
 

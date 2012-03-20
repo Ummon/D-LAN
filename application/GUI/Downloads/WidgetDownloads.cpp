@@ -47,26 +47,36 @@ void DownloadsDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opt
       progressBarOption.textAlignment = Qt::AlignHCenter;
       progressBarOption.progress = progress.progress;
 
-      switch (progress.status)
+      if (progress.type == Protos::Common::Entry::FILE)
       {
-      case Protos::GUI::State_Download_Status_QUEUED:
-         progressBarOption.text = "Queued";
-         break;
-      case Protos::GUI::State_Download_Status_GETTING_THE_HASHES:
-         progressBarOption.text = "Getting the hashes..";
-         break;
-      case Protos::GUI::State_Download_Status_DOWNLOADING:
-         progressBarOption.text = QString("%1%").arg(static_cast<double>(progress.progress) / 100);
-         break;
-      case Protos::GUI::State_Download_Status_COMPLETE:
-         progressBarOption.text = "Complete";
-         break;
-      case Protos::GUI::State_Download_Status_PAUSED:
-         progressBarOption.text = "Paused";
-         break;
-      default:
-         progressBarOption.text = "Waiting..";
-         break;
+         switch (progress.status)
+         {
+         case Protos::GUI::State_Download_Status_QUEUED:
+            progressBarOption.text = "Queued";
+            break;
+         case Protos::GUI::State_Download_Status_GETTING_THE_HASHES:
+            progressBarOption.text = "Getting the hashes..";
+            break;
+         case Protos::GUI::State_Download_Status_DOWNLOADING:
+            progressBarOption.text = QString("%1%").arg(static_cast<double>(progress.progress) / 100);
+            break;
+         case Protos::GUI::State_Download_Status_COMPLETE:
+            progressBarOption.text = "Complete";
+            break;
+         case Protos::GUI::State_Download_Status_PAUSED:
+            progressBarOption.text = "Paused";
+            break;
+         default:
+            progressBarOption.text = "Waiting..";
+            break;
+         }
+      }
+      else
+      {
+         if (progress.status == Protos::GUI::State::Download::COMPLETE)
+            progressBarOption.text = "Complete";
+         else
+            progressBarOption.text = QString("%1%").arg(static_cast<double>(progress.progress) / 100);
       }
 
       progressBarOption.textVisible = true;
@@ -102,7 +112,7 @@ WidgetDownloads::WidgetDownloads(QSharedPointer<RCC::ICoreConnection> coreConnec
 {
    this->ui->setupUi(this);
 
-   this->switchView(static_cast<Protos::GUI::Settings::DownloadView>(SETTINGS.get<quint32>("downloadView")));
+   this->switchView(static_cast<Protos::GUI::Settings::DownloadView>(SETTINGS.get<quint32>("download_view")));
 
    this->ui->tblDownloads->setItemDelegate(&this->downloadsDelegate);
 
@@ -119,14 +129,9 @@ WidgetDownloads::WidgetDownloads(QSharedPointer<RCC::ICoreConnection> coreConnec
    this->ui->tblDownloads->header()->setResizeMode(3, QHeaderView::ResizeToContents);
 
    this->ui->tblDownloads->setUniformRowHeights(true);
-   //this->ui->tblChat->verticalHeader()->setResizeMode(QHeaderView::ResizeToContents);
-   //this->ui->tblDownloads->verticalHeader()->setResizeMode(QHeaderView::Fixed);
-   //this->ui->tblDownloads->verticalHeader()->setDefaultSectionSize(QApplication::fontMetrics().height() + 2);
-   //this->ui->tblDownloads->verticalHeader()->setVisible(false);
 
    this->ui->tblDownloads->setSelectionBehavior(QAbstractItemView::SelectRows);
    this->ui->tblDownloads->setSelectionMode(QAbstractItemView::ExtendedSelection);
-   //this->ui->tblDownloads->setShowGrid(false);
    this->ui->tblDownloads->setAlternatingRowColors(true);
 
    this->ui->tblDownloads->setContextMenuPolicy(Qt::CustomContextMenu);
@@ -303,17 +308,23 @@ void WidgetDownloads::switchView(Protos::GUI::Settings::DownloadView view)
 {
    if (view == Protos::GUI::Settings::TREE_VIEW && this->currentDownloadsModel != &this->downloadsTreeModel)
    {
-      this->ui->butSwitchView->setIcon(QIcon(":/icons/ressources/tree_view.png"));
+      this->ui->butSwitchView->setIcon(QIcon(":/icons/ressources/list_view.png"));
+      this->ui->butSwitchView->setToolTip(tr("Switch to list view"));
       this->ui->tblDownloads->setIndentation(20);
       this->currentDownloadsModel = &this->downloadsTreeModel;
    }
    else if (view == Protos::GUI::Settings::LIST_VIEW && this->currentDownloadsModel != &this->downloadsFlatModel)
    {
-      this->ui->butSwitchView->setIcon(QIcon(":/icons/ressources/list_view.png"));
+      this->ui->butSwitchView->setIcon(QIcon(":/icons/ressources/tree_view.png"));
+      this->ui->butSwitchView->setToolTip(tr("Switch to tree view"));
       this->ui->tblDownloads->setIndentation(0);
       this->currentDownloadsModel = &this->downloadsFlatModel;
    }
+
    this->ui->tblDownloads->setModel(this->currentDownloadsModel);
+
+   SETTINGS.set("download_view", static_cast<quint32>(view));
+   SETTINGS.save();
 }
 
 void WidgetDownloads::updateCheckBoxElements()

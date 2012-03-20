@@ -256,7 +256,7 @@ void SearchModel::result(const Protos::Common::FindResult& findResult)
                {
                   this->beginInsertRows(this->createIndex(0, 0, similarTree), i, i);
                   Common::Hash peerID = findResult.peer_id().hash();
-                  SearchTree* newTree = similarTree->insertChild(i, *entry, peerID, this->peerListModel.getNick(peerID));
+                  SearchTree* newTree = similarTree->insertChild(i, *entry, peerID, this->peerListModel.getNick(peerID, tr("<unknown>")));
                   this->endInsertRows();
 
                   if (static_cast<int>(entry->level()) < similarTree->getLevel())
@@ -321,7 +321,7 @@ int SearchModel::insertTree(const Protos::Common::FindResult_EntryLevel& entry, 
       currentIndex++;
 
    this->beginInsertRows(QModelIndex(), currentIndex, currentIndex);
-   SearchTree* newTree = root->insertChild(currentIndex++, entry, peerID, this->peerListModel.getNick(peerID));
+   SearchTree* newTree = root->insertChild(currentIndex++, entry, peerID, this->peerListModel.getNick(peerID, tr("<unknown>")));
    this->endInsertRows();
 
    if (newTree->getItem().type() == Protos::Common::Entry_Type_FILE && newTree->getItem().chunk_size() > 0)

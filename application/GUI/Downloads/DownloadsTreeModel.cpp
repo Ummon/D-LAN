@@ -22,8 +22,6 @@ using namespace GUI;
 #include <Common/ProtoHelper.h>
 #include <Common/Global.h>
 
-#include <IconProvider.h>
-
 DownloadsTreeModel::DownloadsTreeModel(QSharedPointer<RCC::ICoreConnection> coreConnection, const PeerListModel& peerListModel, const DirListModel& sharedDirsModel, const IFilter<DownloadFilterStatus>& filter) :
    DownloadsModel(coreConnection, peerListModel, sharedDirsModel, filter), root(new Tree())
 {
@@ -144,36 +142,10 @@ QVariant DownloadsTreeModel::data(const QModelIndex& index, int role) const
    if (!index.isValid())
       return QVariant();
 
-   switch (role)
-   {
-   case Qt::DisplayRole:
-      {
-         Tree* tree = static_cast<Tree*>(index.internalPointer());
-         const Protos::GUI::State::Download& currentDownload = tree->getItem();
-         switch (index.column())
-         {
-         case 0: return Common::ProtoHelper::getStr(currentDownload.local_entry(), &Protos::Common::Entry::name);
-         case 1: return Common::Global::formatByteSize(currentDownload.local_entry().size());
-         case 2: return QVariant::fromValue(Progress(currentDownload.local_entry().size() == 0 ? 0 : 10000 * currentDownload.downloaded_bytes() / currentDownload.local_entry().size(), currentDownload.status()));
-         default: return QVariant();
-         }
-      }
-
-   case Qt::DecorationRole:
-      {
-         if (index.column() == 0)
-         {
-            Tree* tree = static_cast<Tree*>(index.internalPointer());
-            return IconProvider::getIcon(tree->getItem().local_entry());
-         }
-         return QVariant();
-      }
-
-   case Qt::TextAlignmentRole:
-      return static_cast<int>(index.column() == 1 ? Qt::AlignRight : Qt::AlignLeft) | Qt::AlignVCenter;
-
-   default: return QVariant();
-   }
+   Tree* tree = static_cast<Tree*>(index.internalPointer());
+   if (tree)
+      return DownloadsModel::data(tree->getItem(), role, index.column());
+   return QVariant();
 }
 
 QModelIndex DownloadsTreeModel::index(int row, int column, const QModelIndex& parent) const
@@ -235,10 +207,8 @@ void DownloadsTreeModel::onNewState(const Protos::GUI::State& state)
 {
    QList<int> activeDownloadIndices = this->getNonFilteredDownloadIndices(state);
 
-   Common::TreeBreadthIterator<Protos::GUI::State::Download> i(this->root);
-   Tree* currentTree;
-   while (currentTree = dynamic_cast<Tree*>(i.next()))
-      currentTree->setToDelete();
+   for (Common::TreeBreadthIterator<Protos::GUI::State::Download> i(this->root); i.hasNext();)
+      dynamic_cast<Tree*>(i.next())->setToDelete();
 
    for (int i = 0; i < activeDownloadIndices.size(); i++)
    {
@@ -268,6 +238,8 @@ void DownloadsTreeModel::onNewState(const Protos::GUI::State& state)
          Tree* currentChildTree = dynamic_cast<Tree*>(currentTree->getChild(i));
          if (currentChildTree->isToDelete())
          {
+            this->updateDirectoriesEntryDeleted(currentChildTree);
+
             this->beginRemoveRows(currentTree == this->root ? QModelIndex() : this->createIndex(currentTree->getOwnPosition(), 0, currentTree), i, i);
             delete currentChildTree;
             this->endRemoveRows();
@@ -301,25 +273,88 @@ DownloadsTreeModel::Tree* DownloadsTreeModel::insert(Tree* tree, const Protos::G
          Tree* newTree = dynamic_cast<Tree*>(tree->insertChild(download, i));
          this->endInsertRows();
 
-         /*if (newTree->getItem().local_entry().type() == Protos::Common::Entry::FILE)
-            this->updateDirectories(newTree);*/
+         if (download.local_entry().type() == Protos::Common::Entry::FILE)
+            this->updateDirectoriesNewFile(newTree);
 
          return newTree;
       }
 
-      if (ProtoHelper::getStr(download.local_entry(), &Protos::Common::Entry::name) == ProtoHelper::getStr(tree->getChild(i)->getItem().local_entry(), &Protos::Common::Entry::name))
+      if (download.local_entry().type() == Protos::Common::Entry::FILE && download.id() == tree->getChild(i)->getItem().id() ||
+          ProtoHelper::getStr(download.local_entry(), &Protos::Common::Entry::name) == ProtoHelper::getStr(tree->getChild(i)->getItem().local_entry(), &Protos::Common::Entry::name))
       {
          Tree* existingTree = dynamic_cast<Tree*>(tree->getChild(i));
          existingTree->setToDelete(false);
-         if (existingTree->getItem() != download)
+         if (download.local_entry().type() == Protos::Common::Entry::FILE && existingTree->getItem() != download)
          {
-            existingTree->setItem(download);
-            emit dataChanged(this->createIndex(i, 0, existingTree), this->createIndex(i, 4, existingTree));
+            if (download.local_entry().type() == Protos::Common::Entry::FILE)
+            {
+               const Protos::GUI::State::Download oldDownload = existingTree->getItem();
+               existingTree->setItem(download);
+               this->updateDirectoriesFileModified(existingTree, oldDownload);
+            }
+            else
+               existingTree->setItem(download);
+
+            emit dataChanged(this->createIndex(i, 1, existingTree), this->createIndex(i, 3, existingTree));
          }
-         return dynamic_cast<Tree*>(tree->getChild(i));
+         return existingTree;
       }
    }
    return 0;
+}
+
+void DownloadsTreeModel::updateDirectoriesEntryDeleted(Tree* entry)
+{
+   const quint64 size = -entry->getItem().local_entry().size();
+   const quint64 downloadedBytes = -entry->getItem().downloaded_bytes();
+
+   this->updateDirectories(entry, size, downloadedBytes);
+}
+
+void DownloadsTreeModel::updateDirectoriesNewFile(Tree* file)
+{
+   const quint64 fileSize = file->getItem().local_entry().size();
+   const quint64 fileDownloadedBytes = file->getItem().downloaded_bytes();
+
+   this->updateDirectories(file, fileSize, fileDownloadedBytes, file->getItem().peer_id());
+
+}
+
+void DownloadsTreeModel::updateDirectoriesFileModified(Tree* file, const Protos::GUI::State::Download& oldDownload)
+{
+   const quint64 fileSizeDelta = file->getItem().local_entry().size() - oldDownload.local_entry().size();
+   const quint64 fileDownloadedBytesDelta = file->getItem().downloaded_bytes() - oldDownload.downloaded_bytes();
+
+   this->updateDirectories(file, fileSizeDelta, fileDownloadedBytesDelta, file->getItem().peer_id());
+}
+
+void DownloadsTreeModel::updateDirectories(Tree* file, quint64 fileSizeDelta, quint64 fileDownloadedBytesDelta, const google::protobuf::RepeatedPtrField<Protos::Common::Hash>& peers)
+{
+   if (fileSizeDelta == 0 && fileDownloadedBytesDelta == 0 && peers.size() == 0)
+      return;
+
+   Tree* currentDirectory = dynamic_cast<Tree*>(file->getParent());
+   while (currentDirectory != this->root)
+   {
+      currentDirectory->getItem().mutable_local_entry()->set_size(currentDirectory->getItem().local_entry().size() + fileSizeDelta);
+      currentDirectory->getItem().set_downloaded_bytes(currentDirectory->getItem().downloaded_bytes() + fileDownloadedBytesDelta);
+      currentDirectory->getItem().set_status(currentDirectory->getItem().local_entry().size() == currentDirectory->getItem().downloaded_bytes() ? Protos::GUI::State::Download::COMPLETE : Protos::GUI::State::Download::QUEUED);
+
+      for (int i = 0; i < peers.size(); i++)
+      {
+         for (int j = 0; j < currentDirectory->getItem().peer_id().size(); j++)
+            if (currentDirectory->getItem().peer_id(j).hash() == peers.Get(i).hash())
+               goto nextPeer;
+
+         currentDirectory->getItem().add_peer_id()->CopyFrom(peers.Get(i));
+         nextPeer:;
+      }
+
+      const int currentDirectoryPosition = currentDirectory->getOwnPosition();
+      emit dataChanged(this->createIndex(currentDirectoryPosition, 1, currentDirectory), this->createIndex(currentDirectoryPosition, 3, currentDirectory));
+
+      currentDirectory = dynamic_cast<Tree*>(currentDirectory->getParent());
+   }
 }
 
 /////

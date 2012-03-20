@@ -39,5 +39,5 @@ message Settings {
       TREE_VIEW = 1;
       LIST_VIEW = 2;
    }
-   optional DownloadView downloadView = 21 [default = TREE_VIEW];
+   optional DownloadView download_view = 21 [default = TREE_VIEW];
 }

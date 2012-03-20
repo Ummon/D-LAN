@@ -27,7 +27,6 @@ using namespace GUI;
 #include <Common/Global.h>
 
 #include <Log.h>
-#include <IconProvider.h>
 #include <Settings/DirListModel.h>
 
 DownloadsFlatModel::DownloadsFlatModel(QSharedPointer<RCC::ICoreConnection> coreConnection, const PeerListModel& peerListModel, const DirListModel& sharedDirsModel, const IFilter<DownloadFilterStatus>& filter) :
@@ -115,79 +114,7 @@ QVariant DownloadsFlatModel::data(const QModelIndex& index, int role) const
    if (!index.isValid() || index.row() >= this->downloads.size())
       return QVariant();
 
-   switch (role)
-   {
-   case Qt::DisplayRole:
-      {
-         const Protos::GUI::State_Download& currentDownload = this->downloads[index.row()];
-         switch (index.column())
-         {
-         case 0: return Common::ProtoHelper::getStr(currentDownload.local_entry(), &Protos::Common::Entry::name);
-         case 1: return Common::Global::formatByteSize(currentDownload.local_entry().size());
-         case 2: return QVariant::fromValue(Progress(currentDownload.local_entry().size() == 0 ? 0 : 10000 * currentDownload.downloaded_bytes() / currentDownload.local_entry().size(), currentDownload.status()));
-         case 3:
-            {
-               QString peersStr;
-
-               int i = 0;
-               if (currentDownload.has_peer_source_nick())
-               {
-                  i = 1;
-                  peersStr.append('[').append(Common::ProtoHelper::getStr(currentDownload, &Protos::GUI::State::Download::peer_source_nick)).append(']');
-               }
-               // O(n^2).
-               for (; i < currentDownload.peer_id_size(); i++)
-               {
-                  if (i != 0)
-                     peersStr.append(" ");
-                  peersStr.append('[').append(this->peerListModel.getNick(currentDownload.peer_id(i).hash())).append(']');
-               }
-               return peersStr;
-            }
-         default: return QVariant();
-         }
-      }
-
-   case Qt::DecorationRole:
-      {
-         if (index.column() == 0)
-         {
-            if (this->downloads[index.row()].status() >= Protos::GUI::State_Download_Status_UNKNOWN_PEER_SOURCE)
-               return QPixmap(":/icons/ressources/error.png");
-            else
-               return IconProvider::getIcon(this->downloads[index.row()].local_entry());
-         }
-         return QVariant();
-      }
-
-   case Qt::ToolTipRole:
-      switch (this->downloads[index.row()].status())
-      {
-      case Protos::GUI::State::Download::UNKNOWN_PEER_SOURCE:
-         return "Unknown source peer";
-      case Protos::GUI::State::Download::ENTRY_NOT_FOUND:
-         return "The source peer doesn't have the entry";
-      case Protos::GUI::State::Download::NO_SOURCE:
-         return "There is no source to download from";
-      case Protos::GUI::State::Download::NO_SHARED_DIRECTORY_TO_WRITE:
-         return "No incoming folder";
-      case Protos::GUI::State::Download::NO_ENOUGH_FREE_SPACE:
-         return "Not enough free space left";
-      case Protos::GUI::State::Download::UNABLE_TO_CREATE_THE_FILE:
-         return "Unable to create the file";
-      case Protos::GUI::State::Download::UNABLE_TO_RETRIEVE_THE_HASHES:
-         return "Unable to retrieve the hashes";
-      case Protos::GUI::State::Download::TRANSFERT_ERROR:
-         return "Transfert error";
-      default:
-         return QVariant();
-      }
-
-   case Qt::TextAlignmentRole:
-      return static_cast<int>(index.column() == 1 ? Qt::AlignRight : Qt::AlignLeft) | Qt::AlignVCenter;
-
-   default: return QVariant();
-   }
+   return DownloadsModel::data(this->downloads[index.row()], role, index.column());
 }
 
 Qt::DropActions DownloadsFlatModel::supportedDropActions() const
