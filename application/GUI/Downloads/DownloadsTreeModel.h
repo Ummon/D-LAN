@@ -68,28 +68,34 @@ namespace GUI
          void setToDelete(bool toDelete = true);
          bool isToDelete() const;
 
+         void setNbPausedFiles(int n) { this->nbPausedFiles = n; }
+         int getNbPausedFiles() const { return this->nbPausedFiles; }
+
+         void setNbErrorFiles(int n) { this->nbErrorFiles = n; }
+         int getNbErrorFiles() const {return this->nbErrorFiles; }
+
       protected:
          virtual Common::Tree<Protos::GUI::State::Download>* newTree(const Protos::GUI::State::Download& download);
 
       private:
          bool toDelete;
+         int nbPausedFiles;
+         int nbErrorFiles;
       };
 
-      Tree* insert(Tree* tree, const QString& dir);
+      Tree* insertDirectory(Tree* tree, const QString& dir, const QString& peerSourceNick);
       Tree* insert(Tree* tree, const Protos::GUI::State::Download& download);
 
-      void updateDirectoriesEntryDeleted(Tree* file);
+      void updateDirectoriesEntryDeleted(Tree* file, const Protos::GUI::State::Download& oldDownload);
       void updateDirectoriesNewFile(Tree* file);
       void updateDirectoriesFileModified(Tree* file, const Protos::GUI::State::Download& oldDownload);
-      void updateDirectories(Tree* file, quint64 fileSizeDelta, quint64 fileDownloadedBytesDelta, const google::protobuf::RepeatedPtrField<Protos::Common::Hash>& peers = google::protobuf::RepeatedPtrField<Protos::Common::Hash>());
+      void updateDirectories(Tree* file, quint64 fileSizeDelta, quint64 fileDownloadedBytesDelta, Protos::GUI::State_Download::Status oldStatus = Protos::GUI::State::Download::QUEUED);
 
       Tree* root;
    };
 
    bool operator>(const Protos::GUI::State::Download& d1, const Protos::GUI::State::Download& d2);
    bool operator<(const Protos::GUI::State::Download& d1, const Protos::GUI::State::Download& d2);
-   /*bool operator==(const Protos::GUI::State::Download& d1, const Protos::GUI::State::Download& d2);
-   bool operator!=(const Protos::GUI::State::Download& d1, const Protos::GUI::State::Download& d2);*/
 }
 
 #endif

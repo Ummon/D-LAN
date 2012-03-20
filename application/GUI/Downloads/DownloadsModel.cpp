@@ -64,7 +64,8 @@ QVariant DownloadsModel::data(const Protos::GUI::State::Download& download, int 
                }
                for (; i < download.peer_id_size(); i++)
                {
-                  const QString nick = this->peerListModel.getNick(download.peer_id(i).hash());
+                  Common::Hash peerID(download.peer_id(i).hash());
+                  const QString nick = this->peerListModel.getNick(peerID);
                   if (nick.isNull())
                      continue;
                   if (i != 0)
@@ -81,7 +82,7 @@ QVariant DownloadsModel::data(const Protos::GUI::State::Download& download, int 
       {
          if (column == 0)
          {
-            if (download.status() >= Protos::GUI::State_Download_Status_UNKNOWN_PEER_SOURCE)
+            if (download.status() >= Protos::GUI::State::Download::UNKNOWN_PEER_SOURCE)
                return QPixmap(":/icons/ressources/error.png");
             else
                return IconProvider::getIcon(download.local_entry());

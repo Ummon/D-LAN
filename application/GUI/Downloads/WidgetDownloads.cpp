@@ -72,11 +72,21 @@ void DownloadsDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opt
          }
       }
       else
-      {
-         if (progress.status == Protos::GUI::State::Download::COMPLETE)
-            progressBarOption.text = "Complete";
-         else
+      {  switch (progress.status)
+         {
+         case Protos::GUI::State_Download_Status_QUEUED:
             progressBarOption.text = QString("%1%").arg(static_cast<double>(progress.progress) / 100);
+            break;
+         case Protos::GUI::State_Download_Status_COMPLETE:
+            progressBarOption.text = "Complete";
+            break;
+         case Protos::GUI::State_Download_Status_PAUSED:
+            progressBarOption.text = "Paused";
+            break;
+         default:
+            progressBarOption.text = "Waiting..";
+            break;
+         }
       }
 
       progressBarOption.textVisible = true;
@@ -338,7 +348,7 @@ void WidgetDownloads::updateCheckBoxElements()
 
 QPair<QList<quint64>, bool> WidgetDownloads::getDownloadIDsToPause() const
 {
-   QList<quint64> downloadIDs;
+   QSet<quint64> downloadIDs; // We use a set to avoid equal IDs.
 
    QModelIndexList selectedRows = this->ui->tblDownloads->selectionModel()->selectedRows();
    bool allPaused = true;
@@ -348,11 +358,11 @@ QPair<QList<quint64>, bool> WidgetDownloads::getDownloadIDsToPause() const
       foreach (quint64 ID, this->currentDownloadsModel->getDownloadIDs(index))
          if (!this->currentDownloadsModel->isFileComplete(index))
          {
-            downloadIDs << ID;
+            downloadIDs.insert(ID);
             if (!this->currentDownloadsModel->isDownloadPaused(index))
                allPaused = false;
          }
    }
 
-   return qMakePair(downloadIDs, !allPaused);
+   return qMakePair(downloadIDs.toList(), !allPaused);
 }
