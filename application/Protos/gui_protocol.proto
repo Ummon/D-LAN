@@ -44,7 +44,7 @@ message State {
          UNABLE_TO_RETRIEVE_THE_HASHES = 0x23;
          TRANSFERT_ERROR = 0x24;
       }
-      required uint64 id = 1;
+      required uint64 id = 1; // Cannot be 0.
       
       // When the entry is physically created, Common.Entry.exists is set to true.
       // The hashes are never sent to save a bit of bandwith.

@@ -42,7 +42,7 @@ namespace Common
    class TreeBreadthIterator
    {
    public:
-      TreeBreadthIterator(Tree<T>* tree);
+      TreeBreadthIterator(Tree<T>* tree, bool iterateOnRoot = false);
       bool hasNext() const;
       Tree<T>* next();
 
@@ -159,8 +159,10 @@ Tree<T>* Tree<T>::newTree(const T& item)
 }
 
 template <typename T>
-TreeBreadthIterator<T>::TreeBreadthIterator(Tree<T>* tree)
+TreeBreadthIterator<T>::TreeBreadthIterator(Tree<T>* tree, bool iterateOnRoot)
 {
+   if (iterateOnRoot)
+      this->nextTrees << tree;
    this->readChildren(tree);
 }
 

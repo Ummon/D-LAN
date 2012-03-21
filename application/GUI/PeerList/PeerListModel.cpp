@@ -35,8 +35,6 @@ PeerListModel::PeerListModel(QSharedPointer<RCC::ICoreConnection> coreConnection
   */
 QString PeerListModel::getNick(const Common::Hash& peerID, const QString& defaultNick) const
 {
-   bool test = defaultNick.isNull();
-
    Peer* peer = this->indexedPeers.value(peerID, 0);
    if (!peer)
       return defaultNick;

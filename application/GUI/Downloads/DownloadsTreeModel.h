@@ -86,12 +86,14 @@ namespace GUI
       Tree* insertDirectory(Tree* tree, const QString& dir, const QString& peerSourceNick);
       Tree* insert(Tree* tree, const Protos::GUI::State::Download& download);
 
-      void updateDirectoriesEntryDeleted(Tree* file, const Protos::GUI::State::Download& oldDownload);
-      void updateDirectoriesNewFile(Tree* file);
-      void updateDirectoriesFileModified(Tree* file, const Protos::GUI::State::Download& oldDownload);
-      void updateDirectories(Tree* file, quint64 fileSizeDelta, quint64 fileDownloadedBytesDelta, Protos::GUI::State_Download::Status oldStatus = Protos::GUI::State::Download::QUEUED);
+      Tree* update(Tree* tree, const Protos::GUI::State::Download& download);
+      Tree* updateDirectoriesEntryDeleted(Tree* file, const Protos::GUI::State::Download& oldDownload);
+      Tree* updateDirectoriesNewFile(Tree* file);
+      Tree* updateDirectoriesFileModified(Tree* file, const Protos::GUI::State::Download& oldDownload);
+      Tree* updateDirectories(Tree* file, quint64 fileSizeDelta, quint64 fileDownloadedBytesDelta, Protos::GUI::State_Download::Status oldStatus = Protos::GUI::State::Download::QUEUED);
 
       Tree* root;
+      QHash<int, Tree*> indexedFiles;
    };
 
    bool operator>(const Protos::GUI::State::Download& d1, const Protos::GUI::State::Download& d2);
