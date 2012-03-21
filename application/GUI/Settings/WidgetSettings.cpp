@@ -91,6 +91,7 @@ WidgetSettings::WidgetSettings(QSharedPointer<RCC::ICoreConnection> coreConnecti
 
    connect(this->ui->butResetCoreAddress, SIGNAL(clicked()), this, SLOT(resetCoreAddress()));
    connect(this->ui->butConnect, SIGNAL(clicked()), this, SLOT(connectToCore()));
+   this->ui->tabAdvancedSettings->installEventFilter(this);
 
    this->ui->tblShareDirs->setContextMenuPolicy(Qt::CustomContextMenu);
    connect(this->ui->tblShareDirs, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(displayContextMenuDownload(const QPoint&)));   
@@ -552,6 +553,17 @@ void WidgetSettings::buttonAddressToggled(bool checked)
 {
    if (checked)
       this->saveCoreSettings();
+}
+
+bool WidgetSettings::eventFilter(QObject* obj, QEvent* event)
+{
+   if (obj == this->ui->tabAdvancedSettings && event->type() == QEvent::Show)
+   {
+      this->ui->txtPassword->clear();
+      this->ui->txtCoreAddress->setText(SETTINGS.get<QString>("core_address"));
+   }
+
+   return QObject::eventFilter(obj, event);
 }
 
 void WidgetSettings::showEvent(QShowEvent* event)

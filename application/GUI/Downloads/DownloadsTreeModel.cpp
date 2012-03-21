@@ -162,7 +162,7 @@ QVariant DownloadsTreeModel::data(const QModelIndex& index, int role) const
 
    Tree* tree = static_cast<Tree*>(index.internalPointer());
    if (tree)
-      return DownloadsModel::data(tree->getItem(), role, index.column());
+      return DownloadsModel::getData(tree->getItem(), role, index.column());
    return QVariant();
 }
 
@@ -283,23 +283,12 @@ DownloadsTreeModel::Tree* DownloadsTreeModel::insertDirectory(Tree* tree, const 
 
 DownloadsTreeModel::Tree* DownloadsTreeModel::insert(Tree* tree, const Protos::GUI::State::Download& download)
 {
-   for (int i = 0; i <= tree->getNbChildren(); i++)
+   const int nbChildren = tree->getNbChildren();
+
+   for (int i = 0; i < nbChildren; i++)
    {
-      if (i == tree->getNbChildren() || (tree != this->root && download < tree->getChild(i)->getItem())) // The root elements aren't sorted.
-      {
-         QModelIndex parentIndex = tree == this->root ? QModelIndex() : this->createIndex(tree->getOwnPosition(), 0, tree);
-         this->beginInsertRows(parentIndex, i, i);
-         Tree* newTree = dynamic_cast<Tree*>(tree->insertChild(download, i));
-         this->endInsertRows();
-
-         if (download.local_entry().type() == Protos::Common::Entry::FILE)
-            this->updateDirectoriesNewFile(newTree);
-
-         return newTree;
-      }
-
       if (download.local_entry().type() == Protos::Common::Entry::FILE && download.id() == tree->getChild(i)->getItem().id() ||
-          ProtoHelper::getStr(download.local_entry(), &Protos::Common::Entry::name) == ProtoHelper::getStr(tree->getChild(i)->getItem().local_entry(), &Protos::Common::Entry::name))
+          download.local_entry().name() == tree->getChild(i)->getItem().local_entry().name())
       {
          Tree* existingTree = dynamic_cast<Tree*>(tree->getChild(i));
          existingTree->setToDelete(false);
@@ -311,6 +300,23 @@ DownloadsTreeModel::Tree* DownloadsTreeModel::insert(Tree* tree, const Protos::G
             emit dataChanged(this->createIndex(i, 1, existingTree), this->createIndex(i, 3, existingTree));
          }
          return existingTree;
+      }
+   }
+
+   // TODO: A dichotomic search can be a good idea here instead of a simple loop.
+   for (int i = 0; i <= nbChildren; i++)
+   {
+      if (i ==  nbChildren || (tree != this->root && download < tree->getChild(i)->getItem())) // The root elements aren't sorted.
+      {
+         QModelIndex parentIndex = tree == this->root ? QModelIndex() : this->createIndex(tree->getOwnPosition(), 0, tree);
+         this->beginInsertRows(parentIndex, i, i);
+         Tree* newTree = dynamic_cast<Tree*>(tree->insertChild(download, i));
+         this->endInsertRows();
+
+         if (download.local_entry().type() == Protos::Common::Entry::FILE)
+            this->updateDirectoriesNewFile(newTree);
+
+         return newTree;
       }
    }
    return 0;
@@ -409,14 +415,14 @@ bool GUI::operator>(const Protos::GUI::State::Download& d1, const Protos::GUI::S
 {
    if (d1.local_entry().type() != d2.local_entry().type())
       return d1.local_entry().type() < d2.local_entry().type();
-   return Common::ProtoHelper::getStr(d1.local_entry(), &Protos::Common::Entry::name) > Common::ProtoHelper::getStr(d2.local_entry(), &Protos::Common::Entry::name);
+   return d1.local_entry().name() > d2.local_entry().name();
 }
 
 bool GUI::operator<(const Protos::GUI::State::Download& d1, const Protos::GUI::State::Download& d2)
 {
    if (d1.local_entry().type() != d2.local_entry().type())
       return d1.local_entry().type() > d2.local_entry().type();
-   return Common::ProtoHelper::getStr(d1.local_entry(), &Protos::Common::Entry::name) < Common::ProtoHelper::getStr(d2.local_entry(), &Protos::Common::Entry::name);
+   return d1.local_entry().name() < d2.local_entry().name();
 }
 
 /*bool GUI::operator==(const Protos::GUI::State::Download& d1, const Protos::GUI::State::Download& d2)

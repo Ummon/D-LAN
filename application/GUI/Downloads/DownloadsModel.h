@@ -56,7 +56,7 @@ namespace GUI
       virtual void onNewState(const Protos::GUI::State& state) = 0;
 
    protected:
-      virtual QVariant data(const Protos::GUI::State::Download& download, int role, int column) const;
+      QVariant getData(const Protos::GUI::State::Download& download, int role, int column) const;
       QList<int> getNonFilteredDownloadIndices(const Protos::GUI::State& state) const;
 
       QSharedPointer<RCC::ICoreConnection> coreConnection;

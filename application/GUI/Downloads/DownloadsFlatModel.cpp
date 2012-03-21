@@ -114,7 +114,7 @@ QVariant DownloadsFlatModel::data(const QModelIndex& index, int role) const
    if (!index.isValid() || index.row() >= this->downloads.size())
       return QVariant();
 
-   return DownloadsModel::data(this->downloads[index.row()], role, index.column());
+   return DownloadsModel::getData(this->downloads[index.row()], role, index.column());
 }
 
 Qt::DropActions DownloadsFlatModel::supportedDropActions() const

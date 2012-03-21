@@ -36,7 +36,7 @@ DownloadsModel::DownloadsModel(QSharedPointer<RCC::ICoreConnection> coreConnecti
    connect(this->coreConnection.data(), SIGNAL(newState(Protos::GUI::State)), this, SLOT(onNewState(Protos::GUI::State)));
 }
 
-QVariant DownloadsModel::data(const Protos::GUI::State::Download& download, int role, int column) const
+QVariant DownloadsModel::getData(const Protos::GUI::State::Download& download, int role, int column) const
 {
    switch (role)
    {
