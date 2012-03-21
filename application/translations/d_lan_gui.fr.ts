@@ -200,7 +200,12 @@
         <translation>Prendre le contrôle de %1</translation>
     </message>
     <message>
-        <location line="-76"/>
+        <location line="+1"/>
+        <source>Enter a password</source>
+        <translation>Entrez le mot de passe</translation>
+    </message>
+    <message>
+        <location line="-77"/>
         <source>Connected to the core</source>
         <translation>Connecté au core</translation>
     </message>
@@ -254,6 +259,12 @@
         <location line="+1"/>
         <source>Size</source>
         <translation>Taille</translation>
+    </message>
+    <message>
+        <location line="+134"/>
+        <location line="+65"/>
+        <source>&lt;unknown&gt;</source>
+        <translation>&lt;inconnu&gt;</translation>
     </message>
 </context>
 <context>
@@ -321,6 +332,14 @@
     </message>
 </context>
 <context>
+    <name>GUI::UploadsModel</name>
+    <message>
+        <location filename="../GUI/Uploads/UploadsModel.cpp" line="+58"/>
+        <source>&lt;unknown&gt;</source>
+        <translation>&lt;inconnu&gt;</translation>
+    </message>
+</context>
+<context>
     <name>GUI::WidgetBrowse</name>
     <message>
         <location filename="../GUI/Browse/WidgetBrowse.cpp" line="+122"/>
@@ -339,7 +358,7 @@
 <context>
     <name>GUI::WidgetDownloads</name>
     <message>
-        <location filename="../GUI/Downloads/WidgetDownloads.cpp" line="+185"/>
+        <location filename="../GUI/Downloads/WidgetDownloads.cpp" line="+209"/>
         <source>Open location</source>
         <translation>Ouvrir le dossier</translation>
     </message>
@@ -364,7 +383,17 @@
         <translation>Enlever la pause des éléments sélectionnés</translation>
     </message>
     <message>
-        <location line="+100"/>
+        <location line="+109"/>
+        <source>Switch to list view</source>
+        <translation>Basculer sur la vue en liste</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Switch to tree view</source>
+        <translation>Basculer sur la vue en arbre</translation>
+    </message>
+    <message>
+        <location line="+13"/>
         <source>&lt;All&gt;</source>
         <translation>&lt;Tous&gt;</translation>
     </message>
@@ -405,7 +434,7 @@
 <context>
     <name>GUI::WidgetSettings</name>
     <message>
-        <location filename="../GUI/Settings/WidgetSettings.cpp" line="+356"/>
+        <location filename="../GUI/Settings/WidgetSettings.cpp" line="+357"/>
         <source>Connecting..</source>
         <translation>Connexion..</translation>
     </message>
@@ -602,7 +631,7 @@
         <translation>Éléments affichés</translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location line="+21"/>
         <location filename="../GUI/.tmp/debug/ui_WidgetDownloads.h" line="+2"/>
         <location filename="../GUI/.tmp/release/ui_WidgetDownloads.h" line="+2"/>
         <source>Remove completed files</source>
@@ -793,14 +822,14 @@
         <location filename="../GUI/.tmp/debug/ui_WidgetSettings.h" line="+1"/>
         <location filename="../GUI/.tmp/release/ui_WidgetSettings.h" line="+1"/>
         <source>Change the password</source>
-        <translation type="unfinished"></translation>
+        <translation>Changer le mot de passe</translation>
     </message>
     <message>
         <location line="+36"/>
         <location filename="../GUI/.tmp/debug/ui_WidgetSettings.h" line="+1"/>
         <location filename="../GUI/.tmp/release/ui_WidgetSettings.h" line="+1"/>
         <source>Disconnect</source>
-        <translation type="unfinished"></translation>
+        <translation>Se déconnecter</translation>
     </message>
     <message>
         <location line="-121"/>
