@@ -306,11 +306,15 @@ void MainWindow::takeControlOfACore()
 
       if (!Common::Global::isLocal(address))
       {
-         bool ok;
-         QString password = QInputDialog::getText(this, tr("Take control of %1").arg(address.toString()), "Enter a password", QLineEdit::Password, "", &ok);
-         if (!ok || password.isEmpty())
+         QInputDialog inputDialog(this);
+         inputDialog.setWindowTitle(tr("Take control of %1").arg(Common::Global::formatIP(address, SETTINGS.get<quint32>("core_port"))));
+         inputDialog.setLabelText(tr("Enter a password"));
+         inputDialog.setTextEchoMode(QLineEdit::Password);
+         inputDialog.resize(300, 100);
+
+         if (inputDialog.exec() == QDialog::Rejected || inputDialog.textValue().isEmpty())
             return;
-         hashedPassword = Common::Hasher::hashWithSalt(password);
+         hashedPassword = Common::Hasher::hashWithSalt(inputDialog.textValue());
       }
 
       this->coreConnection->connectToCore(address.toString(), SETTINGS.get<quint32>("core_port"), hashedPassword);
