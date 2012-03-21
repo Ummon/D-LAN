@@ -38,6 +38,7 @@ namespace GUI
       ~AskNewPasswordDialog();
 
       Common::Hash getNewPassword() const;
+      Common::Hash getOldPassword() const;
 
    private slots:
       void ok();

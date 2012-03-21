@@ -219,11 +219,9 @@ void MainWindow::coreConnectionError(RCC::ICoreConnection::ConnectionErrorCode e
       error = tr("Error unknown");
    }
 
-   QHostAddress remoteAddress(this->coreConnection->getConnectionInfoConnecting().address);
-
    QMessageBox msgBox(this);
    msgBox.setWindowTitle(tr("Unable to connect to the core"));
-   msgBox.setText(QString("<p>%1</p><p>%2 <em>%3</em></p>").arg(error).arg(tr("Remote core address:")).arg(Common::Global::formatIP(remoteAddress, this->coreConnection->getConnectionInfoConnecting().port)));
+   msgBox.setText(QString("<p>%1</p><p>%2 <em>%3:%4</em></p>").arg(error).arg(tr("Remote core address:")).arg(this->coreConnection->getConnectionInfoConnecting().address).arg(this->coreConnection->getConnectionInfoConnecting().port));
    msgBox.setIcon(QMessageBox::Information);
    msgBox.setStandardButtons(QMessageBox::Ok);
    msgBox.exec();
@@ -239,13 +237,11 @@ void MainWindow::coreDisconnected()
 {
    this->setApplicationStateAsDisconnected();
 
-   if (!this->coreConnection->isConnecting())
+   if (!this->coreConnection->isConnected())
    {
-      QHostAddress remoteAddress(this->coreConnection->getConnectionInfo().address);
-
       QMessageBox msgBox(this);
       msgBox.setWindowTitle(tr("Connection lost"));
-      msgBox.setText(QString("<p>%1</p><p>%2 <em>%3</em></p>").arg(tr("The connection to the core has been lost")).arg(tr("Core address:")).arg(Common::Global::formatIP(remoteAddress, this->coreConnection->getConnectionInfo().port)));
+      msgBox.setText(QString("<p>%1</p><p>%2 <em>%3:%4</em></p>").arg(tr("The connection to the core has been lost")).arg(tr("Core address:")).arg(this->coreConnection->getConnectionInfo().address).arg(this->coreConnection->getConnectionInfo().port));
       msgBox.setIcon(QMessageBox::Information);
       msgBox.setStandardButtons(QMessageBox::Ok);
       msgBox.exec();

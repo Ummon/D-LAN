@@ -137,7 +137,7 @@ void RemoteConnection::refresh()
 
    state.set_integrity_check_enabled(SETTINGS.get<bool>("check_received_data_integrity"));
    if (SETTINGS.isSet("remote_password"))
-      state.mutable_current_password()->set_hash(SETTINGS.get<Common::Hash>("remote_password").getData(), Common::Hash::HASH_SIZE);
+      state.mutable_current_password()->set_hash(Common::Hasher::hash(SETTINGS.get<Common::Hash>("remote_password")).getData(), Common::Hash::HASH_SIZE);
 
    // Peers.
    QList<PM::IPeer*> peers = this->peerManager->getPeers();
@@ -362,9 +362,9 @@ void RemoteConnection::onNewMessage(Common::MessageHeader::MessageType type, con
       {
          const Protos::GUI::ChangePassword& passMessage = static_cast<const Protos::GUI::ChangePassword&>(message);
 
-         if (!SETTINGS.isSet("remote_password") || SETTINGS.get<Common::Hash>("remote_password") == Common::Hash(passMessage.old_password().hash().data()))
+         if (!SETTINGS.isSet("remote_password") || SETTINGS.get<Common::Hash>("remote_password") == Common::Hash(passMessage.old_password().hash()))
          {
-            SETTINGS.set("remote_password", Common::Hash(passMessage.new_password().hash().data()));
+            SETTINGS.set("remote_password", Common::Hash(passMessage.new_password().hash()));
             SETTINGS.save();
             this->refresh();
          }

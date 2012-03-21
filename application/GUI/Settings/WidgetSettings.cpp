@@ -306,7 +306,7 @@ void WidgetSettings::newState(const Protos::GUI::State& state)
    if (state.has_current_password())
    {
       this->ui->butChangePassword->setText("Change the password");
-      this->currentPassword = Common::Hash(state.current_password().hash().data());
+      this->currentPassword = Common::Hash(state.current_password().hash());
    }
    else
    {
@@ -444,7 +444,7 @@ void WidgetSettings::changePassword()
    AskNewPasswordDialog dia(this->currentPassword, this);
    if (dia.exec() == QDialog::Accepted)
    {
-      this->coreConnection->setCorePassword(dia.getNewPassword(), this->currentPassword);
+      this->coreConnection->setCorePassword(dia.getNewPassword(), dia.getOldPassword());
    }
 }
 

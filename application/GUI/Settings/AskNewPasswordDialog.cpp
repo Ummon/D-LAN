@@ -49,6 +49,13 @@ Common::Hash AskNewPasswordDialog::getNewPassword() const
    return Common::Hasher::hashWithSalt(this->ui->txtNewPassword->text());
 }
 
+Hash AskNewPasswordDialog::getOldPassword() const
+{
+   if (this->oldPassword.isNull())
+      return Common::Hash();
+   return Common::Hasher::hashWithSalt(this->ui->txtOldPassword->text());
+}
+
 void AskNewPasswordDialog::ok()
 {
    if (this->ui->txtNewPassword->text() != this->ui->txtNewPasswordRepeated->text())
