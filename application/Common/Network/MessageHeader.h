@@ -60,6 +60,7 @@ namespace Common
 
          /***** GUI *****/
          GUI_STATE =                   0x1001,
+         GUI_STATE_RESULT =            0x1002,
 
          GUI_EVENT_CHAT_MESSAGES =     0x1011,
          GUI_EVENT_LOG_MESSAGE =       0x1012,
@@ -89,7 +90,7 @@ namespace Common
 
          GUI_CHAT_MESSAGE =            0x1091,
 
-         GUI_REFRESH =                 0x10A1,
+         GUI_REFRESH =                 0x10A1
       };      
 
       MessageHeader();

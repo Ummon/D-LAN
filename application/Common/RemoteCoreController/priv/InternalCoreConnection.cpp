@@ -357,6 +357,7 @@ void InternalCoreConnection::onNewMessage(Common::MessageHeader::MessageType typ
          const Protos::GUI::State& state = static_cast<const Protos::GUI::State&>(message);
 
          emit newState(state);
+         this->send(Common::MessageHeader::GUI_STATE_RESULT);
       }
       break;
 

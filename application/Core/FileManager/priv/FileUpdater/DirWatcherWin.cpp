@@ -118,6 +118,10 @@ const QList<WatcherEvent> DirWatcherWin::waitEvent(QList<WaitCondition*> ws)
    return this->waitEvent(-1, ws);
 }
 
+/**
+  * Warning: If there is too much time between two calls of 'waitEvent(..)' and there is some disk activities (new files/folders) the buffer 'NOTIFY_BUFFER_SIZE'
+  * may become full and some event may be dropped.
+  */
 const QList<WatcherEvent> DirWatcherWin::waitEvent(int timeout, QList<WaitCondition*> ws)
 {
    QMutexLocker locker(&this->mutex);
@@ -187,11 +191,11 @@ const QList<WatcherEvent> DirWatcherWin::waitEvent(int timeout, QList<WaitCondit
          filenameTCHAR[nbChar] = 0;
          QString filename = QString::fromStdWString(filenameTCHAR);
 
-//         L_WARN("---------");
-//         L_WARN(QString("Action = %1").arg(notifyInformation->Action));
-//         L_WARN(QString("filename = %1").arg(filename));
-//         L_WARN(QString("offset = %1").arg(notifyInformation->NextEntryOffset));
-//         L_WARN("---------");
+//         L_DEBU("---------");
+//         L_DEBU(QString("Action = %1").arg(notifyInformation->Action));
+//         L_DEBU(QString("filename = %1").arg(filename));
+//         L_DEBU(QString("offset = %1").arg(notifyInformation->NextEntryOffset));
+//         L_DEBU("---------");
 
          QString path = dir->fullPath;
          path.append('/').append(filename);

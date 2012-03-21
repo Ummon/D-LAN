@@ -94,6 +94,7 @@ QString MessageHeader::messToStr(MessageType type)
    case CORE_GET_CHUNK_RESULT: return "GET_CHUNK_RESULT";
 
    case GUI_STATE: return "STATE";
+   case GUI_STATE_RESULT: return "STATE_RESULT";
    case GUI_EVENT_CHAT_MESSAGES:  return "EVENT_CHAT_MESSAGE";
    case GUI_EVENT_LOG_MESSAGE: return "EVENT_LOG_MESSAGE";
    case GUI_AUTHENTICATION: return "AUTHENTICATION";
@@ -109,6 +110,7 @@ QString MessageHeader::messToStr(MessageType type)
    case GUI_BROWSE_RESULT: return "BROWSE_RESULT";
    case GUI_CANCEL_DOWNLOADS: return "CANCEL_DOWNLOADS";
    case GUI_PAUSE_DOWNLOADS: return "PAUSE_DOWNLOADS";
+   case GUI_MOVE_DOWNLOADS: return "MOVE_DOWNLOADS";
    case GUI_DOWNLOAD: return "DOWNLOAD";
    case GUI_CHAT_MESSAGE: return "CHAT_MESSAGE";
    case GUI_REFRESH: return "REFRESH";

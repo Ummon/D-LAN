@@ -506,7 +506,7 @@ void FileUpdater::scan(Directory* dir, bool addUnfinished)
                    !this->filesWithoutHashes.contains(file) && // The case where a file is being copied and a lot of modification event is thrown (thus the file is in this->filesWithoutHashes).
                    !this->filesWithoutHashesPrioritized.contains(file) &&
                    file->isComplete() &&
-                   !file->correspondTo(entry)
+                   !file->correspondTo(entry, file->hasAllHashes()) // If the hashes of a file can't be computed (IO error, the file is being written for example) we only compare their sizes.
                )
                   file = 0;
                else
@@ -518,8 +518,8 @@ void FileUpdater::scan(Directory* dir, bool addUnfinished)
                // Very special case : there is a file 'a' without File* in cache and a file 'a.unfinished'.
                // This case occure when a file is redownloaded, the File* 'a' is renamed as 'a.unfinished' but the physical file 'a'
                // is not deleted.
-               File* unfinishedFile;
-               if (!(unfinishedFile = currentDir->getFile(entry.fileName().append(Global::getUnfinishedSuffix()))))
+               File* unfinishedFile = currentDir->getFile(entry.fileName().append(Global::getUnfinishedSuffix()));
+               if (!unfinishedFile)
                   file = new File(currentDir, entry.fileName(), entry.size(), entry.lastModified());
                else
                {

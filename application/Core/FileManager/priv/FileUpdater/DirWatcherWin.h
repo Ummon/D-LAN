@@ -30,7 +30,7 @@
 
 namespace FM
 {
-   static const int NOTIFY_BUFFER_SIZE = 2048;
+   static const int NOTIFY_BUFFER_SIZE = 32768;
    static const int MAX_WAIT_CONDITION = 4;
 
    class DirWatcherWin : public DirWatcher
@@ -39,6 +39,7 @@ namespace FM
       DirWatcherWin();
       ~DirWatcherWin();
 
+      bool isReliable() const;
       bool addDir(const QString& path);
       void rmDir(const QString& path);
       int nbWatchedDir();

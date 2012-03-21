@@ -109,6 +109,10 @@ message State {
    optional Common.Interface.Address.Protocol listenAny = 8; // If this value is set then all the interfaces of the given protocol are listened. Otherwise see the following repeated 'interface' field.
    repeated Common.Interface interface = 9;
 }
+// GUI -> Core
+// id : 0x02
+// Empty message to tell the core that we have finished to process the state message.
+
 
 /***** Events *****/
 // Core -> GUI

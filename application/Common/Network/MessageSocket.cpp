@@ -120,9 +120,10 @@ void MessageSocket::send(MessageHeader::MessageType type, const google::protobuf
 
    MESSAGE_SOCKET_LOG_DEBUG(QString("Socket[%1]::send : %2 to %3\n%4").arg(this->num).arg(header.toStr()).arg(this->remoteID.toStr()).arg(message ? ProtoHelper::getDebugStr(*message) : "<empty message>"));
 
+   MessageHeader::writeHeader(*this->socket, header);
+
    if (message)
    {
-      MessageHeader::writeHeader(*this->socket, header);
       ZeroCopyOutputStreamQIODevice outputStream(this->socket);
       if (!message->SerializeToZeroCopyStream(&outputStream))
          MESSAGE_SOCKET_LOG_ERROR(QString("Unable to send\n%1").arg(ProtoHelper::getDebugStr(*message)));
@@ -248,6 +249,7 @@ bool MessageSocket::readMessage()
    case MessageHeader::CORE_GET_CHUNK_RESULT: return this->readMessage<Protos::Core::GetChunkResult>();
 
    case MessageHeader::GUI_STATE: return this->readMessage<Protos::GUI::State>();
+   case MessageHeader::GUI_STATE_RESULT: return this->readMessage<Protos::Common::Null>();
    case MessageHeader::GUI_EVENT_CHAT_MESSAGES: return this->readMessage<Protos::GUI::EventChatMessages>();
    case MessageHeader::GUI_EVENT_LOG_MESSAGE: return this->readMessage<Protos::GUI::EventLogMessage>();
    case MessageHeader::GUI_AUTHENTICATION: return this->readMessage<Protos::GUI::Authentication>();

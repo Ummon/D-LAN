@@ -218,9 +218,9 @@ bool File::matchesEntry(const Protos::Common::Entry& entry) const
 /**
   * Return true if the size and the last modification date correspond to the given file information.
   */
-bool File::correspondTo(const QFileInfo& fileInfo)
+bool File::correspondTo(const QFileInfo& fileInfo, bool checkTheDateToo)
 {
-   return this->getSize() == fileInfo.size() && this->getDateLastModified() == fileInfo.lastModified();
+   return this->getSize() == fileInfo.size() && (!checkTheDateToo || this->getDateLastModified() == fileInfo.lastModified());
 }
 
 QString File::getPath() const

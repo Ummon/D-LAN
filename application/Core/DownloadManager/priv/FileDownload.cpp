@@ -193,8 +193,7 @@ QSharedPointer<ChunkDownload> FileDownload::getAChunkToDownload()
    int bestNbPeer = std::numeric_limits<int>::max();
    for (QListIterator< QSharedPointer<ChunkDownload> > i(this->chunkDownloads); i.hasNext();)
    {
-      QSharedPointer<ChunkDownload> chunkDownload = i.next();
-
+      const QSharedPointer<ChunkDownload>& chunkDownload = i.next();
       const int nbPeer = chunkDownload->isReadyToDownload();
 
       if (nbPeer == 0)

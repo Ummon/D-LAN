@@ -245,8 +245,6 @@ void RemoteConnection::refresh()
    }
 
    this->send(Common::MessageHeader::GUI_STATE, state);
-
-   this->timerRefresh.start();
 }
 
 void RemoteConnection::newChatMessage(const Protos::GUI::EventChatMessages_Message& message)
@@ -321,6 +319,10 @@ void RemoteConnection::onNewMessage(Common::MessageHeader::MessageType type, con
 
    switch (type)
    {
+   case Common::MessageHeader::GUI_STATE_RESULT:
+      this->timerRefresh.start();
+      break;
+
    case Common::MessageHeader::GUI_AUTHENTICATION:
       {
          const Protos::GUI::Authentication& authenticationMessage = static_cast<const Protos::GUI::Authentication&>(message);
@@ -571,9 +573,7 @@ void RemoteConnection::onNewMessage(Common::MessageHeader::MessageType type, con
       break;
 
    case Common::MessageHeader::GUI_REFRESH:
-      {
-         this->refresh();
-      }
+      this->refresh();
       break;
 
    default:;

@@ -67,7 +67,7 @@ namespace FM
       void populateEntry(Protos::Common::Entry* entry, bool setSharedDir = false) const;
       bool matchesEntry(const Protos::Common::Entry& entry) const;
 
-      bool correspondTo(const QFileInfo& fileInfo);
+      bool correspondTo(const QFileInfo& fileInfo, bool checkTheDateToo = true);
 
       QString getPath() const;
       QString getFullPath() const;

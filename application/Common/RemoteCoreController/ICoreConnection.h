@@ -172,7 +172,7 @@ namespace RCC
       virtual void moveDownloads(quint64 downloadIDRef, const QList<quint64>& downloadIDs, bool moveBefore = true) = 0;
 
       /**
-        * Ask to emit the signal 'newState'.
+        * Ask a new state from the core, the signal 'newState' is then emitted.
         */
       virtual void refresh() = 0;
 
