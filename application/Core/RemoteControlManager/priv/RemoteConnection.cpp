@@ -87,8 +87,7 @@ RemoteConnection::RemoteConnection(
    this->refresh();
 
    connect(&this->networkListener->getChat(), SIGNAL(newMessage(const Protos::GUI::EventChatMessages_Message&)), this, SLOT(newChatMessage(const Protos::GUI::EventChatMessages_Message&)));
-   // We send all the last received messages to the GUI (history).
-   this->send(Common::MessageHeader::GUI_EVENT_CHAT_MESSAGES, this->networkListener->getChat().getLastMessages());
+   this->sendLastChatMessages();
 
    this->loggerHook = LM::Builder::newLoggerHook(LM::Severity(LM::SV_FATAL_ERROR | LM::SV_ERROR | LM::SV_END_USER | LM::SV_WARNING));
 
@@ -125,7 +124,6 @@ void RemoteConnection::sendMessageToItself(const QString& message)
 
    this->send(Common::MessageHeader::GUI_EVENT_CHAT_MESSAGES, eventChatMessages);
 }
-
 
 void RemoteConnection::refresh()
 {
@@ -311,6 +309,11 @@ void RemoteConnection::removeGetEntriesResult(const PM::IGetEntriesResult* getEn
          i.remove();
 }
 
+void RemoteConnection::sendLastChatMessages()
+{
+   // We send all the last received messages to the GUI (history).
+   this->send(Common::MessageHeader::GUI_EVENT_CHAT_MESSAGES, this->networkListener->getChat().getLastMessages());
+}
 
 void RemoteConnection::onNewMessage(Common::MessageHeader::MessageType type, const google::protobuf::Message& message)
 {
@@ -349,6 +352,7 @@ void RemoteConnection::onNewMessage(Common::MessageHeader::MessageType type, con
                this->send(Common::MessageHeader::GUI_AUTHENTICATION_RESULT, authResultMessage);
                this->authenticated = true;
                this->refresh();
+               this->sendLastChatMessages();
             }
          }
       }

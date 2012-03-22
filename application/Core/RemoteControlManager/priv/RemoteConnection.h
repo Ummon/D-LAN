@@ -97,6 +97,7 @@ namespace RCM
 
    private:
       void removeGetEntriesResult(const PM::IGetEntriesResult* getEntriesResult);
+      void sendLastChatMessages();
 
       void onNewMessage(Common::MessageHeader::MessageType type, const google::protobuf::Message& message);
       void onDisconnected();
