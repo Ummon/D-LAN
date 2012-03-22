@@ -34,7 +34,11 @@
     <number>0</number>
    </property>
    <item>
-    <widget class="QTreeView" name="tblDownloads"/>
+    <widget class="QTreeView" name="tblDownloads">
+     <property name="uniformRowHeights">
+      <bool>true</bool>
+     </property>
+    </widget>
    </item>
    <item>
     <layout class="QHBoxLayout" name="layTools">

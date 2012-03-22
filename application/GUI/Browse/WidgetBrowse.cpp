@@ -54,7 +54,6 @@ WidgetBrowse::WidgetBrowse(QSharedPointer<RCC::ICoreConnection> coreConnection, 
 
    this->ui->treeView->setModel(&this->browseModel);
    this->ui->treeView->setItemDelegate(&this->browseDelegate);
-   this->ui->treeView->setUniformRowHeights(true);
    this->ui->treeView->header()->setVisible(false);
    this->ui->treeView->header()->setResizeMode(0, QHeaderView::ResizeToContents);
    this->ui->treeView->header()->setResizeMode(1, QHeaderView::Stretch);

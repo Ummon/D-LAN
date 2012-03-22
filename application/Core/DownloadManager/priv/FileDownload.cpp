@@ -54,7 +54,6 @@ FileDownload::FileDownload(
    occupiedPeersDownloadingChunk(occupiedPeersDownloadingChunk),
    threadPool(threadPool),
    nbHashesKnown(0),
-   fileCreated(false),
    transferRateCalculator(transferRateCalculator)
 {
    L_DEBU(QString("New FileDownload : peer source = %1, remoteEntry : \n%2\nlocalEntry : \n%3").
@@ -229,7 +228,7 @@ QSharedPointer<ChunkDownload> FileDownload::getAChunkToDownload()
    QSharedPointer<ChunkDownload> chunkDownload =
       chunksReadyToDownload.size() == 1 ? chunksReadyToDownload.first() : chunksReadyToDownload[mtrand.randInt(chunksReadyToDownload.size() - 1)];
 
-   if (!this->fileCreated)
+   if (!this->localEntry.exists())
    {
       // Try to get the chunks from an existing file, it's useful when a download is taken from the saved queue.
       if (!this->tryToLinkToAnExistingFile())
@@ -241,7 +240,7 @@ QSharedPointer<ChunkDownload> FileDownload::getAChunkToDownload()
             for (int i = 0; !this->chunksWithoutDownload.isEmpty() && i < this->chunkDownloads.size(); i++)
                this->chunkDownloads[i]->setChunk(this->chunksWithoutDownload.takeFirst());
 
-            this->fileCreated = true;
+            this->localEntry.set_exists(true);
          }
          catch(FM::NoWriteableDirectoryException&)
          {
@@ -490,7 +489,7 @@ void FileDownload::setStatus(Status newStatus)
 
 /**
   * Look if a file in the cache ('FM::IFileManager') owns the known hashes. If so, the chunks ('FM:IChunk') are given to each 'ChunkDownload' and
-  * 'this->fileCreated' is set to true.
+  * 'this->local_entry().exists' is set to true.
   * @return 'true' is the file exists.
   */
 bool FileDownload::tryToLinkToAnExistingFile()
@@ -503,13 +502,13 @@ bool FileDownload::tryToLinkToAnExistingFile()
       this->chunksWithoutDownload = this->fileManager->getAllChunks(this->localEntry, hashes);
 
       if (!this->chunksWithoutDownload.isEmpty())
-         this->fileCreated = true;
+         this->localEntry.set_exists(true);
 
       for (int i = 0; !this->chunksWithoutDownload.isEmpty() && i < this->chunkDownloads.size(); i++)
          this->chunkDownloads[i]->setChunk(this->chunksWithoutDownload.takeFirst());
    }
 
-   return this->fileCreated;
+   return this->localEntry.exists();
 }
 
 void FileDownload::connectChunkDownloadSignals(QSharedPointer<ChunkDownload> chunkDownload)

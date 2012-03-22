@@ -115,8 +115,6 @@ namespace DM
       int nbHashesKnown;
       QSharedPointer<PM::IGetHashesResult> getHashesResult;
 
-      bool fileCreated;
-
       Common::TransferRateCalculator& transferRateCalculator;
    };
 }

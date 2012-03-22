@@ -276,7 +276,7 @@ QList< QSharedPointer<IChunk> > Cache::newFile(Protos::Common::Entry& fileEntry)
    fileEntry.set_exists(true); // File has been physically created.
    dir->populateEntrySharedDir(&fileEntry); // We set the shared directory.
 
-   // TODO : is there a better way to up cast ?
+   // TODO : is there a better way to up cast?
    QList< QSharedPointer<IChunk> > chunks;
    foreach (QSharedPointer<Chunk> chunk, file->getChunks())
       chunks << chunk;

@@ -77,13 +77,10 @@ bool DownloadsTreeModel::isFileLocationKnown(const QModelIndex& index) const
    if (!tree)
       return false;
 
-   if (tree->getItem().local_entry().type() == Protos::Common::Entry::FILE)
-      return tree->getItem().local_entry().exists();
-
-   for (TreeBreadthIterator<Protos::GUI::State::Download> i(tree); i.hasNext();)
+   for (TreeBreadthIterator<Protos::GUI::State::Download> i(tree, true); i.hasNext();)
    {
       Tree* current = dynamic_cast<Tree*>(i.next());
-      if (current->getItem().local_entry().exists())
+      if (current->getItem().local_entry().type() == Protos::Common::Entry::FILE && current->getItem().local_entry().exists())
          return true;
    }
 
@@ -116,27 +113,27 @@ QString DownloadsTreeModel::getPath(const QModelIndex& index, bool appendFilenam
    if (!tree)
       return false;
 
+   const Common::SharedDir sharedDir = this->sharedDirsModel.getDir(tree->getItem().local_entry().shared_dir().id().hash());
+   if (sharedDir.isNull())
+      return QString();
+
    QString path;
    if (tree->getItem().local_entry().type() == Protos::Common::Entry::DIR)
    {
-      // TODO
-      /*Tree* superTree = tree;
+      Tree* superTree = tree;
       while (superTree != this->root)
       {
          path.prepend(Common::ProtoHelper::getStr(superTree->getItem().local_entry(), &Protos::Common::Entry::name)).prepend('/');
-         superTree = superTree->getParent();
-      }*/
-      return path;
+         superTree = dynamic_cast<Tree*>(superTree->getParent());
+      }
+      path.prepend(sharedDir.path.left(sharedDir.path.count() - 1));
    }
    else
    {
-      const Common::SharedDir sharedDir = this->sharedDirsModel.getDir(tree->getItem().local_entry().shared_dir().id().hash());
-      if (sharedDir.isNull())
-         return QString();
-
-      QString path = sharedDir.path;
-      return path.append(Common::ProtoHelper::getRelativePath(tree->getItem().local_entry(), appendFilename));
+      path = sharedDir.path.left(sharedDir.path.count() - 1);
+      path.append(Common::ProtoHelper::getRelativePath(tree->getItem().local_entry(), appendFilename));
    }
+   return path;
 }
 
 int DownloadsTreeModel::rowCount(const QModelIndex& parent) const
@@ -251,7 +248,7 @@ void DownloadsTreeModel::onNewState(const Protos::GUI::State& state)
          // A node is created for each directory.
          Tree* currentTree = this->root;
          for (QStringListIterator i(path); i.hasNext();)
-            currentTree = this->insertDirectory(currentTree, i.next(), ProtoHelper::getStr(download, &Protos::GUI::State::Download::peer_source_nick));
+            currentTree = this->insertDirectory(currentTree, i.next(), ProtoHelper::getStr(download, &Protos::GUI::State::Download::peer_source_nick), download.local_entry().shared_dir().id().hash());
 
          this->insert(currentTree, download);
       }
@@ -289,11 +286,12 @@ void DownloadsTreeModel::onNewState(const Protos::GUI::State& state)
    }
 }
 
-DownloadsTreeModel::Tree* DownloadsTreeModel::insertDirectory(Tree* tree, const QString& dir, const QString& peerSourceNick)
+DownloadsTreeModel::Tree* DownloadsTreeModel::insertDirectory(Tree* tree, const QString& dir, const QString& peerSourceNick, const Common::Hash& sharedDirID)
 {
    Protos::GUI::State::Download download;
    ProtoHelper::setStr(*download.mutable_local_entry(), &Protos::Common::Entry::set_name, dir);
    ProtoHelper::setStr(download, &Protos::GUI::State::Download::set_peer_source_nick, peerSourceNick);
+   download.mutable_local_entry()->mutable_shared_dir()->mutable_id()->set_hash(sharedDirID.getData(), Common::Hash::HASH_SIZE);
    download.mutable_local_entry()->set_type(Protos::Common::Entry::DIR);
 
    return this->insert(tree, download);
@@ -312,7 +310,7 @@ DownloadsTreeModel::Tree* DownloadsTreeModel::insert(Tree* tree, const Protos::G
       }
    }
 
-   // TODO: A dichotomic search can be a good idea here instead of a simple loop.
+   // TODO: A dichotomic search may be a good idea here instead of a simple loop.
    for (int i = 0; i <= nbChildren; i++)
    {
       if (i ==  nbChildren || (tree != this->root && download < tree->getChild(i)->getItem())) // The root elements aren't sorted.
@@ -442,13 +440,3 @@ bool GUI::operator<(const Protos::GUI::State::Download& d1, const Protos::GUI::S
       return d1.local_entry().type() > d2.local_entry().type();
    return d1.local_entry().name() < d2.local_entry().name();
 }
-
-/*bool GUI::operator==(const Protos::GUI::State::Download& d1, const Protos::GUI::State::Download& d2)
-{
-   return ProtoHelper::getStr(d1.local_entry(), &Protos::Common::Entry::name) == ProtoHelper::getStr(d2.local_entry(), &Protos::Common::Entry::name);
-}
-
-bool GUI::operator!=(const Protos::GUI::State::Download& d1, const Protos::GUI::State::Download& d2)
-{
-   return !(d1 == d2);
-}*/
