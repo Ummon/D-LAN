@@ -348,6 +348,7 @@ void RemoteConnection::onNewMessage(Common::MessageHeader::MessageType type, con
                authResultMessage.set_status(Protos::GUI::AuthenticationResult_Status_OK);
                this->send(Common::MessageHeader::GUI_AUTHENTICATION_RESULT, authResultMessage);
                this->authenticated = true;
+               this->refresh();
             }
          }
       }
@@ -406,7 +407,6 @@ void RemoteConnection::onNewMessage(Common::MessageHeader::MessageType type, con
             this->networkListener->rebindSockets();
 
          SETTINGS.save();
-
          this->refresh();
       }
       break;
