@@ -36,7 +36,7 @@ namespace GUI
       static QIcon getIconNative(const QString& icon);
 
       static QFileIconProvider qtIconProvider;
-      static QMap<QString, QIcon> iconMap;
+      static QMap<QString, QIcon> cachedIcons;
    };
 }
 

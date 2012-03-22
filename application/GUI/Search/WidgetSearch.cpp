@@ -177,6 +177,7 @@ WidgetSearch::WidgetSearch(QSharedPointer<RCC::ICoreConnection> coreConnection, 
 
    this->ui->treeView->setModel(&this->searchModel);
    this->ui->treeView->setItemDelegate(&this->searchDelegate);
+   this->ui->treeView->setUniformRowHeights(true);
    this->ui->treeView->header()->setVisible(true);
 
    QList<quint32> columnSizes = SETTINGS.getRepeated<quint32>("search_column_size");

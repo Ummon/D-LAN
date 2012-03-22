@@ -322,7 +322,7 @@ QList<BrowseModel::Tree*> BrowseModel::synchronize(BrowseModel::Tree* tree, cons
          if (tree->getChild(i)->getItem() != entries.entry(j))
          {
             tree->getChild(i)->setItem(entries.entry(j));
-            emit dataChanged(parentIndex.child(i, 0), parentIndex.child(i, 1));
+            emit dataChanged(this->createIndex(i, 0, tree->getChild(i)), this->createIndex(i, 1, tree->getChild(i)));
          }
 
          i++;

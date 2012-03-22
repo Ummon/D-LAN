@@ -41,25 +41,19 @@ QIcon IconProvider::getIcon(const Protos::Common::Entry& entry)
       QString name = Common::ProtoHelper::getStr(entry, &Protos::Common::Entry::name);
       const int index = name.lastIndexOf(".");
       if (index != -1)
-      {
-         // Get extension.
-         name = name.mid(index);
-         return IconProvider::getIconCache(name);
-      }
+         return IconProvider::getIconCache(name.mid(index));
       else
-      {
          return IconProvider::qtIconProvider.icon(QFileIconProvider::File);
-      }
    }
 }
 
 QIcon IconProvider::getIconCache(const QString& extension)
 {
-   QIcon icon = iconMap.value(extension);
+   QIcon icon = cachedIcons.value(extension);
    if (icon.isNull())
    {
       icon = IconProvider::getIconNative(extension);
-      iconMap.insert(extension, icon);
+      cachedIcons.insert(extension, icon);
    }
    return icon;
 }
@@ -82,4 +76,4 @@ QIcon IconProvider::getIconNative(const QString& extension)
 }
 
 QFileIconProvider IconProvider::qtIconProvider;
-QMap<QString, QIcon> IconProvider::iconMap;
+QMap<QString, QIcon> IconProvider::cachedIcons;

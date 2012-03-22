@@ -191,14 +191,14 @@ const QList<WatcherEvent> DirWatcherWin::waitEvent(int timeout, QList<WaitCondit
          filenameTCHAR[nbChar] = 0;
          QString filename = QString::fromStdWString(filenameTCHAR);
 
-//         L_DEBU("---------");
-//         L_DEBU(QString("Action = %1").arg(notifyInformation->Action));
-//         L_DEBU(QString("filename = %1").arg(filename));
-//         L_DEBU(QString("offset = %1").arg(notifyInformation->NextEntryOffset));
-//         L_DEBU("---------");
-
          QString path = dir->fullPath;
          path.append('/').append(filename);
+
+//         L_DEBU("---------");
+//         L_DEBU(QString("Action = %1").arg(notifyInformation->Action));
+//         L_DEBU(QString("path = %1").arg(path));
+//         L_DEBU(QString("offset = %1").arg(notifyInformation->NextEntryOffset));
+//         L_DEBU("---------");
 
          switch (notifyInformation->Action)
          {
