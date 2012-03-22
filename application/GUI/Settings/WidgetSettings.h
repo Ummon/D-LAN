@@ -87,7 +87,7 @@ namespace GUI
       void moveUpShared();
       void moveDownShared();
 
-      void displayContextMenuDownload(const QPoint& point);
+      void displayContextMenuSharedDirs(const QPoint& point);
       void refreshButtonsAvailability(const QItemSelection& selected);
       void refreshButtonsAvailability();
       void openLocation();

@@ -94,7 +94,7 @@ WidgetSettings::WidgetSettings(QSharedPointer<RCC::ICoreConnection> coreConnecti
    this->ui->tabAdvancedSettings->installEventFilter(this);
 
    this->ui->tblShareDirs->setContextMenuPolicy(Qt::CustomContextMenu);
-   connect(this->ui->tblShareDirs, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(displayContextMenuDownload(const QPoint&)));   
+   connect(this->ui->tblShareDirs, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(displayContextMenuSharedDirs(const QPoint&)));
 
    // When the selection change or a shared dir is moved/deleted/inserted we must set the availability of the action buttons.
    connect(this->ui->tblShareDirs->selectionModel(), SIGNAL(selectionChanged(const QItemSelection&, const QItemSelection&)), this, SLOT(refreshButtonsAvailability(const QItemSelection&)));
@@ -379,6 +379,8 @@ void WidgetSettings::coreConnected()
    this->ui->butConnect->setText(tr("Connect"));
 
    this->ui->butChangePassword->setDisabled(false);
+
+   this->ui->butOpenFolder->setDisabled(!this->coreConnection->isLocal());
 }
 
 void WidgetSettings::coreDisconnected()
@@ -497,26 +499,29 @@ void WidgetSettings::moveDownShared()
    }
 }
 
-void WidgetSettings::displayContextMenuDownload(const QPoint& point)
+void WidgetSettings::displayContextMenuSharedDirs(const QPoint& point)
 {
    QPoint globalPosition = this->ui->tblShareDirs->mapToGlobal(point);
    globalPosition.setY(globalPosition.y() + this->ui->tblShareDirs->horizontalHeader()->height());
-   if (this->coreConnection->isLocal())
-   {
-      QMenu menu;
-      menu.addAction(QIcon(":/icons/ressources/delete.png"), tr("Remove the shared folder"), this, SLOT(removeShared()));
-      QAction* actionUp = menu.addAction(QIcon(":/icons/ressources/arrow_up.png"), tr("Move up"), this, SLOT(moveUpShared()));
-      QAction* actionDown = menu.addAction(QIcon(":/icons/ressources/arrow_down.png"), tr("Move down"), this, SLOT(moveDownShared()));
+
+   QMenu menu;
+   QAction* actionDelete = menu.addAction(QIcon(":/icons/ressources/delete.png"), tr("Remove the shared folder"), this, SLOT(removeShared()));
+   QAction* actionUp = menu.addAction(QIcon(":/icons/ressources/arrow_up.png"), tr("Move up"), this, SLOT(moveUpShared()));
+   QAction* actionDown = menu.addAction(QIcon(":/icons/ressources/arrow_down.png"), tr("Move down"), this, SLOT(moveDownShared()));
+
+   if (this->coreConnection->isLocal() && this->sharedDirsModel.rowCount() > 0)
       menu.addAction(QIcon(":/icons/ressources/explore_folder.png"), tr("Open location"), this, SLOT(openLocation()));
 
-      if (this->ui->tblShareDirs->currentIndex().row() == 0)
-         actionUp->setDisabled(true);
+   if (this->sharedDirsModel.rowCount() == 0)
+      actionDelete->setDisabled(true);
 
-      if (this->ui->tblShareDirs->currentIndex().row() >= this->sharedDirsModel.rowCount() - 1)
-         actionDown->setDisabled(true);
+   if (this->ui->tblShareDirs->currentIndex().row() == 0 || this->sharedDirsModel.rowCount() == 0)
+      actionUp->setDisabled(true);
 
-      menu.exec(globalPosition);
-   }
+   if (this->ui->tblShareDirs->currentIndex().row() >= this->sharedDirsModel.rowCount() - 1  || this->sharedDirsModel.rowCount() == 0)
+      actionDown->setDisabled(true);
+
+   menu.exec(globalPosition);
 }
 
 void WidgetSettings::refreshButtonsAvailability(const QItemSelection& selected)
@@ -533,7 +538,7 @@ void WidgetSettings::refreshButtonsAvailability(const QItemSelection& selected)
       this->ui->butMoveUpShared->setDisabled(selected.indexes().first().row() == 0);
       this->ui->butMoveDownShared->setDisabled(selected.indexes().first().row() == this->sharedDirsModel.rowCount() - 1);
       this->ui->butRemoveShared->setDisabled(false);
-      this->ui->butOpenFolder->setDisabled(false);
+      this->ui->butOpenFolder->setDisabled(!this->coreConnection->isLocal());
    }
 }
 
