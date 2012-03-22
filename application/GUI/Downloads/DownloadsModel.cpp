@@ -36,13 +36,13 @@ DownloadsModel::DownloadsModel(QSharedPointer<RCC::ICoreConnection> coreConnecti
    connect(this->coreConnection.data(), SIGNAL(newState(Protos::GUI::State)), this, SLOT(onNewState(Protos::GUI::State)));
 }
 
-QVariant DownloadsModel::getData(const Protos::GUI::State::Download& download, int role, int column) const
+QVariant DownloadsModel::getData(const Protos::GUI::State::Download& download, const QModelIndex& index, int role) const
 {
    switch (role)
    {
    case Qt::DisplayRole:
       {
-         switch (column)
+         switch (index.column())
          {
          case 0: return Common::ProtoHelper::getStr(download.local_entry(), &Protos::Common::Entry::name);
          case 1: return Common::Global::formatByteSize(download.local_entry().size());
@@ -80,7 +80,7 @@ QVariant DownloadsModel::getData(const Protos::GUI::State::Download& download, i
 
    case Qt::DecorationRole:
       {
-         if (column == 0)
+         if (index.column() == 0)
          {
             if (download.status() >= Protos::GUI::State::Download::UNKNOWN_PEER_SOURCE)
                return QPixmap(":/icons/ressources/error.png");
@@ -91,30 +91,34 @@ QVariant DownloadsModel::getData(const Protos::GUI::State::Download& download, i
       }
 
    case Qt::ToolTipRole:
-      switch (download.status())
       {
-      case Protos::GUI::State::Download::UNKNOWN_PEER_SOURCE:
-         return "Unknown source peer";
-      case Protos::GUI::State::Download::ENTRY_NOT_FOUND:
-         return "The source peer doesn't have the entry";
-      case Protos::GUI::State::Download::NO_SOURCE:
-         return "There is no source to download from";
-      case Protos::GUI::State::Download::NO_SHARED_DIRECTORY_TO_WRITE:
-         return "No incoming folder";
-      case Protos::GUI::State::Download::NO_ENOUGH_FREE_SPACE:
-         return "Not enough free space left";
-      case Protos::GUI::State::Download::UNABLE_TO_CREATE_THE_FILE:
-         return "Unable to create the file";
-      case Protos::GUI::State::Download::UNABLE_TO_RETRIEVE_THE_HASHES:
-         return "Unable to retrieve the hashes";
-      case Protos::GUI::State::Download::TRANSFERT_ERROR:
-         return "Transfert error";
-      default:
-         return QVariant();
+         QString toolTip;
+         switch (download.status())
+         {
+         case Protos::GUI::State::Download::UNKNOWN_PEER_SOURCE:
+            toolTip += tr("Unknown source peer: ");
+         case Protos::GUI::State::Download::ENTRY_NOT_FOUND:
+            toolTip += tr("The source peer doesn't have the entry: ");
+         case Protos::GUI::State::Download::NO_SOURCE:
+            toolTip += tr("There is no source to download from: ");
+         case Protos::GUI::State::Download::NO_SHARED_DIRECTORY_TO_WRITE:
+            toolTip += tr("No incoming folder: ");
+         case Protos::GUI::State::Download::NO_ENOUGH_FREE_SPACE:
+            toolTip += tr("Not enough free space left: ");
+         case Protos::GUI::State::Download::UNABLE_TO_CREATE_THE_FILE:
+            toolTip += tr("Unable to create the file: ");
+         case Protos::GUI::State::Download::UNABLE_TO_RETRIEVE_THE_HASHES:
+            toolTip += tr("Unable to retrieve the hashes: ");
+         case Protos::GUI::State::Download::TRANSFERT_ERROR:
+            toolTip += tr("Transfert error: ");
+         default:;
+         }
+         toolTip += this->getPath(index);
+         return toolTip;
       }
 
    case Qt::TextAlignmentRole:
-      return static_cast<int>(column == 1 ? Qt::AlignRight : Qt::AlignLeft) | Qt::AlignVCenter;
+      return static_cast<int>(index.column() == 1 ? Qt::AlignRight : Qt::AlignLeft) | Qt::AlignVCenter;
 
    default: return QVariant();
    }

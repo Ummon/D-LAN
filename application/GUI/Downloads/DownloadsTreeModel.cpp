@@ -162,7 +162,7 @@ QVariant DownloadsTreeModel::data(const QModelIndex& index, int role) const
 
    Tree* tree = static_cast<Tree*>(index.internalPointer());
    if (tree)
-      return DownloadsModel::getData(tree->getItem(), role, index.column());
+      return DownloadsModel::getData(tree->getItem(), index, role);
    return QVariant();
 }
 
@@ -226,7 +226,7 @@ void DownloadsTreeModel::onNewState(const Protos::GUI::State& state)
    QList<int> activeDownloadIndices = this->getNonFilteredDownloadIndices(state);
 
    for (Common::TreeBreadthIterator<Protos::GUI::State::Download> i(this->root); i.hasNext();)
-      dynamic_cast<Tree*>(i.next())->setToDelete();
+      dynamic_cast<Tree*>(i.next())->toDelete = true;
 
    for (int i = 0; i < activeDownloadIndices.size(); i++)
    {
@@ -240,7 +240,7 @@ void DownloadsTreeModel::onNewState(const Protos::GUI::State& state)
       {
          Tree* parentTree = fileTree;
          while (parentTree = dynamic_cast<Tree*>(parentTree->getParent()))
-            parentTree->setToDelete(false);
+            parentTree->toDelete = false;
 
          this->update(fileTree, download);
       }
@@ -266,7 +266,7 @@ void DownloadsTreeModel::onNewState(const Protos::GUI::State& state)
       for (int i = 0; i < currentTree->getNbChildren(); i++)
       {
          Tree* currentChildTree = dynamic_cast<Tree*>(currentTree->getChild(i));
-         if (currentChildTree->isToDelete())
+         if (currentChildTree->toDelete)
          {
             this->updateDirectoriesEntryDeleted(currentChildTree, currentChildTree->getItem());
 
@@ -336,7 +336,7 @@ DownloadsTreeModel::Tree* DownloadsTreeModel::insert(Tree* tree, const Protos::G
 
 DownloadsTreeModel::Tree* DownloadsTreeModel::update(Tree* tree, const Protos::GUI::State::Download& download)
 {
-   tree->setToDelete(false);
+   tree->toDelete = false;
    if (download.local_entry().type() == Protos::Common::Entry::FILE && tree->getItem() != download)
    {
       const Protos::GUI::State::Download oldDownload = tree->getItem();
@@ -385,16 +385,19 @@ DownloadsTreeModel::Tree*  DownloadsTreeModel::updateDirectories(Tree* file, qui
       currentDirectory->getItem().mutable_local_entry()->set_size(currentDirectory->getItem().local_entry().size() + fileSizeDelta);
       currentDirectory->getItem().set_downloaded_bytes(currentDirectory->getItem().downloaded_bytes() + fileDownloadedBytesDelta);
 
-      currentDirectory->setNbErrorFiles(currentDirectory->getNbErrorFiles() + (oldStatus >= Protos::GUI::State::Download::UNKNOWN_PEER_SOURCE && newStatus < Protos::GUI::State::Download::UNKNOWN_PEER_SOURCE ? -1 : (oldStatus < Protos::GUI::State::Download::UNKNOWN_PEER_SOURCE && newStatus >= Protos::GUI::State::Download::UNKNOWN_PEER_SOURCE ? 1 : 0)));
-      currentDirectory->setNbPausedFiles(currentDirectory->getNbPausedFiles() + (oldStatus == Protos::GUI::State::Download::PAUSED && newStatus != Protos::GUI::State::Download::PAUSED ? -1 : (oldStatus != Protos::GUI::State::Download::PAUSED && newStatus == Protos::GUI::State::Download::PAUSED ? 1 : 0)));
+      currentDirectory->nbErrorFiles += oldStatus >= Protos::GUI::State::Download::UNKNOWN_PEER_SOURCE && newStatus < Protos::GUI::State::Download::UNKNOWN_PEER_SOURCE ? -1 : (oldStatus < Protos::GUI::State::Download::UNKNOWN_PEER_SOURCE && newStatus >= Protos::GUI::State::Download::UNKNOWN_PEER_SOURCE ? 1 : 0);
+      currentDirectory->nbPausedFiles += oldStatus == Protos::GUI::State::Download::PAUSED && newStatus != Protos::GUI::State::Download::PAUSED ? -1 : (oldStatus != Protos::GUI::State::Download::PAUSED && newStatus == Protos::GUI::State::Download::PAUSED ? 1 : 0);
+      currentDirectory->nbDownloadingFiles += oldStatus == Protos::GUI::State::Download::DOWNLOADING && newStatus != Protos::GUI::State::Download::DOWNLOADING ? -1 : (oldStatus != Protos::GUI::State::Download::DOWNLOADING && newStatus == Protos::GUI::State::Download::DOWNLOADING ? 1 : 0);
 
       if (currentDirectory->getItem().local_entry().size() == currentDirectory->getItem().downloaded_bytes())
          currentDirectory->getItem().set_status(Protos::GUI::State::Download::COMPLETE);
-      else if (currentDirectory->getNbErrorFiles() == 1)
+      else if (currentDirectory->nbErrorFiles == 1)
          currentDirectory->getItem().set_status(newStatus);
-      else if (currentDirectory->getNbErrorFiles() == 0 && currentDirectory->getNbPausedFiles() > 0)
+      else if (currentDirectory->nbErrorFiles == 0 && currentDirectory->nbPausedFiles > 0)
          currentDirectory->getItem().set_status(Protos::GUI::State::Download::PAUSED);
-      else if (currentDirectory->getNbErrorFiles() == 0)
+      else if (currentDirectory->nbErrorFiles == 0 && currentDirectory->nbDownloadingFiles > 0)
+         currentDirectory->getItem().set_status(Protos::GUI::State::Download::DOWNLOADING);
+      else if (currentDirectory->nbErrorFiles == 0)
          currentDirectory->getItem().set_status(Protos::GUI::State::Download::QUEUED);
 
       const int currentDirectoryPosition = currentDirectory->getOwnPosition();
@@ -409,27 +412,14 @@ DownloadsTreeModel::Tree*  DownloadsTreeModel::updateDirectories(Tree* file, qui
 /////
 
 DownloadsTreeModel::Tree::Tree() :
-   toDelete(false), nbPausedFiles(0), nbErrorFiles(0)
+   toDelete(false), nbPausedFiles(0), nbErrorFiles(0), nbDownloadingFiles(0)
 {
+   this->getItem().set_status(Protos::GUI::State::Download::QUEUED);
 }
 
 DownloadsTreeModel::Tree::Tree(const Protos::GUI::State::Download& download, Tree* parent) :
-   Common::Tree<Protos::GUI::State::Download>(download, parent), toDelete(false), nbPausedFiles(0), nbErrorFiles(0)
+   Common::Tree<Protos::GUI::State::Download>(download, parent), toDelete(false), nbPausedFiles(0), nbErrorFiles(0), nbDownloadingFiles(0)
 {
-}
-
-DownloadsTreeModel::Tree::~Tree()
-{
-}
-
-void DownloadsTreeModel::Tree::setToDelete(bool toDelete)
-{
-   this->toDelete = toDelete;
-}
-
-bool DownloadsTreeModel::Tree::isToDelete() const
-{
-   return this->toDelete;
 }
 
 Common::Tree<Protos::GUI::State::Download>* DownloadsTreeModel::Tree::newTree(const Protos::GUI::State::Download& download)

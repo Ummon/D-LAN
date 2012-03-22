@@ -47,46 +47,26 @@ void DownloadsDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opt
       progressBarOption.textAlignment = Qt::AlignHCenter;
       progressBarOption.progress = progress.progress;
 
-      if (progress.type == Protos::Common::Entry::FILE)
+      switch (progress.status)
       {
-         switch (progress.status)
-         {
-         case Protos::GUI::State_Download_Status_QUEUED:
-            progressBarOption.text = "Queued";
-            break;
-         case Protos::GUI::State_Download_Status_GETTING_THE_HASHES:
-            progressBarOption.text = "Getting the hashes..";
-            break;
-         case Protos::GUI::State_Download_Status_DOWNLOADING:
-            progressBarOption.text = QString("%1%").arg(static_cast<double>(progress.progress) / 100);
-            break;
-         case Protos::GUI::State_Download_Status_COMPLETE:
-            progressBarOption.text = "Complete";
-            break;
-         case Protos::GUI::State_Download_Status_PAUSED:
-            progressBarOption.text = "Paused";
-            break;
-         default:
-            progressBarOption.text = "Waiting..";
-            break;
-         }
-      }
-      else
-      {  switch (progress.status)
-         {
-         case Protos::GUI::State_Download_Status_QUEUED:
-            progressBarOption.text = QString("%1%").arg(static_cast<double>(progress.progress) / 100);
-            break;
-         case Protos::GUI::State_Download_Status_COMPLETE:
-            progressBarOption.text = "Complete";
-            break;
-         case Protos::GUI::State_Download_Status_PAUSED:
-            progressBarOption.text = "Paused";
-            break;
-         default:
-            progressBarOption.text = "Waiting..";
-            break;
-         }
+      case Protos::GUI::State::Download::QUEUED:
+         progressBarOption.text = "Queued";
+         break;
+      case Protos::GUI::State::Download::GETTING_THE_HASHES:
+         progressBarOption.text = "Getting the hashes..";
+         break;
+      case Protos::GUI::State::Download::DOWNLOADING:
+         progressBarOption.text = QString("%1%").arg(static_cast<double>(progress.progress) / 100);
+         break;
+      case Protos::GUI::State::Download::COMPLETE:
+         progressBarOption.text = "Complete";
+         break;
+      case Protos::GUI::State::Download::PAUSED:
+         progressBarOption.text = "Paused";
+         break;
+      default:
+         progressBarOption.text = "Waiting..";
+         break;
       }
 
       progressBarOption.textVisible = true;

@@ -63,24 +63,15 @@ namespace GUI
       public:
          Tree();
          Tree(const Protos::GUI::State::Download& download, Tree* parent);
-         ~Tree();
-
-         void setToDelete(bool toDelete = true);
-         bool isToDelete() const;
-
-         void setNbPausedFiles(int n) { this->nbPausedFiles = n; }
-         int getNbPausedFiles() const { return this->nbPausedFiles; }
-
-         void setNbErrorFiles(int n) { this->nbErrorFiles = n; }
-         int getNbErrorFiles() const {return this->nbErrorFiles; }
 
       protected:
          virtual Common::Tree<Protos::GUI::State::Download>* newTree(const Protos::GUI::State::Download& download);
 
-      private:
+      public: // Fuck you encapsulation.
          bool toDelete;
          int nbPausedFiles;
          int nbErrorFiles;
+         int nbDownloadingFiles;
       };
 
       Tree* insertDirectory(Tree* tree, const QString& dir, const QString& peerSourceNick);

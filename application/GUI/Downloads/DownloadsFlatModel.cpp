@@ -92,7 +92,7 @@ QString DownloadsFlatModel::getPath(const QModelIndex& index, bool appendFilenam
    if (sharedDir.isNull())
       return QString();
 
-   QString path = sharedDir.path;
+   QString path = sharedDir.path.left(sharedDir.path.count() - 1);
    return path.append(Common::ProtoHelper::getRelativePath(this->downloads[index.row()].local_entry(), appendFilename));
 }
 
@@ -114,7 +114,7 @@ QVariant DownloadsFlatModel::data(const QModelIndex& index, int role) const
    if (!index.isValid() || index.row() >= this->downloads.size())
       return QVariant();
 
-   return DownloadsModel::getData(this->downloads[index.row()], role, index.column());
+   return DownloadsModel::getData(this->downloads[index.row()], index, role);
 }
 
 Qt::DropActions DownloadsFlatModel::supportedDropActions() const
