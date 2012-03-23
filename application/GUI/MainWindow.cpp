@@ -103,6 +103,11 @@ MainWindow::MainWindow(QSharedPointer<RCC::ICoreConnection> coreConnection, QWid
 
    this->ui->setupUi(this);
 
+#ifdef Q_OS_DARWIN
+   this->ui->butSearch->setMaximumWidth(24);
+   this->ui->butSearchOwnFiles->setMaximumWidth(24);
+#endif
+
    this->mdiAreaTabBar = this->ui->mdiArea->findChild<QTabBar*>();
    this->mdiAreaTabBar->setMovable(true);
    connect(this->mdiAreaTabBar, SIGNAL(tabMoved(int, int)), this, SLOT(tabMoved(int, int)));
