@@ -65,7 +65,7 @@ namespace DM
       Download* addDownload(const Protos::Common::Entry& remoteEntry, const Protos::Common::Entry& localEntry, PM::IPeer* peerSource, Protos::Queue::Queue::Entry::Status status, int position);
 
       QList<IDownload*> getDownloads() const;
-      void moveDownloads(quint64 downloadIDRef, bool moveBefore, const QList<quint64>& downloadIDs);
+      void moveDownloads(const QList<quint64>& downloadIDRefs, const QList<quint64>& downloadIDs, Protos::GUI::MoveDownloads::Position position);
 
       void removeAllCompleteDownloads();
       void removeDownloads(QList<quint64> IDs);

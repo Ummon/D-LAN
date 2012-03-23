@@ -95,10 +95,12 @@ bool DownloadQueue::isAPeerSource(const Common::Hash& peerID) const
    return this->downloadsIndexedBySourcePeerID.contains(peerID);
 }
 
-void DownloadQueue::moveDownloads(quint64 downloadIDRef, bool moveBefore, const QList<quint64>& downloadIDs)
+void DownloadQueue::moveDownloads(const QList<quint64>& downloadIDRefs, const QList<quint64>& downloadIDs, Protos::GUI::MoveDownloads::Position position)
 {
+   /*
+   TODO
    QList<quint64> downloadIDsCopy(downloadIDs);
-   int iRef = -1; // Index of the download reference, -1 if unkown.
+   int iRef = -1; // Index of the download reference, -1 if unknown.
    QList<int> iToMove;
 
    for (int i = 0; i < this->downloads.size(); i++)
@@ -146,6 +148,7 @@ void DownloadQueue::moveDownloads(quint64 downloadIDRef, bool moveBefore, const 
          iToMove.clear();
       }
    }
+   */
 }
 
 /**

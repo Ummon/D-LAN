@@ -206,7 +206,7 @@ Qt::ItemFlags DownloadsTreeModel::flags(const QModelIndex& index) const
 {
    Qt::ItemFlags defaultFlags = QAbstractItemModel::flags(index);
 
-   if (index.isValid())
+   if (index.isValid() && static_cast<Tree*>(index.internalPointer())->getParent() == this->root)
        return Qt::ItemIsDragEnabled | defaultFlags;
    else
        return Qt::ItemIsDropEnabled | defaultFlags;

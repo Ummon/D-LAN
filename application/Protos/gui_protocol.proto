@@ -252,16 +252,25 @@ message PauseDownloads {
 
 // GUI -> Core
 // id : 0x71
-// Tell the core to move one or more downloads in the list right before or after a given download.
-// 'id_ref' must exist.
+// Tell the core to move one or more downloads in the list right before or after a given set of downloads.
+// 'id_ref' and 'id_to_move' must have at least one item each.
 // The order of the moved downloads are kept unchanged.
-// For example : id_ref = 21, move_before = true, id = [16, 18]
-// Initial list : [34, 21, 18, 54, 16]
-// After the operation : [34, 18, 16, 21, 54]
+//
+// Example #1: id_ref = [21], id_to_move = [16, 18], position = BEFORE
+// Initial list: [34, 21, 18, 54, 16]
+// After the operation: [34, 18, 16, 21, 54]
+//
+// Example #2: id_ref = [8, 2, 5], id_to_move = [3, 6], position = AFTER
+// Initial list : [3, 8, 5, 6, 2]
+// After the operation: [8, 5, 2, 3, 6]
 message MoveDownloads {
-   required uint64 id_ref = 1;
-   optional bool move_before = 2 [default = true];
-   repeated uint64 id_to_move = 3;
+   enum Position {
+      BEFORE = 1;
+      AFTER = 2;
+   }
+   repeated uint64 id_ref = 1;
+   repeated uint64 id_to_move = 2;
+   optional Position position = 3 [default = BEFORE];
 }
 
 // GUI -> Core

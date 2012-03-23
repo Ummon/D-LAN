@@ -172,6 +172,42 @@ QList<int> DownloadsModel::getNonFilteredDownloadIndices(const Protos::GUI::Stat
    return indices;
 }
 
+QList<int> DownloadsModel::getDraggedRows(const QMimeData* data)
+{
+   if (!data)
+      return QList<int>();
+
+   QStringList types = this->mimeTypes();
+   if (types.isEmpty())
+       return QList<int>();
+
+   QString format = types.at(0);
+   if (!data->hasFormat(format))
+      return QList<int>();
+
+   QByteArray encoded = data->data(format);
+   QDataStream stream(&encoded, QIODevice::ReadOnly);
+   QList<int> rows;
+
+   int previousRow = -1;
+   while (!stream.atEnd())
+   {
+       int currentRow;
+       int currentCol;
+       QMap<int, QVariant> value;
+       stream >> currentRow >> currentCol >> value;
+
+       if (currentRow != previousRow)
+       {
+          previousRow = currentRow;
+          if (currentRow >= 0)
+             rows << currentRow;
+       }
+   }
+
+   return rows;
+}
+
 
 /**
   * Used when drag'n dropping some downloads.

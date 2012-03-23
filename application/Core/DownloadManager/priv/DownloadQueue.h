@@ -25,6 +25,7 @@
 #include <QMultiHash>
 
 #include <Protos/common.pb.h>
+#include <Protos/gui_protocol.pb.h>
 #include <Protos/queue.pb.h>
 
 #include <Common/Hash.h>
@@ -54,7 +55,7 @@ namespace DM
       void peerBecomesAvailable(PM::IPeer* peer);
       bool isAPeerSource(const Common::Hash& peerID) const;
 
-      void moveDownloads(quint64 downloadIDRef, bool moveBefore, const QList<quint64>& downloadIDs);
+      void moveDownloads(const QList<quint64>& downloadIDRefs, const QList<quint64>& downloadIDs, Protos::GUI::MoveDownloads::Position position);
       bool removeDownloads(DownloadPredicate& predicate);
       bool pauseDownloads(QList<quint64> IDs, bool pause = true);
       bool isEntryAlreadyQueued(const Protos::Common::Entry& localEntry, const Common::Hash& peerSourceID);

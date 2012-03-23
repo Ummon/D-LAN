@@ -185,9 +185,9 @@ QList<IDownload*> DownloadManager::getDownloads() const
    return listDownloads;
 }
 
-void DownloadManager::moveDownloads(quint64 downloadIDRef, bool moveBefore, const QList<quint64>& downloadIDs)
+void DownloadManager::moveDownloads(const QList<quint64>& downloadIDRefs, const QList<quint64>& downloadIDs, Protos::GUI::MoveDownloads::Position position)
 {
-   this->downloadQueue.moveDownloads(downloadIDRef, moveBefore, downloadIDs);
+   this->downloadQueue.moveDownloads(downloadIDRefs, downloadIDs, position);
 
    this->setQueueChanged();
 }

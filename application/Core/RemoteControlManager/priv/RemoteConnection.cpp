@@ -537,10 +537,15 @@ void RemoteConnection::onNewMessage(Common::MessageHeader::MessageType type, con
       {
          const Protos::GUI::MoveDownloads& moveDownloadsMessage = static_cast<const Protos::GUI::MoveDownloads&>(message);
 
+         QList<quint64> downloadIDRefs;
+         for (int i = 0; i < moveDownloadsMessage.id_ref_size(); i++)
+            downloadIDRefs << moveDownloadsMessage.id_to_move(i);
+
          QList<quint64> downloadIDs;
          for (int i = 0; i < moveDownloadsMessage.id_to_move_size(); i++)
             downloadIDs << moveDownloadsMessage.id_to_move(i);
-         this->downloadManager->moveDownloads(moveDownloadsMessage.id_ref(), moveDownloadsMessage.move_before(), downloadIDs);
+
+         this->downloadManager->moveDownloads(downloadIDRefs, downloadIDs, moveDownloadsMessage.position());
 
          this->refresh();
       }

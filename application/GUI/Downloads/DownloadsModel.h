@@ -58,6 +58,7 @@ namespace GUI
    protected:
       QVariant getData(const Protos::GUI::State::Download& download, const QModelIndex& index, int role) const;
       QList<int> getNonFilteredDownloadIndices(const Protos::GUI::State& state) const;
+      QList<int> getDraggedRows(const QMimeData* data);
 
       QSharedPointer<RCC::ICoreConnection> coreConnection;
       const PeerListModel& peerListModel;

@@ -23,6 +23,7 @@
 #include <QSharedPointer>
 
 #include <Protos/common.pb.h>
+#include <Protos/gui_protocol.pb.h>
 
 #include <Common/Hash.h>
 
@@ -55,9 +56,9 @@ namespace DM
       virtual QList<IDownload*> getDownloads() const = 0;
 
       /**
-        * Move all downloads 'downloadIDs' before or after 'downloadIDRef' depending of 'moveBefore'.
+        * Move all downloads 'downloadIDs' before or after 'downloadIDRefs' depending of 'position'.
         */
-      virtual void moveDownloads(quint64 downloadIDRef, bool moveBefore, const QList<quint64>& downloadIDs) = 0;
+      virtual void moveDownloads(const QList<quint64>& downloadIDRefs, const QList<quint64>& downloadIDs, Protos::GUI::MoveDownloads::Position position) = 0;
 
       virtual void removeAllCompleteDownloads() = 0;
 

@@ -169,7 +169,8 @@ namespace RCC
       /**
         * @remarks The signal 'newState' will be emitted right after a call.
         */
-      virtual void moveDownloads(quint64 downloadIDRef, const QList<quint64>& downloadIDs, bool moveBefore = true) = 0;
+      virtual void moveDownloads(quint64 downloadIDRef, const QList<quint64>& downloadIDs, Protos::GUI::MoveDownloads::Position position = Protos::GUI::MoveDownloads::BEFORE) = 0;
+      virtual void moveDownloads(const QList<quint64>& downloadIDRefs, const QList<quint64>& downloadIDs, Protos::GUI::MoveDownloads::Position position = Protos::GUI::MoveDownloads::BEFORE) = 0;
 
       /**
         * Ask a new state from the core, the signal 'newState' is then emitted.

@@ -132,72 +132,51 @@ Qt::ItemFlags DownloadsFlatModel::flags(const QModelIndex& index) const
        return Qt::ItemIsDropEnabled | defaultFlags;
 }
 
-bool DownloadsFlatModel::dropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex & parent)
+bool DownloadsFlatModel::dropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent)
 {
-   if (row == -1 || !data || action != Qt::MoveAction)
+   if (row == -1 || !data || action != Qt::MoveAction ||  this->downloads.isEmpty())
        return false;
 
-   QStringList types = this->mimeTypes();
-   if (types.isEmpty())
-       return false;
-
-   QString format = types.at(0);
-   if (!data->hasFormat(format))
-       return false;
-
-   if (this->downloads.isEmpty())
+   QList<int> rows = this->getDraggedRows(data);
+   if (rows.isEmpty())
       return false;
 
-   QByteArray encoded = data->data(format);
-   QDataStream stream(&encoded, QIODevice::ReadOnly);
 
-   QList<quint64> downloadIDs;
-   QList<int> rowsToRemove;
-
-   bool moveBefore = true;
+   // Defines the reference ID.
+   Protos::GUI::MoveDownloads::Position position = Protos::GUI::MoveDownloads::BEFORE;
    quint64 placeToMove = 0;
    if (row >= this->downloads.size())
    {
-      moveBefore = false;
+      position = Protos::GUI::MoveDownloads::AFTER;
       placeToMove = this->downloads.last().id();
    }
    else
       placeToMove = this->downloads[row].id();
 
-
-   int previousRow = -1;
-   while (!stream.atEnd())
+   // Defines the download IDs to move.
+   QList<quint64> downloadIDs;
+   for (QListIterator<int> i(rows); i.hasNext();)
    {
-       int currentRow;
-       int currentCol;
-       QMap<int, QVariant> value;
-       stream >> currentRow >> currentCol >> value;
-
-       if (currentRow != previousRow)
-       {
-          previousRow = currentRow;
-          if (currentRow >= 0 && currentRow < this->downloads.size())
-          {
-             downloadIDs << this->downloads[currentRow].id();
-             rowsToRemove << currentRow;
-          }
-       }
+      int currentRow = i.next();
+      if (currentRow < this->downloads.size())
+         downloadIDs << this->downloads[currentRow].id();
    }
 
-   if (!rowsToRemove.isEmpty())
+   // We remove the moved download from the list (not necessery but nicer for the user experience).
+   if (!rows.isEmpty())
    {
-      qSort(rowsToRemove.begin(), rowsToRemove.end());
+      qSort(rows.begin(), rows.end());
 
-      int rowBegin = rowsToRemove.size() - 1;
+      int rowBegin = rows.size() - 1;
       int rowEnd = rowBegin;
       for (int i = rowEnd - 1; i >= -1 ; i--)
       {
-         if (i >= 0 && rowsToRemove[i] == rowsToRemove[rowBegin] - 1)
+         if (i >= 0 && rows[i] == rows[rowBegin] - 1)
             rowBegin--;
          else
          {
-            this->beginRemoveRows(QModelIndex(), rowsToRemove[rowBegin], rowsToRemove[rowEnd]);
-            for (int j = rowsToRemove[rowEnd]; j >= rowsToRemove[rowBegin]; j--)
+            this->beginRemoveRows(QModelIndex(), rows[rowBegin], rows[rowEnd]);
+            for (int j = rows[rowEnd]; j >= rows[rowBegin]; j--)
                this->downloads.removeAt(j);
             this->endRemoveRows();
 
@@ -206,7 +185,7 @@ bool DownloadsFlatModel::dropMimeData(const QMimeData* data, Qt::DropAction acti
       }
    }
 
-   this->coreConnection->moveDownloads(placeToMove, downloadIDs, moveBefore);
+   this->coreConnection->moveDownloads(placeToMove, downloadIDs, position);
    return true;
 }
 

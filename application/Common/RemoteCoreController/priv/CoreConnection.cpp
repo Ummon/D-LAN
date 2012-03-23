@@ -169,9 +169,14 @@ void CoreConnection::pauseDownloads(const QList<quint64>& downloadIDs, bool paus
    this->current()->pauseDownloads(downloadIDs, pause);
 }
 
-void CoreConnection::moveDownloads(quint64 downloadIDRef, const QList<quint64>& downloadIDs, bool moveBefore)
+void CoreConnection::moveDownloads(quint64 downloadIDRef, const QList<quint64>& downloadIDs, Protos::GUI::MoveDownloads::Position position)
 {
-   this->current()->moveDownloads(downloadIDRef, downloadIDs, moveBefore);
+   this->moveDownloads(QList<quint64>() << downloadIDRef, downloadIDs, position);
+}
+
+void CoreConnection::moveDownloads(const QList<quint64>& downloadIDRefs, const QList<quint64>& downloadIDs, Protos::GUI::MoveDownloads::Position position)
+{
+   this->current()->moveDownloads(downloadIDRefs, downloadIDs, position);
 }
 
 void CoreConnection::refresh()

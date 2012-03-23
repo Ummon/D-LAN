@@ -176,7 +176,7 @@ void InternalCoreConnection::download(const Common::Hash& peerID, const Protos::
 void InternalCoreConnection::cancelDownloads(const QList<quint64>& downloadIDs, bool complete)
 {
    Protos::GUI::CancelDownloads cancelDownloadsMessage;
-   for(QListIterator<quint64> i(downloadIDs); i.hasNext();)
+   for (QListIterator<quint64> i(downloadIDs); i.hasNext();)
       cancelDownloadsMessage.add_id(i.next());
    cancelDownloadsMessage.set_complete(complete);
    this->send(Common::MessageHeader::GUI_CANCEL_DOWNLOADS, cancelDownloadsMessage);
@@ -185,18 +185,19 @@ void InternalCoreConnection::cancelDownloads(const QList<quint64>& downloadIDs, 
 void InternalCoreConnection::pauseDownloads(const QList<quint64>& downloadIDs, bool pause)
 {
    Protos::GUI::PauseDownloads pauseDownloadsMessage;
-   for(QListIterator<quint64> i(downloadIDs); i.hasNext();)
+   for (QListIterator<quint64> i(downloadIDs); i.hasNext();)
       pauseDownloadsMessage.add_id(i.next());
    pauseDownloadsMessage.set_pause(pause);
    this->send(Common::MessageHeader::GUI_PAUSE_DOWNLOADS, pauseDownloadsMessage);
 }
 
-void InternalCoreConnection::moveDownloads(quint64 downloadIDRef, const QList<quint64>& downloadIDs, bool moveBefore)
+void InternalCoreConnection::moveDownloads(const QList<quint64>& downloadIDRefs, const QList<quint64>& downloadIDs, Protos::GUI::MoveDownloads::Position position)
 {
    Protos::GUI::MoveDownloads moveDownloadsMessage;
-   moveDownloadsMessage.set_id_ref(downloadIDRef);
-   moveDownloadsMessage.set_move_before(moveBefore);
-   for(QListIterator<quint64> i(downloadIDs); i.hasNext();)
+   for (QListIterator<quint64> i(downloadIDRefs); i.hasNext();)
+      moveDownloadsMessage.add_id_ref(i.next());
+   moveDownloadsMessage.set_position(position);
+   for (QListIterator<quint64> i(downloadIDs); i.hasNext();)
       moveDownloadsMessage.add_id_to_move(i.next());
    this->send(Common::MessageHeader::GUI_MOVE_DOWNLOADS, moveDownloadsMessage);
 }
