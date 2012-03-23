@@ -24,6 +24,7 @@ using namespace FM;
 #include <QSharedPointer>
 #include <QStringList>
 #include <QList>
+#include <QVector>
 #include <QDir>
 #include <QMutableListIterator>
 
@@ -181,7 +182,7 @@ QList<Protos::Common::FindResult> FileManager::find(const QString& words, int ma
    const int n = terms.size();
 
    // Launch a search for each term.
-   QSet< NodeResult<Entry> > results[n];
+   QVector<QSet< NodeResult<Entry> > > results(n);
    for (int i = 0; i < n; i++)
       // We can only limit the number of result for one term. When there is more than one term and thus some results set, say [a, b, c] for example, some good result may be contained in intersect, for example a & b or a & c.
       results[i] += this->wordIndex.search(terms[i], n == 1 ? maxNbResult : -1).toSet();

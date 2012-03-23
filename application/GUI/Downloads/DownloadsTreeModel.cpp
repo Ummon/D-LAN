@@ -111,7 +111,7 @@ QString DownloadsTreeModel::getPath(const QModelIndex& index, bool appendFilenam
 {
    Tree* tree = static_cast<Tree*>(index.internalPointer());
    if (!tree)
-      return false;
+      return QString();
 
    const Common::SharedDir sharedDir = this->sharedDirsModel.getDir(tree->getItem().local_entry().shared_dir().id().hash());
    if (sharedDir.isNull())

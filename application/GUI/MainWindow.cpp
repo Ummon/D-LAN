@@ -519,7 +519,7 @@ void MainWindow::removeMdiSubWindow(QMdiSubWindow* mdiSubWindow)
    if (mdiSubWindow)
    {
       // Set a another sub window as active. If we don't do that the windows are all minimised (bug?).
-      if (mdiSubWindow == this->ui->mdiArea->currentSubWindow());
+      if (mdiSubWindow == this->ui->mdiArea->currentSubWindow())
       {
          QList<QMdiSubWindow*> subWindows = this->ui->mdiArea->subWindowList();
          if (subWindows.size() > 1)
