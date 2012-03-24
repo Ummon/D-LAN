@@ -1,4 +1,3 @@
-
 CONFIG(debug, debug|release) {
    FOLDER = debug
    DEFINES += DEBUG
@@ -9,6 +8,13 @@ CONFIG(debug, debug|release) {
       QMAKE_LFLAGS += -pg
       QMAKE_LFLAGS_RELEASE -= -Wl,-s
    }
+}
+
+win32 {
+   # For mingw32.
+   QMAKE_CXXFLAGS += -std=gnu++0x
+} else {
+   QMAKE_CXXFLAGS += -std=c++0x
 }
 
 DESTDIR = output/$$FOLDER

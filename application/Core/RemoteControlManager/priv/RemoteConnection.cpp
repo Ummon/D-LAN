@@ -289,7 +289,7 @@ void RemoteConnection::newLogEntry(QSharedPointer<const LM::IEntry> entry)
 void RemoteConnection::sendNoPasswordDefinedResult()
 {
    Protos::GUI::AuthenticationResult authResultMessage;
-   authResultMessage.set_status(Protos::GUI::AuthenticationResult::PASSWORD_NOT_DEFINED);
+   authResultMessage.set_status(Protos::GUI::AuthenticationResult::AUTH_PASSWORD_NOT_DEFINED);
    this->send(Common::MessageHeader::GUI_AUTHENTICATION_RESULT, authResultMessage);
    this->socket->close();
 }
@@ -297,7 +297,7 @@ void RemoteConnection::sendNoPasswordDefinedResult()
 void RemoteConnection::sendBadPasswordResult()
 {
    Protos::GUI::AuthenticationResult authResultMessage;
-   authResultMessage.set_status(Protos::GUI::AuthenticationResult::BAD_PASSWORD);
+   authResultMessage.set_status(Protos::GUI::AuthenticationResult::AUTH_BAD_PASSWORD);
    this->send(Common::MessageHeader::GUI_AUTHENTICATION_RESULT, authResultMessage);
    this->socket->close();
 }
@@ -348,7 +348,7 @@ void RemoteConnection::onNewMessage(Common::MessageHeader::MessageType type, con
             else // OK.
             {
                Protos::GUI::AuthenticationResult authResultMessage;
-               authResultMessage.set_status(Protos::GUI::AuthenticationResult_Status_OK);
+               authResultMessage.set_status(Protos::GUI::AuthenticationResult::AUTH_OK);
                this->send(Common::MessageHeader::GUI_AUTHENTICATION_RESULT, authResultMessage);
                this->authenticated = true;
                this->refresh();

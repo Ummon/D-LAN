@@ -161,10 +161,10 @@ message Authentication {
 // If BAD_PASSWORD the core should wait a bit before sending the result (for example 1s) to avoid dictionary attack.
 message AuthenticationResult {
    enum Status {
-      OK = 0x01;
-      BAD_PASSWORD = 0x02;
-      PASSWORD_NOT_DEFINED = 0x03; // The core doesn't have defined a password (empty password).
-      ERROR = 0xFF;
+      AUTH_OK = 0x01;
+      AUTH_BAD_PASSWORD = 0x02;
+      AUTH_PASSWORD_NOT_DEFINED = 0x03; // The core doesn't have defined a password (empty password).
+      AUTH_ERROR = 0xFF;
    }
    required Status status = 1;
 }
