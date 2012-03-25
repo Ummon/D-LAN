@@ -179,8 +179,7 @@ MainWindow::~MainWindow()
 {
    this->saveWindowsSettings();
 
-   this->coreConnection->disconnect(this); // To avoid calling 'coreDisconnected' after deleted 'this->ui'.
-   this->coreConnection->disconnectFromCore();
+   this->coreConnection->disconnect(this); // Disconnect all signals.
    this->logModel.disconnect(this);
 
    this->removeWidgetSettings();
