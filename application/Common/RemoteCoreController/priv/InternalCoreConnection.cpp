@@ -327,7 +327,7 @@ void InternalCoreConnection::onNewMessage(Common::MessageHeader::MessageType typ
       {
          const Protos::GUI::AuthenticationResult& authenticationResult = static_cast<const Protos::GUI::AuthenticationResult&>(message);
 
-         if (authenticationResult.status() == Protos::GUI::AuthenticationResult_Status_OK)
+         if (authenticationResult.status() == Protos::GUI::AuthenticationResult::AUTH_OK)
          {
             this->connectedAndAuthenticated();
          }
@@ -335,15 +335,15 @@ void InternalCoreConnection::onNewMessage(Common::MessageHeader::MessageType typ
          {
             switch (authenticationResult.status())
             {
-            case Protos::GUI::AuthenticationResult_Status_PASSWORD_NOT_DEFINED:
+            case Protos::GUI::AuthenticationResult::AUTH_PASSWORD_NOT_DEFINED:
                emit connectingError(ICoreConnection::ERROR_NO_REMOTE_PASSWORD_DEFINED);
                break;
 
-            case Protos::GUI::AuthenticationResult_Status_BAD_PASSWORD:
+            case Protos::GUI::AuthenticationResult::AUTH_BAD_PASSWORD:
                 emit connectingError(ICoreConnection::ERROR_WRONG_PASSWORD);
                break;
 
-            case Protos::GUI::AuthenticationResult_Status_ERROR:
+            case Protos::GUI::AuthenticationResult::AUTH_ERROR:
                emit connectingError(ICoreConnection::ERROR_UNKNOWN);
                break;
 
