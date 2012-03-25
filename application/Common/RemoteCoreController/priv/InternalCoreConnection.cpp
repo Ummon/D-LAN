@@ -22,10 +22,12 @@ using namespace RCC;
 #include <QHostAddress>
 #include <QCoreApplication>
 
+#include <Common/ZeroCopyStreamQIODevice.h>
+#include <Common/ProtoHelper.h>
+#include <Common/Constants.h>
+#include <Common/Global.h>
+
 #include <LogManager/Builder.h>
-#include <ZeroCopyStreamQIODevice.h>
-#include <ProtoHelper.h>
-#include <Constants.h>
 
 #include <priv/CoreController.h>
 #include <priv/Log.h>
@@ -254,10 +256,10 @@ void InternalCoreConnection::tryToConnectToTheNextAddress()
    if (address.isNull())
       address = this->addressesToTry.takeFirst();
 
-   // If the address is local check if the core is launched, if not try to launch it.
 #ifndef DEBUG
-   if (address == QHostAddress::LocalHost || address == QHostAddress::LocalHostIPv6)
-         this->coreStatus = CoreController::StartCore();
+   // If the address is local check if the core is launched, if not try to launch it.
+   if (Global::isLocal(address))
+      this->coreStatus = CoreController::StartCore();
 #endif
 
    connect(this->socket, SIGNAL(stateChanged(QAbstractSocket::SocketState)), this, SLOT(stateChanged(QAbstractSocket::SocketState)));
