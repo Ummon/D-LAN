@@ -57,7 +57,7 @@ QList<IUpload*> UploadManager::getUploads() const
 {
    QList<IUpload*> uploads;
 
-   for (QListIterator< QSharedPointer<Upload> > i(this->uploads); i.hasNext();)
+   for (QListIterator<QSharedPointer<Upload>> i(this->uploads); i.hasNext();)
       uploads << i.next().data();
 
    return uploads;
@@ -80,7 +80,7 @@ void UploadManager::uploadTimeout()
 {
    Upload* upload = dynamic_cast<Upload*>(this->sender());
 
-   for (QMutableListIterator< QSharedPointer<Upload> > i(this->uploads); i.hasNext();)
+   for (QMutableListIterator<QSharedPointer<Upload>> i(this->uploads); i.hasNext();)
       if (i.next().data() == upload)
       {
          i.remove();

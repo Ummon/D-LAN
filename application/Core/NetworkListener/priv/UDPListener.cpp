@@ -143,7 +143,7 @@ void UDPListener::sendIMAliveMessage()
    static const quint32 NUMBER_OF_HASHES_TO_SEND = SETTINGS.get<quint32>("number_of_hashes_sent_imalive");
    this->currentChunkDownloads = this->downloadManager->getUnfinishedChunks(NUMBER_OF_HASHES_TO_SEND);
    IMAliveMessage.mutable_chunk()->Reserve(this->currentChunkDownloads.size());
-   for (QListIterator< QSharedPointer<DM::IChunkDownload> > i(this->currentChunkDownloads); i.hasNext();)
+   for (QListIterator<QSharedPointer<DM::IChunkDownload>> i(this->currentChunkDownloads); i.hasNext();)
    {
       IMAliveMessage.add_chunk()->set_hash(i.next()->getHash().getData(), Common::Hash::HASH_SIZE);
    }

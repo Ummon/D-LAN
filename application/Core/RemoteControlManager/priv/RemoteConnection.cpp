@@ -91,7 +91,7 @@ RemoteConnection::RemoteConnection(
 
    this->loggerHook = LM::Builder::newLoggerHook(LM::Severity(LM::SV_FATAL_ERROR | LM::SV_ERROR | LM::SV_END_USER | LM::SV_WARNING));
 
-   qRegisterMetaType< QSharedPointer<const LM::IEntry> >("QSharedPointer<const LM::IEntry>");
+   qRegisterMetaType<QSharedPointer<const LM::IEntry>>("QSharedPointer<const LM::IEntry>");
    connect(this->loggerHook.data(), SIGNAL(newLogEntry(QSharedPointer<const LM::IEntry>)), this, SLOT(newLogEntry(QSharedPointer<const LM::IEntry>)), Qt::QueuedConnection);
 }
 
@@ -304,7 +304,7 @@ void RemoteConnection::sendBadPasswordResult()
 
 void RemoteConnection::removeGetEntriesResult(const PM::IGetEntriesResult* getEntriesResult)
 {
-   for (QMutableListIterator< QSharedPointer<PM::IGetEntriesResult> > i(this->getEntriesResults); i.hasNext();)
+   for (QMutableListIterator<QSharedPointer<PM::IGetEntriesResult>> i(this->getEntriesResults); i.hasNext();)
       if (i.next().data() == getEntriesResult)
          i.remove();
 }
@@ -418,7 +418,7 @@ void RemoteConnection::onNewMessage(Common::MessageHeader::MessageType type, con
    case Common::MessageHeader::GUI_SEARCH:
       {
          // Remove old searches.
-         for (QMutableListIterator< QSharedPointer<NL::ISearch> > i(this->currentSearches); i.hasNext();)
+         for (QMutableListIterator<QSharedPointer<NL::ISearch>> i(this->currentSearches); i.hasNext();)
             if (i.next()->elapsed() > SETTINGS.get<quint32>("search_lifetime"))
                i.remove();
 

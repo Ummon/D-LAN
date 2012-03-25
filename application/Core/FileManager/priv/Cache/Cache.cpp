@@ -219,7 +219,7 @@ File* Cache::getFile(const Protos::Common::Entry& fileEntry) const
   * @exception InsufficientStorageSpaceException
   * @exception UnableToCreateNewFileException
   */
-QList< QSharedPointer<IChunk> > Cache::newFile(Protos::Common::Entry& fileEntry)
+QList<QSharedPointer<IChunk>> Cache::newFile(Protos::Common::Entry& fileEntry)
 {
    QMutexLocker locker(&this->mutex);
 
@@ -277,7 +277,7 @@ QList< QSharedPointer<IChunk> > Cache::newFile(Protos::Common::Entry& fileEntry)
    dir->populateEntrySharedDir(&fileEntry); // We set the shared directory.
 
    // TODO : is there a better way to up cast?
-   QList< QSharedPointer<IChunk> > chunks;
+   QList<QSharedPointer<IChunk>> chunks;
    foreach (QSharedPointer<Chunk> chunk, file->getChunks())
       chunks << chunk;
    return chunks;

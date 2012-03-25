@@ -86,7 +86,7 @@ namespace FM
         * The name and the path of the owner of the returned chunk must match the given entry.
         * ".unfinished" suffix is ignored in both side.
         */
-      virtual QList< QSharedPointer<IChunk> > getAllChunks(const Protos::Common::Entry& localEntry, const Common::Hashes& hashes) const = 0;
+      virtual QList<QSharedPointer<IChunk>> getAllChunks(const Protos::Common::Entry& localEntry, const Common::Hashes& hashes) const = 0;
 
       /**
         * Create a new empty file.
@@ -98,7 +98,7 @@ namespace FM
         * @exception InsufficientStorageSpaceException
         * @exception UnableToCreateNewFileException
         */
-      virtual QList< QSharedPointer<IChunk> > newFile(Protos::Common::Entry& entry) = 0;
+      virtual QList<QSharedPointer<IChunk>> newFile(Protos::Common::Entry& entry) = 0;
 
       /**
         * Return the hashes from a FileEntry. If the hashes don't exist they will be computed on the fly. However this

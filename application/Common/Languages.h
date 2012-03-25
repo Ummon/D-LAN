@@ -38,7 +38,7 @@ namespace Common
    class Languages
    {
    public:
-      enum ExeType { CORE, GUI };
+      enum class ExeType { CORE, GUI };
 
       Languages(const QString& path);
 

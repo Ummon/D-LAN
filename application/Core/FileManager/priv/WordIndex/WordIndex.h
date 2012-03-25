@@ -42,8 +42,8 @@ namespace FM
 
       void addItem(const QStringList& words, T* item);
       void rmItem(const QStringList& words, T* item);
-      QList< NodeResult<T> > search(const QStringList& words, int maxNbResultPerWord = -1) const;
-      QList< NodeResult<T> > search(const QString& word, int maxNbResult = -1) const;
+      QList<NodeResult<T>> search(const QStringList& words, int maxNbResultPerWord = -1) const;
+      QList<NodeResult<T>> search(const QString& word, int maxNbResult = -1) const;
 
    private:
       Node<T> node;
@@ -120,11 +120,11 @@ void WordIndex<T>::rmItem(const QStringList& words, T* item)
 }
 
 template<typename T>
-QList< NodeResult<T> > WordIndex<T>::search(const QStringList& words, int maxNbResultPerWord) const
+QList<NodeResult<T>> WordIndex<T>::search(const QStringList& words, int maxNbResultPerWord) const
 {
    QMutexLocker locker(&mutex);
 
-   QList< NodeResult<T> > result;
+   QList<NodeResult<T>> result;
    for (QListIterator<QString> i(words); i.hasNext();)
    {
       const QString& word = i.next();
@@ -142,7 +142,7 @@ QList< NodeResult<T> > WordIndex<T>::search(const QStringList& words, int maxNbR
 }
 
 template<typename T>
-QList< NodeResult<T> > WordIndex<T>::search(const QString& word, int maxNbResult) const
+QList<NodeResult<T>> WordIndex<T>::search(const QString& word, int maxNbResult) const
 {
    return this->search(QStringList() << word, maxNbResult);
 }

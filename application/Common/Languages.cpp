@@ -40,7 +40,7 @@ QList<Language> Languages::getAvailableLanguages(ExeType exeType)
    for (QStringListIterator i(dir.entryList(QStringList() << "*.qm", QDir::Files, QDir::Name)); i.hasNext();)
    {
       QString filename(i.next());
-      QRegExp reg(QString("d_lan_").append(exeType == GUI ? "gui" : "core").append("\\.(\\w+)\\.qm"));
+      QRegExp reg(QString("d_lan_").append(exeType == ExeType::GUI ? "gui" : "core").append("\\.(\\w+)\\.qm"));
       if (reg.exactMatch(filename))
       {
          QLocale locale(reg.capturedTexts()[1]);

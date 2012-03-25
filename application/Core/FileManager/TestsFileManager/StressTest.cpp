@@ -441,8 +441,8 @@ void StressTest::newFile()
 
    try
    {
-      QList< QSharedPointer<IChunk> > chunks = this->fileManager->newFile(entry);
-      for (QListIterator< QSharedPointer<IChunk> > i(chunks); i.hasNext();)
+      QList<QSharedPointer<IChunk>> chunks = this->fileManager->newFile(entry);
+      for (QListIterator<QSharedPointer<IChunk>> i(chunks); i.hasNext();)
       {
          Downloader* downloader = new Downloader(
             i.next(),

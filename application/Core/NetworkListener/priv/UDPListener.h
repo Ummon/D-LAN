@@ -103,7 +103,7 @@ namespace NL
 
       MTRand mtrand;
       quint64 currentIMAliveTag;
-      QList< QSharedPointer<DM::IChunkDownload> > currentChunkDownloads;
+      QList<QSharedPointer<DM::IChunkDownload>> currentChunkDownloads;
 
       QTimer timerIMAlive;
       QSharedPointer<LM::ILogger> loggerIMAlive; // A logger especially for the IMAlive message.

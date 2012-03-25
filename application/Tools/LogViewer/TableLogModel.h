@@ -76,7 +76,7 @@ private:
    QFile* source;
    QTimer timer;
 
-   QVector< QSharedPointer<LM::IEntry> > entries;
+   QVector<QSharedPointer<LM::IEntry>> entries;
 
    QStringList severities;
    QStringList modules;

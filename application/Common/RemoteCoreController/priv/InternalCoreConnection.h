@@ -130,8 +130,8 @@ namespace RCC
 
       QList<QHostAddress> addressesToTry; // When a name is resolved many addresses can be returned, we will try all of them until a connection is successfuly established.
 
-      QList< QWeakPointer<BrowseResult> > browseResultsWithoutTag;
-      QList< QWeakPointer<SearchResult> > searchResultsWithoutTag;
+      QList<QWeakPointer<BrowseResult>> browseResultsWithoutTag;
+      QList<QWeakPointer<SearchResult>> searchResultsWithoutTag;
       bool authenticated;
    };
 }

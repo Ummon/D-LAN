@@ -242,14 +242,14 @@ int Chunk::getNbTotalChunk() const
    return 0;
 }
 
-QList< QSharedPointer<Chunk> > Chunk::getOtherChunks() const
+QList<QSharedPointer<Chunk>> Chunk::getOtherChunks() const
 {
    QMutexLocker locker(&this->mutex);
 
    if (this->file)
       return this->file->getChunks();
    else
-      return QList< QSharedPointer<Chunk> >();
+      return QList<QSharedPointer<Chunk>>();
 }
 
 bool Chunk::hasHash() const

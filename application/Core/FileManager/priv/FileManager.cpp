@@ -120,28 +120,28 @@ QSharedPointer<IChunk> FileManager::getChunk(const Common::Hash& hash) const
    return this->chunks.value(hash);
 }
 
-QList< QSharedPointer<IChunk> > FileManager::getAllChunks(const Protos::Common::Entry& localEntry, const Common::Hashes& hashes) const
+QList<QSharedPointer<IChunk>> FileManager::getAllChunks(const Protos::Common::Entry& localEntry, const Common::Hashes& hashes) const
 {
    for (QListIterator<Common::Hash> h(hashes); h.hasNext();)
    {
       // Chunks from different files, usually one chunk.
-      QList< QSharedPointer<Chunk> > chunks = this->chunks.values(h.next());
+      QList<QSharedPointer<Chunk>> chunks = this->chunks.values(h.next());
 
-      for (QListIterator< QSharedPointer<Chunk> > i(chunks); i.hasNext();)
+      for (QListIterator<QSharedPointer<Chunk>> i(chunks); i.hasNext();)
       {
          QSharedPointer<Chunk> chunk = i.next();
          if (chunk->matchesEntry(localEntry)) // The name, the path and the size of the file are the same?
          {
             // We verify that all hashes of all chunks match the given hashes. If it's not the case, the files are not the same.
-            QList< QSharedPointer<Chunk> > allChunks = chunk->getOtherChunks();
+            QList<QSharedPointer<Chunk>> allChunks = chunk->getOtherChunks();
             if (allChunks.size() != hashes.size())
-               return QList< QSharedPointer<IChunk> >();
+               return QList<QSharedPointer<IChunk>>();
 
-            QList< QSharedPointer<IChunk> > ret;
+            QList<QSharedPointer<IChunk>> ret;
             for (int j = 0; j < allChunks.size(); j++)
             {
                if (allChunks[j]->getHash() != hashes[j]) // Only one hashes doesn't match -> all the file doesn't match.
-                  return QList< QSharedPointer<IChunk> >();
+                  return QList<QSharedPointer<IChunk>>();
                ret << allChunks[j];
             }
             return ret;
@@ -149,10 +149,10 @@ QList< QSharedPointer<IChunk> > FileManager::getAllChunks(const Protos::Common::
       }
    }
 
-   return QList< QSharedPointer<IChunk> >();
+   return QList<QSharedPointer<IChunk>>();
 }
 
-QList< QSharedPointer<IChunk> > FileManager::newFile(Protos::Common::Entry& entry)
+QList<QSharedPointer<IChunk>> FileManager::newFile(Protos::Common::Entry& entry)
 {
    return this->cache.newFile(entry);
 }
@@ -182,7 +182,7 @@ QList<Protos::Common::FindResult> FileManager::find(const QString& words, int ma
    const int n = terms.size();
 
    // Launch a search for each term.
-   QVector<QSet< NodeResult<Entry> > > results(n);
+   QVector<QSet<NodeResult<Entry>>> results(n);
    for (int i = 0; i < n; i++)
       // We can only limit the number of result for one term. When there is more than one term and thus some results set, say [a, b, c] for example, some good result may be contained in intersect, for example a & b or a & c.
       results[i] += this->wordIndex.search(terms[i], n == 1 ? maxNbResult : -1).toSet();
@@ -217,16 +217,16 @@ QList<Protos::Common::FindResult> FileManager::find(const QString& words, int ma
       //  * (a, b)
       //  * (a, c)
       //  * (b, c)
-      QList< NodeResult<Entry> > nodesToSort;
+      QList<NodeResult<Entry>> nodesToSort;
       const int nCombinations = Common::Global::nCombinations(n, nbIntersect);
       for (int j = 0; j < nCombinations && !end; j++)
       {
-         QSet< NodeResult<Entry> > currentLevelSet;
+         QSet<NodeResult<Entry>> currentLevelSet;
 
          // Apply intersects.
          currentLevelSet = results[intersect[0]];
 
-         for (QSetIterator< NodeResult<Entry> > k(currentLevelSet); k.hasNext();)
+         for (QSetIterator<NodeResult<Entry>> k(currentLevelSet); k.hasNext();)
          {
             NodeResult<Entry>& node = const_cast<NodeResult<Entry>&>(k.next());
             node.level = node.level ? nCombinations : 0;
@@ -240,7 +240,7 @@ QList<Protos::Common::FindResult> FileManager::find(const QString& words, int ma
             for (int l = (k == -1 ? 0 : intersect[k] + 1); l < (k == nbIntersect - 1 ? n : intersect[k+1]); l++)
                currentLevelSet -= results[l];
 
-         for (QSetIterator< NodeResult<Entry> > k(currentLevelSet); k.hasNext();)
+         for (QSetIterator<NodeResult<Entry>> k(currentLevelSet); k.hasNext();)
             const_cast<NodeResult<Entry>&>(k.next()).level += level;
 
          // Sort by level.
@@ -262,7 +262,7 @@ QList<Protos::Common::FindResult> FileManager::find(const QString& words, int ma
       qSort(nodesToSort); // Sort by level
 
       // Populate the result.
-      for (QListIterator< NodeResult<Entry> > k(nodesToSort); k.hasNext();)
+      for (QListIterator<NodeResult<Entry>> k(nodesToSort); k.hasNext();)
       {
          NodeResult<Entry> entry = k.next();
          Protos::Common::FindResult_EntryLevel* entryLevel = findResults.last().add_entry();
@@ -415,11 +415,11 @@ void FileManager::loadCacheFromFile()
 
    try
    {
-      Common::PersistentData::getValue(Common::FILE_CACHE, *savedCache, Common::Global::LOCAL);
+      Common::PersistentData::getValue(Common::FILE_CACHE, *savedCache, Common::Global::DataFolderType::LOCAL);
       if (static_cast<int>(savedCache->version()) != FILE_CACHE_VERSION)
       {
          L_ERRO(QString("The version (%1) of the file cache \"%2\" doesn't match the current version (%3)").arg(savedCache->version()).arg(Common::FILE_CACHE).arg(FILE_CACHE_VERSION));
-         Common::PersistentData::rmValue(Common::FILE_CACHE, Common::Global::LOCAL);
+         Common::PersistentData::rmValue(Common::FILE_CACHE, Common::Global::DataFolderType::LOCAL);
          delete savedCache;
          return;
       }
@@ -467,7 +467,7 @@ void FileManager::persistCacheToFile()
 
       try
       {
-         Common::PersistentData::setValue(Common::FILE_CACHE, hashes, Common::Global::LOCAL);
+         Common::PersistentData::setValue(Common::FILE_CACHE, hashes, Common::Global::DataFolderType::LOCAL);
       }
       catch (Common::PersistentDataIOException& err)
       {

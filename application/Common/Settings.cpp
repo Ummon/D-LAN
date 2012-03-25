@@ -96,7 +96,7 @@ bool Settings::saveTo(const QString& filename) const
 
    try
    {
-      PersistentData::setValue(filename, *this->settings, Common::Global::ROAMING, true);
+      PersistentData::setValue(filename, *this->settings, Common::Global::DataFolderType::ROAMING, true);
       return true;
    }
    catch (PersistentDataIOException&)
@@ -116,7 +116,7 @@ bool Settings::load()
 
    try
    {
-      PersistentData::getValue(this->filename, *this->settings, Common::Global::ROAMING, true);
+      PersistentData::getValue(this->filename, *this->settings, Common::Global::DataFolderType::ROAMING, true);
       return true;
    }
    catch (UnknownValueException&)
@@ -138,7 +138,7 @@ void Settings::remove()
    if (!this->settings)
       return;
 
-   PersistentData::rmValue(this->filename, Common::Global::ROAMING);
+   PersistentData::rmValue(this->filename, Common::Global::DataFolderType::ROAMING);
 }
 
 void Settings::free()

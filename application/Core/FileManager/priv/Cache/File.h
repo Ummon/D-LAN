@@ -86,7 +86,7 @@ namespace FM
 
       bool computeHashes(int n = -1, int* amountHashed = 0);
       void stopHashing();
-      QList< QSharedPointer<Chunk> > getChunks() const;
+      QList<QSharedPointer<Chunk>> getChunks() const;
       bool hasAllHashes();
       bool hasOneOrMoreHashes();
 
@@ -109,7 +109,7 @@ namespace FM
       const int CHUNK_SIZE;
 
       Directory* dir;
-      QList< QSharedPointer<Chunk> > chunks;
+      QList<QSharedPointer<Chunk>> chunks;
       QDateTime dateLastModified;
 
       // Used only when writing a file.

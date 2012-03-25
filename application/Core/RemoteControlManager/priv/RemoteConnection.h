@@ -112,8 +112,8 @@ namespace RCM
 
       QTimer timerRefresh;
 
-      QList< QSharedPointer<NL::ISearch> > currentSearches;
-      QList< QSharedPointer<PM::IGetEntriesResult> > getEntriesResults;
+      QList<QSharedPointer<NL::ISearch>> currentSearches;
+      QList<QSharedPointer<PM::IGetEntriesResult>> getEntriesResults;
 
       MTRand mtrand;
 
