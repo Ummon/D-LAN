@@ -26,6 +26,9 @@ private slots:
    void removeElements();
 
 private:
+   static void testElementsAgainstList(const QList<int>& expected, IntTree* tree, bool withRoot);
+
+private:
    IntTree tree;
 };
 

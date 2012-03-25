@@ -57,22 +57,31 @@ void TreeTests::iterate()
 {
    QList<int> expected1;
    expected1 << 1 << 2 << 3 << 4 << 5 << 6 << 7 << 8 << 9;
+   testElementsAgainstList(expected1, &this->tree, true);
 
    QList<int> expected2;
    expected2 << 4 << 5 << 6 << 7 << 8 << 9;
-
-   QList<int> actual1;
-   for (TreeBreadthIterator<IntTree> i(&this->tree, true); i.hasNext();)
-      actual1 << i.next()->getItem();
-
-   QList<int> actual2;
-   for (TreeBreadthIterator<IntTree> i(&this->tree[1]); i.hasNext();)
-      actual2 << i.next()->getItem();
-
-   QVERIFY(actual1 == expected1);
-   QVERIFY(actual2 == expected2);
+   testElementsAgainstList(expected2, &this->tree[1], false);
 }
 
 void TreeTests::removeElements()
 {
+   delete this->tree[1].getChild(0);
+   QList<int> expected1;
+   expected1 << 1 << 2 << 3 << 5 << 6 <<  9;
+   testElementsAgainstList(expected1, &this->tree, true);
+
+   delete this->tree.getChild(1);
+   QList<int> expected2;
+   expected2 << 1 << 2;
+   testElementsAgainstList(expected2, &this->tree, true);
+}
+
+void TreeTests::testElementsAgainstList(const QList<int> &expected, IntTree* tree, bool withRoot)
+{
+   QList<int> actual;
+   for (TreeBreadthIterator<IntTree> i(tree, withRoot); i.hasNext();)
+      actual << i.next()->getItem();
+
+   QVERIFY(actual == expected);
 }
