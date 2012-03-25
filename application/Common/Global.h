@@ -37,8 +37,9 @@ namespace Common
          const QString errorMessage;
       };
 
-      static QString version();
-      static QString versionTag();
+      static QString getVersion();
+      static QString getVersionTag();
+      static QString getVersionFull();
 
       template <typename T>
       static void sortedAdd(T* entry, QList<T*>& list, bool (*lesserThan)(const T&, const T&) = 0);

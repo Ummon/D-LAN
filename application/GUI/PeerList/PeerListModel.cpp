@@ -30,6 +30,12 @@ PeerListModel::PeerListModel(QSharedPointer<RCC::ICoreConnection> coreConnection
    connect(this->coreConnection.data(), SIGNAL(newState(Protos::GUI::State)), this, SLOT(newState(Protos::GUI::State)));
 }
 
+PeerListModel::~PeerListModel()
+{
+   foreach (Peer* p, this->peers)
+      delete p;
+}
+
 /**
   * Return 'defaultNick' if the peer isn't found.
   */
@@ -96,7 +102,17 @@ QVariant PeerListModel::data(const QModelIndex& index, int role) const
    case Qt::TextAlignmentRole:
       return index.column() == 1 ? Qt::AlignRight : Qt::AlignLeft;
 
-   default: return QVariant();
+   case Qt::ToolTipRole:
+      {
+         QString coreVersion = this->peers[index.row()]->coreVersion;
+         if (!coreVersion.isEmpty())
+            return tr("Version: %1").arg(coreVersion);
+         else
+            return QVariant();
+      }
+
+   default:
+      return QVariant();
    }
 }
 
@@ -119,7 +135,8 @@ void PeerListModel::setPeers(const google::protobuf::RepeatedPtrField<Protos::GU
    for (int i = 0; i < peers.size(); i++)
    {
       const Common::Hash peerID(peers.Get(i).peer_id().hash());
-      const QString nick(ProtoHelper::getStr(peers.Get(i), &Protos::GUI::State_Peer::nick));
+      const QString nick(ProtoHelper::getStr(peers.Get(i), &Protos::GUI::State::Peer::nick));
+      const QString coreVersion(ProtoHelper::getStr(peers.Get(i), &Protos::GUI::State::Peer::core_version));
       const quint64 sharingAmount(peers.Get(i).sharing_amount());
       const QHostAddress ip =
          peers.Get(i).has_ip() ?
@@ -141,10 +158,11 @@ void PeerListModel::setPeers(const google::protobuf::RepeatedPtrField<Protos::GU
             sortNeeded = true;
          }
          this->peers[j]->ip = ip;
+         this->peers[j]->coreVersion = coreVersion;
       }
       else
       {
-         peersToAdd << new Peer(peerID, nick, sharingAmount, ip);
+         peersToAdd << new Peer(peerID, nick, coreVersion, sharingAmount, ip);
       }
    }
 
@@ -162,6 +180,7 @@ void PeerListModel::setPeers(const google::protobuf::RepeatedPtrField<Protos::GU
          this->beginRemoveRows(QModelIndex(), j, j);
          this->indexedPeers.remove(peer->peerID);
          this->peers.removeAt(j);
+         delete peer;
          this->endRemoveRows();
       }
    }

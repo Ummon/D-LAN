@@ -23,7 +23,7 @@ using namespace Common;
 
 #include <QDir>
 #include <QDirIterator>
-#include <QDebug>
+#include <QStringBuilder>
 #include <QtGlobal>
 #include <QRegExp>
 #include <QHostAddress>
@@ -51,14 +51,22 @@ Global::UnableToSetTempDirException::UnableToSetTempDirException(const QString& 
 {
 }
 
-QString Global::version()
+QString Global::getVersion()
 {
    return QString(VERSION);
 }
 
-QString Global::versionTag()
+QString Global::getVersionTag()
 {
    return QString(VERSION_TAG);
+}
+
+/**
+  * @return Version + version tag.
+  */
+QString Global::getVersionFull()
+{
+   return Global::getVersion() % " " % Global::getVersionTag();
 }
 
 /**

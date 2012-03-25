@@ -132,6 +132,7 @@ void RemoteConnection::refresh()
    state.mutable_myself()->mutable_peer_id()->set_hash(this->peerManager->getID().getData(), Common::Hash::HASH_SIZE);
    state.mutable_myself()->set_sharing_amount(this->fileManager->getAmount());
    Common::ProtoHelper::setStr(*state.mutable_myself(), &Protos::GUI::State::Peer::set_nick, this->peerManager->getNick());
+   Common::ProtoHelper::setStr(*state.mutable_myself(), &Protos::GUI::State::Peer::set_core_version, Common::Global::getVersionFull());
 
    state.set_integrity_check_enabled(SETTINGS.get<bool>("check_received_data_integrity"));
    if (SETTINGS.isSet("remote_password"))

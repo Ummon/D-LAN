@@ -128,7 +128,7 @@ void UDPListener::sendIMAliveMessage()
 {
    Protos::Core::IMAlive IMAliveMessage;
    IMAliveMessage.set_version(PROTOCOL_VERSION);
-   ProtoHelper::setStr(IMAliveMessage, &Protos::Core::IMAlive::set_core_version, Common::Global::version() % Common::Global::versionTag());
+   ProtoHelper::setStr(IMAliveMessage, &Protos::Core::IMAlive::set_core_version, Common::Global::getVersionFull());
    IMAliveMessage.set_port(this->UNICAST_PORT);
    Common::ProtoHelper::setStr(IMAliveMessage, &Protos::Core::IMAlive::set_nick, this->peerManager->getNick());
 

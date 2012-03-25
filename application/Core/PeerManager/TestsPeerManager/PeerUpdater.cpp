@@ -66,7 +66,8 @@ void PeerUpdater::update()
                QHostAddress::LocalHost,
                this->port + j,
                this->peerManagers[j]->getNick(),
-               this->fileManagers[j]->getAmount()
+               this->fileManagers[j]->getAmount(),
+               QString()
             );
       }
    }
