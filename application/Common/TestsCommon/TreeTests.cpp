@@ -55,8 +55,11 @@ void TreeTests::retrieveElements()
 
 void TreeTests::iterate()
 {
-   QList<int> expected1 {1, 2, 3, 4, 5, 6, 7, 8, 9};
-   QList<int> expected2 {4, 5, 6, 7, 8, 9};
+   QList<int> expected1;
+   expected1 << 1 << 2 << 3 << 4 << 5 << 6 << 7 << 8 << 9;
+
+   QList<int> expected2;
+   expected2 << 4 << 5 << 6 << 7 << 8 << 9;
 
    QList<int> actual1;
    for (TreeBreadthIterator<IntTree> i(&this->tree, true); i.hasNext();)
