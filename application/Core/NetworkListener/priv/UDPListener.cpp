@@ -128,6 +128,7 @@ void UDPListener::sendIMAliveMessage()
 {
    Protos::Core::IMAlive IMAliveMessage;
    IMAliveMessage.set_version(PROTOCOL_VERSION);
+   ProtoHelper::setStr(IMAliveMessage, &Protos::Core::IMAlive::set_core_version, Common::Global::version() % Common::Global::versionTag());
    IMAliveMessage.set_port(this->UNICAST_PORT);
    Common::ProtoHelper::setStr(IMAliveMessage, &Protos::Core::IMAlive::set_nick, this->peerManager->getNick());
 
@@ -204,7 +205,8 @@ void UDPListener::processPendingMulticastDatagrams()
                peerAddress,
                IMAliveMessage.port(),
                Common::ProtoHelper::getStr(IMAliveMessage, &Protos::Core::IMAlive::nick),
-               IMAliveMessage.amount()
+               IMAliveMessage.amount(),
+               Common::ProtoHelper::getStr(IMAliveMessage, &Protos::Core::IMAlive::core_version)
             );
 
             if (IMAliveMessage.chunk_size() > 0)

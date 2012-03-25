@@ -38,6 +38,7 @@ using namespace Common;
 #endif
 
 #include <Constants.h>
+#include <Version.h>
 
 /**
   * @class Common::Global
@@ -48,6 +49,16 @@ using namespace Common;
 Global::UnableToSetTempDirException::UnableToSetTempDirException(const QString& dir) :
    errorMessage(QString("Unable to create the temporary directory %1").arg(dir))
 {
+}
+
+QString Global::version()
+{
+   return QString(VERSION);
+}
+
+QString Global::versionTag()
+{
+   return QString(VERSION_TAG);
 }
 
 /**

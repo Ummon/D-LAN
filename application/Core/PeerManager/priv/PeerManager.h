@@ -64,7 +64,7 @@ namespace PM
       Peer* getPeer_(const Common::Hash& ID);
       IPeer* createPeer(const Common::Hash& ID, const QString& nick);
 
-      void updatePeer(const Common::Hash& ID, const QHostAddress& IP, quint16 port, const QString& nick, const quint64& sharingAmount);
+      void updatePeer(const Common::Hash& ID, const QHostAddress& IP, quint16 port, const QString& nick, const quint64& sharingAmount, const QString& coreVersion);
       void newConnection(QTcpSocket* tcpSocket);
 
       void onGetChunk(QSharedPointer<FM::IChunk> chunk, int offset, QSharedPointer<Socket> socket);

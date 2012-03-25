@@ -20,9 +20,12 @@
 #include <QTest>
 
 #include <Tests.h>
+#include <TreeTests.h>
 
 int main(int argc, char *argv[])
 {
    Tests tests;
-   return QTest::qExec(&tests, argc, argv);
+   TreeTests treeTests;
+
+   return QTest::qExec(&tests, argc, argv) + QTest::qExec(&treeTests, argc, argv);
 }

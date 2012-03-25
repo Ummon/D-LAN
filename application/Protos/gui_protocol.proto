@@ -82,6 +82,7 @@ message State {
       required string nick = 2;
       required uint64 sharing_amount = 3; // [byte].
       optional Common.IP ip = 4;
+      optional string core_version = 5;
    }
    message SharedDir {
       required Common.Hash id = 1;

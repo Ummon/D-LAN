@@ -441,7 +441,7 @@ QVariant SearchModel::SearchTree::data(int column) const
    }
 }
 
-Common::Tree<Protos::Common::Entry>* SearchModel::SearchTree::newTree(const Protos::Common::Entry& entry)
+SearchModel::SearchTree* SearchModel::SearchTree::newTree(const Protos::Common::Entry& entry)
 {
    return new SearchTree(entry, this->peerID, this);
 }

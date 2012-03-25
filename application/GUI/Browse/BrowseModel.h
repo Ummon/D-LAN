@@ -80,26 +80,26 @@ namespace GUI
       virtual QList<Tree*> synchronizeRoot(const Protos::Common::Entries& entries);
       virtual void reset();
 
-      class Tree : public Common::Tree<Protos::Common::Entry>
+      class Tree : public Common::Tree<Protos::Common::Entry, Tree>
       {
       public:
          Tree();
          Tree(const Protos::Common::Entry& entry, Tree* parent);
          virtual ~Tree();
+
          virtual void insertChildren(const Protos::Common::Entries& entries);
          virtual void setItem(const Protos::Common::Entry& entry);
          virtual bool hasUnloadedChildren() const;
          virtual QVariant data(int column) const;
 
       protected:
-         virtual Common::Tree<Protos::Common::Entry>* newTree(const Protos::Common::Entry& entry);
          virtual void copySharedDirFromParent();
       };
 
-      class TreeBreadthIterator : public Common::TreeBreadthIterator<Protos::Common::Entry>
+      class TreeBreadthIterator : public Common::TreeBreadthIterator<Tree>
       {
       public:
-         TreeBreadthIterator(Tree* tree) : Common::TreeBreadthIterator<Protos::Common::Entry>(tree) { }
+         TreeBreadthIterator(Tree* tree) : Common::TreeBreadthIterator<Tree>(tree) { }
       };
 
       QSharedPointer<RCC::ICoreConnection> coreConnection;

@@ -23,5 +23,7 @@ TEMPLATE = app
 SOURCES += main.cpp \
     Tests.cpp \
     ../../Protos/common.pb.cc \
-    ../../Protos/core_settings.pb.cc
-HEADERS += Tests.h
+    ../../Protos/core_settings.pb.cc \
+    TreeTests.cpp
+HEADERS += Tests.h \
+    TreeTests.h

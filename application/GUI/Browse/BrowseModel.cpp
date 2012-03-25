@@ -142,11 +142,6 @@ QVariant BrowseModel::data(const QModelIndex& index, int role) const
    }
 }
 
-Common::Tree<Protos::Common::Entry>* BrowseModel::Tree::newTree(const Protos::Common::Entry& entry)
-{
-   return new Tree(entry, this);
-}
-
 Protos::Common::Entry BrowseModel::getEntry(const QModelIndex& index) const
 {
    Tree* tree = static_cast<Tree*>(index.internalPointer());
@@ -398,7 +393,7 @@ BrowseModel::Tree::Tree()
 }
 
 BrowseModel::Tree::Tree(const Protos::Common::Entry& entry, Tree* parent) :
-   Common::Tree<Protos::Common::Entry>(entry, parent)
+   Common::Tree<Protos::Common::Entry, BrowseModel::Tree>(entry, parent)
 {
    this->copySharedDirFromParent();
    if (!this->getItem().shared_dir().has_shared_name())
@@ -422,7 +417,7 @@ void BrowseModel::Tree::insertChildren(const Protos::Common::Entries& entries)
 
 void BrowseModel::Tree::setItem(const Protos::Common::Entry& entry)
 {
-   Common::Tree<Protos::Common::Entry>::setItem(entry);
+   Common::Tree<Protos::Common::Entry, BrowseModel::Tree>::setItem(entry);
    this->copySharedDirFromParent();
 }
 

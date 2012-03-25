@@ -20,6 +20,8 @@ package Protos.Core;
 // id : 0x01
 message IMAlive {
    required uint32 version = 1; // The version of the protocol used. If 'version' from another peer doesn't correspond to our own version, this peer is ignored.
+   optional string core_version = 9; // The core version, for example: "1.1.4".
+   
    required uint32 port = 2; // The port listened by the core.
    required string nick = 3;
    

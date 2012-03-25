@@ -99,8 +99,8 @@ namespace GUI
          SearchTree(const Protos::Common::Entry& entry, int level, const Common::Hash& peerID, const QString& peerNick, SearchTree* parent);
          SearchTree(const Protos::Common::Entry& entry, const Common::Hash& peerID,  SearchTree* parent);
 
-         SearchTree* insertChild(const Protos::Common::FindResult_EntryLevel& entry, const Common::Hash& peerID, const QString& peerNick);
-         SearchTree* insertChild(int index, const Protos::Common::FindResult_EntryLevel& entry, const Common::Hash& peerID, const QString& peerNick);
+         SearchTree* insertChild(const Protos::Common::FindResult::EntryLevel& entry, const Common::Hash& peerID, const QString& peerNick);
+         SearchTree* insertChild(int index, const Protos::Common::FindResult::EntryLevel& entry, const Common::Hash& peerID, const QString& peerNick);
          SearchTree* insertChild(SearchTree* node);
 
          int getLevel() const;
@@ -111,7 +111,7 @@ namespace GUI
          bool isSameAs(const Protos::Common::Entry& otherEntry) const;
 
       protected:
-         Common::Tree<Protos::Common::Entry>* newTree(const Protos::Common::Entry& entry);
+         SearchTree* newTree(const Protos::Common::Entry& entry);
 
       private:
          int level;

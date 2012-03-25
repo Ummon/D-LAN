@@ -80,6 +80,11 @@ QString Peer::getNick() const
    return this->nick;
 }
 
+QString Peer::getCoreVersion() const
+{
+   return this->coreVersion;
+}
+
 quint64 Peer::getSharingAmount() const
 {
    return this->sharingAmount;
@@ -131,7 +136,13 @@ bool Peer::isAvailable() const
    return this->alive && !this->banned;
 }
 
-void Peer::update(const QHostAddress& IP, quint16 port, const QString& nick, const quint64& sharingAmount)
+void Peer::update(
+   const QHostAddress& IP,
+   quint16 port,
+   const QString& nick,
+   const quint64& sharingAmount,
+   const QString& coreVersion
+)
 {
    this->alive = true;
    this->aliveTimer.start();
@@ -139,6 +150,7 @@ void Peer::update(const QHostAddress& IP, quint16 port, const QString& nick, con
    this->IP = IP;
    this->port = port;
    this->nick = nick;
+   this->coreVersion = coreVersion;
    this->sharingAmount = sharingAmount;
 
    this->connectionPool.setIP(this->IP, this->port);

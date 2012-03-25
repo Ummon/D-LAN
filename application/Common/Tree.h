@@ -5,119 +5,129 @@
 
 namespace Common
 {
-   template <typename T>
+   template <typename TreeType>
    class TreeBreadthIterator;
 
-   template<typename T>
+   class OutOfRangeException {};
+
+   template<typename ItemType, typename TreeType>
    class Tree
    {
    public:
       Tree();
-      Tree(const T&, Tree* parent);
+      Tree(const ItemType&, TreeType* parent);
       virtual ~Tree();
 
-      virtual Tree<T>* getParent();
+      virtual TreeType* getParent();
       virtual int getNbChildren() const;
-      virtual Tree<T>* getChild(int pos) const;
+      virtual TreeType* getChild(int pos) const;
       virtual void moveChild(int from, int to);
-      virtual Tree<T>* insertChild(const T& item);
-      virtual Tree<T>* insertChild(const T& item, int pos);
+      virtual TreeType* insertChild(const ItemType& item);
+      virtual TreeType* insertChild(const ItemType& item, int pos);
 
       virtual int getOwnPosition() const;
-      virtual const T& getItem() const;
-      virtual T& getItem();
-      virtual void setItem(const T& item);
+      virtual const ItemType& getItem() const;
+      virtual ItemType& getItem();
+      virtual void setItem(const ItemType& item);
+
+      TreeType& operator[](int pos);
+      const TreeType& operator[](int pos) const;
 
    protected:
-      virtual Tree<T>* newTree(const T& item);
+      virtual TreeType* newTree(const ItemType& item);
 
-      friend class TreeBreadthIterator<T>;
+      friend class TreeBreadthIterator<TreeType>;
 
-      T item;
-      Tree<T>* parent;
-      QList<Tree<T>*> children;
+      ItemType item;
+      TreeType* parent;
+      QList<TreeType*> children;
    };
 
-   template <typename T>
+   template <typename TreeType>
    class TreeBreadthIterator
    {
    public:
-      TreeBreadthIterator(Tree<T>* tree, bool iterateOnRoot = false);
+      TreeBreadthIterator(TreeType* tree, bool iterateOnRoot = false);
       bool hasNext() const;
-      Tree<T>* next();
+      TreeType* next();
 
    private:
-      void readChildren(Tree<T>* parentTree);
-      QList<Tree<T>*> nextTrees;
+      void readChildren(TreeType* parentTree);
+      QList<TreeType*> nextTrees;
    };
 }
 
 using namespace Common;
 
-template <typename T>
-Tree<T>::Tree() :
+template <typename ItemType, typename TreeType>
+Tree<ItemType, TreeType>::Tree() :
    parent(0)
 {
 }
 
-template <typename T>
-Tree<T>::Tree(const T& item, Tree* parent) :
+template <typename ItemType, typename TreeType>
+Tree<ItemType, TreeType>::Tree(const ItemType& item, TreeType* parent) :
    item(item), parent(parent)
 {
 }
 
-template <typename T>
-Tree<T>::~Tree()
+template <typename ItemType, typename TreeType>
+Tree<ItemType, TreeType>::~Tree()
 {
-   for (QListIterator<Tree*> i(this->children); i.hasNext();)
+   for (QListIterator<TreeType*> i(this->children); i.hasNext();)
       delete i.next();
 
    if (this->parent)
-      this->parent->children.removeOne(this);
+      this->parent->children.removeOne(static_cast<TreeType*>(this));
 }
 
-template <typename T>
-Tree<T>* Tree<T>::getParent()
+template <typename ItemType, typename TreeType>
+TreeType* Tree<ItemType, TreeType>::getParent()
 {
    return this->parent;
 }
 
-template <typename T>
-int Tree<T>::getNbChildren() const
+template <typename ItemType, typename TreeType>
+int Tree<ItemType, TreeType>::getNbChildren() const
 {
    return this->children.size();
 }
 
-template <typename T>
-Tree<T>* Tree<T>::getChild(int pos) const
+template <typename ItemType, typename TreeType>
+TreeType* Tree<ItemType, TreeType>::getChild(int pos) const
 {
    if (pos >= this->children.size())
       return 0;
    return this->children[pos];
 }
 
-template <typename T>
-void Tree<T>::moveChild(int from, int to)
+template <typename ItemType, typename TreeType>
+void Tree<ItemType, TreeType>::moveChild(int from, int to)
 {
    if (from >= this->children.size() || to >= this->children.size())
       return;
    this->children.move(from, to);
 }
 
-template <typename T>
-Tree<T>* Tree<T>::insertChild(const T& item)
+template <typename ItemType, typename TreeType>
+TreeType* Tree<ItemType, TreeType>::insertChild(const ItemType& item)
 {
    this->children << this->newTree(item);
    return this->children.last();
 }
 
-template <typename T>
-Tree<T>* Tree<T>::insertChild(const T& item, int pos)
+/**
+  * Insert an item into the tree at the position 'pos', if the position exceed
+  * the children size the new item will be put at the end.
+  * @return The new created subtree.
+  */
+template <typename ItemType, typename TreeType>
+TreeType* Tree<ItemType, TreeType>::insertChild(const ItemType& item, int pos)
 {
    if (pos > this->children.size())
       pos = this->children.size();
 
-   Tree<T>* tree = this->newTree(item);
+   TreeType* tree = this->newTree(item);
    this->children.insert(pos, tree);
    return tree;
 }
@@ -125,66 +135,91 @@ Tree<T>* Tree<T>::insertChild(const T& item, int pos)
 /**
   * O(n).
   */
-template <typename T>
-int Tree<T>::getOwnPosition() const
+template <typename ItemType, typename TreeType>
+int Tree<ItemType, TreeType>::getOwnPosition() const
 {
    if (this->parent)
-      return this->parent->children.indexOf(const_cast<Tree<T>*>(this));
+      return this->parent->children.indexOf(const_cast<TreeType*>(static_cast<const TreeType*>(this)));
 
    return 0;
 }
 
-template <typename T>
-const T& Tree<T>::getItem() const
+template <typename ItemType, typename TreeType>
+const ItemType& Tree<ItemType, TreeType>::getItem() const
 {
    return this->item;
 }
 
-template <typename T>
-T& Tree<T>::getItem()
+template <typename ItemType, typename TreeType>
+ItemType& Tree<ItemType, TreeType>::getItem()
 {
    return this->item;
 }
 
-template <typename T>
-void Tree<T>::setItem(const T& item)
+template <typename ItemType, typename TreeType>
+void Tree<ItemType, TreeType>::setItem(const ItemType& item)
 {
    this->item = item;
 }
 
-template <typename T>
-Tree<T>* Tree<T>::newTree(const T& item)
+/**
+  * @exception OutOfRangeException
+  */
+template <typename ItemType, typename TreeType>
+TreeType& Tree<ItemType, TreeType>::operator[](int pos)
 {
-   return new Tree(item, this);
+   if (pos >= this->children.size())
+      throw OutOfRangeException();
+   return *this->children[pos];
 }
 
-template <typename T>
-TreeBreadthIterator<T>::TreeBreadthIterator(Tree<T>* tree, bool iterateOnRoot)
+/**
+  * @exception OutOfRangeException
+  */
+template <typename ItemType, typename TreeType>
+const TreeType& Tree<ItemType, TreeType>::operator[](int pos) const
+{
+   if (pos >= this->children.size())
+      throw OutOfRangeException();
+   return *this->children[pos];
+}
+
+template <typename ItemType, typename TreeType>
+TreeType* Tree<ItemType, TreeType>::newTree(const ItemType& item)
+{
+   return new TreeType(item, static_cast<TreeType*>(this));
+}
+
+/////
+
+template <typename TreeType>
+TreeBreadthIterator<TreeType>::TreeBreadthIterator(TreeType* tree, bool iterateOnRoot)
 {
    if (iterateOnRoot)
       this->nextTrees << tree;
-   this->readChildren(tree);
+   else
+      this->readChildren(tree);
 }
 
-template <typename T>
-bool TreeBreadthIterator<T>::hasNext() const
+template <typename TreeType>
+bool TreeBreadthIterator<TreeType>::hasNext() const
 {
    return !this->nextTrees.isEmpty();
 }
 
-template <typename T>
-Tree<T>* TreeBreadthIterator<T>::TreeBreadthIterator::next()
+template <typename TreeType>
+TreeType* TreeBreadthIterator<TreeType>::TreeBreadthIterator::next()
 {
    if (this->nextTrees.isEmpty())
       return 0;
 
-   Tree<T>* tree = this->nextTrees.takeFirst();
+   TreeType* tree = this->nextTrees.takeFirst();
    this->readChildren(tree);
    return tree;
 }
 
-template <typename T>
-void TreeBreadthIterator<T>::readChildren(Tree<T>* parentTree)
+template <typename TreeType>
+void TreeBreadthIterator<TreeType>::readChildren(TreeType* parentTree)
 {
    this->nextTrees.append(parentTree->children);
 }

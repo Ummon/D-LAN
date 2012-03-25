@@ -57,6 +57,7 @@ namespace PM
       QHostAddress getIP() const;
       quint16 getPort() const;
       QString getNick() const;
+      QString getCoreVersion() const;
       quint64 getSharingAmount() const;
 
       quint32 getSpeed();
@@ -66,7 +67,13 @@ namespace PM
 
       bool isAlive() const;
       bool isAvailable() const;
-      void update(const QHostAddress& IP, quint16 port, const QString& nick, const quint64& sharingAmount);
+      void update(
+         const QHostAddress& IP,
+         quint16 port,
+         const QString& nick,
+         const quint64& sharingAmount,
+         const QString& coreVersion
+      );
 
       QSharedPointer<IGetEntriesResult> getEntries(const Protos::Core::GetEntries& dirs);
       QSharedPointer<IGetHashesResult> getHashes(const Protos::Common::Entry& file);
@@ -93,6 +100,7 @@ namespace PM
       QHostAddress IP;
       quint16 port;
       QString nick;
+      QString coreVersion;
       quint64 sharingAmount;
 
       QElapsedTimer speedTimer;

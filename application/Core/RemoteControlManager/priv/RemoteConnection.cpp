@@ -145,6 +145,11 @@ void RemoteConnection::refresh()
       Protos::GUI::State::Peer* protoPeer = state.add_peer();
       protoPeer->mutable_peer_id()->set_hash(peer->getID().getData(), Common::Hash::HASH_SIZE);
       Common::ProtoHelper::setStr(*protoPeer, &Protos::GUI::State::Peer::set_nick, peer->getNick());
+
+      const QString coreVersion = peer->getCoreVersion();
+      if (!coreVersion.isNull())
+         Common::ProtoHelper::setStr(*protoPeer, &Protos::GUI::State::Peer::set_core_version, coreVersion);
+
       protoPeer->set_sharing_amount(peer->getSharingAmount());
       Common::ProtoHelper::setIP(*protoPeer->mutable_ip(), peer->getIP());
    }

@@ -57,16 +57,13 @@ namespace GUI
       void onNewState(const Protos::GUI::State& state);
 
    private:
-      class Tree : public Common::Tree<Protos::GUI::State::Download>
+      class Tree : public Common::Tree<Protos::GUI::State::Download, Tree>
       {
       public:
          Tree();
          Tree(const Protos::GUI::State::Download& download, Tree* parent);
 
-      protected:
-         virtual Common::Tree<Protos::GUI::State::Download>* newTree(const Protos::GUI::State::Download& download);
-
-      public: // Fuck you encapsulation.
+         // Fuck you encapsulation.
          bool toDelete;
          int nbPausedFiles;
          int nbErrorFiles;
@@ -80,7 +77,7 @@ namespace GUI
       Tree* updateDirectoriesEntryDeleted(Tree* file, const Protos::GUI::State::Download& oldDownload);
       Tree* updateDirectoriesNewFile(Tree* file);
       Tree* updateDirectoriesFileModified(Tree* file, const Protos::GUI::State::Download& oldDownload);
-      Tree* updateDirectories(Tree* file, quint64 fileSizeDelta, quint64 fileDownloadedBytesDelta, Protos::GUI::State_Download::Status oldStatus = Protos::GUI::State::Download::QUEUED);
+      Tree* updateDirectories(Tree* file, quint64 fileSizeDelta, quint64 fileDownloadedBytesDelta, Protos::GUI::State::Download::Status oldStatus = Protos::GUI::State::Download::QUEUED);
 
       Tree* root;
       QHash<int, Tree*> indexedFiles;
