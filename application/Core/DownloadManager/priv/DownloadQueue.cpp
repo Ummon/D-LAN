@@ -97,9 +97,13 @@ bool DownloadQueue::isAPeerSource(const Common::Hash& peerID) const
 
 void DownloadQueue::moveDownloads(const QList<quint64>& downloadIDRefs, const QList<quint64>& downloadIDs, Protos::GUI::MoveDownloads::Position position)
 {
-   /*
-   TODO
+   if (downloadIDRefs.isEmpty() || downloadIDs.isEmpty())
+      return;
+
    QList<quint64> downloadIDsCopy(downloadIDs);
+   QList<quint64> downloadIDRefsCopy(downloadIDRefs);
+
+   quint64 downloadIDRef = downloadIDRefsCopy.size() == 1 ? downloadIDRefsCopy.first() : 0;
    int iRef = -1; // Index of the download reference, -1 if unknown.
    QList<int> iToMove;
 
@@ -110,7 +114,7 @@ void DownloadQueue::moveDownloads(const QList<quint64>& downloadIDRefs, const QL
       {
          if (iRef != -1)
          {
-            int whereToInsert = moveBefore ? iRef++ : ++iRef;
+            int whereToInsert = position == Protos::GUI::MoveDownloads::BEFORE ? iRef++ : ++iRef;
             int whereToRemove = i + 1;
 
             this->updateMarkersMove(whereToInsert, whereToRemove, this->downloads[i]);
@@ -125,17 +129,34 @@ void DownloadQueue::moveDownloads(const QList<quint64>& downloadIDRefs, const QL
          downloadIDsCopy.removeAt(j);
       }
 
+      // If the download reference isn't defined we have to search one among 'downloadIDRefsCopy'.
+      int k;
+      if (downloadIDRef == 0 && (k = downloadIDRefsCopy.indexOf(this->downloads[i]->getID())) != -1)
+      {
+         if (position == Protos::GUI::MoveDownloads::BEFORE)
+         {
+            downloadIDRef = this->downloads[i]->getID();
+         }
+         else
+         {
+            if (downloadIDRefsCopy.size() == 1)
+               downloadIDRef = downloadIDRefsCopy.first();
+            else
+               downloadIDRefsCopy.removeAt(k);
+         }
+      }
+
       if (this->downloads[i]->getID() == downloadIDRef)
       {
          iRef = i;
          int shift = 0;
          for (int j = 0; j < iToMove.size(); j++)
          {
-            if (iToMove[j] == iRef && moveBefore)
+            if (iToMove[j] == iRef && position == Protos::GUI::MoveDownloads::BEFORE)
                iRef++;
             else
             {
-               int whereToInsert = j == 0 && !moveBefore ? ++iRef : iRef;
+               int whereToInsert = j == 0 && position == Protos::GUI::MoveDownloads::AFTER ? ++iRef : iRef;
                int whereToRemove = iToMove[j] + shift;
 
                this->updateMarkersMove(whereToInsert, whereToRemove, this->downloads[whereToRemove]);
@@ -148,7 +169,6 @@ void DownloadQueue::moveDownloads(const QList<quint64>& downloadIDRefs, const QL
          iToMove.clear();
       }
    }
-   */
 }
 
 /**

@@ -545,7 +545,7 @@ void RemoteConnection::onNewMessage(Common::MessageHeader::MessageType type, con
 
          QList<quint64> downloadIDRefs;
          for (int i = 0; i < moveDownloadsMessage.id_ref_size(); i++)
-            downloadIDRefs << moveDownloadsMessage.id_to_move(i);
+            downloadIDRefs << moveDownloadsMessage.id_ref(i);
 
          QList<quint64> downloadIDs;
          for (int i = 0; i < moveDownloadsMessage.id_to_move_size(); i++)
