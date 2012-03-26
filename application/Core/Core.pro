@@ -55,12 +55,13 @@ win32 {
     INCLUDEPATH += "."
     #INCLUDEPATH += "$$(QTDIR)/../mingw/include"
     #LIBS += "$$(QTDIR)/../mingw/lib/libwsock32.a"
-    INCLUDEPATH += "E:/Qt/qtcreator-2.4.0/mingw/include"
-    LIBS += "E:/Qt/qtcreator-2.4.0/mingw/lib/libwsock32.a"
+    INCLUDEPATH += "E:/Qt/qtcreator-2.4.82/mingw/include"
+    LIBS += "E:/Qt/qtcreator-2.4.82/mingw/lib/libwsock32.a"
 }
 
 CONFIG(debug, debug|release) {
    contains(DEFINES, ENABLE_NVWA) {
+      DEFINES += _DEBUG_NEW_ERROR_CRASH
       SOURCES += ../Libs/Nvwa/debug_new.cpp
    }
 }

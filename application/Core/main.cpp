@@ -15,7 +15,7 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #include <QString>
 #include <QTextCodec>
 #include <QLocale>
@@ -26,8 +26,10 @@
 #include <CoreService.h>
 
 #if defined(DEBUG) && defined(ENABLE_NVWA)
-   // For Common/debug_new.cpp.
+   // For Libs/debug_new.cpp.
    extern const char* new_progname;
+   extern bool new_verbose_flag;
+   extern FILE* new_output_fp;
 #endif
 
 /**

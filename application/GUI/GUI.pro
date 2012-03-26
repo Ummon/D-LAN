@@ -32,6 +32,7 @@ PRE_TARGETDEPS += ../Common/output/$$FOLDER/libCommon.a
 
 CONFIG(debug, debug|release) {
    contains(DEFINES, ENABLE_NVWA) {
+      DEFINES += _DEBUG_NEW_ERROR_CRASH
       SOURCES += ../Libs/Nvwa/debug_new.cpp
    }
 }
