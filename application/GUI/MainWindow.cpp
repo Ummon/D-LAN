@@ -168,9 +168,9 @@ MainWindow::MainWindow(QSharedPointer<RCC::ICoreConnection> coreConnection, QWid
 
    this->loadLanguage(this->widgetSettings->getCurrentLanguageFilename());
 
-   connect(this->coreConnection.data(), SIGNAL(connectingError(RCC::ICoreConnection::ConnectionErrorCode)), this, SLOT(coreConnectionError(RCC::ICoreConnection::ConnectionErrorCode)), Qt::QueuedConnection);
-   connect(this->coreConnection.data(), SIGNAL(connected()), this, SLOT(coreConnected()), Qt::QueuedConnection);
-   connect(this->coreConnection.data(), SIGNAL(disconnected()), this, SLOT(coreDisconnected()), Qt::QueuedConnection);
+   connect(this->coreConnection.data(), SIGNAL(connectingError(RCC::ICoreConnection::ConnectionErrorCode)), this, SLOT(coreConnectionError(RCC::ICoreConnection::ConnectionErrorCode)));
+   connect(this->coreConnection.data(), SIGNAL(connected()), this, SLOT(coreConnected()));
+   connect(this->coreConnection.data(), SIGNAL(disconnected()), this, SLOT(coreDisconnected()));
 
    this->coreConnection->connectToCore(SETTINGS.get<QString>("core_address"), SETTINGS.get<quint32>("core_port"), SETTINGS.get<Common::Hash>("password"));
 }

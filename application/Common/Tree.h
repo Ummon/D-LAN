@@ -10,6 +10,19 @@ namespace Common
 
    class OutOfRangeException {};
 
+   /**
+     * @class Tree
+     * A tree data structure, can store data called 'item' of type 'ItemType'.
+     * To use this classe you have to inherit it and give your child class type as the second template parameter.
+     * For example:
+     * MyTree : public Tree<int, MyTree> { .. };
+     *
+     * Some remarks:
+     *  - To remove an element just delete it.
+     *  - You can reimplement 'newwTree(..)' to dynamically create new type of children.
+     *  - This class comes with a breadth-first iterator.
+     */
+
    template<typename ItemType, typename TreeType>
    class Tree
    {

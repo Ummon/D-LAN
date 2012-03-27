@@ -71,10 +71,10 @@ WidgetSettings::WidgetSettings(QSharedPointer<RCC::ICoreConnection> coreConnecti
    this->ui->txtCoreAddress->setText(SETTINGS.get<QString>("core_address"));
 
    connect(this->coreConnection.data(), SIGNAL(newState(Protos::GUI::State)), this, SLOT(newState(Protos::GUI::State)));
-   connect(this->coreConnection.data(), SIGNAL(connecting()), this, SLOT(coreConnecting()), Qt::QueuedConnection);
-   connect(this->coreConnection.data(), SIGNAL(connectingError(RCC::ICoreConnection::ConnectionErrorCode)), this, SLOT(coreConnectingError()), Qt::QueuedConnection);
-   connect(this->coreConnection.data(), SIGNAL(connected()), this, SLOT(coreConnected()), Qt::QueuedConnection);
-   connect(this->coreConnection.data(), SIGNAL(disconnected()), this, SLOT(coreDisconnected()), Qt::QueuedConnection);
+   connect(this->coreConnection.data(), SIGNAL(connecting()), this, SLOT(coreConnecting()));
+   connect(this->coreConnection.data(), SIGNAL(connectingError(RCC::ICoreConnection::ConnectionErrorCode)), this, SLOT(coreConnectingError()));
+   connect(this->coreConnection.data(), SIGNAL(connected()), this, SLOT(coreConnected()));
+   connect(this->coreConnection.data(), SIGNAL(disconnected()), this, SLOT(coreDisconnected()));
 
    connect(this->ui->txtNick, SIGNAL(editingFinished()), this, SLOT(saveCoreSettings()));
    connect(this->ui->chkEnableIntegrityCheck, SIGNAL(clicked()), this, SLOT(saveCoreSettings()));
