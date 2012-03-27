@@ -39,7 +39,9 @@ Peer::Peer(PeerManager* peerManager, QSharedPointer<FM::IFileManager> fileManage
    fileManager(fileManager),
    connectionPool(peerManager, fileManager, ID),
    ID(ID),
+   port(0),
    nick(nick),
+   sharingAmount(0),
    speed(MAX_SPEED),
    alive(false),
    banned(false)

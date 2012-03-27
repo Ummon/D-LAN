@@ -98,7 +98,8 @@ WidgetDownloads::WidgetDownloads(QSharedPointer<RCC::ICoreConnection> coreConnec
    ui(new Ui::WidgetDownloads),
    coreConnection(coreConnection),
    downloadsFlatModel(coreConnection, peerListModel, sharedDirsModel, checkBoxModel),
-   downloadsTreeModel(coreConnection, peerListModel, sharedDirsModel, checkBoxModel)
+   downloadsTreeModel(coreConnection, peerListModel, sharedDirsModel, checkBoxModel),
+   currentDownloadsModel(0)
 {
    this->ui->setupUi(this);
 
@@ -297,7 +298,7 @@ void WidgetDownloads::switchView(Protos::GUI::Settings::DownloadView view)
    if (view == Protos::GUI::Settings::TREE_VIEW && this->currentDownloadsModel != &this->downloadsTreeModel)
    {
       this->ui->butSwitchView->setIcon(QIcon(":/icons/ressources/list_view.png"));
-      this->ui->butSwitchView->setToolTip(tr("Switch to list view"));
+      this->ui->butSwitchView->setToolTip(tr("Switch to file list view"));
       this->ui->tblDownloads->setIndentation(20);
       this->currentDownloadsModel = &this->downloadsTreeModel;
    }
