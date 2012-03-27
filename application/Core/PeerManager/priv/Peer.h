@@ -112,9 +112,6 @@ namespace PM
       bool banned;
       QString bannedReason;
       QTimer bannedTimer;
-
-      quint32 averageSpeed;
-      QDateTime lastUpdateAverageSpeed;
    };
 }
 #endif

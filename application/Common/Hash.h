@@ -63,7 +63,7 @@ namespace Common
         * The length of the returned value is exactly HASH_SIZE.
         */
       inline const char* getData() const { return this->data->hash; }
-      inline QByteArray getByteArray() const { return QByteArray(this->data->hash); }
+      inline QByteArray getByteArray() const { return QByteArray(this->data->hash, HASH_SIZE); }
 
       QString toStr() const;
       QString toStrCArray() const;
