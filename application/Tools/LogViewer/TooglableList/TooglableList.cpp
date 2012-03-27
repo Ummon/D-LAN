@@ -16,11 +16,11 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#include "TooglableList.h"
+#include <TooglableList/TooglableList.h>
 
 #include <QPushButton>
 
-#include "ui_TooglableList.h"
+#include <ui_TooglableList.h>
 
 TooglableList::TooglableList(QWidget *parent) :
     QWidget(parent),

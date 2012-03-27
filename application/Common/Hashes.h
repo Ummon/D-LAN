@@ -21,7 +21,7 @@
 
 #include <QList>
 
-#include "Hash.h"
+#include <Common/Hash.h>
 
 #include <Protos/common.pb.h>
 

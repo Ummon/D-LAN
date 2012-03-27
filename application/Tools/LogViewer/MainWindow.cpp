@@ -16,8 +16,8 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#include "MainWindow.h"
-#include "ui_MainWindow.h"
+#include <MainWindow.h>
+#include <ui_MainWindow.h>
 
 #include <QFileDialog>
 #include <QFileInfo>

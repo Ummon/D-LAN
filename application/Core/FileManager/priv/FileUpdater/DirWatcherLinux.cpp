@@ -20,13 +20,13 @@
 
 #ifdef Q_OS_LINUX
 
-#include "DirWatcherLinux.h"
+#include <priv/FileUpdater/DirWatcherLinux.h>
 using namespace FM;
 
 #include <QMutexLocker>
 #include <QtCore/QDebug>
 
-#include "WaitConditionLinux.h"
+#include <priv/FileUpdater/WaitConditionLinux.h>
 #include <priv/Log.h>
 
 #include <sys/select.h>

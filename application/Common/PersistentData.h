@@ -24,7 +24,7 @@
 #include <QString>
 #include <QByteArray>
 
-#include "Global.h"
+#include <Common/Global.h>
 
 namespace Common
 {

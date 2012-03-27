@@ -16,7 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#include "TooglableListButton.h"
+#include <TooglableList/TooglableListButton.h>
 
 #include <QMouseEvent>
 TooglableListButton::TooglableListButton(QWidget* parent) :

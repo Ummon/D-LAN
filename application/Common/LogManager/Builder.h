@@ -22,9 +22,9 @@
 #include <QDir>
 #include <QSharedPointer>
 
-#include "IEntry.h"
-#include "ILogger.h"
-#include "ILoggerHook.h"
+#include <Common/LogManager/IEntry.h>
+#include <Common/LogManager/ILogger.h>
+#include <Common/LogManager/ILoggerHook.h>
 
 namespace LM
 {

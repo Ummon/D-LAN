@@ -21,8 +21,8 @@
 
 #include <QString>
 
-#include "ILoggable.h"
-#include "IEntry.h"
+#include <Common/LogManager/ILoggable.h>
+#include <Common/LogManager/IEntry.h>
 
 namespace LM
 {

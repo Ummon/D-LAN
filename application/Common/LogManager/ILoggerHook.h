@@ -22,7 +22,7 @@
 #include <QObject>
 #include <QSharedPointer>
 
-#include "IEntry.h"
+#include <Common/LogManager/IEntry.h>
 
 namespace LM
 {

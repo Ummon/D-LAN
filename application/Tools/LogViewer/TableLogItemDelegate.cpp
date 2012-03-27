@@ -16,7 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#include "TableLogItemDelegate.h"
+#include <TableLogItemDelegate.h>
 
 #include <QPainter>
 

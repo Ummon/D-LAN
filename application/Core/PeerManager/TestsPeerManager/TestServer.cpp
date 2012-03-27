@@ -16,7 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#include "TestServer.h"
+#include <TestServer.h>
 
 #include <QSharedPointer>
 #include <QtDebug>
