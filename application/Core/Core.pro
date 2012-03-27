@@ -50,13 +50,10 @@ PRE_TARGETDEPS += ../Common/output/$$FOLDER/libCommon.a
 
 include(../Libs/qtservice/src/qtservice.pri)
 
-# FIXME : Theses declarations should not be here, all dependencies are read from the prl files of each library (see link_prl):
 win32 {
-    INCLUDEPATH += "."
-    #INCLUDEPATH += "$$(QTDIR)/../mingw/include"
-    #LIBS += "$$(QTDIR)/../mingw/lib/libwsock32.a"
-    INCLUDEPATH += "E:/Qt/qtcreator-2.4.82/mingw/include"
-    LIBS += "E:/Qt/qtcreator-2.4.82/mingw/lib/libwsock32.a"
+   # The NetworkListener component use some functions from this lib.
+   # See the 'UDPListener::initMulticastUDPSocket()' method.
+   LIBS += -lwsock32
 }
 
 CONFIG(debug, debug|release) {

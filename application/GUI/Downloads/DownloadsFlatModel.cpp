@@ -132,7 +132,7 @@ Qt::ItemFlags DownloadsFlatModel::flags(const QModelIndex& index) const
        return Qt::ItemIsDropEnabled | defaultFlags;
 }
 
-bool DownloadsFlatModel::dropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent)
+bool DownloadsFlatModel::dropMimeData(const QMimeData* data, Qt::DropAction action, int row, int /*column*/, const QModelIndex& /*parent*/)
 {
    if (row == -1 || !data || action != Qt::MoveAction ||  this->downloads.isEmpty())
        return false;
