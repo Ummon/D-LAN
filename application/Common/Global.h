@@ -39,6 +39,7 @@ namespace Common
 
       static QString getVersion();
       static QString getVersionTag();
+      static QString getSystemVersion();
       static QString getVersionFull();
 
       template <typename T>

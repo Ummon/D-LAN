@@ -61,12 +61,62 @@ QString Global::getVersionTag()
    return QString(VERSION_TAG);
 }
 
+QString Global::getSystemVersion()
+{
+#ifdef Q_OS_WIN32
+   // Reference: http://msdn.microsoft.com/en-us/library/windows/desktop/ms724429(v=vs.85).aspx
+   OSVERSIONINFOEX versionInfo;
+   memset(&versionInfo, 0, sizeof(versionInfo));
+   versionInfo.dwOSVersionInfoSize = sizeof(versionInfo);
+   GetVersionEx((OSVERSIONINFO*)&versionInfo);
+
+   if (versionInfo.dwMajorVersion == 6 && versionInfo.dwMinorVersion == 0)
+   {
+      if (versionInfo.wProductType == VER_NT_WORKSTATION)
+         return QString("Windows Vista");
+      else
+         return QString("Windows Server 2008");
+   }
+   else if (versionInfo.dwMajorVersion == 6 && versionInfo.dwMinorVersion == 1)
+   {
+      if (versionInfo.wProductType == VER_NT_WORKSTATION)
+         return QString("Windows 7");
+      else
+         return QString("Windows Server 2008 R2");
+   }
+   else if (versionInfo.dwMajorVersion == 5 && versionInfo.dwMinorVersion == 2)
+   {
+      return QString("Windows Server 2003");
+   }
+   else if (versionInfo.dwMajorVersion == 5 && versionInfo.dwMinorVersion == 1)
+   {
+      return QString("Windows XP");
+   }
+   else if (versionInfo.dwMajorVersion == 5 && versionInfo.dwMinorVersion == 0)
+   {
+      return QString("Windows 2000");
+   }
+   return QString("Windows");
+#elif Q_OS_LINUX
+   return QString("Linux");
+#elif Q_OS_DARWIN
+   return QString("Mac OS X");
+#else
+   return QString();
+#endif
+}
+
 /**
-  * @return Version + version tag.
+  * @return Version + version tag + system version.
   */
 QString Global::getVersionFull()
 {
-   return Global::getVersion() % " " % Global::getVersionTag();
+   const QString versionTag = Global::getVersionTag();
+   const QString systemVersion = Global::getSystemVersion();
+   return
+      Global::getVersion() %
+      (versionTag.isEmpty() ? QString() : " " % Global::getVersionTag()) %
+      (systemVersion.isEmpty() ? QString() : " - " % Global::getSystemVersion());
 }
 
 /**
