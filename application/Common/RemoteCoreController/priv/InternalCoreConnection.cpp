@@ -195,6 +195,9 @@ void InternalCoreConnection::pauseDownloads(const QList<quint64>& downloadIDs, b
 
 void InternalCoreConnection::moveDownloads(const QList<quint64>& downloadIDRefs, const QList<quint64>& downloadIDs, Protos::GUI::MoveDownloads::Position position)
 {
+   if (downloadIDRefs.isEmpty() || downloadIDs.isEmpty()) // Nothing to do in this case.
+      return;
+
    Protos::GUI::MoveDownloads moveDownloadsMessage;
    for (QListIterator<quint64> i(downloadIDRefs); i.hasNext();)
       moveDownloadsMessage.add_id_ref(i.next());

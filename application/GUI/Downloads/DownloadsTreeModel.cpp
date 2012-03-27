@@ -21,6 +21,7 @@ using namespace GUI;
 
 #include <Common/ProtoHelper.h>
 #include <Common/Global.h>
+#include <QtGlobal>
 
 DownloadsTreeModel::DownloadsTreeModel(QSharedPointer<RCC::ICoreConnection> coreConnection, const PeerListModel& peerListModel, const DirListModel& sharedDirsModel, const IFilter<DownloadFilterStatus>& filter) :
    DownloadsModel(coreConnection, peerListModel, sharedDirsModel, filter), root(new Tree())
@@ -38,18 +39,7 @@ QList<quint64> DownloadsTreeModel::getDownloadIDs(const QModelIndex& index) cons
    if (!tree)
       return QList<quint64>();
 
-   if (tree->getItem().local_entry().type() == Protos::Common::Entry::FILE)
-      return QList<quint64>() << tree->getItem().id();
-
-   // We have to send all sub file ids, a directory doesn't have an id.
-   QList<quint64> IDs;
-   for (Common::TreeBreadthIterator<Tree> i(tree); i.hasNext();)
-   {
-      Tree* current = i.next();
-      if (current->getItem().local_entry().type() == Protos::Common::Entry::FILE)
-         IDs << current->getItem().id();
-   }
-   return IDs;
+   return this->getDownloadIDs(tree);
 }
 
 bool DownloadsTreeModel::isDownloadPaused(const QModelIndex& index) const
@@ -212,10 +202,103 @@ Qt::ItemFlags DownloadsTreeModel::flags(const QModelIndex& index) const
        return Qt::ItemIsDropEnabled | defaultFlags;
 }
 
-bool DownloadsTreeModel::dropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent)
+bool DownloadsTreeModel::dropMimeData(const QMimeData* data, Qt::DropAction action, int where, int /*column*/, const QModelIndex& parent)
 {
-   // TODO
-   return false;
+   if (where == -1 || !data || action != Qt::MoveAction || where > this->root->getNbChildren() || parent.isValid()) // We can only drop on the root.
+       return false;
+
+   QList<int> rows = this->getDraggedRows(data);
+   if (rows.isEmpty() || (rows.size() == 1 && rows.first() == where))
+      return false;
+
+   qSort(rows); // TODO: is 'getDraggedRows(..)' returns a sorted list?
+
+   const int first = rows.first();
+   const int last = rows.last();
+
+   int begin = 0;
+   int end = 0;
+   if (abs(where - first) > abs(where - last))
+   {
+      begin = qMin(where, first);
+      end = qMax(where, first);
+   }
+   else
+   {
+      begin = qMin(where, last);
+      end = qMax(where, last);
+   }
+
+   Protos::GUI::MoveDownloads::Position position = Protos::GUI::MoveDownloads::BEFORE;
+   if (where > (first + last + 1) / 2)
+   {
+      end--;
+      position = Protos::GUI::MoveDownloads::AFTER;
+   }
+
+   QList<quint64> downloadIDsToMove;
+   QList<quint64> downloadRefs;
+   for (int i = begin; i <= end; i++)
+   {
+      if (!rows.empty() && rows.first() == i)
+      {
+         rows.removeFirst();
+         downloadIDsToMove << this->getDownloadIDs(this->root->getChild(i));
+      }
+      else
+      {
+         downloadRefs << this->getDownloadIDs(this->root->getChild(i));
+      }
+   }
+
+   if (downloadRefs.isEmpty())
+      if (last < this->root->getNbChildren() - 1 && (where > (first + last + 1) / 2 || first == 0))
+      {
+
+         downloadRefs << this->getDownloadIDs(this->root->getChild(last + 1));
+         position = Protos::GUI::MoveDownloads::BEFORE;
+      }
+      else if (first > 0)
+      {
+         downloadRefs << this->getDownloadIDs(this->root->getChild(first - 1));
+         position = Protos::GUI::MoveDownloads::AFTER;
+      }
+
+   // Some rows to move may not have be processed by the last loop.
+   for (QListIterator<int> i(rows); i.hasNext();)
+      downloadIDsToMove << this->getDownloadIDs(this->root->getChild(i.next()));
+
+   this->coreConnection->moveDownloads(downloadRefs, downloadIDsToMove, position);
+
+   return true;
+
+   /*
+   // We remove the moved download from the list (not necessery but nicer for the user experience).
+   if (!rows.isEmpty())
+   {
+      qSort(rows.begin(), rows.end());
+
+      int rowBegin = rows.size() - 1;
+      int rowEnd = rowBegin;
+      for (int i = rowEnd - 1; i >= -1 ; i--)
+      {
+         if (i >= 0 && rows[i] == rows[rowBegin] - 1)
+            rowBegin--;
+         else
+         {
+            this->beginRemoveRows(QModelIndex(), rows[rowBegin], rows[rowEnd]);
+            for (int j = rows[rowEnd]; j >= rows[rowBegin]; j--)
+               this->downloads.removeAt(j);
+            this->endRemoveRows();
+
+            rowBegin = rowEnd = i;
+         }
+      }
+   }
+
+   this->coreConnection->moveDownloads(placeToMove, downloadIDs, position);
+   return true;*/
+
 }
 
 void DownloadsTreeModel::onNewState(const Protos::GUI::State& state)
@@ -223,7 +306,7 @@ void DownloadsTreeModel::onNewState(const Protos::GUI::State& state)
    QList<int> activeDownloadIndices = this->getNonFilteredDownloadIndices(state);
 
    for (Common::TreeBreadthIterator<Tree> i(this->root); i.hasNext();)
-      i.next()->toDelete = true;
+      i.next()->visited = false;
 
    for (int i = 0; i < activeDownloadIndices.size(); i++)
    {
@@ -237,7 +320,11 @@ void DownloadsTreeModel::onNewState(const Protos::GUI::State& state)
       {
          Tree* parentTree = fileTree;
          while (parentTree = parentTree->getParent())
-            parentTree->toDelete = false;
+         {
+            parentTree->visited = true;
+            if (parentTree->getParent() == this->root)
+               this->moveUp(parentTree);
+         }
 
          this->update(fileTree, download);
       }
@@ -263,12 +350,12 @@ void DownloadsTreeModel::onNewState(const Protos::GUI::State& state)
       for (int i = 0; i < currentTree->getNbChildren(); i++)
       {
          Tree* currentChildTree = currentTree->getChild(i);
-         if (currentChildTree->toDelete)
+         if (!currentChildTree->visited)
          {
             this->updateDirectoriesEntryDeleted(currentChildTree, currentChildTree->getItem());
 
             this->beginRemoveRows(currentTree == this->root ? QModelIndex() : this->createIndex(currentTree->getOwnPosition(), 0, currentTree), i, i);
-            for (Common::TreeBreadthIterator<Tree> j(currentTree, true); j.hasNext();)
+            for (Common::TreeBreadthIterator<Tree> j(currentChildTree, true); j.hasNext();)
             {
                Tree* treeChild = j.next();
                if (treeChild->getItem().local_entry().type() == Protos::Common::Entry::FILE)
@@ -284,6 +371,22 @@ void DownloadsTreeModel::onNewState(const Protos::GUI::State& state)
          }
       }
    }
+}
+
+QList<quint64> DownloadsTreeModel::getDownloadIDs(Tree* tree) const
+{
+   if (tree->getItem().local_entry().type() == Protos::Common::Entry::FILE)
+      return QList<quint64>() << tree->getItem().id();
+
+   // We have to send all sub file ids, a directory doesn't have an id.
+   QList<quint64> IDs;
+   for (Common::TreeBreadthIterator<Tree> i(tree); i.hasNext();)
+   {
+      const Tree* current = i.next();
+      if (current->getItem().local_entry().type() == Protos::Common::Entry::FILE)
+         IDs << current->getItem().id();
+   }
+   return IDs;
 }
 
 DownloadsTreeModel::Tree* DownloadsTreeModel::insertDirectory(Tree* tree, const QString& dir, const QString& peerSourceNick, const Common::Hash& sharedDirID)
@@ -310,7 +413,18 @@ DownloadsTreeModel::Tree* DownloadsTreeModel::insert(Tree* tree, const Protos::G
       }
    }
 
-   // TODO: A dichotomic search may be a good idea here instead of a simple loop.
+   // Special case, the children of the root aren't sorted in an alphabetic way.
+   if (download.local_entry().type() == Protos::Common::Entry::DIR && tree == this->root)
+   {
+      int i = this->root->getNbChildren() == 0 ? 0 : this->root->getNbChildren() - 1;
+      while (i >= 1 && !this->root->getChild(i-1)->visited)
+         i--;
+      this->beginInsertRows(QModelIndex(), i, i);
+      Tree* newTree = this->root->insertChild(download, i);
+      this->endInsertRows();
+      return newTree;
+   }
+
    for (int i = 0; i <= nbChildren; i++)
    {
       if (i ==  nbChildren || (tree != this->root && download < tree->getChild(i)->getItem())) // The root elements aren't sorted.
@@ -332,9 +446,36 @@ DownloadsTreeModel::Tree* DownloadsTreeModel::insert(Tree* tree, const Protos::G
    return 0;
 }
 
+/**
+  * Move the given tree right after the last visited tree (Tree::visited = true).
+  * The tree must be a directory and must be a direct child of the root.
+  * @param tree
+  * @return
+  */
+DownloadsTreeModel::Tree *DownloadsTreeModel::moveUp(DownloadsTreeModel::Tree* tree)
+{
+   Q_ASSERT(tree && tree->getParent() == this->root && tree->getItem().local_entry().type() == Protos::Common::Entry::DIR);
+
+   const int ownPosition = tree->getOwnPosition();
+   int i = ownPosition;
+   while (i >= 1 && !this->root->getChild(i-1)->visited)
+      i--;
+
+   if (ownPosition > i)
+   {
+      this->beginMoveRows(QModelIndex(), ownPosition, ownPosition, QModelIndex(), i);
+      this->root->moveChild(ownPosition, i);
+      this->endMoveRows();
+   }
+
+   return tree;
+}
+
 DownloadsTreeModel::Tree* DownloadsTreeModel::update(Tree* tree, const Protos::GUI::State::Download& download)
 {
-   tree->toDelete = false;
+   Q_ASSERT(tree);
+
+   tree->visited = true;
    if (download.local_entry().type() == Protos::Common::Entry::FILE && tree->getItem() != download)
    {
       const Protos::GUI::State::Download oldDownload = tree->getItem();
@@ -410,13 +551,13 @@ DownloadsTreeModel::Tree*  DownloadsTreeModel::updateDirectories(Tree* file, qui
 /////
 
 DownloadsTreeModel::Tree::Tree() :
-   toDelete(false), nbPausedFiles(0), nbErrorFiles(0), nbDownloadingFiles(0)
+   visited(true), nbPausedFiles(0), nbErrorFiles(0), nbDownloadingFiles(0)
 {
    this->getItem().set_status(Protos::GUI::State::Download::QUEUED);
 }
 
 DownloadsTreeModel::Tree::Tree(const Protos::GUI::State::Download& download, Tree* parent) :
-   Common::Tree<Protos::GUI::State::Download, Tree>(download, parent), toDelete(false), nbPausedFiles(0), nbErrorFiles(0), nbDownloadingFiles(0)
+   Common::Tree<Protos::GUI::State::Download, Tree>(download, parent), visited(true), nbPausedFiles(0), nbErrorFiles(0), nbDownloadingFiles(0)
 {
 }
 

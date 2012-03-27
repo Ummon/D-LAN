@@ -51,7 +51,7 @@ namespace GUI
       Qt::ItemFlags flags(const QModelIndex& index) const;
 
    protected:
-      bool dropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent);
+      bool dropMimeData(const QMimeData* data, Qt::DropAction action, int where, int column, const QModelIndex& parent);
 
    protected slots:
       void onNewState(const Protos::GUI::State& state);
@@ -64,15 +64,17 @@ namespace GUI
          Tree(const Protos::GUI::State::Download& download, Tree* parent);
 
          // Fuck you encapsulation.
-         bool toDelete;
+         bool visited;
          int nbPausedFiles;
          int nbErrorFiles;
          int nbDownloadingFiles;
       };
 
+      QList<quint64> getDownloadIDs(Tree* tree) const;
       Tree* insertDirectory(Tree* tree, const QString& dir, const QString& peerSourceNick, const Hash& sharedDirID);
       Tree* insert(Tree* tree, const Protos::GUI::State::Download& download);
 
+      Tree* moveUp(Tree* tree);
       Tree* update(Tree* tree, const Protos::GUI::State::Download& download);
       Tree* updateDirectoriesEntryDeleted(Tree* file, const Protos::GUI::State::Download& oldDownload);
       Tree* updateDirectoriesNewFile(Tree* file);
