@@ -545,7 +545,7 @@ void Settings::getRepeated(const google::protobuf::FieldDescriptor* fieldDescrip
 
 void Settings::setDefaultValues()
 {
-   // Very ugly : to force the optional field to be written. TODO : find a another way.
+   // Very ugly : to force the optional field to be written. TODO: find a another way.
    for (int i = 0; i < this->descriptor->field_count(); i++)
    {
       const google::protobuf::FieldDescriptor* fieldDescriptor = this->descriptor->field(i);

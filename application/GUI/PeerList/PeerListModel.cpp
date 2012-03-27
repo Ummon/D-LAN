@@ -118,7 +118,7 @@ QVariant PeerListModel::data(const QModelIndex& index, int role) const
 
 void PeerListModel::newState(const Protos::GUI::State& state)
 {
-   // TODO : not very efficient!?
+   // TODO: not very efficient!?
    google::protobuf::RepeatedPtrField<Protos::GUI::State::Peer> peers;
    peers.MergeFrom(state.peer());
    peers.Add()->CopyFrom(state.myself());

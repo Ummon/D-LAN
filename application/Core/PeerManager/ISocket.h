@@ -63,7 +63,7 @@ namespace PM
 
       /**
         * Used by uploader to tell when an upload is finished.
-        * TODO : should be removed and only be called by the peerManager (as with downloads).
+        * TODO: should be removed and only be called by the peerManager (as with downloads).
         */
       virtual void finished(FinishedStatus status = SFS_OK) = 0;
    };

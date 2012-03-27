@@ -20,12 +20,12 @@
 #define COMMON_ZERO_COPY_STREAM_QIODEVICE_H
 
 #include <QIODevice>
+#include <QVector>
 
 #include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/stubs/common.h>
 
-#include "Constants.h"
-#include "Uncopyable.h"
+#include <Common/Uncopyable.h>
 
 namespace Common
 {
@@ -40,7 +40,7 @@ namespace Common
 
    private:
       QIODevice* device;
-      char buffer[PROTOBUF_STREAMING_BUFFER_SIZE];
+      char* buffer;
       char* pos;
       google::protobuf::int64 bytesWritten;
    };
@@ -60,7 +60,7 @@ namespace Common
       QIODevice* device;
 
       int nbLastRead;
-      char buffer[PROTOBUF_STREAMING_BUFFER_SIZE];
+      char* buffer;
       char* pos; ///< Point on the remaining data, remaing data size is "buffer + nbLastRead - pos".
 
       google::protobuf::int64 bytesRead;

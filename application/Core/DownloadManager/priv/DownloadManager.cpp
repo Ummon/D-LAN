@@ -281,7 +281,7 @@ void DownloadManager::newEntries(const Protos::Common::Entries& remoteEntries)
          this->addDownload(remoteEntries.entry(n), dirDownload->getPeerSource(), localEntry.has_shared_dir() ? localEntry.shared_dir().id().hash() : Common::Hash(), relativePath, Protos::Queue::Queue::Entry::QUEUED, position++);
       }
 
-   // Then directories. TODO : code to refactor with the one above.
+   // Then directories. TODO: code to refactor with the one above.
    for (int n = 0; n < remoteEntries.entry_size(); n++)
       if (remoteEntries.entry(n).type() == Protos::Common::Entry_Type_DIR)
       {

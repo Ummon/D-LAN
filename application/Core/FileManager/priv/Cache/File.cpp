@@ -98,7 +98,7 @@ File::File(
 
 File::~File()
 {
-   // QMutexLocker(&this->cache->getMutex()); // TODO : Is it necessary ?
+   // QMutexLocker(&this->cache->getMutex()); // TODO: Is it necessary ?
 
    this->dir->fileDeleted(this);
 
@@ -474,7 +474,7 @@ bool File::computeHashes(int n, int* amountHashed)
          else
          {
             if (this->chunks[chunkNum]->hasHash())
-               this->cache->onChunkRemoved(this->chunks[chunkNum]); // To remove the chunk from the chunk index (TODO : find a more elegant way).
+               this->cache->onChunkRemoved(this->chunks[chunkNum]); // To remove the chunk from the chunk index (TODO: find a more elegant way).
 
             this->chunks[chunkNum]->setHash(hasher.getResult());
             this->chunks[chunkNum]->setKnownBytes(bytesReadChunk);
@@ -580,7 +580,7 @@ bool File::isComplete()
   * Set the file as complete, change its name from "<name>.unfinished" to "<name>".
   * If a file with the same name already exists it will be deleted.
   * The rename process can be only made if there is no reader, in a such case we will wait for the last reader finished.
-  * TODO : if the rename fail must we attempt later ? With a timer ?
+  * TODO: if the rename fail must we attempt later ? With a timer ?
   */
 void File::setAsComplete()
 {
@@ -622,7 +622,7 @@ void File::chunkComplete(const Chunk* chunk)
 {
    QMutexLocker locker(&this->mutex);
 
-   // TODO : very cpu consumer! We have to find a better way!
+   // TODO: very cpu consumer! We have to find a better way!
    for (int i = 0; i < this->chunks.size(); i++)
       if (this->chunks[i].data() == chunk)
       {

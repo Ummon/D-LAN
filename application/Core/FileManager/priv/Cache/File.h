@@ -126,7 +126,7 @@ namespace FM
       mutable QMutex mutex;
 
       // Mutex and wait condition used during hashing.
-      // (TODO : It's a bit heavy, try to reduce the memory footprint).
+      // (TODO: It's a bit heavy, try to reduce the memory footprint).
       bool hashing;
       bool toStopHashing;
       QWaitCondition hashingStopped;

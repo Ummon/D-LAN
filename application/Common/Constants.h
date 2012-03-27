@@ -23,32 +23,27 @@
 
 namespace Common
 {
-#ifdef Q_OS_WIN32
-   const QString APPLICATION_FOLDER_NAME("D-LAN");
-#else
-   const QString APPLICATION_FOLDER_NAME(".d-lan");
-#endif
+   class Constants
+   {
+   public:
+      static const QString APPLICATION_FOLDER_NAME;
 
-// Some files are saved as text format in debug and as binary in release.
-#ifdef DEBUG
-   const QString FILE_EXTENSION("txt");
-#else
-   const QString FILE_EXTENSION("bin");
-#endif
+      static const QString FILE_EXTENSION;
 
-   const QString FILE_CACHE("cache." + FILE_EXTENSION); ///< The name of the file cache saved in the local data directory.
-   const QString FILE_QUEUE("queue." + FILE_EXTENSION); ///< This file contains the current downloads.
+      static const QString FILE_CACHE;
+      static const QString FILE_QUEUE;
 
-   const QString CORE_SETTINGS_FILENAME("core_settings.txt");
-   const QString GUI_SETTINGS_FILENAME("gui_settings.txt");
+      static const QString CORE_SETTINGS_FILENAME;
+      static const QString GUI_SETTINGS_FILENAME;
 
-   const QString LANGUAGE_DIRECTORY("languages");
+      static const QString LANGUAGE_DIRECTORY;
 
-   const QString SERVICE_NAME("D-LAN Core");
+      static const QString SERVICE_NAME;
 
-   const int PROTOBUF_STREAMING_BUFFER_SIZE(4 * 1024); ///< 4kB.
+      static const int PROTOBUF_STREAMING_BUFFER_SIZE;
 
-   const QString BINARY_PREFIXS[] = {"B", "KiB", "MiB", "GiB", "TiB", "PiB", "EiB", "ZiB"};
+      static const QString BINARY_PREFIXS[];
+   };
 }
 
 #endif

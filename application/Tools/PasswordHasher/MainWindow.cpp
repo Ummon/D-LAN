@@ -34,7 +34,7 @@ using namespace PasswordHasher;
 #include <ui_MainWindow.h>
 
 MainWindow::MainWindow(QWidget *parent) :
-   QMainWindow(parent), CORE_SETTINGS_PATH(Common::Global::getDataFolder(Common::Global::ROAMING, false) + '/' + Common::CORE_SETTINGS_FILENAME), ui(new Ui::MainWindow)
+   QMainWindow(parent), CORE_SETTINGS_PATH(Common::Global::getDataFolder(Common::Global::ROAMING, false) + '/' + Common::Constants::CORE_SETTINGS_FILENAME), ui(new Ui::MainWindow)
 {
    ui->setupUi(this);
    this->setButtonText();
@@ -47,7 +47,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
    this->ui->lblInstructions->setText(this->ui->lblInstructions->text().replace("{settings_path}", CORE_SETTINGS_PATH));
 
-   SETTINGS.setFilename(Common::CORE_SETTINGS_FILENAME);
+   SETTINGS.setFilename(Common::Constants::CORE_SETTINGS_FILENAME);
    SETTINGS.setSettingsMessage(new Protos::Core::Settings());
 }
 

@@ -132,7 +132,7 @@ void MainWindow::filtersChange()
    if (this->disableRefreshFilters)
       return;
 
-   // TODO : find a better way to avoid slowing down.
+   // TODO: find a better way to avoid slowing down.
    this->ui->tblLog->verticalHeader()->setResizeMode(QHeaderView::Custom);
    for (int i = 0; i < this->model.rowCount(); i++)
       this->filterRow(i);

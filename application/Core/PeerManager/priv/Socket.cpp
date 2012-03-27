@@ -168,7 +168,7 @@ void Socket::finished(FinishedStatus status)
       this->close();
       return;
    }
-   else if (status == SFS_ERROR && ++this->nbError > 5) // TODO : -> constant
+   else if (status == SFS_ERROR && ++this->nbError > MAX_SOCKET_ERROR_BEFORE_FORCE_TO_CLOSE)
    {
       L_WARN("Socket with too many error, closed");
       this->close();

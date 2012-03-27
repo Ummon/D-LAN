@@ -28,7 +28,7 @@ using namespace GUI;
 
 /**
   * Ask the user to choose one or more directories.
-  * TODO : browse the remotes directories (Core) not the local ones.
+  * TODO: browse the remotes directories (Core) not the local ones.
   */
 QStringList Utils::askForDirectories(QSharedPointer<RCC::ICoreConnection> coreConnection, const QString& message)
 {

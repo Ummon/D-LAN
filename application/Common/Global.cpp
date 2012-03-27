@@ -161,7 +161,7 @@ int Global::nCombinations(int n, int k)
    else
       bytes = 0;
 
-   return QString::number(bytes).append(IS_BELOW_1024 ? "" : QString(".").append(QString::number(rest))).append(" ").append(BINARY_PREFIXS[current]);
+   return QString::number(bytes).append(IS_BELOW_1024 ? "" : QString(".").append(QString::number(rest))).append(" ").append(Constants::BINARY_PREFIXS[current]);
 }*/
 
 /**
@@ -187,8 +187,8 @@ QString Global::formatByteSize(qint64 bytes, int precision)
 
       if (bytes < 1024 * size)
          return bytes < 1024 ?
-            QString::number(bytes <= 0 ? 0 : bytes).append(" ").append(BINARY_PREFIXS[i]) :
-            QString::number((double)bytes / size, 'f', precision).append(" ").append(BINARY_PREFIXS[i]);
+            QString::number(bytes <= 0 ? 0 : bytes).append(" ").append(Constants::BINARY_PREFIXS[i]) :
+            QString::number((double)bytes / size, 'f', precision).append(" ").append(Constants::BINARY_PREFIXS[i]);
    }
    return QString();
 }
@@ -247,7 +247,7 @@ QString Global::formatIP(const QHostAddress& address, quint16 port)
 
 /**
   * Return the remaining free space for the given path.
-  * TODO : Linux
+  * TODO: Linux
   */
 qint64 Global::availableDiskSpace(const QString& path)
 {
@@ -270,7 +270,7 @@ qint64 Global::availableDiskSpace(const QString& path)
 
 /**
   * Rename a file, if 'newFile' already exists, it will be replaced by 'existingFile'.
-  * TODO : Linux
+  * TODO: Linux
   * @remarks Qt doesn't offer any way to replace a file by an other in one operation.
   * @return false if the rename didn't work.
   */
@@ -424,17 +424,17 @@ QString Global::getDataFolder(DataFolderType type, bool create)
       const QString dataFolderPath = QString::fromUtf16((ushort*)dataPath);
       const QDir dataFolder(dataFolderPath);
 
-      if (create && !dataFolder.exists(APPLICATION_FOLDER_NAME))
-         if (!dataFolder.mkdir(APPLICATION_FOLDER_NAME))
-            throw UnableToGetFolder(QString("Unable to create the folder %1 in %2").arg(APPLICATION_FOLDER_NAME).arg(dataFolder.absolutePath()));
+      if (create && !dataFolder.exists(Constants::APPLICATION_FOLDER_NAME))
+         if (!dataFolder.mkdir(Constants::APPLICATION_FOLDER_NAME))
+            throw UnableToGetFolder(QString("Unable to create the folder %1 in %2").arg(Constants::APPLICATION_FOLDER_NAME).arg(dataFolder.absolutePath()));
 
-      return dataFolder.absoluteFilePath(APPLICATION_FOLDER_NAME);
+      return dataFolder.absoluteFilePath(Constants::APPLICATION_FOLDER_NAME);
 #else
-      if (create && !QDir::home().exists(APPLICATION_FOLDER_NAME))
-         if (!QDir::home().mkdir(APPLICATION_FOLDER_NAME))
-             throw UnableToGetFolder(QString("Unable to create the folder %1 in %2").arg(APPLICATION_FOLDER_NAME).arg(QDir::home().absolutePath()));
+      if (create && !QDir::home().exists(Constants::APPLICATION_FOLDER_NAME))
+         if (!QDir::home().mkdir(Constants::APPLICATION_FOLDER_NAME))
+             throw UnableToGetFolder(QString("Unable to create the folder %1 in %2").arg(Constants::APPLICATION_FOLDER_NAME).arg(QDir::home().absolutePath()));
 
-      return QDir::home().absoluteFilePath(APPLICATION_FOLDER_NAME);
+      return QDir::home().absoluteFilePath(Constants::APPLICATION_FOLDER_NAME);
 #endif
    }
 }
@@ -481,7 +481,7 @@ QString Global::getDataServiceFolder(DataFolderType type)
       if (windowsPathSplit.isEmpty())
          return QString();
 
-      return windowsPathSplit.first() + "/Documents and Settings/LocalService" + (type == ROAMING ? "/Application Data/" : "/Local Settings/Application Data/") + APPLICATION_FOLDER_NAME;
+      return windowsPathSplit.first() + "/Documents and Settings/LocalService" + (type == ROAMING ? "/Application Data/" : "/Local Settings/Application Data/") + Constants::APPLICATION_FOLDER_NAME;
    }
 #else
    return Global::getDataSystemFolder(type);
@@ -508,9 +508,9 @@ QString Global::getDataSystemFolder(DataFolderType type)
 
    // Vista & Windows 7
    if (versionInfo.dwMajorVersion >= 6)
-      return dataFolderPath + "/config/systemprofile/AppData" + (type == ROAMING ? "/Roaming/" : "/local/") + APPLICATION_FOLDER_NAME;
+      return dataFolderPath + "/config/systemprofile/AppData" + (type == ROAMING ? "/Roaming/" : "/local/") + Constants::APPLICATION_FOLDER_NAME;
    else
-      return dataFolderPath + "/config/systemprofile" + (type == ROAMING ? "/Application Data/" : "/Local Settings/Application Data/") + APPLICATION_FOLDER_NAME;
+      return dataFolderPath + "/config/systemprofile" + (type == ROAMING ? "/Application Data/" : "/Local Settings/Application Data/") + Constants::APPLICATION_FOLDER_NAME;
 #else
    return QString();
 #endif

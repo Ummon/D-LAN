@@ -114,7 +114,7 @@ QSize SearchDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelI
          QTextDocument doc;
          doc.setHtml(this->toHtmlText(optionV4.text));
          //doc.setTextWidth(optionV4.rect.width());
-         return QSize(doc.idealWidth() + 20, doc.size().height()); // + 20 is for the icon, TODO : find a better way to obtain this value.
+         return QSize(doc.idealWidth() + 20, doc.size().height()); // + 20 is for the icon, TODO: find a better way to obtain this value.
       }
       break;
 

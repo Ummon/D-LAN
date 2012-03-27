@@ -49,7 +49,7 @@ namespace NL
 
       quint16 currentPort;
 
-        // TODO : count the number of connection per ip per second and
+        // TODO: count the number of connection per ip per second and
         // banned temporarely an ip with too much attempt.
 //      struct BannedIPs
 //      {

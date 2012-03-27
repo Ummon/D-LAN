@@ -52,7 +52,7 @@ void StressTests::initTestCase()
       QFAIL(e.errorMessage.toAscii().constData());
    }
 
-   Common::PersistentData::rmValue(Common::FILE_CACHE, Common::Global::LOCAL); // Reset the stored cache.
+   Common::PersistentData::rmValue(Common::Constants::FILE_CACHE, Common::Global::LOCAL); // Reset the stored cache.
 
    SETTINGS.setFilename("core_settings_file_manager_stress_tests.txt");
    SETTINGS.setSettingsMessage(new Protos::Core::Settings());
@@ -66,6 +66,6 @@ void StressTests::stressTest()
 {
    qDebug() << "===== stressTest() =====";
 
-   Common::PersistentData::rmValue(Common::FILE_CACHE, Common::Global::LOCAL);
+   Common::PersistentData::rmValue(Common::Constants::FILE_CACHE, Common::Global::LOCAL);
    StressTest test;
 }

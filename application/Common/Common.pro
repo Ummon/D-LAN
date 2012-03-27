@@ -31,7 +31,8 @@ SOURCES += Hash.cpp \
     ../Protos/core_protocol.pb.cc \
     ../Protos/common.pb.cc \
     ThreadPool.cpp \
-    Languages.cpp
+    Languages.cpp \
+    Constants.cpp
 
 HEADERS += Hashes.h \
     Hash.h \

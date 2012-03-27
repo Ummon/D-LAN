@@ -28,7 +28,7 @@ using namespace RCC;
 
 CoreStatus CoreController::StartCore()
 {
-   QtServiceController controller(Common::SERVICE_NAME);
+   QtServiceController controller(Common::Constants::SERVICE_NAME);
    if (!controller.isInstalled())
    {
       if (!QtServiceController::install("D-LAN.Core.exe"))
@@ -59,7 +59,7 @@ CoreStatus CoreController::StartCore()
 
 void CoreController::StopCore()
 {
-   QtServiceController controller(Common::SERVICE_NAME);
+   QtServiceController controller(Common::Constants::SERVICE_NAME);
    if (controller.isRunning())
       controller.stop();
 

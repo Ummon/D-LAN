@@ -15,7 +15,12 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
+#include <Common/ZeroCopyStreamQIODevice.h>
+using namespace Common;
+
+#include <Common/Constants.h>
+
 /**
   * @class Common::ZeroCopyOutputStreamQIODevice
   *
@@ -23,11 +28,8 @@
   * Warning : The data will be effectively written when the object is destroyed.
   */
 
-#include <Common/ZeroCopyStreamQIODevice.h>
-using namespace Common;
-
 ZeroCopyOutputStreamQIODevice::ZeroCopyOutputStreamQIODevice(QIODevice* device) :
-   device(device), bytesWritten(0)
+   device(device), buffer(new char[Constants::PROTOBUF_STREAMING_BUFFER_SIZE]), bytesWritten(0)
 {
    this->pos = this->buffer;
 }
@@ -36,6 +38,7 @@ ZeroCopyOutputStreamQIODevice::~ZeroCopyOutputStreamQIODevice()
 {
    if (this->pos != this->buffer)
       this->device->write(this->buffer, this->pos - this->buffer);
+   delete[] this->buffer;
 }
 
 bool ZeroCopyOutputStreamQIODevice::Next(void** data, int* size)
@@ -55,9 +58,9 @@ bool ZeroCopyOutputStreamQIODevice::Next(void** data, int* size)
    }
 
    *data = this->buffer;
-   *size = PROTOBUF_STREAMING_BUFFER_SIZE;
+   *size = Constants::PROTOBUF_STREAMING_BUFFER_SIZE;
 
-   this->pos = this->buffer + PROTOBUF_STREAMING_BUFFER_SIZE;
+   this->pos = this->buffer + Constants::PROTOBUF_STREAMING_BUFFER_SIZE;
 
    return true;
 }
@@ -83,13 +86,14 @@ google::protobuf::int64 ZeroCopyOutputStreamQIODevice::ByteCount() const
   */
 
 ZeroCopyInputStreamQIODevice::ZeroCopyInputStreamQIODevice(QIODevice* device) :
-   device(device), nbLastRead(0), pos(buffer), bytesRead(0)
+   device(device), nbLastRead(0), buffer(new char[Constants::PROTOBUF_STREAMING_BUFFER_SIZE]), pos(buffer), bytesRead(0)
 {
 }
 
 ZeroCopyInputStreamQIODevice::~ZeroCopyInputStreamQIODevice()
 {
    this->device->read(this->pos - this->buffer);
+   delete[] this->buffer;
 }
 
 bool ZeroCopyInputStreamQIODevice::Next(const void** data, int* size)
@@ -105,7 +109,7 @@ bool ZeroCopyInputStreamQIODevice::Next(const void** data, int* size)
    if (this->nbLastRead != 0)
       this->device->read(this->nbLastRead);
 
-   this->nbLastRead = this->device->peek(this->buffer, PROTOBUF_STREAMING_BUFFER_SIZE);
+   this->nbLastRead = this->device->peek(this->buffer, Constants::PROTOBUF_STREAMING_BUFFER_SIZE);
    if (this->nbLastRead <= 0)
    {
       this->pos = this->buffer;

@@ -78,7 +78,7 @@ Protos::Core::GetHashesResult GetHashesResult::start()
    for (QListIterator< QSharedPointer<Chunk> > i(chunks); i.hasNext();)
    {
       QSharedPointer<Chunk> chunk(i.next());
-      if (chunk->getNum() < this->fileEntry.chunk_size()) // TODO : maybe we should check if the hashes are equal..
+      if (chunk->getNum() < this->fileEntry.chunk_size()) // TODO: maybe we should check if the hashes are equal..
          continue;
 
       if (chunk->hasHash())

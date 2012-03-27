@@ -64,7 +64,7 @@ void Tests::initTestCase()
       QFAIL(e.errorMessage.toAscii().constData());
    }
 
-   Common::PersistentData::rmValue(Common::FILE_CACHE, Common::Global::LOCAL); // Reset the stored cache.
+   Common::PersistentData::rmValue(Common::Constants::FILE_CACHE, Common::Global::LOCAL); // Reset the stored cache.
 
    SETTINGS.setFilename("core_settings_peer_manager_tests.txt");
    SETTINGS.setSettingsMessage(new Protos::Core::Settings());

@@ -68,7 +68,7 @@ void Tests::initTestCase()
       QFAIL(e.errorMessage.toAscii().constData());
    }
 
-   Common::PersistentData::rmValue(Common::FILE_CACHE, Common::Global::LOCAL); // Reset the stored cache.
+   Common::PersistentData::rmValue(Common::Constants::FILE_CACHE, Common::Global::LOCAL); // Reset the stored cache.
 
    SETTINGS.setFilename("core_settings_file_manager_tests.txt");
    SETTINGS.setSettingsMessage(new Protos::Core::Settings());
@@ -228,7 +228,7 @@ void Tests::createASubFile()
    Common::Global::createFile("sharedDirs/share1/v.txt");
    QTest::qSleep(100);
 
-   // TODO : check if cache own v.txt (only for watchable shared dir).
+   // TODO: check if cache own v.txt (only for watchable shared dir).
 }
 
 void Tests::createABigFile()
@@ -417,7 +417,7 @@ void Tests::browseSomedirectories()
 {
    qDebug() << "===== browseSomedirectories() =====";
 
-   // TODO : active the regexp comparison.
+   // TODO: active the regexp comparison.
 
    // Get the shared directories.
    Protos::Common::Entries entries1 = this->fileManager->getEntries();

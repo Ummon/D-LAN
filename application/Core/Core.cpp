@@ -37,7 +37,7 @@ LOG_INIT_CPP(Core);
 Core::Core(bool resetSettings, QLocale locale)
 {
    GOOGLE_PROTOBUF_VERIFY_VERSION;
-   SETTINGS.setFilename(Common::CORE_SETTINGS_FILENAME);
+   SETTINGS.setFilename(Common::Constants::CORE_SETTINGS_FILENAME);
    SETTINGS.setSettingsMessage(new Protos::Core::Settings());
    SETTINGS.load();
 
@@ -64,7 +64,7 @@ Core::Core(bool resetSettings, QLocale locale)
          {
             const QString nick = SETTINGS.get<QString>("nick");
             const Common::Hash peerID = SETTINGS.get<Common::Hash>("peer_id");
-            SETTINGS.saveTo(Common::CORE_SETTINGS_FILENAME + ".backup");
+            SETTINGS.saveTo(Common::Constants::CORE_SETTINGS_FILENAME + ".backup");
             SETTINGS.rmAll();
             SETTINGS.set("nick", nick);
             SETTINGS.set("peer_id", peerID);
@@ -114,11 +114,11 @@ void Core::setLanguage(QLocale locale, bool load)
 {
    if (load)
    {
-      Common::Languages languages(QCoreApplication::applicationDirPath() + "/" + LANGUAGE_DIRECTORY);
+      Common::Languages languages(QCoreApplication::applicationDirPath() + "/" + Common::Constants::LANGUAGE_DIRECTORY);
       Common::Language lang = languages.getBestMatchLanguage(Common::Languages::CORE, locale);
       SETTINGS.set("language", lang.locale);
       SETTINGS.save();
-      this->translator.load(lang.filename, QCoreApplication::applicationDirPath() + "/" + LANGUAGE_DIRECTORY);
+      this->translator.load(lang.filename, QCoreApplication::applicationDirPath() + "/" + Common::Constants::LANGUAGE_DIRECTORY);
    }
    else
    {

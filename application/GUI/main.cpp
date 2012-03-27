@@ -53,7 +53,7 @@ int main(int argc, char *argv[])
          locale = QLocale(QString::fromLatin1(argv[++i]));
    }
 
-   SETTINGS.setFilename(Common::GUI_SETTINGS_FILENAME);
+   SETTINGS.setFilename(Common::Constants::GUI_SETTINGS_FILENAME);
    SETTINGS.setSettingsMessage(new Protos::GUI::Settings());
    SETTINGS.load();
    if (locale != QLocale::system())

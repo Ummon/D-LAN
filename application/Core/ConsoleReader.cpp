@@ -38,7 +38,7 @@ ConsoleReader::ConsoleReader(QObject *parent) :
 void ConsoleReader::stop()
 {
    this->stopping = true;
-   // TODO : Don't know how to unblock 'readLine' which use 'fgets(..)' internaly...
+   // TODO: Don't know how to unblock 'readLine' which use 'fgets(..)' internaly...
 
    // fclose(stdin) // Don't work, blocks.
 

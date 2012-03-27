@@ -124,7 +124,7 @@ void FileUpdater::rmRoot(SharedDirectory* dir, Directory* dir2)
    QMutexLocker locker(&this->mutex);
 
    // Stop the hashing to modify 'this->fileWithoutHashes'.
-   // TODO : A suspend/resume hashing methods would be more readable.
+   // TODO: A suspend/resume hashing methods would be more readable.
    {
       QMutexLocker locker(&this->hashingMutex);
 
@@ -132,7 +132,7 @@ void FileUpdater::rmRoot(SharedDirectory* dir, Directory* dir2)
          this->currentHashingFile->stopHashing();
       this->toStopHashing = true;
 
-      // TODO : Find a more elegant way!
+      // TODO: Find a more elegant way!
       if (dir2)
          dir2->stealContent(dir);
 
@@ -221,7 +221,7 @@ void FileUpdater::run()
    if (this->fileCache)
    {
       const int nbDirsToScan = this->dirsToScan.size();
-      // TODO : the mutex should be used ?
+      // TODO: the mutex should be used ?
       while (!this->dirsToScan.isEmpty())
       {
          Directory* dir = this->dirsToScan.takeFirst();
@@ -718,8 +718,8 @@ bool FileUpdater::treatEvents(const QList<WatcherEvent>& events)
       {
       case WatcherEvent::MOVE:
          {
-            // TODO : move the entry if needed. (create a method in Cache)
-            // TODO : update the file modification date (only if the rename under Windows changes it)
+            // TODO: move the entry if needed. (create a method in Cache)
+            // TODO: update the file modification date (only if the rename under Windows changes it)
             Entry* entry = this->fileManager->getEntry(event.path1);
             if (entry)
                entry->changeName(event.path2.split('/', QString::SkipEmptyParts).last());

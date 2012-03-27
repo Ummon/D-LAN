@@ -351,7 +351,7 @@ void UDPListener::initMulticastUDPSocket()
    static const int BUFFER_SIZE_UDP = SETTINGS.get<quint32>("udp_read_buffer_size");
    const int multicastSocketDescriptor = this->multicastSocket.socketDescriptor();
 #if defined(Q_OS_DARWIN)
-   if (int error = 0) // TODO
+   if (int error = 0) // TODO: Mac OS X
 #else
    if (int error = setsockopt(multicastSocketDescriptor, SOL_SOCKET, SO_RCVBUF, (char*)&BUFFER_SIZE_UDP, sizeof BUFFER_SIZE_UDP))
 #endif

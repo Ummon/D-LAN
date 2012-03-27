@@ -189,7 +189,7 @@ MainWindow::~MainWindow()
 
 void MainWindow::loadLanguage(const QString& filename)
 {
-   this->translator.load(filename, QCoreApplication::applicationDirPath() + "/" + LANGUAGE_DIRECTORY);
+   this->translator.load(filename, QCoreApplication::applicationDirPath() + "/" + Common::Constants::LANGUAGE_DIRECTORY);
 }
 
 

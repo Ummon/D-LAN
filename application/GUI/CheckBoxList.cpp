@@ -41,7 +41,7 @@ CheckBoxList::CheckBoxList(QWidget *parent ) :
    this->view()->setItemDelegate(new CheckBoxListDelegate(this));
 
    // Enable editing on items view.
-   // TODO : There is a bug, the first element when the listview pop up is not editable!!! (Qt bug??)
+   // TODO: There is a bug, the first element when the listview pop up is not editable!!! (Qt bug??)
    this->view()->setEditTriggers(QAbstractItemView::AllEditTriggers);
 
    // Set "CheckBoxList::eventFilter" as event filter for items view.

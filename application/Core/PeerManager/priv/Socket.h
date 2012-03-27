@@ -44,6 +44,11 @@ namespace PM
    class Socket : public Common::MessageSocket, public ISocket
    {
       Q_OBJECT
+
+      // Each time there is an error like a malformed received message we increment 'nbError'.
+      // If nbError is greater than this number the socket is closed.
+      static const int MAX_SOCKET_ERROR_BEFORE_FORCE_TO_CLOSE = 5;
+
    protected:
       class Logger : public ILogger
       {
