@@ -114,8 +114,8 @@ void DownloadQueue::moveDownloads(const QList<quint64>& downloadIDRefs, const QL
       {
          if (iRef != -1)
          {
-            int whereToInsert = position == Protos::GUI::MoveDownloads::BEFORE ? iRef++ : ++iRef;
-            int whereToRemove = i + 1;
+            const int whereToInsert = position == Protos::GUI::MoveDownloads::BEFORE ? iRef++ : ++iRef;
+            const int whereToRemove = i + 1;
 
             this->updateMarkersMove(whereToInsert, whereToRemove, this->downloads[i]);
 
@@ -156,12 +156,12 @@ void DownloadQueue::moveDownloads(const QList<quint64>& downloadIDRefs, const QL
                iRef++;
             else
             {
-               int whereToInsert = j == 0 && position == Protos::GUI::MoveDownloads::AFTER ? ++iRef : iRef;
-               int whereToRemove = iToMove[j] + shift;
+               const int whereToInsert = position == Protos::GUI::MoveDownloads::AFTER ? iRef + 1 : iRef;
+               const int whereToRemove = iToMove[j] + shift;
 
                this->updateMarkersMove(whereToInsert, whereToRemove, this->downloads[whereToRemove]);
 
-               this->downloads.insert(whereToInsert, this->downloads[iToMove[j] + shift]);
+               this->downloads.insert(whereToInsert, this->downloads[whereToRemove]);
                this->downloads.removeAt(whereToRemove);
                shift--;
             }

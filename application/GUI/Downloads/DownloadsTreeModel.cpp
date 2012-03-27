@@ -208,7 +208,7 @@ bool DownloadsTreeModel::dropMimeData(const QMimeData* data, Qt::DropAction acti
        return false;
 
    QList<int> rows = this->getDraggedRows(data);
-   if (rows.isEmpty() || (rows.size() == 1 && rows.first() == where))
+   if (rows.isEmpty())
       return false;
 
    qSort(rows); // TODO: is 'getDraggedRows(..)' returns a sorted list?
@@ -230,7 +230,7 @@ bool DownloadsTreeModel::dropMimeData(const QMimeData* data, Qt::DropAction acti
    }
 
    Protos::GUI::MoveDownloads::Position position = Protos::GUI::MoveDownloads::BEFORE;
-   if (where > (first + last + 1) / 2)
+   if (where >= (first + last + 1) / 2)
    {
       end--;
       position = Protos::GUI::MoveDownloads::AFTER;
@@ -271,34 +271,6 @@ bool DownloadsTreeModel::dropMimeData(const QMimeData* data, Qt::DropAction acti
    this->coreConnection->moveDownloads(downloadRefs, downloadIDsToMove, position);
 
    return true;
-
-   /*
-   // We remove the moved download from the list (not necessery but nicer for the user experience).
-   if (!rows.isEmpty())
-   {
-      qSort(rows.begin(), rows.end());
-
-      int rowBegin = rows.size() - 1;
-      int rowEnd = rowBegin;
-      for (int i = rowEnd - 1; i >= -1 ; i--)
-      {
-         if (i >= 0 && rows[i] == rows[rowBegin] - 1)
-            rowBegin--;
-         else
-         {
-            this->beginRemoveRows(QModelIndex(), rows[rowBegin], rows[rowEnd]);
-            for (int j = rows[rowEnd]; j >= rows[rowBegin]; j--)
-               this->downloads.removeAt(j);
-            this->endRemoveRows();
-
-            rowBegin = rowEnd = i;
-         }
-      }
-   }
-
-   this->coreConnection->moveDownloads(placeToMove, downloadIDs, position);
-   return true;*/
-
 }
 
 void DownloadsTreeModel::onNewState(const Protos::GUI::State& state)
@@ -416,7 +388,7 @@ DownloadsTreeModel::Tree* DownloadsTreeModel::insert(Tree* tree, const Protos::G
    // Special case, the children of the root aren't sorted in an alphabetic way.
    if (download.local_entry().type() == Protos::Common::Entry::DIR && tree == this->root)
    {
-      int i = this->root->getNbChildren() == 0 ? 0 : this->root->getNbChildren() - 1;
+      int i = this->root->getNbChildren();
       while (i >= 1 && !this->root->getChild(i-1)->visited)
          i--;
       this->beginInsertRows(QModelIndex(), i, i);
