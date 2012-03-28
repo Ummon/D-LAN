@@ -67,12 +67,12 @@ img {
 
 em {
    font-weight: bold;
-}
+} 
  
 a {
-   color: darken($red-light, 20%);
+   color: desaturate(lighten($blue-dark, 20%), 20%);
    text-decoration: none;
-   &:hover { color: $red-light } 
+   &:hover { color: lighten($blue-dark, 30%); } 
 }
 
 h1 {
@@ -198,7 +198,6 @@ p {
       padding-top: 15px;
       padding-bottom: 15px;
       a {
-         text-shadow: 0 0 3px #FFFFFF;
          font-weight: bold;
       }
       .download {
