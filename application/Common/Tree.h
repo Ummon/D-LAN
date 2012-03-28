@@ -21,6 +21,8 @@ namespace Common
      *  - To remove an element just delete it.
      *  - You can reimplement 'newwTree(..)' to dynamically create new type of children.
      *  - This class comes with a breadth-first iterator.
+     *
+     * If you don't want to inherit from Tree you can use the SimpleTree class.
      */
 
    template<typename ItemType, typename TreeType>
@@ -37,6 +39,7 @@ namespace Common
       virtual void moveChild(int from, int to);
       virtual TreeType* insertChild(const ItemType& item);
       virtual TreeType* insertChild(const ItemType& item, int pos);
+      virtual void deleteAllChildren();
 
       virtual int getOwnPosition() const;
       virtual const ItemType& getItem() const;
@@ -54,6 +57,14 @@ namespace Common
       ItemType item;
       TreeType* parent;
       QList<TreeType*> children;
+   };
+
+   template <typename T>
+   class SimpleTree : public Tree< T, SimpleTree<T> >
+   {
+   public:
+      SimpleTree() {}
+      SimpleTree(const T& item, SimpleTree<T>* parent) : Tree< T, SimpleTree<T> >(item, parent) {}
    };
 
    template <typename TreeType>
@@ -143,6 +154,14 @@ TreeType* Tree<ItemType, TreeType>::insertChild(const ItemType& item, int pos)
    TreeType* tree = this->newTree(item);
    this->children.insert(pos, tree);
    return tree;
+}
+
+template <typename ItemType, typename TreeType>
+void Tree<ItemType, TreeType>::deleteAllChildren()
+{
+   for (QListIterator<TreeType*> i(this->children); i.hasNext();)
+      delete i.next();
+   this->children.clear();
 }
 
 /**

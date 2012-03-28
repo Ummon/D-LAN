@@ -99,7 +99,8 @@ WidgetDownloads::WidgetDownloads(QSharedPointer<RCC::ICoreConnection> coreConnec
    coreConnection(coreConnection),
    downloadsFlatModel(coreConnection, peerListModel, sharedDirsModel, checkBoxModel),
    downloadsTreeModel(coreConnection, peerListModel, sharedDirsModel, checkBoxModel),
-   currentDownloadsModel(0)
+   currentDownloadsModel(0),
+   treeViewState(new SimpleTree<quint32>())
 {
    this->ui->setupUi(this);
 
@@ -300,17 +301,21 @@ void WidgetDownloads::switchView(Protos::GUI::Settings::DownloadView view)
       this->ui->butSwitchView->setIcon(QIcon(":/icons/ressources/list_view.png"));
       this->ui->butSwitchView->setToolTip(tr("Switch to file list view"));
       this->ui->tblDownloads->setIndentation(20);
+
       this->currentDownloadsModel = &this->downloadsTreeModel;
+      this->ui->tblDownloads->setModel(this->currentDownloadsModel);
+      this->restoreTreeViewState();
    }
    else if (view == Protos::GUI::Settings::LIST_VIEW && this->currentDownloadsModel != &this->downloadsFlatModel)
    {
       this->ui->butSwitchView->setIcon(QIcon(":/icons/ressources/tree_view.png"));
       this->ui->butSwitchView->setToolTip(tr("Switch to tree view"));
       this->ui->tblDownloads->setIndentation(0);
-      this->currentDownloadsModel = &this->downloadsFlatModel;
-   }
 
-   this->ui->tblDownloads->setModel(this->currentDownloadsModel);
+      this->saveTreeViewState();
+      this->currentDownloadsModel = &this->downloadsFlatModel;
+      this->ui->tblDownloads->setModel(this->currentDownloadsModel);
+   }
 
    SETTINGS.set("download_view", static_cast<quint32>(view));
    SETTINGS.save();
@@ -344,4 +349,55 @@ QPair<QList<quint64>, bool> WidgetDownloads::getDownloadIDsToPause() const
    }
 
    return qMakePair(downloadIDs.toList(), !allPaused);
+}
+
+/**
+  * Save the opened directories in 'treeViewState'. Save only hash(item_name) to save space and to facilitate a future serialization.
+  */
+void WidgetDownloads::saveTreeViewState()
+{
+   if (this->currentDownloadsModel != &this->downloadsTreeModel)
+      return;
+
+   this->treeViewState->deleteAllChildren();
+   this->saveTreeViewState(QModelIndex(), this->treeViewState);
+}
+
+void WidgetDownloads::saveTreeViewState(const QModelIndex& index, SimpleTree<quint32>* tree)
+{
+   for (int row = 0; row < this->downloadsTreeModel.rowCount(index); row++)
+   {
+      const QModelIndex& childIndex = this->downloadsTreeModel.index(row, 0, index);
+      if (this->ui->tblDownloads->isExpanded(childIndex))
+         this->saveTreeViewState(childIndex, tree->insertChild(Common::Global::hashStringToInt(this->downloadsTreeModel.data(childIndex).toString())));
+   }
+}
+
+/**
+  * Restore the opened directories from 'treeViewState'.
+  */
+void WidgetDownloads::restoreTreeViewState()
+{
+   if (this->currentDownloadsModel != &this->downloadsTreeModel)
+      return;
+
+   this->restoreTreeViewState(QModelIndex(), this->treeViewState);
+}
+
+void WidgetDownloads::restoreTreeViewState(const QModelIndex& index, SimpleTree<quint32>* tree)
+{
+   // O(n^2)
+   for (int row = 0; row < this->downloadsTreeModel.rowCount(index); row++)
+   {
+      const QModelIndex& childIndex = this->downloadsTreeModel.index(row, 0, index);
+      const quint32 currentHash = Common::Global::hashStringToInt(this->downloadsTreeModel.data(childIndex).toString());
+
+      for (int i = 0; i < tree->getNbChildren(); i++)
+         if (tree->getChild(i)->getItem() == currentHash)
+         {
+            this->ui->tblDownloads->expand(childIndex);
+            this->restoreTreeViewState(childIndex, tree->getChild(i));
+            break;
+         }
+   }
 }

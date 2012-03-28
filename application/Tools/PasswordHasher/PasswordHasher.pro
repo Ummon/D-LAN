@@ -25,5 +25,7 @@ HEADERS  += MainWindow.h \
     ../../Protos/core_settings.pb.h
 FORMS    += MainWindow.ui
 
+RC_FILE = passwordhasher.rc
+
 RESOURCES += \
     ressources.qrc

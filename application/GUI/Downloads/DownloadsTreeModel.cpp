@@ -291,12 +291,12 @@ void DownloadsTreeModel::onNewState(const Protos::GUI::State& state)
       if (fileTree)
       {
          Tree* parentTree = fileTree;
-         while (parentTree = parentTree->getParent())
+         do
          {
             parentTree->visited = true;
             if (parentTree->getParent() == this->root)
                this->moveUp(parentTree);
-         }
+         } while (parentTree = parentTree->getParent());
 
          this->update(fileTree, download);
       }
@@ -369,64 +369,69 @@ DownloadsTreeModel::Tree* DownloadsTreeModel::insertDirectory(Tree* tree, const 
    download.mutable_local_entry()->mutable_shared_dir()->mutable_id()->set_hash(sharedDirID.getData(), Common::Hash::HASH_SIZE);
    download.mutable_local_entry()->set_type(Protos::Common::Entry::DIR);
 
+   // If the directory already exist, we just update it.
+   for (int i = 0; i < tree->getNbChildren(); i++)
+      if (download.local_entry().name() == tree->getChild(i)->getItem().local_entry().name())
+         return this->update(tree->getChild(i), download);
+
    return this->insert(tree, download);
 }
 
+/**
+  * Insert a new download into the given tree.
+  * @param tree
+  * @param download
+  * @return
+  */
 DownloadsTreeModel::Tree* DownloadsTreeModel::insert(Tree* tree, const Protos::GUI::State::Download& download)
 {
    const int nbChildren = tree->getNbChildren();
 
-   for (int i = 0; i < nbChildren; i++)
-   {
-      if (download.local_entry().type() == Protos::Common::Entry::FILE && download.id() == tree->getChild(i)->getItem().id() ||
-          download.local_entry().name() == tree->getChild(i)->getItem().local_entry().name())
-      {
-         return this->update(tree->getChild(i), download);
-      }
-   }
-
    // Special case, the children of the root aren't sorted in an alphabetic way.
-   if (download.local_entry().type() == Protos::Common::Entry::DIR && tree == this->root)
+   if (tree == this->root)
    {
-      int i = this->root->getNbChildren();
+      int i = nbChildren;
       while (i >= 1 && !this->root->getChild(i-1)->visited)
          i--;
-      this->beginInsertRows(QModelIndex(), i, i);
-      Tree* newTree = this->root->insertChild(download, i);
-      this->endInsertRows();
-      return newTree;
+      return this->createEntry(QModelIndex(), i, download);
    }
 
+   // We find a place to create the new entry and to keep the children in alphabetic order.
    for (int i = 0; i <= nbChildren; i++)
    {
-      if (i ==  nbChildren || (tree != this->root && download < tree->getChild(i)->getItem())) // The root elements aren't sorted.
+      if (i == nbChildren || (tree != this->root && download < tree->getChild(i)->getItem())) // The root elements aren't sorted.
       {
          QModelIndex parentIndex = tree == this->root ? QModelIndex() : this->createIndex(tree->getOwnPosition(), 0, tree);
-
-         this->beginInsertRows(parentIndex, i, i);
-         Tree* newTree = tree->insertChild(download, i);
-         if (newTree->getItem().local_entry().type() == Protos::Common::Entry::FILE)
-            this->indexedFiles.insert(download.id(), newTree);
-         this->endInsertRows();
-
-         if (download.local_entry().type() == Protos::Common::Entry::FILE)
-            this->updateDirectoriesNewFile(newTree);
-
-         return newTree;
+         return this->createEntry(parentIndex, i, download);
       }
    }
    return 0;
 }
 
+DownloadsTreeModel::Tree* DownloadsTreeModel::createEntry(const QModelIndex& parent, int position, const Protos::GUI::State::Download& download)
+{
+   this->beginInsertRows(parent, position, position);
+   Tree* parentTree = parent.isValid() ? static_cast<Tree*>(parent.internalPointer()) : this->root;
+   Tree* newTree = parentTree->insertChild(download, position);
+   if (newTree->getItem().local_entry().type() == Protos::Common::Entry::FILE)
+      this->indexedFiles.insert(download.id(), newTree);
+   this->endInsertRows();
+
+   if (download.local_entry().type() == Protos::Common::Entry::FILE)
+      this->updateDirectoriesNewFile(newTree);
+
+   return newTree;
+}
+
 /**
   * Move the given tree right after the last visited tree (Tree::visited = true).
-  * The tree must be a directory and must be a direct child of the root.
+  * The tree must be a direct child of the root.
   * @param tree
   * @return
   */
-DownloadsTreeModel::Tree *DownloadsTreeModel::moveUp(DownloadsTreeModel::Tree* tree)
+DownloadsTreeModel::Tree* DownloadsTreeModel::moveUp(DownloadsTreeModel::Tree* tree)
 {
-   Q_ASSERT(tree && tree->getParent() == this->root && tree->getItem().local_entry().type() == Protos::Common::Entry::DIR);
+   Q_ASSERT(tree && tree->getParent() == this->root);
 
    const int ownPosition = tree->getOwnPosition();
    int i = ownPosition;

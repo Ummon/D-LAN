@@ -30,6 +30,7 @@ namespace GUI
    class DownloadsTreeModel : public DownloadsModel
    {
       Q_OBJECT
+
    public:
       DownloadsTreeModel(QSharedPointer<RCC::ICoreConnection> coreConnection, const PeerListModel& peerListModel, const DirListModel& sharedDirsModel, const IFilter<DownloadFilterStatus>& filter);
       ~DownloadsTreeModel();
@@ -73,6 +74,7 @@ namespace GUI
       QList<quint64> getDownloadIDs(Tree* tree) const;
       Tree* insertDirectory(Tree* tree, const QString& dir, const QString& peerSourceNick, const Hash& sharedDirID);
       Tree* insert(Tree* tree, const Protos::GUI::State::Download& download);
+      Tree* createEntry(const QModelIndex& parent, int position, const Protos::GUI::State::Download& download);
 
       Tree* moveUp(Tree* tree);
       Tree* update(Tree* tree, const Protos::GUI::State::Download& download);

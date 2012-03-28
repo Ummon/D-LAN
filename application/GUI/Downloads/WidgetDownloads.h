@@ -27,6 +27,7 @@
 #include <Protos/gui_settings.pb.h>
 
 #include <Common/RemoteCoreController/ICoreConnection.h>
+#include <Common/Tree.h>
 
 #include <CheckBoxList.h>
 #include <CheckBoxModel.h>
@@ -77,6 +78,11 @@ namespace GUI
       void updateCheckBoxElements();
       QPair<QList<quint64>, bool> getDownloadIDsToPause() const;
 
+      void saveTreeViewState();
+      void saveTreeViewState(const QModelIndex& index, SimpleTree<quint32>* tree);
+      void restoreTreeViewState();
+      void restoreTreeViewState(const QModelIndex& index, SimpleTree<quint32>* tree);
+
       Ui::WidgetDownloads *ui;
       CheckBoxList* filterStatusList;
 
@@ -89,6 +95,8 @@ namespace GUI
       DownloadsModel* currentDownloadsModel;
 
       DownloadsDelegate downloadsDelegate;
+
+      SimpleTree<quint32>* treeViewState;
    };
 }
 
