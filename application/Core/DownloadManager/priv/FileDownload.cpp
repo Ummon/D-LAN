@@ -76,7 +76,6 @@ FileDownload::FileDownload(
    this->nbHashesKnown = this->chunkDownloads.size();
 
    this->tryToLinkToAnExistingFile();
-   this->updateStatus();
 }
 
 FileDownload::~FileDownload()
@@ -98,6 +97,7 @@ void FileDownload::start()
    if (this->hasAValidPeer())
    {
       this->peerSourceBecomesAvailable();
+      this->updateStatus();
       this->occupiedPeersDownloadingChunk.newPeer(this->peerSource);
    }
 
