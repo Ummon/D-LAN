@@ -36,6 +36,7 @@ AskNewPasswordDialog::AskNewPasswordDialog(QSharedPointer<RCC::ICoreConnection> 
       this->ui->lblOldPassword->hide();
       this->ui->txtOldPassword->hide();
    }
+   this->setMaximumHeight(0);
 
    connect(this->ui->buttons, SIGNAL(rejected()), this, SLOT(reject()));
    connect(this->ui->buttons, SIGNAL(accepted()), this, SLOT(ok()));
