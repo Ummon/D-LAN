@@ -69,7 +69,7 @@ namespace RCC
       void sendChatMessage(const QString& message);
       void setCoreSettings(const Protos::GUI::CoreSettings settings);
       void setCoreLanguage(const QLocale locale);
-      void setCorePassword(const QString& newPassword, const QString& oldPassword = QString());
+      bool setCorePassword(const QString& newPassword, const QString& oldPassword = QString());
 
       QSharedPointer<IBrowseResult> browse(const Common::Hash& peerID);
       QSharedPointer<IBrowseResult> browse(const Common::Hash& peerID, const Protos::Common::Entry& entry);

@@ -69,12 +69,14 @@ WidgetSettings::WidgetSettings(QSharedPointer<RCC::ICoreConnection> coreConnecti
    this->ui->tblShareDirs->setAlternatingRowColors(true);
 
    this->ui->txtCoreAddress->setText(SETTINGS.get<QString>("core_address"));
+   connect(this->ui->txtCoreAddress, SIGNAL(returnPressed()), this->ui->butConnect, SLOT(click()));
+   connect(this->ui->txtPassword, SIGNAL(returnPressed()), this->ui->butConnect, SLOT(click()));
 
    connect(this->coreConnection.data(), SIGNAL(newState(Protos::GUI::State)), this, SLOT(newState(Protos::GUI::State)));
    connect(this->coreConnection.data(), SIGNAL(connecting()), this, SLOT(coreConnecting()));
    connect(this->coreConnection.data(), SIGNAL(connectingError(RCC::ICoreConnection::ConnectionErrorCode)), this, SLOT(coreConnectingError()));
    connect(this->coreConnection.data(), SIGNAL(connected()), this, SLOT(coreConnected()));
-   connect(this->coreConnection.data(), SIGNAL(disconnected()), this, SLOT(coreDisconnected()));
+   connect(this->coreConnection.data(), SIGNAL(disconnected(bool)), this, SLOT(coreDisconnected()));
 
    connect(this->ui->txtNick, SIGNAL(editingFinished()), this, SLOT(saveCoreSettings()));
    connect(this->ui->chkEnableIntegrityCheck, SIGNAL(clicked()), this, SLOT(saveCoreSettings()));
@@ -91,6 +93,7 @@ WidgetSettings::WidgetSettings(QSharedPointer<RCC::ICoreConnection> coreConnecti
 
    connect(this->ui->butResetCoreAddress, SIGNAL(clicked()), this, SLOT(resetCoreAddress()));
    connect(this->ui->butConnect, SIGNAL(clicked()), this, SLOT(connectToCore()));
+   connect(this->ui->butDisconnect, SIGNAL(clicked()), this, SLOT(disconnectFromTheCore()));
    this->ui->tabAdvancedSettings->installEventFilter(this);
 
    this->ui->tblShareDirs->setContextMenuPolicy(Qt::CustomContextMenu);
@@ -133,6 +136,13 @@ void WidgetSettings::connectToCore()
 
    if (newHost != SETTINGS.get<QString>("core_address") || !this->coreConnection->isConnected())
       this->coreConnection->connectToCore(newHost, SETTINGS.get<quint32>("core_port"), this->ui->txtPassword->text());
+}
+
+void WidgetSettings::disconnectFromTheCore()
+{
+   this->coreConnection->disconnectFromCore();
+   SETTINGS.rm("password");
+   SETTINGS.save();
 }
 
 /**
@@ -348,6 +358,7 @@ void WidgetSettings::newState(const Protos::GUI::State& state)
 void WidgetSettings::coreConnecting()
 {
    this->ui->butConnect->setDisabled(true);
+   this->ui->butDisconnect->setDisabled(true);
    this->ui->butConnect->setText(tr("Connecting.."));
 }
 
@@ -371,6 +382,7 @@ void WidgetSettings::coreConnected()
 
    this->ui->butConnect->setDisabled(false);
    this->ui->butConnect->setText(tr("Connect"));
+   this->ui->butDisconnect->setDisabled(false);
 
    this->ui->butChangePassword->setDisabled(false);
 
@@ -387,6 +399,7 @@ void WidgetSettings::coreDisconnected()
 
    this->ui->butConnect->setDisabled(false);
    this->ui->butConnect->setText(tr("Connect"));
+   this->ui->butDisconnect->setDisabled(true);
 
    this->ui->butChangePassword->setDisabled(true);
 }
@@ -437,11 +450,8 @@ void WidgetSettings::cmbLanguageChanged(int cmbIndex)
 
 void WidgetSettings::changePassword()
 {
-   AskNewPasswordDialog dia(this->corePasswordDefined, this);
-   if (dia.exec() == QDialog::Accepted)
-   {
-      this->coreConnection->setCorePassword(dia.getNewPassword(), dia.getOldPassword());
-   }
+   AskNewPasswordDialog dia(this->coreConnection, this->corePasswordDefined, this);
+   dia.exec();
 }
 
 void WidgetSettings::addShared()

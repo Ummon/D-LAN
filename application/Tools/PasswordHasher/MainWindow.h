@@ -21,6 +21,8 @@
 
 #include <QMainWindow>
 
+#include <Libs/MersenneTwister.h>
+
 namespace Ui {
    class MainWindow;
 }
@@ -36,16 +38,21 @@ namespace PasswordHasher
 
    private slots:
       void computeHash();
-      void savePassword();
+      void savePasswordToCurrentUser();
+      void savePasswordToSystemUser();
 
    private:
+      void savePassword(const QString& directory);
       void setButtonText();
       QString checkPasswords() const;
 
    private:
-      const QString CORE_SETTINGS_PATH;
+      const QString CORE_SETTINGS_PATH_CURRENT_USER;
+      const QString CORE_SETTINGS_PATH_SYSTEM_USER;
 
       Ui::MainWindow* ui;
+      MTRand mtrand;
+      quint64 salt;
    };
 }
 

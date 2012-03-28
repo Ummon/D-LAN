@@ -170,7 +170,7 @@ MainWindow::MainWindow(QSharedPointer<RCC::ICoreConnection> coreConnection, QWid
 
    connect(this->coreConnection.data(), SIGNAL(connectingError(RCC::ICoreConnection::ConnectionErrorCode)), this, SLOT(coreConnectionError(RCC::ICoreConnection::ConnectionErrorCode)));
    connect(this->coreConnection.data(), SIGNAL(connected()), this, SLOT(coreConnected()));
-   connect(this->coreConnection.data(), SIGNAL(disconnected()), this, SLOT(coreDisconnected()));
+   connect(this->coreConnection.data(), SIGNAL(disconnected(bool)), this, SLOT(coreDisconnected(bool)));
 
    this->coreConnection->connectToCore(SETTINGS.get<QString>("core_address"), SETTINGS.get<quint32>("core_port"), SETTINGS.get<Common::Hash>("password"));
 }
@@ -237,11 +237,11 @@ void MainWindow::coreConnected()
    this->setApplicationStateAsConnected();
 }
 
-void MainWindow::coreDisconnected()
+void MainWindow::coreDisconnected(bool forced)
 {
    this->setApplicationStateAsDisconnected();
 
-   if (!this->coreConnection->isConnected())
+   if (!forced && !this->coreConnection->isConnecting())
    {
       QMessageBox msgBox(this);
       msgBox.setWindowTitle(tr("Connection lost"));

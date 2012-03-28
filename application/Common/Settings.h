@@ -49,6 +49,9 @@ namespace Common
       bool load();
       void remove();
 
+      bool saveToACutomDirectory(const QString& directory) const;
+      bool loadFromACutomDirectory(const QString& directory);
+
       void free();
 
       bool isSet(const QString& name) const;

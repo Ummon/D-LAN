@@ -39,11 +39,17 @@ namespace Common
    class PersistentData
    {
       static const QString TEMP_SUFFIX_TERM;
-   public:
 
+   public:
       static void setValue(const QString& name, const google::protobuf::Message& data, Global::DataFolderType dataFolderType, bool humanReadable = false);
+      static void setValue(const QString& directory, const QString& name, const google::protobuf::Message& data, Global::DataFolderType dataFolderType, bool humanReadable = false);
       static void getValue(const QString& name, google::protobuf::Message& data, Global::DataFolderType dataFolderType, bool humanReadable = false);
+      static void getValue(const QString& directory, const QString& name, google::protobuf::Message& data, Global::DataFolderType dataFolderType, bool humanReadable = false);
       static bool rmValue(const QString& name, Global::DataFolderType dataFolderType);
+
+   private:
+      static void setValueFilepath(const QString& filepath, const google::protobuf::Message& data, Global::DataFolderType dataFolderType, bool humanReadable = false);
+      static void getValueFilepath(const QString& filepath, google::protobuf::Message& data, Global::DataFolderType dataFolderType, bool humanReadable = false);
    };
 }
 #endif

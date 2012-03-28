@@ -124,10 +124,7 @@ namespace RCM
       MTRand mtrand;
 
       bool authenticated;
-
-      // We save the current password and salt because some other client may change 'Protos.Core.Settings.remote_password' and 'Protos.Core.Settings.salt'.
-      Common::Hash currentPassword;
-      quint64 currentSalt;
+      quint64 saltChallenge;
 
 #ifdef DEBUG
       QSharedPointer<LM::ILogger> loggerRefreshState; // A logger especially for the state message.

@@ -116,8 +116,9 @@ namespace RCC
       /**
         * @param newPassword
         * @param oldPassword Hased + salted.
+        * @return true if the given old password match the current password else false.
         */
-      virtual void setCorePassword(const QString& newPassword, const QString& oldPassword = QString()) = 0;
+      virtual bool setCorePassword(const QString& newPassword, const QString& oldPassword = QString()) = 0;
 
       /**
         * Get the roots folders (shared directories) of a given peer.
@@ -206,7 +207,7 @@ namespace RCC
       void connecting();
       void connectingError(RCC::ICoreConnection::ConnectionErrorCode); // Can only be thrown during the connection process.
       void connected();
-      void disconnected(); // Can only be thrown if 'coreConnected()' has been previously thrown.
+      void disconnected(bool asked); // Can only be thrown if 'coreConnected()' has been previously thrown. 'asked' = true if disconnected by 'disconnectFromCore()'.
 
       void newState(const Protos::GUI::State&);
       void newChatMessages(const Protos::GUI::EventChatMessages&);

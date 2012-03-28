@@ -239,7 +239,7 @@
                     <bool>true</bool>
                    </property>
                    <attribute name="buttonGroup">
-                    <string>grpAddressesToListenTo</string>
+                    <string notr="true">grpAddressesToListenTo</string>
                    </attribute>
                   </widget>
                  </item>
@@ -249,7 +249,7 @@
                     <string>IPv4</string>
                    </property>
                    <attribute name="buttonGroup">
-                    <string>grpAddressesToListenTo</string>
+                    <string notr="true">grpAddressesToListenTo</string>
                    </attribute>
                   </widget>
                  </item>
@@ -381,6 +381,9 @@
                 <property name="icon">
                  <iconset resource="../ressources.qrc">
                   <normaloff>:/icons/ressources/lightning.png</normaloff>:/icons/ressources/lightning.png</iconset>
+                </property>
+                <property name="default">
+                 <bool>true</bool>
                 </property>
                </widget>
               </item>

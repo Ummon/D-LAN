@@ -66,7 +66,7 @@ RemoteConnection::RemoteConnection(
    downloadManager(downloadManager),
    networkListener(networkListener),
    authenticated(false),
-   currentSalt(0)
+   saltChallenge(0)
  #if DEBUG
    ,loggerRefreshState(LM::Builder::newLogger("RemoteConnection (State)"))
  #endif
@@ -108,8 +108,8 @@ RemoteConnection::~RemoteConnection()
 
 void RemoteConnection::send(Common::MessageHeader::MessageType type, const google::protobuf::Message& message)
 {
-   // When not authenticated we can only send messages of type 'GUI_AUTHENTICATION_RESULT'.
-   if (!this->authenticated && type != Common::MessageHeader::GUI_AUTHENTICATION_RESULT)
+   // When not authenticated we can only send messages of type 'GUI_AUTHENTICATION_RESULT' or 'GUI_ASK_FOR_AUTHENTICATION'.
+   if (!this->authenticated && type != Common::MessageHeader::GUI_ASK_FOR_AUTHENTICATION && type != Common::MessageHeader::GUI_AUTHENTICATION_RESULT)
       return;
 
    Common::MessageSocket::send(type, message);
@@ -140,7 +140,7 @@ void RemoteConnection::refresh()
    Common::ProtoHelper::setStr(*state.mutable_myself(), &Protos::GUI::State::Peer::set_core_version, Common::Global::getVersionFull());
 
    state.set_integrity_check_enabled(SETTINGS.get<bool>("check_received_data_integrity"));
-   state.set_password_defined(!this->currentPassword.isNull());
+   state.set_password_defined(SETTINGS.isSet("remote_password"));
 
    // Peers.
    QList<PM::IPeer*> peers = this->peerManager->getPeers();
@@ -319,13 +319,11 @@ void RemoteConnection::sendBadPasswordResult()
 
 void RemoteConnection::askForAuthentication()
 {
-   this->currentPassword = SETTINGS.get<Common::Hash>("remote_password");
-   this->currentSalt = SETTINGS.get<quint64>("salt");
-
    Protos::GUI::AskForAuthentication askForAuthenticationMessage;
-   askForAuthenticationMessage.set_old_salt(this->currentSalt);
-   this->currentSalt = (static_cast<quint64>(this->mtrand.randInt()) << 32) | this->mtrand.randInt();
-   askForAuthenticationMessage.set_new_salt(this->currentSalt);
+   askForAuthenticationMessage.set_salt(SETTINGS.get<quint64>("salt"));
+
+   this->saltChallenge = (static_cast<quint64>(this->mtrand.randInt()) << 32) | this->mtrand.randInt();
+   askForAuthenticationMessage.set_salt_challenge(this->saltChallenge);
 
    this->timerCloseSocket.start();
    this->send(Common::MessageHeader::GUI_ASK_FOR_AUTHENTICATION, askForAuthenticationMessage);
@@ -363,24 +361,19 @@ void RemoteConnection::onNewMessage(Common::MessageHeader::MessageType type, con
 
          if (!this->isLocal())
          {
-            Common::Hash passwordOldReceived = Common::Hasher::hashWithSalt(Common::Hash(authenticationMessage.password_old_salt().hash()), this->currentSalt);
-            Common::Hash passwordNewReceived(authenticationMessage.password_new_salt().hash());
+            Common::Hash passwordReceived(authenticationMessage.password_challenge().hash());
+            Common::Hash currentPassword = SETTINGS.get<Common::Hash>("remote_password");
 
-            if (this->currentPassword.isNull())
+            if (currentPassword.isNull())
             {
                QTimer::singleShot(SETTINGS.get<quint32>("delay_gui_connection_fail"), this, SLOT(sendNoPasswordDefinedResult()));
                break;
             }
-            else if (passwordOldReceived != this->currentPassword)
+            else if (passwordReceived != Common::Hasher::hashWithSalt(currentPassword, this->saltChallenge))
             {
                QTimer::singleShot(SETTINGS.get<quint32>("delay_gui_connection_fail"), this, SLOT(sendBadPasswordResult()));
                break;
             }
-
-            this->currentPassword = passwordNewReceived;
-            SETTINGS.set("remote_password", passwordNewReceived);
-            SETTINGS.set("salt", this->currentSalt);
-            SETTINGS.save();
          }
 
          Protos::GUI::AuthenticationResult authResultMessage;
@@ -403,10 +396,12 @@ void RemoteConnection::onNewMessage(Common::MessageHeader::MessageType type, con
       {
          const Protos::GUI::ChangePassword& passMessage = static_cast<const Protos::GUI::ChangePassword&>(message);
 
-         if (!currentPassword.isNull() || this->currentPassword == Common::Hash(passMessage.old_password().hash()))
+         Common::Hash currentPassword = SETTINGS.get<Common::Hash>("remote_password");
+
+         if (currentPassword.isNull() || currentPassword == Common::Hash(passMessage.old_password().hash()))
          {
             SETTINGS.set("remote_password", Common::Hash(passMessage.new_password().hash()));
-            SETTINGS.set("salt", this->currentSalt);
+            SETTINGS.set("salt", passMessage.new_salt());
             SETTINGS.save();
             this->refresh();
          }

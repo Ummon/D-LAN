@@ -22,9 +22,12 @@ using namespace GUI;
 
 #include <QMessageBox>
 
-AskNewPasswordDialog::AskNewPasswordDialog(bool askOldPassword, QWidget *parent) :
+#include <Common/Settings.h>
+
+AskNewPasswordDialog::AskNewPasswordDialog(QSharedPointer<RCC::ICoreConnection> coreConnection, bool askOldPassword, QWidget *parent) :
    QDialog(parent),
-   ui(new Ui::AskNewPasswordDialog)
+   ui(new Ui::AskNewPasswordDialog),
+   coreConnection(coreConnection)
 {
    ui->setupUi(this);
 
@@ -43,21 +46,11 @@ AskNewPasswordDialog::~AskNewPasswordDialog()
    delete this->ui;
 }
 
-QString AskNewPasswordDialog::getNewPassword() const
-{
-   return this->ui->txtNewPassword->text();
-}
-
-QString AskNewPasswordDialog::getOldPassword() const
-{
-   return this->ui->txtOldPassword->text();
-}
-
 void AskNewPasswordDialog::ok()
 {
    if (this->ui->txtNewPassword->text() != this->ui->txtNewPasswordRepeated->text())
    {
-      QMessageBox::information(this, "Error", "Ths passwords aren't the same");
+      QMessageBox::information(this, "Error", "The passwords aren't the same");
       return;
    }
    else if (this->ui->txtNewPassword->text().isEmpty())
@@ -75,8 +68,20 @@ void AskNewPasswordDialog::ok()
       QMessageBox::information(this, "Error", "The old password is required");
       return;
    }
+   else if (this->ui->txtOldPassword->text() == this->ui->txtNewPassword->text())
+   {
+      QMessageBox::information(this, "Error", "The old and new password are the same");
+      return;
+   }
    else
    {
-      this->accept();
+      if (!this->coreConnection->setCorePassword(this->ui->txtNewPassword->text(), this->ui->txtOldPassword->isHidden() ? QString() : this->ui->txtOldPassword->text()))
+         QMessageBox::information(this, "Error", "The old password didn't match");
+      else
+      {
+         SETTINGS.set("password", this->coreConnection->getConnectionInfo().password);
+         SETTINGS.save();
+         this->accept();
+      }
    }
 }

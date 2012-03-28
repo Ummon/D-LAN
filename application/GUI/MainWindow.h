@@ -78,7 +78,7 @@ namespace GUI
 
       void coreConnectionError(RCC::ICoreConnection::ConnectionErrorCode errorCode);
       void coreConnected();
-      void coreDisconnected();
+      void coreDisconnected(bool forced);
 
       void tabMoved(int from, int to);
 

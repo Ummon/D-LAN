@@ -153,15 +153,14 @@ message EventLogMessage {
 // Core -> GUI
 // id : 0x21
 message AskForAuthentication {
-   required uint64 old_salt = 1;
-   required uint64 new_salt = 2;
+   required uint64 salt = 1;
+   required uint64 salt_challenge = 2;
 }
 // Password is optional for local connections.
 // GUI -> Core
 // id : 0x22
 message Authentication {
-   optional Common.Hash password_old_salt = 1;
-   optional Common.Hash password_new_salt = 2;
+   optional Common.Hash password_challenge = 1; // hash(password) + old_salt + salt_challenge
 }
 // Core -> GUI
 // id : 0x23
@@ -188,8 +187,10 @@ message Language {
 // Change the core password.
 // Both sent passwords are salted with 'AskForAuthentication.new_salt'.
 message ChangePassword {
-   required Common.Hash new_password = 1;
-   optional Common.Hash old_password = 2; // Only if a password has already been set.
+   required Common.Hash new_password = 1; // Salted with the new salt.
+   required uint64 new_salt = 2;
+   
+   optional Common.Hash old_password = 3; // Salted with the old salt. Required only if a password has already been set. 'See State.password_defined'.
 }
 
 // GUI -> Core

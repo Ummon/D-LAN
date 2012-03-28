@@ -56,6 +56,7 @@ namespace GUI
    public slots:
       void resetCoreAddress();
       void connectToCore();
+      void disconnectFromTheCore();
 
    signals:
       void languageChanged(const QString& filename);

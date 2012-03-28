@@ -481,7 +481,7 @@ QString Global::getDataServiceFolder(DataFolderType type)
       if (windowsPathSplit.isEmpty())
          return QString();
 
-      return windowsPathSplit.first() + "/Documents and Settings/LocalService" + (type == ROAMING ? "/Application Data/" : "/Local Settings/Application Data/") + Constants::APPLICATION_FOLDER_NAME;
+      return windowsPathSplit.first().replace('\\', '/') + "/Documents and Settings/LocalService" + (type == ROAMING ? "/Application Data/" : "/Local Settings/Application Data/") + Constants::APPLICATION_FOLDER_NAME;
    }
 #else
    return Global::getDataSystemFolder(type);
@@ -499,7 +499,7 @@ QString Global::getDataSystemFolder(DataFolderType type)
    // SHGetKnownFolderPath should be use for vista a superior but it doesn't exist in mingw.
    if (!SUCCEEDED(SHGetFolderPath(NULL, CSIDL_SYSTEMX86, NULL, 0, dataPathSystem)))
       return QString();
-   const QString dataFolderPath = QString::fromUtf16((ushort*)dataPathSystem);
+   const QString dataFolderPath = QString::fromUtf16((ushort*)dataPathSystem).replace('\\', '/');
 
    OSVERSIONINFO versionInfo;
    memset(&versionInfo, 0, sizeof(versionInfo));

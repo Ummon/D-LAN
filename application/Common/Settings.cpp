@@ -88,9 +88,7 @@ bool Settings::save() const
 bool Settings::saveTo(const QString& filename) const
 {
    QMutexLocker locker(&this->mutex);
-
    Q_ASSERT(this->settings);
-
    if (!this->settings)
       return false;
 
@@ -139,6 +137,48 @@ void Settings::remove()
       return;
 
    PersistentData::rmValue(this->filename, Common::Global::ROAMING);
+}
+
+bool Settings::saveToACutomDirectory(const QString& directory) const
+{
+   QMutexLocker locker(&this->mutex);
+   Q_ASSERT(this->settings);
+   if (!this->settings)
+      return false;
+
+   try
+   {
+      PersistentData::setValue(directory, filename, *this->settings, Common::Global::ROAMING, true);
+      return true;
+   }
+   catch (PersistentDataIOException&)
+   {
+      return false;
+   }
+}
+
+bool Settings::loadFromACutomDirectory(const QString& directory)
+{
+   QMutexLocker locker(&this->mutex);
+
+   Q_ASSERT(this->settings);
+
+   if (!this->settings)
+      return false;
+
+   try
+   {
+      PersistentData::getValue(directory, this->filename, *this->settings, Common::Global::ROAMING, true);
+      return true;
+   }
+   catch (UnknownValueException&)
+   {
+      return false;
+   }
+   catch (PersistentDataIOException&)
+   {
+      return false;
+   }
 }
 
 void Settings::free()

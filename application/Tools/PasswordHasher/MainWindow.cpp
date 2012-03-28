@@ -20,10 +20,12 @@
 using namespace PasswordHasher;
 
 #include <QMessageBox>
+#include <QStringBuilder>
+
+#include <google/protobuf/text_format.h>
 
 #include <Protos/common.pb.h>
 #include <Protos/core_settings.pb.h>
-#include <google/protobuf/text_format.h>
 
 #include <Common/Hash.h>
 #include <Common/Global.h>
@@ -34,7 +36,10 @@ using namespace PasswordHasher;
 #include <ui_MainWindow.h>
 
 MainWindow::MainWindow(QWidget *parent) :
-   QMainWindow(parent), CORE_SETTINGS_PATH(Common::Global::getDataFolder(Common::Global::ROAMING, false) + '/' + Common::Constants::CORE_SETTINGS_FILENAME), ui(new Ui::MainWindow)
+   QMainWindow(parent),
+   CORE_SETTINGS_PATH_CURRENT_USER(Common::Global::getDataFolder(Common::Global::ROAMING, false)),
+   CORE_SETTINGS_PATH_SYSTEM_USER(Common::Global::getDataServiceFolder(Common::Global::ROAMING)),
+   ui(new Ui::MainWindow)
 {
    ui->setupUi(this);
    this->setButtonText();
@@ -43,9 +48,11 @@ MainWindow::MainWindow(QWidget *parent) :
    connect(this->ui->txtPass1, SIGNAL(textChanged(const QString&)), this, SLOT(computeHash()));
    connect(this->ui->txtPass2, SIGNAL(textChanged(const QString&)), this, SLOT(computeHash()));
 
-   connect(this->ui->butSave, SIGNAL(clicked()), this, SLOT(savePassword()));
+   connect(this->ui->butSaveCurrentUser, SIGNAL(clicked()), this, SLOT(savePasswordToCurrentUser()));
+   connect(this->ui->butSaveSystemUser, SIGNAL(clicked()), this, SLOT(savePasswordToSystemUser()));
 
-   this->ui->lblInstructions->setText(this->ui->lblInstructions->text().replace("{settings_path}", CORE_SETTINGS_PATH));
+   this->ui->lblInstructions->setText(this->ui->lblInstructions->text().replace("{settings_path_current_user}", CORE_SETTINGS_PATH_CURRENT_USER + '/' + Common::Constants::CORE_SETTINGS_FILENAME));
+   this->ui->lblInstructions->setText(this->ui->lblInstructions->text().replace("{settings_path_system_user}", CORE_SETTINGS_PATH_SYSTEM_USER + '/' + Common::Constants::CORE_SETTINGS_FILENAME));
 
    SETTINGS.setFilename(Common::Constants::CORE_SETTINGS_FILENAME);
    SETTINGS.setSettingsMessage(new Protos::Core::Settings());
@@ -65,20 +72,35 @@ void MainWindow::computeHash()
    }
    else
    {
-      Common::Hash hash = Common::Hasher::hashWithSalt(this->ui->txtPass1->text());
+      Common::Hash hash = Common::Hasher::hashWithRandomSalt(this->ui->txtPass1->text(), this->salt);
 
-      Protos::Common::Hash hashMessage;
-      const google::protobuf::FieldDescriptor* hashField = hashMessage.GetDescriptor()->FindFieldByName("hash");
+      Protos::Core::Settings settings;
+      const google::protobuf::FieldDescriptor* passField = settings.GetDescriptor()->FindFieldByName("remote_password");
+      const google::protobuf::FieldDescriptor* saltField = settings.GetDescriptor()->FindFieldByName("salt");
+
+      settings.mutable_remote_password()->set_hash(hash.getData(), Common::Hash::HASH_SIZE);
+      settings.set_salt(this->salt);
 
       std::string encodedHash;
-      hashMessage.set_hash(hash.getData(), Common::Hash::HASH_SIZE);
-      google::protobuf::TextFormat::PrintFieldValueToString(hashMessage, hashField, -1, &encodedHash);
+      std::string encodedSalt;
+      google::protobuf::TextFormat::PrintFieldValueToString(settings, passField, -1, &encodedHash);
+      google::protobuf::TextFormat::PrintFieldValueToString(settings, saltField, -1, &encodedSalt);
 
-      this->ui->txtResult->setText("remote_password {\n   hash: " + QString::fromStdString(encodedHash) + "\n}");
+      this->ui->txtResult->setText("remote_password {\n " % QString::fromStdString(encodedHash) % "}\nsalt: " % QString::fromStdString(encodedSalt) % "\n");
    }
 }
 
-void MainWindow::savePassword()
+void MainWindow::savePasswordToCurrentUser()
+{
+   this->savePassword(CORE_SETTINGS_PATH_CURRENT_USER);
+}
+
+void MainWindow::savePasswordToSystemUser()
+{
+   this->savePassword(CORE_SETTINGS_PATH_SYSTEM_USER);
+}
+
+void MainWindow::savePassword(const QString& directory)
 {
    QString error = this->checkPasswords();
 
@@ -88,23 +110,21 @@ void MainWindow::savePassword()
    }
    else
    {
-      try
-      {
-         SETTINGS.load();
-         SETTINGS.set("remote_password", Common::Hasher::hashWithSalt(this->ui->txtPass1->text()));
-         SETTINGS.save();
+      SETTINGS.load();
+      SETTINGS.set("remote_password", Common::Hasher::hashWithSalt(this->ui->txtPass1->text(), this->salt));
+      SETTINGS.set("salt", this->salt);
+
+      if (!SETTINGS.saveToACutomDirectory(directory))
+         QMessageBox::warning(this, "Error", "Error during saving");
+      else
          QMessageBox::information(this, "Password saved", "Password has been saved.");
-      }
-      catch (Common::PersistentDataIOException& e)
-      {
-         QMessageBox::warning(this, "Error during saving", e.message);
-      }
    }
 }
 
 void MainWindow::setButtonText()
 {
-   this->ui->butSave->setText(QString("Save result to \"%1\"").arg(CORE_SETTINGS_PATH));
+   this->ui->butSaveCurrentUser->setText(QString("Save result to \"%1\"").arg(CORE_SETTINGS_PATH_CURRENT_USER + '/' + Common::Constants::CORE_SETTINGS_FILENAME));
+   this->ui->butSaveSystemUser->setText(QString("Save result to \"%1\"").arg(CORE_SETTINGS_PATH_SYSTEM_USER + '/' + Common::Constants::CORE_SETTINGS_FILENAME));
 }
 
 /**

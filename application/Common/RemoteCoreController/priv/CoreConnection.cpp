@@ -107,9 +107,9 @@ void CoreConnection::setCoreLanguage(const QLocale locale)
    this->current()->setCoreLanguage(locale);
 }
 
-void CoreConnection::setCorePassword(const QString& newPassword, const QString& oldPassword)
+bool CoreConnection::setCorePassword(const QString& newPassword, const QString& oldPassword)
 {
-   this->current()->setCorePassword(newPassword, oldPassword);
+   return this->current()->setCorePassword(newPassword, oldPassword);
 }
 
 QSharedPointer<IBrowseResult> CoreConnection::browse(const Common::Hash& peerID)
@@ -207,7 +207,7 @@ void CoreConnection::tempConnected()
 
    this->swap();
 
-   connect(this->current(), SIGNAL(disconnected()), this, SIGNAL(disconnected()));
+   connect(this->current(), SIGNAL(disconnected(bool)), this, SIGNAL(disconnected(bool)));
    connect(this->current(), SIGNAL(newState(const Protos::GUI::State&)), this, SIGNAL(newState(const Protos::GUI::State&)));
    connect(this->current(), SIGNAL(newChatMessages(const Protos::GUI::EventChatMessages&)), this, SIGNAL(newChatMessages(const Protos::GUI::EventChatMessages&)));
    connect(this->current(), SIGNAL(newLogMessage(QSharedPointer<const LM::IEntry>)), this, SIGNAL(newLogMessage(QSharedPointer<const LM::IEntry>)));
@@ -243,7 +243,7 @@ bool CoreConnection::connectToCorePrepare(const QString& address)
 
    connect(this->temp(), SIGNAL(connectingError(RCC::ICoreConnection::ConnectionErrorCode)), this, SLOT(tempConnectingError(RCC::ICoreConnection::ConnectionErrorCode)));
    connect(this->temp(), SIGNAL(connected()), this, SLOT(tempConnected()));
-   connect(this->temp(), SIGNAL(disconnected()), this, SLOT(tempDisconnected()));
+   connect(this->temp(), SIGNAL(disconnected(bool)), this, SLOT(tempDisconnected()));
 
    return true;
 }

@@ -49,7 +49,8 @@ InternalCoreConnection::InternalCoreConnection() :
    coreStatus(NOT_RUNNING),
    currentHostLookupID(-1),
    authenticated(false),
-   currentSalt(0)
+   forcedToClose(false),
+   salt(0)
 {
    this->startListening();
 }
@@ -93,9 +94,11 @@ bool InternalCoreConnection::isConnected() const
 
 void InternalCoreConnection::disconnectFromCore()
 {
+   this->forcedToClose = true;
+   this->socket->close();
+   this->forcedToClose = false;
    this->addressesToTry.clear();
    this->connectionInfo.clear();
-   this->socket->close();
 }
 
 void InternalCoreConnection::sendChatMessage(const QString& message)
@@ -116,15 +119,30 @@ void InternalCoreConnection::setCoreLanguage(const QLocale locale)
    this->sendCurrentLanguage();
 }
 
-void InternalCoreConnection::setCorePassword(const QString& newPassword, const QString& oldPassword)
+bool InternalCoreConnection::setCorePassword(const QString& newPassword, const QString& oldPassword)
 {
    Protos::GUI::ChangePassword passMess;
-   passMess.mutable_new_password()->set_hash(Common::Hasher::hashWithSalt(newPassword, this->currentSalt).getData(), Common::Hash::HASH_SIZE);
+
+   const quint64 newSalt = static_cast<quint64>(mtrand.randInt()) << 32 | mtrand.randInt();
+   Common::Hash newPasswordHashed = Common::Hasher::hashWithSalt(newPassword, newSalt);
+
+   passMess.mutable_new_password()->set_hash(newPasswordHashed.getData(), Common::Hash::HASH_SIZE);
+   passMess.set_new_salt(newSalt);
 
    if (!oldPassword.isNull())
-      passMess.mutable_old_password()->set_hash(Common::Hasher::hashWithSalt(oldPassword, this->currentSalt).getData(), Common::Hash::HASH_SIZE);
+   {
+      Common::Hash oldPasswordHashed = Common::Hasher::hashWithSalt(oldPassword, this->salt);
+      if (!this->connectionInfo.password.isNull() && this->connectionInfo.password != oldPasswordHashed)
+         return false;
+
+      passMess.mutable_old_password()->set_hash(oldPasswordHashed.getData(), Common::Hash::HASH_SIZE);
+   }
+
+   this->connectionInfo.password = newPasswordHashed;
+   this->salt = newSalt;
 
    this->send(Common::MessageHeader::GUI_CHANGE_PASSWORD, passMess);
+   return true;
 }
 
 QSharedPointer<IBrowseResult> InternalCoreConnection::browse(const Common::Hash& peerID)
@@ -303,7 +321,7 @@ void InternalCoreConnection::connectedAndAuthenticated()
 {
    // If we were previously connected we announce it.
    if (this->authenticated)
-      emit disconnected();
+      emit disconnected(this->forcedToClose);
 
    this->authenticated = true;
 
@@ -330,12 +348,14 @@ void InternalCoreConnection::onNewMessage(Common::MessageHeader::MessageType typ
       {
          const Protos::GUI::AskForAuthentication& askForAuthentication = static_cast<const Protos::GUI::AskForAuthentication&>(message);
 
-         this->currentSalt = askForAuthentication.new_salt();
-         this->connectionInfo.password = Common::Hasher::hashWithSalt(this->password, this->currentSalt);
-
          Protos::GUI::Authentication authentication;
-         authentication.mutable_password_old_salt()->set_hash(Common::Hasher::hashWithSalt(Common::Hasher::hashWithSalt(this->password, askForAuthentication.old_salt()), this->currentSalt).getData(), Common::Hash::HASH_SIZE);
-         authentication.mutable_password_new_salt()->set_hash(Common::Hasher::hashWithSalt(this->password, this->currentSalt).getData(), Common::Hash::HASH_SIZE);
+
+         this->salt = askForAuthentication.salt();
+
+         if (!this->password.isEmpty())
+            this->connectionInfo.password = Common::Hasher::hashWithSalt(this->password, this->salt);
+
+         authentication.mutable_password_challenge()->set_hash(Common::Hasher::hashWithSalt(this->connectionInfo.password, askForAuthentication.salt_challenge()).getData(), Common::Hash::HASH_SIZE);
          this->password.clear();
          this->send(Common::MessageHeader::GUI_AUTHENTICATION, authentication);
       }
@@ -454,5 +474,6 @@ void InternalCoreConnection::onNewMessage(Common::MessageHeader::MessageType typ
 void InternalCoreConnection::onDisconnected()
 {
    this->authenticated = false;
-   emit disconnected();
+   emit disconnected(this->forcedToClose);
+   this->forcedToClose = false;
 }

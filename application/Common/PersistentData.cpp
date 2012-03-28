@@ -47,12 +47,55 @@ const QString PersistentData::TEMP_SUFFIX_TERM(".temp");
   * @exception PersistentDataIOException if the value can't be persisted.
   */
 void PersistentData::setValue(const QString& name, const google::protobuf::Message& data, Global::DataFolderType dataFolderType, bool humanReadable)
+{
+   Q_ASSERT(!name.isEmpty());
+   PersistentData::setValueFilepath(Global::getDataFolder(dataFolderType) + '/' + name, data, dataFolderType, humanReadable);
+}
+
+void PersistentData::setValue(const QString& directory, const QString& name, const google::protobuf::Message& data, Global::DataFolderType dataFolderType, bool humanReadable)
+{
+   Q_ASSERT(!name.isEmpty());
+   PersistentData::setValueFilepath(directory + '/' + name, data, dataFolderType, humanReadable);
+}
+
+/**
+  * Retrieve the data associated to a given name.
+  * @exception PersistentDataIOException
+  * @exception UnknownValueException Throwed if the value doesn't exist
+  */
+void PersistentData::getValue(const QString& name, google::protobuf::Message& data, Global::DataFolderType dataFolderType, bool humanReadable)
+{
+   Q_ASSERT(!name.isEmpty());
+   PersistentData::getValueFilepath(Global::getDataFolder(dataFolderType) + '/' + name, data, dataFolderType, humanReadable);
+}
+
+void PersistentData::getValue(const QString& name, const QString& directory, google::protobuf::Message& data, Global::DataFolderType dataFolderType, bool humanReadable)
+{
+   Q_ASSERT(!name.isEmpty());
+   PersistentData::getValueFilepath(directory + '/' + name, data, dataFolderType, humanReadable);
+}
+
+/**
+  * Remove a data.
+  * @exception PersistentDataIOException
+  * @return Return false if the data didn't exist.
+  */
+bool PersistentData::rmValue(const QString& name, Global::DataFolderType dataFolderType)
 try
 {
    Q_ASSERT(!name.isEmpty());
+   return QFile::remove(Global::getDataFolder(dataFolderType) + '/' + name);
+}
+catch(Global::UnableToGetFolder& e)
+{
+   throw PersistentDataIOException(e.errorMessage);
+}
 
-   const QString FILEPATH(Global::getDataFolder(dataFolderType) + '/' + name);
-   const QString TEMP_FILEPATH(FILEPATH + TEMP_SUFFIX_TERM);
+
+void PersistentData::setValueFilepath(const QString& filepath, const google::protobuf::Message& data, Global::DataFolderType dataFolderType, bool humanReadable)
+try
+{
+   const QString TEMP_FILEPATH(filepath + TEMP_SUFFIX_TERM);
 
    // To avoid ::Print(..) to crash, see defect #153.
    if (Global::availableDiskSpace(Global::getDataFolder(dataFolderType)) < 20 * 1024 * 1024)
@@ -80,24 +123,17 @@ try
 #endif
    }
 
-   Global::rename(TEMP_FILEPATH, FILEPATH);
+   Global::rename(TEMP_FILEPATH, filepath);
 }
 catch(Global::UnableToGetFolder& e)
 {
    throw PersistentDataIOException(e.errorMessage);
 }
 
-/**
-  * Retrieve the data associated to a given name.
-  * @exception PersistentDataIOException
-  * @exception UnknownValueException Throwed if the value doesn't exist
-  */
-void PersistentData::getValue(const QString& name, google::protobuf::Message& data, Global::DataFolderType dataFolderType, bool humanReadable)
+void PersistentData::getValueFilepath(const QString& filepath, google::protobuf::Message& data, Global::DataFolderType dataFolderType, bool humanReadable)
 try
 {
-   Q_ASSERT(!name.isEmpty());
-
-   QFile file(Global::getDataFolder(dataFolderType) + '/' + name);
+   QFile file(filepath);
    if (!file.open(QIODevice::ReadOnly))
       throw UnknownValueException();
 
@@ -114,22 +150,6 @@ try
       data.ParsePartialFromFileDescriptor(file.handle());
    }
 #endif
-}
-catch(Global::UnableToGetFolder& e)
-{
-   throw PersistentDataIOException(e.errorMessage);
-}
-
-/**
-  * Remove a data.
-  * @exception PersistentDataIOException
-  * @return Return false if the data didn't exist.
-  */
-bool PersistentData::rmValue(const QString& name, Global::DataFolderType dataFolderType)
-try
-{
-   Q_ASSERT(!name.isEmpty());
-   return QFile::remove(Global::getDataFolder(dataFolderType) + '/' + name);
 }
 catch(Global::UnableToGetFolder& e)
 {
