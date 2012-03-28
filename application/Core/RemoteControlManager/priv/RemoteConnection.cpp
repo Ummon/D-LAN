@@ -398,7 +398,7 @@ void RemoteConnection::onNewMessage(Common::MessageHeader::MessageType type, con
 
          Common::Hash currentPassword = SETTINGS.get<Common::Hash>("remote_password");
 
-         if (currentPassword.isNull() || currentPassword == Common::Hash(passMessage.old_password().hash()))
+         if (currentPassword.isNull() || this->isLocal() || currentPassword == Common::Hash(passMessage.old_password().hash()))
          {
             SETTINGS.set("remote_password", Common::Hash(passMessage.new_password().hash()));
             SETTINGS.set("salt", passMessage.new_salt());

@@ -31,7 +31,7 @@ AskNewPasswordDialog::AskNewPasswordDialog(QSharedPointer<RCC::ICoreConnection> 
 {
    ui->setupUi(this);
 
-   if (!askOldPassword)
+   if (!askOldPassword || this->coreConnection->isLocal())
    {
       this->ui->lblOldPassword->hide();
       this->ui->txtOldPassword->hide();
