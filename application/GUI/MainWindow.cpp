@@ -302,7 +302,7 @@ void MainWindow::takeControlOfACore()
    if (action)
    {
       QHostAddress address = action->data().value<QHostAddress>();
-      Common::Hash hashedPassword;
+      QString password;
 
       if (!Common::Global::isLocal(address))
       {
@@ -314,10 +314,11 @@ void MainWindow::takeControlOfACore()
 
          if (inputDialog.exec() == QDialog::Rejected || inputDialog.textValue().isEmpty())
             return;
-         hashedPassword = Common::Hasher::hashWithSalt(inputDialog.textValue());
+
+         password = inputDialog.textValue();
       }
 
-      this->coreConnection->connectToCore(address.toString(), SETTINGS.get<quint32>("core_port"), hashedPassword);
+      this->coreConnection->connectToCore(address.toString(), SETTINGS.get<quint32>("core_port"), password);
    }
 }
 

@@ -54,25 +54,15 @@ void CoreConnection::connectToCore(quint16 port)
 
 void CoreConnection::connectToCore(const QString& address, quint16 port, Common::Hash password)
 {
-   emit connecting();
-
-   if (this->connectingInProgress)
-   {
-      this->tempConnectingError(ERROR_CONNECTING_IN_PROGRESS);
+   if (!this->connectToCorePrepare(address))
       return;
-   }
+   this->temp()->connectToCore(address, port, password);
+}
 
-   this->connectingInProgress = true;
-
-   if (address.isNull() || address.isEmpty())
-   {
-      this->tempConnectingError(ERROR_INVALID_ADDRESS);
+void CoreConnection::connectToCore(const QString& address, quint16 port, const QString& password)
+{
+   if (!this->connectToCorePrepare(address))
       return;
-   }
-
-   connect(this->temp(), SIGNAL(connectingError(RCC::ICoreConnection::ConnectionErrorCode)), this, SLOT(tempConnectingError(RCC::ICoreConnection::ConnectionErrorCode)));
-   connect(this->temp(), SIGNAL(connected()), this, SLOT(tempConnected()));
-   connect(this->temp(), SIGNAL(disconnected()), this, SLOT(tempDisconnected()));
    this->temp()->connectToCore(address, port, password);
 }
 
@@ -117,7 +107,7 @@ void CoreConnection::setCoreLanguage(const QLocale locale)
    this->current()->setCoreLanguage(locale);
 }
 
-void CoreConnection::setCorePassword(Hash newPassword, Hash oldPassword)
+void CoreConnection::setCorePassword(const QString& newPassword, const QString& oldPassword)
 {
    this->current()->setCorePassword(newPassword, oldPassword);
 }
@@ -228,6 +218,34 @@ void CoreConnection::tempDisconnected()
 {
    if (this->connectingInProgress)
       this->tempConnectingError(ERROR_HOST_TIMEOUT);
+}
+
+/**
+  * @return true is no error.
+  */
+bool CoreConnection::connectToCorePrepare(const QString& address)
+{
+   emit connecting();
+
+   if (this->connectingInProgress)
+   {
+      this->tempConnectingError(ERROR_CONNECTING_IN_PROGRESS);
+      return false;
+   }
+
+   this->connectingInProgress = true;
+
+   if (address.isNull() || address.isEmpty())
+   {
+      this->tempConnectingError(ERROR_INVALID_ADDRESS);
+      return false;
+   }
+
+   connect(this->temp(), SIGNAL(connectingError(RCC::ICoreConnection::ConnectionErrorCode)), this, SLOT(tempConnectingError(RCC::ICoreConnection::ConnectionErrorCode)));
+   connect(this->temp(), SIGNAL(connected()), this, SLOT(tempConnected()));
+   connect(this->temp(), SIGNAL(disconnected()), this, SLOT(tempDisconnected()));
+
+   return true;
 }
 
 InternalCoreConnection* CoreConnection::current()

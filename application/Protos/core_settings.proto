@@ -65,7 +65,8 @@ message Settings {
    
    // RemoteControlManager
    optional uint32 remote_control_port = 80 [default = 59485];
-   optional Common.Hash remote_password = 81; // Only used for non-local connection.
+   optional Common.Hash remote_password = 81; // Hashed + salted. Only used for non-local connection. If defined salt field must be set.
+   optional uint64 salt = 90 [default=42];
    optional uint32 remote_refresh_rate = 82 [default = 1000]; // [ms].
    optional uint32 remote_max_nb_connection = 83 [default = 5];
    optional uint32 search_lifetime = 84 [default = 5000]; // [ms]. (5s)

@@ -267,12 +267,12 @@ void Tests::hasher()
    Hash h3 = hasher.getResult();
 
    hasher.reset();
-   hasher.addPredefinedSalt();
+   hasher.addSalt(42);
    hasher.addData(str1, sizeof(str1));
    Hash h4 = hasher.getResult();
 
    hasher.reset();
-   hasher.addPredefinedSalt();
+   hasher.addSalt(42);
    hasher.addData(str2, sizeof(str2));
    Hash h5 = hasher.getResult();
 

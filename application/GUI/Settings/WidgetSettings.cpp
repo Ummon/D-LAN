@@ -48,7 +48,7 @@ void DirListDelegate::paint(QPainter* painter, const QStyleOptionViewItem& optio
 /////
 
 WidgetSettings::WidgetSettings(QSharedPointer<RCC::ICoreConnection> coreConnection, DirListModel& sharedDirsModel, QWidget* parent) :
-   QWidget(parent), ui(new Ui::WidgetSettings), getAtLeastOneState(false), coreConnection(coreConnection), sharedDirsModel(sharedDirsModel)
+   QWidget(parent), ui(new Ui::WidgetSettings), getAtLeastOneState(false), coreConnection(coreConnection), sharedDirsModel(sharedDirsModel), corePasswordDefined(false)
 {
    this->ui->setupUi(this);
 
@@ -132,7 +132,7 @@ void WidgetSettings::connectToCore()
    const QString newHost = this->ui->txtCoreAddress->text().trimmed().toLower();
 
    if (newHost != SETTINGS.get<QString>("core_address") || !this->coreConnection->isConnected())
-      this->coreConnection->connectToCore(newHost, SETTINGS.get<quint32>("core_port"), Common::Hasher::hashWithSalt(this->ui->txtPassword->text()));
+      this->coreConnection->connectToCore(newHost, SETTINGS.get<quint32>("core_port"), this->ui->txtPassword->text());
 }
 
 /**
@@ -303,16 +303,10 @@ void WidgetSettings::newState(const Protos::GUI::State& state)
    if (!this->ui->chkEnableIntegrityCheck->hasFocus())
       this->ui->chkEnableIntegrityCheck->setChecked(state.integrity_check_enabled());
 
-   if (state.has_current_password())
-   {
+   if (this->corePasswordDefined = state.password_defined())
       this->ui->butChangePassword->setText("Change the password");
-      this->currentPassword = Common::Hash(state.current_password().hash());
-   }
    else
-   {
       this->ui->butChangePassword->setText("Define a password");
-      this->currentPassword = Common::Hash();
-   }
 
    QList<Common::SharedDir> sharedDirs;
    for (int i = 0; i < state.shared_directory_size(); i++)
@@ -443,7 +437,7 @@ void WidgetSettings::cmbLanguageChanged(int cmbIndex)
 
 void WidgetSettings::changePassword()
 {
-   AskNewPasswordDialog dia(this->currentPassword, this);
+   AskNewPasswordDialog dia(this->corePasswordDefined, this);
    if (dia.exec() == QDialog::Accepted)
    {
       this->coreConnection->setCorePassword(dia.getNewPassword(), dia.getOldPassword());

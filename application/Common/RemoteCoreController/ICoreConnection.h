@@ -82,6 +82,11 @@ namespace RCC
         */
       virtual void connectToCore(const QString& address, quint16 port, Common::Hash password) = 0;
 
+      /**
+        * Same as the method above but takes a plain password, it will be automatically salted.
+        */
+      virtual void connectToCore(const QString& address, quint16 port, const QString& password) = 0;
+
       virtual Common::Hash getRemoteID() const = 0;
 
       virtual bool isLocal() const = 0;
@@ -108,7 +113,11 @@ namespace RCC
         */
       virtual void setCoreLanguage(const QLocale locale) = 0;
 
-      virtual void setCorePassword(Common::Hash newPassword, Common::Hash oldPassword = Common::Hash()) = 0;
+      /**
+        * @param newPassword
+        * @param oldPassword Hased + salted.
+        */
+      virtual void setCorePassword(const QString& newPassword, const QString& oldPassword = QString()) = 0;
 
       /**
         * Get the roots folders (shared directories) of a given peer.

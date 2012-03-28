@@ -22,14 +22,13 @@ using namespace GUI;
 
 #include <QMessageBox>
 
-AskNewPasswordDialog::AskNewPasswordDialog(const Common::Hash& oldPassword, QWidget *parent) :
+AskNewPasswordDialog::AskNewPasswordDialog(bool askOldPassword, QWidget *parent) :
    QDialog(parent),
-   ui(new Ui::AskNewPasswordDialog),
-   oldPassword(oldPassword)
+   ui(new Ui::AskNewPasswordDialog)
 {
    ui->setupUi(this);
 
-   if (oldPassword.isNull())
+   if (!askOldPassword)
    {
       this->ui->lblOldPassword->hide();
       this->ui->txtOldPassword->hide();
@@ -44,16 +43,14 @@ AskNewPasswordDialog::~AskNewPasswordDialog()
    delete this->ui;
 }
 
-Common::Hash AskNewPasswordDialog::getNewPassword() const
+QString AskNewPasswordDialog::getNewPassword() const
 {
-   return Common::Hasher::hashWithSalt(this->ui->txtNewPassword->text());
+   return this->ui->txtNewPassword->text();
 }
 
-Hash AskNewPasswordDialog::getOldPassword() const
+QString AskNewPasswordDialog::getOldPassword() const
 {
-   if (this->oldPassword.isNull())
-      return Common::Hash();
-   return Common::Hasher::hashWithSalt(this->ui->txtOldPassword->text());
+   return this->ui->txtOldPassword->text();
 }
 
 void AskNewPasswordDialog::ok()
@@ -73,9 +70,9 @@ void AskNewPasswordDialog::ok()
       QMessageBox::information(this, "Error", "The password can't contain one or more whitespace");
       return;
    }
-   else if (!this->oldPassword.isNull() && this->oldPassword != Common::Hasher::hash(Common::Hasher::hashWithSalt(this->ui->txtOldPassword->text())))
+   else if (!this->ui->txtOldPassword->isHidden() && this->ui->txtOldPassword->text().isEmpty())
    {
-      QMessageBox::information(this, "Error", "The old password doesn't match");
+      QMessageBox::information(this, "Error", "The old password is required");
       return;
    }
    else

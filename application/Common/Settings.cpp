@@ -201,6 +201,31 @@ void Settings::set(const QString& name, quint32 value)
    }
 }
 
+void Settings::set(const QString& name, quint64 value)
+{
+   QMutexLocker locker(&this->mutex);
+
+   Q_ASSERT(!name.isEmpty());
+   Q_ASSERT(this->settings);
+
+   if (!this->settings)
+      return;
+
+   const google::protobuf::FieldDescriptor* fieldDescriptor = this->descriptor->FindFieldByName(name.toStdString());
+   if (!fieldDescriptor)
+   {
+      printErrorNameNotFound(name);
+      return;
+   }
+   if (fieldDescriptor->type() != google::protobuf::FieldDescriptor::TYPE_UINT64)
+   {
+      printErrorBadType(fieldDescriptor, "uint64");
+      return;
+   }
+
+   this->settings->GetReflection()->SetUInt64(this->settings, fieldDescriptor, value);
+}
+
 void Settings::set(const QString& name, bool value)
 {
    QMutexLocker locker(&this->mutex);
@@ -478,6 +503,12 @@ void Settings::get(const google::protobuf::FieldDescriptor* fieldDescriptor, qui
    {
       value = this->settings->GetReflection()->GetUInt32(*this->settings, fieldDescriptor);
    }
+}
+
+void Settings::get(const google::protobuf::FieldDescriptor* fieldDescriptor, quint64& value) const
+{
+   Q_ASSERT(fieldDescriptor);
+   value = this->settings->GetReflection()->GetUInt64(*this->settings, fieldDescriptor);
 }
 
 void Settings::get(const google::protobuf::FieldDescriptor* fieldDescriptor, bool& value) const

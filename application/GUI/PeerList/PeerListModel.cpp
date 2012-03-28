@@ -106,7 +106,7 @@ QVariant PeerListModel::data(const QModelIndex& index, int role) const
       {
          QString coreVersion = this->peers[index.row()]->coreVersion;
          if (!coreVersion.isEmpty())
-            return tr("Version: %1").arg(coreVersion);
+            return tr("Version %1").arg(coreVersion);
          else
             return QVariant();
       }

@@ -65,8 +65,9 @@ namespace Common
          GUI_EVENT_CHAT_MESSAGES =     0x1011,
          GUI_EVENT_LOG_MESSAGE =       0x1012,
 
-         GUI_AUTHENTICATION =          0x1021,
-         GUI_AUTHENTICATION_RESULT =   0x1022,
+         GUI_ASK_FOR_AUTHENTICATION =  0x1021,
+         GUI_AUTHENTICATION =          0x1022,
+         GUI_AUTHENTICATION_RESULT =   0x1023,
 
          GUI_LANGUAGE =                0x10B1,
 

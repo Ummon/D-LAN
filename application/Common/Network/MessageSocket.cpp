@@ -252,6 +252,7 @@ bool MessageSocket::readMessage()
    case MessageHeader::GUI_STATE_RESULT: return this->readMessage<Protos::Common::Null>();
    case MessageHeader::GUI_EVENT_CHAT_MESSAGES: return this->readMessage<Protos::GUI::EventChatMessages>();
    case MessageHeader::GUI_EVENT_LOG_MESSAGE: return this->readMessage<Protos::GUI::EventLogMessage>();
+   case MessageHeader::GUI_ASK_FOR_AUTHENTICATION: return this->readMessage<Protos::GUI::AskForAuthentication>();
    case MessageHeader::GUI_AUTHENTICATION: return this->readMessage<Protos::GUI::Authentication>();
    case MessageHeader::GUI_AUTHENTICATION_RESULT: return this->readMessage<Protos::GUI::AuthenticationResult>();
    case MessageHeader::GUI_LANGUAGE: return this->readMessage<Protos::GUI::Language>();

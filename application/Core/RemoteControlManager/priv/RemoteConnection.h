@@ -53,6 +53,9 @@ namespace RCM
    class RemoteConnection : public Common::MessageSocket
    {
       Q_OBJECT
+
+      static const int MAX_DELAY_WAITING_AUTH_RES = 5000; // [s]. We close the socket if we don't receive a response after this delay when sending the message 'Protos.GUI.AskForAuthentication'.
+
    protected:
       class Logger : public ILogger
       {
@@ -83,6 +86,7 @@ namespace RCM
 
    private slots:
       void refresh();
+      void closeSocket();
 
       void newChatMessage(const Protos::GUI::EventChatMessages_Message& message);
       void searchFound(const Protos::Common::FindResult& result);
@@ -96,6 +100,7 @@ namespace RCM
       void sendBadPasswordResult();
 
    private:
+      void askForAuthentication();
       void removeGetEntriesResult(const PM::IGetEntriesResult* getEntriesResult);
       void sendLastChatMessages();
 
@@ -111,6 +116,7 @@ namespace RCM
       QSharedPointer<LM::ILoggerHook> loggerHook;
 
       QTimer timerRefresh;
+      QTimer timerCloseSocket;
 
       QList< QSharedPointer<NL::ISearch> > currentSearches;
       QList< QSharedPointer<PM::IGetEntriesResult> > getEntriesResults;
@@ -118,6 +124,10 @@ namespace RCM
       MTRand mtrand;
 
       bool authenticated;
+
+      // We save the current password and salt because some other client may change 'Protos.Core.Settings.remote_password' and 'Protos.Core.Settings.salt'.
+      Common::Hash currentPassword;
+      quint64 currentSalt;
 
 #ifdef DEBUG
       QSharedPointer<LM::ILogger> loggerRefreshState; // A logger especially for the state message.

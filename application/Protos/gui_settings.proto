@@ -8,8 +8,8 @@ package Protos.GUI;
 
 message Settings {
    optional string core_address = 1 [default = "localhost"];
-   optional uint32 core_port = 2 [default = 59485];
-   optional Common.Hash password = 3; // Hashed with salt.
+   optional uint32 core_port = 2 [default = 59485];   
+   optional Common.Hash password = 3; // Hashed with the salt given by the core. See the 'Protos.GUI.AskForAuthentication' message.
    
    optional Common.Language language = 20;
       

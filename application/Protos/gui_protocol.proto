@@ -98,9 +98,7 @@ message State {
    
    required bool integrity_check_enabled = 7;
    
-   // Re-hashed hashed password.
-   // Not set if the password has never been set (initial state).
-   optional Common.Hash current_password = 10;
+   optional bool password_defined = 10 [default = false];
       
    repeated Download download = 4;
    repeated Upload upload = 5;
@@ -148,17 +146,25 @@ message EventLogMessage {
 }
 
 /***** Commands. *****/
-// GUI -> Core
-// id : 0x21
 // Authentication.
-// Must be send for non-local connection as the first message.
+// Always send by the core when a new connection is established.
 // All other messages can't be sent or received without a proper authentication.
-// Authentication tries from a local connection will be ignored by the core.
+// A new salt is randomly generated each time a new connection is created.
+// Core -> GUI
+// id : 0x21
+message AskForAuthentication {
+   required uint64 old_salt = 1;
+   required uint64 new_salt = 2;
+}
+// Password is optional for local connections.
+// GUI -> Core
+// id : 0x22
 message Authentication {
-   required Common.Hash password = 1; // A salt should be added.
+   optional Common.Hash password_old_salt = 1;
+   optional Common.Hash password_new_salt = 2;
 }
 // Core -> GUI
-// id : 0x22
+// id : 0x23
 // If BAD_PASSWORD the core should wait a bit before sending the result (for example 1s) to avoid dictionary attack.
 message AuthenticationResult {
    enum Status {
@@ -177,10 +183,10 @@ message Language {
    required Common.Language language = 1;
 }
 
-
 // GUI -> Core
 // id : 0xD1
 // Change the core password.
+// Both sent passwords are salted with 'AskForAuthentication.new_salt'.
 message ChangePassword {
    required Common.Hash new_password = 1;
    optional Common.Hash old_password = 2; // Only if a password has already been set.

@@ -62,6 +62,7 @@ namespace RCC
       ~InternalCoreConnection();
 
       void connectToCore(const QString& address, quint16 port, Common::Hash password);
+      void connectToCore(const QString& address, quint16 port, const QString& password);
 
       bool isConnected() const;
 
@@ -70,7 +71,7 @@ namespace RCC
       void sendChatMessage(const QString& message);
       void setCoreSettings(const Protos::GUI::CoreSettings settings);
       void setCoreLanguage(const QLocale locale);
-      void setCorePassword(Common::Hash newPassword, Common::Hash oldPassword = Common::Hash());
+      void setCorePassword(const QString& newPassword, const QString& oldPassword = QString());
 
       QSharedPointer<IBrowseResult> browse(const Common::Hash& peerID);
       QSharedPointer<IBrowseResult> browse(const Common::Hash& peerID, const Protos::Common::Entry& entry);
@@ -132,7 +133,13 @@ namespace RCC
 
       QList< QWeakPointer<BrowseResult> > browseResultsWithoutTag;
       QList< QWeakPointer<SearchResult> > searchResultsWithoutTag;
+
       bool authenticated;
+
+      // Temporary text password. Once we got the salt sent by the Core we set 'connectionInfo.password' with the salted password and we erase this member.
+      QString password;
+
+      quint64 currentSalt;
    };
 }
 

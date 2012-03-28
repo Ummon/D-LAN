@@ -34,19 +34,17 @@ namespace GUI
       Q_OBJECT
 
    public:
-      explicit AskNewPasswordDialog(const Common::Hash& oldPassword, QWidget* parent = 0);
+      AskNewPasswordDialog(bool askOldPassword, QWidget* parent = 0);
       ~AskNewPasswordDialog();
 
-      Common::Hash getNewPassword() const;
-      Common::Hash getOldPassword() const;
+      QString getNewPassword() const;
+      QString getOldPassword() const;
 
    private slots:
       void ok();
 
    private:
       Ui::AskNewPasswordDialog* ui;
-
-      Common::Hash oldPassword;
    };
 }
 

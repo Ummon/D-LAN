@@ -111,7 +111,7 @@ namespace GUI
 
       DirListDelegate dirListDelegate;
 
-      Common::Hash currentPassword;
+      bool corePasswordDefined;
    };
 }
 

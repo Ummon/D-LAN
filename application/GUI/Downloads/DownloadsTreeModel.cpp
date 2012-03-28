@@ -230,7 +230,7 @@ bool DownloadsTreeModel::dropMimeData(const QMimeData* data, Qt::DropAction acti
    }
 
    Protos::GUI::MoveDownloads::Position position = Protos::GUI::MoveDownloads::BEFORE;
-   if (where >= (first + last + 1) / 2)
+   if (where > (first + last + 1) / 2)
    {
       end--;
       position = Protos::GUI::MoveDownloads::AFTER;

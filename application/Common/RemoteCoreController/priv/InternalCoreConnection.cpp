@@ -48,7 +48,8 @@ InternalCoreConnection::InternalCoreConnection() :
    Common::MessageSocket(new InternalCoreConnection::Logger()),
    coreStatus(NOT_RUNNING),
    currentHostLookupID(-1),
-   authenticated(false)
+   authenticated(false),
+   currentSalt(0)
 {
    this->startListening();
 }
@@ -77,6 +78,12 @@ void InternalCoreConnection::connectToCore(const QString& address, quint16 port,
       QHostInfo::abortHostLookup(this->currentHostLookupID);
 
    this->currentHostLookupID = QHostInfo::lookupHost(this->connectionInfo.address, this, SLOT(adressResolved(QHostInfo)));
+}
+
+void InternalCoreConnection::connectToCore(const QString& address, quint16 port, const QString& password)
+{
+   this->password = password;
+   this->connectToCore(address, port, Common::Hash());
 }
 
 bool InternalCoreConnection::isConnected() const
@@ -109,13 +116,13 @@ void InternalCoreConnection::setCoreLanguage(const QLocale locale)
    this->sendCurrentLanguage();
 }
 
-void InternalCoreConnection::setCorePassword(Hash newPassword, Hash oldPassword)
+void InternalCoreConnection::setCorePassword(const QString& newPassword, const QString& oldPassword)
 {
    Protos::GUI::ChangePassword passMess;
-   passMess.mutable_new_password()->set_hash(newPassword.getData(), Common::Hash::HASH_SIZE);
+   passMess.mutable_new_password()->set_hash(Common::Hasher::hashWithSalt(newPassword, this->currentSalt).getData(), Common::Hash::HASH_SIZE);
 
    if (!oldPassword.isNull())
-      passMess.mutable_old_password()->set_hash(oldPassword.getData(), Common::Hash::HASH_SIZE);
+      passMess.mutable_old_password()->set_hash(Common::Hasher::hashWithSalt(oldPassword, this->currentSalt).getData(), Common::Hash::HASH_SIZE);
 
    this->send(Common::MessageHeader::GUI_CHANGE_PASSWORD, passMess);
 }
@@ -286,17 +293,7 @@ void InternalCoreConnection::stateChanged(QAbstractSocket::SocketState socketSta
 
    case QAbstractSocket::ConnectedState:
       disconnect(this->socket, SIGNAL(stateChanged(QAbstractSocket::SocketState)), this, SLOT(stateChanged(QAbstractSocket::SocketState)));
-
-      if (this->isLocal())
-      {
-         this->connectedAndAuthenticated();
-      }
-      else
-      {
-         Protos::GUI::Authentication authMessage;
-         authMessage.mutable_password()->set_hash(this->connectionInfo.password.getData(), Common::Hash::HASH_SIZE);
-         this->send(Common::MessageHeader::GUI_AUTHENTICATION, authMessage);
-      }
+      // Now we wait a message 'Protos.GUI.AskForAuthentication' from the Core before being authenticated.
 
    default:;
    }
@@ -323,11 +320,27 @@ void InternalCoreConnection::sendCurrentLanguage()
 
 void InternalCoreConnection::onNewMessage(Common::MessageHeader::MessageType type, const google::protobuf::Message& message)
 {
-   if (type != Common::MessageHeader::GUI_AUTHENTICATION_RESULT && !this->authenticated)
+   // While we are not authenticated we accept only two message types.
+   if (!this->authenticated && type != Common::MessageHeader::GUI_ASK_FOR_AUTHENTICATION && type != Common::MessageHeader::GUI_AUTHENTICATION_RESULT)
       return;
 
    switch (type)
    {
+   case Common::MessageHeader::GUI_ASK_FOR_AUTHENTICATION:
+      {
+         const Protos::GUI::AskForAuthentication& askForAuthentication = static_cast<const Protos::GUI::AskForAuthentication&>(message);
+
+         this->currentSalt = askForAuthentication.new_salt();
+         this->connectionInfo.password = Common::Hasher::hashWithSalt(this->password, this->currentSalt);
+
+         Protos::GUI::Authentication authentication;
+         authentication.mutable_password_old_salt()->set_hash(Common::Hasher::hashWithSalt(Common::Hasher::hashWithSalt(this->password, askForAuthentication.old_salt()), this->currentSalt).getData(), Common::Hash::HASH_SIZE);
+         authentication.mutable_password_new_salt()->set_hash(Common::Hasher::hashWithSalt(this->password, this->currentSalt).getData(), Common::Hash::HASH_SIZE);
+         this->password.clear();
+         this->send(Common::MessageHeader::GUI_AUTHENTICATION, authentication);
+      }
+      break;
+
    case Common::MessageHeader::GUI_AUTHENTICATION_RESULT:
       {
          const Protos::GUI::AuthenticationResult& authenticationResult = static_cast<const Protos::GUI::AuthenticationResult&>(message);
