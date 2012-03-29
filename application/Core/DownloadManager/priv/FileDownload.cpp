@@ -74,8 +74,6 @@ FileDownload::FileDownload(
       this->connectChunkDownloadSignals(this->chunkDownloads.last());
    }
    this->nbHashesKnown = this->chunkDownloads.size();
-
-   this->tryToLinkToAnExistingFile();
 }
 
 FileDownload::~FileDownload()
@@ -94,12 +92,15 @@ FileDownload::~FileDownload()
 
 void FileDownload::start()
 {
+   this->tryToLinkToAnExistingFile();
+
    if (this->hasAValidPeer())
-   {
       this->peerSourceBecomesAvailable();
-      this->updateStatus();
+
+   this->updateStatus();
+
+   if (this->hasAValidPeer())
       this->occupiedPeersDownloadingChunk.newPeer(this->peerSource);
-   }
 
    this->retrieveHashes();
 }
@@ -494,6 +495,8 @@ void FileDownload::setStatus(Status newStatus)
   */
 bool FileDownload::tryToLinkToAnExistingFile()
 {
+   this->localEntry.set_exists(false);
+
    if (!this->chunkDownloads.isEmpty())
    {
       Common::Hashes hashes;
