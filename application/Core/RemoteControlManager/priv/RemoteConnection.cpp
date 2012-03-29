@@ -401,7 +401,7 @@ void RemoteConnection::onNewMessage(Common::MessageHeader::MessageType type, con
          if (currentPassword.isNull() || this->isLocal() || currentPassword == Common::Hash(passMessage.old_password().hash()))
          {
             SETTINGS.set("remote_password", Common::Hash(passMessage.new_password().hash()));
-            SETTINGS.set("salt", passMessage.new_salt());
+            SETTINGS.set("salt", static_cast<quint64>(passMessage.new_salt()));
             SETTINGS.save();
             this->refresh();
          }
