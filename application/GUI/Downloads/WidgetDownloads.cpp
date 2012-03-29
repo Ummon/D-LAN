@@ -327,7 +327,7 @@ void WidgetDownloads::updateCheckBoxElements()
    this->checkBoxModel.addElement(tr("Complete"), true, STATUS_COMPLETE);
    this->checkBoxModel.addElement(tr("Downloading"), true, STATUS_DOWNLOADING);
    this->checkBoxModel.addElement(tr("Queued"), true, STATUS_QUEUED);
-   this->checkBoxModel.addElement(tr("Error"), true, STATUS_ERROR);
+   this->checkBoxModel.addElement(tr("Inactive"), true, STATUS_INACTIVE);
 }
 
 QPair<QList<quint64>, bool> WidgetDownloads::getDownloadIDsToPause() const

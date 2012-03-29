@@ -26,7 +26,7 @@ namespace GUI
       STATUS_COMPLETE = 0x01,
       STATUS_DOWNLOADING = 0x02,
       STATUS_QUEUED = 0x04,
-      STATUS_ERROR = 0x08,
+      STATUS_INACTIVE = 0x08,
    };
 }
 

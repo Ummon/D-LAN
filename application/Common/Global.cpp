@@ -63,7 +63,7 @@ QString Global::getVersionTag()
 
 QString Global::getSystemVersion()
 {
-#ifdef Q_OS_WIN32
+#if defined(Q_OS_WIN32)
    // Reference: http://msdn.microsoft.com/en-us/library/windows/desktop/ms724429(v=vs.85).aspx
    OSVERSIONINFOEX versionInfo;
    memset(&versionInfo, 0, sizeof(versionInfo));
@@ -97,9 +97,9 @@ QString Global::getSystemVersion()
       return QString("Windows 2000");
    }
    return QString("Windows");
-#elif Q_OS_LINUX
+#elif defined(Q_OS_LINUX)
    return QString("Linux");
-#elif Q_OS_DARWIN
+#elif defined(Q_OS_DARWIN)
    return QString("Mac OS X");
 #else
    return QString();

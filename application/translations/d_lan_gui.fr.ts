@@ -465,8 +465,8 @@
     </message>
     <message>
         <location line="+1"/>
-        <source>Error</source>
-        <translation>Erroné</translation>
+        <source>Inactive</source>
+        <translation>Inactif</translation>
     </message>
 </context>
 <context>

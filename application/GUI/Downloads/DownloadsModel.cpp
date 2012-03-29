@@ -145,7 +145,6 @@ QList<int> DownloadsModel::getNonFilteredDownloadIndices(const Protos::GUI::Stat
       switch (state.download(i).status())
       {
       case Protos::GUI::State::Download::QUEUED:
-      case Protos::GUI::State::Download::PAUSED:
          if (!(statusToFilter & STATUS_QUEUED))
             indices << i;
          break;
@@ -161,6 +160,7 @@ QList<int> DownloadsModel::getNonFilteredDownloadIndices(const Protos::GUI::Stat
             indices << i;
          break;
 
+      case Protos::GUI::State::Download::PAUSED:
       case Protos::GUI::State::Download::UNKNOWN_PEER_SOURCE:
       case Protos::GUI::State::Download::ENTRY_NOT_FOUND:
       case Protos::GUI::State::Download::NO_SOURCE:
@@ -169,7 +169,7 @@ QList<int> DownloadsModel::getNonFilteredDownloadIndices(const Protos::GUI::Stat
       case Protos::GUI::State::Download::UNABLE_TO_CREATE_THE_FILE:
       case Protos::GUI::State::Download::UNABLE_TO_RETRIEVE_THE_HASHES:
       case Protos::GUI::State::Download::TRANSFERT_ERROR:
-         if (!(statusToFilter & STATUS_ERROR))
+         if (!(statusToFilter & STATUS_INACTIVE))
             indices << i;
          break;
 
