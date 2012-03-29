@@ -13,8 +13,13 @@ cd $TS_DIR
 lupdate -no-obsolete -codecfortr UTF-8 ../GUI ../Common/RemoteCoreController -ts d_lan_gui.fr.ts d_lan_gui.ko.ts
 lupdate -no-obsolete -codecfortr UTF-8 ../Core -ts d_lan_core.fr.ts d_lan_core.ko.ts
 
-mkdir ../GUI/output/debug/$QM_DIR
-mkdir ../Core/output/debug/$QM_DIR
+
+for SubSystem in GUI Core
+do
+   mkdir ../$SubSystem/output
+   mkdir ../$SubSystem/output/debug
+   mkdir ../$SubSystem/output/debug/$QM_DIR
+done
 
 rm *.qm
 
