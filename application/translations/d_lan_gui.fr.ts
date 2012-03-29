@@ -81,7 +81,7 @@
 <context>
     <name>GUI::D_LAN_GUI</name>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="+113"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="+116"/>
         <source>Show the GUI</source>
         <translation>Afficher le GUI</translation>
     </message>
@@ -133,9 +133,52 @@
     </message>
 </context>
 <context>
+    <name>GUI::DownloadsModel</name>
+    <message>
+        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="+99"/>
+        <source>Unknown source peer: </source>
+        <translation>Source inconnue:  </translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>The source peer doesn&apos;t have the entry: </source>
+        <translation>La source ne possède pas l&apos;élément: </translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>There is no source to download from: </source>
+        <translation>Aucun paire ne possède cet élément: </translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>No incoming folder: </source>
+        <translation>Aucun dossier partagé disponible où mettre l&apos;élément: </translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Not enough free space left: </source>
+        <translation>Pas assez d&apos;espace libre: </translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Unable to create the file: </source>
+        <translation>Impossible de créer le fichier: </translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Unable to retrieve the hashes: </source>
+        <translation>Impossible de récupérer les empeintes: </translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Transfert error: </source>
+        <translation>Erreur de transfert: </translation>
+    </message>
+</context>
+<context>
     <name>GUI::MainWindow</name>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="+198"/>
+        <location filename="../GUI/MainWindow.cpp" line="+202"/>
         <source>Already connected to this address</source>
         <translation>Déjà connecté à cette addresse</translation>
     </message>
@@ -175,7 +218,7 @@
         <translation>Erreur inconnue</translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="+4"/>
         <source>Unable to connect to the core</source>
         <translation>Impossible de se connecter au core</translation>
     </message>
@@ -185,7 +228,7 @@
         <translation>Adresse du core distant:</translation>
     </message>
     <message>
-        <location line="+22"/>
+        <location line="+20"/>
         <source>Core address:</source>
         <translation>Adresse du core:</translation>
     </message>
@@ -205,12 +248,12 @@
         <translation>Entrez le mot de passe</translation>
     </message>
     <message>
-        <location line="-77"/>
+        <location line="-75"/>
         <source>Connected to the core</source>
         <translation>Connecté au core</translation>
     </message>
     <message>
-        <location line="+13"/>
+        <location line="+11"/>
         <source>Connection lost</source>
         <translation>Connexion perdue</translation>
     </message>
@@ -223,6 +266,14 @@
         <location line="+25"/>
         <source>Browse</source>
         <translation>Explorer</translation>
+    </message>
+</context>
+<context>
+    <name>GUI::PeerListModel</name>
+    <message>
+        <location filename="../GUI/PeerList/PeerListModel.cpp" line="+109"/>
+        <source>Version %1</source>
+        <translation>Version %1</translation>
     </message>
 </context>
 <context>
@@ -358,7 +409,7 @@
 <context>
     <name>GUI::WidgetDownloads</name>
     <message>
-        <location filename="../GUI/Downloads/WidgetDownloads.cpp" line="+209"/>
+        <location filename="../GUI/Downloads/WidgetDownloads.cpp" line="+189"/>
         <source>Open location</source>
         <translation>Ouvrir le dossier</translation>
     </message>
@@ -384,16 +435,16 @@
     </message>
     <message>
         <location line="+109"/>
-        <source>Switch to list view</source>
-        <translation>Basculer sur la vue en liste</translation>
+        <source>Switch to file list view</source>
+        <translation>Basculer sur la liste des fichiers</translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location line="+10"/>
         <source>Switch to tree view</source>
         <translation>Basculer sur la vue en arbre</translation>
     </message>
     <message>
-        <location line="+13"/>
+        <location line="+14"/>
         <source>&lt;All&gt;</source>
         <translation>&lt;Tous&gt;</translation>
     </message>
@@ -434,24 +485,24 @@
 <context>
     <name>GUI::WidgetSettings</name>
     <message>
-        <location filename="../GUI/Settings/WidgetSettings.cpp" line="+357"/>
+        <location filename="../GUI/Settings/WidgetSettings.cpp" line="+362"/>
         <source>Connecting..</source>
         <translation>Connexion..</translation>
     </message>
     <message>
         <location line="+6"/>
         <location line="+16"/>
-        <location line="+14"/>
+        <location line="+17"/>
         <source>Connect</source>
         <translation>Connecter</translation>
     </message>
     <message>
-        <location line="-194"/>
+        <location line="-192"/>
         <source>Interface not active</source>
         <translation>Interface inactive</translation>
     </message>
     <message>
-        <location line="+308"/>
+        <location line="+303"/>
         <source>Remove the shared folder</source>
         <translation>Enlever le dossier partagé</translation>
     </message>
@@ -466,7 +517,7 @@
         <translation>Déplacer vers le bas</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+3"/>
         <source>Open location</source>
         <translation>Ouvrir le dossier</translation>
     </message>
@@ -583,9 +634,9 @@
 <context>
     <name>WidgetBrowse</name>
     <message>
-        <location filename="../GUI/Browse/WidgetBrowse.ui" line="+45"/>
-        <location filename="../GUI/.tmp/debug/ui_WidgetBrowse.h" line="+66"/>
-        <location filename="../GUI/.tmp/release/ui_WidgetBrowse.h" line="+66"/>
+        <location filename="../GUI/Browse/WidgetBrowse.ui" line="+48"/>
+        <location filename="../GUI/.tmp/debug/ui_WidgetBrowse.h" line="+67"/>
+        <location filename="../GUI/.tmp/release/ui_WidgetBrowse.h" line="+67"/>
         <source>Download selected items to the first shared folder with enough free space</source>
         <translation>Télécharger les éléments sélectionnés dans le premier dossier partagé avec assez de place libre</translation>
     </message>
@@ -618,13 +669,13 @@
     <name>WidgetDownloads</name>
     <message>
         <location filename="../GUI/Downloads/WidgetDownloads.ui" line="+14"/>
-        <location filename="../GUI/.tmp/debug/ui_WidgetDownloads.h" line="+118"/>
-        <location filename="../GUI/.tmp/release/ui_WidgetDownloads.h" line="+118"/>
+        <location filename="../GUI/.tmp/debug/ui_WidgetDownloads.h" line="+129"/>
+        <location filename="../GUI/.tmp/release/ui_WidgetDownloads.h" line="+129"/>
         <source>Downloads</source>
         <translation>Téléchargements</translation>
     </message>
     <message>
-        <location line="+30"/>
+        <location line="+34"/>
         <location filename="../GUI/.tmp/debug/ui_WidgetDownloads.h" line="+1"/>
         <location filename="../GUI/.tmp/release/ui_WidgetDownloads.h" line="+1"/>
         <source>Item shown :</source>
@@ -632,8 +683,8 @@
     </message>
     <message>
         <location line="+21"/>
-        <location filename="../GUI/.tmp/debug/ui_WidgetDownloads.h" line="+2"/>
-        <location filename="../GUI/.tmp/release/ui_WidgetDownloads.h" line="+2"/>
+        <location filename="../GUI/.tmp/debug/ui_WidgetDownloads.h" line="+5"/>
+        <location filename="../GUI/.tmp/release/ui_WidgetDownloads.h" line="+5"/>
         <source>Remove completed files</source>
         <translation>Enlever les fichiers complets</translation>
     </message>
@@ -680,8 +731,8 @@
     <name>WidgetSettings</name>
     <message>
         <location filename="../GUI/Settings/WidgetSettings.ui" line="+14"/>
-        <location filename="../GUI/.tmp/debug/ui_WidgetSettings.h" line="+365"/>
-        <location filename="../GUI/.tmp/release/ui_WidgetSettings.h" line="+365"/>
+        <location filename="../GUI/.tmp/debug/ui_WidgetSettings.h" line="+366"/>
+        <location filename="../GUI/.tmp/release/ui_WidgetSettings.h" line="+366"/>
         <source>Settings</source>
         <translation>Paramètres</translation>
     </message>
@@ -725,14 +776,14 @@
         <location filename="../GUI/.tmp/debug/ui_WidgetSettings.h" line="+4"/>
         <location filename="../GUI/.tmp/release/ui_WidgetSettings.h" line="+4"/>
         <source>Move down the selected shared directory</source>
-        <translation>Déplacé la dossier sélectionné vers le haut</translation>
+        <translation>Déplacer la dossier sélectionné vers le haut</translation>
     </message>
     <message>
         <location line="+14"/>
         <location filename="../GUI/.tmp/debug/ui_WidgetSettings.h" line="+4"/>
         <location filename="../GUI/.tmp/release/ui_WidgetSettings.h" line="+4"/>
         <source>Move up the selected shared directory</source>
-        <translation>Déplacé le dossier sélectionné vers le bas</translation>
+        <translation>Déplacer le dossier sélectionné vers le bas</translation>
     </message>
     <message>
         <location line="+14"/>
@@ -763,13 +814,7 @@
         <translation>IPv6</translation>
     </message>
     <message>
-        <location line="+6"/>
-        <location line="+10"/>
-        <source>grpAddressesToListenTo</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-3"/>
+        <location line="+13"/>
         <location filename="../GUI/.tmp/debug/ui_WidgetSettings.h" line="+1"/>
         <location filename="../GUI/.tmp/release/ui_WidgetSettings.h" line="+1"/>
         <source>IPv4</source>
@@ -825,14 +870,14 @@
         <translation>Changer le mot de passe</translation>
     </message>
     <message>
-        <location line="+36"/>
+        <location line="+39"/>
         <location filename="../GUI/.tmp/debug/ui_WidgetSettings.h" line="+1"/>
         <location filename="../GUI/.tmp/release/ui_WidgetSettings.h" line="+1"/>
         <source>Disconnect</source>
         <translation>Se déconnecter</translation>
     </message>
     <message>
-        <location line="-121"/>
+        <location line="-124"/>
         <location filename="../GUI/.tmp/debug/ui_WidgetSettings.h" line="-10"/>
         <location filename="../GUI/.tmp/release/ui_WidgetSettings.h" line="-10"/>
         <source>When activated all received data will be verified against their hashes.  It may consume CPU resources.</source>
