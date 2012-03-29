@@ -140,37 +140,37 @@
         <translation>Source inconnue:  </translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="+3"/>
         <source>The source peer doesn&apos;t have the entry: </source>
         <translation>La source ne possède pas l&apos;élément: </translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="+3"/>
         <source>There is no source to download from: </source>
         <translation>Aucun paire ne possède cet élément: </translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="+3"/>
         <source>No incoming folder: </source>
         <translation>Aucun dossier partagé disponible où mettre l&apos;élément: </translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="+3"/>
         <source>Not enough free space left: </source>
         <translation>Pas assez d&apos;espace libre: </translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="+3"/>
         <source>Unable to create the file: </source>
         <translation>Impossible de créer le fichier: </translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="+3"/>
         <source>Unable to retrieve the hashes: </source>
         <translation>Impossible de récupérer les empeintes: </translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="+3"/>
         <source>Transfert error: </source>
         <translation>Erreur de transfert: </translation>
     </message>
@@ -502,7 +502,17 @@
         <translation>Interface inactive</translation>
     </message>
     <message>
-        <location line="+303"/>
+        <location line="+108"/>
+        <source>Change the password</source>
+        <translation>Changer le mot de passe</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Define a password</source>
+        <translation>Définir un mot de passe</translation>
+    </message>
+    <message>
+        <location line="+193"/>
         <source>Remove the shared folder</source>
         <translation>Enlever le dossier partagé</translation>
     </message>

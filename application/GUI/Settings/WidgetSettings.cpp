@@ -314,9 +314,9 @@ void WidgetSettings::newState(const Protos::GUI::State& state)
       this->ui->chkEnableIntegrityCheck->setChecked(state.integrity_check_enabled());
 
    if (this->corePasswordDefined = state.password_defined())
-      this->ui->butChangePassword->setText("Change the password");
+      this->ui->butChangePassword->setText(tr("Change the password"));
    else
-      this->ui->butChangePassword->setText("Define a password");
+      this->ui->butChangePassword->setText(tr("Define a password"));
 
    QList<Common::SharedDir> sharedDirs;
    for (int i = 0; i < state.shared_directory_size(); i++)
