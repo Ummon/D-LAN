@@ -97,20 +97,28 @@ QVariant DownloadsModel::getData(const Protos::GUI::State::Download& download, c
          {
          case Protos::GUI::State::Download::UNKNOWN_PEER_SOURCE:
             toolTip += tr("Unknown source peer: ");
+            break;
          case Protos::GUI::State::Download::ENTRY_NOT_FOUND:
             toolTip += tr("The source peer doesn't have the entry: ");
+            break;
          case Protos::GUI::State::Download::NO_SOURCE:
             toolTip += tr("There is no source to download from: ");
+            break;
          case Protos::GUI::State::Download::NO_SHARED_DIRECTORY_TO_WRITE:
             toolTip += tr("No incoming folder: ");
+            break;
          case Protos::GUI::State::Download::NO_ENOUGH_FREE_SPACE:
             toolTip += tr("Not enough free space left: ");
+            break;
          case Protos::GUI::State::Download::UNABLE_TO_CREATE_THE_FILE:
             toolTip += tr("Unable to create the file: ");
+            break;
          case Protos::GUI::State::Download::UNABLE_TO_RETRIEVE_THE_HASHES:
             toolTip += tr("Unable to retrieve the hashes: ");
+            break;
          case Protos::GUI::State::Download::TRANSFERT_ERROR:
             toolTip += tr("Transfert error: ");
+            break;
          default:;
          }
          toolTip += this->getPath(index);
