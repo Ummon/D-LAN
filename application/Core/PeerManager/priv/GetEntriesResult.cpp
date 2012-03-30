@@ -28,16 +28,17 @@ GetEntriesResult::GetEntriesResult(const Protos::Core::GetEntries& dirs, QShared
 {
 }
 
-GetEntriesResult::~GetEntriesResult()
-{
-   disconnect(this->socket.data(), SIGNAL(newMessage(Common::MessageHeader::MessageType, const google::protobuf::Message&)), this, SLOT(newMessage(Common::MessageHeader::MessageType, const google::protobuf::Message&)));
-}
-
 void GetEntriesResult::start()
 {
    connect(this->socket.data(), SIGNAL(newMessage(Common::MessageHeader::MessageType, const google::protobuf::Message&)), this, SLOT(newMessage(Common::MessageHeader::MessageType, const google::protobuf::Message&)), Qt::DirectConnection);
    socket->send(Common::MessageHeader::CORE_GET_ENTRIES, this->dirs);
    this->startTimer();
+}
+
+void GetEntriesResult::doDeleteLater()
+{
+   disconnect(this->socket.data(), SIGNAL(newMessage(Common::MessageHeader::MessageType, const google::protobuf::Message&)), this, SLOT(newMessage(Common::MessageHeader::MessageType, const google::protobuf::Message&)));
+   this->deleteLater();
 }
 
 void GetEntriesResult::newMessage(Common::MessageHeader::MessageType type, const google::protobuf::Message& message)

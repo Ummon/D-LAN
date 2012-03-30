@@ -42,6 +42,11 @@ namespace PM
       virtual void start() = 0;
 
       /**
+        * Never call this method, only for internal purpose.
+        */
+      virtual void doDeleteLater() = 0;
+
+      /**
         * If there is an error during the streaming, it can be reported by calling this method.
         */
       virtual void setStatus(ISocket::FinishedStatus status) = 0;

@@ -41,9 +41,9 @@ namespace PM
       Q_OBJECT
    public:
       GetChunkResult(const Protos::Core::GetChunk& chunk, QSharedPointer<Socket> socket);
-      ~GetChunkResult();
       void start();
       void setStatus(ISocket::FinishedStatus status);
+      void doDeleteLater();
 
    private slots:
       void newMessage(Common::MessageHeader::MessageType type, const google::protobuf::Message& message);

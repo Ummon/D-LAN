@@ -40,8 +40,8 @@ namespace PM
       Q_OBJECT
    public:
       GetHashesResult(const Protos::Common::Entry& file, QSharedPointer<Socket> socket);
-      ~GetHashesResult();
       void start();
+      void doDeleteLater();
 
    private slots:
       void newMessage(Common::MessageHeader::MessageType type, const google::protobuf::Message& message);

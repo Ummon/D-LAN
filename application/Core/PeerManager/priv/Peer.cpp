@@ -161,28 +161,25 @@ void Peer::update(
 QSharedPointer<IGetEntriesResult> Peer::getEntries(const Protos::Core::GetEntries& dirs)
 {
    return QSharedPointer<IGetEntriesResult>(
-      new GetEntriesResult(dirs, this->connectionPool.getASocket())
+      new GetEntriesResult(dirs, this->connectionPool.getASocket()),
+      &IGetEntriesResult::doDeleteLater
    );
 }
 
 QSharedPointer<IGetHashesResult> Peer::getHashes(const Protos::Common::Entry& file)
 {
    return QSharedPointer<IGetHashesResult>(
-      new GetHashesResult(file, this->connectionPool.getASocket())
+      new GetHashesResult(file, this->connectionPool.getASocket()),
+      &IGetHashesResult::doDeleteLater
    );
 }
 
-QSharedPointer<IGetChunkResult> Peer::getChunk(const Protos::Core::GetChunk& chunk, bool deleteLater)
+QSharedPointer<IGetChunkResult> Peer::getChunk(const Protos::Core::GetChunk& chunk)
 {
-   if (deleteLater)
-      return QSharedPointer<IGetChunkResult>(
-         new GetChunkResult(chunk, this->connectionPool.getASocket()),
-         &QObject::deleteLater
-      );
-   else
-      return QSharedPointer<IGetChunkResult>(
-         new GetChunkResult(chunk, this->connectionPool.getASocket())
-      );
+   return QSharedPointer<IGetChunkResult>(
+      new GetChunkResult(chunk, this->connectionPool.getASocket()),
+      &IGetChunkResult::doDeleteLater
+   );
 }
 
 void Peer::newConnexion(QTcpSocket* tcpSocket)

@@ -39,8 +39,8 @@ namespace PM
       Q_OBJECT
    public:
       GetEntriesResult(const Protos::Core::GetEntries& dirs, QSharedPointer<Socket> socket);
-      ~GetEntriesResult();
       void start();
+      void doDeleteLater();
 
    private slots:
       void newMessage(Common::MessageHeader::MessageType type, const google::protobuf::Message& message);

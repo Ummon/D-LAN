@@ -28,12 +28,6 @@ GetHashesResult::GetHashesResult(const Protos::Common::Entry& file, QSharedPoint
 {
 }
 
-GetHashesResult::~GetHashesResult()
-{
-   disconnect(this->socket.data(), SIGNAL(newMessage(Common::MessageHeader::MessageType, const google::protobuf::Message&)), this, SLOT(newMessage(Common::MessageHeader::MessageType, const google::protobuf::Message&)));
-   this->socket->finished();
-}
-
 void GetHashesResult::start()
 {
    Protos::Core::GetHashes message;
@@ -41,6 +35,13 @@ void GetHashesResult::start()
    connect(this->socket.data(), SIGNAL(newMessage(Common::MessageHeader::MessageType, const google::protobuf::Message&)), this, SLOT(newMessage(Common::MessageHeader::MessageType, const google::protobuf::Message&)), Qt::DirectConnection);
    socket->send(Common::MessageHeader::CORE_GET_HASHES, message);
    this->startTimer();
+}
+
+void GetHashesResult::doDeleteLater()
+{
+   disconnect(this->socket.data(), SIGNAL(newMessage(Common::MessageHeader::MessageType, const google::protobuf::Message&)), this, SLOT(newMessage(Common::MessageHeader::MessageType, const google::protobuf::Message&)));
+   this->socket->finished();
+   this->deleteLater();
 }
 
 void GetHashesResult::newMessage(Common::MessageHeader::MessageType type, const google::protobuf::Message& message)

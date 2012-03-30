@@ -39,6 +39,11 @@ namespace PM
       virtual ~IGetHashesResult() {}
       virtual void start() = 0;
 
+      /**
+        * Never call this method, only for internal purpose.
+        */
+      virtual void doDeleteLater() = 0;
+
    signals:
       void result(const Protos::Core::GetHashesResult&);
       void nextHash(const Common::Hash&);

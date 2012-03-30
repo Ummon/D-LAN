@@ -114,7 +114,7 @@ namespace PM
         * Ask to download a chunk.
         * @param deleteLater If you want to use 'QObject::deleteLate()' instead of the simple 'delete'.
         */
-      virtual QSharedPointer<IGetChunkResult> getChunk(const Protos::Core::GetChunk& chunk, bool deleteLater = false) = 0;
+      virtual QSharedPointer<IGetChunkResult> getChunk(const Protos::Core::GetChunk& chunk) = 0;
    };
 }
 #endif
