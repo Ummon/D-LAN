@@ -176,7 +176,7 @@ void DownloadQueue::moveDownloads(const QList<quint64>& downloadIDRefs, const QL
   * It uses QList::erase(iterator begin, iterator end) to improve the performance.
   * @return Returns 'true' is the list has been altered.
   */
-bool DownloadQueue::removeDownloads(DownloadPredicate& predicate)
+bool DownloadQueue::removeDownloads(const DownloadPredicate& predicate)
 {
    bool queueChanged = false;
    QList<Download*> downloadsToDelete;

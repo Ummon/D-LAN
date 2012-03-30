@@ -28,29 +28,29 @@ namespace DM
 
    struct DownloadPredicate
    {
-      virtual bool operator() (Download* download) = 0;
+      virtual bool operator() (const Download* download) const = 0;
       virtual ~DownloadPredicate() {}
    };
 
    struct IsDownloable : public DownloadPredicate
    {
-      bool operator() (Download* download);
+      bool operator() (const Download* download) const;
    };
 
    struct IsADirectory : public DownloadPredicate
    {
-      bool operator() (Download* download);
+      bool operator() (const Download* download) const;
    };
 
    struct IsComplete : public DownloadPredicate
    {
-      bool operator() (Download* download);
+      bool operator() (const Download* download) const;
    };
 
    struct IsContainedInAList : public DownloadPredicate
    {
-      IsContainedInAList(QList<quint64> downloadIDs);
-      bool operator() (Download* download);
+      IsContainedInAList(const QList<quint64>& downloadIDs);
+      bool operator() (const Download* download) const;
 
    private:
       QSet<quint64> downloadIDs; // We us a QSet to decrease the complexity.

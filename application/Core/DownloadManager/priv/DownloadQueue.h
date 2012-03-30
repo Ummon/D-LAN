@@ -56,7 +56,7 @@ namespace DM
       bool isAPeerSource(const Common::Hash& peerID) const;
 
       void moveDownloads(const QList<quint64>& downloadIDRefs, const QList<quint64>& downloadIDs, Protos::GUI::MoveDownloads::Position position);
-      bool removeDownloads(DownloadPredicate& predicate);
+      bool removeDownloads(const DownloadPredicate& predicate);
       bool pauseDownloads(QList<quint64> IDs, bool pause = true);
       bool isEntryAlreadyQueued(const Protos::Common::Entry& localEntry, const Common::Hash& peerSourceID);
 

@@ -24,28 +24,28 @@ using namespace DM;
 #include <priv/FileDownload.h>
 #include <priv/DirDownload.h>
 
-bool IsDownloable::operator() (Download* download)
+bool IsDownloable::operator() (const Download* download) const
 {
-   FileDownload* fileDownload = dynamic_cast<FileDownload*>(download);
+   const FileDownload* fileDownload = dynamic_cast<const FileDownload*>(download);
    return fileDownload && fileDownload->getStatus() != COMPLETE && fileDownload->getStatus() != DELETED;
 }
 
-bool IsADirectory::operator() (Download* download)
+bool IsADirectory::operator() (const Download* download) const
 {
-   return dynamic_cast<DirDownload*>(download) != 0;
+   return dynamic_cast<const DirDownload*>(download) != 0;
 }
 
-bool IsComplete::operator() (Download* download)
+bool IsComplete::operator() (const Download* download) const
 {
    return download->getStatus() == COMPLETE;
 }
 
-IsContainedInAList::IsContainedInAList(QList<quint64> downloadIDs) :
+IsContainedInAList::IsContainedInAList(const QList<quint64>& downloadIDs) :
    downloadIDs(downloadIDs.toSet())
 {
 }
 
-bool IsContainedInAList::operator() (Download* download)
+bool IsContainedInAList::operator() (const Download* download) const
 {
    return this->downloadIDs.contains(download->getID());
 }
