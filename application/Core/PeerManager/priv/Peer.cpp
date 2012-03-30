@@ -172,11 +172,17 @@ QSharedPointer<IGetHashesResult> Peer::getHashes(const Protos::Common::Entry& fi
    );
 }
 
-QSharedPointer<IGetChunkResult> Peer::getChunk(const Protos::Core::GetChunk& chunk)
+QSharedPointer<IGetChunkResult> Peer::getChunk(const Protos::Core::GetChunk& chunk, bool deleteLater)
 {
-   return QSharedPointer<IGetChunkResult>(
-      new GetChunkResult(chunk, this->connectionPool.getASocket())
-   );
+   if (deleteLater)
+      return QSharedPointer<IGetChunkResult>(
+         new GetChunkResult(chunk, this->connectionPool.getASocket()),
+         &QObject::deleteLater
+      );
+   else
+      return QSharedPointer<IGetChunkResult>(
+         new GetChunkResult(chunk, this->connectionPool.getASocket())
+      );
 }
 
 void Peer::newConnexion(QTcpSocket* tcpSocket)

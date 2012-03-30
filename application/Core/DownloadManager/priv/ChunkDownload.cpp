@@ -366,7 +366,7 @@ bool ChunkDownload::startDownloading()
    Protos::Core::GetChunk getChunkMess;
    getChunkMess.mutable_chunk()->set_hash(this->chunkHash.getData(), Common::Hash::HASH_SIZE);
    getChunkMess.set_offset(this->chunk->getKnownBytes());
-   this->getChunkResult = this->currentDownloadingPeer->getChunk(getChunkMess);
+   this->getChunkResult = this->currentDownloadingPeer->getChunk(getChunkMess, true);
    connect(this->getChunkResult.data(), SIGNAL(result(const Protos::Core::GetChunkResult&)), this, SLOT(result(const Protos::Core::GetChunkResult&)), Qt::DirectConnection);
    connect(this->getChunkResult.data(), SIGNAL(stream(QSharedPointer<PM::ISocket>)), this, SLOT(stream(QSharedPointer<PM::ISocket>)), Qt::DirectConnection);
    connect(this->getChunkResult.data(), SIGNAL(timeout()), this, SLOT(getChunkTimeout()), Qt::DirectConnection);
@@ -409,8 +409,7 @@ void ChunkDownload::stream(QSharedPointer<PM::ISocket> socket)
 {
    this->socket = socket;
    this->socket->setReadBufferSize(SETTINGS.get<quint32>("socket_buffer_size"));
-
-   threadPool.run(this);
+   this->threadPool.run(this);
 }
 
 void ChunkDownload::getChunkTimeout()
