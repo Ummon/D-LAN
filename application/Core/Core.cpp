@@ -60,7 +60,7 @@ Core::Core(bool resetSettings, QLocale locale)
             Common::Global::setDataFolder(Common::Global::ROAMING, roamingSystem);
          }
 
-         if (resetSettings && SETTINGS.load())
+         if (SETTINGS.load() && resetSettings)
          {
             const QString nick = SETTINGS.get<QString>("nick");
             const Common::Hash peerID = SETTINGS.get<Common::Hash>("peer_id");
