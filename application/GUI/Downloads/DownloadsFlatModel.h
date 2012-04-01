@@ -28,7 +28,7 @@ namespace GUI
    class DownloadsFlatModel : public DownloadsModel
    {
       Q_OBJECT
-      static const int WEIGHT_LAST_ETA = 5; // Used in the weighted mean computation.
+      static const int WEIGHT_LAST_ETA = 3; // Used in the weighted mean computation.
 
    public:
       DownloadsFlatModel(QSharedPointer<RCC::ICoreConnection> coreConnection, const PeerListModel& peerListModel, const DirListModel& sharedDirsModel, const IFilter<DownloadFilterStatus>& filter);

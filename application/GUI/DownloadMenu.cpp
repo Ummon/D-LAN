@@ -41,13 +41,16 @@ void DownloadMenu::show(const QPoint& globalPosition)
 {
    QMenu menu;
 
-   QAction* actionDownload = new QAction(
-      QIcon(":/icons/ressources/download.png"),
-      tr("Download selected items to the first shared folder with enough free space"),
-      &menu
-   );
-   connect(actionDownload, SIGNAL(triggered()), this, SIGNAL(download()));
-   menu.addAction(actionDownload);
+   if (this->sharedDirsModel.getDirs().size() > 0)
+   {
+      QAction* actionDownload = new QAction(
+         QIcon(":/icons/ressources/download.png"),
+         tr("Download selected items to the first shared folder with enough free space"),
+         &menu
+      );
+      connect(actionDownload, SIGNAL(triggered()), this, SIGNAL(download()));
+      menu.addAction(actionDownload);
+   }
 
    for (QListIterator<Common::SharedDir> i(this->sharedDirsModel.getDirs()); i.hasNext();)
    {

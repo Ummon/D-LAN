@@ -168,17 +168,20 @@ void WidgetDownloads::changeEvent(QEvent* event)
 }
 
 void WidgetDownloads::displayContextMenuDownloads(const QPoint& point)
-{
-   // If there is at least one complete or downloading file we show a menu action to open the file location.
+{   
    bool showOpenLocation = false;
-   QModelIndexList selectedRows = this->ui->tblDownloads->selectionModel()->selectedRows();
-   for (QListIterator<QModelIndex> i(selectedRows); i.hasNext();)
+   // If the connection isn't remote and there is at least one complete or downloading file we show a menu action to open the file location.
+   if (this->coreConnection->isLocal())
    {
-      const QModelIndex& index = i.next();
-      if (this->currentDownloadsModel->isFileLocationKnown(index))
+      QModelIndexList selectedRows = this->ui->tblDownloads->selectionModel()->selectedRows();
+      for (QListIterator<QModelIndex> i(selectedRows); i.hasNext();)
       {
-         showOpenLocation = true;
-         break;
+         const QModelIndex& index = i.next();
+         if (this->currentDownloadsModel->isFileLocationKnown(index))
+         {
+            showOpenLocation = true;
+            break;
+         }
       }
    }
 
