@@ -453,6 +453,7 @@ bool File::computeHashes(int n, int* amountHashed)
             throw IOErrorException();
          case 0:
             endOfFile = true;
+            this->size = bytesReadChunk + bytesReadTotal + bytesSkipped;
             goto endReading;
          }
 
@@ -469,18 +470,26 @@ bool File::computeHashes(int n, int* amountHashed)
          if (amountHashed != 0)
             *amountHashed += bytesReadChunk;
 
+         const Common::Hash& hash = hasher.getResult();
+
          if (this->chunks.size() <= chunkNum) // The size of the file has increased during the read..
-            this->chunks.append(QSharedPointer<Chunk>(new Chunk(this, chunkNum, bytesReadChunk, hasher.getResult())));
+         {
+            this->chunks.append(QSharedPointer<Chunk>(new Chunk(this, chunkNum, bytesReadChunk, hash)));
+            this->cache->onChunkHashKnown(this->chunks[chunkNum]);
+         }
          else
          {
-            if (this->chunks[chunkNum]->hasHash())
-               this->cache->onChunkRemoved(this->chunks[chunkNum]); // To remove the chunk from the chunk index (TODO: find a more elegant way).
+            if (this->chunks[chunkNum]->getHash() != hash)
+            {
+               if (this->chunks[chunkNum]->hasHash())
+                  this->cache->onChunkRemoved(this->chunks[chunkNum]); // To remove the chunk from the chunk index (TODO: find a more elegant way).
 
-            this->chunks[chunkNum]->setHash(hasher.getResult());
-            this->chunks[chunkNum]->setKnownBytes(bytesReadChunk);
+               this->chunks[chunkNum]->setHash(hash);
+               this->chunks[chunkNum]->setKnownBytes(bytesReadChunk);
+
+               this->cache->onChunkHashKnown(this->chunks[chunkNum]);
+            }
          }
-
-         this->cache->onChunkHashKnown(this->chunks[chunkNum]);
 
          if (--n == 0)
             break;
