@@ -26,7 +26,6 @@ using namespace PM;
 GetChunkResult::GetChunkResult(const Protos::Core::GetChunk& chunk, QSharedPointer<Socket> socket) :
    IGetChunkResult(SETTINGS.get<quint32>("socket_timeout")), chunk(chunk), socket(socket), status(ISocket::SFS_OK)
 {
-   connect(this, SIGNAL(destroyed(QObject*)), this, SLOT(destroyedSlot(QObject*)));
 }
 
 void GetChunkResult::start()
