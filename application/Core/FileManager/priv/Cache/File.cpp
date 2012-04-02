@@ -30,6 +30,7 @@ using namespace FM;
 #include <QElapsedTimer>
 
 #include <Common/Global.h>
+#include <Common/FileLocker.h>
 #include <Common/Settings.h>
 #include <Common/ProtoHelper.h>
 
@@ -392,16 +393,25 @@ bool File::computeHashes(int n, int* amountHashed)
 
    this->hashing = true;
 
-   L_DEBU(QString("Computing the hash for %1").arg(this->getFullPath()));
+   const QString& filePath = this->getFullPath();
+
+   L_DEBU(QString("Computing the hash for %1").arg(filePath));
 
    Common::Hasher hasher;
 
-   QFile file(this->getFullPath());
+   Common::FileLocker fileLocker(filePath, Common::FileLocker::READ);
+   if (!fileLocker.isLocked())
+   {
+      L_WARN(QString("Unable to acquire the lock for this file : %1").arg(filePath));
+      throw IOErrorException();
+   }
+
+   QFile file(filePath);
    if (!file.open(QIODevice::ReadOnly | QIODevice::Unbuffered)) // Same performance with or without "QIODevice::Unbuffered".
    {
       this->toStopHashing = false;
       this->hashing = false;
-      L_WARN(QString("Unable to open this file : %1").arg(this->getFullPath()));
+      L_WARN(QString("Unable to open this file : %1").arg(filePath));
       throw IOErrorException();
    }
 
@@ -449,7 +459,7 @@ bool File::computeHashes(int n, int* amountHashed)
          switch (bytesRead)
          {
          case -1:
-            L_ERRO(QString("Error during reading the file %1").arg(this->getFullPath()));
+            L_ERRO(QString("Error during reading the file %1").arg(filePath));
             throw IOErrorException();
          case 0:
             endOfFile = true;
@@ -518,10 +528,10 @@ bool File::computeHashes(int n, int* amountHashed)
    {
       if (n != 0)
       {
-         L_DEBU(QString("The file content has changed during the hashes computing process. File = %1, bytes read = %2, previous size = %3").arg(this->getFullPath()).arg(bytesReadTotal).arg(this->size));
+         L_DEBU(QString("The file content has changed during the hashes computing process. File = %1, bytes read = %2, previous size = %3").arg(filePath).arg(bytesReadTotal).arg(this->size));
          this->dir->fileSizeChanged(this->size, bytesReadTotal + bytesSkipped);
          this->size = bytesReadTotal + bytesSkipped;
-         this->dateLastModified = QFileInfo(this->getFullPath()).lastModified();
+         this->dateLastModified = QFileInfo(filePath).lastModified();
 
          if (bytesReadTotal + bytesSkipped < this->size) // In this case, maybe some chunk must be deleted.
             for (int i = this->getNbChunks(); i < this->chunks.size(); i++)
