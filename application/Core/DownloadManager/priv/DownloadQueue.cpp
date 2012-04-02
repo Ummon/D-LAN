@@ -239,12 +239,19 @@ bool DownloadQueue::pauseDownloads(QList<quint64> IDs, bool pause)
    return stateChanged;
 }
 
-bool DownloadQueue::isEntryAlreadyQueued(const Protos::Common::Entry& localEntry, const Common::Hash& peerSourceID)
+/**
+  * To know if a given entry is already in queue. It depends of (shared dir id, name, path).
+  */
+bool DownloadQueue::isEntryAlreadyQueued(const Protos::Common::Entry& localEntry)
 {
-   for (QMultiHash<Common::Hash, Download*>::iterator i = this->downloadsIndexedBySourcePeerID.find(peerSourceID); i != this->downloadsIndexedBySourcePeerID.end() && i.key() == peerSourceID; ++i)
+   for (QListIterator<Download*> i(this->downloads); i.hasNext();)
    {
-      Download* download = i.value();
-      if (download->getLocalEntry().shared_dir().id().hash() == localEntry.shared_dir().id().hash() && download->getLocalEntry().path() == localEntry.path() && download->getLocalEntry().name() == localEntry.name())
+      const Download* download = i.next();
+      if (
+         download->getLocalEntry().name() == localEntry.name() &&
+         download->getLocalEntry().path() == localEntry.path() &&
+         (!localEntry.has_shared_dir() || download->getLocalEntry().shared_dir().id().hash() == localEntry.shared_dir().id().hash())
+      )
          return true;
    }
    return false;

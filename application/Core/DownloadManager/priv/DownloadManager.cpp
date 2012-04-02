@@ -19,6 +19,8 @@
 #include <priv/DownloadManager.h>
 using namespace DM;
 
+#include <QStringBuilder>
+
 #include <Protos/queue.pb.h>
 
 #include <Common/Settings.h>
@@ -107,10 +109,13 @@ Download* DownloadManager::addDownload(const Protos::Common::Entry& remoteEntry,
 Download* DownloadManager::addDownload(const Protos::Common::Entry& remoteEntry, PM::IPeer* peerSource, const Common::Hash& destinationDirectoryID, const QString& localRelativePath, Protos::Queue::Queue::Entry::Status status, int position)
 {
    Protos::Common::Entry localEntry(remoteEntry);
+
+   localEntry.clear_shared_dir();
+   localEntry.set_exists(false);
+
    Common::ProtoHelper::setStr(localEntry, &Protos::Common::Entry::set_path, localRelativePath);
    if (!destinationDirectoryID.isNull())
       localEntry.mutable_shared_dir()->mutable_id()->set_hash(destinationDirectoryID.getData(), Common::Hash::HASH_SIZE);
-   localEntry.set_exists(false);
 
    return this->addDownload(remoteEntry, localEntry, peerSource, status, position);
 }
@@ -123,6 +128,17 @@ Download* DownloadManager::addDownload(const Protos::Common::Entry& remoteEntry,
 Download* DownloadManager::addDownload(const Protos::Common::Entry& remoteEntry, const Protos::Common::Entry& localEntry, PM::IPeer* peerSource, Protos::Queue::Queue::Entry::Status status, int position)
 {
    Download* newDownload = 0;
+
+   // We do not create a new download is a similar one is already in queue. This test can be CPU expensive.
+   if (this->downloadQueue.isEntryAlreadyQueued(localEntry))
+   {
+      QString sharedDir = this->fileManager->getSharedDir(localEntry.shared_dir().id().hash());
+      if (!sharedDir.isEmpty())
+         sharedDir.remove(sharedDir.size() - 1, 1); // Remove the ending '/'.
+
+      L_USER(tr("The file '%1' is already in queue").arg(sharedDir % Common::ProtoHelper::getRelativePath(localEntry)));
+      return newDownload;
+   }
 
    switch (remoteEntry.type())
    {

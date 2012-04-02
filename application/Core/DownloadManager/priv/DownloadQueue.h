@@ -58,7 +58,7 @@ namespace DM
       void moveDownloads(const QList<quint64>& downloadIDRefs, const QList<quint64>& downloadIDs, Protos::GUI::MoveDownloads::Position position);
       bool removeDownloads(const DownloadPredicate& predicate);
       bool pauseDownloads(QList<quint64> IDs, bool pause = true);
-      bool isEntryAlreadyQueued(const Protos::Common::Entry& localEntry, const Common::Hash& peerSourceID);
+      bool isEntryAlreadyQueued(const Protos::Common::Entry& localEntry);
 
       static Protos::Queue::Queue loadFromFile();
       void saveToFile() const;
