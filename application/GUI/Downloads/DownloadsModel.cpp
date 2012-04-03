@@ -96,7 +96,7 @@ QVariant DownloadsModel::getData(const Protos::GUI::State::Download& download, c
          switch (download.status())
          {
          case Protos::GUI::State::Download::UNKNOWN_PEER_SOURCE:
-            toolTip += tr("Unknown source peer");
+            toolTip += tr("Unknown source peer (%1)").arg(Common::ProtoHelper::getStr(download, &Protos::GUI::State::Download::peer_source_nick));
             break;
          case Protos::GUI::State::Download::ENTRY_NOT_FOUND:
             toolTip += tr("The source peer doesn't have the entry");
@@ -128,7 +128,7 @@ QVariant DownloadsModel::getData(const Protos::GUI::State::Download& download, c
             toolTip += tr("Unable to write the file");
             break;
          case Protos::GUI::State::Download::FILE_NON_EXISTENT:
-            toolTip += tr("File non-existent");
+            toolTip += tr("The local file has been deleted");
             break;
          case Protos::GUI::State::Download::GOT_TOO_MUCH_DATA:
             toolTip += tr("We received too much data");
@@ -142,7 +142,7 @@ QVariant DownloadsModel::getData(const Protos::GUI::State::Download& download, c
          if (!path.isEmpty())
          {
             if (!toolTip.isEmpty())
-               toolTip += ", ";
+               toolTip += " - ";
             toolTip += this->getPath(index);
          }
          return toolTip;

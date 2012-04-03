@@ -61,6 +61,7 @@ namespace Common
 
       static QString toLowerAndRemoveAccents(const QString& str);
       static QStringList splitInWords(const QString& words);
+      static int strcmpi(const std::string& s1, const std::string& s2);
 
       static quint32 hashStringToInt(const QString& str);
 

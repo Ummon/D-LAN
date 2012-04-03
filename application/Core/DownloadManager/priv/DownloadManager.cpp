@@ -390,13 +390,16 @@ void DownloadManager::scanTheQueue()
 
 void DownloadManager::rescanTimerActivated()
 {
-   Download* download = this->downloadQueue.getAnErroneousDownload();
-   if (download && download->isStatusErroneous())
+   while (Download* download = this->downloadQueue.getAnErroneousDownload())
    {
-      download->updateStatus();
-      L_DEBU(QString("Rescan timer timedout, the queue will be recanned. File rested : %1").arg(Common::ProtoHelper::getRelativePath(download->getLocalEntry())));
-      this->rescanTimer.start();
-      this->scanTheQueue();
+      if (download->isStatusErroneous())
+      {
+         download->updateStatus();
+         L_DEBU(QString("Rescan timer timedout, the queue will be recanned. File rested : %1").arg(Common::ProtoHelper::getRelativePath(download->getLocalEntry())));
+         this->rescanTimer.start();
+         this->scanTheQueue();
+         break;
+      }
    }
 }
 

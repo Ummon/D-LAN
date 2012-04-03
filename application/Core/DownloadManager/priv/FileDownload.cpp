@@ -140,6 +140,9 @@ bool FileDownload::pause(bool pause)
 
 void FileDownload::peerSourceBecomesAvailable()
 {
+   if (this->status == UNKNOWN_PEER_SOURCE)
+      this->setStatus(QUEUED);
+
    for (QListIterator< QSharedPointer<ChunkDownload> > i(this->chunkDownloads); i.hasNext();)
       i.next()->setPeerSource(this->peerSource, false); // 'false' : to avoid to send unnecessary 'newFreePeer'.
 }
@@ -372,12 +375,16 @@ bool FileDownload::retrieveHashes()
 {
    // If we've already got all the chunk hashes it's unecessary to re-ask them.
    // Or if we'v got anyone to ask the chunk hashes..
-   if (
-      this->nbHashesKnown == this->NB_CHUNK ||
-      !this->hasAValidPeer() ||
-      this->status == COMPLETE || this->status == DELETED || this->status == PAUSED || this->status == UNABLE_TO_RETRIEVE_THE_HASHES ||
-      !this->occupiedPeersAskingForHashes.setPeerAsOccupied(this->peerSource)
-   )
+   if (this->nbHashesKnown == this->NB_CHUNK || this->status == COMPLETE || this->status == DELETED || this->status == PAUSED || this->status == UNABLE_TO_RETRIEVE_THE_HASHES)
+      return false;
+
+   if (!this->hasAValidPeer())
+   {
+      this->setStatus(UNKNOWN_PEER_SOURCE);
+      return false;
+   }
+
+   if (!this->occupiedPeersAskingForHashes.setPeerAsOccupied(this->peerSource))
       return false;
 
    this->setStatus(GETTING_THE_HASHES);

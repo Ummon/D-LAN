@@ -384,6 +384,26 @@ QStringList Global::splitInWords(const QString& words)
    return Global::toLowerAndRemoveAccents(words).split(regExp, QString::SkipEmptyParts);
 }
 
+/**
+  * Compare two std::string without case sensitive.
+  * @return 0 if equal, 1 if s1 > s2, -1 if s1 < s2.
+  */
+int Global::strcmpi(const std::string& s1, const std::string& s2)
+{
+   for (unsigned int i = 0; i < s1.length() && i < s2.length(); i++)
+   {
+      const int c1 = tolower(s1[i]);
+      const int c2 = tolower(s2[i]);
+      if (c1 > c2) return 1;
+      else if (c1 < c2) return -1;
+   }
+   if (s1.length() > s2.length())
+      return 1;
+   else if (s1.length() < s2.length())
+      return -1;
+   return 0;
+}
+
 quint32 Global::hashStringToInt(const QString& str)
 {
    QByteArray data = str.toLocal8Bit();
