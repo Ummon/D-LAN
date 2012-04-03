@@ -82,6 +82,7 @@ void DownloadQueue::remove(int position)
    Download* download = (*this)[position];
    this->downloadsIndexedBySourcePeerID.remove(download->getPeerSource()->getID(), download);
    this->downloads.removeAt(position);
+   this->erroneousDownloads.removeOne(download);
 }
 
 void DownloadQueue::peerBecomesAvailable(PM::IPeer* peer)
@@ -191,6 +192,7 @@ bool DownloadQueue::removeDownloads(const DownloadPredicate& predicate)
          (*j)->setAsDeleted();
          this->downloadsIndexedBySourcePeerID.remove((*j)->getPeerSource()->getID(), *j);
          downloadsToDelete << *j;
+         this->erroneousDownloads.removeOne(*j);
          ++j;
 
          this->updateMarkersRemove(position);
@@ -255,6 +257,18 @@ bool DownloadQueue::isEntryAlreadyQueued(const Protos::Common::Entry& localEntry
          return true;
    }
    return false;
+}
+
+void DownloadQueue::setDownloadAsErroneous(Download* download)
+{
+   this->erroneousDownloads << download;
+}
+
+Download* DownloadQueue::getAnErroneousDownload()
+{
+   if (!this->erroneousDownloads.isEmpty())
+      return this->erroneousDownloads.takeFirst();
+   return 0;
 }
 
 /**

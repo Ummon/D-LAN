@@ -49,6 +49,9 @@ namespace DM
 
       bool retrieveEntries();
 
+   public slots:
+      bool updateStatus();
+
    signals:
       /**
         * Emitted when the content of the folder has been retrieved.

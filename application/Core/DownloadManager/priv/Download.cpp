@@ -70,6 +70,17 @@ bool Download::isStatusErroneous() const
    return this->status >= 0x20;
 }
 
+/**
+  * Force the status to 'QUEUED', usefull to force to retry to download an erroneous download.
+  * Do nothing if the status is DELETED, COMPLETE or PAUSED.
+  */
+void Download::resetStatus()
+{
+   if (this->status == DELETED || this->status == COMPLETE || this->status == PAUSED)
+      return;
+   this->status = QUEUED;
+}
+
 quint64 Download::getDownloadedBytes() const
 {
    return 0;
@@ -109,12 +120,6 @@ bool Download::updateStatus()
 {
    if (this->status == DELETED || this->status == COMPLETE || this->status == PAUSED)
       return true;
-
-   if (!this->peerSource->isAvailable())
-      this->setStatus(UNKNOWN_PEER_SOURCE);
-   else
-      this->setStatus(QUEUED);
-
    return false;
 }
 

@@ -80,6 +80,19 @@ bool DirDownload::retrieveEntries()
    return true;
 }
 
+bool DirDownload::updateStatus()
+{
+   if (Download::updateStatus())
+      return true;
+
+   if (!this->peerSource->isAvailable())
+      this->setStatus(UNKNOWN_PEER_SOURCE);
+   else
+      this->setStatus(QUEUED);
+
+   return false;
+}
+
 void DirDownload::result(const Protos::Core::GetEntriesResult& entries)
 {
    Protos::Common::Entries entriesCopy;

@@ -60,6 +60,9 @@ namespace DM
       bool pauseDownloads(QList<quint64> IDs, bool pause = true);
       bool isEntryAlreadyQueued(const Protos::Common::Entry& localEntry);
 
+      void setDownloadAsErroneous(Download* download);
+      Download* getAnErroneousDownload();
+
       static Protos::Queue::Queue loadFromFile();
       void saveToFile() const;
 
@@ -89,6 +92,7 @@ namespace DM
       QList<Marker> markers; ///< Saved some positions like the first downloadable file or the first directory. The goal is to speed up the scan. See the class 'ScanningIterator'.
 
       QList<Download*> downloads;
+      QList<Download*> erroneousDownloads;
       QMultiHash<Common::Hash, Download*> downloadsIndexedBySourcePeerID;
    };
 }

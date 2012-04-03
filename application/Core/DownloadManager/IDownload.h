@@ -32,24 +32,30 @@ namespace DM
 {
    enum Status
    {
-     QUEUED = 0x1,
-     GETTING_THE_HASHES = 0x2,
-     DOWNLOADING = 0x3,
-     COMPLETE = 0x4,
-     PAUSED = 0x5,
-     DELETED = 0x6,
+      QUEUED = 0x1,
+      GETTING_THE_HASHES = 0x2,
+      DOWNLOADING = 0x3,
+      COMPLETE = 0x4,
+      PAUSED = 0x5,
+      DELETED = 0x6,
 
-     // All theses status will imply the paused status.
-     UNKNOWN_PEER_SOURCE = 0x10, // The source peer can't be found.
-     ENTRY_NOT_FOUND = 0x11, // The source peer can't find the entry.
-     NO_SOURCE = 0x12, // Some chunk can't be downloaded. Only when there is no more downloading.
+      // All theses status will imply the paused status.
+      UNKNOWN_PEER_SOURCE = 0x10, // The source peer can't be found.
+      ENTRY_NOT_FOUND = 0x11, // The source peer can't find the entry.
+      NO_SOURCE = 0x12, // Some chunk can't be downloaded. Only when there is no more downloading.
 
-     // Error status :
-     NO_SHARED_DIRECTORY_TO_WRITE = 0x20,
-     NO_ENOUGH_FREE_SPACE = 0x21,
-     UNABLE_TO_CREATE_THE_FILE = 0x22,
-     UNABLE_TO_RETRIEVE_THE_HASHES = 0x23,
-     TRANSFERT_ERROR = 0x24
+      // Error status :
+      NO_SHARED_DIRECTORY_TO_WRITE = 0x20,
+      NO_ENOUGH_FREE_SPACE = 0x21,
+      UNABLE_TO_CREATE_THE_FILE = 0x22,
+      UNABLE_TO_RETRIEVE_THE_HASHES = 0x23,
+
+      TRANSFERT_ERROR = 0x24,
+      UNABLE_TO_OPEN_THE_FILE = 0x25,
+      FILE_IO_ERROR = 0x26,
+      FILE_NON_EXISTENT = 0x27,
+      GOT_TOO_MUCH_DATA = 0x28,
+      HASH_MISSMATCH = 0x29
    };
 
    class IDownload

@@ -399,13 +399,6 @@ bool File::computeHashes(int n, int* amountHashed)
 
    Common::Hasher hasher;
 
-   Common::FileLocker fileLocker(filePath, Common::FileLocker::READ);
-   if (!fileLocker.isLocked())
-   {
-      L_WARN(QString("Unable to acquire the lock for this file : %1").arg(filePath));
-      throw IOErrorException();
-   }
-
    QFile file(filePath);
    if (!file.open(QIODevice::ReadOnly | QIODevice::Unbuffered)) // Same performance with or without "QIODevice::Unbuffered".
    {
@@ -455,16 +448,26 @@ bool File::computeHashes(int n, int* amountHashed)
             return false;
          }
 
-         int bytesRead = file.read(buffer, BUFFER_SIZE);
-         switch (bytesRead)
+         int bytesRead = 0;
          {
-         case -1:
-            L_ERRO(QString("Error during reading the file %1").arg(filePath));
-            throw IOErrorException();
-         case 0:
-            endOfFile = true;
-            this->size = bytesReadChunk + bytesReadTotal + bytesSkipped;
-            goto endReading;
+            Common::FileLocker fileLocker(file, BUFFER_SIZE, Common::FileLocker::READ);
+            if (!fileLocker.isLocked())
+            {
+               L_WARN(QString("Unable to acquire the lock for this file : %1").arg(filePath));
+               throw IOErrorException();
+            }
+
+            bytesRead = file.read(buffer, BUFFER_SIZE);
+            switch (bytesRead)
+            {
+            case -1:
+               L_ERRO(QString("Error during reading the file %1").arg(filePath));
+               throw IOErrorException();
+            case 0:
+               endOfFile = true;
+               this->size = bytesReadChunk + bytesReadTotal + bytesSkipped;
+               goto endReading;
+            }
          }
 
          hasher.addData(buffer, bytesRead);

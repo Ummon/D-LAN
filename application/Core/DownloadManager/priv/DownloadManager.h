@@ -88,6 +88,7 @@ namespace DM
       void peerNoLongerDownloadingChunk(PM::IPeer* peer);
 
       void scanTheQueue();
+      void rescanTimerActivated();
       void chunkDownloadFinished();
 
    private:

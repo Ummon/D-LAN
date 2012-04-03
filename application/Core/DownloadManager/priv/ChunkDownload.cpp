@@ -45,7 +45,7 @@ ChunkDownload::ChunkDownload(QSharedPointer<PM::IPeerManager> peerManager, Occup
    socket(0),
    downloading(false),
    networkTransferStatus(PM::ISocket::SFS_OK),
-   lastTransfertAttemptFailed(false),
+   lastTransfertStatus(QUEUED),
    mainThread(QThread::currentThread()),
    mutex(QMutex::Recursive)
 {
@@ -108,7 +108,7 @@ void ChunkDownload::run()
    int deltaRead = 0;
    QElapsedTimer timer;
    timer.start();
-   this->lastTransfertAttemptFailed = false;
+   this->lastTransfertStatus = QUEUED;
 
    try
    {
@@ -146,7 +146,7 @@ void ChunkDownload::run()
             {
                L_WARN(QString("Connection dropped, error = %1, bytesAvailable = %2").arg(socket->errorString()).arg(socket->bytesAvailable()));
                this->networkTransferStatus = PM::ISocket::SFS_TO_CLOSE;
-               this->lastTransfertAttemptFailed = true;
+               this->lastTransfertStatus = TRANSFERT_ERROR;
                break;
             }
             continue;
@@ -155,7 +155,7 @@ void ChunkDownload::run()
          {
             L_WARN(QString("Socket : cannot receive data : %1").arg(this->chunk->toStringLog()));
             this->networkTransferStatus = PM::ISocket::SFS_ERROR;
-            this->lastTransfertAttemptFailed = true;
+            this->lastTransfertStatus = TRANSFERT_ERROR;
             break;
          }
 
@@ -200,19 +200,23 @@ void ChunkDownload::run()
    }
    catch(FM::UnableToOpenFileInWriteModeException)
    {
-      L_WARN("UnableToOpenFileInWriteModeException");
+      L_DEBU("UnableToOpenFileInWriteModeException");
+      this->lastTransfertStatus = UNABLE_TO_OPEN_THE_FILE;
    }
    catch(FM::IOErrorException&)
    {
       L_WARN("IOErrorException");
+      this->lastTransfertStatus = FILE_IO_ERROR;
    }
    catch (FM::ChunkDeletedException&)
    {
       L_WARN("ChunkDeletedException");
+      this->lastTransfertStatus = FILE_NON_EXISTENT;
    }
    catch (FM::TryToWriteBeyondTheEndOfChunkException&)
    {
       L_WARN("TryToWriteBeyondTheEndOfChunkException");
+      this->lastTransfertStatus = GOT_TOO_MUCH_DATA;
    }
    catch (FM::hashMissmatchException)
    {
@@ -220,6 +224,7 @@ void ChunkDownload::run()
       L_USER(QString(tr("Corrupted data received for the file \"%1\" from peer %2. Peer banned for %3 ms")).arg(this->chunk->getBasePath()).arg(this->currentDownloadingPeer->getNick()).arg(BAN_DURATION));
       /*: A reason why the user has been banned */
       this->currentDownloadingPeer->ban(BAN_DURATION, tr("Has sent corrupted data"));
+      this->lastTransfertStatus = HASH_MISSMATCH;
    }
 
    if (timer.elapsed() > MINIMUM_DELTA_TIME_TO_COMPUTE_SPEED)
@@ -295,16 +300,23 @@ bool ChunkDownload::hasAtLeastAPeer()
 }
 
 /**
-  * Return 'true' if the last attempt of downloading this chunk has failed.
+  * May return one of this status:
+  * QUEUED (all is ok)
+  * TRANSFERT_ERROR
+  * UNABLE_TO_OPEN_THE_FILE
+  * FILE_IO_ERROR
+  * FILE_NON_EXISTENT
+  * GOT_TOO_MUCH_DATA
+  * HASH_MISSMATCH
   */
-bool ChunkDownload::isLastTransfertAttemptFailed() const
+Status ChunkDownload::getLastTransfertStatus() const
 {
-    return this->lastTransfertAttemptFailed;
+   return this->lastTransfertStatus;
 }
 
-void ChunkDownload::resetLastTransfertAttemptFailed()
+void ChunkDownload::resetLastTransfertStatus()
 {
-   this->lastTransfertAttemptFailed = false;
+   this->lastTransfertStatus = QUEUED;
 }
 
 int ChunkDownload::getDownloadedBytes() const
@@ -366,7 +378,7 @@ bool ChunkDownload::startDownloading()
    Protos::Core::GetChunk getChunkMess;
    getChunkMess.mutable_chunk()->set_hash(this->chunkHash.getData(), Common::Hash::HASH_SIZE);
    getChunkMess.set_offset(this->chunk->getKnownBytes());
-   this->getChunkResult = this->currentDownloadingPeer->getChunk(getChunkMess, true);
+   this->getChunkResult = this->currentDownloadingPeer->getChunk(getChunkMess);
    connect(this->getChunkResult.data(), SIGNAL(result(const Protos::Core::GetChunkResult&)), this, SLOT(result(const Protos::Core::GetChunkResult&)), Qt::DirectConnection);
    connect(this->getChunkResult.data(), SIGNAL(stream(QSharedPointer<PM::ISocket>)), this, SLOT(stream(QSharedPointer<PM::ISocket>)), Qt::DirectConnection);
    connect(this->getChunkResult.data(), SIGNAL(timeout()), this, SLOT(getChunkTimeout()), Qt::DirectConnection);

@@ -202,8 +202,7 @@ QSharedPointer<ChunkDownload> FileDownload::getAChunkToDownload()
       }
       else
       {
-         if (chunkDownload->isLastTransfertAttemptFailed())
-            chunkDownload->resetLastTransfertAttemptFailed();
+         chunkDownload->resetLastTransfertStatus();
 
          if (chunkDownload->isPartiallyDownloaded())
          {
@@ -307,6 +306,7 @@ void FileDownload::remove()
   * If a GET_HASHES request is running -> INITIALIZING
   * If all the incomplete chunks have no peer -> NO_SOURCE
   * Else -> QUEUED
+  * @return
   */
 bool FileDownload::updateStatus()
 {
@@ -326,6 +326,11 @@ bool FileDownload::updateStatus()
          this->status = DOWNLOADING;
          return false;
       }
+      else if (chunkDownload->getLastTransfertStatus() >= 0x20)
+      {
+         this->status = chunkDownload->getLastTransfertStatus();
+         return false;
+      }
       else if (!hasAtLeastAPeer && !chunkDownload->isComplete())
       {
          if (chunkDownload->hasAtLeastAPeer())
@@ -337,10 +342,6 @@ bool FileDownload::updateStatus()
          {
             this->status = NO_SOURCE;
          }
-      }
-      else if (chunkDownload->isLastTransfertAttemptFailed())
-      {
-         this->status = TRANSFERT_ERROR;
       }
    }
 
@@ -396,14 +397,14 @@ void FileDownload::retryToRetrieveHashes()
 
 void FileDownload::result(const Protos::Core::GetHashesResult& result)
 {
-   if (result.status() == Protos::Core::GetHashesResult_Status_OK)
+   if (result.status() == Protos::Core::GetHashesResult::OK)
    {
       if (this->nbHashesKnown + static_cast<int>(result.nb_hash()) != this->NB_CHUNK)
          L_WARN(QString("The received hashes (%1) plus the known hashes (%2) is not equal to the number of chunks (%3)").arg(result.nb_hash()).arg(this->nbHashesKnown).arg(this->NB_CHUNK));
    }
    else
    {
-      if (result.status() == Protos::Core::GetHashesResult_Status_DONT_HAVE)
+      if (result.status() == Protos::Core::GetHashesResult::DONT_HAVE)
       {
          L_DEBU("Unable to retrieve the hashes: DONT_HAVE");
          this->status = ENTRY_NOT_FOUND;
@@ -474,18 +475,6 @@ void FileDownload::chunkDownloadStarted()
 void FileDownload::chunkDownloadFinished()
 {
    this->updateStatus();
-}
-
-void FileDownload::setStatus(Status newStatus)
-{
-   if (this->status == COMPLETE)
-      return;
-
-   // We don't care about the source peer if we have all the hashes.
-   if (newStatus == UNKNOWN_PEER_SOURCE && nbHashesKnown == this->NB_CHUNK)
-      return;
-
-   Download::setStatus(newStatus);
 }
 
 /**

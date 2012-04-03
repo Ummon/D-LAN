@@ -37,6 +37,7 @@
 #include <Core/PeerManager/IGetChunkResult.h>
 
 #include <IChunkDownload.h>
+#include <IDownload.h>
 
 #include <priv/OccupiedPeers.h>
 
@@ -74,8 +75,8 @@ namespace DM
       bool isComplete() const;
       bool isPartiallyDownloaded() const;
       bool hasAtLeastAPeer();
-      bool isLastTransfertAttemptFailed() const;
-      void resetLastTransfertAttemptFailed();
+      Status getLastTransfertStatus() const;
+      void resetLastTransfertStatus();
 
       int getDownloadedBytes() const;
       QList<Common::Hash> getPeers();
@@ -120,7 +121,7 @@ namespace DM
 
       bool downloading;
       PM::ISocket::FinishedStatus networkTransferStatus;
-      bool lastTransfertAttemptFailed;
+      Status lastTransfertStatus;
 
       QThread* mainThread;
 

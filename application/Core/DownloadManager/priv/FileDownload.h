@@ -92,9 +92,6 @@ namespace DM
       void chunkDownloadStarted();
       void chunkDownloadFinished();
 
-   protected:
-      void setStatus(Status newStatus);
-
    private:
       bool tryToLinkToAnExistingFile();
       void connectChunkDownloadSignals(QSharedPointer<ChunkDownload> chunkDownload);

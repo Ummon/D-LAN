@@ -52,7 +52,7 @@ DownloadManager::DownloadManager(QSharedPointer<FM::IFileManager> fileManager, Q
 
    this->rescanTimer.setInterval(RESCAN_QUEUE_PERIOD_IF_ERROR);
    this->rescanTimer.setSingleShot(true);
-   connect(&this->rescanTimer, SIGNAL(timeout()), this, SLOT(scanTheQueue()));
+   connect(&this->rescanTimer, SIGNAL(timeout()), this, SLOT(rescanTimerActivated()));
 
    this->saveTimer.setInterval(SETTINGS.get<quint32>("save_queue_period"));
    connect(&this->saveTimer, SIGNAL(timeout()), this, SLOT(saveQueueToFile()));
@@ -367,16 +367,15 @@ void DownloadManager::scanTheQueue()
          if (!(fileDownload = static_cast<FileDownload*>(i.next())))
              break;
 
-      fileDownload->updateStatus(); // Reset status.
-
-      chunkDownload = fileDownload->getAChunkToDownload();
-
       if (fileDownload->isStatusErroneous())
       {
+         this->downloadQueue.setDownloadAsErroneous(fileDownload);
          this->rescanTimer.start();
          chunkDownload.clear();
          continue;
       }
+
+      chunkDownload = fileDownload->getAChunkToDownload();
 
       if (chunkDownload.isNull())
          continue;
@@ -391,6 +390,18 @@ void DownloadManager::scanTheQueue()
    }
 
    L_DEBU("Scanning terminated");
+}
+
+void DownloadManager::rescanTimerActivated()
+{
+   Download* download = this->downloadQueue.getAnErroneousDownload();
+   if (download && download->isStatusErroneous())
+   {
+      download->resetStatus();
+      L_DEBU(QString("Rescan timer timedout, the queue will be recanned. File rested : %1").arg(Common::ProtoHelper::getRelativePath(download->getLocalEntry())));
+      this->rescanTimer.start();
+      this->scanTheQueue();
+   }
 }
 
 /**
