@@ -114,6 +114,9 @@ File::~File()
    QMutexLocker lockerRead(&this->readLock);
    delete this->fileInReadMode;
 
+   if (this->tryToRename)
+      this->setAsComplete();
+
    L_DEBU(QString("File deleted : %1").arg(this->getFullPath()));
 }
 
@@ -663,6 +666,17 @@ int File::getNbChunks()
    return this->size / CHUNK_SIZE + (this->size % CHUNK_SIZE == 0 ? 0 : 1);
 }
 
+void File::deleteIfIncomplete()
+{
+   QMutexLocker locker(&this->mutex);
+
+   if (!this->isComplete() && !this->tryToRename)
+   {
+      this->removeUnfinishedFiles();
+      delete this;
+   }
+}
+
 /**
   * Remove the file physically only if it's not complete.
   * The file removed must ended by the setting "unfinished_suffix_term".
@@ -671,7 +685,7 @@ void File::removeUnfinishedFiles()
 {
    QMutexLocker locker(&this->mutex);
 
-   if (!this->isComplete())
+   if (!this->isComplete() && !this->tryToRename)
    {
       QMutexLocker lockerWrite(&this->writeLock);
       QMutexLocker lockerRead(&this->readLock);

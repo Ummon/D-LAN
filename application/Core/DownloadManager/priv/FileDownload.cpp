@@ -294,6 +294,9 @@ void FileDownload::getUnfinishedChunks(QList< QSharedPointer<IChunkDownload> >& 
   */
 void FileDownload::remove()
 {
+   this->setStatus(DELETED); // To avoid the call to 'stop()' to relaunch a download (via occupiedPeersDownloadingChunk::setPeerAsFree(..) -> DownloadManager::scanTheQueue()).
+   this->stop();
+
    for (QListIterator< QSharedPointer<ChunkDownload> > i(this->chunkDownloads); i.hasNext();)
       i.next()->tryToRemoveItsIncompleteFile();
 

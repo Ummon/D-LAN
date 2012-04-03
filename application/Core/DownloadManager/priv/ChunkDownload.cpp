@@ -55,9 +55,13 @@ ChunkDownload::ChunkDownload(QSharedPointer<PM::IPeerManager> peerManager, Occup
 ChunkDownload::~ChunkDownload()
 {
    this->stop();
+
    L_DEBU(QString("ChunkDownload deleted : %1").arg(this->chunkHash.toStr()));
 }
 
+/**
+  * Return true if the chunk was downloading.
+  */
 void ChunkDownload::stop()
 {
    if (this->downloading)
@@ -67,6 +71,8 @@ void ChunkDownload::stop()
       this->mutex.unlock();
 
       this->threadPool.wait(this);
+
+      this->downloadingEnded();
    }
 }
 
@@ -205,17 +211,17 @@ void ChunkDownload::run()
    }
    catch(FM::IOErrorException&)
    {
-      L_WARN("IOErrorException");
+      L_DEBU("IOErrorException");
       this->lastTransfertStatus = FILE_IO_ERROR;
    }
    catch (FM::ChunkDeletedException&)
    {
-      L_WARN("ChunkDeletedException");
+      L_DEBU("ChunkDeletedException");
       this->lastTransfertStatus = FILE_NON_EXISTENT;
    }
    catch (FM::TryToWriteBeyondTheEndOfChunkException&)
    {
-      L_WARN("TryToWriteBeyondTheEndOfChunkException");
+      L_DEBU("TryToWriteBeyondTheEndOfChunkException");
       this->lastTransfertStatus = GOT_TOO_MUCH_DATA;
    }
    catch (FM::hashMissmatchException)
@@ -236,7 +242,8 @@ void ChunkDownload::run()
 
 void ChunkDownload::finished()
 {
-   this->downloadingEnded();
+   if (this->downloading)
+      this->downloadingEnded();
 }
 
 void ChunkDownload::setChunk(QSharedPointer<FM::IChunk> chunk)

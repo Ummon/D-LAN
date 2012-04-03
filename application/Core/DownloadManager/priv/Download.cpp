@@ -21,6 +21,7 @@ using namespace DM;
 
 #include <Common/ProtoHelper.h>
 
+#include <Utils.h>
 #include <priv/Constants.h>
 #include <priv/Log.h>
 
@@ -114,13 +115,13 @@ bool Download::updateStatus()
 
 void Download::setStatus(Status newStatus)
 {
+   if (this->status == newStatus)
+      return;
+
    if (!this->isStatusErroneous() && newStatus >= 0x20)
       emit becomeErroneous(this);
 
-#ifdef DEBUG
-   if (this->status != newStatus)
-      L_DEBU(QString("Download (%1) status change from %2 to %3").arg(Common::ProtoHelper::getRelativePath(this->localEntry)).arg(this->status).arg(newStatus));
-#endif
+   L_DEBU(QString("Download (%1) status change from %2 to %3").arg(Common::ProtoHelper::getRelativePath(this->localEntry)).arg(Utils::getStatusStr(this->status)).arg(Utils::getStatusStr(newStatus)));
 
    this->status = newStatus;
 }

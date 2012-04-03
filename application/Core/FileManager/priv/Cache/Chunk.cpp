@@ -89,11 +89,8 @@ void Chunk::populateHashesChunk(Protos::FileCache::Hashes_Chunk& chunk) const
 void Chunk::removeItsIncompleteFile()
 {
    QMutexLocker locker(&this->mutex);
-   if (this->file && !this->file->isComplete())
-   {
-      this->file->removeUnfinishedFiles();
-      delete this->file;
-   }
+   if (this->file)
+      this->file->deleteIfIncomplete();
 }
 
 bool Chunk::populateEntry(Protos::Common::Entry* entry) const

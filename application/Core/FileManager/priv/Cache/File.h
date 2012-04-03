@@ -96,6 +96,7 @@ namespace FM
 
       int getNbChunks();
 
+      void deleteIfIncomplete();
       void removeUnfinishedFiles();
 
       void changeDirectory(Directory* dir);
