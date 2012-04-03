@@ -361,7 +361,7 @@ QList<quint64> DownloadsTreeModel::getDownloadIDs(Tree* tree) const
    return IDs;
 }
 
-DownloadsTreeModel::Tree* DownloadsTreeModel::insertDirectory(Tree* tree, const QString& dir, const QString& peerSourceNick, const Common::Hash& sharedDirID)
+DownloadsTreeModel::Tree* DownloadsTreeModel::insertDirectory(Tree* parentTree, const QString& dir, const QString& peerSourceNick, const Common::Hash& sharedDirID)
 {
    Protos::GUI::State::Download download;
    ProtoHelper::setStr(*download.mutable_local_entry(), &Protos::Common::Entry::set_name, dir);
@@ -370,11 +370,12 @@ DownloadsTreeModel::Tree* DownloadsTreeModel::insertDirectory(Tree* tree, const 
    download.mutable_local_entry()->set_type(Protos::Common::Entry::DIR);
 
    // If the directory already exist, we just update it.
-   for (int i = 0; i < tree->getNbChildren(); i++)
-      if (download.local_entry().name() == tree->getChild(i)->getItem().local_entry().name())
-         return this->update(tree->getChild(i), download);
+   for (int i = 0; i < parentTree->getNbChildren(); i++)
+      // Top entries may have the same name, in this case we also check their shared directory ID.
+      if ((parentTree != this->root || download.local_entry().shared_dir().id().hash() == parentTree->getChild(i)->getItem().local_entry().shared_dir().id().hash()) && download.local_entry().name() == parentTree->getChild(i)->getItem().local_entry().name())
+         return this->update(parentTree->getChild(i), download);
 
-   return this->insert(tree, download);
+   return this->insert(parentTree, download);
 }
 
 /**
@@ -426,8 +427,9 @@ DownloadsTreeModel::Tree* DownloadsTreeModel::createEntry(const QModelIndex& par
 /**
   * Move the given tree right after the last visited tree (Tree::visited = true).
   * The tree must be a direct child of the root.
+  * Used when reordering the top items against the download file list.
   * @param tree
-  * @return
+  * @return the given tree
   */
 DownloadsTreeModel::Tree* DownloadsTreeModel::moveUp(DownloadsTreeModel::Tree* tree)
 {

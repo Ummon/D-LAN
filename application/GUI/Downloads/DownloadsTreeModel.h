@@ -72,7 +72,7 @@ namespace GUI
       };
 
       QList<quint64> getDownloadIDs(Tree* tree) const;
-      Tree* insertDirectory(Tree* tree, const QString& dir, const QString& peerSourceNick, const Hash& sharedDirID);
+      Tree* insertDirectory(Tree* parentTree, const QString& dir, const QString& peerSourceNick, const Hash& sharedDirID);
       Tree* insert(Tree* tree, const Protos::GUI::State::Download& download);
       Tree* createEntry(const QModelIndex& parent, int position, const Protos::GUI::State::Download& download);
 
