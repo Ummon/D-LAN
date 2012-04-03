@@ -169,31 +169,28 @@ void WidgetDownloads::changeEvent(QEvent* event)
 
 void WidgetDownloads::displayContextMenuDownloads(const QPoint& point)
 {   
-   bool showOpenLocation = false;
-   // If the connection isn't remote and there is at least one complete or downloading file we show a menu action to open the file location.
-   if (this->coreConnection->isLocal())
-   {
-      QModelIndexList selectedRows = this->ui->tblDownloads->selectionModel()->selectedRows();
-      for (QListIterator<QModelIndex> i(selectedRows); i.hasNext();)
-      {
-         const QModelIndex& index = i.next();
-         if (this->currentDownloadsModel->isFileLocationKnown(index))
-         {
-            showOpenLocation = true;
-            break;
-         }
-      }
-   }
-
-   QPair<QList<quint64>, bool> IDs = this->getDownloadIDsToPause();
+   QModelIndexList selectedRows = this->ui->tblDownloads->selectionModel()->selectedRows();
 
    QMenu menu;
-   if (showOpenLocation)
-      menu.addAction(QIcon(":/icons/ressources/explore_folder.png"), tr("Open location"), this, SLOT(openLocationSelectedEntries()));
+
+   // If the connection isn't remote and there is at least one complete or downloading file we show a menu action to open the file location.
+   if (this->coreConnection->isLocal())
+      for (QListIterator<QModelIndex> i(selectedRows); i.hasNext();)
+         if (this->currentDownloadsModel->isFileLocationKnown(i.next()))
+         {
+            menu.addAction(QIcon(":/icons/ressources/explore_folder.png"), tr("Open location"), this, SLOT(openLocationSelectedEntries()));
+            break;
+         }
+
+   menu.addAction(QIcon(":/icons/ressources/arrow_up.png"), tr("Move to top"), this, SLOT(moveSelectedEntriesToTop()));
+
    menu.addAction(QIcon(":/icons/ressources/remove_complete_files.png"), tr("Remove completed files"), this, SLOT(removeCompletedFiles()));
    menu.addAction(QIcon(":/icons/ressources/delete.png"), tr("Remove selected entries"), this, SLOT(removeSelectedEntries()));
+
+   QPair<QList<quint64>, bool> IDs = this->getDownloadIDsToPause();
    if (!IDs.first.isEmpty())
       menu.addAction(QIcon(":/icons/ressources/pause.png"), IDs.second ? tr("Pause selected entries") : tr("Unpause selected entries"), this, SLOT(pauseSelectedEntries()));
+
    menu.exec(this->ui->tblDownloads->mapToGlobal(point));
 }
 
@@ -219,6 +216,31 @@ void WidgetDownloads::openLocationSelectedEntries()
       QDesktopServices::openUrl(QUrl(i.next(), QUrl::TolerantMode));
 }
 
+void WidgetDownloads::moveSelectedEntriesToTop()
+{
+   QSet<quint64> downloadIDs;
+
+   QModelIndexList selectedRows = this->ui->tblDownloads->selectionModel()->selectedRows();
+   for (QListIterator<QModelIndex> i(selectedRows); i.hasNext();)
+   {
+      const QModelIndex& index = i.next();
+      downloadIDs += this->currentDownloadsModel->getDownloadIDs(index).toSet();
+   }
+
+   // Search a download which is not selected
+   for (int r = 0; r < this->downloadsFlatModel.rowCount(); r++)
+   {
+      const quint64 id = this->downloadsFlatModel.getDownloadIDs(this->downloadsFlatModel.index(r, 0)).first();
+      if (!downloadIDs.contains(id))
+      {
+         this->coreConnection->moveDownloads(QList<quint64>() << id, downloadIDs.toList());
+         break;
+      }
+   }
+
+   this->ui->tblDownloads->selectionModel()->clear();
+}
+
 void WidgetDownloads::switchView()
 {
    if (this->currentDownloadsModel == &this->downloadsFlatModel)
@@ -234,14 +256,14 @@ void WidgetDownloads::removeCompletedFiles()
 
 void WidgetDownloads::removeSelectedEntries()
 {
-   QList<quint64> downloadIDs;
+   QSet<quint64> downloadIDs;
 
    QModelIndexList selectedRows = this->ui->tblDownloads->selectionModel()->selectedRows();
    bool allComplete = true;
    for (QListIterator<QModelIndex> i(selectedRows); i.hasNext();)
    {
       const QModelIndex& index = i.next();
-      downloadIDs.append(this->currentDownloadsModel->getDownloadIDs(index));
+      downloadIDs += this->currentDownloadsModel->getDownloadIDs(index).toSet();
       if (!this->currentDownloadsModel->isFileComplete(index))
          allComplete = false;
    }
@@ -258,10 +280,10 @@ void WidgetDownloads::removeSelectedEntries()
          msgBox.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
          msgBox.setDefaultButton(QMessageBox::Ok);
          if (msgBox.exec() == QMessageBox::Ok)
-            this->coreConnection->cancelDownloads(downloadIDs);
+            this->coreConnection->cancelDownloads(downloadIDs.toList());
       }
       else
-         this->coreConnection->cancelDownloads(downloadIDs);
+         this->coreConnection->cancelDownloads(downloadIDs.toList());
    }
 }
 
@@ -299,25 +321,31 @@ void WidgetDownloads::updateGlobalProgressBar()
 
 void WidgetDownloads::switchView(Protos::GUI::Settings::DownloadView view)
 {
-   if (view == Protos::GUI::Settings::TREE_VIEW && this->currentDownloadsModel != &this->downloadsTreeModel)
+   if (view == Protos::GUI::Settings::TREE_VIEW)
    {
       this->ui->butSwitchView->setIcon(QIcon(":/icons/ressources/list_view.png"));
       this->ui->butSwitchView->setToolTip(tr("Switch to file list view"));
       this->ui->tblDownloads->setIndentation(20);
 
-      this->currentDownloadsModel = &this->downloadsTreeModel;
-      this->ui->tblDownloads->setModel(this->currentDownloadsModel);
-      this->restoreTreeViewState();
+      if (this->currentDownloadsModel != &this->downloadsTreeModel)
+      {
+         this->currentDownloadsModel = &this->downloadsTreeModel;
+         this->ui->tblDownloads->setModel(this->currentDownloadsModel);
+         this->restoreTreeViewState();
+      }
    }
-   else if (view == Protos::GUI::Settings::LIST_VIEW && this->currentDownloadsModel != &this->downloadsFlatModel)
+   else if (view == Protos::GUI::Settings::LIST_VIEW)
    {
       this->ui->butSwitchView->setIcon(QIcon(":/icons/ressources/tree_view.png"));
       this->ui->butSwitchView->setToolTip(tr("Switch to tree view"));
       this->ui->tblDownloads->setIndentation(0);
 
-      this->saveTreeViewState();
-      this->currentDownloadsModel = &this->downloadsFlatModel;
-      this->ui->tblDownloads->setModel(this->currentDownloadsModel);
+      if (this->currentDownloadsModel != &this->downloadsFlatModel)
+      {
+         this->saveTreeViewState();
+         this->currentDownloadsModel = &this->downloadsFlatModel;
+         this->ui->tblDownloads->setModel(this->currentDownloadsModel);
+      }
    }
 
    SETTINGS.set("download_view", static_cast<quint32>(view));

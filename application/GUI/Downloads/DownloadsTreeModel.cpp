@@ -371,8 +371,9 @@ DownloadsTreeModel::Tree* DownloadsTreeModel::insertDirectory(Tree* parentTree, 
 
    // If the directory already exist, we just update it.
    for (int i = 0; i < parentTree->getNbChildren(); i++)
-      // Top entries may have the same name, in this case we also check their shared directory ID.
-      if ((parentTree != this->root || download.local_entry().shared_dir().id().hash() == parentTree->getChild(i)->getItem().local_entry().shared_dir().id().hash()) && download.local_entry().name() == parentTree->getChild(i)->getItem().local_entry().name())
+      // Top entries may have the same name, we can't use the shared id as he commented code below because it may be defined only for downloading and finished files.
+      //if ((parentTree != this->root || download.local_entry().shared_dir().id().hash() == parentTree->getChild(i)->getItem().local_entry().shared_dir().id().hash()) && download.local_entry().name() == parentTree->getChild(i)->getItem().local_entry().name())
+      if (download.local_entry().name() == parentTree->getChild(i)->getItem().local_entry().name())
          return this->update(parentTree->getChild(i), download);
 
    return this->insert(parentTree, download);

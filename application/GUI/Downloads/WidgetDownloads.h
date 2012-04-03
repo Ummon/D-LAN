@@ -66,6 +66,7 @@ namespace GUI
       void displayContextMenuDownloads(const QPoint& point);
       void downloadDoubleClicked(const QModelIndex& index);
       void openLocationSelectedEntries();
+      void moveSelectedEntriesToTop();
       void switchView();
       void removeCompletedFiles();
       void removeSelectedEntries();
