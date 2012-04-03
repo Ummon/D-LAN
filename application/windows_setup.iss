@@ -1,7 +1,7 @@
 [code]
-#define QtDir "C:/Qt/4.8.0"
-#define MingwDir "C:/Qt/mingw"
-#define ProtoBufDir "C:/protobuf"
+#define QtDir "E:/Qt/4.8.0"
+#define MingwDir "E:/Qt/qtcreator-2.4.82/mingw"
+#define ProtoBufDir "E:/protobuf"
 
 #define AppName "D-LAN"
 #define ExePath ".\Core\output\release\D-LAN.Core.exe"
@@ -22,18 +22,18 @@ OutputDir=Installations
 OutputBaseFilename={#AppName}-{#Version}{#VersionTag}-{#BuildTime}-Setup
 
 [Files]
-Source: Core/output/release/D-LAN.Core.exe; DestDir: {app}; Flags: comparetimestamp; 
-Source: GUI/output/release/D-LAN.GUI.exe; DestDir: {app}; Flags: comparetimestamp; 
-Source: Tools/LogViewer/output/release/LogViewer.exe; DestDir: {app}; Flags: comparetimestamp; 
-Source: Tools/PasswordHasher/output/release/PasswordHasher.exe; DestDir: {app}; Flags: comparetimestamp; 
-Source: translations/*.qm; DestDir: {app}/languages; Flags: comparetimestamp; 
-Source: {#QtDir}/bin/QtCore4.dll; DestDir: {app}; Flags: comparetimestamp; 
-Source: {#QtDir}/bin/QtGui4.dll; DestDir: {app}; Flags: comparetimestamp; 
-Source: {#QtDir}/bin/QtNetwork4.dll; DestDir: {app}; Flags: comparetimestamp; 
-Source: {#QtDir}/bin/QtNetwork4.dll; DestDir: {app}; Flags: comparetimestamp; 
-Source: {#MingwDir}/bin/mingwm10.dll; DestDir: {app}; Flags: comparetimestamp; 
-Source: {#MingwDir}/bin/libgcc_s_dw2-1.dll; DestDir: {app}; Flags: comparetimestamp; 
-;Source: {#ProtoBufDir}/src/.libs/libprotobuf-7.dll; DestDir: {app}; Flags: comparetimestamp; 
+Source: "Core/output/release/D-LAN.Core.exe"; DestDir: "{app}"; Flags: comparetimestamp
+Source: "GUI/output/release/D-LAN.GUI.exe"; DestDir: "{app}"; Flags: comparetimestamp
+Source: "Tools/LogViewer/output/release/LogViewer.exe"; DestDir: "{app}"; Flags: comparetimestamp
+Source: "Tools/PasswordHasher/output/release/PasswordHasher.exe"; DestDir: "{app}"; Flags: comparetimestamp
+Source: "translations/*.qm"; DestDir: "{app}/languages"; Flags: comparetimestamp
+Source: "{#QtDir}/bin/QtCore4.dll"; DestDir: "{app}"; Flags: comparetimestamp
+Source: "{#QtDir}/bin/QtGui4.dll"; DestDir: "{app}"; Flags: comparetimestamp
+Source: "{#QtDir}/bin/QtNetwork4.dll"; DestDir: "{app}"; Flags: comparetimestamp
+Source: "{#QtDir}/bin/QtNetwork4.dll"; DestDir: "{app}"; Flags: comparetimestamp
+Source: "{#MingwDir}/bin/mingwm10.dll"; DestDir: "{app}"; Flags: comparetimestamp
+Source: "{#MingwDir}/bin/libgcc_s_dw2-1.dll"; DestDir: "{app}"; Flags: comparetimestamp
+;Source: {#ProtoBufDir}/src/.libs/libprotobuf-7.dll; DestDir: {app}; Flags: comparetimestamp;
 
 [Icons]
 Name: "{group}\D-LAN"; Filename: "{app}\D-LAN.GUI.exe"; WorkingDir: "{app}"
