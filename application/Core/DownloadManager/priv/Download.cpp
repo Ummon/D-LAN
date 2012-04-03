@@ -70,17 +70,6 @@ bool Download::isStatusErroneous() const
    return this->status >= 0x20;
 }
 
-/**
-  * Force the status to 'QUEUED', usefull to force to retry to download an erroneous download.
-  * Do nothing if the status is DELETED, COMPLETE or PAUSED.
-  */
-void Download::resetStatus()
-{
-   if (this->status == DELETED || this->status == COMPLETE || this->status == PAUSED)
-      return;
-   this->status = QUEUED;
-}
-
 quint64 Download::getDownloadedBytes() const
 {
    return 0;
@@ -108,7 +97,7 @@ const Protos::Common::Entry& Download::getLocalEntry() const
 
 void Download::setAsDeleted()
 {
-   this->status = DELETED;
+   this->setStatus(DELETED);
 }
 
 void Download::remove()
@@ -125,6 +114,14 @@ bool Download::updateStatus()
 
 void Download::setStatus(Status newStatus)
 {
+   if (!this->isStatusErroneous() && newStatus >= 0x20)
+      emit becomeErroneous(this);
+
+#ifdef DEBUG
+   if (this->status != newStatus)
+      L_DEBU(QString("Download (%1) status change from %2 to %3").arg(Common::ProtoHelper::getRelativePath(this->localEntry)).arg(this->status).arg(newStatus));
+#endif
+
    this->status = newStatus;
 }
 

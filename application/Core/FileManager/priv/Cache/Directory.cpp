@@ -73,7 +73,7 @@ Directory::~Directory()
   * Only files ending with the setting "unfinished_suffix_term" will be removed.
   * @return The files which have all theirs hashes (complete).
   */
-QList<File*> Directory::restoreFromFileCache(const Protos::FileCache::Hashes_Dir& dir)
+QList<File*> Directory::restoreFromFileCache(const Protos::FileCache::Hashes::Dir& dir)
 {
    QMutexLocker locker(&this->mutex);
 
@@ -114,7 +114,7 @@ QList<File*> Directory::restoreFromFileCache(const Protos::FileCache::Hashes_Dir
    return ret;
 }
 
-void Directory::populateHashesDir(Protos::FileCache::Hashes_Dir& dirToFill) const
+void Directory::populateHashesDir(Protos::FileCache::Hashes::Dir& dirToFill) const
 {
    QList<Directory*> subDirsCopy;
    QList<File*> filesCopy;

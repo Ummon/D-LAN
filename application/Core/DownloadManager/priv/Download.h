@@ -65,7 +65,6 @@ namespace DM
       Status getStatus() const;
 
       bool isStatusErroneous() const;
-      void resetStatus();
 
       virtual quint64 getDownloadedBytes() const;
       PM::IPeer* getPeerSource() const;
@@ -76,6 +75,9 @@ namespace DM
 
       void setAsDeleted();
       virtual void remove();
+
+   signals:
+      void becomeErroneous(Download*);
 
    public slots:
       virtual bool updateStatus();

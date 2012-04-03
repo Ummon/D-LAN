@@ -49,7 +49,7 @@ DirDownload::DirDownload(
 
 DirDownload::~DirDownload()
 {
-   this->status = DELETED;
+   this->setStatus(DELETED);
 
    this->occupiedPeersAskingForEntries.setPeerAsFree(this->peerSource);
 

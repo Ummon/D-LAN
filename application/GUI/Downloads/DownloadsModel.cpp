@@ -96,49 +96,55 @@ QVariant DownloadsModel::getData(const Protos::GUI::State::Download& download, c
          switch (download.status())
          {
          case Protos::GUI::State::Download::UNKNOWN_PEER_SOURCE:
-            toolTip += tr("Unknown source peer: ");
+            toolTip += tr("Unknown source peer");
             break;
          case Protos::GUI::State::Download::ENTRY_NOT_FOUND:
-            toolTip += tr("The source peer doesn't have the entry: ");
+            toolTip += tr("The source peer doesn't have the entry");
             break;
          case Protos::GUI::State::Download::NO_SOURCE:
-            toolTip += tr("There is no source to download from: ");
+            toolTip += tr("There is no source to download from");
             break;
          case Protos::GUI::State::Download::NO_SHARED_DIRECTORY_TO_WRITE:
             toolTip += tr("No incoming folder");
             break;
 
          case Protos::GUI::State::Download::NO_ENOUGH_FREE_SPACE:
-            toolTip += tr("Not enough free space left: ");
+            toolTip += tr("Not enough free space left");
             break;
          case Protos::GUI::State::Download::UNABLE_TO_CREATE_THE_FILE:
-            toolTip += tr("Unable to create the file: ");
+            toolTip += tr("Unable to create the file");
             break;
          case Protos::GUI::State::Download::UNABLE_TO_RETRIEVE_THE_HASHES:
-            toolTip += tr("Unable to retrieve the hashes: ");
+            toolTip += tr("Unable to retrieve the hashes");
             break;
 
          case Protos::GUI::State::Download::TRANSFERT_ERROR:
-            toolTip += tr("Transfert error: ");
+            toolTip += tr("Transfert error");
             break;
          case Protos::GUI::State::Download::UNABLE_TO_OPEN_THE_FILE:
-            toolTip += tr("Unable to open the file: ");
+            toolTip += tr("Unable to open the file");
             break;
          case Protos::GUI::State::Download::FILE_IO_ERROR:
-            toolTip += tr("Unable to write the file: ");
+            toolTip += tr("Unable to write the file");
             break;
          case Protos::GUI::State::Download::FILE_NON_EXISTENT:
-            toolTip += tr("File non-existent: ");
+            toolTip += tr("File non-existent");
             break;
-         case Protos::GUI::State::Download::GET_TOO_MUCH_DATA:
-            toolTip += tr("We received too much data: ");
+         case Protos::GUI::State::Download::GOT_TOO_MUCH_DATA:
+            toolTip += tr("We received too much data");
             break;
          case Protos::GUI::State::Download::HASH_MISSMATCH:
-            toolTip += tr("Data received do not match the hash: ");
+            toolTip += tr("Data received do not match the hash");
             break;
          default:;
          }
-         toolTip += this->getPath(index);
+         const QString& path = this->getPath(index);
+         if (!path.isEmpty())
+         {
+            if (!toolTip.isEmpty())
+               toolTip += ", ";
+            toolTip += this->getPath(index);
+         }
          return toolTip;
       }
 
@@ -189,7 +195,7 @@ QList<int> DownloadsModel::getNonFilteredDownloadIndices(const Protos::GUI::Stat
       case Protos::GUI::State::Download::UNABLE_TO_OPEN_THE_FILE:
       case Protos::GUI::State::Download::FILE_IO_ERROR:
       case Protos::GUI::State::Download::FILE_NON_EXISTENT:
-      case Protos::GUI::State::Download::GET_TOO_MUCH_DATA:
+      case Protos::GUI::State::Download::GOT_TOO_MUCH_DATA:
       case Protos::GUI::State::Download::HASH_MISSMATCH:
          if (!(statusToFilter & STATUS_INACTIVE))
             indices << i;

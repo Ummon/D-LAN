@@ -95,6 +95,7 @@ namespace DM
    private:
       bool tryToLinkToAnExistingFile();
       void connectChunkDownloadSignals(QSharedPointer<ChunkDownload> chunkDownload);
+      void reset();
 
       QSharedPointer<FM::IFileManager> fileManager;
       QSharedPointer<PM::IPeerManager> peerManager;

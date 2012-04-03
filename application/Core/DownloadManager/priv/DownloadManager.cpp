@@ -178,6 +178,7 @@ Download* DownloadManager::addDownload(const Protos::Common::Entry& remoteEntry,
       return 0;
    }
 
+   connect(newDownload, SIGNAL(becomeErroneous(Download*)), this, SLOT(downloadStatusBecomeErroneous(Download*)));
    this->downloadQueue.insert(position, newDownload);
    newDownload->start();
 
@@ -368,12 +369,7 @@ void DownloadManager::scanTheQueue()
              break;
 
       if (fileDownload->isStatusErroneous())
-      {
-         this->downloadQueue.setDownloadAsErroneous(fileDownload);
-         this->rescanTimer.start();
-         chunkDownload.clear();
          continue;
-      }
 
       chunkDownload = fileDownload->getAChunkToDownload();
 
@@ -397,7 +393,7 @@ void DownloadManager::rescanTimerActivated()
    Download* download = this->downloadQueue.getAnErroneousDownload();
    if (download && download->isStatusErroneous())
    {
-      download->resetStatus();
+      download->updateStatus();
       L_DEBU(QString("Rescan timer timedout, the queue will be recanned. File rested : %1").arg(Common::ProtoHelper::getRelativePath(download->getLocalEntry())));
       this->rescanTimer.start();
       this->scanTheQueue();
@@ -412,6 +408,16 @@ void DownloadManager::chunkDownloadFinished()
    L_DEBU(QString("DownloadManager::chunkDownloadFinished, numberOfDownloadThreadRunning = %1").arg(this->numberOfDownloadThreadRunning));
    this->sender()->disconnect(this, SLOT(chunkDownloadFinished()));
    this->numberOfDownloadThreadRunning--;
+}
+
+/**
+  * When a download status become erroneous a timer is activated. This will check
+  * the erroneous downloads periodically.
+  */
+void DownloadManager::downloadStatusBecomeErroneous(Download* download)
+{
+   this->downloadQueue.setDownloadAsErroneous(download);
+   this->rescanTimer.start();
 }
 
 /**

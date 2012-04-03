@@ -90,6 +90,7 @@ namespace DM
       void scanTheQueue();
       void rescanTimerActivated();
       void chunkDownloadFinished();
+      void downloadStatusBecomeErroneous(Download* download);
 
    private:
       void loadQueueFromFile();

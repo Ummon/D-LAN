@@ -83,6 +83,7 @@ namespace DM
 
       bool startDownloading();
       void tryToRemoveItsIncompleteFile();
+      void reset();
 
    signals:
       void downloadStarted();

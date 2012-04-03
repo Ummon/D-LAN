@@ -393,6 +393,11 @@ void ChunkDownload::tryToRemoveItsIncompleteFile()
       this->chunk->removeItsIncompleteFile();
 }
 
+void ChunkDownload::reset()
+{
+   this->chunk.clear();
+}
+
 void ChunkDownload::result(const Protos::Core::GetChunkResult& result)
 {
    if (result.status() != Protos::Core::GetChunkResult_Status_OK)
