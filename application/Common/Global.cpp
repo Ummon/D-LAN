@@ -439,20 +439,20 @@ QString Global::getDataFolder(DataFolderType type, bool create)
 #ifdef Q_OS_WIN32
       TCHAR dataPath[MAX_PATH];
       if (!SUCCEEDED(SHGetFolderPath(NULL, type == ROAMING ? CSIDL_APPDATA : CSIDL_LOCAL_APPDATA, NULL, 0, dataPath)))
-         throw UnableToGetFolder(QString("Unable to get the %1: SHGetFolderPath failed").arg(type == ROAMING ? "roaming user folder path" : "local user folder path"));
+         throw UnableToGetFolder(QString("Unable to get the %1: SHGetFolderPath failed").arg(type == ROAMING ? "roaming user directory path" : "local user directory path"));
 
       const QString dataFolderPath = QString::fromUtf16((ushort*)dataPath);
       const QDir dataFolder(dataFolderPath);
 
       if (create && !dataFolder.exists(Constants::APPLICATION_FOLDER_NAME))
          if (!dataFolder.mkdir(Constants::APPLICATION_FOLDER_NAME))
-            throw UnableToGetFolder(QString("Unable to create the folder %1 in %2").arg(Constants::APPLICATION_FOLDER_NAME).arg(dataFolder.absolutePath()));
+            throw UnableToGetFolder(QString("Unable to create the directory %1 in %2").arg(Constants::APPLICATION_FOLDER_NAME).arg(dataFolder.absolutePath()));
 
       return dataFolder.absoluteFilePath(Constants::APPLICATION_FOLDER_NAME);
 #else
       if (create && !QDir::home().exists(Constants::APPLICATION_FOLDER_NAME))
          if (!QDir::home().mkdir(Constants::APPLICATION_FOLDER_NAME))
-             throw UnableToGetFolder(QString("Unable to create the folder %1 in %2").arg(Constants::APPLICATION_FOLDER_NAME).arg(QDir::home().absolutePath()));
+             throw UnableToGetFolder(QString("Unable to create the directory %1 in %2").arg(Constants::APPLICATION_FOLDER_NAME).arg(QDir::home().absolutePath()));
 
       return QDir::home().absoluteFilePath(Constants::APPLICATION_FOLDER_NAME);
 #endif

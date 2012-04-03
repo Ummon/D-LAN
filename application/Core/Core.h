@@ -65,7 +65,7 @@ namespace CoreSpace
 
       QTranslator translator;
 
-      struct TheLastWords { ~TheLastWords() { L_USER(QObject::tr("Core shutdown")); } } theLastWords;
+      struct TheLastWords { ~TheLastWords() { L_USER(QObject::tr("Shutdown")); } } theLastWords;
 
    protected:
       QSharedPointer<FM::IFileManager> fileManager;

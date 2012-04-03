@@ -58,8 +58,8 @@ QStringList Utils::askForDirectories(QSharedPointer<RCC::ICoreConnection> coreCo
    else
    {
       RemoteFileDialog fileDialog;
-      fileDialog.setWindowTitle("Remote folder");
-      fileDialog.setText("Remote folder to share : ");
+      fileDialog.setWindowTitle("Remote directory");
+      fileDialog.setText("Remote directory to share : ");
       if (fileDialog.exec())
       {
          return QStringList() << fileDialog.getFolder();

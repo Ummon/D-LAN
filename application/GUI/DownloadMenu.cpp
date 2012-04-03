@@ -45,7 +45,7 @@ void DownloadMenu::show(const QPoint& globalPosition)
    {
       QAction* actionDownload = new QAction(
          QIcon(":/icons/ressources/download.png"),
-         tr("Download selected items to the first shared folder with enough free space"),
+         tr("Download selected items to the first directory folder with enough free space"),
          &menu
       );
       connect(actionDownload, SIGNAL(triggered()), this, SIGNAL(download()));

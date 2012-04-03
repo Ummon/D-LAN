@@ -56,7 +56,7 @@ void Tests::initTestCase()
    try
    {
       QString tempFolder = Common::Global::setCurrentDirToTemp("PeerManagerTests");
-      qDebug() << "Application folder path (where the persistent data is put) : " <<  Global::getDataFolder(Common::Global::LOCAL, false);
+      qDebug() << "Application directory path (where the persistent data is put) : " <<  Global::getDataFolder(Common::Global::LOCAL, false);
       qDebug() << "The file created during this test are put in : " << tempFolder;
    }
    catch(Common::Global::UnableToSetTempDirException& e)

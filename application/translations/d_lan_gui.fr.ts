@@ -99,8 +99,12 @@
 <context>
     <name>GUI::DirListModel</name>
     <message>
-        <location filename="../GUI/Settings/DirListModel.cpp" line="+181"/>
         <source>Folder</source>
+        <translation type="obsolete">Dossier</translation>
+    </message>
+    <message>
+        <location filename="../GUI/Settings/DirListModel.cpp" line="+181"/>
+        <source>Directory</source>
         <translation>Dossier</translation>
     </message>
     <message>
@@ -117,12 +121,16 @@
 <context>
     <name>GUI::DownloadMenu</name>
     <message>
-        <location filename="../GUI/DownloadMenu.cpp" line="+46"/>
         <source>Download selected items to the first shared folder with enough free space</source>
+        <translation type="obsolete">Télécharger les éléments sélectionnés dans le premier dossier partagé avec assez de place libre</translation>
+    </message>
+    <message>
+        <location filename="../GUI/DownloadMenu.cpp" line="+48"/>
+        <source>Download selected items to the first directory folder with enough free space</source>
         <translation>Télécharger les éléments sélectionnés dans le premier dossier partagé avec assez de place libre</translation>
     </message>
     <message>
-        <location line="+11"/>
+        <location line="+12"/>
         <source>Download selected items to %1</source>
         <translation>Télécharger les éléments dans %1</translation>
     </message>
@@ -136,43 +144,76 @@
     <name>GUI::DownloadsModel</name>
     <message>
         <location filename="../GUI/Downloads/DownloadsModel.cpp" line="+99"/>
-        <source>Unknown source peer: </source>
-        <translation>Source inconnue:  </translation>
+        <source>Source peer offline (%1)</source>
+        <translation>Le pair source n&apos;est pas en ligne (%1)</translation>
     </message>
     <message>
         <location line="+3"/>
-        <source>The source peer doesn&apos;t have the entry: </source>
-        <translation>La source ne possède pas l&apos;élément: </translation>
+        <source>The source peer doesn&apos;t have the entry</source>
+        <translation>Le pair source ne possède pas l&apos;élément</translation>
     </message>
     <message>
         <location line="+3"/>
-        <source>There is no source to download from: </source>
-        <translation>Aucun paire ne possède cet élément: </translation>
+        <source>There is no source to download from</source>
+        <translation>Il n&apos;y a aucune source</translation>
+    </message>
+    <message>
+        <source>No incoming folder</source>
+        <translation type="obsolete"> </translation>
     </message>
     <message>
         <location line="+3"/>
-        <source>No incoming folder: </source>
-        <translation>Aucun dossier partagé disponible où mettre l&apos;élément: </translation>
+        <source>No incoming directory</source>
+        <translation>Aucun dossier partagé défini</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Not enough free space left</source>
+        <translation>Il ne reste pas assez d&apos;espace de stockage</translation>
     </message>
     <message>
         <location line="+3"/>
-        <source>Not enough free space left: </source>
-        <translation>Pas assez d&apos;espace libre: </translation>
+        <source>Unable to create the file</source>
+        <translation>Impossible de créer le fichier</translation>
     </message>
     <message>
         <location line="+3"/>
-        <source>Unable to create the file: </source>
-        <translation>Impossible de créer le fichier: </translation>
+        <source>Unable to retrieve the hashes</source>
+        <translation>Impossible de récupérer les empreintes</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Transfert error</source>
+        <translation>Erreur de transfert</translation>
     </message>
     <message>
         <location line="+3"/>
-        <source>Unable to retrieve the hashes: </source>
-        <translation>Impossible de récupérer les empeintes: </translation>
+        <source>Unable to open the file</source>
+        <translation>Impossible d&apos;ouvrir le fichier</translation>
     </message>
     <message>
         <location line="+3"/>
-        <source>Transfert error: </source>
-        <translation>Erreur de transfert: </translation>
+        <source>Unable to write the file</source>
+        <translation>Impossible d&apos;écrire dans le fichier</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>The local file has been deleted</source>
+        <translation>Le fichier local a été supprimé</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Too much data received</source>
+        <translation>Trop de données reçues</translation>
+    </message>
+    <message>
+        <source>We received too much data</source>
+        <translation type="obsolete">Trop de données reçues</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Data received do not match the hash</source>
+        <translation>Les données reçues ne correspondent pas aux empreintes</translation>
     </message>
 </context>
 <context>
@@ -292,8 +333,12 @@
         <translation>Fichier</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Folder</source>
+        <translation type="obsolete">Dossier</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Directory</source>
         <translation>Dossier</translation>
     </message>
     <message>
@@ -353,7 +398,7 @@
     <message>
         <location line="+4"/>
         <source>hashing in progress..</source>
-        <translation>Calcul des hashs en cours..</translation>
+        <translation>Calcul des empreintes en cours..</translation>
     </message>
     <message>
         <location line="+5"/>
@@ -409,12 +454,17 @@
 <context>
     <name>GUI::WidgetDownloads</name>
     <message>
-        <location filename="../GUI/Downloads/WidgetDownloads.cpp" line="+189"/>
+        <location filename="../GUI/Downloads/WidgetDownloads.cpp" line="+181"/>
         <source>Open location</source>
         <translation>Ouvrir le dossier</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+4"/>
+        <source>Move to top</source>
+        <translation>Déplacer tout en haut</translation>
+    </message>
+    <message>
+        <location line="+2"/>
         <source>Remove completed files</source>
         <translation>Enlever les fichiers complets</translation>
     </message>
@@ -424,7 +474,7 @@
         <translation>Enlever les éléments sélectionnés</translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="+4"/>
         <source>Pause selected entries</source>
         <translation>Mettre en pause les éléments sélectionnés</translation>
     </message>
@@ -434,17 +484,17 @@
         <translation>Enlever la pause des éléments sélectionnés</translation>
     </message>
     <message>
-        <location line="+109"/>
+        <location line="+135"/>
         <source>Switch to file list view</source>
         <translation>Basculer sur la liste des fichiers</translation>
     </message>
     <message>
-        <location line="+10"/>
+        <location line="+13"/>
         <source>Switch to tree view</source>
         <translation>Basculer sur la vue en arbre</translation>
     </message>
     <message>
-        <location line="+14"/>
+        <location line="+17"/>
         <source>&lt;All&gt;</source>
         <translation>&lt;Tous&gt;</translation>
     </message>
@@ -644,16 +694,16 @@
 <context>
     <name>WidgetBrowse</name>
     <message>
-        <location filename="../GUI/Browse/WidgetBrowse.ui" line="+48"/>
-        <location filename="../GUI/.tmp/debug/ui_WidgetBrowse.h" line="+67"/>
-        <location filename="../GUI/.tmp/release/ui_WidgetBrowse.h" line="+67"/>
         <source>Download selected items to the first shared folder with enough free space</source>
-        <translation>Télécharger les éléments sélectionnés dans le premier dossier partagé avec assez de place libre</translation>
+        <translation type="obsolete">Télécharger les éléments sélectionnés dans le premier dossier partagé avec assez de place libre</translation>
+    </message>
+    <message>
+        <location filename="../GUI/Browse/WidgetBrowse.ui" line="+48"/>
+        <source>Download selected items to the first shared directory with enough free space</source>
+        <translation>Télécharger les éléments dans le premier dossier partagé avec assez de place</translation>
     </message>
     <message>
         <location line="+3"/>
-        <location filename="../GUI/.tmp/debug/ui_WidgetBrowse.h" line="+2"/>
-        <location filename="../GUI/.tmp/release/ui_WidgetBrowse.h" line="+2"/>
         <source>Download selected items</source>
         <translation>Télécharger les éléments sélectionnés</translation>
     </message>
@@ -725,12 +775,16 @@
     <message>
         <location line="+34"/>
         <location filename="../GUI/.tmp/debug/ui_WidgetSearch.h" line="+2"/>
+        <source>Download selected items to the first shared directory with enough free space</source>
+        <translation>Télécharger les éléments dans le premier dossier partagé avec assez de place</translation>
+    </message>
+    <message>
         <location filename="../GUI/.tmp/release/ui_WidgetSearch.h" line="+2"/>
         <source>Download selected items to the first shared folder with enough free space</source>
         <translation>Télécharger les éléments sélectionnés dans le premier dossier partagé avec assez de place libre</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location filename="../GUI/Search/WidgetSearch.ui" line="+3"/>
         <location filename="../GUI/.tmp/debug/ui_WidgetSearch.h" line="+2"/>
         <location filename="../GUI/.tmp/release/ui_WidgetSearch.h" line="+2"/>
         <source>Download selected items</source>

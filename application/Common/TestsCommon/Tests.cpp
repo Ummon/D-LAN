@@ -40,7 +40,7 @@ Tests::Tests()
 
 void Tests::initTestCase()
 {
-   qDebug() << "Application folder path (where the settings and persistent data are put) : " << Global::getDataFolder(Common::Global::ROAMING, false);
+   qDebug() << "Application directory path (where the settings and persistent data are put) : " << Global::getDataFolder(Common::Global::ROAMING, false);
 }
 
 void Tests::nCombinations()

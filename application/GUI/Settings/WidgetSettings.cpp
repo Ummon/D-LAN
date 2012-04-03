@@ -343,8 +343,8 @@ void WidgetSettings::newState(const Protos::GUI::State& state)
       {
          if (QMessageBox::question(
                this,
-               "No shared folder",
-               "You don't have any shared folder, would you like to choose one?",
+               "No directory folder",
+               "You don't have any shared directory, would you like to choose one?",
                QMessageBox::Yes,
                QMessageBox::No
             ) == QMessageBox::Yes)

@@ -119,7 +119,7 @@ QVariant SearchModel::headerData(int section, Qt::Orientation orientation, int r
       switch (section)
       {
       case 0: return tr("Filename");
-      case 1: return tr("Folder");
+      case 1: return tr("Directory");
       case 2: return tr("Relevance");
       case 3: return tr("Peer");
       case 4: return tr("Size");

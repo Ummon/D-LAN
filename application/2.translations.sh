@@ -2,6 +2,7 @@
 # Generate the 'ts' files the compile them to 'qm' files
 #set -o errexit
 
+LANGS="fr"
 TS_DIR=translations
 QM_DIR=languages
 
@@ -10,8 +11,15 @@ cd $TS_DIR
 # We should use the project files, but there is a bug described here: https://bugreports.qt-project.org/browse/QTBUG-24587
 # lupdate Core.pro
 # lupdate GUI.pro
-lupdate -no-obsolete -codecfortr UTF-8 ../GUI ../Common/RemoteCoreController -ts d_lan_gui.fr.ts d_lan_gui.ko.ts
-lupdate -no-obsolete -codecfortr UTF-8 ../Core -ts d_lan_core.fr.ts d_lan_core.ko.ts
+
+for Lang in $LANGS
+do
+   TS_FILES_GUI="$TS_FILES_GUI d_lan_gui.$Lang.ts"
+   TS_FILES_CORE="$TS_FILES_CORE d_lan_core.$Lang.ts"
+done
+
+lupdate -codecfortr UTF-8 ../GUI ../Common/RemoteCoreController -ts $TS_FILES_GUI
+lupdate -codecfortr UTF-8 ../Core -ts $TS_FILES_CORE
 
 
 for SubSystem in GUI Core

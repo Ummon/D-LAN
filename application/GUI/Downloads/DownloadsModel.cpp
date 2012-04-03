@@ -96,7 +96,7 @@ QVariant DownloadsModel::getData(const Protos::GUI::State::Download& download, c
          switch (download.status())
          {
          case Protos::GUI::State::Download::UNKNOWN_PEER_SOURCE:
-            toolTip += tr("Unknown source peer (%1)").arg(Common::ProtoHelper::getStr(download, &Protos::GUI::State::Download::peer_source_nick));
+            toolTip += tr("Source peer offline (%1)").arg(Common::ProtoHelper::getStr(download, &Protos::GUI::State::Download::peer_source_nick));
             break;
          case Protos::GUI::State::Download::ENTRY_NOT_FOUND:
             toolTip += tr("The source peer doesn't have the entry");
@@ -105,7 +105,7 @@ QVariant DownloadsModel::getData(const Protos::GUI::State::Download& download, c
             toolTip += tr("There is no source to download from");
             break;
          case Protos::GUI::State::Download::NO_SHARED_DIRECTORY_TO_WRITE:
-            toolTip += tr("No incoming folder");
+            toolTip += tr("No incoming directory");
             break;
 
          case Protos::GUI::State::Download::NO_ENOUGH_FREE_SPACE:
@@ -131,7 +131,7 @@ QVariant DownloadsModel::getData(const Protos::GUI::State::Download& download, c
             toolTip += tr("The local file has been deleted");
             break;
          case Protos::GUI::State::Download::GOT_TOO_MUCH_DATA:
-            toolTip += tr("We received too much data");
+            toolTip += tr("Too much data received");
             break;
          case Protos::GUI::State::Download::HASH_MISSMATCH:
             toolTip += tr("Data received do not match the hash");
