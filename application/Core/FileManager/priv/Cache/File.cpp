@@ -662,7 +662,7 @@ void File::deleteIfIncomplete()
 {
    this->mutex.lock();
 
-   if (!this->isComplete() && !this->tryToRename)
+   if (!this->complete && !this->tryToRename)
    {
       this->removeUnfinishedFiles();
       this->mutex.unlock();
@@ -681,15 +681,13 @@ void File::removeUnfinishedFiles()
 {
    QMutexLocker locker(&this->mutex);
 
-   if (!this->isComplete() && !this->tryToRename)
+   if (!this->complete && !this->tryToRename)
    {
       QMutexLocker lockerWrite(&this->writeLock);
       QMutexLocker lockerRead(&this->readLock);
 
-
-      this->cache->getFilePool().release(this->fileInReadMode, this->size < CHUNK_SIZE);
+      this->cache->getFilePool().forceReleaseAll(this->getFullPath());
       this->fileInReadMode = 0;
-      this->cache->getFilePool().release(this->fileInWriteMode, this->size < CHUNK_SIZE);
       this->fileInWriteMode = 0;
 
       if (!QFile::remove(this->getFullPath()))

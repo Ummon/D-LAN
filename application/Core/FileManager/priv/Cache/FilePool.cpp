@@ -5,6 +5,12 @@ using namespace FM;
 
 #include <priv/Log.h>
 
+/**
+  * @class FilePool
+  *
+  *
+  */
+
 FilePool::FilePool(QObject* parent) :
    QObject(parent)
 {
@@ -31,7 +37,7 @@ QFile* FilePool::open(const QString& path, QIODevice::OpenMode mode)
    {
       OpenedFile& file = i.next();
 
-      if (file.file->fileName() == path && file.mode == mode)
+      if (file.file->fileName() == path && file.mode == mode && !file.releasedTime.isNull())
       {
          L_DEBU(QString("FilePool::open(%1, %2): file already in cache").arg(path).arg(mode));
          file.releasedTime = QTime();
@@ -66,7 +72,7 @@ void FilePool::release(QFile* file, bool forceToClose)
          if (forceToClose)
          {
             L_DEBU(QString("FilePool::release(%1, %2): file forced to close").arg(file->fileName()).arg(forceToClose));
-            delete openedFile.file; // 'close()' is automatically called.
+            delete openedFile.file;
             i.remove();
          }
          else
@@ -77,6 +83,22 @@ void FilePool::release(QFile* file, bool forceToClose)
                QMetaObject::invokeMethod(&this->timer, "start");
          }
          break;
+      }
+   }
+}
+
+void FilePool::forceReleaseAll(const QString& path)
+{
+   QMutexLocker locker(&this->mutex);
+
+   for (QMutableListIterator<OpenedFile> i(this->files); i.hasNext();)
+   {
+      OpenedFile& openedFile = i.next();
+      if (openedFile.file->fileName() == path)
+      {
+            L_DEBU(QString("FilePool::forceReleaseAll(%1): file forced to release and close").arg(path));
+            delete openedFile.file;
+            i.remove();
       }
    }
 }
