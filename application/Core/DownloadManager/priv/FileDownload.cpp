@@ -231,36 +231,30 @@ QSharedPointer<ChunkDownload> FileDownload::getAChunkToDownload()
 
    if (!this->localEntry.exists())
    {
-      // Try to get the chunks from an existing file, it's useful when a download is taken from the saved queue.
-      if (!this->tryToLinkToAnExistingFile())
+      try
       {
-         try
-         {
-            this->chunksWithoutDownload = this->fileManager->newFile(this->localEntry);
+         this->chunksWithoutDownload = this->fileManager->newFile(this->localEntry);
 
-            for (int i = 0; !this->chunksWithoutDownload.isEmpty() && i < this->chunkDownloads.size(); i++)
-               this->chunkDownloads[i]->setChunk(this->chunksWithoutDownload.takeFirst());
-
-            this->localEntry.set_exists(true);
-         }
-         catch(FM::NoWriteableDirectoryException&)
-         {
-            L_DEBU(QString("There is no shared directory with writting rights for this download : %1").arg(Common::ProtoHelper::getStr(this->remoteEntry, &Protos::Common::Entry::name)));
-            this->setStatus(NO_SHARED_DIRECTORY_TO_WRITE);
-            return QSharedPointer<ChunkDownload>();
-         }
-         catch(FM::InsufficientStorageSpaceException&)
-         {
-            L_DEBU(QString("There is no enough space storage available for this download : %1").arg(Common::ProtoHelper::getStr(this->remoteEntry, &Protos::Common::Entry::name)));
-            this->setStatus(NO_ENOUGH_FREE_SPACE);
-            return QSharedPointer<ChunkDownload>();
-         }
-         catch(FM::UnableToCreateNewFileException&)
-         {
-            L_DEBU(QString("Unable to create the file, download : %1").arg(Common::ProtoHelper::getStr(this->remoteEntry, &Protos::Common::Entry::name)));
-            this->setStatus(UNABLE_TO_CREATE_THE_FILE);
-            return QSharedPointer<ChunkDownload>();
-         }
+         for (int i = 0; !this->chunksWithoutDownload.isEmpty() && i < this->chunkDownloads.size(); i++)
+            this->chunkDownloads[i]->setChunk(this->chunksWithoutDownload.takeFirst());
+      }
+      catch(FM::NoWriteableDirectoryException&)
+      {
+         L_DEBU(QString("There is no shared directory with writting rights for this download : %1").arg(Common::ProtoHelper::getStr(this->remoteEntry, &Protos::Common::Entry::name)));
+         this->setStatus(NO_SHARED_DIRECTORY_TO_WRITE);
+         return QSharedPointer<ChunkDownload>();
+      }
+      catch(FM::InsufficientStorageSpaceException&)
+      {
+         L_DEBU(QString("There is no enough space storage available for this download : %1").arg(Common::ProtoHelper::getStr(this->remoteEntry, &Protos::Common::Entry::name)));
+         this->setStatus(NO_ENOUGH_FREE_SPACE);
+         return QSharedPointer<ChunkDownload>();
+      }
+      catch(FM::UnableToCreateNewFileException&)
+      {
+         L_DEBU(QString("Unable to create the file, download : %1").arg(Common::ProtoHelper::getStr(this->remoteEntry, &Protos::Common::Entry::name)));
+         this->setStatus(UNABLE_TO_CREATE_THE_FILE);
+         return QSharedPointer<ChunkDownload>();
       }
 
       // 'tryToLinkToAnExistingFile(..)' above can return some completed chunks.
