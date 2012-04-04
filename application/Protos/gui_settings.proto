@@ -15,7 +15,6 @@ message Settings {
       
    optional uint32 max_chat_message_displayed = 4 [default = 1000];
    optional uint32 max_log_message_displayed = 5 [default = 500];
-   optional uint32 reconnect_period = 6 [default = 1000]; // [ms].
    optional uint32 search_time = 7 [default = 3000]; // [ms].
    optional uint32 socket_timeout = 8 [default = 5000]; // [ms].
    

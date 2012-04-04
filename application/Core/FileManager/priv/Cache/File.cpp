@@ -109,10 +109,10 @@ File::~File()
    this->deleteAllChunks();
 
    QMutexLocker lockerWrite(&this->writeLock);
-   delete this->fileInWriteMode;
+   this->cache->getFilePool().release(this->fileInWriteMode, true);
 
    QMutexLocker lockerRead(&this->readLock);
-   delete this->fileInReadMode;
+   this->cache->getFilePool().release(this->fileInReadMode, true);
 
    if (this->tryToRename)
       this->setAsComplete();
@@ -267,13 +267,10 @@ void File::newDataWriterCreated()
    this->numDataWriter++;
    if (this->numDataWriter == 1)
    {
-      this->fileInWriteMode = new QFile(this->getFullPath());
-      if (!this->fileInWriteMode->open(QIODevice::ReadWrite | QIODevice::Unbuffered)) // We have the same performance with or without "QIODevice::Unbuffered".
-      {
-         delete this->fileInWriteMode;
-         this->fileInWriteMode = 0;
+      // We have the same performance with or without "QIODevice::Unbuffered".
+      this->fileInWriteMode = this->cache->getFilePool().open(this->getFullPath(), QIODevice::ReadWrite | QIODevice::Unbuffered);
+      if (!this->fileInWriteMode)
          throw UnableToOpenFileInWriteModeException();
-      }
    }
 }
 
@@ -287,16 +284,11 @@ void File::newDataReaderCreated()
    this->numDataReader++;
    if (this->numDataReader == 1)
    {
-      this->fileInReadMode = new QFile(this->getFullPath());
-
       // Why a file in readonly need to be buffered? Without the flag "QIODevice::Unbuffered" a lot of memory is consumed for nothing
       // and this memory is not freed when the file is closed ('close()') but only when the QFile is deleted.
-      if (!this->fileInReadMode->open(QIODevice::ReadOnly | QIODevice::Unbuffered))
-      {
-         delete this->fileInReadMode;
-         this->fileInReadMode = 0;
-         throw UnableToOpenFileInReadModeException();
-      }
+      this->fileInReadMode = this->cache->getFilePool().open(this->getFullPath(), QIODevice::ReadOnly | QIODevice::Unbuffered);
+      if (!this->fileInReadMode)
+         throw UnableToOpenFileInWriteModeException();
    }
 }
 
@@ -306,7 +298,7 @@ void File::dataWriterDeleted()
 
    if (--this->numDataWriter == 0)
    {
-      delete this->fileInWriteMode;
+      this->cache->getFilePool().release(this->fileInWriteMode, this->size < CHUNK_SIZE);
       this->fileInWriteMode = 0;
    }
 }
@@ -317,7 +309,7 @@ void File::dataReaderDeleted()
 
    if (--this->numDataReader == 0)
    {
-      delete this->fileInReadMode;
+      this->cache->getFilePool().release(this->fileInReadMode, this->size < CHUNK_SIZE);
       this->fileInReadMode = 0;
 
       if (this->tryToRename)
@@ -623,7 +615,7 @@ void File::setAsComplete()
       }
       this->tryToRename = false;
 
-      delete this->fileInWriteMode;
+      this->cache->getFilePool().release(this->fileInWriteMode, true);
       this->fileInWriteMode = 0;
 
       const QString oldPath = this->getFullPath();
@@ -694,9 +686,10 @@ void File::removeUnfinishedFiles()
       QMutexLocker lockerWrite(&this->writeLock);
       QMutexLocker lockerRead(&this->readLock);
 
-      delete this->fileInReadMode;
+
+      this->cache->getFilePool().release(this->fileInReadMode, this->size < CHUNK_SIZE);
       this->fileInReadMode = 0;
-      delete this->fileInWriteMode;
+      this->cache->getFilePool().release(this->fileInWriteMode, this->size < CHUNK_SIZE);
       this->fileInWriteMode = 0;
 
       if (!QFile::remove(this->getFullPath()))
