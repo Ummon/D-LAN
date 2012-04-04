@@ -613,14 +613,14 @@
         <location filename="../GUI/.tmp/debug/ui_MainWindow.h" line="+2"/>
         <location filename="../GUI/.tmp/release/ui_MainWindow.h" line="+2"/>
         <source>Search among other peers &lt;ENTER&gt;</source>
-        <translation>Recherché parmi les autres pairs &lt;ENTER&gt;</translation>
+        <translation>Rechercher parmi les autres pairs &lt;ENTER&gt;</translation>
     </message>
     <message>
         <location line="+20"/>
         <location filename="../GUI/.tmp/debug/ui_MainWindow.h" line="+4"/>
         <location filename="../GUI/.tmp/release/ui_MainWindow.h" line="+4"/>
         <source>Search among its own files &lt;SHIFT-ENTER&gt;</source>
-        <translation>Recherché parmi ses propres fichiers &lt;SHIFT-ENTER&gt;</translation>
+        <translation>Rechercher parmi ses propres fichiers &lt;SHIFT-ENTER&gt;</translation>
     </message>
     <message>
         <location line="+22"/>
@@ -699,11 +699,13 @@
     </message>
     <message>
         <location filename="../GUI/Browse/WidgetBrowse.ui" line="+48"/>
+        <location filename="../GUI/.tmp/release/ui_WidgetBrowse.h" line="+67"/>
         <source>Download selected items to the first shared directory with enough free space</source>
         <translation>Télécharger les éléments dans le premier dossier partagé avec assez de place</translation>
     </message>
     <message>
         <location line="+3"/>
+        <location filename="../GUI/.tmp/release/ui_WidgetBrowse.h" line="+2"/>
         <source>Download selected items</source>
         <translation>Télécharger les éléments sélectionnés</translation>
     </message>
@@ -775,16 +777,16 @@
     <message>
         <location line="+34"/>
         <location filename="../GUI/.tmp/debug/ui_WidgetSearch.h" line="+2"/>
+        <location filename="../GUI/.tmp/release/ui_WidgetSearch.h" line="+2"/>
         <source>Download selected items to the first shared directory with enough free space</source>
         <translation>Télécharger les éléments dans le premier dossier partagé avec assez de place</translation>
     </message>
     <message>
-        <location filename="../GUI/.tmp/release/ui_WidgetSearch.h" line="+2"/>
         <source>Download selected items to the first shared folder with enough free space</source>
-        <translation>Télécharger les éléments sélectionnés dans le premier dossier partagé avec assez de place libre</translation>
+        <translation type="obsolete">Télécharger les éléments sélectionnés dans le premier dossier partagé avec assez de place libre</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/WidgetSearch.ui" line="+3"/>
+        <location line="+3"/>
         <location filename="../GUI/.tmp/debug/ui_WidgetSearch.h" line="+2"/>
         <location filename="../GUI/.tmp/release/ui_WidgetSearch.h" line="+2"/>
         <source>Download selected items</source>
