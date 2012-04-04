@@ -311,8 +311,10 @@ bool FileDownload::updateStatus()
    if (Download::updateStatus())
       return true;
 
+   Status newStatus = this->status;
+
    if (this->chunkDownloads.size() == NB_CHUNK)
-      this->setStatus(COMPLETE);
+      newStatus = COMPLETE;
 
    bool hasAtLeastAPeer = false;
    for (QListIterator< QSharedPointer<ChunkDownload> > i(this->chunkDownloads); i.hasNext();)
@@ -339,16 +341,16 @@ bool FileDownload::updateStatus()
          if (chunkDownload->hasAtLeastAPeer())
          {
             hasAtLeastAPeer = true;
-            this->setStatus(QUEUED);
+            newStatus = QUEUED;
          }
          else
          {
-            this->setStatus(NO_SOURCE);
+            newStatus = NO_SOURCE;
          }
       }
    }
 
-   if (this->status == COMPLETE)
+   if (newStatus == COMPLETE)
    {
       const QString sharedDir = this->fileManager->getSharedDir(this->localEntry.shared_dir().id().hash());
       L_USER(QString(tr("File completed: %1%2%3"))
@@ -359,8 +361,10 @@ bool FileDownload::updateStatus()
    }
    else if(!this->getHashesResult.isNull())
    {
-      this->setStatus(GETTING_THE_HASHES);
+      newStatus = GETTING_THE_HASHES;
    }
+
+   this->setStatus(newStatus);
 
    return false;
 }
