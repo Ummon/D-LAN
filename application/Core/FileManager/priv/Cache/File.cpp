@@ -668,13 +668,17 @@ int File::getNbChunks()
 
 void File::deleteIfIncomplete()
 {
-   QMutexLocker locker(&this->mutex);
+   this->mutex.lock();
 
    if (!this->isComplete() && !this->tryToRename)
    {
       this->removeUnfinishedFiles();
+      this->mutex.unlock();
       delete this;
+      return;
    }
+
+   this->mutex.unlock();
 }
 
 /**
