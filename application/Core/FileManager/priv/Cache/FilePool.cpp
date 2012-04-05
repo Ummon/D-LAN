@@ -8,7 +8,9 @@ using namespace FM;
 /**
   * @class FilePool
   *
-  *
+  * A file pool keeps a list of opened files ('open(..)').
+  * After a file becomes released ('release(..)' and 'forceReleaseAll(..)'), it stays in open state during at least 'TIME_KEEP_FILE_OPEN_MIN' and can be reused via a call to 'open(..)'.
+  * After the 'TIME_KEEP_FILE_OPEN_MIN' delay, the released file is deleted in the main Qt loop.
   */
 
 FilePool::FilePool(QObject* parent) :
