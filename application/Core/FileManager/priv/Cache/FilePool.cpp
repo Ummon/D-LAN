@@ -72,8 +72,10 @@ void FilePool::release(QFile* file, bool forceToClose)
          if (forceToClose)
          {
             L_DEBU(QString("FilePool::release(%1, %2): file forced to close").arg(file->fileName()).arg(forceToClose));
-            delete openedFile.file;
+            QFile* fileToDelete = openedFile.file;
             i.remove();
+            locker.unlock();
+            delete fileToDelete;
          }
          else
          {

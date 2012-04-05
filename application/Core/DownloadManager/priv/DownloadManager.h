@@ -72,7 +72,7 @@ namespace DM
 
       void pauseDownloads(QList<quint64> IDs, bool pause = true);
 
-      QList< QSharedPointer<IChunkDownload> > getUnfinishedChunks(int n) const;
+      QList< QSharedPointer<IChunkDownload> > getUnfinishedChunks(int n);
 
       int getDownloadRate();
 

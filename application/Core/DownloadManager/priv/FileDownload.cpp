@@ -273,7 +273,7 @@ QSharedPointer<ChunkDownload> FileDownload::getAChunkToDownload()
   */
 void FileDownload::getUnfinishedChunks(QList< QSharedPointer<IChunkDownload> >& chunks, int nMax) const
 {
-   if (this->status == COMPLETE || this->status == DELETED)
+   if (this->status == COMPLETE || this->status == DELETED || this->status == PAUSED)
       return;
 
    for (int i = 0; i < this->chunkDownloads.size() && i < nMax; i++)
