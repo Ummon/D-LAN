@@ -30,6 +30,7 @@ namespace LM
    class Entry : public IEntry
    {
       static const QString DATE_TIME_FORMAT;
+      static const QString DATE_TIME_FORMAT_WITH_MS;
       static const QString SEVERITIES_STR[];
       static QRegExp lineRegExp;
 

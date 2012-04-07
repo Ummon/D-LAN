@@ -24,7 +24,8 @@ using namespace LM;
 
 #include <Exceptions.h>
 
-const QString Entry::DATE_TIME_FORMAT("dd-MM-yyyy HH:mm:ss");
+const QString Entry::DATE_TIME_FORMAT("yyyy-MM-dd HH:mm:ss");
+const QString Entry::DATE_TIME_FORMAT_WITH_MS("yyyy-MM-dd HH:mm:ss.zzz");
 const QString Entry::SEVERITIES_STR[] = {"Fatal", "Error", "Warning", "Debug", "User", "Unkown"};
 QRegExp Entry::lineRegExp("(\\S{10} \\S{8})\\.(\\d{3}) \\[(.+)\\] \\{(.+)\\} \\((\\w+)\\) (?:<(\\S+:\\d+)> )?: (.*)");
 
@@ -94,9 +95,9 @@ QDateTime Entry::getDate() const
 QString Entry::getDateStr(bool withMs) const
 {
    if (withMs)
-      return date.toString("yyyy-MM-dd HH:mm:ss.zzz");
+      return date.toString(DATE_TIME_FORMAT_WITH_MS);
    else
-      return date.toString("yyyy-MM-dd HH:mm:ss");
+      return date.toString(DATE_TIME_FORMAT);
 }
 
 Severity Entry::getSeverity() const
