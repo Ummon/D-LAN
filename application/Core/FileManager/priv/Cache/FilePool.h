@@ -9,7 +9,6 @@
 
 namespace FM
 {
-
    class FilePool : public QObject
    {
       Q_OBJECT

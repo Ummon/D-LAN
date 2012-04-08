@@ -122,6 +122,8 @@ void FilePool::tryToDeleteReleasedFiles()
 
    L_DEBU(QString("FilePool::tryToDeleteReleasedFiles(): number of cached file : %1").arg(this->files.size()));
 
+   QList<QFile*> filesToDelete;
+
    bool stopTimer = true;
    for (QMutableListIterator<OpenedFile> i(this->files); i.hasNext();)
    {
@@ -131,7 +133,8 @@ void FilePool::tryToDeleteReleasedFiles()
          if (openedFile.releasedTime.elapsed() > TIME_KEEP_FILE_OPEN_MIN)
          {
             L_DEBU(QString("FilePool::tryToDeleteReleasedFiles(): file close : %1").arg(openedFile.file->fileName()));
-            delete openedFile.file;
+            filesToDelete << openedFile.file;
+            i.remove();
          }
          else
          {
@@ -144,5 +147,12 @@ void FilePool::tryToDeleteReleasedFiles()
    {
       L_DEBU("FilePool::tryToDeleteReleasedFiles(): timer stopped");
       this->timer.stop();
+   }
+
+   if (!filesToDelete.isEmpty())
+   {
+      locker.unlock();
+      for (QListIterator<QFile*> i(filesToDelete); i.hasNext();)
+         delete i.next();
    }
 }
