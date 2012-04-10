@@ -35,6 +35,7 @@
 #include <priv/FileUpdater/DirWatcher.h>
 #include <priv/Cache/SharedDirectory.h>
 #include <priv/Cache/Chunk.h>
+#include <priv/Cache/FilePool.h>
 
 namespace FM
 {
@@ -71,6 +72,8 @@ namespace FM
 
       quint64 getAmount() const;
 
+      FilePool& getFilePool() { return this->filePool; }
+
       void onEntryAdded(Entry* entry);
       void onEntryRemoved(Entry* entry);
       void onChunkHashKnown(QSharedPointer<Chunk> chunk);
@@ -93,6 +96,8 @@ namespace FM
       Directory* getWriteableDirectory(const QString& path, qint64 spaceNeeded) const;
 
       QList<SharedDirectory*> sharedDirs;
+
+      FilePool filePool;
 
       mutable QMutex mutex; ///< To protect all the data into the cache, files and directories.
    };

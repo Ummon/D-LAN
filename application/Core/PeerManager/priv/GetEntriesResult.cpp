@@ -38,6 +38,8 @@ void GetEntriesResult::start()
 void GetEntriesResult::doDeleteLater()
 {
    disconnect(this->socket.data(), SIGNAL(newMessage(Common::MessageHeader::MessageType, const google::protobuf::Message&)), this, SLOT(newMessage(Common::MessageHeader::MessageType, const google::protobuf::Message&)));
+   this->socket->finished();
+   this->socket.clear();
    this->deleteLater();
 }
 

@@ -69,7 +69,7 @@ namespace DM
         */
       virtual void pauseDownloads(QList<quint64> IDs, bool pause = true) = 0;
 
-      virtual QList< QSharedPointer<IChunkDownload> > getUnfinishedChunks(int n) const = 0;
+      virtual QList< QSharedPointer<IChunkDownload> > getUnfinishedChunks(int n) = 0;
 
       /**
         * @return Byte/s.

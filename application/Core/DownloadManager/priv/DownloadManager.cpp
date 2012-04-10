@@ -241,16 +241,16 @@ void DownloadManager::pauseDownloads(QList<quint64> IDs, bool pause)
       this->scanTheQueue();
 }
 
-QList< QSharedPointer<IChunkDownload> > DownloadManager::getUnfinishedChunks(int n) const
+QList< QSharedPointer<IChunkDownload> > DownloadManager::getUnfinishedChunks(int n)
 {
    QList< QSharedPointer<IChunkDownload> > unfinishedChunks;
 
-   for (int i = 0; i < this->downloadQueue.size(); i++)
+   FileDownload* fileDownload = 0;
+   DownloadQueue::ScanningIterator<IsDownloable> i(this->downloadQueue);
+   while (unfinishedChunks.size() < n)
    {
-      FileDownload* fileDownload = dynamic_cast<FileDownload*>(this->downloadQueue[i]);
-      if (!fileDownload)
-         continue;
-
+      if (!(fileDownload = static_cast<FileDownload*>(i.next())))
+          break;
       fileDownload->getUnfinishedChunks(unfinishedChunks, n - unfinishedChunks.size());
    }
 

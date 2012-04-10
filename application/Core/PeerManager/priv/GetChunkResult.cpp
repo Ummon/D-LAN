@@ -45,6 +45,7 @@ void GetChunkResult::doDeleteLater()
    // We must disconnect because 'this->socket->finished' can read some data and emit 'newMessage'.
    disconnect(this->socket.data(), SIGNAL(newMessage(Common::MessageHeader::MessageType, const google::protobuf::Message&)), this, SLOT(newMessage(Common::MessageHeader::MessageType, const google::protobuf::Message&)));
    this->socket->finished(this->isTimedout() ? ISocket::SFS_ERROR : this->status);
+   this->socket.clear();
    this->deleteLater();
 }
 

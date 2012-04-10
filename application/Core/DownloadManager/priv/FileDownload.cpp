@@ -231,36 +231,30 @@ QSharedPointer<ChunkDownload> FileDownload::getAChunkToDownload()
 
    if (!this->localEntry.exists())
    {
-      // Try to get the chunks from an existing file, it's useful when a download is taken from the saved queue.
-      if (!this->tryToLinkToAnExistingFile())
+      try
       {
-         try
-         {
-            this->chunksWithoutDownload = this->fileManager->newFile(this->localEntry);
+         this->chunksWithoutDownload = this->fileManager->newFile(this->localEntry);
 
-            for (int i = 0; !this->chunksWithoutDownload.isEmpty() && i < this->chunkDownloads.size(); i++)
-               this->chunkDownloads[i]->setChunk(this->chunksWithoutDownload.takeFirst());
-
-            this->localEntry.set_exists(true);
-         }
-         catch(FM::NoWriteableDirectoryException&)
-         {
-            L_DEBU(QString("There is no shared directory with writting rights for this download : %1").arg(Common::ProtoHelper::getStr(this->remoteEntry, &Protos::Common::Entry::name)));
-            this->setStatus(NO_SHARED_DIRECTORY_TO_WRITE);
-            return QSharedPointer<ChunkDownload>();
-         }
-         catch(FM::InsufficientStorageSpaceException&)
-         {
-            L_DEBU(QString("There is no enough space storage available for this download : %1").arg(Common::ProtoHelper::getStr(this->remoteEntry, &Protos::Common::Entry::name)));
-            this->setStatus(NO_ENOUGH_FREE_SPACE);
-            return QSharedPointer<ChunkDownload>();
-         }
-         catch(FM::UnableToCreateNewFileException&)
-         {
-            L_DEBU(QString("Unable to create the file, download : %1").arg(Common::ProtoHelper::getStr(this->remoteEntry, &Protos::Common::Entry::name)));
-            this->setStatus(UNABLE_TO_CREATE_THE_FILE);
-            return QSharedPointer<ChunkDownload>();
-         }
+         for (int i = 0; !this->chunksWithoutDownload.isEmpty() && i < this->chunkDownloads.size(); i++)
+            this->chunkDownloads[i]->setChunk(this->chunksWithoutDownload.takeFirst());
+      }
+      catch(FM::NoWriteableDirectoryException&)
+      {
+         L_DEBU(QString("There is no shared directory with writting rights for this download : %1").arg(Common::ProtoHelper::getStr(this->remoteEntry, &Protos::Common::Entry::name)));
+         this->setStatus(NO_SHARED_DIRECTORY_TO_WRITE);
+         return QSharedPointer<ChunkDownload>();
+      }
+      catch(FM::InsufficientStorageSpaceException&)
+      {
+         L_DEBU(QString("There is no enough space storage available for this download : %1").arg(Common::ProtoHelper::getStr(this->remoteEntry, &Protos::Common::Entry::name)));
+         this->setStatus(NO_ENOUGH_FREE_SPACE);
+         return QSharedPointer<ChunkDownload>();
+      }
+      catch(FM::UnableToCreateNewFileException&)
+      {
+         L_DEBU(QString("Unable to create the file, download : %1").arg(Common::ProtoHelper::getStr(this->remoteEntry, &Protos::Common::Entry::name)));
+         this->setStatus(UNABLE_TO_CREATE_THE_FILE);
+         return QSharedPointer<ChunkDownload>();
       }
 
       // 'tryToLinkToAnExistingFile(..)' above can return some completed chunks.
@@ -279,7 +273,7 @@ QSharedPointer<ChunkDownload> FileDownload::getAChunkToDownload()
   */
 void FileDownload::getUnfinishedChunks(QList< QSharedPointer<IChunkDownload> >& chunks, int nMax) const
 {
-   if (this->status == COMPLETE || this->status == DELETED)
+   if (this->status == COMPLETE || this->status == DELETED || this->status == PAUSED)
       return;
 
    for (int i = 0; i < this->chunkDownloads.size() && i < nMax; i++)
@@ -317,8 +311,10 @@ bool FileDownload::updateStatus()
    if (Download::updateStatus())
       return true;
 
+   Status newStatus = this->status;
+
    if (this->chunkDownloads.size() == NB_CHUNK)
-      this->setStatus(COMPLETE);
+      newStatus = COMPLETE;
 
    bool hasAtLeastAPeer = false;
    for (QListIterator< QSharedPointer<ChunkDownload> > i(this->chunkDownloads); i.hasNext();)
@@ -345,16 +341,16 @@ bool FileDownload::updateStatus()
          if (chunkDownload->hasAtLeastAPeer())
          {
             hasAtLeastAPeer = true;
-            this->setStatus(QUEUED);
+            newStatus = QUEUED;
          }
          else
          {
-            this->setStatus(NO_SOURCE);
+            newStatus = NO_SOURCE;
          }
       }
    }
 
-   if (this->status == COMPLETE)
+   if (newStatus == COMPLETE)
    {
       const QString sharedDir = this->fileManager->getSharedDir(this->localEntry.shared_dir().id().hash());
       L_USER(QString(tr("File completed: %1%2%3"))
@@ -365,8 +361,10 @@ bool FileDownload::updateStatus()
    }
    else if(!this->getHashesResult.isNull())
    {
-      this->setStatus(GETTING_THE_HASHES);
+      newStatus = GETTING_THE_HASHES;
    }
+
+   this->setStatus(newStatus);
 
    return false;
 }

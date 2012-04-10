@@ -11,7 +11,7 @@ package Protos.Core;
 /***** Multicast UDP messages. *****/
 // Im alive.
 // This message is sent periodically to all other peers (for example each 10s).
-// It send an array of hash chunks to know which one has which chunk.
+// It contains an array of hash chunks to know which peer has which chunk.
 // If a peer owns one or more chunk corresponding to the given hashes then it
 // will reply with a 'ChunksOwned' message.
 // These hashes can come from different files.

@@ -33,6 +33,9 @@ using namespace Common;
   * See the *.proto files in "/application/Protos" for more information.
   */
 
+/**
+  * Builds a null header, it can be tested with 'isNull()'.
+  */
 MessageHeader::MessageHeader() :
    type(NULL_MESS), size(0)
 {}

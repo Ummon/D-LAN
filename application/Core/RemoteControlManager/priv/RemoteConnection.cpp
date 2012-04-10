@@ -140,7 +140,7 @@ void RemoteConnection::refresh()
    Common::ProtoHelper::setStr(*state.mutable_myself(), &Protos::GUI::State::Peer::set_core_version, Common::Global::getVersionFull());
 
    state.set_integrity_check_enabled(SETTINGS.get<bool>("check_received_data_integrity"));
-   state.set_password_defined(SETTINGS.isSet("remote_password"));
+   state.set_password_defined(!SETTINGS.get<Common::Hash>("remote_password").isNull());
 
    // Peers.
    QList<PM::IPeer*> peers = this->peerManager->getPeers();
