@@ -89,7 +89,7 @@ QVariant DownloadsModel::getData(const Protos::GUI::State::Download& download, c
             const QString nick = this->peerListModel.getNick(peerID);
             if (nick.isNull())
                continue;
-            if (i != 1)
+            if (!peersStr.isEmpty())
                peersStr.append("\n");
             peersStr += nick;
          }

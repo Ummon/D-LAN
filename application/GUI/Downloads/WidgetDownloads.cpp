@@ -86,8 +86,17 @@ QSize DownloadsDelegate::sizeHint(const QStyleOptionViewItem& option, const QMod
 {
    QSize size = QStyledItemDelegate::sizeHint(option, index);
 
-   if (index.column() == 2)
+   switch (index.column())
+   {
+   case 2:
       size.setWidth(120);
+      break;
+   case 4:
+      if (index.data().toString().isEmpty())
+         size.setWidth(0);
+      break;
+   }
+
    return size;
 }
 
