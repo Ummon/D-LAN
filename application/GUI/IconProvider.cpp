@@ -30,6 +30,13 @@ using namespace GUI;
    // Nothing.
 #endif
 
+/**
+  * @class IconProvider
+  *
+  * @author Yann Diorcet
+  * @author Greg Burri
+  */
+
 QIcon IconProvider::getIcon(const Protos::Common::Entry& entry)
 {
    if (entry.type() == Protos::Common::Entry_Type_DIR)

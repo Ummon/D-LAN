@@ -69,7 +69,15 @@ namespace DM
         */
       virtual void pauseDownloads(QList<quint64> IDs, bool pause = true) = 0;
 
-      virtual QList< QSharedPointer<IChunkDownload> > getUnfinishedChunks(int n) = 0;
+      /**
+        * Return the n (at max) first unfinished chunks.
+        */
+      virtual QList< QSharedPointer<IChunkDownload> > getTheFirstUnfinishedChunks(int n) = 0;
+
+      /**
+        * Return the oldest updated chunks. Each time we know which peer owns a chunk, this chunk is updated.
+        */
+      virtual QList< QSharedPointer<IChunkDownload> > getTheOldestUnfinishedChunks(int n) = 0;
 
       /**
         * @return Byte/s.

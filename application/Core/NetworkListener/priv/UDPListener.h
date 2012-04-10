@@ -54,6 +54,8 @@ namespace NL
       // 2 -> 3 : BLAKE -> Sha-1
       static const quint32 PROTOCOL_VERSION = 3;
 
+      static const int MAX_NICK_LENGTH = 255; // Datagram UDP are limited in size, this limit avoid to fill the whole datagram with only a nickname.
+
    public:
       UDPListener(
          QSharedPointer<FM::IFileManager> fileManager,
@@ -86,6 +88,8 @@ namespace NL
       int writeMessageToBuffer(Common::MessageHeader::MessageType type, const google::protobuf::Message& message);
       Common::MessageHeader readDatagramToBuffer(QUdpSocket& socket, QHostAddress& peerAddress);
 
+      const int MAX_UDP_DATAGRAM_PAYLOAD_SIZE;
+
       char buffer[BUFFER_SIZE]; // Buffer used when sending or receiving datagram.
       char* const bodyBuffer;
 
@@ -104,6 +108,12 @@ namespace NL
       MTRand mtrand;
       quint64 currentIMAliveTag;
       QList< QSharedPointer<DM::IChunkDownload> > currentChunkDownloads;
+      enum HashRequestType
+      {
+         FIRST_HASHES,
+         OLDEST_HASHES
+      };
+      HashRequestType nextHashRequestType;
 
       QTimer timerIMAlive;
       QSharedPointer<LM::ILogger> loggerIMAlive; // A logger especially for the IMAlive message.

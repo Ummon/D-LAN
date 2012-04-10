@@ -22,7 +22,7 @@ LIBS += -L../../../Common/output/$$FOLDER \
     -lCommon
 POST_TARGETDEPS += ../../../Common/output/$$FOLDER/libCommon.a
 
-# FIXME : Should not be here, all dependencies are read from the prl file (see link_prl):
+# FIXME: Should not be here, all dependencies are read from the prl file (see link_prl):
 LIBS += -L../../../Common/LogManager/output/$$FOLDER \
     -lLogManager
 POST_TARGETDEPS += ../../../Common/LogManager/output/$$FOLDER/libLogManager.a

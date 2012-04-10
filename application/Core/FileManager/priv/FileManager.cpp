@@ -270,7 +270,7 @@ QList<Protos::Common::FindResult> FileManager::find(const QString& words, int ma
          entry.value->populateEntry(entryLevel->mutable_entry(), true);
 
          // We wouldn't use 'findResults.last().ByteSize()' because is too slow. Instead we call 'ByteSize()' for each entry and sum it.
-         const int entryByteSize = entryLevel->ByteSize() + 8; // Each entry take a bit of memory... (Value found with an empiric way..).
+         const int entryByteSize = entryLevel->ByteSize() + 8; // Each entry take a bit of memory... (Value found in an empiric way..).
          findResultCurrentSize += entryByteSize;
 
          if (findResultCurrentSize > maxSize)

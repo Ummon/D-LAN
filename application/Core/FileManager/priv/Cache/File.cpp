@@ -597,7 +597,7 @@ bool File::isComplete()
   * Set the file as complete, change its name from "<name>.unfinished" to "<name>".
   * If a file with the same name already exists it will be deleted.
   * The rename process can be only made if there is no reader, in a such case we will wait for the last reader finished.
-  * TODO: if the rename fail must we attempt later ? With a timer ?
+  * TODO: if the rename fail must we attempt later? With a timer?
   */
 void File::setAsComplete()
 {

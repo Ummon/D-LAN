@@ -20,7 +20,7 @@ message Language {
 
 // For identify a chunk or a user.
 message Hash {
-   optional bytes hash = 1; // 28 bytes. If it doesn't exist the hash is null.
+   optional bytes hash = 1; // 20 bytes. If it doesn't exist the hash is null.
 }
 
 message IP {

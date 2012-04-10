@@ -241,7 +241,7 @@ void DownloadManager::pauseDownloads(QList<quint64> IDs, bool pause)
       this->scanTheQueue();
 }
 
-QList< QSharedPointer<IChunkDownload> > DownloadManager::getUnfinishedChunks(int n)
+QList< QSharedPointer<IChunkDownload> > DownloadManager::getTheFirstUnfinishedChunks(int n)
 {
    QList< QSharedPointer<IChunkDownload> > unfinishedChunks;
 
@@ -255,6 +255,11 @@ QList< QSharedPointer<IChunkDownload> > DownloadManager::getUnfinishedChunks(int
    }
 
    return unfinishedChunks;
+}
+
+QList< QSharedPointer<IChunkDownload> > DownloadManager::getTheOldestUnfinishedChunks(int n)
+{
+   return this->downloadQueue.getTheOldestUnfinishedChunks(n);
 }
 
 int DownloadManager::getDownloadRate()
@@ -315,23 +320,24 @@ void DownloadManager::newEntries(const Protos::Common::Entries& remoteEntries)
   */
 void DownloadManager::peerNoLongerAskingForHashes(PM::IPeer* peer)
 {
-   L_DEBU(QString("Finish to ask hashes from peer: %1").arg(peer->getID().toStr()));
+   L_DEBU(QString("A peer is free from asking for hashes: %1").arg(peer->toStringLog()));
 
    if (!this->downloadQueue.isAPeerSource(peer->getID()))
       return;
 
    // We can't use 'downloadsIndexedBySourcePeerID' because the order matters.
-   for (int i = 0; i < this->downloadQueue.size(); i++)
-   {
-      FileDownload* fileDownload = dynamic_cast<FileDownload*>(this->downloadQueue[i]);
-      if (fileDownload && fileDownload->retrieveHashes())
+   DownloadQueue::ScanningIterator<IsDownloable> i(this->downloadQueue);
+   while (FileDownload* fileDownload = static_cast<FileDownload*>(i.next()))
+      if (fileDownload->retrieveHashes())
          break;
-   }
 }
 
+/**
+  * Search a directory to explore in the download queue.
+  */
 void DownloadManager::peerNoLongerAskingForEntries(PM::IPeer* peer)
 {
-   L_DEBU(QString("Finish to ask entries from peer: %1").arg(peer->getID().toStr()));
+   L_DEBU(QString("A peer is free from asking for entries: %1").arg(peer->toStringLog()));
 
    if (!this->downloadQueue.isAPeerSource(peer->getID()))
       return;
@@ -344,7 +350,7 @@ void DownloadManager::peerNoLongerAskingForEntries(PM::IPeer* peer)
 
 void DownloadManager::peerNoLongerDownloadingChunk(PM::IPeer* peer)
 {
-   L_DEBU(QString("A peer is free: %1, number of downloading thread : %2").arg(peer->getID().toStr()).arg(this->numberOfDownloadThreadRunning));
+   L_DEBU(QString("A peer is free from downloading: %1, number of downloading thread : %2").arg(peer->toStringLog()).arg(this->numberOfDownloadThreadRunning));
    this->scanTheQueue();
 }
 

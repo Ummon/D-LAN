@@ -63,6 +63,12 @@ void DownloadQueue::insert(int position, Download* download)
 
    this->downloads.insert(position, download);
    this->downloadsIndexedBySourcePeerID.insert(download->getPeerSource()->getID(), download);
+
+   if (FileDownload* fileDownload = dynamic_cast<FileDownload*>(download))
+   {
+      this->downloadsSortedByTime.insert(QTime(), fileDownload);
+      connect(fileDownload, SIGNAL(lastTimeGetAllUnfinishedChunksChanged(QTime)), this, SLOT(fileDownloadTimeChanged(QTime)), Qt::QueuedConnection);
+   }
 }
 
 Download* DownloadQueue::operator[] (int position) const
@@ -80,6 +86,10 @@ void DownloadQueue::remove(int position)
    this->updateMarkersRemove(position);
 
    Download* download = (*this)[position];
+
+   if (FileDownload* fileDownload = dynamic_cast<FileDownload*>(download))
+      this->downloadsSortedByTime.remove(fileDownload->getLastTimeGetAllUnfinishedChunks(), fileDownload);
+
    this->downloadsIndexedBySourcePeerID.remove(download->getPeerSource()->getID(), download);
    this->downloads.removeAt(position);
    this->erroneousDownloads.removeOne(download);
@@ -190,6 +200,8 @@ bool DownloadQueue::removeDownloads(const DownloadPredicate& predicate)
       {
          queueChanged = true;
          (*j)->setAsDeleted();
+         if (FileDownload* fileDownload = dynamic_cast<FileDownload*>(*j))
+            this->downloadsSortedByTime.remove(fileDownload->getLastTimeGetAllUnfinishedChunks(), fileDownload);
          this->downloadsIndexedBySourcePeerID.remove((*j)->getPeerSource()->getID(), *j);
          downloadsToDelete << *j;
          this->erroneousDownloads.removeOne(*j);
@@ -271,6 +283,22 @@ Download* DownloadQueue::getAnErroneousDownload()
    return 0;
 }
 
+QList< QSharedPointer<IChunkDownload> > DownloadQueue::getTheOldestUnfinishedChunks(int n)
+{
+   QList< QSharedPointer<IChunkDownload> > unfinishedChunks;
+
+   for (QMutableMapIterator<QTime, FileDownload*> i(this->downloadsSortedByTime); i.hasNext() && unfinishedChunks.size() < n;)
+   {
+      i.next();
+      if (i.value()->getStatus() == COMPLETE || i.value()->getStatus() == DELETED)
+         i.remove();
+      else
+         i.value()->getUnfinishedChunks(unfinishedChunks, n - unfinishedChunks.size());
+   }
+
+   return unfinishedChunks;
+}
+
 /**
   * Load the queue from the file and return it. Do not create the downloads itself.
   */
@@ -320,6 +348,13 @@ void DownloadQueue::saveToFile() const
    {
       L_ERRO(err.message);
    }
+}
+
+void DownloadQueue::fileDownloadTimeChanged(QTime oldTime)
+{
+   FileDownload* fileDownload = static_cast<FileDownload*>(this->sender());
+   this->downloadsSortedByTime.remove(oldTime, fileDownload);
+   this->downloadsSortedByTime.insert(fileDownload->getLastTimeGetAllUnfinishedChunks(), fileDownload);
 }
 
 void DownloadQueue::updateMarkersInsert(int position, Download* download)

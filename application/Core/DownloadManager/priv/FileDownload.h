@@ -21,6 +21,7 @@
 
 #include <QList>
 #include <QSharedPointer>
+#include <QTime>
 
 #include <Libs/MersenneTwister.h>
 
@@ -72,7 +73,9 @@ namespace DM
 
       QSharedPointer<ChunkDownload> getAChunkToDownload();
 
-      void getUnfinishedChunks(QList< QSharedPointer<IChunkDownload> >& chunks, int nMax) const;
+      void getUnfinishedChunks(QList< QSharedPointer<IChunkDownload> >& chunks, int nMax);
+
+      QTime getLastTimeGetAllUnfinishedChunks() const;
 
       void remove();
 
@@ -82,6 +85,7 @@ namespace DM
 
    signals:
       void newHashKnown();
+      void lastTimeGetAllUnfinishedChunksChanged(QTime oldTime);
 
    private slots:
       void retryToRetrieveHashes();
@@ -114,6 +118,8 @@ namespace DM
       QSharedPointer<PM::IGetHashesResult> getHashesResult;
 
       Common::TransferRateCalculator& transferRateCalculator;
+
+      QTime lastTimeGetAllUnfinishedChunks; // Updated when ALL hashes are send via the method 'getTheFirstUnfinishedChunks(..)'. Null if never.
    };
 }
 #endif

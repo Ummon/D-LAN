@@ -23,6 +23,8 @@
 
 #include <QList>
 #include <QMultiHash>
+#include <QMultiMap>
+#include <QTime>
 
 #include <Protos/common.pb.h>
 #include <Protos/gui_protocol.pb.h>
@@ -31,6 +33,7 @@
 #include <Common/Hash.h>
 
 #include <IDownload.h>
+#include <IChunkDownload.h>
 #include <priv/DownloadPredicate.h>
 
 namespace PM { class IPeer; }
@@ -40,8 +43,9 @@ namespace DM
    class Download;
    class FileDownload;
 
-   class DownloadQueue
+   class DownloadQueue : public QObject
    {
+      Q_OBJECT
    public:
       DownloadQueue();
       ~DownloadQueue();
@@ -63,8 +67,13 @@ namespace DM
       void setDownloadAsErroneous(Download* download);
       Download* getAnErroneousDownload();
 
+      QList< QSharedPointer<IChunkDownload> > getTheOldestUnfinishedChunks(int n);
+
       static Protos::Queue::Queue loadFromFile();
       void saveToFile() const;
+
+   private slots:
+      void fileDownloadTimeChanged(QTime oldTime);
 
    private:
       struct Marker;
@@ -93,6 +102,7 @@ namespace DM
 
       QList<Download*> downloads;
       QList<Download*> erroneousDownloads;
+      QMultiMap<QTime, FileDownload*> downloadsSortedByTime; // See 'FileDownload::lastTimeGetAllUnfinishedChunks'.
       QMultiHash<Common::Hash, Download*> downloadsIndexedBySourcePeerID;
    };
 }
