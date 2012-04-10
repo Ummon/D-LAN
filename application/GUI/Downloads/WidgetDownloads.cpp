@@ -119,6 +119,8 @@ WidgetDownloads::WidgetDownloads(QSharedPointer<RCC::ICoreConnection> coreConnec
    this->ui->tblDownloads->header()->setResizeMode(1, QHeaderView::ResizeToContents);
    this->ui->tblDownloads->header()->setResizeMode(2, QHeaderView::ResizeToContents);
    this->ui->tblDownloads->header()->setResizeMode(3, QHeaderView::ResizeToContents);
+   this->ui->tblDownloads->header()->setResizeMode(4, QHeaderView::ResizeToContents);
+   this->ui->tblDownloads->header()->setMinimumSectionSize(0);
 
    this->ui->tblDownloads->setSelectionBehavior(QAbstractItemView::SelectRows);
    this->ui->tblDownloads->setSelectionMode(QAbstractItemView::ExtendedSelection);

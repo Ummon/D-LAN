@@ -52,6 +52,8 @@ namespace GUI
         */
       virtual QString getPath(const QModelIndex& index, bool appendFilename = true) const = 0;
 
+      int columnCount(const QModelIndex& parent = QModelIndex()) const;
+
    protected slots:
       virtual void onNewState(const Protos::GUI::State& state) = 0;
 

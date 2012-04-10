@@ -104,11 +104,6 @@ int DownloadsFlatModel::rowCount(const QModelIndex& parent) const
    return this->downloads.size();
 }
 
-int DownloadsFlatModel::columnCount(const QModelIndex& parent) const
-{
-   return 4;
-}
-
 QVariant DownloadsFlatModel::data(const QModelIndex& index, int role) const
 {
    if (!index.isValid() || index.row() >= this->downloads.size())

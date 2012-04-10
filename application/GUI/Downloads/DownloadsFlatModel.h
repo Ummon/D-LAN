@@ -46,7 +46,6 @@ namespace GUI
       QString getPath(const QModelIndex& index, bool appendFilename = true) const;
 
       int rowCount(const QModelIndex& parent = QModelIndex()) const;
-      int columnCount(const QModelIndex& parent = QModelIndex()) const;
       QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const;
       Qt::DropActions supportedDropActions() const;
       Qt::ItemFlags flags(const QModelIndex& index) const;

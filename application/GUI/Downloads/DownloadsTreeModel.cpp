@@ -137,11 +137,6 @@ int DownloadsTreeModel::rowCount(const QModelIndex& parent) const
        return static_cast<Tree*>(parent.internalPointer())->getNbChildren();
 }
 
-int DownloadsTreeModel::columnCount(const QModelIndex& parent) const
-{
-   return 4;
-}
-
 QVariant DownloadsTreeModel::data(const QModelIndex& index, int role) const
 {
    if (!index.isValid())

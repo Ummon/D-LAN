@@ -36,61 +36,66 @@ DownloadsModel::DownloadsModel(QSharedPointer<RCC::ICoreConnection> coreConnecti
    connect(this->coreConnection.data(), SIGNAL(newState(Protos::GUI::State)), this, SLOT(onNewState(Protos::GUI::State)));
 }
 
+int DownloadsModel::columnCount(const QModelIndex& /*parent*/) const
+{
+   return 5;
+}
+
 QVariant DownloadsModel::getData(const Protos::GUI::State::Download& download, const QModelIndex& index, int role) const
 {
    switch (role)
    {
    case Qt::DisplayRole:
+      switch (index.column())
       {
-         switch (index.column())
-         {
-         case 0: return Common::ProtoHelper::getStr(download.local_entry(), &Protos::Common::Entry::name);
-         case 1: return Common::Global::formatByteSize(download.local_entry().size());
-         case 2:
-            return QVariant::fromValue(Progress(
-               download.local_entry().size() == 0 ? 0 : 10000 * download.downloaded_bytes() / download.local_entry().size(),
-               download.status(),
-               download.local_entry().type()
-            ));
-         case 3:
-            {
-               QString peersStr;
+      case 0: return Common::ProtoHelper::getStr(download.local_entry(), &Protos::Common::Entry::name);
+      case 1: return Common::Global::formatByteSize(download.local_entry().size());
+      case 2:
+         return QVariant::fromValue(Progress(
+            download.local_entry().size() == 0 ? 0 : 10000 * download.downloaded_bytes() / download.local_entry().size(),
+            download.status(),
+            download.local_entry().type()
+         ));
+      case 3:
+         if (download.has_peer_source_nick())
+            return Common::ProtoHelper::getStr(download, &Protos::GUI::State::Download::peer_source_nick);
+         return QString();
 
-               int i = 0;
-               if (download.has_peer_source_nick())
-               {
-                  i = 1;
-                  peersStr.append('[').append(Common::ProtoHelper::getStr(download, &Protos::GUI::State::Download::peer_source_nick)).append(']');
-               }
-               for (; i < download.peer_id_size(); i++)
-               {
-                  Common::Hash peerID(download.peer_id(i).hash());
-                  const QString nick = this->peerListModel.getNick(peerID);
-                  if (nick.isNull())
-                     continue;
-                  if (i != 0)
-                     peersStr.append(" ");
-                  peersStr.append('[').append(nick).append(']');
-               }
-               return peersStr;
-            }
-         default: return QVariant();
-         }
+      case 4:
+         if (download.peer_id_size() > 1)
+            return QString("+").append(QString::number(download.peer_id_size() - 1));
+         return QString();
+
+      default: return QVariant();
       }
 
    case Qt::DecorationRole:
+      if (index.column() == 0)
       {
-         if (index.column() == 0)
-         {
-            if (download.status() >= Protos::GUI::State::Download::UNKNOWN_PEER_SOURCE)
-               return QPixmap(":/icons/ressources/error.png");
-            else
-               return IconProvider::getIcon(download.local_entry());
-         }
-         return QVariant();
+         if (download.status() >= Protos::GUI::State::Download::UNKNOWN_PEER_SOURCE)
+            return QPixmap(":/icons/ressources/error.png");
+         else
+            return IconProvider::getIcon(download.local_entry());
       }
+      return QVariant();
 
    case Qt::ToolTipRole:
+      if (index.column() == 4)
+      {
+         QString peersStr;
+         for (int i = 1; i < download.peer_id_size(); i++)
+         {
+            Common::Hash peerID(download.peer_id(i).hash());
+            const QString nick = this->peerListModel.getNick(peerID);
+            if (nick.isNull())
+               continue;
+            if (i != 1)
+               peersStr.append("\n");
+            peersStr += nick;
+         }
+         return peersStr;
+      }
+      else
       {
          QString toolTip;
          switch (download.status())
