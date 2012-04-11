@@ -23,6 +23,13 @@ using namespace GUI;
 #include <Common/Global.h>
 #include <QtGlobal>
 
+/**
+  * @class DownloadsTreeModel
+  *
+  * This model shows the download queue as a tree and is designed to be used with a 'QTreeView'. Each node is a directory and the leaves are the queued files.
+  * The method 'onNewState(..)' is automatically and periodically called by 'DownloadsModel' each time a new state is sent by the core.
+  */
+
 DownloadsTreeModel::DownloadsTreeModel(QSharedPointer<RCC::ICoreConnection> coreConnection, const PeerListModel& peerListModel, const DirListModel& sharedDirsModel, const IFilter<DownloadFilterStatus>& filter) :
    DownloadsModel(coreConnection, peerListModel, sharedDirsModel, filter), root(new Tree())
 {
@@ -33,6 +40,9 @@ DownloadsTreeModel::~DownloadsTreeModel()
    delete this->root;
 }
 
+/**
+  * @return The IDs of all sub-directories and files together. It includes the top item at the given index.
+  */
 QList<quint64> DownloadsTreeModel::getDownloadIDs(const QModelIndex& index) const
 {
    Tree* tree = static_cast<Tree*>(index.internalPointer());
@@ -42,6 +52,9 @@ QList<quint64> DownloadsTreeModel::getDownloadIDs(const QModelIndex& index) cons
    return this->getDownloadIDs(tree);
 }
 
+/**
+  * @return 'true' is all files in the tree corresponding to the given index are paused, the completed files are ignored.
+  */
 bool DownloadsTreeModel::isDownloadPaused(const QModelIndex& index) const
 {   
    Tree* tree = static_cast<Tree*>(index.internalPointer());
@@ -288,7 +301,7 @@ void DownloadsTreeModel::onNewState(const Protos::GUI::State& state)
          continue;
 
       Tree* fileTree = this->indexedFiles.value(download.id(), 0);
-      if (fileTree)
+      if (fileTree) // The file already exists in the tree, we will update its information and all parent directories.
       {
          Tree* parentTree = fileTree;
          do
@@ -380,7 +393,7 @@ DownloadsTreeModel::Tree* DownloadsTreeModel::insertDirectory(Tree* parentTree, 
 }
 
 /**
-  * Insert a new download into the given tree.
+  * Insert a new download into the given tree. It can be a file or a directory.
   * @param tree
   * @param download
   * @return
@@ -451,6 +464,9 @@ DownloadsTreeModel::Tree* DownloadsTreeModel::moveUp(DownloadsTreeModel::Tree* t
    return tree;
 }
 
+/**
+  * Update the given file. Then recursively update all parent directories.
+  */
 DownloadsTreeModel::Tree* DownloadsTreeModel::update(Tree* tree, const Protos::GUI::State::Download& download)
 {
    Q_ASSERT(tree);
@@ -462,12 +478,12 @@ DownloadsTreeModel::Tree* DownloadsTreeModel::update(Tree* tree, const Protos::G
       tree->setItem(download);
       this->updateDirectoriesFileModified(tree, oldDownload);
       const int treePosition = tree->getOwnPosition();
-      emit dataChanged(this->createIndex(treePosition, 1, tree), this->createIndex(treePosition, 3, tree));
+      emit dataChanged(this->createIndex(treePosition, 0, tree), this->createIndex(treePosition, 3, tree));
    }
    return tree;
 }
 
-DownloadsTreeModel::Tree*  DownloadsTreeModel::updateDirectoriesEntryDeleted(Tree* entry, const Protos::GUI::State::Download& oldDownload)
+DownloadsTreeModel::Tree* DownloadsTreeModel::updateDirectoriesEntryDeleted(Tree* entry, const Protos::GUI::State::Download& oldDownload)
 {
    const quint64 size = -entry->getItem().local_entry().size();
    const quint64 downloadedBytes = -entry->getItem().downloaded_bytes();
@@ -475,7 +491,7 @@ DownloadsTreeModel::Tree*  DownloadsTreeModel::updateDirectoriesEntryDeleted(Tre
    return this->updateDirectories(entry, size, downloadedBytes, oldDownload.status());
 }
 
-DownloadsTreeModel::Tree*  DownloadsTreeModel::updateDirectoriesNewFile(Tree* file)
+DownloadsTreeModel::Tree* DownloadsTreeModel::updateDirectoriesNewFile(Tree* file)
 {
    const quint64 fileSize = file->getItem().local_entry().size();
    const quint64 fileDownloadedBytes = file->getItem().downloaded_bytes();
@@ -483,7 +499,7 @@ DownloadsTreeModel::Tree*  DownloadsTreeModel::updateDirectoriesNewFile(Tree* fi
    return this->updateDirectories(file, fileSize, fileDownloadedBytes);
 }
 
-DownloadsTreeModel::Tree*  DownloadsTreeModel::updateDirectoriesFileModified(Tree* file, const Protos::GUI::State::Download& oldDownload)
+DownloadsTreeModel::Tree* DownloadsTreeModel::updateDirectoriesFileModified(Tree* file, const Protos::GUI::State::Download& oldDownload)
 {
    const quint64 fileSizeDelta = file->getItem().local_entry().size() - oldDownload.local_entry().size();
    const quint64 fileDownloadedBytesDelta = file->getItem().downloaded_bytes() - oldDownload.downloaded_bytes();
@@ -491,7 +507,14 @@ DownloadsTreeModel::Tree*  DownloadsTreeModel::updateDirectoriesFileModified(Tre
    return this->updateDirectories(file, fileSizeDelta, fileDownloadedBytesDelta, oldDownload.status());
 }
 
-DownloadsTreeModel::Tree*  DownloadsTreeModel::updateDirectories(Tree* file, quint64 fileSizeDelta, quint64 fileDownloadedBytesDelta, Protos::GUI::State::Download::Status oldStatus)
+/**
+  * Update all parent directories of the given file.
+  * The following data are updated:
+  *  - Size
+  *  - Bytes downloaded
+  *  - Status
+  */
+DownloadsTreeModel::Tree* DownloadsTreeModel::updateDirectories(Tree* file, quint64 fileSizeDelta, quint64 fileDownloadedBytesDelta, Protos::GUI::State::Download::Status oldStatus)
 {
    Protos::GUI::State::Download::Status newStatus = file->getItem().status();
 
@@ -520,7 +543,7 @@ DownloadsTreeModel::Tree*  DownloadsTreeModel::updateDirectories(Tree* file, qui
          currentDirectory->getItem().set_status(Protos::GUI::State::Download::QUEUED);
 
       const int currentDirectoryPosition = currentDirectory->getOwnPosition();
-      emit dataChanged(this->createIndex(currentDirectoryPosition, 1, currentDirectory), this->createIndex(currentDirectoryPosition, 3, currentDirectory));
+      emit dataChanged(this->createIndex(currentDirectoryPosition, 0, currentDirectory), this->createIndex(currentDirectoryPosition, 3, currentDirectory));
 
       currentDirectory = currentDirectory->getParent();
    }
@@ -548,6 +571,7 @@ bool GUI::operator>(const Protos::GUI::State::Download& d1, const Protos::GUI::S
    if (d1.local_entry().type() != d2.local_entry().type())
       return d1.local_entry().type() < d2.local_entry().type();
 
+   // We don't use the 'QString' class because of performance issue of the conversion.
    return Common::Global::strcmpi(d1.local_entry().name(), d2.local_entry().name()) == 1;
 }
 
@@ -556,5 +580,6 @@ bool GUI::operator<(const Protos::GUI::State::Download& d1, const Protos::GUI::S
    if (d1.local_entry().type() != d2.local_entry().type())
       return d1.local_entry().type() > d2.local_entry().type();
 
+   // We don't use the 'QString' class because of performance issue of the conversion.
    return Common::Global::strcmpi(d1.local_entry().name(), d2.local_entry().name()) == -1;
 }
