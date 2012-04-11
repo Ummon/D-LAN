@@ -110,6 +110,7 @@ MainWindow::MainWindow(QSharedPointer<RCC::ICoreConnection> coreConnection, QWid
 
    this->mdiAreaTabBar = this->ui->mdiArea->findChild<QTabBar*>();
    this->mdiAreaTabBar->setMovable(true);
+   this->mdiAreaTabBar->installEventFilter(this);
    connect(this->mdiAreaTabBar, SIGNAL(tabMoved(int, int)), this, SLOT(tabMoved(int, int)));
 
    StatusBar* statusBar = new StatusBar(this->coreConnection);
@@ -425,11 +426,21 @@ void MainWindow::search(bool ownFiles)
 
 bool MainWindow::eventFilter(QObject* obj, QEvent* event)
 {
-   if (event->type() == QEvent::KeyPress)
+   if (obj == this->widgetChat && event->type() == QEvent::KeyPress)
    {
       this->keyPressEvent(static_cast<QKeyEvent*>(event));
       return event->isAccepted();
    }
+   else if // Avoid to close tab with the middle button.
+   (
+      obj == this->mdiAreaTabBar &&
+      (event->type() == QEvent::MouseButtonPress || event->type() == QEvent::MouseButtonDblClick) &&
+      static_cast<QMouseEvent*>(event)->button() == Qt::MiddleButton
+   )
+   {
+      return true;
+   }
+
    return QMainWindow::eventFilter(obj, event);
 }
 
@@ -632,8 +643,6 @@ WidgetBrowse* MainWindow::addWidgetBrowse(const Common::Hash& peerID)
    widgetBrowse->setWindowState(Qt::WindowMaximized);
    this->widgetsBrowse << widgetBrowse;
 
-   QTabBar* tab = this->ui->mdiArea->findChild<QTabBar*>();
-
    QWidget* buttons = new QWidget();
 
    TabCloseButton* closeButton = new TabCloseButton(widgetBrowse, buttons);
@@ -647,7 +656,7 @@ WidgetBrowse* MainWindow::addWidgetBrowse(const Common::Hash& peerID)
    layButtons->addWidget(refreshButton);
    layButtons->addWidget(closeButton);
 
-   tab->setTabButton(tab->count() - 1, QTabBar::RightSide, buttons);
+   this->mdiAreaTabBar->setTabButton(this->mdiAreaTabBar->count() - 1, QTabBar::RightSide, buttons);
 
    return widgetBrowse;
 }
@@ -667,10 +676,9 @@ WidgetSearch* MainWindow::addWidgetSearch(const QString& term, bool searchInOwnF
    this->widgetsSearch << widgetSearch;
    connect(widgetSearch, SIGNAL(browse(const Common::Hash&, const Protos::Common::Entry&)), this, SLOT(addWidgetBrowse(const Common::Hash&, const Protos::Common::Entry&)));
 
-   QTabBar* tab = ui->mdiArea->findChild<QTabBar*>();
    TabCloseButton* closeButton = new TabCloseButton(widgetSearch);
    connect(closeButton, SIGNAL(clicked(QWidget*)), this, SLOT(removeWidget(QWidget*)));
-   tab->setTabButton(tab->count() - 1, QTabBar::RightSide, closeButton);
+   this->mdiAreaTabBar->setTabButton(this->mdiAreaTabBar->count() - 1, QTabBar::RightSide, closeButton);
 
    return widgetSearch;
 }
