@@ -27,7 +27,7 @@ FileLocker::FileLocker(const QFile& file, qint64 nbBytesToLock, LockType type) :
       &this->overlapped
    );
 #else
-   this->lockAcquired = true
+   this->lockAcquired = true;
 #endif
 }
 

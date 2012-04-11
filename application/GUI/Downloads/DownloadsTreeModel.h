@@ -63,7 +63,6 @@ namespace GUI
          Tree();
          Tree(const Protos::GUI::State::Download& download, Tree* parent);
 
-         // Fuck you encapsulation.
          bool visited;
          int nbPausedFiles;
          int nbErrorFiles;
