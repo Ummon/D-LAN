@@ -47,6 +47,10 @@ void PeerTableDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opt
    QStyleOptionViewItemV4 newOption(option);
    newOption.state = option.state & (~QStyle::State_HasFocus);
 
+   // Show the selection only if the widget is active.
+   if (!(newOption.state & QStyle::State_Active))
+      newOption.state = newOption.state & (~QStyle::State_Selected);
+
    QStyledItemDelegate::paint(painter, newOption, index);
 }
 
@@ -124,13 +128,12 @@ MainWindow::MainWindow(QSharedPointer<RCC::ICoreConnection> coreConnection, QWid
    this->ui->tblPeers->verticalHeader()->setDefaultSectionSize(QApplication::fontMetrics().height() + 2);
    this->ui->tblPeers->verticalHeader()->setVisible(false);
    this->ui->tblPeers->setSelectionBehavior(QAbstractItemView::SelectRows);
-   this->ui->tblPeers->setSelectionMode(QAbstractItemView::SingleSelection);
+   this->ui->tblPeers->setSelectionMode(QAbstractItemView::ExtendedSelection);
    this->ui->tblPeers->setShowGrid(false);
    this->ui->tblPeers->setAlternatingRowColors(true);
 
    this->ui->tblPeers->setContextMenuPolicy(Qt::CustomContextMenu);
 
-   this->ui->tblPeers->installEventFilter(this);
    connect(this->ui->tblPeers, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(displayContextMenuPeers(const QPoint&)));
    connect(this->ui->tblPeers, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(browse()));
 
@@ -304,13 +307,17 @@ void MainWindow::displayContextMenuPeers(const QPoint& point)
 
 void MainWindow::browse()
 {
-   QModelIndex i = this->ui->tblPeers->currentIndex();
-   if (i.isValid())
+   foreach (QModelIndex i, this->ui->tblPeers->selectionModel()->selectedIndexes())
    {
-      Common::Hash peerID = this->peerListModel.getPeerID(i.row());
-      if (!peerID.isNull())
-         this->addWidgetBrowse(peerID);
+      if (i.isValid())
+      {
+         Common::Hash peerID = this->peerListModel.getPeerID(i.row());
+         if (!peerID.isNull())
+            this->addWidgetBrowse(peerID);
+      }
    }
+
+   this->ui->tblPeers->clearSelection();
 }
 
 void MainWindow::takeControlOfACore()
@@ -375,48 +382,66 @@ void MainWindow::colorizeSelectedPeer()
 {
    const QColor color = static_cast<QAction*>(this->sender())->data().value<QColor>();
 
-   this->peerListModel.colorize(this->ui->tblPeers->selectionModel()->currentIndex(), color);
+   QSet<Common::Hash> peerIDs;
+   foreach (QModelIndex i, this->ui->tblPeers->selectionModel()->selectedIndexes())
+   {
+      this->peerListModel.colorize(i, color);
+      peerIDs << this->peerListModel.getPeerID(i.row());
+   }
 
    // Update the settings.
-   const Common::Hash& peerID = this->peerListModel.getPeerID(this->ui->tblPeers->selectionModel()->currentIndex().row());
    Protos::GUI::Settings::HighlightedPeers highlightedPeers = SETTINGS.get<Protos::GUI::Settings::HighlightedPeers>("highlighted_peers");
-   for (int i = 0; i < highlightedPeers.peer_size(); i++)
-      if (Common::Hash(highlightedPeers.peer(i).id().hash()) == peerID)
+   for (int i = 0; i < highlightedPeers.peer_size() && !peerIDs.isEmpty(); i++)
+   {
+      const Common::Hash peerID(highlightedPeers.peer(i).id().hash());
+      if (peerIDs.contains(peerID))
       {
+         peerIDs.remove(peerID);
          highlightedPeers.mutable_peer(i)->set_color(color.rgb());
-         goto saveSettings;
       }
+   }
 
+   foreach (Common::Hash peerID, peerIDs)
    {
       Protos::GUI::Settings::HighlightedPeers::Peer* peer = highlightedPeers.add_peer();
       peer->mutable_id()->set_hash(peerID.getData(), Common::Hash::HASH_SIZE);
       peer->set_color(color.rgb());
    }
 
-saveSettings:
    SETTINGS.set("highlighted_peers", highlightedPeers);
    SETTINGS.save();
+
+   this->ui->tblPeers->clearSelection();
 }
 
 void MainWindow::uncolorizeSelectedPeer()
 {
-   this->peerListModel.uncolorize(this->ui->tblPeers->selectionModel()->currentIndex());
+   QSet<Common::Hash> peerIDs;
+   foreach (QModelIndex i, this->ui->tblPeers->selectionModel()->selectedIndexes())
+   {
+      this->peerListModel.uncolorize(i);
+      peerIDs << this->peerListModel.getPeerID(i.row());
+   }
 
    // Update the settings.
-   const Common::Hash& peerID = this->peerListModel.getPeerID(this->ui->tblPeers->selectionModel()->currentIndex().row());
    Protos::GUI::Settings::HighlightedPeers highlightedPeers = SETTINGS.get<Protos::GUI::Settings::HighlightedPeers>("highlighted_peers");
-   for (int i = 0; i < highlightedPeers.peer_size(); i++)
-      if (Common::Hash(highlightedPeers.peer(i).id().hash()) == peerID)
+   for (int i = 0; i < highlightedPeers.peer_size() && !peerIDs.isEmpty(); i++)
+   {
+      const Common::Hash peerID(highlightedPeers.peer(i).id().hash());
+      if (peerIDs.contains(peerID))
       {
+         peerIDs.remove(peerID);
          if (i != highlightedPeers.peer_size() - 1)
             highlightedPeers.mutable_peer()->SwapElements(i, highlightedPeers.peer_size() - 1);
          highlightedPeers.mutable_peer()->RemoveLast();
-         goto saveSettings;
+         i--;
       }
+   }
 
-saveSettings:
    SETTINGS.set("highlighted_peers", highlightedPeers);
    SETTINGS.save();
+
+   this->ui->tblPeers->clearSelection();
 }
 
 /**
@@ -504,10 +529,6 @@ void MainWindow::search(bool ownFiles)
 
 bool MainWindow::eventFilter(QObject* obj, QEvent* event)
 {
-   if (obj == this->ui->tblPeers && event->type() == QEvent::FocusOut)
-   {
-      this->ui->tblPeers->clearSelection();
-   }
    if (obj == this->widgetChat && event->type() == QEvent::KeyPress)
    {
       this->keyPressEvent(static_cast<QKeyEvent*>(event));
