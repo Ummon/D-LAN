@@ -43,13 +43,13 @@ void Socket::Logger::logError(const QString& message)
 }
 
 Socket::Socket(PeerManager* peerManager, QSharedPointer<FM::IFileManager> fileManager, const Common::Hash& remotePeerID, QTcpSocket* socket) :
-   MessageSocket(new Socket::Logger(), socket, peerManager->getID(), remotePeerID), fileManager(fileManager), active(true), nbError(0)
+   MessageSocket(new Socket::Logger(), socket, peerManager->getSelf()->getID(), remotePeerID), fileManager(fileManager), active(true), nbError(0)
 {
    this->initUnactiveTimer();
 }
 
 Socket::Socket(PeerManager* peerManager, QSharedPointer<FM::IFileManager> fileManager, const Common::Hash& remotePeerID, const QHostAddress& address, quint16 port) :
-   MessageSocket(new Socket::Logger(), address, port, peerManager->getID(), remotePeerID), fileManager(fileManager), active(true), nbError(0)
+   MessageSocket(new Socket::Logger(), address, port, peerManager->getSelf()->getID(), remotePeerID), fileManager(fileManager), active(true), nbError(0)
 {
    this->initUnactiveTimer();
 }

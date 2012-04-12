@@ -367,7 +367,7 @@ void DownloadManager::scanTheQueue()
    FileDownload* fileDownload = 0;
    DownloadQueue::ScanningIterator<IsDownloable> i(this->downloadQueue);
 
-   const int nbPeers = this->peerManager->getPeers().size();
+   const int nbPeers = this->peerManager->getPeers().size() + 1; // "+ 1" is for ourself.
    while (numberOfDownloadThreadRunningCopy < NUMBER_OF_DOWNLOADER && nbPeers > this->occupiedPeersDownloadingChunk.nbOccupiedPeers())
    {
       if (chunkDownload.isNull()) // We can ask many chunks to download from the same file.

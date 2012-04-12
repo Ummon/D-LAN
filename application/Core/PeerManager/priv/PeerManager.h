@@ -34,6 +34,7 @@
 #include <IPeerManager.h>
 #include <Common/LogManager/ILogger.h>
 #include <priv/Peer.h>
+#include <priv/PeerSelf.h>
 #include <priv/Log.h>
 
 namespace PM
@@ -55,11 +56,11 @@ namespace PM
       PeerManager(QSharedPointer<FM::IFileManager> fileManager);
       ~PeerManager();
 
-      Common::Hash getID();
       void setNick(const QString& nick);
-      QString getNick();
 
+      IPeer* getSelf();
       QList<IPeer*> getPeers();
+
       IPeer* getPeer(const Common::Hash& ID);
       Peer* getPeer_(const Common::Hash& ID);
       IPeer* createPeer(const Common::Hash& ID, const QString& nick);
@@ -82,9 +83,8 @@ namespace PM
 
       QSharedPointer<FM::IFileManager> fileManager;
 
-      Common::Hash ID;
-      QString nick;
-      QList<Peer*> peers;
+      PeerSelf* self; // Ourself.
+      QList<Peer*> peers; // The other peers.
 
       QTimer timer; ///< Used to check periodically if some pending sockets have timeouted.
       QList<PendingSocket> pendingSockets;

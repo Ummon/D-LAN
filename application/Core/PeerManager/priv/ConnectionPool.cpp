@@ -88,7 +88,7 @@ QSharedPointer<Socket> ConnectionPool::getASocket()
    if (!this->peerIP.isNull())
       return this->addNewSocket(QSharedPointer<Socket>(new Socket(this->peerManager, this->fileManager, this->peerID, this->peerIP, this->port)), TO_PEER);
 
-   L_ERRO("ConnectionPool::getASocket() : Unable to get a socket");
+   L_ERRO("ConnectionPool::getASocket(): Unable to get a socket");
    return QSharedPointer<Socket>();
 }
 

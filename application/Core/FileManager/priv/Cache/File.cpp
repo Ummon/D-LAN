@@ -144,7 +144,7 @@ void File::setToUnfinished(qint64 size, const Common::Hashes& hashes)
    this->createPhysicalFile();
 }
 
-bool File::restoreFromFileCache(const Protos::FileCache::Hashes_File& file)
+bool File::restoreFromFileCache(const Protos::FileCache::Hashes::File& file)
 {
    if (
       Common::ProtoHelper::getStr(file, &Protos::FileCache::Hashes_File::filename) == this->getName() &&
@@ -165,7 +165,9 @@ bool File::restoreFromFileCache(const Protos::FileCache::Hashes_File& file)
          {
             if (this->chunks[i]->isComplete())
                this->nbChunkComplete++;
-            this->cache->onChunkHashKnown(this->chunks[i]);
+
+            if (this->chunks[i]->getKnownBytes() > 0)
+               this->cache->onChunkHashKnown(this->chunks[i]);
          }
       }
 
@@ -292,13 +294,18 @@ void File::newDataReaderCreated()
    }
 }
 
+/**
+  * 'setAsComplete()' must be called before 'dataWriter' and 'dataReader' are deleted.
+  * This is a bit tricky... We should use a signal 'void fileClosed(QFile* )' in 'FilePool' connected to a slot in the 'File' class.
+  * In this case, 'File' must inherits 'QObject' which is actually too heavy.
+  */
 void File::dataWriterDeleted()
 {
    QMutexLocker locker(&this->writeLock);
 
    if (--this->numDataWriter == 0)
    {
-      this->cache->getFilePool().release(this->fileInWriteMode, this->size < CHUNK_SIZE);
+      this->cache->getFilePool().release(this->fileInWriteMode, this->tryToRename);
       this->fileInWriteMode = 0;
    }
 }
@@ -309,7 +316,7 @@ void File::dataReaderDeleted()
 
    if (--this->numDataReader == 0)
    {
-      this->cache->getFilePool().release(this->fileInReadMode, this->size < CHUNK_SIZE);
+      this->cache->getFilePool().release(this->fileInReadMode, this->tryToRename);
       this->fileInReadMode = 0;
 
       if (this->tryToRename)
@@ -613,7 +620,6 @@ void File::setAsComplete()
          this->tryToRename = true;
          return;
       }
-      this->tryToRename = false;
 
       this->cache->getFilePool().release(this->fileInWriteMode, true);
       this->fileInWriteMode = 0;
@@ -623,11 +629,13 @@ void File::setAsComplete()
 
       if (!Common::Global::rename(oldPath, newPath))
       {
-         L_ERRO(QString("Unable to rename the file %1 to %2").arg(oldPath).arg(newPath));
+         L_WARN(QString("Unable to rename the file %1 to %2").arg(oldPath).arg(newPath));
+         this->tryToRename = true;
       }
       else
       {
          this->complete = true;
+         this->tryToRename = false;
          this->dateLastModified = QFileInfo(newPath).lastModified();
          this->name = Global::removeUnfinishedSuffix(this->name);
          this->cache->onEntryAdded(this); // To add the name to the index. (a bit tricky).

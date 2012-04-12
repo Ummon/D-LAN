@@ -61,7 +61,7 @@ namespace FM
 
       void setToUnfinished(qint64 size, const Common::Hashes& hashes = Common::Hashes());
 
-      bool restoreFromFileCache(const Protos::FileCache::Hashes_File& file);
+      bool restoreFromFileCache(const Protos::FileCache::Hashes::File& file);
       void populateHashesFile(Protos::FileCache::Hashes_File& fileToFill) const;
 
       void populateEntry(Protos::Common::Entry* entry, bool setSharedDir = false) const;

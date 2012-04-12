@@ -36,40 +36,19 @@ using namespace PM;
 LOG_INIT_CPP(PeerManager);
 
 PeerManager::PeerManager(QSharedPointer<FM::IFileManager> fileManager) :
-   fileManager(fileManager)
+   fileManager(fileManager), self(new PeerSelf(this, this->fileManager))
 {
    this->timer.setInterval(SETTINGS.get<quint32>("pending_socket_timeout") / 10);
    connect(&this->timer, SIGNAL(timeout()), this, SLOT(checkIdlePendingSockets()));
-
-   this->nick = SETTINGS.get<QString>("nick");
-
-   if (!SETTINGS.isSet("peer_id") || SETTINGS.get<Common::Hash>("peer_id").isNull())
-   {
-      this->ID = Common::Hash::rand();
-      SETTINGS.set("peer_id", this->ID);
-
-      if (!SETTINGS.save())
-         L_ERRO("Unable to save settings");
-   }
-   else
-   {
-      this->ID = SETTINGS.get<Common::Hash>("peer_id");
-   }
-
-   L_USER(QString(tr("Our current ID: %1")).arg(this->ID.toStr()));
 }
 
 PeerManager::~PeerManager()
 {
    for (QListIterator<Peer*> i(this->peers); i.hasNext();)
       delete i.next();
+   delete this->self;
 
    L_DEBU("PeerManager deleted");
-}
-
-Common::Hash PeerManager::getID()
-{
-   return this->ID;
 }
 
 /**
@@ -77,23 +56,12 @@ Common::Hash PeerManager::getID()
   */
 void PeerManager::setNick(const QString& nick)
 {
-   if (nick.length() > MAX_NICK_LENGTH)
-      this->nick = nick.left(MAX_NICK_LENGTH);
-   else
-      this->nick = nick;
-
-   SETTINGS.set("nick", this->nick);
-
-   if (!SETTINGS.save())
-      L_ERRO("Unable to save settings");
+   this->self->setNick(nick);
 }
 
-/**
-  * Get the current nick.
-  */
-QString PeerManager::getNick()
+IPeer* PeerManager::getSelf()
 {
-   return this->nick;
+   return this->self;
 }
 
 QList<IPeer*> PeerManager::getPeers()
@@ -119,6 +87,9 @@ Peer* PeerManager::getPeer_(const Common::Hash& ID)
 {
    if (ID.isNull())
       return 0;
+
+   if (this->self->getID() == ID)
+      return this->self;
 
    for (QListIterator<Peer*> i(this->peers); i.hasNext();)
    {
@@ -148,7 +119,7 @@ IPeer* PeerManager::createPeer(const Hash& ID, const QString& nick)
   */
 void PeerManager::updatePeer(const Common::Hash& ID, const QHostAddress& IP, quint16 port, const QString& nick, const quint64& sharingAmount, const QString& coreVersion)
 {
-   if (ID.isNull() || ID == this->ID)
+   if (ID.isNull() || ID == this->self->getID())
       return;
 
    L_DEBU(QString("%1 (%2) is alive!").arg(ID.toStr()).arg(nick));

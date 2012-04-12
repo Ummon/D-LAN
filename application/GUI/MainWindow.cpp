@@ -431,7 +431,7 @@ bool MainWindow::eventFilter(QObject* obj, QEvent* event)
       this->keyPressEvent(static_cast<QKeyEvent*>(event));
       return event->isAccepted();
    }
-   else if // Avoid to close tab with the middle button.
+   else if // Prohibits the user to close tab with the middle button.
    (
       obj == this->mdiAreaTabBar &&
       (event->type() == QEvent::MouseButtonPress || event->type() == QEvent::MouseButtonDblClick) &&

@@ -197,6 +197,7 @@ QSharedPointer<ChunkDownload> FileDownload::getAChunkToDownload()
    for (QListIterator< QSharedPointer<ChunkDownload> > i(this->chunkDownloads); i.hasNext();)
    {
       const QSharedPointer<ChunkDownload>& chunkDownload = i.next();
+
       const int nbPeer = chunkDownload->isReadyToDownload();
 
       if (nbPeer == 0)
@@ -257,7 +258,7 @@ QSharedPointer<ChunkDownload> FileDownload::getAChunkToDownload()
          return QSharedPointer<ChunkDownload>();
       }
 
-      // 'tryToLinkToAnExistingFile(..)' above can return some completed chunks.
+      // 'newFile(..)' above can return some completed chunks.
       if (!chunkDownload->getChunk().isNull() && chunkDownload->getChunk()->isComplete())
       {
          this->updateStatus(); // Maybe all the file is complete, so we update the status.
