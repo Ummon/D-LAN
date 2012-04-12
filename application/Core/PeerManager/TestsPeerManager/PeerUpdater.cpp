@@ -39,7 +39,7 @@ PeerUpdater::PeerUpdater(QList< QSharedPointer<FM::IFileManager> > fileManagers,
    for (int i = 0; i < this->peerManagers.size(); i++)
    {
       this->peerManagers[i]->setNick("Bob " + QString::number(i + 1));
-      qDebug() << QString("Peer[%1] : %2 %3").arg(i).arg(this->peerManagers[i]->getNick()).arg(this->peerManagers[i]->getID().toStr());
+      qDebug() << QString("Peer[%1] : %2 %3").arg(i).arg(this->peerManagers[i]->getSelf()->getNick()).arg(this->peerManagers[i]->getSelf()->getID().toStr());
    }
 }
 
@@ -60,12 +60,12 @@ void PeerUpdater::update()
    {
       for (int j = 0; j < this->peerManagers.size(); j++)
       {
-         if (this->peerManagers[i]->getID() != this->peerManagers[j]->getID())
+         if (this->peerManagers[i]->getSelf()->getID() != this->peerManagers[j]->getSelf()->getID())
             this->peerManagers[i]->updatePeer(
-               this->peerManagers[j]->getID(),
+               this->peerManagers[j]->getSelf()->getID(),
                QHostAddress::LocalHost,
                this->port + j,
-               this->peerManagers[j]->getNick(),
+               this->peerManagers[j]->getSelf()->getNick(),
                this->fileManagers[j]->getAmount(),
                QString()
             );
