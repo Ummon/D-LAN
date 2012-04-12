@@ -25,7 +25,8 @@ using namespace GUI;
 #include <Common/Global.h>
 
 PeerListModel::PeerListModel(QSharedPointer<RCC::ICoreConnection> coreConnection) :
-   coreConnection(coreConnection)
+   coreConnection(coreConnection),
+   currentSortType(Protos::GUI::Settings::BY_SHARING_AMOUNT)
 {
    connect(this->coreConnection.data(), SIGNAL(newState(Protos::GUI::State)), this, SLOT(newState(Protos::GUI::State)));
 }
@@ -72,6 +73,20 @@ void PeerListModel::clear()
 {
    google::protobuf::RepeatedPtrField<Protos::GUI::State_Peer> peers;
    this->setPeers(peers);
+}
+
+void PeerListModel::setSortType(Protos::GUI::Settings::PeerSortType sortType)
+{
+   if (this->currentSortType == sortType)
+      return;
+
+   this->currentSortType = sortType;
+   this->sort();
+}
+
+Protos::GUI::Settings::PeerSortType PeerListModel::getSortType() const
+{
+   return this->currentSortType;
 }
 
 int PeerListModel::rowCount(const QModelIndex& parent) const
@@ -150,6 +165,7 @@ void PeerListModel::setPeers(const google::protobuf::RepeatedPtrField<Protos::GU
          if (this->peers[j]->nick != nick)
          {
             this->peers[j]->nick = nick;
+            sortNeeded = true;
             emit dataChanged(this->createIndex(j, 0), this->createIndex(j, 0));
          }
          if (this->peers[j]->sharingAmount != sharingAmount)
@@ -207,7 +223,20 @@ void PeerListModel::setPeers(const google::protobuf::RepeatedPtrField<Protos::GU
 void PeerListModel::sort()
 {
    emit layoutAboutToBeChanged();
-   qSort(this->peers.begin(), this->peers.end(), Peer::sortComp);
+   qSort(this->peers.begin(), this->peers.end(), this->currentSortType == Protos::GUI::Settings::BY_NICK ? Peer::sortCompByNick : Peer::sortCompBySharingAmount);
    emit layoutChanged();
 }
 
+//////
+
+bool PeerListModel::Peer::sortCompByNick(const Peer* p1, const Peer* p2)
+{
+   return Common::Global::toLowerAndRemoveAccents(p1->nick) < Common::Global::toLowerAndRemoveAccents(p2->nick);
+}
+
+bool PeerListModel::Peer::sortCompBySharingAmount(const PeerListModel::Peer* p1, const PeerListModel::Peer* p2)
+{
+   if (p1->sharingAmount == p2->sharingAmount)
+      return Common::Global::toLowerAndRemoveAccents(p1->nick) < Common::Global::toLowerAndRemoveAccents(p2->nick);
+   return p1->sharingAmount > p2->sharingAmount;
+}

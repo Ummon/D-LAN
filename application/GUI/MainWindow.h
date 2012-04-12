@@ -89,6 +89,9 @@ namespace GUI
       void searchOwnFiles();
       void txtSearchReturnPressed(Qt::KeyboardModifiers modifiers);
 
+      void sortPeersBySharingAmount();
+      void sortPeersByNick();
+
       void removeWidget(QWidget* widget);
 
       void logScrollChanged(int value);

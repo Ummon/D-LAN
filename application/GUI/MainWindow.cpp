@@ -108,6 +108,8 @@ MainWindow::MainWindow(QSharedPointer<RCC::ICoreConnection> coreConnection, QWid
    this->ui->butSearchOwnFiles->setMaximumWidth(24);
 #endif
 
+   this->peerListModel.setSortType(static_cast<Protos::GUI::Settings::PeerSortType>(SETTINGS.get<quint32>("peer_sort_type")));
+
    this->mdiAreaTabBar = this->ui->mdiArea->findChild<QTabBar*>();
    this->mdiAreaTabBar->setMovable(true);
    this->mdiAreaTabBar->installEventFilter(this);
@@ -283,6 +285,16 @@ void MainWindow::displayContextMenuPeers(const QPoint& point)
       takeControlAction->setData(data);
    }
 
+   menu.addSeparator();
+   QAction* sortBySharingAmountAction = menu.addAction(tr("Sort by the amount of sharing"), this, SLOT(sortPeersBySharingAmount()));
+   QAction* sortByNickAction = menu.addAction(tr("Sort alphabetically"), this, SLOT(sortPeersByNick()));
+
+   sortBySharingAmountAction->setCheckable(true);
+   sortBySharingAmountAction->setChecked(this->peerListModel.getSortType() == Protos::GUI::Settings::BY_SHARING_AMOUNT);
+
+   sortByNickAction->setCheckable(true);
+   sortByNickAction->setChecked(this->peerListModel.getSortType() == Protos::GUI::Settings::BY_NICK);
+
    menu.exec(this->ui->tblPeers->mapToGlobal(point));
 }
 
@@ -339,6 +351,20 @@ void MainWindow::txtSearchReturnPressed(Qt::KeyboardModifiers modifiers)
       this->searchOwnFiles();
    else
       this->searchOtherPeers();
+}
+
+void MainWindow::sortPeersBySharingAmount()
+{
+   this->peerListModel.setSortType(Protos::GUI::Settings::BY_SHARING_AMOUNT);
+   SETTINGS.set("peer_sort_type", static_cast<quint32>(Protos::GUI::Settings::BY_SHARING_AMOUNT));
+   SETTINGS.save();
+}
+
+void MainWindow::sortPeersByNick()
+{
+   this->peerListModel.setSortType(Protos::GUI::Settings::BY_NICK);
+   SETTINGS.set("peer_sort_type", static_cast<quint32>(Protos::GUI::Settings::BY_NICK));
+   SETTINGS.save();
 }
 
 /**

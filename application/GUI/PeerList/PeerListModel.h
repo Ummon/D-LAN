@@ -25,6 +25,7 @@
 #include <QHash>
 
 #include <Protos/gui_protocol.pb.h>
+#include <Protos/gui_settings.pb.h>
 
 #include <Common/Hash.h>
 #include <Common/RemoteCoreController/ICoreConnection.h>
@@ -43,6 +44,9 @@ namespace GUI
       Common::Hash getPeerID(int rowNum) const;
       QHostAddress getPeerIP(int rowNum) const;
       void clear();
+
+      void setSortType(Protos::GUI::Settings::PeerSortType sortType);
+      Protos::GUI::Settings::PeerSortType getSortType() const;
 
       int rowCount(const QModelIndex& parent = QModelIndex()) const;
       int columnCount(const QModelIndex& parent = QModelIndex()) const;
@@ -70,7 +74,8 @@ namespace GUI
 
          bool operator==(const Peer& p) const { return this->peerID == p.peerID; }
          bool operator!=(const Peer& p) const { return this->peerID != p.peerID; }
-         static bool sortComp(const Peer* p1, const Peer* p2) { return p1->sharingAmount > p2->sharingAmount; }
+         static bool sortCompByNick(const Peer* p1, const Peer* p2);
+         static bool sortCompBySharingAmount(const Peer* p1, const Peer* p2);
 
          Common::Hash peerID;
          QString nick;
@@ -81,6 +86,7 @@ namespace GUI
 
       QList<Peer*> peers;
       QHash<Common::Hash, Peer*> indexedPeers; // Peers indexed by their ID.
+      Protos::GUI::Settings::PeerSortType currentSortType;
    };
 }
 
