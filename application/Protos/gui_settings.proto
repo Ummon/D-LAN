@@ -48,7 +48,7 @@ message Settings {
    message HighlightedPeers {
       message Peer {
          required uint32 color = 1; // RGB.
-         required Common.Hash peer_id = 2;
+         required Common.Hash id = 2;
       }
       repeated Peer peer = 1;
    }

@@ -114,6 +114,20 @@ QVariant PeerListModel::data(const QModelIndex& index, int role) const
       default: return QVariant();
       }
 
+   case Qt::BackgroundRole:
+      if (this->peersToColorize.contains(this->peers[index.row()]->peerID))
+         return this->peersToColorize[this->peers[index.row()]->peerID];
+      if (this->isOurself(index.row()))
+         return QColor(192, 255, 192);
+      return QVariant();
+
+   case Qt::ForegroundRole:
+      if (this->peersToColorize.contains(this->peers[index.row()]->peerID))
+         return QColor(255, 255, 255);
+      if (this->isOurself(index.row()))
+         return QColor(0, 0, 0);
+      return QVariant();
+
    case Qt::TextAlignmentRole:
       return index.column() == 1 ? Qt::AlignRight : Qt::AlignLeft;
 
@@ -129,6 +143,37 @@ QVariant PeerListModel::data(const QModelIndex& index, int role) const
    default:
       return QVariant();
    }
+}
+
+void PeerListModel::colorize(const Common::Hash& peerID, const QColor& color)
+{
+   if (Peer* peer = this->indexedPeers.value(peerID, 0))
+   {
+      emit layoutAboutToBeChanged();
+      this->peersToColorize[peer->peerID] = color;
+      emit layoutChanged();
+   }
+   else
+      this->peersToColorize.insert(peerID, color);
+}
+
+void PeerListModel::colorize(const QModelIndex& index, const QColor& color)
+{
+   if (!index.isValid() || index.row() >= this->peers.size())
+      return;
+
+   this->peersToColorize[this->peers[index.row()]->peerID] = color;
+
+   emit dataChanged(this->createIndex(index.row(), 0), this->createIndex(index.row(), this->columnCount() - 1));
+}
+
+void PeerListModel::uncolorize(const QModelIndex& index)
+{
+   if (!index.isValid() || index.row() >= this->peers.size())
+      return;
+
+   if (this->peersToColorize.remove(this->peers[index.row()]->peerID))
+      emit dataChanged(this->createIndex(index.row(), 0), this->createIndex(index.row(), this->columnCount() - 1));
 }
 
 void PeerListModel::newState(const Protos::GUI::State& state)

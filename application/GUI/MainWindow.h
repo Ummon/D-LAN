@@ -91,6 +91,8 @@ namespace GUI
 
       void sortPeersBySharingAmount();
       void sortPeersByNick();
+      void colorizeSelectedPeer();
+      void uncolorizeSelectedPeer();
 
       void removeWidget(QWidget* widget);
 
@@ -111,6 +113,8 @@ namespace GUI
 
       void saveWindowsSettings();
       void restoreWindowsSettings();
+
+      void restoreColorizedPeers();
 
       void removeMdiSubWindow(QMdiSubWindow* mdiSubWindow);
 

@@ -29,6 +29,7 @@ using namespace GUI;
 #include <QScrollBar>
 #include <QMessageBox>
 #include <QInputDialog>
+#include <QColor>
 
 #include <Protos/gui_settings.pb.h>
 
@@ -41,18 +42,10 @@ using namespace GUI;
 #include <StatusBar.h>
 #include <Log.h>
 
-/**
-  * Highlight ourself in the peers list.
-  */
 void PeerTableDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
-   const PeerListModel* model = static_cast<const PeerListModel*>(index.model());
-
    QStyleOptionViewItemV4 newOption(option);
    newOption.state = option.state & (~QStyle::State_HasFocus);
-
-   if (model->isOurself(index.row()))
-      painter->fillRect(option.rect, QColor(192, 255, 192));
 
    QStyledItemDelegate::paint(painter, newOption, index);
 }
@@ -137,6 +130,7 @@ MainWindow::MainWindow(QSharedPointer<RCC::ICoreConnection> coreConnection, QWid
 
    this->ui->tblPeers->setContextMenuPolicy(Qt::CustomContextMenu);
 
+   this->ui->tblPeers->installEventFilter(this);
    connect(this->ui->tblPeers, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(displayContextMenuPeers(const QPoint&)));
    connect(this->ui->tblPeers, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(browse()));
 
@@ -168,6 +162,8 @@ MainWindow::MainWindow(QSharedPointer<RCC::ICoreConnection> coreConnection, QWid
    this->setApplicationStateAsDisconnected(); // Initial state.
 
    this->restoreWindowsSettings();
+
+   this->restoreColorizedPeers();
 
    this->loadLanguage(this->widgetSettings->getCurrentLanguageFilename());
 
@@ -286,6 +282,7 @@ void MainWindow::displayContextMenuPeers(const QPoint& point)
    }
 
    menu.addSeparator();
+
    QAction* sortBySharingAmountAction = menu.addAction(tr("Sort by the amount of sharing"), this, SLOT(sortPeersBySharingAmount()));
    QAction* sortByNickAction = menu.addAction(tr("Sort alphabetically"), this, SLOT(sortPeersByNick()));
 
@@ -294,6 +291,13 @@ void MainWindow::displayContextMenuPeers(const QPoint& point)
 
    sortByNickAction->setCheckable(true);
    sortByNickAction->setChecked(this->peerListModel.getSortType() == Protos::GUI::Settings::BY_NICK);
+
+   menu.addSeparator();
+
+   menu.addAction(QIcon(":/icons/ressources/marble_red.png"), tr("Colorize in red"), this, SLOT(colorizeSelectedPeer()))->setData(QColor(128, 0, 0));
+   menu.addAction(QIcon(":/icons/ressources/marble_blue.png"), tr("Colorize in blue"), this, SLOT(colorizeSelectedPeer()))->setData(QColor(0, 0, 128));
+   menu.addAction(QIcon(":/icons/ressources/marble_green.png"), tr("Colorize in green"), this, SLOT(colorizeSelectedPeer()))->setData(QColor(0, 128, 0));
+   menu.addAction(tr("Uncolorize"), this, SLOT(uncolorizeSelectedPeer()));
 
    menu.exec(this->ui->tblPeers->mapToGlobal(point));
 }
@@ -364,6 +368,54 @@ void MainWindow::sortPeersByNick()
 {
    this->peerListModel.setSortType(Protos::GUI::Settings::BY_NICK);
    SETTINGS.set("peer_sort_type", static_cast<quint32>(Protos::GUI::Settings::BY_NICK));
+   SETTINGS.save();
+}
+
+void MainWindow::colorizeSelectedPeer()
+{
+   const QColor color = static_cast<QAction*>(this->sender())->data().value<QColor>();
+
+   this->peerListModel.colorize(this->ui->tblPeers->selectionModel()->currentIndex(), color);
+
+   // Update the settings.
+   const Common::Hash& peerID = this->peerListModel.getPeerID(this->ui->tblPeers->selectionModel()->currentIndex().row());
+   Protos::GUI::Settings::HighlightedPeers highlightedPeers = SETTINGS.get<Protos::GUI::Settings::HighlightedPeers>("highlighted_peers");
+   for (int i = 0; i < highlightedPeers.peer_size(); i++)
+      if (Common::Hash(highlightedPeers.peer(i).id().hash()) == peerID)
+      {
+         highlightedPeers.mutable_peer(i)->set_color(color.rgb());
+         goto saveSettings;
+      }
+
+   {
+      Protos::GUI::Settings::HighlightedPeers::Peer* peer = highlightedPeers.add_peer();
+      peer->mutable_id()->set_hash(peerID.getData(), Common::Hash::HASH_SIZE);
+      peer->set_color(color.rgb());
+   }
+
+saveSettings:
+   SETTINGS.set("highlighted_peers", highlightedPeers);
+   SETTINGS.save();
+}
+
+void MainWindow::uncolorizeSelectedPeer()
+{
+   this->peerListModel.uncolorize(this->ui->tblPeers->selectionModel()->currentIndex());
+
+   // Update the settings.
+   const Common::Hash& peerID = this->peerListModel.getPeerID(this->ui->tblPeers->selectionModel()->currentIndex().row());
+   Protos::GUI::Settings::HighlightedPeers highlightedPeers = SETTINGS.get<Protos::GUI::Settings::HighlightedPeers>("highlighted_peers");
+   for (int i = 0; i < highlightedPeers.peer_size(); i++)
+      if (Common::Hash(highlightedPeers.peer(i).id().hash()) == peerID)
+      {
+         if (i != highlightedPeers.peer_size() - 1)
+            highlightedPeers.mutable_peer()->SwapElements(i, highlightedPeers.peer_size() - 1);
+         highlightedPeers.mutable_peer()->RemoveLast();
+         goto saveSettings;
+      }
+
+saveSettings:
+   SETTINGS.set("highlighted_peers", highlightedPeers);
    SETTINGS.save();
 }
 
@@ -452,6 +504,10 @@ void MainWindow::search(bool ownFiles)
 
 bool MainWindow::eventFilter(QObject* obj, QEvent* event)
 {
+   if (obj == this->ui->tblPeers && event->type() == QEvent::FocusOut)
+   {
+      this->ui->tblPeers->clearSelection();
+   }
    if (obj == this->widgetChat && event->type() == QEvent::KeyPress)
    {
       this->keyPressEvent(static_cast<QKeyEvent*>(event));
@@ -551,6 +607,13 @@ void MainWindow::restoreWindowsSettings()
    if (state.isEmpty())
       state = QByteArray::fromHex("000000ff00000000fd0000000200000000000000bf000000e1fc0200000002fb000000140064006f0063006b00530065006100720063006801000000000000001c0000001c0000001cfb000000120064006f0063006b005000650065007200730100000020000000c10000004b00ffffff00000003000003840000005dfc0100000001fb0000000e0064006f0063006b004c006f00670000000000000003840000006100ffffff000002c1000000e100000004000000040000000800000008fc00000000");
    this->restoreState(state);
+}
+
+void MainWindow::restoreColorizedPeers()
+{
+   Protos::GUI::Settings::HighlightedPeers highlightedPeers = SETTINGS.get<Protos::GUI::Settings::HighlightedPeers>("highlighted_peers");
+   for (int i = 0; i < highlightedPeers.peer_size(); i++)
+      this->peerListModel.colorize(highlightedPeers.peer(i).id().hash(), QColor(highlightedPeers.peer(i).color()));
 }
 
 /**

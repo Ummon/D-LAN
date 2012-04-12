@@ -23,6 +23,7 @@
 #include <QHostAddress>
 #include <QList>
 #include <QHash>
+#include <QColor>
 
 #include <Protos/gui_protocol.pb.h>
 #include <Protos/gui_settings.pb.h>
@@ -51,6 +52,10 @@ namespace GUI
       int rowCount(const QModelIndex& parent = QModelIndex()) const;
       int columnCount(const QModelIndex& parent = QModelIndex()) const;
       QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const;
+
+      void colorize(const Common::Hash& peerID, const QColor& color);
+      void colorize(const QModelIndex& index, const QColor& color);
+      void uncolorize(const QModelIndex& index);
 
    signals:
       /**
@@ -84,8 +89,10 @@ namespace GUI
          QHostAddress ip;
       };
 
+
       QList<Peer*> peers;
       QHash<Common::Hash, Peer*> indexedPeers; // Peers indexed by their ID.
+      QHash<Common::Hash, QColor> peersToColorize;
       Protos::GUI::Settings::PeerSortType currentSortType;
    };
 }

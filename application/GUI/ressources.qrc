@@ -30,5 +30,8 @@
         <file>ressources/lightning.png</file>
         <file>ressources/tree_view.png</file>
         <file>ressources/list_view.png</file>
+        <file>ressources/marble_red.png</file>
+        <file>ressources/marble_blue.png</file>
+        <file>ressources/marble_green.png</file>
     </qresource>
 </RCC>
