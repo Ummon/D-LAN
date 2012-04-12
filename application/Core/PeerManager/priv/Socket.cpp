@@ -290,11 +290,12 @@ void Socket::onNewMessage(Common::MessageHeader::MessageType type, const google:
             break;
          }
 
+         // TODO implements 'GetChunkResult.ALREADY_DOWNLOADING', 'GetChunkResult.TOO_MANY_CONNECTIONS' and 'GetChunkResult.DONT_HAVE_DATA_FROM_OFFSET'
          QSharedPointer<FM::IChunk> chunk = this->fileManager->getChunk(hash);
          if (chunk.isNull())
          {
             Protos::Core::GetChunkResult result;
-            result.set_status(Protos::Core::GetChunkResult_Status_DONT_HAVE);
+            result.set_status(Protos::Core::GetChunkResult::DONT_HAVE);
             this->send(Common::MessageHeader::CORE_GET_CHUNK_RESULT, result);
             this->finished();
 
@@ -303,7 +304,7 @@ void Socket::onNewMessage(Common::MessageHeader::MessageType type, const google:
          else
          {
             Protos::Core::GetChunkResult result;
-            result.set_status(Protos::Core::GetChunkResult_Status_OK);
+            result.set_status(Protos::Core::GetChunkResult::OK);
             result.set_chunk_size(chunk->getKnownBytes());
             this->send(Common::MessageHeader::CORE_GET_CHUNK_RESULT, result);
 

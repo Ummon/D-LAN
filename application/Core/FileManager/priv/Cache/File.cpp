@@ -99,7 +99,7 @@ File::File(
 
 File::~File()
 {
-   // QMutexLocker(&this->cache->getMutex()); // TODO: Is it necessary ?
+   // QMutexLocker(&this->cache->getMutex()); // Is it necessary ?
 
    this->dir->fileDeleted(this);
 

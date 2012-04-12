@@ -122,6 +122,7 @@ message GetChunkResult {
       DONT_HAVE = 1; // 'b' doesn't have this chunk.
       ALREADY_DOWNLOADING = 2; // If 'a' is already downloading a chunk from 'b'.
       TOO_MANY_CONNECTIONS = 3;
+      DONT_HAVE_DATA_FROM_OFFSET = 4; // If we have the chunk but we don't have the data from the given offset.
       ERROR_UNKNOWN = 255;
    }
    required Status status = 1;

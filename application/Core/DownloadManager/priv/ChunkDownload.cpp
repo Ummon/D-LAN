@@ -408,7 +408,7 @@ void ChunkDownload::reset()
 
 void ChunkDownload::result(const Protos::Core::GetChunkResult& result)
 {
-   if (result.status() != Protos::Core::GetChunkResult_Status_OK)
+   if (result.status() != Protos::Core::GetChunkResult::OK)
    {
       L_WARN(QString("Status error from GetChunkResult : %1. Download aborted.").arg(result.status()));
       if (this->peers.removeOne(this->currentDownloadingPeer))
