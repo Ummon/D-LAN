@@ -402,7 +402,7 @@ void RemoteConnection::onNewMessage(Common::MessageHeader::MessageType type, con
          if (newPassword.isNull()) // If the new password is null, the password is reset.
          {
             SETTINGS.set("remote_password", Common::Hash());
-            SETTINGS.set("salt", 0u);
+            SETTINGS.rm("salt");
             SETTINGS.save();
             this->refresh();
          }

@@ -110,6 +110,15 @@ bool DownloadsTreeModel::isFileComplete(const QModelIndex& index) const
    return tree->getItem().status() == Protos::GUI::State::Download::COMPLETE;
 }
 
+bool DownloadsTreeModel::isSourceAlive(const QModelIndex& index) const
+{
+   Tree* tree = static_cast<Tree*>(index.internalPointer());
+   if (!tree)
+      return false;
+
+   return tree->getItem().peer_id_size() > 0 && !this->peerListModel.getNick(tree->getItem().peer_id(0).hash()).isNull();
+}
+
 QString DownloadsTreeModel::getPath(const QModelIndex& index, bool appendFilename) const
 {
    Tree* tree = static_cast<Tree*>(index.internalPointer());

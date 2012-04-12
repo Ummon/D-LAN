@@ -40,6 +40,7 @@ namespace GUI
       bool isDownloadPaused(const QModelIndex& index) const;
       bool isFileLocationKnown(const QModelIndex& index) const;
       bool isFileComplete(const QModelIndex& index) const;
+      bool isSourceAlive(const QModelIndex& index) const;
 
       QString getPath(const QModelIndex& index, bool appendFilename = true) const;
 

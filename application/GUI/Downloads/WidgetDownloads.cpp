@@ -78,6 +78,10 @@ void DownloadsDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opt
       // Remove the focus box, not very useful.
       QStyleOptionViewItemV4 newOption(option);
       newOption.state = option.state & (~QStyle::State_HasFocus);
+
+      if (index.column() == 3 && !static_cast<const DownloadsModel*>(index.model())->isSourceAlive(index))
+         newOption.font.setStrikeOut(true);
+
       QStyledItemDelegate::paint(painter, newOption, index);
    }
 }
