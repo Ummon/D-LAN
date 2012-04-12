@@ -47,6 +47,7 @@ namespace LM
       virtual QString getThread() const = 0;
       virtual QString getSource() const = 0;
       virtual QString getMessage() const = 0;
+      virtual QString getMessageWithLF() const = 0;
    };
 }
 #endif

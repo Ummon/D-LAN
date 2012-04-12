@@ -48,6 +48,7 @@ namespace LM
       QString getThread() const;
       QString getSource() const;
       QString getMessage() const;
+      QString getMessageWithLF() const;
 
    private:
       static QString severityToStr(Severity severity);
