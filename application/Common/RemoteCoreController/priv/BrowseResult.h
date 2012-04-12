@@ -36,9 +36,9 @@ namespace RCC
    {
       Q_OBJECT
    public:
-      BrowseResult(InternalCoreConnection* coreConnection, const Common::Hash& peerID);
-      BrowseResult(InternalCoreConnection* coreConnection, const Common::Hash& peerID, const Protos::Common::Entry& entry);
-      BrowseResult(InternalCoreConnection* coreConnection, const Common::Hash& peerID, const Protos::Common::Entries& entries, bool withRoots = true);
+      BrowseResult(InternalCoreConnection* coreConnection, const Common::Hash& peerID, int socketTimeout);
+      BrowseResult(InternalCoreConnection* coreConnection, const Common::Hash& peerID, const Protos::Common::Entry& entry, int socketTimeout);
+      BrowseResult(InternalCoreConnection* coreConnection, const Common::Hash& peerID, const Protos::Common::Entries& entries, bool withRoots, int socketTimeout);
       void start();
       void setTag(quint64 tag);
 

@@ -33,7 +33,7 @@ namespace RCC
    {
       Q_OBJECT
    public:
-      SearchResult(InternalCoreConnection* coreConnection, const QString& terms);
+      SearchResult(InternalCoreConnection* coreConnection, const QString& terms, int socketTimeout);
       void start();
       void setTag(quint64 tag);
 
