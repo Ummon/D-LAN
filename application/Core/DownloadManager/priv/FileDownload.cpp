@@ -341,13 +341,16 @@ bool FileDownload::updateStatus()
       }
       else if (chunkDownload->getLastTransfertStatus() >= 0x20)
       {
-         this->setStatus(chunkDownload->getLastTransfertStatus());
+         newStatus = chunkDownload->getLastTransfertStatus();
          chunkDownload->resetLastTransfertStatus();
 
          // If the local file disappear we reset the download.
-         if (this->status == FILE_NON_EXISTENT)
+         if (newStatus == FILE_NON_EXISTENT)
+         {
             this->reset();
-         return false;
+            this->setStatus(newStatus);
+            return false;
+         }
       }
       else if (!hasAtLeastAPeer && !chunkDownload->isComplete())
       {
