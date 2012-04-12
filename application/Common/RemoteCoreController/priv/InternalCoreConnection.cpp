@@ -145,6 +145,14 @@ bool InternalCoreConnection::setCorePassword(const QString& newPassword, const Q
    return true;
 }
 
+void InternalCoreConnection::resetCorePassword()
+{
+   Protos::GUI::ChangePassword passMess;
+   passMess.mutable_new_password()->set_hash(Common::Hash().getData(), Common::Hash::HASH_SIZE);
+   passMess.set_new_salt(0);
+   this->send(Common::MessageHeader::GUI_CHANGE_PASSWORD, passMess);
+}
+
 QSharedPointer<IBrowseResult> InternalCoreConnection::browse(const Common::Hash& peerID, int socketTimeout)
 {
    QSharedPointer<BrowseResult> browseResult = QSharedPointer<BrowseResult>(new BrowseResult(this, peerID, socketTimeout));

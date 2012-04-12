@@ -192,6 +192,7 @@ message Language {
 // id : 0xD1
 // Change the core password.
 // Both sent passwords are salted with 'AskForAuthentication.new_salt'.
+// If 'new_password' is set to a null hash, the password is removed, in this case the old password isn't needed.
 message ChangePassword {
    required Common.Hash new_password = 1; // Salted with the new salt.
    required uint64 new_salt = 2;

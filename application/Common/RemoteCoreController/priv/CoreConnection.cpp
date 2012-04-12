@@ -113,6 +113,11 @@ bool CoreConnection::setCorePassword(const QString& newPassword, const QString& 
    return this->current()->setCorePassword(newPassword, oldPassword);
 }
 
+void CoreConnection::resetCorePassword()
+{
+   this->current()->resetCorePassword();
+}
+
 QSharedPointer<IBrowseResult> CoreConnection::browse(const Common::Hash& peerID)
 {
    return this->current()->browse(peerID, this->SOCKET_TIMEOUT);

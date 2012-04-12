@@ -396,11 +396,19 @@ void RemoteConnection::onNewMessage(Common::MessageHeader::MessageType type, con
       {
          const Protos::GUI::ChangePassword& passMessage = static_cast<const Protos::GUI::ChangePassword&>(message);
 
+         Common::Hash newPassword(passMessage.new_password().hash());
          Common::Hash currentPassword = SETTINGS.get<Common::Hash>("remote_password");
 
-         if (currentPassword.isNull() || this->isLocal() || currentPassword == Common::Hash(passMessage.old_password().hash()))
+         if (newPassword.isNull()) // If the new password is null, the password is reset.
          {
-            SETTINGS.set("remote_password", Common::Hash(passMessage.new_password().hash()));
+            SETTINGS.set("remote_password", Common::Hash());
+            SETTINGS.set("salt", 0u);
+            SETTINGS.save();
+            this->refresh();
+         }
+         else if (currentPassword.isNull() || currentPassword == Common::Hash(passMessage.old_password().hash()))
+         {
+            SETTINGS.set("remote_password", newPassword);
             SETTINGS.set("salt", static_cast<quint64>(passMessage.new_salt()));
             SETTINGS.save();
             this->refresh();

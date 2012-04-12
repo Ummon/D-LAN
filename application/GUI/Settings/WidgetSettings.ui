@@ -345,16 +345,6 @@
               </property>
              </widget>
             </item>
-            <item row="3" column="1">
-             <widget class="QPushButton" name="butChangePassword">
-              <property name="enabled">
-               <bool>false</bool>
-              </property>
-              <property name="text">
-               <string>Change the password</string>
-              </property>
-             </widget>
-            </item>
             <item row="4" column="0" colspan="2">
              <spacer name="verticalSpacer_3">
               <property name="orientation">
@@ -391,6 +381,27 @@
                <widget class="QPushButton" name="butDisconnect">
                 <property name="text">
                  <string>Disconnect</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+            <item row="3" column="1">
+             <layout class="QHBoxLayout" name="horizontalLayout_2">
+              <item>
+               <widget class="QPushButton" name="butChangePassword">
+                <property name="enabled">
+                 <bool>false</bool>
+                </property>
+                <property name="text">
+                 <string>Change the password</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="butResetPassword">
+                <property name="text">
+                 <string>Reset the password</string>
                 </property>
                </widget>
               </item>
