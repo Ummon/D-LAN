@@ -16,7 +16,7 @@ message Settings {
    optional uint32 max_chat_message_displayed = 4 [default = 1000];
    optional uint32 max_log_message_displayed = 5 [default = 500];
    optional uint32 search_time = 7 [default = 3000]; // [ms].
-   optional uint32 socket_timeout = 8 [default = 5000]; // [ms].
+   optional uint32 socket_timeout = 8 [default = 7000]; // [ms].
    
    optional bytes windows_state = 9;
    optional uint32 main_window_width = 10 [default = 900];   
@@ -30,8 +30,7 @@ message Settings {
       WIN_CHAT = 2;
       WIN_DOWNLOAD = 3;
       WIN_UPLOAD = 4;
-   }
-   
+   }   
    repeated Window windowOrder = 18;   
    
    enum DownloadView {
@@ -39,4 +38,19 @@ message Settings {
       LIST_VIEW = 2;
    }
    optional DownloadView download_view = 21 [default = TREE_VIEW];
+   
+   enum PeerSortType {
+      BY_NICK = 1;
+      BY_SHARING_AMOUNT = 2;
+   }
+   optional PeerSortType peer_sort_type = 22 [default = BY_SHARING_AMOUNT];
+   
+   message HighlightedPeers {
+      message Peer {
+         required uint32 color = 1; // RGB.
+         required Common.Hash id = 2;
+      }
+      repeated Peer peer = 1;
+   }
+   optional HighlightedPeers highlighted_peers = 23;
 }

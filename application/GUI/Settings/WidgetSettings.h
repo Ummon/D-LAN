@@ -81,6 +81,7 @@ namespace GUI
       void cmbLanguageChanged(int cmbIndex);
 
       void changePassword();
+      void resetPassword();
 
       void addShared();
       void removeShared();

@@ -96,12 +96,13 @@ void ChunkDownload::addPeerID(const Common::Hash& peerID)
 void ChunkDownload::rmPeerID(const Common::Hash& peerID)
 {
    QMutexLocker locker(&this->mutex);
+
+   if (this->peers.isEmpty())
+      return;
+
    PM::IPeer* peer = this->peerManager->getPeer(peerID);
-   if (peer)
-   {
-      this->peers.removeOne(peer);
+   if (peer && this->peers.removeOne(peer))
       emit numberOfPeersChanged();
-   }
 }
 
 void ChunkDownload::init(QThread* thread)
@@ -407,7 +408,7 @@ void ChunkDownload::reset()
 
 void ChunkDownload::result(const Protos::Core::GetChunkResult& result)
 {
-   if (result.status() != Protos::Core::GetChunkResult_Status_OK)
+   if (result.status() != Protos::Core::GetChunkResult::OK)
    {
       L_WARN(QString("Status error from GetChunkResult : %1. Download aborted.").arg(result.status()));
       if (this->peers.removeOne(this->currentDownloadingPeer))

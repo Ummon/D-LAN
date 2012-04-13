@@ -145,30 +145,38 @@ bool InternalCoreConnection::setCorePassword(const QString& newPassword, const Q
    return true;
 }
 
-QSharedPointer<IBrowseResult> InternalCoreConnection::browse(const Common::Hash& peerID)
+void InternalCoreConnection::resetCorePassword()
 {
-   QSharedPointer<BrowseResult> browseResult = QSharedPointer<BrowseResult>(new BrowseResult(this, peerID));
+   Protos::GUI::ChangePassword passMess;
+   passMess.mutable_new_password()->set_hash(Common::Hash().getData(), Common::Hash::HASH_SIZE);
+   passMess.set_new_salt(0);
+   this->send(Common::MessageHeader::GUI_CHANGE_PASSWORD, passMess);
+}
+
+QSharedPointer<IBrowseResult> InternalCoreConnection::browse(const Common::Hash& peerID, int socketTimeout)
+{
+   QSharedPointer<BrowseResult> browseResult = QSharedPointer<BrowseResult>(new BrowseResult(this, peerID, socketTimeout));
    this->browseResultsWithoutTag << browseResult.toWeakRef();
    return browseResult;
 }
 
-QSharedPointer<IBrowseResult> InternalCoreConnection::browse(const Common::Hash& peerID, const Protos::Common::Entry& entry)
+QSharedPointer<IBrowseResult> InternalCoreConnection::browse(const Common::Hash& peerID, const Protos::Common::Entry& entry, int socketTimeout)
 {
-   QSharedPointer<BrowseResult> browseResult = QSharedPointer<BrowseResult>(new BrowseResult(this, peerID, entry));
+   QSharedPointer<BrowseResult> browseResult = QSharedPointer<BrowseResult>(new BrowseResult(this, peerID, entry, socketTimeout));
    this->browseResultsWithoutTag << browseResult.toWeakRef();
    return browseResult;
 }
 
-QSharedPointer<IBrowseResult> InternalCoreConnection::browse(const Common::Hash& peerID, const Protos::Common::Entries& entries, bool withRoots)
+QSharedPointer<IBrowseResult> InternalCoreConnection::browse(const Common::Hash& peerID, const Protos::Common::Entries& entries, bool withRoots, int socketTimeout)
 {
-   QSharedPointer<BrowseResult> browseResult = QSharedPointer<BrowseResult>(new BrowseResult(this, peerID, entries, withRoots));
+   QSharedPointer<BrowseResult> browseResult = QSharedPointer<BrowseResult>(new BrowseResult(this, peerID, entries, withRoots, socketTimeout));
    this->browseResultsWithoutTag << browseResult.toWeakRef();
    return browseResult;
 }
 
-QSharedPointer<ISearchResult> InternalCoreConnection::search(const QString& terms)
+QSharedPointer<ISearchResult> InternalCoreConnection::search(const QString& terms, int socketTimeout)
 {
-   QSharedPointer<SearchResult> searchResult = QSharedPointer<SearchResult>(new SearchResult(this, terms));
+   QSharedPointer<SearchResult> searchResult = QSharedPointer<SearchResult>(new SearchResult(this, terms, socketTimeout));
    this->searchResultsWithoutTag << searchResult.toWeakRef();
    return searchResult;
 }

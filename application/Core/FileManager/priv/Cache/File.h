@@ -61,7 +61,7 @@ namespace FM
 
       void setToUnfinished(qint64 size, const Common::Hashes& hashes = Common::Hashes());
 
-      bool restoreFromFileCache(const Protos::FileCache::Hashes_File& file);
+      bool restoreFromFileCache(const Protos::FileCache::Hashes::File& file);
       void populateHashesFile(Protos::FileCache::Hashes_File& fileToFill) const;
 
       void populateEntry(Protos::Common::Entry* entry, bool setSharedDir = false) const;
@@ -116,7 +116,6 @@ namespace FM
       // Used only when writing a file.
       int nbChunkComplete;
       bool complete;
-      bool tryToRename; // If a finished file can't be renamed (removing the suffix '.unfinished') because there is some readers, the renaming will be delayed until there is no more reader.
 
       int numDataWriter;
       int numDataReader;

@@ -30,6 +30,12 @@ QSharedPointer<ICoreConnection> Builder::newCoreConnection()
    return QSharedPointer<ICoreConnection>(new CoreConnection());
 }
 
+QSharedPointer<ICoreConnection> Builder::newCoreConnection(int socketTimeout)
+{
+   qRegisterMetaType<RCC::ICoreConnection::ConnectionErrorCode>("RCC::ICoreConnection::ConnectionErrorCode");
+   return QSharedPointer<ICoreConnection>(new CoreConnection(socketTimeout));
+}
+
 /**
   * @remarks Works only in local.
   */

@@ -32,9 +32,10 @@ using namespace RCC;
 #include <priv/BrowseResult.h>
 #include <priv/SearchResult.h>
 
-CoreConnection::CoreConnection() :
+CoreConnection::CoreConnection(int socketTimeout) :
    currentConnected(0),
-   connectingInProgress(false)
+   connectingInProgress(false),
+   SOCKET_TIMEOUT(socketTimeout)
 {
 }
 
@@ -112,26 +113,31 @@ bool CoreConnection::setCorePassword(const QString& newPassword, const QString& 
    return this->current()->setCorePassword(newPassword, oldPassword);
 }
 
+void CoreConnection::resetCorePassword()
+{
+   this->current()->resetCorePassword();
+}
+
 QSharedPointer<IBrowseResult> CoreConnection::browse(const Common::Hash& peerID)
 {
-   return this->current()->browse(peerID);
+   return this->current()->browse(peerID, this->SOCKET_TIMEOUT);
 }
 
 QSharedPointer<IBrowseResult> CoreConnection::browse(const Common::Hash& peerID, const Protos::Common::Entry& entry)
 {
 
-   return this->current()->browse(peerID, entry);
+   return this->current()->browse(peerID, entry, this->SOCKET_TIMEOUT);
 }
 
 QSharedPointer<IBrowseResult> CoreConnection::browse(const Common::Hash& peerID, const Protos::Common::Entries& entries, bool withRoots)
 {
 
-   return this->current()->browse(peerID, entries, withRoots);
+   return this->current()->browse(peerID, entries, withRoots, this->SOCKET_TIMEOUT);
 }
 
 QSharedPointer<ISearchResult> CoreConnection::search(const QString& terms)
 {
-   return this->current()->search(terms);
+   return this->current()->search(terms, this->SOCKET_TIMEOUT);
 }
 
 void CoreConnection::download(const Common::Hash& peerID, const Protos::Common::Entry& entry)

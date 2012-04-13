@@ -48,21 +48,37 @@ int TableLogModel::columnCount(const QModelIndex& parent) const
 
 QVariant TableLogModel::data(const QModelIndex& index, int role) const
 {
-   if (role != Qt::DisplayRole || index.row() >= this->entries.count())
+   if (index.row() >= this->entries.count())
       return QVariant();
 
-   QSharedPointer<LM::IEntry> entry = this->entries[index.row()];
-
-   switch (index.column())
+   switch (role)
    {
-   case 0: return entry->getDateStr();
-   case 1: return entry->getSeverityStr();
-   case 2: return entry->getName();
-   case 3: return entry->getThread();
-   case 4: return entry->getSource();
-   case 5: return entry->getMessage();
-   default: return QVariant();
+   case Qt::DisplayRole:
+      {
+         QSharedPointer<LM::IEntry> entry = this->entries[index.row()];
+
+         switch (index.column())
+         {
+         case 0: return entry->getDateStr();
+         case 1: return entry->getSeverityStr();
+         case 2: return entry->getName();
+         case 3: return entry->getThread();
+         case 4: return entry->getSource();
+         case 5: return entry->getMessage();
+         default: return QVariant();
+         }
+      }
+   case Qt::ToolTipRole:
+      {
+         if (index.column() == 5)
+         {
+            QSharedPointer<LM::IEntry> entry = this->entries[index.row()];
+            return entry->getMessageWithLF();
+         }
+      }
    }
+
+   return QVariant();
 }
 
 QVariant TableLogModel::headerData(int section, Qt::Orientation orientation, int role) const

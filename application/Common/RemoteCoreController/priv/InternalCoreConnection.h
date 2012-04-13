@@ -74,12 +74,13 @@ namespace RCC
       void setCoreSettings(const Protos::GUI::CoreSettings settings);
       void setCoreLanguage(const QLocale locale);
       bool setCorePassword(const QString& newPassword, const QString& oldPassword = QString());
+      void resetCorePassword();
 
-      QSharedPointer<IBrowseResult> browse(const Common::Hash& peerID);
-      QSharedPointer<IBrowseResult> browse(const Common::Hash& peerID, const Protos::Common::Entry& entry);
-      QSharedPointer<IBrowseResult> browse(const Common::Hash& peerID, const Protos::Common::Entries& entries, bool withRoots = true);
+      QSharedPointer<IBrowseResult> browse(const Common::Hash& peerID, int socketTimeout);
+      QSharedPointer<IBrowseResult> browse(const Common::Hash& peerID, const Protos::Common::Entry& entry, int socketTimeout);
+      QSharedPointer<IBrowseResult> browse(const Common::Hash& peerID, const Protos::Common::Entries& entries, bool withRoots, int socketTimeout);
 
-      QSharedPointer<ISearchResult> search(const QString& terms);
+      QSharedPointer<ISearchResult> search(const QString& terms, int socketTimeout);
 
       void download(const Common::Hash& peerID, const Protos::Common::Entry& entry);
       void download(const Common::Hash& peerID, const Protos::Common::Entry& entry, const Common::Hash& sharedFolderID, const QString& path = "/");

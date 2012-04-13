@@ -40,6 +40,7 @@ namespace GUI
       bool isDownloadPaused(const QModelIndex& index) const;
       bool isFileLocationKnown(const QModelIndex& index) const;
       bool isFileComplete(const QModelIndex& index) const;
+      bool isSourceAlive(const QModelIndex& index) const;
 
       QString getPath(const QModelIndex& index, bool appendFilename = true) const;
 
@@ -70,7 +71,7 @@ namespace GUI
       };
 
       QList<quint64> getDownloadIDs(Tree* tree) const;
-      Tree* insertDirectory(Tree* parentTree, const QString& dir, const QString& peerSourceNick, const Hash& sharedDirID);
+      Tree* insertDirectory(Tree* parentTree, const QString& dir, const QString& peerSourceNick, const Common::Hash& peerSourceID, const Hash& sharedDirID);
       Tree* insert(Tree* tree, const Protos::GUI::State::Download& download);
       Tree* createEntry(const QModelIndex& parent, int position, const Protos::GUI::State::Download& download);
 

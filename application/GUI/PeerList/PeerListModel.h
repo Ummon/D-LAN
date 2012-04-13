@@ -23,8 +23,10 @@
 #include <QHostAddress>
 #include <QList>
 #include <QHash>
+#include <QColor>
 
 #include <Protos/gui_protocol.pb.h>
+#include <Protos/gui_settings.pb.h>
 
 #include <Common/Hash.h>
 #include <Common/RemoteCoreController/ICoreConnection.h>
@@ -44,9 +46,16 @@ namespace GUI
       QHostAddress getPeerIP(int rowNum) const;
       void clear();
 
+      void setSortType(Protos::GUI::Settings::PeerSortType sortType);
+      Protos::GUI::Settings::PeerSortType getSortType() const;
+
       int rowCount(const QModelIndex& parent = QModelIndex()) const;
       int columnCount(const QModelIndex& parent = QModelIndex()) const;
       QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const;
+
+      void colorize(const Common::Hash& peerID, const QColor& color);
+      void colorize(const QModelIndex& index, const QColor& color);
+      void uncolorize(const QModelIndex& index);
 
    signals:
       /**
@@ -70,7 +79,8 @@ namespace GUI
 
          bool operator==(const Peer& p) const { return this->peerID == p.peerID; }
          bool operator!=(const Peer& p) const { return this->peerID != p.peerID; }
-         static bool sortComp(const Peer* p1, const Peer* p2) { return p1->sharingAmount > p2->sharingAmount; }
+         static bool sortCompByNick(const Peer* p1, const Peer* p2);
+         static bool sortCompBySharingAmount(const Peer* p1, const Peer* p2);
 
          Common::Hash peerID;
          QString nick;
@@ -79,8 +89,11 @@ namespace GUI
          QHostAddress ip;
       };
 
+
       QList<Peer*> peers;
       QHash<Common::Hash, Peer*> indexedPeers; // Peers indexed by their ID.
+      QHash<Common::Hash, QColor> peersToColorize;
+      Protos::GUI::Settings::PeerSortType currentSortType;
    };
 }
 

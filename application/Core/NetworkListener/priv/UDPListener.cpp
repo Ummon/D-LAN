@@ -130,7 +130,7 @@ void UDPListener::sendIMAliveMessage()
    ProtoHelper::setStr(IMAliveMessage, &Protos::Core::IMAlive::set_core_version, Common::Global::getVersionFull());
    IMAliveMessage.set_port(this->UNICAST_PORT);
 
-   const QString& nick = this->peerManager->getNick();
+   const QString& nick = this->peerManager->getSelf()->getNick();
    Common::ProtoHelper::setStr(IMAliveMessage, &Protos::Core::IMAlive::set_nick, nick.length() > MAX_NICK_LENGTH ? nick.left(MAX_NICK_LENGTH) : nick);
 
    IMAliveMessage.set_amount(this->fileManager->getAmount());
@@ -162,14 +162,24 @@ void UDPListener::sendIMAliveMessage()
 
    IMAliveMessage.mutable_chunk()->Reserve(this->currentChunkDownloads.size());
    for (QListIterator< QSharedPointer<DM::IChunkDownload> > i(this->currentChunkDownloads); i.hasNext();)
-      IMAliveMessage.add_chunk()->set_hash(i.next()->getHash().getData(), Common::Hash::HASH_SIZE);
+   {
+      QSharedPointer<DM::IChunkDownload> chunkDownload = i.next();
+      IMAliveMessage.add_chunk()->set_hash(chunkDownload->getHash().getData(), Common::Hash::HASH_SIZE);
+
+      // If we already have the chunk...
+      QSharedPointer<FM::IChunk> chunk = this->fileManager->getChunk(chunkDownload->getHash());
+      if (!chunk.isNull() && chunk->isComplete())
+         chunkDownload->addPeerID(this->peerManager->getSelf()->getID());
+      else
+         chunkDownload->rmPeerID(this->peerManager->getSelf()->getID());
+   }
 
    this->send(Common::MessageHeader::CORE_IM_ALIVE, IMAliveMessage);
 }
 
 Common::Hash UDPListener::getOwnID() const
 {
-   return this->peerManager->getID();
+   return this->peerManager->getSelf()->getID();
 }
 
 void UDPListener::rebindSockets()
@@ -405,7 +415,7 @@ void UDPListener::initUnicastUDPSocket()
 int UDPListener::writeMessageToBuffer(Common::MessageHeader::MessageType type, const google::protobuf::Message& message)
 {
    const int bodySize = message.ByteSize();
-   const Common::MessageHeader header(type, bodySize, this->peerManager->getID());
+   const Common::MessageHeader header(type, bodySize, this->peerManager->getSelf()->getID());
 
    if (Common::MessageHeader::HEADER_SIZE + bodySize > this->MAX_UDP_DATAGRAM_PAYLOAD_SIZE)
    {
@@ -441,7 +451,7 @@ Common::MessageHeader UDPListener::readDatagramToBuffer(QUdpSocket& socket, QHos
       return header;
    }
 
-   if (header.getSenderID() == this->peerManager->getID())
+   if (header.getSenderID() == this->peerManager->getSelf()->getID())
    {
       // L_WARN("We receive a datagram from ourself, skip"); // Don't care..
       header.setNull();

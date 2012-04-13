@@ -109,6 +109,7 @@ WidgetSettings::WidgetSettings(QSharedPointer<RCC::ICoreConnection> coreConnecti
    connect(this->ui->cmbLanguages, SIGNAL(currentIndexChanged(int)), this, SLOT(cmbLanguageChanged(int)));
 
    connect(this->ui->butChangePassword, SIGNAL(clicked()), this, SLOT(changePassword()));
+   connect(this->ui->butResetPassword, SIGNAL(clicked()), this, SLOT(resetPassword()));
 
    this->refreshButtonsAvailability();
    this->coreDisconnected(); // To set the initial state.
@@ -314,9 +315,17 @@ void WidgetSettings::newState(const Protos::GUI::State& state)
       this->ui->chkEnableIntegrityCheck->setChecked(state.integrity_check_enabled());
 
    if (this->corePasswordDefined = state.password_defined())
+   {
+      this->ui->txtPassword->setPlaceholderText("");
+      this->ui->butResetPassword->setEnabled(true);
       this->ui->butChangePassword->setText(tr("Change the password"));
+   }
    else
+   {
+      this->ui->txtPassword->setPlaceholderText("No password defined");
+      this->ui->butResetPassword->setEnabled(false);
       this->ui->butChangePassword->setText(tr("Define a password"));
+   }
 
    QList<Common::SharedDir> sharedDirs;
    for (int i = 0; i < state.shared_directory_size(); i++)
@@ -359,12 +368,15 @@ void WidgetSettings::coreConnecting()
 {
    this->ui->butConnect->setDisabled(true);
    this->ui->butDisconnect->setDisabled(true);
+   this->ui->butResetCoreAddress->setDisabled(true);
    this->ui->butConnect->setText(tr("Connecting.."));
 }
 
 void WidgetSettings::coreConnectingError()
 {
    this->ui->butConnect->setDisabled(false);
+   this->ui->butDisconnect->setDisabled(!this->coreConnection->isConnected());
+   this->ui->butResetCoreAddress->setDisabled(false);
    this->ui->butConnect->setText(tr("Connect"));
 }
 
@@ -383,6 +395,7 @@ void WidgetSettings::coreConnected()
    this->ui->butConnect->setDisabled(false);
    this->ui->butConnect->setText(tr("Connect"));
    this->ui->butDisconnect->setDisabled(false);
+   this->ui->butResetCoreAddress->setDisabled(false);
 
    this->ui->butChangePassword->setDisabled(false);
 
@@ -402,6 +415,7 @@ void WidgetSettings::coreDisconnected()
    this->ui->butDisconnect->setDisabled(true);
 
    this->ui->butChangePassword->setDisabled(true);
+   this->ui->butResetPassword->setDisabled(true);
 }
 
 /**
@@ -452,6 +466,13 @@ void WidgetSettings::changePassword()
 {
    AskNewPasswordDialog dia(this->coreConnection, this->corePasswordDefined, this);
    dia.exec();
+}
+
+void WidgetSettings::resetPassword()
+{
+   this->coreConnection->resetCorePassword();
+   if (!this->coreConnection->isLocal())
+      this->coreConnection->disconnectFromCore();
 }
 
 void WidgetSettings::addShared()

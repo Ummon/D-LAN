@@ -78,7 +78,6 @@ File::File(
    dateLastModified(dateLastModified),
    nbChunkComplete(0),
    complete(!Global::isFileUnfinished(Entry::getName())),
-   tryToRename(false),
    numDataWriter(0),
    numDataReader(0),
    fileInWriteMode(0),
@@ -99,7 +98,7 @@ File::File(
 
 File::~File()
 {
-   // QMutexLocker(&this->cache->getMutex()); // TODO: Is it necessary ?
+   // QMutexLocker(&this->cache->getMutex()); // Is it necessary ?
 
    this->dir->fileDeleted(this);
 
@@ -113,9 +112,6 @@ File::~File()
 
    QMutexLocker lockerRead(&this->readLock);
    this->cache->getFilePool().release(this->fileInReadMode, true);
-
-   if (this->tryToRename)
-      this->setAsComplete();
 
    L_DEBU(QString("File deleted : %1").arg(this->getFullPath()));
 }
@@ -132,7 +128,6 @@ void File::setToUnfinished(qint64 size, const Common::Hashes& hashes)
 
    this->complete = false;
    this->stopHashing();
-   this->tryToRename = false;
    this->cache->onEntryRemoved(this);
    this->name.append(Global::getUnfinishedSuffix());
    this->size = size;
@@ -144,7 +139,7 @@ void File::setToUnfinished(qint64 size, const Common::Hashes& hashes)
    this->createPhysicalFile();
 }
 
-bool File::restoreFromFileCache(const Protos::FileCache::Hashes_File& file)
+bool File::restoreFromFileCache(const Protos::FileCache::Hashes::File& file)
 {
    if (
       Common::ProtoHelper::getStr(file, &Protos::FileCache::Hashes_File::filename) == this->getName() &&
@@ -165,7 +160,9 @@ bool File::restoreFromFileCache(const Protos::FileCache::Hashes_File& file)
          {
             if (this->chunks[i]->isComplete())
                this->nbChunkComplete++;
-            this->cache->onChunkHashKnown(this->chunks[i]);
+
+            if (this->chunks[i]->getKnownBytes() > 0)
+               this->cache->onChunkHashKnown(this->chunks[i]);
          }
       }
 
@@ -292,13 +289,18 @@ void File::newDataReaderCreated()
    }
 }
 
+/**
+  * 'setAsComplete()' must be called before 'dataWriter' and 'dataReader' are deleted.
+  * This is a bit tricky... We should use a signal 'void fileClosed(QFile* )' in 'FilePool' connected to a slot in the 'File' class.
+  * In this case, 'File' must inherits 'QObject' which is actually too heavy.
+  */
 void File::dataWriterDeleted()
 {
    QMutexLocker locker(&this->writeLock);
 
    if (--this->numDataWriter == 0)
    {
-      this->cache->getFilePool().release(this->fileInWriteMode, this->size < CHUNK_SIZE);
+      this->cache->getFilePool().release(this->fileInWriteMode);
       this->fileInWriteMode = 0;
    }
 }
@@ -309,11 +311,8 @@ void File::dataReaderDeleted()
 
    if (--this->numDataReader == 0)
    {
-      this->cache->getFilePool().release(this->fileInReadMode, this->size < CHUNK_SIZE);
+      this->cache->getFilePool().release(this->fileInReadMode);
       this->fileInReadMode = 0;
-
-      if (this->tryToRename)
-         this->setAsComplete();
    }
 }
 
@@ -607,16 +606,14 @@ void File::setAsComplete()
 
    if (Global::isFileUnfinished(this->name))
    {
-      if (this->numDataReader > 0)
+      if (this->numDataReader > 0 || this->numDataWriter > 0)
       {
-         L_DEBU(QString("Delay file renaming, %1 reader(s)").arg(this->numDataReader));
-         this->tryToRename = true;
-         return;
+         QMutexLocker lockerWrite(&this->writeLock);
+         QMutexLocker lockerRead(&this->readLock);
+         this->cache->getFilePool().forceReleaseAll(this->getFullPath()); // Some uploads may be interrupted.
+         this->fileInReadMode = 0;
+         this->fileInWriteMode = 0;
       }
-      this->tryToRename = false;
-
-      this->cache->getFilePool().release(this->fileInWriteMode, true);
-      this->fileInWriteMode = 0;
 
       const QString oldPath = this->getFullPath();
       const QString newPath = Global::removeUnfinishedSuffix(oldPath);
@@ -662,7 +659,7 @@ void File::deleteIfIncomplete()
 {
    this->mutex.lock();
 
-   if (!this->complete && !this->tryToRename)
+   if (!this->complete)
    {
       this->removeUnfinishedFiles();
       this->mutex.unlock();
@@ -681,7 +678,7 @@ void File::removeUnfinishedFiles()
 {
    QMutexLocker locker(&this->mutex);
 
-   if (!this->complete && !this->tryToRename)
+   if (!this->complete)
    {
       QMutexLocker lockerWrite(&this->writeLock);
       QMutexLocker lockerRead(&this->readLock);

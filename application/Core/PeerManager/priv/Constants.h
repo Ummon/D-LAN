@@ -23,7 +23,7 @@
 
 namespace PM
 {
-   const int MAX_NICK_LENGTH = 256; // To avoid infinite nick length ;).
+   const int MAX_NICK_LENGTH = 255; // To avoid infinite nick length ;).
 }
 
 #endif

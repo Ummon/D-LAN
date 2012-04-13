@@ -121,6 +121,11 @@ namespace RCC
       virtual bool setCorePassword(const QString& newPassword, const QString& oldPassword = QString()) = 0;
 
       /**
+        * Don't need to provide the old password to reset a password.
+        */
+      virtual void resetCorePassword() = 0;
+
+      /**
         * Get the roots folders (shared directories) of a given peer.
         * @param peerID Can be yourself.
         */

@@ -89,6 +89,11 @@ namespace GUI
       void searchOwnFiles();
       void txtSearchReturnPressed(Qt::KeyboardModifiers modifiers);
 
+      void sortPeersBySharingAmount();
+      void sortPeersByNick();
+      void colorizeSelectedPeer();
+      void uncolorizeSelectedPeer();
+
       void removeWidget(QWidget* widget);
 
       void logScrollChanged(int value);
@@ -108,6 +113,8 @@ namespace GUI
 
       void saveWindowsSettings();
       void restoreWindowsSettings();
+
+      void restoreColorizedPeers();
 
       void removeMdiSubWindow(QMdiSubWindow* mdiSubWindow);
 

@@ -25,7 +25,8 @@ using namespace GUI;
 #include <Common/Global.h>
 
 PeerListModel::PeerListModel(QSharedPointer<RCC::ICoreConnection> coreConnection) :
-   coreConnection(coreConnection)
+   coreConnection(coreConnection),
+   currentSortType(Protos::GUI::Settings::BY_SHARING_AMOUNT)
 {
    connect(this->coreConnection.data(), SIGNAL(newState(Protos::GUI::State)), this, SLOT(newState(Protos::GUI::State)));
 }
@@ -74,6 +75,20 @@ void PeerListModel::clear()
    this->setPeers(peers);
 }
 
+void PeerListModel::setSortType(Protos::GUI::Settings::PeerSortType sortType)
+{
+   if (this->currentSortType == sortType)
+      return;
+
+   this->currentSortType = sortType;
+   this->sort();
+}
+
+Protos::GUI::Settings::PeerSortType PeerListModel::getSortType() const
+{
+   return this->currentSortType;
+}
+
 int PeerListModel::rowCount(const QModelIndex& parent) const
 {
    return this->peers.size();
@@ -99,6 +114,20 @@ QVariant PeerListModel::data(const QModelIndex& index, int role) const
       default: return QVariant();
       }
 
+   case Qt::BackgroundRole:
+      if (this->peersToColorize.contains(this->peers[index.row()]->peerID))
+         return this->peersToColorize[this->peers[index.row()]->peerID];
+      if (this->isOurself(index.row()))
+         return QColor(192, 255, 192);
+      return QVariant();
+
+   case Qt::ForegroundRole:
+      if (this->peersToColorize.contains(this->peers[index.row()]->peerID))
+         return QColor(255, 255, 255);
+      if (this->isOurself(index.row()))
+         return QColor(0, 0, 0);
+      return QVariant();
+
    case Qt::TextAlignmentRole:
       return index.column() == 1 ? Qt::AlignRight : Qt::AlignLeft;
 
@@ -114,6 +143,37 @@ QVariant PeerListModel::data(const QModelIndex& index, int role) const
    default:
       return QVariant();
    }
+}
+
+void PeerListModel::colorize(const Common::Hash& peerID, const QColor& color)
+{
+   if (Peer* peer = this->indexedPeers.value(peerID, 0))
+   {
+      emit layoutAboutToBeChanged();
+      this->peersToColorize[peer->peerID] = color;
+      emit layoutChanged();
+   }
+   else
+      this->peersToColorize.insert(peerID, color);
+}
+
+void PeerListModel::colorize(const QModelIndex& index, const QColor& color)
+{
+   if (!index.isValid() || index.row() >= this->peers.size())
+      return;
+
+   this->peersToColorize[this->peers[index.row()]->peerID] = color;
+
+   emit dataChanged(this->createIndex(index.row(), 0), this->createIndex(index.row(), this->columnCount() - 1));
+}
+
+void PeerListModel::uncolorize(const QModelIndex& index)
+{
+   if (!index.isValid() || index.row() >= this->peers.size())
+      return;
+
+   if (this->peersToColorize.remove(this->peers[index.row()]->peerID))
+      emit dataChanged(this->createIndex(index.row(), 0), this->createIndex(index.row(), this->columnCount() - 1));
 }
 
 void PeerListModel::newState(const Protos::GUI::State& state)
@@ -150,6 +210,7 @@ void PeerListModel::setPeers(const google::protobuf::RepeatedPtrField<Protos::GU
          if (this->peers[j]->nick != nick)
          {
             this->peers[j]->nick = nick;
+            sortNeeded = true;
             emit dataChanged(this->createIndex(j, 0), this->createIndex(j, 0));
          }
          if (this->peers[j]->sharingAmount != sharingAmount)
@@ -207,7 +268,20 @@ void PeerListModel::setPeers(const google::protobuf::RepeatedPtrField<Protos::GU
 void PeerListModel::sort()
 {
    emit layoutAboutToBeChanged();
-   qSort(this->peers.begin(), this->peers.end(), Peer::sortComp);
+   qSort(this->peers.begin(), this->peers.end(), this->currentSortType == Protos::GUI::Settings::BY_NICK ? Peer::sortCompByNick : Peer::sortCompBySharingAmount);
    emit layoutChanged();
 }
 
+//////
+
+bool PeerListModel::Peer::sortCompByNick(const Peer* p1, const Peer* p2)
+{
+   return Common::Global::toLowerAndRemoveAccents(p1->nick) < Common::Global::toLowerAndRemoveAccents(p2->nick);
+}
+
+bool PeerListModel::Peer::sortCompBySharingAmount(const PeerListModel::Peer* p1, const PeerListModel::Peer* p2)
+{
+   if (p1->sharingAmount == p2->sharingAmount)
+      return Common::Global::toLowerAndRemoveAccents(p1->nick) < Common::Global::toLowerAndRemoveAccents(p2->nick);
+   return p1->sharingAmount > p2->sharingAmount;
+}

@@ -40,16 +40,11 @@ namespace PM
       virtual ~IPeerManager() {}
 
       /**
-        * Return our ID. This ID is taken from the settings in the home folder of the current user.
-        * If there is no ID in the settings, this one is randomly generated and saved in the settings.
-        */
-      virtual Common::Hash getID() = 0;
-
-      /**
         * As the ID, the nick is saved in the file settings in the home folder of the current user.
         */
       virtual void setNick(const QString& nick) = 0;
-      virtual QString getNick() = 0;
+
+      virtual IPeer* getSelf() = 0;
 
       /**
         * Return all alive peers. A peer is never deleted but can become inactive.
@@ -59,6 +54,7 @@ namespace PM
 
       /**
         * Return the IPeer* coresponding to ID.
+        * May return ourself.
         * Return 0 if the peer doesn't exist.
         */
       virtual IPeer* getPeer(const Common::Hash& ID) = 0;

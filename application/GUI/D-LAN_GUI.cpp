@@ -20,6 +20,7 @@
 using namespace GUI;
 
 #include <Common/Constants.h>
+#include <Common/Settings.h>
 
 #include <Common/RemoteCoreController/Builder.h>
 
@@ -32,7 +33,7 @@ using namespace GUI;
 D_LAN_GUI::D_LAN_GUI(int argc, char *argv[]) :
    QApplication(argc, argv),
    mainWindow(0),
-   coreConnection(RCC::Builder::newCoreConnection()),
+   coreConnection(RCC::Builder::newCoreConnection(SETTINGS.get<quint32>("socket_timeout"))),
    trayIcon(QIcon(":/icons/ressources/icon.png"))
 {
    this->setQuitOnLastWindowClosed(false);

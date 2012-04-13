@@ -59,7 +59,7 @@ RemoteConnection::RemoteConnection(
    QSharedPointer<NL::INetworkListener> networkListener,
    QTcpSocket* socket
 ) :
-   MessageSocket(new RemoteConnection::Logger(), socket, peerManager->getID()),
+   MessageSocket(new RemoteConnection::Logger(), socket, peerManager->getSelf()->getID()),
    fileManager(fileManager),
    peerManager(peerManager),
    uploadManager(uploadManager),
@@ -123,7 +123,7 @@ void RemoteConnection::sendMessageToItself(const QString& message)
    Protos::GUI::EventChatMessages eventChatMessages;
 
    Protos::GUI::EventChatMessages_Message* eventChatMessage = eventChatMessages.add_message();
-   eventChatMessage->mutable_peer_id()->set_hash(this->peerManager->getID().getData(), Common::Hash::HASH_SIZE);
+   eventChatMessage->mutable_peer_id()->set_hash(this->peerManager->getSelf()->getID().getData(), Common::Hash::HASH_SIZE);
    eventChatMessage->set_time(QDateTime::currentMSecsSinceEpoch());
    Common::ProtoHelper::setStr(*eventChatMessage, &Protos::GUI::EventChatMessages_Message::set_message, message);
 
@@ -134,9 +134,9 @@ void RemoteConnection::refresh()
 {
    Protos::GUI::State state;
 
-   state.mutable_myself()->mutable_peer_id()->set_hash(this->peerManager->getID().getData(), Common::Hash::HASH_SIZE);
+   state.mutable_myself()->mutable_peer_id()->set_hash(this->peerManager->getSelf()->getID().getData(), Common::Hash::HASH_SIZE);
    state.mutable_myself()->set_sharing_amount(this->fileManager->getAmount());
-   Common::ProtoHelper::setStr(*state.mutable_myself(), &Protos::GUI::State::Peer::set_nick, this->peerManager->getNick());
+   Common::ProtoHelper::setStr(*state.mutable_myself(), &Protos::GUI::State::Peer::set_nick, this->peerManager->getSelf()->getNick());
    Common::ProtoHelper::setStr(*state.mutable_myself(), &Protos::GUI::State::Peer::set_core_version, Common::Global::getVersionFull());
 
    state.set_integrity_check_enabled(SETTINGS.get<bool>("check_received_data_integrity"));
@@ -396,11 +396,19 @@ void RemoteConnection::onNewMessage(Common::MessageHeader::MessageType type, con
       {
          const Protos::GUI::ChangePassword& passMessage = static_cast<const Protos::GUI::ChangePassword&>(message);
 
+         Common::Hash newPassword(passMessage.new_password().hash());
          Common::Hash currentPassword = SETTINGS.get<Common::Hash>("remote_password");
 
-         if (currentPassword.isNull() || this->isLocal() || currentPassword == Common::Hash(passMessage.old_password().hash()))
+         if (newPassword.isNull()) // If the new password is null, the password is reset.
          {
-            SETTINGS.set("remote_password", Common::Hash(passMessage.new_password().hash()));
+            SETTINGS.set("remote_password", Common::Hash());
+            SETTINGS.rm("salt");
+            SETTINGS.save();
+            this->refresh();
+         }
+         else if (currentPassword.isNull() || currentPassword == Common::Hash(passMessage.old_password().hash()))
+         {
+            SETTINGS.set("remote_password", newPassword);
             SETTINGS.set("salt", static_cast<quint64>(passMessage.new_salt()));
             SETTINGS.save();
             this->refresh();
@@ -468,7 +476,7 @@ void RemoteConnection::onNewMessage(Common::MessageHeader::MessageType type, con
             if (!results.isEmpty())
             {
                Protos::Common::FindResult& result = results.first();
-               result.mutable_peer_id()->set_hash(this->peerManager->getID().getData(), Common::Hash::HASH_SIZE);
+               result.mutable_peer_id()->set_hash(this->peerManager->getSelf()->getID().getData(), Common::Hash::HASH_SIZE);
                result.set_tag(tag);
                this->searchFound(result);
             }
@@ -516,7 +524,7 @@ void RemoteConnection::onNewMessage(Common::MessageHeader::MessageType type, con
             Protos::GUI::BrowseResult result;
 
             // If we want to browse our files.
-            if (peerID == this->peerManager->getID())
+            if (peerID == this->peerManager->getSelf()->getID())
             {
                for (int i = 0; i < browseMessage.dirs().entry_size(); i++)
                   result.add_entries()->CopyFrom(this->fileManager->getEntries(browseMessage.dirs().entry(i)));

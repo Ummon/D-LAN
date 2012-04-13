@@ -21,13 +21,12 @@ using namespace RCC;
 
 #include <Protos/gui_protocol.pb.h>
 
-#include <Common/Settings.h>
 #include <Common/ProtoHelper.h>
 
 #include <priv/InternalCoreConnection.h>
 
-SearchResult::SearchResult(InternalCoreConnection* coreConnection, const QString& terms) :
-   ISearchResult(SETTINGS.get<quint32>("socket_timeout")), coreConnection(coreConnection), terms(terms)
+SearchResult::SearchResult(InternalCoreConnection* coreConnection, const QString& terms, int socketTimeout) :
+   ISearchResult(socketTimeout), coreConnection(coreConnection), terms(terms)
 {
    connect(this->coreConnection, SIGNAL(searchResult(const Protos::Common::FindResult&)), this, SLOT(searchResult(const Protos::Common::FindResult&)));
 }
