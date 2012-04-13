@@ -507,7 +507,7 @@ void RemoteConnection::onNewMessage(Common::MessageHeader::MessageType type, con
          tagMess.set_tag(tag);
          this->send(Common::MessageHeader::GUI_BROWSE_TAG, tagMess);
 
-         if (peer)
+         if (peer && peer != this->peerManager->getSelf())
          {
             Protos::Core::GetEntries getEntries;
             getEntries.mutable_dirs()->CopyFrom(browseMessage.dirs());

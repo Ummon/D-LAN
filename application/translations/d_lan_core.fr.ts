@@ -39,6 +39,13 @@
     <name>PM::PeerManager</name>
     <message>
         <source>Our current ID: %1</source>
+        <translation type="obsolete">Votre ID actuel: %1</translation>
+    </message>
+</context>
+<context>
+    <name>PM::PeerSelf</name>
+    <message>
+        <source>Our current ID: %1</source>
         <translation>Votre ID actuel: %1</translation>
     </message>
 </context>

@@ -71,6 +71,11 @@ namespace PM
       virtual void updatePeer(const Common::Hash& ID, const QHostAddress& IP, quint16 port, const QString& nick, const quint64& sharingAmount, const QString& coreVersion) = 0;
 
       /**
+        * Set all peers as inactive.
+        */
+      virtual void removeAllPeers() = 0;
+
+      /**
         * @param tcpSocket PeerManager will care about deleting the socket.
         */
       virtual void newConnection(QTcpSocket* tcpSocket) = 0;

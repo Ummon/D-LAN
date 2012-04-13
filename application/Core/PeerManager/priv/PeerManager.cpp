@@ -140,6 +140,12 @@ void PeerManager::updatePeer(const Common::Hash& ID, const QHostAddress& IP, qui
       emit peerBecomesAvailable(peer);
 }
 
+void PeerManager::removeAllPeers()
+{
+   for (QListIterator<Peer*> i(this->peers); i.hasNext();)
+      i.next()->setAsDead();
+}
+
 void PeerManager::newConnection(QTcpSocket* tcpSocket)
 {
    if (!tcpSocket)
