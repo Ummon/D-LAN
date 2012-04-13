@@ -32,6 +32,8 @@ DialogAbout::DialogAbout(QWidget *parent) :
 {
    this->ui->setupUi(this);
 
+   this->setWindowFlags(this->windowFlags() & (~Qt::WindowContextHelpButtonHint));
+
    QDateTime buildTime = QDateTime::fromString(BUILD_TIME, "yyyy-MM-dd_hh-mm");
 
    QLocale locale = SETTINGS.get<QLocale>("language");
