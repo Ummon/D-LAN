@@ -91,6 +91,14 @@ bool DownloadsFlatModel::isSourceAlive(const QModelIndex& index) const
    return this->downloads[index.row()].peer_id_size() > 0 && !this->peerListModel.getNick(this->downloads[index.row()].peer_id(0).hash()).isNull();
 }
 
+Protos::Common::Entry::Type DownloadsFlatModel::getType(const QModelIndex& index) const
+{
+   if (index.row() >= this->downloads.size())
+      return Protos::Common::Entry::FILE;
+
+   return this->downloads[index.row()].local_entry().type();
+}
+
 QString DownloadsFlatModel::getPath(const QModelIndex& index, bool appendFilename) const
 {
    if (index.row() >= this->downloads.size())

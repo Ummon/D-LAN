@@ -211,7 +211,7 @@ void WidgetDownloads::displayContextMenuDownloads(const QPoint& point)
 
 void WidgetDownloads::downloadDoubleClicked(const QModelIndex& index)
 {
-   if (this->currentDownloadsModel->isFileLocationKnown(index))
+   if (this->currentDownloadsModel->getType(index) == Protos::Common::Entry::FILE && this->currentDownloadsModel->isFileLocationKnown(index))
       QDesktopServices::openUrl(QUrl("file:///" + this->currentDownloadsModel->getPath(index)));
 }
 
