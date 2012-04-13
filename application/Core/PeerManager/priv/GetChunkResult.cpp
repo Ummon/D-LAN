@@ -23,7 +23,7 @@ using namespace PM;
 
 #include <priv/Log.h>
 
-GetChunkResult::GetChunkResult(const Protos::Core::GetChunk& chunk, QSharedPointer<Socket> socket) :
+GetChunkResult::GetChunkResult(const Protos::Core::GetChunk& chunk, QSharedPointer<PeerMessageSocket> socket) :
    IGetChunkResult(SETTINGS.get<quint32>("socket_timeout")), chunk(chunk), socket(socket), status(ISocket::SFS_OK)
 {
 }

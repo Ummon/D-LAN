@@ -30,7 +30,7 @@
 #include <Common/Uncopyable.h>
 
 #include <IGetEntriesResult.h>
-#include <priv/Socket.h>
+#include <priv/PeerMessageSocket.h>
 
 namespace PM
 {
@@ -38,7 +38,7 @@ namespace PM
    {
       Q_OBJECT
    public:
-      GetEntriesResult(const Protos::Core::GetEntries& dirs, QSharedPointer<Socket> socket);
+      GetEntriesResult(const Protos::Core::GetEntries& dirs, QSharedPointer<PeerMessageSocket> socket);
       void start();
       void doDeleteLater();
 
@@ -47,7 +47,7 @@ namespace PM
 
    private:
       const Protos::Core::GetEntries dirs;
-      QSharedPointer<Socket> socket;
+      QSharedPointer<PeerMessageSocket> socket;
    };
 }
 

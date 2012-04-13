@@ -23,7 +23,7 @@ using namespace PM;
 
 #include <priv/Log.h>
 
-GetEntriesResult::GetEntriesResult(const Protos::Core::GetEntries& dirs, QSharedPointer<Socket> socket) :
+GetEntriesResult::GetEntriesResult(const Protos::Core::GetEntries& dirs, QSharedPointer<PeerMessageSocket> socket) :
    IGetEntriesResult(SETTINGS.get<quint32>("socket_timeout")), dirs(dirs), socket(socket)
 {
 }

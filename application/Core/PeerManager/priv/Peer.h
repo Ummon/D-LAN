@@ -40,7 +40,7 @@
 
 namespace PM
 {   
-   class Socket;
+   class PeerMessageSocket;
    class PeerManager;
 
    class Peer : public QObject, public IPeer, Common::Uncopyable

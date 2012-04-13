@@ -69,7 +69,7 @@ namespace PM
       void removeAllPeers();
       void newConnection(QTcpSocket* tcpSocket);
 
-      void onGetChunk(QSharedPointer<FM::IChunk> chunk, int offset, QSharedPointer<Socket> socket);
+      void onGetChunk(QSharedPointer<FM::IChunk> chunk, int offset, QSharedPointer<PeerMessageSocket> socket);
 
    private slots:
       void dataReceived(QTcpSocket* tcpSocket = 0);

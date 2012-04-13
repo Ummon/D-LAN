@@ -41,7 +41,7 @@ namespace PM
 {
    class PeerManager;
 
-   class Socket : public Common::MessageSocket, public ISocket
+   class PeerMessageSocket : public Common::MessageSocket, public ISocket
    {
       Q_OBJECT
 
@@ -58,9 +58,9 @@ namespace PM
       };
 
    public:
-      Socket(PeerManager* peerManager, QSharedPointer<FM::IFileManager> fileManager, const Common::Hash& remotePeerID, QTcpSocket* socket);
-      Socket(PeerManager* peerManager, QSharedPointer<FM::IFileManager> fileManager, const Common::Hash& remotePeerID, const QHostAddress& address, quint16 port);
-      ~Socket();
+      PeerMessageSocket(PeerManager* peerManager, QSharedPointer<FM::IFileManager> fileManager, const Common::Hash& remotePeerID, QTcpSocket* socket);
+      PeerMessageSocket(PeerManager* peerManager, QSharedPointer<FM::IFileManager> fileManager, const Common::Hash& remotePeerID, const QHostAddress& address, quint16 port);
+      ~PeerMessageSocket();
 
       void setReadBufferSize(qint64 size);
 
@@ -90,13 +90,13 @@ namespace PM
       void close();
 
    signals:
-      void getChunk(QSharedPointer<FM::IChunk>, int, Socket*);
-      void becomeIdle(Socket*);
+      void getChunk(QSharedPointer<FM::IChunk>, int, PeerMessageSocket*);
+      void becomeIdle(PeerMessageSocket*);
 
       /**
         * Emitted when the socket is disconnected or explicitly closed by calling 'close()'.
         */
-      void closed(Socket*);
+      void closed(PeerMessageSocket*);
 
    private slots:
       void nextAskedHash(Common::Hash hash);
