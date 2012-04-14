@@ -218,21 +218,25 @@ void ChunkDownload::run()
    catch(FM::UnableToOpenFileInWriteModeException)
    {
       L_DEBU("UnableToOpenFileInWriteModeException");
+      this->closeTheSocket = true;
       this->lastTransfertStatus = UNABLE_TO_OPEN_THE_FILE;
    }
    catch(FM::IOErrorException&)
    {
       L_DEBU("IOErrorException");
+      this->closeTheSocket = true;
       this->lastTransfertStatus = FILE_IO_ERROR;
    }
    catch (FM::ChunkDeletedException&)
    {
       L_DEBU("ChunkDeletedException");
+      this->closeTheSocket = true;
       this->lastTransfertStatus = FILE_NON_EXISTENT;
    }
    catch (FM::TryToWriteBeyondTheEndOfChunkException&)
    {
       L_DEBU("TryToWriteBeyondTheEndOfChunkException");
+      this->closeTheSocket = true;
       this->lastTransfertStatus = GOT_TOO_MUCH_DATA;
    }
    catch (FM::hashMissmatchException)
@@ -241,6 +245,7 @@ void ChunkDownload::run()
       L_USER(QString(tr("Corrupted data received for the file \"%1\" from peer %2. Peer banned for %3 ms")).arg(this->chunk->getBasePath()).arg(this->currentDownloadingPeer->getNick()).arg(BAN_DURATION));
       /*: A reason why the user has been banned */
       this->currentDownloadingPeer->ban(BAN_DURATION, tr("Has sent corrupted data"));
+      this->closeTheSocket = true;
       this->lastTransfertStatus = HASH_MISSMATCH;
    }
 
