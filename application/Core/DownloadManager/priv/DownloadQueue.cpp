@@ -62,7 +62,7 @@ void DownloadQueue::insert(int position, Download* download)
    this->updateMarkersInsert(position, download);
 
    this->downloads.insert(position, download);
-   this->downloadsIndexedBySourcePeerID.insert(download->getPeerSource()->getID(), download);
+   this->downloadsIndexedBySourcePeer.insert(download->getPeerSource(), download);
 
    if (FileDownload* fileDownload = dynamic_cast<FileDownload*>(download))
    {
@@ -90,20 +90,20 @@ void DownloadQueue::remove(int position)
    if (FileDownload* fileDownload = dynamic_cast<FileDownload*>(download))
       this->downloadsSortedByTime.remove(fileDownload->getLastTimeGetAllUnfinishedChunks(), fileDownload);
 
-   this->downloadsIndexedBySourcePeerID.remove(download->getPeerSource()->getID(), download);
+   this->downloadsIndexedBySourcePeer.remove(download->getPeerSource(), download);
    this->downloads.removeAt(position);
    this->erroneousDownloads.removeOne(download);
 }
 
 void DownloadQueue::peerBecomesAvailable(PM::IPeer* peer)
 {
-   for (QMultiHash<Common::Hash, Download*>::iterator i = this->downloadsIndexedBySourcePeerID.find(peer->getID()); i != this->downloadsIndexedBySourcePeerID.end() && i.key() == peer->getID(); ++i)
+   for (QMultiHash<PM::IPeer*, Download*>::iterator i = this->downloadsIndexedBySourcePeer.find(peer); i != this->downloadsIndexedBySourcePeer.end() && i.key() == peer; ++i)
       i.value()->peerSourceBecomesAvailable();
 }
 
-bool DownloadQueue::isAPeerSource(const Common::Hash& peerID) const
+bool DownloadQueue::isAPeerSource(PM::IPeer* peer) const
 {
-   return this->downloadsIndexedBySourcePeerID.contains(peerID);
+   return this->downloadsIndexedBySourcePeer.contains(peer);
 }
 
 void DownloadQueue::moveDownloads(const QList<quint64>& downloadIDRefs, const QList<quint64>& downloadIDs, Protos::GUI::MoveDownloads::Position position)
@@ -202,7 +202,7 @@ bool DownloadQueue::removeDownloads(const DownloadPredicate& predicate)
          (*j)->setAsDeleted();
          if (FileDownload* fileDownload = dynamic_cast<FileDownload*>(*j))
             this->downloadsSortedByTime.remove(fileDownload->getLastTimeGetAllUnfinishedChunks(), fileDownload);
-         this->downloadsIndexedBySourcePeerID.remove((*j)->getPeerSource()->getID(), *j);
+         this->downloadsIndexedBySourcePeer.remove((*j)->getPeerSource(), *j);
          downloadsToDelete << *j;
          this->erroneousDownloads.removeOne(*j);
          ++j;

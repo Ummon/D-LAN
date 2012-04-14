@@ -57,7 +57,7 @@ namespace DM
       void remove(int position);
 
       void peerBecomesAvailable(PM::IPeer* peer);
-      bool isAPeerSource(const Common::Hash& peerID) const;
+      bool isAPeerSource(PM::IPeer* peer) const;
 
       void moveDownloads(const QList<quint64>& downloadIDRefs, const QList<quint64>& downloadIDs, Protos::GUI::MoveDownloads::Position position);
       bool removeDownloads(const DownloadPredicate& predicate);
@@ -103,7 +103,7 @@ namespace DM
       QList<Download*> downloads;
       QList<Download*> erroneousDownloads;
       QMultiMap<QTime, FileDownload*> downloadsSortedByTime; // See 'FileDownload::lastTimeGetAllUnfinishedChunks'.
-      QMultiHash<Common::Hash, Download*> downloadsIndexedBySourcePeerID;
+      QMultiHash<PM::IPeer*, Download*> downloadsIndexedBySourcePeer;
    };
 }
 

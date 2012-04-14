@@ -22,6 +22,7 @@
 #include <QObject>
 
 #include <Common/Hash.h>
+#include <Core/PeerManager/IPeer.h>
 
 namespace DM
 {
@@ -38,8 +39,8 @@ namespace DM
       /**
         * Define (or redefine) the peers which have the chunk.
         */
-      virtual void addPeerID(const Common::Hash& peerID) = 0;
-      virtual void rmPeerID(const Common::Hash& peerID) = 0;
+      virtual void addPeer(PM::IPeer* peer) = 0;
+      virtual void rmPeer(PM::IPeer* peer) = 0;
    };
 }
 #endif

@@ -101,12 +101,12 @@ void ResultListener::stream(QSharedPointer<PM::ISocket> socket)
    QByteArray data = socket->readAll();
    qDebug() << "ResultListener::stream : " << data;
    QCOMPARE(data, CHUNK_DATA);
-   socket->finished(PM::ISocket::SFS_OK);
+   socket->finished();
    this->streamReceived = true;
 }
 
 void ResultListener::getChunk(QSharedPointer<FM::IChunk> chunk, int offset, QSharedPointer<ISocket> socket)
 {
    socket->write(CHUNK_DATA);
-   socket->finished(PM::ISocket::SFS_OK);
+   socket->finished();
 }

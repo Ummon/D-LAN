@@ -35,6 +35,7 @@
 #include <Protos/common.pb.h>
 
 #include <priv/OccupiedPeers.h>
+#include <priv/LinkedPeers.h>
 #include <priv/Download.h>
 #include <priv/ChunkDownload.h>
 
@@ -47,7 +48,7 @@ namespace DM
    public:
       FileDownload(
          QSharedPointer<FM::IFileManager> fileManager,
-         QSharedPointer<PM::IPeerManager> peerManager,
+         LinkedPeers& linkedPeers,
          OccupiedPeers& occupiedPeersAskingForHashes,
          OccupiedPeers& occupiedPeersDownloadingChunk,
          Common::ThreadPool& threadPool,
@@ -102,7 +103,7 @@ namespace DM
       void reset();
 
       QSharedPointer<FM::IFileManager> fileManager;
-      QSharedPointer<PM::IPeerManager> peerManager;
+      LinkedPeers& linkedPeers;
 
       const int NB_CHUNK;
 

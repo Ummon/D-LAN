@@ -45,10 +45,6 @@ namespace PM
    {
       Q_OBJECT
 
-      // Each time there is an error like a malformed received message we increment 'nbError'.
-      // If nbError is greater than this number the socket is closed.
-      static const int MAX_SOCKET_ERROR_BEFORE_FORCE_TO_CLOSE = 5;
-
    protected:
       class Logger : public ILogger
       {
@@ -84,7 +80,7 @@ namespace PM
       bool isActive() const;
       void setActive();
 
-      void finished(FinishedStatus status = SFS_OK);
+      void finished(bool closeTheSocket = false);
 
    public slots:
       void close();

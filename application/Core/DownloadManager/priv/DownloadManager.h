@@ -35,6 +35,7 @@
 #include <priv/DownloadQueue.h>
 #include <priv/DownloadPredicate.h>
 #include <priv/OccupiedPeers.h>
+#include <priv/LinkedPeers.h>
 #include <priv/Log.h>
 
 namespace PM
@@ -107,6 +108,7 @@ namespace DM
 
       QSharedPointer<FM::IFileManager> fileManager;
       QSharedPointer<PM::IPeerManager> peerManager;
+      LinkedPeers linkedPeers; // Number of 'ChunkDownload' each peer owns.
 
       Common::TransferRateCalculator transferRateCalculator;
 

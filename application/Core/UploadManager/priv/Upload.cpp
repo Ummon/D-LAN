@@ -35,7 +35,7 @@ Upload::Upload(QSharedPointer<FM::IChunk> chunk, int offset, QSharedPointer<PM::
    offset(offset),
    socket(socket),
    transferRateCalculator(transferRateCalculator),
-   networkTransferStatus(PM::ISocket::SFS_OK),
+   closeTheSocket(false),
    toStop(false)
 {   
 }
@@ -99,7 +99,7 @@ void Upload::run()
          if (bytesSent == -1)
          {
             L_WARN(QString("Socket : cannot send data : %1").arg(this->chunk->toStringLog()));
-            this->networkTransferStatus = PM::ISocket::SFS_TO_CLOSE;
+            this->closeTheSocket = true;
             goto end;
          }
 
@@ -118,7 +118,7 @@ void Upload::run()
             if (!socket->waitForBytesWritten(SOCKET_TIMEOUT))
             {
                L_WARN(QString("Socket : cannot write data, error: %1, chunk: %2").arg(socket->errorString()).arg(this->chunk->toStringLog()));
-               this->networkTransferStatus = PM::ISocket::SFS_TO_CLOSE;
+               this->closeTheSocket = true;
                goto end;
             }
             //L_DEBU("OK4 ------------");
@@ -130,22 +130,22 @@ void Upload::run()
    catch(FM::UnableToOpenFileInReadModeException&)
    {
       L_WARN("UnableToOpenFileInReadModeException");
-      this->networkTransferStatus = PM::ISocket::SFS_TO_CLOSE;
+      this->closeTheSocket = true;
    }
    catch(FM::IOErrorException&)
    {
       L_WARN("IOErrorException");
-      this->networkTransferStatus = PM::ISocket::SFS_TO_CLOSE;
+      this->closeTheSocket = true;
    }
    catch (FM::ChunkDeletedException)
    {
       L_WARN("ChunkDeletedException");
-      this->networkTransferStatus = PM::ISocket::SFS_TO_CLOSE;
+      this->closeTheSocket = true;
    }
    catch (FM::ChunkNotCompletedException)
    {
       L_WARN("ChunkNotCompletedException");
-      this->networkTransferStatus = PM::ISocket::SFS_TO_CLOSE;
+      this->closeTheSocket = true;
    }
 
 end:
@@ -154,7 +154,7 @@ end:
 
 void Upload::finished()
 {
-   this->socket->finished(this->networkTransferStatus);
+   this->socket->finished(this->closeTheSocket);
    this->startTimer();
 }
 

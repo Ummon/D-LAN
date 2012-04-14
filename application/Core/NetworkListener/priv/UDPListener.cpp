@@ -169,9 +169,9 @@ void UDPListener::sendIMAliveMessage()
       // If we already have the chunk...
       QSharedPointer<FM::IChunk> chunk = this->fileManager->getChunk(chunkDownload->getHash());
       if (!chunk.isNull() && chunk->isComplete())
-         chunkDownload->addPeerID(this->peerManager->getSelf()->getID());
+         chunkDownload->addPeer(this->peerManager->getSelf());
       else
-         chunkDownload->rmPeerID(this->peerManager->getSelf()->getID());
+         chunkDownload->rmPeer(this->peerManager->getSelf());
    }
 
    this->send(Common::MessageHeader::CORE_IM_ALIVE, IMAliveMessage);
@@ -323,12 +323,13 @@ void UDPListener::processPendingUnicastDatagrams()
             }
 
             for (int i = 0; i < chunksOwnedMessage.chunk_state_size(); i++)
-            {
-               if (chunksOwnedMessage.chunk_state(i))
-                  this->currentChunkDownloads[i]->addPeerID(header.getSenderID());
-               else
-                  this->currentChunkDownloads[i]->rmPeerID(header.getSenderID());
-            }
+               if (PM::IPeer* peer = this->peerManager->getPeer(header.getSenderID()))
+               {
+                  if (chunksOwnedMessage.chunk_state(i))
+                     this->currentChunkDownloads[i]->addPeer(peer);
+                  else
+                     this->currentChunkDownloads[i]->rmPeer(peer);
+               }
          }
          break;
 

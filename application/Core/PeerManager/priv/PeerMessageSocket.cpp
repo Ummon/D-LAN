@@ -155,22 +155,16 @@ void PeerMessageSocket::setActive()
 /**
   * Must be called when a transaction is terminated.
   */
-void PeerMessageSocket::finished(FinishedStatus status)
+void PeerMessageSocket::finished(bool closeTheSocket)
 {
    if (!this->active)
       return;
 
-   L_DEBU(QString("Socket[%1] set to idle%2<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<").arg(this->num).arg(status == SFS_ERROR ? " with error " : " "));
+   L_DEBU(QString("Socket[%1] set to idle%2<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<").arg(this->num).arg(closeTheSocket ? " (socket forced to close) " : " "));
 
-   if (status == SFS_TO_CLOSE)
+   if (closeTheSocket)
    {
       L_WARN("Socket forced to close..");
-      this->close();
-      return;
-   }
-   else if (status == SFS_ERROR && ++this->nbError > MAX_SOCKET_ERROR_BEFORE_FORCE_TO_CLOSE)
-   {
-      L_WARN("Socket with too many error, closed");
       this->close();
       return;
    }
@@ -286,7 +280,7 @@ void PeerMessageSocket::onNewMessage(Common::MessageHeader::MessageType type, co
          if (hash.isNull())
          {
             L_WARN("GET_CHUNK: Chunk null");
-            this->finished(ISocket::SFS_ERROR);
+            this->finished(true);
             break;
          }
 

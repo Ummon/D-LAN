@@ -32,13 +32,6 @@ namespace PM
    class ISocket
    {
    public:
-      enum FinishedStatus
-      {
-         SFS_OK,
-         SFS_ERROR,
-         SFS_TO_CLOSE
-      };
-
       virtual ~ISocket() {}
 
       virtual void setReadBufferSize(qint64 size) = 0;
@@ -64,8 +57,9 @@ namespace PM
       /**
         * Used by uploader to tell when an upload is finished.
         * TODO: should be removed and only be called by the peerManager (as with downloads).
+        * @param closeTheSocket If true force the socket to be closed.
         */
-      virtual void finished(FinishedStatus status = SFS_OK) = 0;
+      virtual void finished(bool closeTheSocket = false) = 0;
    };
 }
 

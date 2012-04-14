@@ -36,15 +36,15 @@ using namespace DM;
 
 const int ChunkDownload::MINIMUM_DELTA_TIME_TO_COMPUTE_SPEED(100); // [ms]
 
-ChunkDownload::ChunkDownload(QSharedPointer<PM::IPeerManager> peerManager, OccupiedPeers& occupiedPeersDownloadingChunk, Common::TransferRateCalculator& transferRateCalculator, Common::ThreadPool& threadPool, Common::Hash chunkHash) :
-   peerManager(peerManager),
+ChunkDownload::ChunkDownload(LinkedPeers& linkedPeers, OccupiedPeers& occupiedPeersDownloadingChunk, Common::TransferRateCalculator& transferRateCalculator, Common::ThreadPool& threadPool, Common::Hash chunkHash) :
+   linkedPeers(linkedPeers),
    occupiedPeersDownloadingChunk(occupiedPeersDownloadingChunk),
    transferRateCalculator(transferRateCalculator),
    threadPool(threadPool),
    chunkHash(chunkHash),
    socket(0),
    downloading(false),
-   networkTransferStatus(PM::ISocket::SFS_OK),
+   closeTheSocket(false),
    lastTransfertStatus(QUEUED),
    mainThread(QThread::currentThread()),
    mutex(QMutex::Recursive)
@@ -55,6 +55,9 @@ ChunkDownload::ChunkDownload(QSharedPointer<PM::IPeerManager> peerManager, Occup
 ChunkDownload::~ChunkDownload()
 {
    this->stop();
+
+   for (QListIterator<PM::IPeer*> i(this->peers); i.hasNext();)
+      this->linkedPeers.rmLink(i.next());
 
    L_DEBU(QString("ChunkDownload deleted : %1").arg(this->chunkHash.toStr()));
 }
@@ -81,28 +84,35 @@ Common::Hash ChunkDownload::getHash() const
    return this->chunkHash;
 }
 
-void ChunkDownload::addPeerID(const Common::Hash& peerID)
+void ChunkDownload::addPeer(PM::IPeer* peer)
 {
+   Q_ASSERT(peer);
+
    QMutexLocker locker(&this->mutex);
-   PM::IPeer* peer = this->peerManager->getPeer(peerID);
-   if (peer && !this->peers.contains(peer))
+
+   if (!this->peers.contains(peer))
    {
       this->peers << peer;
+      this->linkedPeers.addLink(peer);
       emit numberOfPeersChanged();
       this->occupiedPeersDownloadingChunk.newPeer(peer);
    }
 }
 
-void ChunkDownload::rmPeerID(const Common::Hash& peerID)
+void ChunkDownload::rmPeer(PM::IPeer* peer)
 {
+   Q_ASSERT(peer);
+
    QMutexLocker locker(&this->mutex);
 
    if (this->peers.isEmpty())
       return;
 
-   PM::IPeer* peer = this->peerManager->getPeer(peerID);
-   if (peer && this->peers.removeOne(peer))
+   if (this->peers.removeOne(peer))
+   {
+      this->linkedPeers.rmLink(peer);
       emit numberOfPeersChanged();
+   }
 }
 
 void ChunkDownload::init(QThread* thread)
@@ -138,7 +148,7 @@ void ChunkDownload::run()
          if (!this->downloading)
          {
             L_DEBU(QString("Downloading aborted, chunk : %1%2").arg(this->chunk->toStringLog()).arg(this->chunk->isComplete() ? "" : " Not complete!"));
-            this->networkTransferStatus = PM::ISocket::SFS_TO_CLOSE; // Because some garbage from the remote uploader will continue to come in this socket.
+            this->closeTheSocket = true; // Because some garbage from the remote uploader will continue to come in this socket.
             this->mutex.unlock();
             break;
          }
@@ -152,7 +162,7 @@ void ChunkDownload::run()
             if (!this->socket->waitForReadyRead(SOCKET_TIMEOUT))
             {
                L_WARN(QString("Connection dropped, error = %1, bytesAvailable = %2").arg(socket->errorString()).arg(socket->bytesAvailable()));
-               this->networkTransferStatus = PM::ISocket::SFS_TO_CLOSE;
+               this->closeTheSocket = true;
                this->lastTransfertStatus = TRANSFERT_ERROR;
                break;
             }
@@ -161,7 +171,7 @@ void ChunkDownload::run()
          else if (bytesRead == -1)
          {
             L_WARN(QString("Socket : cannot receive data : %1").arg(this->chunk->toStringLog()));
-            this->networkTransferStatus = PM::ISocket::SFS_ERROR;
+            this->closeTheSocket = true;
             this->lastTransfertStatus = TRANSFERT_ERROR;
             break;
          }
@@ -186,7 +196,7 @@ void ChunkDownload::run()
             )
             {
                L_DEBU(QString("Switch to a better peer: %1").arg(peer->toStringLog()));
-               this->networkTransferStatus = PM::ISocket::SFS_TO_CLOSE; // We ask to close the socket to avoid to get garbage data.
+               this->closeTheSocket = true; // We ask to close the socket to avoid to get garbage data.
                break;
             }
          }
@@ -264,6 +274,7 @@ void ChunkDownload::setPeerSource(PM::IPeer* peer, bool informOccupiedPeers)
    if (!this->peers.contains(peer))
    {
       this->peers << peer;
+      this->linkedPeers.addLink(peer);
       emit numberOfPeersChanged();
 
       if (informOccupiedPeers && peer->isAvailable())
@@ -352,6 +363,7 @@ QList<Common::Hash> ChunkDownload::getPeers()
       else
       {
          i.remove();
+         this->linkedPeers.rmLink(peer);
          isTheNmberOfPeersHasChanged = true;
       }
    }
@@ -362,19 +374,19 @@ QList<Common::Hash> ChunkDownload::getPeers()
 
 /**
   * Tell the chunkDownload to download the chunk from one of its peer.
-  * @return true if the downloading has been started.
+  * @return the choosen peer if the downloading has been started else return 0.
   */
-bool ChunkDownload::startDownloading()
+PM::IPeer* ChunkDownload::startDownloading()
 {
    if (this->chunk.isNull())
    {
       L_WARN(QString("Unable to download without the chunk. Hash : %1").arg(this->chunkHash.toStr()));
-      return false;
+      return 0;
    }
 
    this->currentDownloadingPeer = this->getTheFastestFreePeer();
    if (!this->currentDownloadingPeer)
-      return false;
+      return 0;
 
    L_DEBU(QString("Starting downloading a chunk : %1 from %2").arg(this->chunk->toStringLog()).arg(this->currentDownloadingPeer->getID().toStr()));
 
@@ -392,7 +404,7 @@ bool ChunkDownload::startDownloading()
    connect(this->getChunkResult.data(), SIGNAL(timeout()), this, SLOT(getChunkTimeout()), Qt::DirectConnection);
 
    this->getChunkResult->start();
-   return true;
+   return this->currentDownloadingPeer;
 }
 
 void ChunkDownload::tryToRemoveItsIncompleteFile()
@@ -412,7 +424,10 @@ void ChunkDownload::result(const Protos::Core::GetChunkResult& result)
    {
       L_WARN(QString("Status error from GetChunkResult : %1. Download aborted.").arg(result.status()));
       if (this->peers.removeOne(this->currentDownloadingPeer))
+      {
+         this->linkedPeers.rmLink(this->currentDownloadingPeer);
          emit numberOfPeersChanged();
+      }
       this->downloadingEnded();
    }
    else
@@ -420,7 +435,7 @@ void ChunkDownload::result(const Protos::Core::GetChunkResult& result)
       if (!result.has_chunk_size())
       {
          L_ERRO(QString("Message 'GetChunkResult' doesn't contain the size of the chunk : %1. Download aborted.").arg(this->chunk->getHash().toStr()));
-         this->networkTransferStatus = PM::ISocket::SFS_ERROR;
+         this->closeTheSocket = true;
          this->downloadingEnded();
       }
       else
@@ -450,8 +465,8 @@ void ChunkDownload::downloadingEnded()
    if (!this->socket.isNull())
       this->socket.clear();
 
-   this->getChunkResult->setStatus(this->networkTransferStatus);
-   this->networkTransferStatus = PM::ISocket::SFS_OK;
+   this->getChunkResult->setStatus(this->closeTheSocket);
+   this->closeTheSocket = false;
    this->getChunkResult.clear();
 
    this->downloading = false;
@@ -479,6 +494,7 @@ PM::IPeer* ChunkDownload::getTheFastestFreePeer()
       if (!peer->isAvailable())
       {
          i.remove();
+         this->linkedPeers.rmLink(peer);
          isTheNmberOfPeersHasChanged = true;
       }
       else if (this->occupiedPeersDownloadingChunk.isPeerFree(peer) && (!current || peer->getSpeed() > current->getSpeed()))
@@ -503,6 +519,7 @@ int ChunkDownload::getNumberOfFreePeer()
       if (!peer->isAvailable())
       {
          i.remove();
+         this->linkedPeers.rmLink(peer);
          isTheNmberOfPeersHasChanged = true;
       }
       else if (this->occupiedPeersDownloadingChunk.isPeerFree(peer))
