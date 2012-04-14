@@ -114,14 +114,12 @@ void Upload::run()
 
          while (socket->bytesToWrite() > SOCKET_BUFFER_SIZE)
          {
-            //L_DEBU(QString("OK3 ------------ %1").arg(socket->bytesToWrite()));
             if (!socket->waitForBytesWritten(SOCKET_TIMEOUT))
             {
-               L_WARN(QString("Socket : cannot write data, error: %1, chunk: %2").arg(socket->errorString()).arg(this->chunk->toStringLog()));
+               L_WARN(QString("Socket: cannot write data, error: \"%1\", chunk: %2").arg(socket->errorString()).arg(this->chunk->toStringLog()));
                this->closeTheSocket = true;
                goto end;
             }
-            //L_DEBU("OK4 ------------");
          }
 
          this->transferRateCalculator.addData(bytesSent);

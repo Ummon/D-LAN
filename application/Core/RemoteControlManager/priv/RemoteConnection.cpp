@@ -191,6 +191,7 @@ void RemoteConnection::refresh()
       Protos::GUI::State_Upload* protoUpload = state.add_upload();
       if (upload->getChunk()->populateEntry(protoUpload->mutable_file()))
       {
+         protoUpload->mutable_file()->mutable_chunk()->Clear();
          protoUpload->set_id(upload->getID());
          protoUpload->set_current_part(upload->getChunk()->getNum() + 1); // "+ 1" to begin at 1 and not 0.
          protoUpload->set_nb_part(upload->getChunk()->getNbTotalChunk());

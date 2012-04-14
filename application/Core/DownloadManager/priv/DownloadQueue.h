@@ -43,7 +43,7 @@ namespace DM
    class Download;
    class FileDownload;
 
-   class DownloadQueue : public QObject
+   class DownloadQueue : public QObject, Common::Uncopyable
    {
       Q_OBJECT
    public:

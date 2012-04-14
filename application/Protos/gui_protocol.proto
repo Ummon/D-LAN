@@ -53,7 +53,7 @@ message State {
       required uint64 id = 1; // Cannot be 0.
       
       // When the entry is physically created, Common.Entry.exists is set to true.
-      // The hashes are never sent to save a bit of bandwith.
+      // The hashes are never sent to save a bit of bandwidth.
       required Common.Entry local_entry = 2;
       
       required Status status = 3;
@@ -64,7 +64,7 @@ message State {
    }
    message Upload {
       required uint64 id = 1;
-      required Common.Entry file = 2;
+      required Common.Entry file = 2; // As the download, the hashes aren't sent to save bandwidth.
       required uint32 current_part = 3;
       required uint32 nb_part = 4;
       required uint32 progress = 5; // 0 to 10000.

@@ -36,6 +36,7 @@ using namespace DM;
   * Goals:
   *  - Manage a queue of downloads.
   *  - Index queue by download peers to improve performance.
+  *  - Save some positions (markers) to improve itarating performance (see the 'ScanningIterator' class).
   *  - Persist/load the queue to/from a file.
   */
 
