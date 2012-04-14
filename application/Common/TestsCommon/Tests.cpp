@@ -26,12 +26,14 @@
 
 #include <Protos/common.pb.h>
 #include <Protos/core_settings.pb.h>
+#include <Protos/gui_protocol.pb.h>
 
 #include <Network/MessageHeader.h>
 #include <PersistentData.h>
 #include <Settings.h>
 #include <Global.h>
 #include <ZeroCopyStreamQIODevice.h>
+#include <ProtoHelper.h>
 using namespace Common;
 
 Tests::Tests()
@@ -358,5 +360,45 @@ void Tests::readAndWriteWithZeroCopyStreamQIODevice()
    QCOMPARE(QByteArray(hashMessage2.hash().data(), Hash::HASH_SIZE), QByteArray(hash2.getData(), Hash::HASH_SIZE));
 }
 
+/**
+  * TODO: add some tests for these functions:
+  *  - setLang(..)
+  *  - getLang(..)
+  *  - setIP(..)
+  *  - getIP(..)
+  *  - getRelativePath(..)
+  */
+void Tests::protoHelper()
+{
+   const QString path("path");
+   const QString name("name");
+
+   Protos::Common::Entry entry;
+   entry.set_type(Protos::Common::Entry::FILE);
+   entry.set_size(0);
+   ProtoHelper::setStr(entry, &Protos::Common::Entry::set_path, path);
+   ProtoHelper::setStr(entry, &Protos::Common::Entry::set_name, name);
+
+   QCOMPARE(ProtoHelper::getStr(entry, &Protos::Common::Entry::path), path);
+   QCOMPARE(ProtoHelper::getStr(entry, &Protos::Common::Entry::name), name);
+
+   Protos::GUI::CoreSettings::SharedDirectories sharedDirs;
+   const QList<QString> dirs = QList<QString>() << "abc" << "def" << "ghi";
+   foreach (QString dir, dirs)
+      ProtoHelper::addRepeatedStr(sharedDirs, &Protos::GUI::CoreSettings::SharedDirectories::add_dir, dir);
+   for (int i = 0; i < dirs.size(); i++)
+      QCOMPARE(ProtoHelper::getRepeatedStr(sharedDirs, &Protos::GUI::CoreSettings::SharedDirectories::dir, i), dirs[i]);
+
+   for (int i = 0; i < 5; i++)
+      entry.add_chunk()->set_hash(Hash::rand(i).getData(), Hash::HASH_SIZE);
+   const QString debugStr = ProtoHelper::getDebugStr(entry);
+   qDebug() << endl << "The protocol buffer message (Protos::Common::Entry):" << endl << debugStr;
+
+   QVERIFY(debugStr.indexOf("ac2f75c043fbc36709d315f2245746d8588c3ac1") != -1);
+   QVERIFY(debugStr.indexOf("25eb8c48ff89cb854fc09081cc47edfc8619b214") != -1);
+   QVERIFY(debugStr.indexOf("a80fed48162bd24b6807a2b15f4bd52f3f1fda94") != -1);
+   QVERIFY(debugStr.indexOf("6a98f983b8c80015fd93ca6bf9a98a9577a6e094") != -1);
+   QVERIFY(debugStr.indexOf("7aaeb7c5816857c832893afc676d5e37b73968a4") != -1);
+}
 
 

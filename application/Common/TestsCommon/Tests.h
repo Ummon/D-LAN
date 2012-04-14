@@ -61,6 +61,9 @@ private slots:
    // ZeroCopyOutputStreamQIODevice and ZeroCopyInputStreamQIODevice classes.
    void readAndWriteWithZeroCopyStreamQIODevice();
 
+   // ProtoHelper
+   void protoHelper();
+
 private:
    Common::Hash hash;
 };

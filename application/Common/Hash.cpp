@@ -189,7 +189,15 @@ Hash Hash::rand()
    Hash hash;
    for (int i = 0; i < HASH_SIZE; i++)
       hash.data->hash[i] = static_cast<char>(Hash::mtrand.randInt(255));
+   return hash;
+}
 
+Hash Hash::rand(quint32 seed)
+{
+   MTRand mtrand(seed);
+   Hash hash;
+   for (int i = 0; i < HASH_SIZE; i++)
+      hash.data->hash[i] = static_cast<char>(mtrand.randInt(255));
    return hash;
 }
 

@@ -43,10 +43,10 @@ namespace Common
       static QString getStr(const T& mess, const std::string& (T::*getter)() const);
 
       template <typename T>
-      static QString getRepeatedStr(const T& mess, const std::string& (T::*getter)(int) const, int i);
+      static void addRepeatedStr(T& mess, void (T::*adder)(const char*), const QString& str);
 
       template <typename T>
-      static void addRepeatedStr(T& mess, void (T::*adder)(const char*), const QString& str);
+      static QString getRepeatedStr(const T& mess, const std::string& (T::*getter)(int) const, int i);
 
       static void setLang(Protos::Common::Language& langMess, const QLocale& locale);
       static QLocale getLang(const Protos::Common::Language& langMess);
@@ -84,16 +84,16 @@ QString ProtoHelper::getStr(const T& mess, const std::string& (T::*getter)() con
 }
 
 template <typename T>
-QString ProtoHelper::getRepeatedStr(const T& mess, const std::string& (T::*getter)(int) const, int i)
-{
-   return QString::fromUtf8((mess.*getter)(i).data());
-}
-
-template <typename T>
 void ProtoHelper::addRepeatedStr(T& mess, void (T::*adder)(const char*), const QString& str)
 {
    QByteArray array = str.toUtf8();
    (mess.*adder)(array.data());
+}
+
+template <typename T>
+QString ProtoHelper::getRepeatedStr(const T& mess, const std::string& (T::*getter)(int) const, int i)
+{
+   return QString::fromUtf8((mess.*getter)(i).data());
 }
 
 #endif
