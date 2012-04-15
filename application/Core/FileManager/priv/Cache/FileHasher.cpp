@@ -155,7 +155,7 @@ bool FileHasher::start(File* fileCache, int n, int* amountHashed)
 
       if (bytesReadChunk > 0)
       {
-         if (amountHashed != 0)
+         if (amountHashed)
             *amountHashed += bytesReadChunk;
 
          const Common::Hash& hash = hasher.getResult();

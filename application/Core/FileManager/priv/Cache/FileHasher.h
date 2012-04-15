@@ -5,13 +5,14 @@
 #include <QMutex>
 #include <QWaitCondition>
 
+#include <Common/Uncopyable.h>
+
 namespace FM
 {
    class Entry;
    class File;
-   class Cache;
 
-   class FileHasher : public QObject
+   class FileHasher : public QObject, Common::Uncopyable
    {
       Q_OBJECT
    public:
