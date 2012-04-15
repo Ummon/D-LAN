@@ -84,8 +84,6 @@ namespace FM
       qint64 write(const char* buffer, int nbBytes, qint64 offset);
       qint64 read(char* buffer, qint64 offset, int maxBytesToRead);
 
-      bool computeHashes(int n = 0, int* amountHashed = 0);
-      void stopHashing();
       QList< QSharedPointer<Chunk> > getChunks() const;
       bool hasAllHashes();
       bool hasOneOrMoreHashes();
@@ -107,8 +105,6 @@ namespace FM
       void createPhysicalFile();
       void setHashes(const Common::Hashes& hashes);
 
-      const int CHUNK_SIZE;
-
       Directory* dir;
       QList< QSharedPointer<Chunk> > chunks;
       QDateTime dateLastModified;
@@ -125,12 +121,7 @@ namespace FM
       QMutex readLock; ///< Protect the file from concurrent access from different uploaders.
       mutable QMutex mutex;
 
-      // Mutex and wait condition used during hashing.
-      // (TODO: It's a bit heavy, try to reduce the memory footprint).
-      bool hashing;
-      bool toStopHashing;
-      QWaitCondition hashingStopped;
-      QMutex hashingMutex;
+      friend class FileHasher; // TODO: Should be removed.
    };
 }
 #endif

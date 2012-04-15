@@ -50,7 +50,6 @@ FileUpdater::FileUpdater(FileManager* fileManager) :
    progress(0),
    mutex(QMutex::Recursive),
    currentScanningDir(0),
-   currentHashingFile(0),
    toStopHashing(false),
    remainingSizeToHash(0)
 {
@@ -128,8 +127,7 @@ void FileUpdater::rmRoot(SharedDirectory* dir, Directory* dir2)
    {
       QMutexLocker locker(&this->hashingMutex);
 
-      if (this->currentHashingFile)
-         this->currentHashingFile->stopHashing();
+      this->fileHasher.stop();
       this->toStopHashing = true;
 
       // TODO: Find a more elegant way!
@@ -177,11 +175,8 @@ void FileUpdater::prioritizeAFileToHash(File* file)
          this->remainingSizeToHash += file->getSize();
       }
 
-      if (this->currentHashingFile)
-      {
-         this->currentHashingFile->stopHashing();
-         this->toStopHashing = true;
-      }
+      this->fileHasher.stop();
+      this->toStopHashing = true;
    }
    else
       L_DEBU(QString("FileUpdater::prioritizeAFileToHash, unable to prioritize : %1").arg(file->getFullPath()));
@@ -342,15 +337,15 @@ void FileUpdater::computeSomeHashes()
 
    while (!this->filesWithoutHashesPrioritized.empty())
    {
-      this->currentHashingFile = this->filesWithoutHashesPrioritized.first();
+      File* nextFileToHash = this->filesWithoutHashesPrioritized.first();
 
-      if (this->currentHashingFile->isComplete()) // A file can change its state from 'completed' to 'unfinished' if it's redownloaded.
+      if (nextFileToHash->isComplete()) // A file can change its state from 'completed' to 'unfinished' if it's redownloaded.
       {
          locker.unlock();
          bool gotAllHashes;
          try {
             int hashedAmount = 0;
-            gotAllHashes = this->currentHashingFile->computeHashes(1, &hashedAmount); // Be carreful of methods 'prioritizeAFileToHash(..)' and 'rmRoot(..)' called concurrently here.
+            gotAllHashes = this->fileHasher.start(nextFileToHash, 1, &hashedAmount); // Be carreful of methods 'prioritizeAFileToHash(..)' and 'rmRoot(..)' called concurrently here.
             this->remainingSizeToHash -= hashedAmount;
             this->updateHashingProgress();
          } catch (IOErrorException&) {
@@ -369,7 +364,6 @@ void FileUpdater::computeSomeHashes()
          this->filesWithoutHashesPrioritized.removeFirst();
       }
 
-      this->currentHashingFile = 0;
       if (this->toStopHashing)
       {
          this->toStopHashing = false;
@@ -382,15 +376,15 @@ void FileUpdater::computeSomeHashes()
 
    for (int i = 0; i < this->filesWithoutHashes.size(); i++)
    {
-      this->currentHashingFile = this->filesWithoutHashes[i];
+      File* nextFileToHash = this->filesWithoutHashes[i];
 
-      if (this->currentHashingFile->isComplete()) // A file can change its state from 'completed' to 'unfinished' if it's redownloaded.
+      if (nextFileToHash->isComplete()) // A file can change its state from 'completed' to 'unfinished' if it's redownloaded.
       {
          locker.unlock();
          bool gotAllHashes;
          try {
             int hashedAmount = 0;
-            gotAllHashes = this->currentHashingFile->computeHashes(1, &hashedAmount);
+            gotAllHashes = this->fileHasher.start(nextFileToHash, 1, &hashedAmount);
             this->remainingSizeToHash -= hashedAmount;
             this->updateHashingProgress();
          } catch (IOErrorException&) {
@@ -407,7 +401,6 @@ void FileUpdater::computeSomeHashes()
          this->filesWithoutHashes.removeAt(i--);
       }
 
-      this->currentHashingFile = 0;
       if (this->toStopHashing)
       {
          this->toStopHashing = false;
@@ -444,8 +437,7 @@ void FileUpdater::stopHashing()
    QMutexLocker lockerHashing(&this->hashingMutex);
    L_DEBU("Stop hashing...");
 
-   if (this->currentHashingFile)
-      this->currentHashingFile->stopHashing();
+   this->fileHasher.stop();
 
    L_DEBU("Hashing stopped");
    this->toStopHashing = true;
