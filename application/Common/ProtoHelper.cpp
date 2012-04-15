@@ -22,6 +22,8 @@ using namespace Common;
 #include <QRegExp>
 #include <QStringList>
 
+#include <Hash.h>
+
 void ProtoHelper::setLang(Protos::Common::Language& langMess, const QLocale& locale)
 {
    QStringList langCountry = locale.name().split('_');
@@ -131,7 +133,7 @@ QString ProtoHelper::getDebugStr(const google::protobuf::Message& mess)
       pos += prefix.size();
       const int initialPos = pos;
       QString hashHex;
-      hashHex.reserve(40);
+      hashHex.reserve(2 * Hash::HASH_SIZE);
       while (str[pos] != '"')
       {
          if (str[pos] != '\\')
@@ -173,6 +175,7 @@ QString ProtoHelper::getDebugStr(const google::protobuf::Message& mess)
       const QString hash = str.mid(initialPos, pos - initialPos);*/
 
       str.replace(initialPos, pos - initialPos, hashHex);
+      pos = initialPos + 2 * Hash::HASH_SIZE;
   }
 
    return str;

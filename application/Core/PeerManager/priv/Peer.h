@@ -40,7 +40,7 @@
 
 namespace PM
 {   
-   class Socket;
+   class PeerMessageSocket;
    class PeerManager;
 
    class Peer : public QObject, public IPeer, Common::Uncopyable
@@ -74,6 +74,7 @@ namespace PM
          const quint64& sharingAmount,
          const QString& coreVersion
       );
+      virtual void setAsDead();
 
       virtual QSharedPointer<IGetEntriesResult> getEntries(const Protos::Core::GetEntries& dirs);
       virtual QSharedPointer<IGetHashesResult> getHashes(const Protos::Common::Entry& file);

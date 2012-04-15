@@ -159,7 +159,7 @@ Download* DownloadManager::addDownload(const Protos::Common::Entry& remoteEntry,
       {
          FileDownload* fileDownload = new FileDownload(
             this->fileManager,
-            this->peerManager,
+            this->linkedPeers,
             this->occupiedPeersAskingForHashes,
             this->occupiedPeersDownloadingChunk,
             this->threadPool,
@@ -322,7 +322,7 @@ void DownloadManager::peerNoLongerAskingForHashes(PM::IPeer* peer)
 {
    L_DEBU(QString("A peer is free from asking for hashes: %1").arg(peer->toStringLog()));
 
-   if (!this->downloadQueue.isAPeerSource(peer->getID()))
+   if (!this->downloadQueue.isAPeerSource(peer))
       return;
 
    // We can't use 'downloadsIndexedBySourcePeerID' because the order matters.
@@ -339,7 +339,7 @@ void DownloadManager::peerNoLongerAskingForEntries(PM::IPeer* peer)
 {
    L_DEBU(QString("A peer is free from asking for entries: %1").arg(peer->toStringLog()));
 
-   if (!this->downloadQueue.isAPeerSource(peer->getID()))
+   if (!this->downloadQueue.isAPeerSource(peer))
       return;
 
    DownloadQueue::ScanningIterator<IsADirectory> i(this->downloadQueue);
@@ -365,10 +365,14 @@ void DownloadManager::scanTheQueue()
 
    QSharedPointer<ChunkDownload> chunkDownload;
    FileDownload* fileDownload = 0;
+
+   // To know the number of peers not occupied that own at least one chunk in the queue.
+   QSet<PM::IPeer*> linkedPeersNotOccupied = this->linkedPeers.getPeers().toSet();
+   linkedPeersNotOccupied -= this->occupiedPeersDownloadingChunk.getOccupiedPeers();
+
    DownloadQueue::ScanningIterator<IsDownloable> i(this->downloadQueue);
 
-   const int nbPeers = this->peerManager->getPeers().size() + 1; // "+ 1" is for ourself.
-   while (numberOfDownloadThreadRunningCopy < NUMBER_OF_DOWNLOADER && nbPeers > this->occupiedPeersDownloadingChunk.nbOccupiedPeers())
+   while (numberOfDownloadThreadRunningCopy < NUMBER_OF_DOWNLOADER && !linkedPeersNotOccupied.isEmpty())
    {
       if (chunkDownload.isNull()) // We can ask many chunks to download from the same file.
          if (!(fileDownload = static_cast<FileDownload*>(i.next())))
@@ -382,10 +386,10 @@ void DownloadManager::scanTheQueue()
       if (chunkDownload.isNull())
          continue;
 
-      connect(chunkDownload.data(), SIGNAL(downloadFinished()), this, SLOT(chunkDownloadFinished()), Qt::DirectConnection);
-
-      if (chunkDownload->startDownloading())
+      if (PM::IPeer* currentPeer = chunkDownload->startDownloading())
       {
+         connect(chunkDownload.data(), SIGNAL(downloadFinished()), this, SLOT(chunkDownloadFinished()), Qt::DirectConnection);
+         linkedPeersNotOccupied -= currentPeer;
          this->numberOfDownloadThreadRunning++;
          numberOfDownloadThreadRunningCopy = this->numberOfDownloadThreadRunning;
       }

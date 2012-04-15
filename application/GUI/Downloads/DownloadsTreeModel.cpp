@@ -119,6 +119,15 @@ bool DownloadsTreeModel::isSourceAlive(const QModelIndex& index) const
    return tree->getItem().peer_id_size() > 0 && !this->peerListModel.getNick(tree->getItem().peer_id(0).hash()).isNull();
 }
 
+Protos::Common::Entry::Type DownloadsTreeModel::getType(const QModelIndex& index) const
+{
+   Tree* tree = static_cast<Tree*>(index.internalPointer());
+   if (!tree)
+      return Protos::Common::Entry::FILE;
+
+   return tree->getItem().local_entry().type();
+}
+
 QString DownloadsTreeModel::getPath(const QModelIndex& index, bool appendFilename) const
 {
    Tree* tree = static_cast<Tree*>(index.internalPointer());

@@ -36,7 +36,7 @@ MTRand FileDownload::mtrand;
 
 FileDownload::FileDownload(
    QSharedPointer<FM::IFileManager> fileManager,
-   QSharedPointer<PM::IPeerManager> peerManager,
+   LinkedPeers& linkedPeers,
    OccupiedPeers& occupiedPeersAskingForHashes,
    OccupiedPeers& occupiedPeersDownloadingChunk,
    Common::ThreadPool& threadPool,
@@ -48,7 +48,7 @@ FileDownload::FileDownload(
 ) :
    Download(peerSource, remoteEntry, localEntry),
    fileManager(fileManager),
-   peerManager(peerManager),
+   linkedPeers(linkedPeers),
    NB_CHUNK(this->remoteEntry.size() / SETTINGS.get<quint32>("chunk_size") + (this->remoteEntry.size() % SETTINGS.get<quint32>("chunk_size") == 0 ? 0 : 1)),
    occupiedPeersAskingForHashes(occupiedPeersAskingForHashes),
    occupiedPeersDownloadingChunk(occupiedPeersDownloadingChunk),
@@ -68,7 +68,7 @@ FileDownload::FileDownload(
    for (int i = 0; i < this->remoteEntry.chunk_size(); i++)
    {
       Common::Hash chunkHash(this->remoteEntry.chunk(i).hash());
-      QSharedPointer<ChunkDownload> chunkDownload = QSharedPointer<ChunkDownload>(new ChunkDownload(this->peerManager, this->occupiedPeersDownloadingChunk, this->transferRateCalculator, this->threadPool, chunkHash));
+      QSharedPointer<ChunkDownload> chunkDownload = QSharedPointer<ChunkDownload>(new ChunkDownload(this->linkedPeers, this->occupiedPeersDownloadingChunk, this->transferRateCalculator, this->threadPool, chunkHash));
 
       this->chunkDownloads << chunkDownload;
       this->connectChunkDownloadSignals(this->chunkDownloads.last());
@@ -471,7 +471,7 @@ void FileDownload::nextHash(const Common::Hash& hash)
    }
    else
    {
-      QSharedPointer<ChunkDownload> chunkDownload = QSharedPointer<ChunkDownload>(new ChunkDownload(this->peerManager, this->occupiedPeersDownloadingChunk, this->transferRateCalculator, this->threadPool, hash));
+      QSharedPointer<ChunkDownload> chunkDownload = QSharedPointer<ChunkDownload>(new ChunkDownload(this->linkedPeers, this->occupiedPeersDownloadingChunk, this->transferRateCalculator, this->threadPool, hash));
 
       // If the file has already been created, the chunks are known.
       if (!this->chunksWithoutDownload.isEmpty())

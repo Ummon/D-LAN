@@ -30,11 +30,11 @@
 #include <Core/FileManager/IFileManager.h>
 #include <Core/FileManager/IChunk.h>
 
-#include <priv/Socket.h>
+#include <priv/PeerMessageSocket.h>
 
 namespace PM
 {
-   class Socket;
+   class PeerMessageSocket;
    class PeerManager;
 
    class ConnectionPool : public QObject, Common::Uncopyable
@@ -48,24 +48,24 @@ namespace PM
       void setIP(const QHostAddress& IP, quint16 port);
       void newConnexion(QTcpSocket* socket);
 
-      QSharedPointer<Socket> getASocket();
+      QSharedPointer<PeerMessageSocket> getASocket();
       void closeAllSocket();
 
    private slots:
-      void socketBecomeIdle(Socket* socket);
-      void socketClosed(Socket* socket);
-      void socketGetChunk(QSharedPointer<FM::IChunk> chunk, int offset, Socket* socket);
+      void socketBecomeIdle(PeerMessageSocket* socket);
+      void socketClosed(PeerMessageSocket* socket);
+      void socketGetChunk(QSharedPointer<FM::IChunk> chunk, int offset, PeerMessageSocket* socket);
 
    private:
       enum Direction { TO_PEER, FROM_PEER };
-      QSharedPointer<Socket> addNewSocket(QSharedPointer<Socket> socket, Direction direction);
-      QList< QSharedPointer<Socket> > getAllSockets() const;
+      QSharedPointer<PeerMessageSocket> addNewSocket(QSharedPointer<PeerMessageSocket> socket, Direction direction);
+      QList< QSharedPointer<PeerMessageSocket> > getAllSockets() const;
 
       PeerManager* peerManager;
       QSharedPointer<FM::IFileManager> fileManager;
 
-      QList< QSharedPointer<Socket> > socketsToPeer;
-      QList< QSharedPointer<Socket> > socketsFromPeer;
+      QList< QSharedPointer<PeerMessageSocket> > socketsToPeer;
+      QList< QSharedPointer<PeerMessageSocket> > socketsFromPeer;
 
       QHostAddress peerIP;
       quint16 port;

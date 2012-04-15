@@ -47,6 +47,7 @@ namespace GUI
       virtual bool isFileLocationKnown(const QModelIndex& index) const = 0;
       virtual bool isFileComplete(const QModelIndex& index) const = 0;
       virtual bool isSourceAlive(const QModelIndex& index) const = 0;
+      virtual Protos::Common::Entry::Type getType(const QModelIndex& index) const = 0;
 
       /**
         * @remarks appendFilename is only valid if the index is a file (not a directory).

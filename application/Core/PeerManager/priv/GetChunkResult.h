@@ -32,7 +32,7 @@
 #include <Common/Uncopyable.h>
 
 #include <IGetChunkResult.h>
-#include <priv/Socket.h>
+#include <priv/PeerMessageSocket.h>
 
 namespace PM
 {
@@ -40,9 +40,9 @@ namespace PM
    {
       Q_OBJECT
    public:
-      GetChunkResult(const Protos::Core::GetChunk& chunk, QSharedPointer<Socket> socket);
+      GetChunkResult(const Protos::Core::GetChunk& chunk, QSharedPointer<PeerMessageSocket> socket);
       void start();
-      void setStatus(ISocket::FinishedStatus status);
+      void setStatus(bool closeTheSocket);
       void doDeleteLater();
 
    private slots:
@@ -50,8 +50,8 @@ namespace PM
 
    private:
       const Protos::Core::GetChunk chunk;
-      QSharedPointer<Socket> socket;
-      ISocket::FinishedStatus status;
+      QSharedPointer<PeerMessageSocket> socket;
+      bool closeTheSocket;
    };
 }
 

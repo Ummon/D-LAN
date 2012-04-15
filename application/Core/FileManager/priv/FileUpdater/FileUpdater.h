@@ -29,6 +29,7 @@
 #include <Protos/files_cache.pb.h>
 
 #include <priv/FileUpdater/DirWatcher.h>
+#include <priv/Cache/FileHasher.h>
 
 namespace FM
 {
@@ -105,8 +106,8 @@ namespace FM
       mutable QMutex scanningMutex;
 
       mutable QMutex hashingMutex;
-      File* currentHashingFile;
       bool toStopHashing;
+      FileHasher fileHasher;
 
       QList<SharedDirectory*> dirsToRemove;
 

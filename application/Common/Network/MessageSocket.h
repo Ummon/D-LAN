@@ -110,11 +110,11 @@ namespace Common
       QAbstractSocket* socket;
 
    private:
-      Hash localID;
-      Hash remoteID;
+      Hash localID; // ID of the local peer.
+      Hash remoteID; // ID of the remote peer.
 
-      bool IDDefined;
-      bool remoteIDDefined;
+      const bool localIDDefined;
+      const bool remoteIDDefined;
 
       bool listening;
 

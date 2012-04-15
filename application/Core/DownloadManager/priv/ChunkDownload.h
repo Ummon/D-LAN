@@ -33,13 +33,14 @@
 #include <Common/ThreadPool.h>
 #include <Core/FileManager/IChunk.h>
 #include <Core/FileManager/IDataWriter.h>
-#include <Core/PeerManager/IPeerManager.h>
+#include <Core/PeerManager/IPeer.h>
 #include <Core/PeerManager/IGetChunkResult.h>
 
 #include <IChunkDownload.h>
 #include <IDownload.h>
 
 #include <priv/OccupiedPeers.h>
+#include <priv/LinkedPeers.h>
 
 namespace PM { class IPeer; }
 
@@ -51,15 +52,15 @@ namespace DM
 
       Q_OBJECT
    public:
-      ChunkDownload(QSharedPointer<PM::IPeerManager> peerManager, OccupiedPeers& occupiedPeersDownloadingChunk, Common::TransferRateCalculator& transferRateCalculator, Common::ThreadPool& threadPool, Common::Hash chunkHash);
+      ChunkDownload(LinkedPeers& linkedPeers, OccupiedPeers& occupiedPeersDownloadingChunk, Common::TransferRateCalculator& transferRateCalculator, Common::ThreadPool& threadPool, Common::Hash chunkHash);
       ~ChunkDownload();
 
       void stop();
 
       Common::Hash getHash() const;
 
-      void addPeerID(const Common::Hash& peerID);
-      void rmPeerID(const Common::Hash& peerID);
+      void addPeer(PM::IPeer* peer);
+      void rmPeer(PM::IPeer* peer);
 
       void init(QThread* thread);
       void run();
@@ -81,7 +82,7 @@ namespace DM
       int getDownloadedBytes() const;
       QList<Common::Hash> getPeers();
 
-      bool startDownloading();
+      PM::IPeer* startDownloading();
       void tryToRemoveItsIncompleteFile();
       void reset();
 
@@ -104,7 +105,7 @@ namespace DM
       PM::IPeer* getTheFastestFreePeer();
       int getNumberOfFreePeer();
 
-      QSharedPointer<PM::IPeerManager> peerManager; // To retrieve the peers from their ID.
+      LinkedPeers& linkedPeers;
       OccupiedPeers& occupiedPeersDownloadingChunk; // The peers from where we downloading.
       Common::TransferRateCalculator& transferRateCalculator;
       Common::ThreadPool& threadPool;
@@ -121,7 +122,7 @@ namespace DM
       QSharedPointer<PM::IGetChunkResult> getChunkResult;
 
       bool downloading;
-      PM::ISocket::FinishedStatus networkTransferStatus;
+      bool closeTheSocket;
       Status lastTransfertStatus;
 
       QThread* mainThread;

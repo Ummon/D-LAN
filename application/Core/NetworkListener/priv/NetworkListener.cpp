@@ -60,6 +60,7 @@ QSharedPointer<ISearch> NetworkListener::newSearch()
 
 void NetworkListener::rebindSockets()
 {
+   this->peerManager->removeAllPeers();
    this->uDPListener.rebindSockets();
    this->tCPListener.rebindSockets();
 }

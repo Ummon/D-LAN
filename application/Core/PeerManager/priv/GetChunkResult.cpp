@@ -23,8 +23,8 @@ using namespace PM;
 
 #include <priv/Log.h>
 
-GetChunkResult::GetChunkResult(const Protos::Core::GetChunk& chunk, QSharedPointer<Socket> socket) :
-   IGetChunkResult(SETTINGS.get<quint32>("socket_timeout")), chunk(chunk), socket(socket), status(ISocket::SFS_OK)
+GetChunkResult::GetChunkResult(const Protos::Core::GetChunk& chunk, QSharedPointer<PeerMessageSocket> socket) :
+   IGetChunkResult(SETTINGS.get<quint32>("socket_timeout")), chunk(chunk), socket(socket), closeTheSocket(false)
 {
 }
 
@@ -35,16 +35,16 @@ void GetChunkResult::start()
    this->startTimer();
 }
 
-void GetChunkResult::setStatus(ISocket::FinishedStatus status)
+void GetChunkResult::setStatus(bool closeTheSocket)
 {
-   this->status = status;
+   this->closeTheSocket = closeTheSocket;
 }
 
 void GetChunkResult::doDeleteLater()
 {
    // We must disconnect because 'this->socket->finished' can read some data and emit 'newMessage'.
    disconnect(this->socket.data(), SIGNAL(newMessage(Common::MessageHeader::MessageType, const google::protobuf::Message&)), this, SLOT(newMessage(Common::MessageHeader::MessageType, const google::protobuf::Message&)));
-   this->socket->finished(this->isTimedout() ? ISocket::SFS_ERROR : this->status);
+   this->socket->finished(this->isTimedout() ? true : this->closeTheSocket);
    this->socket.clear();
    this->deleteLater();
 }
@@ -59,14 +59,14 @@ void GetChunkResult::newMessage(Common::MessageHeader::MessageType type, const g
    const Protos::Core::GetChunkResult& chunkResult = dynamic_cast<const Protos::Core::GetChunkResult&>(message);
    emit result(chunkResult);
 
-   if (chunkResult.status() == Protos::Core::GetChunkResult_Status_OK)
+   if (chunkResult.status() == Protos::Core::GetChunkResult::OK)
    {
       socket->stopListening();
       emit stream(this->socket);
    }
    else
    {
-      this->status = ISocket::SFS_ERROR;
+      this->closeTheSocket = true;
       // Segfault, maybe we cannot disconnect a signal during a call to the connected slot (this method)!?.
       //disconnect(this->socket.data(), SIGNAL(newMessage(Common::MessageHeader::MessageType, const google::protobuf::Message&)), this, SLOT(newMessage(Common::MessageHeader::MessageType, const google::protobuf::Message&)));
    }

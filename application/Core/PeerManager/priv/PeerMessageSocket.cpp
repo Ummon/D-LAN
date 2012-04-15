@@ -16,7 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#include <priv/Socket.h>
+#include <priv/PeerMessageSocket.h>
 using namespace PM;
 
 #include <QCoreApplication>
@@ -32,94 +32,94 @@ using namespace PM;
 #include <priv/PeerManager.h>
 #include <priv/Constants.h>
 
-void Socket::Logger::logDebug(const QString& message)
+void PeerMessageSocket::Logger::logDebug(const QString& message)
 {
    L_DEBU(message);
 }
 
-void Socket::Logger::logError(const QString& message)
+void PeerMessageSocket::Logger::logError(const QString& message)
 {
    L_WARN(message);
 }
 
-Socket::Socket(PeerManager* peerManager, QSharedPointer<FM::IFileManager> fileManager, const Common::Hash& remotePeerID, QTcpSocket* socket) :
-   MessageSocket(new Socket::Logger(), socket, peerManager->getSelf()->getID(), remotePeerID), fileManager(fileManager), active(true), nbError(0)
+PeerMessageSocket::PeerMessageSocket(PeerManager* peerManager, QSharedPointer<FM::IFileManager> fileManager, const Common::Hash& remotePeerID, QTcpSocket* socket) :
+   MessageSocket(new PeerMessageSocket::Logger(), socket, peerManager->getSelf()->getID(), remotePeerID), fileManager(fileManager), active(true), nbError(0)
 {
    this->initUnactiveTimer();
 }
 
-Socket::Socket(PeerManager* peerManager, QSharedPointer<FM::IFileManager> fileManager, const Common::Hash& remotePeerID, const QHostAddress& address, quint16 port) :
-   MessageSocket(new Socket::Logger(), address, port, peerManager->getSelf()->getID(), remotePeerID), fileManager(fileManager), active(true), nbError(0)
+PeerMessageSocket::PeerMessageSocket(PeerManager* peerManager, QSharedPointer<FM::IFileManager> fileManager, const Common::Hash& remotePeerID, const QHostAddress& address, quint16 port) :
+   MessageSocket(new PeerMessageSocket::Logger(), address, port, peerManager->getSelf()->getID(), remotePeerID), fileManager(fileManager), active(true), nbError(0)
 {
    this->initUnactiveTimer();
 }
 
-Socket::~Socket()
+PeerMessageSocket::~PeerMessageSocket()
 {
    L_DEBU(QString("Socket[%1] deleted").arg(this->num));
 }
 
-void Socket::setReadBufferSize(qint64 size)
+void PeerMessageSocket::setReadBufferSize(qint64 size)
 {
    this->socket->setReadBufferSize(size);
 }
 
-qint64 Socket::bytesAvailable() const
+qint64 PeerMessageSocket::bytesAvailable() const
 {
    return this->socket->bytesAvailable();
 }
 
-qint64 Socket::read(char* data, qint64 maxSize)
+qint64 PeerMessageSocket::read(char* data, qint64 maxSize)
 {
    return this->socket->read(data, maxSize);
 }
 
-QByteArray Socket::readAll()
+QByteArray PeerMessageSocket::readAll()
 {
    return this->socket->readAll();
 }
 
-bool Socket::waitForReadyRead(int msecs)
+bool PeerMessageSocket::waitForReadyRead(int msecs)
 {
    return this->socket->waitForReadyRead(msecs);
 }
 
-qint64 Socket::bytesToWrite() const
+qint64 PeerMessageSocket::bytesToWrite() const
 {
    return this->socket->bytesToWrite();
 }
 
-qint64 Socket::write(const char* data, qint64 maxSize)
+qint64 PeerMessageSocket::write(const char* data, qint64 maxSize)
 {
    return this->socket->write(data, maxSize);
 }
 
-qint64 Socket::write(const QByteArray& byteArray)
+qint64 PeerMessageSocket::write(const QByteArray& byteArray)
 {
    return this->socket->write(byteArray);
 }
 
-bool Socket::waitForBytesWritten(int msecs)
+bool PeerMessageSocket::waitForBytesWritten(int msecs)
 {
    return this->socket->waitForBytesWritten(msecs);
 }
 
-void Socket::moveToThread(QThread* targetThread)
+void PeerMessageSocket::moveToThread(QThread* targetThread)
 {
    this->socket->moveToThread(targetThread);
 }
 
-QString Socket::errorString() const
+QString PeerMessageSocket::errorString() const
 {
    return this->socket->errorString();
 }
 
-Common::Hash Socket::getRemotePeerID() const
+Common::Hash PeerMessageSocket::getRemotePeerID() const
 {
    return this->MessageSocket::getRemoteID();
 }
 
-void Socket::send(MessageHeader::MessageType type, const google::protobuf::Message& message)
+void PeerMessageSocket::send(MessageHeader::MessageType type, const google::protobuf::Message& message)
 {
    if (!this->isListening())
       return;
@@ -132,7 +132,7 @@ void Socket::send(MessageHeader::MessageType type, const google::protobuf::Messa
 /**
   * Is the socket currently been used?
   */
-bool Socket::isActive() const
+bool PeerMessageSocket::isActive() const
 {
    return this->active;
 }
@@ -140,7 +140,7 @@ bool Socket::isActive() const
 /**
   * Change the status of the socket to active. Automatically called when a message is sent.
   */
-void Socket::setActive()
+void PeerMessageSocket::setActive()
 {
    this->inactiveTimer.start(); // Some transactions (like GET_HASHES) can go for a long time, we have to restart the timer even for an active connection.
 
@@ -155,22 +155,16 @@ void Socket::setActive()
 /**
   * Must be called when a transaction is terminated.
   */
-void Socket::finished(FinishedStatus status)
+void PeerMessageSocket::finished(bool closeTheSocket)
 {
    if (!this->active)
       return;
 
-   L_DEBU(QString("Socket[%1] set to idle%2<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<").arg(this->num).arg(status == SFS_ERROR ? " with error " : " "));
+   L_DEBU(QString("Socket[%1] set to idle%2<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<").arg(this->num).arg(closeTheSocket ? " (socket forced to close) " : " "));
 
-   if (status == SFS_TO_CLOSE)
+   if (closeTheSocket)
    {
       L_WARN("Socket forced to close..");
-      this->close();
-      return;
-   }
-   else if (status == SFS_ERROR && ++this->nbError > MAX_SOCKET_ERROR_BEFORE_FORCE_TO_CLOSE)
-   {
-      L_WARN("Socket with too many error, closed");
       this->close();
       return;
    }
@@ -191,7 +185,7 @@ void Socket::finished(FinishedStatus status)
 /**
   * Only emit the 'closed(..)' signal, do not close the socket.
   */
-void Socket::close()
+void PeerMessageSocket::close()
 {
    this->active = false;
 
@@ -202,7 +196,7 @@ void Socket::close()
   * When we ask to the fileManager some hashes for a given file this
   * slot will be called each time a new hash is available.
   */
-void Socket::nextAskedHash(Common::Hash hash)
+void PeerMessageSocket::nextAskedHash(Common::Hash hash)
 {
    Protos::Common::Hash hashProto;
    hashProto.set_hash(hash.getData(), Common::Hash::HASH_SIZE);
@@ -218,7 +212,7 @@ void Socket::nextAskedHash(Common::Hash hash)
 /**
   *
   */
-void Socket::onNewMessage(Common::MessageHeader::MessageType type, const google::protobuf::Message& message)
+void PeerMessageSocket::onNewMessage(Common::MessageHeader::MessageType type, const google::protobuf::Message& message)
 {
    switch (type)
    {
@@ -286,7 +280,7 @@ void Socket::onNewMessage(Common::MessageHeader::MessageType type, const google:
          if (hash.isNull())
          {
             L_WARN("GET_CHUNK: Chunk null");
-            this->finished(ISocket::SFS_ERROR);
+            this->finished(true);
             break;
          }
 
@@ -319,17 +313,17 @@ void Socket::onNewMessage(Common::MessageHeader::MessageType type, const google:
    }
 }
 
-void Socket::onNewDataReceived()
+void PeerMessageSocket::onNewDataReceived()
 {
    this->setActive();
 }
 
-void Socket::onDisconnected()
+void PeerMessageSocket::onDisconnected()
 {
    this->close();
 }
 
-void Socket::initUnactiveTimer()
+void PeerMessageSocket::initUnactiveTimer()
 {
    this->inactiveTimer.setSingleShot(true);
    this->inactiveTimer.setInterval(SETTINGS.get<quint32>("idle_socket_timeout"));

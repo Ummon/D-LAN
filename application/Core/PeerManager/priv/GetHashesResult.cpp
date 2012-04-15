@@ -23,7 +23,7 @@ using namespace PM;
 
 #include <priv/Log.h>
 
-GetHashesResult::GetHashesResult(const Protos::Common::Entry& file, QSharedPointer<Socket> socket) :
+GetHashesResult::GetHashesResult(const Protos::Common::Entry& file, QSharedPointer<PeerMessageSocket> socket) :
    IGetHashesResult(SETTINGS.get<quint32>("get_hashes_timeout")), file(file), socket(socket)
 {
 }

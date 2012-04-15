@@ -64,7 +64,7 @@ namespace UM
 
       Common::TransferRateCalculator& transferRateCalculator;
 
-      PM::ISocket::FinishedStatus networkTransferStatus;
+      bool closeTheSocket;
       bool toStop;
    };
 }

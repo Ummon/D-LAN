@@ -27,10 +27,8 @@ using namespace FM;
 
 #include <QString>
 #include <QFile>
-#include <QElapsedTimer>
 
 #include <Common/Global.h>
-#include <Common/FileLocker.h>
 #include <Common/Settings.h>
 #include <Common/ProtoHelper.h>
 
@@ -51,7 +49,6 @@ using namespace FM;
   * Capabilities :
   *  - Create a new file (which becomes an unfinished file). It's used when downloading a remote file.
   *  - Read or write the file.
-  *  - Compute some hashes by reading the file. It stores the hahes in a chunk list, see the Chunk class.
   *
   * A file can be finished or unfinished.
   * If it is an unfinished one, the name ends with ".unfinished" (see setting 'unfinished_suffix_term').
@@ -73,7 +70,6 @@ File::File(
    bool createPhysically
 ) :
    Entry(dir->getCache(), name + (createPhysically ? Global::getUnfinishedSuffix() : ""), size),
-   CHUNK_SIZE(SETTINGS.get<quint32>("chunk_size")),
    dir(dir),
    dateLastModified(dateLastModified),
    nbChunkComplete(0),
@@ -82,9 +78,7 @@ File::File(
    numDataReader(0),
    fileInWriteMode(0),
    fileInReadMode(0),
-   mutex(QMutex::Recursive),
-   hashing(false),
-   toStopHashing(false)
+   mutex(QMutex::Recursive)
 {
    L_DEBU(QString("New file : %1 (%2), createPhysically = %3").arg(this->getFullPath()).arg(Common::Global::formatByteSize(this->size)).arg(createPhysically));
 
@@ -127,7 +121,6 @@ void File::setToUnfinished(qint64 size, const Common::Hashes& hashes)
    L_DEBU(QString("File::setToUnfinished : %1").arg(this->getFullPath()));
 
    this->complete = false;
-   this->stopHashing();
    this->cache->onEntryRemoved(this);
    this->name.append(Global::getUnfinishedSuffix());
    this->size = size;
@@ -285,7 +278,7 @@ void File::newDataReaderCreated()
       // and this memory is not freed when the file is closed ('close()') but only when the QFile is deleted.
       this->fileInReadMode = this->cache->getFilePool().open(this->getFullPath(), QIODevice::ReadOnly | QIODevice::Unbuffered);
       if (!this->fileInReadMode)
-         throw UnableToOpenFileInWriteModeException();
+         throw UnableToOpenFileInReadModeException();
    }
 }
 
@@ -365,195 +358,6 @@ qint64 File::read(char* buffer, qint64 offset, int maxBytesToRead)
       throw IOErrorException();
 
    return bytesRead;
-}
-
-/**
-  * It will open the file, read it and calculate all theirs chunk hashes.
-  * Only the chunk without hashes will be computed.
-  * This method can be called from an another thread than the main one. For example,
-  * from 'FileUpdated' thread.
-  * @param n number of hashes to compute, 0 if we want to compute all the hashes.
-  * @exception IOErrorException Thrown when the file cannot be opened or read. Some chunk may be computed before this exception is thrown.
-  */
-bool File::computeHashes(int n, int* amountHashed)
-{
-   QMutexLocker locker(&this->hashingMutex);
-
-   if (this->toStopHashing)
-   {
-      this->toStopHashing = false;
-      return false;
-   }
-
-   this->hashing = true;
-
-   const QString& filePath = this->getFullPath();
-
-   L_DEBU(QString("Computing the hash for %1").arg(filePath));
-
-   Common::Hasher hasher;
-
-   QFile file(filePath);
-   if (!file.open(QIODevice::ReadOnly | QIODevice::Unbuffered)) // Same performance with or without "QIODevice::Unbuffered".
-   {
-      this->toStopHashing = false;
-      this->hashing = false;
-      L_WARN(QString("Unable to open this file : %1").arg(filePath));
-      throw IOErrorException();
-   }
-
-   // Skip the already known full hashes.
-   qint64 bytesSkipped = 0;
-   int chunkNum = 0;
-   while (
-      chunkNum < this->chunks.size() &&
-      this->chunks[chunkNum]->hasHash() &&
-      this->chunks[chunkNum]->getKnownBytes() == CHUNK_SIZE) // Maybe the file has grown and the last chunk must be recomputed.
-   {
-      bytesSkipped += CHUNK_SIZE;
-      chunkNum++;
-      file.seek(file.pos() + CHUNK_SIZE);
-   }
-
-#if DEBUG
-   QElapsedTimer timer;
-   timer.start();
-#endif
-
-   static const int BUFFER_SIZE = SETTINGS.get<quint32>("buffer_size_reading");
-   char buffer[BUFFER_SIZE];
-   bool endOfFile = false;
-   qint64 bytesReadTotal = 0;
-   while (!endOfFile)
-   {
-      // See 'stopHashing()'.
-
-      int bytesReadChunk = 0;
-      while (bytesReadChunk < CHUNK_SIZE)
-      {
-         locker.unlock();
-         locker.relock();
-
-         if (this->toStopHashing)
-         {
-            this->hashingStopped.wakeOne();
-            this->toStopHashing = false;
-            this->hashing = false;
-            return false;
-         }
-
-         int bytesRead = 0;
-         {
-            Common::FileLocker fileLocker(file, BUFFER_SIZE, Common::FileLocker::READ);
-            if (!fileLocker.isLocked())
-            {
-               L_WARN(QString("Unable to acquire the lock for this file : %1").arg(filePath));
-               throw IOErrorException();
-            }
-
-            bytesRead = file.read(buffer, BUFFER_SIZE);
-            switch (bytesRead)
-            {
-            case -1:
-               L_ERRO(QString("Error during reading the file %1").arg(filePath));
-               throw IOErrorException();
-            case 0:
-               endOfFile = true;
-               this->size = bytesReadChunk + bytesReadTotal + bytesSkipped;
-               goto endReading;
-            }
-         }
-
-         hasher.addData(buffer, bytesRead);
-
-         bytesReadChunk += bytesRead;
-      }
-      endReading:
-
-      bytesReadTotal += bytesReadChunk;
-
-      if (bytesReadChunk > 0)
-      {
-         if (amountHashed != 0)
-            *amountHashed += bytesReadChunk;
-
-         const Common::Hash& hash = hasher.getResult();
-
-         if (this->chunks.size() <= chunkNum) // The size of the file has increased during the read..
-         {
-            this->chunks.append(QSharedPointer<Chunk>(new Chunk(this, chunkNum, bytesReadChunk, hash)));
-            this->cache->onChunkHashKnown(this->chunks[chunkNum]);
-         }
-         else
-         {
-            if (this->chunks[chunkNum]->getHash() != hash)
-            {
-               if (this->chunks[chunkNum]->hasHash())
-                  this->cache->onChunkRemoved(this->chunks[chunkNum]); // To remove the chunk from the chunk index (TODO: find a more elegant way).
-
-               this->chunks[chunkNum]->setHash(hash);
-               this->chunks[chunkNum]->setKnownBytes(bytesReadChunk);
-
-               this->cache->onChunkHashKnown(this->chunks[chunkNum]);
-            }
-         }
-
-         if (--n == 0)
-            break;
-      }
-
-      hasher.reset();
-      chunkNum += 1;
-   }
-
-#ifdef DEBUG
-   const int delta = timer.elapsed();
-   if (delta < 50)
-      L_DEBU("Hashing speed : ?? MB/s (delta too small)");
-   else
-   {
-      const int speed = 1000LL * bytesReadTotal / delta;
-      L_DEBU(QString("Hashing speed : %1/s").arg(Common::Global::formatByteSize(speed)));
-   }
-#endif
-
-   this->toStopHashing = false;
-   this->hashing = false;
-
-   // TODO: seriously rethink this part, a file being written shouldn't be shared or hashed...
-   if (bytesReadTotal + bytesSkipped != this->size)
-   {
-      if (n != 0)
-      {
-         L_DEBU(QString("The file content has changed during the hashes computing process. File = %1, bytes read = %2, previous size = %3").arg(filePath).arg(bytesReadTotal).arg(this->size));
-         this->dir->fileSizeChanged(this->size, bytesReadTotal + bytesSkipped);
-         this->size = bytesReadTotal + bytesSkipped;
-         this->dateLastModified = QFileInfo(filePath).lastModified();
-
-         if (bytesReadTotal + bytesSkipped < this->size) // In this case, maybe some chunk must be deleted.
-            for (int i = this->getNbChunks(); i < this->chunks.size(); i++)
-            {
-               QSharedPointer<Chunk> c = this->chunks.takeLast();
-               this->cache->onChunkRemoved(c);
-            }
-      }
-
-      return false;
-   }
-
-   return true;
-}
-
-void File::stopHashing()
-{
-   QMutexLocker locker(&this->hashingMutex);
-   this->toStopHashing = true;
-   if (this->hashing)
-   {
-      L_DEBU(QString("File::stopHashing() for %1 ..").arg(this->getFullPath()));
-      this->hashingStopped.wait(&this->hashingMutex);
-      L_DEBU("File hashing stopped");
-   }
 }
 
 QList< QSharedPointer<Chunk> > File::getChunks() const
@@ -652,6 +456,7 @@ void File::chunkComplete(const Chunk* chunk)
 
 int File::getNbChunks()
 {
+   static const int CHUNK_SIZE = SETTINGS.get<quint32>("chunk_size");
    return this->size / CHUNK_SIZE + (this->size % CHUNK_SIZE == 0 ? 0 : 1);
 }
 
@@ -707,6 +512,30 @@ bool File::hasAParentDir(Directory* dir)
    return this->dir->isAChildOf(dir);
 }
 
+void File::setSize(qint64 size)
+{
+   if (this->size != size)
+   {
+      this->dir->fileSizeChanged(this->size, size);
+      this->size = size;
+   }
+}
+
+void File::updateDateLastModified(const QDateTime& date)
+{
+   this->dateLastModified = date;
+}
+
+void File::addChunk(const QSharedPointer<Chunk>& chunk)
+{
+   this->chunks << chunk;
+}
+
+QSharedPointer<Chunk> File::removeLastChunk()
+{
+   return this->chunks.takeLast();
+}
+
 void File::deleteAllChunks()
 {
    for (QListIterator< QSharedPointer<Chunk> > i(this->chunks); i.hasNext();)
@@ -748,6 +577,8 @@ void File::createPhysicalFile()
   */
 void File::setHashes(const Common::Hashes& hashes)
 {
+   static const int CHUNK_SIZE = SETTINGS.get<quint32>("chunk_size");
+
    this->chunks.reserve(this->getNbChunks());
    for (int i = 0; i < this->getNbChunks(); i++)
    {

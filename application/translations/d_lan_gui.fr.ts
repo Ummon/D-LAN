@@ -81,7 +81,7 @@
 <context>
     <name>GUI::D_LAN_GUI</name>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="+116"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="+117"/>
         <source>Show the GUI</source>
         <translation>Afficher le GUI</translation>
     </message>
@@ -143,7 +143,7 @@
 <context>
     <name>GUI::DownloadsModel</name>
     <message>
-        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="+99"/>
+        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="+104"/>
         <source>Source peer offline (%1)</source>
         <translation>Le pair source n&apos;est pas en ligne (%1)</translation>
     </message>
@@ -219,7 +219,7 @@
 <context>
     <name>GUI::MainWindow</name>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="+202"/>
+        <location filename="../GUI/MainWindow.cpp" line="+204"/>
         <source>Already connected to this address</source>
         <translation>Déjà connecté à cette addresse</translation>
     </message>
@@ -279,6 +279,36 @@
         <translation>Prendre le contrôle</translation>
     </message>
     <message>
+        <location line="+8"/>
+        <source>Sort by the amount of sharing</source>
+        <translation>Trier par la quantité de partage</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Sort alphabetically</source>
+        <translation>Trier par ordre alphabétique</translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>Colorize in red</source>
+        <translation>Colorier en rouge</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Colorize in blue</source>
+        <translation>Colorier en bleu</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Colorize in green</source>
+        <translation>Colorier en vert</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Uncolorize</source>
+        <translation>Enlever la couleur</translation>
+    </message>
+    <message>
         <location line="+31"/>
         <source>Take control of %1</source>
         <translation>Prendre le contrôle de %1</translation>
@@ -289,7 +319,7 @@
         <translation>Entrez le mot de passe</translation>
     </message>
     <message>
-        <location line="-75"/>
+        <location line="-97"/>
         <source>Connected to the core</source>
         <translation>Connecté au core</translation>
     </message>
@@ -312,7 +342,7 @@
 <context>
     <name>GUI::PeerListModel</name>
     <message>
-        <location filename="../GUI/PeerList/PeerListModel.cpp" line="+109"/>
+        <location filename="../GUI/PeerList/PeerListModel.cpp" line="+138"/>
         <source>Version %1</source>
         <translation>Version %1</translation>
     </message>
@@ -454,7 +484,7 @@
 <context>
     <name>GUI::WidgetDownloads</name>
     <message>
-        <location filename="../GUI/Downloads/WidgetDownloads.cpp" line="+181"/>
+        <location filename="../GUI/Downloads/WidgetDownloads.cpp" line="+196"/>
         <source>Open location</source>
         <translation>Ouvrir le dossier</translation>
     </message>
@@ -535,34 +565,34 @@
 <context>
     <name>GUI::WidgetSettings</name>
     <message>
-        <location filename="../GUI/Settings/WidgetSettings.cpp" line="+362"/>
+        <location filename="../GUI/Settings/WidgetSettings.cpp" line="+372"/>
         <source>Connecting..</source>
         <translation>Connexion..</translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="+8"/>
         <location line="+16"/>
-        <location line="+17"/>
+        <location line="+18"/>
         <source>Connect</source>
         <translation>Connecter</translation>
     </message>
     <message>
-        <location line="-192"/>
+        <location line="-204"/>
         <source>Interface not active</source>
         <translation>Interface inactive</translation>
     </message>
     <message>
-        <location line="+108"/>
+        <location line="+111"/>
         <source>Change the password</source>
         <translation>Changer le mot de passe</translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="+6"/>
         <source>Define a password</source>
         <translation>Définir un mot de passe</translation>
     </message>
     <message>
-        <location line="+193"/>
+        <location line="+206"/>
         <source>Remove the shared folder</source>
         <translation>Enlever le dossier partagé</translation>
     </message>
@@ -699,12 +729,14 @@
     </message>
     <message>
         <location filename="../GUI/Browse/WidgetBrowse.ui" line="+48"/>
+        <location filename="../GUI/.tmp/debug/ui_WidgetBrowse.h" line="+67"/>
         <location filename="../GUI/.tmp/release/ui_WidgetBrowse.h" line="+67"/>
         <source>Download selected items to the first shared directory with enough free space</source>
         <translation>Télécharger les éléments dans le premier dossier partagé avec assez de place</translation>
     </message>
     <message>
         <location line="+3"/>
+        <location filename="../GUI/.tmp/debug/ui_WidgetBrowse.h" line="+2"/>
         <location filename="../GUI/.tmp/release/ui_WidgetBrowse.h" line="+2"/>
         <source>Download selected items</source>
         <translation>Télécharger les éléments sélectionnés</translation>
@@ -797,8 +829,8 @@
     <name>WidgetSettings</name>
     <message>
         <location filename="../GUI/Settings/WidgetSettings.ui" line="+14"/>
-        <location filename="../GUI/.tmp/debug/ui_WidgetSettings.h" line="+366"/>
-        <location filename="../GUI/.tmp/release/ui_WidgetSettings.h" line="+366"/>
+        <location filename="../GUI/.tmp/debug/ui_WidgetSettings.h" line="+378"/>
+        <location filename="../GUI/.tmp/release/ui_WidgetSettings.h" line="+378"/>
         <source>Settings</source>
         <translation>Paramètres</translation>
     </message>
@@ -888,15 +920,15 @@
     </message>
     <message>
         <location line="+47"/>
-        <location filename="../GUI/.tmp/debug/ui_WidgetSettings.h" line="+13"/>
-        <location filename="../GUI/.tmp/release/ui_WidgetSettings.h" line="+13"/>
+        <location filename="../GUI/.tmp/debug/ui_WidgetSettings.h" line="+14"/>
+        <location filename="../GUI/.tmp/release/ui_WidgetSettings.h" line="+14"/>
         <source>Advanced</source>
         <translation>Avancé</translation>
     </message>
     <message>
         <location line="+6"/>
-        <location filename="../GUI/.tmp/debug/ui_WidgetSettings.h" line="-7"/>
-        <location filename="../GUI/.tmp/release/ui_WidgetSettings.h" line="-7"/>
+        <location filename="../GUI/.tmp/debug/ui_WidgetSettings.h" line="-8"/>
+        <location filename="../GUI/.tmp/release/ui_WidgetSettings.h" line="-8"/>
         <source>Language</source>
         <translation>Langue</translation>
     </message>
@@ -929,23 +961,30 @@
         <translation>Mot de passe</translation>
     </message>
     <message>
-        <location line="+17"/>
-        <location filename="../GUI/.tmp/debug/ui_WidgetSettings.h" line="+1"/>
-        <location filename="../GUI/.tmp/release/ui_WidgetSettings.h" line="+1"/>
+        <location line="+60"/>
+        <location filename="../GUI/.tmp/debug/ui_WidgetSettings.h" line="+2"/>
+        <location filename="../GUI/.tmp/release/ui_WidgetSettings.h" line="+2"/>
         <source>Change the password</source>
         <translation>Changer le mot de passe</translation>
     </message>
     <message>
-        <location line="+39"/>
+        <location line="+7"/>
         <location filename="../GUI/.tmp/debug/ui_WidgetSettings.h" line="+1"/>
         <location filename="../GUI/.tmp/release/ui_WidgetSettings.h" line="+1"/>
+        <source>Reset the password</source>
+        <translation>Réinitialiser le mot de passe</translation>
+    </message>
+    <message>
+        <location line="-21"/>
+        <location filename="../GUI/.tmp/debug/ui_WidgetSettings.h" line="-2"/>
+        <location filename="../GUI/.tmp/release/ui_WidgetSettings.h" line="-2"/>
         <source>Disconnect</source>
         <translation>Se déconnecter</translation>
     </message>
     <message>
-        <location line="-124"/>
-        <location filename="../GUI/.tmp/debug/ui_WidgetSettings.h" line="-10"/>
-        <location filename="../GUI/.tmp/release/ui_WidgetSettings.h" line="-10"/>
+        <location line="-114"/>
+        <location filename="../GUI/.tmp/debug/ui_WidgetSettings.h" line="-9"/>
+        <location filename="../GUI/.tmp/release/ui_WidgetSettings.h" line="-9"/>
         <source>When activated all received data will be verified against their hashes.  It may consume CPU resources.</source>
         <translation>Lorsque activé toutes les données reçues sont vérifiées par rapport à leur empreinte. Consomme un peu de puissance CPU.</translation>
     </message>

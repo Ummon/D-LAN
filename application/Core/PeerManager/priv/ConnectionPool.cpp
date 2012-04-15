@@ -24,7 +24,7 @@ using namespace PM;
 
 #include <priv/Log.h>
 #include <priv/Constants.h>
-#include <priv/Socket.h>
+#include <priv/PeerMessageSocket.h>
 #include <priv/PeerManager.h>
 
 /**
@@ -66,18 +66,18 @@ void ConnectionPool::setIP(const QHostAddress& IP, quint16 port)
   */
 void ConnectionPool::newConnexion(QTcpSocket* tcpSocket)
 {
-   this->addNewSocket(QSharedPointer<Socket>(new Socket(this->peerManager, this->fileManager, this->peerID, tcpSocket)), FROM_PEER);
+   this->addNewSocket(QSharedPointer<PeerMessageSocket>(new PeerMessageSocket(this->peerManager, this->fileManager, this->peerID, tcpSocket)), FROM_PEER);
 }
 
 /**
   * Return an idle socket to the peer.
   * A new connection is made if there is no idle socket.
   */
-QSharedPointer<Socket> ConnectionPool::getASocket()
+QSharedPointer<PeerMessageSocket> ConnectionPool::getASocket()
 {
-   for (QListIterator< QSharedPointer<Socket> > i(this->socketsToPeer); i.hasNext();)
+   for (QListIterator< QSharedPointer<PeerMessageSocket> > i(this->socketsToPeer); i.hasNext();)
    {
-      QSharedPointer<Socket> socket = i.next();
+      QSharedPointer<PeerMessageSocket> socket = i.next();
       if (!socket->isActive())
       {
          socket->setActive();
@@ -86,29 +86,29 @@ QSharedPointer<Socket> ConnectionPool::getASocket()
    }
 
    if (!this->peerIP.isNull())
-      return this->addNewSocket(QSharedPointer<Socket>(new Socket(this->peerManager, this->fileManager, this->peerID, this->peerIP, this->port)), TO_PEER);
+      return this->addNewSocket(QSharedPointer<PeerMessageSocket>(new PeerMessageSocket(this->peerManager, this->fileManager, this->peerID, this->peerIP, this->port)), TO_PEER);
 
    L_ERRO("ConnectionPool::getASocket(): Unable to get a socket");
-   return QSharedPointer<Socket>();
+   return QSharedPointer<PeerMessageSocket>();
 }
 
 void ConnectionPool::closeAllSocket()
 {
-   for (QListIterator< QSharedPointer<Socket> > i(this->getAllSockets()); i.hasNext();)
+   for (QListIterator< QSharedPointer<PeerMessageSocket> > i(this->getAllSockets()); i.hasNext();)
    {
-      QSharedPointer<Socket> socket = i.next();
+      QSharedPointer<PeerMessageSocket> socket = i.next();
       socket->close();
    }
 }
 
-void ConnectionPool::socketBecomeIdle(Socket* socket)
+void ConnectionPool::socketBecomeIdle(PeerMessageSocket* socket)
 {
    quint32 n = 0;
-   QList< QSharedPointer<Socket> > socketsToClose;
+   QList< QSharedPointer<PeerMessageSocket> > socketsToClose;
 
-   for (QListIterator< QSharedPointer<Socket> > i(this->getAllSockets()); i.hasNext();)
+   for (QListIterator< QSharedPointer<PeerMessageSocket> > i(this->getAllSockets()); i.hasNext();)
    {
-     QSharedPointer<Socket> currentSocket = i.next();
+     QSharedPointer<PeerMessageSocket> currentSocket = i.next();
      if (!currentSocket.data()->isActive())
      {
         n += 1;
@@ -117,17 +117,17 @@ void ConnectionPool::socketBecomeIdle(Socket* socket)
      }
    }
 
-   for (QListIterator<QSharedPointer<Socket> > i(socketsToClose); i.hasNext();)
+   for (QListIterator<QSharedPointer<PeerMessageSocket> > i(socketsToClose); i.hasNext();)
       i.next()->close();
 }
 
-void ConnectionPool::socketClosed(Socket* socket)
+void ConnectionPool::socketClosed(PeerMessageSocket* socket)
 {
    for (int k = 0; k < 2; k++)
    {
-      QList< QSharedPointer<Socket> >& list = k == 0 ? this->socketsToPeer : this->socketsFromPeer;
+      QList< QSharedPointer<PeerMessageSocket> >& list = k == 0 ? this->socketsToPeer : this->socketsFromPeer;
 
-      for (QMutableListIterator< QSharedPointer<Socket> > i(list); i.hasNext();)
+      for (QMutableListIterator< QSharedPointer<PeerMessageSocket> > i(list); i.hasNext();)
       {
          if (i.next().data() == socket)
          {
@@ -139,11 +139,11 @@ void ConnectionPool::socketClosed(Socket* socket)
    }
 }
 
-void ConnectionPool::socketGetChunk(QSharedPointer<FM::IChunk> chunk, int offset, Socket* socket)
+void ConnectionPool::socketGetChunk(QSharedPointer<FM::IChunk> chunk, int offset, PeerMessageSocket* socket)
 {
-   for (QListIterator< QSharedPointer<Socket> > i(this->socketsFromPeer); i.hasNext();)
+   for (QListIterator< QSharedPointer<PeerMessageSocket> > i(this->socketsFromPeer); i.hasNext();)
    {
-      QSharedPointer<Socket> socketShared = i.next();
+      QSharedPointer<PeerMessageSocket> socketShared = i.next();
       if (socketShared.data() == socket)
       {
          this->peerManager->onGetChunk(chunk, offset, socketShared);
@@ -155,7 +155,7 @@ void ConnectionPool::socketGetChunk(QSharedPointer<FM::IChunk> chunk, int offset
 /**
   * Add a newly created socket to the socket pool.
   */
-QSharedPointer<Socket> ConnectionPool::addNewSocket(QSharedPointer<Socket> socket, Direction direction)
+QSharedPointer<PeerMessageSocket> ConnectionPool::addNewSocket(QSharedPointer<PeerMessageSocket> socket, Direction direction)
 {
    switch (direction)
    {
@@ -164,19 +164,19 @@ QSharedPointer<Socket> ConnectionPool::addNewSocket(QSharedPointer<Socket> socke
       break;
    case FROM_PEER:
       this->socketsFromPeer << socket;
-      connect(socket.data(), SIGNAL(getChunk(QSharedPointer<FM::IChunk>, int, Socket*)), this, SLOT(socketGetChunk(QSharedPointer<FM::IChunk>, int, Socket*)), Qt::DirectConnection);
+      connect(socket.data(), SIGNAL(getChunk(QSharedPointer<FM::IChunk>, int, PeerMessageSocket*)), this, SLOT(socketGetChunk(QSharedPointer<FM::IChunk>, int, PeerMessageSocket*)), Qt::DirectConnection);
       break;
    }
 
-   connect(socket.data(), SIGNAL(becomeIdle(Socket*)), this, SLOT(socketBecomeIdle(Socket*)));
-   connect(socket.data(), SIGNAL(closed(Socket*)), this, SLOT(socketClosed(Socket*)) /*, Qt::QueuedConnection*/);
+   connect(socket.data(), SIGNAL(becomeIdle(PeerMessageSocket*)), this, SLOT(socketBecomeIdle(PeerMessageSocket*)));
+   connect(socket.data(), SIGNAL(closed(PeerMessageSocket*)), this, SLOT(socketClosed(PeerMessageSocket*)) /*, Qt::QueuedConnection*/);
    socket->startListening();
    return socket;
 }
 
-QList< QSharedPointer<Socket> > ConnectionPool::getAllSockets() const
+QList< QSharedPointer<PeerMessageSocket> > ConnectionPool::getAllSockets() const
 {
-   QList< QSharedPointer<Socket> > allSockets;
+   QList< QSharedPointer<PeerMessageSocket> > allSockets;
    allSockets << this->socketsToPeer;
    allSockets << this->socketsFromPeer;
    return allSockets;

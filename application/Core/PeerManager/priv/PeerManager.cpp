@@ -140,6 +140,12 @@ void PeerManager::updatePeer(const Common::Hash& ID, const QHostAddress& IP, qui
       emit peerBecomesAvailable(peer);
 }
 
+void PeerManager::removeAllPeers()
+{
+   for (QListIterator<Peer*> i(this->peers); i.hasNext();)
+      i.next()->setAsDead();
+}
+
 void PeerManager::newConnection(QTcpSocket* tcpSocket)
 {
    if (!tcpSocket)
@@ -166,7 +172,7 @@ void PeerManager::newConnection(QTcpSocket* tcpSocket)
       this->dataReceived(tcpSocket); // The case where some data arrived before the 'connect' above.
 }
 
-void PeerManager::onGetChunk(QSharedPointer<FM::IChunk> chunk, int offset, QSharedPointer<Socket> socket)
+void PeerManager::onGetChunk(QSharedPointer<FM::IChunk> chunk, int offset, QSharedPointer<PeerMessageSocket> socket)
 {
    if (this->receivers(SIGNAL(getChunk(QSharedPointer<FM::IChunk>, int, QSharedPointer<PM::ISocket>))) < 1)
    {

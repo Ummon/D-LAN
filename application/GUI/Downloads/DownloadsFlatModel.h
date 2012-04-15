@@ -43,6 +43,7 @@ namespace GUI
       bool isFileLocationKnown(const QModelIndex& index) const;
       bool isFileComplete(const QModelIndex& index) const;
       bool isSourceAlive(const QModelIndex& index) const;
+      Protos::Common::Entry::Type getType(const QModelIndex& index) const;
 
       QString getPath(const QModelIndex& index, bool appendFilename = true) const;
 

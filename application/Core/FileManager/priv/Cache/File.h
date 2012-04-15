@@ -84,8 +84,6 @@ namespace FM
       qint64 write(const char* buffer, int nbBytes, qint64 offset);
       qint64 read(char* buffer, qint64 offset, int maxBytesToRead);
 
-      bool computeHashes(int n = 0, int* amountHashed = 0);
-      void stopHashing();
       QList< QSharedPointer<Chunk> > getChunks() const;
       bool hasAllHashes();
       bool hasOneOrMoreHashes();
@@ -102,12 +100,17 @@ namespace FM
       void changeDirectory(Directory* dir);
       bool hasAParentDir(Directory* dir);
 
+      ///// Methods dedicated to the hasher.
+      void setSize(qint64 size);
+      void updateDateLastModified(const QDateTime& date);
+      void addChunk(const QSharedPointer<Chunk>& chunk);
+      QSharedPointer<Chunk> removeLastChunk();
+      /////
+
    private:
       void deleteAllChunks();
       void createPhysicalFile();
       void setHashes(const Common::Hashes& hashes);
-
-      const int CHUNK_SIZE;
 
       Directory* dir;
       QList< QSharedPointer<Chunk> > chunks;
@@ -124,13 +127,6 @@ namespace FM
       QMutex writeLock; ///< Protect the file from concurrent access from different downloaders.
       QMutex readLock; ///< Protect the file from concurrent access from different uploaders.
       mutable QMutex mutex;
-
-      // Mutex and wait condition used during hashing.
-      // (TODO: It's a bit heavy, try to reduce the memory footprint).
-      bool hashing;
-      bool toStopHashing;
-      QWaitCondition hashingStopped;
-      QMutex hashingMutex;
    };
 }
 #endif

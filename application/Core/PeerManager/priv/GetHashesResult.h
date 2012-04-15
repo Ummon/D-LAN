@@ -31,7 +31,7 @@
 #include <Common/Uncopyable.h>
 
 #include <IGetHashesResult.h>
-#include <priv/Socket.h>
+#include <priv/PeerMessageSocket.h>
 
 namespace PM
 {
@@ -39,7 +39,7 @@ namespace PM
    {
       Q_OBJECT
    public:
-      GetHashesResult(const Protos::Common::Entry& file, QSharedPointer<Socket> socket);
+      GetHashesResult(const Protos::Common::Entry& file, QSharedPointer<PeerMessageSocket> socket);
       void start();
       void doDeleteLater();
 
@@ -48,7 +48,7 @@ namespace PM
 
    private:
       const Protos::Common::Entry file;
-      QSharedPointer<Socket> socket;
+      QSharedPointer<PeerMessageSocket> socket;
    };
 }
 

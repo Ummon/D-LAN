@@ -158,6 +158,12 @@ void Peer::update(
    this->connectionPool.setIP(this->IP, this->port);
 }
 
+void Peer::setAsDead()
+{
+   this->aliveTimer.stop();
+   this->consideredDead();
+}
+
 QSharedPointer<IGetEntriesResult> Peer::getEntries(const Protos::Core::GetEntries& dirs)
 {
    return QSharedPointer<IGetEntriesResult>(

@@ -378,6 +378,9 @@ void MainWindow::sortPeersByNick()
    SETTINGS.save();
 }
 
+/**
+  * Must be called only by a 'QAction' object whith a 'QColor' object as data.
+  */
 void MainWindow::colorizeSelectedPeer()
 {
    const QColor color = static_cast<QAction*>(this->sender())->data().value<QColor>();

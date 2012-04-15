@@ -48,4 +48,5 @@ HEADERS += IDownloadManager.h \
     ../../Libs/MersenneTwister.h \
     priv/DownloadPredicate.h \
     priv/DownloadQueue.h \
-    Utils.h
+    Utils.h \
+    priv/LinkedPeers.h

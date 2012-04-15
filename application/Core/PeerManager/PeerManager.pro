@@ -17,12 +17,12 @@ SOURCES += priv/PeerManager.cpp \
     priv/Peer.cpp \
     priv/Builder.cpp \
     priv/ConnectionPool.cpp \
-    priv/Socket.cpp \
     priv/GetEntriesResult.cpp \
     priv/GetHashesResult.cpp \
     priv/GetChunkResult.cpp \
     priv/Log.cpp \
-    priv/PeerSelf.cpp
+    priv/PeerSelf.cpp \
+    priv/PeerMessageSocket.cpp
 HEADERS += IPeerManager.h \
     IPeer.h \
     priv/PeerManager.h \
@@ -31,7 +31,7 @@ HEADERS += IPeerManager.h \
     priv/Log.h \
     priv/Constants.h \
     priv/ConnectionPool.h \
-    priv/Socket.h \
+    priv/PeerMessageSocket.h \
     IGetEntriesResult.h \
     IGetHashesResult.h \
     IGetChunkResult.h \

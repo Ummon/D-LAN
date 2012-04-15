@@ -69,6 +69,7 @@ namespace Common
       bool isNull() const;
 
       static Hash rand();
+      static Hash rand(quint32 seed);
       static Hash fromStr(const QString& str);
 
    private:

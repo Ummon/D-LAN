@@ -73,5 +73,13 @@ void OccupiedPeers::newPeer(PM::IPeer* peer)
 
 int OccupiedPeers::nbOccupiedPeers() const
 {
+   QMutexLocker locker(&this->mutex);
    return this->occupiedPeers.size();
 }
+
+const QSet<PM::IPeer*>& OccupiedPeers::getOccupiedPeers() const
+{
+   QMutexLocker locker(&this->mutex);
+   return this->occupiedPeers;
+}
+

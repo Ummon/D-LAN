@@ -36,40 +36,60 @@ using namespace Common;
   */
 
 /**
+  * Takes the ownership of 'socket'.
+  * Build a non-connected message socket.
   * Take ownership of 'logger'.
   */
 MessageSocket::MessageSocket(MessageSocket::ILogger* logger, const Hash& localID, const Hash& remoteID) :
-   logger(logger), socket(new QTcpSocket()), localID(localID), remoteID(remoteID), IDDefined(!localID.isNull()), remoteIDDefined(!remoteID.isNull()), listening(false)
+   logger(logger),
+   socket(new QTcpSocket()),
+   localID(localID),
+   remoteID(remoteID),
+   localIDDefined(!localID.isNull()),
+   remoteIDDefined(!remoteID.isNull()),
+   listening(false)
 {
 #ifdef DEBUG
    this->num = ++MessageSocket::currentNum;
-   MESSAGE_SOCKET_LOG_DEBUG(QString("New Socket[%1] (not connected)").arg(this->num));
+   MESSAGE_SOCKET_LOG_DEBUG(QString("New MessageSocket[%1] (not connected)").arg(this->num));
 #endif
 }
 
 /**
-  * Take ownership of 'socket'.
+  * Takes the ownership of 'socket'.
   * If remoteID isn't given, it will be initialized by the ID of the first received message.
   * If ID isn't given, it will be set to the remoteID when the first message is received.
   */
 MessageSocket::MessageSocket(MessageSocket::ILogger* logger, QAbstractSocket* socket, const Hash& ID, const Hash& remoteID) :
-   logger(logger), socket(socket), localID(ID), remoteID(remoteID), IDDefined(!ID.isNull()), remoteIDDefined(!remoteID.isNull()), listening(false)
+   logger(logger),
+   socket(socket),
+   localID(ID),
+   remoteID(remoteID),
+   localIDDefined(!ID.isNull()),
+   remoteIDDefined(!remoteID.isNull()),
+   listening(false)
 {
 #ifdef DEBUG
    this->num = ++MessageSocket::currentNum;
-   MESSAGE_SOCKET_LOG_DEBUG(QString("New Socket[%1] (connection from %2:%3)").arg(this->num).arg(socket->peerAddress().toString()).arg(socket->peerPort()));
+   MESSAGE_SOCKET_LOG_DEBUG(QString("New MessageSocket[%1] (connection from %2:%3)").arg(this->num).arg(socket->peerAddress().toString()).arg(socket->peerPort()));
 #endif
 }
 
 /**
+  * Takes the ownership of 'socket'.
   * Will automatically create a connection to the given address and port.
   */
 MessageSocket::MessageSocket(MessageSocket::ILogger* logger, const QHostAddress& address, quint16 port, const Hash& ID, const Hash& remoteID) :
-   logger(logger), socket(new QTcpSocket()), localID(ID), remoteID(remoteID), IDDefined(!ID.isNull()), remoteIDDefined(!remoteID.isNull()), listening(false)
+   logger(logger),
+   socket(new QTcpSocket()),
+   localID(ID), remoteID(remoteID),
+   localIDDefined(!ID.isNull()),
+   remoteIDDefined(!remoteID.isNull()),
+   listening(false)
 {
 #ifdef DEBUG
    this->num = ++MessageSocket::currentNum;
-   MESSAGE_SOCKET_LOG_DEBUG(QString("New Socket[%1] (connection to %2:%3)").arg(this->num).arg(address.toString()).arg(port));
+   MESSAGE_SOCKET_LOG_DEBUG(QString("New MessageSocket[%1] (connection to %2:%3)").arg(this->num).arg(address.toString()).arg(port));
 #endif
 
    this->socket->connectToHost(address, port);
@@ -106,6 +126,9 @@ void MessageSocket::send(MessageHeader::MessageType type, const google::protobuf
    this->send(type, &message);
 }
 
+/**
+  * Send a message without body.
+  */
 void MessageSocket::send(MessageHeader::MessageType type)
 {
    this->send(type, 0);
@@ -153,6 +176,7 @@ void MessageSocket::startListening()
 
 /**
   * Stop listening the socket.
+  * It's useful when some non-message data has to be sent, like a stream of data.
   */
 void MessageSocket::stopListening()
 {
@@ -184,6 +208,9 @@ bool MessageSocket::isListening() const
    return this->listening;
 }
 
+/**
+  * Called when new data has arrived.
+  */
 void MessageSocket::dataReceivedSlot()
 {
    while (!this->socket->atEnd() && this->listening)
@@ -213,6 +240,7 @@ void MessageSocket::dataReceivedSlot()
          {
             MESSAGE_SOCKET_LOG_DEBUG("Can't read the message -> finished");
             this->socket->close();
+            return;
          }
          this->currentHeader.setNull();
       }
@@ -223,7 +251,7 @@ void MessageSocket::dataReceivedSlot()
 
 void MessageSocket::disconnectedSlot()
 {
-   if (!this->IDDefined)
+   if (!this->localIDDefined)
       this->localID = Common::Hash();
    if (!this->remoteIDDefined)
       this->remoteID = Common::Hash();
