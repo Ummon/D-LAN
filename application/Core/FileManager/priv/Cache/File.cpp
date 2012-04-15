@@ -278,7 +278,7 @@ void File::newDataReaderCreated()
       // and this memory is not freed when the file is closed ('close()') but only when the QFile is deleted.
       this->fileInReadMode = this->cache->getFilePool().open(this->getFullPath(), QIODevice::ReadOnly | QIODevice::Unbuffered);
       if (!this->fileInReadMode)
-         throw UnableToOpenFileInWriteModeException();
+         throw UnableToOpenFileInReadModeException();
    }
 }
 
@@ -510,6 +510,30 @@ bool File::hasAParentDir(Directory* dir)
    if (this->dir == dir)
       return true;
    return this->dir->isAChildOf(dir);
+}
+
+void File::setSize(qint64 size)
+{
+   if (this->size != size)
+   {
+      this->dir->fileSizeChanged(this->size, size);
+      this->size = size;
+   }
+}
+
+void File::updateDateLastModified(const QDateTime& date)
+{
+   this->dateLastModified = date;
+}
+
+void File::addChunk(const QSharedPointer<Chunk>& chunk)
+{
+   this->chunks << chunk;
+}
+
+QSharedPointer<Chunk> File::removeLastChunk()
+{
+   return this->chunks.takeLast();
 }
 
 void File::deleteAllChunks()

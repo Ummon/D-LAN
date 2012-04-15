@@ -49,7 +49,7 @@ bool FileHasher::start(File* fileCache, int n, int* amountHashed)
 
    this->currentFileCache = fileCache;
 
-   connect(this->currentFileCache->cache, SIGNAL(entryRemoved(Entry*)), this, SLOT(entryRemoved(Entry*)), Qt::UniqueConnection);
+   connect(this->currentFileCache->getCache(), SIGNAL(entryRemoved(Entry*)), this, SLOT(entryRemoved(Entry*)), Qt::UniqueConnection);
 
    if (this->toStopHashing)
    {
@@ -76,13 +76,15 @@ bool FileHasher::start(File* fileCache, int n, int* amountHashed)
       throw IOErrorException();
    }
 
+   const QList< QSharedPointer<Chunk> >& chunks = this->currentFileCache->getChunks();
+
    // Skip the already known full hashes.
    qint64 bytesSkipped = 0;
    int chunkNum = 0;
    while (
-      chunkNum < this->currentFileCache->chunks.size() &&
-      this->currentFileCache->chunks[chunkNum]->hasHash() &&
-      this->currentFileCache->chunks[chunkNum]->getKnownBytes() == CHUNK_SIZE) // Maybe the file has grown and the last chunk must be recomputed.
+      chunkNum < chunks.size() &&
+      chunks[chunkNum]->hasHash() &&
+      chunks[chunkNum]->getKnownBytes() == CHUNK_SIZE) // Maybe the file has grown and the last chunk must be recomputed.
    {
       bytesSkipped += CHUNK_SIZE;
       chunkNum++;
@@ -140,7 +142,7 @@ bool FileHasher::start(File* fileCache, int n, int* amountHashed)
                throw IOErrorException();
             case 0:
                endOfFile = true;
-               this->currentFileCache->size = bytesReadChunk + bytesReadTotal + bytesSkipped;
+               this->currentFileCache->setSize(bytesReadChunk + bytesReadTotal + bytesSkipped);
                goto endReading;
             }
          }
@@ -160,22 +162,23 @@ bool FileHasher::start(File* fileCache, int n, int* amountHashed)
 
          const Common::Hash& hash = hasher.getResult();
 
-         if (this->currentFileCache->chunks.size() <= chunkNum) // The size of the file has increased during the read..
+         if (chunks.size() <= chunkNum) // The size of the file has increased during the read..
          {
-            this->currentFileCache->chunks.append(QSharedPointer<Chunk>(new Chunk(this->currentFileCache, chunkNum, bytesReadChunk, hash)));
-            this->currentFileCache->cache->onChunkHashKnown(this->currentFileCache->chunks[chunkNum]);
+            QSharedPointer<Chunk> newChunk(new Chunk(this->currentFileCache, chunkNum, bytesReadChunk, hash));
+            this->currentFileCache->addChunk(newChunk);
+            this->currentFileCache->getCache()->onChunkHashKnown(newChunk);
          }
          else
          {
-            if (this->currentFileCache->chunks[chunkNum]->getHash() != hash)
+            if (chunks[chunkNum]->getHash() != hash)
             {
-               if (this->currentFileCache->chunks[chunkNum]->hasHash())
-                  this->currentFileCache->cache->onChunkRemoved(this->currentFileCache->chunks[chunkNum]); // To remove the chunk from the chunk index (TODO: find a more elegant way).
+               if (chunks[chunkNum]->hasHash())
+                  this->currentFileCache->getCache()->onChunkRemoved(chunks[chunkNum]); // To remove the chunk from the chunk index (TODO: find a more elegant way).
 
-               this->currentFileCache->chunks[chunkNum]->setHash(hash);
-               this->currentFileCache->chunks[chunkNum]->setKnownBytes(bytesReadChunk);
+               chunks[chunkNum]->setHash(hash);
+               chunks[chunkNum]->setKnownBytes(bytesReadChunk);
 
-               this->currentFileCache->cache->onChunkHashKnown(this->currentFileCache->chunks[chunkNum]);
+               this->currentFileCache->getCache()->onChunkHashKnown(chunks[chunkNum]);
             }
          }
 
@@ -202,20 +205,19 @@ bool FileHasher::start(File* fileCache, int n, int* amountHashed)
    this->hashing = false;
 
    // TODO: seriously rethink this part, a file being written shouldn't be shared or hashed...
-   if (bytesReadTotal + bytesSkipped != this->currentFileCache->size)
+   if (bytesReadTotal + bytesSkipped != this->currentFileCache->getSize())
    {
       if (n != 0)
       {
-         L_DEBU(QString("The file content has changed during the hashes computing process. File = %1, bytes read = %2, previous size = %3").arg(filePath).arg(bytesReadTotal).arg(this->currentFileCache->size));
-         this->currentFileCache->dir->fileSizeChanged(this->currentFileCache->size, bytesReadTotal + bytesSkipped);
-         this->currentFileCache->size = bytesReadTotal + bytesSkipped;
-         this->currentFileCache->dateLastModified = QFileInfo(filePath).lastModified();
+         L_DEBU(QString("The file content has changed during the hashes computing process. File = %1, bytes read = %2, previous size = %3").arg(filePath).arg(bytesReadTotal).arg(this->currentFileCache->getSize()));
+         this->currentFileCache->setSize(bytesReadTotal + bytesSkipped);
+         this->currentFileCache->updateDateLastModified(QFileInfo(filePath).lastModified());
 
-         if (bytesReadTotal + bytesSkipped < this->currentFileCache->size) // In this case, maybe some chunk must be deleted.
-            for (int i = this->currentFileCache->getNbChunks(); i < this->currentFileCache->chunks.size(); i++)
+         if (bytesReadTotal + bytesSkipped < this->currentFileCache->getSize()) // In this case, maybe some chunk must be deleted.
+            for (int i = this->currentFileCache->getNbChunks(); i < chunks.size(); i++)
             {
-               QSharedPointer<Chunk> c = this->currentFileCache->chunks.takeLast();
-               this->currentFileCache->cache->onChunkRemoved(c);
+               QSharedPointer<Chunk> c = this->currentFileCache->removeLastChunk();
+               this->currentFileCache->getCache()->onChunkRemoved(c);
             }
       }
 
@@ -223,6 +225,7 @@ bool FileHasher::start(File* fileCache, int n, int* amountHashed)
       return false;
    }
 
+   this->currentFileCache->updateDateLastModified(QFileInfo(filePath).lastModified()); // A file may have been changed from its creation in the cache.
    this->currentFileCache = 0;
    return true;
 }

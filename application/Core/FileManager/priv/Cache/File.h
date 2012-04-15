@@ -100,6 +100,13 @@ namespace FM
       void changeDirectory(Directory* dir);
       bool hasAParentDir(Directory* dir);
 
+      ///// Methods dedicated to the hasher.
+      void setSize(qint64 size);
+      void updateDateLastModified(const QDateTime& date);
+      void addChunk(const QSharedPointer<Chunk>& chunk);
+      QSharedPointer<Chunk> removeLastChunk();
+      /////
+
    private:
       void deleteAllChunks();
       void createPhysicalFile();
@@ -120,8 +127,6 @@ namespace FM
       QMutex writeLock; ///< Protect the file from concurrent access from different downloaders.
       QMutex readLock; ///< Protect the file from concurrent access from different uploaders.
       mutable QMutex mutex;
-
-      friend class FileHasher; // TODO: Should be removed.
    };
 }
 #endif
