@@ -53,8 +53,8 @@ translate(fr, home, warning_beta) -> "<em>Attention :</em> La version actuelle d
 translate(en, features, disclaimer) -> "<em>Here is the main features of the actual release.</em> D-LAN is constantly under development, you can see <a href=\"~s\">here</a> the planned features.";
 translate(fr, features, disclaimer) -> "<em>Voici la liste des principales fonctionnalités de la version courante.</em> D-LAN est en développement constant, vous pouvez voir <a href=\"~s\">ici</a> les fonctionnalités planifiées pour les futures versions.";
 
-translate(en, features, feat_1) -> "Share files and folders in a local area network environment (LAN). Subnets are supported.";
-translate(fr, features, feat_1) -> "Partage de fichiers et dossiers sur un réseau local (LAN). Les sous-réseaux (<i>subnet</i>) sont supportés.";
+translate(en, features, feat_1) -> "Share files and folders in a local area network environment (LAN).";
+translate(fr, features, feat_1) -> "Partage de fichiers et dossiers sur un réseau local (LAN).";
 
 translate(en, features, feat_2) -> "Distributed transfers to increase performance and reliability.";
 translate(fr, features, feat_2) -> "Transferts distribués pour de meilleures performances et une meilleure fiabilitée.";
@@ -111,23 +111,44 @@ translate(fr, faq, a2) ->
    "<li>S'assurer que l'UDP multicast est autorisé sur le réseau. L'adresse utilisée est la suivante : 236.123.43.24.</li>"
    "</ul>";
    
-translate(en, faq, q3) -> "There is no Linux version!?";
-translate(fr, faq, q3) -> "Il n'y a pas de version pour Linux!?";
+translate(en, faq, q3) -> "D-LAN slows down my computer when hashing, what's that and why it's needed?";
+translate(fr, faq, q3) -> "D-LAN ralentit mon ordinateur lors du calcul des empreintes, qu'est ce que c'est et pourquoi est-ce nécessaire?";
 
-translate(en, faq, a3) -> "A Linux version will come soon after the final 1.0 Windows release.";
-translate(fr, faq, a3) -> "Une version Linux sera disponible après la sortie de la version 1.0 sous Windows.";
+translate(en, faq, a3) ->
+   "";
+translate(fr, faq, a3) ->
+   "Les empreintes servent à identifier les données des fichiers. Cela permet de télécharger un fichier chez plusieurs pairs simultanément. "
+   "Le calcul des empreintes n'utilise pas plus d'un coeur du processeur (la plus part des processeurs actuels sont multi-coeurs) "
+   "mais doit lire toutes les données partagées ce qui peut ralentir un peu l'accès au disque dur.";
 
-translate(en, faq, q4) -> "There is no Mac OS X version!?";
-translate(fr, faq, q4) -> "Il n'y a pas de version pour Mac OS X!?";
+translat(en, faq, q4) ->
+   "";
+translat(fr, faq, q4) ->
+   "D-LAN utilise trop de ressource, comment puis-je faire pour réduire sa consommation.";
 
-translate(en, faq, a4) -> "A Mac OS X version is planned for summer 2011.";
-translate(fr, faq, a4) -> "Une version Mac OS X est prévue pour l'été 2011.";
+translat(en, faq, a4) ->
+   "";
+translat(fr, faq, a4) ->
+   "Si D-LAN est en train de calculer les empreintes, il faut attendre que l'opération soit terminée, voir la question précédente. "
+   "Sinon il est possible de fermer la fenêtre de D-LAN, l'interface est alors déconnectée du coeur et consomme moins de ressources.";
 
-translate(en, faq, q5) -> "Can I configure D-LAN to start automatically when my computer starting?";
-translate(fr, faq, q5) -> "Est-il possible de configurer D-LAN pour qu'il démarre automatiquement au démarrage de la machine?";
+translate(en, faq, q5) -> "There is no Linux version!?";
+translate(fr, faq, q5) -> "Il n'y a pas de version pour Linux!?";
 
-translate(en, faq, a5) -> "<i>Windows 7</i> : Go to <i>Control Panel</i> &gt; <i>Administrative Tools</i> &gt; <i>Services</i> . Open the properties of <i>D-LAN Core</i> and set the <i>Statup type</i> from <i>Manual</i> to <i>Automatic</i>.";
-translate(fr, faq, a5) -> "<i>Windows 7</i> : Allez dans <i>Panneau de configuration</i> > <i>Outils d'administrations</i> &gt; <i>Services</i>. Ouvrir la fenêtre de propriétés de <i>D-LAN Core</i> et définir le <i>Type de Démarrage</i> à <i>Automatique</i>.";
+translate(en, faq, a5) -> "We are currently working on a Linux version, it will be released when it's done.";
+translate(fr, faq, a5) -> "Nous travaillons actuellement sur une version Linux, elle sortira quand elle sera prête.";
+
+translate(en, faq, q6) -> "There is no Mac OS X version!?";
+translate(fr, faq, q6) -> "Il n'y a pas de version pour Mac OS X!?";
+
+translate(en, faq, a6) -> "We are currently working on a Mac OS X version, it will be released when it's done.";
+translate(fr, faq, a6) -> "Nous travaillons actuellement sur une version Mac OS X, elle sortira quand elle sera prête.";
+
+translate(en, faq, q7) -> "Can I configure D-LAN to start automatically when my computer starting?";
+translate(fr, faq, q7) -> "Est-il possible de configurer D-LAN pour qu'il démarre automatiquement au démarrage de la machine?";
+
+translate(en, faq, a7) -> "<i>Windows 7</i> : Go to <i>Control Panel</i> &gt; <i>Administrative Tools</i> &gt; <i>Services</i> . Open the properties of <i>D-LAN Core</i> and set the <i>Statup type</i> from <i>Manual</i> to <i>Automatic</i>.";
+translate(fr, faq, a7) -> "<i>Windows 7</i> : Allez dans <i>Panneau de configuration</i> > <i>Outils d'administrations</i> &gt; <i>Services</i>. Ouvrir la fenêtre de propriétés de <i>D-LAN Core</i> et définir le <i>Type de Démarrage</i> à <i>Automatique</i>.";
 
 %%%%%%%%%%
 
