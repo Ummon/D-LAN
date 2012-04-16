@@ -35,6 +35,9 @@ using namespace Common;
    #include <Lmcons.h>
 #elif defined (Q_OS_LINUX)
    #include <cstdio>
+   #include <sys/statvfs.h>
+   #include <sys/utsname.h>
+   #include <unistd.h>
 #endif
 
 #include <Constants.h>
@@ -98,9 +101,13 @@ QString Global::getSystemVersion()
    }
    return QString("Windows");
 #elif defined(Q_OS_LINUX)
-   return QString("Linux");
+   struct utsname name;
+   if (uname(&name) == 0)
+      return QString::fromUtf8(name.sysname) % " " % QString::fromUtf8(name.release);
+   else
+      return "Linux";
 #elif defined(Q_OS_DARWIN)
-   return QString("Mac OS X");
+   return "Mac OS X";
 #else
    return QString();
 #endif
@@ -247,13 +254,12 @@ QString Global::formatIP(const QHostAddress& address, quint16 port)
 
 /**
   * Return the remaining free space for the given path.
-  * TODO: Linux
   */
 qint64 Global::availableDiskSpace(const QString& path)
 {
    Q_ASSERT(!path.isEmpty());
 
-#ifdef Q_OS_WIN32
+#if defined(Q_OS_WIN32)
    ULARGE_INTEGER space;
    wchar_t buffer[path.size()];
 
@@ -263,6 +269,10 @@ qint64 Global::availableDiskSpace(const QString& path)
    if (!GetDiskFreeSpaceEx(buffer, &space, NULL, NULL))
       return std::numeric_limits<qint64>::max();
    return space.QuadPart;
+#elif defined(Q_OS_LINUX)
+   struct statvfs info;
+   if (statvfs(path.toUtf8().constData(), &info) == 0)
+      return static_cast<qint64>(info.f_bsize) * info.f_bavail;
 #endif
 
    return std::numeric_limits<qint64>::max();
@@ -270,8 +280,7 @@ qint64 Global::availableDiskSpace(const QString& path)
 
 /**
   * Rename a file, if 'newFile' already exists, it will be replaced by 'existingFile'.
-  * TODO: Linux
-  * @remarks Qt doesn't offer any way to replace a file by an other in one operation.
+  * @remarks Qt doesn't offer any way to replace a file by an other in one operation (atomic).
   * @return false if the rename didn't work.
   */
 bool Global::rename(const QString& existingFile, const QString& newFile)
@@ -282,7 +291,7 @@ bool Global::rename(const QString& existingFile, const QString& newFile)
 #ifdef Q_OS_WIN32
    return MoveFileEx((LPCTSTR)existingFile.utf16(), (LPCTSTR)newFile.utf16(), MOVEFILE_REPLACE_EXISTING);
 #else
-   return std::rename(qPrintable(existingFile), qPrintable(newFile)) == 0;
+   return std::rename(existingFile.toUtf8().constData(), newFile.toUtf8().constData()) == 0;
 #endif
 }
 
@@ -538,25 +547,36 @@ QString Global::getDataSystemFolder(DataFolderType type)
 
 QString Global::getCurrenUserName()
 {
-#ifdef Q_OS_WIN32
+#if defined(Q_OS_WIN32)
    TCHAR userName[UNLEN + 1]; // UNLEN is from Lmcons.h
    DWORD userNameSize = sizeof(userName);
    GetUserName(userName, &userNameSize);
    return QString::fromUtf16((ushort*)userName);
-#else // TODO
+#elif defined(Q_OS_LINUX)
+   char* login = getlogin();
+   if (login)
+      return QString::fromUtf8(login);
+   else
+      return QString();
+#else
    return "Bob";
 #endif
 }
 
 QString Global::getCurrenMachineName()
 {
-#ifdef Q_OS_WIN32
+#if defined(Q_OS_WIN32)
    TCHAR machineName[MAX_COMPUTERNAME_LENGTH + 1];
    DWORD machineNameSize = sizeof(machineName);
    GetComputerName(machineName, &machineNameSize);
    return QString::fromUtf16((ushort*)machineName);
-#else // TODO
-   return "CPU";
+#elif defined(Q_OS_LINUX)
+   char machineName[256];
+   size_t machineNameSize = sizeof(machineName);
+   gethostname(machineName, machineNameSize);
+   return QString::fromUtf8(machineName);
+#else
+   return "Bob";
 #endif
 }
 
