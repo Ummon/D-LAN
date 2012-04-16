@@ -36,7 +36,7 @@ namespace Common
       /**
         * Build a null SharedDir.
         */
-      SharedDir() {};
+      SharedDir() {}
 
       SharedDir(const Common::Hash& ID, const QString& path, quint64 size, quint64 freeSpace) :
          ID(ID), path(path), size(size), freeSpace(freeSpace) {}

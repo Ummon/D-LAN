@@ -32,7 +32,7 @@ CoreService::CoreService(bool resetSettings, QLocale locale, int argc, char** ar
    this->setStartupType(QtServiceController::ManualStartup);
    this->setServiceFlags(QtServiceBase::Default);
 
-   // If AybabtuCore is launched from the console we read user input.
+   // If Core is launched from the console we read user input.
    for (int i = 1; i < argc; i++)
    {
       QString currentArg = QString::fromAscii(argv[i]);
