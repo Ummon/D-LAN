@@ -167,7 +167,7 @@ void Peer::update(
    this->coreVersion = coreVersion;
    this->sharingAmount = sharingAmount;
    this->downloadRate = downloadRate;
-   this->downloadRate = uploadRate;
+   this->uploadRate = uploadRate;
 
    this->connectionPool.setIP(this->IP, this->port);
 }

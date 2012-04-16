@@ -57,7 +57,10 @@ namespace GUI
       Q_OBJECT
    public:
       void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const;
+      QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const;
    };
+
+   /////
 
    class LogDelegate : public QStyledItemDelegate
    {
@@ -65,6 +68,8 @@ namespace GUI
    public:
       void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const;
    };
+
+   /////
 
    class MainWindow : public QMainWindow
    {

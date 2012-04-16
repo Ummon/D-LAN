@@ -53,4 +53,7 @@ message Settings {
       repeated Peer peer = 1;
    }
    optional HighlightedPeers highlighted_peers = 23;
+   
+   // Used to show the little speed rate charts int the peers list.
+   optional uint32 lan_speed = 24 [default = 31457280]; // [B/s]. (30 MiB/s).
 }

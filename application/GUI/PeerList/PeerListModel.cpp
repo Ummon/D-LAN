@@ -97,7 +97,7 @@ int PeerListModel::rowCount(const QModelIndex& parent) const
 
 int PeerListModel::columnCount(const QModelIndex& parent) const
 {
-   return 2;
+   return 3;
 }
 
 QVariant PeerListModel::data(const QModelIndex& index, int role) const
@@ -110,8 +110,9 @@ QVariant PeerListModel::data(const QModelIndex& index, int role) const
    case Qt::DisplayRole:
       switch (index.column())
       {
-      case 0: return this->peers[index.row()]->nick;
-      case 1: return Common::Global::formatByteSize(this->peers[index.row()]->sharingAmount);
+      case 0: return QVariant::fromValue(TransfertRates(this->peers[index.row()]->downloadRate, this->peers[index.row()]->uploadRate));
+      case 1: return this->peers[index.row()]->nick;
+      case 2: return Common::Global::formatByteSize(this->peers[index.row()]->sharingAmount);
       default: return QVariant();
       }
 
@@ -130,7 +131,7 @@ QVariant PeerListModel::data(const QModelIndex& index, int role) const
       return QVariant();
 
    case Qt::TextAlignmentRole:
-      return index.column() == 1 ? Qt::AlignRight : Qt::AlignLeft;
+      return index.column() == 2 ? Qt::AlignRight : Qt::AlignLeft;
 
    case Qt::ToolTipRole:
       {
@@ -213,16 +214,20 @@ void PeerListModel::setPeers(const google::protobuf::RepeatedPtrField<Protos::GU
          {
             this->peers[j]->nick = nick;
             sortNeeded = true;
-            emit dataChanged(this->createIndex(j, 0), this->createIndex(j, 0));
+            emit dataChanged(this->createIndex(j, 1), this->createIndex(j, 1));
          }
          if (this->peers[j]->sharingAmount != sharingAmount)
          {
             this->peers[j]->sharingAmount = sharingAmount;
             sortNeeded = true;
          }
+         if (this->peers[j]->downloadRate != downloadRate || this->peers[j]->uploadRate != uploadRate)
+         {
+            this->peers[j]->downloadRate = downloadRate;
+            this->peers[j]->uploadRate = uploadRate;
+            emit dataChanged(this->createIndex(j, 0), this->createIndex(j, 0));
+         }
 
-         this->peers[j]->downloadRate = downloadRate;
-         this->peers[j]->uploadRate = uploadRate;
          this->peers[j]->ip = ip;
          this->peers[j]->coreVersion = coreVersion;
       }

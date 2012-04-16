@@ -24,6 +24,7 @@
 #include <QList>
 #include <QHash>
 #include <QColor>
+#include <QPair>
 
 #include <Protos/gui_protocol.pb.h>
 #include <Protos/gui_settings.pb.h>
@@ -36,7 +37,9 @@ namespace GUI
    class PeerListModel : public QAbstractTableModel
    {
       Q_OBJECT
-   public:
+   public:      
+      typedef QPair<quint32, quint32> TransfertRates;
+
       PeerListModel(QSharedPointer<RCC::ICoreConnection> coreConnection);
       ~PeerListModel();
 
@@ -98,5 +101,7 @@ namespace GUI
       Protos::GUI::Settings::PeerSortType currentSortType;
    };
 }
+
+Q_DECLARE_METATYPE(GUI::PeerListModel::TransfertRates)
 
 #endif
