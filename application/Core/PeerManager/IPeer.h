@@ -65,6 +65,10 @@ namespace PM
 
       virtual quint64 getSharingAmount() const = 0;
 
+      virtual quint32 getDownloadRate() const = 0;
+
+      virtual quint32 getUploadRate() const = 0;
+
       /**
         * Return the average speed when downloading from this peer.
         * [bytes/s].

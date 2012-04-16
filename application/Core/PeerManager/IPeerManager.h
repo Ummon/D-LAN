@@ -68,7 +68,7 @@ namespace PM
         * The method must be call frequently to tell that a peer (ID) is still alive.
         * @see The protobuf message 'Protos.Core.IMAlive' in "Protos/core_protocol.proto".
         */
-      virtual void updatePeer(const Common::Hash& ID, const QHostAddress& IP, quint16 port, const QString& nick, const quint64& sharingAmount, const QString& coreVersion) = 0;
+      virtual void updatePeer(const Common::Hash& ID, const QHostAddress& IP, quint16 port, const QString& nick, const quint64& sharingAmount, const QString& coreVersion, quint32 downloadRate, quint32 uploadRate) = 0;
 
       /**
         * Set all peers as inactive.

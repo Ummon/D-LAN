@@ -134,13 +134,17 @@ void RemoteConnection::refresh()
 {
    Protos::GUI::State state;
 
-   state.mutable_myself()->mutable_peer_id()->set_hash(this->peerManager->getSelf()->getID().getData(), Common::Hash::HASH_SIZE);
-   state.mutable_myself()->set_sharing_amount(this->fileManager->getAmount());
-   Common::ProtoHelper::setStr(*state.mutable_myself(), &Protos::GUI::State::Peer::set_nick, this->peerManager->getSelf()->getNick());
-   Common::ProtoHelper::setStr(*state.mutable_myself(), &Protos::GUI::State::Peer::set_core_version, Common::Global::getVersionFull());
-
    state.set_integrity_check_enabled(SETTINGS.get<bool>("check_received_data_integrity"));
    state.set_password_defined(!SETTINGS.get<Common::Hash>("remote_password").isNull());
+
+   // Ourself
+   Protos::GUI::State::Peer* self = state.add_peer();
+   self->mutable_peer_id()->set_hash(this->peerManager->getSelf()->getID().getData(), Common::Hash::HASH_SIZE);
+   self->set_sharing_amount(this->fileManager->getAmount());
+   self->set_download_rate(this->downloadManager->getDownloadRate());
+   self->set_upload_rate(this->uploadManager->getUploadRate());
+   Common::ProtoHelper::setStr(*self, &Protos::GUI::State::Peer::set_nick, this->peerManager->getSelf()->getNick());
+   Common::ProtoHelper::setStr(*self, &Protos::GUI::State::Peer::set_core_version, Common::Global::getVersionFull());
 
    // Peers.
    const QList<PM::IPeer*>& peers = this->peerManager->getPeers();
@@ -156,6 +160,8 @@ void RemoteConnection::refresh()
          Common::ProtoHelper::setStr(*protoPeer, &Protos::GUI::State::Peer::set_core_version, coreVersion);
 
       protoPeer->set_sharing_amount(peer->getSharingAmount());
+      protoPeer->set_download_rate(peer->getDownloadRate());
+      protoPeer->set_upload_rate(peer->getUploadRate());
       Common::ProtoHelper::setIP(*protoPeer->mutable_ip(), peer->getIP());
    }
 

@@ -309,7 +309,7 @@ void WidgetSettings::updateAddresses(const Protos::Common::Interface& interface,
 void WidgetSettings::newState(const Protos::GUI::State& state)
 {
    if (!this->ui->txtNick->hasFocus())
-      this->ui->txtNick->setText(Common::ProtoHelper::getStr(state.myself(), &Protos::GUI::State_Peer::nick));
+      this->ui->txtNick->setText(Common::ProtoHelper::getStr(state.peer(0), &Protos::GUI::State_Peer::nick));
 
    if (!this->ui->chkEnableIntegrityCheck->hasFocus())
       this->ui->chkEnableIntegrityCheck->setChecked(state.integrity_check_enabled());

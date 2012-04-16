@@ -231,7 +231,9 @@ void UDPListener::processPendingMulticastDatagrams()
                IMAliveMessage.port(),
                Common::ProtoHelper::getStr(IMAliveMessage, &Protos::Core::IMAlive::nick),
                IMAliveMessage.amount(),
-               Common::ProtoHelper::getStr(IMAliveMessage, &Protos::Core::IMAlive::core_version)
+               Common::ProtoHelper::getStr(IMAliveMessage, &Protos::Core::IMAlive::core_version),
+               IMAliveMessage.download_rate(),
+               IMAliveMessage.upload_rate()
             );
 
             if (IMAliveMessage.chunk_size() > 0)
