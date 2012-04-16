@@ -67,7 +67,9 @@ void PeerUpdater::update()
                this->port + j,
                this->peerManagers[j]->getSelf()->getNick(),
                this->fileManagers[j]->getAmount(),
-               QString()
+               QString(),
+               0,
+               0
             );
       }
    }
