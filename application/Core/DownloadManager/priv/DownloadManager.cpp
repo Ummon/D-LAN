@@ -191,7 +191,8 @@ QList<IDownload*> DownloadManager::getDownloads() const
 {
    QList<IDownload*> listDownloads;
 
-   // TODO: very heavy!
+   // A bit heavy...
+   listDownloads.reserve(this->downloadQueue.size());
    for (int i = 0; i < this->downloadQueue.size(); i++)
    {
       Download* download = this->downloadQueue[i];

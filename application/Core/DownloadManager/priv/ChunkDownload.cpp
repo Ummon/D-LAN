@@ -354,17 +354,19 @@ int ChunkDownload::getDownloadedBytes() const
 /**
   * @remarks This method may remove dead peers from the list.
   */
-QList<Common::Hash> ChunkDownload::getPeers()
+QList<PM::IPeer*> ChunkDownload::getPeers()
 {
    QMutexLocker locker(&this->mutex);
 
-   QList<Common::Hash> peerIDs;
+   QList<PM::IPeer*> peers;
+   peers.reserve(this->peers.size());
+
    bool isTheNmberOfPeersHasChanged = false;
    for (QMutableListIterator<PM::IPeer*> i(this->peers); i.hasNext();)
    {
       PM::IPeer* peer = i.next();
       if (peer->isAvailable())
-         peerIDs << peer->getID();
+         peers << peer;
       else
       {
          i.remove();
@@ -374,7 +376,7 @@ QList<Common::Hash> ChunkDownload::getPeers()
    }
    if (isTheNmberOfPeersHasChanged)
       emit numberOfPeersChanged();
-   return peerIDs;
+   return peers;
 }
 
 /**

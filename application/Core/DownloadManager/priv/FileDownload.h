@@ -70,7 +70,7 @@ namespace DM
       void populateQueueEntry(Protos::Queue::Queue::Entry* entry) const;
 
       quint64 getDownloadedBytes() const;
-      QSet<Common::Hash> getPeers() const;
+      QSet<PM::IPeer*> getPeers() const;
 
       QSharedPointer<ChunkDownload> getAChunkToDownload();
 

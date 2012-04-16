@@ -46,7 +46,7 @@ namespace PM
      *  - The hashes of a given entry. This entry must be a file.
      *  - The data of a given chunk hash.
      *
-     * A peer is never deleted, it's safe to keep a pointer.
+     * A peer is never deleted, it's safe to keep a pointer on it.
      */
    class IPeer : public LM::ILoggable
    {

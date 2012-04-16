@@ -80,7 +80,7 @@ namespace DM
       void resetLastTransfertStatus();
 
       int getDownloadedBytes() const;
-      QList<Common::Hash> getPeers();
+      QList<PM::IPeer*> getPeers();
 
       PM::IPeer* startDownloading();
       void tryToRemoveItsIncompleteFile();

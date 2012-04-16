@@ -289,11 +289,17 @@ QList< QSharedPointer<IChunk> > Cache::newFile(Protos::Common::Entry& fileEntry)
    fileEntry.set_exists(true); // File has been physically created.
    dir->populateEntrySharedDir(&fileEntry); // We set the shared directory.
 
-   // TODO: is there a better way to up cast?
-   QList< QSharedPointer<IChunk> > chunks;
-   foreach (QSharedPointer<Chunk> chunk, file->getChunks())
-      chunks << chunk;
-   return chunks;
+   // Is there a better way to up cast? An other method is shown below that uses 'reinterpret_cast'.
+   QList< QSharedPointer<IChunk> > ichunks;
+   const QList< QSharedPointer<Chunk> >& chunks = file->getChunks();
+   ichunks.reserve(ichunks.size());
+   for (QListIterator< QSharedPointer<Chunk> > i(chunks); i.hasNext();)
+      ichunks << i.next();
+   return ichunks;
+
+   // This method works but 'reinterpret_cast' is too dangerous.
+   // QList< QSharedPointer<Chunk> > chunks = file->getChunks();
+   // return *(reinterpret_cast< QList< QSharedPointer<IChunk> >* >(&chunks));
 }
 
 QList<Common::SharedDir> Cache::getSharedDirs() const

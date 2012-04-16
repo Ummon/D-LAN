@@ -172,12 +172,12 @@ quint64 FileDownload::getDownloadedBytes() const
    return knownBytes;
 }
 
-QSet<Common::Hash> FileDownload::getPeers() const
+QSet<PM::IPeer*> FileDownload::getPeers() const
 {
-   QSet<Common::Hash> peerIDs;
+   QSet<PM::IPeer*> peers;
    for (QListIterator< QSharedPointer<ChunkDownload> > i(this->chunkDownloads); i.hasNext();)
-      peerIDs += i.next()->getPeers().toSet();
-   return peerIDs;
+      peers += i.next()->getPeers().toSet();
+   return peers;
 }
 
 /**

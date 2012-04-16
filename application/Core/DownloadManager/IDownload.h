@@ -75,9 +75,9 @@ namespace DM
       virtual PM::IPeer* getPeerSource() const = 0;
 
       /**
-        * Return all the peer who own at least one chunk. It includes the peer source, see 'getPeerSourceID()'.
+        * Return all the peer who own at least one chunk. It includes the peer source, see 'getPeerSource()'.
         */
-      virtual QSet<Common::Hash> getPeers() const = 0;
+      virtual QSet<PM::IPeer*> getPeers() const = 0;
 
       /**
         * Return the associated entry to the download, it contains :

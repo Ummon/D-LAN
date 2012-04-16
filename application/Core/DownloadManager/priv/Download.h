@@ -68,7 +68,7 @@ namespace DM
 
       virtual quint64 getDownloadedBytes() const;
       PM::IPeer* getPeerSource() const;
-      QSet<Common::Hash> getPeers() const;
+      QSet<PM::IPeer*> getPeers() const;
 
       const Protos::Common::Entry& getRemoteEntry() const;
       const Protos::Common::Entry& getLocalEntry() const;

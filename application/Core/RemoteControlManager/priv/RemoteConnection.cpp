@@ -143,7 +143,7 @@ void RemoteConnection::refresh()
    state.set_password_defined(!SETTINGS.get<Common::Hash>("remote_password").isNull());
 
    // Peers.
-   QList<PM::IPeer*> peers = this->peerManager->getPeers();
+   const QList<PM::IPeer*>& peers = this->peerManager->getPeers();
    for (QListIterator<PM::IPeer*> i(peers); i.hasNext();)
    {
       PM::IPeer* peer = i.next();
@@ -160,7 +160,7 @@ void RemoteConnection::refresh()
    }
 
    // Downloads.
-   QList<DM::IDownload*> downloads = this->downloadManager->getDownloads();
+   const QList<DM::IDownload*>& downloads = this->downloadManager->getDownloads();
    for (QListIterator<DM::IDownload*> i(downloads); i.hasNext();)
    {
       DM::IDownload* download = i.next();
@@ -171,15 +171,14 @@ void RemoteConnection::refresh()
       protoDownload->set_status(static_cast<Protos::GUI::State::Download::Status>(download->getStatus())); // Warning, enums must be compatible.
       protoDownload->set_downloaded_bytes(download->getDownloadedBytes());
 
-      Common::Hash peerSourceID = download->getPeerSource()->getID();
-      protoDownload->add_peer_id()->set_hash(peerSourceID.getData(), Common::Hash::HASH_SIZE); // The first hash must be the source.
-      QSet<Common::Hash> peerIDs = download->getPeers();
-      peerIDs.remove(peerSourceID);
-      for (QSetIterator<Common::Hash> j(peerIDs); j.hasNext();)
-         protoDownload->add_peer_id()->set_hash(j.next().getData(), Common::Hash::HASH_SIZE);
+      PM::IPeer* peerSource = download->getPeerSource();
+      protoDownload->add_peer_id()->set_hash(peerSource->getID().getData(), Common::Hash::HASH_SIZE); // The first hash must be the source.
+      QSet<PM::IPeer*> peers = download->getPeers();
+      peers.remove(peerSource);
+      for (QSetIterator<PM::IPeer*> j(peers); j.hasNext();)
+         protoDownload->add_peer_id()->set_hash(j.next()->getID().getData(), Common::Hash::HASH_SIZE);
 
-      PM::IPeer* peerSource = this->peerManager->getPeer(peerSourceID);
-      if (peerSource)
+      if (!peerSource->getNick().isNull())
          Common::ProtoHelper::setStr(*protoDownload, &Protos::GUI::State::Download::set_peer_source_nick, peerSource->getNick());
    }
 
