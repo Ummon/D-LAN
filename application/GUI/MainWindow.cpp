@@ -58,7 +58,7 @@ void PeerTableDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opt
    {
       static quint32 LAN_SPEED = SETTINGS.get<quint32>("lan_speed");
 
-      PeerListModel::TransfertRates rates = index.data().value<PeerListModel::TransfertRates>();
+      PeerListModel::TransfertInformation transfertInformation = index.data().value<PeerListModel::TransfertInformation>();
       painter->setRenderHint(QPainter::Antialiasing, true);
       const QPoint center = option.rect.center();
       const int radius = qMin(option.rect.height(), option.rect.width()) / 2 - 2;
@@ -77,16 +77,16 @@ void PeerTableDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opt
       // Download speed
       painter->setPen(Qt::NoPen);
       painter->setBrush(QBrush(DOWNLOAD_COLOR.darker(180)));
-      const int downloadAngle = -(16LL * 180 * rates.first) / LAN_SPEED;
+      const int downloadAngle = -(16LL * 180 * transfertInformation.downloadRate) / LAN_SPEED;
       painter->drawPie(rect, 16 * 180, downloadAngle < -16 * 180 ? -16 * 180 : downloadAngle);
 
       // Upload speed
       painter->setPen(Qt::NoPen);
       painter->setBrush(QBrush(UPLOAD_COLOR.darker(180)));
-      const int uploadAngle = (16LL * 180 * rates.second) / LAN_SPEED;
+      const int uploadAngle = (16LL * 180 * transfertInformation.uploadRate) / LAN_SPEED;
       painter->drawPie(rect, 16 * 180, uploadAngle > 16 * 180 ? 16 * 180 : uploadAngle);
 
-      painter->setPen(QPen(QBrush(QColor(150, 150, 150)), 1.2));
+      painter->setPen(QPen(QBrush(transfertInformation.isDownloadingOurData ? QColor(220, 220, 0) : QColor(150, 150, 150)), transfertInformation.isDownloadingOurData ? 1.5 : 1.2));
       painter->setBrush(Qt::NoBrush);
       painter->drawEllipse(rect);
    }

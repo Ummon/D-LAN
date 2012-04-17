@@ -24,7 +24,6 @@
 #include <QList>
 #include <QHash>
 #include <QColor>
-#include <QPair>
 
 #include <Protos/gui_protocol.pb.h>
 #include <Protos/gui_settings.pb.h>
@@ -37,9 +36,7 @@ namespace GUI
    class PeerListModel : public QAbstractTableModel
    {
       Q_OBJECT
-   public:      
-      typedef QPair<quint32, quint32> TransfertRates;
-
+   public:
       PeerListModel(QSharedPointer<RCC::ICoreConnection> coreConnection);
       ~PeerListModel();
 
@@ -60,6 +57,15 @@ namespace GUI
       void colorize(const QModelIndex& index, const QColor& color);
       void uncolorize(const QModelIndex& index);
 
+      struct TransfertInformation
+      {
+         quint32 downloadRate;
+         quint32 uploadRate;
+         bool isDownloadingOurData;
+         bool operator==(const TransfertInformation& ti) const { return ti.downloadRate == this->downloadRate && ti.uploadRate == this->uploadRate && ti.isDownloadingOurData == this->isDownloadingOurData; }
+         bool operator!=(const TransfertInformation& ti) const { return !(ti == *this); }
+      };
+
    signals:
       /**
         * To remove peer files browse window. (Not used).
@@ -70,15 +76,15 @@ namespace GUI
       void newState(const Protos::GUI::State& state);
 
    private:
-      void setPeers(const google::protobuf::RepeatedPtrField<Protos::GUI::State::Peer>& peers);
+      void updatePeers(const google::protobuf::RepeatedPtrField<Protos::GUI::State::Peer>& peers, const QSet<Common::Hash>& peersDownloadingOurData);
       void sort();
 
       QSharedPointer<RCC::ICoreConnection> coreConnection;
 
       struct Peer
       {
-         Peer(const Common::Hash& peerID, const QString& nick, const QString& coreVersion, quint64 sharingAmount, const QHostAddress& ip, quint32 downloadRate, quint32 uploadRate) :
-            peerID(peerID), nick(nick), coreVersion(coreVersion), sharingAmount(sharingAmount), ip(ip), downloadRate(downloadRate), uploadRate(uploadRate) {}
+         Peer(const Common::Hash& peerID, const QString& nick, const QString& coreVersion, quint64 sharingAmount, const QHostAddress& ip, TransfertInformation transfertInformation) :
+            peerID(peerID), nick(nick), coreVersion(coreVersion), sharingAmount(sharingAmount), ip(ip), transfertInformation(transfertInformation) {}
 
          bool operator==(const Peer& p) const { return this->peerID == p.peerID; }
          bool operator!=(const Peer& p) const { return this->peerID != p.peerID; }
@@ -90,8 +96,7 @@ namespace GUI
          QString coreVersion;
          quint64 sharingAmount;
          QHostAddress ip;
-         quint32 downloadRate;
-         quint32 uploadRate;
+         TransfertInformation transfertInformation;
       };
 
 
@@ -102,6 +107,6 @@ namespace GUI
    };
 }
 
-Q_DECLARE_METATYPE(GUI::PeerListModel::TransfertRates)
+Q_DECLARE_METATYPE(GUI::PeerListModel::TransfertInformation)
 
 #endif
