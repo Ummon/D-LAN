@@ -28,7 +28,7 @@ namespace GUI
    {
       Q_OBJECT
    public:
-      explicit ProgressBar(QWidget *parent = 0);
+      explicit ProgressBar(QWidget *parent = nullptr);
 
    protected:
       void paintEvent(QPaintEvent* paintEvent);

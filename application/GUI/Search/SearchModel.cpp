@@ -239,7 +239,7 @@ void SearchModel::result(const Protos::Common::FindResult& findResult)
       if (entry->entry().type() == Protos::Common::Entry_Type_FILE && entry->entry().chunk_size() > 0)
       {
          Common::Hash firstChunk = entry->entry().chunk(0).hash();
-         SearchTree* similarTree = 0;
+         SearchTree* similarTree = nullptr;
          if ((similarTree = this->indexedFile.value(firstChunk)) && similarTree->isSameAs(entry->entry()))
          {
             if (similarTree->getNbChildren() == 0)

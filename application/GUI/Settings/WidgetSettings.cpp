@@ -164,7 +164,7 @@ void WidgetSettings::fillComboBoxLanguages()
    bool exactMatchFound = false;
 
    Common::Languages langs(QCoreApplication::applicationDirPath() + "/" + Common::Constants::LANGUAGE_DIRECTORY);
-   for (QListIterator<Common::Language> i(langs.getAvailableLanguages(Common::Languages::GUI)); i.hasNext();)
+   for (QListIterator<Common::Language> i(langs.getAvailableLanguages(Common::Languages::ExeType::GUI)); i.hasNext();)
    {
       Common::Language lang = i.next();
       QVariant data;

@@ -75,7 +75,7 @@ namespace GUI
    {
       Q_OBJECT
    public:
-      explicit MainWindow(QSharedPointer<RCC::ICoreConnection> coreConnection, QWidget* parent = 0);
+      explicit MainWindow(QSharedPointer<RCC::ICoreConnection> coreConnection, QWidget* parent = nullptr);
       ~MainWindow();
 
    private slots:

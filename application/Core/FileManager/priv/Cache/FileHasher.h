@@ -36,7 +36,7 @@ namespace FM
    public:
       FileHasher();
 
-      bool start(File* fileCache, int n = 0, int* amountHashed = 0);
+      bool start(File* fileCache, int n = 0, int* amountHashed = nullptr);
       void stop();
 
    private slots:

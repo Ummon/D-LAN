@@ -98,7 +98,7 @@ void WordIndex<T>::rmItem(const QStringList& words, T* item)
 
       if (!currentNode->haveChildren())
       {
-         Node<T>* nodeToRemove = 0;
+         Node<T>* nodeToRemove = nullptr;
          for (QListIterator<Node<T>*> i(nodes); i.hasNext();)
          {
             Node<T>* n = i.next();

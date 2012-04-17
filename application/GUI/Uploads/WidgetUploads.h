@@ -45,7 +45,7 @@ namespace GUI
    {
       Q_OBJECT
    public:
-      explicit WidgetUploads(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel, QWidget *parent = 0);
+      explicit WidgetUploads(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel, QWidget* parent = nullptr);
       ~WidgetUploads();
 
    protected:

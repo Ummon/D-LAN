@@ -127,7 +127,7 @@ Download* DownloadManager::addDownload(const Protos::Common::Entry& remoteEntry,
 
 Download* DownloadManager::addDownload(const Protos::Common::Entry& remoteEntry, const Protos::Common::Entry& localEntry, PM::IPeer* peerSource, Protos::Queue::Queue::Entry::Status status, int position)
 {
-   Download* newDownload = 0;
+   Download* newDownload = nullptr;
 
    // We do not create a new download is a similar one is already in queue. This test can be CPU expensive.
    if (this->downloadQueue.isEntryAlreadyQueued(localEntry))
@@ -246,7 +246,7 @@ QList<QSharedPointer<IChunkDownload>> DownloadManager::getTheFirstUnfinishedChun
 {
    QList<QSharedPointer<IChunkDownload>> unfinishedChunks;
 
-   FileDownload* fileDownload = 0;
+   FileDownload* fileDownload = nullptr;
    DownloadQueue::ScanningIterator<IsDownloable> i(this->downloadQueue);
    while (unfinishedChunks.size() < n)
    {
@@ -365,7 +365,7 @@ void DownloadManager::scanTheQueue()
    int numberOfDownloadThreadRunningCopy = this->numberOfDownloadThreadRunning;
 
    QSharedPointer<ChunkDownload> chunkDownload;
-   FileDownload* fileDownload = 0;
+   FileDownload* fileDownload = nullptr;
 
    // To know the number of peers not occupied that own at least one chunk in the queue.
    QSet<PM::IPeer*> linkedPeersNotOccupied = this->linkedPeers.getPeers().toSet();

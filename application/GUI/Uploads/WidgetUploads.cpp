@@ -57,7 +57,7 @@ QSize UploadsDelegate::sizeHint(const QStyleOptionViewItem& option, const QModel
 
 /////
 
-WidgetUploads::WidgetUploads(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel, QWidget *parent) :
+WidgetUploads::WidgetUploads(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel, QWidget* parent) :
    QWidget(parent), ui(new Ui::WidgetUploads), uploadsModel(coreConnection, peerListModel)
 {
    this->ui->setupUi(this);

@@ -29,7 +29,7 @@ namespace GUI
    {
       Q_OBJECT
    public:
-      explicit CheckBoxList(QWidget* parent = 0);
+      explicit CheckBoxList(QWidget* parent = nullptr);
 
       bool eventFilter(QObject* object, QEvent* event);
       void paintEvent(QPaintEvent* );

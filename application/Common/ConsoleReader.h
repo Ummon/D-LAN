@@ -31,7 +31,7 @@ namespace Common
    public:
       static QString QUIT_COMMAND;
 
-      explicit ConsoleReader(QObject* parent = 0);
+      explicit ConsoleReader(QObject* parent = nullptr);
 
       static void setQuitCommand(const QString& quitCommand);
 

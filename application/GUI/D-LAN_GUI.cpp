@@ -68,7 +68,7 @@ void D_LAN_GUI::mainWindowClosed()
    if (this->coreConnection->isConnected())
       this->trayIcon.showMessage("D-LAN GUI closed", "D-LAN Core is still running in background. Select 'exit' from the contextual menu if you want to stop it.");
    this->coreConnection->disconnectFromCore();
-   this->mainWindow = 0;
+   this->mainWindow = nullptr;
 }
 
 void D_LAN_GUI::showMainWindow()

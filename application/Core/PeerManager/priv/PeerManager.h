@@ -72,8 +72,8 @@ namespace PM
       void onGetChunk(QSharedPointer<FM::IChunk> chunk, int offset, QSharedPointer<PeerMessageSocket> socket);
 
    private slots:
-      void dataReceived(QTcpSocket* tcpSocket = 0);
-      void disconnected(QTcpSocket* tcpSocket = 0);
+      void dataReceived(QTcpSocket* tcpSocket = nullptr);
+      void disconnected(QTcpSocket* tcpSocket = nullptr);
       void checkIdlePendingSockets();
       void peerUnbanned();
 

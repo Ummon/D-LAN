@@ -59,7 +59,7 @@ namespace FM
       SharedDirectory* getSharedDirectory(const Common::Hash& ID) const;
       void setSharedDirs(const QStringList& dirs);
       QPair<Common::SharedDir, QString> addASharedDir(const QString& absoluteDir);
-      void removeSharedDir(SharedDirectory* dir, Directory* dir2 = 0);
+      void removeSharedDir(SharedDirectory* dir, Directory* dir2 = nullptr);
 
       SharedDirectory* getSuperSharedDirectory(const QString& path) const;
       QList<SharedDirectory*> getSubSharedDirectories(const QString& path) const;

@@ -30,7 +30,7 @@ namespace GUI
    {
       Q_OBJECT
    public:
-      TabButton(QWidget* parent = 0);
+      TabButton(QWidget* parent = nullptr);
       virtual QSize sizeHint() const;
       virtual QSize minimumSizeHint() const;
       virtual void enterEvent(QEvent *event);
@@ -47,7 +47,7 @@ namespace GUI
    {
        Q_OBJECT
    public:
-       TabCloseButton(QWidget* widget, QWidget* parent = 0);
+       TabCloseButton(QWidget* widget, QWidget* parent = nullptr);
 
    protected:
        void changeEvent(QEvent* event);
@@ -70,7 +70,7 @@ namespace GUI
    {
        Q_OBJECT
    public:
-       TabRefreshButton(QWidget* parent = 0);
+       TabRefreshButton(QWidget* parent = nullptr);
 
    protected:
        void changeEvent(QEvent* event);

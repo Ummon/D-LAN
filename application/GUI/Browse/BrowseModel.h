@@ -74,7 +74,7 @@ namespace GUI
       virtual void resultTimeout();
 
    protected:
-      virtual void browse(const Common::Hash& peerID, Tree* Tree = 0);
+      virtual void browse(const Common::Hash& peerID, Tree* Tree = nullptr);
       virtual void loadChildren(const QPersistentModelIndex &index);
       virtual QList<Tree*> synchronize(BrowseModel::Tree* Tree, const Protos::Common::Entries& entries);
       virtual QList<Tree*> synchronizeRoot(const Protos::Common::Entries& entries);

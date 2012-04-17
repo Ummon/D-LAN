@@ -72,7 +72,7 @@ void TabButton::paintEvent(QPaintEvent* pe)
     if (isDown())
         opt.state |= QStyle::State_Sunken;
 
-    const QTabBar* tb = 0;
+    const QTabBar* tb = nullptr;
     QObject* current = this;
 
     while(current)

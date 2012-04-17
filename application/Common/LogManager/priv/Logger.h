@@ -63,8 +63,8 @@ namespace LM
       Logger(const QString& name);
       ~Logger();
 
-      void log(const QString& message, Severity severity, const char* filename = 0, int line = 0) const;
-      void log(const ILoggable& object, Severity severity, const char* filename = 0, int line = 0) const;
+      void log(const QString& message, Severity severity, const char* filename = nullptr, int line = 0) const;
+      void log(const ILoggable& object, Severity severity, const char* filename = nullptr, int line = 0) const;
 
    private:
       static void createFileLog();

@@ -493,7 +493,7 @@ PM::IPeer* ChunkDownload::getTheFastestFreePeer()
 {
    QMutexLocker locker(&this->mutex);
 
-   PM::IPeer* current = 0;   
+   PM::IPeer* current = nullptr;
    bool isTheNmberOfPeersHasChanged = false;
    for (QMutableListIterator<PM::IPeer*> i(this->peers); i.hasNext();)
    {

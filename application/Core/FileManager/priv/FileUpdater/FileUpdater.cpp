@@ -49,7 +49,7 @@ FileUpdater::FileUpdater(FileManager* fileManager) :
    toStop(false),
    progress(0),
    mutex(QMutex::Recursive),
-   currentScanningDir(0),
+   currentScanningDir(nullptr),
    toStopHashing(false),
    remainingSizeToHash(0)
 {
@@ -186,7 +186,7 @@ void FileUpdater::prioritizeAFileToHash(File* file)
 bool FileUpdater::isScanning() const
 {
    QMutexLocker scanningLocker(&this->scanningMutex);
-   return this->currentScanningDir != 0;
+   return this->currentScanningDir != nullptr;
 }
 
 bool FileUpdater::isHashing() const
@@ -263,7 +263,7 @@ void FileUpdater::run()
          else
             this->mutex.unlock();
 
-         Directory* addedDir = 0;
+         Directory* addedDir = nullptr;
          this->mutex.lock();
          if (!this->dirsToScan.isEmpty())
             addedDir = this->dirsToScan.takeLast();
@@ -475,7 +475,7 @@ void FileUpdater::scan(Directory* dir, bool addUnfinished)
          if (!this->currentScanningDir || this->toStop)
          {
             L_DEBU("Scanning aborted : " + dir->getFullPath());
-            this->currentScanningDir = 0;
+            this->currentScanningDir = nullptr;
             this->scanningStopped.wakeOne();
             return;
          }
@@ -538,7 +538,7 @@ void FileUpdater::scan(Directory* dir, bool addUnfinished)
    }
 
    this->scanningMutex.lock();
-   this->currentScanningDir = 0;
+   this->currentScanningDir = nullptr;
    this->scanningStopped.wakeOne();
    this->scanningMutex.unlock();
 
@@ -559,7 +559,7 @@ void FileUpdater::stopScanning(Directory* dir)
    QMutexLocker scanningLocker(&this->scanningMutex);
    if (!dir && this->currentScanningDir || dir && this->currentScanningDir == dir)
    {
-      this->currentScanningDir = 0;
+      this->currentScanningDir = nullptr;
       this->scanningStopped.wait(&this->scanningMutex);
    }
    else
@@ -659,7 +659,7 @@ void FileUpdater::restoreFromFileCache(SharedDirectory* dir)
 {
    L_DEBU("Start restoring hashes of a shared directory : " + dir->getFullPath());
 
-   if (this->fileCache == 0)
+   if (!this->fileCache)
    {
       L_ERRO("FileUpdater::restoreFromFileCache(..) : 'this->fileCache' must be previously set. Unable to restore from the file cache.");
       return;

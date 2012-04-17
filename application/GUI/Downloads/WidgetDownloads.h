@@ -55,7 +55,7 @@ namespace GUI
    {
       Q_OBJECT
    public:
-      explicit WidgetDownloads(QSharedPointer<RCC::ICoreConnection> coreConnection, const PeerListModel& peerListModel, const DirListModel& sharedDirsModel, QWidget *parent = 0);
+      explicit WidgetDownloads(QSharedPointer<RCC::ICoreConnection> coreConnection, const PeerListModel& peerListModel, const DirListModel& sharedDirsModel, QWidget* parent = nullptr);
       ~WidgetDownloads();
 
    protected:

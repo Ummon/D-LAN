@@ -45,7 +45,7 @@ namespace GUI
    {
       Q_OBJECT
    public:
-      explicit WidgetChat(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel, QWidget *parent = 0);
+      explicit WidgetChat(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel, QWidget* parent = nullptr);
       ~WidgetChat();
       void installEventFilterOnInput(QObject* filterObj);
 

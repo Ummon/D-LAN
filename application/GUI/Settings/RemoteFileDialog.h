@@ -31,14 +31,14 @@ namespace GUI
    {
       Q_OBJECT
    public:
-      explicit RemoteFileDialog(QWidget *parent = 0);
+      explicit RemoteFileDialog(QWidget* parent = nullptr);
       ~RemoteFileDialog();
 
       void setText(const QString& text);
       QString getFolder() const;
 
    private:
-      Ui::RemoteFileDialog *ui;
+      Ui::RemoteFileDialog* ui;
    };
 }
 

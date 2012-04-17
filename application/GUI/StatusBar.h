@@ -36,7 +36,7 @@ namespace GUI
       Q_OBJECT
 
    public:
-      explicit StatusBar(QSharedPointer<RCC::ICoreConnection> coreConnection, QWidget* parent = 0);
+      explicit StatusBar(QSharedPointer<RCC::ICoreConnection> coreConnection, QWidget* parent = nullptr);
       ~StatusBar();
 
    signals:

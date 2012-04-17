@@ -227,7 +227,7 @@ QList<QSharedPointer<IChunk>> Cache::newFile(Protos::Common::Entry& fileEntry)
    const qint64 spaceNeeded = fileEntry.size() + SETTINGS.get<quint32>("minimum_free_space");
 
    // If we know where to put the file.
-   Directory* dir = 0;
+   Directory* dir = nullptr;
    if (fileEntry.has_shared_dir())
    {
       SharedDirectory* sharedDir = this->getSharedDirectory(fileEntry.shared_dir().id().hash());
@@ -702,7 +702,7 @@ Directory* Cache::getWriteableDirectory(const QString& path, qint64 spaceNeeded)
       throw NoWriteableDirectoryException();
 
    // Search for the best fitted shared directory.
-   SharedDirectory* currentSharedDir = 0;
+   SharedDirectory* currentSharedDir = nullptr;
    int currentNbDirsInCommon = -1;
 
    foreach (SharedDirectory* dir, this->sharedDirs)
