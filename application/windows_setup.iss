@@ -1,6 +1,6 @@
 [code]
 #define QtDir "E:/Qt/4.8.1"
-#define MingwDir "E:/Qt/qtcreator-2.4.82/mingw"
+#define MingwDir "E:/mingw"
 #define ProtoBufDir "E:/protobuf"
 
 #define AppName "D-LAN"
@@ -33,6 +33,7 @@ Source: "{#QtDir}/bin/QtNetwork4.dll"; DestDir: "{app}"; Flags: comparetimestamp
 Source: "{#QtDir}/bin/QtNetwork4.dll"; DestDir: "{app}"; Flags: comparetimestamp
 Source: "{#MingwDir}/bin/mingwm10.dll"; DestDir: "{app}"; Flags: comparetimestamp
 Source: "{#MingwDir}/bin/libgcc_s_dw2-1.dll"; DestDir: "{app}"; Flags: comparetimestamp
+Source: "{#MingwDir}/bin/libstdc++-6.dll"; DestDir: "{app}"; Flags: comparetimestamp
 ;Source: {#ProtoBufDir}/src/.libs/libprotobuf-7.dll; DestDir: {app}; Flags: comparetimestamp;
 
 [Icons]

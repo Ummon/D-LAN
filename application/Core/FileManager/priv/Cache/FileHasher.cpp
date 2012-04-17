@@ -94,7 +94,7 @@ bool FileHasher::start(File* fileCache, int n, int* amountHashed)
       throw IOErrorException();
    }
 
-   const QList< QSharedPointer<Chunk> >& chunks = this->currentFileCache->getChunks();
+   const QList<QSharedPointer<Chunk>>& chunks = this->currentFileCache->getChunks();
 
    // Skip the already known full hashes.
    qint64 bytesSkipped = 0;

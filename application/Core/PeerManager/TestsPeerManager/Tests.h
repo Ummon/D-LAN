@@ -61,8 +61,8 @@ private:
    void createInitialFiles();
    void deleteAllFiles();
 
-   QList< QSharedPointer<FM::IFileManager> > fileManagers;
-   QList< QSharedPointer<IPeerManager> > peerManagers;
+   QList<QSharedPointer<FM::IFileManager>> fileManagers;
+   QList<QSharedPointer<IPeerManager>> peerManagers;
    QList<TestServer*> servers;
 
    PeerUpdater* peerUpdater;

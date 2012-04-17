@@ -172,7 +172,7 @@ void File::populateHashesFile(Protos::FileCache::Hashes_File& fileToFill) const
    fileToFill.set_size(this->size);
    fileToFill.set_date_last_modified(this->getDateLastModified().toMSecsSinceEpoch());
 
-   for (QListIterator< QSharedPointer<Chunk> > i(this->chunks); i.hasNext();)
+   for (QListIterator<QSharedPointer<Chunk>> i(this->chunks); i.hasNext();)
    {
       Protos::FileCache::Hashes_Chunk* chunk = fileToFill.add_chunk();
       i.next()->populateHashesChunk(*chunk);
@@ -189,7 +189,7 @@ void File::populateEntry(Protos::Common::Entry* entry, bool setSharedDir) const
    entry->set_type(Protos::Common::Entry_Type_FILE);
 
    entry->clear_chunk();
-   for (QListIterator< QSharedPointer<Chunk> > i(this->chunks); i.hasNext();)
+   for (QListIterator<QSharedPointer<Chunk>> i(this->chunks); i.hasNext();)
    {
       Common::Hash hash = i.next()->getHash();
       if (hash.isNull())
@@ -360,7 +360,7 @@ qint64 File::read(char* buffer, qint64 offset, int maxBytesToRead)
    return bytesRead;
 }
 
-QList< QSharedPointer<Chunk> > File::getChunks() const
+QList<QSharedPointer<Chunk>> File::getChunks() const
 {
    return this->chunks;
 }
@@ -380,7 +380,7 @@ bool File::hasAllHashes()
 
 bool File::hasOneOrMoreHashes()
 {
-   for (QListIterator< QSharedPointer<Chunk> > i(this->chunks); i.hasNext();)
+   for (QListIterator<QSharedPointer<Chunk>> i(this->chunks); i.hasNext();)
      if (i.next()->hasHash())
          return true;
    return false;
@@ -538,7 +538,7 @@ QSharedPointer<Chunk> File::removeLastChunk()
 
 void File::deleteAllChunks()
 {
-   for (QListIterator< QSharedPointer<Chunk> > i(this->chunks); i.hasNext();)
+   for (QListIterator<QSharedPointer<Chunk>> i(this->chunks); i.hasNext();)
       this->cache->onChunkRemoved(i.next());
    this->chunks.clear();
 }

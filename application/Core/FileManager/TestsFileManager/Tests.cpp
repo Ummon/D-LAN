@@ -317,7 +317,7 @@ void Tests::createAnEmptyFile()
 
    try
    {
-      QList< QSharedPointer<IChunk> > chunks = this->fileManager->newFile(remoteEntry);
+      QList<QSharedPointer<IChunk>> chunks = this->fileManager->newFile(remoteEntry);
       for (int i = 0; i < chunks.size(); i++)
          QVERIFY(chunks[i]->getHash().isNull());
    }

@@ -45,7 +45,7 @@ namespace GUI
    private:
       QSharedPointer<RCC::ICoreConnection> coreConnection;
       QSharedPointer<LM::ILoggerHook> loggerHook;
-      QList< QSharedPointer<const LM::IEntry> > entries;
+      QList<QSharedPointer<const LM::IEntry>> entries;
    };
 }
 

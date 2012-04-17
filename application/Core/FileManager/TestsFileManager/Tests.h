@@ -30,7 +30,7 @@ using namespace FM;
 
 class Tests : public QObject
 {
-   struct FindResult : public QMap< int, QList<QString> > {};
+   struct FindResult : public QMap<int, QList<QString>> {};
 
    Q_OBJECT
 public:

@@ -75,7 +75,7 @@ namespace FM
 
       int getNum() const;
       int getNbTotalChunk() const;
-      QList< QSharedPointer<Chunk> > getOtherChunks() const;
+      QList<QSharedPointer<Chunk>> getOtherChunks() const;
 
       bool hasHash() const;
       Common::Hash getHash() const;

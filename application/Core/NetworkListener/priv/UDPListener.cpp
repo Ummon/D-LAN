@@ -161,7 +161,7 @@ void UDPListener::sendIMAliveMessage()
    }
 
    IMAliveMessage.mutable_chunk()->Reserve(this->currentChunkDownloads.size());
-   for (QListIterator< QSharedPointer<DM::IChunkDownload> > i(this->currentChunkDownloads); i.hasNext();)
+   for (QListIterator<QSharedPointer<DM::IChunkDownload>> i(this->currentChunkDownloads); i.hasNext();)
    {
       QSharedPointer<DM::IChunkDownload> chunkDownload = i.next();
       IMAliveMessage.add_chunk()->set_hash(chunkDownload->getHash().getData(), Common::Hash::HASH_SIZE);

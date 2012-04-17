@@ -43,7 +43,7 @@ Core::Core(bool resetSettings, QLocale locale)
 
    if (resetSettings || locale != QLocale::system())
    {
-      QString originalRoamingFolder = Common::Global::getDataFolder(Common::Global::ROAMING);
+      QString originalRoamingFolder = Common::Global::getDataFolder(Common::Global::DataFolderType::ROAMING);
 
       /**
         * Reset the settings for the current application folder (i==0) and for the service application folder (i==1).
@@ -53,11 +53,11 @@ Core::Core(bool resetSettings, QLocale locale)
       {
          if (i == 1)
          {
-            QString roamingSystem = Common::Global::getDataServiceFolder(Common::Global::ROAMING);
+            QString roamingSystem = Common::Global::getDataServiceFolder(Common::Global::DataFolderType::ROAMING);
             if (!QDir(roamingSystem).exists())
                break;
 
-            Common::Global::setDataFolder(Common::Global::ROAMING, roamingSystem);
+            Common::Global::setDataFolder(Common::Global::DataFolderType::ROAMING, roamingSystem);
          }
 
          if (SETTINGS.load() && resetSettings)
@@ -76,7 +76,7 @@ Core::Core(bool resetSettings, QLocale locale)
             this->setLanguage(locale, false);
          }
       }
-      Common::Global::setDataFolder(Common::Global::ROAMING, originalRoamingFolder);
+      Common::Global::setDataFolder(Common::Global::DataFolderType::ROAMING, originalRoamingFolder);
       SETTINGS.load();
    }
 
@@ -115,7 +115,7 @@ void Core::setLanguage(QLocale locale, bool load)
    if (load)
    {
       Common::Languages languages(QCoreApplication::applicationDirPath() + "/" + Common::Constants::LANGUAGE_DIRECTORY);
-      Common::Language lang = languages.getBestMatchLanguage(Common::Languages::CORE, locale);
+      Common::Language lang = languages.getBestMatchLanguage(Common::Languages::ExeType::CORE, locale);
       SETTINGS.set("language", lang.locale);
       SETTINGS.save();
       this->translator.load(lang.filename, QCoreApplication::applicationDirPath() + "/" + Common::Constants::LANGUAGE_DIRECTORY);

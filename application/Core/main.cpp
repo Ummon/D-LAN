@@ -54,9 +54,9 @@ int main(int argc, char* argv[])
    {
       const QString arg = QString::fromLatin1(argv[i]);
       if (arg == "-r" && i < argc - 1)
-         Common::Global::setDataFolder(Common::Global::ROAMING, QString::fromLatin1(argv[++i]));
+         Common::Global::setDataFolder(Common::Global::DataFolderType::ROAMING, QString::fromLatin1(argv[++i]));
       else if (arg == "-l" && i < argc - 1)
-         Common::Global::setDataFolder(Common::Global::LOCAL, QString::fromLatin1(argv[++i]));
+         Common::Global::setDataFolder(Common::Global::DataFolderType::LOCAL, QString::fromLatin1(argv[++i]));
       else if (arg == "--lang" && i < argc - 1)
          locale = QLocale(QString::fromLatin1(argv[++i]));
       else if (arg == "--reset-settings")

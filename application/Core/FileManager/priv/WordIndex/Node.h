@@ -32,7 +32,7 @@ namespace FM
    {
       NodeResult() : level(0) {}
       NodeResult(T* v, bool level = 0) : value(v), level(level) {}
-      static void intersect(QSet< NodeResult<T> >& s1, const QSet< NodeResult<T> >& s2, int matchValue);
+      static void intersect(QSet<NodeResult<T>>& s1, const QSet<NodeResult<T>>& s2, int matchValue);
 
       T* value; // Should be const but QList must be able to change a NodeResult in place...
       int level;
@@ -43,12 +43,12 @@ namespace FM
      * For all common items the 'level' fields are summed.
      */
    template <typename T>
-   void NodeResult<T>::intersect(QSet< NodeResult<T> >& s1, const QSet< NodeResult<T> >& s2, int matchValue)
+   void NodeResult<T>::intersect(QSet<NodeResult<T>>& s1, const QSet<NodeResult<T>>& s2, int matchValue)
    {
-      for (QMutableSetIterator< NodeResult<T> > i(s1); i.hasNext();)
+      for (QMutableSetIterator<NodeResult<T>> i(s1); i.hasNext();)
       {
          const NodeResult<T>& node = i.next();
-         typename QSet< NodeResult<T> >::const_iterator j = s2.find(node);
+         typename QSet<NodeResult<T>>::const_iterator j = s2.find(node);
          if (j == s2.constEnd())
             i.remove();
          else
@@ -117,7 +117,7 @@ namespace FM
         * Return all items from the current node and its sub nodes (recursively) if 'alsoFromSubNodes' is true.
         * For all direct sub nodes NodeResult::level is set to 0, for other sub nodes level is set to 1.
         */
-      QList< NodeResult<T> > getItems(bool alsoFromSubNodes = false, int maxNbResult = -1) const;
+      QList<NodeResult<T>> getItems(bool alsoFromSubNodes = false, int maxNbResult = -1) const;
 
       /**
         * Does the node own some items?
@@ -214,9 +214,9 @@ void Node<T>::rmItem(T* item)
 }
 
 template <typename T>
-QList< NodeResult<T> > Node<T>::getItems(bool alsoFromSubNodes, int maxNbResult) const
+QList<NodeResult<T>> Node<T>::getItems(bool alsoFromSubNodes, int maxNbResult) const
 {
-   QList< NodeResult<T> > result;
+   QList<NodeResult<T>> result;
    QList<Node<T>*> nodesToVisit;
 
    nodesToVisit.append(const_cast<Node<T>*>(this));

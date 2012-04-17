@@ -42,7 +42,7 @@ namespace LM
    private:
       void removeDeletedHooks();
 
-      QList< QWeakPointer<LoggerHook> > loggerHooks;
+      QList<QWeakPointer<LoggerHook>> loggerHooks;
    };
 
    class Logger : public ILogger

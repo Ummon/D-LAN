@@ -67,7 +67,7 @@ namespace DM
       void setDownloadAsErroneous(Download* download);
       Download* getAnErroneousDownload();
 
-      QList< QSharedPointer<IChunkDownload> > getTheOldestUnfinishedChunks(int n);
+      QList<QSharedPointer<IChunkDownload>> getTheOldestUnfinishedChunks(int n);
 
       static Protos::Queue::Queue loadFromFile();
       void saveToFile() const;

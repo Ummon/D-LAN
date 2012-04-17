@@ -84,11 +84,11 @@ namespace Common
    /////
 
    template <typename T>
-   class SimpleTree : public Tree< T, SimpleTree<T> >
+   class SimpleTree : public Tree<T, SimpleTree<T>>
    {
    public:
       SimpleTree() {}
-      SimpleTree(const T& item, SimpleTree<T>* parent) : Tree< T, SimpleTree<T> >(item, parent) {}
+      SimpleTree(const T& item, SimpleTree<T>* parent) : Tree<T, SimpleTree<T>>(item, parent) {}
    };
 
    /////

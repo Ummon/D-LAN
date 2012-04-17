@@ -219,7 +219,7 @@ File* Cache::getFile(const Protos::Common::Entry& fileEntry) const
   * @exception InsufficientStorageSpaceException
   * @exception UnableToCreateNewFileException
   */
-QList< QSharedPointer<IChunk> > Cache::newFile(Protos::Common::Entry& fileEntry)
+QList<QSharedPointer<IChunk>> Cache::newFile(Protos::Common::Entry& fileEntry)
 {
    QMutexLocker locker(&this->mutex);
 
@@ -260,7 +260,7 @@ QList< QSharedPointer<IChunk> > Cache::newFile(Protos::Common::Entry& fileEntry)
    if (file = dir->getFile(name))
    {
       bool resetExistingFile = false;
-      QList< QSharedPointer<Chunk> > existingChunks = file->getChunks();
+      QList<QSharedPointer<Chunk>> existingChunks = file->getChunks();
       if (existingChunks.size() != fileEntry.chunk_size())
          resetExistingFile = true;
       else
@@ -290,16 +290,16 @@ QList< QSharedPointer<IChunk> > Cache::newFile(Protos::Common::Entry& fileEntry)
    dir->populateEntrySharedDir(&fileEntry); // We set the shared directory.
 
    // Is there a better way to up cast? An other method is shown below that uses 'reinterpret_cast'.
-   QList< QSharedPointer<IChunk> > ichunks;
-   const QList< QSharedPointer<Chunk> >& chunks = file->getChunks();
+   QList<QSharedPointer<IChunk>> ichunks;
+   const QList<QSharedPointer<Chunk>>& chunks = file->getChunks();
    ichunks.reserve(ichunks.size());
-   for (QListIterator< QSharedPointer<Chunk> > i(chunks); i.hasNext();)
+   for (QListIterator<QSharedPointer<Chunk>> i(chunks); i.hasNext();)
       ichunks << i.next();
    return ichunks;
 
    // This method works but 'reinterpret_cast' is too dangerous.
-   // QList< QSharedPointer<Chunk> > chunks = file->getChunks();
-   // return *(reinterpret_cast< QList< QSharedPointer<IChunk> >* >(&chunks));
+   // QList<QSharedPointer<Chunk>> chunks = file->getChunks();
+   // return *(reinterpret_cast<QList<QSharedPointer<IChunk>>*>(&chunks));
 }
 
 QList<Common::SharedDir> Cache::getSharedDirs() const

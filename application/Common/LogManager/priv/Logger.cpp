@@ -50,7 +50,7 @@ QWeakPointer<LoggerHook> LoggerHooks::operator[] (int i)
 
 void LoggerHooks::removeDeletedHooks()
 {
-   for (QMutableListIterator< QWeakPointer<LoggerHook> > i(this->loggerHooks); i.hasNext();)
+   for (QMutableListIterator<QWeakPointer<LoggerHook>> i(this->loggerHooks); i.hasNext();)
       if (!i.next().data())
          i.remove();
 }
@@ -138,7 +138,7 @@ void Logger::createFileLog()
 
       try
       {
-         QDir appDir(Common::Global::getDataFolder(Common::Global::LOCAL));
+         QDir appDir(Common::Global::getDataFolder(Common::Global::DataFolderType::LOCAL));
 
          if (!appDir.exists(logDirName) && !appDir.mkdir(logDirName))
          {

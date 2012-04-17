@@ -65,7 +65,7 @@ namespace Common
 
       static quint32 hashStringToInt(const QString& str);
 
-      enum DataFolderType { ROAMING = 0, LOCAL = 1 };
+      enum class DataFolderType { ROAMING = 0, LOCAL = 1 };
 
    private:
       static QString dataFolders[2];

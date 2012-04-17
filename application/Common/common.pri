@@ -10,13 +10,13 @@ CONFIG(debug, debug|release) {
    }
 }
 
-# C++11 is disable because of a segfaulting of GCC 4.4 on Windows
-#win32 {
+# C++11
+win32 {
    # For mingw32.
-   # QMAKE_CXXFLAGS += -std=gnu++0x
-#} else {
-   # QMAKE_CXXFLAGS += -std=c++0x
-#}
+   QMAKE_CXXFLAGS += -std=gnu++0x
+} else {
+   QMAKE_CXXFLAGS += -std=c++0x
+}
 
 DESTDIR = output/$$FOLDER
 MOC_DIR = .tmp/$$FOLDER

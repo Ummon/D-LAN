@@ -46,15 +46,15 @@ void Chunks::rm(QSharedPointer<Chunk> chunk)
 const QSharedPointer<Chunk> Chunks::value(const Common::Hash& hash) const
 {
    QMutexLocker locker(&this->mutex);
-   return QMultiHash< Common::Hash, QSharedPointer<Chunk> >::value(hash);
+   return QMultiHash<Common::Hash, QSharedPointer<Chunk>>::value(hash);
 }
 
-const QList< QSharedPointer<Chunk> > Chunks::values(const Common::Hash& hash) const
+const QList<QSharedPointer<Chunk>> Chunks::values(const Common::Hash& hash) const
 {
    QMutexLocker locker(&this->mutex);
-   QList< QSharedPointer<Chunk> > values;
+   QList<QSharedPointer<Chunk>> values;
 
-   QMultiHash< Common::Hash, QSharedPointer<Chunk> >::const_iterator i = this->find(hash);
+   QMultiHash<Common::Hash, QSharedPointer<Chunk>>::const_iterator i = this->find(hash);
    while (i != this->end() && i.key() == hash)
    {
       values << i.value();
@@ -67,5 +67,5 @@ const QList< QSharedPointer<Chunk> > Chunks::values(const Common::Hash& hash) co
 bool Chunks::contains(const Common::Hash& hash) const
 {
    QMutexLocker locker(&this->mutex);
-   return QMultiHash< Common::Hash, QSharedPointer<Chunk> >::contains(hash);
+   return QMultiHash<Common::Hash, QSharedPointer<Chunk>>::contains(hash);
 }
