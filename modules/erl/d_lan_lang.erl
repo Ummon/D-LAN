@@ -102,13 +102,13 @@ translate(en, faq, a2) ->
    "<ul>"
    "<li>Check you have the latest version of D-LAN.</li>"
    "<li>Be sure the ports 59486 (<i>UDP</i>) and 59487 (<i>UDP + TCP</i>) are opened in your firewall.</li>"
-   "<li>Be sure UDP multicast is allowed in your network. The address used is this one: 236.123.43.24.</li>"
+   "<li>Be sure UDP multicast is allowed in your network. The address used is this one: 236.13.43.24.</li>"
    "</ul>";
 translate(fr, faq, a2) ->
    "<ul>"
    "<li>Vérifier que la dernière version de D-LAN est installée.</li>"
    "<li>S'assurer que les ports 59486 (<i>UDP</i>) et 59487 (<i>UDP + TCP</i>) sont ouvert sur le pare-feu (<i>firewall</i>).</li>"
-   "<li>S'assurer que l'UDP multicast est autorisé sur le réseau. L'adresse utilisée est la suivante : 236.123.43.24.</li>"
+   "<li>S'assurer que l'UDP multicast est autorisé sur le réseau. L'adresse utilisée est la suivante : 236.13.43.24.</li>"
    "</ul>";
    
 translate(en, faq, q3) -> "D-LAN slows down my computer when hashing, what's that and why it's needed?";
