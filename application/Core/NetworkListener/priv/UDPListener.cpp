@@ -243,7 +243,7 @@ void UDPListener::processPendingMulticastDatagrams()
                for (int i = 0; i < IMAliveMessage.chunk_size(); i++)
                   hashes << IMAliveMessage.chunk(i).hash();
 
-               QBitArray bitArray = this->fileManager->haveChunks(hashes);
+               const QBitArray& bitArray = this->fileManager->haveChunks(hashes);
 
                if (!bitArray.isNull()) // If we own at least one chunk we reply with a CHUNKS_OWNED message.
                {
