@@ -20,6 +20,8 @@
 #include <ui_MainWindow.h>
 using namespace GUI;
 
+#include <cmath>
+
 #include <QTabBar>
 #include <QMdiSubWindow>
 #include <QPainter>
@@ -75,16 +77,26 @@ void PeerTableDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opt
       painter->drawPie(rect, 0, -16 * 180);
 
       // Download speed
-      painter->setPen(Qt::NoPen);
-      painter->setBrush(QBrush(DOWNLOAD_COLOR.darker(180)));
-      const int downloadAngle = -(16LL * 180 * transfertInformation.downloadRate) / LAN_SPEED;
-      painter->drawPie(rect, 16 * 180, downloadAngle < -16 * 180 ? -16 * 180 : downloadAngle);
+      if (transfertInformation.downloadRate > 0)
+      {
+         painter->setPen(Qt::NoPen);
+         painter->setBrush(QBrush(DOWNLOAD_COLOR.darker(180)));
+         const int downloadAngle = 16.0 * 180.0 * (log10(double(transfertInformation.downloadRate) / double(LAN_SPEED)) + 1.5) / 1.5; // Logarithmic scale.
+         //const int downloadAngle = -(16LL * 180 * transfertInformation.downloadRate) / LAN_SPEED; // Linear scale.
+         if (downloadAngle > 0)
+            painter->drawPie(rect, 16 * 180, downloadAngle > 16 * 180 ? -16 * 180 : -downloadAngle);
+      }
 
       // Upload speed
-      painter->setPen(Qt::NoPen);
-      painter->setBrush(QBrush(UPLOAD_COLOR.darker(180)));
-      const int uploadAngle = (16LL * 180 * transfertInformation.uploadRate) / LAN_SPEED;
-      painter->drawPie(rect, 16 * 180, uploadAngle > 16 * 180 ? 16 * 180 : uploadAngle);
+      if (transfertInformation.uploadRate > 0)
+      {
+         painter->setPen(Qt::NoPen);
+         painter->setBrush(QBrush(UPLOAD_COLOR.darker(180)));
+         const int uploadAngle = 16.0 * 180.0 * (log10(double(transfertInformation.uploadRate) / double(LAN_SPEED)) + 1.5) / 1.5; // Logarithmic scale.
+         //const int uploadAngle = (16LL * 180 * transfertInformation.uploadRate) / LAN_SPEED; // Linear scale.
+         if (uploadAngle > 0)
+            painter->drawPie(rect, 16 * 180, uploadAngle > 16 * 180 ? 16 * 180 : uploadAngle);
+      }
 
       painter->setPen(QPen(QBrush(transfertInformation.isDownloadingOurData ? QColor(220, 220, 0) : QColor(150, 150, 150)), transfertInformation.isDownloadingOurData ? 1.5 : 1.2));
       painter->setBrush(Qt::NoBrush);
