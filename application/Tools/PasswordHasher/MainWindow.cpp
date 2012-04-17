@@ -37,8 +37,8 @@ using namespace PasswordHasher;
 
 MainWindow::MainWindow(QWidget *parent) :
    QMainWindow(parent),
-   CORE_SETTINGS_PATH_CURRENT_USER(Common::Global::getDataFolder(Common::Global::ROAMING, false)),
-   CORE_SETTINGS_PATH_SYSTEM_USER(Common::Global::getDataServiceFolder(Common::Global::ROAMING)),
+   CORE_SETTINGS_PATH_CURRENT_USER(Common::Global::getDataFolder(Common::Global::DataFolderType::ROAMING, false)),
+   CORE_SETTINGS_PATH_SYSTEM_USER(Common::Global::getDataServiceFolder(Common::Global::DataFolderType::ROAMING)),
    ui(new Ui::MainWindow)
 {
    ui->setupUi(this);
