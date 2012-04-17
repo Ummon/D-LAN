@@ -248,6 +248,24 @@ void Tests::compareTwoHash()
    QVERIFY(h2 == h4);
 }
 
+Hash pouet()
+{
+   return Hash();
+}
+
+void Tests::hashMoveConstuctorAndAssignment()
+{
+   QString str("2d73736f34a73837d422f7aba2740d8409ac60df");
+
+   // Move constructor.
+   Hash h = std::move(Hash::fromStr(str)); // We have to force to rValue reference because of the return optimization (http://en.wikipedia.org/wiki/Return_value_optimization).
+   QVERIFY(h.toStr() == str);
+
+   // Copy constructor
+   h = std::move(Hash::fromStr(str));
+   QVERIFY(h.toStr() == str);
+}
+
 void Tests::hasher()
 {
    char str1[] = "abc";

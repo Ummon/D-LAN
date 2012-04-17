@@ -54,6 +54,7 @@ private slots:
    void generateAHash();
    void buildAnHashFromAString();
    void compareTwoHash();
+   void hashMoveConstuctorAndAssignment();
    void hasher();
 
    void messageHeader();

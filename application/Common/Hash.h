@@ -48,6 +48,7 @@ namespace Common
 
       Hash();
       Hash(const Hash& h);
+      Hash(Hash&& h);
 
       explicit Hash(const char* h); // It's too dangerous to construct an implicit Hash from a const char*.
       Hash(const std::string& str);
@@ -55,7 +56,8 @@ namespace Common
 
       ~Hash();
 
-      Hash& operator=(const Hash&);
+      Hash& operator=(const Hash& h);
+      Hash& operator=(Hash&& h);
 
       /**
         * Return a pointer to its internal data.
@@ -170,9 +172,12 @@ inline void Hash::dereference()
 #if WITH_MUTEX
    QMutexLocker locker(&this->data->mutex);
 #endif
-   this->data->nbRef -= 1;
-   if (this->data->nbRef == 0)
-      delete this->data;
+   if (this->data) // Move constructor may steal the data pointer.
+   {
+      this->data->nbRef -= 1;
+      if (this->data->nbRef == 0)
+         delete this->data;
+   }
 }
 
 inline void Hash::newData()

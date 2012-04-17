@@ -204,7 +204,7 @@ void PeerListModel::updatePeers(const google::protobuf::RepeatedPtrField<Protos:
       const QString& nick = ProtoHelper::getStr(peers.Get(i), &Protos::GUI::State::Peer::nick);
       const QString& coreVersion =ProtoHelper::getStr(peers.Get(i), &Protos::GUI::State::Peer::core_version);
       const quint64 sharingAmount(peers.Get(i).sharing_amount());
-      TransfertInformation transfertInformation = { peers.Get(i).download_rate(), peers.Get(i).upload_rate(),  peersDownloadingOurData.contains(peerID)};
+      TransfertInformation transfertInformation { peers.Get(i).download_rate(), peers.Get(i).upload_rate(),  peersDownloadingOurData.contains(peerID) };
 
       const QHostAddress ip =
          peers.Get(i).has_ip() ?
