@@ -300,7 +300,7 @@ void DownloadManager::newEntries(const Protos::Common::Entries& remoteEntries)
       if (remoteEntries.entry(n).type() == Protos::Common::Entry_Type_FILE)
       {
          const Protos::Common::Entry& localEntry = dirDownload->getLocalEntry();
-         QString relativePath = Common::ProtoHelper::getStr(localEntry, &Protos::Common::Entry::path).append(Common::ProtoHelper::getStr(localEntry, &Protos::Common::Entry::name)).append("/");
+         const QString& relativePath = Common::ProtoHelper::getStr(localEntry, &Protos::Common::Entry::path).append(Common::ProtoHelper::getStr(localEntry, &Protos::Common::Entry::name)).append("/");
          this->addDownload(remoteEntries.entry(n), dirDownload->getPeerSource(), localEntry.has_shared_dir() ? localEntry.shared_dir().id().hash() : Common::Hash(), relativePath, Protos::Queue::Queue::Entry::QUEUED, position++);
       }
 
@@ -309,7 +309,7 @@ void DownloadManager::newEntries(const Protos::Common::Entries& remoteEntries)
       if (remoteEntries.entry(n).type() == Protos::Common::Entry_Type_DIR)
       {
          const Protos::Common::Entry& localEntry = dirDownload->getLocalEntry();
-         QString relativePath = Common::ProtoHelper::getStr(localEntry, &Protos::Common::Entry::path).append(Common::ProtoHelper::getStr(localEntry, &Protos::Common::Entry::name)).append("/");
+         const QString& relativePath = Common::ProtoHelper::getStr(localEntry, &Protos::Common::Entry::path).append(Common::ProtoHelper::getStr(localEntry, &Protos::Common::Entry::name)).append("/");
          this->addDownload(remoteEntries.entry(n), dirDownload->getPeerSource(), localEntry.has_shared_dir() ? localEntry.shared_dir().id().hash() : Common::Hash(), relativePath, Protos::Queue::Queue::Entry::QUEUED, position++);
       }
 

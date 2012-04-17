@@ -328,7 +328,7 @@ void DownloadsTreeModel::onNewState(const Protos::GUI::State& state)
       }
       else
       {
-         QStringList path = ProtoHelper::getStr(download.local_entry(), &Protos::Common::Entry::path).split('/', QString::SkipEmptyParts);
+         const QStringList& path = ProtoHelper::getStr(download.local_entry(), &Protos::Common::Entry::path).split('/', QString::SkipEmptyParts);
 
          // A node is created for each directory.
          Tree* currentTree = this->root;

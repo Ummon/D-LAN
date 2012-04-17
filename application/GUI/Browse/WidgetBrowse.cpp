@@ -198,7 +198,7 @@ void WidgetBrowse::tryToReachEntryToBrowse()
       {
          // Then we try to match each folder name. If a folder cannot be reached then we ask to expand the last folder.
          // After the folder entries are loaded, 'tryToReachEntryToBrowse()' will be recalled via the signal 'BrowseModel::loadingResultFinished()'.
-         QStringList path = Common::ProtoHelper::getStr(this->remoteEntryToBrowse, &Protos::Common::Entry::path).append(Common::ProtoHelper::getStr(this->remoteEntryToBrowse, &Protos::Common::Entry::name)).split('/', QString::SkipEmptyParts);
+         const QStringList& path = Common::ProtoHelper::getStr(this->remoteEntryToBrowse, &Protos::Common::Entry::path).append(Common::ProtoHelper::getStr(this->remoteEntryToBrowse, &Protos::Common::Entry::name)).split('/', QString::SkipEmptyParts);
          for (QStringListIterator i(path); i.hasNext();)
          {
             QModelIndex childIndex = this->browseModel.searchChild(i.next(), currentIndex);

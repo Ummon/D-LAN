@@ -178,7 +178,7 @@ File* Cache::getFile(const Protos::Common::Entry& fileEntry) const
    {
       if (sharedDir->getId() == fileEntry.shared_dir().id().hash())
       {
-         QString relativePath(Common::ProtoHelper::getStr(fileEntry, &Protos::Common::Entry::path));
+         const QString& relativePath = Common::ProtoHelper::getStr(fileEntry, &Protos::Common::Entry::path);
          const QStringList folders = relativePath.split('/', QString::SkipEmptyParts);
 
          Directory* dir = sharedDir;
@@ -223,7 +223,7 @@ QList< QSharedPointer<IChunk> > Cache::newFile(Protos::Common::Entry& fileEntry)
 {
    QMutexLocker locker(&this->mutex);
 
-   const QString dirPath = QDir::cleanPath(Common::ProtoHelper::getStr(fileEntry, &Protos::Common::Entry::path));
+   const QString& dirPath = QDir::cleanPath(Common::ProtoHelper::getStr(fileEntry, &Protos::Common::Entry::path));
    const qint64 spaceNeeded = fileEntry.size() + SETTINGS.get<quint32>("minimum_free_space");
 
    // If we know where to put the file.

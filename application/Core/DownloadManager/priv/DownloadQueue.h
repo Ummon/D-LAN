@@ -100,7 +100,7 @@ namespace DM
       struct Marker { Marker(DownloadPredicate* p) : predicate(p), position(0) {} DownloadPredicate* predicate; int position; };
       QList<Marker> markers; ///< Saved some positions like the first downloadable file or the first directory. The goal is to speed up the scan. See the class 'ScanningIterator'.
 
-      QList<Download*> downloads;
+      QList<Download*> downloads; ///< All downloads, it also includes erroneous downloads.
       QList<Download*> erroneousDownloads;
       QMultiMap<QTime, FileDownload*> downloadsSortedByTime; // See 'FileDownload::lastTimeGetAllUnfinishedChunks'.
       QMultiHash<PM::IPeer*, Download*> downloadsIndexedBySourcePeer;

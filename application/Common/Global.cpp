@@ -66,51 +66,57 @@ QString Global::getVersionTag()
 
 QString Global::getSystemVersion()
 {
-#if defined(Q_OS_WIN32)
-   // Reference: http://msdn.microsoft.com/en-us/library/windows/desktop/ms724429(v=vs.85).aspx
-   OSVERSIONINFOEX versionInfo;
-   memset(&versionInfo, 0, sizeof(versionInfo));
-   versionInfo.dwOSVersionInfoSize = sizeof(versionInfo);
-   GetVersionEx((OSVERSIONINFO*)&versionInfo);
+   static QString systemVersion; // The version is cached.
+   if (systemVersion.isNull())
+   {
+   #if defined(Q_OS_WIN32)
+      // Reference: http://msdn.microsoft.com/en-us/library/windows/desktop/ms724429(v=vs.85).aspx
+      OSVERSIONINFOEX versionInfo;
+      memset(&versionInfo, 0, sizeof(versionInfo));
+      versionInfo.dwOSVersionInfoSize = sizeof(versionInfo);
+      GetVersionEx((OSVERSIONINFO*)&versionInfo);
 
-   if (versionInfo.dwMajorVersion == 6 && versionInfo.dwMinorVersion == 0)
-   {
-      if (versionInfo.wProductType == VER_NT_WORKSTATION)
-         return QString("Windows Vista");
+      if (versionInfo.dwMajorVersion == 6 && versionInfo.dwMinorVersion == 0)
+      {
+         if (versionInfo.wProductType == VER_NT_WORKSTATION)
+            systemVersion = "Windows Vista";
+         else
+            systemVersion = "Windows Server 2008";
+      }
+      else if (versionInfo.dwMajorVersion == 6 && versionInfo.dwMinorVersion == 1)
+      {
+         if (versionInfo.wProductType == VER_NT_WORKSTATION)
+            systemVersion = "Windows 7";
+         else
+            systemVersion = "Windows Server 2008 R2";
+      }
+      else if (versionInfo.dwMajorVersion == 5 && versionInfo.dwMinorVersion == 2)
+      {
+         systemVersion = "Windows Server 2003";
+      }
+      else if (versionInfo.dwMajorVersion == 5 && versionInfo.dwMinorVersion == 1)
+      {
+         systemVersion = "Windows XP";
+      }
+      else if (versionInfo.dwMajorVersion == 5 && versionInfo.dwMinorVersion == 0)
+      {
+         systemVersion = "Windows 2000";
+      }
       else
-         return QString("Windows Server 2008");
-   }
-   else if (versionInfo.dwMajorVersion == 6 && versionInfo.dwMinorVersion == 1)
-   {
-      if (versionInfo.wProductType == VER_NT_WORKSTATION)
-         return QString("Windows 7");
+      {
+         systemVersion = "Windows";
+      }
+   #elif defined(Q_OS_LINUX)
+      struct utsname name;
+      if (uname(&name) == 0)
+         systemVersion = QString::fromUtf8(name.sysname) % " " % QString::fromUtf8(name.release);
       else
-         return QString("Windows Server 2008 R2");
+         systemVersion = "Linux";
+   #elif defined(Q_OS_DARWIN)
+      systemVersion = "Mac OS X";
+   #endif
    }
-   else if (versionInfo.dwMajorVersion == 5 && versionInfo.dwMinorVersion == 2)
-   {
-      return QString("Windows Server 2003");
-   }
-   else if (versionInfo.dwMajorVersion == 5 && versionInfo.dwMinorVersion == 1)
-   {
-      return QString("Windows XP");
-   }
-   else if (versionInfo.dwMajorVersion == 5 && versionInfo.dwMinorVersion == 0)
-   {
-      return QString("Windows 2000");
-   }
-   return QString("Windows");
-#elif defined(Q_OS_LINUX)
-   struct utsname name;
-   if (uname(&name) == 0)
-      return QString::fromUtf8(name.sysname) % " " % QString::fromUtf8(name.release);
-   else
-      return "Linux";
-#elif defined(Q_OS_DARWIN)
-   return "Mac OS X";
-#else
-   return QString();
-#endif
+   return systemVersion;
 }
 
 /**

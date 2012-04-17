@@ -73,27 +73,29 @@ using namespace Common;
 template <typename T>
 void ProtoHelper::setStr(T& mess, void (T::*setter)(const char*), const QString& str)
 {
-   QByteArray array = str.toUtf8();
-   (mess.*setter)(array.data());
+   const QByteArray& array = str.toUtf8();
+   (mess.*setter)(array.constData());
 }
 
 template <typename T>
 QString ProtoHelper::getStr(const T& mess, const std::string& (T::*getter)() const)
 {
-   return QString::fromUtf8((mess.*getter)().data());
+   const std::string& str = (mess.*getter)();
+   return QString::fromUtf8(str.data(), str.length());
 }
 
 template <typename T>
 void ProtoHelper::addRepeatedStr(T& mess, void (T::*adder)(const char*), const QString& str)
 {
-   QByteArray array = str.toUtf8();
-   (mess.*adder)(array.data());
+   const QByteArray& array = str.toUtf8();
+   (mess.*adder)(array.constData());
 }
 
 template <typename T>
 QString ProtoHelper::getRepeatedStr(const T& mess, const std::string& (T::*getter)(int) const, int i)
 {
-   return QString::fromUtf8((mess.*getter)(i).data());
+   const std::string& str = (mess.*getter)(i);
+   return QString::fromUtf8(str.data(), str.length());
 }
 
 #endif

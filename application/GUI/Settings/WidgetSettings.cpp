@@ -199,7 +199,7 @@ void WidgetSettings::updateNetworkInterfaces(const Protos::GUI::State& state)
 
    for (int i = 0; i < state.interface_size(); i++)
    {
-      const QString interfaceName = Common::ProtoHelper::getStr(state.interface(i), &Protos::Common::Interface::name);
+      const QString& interfaceName = Common::ProtoHelper::getStr(state.interface(i), &Protos::Common::Interface::name);
 
       for (QListIterator<QObject*> j(this->ui->scoInterfacesContent->children()); j.hasNext();)
       {
@@ -267,7 +267,7 @@ void WidgetSettings::updateAddresses(const Protos::Common::Interface& interface,
 
    for (int i = 0; i < interface.address_size(); i++)
    {
-      const QString addresseName = Common::ProtoHelper::getStr(interface.address(i), &Protos::Common::Interface::Address::address);
+      const QString& addresseName = Common::ProtoHelper::getStr(interface.address(i), &Protos::Common::Interface::Address::address);
 
       for (QListIterator<QRadioButton*> j(container->findChildren<QRadioButton*>()); j.hasNext();)
       {

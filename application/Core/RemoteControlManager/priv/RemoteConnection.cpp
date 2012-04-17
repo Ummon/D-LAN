@@ -447,7 +447,7 @@ void RemoteConnection::onNewMessage(Common::MessageHeader::MessageType type, con
 
          QString currentAddressToListenTo = SETTINGS.get<QString>("listen_address");
          Protos::Common::Interface::Address::Protocol currentProtocol = static_cast<Protos::Common::Interface::Address::Protocol>(SETTINGS.get<quint32>("listen_any"));
-         QString newAddressToListenTo = ProtoHelper::getStr(coreSettingsMessage, &Protos::GUI::CoreSettings::listen_address);
+         const QString& newAddressToListenTo = ProtoHelper::getStr(coreSettingsMessage, &Protos::GUI::CoreSettings::listen_address);
          Protos::Common::Interface::Address::Protocol newProtocol = coreSettingsMessage.listen_any();
          SETTINGS.set("listen_address", newAddressToListenTo);
          SETTINGS.set("listen_any", static_cast<quint32>(newProtocol));
@@ -467,7 +467,7 @@ void RemoteConnection::onNewMessage(Common::MessageHeader::MessageType type, con
                i.remove();
 
          const Protos::GUI::Search& searchMessage = static_cast<const Protos::GUI::Search&>(message);
-         const QString pattern = Common::ProtoHelper::getStr(searchMessage, &Protos::GUI::Search::pattern);
+         const QString& pattern = Common::ProtoHelper::getStr(searchMessage, &Protos::GUI::Search::pattern);
 
          // Special syntax to search in your own files.
          if (pattern.startsWith('<'))
@@ -619,7 +619,7 @@ void RemoteConnection::onNewMessage(Common::MessageHeader::MessageType type, con
       {
          const Protos::GUI::ChatMessage& chatMessage = static_cast<const Protos::GUI::ChatMessage&>(message);
 
-         const QString message = Common::ProtoHelper::getStr(chatMessage, &Protos::GUI::ChatMessage::message);
+         const QString& message = Common::ProtoHelper::getStr(chatMessage, &Protos::GUI::ChatMessage::message);
          emit chatMessageSent(message);
          this->networkListener->getChat().send(message);
       }
