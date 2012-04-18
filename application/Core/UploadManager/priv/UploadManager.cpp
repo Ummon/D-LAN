@@ -52,7 +52,7 @@ UploadManager::~UploadManager()
 {
    L_DEBU("UploadManager deleted");
 
-   // We stop all uploads to avoid the thread pool to wait that all threads have finished its job.
+   // We stop all uploads to avoid the thread pool to wait that all threads have finished their job.
    for (QListIterator<QSharedPointer<Upload>> i(this->uploads); i.hasNext();)
       i.next()->stop();
 }

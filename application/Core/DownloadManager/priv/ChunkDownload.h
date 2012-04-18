@@ -76,8 +76,8 @@ namespace DM
       bool isComplete() const;
       bool isPartiallyDownloaded() const;
       bool hasAtLeastAPeer();
-      Status getLastTransfertStatus() const;
-      void resetLastTransfertStatus();
+      Status getLastTransferStatus() const;
+      void resetLastTransferStatus();
 
       int getDownloadedBytes() const;
       QList<PM::IPeer*> getPeers();
@@ -123,7 +123,7 @@ namespace DM
 
       bool downloading;
       bool closeTheSocket;
-      Status lastTransfertStatus;
+      Status lastTransferStatus;
 
       QThread* mainThread;
 

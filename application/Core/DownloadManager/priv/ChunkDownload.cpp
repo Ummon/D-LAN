@@ -45,7 +45,7 @@ ChunkDownload::ChunkDownload(LinkedPeers& linkedPeers, OccupiedPeers& occupiedPe
    socket(0),
    downloading(false),
    closeTheSocket(false),
-   lastTransfertStatus(QUEUED),
+   lastTransferStatus(QUEUED),
    mainThread(QThread::currentThread()),
    mutex(QMutex::Recursive)
 {
@@ -125,7 +125,7 @@ void ChunkDownload::run()
    int deltaRead = 0;
    QElapsedTimer timer;
    timer.start();
-   this->lastTransfertStatus = QUEUED;
+   this->lastTransferStatus = QUEUED;
 
    try
    {
@@ -163,7 +163,7 @@ void ChunkDownload::run()
             {
                L_WARN(QString("Connection dropped, error = %1, bytesAvailable = %2").arg(socket->errorString()).arg(socket->bytesAvailable()));
                this->closeTheSocket = true;
-               this->lastTransfertStatus = TRANSFERT_ERROR;
+               this->lastTransferStatus = TRANSFER_ERROR;
                break;
             }
             continue;
@@ -172,7 +172,7 @@ void ChunkDownload::run()
          {
             L_WARN(QString("Socket : cannot receive data : %1").arg(this->chunk->toStringLog()));
             this->closeTheSocket = true;
-            this->lastTransfertStatus = TRANSFERT_ERROR;
+            this->lastTransferStatus = TRANSFER_ERROR;
             break;
          }
 
@@ -219,25 +219,25 @@ void ChunkDownload::run()
    {
       L_DEBU("UnableToOpenFileInWriteModeException");
       this->closeTheSocket = true;
-      this->lastTransfertStatus = UNABLE_TO_OPEN_THE_FILE;
+      this->lastTransferStatus = UNABLE_TO_OPEN_THE_FILE;
    }
    catch(FM::IOErrorException&)
    {
       L_DEBU("IOErrorException");
       this->closeTheSocket = true;
-      this->lastTransfertStatus = FILE_IO_ERROR;
+      this->lastTransferStatus = FILE_IO_ERROR;
    }
    catch (FM::ChunkDeletedException&)
    {
       L_DEBU("ChunkDeletedException");
       this->closeTheSocket = true;
-      this->lastTransfertStatus = FILE_NON_EXISTENT;
+      this->lastTransferStatus = FILE_NON_EXISTENT;
    }
    catch (FM::TryToWriteBeyondTheEndOfChunkException&)
    {
       L_DEBU("TryToWriteBeyondTheEndOfChunkException");
       this->closeTheSocket = true;
-      this->lastTransfertStatus = GOT_TOO_MUCH_DATA;
+      this->lastTransferStatus = GOT_TOO_MUCH_DATA;
    }
    catch (FM::hashMissmatchException)
    {
@@ -246,7 +246,7 @@ void ChunkDownload::run()
       /*: A reason why the user has been banned */
       this->currentDownloadingPeer->ban(BAN_DURATION, tr("Has sent corrupted data"));
       this->closeTheSocket = true;
-      this->lastTransfertStatus = HASH_MISSMATCH;
+      this->lastTransferStatus = HASH_MISSMATCH;
    }
 
    if (timer.elapsed() > MINIMUM_DELTA_TIME_TO_COMPUTE_SPEED)
@@ -326,21 +326,21 @@ bool ChunkDownload::hasAtLeastAPeer()
 /**
   * May return one of this status:
   * QUEUED (all is ok)
-  * TRANSFERT_ERROR
+  * TRANSFER_ERROR
   * UNABLE_TO_OPEN_THE_FILE
   * FILE_IO_ERROR
   * FILE_NON_EXISTENT
   * GOT_TOO_MUCH_DATA
   * HASH_MISSMATCH
   */
-Status ChunkDownload::getLastTransfertStatus() const
+Status ChunkDownload::getLastTransferStatus() const
 {
-   return this->lastTransfertStatus;
+   return this->lastTransferStatus;
 }
 
-void ChunkDownload::resetLastTransfertStatus()
+void ChunkDownload::resetLastTransferStatus()
 {
-   this->lastTransfertStatus = QUEUED;
+   this->lastTransferStatus = QUEUED;
 }
 
 int ChunkDownload::getDownloadedBytes() const

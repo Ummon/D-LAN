@@ -57,13 +57,13 @@ namespace GUI
       void colorize(const QModelIndex& index, const QColor& color);
       void uncolorize(const QModelIndex& index);
 
-      struct TransfertInformation
+      struct TransferInformation
       {
          quint32 downloadRate;
          quint32 uploadRate;
          bool isDownloadingOurData;
-         bool operator==(const TransfertInformation& ti) const { return ti.downloadRate == this->downloadRate && ti.uploadRate == this->uploadRate && ti.isDownloadingOurData == this->isDownloadingOurData; }
-         bool operator!=(const TransfertInformation& ti) const { return !(ti == *this); }
+         bool operator==(const TransferInformation& ti) const { return ti.downloadRate == this->downloadRate && ti.uploadRate == this->uploadRate && ti.isDownloadingOurData == this->isDownloadingOurData; }
+         bool operator!=(const TransferInformation& ti) const { return !(ti == *this); }
       };
 
    signals:
@@ -83,8 +83,8 @@ namespace GUI
 
       struct Peer
       {
-         Peer(const Common::Hash& peerID, const QString& nick, const QString& coreVersion, quint64 sharingAmount, const QHostAddress& ip, TransfertInformation transfertInformation) :
-            peerID(peerID), nick(nick), coreVersion(coreVersion), sharingAmount(sharingAmount), ip(ip), transfertInformation(transfertInformation) {}
+         Peer(const Common::Hash& peerID, const QString& nick, const QString& coreVersion, quint64 sharingAmount, const QHostAddress& ip, TransferInformation transferInformation) :
+            peerID(peerID), nick(nick), coreVersion(coreVersion), sharingAmount(sharingAmount), ip(ip), transferInformation(transferInformation) {}
 
          bool operator==(const Peer& p) const { return this->peerID == p.peerID; }
          bool operator!=(const Peer& p) const { return this->peerID != p.peerID; }
@@ -96,7 +96,7 @@ namespace GUI
          QString coreVersion;
          quint64 sharingAmount;
          QHostAddress ip;
-         TransfertInformation transfertInformation;
+         TransferInformation transferInformation;
       };
 
 
@@ -107,6 +107,6 @@ namespace GUI
    };
 }
 
-Q_DECLARE_METATYPE(GUI::PeerListModel::TransfertInformation)
+Q_DECLARE_METATYPE(GUI::PeerListModel::TransferInformation)
 
 #endif

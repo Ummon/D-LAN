@@ -60,7 +60,7 @@ void PeerTableDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opt
    {
       static quint32 LAN_SPEED = SETTINGS.get<quint32>("lan_speed");
 
-      PeerListModel::TransfertInformation transfertInformation = index.data().value<PeerListModel::TransfertInformation>();
+      PeerListModel::TransferInformation transferInformation = index.data().value<PeerListModel::TransferInformation>();
       painter->setRenderHint(QPainter::Antialiasing, true);
       const QPoint center = option.rect.center();
       const int radius = qMin(option.rect.height(), option.rect.width()) / 2 - 2;
@@ -77,28 +77,28 @@ void PeerTableDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opt
       painter->drawPie(rect, 0, -16 * 180);
 
       // Download speed
-      if (transfertInformation.downloadRate > 0)
+      if (transferInformation.downloadRate > 0)
       {
          painter->setPen(Qt::NoPen);
          painter->setBrush(QBrush(DOWNLOAD_COLOR.darker(180)));
-         const int downloadAngle = 16.0 * 180.0 * (log10(double(transfertInformation.downloadRate) / double(LAN_SPEED)) + 1.5) / 1.5; // Logarithmic scale.
-         //const int downloadAngle = -(16LL * 180 * transfertInformation.downloadRate) / LAN_SPEED; // Linear scale.
+         const int downloadAngle = 16.0 * 180.0 * (log10(double(transferInformation.downloadRate) / double(LAN_SPEED)) + 1.5) / 1.5; // Logarithmic scale.
+         //const int downloadAngle = -(16LL * 180 * transferInformation.downloadRate) / LAN_SPEED; // Linear scale.
          if (downloadAngle > 0)
             painter->drawPie(rect, 16 * 180, downloadAngle > 16 * 180 ? -16 * 180 : -downloadAngle);
       }
 
       // Upload speed
-      if (transfertInformation.uploadRate > 0)
+      if (transferInformation.uploadRate > 0)
       {
          painter->setPen(Qt::NoPen);
          painter->setBrush(QBrush(UPLOAD_COLOR.darker(180)));
-         const int uploadAngle = 16.0 * 180.0 * (log10(double(transfertInformation.uploadRate) / double(LAN_SPEED)) + 1.5) / 1.5; // Logarithmic scale.
-         //const int uploadAngle = (16LL * 180 * transfertInformation.uploadRate) / LAN_SPEED; // Linear scale.
+         const int uploadAngle = 16.0 * 180.0 * (log10(double(transferInformation.uploadRate) / double(LAN_SPEED)) + 1.5) / 1.5; // Logarithmic scale.
+         //const int uploadAngle = (16LL * 180 * transferInformation.uploadRate) / LAN_SPEED; // Linear scale.
          if (uploadAngle > 0)
             painter->drawPie(rect, 16 * 180, uploadAngle > 16 * 180 ? 16 * 180 : uploadAngle);
       }
 
-      painter->setPen(QPen(QBrush(transfertInformation.isDownloadingOurData ? QColor(220, 220, 0) : QColor(150, 150, 150)), transfertInformation.isDownloadingOurData ? 1.5 : 1.2));
+      painter->setPen(QPen(QBrush(transferInformation.isDownloadingOurData ? QColor(220, 220, 0) : QColor(150, 150, 150)), transferInformation.isDownloadingOurData ? 1.5 : 1.2));
       painter->setBrush(Qt::NoBrush);
       painter->drawEllipse(rect);
    }
