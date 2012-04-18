@@ -33,7 +33,7 @@
 #include <Common/Hash.h>
 
 #include <IDownload.h>
-#include <IChunkDownload.h>
+#include <IChunkDownloader.h>
 #include <priv/DownloadPredicate.h>
 
 namespace PM { class IPeer; }
@@ -67,7 +67,7 @@ namespace DM
       void setDownloadAsErroneous(Download* download);
       Download* getAnErroneousDownload();
 
-      QList<QSharedPointer<IChunkDownload>> getTheOldestUnfinishedChunks(int n);
+      QList<QSharedPointer<IChunkDownloader>> getTheOldestUnfinishedChunks(int n);
 
       static Protos::Queue::Queue loadFromFile();
       void saveToFile() const;

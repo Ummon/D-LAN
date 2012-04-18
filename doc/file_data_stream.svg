@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
+
 <svg
    xmlns:dc="http://purl.org/dc/elements/1.1/"
    xmlns:cc="http://creativecommons.org/ns#"
@@ -12,7 +13,7 @@
    height="744.09448"
    id="svg2"
    sodipodi:version="0.32"
-   inkscape:version="0.46"
+   inkscape:version="0.48.2 r9819"
    version="1.0"
    sodipodi:docname="file_data_stream.svg"
    inkscape:output_extension="org.inkscape.output.svg.inkscape"
@@ -105,15 +106,16 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="0.98994949"
-     inkscape:cx="529.64509"
-     inkscape:cy="481.48666"
+     inkscape:cx="532.60711"
+     inkscape:cy="510.97553"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
-     inkscape:window-width="640"
-     inkscape:window-height="667"
-     inkscape:window-x="1344"
-     inkscape:window-y="200" />
+     inkscape:window-width="1351"
+     inkscape:window-height="819"
+     inkscape:window-x="266"
+     inkscape:window-y="152"
+     inkscape:window-maximized="0" />
   <metadata
      id="metadata7">
     <rdf:RDF>
@@ -136,9 +138,9 @@
        height="158.46991"
        width="345.27335"
        id="rect8407"
-       style="opacity:1;fill:#f5f5f5;fill-opacity:1;stroke:#000000;stroke-width:1.70000005;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+       style="opacity:1;fill:#f8f8f8;fill-opacity:1;stroke:#d4d4d4;stroke-width:1.70000005000000010;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
     <rect
-       style="opacity:1;fill:#f5f5f5;fill-opacity:1;stroke:#000000;stroke-width:1.70000005;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       style="opacity:1;fill:#f8f8f8;fill-opacity:1;stroke:#d4d4d4;stroke-width:1.70000005000000010;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
        id="rect8403"
        width="345.27335"
        height="158.46991"
@@ -146,7 +148,7 @@
        y="184.58472"
        ry="24.173378" />
     <rect
-       style="opacity:1;fill:#e6e6e6;fill-opacity:1;stroke:#000000;stroke-width:1.99999988;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       style="opacity:1;fill:#e6e6e6;fill-opacity:1;stroke:#868686;stroke-width:1.99999988000000010;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
        id="rect2405"
        width="223.04579"
        height="95.622261"
@@ -164,17 +166,6 @@
          y="259.22128"
          style="font-size:18px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Arial;-inkscape-font-specification:Arial">File</tspan></text>
     <text
-       xml:space="preserve"
-       style="font-size:6px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Adobe Caslon Pro;-inkscape-font-specification:Adobe Caslon Pro Bold"
-       x="149.13756"
-       y="260.50742"
-       id="text2395"><tspan
-         sodipodi:role="line"
-         id="tspan2397"
-         x="149.13756"
-         y="260.50742"
-         style="font-size:18px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Arial;-inkscape-font-specification:Arial">Chunk</tspan></text>
-    <text
        id="text2401"
        y="260.50742"
        x="216.97008"
@@ -187,7 +178,7 @@
          sodipodi:role="line">DataReader</tspan></text>
     <text
        xml:space="preserve"
-       style="font-size:6px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Adobe Caslon Pro;-inkscape-font-specification:Adobe Caslon Pro Bold"
+       style="font-size:6px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;fill:#4b4b4b;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Adobe Caslon Pro;-inkscape-font-specification:Adobe Caslon Pro Bold"
        x="127.51201"
        y="215.90652"
        id="text2407"><tspan
@@ -195,7 +186,7 @@
          id="tspan2409"
          x="127.51201"
          y="215.90652"
-         style="font-size:18px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Arial;-inkscape-font-specification:Arial">FileManager</tspan></text>
+         style="font-size:18px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Arial;-inkscape-font-specification:Arial;fill:#4b4b4b;fill-opacity:1">FileManager</tspan></text>
     <text
        xml:space="preserve"
        style="font-size:6px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Adobe Caslon Pro;-inkscape-font-specification:Adobe Caslon Pro Bold"
@@ -213,31 +204,47 @@
        height="95.622261"
        width="73.971809"
        id="rect3185"
-       style="opacity:1;fill:#e6e6e6;fill-opacity:1;stroke:#000000;stroke-width:1.99999976;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+       style="opacity:1;fill:#e6e6e6;fill-opacity:1;stroke:#868686;stroke-width:1.99999975999999990;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+    <text
+       xml:space="preserve"
+       style="font-size:4.76249886px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:Adobe Caslon Pro;-inkscape-font-specification:Adobe Caslon Pro Bold"
+       x="341.25143"
+       y="240.71324"
+       id="text2395"><tspan
+         sodipodi:role="line"
+         id="tspan2397"
+         x="341.25143"
+         y="240.71324"
+         style="font-size:14.28749657px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Arial;-inkscape-font-specification:Arial">Chunk-</tspan><tspan
+         sodipodi:role="line"
+         x="341.25143"
+         y="258.5726"
+         style="font-size:14.28749657px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Arial;-inkscape-font-specification:Arial"
+         id="tspan3855">Uploader</tspan></text>
     <text
        id="text3189"
        y="259.22128"
-       x="344.69183"
-       style="font-size:6px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Adobe Caslon Pro;-inkscape-font-specification:Adobe Caslon Pro Bold"
+       x="149.43295"
+       style="font-size:6px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:Adobe Caslon Pro;-inkscape-font-specification:Adobe Caslon Pro Bold"
        xml:space="preserve"><tspan
          style="font-size:18px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Arial;-inkscape-font-specification:Arial"
          y="259.22128"
-         x="344.69183"
-         id="tspan3191"
-         sodipodi:role="line">Upload</tspan></text>
+         x="149.43295"
+         sodipodi:role="line"
+         id="tspan3857">Chunk</tspan></text>
     <text
        id="text3205"
        y="215.90652"
        x="310.51996"
-       style="font-size:6px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Adobe Caslon Pro;-inkscape-font-specification:Adobe Caslon Pro Bold"
+       style="font-size:6px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;fill:#4b4b4b;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Adobe Caslon Pro;-inkscape-font-specification:Adobe Caslon Pro Bold"
        xml:space="preserve"><tspan
-         style="font-size:18px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Arial;-inkscape-font-specification:Arial"
+         style="font-size:18px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Arial;-inkscape-font-specification:Arial;fill:#4b4b4b;fill-opacity:1"
          y="215.90652"
          x="310.51996"
          id="tspan3207"
          sodipodi:role="line">UploadManager</tspan></text>
     <rect
-       style="opacity:1;fill:#e6e6e6;fill-opacity:1;stroke:#000000;stroke-width:1.99999976;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       style="opacity:1;fill:#e6e6e6;fill-opacity:1;stroke:#868686;stroke-width:1.99999975999999990;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
        id="rect3221"
        width="68.807205"
        height="95.622261"
@@ -256,7 +263,7 @@
          style="font-size:18px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Arial;-inkscape-font-specification:Arial">Peer</tspan></text>
     <text
        xml:space="preserve"
-       style="font-size:6px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Adobe Caslon Pro;-inkscape-font-specification:Adobe Caslon Pro Bold"
+       style="font-size:6px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;fill:#4b4b4b;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Adobe Caslon Pro;-inkscape-font-specification:Adobe Caslon Pro Bold"
        x="470.43729"
        y="215.90652"
        id="text3229"><tspan
@@ -264,28 +271,28 @@
          id="tspan3231"
          x="470.43729"
          y="215.90652"
-         style="font-size:18px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Arial;-inkscape-font-specification:Arial">PeerManager</tspan></text>
+         style="font-size:18px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Arial;-inkscape-font-specification:Arial;fill:#4b4b4b;fill-opacity:1">PeerManager</tspan></text>
     <rect
        y="223.49463"
        x="-955.1629"
        height="95.622261"
        width="223.04579"
        id="rect3255"
-       style="opacity:1;fill:#e6e6e6;fill-opacity:1;stroke:#000000;stroke-width:1.99999988;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       style="opacity:1;fill:#e6e6e6;fill-opacity:1;stroke:#868686;stroke-width:1.99999988000000010;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
        transform="scale(-1,1)" />
     <text
        id="text3277"
        y="215.90652"
        x="774.00964"
-       style="font-size:6px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Adobe Caslon Pro;-inkscape-font-specification:Adobe Caslon Pro Bold"
+       style="font-size:6px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;fill:#4b4b4b;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Adobe Caslon Pro;-inkscape-font-specification:Adobe Caslon Pro Bold"
        xml:space="preserve"><tspan
-         style="font-size:18px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Arial;-inkscape-font-specification:Arial"
+         style="font-size:18px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Arial;-inkscape-font-specification:Arial;fill:#4b4b4b;fill-opacity:1"
          y="215.90652"
          x="774.00964"
          id="tspan3279"
          sodipodi:role="line">FileManager</tspan></text>
     <rect
-       style="opacity:1;fill:#e6e6e6;fill-opacity:1;stroke:#000000;stroke-width:1.99999976;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       style="opacity:1;fill:#e6e6e6;fill-opacity:1;stroke:#868686;stroke-width:1.99999975999999990;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
        id="rect3285"
        width="73.971809"
        height="95.622261"
@@ -298,7 +305,7 @@
        height="95.622261"
        width="68.807205"
        id="rect3297"
-       style="opacity:1;fill:#e6e6e6;fill-opacity:1;stroke:#000000;stroke-width:1.99999976;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       style="opacity:1;fill:#e6e6e6;fill-opacity:1;stroke:#868686;stroke-width:1.99999975999999990;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
        transform="scale(-1,1)" />
     <text
        id="text3261"
@@ -335,16 +342,21 @@
          style="font-size:18px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Arial;-inkscape-font-specification:Arial">DataWriter</tspan></text>
     <text
        xml:space="preserve"
-       style="font-size:5.42440796px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Adobe Caslon Pro;-inkscape-font-specification:Adobe Caslon Pro Bold"
-       x="714.62817"
-       y="234.35367"
+       style="font-size:4.41784716px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:Adobe Caslon Pro;-inkscape-font-specification:Adobe Caslon Pro Bold"
+       x="659.91846"
+       y="239.77773"
        id="text3289"
-       transform="scale(0.904068,1.1061115)"><tspan
+       transform="scale(0.98679558,1.0133811)"><tspan
          sodipodi:role="line"
          id="tspan3291"
-         x="714.62817"
-         y="234.35367"
-         style="font-size:16.27322388px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Arial;-inkscape-font-specification:Arial">Download</tspan></text>
+         x="659.91846"
+         y="239.77773"
+         style="font-size:13.25354099px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Arial;-inkscape-font-specification:Arial">Chunk-</tspan><tspan
+         sodipodi:role="line"
+         x="659.91846"
+         y="256.34467"
+         style="font-size:13.25354099px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Arial;-inkscape-font-specification:Arial"
+         id="tspan3853">Download</tspan></text>
     <text
        id="text3301"
        y="259.22128"
@@ -371,9 +383,9 @@
        id="text3315"
        y="215.90652"
        x="604.80194"
-       style="font-size:6px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Adobe Caslon Pro;-inkscape-font-specification:Adobe Caslon Pro Bold"
+       style="font-size:6px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;fill:#4b4b4b;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Adobe Caslon Pro;-inkscape-font-specification:Adobe Caslon Pro Bold"
        xml:space="preserve"><tspan
-         style="font-size:18px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Arial;-inkscape-font-specification:Arial"
+         style="font-size:18px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Arial;-inkscape-font-specification:Arial;fill:#4b4b4b;fill-opacity:1"
          y="215.90652"
          x="604.80194"
          id="tspan3317"

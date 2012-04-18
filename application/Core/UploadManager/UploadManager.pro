@@ -20,11 +20,11 @@ DEFINES += UPLOADMANAGER_LIBRARY
 SOURCES += priv/UploadManager.cpp \
     Builder.cpp \
     priv/Log.cpp \
-    priv/Upload.cpp
+    priv/ChunkUploader.cpp
 HEADERS += IUploadManager.h \
-    IUpload.h \
     priv/UploadManager.h \
     Builder.h \
     priv/Constants.h \
     priv/Log.h \
-    priv/Upload.h
+    priv/ChunkUploader.h \
+    IChunkUploader.h

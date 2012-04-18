@@ -284,9 +284,9 @@ Download* DownloadQueue::getAnErroneousDownload()
    return 0;
 }
 
-QList<QSharedPointer<IChunkDownload>> DownloadQueue::getTheOldestUnfinishedChunks(int n)
+QList<QSharedPointer<IChunkDownloader>> DownloadQueue::getTheOldestUnfinishedChunks(int n)
 {
-   QList<QSharedPointer<IChunkDownload>> unfinishedChunks;
+   QList<QSharedPointer<IChunkDownloader>> unfinishedChunks;
 
    for (QMutableMapIterator<QTime, FileDownload*> i(this->downloadsSortedByTime); i.hasNext() && unfinishedChunks.size() < n;)
    {

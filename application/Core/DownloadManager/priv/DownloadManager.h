@@ -73,8 +73,8 @@ namespace DM
 
       void pauseDownloads(QList<quint64> IDs, bool pause = true);
 
-      QList<QSharedPointer<IChunkDownload>> getTheFirstUnfinishedChunks(int n);
-      QList<QSharedPointer<IChunkDownload>> getTheOldestUnfinishedChunks(int n);
+      QList<QSharedPointer<IChunkDownloader>> getTheFirstUnfinishedChunks(int n);
+      QList<QSharedPointer<IChunkDownloader>> getTheOldestUnfinishedChunks(int n);
 
       int getDownloadRate();
 
@@ -91,7 +91,7 @@ namespace DM
 
       void scanTheQueue();
       void rescanTimerActivated();
-      void chunkDownloadFinished();
+      void chunkDownloaderFinished();
       void downloadStatusBecomeErroneous(Download* download);
 
    private:
@@ -108,7 +108,7 @@ namespace DM
 
       QSharedPointer<FM::IFileManager> fileManager;
       QSharedPointer<PM::IPeerManager> peerManager;
-      LinkedPeers linkedPeers; // Number of 'ChunkDownload' each peer owns.
+      LinkedPeers linkedPeers; // Number of 'ChunkDownloader' each peer owns.
 
       Common::TransferRateCalculator transferRateCalculator;
 

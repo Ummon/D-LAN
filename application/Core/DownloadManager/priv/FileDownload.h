@@ -37,7 +37,7 @@
 #include <priv/OccupiedPeers.h>
 #include <priv/LinkedPeers.h>
 #include <priv/Download.h>
-#include <priv/ChunkDownload.h>
+#include <priv/ChunkDownloader.h>
 
 namespace DM
 {
@@ -72,9 +72,9 @@ namespace DM
       quint64 getDownloadedBytes() const;
       QSet<PM::IPeer*> getPeers() const;
 
-      QSharedPointer<ChunkDownload> getAChunkToDownload();
+      QSharedPointer<ChunkDownloader> getAChunkToDownload();
 
-      void getUnfinishedChunks(QList<QSharedPointer<IChunkDownload>>& chunks, int nMax);
+      void getUnfinishedChunks(QList<QSharedPointer<IChunkDownloader>>& chunks, int nMax);
 
       QTime getLastTimeGetAllUnfinishedChunks() const;
 
@@ -94,12 +94,12 @@ namespace DM
       void nextHash(const Common::Hash& hash);
       void getHashTimeout();
 
-      void chunkDownloadStarted();
-      void chunkDownloadFinished();
+      void chunkDownloaderStarted();
+      void chunkDownloaderFinished();
 
    private:
       bool tryToLinkToAnExistingFile();
-      void connectChunkDownloadSignals(QSharedPointer<ChunkDownload> chunkDownload);
+      void connectChunkDownloaderSignals(QSharedPointer<ChunkDownloader> chunkDownload);
       void reset();
 
       QSharedPointer<FM::IFileManager> fileManager;
@@ -108,7 +108,7 @@ namespace DM
       const int NB_CHUNK;
 
       QList<QSharedPointer<FM::IChunk>> chunksWithoutDownload;
-      QList<QSharedPointer<ChunkDownload>> chunkDownloads;
+      QList<QSharedPointer<ChunkDownloader>> chunkDownloaders;
 
       OccupiedPeers& occupiedPeersAskingForHashes;
       OccupiedPeers& occupiedPeersDownloadingChunk;

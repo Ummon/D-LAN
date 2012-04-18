@@ -30,10 +30,10 @@ namespace UM
    class IPeer;
    class IChunk;
 
-   class IUpload
+   class IChunkUploader
    {
    public:
-      virtual ~IUpload() {}
+      virtual ~IChunkUploader() {}
 
       /**
         * Returns the upload ID, it can be use later to retrieve an upload.

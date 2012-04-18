@@ -16,7 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#include <priv/Upload.h>
+#include <priv/ChunkUploader.h>
 using namespace UM;
 
 #include <QCoreApplication>
@@ -25,9 +25,9 @@ using namespace UM;
 
 #include <priv/Log.h>
 
-quint64 Upload::currentID(1);
+quint64 ChunkUploader::currentID(1);
 
-Upload::Upload(QSharedPointer<FM::IChunk> chunk, int offset, QSharedPointer<PM::ISocket> socket, Common::TransferRateCalculator& transferRateCalculator) :
+ChunkUploader::ChunkUploader(QSharedPointer<FM::IChunk> chunk, int offset, QSharedPointer<PM::ISocket> socket, Common::TransferRateCalculator& transferRateCalculator) :
    Common::Timeoutable(SETTINGS.get<quint32>("upload_lifetime")),
    mainThread(QThread::currentThread()),
    ID(currentID++),
@@ -40,23 +40,23 @@ Upload::Upload(QSharedPointer<FM::IChunk> chunk, int offset, QSharedPointer<PM::
 {   
 }
 
-Upload::~Upload()
+ChunkUploader::~ChunkUploader()
 {
    this->stop();
    L_DEBU(QString("Upload#%1 deleted").arg(this->ID));
 }
 
-quint64 Upload::getID() const
+quint64 ChunkUploader::getID() const
 {
    return this->ID;
 }
 
-Common::Hash Upload::getPeerID() const
+Common::Hash ChunkUploader::getPeerID() const
 {
    return this->socket->getRemotePeerID();
 }
 
-int Upload::getProgress() const
+int ChunkUploader::getProgress() const
 {
    QMutexLocker locker(&this->mutex);
 
@@ -67,17 +67,17 @@ int Upload::getProgress() const
       return 0;
 }
 
-QSharedPointer<FM::IChunk> Upload::getChunk() const
+QSharedPointer<FM::IChunk> ChunkUploader::getChunk() const
 {
    return this->chunk;
 }
 
-void Upload::init(QThread* thread)
+void ChunkUploader::init(QThread* thread)
 {
   this->socket->moveToThread(thread);
 }
 
-void Upload::run()
+void ChunkUploader::run()
 {
    L_DEBU(QString("Starting uploading a chunk from offset %1 : %2").arg(this->offset).arg(this->chunk->toStringLog()));
 
@@ -150,7 +150,7 @@ end:
    this->socket->moveToThread(this->mainThread);
 }
 
-void Upload::finished()
+void ChunkUploader::finished()
 {
    this->socket->finished(this->closeTheSocket);
    this->startTimer();
@@ -161,7 +161,7 @@ void Upload::finished()
   * Do nothing if there is no current upload.
   * See 'Upload::upload()'.
   */
-void Upload::stop()
+void ChunkUploader::stop()
 {
    this->mutex.lock();
    this->toStop = true;

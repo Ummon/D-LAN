@@ -107,7 +107,7 @@ namespace NL
 
       MTRand mtrand;
       quint64 currentIMAliveTag;
-      QList<QSharedPointer<DM::IChunkDownload>> currentChunkDownloads;
+      QList<QSharedPointer<DM::IChunkDownloader>> currentChunkDownloaders;
       enum HashRequestType
       {
          FIRST_HASHES,

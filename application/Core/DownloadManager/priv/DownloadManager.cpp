@@ -242,9 +242,9 @@ void DownloadManager::pauseDownloads(QList<quint64> IDs, bool pause)
       this->scanTheQueue();
 }
 
-QList<QSharedPointer<IChunkDownload>> DownloadManager::getTheFirstUnfinishedChunks(int n)
+QList<QSharedPointer<IChunkDownloader>> DownloadManager::getTheFirstUnfinishedChunks(int n)
 {
-   QList<QSharedPointer<IChunkDownload>> unfinishedChunks;
+   QList<QSharedPointer<IChunkDownloader>> unfinishedChunks;
 
    FileDownload* fileDownload = nullptr;
    DownloadQueue::ScanningIterator<IsDownloable> i(this->downloadQueue);
@@ -258,7 +258,7 @@ QList<QSharedPointer<IChunkDownload>> DownloadManager::getTheFirstUnfinishedChun
    return unfinishedChunks;
 }
 
-QList<QSharedPointer<IChunkDownload>> DownloadManager::getTheOldestUnfinishedChunks(int n)
+QList<QSharedPointer<IChunkDownloader>> DownloadManager::getTheOldestUnfinishedChunks(int n)
 {
    return this->downloadQueue.getTheOldestUnfinishedChunks(n);
 }
@@ -364,7 +364,7 @@ void DownloadManager::scanTheQueue()
 
    int numberOfDownloadThreadRunningCopy = this->numberOfDownloadThreadRunning;
 
-   QSharedPointer<ChunkDownload> chunkDownload;
+   QSharedPointer<ChunkDownloader> chunkDownloader;
    FileDownload* fileDownload = nullptr;
 
    // To know the number of peers not occupied that own at least one chunk in the queue.
@@ -375,21 +375,21 @@ void DownloadManager::scanTheQueue()
 
    while (numberOfDownloadThreadRunningCopy < NUMBER_OF_DOWNLOADER && !linkedPeersNotOccupied.isEmpty())
    {
-      if (chunkDownload.isNull()) // We can ask many chunks to download from the same file.
+      if (chunkDownloader.isNull()) // We can ask many chunks to download from the same file.
          if (!(fileDownload = static_cast<FileDownload*>(i.next())))
              break;
 
       if (fileDownload->isStatusErroneous())
          continue;
 
-      chunkDownload = fileDownload->getAChunkToDownload();
+      chunkDownloader = fileDownload->getAChunkToDownload();
 
-      if (chunkDownload.isNull())
+      if (chunkDownloader.isNull())
          continue;
 
-      if (PM::IPeer* currentPeer = chunkDownload->startDownloading())
+      if (PM::IPeer* currentPeer = chunkDownloader->startDownloading())
       {
-         connect(chunkDownload.data(), SIGNAL(downloadFinished()), this, SLOT(chunkDownloadFinished()), Qt::DirectConnection);
+         connect(chunkDownloader.data(), SIGNAL(downloadFinished()), this, SLOT(chunkDownloaderFinished()), Qt::DirectConnection);
          linkedPeersNotOccupied -= currentPeer;
          this->numberOfDownloadThreadRunning++;
          numberOfDownloadThreadRunningCopy = this->numberOfDownloadThreadRunning;
@@ -417,10 +417,10 @@ void DownloadManager::rescanTimerActivated()
 /**
   * It must be called before 'peerNoLongerDownloadingChunk' when a download is finished.
   */
-void DownloadManager::chunkDownloadFinished()
+void DownloadManager::chunkDownloaderFinished()
 {
-   L_DEBU(QString("DownloadManager::chunkDownloadFinished, numberOfDownloadThreadRunning = %1").arg(this->numberOfDownloadThreadRunning));
-   this->sender()->disconnect(this, SLOT(chunkDownloadFinished()));
+   L_DEBU(QString("DownloadManager::chunkDownloaderFinished, numberOfDownloadThreadRunning = %1").arg(this->numberOfDownloadThreadRunning));
+   this->sender()->disconnect(this, SLOT(chunkDownloaderFinished()));
    this->numberOfDownloadThreadRunning--;
 }
 

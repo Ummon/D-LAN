@@ -22,7 +22,6 @@ SOURCES += priv/FileDownload.cpp \
     priv/DownloadManager.cpp \
     priv/Download.cpp \
     priv/DirDownload.cpp \
-    priv/ChunkDownload.cpp \
     ../../Protos/common.pb.cc \
     priv/Builder.cpp \
     priv/OccupiedPeers.cpp \
@@ -30,15 +29,15 @@ SOURCES += priv/FileDownload.cpp \
     priv/Log.cpp \
     priv/DownloadPredicate.cpp \
     priv/DownloadQueue.cpp \
-    Utils.cpp
+    Utils.cpp \
+    priv/ChunkDownloader.cpp
 HEADERS += IDownloadManager.h \
     IDownload.h \
-    IChunkDownload.h \
+    IChunkDownloader.h \
     priv/FileDownload.h \
     priv/DownloadManager.h \
     priv/Download.h \
     priv/DirDownload.h \
-    priv/ChunkDownload.h \
     ../../Protos/common.pb.h \
     Builder.h \
     priv/Constants.h \
@@ -49,4 +48,6 @@ HEADERS += IDownloadManager.h \
     priv/DownloadPredicate.h \
     priv/DownloadQueue.h \
     Utils.h \
-    priv/LinkedPeers.h
+    priv/LinkedPeers.h \
+    IChunkDownloader.h \
+    priv/ChunkDownloader.h
