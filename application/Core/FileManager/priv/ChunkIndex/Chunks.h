@@ -34,8 +34,8 @@ namespace FM
    public:
       void add(QSharedPointer<Chunk> chunk);
       void rm(QSharedPointer<Chunk> chunk);
-      const QSharedPointer<Chunk> value(const Common::Hash& hash) const;
-      const QList<QSharedPointer<Chunk>> values(const Common::Hash& hash) const;
+      QSharedPointer<Chunk> value(const Common::Hash& hash) const;
+      QList<QSharedPointer<Chunk>> values(const Common::Hash& hash) const;
       bool contains(const Common::Hash& hash) const;
 
    private:

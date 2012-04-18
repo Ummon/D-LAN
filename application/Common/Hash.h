@@ -138,6 +138,7 @@ namespace Common
      */
    inline uint qHash(const Hash& h)
    {
+      // Take the first sizeof(uint) bytes of the hash data.
       return *(const uint*)(h.getData());
    }
 

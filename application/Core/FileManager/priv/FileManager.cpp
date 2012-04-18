@@ -125,7 +125,7 @@ QList<QSharedPointer<IChunk>> FileManager::getAllChunks(const Protos::Common::En
    for (QListIterator<Common::Hash> h(hashes); h.hasNext();)
    {
       // Chunks from different files, usually one chunk.
-      QList<QSharedPointer<Chunk>> chunks = this->chunks.values(h.next());
+      const QList<QSharedPointer<Chunk>>& chunks = this->chunks.values(h.next());
 
       for (QListIterator<QSharedPointer<Chunk>> i(chunks); i.hasNext();)
       {

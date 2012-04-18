@@ -43,13 +43,13 @@ void Chunks::rm(QSharedPointer<Chunk> chunk)
    L_DEBU(QString("Nb chunks: %1").arg(this->size()));
 }
 
-const QSharedPointer<Chunk> Chunks::value(const Common::Hash& hash) const
+QSharedPointer<Chunk> Chunks::value(const Common::Hash& hash) const
 {
    QMutexLocker locker(&this->mutex);
    return QMultiHash<Common::Hash, QSharedPointer<Chunk>>::value(hash);
 }
 
-const QList<QSharedPointer<Chunk>> Chunks::values(const Common::Hash& hash) const
+QList<QSharedPointer<Chunk>> Chunks::values(const Common::Hash& hash) const
 {
    QMutexLocker locker(&this->mutex);
    QList<QSharedPointer<Chunk>> values;
