@@ -60,7 +60,7 @@ Protos::Core::GetHashesResult GetHashesResult::start()
       result.set_status(Protos::Core::GetHashesResult_Status_DONT_HAVE);
       return result;
    }
-   QList< QSharedPointer<Chunk> > chunks = this->file->getChunks();
+   QList<QSharedPointer<Chunk>> chunks = this->file->getChunks();
 
    if (this->fileEntry.chunk_size() > chunks.size())
    {
@@ -75,7 +75,7 @@ Protos::Core::GetHashesResult GetHashesResult::start()
 
    result.set_nb_hash(this->nbHash);
 
-   for (QListIterator< QSharedPointer<Chunk> > i(chunks); i.hasNext();)
+   for (QListIterator<QSharedPointer<Chunk>> i(chunks); i.hasNext();)
    {
       QSharedPointer<Chunk> chunk(i.next());
       if (chunk->getNum() < this->fileEntry.chunk_size()) // TODO: maybe we should check if the hashes are equal..

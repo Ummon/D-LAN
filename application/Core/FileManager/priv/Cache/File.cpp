@@ -76,8 +76,8 @@ File::File(
    complete(!Global::isFileUnfinished(Entry::getName())),
    numDataWriter(0),
    numDataReader(0),
-   fileInWriteMode(0),
-   fileInReadMode(0),
+   fileInWriteMode(nullptr),
+   fileInReadMode(nullptr),
    mutex(QMutex::Recursive)
 {
    L_DEBU(QString("New file : %1 (%2), createPhysically = %3").arg(this->getFullPath()).arg(Common::Global::formatByteSize(this->size)).arg(createPhysically));
@@ -135,8 +135,8 @@ void File::setToUnfinished(qint64 size, const Common::Hashes& hashes)
 bool File::restoreFromFileCache(const Protos::FileCache::Hashes::File& file)
 {
    if (
+      static_cast<qint64>(file.size()) == this->size &&
       Common::ProtoHelper::getStr(file, &Protos::FileCache::Hashes_File::filename) == this->getName() &&
-      (qint64)file.size() == this->size &&
          (
             Global::isFileUnfinished(this->getName()) ||
             (qint64)file.date_last_modified() == this->getDateLastModified().toMSecsSinceEpoch() // We test the date only for finished files.
@@ -172,7 +172,7 @@ void File::populateHashesFile(Protos::FileCache::Hashes_File& fileToFill) const
    fileToFill.set_size(this->size);
    fileToFill.set_date_last_modified(this->getDateLastModified().toMSecsSinceEpoch());
 
-   for (QListIterator< QSharedPointer<Chunk> > i(this->chunks); i.hasNext();)
+   for (QListIterator<QSharedPointer<Chunk>> i(this->chunks); i.hasNext();)
    {
       Protos::FileCache::Hashes_Chunk* chunk = fileToFill.add_chunk();
       i.next()->populateHashesChunk(*chunk);
@@ -189,7 +189,7 @@ void File::populateEntry(Protos::Common::Entry* entry, bool setSharedDir) const
    entry->set_type(Protos::Common::Entry_Type_FILE);
 
    entry->clear_chunk();
-   for (QListIterator< QSharedPointer<Chunk> > i(this->chunks); i.hasNext();)
+   for (QListIterator<QSharedPointer<Chunk>> i(this->chunks); i.hasNext();)
    {
       Common::Hash hash = i.next()->getHash();
       if (hash.isNull())
@@ -294,7 +294,7 @@ void File::dataWriterDeleted()
    if (--this->numDataWriter == 0)
    {
       this->cache->getFilePool().release(this->fileInWriteMode);
-      this->fileInWriteMode = 0;
+      this->fileInWriteMode = nullptr;
    }
 }
 
@@ -305,7 +305,7 @@ void File::dataReaderDeleted()
    if (--this->numDataReader == 0)
    {
       this->cache->getFilePool().release(this->fileInReadMode);
-      this->fileInReadMode = 0;
+      this->fileInReadMode = nullptr;
    }
 }
 
@@ -360,7 +360,7 @@ qint64 File::read(char* buffer, qint64 offset, int maxBytesToRead)
    return bytesRead;
 }
 
-QList< QSharedPointer<Chunk> > File::getChunks() const
+QList<QSharedPointer<Chunk>> File::getChunks() const
 {
    return this->chunks;
 }
@@ -380,7 +380,7 @@ bool File::hasAllHashes()
 
 bool File::hasOneOrMoreHashes()
 {
-   for (QListIterator< QSharedPointer<Chunk> > i(this->chunks); i.hasNext();)
+   for (QListIterator<QSharedPointer<Chunk>> i(this->chunks); i.hasNext();)
      if (i.next()->hasHash())
          return true;
    return false;
@@ -415,8 +415,8 @@ void File::setAsComplete()
          QMutexLocker lockerWrite(&this->writeLock);
          QMutexLocker lockerRead(&this->readLock);
          this->cache->getFilePool().forceReleaseAll(this->getFullPath()); // Some uploads may be interrupted.
-         this->fileInReadMode = 0;
-         this->fileInWriteMode = 0;
+         this->fileInReadMode = nullptr;
+         this->fileInWriteMode = nullptr;
       }
 
       const QString oldPath = this->getFullPath();
@@ -489,8 +489,8 @@ void File::removeUnfinishedFiles()
       QMutexLocker lockerRead(&this->readLock);
 
       this->cache->getFilePool().forceReleaseAll(this->getFullPath());
-      this->fileInReadMode = 0;
-      this->fileInWriteMode = 0;
+      this->fileInReadMode = nullptr;
+      this->fileInWriteMode = nullptr;
 
       if (!QFile::remove(this->getFullPath()))
          L_WARN(QString("File::removeUnfinishedFiles() : unable to delete an unfinished file : %1").arg(this->getFullPath()));
@@ -538,7 +538,7 @@ QSharedPointer<Chunk> File::removeLastChunk()
 
 void File::deleteAllChunks()
 {
-   for (QListIterator< QSharedPointer<Chunk> > i(this->chunks); i.hasNext();)
+   for (QListIterator<QSharedPointer<Chunk>> i(this->chunks); i.hasNext();)
       this->cache->onChunkRemoved(i.next());
    this->chunks.clear();
 }

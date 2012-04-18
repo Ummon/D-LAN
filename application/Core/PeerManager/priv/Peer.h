@@ -59,6 +59,8 @@ namespace PM
       virtual QString getNick() const;
       virtual QString getCoreVersion() const;
       virtual quint64 getSharingAmount() const;
+      virtual quint32 getDownloadRate() const;
+      virtual quint32 getUploadRate() const;
 
       virtual quint32 getSpeed();
       virtual void setSpeed(quint32 newSpeed);
@@ -72,7 +74,9 @@ namespace PM
          quint16 port,
          const QString& nick,
          const quint64& sharingAmount,
-         const QString& coreVersion
+         const QString& coreVersion,
+         quint32 downloadRate,
+         quint32 uploadRate
       );
       virtual void setAsDead();
 
@@ -103,6 +107,8 @@ namespace PM
       QString nick;
       QString coreVersion;
       quint64 sharingAmount;
+      quint32 downloadRate;
+      quint32 uploadRate;
 
       QElapsedTimer speedTimer;
       quint32 speed; // [bytes/s]

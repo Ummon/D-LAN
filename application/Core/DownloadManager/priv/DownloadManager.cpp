@@ -127,7 +127,7 @@ Download* DownloadManager::addDownload(const Protos::Common::Entry& remoteEntry,
 
 Download* DownloadManager::addDownload(const Protos::Common::Entry& remoteEntry, const Protos::Common::Entry& localEntry, PM::IPeer* peerSource, Protos::Queue::Queue::Entry::Status status, int position)
 {
-   Download* newDownload = 0;
+   Download* newDownload = nullptr;
 
    // We do not create a new download is a similar one is already in queue. This test can be CPU expensive.
    if (this->downloadQueue.isEntryAlreadyQueued(localEntry))
@@ -191,7 +191,8 @@ QList<IDownload*> DownloadManager::getDownloads() const
 {
    QList<IDownload*> listDownloads;
 
-   // TODO: very heavy!
+   // A bit heavy...
+   listDownloads.reserve(this->downloadQueue.size());
    for (int i = 0; i < this->downloadQueue.size(); i++)
    {
       Download* download = this->downloadQueue[i];
@@ -241,11 +242,11 @@ void DownloadManager::pauseDownloads(QList<quint64> IDs, bool pause)
       this->scanTheQueue();
 }
 
-QList< QSharedPointer<IChunkDownload> > DownloadManager::getTheFirstUnfinishedChunks(int n)
+QList<QSharedPointer<IChunkDownload>> DownloadManager::getTheFirstUnfinishedChunks(int n)
 {
-   QList< QSharedPointer<IChunkDownload> > unfinishedChunks;
+   QList<QSharedPointer<IChunkDownload>> unfinishedChunks;
 
-   FileDownload* fileDownload = 0;
+   FileDownload* fileDownload = nullptr;
    DownloadQueue::ScanningIterator<IsDownloable> i(this->downloadQueue);
    while (unfinishedChunks.size() < n)
    {
@@ -257,7 +258,7 @@ QList< QSharedPointer<IChunkDownload> > DownloadManager::getTheFirstUnfinishedCh
    return unfinishedChunks;
 }
 
-QList< QSharedPointer<IChunkDownload> > DownloadManager::getTheOldestUnfinishedChunks(int n)
+QList<QSharedPointer<IChunkDownload>> DownloadManager::getTheOldestUnfinishedChunks(int n)
 {
    return this->downloadQueue.getTheOldestUnfinishedChunks(n);
 }
@@ -299,7 +300,7 @@ void DownloadManager::newEntries(const Protos::Common::Entries& remoteEntries)
       if (remoteEntries.entry(n).type() == Protos::Common::Entry_Type_FILE)
       {
          const Protos::Common::Entry& localEntry = dirDownload->getLocalEntry();
-         QString relativePath = Common::ProtoHelper::getStr(localEntry, &Protos::Common::Entry::path).append(Common::ProtoHelper::getStr(localEntry, &Protos::Common::Entry::name)).append("/");
+         const QString& relativePath = Common::ProtoHelper::getStr(localEntry, &Protos::Common::Entry::path).append(Common::ProtoHelper::getStr(localEntry, &Protos::Common::Entry::name)).append("/");
          this->addDownload(remoteEntries.entry(n), dirDownload->getPeerSource(), localEntry.has_shared_dir() ? localEntry.shared_dir().id().hash() : Common::Hash(), relativePath, Protos::Queue::Queue::Entry::QUEUED, position++);
       }
 
@@ -308,7 +309,7 @@ void DownloadManager::newEntries(const Protos::Common::Entries& remoteEntries)
       if (remoteEntries.entry(n).type() == Protos::Common::Entry_Type_DIR)
       {
          const Protos::Common::Entry& localEntry = dirDownload->getLocalEntry();
-         QString relativePath = Common::ProtoHelper::getStr(localEntry, &Protos::Common::Entry::path).append(Common::ProtoHelper::getStr(localEntry, &Protos::Common::Entry::name)).append("/");
+         const QString& relativePath = Common::ProtoHelper::getStr(localEntry, &Protos::Common::Entry::path).append(Common::ProtoHelper::getStr(localEntry, &Protos::Common::Entry::name)).append("/");
          this->addDownload(remoteEntries.entry(n), dirDownload->getPeerSource(), localEntry.has_shared_dir() ? localEntry.shared_dir().id().hash() : Common::Hash(), relativePath, Protos::Queue::Queue::Entry::QUEUED, position++);
       }
 
@@ -364,7 +365,7 @@ void DownloadManager::scanTheQueue()
    int numberOfDownloadThreadRunningCopy = this->numberOfDownloadThreadRunning;
 
    QSharedPointer<ChunkDownload> chunkDownload;
-   FileDownload* fileDownload = 0;
+   FileDownload* fileDownload = nullptr;
 
    // To know the number of peers not occupied that own at least one chunk in the queue.
    QSet<PM::IPeer*> linkedPeersNotOccupied = this->linkedPeers.getPeers().toSet();

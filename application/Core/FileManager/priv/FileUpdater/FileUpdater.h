@@ -58,7 +58,7 @@ namespace FM
 
    public slots:
       void addRoot(SharedDirectory* dir);
-      void rmRoot(SharedDirectory* dir, Directory* dir2 = 0);
+      void rmRoot(SharedDirectory* dir, Directory* dir2 = nullptr);
 
    signals:
       void fileCacheLoaded();
@@ -74,7 +74,7 @@ namespace FM
 
       void scan(Directory* dir, bool addUnfinished = false);
 
-      void stopScanning(Directory* dir = 0);
+      void stopScanning(Directory* dir = nullptr);
 
       void deleteEntry(Entry* entry);
       void removeFromDirsToScan(Directory* dir);

@@ -16,22 +16,25 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef CORE_CONSOLEREADER_H
-#define CORE_CONSOLEREADER_H
+#ifndef COMMON_CONSOLEREADER_H
+#define COMMON_CONSOLEREADER_H
 
 #include <QThread>
 #include <QTextStream>
 #include <QIODevice>
 
-namespace CoreSpace
+namespace Common
 {
    class ConsoleReader : public QThread
    {
       Q_OBJECT
    public:
-      static const QString QUIT_COMMAND;
+      static QString QUIT_COMMAND;
 
-      explicit ConsoleReader(QObject* parent = 0);
+      explicit ConsoleReader(QObject* parent = nullptr);
+
+      static void setQuitCommand(const QString& quitCommand);
+
       void stop();
 
    protected:

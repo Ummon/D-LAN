@@ -57,6 +57,15 @@ namespace GUI
       void colorize(const QModelIndex& index, const QColor& color);
       void uncolorize(const QModelIndex& index);
 
+      struct TransferInformation
+      {
+         quint32 downloadRate;
+         quint32 uploadRate;
+         bool isDownloadingOurData;
+         bool operator==(const TransferInformation& ti) const { return ti.downloadRate == this->downloadRate && ti.uploadRate == this->uploadRate && ti.isDownloadingOurData == this->isDownloadingOurData; }
+         bool operator!=(const TransferInformation& ti) const { return !(ti == *this); }
+      };
+
    signals:
       /**
         * To remove peer files browse window. (Not used).
@@ -67,15 +76,15 @@ namespace GUI
       void newState(const Protos::GUI::State& state);
 
    private:
-      void setPeers(const google::protobuf::RepeatedPtrField<Protos::GUI::State_Peer>& peers);
+      void updatePeers(const google::protobuf::RepeatedPtrField<Protos::GUI::State::Peer>& peers, const QSet<Common::Hash>& peersDownloadingOurData);
       void sort();
 
       QSharedPointer<RCC::ICoreConnection> coreConnection;
 
       struct Peer
       {
-         Peer(const Common::Hash& peerID, const QString& nick, const QString& coreVersion, quint64 sharingAmount, const QHostAddress& ip) :
-            peerID(peerID), nick(nick), coreVersion(coreVersion), sharingAmount(sharingAmount), ip(ip) {}
+         Peer(const Common::Hash& peerID, const QString& nick, const QString& coreVersion, quint64 sharingAmount, const QHostAddress& ip, TransferInformation transferInformation) :
+            peerID(peerID), nick(nick), coreVersion(coreVersion), sharingAmount(sharingAmount), ip(ip), transferInformation(transferInformation) {}
 
          bool operator==(const Peer& p) const { return this->peerID == p.peerID; }
          bool operator!=(const Peer& p) const { return this->peerID != p.peerID; }
@@ -87,6 +96,7 @@ namespace GUI
          QString coreVersion;
          quint64 sharingAmount;
          QHostAddress ip;
+         TransferInformation transferInformation;
       };
 
 
@@ -96,5 +106,7 @@ namespace GUI
       Protos::GUI::Settings::PeerSortType currentSortType;
    };
 }
+
+Q_DECLARE_METATYPE(GUI::PeerListModel::TransferInformation)
 
 #endif

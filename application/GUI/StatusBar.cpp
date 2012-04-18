@@ -72,8 +72,7 @@ void StatusBar::newState(const Protos::GUI::State& state)
    qint64 totalSharing = 0;
    for (int i = 0; i < state.peer_size(); i++)
       totalSharing += state.peer(i).sharing_amount();
-   totalSharing += state.myself().sharing_amount();
-   this->setTotalSharing(state.peer_size() + 1, totalSharing);
+   this->setTotalSharing(state.peer_size(), totalSharing);
 
    this->updateCoreStatus(state.stats().cache_status(), state.stats().progress());
 }

@@ -65,15 +65,15 @@ namespace PM
       Peer* getPeer_(const Common::Hash& ID);
       IPeer* createPeer(const Common::Hash& ID, const QString& nick);
 
-      void updatePeer(const Common::Hash& ID, const QHostAddress& IP, quint16 port, const QString& nick, const quint64& sharingAmount, const QString& coreVersion);
+      void updatePeer(const Common::Hash& ID, const QHostAddress& IP, quint16 port, const QString& nick, const quint64& sharingAmount, const QString& coreVersion, quint32 downloadRate, quint32 uploadRate);
       void removeAllPeers();
       void newConnection(QTcpSocket* tcpSocket);
 
       void onGetChunk(QSharedPointer<FM::IChunk> chunk, int offset, QSharedPointer<PeerMessageSocket> socket);
 
    private slots:
-      void dataReceived(QTcpSocket* tcpSocket = 0);
-      void disconnected(QTcpSocket* tcpSocket = 0);
+      void dataReceived(QTcpSocket* tcpSocket = nullptr);
+      void disconnected(QTcpSocket* tcpSocket = nullptr);
       void checkIdlePendingSockets();
       void peerUnbanned();
 

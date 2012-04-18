@@ -46,7 +46,7 @@ namespace PM
      *  - The hashes of a given entry. This entry must be a file.
      *  - The data of a given chunk hash.
      *
-     * A peer is never deleted, it's safe to keep a pointer.
+     * A peer is never deleted, it's safe to keep a pointer on it.
      */
    class IPeer : public LM::ILoggable
    {
@@ -64,6 +64,10 @@ namespace PM
       virtual QString getCoreVersion() const = 0;
 
       virtual quint64 getSharingAmount() const = 0;
+
+      virtual quint32 getDownloadRate() const = 0;
+
+      virtual quint32 getUploadRate() const = 0;
 
       /**
         * Return the average speed when downloading from this peer.

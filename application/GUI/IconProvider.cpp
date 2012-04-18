@@ -45,7 +45,7 @@ QIcon IconProvider::getIcon(const Protos::Common::Entry& entry)
    }
    else
    {
-      QString name = Common::ProtoHelper::getStr(entry, &Protos::Common::Entry::name);
+      const QString& name = Common::ProtoHelper::getStr(entry, &Protos::Common::Entry::name);
       const int index = name.lastIndexOf(".");
       if (index != -1)
          return IconProvider::getIconCache(name.mid(index));

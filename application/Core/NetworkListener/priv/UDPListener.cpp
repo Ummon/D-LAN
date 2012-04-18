@@ -161,7 +161,7 @@ void UDPListener::sendIMAliveMessage()
    }
 
    IMAliveMessage.mutable_chunk()->Reserve(this->currentChunkDownloads.size());
-   for (QListIterator< QSharedPointer<DM::IChunkDownload> > i(this->currentChunkDownloads); i.hasNext();)
+   for (QListIterator<QSharedPointer<DM::IChunkDownload>> i(this->currentChunkDownloads); i.hasNext();)
    {
       QSharedPointer<DM::IChunkDownload> chunkDownload = i.next();
       IMAliveMessage.add_chunk()->set_hash(chunkDownload->getHash().getData(), Common::Hash::HASH_SIZE);
@@ -231,7 +231,9 @@ void UDPListener::processPendingMulticastDatagrams()
                IMAliveMessage.port(),
                Common::ProtoHelper::getStr(IMAliveMessage, &Protos::Core::IMAlive::nick),
                IMAliveMessage.amount(),
-               Common::ProtoHelper::getStr(IMAliveMessage, &Protos::Core::IMAlive::core_version)
+               Common::ProtoHelper::getStr(IMAliveMessage, &Protos::Core::IMAlive::core_version),
+               IMAliveMessage.download_rate(),
+               IMAliveMessage.upload_rate()
             );
 
             if (IMAliveMessage.chunk_size() > 0)
@@ -241,7 +243,7 @@ void UDPListener::processPendingMulticastDatagrams()
                for (int i = 0; i < IMAliveMessage.chunk_size(); i++)
                   hashes << IMAliveMessage.chunk(i).hash();
 
-               QBitArray bitArray = this->fileManager->haveChunks(hashes);
+               const QBitArray& bitArray = this->fileManager->haveChunks(hashes);
 
                if (!bitArray.isNull()) // If we own at least one chunk we reply with a CHUNKS_OWNED message.
                {

@@ -43,7 +43,7 @@ message State {
          UNABLE_TO_CREATE_THE_FILE = 0x22;
          UNABLE_TO_RETRIEVE_THE_HASHES = 0x23;
          
-         TRANSFERT_ERROR = 0x24;
+         TRANSFER_ERROR = 0x24;
          UNABLE_TO_OPEN_THE_FILE = 0x25;
          FILE_IO_ERROR = 0x26;
          FILE_NON_EXISTENT = 0x27;
@@ -87,6 +87,8 @@ message State {
       required Common.Hash peer_id = 1;
       required string nick = 2;
       required uint64 sharing_amount = 3; // [byte].
+      optional uint32 download_rate = 6; // [byte/s].
+      optional uint32 upload_rate = 7; // [byte/s]
       optional Common.IP ip = 4;
       optional string core_version = 5;
    }
@@ -97,8 +99,7 @@ message State {
       required uint64 free_space = 4;
    }
    
-   required Peer myself = 1;
-   repeated Peer peer = 2;
+   repeated Peer peer = 2; // The first peer is always ourself and always exists.
    
    repeated SharedDir shared_directory = 3;
    

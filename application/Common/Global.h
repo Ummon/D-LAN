@@ -43,9 +43,9 @@ namespace Common
       static QString getVersionFull();
 
       template <typename T>
-      static void sortedAdd(T* entry, QList<T*>& list, bool (*lesserThan)(const T&, const T&) = 0);
+      static void sortedAdd(T* entry, QList<T*>& list, bool (*lesserThan)(const T&, const T&) = nullptr);
       template <typename T>
-      static void sortedAdd(const QList<T*>& entries, QList<T*>& list, bool (*lesserThan)(const T&, const T&) = 0);
+      static void sortedAdd(const QList<T*>& entries, QList<T*>& list, bool (*lesserThan)(const T&, const T&) = nullptr);
 
       static int nCombinations(int n, int k);
       static QString formatByteSize(qint64 bytes, int precision = 1);
@@ -65,7 +65,7 @@ namespace Common
 
       static quint32 hashStringToInt(const QString& str);
 
-      enum DataFolderType { ROAMING = 0, LOCAL = 1 };
+      enum class DataFolderType { ROAMING = 0, LOCAL = 1 };
 
    private:
       static QString dataFolders[2];

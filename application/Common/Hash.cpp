@@ -52,6 +52,12 @@ Hash::Hash(const Hash& h)
    this->data->nbRef += 1;
 }
 
+Hash::Hash(Hash&& h)
+{
+   this->data = h.data;
+   h.data = nullptr;
+}
+
 /**
   * Build a new hash from a char*, 'h' is not a readable string, @see fromStr.
   * 'h' must have a length equal or bigger to HASH_SIZE!
@@ -124,6 +130,17 @@ Hash& Hash::operator=(const Hash& h)
       this->data = h.data;
       this->data->nbRef += 1;
    }
+   return *this;
+}
+
+Hash& Hash::operator=(Hash&& h)
+{
+#if WITH_MUTEX
+   QMutexLocker locker1(&h.data->mutex);
+   QMutexLocker locker2(&this->data->mutex);
+#endif
+
+   qSwap(this->data, h.data);
    return *this;
 }
 

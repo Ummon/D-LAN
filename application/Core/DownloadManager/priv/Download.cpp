@@ -81,9 +81,9 @@ PM::IPeer* Download::getPeerSource() const
    return this->peerSource;
 }
 
-QSet<Common::Hash> Download::getPeers() const
+QSet<PM::IPeer*> Download::getPeers() const
 {
-   return QSet<Common::Hash>();
+   return QSet<PM::IPeer*>();
 }
 
 const Protos::Common::Entry& Download::getRemoteEntry() const

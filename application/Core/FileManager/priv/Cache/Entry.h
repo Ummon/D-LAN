@@ -67,7 +67,7 @@ namespace FM
       virtual qint64 getSize() const;
 
    protected:
-      Cache* cache;
+      Cache* cache; // To announce whan an entry, chunk is created or deleted.
 
       QString name;
       qint64 size;

@@ -33,7 +33,8 @@ SOURCES += Hash.cpp \
     ThreadPool.cpp \
     Languages.cpp \
     Constants.cpp \
-    FileLocker.cpp
+    FileLocker.cpp \
+    ConsoleReader.cpp
 
 HEADERS += Hashes.h \
     Hash.h \
@@ -58,6 +59,7 @@ HEADERS += Hashes.h \
     IRunnable.h \
     Languages.h \
     Tree.h \
-    FileLocker.h
+    FileLocker.h \
+    ConsoleReader.h
 
 

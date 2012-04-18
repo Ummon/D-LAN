@@ -20,6 +20,8 @@
 #include <ui_MainWindow.h>
 using namespace GUI;
 
+#include <cmath>
+
 #include <QTabBar>
 #include <QMdiSubWindow>
 #include <QPainter>
@@ -30,6 +32,7 @@ using namespace GUI;
 #include <QMessageBox>
 #include <QInputDialog>
 #include <QColor>
+#include <QPen>
 
 #include <Protos/gui_settings.pb.h>
 
@@ -52,6 +55,65 @@ void PeerTableDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opt
       newOption.state = newOption.state & (~QStyle::State_Selected);
 
    QStyledItemDelegate::paint(painter, newOption, index);
+
+   if (index.column() == 0)
+   {
+      static quint32 LAN_SPEED = SETTINGS.get<quint32>("lan_speed");
+
+      PeerListModel::TransferInformation transferInformation = index.data().value<PeerListModel::TransferInformation>();
+      painter->setRenderHint(QPainter::Antialiasing, true);
+      const QPoint center = option.rect.center();
+      const int radius = qMin(option.rect.height(), option.rect.width()) / 2 - 2;
+      const QRect rect(center + QPoint(-radius, -radius), center + QPoint(radius, radius));
+
+      static const QColor DOWNLOAD_COLOR(100, 255, 100);
+      static const QColor UPLOAD_COLOR(100, 100, 255);
+
+      // Backgrounds
+      painter->setPen(Qt::NoPen);
+      painter->setBrush(QBrush(DOWNLOAD_COLOR.lighter(140)));
+      painter->drawPie(rect, 0, 16 * 180);
+      painter->setBrush(QBrush(UPLOAD_COLOR.lighter(140)));
+      painter->drawPie(rect, 0, -16 * 180);
+
+      // Download speed
+      if (transferInformation.downloadRate > 0)
+      {
+         painter->setPen(Qt::NoPen);
+         painter->setBrush(QBrush(DOWNLOAD_COLOR.darker(180)));
+         const int downloadAngle = 16.0 * 180.0 * (log10(double(transferInformation.downloadRate) / double(LAN_SPEED)) + 1.5) / 1.5; // Logarithmic scale.
+         //const int downloadAngle = -(16LL * 180 * transferInformation.downloadRate) / LAN_SPEED; // Linear scale.
+         if (downloadAngle > 0)
+            painter->drawPie(rect, 16 * 180, downloadAngle > 16 * 180 ? -16 * 180 : -downloadAngle);
+      }
+
+      // Upload speed
+      if (transferInformation.uploadRate > 0)
+      {
+         painter->setPen(Qt::NoPen);
+         painter->setBrush(QBrush(UPLOAD_COLOR.darker(180)));
+         const int uploadAngle = 16.0 * 180.0 * (log10(double(transferInformation.uploadRate) / double(LAN_SPEED)) + 1.5) / 1.5; // Logarithmic scale.
+         //const int uploadAngle = (16LL * 180 * transferInformation.uploadRate) / LAN_SPEED; // Linear scale.
+         if (uploadAngle > 0)
+            painter->drawPie(rect, 16 * 180, uploadAngle > 16 * 180 ? 16 * 180 : uploadAngle);
+      }
+
+      painter->setPen(QPen(QBrush(transferInformation.isDownloadingOurData ? QColor(220, 220, 0) : QColor(150, 150, 150)), transferInformation.isDownloadingOurData ? 1.5 : 1.2));
+      painter->setBrush(Qt::NoBrush);
+      painter->drawEllipse(rect);
+   }
+}
+
+QSize PeerTableDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const
+{
+   if (index.column() == 0)
+   {
+      return QSize(16, 16);
+   }
+   else
+   {
+      return QStyledItemDelegate::sizeHint(option, index);
+   }
 }
 
 /////
@@ -119,18 +181,19 @@ MainWindow::MainWindow(QSharedPointer<RCC::ICoreConnection> coreConnection, QWid
    this->ui->tblPeers->setModel(&this->peerListModel);
 
    this->ui->tblPeers->setItemDelegate(&this->peerTableDelegate);
-   this->ui->tblPeers->horizontalHeader()->setResizeMode(0, QHeaderView::Stretch);
-   this->ui->tblPeers->horizontalHeader()->setResizeMode(1, QHeaderView::ResizeToContents);
+   this->ui->tblPeers->horizontalHeader()->setResizeMode(0, QHeaderView::ResizeToContents);
+   this->ui->tblPeers->horizontalHeader()->setResizeMode(1, QHeaderView::Stretch);
+   this->ui->tblPeers->horizontalHeader()->setResizeMode(2, QHeaderView::ResizeToContents);
    this->ui->tblPeers->horizontalHeader()->setVisible(false);
 
    // TODO: is there an another way to reduce the row size?
    this->ui->tblPeers->verticalHeader()->setResizeMode(QHeaderView::Fixed);
-   this->ui->tblPeers->verticalHeader()->setDefaultSectionSize(QApplication::fontMetrics().height() + 2);
+   this->ui->tblPeers->verticalHeader()->setDefaultSectionSize(QApplication::fontMetrics().height() + 4);
    this->ui->tblPeers->verticalHeader()->setVisible(false);
    this->ui->tblPeers->setSelectionBehavior(QAbstractItemView::SelectRows);
    this->ui->tblPeers->setSelectionMode(QAbstractItemView::ExtendedSelection);
    this->ui->tblPeers->setShowGrid(false);
-   this->ui->tblPeers->setAlternatingRowColors(true);
+   this->ui->tblPeers->setAlternatingRowColors(false);
 
    this->ui->tblPeers->setContextMenuPolicy(Qt::CustomContextMenu);
 

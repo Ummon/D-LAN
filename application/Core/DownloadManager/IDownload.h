@@ -50,7 +50,7 @@ namespace DM
       UNABLE_TO_CREATE_THE_FILE = 0x22,
       UNABLE_TO_RETRIEVE_THE_HASHES = 0x23,
 
-      TRANSFERT_ERROR = 0x24,
+      TRANSFER_ERROR = 0x24,
       UNABLE_TO_OPEN_THE_FILE = 0x25,
       FILE_IO_ERROR = 0x26,
       FILE_NON_EXISTENT = 0x27,
@@ -75,9 +75,9 @@ namespace DM
       virtual PM::IPeer* getPeerSource() const = 0;
 
       /**
-        * Return all the peer who own at least one chunk. It includes the peer source, see 'getPeerSourceID()'.
+        * Return all the peer who own at least one chunk. It includes the peer source, see 'getPeerSource()'.
         */
-      virtual QSet<Common::Hash> getPeers() const = 0;
+      virtual QSet<PM::IPeer*> getPeers() const = 0;
 
       /**
         * Return the associated entry to the download, it contains :

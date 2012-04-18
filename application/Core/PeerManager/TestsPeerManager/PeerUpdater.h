@@ -41,7 +41,7 @@ class PeerUpdater : public QObject
 {
    Q_OBJECT
 public:
-   PeerUpdater(QList< QSharedPointer<FM::IFileManager> > fileManagers, QList< QSharedPointer<PM::IPeerManager> > peerManagers, int port);
+   PeerUpdater(QList<QSharedPointer<FM::IFileManager>> fileManagers, QList<QSharedPointer<PM::IPeerManager>> peerManagers, int port);
 
    void start();
    void stop();
@@ -50,8 +50,8 @@ private slots:
    void update();
 
 private:
-   QList< QSharedPointer<FM::IFileManager> > fileManagers;
-   QList< QSharedPointer<PM::IPeerManager> > peerManagers;
+   QList<QSharedPointer<FM::IFileManager>> fileManagers;
+   QList<QSharedPointer<PM::IPeerManager>> peerManagers;
    QTimer timer;
    const int port;
 };

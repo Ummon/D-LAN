@@ -65,6 +65,7 @@ namespace Common
 
       virtual void send(MessageHeader::MessageType type, const google::protobuf::Message& message);
       virtual void send(MessageHeader::MessageType type);
+
    private:
       virtual void send(MessageHeader::MessageType type, const google::protobuf::Message* message);
 
@@ -75,7 +76,7 @@ namespace Common
       virtual bool isLocal() const;
       virtual bool isConnected() const;
 
-      virtual void close();   signals:
+      virtual void close();
 
    signals:
       /**
@@ -92,7 +93,7 @@ namespace Common
 
    private:
       /**
-        * Call when a new message arrived. Do nothing by default.
+        * Called when a new message arrives. Do nothing by default.
         * Can be inherited by a subclass of 'MessageSocket'.
         * The signal 'newMessage' is also emitted after this called.
         */

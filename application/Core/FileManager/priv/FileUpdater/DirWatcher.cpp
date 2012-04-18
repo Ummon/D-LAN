@@ -37,7 +37,7 @@ DirWatcher* DirWatcher::getNewWatcher()
    return new DirWatcherLinux();
 #else
    L_WARN("Cannot create a watcher for the current platform, no implementation.");
-   return 0;
+   return nullptr;
 #endif
 }
 

@@ -421,7 +421,7 @@ void InternalCoreConnection::onNewMessage(Common::MessageHeader::MessageType typ
          const Protos::GUI::EventLogMessage& eventLogMessage = static_cast<const Protos::GUI::EventLogMessage&>(message);
 
          QDateTime dateTime = QDateTime::fromMSecsSinceEpoch(eventLogMessage.time());
-         QString message = Common::ProtoHelper::getStr(eventLogMessage, &Protos::GUI::EventLogMessage::message);
+         const QString& message = Common::ProtoHelper::getStr(eventLogMessage, &Protos::GUI::EventLogMessage::message);
          LM::Severity severity = LM::Severity(eventLogMessage.severity());
          emit newLogMessage(LM::Builder::newEntry(dateTime, severity, message));
       }

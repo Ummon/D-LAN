@@ -239,7 +239,7 @@ void SearchModel::result(const Protos::Common::FindResult& findResult)
       if (entry->entry().type() == Protos::Common::Entry_Type_FILE && entry->entry().chunk_size() > 0)
       {
          Common::Hash firstChunk = entry->entry().chunk(0).hash();
-         SearchTree* similarTree = 0;
+         SearchTree* similarTree = nullptr;
          if ((similarTree = this->indexedFile.value(firstChunk)) && similarTree->isSameAs(entry->entry()))
          {
             if (similarTree->getNbChildren() == 0)
@@ -351,14 +351,14 @@ bool SearchModel::setMaxLevel(int newLevel)
   */
 QString SearchModel::SearchTree::entryPath(const Protos::Common::Entry& entry)
 {
-   const QString path = Common::ProtoHelper::getStr(entry, &Protos::Common::Entry::path);
+   const QString& path = Common::ProtoHelper::getStr(entry, &Protos::Common::Entry::path);
 
    QString completePath;
    if (path.isEmpty())
       completePath.append("/");
    else
    {
-      const QString sharedName = Common::ProtoHelper::getStr(entry.shared_dir(), &Protos::Common::SharedDir::shared_name);
+      const QString& sharedName = Common::ProtoHelper::getStr(entry.shared_dir(), &Protos::Common::SharedDir::shared_name);
       completePath.append("/").append(sharedName).append(path);
    }
 

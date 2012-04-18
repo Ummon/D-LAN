@@ -43,8 +43,8 @@ namespace RCC
      *  - Call 'connectToCore(..)'.
      *  - if error: signal 'connectingError()' is emitted.
      *  - if ok:
-     *    - if previsouly connected: signal 'coreDisconnected()' is emitted.
-     *    - signal 'coreConnected()' is emitted.
+     *    - if previsouly connected: signal 'disconnected()' is emitted.
+     *    - signal 'connected()' is emitted.
      */
    class ICoreConnection : public QObject
    {
@@ -66,8 +66,8 @@ namespace RCC
 
       /**
         * Connect to a local core with the default port (59485).
-        * When the connection is ready, the signal 'coreConnected' is emitted.
-        * If the connection fail, the signal 'connectingError(..)' si emitted.
+        * When the connection is ready, the signal 'connected' is emitted.
+        * If the connection fails, the signal 'connectingError(..)' is emitted.
         */
       virtual void connectToCore() = 0;
 

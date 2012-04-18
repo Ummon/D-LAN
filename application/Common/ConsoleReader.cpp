@@ -16,44 +16,55 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#include <ConsoleReader.h>
-using namespace CoreSpace;
+#include <Common/ConsoleReader.h>
+using namespace Common;
 
 #include <cstdio>
 #ifdef Q_OS_WIN32
    #include <windows.h>
 #endif
 
-#include <QCoreApplication>
+/**
+  * @class ConsoleReader
+  *
+  * If the executable is used as a sub-process and the parent-process is killed the signal
+  * 'newLine(..)' is emitted with the 'QUIT_COMMAND'.
+  */
 
-#include <Log.h>
-
-const QString ConsoleReader::QUIT_COMMAND("quit");
+QString ConsoleReader::QUIT_COMMAND("quit");
 
 ConsoleReader::ConsoleReader(QObject *parent) :
     QThread(parent), inputStream(stdin), stopping(false)
 {
 }
 
+void ConsoleReader::setQuitCommand(const QString& quitCommand)
+{
+   ConsoleReader::QUIT_COMMAND = quitCommand;
+}
+
+#include <iostream>
+#include <QFile>
+
 void ConsoleReader::stop()
 {
    this->stopping = true;
+
    // TODO: Don't know how to unblock 'readLine' which use 'fgets(..)' internaly...
 
-   // fclose(stdin) // Don't work, blocks.
+   // fclose(stdin); // Don't work, blocks.
 
-   // QIODevice* in = this->inputStream.device();
-   // close(((QFile*)in)->handle()); // Don't work.
+   /*QIODevice* in = this->inputStream.device();
+   close(((QFile*)in)->handle()); // Don't work.*/
 
-   // this->wait();
+   this->wait();
 }
 
 void ConsoleReader::run()
 {
    while(!this->stopping)
    {
-      // If D-LAN.Core is a child process of D-LAN.GUI. and the latter is killed stdin is closed
-      // In this case D-LAN.Core must be terminated.
+      // To send a 'QUIT_COMMAND' command if the stdin is closed (for example in a process -> child process case).
       if (std::feof(stdin))
       {
          emit newLine(QUIT_COMMAND);
@@ -62,7 +73,6 @@ void ConsoleReader::run()
       }
 
       QString str = this->inputStream.device()->readLine().trimmed();
-      L_DEBU(QString("Command line : %1").arg(str));
 
       if (str.size() > 0)
          emit newLine(str);

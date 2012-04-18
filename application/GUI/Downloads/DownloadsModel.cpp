@@ -123,8 +123,8 @@ QVariant DownloadsModel::getData(const Protos::GUI::State::Download& download, c
             toolTip += tr("Unable to retrieve the hashes");
             break;
 
-         case Protos::GUI::State::Download::TRANSFERT_ERROR:
-            toolTip += tr("Transfert error");
+         case Protos::GUI::State::Download::TRANSFER_ERROR:
+            toolTip += tr("Transfer error");
             break;
          case Protos::GUI::State::Download::UNABLE_TO_OPEN_THE_FILE:
             toolTip += tr("Unable to open the file");
@@ -196,7 +196,7 @@ QList<int> DownloadsModel::getNonFilteredDownloadIndices(const Protos::GUI::Stat
       case Protos::GUI::State::Download::NO_ENOUGH_FREE_SPACE:
       case Protos::GUI::State::Download::UNABLE_TO_CREATE_THE_FILE:
       case Protos::GUI::State::Download::UNABLE_TO_RETRIEVE_THE_HASHES:
-      case Protos::GUI::State::Download::TRANSFERT_ERROR:
+      case Protos::GUI::State::Download::TRANSFER_ERROR:
       case Protos::GUI::State::Download::UNABLE_TO_OPEN_THE_FILE:
       case Protos::GUI::State::Download::FILE_IO_ERROR:
       case Protos::GUI::State::Download::FILE_NON_EXISTENT:

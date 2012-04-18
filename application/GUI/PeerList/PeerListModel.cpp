@@ -20,6 +20,8 @@
 using namespace GUI;
 
 #include <QtAlgorithms>
+#include <QStringBuilder>
+#include <QSet>
 
 #include <Common/ProtoHelper.h>
 #include <Common/Global.h>
@@ -72,7 +74,7 @@ QHostAddress PeerListModel::getPeerIP(int rowNum) const
 void PeerListModel::clear()
 {
    google::protobuf::RepeatedPtrField<Protos::GUI::State_Peer> peers;
-   this->setPeers(peers);
+   this->updatePeers(peers, QSet<Common::Hash>());
 }
 
 void PeerListModel::setSortType(Protos::GUI::Settings::PeerSortType sortType)
@@ -96,7 +98,7 @@ int PeerListModel::rowCount(const QModelIndex& parent) const
 
 int PeerListModel::columnCount(const QModelIndex& parent) const
 {
-   return 2;
+   return 3;
 }
 
 QVariant PeerListModel::data(const QModelIndex& index, int role) const
@@ -109,8 +111,9 @@ QVariant PeerListModel::data(const QModelIndex& index, int role) const
    case Qt::DisplayRole:
       switch (index.column())
       {
-      case 0: return this->peers[index.row()]->nick;
-      case 1: return Common::Global::formatByteSize(this->peers[index.row()]->sharingAmount);
+      case 0: return QVariant::fromValue(this->peers[index.row()]->transferInformation);
+      case 1: return this->peers[index.row()]->nick;
+      case 2: return Common::Global::formatByteSize(this->peers[index.row()]->sharingAmount);
       default: return QVariant();
       }
 
@@ -129,15 +132,18 @@ QVariant PeerListModel::data(const QModelIndex& index, int role) const
       return QVariant();
 
    case Qt::TextAlignmentRole:
-      return index.column() == 1 ? Qt::AlignRight : Qt::AlignLeft;
+      return index.column() == 2 ? Qt::AlignRight : Qt::AlignLeft;
 
    case Qt::ToolTipRole:
       {
-         QString coreVersion = this->peers[index.row()]->coreVersion;
+         const QString coreVersion = this->peers[index.row()]->coreVersion;
+         QString toolTip;
          if (!coreVersion.isEmpty())
-            return tr("Version %1").arg(coreVersion);
-         else
-            return QVariant();
+            toolTip += tr("Version %1\n").arg(coreVersion);
+         toolTip +=
+            tr("Download rate: ") % Common::Global::formatByteSize(this->peers[index.row()]->transferInformation.downloadRate) % "/s\n" %
+            tr("Upload rate: ") % Common::Global::formatByteSize(this->peers[index.row()]->transferInformation.uploadRate) % "/s";
+         return toolTip;
       }
 
    default:
@@ -178,14 +184,14 @@ void PeerListModel::uncolorize(const QModelIndex& index)
 
 void PeerListModel::newState(const Protos::GUI::State& state)
 {
-   // TODO: not very efficient!?
-   google::protobuf::RepeatedPtrField<Protos::GUI::State::Peer> peers;
-   peers.MergeFrom(state.peer());
-   peers.Add()->CopyFrom(state.myself());
-   this->setPeers(peers);
+   QSet<Common::Hash> peersDownloadingOurData;
+   for (int i = 0; i < state.upload_size(); i++)
+      peersDownloadingOurData << Common::Hash(state.upload(i).peer_id().hash());
+
+   this->updatePeers(state.peer(), peersDownloadingOurData);
 }
 
-void PeerListModel::setPeers(const google::protobuf::RepeatedPtrField<Protos::GUI::State::Peer>& peers)
+void PeerListModel::updatePeers(const google::protobuf::RepeatedPtrField<Protos::GUI::State::Peer>& peers, const QSet<Common::Hash>& peersDownloadingOurData)
 {
    bool sortNeeded = false;
 
@@ -195,9 +201,11 @@ void PeerListModel::setPeers(const google::protobuf::RepeatedPtrField<Protos::GU
    for (int i = 0; i < peers.size(); i++)
    {
       const Common::Hash peerID(peers.Get(i).peer_id().hash());
-      const QString nick(ProtoHelper::getStr(peers.Get(i), &Protos::GUI::State::Peer::nick));
-      const QString coreVersion(ProtoHelper::getStr(peers.Get(i), &Protos::GUI::State::Peer::core_version));
+      const QString& nick = ProtoHelper::getStr(peers.Get(i), &Protos::GUI::State::Peer::nick);
+      const QString& coreVersion =ProtoHelper::getStr(peers.Get(i), &Protos::GUI::State::Peer::core_version);
       const quint64 sharingAmount(peers.Get(i).sharing_amount());
+      TransferInformation transferInformation { peers.Get(i).download_rate(), peers.Get(i).upload_rate(),  peersDownloadingOurData.contains(peerID) };
+
       const QHostAddress ip =
          peers.Get(i).has_ip() ?
             Common::ProtoHelper::getIP(peers.Get(i).ip()) :
@@ -211,19 +219,25 @@ void PeerListModel::setPeers(const google::protobuf::RepeatedPtrField<Protos::GU
          {
             this->peers[j]->nick = nick;
             sortNeeded = true;
-            emit dataChanged(this->createIndex(j, 0), this->createIndex(j, 0));
+            emit dataChanged(this->createIndex(j, 1), this->createIndex(j, 1));
          }
          if (this->peers[j]->sharingAmount != sharingAmount)
          {
             this->peers[j]->sharingAmount = sharingAmount;
             sortNeeded = true;
          }
+         if (this->peers[j]->transferInformation != transferInformation)
+         {
+            this->peers[j]->transferInformation = transferInformation;
+            emit dataChanged(this->createIndex(j, 0), this->createIndex(j, 0));
+         }
+
          this->peers[j]->ip = ip;
          this->peers[j]->coreVersion = coreVersion;
       }
       else
       {
-         peersToAdd << new Peer(peerID, nick, coreVersion, sharingAmount, ip);
+         peersToAdd << new Peer(peerID, nick, coreVersion, sharingAmount, ip, transferInformation);
       }
    }
 

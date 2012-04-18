@@ -70,11 +70,11 @@ namespace DM
       void populateQueueEntry(Protos::Queue::Queue::Entry* entry) const;
 
       quint64 getDownloadedBytes() const;
-      QSet<Common::Hash> getPeers() const;
+      QSet<PM::IPeer*> getPeers() const;
 
       QSharedPointer<ChunkDownload> getAChunkToDownload();
 
-      void getUnfinishedChunks(QList< QSharedPointer<IChunkDownload> >& chunks, int nMax);
+      void getUnfinishedChunks(QList<QSharedPointer<IChunkDownload>>& chunks, int nMax);
 
       QTime getLastTimeGetAllUnfinishedChunks() const;
 
@@ -107,8 +107,8 @@ namespace DM
 
       const int NB_CHUNK;
 
-      QList< QSharedPointer<FM::IChunk> > chunksWithoutDownload;
-      QList< QSharedPointer<ChunkDownload> > chunkDownloads;
+      QList<QSharedPointer<FM::IChunk>> chunksWithoutDownload;
+      QList<QSharedPointer<ChunkDownload>> chunkDownloads;
 
       OccupiedPeers& occupiedPeersAskingForHashes;
       OccupiedPeers& occupiedPeersDownloadingChunk;

@@ -99,7 +99,7 @@ void MainWindow::openDir()
    QString dir = QFileDialog::getExistingDirectory(
       this,
       "Choose a directory",
-      Common::Global::getDataFolder(Common::Global::LOCAL, false) + '/' + LM::DEFAULT_LOG_FOLDER_NAME
+      Common::Global::getDataFolder(Common::Global::DataFolderType::LOCAL, false) + '/' + LM::DEFAULT_LOG_FOLDER_NAME
    );
 
    if (!dir.isNull())

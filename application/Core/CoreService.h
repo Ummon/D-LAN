@@ -22,8 +22,8 @@
 #include <Libs/qtservice/src/qtservice.h>
 
 #include <Common/Uncopyable.h>
+#include <Common/ConsoleReader.h>
 
-#include <ConsoleReader.h>
 #include <CoreApplication.h>
 #include <Core.h>
 
@@ -45,7 +45,7 @@ namespace CoreSpace
 
    private:
       Core* core;
-      ConsoleReader consoleReader;
+      Common::ConsoleReader consoleReader;
    };
 }
 #endif

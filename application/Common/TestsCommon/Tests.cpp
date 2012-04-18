@@ -42,7 +42,7 @@ Tests::Tests()
 
 void Tests::initTestCase()
 {
-   qDebug() << "Application directory path (where the settings and persistent data are put) : " << Global::getDataFolder(Common::Global::ROAMING, false);
+   qDebug() << "Application directory path (where the settings and persistent data are put) : " << Global::getDataFolder(Common::Global::DataFolderType::ROAMING, false);
 }
 
 void Tests::nCombinations()
@@ -127,20 +127,20 @@ void Tests::writePersistentData()
    this->hash = Hash::rand();
    Protos::Common::Hash hashMessage;
    hashMessage.set_hash(this->hash.getData(), Hash::HASH_SIZE);
-   PersistentData::setValue("paul", hashMessage, Global::ROAMING);
+   PersistentData::setValue("paul", hashMessage, Global::DataFolderType::ROAMING);
 }
 
 void Tests::readPersistentData()
 {
    Protos::Common::Hash hashMessage;
-   PersistentData::getValue("paul", hashMessage, Global::ROAMING);
+   PersistentData::getValue("paul", hashMessage, Global::DataFolderType::ROAMING);
    Hash hashRead(hashMessage.hash().data());
 
    QVERIFY(this->hash == hashRead);
 
    try
    {
-      PersistentData::getValue("john", hashMessage, Global::ROAMING);
+      PersistentData::getValue("john", hashMessage, Global::DataFolderType::ROAMING);
       QFAIL("'john' shouldn't exist");
    }
    catch (UnknownValueException)
@@ -155,7 +155,7 @@ void Tests::readPersistentData()
 
 void Tests::removePersistentData()
 {
-   QVERIFY(PersistentData::rmValue("paul", Global::ROAMING));
+   QVERIFY(PersistentData::rmValue("paul", Global::DataFolderType::ROAMING));
 }
 
 void Tests::writeSettings()
@@ -246,6 +246,24 @@ void Tests::compareTwoHash()
    QVERIFY(h1 == h4);
    QVERIFY(h2 == h3);
    QVERIFY(h2 == h4);
+}
+
+Hash pouet()
+{
+   return Hash();
+}
+
+void Tests::hashMoveConstuctorAndAssignment()
+{
+   QString str("2d73736f34a73837d422f7aba2740d8409ac60df");
+
+   // Move constructor.
+   Hash h = std::move(Hash::fromStr(str)); // We have to force to rValue reference because of the return optimization (http://en.wikipedia.org/wiki/Return_value_optimization).
+   QVERIFY(h.toStr() == str);
+
+   // Copy constructor
+   h = std::move(Hash::fromStr(str));
+   QVERIFY(h.toStr() == str);
 }
 
 void Tests::hasher()

@@ -59,13 +59,13 @@ namespace PM
    private:
       enum Direction { TO_PEER, FROM_PEER };
       QSharedPointer<PeerMessageSocket> addNewSocket(QSharedPointer<PeerMessageSocket> socket, Direction direction);
-      QList< QSharedPointer<PeerMessageSocket> > getAllSockets() const;
+      QList<QSharedPointer<PeerMessageSocket>> getAllSockets() const;
 
       PeerManager* peerManager;
       QSharedPointer<FM::IFileManager> fileManager;
 
-      QList< QSharedPointer<PeerMessageSocket> > socketsToPeer;
-      QList< QSharedPointer<PeerMessageSocket> > socketsFromPeer;
+      QList<QSharedPointer<PeerMessageSocket>> socketsToPeer;
+      QList<QSharedPointer<PeerMessageSocket>> socketsFromPeer;
 
       QHostAddress peerIP;
       quint16 port;

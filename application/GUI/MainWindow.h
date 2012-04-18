@@ -57,7 +57,10 @@ namespace GUI
       Q_OBJECT
    public:
       void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const;
+      QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const;
    };
+
+   /////
 
    class LogDelegate : public QStyledItemDelegate
    {
@@ -66,11 +69,13 @@ namespace GUI
       void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const;
    };
 
+   /////
+
    class MainWindow : public QMainWindow
    {
       Q_OBJECT
    public:
-      explicit MainWindow(QSharedPointer<RCC::ICoreConnection> coreConnection, QWidget* parent = 0);
+      explicit MainWindow(QSharedPointer<RCC::ICoreConnection> coreConnection, QWidget* parent = nullptr);
       ~MainWindow();
 
    private slots:

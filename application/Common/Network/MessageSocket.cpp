@@ -33,6 +33,7 @@ using namespace Common;
   * @class Common::MessageSocket
   *
   * An abstract class which is able to send and receive protocol buffer messages over a QAbstractSocket.
+  * It is designed to be sublcassed,
   */
 
 /**
@@ -58,14 +59,14 @@ MessageSocket::MessageSocket(MessageSocket::ILogger* logger, const Hash& localID
 /**
   * Takes the ownership of 'socket'.
   * If remoteID isn't given, it will be initialized by the ID of the first received message.
-  * If ID isn't given, it will be set to the remoteID when the first message is received.
+  * If localID isn't given, it will be set to the remoteID when the first message is received.
   */
-MessageSocket::MessageSocket(MessageSocket::ILogger* logger, QAbstractSocket* socket, const Hash& ID, const Hash& remoteID) :
+MessageSocket::MessageSocket(MessageSocket::ILogger* logger, QAbstractSocket* socket, const Hash& localID, const Hash& remoteID) :
    logger(logger),
    socket(socket),
-   localID(ID),
+   localID(localID),
    remoteID(remoteID),
-   localIDDefined(!ID.isNull()),
+   localIDDefined(!localID.isNull()),
    remoteIDDefined(!remoteID.isNull()),
    listening(false)
 {
@@ -79,11 +80,11 @@ MessageSocket::MessageSocket(MessageSocket::ILogger* logger, QAbstractSocket* so
   * Takes the ownership of 'socket'.
   * Will automatically create a connection to the given address and port.
   */
-MessageSocket::MessageSocket(MessageSocket::ILogger* logger, const QHostAddress& address, quint16 port, const Hash& ID, const Hash& remoteID) :
+MessageSocket::MessageSocket(MessageSocket::ILogger* logger, const QHostAddress& address, quint16 port, const Hash& localID, const Hash& remoteID) :
    logger(logger),
    socket(new QTcpSocket()),
-   localID(ID), remoteID(remoteID),
-   localIDDefined(!ID.isNull()),
+   localID(localID), remoteID(remoteID),
+   localIDDefined(!localID.isNull()),
    remoteIDDefined(!remoteID.isNull()),
    listening(false)
 {

@@ -164,7 +164,7 @@ void WidgetSettings::fillComboBoxLanguages()
    bool exactMatchFound = false;
 
    Common::Languages langs(QCoreApplication::applicationDirPath() + "/" + Common::Constants::LANGUAGE_DIRECTORY);
-   for (QListIterator<Common::Language> i(langs.getAvailableLanguages(Common::Languages::GUI)); i.hasNext();)
+   for (QListIterator<Common::Language> i(langs.getAvailableLanguages(Common::Languages::ExeType::GUI)); i.hasNext();)
    {
       Common::Language lang = i.next();
       QVariant data;
@@ -199,7 +199,7 @@ void WidgetSettings::updateNetworkInterfaces(const Protos::GUI::State& state)
 
    for (int i = 0; i < state.interface_size(); i++)
    {
-      const QString interfaceName = Common::ProtoHelper::getStr(state.interface(i), &Protos::Common::Interface::name);
+      const QString& interfaceName = Common::ProtoHelper::getStr(state.interface(i), &Protos::Common::Interface::name);
 
       for (QListIterator<QObject*> j(this->ui->scoInterfacesContent->children()); j.hasNext();)
       {
@@ -267,7 +267,7 @@ void WidgetSettings::updateAddresses(const Protos::Common::Interface& interface,
 
    for (int i = 0; i < interface.address_size(); i++)
    {
-      const QString addresseName = Common::ProtoHelper::getStr(interface.address(i), &Protos::Common::Interface::Address::address);
+      const QString& addresseName = Common::ProtoHelper::getStr(interface.address(i), &Protos::Common::Interface::Address::address);
 
       for (QListIterator<QRadioButton*> j(container->findChildren<QRadioButton*>()); j.hasNext();)
       {
@@ -309,7 +309,7 @@ void WidgetSettings::updateAddresses(const Protos::Common::Interface& interface,
 void WidgetSettings::newState(const Protos::GUI::State& state)
 {
    if (!this->ui->txtNick->hasFocus())
-      this->ui->txtNick->setText(Common::ProtoHelper::getStr(state.myself(), &Protos::GUI::State_Peer::nick));
+      this->ui->txtNick->setText(Common::ProtoHelper::getStr(state.peer(0), &Protos::GUI::State_Peer::nick));
 
    if (!this->ui->chkEnableIntegrityCheck->hasFocus())
       this->ui->chkEnableIntegrityCheck->setChecked(state.integrity_check_enabled());

@@ -36,7 +36,7 @@ namespace GUI
       Q_OBJECT
 
    public:
-      AskNewPasswordDialog(QSharedPointer<RCC::ICoreConnection> coreConnection, bool askOldPassword, QWidget* parent = 0);
+      AskNewPasswordDialog(QSharedPointer<RCC::ICoreConnection> coreConnection, bool askOldPassword, QWidget* parent = nullptr);
       ~AskNewPasswordDialog();
 
    private slots:

@@ -51,13 +51,17 @@ UploadManager::UploadManager(QSharedPointer<PM::IPeerManager> peerManager) :
 UploadManager::~UploadManager()
 {
    L_DEBU("UploadManager deleted");
+
+   // We stop all uploads to avoid the thread pool to wait that all threads have finished their job.
+   for (QListIterator<QSharedPointer<Upload>> i(this->uploads); i.hasNext();)
+      i.next()->stop();
 }
 
 QList<IUpload*> UploadManager::getUploads() const
 {
    QList<IUpload*> uploads;
 
-   for (QListIterator< QSharedPointer<Upload> > i(this->uploads); i.hasNext();)
+   for (QListIterator<QSharedPointer<Upload>> i(this->uploads); i.hasNext();)
       uploads << i.next().data();
 
    return uploads;
@@ -80,7 +84,7 @@ void UploadManager::uploadTimeout()
 {
    Upload* upload = dynamic_cast<Upload*>(this->sender());
 
-   for (QMutableListIterator< QSharedPointer<Upload> > i(this->uploads); i.hasNext();)
+   for (QMutableListIterator<QSharedPointer<Upload>> i(this->uploads); i.hasNext();)
       if (i.next().data() == upload)
       {
          i.remove();

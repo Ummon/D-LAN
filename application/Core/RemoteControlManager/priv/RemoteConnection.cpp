@@ -94,7 +94,7 @@ RemoteConnection::RemoteConnection(
 
    this->loggerHook = LM::Builder::newLoggerHook(LM::Severity(LM::SV_FATAL_ERROR | LM::SV_ERROR | LM::SV_END_USER | LM::SV_WARNING));
 
-   qRegisterMetaType< QSharedPointer<const LM::IEntry> >("QSharedPointer<const LM::IEntry>");
+   qRegisterMetaType<QSharedPointer<const LM::IEntry>>("QSharedPointer<const LM::IEntry>");
    connect(this->loggerHook.data(), SIGNAL(newLogEntry(QSharedPointer<const LM::IEntry>)), this, SLOT(newLogEntry(QSharedPointer<const LM::IEntry>)), Qt::QueuedConnection);
 
    this->askForAuthentication();
@@ -134,16 +134,20 @@ void RemoteConnection::refresh()
 {
    Protos::GUI::State state;
 
-   state.mutable_myself()->mutable_peer_id()->set_hash(this->peerManager->getSelf()->getID().getData(), Common::Hash::HASH_SIZE);
-   state.mutable_myself()->set_sharing_amount(this->fileManager->getAmount());
-   Common::ProtoHelper::setStr(*state.mutable_myself(), &Protos::GUI::State::Peer::set_nick, this->peerManager->getSelf()->getNick());
-   Common::ProtoHelper::setStr(*state.mutable_myself(), &Protos::GUI::State::Peer::set_core_version, Common::Global::getVersionFull());
-
    state.set_integrity_check_enabled(SETTINGS.get<bool>("check_received_data_integrity"));
    state.set_password_defined(!SETTINGS.get<Common::Hash>("remote_password").isNull());
 
+   // Ourself
+   Protos::GUI::State::Peer* self = state.add_peer();
+   self->mutable_peer_id()->set_hash(this->peerManager->getSelf()->getID().getData(), Common::Hash::HASH_SIZE);
+   self->set_sharing_amount(this->fileManager->getAmount());
+   self->set_download_rate(this->downloadManager->getDownloadRate());
+   self->set_upload_rate(this->uploadManager->getUploadRate());
+   Common::ProtoHelper::setStr(*self, &Protos::GUI::State::Peer::set_nick, this->peerManager->getSelf()->getNick());
+   Common::ProtoHelper::setStr(*self, &Protos::GUI::State::Peer::set_core_version, Common::Global::getVersionFull());
+
    // Peers.
-   QList<PM::IPeer*> peers = this->peerManager->getPeers();
+   const QList<PM::IPeer*>& peers = this->peerManager->getPeers();
    for (QListIterator<PM::IPeer*> i(peers); i.hasNext();)
    {
       PM::IPeer* peer = i.next();
@@ -156,11 +160,13 @@ void RemoteConnection::refresh()
          Common::ProtoHelper::setStr(*protoPeer, &Protos::GUI::State::Peer::set_core_version, coreVersion);
 
       protoPeer->set_sharing_amount(peer->getSharingAmount());
+      protoPeer->set_download_rate(peer->getDownloadRate());
+      protoPeer->set_upload_rate(peer->getUploadRate());
       Common::ProtoHelper::setIP(*protoPeer->mutable_ip(), peer->getIP());
    }
 
    // Downloads.
-   QList<DM::IDownload*> downloads = this->downloadManager->getDownloads();
+   const QList<DM::IDownload*>& downloads = this->downloadManager->getDownloads();
    for (QListIterator<DM::IDownload*> i(downloads); i.hasNext();)
    {
       DM::IDownload* download = i.next();
@@ -171,15 +177,14 @@ void RemoteConnection::refresh()
       protoDownload->set_status(static_cast<Protos::GUI::State::Download::Status>(download->getStatus())); // Warning, enums must be compatible.
       protoDownload->set_downloaded_bytes(download->getDownloadedBytes());
 
-      Common::Hash peerSourceID = download->getPeerSource()->getID();
-      protoDownload->add_peer_id()->set_hash(peerSourceID.getData(), Common::Hash::HASH_SIZE); // The first hash must be the source.
-      QSet<Common::Hash> peerIDs = download->getPeers();
-      peerIDs.remove(peerSourceID);
-      for (QSetIterator<Common::Hash> j(peerIDs); j.hasNext();)
-         protoDownload->add_peer_id()->set_hash(j.next().getData(), Common::Hash::HASH_SIZE);
+      PM::IPeer* peerSource = download->getPeerSource();
+      protoDownload->add_peer_id()->set_hash(peerSource->getID().getData(), Common::Hash::HASH_SIZE); // The first hash must be the source.
+      QSet<PM::IPeer*> peers = download->getPeers();
+      peers.remove(peerSource);
+      for (QSetIterator<PM::IPeer*> j(peers); j.hasNext();)
+         protoDownload->add_peer_id()->set_hash(j.next()->getID().getData(), Common::Hash::HASH_SIZE);
 
-      PM::IPeer* peerSource = this->peerManager->getPeer(peerSourceID);
-      if (peerSource)
+      if (!peerSource->getNick().isNull())
          Common::ProtoHelper::setStr(*protoDownload, &Protos::GUI::State::Download::set_peer_source_nick, peerSource->getNick());
    }
 
@@ -332,7 +337,7 @@ void RemoteConnection::askForAuthentication()
 
 void RemoteConnection::removeGetEntriesResult(const PM::IGetEntriesResult* getEntriesResult)
 {
-   for (QMutableListIterator< QSharedPointer<PM::IGetEntriesResult> > i(this->getEntriesResults); i.hasNext();)
+   for (QMutableListIterator<QSharedPointer<PM::IGetEntriesResult>> i(this->getEntriesResults); i.hasNext();)
       if (i.next().data() == getEntriesResult)
          i.remove();
 }
@@ -442,7 +447,7 @@ void RemoteConnection::onNewMessage(Common::MessageHeader::MessageType type, con
 
          QString currentAddressToListenTo = SETTINGS.get<QString>("listen_address");
          Protos::Common::Interface::Address::Protocol currentProtocol = static_cast<Protos::Common::Interface::Address::Protocol>(SETTINGS.get<quint32>("listen_any"));
-         QString newAddressToListenTo = ProtoHelper::getStr(coreSettingsMessage, &Protos::GUI::CoreSettings::listen_address);
+         const QString& newAddressToListenTo = ProtoHelper::getStr(coreSettingsMessage, &Protos::GUI::CoreSettings::listen_address);
          Protos::Common::Interface::Address::Protocol newProtocol = coreSettingsMessage.listen_any();
          SETTINGS.set("listen_address", newAddressToListenTo);
          SETTINGS.set("listen_any", static_cast<quint32>(newProtocol));
@@ -457,12 +462,12 @@ void RemoteConnection::onNewMessage(Common::MessageHeader::MessageType type, con
    case Common::MessageHeader::GUI_SEARCH:
       {
          // Remove old searches.
-         for (QMutableListIterator< QSharedPointer<NL::ISearch> > i(this->currentSearches); i.hasNext();)
+         for (QMutableListIterator<QSharedPointer<NL::ISearch>> i(this->currentSearches); i.hasNext();)
             if (i.next()->elapsed() > SETTINGS.get<quint32>("search_lifetime"))
                i.remove();
 
          const Protos::GUI::Search& searchMessage = static_cast<const Protos::GUI::Search&>(message);
-         const QString pattern = Common::ProtoHelper::getStr(searchMessage, &Protos::GUI::Search::pattern);
+         const QString& pattern = Common::ProtoHelper::getStr(searchMessage, &Protos::GUI::Search::pattern);
 
          // Special syntax to search in your own files.
          if (pattern.startsWith('<'))
@@ -614,7 +619,7 @@ void RemoteConnection::onNewMessage(Common::MessageHeader::MessageType type, con
       {
          const Protos::GUI::ChatMessage& chatMessage = static_cast<const Protos::GUI::ChatMessage&>(message);
 
-         const QString message = Common::ProtoHelper::getStr(chatMessage, &Protos::GUI::ChatMessage::message);
+         const QString& message = Common::ProtoHelper::getStr(chatMessage, &Protos::GUI::ChatMessage::message);
          emit chatMessageSent(message);
          this->networkListener->getChat().send(message);
       }

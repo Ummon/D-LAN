@@ -1,7 +1,27 @@
+/**
+  * D-LAN - A decentralized LAN file sharing software.
+  * Copyright (C) 2010-2012 Greg Burri <greg.burri@gmail.com>
+  *
+  * This program is free software: you can redistribute it and/or modify
+  * it under the terms of the GNU General Public License as published by
+  * the Free Software Foundation, either version 3 of the License, or
+  * (at your option) any later version.
+  *
+  * This program is distributed in the hope that it will be useful,
+  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  * GNU General Public License for more details.
+  *
+  * You should have received a copy of the GNU General Public License
+  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  */
+  
 #ifndef COMMON_TREE_H
 #define COMMON_TREE_H
 
 #include <QList>
+
+#include <Common/Uncopyable.h>
 
 namespace Common
 {
@@ -23,10 +43,12 @@ namespace Common
      *  - This class comes with a breadth-first iterator.
      *
      * If you don't want to inherit from Tree you can use the SimpleTree class.
+     *
+     * @remarks No copy constructor neither no operator assignment are defined for the moment.
      */
 
    template<typename ItemType, typename TreeType>
-   class Tree
+   class Tree : Uncopyable
    {
    public:
       Tree();
@@ -59,13 +81,17 @@ namespace Common
       QList<TreeType*> children;
    };
 
+   /////
+
    template <typename T>
-   class SimpleTree : public Tree< T, SimpleTree<T> >
+   class SimpleTree : public Tree<T, SimpleTree<T>>
    {
    public:
       SimpleTree() {}
-      SimpleTree(const T& item, SimpleTree<T>* parent) : Tree< T, SimpleTree<T> >(item, parent) {}
+      SimpleTree(const T& item, SimpleTree<T>* parent) : Tree<T, SimpleTree<T>>(item, parent) {}
    };
+
+   /////
 
    template <typename TreeType>
    class TreeBreadthIterator

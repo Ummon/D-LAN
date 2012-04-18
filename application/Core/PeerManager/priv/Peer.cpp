@@ -92,6 +92,16 @@ quint64 Peer::getSharingAmount() const
    return this->sharingAmount;
 }
 
+quint32 Peer::getDownloadRate() const
+{
+   return this->downloadRate;
+}
+
+quint32 Peer::getUploadRate() const
+{
+   return this->uploadRate;
+}
+
 quint32 Peer::getSpeed()
 {
    QMutexLocker locker(&this->mutex);
@@ -143,7 +153,9 @@ void Peer::update(
    quint16 port,
    const QString& nick,
    const quint64& sharingAmount,
-   const QString& coreVersion
+   const QString& coreVersion,
+   quint32 downloadRate,
+   quint32 uploadRate
 )
 {
    this->alive = true;
@@ -154,6 +166,8 @@ void Peer::update(
    this->nick = nick;
    this->coreVersion = coreVersion;
    this->sharingAmount = sharingAmount;
+   this->downloadRate = downloadRate;
+   this->uploadRate = uploadRate;
 
    this->connectionPool.setIP(this->IP, this->port);
 }
