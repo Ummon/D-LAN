@@ -36,7 +36,7 @@ namespace FM
       static const int TIME_RECHECK_TO_RELEASE = 1000; // [ms].
 
    public:
-      explicit FilePool(QObject* parent = 0);
+      explicit FilePool(QObject* parent = nullptr);
       ~FilePool();
 
       QFile* open(const QString& path, QIODevice::OpenMode mode);

@@ -69,7 +69,7 @@ QFile* FilePool::open(const QString& path, QIODevice::OpenMode mode)
    if (!file->open(mode))
    {
       delete file;
-      return 0;
+      return nullptr;
    }
 
    L_DEBU(QString("FilePool::open(%1, %2): file added to the cache").arg(path).arg(mode));

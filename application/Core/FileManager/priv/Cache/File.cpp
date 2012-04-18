@@ -76,8 +76,8 @@ File::File(
    complete(!Global::isFileUnfinished(Entry::getName())),
    numDataWriter(0),
    numDataReader(0),
-   fileInWriteMode(0),
-   fileInReadMode(0),
+   fileInWriteMode(nullptr),
+   fileInReadMode(nullptr),
    mutex(QMutex::Recursive)
 {
    L_DEBU(QString("New file : %1 (%2), createPhysically = %3").arg(this->getFullPath()).arg(Common::Global::formatByteSize(this->size)).arg(createPhysically));
@@ -135,8 +135,8 @@ void File::setToUnfinished(qint64 size, const Common::Hashes& hashes)
 bool File::restoreFromFileCache(const Protos::FileCache::Hashes::File& file)
 {
    if (
+      static_cast<qint64>(file.size()) == this->size &&
       Common::ProtoHelper::getStr(file, &Protos::FileCache::Hashes_File::filename) == this->getName() &&
-      (qint64)file.size() == this->size &&
          (
             Global::isFileUnfinished(this->getName()) ||
             (qint64)file.date_last_modified() == this->getDateLastModified().toMSecsSinceEpoch() // We test the date only for finished files.
@@ -294,7 +294,7 @@ void File::dataWriterDeleted()
    if (--this->numDataWriter == 0)
    {
       this->cache->getFilePool().release(this->fileInWriteMode);
-      this->fileInWriteMode = 0;
+      this->fileInWriteMode = nullptr;
    }
 }
 
@@ -305,7 +305,7 @@ void File::dataReaderDeleted()
    if (--this->numDataReader == 0)
    {
       this->cache->getFilePool().release(this->fileInReadMode);
-      this->fileInReadMode = 0;
+      this->fileInReadMode = nullptr;
    }
 }
 
@@ -415,8 +415,8 @@ void File::setAsComplete()
          QMutexLocker lockerWrite(&this->writeLock);
          QMutexLocker lockerRead(&this->readLock);
          this->cache->getFilePool().forceReleaseAll(this->getFullPath()); // Some uploads may be interrupted.
-         this->fileInReadMode = 0;
-         this->fileInWriteMode = 0;
+         this->fileInReadMode = nullptr;
+         this->fileInWriteMode = nullptr;
       }
 
       const QString oldPath = this->getFullPath();
@@ -489,8 +489,8 @@ void File::removeUnfinishedFiles()
       QMutexLocker lockerRead(&this->readLock);
 
       this->cache->getFilePool().forceReleaseAll(this->getFullPath());
-      this->fileInReadMode = 0;
-      this->fileInWriteMode = 0;
+      this->fileInReadMode = nullptr;
+      this->fileInWriteMode = nullptr;
 
       if (!QFile::remove(this->getFullPath()))
          L_WARN(QString("File::removeUnfinishedFiles() : unable to delete an unfinished file : %1").arg(this->getFullPath()));
