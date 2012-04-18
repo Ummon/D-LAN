@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <QtHelpProject version="1.0">
-    <namespace>com.nokia.qtsolutions.qtservice_2.6</namespace>
+    <namespace>com.nokia.qtsolutions.qtservice_head</namespace>
     <virtualFolder>qdoc</virtualFolder>
     <customFilter name="Qt Solutions: Service">
         <filterAttribute>qt</filterAttribute>
@@ -25,6 +25,8 @@
             <keyword name="An Interactive Service" id="An Interactive Service" ref="qtservice-example-interactive.html"/>
             <keyword name="QtService" id="QtService" ref="qtservice.html"/>
             <keyword name="application" id="QtService::application" ref="qtservice.html#application"/>
+            <keyword name="createApplication" id="QtService::createApplication" ref="qtservice.html#createApplication"/>
+            <keyword name="executeApplication" id="QtService::executeApplication" ref="qtservice.html#executeApplication"/>
             <keyword name="~QtService" id="QtService::~QtService" ref="qtservice.html#dtor.QtService"/>
             <keyword name="QtServiceBase" id="QtServiceBase" ref="qtservicebase.html"/>
             <keyword name="QtServiceBase::MessageType" id="QtServiceBase::MessageType" ref="qtservicebase.html#MessageType-enum"/>
@@ -36,6 +38,7 @@
             <keyword name="QtServiceBase::Default" id="QtServiceBase::Default" ref="qtservicebase.html#ServiceFlag-enum"/>
             <keyword name="QtServiceBase::CanBeSuspended" id="QtServiceBase::CanBeSuspended" ref="qtservicebase.html#ServiceFlag-enum"/>
             <keyword name="QtServiceBase::CannotBeStopped" id="QtServiceBase::CannotBeStopped" ref="qtservicebase.html#ServiceFlag-enum"/>
+            <keyword name="QtServiceBase::NeedsStopOnShutdown" id="QtServiceBase::NeedsStopOnShutdown" ref="qtservicebase.html#ServiceFlag-enum"/>
             <keyword name="QtServiceBase::ServiceFlags" id="QtServiceBase::ServiceFlags" ref="qtservicebase.html#ServiceFlag-enum"/>
             <keyword name="createApplication" id="QtServiceBase::createApplication" ref="qtservicebase.html#createApplication"/>
             <keyword name="exec" id="QtServiceBase::exec" ref="qtservicebase.html#exec"/>

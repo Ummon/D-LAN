@@ -2,7 +2,7 @@
 <!DOCTYPE html
     PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
-<!-- qtservice-2.6_1-opensource/src/qtservice.cpp -->
+<!-- qtservice.cpp -->
 <head>
   <title>QtServiceController Class Reference</title>
   <link href="classic.css" rel="stylesheet" type="text/css" />
@@ -17,35 +17,38 @@
 <pre> #include &lt;QtServiceController&gt;</pre><ul>
 <li><a href="qtservicecontroller-members.html">List of all members, including inherited members</a></li>
 </ul>
+<hr />
 <a name="public-types"></a>
-<h3>Public Types</h3>
-<ul>
-<li><div class="fn"></div>enum <b><a href="qtservicecontroller.html#StartupType-enum">StartupType</a></b> { AutoStartup, ManualStartup }</li>
-</ul>
+<h2>Public Types</h2>
+<table class="alignedsummary" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr><td class="memItemLeft" align="right" valign="top">enum </td><td class="memItemRight" valign="bottom"><b><a href="qtservicecontroller.html#StartupType-enum">StartupType</a></b> { AutoStartup, ManualStartup }</td></tr>
+</table>
+<hr />
 <a name="public-functions"></a>
-<h3>Public Functions</h3>
-<ul>
-<li><div class="fn"></div><b><a href="qtservicecontroller.html#QtServiceController">QtServiceController</a></b> ( const QString &amp; <i>name</i> )</li>
-<li><div class="fn"></div>virtual <b><a href="qtservicecontroller.html#dtor.QtServiceController">~QtServiceController</a></b> ()</li>
-<li><div class="fn"></div>bool <b><a href="qtservicecontroller.html#isInstalled">isInstalled</a></b> () const</li>
-<li><div class="fn"></div>bool <b><a href="qtservicecontroller.html#isRunning">isRunning</a></b> () const</li>
-<li><div class="fn"></div>bool <b><a href="qtservicecontroller.html#pause">pause</a></b> ()</li>
-<li><div class="fn"></div>bool <b><a href="qtservicecontroller.html#resume">resume</a></b> ()</li>
-<li><div class="fn"></div>bool <b><a href="qtservicecontroller.html#sendCommand">sendCommand</a></b> ( int <i>code</i> )</li>
-<li><div class="fn"></div>QString <b><a href="qtservicecontroller.html#serviceDescription">serviceDescription</a></b> () const</li>
-<li><div class="fn"></div>QString <b><a href="qtservicecontroller.html#serviceFilePath">serviceFilePath</a></b> () const</li>
-<li><div class="fn"></div>QString <b><a href="qtservicecontroller.html#serviceName">serviceName</a></b> () const</li>
-<li><div class="fn"></div>bool <b><a href="qtservicecontroller.html#start">start</a></b> ( const QStringList &amp; <i>arguments</i> )</li>
-<li><div class="fn"></div>bool <b><a href="qtservicecontroller.html#start-2">start</a></b> ()</li>
-<li><div class="fn"></div>StartupType <b><a href="qtservicecontroller.html#startupType">startupType</a></b> () const</li>
-<li><div class="fn"></div>bool <b><a href="qtservicecontroller.html#stop">stop</a></b> ()</li>
-<li><div class="fn"></div>bool <b><a href="qtservicecontroller.html#uninstall">uninstall</a></b> ()</li>
-</ul>
+<h2>Public Functions</h2>
+<table class="alignedsummary" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr><td class="memItemLeft" align="right" valign="top"></td><td class="memItemRight" valign="bottom"><b><a href="qtservicecontroller.html#QtServiceController">QtServiceController</a></b> ( const QString &amp; <i>name</i> )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">virtual </td><td class="memItemRight" valign="bottom"><b><a href="qtservicecontroller.html#dtor.QtServiceController">~QtServiceController</a></b> ()</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool </td><td class="memItemRight" valign="bottom"><b><a href="qtservicecontroller.html#isInstalled">isInstalled</a></b> () const</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool </td><td class="memItemRight" valign="bottom"><b><a href="qtservicecontroller.html#isRunning">isRunning</a></b> () const</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool </td><td class="memItemRight" valign="bottom"><b><a href="qtservicecontroller.html#pause">pause</a></b> ()</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool </td><td class="memItemRight" valign="bottom"><b><a href="qtservicecontroller.html#resume">resume</a></b> ()</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool </td><td class="memItemRight" valign="bottom"><b><a href="qtservicecontroller.html#sendCommand">sendCommand</a></b> ( int <i>code</i> )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">QString </td><td class="memItemRight" valign="bottom"><b><a href="qtservicecontroller.html#serviceDescription">serviceDescription</a></b> () const</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">QString </td><td class="memItemRight" valign="bottom"><b><a href="qtservicecontroller.html#serviceFilePath">serviceFilePath</a></b> () const</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">QString </td><td class="memItemRight" valign="bottom"><b><a href="qtservicecontroller.html#serviceName">serviceName</a></b> () const</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool </td><td class="memItemRight" valign="bottom"><b><a href="qtservicecontroller.html#start">start</a></b> ( const QStringList &amp; <i>arguments</i> )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool </td><td class="memItemRight" valign="bottom"><b><a href="qtservicecontroller.html#start-2">start</a></b> ()</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">StartupType </td><td class="memItemRight" valign="bottom"><b><a href="qtservicecontroller.html#startupType">startupType</a></b> () const</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool </td><td class="memItemRight" valign="bottom"><b><a href="qtservicecontroller.html#stop">stop</a></b> ()</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool </td><td class="memItemRight" valign="bottom"><b><a href="qtservicecontroller.html#uninstall">uninstall</a></b> ()</td></tr>
+</table>
+<hr />
 <a name="static-public-members"></a>
-<h3>Static Public Members</h3>
-<ul>
-<li><div class="fn"></div>bool <b><a href="qtservicecontroller.html#install">install</a></b> ( const QString &amp; <i>serviceFilePath</i>, const QString &amp; <i>account</i> = QString(), const QString &amp; <i>password</i> = QString() )</li>
-</ul>
+<h2>Static Public Members</h2>
+<table class="alignedsummary" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr><td class="memItemLeft" align="right" valign="top">bool </td><td class="memItemRight" valign="bottom"><b><a href="qtservicecontroller.html#install">install</a></b> ( const QString &amp; <i>serviceFilePath</i>, const QString &amp; <i>account</i> = QString(), const QString &amp; <i>password</i> = QString() )</td></tr>
+</table>
 <a name="details"></a>
 <hr />
 <h2>Detailed Description</h2>
@@ -77,7 +80,7 @@
 <h2>Member Type Documentation</h2>
 <h3 class="fn"><a name="StartupType-enum"></a>enum QtServiceController::StartupType</h3>
 <p>This enum describes when a service should be started.</p>
-<p><table border="1" cellpadding="2" cellspacing="1" width="100%">
+<p><table class="valuelist" border="1" cellpadding="2" cellspacing="1" width="100%">
 <tr><th width="25%">Constant</th><th width="15%">Value</th><th width="60%">Description</th></tr>
 <tr><td valign="top"><tt>QtServiceController::AutoStartup</tt></td><td align="center" valign="top"><tt>0</tt></td><td valign="top">The service is started during system startup.</td></tr>
 <tr><td valign="top"><tt>QtServiceController::ManualStartup</tt></td><td align="center" valign="top"><tt>1</tt></td><td valign="top">The service must be started manually by a process.</td></tr>
@@ -86,22 +89,22 @@
 <p>See also <a href="qtservicecontroller.html#startupType">startupType</a>().</p>
 <hr />
 <h2>Member Function Documentation</h2>
-<h3 class="fn"><a name="QtServiceController"></a>QtServiceController::QtServiceController ( const <a href="http://qt.nokia.com/doc/4.5/qstring.html">QString</a> &amp; <i>name</i> )</h3>
+<h3 class="fn"><a name="QtServiceController"></a>QtServiceController::QtServiceController ( const <a href="http://qt.nokia.com/doc/4.6/qstring.html">QString</a> &amp; <i>name</i> )</h3>
 <p>Creates a controller object for the service with the given <i>name</i>.</p>
 <h3 class="fn"><a name="dtor.QtServiceController"></a>QtServiceController::~QtServiceController ()&nbsp;&nbsp;<tt> [virtual]</tt></h3>
 <p>Destroys the service controller. This neither stops nor uninstalls the controlled service.</p>
 <p>To stop a service the <a href="qtservicecontroller.html#stop">stop</a>() function must be called explicitly. To uninstall a service, you can use the <a href="qtservicecontroller.html#uninstall">uninstall</a>() function.</p>
 <p>See also <a href="qtservicecontroller.html#stop">stop</a>() and <a href="qtservicecontroller.html#uninstall">QtServiceController::uninstall</a>().</p>
-<h3 class="fn"><a name="install"></a>bool QtServiceController::install ( const <a href="http://qt.nokia.com/doc/4.5/qstring.html">QString</a> &amp; <i>serviceFilePath</i>, const <a href="http://qt.nokia.com/doc/4.5/qstring.html">QString</a> &amp; <i>account</i> = QString(), const <a href="http://qt.nokia.com/doc/4.5/qstring.html">QString</a> &amp; <i>password</i> = QString() )&nbsp;&nbsp;<tt> [static]</tt></h3>
+<h3 class="fn"><a name="install"></a>bool QtServiceController::install ( const <a href="http://qt.nokia.com/doc/4.6/qstring.html">QString</a> &amp; <i>serviceFilePath</i>, const <a href="http://qt.nokia.com/doc/4.6/qstring.html">QString</a> &amp; <i>account</i> = QString(), const <a href="http://qt.nokia.com/doc/4.6/qstring.html">QString</a> &amp; <i>password</i> = QString() )&nbsp;&nbsp;<tt> [static]</tt></h3>
 <p>Installs the service with the given <i>serviceFilePath</i> and returns true if the service is installed successfully; otherwise returns false.</p>
 <p>On Windows service is installed in the system's service control manager with the given <i>account</i> and <i>password</i>.</p>
-<p>On Unix service configuration is written to <a href="http://qt.nokia.com/doc/4.5/qsettings.html#Scope-enum">QSettings::SystemScope</a> using &quot;QtSoftware&quot; as organization name. <i>account</i> and <i>password</i> arguments are ignored.</p>
+<p>On Unix service configuration is written to <a href="http://qt.nokia.com/doc/4.6/qsettings.html#Scope-enum">QSettings::SystemScope</a> using &quot;QtSoftware&quot; as organization name. <i>account</i> and <i>password</i> arguments are ignored.</p>
 <p><b>Warning:</b> Due to the different implementations of how services (daemons) are installed on various UNIX-like systems, this method doesn't integrate the service into the system's startup scripts.</p>
 <p>See also <a href="qtservicecontroller.html#uninstall">uninstall</a>() and <a href="qtservicecontroller.html#start">start</a>().</p>
 <h3 class="fn"><a name="isInstalled"></a>bool QtServiceController::isInstalled () const</h3>
 <p>Returns true if the service is installed; otherwise returns false.</p>
 <p>On Windows it uses the system's service control manager.</p>
-<p>On Unix it checks configuration written to <a href="http://qt.nokia.com/doc/4.5/qsettings.html#Scope-enum">QSettings::SystemScope</a> using &quot;QtSoftware&quot; as organization name.</p>
+<p>On Unix it checks configuration written to <a href="http://qt.nokia.com/doc/4.6/qsettings.html#Scope-enum">QSettings::SystemScope</a> using &quot;QtSoftware&quot; as organization name.</p>
 <p>See also <a href="qtservicecontroller.html#install">install</a>().</p>
 <h3 class="fn"><a name="isRunning"></a>bool QtServiceController::isRunning () const</h3>
 <p>Returns true if the service is running; otherwise returns false. A service must be installed before it can be run using a controller.</p>
@@ -118,16 +121,16 @@
 <p>Sends the user command <i>code</i> to the service. The service will call the <a href="qtservicebase.html#processCommand">QtServiceBase::processCommand</a>() implementation. This function does nothing if the service is not running.</p>
 <p>Returns true if the request was sent to a running service; otherwise returns false.</p>
 <p>See also <a href="qtservicebase.html#processCommand">QtServiceBase::processCommand</a>().</p>
-<h3 class="fn"><a name="serviceDescription"></a><a href="http://qt.nokia.com/doc/4.5/qstring.html">QString</a> QtServiceController::serviceDescription () const</h3>
+<h3 class="fn"><a name="serviceDescription"></a><a href="http://qt.nokia.com/doc/4.6/qstring.html">QString</a> QtServiceController::serviceDescription () const</h3>
 <p>Returns the description of the controlled service.</p>
 <p>See also <a href="qtservicecontroller.html#install">install</a>() and <a href="qtservicecontroller.html#serviceName">serviceName</a>().</p>
-<h3 class="fn"><a name="serviceFilePath"></a><a href="http://qt.nokia.com/doc/4.5/qstring.html">QString</a> QtServiceController::serviceFilePath () const</h3>
+<h3 class="fn"><a name="serviceFilePath"></a><a href="http://qt.nokia.com/doc/4.6/qstring.html">QString</a> QtServiceController::serviceFilePath () const</h3>
 <p>Returns the file path to the controlled service.</p>
 <p>See also <a href="qtservicecontroller.html#install">install</a>() and <a href="qtservicecontroller.html#serviceName">serviceName</a>().</p>
-<h3 class="fn"><a name="serviceName"></a><a href="http://qt.nokia.com/doc/4.5/qstring.html">QString</a> QtServiceController::serviceName () const</h3>
+<h3 class="fn"><a name="serviceName"></a><a href="http://qt.nokia.com/doc/4.6/qstring.html">QString</a> QtServiceController::serviceName () const</h3>
 <p>Returns the name of the controlled service.</p>
 <p>See also <a href="qtservicecontroller.html#QtServiceController">QtServiceController</a>() and <a href="qtservicecontroller.html#serviceDescription">serviceDescription</a>().</p>
-<h3 class="fn"><a name="start"></a>bool QtServiceController::start ( const <a href="http://qt.nokia.com/doc/4.5/qstringlist.html">QStringList</a> &amp; <i>arguments</i> )</h3>
+<h3 class="fn"><a name="start"></a>bool QtServiceController::start ( const <a href="http://qt.nokia.com/doc/4.6/qstringlist.html">QStringList</a> &amp; <i>arguments</i> )</h3>
 <p>Starts the installed service passing the given <i>arguments</i> to the service. A service must be installed before a controller can run it.</p>
 <p>Returns true if the service could be started; otherwise returns false.</p>
 <p>See also <a href="qtservicecontroller.html#install">install</a>() and <a href="qtservicecontroller.html#stop">stop</a>().</p>
@@ -144,11 +147,11 @@
 <h3 class="fn"><a name="uninstall"></a>bool QtServiceController::uninstall ()</h3>
 <p>Uninstalls the service and returns true if successful; otherwise returns false.</p>
 <p>On Windows service is uninstalled using the system's service control manager.</p>
-<p>On Unix service configuration is cleared using <a href="http://qt.nokia.com/doc/4.5/qsettings.html#Scope-enum">QSettings::SystemScope</a> with &quot;QtSoftware&quot; as organization name.</p>
+<p>On Unix service configuration is cleared using <a href="http://qt.nokia.com/doc/4.6/qsettings.html#Scope-enum">QSettings::SystemScope</a> with &quot;QtSoftware&quot; as organization name.</p>
 <p>See also <a href="qtservicecontroller.html#install">install</a>().</p>
 <p /><address><hr /><div align="center">
 <table width="100%" cellspacing="0" border="0"><tr class="address">
-<td width="30%" align="left">Copyright &copy; 2009 Nokia Corporation and/or its subsidiary(-ies)</td>
+<td width="30%" align="left">Copyright &copy; 2010 Nokia Corporation and/or its subsidiary(-ies)</td>
 <td width="40%" align="center"><a href="http://qt.nokia.com/doc/trademarks.html">Trademarks</a></td>
 <td width="30%" align="right"><div align="right">Qt Solutions</div></td>
 </tr></table></div></address></body>
