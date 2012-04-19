@@ -25,6 +25,11 @@ using namespace UM;
 
 #include <priv/Log.h>
 
+/**
+  * Un chunk uploader will write a given chunk to a given socket.
+  * This operation is threaded and must be run by a 'Common::ThreadPool'.
+  */
+
 quint64 ChunkUploader::currentID(1);
 
 ChunkUploader::ChunkUploader(QSharedPointer<FM::IChunk> chunk, int offset, QSharedPointer<PM::ISocket> socket, Common::TransferRateCalculator& transferRateCalculator) :
@@ -62,7 +67,7 @@ int ChunkUploader::getProgress() const
 
    const int chunkSize = this->chunk->getChunkSize();
    if (chunkSize != 0)
-      return 10000LL * this->offset / this->chunk->getChunkSize();
+      return 10000LL * this->offset / chunkSize;
    else
       return 0;
 }
@@ -77,9 +82,12 @@ void ChunkUploader::init(QThread* thread)
   this->socket->moveToThread(thread);
 }
 
+/**
+  * Called by the thread pool ('Common::ThreadPool') in another thread.
+  */
 void ChunkUploader::run()
 {
-   L_DEBU(QString("Starting uploading a chunk from offset %1 : %2").arg(this->offset).arg(this->chunk->toStringLog()));
+   L_DEBU(QString("Starting uploading a chunk from offset %1: %2").arg(this->offset).arg(this->chunk->toStringLog()));
 
    static const quint32 BUFFER_SIZE = SETTINGS.get<quint32>("buffer_size_reading");
    static const quint32 SOCKET_BUFFER_SIZE = SETTINGS.get<quint32>("socket_buffer_size");
@@ -94,11 +102,11 @@ void ChunkUploader::run()
 
       while (bytesRead = reader->read(buffer, this->offset))
       {
-         int bytesSent = this->socket->write(buffer, bytesRead);
+         const int bytesSent = this->socket->write(buffer, bytesRead);
 
          if (bytesSent == -1)
          {
-            L_WARN(QString("Socket : cannot send data : %1").arg(this->chunk->toStringLog()));
+            L_WARN(QString("Socket: cannot send data : %1").arg(this->chunk->toStringLog()));
             this->closeTheSocket = true;
             goto end;
          }

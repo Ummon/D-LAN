@@ -455,7 +455,8 @@ void ChunkDownloader::result(const Protos::Core::GetChunkResult& result)
 void ChunkDownloader::stream(QSharedPointer<PM::ISocket> socket)
 {
    this->socket = socket;
-   this->socket->setReadBufferSize(SETTINGS.get<quint32>("socket_buffer_size"));
+   static const quint32 SOCKET_BUFFER_SIZE = SETTINGS.get<quint32>("socket_buffer_size");
+   this->socket->setReadBufferSize(SOCKET_BUFFER_SIZE);
    this->threadPool.run(this);
 }
 
