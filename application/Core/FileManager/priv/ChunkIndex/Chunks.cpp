@@ -43,10 +43,24 @@ void Chunks::rm(QSharedPointer<Chunk> chunk)
    L_DEBU(QString("Nb chunks: %1").arg(this->size()));
 }
 
+/**
+  * If there is some identical chunks (same data, same hash) it always returns the same (first) chunk.
+  * The goal is to optimize the downloading of file with a lot of padding like a Wii ISO game. In this case many chunks are identical
+  * and may be copied from the local disk, the data can be cached in a better way by the OS if it copies always from the same chunk.
+  *
+  * Some measurements for downloading a file with 60% of padding on Windows 7:
+  *  - Last inserted chunk returned: 2 min 35 s
+  *  - First inserted chunk returned: 1 min 40 s
+  */
 QSharedPointer<Chunk> Chunks::value(const Common::Hash& hash) const
 {
    QMutexLocker locker(&this->mutex);
-   return QMultiHash<Common::Hash, QSharedPointer<Chunk>>::value(hash);
+
+   QHash<Common::Hash, QSharedPointer<Chunk>>::const_iterator i = QMultiHash<Common::Hash, QSharedPointer<Chunk>>::constFind(hash);
+   if (i == QHash<Common::Hash, QSharedPointer<Chunk>>::constEnd())
+      return QSharedPointer<Chunk>();
+   else
+      return i.value();
 }
 
 QList<QSharedPointer<Chunk>> Chunks::values(const Common::Hash& hash) const

@@ -284,7 +284,7 @@ void PeerMessageSocket::onNewMessage(Common::MessageHeader::MessageType type, co
             break;
          }
 
-         // TODO implements 'GetChunkResult.ALREADY_DOWNLOADING', 'GetChunkResult.TOO_MANY_CONNECTIONS' and 'GetChunkResult.DONT_HAVE_DATA_FROM_OFFSET'
+         // TODO: implements 'GetChunkResult.ALREADY_DOWNLOADING', 'GetChunkResult.TOO_MANY_CONNECTIONS' and 'GetChunkResult.DONT_HAVE_DATA_FROM_OFFSET'
          QSharedPointer<FM::IChunk> chunk = this->fileManager->getChunk(hash);
          if (chunk.isNull())
          {
