@@ -28,9 +28,6 @@ namespace Common
 {
    struct Language
    {
-      Language() {}
-      Language(QString filename, QLocale locale) : filename(filename), locale(locale) {}
-
       QString filename;
       QLocale locale;
    };

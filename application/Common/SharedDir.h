@@ -33,14 +33,6 @@ namespace Common
      */
    struct SharedDir
    {
-      /**
-        * Build a null SharedDir.
-        */
-      SharedDir() {}
-
-      SharedDir(const Common::Hash& ID, const QString& path, quint64 size, quint64 freeSpace) :
-         ID(ID), path(path), size(size), freeSpace(freeSpace) {}
-
       bool isNull() const { return ID.isNull(); }
 
       bool operator==(const SharedDir& other) const { return this->ID == other.ID; }
