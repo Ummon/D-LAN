@@ -40,7 +40,8 @@ private slots:
    void initTestCase();
    void insertElements();
    void retrieveElements();
-   void iterate();
+   void iterateBreathFirst();
+   void iterateDepthFirst();
    void removeElements();
 
 private:

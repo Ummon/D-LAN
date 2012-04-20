@@ -26,7 +26,10 @@
 namespace Common
 {
    template <typename TreeType>
-   class TreeBreadthIterator;
+   class TreeBreadthFirstIterator;
+
+   template <typename TreeType>
+   class TreeDepthFirstIterator;
 
    class OutOfRangeException {};
 
@@ -55,6 +58,22 @@ namespace Common
       Tree(const ItemType&, TreeType* parent);
       virtual ~Tree();
 
+      /**
+        * Applies 'fun' to all subtrees.
+        * Scan the subtrees in a breadth first traversal way.
+        * Stop the scan if 'fun' returns 'false'.
+        * @return 'false' if the last call of 'fun' returns 'false'.
+        */
+      bool mapBreadthFirst(std::function<bool(TreeType*)> fun, bool iterateOnRoot = false);
+
+      /**
+        * Applies 'fun' to all subtrees.
+        * Scan the subtrees in a depth first traversal way.
+        * Stop the scan if 'fun' returns 'false'.
+        * @return 'false' if the last call of 'fun' returns 'false'.
+        */
+      bool mapDepthFirst(std::function<bool(TreeType*)> fun, bool iterateOnRoot = false);
+
       virtual TreeType* getParent();
       virtual int getNbChildren() const;
       virtual TreeType* getChild(int pos) const;
@@ -74,7 +93,8 @@ namespace Common
    protected:
       virtual TreeType* newTree(const ItemType& item);
 
-      friend class TreeBreadthIterator<TreeType>;
+      friend class TreeBreadthFirstIterator<TreeType>;
+      friend class TreeDepthFirstIterator<TreeType>;
 
       ItemType item;
       TreeType* parent;
@@ -94,10 +114,25 @@ namespace Common
    /////
 
    template <typename TreeType>
-   class TreeBreadthIterator
+   class TreeBreadthFirstIterator
    {
    public:
-      TreeBreadthIterator(TreeType* tree, bool iterateOnRoot = false);
+      TreeBreadthFirstIterator(TreeType* tree, bool iterateOnRoot = false);
+      bool hasNext() const;
+      TreeType* next();
+
+   private:
+      void readChildren(TreeType* parentTree);
+      QList<TreeType*> nextTrees;
+   };
+
+   /////
+
+   template <typename TreeType>
+   class TreeDepthFirstIterator
+   {
+   public:
+      TreeDepthFirstIterator(TreeType* tree, bool iterateOnRoot = false);
       bool hasNext() const;
       TreeType* next();
 
@@ -130,6 +165,29 @@ Tree<ItemType, TreeType>::~Tree()
    if (this->parent)
       this->parent->children.removeOne(static_cast<TreeType*>(this));
 }
+
+template <typename ItemType, typename TreeType>
+bool Tree<ItemType, TreeType>::mapBreadthFirst(std::function<bool(TreeType*)> fun, bool iterateOnRoot)
+{
+   TreeBreadthFirstIterator<TreeType> i(static_cast<TreeType*>(this), iterateOnRoot);
+   TreeType* currentTree;
+   while (currentTree = i.next())
+      if (!fun(currentTree))
+         return false;
+   return true;
+}
+
+template <typename ItemType, typename TreeType>
+bool Tree<ItemType, TreeType>::mapDepthFirst(std::function<bool(TreeType*)> fun, bool iterateOnRoot)
+{
+   TreeDepthFirstIterator<TreeType> i(static_cast<TreeType*>(this), iterateOnRoot);
+   TreeType* currentTree;
+   while (currentTree = i.next())
+      if (!fun(currentTree))
+         return false;
+   return true;
+}
+
 
 template <typename ItemType, typename TreeType>
 TreeType* Tree<ItemType, TreeType>::getParent()
@@ -251,7 +309,7 @@ TreeType* Tree<ItemType, TreeType>::newTree(const ItemType& item)
 /////
 
 template <typename TreeType>
-TreeBreadthIterator<TreeType>::TreeBreadthIterator(TreeType* tree, bool iterateOnRoot)
+TreeBreadthFirstIterator<TreeType>::TreeBreadthFirstIterator(TreeType* tree, bool iterateOnRoot)
 {
    if (iterateOnRoot)
       this->nextTrees << tree;
@@ -260,13 +318,13 @@ TreeBreadthIterator<TreeType>::TreeBreadthIterator(TreeType* tree, bool iterateO
 }
 
 template <typename TreeType>
-bool TreeBreadthIterator<TreeType>::hasNext() const
+bool TreeBreadthFirstIterator<TreeType>::hasNext() const
 {
    return !this->nextTrees.isEmpty();
 }
 
 template <typename TreeType>
-TreeType* TreeBreadthIterator<TreeType>::TreeBreadthIterator::next()
+TreeType* TreeBreadthFirstIterator<TreeType>::TreeBreadthFirstIterator::next()
 {
    if (this->nextTrees.isEmpty())
       return 0;
@@ -277,9 +335,46 @@ TreeType* TreeBreadthIterator<TreeType>::TreeBreadthIterator::next()
 }
 
 template <typename TreeType>
-void TreeBreadthIterator<TreeType>::readChildren(TreeType* parentTree)
+void TreeBreadthFirstIterator<TreeType>::readChildren(TreeType* parentTree)
 {
    this->nextTrees.append(parentTree->children);
+}
+
+/////
+
+template <typename TreeType>
+TreeDepthFirstIterator<TreeType>::TreeDepthFirstIterator(TreeType* tree, bool iterateOnRoot)
+{
+   if (iterateOnRoot)
+      this->nextTrees << tree;
+   else
+      this->readChildren(tree);
+}
+
+template <typename TreeType>
+bool TreeDepthFirstIterator<TreeType>::hasNext() const
+{
+   return !this->nextTrees.isEmpty();
+}
+
+template <typename TreeType>
+TreeType* TreeDepthFirstIterator<TreeType>::TreeDepthFirstIterator::next()
+{
+   if (this->nextTrees.isEmpty())
+      return 0;
+
+   TreeType* tree = this->nextTrees.takeFirst();
+   this->readChildren(tree);
+   return tree;
+}
+
+template <typename TreeType>
+void TreeDepthFirstIterator<TreeType>::readChildren(TreeType* parentTree)
+{
+   QListIterator<TreeType*> i(parentTree->children);
+   i.toBack();
+   while (i.hasPrevious())
+      this->nextTrees.prepend(i.previous());
 }
 
 #endif
