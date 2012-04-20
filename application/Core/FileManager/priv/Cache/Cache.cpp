@@ -641,7 +641,7 @@ SharedDirectory* Cache::createSharedDir(const QString path, const Common::Hash& 
 
 Common::SharedDir Cache::makeSharedDir(const SharedDirectory* dir)
 {
-   return Common::SharedDir(dir->getId(), dir->getFullPath(), dir->getSize(), Common::Global::availableDiskSpace(dir->getFullPath()));
+   return Common::SharedDir { dir->getId(), dir->getFullPath(), dir->getSize(), Common::Global::availableDiskSpace(dir->getFullPath()) };
 }
 
 /**
