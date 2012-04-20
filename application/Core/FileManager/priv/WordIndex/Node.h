@@ -150,8 +150,6 @@ namespace FM
    }
 }
 
-#include <climits>
-
 /***** Definition *****/
 using namespace FM;
 
