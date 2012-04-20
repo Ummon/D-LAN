@@ -19,3 +19,4 @@ output/
 qrc_*.cpp
 TODO
 *.session
+*.DS_STORE
