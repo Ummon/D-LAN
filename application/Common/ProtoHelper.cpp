@@ -26,7 +26,7 @@ using namespace Common;
 
 void ProtoHelper::setLang(Protos::Common::Language& langMess, const QLocale& locale)
 {
-   QStringList langCountry = locale.name().split('_');
+   const QStringList& langCountry = locale.name().split('_');
    if (langCountry.length() == 2)
    {
       ProtoHelper::setStr(langMess, &Protos::Common::Language::set_lang, langCountry[0]);

@@ -223,7 +223,7 @@ Hash Hash::fromStr(const QString& str)
    Q_ASSERT_X(str.size() == 2 * HASH_SIZE, "Hash::fromStr", "The string representation of an hash must have twice as character as the size (in byte) of the hash.");
 
    Hash hash;
-   QString strLower = str.toLower();
+   const QString strLower = str.toLower();
 
    for (int i = 0; i < HASH_SIZE && 2*i + 1 < strLower.size(); i++)
    {

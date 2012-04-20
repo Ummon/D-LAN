@@ -220,7 +220,7 @@ QString Global::formatTime(quint64 seconds)
    QString output;
 
    int ymwdhms[7];
-   char units[7] = {'y', 'M', 'w', 'd', 'h', 'm', 's'};
+   static const char units[7] = {'y', 'M', 'w', 'd', 'h', 'm', 's'};
 
    /* years   */ ymwdhms[0] = seconds / (60 * 60 * 24 * 7 * 4 * 12);
    /* months  */ ymwdhms[1] = seconds / (60 * 60 * 24 * 7 * 4) - (12 * ymwdhms[0]);
@@ -395,7 +395,7 @@ QString Global::toLowerAndRemoveAccents(const QString& str)
   */
 QStringList Global::splitInWords(const QString& words)
 {
-   const static QRegExp regExp("(\\W+|_)");
+   static const QRegExp regExp("(\\W+|_)");
    return Global::toLowerAndRemoveAccents(words).split(regExp, QString::SkipEmptyParts);
 }
 
