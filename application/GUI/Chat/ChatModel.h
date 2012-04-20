@@ -36,6 +36,8 @@ namespace GUI
    class ChatModel : public QAbstractTableModel
    {
       Q_OBJECT
+      static const int MAX_NICK_LENGTH = 12;
+
    public:
       ChatModel(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel);
 
@@ -58,9 +60,6 @@ namespace GUI
 
       struct Message
       {
-         Message(const Common::Hash& peerID, const QString& nick, const QDateTime& dateTime, const QString& message) :
-            peerID(peerID), nick(nick), dateTime(dateTime), message(message) {}
-
          Common::Hash peerID;
          QString nick;
          QDateTime dateTime;

@@ -20,6 +20,7 @@
 using namespace GUI;
 
 #include <QtAlgorithms>
+#include <QStringBuilder>
 
 #include <Protos/gui_protocol.pb.h>
 
@@ -38,11 +39,7 @@ ChatModel::ChatModel(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerLi
   */
 QString ChatModel::getLineStr(int row) const
 {
-   return QString().append(this->data(this->index(row, 0)).toString())
-      .append(" ")
-      .append(this->data(this->index(row, 1)).toString())
-      .append(" ")
-      .append(this->data(this->index(row, 2)).toString());
+   return this->data(this->index(row, 0)).toString() % " " % this->data(this->index(row, 1)).toString() % " " % this->data(this->index(row, 2)).toString();
 }
 
 bool ChatModel::isMessageIsOurs(int row) const
@@ -74,8 +71,8 @@ QVariant ChatModel::data(const QModelIndex& index, int role) const
    case 1:
       {
          QString nick = this->messages[index.row()].nick;
-         if (nick.size() > 12)
-            return nick.left(8).append("...");
+         if (nick.size() > MAX_NICK_LENGTH)
+            return nick.left(MAX_NICK_LENGTH-3).append("...");
          return nick;
       }
    case 2: return this->messages[index.row()].message;
@@ -96,7 +93,7 @@ void ChatModel::newChatMessage(const Common::Hash& peerID, const QString& messag
    QString nick = this->peerListModel.getNick(peerID);
 
    this->beginInsertRows(QModelIndex(), this->messages.size(), this->messages.size());
-   this->messages << Message(peerID, nick, QDateTime::currentDateTime(), message);
+   this->messages << Message { peerID, nick, QDateTime::currentDateTime(), message };
    this->endInsertRows();
 
    if (static_cast<quint32>(this->messages.size()) > SETTINGS.get<quint32>("max_chat_message_displayed"))
@@ -117,12 +114,12 @@ void ChatModel::newChatMessages(const Protos::GUI::EventChatMessages& messages)
    {
       const Common::Hash peerID(messages.message(i).peer_id().hash());
       const QString nick = this->peerListModel.getNick(peerID);
-      this->messages << Message(
+      this->messages << Message {
          peerID,
          nick,
          QDateTime::fromMSecsSinceEpoch(messages.message(i).time()),
          Common::ProtoHelper::getStr(messages.message(i), &Protos::GUI::EventChatMessages_Message::message)
-      );
+      };
    }
    this->endInsertRows();
 

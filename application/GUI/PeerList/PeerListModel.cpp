@@ -29,8 +29,8 @@ using namespace GUI;
 /**
   * @class PeerListModel
   *
-  * The list of all peers. The list is build from the core state message, see the method 'newState(..)'.
-  * The list can be order by the amout of sharing or in a alphabetic way, see the method 'setSortType(..)'.
+  * The list of all peers. The list is built from the core state message, see the method 'newState(..)'.
+  * The list can be order by the amout of sharing or in an alphabetic way, see the method 'setSortType(..)'.
   */
 
 PeerListModel::PeerListModel(QSharedPointer<RCC::ICoreConnection> coreConnection) :
