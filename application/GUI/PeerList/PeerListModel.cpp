@@ -26,6 +26,13 @@ using namespace GUI;
 #include <Common/ProtoHelper.h>
 #include <Common/Global.h>
 
+/**
+  * @class PeerListModel
+  *
+  * The list of all peers. The list is build from the core state message, see the method 'newState(..)'.
+  * The list can be order by the amout of sharing or in a alphabetic way, see the method 'setSortType(..)'.
+  */
+
 PeerListModel::PeerListModel(QSharedPointer<RCC::ICoreConnection> coreConnection) :
    coreConnection(coreConnection),
    currentSortType(Protos::GUI::Settings::BY_SHARING_AMOUNT)
@@ -35,7 +42,7 @@ PeerListModel::PeerListModel(QSharedPointer<RCC::ICoreConnection> coreConnection
 
 PeerListModel::~PeerListModel()
 {
-   foreach (Peer* p, this->peers)
+   foreach (Peer* p, this->orderedPeers)
       delete p;
 }
 
@@ -52,23 +59,23 @@ QString PeerListModel::getNick(const Common::Hash& peerID, const QString& defaul
 
 bool PeerListModel::isOurself(int rowNum) const
 {
-   if (rowNum >= this->peers.size())
+   if (rowNum >= this->orderedPeers.size())
       return false;
-   return this->peers[rowNum]->peerID == this->coreConnection->getRemoteID();
+   return this->orderedPeers[rowNum]->peerID == this->coreConnection->getRemoteID();
 }
 
 Common::Hash PeerListModel::getPeerID(int rowNum) const
 {
-   if (rowNum >= this->peers.size())
+   if (rowNum >= this->orderedPeers.size())
       return Common::Hash();
-   return this->peers[rowNum]->peerID;
+   return this->orderedPeers[rowNum]->peerID;
 }
 
 QHostAddress PeerListModel::getPeerIP(int rowNum) const
 {
-   if (rowNum >= this->peers.size())
+   if (rowNum >= this->orderedPeers.size())
       return QHostAddress();
-   return this->peers[rowNum]->ip;
+   return this->orderedPeers[rowNum]->ip;
 }
 
 void PeerListModel::clear()
@@ -93,7 +100,7 @@ Protos::GUI::Settings::PeerSortType PeerListModel::getSortType() const
 
 int PeerListModel::rowCount(const QModelIndex& parent) const
 {
-   return this->peers.size();
+   return this->orderedPeers.size();
 }
 
 int PeerListModel::columnCount(const QModelIndex& parent) const
@@ -103,7 +110,7 @@ int PeerListModel::columnCount(const QModelIndex& parent) const
 
 QVariant PeerListModel::data(const QModelIndex& index, int role) const
 {
-   if (!index.isValid() || index.row() >= this->peers.size())
+   if (!index.isValid() || index.row() >= this->orderedPeers.size())
       return QVariant();
 
    switch (role)
@@ -111,38 +118,38 @@ QVariant PeerListModel::data(const QModelIndex& index, int role) const
    case Qt::DisplayRole:
       switch (index.column())
       {
-      case 0: return QVariant::fromValue(this->peers[index.row()]->transferInformation);
-      case 1: return this->peers[index.row()]->nick;
-      case 2: return Common::Global::formatByteSize(this->peers[index.row()]->sharingAmount);
+      case 0: return QVariant::fromValue(this->orderedPeers[index.row()]->transferInformation);
+      case 1: return this->orderedPeers[index.row()]->nick;
+      case 2: return Common::Global::formatByteSize(this->orderedPeers[index.row()]->sharingAmount);
       default: return QVariant();
       }
 
    case Qt::BackgroundRole:
-      if (this->peersToColorize.contains(this->peers[index.row()]->peerID))
-         return this->peersToColorize[this->peers[index.row()]->peerID];
+      if (this->peersToColorize.contains(this->orderedPeers[index.row()]->peerID))
+         return this->peersToColorize[this->orderedPeers[index.row()]->peerID];
       if (this->isOurself(index.row()))
          return QColor(192, 255, 192);
       return QVariant();
 
    case Qt::ForegroundRole:
-      if (this->peersToColorize.contains(this->peers[index.row()]->peerID))
+      if (this->peersToColorize.contains(this->orderedPeers[index.row()]->peerID))
          return QColor(255, 255, 255);
       if (this->isOurself(index.row()))
          return QColor(0, 0, 0);
       return QVariant();
 
    case Qt::TextAlignmentRole:
-      return index.column() == 2 ? Qt::AlignRight : Qt::AlignLeft;
+      return (index.column() == 2 ? Qt::AlignRight : Qt::AlignLeft) + Qt::AlignVCenter;
 
    case Qt::ToolTipRole:
       {
-         const QString coreVersion = this->peers[index.row()]->coreVersion;
+         const QString coreVersion = this->orderedPeers[index.row()]->coreVersion;
          QString toolTip;
          if (!coreVersion.isEmpty())
             toolTip += tr("Version %1\n").arg(coreVersion);
          toolTip +=
-            tr("Download rate: ") % Common::Global::formatByteSize(this->peers[index.row()]->transferInformation.downloadRate) % "/s\n" %
-            tr("Upload rate: ") % Common::Global::formatByteSize(this->peers[index.row()]->transferInformation.uploadRate) % "/s";
+            tr("Download rate: ") % Common::Global::formatByteSize(this->orderedPeers[index.row()]->transferInformation.downloadRate) % "/s\n" %
+            tr("Upload rate: ") % Common::Global::formatByteSize(this->orderedPeers[index.row()]->transferInformation.uploadRate) % "/s";
          return toolTip;
       }
 
@@ -165,20 +172,20 @@ void PeerListModel::colorize(const Common::Hash& peerID, const QColor& color)
 
 void PeerListModel::colorize(const QModelIndex& index, const QColor& color)
 {
-   if (!index.isValid() || index.row() >= this->peers.size())
+   if (!index.isValid() || index.row() >= this->orderedPeers.size())
       return;
 
-   this->peersToColorize[this->peers[index.row()]->peerID] = color;
+   this->peersToColorize[this->orderedPeers[index.row()]->peerID] = color;
 
    emit dataChanged(this->createIndex(index.row(), 0), this->createIndex(index.row(), this->columnCount() - 1));
 }
 
 void PeerListModel::uncolorize(const QModelIndex& index)
 {
-   if (!index.isValid() || index.row() >= this->peers.size())
+   if (!index.isValid() || index.row() >= this->orderedPeers.size())
       return;
 
-   if (this->peersToColorize.remove(this->peers[index.row()]->peerID))
+   if (this->peersToColorize.remove(this->orderedPeers[index.row()]->peerID))
       emit dataChanged(this->createIndex(index.row(), 0), this->createIndex(index.row(), this->columnCount() - 1));
 }
 
@@ -195,7 +202,7 @@ void PeerListModel::updatePeers(const google::protobuf::RepeatedPtrField<Protos:
 {
    bool sortNeeded = false;
 
-   QList<Peer*> peersToRemove = this->peers;
+   QList<Peer*> peersToRemove = this->orderedPeers;
    QList<Peer*> peersToAdd;
 
    for (int i = 0; i < peers.size(); i++)
@@ -211,29 +218,29 @@ void PeerListModel::updatePeers(const google::protobuf::RepeatedPtrField<Protos:
             Common::ProtoHelper::getIP(peers.Get(i).ip()) :
             QHostAddress();
 
-      int j = this->peers.indexOf(this->indexedPeers[peerID]);
+      int j = this->orderedPeers.indexOf(this->indexedPeers[peerID]);
       if (j != -1)
       {
          peersToRemove.removeOne(this->indexedPeers[peerID]);
-         if (this->peers[j]->nick != nick)
+         if (this->orderedPeers[j]->nick != nick)
          {
-            this->peers[j]->nick = nick;
+            this->orderedPeers[j]->nick = nick;
             sortNeeded = true;
             emit dataChanged(this->createIndex(j, 1), this->createIndex(j, 1));
          }
-         if (this->peers[j]->sharingAmount != sharingAmount)
+         if (this->orderedPeers[j]->sharingAmount != sharingAmount)
          {
-            this->peers[j]->sharingAmount = sharingAmount;
+            this->orderedPeers[j]->sharingAmount = sharingAmount;
             sortNeeded = true;
          }
-         if (this->peers[j]->transferInformation != transferInformation)
+         if (this->orderedPeers[j]->transferInformation != transferInformation)
          {
-            this->peers[j]->transferInformation = transferInformation;
+            this->orderedPeers[j]->transferInformation = transferInformation;
             emit dataChanged(this->createIndex(j, 0), this->createIndex(j, 0));
          }
 
-         this->peers[j]->ip = ip;
-         this->peers[j]->coreVersion = coreVersion;
+         this->orderedPeers[j]->ip = ip;
+         this->orderedPeers[j]->coreVersion = coreVersion;
       }
       else
       {
@@ -249,12 +256,12 @@ void PeerListModel::updatePeers(const google::protobuf::RepeatedPtrField<Protos:
    {
       Peer* const peer = i.next();
       peerIDsRemoved << peer->peerID;
-      int j = this->peers.indexOf(peer);
+      int j = this->orderedPeers.indexOf(peer);
       if (j != -1)
       {
          this->beginRemoveRows(QModelIndex(), j, j);
          this->indexedPeers.remove(peer->peerID);
-         this->peers.removeAt(j);
+         this->orderedPeers.removeAt(j);
          delete peer;
          this->endRemoveRows();
       }
@@ -265,13 +272,13 @@ void PeerListModel::updatePeers(const google::protobuf::RepeatedPtrField<Protos:
 
    if (!peersToAdd.isEmpty())
    {
-      this->beginInsertRows(QModelIndex(), this->peers.size(), this->peers.size() + peersToAdd.size() - 1);
+      this->beginInsertRows(QModelIndex(), this->orderedPeers.size(), this->orderedPeers.size() + peersToAdd.size() - 1);
       for (QListIterator<Peer*> i(peersToAdd); i.hasNext();)
       {
          Peer* const peer = i.next();
          this->indexedPeers.insert(peer->peerID, peer);
       }
-      this->peers.append(peersToAdd);
+      this->orderedPeers.append(peersToAdd);
       this->endInsertRows();
    }
 
@@ -282,7 +289,7 @@ void PeerListModel::updatePeers(const google::protobuf::RepeatedPtrField<Protos:
 void PeerListModel::sort()
 {
    emit layoutAboutToBeChanged();
-   qSort(this->peers.begin(), this->peers.end(), this->currentSortType == Protos::GUI::Settings::BY_NICK ? Peer::sortCompByNick : Peer::sortCompBySharingAmount);
+   qSort(this->orderedPeers.begin(), this->orderedPeers.end(), this->currentSortType == Protos::GUI::Settings::BY_NICK ? Peer::sortCompByNick : Peer::sortCompBySharingAmount);
    emit layoutChanged();
 }
 
