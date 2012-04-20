@@ -142,10 +142,15 @@ namespace FM
    template <typename T>
    inline uint qHash(const NodeResult<T>& r)
    {
-      // TODO: if sizeof(void*) != sizeof(T) it can be a bit dangerous.
-      return (uint)(intptr_t)r.value;
+      uint h = 0;
+      static const int n = sizeof(T*) > sizeof(uint) ? sizeof(T*) / sizeof(uint) : 1;
+      for (int i = 0; i < n; i++)
+         h ^= intptr_t(r.value) >> (i * sizeof(uint));
+      return h;
    }
 }
+
+#include <climits>
 
 /***** Definition *****/
 using namespace FM;
