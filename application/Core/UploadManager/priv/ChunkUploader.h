@@ -30,17 +30,17 @@
 #include <Core/FileManager/IDataReader.h>
 #include <Core/PeerManager/ISocket.h>
 
-#include <IUpload.h>
+#include <IChunkUploader.h>
 
 namespace UM
 {
-   class Upload : public Common::IRunnable, public IUpload, public Common::Timeoutable
+   class ChunkUploader : public Common::IRunnable, public IChunkUploader, public Common::Timeoutable
    {
       static quint64 currentID; ///< Used to generate the new upload ID.
 
    public:
-      Upload(QSharedPointer<FM::IChunk> chunk, int offset, QSharedPointer<PM::ISocket> socket, Common::TransferRateCalculator& transferRateCalculator);
-      ~Upload();
+      ChunkUploader(QSharedPointer<FM::IChunk> chunk, int offset, QSharedPointer<PM::ISocket> socket, Common::TransferRateCalculator& transferRateCalculator);
+      ~ChunkUploader();
 
       quint64 getID() const;
       Common::Hash getPeerID() const;

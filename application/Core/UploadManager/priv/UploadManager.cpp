@@ -29,7 +29,7 @@ using namespace UM;
 #include <Core/FileManager/IChunk.h>
 #include <Core/PeerManager/ISocket.h>
 
-#include <priv/Upload.h>
+#include <priv/ChunkUploader.h>
 
 /**
   * @class UM::UploaderManager
@@ -53,18 +53,18 @@ UploadManager::~UploadManager()
    L_DEBU("UploadManager deleted");
 
    // We stop all uploads to avoid the thread pool to wait that all threads have finished their job.
-   for (QListIterator<QSharedPointer<Upload>> i(this->uploads); i.hasNext();)
+   for (QListIterator<QSharedPointer<ChunkUploader>> i(this->uploads); i.hasNext();)
       i.next()->stop();
 }
 
-QList<IUpload*> UploadManager::getUploads() const
+QList<IChunkUploader*> UploadManager::getChunkUploaders() const
 {
-   QList<IUpload*> uploads;
+   QList<IChunkUploader*> uploaders;
 
-   for (QListIterator<QSharedPointer<Upload>> i(this->uploads); i.hasNext();)
-      uploads << i.next().data();
+   for (QListIterator<QSharedPointer<ChunkUploader>> i(this->uploads); i.hasNext();)
+      uploaders << i.next().data();
 
-   return uploads;
+   return uploaders;
 }
 
 int UploadManager::getUploadRate()
@@ -74,7 +74,7 @@ int UploadManager::getUploadRate()
 
 void UploadManager::getChunk(QSharedPointer<FM::IChunk> chunk, int offset, QSharedPointer<PM::ISocket> socket)
 {
-   QSharedPointer<Upload> upload(new Upload(chunk, offset, socket, this->transferRateCalculator));
+   QSharedPointer<ChunkUploader> upload(new ChunkUploader(chunk, offset, socket, this->transferRateCalculator));
    connect(upload.data(), SIGNAL(timeout()), this, SLOT(uploadTimeout()));
    this->uploads << upload;
    this->threadPool.run(upload.toWeakRef());
@@ -82,9 +82,9 @@ void UploadManager::getChunk(QSharedPointer<FM::IChunk> chunk, int offset, QShar
 
 void UploadManager::uploadTimeout()
 {
-   Upload* upload = dynamic_cast<Upload*>(this->sender());
+   ChunkUploader* upload = dynamic_cast<ChunkUploader*>(this->sender());
 
-   for (QMutableListIterator<QSharedPointer<Upload>> i(this->uploads); i.hasNext();)
+   for (QMutableListIterator<QSharedPointer<ChunkUploader>> i(this->uploads); i.hasNext();)
       if (i.next().data() == upload)
       {
          i.remove();

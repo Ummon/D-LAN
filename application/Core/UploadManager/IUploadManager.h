@@ -23,13 +23,13 @@
 
 namespace UM
 {
-   class IUpload;
+   class IChunkUploader;
    class IUploadManager
    {
    public:
       virtual ~IUploadManager() {}
 
-      virtual QList<IUpload*> getUploads() const = 0;
+      virtual QList<IChunkUploader*> getChunkUploaders() const = 0;
 
       /**
         * @return Byte/s.

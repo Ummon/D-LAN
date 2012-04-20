@@ -52,16 +52,7 @@ QSharedPointer<Chunk> Chunks::value(const Common::Hash& hash) const
 QList<QSharedPointer<Chunk>> Chunks::values(const Common::Hash& hash) const
 {
    QMutexLocker locker(&this->mutex);
-   QList<QSharedPointer<Chunk>> values;
-
-   QMultiHash<Common::Hash, QSharedPointer<Chunk>>::const_iterator i = this->find(hash);
-   while (i != this->end() && i.key() == hash)
-   {
-      values << i.value();
-      ++i;
-   }
-
-   return values;
+   return QMultiHash<Common::Hash, QSharedPointer<Chunk>>::values(hash);
 }
 
 bool Chunks::contains(const Common::Hash& hash) const

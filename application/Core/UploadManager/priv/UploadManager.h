@@ -33,7 +33,7 @@
 
 namespace UM
 {
-   class Upload;
+   class ChunkUploader;
 
    class UploadManager : public QObject, public IUploadManager, Common::Uncopyable
    {
@@ -42,7 +42,7 @@ namespace UM
       UploadManager(QSharedPointer<PM::IPeerManager> peerManager);
       ~UploadManager();
 
-      QList<IUpload*> getUploads() const;
+      QList<IChunkUploader*> getChunkUploaders() const;
 
       int getUploadRate();
 
@@ -57,7 +57,7 @@ namespace UM
 
       QSharedPointer<PM::IPeerManager> peerManager;
 
-      QList<QSharedPointer<Upload>> uploads;
+      QList<QSharedPointer<ChunkUploader>> uploads;
 
       Common::ThreadPool threadPool;
    };

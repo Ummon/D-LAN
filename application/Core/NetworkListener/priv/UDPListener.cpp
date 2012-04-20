@@ -151,27 +151,27 @@ void UDPListener::sendIMAliveMessage()
    switch (this->nextHashRequestType)
    {
    case FIRST_HASHES:
-      this->currentChunkDownloads = this->downloadManager->getTheFirstUnfinishedChunks(numberOfHashesToSend);
+      this->currentChunkDownloaders = this->downloadManager->getTheFirstUnfinishedChunks(numberOfHashesToSend);
       this->nextHashRequestType = OLDEST_HASHES;
       break;
    case OLDEST_HASHES:
-      this->currentChunkDownloads = this->downloadManager->getTheOldestUnfinishedChunks(numberOfHashesToSend);
+      this->currentChunkDownloaders = this->downloadManager->getTheOldestUnfinishedChunks(numberOfHashesToSend);
       this->nextHashRequestType = FIRST_HASHES;
       break;
    }
 
-   IMAliveMessage.mutable_chunk()->Reserve(this->currentChunkDownloads.size());
-   for (QListIterator<QSharedPointer<DM::IChunkDownload>> i(this->currentChunkDownloads); i.hasNext();)
+   IMAliveMessage.mutable_chunk()->Reserve(this->currentChunkDownloaders.size());
+   for (QListIterator<QSharedPointer<DM::IChunkDownloader>> i(this->currentChunkDownloaders); i.hasNext();)
    {
-      QSharedPointer<DM::IChunkDownload> chunkDownload = i.next();
-      IMAliveMessage.add_chunk()->set_hash(chunkDownload->getHash().getData(), Common::Hash::HASH_SIZE);
+      QSharedPointer<DM::IChunkDownloader> chunkDownloader = i.next();
+      IMAliveMessage.add_chunk()->set_hash(chunkDownloader->getHash().getData(), Common::Hash::HASH_SIZE);
 
       // If we already have the chunk...
-      QSharedPointer<FM::IChunk> chunk = this->fileManager->getChunk(chunkDownload->getHash());
+      QSharedPointer<FM::IChunk> chunk = this->fileManager->getChunk(chunkDownloader->getHash());
       if (!chunk.isNull() && chunk->isComplete())
-         chunkDownload->addPeer(this->peerManager->getSelf());
+         chunkDownloader->addPeer(this->peerManager->getSelf());
       else
-         chunkDownload->rmPeer(this->peerManager->getSelf());
+         chunkDownloader->rmPeer(this->peerManager->getSelf());
    }
 
    this->send(Common::MessageHeader::CORE_IM_ALIVE, IMAliveMessage);
@@ -318,9 +318,9 @@ void UDPListener::processPendingUnicastDatagrams()
                continue;
             }
 
-            if (chunksOwnedMessage.chunk_state_size() != this->currentChunkDownloads.size())
+            if (chunksOwnedMessage.chunk_state_size() != this->currentChunkDownloaders.size())
             {
-               L_WARN(QString("ChunksOwned : The size (%1) doesn't match the expected one (%2)").arg(chunksOwnedMessage.chunk_state_size()).arg(this->currentChunkDownloads.size()));
+               L_WARN(QString("ChunksOwned : The size (%1) doesn't match the expected one (%2)").arg(chunksOwnedMessage.chunk_state_size()).arg(this->currentChunkDownloaders.size()));
                continue;
             }
 
@@ -328,9 +328,9 @@ void UDPListener::processPendingUnicastDatagrams()
                if (PM::IPeer* peer = this->peerManager->getPeer(header.getSenderID()))
                {
                   if (chunksOwnedMessage.chunk_state(i))
-                     this->currentChunkDownloads[i]->addPeer(peer);
+                     this->currentChunkDownloaders[i]->addPeer(peer);
                   else
-                     this->currentChunkDownloads[i]->rmPeer(peer);
+                     this->currentChunkDownloaders[i]->rmPeer(peer);
                }
          }
          break;

@@ -4,6 +4,8 @@
     <section ref="qtservice.html" title="QtService Class Reference">
         <keyword ref="qtservice.html">QtService</keyword>
         <keyword ref="qtservice.html#application">application</keyword>
+        <keyword ref="qtservice.html#createApplication">createApplication</keyword>
+        <keyword ref="qtservice.html#executeApplication">executeApplication</keyword>
         <section ref="qtservice-members.html" title="List of all members"/>
     </section>
     <section ref="qtservicebase.html" title="QtServiceBase Class Reference">
@@ -16,6 +18,7 @@
         <keyword ref="qtservicebase.html#ServiceFlag-enum">ServiceFlag</keyword>
         <keyword ref="qtservicebase.html#ServiceFlag-enum">ServiceFlags</keyword>
         <keyword ref="qtservicebase.html#ServiceFlag-enum">QtServiceBase::Default</keyword>
+        <keyword ref="qtservicebase.html#ServiceFlag-enum">QtServiceBase::NeedsStopOnShutdown</keyword>
         <keyword ref="qtservicebase.html#ServiceFlag-enum">QtServiceBase::CannotBeStopped</keyword>
         <keyword ref="qtservicebase.html#ServiceFlag-enum">QtServiceBase::CanBeSuspended</keyword>
         <keyword ref="qtservicebase.html#createApplication">createApplication</keyword>

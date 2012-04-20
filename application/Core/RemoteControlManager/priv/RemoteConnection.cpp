@@ -37,7 +37,7 @@ using namespace RCM;
 #include <Core/PeerManager/IPeer.h>
 #include <Core/NetworkListener/IChat.h>
 #include <Core/DownloadManager/IDownload.h>
-#include <Core/UploadManager/IUpload.h>
+#include <Core/UploadManager/IChunkUploader.h>
 
 #include <priv/Log.h>
 
@@ -189,19 +189,19 @@ void RemoteConnection::refresh()
    }
 
    // Uploads.
-   QList<UM::IUpload*> uploads = this->uploadManager->getUploads();
-   for (QListIterator<UM::IUpload*> i(uploads); i.hasNext();)
+   QList<UM::IChunkUploader*> chunkUploaders = this->uploadManager->getChunkUploaders();
+   for (QListIterator<UM::IChunkUploader*> i(chunkUploaders); i.hasNext();)
    {
-      UM::IUpload* upload = i.next();
+      UM::IChunkUploader* chunkUploader = i.next();
       Protos::GUI::State_Upload* protoUpload = state.add_upload();
-      if (upload->getChunk()->populateEntry(protoUpload->mutable_file()))
+      if (chunkUploader->getChunk()->populateEntry(protoUpload->mutable_file()))
       {
          protoUpload->mutable_file()->mutable_chunk()->Clear();
-         protoUpload->set_id(upload->getID());
-         protoUpload->set_current_part(upload->getChunk()->getNum() + 1); // "+ 1" to begin at 1 and not 0.
-         protoUpload->set_nb_part(upload->getChunk()->getNbTotalChunk());
-         protoUpload->set_progress(upload->getProgress());
-         protoUpload->mutable_peer_id()->set_hash(upload->getPeerID().getData(), Common::Hash::HASH_SIZE);
+         protoUpload->set_id(chunkUploader->getID());
+         protoUpload->set_current_part(chunkUploader->getChunk()->getNum() + 1); // "+ 1" to begin at 1 and not 0.
+         protoUpload->set_nb_part(chunkUploader->getChunk()->getNbTotalChunk());
+         protoUpload->set_progress(chunkUploader->getProgress());
+         protoUpload->mutable_peer_id()->set_hash(chunkUploader->getPeerID().getData(), Common::Hash::HASH_SIZE);
       }
       else
          state.mutable_upload()->RemoveLast();

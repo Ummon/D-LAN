@@ -45,7 +45,7 @@ QList<Language> Languages::getAvailableLanguages(ExeType exeType)
       {
          QLocale locale(reg.capturedTexts()[1]);
          if (locale.language() != QLocale::C)
-            languages << Language(filename, locale);
+            languages << Language { filename, locale };
       }
    }
    return languages;

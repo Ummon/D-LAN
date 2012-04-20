@@ -33,6 +33,7 @@
 #include <Common/RemoteCoreController/ICoreConnection.h>
 
 #include <PeerList/PeerListModel.h>
+#include <PeerList/PeerListDelegate.h>
 #include <Log/LogModel.h>
 
 #include <Settings/WidgetSettings.h>
@@ -52,16 +53,6 @@ namespace Ui {
 
 namespace GUI
 {
-   class PeerTableDelegate : public QStyledItemDelegate
-   {
-      Q_OBJECT
-   public:
-      void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const;
-      QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const;
-   };
-
-   /////
-
    class LogDelegate : public QStyledItemDelegate
    {
       Q_OBJECT
@@ -158,7 +149,7 @@ namespace GUI
       QSharedPointer<RCC::ICoreConnection> coreConnection;
 
       PeerListModel peerListModel;
-      PeerTableDelegate peerTableDelegate;
+      PeerListDelegate peerListDelegate;
 
       DirListModel sharedDirsModel;
 

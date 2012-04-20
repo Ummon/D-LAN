@@ -71,34 +71,55 @@ void TreeTests::retrieveElements()
    }
 }
 
-void TreeTests::iterate()
+void TreeTests::iterateBreathFirst()
 {
-   QList<int> expected1;
-   expected1 << 1 << 2 << 3 << 4 << 5 << 6 << 7 << 8 << 9;
-   testElementsAgainstList(expected1, &this->tree, true);
+   {
+      QList<int> expected { 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+      QList<int> actual;
+      this->tree.mapBreadthFirst([&](IntTree* tree) { actual << tree->getItem(); return true; }, true);
+      QVERIFY(expected == actual);
+   }
 
-   QList<int> expected2;
-   expected2 << 4 << 5 << 6 << 7 << 8 << 9;
-   testElementsAgainstList(expected2, &this->tree[1], false);
+   {
+      QList<int> expected { 4, 5, 6, 7, 8, 9 };
+      QList<int> actual;
+      this->tree[1].mapBreadthFirst([&](IntTree* tree) { actual << tree->getItem(); return true; });
+      QVERIFY(expected == actual);
+   }
+}
+
+void TreeTests::iterateDepthFirst()
+{
+   {
+      QList<int> expected { 1, 2, 3, 4, 7, 8, 5, 6, 9 };
+      QList<int> actual;
+      this->tree.mapDepthFirst([&](IntTree* tree) { actual << tree->getItem(); return true; }, true);
+      QVERIFY(expected == actual);
+   }
+
+   {
+      QList<int> expected { 4, 7, 8, 5, 6, 9 };
+      QList<int> actual;
+      this->tree[1].mapDepthFirst([&](IntTree* tree) { actual << tree->getItem(); return true; });
+      QVERIFY(expected == actual);
+   }
 }
 
 void TreeTests::removeElements()
 {
    delete this->tree[1].getChild(0);
-   QList<int> expected1;
-   expected1 << 1 << 2 << 3 << 5 << 6 <<  9;
+   QList<int> expected1 { 1, 2, 3, 5, 6, 9 };
    testElementsAgainstList(expected1, &this->tree, true);
 
    delete this->tree.getChild(1);
-   QList<int> expected2;
-   expected2 << 1 << 2;
+   QList<int> expected2 { 1, 2 };
    testElementsAgainstList(expected2, &this->tree, true);
 }
 
 void TreeTests::testElementsAgainstList(const QList<int> &expected, IntTree* tree, bool withRoot)
 {
    QList<int> actual;
-   for (TreeBreadthIterator<IntTree> i(tree, withRoot); i.hasNext();)
+   for (TreeBreadthFirstIterator<IntTree> i(tree, withRoot); i.hasNext();)
       actual << i.next()->getItem();
 
    QVERIFY(actual == expected);

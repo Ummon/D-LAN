@@ -16,7 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#include <priv/ChunkDownload.h>
+#include <priv/ChunkDownloader.h>
 using namespace DM;
 
 #include <QElapsedTimer>
@@ -28,15 +28,15 @@ using namespace DM;
 #include <priv/Log.h>
 
 /**
-  * @class DM::ChunkDownload
+  * @class DM::ChunkDownloader
   *
-  * A class to download a file chunk. A ChunkDownload can exist only if we know its hash.
+  * A class to download a file chunk. A ChunkDownloader can exist only if we know its hash.
   * It can be created when a new FileDownload is added for each chunk known in the given entry or when a FileDownload receive a hash.
   */
 
-const int ChunkDownload::MINIMUM_DELTA_TIME_TO_COMPUTE_SPEED(100); // [ms]
+const int ChunkDownloader::MINIMUM_DELTA_TIME_TO_COMPUTE_SPEED(100); // [ms]
 
-ChunkDownload::ChunkDownload(LinkedPeers& linkedPeers, OccupiedPeers& occupiedPeersDownloadingChunk, Common::TransferRateCalculator& transferRateCalculator, Common::ThreadPool& threadPool, Common::Hash chunkHash) :
+ChunkDownloader::ChunkDownloader(LinkedPeers& linkedPeers, OccupiedPeers& occupiedPeersDownloadingChunk, Common::TransferRateCalculator& transferRateCalculator, Common::ThreadPool& threadPool, Common::Hash chunkHash) :
    linkedPeers(linkedPeers),
    occupiedPeersDownloadingChunk(occupiedPeersDownloadingChunk),
    transferRateCalculator(transferRateCalculator),
@@ -49,23 +49,23 @@ ChunkDownload::ChunkDownload(LinkedPeers& linkedPeers, OccupiedPeers& occupiedPe
    mainThread(QThread::currentThread()),
    mutex(QMutex::Recursive)
 {
-   L_DEBU(QString("New ChunkDownload : %1").arg(this->chunkHash.toStr()));
+   L_DEBU(QString("New ChunkDownloader : %1").arg(this->chunkHash.toStr()));
 }
 
-ChunkDownload::~ChunkDownload()
+ChunkDownloader::~ChunkDownloader()
 {
    this->stop();
 
    for (QListIterator<PM::IPeer*> i(this->peers); i.hasNext();)
       this->linkedPeers.rmLink(i.next());
 
-   L_DEBU(QString("ChunkDownload deleted : %1").arg(this->chunkHash.toStr()));
+   L_DEBU(QString("ChunkDownloader deleted : %1").arg(this->chunkHash.toStr()));
 }
 
 /**
   * Return true if the chunk was downloading.
   */
-void ChunkDownload::stop()
+void ChunkDownloader::stop()
 {
    if (this->downloading)
    {
@@ -79,12 +79,12 @@ void ChunkDownload::stop()
    }
 }
 
-Common::Hash ChunkDownload::getHash() const
+Common::Hash ChunkDownloader::getHash() const
 {
    return this->chunkHash;
 }
 
-void ChunkDownload::addPeer(PM::IPeer* peer)
+void ChunkDownloader::addPeer(PM::IPeer* peer)
 {
    Q_ASSERT(peer);
 
@@ -99,7 +99,7 @@ void ChunkDownload::addPeer(PM::IPeer* peer)
    }
 }
 
-void ChunkDownload::rmPeer(PM::IPeer* peer)
+void ChunkDownloader::rmPeer(PM::IPeer* peer)
 {
    Q_ASSERT(peer);
 
@@ -115,12 +115,12 @@ void ChunkDownload::rmPeer(PM::IPeer* peer)
    }
 }
 
-void ChunkDownload::init(QThread* thread)
+void ChunkDownloader::init(QThread* thread)
 {
    this->socket->moveToThread(thread);
 }
 
-void ChunkDownload::run()
+void ChunkDownloader::run()
 {
    int deltaRead = 0;
    QElapsedTimer timer;
@@ -256,24 +256,24 @@ void ChunkDownload::run()
    this->socket->moveToThread(this->mainThread);
 }
 
-void ChunkDownload::finished()
+void ChunkDownloader::finished()
 {
    if (this->downloading)
       this->downloadingEnded();
 }
 
-void ChunkDownload::setChunk(QSharedPointer<FM::IChunk> chunk)
+void ChunkDownloader::setChunk(QSharedPointer<FM::IChunk> chunk)
 {
    this->chunk = chunk;
    this->chunk->setHash(this->chunkHash);
 }
 
-QSharedPointer<FM::IChunk> ChunkDownload::getChunk() const
+QSharedPointer<FM::IChunk> ChunkDownloader::getChunk() const
 {
    return this->chunk;
 }
 
-void ChunkDownload::setPeerSource(PM::IPeer* peer, bool informOccupiedPeers)
+void ChunkDownloader::setPeerSource(PM::IPeer* peer, bool informOccupiedPeers)
 {
    QMutexLocker locker(&this->mutex);
    if (!this->peers.contains(peer))
@@ -295,7 +295,7 @@ void ChunkDownload::setPeerSource(PM::IPeer* peer, bool informOccupiedPeers)
   * @return The number of free peer.
   * @remarks This method may remove dead peers from the list.
   */
-int ChunkDownload::isReadyToDownload()
+int ChunkDownloader::isReadyToDownload()
 {
    if (this->peers.isEmpty() || this->downloading || (!this->chunk.isNull() && this->chunk->isComplete()))
       return 0;
@@ -303,22 +303,22 @@ int ChunkDownload::isReadyToDownload()
    return this->getNumberOfFreePeer();
 }
 
-bool ChunkDownload::isDownloading() const
+bool ChunkDownloader::isDownloading() const
 {
    return this->downloading;
 }
 
-bool ChunkDownload::isComplete() const
+bool ChunkDownloader::isComplete() const
 {
    return !this->chunk.isNull() && this->chunk->isComplete();
 }
 
-bool ChunkDownload::isPartiallyDownloaded() const
+bool ChunkDownloader::isPartiallyDownloaded() const
 {
    return !this->chunk.isNull() && !this->chunk->isComplete() && this->chunk->getKnownBytes() > 0;
 }
 
-bool ChunkDownload::hasAtLeastAPeer()
+bool ChunkDownloader::hasAtLeastAPeer()
 {
    return !this->getPeers().isEmpty();
 }
@@ -333,17 +333,17 @@ bool ChunkDownload::hasAtLeastAPeer()
   * GOT_TOO_MUCH_DATA
   * HASH_MISSMATCH
   */
-Status ChunkDownload::getLastTransferStatus() const
+Status ChunkDownloader::getLastTransferStatus() const
 {
    return this->lastTransferStatus;
 }
 
-void ChunkDownload::resetLastTransferStatus()
+void ChunkDownloader::resetLastTransferStatus()
 {
    this->lastTransferStatus = QUEUED;
 }
 
-int ChunkDownload::getDownloadedBytes() const
+int ChunkDownloader::getDownloadedBytes() const
 {
    if (this->chunk.isNull())
       return 0;
@@ -354,7 +354,7 @@ int ChunkDownload::getDownloadedBytes() const
 /**
   * @remarks This method may remove dead peers from the list.
   */
-QList<PM::IPeer*> ChunkDownload::getPeers()
+QList<PM::IPeer*> ChunkDownloader::getPeers()
 {
    QMutexLocker locker(&this->mutex);
 
@@ -380,10 +380,10 @@ QList<PM::IPeer*> ChunkDownload::getPeers()
 }
 
 /**
-  * Tell the chunkDownload to download the chunk from one of its peer.
+  * Tell the ChunkDownloader to download the chunk from one of its peer.
   * @return the choosen peer if the downloading has been started else return 0.
   */
-PM::IPeer* ChunkDownload::startDownloading()
+PM::IPeer* ChunkDownloader::startDownloading()
 {
    if (this->chunk.isNull())
    {
@@ -414,18 +414,18 @@ PM::IPeer* ChunkDownload::startDownloading()
    return this->currentDownloadingPeer;
 }
 
-void ChunkDownload::tryToRemoveItsIncompleteFile()
+void ChunkDownloader::tryToRemoveItsIncompleteFile()
 {
    if (!this->chunk.isNull())
       this->chunk->removeItsIncompleteFile();
 }
 
-void ChunkDownload::reset()
+void ChunkDownloader::reset()
 {
    this->chunk.clear();
 }
 
-void ChunkDownload::result(const Protos::Core::GetChunkResult& result)
+void ChunkDownloader::result(const Protos::Core::GetChunkResult& result)
 {
    if (result.status() != Protos::Core::GetChunkResult::OK)
    {
@@ -452,20 +452,21 @@ void ChunkDownload::result(const Protos::Core::GetChunkResult& result)
    }
 }
 
-void ChunkDownload::stream(QSharedPointer<PM::ISocket> socket)
+void ChunkDownloader::stream(QSharedPointer<PM::ISocket> socket)
 {
    this->socket = socket;
-   this->socket->setReadBufferSize(SETTINGS.get<quint32>("socket_buffer_size"));
+   static const quint32 SOCKET_BUFFER_SIZE = SETTINGS.get<quint32>("socket_buffer_size");
+   this->socket->setReadBufferSize(SOCKET_BUFFER_SIZE);
    this->threadPool.run(this);
 }
 
-void ChunkDownload::getChunkTimeout()
+void ChunkDownloader::getChunkTimeout()
 {
    L_WARN("Timeout from GetChunkResult, Download aborted.");
    this->downloadingEnded();
 }
 
-void ChunkDownload::downloadingEnded()
+void ChunkDownloader::downloadingEnded()
 {
    L_DEBU(QString("Downloading ended, chunk : %1%2").arg(this->chunk->toStringLog()).arg(this->chunk->isComplete() ? "" : " Not complete!"));
 
@@ -489,7 +490,7 @@ void ChunkDownload::downloadingEnded()
 /**
   * Get the fastest free peer, may remove dead peers.
   */
-PM::IPeer* ChunkDownload::getTheFastestFreePeer()
+PM::IPeer* ChunkDownloader::getTheFastestFreePeer()
 {
    QMutexLocker locker(&this->mutex);
 
@@ -514,7 +515,7 @@ PM::IPeer* ChunkDownload::getTheFastestFreePeer()
    return current;
 }
 
-int ChunkDownload::getNumberOfFreePeer()
+int ChunkDownloader::getNumberOfFreePeer()
 {
    QMutexLocker locker(&this->mutex);
 

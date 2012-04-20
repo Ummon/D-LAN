@@ -171,11 +171,11 @@ void BrowseModel::refresh()
 
    Protos::Common::Entries entries;
 
-   TreeBreadthIterator i(this->root);
-   Tree* currentTree;
-   while (currentTree = i.next())
-      if (currentTree->getNbChildren() > 0)
-         entries.add_entry()->CopyFrom(currentTree->getItem());
+   this->root->mapBreadthFirst([&entries](Tree* tree) {
+      if (tree->getNbChildren() > 0)
+         entries.add_entry()->CopyFrom(tree->getItem());
+      return true;
+   });
 
    this->browseResult = this->coreConnection->browse(this->peerID, entries, true);
    connect(this->browseResult.data(), SIGNAL(result(const google::protobuf::RepeatedPtrField<Protos::Common::Entries>&)), this, SLOT(resultRefresh(const google::protobuf::RepeatedPtrField<Protos::Common::Entries>&)));
@@ -212,16 +212,16 @@ void BrowseModel::resultRefresh(const google::protobuf::RepeatedPtrField<Protos:
    QList<Tree*> TreesToDelete;
 
    // Synchronize the content of all directories.
-   TreeBreadthIterator i(this->root);
    int j = -1;
-   Tree* currentTree;
-   while (currentTree = i.next())
-      if (currentTree->getNbChildren() > 0)
+   this->root->mapBreadthFirst([&](Tree* tree) {
+      if (tree->getNbChildren() > 0)
       {
          if (++j >= entries.size() - 1)
-            break;
-         TreesToDelete << this->synchronize(currentTree, entries.Get(j));
+            return false;
+         TreesToDelete << this->synchronize(tree, entries.Get(j));
       }
+      return true;
+   });
 
    // Synchronize the root.
    for (QListIterator<Tree*> i(this->synchronizeRoot(entries.Get(entries.size() - 1))); i.hasNext();)

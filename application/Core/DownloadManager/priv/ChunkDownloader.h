@@ -16,8 +16,8 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef DOWNLOADMANAGER_CHUNKDOWNLOAD_H
-#define DOWNLOADMANAGER_CHUNKDOWNLOAD_H
+#ifndef DOWNLOADMANAGER_CHUNKDOWNLOADER_H
+#define DOWNLOADMANAGER_CHUNKDOWNLOADER_H
 
 #include <QSharedPointer>
 #include <QList>
@@ -36,7 +36,7 @@
 #include <Core/PeerManager/IPeer.h>
 #include <Core/PeerManager/IGetChunkResult.h>
 
-#include <IChunkDownload.h>
+#include <IChunkDownloader.h>
 #include <IDownload.h>
 
 #include <priv/OccupiedPeers.h>
@@ -46,14 +46,14 @@ namespace PM { class IPeer; }
 
 namespace DM
 {
-   class ChunkDownload : public QObject, public Common::IRunnable, public IChunkDownload, Common::Uncopyable
+   class ChunkDownloader : public QObject, public Common::IRunnable, public IChunkDownloader, Common::Uncopyable
    {
       static const int MINIMUM_DELTA_TIME_TO_COMPUTE_SPEED;
 
       Q_OBJECT
    public:
-      ChunkDownload(LinkedPeers& linkedPeers, OccupiedPeers& occupiedPeersDownloadingChunk, Common::TransferRateCalculator& transferRateCalculator, Common::ThreadPool& threadPool, Common::Hash chunkHash);
-      ~ChunkDownload();
+      ChunkDownloader(LinkedPeers& linkedPeers, OccupiedPeers& occupiedPeersDownloadingChunk, Common::TransferRateCalculator& transferRateCalculator, Common::ThreadPool& threadPool, Common::Hash chunkHash);
+      ~ChunkDownloader();
 
       void stop();
 

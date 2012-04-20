@@ -184,9 +184,4 @@ inline void MessageHeader::writeHeader(QDataStream& stream, const MessageHeader&
    stream << header.senderID;
 }
 
-#ifdef Q_OS_DARWIN
-// For GCC 4.2.
-const int MessageHeader::HEADER_SIZE(sizeof(MessageType) + sizeof(quint32) + Hash::HASH_SIZE);
-#else
 const int MessageHeader::HEADER_SIZE(sizeof(MessageHeader::type) + sizeof(MessageHeader::size) + Hash::HASH_SIZE);
-#endif

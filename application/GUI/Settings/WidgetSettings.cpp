@@ -152,7 +152,7 @@ void WidgetSettings::disconnectFromTheCore()
 void WidgetSettings::fillComboBoxLanguages()
 {
    QVariant dataEn;
-   dataEn.setValue(Common::Language("", QLocale("en")));
+   dataEn.setValue(Common::Language { "", QLocale("en") });
    this->ui->cmbLanguages->addItem("English", dataEn);
 
    QLocale current = QLocale::system();
@@ -330,12 +330,12 @@ void WidgetSettings::newState(const Protos::GUI::State& state)
    QList<Common::SharedDir> sharedDirs;
    for (int i = 0; i < state.shared_directory_size(); i++)
       sharedDirs <<
-         Common::SharedDir(
+         Common::SharedDir {
             state.shared_directory(i).id().hash(),
             Common::ProtoHelper::getStr(state.shared_directory(i), &Protos::GUI::State_SharedDir::path),
             state.shared_directory(i).size(),
             state.shared_directory(i).free_space()
-         );
+         };
    this->sharedDirsModel.setDirs(sharedDirs);
 
    this->updateNetworkInterfaces(state);

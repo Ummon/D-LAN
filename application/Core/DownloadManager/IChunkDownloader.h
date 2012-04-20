@@ -16,8 +16,8 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef DOWNLOADMANAGER_ICHUNKDOWNLOAD_H
-#define DOWNLOADMANAGER_ICHUNKDOWNLOAD_H
+#ifndef DOWNLOADMANAGER_ICHUNKDOWNLOADER_H
+#define DOWNLOADMANAGER_ICHUNKDOWNLOADER_H
 
 #include <QObject>
 
@@ -26,10 +26,10 @@
 
 namespace DM
 {
-   class IChunkDownload
+   class IChunkDownloader
    {
    public:
-      virtual ~IChunkDownload() {}
+      virtual ~IChunkDownloader() {}
 
       /**
         * Gets the hash of the associated chunk.

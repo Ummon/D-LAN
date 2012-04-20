@@ -11,26 +11,26 @@
                 <parameter left="const QString &amp;" right="" name="name" default=""/>
             </function>
             <function access="public" threadsafety="unspecified" status="commendable" name="~QtServiceController" fullname="QtServiceController::~QtServiceController" href="qtservicecontroller.html#dtor.QtServiceController" location="qtservice.h" virtual="impure" meta="destructor" const="false" static="false" overload="false" type="" signature="~QtServiceController()"/>
-            <function access="public" threadsafety="unspecified" status="commendable" name="isInstalled" fullname="QtServiceController::isInstalled" href="qtservicecontroller.html#isInstalled" location="qtservice_unix.cpp" virtual="non" meta="plain" const="true" static="false" overload="false" type="bool" signature="isInstalled() const"/>
-            <function access="public" threadsafety="unspecified" status="commendable" name="isRunning" fullname="QtServiceController::isRunning" href="qtservicecontroller.html#isRunning" location="qtservice_unix.cpp" virtual="non" meta="plain" const="true" static="false" overload="false" type="bool" signature="isRunning() const"/>
+            <function access="public" threadsafety="unspecified" status="commendable" name="isInstalled" fullname="QtServiceController::isInstalled" href="qtservicecontroller.html#isInstalled" location="qtservice_win.cpp" virtual="non" meta="plain" const="true" static="false" overload="false" type="bool" signature="isInstalled() const"/>
+            <function access="public" threadsafety="unspecified" status="commendable" name="isRunning" fullname="QtServiceController::isRunning" href="qtservicecontroller.html#isRunning" location="qtservice_win.cpp" virtual="non" meta="plain" const="true" static="false" overload="false" type="bool" signature="isRunning() const"/>
             <function access="public" threadsafety="unspecified" status="commendable" name="serviceName" fullname="QtServiceController::serviceName" href="qtservicecontroller.html#serviceName" location="qtservice.h" virtual="non" meta="plain" const="true" static="false" overload="false" type="QString" signature="serviceName() const"/>
-            <function access="public" threadsafety="unspecified" status="commendable" name="serviceDescription" fullname="QtServiceController::serviceDescription" href="qtservicecontroller.html#serviceDescription" location="qtservice_unix.cpp" virtual="non" meta="plain" const="true" static="false" overload="false" type="QString" signature="serviceDescription() const"/>
-            <function access="public" threadsafety="unspecified" status="commendable" name="startupType" fullname="QtServiceController::startupType" href="qtservicecontroller.html#startupType" location="qtservice_unix.cpp" virtual="non" meta="plain" const="true" static="false" overload="false" type="StartupType" signature="startupType() const"/>
-            <function access="public" threadsafety="unspecified" status="commendable" name="serviceFilePath" fullname="QtServiceController::serviceFilePath" href="qtservicecontroller.html#serviceFilePath" location="qtservice_unix.cpp" virtual="non" meta="plain" const="true" static="false" overload="false" type="QString" signature="serviceFilePath() const"/>
+            <function access="public" threadsafety="unspecified" status="commendable" name="serviceDescription" fullname="QtServiceController::serviceDescription" href="qtservicecontroller.html#serviceDescription" location="qtservice_win.cpp" virtual="non" meta="plain" const="true" static="false" overload="false" type="QString" signature="serviceDescription() const"/>
+            <function access="public" threadsafety="unspecified" status="commendable" name="startupType" fullname="QtServiceController::startupType" href="qtservicecontroller.html#startupType" location="qtservice_win.cpp" virtual="non" meta="plain" const="true" static="false" overload="false" type="StartupType" signature="startupType() const"/>
+            <function access="public" threadsafety="unspecified" status="commendable" name="serviceFilePath" fullname="QtServiceController::serviceFilePath" href="qtservicecontroller.html#serviceFilePath" location="qtservice_win.cpp" virtual="non" meta="plain" const="true" static="false" overload="false" type="QString" signature="serviceFilePath() const"/>
             <function access="public" threadsafety="unspecified" status="commendable" name="install" fullname="QtServiceController::install" href="qtservicecontroller.html#install" location="qtservice.h" virtual="non" meta="plain" const="false" static="true" overload="false" type="bool" signature="install(const QString &amp; serviceFilePath, const QString &amp; account, const QString &amp; password)">
                 <parameter left="const QString &amp;" right="" name="serviceFilePath" default=""/>
                 <parameter left="const QString &amp;" right="" name="account" default="QString()"/>
                 <parameter left="const QString &amp;" right="" name="password" default="QString()"/>
             </function>
-            <function access="public" threadsafety="unspecified" status="commendable" name="uninstall" fullname="QtServiceController::uninstall" href="qtservicecontroller.html#uninstall" location="qtservice_unix.cpp" virtual="non" meta="plain" const="false" static="false" overload="false" type="bool" signature="uninstall()"/>
-            <function access="public" threadsafety="unspecified" status="commendable" name="start" fullname="QtServiceController::start" href="qtservicecontroller.html#start" location="qtservice_unix.cpp" virtual="non" meta="plain" const="false" static="false" overload="false" type="bool" signature="start(const QStringList &amp; arguments)">
+            <function access="public" threadsafety="unspecified" status="commendable" name="uninstall" fullname="QtServiceController::uninstall" href="qtservicecontroller.html#uninstall" location="qtservice_win.cpp" virtual="non" meta="plain" const="false" static="false" overload="false" type="bool" signature="uninstall()"/>
+            <function access="public" threadsafety="unspecified" status="commendable" name="start" fullname="QtServiceController::start" href="qtservicecontroller.html#start" location="qtservice_win.cpp" virtual="non" meta="plain" const="false" static="false" overload="false" type="bool" signature="start(const QStringList &amp; arguments)">
                 <parameter left="const QStringList &amp;" right="" name="arguments" default=""/>
             </function>
             <function access="public" threadsafety="unspecified" status="commendable" name="start" fullname="QtServiceController::start" href="qtservicecontroller.html#start-2" location="qtservice.h" virtual="non" meta="plain" const="false" static="false" overload="true" overload-number="2" type="bool" signature="start()"/>
-            <function access="public" threadsafety="unspecified" status="commendable" name="stop" fullname="QtServiceController::stop" href="qtservicecontroller.html#stop" location="qtservice_unix.cpp" virtual="non" meta="plain" const="false" static="false" overload="false" type="bool" signature="stop()"/>
-            <function access="public" threadsafety="unspecified" status="commendable" name="pause" fullname="QtServiceController::pause" href="qtservicecontroller.html#pause" location="qtservice_unix.cpp" virtual="non" meta="plain" const="false" static="false" overload="false" type="bool" signature="pause()"/>
-            <function access="public" threadsafety="unspecified" status="commendable" name="resume" fullname="QtServiceController::resume" href="qtservicecontroller.html#resume" location="qtservice_unix.cpp" virtual="non" meta="plain" const="false" static="false" overload="false" type="bool" signature="resume()"/>
-            <function access="public" threadsafety="unspecified" status="commendable" name="sendCommand" fullname="QtServiceController::sendCommand" href="qtservicecontroller.html#sendCommand" location="qtservice_unix.cpp" virtual="non" meta="plain" const="false" static="false" overload="false" type="bool" signature="sendCommand(int code)">
+            <function access="public" threadsafety="unspecified" status="commendable" name="stop" fullname="QtServiceController::stop" href="qtservicecontroller.html#stop" location="qtservice_win.cpp" virtual="non" meta="plain" const="false" static="false" overload="false" type="bool" signature="stop()"/>
+            <function access="public" threadsafety="unspecified" status="commendable" name="pause" fullname="QtServiceController::pause" href="qtservicecontroller.html#pause" location="qtservice_win.cpp" virtual="non" meta="plain" const="false" static="false" overload="false" type="bool" signature="pause()"/>
+            <function access="public" threadsafety="unspecified" status="commendable" name="resume" fullname="QtServiceController::resume" href="qtservicecontroller.html#resume" location="qtservice_win.cpp" virtual="non" meta="plain" const="false" static="false" overload="false" type="bool" signature="resume()"/>
+            <function access="public" threadsafety="unspecified" status="commendable" name="sendCommand" fullname="QtServiceController::sendCommand" href="qtservicecontroller.html#sendCommand" location="qtservice_win.cpp" virtual="non" meta="plain" const="false" static="false" overload="false" type="bool" signature="sendCommand(int code)">
                 <parameter left="int" right="" name="code" default=""/>
             </function>
         </class>
@@ -46,6 +46,7 @@
                 <value name="Default" value="0x00"/>
                 <value name="CanBeSuspended" value="0x01"/>
                 <value name="CannotBeStopped" value="0x02"/>
+                <value name="NeedsStopOnShutdown" value="0x04"/>
             </enum>
             <typedef access="public" threadsafety="unspecified" status="commendable" name="ServiceFlags" fullname="QtServiceBase::ServiceFlags" href="qtservicebase.html#ServiceFlags-typedef" location="qtservice.h" enum="QtServiceBase::ServiceFlag"/>
             <function access="public" threadsafety="unspecified" status="commendable" name="QtServiceBase" fullname="QtServiceBase::QtServiceBase" href="qtservicebase.html#QtServiceBase" location="qtservice.h" virtual="non" meta="constructor" const="false" static="false" overload="false" type="" signature="QtServiceBase(int argc, char ** argv, const QString &amp; name)">
@@ -64,11 +65,11 @@
                 <parameter left="QtServiceController::StartupType" right="" name="type" default=""/>
             </function>
             <function access="public" threadsafety="unspecified" status="commendable" name="serviceFlags" fullname="QtServiceBase::serviceFlags" href="qtservicebase.html#serviceFlags" location="qtservice.h" virtual="non" meta="plain" const="true" static="false" overload="false" type="ServiceFlags" signature="serviceFlags() const"/>
-            <function access="public" threadsafety="unspecified" status="commendable" name="setServiceFlags" fullname="QtServiceBase::setServiceFlags" href="qtservicebase.html#setServiceFlags" location="qtservice_unix.cpp" virtual="non" meta="plain" const="false" static="false" overload="false" type="void" signature="setServiceFlags(QFlags&lt;QtServiceBase::ServiceFlag&gt; flags)">
+            <function access="public" threadsafety="unspecified" status="commendable" name="setServiceFlags" fullname="QtServiceBase::setServiceFlags" href="qtservicebase.html#setServiceFlags" location="qtservice_win.cpp" virtual="non" meta="plain" const="false" static="false" overload="false" type="void" signature="setServiceFlags(QFlags&lt;QtServiceBase::ServiceFlag&gt; flags)">
                 <parameter left="QFlags&lt;QtServiceBase::ServiceFlag&gt;" right="" name="flags" default=""/>
             </function>
             <function access="public" threadsafety="unspecified" status="commendable" name="exec" fullname="QtServiceBase::exec" href="qtservicebase.html#exec" location="qtservice.h" virtual="non" meta="plain" const="false" static="false" overload="false" type="int" signature="exec()"/>
-            <function access="public" threadsafety="unspecified" status="commendable" name="logMessage" fullname="QtServiceBase::logMessage" href="qtservicebase.html#logMessage" location="qtservice_unix.cpp" virtual="non" meta="plain" const="false" static="false" overload="false" type="void" signature="logMessage(const QString &amp; message, MessageType type, int id, uint category, const QByteArray &amp; data)">
+            <function access="public" threadsafety="unspecified" status="commendable" name="logMessage" fullname="QtServiceBase::logMessage" href="qtservicebase.html#logMessage" location="qtservice_win.cpp" virtual="non" meta="plain" const="false" static="false" overload="false" type="void" signature="logMessage(const QString &amp; message, MessageType type, int id, uint category, const QByteArray &amp; data)">
                 <parameter left="const QString &amp;" right="" name="message" default=""/>
                 <parameter left="MessageType" right="" name="type" default="Success"/>
                 <parameter left="int" right="" name="id" default="0"/>
@@ -97,6 +98,11 @@
             </function>
             <function access="public" threadsafety="unspecified" status="commendable" name="~QtService" fullname="QtService::~QtService" href="qtservice.html#dtor.QtService" location="qtservice.h" virtual="non" meta="destructor" const="false" static="false" overload="false" type="" signature="~QtService()"/>
             <function access="protected" threadsafety="unspecified" status="commendable" name="application" fullname="QtService::application" href="qtservice.html#application" location="qtservice.h" virtual="non" meta="plain" const="true" static="false" overload="false" type="Application *" signature="application() const"/>
+            <function access="protected" threadsafety="unspecified" status="commendable" name="createApplication" fullname="QtService::createApplication" href="qtservice.html#createApplication" location="qtservice.h" virtual="impure" meta="plain" const="false" static="false" overload="false" type="void" signature="createApplication(int &amp; argc, char ** argv)">
+                <parameter left="int &amp;" right="" name="argc" default=""/>
+                <parameter left="char **" right="" name="argv" default=""/>
+            </function>
+            <function access="protected" threadsafety="unspecified" status="commendable" name="executeApplication" fullname="QtService::executeApplication" href="qtservice.html#executeApplication" location="qtservice.h" virtual="impure" meta="plain" const="false" static="false" overload="false" type="int" signature="executeApplication()"/>
         </class>
         <page access="public" status="commendable" name="index.html" href="index.html" subtype="page" title="Service" fulltitle="Service" subtitle="" location="index.qdoc">
             <contents name="description" title="Description" level="1"/>
@@ -104,8 +110,8 @@
             <contents name="examples" title="Examples" level="1"/>
             <contents name="tested-platforms" title="Tested platforms" level="1"/>
         </page>
-        <page access="public" status="commendable" name="qtservice-example-server.html" href="qtservice-example-server.html" subtype="page" title="A simple HTTP Server" fulltitle="A simple HTTP Server" subtitle="" location="server.qdoc"/>
         <page access="public" status="commendable" name="qtservice-example-controller.html" href="qtservice-example-controller.html" subtype="page" title="A simple Service Controller" fulltitle="A simple Service Controller" subtitle="" location="controller.qdoc"/>
         <page access="public" status="commendable" name="qtservice-example-interactive.html" href="qtservice-example-interactive.html" subtype="page" title="An Interactive Service" fulltitle="An Interactive Service" subtitle="" location="interactive.qdoc"/>
+        <page access="public" status="commendable" name="qtservice-example-server.html" href="qtservice-example-server.html" subtype="page" title="A simple HTTP Server" fulltitle="A simple HTTP Server" subtitle="" location="server.qdoc"/>
     </namespace>
 </INDEX>

@@ -96,12 +96,6 @@ namespace GUI
          virtual void copySharedDirFromParent();
       };
 
-      class TreeBreadthIterator : public Common::TreeBreadthIterator<Tree>
-      {
-      public:
-         TreeBreadthIterator(Tree* tree) : Common::TreeBreadthIterator<Tree>(tree) { }
-      };
-
       QSharedPointer<RCC::ICoreConnection> coreConnection;
       const DirListModel& sharedDirsModel;
       Common::Hash peerID;

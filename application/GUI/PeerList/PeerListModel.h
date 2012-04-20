@@ -76,7 +76,7 @@ namespace GUI
       void newState(const Protos::GUI::State& state);
 
    private:
-      void updatePeers(const google::protobuf::RepeatedPtrField<Protos::GUI::State::Peer>& peers, const QSet<Common::Hash>& peersDownloadingOurData);
+      void updatePeers(const google::protobuf::RepeatedPtrField<Protos::GUI::State::Peer>& orderedPeers, const QSet<Common::Hash>& peersDownloadingOurData);
       void sort();
 
       QSharedPointer<RCC::ICoreConnection> coreConnection;
@@ -99,8 +99,7 @@ namespace GUI
          TransferInformation transferInformation;
       };
 
-
-      QList<Peer*> peers;
+      QList<Peer*> orderedPeers;
       QHash<Common::Hash, Peer*> indexedPeers; // Peers indexed by their ID.
       QHash<Common::Hash, QColor> peersToColorize;
       Protos::GUI::Settings::PeerSortType currentSortType;

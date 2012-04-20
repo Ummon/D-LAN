@@ -19,7 +19,6 @@
 #include <Common/ConsoleReader.h>
 using namespace Common;
 
-#include <cstdio>
 #ifdef Q_OS_WIN32
    #include <windows.h>
 #endif
@@ -27,7 +26,7 @@ using namespace Common;
 /**
   * @class ConsoleReader
   *
-  * If the executable is used as a sub-process and the parent-process is killed the signal
+  * @remarks If the executable is used as a sub-process and the parent-process is killed the signal
   * 'newLine(..)' is emitted with the 'QUIT_COMMAND'.
   */
 
@@ -43,17 +42,12 @@ void ConsoleReader::setQuitCommand(const QString& quitCommand)
    ConsoleReader::QUIT_COMMAND = quitCommand;
 }
 
-#include <iostream>
-#include <QFile>
-
 void ConsoleReader::stop()
 {
    this->stopping = true;
 
-   // TODO: Don't know how to unblock 'readLine' which use 'fgets(..)' internaly...
-
+   // TODO: Don't know how to unblock 'readLine' in 'ConsoleReader::run()' which use 'fgets(..)' internaly...
    // fclose(stdin); // Don't work, blocks.
-
    /*QIODevice* in = this->inputStream.device();
    close(((QFile*)in)->handle()); // Don't work.*/
 

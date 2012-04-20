@@ -64,16 +64,16 @@ FileDownload::FileDownload(
 
    this->setStatus(static_cast<Status>(status));
 
-   // We create a ChunkDownload for each known hash in the entry.
+   // We create a ChunkDownloader for each known hash in the entry.
    for (int i = 0; i < this->remoteEntry.chunk_size(); i++)
    {
       Common::Hash chunkHash(this->remoteEntry.chunk(i).hash());
-      QSharedPointer<ChunkDownload> chunkDownload = QSharedPointer<ChunkDownload>(new ChunkDownload(this->linkedPeers, this->occupiedPeersDownloadingChunk, this->transferRateCalculator, this->threadPool, chunkHash));
+      QSharedPointer<ChunkDownloader> chunkDownloader = QSharedPointer<ChunkDownloader>(new ChunkDownloader(this->linkedPeers, this->occupiedPeersDownloadingChunk, this->transferRateCalculator, this->threadPool, chunkHash));
 
-      this->chunkDownloads << chunkDownload;
-      this->connectChunkDownloadSignals(this->chunkDownloads.last());
+      this->chunkDownloaders << chunkDownloader;
+      this->connectChunkDownloaderSignals(this->chunkDownloaders.last());
    }
-   this->nbHashesKnown = this->chunkDownloads.size();
+   this->nbHashesKnown = this->chunkDownloaders.size();
 }
 
 FileDownload::~FileDownload()
@@ -87,7 +87,7 @@ FileDownload::~FileDownload()
    }
 
    this->chunksWithoutDownload.clear();
-   this->chunkDownloads.clear();
+   this->chunkDownloaders.clear();
 }
 
 void FileDownload::start()
@@ -113,7 +113,7 @@ void FileDownload::stop()
       this->occupiedPeersAskingForHashes.setPeerAsFree(this->peerSource);
    }
 
-   for (QListIterator<QSharedPointer<ChunkDownload>> i(this->chunkDownloads); i.hasNext();)
+   for (QListIterator<QSharedPointer<ChunkDownloader>> i(this->chunkDownloaders); i.hasNext();)
       i.next()->stop();
 }
 
@@ -143,7 +143,7 @@ void FileDownload::peerSourceBecomesAvailable()
    if (this->status == UNKNOWN_PEER_SOURCE)
       this->setStatus(QUEUED);
 
-   for (QListIterator<QSharedPointer<ChunkDownload>> i(this->chunkDownloads); i.hasNext();)
+   for (QListIterator<QSharedPointer<ChunkDownloader>> i(this->chunkDownloaders); i.hasNext();)
       i.next()->setPeerSource(this->peerSource, false); // 'false' : to avoid to send unnecessary 'newFreePeer'.
 }
 
@@ -154,10 +154,10 @@ void FileDownload::populateQueueEntry(Protos::Queue::Queue::Entry* entry) const
 {
    Download::populateQueueEntry(entry);
 
-   for (int i = entry->remote_entry().chunk_size(); i < this->chunkDownloads.size(); i++)
+   for (int i = entry->remote_entry().chunk_size(); i < this->chunkDownloaders.size(); i++)
    {
       Protos::Common::Hash* hash = entry->mutable_remote_entry()->add_chunk();
-      hash->set_hash(this->chunkDownloads[i]->getHash().getData(), Common::Hash::HASH_SIZE);
+      hash->set_hash(this->chunkDownloaders[i]->getHash().getData(), Common::Hash::HASH_SIZE);
    }
 }
 
@@ -167,7 +167,7 @@ quint64 FileDownload::getDownloadedBytes() const
       return this->remoteEntry.size();
 
    quint64 knownBytes = 0;
-   for (QListIterator<QSharedPointer<ChunkDownload>> i(this->chunkDownloads); i.hasNext();)
+   for (QListIterator<QSharedPointer<ChunkDownloader>> i(this->chunkDownloaders); i.hasNext();)
       knownBytes += i.next()->getDownloadedBytes();
    return knownBytes;
 }
@@ -175,30 +175,30 @@ quint64 FileDownload::getDownloadedBytes() const
 QSet<PM::IPeer*> FileDownload::getPeers() const
 {
    QSet<PM::IPeer*> peers;
-   for (QListIterator<QSharedPointer<ChunkDownload>> i(this->chunkDownloads); i.hasNext();)
+   for (QListIterator<QSharedPointer<ChunkDownloader>> i(this->chunkDownloaders); i.hasNext();)
       peers += i.next()->getPeers().toSet();
    return peers;
 }
 
 /**
-  * If there is a ChunkDownload with a free peer (we do not already download from this peer) the return the chunk.
+  * If there is a ChunkDownloader with a free peer (we do not already download from this peer) the return the chunk.
   * The file is created on the fly with IFileManager::newFile(..) if we don't have the IChunks.
   * @return The chunk to download, can return a null pointer if an error occurs.
   */
-QSharedPointer<ChunkDownload> FileDownload::getAChunkToDownload()
+QSharedPointer<ChunkDownloader> FileDownload::getAChunkToDownload()
 {
    if (this->status == COMPLETE || this->status == DELETED || this->status == PAUSED)
-      return QSharedPointer<ChunkDownload>();
+      return QSharedPointer<ChunkDownloader>();
 
    // Choose a chunk with the less number of peer. (rarest first).
    // Choose first a partially downloaded chunk.
-   QList<QSharedPointer<ChunkDownload>> chunksReadyToDownload;
+   QList<QSharedPointer<ChunkDownloader>> chunksReadyToDownload;
    int bestNbPeer = std::numeric_limits<int>::max();
-   for (QListIterator<QSharedPointer<ChunkDownload>> i(this->chunkDownloads); i.hasNext();)
+   for (QListIterator<QSharedPointer<ChunkDownloader>> i(this->chunkDownloaders); i.hasNext();)
    {
-      const QSharedPointer<ChunkDownload>& chunkDownload = i.next();
+      const QSharedPointer<ChunkDownloader>& chunkDownloader = i.next();
 
-      const int nbPeer = chunkDownload->isReadyToDownload();
+      const int nbPeer = chunkDownloader->isReadyToDownload();
 
       if (nbPeer == 0)
       {
@@ -206,28 +206,28 @@ QSharedPointer<ChunkDownload> FileDownload::getAChunkToDownload()
       }
       else
       {
-         if (chunkDownload->isPartiallyDownloaded())
+         if (chunkDownloader->isPartiallyDownloaded())
          {
             chunksReadyToDownload.clear();
-            chunksReadyToDownload << chunkDownload;
+            chunksReadyToDownload << chunkDownloader;
             break;
          }
          else if (nbPeer == bestNbPeer)
-            chunksReadyToDownload << chunkDownload;
+            chunksReadyToDownload << chunkDownloader;
          else if (nbPeer < bestNbPeer)
          {
             chunksReadyToDownload.clear();
-            chunksReadyToDownload << chunkDownload;
+            chunksReadyToDownload << chunkDownloader;
             bestNbPeer = nbPeer;
          }
       }
    }
 
    if (chunksReadyToDownload.isEmpty())
-      return QSharedPointer<ChunkDownload>();
+      return QSharedPointer<ChunkDownloader>();
 
    // If there is many chunk with the same best speed we choose randomly one of them.
-   QSharedPointer<ChunkDownload> chunkDownload =
+   QSharedPointer<ChunkDownloader> chunkDownloader =
       chunksReadyToDownload.size() == 1 ? chunksReadyToDownload.first() : chunksReadyToDownload[mtrand.randInt(chunksReadyToDownload.size() - 1)];
 
    if (!this->localEntry.exists())
@@ -236,54 +236,54 @@ QSharedPointer<ChunkDownload> FileDownload::getAChunkToDownload()
       {
          this->chunksWithoutDownload = this->fileManager->newFile(this->localEntry);
 
-         for (int i = 0; !this->chunksWithoutDownload.isEmpty() && i < this->chunkDownloads.size(); i++)
-            this->chunkDownloads[i]->setChunk(this->chunksWithoutDownload.takeFirst());
+         for (int i = 0; !this->chunksWithoutDownload.isEmpty() && i < this->chunkDownloaders.size(); i++)
+            this->chunkDownloaders[i]->setChunk(this->chunksWithoutDownload.takeFirst());
       }
       catch(FM::NoWriteableDirectoryException&)
       {
          L_DEBU(QString("There is no shared directory with writting rights for this download : %1").arg(Common::ProtoHelper::getStr(this->remoteEntry, &Protos::Common::Entry::name)));
          this->setStatus(NO_SHARED_DIRECTORY_TO_WRITE);
-         return QSharedPointer<ChunkDownload>();
+         return QSharedPointer<ChunkDownloader>();
       }
       catch(FM::InsufficientStorageSpaceException&)
       {
          L_DEBU(QString("There is no enough space storage available for this download : %1").arg(Common::ProtoHelper::getStr(this->remoteEntry, &Protos::Common::Entry::name)));
          this->setStatus(NO_ENOUGH_FREE_SPACE);
-         return QSharedPointer<ChunkDownload>();
+         return QSharedPointer<ChunkDownloader>();
       }
       catch(FM::UnableToCreateNewFileException&)
       {
          L_DEBU(QString("Unable to create the file, download : %1").arg(Common::ProtoHelper::getStr(this->remoteEntry, &Protos::Common::Entry::name)));
          this->setStatus(UNABLE_TO_CREATE_THE_FILE);
-         return QSharedPointer<ChunkDownload>();
+         return QSharedPointer<ChunkDownloader>();
       }
 
       // 'newFile(..)' above can return some completed chunks.
-      if (!chunkDownload->getChunk().isNull() && chunkDownload->getChunk()->isComplete())
+      if (!chunkDownloader->getChunk().isNull() && chunkDownloader->getChunk()->isComplete())
       {
          this->updateStatus(); // Maybe all the file is complete, so we update the status.
-         return QSharedPointer<ChunkDownload>();
+         return QSharedPointer<ChunkDownloader>();
       }
    }
 
-   return chunkDownload;
+   return chunkDownloader;
 }
 
 /**
   * Fills 'chunks' with the unfinished chunk of the file. Do not add more than 'nMax' chunk to chunks.
   */
-void FileDownload::getUnfinishedChunks(QList<QSharedPointer<IChunkDownload>>& chunks, int nMax)
+void FileDownload::getUnfinishedChunks(QList<QSharedPointer<IChunkDownloader>>& chunks, int nMax)
 {
    if (this->status == COMPLETE || this->status == DELETED || this->status == PAUSED)
       return;
 
-   for (int i = 0; i < this->chunkDownloads.size() && i < nMax; i++)
+   for (int i = 0; i < this->chunkDownloaders.size() && i < nMax; i++)
    {
-      if (!this->chunkDownloads[i]->isComplete())
-         chunks << this->chunkDownloads[i];
+      if (!this->chunkDownloaders[i]->isComplete())
+         chunks << this->chunkDownloaders[i];
    }
 
-   if (chunks.size() == this->chunkDownloads.size())
+   if (chunks.size() == this->chunkDownloaders.size())
    {
       const QTime oldTime = this->lastTimeGetAllUnfinishedChunks;
       this->lastTimeGetAllUnfinishedChunks = QTime::currentTime();
@@ -304,7 +304,7 @@ void FileDownload::remove()
    this->setStatus(DELETED); // To avoid the call to 'stop()' to relaunch a download (via occupiedPeersDownloadingChunk::setPeerAsFree(..) -> DownloadManager::scanTheQueue()).
    this->stop();
 
-   for (QListIterator<QSharedPointer<ChunkDownload>> i(this->chunkDownloads); i.hasNext();)
+   for (QListIterator<QSharedPointer<ChunkDownloader>> i(this->chunkDownloaders); i.hasNext();)
       i.next()->tryToRemoveItsIncompleteFile();
 
    Download::remove();
@@ -326,23 +326,23 @@ bool FileDownload::updateStatus()
 
    Status newStatus = this->status;
 
-   if (this->chunkDownloads.size() == NB_CHUNK)
+   if (this->chunkDownloaders.size() == NB_CHUNK)
       newStatus = COMPLETE;
 
    bool hasAtLeastAPeer = false;
-   for (QListIterator<QSharedPointer<ChunkDownload>> i(this->chunkDownloads); i.hasNext();)
+   for (QListIterator<QSharedPointer<ChunkDownloader>> i(this->chunkDownloaders); i.hasNext();)
    {
-      QSharedPointer<ChunkDownload> chunkDownload = i.next();
+      QSharedPointer<ChunkDownloader> chunkDownloader = i.next();
 
-      if (chunkDownload->isDownloading())
+      if (chunkDownloader->isDownloading())
       {
          this->setStatus(DOWNLOADING);
          return false;
       }
-      else if (chunkDownload->getLastTransferStatus() >= 0x20)
+      else if (chunkDownloader->getLastTransferStatus() >= 0x20)
       {
-         newStatus = chunkDownload->getLastTransferStatus();
-         chunkDownload->resetLastTransferStatus();
+         newStatus = chunkDownloader->getLastTransferStatus();
+         chunkDownloader->resetLastTransferStatus();
 
          // If the local file disappear we reset the download.
          if (newStatus == FILE_NON_EXISTENT)
@@ -352,9 +352,9 @@ bool FileDownload::updateStatus()
             return false;
          }
       }
-      else if (!hasAtLeastAPeer && !chunkDownload->isComplete())
+      else if (!hasAtLeastAPeer && !chunkDownloader->isComplete())
       {
-         if (chunkDownload->hasAtLeastAPeer())
+         if (chunkDownloader->hasAtLeastAPeer())
          {
             hasAtLeastAPeer = true;
             newStatus = QUEUED;
@@ -460,26 +460,26 @@ void FileDownload::nextHash(const Common::Hash& hash)
       this->updateStatus();
    }
 
-   if (this->chunkDownloads.size() >= this->nbHashesKnown && this->chunkDownloads[this->nbHashesKnown-1]->getHash() != hash)
+   if (this->chunkDownloaders.size() >= this->nbHashesKnown && this->chunkDownloaders[this->nbHashesKnown-1]->getHash() != hash)
    {
       L_WARN(
          QString("The hash (%1) num %2 received doesn't match the hash (%3) in the entry").
             arg(hash.toStr()).
             arg(this->nbHashesKnown-1).
-            arg(this->chunkDownloads[this->nbHashesKnown-1]->getHash().toStr())
+            arg(this->chunkDownloaders[this->nbHashesKnown-1]->getHash().toStr())
       );
    }
    else
    {
-      QSharedPointer<ChunkDownload> chunkDownload = QSharedPointer<ChunkDownload>(new ChunkDownload(this->linkedPeers, this->occupiedPeersDownloadingChunk, this->transferRateCalculator, this->threadPool, hash));
+      QSharedPointer<ChunkDownloader> chunkDownloader = QSharedPointer<ChunkDownloader>(new ChunkDownloader(this->linkedPeers, this->occupiedPeersDownloadingChunk, this->transferRateCalculator, this->threadPool, hash));
 
       // If the file has already been created, the chunks are known.
       if (!this->chunksWithoutDownload.isEmpty())
-         chunkDownload->setChunk(this->chunksWithoutDownload.takeFirst());
+         chunkDownloader->setChunk(this->chunksWithoutDownload.takeFirst());
 
-      this->chunkDownloads << chunkDownload;
-      this->connectChunkDownloadSignals(chunkDownload);
-      chunkDownload->setPeerSource(this->peerSource); // May start a download.
+      this->chunkDownloaders << chunkDownloader;
+      this->connectChunkDownloaderSignals(chunkDownloader);
+      chunkDownloader->setPeerSource(this->peerSource); // May start a download.
       this->remoteEntry.add_chunk()->set_hash(hash.getData(), Common::Hash::HASH_SIZE); // Used during the saving of the queue, see Download::populateEntry(..).
       emit newHashKnown();
    }
@@ -494,12 +494,12 @@ void FileDownload::getHashTimeout()
    QTimer::singleShot(RETRY_PEER_GET_HASHES_PERIOD, this, SLOT(retryToRetrieveHashes()));
 }
 
-void FileDownload::chunkDownloadStarted()
+void FileDownload::chunkDownloaderStarted()
 {
    this->setStatus(DOWNLOADING);
 }
 
-void FileDownload::chunkDownloadFinished()
+void FileDownload::chunkDownloaderFinished()
 {
    this->updateStatus();
 }
@@ -513,28 +513,28 @@ bool FileDownload::tryToLinkToAnExistingFile()
 {
    this->localEntry.set_exists(false);
 
-   if (!this->chunkDownloads.isEmpty())
+   if (!this->chunkDownloaders.isEmpty())
    {
       Common::Hashes hashes;
-      for (QListIterator<QSharedPointer<ChunkDownload>> i(this->chunkDownloads); i.hasNext();)
+      for (QListIterator<QSharedPointer<ChunkDownloader>> i(this->chunkDownloaders); i.hasNext();)
          hashes << i.next()->getHash();
       this->chunksWithoutDownload = this->fileManager->getAllChunks(this->localEntry, hashes);
 
       if (!this->chunksWithoutDownload.isEmpty())
          this->localEntry.set_exists(true);
 
-      for (int i = 0; !this->chunksWithoutDownload.isEmpty() && i < this->chunkDownloads.size(); i++)
-         this->chunkDownloads[i]->setChunk(this->chunksWithoutDownload.takeFirst());
+      for (int i = 0; !this->chunksWithoutDownload.isEmpty() && i < this->chunkDownloaders.size(); i++)
+         this->chunkDownloaders[i]->setChunk(this->chunksWithoutDownload.takeFirst());
    }
 
    return this->localEntry.exists();
 }
 
-void FileDownload::connectChunkDownloadSignals(QSharedPointer<ChunkDownload> chunkDownload)
+void FileDownload::connectChunkDownloaderSignals(QSharedPointer<ChunkDownloader> chunkDownloader)
 {
-   connect(chunkDownload.data(), SIGNAL(downloadStarted()), this, SLOT(chunkDownloadStarted()), Qt::DirectConnection);
-   connect(chunkDownload.data(), SIGNAL(downloadFinished()), this, SLOT(chunkDownloadFinished()), Qt::DirectConnection);
-   connect(chunkDownload.data(), SIGNAL(numberOfPeersChanged()), this, SLOT(updateStatus()), Qt::DirectConnection);
+   connect(chunkDownloader.data(), SIGNAL(downloadStarted()), this, SLOT(chunkDownloaderStarted()), Qt::DirectConnection);
+   connect(chunkDownloader.data(), SIGNAL(downloadFinished()), this, SLOT(chunkDownloaderFinished()), Qt::DirectConnection);
+   connect(chunkDownloader.data(), SIGNAL(numberOfPeersChanged()), this, SLOT(updateStatus()), Qt::DirectConnection);
 }
 
 /**
@@ -543,7 +543,7 @@ void FileDownload::connectChunkDownloadSignals(QSharedPointer<ChunkDownload> chu
 void FileDownload::reset()
 {
    this->chunksWithoutDownload.clear();
-   for (QListIterator<QSharedPointer<ChunkDownload>> i(this->chunkDownloads); i.hasNext();)
+   for (QListIterator<QSharedPointer<ChunkDownloader>> i(this->chunkDownloaders); i.hasNext();)
       i.next()->reset();
    this->localEntry.set_exists(false);
    this->localEntry.clear_shared_dir();
