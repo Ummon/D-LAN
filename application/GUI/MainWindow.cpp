@@ -158,16 +158,16 @@ MainWindow::MainWindow(QSharedPointer<RCC::ICoreConnection> coreConnection, QWid
 
    this->setApplicationStateAsDisconnected(); // Initial state.
 
-   this->restoreWindowsSettings();
-
-   this->restoreColorizedPeers();
-
    this->ui->grip->setVisible(false);
    this->ui->grip->installEventFilter(this);
    connect(this->ui->butClose, SIGNAL(clicked()), this, SLOT(close()));
    connect(this->ui->butMinimize, SIGNAL(clicked()), this, SLOT(showMinimized()));
    if (!SETTINGS.get<QString>("style").isEmpty())
       this->loadCustomStyle(QCoreApplication::applicationDirPath() % "/" % Common::Constants::STYLE_DIRECTORY % "/" % SETTINGS.get<QString>("style") % "/" % Common::Constants::STYLE_FILE_NAME);
+
+   this->restoreWindowsSettings();
+
+   this->restoreColorizedPeers();
 
    this->loadLanguage(this->widgetSettings->getCurrentLanguageFilename());
 
