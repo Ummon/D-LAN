@@ -1,0 +1,124 @@
+  
+#grip {
+   background-color : qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #182430, stop:1 #6596c9);
+   background-image: url(styles/l33t/title.png);
+   background-repeat: none;
+   background-position: center left;   
+}
+
+#grip #butMinimize, #grip #butClose {
+   background-repeat: none;
+   background-position: center;
+}
+
+#grip #butMinimize {
+   background-image: url(styles/l33t/minimize.png)
+}
+
+#grip #butClose {
+   background-image: url(styles/l33t/close.png)
+}
+
+*, QHeaderView::section {
+   background-color: #182430;
+   alternate-background-color: #213141;
+   selection-background-color: #19528a;
+   color: #efefef;
+}
+
+QLabel {
+   background-color: transparent;
+}
+
+QPushButton,
+QLineEdit,
+QComboBox,
+QTabWidget::pane,
+QTabBar::tab,
+QAbstractItemView,
+QProgressBar {
+   border: 1px solid #4e749b;      
+}
+
+QPushButton, QTabBar::tab  {
+   margin: 2px;
+   border: 1px solid #4e749b;
+   padding: 3px;
+   background-color: #182430;
+}
+
+QPushButton {
+   border-radius: 5px;
+}
+
+QPushButton:hover, QTabBar::tab:hover {
+   background-color: #4e749b;
+}
+
+QPushButton:pressed, QTabBar::tab:pressed, QTabBar::tab:selected {
+   background-color: #7697ba;
+}
+
+QPushButton:disabled, QLineEdit:disabled {
+   color: #999999;
+   border: 1px solid #657585;
+}
+
+QPushButton:flat {
+   border: none;
+}
+
+QComboBox, QLineEdit {
+   background-color: #37526e;
+}
+
+QComboBox:hover, QComboBox:focus, QComboBox:open,
+QLineEdit:hover, QLineEdit:focus, QProgressBar::chunk  {
+   background-color: #4b7096;
+}
+
+QGroupBox {    
+   font-style: italic;
+   border: 1px solid #283b4f;
+   border-radius: 5px;
+   margin-top: 3ex;
+}
+
+QGroupBox::title {
+   subcontrol-origin: margin;
+   left: 10px;
+   padding: 0 3px;
+   subcontrol-position: top left;
+}
+  
+QComboBox::drop-down {
+   subcontrol-origin: padding;
+   subcontrol-position: top right;
+   border: 1px solid #283b4f;
+ }
+ 
+QComboBox::down-arrow {
+   image: url(styles/l33t/arrow_down.png);
+}
+
+QTabBar::tab {
+   margin-bottom: -1px;
+}
+
+QTabBar::tab > QWidget {
+   background-color: transparent;
+}
+
+QHeaderView::section {
+   border: none;
+   padding: 3px;
+   background-color: #4e749b; 
+}
+
+QHeaderView::section:!first {
+   border-left: 1px solid white;
+}
+
+QScrollArea {
+   border: none;
+}

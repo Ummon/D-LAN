@@ -36,7 +36,7 @@
    <item>
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>2</number>
+      <number>1</number>
      </property>
      <widget class="QWidget" name="tabBasicSettings">
       <attribute name="title">
@@ -295,7 +295,7 @@
       <attribute name="title">
        <string>Advanced</string>
       </attribute>
-      <layout class="QVBoxLayout" name="layAdvanced" stretch="0,0,0,0">
+      <layout class="QVBoxLayout" name="layAdvanced" stretch="0,0,0,0,0,0">
        <item>
         <widget class="QLabel" name="lblLanguage">
          <property name="text">
@@ -305,6 +305,40 @@
        </item>
        <item>
         <widget class="QComboBox" name="cmbLanguages"/>
+       </item>
+       <item>
+        <widget class="QLabel" name="lblStyle">
+         <property name="text">
+          <string>Style</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="layStyle">
+         <property name="spacing">
+          <number>3</number>
+         </property>
+         <item>
+          <widget class="QComboBox" name="cmbStyles"/>
+         </item>
+         <item>
+          <widget class="QPushButton" name="butReloadStyle">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="text">
+            <string/>
+           </property>
+           <property name="icon">
+            <iconset resource="../ressources.qrc">
+             <normaloff>:/icons/ressources/refresh.png</normaloff>:/icons/ressources/refresh.png</iconset>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </item>
        <item>
         <widget class="QGroupBox" name="grpCoreConnection">

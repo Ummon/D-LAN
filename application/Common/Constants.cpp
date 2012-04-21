@@ -40,6 +40,9 @@ const QString Constants::GUI_SETTINGS_FILENAME("gui_settings.txt");
 
 const QString Constants::LANGUAGE_DIRECTORY("languages");
 
+const QString Constants::STYLE_DIRECTORY("styles");
+const QString Constants::STYLE_FILE_NAME("style.css");
+
 const QString Constants::SERVICE_NAME("D-LAN Core");
 
 const int Constants::PROTOBUF_STREAMING_BUFFER_SIZE(4 * 1024); ///< 4kB.

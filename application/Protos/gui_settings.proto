@@ -56,4 +56,6 @@ message Settings {
    
    // Used to show the little speed rate charts int the peers list.
    optional uint32 lan_speed = 24 [default = 83886080]; // [B/s]. (80 MiB/s).
+   
+   optional string style = 25; // The directory of the style in the 'styles' directory.
 }

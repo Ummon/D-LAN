@@ -23,6 +23,7 @@
 #include <QPoint>
 #include <QPair>
 #include <QStyledItemDelegate>
+#include <QProgressBar>
 
 #include <Protos/gui_settings.pb.h>
 
@@ -49,6 +50,9 @@ namespace GUI
    public:
       void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const;
       QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const;
+
+   private:
+      QProgressBar model;
    };
 
    class WidgetDownloads : public QWidget

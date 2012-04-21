@@ -95,11 +95,16 @@ namespace GUI
       void logScrollChanged(int value);
       void newLogMessage();
 
+      void loadCustomStyle(const QString& filepath);
+
    protected:
       void keyPressEvent(QKeyEvent* event);
       void closeEvent(QCloseEvent * event);
-      bool eventFilter(QObject* obj, QEvent* event);
       void changeEvent(QEvent* event);
+
+      bool eventFilter(QObject* obj, QEvent* event);
+
+      void resizeEvent(QResizeEvent* event);
 
    private:
       void search(bool ownFiles = false);
@@ -145,6 +150,10 @@ namespace GUI
       QList<WidgetSearch*> widgetsSearch;
 
       QTranslator translator;
+
+      QPoint dragPosition; // Used by custome styles.
+      bool customStyleLoaded;
+      Qt::WindowFlags initialWindowFlags;
 
       QSharedPointer<RCC::ICoreConnection> coreConnection;
 
