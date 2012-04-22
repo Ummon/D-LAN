@@ -68,7 +68,6 @@ SOURCES += main.cpp\
     ProgressBar.cpp \
     IconProvider.cpp \
     Utils.cpp \
-    LineEdit.cpp \
     Settings/AskNewPasswordDialog.cpp \
     Downloads/DownloadsTreeModel.cpp \
     Downloads/DownloadsModel.cpp \
@@ -106,7 +105,6 @@ HEADERS  += MainWindow.h \
     ProgressBar.h \
     IconProvider.h \
     Utils.h \
-    LineEdit.h \
     Settings/AskNewPasswordDialog.h \
     Downloads/DownloadsFlatModel.h \
     Downloads/DownloadsTreeModel.h \

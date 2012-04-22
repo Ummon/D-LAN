@@ -152,7 +152,7 @@ MainWindow::MainWindow(QSharedPointer<RCC::ICoreConnection> coreConnection, QWid
 
    connect(this->ui->butSearch, SIGNAL(clicked()), this, SLOT(searchOtherPeers()));
    connect(this->ui->butSearchOwnFiles, SIGNAL(clicked()), this, SLOT(searchOwnFiles()));
-   connect(this->ui->txtSearch, SIGNAL(returnPressed(Qt::KeyboardModifiers)), this, SLOT(txtSearchReturnPressed(Qt::KeyboardModifiers)));
+   this->ui->txtSearch->installEventFilter(this); // the signal 'returnPressed()' doesn't contain the key modifier information (shift = search among our files), we have to use a event filter.
 
    this->addWidgetSettings();
 
@@ -359,14 +359,6 @@ void MainWindow::searchOtherPeers()
 void MainWindow::searchOwnFiles()
 {
    this->search(true);
-}
-
-void MainWindow::txtSearchReturnPressed(Qt::KeyboardModifiers modifiers)
-{
-   if (modifiers.testFlag(Qt::ShiftModifier))
-      this->searchOwnFiles();
-   else
-      this->searchOtherPeers();
 }
 
 void MainWindow::sortPeersBySharingAmount()
@@ -592,39 +584,44 @@ bool MainWindow::eventFilter(QObject* obj, QEvent* event)
    if (obj == this->widgetChat && event->type() == QEvent::KeyPress)
    {
       this->keyPressEvent(static_cast<QKeyEvent*>(event));
-      return event->isAccepted();
    }
    else if (this->customStyleLoaded && obj == this->ui->grip)
    {
       if (event->type() == QEvent::MouseButtonPress && static_cast<QMouseEvent*>(event)->button() == Qt::LeftButton)
       {
          this->dragPosition = static_cast<QMouseEvent*>(event)->globalPos() - frameGeometry().topLeft();
-         return event->isAccepted();
       }
-      else if (event->type() == QEvent::MouseMove && static_cast<QMouseEvent*>(event)->buttons() & Qt::LeftButton)
+      if (event->type() == QEvent::MouseButtonRelease && static_cast<QMouseEvent*>(event)->button() == Qt::LeftButton)
+      {
+         this->dragPosition = QPoint();
+      }
+      else if (event->type() == QEvent::MouseMove && static_cast<QMouseEvent*>(event)->buttons() & Qt::LeftButton && !this->dragPosition.isNull())
       {
          move(static_cast<QMouseEvent*>(event)->globalPos() - this->dragPosition);
-         return event->isAccepted();
       }
-      else if (obj == this->ui->grip)
+      else if (event->type() == QEvent::Resize)
       {
-         if (event->type() == QEvent::Resize)
-         {
-            const QRegion maskedRegion(0, 0, this->ui->grip->width(), this->ui->grip->width());
+         const QRegion maskedRegion(0, 0, this->ui->grip->width(), this->ui->grip->width());
 
-            if (this->isMaximized())
-               this->ui->grip->setMask(maskedRegion);
-            else
-            {
-               const QRegion cornerTopRight = QRegion(this->ui->grip->width() - WINDOW_BORDER_RADIUS, 0, WINDOW_BORDER_RADIUS, WINDOW_BORDER_RADIUS).subtracted(QRegion(this->ui->grip->width() - 2 * WINDOW_BORDER_RADIUS, 0, 2 * WINDOW_BORDER_RADIUS, 2 * WINDOW_BORDER_RADIUS, QRegion::Ellipse));
-               this->ui->grip->setMask(maskedRegion.subtracted(cornerTopRight));
-            }
-         }
-         else if (event->type() == QEvent::MouseButtonDblClick && static_cast<QMouseEvent*>(event)->button() == Qt::LeftButton)
+         if (this->isMaximized())
+            this->ui->grip->setMask(maskedRegion);
+         else
          {
-            this->maximize();
+            const QRegion cornerTopRight = QRegion(this->ui->grip->width() - WINDOW_BORDER_RADIUS, 0, WINDOW_BORDER_RADIUS, WINDOW_BORDER_RADIUS).subtracted(QRegion(this->ui->grip->width() - 2 * WINDOW_BORDER_RADIUS, 0, 2 * WINDOW_BORDER_RADIUS, 2 * WINDOW_BORDER_RADIUS, QRegion::Ellipse));
+            this->ui->grip->setMask(maskedRegion.subtracted(cornerTopRight));
          }
       }
+      else if (event->type() == QEvent::MouseButtonDblClick && static_cast<QMouseEvent*>(event)->button() == Qt::LeftButton)
+      {
+         this->maximize();
+      }
+   }
+   else if (obj == this->ui->txtSearch && event->type() == QEvent::KeyPress && static_cast<QKeyEvent*>(event)->key() == Qt::Key_Return)
+   {
+      if (static_cast<QKeyEvent*>(event)->modifiers().testFlag(Qt::ShiftModifier))
+         this->searchOwnFiles();
+      else
+         this->searchOtherPeers();
    }
    else if // Prohibits the user to close tab with the middle button.
    (

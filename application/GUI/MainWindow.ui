@@ -172,7 +172,7 @@
       <number>2</number>
      </property>
      <item>
-      <widget class="LineEdit" name="txtSearch">
+      <widget class="QLineEdit" name="txtSearch">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
          <horstretch>0</horstretch>
@@ -281,13 +281,6 @@
   </widget>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
- <customwidgets>
-  <customwidget>
-   <class>LineEdit</class>
-   <extends>QLineEdit</extends>
-   <header>LineEdit.h</header>
-  </customwidget>
- </customwidgets>
  <resources>
   <include location="ressources.qrc"/>
  </resources>

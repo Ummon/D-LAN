@@ -85,7 +85,6 @@ namespace GUI
       void takeControlOfACore();
       void searchOtherPeers();
       void searchOwnFiles();
-      void txtSearchReturnPressed(Qt::KeyboardModifiers modifiers);
 
       void sortPeersBySharingAmount();
       void sortPeersByNick();
