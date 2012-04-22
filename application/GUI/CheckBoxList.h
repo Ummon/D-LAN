@@ -20,6 +20,7 @@
 #define GUI_CHECKBOXLIST_H
 
 #include <QComboBox>
+#include <QCheckBox>
 #include <QItemDelegate>
 #include <QAbstractTableModel>
 
@@ -55,6 +56,9 @@ namespace GUI
 
    private slots:
       void checkBoxStateChanged();
+
+   private:
+      QCheckBox model;
     };
 }
 

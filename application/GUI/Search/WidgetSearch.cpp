@@ -56,10 +56,7 @@ void SearchDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option
          QApplication::style()->drawControl(QStyle::CE_ItemViewItem, &newOption, painter, newOption.widget);
 
          QAbstractTextDocumentLayout::PaintContext ctx;
-
-         // Highlighting text if item is selected and we are on Windows XP. TODO: find a better way.
-         if (QString(QApplication::style()->metaObject()->className()) == "QWindowsXPStyle" && (newOption.state & QStyle::State_Selected))
-            ctx.palette.setColor(QPalette::Text, newOption.palette.color(QPalette::Active, QPalette::HighlightedText));
+         ctx.palette = newOption.palette;
 
          const QRect textRect = QApplication::style()->subElementRect(QStyle::SE_ItemViewItemText, &newOption);
          painter->save();
@@ -79,7 +76,7 @@ void SearchDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option
 
          int value = index.data().toInt();
 
-         QStyleOptionProgressBar progressBarOption;
+         QStyleOptionProgressBarV2 progressBarOption;
          progressBarOption.QStyleOption::operator=(option);
          progressBarOption.minimum = 0;
          progressBarOption.maximum = 100;
@@ -93,7 +90,7 @@ void SearchDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option
          rect.setBottom(rect.bottom() - height / 4);
          progressBarOption.rect = rect;
 
-         QApplication::style()->drawControl(QStyle::CE_ProgressBar, &progressBarOption, painter);
+         QApplication::style()->drawControl(QStyle::CE_ProgressBar, &progressBarOption, painter, &this->model);
       }
       break;
 

@@ -14,6 +14,10 @@ using namespace GUI;
   * The information used to draw this chart is stored in a 'PeerListModel::TransferInformation' object.
   */
 
+
+const QColor PeerListDelegate::DOWNLOAD_COLOR(100, 255, 100);
+const QColor PeerListDelegate::UPLOAD_COLOR(100, 100, 255);
+
 void PeerListDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
    QStyleOptionViewItemV4 newOption(option);
@@ -35,15 +39,7 @@ void PeerListDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opti
       const int radius = qMin(option.rect.height(), option.rect.width()) / 2 - 2;
       const QRect rect(center + QPoint(-radius, -radius), center + QPoint(radius, radius));
 
-      static const QColor DOWNLOAD_COLOR(100, 255, 100);
-      static const QColor UPLOAD_COLOR(100, 100, 255);
-
-      // Backgrounds
-      painter->setPen(Qt::NoPen);
-      painter->setBrush(QBrush(DOWNLOAD_COLOR.lighter(140)));
-      painter->drawPie(rect, 0, 16 * 180);
-      painter->setBrush(QBrush(UPLOAD_COLOR.lighter(140)));
-      painter->drawPie(rect, 0, -16 * 180);
+      painter->drawPixmap(rect.topLeft(), this->getMiniChartBackground(rect.width(), rect.height()));
 
       // Download speed
       if (transferInformation.downloadRate > 0)
@@ -83,4 +79,30 @@ QSize PeerListDelegate::sizeHint(const QStyleOptionViewItem& option, const QMode
    {
       return QStyledItemDelegate::sizeHint(option, index);
    }
+}
+
+const QPixmap& PeerListDelegate::getMiniChartBackground(int width, int height) const
+{
+   if (!this->miniChartBackground)
+   {
+      this->miniChartBackground = new QPixmap(width, height);
+      this->miniChartBackground->fill(Qt::transparent);
+
+      QLinearGradient downloadGradient(0, 0, width, 0);
+      downloadGradient.setColorAt(0, DOWNLOAD_COLOR.lighter(70));
+      downloadGradient.setColorAt(1, DOWNLOAD_COLOR.lighter(160));
+
+      QLinearGradient uploadGradient(0, 0, width, 0);
+      uploadGradient.setColorAt(0, UPLOAD_COLOR.lighter(100));
+      uploadGradient.setColorAt(1, UPLOAD_COLOR.lighter(160));
+
+      QPainter painter(this->miniChartBackground);
+      painter.setRenderHint(QPainter::Antialiasing, true);
+      painter.setPen(Qt::NoPen);
+      painter.setBrush(downloadGradient);
+      painter.drawPie(QRect(0, 0, width, height), 0, 16 * 180);
+      painter.setBrush(uploadGradient);
+      painter.drawPie(QRect(0, 0, width, height), 0, -16 * 180);
+   }
+   return *this->miniChartBackground;
 }

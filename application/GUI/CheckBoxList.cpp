@@ -143,6 +143,7 @@ void CheckBoxList::mousePressEvent(QMouseEvent* e)
 CheckBoxListDelegate::CheckBoxListDelegate(QObject* parent) :
    QItemDelegate(parent)
 {
+   this->model.setObjectName("checkBoxListItem");
 }
 
 void CheckBoxListDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
@@ -150,20 +151,21 @@ void CheckBoxListDelegate::paint(QPainter* painter, const QStyleOptionViewItem& 
    // Fill style options with item data.
    const QStyle* style = QApplication::style();
 
-   QStyleOptionButton opt;
-   opt.state |= index.model()->data(index, Qt::UserRole).toBool() ? QStyle::State_On : QStyle::State_Off;
-   opt.state |= QStyle::State_Enabled;
-   opt.text = index.model()->data(index, Qt::DisplayRole).toString();
-   opt.rect = option.rect;
+   QStyleOptionButton buttonOption;
+   buttonOption.QStyleOption::operator=(option);
+
+   buttonOption.state |= index.model()->data(index, Qt::UserRole).toBool() ? QStyle::State_On : QStyle::State_Off;
+   buttonOption.text = index.model()->data(index, Qt::DisplayRole).toString();
 
    // Draw item data as CheckBox.
-   style->drawControl(QStyle::CE_CheckBox, &opt, painter);
+   style->drawControl(QStyle::CE_CheckBox, &buttonOption, painter, &this->model);
 }
 
 QWidget* CheckBoxListDelegate::createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
    // Create check box as our editor.
    QCheckBox* editor = new QCheckBox(parent);
+   editor->setObjectName("checkBoxListItem");
    connect(editor, SIGNAL(stateChanged(int)), this, SLOT(checkBoxStateChanged()));
    return editor;
 }

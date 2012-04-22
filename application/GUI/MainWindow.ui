@@ -75,6 +75,13 @@
         </widget>
        </item>
        <item>
+        <widget class="QPushButton" name="butMaximize">
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+       </item>
+       <item>
         <widget class="QPushButton" name="butClose">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">

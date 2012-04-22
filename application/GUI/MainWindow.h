@@ -65,6 +65,8 @@ namespace GUI
    class MainWindow : public QMainWindow
    {
       Q_OBJECT
+      static const int WINDOW_BORDER_RADIUS = 10; // Only used when a custom style is selected.
+
    public:
       explicit MainWindow(QSharedPointer<RCC::ICoreConnection> coreConnection, QWidget* parent = nullptr);
       ~MainWindow();
@@ -96,6 +98,8 @@ namespace GUI
       void newLogMessage();
 
       void loadCustomStyle(const QString& filepath);
+
+      void maximize();
 
    protected:
       void keyPressEvent(QKeyEvent* event);

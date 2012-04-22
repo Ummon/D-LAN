@@ -6,7 +6,9 @@
    background-position: center left;   
 }
 
-#grip #butMinimize, #grip #butClose {
+#grip #butMinimize,
+#grip #butClose,
+#grip #butMaximize {
    background-repeat: none;
    background-position: center;
 }
@@ -19,11 +21,21 @@
    background-image: url(styles/l33t/close.png)
 }
 
+#grip #butMaximize {
+   background-image: url(styles/l33t/maximize.png)
+}
+
 *,
-QHeaderView::section {
+QHeaderView::section,
+QToolTip,
+QMenu {
    background-color: #182430;
    alternate-background-color: #213141;
    selection-background-color: #19528a;
+}
+
+*,
+QAbstractItemView::item:selected:!active {   
    color: #efefef;
 }
 
@@ -39,7 +51,9 @@ QTabBar::tab,
 QProgressBar,
 QScrollBar,
 QScrollBar::add-line,
-QScrollBar::sub-line {
+QScrollBar::sub-line,
+QToolTip,
+QMenu {
    border: 1px solid #4e749b;      
 }
 
@@ -54,7 +68,7 @@ QPushButton {
    border-radius: 5px;
 }
 
-QPushButton:hover, QTabBar::tab:hover {
+QPushButton:hover, QTabBar::tab:hover, QMenu::item:selected, QTreeView::item:hover {
    background-color: #4e749b;
 }
 
@@ -75,16 +89,20 @@ QComboBox,
 QLineEdit,
 QScrollBar::handle,
 QScrollBar::add-line,
-QScrollBar::sub-line {
+QScrollBar::sub-line,
+QMenu::separator,
+QMenu:selected,
+QProgressBar::chunk {
    background-color: #37526e;
 }
 
 QComboBox:hover, QComboBox:focus, QComboBox:open,
 QLineEdit:hover, QLineEdit:focus,
-QProgressBar::chunk,
 QScrollBar::handle:hover,
 QScrollBar::add-line:hover,
-QScrollBar::sub-line:hover {
+QScrollBar::sub-line:hover,
+QRadioButton:hover,
+QCheckBox:hover {
    background-color: #4b7096;
 }
 
@@ -134,6 +152,14 @@ QScrollArea {
    border: none;
 }
 
+QAbstractItemView {
+  show-decoration-selected: 0;
+}
+
+QAbstractItemView::item:selected {
+   background-color: #19528a;   
+}
+
 QTreeView::branch:has-children:!has-siblings:closed,
 QTreeView::branch:closed:has-children:has-siblings {
    border-image: none;
@@ -161,7 +187,6 @@ QTreeView::branch:open:has-children:has-siblings:hover {
 QScrollBar::add-page, QScrollBar::sub-page {
    background: none;
 }
-
 
 QScrollBar:vertical {
    width: 14px;
@@ -250,4 +275,66 @@ QSizeGrip {
    width: 16px;
    height: 16px;
 }
+
+QMenu {
+   padding-top: 5px;
+   padding-bottom: 5px;
+}
+
+QMenu::item {
+   background-color: transparent;
+   padding: 3px 10px 3px 24px;
+}
+
+QMenu::icon {
+   margin-left: 5px;
+}
+
+QMenu::separator  {
+   height: 1px;
+   margin-top: 5px;
+   margin-bottom: 5px;
+}
+
+QMenu::indicator {
+   width: 16px;
+   height: 16px;
+   margin-left: 3px;
+}
+
+QMenu::indicator:non-exclusive:checked,
+QCheckBox::indicator:checked {
+   image: url(styles/l33t/checkbox_checked.png);
+} 
+
+QMenu::indicator:non-exclusive:unchecked,
+QCheckBox::indicator:unchecked {
+   image: url(styles/l33t/checkbox_unchecked.png);
+} 
+
+QMenu::indicator:exclusive:checked,
+QRadioButton::indicator::checked {
+   image: url(styles/l33t/radiobox_checked.png);
+} 
+
+QMenu::indicator:exclusive:unchecked,
+QRadioButton::indicator::unchecked {
+   image: url(styles/l33t/radiobox_unchecked.png);
+} 
+
+QCheckBox {
+   padding: 3px;
+   background-color: transparent;
+}
+
+QRadioButton {
+   padding: 3px;
+}
+
+// Only for the elements in the download filter combo box.
+#checkBoxListItem {
+   padding: 0px;
+}
+
+
 

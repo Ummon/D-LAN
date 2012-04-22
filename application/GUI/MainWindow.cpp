@@ -162,6 +162,7 @@ MainWindow::MainWindow(QSharedPointer<RCC::ICoreConnection> coreConnection, QWid
    this->ui->grip->installEventFilter(this);
    connect(this->ui->butClose, SIGNAL(clicked()), this, SLOT(close()));
    connect(this->ui->butMinimize, SIGNAL(clicked()), this, SLOT(showMinimized()));
+   connect(this->ui->butMaximize, SIGNAL(clicked()), this, SLOT(maximize()));
    if (!SETTINGS.get<QString>("style").isEmpty())
       this->loadCustomStyle(QCoreApplication::applicationDirPath() % "/" % Common::Constants::STYLE_DIRECTORY % "/" % SETTINGS.get<QString>("style") % "/" % Common::Constants::STYLE_FILE_NAME);
 
@@ -290,11 +291,14 @@ void MainWindow::displayContextMenuPeers(const QPoint& point)
    QAction* sortBySharingAmountAction = menu.addAction(tr("Sort by the amount of sharing"), this, SLOT(sortPeersBySharingAmount()));
    QAction* sortByNickAction = menu.addAction(tr("Sort alphabetically"), this, SLOT(sortPeersByNick()));
 
+   QActionGroup sortGroup(this);
+   sortGroup.setExclusive(true);
    sortBySharingAmountAction->setCheckable(true);
    sortBySharingAmountAction->setChecked(this->peerListModel.getSortType() == Protos::GUI::Settings::BY_SHARING_AMOUNT);
-
    sortByNickAction->setCheckable(true);
    sortByNickAction->setChecked(this->peerListModel.getSortType() == Protos::GUI::Settings::BY_NICK);
+   sortGroup.addAction(sortBySharingAmountAction);
+   sortGroup.addAction(sortByNickAction);
 
    menu.addSeparator();
 
@@ -517,6 +521,18 @@ void MainWindow::loadCustomStyle(const QString& filepath)
    }
 }
 
+void MainWindow::maximize()
+{
+   if (this->windowState() & Qt::WindowMaximized)
+   {
+      this->showNormal();
+   }
+   else
+   {
+      this->showMaximized();
+   }
+}
+
 void MainWindow::keyPressEvent(QKeyEvent* event)
 {
    // CTRL.
@@ -590,14 +606,19 @@ bool MainWindow::eventFilter(QObject* obj, QEvent* event)
          move(static_cast<QMouseEvent*>(event)->globalPos() - this->dragPosition);
          return event->isAccepted();
       }
-      else if (obj == this->ui->grip && event->type() == QEvent::Resize)
+      else if (obj == this->ui->grip)
       {
-         static const int RADIUS = 10;
+         if (event->type() == QEvent::Resize)
+         {
+            QRegion cornerTopRight = QRegion(this->ui->grip->width() - WINDOW_BORDER_RADIUS, 0, WINDOW_BORDER_RADIUS, WINDOW_BORDER_RADIUS).subtracted(QRegion(this->ui->grip->width() - 2 * WINDOW_BORDER_RADIUS, 0, 2 * WINDOW_BORDER_RADIUS, 2 * WINDOW_BORDER_RADIUS, QRegion::Ellipse));
+            QRegion maskedRegion(0, 0, this->ui->grip->width(), this->ui->grip->width());
 
-         QRegion cornerTopRight = QRegion(this->ui->grip->width() - RADIUS, 0, RADIUS, RADIUS).subtracted(QRegion(this->ui->grip->width() - 2 * RADIUS, 0, 2 * RADIUS, 2 * RADIUS, QRegion::Ellipse));
-         QRegion maskedRegion(0, 0, this->ui->grip->width(), this->ui->grip->width());
-
-         this->ui->grip->setMask(maskedRegion.subtracted(cornerTopRight));
+            this->ui->grip->setMask(maskedRegion.subtracted(cornerTopRight));
+         }
+         else if (event->type() == QEvent::MouseButtonDblClick && static_cast<QMouseEvent*>(event)->button() == Qt::LeftButton)
+         {
+            this->maximize();
+         }
       }
    }
    else if // Prohibits the user to close tab with the middle button.
@@ -619,12 +640,10 @@ void MainWindow::resizeEvent(QResizeEvent* event)
 
    if (this->customStyleLoaded)
    {
-      static const int RADIUS = 10;
-
-      QRegion cornerTopLeft = QRegion(0, 0, RADIUS, RADIUS).subtracted(QRegion(0, 0, 2 * RADIUS, 2 * RADIUS, QRegion::Ellipse));
-      QRegion cornerTopRight = QRegion(this->width() - RADIUS, 0, RADIUS, RADIUS).subtracted(QRegion(this->width() - 2 * RADIUS, 0, 2 * RADIUS, 2 * RADIUS, QRegion::Ellipse));
-      QRegion cornerBottomLeft = QRegion(0, this->height() - RADIUS, RADIUS, RADIUS).subtracted(QRegion(0, this->height() - 2 * RADIUS, 2 * RADIUS, 2 * RADIUS, QRegion::Ellipse));
-      QRegion cornerBottomRight = QRegion(this->width() - RADIUS, this->height() - RADIUS, RADIUS, RADIUS).subtracted(QRegion(this->width() - 2 * RADIUS, this->height() - 2 * RADIUS, 2 * RADIUS, 2 * RADIUS, QRegion::Ellipse));
+      QRegion cornerTopLeft = QRegion(0, 0, WINDOW_BORDER_RADIUS, WINDOW_BORDER_RADIUS).subtracted(QRegion(0, 0, 2 * WINDOW_BORDER_RADIUS, 2 * WINDOW_BORDER_RADIUS, QRegion::Ellipse));
+      QRegion cornerTopRight = QRegion(this->width() - WINDOW_BORDER_RADIUS, 0, WINDOW_BORDER_RADIUS, WINDOW_BORDER_RADIUS).subtracted(QRegion(this->width() - 2 * WINDOW_BORDER_RADIUS, 0, 2 * WINDOW_BORDER_RADIUS, 2 * WINDOW_BORDER_RADIUS, QRegion::Ellipse));
+      QRegion cornerBottomLeft = QRegion(0, this->height() - WINDOW_BORDER_RADIUS, WINDOW_BORDER_RADIUS, WINDOW_BORDER_RADIUS).subtracted(QRegion(0, this->height() - 2 * WINDOW_BORDER_RADIUS, 2 * WINDOW_BORDER_RADIUS, 2 * WINDOW_BORDER_RADIUS, QRegion::Ellipse));
+      QRegion cornerBottomRight = QRegion(this->width() - WINDOW_BORDER_RADIUS, this->height() - WINDOW_BORDER_RADIUS, WINDOW_BORDER_RADIUS, WINDOW_BORDER_RADIUS).subtracted(QRegion(this->width() - 2 * WINDOW_BORDER_RADIUS, this->height() - 2 * WINDOW_BORDER_RADIUS, 2 * WINDOW_BORDER_RADIUS, 2 * WINDOW_BORDER_RADIUS, QRegion::Ellipse));
 
       QRegion maskedRegion(0, 0, this->width(), this->height());
 
