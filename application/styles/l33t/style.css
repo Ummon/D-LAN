@@ -19,7 +19,8 @@
    background-image: url(styles/l33t/close.png)
 }
 
-*, QHeaderView::section {
+*,
+QHeaderView::section {
    background-color: #182430;
    alternate-background-color: #213141;
    selection-background-color: #19528a;
@@ -35,8 +36,10 @@ QLineEdit,
 QComboBox,
 QTabWidget::pane,
 QTabBar::tab,
-QAbstractItemView,
-QProgressBar {
+QProgressBar,
+QScrollBar,
+QScrollBar::add-line,
+QScrollBar::sub-line {
    border: 1px solid #4e749b;      
 }
 
@@ -68,12 +71,20 @@ QPushButton:flat {
    border: none;
 }
 
-QComboBox, QLineEdit {
+QComboBox,
+QLineEdit,
+QScrollBar::handle,
+QScrollBar::add-line,
+QScrollBar::sub-line {
    background-color: #37526e;
 }
 
 QComboBox:hover, QComboBox:focus, QComboBox:open,
-QLineEdit:hover, QLineEdit:focus, QProgressBar::chunk  {
+QLineEdit:hover, QLineEdit:focus,
+QProgressBar::chunk,
+QScrollBar::handle:hover,
+QScrollBar::add-line:hover,
+QScrollBar::sub-line:hover {
    background-color: #4b7096;
 }
 
@@ -122,3 +133,121 @@ QHeaderView::section:!first {
 QScrollArea {
    border: none;
 }
+
+QTreeView::branch:has-children:!has-siblings:closed,
+QTreeView::branch:closed:has-children:has-siblings {
+   border-image: none;
+   image: url(styles/l33t/treeview_arrow_closed.png);
+}
+
+QTreeView::branch:has-children:!has-siblings:closed:hover,
+QTreeView::branch:closed:has-children:has-siblings:hover {
+   border-image: none;
+   image: url(styles/l33t/treeview_arrow_closed_highlight.png);
+}
+
+QTreeView::branch:open:has-children:!has-siblings,
+QTreeView::branch:open:has-children:has-siblings  {
+   border-image: none;
+   image: url(styles/l33t/treeview_arrow_opened.png);
+}
+
+QTreeView::branch:open:has-children:!has-siblings:hover,
+QTreeView::branch:open:has-children:has-siblings:hover {
+   border-image: none;
+   image: url(styles/l33t/treeview_arrow_opened_highlight.png);
+}
+
+QScrollBar::add-page, QScrollBar::sub-page {
+   background: none;
+}
+
+
+QScrollBar:vertical {
+   width: 14px;
+   margin: 16px 0px 16px 0px;
+}
+
+QScrollBar::handle:vertical {
+   min-height: 20px;
+}
+
+QScrollBar::sub-line:vertical {
+   border-right: 0px;
+   border-top: 0px;
+   height: 16px;
+   subcontrol-position: top;
+   subcontrol-origin: margin;
+} 
+ 
+QScrollBar::add-line:vertical {
+   border-right: 0px;
+   border-bottom: 0px;
+   height: 16px;
+   subcontrol-position: bottom;
+   subcontrol-origin: margin;
+}
+ 
+QScrollBar::up-arrow:vertical {
+   background-image: url(styles/l33t/scrollbar_arrow_top.png);
+   background-repeat: no-repeat;
+   background-position: center;
+}
+
+QScrollBar::down-arrow:vertical {
+   background-image: url(styles/l33t/scrollbar_arrow_bot.png);
+   background-repeat: no-repeat;
+   background-position: center;
+}
+
+QScrollBar:vertical {
+   border-right: 0px;
+}
+
+QScrollBar:horizontal {
+   height: 14px;
+   margin: 0px 16px 0px 16px;
+}
+
+QScrollBar::handle:horizontal {
+   min-width: 20px;
+}
+
+QScrollBar::sub-line:horizontal {
+   border-bottom: 0px;
+   border-left: 0px;
+   width: 16px;
+   subcontrol-position: left;
+   subcontrol-origin: margin;
+} 
+ 
+QScrollBar::add-line:horizontal {
+   border-bottom: 0px;
+   border-right: 0px;
+   width: 16px;
+   subcontrol-position: right;
+   subcontrol-origin: margin;
+}
+ 
+QScrollBar::left-arrow:horizontal {
+   background-image: url(styles/l33t/scrollbar_arrow_left.png);
+   background-repeat: no-repeat;
+   background-position: center;
+}
+
+QScrollBar::right-arrow:horizontal {
+   background-image: url(styles/l33t/scrollbar_arrow_right.png);
+   background-repeat: no-repeat;
+   background-position: center;
+}
+
+QScrollBar:horizontal {
+   border-bottom: 0px;
+}
+
+QSizeGrip {
+   background-image: url(styles/l33t/grip.png);
+   width: 16px;
+   height: 16px;
+}
+

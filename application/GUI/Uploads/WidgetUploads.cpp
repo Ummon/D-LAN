@@ -27,15 +27,16 @@ void UploadsDelegate::paint(QPainter* painter, const QStyleOptionViewItem& optio
 
    if (index.column() == 2)
    {
-       QStyleOptionProgressBar progressBarOption;
-       progressBarOption.rect = option.rect;
-       progressBarOption.minimum = 0;
-       progressBarOption.maximum = 10000;
-       progressBarOption.textAlignment = Qt::AlignHCenter;
-       progressBarOption.progress = index.data().toInt();
-       progressBarOption.textVisible = false;
+      QStyleOptionProgressBarV2 progressBarOption;
+      progressBarOption.QStyleOption::operator=(option);
 
-       QApplication::style()->drawControl(QStyle::CE_ProgressBar, &progressBarOption, painter);
+      progressBarOption.minimum = 0;
+      progressBarOption.maximum = 10000;
+      progressBarOption.textAlignment = Qt::AlignHCenter;
+      progressBarOption.progress = index.data().toInt();
+      progressBarOption.textVisible = false;
+
+      QApplication::style()->drawControl(QStyle::CE_ProgressBar, &progressBarOption, painter, &this->model);
    }
    else
    {
