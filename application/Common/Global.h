@@ -19,6 +19,7 @@
 #ifndef COMMON_COMMON_H
 #define COMMON_COMMON_H
 
+#include <QObject>
 #include <QString>
 #include <QList>
 #include <QMutableListIterator>
@@ -91,7 +92,10 @@ namespace Common
       static bool createFile(const QString& path);
       static bool recursiveDeleteDirectoryContent(const QString& dir);
       static bool recursiveDeleteDirectory(const QString& dir);
-      static QString setCurrentDirToTemp(const QString& dir);
+      static QString setCurrentDirToTemp(const QString& dir);      
+
+      static QString getQObjectHierarchy(const QObject* root);
+      static QString getQObjectHierarchy(const QObject* root, std::function<QString(const QObject*)> fun);
    };
 }
 

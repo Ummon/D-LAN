@@ -102,9 +102,6 @@
         <verstretch>0</verstretch>
        </sizepolicy>
       </property>
-      <property name="lineWidth">
-       <number>0</number>
-      </property>
       <property name="viewMode">
        <enum>QMdiArea::TabbedView</enum>
       </property>
@@ -112,7 +109,11 @@
     </item>
    </layout>
   </widget>
-  <widget class="QStatusBar" name="statusBar"/>
+  <widget class="QStatusBar" name="statusBar">
+   <property name="sizeGripEnabled">
+    <bool>true</bool>
+   </property>
+  </widget>
   <widget class="QDockWidget" name="dockLog">
    <property name="accessibleName">
     <string/>

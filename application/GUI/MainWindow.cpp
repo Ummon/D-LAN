@@ -523,6 +523,8 @@ void MainWindow::loadCustomStyle(const QString& filepath)
 
 void MainWindow::maximize()
 {
+   L_DEBU(Common::Global::getQObjectHierarchy(this));
+
    if (this->windowState() & Qt::WindowMaximized)
    {
       this->showNormal();
@@ -610,10 +612,15 @@ bool MainWindow::eventFilter(QObject* obj, QEvent* event)
       {
          if (event->type() == QEvent::Resize)
          {
-            QRegion cornerTopRight = QRegion(this->ui->grip->width() - WINDOW_BORDER_RADIUS, 0, WINDOW_BORDER_RADIUS, WINDOW_BORDER_RADIUS).subtracted(QRegion(this->ui->grip->width() - 2 * WINDOW_BORDER_RADIUS, 0, 2 * WINDOW_BORDER_RADIUS, 2 * WINDOW_BORDER_RADIUS, QRegion::Ellipse));
-            QRegion maskedRegion(0, 0, this->ui->grip->width(), this->ui->grip->width());
+            const QRegion maskedRegion(0, 0, this->ui->grip->width(), this->ui->grip->width());
 
-            this->ui->grip->setMask(maskedRegion.subtracted(cornerTopRight));
+            if (this->isMaximized())
+               this->ui->grip->setMask(maskedRegion);
+            else
+            {
+               const QRegion cornerTopRight = QRegion(this->ui->grip->width() - WINDOW_BORDER_RADIUS, 0, WINDOW_BORDER_RADIUS, WINDOW_BORDER_RADIUS).subtracted(QRegion(this->ui->grip->width() - 2 * WINDOW_BORDER_RADIUS, 0, 2 * WINDOW_BORDER_RADIUS, 2 * WINDOW_BORDER_RADIUS, QRegion::Ellipse));
+               this->ui->grip->setMask(maskedRegion.subtracted(cornerTopRight));
+            }
          }
          else if (event->type() == QEvent::MouseButtonDblClick && static_cast<QMouseEvent*>(event)->button() == Qt::LeftButton)
          {
@@ -640,14 +647,19 @@ void MainWindow::resizeEvent(QResizeEvent* event)
 
    if (this->customStyleLoaded)
    {
-      QRegion cornerTopLeft = QRegion(0, 0, WINDOW_BORDER_RADIUS, WINDOW_BORDER_RADIUS).subtracted(QRegion(0, 0, 2 * WINDOW_BORDER_RADIUS, 2 * WINDOW_BORDER_RADIUS, QRegion::Ellipse));
-      QRegion cornerTopRight = QRegion(this->width() - WINDOW_BORDER_RADIUS, 0, WINDOW_BORDER_RADIUS, WINDOW_BORDER_RADIUS).subtracted(QRegion(this->width() - 2 * WINDOW_BORDER_RADIUS, 0, 2 * WINDOW_BORDER_RADIUS, 2 * WINDOW_BORDER_RADIUS, QRegion::Ellipse));
-      QRegion cornerBottomLeft = QRegion(0, this->height() - WINDOW_BORDER_RADIUS, WINDOW_BORDER_RADIUS, WINDOW_BORDER_RADIUS).subtracted(QRegion(0, this->height() - 2 * WINDOW_BORDER_RADIUS, 2 * WINDOW_BORDER_RADIUS, 2 * WINDOW_BORDER_RADIUS, QRegion::Ellipse));
-      QRegion cornerBottomRight = QRegion(this->width() - WINDOW_BORDER_RADIUS, this->height() - WINDOW_BORDER_RADIUS, WINDOW_BORDER_RADIUS, WINDOW_BORDER_RADIUS).subtracted(QRegion(this->width() - 2 * WINDOW_BORDER_RADIUS, this->height() - 2 * WINDOW_BORDER_RADIUS, 2 * WINDOW_BORDER_RADIUS, 2 * WINDOW_BORDER_RADIUS, QRegion::Ellipse));
+      const QRegion maskedRegion(0, 0, this->width(), this->height());
 
-      QRegion maskedRegion(0, 0, this->width(), this->height());
+      if (this->isMaximized())
+         this->setMask(maskedRegion);
+      else
+      {
+         const QRegion cornerTopLeft = QRegion(0, 0, WINDOW_BORDER_RADIUS, WINDOW_BORDER_RADIUS).subtracted(QRegion(0, 0, 2 * WINDOW_BORDER_RADIUS, 2 * WINDOW_BORDER_RADIUS, QRegion::Ellipse));
+         const QRegion cornerTopRight = QRegion(this->width() - WINDOW_BORDER_RADIUS, 0, WINDOW_BORDER_RADIUS, WINDOW_BORDER_RADIUS).subtracted(QRegion(this->width() - 2 * WINDOW_BORDER_RADIUS, 0, 2 * WINDOW_BORDER_RADIUS, 2 * WINDOW_BORDER_RADIUS, QRegion::Ellipse));
+         const QRegion cornerBottomLeft = QRegion(0, this->height() - WINDOW_BORDER_RADIUS, WINDOW_BORDER_RADIUS, WINDOW_BORDER_RADIUS).subtracted(QRegion(0, this->height() - 2 * WINDOW_BORDER_RADIUS, 2 * WINDOW_BORDER_RADIUS, 2 * WINDOW_BORDER_RADIUS, QRegion::Ellipse));
+         const QRegion cornerBottomRight = QRegion(this->width() - WINDOW_BORDER_RADIUS, this->height() - WINDOW_BORDER_RADIUS, WINDOW_BORDER_RADIUS, WINDOW_BORDER_RADIUS).subtracted(QRegion(this->width() - 2 * WINDOW_BORDER_RADIUS, this->height() - 2 * WINDOW_BORDER_RADIUS, 2 * WINDOW_BORDER_RADIUS, 2 * WINDOW_BORDER_RADIUS, QRegion::Ellipse));
 
-      this->setMask(maskedRegion.subtracted(cornerTopLeft).subtracted(cornerTopRight).subtracted(cornerBottomLeft).subtracted(cornerBottomRight));
+         this->setMask(maskedRegion.subtracted(cornerTopLeft).subtracted(cornerTopRight).subtracted(cornerBottomLeft).subtracted(cornerBottomRight));
+      }
    }
 }
 

@@ -28,7 +28,8 @@
 *,
 QHeaderView::section,
 QToolTip,
-QMenu {
+QMenu,
+QMainWindow::separator {
    background-color: #182430;
    alternate-background-color: #213141;
    selection-background-color: #19528a;
@@ -58,9 +59,9 @@ QAbstractItemView {
    border: 1px solid #4e749b;
 }
 
-QPushButton, QTabBar::tab  {
+QPushButton,
+QTabBar::tab {
    margin: 2px;
-   border: 1px solid #4e749b;
    padding: 3px;
    background-color: #182430;
 }
@@ -69,15 +70,23 @@ QPushButton {
    border-radius: 5px;
 }
 
-QPushButton:hover, QTabBar::tab:hover, QMenu::item:selected, QTreeView::item:hover {
+QPushButton:hover,
+QTabBar::tab:hover,
+QMenu::item:selected,
+QTreeView::item:hover,
+QMainWindow::separator:hover,
+QDockWidget::close-button:hover, QDockWidget::float-button:hover {
    background-color: #4e749b;
 }
 
-QPushButton:pressed, QTabBar::tab:pressed, QTabBar::tab:selected {
+QPushButton:pressed,
+QTabBar::tab:pressed,
+QTabBar::tab:selected {
    background-color: #7697ba;
 }
 
-QPushButton:disabled, QLineEdit:disabled {
+QPushButton:disabled,
+QLineEdit:disabled {
    color: #999999;
    border: 1px solid #657585;
 }
@@ -93,7 +102,8 @@ QScrollBar::add-line,
 QScrollBar::sub-line,
 QMenu::separator,
 QMenu:selected,
-QProgressBar::chunk {
+QProgressBar::chunk,
+QDockWidget::title {
    background-color: #37526e;
 }
 
@@ -341,4 +351,39 @@ QRadioButton {
 /* Only for the elements in the download filter combo box. */
 #checkBoxListItem {
    padding: 0px;
+}
+
+QMainWindow::separator {
+   width: 4px;
+   height: 4px;
+}   
+
+QDockWidget {   
+   titlebar-close-icon: url(styles/l33t/dockwidget_close.png);
+   titlebar-normal-icon: url(styles/l33t/dockwidget_min.png);
+}
+
+QDockWidget::close-button, QDockWidget::float-button {
+  padding: 0px;
+  border: 0px;
+  margin: 3px;
+  icon-size: 12px;
+}
+ 
+QDockWidget::close-button:pressed, QDockWidget::float-button:pressed {
+  padding: 1px -1px -1px 1px;
+}
+
+QDockWidget::title {
+   padding-left: -50px; /* -50 is to hide the text, you can put 5 to show it */
+   padding-right: -20px;
+   padding-top: 3px;
+}
+
+QTabBar {
+   background-color: transparent;
+}
+
+QStatusBar::item {
+   border: none;
 }
