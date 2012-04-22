@@ -53,8 +53,9 @@ QScrollBar,
 QScrollBar::add-line,
 QScrollBar::sub-line,
 QToolTip,
-QMenu {
-   border: 1px solid #4e749b;      
+QMenu,
+QAbstractItemView {
+   border: 1px solid #4e749b;
 }
 
 QPushButton, QTabBar::tab  {
@@ -136,6 +137,12 @@ QTabBar::tab {
 
 QTabBar::tab > QWidget {
    background-color: transparent;
+}
+
+QHeaderView {
+   border-top: 0px;
+   border-left: 0px;
+   border-right: 0px;
 }
 
 QHeaderView::section {
@@ -331,10 +338,7 @@ QRadioButton {
    padding: 3px;
 }
 
-// Only for the elements in the download filter combo box.
+/* Only for the elements in the download filter combo box. */
 #checkBoxListItem {
    padding: 0px;
 }
-
-
-
