@@ -152,10 +152,10 @@ void CheckBoxListDelegate::paint(QPainter* painter, const QStyleOptionViewItem& 
    const QStyle* style = QApplication::style();
 
    QStyleOptionButton buttonOption;
-   buttonOption.QStyleOption::operator=(option);
-
    buttonOption.state |= index.model()->data(index, Qt::UserRole).toBool() ? QStyle::State_On : QStyle::State_Off;
+   buttonOption.state |= QStyle::State_Enabled;
    buttonOption.text = index.model()->data(index, Qt::DisplayRole).toString();
+   buttonOption.rect = option.rect;
 
    // Draw item data as CheckBox.
    style->drawControl(QStyle::CE_CheckBox, &buttonOption, painter, &this->model);
