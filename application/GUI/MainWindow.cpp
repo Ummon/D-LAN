@@ -523,8 +523,6 @@ void MainWindow::loadCustomStyle(const QString& filepath)
 
 void MainWindow::maximize()
 {
-   L_DEBU(Common::Global::getQObjectHierarchy(this));
-
    if (this->windowState() & Qt::WindowMaximized)
    {
       this->showNormal();
