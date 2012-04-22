@@ -38,6 +38,9 @@ namespace Common
 
       static const QString LANGUAGE_DIRECTORY;
 
+      static const QString STYLE_DIRECTORY;
+      static const QString STYLE_FILE_NAME;
+
       static const QString SERVICE_NAME;
 
       static const int PROTOBUF_STREAMING_BUFFER_SIZE;

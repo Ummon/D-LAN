@@ -65,6 +65,8 @@ namespace GUI
    class MainWindow : public QMainWindow
    {
       Q_OBJECT
+      static const int WINDOW_BORDER_RADIUS = 10; // Only used when a custom style is selected.
+
    public:
       explicit MainWindow(QSharedPointer<RCC::ICoreConnection> coreConnection, QWidget* parent = nullptr);
       ~MainWindow();
@@ -95,11 +97,18 @@ namespace GUI
       void logScrollChanged(int value);
       void newLogMessage();
 
+      void loadCustomStyle(const QString& filepath);
+
+      void maximize();
+
    protected:
       void keyPressEvent(QKeyEvent* event);
       void closeEvent(QCloseEvent * event);
-      bool eventFilter(QObject* obj, QEvent* event);
       void changeEvent(QEvent* event);
+
+      bool eventFilter(QObject* obj, QEvent* event);
+
+      void resizeEvent(QResizeEvent* event);
 
    private:
       void search(bool ownFiles = false);
@@ -145,6 +154,10 @@ namespace GUI
       QList<WidgetSearch*> widgetsSearch;
 
       QTranslator translator;
+
+      QPoint dragPosition; // Used by custome styles.
+      bool customStyleLoaded;
+      Qt::WindowFlags initialWindowFlags;
 
       QSharedPointer<RCC::ICoreConnection> coreConnection;
 

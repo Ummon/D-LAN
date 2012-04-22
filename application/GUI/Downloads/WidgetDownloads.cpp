@@ -44,34 +44,35 @@ void DownloadsDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opt
 
       progressBarOption.minimum = 0;
       progressBarOption.maximum = 10000;
-      progressBarOption.textAlignment = Qt::AlignHCenter;
+      progressBarOption.textAlignment = Qt::AlignHCenter | Qt::AlignVCenter;
       progressBarOption.progress = progress.progress;
 
       switch (progress.status)
       {
       case Protos::GUI::State::Download::QUEUED:
-         progressBarOption.text = "Queued";
+         progressBarOption.text = tr("Queued");
          break;
       case Protos::GUI::State::Download::GETTING_THE_HASHES:
-         progressBarOption.text = "Getting the hashes..";
+         progressBarOption.text = tr("Getting the hashes..");
          break;
       case Protos::GUI::State::Download::DOWNLOADING:
          progressBarOption.text = QString("%1%").arg(static_cast<double>(progress.progress) / 100);
          break;
       case Protos::GUI::State::Download::COMPLETE:
-         progressBarOption.text = "Complete";
+         progressBarOption.text = tr("Complete");
          break;
       case Protos::GUI::State::Download::PAUSED:
-         progressBarOption.text = "Paused";
+         progressBarOption.text = tr("Paused");
          break;
       default:
-         progressBarOption.text = "Waiting..";
+         progressBarOption.text = tr("Waiting..");
          break;
       }
 
       progressBarOption.textVisible = true;
 
-      QApplication::style()->drawControl(QStyle::CE_ProgressBar, &progressBarOption, painter);
+      // I don't know why the commented code doesn't work ('widget' is 'tblDownloads' from the class 'WidgetDownloads' and has the type 'QTreeView').
+      QApplication::style()->drawControl(QStyle::CE_ProgressBar, &progressBarOption, painter, &this->model /*static_cast<const QStyleOptionViewItemV4&>(option).widget*/);
    }
    else
    {

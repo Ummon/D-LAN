@@ -671,3 +671,40 @@ QString Global::setCurrentDirToTemp(const QString& dirname)
    QDir::setCurrent(tempDir);
    return tempDir;
 }
+
+QString Global::getQObjectHierarchy(const QObject* root)
+{
+   return getQObjectHierarchy(root, [](const QObject* obj) {
+      return QString("\"").append(obj->objectName()).append("\" of type ").append(obj->metaObject()->className()).append('\n');
+   });
+}
+
+/**
+  * Can be specialized with a function ('fun') to specify how to transform each object in string.
+  */
+QString Global::getQObjectHierarchy(const QObject* root, std::function<QString(const QObject*)> fun)
+{
+   static const int INDENTATION = 3;
+   struct Node
+   {
+      int level;
+      const QObject* obj;
+   };
+
+   QString result;
+   QList<Node> nodesToProcess { Node { 0, root } };
+
+   while (!nodesToProcess.isEmpty())
+   {
+      Node current = nodesToProcess.takeFirst();
+      result.append(QString().fill(' ', INDENTATION * current.level));
+      result.append(fun(current.obj));
+
+      QListIterator<QObject*> i(current.obj->children());
+      i.toBack();
+      while (i.hasPrevious())
+         nodesToProcess.prepend(Node { current.level + 1, i.previous() });
+   }
+
+   return result;
+}

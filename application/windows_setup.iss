@@ -27,6 +27,7 @@ Source: "GUI/output/release/D-LAN.GUI.exe"; DestDir: "{app}"; Flags: comparetime
 Source: "Tools/LogViewer/output/release/LogViewer.exe"; DestDir: "{app}"; Flags: comparetimestamp
 Source: "Tools/PasswordHasher/output/release/PasswordHasher.exe"; DestDir: "{app}"; Flags: comparetimestamp
 Source: "translations/*.qm"; DestDir: "{app}/languages"; Flags: comparetimestamp
+Source: "styles/*"; DestDir: "{app}/styles"; Flags: comparetimestamp recursesubdirs createallsubdirs
 Source: "{#QtDir}/bin/QtCore4.dll"; DestDir: "{app}"; Flags: comparetimestamp
 Source: "{#QtDir}/bin/QtGui4.dll"; DestDir: "{app}"; Flags: comparetimestamp
 Source: "{#QtDir}/bin/QtNetwork4.dll"; DestDir: "{app}"; Flags: comparetimestamp

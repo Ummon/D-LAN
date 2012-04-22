@@ -28,6 +28,7 @@ using namespace GUI;
 #include <QMenu>
 #include <QDesktopServices>
 #include <QUrl>
+#include <QStringBuilder>
 
 #include <Common/Languages.h>
 #include <Common/Constants.h>
@@ -108,6 +109,10 @@ WidgetSettings::WidgetSettings(QSharedPointer<RCC::ICoreConnection> coreConnecti
    this->fillComboBoxLanguages();
    connect(this->ui->cmbLanguages, SIGNAL(currentIndexChanged(int)), this, SLOT(cmbLanguageChanged(int)));
 
+   this->fillComboBoxStyles();
+   connect(this->ui->cmbStyles, SIGNAL(currentIndexChanged(int)), this, SLOT(cmbStyleChanged(int)));
+   connect(this->ui->butReloadStyle, SIGNAL(clicked()), this, SLOT(reloadCurrentStyle()));
+
    connect(this->ui->butChangePassword, SIGNAL(clicked()), this, SLOT(changePassword()));
    connect(this->ui->butResetPassword, SIGNAL(clicked()), this, SLOT(resetPassword()));
 
@@ -176,6 +181,22 @@ void WidgetSettings::fillComboBoxLanguages()
          exactMatchFound = lang.locale.country() == current.country();
          this->ui->cmbLanguages->setCurrentIndex(this->ui->cmbLanguages->count() - 1);
       }
+   }
+}
+
+void WidgetSettings::fillComboBoxStyles()
+{
+   const QString& currentStyleFilename = SETTINGS.get<QString>("style");
+
+   this->ui->cmbStyles->addItem(tr("Default"));
+
+   const QDir styleDir(QCoreApplication::applicationDirPath() + "/" + Common::Constants::STYLE_DIRECTORY);
+   for (QStringListIterator i(styleDir.entryList(QDir::Dirs | QDir::NoSymLinks | QDir::NoDotAndDotDot, QDir::Name)); i.hasNext();)
+   {
+      const QString& dirname = i.next();
+      this->ui->cmbStyles->addItem(dirname, dirname);
+      if (currentStyleFilename == dirname)
+         this->ui->cmbStyles->setCurrentIndex(this->ui->cmbStyles->count() - 1);
    }
 }
 
@@ -455,11 +476,25 @@ void WidgetSettings::saveCoreSettings()
 
 void WidgetSettings::cmbLanguageChanged(int cmbIndex)
 {
-   Common::Language lang = this->ui->cmbLanguages->itemData(cmbIndex).value<Common::Language>();
+   const Common::Language& lang = this->ui->cmbLanguages->itemData(cmbIndex).value<Common::Language>();
    emit languageChanged(lang.filename);
    this->coreConnection->setCoreLanguage(lang.locale);
    SETTINGS.set("language", this->ui->cmbLanguages->itemData(this->ui->cmbLanguages->currentIndex()).value<Common::Language>().locale);
    SETTINGS.save();
+}
+
+void WidgetSettings::cmbStyleChanged(int cmbIndex)
+{
+   const QString& dirname = this->ui->cmbStyles->itemData(cmbIndex).toString();
+   emit styleChanged(dirname.isEmpty() ? QString() : QCoreApplication::applicationDirPath() % "/" % Common::Constants::STYLE_DIRECTORY % "/" % dirname % "/" % Common::Constants::STYLE_FILE_NAME);
+   SETTINGS.set("style", dirname);
+   SETTINGS.save();
+}
+
+void WidgetSettings::reloadCurrentStyle()
+{
+   const QString& dirname = this->ui->cmbStyles->itemData(this->ui->cmbStyles->currentIndex()).toString();
+   emit styleChanged(dirname.isEmpty() ? QString() : QCoreApplication::applicationDirPath() % "/" % Common::Constants::STYLE_DIRECTORY % "/" % dirname % "/" % Common::Constants::STYLE_FILE_NAME);
 }
 
 void WidgetSettings::changePassword()

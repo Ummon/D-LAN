@@ -23,6 +23,7 @@ using namespace GUI;
 #include <cmath>
 
 #include <QTabBar>
+#include <QStringBuilder>
 #include <QMdiSubWindow>
 #include <QPainter>
 #include <QMenu>
@@ -80,6 +81,7 @@ MainWindow::MainWindow(QSharedPointer<RCC::ICoreConnection> coreConnection, QWid
    widgetChat(0),
    widgetDownloads(0),
    widgetUploads(0),
+   customStyleLoaded(false),
    coreConnection(coreConnection),
    peerListModel(coreConnection),
    autoScroll(true),
@@ -88,6 +90,8 @@ MainWindow::MainWindow(QSharedPointer<RCC::ICoreConnection> coreConnection, QWid
    QApplication::instance()->installTranslator(&this->translator);
 
    this->ui->setupUi(this);
+
+   this->initialWindowFlags = this->windowFlags();
 
 #ifdef Q_OS_DARWIN
    this->ui->butSearch->setMaximumWidth(24);
@@ -153,6 +157,14 @@ MainWindow::MainWindow(QSharedPointer<RCC::ICoreConnection> coreConnection, QWid
    this->addWidgetSettings();
 
    this->setApplicationStateAsDisconnected(); // Initial state.
+
+   this->ui->grip->setVisible(false);
+   this->ui->grip->installEventFilter(this);
+   connect(this->ui->butClose, SIGNAL(clicked()), this, SLOT(close()));
+   connect(this->ui->butMinimize, SIGNAL(clicked()), this, SLOT(showMinimized()));
+   connect(this->ui->butMaximize, SIGNAL(clicked()), this, SLOT(maximize()));
+   if (!SETTINGS.get<QString>("style").isEmpty())
+      this->loadCustomStyle(QCoreApplication::applicationDirPath() % "/" % Common::Constants::STYLE_DIRECTORY % "/" % SETTINGS.get<QString>("style") % "/" % Common::Constants::STYLE_FILE_NAME);
 
    this->restoreWindowsSettings();
 
@@ -279,11 +291,14 @@ void MainWindow::displayContextMenuPeers(const QPoint& point)
    QAction* sortBySharingAmountAction = menu.addAction(tr("Sort by the amount of sharing"), this, SLOT(sortPeersBySharingAmount()));
    QAction* sortByNickAction = menu.addAction(tr("Sort alphabetically"), this, SLOT(sortPeersByNick()));
 
+   QActionGroup sortGroup(this);
+   sortGroup.setExclusive(true);
    sortBySharingAmountAction->setCheckable(true);
    sortBySharingAmountAction->setChecked(this->peerListModel.getSortType() == Protos::GUI::Settings::BY_SHARING_AMOUNT);
-
    sortByNickAction->setCheckable(true);
    sortByNickAction->setChecked(this->peerListModel.getSortType() == Protos::GUI::Settings::BY_NICK);
+   sortGroup.addAction(sortBySharingAmountAction);
+   sortGroup.addAction(sortByNickAction);
 
    menu.addSeparator();
 
@@ -464,6 +479,62 @@ void MainWindow::newLogMessage()
       this->ui->tblLog->scrollToBottom();
 }
 
+void MainWindow::loadCustomStyle(const QString& filepath)
+{
+   QApplication* app = dynamic_cast<QApplication*>(QApplication::instance());
+
+   if (!filepath.isNull())
+   {
+      QFile file(filepath);
+      if (file.open(QIODevice::ReadOnly))
+      {
+         this->customStyleLoaded = true;
+         app->setStyleSheet(QString::fromUtf8(file.readAll()));
+         this->ui->grip->setVisible(true);
+
+         static const Qt::WindowFlags FRAMELESS_FLAGS = Qt::Window | Qt::FramelessWindowHint | Qt::WindowSystemMenuHint;
+         if (this->windowFlags() != FRAMELESS_FLAGS)
+         {
+            this->setWindowFlags(FRAMELESS_FLAGS);
+            this->resizeEvent(0);
+            this->show();
+         }
+         return;
+      }
+      else
+      {
+         SETTINGS.set("style", QString(""));
+         SETTINGS.save();
+      }
+   }
+
+   // Set the default style.
+   this->customStyleLoaded = false;
+   app->setStyleSheet(QString());
+   this->ui->grip->setVisible(false);
+   this->setMask(QRegion());
+
+   if (this->windowFlags() != this->initialWindowFlags)
+   {
+      this->setWindowFlags(this->initialWindowFlags);
+      this->show();
+   }
+}
+
+void MainWindow::maximize()
+{
+   L_DEBU(Common::Global::getQObjectHierarchy(this));
+
+   if (this->windowState() & Qt::WindowMaximized)
+   {
+      this->showNormal();
+   }
+   else
+   {
+      this->showMaximized();
+   }
+}
+
 void MainWindow::keyPressEvent(QKeyEvent* event)
 {
    // CTRL.
@@ -510,14 +581,12 @@ void MainWindow::closeEvent(QCloseEvent* event)
    delete this;
 }
 
-void MainWindow::search(bool ownFiles)
+void MainWindow::changeEvent(QEvent* event)
 {
-   this->ui->txtSearch->setText(this->ui->txtSearch->text().trimmed());
-
-   if (!this->ui->txtSearch->text().isEmpty())
-   {
-      this->addWidgetSearch(this->ui->txtSearch->text(), ownFiles);
-   }
+   if (event->type() == QEvent::LanguageChange)
+      this->ui->retranslateUi(this);
+   else
+      QWidget::changeEvent(event);
 }
 
 bool MainWindow::eventFilter(QObject* obj, QEvent* event)
@@ -526,6 +595,38 @@ bool MainWindow::eventFilter(QObject* obj, QEvent* event)
    {
       this->keyPressEvent(static_cast<QKeyEvent*>(event));
       return event->isAccepted();
+   }
+   else if (this->customStyleLoaded && obj == this->ui->grip)
+   {
+      if (event->type() == QEvent::MouseButtonPress && static_cast<QMouseEvent*>(event)->button() == Qt::LeftButton)
+      {
+         this->dragPosition = static_cast<QMouseEvent*>(event)->globalPos() - frameGeometry().topLeft();
+         return event->isAccepted();
+      }
+      else if (event->type() == QEvent::MouseMove && static_cast<QMouseEvent*>(event)->buttons() & Qt::LeftButton)
+      {
+         move(static_cast<QMouseEvent*>(event)->globalPos() - this->dragPosition);
+         return event->isAccepted();
+      }
+      else if (obj == this->ui->grip)
+      {
+         if (event->type() == QEvent::Resize)
+         {
+            const QRegion maskedRegion(0, 0, this->ui->grip->width(), this->ui->grip->width());
+
+            if (this->isMaximized())
+               this->ui->grip->setMask(maskedRegion);
+            else
+            {
+               const QRegion cornerTopRight = QRegion(this->ui->grip->width() - WINDOW_BORDER_RADIUS, 0, WINDOW_BORDER_RADIUS, WINDOW_BORDER_RADIUS).subtracted(QRegion(this->ui->grip->width() - 2 * WINDOW_BORDER_RADIUS, 0, 2 * WINDOW_BORDER_RADIUS, 2 * WINDOW_BORDER_RADIUS, QRegion::Ellipse));
+               this->ui->grip->setMask(maskedRegion.subtracted(cornerTopRight));
+            }
+         }
+         else if (event->type() == QEvent::MouseButtonDblClick && static_cast<QMouseEvent*>(event)->button() == Qt::LeftButton)
+         {
+            this->maximize();
+         }
+      }
    }
    else if // Prohibits the user to close tab with the middle button.
    (
@@ -540,12 +641,36 @@ bool MainWindow::eventFilter(QObject* obj, QEvent* event)
    return QMainWindow::eventFilter(obj, event);
 }
 
-void MainWindow::changeEvent(QEvent* event)
+void MainWindow::resizeEvent(QResizeEvent* event)
 {
-   if (event->type() == QEvent::LanguageChange)
-      this->ui->retranslateUi(this);
-   else
-      QWidget::changeEvent(event);
+   QMainWindow::resizeEvent(event);
+
+   if (this->customStyleLoaded)
+   {
+      const QRegion maskedRegion(0, 0, this->width(), this->height());
+
+      if (this->isMaximized())
+         this->setMask(maskedRegion);
+      else
+      {
+         const QRegion cornerTopLeft = QRegion(0, 0, WINDOW_BORDER_RADIUS, WINDOW_BORDER_RADIUS).subtracted(QRegion(0, 0, 2 * WINDOW_BORDER_RADIUS, 2 * WINDOW_BORDER_RADIUS, QRegion::Ellipse));
+         const QRegion cornerTopRight = QRegion(this->width() - WINDOW_BORDER_RADIUS, 0, WINDOW_BORDER_RADIUS, WINDOW_BORDER_RADIUS).subtracted(QRegion(this->width() - 2 * WINDOW_BORDER_RADIUS, 0, 2 * WINDOW_BORDER_RADIUS, 2 * WINDOW_BORDER_RADIUS, QRegion::Ellipse));
+         const QRegion cornerBottomLeft = QRegion(0, this->height() - WINDOW_BORDER_RADIUS, WINDOW_BORDER_RADIUS, WINDOW_BORDER_RADIUS).subtracted(QRegion(0, this->height() - 2 * WINDOW_BORDER_RADIUS, 2 * WINDOW_BORDER_RADIUS, 2 * WINDOW_BORDER_RADIUS, QRegion::Ellipse));
+         const QRegion cornerBottomRight = QRegion(this->width() - WINDOW_BORDER_RADIUS, this->height() - WINDOW_BORDER_RADIUS, WINDOW_BORDER_RADIUS, WINDOW_BORDER_RADIUS).subtracted(QRegion(this->width() - 2 * WINDOW_BORDER_RADIUS, this->height() - 2 * WINDOW_BORDER_RADIUS, 2 * WINDOW_BORDER_RADIUS, 2 * WINDOW_BORDER_RADIUS, QRegion::Ellipse));
+
+         this->setMask(maskedRegion.subtracted(cornerTopLeft).subtracted(cornerTopRight).subtracted(cornerBottomLeft).subtracted(cornerBottomRight));
+      }
+   }
+}
+
+void MainWindow::search(bool ownFiles)
+{
+   this->ui->txtSearch->setText(this->ui->txtSearch->text().trimmed());
+
+   if (!this->ui->txtSearch->text().isEmpty())
+   {
+      this->addWidgetSearch(this->ui->txtSearch->text(), ownFiles);
+   }
 }
 
 void MainWindow::setApplicationStateAsConnected()
@@ -661,6 +786,7 @@ void MainWindow::addWidgetSettings()
 {
    this->widgetSettings = new WidgetSettings(this->coreConnection, this->sharedDirsModel, this);
    connect(this->widgetSettings, SIGNAL(languageChanged(QString)), this, SLOT(loadLanguage(QString)));
+   connect(this->widgetSettings, SIGNAL(styleChanged(QString)), this, SLOT(loadCustomStyle(QString)));
    this->ui->mdiArea->addSubWindow(this->widgetSettings, Qt::CustomizeWindowHint);
    this->mdiAreaTabBar->setTabData(this->mdiAreaTabBar->count() - 1, Protos::GUI::Settings_Window_WIN_SETTINGS);
    this->widgetSettings->setWindowState(Qt::WindowMaximized);

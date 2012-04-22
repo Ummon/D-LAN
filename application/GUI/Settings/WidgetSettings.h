@@ -60,9 +60,11 @@ namespace GUI
 
    signals:
       void languageChanged(const QString& filename);
+      void styleChanged(const QString& filename);
 
    private:
       void fillComboBoxLanguages();
+      void fillComboBoxStyles();
 
       void connectAllAddressButtons();
       void disconnectAllAddressButtons();
@@ -79,6 +81,9 @@ namespace GUI
       void saveCoreSettings();
 
       void cmbLanguageChanged(int cmbIndex);
+
+      void cmbStyleChanged(int cmbIndex);
+      void reloadCurrentStyle();
 
       void changePassword();
       void resetPassword();

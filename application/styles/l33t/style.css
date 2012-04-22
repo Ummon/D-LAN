@@ -1,0 +1,389 @@
+  
+#grip {
+   background-color : qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #182430, stop:1 #6596c9);
+   background-image: url(styles/l33t/title.png);
+   background-repeat: none;
+   background-position: center left;   
+}
+
+#grip #butMinimize,
+#grip #butClose,
+#grip #butMaximize {
+   background-repeat: none;
+   background-position: center;
+}
+
+#grip #butMinimize {
+   background-image: url(styles/l33t/minimize.png)
+}
+
+#grip #butClose {
+   background-image: url(styles/l33t/close.png)
+}
+
+#grip #butMaximize {
+   background-image: url(styles/l33t/maximize.png)
+}
+
+*,
+QHeaderView::section,
+QToolTip,
+QMenu,
+QMainWindow::separator {
+   background-color: #182430;
+   alternate-background-color: #213141;
+   selection-background-color: #19528a;
+}
+
+*,
+QAbstractItemView::item:selected:!active {   
+   color: #efefef;
+}
+
+QLabel {
+   background-color: transparent;
+}
+
+QPushButton,
+QLineEdit,
+QComboBox,
+QTabWidget::pane,
+QTabBar::tab,
+QProgressBar,
+QScrollBar,
+QScrollBar::add-line,
+QScrollBar::sub-line,
+QToolTip,
+QMenu,
+QAbstractItemView {
+   border: 1px solid #4e749b;
+}
+
+QPushButton,
+QTabBar::tab {
+   margin: 2px;
+   padding: 3px;
+   background-color: #182430;
+}
+
+QPushButton {
+   border-radius: 5px;
+}
+
+QPushButton:hover,
+QTabBar::tab:hover,
+QMenu::item:selected,
+QTreeView::item:hover,
+QMainWindow::separator:hover,
+QDockWidget::close-button:hover, QDockWidget::float-button:hover {
+   background-color: #4e749b;
+}
+
+QPushButton:pressed,
+QTabBar::tab:pressed,
+QTabBar::tab:selected {
+   background-color: #7697ba;
+}
+
+QPushButton:disabled,
+QLineEdit:disabled {
+   color: #999999;
+   border: 1px solid #657585;
+}
+
+QPushButton:flat {
+   border: none;
+}
+
+QComboBox,
+QLineEdit,
+QScrollBar::handle,
+QScrollBar::add-line,
+QScrollBar::sub-line,
+QMenu::separator,
+QMenu:selected,
+QProgressBar::chunk,
+QDockWidget::title {
+   background-color: #37526e;
+}
+
+QComboBox:hover, QComboBox:focus, QComboBox:open,
+QLineEdit:hover, QLineEdit:focus,
+QScrollBar::handle:hover,
+QScrollBar::add-line:hover,
+QScrollBar::sub-line:hover,
+QRadioButton:hover,
+QCheckBox:hover {
+   background-color: #4b7096;
+}
+
+QGroupBox {    
+   font-style: italic;
+   border: 1px solid #283b4f;
+   border-radius: 5px;
+   margin-top: 3ex;
+}
+
+QGroupBox::title {
+   subcontrol-origin: margin;
+   left: 10px;
+   padding: 0 3px;
+   subcontrol-position: top left;
+}
+  
+QComboBox::drop-down {
+   subcontrol-origin: padding;
+   subcontrol-position: top right;
+   border: 1px solid #283b4f;
+ }
+ 
+QComboBox::down-arrow {
+   image: url(styles/l33t/arrow_down.png);
+}
+
+QTabBar::tab {
+   margin-bottom: -1px;
+}
+
+QTabBar::tab > QWidget {
+   background-color: transparent;
+}
+
+QHeaderView {
+   border-top: 0px;
+   border-left: 0px;
+   border-right: 0px;
+}
+
+QHeaderView::section {
+   border: none;
+   padding: 3px;
+   background-color: #4e749b; 
+}
+
+QHeaderView::section:!first {
+   border-left: 1px solid white;
+}
+
+QScrollArea {
+   border: none;
+}
+
+QAbstractItemView {
+  show-decoration-selected: 0;
+}
+
+QAbstractItemView::item:selected {
+   background-color: #19528a;   
+}
+
+QTreeView::branch:has-children:!has-siblings:closed,
+QTreeView::branch:closed:has-children:has-siblings {
+   border-image: none;
+   image: url(styles/l33t/treeview_arrow_closed.png);
+}
+
+QTreeView::branch:has-children:!has-siblings:closed:hover,
+QTreeView::branch:closed:has-children:has-siblings:hover {
+   border-image: none;
+   image: url(styles/l33t/treeview_arrow_closed_highlight.png);
+}
+
+QTreeView::branch:open:has-children:!has-siblings,
+QTreeView::branch:open:has-children:has-siblings  {
+   border-image: none;
+   image: url(styles/l33t/treeview_arrow_opened.png);
+}
+
+QTreeView::branch:open:has-children:!has-siblings:hover,
+QTreeView::branch:open:has-children:has-siblings:hover {
+   border-image: none;
+   image: url(styles/l33t/treeview_arrow_opened_highlight.png);
+}
+
+QScrollBar::add-page, QScrollBar::sub-page {
+   background: none;
+}
+
+QScrollBar:vertical {
+   width: 14px;
+   margin: 16px 0px 16px 0px;
+}
+
+QScrollBar::handle:vertical {
+   min-height: 20px;
+}
+
+QScrollBar::sub-line:vertical {
+   border-right: 0px;
+   border-top: 0px;
+   height: 16px;
+   subcontrol-position: top;
+   subcontrol-origin: margin;
+} 
+ 
+QScrollBar::add-line:vertical {
+   border-right: 0px;
+   border-bottom: 0px;
+   height: 16px;
+   subcontrol-position: bottom;
+   subcontrol-origin: margin;
+}
+ 
+QScrollBar::up-arrow:vertical {
+   background-image: url(styles/l33t/scrollbar_arrow_top.png);
+   background-repeat: no-repeat;
+   background-position: center;
+}
+
+QScrollBar::down-arrow:vertical {
+   background-image: url(styles/l33t/scrollbar_arrow_bot.png);
+   background-repeat: no-repeat;
+   background-position: center;
+}
+
+QScrollBar:vertical {
+   border-right: 0px;
+}
+
+QScrollBar:horizontal {
+   height: 14px;
+   margin: 0px 16px 0px 16px;
+}
+
+QScrollBar::handle:horizontal {
+   min-width: 20px;
+}
+
+QScrollBar::sub-line:horizontal {
+   border-bottom: 0px;
+   border-left: 0px;
+   width: 16px;
+   subcontrol-position: left;
+   subcontrol-origin: margin;
+} 
+ 
+QScrollBar::add-line:horizontal {
+   border-bottom: 0px;
+   border-right: 0px;
+   width: 16px;
+   subcontrol-position: right;
+   subcontrol-origin: margin;
+}
+ 
+QScrollBar::left-arrow:horizontal {
+   background-image: url(styles/l33t/scrollbar_arrow_left.png);
+   background-repeat: no-repeat;
+   background-position: center;
+}
+
+QScrollBar::right-arrow:horizontal {
+   background-image: url(styles/l33t/scrollbar_arrow_right.png);
+   background-repeat: no-repeat;
+   background-position: center;
+}
+
+QScrollBar:horizontal {
+   border-bottom: 0px;
+}
+
+QSizeGrip {
+   background-image: url(styles/l33t/grip.png);
+   width: 16px;
+   height: 16px;
+}
+
+QMenu {
+   padding-top: 5px;
+   padding-bottom: 5px;
+}
+
+QMenu::item {
+   background-color: transparent;
+   padding: 3px 10px 3px 24px;
+}
+
+QMenu::icon {
+   margin-left: 5px;
+}
+
+QMenu::separator  {
+   height: 1px;
+   margin-top: 5px;
+   margin-bottom: 5px;
+}
+
+QMenu::indicator {
+   width: 16px;
+   height: 16px;
+   margin-left: 3px;
+}
+
+QMenu::indicator:non-exclusive:checked,
+QCheckBox::indicator:checked {
+   image: url(styles/l33t/checkbox_checked.png);
+} 
+
+QMenu::indicator:non-exclusive:unchecked,
+QCheckBox::indicator:unchecked {
+   image: url(styles/l33t/checkbox_unchecked.png);
+} 
+
+QMenu::indicator:exclusive:checked,
+QRadioButton::indicator::checked {
+   image: url(styles/l33t/radiobox_checked.png);
+} 
+
+QMenu::indicator:exclusive:unchecked,
+QRadioButton::indicator::unchecked {
+   image: url(styles/l33t/radiobox_unchecked.png);
+} 
+
+QCheckBox {
+   padding: 3px;
+   background-color: transparent;
+}
+
+QRadioButton {
+   padding: 3px;
+}
+
+/* Only for the elements in the download filter combo box. */
+#checkBoxListItem {
+   padding: 0px;
+}
+
+QMainWindow::separator {
+   width: 4px;
+   height: 4px;
+}   
+
+QDockWidget {   
+   titlebar-close-icon: url(styles/l33t/dockwidget_close.png);
+   titlebar-normal-icon: url(styles/l33t/dockwidget_min.png);
+}
+
+QDockWidget::close-button, QDockWidget::float-button {
+  padding: 0px;
+  border: 0px;
+  margin: 3px;
+  icon-size: 12px;
+}
+ 
+QDockWidget::close-button:pressed, QDockWidget::float-button:pressed {
+  padding: 1px -1px -1px 1px;
+}
+
+QDockWidget::title {
+   padding-left: -50px; /* -50 is to hide the text, you can put 5 to show it */
+   padding-right: -20px;
+   padding-top: 3px;
+}
+
+QTabBar {
+   background-color: transparent;
+}
+
+QStatusBar::item {
+   border: none;
+}

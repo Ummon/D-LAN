@@ -13,7 +13,19 @@
     <name>DM::ChunkDownload</name>
     <message>
         <source>Corrupted data received for the file &quot;%1&quot; from peer %2. Peer banned for %3 ms</source>
-        <translation>Données corrompues reçues dans le fichier &quot;%1&quot; du pair %2. Le pair est banni durant %3 ms</translation>
+        <translation type="obsolete">Données corrompues reçues dans le fichier &quot;%1&quot; du pair %2. Le pair est banni durant %3 ms</translation>
+    </message>
+    <message>
+        <source>Has sent corrupted data</source>
+        <extracomment>A reason why the user has been banned</extracomment>
+        <translation type="obsolete">A envoyé des données corrompues</translation>
+    </message>
+</context>
+<context>
+    <name>DM::ChunkDownloader</name>
+    <message>
+        <source>Corrupted data received for the file &quot;%1&quot; from peer %2. Peer banned for %3 ms</source>
+        <translation>Données corrompues reçues pour le fichier &quot;%1&quot; du pair %2. Le pair est banni durant %3 ms</translation>
     </message>
     <message>
         <source>Has sent corrupted data</source>

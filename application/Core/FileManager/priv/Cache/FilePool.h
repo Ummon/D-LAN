@@ -49,7 +49,6 @@ namespace FM
    private:
       struct OpenedFile
       {
-         OpenedFile(QFile* file, QIODevice::OpenMode mode) : file(file), mode(mode) {}
          QFile* file;
          QIODevice::OpenMode mode;
          QTime releasedTime; // Null if not released.
