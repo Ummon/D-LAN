@@ -1,6 +1,6 @@
 Put here the released setup. The format must be (EBNF) :
 
-format = "D-LAN-", version, version tag, "-", year, "-", month, "-", day, "_", hour, "-", minute, "-Setup.exe" ;
+format = "D-LAN-", version, version tag, "-", year, "-", month, "-", day, "_", hour, "-", minute, ".dmg" ;
 version = digit, ".", digit, ".", digit ;
 version tag = { alphabetic character } ;
 year = digit, digit, digit, digit ;
