@@ -209,16 +209,21 @@ p {
          width: 300px;
          background-color: rgba(255, 255, 255, $opacity2);
          margin: 15px 15px 0px 15px;
-         background-image: url("img/download_arrow.png");
+         &.exe {
+            background-image: url("img/download_for_windows.png");
+         }
+         &.dmg { 
+            background-image: url("img/download_for_mac.png");
+         }
          background-repeat: no-repeat;
-         background-position: 9px 7px;
+         background-position: 12px 14px;
          a {
             font-weight: normal;
             text-shadow: none;
             height: 56px; 
             color: $red-dark;
             display: block;
-            padding: 3px 10px 3px 70px; 
+            padding: 3px 10px 3px 60px; 
             font-size: 11px; 
             &:hover { color: lighten($red-dark, 20%); }
             em {

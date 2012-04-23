@@ -115,20 +115,20 @@ translate(en, faq, q3) -> "D-LAN slows down my computer when hashing, what's tha
 translate(fr, faq, q3) -> "D-LAN ralentit mon ordinateur lors du calcul des empreintes, qu'est ce que c'est et pourquoi est-ce nécessaire?";
 
 translate(en, faq, a3) ->
-   "";
+   "hashes are necessary to identify all the parts of a file. It allows the multi-source downloading and the data integrity verification. During the hashing process only one core is used, almost all sold computer today are multi-core. All the sharing files has to be read once, so it can slow a bit the disk access.";
 translate(fr, faq, a3) ->
    "Les empreintes servent à identifier les données des fichiers. Cela permet de télécharger un fichier chez plusieurs pairs simultanément. "
    "Le calcul des empreintes n'utilise pas plus d'un coeur du processeur (la plus part des processeurs actuels sont multi-coeurs) "
    "mais doit lire toutes les données partagées ce qui peut ralentir un peu l'accès au disque dur.";
 
-translat(en, faq, q4) ->
-   "";
-translat(fr, faq, q4) ->
-   "D-LAN utilise trop de ressource, comment puis-je faire pour réduire sa consommation.";
+translate(en, faq, q4) ->
+   "D-LAN uses too much ressources, how can I improve that?";
+translate(fr, faq, q4) ->
+   "D-LAN utilise trop de ressource, comment puis-je faire pour réduire sa consommation?";
 
-translat(en, faq, a4) ->
-   "";
-translat(fr, faq, a4) ->
+translate(en, faq, a4) ->
+   "If D-LAN is currently computing the hashes, you have to wait the end of this operation, see the last question. Otherwise it's possible to close the main D-LAN window, the GUI will be disconnected from the core and take less ressources.";
+translate(fr, faq, a4) ->
    "Si D-LAN est en train de calculer les empreintes, il faut attendre que l'opération soit terminée, voir la question précédente. "
    "Sinon il est possible de fermer la fenêtre de D-LAN, l'interface est alors déconnectée du coeur et consomme moins de ressources.";
 

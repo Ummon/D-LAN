@@ -10,7 +10,7 @@
                   {'div', [{class, "answer"}], tr(faq, list_to_atom("a" ++ integer_to_list(N)), A)}
                ]}
             end,
-            lists:seq(1, 5)
+            lists:seq(1, 7)
          )
       }.
 </erl>
