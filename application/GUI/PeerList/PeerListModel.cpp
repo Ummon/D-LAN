@@ -162,7 +162,8 @@ QVariant PeerListModel::data(const QModelIndex& index, int role) const
    case Qt::ToolTipRole:
       {
          const QString coreVersion = this->orderedPeers[index.row()]->coreVersion;
-         QString toolTip;
+         QString toolTip = this->orderedPeers[index.row()]->nick;
+         toolTip.append('\n');
          if (!coreVersion.isEmpty())
             toolTip += tr("Version %1\n").arg(coreVersion);
          toolTip +=
