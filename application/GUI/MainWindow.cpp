@@ -81,6 +81,7 @@ MainWindow::MainWindow(QSharedPointer<RCC::ICoreConnection> coreConnection, QWid
    widgetChat(0),
    widgetDownloads(0),
    widgetUploads(0),
+   downloadsBusyIndicator(0),
    customStyleLoaded(false),
    coreConnection(coreConnection),
    peerListModel(coreConnection),
@@ -172,6 +173,7 @@ MainWindow::MainWindow(QSharedPointer<RCC::ICoreConnection> coreConnection, QWid
 
    this->loadLanguage(this->widgetSettings->getCurrentLanguageFilename());
 
+   connect(this->coreConnection.data(), SIGNAL(newState(const Protos::GUI::State&)), this, SLOT(newState(const Protos::GUI::State&)));
    connect(this->coreConnection.data(), SIGNAL(connectingError(RCC::ICoreConnection::ConnectionErrorCode)), this, SLOT(coreConnectionError(RCC::ICoreConnection::ConnectionErrorCode)));
    connect(this->coreConnection.data(), SIGNAL(connected()), this, SLOT(coreConnected()));
    connect(this->coreConnection.data(), SIGNAL(disconnected(bool)), this, SLOT(coreDisconnected(bool)));
@@ -191,11 +193,21 @@ MainWindow::~MainWindow()
    delete this->ui;
 }
 
+void MainWindow::newState(const Protos::GUI::State& state)
+{
+   if (!this->downloadsBusyIndicator)
+      return;
+
+   if (state.stats().cache_status() == Protos::GUI::State::Stats::LOADING_CACHE_IN_PROGRESS)
+      this->downloadsBusyIndicator->show();
+   else
+      this->downloadsBusyIndicator->hide();
+}
+
 void MainWindow::loadLanguage(const QString& filename)
 {
    this->translator.load(filename, QCoreApplication::applicationDirPath() + "/" + Common::Constants::LANGUAGE_DIRECTORY);
 }
-
 
 void MainWindow::coreConnectionError(RCC::ICoreConnection::ConnectionErrorCode errorCode)
 {
@@ -254,6 +266,9 @@ void MainWindow::coreDisconnected(bool forced)
       msgBox.setStandardButtons(QMessageBox::Ok);
       msgBox.exec();
    }
+
+   if (this->downloadsBusyIndicator)
+      this->downloadsBusyIndicator->hide();
 }
 
 void MainWindow::tabMoved(int, int)
@@ -574,7 +589,11 @@ void MainWindow::closeEvent(QCloseEvent* event)
 void MainWindow::changeEvent(QEvent* event)
 {
    if (event->type() == QEvent::LanguageChange)
+   {
+      if (this->downloadsBusyIndicator)
+         this->downloadsBusyIndicator->setToolTip(this->getBusyIndicatorToolTip());
       this->ui->retranslateUi(this);
+   }
    else
       QWidget::changeEvent(event);
 }
@@ -750,6 +769,11 @@ void MainWindow::restoreColorizedPeers()
       this->peerListModel.colorize(highlightedPeers.peer(i).id().hash(), QColor(highlightedPeers.peer(i).color()));
 }
 
+QString MainWindow::getBusyIndicatorToolTip() const
+{
+   return tr("Waiting that loading the cache is finished");
+}
+
 /**
   * Remove and delete a sub window from the MDI area.
   */
@@ -820,6 +844,10 @@ void MainWindow::addWidgetDownloads()
    this->ui->mdiArea->addSubWindow(this->widgetDownloads, Qt::CustomizeWindowHint);
    this->mdiAreaTabBar->setTabData(this->mdiAreaTabBar->count() - 1, Protos::GUI::Settings_Window_WIN_DOWNLOAD);
    this->widgetDownloads->setWindowState(Qt::WindowMaximized);
+
+   this->downloadsBusyIndicator = new BusyIndicator();
+   this->downloadsBusyIndicator->setToolTip(this->getBusyIndicatorToolTip());
+   this->mdiAreaTabBar->setTabButton(this->mdiAreaTabBar->count() - 1, QTabBar::RightSide, this->downloadsBusyIndicator);
 }
 
 void MainWindow::removeWidgetDownloads()
@@ -828,6 +856,7 @@ void MainWindow::removeWidgetDownloads()
    {
       this->removeMdiSubWindow(dynamic_cast<QMdiSubWindow*>(this->widgetDownloads->parent()));
       this->widgetDownloads = 0;
+      this->downloadsBusyIndicator = 0;
    }
 }
 

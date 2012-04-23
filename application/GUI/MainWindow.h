@@ -43,6 +43,7 @@
 #include <Uploads/WidgetUploads.h>
 #include <Browse/WidgetBrowse.h>
 #include <Search/WidgetSearch.h>
+#include <BusyIndicator.h>
 
 
 Q_DECLARE_METATYPE(QHostAddress)
@@ -72,6 +73,7 @@ namespace GUI
       ~MainWindow();
 
    private slots:
+      void newState(const Protos::GUI::State& state);
       void loadLanguage(const QString& filename);
 
       void coreConnectionError(RCC::ICoreConnection::ConnectionErrorCode errorCode);
@@ -120,6 +122,8 @@ namespace GUI
 
       void restoreColorizedPeers();
 
+      QString getBusyIndicatorToolTip() const;
+
       void removeMdiSubWindow(QMdiSubWindow* mdiSubWindow);
 
       void addWidgetSettings();
@@ -151,6 +155,11 @@ namespace GUI
       WidgetUploads* widgetUploads;
       QList<WidgetBrowse*> widgetsBrowse;
       QList<WidgetSearch*> widgetsSearch;
+
+      // This widget is shown on the tab of the downloads page. It is visible only after D-LAN has started and during the loading
+      // of the cache (before the downloads are loaded).
+      // This widget is owned by the tab bar of the 'QMdiArea'.
+      BusyIndicator* downloadsBusyIndicator;
 
       QTranslator translator;
 

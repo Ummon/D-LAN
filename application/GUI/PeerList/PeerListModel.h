@@ -36,6 +36,8 @@ namespace GUI
    class PeerListModel : public QAbstractTableModel
    {
       Q_OBJECT
+      class Peer;
+
    public:
       PeerListModel(QSharedPointer<RCC::ICoreConnection> coreConnection);
       ~PeerListModel();
@@ -57,11 +59,15 @@ namespace GUI
       void colorize(const QModelIndex& index, const QColor& color);
       void uncolorize(const QModelIndex& index);
 
+      /**
+        * May be encapsulated in a 'QVariant' returned by 'data(..)'.
+        */
       struct TransferInformation
       {
          quint32 downloadRate;
          quint32 uploadRate;
          bool isDownloadingOurData;
+
          bool operator==(const TransferInformation& ti) const { return ti.downloadRate == this->downloadRate && ti.uploadRate == this->uploadRate && ti.isDownloadingOurData == this->isDownloadingOurData; }
          bool operator!=(const TransferInformation& ti) const { return !(ti == *this); }
       };
@@ -80,24 +86,6 @@ namespace GUI
       void sort();
 
       QSharedPointer<RCC::ICoreConnection> coreConnection;
-
-      struct Peer
-      {
-         Peer(const Common::Hash& peerID, const QString& nick, const QString& coreVersion, quint64 sharingAmount, const QHostAddress& ip, TransferInformation transferInformation) :
-            peerID(peerID), nick(nick), coreVersion(coreVersion), sharingAmount(sharingAmount), ip(ip), transferInformation(transferInformation) {}
-
-         bool operator==(const Peer& p) const { return this->peerID == p.peerID; }
-         bool operator!=(const Peer& p) const { return this->peerID != p.peerID; }
-         static bool sortCompByNick(const Peer* p1, const Peer* p2);
-         static bool sortCompBySharingAmount(const Peer* p1, const Peer* p2);
-
-         Common::Hash peerID;
-         QString nick;
-         QString coreVersion;
-         quint64 sharingAmount;
-         QHostAddress ip;
-         TransferInformation transferInformation;
-      };
 
       QList<Peer*> orderedPeers;
       QHash<Common::Hash, Peer*> indexedPeers; // Peers indexed by their ID.

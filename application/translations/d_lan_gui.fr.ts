@@ -71,7 +71,7 @@
 <context>
     <name>GUI::D_LAN_GUI</name>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="+116"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="+117"/>
         <source>Show the GUI</source>
         <translation>Afficher le GUI</translation>
     </message>
@@ -241,7 +241,7 @@
 <context>
     <name>GUI::MainWindow</name>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="+205"/>
+        <location filename="../GUI/MainWindow.cpp" line="+218"/>
         <source>Already connected to this address</source>
         <translation>Déjà connecté à cette addresse</translation>
     </message>
@@ -296,7 +296,7 @@
         <translation>Adresse du core:</translation>
     </message>
     <message>
-        <location line="+31"/>
+        <location line="+34"/>
         <source>Take control</source>
         <translation>Prendre le contrôle</translation>
     </message>
@@ -311,7 +311,7 @@
         <translation>Trier par ordre alphabétique</translation>
     </message>
     <message>
-        <location line="+10"/>
+        <location line="+13"/>
         <source>Colorize in red</source>
         <translation>Colorier en rouge</translation>
     </message>
@@ -341,7 +341,12 @@
         <translation>Entrez le mot de passe</translation>
     </message>
     <message>
-        <location line="-97"/>
+        <location line="+419"/>
+        <source>Waiting that loading the cache is finished</source>
+        <translation>En attente que le cache soit chargé</translation>
+    </message>
+    <message>
+        <location line="-522"/>
         <source>Connected to the core</source>
         <translation>Connecté au core</translation>
     </message>
@@ -356,7 +361,7 @@
         <translation>La connexion au core a été perdu</translation>
     </message>
     <message>
-        <location line="+25"/>
+        <location line="+28"/>
         <source>Browse</source>
         <translation>Explorer</translation>
     </message>
@@ -368,7 +373,7 @@
         <translation type="obsolete">Version %1</translation>
     </message>
     <message>
-        <location filename="../GUI/PeerList/PeerListModel.cpp" line="+149"/>
+        <location filename="../GUI/PeerList/PeerListModel.cpp" line="+167"/>
         <source>Version %1
 </source>
         <translation>Version %1
@@ -388,7 +393,7 @@
 <context>
     <name>GUI::SearchMenu</name>
     <message>
-        <location filename="../GUI/Search/WidgetSearch.cpp" line="+161"/>
+        <location filename="../GUI/Search/WidgetSearch.cpp" line="+158"/>
         <source>Browse</source>
         <translation>Explorer</translation>
     </message>
@@ -659,13 +664,13 @@
     <name>MainWindow</name>
     <message>
         <location filename="../GUI/MainWindow.ui" line="+14"/>
-        <location filename="../GUI/.tmp/debug/ui_MainWindow.h" line="+222"/>
+        <location filename="../GUI/.tmp/debug/ui_MainWindow.h" line="+229"/>
         <source>D-LAN</source>
         <translation>D-LAN</translation>
     </message>
     <message>
-        <location line="+100"/>
-        <location filename="../GUI/.tmp/debug/ui_MainWindow.h" line="+4"/>
+        <location line="+111"/>
+        <location filename="../GUI/.tmp/debug/ui_MainWindow.h" line="+5"/>
         <source>Log</source>
         <translation>Log</translation>
     </message>
@@ -848,7 +853,7 @@
     <name>WidgetSettings</name>
     <message>
         <location filename="../GUI/Settings/WidgetSettings.ui" line="+14"/>
-        <location filename="../GUI/.tmp/debug/ui_WidgetSettings.h" line="+411"/>
+        <location filename="../GUI/.tmp/debug/ui_WidgetSettings.h" line="+416"/>
         <source>Settings</source>
         <translation>Paramètres</translation>
     </message>
@@ -967,7 +972,7 @@
         <translation>Mot de passe</translation>
     </message>
     <message>
-        <location line="+60"/>
+        <location line="+66"/>
         <location filename="../GUI/.tmp/debug/ui_WidgetSettings.h" line="+2"/>
         <source>Change the password</source>
         <translation>Changer le mot de passe</translation>
@@ -985,7 +990,7 @@
         <translation>Se déconnecter</translation>
     </message>
     <message>
-        <location line="-148"/>
+        <location line="-154"/>
         <location filename="../GUI/.tmp/debug/ui_WidgetSettings.h" line="-11"/>
         <source>When activated all received data will be verified against their hashes.  It may consume CPU resources.</source>
         <translation>Lorsque activé toutes les données reçues sont vérifiées par rapport à leur empreinte. Consomme un peu de puissance CPU.</translation>

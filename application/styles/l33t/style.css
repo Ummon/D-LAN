@@ -387,3 +387,7 @@ QTabBar {
 QStatusBar::item {
    border: none;
 }
+
+GUI--BusyIndicator {
+   selection-background-color: #a8bed4;
+}

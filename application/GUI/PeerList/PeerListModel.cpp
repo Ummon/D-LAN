@@ -33,6 +33,24 @@ using namespace GUI;
   * The list can be order by the amout of sharing or in an alphabetic way, see the method 'setSortType(..)'.
   */
 
+struct PeerListModel::Peer
+{
+   Peer(const Common::Hash& peerID, const QString& nick, const QString& coreVersion, quint64 sharingAmount, const QHostAddress& ip, TransferInformation transferInformation) :
+      peerID(peerID), nick(nick), coreVersion(coreVersion), sharingAmount(sharingAmount), ip(ip), transferInformation(transferInformation) {}
+
+   bool operator==(const Peer& p) const { return this->peerID == p.peerID; }
+   bool operator!=(const Peer& p) const { return this->peerID != p.peerID; }
+   static bool sortCompByNick(const Peer* p1, const Peer* p2);
+   static bool sortCompBySharingAmount(const Peer* p1, const Peer* p2);
+
+   Common::Hash peerID;
+   QString nick;
+   QString coreVersion;
+   quint64 sharingAmount;
+   QHostAddress ip;
+   TransferInformation transferInformation;
+};
+
 PeerListModel::PeerListModel(QSharedPointer<RCC::ICoreConnection> coreConnection) :
    coreConnection(coreConnection),
    currentSortType(Protos::GUI::Settings::BY_SHARING_AMOUNT)
