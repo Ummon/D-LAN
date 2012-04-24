@@ -179,6 +179,13 @@ MainWindow::MainWindow(QSharedPointer<RCC::ICoreConnection> coreConnection, QWid
    connect(this->coreConnection.data(), SIGNAL(disconnected(bool)), this, SLOT(coreDisconnected(bool)));
 
    this->coreConnection->connectToCore(SETTINGS.get<QString>("core_address"), SETTINGS.get<quint32>("core_port"), SETTINGS.get<Common::Hash>("password"));
+
+#ifdef DEBUG
+   QPushButton* logEntireQWidgetTreeButton = new QPushButton();
+   logEntireQWidgetTreeButton->setText("log widget tree");
+   connect(logEntireQWidgetTreeButton, SIGNAL(clicked()), this, SLOT(logEntireQWidgetTree()));
+   this->ui->statusBar->addWidget(logEntireQWidgetTreeButton);
+#endif
 }
 
 MainWindow::~MainWindow()
@@ -540,6 +547,11 @@ void MainWindow::maximize()
    }
 }
 
+void MainWindow::logEntireQWidgetTree()
+{
+   L_DEBU(Common::Global::getQObjectHierarchy(this));
+}
+
 void MainWindow::keyPressEvent(QKeyEvent* event)
 {
    // CTRL.
@@ -846,6 +858,7 @@ void MainWindow::addWidgetDownloads()
    this->widgetDownloads->setWindowState(Qt::WindowMaximized);
 
    this->downloadsBusyIndicator = new BusyIndicator();
+   this->downloadsBusyIndicator->setObjectName("tabWidget");
    this->downloadsBusyIndicator->setToolTip(this->getBusyIndicatorToolTip());
    this->mdiAreaTabBar->setTabButton(this->mdiAreaTabBar->count() - 1, QTabBar::RightSide, this->downloadsBusyIndicator);
 }
@@ -897,6 +910,7 @@ WidgetBrowse* MainWindow::addWidgetBrowse(const Common::Hash& peerID)
    this->widgetsBrowse << widgetBrowse;
 
    QWidget* buttons = new QWidget();
+   buttons->setObjectName("tabWidget");
 
    TabCloseButton* closeButton = new TabCloseButton(widgetBrowse, buttons);
    connect(closeButton, SIGNAL(clicked(QWidget*)), this, SLOT(removeWidget(QWidget*)));
@@ -930,6 +944,7 @@ WidgetSearch* MainWindow::addWidgetSearch(const QString& term, bool searchInOwnF
    connect(widgetSearch, SIGNAL(browse(const Common::Hash&, const Protos::Common::Entry&)), this, SLOT(addWidgetBrowse(const Common::Hash&, const Protos::Common::Entry&)));
 
    TabCloseButton* closeButton = new TabCloseButton(widgetSearch);
+   closeButton->setObjectName("tabWidget");
    connect(closeButton, SIGNAL(clicked(QWidget*)), this, SLOT(removeWidget(QWidget*)));
    this->mdiAreaTabBar->setTabButton(this->mdiAreaTabBar->count() - 1, QTabBar::RightSide, closeButton);
 

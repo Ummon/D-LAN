@@ -102,6 +102,8 @@ namespace GUI
 
       void maximize();
 
+      void logEntireQWidgetTree();
+
    protected:
       void keyPressEvent(QKeyEvent* event);
       void closeEvent(QCloseEvent * event);
