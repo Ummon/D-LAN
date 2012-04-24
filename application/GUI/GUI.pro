@@ -68,11 +68,11 @@ SOURCES += main.cpp\
     ProgressBar.cpp \
     IconProvider.cpp \
     Utils.cpp \
-    LineEdit.cpp \
     Settings/AskNewPasswordDialog.cpp \
     Downloads/DownloadsTreeModel.cpp \
     Downloads/DownloadsModel.cpp \
-    PeerList/PeerListDelegate.cpp
+    PeerList/PeerListDelegate.cpp \
+    BusyIndicator.cpp
 
 HEADERS  += MainWindow.h \
     ../Protos/gui_protocol.pb.h \
@@ -106,12 +106,12 @@ HEADERS  += MainWindow.h \
     ProgressBar.h \
     IconProvider.h \
     Utils.h \
-    LineEdit.h \
     Settings/AskNewPasswordDialog.h \
     Downloads/DownloadsFlatModel.h \
     Downloads/DownloadsTreeModel.h \
     Downloads/DownloadsModel.h \
-    PeerList/PeerListDelegate.h
+    PeerList/PeerListDelegate.h \
+    BusyIndicator.h
 
 FORMS    += MainWindow.ui \
     StatusBar.ui \

@@ -81,6 +81,7 @@ MainWindow::MainWindow(QSharedPointer<RCC::ICoreConnection> coreConnection, QWid
    widgetChat(0),
    widgetDownloads(0),
    widgetUploads(0),
+   downloadsBusyIndicator(0),
    customStyleLoaded(false),
    coreConnection(coreConnection),
    peerListModel(coreConnection),
@@ -152,7 +153,7 @@ MainWindow::MainWindow(QSharedPointer<RCC::ICoreConnection> coreConnection, QWid
 
    connect(this->ui->butSearch, SIGNAL(clicked()), this, SLOT(searchOtherPeers()));
    connect(this->ui->butSearchOwnFiles, SIGNAL(clicked()), this, SLOT(searchOwnFiles()));
-   connect(this->ui->txtSearch, SIGNAL(returnPressed(Qt::KeyboardModifiers)), this, SLOT(txtSearchReturnPressed(Qt::KeyboardModifiers)));
+   this->ui->txtSearch->installEventFilter(this); // the signal 'returnPressed()' doesn't contain the key modifier information (shift = search among our files), we have to use a event filter.
 
    this->addWidgetSettings();
 
@@ -172,11 +173,19 @@ MainWindow::MainWindow(QSharedPointer<RCC::ICoreConnection> coreConnection, QWid
 
    this->loadLanguage(this->widgetSettings->getCurrentLanguageFilename());
 
+   connect(this->coreConnection.data(), SIGNAL(newState(const Protos::GUI::State&)), this, SLOT(newState(const Protos::GUI::State&)));
    connect(this->coreConnection.data(), SIGNAL(connectingError(RCC::ICoreConnection::ConnectionErrorCode)), this, SLOT(coreConnectionError(RCC::ICoreConnection::ConnectionErrorCode)));
    connect(this->coreConnection.data(), SIGNAL(connected()), this, SLOT(coreConnected()));
    connect(this->coreConnection.data(), SIGNAL(disconnected(bool)), this, SLOT(coreDisconnected(bool)));
 
    this->coreConnection->connectToCore(SETTINGS.get<QString>("core_address"), SETTINGS.get<quint32>("core_port"), SETTINGS.get<Common::Hash>("password"));
+
+#ifdef DEBUG
+   QPushButton* logEntireQWidgetTreeButton = new QPushButton();
+   logEntireQWidgetTreeButton->setText("log widget tree");
+   connect(logEntireQWidgetTreeButton, SIGNAL(clicked()), this, SLOT(logEntireQWidgetTree()));
+   this->ui->statusBar->addWidget(logEntireQWidgetTreeButton);
+#endif
 }
 
 MainWindow::~MainWindow()
@@ -191,11 +200,21 @@ MainWindow::~MainWindow()
    delete this->ui;
 }
 
+void MainWindow::newState(const Protos::GUI::State& state)
+{
+   if (!this->downloadsBusyIndicator)
+      return;
+
+   if (state.stats().cache_status() == Protos::GUI::State::Stats::LOADING_CACHE_IN_PROGRESS)
+      this->downloadsBusyIndicator->show();
+   else
+      this->downloadsBusyIndicator->hide();
+}
+
 void MainWindow::loadLanguage(const QString& filename)
 {
    this->translator.load(filename, QCoreApplication::applicationDirPath() + "/" + Common::Constants::LANGUAGE_DIRECTORY);
 }
-
 
 void MainWindow::coreConnectionError(RCC::ICoreConnection::ConnectionErrorCode errorCode)
 {
@@ -254,6 +273,9 @@ void MainWindow::coreDisconnected(bool forced)
       msgBox.setStandardButtons(QMessageBox::Ok);
       msgBox.exec();
    }
+
+   if (this->downloadsBusyIndicator)
+      this->downloadsBusyIndicator->hide();
 }
 
 void MainWindow::tabMoved(int, int)
@@ -359,14 +381,6 @@ void MainWindow::searchOtherPeers()
 void MainWindow::searchOwnFiles()
 {
    this->search(true);
-}
-
-void MainWindow::txtSearchReturnPressed(Qt::KeyboardModifiers modifiers)
-{
-   if (modifiers.testFlag(Qt::ShiftModifier))
-      this->searchOwnFiles();
-   else
-      this->searchOtherPeers();
 }
 
 void MainWindow::sortPeersBySharingAmount()
@@ -533,6 +547,11 @@ void MainWindow::maximize()
    }
 }
 
+void MainWindow::logEntireQWidgetTree()
+{
+   L_DEBU(Common::Global::getQObjectHierarchy(this));
+}
+
 void MainWindow::keyPressEvent(QKeyEvent* event)
 {
    // CTRL.
@@ -582,7 +601,11 @@ void MainWindow::closeEvent(QCloseEvent* event)
 void MainWindow::changeEvent(QEvent* event)
 {
    if (event->type() == QEvent::LanguageChange)
+   {
+      if (this->downloadsBusyIndicator)
+         this->downloadsBusyIndicator->setToolTip(this->getBusyIndicatorToolTip());
       this->ui->retranslateUi(this);
+   }
    else
       QWidget::changeEvent(event);
 }
@@ -592,39 +615,44 @@ bool MainWindow::eventFilter(QObject* obj, QEvent* event)
    if (obj == this->widgetChat && event->type() == QEvent::KeyPress)
    {
       this->keyPressEvent(static_cast<QKeyEvent*>(event));
-      return event->isAccepted();
    }
    else if (this->customStyleLoaded && obj == this->ui->grip)
    {
       if (event->type() == QEvent::MouseButtonPress && static_cast<QMouseEvent*>(event)->button() == Qt::LeftButton)
       {
          this->dragPosition = static_cast<QMouseEvent*>(event)->globalPos() - frameGeometry().topLeft();
-         return event->isAccepted();
       }
-      else if (event->type() == QEvent::MouseMove && static_cast<QMouseEvent*>(event)->buttons() & Qt::LeftButton)
+      if (event->type() == QEvent::MouseButtonRelease && static_cast<QMouseEvent*>(event)->button() == Qt::LeftButton)
+      {
+         this->dragPosition = QPoint();
+      }
+      else if (event->type() == QEvent::MouseMove && !this->isMaximized() && static_cast<QMouseEvent*>(event)->buttons() & Qt::LeftButton && !this->dragPosition.isNull())
       {
          move(static_cast<QMouseEvent*>(event)->globalPos() - this->dragPosition);
-         return event->isAccepted();
       }
-      else if (obj == this->ui->grip)
+      else if (event->type() == QEvent::Resize)
       {
-         if (event->type() == QEvent::Resize)
-         {
-            const QRegion maskedRegion(0, 0, this->ui->grip->width(), this->ui->grip->width());
+         const QRegion maskedRegion(0, 0, this->ui->grip->width(), this->ui->grip->width());
 
-            if (this->isMaximized())
-               this->ui->grip->setMask(maskedRegion);
-            else
-            {
-               const QRegion cornerTopRight = QRegion(this->ui->grip->width() - WINDOW_BORDER_RADIUS, 0, WINDOW_BORDER_RADIUS, WINDOW_BORDER_RADIUS).subtracted(QRegion(this->ui->grip->width() - 2 * WINDOW_BORDER_RADIUS, 0, 2 * WINDOW_BORDER_RADIUS, 2 * WINDOW_BORDER_RADIUS, QRegion::Ellipse));
-               this->ui->grip->setMask(maskedRegion.subtracted(cornerTopRight));
-            }
-         }
-         else if (event->type() == QEvent::MouseButtonDblClick && static_cast<QMouseEvent*>(event)->button() == Qt::LeftButton)
+         if (this->isMaximized())
+            this->ui->grip->setMask(maskedRegion);
+         else
          {
-            this->maximize();
+            const QRegion cornerTopRight = QRegion(this->ui->grip->width() - WINDOW_BORDER_RADIUS, 0, WINDOW_BORDER_RADIUS, WINDOW_BORDER_RADIUS).subtracted(QRegion(this->ui->grip->width() - 2 * WINDOW_BORDER_RADIUS, 0, 2 * WINDOW_BORDER_RADIUS, 2 * WINDOW_BORDER_RADIUS, QRegion::Ellipse));
+            this->ui->grip->setMask(maskedRegion.subtracted(cornerTopRight));
          }
       }
+      else if (event->type() == QEvent::MouseButtonDblClick && static_cast<QMouseEvent*>(event)->button() == Qt::LeftButton)
+      {
+         this->maximize();
+      }
+   }
+   else if (obj == this->ui->txtSearch && event->type() == QEvent::KeyPress && static_cast<QKeyEvent*>(event)->key() == Qt::Key_Return)
+   {
+      if (static_cast<QKeyEvent*>(event)->modifiers().testFlag(Qt::ShiftModifier))
+         this->searchOwnFiles();
+      else
+         this->searchOtherPeers();
    }
    else if // Prohibits the user to close tab with the middle button.
    (
@@ -753,6 +781,11 @@ void MainWindow::restoreColorizedPeers()
       this->peerListModel.colorize(highlightedPeers.peer(i).id().hash(), QColor(highlightedPeers.peer(i).color()));
 }
 
+QString MainWindow::getBusyIndicatorToolTip() const
+{
+   return tr("Waiting that loading the cache is finished");
+}
+
 /**
   * Remove and delete a sub window from the MDI area.
   */
@@ -823,6 +856,11 @@ void MainWindow::addWidgetDownloads()
    this->ui->mdiArea->addSubWindow(this->widgetDownloads, Qt::CustomizeWindowHint);
    this->mdiAreaTabBar->setTabData(this->mdiAreaTabBar->count() - 1, Protos::GUI::Settings_Window_WIN_DOWNLOAD);
    this->widgetDownloads->setWindowState(Qt::WindowMaximized);
+
+   this->downloadsBusyIndicator = new BusyIndicator();
+   this->downloadsBusyIndicator->setObjectName("tabWidget");
+   this->downloadsBusyIndicator->setToolTip(this->getBusyIndicatorToolTip());
+   this->mdiAreaTabBar->setTabButton(this->mdiAreaTabBar->count() - 1, QTabBar::RightSide, this->downloadsBusyIndicator);
 }
 
 void MainWindow::removeWidgetDownloads()
@@ -831,6 +869,7 @@ void MainWindow::removeWidgetDownloads()
    {
       this->removeMdiSubWindow(dynamic_cast<QMdiSubWindow*>(this->widgetDownloads->parent()));
       this->widgetDownloads = 0;
+      this->downloadsBusyIndicator = 0;
    }
 }
 
@@ -871,6 +910,7 @@ WidgetBrowse* MainWindow::addWidgetBrowse(const Common::Hash& peerID)
    this->widgetsBrowse << widgetBrowse;
 
    QWidget* buttons = new QWidget();
+   buttons->setObjectName("tabWidget");
 
    TabCloseButton* closeButton = new TabCloseButton(widgetBrowse, buttons);
    connect(closeButton, SIGNAL(clicked(QWidget*)), this, SLOT(removeWidget(QWidget*)));
@@ -904,6 +944,7 @@ WidgetSearch* MainWindow::addWidgetSearch(const QString& term, bool searchInOwnF
    connect(widgetSearch, SIGNAL(browse(const Common::Hash&, const Protos::Common::Entry&)), this, SLOT(addWidgetBrowse(const Common::Hash&, const Protos::Common::Entry&)));
 
    TabCloseButton* closeButton = new TabCloseButton(widgetSearch);
+   closeButton->setObjectName("tabWidget");
    connect(closeButton, SIGNAL(clicked(QWidget*)), this, SLOT(removeWidget(QWidget*)));
    this->mdiAreaTabBar->setTabButton(this->mdiAreaTabBar->count() - 1, QTabBar::RightSide, closeButton);
 
