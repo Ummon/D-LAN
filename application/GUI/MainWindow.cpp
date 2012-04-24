@@ -614,7 +614,7 @@ bool MainWindow::eventFilter(QObject* obj, QEvent* event)
       {
          this->dragPosition = QPoint();
       }
-      else if (event->type() == QEvent::MouseMove && static_cast<QMouseEvent*>(event)->buttons() & Qt::LeftButton && !this->dragPosition.isNull())
+      else if (event->type() == QEvent::MouseMove && !this->isMaximized() && static_cast<QMouseEvent*>(event)->buttons() & Qt::LeftButton && !this->dragPosition.isNull())
       {
          move(static_cast<QMouseEvent*>(event)->globalPos() - this->dragPosition);
       }
