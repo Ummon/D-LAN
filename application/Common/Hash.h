@@ -46,6 +46,11 @@ namespace Common
    public:
       static const int HASH_SIZE = 20;
 
+   private:
+      static const char NULL_HASH[HASH_SIZE];
+
+   public:
+
       Hash();
       Hash(const Hash& h);
       Hash(Hash&& h);
@@ -58,13 +63,15 @@ namespace Common
 
       Hash& operator=(const Hash& h);
       Hash& operator=(Hash&& h);
+      //Hash& operator=(const std::string& str);
 
       /**
         * Return a pointer to its internal data.
+        * return 0 if the pointer is null.
         * The length of the returned value is exactly HASH_SIZE.
         */
-      inline const char* getData() const { return this->data->hash; }
-      inline QByteArray getByteArray() const { return QByteArray(this->data->hash, HASH_SIZE); }
+      inline const char* getData() const { return this->data ? this->data->hash : NULL_HASH; }
+      inline QByteArray getByteArray() const { return QByteArray(this->data ? this->data->hash : NULL_HASH, HASH_SIZE); }
 
       QString toStr() const;
       QString toStrCArray() const;
@@ -80,6 +87,7 @@ namespace Common
 
       friend QDataStream& operator>>(QDataStream&, Hash&);
       friend QDataStream& operator<<(QDataStream& stream, const Hash& hash);
+      friend bool operator==(const Hash& h1, const Hash& h2);
       friend class Hasher;
 
       struct SharedData
@@ -103,7 +111,15 @@ namespace Common
       if (stream.readRawData(data, Hash::HASH_SIZE) != Hash::HASH_SIZE)
          return stream;
 
-      if (qstrncmp(hash.data->hash, data, Hash::HASH_SIZE) != 0)
+      if (memcmp(Hash::NULL_HASH, data, Hash::HASH_SIZE) == 0)
+      {
+         if (hash.data)
+         {
+            hash.dereference();
+            hash.data = 0;
+         }
+      }
+      else if (!hash.data || memcmp(hash.data->hash, data, Hash::HASH_SIZE) != 0)
       {
          hash.dereference();
          hash.newData();
@@ -118,14 +134,17 @@ namespace Common
      */
    inline QDataStream& operator<<(QDataStream& stream, const Hash& hash)
    {
-      stream.writeRawData(hash.data->hash, Hash::HASH_SIZE);
+      if (hash.data)
+         stream.writeRawData(hash.data->hash, Hash::HASH_SIZE);
+      else
+         stream.writeRawData(Hash::NULL_HASH, Hash::HASH_SIZE);
 
       return stream;
    }
 
    inline bool operator==(const Hash& h1, const Hash& h2)
    {
-      return memcmp(h1.getData(), h2.getData(), Hash::HASH_SIZE) == 0;
+      return h1.data == h2.data || memcmp(h1.getData(), h2.getData(), Hash::HASH_SIZE) == 0;
    }
 
    inline bool operator!=(const Hash& h1, const Hash& h2)
@@ -139,7 +158,10 @@ namespace Common
    inline uint qHash(const Hash& h)
    {
       // Take the first sizeof(uint) bytes of the hash data.
-      return *(const uint*)(h.getData());
+      if (h.isNull())
+         return 0;
+      else
+         return *(const uint*)(h.getData());
    }
 
    class Hasher : Uncopyable
@@ -173,7 +195,7 @@ inline void Hash::dereference()
 #if WITH_MUTEX
    QMutexLocker locker(&this->data->mutex);
 #endif
-   if (this->data) // Move constructor may steal the data pointer.
+   if (this->data)
    {
       this->data->nbRef -= 1;
       if (this->data->nbRef == 0)
