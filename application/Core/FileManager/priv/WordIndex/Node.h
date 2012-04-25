@@ -93,6 +93,8 @@ namespace FM
 
       QList<NodeResult<T>> search(const QString& word, bool alsoFromSubNodes = false, int maxNbResult = -1) const;
 
+      QString toStringDebug() const;
+
    private:
       Node(const QString& part);
       Node(const QString& part, T* item);
@@ -163,7 +165,10 @@ void Node<T>::addItem(const QString& word, T* item)
             {
                 // The word and the sub-part are equal.
                if (p == this->children[i]->part.size())
-                  this->children[i]->items << item;
+               {
+                  if (!this->children[i]->items.contains(item))
+                     this->children[i]->items << item;
+               }
                else // The word is the begining of the the sub-part.
                {
                   Node<T>* newNode = new Node<T>(word, item);
@@ -223,7 +228,35 @@ QList<NodeResult<T>> Node<T>::search(const QString& word, bool alsoFromSubNodes,
    if (!nodes.first)
       return QList<NodeResult<T>>();
 
-   return nodes.first->children[nodes.second]->getItems(alsoFromSubNodes, maxNbResult);
+return nodes.first->children[nodes.second]->getItems(alsoFromSubNodes, maxNbResult);
+}
+
+template <typename T>
+QString Node<T>::toStringDebug() const
+{
+   static const int INDENTATION = 3;
+   struct SubNode
+   {
+      int level;
+      const Node<T>* node;
+   };
+
+   QString result;
+   QList<SubNode> nodesToProcess { SubNode { 0, this } };
+
+   while (!nodesToProcess.isEmpty())
+   {
+      SubNode current = nodesToProcess.takeFirst();
+      result.append(QString().fill(' ', INDENTATION * current.level));
+      result.append(current.node->part).append(current.node->items.isEmpty() ? "" : QString(" N = %1").arg(current.node->items.size())).append('\n');
+
+      QListIterator<Node<T>*> i(current.node->children);
+      i.toBack();
+      while (i.hasPrevious())
+         nodesToProcess.prepend(SubNode { current.level + 1, i.previous() });
+   }
+
+   return result;
 }
 
 template <typename T>

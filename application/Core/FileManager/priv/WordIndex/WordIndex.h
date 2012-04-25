@@ -25,6 +25,7 @@
 #include <QMutex>
 
 #include <Common/Uncopyable.h>
+#include <Common/LogManager/ILoggable.h>
 
 #include <priv/WordIndex/Node.h>
 
@@ -34,7 +35,7 @@ namespace FM
      * A thread safe collection of T indexed by word.
      */
    template<typename T>
-   class WordIndex : Common::Uncopyable
+   class WordIndex : public LM::ILoggable, Common::Uncopyable
    {
       static const int MIN_WORD_SIZE_PARTIAL_MATCH; ///< During a search, the words which have a size below this value must match entirely, for exemple 'of' match "conspiracy of one" and not "offspring".
    public:
@@ -46,6 +47,8 @@ namespace FM
       void rmItem(const QString& word, T* item);
       QList<NodeResult<T>> search(const QStringList& words, int maxNbResultPerWord = -1) const;
       QList<NodeResult<T>> search(const QString& word, int maxNbResult = -1) const;
+
+      QString toStringLog() const;
 
       static QList<T*> resultToList(const QList<NodeResult<int>>& result);
 
@@ -114,6 +117,13 @@ QList<NodeResult<T>> WordIndex<T>::search(const QString& word, int maxNbResult) 
 {
    QMutexLocker locker(&mutex);
    return this->root.search(word, word.size() >= MIN_WORD_SIZE_PARTIAL_MATCH, maxNbResult);
+}
+
+template<typename T>
+QString WordIndex<T>::toStringLog() const
+{
+   QMutexLocker locker(&mutex);
+   return this->root.toStringDebug();
 }
 
 template<typename T>
