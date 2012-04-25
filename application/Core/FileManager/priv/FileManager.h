@@ -95,8 +95,6 @@ namespace FM
    private:
       LOG_INIT_H("FileManager");
 
-      const quint32 CHUNK_SIZE;
-
       FileUpdater fileUpdater;
       Cache cache; ///< The files and directories.
       Chunks chunks; ///< The indexed chunks. It contains only completed chunks.

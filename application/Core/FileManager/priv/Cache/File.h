@@ -26,7 +26,7 @@
 #include <QWaitCondition>
 #include <QFile>
 #include <QFileInfo>
-#include <QList>
+#include <QVector>
 #include <QSharedPointer>
 #include <QDateTime>
 
@@ -84,7 +84,7 @@ namespace FM
       qint64 write(const char* buffer, int nbBytes, qint64 offset);
       qint64 read(char* buffer, qint64 offset, int maxBytesToRead);
 
-      QList<QSharedPointer<Chunk>> getChunks() const;
+      QVector<QSharedPointer<Chunk>> getChunks() const;
       bool hasAllHashes();
       bool hasOneOrMoreHashes();
 
@@ -113,7 +113,7 @@ namespace FM
       void setHashes(const Common::Hashes& hashes);
 
       Directory* dir;
-      QList<QSharedPointer<Chunk>> chunks;
+      QVector<QSharedPointer<Chunk>> chunks;
       QDateTime dateLastModified;
 
       // Used only when writing a file.

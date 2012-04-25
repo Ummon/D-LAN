@@ -49,13 +49,14 @@ using namespace FM;
 LOG_INIT_CPP(FileManager);
 
 FileManager::FileManager() :
-   CHUNK_SIZE(SETTINGS.get<quint32>("chunk_size")),
    fileUpdater(this),
    cache(),
    mutexPersistCache(QMutex::Recursive),
    cacheLoading(true),
    cacheChanged(false)
 {
+   Chunk::CHUNK_SIZE = SETTINGS.get<quint32>("chunk_size");
+
    connect(&this->cache, SIGNAL(entryAdded(Entry*)),     this, SLOT(entryAdded(Entry*)),     Qt::DirectConnection);
    connect(&this->cache, SIGNAL(entryRemoved(Entry*)),   this, SLOT(entryRemoved(Entry*)),   Qt::DirectConnection);
    connect(&this->cache, SIGNAL(chunkHashKnown(QSharedPointer<Chunk>)), this, SLOT(chunkHashKnown(QSharedPointer<Chunk>)), Qt::DirectConnection);
@@ -133,7 +134,7 @@ QList<QSharedPointer<IChunk>> FileManager::getAllChunks(const Protos::Common::En
          if (chunk->matchesEntry(localEntry)) // The name, the path and the size of the file are the same?
          {
             // We verify that all hashes of all chunks match the given hashes. If it's not the case, the files are not the same.
-            QList<QSharedPointer<Chunk>> allChunks = chunk->getOtherChunks();
+            QVector<QSharedPointer<Chunk>> allChunks = chunk->getOtherChunks();
             if (allChunks.size() != hashes.size())
                return QList<QSharedPointer<IChunk>>();
 

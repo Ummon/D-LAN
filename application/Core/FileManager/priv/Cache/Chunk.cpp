@@ -38,27 +38,26 @@ using namespace FM;
   * A chunk is a part of a file. It's identified by a hash which can be unknown when a chunk is created and be set later by 'setHash(..)'.
   * A chunk can be read or write, when a chunk is written the 'knownBytes' member is increased.
   * Each chunk of a file has a unique number which begins at 0 and define the order of data, chunk#1 represents the data right after chunk#0 and so on.
+  *
+  * Concurrent accesses are protected by the 'QSharedPointer', see the 'File' class.
   */
 
+int Chunk::CHUNK_SIZE(0);
+
 Chunk::Chunk(File* file, int num, quint32 knownBytes) :
-   CHUNK_SIZE(SETTINGS.get<quint32>("chunk_size")),
-   mutex(QMutex::Recursive), file(file), num(num), knownBytes(knownBytes)
+   file(file), num(num), knownBytes(knownBytes)
 {
-   QMutexLocker locker(&this->mutex);
    L_DEBU(QString("New chunk[%1] : %2. File : %3").arg(num).arg(hash.toStr()).arg(this->file->getFullPath()));
 }
 
 Chunk::Chunk(File* file, int num, quint32 knownBytes, const Common::Hash& hash) :
-   CHUNK_SIZE(SETTINGS.get<quint32>("chunk_size")),
-   mutex(QMutex::Recursive), file(file), num(num), knownBytes(knownBytes), hash(hash)
+   file(file), num(num), knownBytes(knownBytes), hash(hash)
 {
-   QMutexLocker locker(&this->mutex);
    L_DEBU(QString("New chunk[%1] : %2. File : %3").arg(num).arg(hash.toStr()).arg(this->file->getFullPath()));
 }
 
 Chunk::~Chunk()
 {
-   QMutexLocker locker(&this->mutex);
    L_DEBU(QString("Chunk Deleted[%1] : %2. File : %3").arg(num).
       arg(this->hash.toStr()).
       arg(this->file ? this->file->getFullPath() : "<file deleted>")
@@ -88,14 +87,12 @@ void Chunk::populateHashesChunk(Protos::FileCache::Hashes_Chunk& chunk) const
 
 void Chunk::removeItsIncompleteFile()
 {
-   QMutexLocker locker(&this->mutex);
    if (this->file)
       this->file->deleteIfIncomplete();
 }
 
 bool Chunk::populateEntry(Protos::Common::Entry* entry) const
 {
-   QMutexLocker locker(&this->mutex);
    if (this->file)
    {
       this->file->populateEntry(entry);
@@ -106,7 +103,6 @@ bool Chunk::populateEntry(Protos::Common::Entry* entry) const
 
 QString Chunk::getBasePath() const
 {
-   QMutexLocker locker(&this->mutex);
    if (this->file)
       return this->file->getRoot()->getFullPath();
    return QString();
@@ -114,40 +110,34 @@ QString Chunk::getBasePath() const
 
 QSharedPointer<IDataReader> Chunk::getDataReader()
 {
-   QMutexLocker locker(&this->mutex);
    return QSharedPointer<IDataReader>(new DataReader(*this));
 }
 
 QSharedPointer<IDataWriter> Chunk::getDataWriter()
 {
-   QMutexLocker locker(&this->mutex);
    return QSharedPointer<IDataWriter>(new DataWriter(*this));
 }
 
 void Chunk::newDataWriterCreated()
 {
-   QMutexLocker locker(&this->mutex);
    if (this->file)
       this->file->newDataWriterCreated();
 }
 
 void Chunk::newDataReaderCreated()
 {
-   QMutexLocker locker(&this->mutex);
    if (this->file)
       this->file->newDataReaderCreated();
 }
 
 void Chunk::dataWriterDeleted()
 {
-   QMutexLocker locker(&this->mutex);
    if (this->file)
       this->file->dataWriterDeleted();
 }
 
 void Chunk::dataReaderDeleted()
 {
-   QMutexLocker locker(&this->mutex);
    if (this->file)
       this->file->dataReaderDeleted();
 }
@@ -157,7 +147,6 @@ void Chunk::dataReaderDeleted()
   */
 void Chunk::fileDeleted()
 {
-   QMutexLocker locker(&this->mutex);
    this->file = 0;
 }
 
@@ -176,7 +165,6 @@ int Chunk::read(char* buffer, int offset)
 {
    static const int BUFFER_SIZE_READING = SETTINGS.get<quint32>("buffer_size_reading");
 
-   QMutexLocker locker(&this->mutex);
    if (!this->file)
       throw ChunkDeletedException();
 
@@ -199,7 +187,6 @@ int Chunk::read(char* buffer, int offset)
   */
 bool Chunk::write(const char* buffer, int nbBytes)
 {
-   QMutexLocker locker(&this->mutex);
    if (!this->file)
       throw ChunkDeletedException();
 
@@ -231,22 +218,18 @@ int Chunk::getNum() const
 
 int Chunk::getNbTotalChunk() const
 {
-   QMutexLocker locker(&this->mutex);
-
    if (this->file)
       return this->file->getNbChunks();
 
    return 0;
 }
 
-QList<QSharedPointer<Chunk>> Chunk::getOtherChunks() const
+QVector<QSharedPointer<Chunk>> Chunk::getOtherChunks() const
 {
-   QMutexLocker locker(&this->mutex);
-
    if (this->file)
       return this->file->getChunks();
    else
-      return QList<QSharedPointer<Chunk>>();
+      return QVector<QSharedPointer<Chunk>>();
 }
 
 bool Chunk::hasHash() const
@@ -256,7 +239,6 @@ bool Chunk::hasHash() const
 
 Common::Hash Chunk::getHash() const
 {
-   QMutexLocker locker(&this->mutex);
    return this->hash;
 }
 
@@ -272,7 +254,6 @@ void Chunk::setHash(const Common::Hash& hash)
 
 int Chunk::getKnownBytes() const
 {
-   QMutexLocker locker(&this->mutex);
    return this->knownBytes;
 }
 
@@ -298,7 +279,6 @@ int Chunk::getChunkSize() const
 
 bool Chunk::isComplete() const
 {
-   QMutexLocker locker(&this->mutex);
    return this->file && this->knownBytes >= this->getChunkSize(); // Should be '==' but we are never 100% sure ;).
 }
 
@@ -309,6 +289,5 @@ bool Chunk::isOwnedBy(File* file) const
 
 bool Chunk::matchesEntry(const Protos::Common::Entry& entry) const
 {
-   QMutexLocker locker(&this->mutex);
    return this->file->matchesEntry(entry);
 }
