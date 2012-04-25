@@ -110,6 +110,11 @@ void Core::start()
    L_USER(QObject::tr("Ready to serve"));
 }
 
+void Core::dumpWordIndex() const
+{
+   this->fileManager->dumpWordIndex();
+}
+
 void Core::setLanguage(QLocale locale, bool load)
 {
    if (load)

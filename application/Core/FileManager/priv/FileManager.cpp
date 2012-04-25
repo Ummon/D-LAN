@@ -342,6 +342,11 @@ int FileManager::getProgress() const
    return this->fileUpdater.getProgress();
 }
 
+void FileManager::dumpWordIndex() const
+{
+   L_WARN(this->wordIndex.toStringLog());
+}
+
 Directory* FileManager::getFittestDirectory(const QString& path)
 {
    return this->cache.getFittestDirectory(path);

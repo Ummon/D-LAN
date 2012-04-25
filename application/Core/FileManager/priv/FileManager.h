@@ -72,6 +72,8 @@ namespace FM
       CacheStatus getCacheStatus() const;
       int getProgress() const;
 
+      void dumpWordIndex() const;
+
       Directory* getFittestDirectory(const QString& path);
       Entry* getEntry(const QString& path);
 

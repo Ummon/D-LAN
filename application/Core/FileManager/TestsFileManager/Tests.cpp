@@ -87,8 +87,14 @@ void Tests::testWordIndex()
 
    index.addItem("arbre", &arbre);
    index.addItem("arbalete", &arbalete);
+
+   QList<int*> result0 = WordIndex<int>::resultToList(index.search("arime"));
+   QVERIFY(result0.size() == 0);
+
    index.addItem("ar", &ar);
    index.addItem("arbuste", &arbuste);
+
+   qDebug() << index.toStringLog();
 
    QList<int*> result1 = WordIndex<int>::resultToList(index.search("ar"));
    QVERIFY(result1.size() == 1);

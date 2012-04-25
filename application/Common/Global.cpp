@@ -675,7 +675,7 @@ QString Global::setCurrentDirToTemp(const QString& dirname)
 QString Global::getQObjectHierarchy(const QObject* root)
 {
    return getQObjectHierarchy(root, [](const QObject* obj) {
-      return QString("\"").append(obj->objectName()).append("\" of type ").append(obj->metaObject()->className()).append('\n');
+      return QString("\"").append(obj->objectName()).append("\" of type ").append(obj->metaObject()->className());
    });
 }
 
@@ -698,7 +698,7 @@ QString Global::getQObjectHierarchy(const QObject* root, std::function<QString(c
    {
       Node current = nodesToProcess.takeFirst();
       result.append(QString().fill(' ', INDENTATION * current.level));
-      result.append(fun(current.obj));
+      result.append(fun(current.obj)).append('\n');
 
       QListIterator<QObject*> i(current.obj->children());
       i.toBack();
