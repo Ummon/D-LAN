@@ -21,9 +21,11 @@
 
 #include <QList>
 #include <QSet>
-#include <QChar>
+#include <QString>
+#include <QPair>
 
 #include <Common/Uncopyable.h>
+#include <Common/Global.h>
 
 namespace FM
 {
@@ -75,43 +77,27 @@ namespace FM
         * Create a root node.
         */
       Node();
-
       ~Node();
-
-      /**
-        * Add a child node and return it.
-        * If the node already exists it will returned.
-        */
-      Node<T>& addNode(const QChar& letter);
-
-      /**
-        * Remove a node for their children.
-        * If the node doesn't exist nothing happen.
-        */
-      void rmNode(Node<T>* const node);
-
-      /**
-        * Get a children node.
-        * /!\ If no one exists 0 is returned.
-        */
-      Node<T>* getNode(const QChar& letter) const;
-
-      /**
-        * Does the node have some children?
-        */
-      bool haveChildren() const;
 
       /**
         * Add an item to the node.
         * If the item already exists (using operator==) nothing is added.
         */
-      void addItem(T* item);
+      void addItem(const QString& word, T* item);
 
       /**
         * Remove the item from the node.
         * If the item doesn'exist nothing happen.
         */
-      void rmItem(T* item);
+      void rmItem(const QString& word, T* item);
+
+      QList<NodeResult<T>> search(const QString& word, bool alsoFromSubNodes = false, int maxNbResult = -1) const;
+
+   private:
+      Node(const QString& part);
+      Node(const QString& part, T* item);
+
+      QPair<Node<T>*, int> getNode(const QString& word, bool exactMatch = false) const;
 
       /**
         * Return all items from the current node and its sub nodes (recursively) if 'alsoFromSubNodes' is true.
@@ -119,16 +105,9 @@ namespace FM
         */
       QList<NodeResult<T>> getItems(bool alsoFromSubNodes = false, int maxNbResult = -1) const;
 
-      /**
-        * Does the node own some items?
-        */
-      bool haveItems() const;
+      void remove(int i);
 
-   private:
-      Node(const QChar& letter);
-
-      const QChar letter; ///< The letter from an indexed word.
-
+      QString part;
       QList<Node<T>*> children; ///< The children nodes.
       QList<T*> items; ///< The indexed items.
    };
@@ -144,7 +123,7 @@ namespace FM
    {
       uint h = 0;
       static const int n = sizeof(T*) > sizeof(uint) ? sizeof(T*) / sizeof(uint) : 1;
-      for (int i = 0; i < n; i++)
+      for (int i = 0; i < n; ++i)
          h ^= intptr_t(r.value) >> (i * sizeof(uint));
       return h;
    }
@@ -154,10 +133,10 @@ namespace FM
 using namespace FM;
 
 template <typename T>
-Node<T>::Node() :
-   letter('\0')
+Node<T>::Node()
 {
 }
+
 
 template <typename T>
 Node<T>::~Node()
@@ -167,53 +146,129 @@ Node<T>::~Node()
 }
 
 template <typename T>
-Node<T>& Node<T>::addNode(const QChar& letter)
+void Node<T>::addItem(const QString& word, T* item)
 {
-   // Search if the letter already exists.
-   for (int i = 0; i < this->children.size(); i++)
+   if (this->children.isEmpty())
    {
-      if (this->children[i]->letter == letter)
-         return *this->children[i];
+      this->children << new Node(word, item);
    }
-   Node<T>* n = new Node(letter);
-   this->children.append(n);
-   return *n;
-}
-
-template <typename T>
-void Node<T>::rmNode(Node<T>* const node)
-{
-   this->children.removeOne(node);
-}
-
-template <typename T>
-Node<T>* Node<T>::getNode(const QChar& letter) const
-{
-   for (QListIterator<Node<T>*>i(this->children); i.hasNext();)
+   else
    {
-      Node<T>* node = i.next();
-      if (node->letter == letter)
-         return node;
+      for (int i = 0; i < this->children.size(); ++i)
+      {
+         const int p = Common::Global::commonPrefix(word, this->children[i]->part);
+         if (p != 0)
+         {
+            if (p == word.size())
+            {
+                // The word and the sub-part are equal.
+               if (p == this->children[i]->part.size())
+                  this->children[i]->items << item;
+               else // The word is the begining of the the sub-part.
+               {
+                  Node<T>* newNode = new Node<T>(word, item);
+                  this->children[i]->part.remove(0, p);
+                  this->children << newNode;
+                  newNode->children << this->children[i];
+                  this->children.removeAt(i);
+               }
+            }
+            else if (p == this->children[i]->part.size()) // The sub part is the begining of the word.
+            {
+               this->children[i]->addItem(word.right(word.size() - p), item);
+            }
+            else
+            {
+               // The word and the sub part share at least one character from the begining.
+               Node<T>* newNodeSplit = new Node<T>(word.left(p));
+               this->children[i]->part.remove(0, p);
+               this->children << newNodeSplit;
+               newNodeSplit->children << this->children[i];
+               this->children.removeAt(i);
+
+               Node<T>* newNode = new Node<T>(word.right(word.size() - p), item);
+               newNodeSplit->children << newNode;
+            }
+            return;
+         }
+      }
+      this->children << new Node<T>(word, item);
    }
-   return 0;
 }
 
 template <typename T>
-bool Node<T>::haveChildren() const
+void Node<T>::rmItem(const QString& word, T* item)
 {
-   return !this->children.empty();
+   QPair<Node<T>*, int> nodes = this->getNode(word, true);
+   if (!nodes.first)
+      return;
+
+   Node<T>* node = nodes.first->children[nodes.second];
+
+   if (node->items.size() == 1 && node->items[0] == item)
+   {
+      node->items.clear();
+      nodes.first->remove(nodes.second);
+   }
+   else
+   {
+      node->items.removeOne(item);
+   }
 }
 
 template <typename T>
-void Node<T>::addItem(T* item)
+QList<NodeResult<T>> Node<T>::search(const QString& word, bool alsoFromSubNodes, int maxNbResult) const
+{
+   QPair<Node<T>*, int> nodes = this->getNode(word, !alsoFromSubNodes);
+   if (!nodes.first)
+      return QList<NodeResult<T>>();
+
+   return nodes.first->children[nodes.second]->getItems(alsoFromSubNodes, maxNbResult);
+}
+
+template <typename T>
+Node<T>::Node(const QString& part) :
+   part(part)
+{
+}
+
+template <typename T>
+Node<T>::Node(const QString& part, T* item) :
+   part(part)
 {
    this->items << item;
 }
 
+/**
+  * Returns the node matching the given word as the 'QPair::second'th child of its parent 'QPair::first'.
+  */
 template <typename T>
-void Node<T>::rmItem(T* item)
+QPair<Node<T>*, int> Node<T>::getNode(const QString& word, bool exactMatch) const
 {
-   this->items.removeAll(item);
+   QString part = word;
+   Node<T>* currentParent = const_cast<Node<T>*>(this);
+   for (int i = 0; i < currentParent->children.size(); ++i)
+   {
+      int p = Common::Global::commonPrefix(part, currentParent->children[i]->part);
+      if (p == part.size() && p == currentParent->children[i]->part.size())
+         return qMakePair(currentParent, i);
+      if (p == currentParent->children[i]->part.size())
+      {
+         currentParent = currentParent->children[i];
+         part.remove(0, p);
+         i = -1;
+      }
+      else if (p == part.size())
+      {
+         if (exactMatch)
+            break;
+         else
+            return qMakePair(currentParent, i);
+      }
+      else if (p != 0)
+         break;
+   }
+   return QPair<Node<T>*, int>(nullptr, 0);
 }
 
 template <typename T>
@@ -245,15 +300,47 @@ QList<NodeResult<T>> Node<T>::getItems(bool alsoFromSubNodes, int maxNbResult) c
    return result;
 }
 
+/**
+  * Try to remove the i'th child.
+  */
 template <typename T>
-bool Node<T>::haveItems() const
+void Node<T>::remove(int i)
 {
-   return !this->items.empty();
-}
+   if (i >= this->children.size())
+      return;
 
-template <typename T>
-Node<T>::Node(const QChar& letter) :
-   letter(letter)
-{}
+   Node<T>* nodeToDelete = this->children[i];
+
+   // If the node to delete has nothing to merge we just remove it.
+   if (nodeToDelete->children.isEmpty() && nodeToDelete->items.isEmpty())
+   {
+      this->children.removeAt(i);
+      delete nodeToDelete;
+
+      // If we have only one child maybe we can delete it.
+      if (this->children.size() == 1)
+         this->remove(0);
+   }
+   // If the parent has no item and only one child (nodeToDelete) then we merge its child and delete it.
+   else if (this->items.isEmpty() && this->children.size() == 1)
+   {
+      this->items << nodeToDelete->items;
+      this->children << nodeToDelete->children;
+      this->part.append(nodeToDelete->part);
+
+      this->children.removeAt(i);
+      nodeToDelete->children.clear();
+      delete nodeToDelete;
+
+      // If we have only one child maybe we can delete it.
+      if (this->children.size() == 1)
+         this->remove(0);
+   }
+   // If the node to delete has one child and no item we can merge its child.
+   else if (nodeToDelete->children.size() == 1 && nodeToDelete->items.isEmpty())
+   {
+      nodeToDelete->remove(0);
+   }
+}
 
 #endif

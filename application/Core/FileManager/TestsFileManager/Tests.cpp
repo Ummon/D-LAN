@@ -44,6 +44,7 @@ using namespace std;
 #include <IGetHashesResult.h>
 #include <Exceptions.h>
 #include <priv/Constants.h>
+#include <priv/WordIndex/WordIndex.h>
 
 #include <HashesReceiver.h>
 
@@ -72,6 +73,67 @@ void Tests::initTestCase()
 
    SETTINGS.setFilename("core_settings_file_manager_tests.txt");
    SETTINGS.setSettingsMessage(new Protos::Core::Settings());
+}
+
+void Tests::testWordIndex()
+{
+   qDebug() << "===== testWordIndex() =====";
+
+   WordIndex<int> index;
+   int arbre = 1;
+   int arbalete = 2;
+   int ar = 2;
+   int arbuste = 3;
+
+   index.addItem("arbre", &arbre);
+   index.addItem("arbalete", &arbalete);
+   index.addItem("ar", &ar);
+   index.addItem("arbuste", &arbuste);
+
+   QList<int*> result1 = WordIndex<int>::resultToList(index.search("ar"));
+   QVERIFY(result1.size() == 1);
+   QVERIFY(result1.contains(&ar));
+
+   QList<int*> result2 = WordIndex<int>::resultToList(index.search("arb"));
+   QVERIFY(result2.size() == 3);
+   QVERIFY(result2.contains(&arbre));
+   QVERIFY(result2.contains(&arbalete));
+   QVERIFY(result2.contains(&arbuste));
+
+   QList<int*> result3 = WordIndex<int>::resultToList(index.search("arbr"));
+   QVERIFY(result3.size() == 1);
+   QVERIFY(result3.contains(&arbre));
+
+   QList<int*> result4 = WordIndex<int>::resultToList(index.search("arbre"));
+   QVERIFY(result4.size() == 1);
+   QVERIFY(result4.contains(&arbre));
+
+   QList<int*> result5 = WordIndex<int>::resultToList(index.search("arbres"));
+   QVERIFY(result5.size() == 0);
+
+   index.rmItem("arbuste", &arbuste);
+
+   QList<int*> result6 = WordIndex<int>::resultToList(index.search("arb"));
+   QVERIFY(result6.size() == 2);
+   QVERIFY(result6.contains(&arbre));
+   QVERIFY(result6.contains(&arbalete));
+
+   QList<int*> result7 = WordIndex<int>::resultToList(index.search("arbuste"));
+   QVERIFY(result7.size() == 0);
+
+   index.rmItem("arbalete", &arbalete);
+
+   QList<int*> result8 = WordIndex<int>::resultToList(index.search("arb"));
+   QVERIFY(result8.size() == 1);
+   QVERIFY(result8.contains(&arbre));
+
+   QList<int*> result9 = WordIndex<int>::resultToList(index.search("arbalete"));
+   QVERIFY(result9.size() == 0);
+
+   index.rmItem("arbre", &arbre);
+
+   QList<int*> result10 = WordIndex<int>::resultToList(index.search("arb"));
+   QVERIFY(result10.size() == 0);
 }
 
 void Tests::createFileManager()

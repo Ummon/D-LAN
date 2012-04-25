@@ -31,7 +31,7 @@
 namespace FM
 {
    /**
-     * An collection of T indexed by word.
+     * A thread safe collection of T indexed by word.
      */
    template<typename T>
    class WordIndex : Common::Uncopyable
@@ -41,12 +41,16 @@ namespace FM
       WordIndex();
 
       void addItem(const QStringList& words, T* item);
+      void addItem(const QString& word, T* item);
       void rmItem(const QStringList& words, T* item);
+      void rmItem(const QString& word, T* item);
       QList<NodeResult<T>> search(const QStringList& words, int maxNbResultPerWord = -1) const;
       QList<NodeResult<T>> search(const QString& word, int maxNbResult = -1) const;
 
+      static QList<T*> resultToList(const QList<NodeResult<int>>& result);
+
    private:
-      Node<T> node;
+      Node<T> root;
       mutable QMutex mutex;
    };
 }
@@ -65,58 +69,30 @@ template<typename T>
 void WordIndex<T>::addItem(const QStringList& words, T* item)
 {
    QMutexLocker locker(&mutex);
-
    for (QListIterator<QString> i(words); i.hasNext();)
-   {
-      const QString& word = i.next();
-      Node<T>* currentNode = &this->node;
-      for (int j = 0; j < word.size(); j++)
-         currentNode = &currentNode->addNode(word[j]);
-      currentNode->addItem(item);
-   }
+      this->root.addItem(i.next(), item);
+}
+
+template<typename T>
+void WordIndex<T>::addItem(const QString& word, T* item)
+{
+   QMutexLocker locker(&mutex);
+   this->root.addItem(word, item);
 }
 
 template<typename T>
 void WordIndex<T>::rmItem(const QStringList& words, T* item)
 {
    QMutexLocker locker(&mutex);
-
    for (QListIterator<QString> i(words); i.hasNext();)
-   {
-      const QString& word = i.next();
-      QList<Node<T>*> nodes;
-      Node<T>* currentNode = &this->node;
-      nodes.prepend(currentNode);
-      for (int j = 0; j < word.size(); j++)
-      {
-         if (!(currentNode = currentNode->getNode(word[j])))
-            goto nextWord;
-         nodes.prepend(currentNode);
-      }
+      this->root.rmItem(i.next(), item);
+}
 
-      currentNode->rmItem(item);
-
-      if (!currentNode->haveChildren())
-      {
-         Node<T>* nodeToRemove = nullptr;
-         for (QListIterator<Node<T>*> i(nodes); i.hasNext();)
-         {
-            Node<T>* n = i.next();
-            if (nodeToRemove)
-            {
-               n->rmNode(nodeToRemove);
-               delete nodeToRemove;
-            }
-
-            if (n->haveItems() || n->haveChildren())
-               break;
-            else
-               nodeToRemove = n;
-         }
-      }
-
-      nextWord :;
-   }
+template<typename T>
+void WordIndex<T>::rmItem(const QString& word, T* item)
+{
+   QMutexLocker locker(&mutex);
+   this->root.rmItem(word, item);
 }
 
 template<typename T>
@@ -128,15 +104,7 @@ QList<NodeResult<T>> WordIndex<T>::search(const QStringList& words, int maxNbRes
    for (QListIterator<QString> i(words); i.hasNext();)
    {
       const QString& word = i.next();
-      const Node<T>* currentNode = &this->node;
-      for (int j = 0; j < word.size(); j++)
-      {
-         if (!(currentNode = currentNode->getNode(word[j])))
-            goto nextWord;
-      }
-
-      result << currentNode->getItems(word.size() >= MIN_WORD_SIZE_PARTIAL_MATCH, maxNbResultPerWord);
-      nextWord :;
+      result << this->root.search(word, word.size() >= MIN_WORD_SIZE_PARTIAL_MATCH, maxNbResultPerWord);
    }
    return result;
 }
@@ -144,7 +112,17 @@ QList<NodeResult<T>> WordIndex<T>::search(const QStringList& words, int maxNbRes
 template<typename T>
 QList<NodeResult<T>> WordIndex<T>::search(const QString& word, int maxNbResult) const
 {
-   return this->search(QStringList() << word, maxNbResult);
+   QMutexLocker locker(&mutex);
+   return this->root.search(word, word.size() >= MIN_WORD_SIZE_PARTIAL_MATCH, maxNbResult);
+}
+
+template<typename T>
+QList<T*> WordIndex<T>::resultToList(const QList<NodeResult<int>>& result)
+{
+   QList<T*> l;
+   for (auto i = result.begin(); i != result.end(); ++i)
+      l << i->value;
+   return l;
 }
 
 #endif
