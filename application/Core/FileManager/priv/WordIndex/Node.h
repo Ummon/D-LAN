@@ -27,6 +27,12 @@
 #include <Common/Uncopyable.h>
 #include <Common/Global.h>
 
+/**
+  * @class FM::Node
+  *
+  * Indexed item by string, see the class 'WordIndex' for some explanations.
+  */
+
 namespace FM
 {
    template<typename T>
