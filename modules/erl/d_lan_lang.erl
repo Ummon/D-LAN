@@ -195,7 +195,7 @@ translate(en, about, tech_used_tools) ->
    "<li>Lightweight editor : <a href=\"http://www.scintilla.org/SciTE.html\">SciTE</a></li>"
    "<li>Project management : <a href=\"http://www.redmine.org/\">Redmine</a></li>"
    "<li>Documentation generator : <a href=\"http://www.doxygen.org/\">Doxygen</a></li>"
-   "<li>UML editor : <a href=\"http://bouml.free.fr/\">Bouml</a></li>"
+   "<li>UML editor : <a href=\"http://www.bouml.fr/\">Bouml</a></li>"
    "<li>Setup builder : <a href=\"http://www.jrsoftware.org/isinfo.php\">Inno Setup</a></li>"
    "<li>Vector graphics editor : <a href=\"http://inkscape.org/\">Inkscape</a></li>"
    "<li>Bitmap graphics editor : <a href=\"http://www.gimp.org/\">GIMP</a></li>";
