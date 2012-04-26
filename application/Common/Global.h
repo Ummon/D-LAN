@@ -48,7 +48,7 @@ namespace Common
       template <typename T>
       static void sortedAdd(const QList<T*>& entries, QList<T*>& list, bool (*lesserThan)(const T&, const T&) = nullptr);
 
-      static inline int commonPrefix(const QString& s1, const QString& s2);
+      static inline int commonPrefix(const QStringRef& s1, const QStringRef& s2);
 
       static int nCombinations(int n, int k);
       static QString formatByteSize(qint64 bytes, int precision = 1);
@@ -158,12 +158,12 @@ void Common::Global::sortedAdd(const QList<T*>& items, QList<T*>& list, bool (*l
    }
 }
 
-inline int Common::Global::commonPrefix(const QString& s1, const QString& s2)
+inline int Common::Global::commonPrefix(const QStringRef& s1, const QStringRef& s2)
 {
    int i = 0;
    while (i < s1.size() && i < s2.size())
    {
-      if (s1[i] != s2[i])
+      if (s1.at(i) != s2.at(i))
          return i;
       ++i;
    }

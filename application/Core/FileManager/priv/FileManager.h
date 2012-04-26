@@ -100,7 +100,7 @@ namespace FM
       FileUpdater fileUpdater;
       Cache cache; ///< The files and directories.
       Chunks chunks; ///< The indexed chunks. It contains only completed chunks.
-      WordIndex<Entry> wordIndex; ///< The word index.
+      WordIndex<Entry*> wordIndex; ///< The word index.
 
       QTimer timerPersistCache;
       QMutex mutexPersistCache;

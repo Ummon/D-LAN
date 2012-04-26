@@ -33,10 +33,10 @@ namespace FM
    struct NodeResult
    {
       NodeResult() : level(0) {}
-      NodeResult(T* v, bool level = 0) : value(v), level(level) {}
+      NodeResult(T v, bool level = 0) : value(v), level(level) {}
       static void intersect(QSet<NodeResult<T>>& s1, const QSet<NodeResult<T>>& s2, int matchValue);
 
-      T* value; // Should be const but QList must be able to change a NodeResult in place...
+      T value;
       int level;
    };
 
@@ -83,13 +83,13 @@ namespace FM
         * Add an item to the node.
         * If the item already exists (using operator==) nothing is added.
         */
-      void addItem(const QString& word, T* item);
+      void addItem(const QStringRef& word, const T& item);
 
       /**
         * Remove the item from the node.
         * If the item doesn'exist nothing happen.
         */
-      void rmItem(const QString& word, T* item);
+      void rmItem(const QString& word, const T& item);
 
       QList<NodeResult<T>> search(const QString& word, bool alsoFromSubNodes = false, int maxNbResult = -1) const;
 
@@ -97,7 +97,7 @@ namespace FM
 
    private:
       Node(const QString& part);
-      Node(const QString& part, T* item);
+      Node(const QString& part, const T& item);
 
       QPair<Node<T>*, int> getNode(const QString& word, bool exactMatch = false) const;
 
@@ -111,7 +111,7 @@ namespace FM
 
       QString part;
       QList<Node<T>*> children; ///< The children nodes.
-      QList<T*> items; ///< The indexed items.
+      QList<T> items; ///< The indexed items.
    };
 
    template <typename T>
@@ -126,7 +126,7 @@ namespace FM
       uint h = 0;
       static const int n = sizeof(T*) > sizeof(uint) ? sizeof(T*) / sizeof(uint) : 1;
       for (int i = 0; i < n; ++i)
-         h ^= intptr_t(r.value) >> (i * sizeof(uint));
+         h ^= intptr_t(&r.value) >> (i * sizeof(uint));
       return h;
    }
 }
@@ -148,61 +148,59 @@ Node<T>::~Node()
 }
 
 template <typename T>
-void Node<T>::addItem(const QString& word, T* item)
+void Node<T>::addItem(const QStringRef& word, const T& item)
 {
    if (this->children.isEmpty())
    {
-      this->children << new Node(word, item);
+      this->children << new Node(word.toString(), item);
    }
    else
    {
       for (int i = 0; i < this->children.size(); ++i)
       {
-         const int p = Common::Global::commonPrefix(word, this->children[i]->part);
+         Node<T>* child = this->children[i];
+         const int p = Common::Global::commonPrefix(word, &child->part);
          if (p != 0)
          {
             if (p == word.size())
             {
                 // The word and the sub-part are equal.
-               if (p == this->children[i]->part.size())
+               if (p == child->part.size())
                {
-                  if (!this->children[i]->items.contains(item))
-                     this->children[i]->items << item;
+                  child->items << item;
                }
                else // The word is the begining of the the sub-part.
                {
-                  Node<T>* newNode = new Node<T>(word, item);
-                  this->children[i]->part.remove(0, p);
-                  this->children << newNode;
-                  newNode->children << this->children[i];
-                  this->children.removeAt(i);
+                  Node<T>* newNode = new Node<T>(word.toString(), item);
+                  child->part.remove(0, p);
+                  this->children.replace(i, newNode);
+                  newNode->children << child;
                }
             }
-            else if (p == this->children[i]->part.size()) // The sub part is the begining of the word.
+            else if (p == child->part.size()) // The sub part is the begining of the word.
             {
-               this->children[i]->addItem(word.right(word.size() - p), item);
+               child->addItem(word.string()->midRef(word.position() + p, word.size() - p), item);
             }
             else
             {
                // The word and the sub part share at least one character from the begining.
-               Node<T>* newNodeSplit = new Node<T>(word.left(p));
-               this->children[i]->part.remove(0, p);
-               this->children << newNodeSplit;
-               newNodeSplit->children << this->children[i];
-               this->children.removeAt(i);
+               Node<T>* newNodeSplit = new Node<T>(word.string()->mid(word.position(), p));
+               child->part.remove(0, p);
+               this->children.replace(i, newNodeSplit);
+               newNodeSplit->children << child;
 
-               Node<T>* newNode = new Node<T>(word.right(word.size() - p), item);
+               Node<T>* newNode = new Node<T>(word.string()->mid(word.position() + p, word.size() - p), item);
                newNodeSplit->children << newNode;
             }
             return;
          }
       }
-      this->children << new Node<T>(word, item);
+      this->children << new Node<T>(word.toString(), item);
    }
 }
 
 template <typename T>
-void Node<T>::rmItem(const QString& word, T* item)
+void Node<T>::rmItem(const QString& word, const T& item)
 {
    QPair<Node<T>*, int> nodes = this->getNode(word, true);
    if (!nodes.first)
@@ -228,7 +226,7 @@ QList<NodeResult<T>> Node<T>::search(const QString& word, bool alsoFromSubNodes,
    if (!nodes.first)
       return QList<NodeResult<T>>();
 
-return nodes.first->children[nodes.second]->getItems(alsoFromSubNodes, maxNbResult);
+   return nodes.first->children[nodes.second]->getItems(alsoFromSubNodes, maxNbResult);
 }
 
 template <typename T>
@@ -266,7 +264,7 @@ Node<T>::Node(const QString& part) :
 }
 
 template <typename T>
-Node<T>::Node(const QString& part, T* item) :
+Node<T>::Node(const QString& part, const T& item) :
    part(part)
 {
    this->items << item;
@@ -282,24 +280,30 @@ QPair<Node<T>*, int> Node<T>::getNode(const QString& word, bool exactMatch) cons
    Node<T>* currentParent = const_cast<Node<T>*>(this);
    for (int i = 0; i < currentParent->children.size(); ++i)
    {
-      int p = Common::Global::commonPrefix(part, currentParent->children[i]->part);
-      if (p == part.size() && p == currentParent->children[i]->part.size())
-         return qMakePair(currentParent, i);
-      if (p == currentParent->children[i]->part.size())
+      Node<T>* child = currentParent->children[i];
+      int p = Common::Global::commonPrefix(&part, &child->part);
+
+      if (p != 0)
       {
-         currentParent = currentParent->children[i];
-         part.remove(0, p);
-         i = -1;
-      }
-      else if (p == part.size())
-      {
-         if (exactMatch)
-            break;
-         else
-            return qMakePair(currentParent, i);
-      }
-      else if (p != 0)
+         if (p == child->part.size())
+         {
+            if (p == part.size())
+               return qMakePair(currentParent, i);
+
+            currentParent = child;
+            part.remove(0, p);
+            i = -1;
+            continue;
+         }
+         else if (p == part.size())
+         {
+            if (exactMatch)
+               break;
+            else
+               return qMakePair(currentParent, i);
+         }
          break;
+      }
    }
    return QPair<Node<T>*, int>(nullptr, 0);
 }
@@ -316,7 +320,7 @@ QList<NodeResult<T>> Node<T>::getItems(bool alsoFromSubNodes, int maxNbResult) c
    {
       const Node<T>* current = nodesToVisit.takeFirst();
 
-      for (QListIterator<T*> i(current->items); i.hasNext();)
+      for (QListIterator<T> i(current->items); i.hasNext();)
       {
          // 'level' == 0 means the item matches exactly, it's a bit tricky..
          result << NodeResult<T>(i.next(), current == this ? 0 : 1);
