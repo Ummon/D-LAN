@@ -422,9 +422,8 @@ end:
 
 void FileUpdater::updateHashingProgress()
 {
+   const quint64 totalAmountOfData = this->fileManager->getAmount();
    QMutexLocker locker(&this->mutex);
-
-   quint64 totalAmountOfData = this->fileManager->getAmount();
    this->progress = totalAmountOfData == 0 ? 0 : 10000LL * (totalAmountOfData - this->remainingSizeToHash) / totalAmountOfData;
 }
 
@@ -564,7 +563,7 @@ void FileUpdater::stopScanning(Directory* dir)
    }
    else
    {
-      QMutexLocker scanningLocker(&this->mutex);
+      QMutexLocker locker(&this->mutex);
       if (dir)
          this->dirsToScan.removeOne(dir);
       else
