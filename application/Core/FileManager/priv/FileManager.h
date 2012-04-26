@@ -35,12 +35,12 @@
 #include <priv/Log.h>
 #include <priv/FileUpdater/FileUpdater.h>
 #include <priv/Cache/Cache.h>
+#include <priv/Cache/Entry.h>
 #include <priv/ChunkIndex/Chunks.h>
 #include <priv/WordIndex/WordIndex.h>
 
 namespace FM
 {
-   class Entry;
    class Chunk;
    class Directory;
    class IChunk;
