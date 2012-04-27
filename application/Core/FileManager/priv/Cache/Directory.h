@@ -23,6 +23,7 @@
 #include <QList>
 #include <QFileInfo>
 #include <QMutex>
+#include <QMap>
 
 #include <Protos/common.pb.h>
 #include <Protos/files_cache.pb.h>
@@ -95,6 +96,10 @@ namespace FM
 
       Directory& operator+=(qint64);
       Directory& operator-=(qint64);
+
+      void sortFiles();
+      void sortSubDirs();
+      static bool entrySortingFun(const Entry* e1, const Entry* e2);
 
       Directory* parent;
 

@@ -336,7 +336,8 @@ File* Directory::getFile(const QString& name) const
 void Directory::add(File* file)
 {
    QMutexLocker locker(&this->mutex);
-   Common::Global::sortedAdd(file, this->files);
+   this->files << file;
+   this->sortFiles();
    (*this) += file->getSize();
 }
 
@@ -381,37 +382,38 @@ void Directory::stealContent(Directory* dir)
 void Directory::add(Directory* dir)
 {
    QMutexLocker locker(&this->mutex);
-   Common::Global::sortedAdd(dir, this->subDirs);
+   this->subDirs << dir;
+   this->sortSubDirs();
 }
 
 /**
   *
   */
-void Directory::subdirNameChanged(Directory* dir)
+void Directory::subdirNameChanged(Directory* /*dir*/)
 {
    QMutexLocker locker(&this->mutex);
-   this->subDirs.removeOne(dir);
-   Common::Global::sortedAdd(dir, this->subDirs);
+   this->sortSubDirs();
 }
 
 /**
   * Must be called only by a file.
   */
-void Directory::fileNameChanged(File* file)
+void Directory::fileNameChanged(File* /*file*/)
 {
    QMutexLocker locker(&this->mutex);
-   this->files.removeOne(file);
-   Common::Global::sortedAdd(file, this->files);
+   this->sortFiles();
 }
 
 void Directory::add(QList<Directory*> dirs)
 {
-   Common::Global::sortedAdd(dirs, this->subDirs);
+   this->subDirs << dirs;
+   this->sortSubDirs();
 }
 
 void Directory::add(QList<File*> files)
 {
-   Common::Global::sortedAdd(files, this->files);
+   this->files << files;
+   this->sortFiles();
 }
 
 /**
@@ -436,6 +438,21 @@ Directory& Directory::operator-=(qint64 size)
       (*this->parent) -= size;
 
    return *this;
+}
+
+void Directory::sortFiles()
+{
+   qSort(this->files.begin(), this->files.end(), Directory::entrySortingFun);
+}
+
+void Directory::sortSubDirs()
+{
+   qSort(this->subDirs.begin(), this->subDirs.end(), Directory::entrySortingFun);
+}
+
+bool Directory::entrySortingFun(const Entry* e1, const Entry* e2)
+{
+   return (*e1) < (*e2);
 }
 
 /**

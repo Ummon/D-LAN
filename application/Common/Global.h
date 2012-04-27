@@ -43,11 +43,7 @@ namespace Common
       static QString getSystemVersion();
       static QString getVersionFull();
 
-      template <typename T>
-      static void sortedAdd(T* entry, QList<T*>& list, bool (*lesserThan)(const T&, const T&) = nullptr);
-      template <typename T>
-      static void sortedAdd(const QList<T*>& entries, QList<T*>& list, bool (*lesserThan)(const T&, const T&) = nullptr);
-
+      static inline int commonPrefix(const QString& s1, const QString& s2) { return Global::commonPrefix(&s1, &s2); }
       static inline int commonPrefix(const QStringRef& s1, const QStringRef& s2);
 
       static int nCombinations(int n, int k);
@@ -99,63 +95,6 @@ namespace Common
       static QString getQObjectHierarchy(const QObject* root);
       static QString getQObjectHierarchy(const QObject* root, std::function<QString(const QObject*)> fun);
    };
-}
-
-/**
-  * Add an item into a sorted list. The list is kept sorted.
-  * T must implement the < operator.
-  * @param list Must be sorted.
-  */
-template <typename T>
-void Common::Global::sortedAdd(T* item, QList<T*>& list, bool (*lesserThan)(const T&, const T&))
-{
-   for (QMutableListIterator<T*> i(list); i.hasNext(); i.next())
-   {
-      T* e = i.peekNext();
-      if (e == item)
-         return;
-      if (lesserThan ? lesserThan(*item, *e) : *item < *e)
-      {
-         i.insert(item);
-         return;
-      }
-   }
-
-   list << item;
-}
-
-/**
-  * Merge some items into a sorted list. The list is kept sorted.
-  * T must implement the < operator.
-  * @param list Must be sorted.
-  */
-template <typename T>
-void Common::Global::sortedAdd(const QList<T*>& items, QList<T*>& list, bool (*lesserThan)(const T&, const T&))
-{
-   QListIterator<T*> i(items);
-   QMutableListIterator<T*> j(list);
-
-   while(i.hasNext())
-   {
-      T* ei = i.next();
-
-      bool inserted = false;
-      while (j.hasNext())
-      {
-         T* ej = j.peekNext();
-         if (lesserThan ? lesserThan(*ei, *ej) : *ei < *ej)
-         {
-            j.insert(ei);
-            i.next();
-            inserted = true;
-            break;
-         }
-         j.next();
-      }
-
-      if (!inserted)
-         j.insert(ei);
-   }
 }
 
 inline int Common::Global::commonPrefix(const QStringRef& s1, const QStringRef& s2)
