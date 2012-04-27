@@ -45,6 +45,39 @@ void Tests::initTestCase()
    qDebug() << "Application directory path (where the settings and persistent data are put) : " << Global::getDataFolder(Common::Global::DataFolderType::ROAMING, false);
 }
 
+void Tests::getVersion()
+{
+   qDebug() << "Global::getVersion(): " << Global::getVersion();
+   qDebug() << "Global::getVersionTag(): " << Global::getVersionTag();
+   qDebug() << "Global::getSystemVersion(): " << Global::getSystemVersion();
+   qDebug() << "Global::getVersionFull(): " << Global::getVersionFull();
+
+   QVERIFY(!Global::getVersion().isEmpty());
+   QVERIFY(!Global::getVersionTag().isEmpty());
+   QVERIFY(!Global::getSystemVersion().isEmpty());
+   QVERIFY(!Global::getVersionFull().isEmpty());
+}
+
+void Tests::commonPrefix()
+{
+   const QString s1 = "abcd";
+   const QString s2 = "abc";
+   const QString s3 = "abcz";
+   const QString s4 = "a";
+   const QString s5 = "";
+   const QString s6;
+   const QString s7 = "abcdefg";
+   const QString s8 = "zzz";
+
+   QCOMPARE(Global::commonPrefix(s1, s2), 3);
+   QCOMPARE(Global::commonPrefix(s1, s3), 3);
+   QCOMPARE(Global::commonPrefix(s1, s4), 1);
+   QCOMPARE(Global::commonPrefix(s1, s5), 0);
+   QCOMPARE(Global::commonPrefix(s1, s6), 0);
+   QCOMPARE(Global::commonPrefix(s1, s7), 4);
+   QCOMPARE(Global::commonPrefix(s1, s8), 0);
+}
+
 void Tests::nCombinations()
 {
    QCOMPARE(Global::nCombinations(5, 4), 5);

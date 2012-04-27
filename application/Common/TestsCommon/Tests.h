@@ -33,6 +33,8 @@ private slots:
    void initTestCase();
 
    // Global class.
+   void getVersion();
+   void commonPrefix();
    void nCombinations();
    void formatByteSize();
    void formatTime();
