@@ -72,7 +72,6 @@ File::File(
    Entry(dir->getCache(), name + (createPhysically ? Global::getUnfinishedSuffix() : ""), size),
    dir(dir),
    dateLastModified(dateLastModified),
-   nbChunkComplete(0),
    complete(!Global::isFileUnfinished(Entry::getName())),
    numDataWriter(0),
    numDataReader(0),
@@ -125,13 +124,16 @@ void File::setToUnfinished(qint64 size, const Common::Hashes& hashes)
    this->name.append(Global::getUnfinishedSuffix());
    this->size = size;
    this->dateLastModified = QDateTime::currentDateTime();
-   this->nbChunkComplete = 0;
    this->deleteAllChunks();
    this->setHashes(hashes);
 
    this->createPhysicalFile();
 }
 
+/**
+  * Restore the data stored in a protocol buffer structure.
+  * @return 'true' if the file match the given data or 'false' otherwise.
+  */
 bool File::restoreFromFileCache(const Protos::FileCache::Hashes::File& file)
 {
    if (
@@ -151,9 +153,6 @@ bool File::restoreFromFileCache(const Protos::FileCache::Hashes::File& file)
          this->chunks[i]->restoreFromFileCache(file.chunk(i));
          if (this->chunks[i]->hasHash())
          {
-            if (this->chunks[i]->isComplete())
-               this->nbChunkComplete++;
-
             if (this->chunks[i]->getKnownBytes() > 0)
                this->cache->onChunkHashKnown(this->chunks[i]);
          }
@@ -395,63 +394,22 @@ bool File::isComplete()
    return this->complete;
 }
 
-/**
-  * Called from a downloading thread.
-  * Set the file as complete, change its name from "<name>.unfinished" to "<name>".
-  * If a file with the same name already exists it will be deleted.
-  * The rename process can be only made if there is no reader, in a such case we will wait for the last reader finished.
-  * TODO: if the rename fail must we attempt later? With a timer?
-  */
-void File::setAsComplete()
-{
-   QMutexLocker locker(&this->mutex);
-
-   L_DEBU(QString("File set as complete : %1").arg(this->getFullPath()));
-
-   if (Global::isFileUnfinished(this->name))
-   {
-      if (this->numDataReader > 0 || this->numDataWriter > 0)
-      {
-         QMutexLocker lockerWrite(&this->writeLock);
-         QMutexLocker lockerRead(&this->readLock);
-         this->cache->getFilePool().forceReleaseAll(this->getFullPath()); // Some uploads may be interrupted.
-         this->fileInReadMode = nullptr;
-         this->fileInWriteMode = nullptr;
-      }
-
-      const QString oldPath = this->getFullPath();
-      const QString newPath = Global::removeUnfinishedSuffix(oldPath);
-
-      if (!Common::Global::rename(oldPath, newPath))
-      {
-         L_ERRO(QString("Unable to rename the file %1 to %2").arg(oldPath).arg(newPath));
-      }
-      else
-      {
-         this->complete = true;
-         this->dateLastModified = QFileInfo(newPath).lastModified();
-         this->name = Global::removeUnfinishedSuffix(this->name);
-         this->cache->onEntryAdded(this); // To add the name to the index. (a bit tricky).
-      }
-   }
-}
-
 void File::chunkComplete(const Chunk* chunk)
 {
    QMutexLocker locker(&this->mutex);
 
-   // TODO: very cpu consumer! We have to find a better way!
+   int nbChunkComplete = 0;
    for (int i = 0; i < this->chunks.size(); ++i)
-      if (this->chunks[i].data() == chunk)
-      {
-         this->cache->onChunkHashKnown(this->chunks[i]);
-         break;
-      }
-
-   if (++this->nbChunkComplete == this->getNbChunks())
    {
-      this->setAsComplete();
+      if (this->chunks[i].data() == chunk)
+         this->cache->onChunkHashKnown(this->chunks[i]);
+
+      if (this->chunks[i]->isComplete())
+         ++nbChunkComplete;
    }
+
+   if (nbChunkComplete == this->getNbChunks())
+      this->setAsComplete();
 }
 
 int File::getNbChunks()
@@ -538,6 +496,47 @@ QSharedPointer<Chunk> File::removeLastChunk()
    QSharedPointer<Chunk> chunk = this->chunks.last();
    this->chunks.remove(this->chunks.size() - 1);
    return chunk;
+}
+
+/**
+  * Called from a downloading thread.
+  * Set the file as complete, change its name from "<name>.unfinished" to "<name>".
+  * If a file with the same name already exists it will be deleted.
+  * The rename process can be only made if there is no reader, in a such case we will wait for the last reader finished.
+  * TODO: if the rename fail must we attempt later? With a timer?
+  */
+void File::setAsComplete()
+{
+   QMutexLocker locker(&this->mutex);
+
+   L_DEBU(QString("File set as complete : %1").arg(this->getFullPath()));
+
+   if (Global::isFileUnfinished(this->name))
+   {
+      if (this->numDataReader > 0 || this->numDataWriter > 0)
+      {
+         QMutexLocker lockerWrite(&this->writeLock);
+         QMutexLocker lockerRead(&this->readLock);
+         this->cache->getFilePool().forceReleaseAll(this->getFullPath()); // Some uploads may be interrupted.
+         this->fileInReadMode = nullptr;
+         this->fileInWriteMode = nullptr;
+      }
+
+      const QString oldPath = this->getFullPath();
+      const QString newPath = Global::removeUnfinishedSuffix(oldPath);
+
+      if (!Common::Global::rename(oldPath, newPath))
+      {
+         L_ERRO(QString("Unable to rename the file %1 to %2").arg(oldPath).arg(newPath));
+      }
+      else
+      {
+         this->complete = true;
+         this->dateLastModified = QFileInfo(newPath).lastModified();
+         this->name = Global::removeUnfinishedSuffix(this->name);
+         this->cache->onEntryAdded(this); // To add the name to the index. (a bit tricky).
+      }
+   }
 }
 
 void File::deleteAllChunks()
