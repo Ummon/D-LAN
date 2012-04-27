@@ -49,13 +49,14 @@ using namespace FM;
 LOG_INIT_CPP(FileManager);
 
 FileManager::FileManager() :
-   CHUNK_SIZE(SETTINGS.get<quint32>("chunk_size")),
    fileUpdater(this),
    cache(),
    mutexPersistCache(QMutex::Recursive),
    cacheLoading(true),
    cacheChanged(false)
 {
+   Chunk::CHUNK_SIZE = SETTINGS.get<quint32>("chunk_size");
+
    connect(&this->cache, SIGNAL(entryAdded(Entry*)),     this, SLOT(entryAdded(Entry*)),     Qt::DirectConnection);
    connect(&this->cache, SIGNAL(entryRemoved(Entry*)),   this, SLOT(entryRemoved(Entry*)),   Qt::DirectConnection);
    connect(&this->cache, SIGNAL(chunkHashKnown(QSharedPointer<Chunk>)), this, SLOT(chunkHashKnown(QSharedPointer<Chunk>)), Qt::DirectConnection);
@@ -133,7 +134,7 @@ QList<QSharedPointer<IChunk>> FileManager::getAllChunks(const Protos::Common::En
          if (chunk->matchesEntry(localEntry)) // The name, the path and the size of the file are the same?
          {
             // We verify that all hashes of all chunks match the given hashes. If it's not the case, the files are not the same.
-            QList<QSharedPointer<Chunk>> allChunks = chunk->getOtherChunks();
+            QVector<QSharedPointer<Chunk>> allChunks = chunk->getOtherChunks();
             if (allChunks.size() != hashes.size())
                return QList<QSharedPointer<IChunk>>();
 
@@ -172,127 +173,39 @@ Protos::Common::Entries FileManager::getEntries()
    return this->cache.getEntries();
 }
 
-/**
-  * @see http://dev.euphorik.ch/wiki/pmp/Algorithms#Word-indexing for more information.
-  * TODO: A large part of this function code should be owned by 'WordIndex'.
-  */
 QList<Protos::Common::FindResult> FileManager::find(const QString& words, int maxNbResult, int maxSize)
 {
-   QStringList terms = Common::Global::splitInWords(words);
-   const int n = terms.size();
-
-   // Launch a search for each term.
-   QVector<QSet<NodeResult<Entry>>> results(n);
-   for (int i = 0; i < n; i++)
-      // We can only limit the number of result for one term. When there is more than one term and thus some results set, say [a, b, c] for example, some good result may be contained in intersect, for example a & b or a & c.
-      results[i] += this->wordIndex.search(terms[i], n == 1 ? maxNbResult : -1).toSet();
+   QList<NodeResult<Entry*>> result = this->wordIndex.search(Common::Global::splitInWords(words), maxNbResult);
 
    QList<Protos::Common::FindResult> findResults;
    findResults << Protos::Common::FindResult();
-   findResults.last().set_tag(std::numeric_limits<quint64>::max()); // Worst case to compute the size.
+   findResults.last().set_tag(std::numeric_limits<quint64>::max()); // Worst case to compute the size (int fields have a variable size).
 
-   const int constantFindResultsSize = findResults.last().ByteSize();
-   int findResultCurrentSize = constantFindResultsSize; // [Byte].
+   const int EMPTY_FIND_RESULT_SIZE = findResults.last().ByteSize();
+   int findResultCurrentSize = EMPTY_FIND_RESULT_SIZE; // [Byte].
 
-   int numberOfResult = 0;
-   bool end = false;
-
-   int level = 0;
-   // For each group of intersection number.
-   // For example, [a, b, c] :
-   //  * a & b & c
-   //  * (a & b) \ c
-   //    (a & c) \ b
-   //    (b & c) \ a
-   //  * a \ b \ c
-   for (int i = 0; i < n && !end; i++)
+   for (QListIterator<NodeResult<Entry*>> i(result); i.hasNext();)
    {
-      const int nbIntersect = n - i; // Number of set intersected.
-      int intersect[nbIntersect]; // A array of the results wich will be intersected.
-      for (int j = 0; j < nbIntersect; j++)
-         intersect[j] = j;
+      const NodeResult<Entry*>& entry = i.next();
+      Protos::Common::FindResult_EntryLevel* entryLevel = findResults.last().add_entry();
+      entryLevel->set_level(entry.level);
+      entry.value->populateEntry(entryLevel->mutable_entry(), true);
 
-      // For each combination of the current intersection group.
-      // For 2 intersections (nbIntersect == 2) among 3 elements [a, b, c] :
-      //  * (a, b)
-      //  * (a, c)
-      //  * (b, c)
-      QList<NodeResult<Entry>> nodesToSort;
-      const int nCombinations = Common::Global::nCombinations(n, nbIntersect);
-      for (int j = 0; j < nCombinations && !end; j++)
+      // We wouldn't use 'findResults.last().ByteSize()' because is too slow. Instead we call 'ByteSize()' for each entry and sum it.
+      const int entryByteSize = entryLevel->ByteSize() + 8; // Each entry take a bit of memory overhead... (Value found in an empiric way..).
+      findResultCurrentSize += entryByteSize;
+
+      if (findResultCurrentSize > maxSize)
       {
-         QSet<NodeResult<Entry>> currentLevelSet;
-
-         // Apply intersects.
-         currentLevelSet = results[intersect[0]];
-
-         for (QSetIterator<NodeResult<Entry>> k(currentLevelSet); k.hasNext();)
+         google::protobuf::RepeatedPtrField<Protos::Common::FindResult_EntryLevel>* entries = findResults.last().mutable_entry();
+         findResults << Protos::Common::FindResult();
+         if (entries->size() > 0)
          {
-            NodeResult<Entry>& node = const_cast<NodeResult<Entry>&>(k.next());
-            node.level = node.level ? nCombinations : 0;
+            findResults.last().add_entry()->CopyFrom(entries->Get(entries->size()-1));
+            entries->RemoveLast();
          }
-
-         for (int k = 1; k < nbIntersect; k++)
-            NodeResult<Entry>::intersect(currentLevelSet, results[intersect[k]], nCombinations);
-
-         // Apply substracts.
-         for (int k = -1; k < nbIntersect; k++)
-            for (int l = (k == -1 ? 0 : intersect[k] + 1); l < (k == nbIntersect - 1 ? n : intersect[k+1]); l++)
-               currentLevelSet -= results[l];
-
-         for (QSetIterator<NodeResult<Entry>> k(currentLevelSet); k.hasNext();)
-            const_cast<NodeResult<Entry>&>(k.next()).level += level;
-
-         // Sort by level.
-         nodesToSort << currentLevelSet.toList();
-
-         // Define positions of each intersect term.
-         for (int k = nbIntersect - 1; k >= 0; k--)
-            if  (intersect[k] < n - nbIntersect + k)
-            {
-               intersect[k] += 1;
-               for (int l = k + 1; l < nbIntersect; l++)
-                  intersect[l] = intersect[k] + (l - k);
-               break;
-            }
-
-         level += 1;
+         findResultCurrentSize = EMPTY_FIND_RESULT_SIZE + entryByteSize;
       }
-
-      qSort(nodesToSort); // Sort by level
-
-      // Populate the result.
-      for (QListIterator<NodeResult<Entry>> k(nodesToSort); k.hasNext();)
-      {
-         NodeResult<Entry> entry = k.next();
-         Protos::Common::FindResult_EntryLevel* entryLevel = findResults.last().add_entry();
-         entryLevel->set_level(entry.level);
-         entry.value->populateEntry(entryLevel->mutable_entry(), true);
-
-         // We wouldn't use 'findResults.last().ByteSize()' because is too slow. Instead we call 'ByteSize()' for each entry and sum it.
-         const int entryByteSize = entryLevel->ByteSize() + 8; // Each entry take a bit of memory... (Value found in an empiric way..).
-         findResultCurrentSize += entryByteSize;
-
-         if (findResultCurrentSize > maxSize)
-         {
-            google::protobuf::RepeatedPtrField<Protos::Common::FindResult_EntryLevel>* entries = findResults.last().mutable_entry();
-            findResults << Protos::Common::FindResult();
-            if (entries->size() > 0)
-            {
-               findResults.last().add_entry()->CopyFrom(entries->Get(entries->size()-1));
-               entries->RemoveLast();
-            }
-            findResultCurrentSize = constantFindResultsSize + entryByteSize;
-         }
-
-         if (++numberOfResult >= maxNbResult)
-         {
-            end = true;
-            break;
-         }
-      }
-
-      level += nCombinations * nbIntersect;
    }
 
    if (findResults.last().entry_size() == 0)
@@ -339,6 +252,11 @@ FileManager::CacheStatus FileManager::getCacheStatus() const
 int FileManager::getProgress() const
 {
    return this->fileUpdater.getProgress();
+}
+
+void FileManager::dumpWordIndex() const
+{
+   L_WARN(this->wordIndex.toStringLog());
 }
 
 Directory* FileManager::getFittestDirectory(const QString& path)

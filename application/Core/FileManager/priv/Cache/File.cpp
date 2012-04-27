@@ -96,8 +96,8 @@ File::~File()
 
    this->dir->fileDeleted(this);
 
-   foreach (QSharedPointer<Chunk> c, this->chunks)
-      c->fileDeleted();
+   for (QVectorIterator<QSharedPointer<Chunk>> i(this->chunks); i.hasNext();)
+      i.next()->fileDeleted();
 
    this->deleteAllChunks();
 
@@ -172,7 +172,7 @@ void File::populateHashesFile(Protos::FileCache::Hashes_File& fileToFill) const
    fileToFill.set_size(this->size);
    fileToFill.set_date_last_modified(this->getDateLastModified().toMSecsSinceEpoch());
 
-   for (QListIterator<QSharedPointer<Chunk>> i(this->chunks); i.hasNext();)
+   for (QVectorIterator<QSharedPointer<Chunk>> i(this->chunks); i.hasNext();)
    {
       Protos::FileCache::Hashes_Chunk* chunk = fileToFill.add_chunk();
       i.next()->populateHashesChunk(*chunk);
@@ -189,7 +189,7 @@ void File::populateEntry(Protos::Common::Entry* entry, bool setSharedDir) const
    entry->set_type(Protos::Common::Entry_Type_FILE);
 
    entry->clear_chunk();
-   for (QListIterator<QSharedPointer<Chunk>> i(this->chunks); i.hasNext();)
+   for (QVectorIterator<QSharedPointer<Chunk>> i(this->chunks); i.hasNext();)
    {
       Common::Hash hash = i.next()->getHash();
       if (hash.isNull())
@@ -360,7 +360,7 @@ qint64 File::read(char* buffer, qint64 offset, int maxBytesToRead)
    return bytesRead;
 }
 
-QList<QSharedPointer<Chunk>> File::getChunks() const
+QVector<QSharedPointer<Chunk>> File::getChunks() const
 {
    return this->chunks;
 }
@@ -371,8 +371,8 @@ bool File::hasAllHashes()
    if (this->size == 0)
       return false;
 
-   foreach (QSharedPointer<Chunk> c, this->chunks)
-      if (!c->hasHash())
+   for (QVectorIterator<QSharedPointer<Chunk>> i(this->chunks); i.hasNext();)
+      if (!i.next()->hasHash())
          return false;   
 
    return true;
@@ -380,7 +380,7 @@ bool File::hasAllHashes()
 
 bool File::hasOneOrMoreHashes()
 {
-   for (QListIterator<QSharedPointer<Chunk>> i(this->chunks); i.hasNext();)
+   for (QVectorIterator<QSharedPointer<Chunk>> i(this->chunks); i.hasNext();)
      if (i.next()->hasHash())
          return true;
    return false;
@@ -441,7 +441,7 @@ void File::chunkComplete(const Chunk* chunk)
    QMutexLocker locker(&this->mutex);
 
    // TODO: very cpu consumer! We have to find a better way!
-   for (int i = 0; i < this->chunks.size(); i++)
+   for (int i = 0; i < this->chunks.size(); ++i)
       if (this->chunks[i].data() == chunk)
       {
          this->cache->onChunkHashKnown(this->chunks[i]);
@@ -456,8 +456,7 @@ void File::chunkComplete(const Chunk* chunk)
 
 int File::getNbChunks()
 {
-   static const int CHUNK_SIZE = SETTINGS.get<quint32>("chunk_size");
-   return this->size / CHUNK_SIZE + (this->size % CHUNK_SIZE == 0 ? 0 : 1);
+   return this->size / Chunk::CHUNK_SIZE + (this->size % Chunk::CHUNK_SIZE == 0 ? 0 : 1);
 }
 
 void File::deleteIfIncomplete()
@@ -533,12 +532,17 @@ void File::addChunk(const QSharedPointer<Chunk>& chunk)
 
 QSharedPointer<Chunk> File::removeLastChunk()
 {
-   return this->chunks.takeLast();
+   if (this->chunks.isEmpty())
+      return QSharedPointer<Chunk>();
+
+   QSharedPointer<Chunk> chunk = this->chunks.last();
+   this->chunks.remove(this->chunks.size() - 1);
+   return chunk;
 }
 
 void File::deleteAllChunks()
 {
-   for (QListIterator<QSharedPointer<Chunk>> i(this->chunks); i.hasNext();)
+   for (QVectorIterator<QSharedPointer<Chunk>> i(this->chunks); i.hasNext();)
       this->cache->onChunkRemoved(i.next());
    this->chunks.clear();
 }
@@ -577,12 +581,10 @@ void File::createPhysicalFile()
   */
 void File::setHashes(const Common::Hashes& hashes)
 {
-   static const int CHUNK_SIZE = SETTINGS.get<quint32>("chunk_size");
-
    this->chunks.reserve(this->getNbChunks());
    for (int i = 0; i < this->getNbChunks(); i++)
    {
-      int chunkKnownBytes = !this->isComplete() ? 0 : i == this->getNbChunks() - 1 && this->size % CHUNK_SIZE != 0 ? this->size % CHUNK_SIZE : CHUNK_SIZE;
+      int chunkKnownBytes = !this->isComplete() ? 0 : i == this->getNbChunks() - 1 && this->size % Chunk::CHUNK_SIZE != 0 ? this->size % Chunk::CHUNK_SIZE : Chunk::CHUNK_SIZE;
 
       if (i < hashes.size())
       {
@@ -593,6 +595,6 @@ void File::setHashes(const Common::Hashes& hashes)
       }
       else
          // If there is too few hashes then null hashes are added.
-         this->chunks.append(QSharedPointer<Chunk>(new Chunk(this, i, chunkKnownBytes)));
+         this->chunks << QSharedPointer<Chunk>(new Chunk(this, i, chunkKnownBytes));
    }
 }

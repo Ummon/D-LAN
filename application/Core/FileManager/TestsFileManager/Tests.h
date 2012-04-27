@@ -38,6 +38,9 @@ public:
 
 private slots:
    void initTestCase();
+
+   void testWordIndex();
+
    void createFileManager();
 
    /***** Adding shared directories *****/

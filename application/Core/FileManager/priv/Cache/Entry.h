@@ -67,7 +67,7 @@ namespace FM
       virtual qint64 getSize() const;
 
    protected:
-      Cache* cache; // To announce whan an entry, chunk is created or deleted.
+      Cache* cache; // To announce when an entry, chunk is created or deleted.
 
       QString name;
       qint64 size;
@@ -81,6 +81,15 @@ namespace FM
    inline bool operator>(const Entry& e1, const Entry& e2)
    {
       return e1.getName().toLower() > e2.getName().toLower();
+   }
+
+   inline uint qHash(const Entry* entry)
+   {
+      uint h = 0;
+      static const int n = sizeof(Entry*) > sizeof(uint) ? sizeof(Entry*) / sizeof(uint) : 1;
+      for (int i = 0; i < n; ++i)
+         h ^= intptr_t(entry) >> (i * sizeof(uint));
+      return h;
    }
 }
 #endif

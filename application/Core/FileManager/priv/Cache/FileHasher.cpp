@@ -63,8 +63,6 @@ bool FileHasher::start(File* fileCache, int n, int* amountHashed)
 {
    QMutexLocker locker(&this->hashingMutex);
 
-   static const int CHUNK_SIZE = SETTINGS.get<quint32>("chunk_size");
-
    this->currentFileCache = fileCache;
 
    connect(this->currentFileCache->getCache(), SIGNAL(entryRemoved(Entry*)), this, SLOT(entryRemoved(Entry*)), Qt::UniqueConnection);
@@ -94,7 +92,7 @@ bool FileHasher::start(File* fileCache, int n, int* amountHashed)
       throw IOErrorException();
    }
 
-   const QList<QSharedPointer<Chunk>>& chunks = this->currentFileCache->getChunks();
+   const QVector<QSharedPointer<Chunk>>& chunks = this->currentFileCache->getChunks();
 
    // Skip the already known full hashes.
    qint64 bytesSkipped = 0;
@@ -102,11 +100,11 @@ bool FileHasher::start(File* fileCache, int n, int* amountHashed)
    while (
       chunkNum < chunks.size() &&
       chunks[chunkNum]->hasHash() &&
-      chunks[chunkNum]->getKnownBytes() == CHUNK_SIZE) // Maybe the file has grown and the last chunk must be recomputed.
+      chunks[chunkNum]->getKnownBytes() == Chunk::CHUNK_SIZE) // Maybe the file has grown and the last chunk must be recomputed.
    {
-      bytesSkipped += CHUNK_SIZE;
+      bytesSkipped += Chunk::CHUNK_SIZE;
       chunkNum++;
-      file.seek(file.pos() + CHUNK_SIZE);
+      file.seek(file.pos() + Chunk::CHUNK_SIZE);
    }
 
 #if DEBUG
@@ -123,7 +121,7 @@ bool FileHasher::start(File* fileCache, int n, int* amountHashed)
       // See 'stopHashing()'.
 
       int bytesReadChunk = 0;
-      while (bytesReadChunk < CHUNK_SIZE)
+      while (bytesReadChunk < Chunk::CHUNK_SIZE)
       {
          locker.unlock();
          locker.relock();

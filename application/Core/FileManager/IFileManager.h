@@ -152,6 +152,8 @@ namespace FM
         */
       virtual int getProgress() const = 0;
 
+      virtual void dumpWordIndex() const = 0;
+
    signals:
       /**
         * Emitted when the file cache has been loaded.

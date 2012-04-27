@@ -35,12 +35,12 @@
 #include <priv/Log.h>
 #include <priv/FileUpdater/FileUpdater.h>
 #include <priv/Cache/Cache.h>
+#include <priv/Cache/Entry.h>
 #include <priv/ChunkIndex/Chunks.h>
 #include <priv/WordIndex/WordIndex.h>
 
 namespace FM
 {
-   class Entry;
    class Chunk;
    class Directory;
    class IChunk;
@@ -72,6 +72,8 @@ namespace FM
       CacheStatus getCacheStatus() const;
       int getProgress() const;
 
+      void dumpWordIndex() const;
+
       Directory* getFittestDirectory(const QString& path);
       Entry* getEntry(const QString& path);
 
@@ -95,12 +97,10 @@ namespace FM
    private:
       LOG_INIT_H("FileManager");
 
-      const quint32 CHUNK_SIZE;
-
       FileUpdater fileUpdater;
       Cache cache; ///< The files and directories.
       Chunks chunks; ///< The indexed chunks. It contains only completed chunks.
-      WordIndex<Entry> wordIndex; ///< The word index.
+      WordIndex<Entry*> wordIndex; ///< The word index.
 
       QTimer timerPersistCache;
       QMutex mutexPersistCache;

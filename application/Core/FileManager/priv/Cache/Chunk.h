@@ -22,7 +22,6 @@
 #include <exception>
 
 #include <QByteArray>
-#include <QMutex>
 
 #include <Protos/files_cache.pb.h>
 
@@ -39,14 +38,15 @@ namespace FM
 
    class Chunk : public IChunk, Common::Uncopyable
    {
-   public:
+   public:      
+      static int CHUNK_SIZE;
+
       /**
         * Create a new empty chunk.
         */
       Chunk(File* file, int num, quint32 knownBytes);
       Chunk(File* file, int num, quint32 knownBytes, const Common::Hash& hash);
 
-   public:
       ~Chunk();
 
       QString toStringLog() const;
@@ -75,7 +75,7 @@ namespace FM
 
       int getNum() const;
       int getNbTotalChunk() const;
-      QList<QSharedPointer<Chunk>> getOtherChunks() const;
+      QVector<QSharedPointer<Chunk>> getOtherChunks() const;
 
       bool hasHash() const;
       Common::Hash getHash() const;
@@ -92,10 +92,6 @@ namespace FM
       bool matchesEntry(const Protos::Common::Entry& entry) const;
 
    private:
-      const int CHUNK_SIZE;
-
-      mutable QMutex mutex; ///< Protect 'file' against multiple access.
-
       File* file;
       const int num; // First is 0.
       int knownBytes; ///< Relative offset, 0 means we don't have any byte and CHUNK_SIZE means we have all the chunk data.

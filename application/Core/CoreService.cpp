@@ -72,10 +72,15 @@ void CoreService::treatUserInput(QString input)
    {
       this->stop();
    }
+   else if (input == "dumpwi")
+   {
+      this->core->dumpWordIndex();
+   }
    else
    {
       QTextStream out(stdout);
       out << "Commands:" << endl
-          << " - " << ConsoleReader::QUIT_COMMAND << " : stop the core" << endl;
+          << " - " << ConsoleReader::QUIT_COMMAND << " : stop the core" << endl
+          << " - dumpwi : dump the word index in the log as a warning" << endl;
    }
 }
