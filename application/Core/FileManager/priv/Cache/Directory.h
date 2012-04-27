@@ -28,6 +28,8 @@
 #include <Protos/common.pb.h>
 #include <Protos/files_cache.pb.h>
 
+#include <Common/SortedList.h>
+
 #include <priv/Cache/Entry.h>
 
 namespace FM
@@ -70,8 +72,8 @@ namespace FM
       bool isAChildOf(const Directory* dir) const;
 
       Directory* getSubDir(const QString& name) const;
-      QList<Directory*> getSubDirs() const;
-      QList<File*> getFiles() const;
+      QLinkedList<Directory*> getSubDirs() const;
+      QLinkedList<File*> getFiles() const;
       QList<File*> getCompleteFiles() const;
 
       Directory* createSubDirectory(const QString& name, bool physically = false);
@@ -91,20 +93,15 @@ namespace FM
       void fileNameChanged(File* file);
 
    private:
-      void add(QList<Directory*> dirs);
-      void add(QList<File*> files);
-
       Directory& operator+=(qint64);
       Directory& operator-=(qint64);
 
-      void sortFiles();
-      void sortSubDirs();
-      static bool entrySortingFun(const Entry* e1, const Entry* e2);
+      static inline bool entrySortingFun(const Entry* const& e1, const Entry* const& e2) { return (*e1) < (*e2); }
 
       Directory* parent;
 
-      QList<Directory*> subDirs; ///< Sorted by name.
-      QList<File*> files; ///< Sorted by name.
+      SortedList<Directory*> subDirs; ///< Sorted by name.
+      SortedList<File*> files; ///< Sorted by name.
 
       mutable QMutex mutex;
    };
@@ -117,7 +114,7 @@ namespace FM
       Directory* next();
 
    private:
-      QList<Directory*> dirsToVisit;
+      QLinkedList<Directory*> dirsToVisit;
    };
 }
 

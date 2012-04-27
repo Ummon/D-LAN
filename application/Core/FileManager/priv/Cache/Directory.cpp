@@ -32,7 +32,7 @@ using namespace FM;
 #include <priv/Cache/SharedDirectory.h>
 
 Directory::Directory(Directory* parent, const QString& name, bool createPhysically) :
-   Entry(parent->cache, name), parent(parent), mutex(QMutex::Recursive)
+   Entry(parent->cache, name), parent(parent), subDirs(&Directory::entrySortingFun), files(&Directory::entrySortingFun), mutex(QMutex::Recursive)
 {
    QMutexLocker locker(&this->mutex);
    L_DEBU(QString("New Directory : %1, createPhysically = %2").arg(this->getFullPath()).arg(createPhysically));
@@ -48,7 +48,7 @@ Directory::Directory(Directory* parent, const QString& name, bool createPhysical
   * Called by the root (SharedDirectory) which will not have parent and name.
   */
 Directory::Directory(Cache* cache, const QString& name) :
-   Entry(cache, name), parent(0), mutex(QMutex::Recursive)
+   Entry(cache, name), parent(0), subDirs(&Directory::entrySortingFun), files(&Directory::entrySortingFun), mutex(QMutex::Recursive)
 {
 }
 
@@ -56,9 +56,9 @@ Directory::~Directory()
 {
    QMutexLocker locker(&this->mutex);
 
-   foreach (File* f, this->files)
+   foreach (File* f, this->files.getList())
       delete f;
-   foreach (Directory* d, this->subDirs)
+   foreach (Directory* d, this->subDirs.getList())
       delete d;
 
    if (this->parent)
@@ -83,13 +83,13 @@ QList<File*> Directory::restoreFromFileCache(const Protos::FileCache::Hashes::Di
    {
       // Sub directories..
       for (int i = 0; i < dir.dir_size(); i++)
-         for (QListIterator<Directory*> d(this->subDirs); d.hasNext();)
+         for (QLinkedListIterator<Directory*> d(this->subDirs.getList()); d.hasNext();)
             ret << d.next()->restoreFromFileCache(dir.dir(i));
 
       // .. And files.
-      QList<File*> filesNotInDir = this->files;
+      QLinkedList<File*> filesNotInDir = this->files.getList();
       for (int i = 0; i < dir.file_size(); i++)
-         for (QListIterator<File*> j(this->files); j.hasNext();)
+         for (QLinkedListIterator<File*> j(this->files.getList()); j.hasNext();)
          {
             File* f = j.next();
             if (f->restoreFromFileCache(dir.file(i)) && f->hasAllHashes())
@@ -100,7 +100,7 @@ QList<File*> Directory::restoreFromFileCache(const Protos::FileCache::Hashes::Di
          }
 
       // Remove unfinished files not in 'dir'.
-      for (QListIterator<File*> i(filesNotInDir); i.hasNext();)
+      for (QLinkedListIterator<File*> i(filesNotInDir); i.hasNext();)
       {
          File* file = i.next();
          if (!file->isComplete())
@@ -116,17 +116,17 @@ QList<File*> Directory::restoreFromFileCache(const Protos::FileCache::Hashes::Di
 
 void Directory::populateHashesDir(Protos::FileCache::Hashes::Dir& dirToFill) const
 {
-   QList<Directory*> subDirsCopy;
-   QList<File*> filesCopy;
+   QLinkedList<Directory*> subDirsCopy;
+   QLinkedList<File*> filesCopy;
 
    {
       QMutexLocker locker(&this->mutex);
       Common::ProtoHelper::setStr(dirToFill, &Protos::FileCache::Hashes_Dir::set_name, this->getName());
-      subDirsCopy = this->subDirs;
-      filesCopy = this->files;
+      subDirsCopy = this->subDirs.getList();
+      filesCopy = this->files.getList();
    }
 
-   for (QListIterator<File*> i(filesCopy); i.hasNext();)
+   for (QLinkedListIterator<File*> i(filesCopy); i.hasNext();)
    {
       File* f = i.next();
 
@@ -137,7 +137,7 @@ void Directory::populateHashesDir(Protos::FileCache::Hashes::Dir& dirToFill) con
       }
    }
 
-   for (QListIterator<Directory*> dir(subDirsCopy); dir.hasNext();)
+   for (QLinkedListIterator<Directory*> dir(subDirsCopy); dir.hasNext();)
    {
       dir.next()->populateHashesDir(*dirToFill.add_dir());
    }
@@ -151,14 +151,14 @@ void Directory::populateEntry(Protos::Common::Entry* dir, bool setSharedDir) con
 
    // Do not count the unfinished files.
    bool isEmpty = true;
-   for (QListIterator<File*> i(this->files); i.hasNext();)
+   for (QLinkedListIterator<File*> i(this->files.getList()); i.hasNext();)
       if (i.next()->isComplete())
       {
          isEmpty = false;
          break;
       }
 
-   dir->set_is_empty(this->subDirs.isEmpty() && isEmpty);
+   dir->set_is_empty(this->subDirs.getList().isEmpty() && isEmpty);
    dir->set_type(Protos::Common::Entry_Type_DIR);
 }
 
@@ -170,10 +170,10 @@ void Directory::removeUnfinishedFiles()
    QMutexLocker locker(&this->mutex);
 
    // Removes incomplete file we don't know.
-   foreach (File* f, this->files)
+   foreach (File* f, this->files.getList())
       f->removeUnfinishedFiles();
 
-   foreach (Directory* d, this->subDirs)
+   foreach (Directory* d, this->subDirs.getList())
       d->removeUnfinishedFiles();
 }
 
@@ -252,14 +252,17 @@ Directory* Directory::getSubDir(const QString& name) const
 {
    QMutexLocker locker(&this->mutex);
 
-   foreach (Directory* d, this->subDirs)
+   for (QLinkedListIterator<Directory*> i(this->subDirs.getList()); i.hasNext();)
+   {
+      Directory* d = i.next();
       if (d->getName() == name)
          return d;
+   }
 
    return 0;
 }
 
-QList<Directory*> Directory::getSubDirs() const
+QLinkedList<Directory*> Directory::getSubDirs() const
 {
    QMutexLocker locker(&this->mutex);
    // TODO: it create a deadlock, rethink serously about the concurency problems ..
@@ -268,23 +271,23 @@ QList<Directory*> Directory::getSubDirs() const
    // - (MT) : SharedDirectory::init() call this->getCache()->removeSharedDir(subDir, current); and emit sharedDirectoryRemoved
    //          which will call FileUpdater::rmRoot which will try to stop scanning -> deadlock
    // QMutexLocker locker(&this->cache->getMutex());
-   return this->subDirs;
+   return this->subDirs.getList();
 }
 
-QList<File*> Directory::getFiles() const
+QLinkedList<File*> Directory::getFiles() const
 {
    QMutexLocker locker(&this->mutex);
    // TODO: it create a deadlock, rethink serously about the concurency problems ..
    // Same problem as above.
    // QMutexLocker locker(&this->cache->getMutex());
-   return this->files;
+   return this->files.getList();
 }
 
 QList<File*> Directory::getCompleteFiles() const
 {
    QMutexLocker locker(&this->mutex);
    QList<File*> completeFiles;
-   foreach (File* file, this->files)
+   foreach (File* file, this->files.getList())
    {
       if (file->isComplete())
          completeFiles << file;
@@ -323,7 +326,7 @@ Directory* Directory::createSubDirectories(const QStringList& names, bool physic
 File* Directory::getFile(const QString& name) const
 {
    QMutexLocker locker(&this->mutex);
-   foreach (File* f, this->files)
+   foreach (File* f, this->files.getList())
       if (f->getName() == name)
          return f;
 
@@ -336,8 +339,7 @@ File* Directory::getFile(const QString& name) const
 void Directory::add(File* file)
 {
    QMutexLocker locker(&this->mutex);
-   this->files << file;
-   this->sortFiles();
+   this->files.insert(file);
    (*this) += file->getSize();
 }
 
@@ -362,17 +364,17 @@ void Directory::stealContent(Directory* dir)
 
    // L_DEBU(QString("this = %1, dir = %2").arg(this->getFullPath()).arg(dir->getFullPath()));
 
-   this->add(dir->subDirs);
-   this->add(dir->files);
+   this->subDirs.insert(dir->subDirs.getList());
+   this->files.insert(dir->files.getList());
 
-   foreach (Directory* d, dir->subDirs)
+   foreach (Directory* d, dir->subDirs.getList())
    {
       d->parent = this;
       (*this) += d->getSize();
       (*dir) -= d->getSize();
    }
 
-   foreach (File* f, dir->files)
+   foreach (File* f, dir->files.getList())
       f->changeDirectory(this);
 
    dir->subDirs.clear();
@@ -382,38 +384,25 @@ void Directory::stealContent(Directory* dir)
 void Directory::add(Directory* dir)
 {
    QMutexLocker locker(&this->mutex);
-   this->subDirs << dir;
-   this->sortSubDirs();
+   this->subDirs.insert(dir);
 }
 
 /**
   *
   */
-void Directory::subdirNameChanged(Directory* /*dir*/)
+void Directory::subdirNameChanged(Directory* dir)
 {
    QMutexLocker locker(&this->mutex);
-   this->sortSubDirs();
+   this->subDirs.itemChanged(dir);
 }
 
 /**
   * Must be called only by a file.
   */
-void Directory::fileNameChanged(File* /*file*/)
+void Directory::fileNameChanged(File* file)
 {
    QMutexLocker locker(&this->mutex);
-   this->sortFiles();
-}
-
-void Directory::add(QList<Directory*> dirs)
-{
-   this->subDirs << dirs;
-   this->sortSubDirs();
-}
-
-void Directory::add(QList<File*> files)
-{
-   this->files << files;
-   this->sortFiles();
+   this->files.itemChanged(file);
 }
 
 /**
@@ -440,21 +429,6 @@ Directory& Directory::operator-=(qint64 size)
    return *this;
 }
 
-void Directory::sortFiles()
-{
-   qSort(this->files.begin(), this->files.end(), Directory::entrySortingFun);
-}
-
-void Directory::sortSubDirs()
-{
-   qSort(this->subDirs.begin(), this->subDirs.end(), Directory::entrySortingFun);
-}
-
-bool Directory::entrySortingFun(const Entry* e1, const Entry* e2)
-{
-   return (*e1) < (*e2);
-}
-
 /**
   * @class FM::DirIterator
   *
@@ -462,7 +436,7 @@ bool Directory::entrySortingFun(const Entry* e1, const Entry* e2)
   */
 
 DirIterator::DirIterator(Directory* dir) :
-   dirsToVisit(dir->subDirs)
+   dirsToVisit(dir->subDirs.getList())
 {
 }
 
@@ -476,6 +450,6 @@ Directory* DirIterator::next()
 
    Directory* dir = this->dirsToVisit.front();
    this->dirsToVisit.removeFirst();
-   this->dirsToVisit.append(dir->subDirs);
+   this->dirsToVisit << dir->subDirs.getList();
    return dir;
 }
