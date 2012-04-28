@@ -93,10 +93,10 @@ QTabBar::tab:selected {
    background-color: #7697ba;
 }
 
-QPushButton:disabled,
-QLineEdit:disabled {
-   color: #999999;
-   border: 1px solid #657585;
+*:disabled,
+QTabBar::tab:disables {
+   color: #454545;
+   border: 1px solid #454545;
 }
 
 QPushButton:flat {
