@@ -42,6 +42,9 @@ private slots:
    void splitInWords();
    void hashStringToInt();
 
+   // SortedList class.
+   void sortedList();
+
    // PersistentData class.
    void writePersistentData();
    void readPersistentData();

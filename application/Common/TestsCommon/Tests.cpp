@@ -34,6 +34,7 @@
 #include <Global.h>
 #include <ZeroCopyStreamQIODevice.h>
 #include <ProtoHelper.h>
+#include <SortedList.h>
 using namespace Common;
 
 Tests::Tests()
@@ -153,6 +154,41 @@ void Tests::hashStringToInt()
    QCOMPARE(Global::hashStringToInt(""), 0u);
    QCOMPARE(Global::hashStringToInt("abcde"), 444281822u);
    QCOMPARE(Global::hashStringToInt("abcdef"), 3174932005u);
+}
+
+void Tests::sortedList()
+{
+   SortedList<int> list;
+
+   list.insert(16);
+   list.insert(2);
+   list.insert(9);
+   list.insert(10);
+   list.insert(3);
+
+   auto test = [&](const QList<int>& expected) {
+      int i = 0;
+      foreach (int n, list.getList())
+         QCOMPARE(n, expected[i++]);
+   };
+
+   test(QList<int> { 2, 3, 9, 10, 16 });
+
+   list.insert(QList<int> { 1, 4, 5, 12, 15, 32 });
+
+   test(QList<int> { 1, 2, 3, 4, 5, 9, 10, 12, 15, 16, 32 });
+
+   list.removeOne(32);
+   list.removeOne(2);
+   list.removeOne(3);
+   list.removeOne(12);
+   list.removeOne(42);
+
+   test(QList<int> { 1, 4, 5, 9, 10, 15, 16, });
+
+   list.clear();
+
+   QVERIFY(list.getList().isEmpty());
 }
 
 void Tests::writePersistentData()
@@ -451,5 +487,3 @@ void Tests::protoHelper()
    QVERIFY(debugStr.indexOf("6a98f983b8c80015fd93ca6bf9a98a9577a6e094") != -1);
    QVERIFY(debugStr.indexOf("7aaeb7c5816857c832893afc676d5e37b73968a4") != -1);
 }
-
-
