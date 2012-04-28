@@ -92,10 +92,13 @@ void TransferRateCalculator::update(int value)
             this->currentValue = 0;
             this->currentValuePos = 0;
             this->t1 = 0;
+            this->total = 0;
             const quint32 v = value / NB_VALUE;
-            this->total = value;
             for (quint32 i = 0; i < NB_VALUE; i++)
+            {
                this->values[i] = v;
+               this->total += v;
+            }
             this->timer.start();
          }
          else
