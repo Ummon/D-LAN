@@ -211,12 +211,11 @@ void FileUpdater::run()
 #endif
    QThread::currentThread()->setObjectName(threadName);
 
-   // First : retrieve the directories and file from the file cache and
+   // First: retrieve the directories and file from the file cache and
    // synchronize it with the file system.
    if (this->fileCache)
    {
       const int nbDirsToScan = this->dirsToScan.size();
-      // TODO: the mutex should be used ?
       while (!this->dirsToScan.isEmpty())
       {
          Directory* dir = this->dirsToScan.takeFirst();
