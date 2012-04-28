@@ -87,30 +87,25 @@ void SortedList<T>::insert(const T& item)
 template <typename T>
 template <typename Container>
 void SortedList<T>::insert(const Container& items)
-{
-   typename Container::const_iterator i = items.begin();
+{   
    QMutableLinkedListIterator<T> j(list);
 
-   while(i != items.end())
+   for (typename Container::const_iterator i = items.begin(); i != items.end(); i++)
    {
       T ei = *i;
 
-      bool inserted = false;
       while (j.hasNext())
       {
          T ej = j.peekNext();
          if (this->lesserThan ? this->lesserThan(ei, ej) : ei < ej)
          {
             j.insert(ei);
-            i++;
-            inserted = true;
-            break;
+            goto nextEi;
          }
          j.next();
       }
-
-      if (!inserted)
-         j.insert(ei);
+      j.insert(ei);
+      nextEi:;
    }
 }
 
