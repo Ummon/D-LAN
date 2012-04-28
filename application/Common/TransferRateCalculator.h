@@ -29,8 +29,9 @@ namespace Common
    class TransferRateCalculator : Common::Uncopyable
    {
       static const quint32 PERIOD = 3000000000u; // [ns].
-      static const quint32 NB_VALUE = 20;
-      static const quint32 DELTA_T = PERIOD / NB_VALUE; // [ns].
+      static const quint32 PERIOD_S = PERIOD / 1000000000; // [s].
+      static const quint32 NB_VALUE = 30;
+      static const quint32 D = PERIOD / NB_VALUE; // [ns].
 
    public:
       TransferRateCalculator();
@@ -41,25 +42,17 @@ namespace Common
    private:
       void reset();
       void update(int value);
-      inline void stepForwardCurrentValuePos();
 
       mutable QMutex mutex;
       QElapsedTimer timer;
+      qint64 t1;
 
-      int currentValue;
+      quint32 currentValue;
       quint32 currentValuePos;
-      int values[NB_VALUE]; // Previous values during the current period.
+      quint32 values[NB_VALUE]; // Previous values during the current period.
 
-      int total; // Sum of all values.
+      quint32 total; // Sum of all values.
    };
 }
 
-using namespace Common;
-
-inline void TransferRateCalculator::stepForwardCurrentValuePos()
-{
-   this->currentValuePos++;
-   if (this->currentValuePos >= NB_VALUE)
-      this->currentValuePos = 0;
-}
 #endif

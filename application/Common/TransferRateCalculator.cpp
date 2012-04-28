@@ -34,7 +34,7 @@ using namespace Common;
   */
 
 TransferRateCalculator::TransferRateCalculator() :
-   mutex(QMutex::Recursive), currentValue(0), currentValuePos(0), total(0)
+   mutex(QMutex::Recursive), t1(0), currentValue(0), currentValuePos(0), total(0)
 {
    this->reset();
 }
@@ -55,7 +55,7 @@ int TransferRateCalculator::getTransferRate()
    QMutexLocker locker(&this->mutex);
 
    this->update(0);
-   return 1000000000LL * this->total / PERIOD;
+   return this->total / PERIOD_S;
 }
 
 void TransferRateCalculator::reset()
@@ -65,42 +65,58 @@ void TransferRateCalculator::reset()
    this->currentValue = 0;
    this->currentValuePos = 0;
    this->total = 0;
+   this->t1 = 0;
    memset(this->values, 0, sizeof(this->values));
    this->timer.start();
 }
 
 void TransferRateCalculator::update(int value)
 {
-   const qint64 ELAPSED = this->timer.nsecsElapsed();
-
-   if (ELAPSED < DELTA_T) // (we are in the current delta)
+   const qint64 t2 = this->timer.nsecsElapsed();
+   forever
    {
-      this->currentValue += value;
-   }
-   else if (ELAPSED >= PERIOD)
-   {
-      this->reset();
-      this->currentValue = value;
-   }
-   else
-   {
-      const int N = ELAPSED / DELTA_T;
+      const qint64 dt = t2 - this->t1;
+      const qint64 t1_ = this->t1 % D; // (t1 prime), relative to the current position.
+      const qint64 t2_ = t1_ + dt; // (t2 prime), relative to t1 prime.
 
-      this->total -= this->values[this->currentValuePos];
-      this->values[this->currentValuePos] = this->currentValue;
-      this->total += this->currentValue;
-      this->stepForwardCurrentValuePos();
-
-      for (int i = 0; i < N - 1; i++)
+      if (t2_ < D) // We are in the current position.
       {
-         this->total -= this->values[this->currentValuePos];
-         this->values[this->currentValuePos] = 0;
-
-         this->stepForwardCurrentValuePos();
+         this->currentValue += value;
+         this->t1 = t2;
+         return;
       }
+      else if (dt > PERIOD)
+      {
+         if (value != 0)
+         {
+            this->currentValue = 0;
+            this->currentValuePos = 0;
+            this->t1 = 0;
+            const quint32 v = value / NB_VALUE;
+            this->total = value;
+            for (quint32 i = 0; i < NB_VALUE; i++)
+               this->values[i] = v;
+            this->timer.start();
+         }
+         else
+            this->reset();
 
-      this->currentValue = value;
-      this->timer.start();
+         return;
+      }
+      else
+      {
+         const quint32 v1 = qint64(value) * (D - t1_) / dt;
+
+         this->total -= this->values[this->currentValuePos];
+         this->values[this->currentValuePos++] = this->currentValue + v1;
+         this->total += this->currentValue + v1;
+         if (this->currentValuePos == NB_VALUE)
+            this->currentValuePos = 0;
+
+         value -= v1;
+         this->t1 += (D - t1_);
+         this->currentValue = 0;
+      }
    }
 }
 
