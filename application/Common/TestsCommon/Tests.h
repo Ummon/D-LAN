@@ -45,6 +45,9 @@ private slots:
    // SortedList class.
    void sortedList();
 
+   // TransferRateCalculator
+   void transferRateCalculator();
+
    // PersistentData class.
    void writePersistentData();
    void readPersistentData();

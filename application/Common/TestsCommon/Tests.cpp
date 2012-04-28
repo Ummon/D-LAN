@@ -35,6 +35,7 @@
 #include <ZeroCopyStreamQIODevice.h>
 #include <ProtoHelper.h>
 #include <SortedList.h>
+#include <TransferRateCalculator.h>
 using namespace Common;
 
 Tests::Tests()
@@ -189,6 +190,25 @@ void Tests::sortedList()
    list.clear();
 
    QVERIFY(list.getList().isEmpty());
+}
+
+void Tests::transferRateCalculator()
+{
+   TransferRateCalculator t;
+   QCOMPARE(t.getTransferRate(), 0);
+
+   static int N = 700;
+   for (int i = 1; i < N; i += 10)
+   {
+      QTest::qSleep(i);
+      if (i < 600)
+         t.addData(i);
+      qDebug() << "Transfert rate: " << t.getTransferRate();
+
+      QVERIFY(t.getTransferRate() <= 1000);
+   }
+
+   QCOMPARE(t.getTransferRate(), 0);
 }
 
 void Tests::writePersistentData()
