@@ -64,7 +64,7 @@ void PeerListDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opti
       {
          painter->setPen(Qt::NoPen);
          painter->setBrush(QBrush(DOWNLOAD_COLOR.darker(180)));
-         const int downloadAngle = 16.0 * 180.0 * (log10(double(transferInformation.downloadRate) / double(LAN_SPEED)) + 1.5) / 1.5; // Logarithmic scale.
+         const int downloadAngle = 16.0 * 180.0 * (log10(double(transferInformation.downloadRate) / double(LAN_SPEED)) + 2.0) / 2.0; // Logarithmic scale.
          //const int downloadAngle = -(16LL * 180 * transferInformation.downloadRate) / LAN_SPEED; // Linear scale.
          if (downloadAngle > 0)
             painter->drawPie(rect, 16 * 180, downloadAngle > 16 * 180 ? -16 * 180 : -downloadAngle);
@@ -75,7 +75,7 @@ void PeerListDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opti
       {
          painter->setPen(Qt::NoPen);
          painter->setBrush(QBrush(UPLOAD_COLOR.darker(180)));
-         const int uploadAngle = 16.0 * 180.0 * (log10(double(transferInformation.uploadRate) / double(LAN_SPEED)) + 1.5) / 1.5; // Logarithmic scale.
+         const int uploadAngle = 16.0 * 180.0 * (log10(double(transferInformation.uploadRate) / double(LAN_SPEED)) + 2.0) / 2.0; // Logarithmic scale.
          //const int uploadAngle = (16LL * 180 * transferInformation.uploadRate) / LAN_SPEED; // Linear scale.
          if (uploadAngle > 0)
             painter->drawPie(rect, 16 * 180, uploadAngle > 16 * 180 ? 16 * 180 : uploadAngle);
