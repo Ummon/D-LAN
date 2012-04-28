@@ -289,29 +289,24 @@ void DownloadManager::fileCacheLoaded()
   */
 void DownloadManager::newEntries(const Protos::Common::Entries& remoteEntries)
 {
-   DirDownload* dirDownload = dynamic_cast<DirDownload*>(this->sender());
+   DirDownload* dirDownload = static_cast<DirDownload*>(this->sender());
    int position = this->downloadQueue.find(dirDownload);
    if (position == -1)
       return;
    this->downloadQueue.remove(position);
 
+   const Protos::Common::Entry& localEntry = dirDownload->getLocalEntry();
+   const QString relativePath = Common::ProtoHelper::getStr(localEntry, &Protos::Common::Entry::path).append(Common::ProtoHelper::getStr(localEntry, &Protos::Common::Entry::name)).append("/");
+
    // Add files first.
    for (int n = 0; n < remoteEntries.entry_size(); n++)
       if (remoteEntries.entry(n).type() == Protos::Common::Entry_Type_FILE)
-      {
-         const Protos::Common::Entry& localEntry = dirDownload->getLocalEntry();
-         const QString relativePath = Common::ProtoHelper::getStr(localEntry, &Protos::Common::Entry::path).append(Common::ProtoHelper::getStr(localEntry, &Protos::Common::Entry::name)).append("/");
          this->addDownload(remoteEntries.entry(n), dirDownload->getPeerSource(), localEntry.has_shared_dir() ? localEntry.shared_dir().id().hash() : Common::Hash(), relativePath, Protos::Queue::Queue::Entry::QUEUED, position++);
-      }
 
    // Then directories. TODO: code to refactor with the one above.
    for (int n = 0; n < remoteEntries.entry_size(); n++)
       if (remoteEntries.entry(n).type() == Protos::Common::Entry_Type_DIR)
-      {
-         const Protos::Common::Entry& localEntry = dirDownload->getLocalEntry();
-         const QString relativePath = Common::ProtoHelper::getStr(localEntry, &Protos::Common::Entry::path).append(Common::ProtoHelper::getStr(localEntry, &Protos::Common::Entry::name)).append("/");
          this->addDownload(remoteEntries.entry(n), dirDownload->getPeerSource(), localEntry.has_shared_dir() ? localEntry.shared_dir().id().hash() : Common::Hash(), relativePath, Protos::Queue::Queue::Entry::QUEUED, position++);
-      }
 
    delete dirDownload;
 }

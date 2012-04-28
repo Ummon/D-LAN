@@ -708,8 +708,6 @@ bool FileUpdater::treatEvents(const QList<WatcherEvent>& events)
       {
       case WatcherEvent::MOVE:
          {
-            // TODO: move the entry if needed. (create a method in Cache)
-            // TODO: update the file modification date (only if the rename under Windows changes it)
             Entry* entry = this->fileManager->getEntry(event.path1);
             if (entry)
                entry->changeName(event.path2.split('/', QString::SkipEmptyParts).last());
