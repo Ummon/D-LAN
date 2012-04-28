@@ -59,6 +59,7 @@ FileManager::FileManager() :
 
    connect(&this->cache, SIGNAL(entryAdded(Entry*)),     this, SLOT(entryAdded(Entry*)),     Qt::DirectConnection);
    connect(&this->cache, SIGNAL(entryRemoved(Entry*)),   this, SLOT(entryRemoved(Entry*)),   Qt::DirectConnection);
+   connect(&this->cache, SIGNAL(entryRenamed(Entry*, QString)),   this, SLOT(entryRenamed(Entry*, QString)),   Qt::DirectConnection);
    connect(&this->cache, SIGNAL(chunkHashKnown(QSharedPointer<Chunk>)), this, SLOT(chunkHashKnown(QSharedPointer<Chunk>)), Qt::DirectConnection);
    connect(&this->cache, SIGNAL(chunkRemoved(QSharedPointer<Chunk>)),   this, SLOT(chunkRemoved(QSharedPointer<Chunk>)),   Qt::DirectConnection);
 
@@ -302,6 +303,13 @@ void FileManager::entryRemoved(Entry* entry)
    L_DEBU(QString("Removing entry '%1' from the index..").arg(entry->getName()));
    this->wordIndex.rmItem(Common::Global::splitInWords(entry->getName()), entry);
    L_DEBU("Entry removed from the index..");
+}
+
+void FileManager::entryRenamed(Entry* entry, const QString& oldName)
+{
+   L_DEBU(QString("Renaming entry '%1' to '%2' in the index..").arg(entry->getName()).arg(oldName));
+   this->wordIndex.renameItem(Common::Global::splitInWords(oldName), Common::Global::splitInWords(entry->getName()), entry);
+   L_DEBU("Entry renamed in the index..");
 }
 
 void FileManager::chunkHashKnown(QSharedPointer<Chunk> chunk)

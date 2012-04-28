@@ -77,7 +77,7 @@ void AskNewPasswordDialog::ok()
    else
    {
       if (!this->coreConnection->setCorePassword(this->ui->txtNewPassword->text(), this->ui->txtOldPassword->isHidden() ? QString() : this->ui->txtOldPassword->text()))
-         QMessageBox::information(this, "Error", "The old password didn't match");
+         QMessageBox::information(this, "Error", "The old password doesn't match");
       else
       {
          SETTINGS.set("password", this->coreConnection->getConnectionInfo().password);
