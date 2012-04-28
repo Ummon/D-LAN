@@ -28,9 +28,9 @@ namespace Common
 {
    class TransferRateCalculator : Common::Uncopyable
    {
-      static int const PERIOD = 3000; // [ms].
-      static int const NB_VALUE = 20;
-      static int const DELTA_T = PERIOD / NB_VALUE;
+      static const quint32 PERIOD = 3000000000u; // [ns].
+      static const quint32 NB_VALUE = 20;
+      static const quint32 DELTA_T = PERIOD / NB_VALUE; // [ns].
 
    public:
       TransferRateCalculator();
@@ -47,7 +47,7 @@ namespace Common
       QElapsedTimer timer;
 
       int currentValue;
-      int currentValuePos;
+      quint32 currentValuePos;
       int values[NB_VALUE]; // Previous values during the current period.
 
       int total; // Sum of all values.

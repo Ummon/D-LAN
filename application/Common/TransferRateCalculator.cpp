@@ -55,7 +55,7 @@ int TransferRateCalculator::getTransferRate()
    QMutexLocker locker(&this->mutex);
 
    this->update(0);
-   return 1000LL * this->total / PERIOD;
+   return 1000000000LL * this->total / PERIOD;
 }
 
 void TransferRateCalculator::reset()
@@ -71,7 +71,7 @@ void TransferRateCalculator::reset()
 
 void TransferRateCalculator::update(int value)
 {
-   const qint64 ELAPSED = this->timer.elapsed();
+   const qint64 ELAPSED = this->timer.nsecsElapsed();
 
    if (ELAPSED < DELTA_T) // (we are in the current delta)
    {
