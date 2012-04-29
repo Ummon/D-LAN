@@ -78,14 +78,14 @@ Protos::Core::GetHashesResult GetHashesResult::start()
    for (QVectorIterator<QSharedPointer<Chunk>> i(chunks); i.hasNext();)
    {
       QSharedPointer<Chunk> chunk(i.next());
-      if (chunk->getNum() < this->fileEntry.chunk_size()) // TODO: maybe we should check if the hashes are equal..
+      if (chunk->getNum() < this->fileEntry.chunk_size())
          continue;
 
       if (chunk->hasHash())
       {
          this->sendNextHash(chunk);
       }
-      else // If only one hash is missing we tell the FileUpdater to compute the remaining ones.
+      else // If only one hash is missing we tell the file updater to compute the remaining ones.
       {
          this->fileUpdater.prioritizeAFileToHash(this->file);
          break;

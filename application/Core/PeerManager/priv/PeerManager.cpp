@@ -190,7 +190,7 @@ void PeerManager::onGetChunk(QSharedPointer<FM::IChunk> chunk, int offset, QShar
 void PeerManager::dataReceived(QTcpSocket* tcpSocket)
 {
    if (!tcpSocket)
-      tcpSocket = dynamic_cast<QTcpSocket*>(this->sender());
+      tcpSocket = static_cast<QTcpSocket*>(this->sender());
 
    if (tcpSocket->bytesAvailable() >= Common::MessageHeader::HEADER_SIZE)
    {
@@ -214,7 +214,7 @@ void PeerManager::dataReceived(QTcpSocket* tcpSocket)
 void PeerManager::disconnected(QTcpSocket* tcpSocket)
 {
    if (!tcpSocket)
-      tcpSocket = dynamic_cast<QTcpSocket*>(this->sender());
+      tcpSocket = static_cast<QTcpSocket*>(this->sender());
 
    this->removeFromPending(tcpSocket);
    tcpSocket->deleteLater();
@@ -226,8 +226,9 @@ void PeerManager::checkIdlePendingSockets()
 {
    for (QMutableListIterator<PendingSocket> i(this->pendingSockets); i.hasNext();)
    {
-      PendingSocket pendingSocket = i.next();
-      if (static_cast<quint32>(pendingSocket.t.elapsed()) > SETTINGS.get<quint32>("pending_socket_timeout"))
+      PendingSocket& pendingSocket = i.next();
+      static const int SOCKET_TIMEOUT = SETTINGS.get<quint32>("pending_socket_timeout");
+      if (pendingSocket.t.elapsed() > SOCKET_TIMEOUT)
       {
          i.remove();
          // Without these 'disconnect' this warning is printed by Qt : "QCoreApplication::postEvent: Unexpected null receiver".

@@ -582,13 +582,12 @@ void Cache::onEntryAdded(Entry* entry)
 
 void Cache::onEntryRemoved(Entry* entry)
 {
-   if (SharedDirectory* sharedDir = dynamic_cast<SharedDirectory*>(entry))
-   {
-      QMutexLocker locker(&this->mutex);
-      this->sharedDirs.removeOne(sharedDir);
-   }
-
    emit entryRemoved(entry);
+}
+
+void Cache::onEntryRenamed(Entry* entry, const QString& oldName)
+{
+   emit entryRenamed(entry, oldName);
 }
 
 void Cache::onChunkHashKnown(QSharedPointer<Chunk> chunk)
@@ -600,7 +599,6 @@ void Cache::onChunkRemoved(QSharedPointer<Chunk> chunk)
 {
    emit chunkRemoved(chunk);
 }
-
 
 /**
   * Create a new shared directory.

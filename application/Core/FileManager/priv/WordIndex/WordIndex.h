@@ -48,10 +48,12 @@ namespace FM
 
       WordIndex();
 
-      void addItem(const QStringList& words, const T& item);
       void addItem(const QString& word, const T& item);
-      void rmItem(const QStringList& words, const T& item);
+      void addItem(const QStringList& words, const T& item);
       void rmItem(const QString& word, const T& item);
+      void rmItem(const QStringList& words, const T& item);
+      void renameItem(const QString& oldWord, const QString& newWord, const T& item);
+      void renameItem(const QStringList& oldWords, const QStringList& newWords, const T& item);
 
       QList<NodeResult<T>> search(const QString& word, int maxNbResult = -1) const;
 
@@ -79,14 +81,6 @@ WordIndex<T>::WordIndex() :
 {}
 
 template<typename T>
-void WordIndex<T>::addItem(const QStringList& words, const T& item)
-{
-   QMutexLocker locker(&mutex);
-   for (QListIterator<QString> i(words); i.hasNext();)
-      this->root.addItem(&i.next(), item);
-}
-
-template<typename T>
 void WordIndex<T>::addItem(const QString& word, const T& item)
 {
    QMutexLocker locker(&mutex);
@@ -94,11 +88,11 @@ void WordIndex<T>::addItem(const QString& word, const T& item)
 }
 
 template<typename T>
-void WordIndex<T>::rmItem(const QStringList& words, const T& item)
+void WordIndex<T>::addItem(const QStringList& words, const T& item)
 {
    QMutexLocker locker(&mutex);
-   for (QListIterator<QString> i(words); i.hasNext();)
-      this->root.rmItem(i.next(), item);
+   for (QStringListIterator i(words); i.hasNext();)
+      this->root.addItem(&i.next(), item);
 }
 
 template<typename T>
@@ -106,6 +100,32 @@ void WordIndex<T>::rmItem(const QString& word, const T& item)
 {
    QMutexLocker locker(&mutex);
    this->root.rmItem(word, item);
+}
+
+template<typename T>
+void WordIndex<T>::rmItem(const QStringList& words, const T& item)
+{
+   QMutexLocker locker(&mutex);
+   for (QStringListIterator i(words); i.hasNext();)
+      this->root.rmItem(i.next(), item);
+}
+
+template<typename T>
+void WordIndex<T>::renameItem(const QString& oldWord, const QString& newWord, const T& item)
+{
+   QMutexLocker locker(&mutex);
+   this->root.rmItem(oldWord, item);
+   this->root.addItem(&newWord, item);
+}
+
+template<typename T>
+void WordIndex<T>::renameItem(const QStringList& oldWords, const QStringList& newWords, const T& item)
+{
+   QMutexLocker locker(&mutex);
+   for (QStringListIterator i(oldWords); i.hasNext();)
+      this->root.rmItem(i.next(), item);
+   for (QStringListIterator i(newWords); i.hasNext();)
+      this->root.addItem(&i.next(), item);
 }
 
 /**

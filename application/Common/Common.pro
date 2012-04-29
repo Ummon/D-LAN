@@ -60,6 +60,7 @@ HEADERS += Hashes.h \
     Languages.h \
     Tree.h \
     FileLocker.h \
-    ConsoleReader.h
+    ConsoleReader.h \
+    SortedList.h
 
 

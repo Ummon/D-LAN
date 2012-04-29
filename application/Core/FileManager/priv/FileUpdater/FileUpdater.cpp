@@ -211,12 +211,11 @@ void FileUpdater::run()
 #endif
    QThread::currentThread()->setObjectName(threadName);
 
-   // First : retrieve the directories and file from the file cache and
+   // First: retrieve the directories and file from the file cache and
    // synchronize it with the file system.
    if (this->fileCache)
    {
       const int nbDirsToScan = this->dirsToScan.size();
-      // TODO: the mutex should be used ?
       while (!this->dirsToScan.isEmpty())
       {
          Directory* dir = this->dirsToScan.takeFirst();
@@ -464,7 +463,7 @@ void FileUpdater::scan(Directory* dir, bool addUnfinished)
    {
       Directory* currentDir = dirsToVisit.takeFirst();
 
-      QList<Directory*> currentSubDirs = currentDir->getSubDirs();
+      QLinkedList<Directory*> currentSubDirs = currentDir->getSubDirs();
       QList<File*> currentFiles = currentDir->getCompleteFiles(); // We don't care about the unfinished files.
 
       foreach (QFileInfo entry, QDir(currentDir->getFullPath()).entryInfoList(QDir::AllEntries | QDir::NoDotAndDotDot | QDir::NoSymLinks)) // TODO: Add an option to follow or not symlinks.
@@ -709,8 +708,6 @@ bool FileUpdater::treatEvents(const QList<WatcherEvent>& events)
       {
       case WatcherEvent::MOVE:
          {
-            // TODO: move the entry if needed. (create a method in Cache)
-            // TODO: update the file modification date (only if the rename under Windows changes it)
             Entry* entry = this->fileManager->getEntry(event.path1);
             if (entry)
                entry->changeName(event.path2.split('/', QString::SkipEmptyParts).last());

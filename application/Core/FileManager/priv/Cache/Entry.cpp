@@ -75,10 +75,9 @@ QString Entry::getName() const
   */
 void Entry::changeName(const QString& newName)
 {
-   // TODO: create a method 'onEntryRenamed' instead of using these two methods.
-   this->cache->onEntryRemoved(this);
+   const QString oldName = this->name;
    this->name = newName;
-   this->cache->onEntryAdded(this);
+   this->cache->onEntryRenamed(this, oldName);
 }
 
 qint64 Entry::getSize() const

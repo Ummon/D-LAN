@@ -33,12 +33,20 @@ private slots:
    void initTestCase();
 
    // Global class.
+   void getVersion();
+   void commonPrefix();
    void nCombinations();
    void formatByteSize();
    void formatTime();
    void availableDiskSpace();
    void splitInWords();
    void hashStringToInt();
+
+   // SortedList class.
+   void sortedList();
+
+   // TransferRateCalculator
+   void transferRateCalculator();
 
    // PersistentData class.
    void writePersistentData();

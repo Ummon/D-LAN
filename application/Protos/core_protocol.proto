@@ -97,6 +97,7 @@ message GetHashesResult {
    enum Status {
       OK = 0;
       DONT_HAVE = 1; // 'b' doesn't have the requested entry.
+      HASHES_DONT_MATCH = 2; // If one or more hashes of the given entry (GetHashes.file) don't match the hashes of the 'b' entry. Not implemented (no check is performed).
       ERROR_UNKNOWN = 255;
    }
    required Status status = 1; // If status != OK nb_hash is not set.

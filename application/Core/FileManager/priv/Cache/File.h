@@ -89,7 +89,6 @@ namespace FM
       bool hasOneOrMoreHashes();
 
       bool isComplete();
-      void setAsComplete();
       void chunkComplete(const Chunk* chunk);
 
       int getNbChunks();
@@ -108,6 +107,7 @@ namespace FM
       /////
 
    private:
+      void setAsComplete();
       void deleteAllChunks();
       void createPhysicalFile();
       void setHashes(const Common::Hashes& hashes);
@@ -116,12 +116,10 @@ namespace FM
       QVector<QSharedPointer<Chunk>> chunks;
       QDateTime dateLastModified;
 
-      // Used only when writing a file.
-      int nbChunkComplete;
       bool complete;
 
-      int numDataWriter;
-      int numDataReader;
+      quint16 numDataWriter;
+      quint16 numDataReader;
       QFile* fileInWriteMode;
       QFile* fileInReadMode;
       QMutex writeLock; ///< Protect the file from concurrent access from different downloaders.

@@ -131,7 +131,10 @@ void RemoteConnection::sendMessageToItself(const QString& message)
 }
 
 void RemoteConnection::refresh()
-{
+{   
+   const int downloadRate = this->downloadManager->getDownloadRate();
+   const int uploadRate = this->uploadManager->getUploadRate();
+
    Protos::GUI::State state;
 
    state.set_integrity_check_enabled(SETTINGS.get<bool>("check_received_data_integrity"));
@@ -141,8 +144,8 @@ void RemoteConnection::refresh()
    Protos::GUI::State::Peer* self = state.add_peer();
    self->mutable_peer_id()->set_hash(this->peerManager->getSelf()->getID().getData(), Common::Hash::HASH_SIZE);
    self->set_sharing_amount(this->fileManager->getAmount());
-   self->set_download_rate(this->downloadManager->getDownloadRate());
-   self->set_upload_rate(this->uploadManager->getUploadRate());
+   self->set_download_rate(downloadRate);
+   self->set_upload_rate(uploadRate);
    Common::ProtoHelper::setStr(*self, &Protos::GUI::State::Peer::set_nick, this->peerManager->getSelf()->getNick());
    Common::ProtoHelper::setStr(*self, &Protos::GUI::State::Peer::set_core_version, Common::Global::getVersionFull());
 
@@ -222,8 +225,8 @@ void RemoteConnection::refresh()
    Protos::GUI::State_Stats* stats = state.mutable_stats();
    stats->set_cache_status(static_cast<Protos::GUI::State::Stats::CacheStatus>(this->fileManager->getCacheStatus())); // Warning: IFileManager::CacheStatus and Protos::GUI::State_Stats_CacheStatus must be compatible.
    stats->set_progress(this->fileManager->getProgress());
-   stats->set_download_rate(this->downloadManager->getDownloadRate());
-   stats->set_upload_rate(this->uploadManager->getUploadRate());
+   stats->set_download_rate(downloadRate);
+   stats->set_upload_rate(uploadRate);
 
    // Network interfaces.
    QString adressToListenStr = SETTINGS.get<QString>("listen_address");

@@ -34,6 +34,8 @@
 #include <Global.h>
 #include <ZeroCopyStreamQIODevice.h>
 #include <ProtoHelper.h>
+#include <SortedList.h>
+#include <TransferRateCalculator.h>
 using namespace Common;
 
 Tests::Tests()
@@ -43,6 +45,39 @@ Tests::Tests()
 void Tests::initTestCase()
 {
    qDebug() << "Application directory path (where the settings and persistent data are put) : " << Global::getDataFolder(Common::Global::DataFolderType::ROAMING, false);
+}
+
+void Tests::getVersion()
+{
+   qDebug() << "Global::getVersion(): " << Global::getVersion();
+   qDebug() << "Global::getVersionTag(): " << Global::getVersionTag();
+   qDebug() << "Global::getSystemVersion(): " << Global::getSystemVersion();
+   qDebug() << "Global::getVersionFull(): " << Global::getVersionFull();
+
+   QVERIFY(!Global::getVersion().isEmpty());
+   QVERIFY(!Global::getVersionTag().isEmpty());
+   QVERIFY(!Global::getSystemVersion().isEmpty());
+   QVERIFY(!Global::getVersionFull().isEmpty());
+}
+
+void Tests::commonPrefix()
+{
+   const QString s1 = "abcd";
+   const QString s2 = "abc";
+   const QString s3 = "abcz";
+   const QString s4 = "a";
+   const QString s5 = "";
+   const QString s6;
+   const QString s7 = "abcdefg";
+   const QString s8 = "zzz";
+
+   QCOMPARE(Global::commonPrefix(s1, s2), 3);
+   QCOMPARE(Global::commonPrefix(s1, s3), 3);
+   QCOMPARE(Global::commonPrefix(s1, s4), 1);
+   QCOMPARE(Global::commonPrefix(s1, s5), 0);
+   QCOMPARE(Global::commonPrefix(s1, s6), 0);
+   QCOMPARE(Global::commonPrefix(s1, s7), 4);
+   QCOMPARE(Global::commonPrefix(s1, s8), 0);
 }
 
 void Tests::nCombinations()
@@ -120,6 +155,60 @@ void Tests::hashStringToInt()
    QCOMPARE(Global::hashStringToInt(""), 0u);
    QCOMPARE(Global::hashStringToInt("abcde"), 444281822u);
    QCOMPARE(Global::hashStringToInt("abcdef"), 3174932005u);
+}
+
+void Tests::sortedList()
+{
+   SortedList<int> list;
+
+   list.insert(16);
+   list.insert(2);
+   list.insert(9);
+   list.insert(10);
+   list.insert(3);
+
+   auto test = [&](const QList<int>& expected) {
+      int i = 0;
+      foreach (int n, list.getList())
+         QCOMPARE(n, expected[i++]);
+   };
+
+   test(QList<int> { 2, 3, 9, 10, 16 });
+
+   list.insert(QList<int> { 1, 4, 5, 12, 15, 32 });
+
+   test(QList<int> { 1, 2, 3, 4, 5, 9, 10, 12, 15, 16, 32 });
+
+   list.removeOne(32);
+   list.removeOne(2);
+   list.removeOne(3);
+   list.removeOne(12);
+   list.removeOne(42);
+
+   test(QList<int> { 1, 4, 5, 9, 10, 15, 16, });
+
+   list.clear();
+
+   QVERIFY(list.getList().isEmpty());
+}
+
+void Tests::transferRateCalculator()
+{
+   TransferRateCalculator t;
+   QCOMPARE(t.getTransferRate(), 0);
+
+   static int N = 700;
+   for (int i = 1; i < N; i += 10)
+   {
+      QTest::qSleep(i);
+      if (i < 600)
+         t.addData(i);
+      qDebug() << "Transfert rate: " << t.getTransferRate();
+
+      QVERIFY(t.getTransferRate() <= 1000);
+   }
+
+   QCOMPARE(t.getTransferRate(), 0);
 }
 
 void Tests::writePersistentData()
@@ -418,5 +507,3 @@ void Tests::protoHelper()
    QVERIFY(debugStr.indexOf("6a98f983b8c80015fd93ca6bf9a98a9577a6e094") != -1);
    QVERIFY(debugStr.indexOf("7aaeb7c5816857c832893afc676d5e37b73968a4") != -1);
 }
-
-

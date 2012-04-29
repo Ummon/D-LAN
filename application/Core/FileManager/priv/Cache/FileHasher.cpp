@@ -39,8 +39,6 @@ using namespace FM;
   *
   * The class can compute the hashes of a given file (FM::File*).
   * A 'Chunk' object is added to the file for each hash computed.
-  *
-  * TODO: this class is tightly coupled to 'File' (friend) and 'FileUpdater', try to avoid this.
   */
 
 FileHasher::FileHasher() :

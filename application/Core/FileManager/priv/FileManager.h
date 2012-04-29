@@ -82,6 +82,7 @@ namespace FM
       void sharedDirectoryRemoved(SharedDirectory*, Directory*);
       void entryAdded(Entry* entry);
       void entryRemoved(Entry* entry);
+      void entryRenamed(Entry* entry, const QString& oldName);
       void chunkHashKnown(QSharedPointer<Chunk> chunk);
       void chunkRemoved(QSharedPointer<Chunk> chunk);
 
