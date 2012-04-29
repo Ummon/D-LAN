@@ -82,7 +82,7 @@ void UploadManager::getChunk(QSharedPointer<FM::IChunk> chunk, int offset, QShar
 
 void UploadManager::uploadTimeout()
 {
-   ChunkUploader* upload = dynamic_cast<ChunkUploader*>(this->sender());
+   ChunkUploader* upload = static_cast<ChunkUploader*>(this->sender());
 
    for (QMutableListIterator<QSharedPointer<ChunkUploader>> i(this->uploads); i.hasNext();)
       if (i.next().data() == upload)

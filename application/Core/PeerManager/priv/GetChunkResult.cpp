@@ -56,7 +56,7 @@ void GetChunkResult::newMessage(Common::MessageHeader::MessageType type, const g
 
    this->stopTimer();
 
-   const Protos::Core::GetChunkResult& chunkResult = dynamic_cast<const Protos::Core::GetChunkResult&>(message);
+   const Protos::Core::GetChunkResult& chunkResult = static_cast<const Protos::Core::GetChunkResult&>(message);
    emit result(chunkResult);
 
    if (chunkResult.status() == Protos::Core::GetChunkResult::OK)

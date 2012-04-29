@@ -52,6 +52,6 @@ void GetEntriesResult::newMessage(Common::MessageHeader::MessageType type, const
 
    disconnect(this->socket.data(), SIGNAL(newMessage(Common::MessageHeader::MessageType, const google::protobuf::Message&)), this, SLOT(newMessage(Common::MessageHeader::MessageType, const google::protobuf::Message&)));
 
-   const Protos::Core::GetEntriesResult& entries = dynamic_cast<const Protos::Core::GetEntriesResult&>(message);
+   const Protos::Core::GetEntriesResult& entries = static_cast<const Protos::Core::GetEntriesResult&>(message);
    emit result(entries);
 }
