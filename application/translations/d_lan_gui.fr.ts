@@ -352,8 +352,12 @@
     </message>
     <message>
         <location line="+424"/>
+        <source>Waiting the cache loading process is finished</source>
+        <translation>En attente de la fin de chargement du cache</translation>
+    </message>
+    <message>
         <source>Waiting that loading the cache is finished</source>
-        <translation>En attente que le cache soit chargé</translation>
+        <translation type="obsolete">En attente que le cache soit chargé</translation>
     </message>
     <message>
         <location line="-527"/>
@@ -547,17 +551,15 @@
         <translation>Déplacer tout en haut</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>Remove completed files</source>
-        <translation>Enlever les fichiers complets</translation>
+        <translation type="obsolete">Enlever les fichiers complets</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Remove selected entries</source>
-        <translation>Enlever les éléments sélectionnés</translation>
+        <translation type="obsolete">Enlever les éléments sélectionnés</translation>
     </message>
     <message>
-        <location line="+4"/>
+        <location line="+7"/>
         <source>Pause selected entries</source>
         <translation>Mettre en pause les éléments sélectionnés</translation>
     </message>
@@ -836,19 +838,27 @@
     <message>
         <location line="+21"/>
         <location filename="../GUI/.tmp/debug/ui_WidgetDownloads.h" line="+5"/>
+        <source>Remove completed files from the queue</source>
+        <translation>Enlever les fichiers complets de la queue</translation>
+    </message>
+    <message>
+        <location line="+14"/>
+        <location filename="../GUI/.tmp/debug/ui_WidgetDownloads.h" line="+4"/>
+        <source>Removed selected downloads from the queue</source>
+        <translation>Enlever les éléments sélectionnés de la queue</translation>
+    </message>
+    <message>
         <location filename="../GUI/.tmp/release/ui_WidgetDownloads.h" line="+5"/>
         <source>Remove completed files</source>
         <translation>Enlever les fichiers complets</translation>
     </message>
     <message>
-        <location line="+14"/>
-        <location filename="../GUI/.tmp/debug/ui_WidgetDownloads.h" line="+4"/>
-        <location filename="../GUI/.tmp/release/ui_WidgetDownloads.h" line="+4"/>
+        <location line="+4"/>
         <source>Removed selected downloads</source>
         <translation>Enlever les fichiers sélectionnés</translation>
     </message>
     <message>
-        <location line="+14"/>
+        <location filename="../GUI/Downloads/WidgetDownloads.ui" line="+14"/>
         <location filename="../GUI/.tmp/debug/ui_WidgetDownloads.h" line="+4"/>
         <location filename="../GUI/.tmp/release/ui_WidgetDownloads.h" line="+4"/>
         <source>Pause or unpause selected downloads</source>

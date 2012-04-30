@@ -66,7 +66,7 @@
      <item>
       <widget class="QPushButton" name="butRemoveComplete">
        <property name="toolTip">
-        <string>Remove completed files</string>
+        <string>Remove completed files from the queue</string>
        </property>
        <property name="text">
         <string/>
@@ -80,7 +80,7 @@
      <item>
       <widget class="QPushButton" name="butRemoveSelected">
        <property name="toolTip">
-        <string>Removed selected downloads</string>
+        <string>Removed selected downloads from the queue</string>
        </property>
        <property name="text">
         <string/>
