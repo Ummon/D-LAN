@@ -37,6 +37,12 @@ CONFIG(debug, debug|release) {
    }
 }
 
+win32 {
+   LIBS += libole32
+   SOURCES += Taskbar/TaskbarImplWin.cpp
+   HEADERS += Taskbar/TaskbarImplWin.h
+}
+
 SOURCES += main.cpp\
     MainWindow.cpp \
     ../Protos/gui_protocol.pb.cc \
@@ -111,7 +117,11 @@ HEADERS  += MainWindow.h \
     Downloads/DownloadsTreeModel.h \
     Downloads/DownloadsModel.h \
     PeerList/PeerListDelegate.h \
-    BusyIndicator.h
+    BusyIndicator.h \
+    Taskbar/Taskbar.h \
+    Taskbar/ITaskbarImpl.h \
+    Taskbar/WinUtil.h \
+    Taskbar/TaskbarTypes.h
 
 FORMS    += MainWindow.ui \
     StatusBar.ui \

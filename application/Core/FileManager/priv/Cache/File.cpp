@@ -449,6 +449,7 @@ void File::removeUnfinishedFiles()
       QMutexLocker lockerRead(&this->readLock);
 
       this->cache->getFilePool().forceReleaseAll(this->getFullPath());
+
       this->fileInReadMode = nullptr;
       this->fileInWriteMode = nullptr;
 
@@ -567,6 +568,7 @@ void File::createPhysicalFile()
          QFile::remove(this->getFullPath());
          throw UnableToCreateNewFileException();
       }
+// TODO: Do we need that on linux? see 'fallocate(..)',
 #ifdef Q_OS_WIN32
       DWORD bytesWritten;
       HANDLE hdl = (HANDLE)_get_osfhandle(file.handle());

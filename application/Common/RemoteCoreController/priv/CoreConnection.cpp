@@ -223,7 +223,7 @@ void CoreConnection::tempConnected()
 void CoreConnection::tempDisconnected()
 {
    if (this->connectingInProgress)
-      this->tempConnectingError(ERROR_HOST_TIMEOUT);
+      this->tempConnectingError(RCC_ERROR_HOST_TIMEOUT);
 }
 
 /**
@@ -235,7 +235,7 @@ bool CoreConnection::connectToCorePrepare(const QString& address)
 
    if (this->connectingInProgress)
    {
-      this->tempConnectingError(ERROR_CONNECTING_IN_PROGRESS);
+      this->tempConnectingError(RCC_ERROR_CONNECTING_IN_PROGRESS);
       return false;
    }
 
@@ -243,7 +243,7 @@ bool CoreConnection::connectToCorePrepare(const QString& address)
 
    if (address.isNull() || address.isEmpty())
    {
-      this->tempConnectingError(ERROR_INVALID_ADDRESS);
+      this->tempConnectingError(RCC_ERROR_INVALID_ADDRESS);
       return false;
    }
 
