@@ -174,7 +174,7 @@ int Chunk::read(char* buffer, int offset)
    if (offset >= this->knownBytes)
       return 0;
 
-   int bytesRemaining = this->getChunkSize() - offset;
+   const int bytesRemaining = this->getChunkSize() - offset;
    return this->file->read(buffer, offset + static_cast<qint64>(this->num) * CHUNK_SIZE, bytesRemaining >= BUFFER_SIZE_READING ? BUFFER_SIZE_READING : bytesRemaining);
 }
 

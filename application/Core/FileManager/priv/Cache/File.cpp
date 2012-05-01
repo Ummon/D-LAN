@@ -327,8 +327,8 @@ qint64 File::write(const char* buffer, int nbBytes, qint64 offset)
    if (!this->fileInWriteMode || offset >= this->size || !this->fileInWriteMode->seek(offset))
       throw IOErrorException();
 
-   qint64 maxSize = this->size - offset;
-   qint64 n = this->fileInWriteMode->write(buffer, nbBytes > maxSize ? maxSize : nbBytes);
+   const qint64 maxSize = this->size - offset;
+   const qint64 n = this->fileInWriteMode->write(buffer, nbBytes > maxSize ? maxSize : nbBytes);
 
    if (n == -1)
       throw IOErrorException();
@@ -354,7 +354,7 @@ qint64 File::read(char* buffer, qint64 offset, int maxBytesToRead)
    if (!this->fileInReadMode->seek(offset))
       throw IOErrorException();
 
-   qint64 bytesRead = this->fileInReadMode->read(buffer, maxBytesToRead);
+   const qint64 bytesRead = this->fileInReadMode->read(buffer, maxBytesToRead);
 
    if (bytesRead == -1)
       throw IOErrorException();
