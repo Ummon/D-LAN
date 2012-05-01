@@ -200,8 +200,8 @@ void WidgetDownloads::displayContextMenuDownloads(const QPoint& point)
 
    menu.addAction(QIcon(":/icons/ressources/arrow_up.png"), tr("Move to top"), this, SLOT(moveSelectedEntriesToTop()));
 
-   menu.addAction(QIcon(":/icons/ressources/remove_complete_files.png"), tr("Remove completed files"), this, SLOT(removeCompletedFiles()));
-   menu.addAction(QIcon(":/icons/ressources/delete.png"), tr("Remove selected entries"), this, SLOT(removeSelectedEntries()));
+   menu.addAction(QIcon(":/icons/ressources/remove_complete_files.png"), this->ui->butRemoveComplete->toolTip(), this, SLOT(removeCompletedFiles()));
+   menu.addAction(QIcon(":/icons/ressources/delete.png"), this->ui->butRemoveSelected->toolTip(), this, SLOT(removeSelectedEntries()));
 
    QPair<QList<quint64>, bool> IDs = this->getDownloadIDsToPause();
    if (!IDs.first.isEmpty())

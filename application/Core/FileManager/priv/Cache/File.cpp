@@ -91,8 +91,6 @@ File::File(
 
 File::~File()
 {
-   // QMutexLocker(&this->cache->getMutex()); // Is it necessary ?
-
    this->dir->fileDeleted(this);
 
    for (QVectorIterator<QSharedPointer<Chunk>> i(this->chunks); i.hasNext();)
@@ -117,6 +115,7 @@ File::~File()
   */
 void File::setToUnfinished(qint64 size, const Common::Hashes& hashes)
 {
+   QMutexLocker locker(&this->mutex);
    L_DEBU(QString("File::setToUnfinished : %1").arg(this->getFullPath()));
 
    this->complete = false;
@@ -183,6 +182,8 @@ void File::populateHashesFile(Protos::FileCache::Hashes_File& fileToFill) const
   */
 void File::populateEntry(Protos::Common::Entry* entry, bool setSharedDir) const
 {
+   QMutexLocker locker(&this->mutex);
+
    Entry::populateEntry(entry, setSharedDir);
 
    entry->set_type(Protos::Common::Entry_Type_FILE);
@@ -237,6 +238,8 @@ SharedDirectory* File::getRoot() const
 
 void File::changeName(const QString& newName)
 {
+   QMutexLocker locker(&this->mutex);
+
    Entry::changeName(newName);
    this->dir->fileNameChanged(this);
 }
@@ -506,8 +509,6 @@ QSharedPointer<Chunk> File::removeLastChunk()
   */
 void File::setAsComplete()
 {
-   QMutexLocker locker(&this->mutex);
-
    L_DEBU(QString("File set as complete : %1").arg(this->getFullPath()));
 
    if (Global::isFileUnfinished(this->name))
@@ -516,7 +517,12 @@ void File::setAsComplete()
       {
          QMutexLocker lockerWrite(&this->writeLock);
          QMutexLocker lockerRead(&this->readLock);
-         this->cache->getFilePool().forceReleaseAll(this->getFullPath()); // Some uploads may be interrupted.
+         // On Windows with some kinds of device like external hard drive this call can suspend the execution
+         // for a long time like 10 seconds ('ClosHandle(..)' will flush all data and wait). Some actions will be also blocks by the mutex
+         // like browsing the parent directory. The workaround is to temporaty unlock the mutex during this operation.
+         this->mutex.unlock();
+         this->cache->getFilePool().forceReleaseAll(this->getFullPath());
+         this->mutex.lock();
          this->fileInReadMode = nullptr;
          this->fileInWriteMode = nullptr;
       }

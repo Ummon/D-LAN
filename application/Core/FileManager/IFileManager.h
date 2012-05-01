@@ -152,6 +152,10 @@ namespace FM
         */
       virtual int getProgress() const = 0;
 
+      /**
+        * Dump the word index as text in the warning logger.
+        * Use only for debugging purpose.
+        */
       virtual void dumpWordIndex() const = 0;
 
    signals:

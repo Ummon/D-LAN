@@ -284,7 +284,7 @@ void RemoteConnection::searchFound(const Protos::Common::FindResult& result)
 
 void RemoteConnection::getEntriesResult(const Protos::Core::GetEntriesResult& entries)
 {
-   PM::IGetEntriesResult* getEntriesResult = dynamic_cast<PM::IGetEntriesResult*>(this->sender());
+   PM::IGetEntriesResult* getEntriesResult = static_cast<PM::IGetEntriesResult*>(this->sender());
 
    Protos::GUI::BrowseResult result;
    result.mutable_entries()->MergeFrom(entries.entries());
@@ -296,7 +296,7 @@ void RemoteConnection::getEntriesResult(const Protos::Core::GetEntriesResult& en
 
 void RemoteConnection::getEntriesTimeout()
 {
-   PM::IGetEntriesResult* getEntriesResult = dynamic_cast<PM::IGetEntriesResult*>(this->sender());
+   PM::IGetEntriesResult* getEntriesResult = static_cast<PM::IGetEntriesResult*>(this->sender());
    this->removeGetEntriesResult(getEntriesResult);
 }
 

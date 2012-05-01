@@ -150,7 +150,7 @@ void FilePool::tryToDeleteReleasedFiles()
       {
          if (openedFile.releasedTime.elapsed() > TIME_KEEP_FILE_OPEN_MIN)
          {
-            L_DEBU(QString("FilePool::tryToDeleteReleasedFiles(): file close : %1").arg(openedFile.file->fileName()));
+            L_DEBU(QString("FilePool::tryToDeleteReleasedFiles(): file closed: %1").arg(openedFile.file->fileName()));
             filesToDelete << openedFile.file;
             i.remove();
          }

@@ -40,10 +40,8 @@ Entry::~Entry()
 
 void Entry::populateEntry(Protos::Common::Entry* entry, bool setSharedDir) const
 {
-   QString name = this->getName();
-
    Common::ProtoHelper::setStr(*entry, &Protos::Common::Entry::set_path, this->getPath());
-   Common::ProtoHelper::setStr(*entry, &Protos::Common::Entry::set_name, name);
+   Common::ProtoHelper::setStr(*entry, &Protos::Common::Entry::set_name, this->getName());
    entry->set_size(this->getSize());
 
    if (setSharedDir)

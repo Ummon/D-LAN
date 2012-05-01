@@ -51,7 +51,7 @@ void GetHashesResult::newMessage(Common::MessageHeader::MessageType type, const 
    {
    case Common::MessageHeader::CORE_GET_HASHES_RESULT:
       {
-         const Protos::Core::GetHashesResult& hashesResult = dynamic_cast<const Protos::Core::GetHashesResult&>(message);
+         const Protos::Core::GetHashesResult& hashesResult = static_cast<const Protos::Core::GetHashesResult&>(message);
          this->startTimer(); // Restart the timer.
          emit result(hashesResult);
       }
@@ -59,7 +59,7 @@ void GetHashesResult::newMessage(Common::MessageHeader::MessageType type, const 
 
    case Common::MessageHeader::CORE_HASH:
       {
-         const Protos::Common::Hash& hash = dynamic_cast<const Protos::Common::Hash&>(message);
+         const Protos::Common::Hash& hash = static_cast<const Protos::Common::Hash&>(message);
          this->startTimer(); // Restart the timer.
          emit nextHash(Common::Hash(hash.hash()));
       }

@@ -171,7 +171,7 @@ void ThreadPool::wait(QWeakPointer<IRunnable> runnable)
 
 void ThreadPool::runnableFinished()
 {
-   Thread* thread = dynamic_cast<Thread*>(this->sender());
+   Thread* thread = static_cast<Thread*>(this->sender());
 
    // The runnable object may have been deleted right after the call to 'run()'.
    if (!thread->getRunnable().isNull())
@@ -184,7 +184,7 @@ void ThreadPool::runnableFinished()
 
 void ThreadPool::threadTimeout()
 {
-   Thread* thread = dynamic_cast<Thread*>(this->sender());
+   Thread* thread = static_cast<Thread*>(this->sender());
 
    if (this->activeThreads.size() + this->inactiveThreads.size() > this->nbMinThread)
    {

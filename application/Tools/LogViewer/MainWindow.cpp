@@ -237,7 +237,7 @@ void MainWindow::readCurrentDir()
    }
    this->ui->cmbFile->setCurrentIndex(this->ui->cmbFile->count() - 1);
 
-   if (this-ui->cmbFile->count() > 0)
+   if (this->ui->cmbFile->count() > 0)
       this->setCurrentFile(this->ui->cmbFile->itemText(this->ui->cmbFile->count() - 1));
 
    connect(this->ui->cmbFile, SIGNAL(currentIndexChanged(QString)), this, SLOT(setCurrentFile(QString)));
