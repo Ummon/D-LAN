@@ -32,6 +32,9 @@ TaskbarImplWin::~TaskbarImplWin()
       this->taskbarInterface->Release();
 }
 
+/**
+  * See http://msdn.microsoft.com/en-us/library/windows/desktop/dd391697(v=vs.85).aspx
+  */
 void TaskbarImplWin::setStatus(TaskbarButtonStatus status)
 {
    if (!this->winHandle || !this->taskbarInterface)
@@ -57,6 +60,9 @@ void TaskbarImplWin::setStatus(TaskbarButtonStatus status)
    }
 }
 
+/**
+  * See http://msdn.microsoft.com/en-us/library/windows/desktop/dd391698(v=vs.85).aspx
+  */
 void TaskbarImplWin::setProgress(quint64 completed, quint64 total)
 {
    if (!this->winHandle || !this->taskbarInterface)
