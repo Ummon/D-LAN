@@ -68,7 +68,7 @@ images(Filename_caption_list) ->
       end,
       Filename_caption_list
    ).
-
+   
 % 'Platform' is a folder where the releases are put.
 % For example: "windows".
 download_button(A, Platform) ->
@@ -80,15 +80,27 @@ download_button(A, Platform) ->
    File_size = filelib:file_size(Relase_platform_folder ++ "/" ++ Filename),
    File_size_mb = float(File_size) / 1048576,
    {'div', [{class, "download" ++ " " ++ Extension}],
-      [{a, [{href, atom_to_list(current_page(A)) ++ ".html&amp;dl=" ++ Filename ++ "&amp;platform=" ++ Platform}], 
+      [{a, [{class, "installer"}, {href, file_to_url(A, Filename, Platform)}], 
          [
             {em, [], [tr(download_button, download, A) ++ " (" ++ io_lib:format("~.2f", [File_size_mb]) ++ " MiB)"]}, {br},
             tr(download_button, version, A, [Version ++ if Version_tag =/= [] -> " " ++ Version_tag; true -> [] end, Platform_maj]), {br},
             tr(download_button, released, A, [httpd_util:month(list_to_integer(Month)) ++ " " ++ Day ++ " " ++ Year])
             %"Number of download : " ++ integer_to_list(d_lan_download_counter:nb_download(Filename))
          ]
-      }]
+      }] 
+      ++ % Add a link to the torrent file if it exists.
+      case sort([F || F <- Filenames, string:right(F, 8) =:= ".torrent"]) of
+         [Torrent_file | _] ->
+            [{a, [{class, "torrent"}, {href, file_to_url(A, Torrent_file, Platform)}],
+               tr(download_button, torrent, A)
+            }];
+         _ -> []
+      end
    }.
+
+% Returns the url to download a given file for the given platform.
+file_to_url(A, Filename, Platform) ->
+   atom_to_list(current_page(A)) ++ ".html&amp;dl=" ++ Filename ++ "&amp;platform=" ++ Platform.
 
 % Send a file to the HTTP agent.
 % See http://yaws.hyber.org/stream.yaws for more informations.

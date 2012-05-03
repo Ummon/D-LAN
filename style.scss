@@ -12,9 +12,25 @@ $color-bg-body: mix($blue-dark, $blue-light);
 $color-bg-content: desaturate(lighten(mix($blue-dark, $blue-light), 20%), 15%); 
 $color-bg-box: desaturate(lighten(mix($blue-dark, $blue-light), 50%), 15%); // For download and gallery
 
-@mixin border-radius($r) {
-   border-radius: $r;
+@mixin border-radius-all($r) {
+   -webkit-border-top-left-radius: $r;
    -moz-border-radius: $r;
+   border-radius: $r;
+}
+
+@mixin border-radius($r_top_left, $r_top_right, $r_bot_right, $r_bot_left) {
+   -webkit-border-top-left-radius: $r_top_left;
+   -webkit-border-top-right-radius: $r_top_right;
+   -webkit-border-bottom-right-radius: $r_bot_right;
+   -webkit-border-bottom-left-radius: $r_bot_left;
+   -moz-border-radius-topleft: $r_top_left;
+   -moz-border-radius-topright: $r_top_right;
+   -moz-border-radius-bottomright: $r_bot_right;
+   -moz-border-radius-bottomleft: $r_bot_left;
+   border-top-left-radius: $r_top_left;
+   border-top-right-radius: $r_top_right;
+   border-bottom-right-radius: $r_bot_right;
+   border-bottom-left-radius: $r_bot_left;
 }
 
 @mixin vertical-list {   
@@ -108,7 +124,7 @@ p {
    margin: 10px;
    padding: 12px;
    background-color: rgba(255, 255, 255, $opacity2);   
-   @include border-radius(16px);
+   @include border-radius-all(16px);
 }
 .ie .box {
    background-color: $color-bg-box;
@@ -141,7 +157,7 @@ p {
       background-image: url(img/donate_button_highlight.png);
    }
    font-style: italic;
-   background-color:rgba(255, 255, 255, $opacity1);
+   background-color:rgba(255, 255, 255, $opacity1);   
    ul#langs {
       @include vertical-list;
       margin-left: 10px;
@@ -205,7 +221,7 @@ p {
          &:hover {
             border-color: $red-light;
          }
-         @include border-radius(40px);
+         @include border-radius-all(40px);
          width: 300px;
          background-color: rgba(255, 255, 255, $opacity2);
          margin: 15px 15px 0px 15px;
@@ -216,20 +232,29 @@ p {
             background-image: url("img/download_for_mac.png");
          }
          background-repeat: no-repeat;
-         background-position: 12px 14px;
+         background-position: 12px 18px;
          a {
-            font-weight: normal;
-            text-shadow: none;
-            height: 56px; 
             color: $red-dark;
             display: block;
-            padding: 3px 10px 3px 60px; 
+            font-weight: normal;
             font-size: 11px; 
             &:hover { color: lighten($red-dark, 20%); }
+         }
+         a.installer {
+            height: 56px; 
+            padding: 3px 10px 3px 60px; 
             em {
                font-size: 13px;
                font-weight: bold;
             } 
+         }
+         a.torrent {
+            @include border-radius(10px, 10px, 0px, 0px);
+            width: 200px;
+            margin: 0px 10px 0px 50px;
+            padding: 1px 0px 1px 10px;
+            background-color: rgba(255, 255, 255, $opacity2);            
+            &:hover { color: white; background-color: $red-light; }
          }
       }
       .ie .download {

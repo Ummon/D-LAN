@@ -92,7 +92,7 @@ translate(fr, features, help_us) -> "N'oubliez pas de nous <a href=\"~s\">aider<
 translate(en, faq, q1) -> "A new file sharing tool is neat but I can already share some files with my system tools. What are the benefits to use D-LAN?";
 translate(fr, faq, q1) -> "Un nouvel outil de partage de fichier c'est bien mais je peux déjà faire des partages avec les outils de mon système. Quels sont les avantages d'utiliser D-LAN?";
 
-translate(en, faq, a1) -> "D-LAN is designed for massive transfers, you can manage a queue of files to be downloaded. A file may be downloaded automatically from many peers at the same time to speed up the transfer and prevent peer downtime. D-LAN has a fast global search feature which default system file sharing doesn't have. You will find more information from the <a href=\"features.html\">feature page</a>.";
+translate(en, faq, a1) -> "D-LAN is designed for massive transfers, you can manage a queue of files to be downloaded. A file may be downloaded automatically from many peers at the same time to speed up the transfer and prevent peer downtime. D-LAN has a fast global search feature that the default system file sharing doesn't have. You will find more information from the <a href=\"features.html\">feature page</a>.";
 translate(fr, faq, a1) -> "D-LAN est conçu pour des transfers massifs, il est possible de gérer une liste des fichiers à transferer. Un fichier peut être transferé depuis plusieurs pairs simultanément pour augmenter la vitesse ainsi que la fiabilité. Il est possible d'effectuer une recherche globale, ce que les partages système par défaut n'ont pas. Pour plus d'informations voir la <a href=\"features.html\">page des fonctionnalités</a>.";
 
 translate(en, faq, q2) -> "I don't see other computers in my network.";
@@ -103,12 +103,14 @@ translate(en, faq, a2) ->
    "<li>Check you have the latest version of D-LAN.</li>"
    "<li>Be sure the ports 59486 (<i>UDP</i>) and 59487 (<i>UDP + TCP</i>) are opened in your firewall.</li>"
    "<li>Be sure UDP multicast is allowed in your network. The address used is this one: 236.13.43.24.</li>"
+   "<li>All peers must use the same protocol: IPv4 or IPv6, look on <i>Settings &gt; Network</i>.</li>"
    "</ul>";
 translate(fr, faq, a2) ->
    "<ul>"
    "<li>Vérifier que la dernière version de D-LAN est installée.</li>"
    "<li>S'assurer que les ports 59486 (<i>UDP</i>) et 59487 (<i>UDP + TCP</i>) sont ouvert sur le pare-feu (<i>firewall</i>).</li>"
    "<li>S'assurer que l'UDP multicast est autorisé sur le réseau. L'adresse utilisée est la suivante : 236.13.43.24.</li>"
+   "Tous les pairs doivent utiliser le même protocole : IPv4 ou IPv6, voir <i>Paramètres &gt; Réseau</i>.</li>"
    "</ul>";
    
 translate(en, faq, q3) -> "D-LAN slows down my computer when hashing, what's that and why it's needed?";
@@ -267,6 +269,9 @@ translate(fr, download_button, version) -> "Version ~s pour ~s";
 
 translate(en, download_button, released) -> "Released on ~s";
 translate(fr, download_button, released) -> "Sorti le ~s";
+
+translate(en, download_button, torrent) -> "Torrent file";
+translate(fr, download_button, torrent) -> "Fichier torrent";
 
 translate(en, _, _) -> "No translation.";
 translate(fr, _, _) -> "Pas de traduction";
