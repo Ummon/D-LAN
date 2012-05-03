@@ -180,7 +180,7 @@ QList<NodeResult<T>> WordIndex<T>::search(const QStringList& words, int maxNbRes
       //  * (b, c)
       QList<NodeResult<T>> nodesToSort;
       const int NB_COMBINATIONS = Common::Global::nCombinations(N, NB_INTERSECTS);
-      for (int j = 0; j < NB_COMBINATIONS && nodesToSort.size() + finalResult.size() < maxNbResult; j++)
+      for (int j = 0; j < NB_COMBINATIONS; j++)
       {
          // Apply intersects.
          QSet<NodeResult<T>> currentLevelSet = results[intersect[0]];
@@ -203,6 +203,12 @@ QList<NodeResult<T>> WordIndex<T>::search(const QStringList& words, int maxNbRes
 
          // Sort by level.
          nodesToSort << currentLevelSet.toList();
+
+         if (nodesToSort.size() + finalResult.size() > maxNbResult)
+         {
+            nodesToSort.erase(nodesToSort.end() - (nodesToSort.size() + finalResult.size() - maxNbResult), nodesToSort.end());
+            break;
+         }
 
          // Define positions of each intersect term.
          for (int k = NB_INTERSECTS - 1; k >= 0; k--)
