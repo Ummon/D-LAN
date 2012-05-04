@@ -171,13 +171,9 @@ void WidgetBrowse::openLocation()
 
    QSet<QString> locations;
    for (QListIterator<QModelIndex> i(selectedRows); i.hasNext();)
-   {
-      QModelIndex index = i.next();
-      locations.insert("file:///" + this->browseModel.getPath(index, false));
-   }
+      locations.insert(this->browseModel.getPath(i.next(), true));
 
-   for (QSetIterator<QString> i(locations); i.hasNext();)
-      QDesktopServices::openUrl(QUrl(i.next(), QUrl::TolerantMode));
+   Utils::openLocations(locations.toList());
 }
 
 /**
