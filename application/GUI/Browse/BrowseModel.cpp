@@ -161,6 +161,8 @@ QString BrowseModel::getPath(const QModelIndex& index, bool appendFilename) cons
       return QString();
 
    QString path = sharedDir.path;
+   if (!path.isEmpty())
+      path.remove(path.size() - 1, 1); // Remove the '/' at the end because path given by 'Common::ProtoHelper::getRelativePath(..)' already begins with a '/'.
    return path.append(Common::ProtoHelper::getRelativePath(entry, appendFilename));
 }
 
