@@ -22,6 +22,7 @@ using namespace GUI;
 #include <QListView>
 #include <QFileDialog>
 #include <QDesktopServices>
+#include <QUrl>
 #include <QProcess>
 #include <QGridLayout>
 #include <QLabel>
