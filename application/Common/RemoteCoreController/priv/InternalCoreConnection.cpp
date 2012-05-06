@@ -71,7 +71,7 @@ void InternalCoreConnection::connectToCore(const QString& address, quint16 port,
 
    if (this->isConnected() && this->connectionInfo.address == address)
    {
-      emit connectingError(ICoreConnection::ERROR_ALREADY_CONNECTED_TO_THIS_CORE);
+      emit connectingError(ICoreConnection::RCC_ERROR_ALREADY_CONNECTED_TO_THIS_CORE);
       return;
    }
 
@@ -261,7 +261,7 @@ void InternalCoreConnection::adressResolved(QHostInfo hostInfo)
 
    if (hostInfo.addresses().isEmpty())
    {
-      emit connectingError(ICoreConnection::ERROR_HOST_UNKOWN);
+      emit connectingError(ICoreConnection::RCC_ERROR_HOST_UNKOWN);
       return;
    }
 
@@ -313,7 +313,7 @@ void InternalCoreConnection::stateChanged(QAbstractSocket::SocketState socketSta
       }
       else
       {
-         emit connectingError(ICoreConnection::ERROR_HOST_TIMEOUT);
+         emit connectingError(ICoreConnection::RCC_ERROR_HOST_TIMEOUT);
       }
       break;
 
@@ -382,15 +382,15 @@ void InternalCoreConnection::onNewMessage(Common::MessageHeader::MessageType typ
             switch (authenticationResult.status())
             {
             case Protos::GUI::AuthenticationResult::AUTH_PASSWORD_NOT_DEFINED:
-               emit connectingError(ICoreConnection::ERROR_NO_REMOTE_PASSWORD_DEFINED);
+               emit connectingError(ICoreConnection::RCC_ERROR_NO_REMOTE_PASSWORD_DEFINED);
                break;
 
             case Protos::GUI::AuthenticationResult::AUTH_BAD_PASSWORD:
-                emit connectingError(ICoreConnection::ERROR_WRONG_PASSWORD);
+                emit connectingError(ICoreConnection::RCC_ERROR_WRONG_PASSWORD);
                break;
 
             case Protos::GUI::AuthenticationResult::AUTH_ERROR:
-               emit connectingError(ICoreConnection::ERROR_UNKNOWN);
+               emit connectingError(ICoreConnection::RCC_ERROR_UNKNOWN);
                break;
 
             default:;

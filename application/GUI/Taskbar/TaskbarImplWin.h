@@ -16,24 +16,40 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef GUI_UTILS_H
-#define GUI_UTILS_H
+#ifndef GUI_TASKBARIMPLWIN_H
+#define GUI_TASKBARIMPLWIN_H
 
-#include <QSharedPointer>
-#include <QStringList>
+#include <QEvent>
+#include <QObject>
+#include <QWidget>
+#include <QIcon>
 
-#include <Common/RemoteCoreController/ICoreConnection.h>
+#include <Taskbar/ITaskbarImpl.h>
+#include <Taskbar/WinUtil.h>
 
 namespace GUI
 {
-   class Utils
+   class TaskbarImplWin : public QObject, public ITaskbarImpl
    {
-   public:
-      static QStringList askForDirectories(QSharedPointer<RCC::ICoreConnection> coreConnection, const QString& message = QString());
-      static QStringList askForDirectoriesToDownloadTo(QSharedPointer<RCC::ICoreConnection> coreConnection);
+      Q_OBJECT
 
-      static void openLocations(const QStringList& paths);
-      static void openLocation(const QString& path);
+   public:
+      TaskbarImplWin();
+      ~TaskbarImplWin();
+
+      void setStatus(TaskbarButtonStatus status);
+      void setProgress(quint64 completed, quint64 total);
+      void setOverlayIcon(const QIcon& icon, const QString& description);
+
+      void setWinHandle(HWND winHandle);
+      void winEvent(MSG* message, long* result);
+
+   private:
+      void initTaskbarButton();
+
+      HWND winHandle;
+      unsigned int iDTaskbarButtonCreated;
+      ITaskbarList3* taskbarInterface;
    };
 }
 

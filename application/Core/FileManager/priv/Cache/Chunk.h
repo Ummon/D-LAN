@@ -25,10 +25,15 @@
 
 #include <Protos/files_cache.pb.h>
 
+#include <Common/Settings.h>
 #include <Common/Hash.h>
 #include <Common/Uncopyable.h>
+
 #include <IChunk.h>
+#include <Exceptions.h>
+#include <priv/Log.h>
 #include <priv/Constants.h>
+#include <priv/Cache/File.h>
 
 namespace FM
 {
@@ -70,8 +75,8 @@ namespace FM
 
       void fileDeleted();
 
-      int read(char* buffer, int offset);
-      bool write(const char* buffer, int nbBytes);
+      inline int read(char* buffer, int offset);
+      inline bool write(const char* buffer, int nbBytes);
 
       int getNum() const;
       int getNbTotalChunk() const;
@@ -98,4 +103,67 @@ namespace FM
       Common::Hash hash;
    };
 }
+
+
+/**
+  * Fill the given buffer with read bytes.
+  *
+  * @exception IOErrorException
+  * @exception ChunkDeletedException
+  * @exception ChunkNotCompletedException
+  * @param buffer The buffer.
+  * @param offset The offset relative to the chunk.
+  * @return The number of read bytes. If lesser than 'buffer.size' the end of file has been reached
+  *         and the buffer will be partially filled.
+  */
+inline int FM::Chunk::read(char* buffer, int offset)
+{
+   static const int BUFFER_SIZE_READING = SETTINGS.get<quint32>("buffer_size_reading");
+
+   if (!this->file)
+      throw ChunkDeletedException();
+
+   if (this->knownBytes == 0)
+      throw ChunkNotCompletedException();
+
+   if (offset >= this->knownBytes)
+      return 0;
+
+   const int bytesRemaining = this->getChunkSize() - offset;
+   return this->file->read(buffer, offset + static_cast<qint64>(this->num) * CHUNK_SIZE, bytesRemaining >= BUFFER_SIZE_READING ? BUFFER_SIZE_READING : bytesRemaining);
+}
+
+/**
+  * Write the given buffer after 'knownBytes'.
+  * @exception IOErrorException
+  * @exception ChunkDeletedException
+  * @exception TryToWriteBeyondTheEndOfChunkException
+  * @return 'true' if end of chunk reached.
+  */
+inline bool FM::Chunk::write(const char* buffer, int nbBytes)
+{
+   if (!this->file)
+      throw ChunkDeletedException();
+
+   const int CURRENT_CHUNK_SIZE = this->getChunkSize();
+
+   if (this->knownBytes + nbBytes > CURRENT_CHUNK_SIZE)
+      throw TryToWriteBeyondTheEndOfChunkException();
+
+   this->knownBytes += this->file->write(buffer, nbBytes, this->knownBytes + static_cast<qint64>(this->num) * CHUNK_SIZE);
+
+   if (this->knownBytes > CURRENT_CHUNK_SIZE) // Should never be true.
+   {
+      L_ERRO("Chunk::write(..) : this->knownBytes > getChunkSize");
+      this->knownBytes = CURRENT_CHUNK_SIZE;
+   }
+
+   const bool COMPLETE = this->knownBytes == CURRENT_CHUNK_SIZE;
+
+   if (COMPLETE)
+      this->file->chunkComplete(this);
+
+   return COMPLETE;
+}
+
 #endif

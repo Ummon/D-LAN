@@ -174,7 +174,7 @@ QList<NodeResult<T>> WordIndex<T>::search(const QStringList& words, int maxNbRes
          intersect[j] = j;
 
       // For each combination of the current intersection group.
-      // For 2 intersections (nbIntersect == 2) among 3 elements [a, b, c] :
+      // For 2 intersections (NB_INTERSECTS == 2) among 3 elements [a, b, c]:
       //  * (a, b)
       //  * (a, c)
       //  * (b, c)
@@ -223,6 +223,9 @@ QList<NodeResult<T>> WordIndex<T>::search(const QStringList& words, int maxNbRes
 
       level += NB_COMBINATIONS * NB_INTERSECTS;
    }
+
+   if (finalResult.size() > maxNbResult)
+      finalResult.erase(finalResult.end() - (finalResult.size() - maxNbResult), finalResult.end());
 
    return finalResult;
 }

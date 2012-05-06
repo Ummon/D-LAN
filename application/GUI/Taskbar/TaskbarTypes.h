@@ -16,24 +16,18 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef GUI_UTILS_H
-#define GUI_UTILS_H
-
-#include <QSharedPointer>
-#include <QStringList>
-
-#include <Common/RemoteCoreController/ICoreConnection.h>
+#ifndef GUI_TASKBARTYPES_H
+#define GUI_TASKBARTYPES_H
 
 namespace GUI
 {
-   class Utils
+   enum class TaskbarButtonStatus
    {
-   public:
-      static QStringList askForDirectories(QSharedPointer<RCC::ICoreConnection> coreConnection, const QString& message = QString());
-      static QStringList askForDirectoriesToDownloadTo(QSharedPointer<RCC::ICoreConnection> coreConnection);
-
-      static void openLocations(const QStringList& paths);
-      static void openLocation(const QString& path);
+      BUTTON_STATUS_INDETERMINATE,
+      BUTTON_STATUS_NORMAL,
+      BUTTON_STATUS_ERROR,
+      BUTTON_STATUS_PAUSED,
+      BUTTON_STATUS_NOPROGRESS
    };
 }
 

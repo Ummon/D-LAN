@@ -322,6 +322,8 @@ void WidgetDownloads::updateGlobalProgressBar()
    const quint64 bytesDownloaded = this->downloadsFlatModel.getTotalBytesDownloadedInQueue();
    const quint64 eta = this->downloadsFlatModel.getEta();
 
+   emit globalProgressChanged(bytesDownloaded, bytesInQueue);
+
    this->ui->prgGlobalProgress->setValue(bytesInQueue == 0 ? 0 : bytesDownloaded * 10000LL / bytesInQueue);
 
    if (bytesInQueue == 0)

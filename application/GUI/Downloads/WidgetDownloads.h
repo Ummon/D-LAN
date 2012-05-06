@@ -62,6 +62,9 @@ namespace GUI
       explicit WidgetDownloads(QSharedPointer<RCC::ICoreConnection> coreConnection, const PeerListModel& peerListModel, const DirListModel& sharedDirsModel, QWidget* parent = nullptr);
       ~WidgetDownloads();
 
+   signals:
+      void globalProgressChanged(quint64 completed, quint64 total);
+
    protected:
       void keyPressEvent(QKeyEvent* event);
       void changeEvent(QEvent* event);

@@ -16,24 +16,28 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef GUI_UTILS_H
-#define GUI_UTILS_H
+#ifndef GUI_ITASKBARIMPL_H
+#define GUI_ITASKBARIMPL_H
 
-#include <QSharedPointer>
-#include <QStringList>
+#include <QtGlobal>
 
-#include <Common/RemoteCoreController/ICoreConnection.h>
+#include <Taskbar/TaskbarTypes.h>
 
 namespace GUI
 {
-   class Utils
+   class ITaskbarImpl
    {
    public:
-      static QStringList askForDirectories(QSharedPointer<RCC::ICoreConnection> coreConnection, const QString& message = QString());
-      static QStringList askForDirectoriesToDownloadTo(QSharedPointer<RCC::ICoreConnection> coreConnection);
+      virtual ~ITaskbarImpl() {}
 
-      static void openLocations(const QStringList& paths);
-      static void openLocation(const QString& path);
+      virtual void setStatus(TaskbarButtonStatus status) = 0;
+      virtual void setProgress(quint64 completed, quint64 total) = 0;
+      virtual void setOverlayIcon(const QIcon& icon, const QString& description) = 0;
+
+#ifdef Q_OS_WIN32
+      virtual void setWinHandle(HWND winHandle) = 0;
+      virtual void winEvent(MSG* message, long* result) = 0;
+#endif
    };
 }
 

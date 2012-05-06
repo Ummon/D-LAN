@@ -19,7 +19,7 @@
 #ifndef COMMON_HASH_H
 #define COMMON_HASH_H
 
-#define WITH_MUTEX false
+#define WITH_MUTEX false // Not implemented.
 
 #include <string>
 
@@ -63,7 +63,6 @@ namespace Common
 
       Hash& operator=(const Hash& h);
       Hash& operator=(Hash&& h);
-      //Hash& operator=(const std::string& str);
 
       /**
         * Return a pointer to its internal data.
@@ -192,9 +191,6 @@ using namespace Common;
 
 inline void Hash::dereference()
 {
-#if WITH_MUTEX
-   QMutexLocker locker(&this->data->mutex);
-#endif
    if (this->data)
    {
       this->data->nbRef -= 1;

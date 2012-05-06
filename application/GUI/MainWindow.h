@@ -43,6 +43,7 @@
 #include <Uploads/WidgetUploads.h>
 #include <Browse/WidgetBrowse.h>
 #include <Search/WidgetSearch.h>
+#include <Taskbar/Taskbar.h>
 #include <BusyIndicator.h>
 
 
@@ -74,6 +75,7 @@ namespace GUI
 
    private slots:
       void newState(const Protos::GUI::State& state);
+      void onGlobalProgressChanged(quint64 completed, quint64 total);
       void loadLanguage(const QString& filename);
 
       void coreConnectionError(RCC::ICoreConnection::ConnectionErrorCode errorCode);
@@ -112,6 +114,11 @@ namespace GUI
       bool eventFilter(QObject* obj, QEvent* event);
 
       void resizeEvent(QResizeEvent* event);
+
+#ifdef Q_OS_WIN32
+      void showEvent(QShowEvent* event);
+      bool winEvent(MSG* message, long* result);
+#endif
 
    private:
       void search(bool ownFiles = false);
@@ -179,6 +186,8 @@ namespace GUI
       bool autoScroll;
       LogModel logModel;
       LogDelegate logDelegate;
+
+      Taskbar taskbar;
    };
 }
 
