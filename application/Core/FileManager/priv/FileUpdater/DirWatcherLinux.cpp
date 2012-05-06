@@ -45,6 +45,7 @@ const size_t DirWatcherLinux::BUF_LEN = (1024 * (EVENT_SIZE + 16));
 const uint32_t DirWatcherLinux::EVENTS_OBS = IN_MOVE|IN_DELETE|IN_CREATE|IN_CLOSE_WRITE;
 const uint32_t DirWatcherLinux::ROOT_EVENTS_OBS = EVENTS_OBS|IN_MOVE_SELF|IN_DELETE_SELF;
 
+class UnableToWatchException {};
 
 /**
  * Constructor.
@@ -83,11 +84,16 @@ bool DirWatcherLinux::addDir(const QString& path)
 
    if (!initialized) return false;
 
-   Dir* dir = new Dir(this, nullptr, path);
-   if (dir->wd < 0) return false;
-   rootDirs << dir;
-
-   return true;
+   try
+   {
+      Dir* dir = new Dir(this, nullptr, path);
+      rootDirs << dir;
+      return true;
+   }
+   catch (UnableToWatchException&)
+   {
+      return false;
+   }
 }
 
 /**
@@ -109,7 +115,7 @@ void DirWatcherLinux::rmDir(const QString& path)
    }
 }
 
-/**
+/**   return true;
  * Return the full path of the file notified by an inotify event.
  * @param path the full path
  */
@@ -341,6 +347,7 @@ const QList<WatcherEvent> DirWatcherLinux::waitEvent(int timeout, QList<WaitCond
  * @param dwl     the DirWatcherLinux who use the directory tree index
  * @param parent  the parent Dir
  * @param name    the name of the Dir
+ * @exception UnableToWatchException
  */
 DirWatcherLinux::Dir::Dir(DirWatcherLinux* dwl, Dir* parent, const QString& name) : dwl(dwl), parent(parent), name(name)
 {
@@ -368,6 +375,7 @@ DirWatcherLinux::Dir::Dir(DirWatcherLinux* dwl, Dir* parent, const QString& name
           L_ERRO("inotify_add_watch ERROR : Insufficient kernel memory was available.");
       if (errno == ENOSPC)
           L_ERRO("inotify_add_watch ERROR : The user limit on the total number of inotify watches was reached or the kernel failed to allocate a needed resource.");
+      throw UnableToWatchException();
    }
    dwl->dirs.insert(wd, this);
 
