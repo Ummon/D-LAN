@@ -47,21 +47,21 @@ namespace FM
 
        struct Dir
        {
-          DirWatcherLinux* dwl;
-          Dir* parent;
-          QMap<QString, Dir*> childs;
-          QString name;
-          int wd;
-
           Dir(DirWatcherLinux* dwl, Dir* parent, const QString& name);
           ~Dir();
           QString getFullPath();
           void rename(const QString& newName);
           void move(Dir* to);
+
+          DirWatcherLinux* dwl;
+          Dir* parent;
+          QMap<QString, Dir*> childs;
+          QString name;
+          int wd;
        };
 
        QMap<int, Dir*> dirs; // The watched dirs, indexed by watch descriptor.
-       QMap<QString, Dir*> rootDirs; // The watched root dirs, indexed by full path.
+       QList<Dir*> rootDirs; // The watched root dirs, indexed by full path.
 
        void rmWatcher(int watcher);
        QString getEventPath(inotify_event *event);
