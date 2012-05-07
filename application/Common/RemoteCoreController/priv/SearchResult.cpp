@@ -34,7 +34,7 @@ SearchResult::SearchResult(InternalCoreConnection* coreConnection, const QString
 void SearchResult::start()
 {
    Protos::GUI::Search search;
-   Common::ProtoHelper::setStr(search, &Protos::GUI::Search::set_pattern, this->terms);
+   Common::ProtoHelper::setStr(*search.mutable_pattern(), &Protos::Common::FindPattern::set_pattern, this->terms);
    this->coreConnection->send(Common::MessageHeader::GUI_SEARCH, search);
    this->startTimer();
 }

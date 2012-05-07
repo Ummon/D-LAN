@@ -273,7 +273,7 @@ void UDPListener::processPendingMulticastDatagrams()
 
             QList<Protos::Common::FindResult> results =
                this->fileManager->find(
-                  Common::ProtoHelper::getStr(findMessage, &Protos::Core::Find::pattern),
+                  Common::ProtoHelper::getStr(findMessage.pattern(), &Protos::Common::FindPattern::pattern),
                   SETTINGS.get<quint32>("max_number_of_search_result_to_send"),
                   this->MAX_UDP_DATAGRAM_PAYLOAD_SIZE - Common::MessageHeader::HEADER_SIZE
                );

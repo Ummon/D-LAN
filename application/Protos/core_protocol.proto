@@ -54,7 +54,7 @@ message ChatMessage {
 // id : 0x21
 message Find {
    required uint64 tag = 1; // A tag to identify the search. All answers must have the same tag.
-   required string pattern = 2;
+   required Common.FindPattern pattern = 2;
 }
 // Results.
 // The size of this message must fit in a UDP packet so it must not exeed a certain amount of bytes, depending of the network. See Protos.Core.Settings.max_udp_datagram_size.

@@ -470,7 +470,7 @@ void RemoteConnection::onNewMessage(Common::MessageHeader::MessageType type, con
                i.remove();
 
          const Protos::GUI::Search& searchMessage = static_cast<const Protos::GUI::Search&>(message);
-         const QString& pattern = Common::ProtoHelper::getStr(searchMessage, &Protos::GUI::Search::pattern);
+         const QString& pattern = Common::ProtoHelper::getStr(searchMessage.pattern(), &Protos::Common::FindPattern::pattern);
 
          // Special syntax to search in your own files.
          if (pattern.startsWith('<'))

@@ -220,12 +220,12 @@ message CoreSettings {
 // GUI -> Core
 // id : 0x41
 message Search  {
-   required string pattern = 2;
+   required Common.FindPattern pattern = 1;
 }
 // Core -> GUI (directly)
 // id : 0x42
 message Tag  {
-   required uint64 tag = 2;
+   required uint64 tag = 1;
 }
 // Core -> GUI (deferred)
 // This message is sent for each UDP datagram received.
