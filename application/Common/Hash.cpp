@@ -46,9 +46,6 @@ Hash::Hash() :
   */
 Hash::Hash(const Hash& h)
 {
-#if WITH_MUTEX
-   QMutexLocker locker(&h.data->mutex);
-#endif
    this->data = h.data;
    if (this->data)
       this->data->nbRef += 1;
@@ -133,9 +130,6 @@ Hash::~Hash()
   */
 Hash& Hash::operator=(const Hash& h)
 {
-#if WITH_MUTEX
-   QMutexLocker locker(&h.data->mutex);
-#endif
    if (&h != this)
    {
       this->dereference();
@@ -148,11 +142,6 @@ Hash& Hash::operator=(const Hash& h)
 
 Hash& Hash::operator=(Hash&& h)
 {
-#if WITH_MUTEX
-   QMutexLocker locker1(&h.data->mutex);
-   QMutexLocker locker2(&this->data->mutex);
-#endif
-
    qSwap(this->data, h.data);
    return *this;
 }

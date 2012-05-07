@@ -45,6 +45,7 @@ const size_t DirWatcherLinux::BUF_LEN = (1024 * (EVENT_SIZE + 16));
 const uint32_t DirWatcherLinux::EVENTS_OBS = IN_MOVE|IN_DELETE|IN_CREATE|IN_CLOSE_WRITE;
 const uint32_t DirWatcherLinux::ROOT_EVENTS_OBS = EVENTS_OBS|IN_MOVE_SELF|IN_DELETE_SELF;
 
+class UnableToWatchException {};
 
 /**
  * Constructor.
@@ -83,11 +84,16 @@ bool DirWatcherLinux::addDir(const QString& path)
 
    if (!initialized) return false;
 
-   Dir* dir = new Dir(this, NULL, path);
-   if (dir->wd < 0) return false;
-   rootDirs.insert(path, dir);
-
-   return true;
+   try
+   {
+      Dir* dir = new Dir(this, nullptr, path);
+      rootDirs << dir;
+      return true;
+   }
+   catch (UnableToWatchException&)
+   {
+      return false;
+   }
 }
 
 /**
@@ -97,11 +103,19 @@ void DirWatcherLinux::rmDir(const QString& path)
 {
    QMutexLocker locker(&this->mutex);
 
-   Dir* dir = rootDirs.take(path);
-   delete dir;
+   for (QMutableListIterator<Dir*> i(rootDirs); i.hasNext();)
+   {
+      Dir* dir = i.next();
+      if (dir->name == path)
+      {
+         delete dir;
+         i.remove();
+         break;
+      }
+   }
 }
 
-/**
+/**   return true;
  * Return the full path of the file notified by an inotify event.
  * @param path the full path
  */
@@ -223,11 +237,13 @@ const QList<WatcherEvent> DirWatcherLinux::waitEvent(int timeout, QList<WaitCond
 
       if (event->mask & IN_MOVED_FROM)
       {
+         L_DEBU(QString("inotify event : IN_MOVED_FROM (path=%1)").arg(getEventPath(event)));
          // Add the event to movedToEvents.
          movedFromEvents << event;
       }
       if (event->mask & IN_MOVED_TO)
       {
+         L_DEBU(QString("inotify event : IN_MOVED_TO (path=%1)").arg(getEventPath(event)));
          // Check list of IN_MOVED_FROM events.
          for (QMutableListIterator<inotify_event*> i(movedFromEvents); i.hasNext();)
          {
@@ -251,7 +267,7 @@ const QList<WatcherEvent> DirWatcherLinux::waitEvent(int timeout, QList<WaitCond
                   if (fromEvent->name != event->name)
                      movedDir->rename(event->name);
 
-                  // If the path of moved directosy has changed, move it.
+                  // If the path of moved directory has changed, move it.
                   if (movedDir->parent->getFullPath() != toDir->getFullPath())
                      movedDir->move(toDir);
                }
@@ -264,26 +280,47 @@ const QList<WatcherEvent> DirWatcherLinux::waitEvent(int timeout, QList<WaitCond
          // IN_MOVED_FROM event without IN_MOVE_TO event have to be processed at
          // the end of the loop, when every IN_MOVED_TO event is processed.
          events << WatcherEvent(WatcherEvent::NEW, getEventPath(event));
+         if (event->mask & IN_ISDIR)
+            new Dir(this, dirs.value(event->wd), event->name);
       }
       end_moved_to:
       if (event->mask & IN_DELETE)
       {
+         L_DEBU(QString("inotify event : IN_DELETE (path=%1)").arg(getEventPath(event)));
          events << WatcherEvent(WatcherEvent::DELETED, getEventPath(event));
          if (event->mask & IN_ISDIR)
             delete dirs.value(event->wd)->childs.value(event->name);
       }
       if (event->mask & IN_CREATE)
       {
+         L_DEBU(QString("inotify event : IN_CREATE (path=%1)").arg(getEventPath(event)));
          events << WatcherEvent(WatcherEvent::NEW, getEventPath(event));
          if (event->mask & IN_ISDIR)
             new Dir(this, dirs.value(event->wd), event->name);
       }
       if (event->mask & IN_CLOSE_WRITE)
+      {
+         L_DEBU(QString("inotify event : IN_CLOSE_WRITE (path=%1)").arg(getEventPath(event)));
          events << WatcherEvent(WatcherEvent::CONTENT_CHANGED, getEventPath(event));
-//         if (event->mask & IN_MOVE_SELF)
-//            // TODO: Process only for root directory move.
-//         if (event->mask & IN_DELETE_SELF)
-//            // TODO: Process only for root directory delete.
+      }
+      if (event->mask & IN_MOVE_SELF)
+      {
+         L_DEBU(QString("inotify event : IN_MOVE_SELF (path=%1)").arg(getEventPath(event)));
+         // This event is triggered only for ROOT directory
+         events << WatcherEvent(WatcherEvent::MOVE, dirs.value(event->wd)->getFullPath(), getEventPath(event));
+      }
+      if (event->mask & IN_DELETE_SELF)
+      {
+         L_DEBU(QString("inotify event : IN_DELETE_SELF (path=%1)").arg(getEventPath(event)));
+         // process only for ROOT directory
+         if(!dirs.value(event->wd)->parent)
+         {
+            events << WatcherEvent(WatcherEvent::DELETED, getEventPath(event));
+            delete dirs.value(event->wd)->childs.value(event->name);
+            if (event->mask & IN_ISDIR)
+               delete dirs.value(event->wd)->childs.value(event->name);
+         }
+      }
 
       i += EVENT_SIZE + event->len;
    }
@@ -310,24 +347,43 @@ const QList<WatcherEvent> DirWatcherLinux::waitEvent(int timeout, QList<WaitCond
  * @param dwl     the DirWatcherLinux who use the directory tree index
  * @param parent  the parent Dir
  * @param name    the name of the Dir
+ * @exception UnableToWatchException
  */
 DirWatcherLinux::Dir::Dir(DirWatcherLinux* dwl, Dir* parent, const QString& name) : dwl(dwl), parent(parent), name(name)
 {
    if (this->parent)
       this->parent->childs.insert(this->name, this);
 
+   const QByteArray& array = getFullPath().toUtf8();
    this->wd = inotify_add_watch(
          dwl->fileDescriptor,
-         getFullPath().toStdString().c_str(),
+         array.constData(),
          (this->parent ? EVENTS_OBS : ROOT_EVENTS_OBS));
-   if (wd < 0) return;
+   if (wd < 0)
+   {
+      if (errno == EACCES)
+          L_ERRO("inotify_add_watch ERROR : Read access to the given file is not permitted.");
+      if (errno == EBADF)
+          L_ERRO("inotify_add_watch ERROR : The given file descriptor is not valid.");
+      if (errno == EFAULT)
+          L_ERRO("inotify_add_watch ERROR : pathname points outside of the process's accessible address space.");
+      if (errno == EINVAL)
+          L_ERRO("inotify_add_watch ERROR : The given event mask contains no valid events; or fd is not an inotify file descriptor.");
+      if (errno == ENOENT)
+          L_ERRO("inotify_add_watch ERROR : A directory component in pathname does not exist or is a dangling symbolic link.");
+      if (errno == ENOMEM)
+          L_ERRO("inotify_add_watch ERROR : Insufficient kernel memory was available.");
+      if (errno == ENOSPC)
+          L_ERRO("inotify_add_watch ERROR : The user limit on the total number of inotify watches was reached or the kernel failed to allocate a needed resource.");
+      throw UnableToWatchException();
+   }
    dwl->dirs.insert(wd, this);
 
    for (QListIterator<QString> i(QDir(this->getFullPath()).entryList(QDir::Dirs | QDir::NoDotAndDotDot)); i.hasNext();)
       new Dir(this->dwl, this, (QString) i.next());
 }
 
-/**
+/**QMap<QString, Dir*> rootDirs; // The watched root dirs, indexed by full path.
  * Destructor. Used to delete a branch.
  */
 DirWatcherLinux::Dir::~Dir()
@@ -337,7 +393,7 @@ DirWatcherLinux::Dir::~Dir()
        L_ERRO(QString("DirWatcherLinux::~DirWatcherLinux : Unable to remove an inotify watcher."));
 
    for (QListIterator<Dir*> i(childs.values()); i.hasNext();)
-      delete ((Dir*) i.next());
+      delete i.next();
 }
 
 /**

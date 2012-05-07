@@ -21,6 +21,9 @@ using namespace GUI;
 
 #include <QListView>
 #include <QFileDialog>
+#include <QDesktopServices>
+#include <QUrl>
+#include <QProcess>
 #include <QGridLayout>
 #include <QLabel>
 
@@ -71,4 +74,31 @@ QStringList Utils::askForDirectories(QSharedPointer<RCC::ICoreConnection> coreCo
 QStringList Utils::askForDirectoriesToDownloadTo(QSharedPointer<RCC::ICoreConnection> coreConnection)
 {
    return Utils::askForDirectories(coreConnection, "<img src=\":/icons/ressources/information.png\" /> <strong>" + QObject::tr("The choosen directory will be shared") + "</strong>");
+}
+
+void Utils::openLocations(const QStringList& paths)
+{
+   foreach (QString path, paths)
+      Utils::openLocation(path);
+}
+
+/**
+  * Open the location of the path, launch a system file browser to the given directory path. If the path is a file then it will open it's containing directory and select it.
+  *
+  * An other on Windows is to use 'SHOpenFolderAndSelectItems(..)'.
+  */
+void Utils::openLocation(const QString& path)
+{
+#ifdef Q_OS_WIN32
+   static const QString EXPLORER = "explorer";
+   QStringList params;
+   if (!QFileInfo(path).isDir())
+      params.append("/select,");
+   params.append(QDir::toNativeSeparators(path));
+   QProcess::startDetached(EXPLORER, params);
+#else
+   QFileInfo fileInfo(path);
+   const QString dirPath = fileInfo.isDir() ? path : fileInfo.absolutePath();
+   QDesktopServices::openUrl(QUrl("file:///" + dirPath, QUrl::TolerantMode));
+#endif
 }

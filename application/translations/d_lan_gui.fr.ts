@@ -251,7 +251,7 @@
 <context>
     <name>GUI::MainWindow</name>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="+225"/>
+        <location filename="../GUI/MainWindow.cpp" line="+238"/>
         <source>Already connected to this address</source>
         <translation>Déjà connecté à cette addresse</translation>
     </message>
@@ -351,7 +351,7 @@
         <translation>Entrez le mot de passe</translation>
     </message>
     <message>
-        <location line="+424"/>
+        <location line="+438"/>
         <source>Waiting the cache loading process is finished</source>
         <translation>En attente de la fin de chargement du cache</translation>
     </message>
@@ -360,7 +360,7 @@
         <translation type="obsolete">En attente que le cache soit chargé</translation>
     </message>
     <message>
-        <location line="-527"/>
+        <location line="-541"/>
         <source>Connected to the core</source>
         <translation>Connecté au core</translation>
     </message>
@@ -569,7 +569,7 @@
         <translation>Enlever la pause des éléments sélectionnés</translation>
     </message>
     <message>
-        <location line="+135"/>
+        <location line="+137"/>
         <source>Switch to file list view</source>
         <translation>Basculer sur la liste des fichiers</translation>
     </message>
@@ -738,7 +738,7 @@
         <translation>Core lancé comme service</translation>
     </message>
     <message>
-        <location filename="../GUI/Utils.cpp" line="+73"/>
+        <location filename="../GUI/Utils.cpp" line="+75"/>
         <source>The choosen directory will be shared</source>
         <translation>Le dossier choisi sera partagé</translation>
     </message>
@@ -838,27 +838,27 @@
     <message>
         <location line="+21"/>
         <location filename="../GUI/.tmp/debug/ui_WidgetDownloads.h" line="+5"/>
+        <location filename="../GUI/.tmp/release/ui_WidgetDownloads.h" line="+5"/>
         <source>Remove completed files from the queue</source>
         <translation>Enlever les fichiers complets de la queue</translation>
     </message>
     <message>
         <location line="+14"/>
         <location filename="../GUI/.tmp/debug/ui_WidgetDownloads.h" line="+4"/>
+        <location filename="../GUI/.tmp/release/ui_WidgetDownloads.h" line="+4"/>
         <source>Removed selected downloads from the queue</source>
         <translation>Enlever les éléments sélectionnés de la queue</translation>
     </message>
     <message>
-        <location filename="../GUI/.tmp/release/ui_WidgetDownloads.h" line="+5"/>
         <source>Remove completed files</source>
-        <translation>Enlever les fichiers complets</translation>
+        <translation type="obsolete">Enlever les fichiers complets</translation>
     </message>
     <message>
-        <location line="+4"/>
         <source>Removed selected downloads</source>
-        <translation>Enlever les fichiers sélectionnés</translation>
+        <translation type="obsolete">Enlever les fichiers sélectionnés</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/WidgetDownloads.ui" line="+14"/>
+        <location line="+14"/>
         <location filename="../GUI/.tmp/debug/ui_WidgetDownloads.h" line="+4"/>
         <location filename="../GUI/.tmp/release/ui_WidgetDownloads.h" line="+4"/>
         <source>Pause or unpause selected downloads</source>
@@ -988,15 +988,25 @@
     </message>
     <message>
         <location line="+47"/>
-        <location filename="../GUI/.tmp/debug/ui_WidgetSettings.h" line="+16"/>
-        <location filename="../GUI/.tmp/release/ui_WidgetSettings.h" line="+16"/>
+        <location filename="../GUI/.tmp/release/ui_WidgetSettings.h" line="+19"/>
+        <source>GUI</source>
+        <translation>GUI</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <location filename="../GUI/.tmp/release/ui_WidgetSettings.h" line="+1"/>
+        <source>Graphic User Interface</source>
+        <translation>Interface Graphique</translation>
+    </message>
+    <message>
+        <location filename="../GUI/.tmp/debug/ui_WidgetSettings.h" line="+19"/>
         <source>Advanced</source>
         <translation>Avancé</translation>
     </message>
     <message>
-        <location line="+6"/>
-        <location filename="../GUI/.tmp/debug/ui_WidgetSettings.h" line="-10"/>
-        <location filename="../GUI/.tmp/release/ui_WidgetSettings.h" line="-10"/>
+        <location filename="../GUI/Settings/WidgetSettings.ui" line="+6"/>
+        <location filename="../GUI/.tmp/debug/ui_WidgetSettings.h" line="-13"/>
+        <location filename="../GUI/.tmp/release/ui_WidgetSettings.h" line="-14"/>
         <source>Language</source>
         <translation>Langue</translation>
     </message>
@@ -1008,9 +1018,16 @@
         <translation>Style</translation>
     </message>
     <message>
-        <location line="+34"/>
+        <location line="+21"/>
         <location filename="../GUI/.tmp/debug/ui_WidgetSettings.h" line="+2"/>
         <location filename="../GUI/.tmp/release/ui_WidgetSettings.h" line="+2"/>
+        <source>Reload the current style</source>
+        <translation>Recharger le style courrant</translation>
+    </message>
+    <message>
+        <location line="+16"/>
+        <location filename="../GUI/.tmp/debug/ui_WidgetSettings.h" line="+3"/>
+        <location filename="../GUI/.tmp/release/ui_WidgetSettings.h" line="+3"/>
         <source>Core connection</source>
         <translation>Connexion au core</translation>
     </message>
@@ -1057,9 +1074,9 @@
         <translation>Se déconnecter</translation>
     </message>
     <message>
-        <location line="-154"/>
-        <location filename="../GUI/.tmp/debug/ui_WidgetSettings.h" line="-11"/>
-        <location filename="../GUI/.tmp/release/ui_WidgetSettings.h" line="-11"/>
+        <location line="-160"/>
+        <location filename="../GUI/.tmp/debug/ui_WidgetSettings.h" line="-14"/>
+        <location filename="../GUI/.tmp/release/ui_WidgetSettings.h" line="-14"/>
         <source>When activated all received data will be verified against their hashes.  It may consume CPU resources.</source>
         <translation>Lorsque activé toutes les données reçues sont vérifiées par rapport à leur empreinte. Consomme un peu de puissance CPU.</translation>
     </message>

@@ -45,7 +45,7 @@ FileUpdater::FileUpdater(FileManager* fileManager) :
    SCAN_PERIOD_UNWATCHABLE_DIRS(SETTINGS.get<quint32>("scan_period_unwatchable_dirs")),
    fileManager(fileManager),
    dirWatcher(DirWatcher::getNewWatcher()),
-   fileCache(0),
+   fileCache(nullptr),
    toStop(false),
    progress(0),
    mutex(QMutex::Recursive),
@@ -225,7 +225,7 @@ void FileUpdater::run()
       }
 
       delete this->fileCache;
-      this->fileCache = 0;
+      this->fileCache = nullptr;
    }
 
    emit fileCacheLoaded();
@@ -498,7 +498,7 @@ void FileUpdater::scan(Directory* dir, bool addUnfinished)
                    file->isComplete() &&
                    !file->correspondTo(entry, file->hasAllHashes()) // If the hashes of a file can't be computed (IO error, the file is being written for example) we only compare their sizes.
                )
-                  file = 0;
+                  file = nullptr;
                else
                   currentFiles.removeOne(file);
             }
@@ -681,7 +681,7 @@ void FileUpdater::restoreFromFileCache(SharedDirectory* dir)
          break;
       }
 
-   L_DEBU("Restoring terminated : " + dir->getFullPath());
+   L_DEBU("Restoring terminated: " + dir->getFullPath());
 }
 
 /**
@@ -707,10 +707,13 @@ bool FileUpdater::treatEvents(const QList<WatcherEvent>& events)
       switch (event.type)
       {
       case WatcherEvent::MOVE:
-         {
+         {         
+            // TODO: add a move capability. (only rename is implemented).
             Entry* entry = this->fileManager->getEntry(event.path1);
             if (entry)
+            {
                entry->changeName(event.path2.split('/', QString::SkipEmptyParts).last());
+            }
             break;
          }
 

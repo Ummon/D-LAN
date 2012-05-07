@@ -211,6 +211,19 @@ void MainWindow::newState(const Protos::GUI::State& state)
       this->downloadsBusyIndicator->hide();
 }
 
+void MainWindow::onGlobalProgressChanged(quint64 completed, quint64 total)
+{
+   if (total == 0)
+   {
+      this->taskbar.setStatus(TaskbarButtonStatus::BUTTON_STATUS_NOPROGRESS);
+   }
+   else
+   {
+      this->taskbar.setStatus(TaskbarButtonStatus::BUTTON_STATUS_NORMAL);
+      this->taskbar.setProgress(completed, total);
+   }
+}
+
 void MainWindow::loadLanguage(const QString& filename)
 {
    this->translator.load(filename, QCoreApplication::applicationDirPath() + "/" + Common::Constants::LANGUAGE_DIRECTORY);
@@ -221,28 +234,28 @@ void MainWindow::coreConnectionError(RCC::ICoreConnection::ConnectionErrorCode e
    QString error;
    switch (errorCode)
    {
-   case RCC::ICoreConnection::ERROR_ALREADY_CONNECTED_TO_THIS_CORE:
+   case RCC::ICoreConnection::RCC_ERROR_ALREADY_CONNECTED_TO_THIS_CORE:
       error = tr("Already connected to this address");
       break;
-   case RCC::ICoreConnection::ERROR_CONNECTING_IN_PROGRESS:
+   case RCC::ICoreConnection::RCC_ERROR_CONNECTING_IN_PROGRESS:
       error = tr("There is already a connection process in progress");
       break;
-   case RCC::ICoreConnection::ERROR_HOST_UNKOWN:
+   case RCC::ICoreConnection::RCC_ERROR_HOST_UNKOWN:
       error = tr("The host is unknow");
       break;
-   case RCC::ICoreConnection::ERROR_HOST_TIMEOUT:
+   case RCC::ICoreConnection::RCC_ERROR_HOST_TIMEOUT:
       error = tr("Host has timed out");
       break;
-   case RCC::ICoreConnection::ERROR_NO_REMOTE_PASSWORD_DEFINED:
+   case RCC::ICoreConnection::RCC_ERROR_NO_REMOTE_PASSWORD_DEFINED:
       error = tr("The host hasn't defined any password");
       break;
-   case RCC::ICoreConnection::ERROR_WRONG_PASSWORD:
+   case RCC::ICoreConnection::RCC_ERROR_WRONG_PASSWORD:
       error = tr("Wrong password");
       break;
-   case RCC::ICoreConnection::ERROR_INVALID_ADDRESS:
+   case RCC::ICoreConnection::RCC_ERROR_INVALID_ADDRESS:
       error = tr("Invalid address");
       break;
-   case RCC::ICoreConnection::ERROR_UNKNOWN:
+   case RCC::ICoreConnection::RCC_ERROR_UNKNOWN:
       error = tr("Error unknown");
    }
 
@@ -689,6 +702,20 @@ void MainWindow::resizeEvent(QResizeEvent* event)
    }
 }
 
+#ifdef Q_OS_WIN32
+   void MainWindow::showEvent(QShowEvent* /*event*/)
+   {
+      // It seems that the handle change every time the style is changed.
+      this->taskbar.setWinHandle(this->winId());
+   }
+
+   bool MainWindow::winEvent(MSG* message, long* result)
+   {
+      this->taskbar.winEvent(message, result);
+      return false;
+   }
+#endif
+
 void MainWindow::search(bool ownFiles)
 {
    this->ui->txtSearch->setText(this->ui->txtSearch->text().trimmed());
@@ -856,6 +883,8 @@ void MainWindow::addWidgetDownloads()
    this->ui->mdiArea->addSubWindow(this->widgetDownloads, Qt::CustomizeWindowHint);
    this->mdiAreaTabBar->setTabData(this->mdiAreaTabBar->count() - 1, Protos::GUI::Settings_Window_WIN_DOWNLOAD);
    this->widgetDownloads->setWindowState(Qt::WindowMaximized);
+
+   connect(this->widgetDownloads, SIGNAL(globalProgressChanged(quint64, quint64)), this, SLOT(onGlobalProgressChanged(quint64, quint64)));
 
    this->downloadsBusyIndicator = new BusyIndicator();
    this->downloadsBusyIndicator->setObjectName("tabWidget");

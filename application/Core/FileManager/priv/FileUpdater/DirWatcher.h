@@ -31,16 +31,22 @@ namespace FM
      * An abstract directory watcher.
      * Can watch several directories recursively.
      *
-     * There must be an implementation for the current platform,
-     * if any exist, an error will occur during compilation.
-     * See the factory 'getNewWatcher'.
+     * An implementation may or may not exist for the current platform,
+     * see the factory 'getNewWatcher()'.
      *
-     * Event types :
+     * Event types:
      *  - Rename dir
      *  - Rename file
      *  - New file
      *  - Delete file
      *  - The content of a file changed
+     *
+     * Behaviors of some special cases:
+     *  - Symlinks must be ignored.
+     *  - When a directory is added as a shared directory ('addDir(..)') and one or more sub-directories are already shared then
+     *    'addDir(..)' is called for the new shared directory and 'rmDir(..)' is called for each old shared sub-directory.
+     *  - When a sub-directory of a shared directory is moved as a sub-directory of another shared directory the implementation
+     *    can use the events 'DELETED' folloing by 'NEW' or the event 'MOVE' alone, the last one is preferred.
      */
    class DirWatcher
    {
@@ -49,8 +55,9 @@ namespace FM
 
       /**
         * Build a new watcher.
-        * The implementation depends of the platform.
-        * @return 0 if there is no implementation for the current platform.
+        * The implementation is platform dependent.
+        *
+        * @return 'nullptr' if there is no implementation for the current platform.
         */
       static DirWatcher* getNewWatcher();
 
@@ -59,7 +66,9 @@ namespace FM
         * Each new added directory is immediately watched. If some modification
         * occurs in the file system bewteen a call of 'addDir' and a call of 'waitEvent' they
         * will be recorded and the next call to 'waitEvent' will be no blocking.
-        * @return 'true' is the dir is watchable else 'false'.
+        *
+        * @param path An absolute path.
+        * @return 'true' if the dir is watchable else 'false'.
         * @exception DirNotFoundException
         */
       virtual bool addDir(const QString& path) = 0;
@@ -93,13 +102,18 @@ namespace FM
    struct WatcherEvent
    {
       enum Type {
-         // A file moved into the shared directory. The file can be renamed.
-         // Some examples :
-         // - shared/a/x.txt -> shared/a/y.txt
-         // - shared/a/x.txt -> shared/a/b/x.txt
-         // - shared/a/x.txt -> shared/a/b/y.txt
-         // If a file is moved from outside to a shared dir you may use NEW
-         // If a file is moved from a shared dir to outside you may use DELETED
+         // A file or a directory is moved into the shared directory structure or a shared directory is moved somewhere else.
+         // The file or the directory can be renamed.
+         // Some examples on files:
+         //  - /home/dlan/shared/a/x.txt -> /home/dlan/shared/a/y.txt
+         //  - /home/dlan/shared/a/x.txt -> /home/dlan/shared/a/b/x.txt
+         //  - /home/dlan/shared/a/x.txt -> /home/dlan/shared2/a/b/y.txt
+         // Some examples on directories:
+         //  - /home/dlan/shared/a -> /home/dlan/shared/b
+         //  - /home/dlan/shared/a -> /home/dlan/shared/x/a
+         //  - /home/dlan/shared/a -> /home/dlan/shared2/a
+         // If a file is moved from outside a shared dir you may use 'NEW'
+         // If a file is moved from a shared dir to outside you may use 'DELETED'
          MOVE,
          NEW,
          DELETED,
@@ -123,7 +137,7 @@ namespace FM
 
       const Type type;
       const QString path1;
-      const QString path2; // Only used when type == MOVE.
+      const QString path2; // Only used when type is 'MOVE'.
    };
 }
 

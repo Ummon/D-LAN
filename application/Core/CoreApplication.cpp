@@ -23,7 +23,7 @@ CoreApplication::CoreApplication(int& argc, char** argv) :
 {
 }
 
-#ifdef Q_OS_WIN
+#ifdef Q_OS_WIN32
     bool CoreApplication::winEventFilter(MSG* msg, long* result)
     {
        /* Was used to rebind the sockets when the compute wake up.

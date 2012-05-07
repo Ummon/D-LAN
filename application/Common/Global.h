@@ -19,6 +19,8 @@
 #ifndef COMMON_COMMON_H
 #define COMMON_COMMON_H
 
+#include <functional>
+
 #include <QObject>
 #include <QString>
 #include <QList>

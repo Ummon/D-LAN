@@ -327,8 +327,8 @@ qint64 File::write(const char* buffer, int nbBytes, qint64 offset)
    if (!this->fileInWriteMode || offset >= this->size || !this->fileInWriteMode->seek(offset))
       throw IOErrorException();
 
-   qint64 maxSize = this->size - offset;
-   qint64 n = this->fileInWriteMode->write(buffer, nbBytes > maxSize ? maxSize : nbBytes);
+   const qint64 maxSize = this->size - offset;
+   const qint64 n = this->fileInWriteMode->write(buffer, nbBytes > maxSize ? maxSize : nbBytes);
 
    if (n == -1)
       throw IOErrorException();
@@ -354,7 +354,7 @@ qint64 File::read(char* buffer, qint64 offset, int maxBytesToRead)
    if (!this->fileInReadMode->seek(offset))
       throw IOErrorException();
 
-   qint64 bytesRead = this->fileInReadMode->read(buffer, maxBytesToRead);
+   const qint64 bytesRead = this->fileInReadMode->read(buffer, maxBytesToRead);
 
    if (bytesRead == -1)
       throw IOErrorException();
@@ -449,6 +449,7 @@ void File::removeUnfinishedFiles()
       QMutexLocker lockerRead(&this->readLock);
 
       this->cache->getFilePool().forceReleaseAll(this->getFullPath());
+
       this->fileInReadMode = nullptr;
       this->fileInWriteMode = nullptr;
 
@@ -567,6 +568,7 @@ void File::createPhysicalFile()
          QFile::remove(this->getFullPath());
          throw UnableToCreateNewFileException();
       }
+// TODO: Do we need that on linux? see 'fallocate(..)',
 #ifdef Q_OS_WIN32
       DWORD bytesWritten;
       HANDLE hdl = (HANDLE)_get_osfhandle(file.handle());

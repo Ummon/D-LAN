@@ -50,16 +50,17 @@ namespace RCC
    {
       Q_OBJECT
    public:
+      // All values are prefied by 'RCC_' because some of them are defined as macro in 'winerror.h' (Windows only).
       enum ConnectionErrorCode
       {
-         ERROR_ALREADY_CONNECTED_TO_THIS_CORE = 1,
-         ERROR_CONNECTING_IN_PROGRESS = 2,
-         ERROR_HOST_UNKOWN = 3,
-         ERROR_HOST_TIMEOUT = 4,
-         ERROR_NO_REMOTE_PASSWORD_DEFINED = 5,
-         ERROR_WRONG_PASSWORD = 6,
-         ERROR_INVALID_ADDRESS = 7,
-         ERROR_UNKNOWN = 255
+         RCC_ERROR_ALREADY_CONNECTED_TO_THIS_CORE = 1,
+         RCC_ERROR_CONNECTING_IN_PROGRESS = 2,
+         RCC_ERROR_HOST_UNKOWN = 3,
+         RCC_ERROR_HOST_TIMEOUT = 4,
+         RCC_ERROR_NO_REMOTE_PASSWORD_DEFINED = 5,
+         RCC_ERROR_WRONG_PASSWORD = 6,
+         RCC_ERROR_INVALID_ADDRESS = 7,
+         RCC_ERROR_UNKNOWN = 255
       };
 
       virtual ~ICoreConnection() {}

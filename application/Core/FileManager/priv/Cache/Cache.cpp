@@ -122,7 +122,7 @@ Protos::Common::Entries Cache::getEntries() const
 
 /**
   * @param path The absolute path to a directory or a file.
-  * @return Returns 0 if no entry found.
+  * @return Returns 'nullptr' if no entry found.
   */
 Entry* Cache::getEntry(const QString& path) const
 {
@@ -149,7 +149,7 @@ Entry* Cache::getEntry(const QString& path) const
                   if (file)
                      return file;
                }
-               return 0;
+               return nullptr;
             }
             currentDir = dir;
          }
@@ -158,7 +158,7 @@ Entry* Cache::getEntry(const QString& path) const
       }
    }
 
-   return 0;
+   return nullptr;
 }
 
 /**
@@ -602,7 +602,7 @@ void Cache::onChunkRemoved(QSharedPointer<Chunk> chunk)
 
 /**
   * Create a new shared directory.
-  * The other shared directories may not be merged with the new one, use SharedDirectory::mergeSubSharedDirectories to do that after this call.
+  * The other shared directories may not be merged with the new one, use 'SharedDirectory::mergeSubSharedDirectories' to do that after this call.
   *
   * @exceptions DirNotFoundException
   */
