@@ -14,6 +14,9 @@ CONFIG(debug, debug|release) {
 win32 {
    # For mingw32.
    QMAKE_CXXFLAGS += -std=gnu++0x
+} macx {
+   # For clang.
+   QMAKE_CXXFLAGS += -std=c++11 -stdlib=libc++
 } else {
    QMAKE_CXXFLAGS += -std=c++0x
 }
