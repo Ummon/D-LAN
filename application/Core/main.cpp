@@ -37,7 +37,7 @@
   *  <roaming data directory> : Where settings are put.
   *  <local data directory> : Where logs, download queue, and files cache are put.
   *  --reset-settings : Remove all settings except "nick" and "peerID", other settings are set to their default values. Core exist directly after.
-  *  --lang <language> : set the language and save it to the settings file. (ISO-63, two letters)
+  *  --lang <language> : set the language and save it to the settings file. (ISO-639, two letters)
   *  <arguments from QtService> : Type "D-LAN.Core.exe -h" to see them.
   */
 int main(int argc, char* argv[])

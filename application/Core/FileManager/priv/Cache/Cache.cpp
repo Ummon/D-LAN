@@ -130,10 +130,15 @@ Entry* Cache::getEntry(const QString& path) const
 
    foreach (SharedDirectory* sharedDir, this->sharedDirs)
    {
-      if (path.startsWith(sharedDir->getFullPath()))
+      // We remove the endind '/'.
+      QString currentPath(sharedDir->getFullPath());
+      if (currentPath.length() > 1 && currentPath.endsWith('/'))
+         currentPath.remove(currentPath.size() - 1, 1);
+
+      if (path.startsWith(currentPath))
       {
          QString relativePath(path);
-         relativePath.remove(0, sharedDir->getFullPath().size());
+         relativePath.remove(0, currentPath.size());
          const QStringList folders = relativePath.split('/', QString::SkipEmptyParts);
 
          Directory* currentDir = sharedDir;
@@ -237,7 +242,7 @@ QList<QSharedPointer<IChunk>> Cache::newFile(Protos::Common::Entry& fileEntry)
          if (Common::Global::availableDiskSpace(sharedDir->getFullPath()) < spaceNeeded)
             throw InsufficientStorageSpaceException();
 
-         dir = sharedDir->createSubDirectories(dirPath.split('/', QString::SkipEmptyParts), true);
+         dir = sharedDir->createSubDirs(dirPath.split('/', QString::SkipEmptyParts), true);
       }
       else
          fileEntry.clear_shared_dir(); // The shared directory is invalid.
@@ -423,9 +428,11 @@ void Cache::removeSharedDir(SharedDirectory* dir, Directory* dir2)
 {
    QMutexLocker locker(&this->mutex);
 
-   this->sharedDirs.removeOne(dir);
-
-   emit sharedDirectoryRemoved(dir, dir2);
+   if (this->sharedDirs.contains(dir))
+   {
+      this->sharedDirs.removeOne(dir);
+      emit sharedDirectoryRemoved(dir, dir2);
+   }
 }
 
 SharedDirectory* Cache::getSuperSharedDirectory(const QString& path) const
@@ -729,5 +736,5 @@ Directory* Cache::getWriteableDirectory(const QString& path, qint64 spaceNeeded)
       throw InsufficientStorageSpaceException();
 
    // Create the missing directories.
-   return currentSharedDir->createSubDirectories(folders, true);
+   return currentSharedDir->createSubDirs(folders, true);
 }

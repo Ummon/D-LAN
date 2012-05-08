@@ -42,10 +42,8 @@ namespace FM
    {
       friend class DirIterator;
 
-   public:
-      Directory(Directory* parent, const QString& name, bool createPhysically = false);
-
    protected:
+      Directory(Directory* parent, const QString& name, bool createPhysically = false);
       Directory(Cache* cache, const QString& name);
 
    public:
@@ -58,6 +56,8 @@ namespace FM
 
       virtual void removeUnfinishedFiles();
 
+      virtual void moveInto(Directory* directory);
+
       void fileDeleted(File* file);
 
    private:
@@ -68,16 +68,17 @@ namespace FM
       virtual QString getFullPath() const;
       virtual SharedDirectory* getRoot() const;
 
-      void changeName(const QString& newName);
+      void rename(const QString& newName);
       bool isAChildOf(const Directory* dir) const;
 
       Directory* getSubDir(const QString& name) const;
       QLinkedList<Directory*> getSubDirs() const;
+
       QLinkedList<File*> getFiles() const;
       QList<File*> getCompleteFiles() const;
 
-      Directory* createSubDirectory(const QString& name, bool physically = false);
-      Directory* createSubDirectories(const QStringList& names, bool physically = false);
+      Directory* createSubDir(const QString& name, bool physically = false);
+      Directory* createSubDirs(const QStringList& names, bool physically = false);
 
       File* getFile(const QString& name) const;      
       void add(File* file);
@@ -109,7 +110,7 @@ namespace FM
    class DirIterator
    {
    public:
-      DirIterator(Directory* dir);
+      DirIterator(Directory* dir, bool includeRoot = false);
       virtual ~DirIterator() {}
       Directory* next();
 

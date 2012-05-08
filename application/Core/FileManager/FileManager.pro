@@ -16,24 +16,28 @@ INCLUDEPATH += . ../..
 DEFINES += FILEMANAGER_LIBRARY
 
 win32 {
-   SOURCES += priv/FileUpdater/WaitConditionWin.cpp
-   HEADERS += priv/FileUpdater/DirWatcherWin.h
+   SOURCES += priv/FileUpdater/WaitConditionWin.cpp \
+      priv/FileUpdater/DirWatcherWin.cpp
+   HEADERS +=  priv/FileUpdater/WaitConditionWin.h \
+      priv/FileUpdater/DirWatcherWin.h
 }
 
 unix {
-   SOURCES += priv/FileUpdater/WaitConditionLinux.cpp
-   HEADERS += priv/FileUpdater/DirWatcherLinux.h
+   SOURCES += priv/FileUpdater/WaitConditionLinux.cpp \
+      priv/FileUpdater/DirWatcherLinux.cpp
+   HEADERS += priv/FileUpdater/WaitConditionLinux.h \
+      priv/FileUpdater/DirWatcherLinux.h
 }
 
 macx {
    SOURCES += priv/FileUpdater/WaitConditionDarwin.cpp
-   HEADERS += priv/FileUpdater/DirWatcherDarwin.h
+   HEADERS += priv/FileUpdater/WaitConditionDarwin.h \
+      priv/FileUpdater/DirWatcherDarwin.h
 }
 
 SOURCES += priv/Builder.cpp \
     priv/FileManager.cpp \
     priv/FileUpdater/FileUpdater.cpp \
-    priv/FileUpdater/DirWatcherWin.cpp \
     priv/FileUpdater/DirWatcher.cpp \
     priv/Cache/Entry.cpp \
     priv/Cache/File.cpp \
@@ -51,7 +55,6 @@ SOURCES += priv/Builder.cpp \
     priv/GetHashesResult.cpp \
     priv/Log.cpp \
     priv/Global.cpp \
-    priv/FileUpdater/DirWatcherLinux.cpp \
     priv/Cache/FilePool.cpp \
     priv/Cache/FileHasher.cpp
 HEADERS += IGetHashesResult.h \

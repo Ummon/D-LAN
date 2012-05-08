@@ -73,6 +73,7 @@ namespace FM
       int getProgress() const;
 
       void dumpWordIndex() const;
+      void printSimilarFiles() const;
 
       Directory* getFittestDirectory(const QString& path);
       Entry* getEntry(const QString& path);
@@ -80,6 +81,7 @@ namespace FM
    private slots:
       void newSharedDirectory(SharedDirectory*);
       void sharedDirectoryRemoved(SharedDirectory*, Directory*);
+      void deleteSharedDir(SharedDirectory* sharedDirectory);
       void entryAdded(Entry* entry);
       void entryRemoved(Entry* entry);
       void entryRenamed(Entry* entry, const QString& oldName);

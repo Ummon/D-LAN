@@ -58,7 +58,8 @@ namespace Common
       static bool isLocal(const QHostAddress& address);
 
       static QString cleanDirPath(const QString& path);
-      static QString dirName(const QString& path);
+      static bool isWindowsPath(const QString& path);
+      static bool isWindowsRootPath(const QString& path);
 
       static QString toLowerAndRemoveAccents(const QString& str);
       static QStringList splitInWords(const QString& words);

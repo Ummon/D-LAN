@@ -62,6 +62,7 @@ namespace FM
 
    signals:
       void fileCacheLoaded();
+      void deleteSharedDir(SharedDirectory*);
 
    protected:
       void run();
@@ -82,7 +83,7 @@ namespace FM
 
       void restoreFromFileCache(SharedDirectory* dir);
 
-      bool treatEvents(const QList<WatcherEvent>& events);
+      bool processEvents(const QList<WatcherEvent>& events);
 
       const int SCAN_PERIOD_UNWATCHABLE_DIRS;
 

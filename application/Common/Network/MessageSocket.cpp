@@ -100,7 +100,7 @@ MessageSocket::~MessageSocket()
 {
    this->stopListening();
 
-   this->socket->close();
+   this->close();
    this->socket->deleteLater();
 
    delete this->logger;
@@ -152,9 +152,6 @@ void MessageSocket::send(MessageHeader::MessageType type, const google::protobuf
       if (!message->SerializeToZeroCopyStream(&outputStream))
          MESSAGE_SOCKET_LOG_ERROR(QString("Unable to send\n%1").arg(ProtoHelper::getDebugStr(*message)));
    }
-
-   if (this->socket->state() == QAbstractSocket::ConnectedState)
-      this->socket->flush();
 }
 
 /**
@@ -172,6 +169,7 @@ void MessageSocket::startListening()
 
    connect(this->socket, SIGNAL(readyRead()), this, SLOT(dataReceivedSlot()), Qt::DirectConnection);
    connect(this->socket, SIGNAL(disconnected()), this, SLOT(disconnectedSlot()), Qt::DirectConnection);
+
    this->dataReceivedSlot();
 }
 

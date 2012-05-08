@@ -45,7 +45,9 @@ namespace CoreSpace
    public:
       Core(bool resetSettings, QLocale locale);
       void start();
+
       void dumpWordIndex() const;
+      void printSimilarFiles() const;
 
    public slots:
       void setLanguage(QLocale locale, bool load = true);

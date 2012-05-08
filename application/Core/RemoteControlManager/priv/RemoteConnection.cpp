@@ -266,7 +266,7 @@ void RemoteConnection::refresh()
 
 void RemoteConnection::closeSocket()
 {
-   this->socket->close();
+   this->close();
 }
 
 void RemoteConnection::newChatMessage(const Protos::GUI::EventChatMessages_Message& message)

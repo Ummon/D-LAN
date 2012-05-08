@@ -43,6 +43,8 @@ namespace FM
       void entryRemoved(Entry* entry);
 
    private:
+      void internalStop();
+
       File* currentFileCache;
 
       bool hashing;

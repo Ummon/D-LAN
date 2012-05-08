@@ -23,6 +23,7 @@ using namespace FM;
 
 #include <QSharedPointer>
 #include <QStringList>
+#include <QStringBuilder>
 #include <QList>
 #include <QVector>
 #include <QDir>
@@ -67,6 +68,7 @@ FileManager::FileManager() :
    connect(&this->cache, SIGNAL(sharedDirectoryRemoved(SharedDirectory*, Directory*)), this, SLOT(sharedDirectoryRemoved(SharedDirectory*, Directory*)), Qt::DirectConnection);
 
    connect(&this->fileUpdater, SIGNAL(fileCacheLoaded()), this, SLOT(fileCacheLoadingComplete()),  Qt::QueuedConnection);
+   connect(&this->fileUpdater, SIGNAL(deleteSharedDir(SharedDirectory*)), this, SLOT(deleteSharedDir(SharedDirectory*)),  Qt::QueuedConnection); // If the 'FileUpdater' wants to delete a shared directory.
 
    this->timerPersistCache.setInterval(SETTINGS.get<quint32>("save_cache_period"));
    connect(&this->timerPersistCache, SIGNAL(timeout()), this, SLOT(persistCacheToFile()));
@@ -188,7 +190,7 @@ QList<Protos::Common::FindResult> FileManager::find(const QString& words, int ma
    for (QListIterator<NodeResult<Entry*>> i(result); i.hasNext();)
    {
       const NodeResult<Entry*>& entry = i.next();
-      Protos::Common::FindResult_EntryLevel* entryLevel = findResults.last().add_entry();
+      Protos::Common::FindResult::EntryLevel* entryLevel = findResults.last().add_entry();
       entryLevel->set_level(entry.level);
       entry.value->populateEntry(entryLevel->mutable_entry(), true);
 
@@ -198,7 +200,7 @@ QList<Protos::Common::FindResult> FileManager::find(const QString& words, int ma
 
       if (findResultCurrentSize > maxSize)
       {
-         google::protobuf::RepeatedPtrField<Protos::Common::FindResult_EntryLevel>* entries = findResults.last().mutable_entry();
+         google::protobuf::RepeatedPtrField<Protos::Common::FindResult::EntryLevel>* entries = findResults.last().mutable_entry();
          findResults << Protos::Common::FindResult();
          if (entries->size() > 0)
          {
@@ -260,6 +262,45 @@ void FileManager::dumpWordIndex() const
    L_WARN(this->wordIndex.toStringLog());
 }
 
+/**
+  * Incomplete, only the first hash is compared for the moment.
+  */
+void FileManager::printSimilarFiles() const
+{
+   QString result("Similar files:\n");
+
+   QSet<Common::Hash> knownHashes;
+   foreach (Common::SharedDir sharedDir, this->cache.getSharedDirs())
+   {
+      Directory* dir = this->cache.getSharedDirectory(sharedDir.ID);
+      DirIterator i(dir, true);
+      while (dir = i.next())
+      {
+         foreach (File* file, dir->getFiles())
+         {
+            const QVector<QSharedPointer<Chunk>>& chunks = file->getChunks();
+            if (!chunks.isEmpty())
+            {
+               const Common::Hash& hash = chunks[0]->getHash();
+               if (!hash.isNull() && !knownHashes.contains(hash))
+               {
+                  knownHashes.insert(hash);
+                  const QList<QSharedPointer<Chunk> >& similarChunks = this->chunks.values(hash);
+                  if (similarChunks.size() > 1)
+                  {
+                     foreach (QSharedPointer<Chunk> similarChunk, similarChunks)
+                        result.append(similarChunk->getFilePath()).append("\n");
+                     result.append("------\n");
+                  }
+               }
+            }
+         }
+      }
+   }
+
+   L_WARN(result);
+}
+
 Directory* FileManager::getFittestDirectory(const QString& path)
 {
    return this->cache.getFittestDirectory(path);
@@ -283,6 +324,11 @@ void FileManager::sharedDirectoryRemoved(SharedDirectory* sharedDir, Directory* 
 {
    this->fileUpdater.rmRoot(sharedDir, dir);
    this->forcePersistCacheToFile();
+}
+
+void FileManager::deleteSharedDir(SharedDirectory* sharedDirectory)
+{
+   this->cache.removeSharedDir(sharedDirectory);
 }
 
 void FileManager::entryAdded(Entry* entry)

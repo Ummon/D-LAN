@@ -115,6 +115,11 @@ void Core::dumpWordIndex() const
    this->fileManager->dumpWordIndex();
 }
 
+void Core::printSimilarFiles() const
+{
+   this->fileManager->printSimilarFiles();
+}
+
 void Core::setLanguage(QLocale locale, bool load)
 {
    if (load)
@@ -181,7 +186,7 @@ void Core::checkSettingsIntegrity()
    this->checkSetting("multicast_port", 1u, 65535u);
    this->checkSetting("multicast_ttl", 1u, 255u);
    this->checkSetting("max_udp_datagram_size", 255u, 65535u);
-   this->checkSetting("udp_read_buffer_size", 255u, 6684672u);
+   this->checkSetting("udp_buffer_size", 255u, 6684672u);
    this->checkSetting("max_number_of_search_result_to_send", 1u, 10000u);
    this->checkSetting("max_number_of_result_shown", 1u, 100000u);
    this->checkSetting("max_number_of_chat_message_saved", 1u, 1000000u);

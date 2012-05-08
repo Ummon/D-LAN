@@ -44,8 +44,7 @@ using namespace FM;
 FileHasher::FileHasher() :
    currentFileCache(0),
    hashing(false),
-   toStopHashing(false),
-   hashingMutex(QMutex::Recursive)
+   toStopHashing(false)
 {
 }
 
@@ -247,6 +246,18 @@ bool FileHasher::start(File* fileCache, int n, int* amountHashed)
 void FileHasher::stop()
 {
    QMutexLocker locker(&this->hashingMutex);
+   this->internalStop();
+}
+
+void FileHasher::entryRemoved(Entry* entry)
+{
+   QMutexLocker locker(&this->hashingMutex);
+   if (this->currentFileCache == entry)
+      this->internalStop();
+}
+
+void FileHasher::internalStop()
+{
    this->toStopHashing = true;
    if (this->hashing)
    {
@@ -254,11 +265,4 @@ void FileHasher::stop()
       this->hashingStopped.wait(&this->hashingMutex);
       L_DEBU("File hashing stopped");
    }
-}
-
-void FileHasher::entryRemoved(Entry* entry)
-{
-   QMutexLocker locker(&this->hashingMutex);
-   if (this->currentFileCache == entry)
-      this->stop();
 }
