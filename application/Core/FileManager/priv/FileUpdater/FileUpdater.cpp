@@ -281,12 +281,12 @@ void FileUpdater::run()
          if (this->dirsToScan.isEmpty() && this->filesWithoutHashes.isEmpty() && this->filesWithoutHashesPrioritized.isEmpty())
          {
             this->mutex.unlock();
-            this->treatEvents(this->dirWatcher->waitEvent(this->unwatchableDirs.isEmpty() ? -1 : SCAN_PERIOD_UNWATCHABLE_DIRS, QList<WaitCondition*>() << this->dirEvent));
+            this->processEvents(this->dirWatcher->waitEvent(this->unwatchableDirs.isEmpty() ? -1 : SCAN_PERIOD_UNWATCHABLE_DIRS, QList<WaitCondition*>() << this->dirEvent));
          }
          else
          {
             this->mutex.unlock();
-            this->treatEvents(this->dirWatcher->waitEvent(0)); // Just pick the new events. (Don't wait for new event).
+            this->processEvents(this->dirWatcher->waitEvent(0)); // Just pick the new events. (Don't wait for new event).
          }
       }
 
@@ -688,7 +688,7 @@ void FileUpdater::restoreFromFileCache(SharedDirectory* dir)
   * Event from the filesystem like a new created file or a renamed file.
   * return true is at least one event is a timeout.
   */
-bool FileUpdater::treatEvents(const QList<WatcherEvent>& events)
+bool FileUpdater::processEvents(const QList<WatcherEvent>& events)
 {
    if (events.isEmpty())
       return false;
