@@ -38,8 +38,11 @@ CoreService::CoreService(bool resetSettings, QLocale locale, int argc, char** ar
       QString currentArg = QString::fromAscii(argv[i]);
       if (currentArg == "-e" || currentArg == "-exec")
       {
-         connect(&this->consoleReader, SIGNAL(newLine(QString)), this, SLOT(treatUserInput(QString)), Qt::QueuedConnection);
+         connect(&this->consoleReader, SIGNAL(newLine(QString)), this, SLOT(processUserInput(QString)), Qt::QueuedConnection);
          this->consoleReader.start();
+         QTextStream out(stdout);
+         out << "D-LAN Core started with console support" << endl;
+         CoreService::printCommands();
          break;
       }
    }
@@ -66,7 +69,7 @@ void CoreService::stop()
    this->consoleReader.stop();
 }
 
-void CoreService::treatUserInput(QString input)
+void CoreService::processUserInput(QString input)
 {
    if (input == ConsoleReader::QUIT_COMMAND)
    {
@@ -77,10 +80,13 @@ void CoreService::treatUserInput(QString input)
       this->core->dumpWordIndex();
    }
    else
-   {
-      QTextStream out(stdout);
-      out << "Commands:" << endl
-          << " - " << ConsoleReader::QUIT_COMMAND << " : stop the core" << endl
-          << " - dumpwi : dump the word index in the log as a warning" << endl;
-   }
+      CoreService::printCommands();
+}
+
+void CoreService::printCommands()
+{
+   QTextStream out(stdout);
+   out << "Commands:" << endl
+       << " - " << ConsoleReader::QUIT_COMMAND << " : stop the core" << endl
+       << " - dumpwi : dump the word index in the log as a warning" << endl;
 }
