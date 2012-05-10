@@ -158,6 +158,12 @@ namespace FM
         */
       virtual void dumpWordIndex() const = 0;
 
+      /**
+        * Experimental.
+        * Use only for debugging purpose.
+        */
+      virtual void printSimilarFiles() const = 0;
+
    signals:
       /**
         * Emitted when the file cache has been loaded.

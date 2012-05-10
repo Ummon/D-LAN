@@ -76,11 +76,16 @@ void CoreService::treatUserInput(QString input)
    {
       this->core->dumpWordIndex();
    }
+   else if (input == "printsf")
+   {
+      this->core->printSimilarFiles();
+   }
    else
    {
       QTextStream out(stdout);
       out << "Commands:" << endl
           << " - " << ConsoleReader::QUIT_COMMAND << " : stop the core" << endl
-          << " - dumpwi : dump the word index in the log as a warning" << endl;
+          << " - dumpwi : dump the word index in the log as a warning" << endl
+          << " - printsf : print the similar files in the log as a warning" << endl;
    }
 }

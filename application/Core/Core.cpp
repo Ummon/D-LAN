@@ -115,6 +115,11 @@ void Core::dumpWordIndex() const
    this->fileManager->dumpWordIndex();
 }
 
+void Core::printSimilarFiles() const
+{
+   this->fileManager->printSimilarFiles();
+}
+
 void Core::setLanguage(QLocale locale, bool load)
 {
    if (load)

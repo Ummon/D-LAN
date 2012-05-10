@@ -424,11 +424,15 @@ Directory& Directory::operator-=(qint64 size)
   * @class FM::DirIterator
   *
   * Iterate recursively over a directory tree structure.
+  * @param includeRoot If true then include the given dir into the iterations.
   */
 
-DirIterator::DirIterator(Directory* dir) :
-   dirsToVisit(dir->subDirs.getList())
+DirIterator::DirIterator(Directory* dir, bool includeRoot)
 {
+   if (includeRoot)
+      this->dirsToVisit << dir;
+   else
+      this->dirsToVisit = dir->subDirs.getList();
 }
 
 /**

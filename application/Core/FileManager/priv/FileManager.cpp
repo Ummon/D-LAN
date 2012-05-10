@@ -23,6 +23,7 @@ using namespace FM;
 
 #include <QSharedPointer>
 #include <QStringList>
+#include <QStringBuilder>
 #include <QList>
 #include <QVector>
 #include <QDir>
@@ -258,6 +259,45 @@ int FileManager::getProgress() const
 void FileManager::dumpWordIndex() const
 {
    L_WARN(this->wordIndex.toStringLog());
+}
+
+/**
+  * Incomplete, only the first hash is compared for the moment.
+  */
+void FileManager::printSimilarFiles() const
+{
+   QString result("Similar files:\n");
+
+   QSet<Common::Hash> knownHashes;
+   foreach (Common::SharedDir sharedDir, this->cache.getSharedDirs())
+   {
+      Directory* dir = this->cache.getSharedDirectory(sharedDir.ID);
+      DirIterator i(dir, true);
+      while (dir = i.next())
+      {
+         foreach (File* file, dir->getFiles())
+         {
+            const QVector<QSharedPointer<Chunk>>& chunks = file->getChunks();
+            if (!chunks.isEmpty())
+            {
+               const Common::Hash& hash = chunks[0]->getHash();
+               if (!hash.isNull() && !knownHashes.contains(hash))
+               {
+                  knownHashes.insert(hash);
+                  const QList<QSharedPointer<Chunk> >& similarChunks = this->chunks.values(hash);
+                  if (similarChunks.size() > 1)
+                  {
+                     foreach (QSharedPointer<Chunk> similarChunk, similarChunks)
+                        result.append(similarChunk->getFilePath()).append("\n");
+                     result.append("------\n");
+                  }
+               }
+            }
+         }
+      }
+   }
+
+   L_WARN(result);
 }
 
 Directory* FileManager::getFittestDirectory(const QString& path)

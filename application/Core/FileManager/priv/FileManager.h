@@ -73,6 +73,7 @@ namespace FM
       int getProgress() const;
 
       void dumpWordIndex() const;
+      void printSimilarFiles() const;
 
       Directory* getFittestDirectory(const QString& path);
       Entry* getEntry(const QString& path);

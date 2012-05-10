@@ -109,7 +109,7 @@ namespace FM
    class DirIterator
    {
    public:
-      DirIterator(Directory* dir);
+      DirIterator(Directory* dir, bool includeRoot = false);
       virtual ~DirIterator() {}
       Directory* next();
 
