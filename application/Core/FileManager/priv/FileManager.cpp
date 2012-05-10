@@ -189,7 +189,7 @@ QList<Protos::Common::FindResult> FileManager::find(const QString& words, int ma
    for (QListIterator<NodeResult<Entry*>> i(result); i.hasNext();)
    {
       const NodeResult<Entry*>& entry = i.next();
-      Protos::Common::FindResult_EntryLevel* entryLevel = findResults.last().add_entry();
+      Protos::Common::FindResult::EntryLevel* entryLevel = findResults.last().add_entry();
       entryLevel->set_level(entry.level);
       entry.value->populateEntry(entryLevel->mutable_entry(), true);
 
@@ -199,7 +199,7 @@ QList<Protos::Common::FindResult> FileManager::find(const QString& words, int ma
 
       if (findResultCurrentSize > maxSize)
       {
-         google::protobuf::RepeatedPtrField<Protos::Common::FindResult_EntryLevel>* entries = findResults.last().mutable_entry();
+         google::protobuf::RepeatedPtrField<Protos::Common::FindResult::EntryLevel>* entries = findResults.last().mutable_entry();
          findResults << Protos::Common::FindResult();
          if (entries->size() > 0)
          {
