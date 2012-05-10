@@ -1,0 +1,11 @@
+print('Test core connection')
+
+var core = dlan.newConnection()
+
+core.connected.connect(function(){
+   print("Connected!")   
+   for (var i = 0; i < 10; i++)
+      core.sendChatMessage("Hi, i equals " + i)   
+})
+
+core.tryConnecting()
