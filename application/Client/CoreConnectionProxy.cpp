@@ -9,9 +9,14 @@ CoreConnectionProxy::CoreConnectionProxy() :
    connect(this->coreConnection.data(), SIGNAL(connected()), this, SIGNAL(connected()), Qt::DirectConnection);
 }
 
-void CoreConnectionProxy::tryConnecting()
+void CoreConnectionProxy::connectToCore()
 {
    this->coreConnection->connectToCore();
+}
+
+void CoreConnectionProxy::disconnectFromCore()
+{
+   this->coreConnection->disconnectFromCore();
 }
 
 void CoreConnectionProxy::sendChatMessage(const QString& message)

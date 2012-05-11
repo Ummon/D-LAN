@@ -39,7 +39,7 @@ namespace Client
       D_LAN_Client(int argc, char *argv[]);
 
    public slots:
-      QObject* newConnection();
+      QScriptValue newConnection();
 
    private slots:
       void newCommandLine(QString line);
@@ -49,7 +49,6 @@ namespace Client
 
       QScriptEngine engine;
 
-      QList<CoreConnectionProxy*> connections;
       QTextStream out;
       Common::ConsoleReader consoleReader;
    };

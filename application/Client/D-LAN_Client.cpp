@@ -39,10 +39,9 @@ D_LAN_Client::D_LAN_Client(int argc, char *argv[]) :
    this->consoleReader.start();
 }
 
-QObject* D_LAN_Client::newConnection()
+QScriptValue D_LAN_Client::newConnection()
 {
-   this->connections << new CoreConnectionProxy();
-   return this->connections.last();
+   return this->engine.newQObject(new CoreConnectionProxy(), QScriptEngine::ScriptOwnership);
 }
 
 void D_LAN_Client::newCommandLine(QString line)

@@ -15,7 +15,9 @@ namespace Client
       CoreConnectionProxy();
 
    public slots:
-      void tryConnecting();
+      void connectToCore();
+      void disconnectFromCore();
+
       void sendChatMessage(const QString& message);
 
    signals:
