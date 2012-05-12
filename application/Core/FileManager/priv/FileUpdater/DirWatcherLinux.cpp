@@ -74,7 +74,6 @@ DirWatcherLinux::~DirWatcherLinux ()
       Dir* dir = i.next();
       delete dir;
       i.remove();
-      break;
    }
 
    // Close file descriptor
