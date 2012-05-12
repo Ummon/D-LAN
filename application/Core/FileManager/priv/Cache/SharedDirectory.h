@@ -66,7 +66,8 @@ namespace FM
       Common::Hash getId() const;
 
    private:
-      QString cleanAndRemoveName(const QString& path);
+      static QString dirName(const QString& path);
+      QString pathWithoutDirName(const QString& path);
 
       QString path; // Always ended by a slash '/'.
       Common::Hash id;

@@ -37,7 +37,7 @@ using namespace FM;
   * @exception DirNotFoundException
   */
 SharedDirectory::SharedDirectory(Cache* cache, const QString& path) :
-   Directory(cache, QDir(path).dirName()), path(this->cleanAndRemoveName(path)), id(Common::Hash::rand())
+   Directory(cache, dirName(path)), path(this->pathWithoutDirName(path)), id(Common::Hash::rand())
 {
    this->init();
 }
@@ -48,7 +48,7 @@ SharedDirectory::SharedDirectory(Cache* cache, const QString& path) :
   * @exception DirNotFoundException
   */
 SharedDirectory::SharedDirectory(Cache* cache, const QString& path, const Common::Hash& id) :
-   Directory(cache, QDir(path).dirName()), path(this->cleanAndRemoveName(path)), id(id)
+   Directory(cache, dirName(path)), path(this->pathWithoutDirName(path)), id(id)
 {
    this->init();
 }
@@ -76,11 +76,9 @@ void SharedDirectory::mergeSubSharedDirectories()
 
 void SharedDirectory::populateEntry(Protos::Common::Entry* entry, bool setSharedDir) const
 {
-   Directory::populateEntry(entry, setSharedDir);
-   entry->set_path("");
-   if (this->name.isEmpty())
-      Common::ProtoHelper::setStr(*entry, &Protos::Common::Entry::set_name, this->path);
-   entry->mutable_shared_dir()->mutable_id()->set_hash(static_cast<SharedDirectory*>(this->getRoot())->getId().getData(), Common::Hash::HASH_SIZE);
+   // The 'shared_dir' field is always filled for a 'SharedDirectory', it doesn't depend of 'setSharedDir'.
+   Directory::populateEntry(entry, true);
+   entry->set_path(""); // The path of a shared directory is private (we don't want the other peers to see absolute paths).
 }
 
 void SharedDirectory::init()
@@ -122,7 +120,7 @@ QString SharedDirectory::getPath() const
 
 QString SharedDirectory::getFullPath() const
 {
-   return this->path + (!this->name.isEmpty() ? this->name + '/' : "");
+   return this->path + (!this->name.isEmpty() && !SharedDirectory::pathIsWindowsRoot(this->name) ? this->name + '/' : "");
 }
 
 SharedDirectory* SharedDirectory::getRoot() const
@@ -135,8 +133,23 @@ Common::Hash SharedDirectory::getId() const
    return this->id;
 }
 
-QString SharedDirectory::cleanAndRemoveName(const QString& path)
+/**
+  * Special for Windows root:
+  * name of "C:\" is "C:".
+  */
+QString SharedDirectory::dirName(const QString& path)
 {
+   if (Common::Global::isWindowsRootPath(path))
+      return path.left(2);
+
+   return QDir(path).dirName();
+}
+
+QString SharedDirectory::pathWithoutDirName(const QString& path)
+{
+   if (Common::Global::isWindowsRootPath(path))
+      return path;
+
    const QString& cleanedPath(QDir::cleanPath(path));
    return cleanedPath.left(cleanedPath.size() - this->name.size());
 }

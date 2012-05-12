@@ -359,7 +359,9 @@ QString SearchModel::SearchTree::entryPath(const Protos::Common::Entry& entry)
    else
    {
       const QString& sharedName = Common::ProtoHelper::getStr(entry.shared_dir(), &Protos::Common::SharedDir::shared_name);
-      completePath.append("/").append(sharedName).append(path);
+      if (!Common::Global::isWindowsPath(sharedName))
+         completePath.append("/");
+      completePath.append(sharedName).append(path);
    }
 
    return completePath;

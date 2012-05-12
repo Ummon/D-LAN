@@ -54,7 +54,7 @@ void Entry::populateEntrySharedDir(Protos::Common::Entry* entry) const
    if (dir)
    {
       entry->mutable_shared_dir()->mutable_id()->set_hash(dir->getId().getData(), Common::Hash::HASH_SIZE);
-      Common::ProtoHelper::setStr(*entry->mutable_shared_dir(), &Protos::Common::SharedDir::set_shared_name, dir->getName().isEmpty() ? this->getPath() : dir->getName());
+      Common::ProtoHelper::setStr(*entry->mutable_shared_dir(), &Protos::Common::SharedDir::set_shared_name, dir->getName());
    }
 }
 
