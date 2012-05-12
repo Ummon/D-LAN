@@ -46,7 +46,9 @@ namespace FM
      *  - When a directory is added as a shared directory ('addDir(..)') and one or more sub-directories are already shared then
      *    'addDir(..)' is called for the new shared directory and 'rmDir(..)' is called for each old shared sub-directory.
      *  - When a sub-directory of a shared directory is moved as a sub-directory of another shared directory the implementation
-     *    can use the events 'DELETED' folloing by 'NEW' or the event 'MOVE' alone, the last one is preferred.
+     *    can use the events 'DELETED' following by 'NEW' or the event 'MOVE' alone, the last one is preferred.
+     *  - When a shared directory is deleted in the file system, the watcher should send a 'DELETE' event. If it does, the 'rmDir(..)' will be
+     *    Automatically called for this directory.
      */
    class DirWatcher
    {
