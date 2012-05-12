@@ -303,23 +303,12 @@ const QList<WatcherEvent> DirWatcherLinux::waitEvent(int timeout, QList<WaitCond
          L_DEBU(QString("inotify event : IN_CLOSE_WRITE (path=%1)").arg(getEventPath(event)));
          events << WatcherEvent(WatcherEvent::CONTENT_CHANGED, getEventPath(event));
       }
-      if (event->mask & IN_MOVE_SELF)
+      if (event->mask & IN_DELETE_SELF || event->mask & IN_MOVE_SELF)
       {
-         L_DEBU(QString("inotify event : IN_MOVE_SELF (path=%1)").arg(getEventPath(event)));
-         // This event is triggered only for ROOT directory
-         events << WatcherEvent(WatcherEvent::MOVE, this->dirs.value(event->wd)->getFullPath(), getEventPath(event));
-      }
-      if (event->mask & IN_DELETE_SELF)
-      {
-         L_DEBU(QString("inotify event : IN_DELETE_SELF (path=%1)").arg(getEventPath(event)));
-         // process only for ROOT directory
-         if(!this->dirs.value(event->wd)->parent)
-         {
-            events << WatcherEvent(WatcherEvent::DELETED, getEventPath(event));
-            delete this->dirs.value(event->wd)->childs.value(event->name);
-            if (event->mask & IN_ISDIR)
-               delete this->dirs.value(event->wd)->childs.value(event->name);
-         }
+         L_DEBU(QString("inotify event : IN_DELETE_SELF || IN_MOVE_SELF (path=%1)").arg(getEventPath(event)));
+         // processed only for ROOT directory
+         events << WatcherEvent(WatcherEvent::DELETED, getEventPath(event));
+         delete this->dirs.value(event->wd);
       }
 
       i += EVENT_SIZE + event->len;
