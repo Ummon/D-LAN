@@ -392,8 +392,9 @@ DirWatcherLinux::Dir::~Dir()
    if (inotify_rm_watch(dwl->fileDescriptor, wd))
        L_ERRO(QString("DirWatcherLinux::~DirWatcherLinux : Unable to remove an inotify watcher."));
 
-   for (QListIterator<Dir*> i(childs.values()); i.hasNext();)
-      delete i.next();
+   this->parent->childs.remove(this->name);
+   for (QMapIterator<QString, Dir*> i(childs); i.hasNext();)
+      delete i.next().value();
 }
 
 /**

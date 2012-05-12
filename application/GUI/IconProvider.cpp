@@ -21,6 +21,8 @@ using namespace GUI;
 
 #include <Common/ProtoHelper.h>
 
+#include <Log.h>
+
 #if defined(Q_OS_WIN32)
    #include <shlobj.h>
    #include <shellapi.h>
