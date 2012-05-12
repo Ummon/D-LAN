@@ -130,10 +130,15 @@ Entry* Cache::getEntry(const QString& path) const
 
    foreach (SharedDirectory* sharedDir, this->sharedDirs)
    {
-      if (path.startsWith(sharedDir->getFullPath()))
+      // We remove the endind '/'.
+      QString currentPath(sharedDir->getFullPath());
+      if (currentPath.length() > 1 && currentPath.endsWith('/'))
+         currentPath.remove(currentPath.size() - 1, 1);
+
+      if (path.startsWith(currentPath))
       {
          QString relativePath(path);
-         relativePath.remove(0, sharedDir->getFullPath().size());
+         relativePath.remove(0, currentPath.size());
          const QStringList folders = relativePath.split('/', QString::SkipEmptyParts);
 
          Directory* currentDir = sharedDir;

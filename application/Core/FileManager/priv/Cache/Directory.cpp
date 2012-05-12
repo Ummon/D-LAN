@@ -181,6 +181,9 @@ void Directory::moveInto(Directory* directory)
 {
    QMutexLocker locker(&this->mutex);
 
+   if (directory == this->parent)
+      return;
+
    // A directory can't be move in its own tree.
    Directory* parentDestination = directory;
    do
@@ -191,6 +194,7 @@ void Directory::moveInto(Directory* directory)
 
    this->parent->subDirDeleted(this);
    directory->add(this);
+   this->parent = directory;
 }
 
 /**

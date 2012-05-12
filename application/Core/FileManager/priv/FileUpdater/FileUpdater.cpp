@@ -732,7 +732,7 @@ bool FileUpdater::processEvents(const QList<WatcherEvent>& events)
                }
                else
                {
-                  delete entryToMove;
+                  this->deleteEntry(entryToMove);
                }
             }
 

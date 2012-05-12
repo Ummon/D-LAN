@@ -467,6 +467,7 @@ void File::moveInto(Directory* directory)
 
    this->dir->fileDeleted(this);
    directory->add(this);
+   this->dir = directory;
 }
 
 void File::changeDirectory(Directory* dir)
