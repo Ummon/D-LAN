@@ -120,7 +120,7 @@ QString SharedDirectory::getPath() const
 
 QString SharedDirectory::getFullPath() const
 {
-   return this->path + (!this->name.isEmpty() && !SharedDirectory::pathIsWindowsRoot(this->name) ? this->name + '/' : "");
+   return this->path + (!this->name.isEmpty() && !Common::Global::isWindowsRootPath(this->name) ? this->name + '/' : "");
 }
 
 SharedDirectory* SharedDirectory::getRoot() const
