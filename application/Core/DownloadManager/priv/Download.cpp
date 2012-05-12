@@ -19,6 +19,8 @@
 #include <priv/Download.h>
 using namespace DM;
 
+#include <algorithm>
+
 #include <Common/ProtoHelper.h>
 
 #include <Utils.h>
@@ -34,6 +36,8 @@ Download::Download(
 ) :
    ID(currentID++), peerSource(peerSource), remoteEntry(remoteEntry), localEntry(localEntry), status(QUEUED)
 {
+   // Special case when downloading the root of a drive like "C:/". In this case "C:" is the name of the entry and it becomes a part of the local entry path.
+   std::replace(this->localEntry.mutable_path()->begin(), this->localEntry.mutable_path()->end(), ':', '_');
 }
 
 Download::~Download()

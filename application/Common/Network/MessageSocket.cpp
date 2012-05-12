@@ -100,7 +100,7 @@ MessageSocket::~MessageSocket()
 {
    this->stopListening();
 
-   this->socket->close();
+   this->close();
    this->socket->deleteLater();
 
    delete this->logger;
@@ -171,7 +171,8 @@ void MessageSocket::startListening()
    this->listening = true;
 
    connect(this->socket, SIGNAL(readyRead()), this, SLOT(dataReceivedSlot()), Qt::DirectConnection);
-   connect(this->socket, SIGNAL(disconnected()), this, SLOT(disconnectedSlot()), Qt::DirectConnection);
+   connect(this->socket, SIGNAL(disconnected()), this, SLOT(disconnectedSlot()), Qt::QueuedConnection);
+
    this->dataReceivedSlot();
 }
 
@@ -201,7 +202,7 @@ bool MessageSocket::isConnected() const
 
 void MessageSocket::close()
 {
-   this->socket->close();
+   this->socket->disconnectFromHost();
 }
 
 bool MessageSocket::isListening() const

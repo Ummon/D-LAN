@@ -75,6 +75,7 @@ namespace Common
       bool mapDepthFirst(std::function<bool(TreeType*)> fun, bool iterateOnRoot = false);
 
       virtual TreeType* getParent();
+      virtual const TreeType* getParent() const;
       virtual int getNbChildren() const;
       virtual TreeType* getChild(int pos) const;
       virtual void moveChild(int from, int to);
@@ -188,9 +189,14 @@ bool Tree<ItemType, TreeType>::mapDepthFirst(std::function<bool(TreeType*)> fun,
    return true;
 }
 
-
 template <typename ItemType, typename TreeType>
 TreeType* Tree<ItemType, TreeType>::getParent()
+{
+   return this->parent;
+}
+
+template <typename ItemType, typename TreeType>
+const TreeType* Tree<ItemType, TreeType>::getParent() const
 {
    return this->parent;
 }

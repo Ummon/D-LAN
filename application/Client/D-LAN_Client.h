@@ -16,38 +16,42 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef CORE_CORE_SERVICE_H
-#define CORE_CORE_SERVICE_H
+#ifndef CLIENT_D_LAN_CLIENT_H
+#define CLIENT_D_LAN_CLIENT_H
 
-#include <Libs/qtservice/src/qtservice.h>
+#include <QCoreApplication>
+#include <QScriptEngine>
+#include <QList>
+#include <QTextStream>
 
-#include <Common/Uncopyable.h>
 #include <Common/ConsoleReader.h>
 
-#include <CoreApplication.h>
-#include <Core.h>
+#include <Common/RemoteCoreController/ICoreConnection.h>
 
-namespace CoreSpace
+#include <CoreConnectionProxy.h>
+
+namespace Client
 {
-   class CoreService : public QObject, public QtService<CoreApplication>, Common::Uncopyable
+   class D_LAN_Client : public QCoreApplication
    {
       Q_OBJECT
    public:
-      CoreService(bool resetSettings, QLocale locale, int argc, char** argv);
-      virtual ~CoreService();
+      D_LAN_Client(int argc, char *argv[]);
 
-   protected:
-      void start();
-      void stop();
+   public slots:
+      QScriptValue newConnection();
 
    private slots:
-      void processUserInput(QString);
+      void newCommandLine(QString line);
 
    private:
-      static void printCommands();
+      void printHelp();
 
-      Core* core;
+      QScriptEngine engine;
+
+      QTextStream out;
       Common::ConsoleReader consoleReader;
    };
 }
+
 #endif

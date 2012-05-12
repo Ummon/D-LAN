@@ -16,38 +16,28 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef CORE_CORE_SERVICE_H
-#define CORE_CORE_SERVICE_H
+#include <cstdio>
+#include <iostream>
 
-#include <Libs/qtservice/src/qtservice.h>
+#include <QTextCodec>
 
-#include <Common/Uncopyable.h>
-#include <Common/ConsoleReader.h>
+#include <Common/LogManager/Builder.h>
 
-#include <CoreApplication.h>
-#include <Core.h>
+#include <D-LAN_Client.h>
 
-namespace CoreSpace
+/**
+  * By default is will launch a new core.
+  *
+  * Arguments : [--run <script file>] [--core <ip>[:<port]]
+  *  --core : connect to the an existing core.
+  */
+int main(int argc, char *argv[])
 {
-   class CoreService : public QObject, public QtService<CoreApplication>, Common::Uncopyable
-   {
-      Q_OBJECT
-   public:
-      CoreService(bool resetSettings, QLocale locale, int argc, char** argv);
-      virtual ~CoreService();
+   QTextCodec::setCodecForLocale(QTextCodec::codecForName("UTF-8"));
 
-   protected:
-      void start();
-      void stop();
+   LM::Builder::setLogDirName("log_client");
 
-   private slots:
-      void processUserInput(QString);
-
-   private:
-      static void printCommands();
-
-      Core* core;
-      Common::ConsoleReader consoleReader;
-   };
+   Client::D_LAN_Client client(argc, argv);
+   return client.exec();
 }
-#endif
+

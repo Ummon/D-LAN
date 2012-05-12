@@ -45,7 +45,7 @@ FileUpdater::FileUpdater(FileManager* fileManager) :
    SCAN_PERIOD_UNWATCHABLE_DIRS(SETTINGS.get<quint32>("scan_period_unwatchable_dirs")),
    fileManager(fileManager),
    dirWatcher(DirWatcher::getNewWatcher()),
-   fileCache(0),
+   fileCache(nullptr),
    toStop(false),
    progress(0),
    mutex(QMutex::Recursive),
@@ -225,7 +225,7 @@ void FileUpdater::run()
       }
 
       delete this->fileCache;
-      this->fileCache = 0;
+      this->fileCache = nullptr;
    }
 
    emit fileCacheLoaded();
@@ -281,12 +281,12 @@ void FileUpdater::run()
          if (this->dirsToScan.isEmpty() && this->filesWithoutHashes.isEmpty() && this->filesWithoutHashesPrioritized.isEmpty())
          {
             this->mutex.unlock();
-            this->treatEvents(this->dirWatcher->waitEvent(this->unwatchableDirs.isEmpty() ? -1 : SCAN_PERIOD_UNWATCHABLE_DIRS, QList<WaitCondition*>() << this->dirEvent));
+            this->processEvents(this->dirWatcher->waitEvent(this->unwatchableDirs.isEmpty() ? -1 : SCAN_PERIOD_UNWATCHABLE_DIRS, QList<WaitCondition*>() << this->dirEvent));
          }
          else
          {
             this->mutex.unlock();
-            this->treatEvents(this->dirWatcher->waitEvent(0)); // Just pick the new events. (Don't wait for new event).
+            this->processEvents(this->dirWatcher->waitEvent(0)); // Just pick the new events. (Don't wait for new event).
          }
       }
 
@@ -480,7 +480,7 @@ void FileUpdater::scan(Directory* dir, bool addUnfinished)
 
          if (entry.isDir())
          {
-            Directory* dir = currentDir->createSubDirectory(entry.fileName());
+            Directory* dir = currentDir->createSubDir(entry.fileName());
             dirsToVisit << dir;
 
             currentSubDirs.removeOne(dir);
@@ -498,7 +498,7 @@ void FileUpdater::scan(Directory* dir, bool addUnfinished)
                    file->isComplete() &&
                    !file->correspondTo(entry, file->hasAllHashes()) // If the hashes of a file can't be computed (IO error, the file is being written for example) we only compare their sizes.
                )
-                  file = 0;
+                  file = nullptr;
                else
                   currentFiles.removeOne(file);
             }
@@ -681,14 +681,14 @@ void FileUpdater::restoreFromFileCache(SharedDirectory* dir)
          break;
       }
 
-   L_DEBU("Restoring terminated : " + dir->getFullPath());
+   L_DEBU("Restoring terminated: " + dir->getFullPath());
 }
 
 /**
   * Event from the filesystem like a new created file or a renamed file.
   * return true is at least one event is a timeout.
   */
-bool FileUpdater::treatEvents(const QList<WatcherEvent>& events)
+bool FileUpdater::processEvents(const QList<WatcherEvent>& events)
 {
    if (events.isEmpty())
       return false;
@@ -708,9 +708,34 @@ bool FileUpdater::treatEvents(const QList<WatcherEvent>& events)
       {
       case WatcherEvent::MOVE:
          {
-            Entry* entry = this->fileManager->getEntry(event.path1);
-            if (entry)
-               entry->changeName(event.path2.split('/', QString::SkipEmptyParts).last());
+            const int lastSlashDestination = event.path2.lastIndexOf('/');
+            if (lastSlashDestination == -1)
+               break;
+
+            const QString& destinationPath = event.path2.left(lastSlashDestination);
+            Directory* destination = dynamic_cast<Directory*>(this->fileManager->getEntry(destinationPath));
+
+            Entry* entryToMove = this->fileManager->getEntry(event.path1);
+
+            if (entryToMove)
+            {
+               entryToMove->rename(event.path2.right(event.path2.size() - lastSlashDestination - 1));
+
+               if (destination)
+               {
+                  entryToMove->moveInto(destination);
+               }
+               // A shared directory is moved in a directory not in cache.
+               else if (SharedDirectory* sharedToMove = dynamic_cast<SharedDirectory*>(entryToMove))
+               {
+                  sharedToMove->moveInto(destinationPath);
+               }
+               else
+               {
+                  this->deleteEntry(entryToMove);
+               }
+            }
+
             break;
          }
 
