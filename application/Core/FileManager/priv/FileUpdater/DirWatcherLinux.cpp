@@ -308,7 +308,7 @@ const QList<WatcherEvent> DirWatcherLinux::waitEvent(int timeout, QList<WaitCond
          L_DEBU(QString("inotify event : IN_DELETE_SELF || IN_MOVE_SELF (path=%1)").arg(getEventPath(event)));
          // processed only for ROOT directory
          events << WatcherEvent(WatcherEvent::DELETED, getEventPath(event));
-         delete this->dirs.value(event->wd);
+         dirs.value(event->wd)->dwl->rmDir(getEventPath(event));
       }
 
       i += EVENT_SIZE + event->len;
