@@ -428,9 +428,11 @@ void Cache::removeSharedDir(SharedDirectory* dir, Directory* dir2)
 {
    QMutexLocker locker(&this->mutex);
 
-   this->sharedDirs.removeOne(dir);
-
-   emit sharedDirectoryRemoved(dir, dir2);
+   if (this->sharedDirs.contains(dir))
+   {
+      this->sharedDirs.removeOne(dir);
+      emit sharedDirectoryRemoved(dir, dir2);
+   }
 }
 
 SharedDirectory* Cache::getSuperSharedDirectory(const QString& path) const

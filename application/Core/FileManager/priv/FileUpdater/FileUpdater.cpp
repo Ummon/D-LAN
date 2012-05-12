@@ -572,6 +572,7 @@ void FileUpdater::stopScanning(Directory* dir)
 
 /**
   * Delete an entry and if it's a directory remove it and its sub childs from dirsToScan.
+  * It can't be used to remove a 'SharedDirectory', only the 'Cache' is able to do that.
   */
 void FileUpdater::deleteEntry(Entry* entry)
 {
@@ -585,12 +586,6 @@ void FileUpdater::deleteEntry(Entry* entry)
    {
       this->removeFromFilesWithoutHashes(dir);
       this->removeFromDirsToScan(dir);
-   }
-
-   if (SharedDirectory* sharedDir = dynamic_cast<SharedDirectory*>(entry))
-   {
-      if (!this->dirsToRemove.contains(sharedDir))
-         this->dirsToRemove << sharedDir;
    }
    else if (File* file = dynamic_cast<File*>(entry))
    {
@@ -742,7 +737,10 @@ bool FileUpdater::processEvents(const QList<WatcherEvent>& events)
       case WatcherEvent::DELETED:
          {
             Entry* entry = this->fileManager->getEntry(event.path1);
-            this->deleteEntry(entry);
+            if (SharedDirectory* sharedDir = dynamic_cast<SharedDirectory*>(entry))
+               emit deleteSharedDir(sharedDir);
+            else
+               this->deleteEntry(entry);
             break;
          }
 

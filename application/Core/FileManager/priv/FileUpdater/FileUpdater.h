@@ -62,6 +62,7 @@ namespace FM
 
    signals:
       void fileCacheLoaded();
+      void deleteSharedDir(SharedDirectory*);
 
    protected:
       void run();
