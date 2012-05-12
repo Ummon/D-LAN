@@ -37,7 +37,7 @@ using namespace FM;
   * @exception DirNotFoundException
   */
 SharedDirectory::SharedDirectory(Cache* cache, const QString& path) :
-   Directory(cache, Common::Global::dirName(path)), path(Common::Global::cleanDirPath(path)), id(Common::Hash::rand())
+   Directory(cache, QDir(path).dirName()), path(this->cleanAndRemoveName(path)), id(Common::Hash::rand())
 {
    this->init();
 }
@@ -48,7 +48,7 @@ SharedDirectory::SharedDirectory(Cache* cache, const QString& path) :
   * @exception DirNotFoundException
   */
 SharedDirectory::SharedDirectory(Cache* cache, const QString& path, const Common::Hash& id) :
-   Directory(cache, Common::Global::dirName(path)), path(Common::Global::cleanDirPath(path)), id(id)
+   Directory(cache, QDir(path).dirName()), path(this->cleanAndRemoveName(path)), id(id)
 {
    this->init();
 }
@@ -61,14 +61,14 @@ SharedDirectory::SharedDirectory(Cache* cache, const QString& path, const Common
 void SharedDirectory::mergeSubSharedDirectories()
 {
    // Merges the sub-directories of each directory found.
-   foreach (SharedDirectory* subDir, this->cache->getSubSharedDirectories(this->path))
+   foreach (SharedDirectory* subDir, this->cache->getSubSharedDirectories(this->getFullPath()))
    {
       // Create the missing directories.
       const QStringList& parentFolders = this->getFullPath().split('/', QString::SkipEmptyParts);
       const QStringList& childFolders = subDir->getFullPath().split('/', QString::SkipEmptyParts);
       Directory* current = this;
       for (int i = parentFolders.size(); i < childFolders.size(); i++)
-         current = new Directory(current, childFolders[i]);
+         current = current->createSubDir(childFolders[i]);
 
       this->getCache()->removeSharedDir(subDir, current);
    }
@@ -77,36 +77,52 @@ void SharedDirectory::mergeSubSharedDirectories()
 void SharedDirectory::populateEntry(Protos::Common::Entry* entry, bool setSharedDir) const
 {
    Directory::populateEntry(entry, setSharedDir);
+   entry->set_path("");
+   if (this->name.isEmpty())
+      Common::ProtoHelper::setStr(*entry, &Protos::Common::Entry::set_name, this->path);
    entry->mutable_shared_dir()->mutable_id()->set_hash(static_cast<SharedDirectory*>(this->getRoot())->getId().getData(), Common::Hash::HASH_SIZE);
 }
 
 void SharedDirectory::init()
 {
    // Avoid two same directories.
-   if (this->cache->isShared(this->path))
+   if (this->cache->isShared(this->getFullPath()))
       throw DirAlreadySharedException();
 
    // First of all check is the directory physically exists.
-   if (!QDir(this->path).exists())
-      throw DirNotFoundException(this->path);
+   if (!QDir(this->getFullPath()).exists())
+      throw DirNotFoundException(this->getFullPath());
 
-   if (SharedDirectory* dir = this->cache->getSuperSharedDirectory(this->path))
+   if (SharedDirectory* dir = this->cache->getSuperSharedDirectory(this->getFullPath()))
       throw SuperDirectoryExistsException(dir->getFullPath(), this->getFullPath());
 }
 
 SharedDirectory::~SharedDirectory()
 {
-   L_DEBU(QString("SharedDirectory deleted : %1").arg(this->path));
+   L_DEBU(QString("SharedDirectory deleted : %1").arg(this->getFullPath()));
+}
+
+void SharedDirectory::moveInto(Directory* directory)
+{
+   // A directory can't be move in its own tree.
+   if (directory->getRoot() == this)
+      return;
+   this->getCache()->removeSharedDir(this, directory->createSubDir(this->name));
+}
+
+void SharedDirectory::moveInto(const QString& path)
+{
+   this->path = Common::Global::cleanDirPath(path);
 }
 
 QString SharedDirectory::getPath() const
 {
-   return "";
+   return this->path;
 }
 
 QString SharedDirectory::getFullPath() const
 {
-   return this->path;
+   return this->path + (!this->name.isEmpty() ? this->name + '/' : "");
 }
 
 SharedDirectory* SharedDirectory::getRoot() const
@@ -117,4 +133,10 @@ SharedDirectory* SharedDirectory::getRoot() const
 Common::Hash SharedDirectory::getId() const
 {
    return this->id;
+}
+
+QString SharedDirectory::cleanAndRemoveName(const QString& path)
+{
+   const QString& cleanedPath(QDir::cleanPath(path));
+   return cleanedPath.left(cleanedPath.size() - this->name.size());
 }

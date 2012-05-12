@@ -33,8 +33,10 @@ namespace FM
 
    class Entry : Common::Uncopyable
    {
-   public:
+   protected:
       Entry(Cache* cache, const QString& name, qint64 size = 0);
+
+   public:
       virtual ~Entry();
 
       virtual void populateEntry(Protos::Common::Entry* entry, bool setSharedDir = false) const;
@@ -61,8 +63,10 @@ namespace FM
 
       virtual void removeUnfinishedFiles() = 0;
 
+      virtual void moveInto(Directory* directory) = 0;
+
       QString getName() const;
-      virtual void changeName(const QString& newName);
+      virtual void rename(const QString& newName);
 
       virtual qint64 getSize() const;
 

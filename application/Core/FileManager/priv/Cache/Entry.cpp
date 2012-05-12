@@ -54,7 +54,7 @@ void Entry::populateEntrySharedDir(Protos::Common::Entry* entry) const
    if (dir)
    {
       entry->mutable_shared_dir()->mutable_id()->set_hash(dir->getId().getData(), Common::Hash::HASH_SIZE);
-      Common::ProtoHelper::setStr(*entry->mutable_shared_dir(), &Protos::Common::SharedDir::set_shared_name, dir->getName());
+      Common::ProtoHelper::setStr(*entry->mutable_shared_dir(), &Protos::Common::SharedDir::set_shared_name, dir->getName().isEmpty() ? this->getPath() : dir->getName());
    }
 }
 
@@ -71,8 +71,11 @@ QString Entry::getName() const
 /**
   * When a file or a directory is renamed.
   */
-void Entry::changeName(const QString& newName)
+void Entry::rename(const QString& newName)
 {
+   if (this->name == newName)
+      return;
+
    const QString oldName = this->name;
    this->name = newName;
    this->cache->onEntryRenamed(this, oldName);

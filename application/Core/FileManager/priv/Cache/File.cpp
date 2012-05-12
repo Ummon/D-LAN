@@ -236,11 +236,11 @@ SharedDirectory* File::getRoot() const
    return this->dir->getRoot();
 }
 
-void File::changeName(const QString& newName)
+void File::rename(const QString& newName)
 {
    QMutexLocker locker(&this->mutex);
 
-   Entry::changeName(newName);
+   Entry::rename(newName);
    this->dir->fileNameChanged(this);
 }
 
@@ -456,6 +456,17 @@ void File::removeUnfinishedFiles()
       if (!QFile::remove(this->getFullPath()))
          L_WARN(QString("File::removeUnfinishedFiles() : unable to delete an unfinished file : %1").arg(this->getFullPath()));
    }
+}
+
+void File::moveInto(Directory* directory)
+{
+   QMutexLocker locker(&this->mutex);
+
+   if (this->dir == directory)
+      return;
+
+   this->dir->fileDeleted(this);
+   directory->add(this);
 }
 
 void File::changeDirectory(Directory* dir)

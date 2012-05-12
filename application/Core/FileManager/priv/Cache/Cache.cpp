@@ -237,7 +237,7 @@ QList<QSharedPointer<IChunk>> Cache::newFile(Protos::Common::Entry& fileEntry)
          if (Common::Global::availableDiskSpace(sharedDir->getFullPath()) < spaceNeeded)
             throw InsufficientStorageSpaceException();
 
-         dir = sharedDir->createSubDirectories(dirPath.split('/', QString::SkipEmptyParts), true);
+         dir = sharedDir->createSubDirs(dirPath.split('/', QString::SkipEmptyParts), true);
       }
       else
          fileEntry.clear_shared_dir(); // The shared directory is invalid.
@@ -729,5 +729,5 @@ Directory* Cache::getWriteableDirectory(const QString& path, qint64 spaceNeeded)
       throw InsufficientStorageSpaceException();
 
    // Create the missing directories.
-   return currentSharedDir->createSubDirectories(folders, true);
+   return currentSharedDir->createSubDirs(folders, true);
 }

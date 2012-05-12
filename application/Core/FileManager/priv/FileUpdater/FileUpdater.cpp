@@ -480,7 +480,7 @@ void FileUpdater::scan(Directory* dir, bool addUnfinished)
 
          if (entry.isDir())
          {
-            Directory* dir = currentDir->createSubDirectory(entry.fileName());
+            Directory* dir = currentDir->createSubDir(entry.fileName());
             dirsToVisit << dir;
 
             currentSubDirs.removeOne(dir);
@@ -707,13 +707,35 @@ bool FileUpdater::processEvents(const QList<WatcherEvent>& events)
       switch (event.type)
       {
       case WatcherEvent::MOVE:
-         {         
-            // TODO: add a move capability. (only rename is implemented).
-            Entry* entry = this->fileManager->getEntry(event.path1);
-            if (entry)
+         {
+            const int lastSlashDestination = event.path2.lastIndexOf('/');
+            if (lastSlashDestination == -1)
+               break;
+
+            const QString& destinationPath = event.path2.left(lastSlashDestination);
+            Directory* destination = dynamic_cast<Directory*>(this->fileManager->getEntry(destinationPath));
+
+            Entry* entryToMove = this->fileManager->getEntry(event.path1);
+
+            if (entryToMove)
             {
-               entry->changeName(event.path2.split('/', QString::SkipEmptyParts).last());
+               entryToMove->rename(event.path2.right(event.path2.size() - lastSlashDestination - 1));
+
+               if (destination)
+               {
+                  entryToMove->moveInto(destination);
+               }
+               // A shared directory is moved in a directory not in cache.
+               else if (SharedDirectory* sharedToMove = dynamic_cast<SharedDirectory*>(entryToMove))
+               {
+                  sharedToMove->moveInto(destinationPath);
+               }
+               else
+               {
+                  delete entryToMove;
+               }
             }
+
             break;
          }
 
