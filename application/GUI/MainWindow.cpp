@@ -213,7 +213,7 @@ void MainWindow::newState(const Protos::GUI::State& state)
 
 void MainWindow::onGlobalProgressChanged(quint64 completed, quint64 total)
 {
-   if (total == 0)
+   if (total == 0 || completed == total)
    {
       this->taskbar.setStatus(TaskbarButtonStatus::BUTTON_STATUS_NOPROGRESS);
    }
