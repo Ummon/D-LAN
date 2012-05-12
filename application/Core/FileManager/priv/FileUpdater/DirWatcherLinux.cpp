@@ -69,6 +69,14 @@ DirWatcherLinux::~DirWatcherLinux ()
 {
    QMutexLocker locker(&this->mutex);
 
+   for (QMutableListIterator<Dir*> i(rootDirs); i.hasNext();)
+   {
+      Dir* dir = i.next();
+      delete dir;
+      i.remove();
+      break;
+   }
+
    // Close file descriptor
    if (close(this->fileDescriptor) < 0) {
        L_ERRO(QString("DirWatcherLinux::~DirWatcherLinux : Unable to close file descriptor (inotify)."));
