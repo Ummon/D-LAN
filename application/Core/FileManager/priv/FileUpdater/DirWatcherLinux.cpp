@@ -54,11 +54,11 @@ DirWatcherLinux::DirWatcherLinux()
    : mutex(QMutex::Recursive)
 {
    // Initialize inotify
-   initialized = true;
-   fileDescriptor = inotify_init();
+   this->initialized = true;
+   this->fileDescriptor = inotify_init();
    if (fileDescriptor < 0) {
       L_WARN(QString("Unable to initialize inotify, DirWatcher not used."));
-      initialized = false;
+      this->initialized = false;
    }
 }
 
@@ -70,7 +70,7 @@ DirWatcherLinux::~DirWatcherLinux ()
    QMutexLocker locker(&this->mutex);
 
    // Close file descriptor
-   if (close(fileDescriptor) < 0) {
+   if (close(this->fileDescriptor) < 0) {
        L_ERRO(QString("DirWatcherLinux::~DirWatcherLinux : Unable to close file descriptor (inotify)."));
    }
 }
@@ -82,7 +82,7 @@ bool DirWatcherLinux::addDir(const QString& path)
 {
    QMutexLocker locker(&this->mutex);
 
-   if (!initialized) return false;
+   if (!this->initialized) return false;
 
    try
    {
@@ -392,8 +392,9 @@ DirWatcherLinux::Dir::~Dir()
    if (inotify_rm_watch(dwl->fileDescriptor, wd))
        L_ERRO(QString("DirWatcherLinux::~DirWatcherLinux : Unable to remove an inotify watcher."));
 
-   this->parent->childs.remove(this->name);
-   for (QMapIterator<QString, Dir*> i(childs); i.hasNext();)
+   if (this->parent)
+      this->parent->childs.remove(this->name);
+   for (QMapIterator<QString, Dir*> i(this->childs); i.hasNext();)
       delete i.next().value();
 }
 
