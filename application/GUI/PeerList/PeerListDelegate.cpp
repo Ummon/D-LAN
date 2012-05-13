@@ -101,8 +101,9 @@ QSize PeerListDelegate::sizeHint(const QStyleOptionViewItem& option, const QMode
 
 const QPixmap& PeerListDelegate::getMiniChartBackground(int width, int height) const
 {
-   if (!this->miniChartBackground)
+   if (!this->miniChartBackground || this->miniChartBackground->width() != width || this->miniChartBackground->height() != height)
    {
+      delete this->miniChartBackground;
       this->miniChartBackground = new QPixmap(width, height);
       this->miniChartBackground->fill(Qt::transparent);
 
