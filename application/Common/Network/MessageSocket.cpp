@@ -202,7 +202,7 @@ bool MessageSocket::isConnected() const
 
 void MessageSocket::close()
 {
-   this->socket->disconnectFromHost();
+   this->socket->close();
 }
 
 bool MessageSocket::isListening() const
