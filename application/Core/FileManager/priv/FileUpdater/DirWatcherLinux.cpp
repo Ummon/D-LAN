@@ -20,7 +20,6 @@
 using namespace FM;
 
 #include <QMutexLocker>
-#include <QtCore/QDebug>
 
 #include <priv/FileUpdater/WaitConditionLinux.h>
 #include <priv/Log.h>

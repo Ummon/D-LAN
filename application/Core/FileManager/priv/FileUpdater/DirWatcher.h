@@ -19,8 +19,8 @@
 #ifndef FILEMANAGER_DIRWATCHER_H
 #define FILEMANAGER_DIRWATCHER_H
 
-#include <QtCore/QList>
-#include <QtCore/QString>
+#include <QList>
+#include <QString>
 
 namespace FM
 {
