@@ -480,7 +480,7 @@ void FileUpdater::scan(Directory* dir, bool addUnfinished)
 
          if (entry.isDir())
          {
-            Directory* dir = currentDir->createSubDirectory(entry.fileName());
+            Directory* dir = currentDir->createSubDir(entry.fileName());
             dirsToVisit << dir;
 
             currentSubDirs.removeOne(dir);
@@ -572,6 +572,7 @@ void FileUpdater::stopScanning(Directory* dir)
 
 /**
   * Delete an entry and if it's a directory remove it and its sub childs from dirsToScan.
+  * It can't be used to remove a 'SharedDirectory', only the 'Cache' is able to do that.
   */
 void FileUpdater::deleteEntry(Entry* entry)
 {
@@ -585,12 +586,6 @@ void FileUpdater::deleteEntry(Entry* entry)
    {
       this->removeFromFilesWithoutHashes(dir);
       this->removeFromDirsToScan(dir);
-   }
-
-   if (SharedDirectory* sharedDir = dynamic_cast<SharedDirectory*>(entry))
-   {
-      if (!this->dirsToRemove.contains(sharedDir))
-         this->dirsToRemove << sharedDir;
    }
    else if (File* file = dynamic_cast<File*>(entry))
    {
@@ -707,20 +702,45 @@ bool FileUpdater::processEvents(const QList<WatcherEvent>& events)
       switch (event.type)
       {
       case WatcherEvent::MOVE:
-         {         
-            // TODO: add a move capability. (only rename is implemented).
-            Entry* entry = this->fileManager->getEntry(event.path1);
-            if (entry)
+         {
+            const int lastSlashDestination = event.path2.lastIndexOf('/');
+            if (lastSlashDestination == -1)
+               break;
+
+            const QString& destinationPath = event.path2.left(lastSlashDestination);
+            Directory* destination = dynamic_cast<Directory*>(this->fileManager->getEntry(destinationPath));
+
+            Entry* entryToMove = this->fileManager->getEntry(event.path1);
+
+            if (entryToMove)
             {
-               entry->changeName(event.path2.split('/', QString::SkipEmptyParts).last());
+               entryToMove->rename(event.path2.right(event.path2.size() - lastSlashDestination - 1));
+
+               if (destination)
+               {
+                  entryToMove->moveInto(destination);
+               }
+               // A shared directory is moved in a directory not in cache.
+               else if (SharedDirectory* sharedToMove = dynamic_cast<SharedDirectory*>(entryToMove))
+               {
+                  sharedToMove->moveInto(destinationPath);
+               }
+               else
+               {
+                  this->deleteEntry(entryToMove);
+               }
             }
+
             break;
          }
 
       case WatcherEvent::DELETED:
          {
             Entry* entry = this->fileManager->getEntry(event.path1);
-            this->deleteEntry(entry);
+            if (SharedDirectory* sharedDir = dynamic_cast<SharedDirectory*>(entry))
+               emit deleteSharedDir(sharedDir);
+            else
+               this->deleteEntry(entry);
             break;
          }
 

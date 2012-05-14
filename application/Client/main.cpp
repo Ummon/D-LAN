@@ -16,42 +16,28 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef FILEMANAGER_FILEHASHER_H
-#define FILEMANAGER_FILEHASHER_H
+#include <cstdio>
+#include <iostream>
 
-#include <QObject>
-#include <QMutex>
-#include <QWaitCondition>
+#include <QTextCodec>
 
-#include <Common/Uncopyable.h>
+#include <Common/LogManager/Builder.h>
 
-namespace FM
+#include <D-LAN_Client.h>
+
+/**
+  * By default is will launch a new core.
+  *
+  * Arguments : [--run <script file>] [--core <ip>[:<port]]
+  *  --core : connect to the an existing core.
+  */
+int main(int argc, char *argv[])
 {
-   class Entry;
-   class File;
+   QTextCodec::setCodecForLocale(QTextCodec::codecForName("UTF-8"));
 
-   class FileHasher : public QObject, Common::Uncopyable
-   {
-      Q_OBJECT
-   public:
-      FileHasher();
+   LM::Builder::setLogDirName("log_client");
 
-      bool start(File* fileCache, int n = 0, int* amountHashed = nullptr);
-      void stop();
-
-   private slots:
-      void entryRemoved(Entry* entry);
-
-   private:
-      void internalStop();
-
-      File* currentFileCache;
-
-      bool hashing;
-      bool toStopHashing;
-      QWaitCondition hashingStopped;
-      QMutex hashingMutex;
-   };
+   Client::D_LAN_Client client(argc, argv);
+   return client.exec();
 }
 
-#endif

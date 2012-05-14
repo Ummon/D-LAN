@@ -15,11 +15,13 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
-#include <QtCore/QtCore> // For the Q_OS_* defines.
 
-#if !defined(FILEMANAGER_DIRWATCHERLINUX_H) and defined(Q_OS_LINUX)
+#ifndef FILEMANAGER_DIRWATCHERLINUX_H
 #define FILEMANAGER_DIRWATCHERLINUX_H
+
+#include <QMap>
+#include <QList>
+#include <QMutex>
 
 #include <priv/FileUpdater/DirWatcher.h>
 
@@ -57,7 +59,7 @@ namespace FM
           Dir* parent;
           QMap<QString, Dir*> childs;
           QString name;
-          int wd;
+          int wd; // Watch descriptor.
        };
 
        QMap<int, Dir*> dirs; // The watched dirs, indexed by watch descriptor.
@@ -73,4 +75,4 @@ namespace FM
    };
 }
 
-#endif // FILEMANAGER_DIRWATCHERLINUX_H
+#endif

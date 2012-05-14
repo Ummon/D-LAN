@@ -322,17 +322,19 @@ QString Global::cleanDirPath(const QString& path)
 }
 
 /**
-  * Special case for Windows: "C:/" -> "C:"
+  * @return 'true' if path begins with  "<Drive letter>:", for example: "C:/Users/"
   */
-QString Global::dirName(const QString& path)
+bool Global::isWindowsPath(const QString& path)
 {
-   Q_ASSERT(!path.isEmpty());
+   return path.length() >= 2 && path[0].isLetter() && path[1] == ':';
+}
 
-#ifdef Q_OS_WIN32
-   if (path.size() == 3 && path[1] == ':')
-      return path.left(2);
-#endif
-   return QDir(path).dirName();
+/**
+  * @return 'true' if path is a Windows root, for example: "C:", "C:\", "C:/"
+  */
+bool Global::isWindowsRootPath(const QString& path)
+{
+   return (path.length() == 3 || path.length() == 2) && path[0].isLetter() && path[1] == ':';
 }
 
 QString Global::toLowerAndRemoveAccents(const QString& str)

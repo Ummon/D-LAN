@@ -68,6 +68,7 @@ FileManager::FileManager() :
    connect(&this->cache, SIGNAL(sharedDirectoryRemoved(SharedDirectory*, Directory*)), this, SLOT(sharedDirectoryRemoved(SharedDirectory*, Directory*)), Qt::DirectConnection);
 
    connect(&this->fileUpdater, SIGNAL(fileCacheLoaded()), this, SLOT(fileCacheLoadingComplete()),  Qt::QueuedConnection);
+   connect(&this->fileUpdater, SIGNAL(deleteSharedDir(SharedDirectory*)), this, SLOT(deleteSharedDir(SharedDirectory*)),  Qt::QueuedConnection); // If the 'FileUpdater' wants to delete a shared directory.
 
    this->timerPersistCache.setInterval(SETTINGS.get<quint32>("save_cache_period"));
    connect(&this->timerPersistCache, SIGNAL(timeout()), this, SLOT(persistCacheToFile()));
@@ -323,6 +324,11 @@ void FileManager::sharedDirectoryRemoved(SharedDirectory* sharedDir, Directory* 
 {
    this->fileUpdater.rmRoot(sharedDir, dir);
    this->forcePersistCacheToFile();
+}
+
+void FileManager::deleteSharedDir(SharedDirectory* sharedDirectory)
+{
+   this->cache.removeSharedDir(sharedDirectory);
 }
 
 void FileManager::entryAdded(Entry* entry)

@@ -72,7 +72,7 @@ namespace FM
       QString getPath() const;
       QString getFullPath() const;
       SharedDirectory* getRoot() const;
-      void changeName(const QString& newName);
+      void rename(const QString& newName);
       QDateTime getDateLastModified() const;
 
       void newDataWriterCreated();
@@ -95,6 +95,8 @@ namespace FM
 
       void deleteIfIncomplete();
       void removeUnfinishedFiles();
+
+      void moveInto(Directory* directory);
 
       void changeDirectory(Directory* dir);
       bool hasAParentDir(Directory* dir);

@@ -81,6 +81,7 @@ namespace FM
    private slots:
       void newSharedDirectory(SharedDirectory*);
       void sharedDirectoryRemoved(SharedDirectory*, Directory*);
+      void deleteSharedDir(SharedDirectory* sharedDirectory);
       void entryAdded(Entry* entry);
       void entryRemoved(Entry* entry);
       void entryRenamed(Entry* entry, const QString& oldName);

@@ -95,7 +95,7 @@ bool InternalCoreConnection::isConnected() const
 void InternalCoreConnection::disconnectFromCore()
 {
    this->forcedToClose = true;
-   this->socket->close();
+   this->close();
    this->forcedToClose = false;
    this->addressesToTry.clear();
    this->connectionInfo.clear();

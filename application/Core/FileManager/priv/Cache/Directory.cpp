@@ -177,6 +177,26 @@ void Directory::removeUnfinishedFiles()
       d->removeUnfinishedFiles();
 }
 
+void Directory::moveInto(Directory* directory)
+{
+   QMutexLocker locker(&this->mutex);
+
+   if (directory == this->parent)
+      return;
+
+   // A directory can't be move in its own tree.
+   Directory* parentDestination = directory;
+   do
+   {
+      if (parentDestination == this)
+         return;
+   } while (parentDestination = parentDestination->parent);
+
+   this->parent->subDirDeleted(this);
+   directory->add(this);
+   this->parent = directory;
+}
+
 /**
   * Called from one of its file.
   */
@@ -226,9 +246,9 @@ SharedDirectory* Directory::getRoot() const
    return this->parent->getRoot(); // A directory MUST have a parent.
 }
 
-void Directory::changeName(const QString& newName)
+void Directory::rename(const QString& newName)
 {
-   Entry::changeName(newName);
+   Entry::rename(newName);
    if (this->parent)
       this->parent->subdirNameChanged(this);
 }
@@ -290,7 +310,7 @@ QList<File*> Directory::getCompleteFiles() const
   * Creates a new sub-directory if none exists already otherwise
   * returns an already existing.
   */
-Directory* Directory::createSubDirectory(const QString& name, bool physically)
+Directory* Directory::createSubDir(const QString& name, bool physically)
 {
    QMutexLocker locker(&this->mutex);
    if (Directory* subDir = this->getSubDir(name))
@@ -302,12 +322,12 @@ Directory* Directory::createSubDirectory(const QString& name, bool physically)
   * Create the all sub-directories, sub-dirs may already exist.
   * @return the last directory.
   */
-Directory* Directory::createSubDirectories(const QStringList& names, bool physically)
+Directory* Directory::createSubDirs(const QStringList& names, bool physically)
 {
    Directory* currentDir = this;
    foreach (QString name, names)
    {
-      currentDir = currentDir->createSubDirectory(name, physically);
+      currentDir = currentDir->createSubDir(name, physically);
       if (!currentDir)
          return 0;
    }

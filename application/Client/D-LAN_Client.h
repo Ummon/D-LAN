@@ -16,41 +16,41 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef FILEMANAGER_FILEHASHER_H
-#define FILEMANAGER_FILEHASHER_H
+#ifndef CLIENT_D_LAN_CLIENT_H
+#define CLIENT_D_LAN_CLIENT_H
 
-#include <QObject>
-#include <QMutex>
-#include <QWaitCondition>
+#include <QCoreApplication>
+#include <QScriptEngine>
+#include <QList>
+#include <QTextStream>
 
-#include <Common/Uncopyable.h>
+#include <Common/ConsoleReader.h>
 
-namespace FM
+#include <Common/RemoteCoreController/ICoreConnection.h>
+
+#include <CoreConnectionProxy.h>
+
+namespace Client
 {
-   class Entry;
-   class File;
-
-   class FileHasher : public QObject, Common::Uncopyable
+   class D_LAN_Client : public QCoreApplication
    {
       Q_OBJECT
    public:
-      FileHasher();
+      D_LAN_Client(int argc, char *argv[]);
 
-      bool start(File* fileCache, int n = 0, int* amountHashed = nullptr);
-      void stop();
+   public slots:
+      QScriptValue newConnection();
 
    private slots:
-      void entryRemoved(Entry* entry);
+      void newCommandLine(QString line);
 
    private:
-      void internalStop();
+      void printHelp();
 
-      File* currentFileCache;
+      QScriptEngine engine;
 
-      bool hashing;
-      bool toStopHashing;
-      QWaitCondition hashingStopped;
-      QMutex hashingMutex;
+      QTextStream out;
+      Common::ConsoleReader consoleReader;
    };
 }
 

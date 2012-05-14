@@ -213,7 +213,7 @@ void MainWindow::newState(const Protos::GUI::State& state)
 
 void MainWindow::onGlobalProgressChanged(quint64 completed, quint64 total)
 {
-   if (total == 0)
+   if (total == 0 || completed == total)
    {
       this->taskbar.setStatus(TaskbarButtonStatus::BUTTON_STATUS_NOPROGRESS);
    }
@@ -861,6 +861,9 @@ void MainWindow::removeWidgetSettings()
 
 void MainWindow::addWidgetChat()
 {
+   if (this->widgetChat)
+      return;
+
    this->widgetChat = new WidgetChat(this->coreConnection, this->peerListModel, this);
    this->widgetChat->installEventFilterOnInput(this);
    this->ui->mdiArea->addSubWindow(this->widgetChat, Qt::CustomizeWindowHint);
@@ -879,6 +882,9 @@ void MainWindow::removeWidgetChat()
 
 void MainWindow::addWidgetDownloads()
 {
+   if (this->widgetDownloads)
+      return;
+
    this->widgetDownloads = new WidgetDownloads(this->coreConnection, this->peerListModel, this->sharedDirsModel, this);
    this->ui->mdiArea->addSubWindow(this->widgetDownloads, Qt::CustomizeWindowHint);
    this->mdiAreaTabBar->setTabData(this->mdiAreaTabBar->count() - 1, Protos::GUI::Settings_Window_WIN_DOWNLOAD);
@@ -904,6 +910,9 @@ void MainWindow::removeWidgetDownloads()
 
 void MainWindow::addWidgetUploads()
 {
+   if (this->widgetUploads)
+      return;
+
    this->widgetUploads = new WidgetUploads(this->coreConnection, this->peerListModel, this);
    this->ui->mdiArea->addSubWindow(this->widgetUploads, Qt::CustomizeWindowHint);
    this->mdiAreaTabBar->setTabData(this->mdiAreaTabBar->count() - 1, Protos::GUI::Settings_Window_WIN_UPLOAD);

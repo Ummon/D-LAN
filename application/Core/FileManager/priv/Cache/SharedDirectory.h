@@ -45,9 +45,9 @@ namespace FM
    public:
       ~SharedDirectory();
 
-      /**
-        * Return always "" thus it makes this method the most usefull of the entire known univers.
-        */
+      void moveInto(Directory* directory);
+      void moveInto(const QString& path);
+
       QString getPath() const;
 
       /**
@@ -66,7 +66,10 @@ namespace FM
       Common::Hash getId() const;
 
    private:
-      QString path;
+      static QString dirName(const QString& path);
+      QString pathWithoutDirName(const QString& path);
+
+      QString path; // Always ended by a slash '/'.
       Common::Hash id;
    };
 }
