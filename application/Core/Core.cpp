@@ -64,10 +64,13 @@ Core::Core(bool resetSettings, QLocale locale)
          {
             const QString nick = SETTINGS.get<QString>("nick");
             const Common::Hash peerID = SETTINGS.get<Common::Hash>("peer_id");
+            const Protos::Common::Interface::Address::Protocol listen_any = static_cast<Protos::Common::Interface::Address::Protocol>(SETTINGS.get<quint32>("listen_any"));
+
             SETTINGS.saveTo(Common::Constants::CORE_SETTINGS_FILENAME + ".backup");
             SETTINGS.rmAll();
             SETTINGS.set("nick", nick);
             SETTINGS.set("peer_id", peerID);
+            SETTINGS.set("listen_any", static_cast<quint32>(listen_any));
             SETTINGS.save();
          }
 
@@ -149,7 +152,7 @@ void Core::checkSettingsIntegrity()
 
    this->checkSetting("minimum_duration_when_hashing", 100u, 30u * 1000u);
    this->checkSetting("scan_period_unwatchable_dirs", 1000u, 60u * 60u * 1000u);
-   QRegExp unfinishedSuffixExp("^\\.\\S+$");
+   static const QRegExp unfinishedSuffixExp("^\\.\\S+$");
    if (!unfinishedSuffixExp.exactMatch(SETTINGS.get<QString>("unfinished_suffix_term")))
    {
       L_ERRO("Settings : 'unfinished_suffix_term' must begin with a dot and not contain any space character");
@@ -169,7 +172,6 @@ void Core::checkSettingsIntegrity()
    this->checkSetting("time_recheck_chunk_factor", 1.0, 10.0);
    this->checkSetting("switch_to_another_peer_factor", 1.0, 10.0);
    this->checkSetting("download_rate_valid_time_factor", 100u, 100000u);
-   this->checkSetting("peer_imalive_period", 1000u, 60u * 1000u);
    this->checkSetting("save_queue_period", 1000u, 4294967295u);
    this->checkSetting("ban_duration_corrupted_data", 0u, 60u * 60u * 1000u);
 
@@ -177,8 +179,10 @@ void Core::checkSettingsIntegrity()
    this->checkSetting("upload_min_nb_thread", 1u, 1000u);
    this->checkSetting("upload_thread_lifetime", 0u, 60u * 60u * 1000u);
 
+   this->checkSetting("peer_imalive_period", 1000u, 60u * 1000u);
    this->checkSetting("unicast_base_port", 1u, 65535u);
    this->checkSetting("multicast_port", 1u, 65535u);
+   this->checkSetting("multicast_group", 1u, 4294967295u);
    this->checkSetting("multicast_ttl", 1u, 255u);
    this->checkSetting("max_udp_datagram_size", 255u, 65535u);
    this->checkSetting("udp_buffer_size", 255u, 6684672u);

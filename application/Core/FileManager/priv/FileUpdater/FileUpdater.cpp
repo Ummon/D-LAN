@@ -593,18 +593,11 @@ void FileUpdater::deleteEntry(Entry* entry)
       fileInAList |= this->filesWithoutHashesPrioritized.removeOne(file);
 
       if (fileInAList)
-      {
          this->remainingSizeToHash -= file->getSize();
-      }
+   }
 
-      file->removeUnfinishedFiles();
-      delete file;
-   }
-   else
-   {
-      entry->removeUnfinishedFiles();
-      delete entry;
-   }
+   entry->removeUnfinishedFiles();
+   delete entry;
 }
 
 /**
