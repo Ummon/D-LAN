@@ -231,6 +231,9 @@ p {
          &.dmg { 
             background-image: url("img/download_for_mac.png");
          }
+         &.deb { 
+            background-image: url("img/download_for_linux.png");
+         }
          background-repeat: no-repeat;
          background-position: 12px 18px;
          a {

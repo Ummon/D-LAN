@@ -1,10 +1,27 @@
 <erl>
    -import(d_lan_lang, [tr/3, tr/4]).
    
+   image_of_the_day(A) ->      
+      case calendar:day_of_the_week(date()) of
+         1 -> % Monday.
+            d_lan_common:image("browse", tr(gallery, browse, A));
+         2 -> % Thuesday.
+            d_lan_common:image("search", tr(gallery, search, A), tr(gallery, search_comment, A));
+         3 -> % Wednesday.
+            d_lan_common:image("download_folders", tr(gallery, download_folders, A), tr(gallery, download_folders_comment, A));
+         4 -> % Thursday.
+            d_lan_common:image("download_files", tr(gallery, download_files, A), tr(gallery, download_files_comment, A));
+         5 -> % Friday.
+            d_lan_common:image("upload", tr(gallery, upload, A));
+         _ -> % Week-end.
+            d_lan_common:image("skin", tr(gallery, skin, A))
+      end.
+   
    out(A) -> 
       {ehtml,
          [
-            d_lan_common:image("search", tr(gallery, search_feature, A)),
+            %("search", tr(gallery, search, A)),
+            image_of_the_day(A),
             {h1, [],
                {em, [], tr(home, title, A)}
             },
@@ -12,6 +29,7 @@
             {p, [], tr(home, warning_beta, A, ["http://dev.d-lan.net/projects/pmp/issues"])},
             d_lan_common:download_button(A, "windows"),
             %d_lan_common:download_button(A, "Mac OS X"),
+            %d_lan_common:download_button(A, "Linux"),
             {'div', [{class, "spacer"}]}
          ]
       }. 

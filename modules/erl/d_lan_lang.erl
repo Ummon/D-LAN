@@ -247,17 +247,32 @@ translate(fr, donate, flattr_info) -> "Flattr est un système de micro-paiements
 
 %%%%%%%%%%
 
-translate(en, gallery, browsing) -> "Browsing";
-translate(fr, gallery, browsing) -> "Navigation";
+translate(en, gallery, browse) -> "Browsing";
+translate(fr, gallery, browse) -> "Navigation";
 
-translate(en, gallery, download) -> "Download queue";
-translate(fr, gallery, download) -> "Liste des transferts";
+translate(en, gallery, search) -> "Search result";
+translate(fr, gallery, search) -> "Résultat de la recherche";
 
-translate(en, gallery, search_result) -> "Search result";
-translate(fr, gallery, search_result) -> "Résultat de la recherche";
+translate(en, gallery, search_comment) -> "The results are sorted by relevance. Folders are put on top.";
+translate(fr, gallery, search_comment) -> "Les résultats sont triés par pertinence. Les dossier sont placés en premiers.";
 
-translate(en, gallery, search_feature) -> "Search feature";
-translate(fr, gallery, search_feature) -> "Recherche";
+translate(en, gallery, download_folders) -> "Downloads - Folders";
+translate(fr, gallery, download_folders) -> "Transferts - Dossier";
+
+translate(en, gallery, download_folders_comment) -> "This view shows the files with their folders, they are both sorted alphabetically.";
+translate(fr, gallery, download_folders_comment) -> "Cette vue montre les fichiers avec leurs dossiers, ils sont triés alphabétiquement.";
+
+translate(en, gallery, download_files) -> "Downloads - Files";
+translate(fr, gallery, download_files) -> "Transferts - Fichiers";
+
+translate(en, gallery, download_files_comment) -> "This view shows only the files, they can be rearranged, the top files are downloaded first.";
+translate(fr, gallery, download_files_comment) -> "Cett vue montre seulement les fichier, ils peuvent être réordonnés, les fichiers en haut sont téléchargés en premier.";
+
+translate(en, gallery, upload) -> "Upload view";
+translate(fr, gallery, upload) -> "Vue des envoies";
+
+translate(en, gallery, skin) -> "Skin";
+translate(fr, gallery, skin) -> "Skin";
 
 %%%%%%%%%%
 
@@ -270,8 +285,8 @@ translate(fr, download_button, version) -> "Version ~s pour ~s";
 translate(en, download_button, released) -> "Released on ~s";
 translate(fr, download_button, released) -> "Sorti le ~s";
 
-translate(en, download_button, torrent) -> "Torrent file";
-translate(fr, download_button, torrent) -> "Fichier torrent";
+translate(en, download_button, torrent) -> "Download with BitTorrent";
+translate(fr, download_button, torrent) -> "Télécharger avec BitTorrent";
 
 translate(en, _, _) -> "No translation.";
 translate(fr, _, _) -> "Pas de traduction";

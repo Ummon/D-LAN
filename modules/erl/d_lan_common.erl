@@ -1,11 +1,13 @@
 -module(d_lan_common).
--export([current_page/1, page_name/2, menu/1, image/2, images/1, download_button/2, send_release/3]).
+-export([get_data/1, current_page/1, page_name/2, menu/1, image/2, image/3, images/1, download_button/2, send_release/3]).
 
 -import(d_lan_lang, [tr/3, tr/4]).
 -import(lists, [member/2, map/2, last/1, sort/1]).
  
 -include("/usr/lib/yaws/include/yaws_api.hrl"). 
 -include("../include/d_lan_defines.hrl").
+
+-define(MAIN_PAGE, "yssi/main.yaws").
 
 -type page() :: atom().
 -spec current_page(#arg{}) -> page() | unknown.
@@ -14,12 +16,28 @@
 -spec image(string(), string()) -> {'div', term()}.
 -spec download_button(#arg{}, string()) -> {'div', term()}.
 -spec send_release(#arg{}, string(), string()) -> [#headers{}] | error.
- 
+
 pages() ->
    [home, features, faq, about].
 
 hidden_pages() ->
    [stats, donate].
+   
+get_data(A) ->
+   % We ignore the page.
+   case yaws_api:parse_query(A) of
+      [_p, {"get_stat_data", Nb_months}] ->
+         {content, "text/plain", lists:foldl(fun(N, Acc) -> Acc ++ integer_to_list(N) ++ "~n" end, "", d_lan_db:nb_downloads_per_day(Nb_months))};
+      [_p, {"dl", Filename}, {"platform", Platform}] ->
+         d_lan_common:send_release(A, Filename, Platform);
+      [_p, {"lang", Lang}] ->
+         [
+            yaws_api:setcookie("lang", Lang, "/"),
+            {yssi, ?MAIN_PAGE}
+         ];
+      _ ->      
+         {yssi, ?MAIN_PAGE}     
+   end.
    
 % Return the current page depending the page parameters.
 current_page(A) ->
@@ -52,9 +70,11 @@ menu(A) ->
    }.
 
 image(Filename, Caption) ->
+   image(Filename, Caption, Caption).
+image(Filename, Caption, Comment) ->
    {'div', [{class, "box gallery"}],
       [
-         {a, [{href, "img/gallery/" ++ Filename ++ ".png"}, {rel, "group"}, {title, Caption}],
+         {a, [{href, "img/gallery/" ++ Filename ++ ".png"}, {rel, "group"}, {title, Comment}],
                "<img src = \"img/gallery/" ++ Filename ++ "_thumb.png\" alt=\"" ++ Caption ++ "\" />"
          },
          {p, [], Caption}
@@ -63,8 +83,11 @@ image(Filename, Caption) ->
    
 images(Filename_caption_list) ->
    map(
-      fun({Filename, Caption}) -> 
-         image(Filename, Caption)
+      fun
+         ({Filename, Caption}) -> 
+            image(Filename, Caption);
+         ({Filename, Caption, Comment}) ->
+            image(Filename, Caption, Comment)
       end,
       Filename_caption_list
    ).
@@ -75,7 +98,7 @@ download_button(A, Platform) ->
    Platform_maj = [string:to_upper(hd(Platform)) | tl(Platform)],
    Relase_platform_folder = A#arg.docroot ++ "/" ++ ?RELEASES_FOLDER ++ "/" ++ Platform,
    {ok, Filenames} = file:list_dir(Relase_platform_folder),
-   Filename = last(sort([F || F <- Filenames, lists:member(string:right(F, 4), [".exe", ".dmg", ".bin"])])),
+   Filename = last(sort([F || F <- Filenames, lists:member(string:right(F, 4), [".exe", ".dmg", ".deb"])])),
    {match, [Version, Version_tag, Year, Month, Day, Extension]} = re:run(Filename, "D-LAN-((?:\\d|\\.)+)([^-]*)-(\\d+)-(\\d+)-(\\d+).*\\.(.*)", [{capture, all_but_first, list}]),
    File_size = filelib:file_size(Relase_platform_folder ++ "/" ++ Filename),
    File_size_mb = float(File_size) / 1048576,
@@ -85,11 +108,11 @@ download_button(A, Platform) ->
             {em, [], [tr(download_button, download, A) ++ " (" ++ io_lib:format("~.2f", [File_size_mb]) ++ " MiB)"]}, {br},
             tr(download_button, version, A, [Version ++ if Version_tag =/= [] -> " " ++ Version_tag; true -> [] end, Platform_maj]), {br},
             tr(download_button, released, A, [httpd_util:month(list_to_integer(Month)) ++ " " ++ Day ++ " " ++ Year])
-            %"Number of download : " ++ integer_to_list(d_lan_download_counter:nb_download(Filename))
+            %"Number of download : " ++ integer_to_list(d_lan_download_db(Filename))
          ]
       }] 
       ++ % Add a link to the torrent file if it exists.
-      case sort([F || F <- Filenames, string:right(F, 8) =:= ".torrent"]) of
+      case lists:reverse(sort([F || F <- Filenames, string:right(F, 8) =:= ".torrent"])) of
          [Torrent_file | _] ->
             [{a, [{class, "torrent"}, {href, file_to_url(A, Torrent_file, Platform)}],
                tr(download_button, torrent, A)
@@ -128,7 +151,7 @@ send_stream_loop(Filename, IoDevice, YawsPid) ->
       eof ->
          yaws_api:stream_chunk_end(YawsPid),
          % Increment the number of download
-         d_lan_download_counter:new_download(Filename);
+         d_lan_db:new_download(Filename);
       _ ->
          yaws_api:stream_chunk_end(YawsPid)
    end.

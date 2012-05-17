@@ -18,7 +18,16 @@
                {li, [], tr(features, feat_10, A)}
             ]},
             {p, [], tr(features, help_us, A, ["donate.html"])}
-         ] ++ d_lan_common:images([{"browse", tr(gallery, browsing, A)}, {"downloads", tr(gallery, download, A)}, {"search", tr(gallery, search_result, A)}])
+         ]
+         ++
+         d_lan_common:images([
+            {"browse", tr(gallery, browse, A)},
+            {"search", tr(gallery, search, A), tr(gallery, search_comment, A)},
+            {"download_folders", tr(gallery, download_folders, A), tr(gallery, download_folders_comment, A)},
+            {"download_files", tr(gallery, download_files, A), tr(gallery, download_files_comment, A)},
+            {"upload", tr(gallery, upload, A)},
+            {"skin", tr(gallery, skin, A)}
+         ])
       }.
 
 </erl>

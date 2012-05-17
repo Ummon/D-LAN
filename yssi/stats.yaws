@@ -6,8 +6,8 @@
          {table, [{class, "nb-download"}], [
             {tr, [], [{th, [], "Filename"}, {th, [], "Nb of d/l"}]} |
             lists:map(fun(File) -> {tr, [], [{td, [{class, "filename"}], File}, {td, [{class, "nb"}],
-               lists:map(fun([{Year, Month, Day}, N]) -> {'div', [], io_lib:format("~B.~B.~B : ~B", [Day, Month, Year, N])} end, d_lan_download_counter:stats(File))
-            }]} end, d_lan_download_counter:all_files())
+               lists:map(fun([{Year, Month, Day}, N]) -> {'div', [], io_lib:format("~B.~B.~B : ~B", [Day, Month, Year, N])} end, d_lan_db:stats(File))
+            }]} end, d_lan_db:all_files())
          ]}
       }.
 </erl>
