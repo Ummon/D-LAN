@@ -32,7 +32,6 @@ using namespace GUI;
   * The information used to draw this chart is stored in a 'PeerListModel::TransferInformation' object.
   */
 
-
 const QColor PeerListDelegate::DOWNLOAD_COLOR(100, 255, 100);
 const QColor PeerListDelegate::UPLOAD_COLOR(100, 100, 255);
 
@@ -59,7 +58,7 @@ void PeerListDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opti
 
       painter->drawPixmap(rect.topLeft(), this->getMiniChartBackground(rect.width(), rect.height()));
 
-      // Download speed
+      // Download speed.
       if (transferInformation.downloadRate > 0)
       {
          painter->setPen(Qt::NoPen);
@@ -70,7 +69,7 @@ void PeerListDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opti
             painter->drawPie(rect, 16 * 180, downloadAngle > 16 * 180 ? -16 * 180 : -downloadAngle);
       }
 
-      // Upload speed
+      // Upload speed.
       if (transferInformation.uploadRate > 0)
       {
          painter->setPen(Qt::NoPen);
@@ -99,6 +98,11 @@ QSize PeerListDelegate::sizeHint(const QStyleOptionViewItem& option, const QMode
    }
 }
 
+/**
+  * Draw the background of the minichart shown next to each peer and store it to 'this->miniChartBackground'.
+  * The background is generated only of it doesn't already exist or if the given size doesn't match the actual.
+  * @return A reference to 'this->miniChartBackground' for convenience.
+  */
 const QPixmap& PeerListDelegate::getMiniChartBackground(int width, int height) const
 {
    if (!this->miniChartBackground || this->miniChartBackground->width() != width || this->miniChartBackground->height() != height)
