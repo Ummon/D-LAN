@@ -148,9 +148,9 @@ void ChunkUploader::run()
       L_WARN("ChunkDeletedException");
       this->closeTheSocket = true;
    }
-   catch (FM::ChunkNotCompletedException)
+   catch (FM::ChunkDataUnknownException)
    {
-      L_WARN("ChunkNotCompletedException");
+      L_WARN("ChunkDataUnknownException");
       this->closeTheSocket = true;
    }
 

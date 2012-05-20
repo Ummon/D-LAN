@@ -49,9 +49,15 @@ FilePool::~FilePool()
    this->files.clear();
 }
 
-QFile* FilePool::open(const QString& path, QIODevice::OpenMode mode)
+/**
+  * @param[out] fileCreated Optional, only valid in write mode, set to true if the file didn't exist before.
+  */
+QFile* FilePool::open(const QString& path, QIODevice::OpenMode mode, bool* fileCreated)
 {
    QMutexLocker locker(&this->mutex);
+
+   if (fileCreated)
+      *fileCreated = false;
 
    for (QMutableListIterator<OpenedFile> i(this->files); i.hasNext();)
    {
@@ -66,8 +72,14 @@ QFile* FilePool::open(const QString& path, QIODevice::OpenMode mode)
    }
 
    QFile* file = new QFile(path);
+
+   if (fileCreated && mode.testFlag(QIODevice::WriteOnly) && !file->exists())
+      *fileCreated = true;
+
    if (!file->open(mode))
-   {
+   {      
+      if (fileCreated)
+         *fileCreated = false;
       delete file;
       return nullptr;
    }
