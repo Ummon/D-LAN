@@ -34,7 +34,7 @@ namespace FM
       /**
         * @exception IOErrorException
         * @exception ChunkDeletedException
-        * @exception ChunkNotCompletedException
+        * @exception ChunkDataUnknownException
         */
       virtual int read(char* buffer, uint offset) = 0;
    };

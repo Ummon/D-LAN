@@ -27,13 +27,15 @@ using namespace FM;
 
 /**
   * @remarks The setting "check_received_data_integrity" can be changed at runtime.
+  * @exception IOErrorException
+  * @exception ChunkDeletedException
+  * @exception ChunkDataUnknownException
   */
 DataWriter::DataWriter(Chunk& chunk) :
    CHECK_DATA_INTEGRITY(SETTINGS.get<bool>("check_received_data_integrity")), chunk(chunk)
 {
    if (this->CHECK_DATA_INTEGRITY && this->chunk.getKnownBytes() > 0)
    {
-      static const QString errorMessage("Unable to read chunk to check data integrity: %1");
       try
       {
          static const quint32 BUFFER_SIZE = SETTINGS.get<quint32>("buffer_size_reading");
@@ -49,21 +51,10 @@ DataWriter::DataWriter(Chunk& chunk) :
             offset += bytesRead;
          }
       }
-      catch(UnableToOpenFileInReadModeException&)
+      // If the file can't be read it may be created later.
+      catch (UnableToOpenFileInReadModeException&)
       {
-         L_WARN(errorMessage.arg("UnableToOpenFileInReadModeException"));
-      }
-      catch(IOErrorException&)
-      {
-         L_WARN(errorMessage.arg("IOErrorException"));
-      }
-      catch(ChunkDeletedException&)
-      {
-         L_WARN(errorMessage.arg("ChunkDeletedException"));
-      }
-      catch(ChunkNotCompletedException&)
-      {
-         L_WARN(errorMessage.arg("ChunkNotCompletedException"));
+         L_WARN("UnableToOpenFileInReadModeException");
       }
    }
 
