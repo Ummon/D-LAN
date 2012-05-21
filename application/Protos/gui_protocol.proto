@@ -167,7 +167,7 @@ message AskForAuthentication {
 // GUI -> Core
 // id : 0x22
 message Authentication {
-   optional Common.Hash password_challenge = 1; // hash(password) + old_salt + salt_challenge
+   optional Common.Hash password_challenge = 1; // (hash(password) + salt) + salt_challenge
 }
 // Core -> GUI
 // id : 0x23

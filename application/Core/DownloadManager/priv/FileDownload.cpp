@@ -94,12 +94,12 @@ void FileDownload::start()
 {
    this->tryToLinkToAnExistingFile();
 
-   if (this->hasAValidPeer())
+   if (this->hasAValidPeerSource())
       this->peerSourceBecomesAvailable();
 
    this->updateStatus();
 
-   if (this->hasAValidPeer())
+   if (this->hasAValidPeerSource())
       this->occupiedPeersDownloadingChunk.newPeer(this->peerSource);
 
    this->retrieveHashes();
@@ -386,21 +386,30 @@ bool FileDownload::updateStatus()
 }
 
 /**
-  * Return true if a GetHashes request has been sent to the peer.
+  * Send a request to the source peer of the download to ask it the hashes. Only sent if needed.
+  * Return true if a 'GetHashes' request has been sent to the peer.
   */
 bool FileDownload::retrieveHashes()
 {
    // If we've already got all the chunk hashes it's unecessary to re-ask them.
-   // Or if we'v got anyone to ask the chunk hashes..
-   if (this->nbHashesKnown == this->NB_CHUNK || this->status == COMPLETE || this->status == DELETED || this->status == PAUSED || this->status == UNABLE_TO_RETRIEVE_THE_HASHES)
+   if (
+      this->nbHashesKnown == this->NB_CHUNK ||
+      this->status == COMPLETE ||
+      this->status == DELETED ||
+      this->status == PAUSED ||
+      this->status == UNABLE_TO_RETRIEVE_THE_HASHES ||
+      this->status == ENTRY_NOT_FOUND
+   )
       return false;
 
-   if (!this->hasAValidPeer())
+   // If the source peer isn't online, we can't ask the hashes.
+   if (!this->hasAValidPeerSource())
    {
       this->setStatus(UNKNOWN_PEER_SOURCE);
       return false;
    }
 
+   // If the peer source is already occupied, we can't ask the hashes.
    if (!this->occupiedPeersAskingForHashes.setPeerAsOccupied(this->peerSource))
       return false;
 
@@ -487,7 +496,7 @@ void FileDownload::nextHash(const Common::Hash& hash)
 
 void FileDownload::getHashTimeout()
 {
-   L_DEBU("Unable to retrieve the hashes : timeout");
+   L_DEBU("Unable to retrieve the hashes: timeout");
    this->getHashesResult.clear();
    this->setStatus(UNABLE_TO_RETRIEVE_THE_HASHES);
    this->occupiedPeersAskingForHashes.setPeerAsFree(this->peerSource);

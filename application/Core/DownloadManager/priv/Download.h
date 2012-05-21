@@ -88,7 +88,7 @@ namespace DM
         */
       virtual void setStatus(Status newStatus);
 
-      bool hasAValidPeer();
+      bool hasAValidPeerSource();
 
    protected:
       const quint64 ID;
