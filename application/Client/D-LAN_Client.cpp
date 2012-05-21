@@ -17,6 +17,7 @@
   */
 
 #include <QFile>
+#include <QStringList>
   
 #include <D-LAN_Client.h>
 using namespace Client;
@@ -44,6 +45,9 @@ QScriptValue D_LAN_Client::newConnection()
    return this->engine.newQObject(new CoreConnectionProxy(), QScriptEngine::ScriptOwnership);
 }
 
+Q_SCRIPT_DECLARE_QMETAOBJECT(QFile, QObject*)
+//Q_SCRIPT_DECLARE_QMETAOBJECT(QIODevice, QObject*)
+
 void D_LAN_Client::newCommandLine(QString line)
 {
    if (line == ConsoleReader::QUIT_COMMAND)
@@ -57,10 +61,18 @@ void D_LAN_Client::newCommandLine(QString line)
    }
    else if (line == "run")
    {
+      foreach (QString e, this->engine.availableExtensions())
+         this->out << e << endl;
+
       QScriptValue objectValue = this->engine.newQObject(this);
       this->engine.globalObject().setProperty("dlan", objectValue);
 
-      QFile script("../../test_script_1.dlan");
+      QScriptValue qfileClass = this->engine.scriptValueFromQMetaObject<QFile>();
+      engine.globalObject().setProperty("QFile", qfileClass);
+//      QScriptValue qiodeviceClass = this->engine.scriptValueFromQMetaObject<QIODevice>();
+//      engine.globalObject().setProperty("QIOdevice", qiodeviceClass);
+
+      QFile script("../../test_script_1.js");
       if (script.open(QIODevice::ReadOnly))
       {
          QScriptValue value = this->engine.evaluate(script.readAll());
