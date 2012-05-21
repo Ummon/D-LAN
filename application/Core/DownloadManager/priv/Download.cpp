@@ -130,7 +130,7 @@ void Download::setStatus(Status newStatus)
    this->status = newStatus;
 }
 
-bool Download::hasAValidPeer()
+bool Download::hasAValidPeerSource()
 {
    return this->peerSource->isAlive();
 }

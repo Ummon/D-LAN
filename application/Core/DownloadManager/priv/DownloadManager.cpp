@@ -401,7 +401,7 @@ void DownloadManager::rescanTimerActivated()
       if (download->isStatusErroneous())
       {
          download->updateStatus();
-         L_DEBU(QString("Rescan timer timedout, the queue will be recanned. File rested : %1").arg(Common::ProtoHelper::getRelativePath(download->getLocalEntry())));
+         L_DEBU(QString("Rescan timer timedout, the queue will be recanned. File reset: %1").arg(Common::ProtoHelper::getRelativePath(download->getLocalEntry())));
          this->rescanTimer.start();
          this->scanTheQueue();
          break;
