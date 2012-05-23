@@ -757,6 +757,7 @@ void MainWindow::setApplicationStateAsConnected()
 
 void MainWindow::setApplicationStateAsDisconnected()
 {
+   this->taskbar.setStatus(TaskbarButtonStatus::BUTTON_STATUS_NOPROGRESS);
    this->removeWidgetUploads();
    this->removeWidgetDownloads();
    this->removeWidgetChat();
