@@ -122,7 +122,7 @@ Protos::Common::Entries Cache::getEntries() const
 
 /**
   * @param path The absolute path to a directory or a file.
-  * @return Returns 'nullptr' if no entry found.
+  * @return Returns a directory or a file, it can be a shared directory. Returns 'nullptr' if no entry found.
   */
 Entry* Cache::getEntry(const QString& path) const
 {
@@ -130,12 +130,12 @@ Entry* Cache::getEntry(const QString& path) const
 
    foreach (SharedDirectory* sharedDir, this->sharedDirs)
    {
-      // We remove the endind '/'.
+      // We remove the end '/'.
       QString currentPath(sharedDir->getFullPath());
       if (currentPath.length() > 1 && currentPath.endsWith('/'))
          currentPath.remove(currentPath.size() - 1, 1);
 
-      if (path.startsWith(currentPath))
+      if (path.startsWith(currentPath) && (path.size() == currentPath.size() || path[currentPath.size()] == '/'))
       {
          QString relativePath(path);
          relativePath.remove(0, currentPath.size());

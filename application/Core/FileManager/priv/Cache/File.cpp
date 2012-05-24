@@ -251,6 +251,7 @@ QDateTime File::getDateLastModified() const
 
 /**
   * @exception UnableToOpenFileInWriteModeException
+  * @exception FileResetException
   */
 void File::newDataWriterCreated()
 {
@@ -260,9 +261,27 @@ void File::newDataWriterCreated()
    if (this->numDataWriter == 1)
    {
       // We have the same performance with or without "QIODevice::Unbuffered".
-      this->fileInWriteMode = this->cache->getFilePool().open(this->getFullPath(), QIODevice::ReadWrite | QIODevice::Unbuffered);
+      bool fileCreated;
+      this->fileInWriteMode = this->cache->getFilePool().open(this->getFullPath(), QIODevice::ReadWrite | QIODevice::Unbuffered, &fileCreated);
+
       if (!this->fileInWriteMode)
          throw UnableToOpenFileInWriteModeException();
+
+      // If the file is created then we reset all the chunks.
+      bool fileReset = false;
+      if (fileCreated)
+         for (QVectorIterator<QSharedPointer<Chunk>> i(this->chunks); i.hasNext();)
+         {
+            QSharedPointer<Chunk> chunk = i.next();
+            if (chunk->getKnownBytes() != 0)
+            {
+               chunk->setKnownBytes(0);
+               this->cache->onChunkRemoved(chunk);
+               fileReset = true;
+            }
+         }
+      if (fileReset)
+         throw FileResetException(); // Should never occur: A file has been deleted and we know some data.
    }
 }
 

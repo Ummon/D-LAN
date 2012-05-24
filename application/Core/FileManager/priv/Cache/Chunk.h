@@ -110,7 +110,7 @@ namespace FM
   *
   * @exception IOErrorException
   * @exception ChunkDeletedException
-  * @exception ChunkNotCompletedException
+  * @exception ChunkDataUnknownException
   * @param buffer The buffer.
   * @param offset The offset relative to the chunk.
   * @return The number of read bytes. If lesser than 'buffer.size' the end of file has been reached
@@ -124,7 +124,7 @@ inline int FM::Chunk::read(char* buffer, int offset)
       throw ChunkDeletedException();
 
    if (this->knownBytes == 0)
-      throw ChunkNotCompletedException();
+      throw ChunkDataUnknownException();
 
    if (offset >= this->knownBytes)
       return 0;

@@ -39,7 +39,7 @@ namespace FM
       explicit FilePool(QObject* parent = nullptr);
       ~FilePool();
 
-      QFile* open(const QString& path, QIODevice::OpenMode mode);
+      QFile* open(const QString& path, QIODevice::OpenMode mode, bool* fileCreated = 0);
       void release(QFile* file, bool forceToClose = false);
       void forceReleaseAll(const QString& path);
 

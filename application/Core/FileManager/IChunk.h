@@ -67,7 +67,13 @@ namespace FM
 
       /**
         * The caller must not delete the IChunk as long as data is written with the IDataWriter.
+        * The exceptions (except 'UnableToOpenFileInWriteMode') may occur only if the settings
+        * 'check_received_data_integrity' is true.
+        * @exception FileResetException Occurs when the file has been created and we already got some known bytes.
         * @exception UnableToOpenFileInWriteMode
+        * @exception IOErrorException
+        * @exception ChunkDeletedException
+        * @exception ChunkDataUnknownException
         */
       virtual QSharedPointer<IDataWriter> getDataWriter() = 0;
 

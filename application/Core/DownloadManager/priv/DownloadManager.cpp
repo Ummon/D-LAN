@@ -298,15 +298,13 @@ void DownloadManager::newEntries(const Protos::Common::Entries& remoteEntries)
    const Protos::Common::Entry& localEntry = dirDownload->getLocalEntry();
    const QString relativePath = Common::ProtoHelper::getStr(localEntry, &Protos::Common::Entry::path).append(Common::ProtoHelper::getStr(localEntry, &Protos::Common::Entry::name)).append("/");
 
-   // Add files first.
-   for (int n = 0; n < remoteEntries.entry_size(); n++)
-      if (remoteEntries.entry(n).type() == Protos::Common::Entry_Type_FILE)
-         this->addDownload(remoteEntries.entry(n), dirDownload->getPeerSource(), localEntry.has_shared_dir() ? localEntry.shared_dir().id().hash() : Common::Hash(), relativePath, Protos::Queue::Queue::Entry::QUEUED, position++);
-
-   // Then directories. TODO: code to refactor with the one above.
-   for (int n = 0; n < remoteEntries.entry_size(); n++)
-      if (remoteEntries.entry(n).type() == Protos::Common::Entry_Type_DIR)
-         this->addDownload(remoteEntries.entry(n), dirDownload->getPeerSource(), localEntry.has_shared_dir() ? localEntry.shared_dir().id().hash() : Common::Hash(), relativePath, Protos::Queue::Queue::Entry::QUEUED, position++);
+   // Add files first then directories.
+   for (auto type : QList<Protos::Common::Entry::Type> { Protos::Common::Entry::FILE, Protos::Common::Entry::DIR })
+   {
+      for (int n = 0; n < remoteEntries.entry_size(); n++)
+         if (remoteEntries.entry(n).type() == type)
+            this->addDownload(remoteEntries.entry(n), dirDownload->getPeerSource(), localEntry.has_shared_dir() ? localEntry.shared_dir().id().hash() : Common::Hash(), relativePath, Protos::Queue::Queue::Entry::QUEUED, position++);
+   }
 
    delete dirDownload;
 }
@@ -401,7 +399,7 @@ void DownloadManager::rescanTimerActivated()
       if (download->isStatusErroneous())
       {
          download->updateStatus();
-         L_DEBU(QString("Rescan timer timedout, the queue will be recanned. File rested : %1").arg(Common::ProtoHelper::getRelativePath(download->getLocalEntry())));
+         L_DEBU(QString("Rescan timer timedout, the queue will be recanned. File reset: %1").arg(Common::ProtoHelper::getRelativePath(download->getLocalEntry())));
          this->rescanTimer.start();
          this->scanTheQueue();
          break;

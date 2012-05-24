@@ -290,8 +290,8 @@ void WidgetDownloads::removeSelectedEntries()
       {
          QMessageBox msgBox(this);
          msgBox.setWindowIcon(QIcon(":/icons/ressources/delete.png"));
-         msgBox.setWindowTitle("Remove selected downloads");
-         msgBox.setText("Are you sure to remove the selected downloads? There is one or more unfinished download.");
+         msgBox.setWindowTitle(tr("Remove selected downloads"));
+         msgBox.setText(tr("Are you sure to remove the selected downloads? There is one or more unfinished download."));
          msgBox.setIcon(QMessageBox::Question);
          msgBox.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
          msgBox.setDefaultButton(QMessageBox::Ok);

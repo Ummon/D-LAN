@@ -27,7 +27,7 @@ namespace RCC
    class CoreController
    {
    public:
-      static CoreStatus StartCore();
+      static CoreStatus StartCore(int port = -1);
       static void StopCore();
 
    private:

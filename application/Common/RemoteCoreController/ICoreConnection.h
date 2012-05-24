@@ -115,8 +115,10 @@ namespace RCC
       virtual void setCoreLanguage(const QLocale locale) = 0;
 
       /**
+        * Defines or changes the password. The old password is not mendatory in a local connection. See 'isLocal()'.
+        *
         * @param newPassword
-        * @param oldPassword Hased + salted.
+        * @param oldPassword
         * @return true if the given old password match the current password else false.
         */
       virtual bool setCorePassword(const QString& newPassword, const QString& oldPassword = QString()) = 0;
