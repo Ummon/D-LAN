@@ -374,7 +374,7 @@ DirWatcherLinux::Dir::Dir(DirWatcherLinux* dwl, Dir* parent, const QString& name
       new Dir(this->dwl, this, (QString) i.next());
 }
 
-/**QMap<QString, Dir*> rootDirs; // The watched root dirs, indexed by full path.
+/**
  * Destructor. Used to delete a branch.
  */
 DirWatcherLinux::Dir::~Dir()
