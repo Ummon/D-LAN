@@ -25,7 +25,6 @@ using namespace GUI;
 #include <QRegExp>
 #include <QMenu>
 #include <QIcon>
-#include <QDesktopServices>
 #include <QUrl>
 #include <QWindowsXPStyle>
 
@@ -221,6 +220,19 @@ void WidgetSearch::changeEvent(QEvent* event)
       QWidget::changeEvent(event);
 }
 
+void WidgetSearch::keyPressEvent(QKeyEvent* event)
+{
+   // Return key -> open all selected files.
+   if (event->key() == Qt::Key_Return)
+   {
+      const QModelIndexList& selectedRows = this->ui->treeView->selectionModel()->selectedRows();
+      for (QListIterator<QModelIndex> i(selectedRows); i.hasNext();)
+         this->openFile(i.next());
+   }
+   else
+      QWidget::keyPressEvent(event);
+}
+
 void WidgetSearch::displayContextMenuDownload(const QPoint& point)
 {   
    QPoint globalPosition = this->ui->treeView->viewport()->mapToGlobal(point);
@@ -244,8 +256,7 @@ void WidgetSearch::displayContextMenuDownload(const QPoint& point)
 
 void WidgetSearch::entryDoubleClicked(const QModelIndex& index)
 {
-   if (this->coreConnection->getRemoteID() == this->searchModel.getPeerID(index) && !this->searchModel.isDir(index))
-      QDesktopServices::openUrl(QUrl("file:///" + this->searchModel.getPath(index), QUrl::TolerantMode));
+   this->openFile(index);
 }
 
 void WidgetSearch::download()
@@ -330,4 +341,10 @@ bool WidgetSearch::atLeastOneRemotePeer(const QModelIndexList& indexes) const
          return true;
 
    return false;
+}
+
+void WidgetSearch::openFile(const QModelIndex& index) const
+{
+   if (this->coreConnection->getRemoteID() == this->searchModel.getPeerID(index) && !this->searchModel.isDir(index))
+      Utils::openFile(this->searchModel.getPath(index));
 }

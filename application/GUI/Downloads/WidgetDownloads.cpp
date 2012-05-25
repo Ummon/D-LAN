@@ -24,11 +24,12 @@ using namespace GUI;
 
 #include <QMenu>
 #include <QMessageBox>
-#include <QDesktopServices>
 #include <QUrl>
 
 #include <Common/Global.h>
 #include <Common/Settings.h>
+
+#include <Utils.h>
 
 void DownloadsDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
@@ -164,14 +165,6 @@ WidgetDownloads::~WidgetDownloads()
    delete this->ui;
 }
 
-void WidgetDownloads::keyPressEvent(QKeyEvent* event)
-{
-   if (event->key() == Qt::Key_Delete || event->key() == Qt::Key_Backspace)
-      this->removeSelectedEntries();
-   else
-      QWidget::keyPressEvent(event);
-}
-
 void WidgetDownloads::changeEvent(QEvent* event)
 {
    if (event->type() == QEvent::LanguageChange)
@@ -183,9 +176,23 @@ void WidgetDownloads::changeEvent(QEvent* event)
       QWidget::changeEvent(event);
 }
 
+void WidgetDownloads::keyPressEvent(QKeyEvent* event)
+{
+   if (event->key() == Qt::Key_Delete || event->key() == Qt::Key_Backspace)
+      this->removeSelectedEntries();
+   else if (event->key() == Qt::Key_Return)
+   {
+      const QModelIndexList& selectedRows = this->ui->tblDownloads->selectionModel()->selectedRows();
+      for (QListIterator<QModelIndex> i(selectedRows); i.hasNext();)
+         this->openFile(i.next());
+   }
+   else
+      QWidget::keyPressEvent(event);
+}
+
 void WidgetDownloads::displayContextMenuDownloads(const QPoint& point)
-{   
-   QModelIndexList selectedRows = this->ui->tblDownloads->selectionModel()->selectedRows();
+{
+   const QModelIndexList& selectedRows = this->ui->tblDownloads->selectionModel()->selectedRows();
 
    QMenu menu;
 
@@ -212,8 +219,7 @@ void WidgetDownloads::displayContextMenuDownloads(const QPoint& point)
 
 void WidgetDownloads::downloadDoubleClicked(const QModelIndex& index)
 {
-   if (this->currentDownloadsModel->getType(index) == Protos::Common::Entry::FILE && this->currentDownloadsModel->isFileLocationKnown(index))
-      QDesktopServices::openUrl(QUrl("file:///" + this->currentDownloadsModel->getPath(index)));
+   this->openFile(index);
 }
 
 void WidgetDownloads::openLocationSelectedEntries()
@@ -225,11 +231,10 @@ void WidgetDownloads::openLocationSelectedEntries()
    {
       const QModelIndex& index = i.next();
       if (this->currentDownloadsModel->isFileLocationKnown(index))
-         locations.insert("file:///" + this->currentDownloadsModel->getPath(index, false));
+         locations.insert(this->currentDownloadsModel->getPath(index, false));
    }
 
-   for (QSetIterator<QString> i(locations); i.hasNext();)
-      QDesktopServices::openUrl(QUrl(i.next(), QUrl::TolerantMode));
+   Utils::openLocations(locations.toList());
 }
 
 void WidgetDownloads::moveSelectedEntriesToTop()
@@ -449,4 +454,10 @@ void WidgetDownloads::restoreTreeViewState(const QModelIndex& index, SimpleTree<
             break;
          }
    }
+}
+
+void WidgetDownloads::openFile(const QModelIndex& index) const
+{
+   if (this->currentDownloadsModel->getType(index) == Protos::Common::Entry::FILE && this->currentDownloadsModel->isFileLocationKnown(index))
+      Utils::openFile(this->currentDownloadsModel->getPath(index));
 }

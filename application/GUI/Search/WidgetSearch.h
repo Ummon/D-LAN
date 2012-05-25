@@ -78,6 +78,7 @@ namespace GUI
 
    protected:
       void changeEvent(QEvent* event);
+      void keyPressEvent(QKeyEvent* event);
 
    private slots:
       void displayContextMenuDownload(const QPoint& point);
@@ -95,6 +96,8 @@ namespace GUI
 
    private:
       bool atLeastOneRemotePeer(const QModelIndexList& indexes) const;
+
+      void openFile(const QModelIndex& index) const;
 
       Ui::WidgetSearch* ui;
       SearchMenu downloadMenu;
