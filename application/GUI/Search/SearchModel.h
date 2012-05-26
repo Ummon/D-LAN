@@ -55,6 +55,8 @@ namespace GUI
       int getNbFolders() const;
       int getNbFiles() const;
 
+      static bool isNonTerminalFile(const QModelIndex& index);
+
    signals:
       /**
         * 0 to 100;

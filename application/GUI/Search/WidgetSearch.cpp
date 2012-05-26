@@ -242,9 +242,18 @@ void WidgetSearch::displayContextMenuDownload(const QPoint& point)
    {
       this->downloadMenu.show(globalPosition);
    }
-   else
+   else if (this->coreConnection->isLocal())
    {
-      if (this->coreConnection->isLocal())
+      bool allSelectedEntriesAreTerminalFiles = true;
+      const QModelIndexList& selectedRows = this->ui->treeView->selectionModel()->selectedRows();
+      for (QListIterator<QModelIndex> i(selectedRows); i.hasNext();)
+         if (!SearchModel::isNonTerminalFile(i.next()))
+         {
+            allSelectedEntriesAreTerminalFiles = false;
+            break;
+         }
+
+      if (!allSelectedEntriesAreTerminalFiles)
       {
          QMenu menu;
          menu.addAction(QIcon(":/icons/ressources/explore_folder.png"), tr("Open location"), this, SLOT(openLocation()));
@@ -300,19 +309,21 @@ void WidgetSearch::openLocation()
 
    QSet<QString> locations;
    for (QListIterator<QModelIndex> i(selectedRows); i.hasNext();)
-      locations.insert(this->searchModel.getPath(i.next(), true));
+   {
+      const QModelIndex& index = i.next();
+      if (!SearchModel::isNonTerminalFile(index))
+         locations.insert(this->searchModel.getPath(index, true));
+   }
 
    Utils::openLocations(locations.toList());
 }
 
 void WidgetSearch::browseCurrents()
 {
+   // We can only browse one item.
    QModelIndexList indexes = this->ui->treeView->selectionModel()->selectedRows();
-   for (QListIterator<QModelIndex> i(indexes); i.hasNext();)
-   {
-      QModelIndex index = i.next();
-      emit browse(this->searchModel.getPeerID(index), this->searchModel.getEntry(index));
-   }
+   if (!indexes.isEmpty() && !SearchModel::isNonTerminalFile(indexes.first()))
+      emit browse(this->searchModel.getPeerID(indexes.first()), this->searchModel.getEntry(indexes.first()));
 }
 
 void WidgetSearch::progress(int value)
@@ -345,6 +356,6 @@ bool WidgetSearch::atLeastOneRemotePeer(const QModelIndexList& indexes) const
 
 void WidgetSearch::openFile(const QModelIndex& index) const
 {
-   if (this->coreConnection->getRemoteID() == this->searchModel.getPeerID(index) && !this->searchModel.isDir(index))
+   if (!SearchModel::isNonTerminalFile(index) && this->coreConnection->getRemoteID() == this->searchModel.getPeerID(index) && !this->searchModel.isDir(index))
       Utils::openFile(this->searchModel.getPath(index));
 }
