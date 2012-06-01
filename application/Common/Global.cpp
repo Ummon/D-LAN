@@ -421,6 +421,9 @@ int Global::strcmpi(const std::string& s1, const std::string& s2)
    return 0;
 }
 
+/**
+  * If more speedup is needed, it may be replaced by the FNV hash function: http://en.wikipedia.org/wiki/Fowler%E2%80%93Noll%E2%80%93Vo_hash_function
+  */
 quint32 Global::hashStringToInt(const QString& str)
 {
    QByteArray data = str.toLocal8Bit();

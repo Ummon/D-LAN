@@ -65,7 +65,7 @@ message Entries
 
 // A result following a search.
 // Entries may not be sorted in any particular way.
-// See 'Network.Find' and 'GUI.GUINetwork' for more information.
+// See 'Core.Find' and 'GUI.Search' for more information.
 message FindResult {
    message EntryLevel {
       required uint32 level = 1;

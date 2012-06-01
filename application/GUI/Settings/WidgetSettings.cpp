@@ -565,7 +565,7 @@ void WidgetSettings::displayContextMenuSharedDirs(const QPoint& point)
    globalPosition.setY(globalPosition.y() + this->ui->tblShareDirs->horizontalHeader()->height());
 
    QMenu menu;
-   QAction* actionDelete = menu.addAction(QIcon(":/icons/ressources/delete.png"), tr("Remove the shared folder"), this, SLOT(removeShared()));
+   QAction* actionDelete = menu.addAction(QIcon(":/icons/ressources/delete.png"), tr("Remove the shared directory"), this, SLOT(removeShared()));
    QAction* actionUp = menu.addAction(QIcon(":/icons/ressources/arrow_up.png"), tr("Move up"), this, SLOT(moveUpShared()));
    QAction* actionDown = menu.addAction(QIcon(":/icons/ressources/arrow_down.png"), tr("Move down"), this, SLOT(moveDownShared()));
 

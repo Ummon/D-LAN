@@ -10,8 +10,8 @@ package Protos.Core;
 
 /***** Multicast UDP messages. *****/
 // Im alive.
-// This message is sent periodically to all other peers (for example each 10s).
-// It contains an array of hash chunks to know which peer has which chunk.
+// This message is sent periodically to all other peers (for example each 5s).
+// It contains some information about the peer and an array of hash chunks the peer wants to download.
 // If a peer owns one or more chunk corresponding to the given hashes then it
 // will reply with a 'ChunksOwned' message.
 // These hashes can come from different files.
@@ -20,18 +20,19 @@ package Protos.Core;
 // id : 0x01
 message IMAlive {
    required uint32 version = 1; // The version of the protocol used. If 'version' from another peer doesn't correspond to our own version, this peer is ignored.
-   optional string core_version = 9; // The core version, for example: "Version: 1.1.4 (Linux)".
+   optional string core_version = 9; // The core version, for example: "1.1.4 - Linux Mr. 3.2.0-24-generic".
    
-   required uint32 port = 2; // The port listened by the core.
+   required uint32 port = 2; // The port listened by the core (UDP + TCP).
    required string nick = 3;
    
    required uint64 amount = 4; // [byte] Amount of sharing.
-   optional uint32 download_rate = 7;
-   optional uint32 upload_rate = 8;
+   optional uint32 download_rate = 7; // [byte/s]
+   optional uint32 upload_rate = 8; // [byte/s]
    
-   optional uint64 tag = 5; // A random number, all results must repeat this number.
-   repeated Common.Hash chunk = 6; // Can be empty.
+   optional uint64 tag = 5; // A random number, all responds ('ChunkOwned' message) must repeat this number.
+   repeated Common.Hash chunk = 6; // The chunks the core wants to download. May be empty.
 }
+
 // This message is only sent if at least one requested chunks is known.
 // Return an array with a bool value for each
 // given chunks. 'true' means "I have this chunk".
@@ -42,11 +43,13 @@ message ChunksOwned {
    repeated bool chunk_state = 2 [packed=true]; // The array size must have the same size of HaveChunks.chunks.
 }
 
+
 // a -> all
 // id : 0x11
 message ChatMessage {
    required string message = 1;
 }
+
 
 // Searching a file or a directory.
 // See http://dev.euphorik.ch/wiki/pmp/Algorithms#Searching for more details.
@@ -56,6 +59,7 @@ message Find {
    required uint64 tag = 1; // A tag to identify the search. All answers must have the same tag.
    required string pattern = 2;
 }
+
 // Results.
 // The size of this message must fit in a UDP packet so it must not exeed a certain amount of bytes, depending of the network. See Protos.Core.Settings.max_udp_datagram_size.
 // The size can typically set to 8164 B.
@@ -74,11 +78,13 @@ message GetEntries {
    optional Common.Entries dirs = 1; // The shared directories must have the field 'shared_dir' defined but 'shared_dir.shared_name' is not mandatory.
    optional bool get_roots = 2 [default = false]; // If true the roots directories will be appended to the entries result. If the Dir field above is empty then the roots folders will always be sent whatever get_roots is true or false.
 }
+
 // b -> a
 // id : 0x32
 message GetEntriesResult {
    repeated Common.Entries entries = 1; // If an entry is empty or doesn't exist, it will be empty.
 }
+
 
 // Get hashes.
 // If a peer want to start a queued download but doesn't know its hashes
@@ -89,8 +95,9 @@ message GetEntriesResult {
 // a -> b
 // id : 0x41
 message GetHashes {
-   required Common.Entry file = 1; // Must have the field shared_dir set. If it contains some chunk hashes only the next ones will be sent.
+   required Common.Entry file = 1; // Must have the field shared_dir set. If it already contains some chunk hashes only the next ones will be sent.
 }
+
 // b -> a
 // id : 0x42
 message GetHashesResult {
@@ -101,12 +108,14 @@ message GetHashesResult {
       ERROR_UNKNOWN = 255;
    }
    required Status status = 1; // If status != OK nb_hash is not set.
-   optional uint32 nb_hash = 2; // The number of hashe that will be sent. Only the unknown hashes are sent, not the total. Depend of GetHashes.file.chunk.
+   optional uint32 nb_hash = 2; // The number of hashe that will be sent. Only the unknown hashes are sent, not the total. Depend of 'GetHashes.file.chunk'.
 }
+
 // For each hash, this message is sent. Only if GetHashesResult.status == OK.
 // b -> a
 // id = 0x43
 // Common.Hash
+
 
 // Download.
 // a -> b
@@ -115,6 +124,7 @@ message GetChunk {
    required Common.Hash chunk = 1;
    required uint32 offset = 2; // [byte] Relative to the beginning of the chunk.
 }
+
 // b -> a
 // id : 0x52
 message GetChunkResult {
@@ -129,4 +139,5 @@ message GetChunkResult {
    required Status status = 1;
    optional uint32 chunk_size = 2; // This value must be between 1 and Proto.Core.Settings.chunk_size.
 }
+
 // b -> a : stream of data..
