@@ -115,6 +115,7 @@ message State {
    optional Common.Interface.Address.Protocol listenAny = 8; // If this value is set then all the interfaces of the given protocol are listened. Otherwise see the following repeated 'interface' field.
    repeated Common.Interface interface = 9;
 }
+
 // GUI -> Core
 // id : 0x02
 // Empty message to tell the core that we have finished to process the state message.
@@ -131,6 +132,7 @@ message EventChatMessages {
    }
    repeated Message message = 1;
 }
+
 
 // Core -> GUI
 // id : 0x12
@@ -163,12 +165,14 @@ message AskForAuthentication {
    required uint64 salt = 1;
    required uint64 salt_challenge = 2;
 }
+
 // Password is optional for local connections.
 // GUI -> Core
 // id : 0x22
 message Authentication {
    optional Common.Hash password_challenge = 1; // (hash(password) + salt) + salt_challenge
 }
+
 // Core -> GUI
 // id : 0x23
 // If BAD_PASSWORD the core should wait a bit before sending the result (for example 1s) to avoid dictionary attack.
@@ -182,12 +186,14 @@ message AuthenticationResult {
    required Status status = 1;
 }
 
+
 // GUI -> Core
 // id : 0xB1
 // Set the language of the core.
 message Language {
    required Common.Language language = 1;
 }
+
 
 // GUI -> Core
 // id : 0xD1
@@ -200,6 +206,7 @@ message ChangePassword {
    
    optional Common.Hash old_password = 3; // Salted with the old salt. Required only if a password has already been set. 'See State.password_defined'.
 }
+
 
 // GUI -> Core
 // id : 0x31
@@ -217,20 +224,24 @@ message CoreSettings {
    optional Common.Interface.Address.Protocol listen_any = 5 [default = IPv6];
 }
 
+
 // GUI -> Core
 // id : 0x41
 message Search  {
    required string pattern = 2;
 }
+
 // Core -> GUI (directly)
 // id : 0x42
 message Tag  {
    required uint64 tag = 2;
 }
+
 // Core -> GUI (deferred)
 // This message is sent for each UDP datagram received.
 // id : 0x43
 // Common.FindResult
+
 
 // GUI -> Core
 // id : 0x51
@@ -239,6 +250,7 @@ message Browse {
    optional Common.Entries dirs = 2;
    optional bool get_roots = 3 [default = false]; // If true the roots directories will be appended to the entries result. If the Dir field above is empty then the roots folders will always be sent whatever get_roots is true or false.
 }
+
 // Core -> GUI (directly)
 // id : 0x52
 // Tag
@@ -249,6 +261,7 @@ message BrowseResult {
    repeated Common.Entries entries = 2; 
 }
 
+
 // GUI -> Core
 // id : 0x61
 // Remove one or several download from the queue. If this download
@@ -258,6 +271,7 @@ message CancelDownloads {
    optional bool complete= 2 [default = false];
 }
 
+
 // GUI -> Core
 // id : 0xC1
 // Pause or unpause the given downloads.
@@ -265,6 +279,7 @@ message PauseDownloads {
    repeated uint64 id = 1 [packed = true];
    optional bool pause = 2 [default = true]; // Id false -> unpause.
 }
+
 
 // GUI -> Core
 // id : 0x71
@@ -289,6 +304,7 @@ message MoveDownloads {
    optional Position position = 3 [default = BEFORE];
 }
 
+
 // GUI -> Core
 // id : 0x81
 // Says to the core to download a file or a directory.
@@ -300,6 +316,7 @@ message Download {
    optional Common.Hash destination_directory_id = 3; // Where to put the folder/file. It must one of the directory of State.destination_directory. If this directory is not set, the first directory with enough free space will be taken.
    optional string destination_path = 4 [default="/"]; // Must ended with an '/'. If 'Common.Hash destination_directory_id' isn't set then a new shred directory will be created (if needed).
 }
+
 
 // GUI -> Core
 // id : 0x91

@@ -13,7 +13,7 @@
    height="297mm"
    id="svg2"
    version="1.1"
-   inkscape:version="0.48.1 "
+   inkscape:version="0.48.2 r9819"
    sodipodi:docname="network_protocol.svg"
    inkscape:output_extension="org.inkscape.output.svg.inkscape"
    inkscape:export-filename="C:\Users\gburri\AppData\Local\Temp\network_protocol.png"
@@ -621,16 +621,16 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.98994949"
-     inkscape:cx="98.114412"
-     inkscape:cy="718.65739"
+     inkscape:zoom="1.4"
+     inkscape:cx="217.549"
+     inkscape:cy="773.84457"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
      inkscape:window-width="1294"
      inkscape:window-height="939"
-     inkscape:window-x="40"
-     inkscape:window-y="34"
+     inkscape:window-x="485"
+     inkscape:window-y="27"
      inkscape:window-maximized="0" />
   <metadata
      id="metadata7">
@@ -804,7 +804,7 @@
     <text
        xml:space="preserve"
        style="font-size:12.16813469px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:end;text-anchor:end;fill:#2833b2;fill-opacity:1;stroke:none;font-family:Monaco;-inkscape-font-specification:Monaco"
-       x="219.04839"
+       x="213.04839"
        y="268.39548"
        id="text3602-0"
        inkscape:export-filename="C:\Users\gburri\network_protocol.png"
@@ -812,30 +812,30 @@
        inkscape:export-ydpi="119.91233"><tspan
          sodipodi:role="line"
          id="tspan3604-9"
-         x="219.04839"
+         x="213.04839"
          y="268.39548"
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:end;text-anchor:end;fill:#2833b2;fill-opacity:1;font-family:Bitstream Vera Sans Mono;-inkscape-font-specification:Bitstream Vera Sans Mono">ChunksOwned</tspan><tspan
          sodipodi:role="line"
-         x="219.04839"
+         x="213.04839"
          y="283.60565"
          style="font-size:8px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:end;text-anchor:end;fill:#2833b2;fill-opacity:1;font-family:Bitstream Vera Sans Mono;-inkscape-font-specification:Bitstream Vera Sans Mono"
          id="tspan2869-48" /></text>
     <text
        xml:space="preserve"
        style="font-size:12.16813469px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Monaco;-inkscape-font-specification:Monaco"
-       x="158.76213"
+       x="152.76213"
        y="280.98682"
        id="text3602-1-8"
        inkscape:export-filename="C:\Users\gburri\network_protocol.png"
        inkscape:export-xdpi="119.91233"
        inkscape:export-ydpi="119.91233"><tspan
          sodipodi:role="line"
-         x="158.76213"
+         x="152.76213"
          y="280.98682"
          style="font-size:8px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;text-anchor:start;font-family:Bitstream Vera Sans Mono;-inkscape-font-specification:Bitstream Vera Sans Mono"
-         id="tspan2905-4">(tag, [chunkState::bool])</tspan><tspan
+         id="tspan2905-4">(tag, [chunk_state::bool])</tspan><tspan
          sodipodi:role="line"
-         x="158.76213"
+         x="152.76213"
          y="290.98682"
          style="font-size:8px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;text-anchor:start;font-family:Bitstream Vera Sans Mono;-inkscape-font-specification:Bitstream Vera Sans Mono"
          id="tspan2869-4-5" /></text>
@@ -1053,7 +1053,7 @@
          x="352.51172"
          y="177.23215"
          style="font-size:8px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;text-anchor:start;font-family:Bitstream Vera Sans Mono;-inkscape-font-specification:Bitstream Vera Sans Mono"
-         id="tspan2905-6-3-7">(file)</tspan><tspan
+         id="tspan2905-6-3-7">file</tspan><tspan
          sodipodi:role="line"
          x="352.51172"
          y="187.23215"
@@ -1319,7 +1319,7 @@
          x="383.83588"
          y="570.53906"
          style="font-size:8px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;text-anchor:start;font-family:Bitstream Vera Sans Mono;-inkscape-font-specification:Bitstream Vera Sans Mono"
-         id="tspan4086">[([dir], [file])]</tspan><tspan
+         id="tspan4086">[entry]</tspan><tspan
          sodipodi:role="line"
          x="383.83588"
          y="580.53906"
@@ -1447,7 +1447,7 @@
            style="font-size:8px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;text-anchor:start;font-family:Bitstream Vera Sans Mono;-inkscape-font-specification:Bitstream Vera Sans Mono"
            y="592.19403"
            x="127.58092"
-           sodipodi:role="line">(tag, [dir], [file])</tspan><tspan
+           sodipodi:role="line">(tag, [entry])</tspan><tspan
            id="tspan2869-4-1-6"
            style="font-size:8px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;text-anchor:start;font-family:Bitstream Vera Sans Mono;-inkscape-font-specification:Bitstream Vera Sans Mono"
            y="602.19403"
