@@ -106,7 +106,7 @@ void (FilesAndDirs::*FilesAndDirs::actions[])() =
    &FilesAndDirs::createADir,
    &FilesAndDirs::removeADir,
    &FilesAndDirs::createAFile,
-   &FilesAndDirs::removeAFile,
+   &FilesAndDirs::removeAFile
 };
 
 const int FilesAndDirs::NB_ACTION = sizeof(FilesAndDirs::actions) / sizeof(void (FilesAndDirs::*)());
@@ -280,7 +280,7 @@ void (StressTest::*StressTest::actions[])() =
    &StressTest::haveChunk,
    &StressTest::getRootEntries,
    &StressTest::getEntries,
-   &StressTest::getHashes,
+   &StressTest::getHashes
 };
 
 const int StressTest::NB_ACTION = sizeof(StressTest::actions) / sizeof(void (StressTest::*)());
