@@ -58,4 +58,6 @@ message Settings {
    optional uint32 lan_speed = 24 [default = 104857600]; // [B/s]. (100 MiB/s).
    
    optional string style = 25; // The directory of the style in the 'styles' directory.
+   
+   optional bool multiple_instance_allowed = 26 [default = false];
 }
