@@ -19,11 +19,11 @@
 #ifndef RCC_LOG_H
 #define RCC_LOG_H
 
-#include <LogManager/Builder.h>
+#include <Common/LogManager/Builder.h>
 
 namespace RCC
 {
-   #include <LogManager/LogMacros.h>
+   #include <Common/LogManager/LogMacros.h>
 }
 
 #endif

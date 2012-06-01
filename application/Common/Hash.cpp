@@ -292,7 +292,8 @@ void Hasher::addSalt(quint64 salt)
 }
 
 /**
-  * @param size In bytes.
+  * @param data A pointer to the data.
+  * @param size Size of the given data in bytes.
   */
 void Hasher::addData(const char* data, int size)
 {
