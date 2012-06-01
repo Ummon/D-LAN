@@ -215,6 +215,18 @@ void ChunkDownloader::run()
             break;
       }
    }
+   catch(FM::FileResetException)
+   {
+      L_DEBU("FileResetException");
+      this->closeTheSocket = true;
+      this->lastTransferStatus = FILE_NON_EXISTENT;
+   }
+   catch(FM::ChunkDataUnknownException)
+   {
+      L_DEBU("ChunkDataUnknownException");
+      this->closeTheSocket = true;
+      this->lastTransferStatus = UNABLE_TO_OPEN_THE_FILE;
+   }
    catch(FM::UnableToOpenFileInWriteModeException)
    {
       L_DEBU("UnableToOpenFileInWriteModeException");

@@ -26,7 +26,10 @@ using namespace RCC;
 
 #include <priv/Log.h>
 
-CoreStatus CoreController::StartCore()
+/**
+  * Try to start the core as a service if it fails then try to launch it as a sub-process.
+  */
+CoreStatus CoreController::StartCore(int port)
 {
    QtServiceController controller(Common::Constants::SERVICE_NAME);
    if (!controller.isInstalled())
@@ -39,11 +42,15 @@ CoreStatus CoreController::StartCore()
 
    if (!(isRunning = controller.isRunning()))
    {
-      if (!(isRunning = controller.start()))
+      QStringList arguments;
+      if (port != -1)
+         arguments << "--port" << QString::number(port);
+
+      if (!(isRunning = controller.start(arguments)))
       {
          if (coreProcess.state() == QProcess::NotRunning)
          {
-            coreProcess.start("D-LAN.Core.exe -e");
+            coreProcess.start("D-LAN.Core.exe -e" + (port != -1 ? QString() : QString(" --port %1").arg(port)));
             L_USER(QObject::tr("Core launched as subprocess"));
             return RUNNING_AS_SUB_PROCESS;
          }

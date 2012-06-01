@@ -59,6 +59,7 @@ namespace GUI
 
    protected:
       void changeEvent(QEvent* event);
+      void keyPressEvent(QKeyEvent* event);
 
    private slots:
       void displayContextMenuDownload(const QPoint& point);
@@ -72,6 +73,8 @@ namespace GUI
       void tryToReachEntryToBrowse();
 
    private:
+      void openFile(const QModelIndex& index) const;
+
       Ui::WidgetBrowse* ui;
       DownloadMenu downloadMenu;
 

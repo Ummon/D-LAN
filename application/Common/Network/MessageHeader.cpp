@@ -74,7 +74,7 @@ QString MessageHeader::toStr() const
    if (this->isNull())
       return QString("MessageHeader : <null>");
    else
-      return QString("MessageHeader : type = %1, size = %2, senderID = %3").arg(messToStr(static_cast<MessageType>(this->type))).arg(this->size).arg(this->senderID.toStr());
+      return QString("MessageHeader : type = %1, size = %2, senderID = %3").arg(messToStr(this->type)).arg(this->size).arg(this->senderID.toStr());
 }
 
 QString MessageHeader::messToStr(MessageType type)
@@ -177,7 +177,7 @@ void MessageHeader::writeHeader(char* buffer, const MessageHeader& header)
    memcpy(buffer, array.data(), HEADER_SIZE);
 }
 
-inline void MessageHeader::writeHeader(QDataStream& stream, const MessageHeader& header)
+void MessageHeader::writeHeader(QDataStream& stream, const MessageHeader& header)
 {
    stream << header.type;
    stream << header.size;

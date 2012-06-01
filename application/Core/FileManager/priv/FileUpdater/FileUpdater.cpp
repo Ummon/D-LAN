@@ -571,7 +571,7 @@ void FileUpdater::stopScanning(Directory* dir)
 }
 
 /**
-  * Delete an entry and if it's a directory remove it and its sub childs from dirsToScan.
+  * Delete an entry and if it's a directory remove it and its sub childs from 'this->dirsToScan'.
   * It can't be used to remove a 'SharedDirectory', only the 'Cache' is able to do that.
   */
 void FileUpdater::deleteEntry(Entry* entry)
@@ -593,18 +593,11 @@ void FileUpdater::deleteEntry(Entry* entry)
       fileInAList |= this->filesWithoutHashesPrioritized.removeOne(file);
 
       if (fileInAList)
-      {
          this->remainingSizeToHash -= file->getSize();
-      }
+   }
 
-      file->removeUnfinishedFiles();
-      delete file;
-   }
-   else
-   {
-      entry->removeUnfinishedFiles();
-      delete entry;
-   }
+   entry->removeUnfinishedFiles();
+   delete entry;
 }
 
 /**

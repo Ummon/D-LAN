@@ -67,7 +67,7 @@ void DirDownload::start()
   */
 bool DirDownload::retrieveEntries()
 {
-   if (!this->hasAValidPeer() || this->status == DELETED || !this->occupiedPeersAskingForEntries.setPeerAsOccupied(this->peerSource))
+   if (!this->hasAValidPeerSource() || this->status == DELETED || !this->occupiedPeersAskingForEntries.setPeerAsOccupied(this->peerSource))
       return false;
 
    Protos::Core::GetEntries getEntries;

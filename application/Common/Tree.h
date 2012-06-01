@@ -42,10 +42,10 @@ namespace Common
      *
      * Some remarks:
      *  - To remove an element just delete it.
-     *  - You can reimplement 'newwTree(..)' to dynamically create new type of children.
-     *  - This class comes with a breadth-first iterator.
+     *  - You can reimplement 'newTree(..)' to dynamically create new type of children.
+     *  - This class comes with a breadth-first and a depth-first iterators.
      *
-     * If you don't want to inherit from Tree you can use the SimpleTree class.
+     * If you don't want to inherit from Tree you can use the 'SimpleTree' class.
      *
      * @remarks No copy constructor neither no operator assignment are defined for the moment.
      */

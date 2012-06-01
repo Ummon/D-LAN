@@ -39,11 +39,9 @@
 
 namespace FM
 {
-   class IChunk;
    class Chunk;
    class Directory;
    class SharedDirectory;
-   class Cache;
 
    class File : public Entry
    {

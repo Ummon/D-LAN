@@ -23,7 +23,6 @@ using namespace GUI;
 #include <QMenu>
 #include <QPainter>
 #include <QIcon>
-#include <QDesktopServices>
 #include <QUrl>
 #include <QShowEvent>
 
@@ -111,6 +110,19 @@ void WidgetBrowse::changeEvent(QEvent* event)
       QWidget::changeEvent(event);
 }
 
+void WidgetBrowse::keyPressEvent(QKeyEvent* event)
+{
+   // Return key -> open all selected files.
+   if (event->key() == Qt::Key_Return)
+   {
+      const QModelIndexList& selectedRows = this->ui->treeView->selectionModel()->selectedRows();
+      for (QListIterator<QModelIndex> i(selectedRows); i.hasNext();)
+         this->openFile(i.next());
+   }
+   else
+      QWidget::keyPressEvent(event);
+}
+
 void WidgetBrowse::displayContextMenuDownload(const QPoint& point)
 {
    QPoint globalPosition = this->ui->treeView->mapToGlobal(point);
@@ -131,8 +143,7 @@ void WidgetBrowse::displayContextMenuDownload(const QPoint& point)
 
 void WidgetBrowse::entryDoubleClicked(const QModelIndex& index)
 {
-   if (this->coreConnection->getRemoteID() == this->peerID && !this->browseModel.isDir(index))
-      QDesktopServices::openUrl(QUrl("file:///" + this->browseModel.getPath(index), QUrl::TolerantMode));
+   this->openFile(index);
 }
 
 void WidgetBrowse::download()
@@ -216,4 +227,10 @@ void WidgetBrowse::tryToReachEntryToBrowse()
    }
 
    this->tryingToReachEntryToBrowse = false;
+}
+
+void WidgetBrowse::openFile(const QModelIndex& index) const
+{
+   if (this->coreConnection->getRemoteID() == this->peerID && !this->browseModel.isDir(index))
+      Utils::openFile(this->browseModel.getPath(index));
 }

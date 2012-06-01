@@ -1,6 +1,6 @@
 format 75
 "DownloadManager" // Aybabtu::Core::DownloadManager
-  revision 13
+  revision 14
   modified_by 42 "gburri"
   // class settings
   //class diagram settings
@@ -532,5 +532,4 @@ ${items}};
       end
     end
   end
-
 end

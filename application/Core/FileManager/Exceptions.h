@@ -51,6 +51,8 @@ namespace FM
 
    class IOErrorException {};
 
+   class FileResetException {};
+
    class UnableToOpenFileInWriteModeException {};
 
    class UnableToOpenFileInReadModeException {};
@@ -61,7 +63,7 @@ namespace FM
 
    class ChunkDeletedException {};
 
-   class ChunkNotCompletedException {};
+   class ChunkDataUnknownException {};
 
    class InsufficientStorageSpaceException {};
 

@@ -141,7 +141,6 @@ int SearchModel::columnCount(const QModelIndex& parent) const
 {
    return 5;
 }
-
 int SearchModel::getNbFolders() const
 {
    return this->nbFolders;
@@ -150,6 +149,15 @@ int SearchModel::getNbFolders() const
 int SearchModel::getNbFiles() const
 {
    return this->nbFiles;
+}
+
+/**
+  * Return true for files with multiple similar files.
+  */
+bool SearchModel::isNonTerminalFile(const QModelIndex& index)
+{
+   SearchTree* tree = static_cast<SearchTree*>(index.internalPointer());
+   return tree->getItem().type() == Protos::Common::Entry::FILE && tree->getNbChildren() > 0;
 }
 
 void SearchModel::loadChildren(const QPersistentModelIndex &index)

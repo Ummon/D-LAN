@@ -713,9 +713,9 @@ void Uploader::run()
    {
       qDebug() << "ChunkDeletedException";
    }
-   catch(ChunkNotCompletedException&)
+   catch(ChunkDataUnknownException&)
    {
-      qDebug() << "ChunkNotCompletedException";
+      qDebug() << "ChunkDataUnknownException";
    }
 
    qDebug() << "Uploader::run() finished";

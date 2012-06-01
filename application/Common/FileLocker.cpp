@@ -24,6 +24,15 @@ using namespace Common;
    #include <WinIoCtl.h>
 #endif
 
+/**
+  * @class FileLocker
+  *
+  * The purpose of this class is to be able to easy lock a part of a file in a portable way.
+  * The file is locked in the constructor and automatically unlocked in the destructor.
+  *
+  * @remarks Only the Windows implementation currently exists.
+  */
+
 FileLocker::FileLocker(const QFile& file, qint64 nbBytesToLock, LockType type) :
    nbBytesLocked(nbBytesToLock)
  #ifdef Q_OS_WIN32
@@ -62,6 +71,9 @@ FileLocker::~FileLocker()
 #endif
 }
 
+/**
+  * After a 'FileLocker' is built this method should be called to test if the file has been properly locked.
+  */
 bool FileLocker::isLocked() const
 {
    return this->lockAcquired;

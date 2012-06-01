@@ -41,13 +41,16 @@ using namespace NL;
 
 /**
   * @class NL::UDPListener
+  *
+  * The goals of this class are:
+  *  - Listen for incoming unicast and multicast datagrams, process them and dispatch the information the correct manager: 'FileManager', 'DownloadManager' or 'PeerManager'.
+  *  - Offer methods to send unicast or multicast datagrams.
+  *  - Periodically send a 'IMAlive' multicast datagrams.
+  *
   * @author mcuony
   * @author gburri
   */
 
-/**
-  * Initialize the socket to broadcast.
-  */
 UDPListener::UDPListener(
    QSharedPointer<FM::IFileManager> fileManager,
    QSharedPointer<PM::IPeerManager> peerManager,
@@ -77,6 +80,9 @@ UDPListener::UDPListener(
    this->sendIMAliveMessage();
 }
 
+/**
+  * Send an UDP unicast datagram to the given peer.
+  */
 void UDPListener::send(Common::MessageHeader::MessageType type, const Common::Hash& peerID, const google::protobuf::Message& message)
 {
    PM::IPeer* peer = this->peerManager->getPeer(peerID);
@@ -188,15 +194,12 @@ void UDPListener::rebindSockets()
    this->initUnicastUDPSocket();
 }
 
-/**
-  *
-  */
 void UDPListener::processPendingMulticastDatagrams()
 {
    while (this->multicastSocket.hasPendingDatagrams())
    {
       QHostAddress peerAddress;
-      const Common::MessageHeader& header =  UDPListener::readDatagramToBuffer(this->multicastSocket, peerAddress);
+      const Common::MessageHeader& header =  this->readDatagramToBuffer(this->multicastSocket, peerAddress);
       if (header.isNull())
          continue;
 

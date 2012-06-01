@@ -15,7 +15,7 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-
+  
 #include <priv/FileUpdater/DirWatcherLinux.h>
 using namespace FM;
 
@@ -374,7 +374,7 @@ DirWatcherLinux::Dir::Dir(DirWatcherLinux* dwl, Dir* parent, const QString& name
       new Dir(this->dwl, this, (QString) i.next());
 }
 
-/**QMap<QString, Dir*> rootDirs; // The watched root dirs, indexed by full path.
+/**
  * Destructor. Used to delete a branch.
  */
 DirWatcherLinux::Dir::~Dir()
