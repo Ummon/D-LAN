@@ -188,13 +188,6 @@
          </property>
          <layout class="QVBoxLayout" name="layGrpInterfaces">
           <item>
-           <widget class="QPushButton" name="butRefreshInterfaces">
-            <property name="text">
-             <string>Refresh interfaces</string>
-            </property>
-           </widget>
-          </item>
-          <item>
            <widget class="QScrollArea" name="scoInterfaces">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
@@ -265,6 +258,13 @@
               </item>
              </layout>
             </widget>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="butRefreshInterfaces">
+            <property name="text">
+             <string>Refresh interfaces</string>
+            </property>
            </widget>
           </item>
          </layout>
