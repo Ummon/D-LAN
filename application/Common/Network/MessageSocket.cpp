@@ -233,6 +233,8 @@ void MessageSocket::dataReceivedSlot()
          }
       }
 
+      MESSAGE_SOCKET_LOG_DEBUG(QString("this->socket->bytesAvailable(): %1").arg(this->socket->bytesAvailable()));
+
       if (!this->currentHeader.isNull() && this->socket->bytesAvailable() >= this->currentHeader.getSize())
       {
          if (!this->readMessage())
@@ -297,6 +299,7 @@ bool MessageSocket::readMessage()
    case MessageHeader::GUI_DOWNLOAD: return this->readMessage<Protos::GUI::Download>();
    case MessageHeader::GUI_CHAT_MESSAGE: return this->readMessage<Protos::GUI::ChatMessage>();
    case MessageHeader::GUI_REFRESH: return this->readMessage<Protos::Common::Null>();
+   case MessageHeader::GUI_REFRESH_NETWORK_INTERFACES: return this->readMessage<Protos::Common::Null>();
 
    default:
       return false;

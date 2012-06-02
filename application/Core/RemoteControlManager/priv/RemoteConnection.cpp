@@ -82,6 +82,8 @@ RemoteConnection::RemoteConnection(
       return;
    }
 
+   this->refreshAllInterfaces();
+
    this->timerRefresh.setInterval(SETTINGS.get<quint32>("remote_refresh_rate"));
    this->timerRefresh.setSingleShot(true);
    connect(&this->timerRefresh, SIGNAL(timeout()), this, SLOT(refresh()));
@@ -229,20 +231,20 @@ void RemoteConnection::refresh()
    stats->set_upload_rate(uploadRate);
 
    // Network interfaces.
-   QString adressToListenStr = SETTINGS.get<QString>("listen_address");
-   QHostAddress adressToListen(adressToListenStr);
+   const QString& adressToListenStr = SETTINGS.get<QString>("listen_address");
+   const QHostAddress adressToListen(adressToListenStr);
    if (adressToListenStr.isEmpty())
       state.set_listenany(static_cast<Protos::Common::Interface::Address::Protocol>(SETTINGS.get<quint32>("listen_any")));
-   for (QListIterator<QNetworkInterface> i(QNetworkInterface::allInterfaces()); i.hasNext();)
+   for (QListIterator<QNetworkInterface> i(this->interfaces); i.hasNext();)
    {
-      QNetworkInterface interface = i.next();
+      const QNetworkInterface& interface = i.next();
       if (
-         interface.isValid() &&
          interface.flags().testFlag(QNetworkInterface::CanMulticast) &&
-         !interface.flags().testFlag(QNetworkInterface::IsLoopBack)
+         !interface.flags().testFlag(QNetworkInterface::IsLoopBack) &&
+         interface.isValid()
       )
       {
-         QList<QNetworkAddressEntry> addresses = interface.addressEntries();
+         const QList<QNetworkAddressEntry>& addresses = interface.addressEntries();
          if (!addresses.isEmpty())
          {
             Protos::Common::Interface* interfaceMess = state.add_interface();
@@ -349,6 +351,11 @@ void RemoteConnection::sendLastChatMessages()
 {
    // We send all the last received messages to the GUI (history).
    this->send(Common::MessageHeader::GUI_EVENT_CHAT_MESSAGES, this->networkListener->getChat().getLastMessages());
+}
+
+void RemoteConnection::refreshAllInterfaces()
+{
+   this->interfaces = QNetworkInterface::allInterfaces();
 }
 
 void RemoteConnection::onNewMessage(Common::MessageHeader::MessageType type, const google::protobuf::Message& message)
@@ -629,6 +636,11 @@ void RemoteConnection::onNewMessage(Common::MessageHeader::MessageType type, con
       break;
 
    case Common::MessageHeader::GUI_REFRESH:
+      this->refresh();
+      break;
+
+   case Common::MessageHeader::GUI_REFRESH_NETWORK_INTERFACES:
+      this->refreshAllInterfaces();
       this->refresh();
       break;
 

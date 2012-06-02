@@ -180,6 +180,11 @@ void CoreConnection::refresh()
    this->current()->refresh();
 }
 
+void CoreConnection::refreshNetworkInterfaces()
+{
+   this->current()->refreshNetworkInterfaces();
+}
+
 bool CoreConnection::isRunningAsSubProcess() const
 {
    return this->current()->isRunningAsSubProcess();

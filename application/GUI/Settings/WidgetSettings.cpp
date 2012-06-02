@@ -80,7 +80,9 @@ WidgetSettings::WidgetSettings(QSharedPointer<RCC::ICoreConnection> coreConnecti
    connect(this->coreConnection.data(), SIGNAL(disconnected(bool)), this, SLOT(coreDisconnected()));
 
    connect(this->ui->txtNick, SIGNAL(editingFinished()), this, SLOT(saveCoreSettings()));
+
    connect(this->ui->chkEnableIntegrityCheck, SIGNAL(clicked()), this, SLOT(saveCoreSettings()));
+   connect(this->ui->butRefreshInterfaces, SIGNAL(clicked()), this, SLOT(refreshNetworkInterfaces()));
 
    this->connectAllAddressButtons();
 
@@ -437,6 +439,11 @@ void WidgetSettings::coreDisconnected()
 
    this->ui->butChangePassword->setDisabled(true);
    this->ui->butResetPassword->setDisabled(true);
+}
+
+void WidgetSettings::refreshNetworkInterfaces()
+{
+   this->coreConnection->refreshNetworkInterfaces();
 }
 
 /**
