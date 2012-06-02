@@ -71,9 +71,9 @@ int main(int argc, char *argv[])
    LM::Builder::setLogDirName("log_gui");
    QSharedPointer<LM::ILogger> mainLogger = LM::Builder::newLogger("main");
 
-   // If multiple instance isn't allow we will test if a particular
+   // If multiple instance isn't allowed we will test if a particular
    // shared memory segment alreydy exists. There is actually no
-   // easy way to bring the already existing process to the front without
+   // easy way to bring the already existing GUI windows to the front without
    // dirty polling.
    if (!SETTINGS.get<bool>("multiple_instance_allowed"))
    {
