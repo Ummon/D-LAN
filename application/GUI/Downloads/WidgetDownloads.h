@@ -106,7 +106,7 @@ namespace GUI
 
       DownloadsDelegate downloadsDelegate;
 
-      SimpleTree<quint32>* treeViewState;
+      SimpleTree<quint32> treeViewState;
    };
 }
 
