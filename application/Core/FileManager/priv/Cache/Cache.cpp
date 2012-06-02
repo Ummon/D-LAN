@@ -611,7 +611,7 @@ void Cache::onChunkRemoved(QSharedPointer<Chunk> chunk)
   * Create a new shared directory.
   * The other shared directories may not be merged with the new one, use 'SharedDirectory::mergeSubSharedDirectories' to do that after this call.
   *
-  * @exceptions DirNotFoundException
+  * @exception DirNotFoundException
   */
 SharedDirectory* Cache::createSharedDir(const QString path, const Common::Hash& ID, int pos)
 {
@@ -693,6 +693,7 @@ void Cache::createSharedDirs(const QStringList& dirs, const QList<Common::Hash>&
   * The missing directories will be automatically created.
   *
   * @param path A relative path to a directory. Must be a cleaned path (QDir::cleanPath).
+  * @param spaceNeeded The number of storage space needed, if no directory can be found the exception 'InsufficientStorageSpaceException' is thrown.
   * @return The directory, 0 if unkown error.
   * @exception InsufficientStorageSpaceException
   * @exception NoWriteableDirectoryException

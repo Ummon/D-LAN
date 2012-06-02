@@ -134,7 +134,7 @@ QString Global::getVersionFull()
 
 /**
   * The number of k-combinations (each of size k) from a set S with n elements (size n).
-  * @link http://en.wikipedia.org/wiki/Combination
+  * http://en.wikipedia.org/wiki/Combination
   */
 int Global::nCombinations(int n, int k)
 {   

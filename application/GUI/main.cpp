@@ -64,6 +64,10 @@ int main(int argc, char *argv[])
       SETTINGS.set("language", locale);
    SETTINGS.save(); // To automatically create the file if it doesn't exist.
 
+   // 'locale' has been set with "--lang".
+   if (locale != QLocale::system())
+      return 0;
+
    LM::Builder::setLogDirName("log_gui");
    QSharedPointer<LM::ILogger> mainLogger = LM::Builder::newLogger("main");
 

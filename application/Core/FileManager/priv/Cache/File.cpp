@@ -52,14 +52,20 @@ using namespace FM;
   *
   * A file can be finished or unfinished.
   * If it is an unfinished one, the name ends with ".unfinished" (see setting 'unfinished_suffix_term').
-  * When a file is just finished the suffix ".unfinished" is removed and the file is renamed.
+  * When a file becomes complete the suffix ".unfinished" is removed.
   */
 
 /**
   * Create a new file into a given directory.
   * The file may or may not have a correponding local file.
   * If 'createPhysically' is true then the file is created as unfinished with no byte known.
+  *
+  * @param dir The directory that owns the file.
+  * @param name The name of the file.
+  * @param size The size of the file in byte.
+  * @param dateLastModified The date of the last modification of the file.
   * @param hashes Optional hashes, if given it must contain ALL hashes.
+  * @param createPhysically If 'true' the file will be created. Default is 'false'.
   */
 File::File(
    Directory* dir,

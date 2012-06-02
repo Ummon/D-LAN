@@ -53,7 +53,10 @@ FileHasher::FileHasher() :
   * Only the chunk without hashes will be computed.
   * This method can be called from an another thread than the main one. For example,
   * from 'FileUpdated' thread.
-  * @param n number of hashes to compute, 0 if we want to compute all the hashes.
+  *
+  * @param fileCache The file to hash.
+  * @param n Number of hashes to compute, 0 if we want to compute all the hashes.
+  * @param[out] amountHashed Write the number of bytes hashed. It may be a null pointer ('nullptr') if this information isn't needed.
   * @exception IOErrorException Thrown when the file cannot be opened or read. Some chunk may be computed before this exception is thrown.
   */
 bool FileHasher::start(File* fileCache, int n, int* amountHashed)
