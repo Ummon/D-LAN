@@ -81,7 +81,6 @@ namespace DM
       void remove();
 
    public slots:
-      bool updateStatus();
       bool retrieveHashes();
 
    signals:
@@ -89,6 +88,7 @@ namespace DM
       void lastTimeGetAllUnfinishedChunksChanged(QTime oldTime);
 
    private slots:
+      bool updateStatus();
       void retryToRetrieveHashes();
       void result(const Protos::Core::GetHashesResult& result);
       void nextHash(const Common::Hash& hash);
@@ -100,6 +100,7 @@ namespace DM
    private:
       bool tryToLinkToAnExistingFile();
       void connectChunkDownloaderSignals(QSharedPointer<ChunkDownloader> chunkDownload);
+      bool createFile();
       void reset();
 
       QSharedPointer<FM::IFileManager> fileManager;

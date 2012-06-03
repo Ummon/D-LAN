@@ -75,7 +75,7 @@ File::File(
    const Common::Hashes& hashes,
    bool createPhysically
 ) :
-   Entry(dir->getCache(), name + (createPhysically ? Global::getUnfinishedSuffix() : ""), size),
+   Entry(dir->getCache(), name + (createPhysically && size > 0 ? Global::getUnfinishedSuffix() : ""), size),
    dir(dir),
    dateLastModified(dateLastModified),
    complete(!Global::isFileUnfinished(Entry::getName())),
@@ -595,7 +595,7 @@ void File::deleteAllChunks()
   */
 void File::createPhysicalFile()
 {
-   if (!Global::isFileUnfinished(this->name))
+   if (this->size > 0 && !Global::isFileUnfinished(this->name))
       L_ERRO(QString("File::createPhysicalFile(..) : Cannot create a file (%1) without the 'unfinished' suffix").arg(this->getPath()));
    else
    {

@@ -46,7 +46,7 @@ void DownloadsDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opt
       progressBarOption.minimum = 0;
       progressBarOption.maximum = 10000;
       progressBarOption.textAlignment = Qt::AlignHCenter | Qt::AlignVCenter;
-      progressBarOption.progress = progress.progress;
+      progressBarOption.progress = progress.status == Protos::GUI::State::Download::COMPLETE ? 10000 : progress.progress; // Complete -> 100%.
 
       switch (progress.status)
       {

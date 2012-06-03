@@ -50,9 +50,9 @@ DownloadManager::DownloadManager(QSharedPointer<FM::IFileManager> fileManager, Q
 
    connect(this->fileManager.data(), SIGNAL(fileCacheLoaded()), this, SLOT(fileCacheLoaded()));
 
-   this->rescanTimer.setInterval(RESCAN_QUEUE_PERIOD_IF_ERROR);
-   this->rescanTimer.setSingleShot(true);
-   connect(&this->rescanTimer, SIGNAL(timeout()), this, SLOT(rescanTimerActivated()));
+   this->startErroneousDownloadTimer.setInterval(RESTART_DOWNLOADS_PERIOD_IF_ERROR);
+   this->startErroneousDownloadTimer.setSingleShot(true);
+   connect(&this->startErroneousDownloadTimer, SIGNAL(timeout()), this, SLOT(restartErroneousDownloads()));
 
    this->saveTimer.setInterval(SETTINGS.get<quint32>("save_queue_period"));
    connect(&this->saveTimer, SIGNAL(timeout()), this, SLOT(saveQueueToFile()));
@@ -392,16 +392,15 @@ void DownloadManager::scanTheQueue()
    L_DEBU("Scanning terminated");
 }
 
-void DownloadManager::rescanTimerActivated()
+void DownloadManager::restartErroneousDownloads()
 {
    while (Download* download = this->downloadQueue.getAnErroneousDownload())
    {
       if (download->isStatusErroneous())
       {
-         download->updateStatus();
-         L_DEBU(QString("Rescan timer timedout, the queue will be recanned. File reset: %1").arg(Common::ProtoHelper::getRelativePath(download->getLocalEntry())));
-         this->rescanTimer.start();
-         this->scanTheQueue();
+         download->start(); // We restart the download.
+         L_DEBU(QString("Rescan timer timedout, the queue will be recanned. File restarted: %1").arg(Common::ProtoHelper::getRelativePath(download->getLocalEntry())));
+         this->startErroneousDownloadTimer.start();
          break;
       }
    }
@@ -424,7 +423,9 @@ void DownloadManager::chunkDownloaderFinished()
 void DownloadManager::downloadStatusBecomeErroneous(Download* download)
 {
    this->downloadQueue.setDownloadAsErroneous(download);
-   this->rescanTimer.start();
+
+   if (!this->startErroneousDownloadTimer.isActive())
+      this->startErroneousDownloadTimer.start();
 }
 
 /**

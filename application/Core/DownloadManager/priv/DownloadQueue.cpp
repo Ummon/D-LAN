@@ -277,6 +277,9 @@ void DownloadQueue::setDownloadAsErroneous(Download* download)
    this->erroneousDownloads << download;
 }
 
+/**
+  * If a erroneous download is returns it is removed from the erroneous list.
+  */
 Download* DownloadQueue::getAnErroneousDownload()
 {
    if (!this->erroneousDownloads.isEmpty())
