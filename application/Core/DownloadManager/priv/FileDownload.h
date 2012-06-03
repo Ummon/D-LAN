@@ -27,7 +27,6 @@
 
 #include <Common/ThreadPool.h>
 
-#include <Core/FileManager/IFileManager.h>
 #include <Core/FileManager/IChunk.h>
 #include <Core/PeerManager/IPeerManager.h>
 #include <Core/PeerManager/IGetHashesResult.h>
@@ -103,7 +102,6 @@ namespace DM
       bool createFile();
       void reset();
 
-      QSharedPointer<FM::IFileManager> fileManager;
       LinkedPeers& linkedPeers;
 
       const int NB_CHUNK;

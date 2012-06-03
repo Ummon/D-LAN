@@ -145,6 +145,7 @@ Download* DownloadManager::addDownload(const Protos::Common::Entry& remoteEntry,
    case Protos::Common::Entry_Type_DIR:
       {
          DirDownload* dirDownload = new DirDownload(
+            this->fileManager,
             this->occupiedPeersAskingForEntries,
             peerSource,
             remoteEntry,

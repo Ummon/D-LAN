@@ -98,8 +98,15 @@ namespace FM
         * @exception NoWriteableDirectoryException
         * @exception InsufficientStorageSpaceException
         * @exception UnableToCreateNewFileException
+        * @exception UnableToCreateNewDirException It means that one of the directories of the file path can't be created. The file is of course not created in this case.
         */
       virtual QList<QSharedPointer<IChunk>> newFile(Protos::Common::Entry& entry) = 0;
+
+      /**
+        * @exception NoWriteableDirectoryException
+        * @exception UnableToCreateNewDirException
+        */
+      virtual void newDirectory(Protos::Common::Entry& entry) = 0;
 
       /**
         * Return the hashes from a FileEntry. If the hashes don't exist they will be computed on the fly. However this

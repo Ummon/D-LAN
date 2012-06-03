@@ -46,8 +46,7 @@ FileDownload::FileDownload(
    Common::TransferRateCalculator& transferRateCalculator,
    Protos::Queue::Queue::Entry::Status status
 ) :
-   Download(peerSource, remoteEntry, localEntry),
-   fileManager(fileManager),
+   Download(fileManager, peerSource, remoteEntry, localEntry),
    linkedPeers(linkedPeers),
    NB_CHUNK(this->remoteEntry.size() / SETTINGS.get<quint32>("chunk_size") + (this->remoteEntry.size() % SETTINGS.get<quint32>("chunk_size") == 0 ? 0 : 1)),
    occupiedPeersAskingForHashes(occupiedPeersAskingForHashes),
@@ -556,6 +555,12 @@ bool FileDownload::createFile()
    {
       L_DEBU(QString("Unable to create the file, download : %1").arg(Common::ProtoHelper::getStr(this->remoteEntry, &Protos::Common::Entry::name)));
       this->setStatus(UNABLE_TO_CREATE_THE_FILE);
+      return false;
+   }
+   catch(FM::UnableToCreateNewDirException&)
+   {
+      L_DEBU(QString("Unable to create the path, download : %1").arg(Common::ProtoHelper::getStr(this->remoteEntry, &Protos::Common::Entry::name)));
+      this->setStatus(UNABLE_TO_CREATE_THE_DIRECTORY);
       return false;
    }
 

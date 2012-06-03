@@ -160,6 +160,11 @@ QList<QSharedPointer<IChunk>> FileManager::newFile(Protos::Common::Entry& entry)
    return this->cache.newFile(entry);
 }
 
+void FileManager::newDirectory(Protos::Common::Entry& entry)
+{
+   this->cache.newDirectory(entry);
+}
+
 QSharedPointer<IGetHashesResult> FileManager::getHashes(const Protos::Common::Entry& file)
 {
    return QSharedPointer<IGetHashesResult>(new GetHashesResult(file, this->cache, this->fileUpdater));

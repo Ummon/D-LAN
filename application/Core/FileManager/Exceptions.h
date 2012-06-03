@@ -69,6 +69,8 @@ namespace FM
 
    class UnableToCreateNewFileException {};
 
+   class UnableToCreateNewDirException {};
+
    class UnableToCreateSharedDirectory {};
 }
 

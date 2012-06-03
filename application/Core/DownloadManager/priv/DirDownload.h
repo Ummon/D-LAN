@@ -38,6 +38,7 @@ namespace DM
       Q_OBJECT
    public:
       DirDownload(
+         QSharedPointer<FM::IFileManager> fileManager,
          OccupiedPeers& occupiedPeersAskingForEntries,
          PM::IPeer* peerSource,
          const Protos::Common::Entry& remoteEntry,
@@ -54,7 +55,7 @@ namespace DM
 
    signals:
       /**
-        * Emitted when the content of the folder has been retrieved.
+        * Emitted when the content of the folder has been retrieved. 'entries' may be empty.
         */
       void newEntries(const Protos::Common::Entries& entries);
 
@@ -63,6 +64,8 @@ namespace DM
       void resultTimeout();
 
    private:
+      void createDirectory();
+
       OccupiedPeers& occupiedPeersAskingForEntries;
       QSharedPointer<PM::IGetEntriesResult> getEntriesResult;
    };

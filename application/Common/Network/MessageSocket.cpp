@@ -233,8 +233,6 @@ void MessageSocket::dataReceivedSlot()
          }
       }
 
-      MESSAGE_SOCKET_LOG_DEBUG(QString("this->socket->bytesAvailable(): %1").arg(this->socket->bytesAvailable()));
-
       if (!this->currentHeader.isNull() && this->socket->bytesAvailable() >= this->currentHeader.getSize())
       {
          if (!this->readMessage())
