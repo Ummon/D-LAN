@@ -54,7 +54,7 @@ namespace CoreSpace
       void checkSettingsIntegrity();
 
       template <typename T>
-      void checkSetting(const QString& name, T min, T max, bool mustBeAPowerOf32 = false);
+      void checkSetting(const QString& name, T min, T max);
 
       // This objet will be the last destroyed.
       struct Cleaner { ~Cleaner() {
@@ -83,7 +83,7 @@ namespace CoreSpace
 using namespace CoreSpace;
 
 template <typename T>
-void Core::checkSetting(const QString& name, T min, T max, bool mustBeAPowerOf32)
+void Core::checkSetting(const QString& name, T min, T max)
 {
    T actualValue = SETTINGS.get<T>(name);
    T newValue;
@@ -104,7 +104,7 @@ void Core::checkSetting(const QString& name, T min, T max, bool mustBeAPowerOf32
    {
       L_ERRO(
          QString("The value of the setting '%1' must be between %2 and %3. The actual value of %4 is modified to %5").
-         arg(name).arg(min).arg(max).arg(actualValue).arg(newValue)
+            arg(name).arg(min).arg(max).arg(actualValue).arg(newValue)
       );
       SETTINGS.set(name, newValue);
    }

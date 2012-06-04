@@ -73,6 +73,18 @@ namespace FM
       return nr1.level < nr2.level;
    }
 
+   template <typename T>
+   inline bool operator==(const NodeResult<T>& nr1, const NodeResult<T>& nr2)
+   {
+      return nr1.value == nr2.value;
+   }
+
+   template <typename T>
+   inline uint qHash(const NodeResult<T>& nr)
+   {
+      return qHash(nr.value);
+   }
+
    /////
 
    template<typename T>
@@ -119,18 +131,6 @@ namespace FM
       QList<Node<T>*> children; ///< The children nodes.
       QList<T> items; ///< The indexed items.
    };
-
-   template <typename T>
-   inline bool operator==(const NodeResult<T>& r1, const NodeResult<T>& r2)
-   {
-      return r1.value == r2.value;
-   }
-
-   template <typename T>
-   inline uint qHash(const NodeResult<T>& r)
-   {
-      return qHash(r.value);
-   }
 }
 
 /***** Definition *****/
