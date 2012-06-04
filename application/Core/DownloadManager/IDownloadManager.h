@@ -41,13 +41,20 @@ namespace DM
       virtual ~IDownloadManager() {}
 
       /**
-        * @remarks entry.path is not taken into account .
-        * The entry will be put in the root of the first shared directory with enough space.
+        * The entry will be put in the root of the first shared directory with enough space. This shared directory is defined when the download starts.
+        * @remarks 'remoteEntry.path' is not taken into account when creating the local file.
         */
       virtual void addDownload(const Protos::Common::Entry& remoteEntry, PM::IPeer* peerSource) = 0;
 
+      /**
+        * The entry will be put in the given path relatively to the given directory. The path directories are created if they don't exist.
+        */
       virtual void addDownload(const Protos::Common::Entry& remoteEntry, PM::IPeer* peerSource, const Common::Hash& destinationDirectoryID, const QString& relativePath) = 0;
 
+      /**
+        * The entry is put in the given absolute path.
+        * If the last directory isn't shared it is added as a shared directory. TODO: This behavior will be changed in the 1.2 version as we can share a single file without sharing its directory.
+        */
       virtual void addDownload(const Protos::Common::Entry& remoteEntry, PM::IPeer* peerSource, const QString& absolutePath) = 0;
 
       /**
@@ -60,8 +67,14 @@ namespace DM
         */
       virtual void moveDownloads(const QList<quint64>& downloadIDRefs, const QList<quint64>& downloadIDs, Protos::GUI::MoveDownloads::Position position) = 0;
 
+      /**
+        * Remove all completed download from the queue, will not delete any physical file.
+        */
       virtual void removeAllCompleteDownloads() = 0;
 
+      /**
+        * Remove the given download IDs from the queue. Unfinished files are physically removed.
+        */
       virtual void removeDownloads(QList<quint64> IDs) = 0;
 
       /**
@@ -70,7 +83,7 @@ namespace DM
       virtual void pauseDownloads(QList<quint64> IDs, bool pause = true) = 0;
 
       /**
-        * Return the n (at max) first unfinished chunks.
+        * Return the n (at max) first unfinished chunks. The chunks are taken from the first files in the download queue.
         */
       virtual QList<QSharedPointer<IChunkDownloader>> getTheFirstUnfinishedChunks(int n) = 0;
 
