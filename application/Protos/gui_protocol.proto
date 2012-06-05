@@ -7,7 +7,6 @@
   */
 
 import "common.proto";
-import "core_settings.proto";
 
 package Protos.GUI;
 

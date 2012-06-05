@@ -3,6 +3,9 @@ CONFIG(debug, debug|release) {
    DEFINES += DEBUG
 } else {
    FOLDER = release
+   # Disable, GCC 4.6 exit with an error during link time.
+   #QMAKE_CXXLAGS_RELEASE += -flto
+   #QMAKE_LFLAGS_RELEASE += -flto
    prof {
       QMAKE_CXXFLAGS += -pg -g
       QMAKE_LFLAGS += -pg

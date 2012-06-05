@@ -32,6 +32,7 @@
 #include <PersistentData.h>
 #include <Settings.h>
 #include <Global.h>
+#include <StringUtils.h>
 #include <ZeroCopyStreamQIODevice.h>
 #include <ProtoHelper.h>
 #include <SortedList.h>
@@ -71,13 +72,13 @@ void Tests::commonPrefix()
    const QString s7 = "abcdefg";
    const QString s8 = "zzz";
 
-   QCOMPARE(Global::commonPrefix(s1, s2), 3);
-   QCOMPARE(Global::commonPrefix(s1, s3), 3);
-   QCOMPARE(Global::commonPrefix(s1, s4), 1);
-   QCOMPARE(Global::commonPrefix(s1, s5), 0);
-   QCOMPARE(Global::commonPrefix(s1, s6), 0);
-   QCOMPARE(Global::commonPrefix(s1, s7), 4);
-   QCOMPARE(Global::commonPrefix(s1, s8), 0);
+   QCOMPARE(StringUtils::commonPrefix(s1, s2), 3);
+   QCOMPARE(StringUtils::commonPrefix(s1, s3), 3);
+   QCOMPARE(StringUtils::commonPrefix(s1, s4), 1);
+   QCOMPARE(StringUtils::commonPrefix(s1, s5), 0);
+   QCOMPARE(StringUtils::commonPrefix(s1, s6), 0);
+   QCOMPARE(StringUtils::commonPrefix(s1, s7), 4);
+   QCOMPARE(StringUtils::commonPrefix(s1, s8), 0);
 }
 
 void Tests::nCombinations()
@@ -141,20 +142,20 @@ void Tests::availableDiskSpace()
 
 void Tests::splitInWords()
 {
-    QCOMPARE(Global::splitInWords("a"), QStringList() << "a");
-    QCOMPARE(Global::splitInWords("a b"), QStringList() << "a" << "b");
-    QCOMPARE(Global::splitInWords("    a    b    "), QStringList() << "a" << "b");
-    QCOMPARE(Global::splitInWords("a_b"), QStringList() << "a" << "b");
-    QCOMPARE(Global::splitInWords("ABC DEF"), QStringList() << "abc" << "def");
-    QCOMPARE(Global::splitInWords(QString::fromUtf8("àéè")), QStringList() << "aee");
-    QCOMPARE(Global::splitInWords("abc%_-[]def"), QStringList() << "abc" << "def");
+    QCOMPARE(StringUtils::splitInWords("a"), QStringList() << "a");
+    QCOMPARE(StringUtils::splitInWords("a b"), QStringList() << "a" << "b");
+    QCOMPARE(StringUtils::splitInWords("    a    b    "), QStringList() << "a" << "b");
+    QCOMPARE(StringUtils::splitInWords("a_b"), QStringList() << "a" << "b");
+    QCOMPARE(StringUtils::splitInWords("ABC DEF"), QStringList() << "abc" << "def");
+    QCOMPARE(StringUtils::splitInWords(QString::fromUtf8("àéè")), QStringList() << "aee");
+    QCOMPARE(StringUtils::splitInWords("abc%_-[]def"), QStringList() << "abc" << "def");
 }
 
 void Tests::hashStringToInt()
 {
-   QCOMPARE(Global::hashStringToInt(""), 0u);
-   QCOMPARE(Global::hashStringToInt("abcde"), 444281822u);
-   QCOMPARE(Global::hashStringToInt("abcdef"), 3174932005u);
+   QCOMPARE(StringUtils::hashStringToInt(""), 0u);
+   QCOMPARE(StringUtils::hashStringToInt("abcde"), 444281822u);
+   QCOMPARE(StringUtils::hashStringToInt("abcdef"), 3174932005u);
 }
 
 void Tests::sortedList()
