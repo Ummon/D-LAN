@@ -15,6 +15,7 @@ RC_FILE = ../Common/version.rc
 
 include(../Common/common.pri)
 include(../Libs/protobuf.pri)
+include(../Protos/Protos.pri)
 
 INCLUDEPATH += . ..
 

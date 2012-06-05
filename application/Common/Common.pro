@@ -7,6 +7,7 @@ TARGET = Common
 
 include(common.pri)
 include(../Libs/protobuf.pri)
+include(../Protos/Protos.pri)
 
 INCLUDEPATH += . \
     ..
