@@ -83,14 +83,14 @@ WordIndex<T>::WordIndex() :
 template<typename T>
 void WordIndex<T>::addItem(const QString& word, const T& item)
 {
-   QMutexLocker locker(&mutex);
+   QMutexLocker locker(&this->mutex);
    this->root.addItem(&word, item);
 }
 
 template<typename T>
 void WordIndex<T>::addItem(const QStringList& words, const T& item)
 {
-   QMutexLocker locker(&mutex);
+   QMutexLocker locker(&this->mutex);
    for (QStringListIterator i(words); i.hasNext();)
       this->root.addItem(&i.next(), item);
 }
@@ -98,14 +98,14 @@ void WordIndex<T>::addItem(const QStringList& words, const T& item)
 template<typename T>
 void WordIndex<T>::rmItem(const QString& word, const T& item)
 {
-   QMutexLocker locker(&mutex);
+   QMutexLocker locker(&this->mutex);
    this->root.rmItem(word, item);
 }
 
 template<typename T>
 void WordIndex<T>::rmItem(const QStringList& words, const T& item)
 {
-   QMutexLocker locker(&mutex);
+   QMutexLocker locker(&this->mutex);
    for (QStringListIterator i(words); i.hasNext();)
       this->root.rmItem(i.next(), item);
 }
@@ -113,7 +113,7 @@ void WordIndex<T>::rmItem(const QStringList& words, const T& item)
 template<typename T>
 void WordIndex<T>::renameItem(const QString& oldWord, const QString& newWord, const T& item)
 {
-   QMutexLocker locker(&mutex);
+   QMutexLocker locker(&this->mutex);
    this->root.rmItem(oldWord, item);
    this->root.addItem(&newWord, item);
 }
@@ -121,7 +121,7 @@ void WordIndex<T>::renameItem(const QString& oldWord, const QString& newWord, co
 template<typename T>
 void WordIndex<T>::renameItem(const QStringList& oldWords, const QStringList& newWords, const T& item)
 {
-   QMutexLocker locker(&mutex);
+   QMutexLocker locker(&this->mutex);
    for (QStringListIterator i(oldWords); i.hasNext();)
       this->root.rmItem(i.next(), item);
    for (QStringListIterator i(newWords); i.hasNext();)
@@ -135,7 +135,7 @@ void WordIndex<T>::renameItem(const QStringList& oldWords, const QStringList& ne
 template<typename T>
 QList<NodeResult<T>> WordIndex<T>::search(const QString& word, int maxNbResult) const
 {
-   QMutexLocker locker(&mutex);
+   QMutexLocker locker(&this->mutex);
    return this->root.search(word, word.size() >= MIN_WORD_SIZE_PARTIAL_MATCH, maxNbResult);
 }
 
@@ -145,7 +145,7 @@ QList<NodeResult<T>> WordIndex<T>::search(const QString& word, int maxNbResult) 
 template<typename T>
 QList<NodeResult<T>> WordIndex<T>::search(const QStringList& words, int maxNbResult) const
 {
-   QMutexLocker locker(&mutex);
+   QMutexLocker locker(&this->mutex);
 
    const int N = words.size();
 

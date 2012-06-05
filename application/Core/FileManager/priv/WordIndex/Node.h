@@ -30,7 +30,7 @@
 /**
   * @class FM::Node
   *
-  * Indexed item by string, see the class 'WordIndex' for some explanations.
+  * Indexed item by string, see the class 'WordIndex' for more explanations.
   */
 
 namespace FM
