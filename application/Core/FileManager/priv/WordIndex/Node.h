@@ -25,7 +25,7 @@
 #include <QPair>
 
 #include <Common/Uncopyable.h>
-#include <Common/Global.h>
+#include <Common/StringUtils.h>
 
 /**
   * @class FM::Node
@@ -161,7 +161,7 @@ void Node<T>::addItem(const QStringRef& word, const T& item)
       for (int i = 0; i < this->children.size(); ++i)
       {
          Node<T>* child = this->children[i];
-         const int p = Common::Global::commonPrefix(word, &child->part);
+         const int p = Common::StringUtils::commonPrefix(word, &child->part);
          if (p != 0)
          {
             if (p == word.size())
@@ -283,7 +283,7 @@ QPair<Node<T>*, int> Node<T>::getNode(const QString& word, bool exactMatch) cons
    for (int i = 0; i < currentParent->children.size(); ++i)
    {
       Node<T>* child = currentParent->children[i];
-      int p = Common::Global::commonPrefix(&part, &child->part);
+      int p = Common::StringUtils::commonPrefix(&part, &child->part);
 
       if (p != 0)
       {

@@ -27,6 +27,7 @@ using namespace GUI;
 #include <QUrl>
 
 #include <Common/Global.h>
+#include <Common/StringUtils.h>
 #include <Common/Settings.h>
 
 #include <Utils.h>
@@ -422,7 +423,7 @@ void WidgetDownloads::saveTreeViewState(const QModelIndex& index, SimpleTree<qui
    {
       const QModelIndex& childIndex = this->downloadsTreeModel.index(row, 0, index);
       if (this->ui->tblDownloads->isExpanded(childIndex))
-         this->saveTreeViewState(childIndex, tree->insertChild(Common::Global::hashStringToInt(this->downloadsTreeModel.data(childIndex).toString())));
+         this->saveTreeViewState(childIndex, tree->insertChild(Common::StringUtils::hashStringToInt(this->downloadsTreeModel.data(childIndex).toString())));
    }
 }
 
@@ -443,7 +444,7 @@ void WidgetDownloads::restoreTreeViewState(const QModelIndex& index, SimpleTree<
    for (int row = 0; row < this->downloadsTreeModel.rowCount(index); row++)
    {
       const QModelIndex& childIndex = this->downloadsTreeModel.index(row, 0, index);
-      const quint32 currentHash = Common::Global::hashStringToInt(this->downloadsTreeModel.data(childIndex).toString());
+      const quint32 currentHash = Common::StringUtils::hashStringToInt(this->downloadsTreeModel.data(childIndex).toString());
 
       for (int i = 0; i < tree->getNbChildren(); i++)
          if (tree->getChild(i)->getItem() == currentHash)

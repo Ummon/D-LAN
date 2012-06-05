@@ -58,15 +58,6 @@ namespace Common
       static bool isWindowsPath(const QString& path);
       static bool isWindowsRootPath(const QString& path);
 
-      static QString toLowerAndRemoveAccents(const QString& str);
-      static QStringList splitInWords(const QString& words);
-      static int strcmpi(const std::string& s1, const std::string& s2);
-
-      static inline int commonPrefix(const QString& s1, const QString& s2) { return Global::commonPrefix(&s1, &s2); }
-      static inline int commonPrefix(const QStringRef& s1, const QStringRef& s2);
-
-      static quint32 hashStringToInt(const QString& str);
-
       enum class DataFolderType { ROAMING = 0, LOCAL = 1 };
 
    private:
@@ -98,18 +89,6 @@ namespace Common
       static QString getQObjectHierarchy(const QObject* root);
       static QString getQObjectHierarchy(const QObject* root, std::function<QString(const QObject*)> fun);
    };
-}
-
-inline int Common::Global::commonPrefix(const QStringRef& s1, const QStringRef& s2)
-{
-   int i = 0;
-   while (i < s1.size() && i < s2.size())
-   {
-      if (s1.at(i) != s2.at(i))
-         return i;
-      ++i;
-   }
-   return i;
 }
 
 #endif

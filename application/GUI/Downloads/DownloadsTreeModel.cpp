@@ -20,7 +20,7 @@
 using namespace GUI;
 
 #include <Common/ProtoHelper.h>
-#include <Common/Global.h>
+#include <Common/StringUtils.h>
 #include <QtGlobal>
 
 /**
@@ -592,7 +592,7 @@ bool GUI::operator>(const Protos::GUI::State::Download& d1, const Protos::GUI::S
       return d1.local_entry().type() < d2.local_entry().type();
 
    // We don't use the 'QString' class because of performance issue of the conversion.
-   return Common::Global::strcmpi(d1.local_entry().name(), d2.local_entry().name()) == 1;
+   return Common::StringUtils::strcmpi(d1.local_entry().name(), d2.local_entry().name()) == 1;
 }
 
 bool GUI::operator<(const Protos::GUI::State::Download& d1, const Protos::GUI::State::Download& d2)
@@ -601,5 +601,5 @@ bool GUI::operator<(const Protos::GUI::State::Download& d1, const Protos::GUI::S
       return d1.local_entry().type() > d2.local_entry().type();
 
    // We don't use the 'QString' class because of performance issue of the conversion.
-   return Common::Global::strcmpi(d1.local_entry().name(), d2.local_entry().name()) == -1;
+   return Common::StringUtils::strcmpi(d1.local_entry().name(), d2.local_entry().name()) == -1;
 }

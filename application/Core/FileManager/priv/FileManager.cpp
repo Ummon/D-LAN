@@ -37,6 +37,7 @@ using namespace FM;
 #include <Common/Settings.h>
 #include <Common/Constants.h>
 #include <Common/Global.h>
+#include <Common/StringUtils.h>
 #include <Exceptions.h>
 #include <priv/Global.h>
 #include <priv/Constants.h>
@@ -183,7 +184,7 @@ Protos::Common::Entries FileManager::getEntries()
 
 QList<Protos::Common::FindResult> FileManager::find(const QString& words, int maxNbResult, int maxSize)
 {
-   QList<NodeResult<Entry*>> result = this->wordIndex.search(Common::Global::splitInWords(words), maxNbResult);
+   QList<NodeResult<Entry*>> result = this->wordIndex.search(Common::StringUtils::splitInWords(words), maxNbResult);
 
    QList<Protos::Common::FindResult> findResults;
    findResults << Protos::Common::FindResult();
@@ -342,7 +343,7 @@ void FileManager::entryAdded(Entry* entry)
       return;
 
    L_DEBU(QString("Adding entry '%1' to the index ..").arg(entry->getName()));
-   this->wordIndex.addItem(Common::Global::splitInWords(entry->getName()), entry);
+   this->wordIndex.addItem(Common::StringUtils::splitInWords(entry->getName()), entry);
    L_DEBU("Entry added to the index ..");
 }
 
@@ -352,14 +353,14 @@ void FileManager::entryRemoved(Entry* entry)
       return;
 
    L_DEBU(QString("Removing entry '%1' from the index..").arg(entry->getName()));
-   this->wordIndex.rmItem(Common::Global::splitInWords(entry->getName()), entry);
+   this->wordIndex.rmItem(Common::StringUtils::splitInWords(entry->getName()), entry);
    L_DEBU("Entry removed from the index..");
 }
 
 void FileManager::entryRenamed(Entry* entry, const QString& oldName)
 {
    L_DEBU(QString("Renaming entry '%1' to '%2' in the index..").arg(entry->getName()).arg(oldName));
-   this->wordIndex.renameItem(Common::Global::splitInWords(oldName), Common::Global::splitInWords(entry->getName()), entry);
+   this->wordIndex.renameItem(Common::StringUtils::splitInWords(oldName), Common::StringUtils::splitInWords(entry->getName()), entry);
    L_DEBU("Entry renamed in the index..");
 }
 

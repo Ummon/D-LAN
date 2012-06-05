@@ -25,6 +25,7 @@ using namespace GUI;
 
 #include <Common/ProtoHelper.h>
 #include <Common/Global.h>
+#include <Common/StringUtils.h>
 
 /**
   * @class PeerListModel
@@ -316,12 +317,12 @@ void PeerListModel::sort()
 
 bool PeerListModel::Peer::sortCompByNick(const Peer* p1, const Peer* p2)
 {
-   return Common::Global::toLowerAndRemoveAccents(p1->nick) < Common::Global::toLowerAndRemoveAccents(p2->nick);
+   return Common::StringUtils::toLowerAndRemoveAccents(p1->nick) < Common::StringUtils::toLowerAndRemoveAccents(p2->nick);
 }
 
 bool PeerListModel::Peer::sortCompBySharingAmount(const PeerListModel::Peer* p1, const PeerListModel::Peer* p2)
 {
    if (p1->sharingAmount == p2->sharingAmount)
-      return Common::Global::toLowerAndRemoveAccents(p1->nick) < Common::Global::toLowerAndRemoveAccents(p2->nick);
+      return Common::StringUtils::toLowerAndRemoveAccents(p1->nick) < Common::StringUtils::toLowerAndRemoveAccents(p2->nick);
    return p1->sharingAmount > p2->sharingAmount;
 }

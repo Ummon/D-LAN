@@ -32,6 +32,7 @@ using namespace RCM;
 #include <Common/Hash.h>
 #include <Common/SharedDir.h>
 #include <Common/Global.h>
+#include <Common/StringUtils.h>
 #include <Core/FileManager/IChunk.h>
 #include <Core/FileManager/Exceptions.h>
 #include <Core/PeerManager/IPeer.h>
@@ -248,7 +249,7 @@ void RemoteConnection::refresh()
          if (!addresses.isEmpty())
          {
             Protos::Common::Interface* interfaceMess = state.add_interface();
-            interfaceMess->set_id(interface.index() == 0 ? Common::Global::hashStringToInt(interface.name()) : interface.index());
+            interfaceMess->set_id(interface.index() == 0 ? Common::StringUtils::hashStringToInt(interface.name()) : interface.index());
             Common::ProtoHelper::setStr(*interfaceMess, &Protos::Common::Interface::set_name, interface.humanReadableName());
             interfaceMess->set_isup(interface.flags().testFlag(QNetworkInterface::IsUp) && interface.flags().testFlag(QNetworkInterface::IsRunning));
             for (QListIterator<QNetworkAddressEntry> j(addresses); j.hasNext();)

@@ -28,7 +28,7 @@ using namespace GUI;
 #include <QUrl>
 #include <QWindowsXPStyle>
 
-#include <Common/Global.h>
+#include <Common/StringUtils.h>
 #include <Common/Settings.h>
 #include <Utils.h>
 #include <Log.h>
@@ -121,12 +121,12 @@ QSize SearchDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelI
 
 void SearchDelegate::setTerms(const QString& terms)
 {
-   this->currentTerms = Common::Global::splitInWords(terms);
+   this->currentTerms = Common::StringUtils::splitInWords(terms);
 }
 
 QString SearchDelegate::toHtmlText(const QString& text) const
 {
-   QString textWithoutAccent = Global::toLowerAndRemoveAccents(text);
+   QString textWithoutAccent = StringUtils::toLowerAndRemoveAccents(text);
 
    QString htmlText(text);
 
