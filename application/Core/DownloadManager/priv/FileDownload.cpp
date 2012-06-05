@@ -46,8 +46,7 @@ FileDownload::FileDownload(
    Common::TransferRateCalculator& transferRateCalculator,
    Protos::Queue::Queue::Entry::Status status
 ) :
-   Download(peerSource, remoteEntry, localEntry),
-   fileManager(fileManager),
+   Download(fileManager, peerSource, remoteEntry, localEntry),
    linkedPeers(linkedPeers),
    NB_CHUNK(this->remoteEntry.size() / SETTINGS.get<quint32>("chunk_size") + (this->remoteEntry.size() % SETTINGS.get<quint32>("chunk_size") == 0 ? 0 : 1)),
    occupiedPeersAskingForHashes(occupiedPeersAskingForHashes),
@@ -98,6 +97,10 @@ void FileDownload::start()
       this->peerSourceBecomesAvailable();
 
    this->updateStatus();
+
+   // If the file is empty we create it now.
+   if (this->localEntry.size() == 0 && !this->localEntry.exists())
+      this->createFile();
 
    if (this->hasAValidPeerSource())
       this->occupiedPeersDownloadingChunk.newPeer(this->peerSource);
@@ -227,36 +230,12 @@ QSharedPointer<ChunkDownloader> FileDownload::getAChunkToDownload()
       return QSharedPointer<ChunkDownloader>();
 
    // If there is many chunk with the same best speed we choose randomly one of them.
-   QSharedPointer<ChunkDownloader> chunkDownloader =
-      chunksReadyToDownload.size() == 1 ? chunksReadyToDownload.first() : chunksReadyToDownload[mtrand.randInt(chunksReadyToDownload.size() - 1)];
+   QSharedPointer<ChunkDownloader> chunkDownloader = chunksReadyToDownload.size() == 1 ? chunksReadyToDownload.first() : chunksReadyToDownload[mtrand.randInt(chunksReadyToDownload.size() - 1)];
 
    if (!this->localEntry.exists())
    {
-      try
-      {
-         this->chunksWithoutDownload = this->fileManager->newFile(this->localEntry);
-
-         for (int i = 0; !this->chunksWithoutDownload.isEmpty() && i < this->chunkDownloaders.size(); i++)
-            this->chunkDownloaders[i]->setChunk(this->chunksWithoutDownload.takeFirst());
-      }
-      catch(FM::NoWriteableDirectoryException&)
-      {
-         L_DEBU(QString("There is no shared directory with writting rights for this download : %1").arg(Common::ProtoHelper::getStr(this->remoteEntry, &Protos::Common::Entry::name)));
-         this->setStatus(NO_SHARED_DIRECTORY_TO_WRITE);
+      if (!this->createFile())
          return QSharedPointer<ChunkDownloader>();
-      }
-      catch(FM::InsufficientStorageSpaceException&)
-      {
-         L_DEBU(QString("There is no enough space storage available for this download : %1").arg(Common::ProtoHelper::getStr(this->remoteEntry, &Protos::Common::Entry::name)));
-         this->setStatus(NO_ENOUGH_FREE_SPACE);
-         return QSharedPointer<ChunkDownloader>();
-      }
-      catch(FM::UnableToCreateNewFileException&)
-      {
-         L_DEBU(QString("Unable to create the file, download : %1").arg(Common::ProtoHelper::getStr(this->remoteEntry, &Protos::Common::Entry::name)));
-         this->setStatus(UNABLE_TO_CREATE_THE_FILE);
-         return QSharedPointer<ChunkDownloader>();
-      }
 
       // 'newFile(..)' above can return some completed chunks.
       if (!chunkDownloader->getChunk().isNull() && chunkDownloader->getChunk()->isComplete())
@@ -308,6 +287,45 @@ void FileDownload::remove()
       i.next()->tryToRemoveItsIncompleteFile();
 
    Download::remove();
+}
+
+/**
+  * Send a request to the source peer of the download to ask it the hashes. Only sent if needed.
+  * Return true if a 'GetHashes' request has been sent to the peer.
+  */
+bool FileDownload::retrieveHashes()
+{
+   // If we've already got all the chunk hashes it's unecessary to re-ask them.
+   if (
+      this->nbHashesKnown == this->NB_CHUNK ||
+      this->status == COMPLETE ||
+      this->status == DELETED ||
+      this->status == PAUSED ||
+      this->status == UNABLE_TO_RETRIEVE_THE_HASHES ||
+      this->status == ENTRY_NOT_FOUND
+   )
+      return false;
+
+   // If the source peer isn't online, we can't ask the hashes.
+   if (!this->hasAValidPeerSource())
+   {
+      this->setStatus(UNKNOWN_PEER_SOURCE);
+      return false;
+   }
+
+   // If the peer source is already occupied, we can't ask the hashes.
+   if (!this->occupiedPeersAskingForHashes.setPeerAsOccupied(this->peerSource))
+      return false;
+
+   this->setStatus(GETTING_THE_HASHES);
+
+   this->getHashesResult = this->peerSource->getHashes(this->remoteEntry);
+   connect(this->getHashesResult.data(), SIGNAL(result(const Protos::Core::GetHashesResult&)), this, SLOT(result(const Protos::Core::GetHashesResult&)));
+   connect(this->getHashesResult.data(), SIGNAL(nextHash(const Common::Hash&)), this, SLOT(nextHash(const Common::Hash&)));
+   connect(this->getHashesResult.data(), SIGNAL(timeout()), this, SLOT(getHashTimeout()));
+   this->getHashesResult->start();
+
+   return true;
 }
 
 /**
@@ -383,45 +401,6 @@ bool FileDownload::updateStatus()
    this->setStatus(newStatus);
 
    return false;
-}
-
-/**
-  * Send a request to the source peer of the download to ask it the hashes. Only sent if needed.
-  * Return true if a 'GetHashes' request has been sent to the peer.
-  */
-bool FileDownload::retrieveHashes()
-{
-   // If we've already got all the chunk hashes it's unecessary to re-ask them.
-   if (
-      this->nbHashesKnown == this->NB_CHUNK ||
-      this->status == COMPLETE ||
-      this->status == DELETED ||
-      this->status == PAUSED ||
-      this->status == UNABLE_TO_RETRIEVE_THE_HASHES ||
-      this->status == ENTRY_NOT_FOUND
-   )
-      return false;
-
-   // If the source peer isn't online, we can't ask the hashes.
-   if (!this->hasAValidPeerSource())
-   {
-      this->setStatus(UNKNOWN_PEER_SOURCE);
-      return false;
-   }
-
-   // If the peer source is already occupied, we can't ask the hashes.
-   if (!this->occupiedPeersAskingForHashes.setPeerAsOccupied(this->peerSource))
-      return false;
-
-   this->setStatus(GETTING_THE_HASHES);
-
-   this->getHashesResult = this->peerSource->getHashes(this->remoteEntry);
-   connect(this->getHashesResult.data(), SIGNAL(result(const Protos::Core::GetHashesResult&)), this, SLOT(result(const Protos::Core::GetHashesResult&)));
-   connect(this->getHashesResult.data(), SIGNAL(nextHash(const Common::Hash&)), this, SLOT(nextHash(const Common::Hash&)));
-   connect(this->getHashesResult.data(), SIGNAL(timeout()), this, SLOT(getHashTimeout()));
-   this->getHashesResult->start();
-
-   return true;
 }
 
 void FileDownload::retryToRetrieveHashes()
@@ -544,6 +523,48 @@ void FileDownload::connectChunkDownloaderSignals(QSharedPointer<ChunkDownloader>
    connect(chunkDownloader.data(), SIGNAL(downloadStarted()), this, SLOT(chunkDownloaderStarted()), Qt::DirectConnection);
    connect(chunkDownloader.data(), SIGNAL(downloadFinished()), this, SLOT(chunkDownloaderFinished()), Qt::DirectConnection);
    connect(chunkDownloader.data(), SIGNAL(numberOfPeersChanged()), this, SLOT(updateStatus()), Qt::DirectConnection);
+}
+
+/**
+  * Try to create the file.
+  * May change the status of the download if an error occurs.
+  * @return 'true' if everything fine else 'false' if an error has occured.
+  */
+bool FileDownload::createFile()
+{
+   try
+   {
+      this->chunksWithoutDownload = this->fileManager->newFile(this->localEntry);
+
+      for (int i = 0; !this->chunksWithoutDownload.isEmpty() && i < this->chunkDownloaders.size(); i++)
+         this->chunkDownloaders[i]->setChunk(this->chunksWithoutDownload.takeFirst());
+   }
+   catch(FM::NoWriteableDirectoryException&)
+   {
+      L_DEBU(QString("There is no shared directory with writting rights for this download : %1").arg(Common::ProtoHelper::getStr(this->remoteEntry, &Protos::Common::Entry::name)));
+      this->setStatus(NO_SHARED_DIRECTORY_TO_WRITE);
+      return false;
+   }
+   catch(FM::InsufficientStorageSpaceException&)
+   {
+      L_DEBU(QString("There is no enough space storage available for this download : %1").arg(Common::ProtoHelper::getStr(this->remoteEntry, &Protos::Common::Entry::name)));
+      this->setStatus(NO_ENOUGH_FREE_SPACE);
+      return false;
+   }
+   catch(FM::UnableToCreateNewFileException&)
+   {
+      L_DEBU(QString("Unable to create the file, download : %1").arg(Common::ProtoHelper::getStr(this->remoteEntry, &Protos::Common::Entry::name)));
+      this->setStatus(UNABLE_TO_CREATE_THE_FILE);
+      return false;
+   }
+   catch(FM::UnableToCreateNewDirException&)
+   {
+      L_DEBU(QString("Unable to create the path, download : %1").arg(Common::ProtoHelper::getStr(this->remoteEntry, &Protos::Common::Entry::name)));
+      this->setStatus(UNABLE_TO_CREATE_THE_DIRECTORY);
+      return false;
+   }
+
+   return true;
 }
 
 /**

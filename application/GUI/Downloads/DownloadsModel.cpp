@@ -119,6 +119,9 @@ QVariant DownloadsModel::getData(const Protos::GUI::State::Download& download, c
          case Protos::GUI::State::Download::UNABLE_TO_CREATE_THE_FILE:
             toolTip += tr("Unable to create the file");
             break;
+         case Protos::GUI::State::Download::UNABLE_TO_CREATE_THE_DIRECTORY:
+            toolTip += download.local_entry().type() == Protos::Common::Entry::DIR ? tr("Unable to create the directory") : tr("Unable to create the path of the file");
+            break;
          case Protos::GUI::State::Download::UNABLE_TO_RETRIEVE_THE_HASHES:
             toolTip += tr("Unable to retrieve the hashes");
             break;

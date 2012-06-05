@@ -118,6 +118,7 @@ QString MessageHeader::messToStr(MessageType type)
    case GUI_DOWNLOAD: return "DOWNLOAD";
    case GUI_CHAT_MESSAGE: return "CHAT_MESSAGE";
    case GUI_REFRESH: return "REFRESH";
+   case GUI_REFRESH_NETWORK_INTERFACES: return "REFRESH_NETWORK_INTERFACES";
    default: return "<UNKNOWN_MESSAGE_TYPE>";
    }
 }

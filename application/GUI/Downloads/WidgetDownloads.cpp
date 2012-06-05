@@ -46,7 +46,7 @@ void DownloadsDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opt
       progressBarOption.minimum = 0;
       progressBarOption.maximum = 10000;
       progressBarOption.textAlignment = Qt::AlignHCenter | Qt::AlignVCenter;
-      progressBarOption.progress = progress.progress;
+      progressBarOption.progress = progress.status == Protos::GUI::State::Download::COMPLETE ? 10000 : progress.progress; // Complete -> 100%.
 
       switch (progress.status)
       {
@@ -114,8 +114,7 @@ WidgetDownloads::WidgetDownloads(QSharedPointer<RCC::ICoreConnection> coreConnec
    coreConnection(coreConnection),
    downloadsFlatModel(coreConnection, peerListModel, sharedDirsModel, checkBoxModel),
    downloadsTreeModel(coreConnection, peerListModel, sharedDirsModel, checkBoxModel),
-   currentDownloadsModel(0),
-   treeViewState(new SimpleTree<quint32>())
+   currentDownloadsModel(0)
 {
    this->ui->setupUi(this);
 
@@ -413,8 +412,8 @@ void WidgetDownloads::saveTreeViewState()
    if (this->currentDownloadsModel != &this->downloadsTreeModel)
       return;
 
-   this->treeViewState->deleteAllChildren();
-   this->saveTreeViewState(QModelIndex(), this->treeViewState);
+   this->treeViewState.deleteAllChildren();
+   this->saveTreeViewState(QModelIndex(), &this->treeViewState);
 }
 
 void WidgetDownloads::saveTreeViewState(const QModelIndex& index, SimpleTree<quint32>* tree)
@@ -435,7 +434,7 @@ void WidgetDownloads::restoreTreeViewState()
    if (this->currentDownloadsModel != &this->downloadsTreeModel)
       return;
 
-   this->restoreTreeViewState(QModelIndex(), this->treeViewState);
+   this->restoreTreeViewState(QModelIndex(), &this->treeViewState);
 }
 
 void WidgetDownloads::restoreTreeViewState(const QModelIndex& index, SimpleTree<quint32>* tree)

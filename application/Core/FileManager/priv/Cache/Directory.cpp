@@ -31,6 +31,9 @@ using namespace FM;
 #include <priv/Cache/File.h>
 #include <priv/Cache/SharedDirectory.h>
 
+/**
+  * @exception UnableToCreateNewDirException (may be thrown only if 'createPhysically' is true).
+  */
 Directory::Directory(Directory* parent, const QString& name, bool createPhysically) :
    Entry(parent->cache, name), parent(parent), subDirs(&Directory::entrySortingFun), files(&Directory::entrySortingFun), mutex(QMutex::Recursive)
 {
@@ -39,7 +42,10 @@ Directory::Directory(Directory* parent, const QString& name, bool createPhysical
 
    if (createPhysically)
       if (!QDir(this->parent->getFullPath()).mkdir(this->name))
+      {
          L_ERRO(QString("Unable to create the directory : %1").arg(this->getFullPath()));
+         throw UnableToCreateNewDirException();
+      }
 
    this->parent->add(this);
 }
@@ -309,6 +315,7 @@ QList<File*> Directory::getCompleteFiles() const
 /**
   * Creates a new sub-directory if none exists already otherwise
   * returns an already existing.
+  * @exception UnableToCreateNewDirException
   */
 Directory* Directory::createSubDir(const QString& name, bool physically)
 {
@@ -321,6 +328,7 @@ Directory* Directory::createSubDir(const QString& name, bool physically)
 /**
   * Create the all sub-directories, sub-dirs may already exist.
   * @return the last directory.
+  * @exception UnableToCreateNewDirException
   */
 Directory* Directory::createSubDirs(const QStringList& names, bool physically)
 {

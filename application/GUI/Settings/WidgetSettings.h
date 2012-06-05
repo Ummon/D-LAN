@@ -78,6 +78,8 @@ namespace GUI
       void coreConnected();
       void coreDisconnected();
 
+      void refreshNetworkInterfaces();
+
       void saveCoreSettings();
 
       void cmbLanguageChanged(int cmbIndex);

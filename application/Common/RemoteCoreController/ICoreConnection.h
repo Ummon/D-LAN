@@ -195,6 +195,11 @@ namespace RCC
         */
       virtual void refresh() = 0;
 
+      /**
+        * Ask the core to re-read the network interfaces. A new state is sent.
+        */
+      virtual void refreshNetworkInterfaces() = 0;
+
       virtual bool isRunningAsSubProcess() const = 0;
 
       struct ConnectionInfo {

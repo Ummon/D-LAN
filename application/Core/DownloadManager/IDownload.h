@@ -39,15 +39,15 @@ namespace DM
       PAUSED = 0x5,
       DELETED = 0x6,
 
-      // All theses status will imply the paused status.
       UNKNOWN_PEER_SOURCE = 0x10, // The source peer can't be found.
       ENTRY_NOT_FOUND = 0x11, // The source peer can't find the entry.
       NO_SOURCE = 0x12, // Some chunk can't be downloaded. Only when there is no more downloading.
 
-      // Error status :
+      // Error status:
       NO_SHARED_DIRECTORY_TO_WRITE = 0x20,
       NO_ENOUGH_FREE_SPACE = 0x21,
       UNABLE_TO_CREATE_THE_FILE = 0x22,
+      UNABLE_TO_CREATE_THE_DIRECTORY = 0x30,
       UNABLE_TO_RETRIEVE_THE_HASHES = 0x23,
 
       TRANSFER_ERROR = 0x24,
@@ -82,11 +82,9 @@ namespace DM
       /**
         * Return the associated entry to the download, it contains :
         * - The type (directory or file)
-        * - The path
+        * - The path. May not be defined if the path hasn't been defined when queued and the download hasn't begun.
         * - The name
         * - The size
-        * The entry can be remote or local, once the download is completed (see 'getStatus')
-        * the remote becomes local and the path corresponds to the local file.
         */
       virtual const Protos::Common::Entry& getLocalEntry() const = 0;
    };

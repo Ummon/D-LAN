@@ -104,6 +104,8 @@ namespace RCM
       void removeGetEntriesResult(const PM::IGetEntriesResult* getEntriesResult);
       void sendLastChatMessages();
 
+      void refreshAllInterfaces();
+
       void onNewMessage(Common::MessageHeader::MessageType type, const google::protobuf::Message& message);
       void onDisconnected();
 
@@ -125,6 +127,8 @@ namespace RCM
 
       bool authenticated;
       quint64 saltChallenge;
+
+      QList<QNetworkInterface> interfaces; // We are caching the interfaces because the call of 'QNetworkInterface::allInterfaces()' for each refresh is too heavy.
 
 #ifdef DEBUG
       QSharedPointer<LM::ILogger> loggerRefreshState; // A logger especially for the state message.

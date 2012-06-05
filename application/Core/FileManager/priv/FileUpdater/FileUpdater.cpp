@@ -485,7 +485,7 @@ void FileUpdater::scan(Directory* dir, bool addUnfinished)
 
             currentSubDirs.removeOne(dir);
          }
-         else if (entry.size() > 0 && (addUnfinished || !Global::isFileUnfinished(entry.fileName())))
+         else if (addUnfinished || !Global::isFileUnfinished(entry.fileName()))
          {
             File* file = currentDir->getFile(entry.fileName());
             QMutexLocker locker(&this->mutex);
