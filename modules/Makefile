@@ -2,7 +2,7 @@
 
 rep_ebin = ebin
 rep_erl = erl
-DEBUG = false
+#DEBUG = true
 
 ifdef DEBUG
    erlc_params = +debug_info -Wall -o $(rep_ebin) $<

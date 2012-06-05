@@ -20,7 +20,6 @@
    out(A) -> 
       {ehtml,
          [
-            %("search", tr(gallery, search, A)),
             image_of_the_day(A),
             {h1, [],
                {em, [], tr(home, title, A)}

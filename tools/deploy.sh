@@ -28,9 +28,8 @@ rsync $RSYNC_OPTS img $TARGET
 rsync $RSYNC_OPTS modules/ebin $TARGET/modules/
 rsync $RSYNC_OPTS modules/include $TARGET/modules/
 rsync $RSYNC_OPTS yssi $TARGET
-rsync $RSYNC_OPTS d_lan.js $TARGET
+rsync $RSYNC_OPTS js $TARGET
 rsync $RSYNC_OPTS favicon.ico $TARGET
 rsync $RSYNC_OPTS index.yaws $TARGET
-rsync $RSYNC_OPTS jquery* $TARGET
 rsync $RSYNC_OPTS style.css $TARGET
  

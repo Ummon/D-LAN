@@ -74,7 +74,7 @@ translate(fr, features, feat_6) -> "Gestion d'une liste des transferts. Il est p
 translate(en, features, feat_7) -> "Global chatting.";
 translate(fr, features, feat_7) -> "Chat global";
 
-translate(en, features, feat_8) -> "D-LAN can run without graphic interface (GUI) and be controlled remotly."; 
+translate(en, features, feat_8) -> "D-LAN can run without graphic interface (GUI) and be controlled remotely."; 
 translate(fr, features, feat_8) -> "D-LAN peut être lancé sans interface graphique (<i>GUI</i>) et être piloté à distance.";
 
 translate(en, features, feat_9) -> "Open source. Code source distributed under GPLv3 license.";
@@ -129,7 +129,7 @@ translate(fr, faq, q4) ->
    "D-LAN utilise trop de ressource, comment puis-je faire pour réduire sa consommation?";
 
 translate(en, faq, a4) ->
-   "If D-LAN is currently computing the hashes, you have to wait the end of this operation, see the last question. Otherwise it's possible to close the main D-LAN window, the GUI will be disconnected from the core and take less ressources.";
+   "If D-LAN is currently computing some hashes, you have to wait the end of this operation, see the previous question. Otherwise it's possible to close the main D-LAN window, the GUI will be disconnected from the core and take less ressources.";
 translate(fr, faq, a4) ->
    "Si D-LAN est en train de calculer les empreintes, il faut attendre que l'opération soit terminée, voir la question précédente. "
    "Sinon il est possible de fermer la fenêtre de D-LAN, l'interface est alors déconnectée du coeur et consomme moins de ressources.";
@@ -266,7 +266,7 @@ translate(en, gallery, download_files) -> "Downloads - Files";
 translate(fr, gallery, download_files) -> "Transferts - Fichiers";
 
 translate(en, gallery, download_files_comment) -> "This view shows only the files, they can be rearranged, the top files are downloaded first.";
-translate(fr, gallery, download_files_comment) -> "Cett vue montre seulement les fichier, ils peuvent être réordonnés, les fichiers en haut sont téléchargés en premier.";
+translate(fr, gallery, download_files_comment) -> "Cette vue montre seulement les fichiers, ils peuvent être réordonnés, les fichiers en haut sont téléchargés en premiers.";
 
 translate(en, gallery, upload) -> "Upload view";
 translate(fr, gallery, upload) -> "Vue des envoies";
