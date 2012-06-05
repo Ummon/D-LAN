@@ -104,13 +104,22 @@ QStringList StringUtils::splitInWords(const QString& words)
 
 /**
   * http://www.tamasoft.co.jp/en/general-info/unicode.html
+  * http://en.wikipedia.org/wiki/Hangul
   */
 bool StringUtils::isKorean(const QString& str)
 {
    for (int i = 0; i < str.size(); ++i)
    {
       const ushort& code = str[i].unicode();
-      if (code >= 0x1100 && code <= 0x11F9 || code >= 0x3131 && code <= 0x318E || code >= 0xAC00 && code <= 0xD7A3)
+      if (
+          code >= 0x1100 && code <= 0x11FF ||
+          code >= 0x3130 && code <= 0x318F ||
+          code >= 0x3200 && code <= 0x32FF ||
+          code >= 0xA960 && code <= 0xA97F ||
+          code >= 0xAC00 && code <= 0xD7AF ||
+          code >= 0xD7B0 && code <= 0xD7FF ||
+          code >= 0xFF00 && code <= 0xFFEF
+       )
          return true;
    }
    return false;
