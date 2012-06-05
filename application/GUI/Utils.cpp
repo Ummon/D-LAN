@@ -102,3 +102,8 @@ void Utils::openLocation(const QString& path)
    QDesktopServices::openUrl(QUrl("file:///" + dirPath, QUrl::TolerantMode));
 #endif
 }
+
+void Utils::openFile(const QString& path)
+{
+   QDesktopServices::openUrl(QUrl("file:///" + path, QUrl::TolerantMode));
+}

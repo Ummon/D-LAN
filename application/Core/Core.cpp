@@ -136,7 +136,7 @@ void Core::setLanguage(QLocale locale, bool load)
 }
 
 /**
-  * Check if each value settings is valid, for example buffer_size cannot be one byte or 3 TiB..
+  * Check if each value settings is valid, for example 'buffer_size' cannot be one byte or 3 TiB..
   */
 void Core::checkSettingsIntegrity()
 {
@@ -145,9 +145,9 @@ void Core::checkSettingsIntegrity()
    if (SETTINGS.get<QString>("nick").isEmpty())
       SETTINGS.set("nick", Common::Global::getCurrenMachineName());
 
-   this->checkSetting("buffer_size_reading", 1024u, 32u * 1024u * 1024u, true);
-   this->checkSetting("buffer_size_writing", 1024u, 32u * 1024u * 1024u, true);
-   this->checkSetting("socket_buffer_size", 1024u, 32u * 1024u * 1024u, true);
+   this->checkSetting("buffer_size_reading", 1024u, 32u * 1024u * 1024u);
+   this->checkSetting("buffer_size_writing", 1024u, 32u * 1024u * 1024u);
+   this->checkSetting("socket_buffer_size", 1024u, 32u * 1024u * 1024u);
    this->checkSetting("socket_timeout", 1000u, 60u * 1000u);
 
    this->checkSetting("minimum_duration_when_hashing", 100u, 30u * 1000u);

@@ -245,6 +245,11 @@ void InternalCoreConnection::refresh()
    this->send(Common::MessageHeader::GUI_REFRESH);
 }
 
+void InternalCoreConnection::refreshNetworkInterfaces()
+{
+   this->send(Common::MessageHeader::GUI_REFRESH_NETWORK_INTERFACES);
+}
+
 bool InternalCoreConnection::isRunningAsSubProcess() const
 {
    return this->coreStatus == RUNNING_AS_SUB_PROCESS;

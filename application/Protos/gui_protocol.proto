@@ -12,13 +12,8 @@ import "core_settings.proto";
 package Protos.GUI;
 
 /***** Core state *****/
-// GUI -> Core
-// id : 0xa1
-// Ask to receive a new state.
-// This message doesn't have a body.
-
 // Core -> GUI
-// id : 0x01
+// id: 0x1001
 // The state is sent periodically to the GUI (each second for example)
 // or right after a GUI command.
 // The size of this message should be lesser than 63kB to fit in one IP packet.
@@ -41,6 +36,7 @@ message State {
          NO_SHARED_DIRECTORY_TO_WRITE = 0x20;
          NO_ENOUGH_FREE_SPACE = 0x21;
          UNABLE_TO_CREATE_THE_FILE = 0x22;
+         UNABLE_TO_CREATE_THE_DIRECTORY = 0x30;
          UNABLE_TO_RETRIEVE_THE_HASHES = 0x23;
          
          TRANSFER_ERROR = 0x24;
@@ -115,14 +111,15 @@ message State {
    optional Common.Interface.Address.Protocol listenAny = 8; // If this value is set then all the interfaces of the given protocol are listened. Otherwise see the following repeated 'interface' field.
    repeated Common.Interface interface = 9;
 }
+
 // GUI -> Core
-// id : 0x02
+// id: 0x1002
 // Empty message to tell the core that we have finished to process the state message.
 
 
 /***** Events *****/
 // Core -> GUI
-// id : 0x11
+// id: 0x1011
 message EventChatMessages {
    message Message {
       required uint64 time = 1; // In [ms] since Epoch.
@@ -132,8 +129,9 @@ message EventChatMessages {
    repeated Message message = 1;
 }
 
+
 // Core -> GUI
-// id : 0x12
+// id: 0x1012
 message EventLogMessage {
    enum Severity {
       SV_FATAL_ERROR = 0x01;
@@ -158,19 +156,21 @@ message EventLogMessage {
 // All other messages can't be sent or received without a proper authentication.
 // A new salt is randomly generated each time a new connection is created.
 // Core -> GUI
-// id : 0x21
+// id: 0x1021
 message AskForAuthentication {
    required uint64 salt = 1;
    required uint64 salt_challenge = 2;
 }
+
 // Password is optional for local connections.
 // GUI -> Core
-// id : 0x22
+// id: 0x1022
 message Authentication {
    optional Common.Hash password_challenge = 1; // (hash(password) + salt) + salt_challenge
 }
+
 // Core -> GUI
-// id : 0x23
+// id: 0x1023
 // If BAD_PASSWORD the core should wait a bit before sending the result (for example 1s) to avoid dictionary attack.
 message AuthenticationResult {
    enum Status {
@@ -182,15 +182,17 @@ message AuthenticationResult {
    required Status status = 1;
 }
 
+
 // GUI -> Core
-// id : 0xB1
+// id: 0x10B1
 // Set the language of the core.
 message Language {
    required Common.Language language = 1;
 }
 
+
 // GUI -> Core
-// id : 0xD1
+// id: 0x10D1
 // Change the core password.
 // Both sent passwords are salted with 'AskForAuthentication.new_salt'.
 // If 'new_password' is set to a null hash, the password is removed, in this case the old password isn't needed.
@@ -201,8 +203,9 @@ message ChangePassword {
    optional Common.Hash old_password = 3; // Salted with the old salt. Required only if a password has already been set. 'See State.password_defined'.
 }
 
+
 // GUI -> Core
-// id : 0x31
+// id: 0x1031
 // Set the settings.
 message CoreSettings {
    message SharedDirectories {
@@ -217,40 +220,46 @@ message CoreSettings {
    optional Common.Interface.Address.Protocol listen_any = 5 [default = IPv6];
 }
 
+
 // GUI -> Core
-// id : 0x41
+// id: 0x1041
 message Search  {
    required string pattern = 2;
 }
+
 // Core -> GUI (directly)
-// id : 0x42
+// id: 0x1042
 message Tag  {
    required uint64 tag = 2;
 }
+
 // Core -> GUI (deferred)
 // This message is sent for each UDP datagram received.
-// id : 0x43
+// id: 0x1043
 // Common.FindResult
 
+
 // GUI -> Core
-// id : 0x51
+// id: 0x1051
 message Browse {
    required Common.Hash peer_id = 1;
    optional Common.Entries dirs = 2;
    optional bool get_roots = 3 [default = false]; // If true the roots directories will be appended to the entries result. If the Dir field above is empty then the roots folders will always be sent whatever get_roots is true or false.
 }
+
 // Core -> GUI (directly)
-// id : 0x52
+// id: 0x1052
 // Tag
 // Core -> GUI (deferred)
-// id : 0x53
+// id: 0x1053
 message BrowseResult {
    required uint64 tag = 1;
    repeated Common.Entries entries = 2; 
 }
 
+
 // GUI -> Core
-// id : 0x61
+// id: 0x1061
 // Remove one or several download from the queue. If this download
 // is not finished the unfinished file is removed.
 message CancelDownloads {
@@ -258,16 +267,18 @@ message CancelDownloads {
    optional bool complete= 2 [default = false];
 }
 
+
 // GUI -> Core
-// id : 0xC1
+// id: 0x10C1
 // Pause or unpause the given downloads.
 message PauseDownloads {
    repeated uint64 id = 1 [packed = true];
    optional bool pause = 2 [default = true]; // Id false -> unpause.
 }
 
+
 // GUI -> Core
-// id : 0x71
+// id: 0x1071
 // Tell the core to move one or more downloads in the list right before or after a given set of downloads.
 // 'id_ref' and 'id_to_move' must have at least one item each.
 // The order of the moved downloads are kept unchanged.
@@ -289,8 +300,9 @@ message MoveDownloads {
    optional Position position = 3 [default = BEFORE];
 }
 
+
 // GUI -> Core
-// id : 0x81
+// id: 0x1081
 // Says to the core to download a file or a directory.
 // The given path can be relative to a shared directory (if destination_directory_id is set)  or absolute (if destination_directory_id is null).
 message Download {
@@ -301,10 +313,23 @@ message Download {
    optional string destination_path = 4 [default="/"]; // Must ended with an '/'. If 'Common.Hash destination_directory_id' isn't set then a new shred directory will be created (if needed).
 }
 
+
 // GUI -> Core
-// id : 0x91
+// id: 0x1091
 // Send a chat message to everyone.
 message ChatMessage {
    required string message = 1;
 }
 
+
+// GUI -> Core
+// id: 0x10A1
+// Ask to receive a new state.
+// This message doesn't have a body.
+
+
+// GUI -> Core
+// id: 0x10E1
+// Ask to refresh the known network interfaces.
+// A new state is immediately sent by the core.
+// This message doesn't have a body.

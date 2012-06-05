@@ -80,7 +80,9 @@ WidgetSettings::WidgetSettings(QSharedPointer<RCC::ICoreConnection> coreConnecti
    connect(this->coreConnection.data(), SIGNAL(disconnected(bool)), this, SLOT(coreDisconnected()));
 
    connect(this->ui->txtNick, SIGNAL(editingFinished()), this, SLOT(saveCoreSettings()));
+
    connect(this->ui->chkEnableIntegrityCheck, SIGNAL(clicked()), this, SLOT(saveCoreSettings()));
+   connect(this->ui->butRefreshInterfaces, SIGNAL(clicked()), this, SLOT(refreshNetworkInterfaces()));
 
    this->connectAllAddressButtons();
 
@@ -439,6 +441,11 @@ void WidgetSettings::coreDisconnected()
    this->ui->butResetPassword->setDisabled(true);
 }
 
+void WidgetSettings::refreshNetworkInterfaces()
+{
+   this->coreConnection->refreshNetworkInterfaces();
+}
+
 /**
   * Send the settings to the core. A connection to a core must be established.
   */
@@ -565,7 +572,7 @@ void WidgetSettings::displayContextMenuSharedDirs(const QPoint& point)
    globalPosition.setY(globalPosition.y() + this->ui->tblShareDirs->horizontalHeader()->height());
 
    QMenu menu;
-   QAction* actionDelete = menu.addAction(QIcon(":/icons/ressources/delete.png"), tr("Remove the shared folder"), this, SLOT(removeShared()));
+   QAction* actionDelete = menu.addAction(QIcon(":/icons/ressources/delete.png"), tr("Remove the shared directory"), this, SLOT(removeShared()));
    QAction* actionUp = menu.addAction(QIcon(":/icons/ressources/arrow_up.png"), tr("Move up"), this, SLOT(moveUpShared()));
    QAction* actionDown = menu.addAction(QIcon(":/icons/ressources/arrow_down.png"), tr("Move down"), this, SLOT(moveDownShared()));
 

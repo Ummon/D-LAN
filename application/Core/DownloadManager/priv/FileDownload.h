@@ -27,7 +27,6 @@
 
 #include <Common/ThreadPool.h>
 
-#include <Core/FileManager/IFileManager.h>
 #include <Core/FileManager/IChunk.h>
 #include <Core/PeerManager/IPeerManager.h>
 #include <Core/PeerManager/IGetHashesResult.h>
@@ -81,7 +80,6 @@ namespace DM
       void remove();
 
    public slots:
-      bool updateStatus();
       bool retrieveHashes();
 
    signals:
@@ -89,6 +87,7 @@ namespace DM
       void lastTimeGetAllUnfinishedChunksChanged(QTime oldTime);
 
    private slots:
+      bool updateStatus();
       void retryToRetrieveHashes();
       void result(const Protos::Core::GetHashesResult& result);
       void nextHash(const Common::Hash& hash);
@@ -100,9 +99,9 @@ namespace DM
    private:
       bool tryToLinkToAnExistingFile();
       void connectChunkDownloaderSignals(QSharedPointer<ChunkDownloader> chunkDownload);
+      bool createFile();
       void reset();
 
-      QSharedPointer<FM::IFileManager> fileManager;
       LinkedPeers& linkedPeers;
 
       const int NB_CHUNK;

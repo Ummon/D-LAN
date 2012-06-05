@@ -50,6 +50,8 @@ FilePool::~FilePool()
 }
 
 /**
+  * @param path The absolute path to the file.
+  * @param mode The open mode.
   * @param[out] fileCreated Optional, only valid in write mode, set to true if the file didn't exist before.
   */
 QFile* FilePool::open(const QString& path, QIODevice::OpenMode mode, bool* fileCreated)

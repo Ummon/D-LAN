@@ -35,7 +35,9 @@ message IP {
 // A shared directory matches an existing handle, thus there is no need to have the complete path to it.
 message SharedDir {
    required Hash id = 1; // Identify a shared directory.
-   optional string shared_name = 2; // A name to identify the shared directory by human. It may correspond to the name of the shared directory itself. It may be used when creating the directories of a new downloading file.
+   // A name to identify the shared directory by human. It may correspond to the name of the shared directory itself. It may be used when creating the directories of a new downloading file.
+   // This value is never used to build a path to a directory or a file.
+   optional string shared_name = 2;   
 }
 
 // Used for a directory or a file.
@@ -63,7 +65,7 @@ message Entries
 
 // A result following a search.
 // Entries may not be sorted in any particular way.
-// See 'Network.Find' and 'GUI.GUINetwork' for more information.
+// See 'Core.Find' and 'GUI.Search' for more information.
 message FindResult {
    message EntryLevel {
       required uint32 level = 1;

@@ -223,6 +223,7 @@ File* Cache::getFile(const Protos::Common::Entry& fileEntry) const
   * @exception NoWriteableDirectoryException
   * @exception InsufficientStorageSpaceException
   * @exception UnableToCreateNewFileException
+  * @exception UnableToCreateNewDirException
   */
 QList<QSharedPointer<IChunk>> Cache::newFile(Protos::Common::Entry& fileEntry)
 {
@@ -258,7 +259,7 @@ QList<QSharedPointer<IChunk>> Cache::newFile(Protos::Common::Entry& fileEntry)
    for (int i = 0; i < fileEntry.chunk_size(); i++)
       hashes << (fileEntry.chunk(i).has_hash() ? fileEntry.chunk(i).hash() : Common::Hash());
 
-   const QString name = Common::ProtoHelper::getStr(fileEntry, &Protos::Common::Entry::name);
+   const QString& name = Common::ProtoHelper::getStr(fileEntry, &Protos::Common::Entry::name);
 
    // If a file with the same name already exists we will compare its hashes with the given entry.
    File* file;
@@ -305,6 +306,34 @@ QList<QSharedPointer<IChunk>> Cache::newFile(Protos::Common::Entry& fileEntry)
    // This method works but 'reinterpret_cast' is too dangerous. (only if 'File::getChunks()' return a QList).
    // QList<QSharedPointer<Chunk>> chunks = file->getChunks();
    // return *(reinterpret_cast<QList<QSharedPointer<IChunk>>*>(&chunks));
+}
+
+/**
+  * @exception NoWriteableDirectoryException
+  * @exception UnableToCreateNewDirException
+  */
+void Cache::newDirectory(Protos::Common::Entry& dirEntry)
+{
+   QMutexLocker locker(&this->mutex);
+
+   const QString& dirPath = QDir::cleanPath(Common::ProtoHelper::getStr(dirEntry, &Protos::Common::Entry::path)) + '/' + Common::ProtoHelper::getStr(dirEntry, &Protos::Common::Entry::name);
+
+   // If we know where to create the directory.
+   Directory* dir = nullptr;
+   if (dirEntry.has_shared_dir())
+   {
+      SharedDirectory* sharedDir = this->getSharedDirectory(dirEntry.shared_dir().id().hash());
+      if (sharedDir)
+         dir = sharedDir->createSubDirs(dirPath.split('/', QString::SkipEmptyParts), true);
+      else
+         dirEntry.clear_shared_dir(); // The shared directory is invalid.
+   }
+
+   if (!dir)
+      dir = this->getWriteableDirectory(dirPath);
+
+   if (!dir)
+      throw UnableToCreateNewDirException();
 }
 
 QList<Common::SharedDir> Cache::getSharedDirs() const
@@ -611,7 +640,7 @@ void Cache::onChunkRemoved(QSharedPointer<Chunk> chunk)
   * Create a new shared directory.
   * The other shared directories may not be merged with the new one, use 'SharedDirectory::mergeSubSharedDirectories' to do that after this call.
   *
-  * @exceptions DirNotFoundException
+  * @exception DirNotFoundException
   */
 SharedDirectory* Cache::createSharedDir(const QString path, const Common::Hash& ID, int pos)
 {
@@ -693,9 +722,11 @@ void Cache::createSharedDirs(const QStringList& dirs, const QList<Common::Hash>&
   * The missing directories will be automatically created.
   *
   * @param path A relative path to a directory. Must be a cleaned path (QDir::cleanPath).
+  * @param spaceNeeded The number of storage space needed, if no directory can be found the exception 'InsufficientStorageSpaceException' is thrown.
   * @return The directory, 0 if unkown error.
-  * @exception InsufficientStorageSpaceException
+  * @exception InsufficientStorageSpaceException (only if 'spaceNeeded' > 0)
   * @exception NoWriteableDirectoryException
+  * @exception UnableToCreateNewDirException
   */
 Directory* Cache::getWriteableDirectory(const QString& path, qint64 spaceNeeded) const
 {
@@ -712,7 +743,7 @@ Directory* Cache::getWriteableDirectory(const QString& path, qint64 spaceNeeded)
 
    foreach (SharedDirectory* dir, this->sharedDirs)
    {
-      if (Common::Global::availableDiskSpace(dir->getFullPath()) < spaceNeeded)
+      if (spaceNeeded > 0 && Common::Global::availableDiskSpace(dir->getFullPath()) < spaceNeeded)
          continue;
 
       Directory* currentDir = dir;
@@ -733,7 +764,7 @@ Directory* Cache::getWriteableDirectory(const QString& path, qint64 spaceNeeded)
    }
 
    if (!currentSharedDir)
-      throw InsufficientStorageSpaceException();
+      throw InsufficientStorageSpaceException(); // Not executed if 'spaceNeeded' equals 0.
 
    // Create the missing directories.
    return currentSharedDir->createSubDirs(folders, true);

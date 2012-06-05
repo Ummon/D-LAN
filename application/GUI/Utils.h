@@ -34,6 +34,7 @@ namespace GUI
 
       static void openLocations(const QStringList& paths);
       static void openLocation(const QString& path);
+      static void openFile(const QString& path);
    };
 }
 

@@ -89,6 +89,7 @@ namespace RCC
       void moveDownloads(const QList<quint64>& downloadIDRefs, const QList<quint64>& downloadIDs, Protos::GUI::MoveDownloads::Position position);
 
       void refresh();
+      void refreshNetworkInterfaces();
 
       bool isRunningAsSubProcess() const;
       ICoreConnection::ConnectionInfo getConnectionInfo() const;

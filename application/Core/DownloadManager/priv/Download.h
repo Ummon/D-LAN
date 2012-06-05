@@ -24,6 +24,7 @@
 #include <QFlags>
 
 #include <Common/Uncopyable.h>
+#include <Core/FileManager/IFileManager.h>
 #include <Core/PeerManager/IPeer.h>
 
 #include <Protos/common.pb.h>
@@ -42,6 +43,7 @@ namespace DM
 
    protected:
       Download(
+         QSharedPointer<FM::IFileManager> fileManager,
          PM::IPeer* peerSource,
          const Protos::Common::Entry& remoteEntry,
          const Protos::Common::Entry& localEntry
@@ -91,6 +93,8 @@ namespace DM
       bool hasAValidPeerSource();
 
    protected:
+      QSharedPointer<FM::IFileManager> fileManager;
+
       const quint64 ID;
 
       PM::IPeer* peerSource;

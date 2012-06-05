@@ -16,7 +16,8 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#include <QtGui/QApplication>
+#include <QSharedMemory>
+#include <QApplication>
 #include <QTextCodec>
 #include <QLocale>
 
@@ -32,6 +33,9 @@
    // For Common/debug_new.cpp.
    extern const char* new_progname;
 #endif
+
+static const QString sharedMemoryKeyname("D-LAN GUI instance");
+static QSharedMemory sharedMemory;
 
 /**
   * Arguments : [--lang <language>]
@@ -60,10 +64,29 @@ int main(int argc, char *argv[])
       SETTINGS.set("language", locale);
    SETTINGS.save(); // To automatically create the file if it doesn't exist.
 
-   LM::Builder::setLogDirName("log_gui");
-
+   // 'locale' has been set with "--lang".
    if (locale != QLocale::system())
       return 0;
+
+   LM::Builder::setLogDirName("log_gui");
+   QSharedPointer<LM::ILogger> mainLogger = LM::Builder::newLogger("main");
+
+   // If multiple instance isn't allowed we will test if a particular
+   // shared memory segment alreydy exists. There is actually no
+   // easy way to bring the already existing GUI windows to the front without
+   // dirty polling.
+   if (!SETTINGS.get<bool>("multiple_instance_allowed"))
+   {
+      sharedMemory.lock();
+      sharedMemory.setKey(sharedMemoryKeyname);
+      if (!sharedMemory.create(1))
+      {
+         mainLogger->log("GUI already launched, exited..", LM::SV_END_USER);
+         sharedMemory.unlock();
+         return 1;
+      }
+      sharedMemory.unlock();
+   }
 
    GUI::D_LAN_GUI gui(argc, argv);
    return gui.exec();

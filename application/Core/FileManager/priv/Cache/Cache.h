@@ -54,6 +54,7 @@ namespace FM
       Entry* getEntry(const QString& path) const;
       File* getFile(const Protos::Common::Entry& fileEntry) const;
       QList<QSharedPointer<IChunk>> newFile(Protos::Common::Entry& fileEntry);
+      void newDirectory(Protos::Common::Entry& dirEntry);
 
       QList<Common::SharedDir> getSharedDirs() const;
       SharedDirectory* getSharedDirectory(const Common::Hash& ID) const;
@@ -96,7 +97,7 @@ namespace FM
       SharedDirectory* createSharedDir(const QString path, const Common::Hash& ID = Common::Hash(), int pos = -1);
       void createSharedDirs(const QStringList& dirs, const QList<Common::Hash>& ids = QList<Common::Hash>());
 
-      Directory* getWriteableDirectory(const QString& path, qint64 spaceNeeded) const;
+      Directory* getWriteableDirectory(const QString& path, qint64 spaceNeeded = 0) const;
 
       QList<SharedDirectory*> sharedDirs;
 

@@ -21,6 +21,8 @@ using namespace DM;
 
 #include <Common/ProtoHelper.h>
 
+#include <Core/FileManager/Exceptions.h>
+
 #include <priv/Log.h>
 
 /**
@@ -32,12 +34,13 @@ using namespace DM;
   */
 
 DirDownload::DirDownload(
+   QSharedPointer<FM::IFileManager> fileManager,
    OccupiedPeers& occupiedPeersAskingForEntries,
    PM::IPeer* peerSource,
    const Protos::Common::Entry& remoteEntry,
    const Protos::Common::Entry& localEntry
 ) :
-   Download(peerSource, remoteEntry, localEntry),
+   Download(fileManager, peerSource, remoteEntry, localEntry),
    occupiedPeersAskingForEntries(occupiedPeersAskingForEntries)
 {
    L_DEBU(QString("New DirDownload : source = %1, remoteEntry : \n%2\nlocalEntry : \n%3").
@@ -58,6 +61,8 @@ DirDownload::~DirDownload()
 
 void DirDownload::start()
 {
+   this->updateStatus();
+   this->createDirectory();
    this->retrieveEntries();
 }
 
@@ -67,7 +72,7 @@ void DirDownload::start()
   */
 bool DirDownload::retrieveEntries()
 {
-   if (!this->hasAValidPeerSource() || this->status == DELETED || !this->occupiedPeersAskingForEntries.setPeerAsOccupied(this->peerSource))
+   if (!this->hasAValidPeerSource() || this->isStatusErroneous() || this->status == DELETED || !this->occupiedPeersAskingForEntries.setPeerAsOccupied(this->peerSource))
       return false;
 
    Protos::Core::GetEntries getEntries;
@@ -116,4 +121,26 @@ void DirDownload::resultTimeout()
    L_DEBU("Unable to retrieve the entries : timeout");
    this->getEntriesResult.clear();
    this->occupiedPeersAskingForEntries.setPeerAsFree(this->peerSource);
+}
+
+void DirDownload::createDirectory()
+{
+   // Only create the directory if it's empty. In other cases the directories are created when the file is created.
+   if (this->remoteEntry.is_empty())
+   {
+      try
+      {
+         this->fileManager->newDirectory(this->localEntry);
+      }
+      catch(FM::NoWriteableDirectoryException&)
+      {
+         L_DEBU(QString("There is no shared directory with writting rights for this download : %1").arg(Common::ProtoHelper::getStr(this->remoteEntry, &Protos::Common::Entry::name)));
+         this->setStatus(NO_SHARED_DIRECTORY_TO_WRITE);
+      }
+      catch(FM::UnableToCreateNewDirException&)
+      {
+         L_DEBU(QString("Unable to create the directory, download : %1").arg(Common::ProtoHelper::getStr(this->remoteEntry, &Protos::Common::Entry::name)));
+         this->setStatus(UNABLE_TO_CREATE_THE_DIRECTORY);
+      }
+   }
 }

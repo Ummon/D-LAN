@@ -36,7 +36,7 @@
    <item>
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>2</number>
+      <number>1</number>
      </property>
      <widget class="QWidget" name="tabBasicSettings">
       <attribute name="title">
@@ -258,6 +258,13 @@
               </item>
              </layout>
             </widget>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="butRefreshInterfaces">
+            <property name="text">
+             <string>Refresh interfaces</string>
+            </property>
            </widget>
           </item>
          </layout>

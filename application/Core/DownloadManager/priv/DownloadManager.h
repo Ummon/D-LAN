@@ -90,7 +90,7 @@ namespace DM
       void peerNoLongerDownloadingChunk(PM::IPeer* peer);
 
       void scanTheQueue();
-      void rescanTimerActivated();
+      void restartErroneousDownloads();
       void chunkDownloaderFinished();
       void downloadStatusBecomeErroneous(Download* download);
 
@@ -122,7 +122,7 @@ namespace DM
 
       int numberOfDownloadThreadRunning;
 
-      QTimer rescanTimer; // When a download has an error status, the queue will be rescaned periodically.
+      QTimer startErroneousDownloadTimer; // When one or more downloads are in error state, we try to relaunch them periodically.
 
       QTimer saveTimer; // To know when to save the queue, for exemple each 5min.
       bool queueChanged;

@@ -34,64 +34,66 @@ namespace Common
    public:
       enum MessageType
       {
-         NULL_MESS =                   0x0000,
+         NULL_MESS =                      0x0000,
 
          /***** CORE *****/
 
          // UDP.
-         CORE_IM_ALIVE =               0x0001,
-         CORE_CHUNKS_OWNED =           0x0002,
+         CORE_IM_ALIVE =                  0x0001,
+         CORE_CHUNKS_OWNED =              0x0002,
 
-         CORE_CHAT_MESSAGE =           0x0011,
+         CORE_CHAT_MESSAGE =              0x0011,
 
-         CORE_FIND =                   0x0021,
-         CORE_FIND_RESULT =            0x0022,
+         CORE_FIND =                      0x0021,
+         CORE_FIND_RESULT =               0x0022,
 
          // TCP.
-         CORE_GET_ENTRIES =            0x0031,
-         CORE_GET_ENTRIES_RESULT =     0x0032,
+         CORE_GET_ENTRIES =               0x0031,
+         CORE_GET_ENTRIES_RESULT =        0x0032,
 
-         CORE_GET_HASHES =             0x0041,
-         CORE_GET_HASHES_RESULT =      0x0042,
-         CORE_HASH =                   0x0043,
+         CORE_GET_HASHES =                0x0041,
+         CORE_GET_HASHES_RESULT =         0x0042,
+         CORE_HASH =                      0x0043,
 
-         CORE_GET_CHUNK =              0x0051,
-         CORE_GET_CHUNK_RESULT =       0x0052,
+         CORE_GET_CHUNK =                 0x0051,
+         CORE_GET_CHUNK_RESULT =          0x0052,
 
          /***** GUI *****/
-         GUI_STATE =                   0x1001,
-         GUI_STATE_RESULT =            0x1002,
+         GUI_STATE =                      0x1001,
+         GUI_STATE_RESULT =               0x1002,
 
-         GUI_EVENT_CHAT_MESSAGES =     0x1011,
-         GUI_EVENT_LOG_MESSAGE =       0x1012,
+         GUI_EVENT_CHAT_MESSAGES =        0x1011,
+         GUI_EVENT_LOG_MESSAGE =          0x1012,
 
-         GUI_ASK_FOR_AUTHENTICATION =  0x1021,
-         GUI_AUTHENTICATION =          0x1022,
-         GUI_AUTHENTICATION_RESULT =   0x1023,
+         GUI_ASK_FOR_AUTHENTICATION =     0x1021,
+         GUI_AUTHENTICATION =             0x1022,
+         GUI_AUTHENTICATION_RESULT =      0x1023,
 
-         GUI_LANGUAGE =                0x10B1,
+         GUI_LANGUAGE =                   0x10B1,
 
-         GUI_CHANGE_PASSWORD =         0x10D1,
+         GUI_CHANGE_PASSWORD =            0x10D1,
 
-         GUI_SETTINGS =                0x1031,
+         GUI_SETTINGS =                   0x1031,
 
-         GUI_SEARCH =                  0x1041,
-         GUI_SEARCH_TAG =              0x1042,
-         GUI_SEARCH_RESULT =           0x1043,
+         GUI_SEARCH =                     0x1041,
+         GUI_SEARCH_TAG =                 0x1042,
+         GUI_SEARCH_RESULT =              0x1043,
 
-         GUI_BROWSE =                  0x1051,
-         GUI_BROWSE_TAG =              0x1052,
-         GUI_BROWSE_RESULT =           0x1053,
+         GUI_BROWSE =                     0x1051,
+         GUI_BROWSE_TAG =                 0x1052,
+         GUI_BROWSE_RESULT =              0x1053,
 
-         GUI_CANCEL_DOWNLOADS =        0x1061,
-         GUI_PAUSE_DOWNLOADS =         0x10C1,
-         GUI_MOVE_DOWNLOADS =          0x1071,
+         GUI_CANCEL_DOWNLOADS =           0x1061,
+         GUI_PAUSE_DOWNLOADS =            0x10C1,
+         GUI_MOVE_DOWNLOADS =             0x1071,
 
-         GUI_DOWNLOAD =                0x1081,
+         GUI_DOWNLOAD =                   0x1081,
 
-         GUI_CHAT_MESSAGE =            0x1091,
+         GUI_CHAT_MESSAGE =               0x1091,
 
-         GUI_REFRESH =                 0x10A1
+         GUI_REFRESH =                    0x10A1,
+
+         GUI_REFRESH_NETWORK_INTERFACES = 0x10E1
       };      
 
       MessageHeader();

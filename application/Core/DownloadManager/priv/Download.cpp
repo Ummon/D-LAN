@@ -30,11 +30,12 @@ using namespace DM;
 quint64 Download::currentID(1);
 
 Download::Download(
+   QSharedPointer<FM::IFileManager> fileManager,
    PM::IPeer* peerSource,
    const Protos::Common::Entry& remoteEntry,
    const Protos::Common::Entry& localEntry
 ) :
-   ID(currentID++), peerSource(peerSource), remoteEntry(remoteEntry), localEntry(localEntry), status(QUEUED)
+   fileManager(fileManager), ID(currentID++), peerSource(peerSource), remoteEntry(remoteEntry), localEntry(localEntry), status(QUEUED)
 {
    // Special case when downloading the root of a drive like "C:/". In this case "C:" is the name of the entry and it becomes a part of the local entry path.
    std::replace(this->localEntry.mutable_path()->begin(), this->localEntry.mutable_path()->end(), ':', '_');

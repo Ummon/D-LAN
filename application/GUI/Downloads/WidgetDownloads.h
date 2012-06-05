@@ -66,8 +66,8 @@ namespace GUI
       void globalProgressChanged(quint64 completed, quint64 total);
 
    protected:
-      void keyPressEvent(QKeyEvent* event);
       void changeEvent(QEvent* event);
+      void keyPressEvent(QKeyEvent* event);
 
    private slots:
       void displayContextMenuDownloads(const QPoint& point);
@@ -91,6 +91,8 @@ namespace GUI
       void restoreTreeViewState();
       void restoreTreeViewState(const QModelIndex& index, SimpleTree<quint32>* tree);
 
+      void openFile(const QModelIndex& index) const;
+
       Ui::WidgetDownloads *ui;
       CheckBoxList* filterStatusList;
 
@@ -104,7 +106,7 @@ namespace GUI
 
       DownloadsDelegate downloadsDelegate;
 
-      SimpleTree<quint32>* treeViewState;
+      SimpleTree<quint32> treeViewState;
    };
 }
 

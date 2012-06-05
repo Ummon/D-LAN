@@ -92,14 +92,21 @@ namespace FM
         * Create a new empty file.
         * If 'entry.shared_dir' isn't defined it will take the shared directory which has enough storage space and matches paths the closest.
         * The file will have the exact final size and filled with 0.
-        * The filename will end with ".unfinished".
+        * The filename will end with ".unfinished" if the file size is not zero.
         * Some or all hashes can be null (see Protos.Common.Hash). They can be set later with IChunk::setHash(..).
         * If the file already exists we will compare its hashes to 'entry.chunk', if not all hashes match file is reset.
         * @exception NoWriteableDirectoryException
         * @exception InsufficientStorageSpaceException
         * @exception UnableToCreateNewFileException
+        * @exception UnableToCreateNewDirException It means that one of the directories of the file path can't be created. The file is of course not created in this case.
         */
       virtual QList<QSharedPointer<IChunk>> newFile(Protos::Common::Entry& entry) = 0;
+
+      /**
+        * @exception NoWriteableDirectoryException
+        * @exception UnableToCreateNewDirException
+        */
+      virtual void newDirectory(Protos::Common::Entry& entry) = 0;
 
       /**
         * Return the hashes from a FileEntry. If the hashes don't exist they will be computed on the fly. However this
@@ -120,6 +127,8 @@ namespace FM
       /**
         * Find some entry from a given words.
         * The result is sorted by level.
+        * @param words The words to find, must contain at least one word.
+        * @param maxNbResult The maximum total number of result, sum of all 'FindResult' sizes.
         * @param maxSize This is the size in bytes each 'FindResult' can't exceed. (Because UDP datagrams have a maximum size).
         * It should not be here but it's far more harder to split the result outside this method.
         * @remarks Will not fill the fields 'FindResult.tag' and 'FindResult.peer_id'.
