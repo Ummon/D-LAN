@@ -14,6 +14,8 @@ namespace Common
       static QString toLowerAndRemoveAccents(const QString& str);
       static QStringList splitInWords(const QString& words);
 
+      static bool isKorean(const QString& str);
+
       static int strcmpi(const std::string& s1, const std::string& s2);
 
       static inline int commonPrefix(const QString& s1, const QString& s2) { return StringUtils::commonPrefix(&s1, &s2); }

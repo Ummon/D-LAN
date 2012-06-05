@@ -103,6 +103,20 @@ QStringList StringUtils::splitInWords(const QString& words)
 }
 
 /**
+  * http://www.tamasoft.co.jp/en/general-info/unicode.html
+  */
+bool StringUtils::isKorean(const QString& str)
+{
+   for (int i = 0; i < str.size(); ++i)
+   {
+      const ushort& code = str[i].unicode();
+      if (code >= 0x1100 && code <= 0x11F9 || code >= 0x3131 && code <= 0x318E || code >= 0xAC00 && code <= 0xD7A3)
+         return true;
+   }
+   return false;
+}
+
+/**
   * Compare two std::string without case sensitive.
   * @return 0 if equal, 1 if s1 > s2, -1 if s1 < s2.
   */

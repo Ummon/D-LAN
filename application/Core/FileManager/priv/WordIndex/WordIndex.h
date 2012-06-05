@@ -45,6 +45,7 @@ namespace FM
    {
    public:
       static const int MIN_WORD_SIZE_PARTIAL_MATCH; ///< During a search, the words which have a size below this value must match entirely, for exemple 'of' match "conspiracy of one" and not "offspring".
+      static const int MIN_WORD_SIZE_PARTIAL_MATCH_KOREAN;
 
       WordIndex();
 
@@ -74,6 +75,9 @@ using namespace FM;
 
 template<typename T>
 const int WordIndex<T>::MIN_WORD_SIZE_PARTIAL_MATCH(3);
+
+template<typename T>
+const int WordIndex<T>::MIN_WORD_SIZE_PARTIAL_MATCH_KOREAN(1);
 
 template<typename T>
 WordIndex<T>::WordIndex() :
@@ -136,7 +140,7 @@ template<typename T>
 QList<NodeResult<T>> WordIndex<T>::search(const QString& word, int maxNbResult) const
 {
    QMutexLocker locker(&this->mutex);
-   return this->root.search(word, word.size() >= MIN_WORD_SIZE_PARTIAL_MATCH, maxNbResult);
+   return this->root.search(word, word.size() >= (Common::StringUtils::isKorean(word) ? MIN_WORD_SIZE_PARTIAL_MATCH_KOREAN : MIN_WORD_SIZE_PARTIAL_MATCH), maxNbResult);
 }
 
 /**
