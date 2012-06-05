@@ -39,15 +39,15 @@ QSharedPointer<ICoreConnection> Builder::newCoreConnection(int socketTimeout)
 /**
   * @remarks Works only in local.
   */
-CoreStatus Builder::StartCore()
+CoreStatus Builder::startCore()
 {
-   return CoreController::StartCore();
+   return CoreController::startCore();
 }
 
 /**
   * @remarks Works only in local.
   */
-void Builder::StopCore()
+void Builder::stopCore()
 {
-   CoreController::StopCore();
+   CoreController::stopCore();
 }

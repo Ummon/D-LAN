@@ -29,7 +29,7 @@ using namespace RCC;
 /**
   * Try to start the core as a service if it fails then try to launch it as a sub-process.
   */
-CoreStatus CoreController::StartCore(int port)
+CoreStatus CoreController::startCore(int port)
 {
    QtServiceController controller(Common::Constants::SERVICE_NAME);
    if (!controller.isInstalled())
@@ -64,7 +64,7 @@ CoreStatus CoreController::StartCore(int port)
    return NOT_RUNNING;
 }
 
-void CoreController::StopCore()
+void CoreController::stopCore()
 {
    QtServiceController controller(Common::Constants::SERVICE_NAME);
    if (controller.isRunning())

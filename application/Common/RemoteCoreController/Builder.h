@@ -30,8 +30,8 @@ namespace RCC
       static QSharedPointer<ICoreConnection> newCoreConnection();
       static QSharedPointer<ICoreConnection> newCoreConnection(int socketTimeout);
 
-      static CoreStatus StartCore();
-      static void StopCore();
+      static CoreStatus startCore();
+      static void stopCore();
    };
 }
 

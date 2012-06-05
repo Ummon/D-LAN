@@ -27,8 +27,8 @@ namespace RCC
    class CoreController
    {
    public:
-      static CoreStatus StartCore(int port = -1);
-      static void StopCore();
+      static CoreStatus startCore(int port = -1);
+      static void stopCore();
 
    private:
       static QProcess coreProcess; ///< Only used when unable to lauche the core as a service.
