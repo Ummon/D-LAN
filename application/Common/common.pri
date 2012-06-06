@@ -3,9 +3,9 @@ CONFIG(debug, debug|release) {
    DEFINES += DEBUG
 } else {
    FOLDER = release
-   # Disable, GCC 4.6 exit with an error during link time.
-   #QMAKE_CXXLAGS_RELEASE += -flto
-   #QMAKE_LFLAGS_RELEASE += -flto
+   # Disable, GCC 4.6 exit with an error during link time of 'TestsFileManager.exe' when using '1.regen.all.sh'.
+   # QMAKE_CXXFLAGS_RELEASE += -flto
+   # QMAKE_LFLAGS_RELEASE += -flto -Wl,-allow-multiple-definition
    prof {
       QMAKE_CXXFLAGS += -pg -g
       QMAKE_LFLAGS += -pg
