@@ -100,7 +100,7 @@ void D_LAN_GUI::exit(bool stopTheCore)
    this->trayIcon.hide();
 
    if (stopTheCore)
-      RCC::Builder::StopCore();
+      RCC::Builder::stopCore();
 
    if (this->mainWindow)
    {
