@@ -113,6 +113,11 @@ File::~File()
    L_DEBU(QString("File deleted : %1").arg(this->getFullPath()));
 }
 
+FileForHasher* File::asFileForHasher()
+{
+   return static_cast<FileForHasher*>(this);
+}
+
 /**
   * Set the file as unfinished, this is use when an existing file is re-downloaded.
   * The file is removed from the index and a new physcally file named "<name>.unfinished" is created.
@@ -510,35 +515,6 @@ bool File::hasAParentDir(Directory* dir)
    return this->dir->isAChildOf(dir);
 }
 
-void File::setSize(qint64 size)
-{
-   if (this->size != size)
-   {
-      this->dir->fileSizeChanged(this->size, size);
-      this->size = size;
-   }
-}
-
-void File::updateDateLastModified(const QDateTime& date)
-{
-   this->dateLastModified = date;
-}
-
-void File::addChunk(const QSharedPointer<Chunk>& chunk)
-{
-   this->chunks << chunk;
-}
-
-QSharedPointer<Chunk> File::removeLastChunk()
-{
-   if (this->chunks.isEmpty())
-      return QSharedPointer<Chunk>();
-
-   QSharedPointer<Chunk> chunk = this->chunks.last();
-   this->chunks.remove(this->chunks.size() - 1);
-   return chunk;
-}
-
 /**
   * Called from a downloading thread.
   * Set the file as complete, change its name from "<name>.unfinished" to "<name>".
@@ -640,4 +616,35 @@ void File::setHashes(const Common::Hashes& hashes)
          // If there is too few hashes then null hashes are added.
          this->chunks << QSharedPointer<Chunk>(new Chunk(this, i, chunkKnownBytes));
    }
+}
+
+/////
+
+void FileForHasher::setSize(qint64 size)
+{
+   if (this->size != size)
+   {
+      this->dir->fileSizeChanged(this->size, size);
+      this->size = size;
+   }
+}
+
+void FileForHasher::updateDateLastModified(const QDateTime& date)
+{
+   this->dateLastModified = date;
+}
+
+void FileForHasher::addChunk(const QSharedPointer<Chunk>& chunk)
+{
+   this->chunks << chunk;
+}
+
+QSharedPointer<Chunk> FileForHasher::removeLastChunk()
+{
+   if (this->chunks.isEmpty())
+      return QSharedPointer<Chunk>();
+
+   QSharedPointer<Chunk> chunk = this->chunks.last();
+   this->chunks.remove(this->chunks.size() - 1);
+   return chunk;
 }

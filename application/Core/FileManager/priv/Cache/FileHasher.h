@@ -28,7 +28,7 @@
 namespace FM
 {
    class Entry;
-   class File;
+   class FileForHasher;
 
    class FileHasher : public QObject, Common::Uncopyable
    {
@@ -36,7 +36,7 @@ namespace FM
    public:
       FileHasher();
 
-      bool start(File* fileCache, int n = 0, int* amountHashed = nullptr);
+      bool start(FileForHasher* fileCache, int n = 0, int* amountHashed = nullptr);
       void stop();
 
    private slots:
@@ -45,7 +45,7 @@ namespace FM
    private:
       void internalStop();
 
-      File* currentFileCache;
+      FileForHasher* currentFileCache;
 
       bool hashing;
       bool toStopHashing;

@@ -42,6 +42,7 @@ namespace FM
    class Chunk;
    class Directory;
    class SharedDirectory;
+   class FileForHasher;
 
    class File : public Entry
    {
@@ -56,6 +57,8 @@ namespace FM
       );
 
       virtual ~File();
+
+      FileForHasher* asFileForHasher();
 
       void setToUnfinished(qint64 size, const Common::Hashes& hashes = Common::Hashes());
 
@@ -99,23 +102,18 @@ namespace FM
       void changeDirectory(Directory* dir);
       bool hasAParentDir(Directory* dir);
 
-      ///// Methods dedicated to the hasher.
-      void setSize(qint64 size);
-      void updateDateLastModified(const QDateTime& date);
-      void addChunk(const QSharedPointer<Chunk>& chunk);
-      QSharedPointer<Chunk> removeLastChunk();
-      /////
-
    private:
       void setAsComplete();
       void deleteAllChunks();
       void createPhysicalFile();
       void setHashes(const Common::Hashes& hashes);
 
+   protected:
       Directory* dir;
       QVector<QSharedPointer<Chunk>> chunks;
       QDateTime dateLastModified;
 
+   private:
       bool complete;
 
       quint16 numDataWriter;
@@ -125,6 +123,19 @@ namespace FM
       QMutex writeLock; ///< Protect the file from concurrent access from different downloaders.
       QMutex readLock; ///< Protect the file from concurrent access from different uploaders.
       mutable QMutex mutex;
+   };
+
+   /**
+     * A class dedicated to the hasher.
+     * It must not add any member data because an allocated 'File' object may be downcasted to a 'FileForHasher' type.
+     */
+   class FileForHasher : public File
+   {
+   public:
+      void setSize(qint64 size);
+      void updateDateLastModified(const QDateTime& date);
+      void addChunk(const QSharedPointer<Chunk>& chunk);
+      QSharedPointer<Chunk> removeLastChunk();
    };
 }
 #endif
