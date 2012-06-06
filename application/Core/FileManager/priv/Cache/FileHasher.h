@@ -25,6 +25,8 @@
 
 #include <Common/Uncopyable.h>
 
+#include <priv/Cache/FilePool.h>
+
 namespace FM
 {
    class Entry;
@@ -51,6 +53,8 @@ namespace FM
       bool toStopHashing;
       QWaitCondition hashingStopped;
       QMutex hashingMutex;
+
+      static FilePool filePool;
    };
 }
 
