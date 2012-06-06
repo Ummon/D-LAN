@@ -21,7 +21,6 @@
 
 #include <QMainWindow>
 #include <QLabel>
-#include <QStyledItemDelegate>
 #include <QIcon>
 #include <QMdiSubWindow>
 #include <QKeyEvent>
@@ -35,6 +34,7 @@
 #include <PeerList/PeerListModel.h>
 #include <PeerList/PeerListDelegate.h>
 #include <Log/LogModel.h>
+#include <Log/LogDelegate.h>
 
 #include <Settings/WidgetSettings.h>
 #include <Settings/DirListModel.h>
@@ -55,15 +55,6 @@ namespace Ui {
 
 namespace GUI
 {
-   class LogDelegate : public QStyledItemDelegate
-   {
-      Q_OBJECT
-   public:
-      void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const;
-   };
-
-   /////
-
    class MainWindow : public QMainWindow
    {
       Q_OBJECT

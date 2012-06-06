@@ -46,34 +46,6 @@ using namespace GUI;
 #include <StatusBar.h>
 #include <Log.h>
 
-void LogDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
-{
-   const LogModel* model = static_cast<const LogModel*>(index.model());
-
-   QStyleOptionViewItemV4 newOption(option);
-   newOption.state = option.state & (~QStyle::State_HasFocus);
-
-   switch (model->getSeverity(index.row()))
-   {
-   case LM::SV_WARNING:
-      painter->fillRect(option.rect, QColor(235, 199, 199));
-      break;
-   case LM::SV_ERROR:
-      painter->fillRect(option.rect, QColor(200, 0, 0));
-      newOption.palette.setColor(QPalette::Text, QColor(255, 255, 255));
-      break;
-   case LM::SV_FATAL_ERROR:
-      painter->fillRect(option.rect, QColor(50, 0, 0));
-      newOption.palette.setColor(QPalette::Text, QColor(255, 255, 0));
-      break;
-   default:;
-   }
-
-   QStyledItemDelegate::paint(painter, newOption, index);
-}
-
-/////
-
 MainWindow::MainWindow(QSharedPointer<RCC::ICoreConnection> coreConnection, QWidget* parent) :
    QMainWindow(parent),
    ui(new Ui::MainWindow),
@@ -145,6 +117,8 @@ MainWindow::MainWindow(QSharedPointer<RCC::ICoreConnection> coreConnection, QWid
    this->ui->tblLog->setSelectionBehavior(QAbstractItemView::SelectRows);
    this->ui->tblLog->setSelectionMode(QAbstractItemView::SingleSelection);
    this->ui->tblLog->setShowGrid(false);
+   // If we didn't set auto-scroll to 'false', when the selection is on the first item and it being deleted, the selection automatically change to the next item and the view scroll to it.
+   this->ui->tblLog->setAutoScroll(false);
    this->ui->tblLog->setAlternatingRowColors(true);
 
    connect(&this->logModel, SIGNAL(rowsInserted(const QModelIndex&, int, int)), this, SLOT(newLogMessage()));
@@ -497,6 +471,7 @@ void MainWindow::removeWidget(QWidget* widget)
 
 void MainWindow::logScrollChanged(int value)
 {
+   L_DEBU(QString("value: %1, this->ui->tblLog->verticalScrollBar()->maximum(): %2").arg(value).arg(this->ui->tblLog->verticalScrollBar()->maximum()));
    this->autoScroll = value == this->ui->tblLog->verticalScrollBar()->maximum();
 }
 
