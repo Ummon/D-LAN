@@ -78,7 +78,7 @@ bool FileHasher::start(FileForHasher* fileCache, int n, int* amountHashed)
 
    const QString& filePath = this->currentFileCache->getFullPath();
 
-   L_DEBU(QString("Computing the hash for %1").arg(filePath));
+   L_USER(QString("Computing the hashes for %1 ..").arg(filePath));
 
    Common::Hasher hasher;
 
