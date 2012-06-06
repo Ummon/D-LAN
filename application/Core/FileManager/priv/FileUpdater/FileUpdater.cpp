@@ -392,7 +392,8 @@ void FileUpdater::computeSomeHashes()
          locker.relock();
 
          if (gotAllHashes)
-            this->filesWithoutHashes.removeAt(i--);
+            this->filesWithoutHashes.removeAt(i);
+         i--;
       }
       else
       {
