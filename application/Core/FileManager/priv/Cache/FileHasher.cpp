@@ -59,7 +59,7 @@ FileHasher::FileHasher() :
   * @param[out] amountHashed Write the number of bytes hashed. It may be a null pointer ('nullptr') if this information isn't needed.
   * @exception IOErrorException Thrown when the file cannot be opened or read. Some chunk may be computed before this exception is thrown.
   */
-bool FileHasher::start(File* fileCache, int n, int* amountHashed)
+bool FileHasher::start(FileForHasher* fileCache, int n, int* amountHashed)
 {
    QMutexLocker locker(&this->hashingMutex);
 
@@ -78,7 +78,7 @@ bool FileHasher::start(File* fileCache, int n, int* amountHashed)
 
    const QString& filePath = this->currentFileCache->getFullPath();
 
-   L_DEBU(QString("Computing the hash for %1").arg(filePath));
+   L_USER(QString("Computing the hashes for %1 ..").arg(filePath));
 
    Common::Hasher hasher;
 

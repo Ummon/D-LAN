@@ -19,5 +19,5 @@ h2. Features
 * Browse all files and folders of any other peer.
 * Fast indexed search among all other peers.
 * Global chatting.
-* D-LAN can run without graphic interface (GUI) and be controlled remotly.
+* D-LAN can run without graphic interface (GUI) and be controlled remotely.
 * Open source. Code source distributed under GPLv3 license.
