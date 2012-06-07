@@ -313,8 +313,8 @@ void FileUpdater::run()
 }
 
 /**
-  * It will take some files from 'fileWithoutHashes' and compute theirs hashes.
-  * The duration of the compuation is minimum 'minimumDurationWhenHashing'.
+  * It will take some files from 'filesWithoutHashesPrioritized' or 'fileWithoutHashes' and compute theirs hashes.
+  * The minimum duration of the compuation is equal to the setting 'minimum_duration_when_hashing'.
   */
 void FileUpdater::computeSomeHashes()
 {
@@ -375,7 +375,8 @@ void FileUpdater::computeSomeHashes()
             goto end;
          }
 
-         if (static_cast<quint32>(timer.elapsed()) >= SETTINGS.get<quint32>("minimum_duration_when_hashing"))
+         static const quint32 MINIMUM_DURATION_WHEN_HASHING = SETTINGS.get<quint32>("minimum_duration_when_hashing");
+         if (static_cast<quint32>(timer.elapsed()) >= MINIMUM_DURATION_WHEN_HASHING)
             goto end;
       }
    }
