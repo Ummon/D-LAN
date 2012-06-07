@@ -50,6 +50,7 @@ FilePool::~FilePool()
 }
 
 /**
+  * @remarks Because the file is kept opened for some time, take care about not opening too many file at the same time.
   * @param path The absolute path to the file.
   * @param mode The open mode.
   * @param[out] fileCreated Optional, only valid in write mode, set to true if the file didn't exist before.

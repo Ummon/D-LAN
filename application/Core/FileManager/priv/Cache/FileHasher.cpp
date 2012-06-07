@@ -80,9 +80,8 @@ bool FileHasher::start(FileForHasher* fileCache, int n, int* amountHashed)
 
    L_USER(QString("Computing the hashes for %1 ..").arg(filePath));
 
-   Common::Hasher hasher;
-
-   AutoReleasedFile file(FileHasher::filePool, filePath, QIODevice::ReadOnly | QIODevice::Unbuffered); // Same performance with or without "QIODevice::Unbuffered".
+   // Same performance with or without "QIODevice::Unbuffered".
+   AutoReleasedFile file(FileHasher::filePool, filePath, QIODevice::ReadOnly | QIODevice::Unbuffered, this->currentFileCache->getSize() <= Chunk::CHUNK_SIZE);
 
    if (!file)
    {
@@ -117,8 +116,11 @@ bool FileHasher::start(FileForHasher* fileCache, int n, int* amountHashed)
 
    static const int BUFFER_SIZE = SETTINGS.get<quint32>("buffer_size_reading");
    char buffer[BUFFER_SIZE];
+
+   Common::Hasher hasher;
    bool endOfFile = false;
    qint64 bytesReadTotal = 0;
+
    while (!endOfFile)
    {
       // See 'stopHashing()'.

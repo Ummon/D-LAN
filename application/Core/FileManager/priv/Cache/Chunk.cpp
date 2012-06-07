@@ -205,11 +205,11 @@ int Chunk::getChunkSize() const
       return 0;
 
    if (this->num < this->file->getNbChunks() - 1)
-      return this->CHUNK_SIZE;
+      return Chunk::CHUNK_SIZE;
 
-   const int size = this->file->getSize() % this->CHUNK_SIZE;
+   const int size = this->file->getSize() % Chunk::CHUNK_SIZE;
    if (!size)
-      return this->CHUNK_SIZE;
+      return Chunk::CHUNK_SIZE;
    else
       return size;
 }
