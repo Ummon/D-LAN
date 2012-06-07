@@ -71,7 +71,7 @@ namespace FM
    {
    public:
       AutoReleasedFile(FilePool& filePool, const QString& path, QIODevice::OpenMode mode, bool* fileCreated = 0) : filePool(filePool), file(this->filePool.open(path, mode, fileCreated)) {}
-      ~AutoReleasedFile() { this->filePool.release(file); }
+      ~AutoReleasedFile() { this->filePool.release(this->file); }
       inline QFile* operator->() const { return this->file; }
       inline QFile& operator*() const { return *this->file; }
       inline bool operator!() const { return !this->file; }
