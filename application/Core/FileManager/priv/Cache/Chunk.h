@@ -99,7 +99,7 @@ namespace FM
    private:
       File* file;
       const int num; // First is 0.
-      int knownBytes; ///< Relative offset, 0 means we don't have any byte and CHUNK_SIZE means we have all the chunk data.
+      int knownBytes; ///< Relative offset, 0 means we don't have any byte and 'getChunkSize()' means we have all the chunk data.
       Common::Hash hash;
    };
 }

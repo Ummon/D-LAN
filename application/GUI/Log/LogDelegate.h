@@ -16,45 +16,18 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef FILEMANAGER_FILEHASHER_H
-#define FILEMANAGER_FILEHASHER_H
+#ifndef GUI_LOGDELEGATE_H
+#define GUI_LOGDELEGATE_H
 
-#include <QObject>
-#include <QMutex>
-#include <QWaitCondition>
+#include <QStyledItemDelegate>
 
-#include <Common/Uncopyable.h>
-
-#include <priv/Cache/FilePool.h>
-
-namespace FM
+namespace GUI
 {
-   class Entry;
-   class FileForHasher;
-
-   class FileHasher : public QObject, Common::Uncopyable
+   class LogDelegate : public QStyledItemDelegate
    {
       Q_OBJECT
    public:
-      FileHasher();
-
-      bool start(FileForHasher* fileCache, int n = 0, int* amountHashed = nullptr);
-      void stop();
-
-   private slots:
-      void entryRemoved(Entry* entry);
-
-   private:
-      void internalStop();
-
-      FileForHasher* currentFileCache;
-
-      bool hashing;
-      bool toStopHashing;
-      QWaitCondition hashingStopped;
-      QMutex hashingMutex;
-
-      static FilePool filePool;
+      void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const;
    };
 }
 

@@ -78,6 +78,7 @@ WidgetChat::WidgetChat(QSharedPointer<RCC::ICoreConnection> coreConnection, Peer
    this->ui->tblChat->setSelectionBehavior(QAbstractItemView::SelectRows);
    this->ui->tblChat->setSelectionMode(QAbstractItemView::ExtendedSelection);
    this->ui->tblChat->setShowGrid(false);
+   this->ui->tblChat->setAutoScroll(false);
    this->ui->tblChat->setAlternatingRowColors(true);
 
    this->ui->tblChat->setEditTriggers(QAbstractItemView::AllEditTriggers);

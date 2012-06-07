@@ -344,7 +344,7 @@ void FileUpdater::computeSomeHashes()
          bool gotAllHashes;
          try {
             int hashedAmount = 0;
-            gotAllHashes = this->fileHasher.start(nextFileToHash, 1, &hashedAmount); // Be carreful of methods 'prioritizeAFileToHash(..)' and 'rmRoot(..)' called concurrently here.
+            gotAllHashes = this->fileHasher.start(nextFileToHash->asFileForHasher(), 1, &hashedAmount); // Be carreful of methods 'prioritizeAFileToHash(..)' and 'rmRoot(..)' called concurrently here.
             this->remainingSizeToHash -= hashedAmount;
             this->updateHashingProgress();
          } catch (IOErrorException&) {
@@ -383,7 +383,7 @@ void FileUpdater::computeSomeHashes()
          bool gotAllHashes;
          try {
             int hashedAmount = 0;
-            gotAllHashes = this->fileHasher.start(nextFileToHash, 1, &hashedAmount);
+            gotAllHashes = this->fileHasher.start(nextFileToHash->asFileForHasher(), 1, &hashedAmount);
             this->remainingSizeToHash -= hashedAmount;
             this->updateHashingProgress();
          } catch (IOErrorException&) {
@@ -392,7 +392,8 @@ void FileUpdater::computeSomeHashes()
          locker.relock();
 
          if (gotAllHashes)
-            this->filesWithoutHashes.removeAt(i--);
+            this->filesWithoutHashes.removeAt(i);
+         i--;
       }
       else
       {
@@ -519,7 +520,7 @@ void FileUpdater::scan(Directory* dir, bool addUnfinished)
             }
 
             // If a file is incomplete (unfinished) we can't compute its hashes because we don't have all data.
-            if (!file->hasAllHashes() && file->isComplete() && !this->filesWithoutHashes.contains(file) && !this->filesWithoutHashesPrioritized.contains(file))
+            if (file->getSize() > 0 && !file->hasAllHashes() && file->isComplete() && !this->filesWithoutHashes.contains(file) && !this->filesWithoutHashesPrioritized.contains(file))
             {
                this->filesWithoutHashes << file;
                this->remainingSizeToHash += file->getSize();

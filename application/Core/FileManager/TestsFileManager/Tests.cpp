@@ -314,8 +314,13 @@ void Tests::modifyABigFile()
    qDebug() << "===== modifyABigFile() =====";
 
    {
-      QFile file("sharedDirs/big.bin");
-      file.open(QIODevice::ReadWrite);
+      const QString filePath("sharedDirs/big.bin");
+      QFile file(filePath);
+      if (!file.open(QIODevice::ReadWrite))
+      {
+         qDebug() << "Can't create the file " << filePath;
+         return;
+      }
       QDataStream stream(&file);
       stream.skipRawData(32 * 1024 * 1024 - 3);
       QByteArray data("XXXXXX");
@@ -330,8 +335,8 @@ void Tests::removeABigFile()
    qDebug() << "===== removeABigFile() =====";
 
    while(!QFile("sharedDirs/big.bin").remove())
-      QTest::qSleep(100);
-   QTest::qSleep(100);
+      QTest::qWait(100); // We use qWait because some events must be processed (timers).
+   QTest::qWait(100);
 }
 
 void Tests::createADirectory()
@@ -416,11 +421,11 @@ void Tests::getAnExistingChunk()
 
 void Tests::getAnUnexistingChunk()
 {
-   qDebug() << "===== getAUnexistingChunk() =====";
+   qDebug() << "===== getAnUnexistingChunk() =====";
 
-   QSharedPointer<IChunk> chunk = this->fileManager->getChunk(Common::Hash::fromStr("47ddfe38b8c66c0f9d98b9d802f220c84b4b30d4"));
+   QSharedPointer<IChunk> chunk = this->fileManager->getChunk(Common::Hash::fromStr("928e1bd85c0957c4af0cf69cf76f6ed6898cfd2d"));
    if (chunk.isNull())
-      qDebug() << "Chunk not found : ok";
+      qDebug() << "Chunk not found : ok" << Common::Hash::rand().toStr();
    else
       QFAIL("No chunk must be found");
 }
