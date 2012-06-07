@@ -36,7 +36,7 @@
    <item>
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>1</number>
+      <number>2</number>
      </property>
      <widget class="QWidget" name="tabBasicSettings">
       <attribute name="title">
@@ -364,7 +364,7 @@
             <item row="0" column="0" colspan="2">
              <widget class="QLabel" name="lblCoreAddress">
               <property name="text">
-               <string>address</string>
+               <string>Address</string>
               </property>
              </widget>
             </item>
