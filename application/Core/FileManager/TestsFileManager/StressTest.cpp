@@ -166,13 +166,13 @@ void FilesAndDirs::createAFile()
 
    // Create a file with a random size from 1 B to 100 MB
    int bytes = this->randGen.rand(100 * 1024 * 1024 - 1) + 1;
-   const int CHUNK_SIZE = SETTINGS.get<quint32>("chunk_size");
-   QByteArray buffer(CHUNK_SIZE, 0); // Don't know why "char buffer[CHUNK_SIZE]" crashes..
+   static const int BUFFER_SIZE = 64 * 1024;
+   char buffer[BUFFER_SIZE];
 
    qDebug() << "Creating file " << filePath << " (" << Common::Global::formatByteSize(bytes) << ")";
 
    QFile file(filePath);
-   if (!file.open(QIODevice::WriteOnly))
+   if (!file.open(QIODevice::WriteOnly | QIODevice::Unbuffered))
    {
       qDebug() << "Unable to open file " << filePath;
       return;
@@ -180,13 +180,11 @@ void FilesAndDirs::createAFile()
 
    while (bytes > 0)
    {
-      int bufferSize = bytes < CHUNK_SIZE ? bytes : CHUNK_SIZE;
-
       int n = this->randGen.rand(255); // Don't generate a number for each byte to avoid too much computation.
-      for (int i = 0; i < bufferSize; i++)
+      for (int i = 0; i < BUFFER_SIZE; i++)
          buffer[i] = n++;
 
-      int bytesWritten = file.write(buffer, bufferSize);
+      int bytesWritten = file.write(buffer, bytes >= BUFFER_SIZE ? BUFFER_SIZE : bytes);
       if (bytesWritten == -1 || bytesWritten == 0)
       {
          qDebug() << "Unable to write in the file " << filePath;
@@ -486,7 +484,7 @@ void StressTest::haveChunk()
    time.start();
    QBitArray result = this->fileManager->haveChunks(hashes);
 
-   qDebug() << "Ask for " << hashes.size() << " hashe(s). Request time : " << time.elapsed() << " ms";
+   qDebug() << "Ask for" << hashes.size() << "hashe(s). Request time :" << time.elapsed() << "ms";
    if (result.isNull())
    {
       qDebug() << " -> " << "Don't have any hashes";
