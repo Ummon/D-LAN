@@ -462,7 +462,7 @@ void FileUpdater::scan(Directory* dir, bool addUnfinished)
             // Only used when loading the cache to compute the progress.
             if (this->fileCacheInformation)
             {
-               this->fileCacheInformation->addBytes(entry.size());
+               this->fileCacheInformation->newFile();
                this->progress = this->fileCacheInformation->getProgress();
             }
 
@@ -734,10 +734,10 @@ bool FileUpdater::processEvents(const QList<WatcherEvent>& events)
 /////
 
 FileUpdater::FileCacheInformation::FileCacheInformation(const Protos::FileCache::Hashes* fileCache) :
-   fileCache(fileCache), fileCacheSize(0), fileCacheSizeLoaded(0)
+   fileCache(fileCache), fileCacheNbFiles(0), fileCacheNbFilesLoaded(0)
 {
    for (int i = 0; i < this->fileCache->shareddir_size(); i++)
-      this->computeFileCacheSize(this->fileCache->shareddir(i).root());
+      this->computeFileCacheNbFiles(this->fileCache->shareddir(i).root());
 }
 
 FileUpdater::FileCacheInformation::~FileCacheInformation()
@@ -745,11 +745,11 @@ FileUpdater::FileCacheInformation::~FileCacheInformation()
    delete this->fileCache;
 }
 
-void FileUpdater::FileCacheInformation::addBytes(quint64 bytes)
+void FileUpdater::FileCacheInformation::newFile()
 {
-   this->fileCacheSizeLoaded += bytes;
-   if (this->fileCacheSizeLoaded > this->fileCacheSize)
-      this->fileCacheSizeLoaded = this->fileCacheSize;
+   if (this->fileCacheNbFilesLoaded == this->fileCacheNbFiles)
+      return;
+   this->fileCacheNbFilesLoaded++;
 }
 
 const Protos::FileCache::Hashes* FileUpdater::FileCacheInformation::getFileCache()
@@ -762,16 +762,15 @@ const Protos::FileCache::Hashes* FileUpdater::FileCacheInformation::getFileCache
   */
 int FileUpdater::FileCacheInformation::getProgress() const
 {
-   if (this->fileCacheSize == 0)
+   if (this->fileCacheNbFiles == 0)
       return 0;
-   return 10000LL * this->fileCacheSizeLoaded / this->fileCacheSize;
+   return 10000LL * this->fileCacheNbFilesLoaded / this->fileCacheNbFiles;
 }
 
-void FileUpdater::FileCacheInformation::computeFileCacheSize(const Protos::FileCache::Hashes::Dir& dir)
+void FileUpdater::FileCacheInformation::computeFileCacheNbFiles(const Protos::FileCache::Hashes::Dir& dir)
 {
    for (int i = 0; i < dir.dir_size(); i++)
-      this->computeFileCacheSize(dir.dir(i));
+      this->computeFileCacheNbFiles(dir.dir(i));
 
-   for (int i = 0; i < dir.file_size(); i++)
-      this->fileCacheSize += dir.file(i).size();
+   this->fileCacheNbFiles += dir.file_size();
 }

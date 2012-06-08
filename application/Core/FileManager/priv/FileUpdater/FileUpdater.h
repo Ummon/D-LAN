@@ -96,16 +96,16 @@ namespace FM
          FileCacheInformation(const Protos::FileCache::Hashes* fileCache);
          ~FileCacheInformation();
 
-         void addBytes(quint64 bytes);
+         void newFile();
          const Protos::FileCache::Hashes* getFileCache();
          int getProgress() const;
 
       private:
-         void computeFileCacheSize(const Protos::FileCache::Hashes::Dir& dir);
+         void computeFileCacheNbFiles(const Protos::FileCache::Hashes::Dir& dir);
 
          const Protos::FileCache::Hashes* fileCache; ///< The hashes from the saved file cache. Used only temporally at the begining of 'run()'.
-         quint64 fileCacheSize;
-         quint64 fileCacheSizeLoaded;
+         int fileCacheNbFiles;
+         int fileCacheNbFilesLoaded;
       };
       FileCacheInformation* fileCacheInformation; // Only used during the loading of 'fileCache'.
 
