@@ -45,7 +45,7 @@ FileUpdater::FileUpdater(FileManager* fileManager) :
    SCAN_PERIOD_UNWATCHABLE_DIRS(SETTINGS.get<quint32>("scan_period_unwatchable_dirs")),
    fileManager(fileManager),
    dirWatcher(DirWatcher::getNewWatcher()),
-   fileCache(nullptr),
+   fileCacheInformation(nullptr),
    toStop(false),
    progress(0),
    mutex(QMutex::Recursive),
@@ -151,7 +151,7 @@ void FileUpdater::rmRoot(SharedDirectory* dir, Directory* dir2)
   */
 void FileUpdater::setFileCache(const Protos::FileCache::Hashes* fileCache)
 {
-   this->fileCache = fileCache;
+   this->fileCacheInformation = new FileCacheInformation(fileCache);
 }
 
 void FileUpdater::prioritizeAFileToHash(File* file)
@@ -213,19 +213,17 @@ void FileUpdater::run()
 
    // First: retrieve the directories and file from the file cache and
    // synchronize it with the file system.
-   if (this->fileCache)
+   if (this->fileCacheInformation)
    {
-      const int nbDirsToScan = this->dirsToScan.size();
       while (!this->dirsToScan.isEmpty())
       {
          Directory* dir = this->dirsToScan.takeFirst();
          this->scan(dir, true);
          this->restoreFromFileCache(static_cast<SharedDirectory*>(dir));
-         this->progress = 10000 * (nbDirsToScan - this->dirsToScan.size()) / nbDirsToScan;
       }
 
-      delete this->fileCache;
-      this->fileCache = nullptr;
+      delete this->fileCacheInformation;
+      this->fileCacheInformation = nullptr;
    }
 
    emit fileCacheLoaded();
@@ -461,6 +459,13 @@ void FileUpdater::scan(Directory* dir, bool addUnfinished)
             File* file = currentDir->getFile(entry.fileName());
             QMutexLocker locker(&this->mutex);
 
+            // Only used when loading the cache to compute the progress.
+            if (this->fileCacheInformation)
+            {
+               this->fileCacheInformation->addBytes(entry.size());
+               this->progress = this->fileCacheInformation->getProgress();
+            }
+
             if (file)
             {
                if (
@@ -616,16 +621,16 @@ void FileUpdater::restoreFromFileCache(SharedDirectory* dir)
 {
    L_DEBU("Start restoring hashes of a shared directory : " + dir->getFullPath());
 
-   if (!this->fileCache)
+   if (!this->fileCacheInformation)
    {
       L_ERRO("FileUpdater::restoreFromFileCache(..) : 'this->fileCache' must be previously set. Unable to restore from the file cache.");
       return;
    }
 
-   for (int i = 0; i < this->fileCache->shareddir_size(); i++)
-      if (this->fileCache->shareddir(i).id().hash() == dir->getId())
+   for (int i = 0; i < this->fileCacheInformation->getFileCache()->shareddir_size(); i++)
+      if (this->fileCacheInformation->getFileCache()->shareddir(i).id().hash() == dir->getId())
       {
-         QSet<File*> filesWithHashes = dir->restoreFromFileCache(this->fileCache->shareddir(i).root()).toSet();
+         QSet<File*> filesWithHashes = dir->restoreFromFileCache(this->fileCacheInformation->getFileCache()->shareddir(i).root()).toSet();
 
          for (QMutableListIterator<File*> i(this->filesWithoutHashes); i.hasNext();)
          {
@@ -724,4 +729,49 @@ bool FileUpdater::processEvents(const QList<WatcherEvent>& events)
    }
 
    return false;
+}
+
+/////
+
+FileUpdater::FileCacheInformation::FileCacheInformation(const Protos::FileCache::Hashes* fileCache) :
+   fileCache(fileCache), fileCacheSize(0), fileCacheSizeLoaded(0)
+{
+   for (int i = 0; i < this->fileCache->shareddir_size(); i++)
+      this->computeFileCacheSize(this->fileCache->shareddir(i).root());
+}
+
+FileUpdater::FileCacheInformation::~FileCacheInformation()
+{
+   delete this->fileCache;
+}
+
+void FileUpdater::FileCacheInformation::addBytes(quint64 bytes)
+{
+   this->fileCacheSizeLoaded += bytes;
+   if (this->fileCacheSizeLoaded > this->fileCacheSize)
+      this->fileCacheSizeLoaded = this->fileCacheSize;
+}
+
+const Protos::FileCache::Hashes* FileUpdater::FileCacheInformation::getFileCache()
+{
+   return this->fileCache;
+}
+
+/**
+  * return a value between 0 and 10000 (basis point).
+  */
+int FileUpdater::FileCacheInformation::getProgress() const
+{
+   if (this->fileCacheSize == 0)
+      return 0;
+   return 10000LL * this->fileCacheSizeLoaded / this->fileCacheSize;
+}
+
+void FileUpdater::FileCacheInformation::computeFileCacheSize(const Protos::FileCache::Hashes::Dir& dir)
+{
+   for (int i = 0; i < dir.dir_size(); i++)
+      this->computeFileCacheSize(dir.dir(i));
+
+   for (int i = 0; i < dir.file_size(); i++)
+      this->fileCacheSize += dir.file(i).size();
 }
