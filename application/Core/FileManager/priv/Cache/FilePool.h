@@ -24,6 +24,7 @@
 #include <QFile>
 #include <QTime>
 #include <QTimer>
+#include <QScopedPointer>
 
 #include <Common/Uncopyable.h>
 
@@ -39,7 +40,7 @@ namespace FM
       explicit FilePool(QObject* parent = nullptr);
       ~FilePool();
 
-      QFile* open(const QString& path, QIODevice::OpenMode mode, bool* fileCreated = 0);
+      QFile* open(const QString& path, QIODevice::OpenMode mode, bool* fileCreated = nullptr);
       void release(QFile* file, bool forceToClose = false);
       void forceReleaseAll(const QString& path);
 
@@ -57,6 +58,34 @@ namespace FM
       QList<OpenedFile> files;
       QMutex mutex;
       QTimer timer;
+   };
+
+   /**
+     * Little helper class to autorelease a file opened with a 'FilePool' when going out of scope.
+     * Don't forget to test if the file has been correctely created before using it. For example:
+     * AutoReleasedFile f(fp, path, mode);
+     * if (!f)
+     *    [..]
+     */
+   class AutoReleasedFile
+   {
+   public:
+      AutoReleasedFile(FilePool& filePool, const QString& path, QIODevice::OpenMode mode, bool forceToClose = false, bool* fileCreated = nullptr) :
+         filePool(filePool), file(this->filePool.open(path, mode, fileCreated)), forceToClose(forceToClose) {}
+
+      ~AutoReleasedFile()
+      {
+         this->filePool.release(this->file, this->forceToClose);
+      }
+
+      inline QFile* operator->() const { return this->file; }
+      inline QFile& operator*() const { return *this->file; }
+      inline bool operator!() const { return !this->file; }
+
+   private:
+      FilePool& filePool;
+      QFile* file;
+      bool forceToClose;
    };
 }
 

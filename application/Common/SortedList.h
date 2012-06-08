@@ -68,18 +68,18 @@ template <typename T>
 void SortedList<T>::insert(const T& item)
 {
    for (QMutableLinkedListIterator<T> i(this->list); i.hasNext(); i.next())
-    {
-       T e = i.peekNext();
-       if (e == item)
-          return;
-       if (this->lesserThan ? this->lesserThan(item, e) : item < e)
-       {
-          i.insert(item);
-          return;
-       }
-    }
+   {
+      T e = i.peekNext();
+      if (e == item)
+         return;
+      if (this->lesserThan ? this->lesserThan(item, e) : item < e)
+      {
+         i.insert(item);
+         return;
+      }
+   }
 
-    this->list << item;
+   this->list << item;
 }
 
 /**

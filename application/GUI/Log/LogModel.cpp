@@ -31,12 +31,12 @@ LogModel::LogModel(QSharedPointer<RCC::ICoreConnection> coreConnection) :
    connect(this->loggerHook.data(), SIGNAL(newLogEntry(QSharedPointer<const LM::IEntry>)), this, SLOT(newLogEntry(QSharedPointer<const LM::IEntry>)));
 }
 
-int LogModel::rowCount(const QModelIndex& parent) const
+int LogModel::rowCount(const QModelIndex& /*parent*/) const
 {
    return this->entries.size();
 }
 
-int LogModel::columnCount(const QModelIndex& parent) const
+int LogModel::columnCount(const QModelIndex& /*parent*/) const
 {
    return 2;
 }
@@ -46,25 +46,32 @@ QVariant LogModel::data(const QModelIndex& index, int role) const
    if (role != Qt::DisplayRole || index.row() >= this->entries.size())
       return QVariant();
 
-   QSharedPointer<const LM::IEntry> entry = this->entries[index.row()];
-
-   QString messagePrefix;
-   switch (entry->getSeverity())
-   {
-   case LM::SV_FATAL_ERROR:
-      messagePrefix = "[Fatal Error] ";
-      break;
-   case LM::SV_ERROR:
-      messagePrefix = "[Error] ";
-      break;
-   default:;
-   }
+   const QSharedPointer<const LM::IEntry>& entry = this->entries[index.row()];
 
    switch (index.column())
    {
-   case 0: return entry->getDateStr(false);
-   case 1: return messagePrefix + entry->getMessage();
-   default: return QVariant();
+   case 0:
+      return entry->getDateStr(false);
+
+   case 1:
+      {
+         QString message;
+         switch (entry->getSeverity())
+         {
+         case LM::SV_FATAL_ERROR:
+            message.append("[Fatal Error] ");
+            break;
+         case LM::SV_ERROR:
+            message.append("[Error] ");
+            break;
+         default:;
+         }
+         message.append(entry->getMessage());
+         return message;
+      }
+
+   default:
+      return QVariant();
    }
 }
 
@@ -91,7 +98,8 @@ void LogModel::newLogEntry(QSharedPointer<const LM::IEntry> entry)
    this->entries << entry;
    this->endInsertRows();
 
-   if (static_cast<quint32>(this->entries.size()) > SETTINGS.get<quint32>("max_log_message_displayed"))
+   static const quint32 MAX_LOG_MESSAGE_DISPLAYED = SETTINGS.get<quint32>("max_log_message_displayed");
+   if (static_cast<quint32>(this->entries.size()) > MAX_LOG_MESSAGE_DISPLAYED)
    {
       this->beginRemoveRows(QModelIndex(), 0, 0);
       this->entries.removeFirst();

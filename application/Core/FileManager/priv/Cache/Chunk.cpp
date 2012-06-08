@@ -180,10 +180,11 @@ Common::Hash Chunk::getHash() const
 
 void Chunk::setHash(const Common::Hash& hash)
 {
-   L_DEBU(QString("Chunk[%1] setHash(..) : %2").arg(this->num).arg(hash.toStr()));
-
-   if (!this->hash.isNull() && this->hash != hash)
-      L_WARN(QString("Chunk::setHash : Hash chunk changed from %1 to %2 for the file %3").arg(this->hash.toStr()).arg(hash.toStr()).arg(this->file->getFullPath()));
+   #ifdef DEBUG
+      L_DEBU(QString("Chunk[%1] setHash(..) : %2").arg(this->num).arg(hash.toStr()));
+      if (!this->hash.isNull() && this->hash != hash)
+         L_WARN(QString("Chunk::setHash : Hash chunk changed from %1 to %2 for the file %3").arg(this->hash.toStr()).arg(hash.toStr()).arg(this->file->getFullPath()));
+   #endif
 
    this->hash = hash;
 }
@@ -204,11 +205,11 @@ int Chunk::getChunkSize() const
       return 0;
 
    if (this->num < this->file->getNbChunks() - 1)
-      return this->CHUNK_SIZE;
+      return Chunk::CHUNK_SIZE;
 
-   const int size = this->file->getSize() % this->CHUNK_SIZE;
+   const int size = this->file->getSize() % Chunk::CHUNK_SIZE;
    if (!size)
-      return this->CHUNK_SIZE;
+      return Chunk::CHUNK_SIZE;
    else
       return size;
 }

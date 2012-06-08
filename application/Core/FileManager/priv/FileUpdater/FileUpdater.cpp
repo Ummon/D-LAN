@@ -313,8 +313,8 @@ void FileUpdater::run()
 }
 
 /**
-  * It will take some files from 'fileWithoutHashes' and compute theirs hashes.
-  * The duration of the compuation is minimum 'minimumDurationWhenHashing'.
+  * It will take some files from 'filesWithoutHashesPrioritized' or 'fileWithoutHashes' and compute theirs hashes.
+  * The minimum duration of the compuation is equal to the setting 'minimum_duration_when_hashing'.
   */
 void FileUpdater::computeSomeHashes()
 {
@@ -334,81 +334,51 @@ void FileUpdater::computeSomeHashes()
    QElapsedTimer timer;
    timer.start();
 
-   while (!this->filesWithoutHashesPrioritized.empty())
+   // We take the file from the prioritized list first.
+   QList<QList<File*>*> fileLists { &this->filesWithoutHashesPrioritized, &this->filesWithoutHashes };
+   for (QMutableListIterator<QList<File*>*> i(fileLists); i.hasNext();)
    {
-      File* nextFileToHash = this->filesWithoutHashesPrioritized.first();
-
-      if (nextFileToHash->isComplete()) // A file can change its state from 'completed' to 'unfinished' if it's redownloaded.
+      QList<File*>* fileList = i.next();
+      while (!fileList->empty())
       {
-         locker.unlock();
-         bool gotAllHashes;
-         try {
-            int hashedAmount = 0;
-            gotAllHashes = this->fileHasher.start(nextFileToHash->asFileForHasher(), 1, &hashedAmount); // Be carreful of methods 'prioritizeAFileToHash(..)' and 'rmRoot(..)' called concurrently here.
-            this->remainingSizeToHash -= hashedAmount;
-            this->updateHashingProgress();
-         } catch (IOErrorException&) {
-            gotAllHashes = true; // The hashes may be recomputed when a peer ask the hashes with a GET_HASHES request.
+         File* nextFileToHash = fileList->first();
+
+         if (nextFileToHash->isComplete()) // A file can change its state from 'completed' to 'unfinished' if it's redownloaded.
+         {
+            locker.unlock();
+            bool gotAllHashes;
+            try {
+               int hashedAmount = 0;
+               gotAllHashes = this->fileHasher.start(nextFileToHash->asFileForHasher(), 1, &hashedAmount); // Be carreful of methods 'prioritizeAFileToHash(..)' and 'rmRoot(..)' called concurrently here.
+               this->remainingSizeToHash -= hashedAmount;
+               this->updateHashingProgress();
+            } catch (IOErrorException&) {
+               gotAllHashes = true; // The hashes may be recomputed when a peer ask the hashes with a GET_HASHES request.
+            }
+            locker.relock();
+
+            if (gotAllHashes)
+               fileList->removeFirst();
+            // Special case for the prioritized list, we put the file at the end after the computation of a hash.
+            else if (fileList == &this->filesWithoutHashesPrioritized && fileList->size() > 1) // The current hashing file may have been removed from 'filesWithoutHashesPrioritized' by 'rmRoot(..)'.
+               fileList->move(0, fileList->size() - 1);
          }
-         locker.relock();
-
-         if (gotAllHashes)
-            this->filesWithoutHashesPrioritized.removeFirst();
-         else if (this->filesWithoutHashesPrioritized.size() > 1) // The current hashing file may have been removed from 'filesWithoutHashesPrioritized' by 'rmRoot(..)'.
-            this->filesWithoutHashesPrioritized.move(0, this->filesWithoutHashesPrioritized.size() - 1);
-      }
-      else
-      {
-         this->remainingSizeToHash -= this->filesWithoutHashesPrioritized[0]->getSize();
-         this->filesWithoutHashesPrioritized.removeFirst();
-      }
-
-      if (this->toStopHashing)
-      {
-         this->toStopHashing = false;
-         goto end;
-      }
-
-      if (static_cast<quint32>(timer.elapsed()) >= SETTINGS.get<quint32>("minimum_duration_when_hashing"))
-         goto end;
-   }
-
-   for (int i = 0; i < this->filesWithoutHashes.size(); i++)
-   {
-      File* nextFileToHash = this->filesWithoutHashes[i];
-
-      if (nextFileToHash->isComplete()) // A file can change its state from 'completed' to 'unfinished' if it's redownloaded.
-      {
-         locker.unlock();
-         bool gotAllHashes;
-         try {
-            int hashedAmount = 0;
-            gotAllHashes = this->fileHasher.start(nextFileToHash->asFileForHasher(), 1, &hashedAmount);
-            this->remainingSizeToHash -= hashedAmount;
-            this->updateHashingProgress();
-         } catch (IOErrorException&) {
-            gotAllHashes = true; // The hashes may be recomputed when a peer ask the hashes with a GET_HASHES request.
+         else
+         {
+            this->remainingSizeToHash -= fileList->first()->getSize();
+            fileList->removeFirst();
          }
-         locker.relock();
 
-         if (gotAllHashes)
-            this->filesWithoutHashes.removeAt(i);
-         i--;
-      }
-      else
-      {
-         this->remainingSizeToHash -= this->filesWithoutHashes[i]->getSize();
-         this->filesWithoutHashes.removeAt(i--);
-      }
+         if (this->toStopHashing)
+         {
+            this->toStopHashing = false;
+            goto end;
+         }
 
-      if (this->toStopHashing)
-      {
-         this->toStopHashing = false;
-         goto end;
+         static const quint32 MINIMUM_DURATION_WHEN_HASHING = SETTINGS.get<quint32>("minimum_duration_when_hashing");
+         if (static_cast<quint32>(timer.elapsed()) >= MINIMUM_DURATION_WHEN_HASHING)
+            goto end;
       }
-
-      if (static_cast<quint32>(timer.elapsed()) >= SETTINGS.get<quint32>("minimum_duration_when_hashing"))
-         goto end;
    }
 
 end:

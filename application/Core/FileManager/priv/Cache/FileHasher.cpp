@@ -80,10 +80,10 @@ bool FileHasher::start(FileForHasher* fileCache, int n, int* amountHashed)
 
    L_USER(QString("Computing the hashes for %1 ..").arg(filePath));
 
-   Common::Hasher hasher;
+   // Same performance with or without "QIODevice::Unbuffered".
+   AutoReleasedFile file(FileHasher::filePool, filePath, QIODevice::ReadOnly | QIODevice::Unbuffered, this->currentFileCache->getSize() <= Chunk::CHUNK_SIZE);
 
-   QFile file(filePath);
-   if (!file.open(QIODevice::ReadOnly | QIODevice::Unbuffered)) // Same performance with or without "QIODevice::Unbuffered".
+   if (!file)
    {
       this->toStopHashing = false;
       this->hashing = false;
@@ -91,6 +91,8 @@ bool FileHasher::start(FileForHasher* fileCache, int n, int* amountHashed)
       L_WARN(QString("Unable to open this file : %1").arg(filePath));
       throw IOErrorException();
    }
+
+   file->reset();
 
    const QVector<QSharedPointer<Chunk>>& chunks = this->currentFileCache->getChunks();
 
@@ -104,7 +106,7 @@ bool FileHasher::start(FileForHasher* fileCache, int n, int* amountHashed)
    {
       bytesSkipped += Chunk::CHUNK_SIZE;
       chunkNum++;
-      file.seek(file.pos() + Chunk::CHUNK_SIZE);
+      file->seek(file->pos() + Chunk::CHUNK_SIZE);
    }
 
 #if DEBUG
@@ -114,8 +116,11 @@ bool FileHasher::start(FileForHasher* fileCache, int n, int* amountHashed)
 
    static const int BUFFER_SIZE = SETTINGS.get<quint32>("buffer_size_reading");
    char buffer[BUFFER_SIZE];
+
+   Common::Hasher hasher;
    bool endOfFile = false;
    qint64 bytesReadTotal = 0;
+
    while (!endOfFile)
    {
       // See 'stopHashing()'.
@@ -137,7 +142,7 @@ bool FileHasher::start(FileForHasher* fileCache, int n, int* amountHashed)
 
          int bytesRead = 0;
          {
-            Common::FileLocker fileLocker(file, BUFFER_SIZE, Common::FileLocker::READ);
+            Common::FileLocker fileLocker(*file, BUFFER_SIZE, Common::FileLocker::READ);
             if (!fileLocker.isLocked())
             {
                this->toStopHashing = false;
@@ -147,7 +152,7 @@ bool FileHasher::start(FileForHasher* fileCache, int n, int* amountHashed)
                throw IOErrorException();
             }
 
-            bytesRead = file.read(buffer, BUFFER_SIZE);
+            bytesRead = file->read(buffer, BUFFER_SIZE);
             switch (bytesRead)
             {
             case -1:
@@ -236,9 +241,9 @@ bool FileHasher::start(FileForHasher* fileCache, int n, int* amountHashed)
                this->currentFileCache->getCache()->onChunkRemoved(c);
             }
       }
-
       this->currentFileCache = 0;
       return false;
+
    }
 
    this->currentFileCache->updateDateLastModified(QFileInfo(filePath).lastModified()); // A file may have been changed from its creation in the cache.
@@ -269,3 +274,5 @@ void FileHasher::internalStop()
       L_DEBU("File hashing stopped");
    }
 }
+
+FilePool FileHasher::filePool;
