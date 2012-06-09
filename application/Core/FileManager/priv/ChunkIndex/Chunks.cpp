@@ -32,7 +32,7 @@ using namespace FM;
   * We use a Bloom filter to reduce the time of a call to 'contains(..)', 'value(..)' and 'values(..)'.
   * Some measurements (compiled with GCC 4.6 and -02):
   *  - The filter reduce the call time of 'contains()' from about 20% with 30'000 hashes
-  *    and about 10% with 100'000 hashes.
+  *    and about 15% with 100'000 hashes.
   *  - 100'000'000 calls of 'contains(..)' for 100'000 known chunks takes 3.6s on a i5 @ 2.5 GHz.
   *    It's 36 ns per call.
   * See the method 'chunksPerformance()' in 'TestsFileManager' for more information.

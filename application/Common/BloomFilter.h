@@ -19,8 +19,6 @@
 #ifndef COMMON_BLOOMFILTER_H
 #define COMMON_BLOOMFILTER_H
 
-#include <QBitArray>
-
 #include <Common/Hash.h>
 
 /**
@@ -65,7 +63,7 @@ inline void Common::BloomFilter::add(const Hash& hash)
    for (int i = 0; i < k; i++)
    {
       const quint32 p = position(hash, i);
-      *(this->bitArray + (p >> 3)) |= 1 << (p & 7);
+      this->bitArray[p >> 3] |= 1 << (p % 8);
    }
 }
 
@@ -77,7 +75,7 @@ inline bool Common::BloomFilter::test(const Hash& hash) const
    for (int i = 0; i < k; i++)
    {
       const quint32 p = position(hash, i);
-      if ((*(this->bitArray + (p >> 3)) & 1 << (p & 7)) == 0)
+      if ((this->bitArray[p >> 3] & 1 << (p % 8)) == 0)
          return false;
    }
    return true;
