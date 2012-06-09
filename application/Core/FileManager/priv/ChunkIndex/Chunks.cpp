@@ -34,29 +34,39 @@ void Chunks::add(QSharedPointer<Chunk> chunk)
 {
    QMutexLocker locker(&this->mutex);
    this->insert(chunk->getHash(), chunk);
+   this->bloomFilter.add(chunk->getHash());
 }
 
 void Chunks::rm(QSharedPointer<Chunk> chunk)
 {
    QMutexLocker locker(&this->mutex);
    this->remove(chunk->getHash(), chunk);
+   if (this->isEmpty())
+      this->bloomFilter.reset();
+
    L_DEBU(QString("Nb chunks: %1").arg(this->size()));
 }
 
 QSharedPointer<Chunk> Chunks::value(const Common::Hash& hash) const
 {
    QMutexLocker locker(&this->mutex);
+   if (!this->bloomFilter.test(hash))
+      return QSharedPointer<Chunk>();
    return QMultiHash<Common::Hash, QSharedPointer<Chunk>>::value(hash);
 }
 
 QList<QSharedPointer<Chunk>> Chunks::values(const Common::Hash& hash) const
 {
    QMutexLocker locker(&this->mutex);
+   if (!this->bloomFilter.test(hash))
+      return QList<QSharedPointer<Chunk>>();
    return QMultiHash<Common::Hash, QSharedPointer<Chunk>>::values(hash);
 }
 
 bool Chunks::contains(const Common::Hash& hash) const
 {
    QMutexLocker locker(&this->mutex);
+   if (!this->bloomFilter.test(hash))
+      return false;
    return QMultiHash<Common::Hash, QSharedPointer<Chunk>>::contains(hash);
 }

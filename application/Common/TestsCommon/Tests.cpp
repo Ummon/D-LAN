@@ -35,6 +35,7 @@
 #include <ZeroCopyStreamQIODevice.h>
 #include <ProtoHelper.h>
 #include <SortedList.h>
+#include <BloomFilter.h>
 #include <TransferRateCalculator.h>
 using namespace Common;
 
@@ -390,6 +391,39 @@ void Tests::hasher()
    QVERIFY(h2 != h3);
    QVERIFY(h4 != h1);
    QVERIFY(h4 == h5);
+}
+
+void Tests::bloomFilter()
+{
+   BloomFilter bloomFilter;
+   Hash h1 = Hash::fromStr("02e4a0f0e55a308eb83b00eb13023a42cbaffe77");
+   Hash h2 = Hash::fromStr("db23d79ed24b1c40b1f88294f877fac03f6dd789");
+
+   bloomFilter.add(h1);
+   bloomFilter.add(h2);
+
+   QCOMPARE(bloomFilter.test(h1), true);
+   QCOMPARE(bloomFilter.test(h2), true);
+
+   Hash h3 = Hash::fromStr("ca2dae971001c3da923bb23372b3a66378810a0f");
+   int nbOfFalsePositive = 0;
+   const int NB_TESTS = 1000; // Number of test.
+   const int n = 30000; // Size of the set.
+
+   for (int i = 0; i < NB_TESTS; i++)
+   {
+      bloomFilter.reset();
+      for (int j = 0; j < n; j++)
+         bloomFilter.add(Common::Hash::rand());
+
+      if (bloomFilter.test(h3))
+         nbOfFalsePositive++;
+
+      if (i % 50 == 0)
+         qDebug() << "i ==" << i << "...";
+   }
+
+   qDebug() << "Measurement of the probability (p) for n =" << n << "with" << NB_TESTS << "tests:" << static_cast<double>(nbOfFalsePositive) / NB_TESTS;
 }
 
 void Tests::messageHeader()

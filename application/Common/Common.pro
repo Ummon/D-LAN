@@ -34,7 +34,8 @@ SOURCES += Hash.cpp \
     Languages.cpp \
     Constants.cpp \
     FileLocker.cpp \
-    ConsoleReader.cpp
+    ConsoleReader.cpp \
+    BloomFilter.cpp
 
 HEADERS += Hashes.h \
     Hash.h \
@@ -61,6 +62,7 @@ HEADERS += Hashes.h \
     Tree.h \
     FileLocker.h \
     ConsoleReader.h \
-    SortedList.h
+    SortedList.h \
+    BloomFilter.h
 
 
