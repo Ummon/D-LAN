@@ -27,9 +27,9 @@ namespace Common
 {
    class BloomFilter
    {
-      static const int w = 18; // Number if bits used to find a position.
-      static const int m = 262144; // Total number of positions: 2^18.
-      static const int k = 7; // Number of positions per hash.
+      static const int w = 18; // Size of the integer used to find a position.
+      static const int m = 262144; // Total number of positions: 2^18. It corresponds to a 32 KiB array.
+      static const int k = 7; // Number of positions set per hash.
 
    public:
       BloomFilter();
