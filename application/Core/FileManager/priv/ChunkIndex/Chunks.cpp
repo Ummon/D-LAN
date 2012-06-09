@@ -27,7 +27,15 @@ using namespace FM;
   *
   * We must allow multiple chunk with the same hash. Considering this case :
   * - Add identical files 'a' and 'b'.
-  * - remove 'a'. 'b' wouldn't be remove from Chunks in the same time.
+  * - remove 'a'. 'b' wouldn't be remove from Chunks at the same time.
+  *
+  * We use a Bloom filter to reduce the time of a call to 'contains(..)', 'value(..)' and 'values(..)'.
+  * Some measurements (compiled with GCC 4.6 and -02):
+  *  - The filter reduce the call time of 'contains()' from about 20% with 30'000 hashes
+  *    and about 10% with 100'000 hashes.
+  *  - 100'000'000 calls of 'contains(..)' for 100'000 known chunks takes 3.6s on a i5 @ 2.5 GHz.
+  *    It's 36 ns per call.
+  * See the method 'chunksPerformance()' in 'TestsFileManager' for more information.
   */
 
 void Chunks::add(QSharedPointer<Chunk> chunk)

@@ -23,35 +23,78 @@
 
 #include <Common/Hash.h>
 
+/**
+  * @class Common::BloomFilter
+  * A very simple bloom filter implementation for the class 'Common::Hash'.
+  * Calibrated for n = 30'000 hashes (~1.8 TiB) and p = 0.015 (probability of false positive).
+  *
+  * We don't use any hash functions to compute the positions, instead we use part of the hash. See the 'position(..)' function.
+  *
+  * More information: http://en.wikipedia.org/wiki/Bloom_filter
+  *
+  * @remarks (x >> 3) is used as a division by 8.
+  */
+
 namespace Common
 {
    class BloomFilter
    {
-      static const int w = 18; // Size of the integer used to find a position.
-      static const int m = 262144; // Total number of positions: 2^18. It corresponds to a 32 KiB array.
+      static const int w = 20; // Size of the integer used to find a position.
+      static const int m = 1048576; // Total number of positions: 2^20. It corresponds to a 128 KiB array.
       static const int k = 7; // Number of positions set per hash.
 
    public:
-      BloomFilter();
+      BloomFilter() { this->reset(); }
 
-      void add(const Hash& hash);
-      bool test(const Hash& hash) const;
-      void reset();
+      inline void add(const Hash& hash);
+      inline bool test(const Hash& hash) const;
+      inline void reset();
 
    private:
       /**
         * Returns the position value of 'n',  0 <= n <= k.
         */
-      inline static quint32 position(const Hash& hash, int n)
-      {
-         const char* hashData = hash.getData();
-         const int pPos = n * w; // Position in 'hashData' of 'p'.
-         const quint32* p = reinterpret_cast<const quint32*>(hashData + pPos / 8);
-         return *p >> (32 - w - pPos % 8) & ((1 << w) - 1);
-      }
+      inline static quint32 position(const Hash& hash, int n);
 
-      QBitArray bitArray;
+      uchar bitArray[m >> 3];
    };
+}
+
+inline void Common::BloomFilter::add(const Hash& hash)
+{
+   for (int i = 0; i < k; i++)
+   {
+      const quint32 p = position(hash, i);
+      *(this->bitArray + (p >> 3)) |= 1 << (p & 7);
+   }
+}
+
+/**
+  * Returns 'true' if the hash may exist in the set and 'false' if the hash doesn't exist in the set.
+  */
+inline bool Common::BloomFilter::test(const Hash& hash) const
+{
+   for (int i = 0; i < k; i++)
+   {
+      const quint32 p = position(hash, i);
+      if ((*(this->bitArray + (p >> 3)) & 1 << (p & 7)) == 0)
+         return false;
+   }
+   return true;
+}
+
+inline void Common::BloomFilter::reset()
+{
+   memset(this->bitArray, 0, sizeof(this->bitArray));
+}
+
+inline quint32 Common::BloomFilter::position(const Hash& hash, int n)
+{
+   const char* hashData = hash.getData();
+   const quint32 pPos = n * w; // Position in 'hashData' of 'p'.
+   const quint32* p = reinterpret_cast<const quint32*>(hashData + (pPos >> 3));
+   static const quint32 wMask = (1 << w) - 1;
+   return *p >> (32 - w - pPos % 8) & wMask;
 }
 
 #endif

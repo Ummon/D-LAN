@@ -43,13 +43,13 @@ int Chunk::CHUNK_SIZE(0);
 Chunk::Chunk(File* file, int num, quint32 knownBytes) :
    file(file), num(num), knownBytes(knownBytes)
 {
-   L_DEBU(QString("New chunk[%1] : %2. File : %3").arg(num).arg(hash.toStr()).arg(this->file->getFullPath()));
+   L_DEBU(QString("New chunk[%1] : %2. File : %3").arg(num).arg(hash.toStr()).arg(this->file ? this->file->getFullPath() : "<no file defined>"));
 }
 
 Chunk::Chunk(File* file, int num, quint32 knownBytes, const Common::Hash& hash) :
    file(file), num(num), knownBytes(knownBytes), hash(hash)
 {
-   L_DEBU(QString("New chunk[%1] : %2. File : %3").arg(num).arg(hash.toStr()).arg(this->file->getFullPath()));
+   L_DEBU(QString("New chunk[%1] : %2. File : %3").arg(num).arg(hash.toStr()).arg(this->file ? this->file->getFullPath() : "<no file defined>"));
 }
 
 Chunk::~Chunk()

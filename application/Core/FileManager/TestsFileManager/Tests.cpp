@@ -647,6 +647,39 @@ void Tests::rmSharedDirectory()
    this->fileManager->setSharedDirs(this->sharedDirs);
 }
 
+/**
+  * The following case tests the Bloom filter performance
+  * used in the class 'Chunks'.
+  */
+#include <priv/ChunkIndex/Chunks.h>
+#include <priv/Cache/Chunk.h>
+#include <priv/Cache/Directory.h>
+#include <priv/Cache/File.h>
+void Tests::chunksPerformance()
+{
+   qDebug() << "===== chunksPerformance() =====";
+
+   Chunks chunks;
+
+   for (int i = 0; i < 100000; i++)
+   {
+      QSharedPointer<Chunk> chunk(new Chunk(nullptr, 0, 0));
+      chunk->setHash(Common::Hash::rand());
+      chunks.add(chunk);
+   }
+
+   Common::Hashes hashes;
+   const int nbHashes = 100;
+   for (int i = 0; i < nbHashes; i++)
+      hashes << Common::Hash::rand();
+
+   for (int i = 0; i < 100000000; i++)
+   {
+      if(chunks.contains(hashes[i % nbHashes]))
+         QFAIL("chunks cannot contains a random chunk");
+   }
+}
+
 void Tests::cleanupTestCase()
 {
    qDebug() << "===== cleanupTestCase() =====";

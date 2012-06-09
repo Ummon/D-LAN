@@ -41,7 +41,7 @@ namespace FM
 
    private:
       mutable QMutex mutex; // From the documentation : "they (containers) are thread-safe in situations where they are used as read-only containers by all threads used to access them.".
-      BloomFilter bloomFilter; // To reduce the time of a call to 'contains(..)', 'value(..)' and 'values(..)'.
+      BloomFilter bloomFilter;
    };
 }
 #endif
