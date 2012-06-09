@@ -24,7 +24,7 @@
 /**
   * @class Common::BloomFilter
   * A very simple bloom filter implementation for the class 'Common::Hash'.
-  * Calibrated for n = 30'000 hashes (~1.8 TiB) and p = 0.015 (probability of false positive).
+  * Calibrated for n = 100'000 hashes (~6.1 TiB) and p = 0.006 (probability of false positive).
   *
   * We don't use any hash functions to compute the positions, instead we use part of the hash. See the 'position(..)' function.
   *

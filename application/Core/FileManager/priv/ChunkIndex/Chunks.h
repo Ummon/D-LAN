@@ -19,12 +19,19 @@
 #ifndef FILEMANAGER_CHUNKS_H
 #define FILEMANAGER_CHUNKS_H
 
+// Uncomment this directive to enable the Bloom filter.
+// It will speed up the call to the methods 'value(..)', 'values(..)' and 'contains(..)' by 15% for less than 100'000 chunks in memory
+// but slow down by 100% for more than 1'000'000 chunks in memory, this is why it is disable by default.
+// #define BLOOM_FILTER_ON
+
 #include <QHash>
 #include <QSharedPointer>
 #include <QMutex>
 
 #include <Common/Hash.h>
-#include <Common/BloomFilter.h>
+#ifdef BLOOM_FILTER_ON
+   #include <Common/BloomFilter.h>
+#endif
 
 namespace FM
 {
@@ -41,7 +48,10 @@ namespace FM
 
    private:
       mutable QMutex mutex; // From the documentation : "they (containers) are thread-safe in situations where they are used as read-only containers by all threads used to access them.".
+
+#ifdef BLOOM_FILTER_ON
       BloomFilter bloomFilter;
+#endif
    };
 }
 #endif
