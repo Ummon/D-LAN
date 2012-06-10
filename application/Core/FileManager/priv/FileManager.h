@@ -85,8 +85,8 @@ namespace FM
       void entryAdded(Entry* entry);
       void entryRemoved(Entry* entry);
       void entryRenamed(Entry* entry, const QString& oldName);
-      void chunkHashKnown(QSharedPointer<Chunk> chunk);
-      void chunkRemoved(QSharedPointer<Chunk> chunk);
+      void chunkHashKnown(const QSharedPointer<Chunk>& chunk);
+      void chunkRemoved(const QSharedPointer<Chunk>& chunk);
 
    private:
       void loadCacheFromFile();

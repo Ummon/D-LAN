@@ -626,12 +626,12 @@ void Cache::onEntryRenamed(Entry* entry, const QString& oldName)
    emit entryRenamed(entry, oldName);
 }
 
-void Cache::onChunkHashKnown(QSharedPointer<Chunk> chunk)
+void Cache::onChunkHashKnown(const QSharedPointer<Chunk>& chunk)
 {
    emit chunkHashKnown(chunk);
 }
 
-void Cache::onChunkRemoved(QSharedPointer<Chunk> chunk)
+void Cache::onChunkRemoved(const QSharedPointer<Chunk>& chunk)
 {
    emit chunkRemoved(chunk);
 }

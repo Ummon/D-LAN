@@ -85,7 +85,7 @@ namespace PM
         * When a remote peer want a chunk, this signal is emitted.
         * The chunk will be sent using the socket object. Once the data is finished to send the method 'ISocket::finished()' must be called.
         */
-      void getChunk(QSharedPointer<FM::IChunk> chunk, int offset, QSharedPointer<PM::ISocket> socket);
+      void getChunk(const QSharedPointer<FM::IChunk>& chunk, int offset, const QSharedPointer<PM::ISocket>& socket);
 
       /**
         * Emitted when a peer becomes alive or is not banned anymore.

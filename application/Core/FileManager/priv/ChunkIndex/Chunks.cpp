@@ -39,7 +39,7 @@ using namespace FM;
   * See the method 'chunksPerformance()' in 'TestsFileManager' for more information.
   */
 
-void Chunks::add(QSharedPointer<Chunk> chunk)
+void Chunks::add(const QSharedPointer<Chunk>& chunk)
 {
    QMutexLocker locker(&this->mutex);
    this->insert(chunk->getHash(), chunk);
@@ -48,7 +48,7 @@ void Chunks::add(QSharedPointer<Chunk> chunk)
 #endif
 }
 
-void Chunks::rm(QSharedPointer<Chunk> chunk)
+void Chunks::rm(const QSharedPointer<Chunk>& chunk)
 {
    QMutexLocker locker(&this->mutex);
    this->remove(chunk->getHash(), chunk);

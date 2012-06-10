@@ -66,7 +66,7 @@ namespace DM
       void run();
       void finished();
 
-      void setChunk(QSharedPointer<FM::IChunk> chunk);
+      void setChunk(const QSharedPointer<FM::IChunk>& chunk);
       QSharedPointer<FM::IChunk> getChunk() const;
 
       void setPeerSource(PM::IPeer* peer, bool informOccupiedPeers = true);
@@ -96,7 +96,7 @@ namespace DM
 
    private slots:
       void result(const Protos::Core::GetChunkResult& result);
-      void stream(QSharedPointer<PM::ISocket> socket);
+      void stream(const QSharedPointer<PM::ISocket>& socket);
       void getChunkTimeout();
 
       void downloadingEnded();

@@ -650,6 +650,7 @@ void Tests::rmSharedDirectory()
 /**
   * The following case tests the Bloom filter performance
   * used in the class 'Chunks'.
+  * The bloom filter can be enable in "Chunks.h".
   */
 #include <priv/ChunkIndex/Chunks.h>
 #include <priv/Cache/Chunk.h>

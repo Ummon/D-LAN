@@ -518,7 +518,7 @@ bool FileDownload::tryToLinkToAnExistingFile()
    return this->localEntry.exists();
 }
 
-void FileDownload::connectChunkDownloaderSignals(QSharedPointer<ChunkDownloader> chunkDownloader)
+void FileDownload::connectChunkDownloaderSignals(const QSharedPointer<ChunkDownloader>& chunkDownloader)
 {
    connect(chunkDownloader.data(), SIGNAL(downloadStarted()), this, SLOT(chunkDownloaderStarted()), Qt::DirectConnection);
    connect(chunkDownloader.data(), SIGNAL(downloadFinished()), this, SLOT(chunkDownloaderFinished()), Qt::DirectConnection);

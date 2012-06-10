@@ -40,8 +40,8 @@ namespace FM
    class Chunks : private QMultiHash<Common::Hash, QSharedPointer<Chunk>>
    {
    public:
-      void add(QSharedPointer<Chunk> chunk);
-      void rm(QSharedPointer<Chunk> chunk);
+      void add(const QSharedPointer<Chunk>& chunk);
+      void rm(const QSharedPointer<Chunk>& chunk);
       QSharedPointer<Chunk> value(const Common::Hash& hash) const;
       QList<QSharedPointer<Chunk>> values(const Common::Hash& hash) const;
       bool contains(const Common::Hash& hash) const;

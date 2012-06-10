@@ -323,7 +323,7 @@ void FileManager::entryRenamed(Entry* entry, const QString& oldName)
    L_DEBU("Entry renamed in the index..");
 }
 
-void FileManager::chunkHashKnown(QSharedPointer<Chunk> chunk)
+void FileManager::chunkHashKnown(const QSharedPointer<Chunk>& chunk)
 {
    L_DEBU(QString("Adding chunk '%1' to the index..").arg(chunk->getHash().toStr()));
    this->chunks.add(chunk);
@@ -331,7 +331,7 @@ void FileManager::chunkHashKnown(QSharedPointer<Chunk> chunk)
    this->setCacheChanged();
 }
 
-void FileManager::chunkRemoved(QSharedPointer<Chunk> chunk)
+void FileManager::chunkRemoved(const QSharedPointer<Chunk>& chunk)
 {
    L_DEBU(QString("Removing chunk '%1' from the index ..").arg(chunk->getHash().toStr()));
    this->chunks.rm(chunk);

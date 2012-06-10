@@ -274,7 +274,7 @@ void ChunkDownloader::finished()
       this->downloadingEnded();
 }
 
-void ChunkDownloader::setChunk(QSharedPointer<FM::IChunk> chunk)
+void ChunkDownloader::setChunk(const QSharedPointer<FM::IChunk>& chunk)
 {
    this->chunk = chunk;
    this->chunk->setHash(this->chunkHash);
@@ -464,7 +464,7 @@ void ChunkDownloader::result(const Protos::Core::GetChunkResult& result)
    }
 }
 
-void ChunkDownloader::stream(QSharedPointer<PM::ISocket> socket)
+void ChunkDownloader::stream(const QSharedPointer<PM::ISocket>& socket)
 {
    this->socket = socket;
    static const quint32 SOCKET_BUFFER_SIZE = SETTINGS.get<quint32>("socket_buffer_size");

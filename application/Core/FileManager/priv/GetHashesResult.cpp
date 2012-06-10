@@ -96,9 +96,6 @@ Protos::Core::GetHashesResult GetHashesResult::start()
    return result;
 }
 
-/**
-  * Called from UploadManager thread.
-  */
 void GetHashesResult::chunkHashKnown(QSharedPointer<Chunk> chunk)
 {
    if (chunk->isOwnedBy(this->file))

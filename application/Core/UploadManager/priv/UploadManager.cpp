@@ -72,7 +72,7 @@ int UploadManager::getUploadRate()
    return this->transferRateCalculator.getTransferRate();
 }
 
-void UploadManager::getChunk(QSharedPointer<FM::IChunk> chunk, int offset, QSharedPointer<PM::ISocket> socket)
+void UploadManager::getChunk(const QSharedPointer<FM::IChunk>& chunk, int offset, const QSharedPointer<PM::ISocket>& socket)
 {
    QSharedPointer<ChunkUploader> upload(new ChunkUploader(chunk, offset, socket, this->transferRateCalculator));
    connect(upload.data(), SIGNAL(timeout()), this, SLOT(uploadTimeout()));

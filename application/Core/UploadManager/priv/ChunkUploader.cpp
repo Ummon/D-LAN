@@ -32,7 +32,7 @@ using namespace UM;
 
 quint64 ChunkUploader::currentID(1);
 
-ChunkUploader::ChunkUploader(QSharedPointer<FM::IChunk> chunk, int offset, QSharedPointer<PM::ISocket> socket, Common::TransferRateCalculator& transferRateCalculator) :
+ChunkUploader::ChunkUploader(const QSharedPointer<FM::IChunk>& chunk, int offset, const QSharedPointer<PM::ISocket>& socket, Common::TransferRateCalculator& transferRateCalculator) :
    Common::Timeoutable(SETTINGS.get<quint32>("upload_lifetime")),
    mainThread(QThread::currentThread()),
    ID(currentID++),

@@ -47,7 +47,7 @@ namespace UM
       int getUploadRate();
 
    private slots:
-      void getChunk(QSharedPointer<FM::IChunk> chunk, int offset, QSharedPointer<PM::ISocket> socket);
+      void getChunk(const QSharedPointer<FM::IChunk>& chunk, int offset, const QSharedPointer<PM::ISocket>& socket);
       void uploadTimeout();
 
    private:
