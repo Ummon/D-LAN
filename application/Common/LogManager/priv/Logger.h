@@ -63,11 +63,11 @@ namespace LM
       Logger(const QString& name);
       ~Logger();
 
-      void log(const QString& message, Severity severity, const char* filename = nullptr, int line = 0) const;
-      void log(const ILoggable& object, Severity severity, const char* filename = nullptr, int line = 0) const;
+      bool log(const QString& message, Severity severity, const char* filename = nullptr, int line = 0) const;
+      bool log(const ILoggable& object, Severity severity, const char* filename = nullptr, int line = 0) const;
 
    private:
-      static void createFileLog();
+      static bool createFileLog();
       static void deleteOldestLog(const QDir& logDir);
 
       QString name;

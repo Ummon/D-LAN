@@ -88,7 +88,7 @@ Logger::~Logger()
 {
 }
 
-void Logger::log(const QString& message, Severity severity, const char* filename, int line) const
+bool Logger::log(const QString& message, Severity severity, const char* filename, int line) const
 {
    QMutexLocker locker(&Logger::mutex);
 
@@ -105,13 +105,17 @@ void Logger::log(const QString& message, Severity severity, const char* filename
    for (int i = 0; i < this->loggerHooks.size(); i++)
       this->loggerHooks[i].data()->newMessage(entry);
 
-   Logger::createFileLog();
+   if (!Logger::createFileLog())
+      return false;
+
    Logger::out << entry->toStrLine() << endl;
+
+   return true;
 }
 
-void Logger::log(const ILoggable& object, Severity severity, const char* filename, int line) const
+bool Logger::log(const ILoggable& object, Severity severity, const char* filename, int line) const
 {
-    this->log(object.toStringLog(), severity, filename, line);
+   return this->log(object.toStringLog(), severity, filename, line);
 }
 
 /**
@@ -127,7 +131,7 @@ bool fileInfoLessThan(const QFileInfo& f1, const QFileInfo& f2)
   * It will create the file log and open it for writing if it doesn't already exist.
   * Must be called in a mutex.
   */
-void Logger::createFileLog()
+bool Logger::createFileLog()
 {
    if (!Logger::file.isOpen())
    {
@@ -143,6 +147,7 @@ void Logger::createFileLog()
          if (!appDir.exists(logDirName) && !appDir.mkdir(logDirName))
          {
             outErr << "Error, cannot create log directory : " << appDir.absoluteFilePath(logDirName) << endl;
+            return false;
          }
          else
          {
@@ -154,6 +159,7 @@ void Logger::createFileLog()
             if (!Logger::file.open(QIODevice::WriteOnly))
             {
                outErr << "Error, cannot create log file : " << logDir.absoluteFilePath(filename) << endl;
+               return false;
             }
             else
             {
@@ -166,8 +172,11 @@ void Logger::createFileLog()
       catch(Common::Global::UnableToGetFolder& e)
       {
          outErr << "Error, cannot create the application data directory: " << e.errorMessage << endl;
+         return false;
       }
    }
+
+   return true;
 }
 
 void Logger::deleteOldestLog(const QDir& logDir)
