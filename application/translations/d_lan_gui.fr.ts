@@ -68,7 +68,7 @@
         <location filename="../GUI/.tmp/debug/ui_DialogAbout.h" line="+1"/>
         <location filename="../GUI/.tmp/release/ui_DialogAbout.h" line="+1"/>
         <source>Copyright 2010-%1 Greg Burri. All rights reserved.</source>
-        <translation type="unfinished">Copyright 2010-2011 Greg Burri. Tous droits réservés. {2010-%1 ?}</translation>
+        <translation>Copyright 2010-%1 Greg Burri. Tous droits réservés.</translation>
     </message>
     <message>
         <source>Copyright 2010-2011 Greg Burri. All rights reserved.</source>
@@ -211,12 +211,12 @@
     <message>
         <location line="+3"/>
         <source>Unable to create the directory</source>
-        <translation type="unfinished"></translation>
+        <translation>Impossible de créer le dossier</translation>
     </message>
     <message>
         <location line="+0"/>
         <source>Unable to create the path of the file</source>
-        <translation type="unfinished"></translation>
+        <translation>Impossible de créer le chemin du fichier</translation>
     </message>
     <message>
         <location line="+3"/>
@@ -367,7 +367,7 @@
     <message>
         <location line="+440"/>
         <source>Waiting the cache loading process is finished before loading the download queue</source>
-        <translation type="unfinished"></translation>
+        <translation>En attente de la fin de chargement du cache avant de pouvoir charger la queue de téléchargement</translation>
     </message>
     <message>
         <source>Waiting the cache loading process is finished</source>
@@ -1009,14 +1009,14 @@
         <location filename="../GUI/.tmp/debug/ui_WidgetSettings.h" line="+4"/>
         <location filename="../GUI/.tmp/release/ui_WidgetSettings.h" line="+4"/>
         <source>Refresh interfaces</source>
-        <translation type="unfinished">Rafraichir les interfaces</translation>
+        <translation>Rafraichir les interfaces</translation>
     </message>
     <message>
         <location line="+101"/>
         <location filename="../GUI/.tmp/debug/ui_WidgetSettings.h" line="+13"/>
         <location filename="../GUI/.tmp/release/ui_WidgetSettings.h" line="+13"/>
         <source>Address</source>
-        <translation type="unfinished"></translation>
+        <translation>Adresse</translation>
     </message>
     <message>
         <location line="-131"/>
