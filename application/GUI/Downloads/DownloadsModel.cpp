@@ -198,6 +198,7 @@ QList<int> DownloadsModel::getNonFilteredDownloadIndices(const Protos::GUI::Stat
       case Protos::GUI::State::Download::NO_SHARED_DIRECTORY_TO_WRITE:
       case Protos::GUI::State::Download::NO_ENOUGH_FREE_SPACE:
       case Protos::GUI::State::Download::UNABLE_TO_CREATE_THE_FILE:
+      case Protos::GUI::State::Download::UNABLE_TO_CREATE_THE_DIRECTORY:
       case Protos::GUI::State::Download::UNABLE_TO_RETRIEVE_THE_HASHES:
       case Protos::GUI::State::Download::TRANSFER_ERROR:
       case Protos::GUI::State::Download::UNABLE_TO_OPEN_THE_FILE:
