@@ -281,6 +281,12 @@ void File::newDataWriterCreated()
       // If the file is created then we reset all the chunks.
       bool fileReset = false;
       if (fileCreated)
+      {
+         if (!this->fileInWriteMode->resize(this->size))
+            throw UnableToOpenFileInWriteModeException();
+
+         this->setFileAsSparse(*this->fileInWriteMode);
+
          for (QVectorIterator<QSharedPointer<Chunk>> i(this->chunks); i.hasNext();)
          {
             QSharedPointer<Chunk> chunk = i.next();
@@ -291,8 +297,10 @@ void File::newDataWriterCreated()
                fileReset = true;
             }
          }
+      }
+
       if (fileReset)
-         throw FileResetException(); // Should never occur: A file has been deleted and we know some data.
+         throw FileResetException(); // A file has been deleted and we know some data. For example a user has shut down D-LAN then has removed a previously downloading ".unfinished" file then he has restarted D-LAN.
    }
 }
 
@@ -581,8 +589,15 @@ void File::createPhysicalFile()
          QFile::remove(this->getFullPath());
          throw UnableToCreateNewFileException();
       }
-// TODO: Do we need that on linux? see 'fallocate(..)',
-#ifdef Q_OS_WIN32
+      this->setFileAsSparse(file);
+      this->dateLastModified = QFileInfo(file).lastModified();
+   }
+}
+
+void File::setFileAsSparse(const QFile& file)
+{
+   // TODO: Do we need that on linux? see 'fallocate(..)',
+   #ifdef Q_OS_WIN32
       DWORD bytesWritten;
       HANDLE hdl = (HANDLE)_get_osfhandle(file.handle());
       // To avoid to initialize all the file, when you seek at the end of a file then you write some data the file will be initialized without this call.
@@ -590,9 +605,7 @@ void File::createPhysicalFile()
       // See : http://msdn.microsoft.com/en-us/library/aa364596%28v=vs.85%29.aspx
       if (!DeviceIoControl(hdl, FSCTL_SET_SPARSE, NULL, 0, NULL, 0, &bytesWritten, NULL))
          L_WARN("DeviceIoControl(..) failed");
-#endif
-      this->dateLastModified = QFileInfo(file).lastModified();
-   }
+   #endif
 }
 
 /**
