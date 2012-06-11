@@ -21,9 +21,11 @@ using namespace Common;
 
 #include <Common/IRunnable.h>
 
-Thread::Thread(int lifetime) :
+Thread::Thread(int lifetime, uint stackSize) :
    toStop(false), active(false)
 {
+   if (stackSize)
+      this->setStackSize(stackSize);
    this->timer.setInterval(lifetime);
    this->timer.setSingleShot(true);
    connect(&this->timer, SIGNAL(timeout()), this, SIGNAL(timeout()));
@@ -119,7 +121,7 @@ QWeakPointer<IRunnable> Thread::getRunnable() const
   * Default life time: 1 min.
   */
 ThreadPool::ThreadPool(int nbMinThread, int threadInactiveLifetime) :
-   nbMinThread(nbMinThread), threadInactiveLifetime(threadInactiveLifetime)
+   nbMinThread(nbMinThread), threadInactiveLifetime(threadInactiveLifetime), stackSize(0)
 {
 }
 
@@ -130,6 +132,11 @@ ThreadPool::~ThreadPool()
 {
    foreach (Thread* thread, this->activeThreads + this->inactiveThreads)
       delete thread;
+}
+
+void ThreadPool::setStackSize(uint stackSize)
+{
+   this->stackSize = stackSize;
 }
 
 /**
@@ -144,7 +151,7 @@ void ThreadPool::run(QWeakPointer<IRunnable> runnable)
    }
    else
    {
-      thread = new Thread(this->threadInactiveLifetime);
+      thread = new Thread(this->threadInactiveLifetime, this->stackSize);
       connect(thread, SIGNAL(runnableFinished()), this, SLOT(runnableFinished()), Qt::QueuedConnection);
       connect(thread, SIGNAL(timeout()), this, SLOT(threadTimeout()));
    }

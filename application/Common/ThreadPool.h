@@ -37,6 +37,9 @@ namespace Common
    public:
       ThreadPool(int nbMinThread, int threadInactiveLifetime = 60000);
       ~ThreadPool();
+
+      void setStackSize(uint stackSize);
+
       void run(QWeakPointer<IRunnable> runnable);
       void wait(QWeakPointer<IRunnable> runnable);
 
@@ -47,6 +50,7 @@ namespace Common
    private:
       const int nbMinThread;
       const int threadInactiveLifetime;
+      uint stackSize;
 
       QList<Thread*> activeThreads;
       QList<Thread*> inactiveThreads;
@@ -56,7 +60,7 @@ namespace Common
    {
       Q_OBJECT
    public:
-      Thread(int lifetime);
+      Thread(int lifetime, uint stackSize = 0);
       ~Thread();
       void setRunnable(QWeakPointer<IRunnable> runnable);
       void waitRunnableFinished();

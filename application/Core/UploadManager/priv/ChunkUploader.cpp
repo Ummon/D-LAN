@@ -42,7 +42,7 @@ ChunkUploader::ChunkUploader(const QSharedPointer<FM::IChunk>& chunk, int offset
    transferRateCalculator(transferRateCalculator),
    closeTheSocket(false),
    toStop(false)
-{   
+{
 }
 
 ChunkUploader::~ChunkUploader()

@@ -298,7 +298,7 @@ QList<QSharedPointer<IChunk>> Cache::newFile(Protos::Common::Entry& fileEntry)
    // Is there a better way to up cast? An other method is shown below that uses 'reinterpret_cast'.
    QList<QSharedPointer<IChunk>> ichunks;
    const QVector<QSharedPointer<Chunk>>& chunks = file->getChunks();
-   ichunks.reserve(ichunks.size());
+   ichunks.reserve(chunks.size());
    for (QVectorIterator<QSharedPointer<Chunk>> i(chunks); i.hasNext();)
       ichunks << i.next();
    return ichunks;
