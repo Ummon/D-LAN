@@ -53,7 +53,7 @@ namespace PM
 
    signals:
       void result(const Protos::Core::GetChunkResult& result);
-      void stream(QSharedPointer<PM::ISocket> socket);
+      void stream(const QSharedPointer<PM::ISocket>& socket);
    };
 }
 #endif

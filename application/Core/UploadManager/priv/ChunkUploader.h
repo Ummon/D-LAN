@@ -39,7 +39,7 @@ namespace UM
       static quint64 currentID; ///< Used to generate the new upload ID.
 
    public:
-      ChunkUploader(QSharedPointer<FM::IChunk> chunk, int offset, QSharedPointer<PM::ISocket> socket, Common::TransferRateCalculator& transferRateCalculator);
+      ChunkUploader(const QSharedPointer<FM::IChunk>& chunk, int offset, const QSharedPointer<PM::ISocket>& socket, Common::TransferRateCalculator& transferRateCalculator);
       ~ChunkUploader();
 
       quint64 getID() const;

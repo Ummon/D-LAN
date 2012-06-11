@@ -47,11 +47,13 @@ namespace UM
       int getUploadRate();
 
    private slots:
-      void getChunk(QSharedPointer<FM::IChunk> chunk, int offset, QSharedPointer<PM::ISocket> socket);
+      void getChunk(const QSharedPointer<FM::IChunk>& chunk, int offset, const QSharedPointer<PM::ISocket>& socket);
       void uploadTimeout();
 
    private:
       LOG_INIT_H("UploadManager");
+
+      static const quint32 MIN_UPLOAD_THREAD_STACK_SIZE;
 
       Common::TransferRateCalculator transferRateCalculator;
 

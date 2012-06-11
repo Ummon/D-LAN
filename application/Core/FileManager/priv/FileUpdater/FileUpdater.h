@@ -90,7 +90,24 @@ namespace FM
       FileManager* fileManager;
       DirWatcher* dirWatcher;
 
-      const Protos::FileCache::Hashes* fileCache; ///< The hashes from the saved file cache. Used only temporally at the begining of 'run()'.
+      class FileCacheInformation
+      {
+      public:
+         FileCacheInformation(const Protos::FileCache::Hashes* fileCache);
+         ~FileCacheInformation();
+
+         void newFile();
+         const Protos::FileCache::Hashes* getFileCache();
+         int getProgress() const;
+
+      private:
+         void computeFileCacheNbFiles(const Protos::FileCache::Hashes::Dir& dir);
+
+         const Protos::FileCache::Hashes* fileCache; ///< The hashes from the saved file cache. Used only temporally at the begining of 'run()'.
+         int fileCacheNbFiles;
+         int fileCacheNbFilesLoaded;
+      };
+      FileCacheInformation* fileCacheInformation; // Only used during the loading of 'fileCache'.
 
       bool toStop; ///< Set to true when the service must be stopped.
 

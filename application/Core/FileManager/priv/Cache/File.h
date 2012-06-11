@@ -106,6 +106,7 @@ namespace FM
       void setAsComplete();
       void deleteAllChunks();
       void createPhysicalFile();
+      static void setFileAsSparse(const QFile& file);
       void setHashes(const Common::Hashes& hashes);
 
    protected:

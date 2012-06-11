@@ -79,15 +79,15 @@ namespace FM
       void onEntryRemoved(Entry* entry);
       void onEntryRenamed(Entry* entry, const QString& oldName);
 
-      void onChunkHashKnown(QSharedPointer<Chunk> chunk);
-      void onChunkRemoved(QSharedPointer<Chunk> chunk);
+      void onChunkHashKnown(const QSharedPointer<Chunk>& chunk);
+      void onChunkRemoved(const QSharedPointer<Chunk>& chunk);
 
    signals:
       void entryAdded(Entry* entry);
       void entryRemoved(Entry* entry);
       void entryRenamed(Entry* entry, const QString& oldName);
-      void chunkHashKnown(QSharedPointer<Chunk> chunk);
-      void chunkRemoved(QSharedPointer<Chunk> chunk);
+      void chunkHashKnown(const QSharedPointer<Chunk>& chunk);
+      void chunkRemoved(const QSharedPointer<Chunk>& chunk);
 
       void newSharedDirectory(SharedDirectory* dir);
       void sharedDirectoryRemoved(SharedDirectory* dir, Directory* dir2);

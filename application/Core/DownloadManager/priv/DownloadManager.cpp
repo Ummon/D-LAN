@@ -44,6 +44,8 @@ DownloadManager::DownloadManager(QSharedPointer<FM::IFileManager> fileManager, Q
    numberOfDownloadThreadRunning(0),
    queueChanged(false)
 {
+   this->threadPool.setStackSize(MIN_DOWNLOAD_THREAD_STACK_SIZE + SETTINGS.get<quint32>("buffer_size_writing"));
+
    connect(&this->occupiedPeersAskingForHashes, SIGNAL(newFreePeer(PM::IPeer*)), this, SLOT(peerNoLongerAskingForHashes(PM::IPeer*)));
    connect(&this->occupiedPeersAskingForEntries, SIGNAL(newFreePeer(PM::IPeer*)), this, SLOT(peerNoLongerAskingForEntries(PM::IPeer*)));
    connect(&this->occupiedPeersDownloadingChunk, SIGNAL(newFreePeer(PM::IPeer*)), this, SLOT(peerNoLongerDownloadingChunk(PM::IPeer*)));
@@ -472,3 +474,5 @@ void DownloadManager::setQueueChanged()
 {
    this->queueChanged = true;
 }
+
+const quint32 DownloadManager::MIN_DOWNLOAD_THREAD_STACK_SIZE(8 * 1024);

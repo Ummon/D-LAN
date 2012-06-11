@@ -92,7 +92,7 @@ namespace FM
       uint h = 0;
       static const int n = sizeof(Entry*) > sizeof(uint) ? sizeof(Entry*) / sizeof(uint) : 1;
       for (int i = 0; i < n; ++i)
-         h ^= intptr_t(entry) >> (i * sizeof(uint));
+         h ^= intptr_t(entry) >> (i * 8 * sizeof(uint));
       return h;
    }
 }

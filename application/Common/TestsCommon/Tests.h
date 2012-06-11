@@ -65,6 +65,9 @@ private slots:
    void hashMoveConstuctorAndAssignment();
    void hasher();
 
+   // BloomFilter class.
+   void bloomFilter();
+
    void messageHeader();
 
    // ZeroCopyOutputStreamQIODevice and ZeroCopyInputStreamQIODevice classes.

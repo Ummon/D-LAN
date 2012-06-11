@@ -27,36 +27,64 @@ using namespace FM;
   *
   * We must allow multiple chunk with the same hash. Considering this case :
   * - Add identical files 'a' and 'b'.
-  * - remove 'a'. 'b' wouldn't be remove from Chunks in the same time.
+  * - remove 'a'. 'b' wouldn't be remove from Chunks at the same time.
+  *
+  * We may use a Bloom filter to reduce the time of a call to 'contains(..)', 'value(..)' and 'values(..)'.
+  * Some measurements (compiled with GCC 4.6 and -02):
+  *  - The filter reduces the call time of 'contains()' from about 20% with 30'000 hashes
+  *    and about 15% with 100'000 hashes.
+  *  - The filter increases the call time of 'contains()' from about 100% with 1'000'000 hashes.
+  *  - 100'000'000 calls of 'contains(..)' for 100'000 known chunks takes 3.6s on a i5 @ 2.5 GHz.
+  *    It's 36 ns per call.
+  * See the method 'chunksPerformance()' in 'TestsFileManager' for more information.
   */
 
-void Chunks::add(QSharedPointer<Chunk> chunk)
+void Chunks::add(const QSharedPointer<Chunk>& chunk)
 {
    QMutexLocker locker(&this->mutex);
    this->insert(chunk->getHash(), chunk);
+#ifdef BLOOM_FILTER_ON
+   this->bloomFilter.add(chunk->getHash());
+#endif
 }
 
-void Chunks::rm(QSharedPointer<Chunk> chunk)
+void Chunks::rm(const QSharedPointer<Chunk>& chunk)
 {
    QMutexLocker locker(&this->mutex);
    this->remove(chunk->getHash(), chunk);
+#ifdef BLOOM_FILTER_ON
+   if (this->isEmpty())
+      this->bloomFilter.reset();
+#endif
    L_DEBU(QString("Nb chunks: %1").arg(this->size()));
 }
 
 QSharedPointer<Chunk> Chunks::value(const Common::Hash& hash) const
 {
    QMutexLocker locker(&this->mutex);
+#ifdef BLOOM_FILTER_ON
+   if (!this->bloomFilter.test(hash))
+      return QSharedPointer<Chunk>();
+#endif
    return QMultiHash<Common::Hash, QSharedPointer<Chunk>>::value(hash);
 }
 
 QList<QSharedPointer<Chunk>> Chunks::values(const Common::Hash& hash) const
 {
    QMutexLocker locker(&this->mutex);
+#ifdef BLOOM_FILTER_ON
+   if (!this->bloomFilter.test(hash))
+      return QList<QSharedPointer<Chunk>>();
+#endif
    return QMultiHash<Common::Hash, QSharedPointer<Chunk>>::values(hash);
 }
 
 bool Chunks::contains(const Common::Hash& hash) const
 {
-   QMutexLocker locker(&this->mutex);
+   QMutexLocker locker(&this->mutex);   
+#ifdef BLOOM_FILTER_ON
+   if (!this->bloomFilter.test(hash))
+      return false;
+#endif
    return QMultiHash<Common::Hash, QSharedPointer<Chunk>>::contains(hash);
 }

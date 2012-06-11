@@ -104,6 +104,7 @@ namespace DM
    private:
       LOG_INIT_H("DownloadManager");
 
+      static const quint32 MIN_DOWNLOAD_THREAD_STACK_SIZE;
       const int NUMBER_OF_DOWNLOADER;
 
       QSharedPointer<FM::IFileManager> fileManager;

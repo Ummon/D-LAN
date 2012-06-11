@@ -786,7 +786,7 @@ void MainWindow::restoreColorizedPeers()
 
 QString MainWindow::getBusyIndicatorToolTip() const
 {
-   return tr("Waiting the cache loading process is finished");
+   return tr("Waiting the cache loading process is finished before loading the download queue");
 }
 
 /**

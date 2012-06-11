@@ -64,6 +64,7 @@ HEADERS += Hashes.h \
     FileLocker.h \
     ConsoleReader.h \
     SortedList.h \
-    StringUtils.h
+    StringUtils.h \
+    BloomFilter.h
 
 

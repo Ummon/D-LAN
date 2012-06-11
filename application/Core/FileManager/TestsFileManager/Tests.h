@@ -98,6 +98,9 @@ private slots:
    /***** Removing shared directories *****/
    void rmSharedDirectory();
 
+   /***** Speed test of the class 'Chunks' *****/
+   void chunksPerformance();
+
    void cleanupTestCase();
 
 private:
