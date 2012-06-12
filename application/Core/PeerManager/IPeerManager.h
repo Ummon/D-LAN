@@ -47,10 +47,15 @@ namespace PM
       virtual IPeer* getSelf() = 0;
 
       /**
+        * @return The number of alive peers.
+        */
+      virtual int getNbOfPeers() const = 0;
+
+      /**
         * Return all alive peers. A peer is never deleted but can become inactive.
         * @remarks This list doesn't include us.
         */
-      virtual QList<IPeer*> getPeers() = 0;
+      virtual QList<IPeer*> getPeers() const = 0;
 
       /**
         * Return the IPeer* coresponding to ID.

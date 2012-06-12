@@ -59,7 +59,8 @@ namespace PM
       void setNick(const QString& nick);
 
       IPeer* getSelf();
-      QList<IPeer*> getPeers();
+      int getNbOfPeers() const;
+      QList<IPeer*> getPeers() const;
 
       IPeer* getPeer(const Common::Hash& ID);
       Peer* getPeer_(const Common::Hash& ID);

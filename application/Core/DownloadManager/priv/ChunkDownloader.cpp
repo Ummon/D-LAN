@@ -90,6 +90,9 @@ void ChunkDownloader::addPeer(PM::IPeer* peer)
 
    QMutexLocker locker(&this->mutex);
 
+   if (this->isComplete())
+      return;
+
    if (!this->peers.contains(peer))
    {
       this->peers << peer;
@@ -495,6 +498,10 @@ void ChunkDownloader::downloadingEnded()
    // occupiedPeersDownloadingChunk can relaunch the download, so we have to set this->currentDownloadingPeer to 0 before.
    PM::IPeer* currentPeer = this->currentDownloadingPeer;
    this->currentDownloadingPeer = 0;
+
+   // When a chunk is finished we don't care to know the associated peers.
+   if (this->isComplete())
+      this->peers.clear();
 
    this->occupiedPeersDownloadingChunk.setPeerAsFree(currentPeer);
 }

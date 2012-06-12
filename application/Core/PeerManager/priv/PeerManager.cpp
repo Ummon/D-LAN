@@ -64,7 +64,16 @@ IPeer* PeerManager::getSelf()
    return this->self;
 }
 
-QList<IPeer*> PeerManager::getPeers()
+int PeerManager::getNbOfPeers() const
+{
+   int n = 0;
+   for (QListIterator<Peer*> i(this->peers); i.hasNext();)
+      if (i.next()->isAlive())
+         n++;
+   return n;
+}
+
+QList<IPeer*> PeerManager::getPeers() const
 {
    QList<IPeer*> peers;
 
