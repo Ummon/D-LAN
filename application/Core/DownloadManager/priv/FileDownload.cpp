@@ -229,7 +229,7 @@ QSharedPointer<ChunkDownloader> FileDownload::getAChunkToDownload()
    if (chunksReadyToDownload.isEmpty())
       return QSharedPointer<ChunkDownloader>();
 
-   // If there is many chunk with the same best speed we choose randomly one of them.
+   // If there is many chunk with the same number of peer we choose randomly one of them.
    QSharedPointer<ChunkDownloader> chunkDownloader = chunksReadyToDownload.size() == 1 ? chunksReadyToDownload.first() : chunksReadyToDownload[mtrand.randInt(chunksReadyToDownload.size() - 1)];
 
    if (!this->localEntry.exists())

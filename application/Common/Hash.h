@@ -19,7 +19,7 @@
 #ifndef COMMON_HASH_H
 #define COMMON_HASH_H
 
-#define WITH_MUTEX false // Not implemented.
+#define WITH_MUTEX false // Not implemented. Using a 'QAtomicPointer' instead of a mutex should be better.
 
 #include <string>
 
@@ -66,7 +66,6 @@ namespace Common
 
       /**
         * Return a pointer to its internal data.
-        * return 0 if the pointer is null.
         * The length of the returned value is exactly HASH_SIZE.
         */
       inline const char* getData() const { return this->data ? this->data->hash : NULL_HASH; }

@@ -217,11 +217,11 @@ bool findEntryLessThan(const Protos::Common::FindResult_EntryLevel* e1, const Pr
 }
 
 /**
-  * This method is called several times, one by received entries. The entries are inserted into the model.
-  * The given entries are sorted by their level, we will keep the sort when inserting the entry but with some modifications :
-  * - The directories are put first.
-  * - All entries with the same level are sorted first by their path (prefixed with the shared directory name) and then by their name.
-  * - All file entries with the same chunks (identical data) are grouped. They can be owned by different peer.
+  * This method is called several times, one per received entries. The entries are inserted into the model.
+  * The given entries are sorted by their level, we will keep the sort when inserting the entry but with some modifications:
+  *  - The directories are put first.
+  *  - All entries with the same level are sorted first by their path (prefixed with the shared directory name) and then by their name.
+  *  - All file entries with the same chunks (identical data) are grouped. They can be owned by different peer.
   */
 void SearchModel::result(const Protos::Common::FindResult& findResult)
 {
@@ -435,7 +435,7 @@ QVariant SearchModel::SearchTree::data(int column) const
 
       return entryPath(this->getItem());
 
-   // case 2: // See SearchModel::data(..).
+   // case 2: // See 'SearchModel::data(..)'.
 
    case 3:
       if (this->getItem().type() == Protos::Common::Entry_Type_FILE && this->getNbChildren() > 0)
