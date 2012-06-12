@@ -73,7 +73,7 @@ namespace DM
 
       QSharedPointer<ChunkDownloader> getAChunkToDownload();
 
-      void getUnfinishedChunks(QList<QSharedPointer<IChunkDownloader>>& chunks, int nMax);
+      void getUnfinishedChunks(QList<QSharedPointer<IChunkDownloader>>& chunks, int nMax, bool notAlreadyAsked = true);
 
       QTime getLastTimeGetAllUnfinishedChunks() const;
 
@@ -108,6 +108,8 @@ namespace DM
 
       QList<QSharedPointer<FM::IChunk>> chunksWithoutDownload;
       QList<QSharedPointer<ChunkDownloader>> chunkDownloaders;
+
+      int nbChunkAsked;
 
       OccupiedPeers& occupiedPeersAskingForHashes;
       OccupiedPeers& occupiedPeersDownloadingChunk;

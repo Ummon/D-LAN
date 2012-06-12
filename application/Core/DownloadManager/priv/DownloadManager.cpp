@@ -249,13 +249,11 @@ QList<QSharedPointer<IChunkDownloader>> DownloadManager::getTheFirstUnfinishedCh
 {
    QList<QSharedPointer<IChunkDownloader>> unfinishedChunks;
 
-   FileDownload* fileDownload = nullptr;
    DownloadQueue::ScanningIterator<IsDownloable> i(this->downloadQueue);
-   while (unfinishedChunks.size() < n)
+   FileDownload* fileDownload;
+   while (unfinishedChunks.size() < n && (fileDownload = static_cast<FileDownload*>(i.next())))
    {
-      if (!(fileDownload = static_cast<FileDownload*>(i.next())))
-          break;
-      fileDownload->getUnfinishedChunks(unfinishedChunks, n - unfinishedChunks.size());
+      fileDownload->getUnfinishedChunks(unfinishedChunks, n - unfinishedChunks.size(), false); // 'false' because we always want the first (unfinished) chunks.
    }
 
    return unfinishedChunks;
