@@ -69,12 +69,12 @@ void Tests::initTestCase()
    SETTINGS.setFilename("core_settings_peer_manager_tests.txt");
    SETTINGS.setSettingsMessage(new Protos::Core::Settings());
 
-   this->createInitialFiles();
+   QVERIFY(this->createInitialFiles());
 
    this->fileManagers << FM::Builder::newFileManager() << FM::Builder::newFileManager();
 
-   this->peerIDs << Hash::fromStr("11111111111111111111111111111111111111111111111111111111") <<
-                    Hash::fromStr("22222222222222222222222222222222222222222222222222222222");
+   this->peerIDs << Hash::fromStr("1111111111111111111111111111111111111111") <<
+                    Hash::fromStr("2222222222222222222222222222222222222222");
 
    this->peerSharedDirs << "/sharedDirs/peer1" << "/sharedDirs/peer2";
 
@@ -335,26 +335,30 @@ void Tests::cleanupTestCase()
    delete this->peerUpdater;
 }
 
-void Tests::createInitialFiles()
+bool Tests::createInitialFiles()
 {
-   this->deleteAllFiles();
+   qDebug() << "Create the directories structure in" << QDir::currentPath();
 
-   Common::Global::createFile("sharedDirs/peer1/subdir/a.txt");
-   Common::Global::createFile("sharedDirs/peer1/subdir/b.txt");
-   Common::Global::createFile("sharedDirs/peer1/subdir/c.txt");
-   Common::Global::createFile("sharedDirs/peer1/d.txt");
-   Common::Global::createFile("sharedDirs/peer1/e.txt");
+   if (!this->deleteAllFiles())
+      return false;
 
-   Common::Global::createFile("sharedDirs/peer2/subdir/f.txt");
-   Common::Global::createFile("sharedDirs/peer2/subdir/g.txt");
-   Common::Global::createFile("sharedDirs/peer2/subdir/h.txt");
-   Common::Global::createFile("sharedDirs/peer2/i.txt");
-   Common::Global::createFile("sharedDirs/peer2/j.txt");
-   Common::Global::createFile("sharedDirs/peer2/k.txt");
+   return
+      Common::Global::createFile("sharedDirs/peer1/subdir/a.txt") &&
+      Common::Global::createFile("sharedDirs/peer1/subdir/b.txt") &&
+      Common::Global::createFile("sharedDirs/peer1/subdir/c.txt") &&
+      Common::Global::createFile("sharedDirs/peer1/d.txt") &&
+      Common::Global::createFile("sharedDirs/peer1/e.txt") &&
+
+      Common::Global::createFile("sharedDirs/peer2/subdir/f.txt") &&
+      Common::Global::createFile("sharedDirs/peer2/subdir/g.txt") &&
+      Common::Global::createFile("sharedDirs/peer2/subdir/h.txt") &&
+      Common::Global::createFile("sharedDirs/peer2/i.txt") &&
+      Common::Global::createFile("sharedDirs/peer2/j.txt") &&
+      Common::Global::createFile("sharedDirs/peer2/k.txt");
 }
 
-void Tests::deleteAllFiles()
+bool Tests::deleteAllFiles()
 {
-   Common::Global::recursiveDeleteDirectory("sharedDirs");
+   return Common::Global::recursiveDeleteDirectory("sharedDirs");
 }
 

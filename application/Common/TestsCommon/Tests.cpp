@@ -408,7 +408,7 @@ void Tests::bloomFilter()
 
    Hash h3 = Hash::fromStr("ca2dae971001c3da923bb23372b3a66378810a0f");
    int nbOfFalsePositive = 0;
-   const int NB_TESTS = 1000; // Number of test.
+   const int NB_TESTS = 100; // Number of test.
    const int n = 100000; // Size of the set.
 
    for (int i = 0; i < NB_TESTS; i++)
@@ -420,7 +420,7 @@ void Tests::bloomFilter()
       if (bloomFilter.test(h3))
          nbOfFalsePositive++;
 
-      if (i % 50 == 0)
+      if (i % 10 == 0)
          qDebug() << "i ==" << i << "...";
    }
 

@@ -90,6 +90,9 @@ void ChunkDownloader::addPeer(PM::IPeer* peer)
 
    QMutexLocker locker(&this->mutex);
 
+   if (this->isComplete())
+      return;
+
    if (!this->peers.contains(peer))
    {
       this->peers << peer;
@@ -253,8 +256,9 @@ void ChunkDownloader::run()
    }
    catch (FM::hashMissmatchException)
    {
-      const quint32 BAN_DURATION = SETTINGS.get<quint32>("ban_duration_corrupted_data");
+      static const quint32 BAN_DURATION = SETTINGS.get<quint32>("ban_duration_corrupted_data");
       L_USER(QString(tr("Corrupted data received for the file \"%1\" from peer %2. Peer banned for %3 ms")).arg(this->chunk->getFilePath()).arg(this->currentDownloadingPeer->getNick()).arg(BAN_DURATION));
+
       /*: A reason why the user has been banned */
       this->currentDownloadingPeer->ban(BAN_DURATION, tr("Has sent corrupted data"));
       this->closeTheSocket = true;
@@ -495,6 +499,10 @@ void ChunkDownloader::downloadingEnded()
    // occupiedPeersDownloadingChunk can relaunch the download, so we have to set this->currentDownloadingPeer to 0 before.
    PM::IPeer* currentPeer = this->currentDownloadingPeer;
    this->currentDownloadingPeer = 0;
+
+   // When a chunk is finished we don't care to know the associated peers.
+   if (this->isComplete())
+      this->peers.clear();
 
    this->occupiedPeersDownloadingChunk.setPeerAsFree(currentPeer);
 }

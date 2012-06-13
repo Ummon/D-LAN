@@ -49,6 +49,7 @@ FileDownload::FileDownload(
    Download(fileManager, peerSource, remoteEntry, localEntry),
    linkedPeers(linkedPeers),
    NB_CHUNK(this->remoteEntry.size() / SETTINGS.get<quint32>("chunk_size") + (this->remoteEntry.size() % SETTINGS.get<quint32>("chunk_size") == 0 ? 0 : 1)),
+   nbChunkAsked(0),
    occupiedPeersAskingForHashes(occupiedPeersAskingForHashes),
    occupiedPeersDownloadingChunk(occupiedPeersDownloadingChunk),
    threadPool(threadPool),
@@ -229,7 +230,7 @@ QSharedPointer<ChunkDownloader> FileDownload::getAChunkToDownload()
    if (chunksReadyToDownload.isEmpty())
       return QSharedPointer<ChunkDownloader>();
 
-   // If there is many chunk with the same best speed we choose randomly one of them.
+   // If there is many chunk with the same number of peer we choose randomly one of them.
    QSharedPointer<ChunkDownloader> chunkDownloader = chunksReadyToDownload.size() == 1 ? chunksReadyToDownload.first() : chunksReadyToDownload[mtrand.randInt(chunksReadyToDownload.size() - 1)];
 
    if (!this->localEntry.exists())
@@ -251,21 +252,28 @@ QSharedPointer<ChunkDownloader> FileDownload::getAChunkToDownload()
 /**
   * Fills 'chunks' with the unfinished chunk of the file. Do not add more than 'nMax' chunk to chunks.
   */
-void FileDownload::getUnfinishedChunks(QList<QSharedPointer<IChunkDownloader>>& chunks, int nMax)
+void FileDownload::getUnfinishedChunks(QList<QSharedPointer<IChunkDownloader>>& chunks, int nMax, bool notAlreadyAsked)
 {
    if (this->status == COMPLETE || this->status == DELETED || this->status == PAUSED)
       return;
 
-   for (int i = 0; i < this->chunkDownloaders.size() && i < nMax; i++)
+   int n = 0;
+   for (int i = notAlreadyAsked ? this->nbChunkAsked : 0; i < this->chunkDownloaders.size() && n < nMax; i++)
    {
       if (!this->chunkDownloaders[i]->isComplete())
+      {
          chunks << this->chunkDownloaders[i];
+         n++;
+      }
+      if (i >= this->nbChunkAsked)
+         this->nbChunkAsked++;
    }
 
-   if (chunks.size() == this->chunkDownloaders.size())
+   if (this->nbChunkAsked == this->chunkDownloaders.size())
    {
       const QTime oldTime = this->lastTimeGetAllUnfinishedChunks;
       this->lastTimeGetAllUnfinishedChunks = QTime::currentTime();
+      this->nbChunkAsked = 0;
       emit lastTimeGetAllUnfinishedChunksChanged(oldTime);
    }
 }
