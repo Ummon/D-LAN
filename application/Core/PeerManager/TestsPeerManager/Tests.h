@@ -58,8 +58,8 @@ private slots:
    void cleanupTestCase();
 
 private:
-   void createInitialFiles();
-   void deleteAllFiles();
+   bool createInitialFiles();
+   bool deleteAllFiles();
 
    QList<QSharedPointer<FM::IFileManager>> fileManagers;
    QList<QSharedPointer<IPeerManager>> peerManagers;
