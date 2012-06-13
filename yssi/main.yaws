@@ -39,7 +39,9 @@
             <li><a href="http://dev.d-lan.net/projects/pmp/wiki" target="_blank">wiki</a></li>
             <li><a href="http://dev.d-lan.net/projects/pmp/boards" target="_blank">forums</a></li>
             <li><a href="https://github.com/Ummon/D-LAN" target="_blank">github</a></li>
-            <li><a class="donate-button" href="donate.html"></a></li>
+            <li><a href="donate.html"><erl>
+                  out(A) -> {html, d_lan_lang:tr(header, support_us, A)}.
+            </erl></a></li>
             <li><a class="FlattrButton" style="display:none;" data-flattr-button="compact" href="http://www.d-lan.net"></a></li>
          </ul>
          <ul id="langs">

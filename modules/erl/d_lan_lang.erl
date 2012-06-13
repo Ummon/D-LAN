@@ -25,6 +25,11 @@ translate(fr, global, title) -> "D-LAN - Un logiciel de partage de fichiers en L
 
 %%%%%%%%%%
 
+translate(en, header, support_us) -> "support us!";
+translate(fr, header, support_us) -> "soutenez-nous!";
+
+%%%%%%%%%%
+
 translate(en, menu, home) -> "HOME";
 translate(fr, menu, home) -> "HOME";
 

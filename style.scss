@@ -139,44 +139,42 @@ p {
    }
 }
 
+@mixin highlight-link-header {
+   color: white;
+   background-color: $red-light;
+   @include border-radius-all(10px);
+}
+
 #header {
+   font-style: italic;
+   line-height: normal;
+   background-color:rgba(255, 255, 255, $opacity1);
    a {
+      padding: 0px 10px 0px 10px;
       color: $red-dark;
-      &:hover { color: lighten($red-dark, 20%); }
+      &:hover { @include highlight-link-header; }
    }
    a.current-lang {
       font-weight: bold;
+      @include highlight-link-header;
    }
-   a.donate-button {
-      display: inline-block;
-      height: 20px;
-      width: 69px;
-      background-image: url(img/donate_button.png);
-   }
-   a.donate-button:hover {
-      background-image: url(img/donate_button_highlight.png);
-   }
-   font-style: italic;
-   background-color:rgba(255, 255, 255, $opacity1);   
-   ul#langs {
-      @include vertical-list;
-      margin-left: 10px;
-      height: 20px;
+   ul {
       li a {
          vertical-align: top;
       }
-   }
-   ul#external-links {
-      float: right;
-      height: 20px;
-      margin-right: 10px;
-      li a {
-         vertical-align: top;
-         margin-right: 15px;
+      &#langs {
+         @include vertical-list;
+         margin-left: 10px;
+         height: 18px;
       }
-      @include vertical-list;
-      .FlattrButton {
-         margin-bottom: -3px;
+      &#external-links {
+         float: right;
+         height: 18px;
+         margin-right: 5px;
+         li a {
+            margin-right: 10px;
+         }
+         @include vertical-list;
       }
    }
 } 
