@@ -630,12 +630,14 @@ bool Global::recursiveDeleteDirectoryContent(const QString& dir)
    bool success = true;
 
    for (QDirIterator i(dir, QDir::Files, QDirIterator::Subdirectories); i.hasNext();)
-      if (!QFile(i.next()).remove())
+   {
+      QFile file(i.next());
+      if (file.exists() && !file.remove())
          success = false;
+   }
 
    for (QDirIterator i(dir, QDir::AllDirs | QDir::NoDotAndDotDot, QDirIterator::Subdirectories); i.hasNext();)
-      if (!QDir::current().rmpath(i.next()))
-         success = false;
+      QDir(i.next()).rmpath(".");
 
    return success;
 }
