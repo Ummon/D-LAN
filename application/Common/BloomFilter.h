@@ -24,22 +24,36 @@
 /**
   * @class Common::BloomFilter
   * A very simple bloom filter implementation for the class 'Common::Hash'.
-  * Calibrated for n = 100'000 hashes (~6.1 TiB) and p = 0.006 (probability of false positive).
+  * Calibrated by default for n = 100'000 hashes (~6.1 TiB) and p = 0.006 (probability of false positive).
   *
   * We don't use any hash functions to compute the positions, instead we use part of the hash. See the 'position(..)' function.
   *
   * More information: http://en.wikipedia.org/wiki/Bloom_filter
+  *
+  * Description of the template parameters:
+  *  - 'w' Is the number of bit allocated to compute a position in the filter. Thus the filter size (in bits) is 2^w. The default size (w = 20) takes 128 KiB of memory.
+  *  - w * k must be lower or equal than 8 * HASH_SIZE because we extract each 'k' positions from the hash data.
+  *  - 'w' must be lower or equal than 32 bits,
   *
   * @remarks (x >> 3) is used as a division by 8.
   */
 
 namespace Common
 {
+   template<int v, int p>
+   struct Power {
+      static const int value = v * Power<v, p - 1>::value;
+   };
+   template<int v>
+   struct Power<v, 1> {
+      static const int value = v;
+   };
+
+   template<int w = 20, int n = 100000>
    class BloomFilter
    {
-      static const int w = 20; // Size of the integer used to find a position.
-      static const int m = 1048576; // Total number of positions: 2^20. It corresponds to a 128 KiB array.
-      static const int k = 7; // Number of positions set per hash.
+      static const int m =  Power<2, w>::value; // Total number of positions.
+      static const int k = double(m) * 0.69314718 / double(n); // Number of positions set per hash: ln(2) * m / n.
 
    public:
       BloomFilter() { this->reset(); }
@@ -50,15 +64,16 @@ namespace Common
 
    private:
       /**
-        * Returns the position value of 'n',  0 <= n <= k.
+        * Returns the position value of 'n',  0 <= i <= k.
         */
-      inline static quint32 position(const Hash& hash, int n);
+      inline static quint32 position(const Hash& hash, int i);
 
       uchar bitArray[m >> 3];
    };
 }
 
-inline void Common::BloomFilter::add(const Hash& hash)
+template<int w, int n>
+inline void Common::BloomFilter<w, n>::add(const Hash& hash)
 {
    for (int i = 0; i < k; i++)
    {
@@ -70,7 +85,8 @@ inline void Common::BloomFilter::add(const Hash& hash)
 /**
   * Returns 'true' if the hash may exist in the set and 'false' if the hash doesn't exist in the set.
   */
-inline bool Common::BloomFilter::test(const Hash& hash) const
+template<int w, int n>
+inline bool Common::BloomFilter<w, n>::test(const Hash& hash) const
 {
    for (int i = 0; i < k; i++)
    {
@@ -81,15 +97,17 @@ inline bool Common::BloomFilter::test(const Hash& hash) const
    return true;
 }
 
-inline void Common::BloomFilter::reset()
+template<int w, int n>
+inline void Common::BloomFilter<w, n>::reset()
 {
    memset(this->bitArray, 0, sizeof(this->bitArray));
 }
 
-inline quint32 Common::BloomFilter::position(const Hash& hash, int n)
+template<int w, int n>
+inline quint32 Common::BloomFilter<w, n>::position(const Hash& hash, int i)
 {
    const char* hashData = hash.getData();
-   const quint32 pPos = n * w; // Position in 'hashData' of 'p'.
+   const quint32 pPos = i * w; // Position in 'hashData' of 'p'.
    const quint32* p = reinterpret_cast<const quint32*>(hashData + (pPos >> 3));
    static const quint32 wMask = (1 << w) - 1;
    return *p >> (32 - w - pPos % 8) & wMask;
