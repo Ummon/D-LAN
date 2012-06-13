@@ -42,9 +42,9 @@ void TreeTests::initTestCase()
    this->tree.setItem(1);
    QVERIFY(this->tree.insertChild(2)->getItem() == 2);
    IntTree* sub3 = this->tree.insertChild(3);
-   QVERIFY(sub3 != 0);
+   QVERIFY(sub3 != nullptr);
    IntTree* sub4 = sub3->insertChild(4);
-   QVERIFY(sub4 != 0);
+   QVERIFY(sub4 != nullptr);
    QVERIFY(sub3->insertChild(6)->getItem() == 6);
    QVERIFY(sub3->insertChild(5, 1)->getItem() == 5);
    QVERIFY(sub4->insertChild(7)->getItem() == 7);
