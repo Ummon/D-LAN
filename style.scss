@@ -67,7 +67,7 @@ body {
       left top,
       right bottom,
       color-stop(0, $blue-dark),
-      color-stop(1, $blue-light)      
+      color-stop(1, $blue-light)
    ) fixed; 
    background: -moz-linear-gradient( 
       left top,
@@ -148,19 +148,19 @@ p {
 #header {
    font-style: italic;
    line-height: normal;
+   background-image: url("img/bg.png");
+   background-attachment:fixed;
    background-color:rgba(255, 255, 255, $opacity1);
-   a {
-      padding: 0px 10px 0px 10px;
-      color: $red-dark;
-      &:hover { @include highlight-link-header; }
-   }
-   a.current-lang {
-      font-weight: bold;
-      @include highlight-link-header;
-   }
    ul {
-      li a {
+      a {
          vertical-align: top;
+         padding: 0px 10px 0px 10px;
+         color: $red-dark;
+         &:hover { @include highlight-link-header; }
+      }
+      a.current-lang {
+         font-weight: bold;
+         @include highlight-link-header;
       }
       &#langs {
          @include vertical-list;
@@ -206,7 +206,9 @@ p {
 }
 
 #content-bg {
-   background-color:rgba(255, 255, 255, $opacity1);    
+   background-image: url("img/bg.png");
+   background-attachment:fixed;
+   background-color:rgba(255, 255, 255, $opacity1);
    #content {
       @include central-part;
       padding-top: 15px;
