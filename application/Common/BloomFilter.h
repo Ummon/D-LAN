@@ -48,8 +48,7 @@ namespace Common
       BloomFilter(int w = 20, int n = 100000) :
          w(w), m(qPow(2, w)), k(qLn(2) * m / n), wMask((1 << this->w) - 1)
       {
-         this->bitArray = new uchar[this->m >> 3];
-         this->reset();
+         this->bitArray = new uchar[this->m >> 3]();
       }
 
       ~BloomFilter()
