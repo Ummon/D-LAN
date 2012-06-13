@@ -19,18 +19,20 @@
 #ifndef COMMON_BLOOMFILTER_H
 #define COMMON_BLOOMFILTER_H
 
+#include <qmath.h>
+
 #include <Common/Hash.h>
 
 /**
   * @class Common::BloomFilter
   * A very simple bloom filter implementation for the class 'Common::Hash'.
-  * Calibrated by default for n = 100'000 hashes (~6.1 TiB) and p = 0.006 (probability of false positive).
+  * Calibrated by default for n = 100'000 hashes (~6.1 TiB of chunks) and p = 0.006 (probability of false positive).
   *
   * We don't use any hash functions to compute the positions, instead we use part of the hash. See the 'position(..)' function.
   *
   * More information: http://en.wikipedia.org/wiki/Bloom_filter
   *
-  * Description of the template parameters:
+  * Description of the parameters:
   *  - 'w' Is the number of bit allocated to compute a position in the filter. Thus the filter size (in bits) is 2^w. The default size (w = 20) takes 128 KiB of memory.
   *  - w * k must be lower or equal than 8 * HASH_SIZE because we extract each 'k' positions from the hash data.
   *  - 'w' must be lower or equal than 32 bits,
@@ -40,23 +42,20 @@
 
 namespace Common
 {
-   template<int v, int p>
-   struct Power {
-      static const int value = v * Power<v, p - 1>::value;
-   };
-   template<int v>
-   struct Power<v, 1> {
-      static const int value = v;
-   };
-
-   template<int w = 20, int n = 100000>
    class BloomFilter
    {
-      static const int m =  Power<2, w>::value; // Total number of positions.
-      static const int k = double(m) * 0.69314718 / double(n); // Number of positions set per hash: ln(2) * m / n.
-
    public:
-      BloomFilter() { this->reset(); }
+      BloomFilter(int w = 20, int n = 100000) :
+         w(w), m(qPow(2, w)), k(qLn(2) * m / n), wMask((1 << this->w) - 1)
+      {
+         this->bitArray = new uchar[this->m >> 3];
+         this->reset();
+      }
+
+      ~BloomFilter()
+      {
+         delete[] this->bitArray;
+      }
 
       inline void add(const Hash& hash);
       inline bool test(const Hash& hash) const;
@@ -64,16 +63,21 @@ namespace Common
 
    private:
       /**
-        * Returns the position value of 'n',  0 <= i <= k.
+        * Returns the position value of 'i',  0 <= i <= k.
         */
-      inline static quint32 position(const Hash& hash, int i);
+      inline quint32 position(const Hash& hash, int i) const;
 
-      uchar bitArray[m >> 3];
+      const int w;
+      const int m; // Total number of positions.
+      const int k; // Number of positions set per hash: ln(2) * m / n.
+
+      const quint32 wMask;
+
+      uchar* bitArray;
    };
 }
 
-template<int w, int n>
-inline void Common::BloomFilter<w, n>::add(const Hash& hash)
+inline void Common::BloomFilter::add(const Hash& hash)
 {
    for (int i = 0; i < k; i++)
    {
@@ -85,8 +89,7 @@ inline void Common::BloomFilter<w, n>::add(const Hash& hash)
 /**
   * Returns 'true' if the hash may exist in the set and 'false' if the hash doesn't exist in the set.
   */
-template<int w, int n>
-inline bool Common::BloomFilter<w, n>::test(const Hash& hash) const
+inline bool Common::BloomFilter::test(const Hash& hash) const
 {
    for (int i = 0; i < k; i++)
    {
@@ -97,20 +100,17 @@ inline bool Common::BloomFilter<w, n>::test(const Hash& hash) const
    return true;
 }
 
-template<int w, int n>
-inline void Common::BloomFilter<w, n>::reset()
+inline void Common::BloomFilter::reset()
 {
-   memset(this->bitArray, 0, sizeof(this->bitArray));
+   memset(this->bitArray, 0, sizeof(uchar) * (this->m >> 3));
 }
 
-template<int w, int n>
-inline quint32 Common::BloomFilter<w, n>::position(const Hash& hash, int i)
+inline quint32 Common::BloomFilter::position(const Hash& hash, int i) const
 {
    const char* hashData = hash.getData();
-   const quint32 pPos = i * w; // Position in 'hashData' of 'p'.
-   const quint32* p = reinterpret_cast<const quint32*>(hashData + (pPos >> 3));
-   static const quint32 wMask = (1 << w) - 1;
-   return *p >> (32 - w - pPos % 8) & wMask;
+   const quint32 pPos = i * this->w; // Position in 'hashData' of 'p'.
+   const quint32* p = reinterpret_cast<const quint32*>(hashData + (pPos >> 3));   
+   return *p >> (32 - this->w - pPos % 8) & this->wMask;
 }
 
 #endif

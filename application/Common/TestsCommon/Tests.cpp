@@ -396,7 +396,7 @@ void Tests::hasher()
 
 void Tests::bloomFilter()
 {
-   BloomFilter<> bloomFilter;
+   BloomFilter bloomFilter;
    Hash h1 = Hash::fromStr("02e4a0f0e55a308eb83b00eb13023a42cbaffe77");
    Hash h2 = Hash::fromStr("db23d79ed24b1c40b1f88294f877fac03f6dd789");
 
