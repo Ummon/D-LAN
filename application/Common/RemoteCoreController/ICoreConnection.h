@@ -223,7 +223,12 @@ namespace RCC
       void disconnected(bool asked); // Can only be thrown if 'coreConnected()' has been previously thrown. 'asked' = true if disconnected by 'disconnectFromCore()'.
 
       void newState(const Protos::GUI::State&);
+
+      /**
+        * The messages are sorted from the oldest to the youngest.
+        */
       void newChatMessages(const Protos::GUI::EventChatMessages&);
+
       void newLogMessage(QSharedPointer<const LM::IEntry>);
    };
 }

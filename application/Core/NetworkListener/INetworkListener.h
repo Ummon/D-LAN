@@ -19,19 +19,21 @@
 #ifndef NETWORKLISTENER_INETWORKLISTENER_H
 #define NETWORKLISTENER_INETWORKLISTENER_H
 
+#include <QObject>
 #include <QSharedPointer>
+
+#include <Common/Network/Message.h>
 
 namespace NL
 {
-   class IChat;
    class ISearch;
 
-   class INetworkListener
+   class INetworkListener : public QObject
    {
+      Q_OBJECT
    public:
       virtual ~INetworkListener() {}
 
-      virtual IChat& getChat() = 0;
       virtual QSharedPointer<ISearch> newSearch() = 0;
 
       /**
@@ -39,6 +41,15 @@ namespace NL
         * On Windows after disable/enable the netowrk interface, the sockets have to be rebound.
         */
       virtual void rebindSockets() = 0;
+
+      /**
+        * Send a message to a particular peer, if the peer ID isn't given the message is sent to everyone.
+        */
+      virtual void send(MessageHeader::MessageType type, const google::protobuf::Message& message, const Common::Hash& peerID = Common::Hash()) = 0;
+
+   signals:
+      // This signal is sent only for non-processed messages.
+      void received(const Common::Message& message);
    };
 }
 #endif

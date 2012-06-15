@@ -193,7 +193,9 @@ void Core::checkSettingsIntegrity()
    this->checkSetting("udp_buffer_size", 255u, 6684672u);
    this->checkSetting("max_number_of_search_result_to_send", 1u, 10000u);
    this->checkSetting("max_number_of_result_shown", 1u, 100000u);
-   this->checkSetting("max_number_of_chat_message_saved", 1u, 1000000u);
+
+   this->checkSetting("max_number_of_stored_chat_messages", 1u, 1000000u);
+   this->checkSetting("number_of_chat_messages_to_retrieve", 1u, 1000000u);
 
    this->checkSetting("remote_control_port", 1u, 65535u);
    this->checkSetting("remote_refresh_rate", 500u, 10u * 1000u);

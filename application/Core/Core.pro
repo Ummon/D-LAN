@@ -21,6 +21,10 @@ LIBS += -LRemoteControlManager/output/$$FOLDER \
     -lRemoteControlManager
 PRE_TARGETDEPS += RemoteControlManager/output/$$FOLDER/libRemoteControlManager.a
 
+LIBS += -LChatSystem/output/$$FOLDER \
+    -lChatSystem
+PRE_TARGETDEPS += ChatSystem/output/$$FOLDER/libChatSystem.a
+
 LIBS += -LNetworkListener/output/$$FOLDER \
     -lNetworkListener
 PRE_TARGETDEPS += NetworkListener/output/$$FOLDER/libNetworkListener.a

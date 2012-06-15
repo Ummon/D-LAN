@@ -117,15 +117,11 @@ message State {
 
 
 /***** Events *****/
+// The messages are sorted from the oldest to the youngest.
 // Core -> GUI
 // id: 0x1011
 message EventChatMessages {
-   message Message {
-      required uint64 time = 1; // In [ms] since Epoch.
-      required Common.Hash peer_id = 2;
-      required string message = 3;
-   }
-   repeated Message message = 1;
+   repeated Common.ChatMessage message = 1;
 }
 
 

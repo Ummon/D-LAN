@@ -8,6 +8,7 @@ SUBDIRS = Common \
    Core/UploadManager \
    Core/DownloadManager \
    Core/NetworkListener \
+   Core/ChatSystem \
    Core/RemoteControlManager \
    Core
 

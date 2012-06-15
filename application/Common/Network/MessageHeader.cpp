@@ -23,8 +23,6 @@ using namespace Common;
 #include <Protos/core_protocol.pb.h>
 #include <Protos/gui_protocol.pb.h>
 
-#include <ZeroCopyStreamQIODevice.h>
-
 /**
   * @class Common::MessageHeader
   *
@@ -85,7 +83,8 @@ QString MessageHeader::messToStr(MessageType type)
 
    case CORE_IM_ALIVE: return "IM_ALIVE";
    case CORE_CHUNKS_OWNED: return "CHUNKS_OWNED";
-   case CORE_CHAT_MESSAGE: return "CHAT_MESSAGE";
+   case CORE_CHAT_MESSAGES: return "CHAT_MESSAGES";
+   case CORE_GET_LAST_CHAT_MESSAGES: return "CHAT_GET_LAST_MESSAGES";
    case CORE_FIND: return "FIND";
    case CORE_FIND_RESULT: return "FIND_RESULT";
    case CORE_GET_ENTRIES: return "GET_ENTRIES";

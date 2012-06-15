@@ -23,7 +23,6 @@ using namespace UM;
 
 #include <Protos/core_protocol.pb.h>
 
-#include <Common/ZeroCopyStreamQIODevice.h>
 #include <Common/Settings.h>
 #include <Core/FileManager/Exceptions.h>
 #include <Core/FileManager/IChunk.h>

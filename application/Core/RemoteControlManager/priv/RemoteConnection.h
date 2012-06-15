@@ -77,18 +77,18 @@ namespace RCM
 
       void send(Common::MessageHeader::MessageType type, const google::protobuf::Message& message);
 
-      void sendMessageToItself(const QString& message);
+      //void sendMessageToItself(const QString& message);
 
    signals:
       void deleted(RemoteConnection*);
-      void chatMessageSent(const QString&);
+      //void chatMessageSent(const QString&);
       void languageDefined(QLocale);
 
    private slots:
       void refresh();
       void closeSocket();
 
-      void newChatMessage(const Protos::GUI::EventChatMessages_Message& message);
+      //void newChatMessage(const Protos::GUI::EventChatMessages_Message& message);
       void searchFound(const Protos::Common::FindResult& result);
 
       void getEntriesResult(const Protos::Core::GetEntriesResult&);
@@ -106,7 +106,7 @@ namespace RCM
 
       void refreshAllInterfaces();
 
-      void onNewMessage(Common::MessageHeader::MessageType type, const google::protobuf::Message& message);
+      void onNewMessage(const Common::Message& message);
       void onDisconnected();
 
       QSharedPointer<FM::IFileManager> fileManager;

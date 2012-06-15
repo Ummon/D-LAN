@@ -28,6 +28,7 @@
 #include <google/protobuf/message.h>
 
 #include <Common/Network/MessageHeader.h>
+#include <Common/Network/Message.h>
 #include <Common/Hash.h>
 #include <Common/Uncopyable.h>
 
@@ -65,11 +66,10 @@ namespace Common
 
       virtual void send(MessageHeader::MessageType type, const google::protobuf::Message& message);
       virtual void send(MessageHeader::MessageType type);
-
    private:
       virtual void send(MessageHeader::MessageType type, const google::protobuf::Message* message);
 
-   public:
+   public:      
       virtual void startListening();
       virtual void stopListening();
 
@@ -82,7 +82,7 @@ namespace Common
       /**
         * Emitted after a message is received. The method 'onNewMessage()' is called previously.
         */
-      void newMessage(Common::MessageHeader::MessageType type, const google::protobuf::Message& message);
+      void newMessage(const Message& message);
 
    protected:
       bool isListening() const;
@@ -97,13 +97,11 @@ namespace Common
         * Can be inherited by a subclass of 'MessageSocket'.
         * The signal 'newMessage' is also emitted after this called.
         */
-      virtual void onNewMessage(MessageHeader::MessageType type, const google::protobuf::Message& message) {}
+      virtual void onNewMessage(const Message& message) {}
       virtual void onNewDataReceived() {}
       virtual void onDisconnected() {}
 
       bool readMessage();
-      template<typename MessT> bool readMessage();
-      bool readProtoMessage(google::protobuf::Message& message);
 
       ILogger* logger;
 
@@ -129,21 +127,6 @@ namespace Common
       static int currentNum;
 #endif
    };
-}
-
-/***** Definitions *****/
-using namespace Common;
-
-template<typename MessT> bool MessageSocket::readMessage()
-{
-   MessT mess;
-   if (this->readProtoMessage(mess))
-   {
-      this->onNewMessage(this->currentHeader.getType(), mess);
-      emit newMessage(this->currentHeader.getType(), mess);
-      return true;
-   }
-   return false;
 }
 
 #endif

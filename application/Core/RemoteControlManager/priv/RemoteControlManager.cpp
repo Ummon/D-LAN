@@ -96,7 +96,7 @@ void RemoteControlManager::connectionDeleted(RemoteConnection* connection)
 /**
   * When a message is sent to the other peers, it must also be forwarded to the other remote connections.
   */
-void RemoteControlManager::chatMessageSent(const QString& message)
+/*void RemoteControlManager::chatMessageSent(const QString& message)
 {
    RemoteConnection* sender = static_cast<RemoteConnection*>(this->sender());
    for (QListIterator<RemoteConnection*> i(this->connections); i.hasNext();)
@@ -105,4 +105,4 @@ void RemoteControlManager::chatMessageSent(const QString& message)
       if (remoteConnection != sender)
          remoteConnection->sendMessageToItself(message);
    }
-}
+}*/

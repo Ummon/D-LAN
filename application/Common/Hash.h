@@ -23,8 +23,6 @@
 
 #include <string>
 
-#include <Common/Uncopyable.h>
-
 #include <QString>
 #include <QByteArray>
 #include <QDataStream>
@@ -35,6 +33,8 @@
 #if WITH_MUTEX
 #  include <QMutex>
 #endif
+
+#include <Common/Uncopyable.h>
 
 namespace Common
 {

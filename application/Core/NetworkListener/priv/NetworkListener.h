@@ -32,12 +32,11 @@
 #include <ISearch.h>
 #include <priv/UDPListener.h>
 #include <priv/TCPListener.h>
-#include <priv/Chat.h>
 #include <priv/Log.h>
 
 namespace NL
 {
-   class NetworkListener : public QObject, public INetworkListener, Common::Uncopyable
+   class NetworkListener : public INetworkListener, Common::Uncopyable
    {
       Q_OBJECT
    public:
@@ -50,11 +49,13 @@ namespace NL
 
       ~NetworkListener();
 
-      IChat& getChat();
       QSharedPointer<ISearch> newSearch();
 
-  private slots:
+   public slots:
       void rebindSockets();
+
+   public:
+      void send(MessageHeader::MessageType type, const google::protobuf::Message& message, const Common::Hash& peerID = Common::Hash());
 
    private:      
       LOG_INIT_H("NetworkListener");
@@ -68,7 +69,6 @@ namespace NL
 
       TCPListener tCPListener;
       UDPListener uDPListener;
-      Chat chat;
    };
 }
 #endif

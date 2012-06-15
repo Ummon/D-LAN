@@ -66,7 +66,7 @@ namespace GUI
          QString message;
       };
 
-      QList<Message> messages;
+      QList<Message> messages; // Always sorted by date-time.
    };
 
 }

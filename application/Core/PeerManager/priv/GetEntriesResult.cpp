@@ -30,28 +30,28 @@ GetEntriesResult::GetEntriesResult(const Protos::Core::GetEntries& dirs, QShared
 
 void GetEntriesResult::start()
 {
-   connect(this->socket.data(), SIGNAL(newMessage(Common::MessageHeader::MessageType, const google::protobuf::Message&)), this, SLOT(newMessage(Common::MessageHeader::MessageType, const google::protobuf::Message&)), Qt::DirectConnection);
+   connect(this->socket.data(), SIGNAL(newMessage(Common::Message&)), this, SLOT(newMessage(Common::Message&)), Qt::DirectConnection);
    socket->send(Common::MessageHeader::CORE_GET_ENTRIES, this->dirs);
    this->startTimer();
 }
 
 void GetEntriesResult::doDeleteLater()
 {
-   disconnect(this->socket.data(), SIGNAL(newMessage(Common::MessageHeader::MessageType, const google::protobuf::Message&)), this, SLOT(newMessage(Common::MessageHeader::MessageType, const google::protobuf::Message&)));
+   disconnect(this->socket.data(), SIGNAL(newMessage(Common::Message&)), this, SLOT(newMessage(Common::Message&)));
    this->socket->finished();
    this->socket.clear();
    this->deleteLater();
 }
 
-void GetEntriesResult::newMessage(Common::MessageHeader::MessageType type, const google::protobuf::Message& message)
+void GetEntriesResult::newMessage(Common::Message& message)
 {
-   if (type != Common::MessageHeader::CORE_GET_ENTRIES_RESULT)
+   if (message.getHeader().getType() != Common::MessageHeader::CORE_GET_ENTRIES_RESULT)
       return;
 
    this->stopTimer();
 
-   disconnect(this->socket.data(), SIGNAL(newMessage(Common::MessageHeader::MessageType, const google::protobuf::Message&)), this, SLOT(newMessage(Common::MessageHeader::MessageType, const google::protobuf::Message&)));
+   disconnect(this->socket.data(), SIGNAL(newMessage(Common::Message&)), this, SLOT(newMessage(Common::Message&)));
 
-   const Protos::Core::GetEntriesResult& entries = static_cast<const Protos::Core::GetEntriesResult&>(message);
+   const Protos::Core::GetEntriesResult& entries = message.getMessage<Protos::Core::GetEntriesResult>();
    emit result(entries);
 }

@@ -22,7 +22,6 @@ using namespace RCC;
 #include <QHostAddress>
 #include <QCoreApplication>
 
-#include <Common/ZeroCopyStreamQIODevice.h>
 #include <Common/ProtoHelper.h>
 #include <Common/Constants.h>
 #include <Common/Global.h>
@@ -349,17 +348,17 @@ void InternalCoreConnection::sendCurrentLanguage()
    this->send(Common::MessageHeader::GUI_LANGUAGE, langMess);
 }
 
-void InternalCoreConnection::onNewMessage(Common::MessageHeader::MessageType type, const google::protobuf::Message& message)
+void InternalCoreConnection::onNewMessage(const Common::Message& message)
 {
    // While we are not authenticated we accept only two message types.
-   if (!this->authenticated && type != Common::MessageHeader::GUI_ASK_FOR_AUTHENTICATION && type != Common::MessageHeader::GUI_AUTHENTICATION_RESULT)
+   if (!this->authenticated && message.getHeader().getType() != Common::MessageHeader::GUI_ASK_FOR_AUTHENTICATION && message.getHeader().getType() != Common::MessageHeader::GUI_AUTHENTICATION_RESULT)
       return;
 
    switch (type)
    {
    case Common::MessageHeader::GUI_ASK_FOR_AUTHENTICATION:
       {
-         const Protos::GUI::AskForAuthentication& askForAuthentication = static_cast<const Protos::GUI::AskForAuthentication&>(message);
+         const Protos::GUI::AskForAuthentication& askForAuthentication = message.getMessage<Protos::GUI::AskForAuthentication>();
 
          Protos::GUI::Authentication authentication;
 
@@ -376,7 +375,7 @@ void InternalCoreConnection::onNewMessage(Common::MessageHeader::MessageType typ
 
    case Common::MessageHeader::GUI_AUTHENTICATION_RESULT:
       {
-         const Protos::GUI::AuthenticationResult& authenticationResult = static_cast<const Protos::GUI::AuthenticationResult&>(message);
+         const Protos::GUI::AuthenticationResult& authenticationResult = message.getMessage<Protos::GUI::AuthenticationResult>();
 
          if (authenticationResult.status() == Protos::GUI::AuthenticationResult::AUTH_OK)
          {
@@ -406,7 +405,7 @@ void InternalCoreConnection::onNewMessage(Common::MessageHeader::MessageType typ
 
    case Common::MessageHeader::GUI_STATE:
       {
-         const Protos::GUI::State& state = static_cast<const Protos::GUI::State&>(message);
+         const Protos::GUI::State& state = message.getMessage<Protos::GUI::State>();
 
          emit newState(state);
          this->send(Common::MessageHeader::GUI_STATE_RESULT);
@@ -415,7 +414,7 @@ void InternalCoreConnection::onNewMessage(Common::MessageHeader::MessageType typ
 
    case Common::MessageHeader::GUI_EVENT_CHAT_MESSAGES:
       {
-         const Protos::GUI::EventChatMessages& eventChatMessages = static_cast<const Protos::GUI::EventChatMessages&>(message);
+         const Protos::GUI::EventChatMessages& eventChatMessages = message.getMessage<Protos::GUI::EventChatMessages>();
          if (eventChatMessages.message_size() > 0)
             emit newChatMessages(eventChatMessages);
       }
@@ -423,7 +422,7 @@ void InternalCoreConnection::onNewMessage(Common::MessageHeader::MessageType typ
 
    case Common::MessageHeader::GUI_EVENT_LOG_MESSAGE:
       {
-         const Protos::GUI::EventLogMessage& eventLogMessage = static_cast<const Protos::GUI::EventLogMessage&>(message);
+         const Protos::GUI::EventLogMessage& eventLogMessage = message.getMessage<Protos::GUI::EventLogMessage>();
 
          QDateTime dateTime = QDateTime::fromMSecsSinceEpoch(eventLogMessage.time());
          const QString& message = Common::ProtoHelper::getStr(eventLogMessage, &Protos::GUI::EventLogMessage::message);
@@ -434,7 +433,7 @@ void InternalCoreConnection::onNewMessage(Common::MessageHeader::MessageType typ
 
    case Common::MessageHeader::GUI_SEARCH_TAG:
       {
-         const Protos::GUI::Tag& tagMessage = static_cast<const Protos::GUI::Tag&>(message);
+         const Protos::GUI::Tag& tagMessage = message.getMessage<Protos::GUI::Tag>();
 
          while (!this->searchResultsWithoutTag.isEmpty())
          {
@@ -450,7 +449,7 @@ void InternalCoreConnection::onNewMessage(Common::MessageHeader::MessageType typ
 
    case Common::MessageHeader::GUI_SEARCH_RESULT:
       {
-         const Protos::Common::FindResult& findResultMessage = static_cast<const Protos::Common::FindResult&>(message);
+         const Protos::Common::FindResult& findResultMessage = message.getMessage<Protos::Common::FindResult>();
 
          emit searchResult(findResultMessage);
       }
@@ -458,7 +457,7 @@ void InternalCoreConnection::onNewMessage(Common::MessageHeader::MessageType typ
 
    case Common::MessageHeader::GUI_BROWSE_TAG:
       {
-         const Protos::GUI::Tag& tagMessage = static_cast<const Protos::GUI::Tag&>(message);
+         const Protos::GUI::Tag& tagMessage = message.getMessage<Protos::GUI::Tag>();
 
          while (!this->browseResultsWithoutTag.isEmpty())
          {
@@ -474,7 +473,7 @@ void InternalCoreConnection::onNewMessage(Common::MessageHeader::MessageType typ
 
    case Common::MessageHeader::GUI_BROWSE_RESULT:
       {
-         const Protos::GUI::BrowseResult& browseResultMessage = static_cast<const Protos::GUI::BrowseResult&>(message);
+         const Protos::GUI::BrowseResult& browseResultMessage = message.getMessage<Protos::GUI::BrowseResult>();
 
          emit browseResult(browseResultMessage);
       }

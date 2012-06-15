@@ -16,39 +16,14 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef PEERMANAGER_GET_ENTRIES_RESULT_H
-#define PEERMANAGER_GET_ENTRIES_RESULT_H
+#ifndef UPLOADMANAGER_LOG_H
+#define UPLOADMANAGER_LOG_H
 
-#include <QObject>
+#include <Common/LogManager/Builder.h>
 
-#include <google/protobuf/message.h>
-
-#include <Protos/common.pb.h>
-#include <Protos/core_protocol.pb.h>
-
-#include <Common/Network/MessageHeader.h>
-#include <Common/Uncopyable.h>
-
-#include <IGetEntriesResult.h>
-#include <priv/PeerMessageSocket.h>
-
-namespace PM
+namespace UM
 {
-   class GetEntriesResult : public IGetEntriesResult, Common::Uncopyable
-   {
-      Q_OBJECT
-   public:
-      GetEntriesResult(const Protos::Core::GetEntries& dirs, QSharedPointer<PeerMessageSocket> socket);
-      void start();
-      void doDeleteLater();
-
-   private slots:
-      void newMessage(Common::Message& message);
-
-   private:
-      const Protos::Core::GetEntries dirs;
-      QSharedPointer<PeerMessageSocket> socket;
-   };
+   #include <Common/LogManager/LogMacros.h>
 }
 
 #endif

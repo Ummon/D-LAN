@@ -130,7 +130,7 @@ Hash::~Hash()
   */
 Hash& Hash::operator=(const Hash& h)
 {
-   if (&h != this)
+   if (&h != this && h.data != this->data)
    {
       this->dereference();
       this->data = h.data;

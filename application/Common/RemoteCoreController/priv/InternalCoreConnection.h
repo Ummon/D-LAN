@@ -119,7 +119,7 @@ namespace RCC
 
       void sendCurrentLanguage();
 
-      void onNewMessage(Common::MessageHeader::MessageType type, const google::protobuf::Message& message);
+      void onNewMessage(const Common::Message& message);
       void onDisconnected();
 
       friend class BrowseResult;

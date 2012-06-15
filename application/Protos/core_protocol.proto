@@ -44,11 +44,29 @@ message ChunksOwned {
 }
 
 
+// Send a chat message to all other peers.
+// 'id' is randomly generated for each message.
+// The field 'peer_id' is not set because it is already set in the header.
+// The field 'time' is not set because the receiver will set the time and not the sender.
 // a -> all
 // id : 0x11
-message ChatMessage {
-   required string message = 1;
+// Common.ChatMessages
+
+
+// Ask to a peer the 'n' last messages he knows.
+// We can ask periodically to a random peer to be sure we got all the messages of the network.
+// For example the last 500 messages each second.
+// a -> b
+// id : 0x18
+message GetLastChatMessages {
+   required uint32 number = 1;
+   repeated uint64 message_id = 2;
 }
+
+// This message is only sent if 'b' has some messages not contained in the given list.
+// b -> a
+// id : 0x11
+// Common.ChatMessages
 
 
 // Searching a file or a directory.

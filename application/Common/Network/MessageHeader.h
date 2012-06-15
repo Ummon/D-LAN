@@ -42,7 +42,8 @@ namespace Common
          CORE_IM_ALIVE =                  0x0001,
          CORE_CHUNKS_OWNED =              0x0002,
 
-         CORE_CHAT_MESSAGE =              0x0011,
+         CORE_CHAT_MESSAGES =             0x0011,
+         CORE_GET_LAST_CHAT_MESSAGES =    0x0018,
 
          CORE_FIND =                      0x0021,
          CORE_FIND_RESULT =               0x0022,
@@ -105,6 +106,7 @@ namespace Common
 
       bool isNull() const;
       void setNull();
+
       QString toStr() const;
 
       static QString messToStr(MessageType type);

@@ -23,7 +23,6 @@ using namespace RCC;
 #include <QCoreApplication>
 
 #include <LogManager/Builder.h>
-#include <ZeroCopyStreamQIODevice.h>
 #include <ProtoHelper.h>
 #include <Constants.h>
 

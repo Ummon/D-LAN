@@ -55,7 +55,7 @@ namespace RCM
    private slots:
       void newConnection();
       void connectionDeleted(RemoteConnection* sender);
-      void chatMessageSent(const QString& message);
+      //void chatMessageSent(const QString& message);
 
    private:      
       LOG_INIT_H("RemoteControlManager");

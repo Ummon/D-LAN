@@ -65,15 +65,13 @@ namespace NL
          quint16 unicastPort
       );
 
-      void send(Common::MessageHeader::MessageType type, const Common::Hash& peerID, const google::protobuf::Message& message);
+      void send(Common::MessageHeader::MessageType type, const google::protobuf::Message& message, const Common::Hash& peerID);
       void send(Common::MessageHeader::MessageType type, const google::protobuf::Message& message);
-
-      Common::Hash getOwnID() const;
 
       void rebindSockets();
 
    signals:
-      void newChatMessage(const Common::Hash&, const Protos::Core::ChatMessage& chatMessage);
+      void received(const Common::Message& message);
       void newFindResultMessage(const Protos::Common::FindResult& findResult);
 
    private slots:
@@ -87,6 +85,8 @@ namespace NL
    private:
       int writeMessageToBuffer(Common::MessageHeader::MessageType type, const google::protobuf::Message& message);
       Common::MessageHeader readDatagramToBuffer(QUdpSocket& socket, QHostAddress& peerAddress);
+
+      Common::Hash getOwnID() const;
 
       const int MAX_UDP_DATAGRAM_PAYLOAD_SIZE;
 

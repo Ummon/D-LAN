@@ -16,52 +16,62 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#include <priv/Chat.h>
-using namespace NL;
+#include <priv/ChatSystem.h>
+using namespace CS;
 
 #include <QDateTime>
 
+#include <Protos/common.pb.h>
+#include <Protos/core_protocol.pb.h>
+
 #include <Common/ProtoHelper.h>
-#include <Common/Network/MessageHeader.h>
+#include <Common/Network/Message.h>
 #include <Common/Settings.h>
 
-#include <priv/UDPListener.h>
+#include <Core/PeerManager/IPeer.h>
+
+#include <Core/NetworkListener/INetworkListener.h>
 
 /**
-  * @class NL::Chat
+  * @class CM::ChatSystem
   *
-  * @author mcuony
-  * @author gburri
   */
 
-Chat::Chat(UDPListener& uDPListener) :
-   uDPListener(uDPListener)
+ChatSystem::ChatSystem(QSharedPointer<PM::IPeerManager> peerManager, QSharedPointer<NL::INetworkListener> networkListener) :
+   peerManager(peerManager),
+   networkListener(networkListener)
 {
-   Chat::connect(
-      &this->uDPListener,
-      SIGNAL(newChatMessage(const Common::Hash&, const Protos::Core::ChatMessage&)),
-      this,
-      SLOT(newChatMessage(const Common::Hash&, const Protos::Core::ChatMessage&))
-   );
+   this->connect(this->networkListener.data(), SIGNAL(received(const Common::Message&)), this, SLOT(received(const Common::Message&)));
 }
 
 /**
   * Send a message to all other peers and save it into our list of messages.
   */
-void Chat::send(const QString& message)
+void ChatSystem::send(const QString& message)
 {
-   Protos::Core::ChatMessage chatMessage;
-   Common::ProtoHelper::setStr(chatMessage, &Protos::Core::ChatMessage::set_message, message);
+   Protos::Common::ChatMessages protoChatMessages;
+   Protos::Common::ChatMessage* protochatMessage = protoChatMessages.add_message();
+   Common::ProtoHelper::setStr(*protochatMessage, &Protos::Common::ChatMessage::set_message, message);
 
-   this->uDPListener.send(Common::MessageHeader::CORE_CHAT_MESSAGE, chatMessage);
+   this->networkListener->send(Common::MessageHeader::CORE_CHAT_MESSAGES, protoChatMessages);
 
-   Protos::GUI::EventChatMessages_Message eventMessage;
+   QSharedPointer<ChatMessage> chatMessage = this->messages.add(message, this->peerManager->getSelf()->getID());
+
+
+   emit newMessages(QList<QSharedPointer<IChatMessage>> { chatMessage });
+
+   /*Protos::GUI::EventChatMessages_Message eventMessage;
    eventMessage.mutable_peer_id()->set_hash(this->uDPListener.getOwnID().getData(), Common::Hash::HASH_SIZE);
    eventMessage.set_time(QDateTime::currentMSecsSinceEpoch());
    eventMessage.set_message(chatMessage.message());
-   this->messagesHistory.append(eventMessage);
+   this->messagesHistory.append(eventMessage);*/
 }
 
+void ChatSystem::received(const Common::Message& message)
+{
+
+}
+/*
 Protos::GUI::EventChatMessages Chat::getLastMessages() const
 {
    Protos::GUI::EventChatMessages eventMessages;
@@ -85,3 +95,4 @@ void Chat::newChatMessage(const Common::Hash& peerID, const Protos::Core::ChatMe
    if (static_cast<quint32>(this->messagesHistory.size()) > SETTINGS.get<quint32>("max_number_of_chat_message_saved"))
       this->messagesHistory.removeFirst();
 }
+*/

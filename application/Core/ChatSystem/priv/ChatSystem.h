@@ -16,43 +16,40 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef PEERMANAGER_GET_CHUNK_RESULT_H
-#define PEERMANAGER_GET_CHUNK_RESULT_H
+#ifndef CHATSYSTEM_CHATMANAGER_H
+#define CHATSYSTEM_CHATMANAGER_H
 
-#include <QObject>
-#include <QTimer>
+#include <QSharedPointer>
+#include <QLinkedList>
 
-#include <google/protobuf/message.h>
-
-#include <Protos/common.pb.h>
-#include <Protos/core_protocol.pb.h>
-
-#include <Common/Network/MessageHeader.h>
-#include <Common/Network/MessageSocket.h>
 #include <Common/Uncopyable.h>
+#include <Common/Network/MessageHeader.h>
+#include <Common/Hash.h>
 
-#include <IGetChunkResult.h>
-#include <priv/PeerMessageSocket.h>
+#include <Core/PeerManager/IPeerManager.h>
+#include <Core/NetworkListener/INetworkListener.h>
 
-namespace PM
+#include <priv/ChatMessages.h>
+#include <IChatSystem.h>
+
+namespace CS
 {
-   class GetChunkResult : public IGetChunkResult, Common::Uncopyable
+   class ChatSystem : public IChatSystem, Common::Uncopyable
    {
-      Q_OBJECT
    public:
-      GetChunkResult(const Protos::Core::GetChunk& chunk, QSharedPointer<PeerMessageSocket> socket);
-      void start();
-      void setStatus(bool closeTheSocket);
-      void doDeleteLater();
+      ChatSystem(QSharedPointer<PM::IPeerManager> peerManager, QSharedPointer<NL::INetworkListener> networkListener);
+      ~ChatSystem() {}
+
+      void send(const QString& message);
 
    private slots:
-      void newMessage(const Common::Message& message);
+      void received(const Common::Message& message);
 
    private:
-      const Protos::Core::GetChunk chunk;
-      QSharedPointer<PeerMessageSocket> socket;
-      bool closeTheSocket;
+      QSharedPointer<PM::IPeerManager> peerManager;
+      QSharedPointer<NL::INetworkListener> networkListener;
+
+      ChatMessages messages;
    };
 }
-
 #endif

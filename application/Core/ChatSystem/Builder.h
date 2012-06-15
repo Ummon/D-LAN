@@ -16,38 +16,22 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef NETWORKLISTENER_CHAT_H
-#define NETWORKLISTENER_CHAT_H
+#ifndef CHATSYSTEM_BUILDER_H
+#define CHATSYSTEM_BUILDER_H
 
 #include <QSharedPointer>
-#include <QLinkedList>
 
-#include <Protos/core_protocol.pb.h>
-#include <Protos/gui_protocol.pb.h>
+namespace NL { class INetworkListener; }
+namespace PM { class IPeerManager; }
 
-#include <Common/Uncopyable.h>
-
-#include <IChat.h>
-#include <priv/UDPListener.h>
-
-namespace NL
+namespace CS
 {
-   class Chat : public IChat, Common::Uncopyable
+   class IChatSystem;
+
+   class Builder
    {
-      Q_OBJECT
    public:
-      Chat(UDPListener& uDPListener);
-      virtual ~Chat() {}
-      void send(const QString& message);
-      Protos::GUI::EventChatMessages getLastMessages() const;
-
-   private slots:
-      void newChatMessage(const Common::Hash&, const Protos::Core::ChatMessage&);
-
-   private:
-      QLinkedList<Protos::GUI::EventChatMessages_Message> messagesHistory; ///< The last messages. The first is the older.
-
-      UDPListener& uDPListener;
+      static QSharedPointer<IChatSystem> newChatSystem(QSharedPointer<PM::IPeerManager> peerManager, QSharedPointer<NL::INetworkListener> networkListener);
    };
 }
 #endif

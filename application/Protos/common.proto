@@ -76,6 +76,17 @@ message FindResult {
    optional Common.Hash peer_id = 3;
 }
 
+message ChatMessage {
+   required uint64 id = 1;
+   required string message = 2;
+   optional Common.Hash peer_id = 3;
+   optional uint64 time = 4; // In [ms] since Epoch.
+}
+
+message ChatMessages {
+   repeated ChatMessage message = 1;
+}
+
 message Interface {
    message Address {
       enum Protocol {

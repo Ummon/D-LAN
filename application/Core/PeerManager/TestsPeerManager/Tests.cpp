@@ -30,7 +30,6 @@ using namespace PM;
 #include <Common/PersistentData.h>
 #include <Common/Constants.h>
 #include <Common/Global.h>
-#include <Common/ZeroCopyStreamQIODevice.h>
 #include <Common/Settings.h>
 
 #include <ResultListener.h>

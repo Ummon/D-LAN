@@ -16,40 +16,33 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef NETWORKLISTENER_ICHAT_H
-#define NETWORKLISTENER_ICHAT_H
+#ifndef ICHATSYSTEM_ICHAT_H
+#define ICHATSYSTEM_ICHAT_H
 
 #include <QObject>
 #include <QString>
+#include <QSharedPointer>
 
-#include <Protos/gui_protocol.pb.h>
+#include <IChatMessage.h>
 
-#include <Common/Hash.h>
-
-namespace NL
+namespace CS
 {
-   class IChat : public QObject
+   class IChatSystem : public QObject
    {
       Q_OBJECT
    public:
-      virtual ~IChat() {}
+      virtual ~IChatSystem() {}
 
       /**
         * Send a message to everyone.
         */
       virtual void send(const QString& message) = 0;
 
-      /**
-        * Return the last received messages. The first of the list is the older and the last the younger.
-        * The maximum number of messages is defined by 'Protos.Core.Settings.max_number_of_chat_message_saved'.
-        */
-      virtual Protos::GUI::EventChatMessages getLastMessages() const = 0;
-
    signals:
       /**
         * Emitted when one or more messages are received.
         */
-      void newMessage(const Protos::GUI::EventChatMessages_Message&);
+      void newMessages(const QList<QSharedPointer<IChatMessage>>&);
    };
 }
 #endif

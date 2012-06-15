@@ -109,19 +109,24 @@ void ChatModel::newChatMessages(const Protos::GUI::EventChatMessages& messages)
    if (messages.message_size() < 1)
       return;
 
-   this->beginInsertRows(QModelIndex(), this->messages.size(), this->messages.size() + messages.message_size() - 1);
-   for (int i = 0; i < messages.message_size(); i++)
+   int j = this->messages.size();
+   for (int i = messages.message_size() - 1; i >= 0; i--)
    {
       const Common::Hash peerID(messages.message(i).peer_id().hash());
-      const QString nick = this->peerListModel.getNick(peerID);
-      this->messages << Message {
+      Message message {
          peerID,
-         nick,
+         this->peerListModel.getNick(peerID),
          QDateTime::fromMSecsSinceEpoch(messages.message(i).time()),
-         Common::ProtoHelper::getStr(messages.message(i), &Protos::GUI::EventChatMessages_Message::message)
+         Common::ProtoHelper::getStr(messages.message(i), &Protos::Common::ChatMessage::message)
       };
+
+      while (j > 0 && this->messages[j-1].dateTime > message.dateTime)
+         j--;
+
+      this->beginInsertRows(QModelIndex(), j, j);
+      this->messages.insert(j, message);
+      this->endInsertRows();
    }
-   this->endInsertRows();
 
    const int nbMessageToDelete = this->messages.size() - SETTINGS.get<quint32>("max_chat_message_displayed");
 

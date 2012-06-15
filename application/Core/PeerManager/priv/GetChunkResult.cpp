@@ -30,7 +30,7 @@ GetChunkResult::GetChunkResult(const Protos::Core::GetChunk& chunk, QSharedPoint
 
 void GetChunkResult::start()
 {
-   connect(this->socket.data(), SIGNAL(newMessage(Common::MessageHeader::MessageType, const google::protobuf::Message&)), this, SLOT(newMessage(Common::MessageHeader::MessageType, const google::protobuf::Message&)), Qt::DirectConnection);
+   connect(this->socket.data(), SIGNAL(newMessage(const Common::Message&)), this, SLOT(newMessage(const Common::Message&)), Qt::DirectConnection);
    socket->send(Common::MessageHeader::CORE_GET_CHUNK, this->chunk);
    this->startTimer();
 }
@@ -43,20 +43,20 @@ void GetChunkResult::setStatus(bool closeTheSocket)
 void GetChunkResult::doDeleteLater()
 {
    // We must disconnect because 'this->socket->finished' can read some data and emit 'newMessage'.
-   disconnect(this->socket.data(), SIGNAL(newMessage(Common::MessageHeader::MessageType, const google::protobuf::Message&)), this, SLOT(newMessage(Common::MessageHeader::MessageType, const google::protobuf::Message&)));
+   disconnect(this->socket.data(), SIGNAL(newMessage(const Common::Message&)), this, SLOT(newMessage(const Common::Message&)));
    this->socket->finished(this->isTimedout() ? true : this->closeTheSocket);
    this->socket.clear();
    this->deleteLater();
 }
 
-void GetChunkResult::newMessage(Common::MessageHeader::MessageType type, const google::protobuf::Message& message)
+void GetChunkResult::newMessage(const Common::Message& message)
 {
-   if (type != Common::MessageHeader::CORE_GET_CHUNK_RESULT)
+   if (message.getHeader().getType() != Common::MessageHeader::CORE_GET_CHUNK_RESULT)
       return;
 
    this->stopTimer();
 
-   const Protos::Core::GetChunkResult& chunkResult = static_cast<const Protos::Core::GetChunkResult&>(message);
+   const Protos::Core::GetChunkResult& chunkResult = message.getMessage<Protos::Core::GetChunkResult>();
    emit result(chunkResult);
 
    if (chunkResult.status() == Protos::Core::GetChunkResult::OK)

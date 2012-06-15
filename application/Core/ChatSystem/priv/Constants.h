@@ -16,15 +16,11 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef UPLOADMANAGER_GLOBAL_H
-#define UPLOADMANAGER_GLOBAL_H
+#ifndef UPLOADMANAGER_CONSTANTS_H
+#define UPLOADMANAGER_CONSTANTS_H
 
-#include <QtCore/qglobal.h>
+namespace UM
+{
+}
 
-#if defined(UPLOADMANAGER_LIBRARY)
-#  define UPLOADMANAGERSHARED_EXPORT Q_DECL_EXPORT
-#else
-#  define UPLOADMANAGERSHARED_EXPORT Q_DECL_IMPORT
 #endif
-
-#endif // UPLOADMANAGER_GLOBAL_H
