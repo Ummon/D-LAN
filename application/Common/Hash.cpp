@@ -354,12 +354,12 @@ Common::Hash Hasher::hashWithSalt(const Common::Hash& hash, quint64 salt)
 
 Hash Hasher::hashWithRandomSalt(const QString& str, quint64& salt)
 {
-   salt = static_cast<quint64>(Hash::mtrand.randInt()) << 32 | Hash::mtrand.randInt();
+   salt = Hash::mtrand.randInt64();
    return Hasher::hashWithSalt(str, salt);
 }
 
 Hash Hasher::hashWithRandomSalt(const Common::Hash& hash, quint64& salt)
 {
-   salt = static_cast<quint64>(Hash::mtrand.randInt()) << 32 | Hash::mtrand.randInt();
+   salt = Hash::mtrand.randInt64();
    return Hasher::hashWithSalt(hash, salt);
 }

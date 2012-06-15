@@ -122,7 +122,7 @@ bool InternalCoreConnection::setCorePassword(const QString& newPassword, const Q
 {
    Protos::GUI::ChangePassword passMess;
 
-   const quint64 newSalt = static_cast<quint64>(mtrand.randInt()) << 32 | mtrand.randInt();
+   const quint64 newSalt = mtrand.randInt64();
    Common::Hash newPasswordHashed = Common::Hasher::hashWithSalt(newPassword, newSalt);
 
    passMess.mutable_new_password()->set_hash(newPasswordHashed.getData(), Common::Hash::HASH_SIZE);

@@ -332,7 +332,7 @@ void RemoteConnection::askForAuthentication()
    Protos::GUI::AskForAuthentication askForAuthenticationMessage;
    askForAuthenticationMessage.set_salt(SETTINGS.get<quint64>("salt"));
 
-   this->saltChallenge = (static_cast<quint64>(this->mtrand.randInt()) << 32) | this->mtrand.randInt();
+   this->saltChallenge = this->mtrand.randInt64();
    askForAuthenticationMessage.set_salt_challenge(this->saltChallenge);
 
    this->timerCloseSocket.start();
@@ -483,7 +483,7 @@ void RemoteConnection::onNewMessage(const Common::Message& message)
          {
             QList<QSharedPointer<Protos::Common::FindResult>> results = this->fileManager->find(pattern, SETTINGS.get<quint32>("max_number_of_result_shown"), std::numeric_limits<int>::max());
 
-            const quint64 tag = (static_cast<quint64>(this->mtrand.randInt()) << 32) | this->mtrand.randInt();
+            const quint64 tag = this->mtrand.randInt64();
             Protos::GUI::Tag tagMess;
             tagMess.set_tag(tag);
             this->send(Common::MessageHeader::GUI_SEARCH_TAG, tagMess);
@@ -517,7 +517,7 @@ void RemoteConnection::onNewMessage(const Common::Message& message)
          Common::Hash peerID(browseMessage.peer_id().hash());
          PM::IPeer* peer = this->peerManager->getPeer(peerID);
 
-         quint64 tag = (static_cast<quint64>(this->mtrand.randInt()) << 32) | this->mtrand.randInt();
+         quint64 tag = this->mtrand.randInt64();
          Protos::GUI::Tag tagMess;
          tagMess.set_tag(tag);
          this->send(Common::MessageHeader::GUI_BROWSE_TAG, tagMess);
