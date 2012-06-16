@@ -100,8 +100,8 @@ RemoteConnection::RemoteConnection(
 
    this->loggerHook = LM::Builder::newLoggerHook(LM::Severity(LM::SV_FATAL_ERROR | LM::SV_ERROR | LM::SV_END_USER | LM::SV_WARNING));
 
-   //qRegisterMetaType<QSharedPointer<LM::IEntry>>("QSharedPointer<LM::IEntry>");
-   connect(this->loggerHook.data(), SIGNAL(newLogEntry(QSharedPointer<LM::IEntry>)), this, SLOT(newLogEntry(QSharedPointer<LM::IEntry>))/*, Qt::QueuedConnection*/);
+   qRegisterMetaType<QSharedPointer<LM::IEntry>>("QSharedPointer<LM::IEntry>");
+   connect(this->loggerHook.data(), SIGNAL(newLogEntry(QSharedPointer<LM::IEntry>)), this, SLOT(newLogEntry(QSharedPointer<LM::IEntry>)), Qt::QueuedConnection);
 
    this->askForAuthentication();
 }
