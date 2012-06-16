@@ -21,6 +21,8 @@ using namespace CS;
 
 #include <QDateTime>
 
+#include <Libs/MersenneTwister.h>
+
 #include <Protos/common.pb.h>
 #include <Protos/core_protocol.pb.h>
 
@@ -41,7 +43,12 @@ ChatSystem::ChatSystem(QSharedPointer<PM::IPeerManager> peerManager, QSharedPoin
    peerManager(peerManager),
    networkListener(networkListener)
 {
-   this->connect(this->networkListener.data(), SIGNAL(received(const Common::Message&)), this, SLOT(received(const Common::Message&)));
+   connect(this->networkListener.data(), SIGNAL(received(const Common::Message&)), this, SLOT(received(const Common::Message&)));
+
+   connect(&this->getLastChatMessageTimer, SIGNAL(timeout()), this, SLOT(getLastChatMessage()));
+   this->getLastChatMessageTimer.setInterval(SETTINGS.get<quint32>("get_last_chat_messages_period"));
+   this->getLastChatMessageTimer.start();
+   this->getLastChatMessage();
 }
 
 /**
@@ -49,50 +56,63 @@ ChatSystem::ChatSystem(QSharedPointer<PM::IPeerManager> peerManager, QSharedPoin
   */
 void ChatSystem::send(const QString& message)
 {
+   QSharedPointer<ChatMessage> chatMessage = this->messages.add(message, this->peerManager->getSelf()->getID());
+
    Protos::Common::ChatMessages protoChatMessages;
    Protos::Common::ChatMessage* protochatMessage = protoChatMessages.add_message();
-   Common::ProtoHelper::setStr(*protochatMessage, &Protos::Common::ChatMessage::set_message, message);
+   chatMessage->fillProtoChatMessage(*protochatMessage);
+   protochatMessage->clear_time(); // We let the receive set the time.
 
    this->networkListener->send(Common::MessageHeader::CORE_CHAT_MESSAGES, protoChatMessages);
 
-   QSharedPointer<ChatMessage> chatMessage = this->messages.add(message, this->peerManager->getSelf()->getID());
-
-
    emit newMessages(QList<QSharedPointer<IChatMessage>> { chatMessage });
-
-   /*Protos::GUI::EventChatMessages_Message eventMessage;
-   eventMessage.mutable_peer_id()->set_hash(this->uDPListener.getOwnID().getData(), Common::Hash::HASH_SIZE);
-   eventMessage.set_time(QDateTime::currentMSecsSinceEpoch());
-   eventMessage.set_message(chatMessage.message());
-   this->messagesHistory.append(eventMessage);*/
 }
 
 void ChatSystem::received(const Common::Message& message)
 {
+   switch (message.getHeader().getType())
+   {
+   case Common::MessageHeader::CORE_CHAT_MESSAGES:
+      {
+         Protos::Common::ChatMessages chatMessages = message.getMessage<Protos::Common::ChatMessages>();
+         for (int i = 0; i < chatMessages.message_size(); i++)
+            if (!chatMessages.message(i).has_peer_id())
+               chatMessages.mutable_message(i)->mutable_peer_id()->set_hash(message.getHeader().getSenderID().getData(), Common::Hash::HASH_SIZE);
+         const QList<QSharedPointer<ChatMessage>>& messages = this->messages.add(chatMessages);
+         emit newMessages(reinterpret_cast<const QList<QSharedPointer<IChatMessage>>&>(messages));
+      }
+      break;
 
+   case Common::MessageHeader::CORE_GET_LAST_CHAT_MESSAGES:
+      {
+         const Protos::Core::GetLastChatMessages& getLastChatMessage = message.getMessage<Protos::Core::GetLastChatMessages>();
+         const QList<QSharedPointer<ChatMessage>>& messages = this->messages.getUnknownMessage(getLastChatMessage);
+         if (!messages.isEmpty())
+         {
+            Protos::Common::ChatMessages chatMessages;
+            ChatMessages::fillProtoChatMessages(chatMessages, messages);
+            this->networkListener->send(MessageHeader::CORE_CHAT_MESSAGES, chatMessages, message.getHeader().getSenderID());
+         }
+      }
+      break;
+
+   default:; // Ignore all other messages.
+   }
 }
-/*
-Protos::GUI::EventChatMessages Chat::getLastMessages() const
+
+/**
+  * Ask to a random peer its last messages.
+  */
+void ChatSystem::getLastChatMessage()
 {
-   Protos::GUI::EventChatMessages eventMessages;
-   eventMessages.mutable_message()->Reserve(this->messagesHistory.size());
+   static const quint32 N = SETTINGS.get<quint32>("number_of_chat_messages_to_retrieve");
 
-   for (QLinkedListIterator<Protos::GUI::EventChatMessages_Message> i(this->messagesHistory); i.hasNext();)
-      eventMessages.mutable_message()->Add()->CopyFrom(i.next());
-   return eventMessages;
+   const QList<quint64>& messageIDs = this->messages.getLastMessageIDs(N);
+   Protos::Core::GetLastChatMessages getLastChatMessage;
+   getLastChatMessage.set_number(N);
+   for (QListIterator<quint64> i(messageIDs); i.hasNext();)
+      getLastChatMessage.add_message_id(i.next());
+
+   const QList<PM::IPeer*>& peers = this->peerManager->getPeers();
+   this->networkListener->send(Common::MessageHeader::CORE_GET_LAST_CHAT_MESSAGES, getLastChatMessage, peers[this->mtrand.randInt(peers.size() - 1)]->getID());
 }
-
-void Chat::newChatMessage(const Common::Hash& peerID, const Protos::Core::ChatMessage& message)
-{
-   Protos::GUI::EventChatMessages_Message eventMessage;
-   eventMessage.mutable_peer_id()->set_hash(peerID.getData(), Common::Hash::HASH_SIZE);
-   eventMessage.set_time(QDateTime::currentMSecsSinceEpoch());
-   eventMessage.set_message(message.message());
-
-   emit newMessage(eventMessage);
-
-   this->messagesHistory.append(eventMessage);
-   if (static_cast<quint32>(this->messagesHistory.size()) > SETTINGS.get<quint32>("max_number_of_chat_message_saved"))
-      this->messagesHistory.removeFirst();
-}
-*/

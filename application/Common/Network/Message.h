@@ -28,9 +28,6 @@ namespace Common
 
       const MessageHeader& getHeader() const;
 
-//      void setHeaderSize(quint32 size);
-//      void setHeaderPeerID(const Hash& ID);
-
       template <typename T = google::protobuf::Message>
       const T& getMessage() const;
 

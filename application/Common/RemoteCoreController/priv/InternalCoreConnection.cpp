@@ -354,7 +354,7 @@ void InternalCoreConnection::onNewMessage(const Common::Message& message)
    if (!this->authenticated && message.getHeader().getType() != Common::MessageHeader::GUI_ASK_FOR_AUTHENTICATION && message.getHeader().getType() != Common::MessageHeader::GUI_AUTHENTICATION_RESULT)
       return;
 
-   switch (type)
+   switch (message.getHeader().getType())
    {
    case Common::MessageHeader::GUI_ASK_FOR_AUTHENTICATION:
       {

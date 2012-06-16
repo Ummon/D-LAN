@@ -6,6 +6,8 @@
 
 #include <Libs/MersenneTwister.h>
 
+#include <Protos/common.pb.h>
+
 #include <Common/Hash.h>
 
 #include <IChatMessage.h>
@@ -16,8 +18,13 @@ namespace CS
    {
    public:
       ChatMessage(const QString& message, const Common::Hash& ownerID);
+      ChatMessage(const Protos::Common::ChatMessage& chatMessage);
 
+      quint64 getID() const;
       QString getMessage() const;
+      QDateTime getTime() const;
+
+      void fillProtoChatMessage(Protos::Common::ChatMessage& protoChatMessage) const;
 
    private:
       static MTRand mtrand;

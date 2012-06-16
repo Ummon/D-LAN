@@ -21,6 +21,7 @@
 
 #include <QSharedPointer>
 #include <QLinkedList>
+#include <QTimer>
 
 #include <Common/Uncopyable.h>
 #include <Common/Network/MessageHeader.h>
@@ -44,12 +45,16 @@ namespace CS
 
    private slots:
       void received(const Common::Message& message);
+      void getLastChatMessage();
 
    private:
       QSharedPointer<PM::IPeerManager> peerManager;
       QSharedPointer<NL::INetworkListener> networkListener;
 
       ChatMessages messages;
+
+      QTimer getLastChatMessageTimer;
+      MTRand mtrand;
    };
 }
 #endif

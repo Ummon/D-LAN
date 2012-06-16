@@ -481,7 +481,7 @@ void RemoteConnection::onNewMessage(const Common::Message& message)
          // Special syntax to search in your own files.
          if (pattern.startsWith('<'))
          {
-            QList<QSharedPointer<Protos::Common::FindResult>> results = this->fileManager->find(pattern, SETTINGS.get<quint32>("max_number_of_result_shown"), std::numeric_limits<int>::max());
+            const QList<Protos::Common::FindResult>& results = this->fileManager->find(pattern, SETTINGS.get<quint32>("max_number_of_result_shown"), std::numeric_limits<int>::max());
 
             const quint64 tag = this->mtrand.randInt64();
             Protos::GUI::Tag tagMess;
@@ -490,10 +490,10 @@ void RemoteConnection::onNewMessage(const Common::Message& message)
 
             if (!results.isEmpty())
             {
-               QSharedPointer<Protos::Common::FindResult>& result = results.first();
-               result->mutable_peer_id()->set_hash(this->peerManager->getSelf()->getID().getData(), Common::Hash::HASH_SIZE);
-               result->set_tag(tag);
-               this->searchFound(*result.data());
+               Protos::Common::FindResult result = results.first();
+               result.mutable_peer_id()->set_hash(this->peerManager->getSelf()->getID().getData(), Common::Hash::HASH_SIZE);
+               result.set_tag(tag);
+               this->searchFound(result);
             }
          }
          else
