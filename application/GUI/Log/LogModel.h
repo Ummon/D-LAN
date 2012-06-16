@@ -40,12 +40,13 @@ namespace GUI
       LM::Severity getSeverity(int row) const;
 
    private slots:
-      void newLogEntry(QSharedPointer<const LM::IEntry> entry);
+      void newLogEntry(QSharedPointer<LM::IEntry> entry);
+      void newLogEntries(const QList<QSharedPointer<LM::IEntry>>& entries);
 
    private:
       QSharedPointer<RCC::ICoreConnection> coreConnection;
       QSharedPointer<LM::ILoggerHook> loggerHook;
-      QList<QSharedPointer<const LM::IEntry>> entries;
+      QList<QSharedPointer<LM::IEntry>> entries;
    };
 }
 

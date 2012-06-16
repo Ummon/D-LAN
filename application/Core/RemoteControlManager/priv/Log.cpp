@@ -20,6 +20,3 @@
 using namespace RCM;
 
 QSharedPointer<LM::ILogger> Log::logger;
-
-
-

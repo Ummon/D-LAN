@@ -94,7 +94,8 @@ namespace RCM
       void getEntriesResult(const Protos::Core::GetEntriesResult&);
       void getEntriesTimeout();
 
-      void newLogEntry(QSharedPointer<const LM::IEntry> entry);
+      void newLogEntry(QSharedPointer<LM::IEntry> entry);
+      void sendLogMessages();
 
       void sendNoPasswordDefinedResult();
       void sendBadPasswordResult();
@@ -116,6 +117,9 @@ namespace RCM
       QSharedPointer<NL::INetworkListener> networkListener;
 
       QSharedPointer<LM::ILoggerHook> loggerHook;
+
+      Protos::GUI::EventLogMessages eventLogMessages; // The next log messages to send are buffered in this member.
+      QTimer sendLogMessagesTimer;
 
       QTimer timerRefresh;
       QTimer timerCloseSocket;

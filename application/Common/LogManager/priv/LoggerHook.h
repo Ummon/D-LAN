@@ -27,7 +27,7 @@ namespace LM
    {
    public:
       LoggerHook(Severity severities);
-      void newMessage(QSharedPointer<const IEntry> entry);
+      void newMessage(QSharedPointer<IEntry> entry);
 
    private:
       Severity severities; // Only these severities will be caught.
