@@ -1,3 +1,21 @@
+/**
+  * D-LAN - A decentralized LAN file sharing software.
+  * Copyright (C) 2010-2012 Greg Burri <greg.burri@gmail.com>
+  *
+  * This program is free software: you can redistribute it and/or modify
+  * it under the terms of the GNU General Public License as published by
+  * the Free Software Foundation, either version 3 of the License, or
+  * (at your option) any later version.
+  *
+  * This program is distributed in the hope that it will be useful,
+  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  * GNU General Public License for more details.
+  *
+  * You should have received a copy of the GNU General Public License
+  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  */
+  
 #include <priv/ChatMessages.h>
 using namespace CS;
 
@@ -46,18 +64,20 @@ QList<quint64> ChatMessages::getLastMessageIDs(int n) const
 }
 
 /**
+  * Returns the last unkown messages, the known message IDs are defined into 'getLastChatMessage'.
   * The returned messages are sorted from oldest to youngest.
   */
-QList<QSharedPointer<ChatMessage>> ChatMessages::getUnknownMessage(const Protos::Core::GetLastChatMessages& getLastChatMessage)
+QList<QSharedPointer<ChatMessage>> ChatMessages::getUnknownMessages(const Protos::Core::GetLastChatMessages& getLastChatMessage)
 {
    QSet<quint64> knownIDs;
+   knownIDs.reserve(getLastChatMessage.message_id_size());
    for (int i = 0; i < getLastChatMessage.message_id_size(); i++)
       knownIDs.insert(getLastChatMessage.message_id(i));
 
    QList<QSharedPointer<ChatMessage>> result;
    for (int i = this->messages.size() - 1; i >= 0 && this->messages.size() - i <= int(getLastChatMessage.number()); i--)
    {
-      if (!knownIDs.contains(this->messages[i]->getID()))
+      if (!knownIDs.remove(this->messages[i]->getID()))
          result.prepend(this->messages[i]);
    }
 
@@ -79,7 +99,7 @@ void ChatMessages::fillProtoChatMessages(Protos::Common::ChatMessages& chatMessa
 
 
 /**
-  * Load the chat messages from the file and return it.
+  * Load the chat messages from the file previously saved in the user home and return it.
   */
 void ChatMessages::loadFromFile()
 {
@@ -100,6 +120,9 @@ void ChatMessages::loadFromFile()
    }
 }
 
+/**
+  * Save the chat messages to a file in the user home.
+  */
 void ChatMessages::saveToFile() const
 {
    if (!this->changed)

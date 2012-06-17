@@ -86,6 +86,9 @@ void ChatSystem::getLastChatMessages(Protos::Common::ChatMessages& chatMessages,
    this->messages.fillProtoChatMessages(chatMessages);
 }
 
+/**
+  * Called by the 'NetworkListener' component when a new message arrived.
+  */
 void ChatSystem::received(const Common::Message& message)
 {
    switch (message.getHeader().getType())
@@ -111,7 +114,7 @@ void ChatSystem::received(const Common::Message& message)
    case Common::MessageHeader::CORE_GET_LAST_CHAT_MESSAGES:
       {
          const Protos::Core::GetLastChatMessages& getLastChatMessages = message.getMessage<Protos::Core::GetLastChatMessages>();
-         const QList<QSharedPointer<ChatMessage>>& messages = this->messages.getUnknownMessage(getLastChatMessages);
+         const QList<QSharedPointer<ChatMessage>>& messages = this->messages.getUnknownMessages(getLastChatMessages);
          if (!messages.isEmpty())
          {
             Protos::Common::ChatMessages chatMessages;

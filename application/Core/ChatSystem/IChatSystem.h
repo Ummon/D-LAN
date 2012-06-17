@@ -41,6 +41,9 @@ namespace CS
         */
       virtual void send(const QString& message) = 0;
 
+      /**
+        * Retrieve the last 'number' known message.
+        */
       virtual void getLastChatMessages(Protos::Common::ChatMessages& chatMessages, int number = std::numeric_limits<int>::max()) const = 0;
 
    signals:
