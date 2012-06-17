@@ -51,13 +51,14 @@ QList<QSharedPointer<ChatMessage> > ChatMessages::add(const Protos::Common::Chat
    return this->insert(messages);
 }
 
-QList<quint64> ChatMessages::getLastMessageIDs(int n) const
+QList<quint64> ChatMessages::getLastMessageIDs(int nMax) const
 {
    QList<quint64> result;
 
-   QListIterator<QSharedPointer<ChatMessage>> i(messages);
+   QListIterator<QSharedPointer<ChatMessage>> i(this->messages);
    i.toBack();
-   while (i.hasPrevious())
+   int n = 0;
+   while (i.hasPrevious() && n++ < nMax)
       result << i.previous()->getID();
 
    return result;

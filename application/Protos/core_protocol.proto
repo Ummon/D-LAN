@@ -61,7 +61,7 @@ message ChunksOwned {
 // id : 0x18
 message GetLastChatMessages {
    required uint32 number = 1;
-   repeated uint64 message_id = 2;
+   repeated uint64 message_id = 2 [packed=true];
 }
 
 // This message is only sent if 'b' has some messages not contained in the given list.

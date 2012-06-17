@@ -83,7 +83,7 @@ void ChatSystem::send(const QString& message)
 
 void ChatSystem::getLastChatMessages(Protos::Common::ChatMessages& chatMessages, int number) const
 {
-   this->messages.fillProtoChatMessages(chatMessages);
+   this->messages.fillProtoChatMessages(chatMessages, number);
 }
 
 /**

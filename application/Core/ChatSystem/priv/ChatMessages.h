@@ -43,7 +43,7 @@ namespace CS
       QSharedPointer<ChatMessage> add(const QString& message, const Common::Hash& ownerID, const QString& ownerNick);
       QList<QSharedPointer<ChatMessage>> add(const Protos::Common::ChatMessages& chatMessages);
 
-      QList<quint64> getLastMessageIDs(int n) const;
+      QList<quint64> getLastMessageIDs(int nMax) const;
 
       QList<QSharedPointer<ChatMessage>> getUnknownMessages(const Protos::Core::GetLastChatMessages& getLastChatMessage);
 
