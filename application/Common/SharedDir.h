@@ -40,8 +40,8 @@ namespace Common
 
       Common::Hash ID; ///< The unique identifier of the shared directory.
       QString path; ///< The absolute path of the shared directory.
-      quint64 size;
-      quint64 freeSpace;
+      qint64 size;
+      qint64 freeSpace;
    };
 }
 

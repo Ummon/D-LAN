@@ -229,7 +229,7 @@ namespace RCC
         */
       void newChatMessages(const Protos::GUI::EventChatMessages&);
 
-      void newLogMessage(QSharedPointer<const LM::IEntry>);
+      void newLogMessages(QList<QSharedPointer<LM::IEntry>>);
    };
 }
 

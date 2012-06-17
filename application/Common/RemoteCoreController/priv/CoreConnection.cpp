@@ -220,7 +220,7 @@ void CoreConnection::tempConnected()
    connect(this->current(), SIGNAL(disconnected(bool)), this, SIGNAL(disconnected(bool)));
    connect(this->current(), SIGNAL(newState(const Protos::GUI::State&)), this, SIGNAL(newState(const Protos::GUI::State&)));
    connect(this->current(), SIGNAL(newChatMessages(const Protos::GUI::EventChatMessages&)), this, SIGNAL(newChatMessages(const Protos::GUI::EventChatMessages&)));
-   connect(this->current(), SIGNAL(newLogMessage(QSharedPointer<const LM::IEntry>)), this, SIGNAL(newLogMessage(QSharedPointer<const LM::IEntry>)));
+   connect(this->current(), SIGNAL(newLogMessages(QList<QSharedPointer<LM::IEntry>>)), this, SIGNAL(newLogMessages(QList<QSharedPointer<LM::IEntry>>)));
    emit connected();
 }
 

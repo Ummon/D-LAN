@@ -101,7 +101,7 @@ namespace RCC
 
       void newState(const Protos::GUI::State&);
       void newChatMessages(const Protos::GUI::EventChatMessages&);
-      void newLogMessage(QSharedPointer<const LM::IEntry>);
+      void newLogMessages(const QList<QSharedPointer<LM::IEntry>>&);
 
       void browseResult(const Protos::GUI::BrowseResult& browseResult);
       void searchResult(const Protos::Common::FindResult& findResult);

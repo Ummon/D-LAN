@@ -25,10 +25,10 @@ using namespace GUI;
 LogModel::LogModel(QSharedPointer<RCC::ICoreConnection> coreConnection) :
    coreConnection(coreConnection)
 {
-   connect(this->coreConnection.data(), SIGNAL(newLogMessage(QSharedPointer<const LM::IEntry>)), this, SLOT(newLogEntry(QSharedPointer<const LM::IEntry>)));
+   connect(this->coreConnection.data(), SIGNAL(newLogMessages(QList<QSharedPointer<LM::IEntry>>)), this, SLOT(newLogEntries(QList<QSharedPointer<LM::IEntry>>)));
 
    this->loggerHook = LM::Builder::newLoggerHook(LM::Severity(LM::SV_FATAL_ERROR | LM::SV_ERROR | LM::SV_END_USER | LM::SV_WARNING));
-   connect(this->loggerHook.data(), SIGNAL(newLogEntry(QSharedPointer<const LM::IEntry>)), this, SLOT(newLogEntry(QSharedPointer<const LM::IEntry>)));
+   connect(this->loggerHook.data(), SIGNAL(newLogEntry(QSharedPointer<LM::IEntry>)), this, SLOT(newLogEntry(QSharedPointer<LM::IEntry>)));
 }
 
 int LogModel::rowCount(const QModelIndex& /*parent*/) const
@@ -46,7 +46,7 @@ QVariant LogModel::data(const QModelIndex& index, int role) const
    if (role != Qt::DisplayRole || index.row() >= this->entries.size())
       return QVariant();
 
-   const QSharedPointer<const LM::IEntry>& entry = this->entries[index.row()];
+   const QSharedPointer<LM::IEntry>& entry = this->entries[index.row()];
 
    switch (index.column())
    {
@@ -82,27 +82,39 @@ LM::Severity LogModel::getSeverity(int row) const
    return this->entries[row]->getSeverity();
 }
 
-void LogModel::newLogEntry(QSharedPointer<const LM::IEntry> entry)
+void LogModel::newLogEntry(QSharedPointer<LM::IEntry> entry)
 {
+   this->newLogEntries(QList<QSharedPointer<LM::IEntry>> { entry });
+}
+
+void LogModel::newLogEntries(const QList<QSharedPointer<LM::IEntry>>& entries)
+{
+   QList<QSharedPointer<LM::IEntry>> filteredEntries;
+
    // Report Warnings only in DEBUG mode.
+   for (QListIterator<QSharedPointer<LM::IEntry>> i(entries); i.hasNext();)
+   {
+      const QSharedPointer<LM::IEntry>& entry = i.next();
 #ifndef DEBUG
-   if (entry->getSeverity() == LM::SV_WARNING)
-      return;
+      if (entry->getSeverity() != LM::SV_WARNING)
 #endif
+         filteredEntries << entry;
+   }
 
    // Do not repeat several same messages.
-   if (!this->entries.isEmpty() && this->entries.last()->getMessage() == entry->getMessage())
+   if (filteredEntries.isEmpty() || !this->entries.isEmpty() && filteredEntries.size() == 1 && this->entries.last()->getMessage() == filteredEntries.first()->getMessage())
       return;
 
-   this->beginInsertRows(QModelIndex(), this->entries.size(), this->entries.size());
-   this->entries << entry;
+   this->beginInsertRows(QModelIndex(), this->entries.size(), this->entries.size() + filteredEntries.size() - 1);
+   this->entries << filteredEntries;
    this->endInsertRows();
 
    static const quint32 MAX_LOG_MESSAGE_DISPLAYED = SETTINGS.get<quint32>("max_log_message_displayed");
-   if (static_cast<quint32>(this->entries.size()) > MAX_LOG_MESSAGE_DISPLAYED)
+   if (quint32(this->entries.size()) > MAX_LOG_MESSAGE_DISPLAYED)
    {
-      this->beginRemoveRows(QModelIndex(), 0, 0);
-      this->entries.removeFirst();
+      this->beginRemoveRows(QModelIndex(), 0, quint32(this->entries.size()) - MAX_LOG_MESSAGE_DISPLAYED - 1);
+      this->entries.erase(this->entries.begin(), this->entries.begin() + (quint32(this->entries.size()) - MAX_LOG_MESSAGE_DISPLAYED));
       this->endRemoveRows();
    }
+
 }

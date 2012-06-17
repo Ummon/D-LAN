@@ -83,6 +83,10 @@ RemoteConnection::RemoteConnection(
 
    this->refreshAllInterfaces();
 
+   this->sendLogMessagesTimer.setInterval(SETTINGS.get<quint32>("delay_before_sending_log_messages"));
+   this->sendLogMessagesTimer.setSingleShot(true);
+   connect(&this->sendLogMessagesTimer, SIGNAL(timeout()), this, SLOT(sendLogMessages()));
+
    this->timerRefresh.setInterval(SETTINGS.get<quint32>("remote_refresh_rate"));
    this->timerRefresh.setSingleShot(true);
    connect(&this->timerRefresh, SIGNAL(timeout()), this, SLOT(refresh()));
@@ -95,8 +99,8 @@ RemoteConnection::RemoteConnection(
 
    this->loggerHook = LM::Builder::newLoggerHook(LM::Severity(LM::SV_FATAL_ERROR | LM::SV_ERROR | LM::SV_END_USER | LM::SV_WARNING));
 
-   qRegisterMetaType<QSharedPointer<const LM::IEntry>>("QSharedPointer<const LM::IEntry>");
-   connect(this->loggerHook.data(), SIGNAL(newLogEntry(QSharedPointer<const LM::IEntry>)), this, SLOT(newLogEntry(QSharedPointer<const LM::IEntry>)), Qt::QueuedConnection);
+   qRegisterMetaType<QSharedPointer<LM::IEntry>>("QSharedPointer<LM::IEntry>");
+   connect(this->loggerHook.data(), SIGNAL(newLogEntry(QSharedPointer<LM::IEntry>)), this, SLOT(newLogEntry(QSharedPointer<LM::IEntry>)), Qt::QueuedConnection);
 
    this->askForAuthentication();
 }
@@ -301,14 +305,21 @@ void RemoteConnection::getEntriesTimeout()
    this->removeGetEntriesResult(getEntriesResult);
 }
 
-void RemoteConnection::newLogEntry(QSharedPointer<const LM::IEntry> entry)
+void RemoteConnection::newLogEntry(QSharedPointer<LM::IEntry> entry)
 {
-   Protos::GUI::EventLogMessage eventLogMessage;
-   eventLogMessage.set_time(entry->getDate().currentMSecsSinceEpoch());
-   Common::ProtoHelper::setStr(eventLogMessage, &Protos::GUI::EventLogMessage::set_message, entry->getMessage());
-   eventLogMessage.set_severity(static_cast<Protos::GUI::EventLogMessage_Severity>(entry->getSeverity()));
+   Protos::GUI::EventLogMessages::EventLogMessage* eventLogMessage = this->eventLogMessages.add_message();
+   eventLogMessage->set_time(entry->getDate().currentMSecsSinceEpoch());
+   Common::ProtoHelper::setStr(*eventLogMessage, &Protos::GUI::EventLogMessages::EventLogMessage::set_message, entry->getMessage());
+   eventLogMessage->set_severity(static_cast<Protos::GUI::EventLogMessages::EventLogMessage::Severity>(entry->getSeverity()));
 
-   this->send(Common::MessageHeader::GUI_EVENT_LOG_MESSAGE, eventLogMessage);
+   if (!this->sendLogMessagesTimer.isActive())
+      this->sendLogMessagesTimer.start();
+}
+
+void RemoteConnection::sendLogMessages()
+{
+   this->send(Common::MessageHeader::GUI_EVENT_LOG_MESSAGES, this->eventLogMessages);
+   this->eventLogMessages.Clear();
 }
 
 void RemoteConnection::sendNoPasswordDefinedResult()

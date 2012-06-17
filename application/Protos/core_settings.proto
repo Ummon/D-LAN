@@ -86,4 +86,5 @@ message Settings {
    optional uint32 remote_max_nb_connection = 83 [default = 5];
    optional uint32 search_lifetime = 84 [default = 5000]; // [ms]. (5s)
    optional uint32 delay_gui_connection_fail = 88 [default = 200]; // When a GUI fails to connect to the core (for example by giving a wrong password) the answer is delayed [ms]. (0.2s)
+   optional uint32 delay_before_sending_log_messages = 100 [default = 250]; // [ms]. When a new log message should be sent to the Core we wait this time for another log messages to try to send many at the same time.
 }
