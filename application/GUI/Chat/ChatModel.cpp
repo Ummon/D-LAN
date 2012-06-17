@@ -70,7 +70,7 @@ QVariant ChatModel::data(const QModelIndex& index, int role) const
    case 0: return this->messages[index.row()].dateTime.toString("HH:mm:ss");
    case 1:
       {
-         QString nick = this->messages[index.row()].nick;
+         const QString nick = this->messages[index.row()].nick;
          if (nick.size() > MAX_NICK_LENGTH)
             return nick.left(MAX_NICK_LENGTH-3).append("...");
          return nick;
@@ -106,10 +106,13 @@ void ChatModel::newChatMessage(const Common::Hash& peerID, const QString& messag
 
 void ChatModel::newChatMessages(const Protos::Common::ChatMessages& messages)
 {
-   if (messages.message_size() < 1)
+   if (messages.message_size() == 0)
       return;
 
    int j = this->messages.size();
+   int previousJ;
+   QList<Message> toInsert;
+
    for (int i = messages.message_size() - 1; i >= 0; i--)
    {
       const Common::Hash peerID(messages.message(i).peer_id().hash());
@@ -120,15 +123,33 @@ void ChatModel::newChatMessages(const Protos::Common::ChatMessages& messages)
          Common::ProtoHelper::getStr(messages.message(i), &Protos::Common::ChatMessage::message)
       };
 
+      previousJ = j;
       while (j > 0 && this->messages[j-1].dateTime > message.dateTime)
          j--;
 
-      this->beginInsertRows(QModelIndex(), j, j);
-      this->messages.insert(j, message);
-      this->endInsertRows();
+      if (previousJ != j && !toInsert.isEmpty())
+      {
+         this->beginInsertRows(QModelIndex(), previousJ, previousJ + toInsert.size() - 1);
+         for (QListIterator<Message> k(toInsert); k.hasNext();)
+            this->messages.insert(previousJ, k.next());
+         this->endInsertRows();
+         toInsert.clear();
+      }
+
+      toInsert << message;
+
+      // Special case for the last message.
+      if (i == 0)
+      {
+         this->beginInsertRows(QModelIndex(), j, j + toInsert.size() - 1);
+         for (QListIterator<Message> k(toInsert); k.hasNext();)
+            this->messages.insert(j, k.next());
+         this->endInsertRows();
+      }
    }
 
-   const int nbMessageToDelete = this->messages.size() - SETTINGS.get<quint32>("max_chat_message_displayed");
+   static const quint32 MAX_NB_MESSAGES = SETTINGS.get<quint32>("max_chat_message_displayed");
+   const int nbMessageToDelete = this->messages.size() - MAX_NB_MESSAGES;
 
    if (nbMessageToDelete > 0)
    {

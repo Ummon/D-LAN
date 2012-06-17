@@ -26,19 +26,6 @@ Message::Message(const MessageHeader& header, google::protobuf::Message* message
 {
 }
 
-//Message::Message(const MessageHeader::MessageType type, const QSharedPointer<google::protobuf::Message>& message) :
-//   header(type), message(message)
-//{
-//}
-
-///**
-//  * The object takes the control of 'message' and will destroy it when no more used.
-//  */
-//Message::Message(const MessageHeader::MessageType type, google::protobuf::Message* message) :
-//   header(type), message(message)
-//{
-//}
-
 bool Message::isNull() const
 {
    return this->message.isNull();
@@ -48,16 +35,6 @@ const MessageHeader& Message::getHeader() const
 {
    return this->header;
 }
-
-//void Message::setHeaderSize(quint32 size)
-//{
-//   this->header.setSize(size);
-//}
-
-//void Message::setHeaderPeerID(const Hash& ID)
-//{
-//   this->header.setSenderID(ID);
-//}
 
 int Message::writeMessageToBuffer(char* buffer, quint32 bufferSize, const MessageHeader& header, const google::protobuf::Message* message)
 {
