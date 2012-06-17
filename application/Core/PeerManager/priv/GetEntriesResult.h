@@ -43,7 +43,7 @@ namespace PM
       void doDeleteLater();
 
    private slots:
-      void newMessage(Common::Message& message);
+      void newMessage(const Common::Message& message);
 
    private:
       const Protos::Core::GetEntries dirs;

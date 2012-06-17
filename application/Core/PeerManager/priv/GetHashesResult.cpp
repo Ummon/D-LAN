@@ -32,20 +32,20 @@ void GetHashesResult::start()
 {
    Protos::Core::GetHashes message;
    message.mutable_file()->CopyFrom(this->file);
-   connect(this->socket.data(), SIGNAL(newMessage(Common::Message&)), this, SLOT(newMessage(Common::Message&)), Qt::DirectConnection);
+   connect(this->socket.data(), SIGNAL(newMessage(Common::Message)), this, SLOT(newMessage(Common::Message)), Qt::DirectConnection);
    socket->send(Common::MessageHeader::CORE_GET_HASHES, message);
    this->startTimer();
 }
 
 void GetHashesResult::doDeleteLater()
 {
-   disconnect(this->socket.data(), SIGNAL(newMessage(Common::Message&)), this, SLOT(newMessage(Common::Message&)));
+   disconnect(this->socket.data(), SIGNAL(newMessage(Common::Message)), this, SLOT(newMessage(Common::Message)));
    this->socket->finished();
    this->socket.clear();
    this->deleteLater();
 }
 
-void GetHashesResult::newMessage(Common::Message& message)
+void GetHashesResult::newMessage(const Common::Message& message)
 {
    switch (message.getHeader().getType())
    {

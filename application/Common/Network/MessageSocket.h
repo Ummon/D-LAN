@@ -82,7 +82,7 @@ namespace Common
       /**
         * Emitted after a message is received. The method 'onNewMessage()' is called previously.
         */
-      void newMessage(const Message& message);
+      void newMessage(const Common::Message& message);
 
    protected:
       bool isListening() const;
