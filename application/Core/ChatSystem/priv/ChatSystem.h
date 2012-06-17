@@ -19,6 +19,8 @@
 #ifndef CHATSYSTEM_CHATMANAGER_H
 #define CHATSYSTEM_CHATMANAGER_H
 
+#include <limits>
+
 #include <QSharedPointer>
 #include <QLinkedList>
 #include <QTimer>
@@ -30,28 +32,36 @@
 #include <Core/PeerManager/IPeerManager.h>
 #include <Core/NetworkListener/INetworkListener.h>
 
-#include <priv/ChatMessages.h>
 #include <IChatSystem.h>
+#include <priv/ChatMessages.h>
+#include <priv/Log.h>
 
 namespace CS
 {
    class ChatSystem : public IChatSystem, Common::Uncopyable
    {
+      Q_OBJECT
    public:
       ChatSystem(QSharedPointer<PM::IPeerManager> peerManager, QSharedPointer<NL::INetworkListener> networkListener);
-      ~ChatSystem() {}
+      ~ChatSystem();
 
       void send(const QString& message);
+      void getLastChatMessages(Protos::Common::ChatMessages& chatMessages, int number = std::numeric_limits<int>::max()) const;
 
    private slots:
       void received(const Common::Message& message);
-      void getLastChatMessage();
+      void getLastChatMessages();
+      void saveChatMessages();
 
    private:
+      LOG_INIT_H("ChatSystem");
+
       QSharedPointer<PM::IPeerManager> peerManager;
       QSharedPointer<NL::INetworkListener> networkListener;
 
       ChatMessages messages;
+
+      QTimer saveChatMessagesTimer;
 
       QTimer getLastChatMessageTimer;
       MTRand mtrand;

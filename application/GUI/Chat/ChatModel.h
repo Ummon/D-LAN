@@ -52,7 +52,7 @@ namespace GUI
       void newChatMessage(const Common::Hash& peerID, const QString& message);
 
    private slots:
-      void newChatMessages(const Protos::GUI::EventChatMessages& messages);
+      void newChatMessages(const Protos::Common::ChatMessages& messages);
 
    private:
       QSharedPointer<RCC::ICoreConnection> coreConnection;

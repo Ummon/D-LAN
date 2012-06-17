@@ -77,6 +77,7 @@ message Settings {
    //  - For n = 100 peers: t = 13.3 seconds.
    //  - For n = 1000 peers: t = 19.9 seconds.
    optional uint32 get_last_chat_messages_period = 93 [default = 2000];
+   optional uint32 save_chat_messages_period = 94 [default = 90000]; // [ms]. (1.5 min).
    
    ///// RemoteControlManager /////
    optional uint32 remote_control_port = 80 [default = 59485];

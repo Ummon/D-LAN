@@ -19,11 +19,15 @@
 #ifndef ICHATSYSTEM_ICHAT_H
 #define ICHATSYSTEM_ICHAT_H
 
+#include <limits>
+
 #include <QObject>
 #include <QString>
 #include <QSharedPointer>
 
-#include <IChatMessage.h>
+#include <Protos/common.pb.h>
+
+#include <Core/ChatSystem/IChatMessage.h>
 
 namespace CS
 {
@@ -35,14 +39,17 @@ namespace CS
 
       /**
         * Send a message to everyone.
+        * This will emit a 'newMessages' signal.
         */
       virtual void send(const QString& message) = 0;
+
+      virtual void getLastChatMessages(Protos::Common::ChatMessages& chatMessages, int number = std::numeric_limits<int>::max()) const = 0;
 
    signals:
       /**
         * Emitted when one or more messages are received.
         */
-      void newMessages(const QList<QSharedPointer<IChatMessage>>&);
+      void newMessages(const Protos::Common::ChatMessages&);
    };
 }
 #endif

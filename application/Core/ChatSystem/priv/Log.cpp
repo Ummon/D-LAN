@@ -17,6 +17,6 @@
   */
   
 #include <priv/Log.h>
-using namespace UM;
+using namespace CS;
 
 QSharedPointer<LM::ILogger> Log::logger;

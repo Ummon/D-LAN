@@ -227,7 +227,7 @@ namespace RCC
       /**
         * The messages are sorted from the oldest to the youngest.
         */
-      void newChatMessages(const Protos::GUI::EventChatMessages&);
+      void newChatMessages(const Protos::Common::ChatMessages&);
 
       void newLogMessages(QList<QSharedPointer<LM::IEntry>>);
    };

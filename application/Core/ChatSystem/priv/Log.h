@@ -16,12 +16,12 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef UPLOADMANAGER_LOG_H
-#define UPLOADMANAGER_LOG_H
+#ifndef CHAT_SYSTEM_LOG_H
+#define CHAT_SYSTEM_LOG_H
 
 #include <Common/LogManager/Builder.h>
 
-namespace UM
+namespace CS
 {
    #include <Common/LogManager/LogMacros.h>
 }

@@ -414,9 +414,9 @@ void InternalCoreConnection::onNewMessage(const Common::Message& message)
 
    case Common::MessageHeader::GUI_EVENT_CHAT_MESSAGES:
       {
-         const Protos::GUI::EventChatMessages& eventChatMessages = message.getMessage<Protos::GUI::EventChatMessages>();
-         if (eventChatMessages.message_size() > 0)
-            emit newChatMessages(eventChatMessages);
+         const Protos::Common::ChatMessages& chatMessages = message.getMessage<Protos::Common::ChatMessages>();
+         if (chatMessages.message_size() > 0)
+            emit newChatMessages(chatMessages);
       }
       break;
 

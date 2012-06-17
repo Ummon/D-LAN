@@ -32,6 +32,7 @@
 #include <UploadManager/IUploadManager.h>
 #include <DownloadManager/IDownloadManager.h>
 #include <NetworkListener/INetworkListener.h>
+#include <ChatSystem/IChatSystem.h>
 #include <RemoteControlManager/IRemoteControlManager.h>
 
 #include <Log.h>
@@ -76,6 +77,7 @@ namespace CoreSpace
       QSharedPointer<UM::IUploadManager> uploadManager;
       QSharedPointer<DM::IDownloadManager> downloadManager;
       QSharedPointer<NL::INetworkListener> networkListener;
+      QSharedPointer<CS::IChatSystem> chatSystem;
       QSharedPointer<RCM::IRemoteControlManager> remoteControlManager;
    };
 }

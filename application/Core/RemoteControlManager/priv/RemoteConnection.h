@@ -47,6 +47,7 @@
 #include <Core/DownloadManager/IDownloadManager.h>
 #include <Core/NetworkListener/INetworkListener.h>
 #include <Core/NetworkListener/ISearch.h>
+#include <Core/ChatSystem/IChatSystem.h>
 
 namespace RCM
 {
@@ -71,24 +72,22 @@ namespace RCM
          QSharedPointer<UM::IUploadManager> uploadManager,
          QSharedPointer<DM::IDownloadManager> downloadManager,
          QSharedPointer<NL::INetworkListener> networkListener,
+         QSharedPointer<CS::IChatSystem> chatSystem,
          QTcpSocket* socket
       );
       ~RemoteConnection();
 
       void send(Common::MessageHeader::MessageType type, const google::protobuf::Message& message);
 
-      //void sendMessageToItself(const QString& message);
-
    signals:
       void deleted(RemoteConnection*);
-      //void chatMessageSent(const QString&);
       void languageDefined(QLocale);
 
    private slots:
       void refresh();
       void closeSocket();
 
-      //void newChatMessage(const Protos::GUI::EventChatMessages_Message& message);
+      void newChatMessages(const Protos::Common::ChatMessages& messages);
       void searchFound(const Protos::Common::FindResult& result);
 
       void getEntriesResult(const Protos::Core::GetEntriesResult&);
@@ -115,6 +114,7 @@ namespace RCM
       QSharedPointer<UM::IUploadManager> uploadManager;
       QSharedPointer<DM::IDownloadManager> downloadManager;
       QSharedPointer<NL::INetworkListener> networkListener;
+      QSharedPointer<CS::IChatSystem> chatSystem;
 
       QSharedPointer<LM::ILoggerHook> loggerHook;
 

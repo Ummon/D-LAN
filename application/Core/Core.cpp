@@ -30,6 +30,7 @@ using namespace CoreSpace;
 #include <UploadManager/Builder.h>
 #include <DownloadManager/Builder.h>
 #include <NetworkListener/Builder.h>
+#include <ChatSystem/Builder.h>
 #include <RemoteControlManager/Builder.h>
 
 LOG_INIT_CPP(Core);
@@ -106,7 +107,8 @@ void Core::start()
    this->uploadManager = UM::Builder::newUploadManager(this->peerManager);
    this->downloadManager = DM::Builder::newDownloadManager(this->fileManager, this->peerManager);
    this->networkListener = NL::Builder::newNetworkListener(this->fileManager, this->peerManager, this->uploadManager, this->downloadManager);
-   this->remoteControlManager = RCM::Builder::newRemoteControlManager(this->fileManager, this->peerManager, this->uploadManager, this->downloadManager, this->networkListener);
+   this->chatSystem = CS::Builder::newChatSystem(this->peerManager, this->networkListener);
+   this->remoteControlManager = RCM::Builder::newRemoteControlManager(this->fileManager, this->peerManager, this->uploadManager, this->downloadManager, this->networkListener, this->chatSystem);
 
    connect(this->remoteControlManager.data(), SIGNAL(languageDefined(QLocale)), this, SLOT(setLanguage(QLocale)));
 

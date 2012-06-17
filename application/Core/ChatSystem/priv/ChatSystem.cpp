@@ -39,16 +39,29 @@ using namespace CS;
   *
   */
 
+LOG_INIT_CPP(ChatSystem);
+
 ChatSystem::ChatSystem(QSharedPointer<PM::IPeerManager> peerManager, QSharedPointer<NL::INetworkListener> networkListener) :
    peerManager(peerManager),
    networkListener(networkListener)
 {
+   this->messages.loadFromFile();
+
    connect(this->networkListener.data(), SIGNAL(received(const Common::Message&)), this, SLOT(received(const Common::Message&)));
 
-   connect(&this->getLastChatMessageTimer, SIGNAL(timeout()), this, SLOT(getLastChatMessage()));
+   connect(&this->getLastChatMessageTimer, SIGNAL(timeout()), this, SLOT(getLastChatMessages()));
    this->getLastChatMessageTimer.setInterval(SETTINGS.get<quint32>("get_last_chat_messages_period"));
    this->getLastChatMessageTimer.start();
-   this->getLastChatMessage();
+   this->getLastChatMessages();
+
+   this->saveChatMessagesTimer.setInterval(SETTINGS.get<quint32>("save_chat_messages_period"));
+   connect(&this->saveChatMessagesTimer, SIGNAL(timeout()), this, SLOT(saveChatMessages()));
+   this->saveChatMessagesTimer.start();
+}
+
+ChatSystem::~ChatSystem()
+{
+   this->messages.saveToFile();
 }
 
 /**
@@ -61,11 +74,16 @@ void ChatSystem::send(const QString& message)
    Protos::Common::ChatMessages protoChatMessages;
    Protos::Common::ChatMessage* protochatMessage = protoChatMessages.add_message();
    chatMessage->fillProtoChatMessage(*protochatMessage);
-   protochatMessage->clear_time(); // We let the receive set the time.
 
+   emit newMessages(protoChatMessages);
+
+   protochatMessage->clear_time(); // We let the receiver set the time.
    this->networkListener->send(Common::MessageHeader::CORE_CHAT_MESSAGES, protoChatMessages);
+}
 
-   emit newMessages(QList<QSharedPointer<IChatMessage>> { chatMessage });
+void ChatSystem::getLastChatMessages(Protos::Common::ChatMessages& chatMessages, int number) const
+{
+   this->messages.fillProtoChatMessages(chatMessages);
 }
 
 void ChatSystem::received(const Common::Message& message)
@@ -75,18 +93,25 @@ void ChatSystem::received(const Common::Message& message)
    case Common::MessageHeader::CORE_CHAT_MESSAGES:
       {
          Protos::Common::ChatMessages chatMessages = message.getMessage<Protos::Common::ChatMessages>();
+
          for (int i = 0; i < chatMessages.message_size(); i++)
             if (!chatMessages.message(i).has_peer_id())
                chatMessages.mutable_message(i)->mutable_peer_id()->set_hash(message.getHeader().getSenderID().getData(), Common::Hash::HASH_SIZE);
+
          const QList<QSharedPointer<ChatMessage>>& messages = this->messages.add(chatMessages);
-         emit newMessages(reinterpret_cast<const QList<QSharedPointer<IChatMessage>>&>(messages));
+
+         Protos::Common::ChatMessages filteredChatMessages;
+         ChatMessages::fillProtoChatMessages(filteredChatMessages, messages);
+
+         if (filteredChatMessages.message_size() > 0)
+            emit newMessages(filteredChatMessages);
       }
       break;
 
    case Common::MessageHeader::CORE_GET_LAST_CHAT_MESSAGES:
       {
-         const Protos::Core::GetLastChatMessages& getLastChatMessage = message.getMessage<Protos::Core::GetLastChatMessages>();
-         const QList<QSharedPointer<ChatMessage>>& messages = this->messages.getUnknownMessage(getLastChatMessage);
+         const Protos::Core::GetLastChatMessages& getLastChatMessages = message.getMessage<Protos::Core::GetLastChatMessages>();
+         const QList<QSharedPointer<ChatMessage>>& messages = this->messages.getUnknownMessage(getLastChatMessages);
          if (!messages.isEmpty())
          {
             Protos::Common::ChatMessages chatMessages;
@@ -103,16 +128,24 @@ void ChatSystem::received(const Common::Message& message)
 /**
   * Ask to a random peer its last messages.
   */
-void ChatSystem::getLastChatMessage()
+void ChatSystem::getLastChatMessages()
 {
    static const quint32 N = SETTINGS.get<quint32>("number_of_chat_messages_to_retrieve");
 
-   const QList<quint64>& messageIDs = this->messages.getLastMessageIDs(N);
-   Protos::Core::GetLastChatMessages getLastChatMessage;
-   getLastChatMessage.set_number(N);
-   for (QListIterator<quint64> i(messageIDs); i.hasNext();)
-      getLastChatMessage.add_message_id(i.next());
-
    const QList<PM::IPeer*>& peers = this->peerManager->getPeers();
-   this->networkListener->send(Common::MessageHeader::CORE_GET_LAST_CHAT_MESSAGES, getLastChatMessage, peers[this->mtrand.randInt(peers.size() - 1)]->getID());
+   if (peers.isEmpty())
+      return;
+
+   const QList<quint64>& messageIDs = this->messages.getLastMessageIDs(N);
+   Protos::Core::GetLastChatMessages getLastChatMessages;
+   getLastChatMessages.set_number(N);
+   for (QListIterator<quint64> i(messageIDs); i.hasNext();)
+      getLastChatMessages.add_message_id(i.next());
+
+   this->networkListener->send(Common::MessageHeader::CORE_GET_LAST_CHAT_MESSAGES, getLastChatMessages, peers[this->mtrand.randInt(peers.size() - 1)]->getID());
+}
+
+void ChatSystem::saveChatMessages()
+{
+   this->messages.saveToFile();
 }

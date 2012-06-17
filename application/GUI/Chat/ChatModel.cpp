@@ -22,7 +22,7 @@ using namespace GUI;
 #include <QtAlgorithms>
 #include <QStringBuilder>
 
-#include <Protos/gui_protocol.pb.h>
+#include <Protos/common.pb.h>
 
 #include <Common/ProtoHelper.h>
 #include <Common/Global.h>
@@ -31,7 +31,7 @@ using namespace GUI;
 ChatModel::ChatModel(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel) :
    coreConnection(coreConnection), peerListModel(peerListModel)
 {
-   connect(this->coreConnection.data(), SIGNAL(newChatMessages(const Protos::GUI::EventChatMessages&)), this, SLOT(newChatMessages(const Protos::GUI::EventChatMessages&)));
+   connect(this->coreConnection.data(), SIGNAL(newChatMessages(const Protos::Common::ChatMessages&)), this, SLOT(newChatMessages(const Protos::Common::ChatMessages&)));
 }
 
 /**
@@ -104,7 +104,7 @@ void ChatModel::newChatMessage(const Common::Hash& peerID, const QString& messag
    }
 }
 
-void ChatModel::newChatMessages(const Protos::GUI::EventChatMessages& messages)
+void ChatModel::newChatMessages(const Protos::Common::ChatMessages& messages)
 {
    if (messages.message_size() < 1)
       return;

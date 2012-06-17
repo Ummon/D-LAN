@@ -93,7 +93,7 @@ Message Common::Message::readMessageBody(const MessageHeader& header, T source)
 
    case MessageHeader::GUI_STATE:                        return readMessageBody<Protos::GUI::State>                  (header, source);
    case MessageHeader::GUI_STATE_RESULT:                 return readMessageBody<Protos::Common::Null>                (header, source);
-   case MessageHeader::GUI_EVENT_CHAT_MESSAGES:          return readMessageBody<Protos::GUI::EventChatMessages>      (header, source);
+   case MessageHeader::GUI_EVENT_CHAT_MESSAGES:          return readMessageBody<Protos::Common::ChatMessages>        (header, source);
    case MessageHeader::GUI_EVENT_LOG_MESSAGES:           return readMessageBody<Protos::GUI::EventLogMessages>       (header, source);
    case MessageHeader::GUI_ASK_FOR_AUTHENTICATION:       return readMessageBody<Protos::GUI::AskForAuthentication>   (header, source);
    case MessageHeader::GUI_AUTHENTICATION:               return readMessageBody<Protos::GUI::Authentication>         (header, source);

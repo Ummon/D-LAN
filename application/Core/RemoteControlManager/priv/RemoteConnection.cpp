@@ -56,6 +56,7 @@ RemoteConnection::RemoteConnection(
    QSharedPointer<UM::IUploadManager> uploadManager,
    QSharedPointer<DM::IDownloadManager> downloadManager,
    QSharedPointer<NL::INetworkListener> networkListener,
+   QSharedPointer<CS::IChatSystem> chatSystem,
    QTcpSocket* socket
 ) :
    MessageSocket(new RemoteConnection::Logger(), socket, peerManager->getSelf()->getID()),
@@ -64,6 +65,7 @@ RemoteConnection::RemoteConnection(
    uploadManager(uploadManager),
    downloadManager(downloadManager),
    networkListener(networkListener),
+   chatSystem(chatSystem),
    authenticated(false),
    saltChallenge(0)
  #if DEBUG
@@ -95,7 +97,7 @@ RemoteConnection::RemoteConnection(
    this->timerCloseSocket.setSingleShot(true);
    connect(&this->timerCloseSocket, SIGNAL(timeout()), this, SLOT(closeSocket()));
 
-   //connect(&this->networkListener->getChat(), SIGNAL(newMessage(const Protos::GUI::EventChatMessages_Message&)), this, SLOT(newChatMessage(const Protos::GUI::EventChatMessages_Message&)));
+   connect(this->chatSystem.data(), SIGNAL(newMessages(Protos::Common::ChatMessages)), this, SLOT(newChatMessages(Protos::Common::ChatMessages)));
 
    this->loggerHook = LM::Builder::newLoggerHook(LM::Severity(LM::SV_FATAL_ERROR | LM::SV_ERROR | LM::SV_END_USER | LM::SV_WARNING));
 
@@ -119,21 +121,6 @@ void RemoteConnection::send(Common::MessageHeader::MessageType type, const googl
 
    Common::MessageSocket::send(type, message);
 }
-
-/**
-  * @see RemoteControlManager::chatMessageSent
-  */
-/*void RemoteConnection::sendMessageToItself(const QString& message)
-{
-   Protos::GUI::EventChatMessages eventChatMessages;
-
-   Protos::GUI::EventChatMessages_Message* eventChatMessage = eventChatMessages.add_message();
-   eventChatMessage->mutable_peer_id()->set_hash(this->peerManager->getSelf()->getID().getData(), Common::Hash::HASH_SIZE);
-   eventChatMessage->set_time(QDateTime::currentMSecsSinceEpoch());
-   Common::ProtoHelper::setStr(*eventChatMessage, &Protos::GUI::EventChatMessages_Message::set_message, message);
-
-   this->send(Common::MessageHeader::GUI_EVENT_CHAT_MESSAGES, eventChatMessages);
-}*/
 
 void RemoteConnection::refresh()
 {   
@@ -274,13 +261,10 @@ void RemoteConnection::closeSocket()
    this->close();
 }
 
-/*void RemoteConnection::newChatMessage(const Protos::GUI::EventChatMessages_Message& message)
+void RemoteConnection::newChatMessages(const Protos::Common::ChatMessages& messages)
 {
-   Protos::GUI::EventChatMessages eventChatMessages;
-   eventChatMessages.add_message()->CopyFrom(message);
-
-   this->send(Common::MessageHeader::GUI_EVENT_CHAT_MESSAGES, eventChatMessages);
-}*/
+   this->send(Common::MessageHeader::GUI_EVENT_CHAT_MESSAGES, messages);
+}
 
 void RemoteConnection::searchFound(const Protos::Common::FindResult& result)
 {
@@ -359,8 +343,11 @@ void RemoteConnection::removeGetEntriesResult(const PM::IGetEntriesResult* getEn
 
 void RemoteConnection::sendLastChatMessages()
 {
+   Protos::Common::ChatMessages chatMessages;
+   this->chatSystem->getLastChatMessages(chatMessages);
+
    // We send all the last received messages to the GUI (history).
-   //this->send(Common::MessageHeader::GUI_EVENT_CHAT_MESSAGES, this->networkListener->getChat().getLastMessages());
+   this->send(Common::MessageHeader::GUI_EVENT_CHAT_MESSAGES, chatMessages);
 }
 
 void RemoteConnection::refreshAllInterfaces()
@@ -639,9 +626,7 @@ void RemoteConnection::onNewMessage(const Common::Message& message)
       {
          const Protos::GUI::ChatMessage& chatMessage = message.getMessage<Protos::GUI::ChatMessage>();
 
-         const QString& message = Common::ProtoHelper::getStr(chatMessage, &Protos::GUI::ChatMessage::message);
-         //emit chatMessageSent(message);
-         //this->networkListener->getChat().send(message);
+         this->chatSystem->send(Common::ProtoHelper::getStr(chatMessage, &Protos::GUI::ChatMessage::message));
       }
       break;
 

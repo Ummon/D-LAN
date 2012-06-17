@@ -97,7 +97,7 @@ QString MessageHeader::messToStr(MessageType type)
 
    case GUI_STATE: return "STATE";
    case GUI_STATE_RESULT: return "STATE_RESULT";
-   case GUI_EVENT_CHAT_MESSAGES:  return "EVENT_CHAT_MESSAGE";
+   case GUI_EVENT_CHAT_MESSAGES:  return "EVENT_CHAT_MESSAGES";
    case GUI_EVENT_LOG_MESSAGES: return "EVENT_LOG_MESSAGES";
    case GUI_ASK_FOR_AUTHENTICATION: return "ASK_FOR_AUTHENTICATION";
    case GUI_AUTHENTICATION: return "AUTHENTICATION";

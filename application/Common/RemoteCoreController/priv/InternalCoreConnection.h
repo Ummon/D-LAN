@@ -100,7 +100,7 @@ namespace RCC
       void disconnected(bool asked); // 'asked' = true if disconnected by 'disconnectFromCore()'.
 
       void newState(const Protos::GUI::State&);
-      void newChatMessages(const Protos::GUI::EventChatMessages&);
+      void newChatMessages(const Protos::Common::ChatMessages&);
       void newLogMessages(const QList<QSharedPointer<LM::IEntry>>&);
 
       void browseResult(const Protos::GUI::BrowseResult& browseResult);

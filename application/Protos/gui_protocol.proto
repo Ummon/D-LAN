@@ -120,9 +120,7 @@ message State {
 // The messages are sorted from the oldest to the youngest.
 // Core -> GUI
 // id: 0x1011
-message EventChatMessages {
-   repeated Common.ChatMessage message = 1;
-}
+// Common.ChatMessages
 
 
 // Core -> GUI
