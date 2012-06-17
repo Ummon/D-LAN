@@ -115,7 +115,7 @@ void ChatModel::newChatMessages(const Protos::Common::ChatMessages& messages)
       const Common::Hash peerID(messages.message(i).peer_id().hash());
       Message message {
          peerID,
-         this->peerListModel.getNick(peerID),
+         this->peerListModel.getNick(peerID, Common::ProtoHelper::getStr(messages.message(i), &Protos::Common::ChatMessage::peer_nick)),
          QDateTime::fromMSecsSinceEpoch(messages.message(i).time()),
          Common::ProtoHelper::getStr(messages.message(i), &Protos::Common::ChatMessage::message)
       };

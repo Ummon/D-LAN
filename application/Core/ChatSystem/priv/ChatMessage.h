@@ -10,18 +10,15 @@
 
 #include <Common/Hash.h>
 
-#include <IChatMessage.h>
-
 namespace CS
 {
-   class ChatMessage : public IChatMessage
+   class ChatMessage
    {
    public:
-      ChatMessage(const QString& message, const Common::Hash& ownerID);
+      ChatMessage(const QString& message, const Common::Hash& ownerID, const QString& ownerNick);
       ChatMessage(const Protos::Common::ChatMessage& chatMessage);
 
       quint64 getID() const;
-      QString getMessage() const;
       QDateTime getTime() const;
 
       void fillProtoChatMessage(Protos::Common::ChatMessage& protoChatMessage) const;
@@ -33,6 +30,7 @@ namespace CS
       QString message;
       Common::Hash ownerID;
       QDateTime time; // UTC.
+      QString ownerNick;
    };
 }
 

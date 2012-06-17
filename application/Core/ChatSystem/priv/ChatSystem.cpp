@@ -69,7 +69,7 @@ ChatSystem::~ChatSystem()
   */
 void ChatSystem::send(const QString& message)
 {
-   QSharedPointer<ChatMessage> chatMessage = this->messages.add(message, this->peerManager->getSelf()->getID());
+   QSharedPointer<ChatMessage> chatMessage = this->messages.add(message, this->peerManager->getSelf()->getID(), this->peerManager->getSelf()->getNick());
 
    Protos::Common::ChatMessages protoChatMessages;
    Protos::Common::ChatMessage* protochatMessage = protoChatMessages.add_message();

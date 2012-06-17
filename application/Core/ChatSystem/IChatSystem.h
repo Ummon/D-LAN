@@ -27,8 +27,6 @@
 
 #include <Protos/common.pb.h>
 
-#include <Core/ChatSystem/IChatMessage.h>
-
 namespace CS
 {
    class IChatSystem : public QObject

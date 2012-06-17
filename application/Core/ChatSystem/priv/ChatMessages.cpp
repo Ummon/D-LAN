@@ -14,9 +14,9 @@ ChatMessages::ChatMessages() :
    changed(false)
 {}
 
-QSharedPointer<ChatMessage> ChatMessages::add(const QString& message, const Common::Hash& ownerID)
+QSharedPointer<ChatMessage> ChatMessages::add(const QString& message, const Common::Hash& ownerID, const QString& ownerNick)
 {
-   QSharedPointer<ChatMessage> mess = QSharedPointer<ChatMessage>(new ChatMessage(message, ownerID));
+   QSharedPointer<ChatMessage> mess = QSharedPointer<ChatMessage>(new ChatMessage(message, ownerID, ownerNick));
 
    this->insert(QList<QSharedPointer<ChatMessage>> { mess });
 

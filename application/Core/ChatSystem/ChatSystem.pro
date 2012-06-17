@@ -27,6 +27,5 @@ HEADERS += IChatSystem.h \
     Builder.h \
     priv/Constants.h \
     priv/Log.h \
-    IChatMessage.h \
     priv/ChatMessage.h \
     priv/ChatMessages.h

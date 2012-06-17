@@ -22,8 +22,8 @@ namespace CS
    public:
       ChatMessages();
 
-      QSharedPointer<ChatMessage> add(const QString& message, const Common::Hash& ownerID);
-      QList<QSharedPointer<ChatMessage>>  add(const Protos::Common::ChatMessages& chatMessages);
+      QSharedPointer<ChatMessage> add(const QString& message, const Common::Hash& ownerID, const QString& ownerNick);
+      QList<QSharedPointer<ChatMessage>> add(const Protos::Common::ChatMessages& chatMessages);
 
       QList<quint64> getLastMessageIDs(int n) const;
 
