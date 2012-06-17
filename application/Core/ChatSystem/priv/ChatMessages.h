@@ -48,7 +48,7 @@ namespace CS
       QList<QSharedPointer<ChatMessage>> getUnknownMessages(const Protos::Core::GetLastChatMessages& getLastChatMessage);
 
       void fillProtoChatMessages(Protos::Common::ChatMessages& chatMessages, int number = std::numeric_limits<int>::max()) const;
-      static void fillProtoChatMessages(Protos::Common::ChatMessages& chatMessages, const QList<QSharedPointer<ChatMessage>>& messages);
+      static QList<QSharedPointer<ChatMessage>> fillProtoChatMessages(Protos::Common::ChatMessages& chatMessages, const QList<QSharedPointer<ChatMessage>>& messages, int maxByteSize = std::numeric_limits<int>::max());
 
       void loadFromFile();
       void saveToFile() const;

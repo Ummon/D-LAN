@@ -114,12 +114,18 @@ void ChatSystem::received(const Common::Message& message)
    case Common::MessageHeader::CORE_GET_LAST_CHAT_MESSAGES:
       {
          const Protos::Core::GetLastChatMessages& getLastChatMessages = message.getMessage<Protos::Core::GetLastChatMessages>();
-         const QList<QSharedPointer<ChatMessage>>& messages = this->messages.getUnknownMessages(getLastChatMessages);
+         QList<QSharedPointer<ChatMessage>> messages = this->messages.getUnknownMessages(getLastChatMessages);
          if (!messages.isEmpty())
          {
+            static int MAX_SIZE = int(SETTINGS.get<quint32>("max_udp_datagram_size")) - Common::MessageHeader::HEADER_SIZE;
             Protos::Common::ChatMessages chatMessages;
-            ChatMessages::fillProtoChatMessages(chatMessages, messages);
-            this->networkListener->send(MessageHeader::CORE_CHAT_MESSAGES, chatMessages, message.getHeader().getSenderID());
+            do
+            {
+               messages = ChatMessages::fillProtoChatMessages(chatMessages, messages, MAX_SIZE);
+               this->networkListener->send(MessageHeader::CORE_CHAT_MESSAGES, chatMessages, message.getHeader().getSenderID());
+               chatMessages.Clear();
+
+            } while (!messages.isEmpty());
          }
       }
       break;

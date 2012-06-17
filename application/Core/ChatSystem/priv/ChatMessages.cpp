@@ -92,10 +92,24 @@ void ChatMessages::fillProtoChatMessages(Protos::Common::ChatMessages& chatMessa
       this->messages[i++]->fillProtoChatMessage(*chatMessages.add_message());
 }
 
-void ChatMessages::fillProtoChatMessages(Protos::Common::ChatMessages& chatMessages, const QList<QSharedPointer<ChatMessage>>& messages)
+/**
+  * Fill 'chatMessages' with the given messages. 'chatMessages' must not exceed 'maxByteSize'.
+  * @return The messages which aren't put in 'chatMessages'.
+  */
+QList<QSharedPointer<ChatMessage>> ChatMessages::fillProtoChatMessages(Protos::Common::ChatMessages& chatMessages, const QList<QSharedPointer<ChatMessage>>& messages, int maxByteSize)
 {
-   for (QListIterator<QSharedPointer<ChatMessage>> i(messages); i.hasNext();)
+   QList<QSharedPointer<ChatMessage>> result(messages);
+   for (QMutableListIterator<QSharedPointer<ChatMessage>> i(result); i.hasNext();)
+   {
       i.next()->fillProtoChatMessage(*chatMessages.add_message());
+      if (maxByteSize != std::numeric_limits<int>::max() && chatMessages.ByteSize() > maxByteSize)
+      {
+         chatMessages.mutable_message()->RemoveLast();
+         return result;
+      }
+      i.remove();
+   }
+   return result;
 }
 
 
