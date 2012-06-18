@@ -119,20 +119,13 @@ WidgetChat::WidgetChat(QSharedPointer<RCC::ICoreConnection> coreConnection, Peer
    this->ui->tblChat->setWordWrap(true);
    this->ui->tblChat->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
    this->ui->tblChat->horizontalHeader()->setVisible(false);
-   /*this->ui->tblChat->horizontalHeader()->setResizeMode(0, QHeaderView::ResizeToContents);
-   this->ui->tblChat->horizontalHeader()->setResizeMode(1, QHeaderView::ResizeToContents);*/
    this->ui->tblChat->horizontalHeader()->setResizeMode(QHeaderView::Stretch);
-
    this->ui->tblChat->verticalHeader()->setResizeMode(QHeaderView::ResizeToContents);
-   //this->ui->tblChat->verticalHeader()->setResizeMode(QHeaderView::Fixed);
-   //this->ui->tblChat->verticalHeader()->setDefaultSectionSize(QApplication::fontMetrics().height() + 2);
-
    this->ui->tblChat->verticalHeader()->setVisible(false);
    this->ui->tblChat->setSelectionBehavior(QAbstractItemView::SelectRows);
    this->ui->tblChat->setSelectionMode(QAbstractItemView::ExtendedSelection);
    this->ui->tblChat->setShowGrid(false);
    this->ui->tblChat->setAutoScroll(false);
-   this->ui->tblChat->setAlternatingRowColors(true);
 
    this->ui->tblChat->setEditTriggers(QAbstractItemView::AllEditTriggers);
 

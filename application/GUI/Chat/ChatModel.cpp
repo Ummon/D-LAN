@@ -68,18 +68,14 @@ QVariant ChatModel::data(const QModelIndex& index, int role) const
    switch (role)
    {
    case Qt::DisplayRole:
-      switch (index.column())
       {
-      case 0:
-         {
-            const Message& mess = this->messages[index.row()];
-            QString content;
-            content
-               .append(mess.dateTime.toString("[HH:mm:ss] "))
-               .append("<b>").append(mess.nick).append("</b>: ")
-               .append(mess.message);
-            return content;
-         }
+         const Message& mess = this->messages[index.row()];
+         QString content;
+         content
+            .append(mess.dateTime.toString("[HH:mm:ss] "))
+            .append("<b>").append(mess.nick).append("</b>: ")
+            .append(mess.message);
+         return content;
       }
       break;
    }
