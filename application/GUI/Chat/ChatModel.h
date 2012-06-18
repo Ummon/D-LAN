@@ -24,7 +24,6 @@
 #include <QDateTime>
 #include <QList>
 #include <QSize>
-#include <QMap>
 
 #include <Protos/gui_protocol.pb.h>
 
@@ -51,9 +50,9 @@ namespace GUI
       QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const;
       Qt::ItemFlags flags(const QModelIndex& index) const;
 
-      inline QSize getCachedSize(const QModelIndex& index) { return this->cachedSizes.value(this->messages[index.row()].ID); }
-      inline void insertCachedSize(const QModelIndex& index, const QSize& size) { this->cachedSizes.insert(this->messages[index.row()].ID, size); }
-      inline void removeCachedSize(const QModelIndex& index) { this->cachedSizes.remove(this->messages[index.row()].ID); }
+      inline QSize getCachedSize(const QModelIndex& index) { return this->messages[index.row()].size; }
+      inline void insertCachedSize(const QModelIndex& index, const QSize& size) { this->messages[index.row()].size = size; }
+      inline void removeCachedSize(const QModelIndex& index) { this->messages[index.row()].size = QSize(); }
 
    private slots:
       void newChatMessages(const Protos::Common::ChatMessages& messages);
@@ -69,11 +68,10 @@ namespace GUI
          QString nick;
          QDateTime dateTime;
          QString message;
+         QSize size; // Ugly hack, we cache the rendered size to speed-up the method 'ChatDelegate::sizeHint'.
       };
 
       QList<Message> messages; // Always sorted by date-time.
-
-      QMap<quint64, QSize> cachedSizes; // See the comment for 'ChatDelegate::sizeHint'.
    };
 
 }

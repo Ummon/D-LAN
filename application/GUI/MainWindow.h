@@ -74,6 +74,7 @@ namespace GUI
       void coreDisconnected(bool forced);
 
       void tabMoved(int from, int to);
+      void subWindowActivated(QMdiSubWindow* window);
 
       void displayContextMenuPeers(const QPoint& point);
       void browse();

@@ -110,7 +110,7 @@ QSize	ChatDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelInd
 /////
 
 WidgetChat::WidgetChat(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel, QWidget* parent) :
-   QWidget(parent), ui(new Ui::WidgetChat), coreConnection(coreConnection), chatModel(coreConnection, peerListModel), autoScroll(true)
+   WidgetDocument(parent), ui(new Ui::WidgetChat), coreConnection(coreConnection), chatModel(coreConnection, peerListModel), autoScroll(true)
 {
    this->ui->setupUi(this);
 
@@ -206,12 +206,6 @@ void WidgetChat::copySelectedLineToClipboard()
    QApplication::clipboard()->setText(lines);
 }
 
-void WidgetChat::showEvent(QShowEvent* event)
-{
-   this->setNewMessageState(false);
-   this->ui->txtMessage->setFocus();
-}
-
 void WidgetChat::keyPressEvent(QKeyEvent* event)
 {
    // CTRL.
@@ -232,6 +226,12 @@ void WidgetChat::changeEvent(QEvent* event)
       this->ui->retranslateUi(this);
    else
       QWidget::changeEvent(event);
+}
+
+void WidgetChat::onActivate()
+{
+   this->setNewMessageState(false);
+   this->ui->txtMessage->setFocus();
 }
 
 void WidgetChat::setNewMessageState(bool newMessage)

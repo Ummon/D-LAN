@@ -80,7 +80,8 @@ SOURCES += main.cpp\
     Downloads/DownloadsModel.cpp \
     PeerList/PeerListDelegate.cpp \
     BusyIndicator.cpp \
-    Log/LogDelegate.cpp
+    Log/LogDelegate.cpp \
+    WidgetDocument.cpp
 
 HEADERS  += MainWindow.h \
     ../Protos/gui_protocol.pb.h \
@@ -124,7 +125,8 @@ HEADERS  += MainWindow.h \
     Taskbar/ITaskbarImpl.h \
     Taskbar/WinUtil.h \
     Taskbar/TaskbarTypes.h \
-    Log/LogDelegate.h
+    Log/LogDelegate.h \
+    WidgetDocument.h
 
 FORMS    += MainWindow.ui \
     StatusBar.ui \

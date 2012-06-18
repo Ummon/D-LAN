@@ -37,6 +37,7 @@ using namespace GUI;
 
 #include <Protos/gui_settings.pb.h>
 
+#include <Log.h>
 #include <Utils.h>
 
 void DirListDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
@@ -49,7 +50,7 @@ void DirListDelegate::paint(QPainter* painter, const QStyleOptionViewItem& optio
 /////
 
 WidgetSettings::WidgetSettings(QSharedPointer<RCC::ICoreConnection> coreConnection, DirListModel& sharedDirsModel, QWidget* parent) :
-   QWidget(parent), ui(new Ui::WidgetSettings), getAtLeastOneState(false), coreConnection(coreConnection), sharedDirsModel(sharedDirsModel), corePasswordDefined(false)
+   WidgetDocument(parent), ui(new Ui::WidgetSettings), getAtLeastOneState(false), coreConnection(coreConnection), sharedDirsModel(sharedDirsModel), corePasswordDefined(false)
 {
    this->ui->setupUi(this);
 
@@ -638,19 +639,17 @@ bool WidgetSettings::eventFilter(QObject* obj, QEvent* event)
    return QObject::eventFilter(obj, event);
 }
 
-void WidgetSettings::showEvent(QShowEvent* event)
-{
-   if (this->ui->tabWidget->isTabEnabled(0))
-      this->ui->tabWidget->setCurrentIndex(0);
-
-   QWidget::showEvent(event);
-}
-
 void WidgetSettings::changeEvent(QEvent* event)
 {
    if (event->type() == QEvent::LanguageChange)
       this->ui->retranslateUi(this);
    else
       QWidget::changeEvent(event);
+}
+
+void WidgetSettings::onActivate()
+{
+   if (this->ui->tabWidget->isTabEnabled(0))
+      this->ui->tabWidget->setCurrentIndex(0);
 }
 

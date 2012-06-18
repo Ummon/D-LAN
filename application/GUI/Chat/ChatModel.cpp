@@ -146,10 +146,6 @@ void ChatModel::newChatMessages(const Protos::Common::ChatMessages& messages)
    if (nbMessageToDelete > 0)
    {
       this->beginRemoveRows(QModelIndex(), 0, nbMessageToDelete - 1);
-
-      for (auto i = this->messages.begin(); i != this->messages.begin() + nbMessageToDelete; i++)
-         this->cachedSizes.remove(i->ID);
-
       this->messages.erase(this->messages.begin(), this->messages.begin() + nbMessageToDelete);
       this->endRemoveRows();
    }

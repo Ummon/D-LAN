@@ -42,6 +42,7 @@ using namespace GUI;
 #include <Common/Global.h>
 #include <Common/RemoteCoreController/Builder.h>
 
+#include <WidgetDocument.h>
 #include <TabButtons.h>
 #include <StatusBar.h>
 #include <Log.h>
@@ -74,6 +75,7 @@ MainWindow::MainWindow(QSharedPointer<RCC::ICoreConnection> coreConnection, QWid
    this->peerListModel.setSortType(static_cast<Protos::GUI::Settings::PeerSortType>(SETTINGS.get<quint32>("peer_sort_type")));
 
    this->ui->mdiArea->setOption(QMdiArea::DontMaximizeSubWindowOnActivation, true);
+   connect(this->ui->mdiArea, SIGNAL(subWindowActivated(QMdiSubWindow*)), this, SLOT(subWindowActivated(QMdiSubWindow*)));
 
    this->mdiAreaTabBar = this->ui->mdiArea->findChild<QTabBar*>();
    this->mdiAreaTabBar->setMovable(true);
@@ -280,6 +282,14 @@ void MainWindow::tabMoved(int, int)
 
    SETTINGS.set("windowOrder", values);
    SETTINGS.save();
+}
+
+void MainWindow::subWindowActivated(QMdiSubWindow* window)
+{
+   if (!window)
+      return;
+   if (WidgetDocument* document = dynamic_cast<WidgetDocument*>(window->widget()))
+      document->activate();
 }
 
 void MainWindow::displayContextMenuPeers(const QPoint& point)

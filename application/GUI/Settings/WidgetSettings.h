@@ -29,6 +29,7 @@
 
 #include <Settings/DirListModel.h>
 #include <Settings/AskNewPasswordDialog.h>
+#include <WidgetDocument.h>
 
 namespace Ui {
    class WidgetSettings;
@@ -43,7 +44,7 @@ namespace GUI
       void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const;
    };
 
-   class WidgetSettings : public QWidget
+   class WidgetSettings : public WidgetDocument
    {
       Q_OBJECT
 
@@ -105,10 +106,11 @@ namespace GUI
 
    protected:
       bool eventFilter(QObject* obj, QEvent* event);
-      void showEvent(QShowEvent* event);
       void changeEvent(QEvent* event);
 
    private:
+      void onActivate();
+
       Ui::WidgetSettings* ui;
 
       // To avoid to send a state (via 'saveCoreSettings()') without getting at least one state (via 'newState(..)').

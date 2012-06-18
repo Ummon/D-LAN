@@ -26,6 +26,7 @@
 
 #include <PeerList/PeerListModel.h>
 #include <Chat/ChatModel.h>
+#include <WidgetDocument.h>
 
 namespace Ui {
   class WidgetChat;
@@ -42,7 +43,7 @@ namespace GUI
 //      void setEditorData(QWidget* editor, const QModelIndex& index) const;
    };
 
-   class WidgetChat : public QWidget
+   class WidgetChat : public WidgetDocument
    {
       Q_OBJECT
    public:
@@ -59,11 +60,12 @@ namespace GUI
       void copySelectedLineToClipboard();
 
    protected:
-      void showEvent(QShowEvent* event);
       void keyPressEvent(QKeyEvent* event);
       void changeEvent(QEvent* event);
 
    private:
+      void onActivate();
+
       void setNewMessageState(bool newMessage);
 
       Ui::WidgetChat *ui;
