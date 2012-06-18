@@ -39,9 +39,6 @@ namespace Common
       Message(const Common::MessageHeader& header, google::protobuf::Message* message);
 
    public:
-      Message(MessageHeader::MessageType type, const QSharedPointer<google::protobuf::Message>& message);
-      Message(MessageHeader::MessageType type, google::protobuf::Message* message = nullptr);
-
       bool isNull() const;
 
       const MessageHeader& getHeader() const;
@@ -52,7 +49,6 @@ namespace Common
       static int writeMessageToBuffer(char* buffer, quint32 bufferSize, const MessageHeader& header, const google::protobuf::Message* message = 0);
       static int writeMessageToDevice(QIODevice* ioDevice, const MessageHeader& header, const google::protobuf::Message* message = 0);
 
-   public:
       /**
         * Read all the message, including header, from the given buffer.
         */

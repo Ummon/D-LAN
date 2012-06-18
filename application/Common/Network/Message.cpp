@@ -21,6 +21,9 @@ using namespace Common;
 
 #include <QIODevice>
 
+/**
+  * The 'Message' object take the ownership of the given protobuf message.
+  */
 Message::Message(const MessageHeader& header, google::protobuf::Message* message) :
    header(header), message(message)
 {
