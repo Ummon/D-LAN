@@ -41,20 +41,22 @@ void ChatDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, 
    QStyleOptionViewItemV4 optionV4(option);
    this->initStyleOption(&optionV4, index);
 
+   optionV4.state = option.state & (~QStyle::State_HasFocus);
+
    QStyle* style = optionV4.widget ? optionV4.widget->style() : QApplication::style();
 
    QTextDocument doc;
    doc.setHtml(optionV4.text);
    doc.setTextWidth(optionV4.rect.width());
 
-   /// Painting item without text
    optionV4.text = QString();
-   style->drawControl(QStyle::CE_ItemViewItem, &optionV4, painter);
+   style->drawControl(QStyle::CE_ItemViewItem, &optionV4, painter, optionV4.widget);
 
    QAbstractTextDocumentLayout::PaintContext ctx;
+   ctx.palette = optionV4.palette;
 
-   // Highlighting text if item is selected
-   if (optionV4.state & QStyle::State_Selected)
+   // Highlighting text if item is selected.
+   if (optionV4.state & QStyle::State_Selected && optionV4.state & QStyle::State_Active)
        ctx.palette.setColor(QPalette::Text, optionV4.palette.color(QPalette::Active, QPalette::HighlightedText));
 
    QRect textRect = style->subElementRect(QStyle::SE_ItemViewItemText, &optionV4);
