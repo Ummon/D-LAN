@@ -58,9 +58,6 @@ namespace GUI
       void newChatMessages(const Protos::Common::ChatMessages& messages);
 
    private:
-      QSharedPointer<RCC::ICoreConnection> coreConnection;
-      PeerListModel& peerListModel;
-
       struct Message
       {
          quint64 ID;
@@ -70,6 +67,11 @@ namespace GUI
          QString message;
          QSize size; // Ugly hack, we cache the rendered size to speed-up the method 'ChatDelegate::sizeHint'.
       };
+
+      QString formatMessage(const Message& message) const;
+
+      QSharedPointer<RCC::ICoreConnection> coreConnection;
+      PeerListModel& peerListModel;
 
       QList<Message> messages; // Always sorted by date-time.
    };

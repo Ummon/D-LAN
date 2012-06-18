@@ -35,11 +35,11 @@ ChatModel::ChatModel(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerLi
 }
 
 /**
-  * Return a string with all the field: "<date> <nick> <message>".
+  * Return a string with all the field: "[<date>] <nick>: <message>".
   */
 QString ChatModel::getLineStr(int row) const
 {
-   return this->data(this->index(row, 0)).toString() % " " % this->data(this->index(row, 1)).toString() % " " % this->data(this->index(row, 2)).toString();
+   return this->formatMessage(this->messages[row]); // TODO: remove html markup.
 }
 
 bool ChatModel::isMessageIsOurs(int row) const
@@ -68,15 +68,7 @@ QVariant ChatModel::data(const QModelIndex& index, int role) const
    switch (role)
    {
    case Qt::DisplayRole:
-      {
-         const Message& mess = this->messages[index.row()];
-         QString content;
-         content
-            .append(mess.dateTime.toString("[HH:mm:ss] "))
-            .append("<b>").append(mess.nick).append("</b>: ")
-            .append(mess.message);
-         return content;
-      }
+         return this->formatMessage(this->messages[index.row()]);
       break;
    }
 
@@ -145,4 +137,12 @@ void ChatModel::newChatMessages(const Protos::Common::ChatMessages& messages)
       this->messages.erase(this->messages.begin(), this->messages.begin() + nbMessageToDelete);
       this->endRemoveRows();
    }
+}
+
+QString ChatModel::formatMessage(const Message& message) const
+{
+   return
+       message.dateTime.toString("[HH:mm:ss] ")
+      .append("<b>").append(message.nick).append("</b>: ")
+      .append(message.message);
 }
