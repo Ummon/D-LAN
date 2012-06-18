@@ -23,6 +23,8 @@
 #include <QString>
 #include <QDateTime>
 #include <QList>
+#include <QSize>
+#include <QMap>
 
 #include <Protos/gui_protocol.pb.h>
 
@@ -49,7 +51,9 @@ namespace GUI
       QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const;
       Qt::ItemFlags flags(const QModelIndex& index) const;
 
-      void newChatMessage(const Common::Hash& peerID, const QString& message);
+      inline QSize getCachedSize(const QModelIndex& index) { return this->cachedSizes.value(this->messages[index.row()].ID); }
+      inline void insertCachedSize(const QModelIndex& index, const QSize& size) { this->cachedSizes.insert(this->messages[index.row()].ID, size); }
+      inline void removeCachedSize(const QModelIndex& index) { this->cachedSizes.remove(this->messages[index.row()].ID); }
 
    private slots:
       void newChatMessages(const Protos::Common::ChatMessages& messages);
@@ -60,6 +64,7 @@ namespace GUI
 
       struct Message
       {
+         quint64 ID;
          Common::Hash peerID;
          QString nick;
          QDateTime dateTime;
@@ -67,6 +72,8 @@ namespace GUI
       };
 
       QList<Message> messages; // Always sorted by date-time.
+
+      QMap<quint64, QSize> cachedSizes; // See the comment for 'ChatDelegate::sizeHint'.
    };
 
 }

@@ -57,27 +57,34 @@ int ChatModel::rowCount(const QModelIndex& parent) const
 
 int ChatModel::columnCount(const QModelIndex& parent) const
 {
-   return 3;
+   return 1;
 }
 
 QVariant ChatModel::data(const QModelIndex& index, int role) const
 {
-   if (role != Qt::DisplayRole && role != Qt::EditRole || index.row() >= this->messages.size())
+   if (index.row() >= this->messages.size())
       return QVariant();
 
-   switch (index.column())
+   switch (role)
    {
-   case 0: return this->messages[index.row()].dateTime.toString("HH:mm:ss");
-   case 1:
+   case Qt::DisplayRole:
+      switch (index.column())
       {
-         const QString nick = this->messages[index.row()].nick;
-         if (nick.size() > MAX_NICK_LENGTH)
-            return nick.left(MAX_NICK_LENGTH-3).append("...");
-         return nick;
+      case 0:
+         {
+            const Message& mess = this->messages[index.row()];
+            QString content;
+            content
+               .append(mess.dateTime.toString("[HH:mm:ss] "))
+               .append("<b>").append(mess.nick).append("</b>: ")
+               .append(mess.message);
+            return content;
+         }
       }
-   case 2: return this->messages[index.row()].message;
-   default: return QVariant();
+      break;
    }
+
+   return QVariant();
 }
 
 Qt::ItemFlags ChatModel::flags(const QModelIndex& index) const
@@ -86,22 +93,6 @@ Qt::ItemFlags ChatModel::flags(const QModelIndex& index) const
       return Qt::ItemIsSelectable | Qt::ItemIsEnabled;
    else
       return Qt::ItemIsSelectable | Qt::ItemIsEditable | Qt::ItemIsEnabled;
-}
-
-void ChatModel::newChatMessage(const Common::Hash& peerID, const QString& message)
-{
-   QString nick = this->peerListModel.getNick(peerID);
-
-   this->beginInsertRows(QModelIndex(), this->messages.size(), this->messages.size());
-   this->messages << Message { peerID, nick, QDateTime::currentDateTime(), message };
-   this->endInsertRows();
-
-   if (static_cast<quint32>(this->messages.size()) > SETTINGS.get<quint32>("max_chat_message_displayed"))
-   {
-      this->beginRemoveRows(QModelIndex(), 0, 0);
-      this->messages.removeFirst();
-      this->endRemoveRows();
-   }
 }
 
 void ChatModel::newChatMessages(const Protos::Common::ChatMessages& messages)
@@ -117,6 +108,7 @@ void ChatModel::newChatMessages(const Protos::Common::ChatMessages& messages)
    {
       const Common::Hash peerID(messages.message(i).peer_id().hash());
       Message message {
+         messages.message(i).id(),
          peerID,
          this->peerListModel.getNick(peerID, Common::ProtoHelper::getStr(messages.message(i), &Protos::Common::ChatMessage::peer_nick)),
          QDateTime::fromMSecsSinceEpoch(messages.message(i).time()),
@@ -155,10 +147,10 @@ void ChatModel::newChatMessages(const Protos::Common::ChatMessages& messages)
    {
       this->beginRemoveRows(QModelIndex(), 0, nbMessageToDelete - 1);
 
-      QList<Message>::iterator i = this->messages.begin();
-      for (int n = 0; n < nbMessageToDelete && i != this->messages.end(); n++, i++);
-      this->messages.erase(this->messages.begin(), i);
+      for (auto i = this->messages.begin(); i != this->messages.begin() + nbMessageToDelete; i++)
+         this->cachedSizes.remove(i->ID);
 
+      this->messages.erase(this->messages.begin(), this->messages.begin() + nbMessageToDelete);
       this->endRemoveRows();
    }
 }

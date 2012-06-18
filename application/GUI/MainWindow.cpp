@@ -73,6 +73,8 @@ MainWindow::MainWindow(QSharedPointer<RCC::ICoreConnection> coreConnection, QWid
 
    this->peerListModel.setSortType(static_cast<Protos::GUI::Settings::PeerSortType>(SETTINGS.get<quint32>("peer_sort_type")));
 
+   this->ui->mdiArea->setOption(QMdiArea::DontMaximizeSubWindowOnActivation, true);
+
    this->mdiAreaTabBar = this->ui->mdiArea->findChild<QTabBar*>();
    this->mdiAreaTabBar->setMovable(true);
    this->mdiAreaTabBar->installEventFilter(this);

@@ -21,6 +21,9 @@
 using namespace GUI;
 
 #include <QMenu>
+#include <QTextDocument>
+#include <QAbstractTextDocumentLayout>
+#include <QPainter>
 #include <QClipboard>
 #include <QKeyEvent>
 #include <QScrollBar>
@@ -35,25 +38,74 @@ using namespace GUI;
 
 void ChatDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
-   QStyleOptionViewItemV4 newOption(option);
-   newOption.state = option.state & (~QStyle::State_HasFocus);
-   QStyledItemDelegate::paint(painter, newOption, index);
+   QStyleOptionViewItemV4 optionV4(option);
+   this->initStyleOption(&optionV4, index);
+
+   QStyle* style = optionV4.widget ? optionV4.widget->style() : QApplication::style();
+
+   QTextDocument doc;
+   doc.setHtml(optionV4.text);
+   doc.setTextWidth(optionV4.rect.width());
+
+   /// Painting item without text
+   optionV4.text = QString();
+   style->drawControl(QStyle::CE_ItemViewItem, &optionV4, painter);
+
+   QAbstractTextDocumentLayout::PaintContext ctx;
+
+   // Highlighting text if item is selected
+   if (optionV4.state & QStyle::State_Selected)
+       ctx.palette.setColor(QPalette::Text, optionV4.palette.color(QPalette::Active, QPalette::HighlightedText));
+
+   QRect textRect = style->subElementRect(QStyle::SE_ItemViewItemText, &optionV4);
+   painter->save();
+   painter->translate(textRect.topLeft());
+   painter->setClipRect(textRect.translated(-textRect.topLeft()));
+   doc.documentLayout()->draw(painter, ctx);
+   painter->restore();
 }
 
-QWidget* ChatDelegate::createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const
+/**
+  * This method is called for EACH rows when a new message is inserted, this can be very heavy.
+  * To reduce the latency we use a cache containing the size of each message.
+  */
+QSize	ChatDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
-   QLineEdit* line = new QLineEdit(parent);
-   line->setFrame(false);
-   line->setReadOnly(true);
-   return line;
+   ChatModel* model = const_cast<ChatModel*>(static_cast<const ChatModel*>(index.model()));
+   QSize cachedSize = model->getCachedSize(index);
+   if (cachedSize.isValid())
+   {
+      if (cachedSize.width() == option.rect.width())
+         return cachedSize;
+      else
+         model->removeCachedSize(index);
+   }
+
+   QStyleOptionViewItemV4 optionV4 = option;
+   initStyleOption(&optionV4, index);
+
+   QTextDocument doc;
+   doc.setHtml(optionV4.text);
+   doc.setTextWidth(optionV4.rect.width());
+   QSize size(optionV4.rect.width(), doc.size().height()); // Width should be "doc.idealWidth()".
+   model->insertCachedSize(index, size);
+   return size;
 }
 
-void ChatDelegate::setEditorData(QWidget* editor, const QModelIndex& index) const
-{
-   // Set editor data.
-   QLineEdit* line = static_cast<QLineEdit*>(editor);
-   line->setText(index.model()->data(index, Qt::DisplayRole).toString());
-}
+//QWidget* ChatDelegate::createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const
+//{
+//   QLineEdit* line = new QLineEdit(parent);
+//   line->setFrame(false);
+//   line->setReadOnly(true);
+//   return line;
+//}
+
+//void ChatDelegate::setEditorData(QWidget* editor, const QModelIndex& index) const
+//{
+//   // Set editor data.
+//   QLineEdit* line = static_cast<QLineEdit*>(editor);
+//   line->setText(index.model()->data(index, Qt::DisplayRole).toString());
+//}
 
 /////
 
@@ -64,15 +116,16 @@ WidgetChat::WidgetChat(QSharedPointer<RCC::ICoreConnection> coreConnection, Peer
 
    this->ui->tblChat->setModel(&this->chatModel);
    this->ui->tblChat->setItemDelegate(&this->chatDelegate);
+   this->ui->tblChat->setWordWrap(true);
    this->ui->tblChat->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
    this->ui->tblChat->horizontalHeader()->setVisible(false);
-   this->ui->tblChat->horizontalHeader()->setResizeMode(0, QHeaderView::ResizeToContents);
-   this->ui->tblChat->horizontalHeader()->setResizeMode(1, QHeaderView::ResizeToContents);
-   this->ui->tblChat->horizontalHeader()->setResizeMode(2, QHeaderView::Stretch);
+   /*this->ui->tblChat->horizontalHeader()->setResizeMode(0, QHeaderView::ResizeToContents);
+   this->ui->tblChat->horizontalHeader()->setResizeMode(1, QHeaderView::ResizeToContents);*/
+   this->ui->tblChat->horizontalHeader()->setResizeMode(QHeaderView::Stretch);
 
-   //this->ui->tblChat->verticalHeader()->setResizeMode(QHeaderView::ResizeToContents);
-   this->ui->tblChat->verticalHeader()->setResizeMode(QHeaderView::Fixed);
-   this->ui->tblChat->verticalHeader()->setDefaultSectionSize(QApplication::fontMetrics().height() + 2);
+   this->ui->tblChat->verticalHeader()->setResizeMode(QHeaderView::ResizeToContents);
+   //this->ui->tblChat->verticalHeader()->setResizeMode(QHeaderView::Fixed);
+   //this->ui->tblChat->verticalHeader()->setDefaultSectionSize(QApplication::fontMetrics().height() + 2);
 
    this->ui->tblChat->verticalHeader()->setVisible(false);
    this->ui->tblChat->setSelectionBehavior(QAbstractItemView::SelectRows);
@@ -111,8 +164,6 @@ void WidgetChat::sendMessage()
    this->ui->txtMessage->setText(this->ui->txtMessage->text().trimmed());
    if (this->ui->txtMessage->text().isEmpty())
       return;
-
-   //static_cast<ChatModel*>(this->ui->tblChat->model())->newChatMessage(this->coreConnection->getRemoteID(), this->ui->txtMessage->text());
 
    this->coreConnection->sendChatMessage(this->ui->txtMessage->text());
    this->ui->txtMessage->clear();

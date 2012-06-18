@@ -68,7 +68,7 @@ message Settings {
    optional Common.Interface.Address.Protocol listen_any = 87 [default = IPv4];
 
    ///// ChatSystem /////
-   optional uint32 max_number_of_stored_chat_messages = 70 [default = 1000]; // When a chat message arrive we saved it into a queue. When a GUI connects this queue is sent.
+   optional uint32 max_number_of_stored_chat_messages = 70 [default = 500]; // When a chat message arrive we saved it into a queue. When a GUI connects this queue is sent.
    optional uint32 number_of_chat_messages_to_retrieve = 92 [default = 500]; // Periodically we ask to a random peer the last messages
 
    // [ms]. (2 seconds). Average time in second for everyone to know a new message: t = log2(n) * 'get_last_chat_messages_period' / 1000. Where n = number of peers.
