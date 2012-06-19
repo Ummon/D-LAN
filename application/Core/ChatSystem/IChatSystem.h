@@ -25,6 +25,8 @@
 #include <QString>
 #include <QSharedPointer>
 
+#include <Core/PeerManager/IPeer.h>
+
 #include <Protos/common.pb.h>
 
 namespace CS
@@ -44,7 +46,20 @@ namespace CS
       /**
         * Retrieve the last 'number' known message.
         */
-      virtual void getLastChatMessages(Protos::Common::ChatMessages& chatMessages, int number = std::numeric_limits<int>::max()) const = 0;
+      virtual void getLastChatMessages(Protos::Common::ChatMessages& chatMessages, int number = std::numeric_limits<int>::max(), const QString& room = QString()) const = 0;
+
+      struct ChatRoom
+      {
+         QString name;
+         QSet<PM::IPeer*> peers;
+         bool joined;
+      };
+
+      virtual QList<ChatRoom> getRooms() const = 0;
+
+      virtual void joinRoom(const QString& room) = 0;
+
+      virtual void leaveRoom(const QString& room) = 0;
 
    signals:
       /**

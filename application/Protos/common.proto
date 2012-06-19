@@ -82,6 +82,7 @@ message ChatMessage {
    optional Common.Hash peer_id = 3;
    optional uint64 time = 4; // In [ms] since Epoch.
    optional string peer_nick = 5;
+   optional string chat_room = 6;
 }
 
 message ChatMessages {

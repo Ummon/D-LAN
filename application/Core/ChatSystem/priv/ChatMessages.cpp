@@ -182,7 +182,7 @@ QList<QSharedPointer<ChatMessage>> ChatMessages::insert(const QList<QSharedPoint
       if (this->messages.size() != MAX_NUMBER_OF_STORED_CHAT_MESSAGES || j != 0) // We avoid to insert a message which will ne deleted right after.
       {
          insertedMessages.prepend(mess);
-         this->messageIDs.remove(mess->getID());
+         this->messageIDs.insert(mess->getID());
          this->messages.insert(j, mess);
       }
    }

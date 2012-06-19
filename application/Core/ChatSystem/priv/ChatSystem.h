@@ -24,6 +24,8 @@
 #include <QSharedPointer>
 #include <QLinkedList>
 #include <QTimer>
+#include <QSet>
+#include <QMap>
 
 #include <Common/Uncopyable.h>
 #include <Common/Network/MessageHeader.h>
@@ -46,20 +48,33 @@ namespace CS
       ~ChatSystem();
 
       void send(const QString& message);
-      void getLastChatMessages(Protos::Common::ChatMessages& chatMessages, int number = std::numeric_limits<int>::max()) const;
+      void getLastChatMessages(Protos::Common::ChatMessages& chatMessages, int number = std::numeric_limits<int>::max(), const QString& roomName = QString()) const;
+      QList<ChatRoom> getRooms() const;
+      void joinRoom(const QString& roomName);
+      void leaveRoom(const QString& roomName);
 
    private slots:
       void received(const Common::Message& message);
+      void IMAliveMessageToBeSend(Protos::Core::IMAlive& IMAliveMessage);
       void getLastChatMessages();
       void saveChatMessages();
 
    private:
+      void getLastChatMessages(const QList<PM::IPeer*>& peers, const QString& roomName = QString());
       LOG_INIT_H("ChatSystem");
 
       QSharedPointer<PM::IPeerManager> peerManager;
       QSharedPointer<NL::INetworkListener> networkListener;
 
       ChatMessages messages;
+
+      struct Room {
+         ChatMessages messages; // We may not know the message of not joined room.
+         QSet<PM::IPeer*> peers; // Do not include our ID.
+         bool joined;
+      };
+
+      QMap<QString, Room> rooms;
 
       QTimer saveChatMessagesTimer;
 

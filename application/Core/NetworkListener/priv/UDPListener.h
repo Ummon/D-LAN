@@ -72,6 +72,7 @@ namespace NL
 
    signals:
       void received(const Common::Message& message);
+      void IMAliveMessageToBeSend(Protos::Core::IMAlive& IMAliveMessage);
       void newFindResultMessage(const Protos::Common::FindResult& findResult);
 
    private slots:

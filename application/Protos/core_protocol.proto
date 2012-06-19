@@ -31,6 +31,8 @@ message IMAlive {
    
    optional uint64 tag = 5; // A random number, all responds ('ChunkOwned' message) must repeat this number.
    repeated Common.Hash chunk = 6; // The chunks the core wants to download. May be empty.
+
+   repeated string chat_rooms = 10;
 }
 
 // This message is only sent if at least one requested chunks is known.
@@ -54,7 +56,7 @@ message ChunksOwned {
 // Common.ChatMessages
 
 
-// Ask to a peer the 'n' last messages he knows.
+// Ask to a peer the 'n' last messages.
 // We can ask periodically to a random peer to be sure we got all the messages of the network.
 // For example the last 500 messages each second.
 // a -> b
@@ -62,6 +64,7 @@ message ChunksOwned {
 message GetLastChatMessages {
    required uint32 number = 1;
    repeated uint64 message_id = 2 [packed=true];
+   optional string chat_room = 3;
 }
 
 // This message is only sent if 'b' has some messages not contained in the given list.

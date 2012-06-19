@@ -22,6 +22,8 @@
 #include <QObject>
 #include <QSharedPointer>
 
+#include <Protos/core_protocol.pb.h>
+
 #include <Common/Network/Message.h>
 
 namespace NL
@@ -48,8 +50,8 @@ namespace NL
       virtual void send(MessageHeader::MessageType type, const google::protobuf::Message& message, const Common::Hash& peerID = Common::Hash()) = 0;
 
    signals:
-      // This signal is sent only for non-processed messages.
       void received(const Common::Message& message);
+      void IMAliveMessageToBeSend(Protos::Core::IMAlive& IMAliveMessage);
    };
 }
 #endif

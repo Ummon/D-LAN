@@ -193,6 +193,8 @@ void UDPListener::sendIMAliveMessage()
          chunkDownloader->rmPeer(this->peerManager->getSelf());
    }
 
+   emit IMAliveMessageToBeSend(IMAliveMessage);
+
    this->send(Common::MessageHeader::CORE_IM_ALIVE, IMAliveMessage);
 }
 
@@ -287,9 +289,10 @@ void UDPListener::processPendingMulticastDatagrams()
             }
             break;
 
-         default:
-            emit received(message);
+         default:;
          }
+
+         emit received(message);
       }
       catch(Common::ReadErrorException&)
       {

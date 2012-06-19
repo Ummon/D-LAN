@@ -40,6 +40,7 @@ NetworkListener::NetworkListener(
 {
    connect(&this->configManager, SIGNAL(configurationChanged(const QNetworkConfiguration&)), this, SLOT(rebindSockets()));
    connect(&this->uDPListener, SIGNAL(received(const Common::Message&)), this, SIGNAL(received(const Common::Message&)));
+   connect(&this->uDPListener, SIGNAL(IMAliveMessageToBeSend(Protos::Core::IMAlive)), this, SIGNAL(IMAliveMessageToBeSend(Protos::Core::IMAlive)));
 }
 
 NetworkListener::~NetworkListener()

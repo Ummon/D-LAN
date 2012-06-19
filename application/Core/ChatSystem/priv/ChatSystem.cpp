@@ -48,6 +48,7 @@ ChatSystem::ChatSystem(QSharedPointer<PM::IPeerManager> peerManager, QSharedPoin
    this->messages.loadFromFile();
 
    connect(this->networkListener.data(), SIGNAL(received(const Common::Message&)), this, SLOT(received(const Common::Message&)));
+   connect(this->networkListener.data(), SIGNAL(IMAliveMessageToBeSend(Protos::Core::IMAlive)), this, SLOT(IMAliveMessageToBeSend(Protos::Core::IMAlive)));
 
    connect(&this->getLastChatMessageTimer, SIGNAL(timeout()), this, SLOT(getLastChatMessages()));
    this->getLastChatMessageTimer.setInterval(SETTINGS.get<quint32>("get_last_chat_messages_period"));
@@ -81,9 +82,51 @@ void ChatSystem::send(const QString& message)
    this->networkListener->send(Common::MessageHeader::CORE_CHAT_MESSAGES, protoChatMessages);
 }
 
-void ChatSystem::getLastChatMessages(Protos::Common::ChatMessages& chatMessages, int number) const
+void ChatSystem::getLastChatMessages(Protos::Common::ChatMessages& chatMessages, int number, const QString& roomName) const
 {
-   this->messages.fillProtoChatMessages(chatMessages, number);
+   if (roomName.isNull())
+      this->messages.fillProtoChatMessages(chatMessages, number);
+   else
+   {
+      // If the room doesn't exist then 'room.messages' will be empty.
+      const Room& room = this->rooms.value(roomName);
+      room.messages.fillProtoChatMessages(chatMessages, number);
+   }
+}
+
+QList<IChatSystem::ChatRoom> ChatSystem::getRooms() const
+{
+   QList<ChatRoom> result;
+
+   for (QMapIterator<QString, Room> i(this->rooms); i.hasNext();)
+   {
+      auto room = i.next();
+      result << ChatRoom { room.key(), room.value().peers, room.value().joined };
+   }
+
+   return result;
+}
+
+void ChatSystem::joinRoom(const QString& roomName)
+{
+   Room& room = this->rooms[roomName];
+   room.joined = true;
+   this->getLastChatMessages(room.peers.toList(), roomName);
+}
+
+void ChatSystem::leaveRoom(const QString& roomName)
+{
+   if (this->rooms.contains(roomName))
+   {
+      Room& room = this->rooms[roomName];
+      if (room.joined)
+      {
+         if (room.peers.isEmpty())
+            this->rooms.remove(roomName);
+         else
+            room.joined = false;
+      }
+   }
 }
 
 /**
@@ -93,6 +136,36 @@ void ChatSystem::received(const Common::Message& message)
 {
    switch (message.getHeader().getType())
    {
+   // Update the known chat rooms from a 'IMAlive' message.
+   case Common::MessageHeader::CORE_IM_ALIVE:
+      {
+         const Protos::Core::IMAlive& IMAliveMessage = message.getMessage<Protos::Core::IMAlive>();
+         if (PM::IPeer* peer = this->peerManager->getPeer(message.getHeader().getSenderID()))
+         {
+            QSet<QString> roomsWithPeer;
+            for (int i = 0; i < IMAliveMessage.chat_rooms_size(); i++)
+            {
+               const QString& roomName = Common::ProtoHelper::getRepeatedStr(IMAliveMessage, &Protos::Core::IMAlive::chat_rooms, i);
+               roomsWithPeer.insert(roomName);
+               Room& room = this->rooms[roomName];
+               room.peers.insert(peer);
+            }
+
+            // We remove the peer from the rooms he is not.
+            for (QMutableMapIterator<QString, Room> i(this->rooms); i.hasNext();)
+            {
+               auto room = i.next();
+               if (!roomsWithPeer.remove(room.key()))
+               {
+                  room.value().peers.remove(peer);
+                  if (room.value().peers.isEmpty() && !room.value().joined)
+                     i.remove();
+               }
+            }
+         }
+      }
+      break;
+
    case Common::MessageHeader::CORE_CHAT_MESSAGES:
       {
          Protos::Common::ChatMessages chatMessages = message.getMessage<Protos::Common::ChatMessages>();
@@ -135,15 +208,43 @@ void ChatSystem::received(const Common::Message& message)
 }
 
 /**
+  * Fill the 'IMAliveMessage' with the chat rooms.
+  */
+void ChatSystem::IMAliveMessageToBeSend(Protos::Core::IMAlive& IMAliveMessage)
+{
+   for (QMapIterator<QString, Room> i(this->rooms); i.hasNext();)
+   {
+      auto room = i.next();
+      if (room.value().joined)
+         Common::ProtoHelper::addRepeatedStr(IMAliveMessage, &Protos::Core::IMAlive::add_chat_rooms, room.key());
+   }
+}
+
+/**
   * Ask to a random peer its last messages.
   */
 void ChatSystem::getLastChatMessages()
 {
-   static const quint32 N = SETTINGS.get<quint32>("number_of_chat_messages_to_retrieve");
+   this->getLastChatMessages(this->peerManager->getPeers());
 
-   const QList<PM::IPeer*>& peers = this->peerManager->getPeers();
+   for (QMapIterator<QString, Room> i(this->rooms); i.hasNext();)
+   {
+      auto room = i.next();
+      this->getLastChatMessages(room.value().peers.toList(), room.key());
+   }
+}
+
+void ChatSystem::saveChatMessages()
+{
+   this->messages.saveToFile();
+}
+
+void ChatSystem::getLastChatMessages(const QList<PM::IPeer*>& peers, const QString& roomName)
+{
    if (peers.isEmpty())
       return;
+
+   static const quint32 N = SETTINGS.get<quint32>("number_of_chat_messages_to_retrieve");
 
    const QList<quint64>& messageIDs = this->messages.getLastMessageIDs(N);
    Protos::Core::GetLastChatMessages getLastChatMessages;
@@ -152,9 +253,4 @@ void ChatSystem::getLastChatMessages()
       getLastChatMessages.add_message_id(i.next());
 
    this->networkListener->send(Common::MessageHeader::CORE_GET_LAST_CHAT_MESSAGES, getLastChatMessages, peers[this->mtrand.randInt(peers.size() - 1)]->getID());
-}
-
-void ChatSystem::saveChatMessages()
-{
-   this->messages.saveToFile();
 }

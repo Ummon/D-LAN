@@ -54,14 +54,14 @@ message Settings {
    optional uint32 multicast_group = 63 [default = 3960285976]; // IPv4: 236.13.43.24 / IPv6: ff0e:ec0d:2b18::
    optional string channel = 89 [default = "main"]; // Used with 'multicast_group' to define the IPv6 multicast group.
    optional uint32 multicast_ttl = 64 [default = 31];
-   optional uint32 max_udp_datagram_size = 65 [default = 8164]; // (~8 KiB). It doesn't include the IP+UDP header (28 bits).
+   optional uint32 max_udp_datagram_size = 65 [default = 16356]; // (~16 KiB). It doesn't include the IP+UDP header (28 bytes).
 
    // This is the max throughput allowed for the 'IMAlive' message for the whole network.
    // It means thats n * s / 'peer_imalive_period' must not exceed this value. Where n is the number of peer and s the size of the 'IMAlive' message.
    // The 'IMAlive' message size may vary from ~100 bytes to ~'max_udp_datagram_size' depending the number of hashes in it.
    optional uint32 max_imalive_throughput = 91 [default = 1048576]; // [B/s]. (1 MiB/s).
 
-   optional uint32 udp_buffer_size = 66 [default = 81640]; // (10 * 8KiB).
+   optional uint32 udp_buffer_size = 66 [default = 163840]; // (10 * 16KiB).
    optional uint32 max_number_of_search_result_to_send = 68 [default = 300];
    optional uint32 max_number_of_result_shown = 69 [default = 5000]; // For one search we accept a maximum of 5000 results.
    optional string listen_address = 86 [default = ""]; // If address is empty then listen to any adresses, in this case the protocol is given by 'listenAny'.
