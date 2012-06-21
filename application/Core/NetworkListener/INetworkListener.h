@@ -47,7 +47,7 @@ namespace NL
       /**
         * Send a message to a particular peer, if the peer ID isn't given the message is sent to everyone.
         */
-      virtual void send(MessageHeader::MessageType type, const google::protobuf::Message& message, const Common::Hash& peerID = Common::Hash()) = 0;
+      virtual void send(Common::MessageHeader::MessageType type, const google::protobuf::Message& message, const Common::Hash& peerID = Common::Hash()) = 0;
 
    signals:
       void received(const Common::Message& message);

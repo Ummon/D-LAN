@@ -105,12 +105,8 @@ namespace Common
    };
 }
 
-/***** Definitions *****/
-using namespace Common;
-
-
 template <typename T>
-T Settings::get(const QString& name) const
+T Common::Settings::get(const QString& name) const
 {
    QMutexLocker locker(&this->mutex);
 
@@ -130,7 +126,7 @@ T Settings::get(const QString& name) const
 }
 
 template <typename T>
-QList<T> Settings::getRepeated(const QString& name) const
+QList<T> Common::Settings::getRepeated(const QString& name) const
 {
    QMutexLocker locker(&this->mutex);
 

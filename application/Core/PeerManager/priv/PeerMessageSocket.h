@@ -75,7 +75,7 @@ namespace PM
 
       Common::Hash getRemotePeerID() const;
 
-      void send(MessageHeader::MessageType type, const google::protobuf::Message& message);
+      void send(Common::MessageHeader::MessageType type, const google::protobuf::Message& message);
 
       bool isActive() const;
       void setActive();

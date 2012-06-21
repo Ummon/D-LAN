@@ -40,7 +40,7 @@ NetworkListener::NetworkListener(
 {
    connect(&this->configManager, SIGNAL(configurationChanged(const QNetworkConfiguration&)), this, SLOT(rebindSockets()));
    connect(&this->uDPListener, SIGNAL(received(const Common::Message&)), this, SIGNAL(received(const Common::Message&)));
-   connect(&this->uDPListener, SIGNAL(IMAliveMessageToBeSend(Protos::Core::IMAlive)), this, SIGNAL(IMAliveMessageToBeSend(Protos::Core::IMAlive)));
+   connect(&this->uDPListener, SIGNAL(IMAliveMessageToBeSend(Protos::Core::IMAlive&)), this, SIGNAL(IMAliveMessageToBeSend(Protos::Core::IMAlive&)));
 }
 
 NetworkListener::~NetworkListener()
@@ -60,7 +60,7 @@ void NetworkListener::rebindSockets()
    this->tCPListener.rebindSockets();
 }
 
-void NetworkListener::send(MessageHeader::MessageType type, const google::protobuf::Message& message, const Common::Hash& peerID)
+void NetworkListener::send(Common::MessageHeader::MessageType type, const google::protobuf::Message& message, const Common::Hash& peerID)
 {
    if (peerID.isNull())
       this->uDPListener.send(type, message);

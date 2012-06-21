@@ -82,12 +82,8 @@ namespace CoreSpace
    };
 }
 
-
-/***** Definitions *****/
-using namespace CoreSpace;
-
 template <typename T>
-void Core::checkSetting(const QString& name, T min, T max)
+void CoreSpace::Core::checkSetting(const QString& name, T min, T max)
 {
    T actualValue = SETTINGS.get<T>(name);
    T newValue;

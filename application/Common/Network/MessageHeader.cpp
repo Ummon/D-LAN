@@ -116,6 +116,8 @@ QString MessageHeader::messToStr(MessageType type)
    case GUI_MOVE_DOWNLOADS: return "MOVE_DOWNLOADS";
    case GUI_DOWNLOAD: return "DOWNLOAD";
    case GUI_CHAT_MESSAGE: return "CHAT_MESSAGE";
+   case GUI_JOIN_ROOM: return "LEAVE_ROOM";
+   case GUI_LEAVE_ROOM: return "JOIN_ROOM";
    case GUI_REFRESH: return "REFRESH";
    case GUI_REFRESH_NETWORK_INTERFACES: return "REFRESH_NETWORK_INTERFACES";
    default: return "<UNKNOWN_MESSAGE_TYPE>";

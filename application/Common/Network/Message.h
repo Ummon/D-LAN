@@ -85,7 +85,7 @@ const T& Common::Message::getMessage() const
   * @exception ReadErrorException
   */
 template <typename T>
-Message Common::Message::readMessageBody(const MessageHeader& header, T source)
+Common::Message Common::Message::readMessageBody(const Common::MessageHeader& header, T source)
 {
    switch (header.getType())
    {
@@ -126,6 +126,8 @@ Message Common::Message::readMessageBody(const MessageHeader& header, T source)
    case MessageHeader::GUI_MOVE_DOWNLOADS:               return readMessageBody<Protos::GUI::MoveDownloads>          (header, source);
    case MessageHeader::GUI_DOWNLOAD:                     return readMessageBody<Protos::GUI::Download>               (header, source);
    case MessageHeader::GUI_CHAT_MESSAGE:                 return readMessageBody<Protos::GUI::ChatMessage>            (header, source);
+   case MessageHeader::GUI_JOIN_ROOM:                    return readMessageBody<Protos::GUI::JoinRoom>               (header, source);
+   case MessageHeader::GUI_LEAVE_ROOM:                   return readMessageBody<Protos::GUI::LeaveRoom>              (header, source);
    case MessageHeader::GUI_REFRESH:                      return readMessageBody<Protos::Common::Null>                (header, source);
    case MessageHeader::GUI_REFRESH_NETWORK_INTERFACES:   return readMessageBody<Protos::Common::Null>                (header, source);
 
@@ -137,7 +139,7 @@ Message Common::Message::readMessageBody(const MessageHeader& header, T source)
   * @exception ReadErrorException
   */
 template <typename T>
-Message Common::Message::readMessageBody(const MessageHeader& header, const char* buffer)
+Common::Message Common::Message::readMessageBody(const Common::MessageHeader& header, const char* buffer)
 {
    T* message = new T();
    if (!message->ParseFromArray(buffer, header.getSize()))
@@ -152,7 +154,7 @@ Message Common::Message::readMessageBody(const MessageHeader& header, const char
   * @exception ReadErrorException
   */
 template <typename T>
-Message Common::Message::readMessageBody(const MessageHeader& header, ZeroCopyInputStreamQIODevice* stream)
+Common::Message Common::Message::readMessageBody(const Common::MessageHeader& header, ZeroCopyInputStreamQIODevice* stream)
 {
    T* message = new T();
    if (!message->ParseFromBoundedZeroCopyStream(stream, header.getSize()))

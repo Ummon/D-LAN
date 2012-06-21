@@ -71,7 +71,7 @@ void CoreService::stop()
 
 void CoreService::processUserInput(QString input)
 {
-   if (input == ConsoleReader::QUIT_COMMAND)
+   if (input == Common::ConsoleReader::QUIT_COMMAND)
    {
       this->stop();
    }
@@ -91,7 +91,7 @@ void CoreService::printCommands()
 {
    QTextStream out(stdout);
    out << "Commands:" << endl
-       << " - " << ConsoleReader::QUIT_COMMAND << " : stop the core" << endl
+       << " - " << Common::ConsoleReader::QUIT_COMMAND << " : stop the core" << endl
        << " - dumpwi : dump the word index in the log as a warning" << endl
        << " - printsf : print the similar files in the log as a warning" << endl;
 }

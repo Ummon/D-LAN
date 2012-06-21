@@ -48,7 +48,7 @@ namespace GUI
       int rowCount(const QModelIndex& parent = QModelIndex()) const;
       int columnCount(const QModelIndex& parent = QModelIndex()) const;
       QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const;
-      Qt::ItemFlags flags(const QModelIndex& index) const;
+      //Qt::ItemFlags flags(const QModelIndex& index) const;
 
       inline QSize getCachedSize(const QModelIndex& index) { return this->messages[index.row()].size; }
       inline void insertCachedSize(const QModelIndex& index, const QSize& size) { this->messages[index.row()].size = size; }

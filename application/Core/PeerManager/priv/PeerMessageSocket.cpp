@@ -118,7 +118,7 @@ Common::Hash PeerMessageSocket::getRemotePeerID() const
    return this->MessageSocket::getRemoteID();
 }
 
-void PeerMessageSocket::send(MessageHeader::MessageType type, const google::protobuf::Message& message)
+void PeerMessageSocket::send(Common::MessageHeader::MessageType type, const google::protobuf::Message& message)
 {
    if (!this->isListening())
       return;

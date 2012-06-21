@@ -85,7 +85,7 @@ UDPListener::UDPListener(
 /**
   * Send an UDP unicast datagram to the given peer.
   */
-void UDPListener::send(MessageHeader::MessageType type, const google::protobuf::Message& message, const Common::Hash& peerID)
+void UDPListener::send(Common::MessageHeader::MessageType type, const google::protobuf::Message& message, const Common::Hash& peerID)
 {
    PM::IPeer* peer = this->peerManager->getPeer(peerID);
    if (!peer)
@@ -109,7 +109,7 @@ void UDPListener::send(MessageHeader::MessageType type, const google::protobuf::
 /**
   * Send an UDP multicast message.
   */
-void UDPListener::send(MessageHeader::MessageType type, const google::protobuf::Message& message)
+void UDPListener::send(Common::MessageHeader::MessageType type, const google::protobuf::Message& message)
 {
    int messageSize;
    if (!(messageSize = this->writeMessageToBuffer(type, message)))
@@ -135,7 +135,7 @@ void UDPListener::sendIMAliveMessage()
 {
    Protos::Core::IMAlive IMAliveMessage;
    IMAliveMessage.set_version(PROTOCOL_VERSION);
-   ProtoHelper::setStr(IMAliveMessage, &Protos::Core::IMAlive::set_core_version, Common::Global::getVersionFull());
+   Common::ProtoHelper::setStr(IMAliveMessage, &Protos::Core::IMAlive::set_core_version, Common::Global::getVersionFull());
    IMAliveMessage.set_port(this->UNICAST_PORT);
 
    const QString& nick = this->peerManager->getSelf()->getNick();
@@ -451,7 +451,7 @@ int UDPListener::writeMessageToBuffer(Common::MessageHeader::MessageType type, c
 {
    const Common::MessageHeader header(type, message.ByteSize(), this->getOwnID());
 
-   const int nbBytesWritten = Message::writeMessageToBuffer(this->buffer, this->MAX_UDP_DATAGRAM_PAYLOAD_SIZE, header, &message);
+   const int nbBytesWritten = Common::Message::writeMessageToBuffer(this->buffer, this->MAX_UDP_DATAGRAM_PAYLOAD_SIZE, header, &message);
    if (!nbBytesWritten)
       L_ERRO(QString("Datagram size too big: %1, max allowed: %2").arg(Common::MessageHeader::HEADER_SIZE + header.getSize()).arg(this->MAX_UDP_DATAGRAM_PAYLOAD_SIZE));
 

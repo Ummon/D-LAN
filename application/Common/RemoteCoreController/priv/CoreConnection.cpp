@@ -97,6 +97,16 @@ void CoreConnection::sendChatMessage(const QString& message)
    this->current()->sendChatMessage(message);
 }
 
+void CoreConnection::joinRoom(const QString& room)
+{
+   this->current()->joinRoom(room);
+}
+
+void CoreConnection::leaveRoom(const QString& room)
+{
+   this->current()->leaveRoom(room);
+}
+
 void CoreConnection::setCoreSettings(const Protos::GUI::CoreSettings settings)
 {
    this->current()->setCoreSettings(settings);

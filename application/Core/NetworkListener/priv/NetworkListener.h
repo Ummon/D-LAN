@@ -55,7 +55,7 @@ namespace NL
       void rebindSockets();
 
    public:
-      void send(MessageHeader::MessageType type, const google::protobuf::Message& message, const Common::Hash& peerID = Common::Hash());
+      void send(Common::MessageHeader::MessageType type, const google::protobuf::Message& message, const Common::Hash& peerID = Common::Hash());
 
    private:      
       LOG_INIT_H("NetworkListener");

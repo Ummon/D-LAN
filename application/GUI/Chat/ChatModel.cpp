@@ -75,13 +75,13 @@ QVariant ChatModel::data(const QModelIndex& index, int role) const
    return QVariant();
 }
 
-Qt::ItemFlags ChatModel::flags(const QModelIndex& index) const
+/*Qt::ItemFlags ChatModel::flags(const QModelIndex& index) const
 {
    if (index.column() == 0)
       return Qt::ItemIsSelectable | Qt::ItemIsEnabled;
    else
       return Qt::ItemIsSelectable | Qt::ItemIsEditable | Qt::ItemIsEnabled;
-}
+}*/
 
 void ChatModel::newChatMessages(const Protos::Common::ChatMessages& messages)
 {

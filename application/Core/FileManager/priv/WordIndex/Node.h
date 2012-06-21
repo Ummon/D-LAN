@@ -133,24 +133,21 @@ namespace FM
    };
 }
 
-/***** Definition *****/
-using namespace FM;
-
 template <typename T>
-Node<T>::Node()
+FM::Node<T>::Node()
 {
 }
 
 
 template <typename T>
-Node<T>::~Node()
+FM::Node<T>::~Node()
 {
    for (QListIterator<Node<T>*>i(this->children); i.hasNext();)
       delete i.next();
 }
 
 template <typename T>
-void Node<T>::addItem(const QStringRef& word, const T& item)
+void FM::Node<T>::addItem(const QStringRef& word, const T& item)
 {
    if (this->children.isEmpty())
    {
@@ -202,7 +199,7 @@ void Node<T>::addItem(const QStringRef& word, const T& item)
 }
 
 template <typename T>
-void Node<T>::rmItem(const QString& word, const T& item)
+void FM::Node<T>::rmItem(const QString& word, const T& item)
 {
    QPair<Node<T>*, int> nodes = this->getNode(word, true);
    if (!nodes.first)
@@ -222,7 +219,7 @@ void Node<T>::rmItem(const QString& word, const T& item)
 }
 
 template <typename T>
-QList<NodeResult<T>> Node<T>::search(const QString& word, bool alsoFromSubNodes, int maxNbResult) const
+QList<FM::NodeResult<T>> FM::Node<T>::search(const QString& word, bool alsoFromSubNodes, int maxNbResult) const
 {
    QPair<Node<T>*, int> nodes = this->getNode(word, !alsoFromSubNodes);
    if (!nodes.first)
@@ -232,7 +229,7 @@ QList<NodeResult<T>> Node<T>::search(const QString& word, bool alsoFromSubNodes,
 }
 
 template <typename T>
-QString Node<T>::toStringDebug() const
+QString FM::Node<T>::toStringDebug() const
 {
    static const int INDENTATION = 3;
    struct SubNode
@@ -260,13 +257,13 @@ QString Node<T>::toStringDebug() const
 }
 
 template <typename T>
-Node<T>::Node(const QString& part) :
+FM::Node<T>::Node(const QString& part) :
    part(part)
 {
 }
 
 template <typename T>
-Node<T>::Node(const QString& part, const T& item) :
+FM::Node<T>::Node(const QString& part, const T& item) :
    part(part)
 {
    this->items << item;
@@ -276,7 +273,7 @@ Node<T>::Node(const QString& part, const T& item) :
   * Returns the node matching the given word as the 'QPair::second'th child of its parent 'QPair::first'.
   */
 template <typename T>
-QPair<Node<T>*, int> Node<T>::getNode(const QString& word, bool exactMatch) const
+QPair<FM::Node<T>*, int> FM::Node<T>::getNode(const QString& word, bool exactMatch) const
 {
    QString part = word;
    Node<T>* currentParent = const_cast<Node<T>*>(this);
@@ -311,7 +308,7 @@ QPair<Node<T>*, int> Node<T>::getNode(const QString& word, bool exactMatch) cons
 }
 
 template <typename T>
-QList<NodeResult<T>> Node<T>::getItems(bool alsoFromSubNodes, int maxNbResult) const
+QList<FM::NodeResult<T>> FM::Node<T>::getItems(bool alsoFromSubNodes, int maxNbResult) const
 {
    QList<NodeResult<T>> result;
    QList<Node<T>*> nodesToVisit;
@@ -343,7 +340,7 @@ QList<NodeResult<T>> Node<T>::getItems(bool alsoFromSubNodes, int maxNbResult) c
   * Try to remove the i'th child.
   */
 template <typename T>
-void Node<T>::remove(int i)
+void FM::Node<T>::remove(int i)
 {
    if (i >= this->children.size())
       return;

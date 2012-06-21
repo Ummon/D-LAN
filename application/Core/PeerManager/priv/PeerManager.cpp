@@ -110,7 +110,7 @@ Peer* PeerManager::getPeer_(const Common::Hash& ID)
    return 0;
 }
 
-IPeer* PeerManager::createPeer(const Hash& ID, const QString& nick)
+IPeer* PeerManager::createPeer(const Common::Hash& ID, const QString& nick)
 {
    IPeer* existingPeer = this->getPeer(ID);
    if (existingPeer)

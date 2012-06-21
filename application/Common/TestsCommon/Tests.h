@@ -45,6 +45,9 @@ private slots:
    // SortedList class.
    void sortedList();
 
+   // IndexedArray class.
+   void indexedArray();
+
    // TransferRateCalculator
    void transferRateCalculator();
 

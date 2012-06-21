@@ -81,7 +81,9 @@ SOURCES += main.cpp\
     PeerList/PeerListDelegate.cpp \
     BusyIndicator.cpp \
     Log/LogDelegate.cpp \
-    WidgetDocument.cpp
+    WidgetDocument.cpp \
+    Chat/RoomsModel.cpp \
+    Chat/RoomsDelegate.cpp
 
 HEADERS  += MainWindow.h \
     ../Protos/gui_protocol.pb.h \
@@ -126,7 +128,9 @@ HEADERS  += MainWindow.h \
     Taskbar/WinUtil.h \
     Taskbar/TaskbarTypes.h \
     Log/LogDelegate.h \
-    WidgetDocument.h
+    WidgetDocument.h \
+    Chat/RoomsModel.h \
+    Chat/RoomsDelegate.h
 
 FORMS    += MainWindow.ui \
     StatusBar.ui \

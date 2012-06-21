@@ -137,7 +137,6 @@ WidgetChat::WidgetChat(QSharedPointer<RCC::ICoreConnection> coreConnection, Peer
    connect(&this->chatModel, SIGNAL(rowsInserted(const QModelIndex&, int, int)), this, SLOT(newRows(const QModelIndex&, int, int)));
    connect(this->ui->tblChat->verticalScrollBar(), SIGNAL(valueChanged(int)), this, SLOT(scrollChanged(int)));
 
-   connect(this->ui->butSend, SIGNAL(clicked()), this, SLOT(sendMessage()));
    connect(this->ui->txtMessage, SIGNAL(returnPressed()), this, SLOT(sendMessage()));
 }
 
@@ -156,11 +155,11 @@ void WidgetChat::installEventFilterOnInput(QObject* filterObj)
 
 void WidgetChat::sendMessage()
 {
-   this->ui->txtMessage->setText(this->ui->txtMessage->text().trimmed());
-   if (this->ui->txtMessage->text().isEmpty())
+   //this->ui->txtMessage->setText(this->ui->txtMessage->text().trimmed());
+   if (this->ui->txtMessage->toHtml().isEmpty())
       return;
 
-   this->coreConnection->sendChatMessage(this->ui->txtMessage->text());
+   this->coreConnection->sendChatMessage(this->ui->txtMessage->toHtml());
    this->ui->txtMessage->clear();
 }
 

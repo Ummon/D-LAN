@@ -186,9 +186,7 @@ namespace Common
    };
 }
 
-using namespace Common;
-
-inline void Hash::dereference()
+inline void Common::Hash::dereference()
 {
    if (this->data)
    {
@@ -198,7 +196,7 @@ inline void Hash::dereference()
    }
 }
 
-inline void Hash::newData()
+inline void Common::Hash::newData()
 {
    this->data = new SharedData;
    this->data->nbRef = 1;

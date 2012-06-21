@@ -401,7 +401,7 @@ void RemoteConnection::onNewMessage(const Common::Message& message)
    case Common::MessageHeader::GUI_LANGUAGE:
       {
          const Protos::GUI::Language& langMessage = message.getMessage<Protos::GUI::Language>();
-         emit languageDefined(ProtoHelper::getLang(langMessage.language()));
+         emit languageDefined(Common::ProtoHelper::getLang(langMessage.language()));
       }
       break;
 
@@ -454,7 +454,7 @@ void RemoteConnection::onNewMessage(const Common::Message& message)
 
          QString currentAddressToListenTo = SETTINGS.get<QString>("listen_address");
          Protos::Common::Interface::Address::Protocol currentProtocol = static_cast<Protos::Common::Interface::Address::Protocol>(SETTINGS.get<quint32>("listen_any"));
-         const QString& newAddressToListenTo = ProtoHelper::getStr(coreSettingsMessage, &Protos::GUI::CoreSettings::listen_address);
+         const QString& newAddressToListenTo = Common::ProtoHelper::getStr(coreSettingsMessage, &Protos::GUI::CoreSettings::listen_address);
          Protos::Common::Interface::Address::Protocol newProtocol = coreSettingsMessage.listen_any();
          SETTINGS.set("listen_address", newAddressToListenTo);
          SETTINGS.set("listen_any", static_cast<quint32>(newProtocol));

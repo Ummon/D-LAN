@@ -48,7 +48,7 @@ ChatSystem::ChatSystem(QSharedPointer<PM::IPeerManager> peerManager, QSharedPoin
    this->messages.loadFromFile();
 
    connect(this->networkListener.data(), SIGNAL(received(const Common::Message&)), this, SLOT(received(const Common::Message&)));
-   connect(this->networkListener.data(), SIGNAL(IMAliveMessageToBeSend(Protos::Core::IMAlive)), this, SLOT(IMAliveMessageToBeSend(Protos::Core::IMAlive)));
+   connect(this->networkListener.data(), SIGNAL(IMAliveMessageToBeSend(Protos::Core::IMAlive&)), this, SLOT(IMAliveMessageToBeSend(Protos::Core::IMAlive&)));
 
    connect(&this->getLastChatMessageTimer, SIGNAL(timeout()), this, SLOT(getLastChatMessages()));
    this->getLastChatMessageTimer.setInterval(SETTINGS.get<quint32>("get_last_chat_messages_period"));
@@ -195,7 +195,7 @@ void ChatSystem::received(const Common::Message& message)
             do
             {
                messages = ChatMessages::fillProtoChatMessages(chatMessages, messages, MAX_SIZE);
-               this->networkListener->send(MessageHeader::CORE_CHAT_MESSAGES, chatMessages, message.getHeader().getSenderID());
+               this->networkListener->send(Common::MessageHeader::CORE_CHAT_MESSAGES, chatMessages, message.getHeader().getSenderID());
                chatMessages.Clear();
 
             } while (!messages.isEmpty());

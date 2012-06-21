@@ -67,6 +67,8 @@ HEADERS += Hashes.h \
     SortedList.h \
     StringUtils.h \
     BloomFilter.h \
-    Network/Message.h
+    Network/Message.h \
+    IndexedArray.h \
+    SortedArray.h
 
 

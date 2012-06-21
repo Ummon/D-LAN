@@ -37,7 +37,6 @@ ChatMessage::ChatMessage(const Protos::Common::ChatMessage& chatMessage) :
    time(chatMessage.has_time() ? QDateTime::fromMSecsSinceEpoch(chatMessage.time()) : QDateTime::currentDateTimeUtc()),
    ownerNick(chatMessage.has_peer_nick() ? Common::ProtoHelper::getStr(chatMessage, &Protos::Common::ChatMessage::peer_nick) : QString())
 {
-
 }
 
 quint64 ChatMessage::getID() const

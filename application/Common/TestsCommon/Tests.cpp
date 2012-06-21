@@ -36,6 +36,7 @@
 #include <ZeroCopyStreamQIODevice.h>
 #include <ProtoHelper.h>
 #include <SortedList.h>
+#include <IndexedArray.h>
 #include <BloomFilter.h>
 #include <TransferRateCalculator.h>
 using namespace Common;
@@ -192,6 +193,14 @@ void Tests::sortedList()
    list.clear();
 
    QVERIFY(list.getList().isEmpty());
+}
+
+void Tests::indexedArray()
+{
+   IndexedArray<Common::Hash, QString> array;
+   Hash h = Hash::fromStr("2c583d414e4a9eb956228209b367e48f59078a4b");
+
+   //array.insert(h, "AAA");
 }
 
 void Tests::transferRateCalculator()

@@ -107,6 +107,20 @@ void InternalCoreConnection::sendChatMessage(const QString& message)
    this->send(Common::MessageHeader::GUI_CHAT_MESSAGE, chatMessage);
 }
 
+void InternalCoreConnection::joinRoom(const QString& room)
+{
+   Protos::GUI::JoinRoom joinRoomMessage;
+   Common::ProtoHelper::setStr(joinRoomMessage, &Protos::GUI::JoinRoom::set_name, room);
+   this->send(Common::MessageHeader::GUI_JOIN_ROOM, joinRoomMessage);
+}
+
+void InternalCoreConnection::leaveRoom(const QString& room)
+{
+   Protos::GUI::LeaveRoom leaveRoomMessage;
+   Common::ProtoHelper::setStr(leaveRoomMessage, &Protos::GUI::LeaveRoom::set_name, room);
+   this->send(Common::MessageHeader::GUI_LEAVE_ROOM, leaveRoomMessage);
+}
+
 void InternalCoreConnection::setCoreSettings(const Protos::GUI::CoreSettings settings)
 {
    this->send(Common::MessageHeader::GUI_SETTINGS, settings);
@@ -298,7 +312,7 @@ void InternalCoreConnection::tryToConnectToTheNextAddress()
 
 #ifndef DEBUG
    // If the address is local check if the core is launched, if not try to launch it.
-   if (Global::isLocal(address))
+   if (Common::Global::isLocal(address))
       this->coreStatus = CoreController::startCore(this->connectionInfo.port);
 #endif
 
@@ -344,7 +358,7 @@ void InternalCoreConnection::connectedAndAuthenticated()
 void InternalCoreConnection::sendCurrentLanguage()
 {
    Protos::GUI::Language langMess;
-   ProtoHelper::setLang(*langMess.mutable_language(), this->currentLanguage);
+   Common::ProtoHelper::setLang(*langMess.mutable_language(), this->currentLanguage);
    this->send(Common::MessageHeader::GUI_LANGUAGE, langMess);
 }
 
