@@ -19,7 +19,7 @@
 #ifndef COMMON_SORTARRAY_H
 #define COMMON_SORTARRAY_H
 
-#include <QList>
+#include <QSharedDataPointer>
 
 /**
   * @class Common::SortedArray
@@ -39,16 +39,18 @@ namespace Common
    template<typename T, int M = 7>
    class SortedArray
    {
-   public:
+   public:      
+      class NotFoundException {};
+      class InvalidMException {};
+
       SortedArray();
+      SortedArray(const SortedArray& other);
 
       int size() const;
       int insert(const T& value, bool* exists = nullptr);
       void remove(int index);
 
       bool contains(const T& value) const;
-
-      class NotFoundException {};
 
       int indexOf(const T& value) const;
 
@@ -79,23 +81,47 @@ namespace Common
       static void moveChild(Node* node1, int pos1, Node* node2, int pos2);
       static void insertChild(Node* child, Node* parent, int pos);
 
+      static Node* duplicateNode(Node* node);
+      static void deleteNode(Node* node);
+
       void add(Node* node, const T& e, Node* child = nullptr);
       Node* split(Node* node, const T& e, Node* child = nullptr);
 
-      Node* root;
+      struct SortedArrayData : public QSharedData
+      {
+         SortedArrayData() : root(new Node()) {}
+         SortedArrayData(const SortedArrayData& other) : root(duplicateNode(other.root)) {}
+         ~SortedArrayData() { deleteNode(this->root); }
+
+         Node* root;
+      };
+
+      QSharedDataPointer<SortedArrayData> d;
    };
 }
 
+/**
+  * @exception InvalidMException
+  */
 template <typename T, int M>
 Common::SortedArray<T, M>::SortedArray() :
-   root(new Node())
+   d(new SortedArrayData())
+{
+   // M must be an odd number.
+   if (M % 2 == 0)
+      throw InvalidMException();
+}
+
+template <typename T, int M>
+Common::SortedArray<T, M>::SortedArray(const SortedArray& other) :
+   d(other.d)
 {
 }
 
 template <typename T, int M>
 int Common::SortedArray<T, M>::size() const
 {
-   return this->root->size;
+   return this->d->root->size;
 }
 
 /**
@@ -107,7 +133,7 @@ template <typename T, int M>
 int Common::SortedArray<T, M>::insert(const T& value, bool* exists)
 {
    int position;
-   Node* node = getNode(this->root, value, position);
+   Node* node = getNode(this->d->root, value, position);
    if (position == -1)
       this->add(node, value);
    else
@@ -123,7 +149,7 @@ template <typename T, int M>
 bool Common::SortedArray<T, M>::contains(const T& value) const
 {
    int position;
-   getNode(this->root, value, position);
+   getNode(this->d->root, value, position);
    return position != -1;
 }
 
@@ -133,7 +159,7 @@ bool Common::SortedArray<T, M>::contains(const T& value) const
 template <typename T, int M>
 int Common::SortedArray<T, M>::indexOf(const T& value) const
 {
-   return indexOf(this->root, value, 0);
+   return indexOf(this->d->root, value, 0);
 }
 
 /**
@@ -151,10 +177,10 @@ const T& Common::SortedArray<T, M>::operator[](int index) const
 template <typename T, int M>
 T& Common::SortedArray<T, M>::operator[](int index)
 {
-   if (index >= this->root->size)
+   if (index >= this->d->root->size)
       throw NotFoundException();
 
-   return getFromIndex(this->root, index, 0);
+   return getFromIndex(this->d->root, index, 0);
 }
 
 template <typename T, int M>
@@ -309,6 +335,31 @@ void Common::SortedArray<T, M>::insertChild(Node* child, Node* parent, int pos)
    }
 }
 
+template <typename T, int M>
+typename Common::SortedArray<T, M>::Node* Common::SortedArray<T, M>::duplicateNode(Node* node)
+{
+   Node* newNode = new Node();
+
+   memcpy(newNode, node, sizeof(node));
+
+   for (int i = 0; i <= newNode->nbItems; i++)
+      if (newNode->children[i])
+         newNode->children[i] = duplicateNode(newNode->children[i]);
+
+   return newNode;
+}
+
+template <typename T, int M>
+void Common::SortedArray<T, M>::deleteNode(Node* node)
+{
+   for (int i = 0; i <= node->nbItems; i++)
+   {
+      if (node->children[i])
+         deleteNode(node->children[i]);
+   }
+   delete node;
+}
+
 /**
   * Add the element 'e' to 'node', may attach an optional child after the position of 'e'.
   */
@@ -351,14 +402,14 @@ void Common::SortedArray<T, M>::add(Node* node, const T& e, Node* child)
       }
       else
       {
-         this->root = new Node();
-         this->root->nbItems = 1;
-         this->root->size = 1 + node->size + rightNode->size;
-         this->root->items[0] = node->items[M / 2]; // Copy the median value.
-         this->root->children[0] = node;
-         this->root->children[1] = rightNode;
-         node->parent = this->root;
-         rightNode->parent = this->root;
+         this->d->root = new Node();
+         this->d->root->nbItems = 1;
+         this->d->root->size = 1 + node->size + rightNode->size;
+         this->d->root->items[0] = node->items[M / 2]; // Copy the median value.
+         this->d->root->children[0] = node;
+         this->d->root->children[1] = rightNode;
+         node->parent = this->d->root;
+         rightNode->parent = this->d->root;
       }
       node->items[M / 2] = T(); // Remove the median value.
    }
