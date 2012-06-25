@@ -1,3 +1,21 @@
+/**
+  * D-LAN - A decentralized LAN file sharing software.
+  * Copyright (C) 2010-2012 Greg Burri <greg.burri@gmail.com>
+  *
+  * This program is free software: you can redistribute it and/or modify
+  * it under the terms of the GNU General Public License as published by
+  * the Free Software Foundation, either version 3 of the License, or
+  * (at your option) any later version.
+  *
+  * This program is distributed in the hope that it will be useful,
+  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  * GNU General Public License for more details.
+  *
+  * You should have received a copy of the GNU General Public License
+  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  */
+  
 #ifndef COMMON_SORTARRAY_H
 #define COMMON_SORTARRAY_H
 
@@ -6,11 +24,19 @@
 /**
   * @class Common::SortedArray
   *
+  * The goal of the class is to be able to use an ordered list as an array, here are listed some properties:
+  *  - Access to element by integer index like an array: 0, 1, 2, ...
+  *  - Found the index of a given value.
+  *  - The elements are kept ordered when a new one is inserted.
+  * The type T must have the operators '>' and '==' defined.
+  *
+  * 'SortedArray' is implemented as a B-Tree, see here for more information: http://en.wikipedia.org/wiki/B-tree
+  * M is the order according Knuth's definition. This is the maximum number of children a node can have.
   */
 
 namespace Common
 {
-   template<typename T, int M = 3>
+   template<typename T, int M = 7>
    class SortedArray
    {
    public:
@@ -20,10 +46,16 @@ namespace Common
       int insert(const T& value, bool* exists = nullptr);
       void remove(int index);
 
-      int indexOf(const T& value);
+      bool contains(const T& value) const;
+
+      class NotFoundException {};
+
+      int indexOf(const T& value) const;
 
       const T& operator[](int index) const;
       T& operator[](int index);
+
+      int getM() const;
 
    private:
       struct Node
@@ -39,9 +71,10 @@ namespace Common
          int size; // The size of the subtree (children's sizes + this->nbItems).
       };
 
-      int getPosition(const T& value, bool& exists);
-
-      static Node* getLeaf(Node* node, const T& value);
+      static T& getFromIndex(Node* node, int index, int nbItemsBefore);
+      static int indexOf(Node* node, const T& value, int nbItemsBefore);
+      static Node* getNode(Node* node, const T& value, int& position);
+      static int getPosition(Node* node, const T& value, bool& exists);
       static void incrementSize(Node* node);
       static void moveChild(Node* node1, int pos1, Node* node2, int pos2);
       static void insertChild(Node* child, Node* parent, int pos);
@@ -73,31 +106,161 @@ int Common::SortedArray<T, M>::size() const
 template <typename T, int M>
 int Common::SortedArray<T, M>::insert(const T& value, bool* exists)
 {
-   Node* leaf = getLeaf(this->root, value);
-   this->add(leaf, value);
+   int position;
+   Node* node = getNode(this->root, value, position);
+   if (position == -1)
+      this->add(node, value);
+   else
+      node->items[position] = value;
+
+   if (exists)
+      *exists = position != -1;
+
    return 0;
 }
 
+template <typename T, int M>
+bool Common::SortedArray<T, M>::contains(const T& value) const
+{
+   int position;
+   getNode(this->root, value, position);
+   return position != -1;
+}
+
 /**
-  * Returns a leaf corresponding to the given value, this leaf may or may not contain the value.
+  * @exception NotFoundException
   */
 template <typename T, int M>
-typename Common::SortedArray<T, M>::Node* Common::SortedArray<T, M>::getLeaf(Common::SortedArray<T, M>::Node* node, const T& value)
+int Common::SortedArray<T, M>::indexOf(const T& value) const
 {
-   if (node->nbItems == node->size)
-      return node;
+   return indexOf(this->root, value, 0);
+}
 
-   for (int i = 0; i < node->nbItems; i++)
-      if (value < node->items[i])
+/**
+  * @exception NotFoundException
+  */
+template <typename T, int M>
+const T& Common::SortedArray<T, M>::operator[](int index) const
+{
+   return (*this)[index];
+}
+
+/**
+  * @exception NotFoundException
+  */
+template <typename T, int M>
+T& Common::SortedArray<T, M>::operator[](int index)
+{
+   if (index >= this->root->size)
+      throw NotFoundException();
+
+   return getFromIndex(this->root, index, 0);
+}
+
+template <typename T, int M>
+int Common::SortedArray<T, M>::getM() const
+{
+   return M;
+}
+
+template <typename T, int M>
+T& Common::SortedArray<T, M>::getFromIndex(Node* node, int index, int nbItemsBefore)
+{
+   for (int i = 0; i <= node->nbItems; i++)
+   {
+      if (node->children[i])
       {
-         if (node->children[i])
-            return getLeaf(node->children[i], value);
-         return node;
+         if (index < nbItemsBefore + node->children[i]->size)
+            return getFromIndex(node->children[i], index, nbItemsBefore);
+         else
+            nbItemsBefore += node->children[i]->size;
       }
 
-   if (node->children[node->nbItems])
-      return getLeaf(node->children[node->nbItems], value);
+      if (nbItemsBefore++ == index && i < node->nbItems)
+         return node->items[i];
+   }
+
+   throw NotFoundException();
+}
+
+template <typename T, int M>
+int Common::SortedArray<T, M>::indexOf(Node* node, const T& value, int nbItemsBefore)
+{
+   bool exists;
+   int position = getPosition(node, value, exists);
+
+   nbItemsBefore += position;
+   for (int i = 0; i < position; i++)
+      if (node->children[i])
+         nbItemsBefore += node->children[i]->size;
+
+   if (!exists)
+   {
+      if (node->children[position])
+         return indexOf(node->children[position], value, nbItemsBefore);
+      return -1;
+   }
+
+   return nbItemsBefore;
+}
+
+/**
+  * Returns a node corresponding to the given value, this node may or may not contain the value.
+  * If the node doesn't contain the value it's a leaf.
+  */
+template <typename T, int M>
+typename Common::SortedArray<T, M>::Node* Common::SortedArray<T, M>::getNode(Common::SortedArray<T, M>::Node* node, const T& value, int& position)
+{
+   bool exists;
+   position = getPosition(node, value, exists);
+   if (!exists)
+   {
+      if (node->children[position])
+         return getNode(node->children[position], value, position);
+      position = -1;
+   }
+
    return node;
+}
+
+/**
+  * Return the position of the value, if it doesn't exist returns the position where to insert the value.
+  * It may return a position after the last value if the new one have to be inserted in the last position.
+  */
+template <typename T, int M>
+int Common::SortedArray<T, M>::getPosition(Node* node, const T& value, bool& exists)
+{
+   exists = false;
+   if (node->nbItems == 0 || value < node->items[0])
+      return 0;
+
+   if (node->items[node->nbItems-1] < value)
+      return node->nbItems;
+
+   int i1 = 0;
+   int i2 = node->nbItems;
+
+   forever
+   {
+      int i3 = (i2 + i1) / 2;
+      if (node->items[i3] == value)
+      {
+         exists = true;
+         return i3;
+      }
+
+      if (i1 == i3)
+      {
+         if (node->items[i2] == value)
+            exists = true;
+         return i2;
+      }
+
+      if (node->items[i3] < value)
+         i1 = i3;
+      else
+         i2 = i3;
+   }
 }
 
 template <typename T, int M>
@@ -116,6 +279,7 @@ template <typename T, int M>
 void Common::SortedArray<T, M>::moveChild(Node* node1, int pos1, Node* node2, int pos2)
 {
    Q_ASSERT(node2->children[pos2] == nullptr);
+   Q_ASSERT(node1 != node2);
 
    node2->children[pos2] = node1->children[pos1];
 
@@ -163,7 +327,7 @@ void Common::SortedArray<T, M>::add(Node* node, const T& e, Node* child)
          if (i == -1 || e > node->items[i])
          {
             node->items[i+1] = e;
-            node->children[i+2] = child; // If child is null then "node->children[i+2]" must be null too.
+            node->children[i+2] = child; // If 'child' is null then "node->children[i+2]" must be null too.
             break;
          }
          else
@@ -233,11 +397,12 @@ typename Common::SortedArray<T, M>::Node* Common::SortedArray<T, M>::split(Node*
       else
       {
          rightNode->items[j] = node->items[i];
+         node->items[i] = T();
          moveChild(node, i+1, rightNode, j+1);
       }
    }
 
-   // Median.
+   // Defines the median value in "node->items[i+1]".
    if (!eInsertedInRightNode && e > node->items[i])
    {
       node->items[i+1] = e;

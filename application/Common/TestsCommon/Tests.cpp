@@ -21,7 +21,7 @@
 #include <QtDebug>
 #include <QByteArray>
 #include <QFile>
-#include <QSet>
+#include <QMap>
 #include <QDir>
 #include <QElapsedTimer>
 
@@ -201,29 +201,39 @@ void Tests::sortedList()
 
 void Tests::sortedArray()
 {
+   QTest::qSleep(100);
+
    SortedArray<QString> array;
 
+   // Insert the following items: A, B, C, D, E, R, S, Z.
    array.insert("B");
    array.insert("R");
    array.insert("C");
    array.insert("Z");
    array.insert("A");
    array.insert("D");
+   array.insert("E");
+   array.insert("S");
 
-//   QCOMPARE(array[0], QString("A"));
-//   QCOMPARE(array[1], QString("B"));
-//   QCOMPARE(array[2], QString("C"));
-//   QCOMPARE(array[3], QString("D"));
-//   QCOMPARE(array[4], QString("R"));
-//   QCOMPARE(array[5], QString("Z"));
+   QCOMPARE(array[0], QString("A"));
+   QCOMPARE(array[1], QString("B"));
+   QCOMPARE(array[2], QString("C"));
+   QCOMPARE(array[3], QString("D"));
+   QCOMPARE(array[4], QString("E"));
+   QCOMPARE(array[5], QString("R"));
+   QCOMPARE(array[6], QString("S"));
+   QCOMPARE(array[7], QString("Z"));
 
-//   int bPos = array.indexOf("B");
-//   QCOMPARE(bPos, 1);
+   int yPos = array.indexOf("Y");
+   QCOMPARE(yPos, -1);
+
+   int bPos = array.indexOf("B");
+   QCOMPARE(bPos, 1);
 //   array.remove(bPos);
 //   QCOMPARE(array.size(), 5);
 
-//   int aPos = array.indexOf("A");
-//   QCOMPARE(aPos, 0);
+   int aPos = array.indexOf("A");
+   QCOMPARE(aPos, 0);
 //   array.remove(aPos);
 //   QCOMPARE(array.size(), 4);
 
@@ -247,14 +257,13 @@ void Tests::sortedArray()
 //   array.remove(dPos);
 //   QCOMPARE(array.size(), 0);
 
-   /*
    MTRand mtRand(42);
    const int wordSize = 5;
    const int nbWords = 200000;
+   const int M = 7;
 
    QList<QString> names;
    names.reserve(nbWords);
-
    for (int i = 0; i < nbWords; i++)
    {
       QString word(wordSize, 'a');
@@ -263,51 +272,73 @@ void Tests::sortedArray()
       names << word;
    }
 
+
+   QList<QString> names2;
+   for (int i = 0; i < nbWords / 20; i++)
+   {
+      QString word(wordSize, 'a');
+      for (int j = 0; j < word.size(); j++)
+         word[j] = 'A' + static_cast<char>(mtRand.randInt(25));
+      names2 << word;
+   }
+
    QElapsedTimer timer;
 
+   ///// Insert /////
+   // SortedArray.
    qDebug() << "SortedArray, insert: Elapsed time:";
    timer.start();
-   QList<SortedArray<QString>> arrayBenchmarks;
+   QList<SortedArray<QString, M>> arrayBenchmarks;
    for (int n = nbWords / 20; n <= nbWords; n += nbWords / 20)
    {
-      SortedArray<QString> array;
+      SortedArray<QString, M> array;
       for (int i = 0; i < n; i++)
          array.insert(names[i]);
       arrayBenchmarks << array;
    }
    qDebug() << timer.elapsed();
 
-   qDebug() << "QSet, insert: Elapsed time:";
+   // QMap.
+   qDebug() << "QMap, insert: Elapsed time:";
    timer.start();
-   QList<QSet<QString>> setBenchmarks;
+   QList<QMap<QString, int>> mapBenchmarks;
    for (int n = nbWords / 20; n <= nbWords; n += nbWords / 20)
    {
-      QSet<QString> set;
+      QMap<QString, int> map;
       for (int i = 0; i < n; i++)
-         set.insert(names[i]);
-      setBenchmarks << set;
+         map.insert(names[i], 0);
+      mapBenchmarks << map;
    }
    qDebug() << timer.elapsed();
 
-
-   qDebug() << "SortedArray, lookup [ms] for" << nbWords / 20 << "elements";
+   ///// Lookup /////
+   // SortedArray.
+   qDebug() << "SortedArray (M="<< M <<"), lookup [ms] for 100 *" << nbWords / 20 << "known elements + 100 *" << nbWords / 20 << "unknown elements";
    for (int i = 0; i < arrayBenchmarks.size(); i++)
    {
       timer.start();
-      for (int j = 0; j < nbWords / 20; j++)
-         arrayBenchmarks[i].indexOf(names[j]);
+      for (int k = 0; k < 100; k++)
+         for (int j = 0; j < nbWords / 20; j++)
+         {
+            arrayBenchmarks[i].indexOf(names[j]); // Known values.
+            arrayBenchmarks[i].indexOf(names2[j]); // Unknown values.
+         }
       qDebug() << arrayBenchmarks[i].size() << "\t" << timer.elapsed();
    }
 
-
-   qDebug() << "QSet, lookup [ms] for" << nbWords / 20 << "elements";
-   for (int i = 0; i < setBenchmarks.size(); i++)
+   // QMap.
+   qDebug() << "QMap, lookup [ms] for 100 *" << nbWords / 20 << "known elements + 100 *" << nbWords / 20 << "unknown elements";
+   for (int i = 0; i < mapBenchmarks.size(); i++)
    {
       timer.start();
-      for (int j = 0; j < nbWords / 20; j++)
-         setBenchmarks[i].contains(names[j]);
-      qDebug() << setBenchmarks[i].size() << "\t" << timer.elapsed();
-   }*/
+      for (int k = 0; k < 100; k++)
+         for (int j = 0; j < nbWords / 20; j++)
+         {
+            mapBenchmarks[i].contains(names[j]); // Known values.
+            mapBenchmarks[i].contains(names2[j]); // Unknown values.
+         }
+      qDebug() << mapBenchmarks[i].size() << "\t" << timer.elapsed();
+   }
 }
 
 void Tests::indexedArray()
