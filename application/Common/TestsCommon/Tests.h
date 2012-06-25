@@ -45,6 +45,9 @@ private slots:
    // SortedList class.
    void sortedList();
 
+   // SortedArray class
+   void sortedArray();
+
    // IndexedArray class.
    void indexedArray();
 

@@ -21,8 +21,11 @@
 #include <QtDebug>
 #include <QByteArray>
 #include <QFile>
+#include <QSet>
 #include <QDir>
 #include <QElapsedTimer>
+
+#include <Libs/MersenneTwister.h>
 
 #include <Protos/common.pb.h>
 #include <Protos/core_settings.pb.h>
@@ -36,6 +39,7 @@
 #include <ZeroCopyStreamQIODevice.h>
 #include <ProtoHelper.h>
 #include <SortedList.h>
+#include <SortedArray.h>
 #include <IndexedArray.h>
 #include <BloomFilter.h>
 #include <TransferRateCalculator.h>
@@ -193,6 +197,117 @@ void Tests::sortedList()
    list.clear();
 
    QVERIFY(list.getList().isEmpty());
+}
+
+void Tests::sortedArray()
+{
+   SortedArray<QString> array;
+
+   array.insert("B");
+   array.insert("R");
+   array.insert("C");
+   array.insert("Z");
+   array.insert("A");
+   array.insert("D");
+
+//   QCOMPARE(array[0], QString("A"));
+//   QCOMPARE(array[1], QString("B"));
+//   QCOMPARE(array[2], QString("C"));
+//   QCOMPARE(array[3], QString("D"));
+//   QCOMPARE(array[4], QString("R"));
+//   QCOMPARE(array[5], QString("Z"));
+
+//   int bPos = array.indexOf("B");
+//   QCOMPARE(bPos, 1);
+//   array.remove(bPos);
+//   QCOMPARE(array.size(), 5);
+
+//   int aPos = array.indexOf("A");
+//   QCOMPARE(aPos, 0);
+//   array.remove(aPos);
+//   QCOMPARE(array.size(), 4);
+
+//   int zPos = array.indexOf("Z");
+//   QCOMPARE(zPos, 3);
+//   array.remove(zPos);
+//   QCOMPARE(array.size(), 3);
+
+//   int rPos = array.indexOf("R");
+//   QCOMPARE(rPos, 2);
+//   array.remove(rPos);
+//   QCOMPARE(array.size(), 2);
+
+//   int cPos = array.indexOf("C");
+//   QCOMPARE(cPos, 0);
+//   array.remove(cPos);
+//   QCOMPARE(array.size(), 1);
+
+//   int dPos = array.indexOf("D");
+//   QCOMPARE(dPos, 0);
+//   array.remove(dPos);
+//   QCOMPARE(array.size(), 0);
+
+   /*
+   MTRand mtRand(42);
+   const int wordSize = 5;
+   const int nbWords = 200000;
+
+   QList<QString> names;
+   names.reserve(nbWords);
+
+   for (int i = 0; i < nbWords; i++)
+   {
+      QString word(wordSize, 'a');
+      for (int j = 0; j < word.size(); j++)
+         word[j] = 'A' + static_cast<char>(mtRand.randInt(25));
+      names << word;
+   }
+
+   QElapsedTimer timer;
+
+   qDebug() << "SortedArray, insert: Elapsed time:";
+   timer.start();
+   QList<SortedArray<QString>> arrayBenchmarks;
+   for (int n = nbWords / 20; n <= nbWords; n += nbWords / 20)
+   {
+      SortedArray<QString> array;
+      for (int i = 0; i < n; i++)
+         array.insert(names[i]);
+      arrayBenchmarks << array;
+   }
+   qDebug() << timer.elapsed();
+
+   qDebug() << "QSet, insert: Elapsed time:";
+   timer.start();
+   QList<QSet<QString>> setBenchmarks;
+   for (int n = nbWords / 20; n <= nbWords; n += nbWords / 20)
+   {
+      QSet<QString> set;
+      for (int i = 0; i < n; i++)
+         set.insert(names[i]);
+      setBenchmarks << set;
+   }
+   qDebug() << timer.elapsed();
+
+
+   qDebug() << "SortedArray, lookup [ms] for" << nbWords / 20 << "elements";
+   for (int i = 0; i < arrayBenchmarks.size(); i++)
+   {
+      timer.start();
+      for (int j = 0; j < nbWords / 20; j++)
+         arrayBenchmarks[i].indexOf(names[j]);
+      qDebug() << arrayBenchmarks[i].size() << "\t" << timer.elapsed();
+   }
+
+
+   qDebug() << "QSet, lookup [ms] for" << nbWords / 20 << "elements";
+   for (int i = 0; i < setBenchmarks.size(); i++)
+   {
+      timer.start();
+      for (int j = 0; j < nbWords / 20; j++)
+         setBenchmarks[i].contains(names[j]);
+      qDebug() << setBenchmarks[i].size() << "\t" << timer.elapsed();
+   }*/
 }
 
 void Tests::indexedArray()
