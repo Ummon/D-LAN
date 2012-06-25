@@ -62,14 +62,22 @@ body {
    color: black;
    margin: 0px;
       
-   background: -webkit-gradient(
-      linear,
+   background: -webkit-linear-gradient(
       left top,
-      right bottom,
-      color-stop(0, $blue-dark),
-      color-stop(1, $blue-light)
+      $blue-dark 0%,
+      $blue-light 100%
    ) fixed; 
    background: -moz-linear-gradient( 
+      left top,
+      $blue-dark 0%,
+      $blue-light 100%
+   ) fixed;
+   background: -ms-linear-gradient( 
+      left top,
+      $blue-dark 0%,
+      $blue-light 100%
+   ) fixed;
+   background: -o-linear-gradient( 
       left top,
       $blue-dark 0%,
       $blue-light 100%
