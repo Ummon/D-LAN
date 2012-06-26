@@ -51,6 +51,7 @@ Tests::Tests()
 
 void Tests::initTestCase()
 {
+   QTest::qSleep(100); // If there is no delay when debugging, the debugger is not attached fast enough and some breackpoints are not triggered... very strange.
    qDebug() << "Application directory path (where the settings and persistent data are put) : " << Global::getDataFolder(Common::Global::DataFolderType::ROAMING, false);
 }
 
@@ -201,61 +202,38 @@ void Tests::sortedList()
 
 void Tests::sortedArray()
 {
-   QTest::qSleep(100);
+   // 'A' -> 'Z'.
+   QList<char> orderedList;
+   for (char c = 'A'; c <= 'Z'; c++)
+      orderedList << c;
 
-   SortedArray<QString> array;
+   for (int seed = 1; seed <= 100; seed++)
+   {
+      MTRand mtRand(seed);
 
-   // Insert the following items: A, B, C, D, E, R, S, Z.
-   array.insert("B");
-   array.insert("R");
-   array.insert("C");
-   array.insert("Z");
-   array.insert("A");
-   array.insert("D");
-   array.insert("E");
-   array.insert("S");
+      SortedArray<char, 5> array;
 
-   QCOMPARE(array[0], QString("A"));
-   QCOMPARE(array[1], QString("B"));
-   QCOMPARE(array[2], QString("C"));
-   QCOMPARE(array[3], QString("D"));
-   QCOMPARE(array[4], QString("E"));
-   QCOMPARE(array[5], QString("R"));
-   QCOMPARE(array[6], QString("S"));
-   QCOMPARE(array[7], QString("Z"));
+      // Insert the following items: A -> Z in a randrom order.
+      while (array.size() != orderedList.size())
+         array.insert(orderedList[mtRand.randInt(orderedList.size()-1)]);
 
-   int yPos = array.indexOf("Y");
-   QCOMPARE(yPos, -1);
+      // Access with integer index.
+      for (int i = 0; i < array.size(); i++)
+         QCOMPARE(array[i], orderedList[i]);
 
-   int bPos = array.indexOf("B");
-   QCOMPARE(bPos, 1);
-//   array.remove(bPos);
-//   QCOMPARE(array.size(), 5);
+      // Iterator.
+      QListIterator<char> j(orderedList);
+      for (SortedArray<char, 5>::Iterator i(array); i.hasNext() && j.hasNext();)
+         QCOMPARE(i.next(), j.next());
 
-   int aPos = array.indexOf("A");
-   QCOMPARE(aPos, 0);
-//   array.remove(aPos);
-//   QCOMPARE(array.size(), 4);
+      int unknownElement = array.indexOf('_');
+      QCOMPARE(unknownElement, -1);
 
-//   int zPos = array.indexOf("Z");
-//   QCOMPARE(zPos, 3);
-//   array.remove(zPos);
-//   QCOMPARE(array.size(), 3);
-
-//   int rPos = array.indexOf("R");
-//   QCOMPARE(rPos, 2);
-//   array.remove(rPos);
-//   QCOMPARE(array.size(), 2);
-
-//   int cPos = array.indexOf("C");
-//   QCOMPARE(cPos, 0);
-//   array.remove(cPos);
-//   QCOMPARE(array.size(), 1);
-
-//   int dPos = array.indexOf("D");
-//   QCOMPARE(dPos, 0);
-//   array.remove(dPos);
-//   QCOMPARE(array.size(), 0);
+      array.remove('N');
+      array.remove('E');
+      array.remove('Z');
+      // TODO...
+   }
 
    MTRand mtRand(42);
    const int wordSize = 5;
@@ -273,13 +251,13 @@ void Tests::sortedArray()
    }
 
 
-   QList<QString> names2;
+   QList<QString> namesNotInserted;
    for (int i = 0; i < nbWords / 20; i++)
    {
       QString word(wordSize, 'a');
       for (int j = 0; j < word.size(); j++)
          word[j] = 'A' + static_cast<char>(mtRand.randInt(25));
-      names2 << word;
+      namesNotInserted << word;
    }
 
    QElapsedTimer timer;
@@ -321,7 +299,7 @@ void Tests::sortedArray()
          for (int j = 0; j < nbWords / 20; j++)
          {
             arrayBenchmarks[i].indexOf(names[j]); // Known values.
-            arrayBenchmarks[i].indexOf(names2[j]); // Unknown values.
+            arrayBenchmarks[i].indexOf(namesNotInserted[j]); // Unknown values.
          }
       qDebug() << arrayBenchmarks[i].size() << "\t" << timer.elapsed();
    }
@@ -335,7 +313,7 @@ void Tests::sortedArray()
          for (int j = 0; j < nbWords / 20; j++)
          {
             mapBenchmarks[i].contains(names[j]); // Known values.
-            mapBenchmarks[i].contains(names2[j]); // Unknown values.
+            mapBenchmarks[i].contains(namesNotInserted[j]); // Unknown values.
          }
       qDebug() << mapBenchmarks[i].size() << "\t" << timer.elapsed();
    }

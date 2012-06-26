@@ -28,7 +28,7 @@
   *  - Access to element by integer index like an array: 0, 1, 2, ...
   *  - Found the index of a given value.
   *  - The elements are kept ordered when a new one is inserted.
-  * The type T must have the operators '>' and '==' defined.
+  * The type T must have the operators '<' and '==' defined.
   *
   * 'SortedArray' is implemented as a B-Tree, see here for more information: http://en.wikipedia.org/wiki/B-tree
   * M is the order according Knuth's definition. This is the maximum number of children a node can have.
@@ -39,6 +39,7 @@ namespace Common
    template<typename T, int M = 7>
    class SortedArray
    {
+      struct Node;
    public:      
       class NotFoundException {};
       class InvalidMException {};
@@ -49,6 +50,7 @@ namespace Common
       int size() const;
       int insert(const T& value, bool* exists = nullptr);
       void remove(int index);
+      bool remove(const T& value);
 
       bool contains(const T& value) const;
 
@@ -58,6 +60,22 @@ namespace Common
       T& operator[](int index);
 
       int getM() const;
+
+      /**
+        * A very basic iterator to iterator on the sorted elements.
+        */
+      class Iterator
+      {
+      public:
+         Iterator(const SortedArray&);
+         bool hasNext() const;
+         const T& next();
+
+      private:
+         const SortedArray& array;
+         Node* currentNode;
+         int currentPosition;
+      };
 
    private:
       struct Node
@@ -73,19 +91,29 @@ namespace Common
          int size; // The size of the subtree (children's sizes + this->nbItems).
       };
 
-      static T& getFromIndex(Node* node, int index, int nbItemsBefore);
+      static Node* getLeftmostNode(Node* node);
+      static Node* getRightmostNode(Node* node);
+
+      static int getNextPosition(Node*& node, int currentPosition);
+      static Node* getFromIndex(Node* node, int index, int nbItemsBefore, int& position);
       static int indexOf(Node* node, const T& value, int nbItemsBefore);
       static Node* getNode(Node* node, const T& value, int& position);
       static int getPosition(Node* node, const T& value, bool& exists);
       static void incrementSize(Node* node);
+      static void decrementSize(Node* node);
       static void moveChild(Node* node1, int pos1, Node* node2, int pos2);
       static void insertChild(Node* child, Node* parent, int pos);
+
+      static void remove(Node* node, int position);
+      static void rebalance(Node* node);
+      static Node* getRightNeighbor(Node* node, int& medianPosition);
+      static Node* getLeftNeighbor(Node* node, int& medianPosition);
 
       static Node* duplicateNode(Node* node);
       static void deleteNode(Node* node);
 
-      void add(Node* node, const T& e, Node* child = nullptr);
-      Node* split(Node* node, const T& e, Node* child = nullptr);
+      void add(Node* node, const T& value, Node* child = nullptr);
+      Node* split(Node* node, const T& value, Node* child = nullptr);
 
       struct SortedArrayData : public QSharedData
       {
@@ -145,6 +173,32 @@ int Common::SortedArray<T, M>::insert(const T& value, bool* exists)
    return 0;
 }
 
+/**
+  * @exception NotFoundException
+  */
+template <typename T, int M>
+void Common::SortedArray<T, M>::remove(int index)
+{
+   int position;
+   Node* node = getFromIndex(this->d->root, index, 0, position);
+
+   remove(node, position);
+}
+
+/**
+  * Return false if the value doesn't exist.
+  */
+template <typename T, int M>
+bool Common::SortedArray<T, M>::remove(const T& value)
+{
+   int position;
+   Node* node = getNode(this->d->root, value, position);
+   if (!node)
+      return false;
+   remove(node, position);
+   return true;
+}
+
 template <typename T, int M>
 bool Common::SortedArray<T, M>::contains(const T& value) const
 {
@@ -180,7 +234,9 @@ T& Common::SortedArray<T, M>::operator[](int index)
    if (index >= this->d->root->size)
       throw NotFoundException();
 
-   return getFromIndex(this->d->root, index, 0);
+   int position;
+   Node* node = getFromIndex(this->d->root, index, 0, position);
+   return node->items[position];
 }
 
 template <typename T, int M>
@@ -190,20 +246,103 @@ int Common::SortedArray<T, M>::getM() const
 }
 
 template <typename T, int M>
-T& Common::SortedArray<T, M>::getFromIndex(Node* node, int index, int nbItemsBefore)
+Common::SortedArray<T, M>::Iterator::Iterator(const SortedArray& array) :
+   array(array), currentNode(nullptr), currentPosition(0)
+{
+   if (array.size() > 0)
+      this->currentNode = getLeftmostNode(array.d->root);
+}
+
+template <typename T, int M>
+bool Common::SortedArray<T, M>::Iterator::hasNext() const
+{
+   return this->currentNode != nullptr;
+}
+
+/**
+  * @exception NotFoundException
+  */
+template <typename T, int M>
+const T& Common::SortedArray<T, M>::Iterator::next()
+{
+   if (this->currentNode == nullptr)
+      throw NotFoundException();
+
+   const T& value = this->currentNode->items[this->currentPosition];
+   this->currentPosition = getNextPosition(this->currentNode, this->currentPosition);
+   return value;
+}
+
+/**
+  * Return the leftmost node.
+  */
+template <typename T, int M>
+typename Common::SortedArray<T, M>::Node* Common::SortedArray<T, M>::getLeftmostNode(Node* node)
+{
+   if (Node* child = node->children[0])
+      return getLeftmostNode(child);
+   return node;
+}
+
+template <typename T, int M>
+typename Common::SortedArray<T, M>::Node* Common::SortedArray<T, M>::getRightmostNode(Node* node)
+{
+   if (Node* child = node->children[node->nbItems])
+      return getRightmostNode(child);
+   return node;
+}
+
+/**
+  * Get the next position to the right.
+  * 'node' is set to 'nullptr' if there is no next position.
+  */
+template <typename T, int M>
+int Common::SortedArray<T, M>::getNextPosition(Node*& node, int currentPosition)
+{
+   currentPosition++;
+
+   if (Node* child = node->children[currentPosition])
+   {
+      node = getLeftmostNode(child);
+      return 0;
+   }
+
+   if (currentPosition < node->nbItems)
+      return currentPosition;
+
+   while (node->parent)
+   {
+      for (int i = 0; i < node->parent->nbItems; i++)
+         if (node->parent->children[i] == node)
+         {
+            node = node->parent;
+            return i;
+         }
+      node = node->parent;
+   }
+
+   node = nullptr;
+   return 0;
+}
+
+template <typename T, int M>
+typename Common::SortedArray<T, M>::Node* Common::SortedArray<T, M>::getFromIndex(Node* node, int index, int nbItemsBefore, int& position)
 {
    for (int i = 0; i <= node->nbItems; i++)
    {
       if (node->children[i])
       {
          if (index < nbItemsBefore + node->children[i]->size)
-            return getFromIndex(node->children[i], index, nbItemsBefore);
+            return getFromIndex(node->children[i], index, nbItemsBefore, position);
          else
             nbItemsBefore += node->children[i]->size;
       }
 
       if (nbItemsBefore++ == index && i < node->nbItems)
-         return node->items[i];
+      {
+         position = i;
+         return node;
+      }
    }
 
    throw NotFoundException();
@@ -297,6 +436,14 @@ void Common::SortedArray<T, M>::incrementSize(Node* node)
       incrementSize(node->parent);
 }
 
+template <typename T, int M>
+void Common::SortedArray<T, M>::decrementSize(Node* node)
+{
+   node->size--;
+   if (node->parent)
+      decrementSize(node->parent);
+}
+
 /**
   * Move the pos1'th child of node1 to the pos2'th position of node2.
   * The child to move may be null.
@@ -336,6 +483,125 @@ void Common::SortedArray<T, M>::insertChild(Node* child, Node* parent, int pos)
 }
 
 template <typename T, int M>
+void Common::SortedArray<T, M>::remove(Node* node, int position)
+{
+   if (node->nbItems == node->size) // It's a leaf
+   {
+      node->items[position] = T(); // Delete the element.
+      node->nbItems--;
+      decrementSize(node);
+
+      for (int i = position; i < node->nbItems; i++)
+         qSwap(node->items[i], node->items[i+1]);
+
+      rebalance(node);
+   }
+   else // It's an internal node.
+   {
+      Node* leftChild = getRightmostNode(node->children[position]);
+      Node* rightChild = getLeftmostNode(node->children[position+1]);
+
+      if (leftChild->nbItems > rightChild->nbItems)
+      {
+         qSwap(leftChild->items[leftChild->nbItems - 1], node->items[position]);
+         remove(leftChild, leftChild->nbItems - 1);
+      }
+      else
+      {
+         qSwap(rightChild->items[0], node->items[position]);
+         remove(rightChild, 0);
+      }
+   }
+}
+
+template <typename T, int M>
+void Common::SortedArray<T, M>::rebalance(Node* node)
+{
+   if (node->nbItems >= M / 2 )
+      return;
+
+   // 1) We look on the left and right neighbors if we can take one of their children.
+   int medianPosition;
+   Node* neighbor = getRightNeighbor(node, medianPosition);
+   if (neighbor && neighbor->nbItems > M / 2)
+   {
+      node->items[node->nbItems] = node->parent->items[medianPosition];
+      node->children[node->nbItems + 1] = neighbor->children[0];
+
+      node->nbItems++;
+      neighbor->nbItems--;
+      // We don't need to change the size of parent because they share the same parent.
+      node->size++;
+      neighbor->size--;
+
+      node->parent->items[medianPosition] = neighbor->items[0];
+
+      for (int i = 0; i < neighbor->nbItems; i++)
+      {
+         neighbor->items[i] = neighbor->items[i+1];
+         neighbor->children[i] = neighbor->children[i+1];
+      }
+      neighbor->children[neighbor->nbItems] = neighbor->children[neighbor->nbItems+1];
+
+      neighbor->items[neighbor->nbItems] = T();
+   }
+   else if ((neighbor = getLeftNeighbor(node, medianPosition)) && neighbor->nbItems > M / 2)
+   {
+      for (int i = node->nbItems; i > 0; i--)
+      {
+         node->items[i] = node->items[i-1];
+         node->children[i+1] = node->children[i];
+      }
+      node->children[1] = node->children[0];
+
+      node->items[0] = node->parent->items[medianPosition];
+      node->children[0] = neighbor->children[neighbor->nbItems];
+
+      node->nbItems++;
+      neighbor->nbItems--;
+      // We don't need to change the size of parent because they share the same parent.
+      node->size++;
+      neighbor->size--;
+
+      node->parent->items[medianPosition] = neighbor->items[neighbor->nbItems];
+
+      neighbor->items[neighbor->nbItems] = T();
+   }
+   else
+   {
+      ; // TODO
+   }
+}
+
+template <typename T, int M>
+typename Common::SortedArray<T, M>::Node* Common::SortedArray<T, M>::getRightNeighbor(Common::SortedArray<T, M>::Node* node, int& medianPosition)
+{
+   if (node->parent)
+      for (int i = 0; i < node->parent->nbItems; i++)
+         if (node->parent->children[i] == node)
+         {
+            medianPosition = i;
+            return node->parent->children[i+1];
+         }
+
+   return nullptr;
+}
+
+template <typename T, int M>
+typename Common::SortedArray<T, M>::Node* Common::SortedArray<T, M>::getLeftNeighbor(Common::SortedArray<T, M>::Node* node, int& medianPosition)
+{
+   if (node->parent)
+      for (int i = 1; i <= node->parent->nbItems; i++)
+         if (node->parent->children[i] == node)
+         {
+            medianPosition = i-1;
+            return node->parent->children[i-1];
+         }
+
+   return nullptr;
+}
+
+template <typename T, int M>
 typename Common::SortedArray<T, M>::Node* Common::SortedArray<T, M>::duplicateNode(Node* node)
 {
    Node* newNode = new Node();
@@ -364,7 +630,7 @@ void Common::SortedArray<T, M>::deleteNode(Node* node)
   * Add the element 'e' to 'node', may attach an optional child after the position of 'e'.
   */
 template <typename T, int M>
-void Common::SortedArray<T, M>::add(Node* node, const T& e, Node* child)
+void Common::SortedArray<T, M>::add(Node* node, const T& value, Node* child)
 {
    if (child)
       child->parent = node;
@@ -375,9 +641,9 @@ void Common::SortedArray<T, M>::add(Node* node, const T& e, Node* child)
       for (int i = node->nbItems - 1; i >= -1; i--)
       {
          // If 'e' must be put after the ith element.
-         if (i == -1 || e > node->items[i])
+         if (i == -1 || node->items[i] < value)
          {
-            node->items[i+1] = e;
+            node->items[i+1] = value;
             node->children[i+2] = child; // If 'child' is null then "node->children[i+2]" must be null too.
             break;
          }
@@ -394,7 +660,7 @@ void Common::SortedArray<T, M>::add(Node* node, const T& e, Node* child)
    // If the node doesn't have a parent we create one.
    else
    {
-      Node* rightNode = split(node, e, child);
+      Node* rightNode = split(node, value, child);
 
       if (node->parent)
       {
@@ -420,7 +686,7 @@ void Common::SortedArray<T, M>::add(Node* node, const T& e, Node* child)
   * The median value is put in the position "M / 2" in 'node'.
   */
 template <typename T, int M>
-typename Common::SortedArray<T, M>::Node* Common::SortedArray<T, M>::split(Node* node, const T& e, Node* child)
+typename Common::SortedArray<T, M>::Node* Common::SortedArray<T, M>::split(Node* node, const T& value, Node* child)
 {
    Node* rightNode = new Node();
    rightNode->nbItems = (M-1) / 2;
@@ -434,9 +700,10 @@ typename Common::SortedArray<T, M>::Node* Common::SortedArray<T, M>::split(Node*
    // First we copy the values in the new node.
    for (int j = rightNode->nbItems - 1; j >= 0; j--, i--)
    {
-      if (!eInsertedInRightNode && e > node->items[i])
+      if (!eInsertedInRightNode && node->items[i] < value)
       {
-         rightNode->items[j] = e;
+         rightNode->items[j] = value;
+
          if (child)
          {
             insertChild(child, rightNode, j+1);
@@ -454,9 +721,9 @@ typename Common::SortedArray<T, M>::Node* Common::SortedArray<T, M>::split(Node*
    }
 
    // Defines the median value in "node->items[i+1]".
-   if (!eInsertedInRightNode && e > node->items[i])
+   if (!eInsertedInRightNode && node->items[i] < value)
    {
-      node->items[i+1] = e;
+      node->items[i+1] = value;
       if (child)
       {
          insertChild(child, rightNode, 0);
@@ -475,9 +742,9 @@ typename Common::SortedArray<T, M>::Node* Common::SortedArray<T, M>::split(Node*
    if (!eInsertedInRightNode)
       while (--i >= -1)
       {
-         if (!eInsertedInRightNode && (i == -1 || e > node->items[i]))
+         if (!eInsertedInRightNode && (i == -1 || node->items[i] < value))
          {
-            node->items[i+1] = e;
+            node->items[i+1] = value;
             if (child)
                node->children[i+2] = child;
             break;
