@@ -25,7 +25,7 @@
 #include <QLinkedList>
 #include <QTimer>
 #include <QSet>
-#include <QMap>
+#include <QHash>
 
 #include <Common/Uncopyable.h>
 #include <Common/Network/MessageHeader.h>
@@ -74,7 +74,7 @@ namespace CS
          bool joined;
       };
 
-      QMap<QString, Room> rooms;
+      QHash<QString, Room> rooms;
 
       QTimer saveChatMessagesTimer;
 

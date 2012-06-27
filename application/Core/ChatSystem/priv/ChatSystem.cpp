@@ -98,7 +98,7 @@ QList<IChatSystem::ChatRoom> ChatSystem::getRooms() const
 {
    QList<ChatRoom> result;
 
-   for (QMapIterator<QString, Room> i(this->rooms); i.hasNext();)
+   for (QHashIterator<QString, Room> i(this->rooms); i.hasNext();)
    {
       auto room = i.next();
       result << ChatRoom { room.key(), room.value().peers, room.value().joined };
@@ -152,7 +152,7 @@ void ChatSystem::received(const Common::Message& message)
             }
 
             // We remove the peer from the rooms he is not.
-            for (QMutableMapIterator<QString, Room> i(this->rooms); i.hasNext();)
+            for (QMutableHashIterator<QString, Room> i(this->rooms); i.hasNext();)
             {
                auto room = i.next();
                if (!roomsWithPeer.remove(room.key()))
@@ -212,7 +212,7 @@ void ChatSystem::received(const Common::Message& message)
   */
 void ChatSystem::IMAliveMessageToBeSend(Protos::Core::IMAlive& IMAliveMessage)
 {
-   for (QMapIterator<QString, Room> i(this->rooms); i.hasNext();)
+   for (QHashIterator<QString, Room> i(this->rooms); i.hasNext();)
    {
       auto room = i.next();
       if (room.value().joined)
@@ -227,7 +227,7 @@ void ChatSystem::getLastChatMessages()
 {
    this->getLastChatMessages(this->peerManager->getPeers());
 
-   for (QMapIterator<QString, Room> i(this->rooms); i.hasNext();)
+   for (QHashIterator<QString, Room> i(this->rooms); i.hasNext();)
    {
       auto room = i.next();
       this->getLastChatMessages(room.value().peers.toList(), room.key());
