@@ -29,6 +29,7 @@
 #include <Protos/gui_settings.pb.h>
 
 #include <Common/Hash.h>
+#include <Common/SortedArray.h>
 #include <Common/RemoteCoreController/ICoreConnection.h>
 
 namespace GUI
@@ -83,11 +84,10 @@ namespace GUI
 
    private:
       void updatePeers(const google::protobuf::RepeatedPtrField<Protos::GUI::State::Peer>& orderedPeers, const QSet<Common::Hash>& peersDownloadingOurData);
-      void sort();
 
       QSharedPointer<RCC::ICoreConnection> coreConnection;
 
-      QList<Peer*> orderedPeers;
+      Common::SortedArray<Peer*> orderedPeers;
       QHash<Common::Hash, Peer*> indexedPeers; // Peers indexed by their ID.
       QHash<Common::Hash, QColor> peersToColorize;
       Protos::GUI::Settings::PeerSortType currentSortType;

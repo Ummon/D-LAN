@@ -150,6 +150,11 @@ namespace Common
       return !(h1 == h2);
    }
 
+   inline bool operator<(const Hash& h1, const Hash& h2)
+   {
+      return memcmp(h1.getData(), h2.getData(), Hash::HASH_SIZE) < 0;
+   }
+
    /**
      * Used by QHash.
      */

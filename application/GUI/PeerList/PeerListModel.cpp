@@ -41,8 +41,6 @@ struct PeerListModel::Peer
 
    bool operator==(const Peer& p) const { return this->peerID == p.peerID; }
    bool operator!=(const Peer& p) const { return this->peerID != p.peerID; }
-   static bool sortCompByNick(const Peer* p1, const Peer* p2);
-   static bool sortCompBySharingAmount(const Peer* p1, const Peer* p2);
 
    Common::Hash peerID;
    QString nick;
@@ -61,8 +59,8 @@ PeerListModel::PeerListModel(QSharedPointer<RCC::ICoreConnection> coreConnection
 
 PeerListModel::~PeerListModel()
 {
-   foreach (Peer* p, this->orderedPeers)
-      delete p;
+   for (Common::SortedArray<Peer*>::Iterator i(this->orderedPeers); i.hasNext();)
+      delete i.next();
 }
 
 /**
@@ -109,7 +107,43 @@ void PeerListModel::setSortType(Protos::GUI::Settings::PeerSortType sortType)
       return;
 
    this->currentSortType = sortType;
-   this->sort();
+
+   emit layoutAboutToBeChanged();
+   switch (this->currentSortType)
+   {
+   case Protos::GUI::Settings::BY_NICK:
+      this->orderedPeers.setSortedFunctions([](const Peer* p1, const Peer* p2) {
+         if (!p1 || !p2)
+            return false;
+         const QString& nick1 = Common::StringUtils::toLowerAndRemoveAccents(p1->nick);
+         const QString& nick2 = Common::StringUtils::toLowerAndRemoveAccents(p2->nick);
+         if (nick1 == nick2)
+         {
+            if (p1->sharingAmount == p2->sharingAmount)
+               return p1->peerID < p2->peerID;
+            return p1->sharingAmount > p2->sharingAmount;
+         }
+         return nick1 < nick2;
+      });
+      break;
+
+   case Protos::GUI::Settings::BY_SHARING_AMOUNT:
+      this->orderedPeers.setSortedFunctions([](const Peer* p1, const Peer* p2) {
+         if (!p1 || !p2)
+            return false;
+         if (p1->sharingAmount == p2->sharingAmount)
+         {
+            const QString& nick1 = Common::StringUtils::toLowerAndRemoveAccents(p1->nick);
+            const QString& nick2 = Common::StringUtils::toLowerAndRemoveAccents(p2->nick);
+            if (nick1 == nick2)
+               return p1->peerID < p2->peerID;
+            return nick1 < nick2;
+         }
+         return p1->sharingAmount > p2->sharingAmount;
+      });
+      break;
+   }
+   emit layoutChanged();
 }
 
 Protos::GUI::Settings::PeerSortType PeerListModel::getSortType() const
@@ -218,14 +252,9 @@ void PeerListModel::newState(const Protos::GUI::State& state)
    this->updatePeers(state.peer(), peersDownloadingOurData);
 }
 
-/**
-  * O(n^2)!
-  */
 void PeerListModel::updatePeers(const google::protobuf::RepeatedPtrField<Protos::GUI::State::Peer>& peers, const QSet<Common::Hash>& peersDownloadingOurData)
 {
-   bool sortNeeded = false;
-
-   QList<Peer*> peersToRemove = this->orderedPeers;
+   Common::SortedArray<Peer*> peersToRemove = this->orderedPeers;
    QList<Peer*> peersToAdd;
 
    for (int i = 0; i < peers.size(); i++)
@@ -241,29 +270,51 @@ void PeerListModel::updatePeers(const google::protobuf::RepeatedPtrField<Protos:
             Common::ProtoHelper::getIP(peers.Get(i).ip()) :
             QHostAddress();
 
-      int j = this->orderedPeers.indexOf(this->indexedPeers[peerID]);
+      Peer* peer = this->indexedPeers[peerID];
+      int j = this->orderedPeers.indexOf(peer);
       if (j != -1)
       {
-         peersToRemove.removeOne(this->indexedPeers[peerID]);
-         if (this->orderedPeers[j]->nick != nick)
+         peersToRemove.remove(peer);
+         if (peer->nick != nick)
          {
-            this->orderedPeers[j]->nick = nick;
-            sortNeeded = true;
-            emit dataChanged(this->createIndex(j, 1), this->createIndex(j, 1));
+            if (this->currentSortType == Protos::GUI::Settings::BY_NICK)
+            {
+               this->beginRemoveRows(QModelIndex(), j, j);
+               this->orderedPeers.remove(peer);
+               this->endRemoveRows();
+               peer->nick = nick;
+               peersToAdd << peer;
+            }
+            else
+            {
+               peer->nick = nick;
+               emit dataChanged(this->createIndex(j, 1), this->createIndex(j, 1));
+            }
          }
-         if (this->orderedPeers[j]->sharingAmount != sharingAmount)
+         if (peer->sharingAmount != sharingAmount)
          {
-            this->orderedPeers[j]->sharingAmount = sharingAmount;
-            sortNeeded = true;
+            if (this->currentSortType == Protos::GUI::Settings::BY_SHARING_AMOUNT)
+            {
+               this->beginRemoveRows(QModelIndex(), j, j);
+               this->orderedPeers.remove(peer);
+               this->endRemoveRows();
+               peer->sharingAmount = sharingAmount;
+               peersToAdd << peer;
+            }
+            else
+            {
+               peer->sharingAmount = sharingAmount;
+               emit dataChanged(this->createIndex(j, 1), this->createIndex(j, 1));
+            }
          }
-         if (this->orderedPeers[j]->transferInformation != transferInformation)
+         if (peer->transferInformation != transferInformation)
          {
-            this->orderedPeers[j]->transferInformation = transferInformation;
+            peer->transferInformation = transferInformation;
             emit dataChanged(this->createIndex(j, 0), this->createIndex(j, 0));
          }
 
-         this->orderedPeers[j]->ip = ip;
-         this->orderedPeers[j]->coreVersion = coreVersion;
+         peer->ip = ip;
+         peer->coreVersion = coreVersion;
       }
       else
       {
@@ -271,11 +322,8 @@ void PeerListModel::updatePeers(const google::protobuf::RepeatedPtrField<Protos:
       }
    }
 
-   if(!peersToAdd.isEmpty())
-      sortNeeded = true;
-
    QList<Common::Hash> peerIDsRemoved;
-   for (QListIterator<Peer*> i(peersToRemove); i.hasNext();)
+   for (Common::SortedArray<Peer*>::Iterator i(peersToRemove); i.hasNext();)
    {
       Peer* const peer = i.next();
       peerIDsRemoved << peer->peerID;
@@ -284,7 +332,7 @@ void PeerListModel::updatePeers(const google::protobuf::RepeatedPtrField<Protos:
       {
          this->beginRemoveRows(QModelIndex(), j, j);
          this->indexedPeers.remove(peer->peerID);
-         this->orderedPeers.removeAt(j);
+         this->orderedPeers.remove(peer);
          delete peer;
          this->endRemoveRows();
       }
@@ -293,39 +341,12 @@ void PeerListModel::updatePeers(const google::protobuf::RepeatedPtrField<Protos:
    if (!peerIDsRemoved.isEmpty())
       emit peersRemoved(peerIDsRemoved);
 
-   if (!peersToAdd.isEmpty())
+   for (QListIterator<Peer*> i(peersToAdd); i.hasNext();)
    {
-      this->beginInsertRows(QModelIndex(), this->orderedPeers.size(), this->orderedPeers.size() + peersToAdd.size() - 1);
-      for (QListIterator<Peer*> i(peersToAdd); i.hasNext();)
-      {
-         Peer* const peer = i.next();
-         this->indexedPeers.insert(peer->peerID, peer);
-      }
-      this->orderedPeers.append(peersToAdd);
+      Peer* const peer = i.next();
+      int pos = this->orderedPeers.insert(peer);
+      this->beginInsertRows(QModelIndex(), pos, pos);
+      this->indexedPeers.insert(peer->peerID, peer);
       this->endInsertRows();
    }
-
-   if (sortNeeded)
-      this->sort();
-}
-
-void PeerListModel::sort()
-{
-   emit layoutAboutToBeChanged();
-   qSort(this->orderedPeers.begin(), this->orderedPeers.end(), this->currentSortType == Protos::GUI::Settings::BY_NICK ? Peer::sortCompByNick : Peer::sortCompBySharingAmount);
-   emit layoutChanged();
-}
-
-//////
-
-bool PeerListModel::Peer::sortCompByNick(const Peer* p1, const Peer* p2)
-{
-   return Common::StringUtils::toLowerAndRemoveAccents(p1->nick) < Common::StringUtils::toLowerAndRemoveAccents(p2->nick);
-}
-
-bool PeerListModel::Peer::sortCompBySharingAmount(const PeerListModel::Peer* p1, const PeerListModel::Peer* p2)
-{
-   if (p1->sharingAmount == p2->sharingAmount)
-      return Common::StringUtils::toLowerAndRemoveAccents(p1->nick) < Common::StringUtils::toLowerAndRemoveAccents(p2->nick);
-   return p1->sharingAmount > p2->sharingAmount;
 }
