@@ -108,6 +108,7 @@ namespace Common
       static void rebalance(Node* node);
       static Node* getRightNeighbor(Node* node, int& medianPosition);
       static Node* getLeftNeighbor(Node* node, int& medianPosition);
+      static void merge(Node* leftNode, int medianPosition, Node* rightNode);
 
       static Node* duplicateNode(Node* node);
       static void deleteNode(Node* node);
@@ -193,7 +194,7 @@ bool Common::SortedArray<T, M>::remove(const T& value)
 {
    int position;
    Node* node = getNode(this->d->root, value, position);
-   if (!node)
+   if (position == -1)
       return false;
    remove(node, position);
    return true;
@@ -371,7 +372,7 @@ int Common::SortedArray<T, M>::indexOf(Node* node, const T& value, int nbItemsBe
 
 /**
   * Returns a node corresponding to the given value, this node may or may not contain the value.
-  * If the node doesn't contain the value it's a leaf.
+  * If the node doesn't contain the value then position is set to -1.
   */
 template <typename T, int M>
 typename Common::SortedArray<T, M>::Node* Common::SortedArray<T, M>::getNode(Common::SortedArray<T, M>::Node* node, const T& value, int& position)
@@ -517,59 +518,154 @@ void Common::SortedArray<T, M>::remove(Node* node, int position)
 template <typename T, int M>
 void Common::SortedArray<T, M>::rebalance(Node* node)
 {
-   if (node->nbItems >= M / 2 )
+   if (!node->parent || node->nbItems >= M / 2 )
       return;
 
    // 1) We look on the left and right neighbors if we can take one of their children.
-   int medianPosition;
-   Node* neighbor = getRightNeighbor(node, medianPosition);
-   if (neighbor && neighbor->nbItems > M / 2)
+   int medianPositionRight;
+   Node* rightNeighbor = getRightNeighbor(node, medianPositionRight);
+   if (rightNeighbor && rightNeighbor->nbItems > M / 2)
    {
-      node->items[node->nbItems] = node->parent->items[medianPosition];
-      node->children[node->nbItems + 1] = neighbor->children[0];
+      node->items[node->nbItems] = node->parent->items[medianPositionRight];
+
+      // Move the associated child if it exists.
+      if (rightNeighbor->children[0])
+      {
+         node->size += rightNeighbor->children[0]->size;
+         rightNeighbor->size -= rightNeighbor->children[0]->size;
+         node->children[node->nbItems + 1] = rightNeighbor->children[0];
+         node->children[node->nbItems + 1]->parent = node;
+      }
 
       node->nbItems++;
-      neighbor->nbItems--;
+      rightNeighbor->nbItems--;
       // We don't need to change the size of parent because they share the same parent.
       node->size++;
-      neighbor->size--;
+      rightNeighbor->size--;
 
-      node->parent->items[medianPosition] = neighbor->items[0];
+      node->parent->items[medianPositionRight] = rightNeighbor->items[0];
 
-      for (int i = 0; i < neighbor->nbItems; i++)
+      for (int i = 0; i < rightNeighbor->nbItems; i++)
       {
-         neighbor->items[i] = neighbor->items[i+1];
-         neighbor->children[i] = neighbor->children[i+1];
+         rightNeighbor->items[i] = rightNeighbor->items[i+1];
+         rightNeighbor->children[i] = rightNeighbor->children[i+1];
       }
-      neighbor->children[neighbor->nbItems] = neighbor->children[neighbor->nbItems+1];
+      rightNeighbor->children[rightNeighbor->nbItems] = rightNeighbor->children[rightNeighbor->nbItems+1];
 
-      neighbor->items[neighbor->nbItems] = T();
-   }
-   else if ((neighbor = getLeftNeighbor(node, medianPosition)) && neighbor->nbItems > M / 2)
-   {
-      for (int i = node->nbItems; i > 0; i--)
-      {
-         node->items[i] = node->items[i-1];
-         node->children[i+1] = node->children[i];
-      }
-      node->children[1] = node->children[0];
-
-      node->items[0] = node->parent->items[medianPosition];
-      node->children[0] = neighbor->children[neighbor->nbItems];
-
-      node->nbItems++;
-      neighbor->nbItems--;
-      // We don't need to change the size of parent because they share the same parent.
-      node->size++;
-      neighbor->size--;
-
-      node->parent->items[medianPosition] = neighbor->items[neighbor->nbItems];
-
-      neighbor->items[neighbor->nbItems] = T();
+      rightNeighbor->items[rightNeighbor->nbItems] = T();
    }
    else
    {
-      ; // TODO
+      int medianPositionLeft;
+      Node* leftNeighbor = getLeftNeighbor(node, medianPositionLeft);
+      if (leftNeighbor && leftNeighbor->nbItems > M / 2)
+      {
+         for (int i = node->nbItems; i > 0; i--)
+         {
+            node->items[i] = node->items[i-1];
+            node->children[i+1] = node->children[i];
+         }
+         node->children[1] = node->children[0];
+
+         node->items[0] = node->parent->items[medianPositionLeft];
+
+         // Move the associated child if it exists.
+         if (leftNeighbor->children[leftNeighbor->nbItems])
+         {
+            node->size += leftNeighbor->children[leftNeighbor->nbItems]->size;
+            leftNeighbor->size -= leftNeighbor->children[leftNeighbor->nbItems]->size;
+            node->children[0] = leftNeighbor->children[leftNeighbor->nbItems];
+            node->children[0]->parent = node;
+         }
+
+         node->nbItems++;
+         leftNeighbor->nbItems--;
+         // We don't need to change the size of parent because they share the same parent.
+         node->size++;
+         leftNeighbor->size--;
+
+         node->parent->items[medianPositionLeft] = leftNeighbor->items[leftNeighbor->nbItems];
+
+         leftNeighbor->items[leftNeighbor->nbItems] = T();
+      }
+      else // If we can't take an element from the right neighbor or from the left neighbor, we have to merge it.
+      {
+         if (rightNeighbor)
+            merge(node, medianPositionRight, rightNeighbor);
+         else
+            merge(leftNeighbor, medianPositionLeft, node);
+      }
+   }
+}
+
+/**
+  * Merge two neighbors together. 'leftNode->nbItems' + 'rightNode->nbItems' + 1 must be equal to M - 1.
+  */
+template <typename T, int M>
+void Common::SortedArray<T, M>::merge(Common::SortedArray<T, M>::Node* leftNode, int medianPosition, Common::SortedArray<T, M>::Node* rightNode)
+{
+   Node* parent = leftNode->parent;
+
+   // Special case when the parent is the root and both given nodes can be merge into it.
+   if (!parent->parent && parent->nbItems == 1)
+   {
+      // Median value.
+      parent->items[leftNode->nbItems] = parent->items[0];
+
+      for (int i = 0; i < leftNode->nbItems; i++)
+      {
+         parent->items[i] = leftNode->items[i];
+         if (parent->children[i] = leftNode->children[i])
+            parent->children[i]->parent = parent;
+      }
+      if (parent->children[leftNode->nbItems] = leftNode->children[leftNode->nbItems])
+         parent->children[leftNode->nbItems]->parent = parent;
+
+      for (int i = 0; i < rightNode->nbItems; i++)
+      {
+         parent->items[leftNode->nbItems + 1 + i] = rightNode->items[i];
+         if (parent->children[leftNode->nbItems + 1 + i] = rightNode->children[i])
+            parent->children[leftNode->nbItems + 1 + i]->parent = parent;
+      }
+      if (parent->children[leftNode->nbItems + rightNode->nbItems + 1] = rightNode->children[rightNode->nbItems])
+         parent->children[leftNode->nbItems + rightNode->nbItems + 1]->parent = parent;
+
+      parent->nbItems = M - 1;
+
+      delete leftNode;
+      delete rightNode;
+   }
+   else // Else we merge the median of the parent and the elements of the right nodes into the left node.
+   {
+      leftNode->items[leftNode->nbItems] = parent->items[medianPosition];
+      leftNode->nbItems++;
+      leftNode->size++;
+
+      for (int i = 0; i < rightNode->nbItems; i++)
+      {
+         leftNode->items[leftNode->nbItems+i] = rightNode->items[i];
+         if (leftNode->children[leftNode->nbItems+i] = rightNode->children[i])
+            leftNode->children[leftNode->nbItems+i]->parent = leftNode;
+      }
+      leftNode->nbItems += rightNode->nbItems;
+      leftNode->size += rightNode->size;
+      if (leftNode->children[leftNode->nbItems] = rightNode->children[rightNode->nbItems])
+         leftNode->children[leftNode->nbItems]->parent = leftNode;
+
+      delete rightNode;
+
+      parent->nbItems--;
+
+      // Shift to left. TODO: maybe do a function for that.
+      for (int i = medianPosition; i < parent->nbItems; i++)
+      {
+         parent->items[i] = parent->items[i+1];
+         parent->children[i+1] = parent->children[i+2];
+      }
+      parent->items[parent->nbItems] = T();
+      parent->children[parent->nbItems+1] = nullptr;
+
+      rebalance(parent);
    }
 }
 

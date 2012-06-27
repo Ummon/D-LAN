@@ -207,13 +207,13 @@ void Tests::sortedArray()
    for (char c = 'A'; c <= 'Z'; c++)
       orderedList << c;
 
-   for (int seed = 1; seed <= 100; seed++)
+   for (int seed = 1; seed <= 1000; seed++)
    {
       MTRand mtRand(seed);
 
       SortedArray<char, 5> array;
 
-      // Insert the following items: A -> Z in a randrom order.
+      // Insert the following items: A -> Z in a pseudo randrom order.
       while (array.size() != orderedList.size())
          array.insert(orderedList[mtRand.randInt(orderedList.size()-1)]);
 
@@ -229,10 +229,9 @@ void Tests::sortedArray()
       int unknownElement = array.indexOf('_');
       QCOMPARE(unknownElement, -1);
 
-      array.remove('N');
-      array.remove('E');
-      array.remove('Z');
-      // TODO...
+      // Remove the elements in a pseudo random order.
+      while (array.size() != 0)
+         array.remove(orderedList[mtRand.randInt(orderedList.size()-1)]);
    }
 
    MTRand mtRand(42);
@@ -250,8 +249,8 @@ void Tests::sortedArray()
       names << word;
    }
 
-
    QList<QString> namesNotInserted;
+   names.reserve(nbWords / 20);
    for (int i = 0; i < nbWords / 20; i++)
    {
       QString word(wordSize, 'a');
