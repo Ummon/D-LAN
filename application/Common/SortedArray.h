@@ -19,6 +19,8 @@
 #ifndef COMMON_SORTARRAY_H
 #define COMMON_SORTARRAY_H
 
+#include <functional>
+
 #include <QSharedDataPointer>
 
 /**
@@ -48,6 +50,13 @@ namespace Common
    class SortedArray
    {
       struct Node;
+      struct Position
+      {
+         bool operator==(const Position& other) const { return other.node == this->node && other.p == this->p; }
+         Node* node;
+         int p;
+      };
+
    public:      
       class NotFoundException {};
       class InvalidMException {};
@@ -69,8 +78,11 @@ namespace Common
 
       int getM() const;
 
+      //void sort();
+      void setSortedFunctions(const std::function<bool(const T&, const T&)>& lesserThan);
+
       /**
-        * A very basic iterator to iterator on the sorted elements.
+        * A very basic iterator to iterate on the sorted elements.
         */
       class Iterator
       {
@@ -81,8 +93,7 @@ namespace Common
 
       private:
          const SortedArray& array;
-         Node* currentNode;
-         int currentPosition;
+         Position currentPosition;
       };
 
    private:
@@ -99,14 +110,18 @@ namespace Common
          int size; // The size of the subtree (children's sizes + this->nbItems).
       };
 
+      T& get(int index) const;
+
       static Node* getLeftmostNode(Node* node);
       static Node* getRightmostNode(Node* node);
 
-      static int getNextPosition(Node*& node, int currentPosition);
+      static Position getNextPosition(const Position&);
       static Node* getFromIndex(Node* node, int index, int nbItemsBefore, int& position);
-      static int indexOf(Node* node, const T& value, int nbItemsBefore);
-      static Node* getNode(Node* node, const T& value, int& position);
-      static int getPosition(Node* node, const T& value, bool& exists);
+
+      static int indexOf(Node* node, const T& value, int nbItemsBefore, const std::function<bool(const T&, const T&)>& lesserThan);
+      static Node* getNode(Node* node, const T& value, int& position, const std::function<bool(const T&, const T&)>& lesserThan);
+      inline static int getPosition(Node* node, const T& value, bool& exists, const std::function<bool(const T&, const T&)>& lesserThan);
+
       static void incrementSize(Node* node);
       static void decrementSize(Node* node);
       static void moveChild(Node* node1, int pos1, Node* node2, int pos2);
@@ -123,16 +138,25 @@ namespace Common
       static Node* duplicateNode(Node* node);
       static void deleteNode(Node* node);
 
-      void add(Node* node, const T& value, Node* child = nullptr);
-      Node* split(Node* node, const T& value, Node* child = nullptr);
+      static Node* add(Node* node, const T& value, const std::function<bool(const T&, const T&)>& lesserThan, Node* child = nullptr);
+      static Node* split(Node* node, const T& value, const std::function<bool(const T&, const T&)>& lesserThan, Node* child = nullptr);
+
+      static void quickSort(const Position& first, const Position& last);
+      static Position partition(const Position& first, const Position& last, const Position& pivot);
 
       struct SortedArrayData : public QSharedData
       {
-         SortedArrayData() : root(new Node()) {}
-         SortedArrayData(const SortedArrayData& other) : root(duplicateNode(other.root)) {}
+         SortedArrayData(const std::function<bool(const T&, const T&)>& lesserThan) :
+            root(new Node()), lesserThanFun(lesserThan)
+         {}
+         SortedArrayData(const SortedArrayData& other) :
+            root(duplicateNode(other.root)),
+            lesserThanFun(other.lesserThanFun)
+         {}
          ~SortedArrayData() { deleteNode(this->root); }
 
          Node* root;
+         std::function<bool(const T&, const T&)> lesserThanFun;
       };
 
       QSharedDataPointer<SortedArrayData> d;
@@ -144,7 +168,7 @@ namespace Common
   */
 template <typename T, int M>
 Common::SortedArray<T, M>::SortedArray() :
-   d(new SortedArrayData())
+   d(new SortedArrayData([](const T& e1, const T& e2) { return e1 < e2; }))
 {
    // M must be an odd number.
    if (M % 2 == 0)
@@ -172,9 +196,12 @@ template <typename T, int M>
 int Common::SortedArray<T, M>::insert(const T& value, bool* exists)
 {
    int position;
-   Node* node = getNode(this->d->root, value, position);
+   Node* node = getNode(this->d->root, value, position, this->d->lesserThanFun);
    if (position == -1)
-      this->add(node, value);
+   {
+      if (Node* newRoot = add(node, value, this->d->lesserThanFun))
+         this->d->root = newRoot;
+   }
    else
       node->items[position] = value;
 
@@ -203,7 +230,7 @@ template <typename T, int M>
 bool Common::SortedArray<T, M>::remove(const T& value)
 {
    int position;
-   Node* node = getNode(this->d->root, value, position);
+   Node* node = getNode(this->d->root, value, position, this->d->lesserThanFun);
    if (position == -1)
       return false;
    remove(node, position);
@@ -214,7 +241,7 @@ template <typename T, int M>
 bool Common::SortedArray<T, M>::contains(const T& value) const
 {
    int position;
-   getNode(this->d->root, value, position);
+   getNode(this->d->root, value, position, this->d->lesserThanFun);
    return position != -1;
 }
 
@@ -224,7 +251,7 @@ bool Common::SortedArray<T, M>::contains(const T& value) const
 template <typename T, int M>
 int Common::SortedArray<T, M>::indexOf(const T& value) const
 {
-   return indexOf(this->d->root, value, 0);
+   return this->indexOf(this->d->root, value, 0, this->d->lesserThanFun);
 }
 
 /**
@@ -233,7 +260,7 @@ int Common::SortedArray<T, M>::indexOf(const T& value) const
 template <typename T, int M>
 const T& Common::SortedArray<T, M>::operator[](int index) const
 {
-   return (*this)[index];
+   return this->get(index);
 }
 
 /**
@@ -242,12 +269,7 @@ const T& Common::SortedArray<T, M>::operator[](int index) const
 template <typename T, int M>
 T& Common::SortedArray<T, M>::operator[](int index)
 {
-   if (index >= this->d->root->size)
-      throw NotFoundException();
-
-   int position;
-   Node* node = getFromIndex(this->d->root, index, 0, position);
-   return node->items[position];
+   return this->get(index);
 }
 
 template <typename T, int M>
@@ -256,18 +278,58 @@ int Common::SortedArray<T, M>::getM() const
    return M;
 }
 
+/**
+  * Must be call after data used to compare an element is modified.
+  * Not implemented.
+  */
+/*template <typename T, int M>
+void Common::SortedArray<T, M>::sort()
+{
+   if (this->size() < 2)
+      return;
+   Position start { getLeftmostNode(this->d->root), 0 };
+   Position last { getRightmostNode(this->d->root), 0 };
+   last.p = last.node->nbItems - 1;
+
+   quickSort(start, last);
+}*/
+
+/**
+  * Defines custom function used to define the order of the values.
+  * The array is automatically reordered after calling this method.
+  */
+template <typename T, int M>
+void Common::SortedArray<T, M>::setSortedFunctions(const std::function<bool(const T&, const T&)>& lesserThan)
+{
+   this->d->lesserThanFun = lesserThan;
+
+   QSharedDataPointer<SortedArrayData> newD(new SortedArrayData(lesserThan));
+   for (Iterator i(*this); i.hasNext();)
+   {
+      int position;
+      const T& value = i.next();
+      Node* node = getNode(newD->root, value, position, newD->lesserThanFun);
+
+      Q_ASSERT(position == -1); // The value should never be found.
+
+      if (Node* newRoot = add(node, value, newD->lesserThanFun))
+         newD->root = newRoot;
+   }
+   this->d = newD;
+}
+
 template <typename T, int M>
 Common::SortedArray<T, M>::Iterator::Iterator(const SortedArray& array) :
-   array(array), currentNode(nullptr), currentPosition(0)
+   array(array), currentPosition({nullptr, 0})
 {
    if (array.size() > 0)
-      this->currentNode = getLeftmostNode(array.d->root);
+      this->currentPosition.node = getLeftmostNode(array.d->root);
 }
 
 template <typename T, int M>
 bool Common::SortedArray<T, M>::Iterator::hasNext() const
 {
-   return this->currentNode != nullptr;
+   return this->currentPosition.node != nullptr;
 }
 
 /**
@@ -276,12 +338,23 @@ bool Common::SortedArray<T, M>::Iterator::hasNext() const
 template <typename T, int M>
 const T& Common::SortedArray<T, M>::Iterator::next()
 {
-   if (this->currentNode == nullptr)
+   if (this->currentPosition.node == nullptr)
       throw NotFoundException();
 
-   const T& value = this->currentNode->items[this->currentPosition];
-   this->currentPosition = getNextPosition(this->currentNode, this->currentPosition);
+   const T& value = this->currentPosition.node->items[this->currentPosition.p];
+   this->currentPosition = getNextPosition(this->currentPosition);
    return value;
+}
+
+template <typename T, int M>
+T& Common::SortedArray<T, M>::get(int index) const
+{
+   if (index >= this->d->root->size)
+      throw NotFoundException();
+
+   int position;
+   Node* node = getFromIndex(this->d->root, index, 0, position);
+   return node->items[position];
 }
 
 /**
@@ -308,32 +381,35 @@ typename Common::SortedArray<T, M>::Node* Common::SortedArray<T, M>::getRightmos
   * 'node' is set to 'nullptr' if there is no next position.
   */
 template <typename T, int M>
-int Common::SortedArray<T, M>::getNextPosition(Node*& node, int currentPosition)
+typename Common::SortedArray<T, M>::Position Common::SortedArray<T, M>::getNextPosition(const Position& currentPosition)
 {
-   currentPosition++;
+   Position nextPosition = currentPosition;
+   nextPosition.p++;
 
-   if (Node* child = node->children[currentPosition])
+   if (Node* child = nextPosition.node->children[nextPosition.p])
    {
-      node = getLeftmostNode(child);
-      return 0;
+      nextPosition.node = getLeftmostNode(child);
+      nextPosition.p = 0;
+      return nextPosition;
    }
 
-   if (currentPosition < node->nbItems)
-      return currentPosition;
+   if (nextPosition.p < nextPosition.node->nbItems)
+      return nextPosition;
 
-   while (node->parent)
+   while (nextPosition.node->parent)
    {
-      for (int i = 0; i < node->parent->nbItems; i++)
-         if (node->parent->children[i] == node)
+      for (int i = 0; i < nextPosition.node->parent->nbItems; i++)
+         if (nextPosition.node->parent->children[i] == nextPosition.node)
          {
-            node = node->parent;
-            return i;
+            nextPosition.node = nextPosition.node->parent;
+            nextPosition.p = i;
+            return nextPosition;
          }
-      node = node->parent;
+      nextPosition.node = nextPosition.node->parent;
    }
 
-   node = nullptr;
-   return 0;
+   nextPosition.node = nullptr;
+   return nextPosition;
 }
 
 template <typename T, int M>
@@ -360,10 +436,10 @@ typename Common::SortedArray<T, M>::Node* Common::SortedArray<T, M>::getFromInde
 }
 
 template <typename T, int M>
-int Common::SortedArray<T, M>::indexOf(Node* node, const T& value, int nbItemsBefore)
+int Common::SortedArray<T, M>::indexOf(Node* node, const T& value, int nbItemsBefore, const std::function<bool(const T&, const T&)>& lesserThan)
 {
    bool exists;
-   int position = getPosition(node, value, exists);
+   int position = getPosition(node, value, exists, lesserThan);
 
    nbItemsBefore += position;
    for (int i = 0; i < position; i++)
@@ -373,7 +449,7 @@ int Common::SortedArray<T, M>::indexOf(Node* node, const T& value, int nbItemsBe
    if (!exists)
    {
       if (node->children[position])
-         return indexOf(node->children[position], value, nbItemsBefore);
+         return indexOf(node->children[position], value, nbItemsBefore, lesserThan);
       return -1;
    }
 
@@ -385,14 +461,14 @@ int Common::SortedArray<T, M>::indexOf(Node* node, const T& value, int nbItemsBe
   * If the node doesn't contain the value then position is set to -1.
   */
 template <typename T, int M>
-typename Common::SortedArray<T, M>::Node* Common::SortedArray<T, M>::getNode(Node* node, const T& value, int& position)
+typename Common::SortedArray<T, M>::Node* Common::SortedArray<T, M>::getNode(Node* node, const T& value, int& position, const std::function<bool(const T&, const T&)>& lesserThan)
 {
    bool exists;
-   position = getPosition(node, value, exists);
+   position = getPosition(node, value, exists, lesserThan);
    if (!exists)
    {
       if (node->children[position])
-         return getNode(node->children[position], value, position);
+         return getNode(node->children[position], value, position, lesserThan);
       position = -1;
    }
 
@@ -404,13 +480,13 @@ typename Common::SortedArray<T, M>::Node* Common::SortedArray<T, M>::getNode(Nod
   * It may return a position after the last value if the new one have to be inserted in the last position.
   */
 template <typename T, int M>
-int Common::SortedArray<T, M>::getPosition(Node* node, const T& value, bool& exists)
+inline int Common::SortedArray<T, M>::getPosition(Node* node, const T& value, bool& exists, const std::function<bool(const T&, const T&)>& lesserThan)
 {
    exists = false;
-   if (node->nbItems == 0 || value < node->items[0])
+   if (node->nbItems == 0 || lesserThan(value, node->items[0]))
       return 0;
 
-   if (node->items[node->nbItems-1] < value)
+   if (lesserThan(node->items[node->nbItems-1], value))
       return node->nbItems;
 
    int i1 = 0;
@@ -432,7 +508,7 @@ int Common::SortedArray<T, M>::getPosition(Node* node, const T& value, bool& exi
          return i2;
       }
 
-      if (node->items[i3] < value)
+      if (lesserThan(node->items[i3], value))
          i1 = i3;
       else
          i2 = i3;
@@ -553,7 +629,7 @@ void Common::SortedArray<T, M>::rebalance(Node* node)
    }
    else
    {
-      int medianPositionLeft;
+      int medianPositionLeft = 0;
       Node* leftNeighbor = getLeftNeighbor(node, medianPositionLeft);
       if (leftNeighbor && leftNeighbor->nbItems > M / 2)
       {
@@ -714,7 +790,7 @@ typename Common::SortedArray<T, M>::Node* Common::SortedArray<T, M>::duplicateNo
 {
    Node* newNode = new Node();
 
-   memcpy(newNode, node, sizeof(node));
+   memcpy(newNode, node, sizeof(Node));
 
    for (int i = 0; i <= newNode->nbItems; i++)
       if (newNode->children[i])
@@ -736,9 +812,10 @@ void Common::SortedArray<T, M>::deleteNode(Node* node)
 
 /**
   * Add the element 'e' to 'node', may attach an optional child after the position of 'e'.
+  * @return the new root if a new root has been created, else returns 'nullptr'.
   */
 template <typename T, int M>
-void Common::SortedArray<T, M>::add(Node* node, const T& value, Node* child)
+typename Common::SortedArray<T, M>::Node* Common::SortedArray<T, M>::add(Node* node, const T& value, const std::function<bool(const T&, const T&)>& lesserThan, Node* child)
 {
    if (child)
       child->parent = node;
@@ -749,7 +826,7 @@ void Common::SortedArray<T, M>::add(Node* node, const T& value, Node* child)
       for (int i = node->nbItems - 1; i >= -1; i--)
       {
          // If 'e' must be put after the ith element.
-         if (i == -1 || node->items[i] < value)
+         if (i == -1 || lesserThan(node->items[i], value))
          {
             node->items[i+1] = value;
             node->children[i+2] = child; // If 'child' is null then "node->children[i+2]" must be null too.
@@ -768,25 +845,31 @@ void Common::SortedArray<T, M>::add(Node* node, const T& value, Node* child)
    // If the node doesn't have a parent we create one.
    else
    {
-      Node* rightNode = split(node, value, child);
+      Node* rightNode = split(node, value, lesserThan, child);
+
+      Node* newRoot;
 
       if (node->parent)
       {
-         add(node->parent, node->items[M / 2], rightNode);
+         newRoot = add(node->parent, node->items[M / 2], lesserThan, rightNode);
       }
       else
       {
-         this->d->root = new Node();
-         this->d->root->nbItems = 1;
-         this->d->root->size = 1 + node->size + rightNode->size;
-         this->d->root->items[0] = node->items[M / 2]; // Copy the median value.
-         this->d->root->children[0] = node;
-         this->d->root->children[1] = rightNode;
-         node->parent = this->d->root;
-         rightNode->parent = this->d->root;
+         newRoot = new Node();
+         newRoot->nbItems = 1;
+         newRoot->size = 1 + node->size + rightNode->size;
+         newRoot->items[0] = node->items[M / 2]; // Copy the median value.
+         newRoot->children[0] = node;
+         newRoot->children[1] = rightNode;
+         node->parent = newRoot;
+         rightNode->parent = newRoot;
       }
       node->items[M / 2] = T(); // Remove the median value.
+
+      return newRoot;
    }
+
+   return nullptr;
 }
 
 /**
@@ -794,7 +877,7 @@ void Common::SortedArray<T, M>::add(Node* node, const T& value, Node* child)
   * The median value is put in the position "M / 2" in 'node'.
   */
 template <typename T, int M>
-typename Common::SortedArray<T, M>::Node* Common::SortedArray<T, M>::split(Node* node, const T& value, Node* child)
+typename Common::SortedArray<T, M>::Node* Common::SortedArray<T, M>::split(Node* node, const T& value, const std::function<bool(const T&, const T&)>& lesserThan, Node* child)
 {
    Node* rightNode = new Node();
    rightNode->nbItems = (M-1) / 2;
@@ -808,7 +891,7 @@ typename Common::SortedArray<T, M>::Node* Common::SortedArray<T, M>::split(Node*
    // First we copy the values in the new node.
    for (int j = rightNode->nbItems - 1; j >= 0; j--, i--)
    {
-      if (!eInsertedInRightNode && node->items[i] < value)
+      if (!eInsertedInRightNode && lesserThan(node->items[i], value))
       {
          rightNode->items[j] = value;
 
@@ -829,7 +912,7 @@ typename Common::SortedArray<T, M>::Node* Common::SortedArray<T, M>::split(Node*
    }
 
    // Defines the median value in "node->items[i+1]".
-   if (!eInsertedInRightNode && node->items[i] < value)
+   if (!eInsertedInRightNode && lesserThan(node->items[i], value))
    {
       node->items[i+1] = value;
       if (child)
@@ -850,7 +933,7 @@ typename Common::SortedArray<T, M>::Node* Common::SortedArray<T, M>::split(Node*
    if (!eInsertedInRightNode)
       while (--i >= -1)
       {
-         if (!eInsertedInRightNode && (i == -1 || node->items[i] < value))
+         if (!eInsertedInRightNode && (i == -1 || lesserThan(node->items[i], value)))
          {
             node->items[i+1] = value;
             if (child)
@@ -866,5 +949,23 @@ typename Common::SortedArray<T, M>::Node* Common::SortedArray<T, M>::split(Node*
 
    return rightNode;
 }
+
+/**
+  * Not implemented
+  */
+/*
+template <typename T, int M>
+void Common::SortedArray<T, M>::quickSort(const Position& first, const Position& last)
+{
+   if (getNextPosition(first) == last)
+      return;
+
+   Position pivot;
+}
+template <typename T, int M>
+typename Common::SortedArray<T, M>::Position Common::SortedArray<T, M>::partition(const Position& first, const Position& last, const Position& pivot)
+{
+
+}*/
 
 #endif

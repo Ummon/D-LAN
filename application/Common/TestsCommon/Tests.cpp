@@ -239,6 +239,41 @@ void Tests::sortedArray()
       }
    }
 
+   {
+      // Test other comparaison functions.
+      QList<QString> values { "albinos", "Andrew", "double", "David" };
+      QList<QString> res1 { "Andrew", "David", "albinos", "double" };
+      QList<QString> res2 { "albinos", "Andrew", "David", "double" };
+      SortedArray<QString> array;
+
+      for (int i = 0; i < values.size(); i++)
+         array.insert(values[i]);
+
+      qDebug() << "Sorted values without sorted functions defined:";
+      for (int i = 0; i < array.size(); i++)
+      {
+         QCOMPARE(array[i], res1[i]);
+         qDebug() << array[i];
+      }
+
+      array.setSortedFunctions(
+         [](const QString& s1, const QString& s2) { return s1.toLower() < s2.toLower(); }
+      );
+
+      qDebug() << "Sorted values with sorted functions defined:";
+      for (int i = 0; i < array.size(); i++)
+      {
+         QCOMPARE(array[i], res2[i]);
+         qDebug() << array[i];
+      }
+
+      array.insert("actual");
+      QCOMPARE(array[0], QString("actual"));
+   }
+}
+
+void Tests::sortedArrayBenchmark()
+{
    MTRand mtRand(42);
    const int wordSize = 5;
    const int nbWords = 200000;
