@@ -109,6 +109,8 @@ namespace Common
       static Node* getRightNeighbor(Node* node, int& medianPosition);
       static Node* getLeftNeighbor(Node* node, int& medianPosition);
       static void merge(Node* leftNode, int medianPosition, Node* rightNode);
+      static void shiftLeft(Node* node, const T& value = T(), int startPositionItem = 0, int startPositionChild = 0);
+      static void shiftRight(Node* node, const T& value = T(), int startPositionItem = -1, int startPositionChild = -1);
 
       static Node* duplicateNode(Node* node);
       static void deleteNode(Node* node);
@@ -187,7 +189,7 @@ void Common::SortedArray<T, M>::remove(int index)
 }
 
 /**
-  * Return false if the value doesn't exist.
+  * Return 'false' if the value doesn't exist.
   */
 template <typename T, int M>
 bool Common::SortedArray<T, M>::remove(const T& value)
@@ -532,21 +534,14 @@ void Common::SortedArray<T, M>::rebalance(Node* node)
       moveChild(rightNeighbor, 0, node, node->nbItems + 1);
 
       node->nbItems++;
-      rightNeighbor->nbItems--;
+
       // We don't need to change the size of parent because they share the same parent.
       node->size++;
       rightNeighbor->size--;
 
       node->parent->items[medianPositionRight] = rightNeighbor->items[0];
 
-      for (int i = 0; i < rightNeighbor->nbItems; i++)
-      {
-         rightNeighbor->items[i] = rightNeighbor->items[i+1];
-         rightNeighbor->children[i] = rightNeighbor->children[i+1];
-      }
-      rightNeighbor->children[rightNeighbor->nbItems] = rightNeighbor->children[rightNeighbor->nbItems+1];
-
-      rightNeighbor->items[rightNeighbor->nbItems] = T();
+      shiftLeft(rightNeighbor);
    }
    else
    {
@@ -554,21 +549,13 @@ void Common::SortedArray<T, M>::rebalance(Node* node)
       Node* leftNeighbor = getLeftNeighbor(node, medianPositionLeft);
       if (leftNeighbor && leftNeighbor->nbItems > M / 2)
       {
-         for (int i = node->nbItems; i > 0; i--)
-         {
-            node->items[i] = node->items[i-1];
-            node->children[i+1] = node->children[i];
-         }
-         node->children[1] = node->children[0];
-         node->children[0] = nullptr;
-
-         node->items[0] = node->parent->items[medianPositionLeft];
+         shiftRight(node, node->parent->items[medianPositionLeft]);
 
          // Move the associated child if it exists.
          moveChild(leftNeighbor, leftNeighbor->nbItems, node, 0);
 
-         node->nbItems++;
          leftNeighbor->nbItems--;
+
          // We don't need to change the size of parent because they share the same parent.
          node->size++;
          leftNeighbor->size--;
@@ -643,19 +630,47 @@ void Common::SortedArray<T, M>::merge(Common::SortedArray<T, M>::Node* leftNode,
 
       delete rightNode;
 
-      parent->nbItems--;
-
-      // Shift to left. TODO: maybe do a function for that.
-      for (int i = medianPosition; i < parent->nbItems; i++)
-      {
-         parent->items[i] = parent->items[i+1];
-         parent->children[i+1] = parent->children[i+2];
-      }
-      parent->items[parent->nbItems] = T();
-      parent->children[parent->nbItems+1] = nullptr;
+      shiftLeft(parent, T(), medianPosition, medianPosition+1);
 
       rebalance(parent);
    }
+}
+
+/**
+  * @remarks Will decrement 'node->nbItems'.
+  */
+template <typename T, int M>
+void Common::SortedArray<T, M>::shiftLeft(Common::SortedArray<T, M>::Node* node, const T& value, int startPositionItem, int startPositionChild)
+{
+   node->nbItems--;
+
+   for (int i = startPositionItem; i < node->nbItems; i++)
+      node->items[i] = node->items[i+1];
+   node->items[node->nbItems] = value;
+
+   for (int i = startPositionChild; i <= node->nbItems; i++)
+      node->children[i] = node->children[i+1];
+   node->children[node->nbItems+1] = nullptr;
+}
+
+/**
+  * @remarks Will increment 'node->nbItems'.
+  */
+template <typename T, int M>
+void Common::SortedArray<T, M>::shiftRight(Common::SortedArray<T, M>::Node* node, const T& value, int startPositionItem, int startPositionChild)
+{
+   startPositionItem = startPositionItem == -1 ? node->nbItems : startPositionItem;
+   startPositionChild = startPositionChild == -1 ? node->nbItems+1 : startPositionChild;
+
+   for (int i = startPositionItem; i > 0; i--)
+      node->items[i] = node->items[i-1];
+   node->items[0] = value;
+
+   for (int i = startPositionChild; i > 0; i--)
+      node->children[i] = node->children[i-1];
+   node->children[0] = nullptr;
+
+   node->nbItems++;
 }
 
 template <typename T, int M>
