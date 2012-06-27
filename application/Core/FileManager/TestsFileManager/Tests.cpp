@@ -61,7 +61,7 @@ void Tests::initTestCase()
    try
    {
       QString tempFolder = Common::Global::setCurrentDirToTemp("FileManagerTests");
-      qDebug() << "Application folder path (where the persistent data is put) : " <<  Global::getDataFolder(Common::Global::DataFolderType::LOCAL, false);
+      qDebug() << "Application folder path (where the persistent data is put) : " <<  Common::Global::getDataFolder(Common::Global::DataFolderType::LOCAL, false);
       qDebug() << "The file created during this test are put in : " << tempFolder;
    }
    catch(Common::Global::UnableToSetTempDirException& e)
@@ -156,7 +156,7 @@ void Tests::addASharedDirectoryIncoming()
 
    this->sharedDirs << QDir::currentPath().append("/incoming/");
    this->fileManager->setSharedDirs(this->sharedDirs);
-   QList<SharedDir> paths = this->fileManager->getSharedDirs();
+   QList<Common::SharedDir> paths = this->fileManager->getSharedDirs();
    QVERIFY(paths.size() == 1);
    QCOMPARE(paths.at(0).path, this->sharedDirs.at(0));
 }
@@ -167,7 +167,7 @@ void Tests::addASharedDirectory()
 
    this->sharedDirs << QDir::currentPath().append("/sharedDirs/share1/");
    this->fileManager->setSharedDirs(this->sharedDirs);
-   QList<SharedDir> paths = this->fileManager->getSharedDirs();
+   QList<Common::SharedDir> paths = this->fileManager->getSharedDirs();
    QVERIFY(paths.size() == 2);
    QCOMPARE(paths.at(1).path, this->sharedDirs.at(1));
 }
@@ -177,7 +177,7 @@ void Tests::addAnAlreadySharedDirectory()
    qDebug() << "===== addAnAlreadySharedDirectory() =====";
 
    this->fileManager->setSharedDirs(this->sharedDirs);
-   QList<SharedDir> paths = this->fileManager->getSharedDirs();
+   QList<Common::SharedDir> paths = this->fileManager->getSharedDirs();
    QVERIFY(paths.size() == 2);
    QCOMPARE(paths.at(1).path, this->sharedDirs.at(1));
 }
@@ -186,13 +186,13 @@ void Tests::swapTwoDirectories()
 {
    this->sharedDirs.move(1, 0);
    this->fileManager->setSharedDirs(this->sharedDirs);
-   QList<SharedDir> paths = this->fileManager->getSharedDirs();
+   QList<Common::SharedDir> paths = this->fileManager->getSharedDirs();
    QCOMPARE(paths.at(0).path, this->sharedDirs.at(0));
    QCOMPARE(paths.at(1).path, this->sharedDirs.at(1));
 
    this->sharedDirs.move(1, 0);
    this->fileManager->setSharedDirs(this->sharedDirs);
-   QList<SharedDir> paths2 = this->fileManager->getSharedDirs();
+   QList<Common::SharedDir> paths2 = this->fileManager->getSharedDirs();
    QCOMPARE(paths2.at(0).path, this->sharedDirs.at(0));
    QCOMPARE(paths2.at(1).path, this->sharedDirs.at(1));
 }
