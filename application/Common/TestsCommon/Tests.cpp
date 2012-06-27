@@ -231,7 +231,11 @@ void Tests::sortedArray()
 
       // Remove the elements in a pseudo random order.
       while (array.size() != 0)
-         array.remove(orderedList[mtRand.randInt(orderedList.size()-1)]);
+      {
+         const char letter = orderedList[mtRand.randInt(orderedList.size()-1)];
+         array.remove(letter);
+         QVERIFY(!array.contains(letter));
+      }
    }
 
    MTRand mtRand(42);

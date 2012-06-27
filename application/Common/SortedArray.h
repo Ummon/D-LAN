@@ -529,13 +529,7 @@ void Common::SortedArray<T, M>::rebalance(Node* node)
       node->items[node->nbItems] = node->parent->items[medianPositionRight];
 
       // Move the associated child if it exists.
-      if (rightNeighbor->children[0])
-      {
-         node->size += rightNeighbor->children[0]->size;
-         rightNeighbor->size -= rightNeighbor->children[0]->size;
-         node->children[node->nbItems + 1] = rightNeighbor->children[0];
-         node->children[node->nbItems + 1]->parent = node;
-      }
+      moveChild(rightNeighbor, 0, node, node->nbItems + 1);
 
       node->nbItems++;
       rightNeighbor->nbItems--;
@@ -566,17 +560,12 @@ void Common::SortedArray<T, M>::rebalance(Node* node)
             node->children[i+1] = node->children[i];
          }
          node->children[1] = node->children[0];
+         node->children[0] = nullptr;
 
          node->items[0] = node->parent->items[medianPositionLeft];
 
          // Move the associated child if it exists.
-         if (leftNeighbor->children[leftNeighbor->nbItems])
-         {
-            node->size += leftNeighbor->children[leftNeighbor->nbItems]->size;
-            leftNeighbor->size -= leftNeighbor->children[leftNeighbor->nbItems]->size;
-            node->children[0] = leftNeighbor->children[leftNeighbor->nbItems];
-            node->children[0]->parent = node;
-         }
+         moveChild(leftNeighbor, leftNeighbor->nbItems, node, 0);
 
          node->nbItems++;
          leftNeighbor->nbItems--;
