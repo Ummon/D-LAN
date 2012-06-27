@@ -202,18 +202,19 @@ void Tests::sortedList()
 
 void Tests::sortedArray()
 {
-   // 'A' -> 'Z'.
+   // Insert 75 ASCII characters.
    QList<char> orderedList;
-   for (char c = 'A'; c <= 'Z'; c++)
+   for (char c = '0'; c <= 'z'; c++)
       orderedList << c;
 
-   for (int seed = 1; seed <= 1000; seed++)
+   // Repeate the tests 1000 times with a random insert order and a random remove order each time.
+   for (int seed = 1; seed <= 100000; seed++)
    {
       MTRand mtRand(seed);
 
       SortedArray<char, 5> array;
 
-      // Insert the following items: A -> Z in a pseudo randrom order.
+      // Insert the following items: A -> Z in a pseudo random order.
       while (array.size() != orderedList.size())
          array.insert(orderedList[mtRand.randInt(orderedList.size()-1)]);
 
@@ -226,7 +227,7 @@ void Tests::sortedArray()
       for (SortedArray<char, 5>::Iterator i(array); i.hasNext() && j.hasNext();)
          QCOMPARE(i.next(), j.next());
 
-      int unknownElement = array.indexOf('_');
+      int unknownElement = array.indexOf('*');
       QCOMPARE(unknownElement, -1);
 
       // Remove the elements in a pseudo random order.

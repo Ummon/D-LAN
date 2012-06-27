@@ -32,6 +32,14 @@
   *
   * 'SortedArray' is implemented as a B-Tree, see here for more information: http://en.wikipedia.org/wiki/B-tree
   * M is the order according Knuth's definition. This is the maximum number of children a node can have.
+  *
+  * The height of the tree can be computed with this formula:
+  *  h = log_M(n+1) - 1
+  * where
+  *  h: the height
+  *  n: the number of distinct elements
+  *  M: the order
+  * For example a 5 order tree with a height of 4 can contain a maximum of 3124 elements.
   */
 
 namespace Common
@@ -377,7 +385,7 @@ int Common::SortedArray<T, M>::indexOf(Node* node, const T& value, int nbItemsBe
   * If the node doesn't contain the value then position is set to -1.
   */
 template <typename T, int M>
-typename Common::SortedArray<T, M>::Node* Common::SortedArray<T, M>::getNode(Common::SortedArray<T, M>::Node* node, const T& value, int& position)
+typename Common::SortedArray<T, M>::Node* Common::SortedArray<T, M>::getNode(Node* node, const T& value, int& position)
 {
    bool exists;
    position = getPosition(node, value, exists);
@@ -578,7 +586,7 @@ void Common::SortedArray<T, M>::rebalance(Node* node)
   * Merge two neighbors together. 'leftNode->nbItems' + 'rightNode->nbItems' + 1 must be equal to M - 1.
   */
 template <typename T, int M>
-void Common::SortedArray<T, M>::merge(Common::SortedArray<T, M>::Node* leftNode, int medianPosition, Common::SortedArray<T, M>::Node* rightNode)
+void Common::SortedArray<T, M>::merge(Common::SortedArray<T, M>::Node* leftNode, int medianPosition, Node* rightNode)
 {
    Node* parent = leftNode->parent;
 
@@ -640,7 +648,7 @@ void Common::SortedArray<T, M>::merge(Common::SortedArray<T, M>::Node* leftNode,
   * @remarks Will decrement 'node->nbItems'.
   */
 template <typename T, int M>
-void Common::SortedArray<T, M>::shiftLeft(Common::SortedArray<T, M>::Node* node, const T& value, int startPositionItem, int startPositionChild)
+void Common::SortedArray<T, M>::shiftLeft(Node* node, const T& value, int startPositionItem, int startPositionChild)
 {
    node->nbItems--;
 
@@ -657,7 +665,7 @@ void Common::SortedArray<T, M>::shiftLeft(Common::SortedArray<T, M>::Node* node,
   * @remarks Will increment 'node->nbItems'.
   */
 template <typename T, int M>
-void Common::SortedArray<T, M>::shiftRight(Common::SortedArray<T, M>::Node* node, const T& value, int startPositionItem, int startPositionChild)
+void Common::SortedArray<T, M>::shiftRight(Node* node, const T& value, int startPositionItem, int startPositionChild)
 {
    startPositionItem = startPositionItem == -1 ? node->nbItems : startPositionItem;
    startPositionChild = startPositionChild == -1 ? node->nbItems+1 : startPositionChild;
@@ -674,7 +682,7 @@ void Common::SortedArray<T, M>::shiftRight(Common::SortedArray<T, M>::Node* node
 }
 
 template <typename T, int M>
-typename Common::SortedArray<T, M>::Node* Common::SortedArray<T, M>::getRightNeighbor(Common::SortedArray<T, M>::Node* node, int& medianPosition)
+typename Common::SortedArray<T, M>::Node* Common::SortedArray<T, M>::getRightNeighbor(Node* node, int& medianPosition)
 {
    if (node->parent)
       for (int i = 0; i < node->parent->nbItems; i++)
@@ -688,7 +696,7 @@ typename Common::SortedArray<T, M>::Node* Common::SortedArray<T, M>::getRightNei
 }
 
 template <typename T, int M>
-typename Common::SortedArray<T, M>::Node* Common::SortedArray<T, M>::getLeftNeighbor(Common::SortedArray<T, M>::Node* node, int& medianPosition)
+typename Common::SortedArray<T, M>::Node* Common::SortedArray<T, M>::getLeftNeighbor(Node* node, int& medianPosition)
 {
    if (node->parent)
       for (int i = 1; i <= node->parent->nbItems; i++)
