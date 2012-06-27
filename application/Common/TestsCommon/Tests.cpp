@@ -208,7 +208,7 @@ void Tests::sortedArray()
       orderedList << c;
 
    // Repeate the tests 1000 times with a random insert order and a random remove order each time.
-   for (int seed = 1; seed <= 100000; seed++)
+   for (int seed = 1; seed <= 1000; seed++)
    {
       MTRand mtRand(seed);
 
@@ -268,7 +268,7 @@ void Tests::sortedArray()
 
    ///// Insert /////
    // SortedArray.
-   qDebug() << "SortedArray, insert: Elapsed time:";
+   qDebug() << "SortedArray, insert: Elapsed time [ms]:";
    timer.start();
    QList<SortedArray<QString, M>> arrayBenchmarks;
    for (int n = nbWords / 20; n <= nbWords; n += nbWords / 20)
@@ -281,7 +281,7 @@ void Tests::sortedArray()
    qDebug() << timer.elapsed();
 
    // QMap.
-   qDebug() << "QMap, insert: Elapsed time:";
+   qDebug() << "QMap, insert: Elapsed time [ms]:";
    timer.start();
    QList<QMap<QString, int>> mapBenchmarks;
    for (int n = nbWords / 20; n <= nbWords; n += nbWords / 20)
@@ -321,6 +321,33 @@ void Tests::sortedArray()
          }
       qDebug() << mapBenchmarks[i].size() << "\t" << timer.elapsed();
    }
+
+   ///// Delete /////
+   // SortedArray.
+   qDebug() << "SortedArray, delete: Elapsed time [ms]:";
+   timer.start();
+   int j = 0;
+   for (int n = nbWords / 20; n <= nbWords; n += nbWords / 20)
+   {
+      for (int i = 0; i < n; i++)
+         arrayBenchmarks[j].remove(names[i]);
+      QCOMPARE(arrayBenchmarks[j].size(), 0);
+      j++;
+   }
+   qDebug() << timer.elapsed();
+
+   // QMap.
+   qDebug() << "QMap, delete: Elapsed time [ms]:";
+   timer.start();
+   j = 0;
+   for (int n = nbWords / 20; n <= nbWords; n += nbWords / 20)
+   {
+      for (int i = 0; i < n; i++)
+         mapBenchmarks[j].remove(names[i]);
+      QCOMPARE(mapBenchmarks[j].size(), 0);
+      j++;
+   }
+   qDebug() << timer.elapsed();
 }
 
 void Tests::indexedArray()
