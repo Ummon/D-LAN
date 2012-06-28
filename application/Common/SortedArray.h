@@ -30,7 +30,7 @@
   *  - Access to element by integer index like an array: 0, 1, 2, ...
   *  - Found the index of a given value.
   *  - The elements are kept ordered when a new one is inserted.
-  * The type T must have the operators '<' and '==' defined.
+  * The type T must have the operator '<' defined. Else a "lesser than" function can be given with the method 'setSortedFunctions'.
   *
   * 'SortedArray' is implemented as a B-Tree, see here for more information: http://en.wikipedia.org/wiki/B-tree
   * M is the order according Knuth's definition. This is the maximum number of children a node can have.
@@ -489,29 +489,39 @@ inline int Common::SortedArray<T, M>::getPosition(Node* node, const T& value, bo
    if (lesserThan(node->items[node->nbItems-1], value))
       return node->nbItems;
 
+   if (!lesserThan(node->items[0], value))
+   {
+      exists = true;
+      return 0;
+   }
+
+   // Values at 'i1' and 'i2' aren't equal to 'value'.
    int i1 = 0;
    int i2 = node->nbItems;
 
    forever
    {
-      int i3 = (i2 + i1) / 2;
-      if (node->items[i3] == value)
+      int i3 = (i2 + i1) >> 1;
+
+      if (lesserThan(value, node->items[i3]))
+      {
+         if (i1 >= i3 - 1)
+            return i3;
+
+         i2 = i3;
+      }
+      else if (lesserThan(node->items[i3], value))
+      {
+         if (i3 + 1 == i2)
+            return i2;
+
+         i1 = i3 + 1;
+      }
+      else
       {
          exists = true;
          return i3;
       }
-
-      if (i1 == i3)
-      {
-         if (node->items[i2] == value)
-            exists = true;
-         return i2;
-      }
-
-      if (lesserThan(node->items[i3], value))
-         i1 = i3;
-      else
-         i2 = i3;
    }
 }
 
