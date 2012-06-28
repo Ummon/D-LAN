@@ -218,6 +218,10 @@ void Tests::sortedArray()
       while (array.size() != orderedList.size())
          array.insert(orderedList[mtRand.randInt(orderedList.size()-1)]);
 
+      // Test if all values are known.
+      for (int i = 0; i < array.size(); i++)
+         QVERIFY(orderedList.contains(array[i]));
+
       // Access with integer index.
       for (int i = 0; i < array.size(); i++)
          QCOMPARE(array[i], orderedList[i]);
@@ -249,7 +253,7 @@ void Tests::sortedArray()
       for (int i = 0; i < values.size(); i++)
          array.insert(values[i]);
 
-      qDebug() << "Sorted values without sorted functions defined:";
+      qDebug() << "Sorted values without a sorted function defined:";
       for (int i = 0; i < array.size(); i++)
       {
          QCOMPARE(array[i], res1[i]);
@@ -260,7 +264,7 @@ void Tests::sortedArray()
          [](const QString& s1, const QString& s2) { return s1.toLower() < s2.toLower(); }
       );
 
-      qDebug() << "Sorted values with sorted functions defined:";
+      qDebug() << "Sorted values with a sorted function defined:";
       for (int i = 0; i < array.size(); i++)
       {
          QCOMPARE(array[i], res2[i]);
@@ -337,8 +341,8 @@ void Tests::sortedArrayBenchmark()
       for (int k = 0; k < 100; k++)
          for (int j = 0; j < nbWords / 20; j++)
          {
-            arrayBenchmarks[i].indexOf(names[j]); // Known values.
-            arrayBenchmarks[i].indexOf(namesNotInserted[j]); // Unknown values.
+            arrayBenchmarks[i].contains(names[j]); // Known values.
+            arrayBenchmarks[i].contains(namesNotInserted[j]); // Unknown values.
          }
       qDebug() << arrayBenchmarks[i].size() << "\t" << timer.elapsed();
    }

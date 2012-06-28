@@ -495,7 +495,7 @@ inline int Common::SortedArray<T, M>::getPosition(Node* node, const T& value, bo
       return 0;
    }
 
-   // Values at 'i1' and 'i2' aren't equal to 'value'.
+   // Values at 'i1' and 'i2' are never equal to 'value'.
    int i1 = 0;
    int i2 = node->nbItems;
 
@@ -515,7 +515,7 @@ inline int Common::SortedArray<T, M>::getPosition(Node* node, const T& value, bo
          if (i3 + 1 == i2)
             return i2;
 
-         i1 = i3 + 1;
+         i1 = i3;
       }
       else
       {
