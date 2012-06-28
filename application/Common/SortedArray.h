@@ -76,6 +76,8 @@ namespace Common
       const T& operator[](int index) const;
       T& operator[](int index);
 
+      T& operator[](const T& value);
+
       int getM() const;
 
       //void sort();
@@ -111,6 +113,7 @@ namespace Common
       };
 
       T& get(int index) const;
+      T& getValue(const T& value);
 
       static Node* getLeftmostNode(Node* node);
       static Node* getRightmostNode(Node* node);
@@ -272,6 +275,16 @@ T& Common::SortedArray<T, M>::operator[](int index)
    return this->get(index);
 }
 
+/**
+  * @exception NotFoundException
+  */
+template <typename T, int M>
+T& Common::SortedArray<T, M>::operator[](const T& value)
+{
+   return this->getValue(value);
+}
+
+
 template <typename T, int M>
 int Common::SortedArray<T, M>::getM() const
 {
@@ -356,6 +369,23 @@ T& Common::SortedArray<T, M>::get(int index) const
 
    int position;
    Node* node = getFromIndex(this->d->root, index, 0, position);
+   return node->items[position];
+}
+
+template <typename T, int M>
+T& Common::SortedArray<T, M>::getValue(const T& value)
+{
+   int position;
+   Node* node = getNode(this->d->root, value, position, this->d->lesserThanFun);
+
+   if (position == -1)
+   {
+      if (Node* newRoot = add(node, value, this->d->lesserThanFun))
+         this->d->root = newRoot;
+
+      node = getNode(node->parent ? node->parent : node, value, position, this->d->lesserThanFun);
+   }
+
    return node->items[position];
 }
 

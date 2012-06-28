@@ -49,8 +49,8 @@ private slots:
    void sortedArray();
    void sortedArrayBenchmark();
 
-   // IndexedArray class.
-   void indexedArray();
+   // MapArray class.
+   void mapArray();
 
    // TransferRateCalculator
    void transferRateCalculator();

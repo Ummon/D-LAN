@@ -40,7 +40,7 @@
 #include <ProtoHelper.h>
 #include <SortedList.h>
 #include <SortedArray.h>
-#include <IndexedArray.h>
+#include <MapArray.h>
 #include <BloomFilter.h>
 #include <TransferRateCalculator.h>
 using namespace Common;
@@ -389,12 +389,39 @@ void Tests::sortedArrayBenchmark()
    qDebug() << timer.elapsed();
 }
 
-void Tests::indexedArray()
+void Tests::mapArray()
 {
-   IndexedArray<Common::Hash, QString> array;
-   Hash h = Hash::fromStr("2c583d414e4a9eb956228209b367e48f59078a4b");
+   MapArray<Common::Hash, QString> array;
+   const Hash h1 = Hash::fromStr("02e4a0f0e55a308eb83b00eb13023a42cbaffe77");
+   const QString v1("I'm V1");
 
-   //array.insert(h, "AAA");
+   const Hash h2 = Hash::fromStr("2c583d414e4a9eb956228209b367e48f59078a4b");
+   const QString v2("I'm V2");
+
+   const Hash h3 = Hash::fromStr("db23d79ed24b1c40b1f88294f877fac03f6dd789");
+   const QString v3("I'm V3");
+
+   array.insert(h1, v1);
+   array.insert(h2, v2);
+   array.insert(h3, v3);
+
+   QCOMPARE(array[h1], v1);
+   QCOMPARE(array[h2], v2);
+   QCOMPARE(array[h3], v3);
+
+   const Hash h4 = Hash::fromStr("e8f98b5a2dd96315dfcf7e490e31b2ba6234887c");
+   const QString v4("I'm V4");
+   array[h4] = v4;
+
+   QCOMPARE(array.getValueFromIndex(0), v1);
+   QCOMPARE(array.getValueFromIndex(1), v2);
+   QCOMPARE(array.getValueFromIndex(2), v3);
+   QCOMPARE(array.getValueFromIndex(3), v4);
+
+   QCOMPARE(array.getKeyFromIndex(0), h1);
+   QCOMPARE(array.getKeyFromIndex(1), h2);
+   QCOMPARE(array.getKeyFromIndex(2), h3);
+   QCOMPARE(array.getKeyFromIndex(3), h4);
 }
 
 void Tests::transferRateCalculator()
