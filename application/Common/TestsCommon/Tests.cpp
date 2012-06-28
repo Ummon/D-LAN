@@ -348,18 +348,18 @@ void Tests::sortedArrayBenchmark()
    }
 
    // QMap.
-   qDebug() << "QMap, lookup [ms] for 100 *" << nbWords / 20 << "known elements + 100 *" << nbWords / 20 << "unknown elements";
-   for (int i = 0; i < mapBenchmarks.size(); i++)
-   {
-      timer.start();
-      for (int k = 0; k < 100; k++)
-         for (int j = 0; j < nbWords / 20; j++)
-         {
-            mapBenchmarks[i].contains(names[j]); // Known values.
-            mapBenchmarks[i].contains(namesNotInserted[j]); // Unknown values.
-         }
-      qDebug() << mapBenchmarks[i].size() << "\t" << timer.elapsed();
-   }
+//   qDebug() << "QMap, lookup [ms] for 100 *" << nbWords / 20 << "known elements + 100 *" << nbWords / 20 << "unknown elements";
+//   for (int i = 0; i < mapBenchmarks.size(); i++)
+//   {
+//      timer.start();
+//      for (int k = 0; k < 100; k++)
+//         for (int j = 0; j < nbWords / 20; j++)
+//         {
+//            mapBenchmarks[i].contains(names[j]); // Known values.
+//            mapBenchmarks[i].contains(namesNotInserted[j]); // Unknown values.
+//         }
+//      qDebug() << mapBenchmarks[i].size() << "\t" << timer.elapsed();
+//   }
 
    ///// Delete /////
    // SortedArray.
@@ -376,17 +376,17 @@ void Tests::sortedArrayBenchmark()
    qDebug() << timer.elapsed();
 
    // QMap.
-   qDebug() << "QMap, delete: Elapsed time [ms]:";
-   timer.start();
-   j = 0;
-   for (int n = nbWords / 20; n <= nbWords; n += nbWords / 20)
-   {
-      for (int i = 0; i < n; i++)
-         mapBenchmarks[j].remove(names[i]);
-      QCOMPARE(mapBenchmarks[j].size(), 0);
-      j++;
-   }
-   qDebug() << timer.elapsed();
+//   qDebug() << "QMap, delete: Elapsed time [ms]:";
+//   timer.start();
+//   j = 0;
+//   for (int n = nbWords / 20; n <= nbWords; n += nbWords / 20)
+//   {
+//      for (int i = 0; i < n; i++)
+//         mapBenchmarks[j].remove(names[i]);
+//      QCOMPARE(mapBenchmarks[j].size(), 0);
+//      j++;
+//   }
+//   qDebug() << timer.elapsed();
 }
 
 void Tests::indexedArray()
