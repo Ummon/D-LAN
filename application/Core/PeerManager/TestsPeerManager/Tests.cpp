@@ -55,7 +55,7 @@ void Tests::initTestCase()
    try
    {
       QString tempFolder = Common::Global::setCurrentDirToTemp("PeerManagerTests");
-      qDebug() << "Application directory path (where the persistent data is put) : " <<  Global::getDataFolder(Common::Global::DataFolderType::LOCAL, false);
+      qDebug() << "Application directory path (where the persistent data is put) : " <<  Common::Global::getDataFolder(Common::Global::DataFolderType::LOCAL, false);
       qDebug() << "The file created during this test are put in : " << tempFolder;
    }
    catch(Common::Global::UnableToSetTempDirException& e)
@@ -72,8 +72,8 @@ void Tests::initTestCase()
 
    this->fileManagers << FM::Builder::newFileManager() << FM::Builder::newFileManager();
 
-   this->peerIDs << Hash::fromStr("1111111111111111111111111111111111111111") <<
-                    Hash::fromStr("2222222222222222222222222222222222222222");
+   this->peerIDs << Common::Hash::fromStr("1111111111111111111111111111111111111111") <<
+                    Common::Hash::fromStr("2222222222222222222222222222222222222222");
 
    this->peerSharedDirs << "/sharedDirs/peer1" << "/sharedDirs/peer2";
 
