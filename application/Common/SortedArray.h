@@ -30,7 +30,7 @@
   *  - Access to element by integer index like an array: 0, 1, 2, ...
   *  - Found the index of a given value.
   *  - The elements are kept ordered when a new one is inserted.
-  * The type T must have the operator '<' defined. Else a "lesser than" function can be given with the method 'setSortedFunctions'.
+  * The type T must have the operator '<' defined. Otherwise a "lesser than" function can be given with the method 'setSortedFunctions'.
   *
   * 'SortedArray' is implemented as a B-Tree, see here for more information: http://en.wikipedia.org/wiki/B-tree
   * M is the order according Knuth's definition. This is the maximum number of children a node can have.
@@ -303,6 +303,8 @@ void Common::SortedArray<T, M>::setSortedFunctions(const std::function<bool(cons
 {
    this->d->lesserThanFun = lesserThan;
 
+   // For the moment we recreate an entire new tree and inserting all the elements in it.
+   // A better approach will be to re-sort the tree in place.
    QSharedDataPointer<SortedArrayData> newD(new SortedArrayData(lesserThan));
    for (Iterator i(*this); i.hasNext();)
    {
@@ -505,16 +507,14 @@ inline int Common::SortedArray<T, M>::getPosition(Node* node, const T& value, bo
 
       if (lesserThan(value, node->items[i3]))
       {
-         if (i1 >= i3 - 1)
+         if (i1 + 1 == i3)
             return i3;
-
          i2 = i3;
       }
       else if (lesserThan(node->items[i3], value))
       {
          if (i3 + 1 == i2)
             return i2;
-
          i1 = i3;
       }
       else
