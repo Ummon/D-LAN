@@ -78,21 +78,21 @@ bool PeerListModel::isOurself(int rowNum) const
 {
    if (rowNum >= this->orderedPeers.size())
       return false;
-   return this->orderedPeers[rowNum]->peerID == this->coreConnection->getRemoteID();
+   return this->orderedPeers.getFromIndex(rowNum)->peerID == this->coreConnection->getRemoteID();
 }
 
 Common::Hash PeerListModel::getPeerID(int rowNum) const
 {
    if (rowNum >= this->orderedPeers.size())
       return Common::Hash();
-   return this->orderedPeers[rowNum]->peerID;
+   return this->orderedPeers.getFromIndex(rowNum)->peerID;
 }
 
 QHostAddress PeerListModel::getPeerIP(int rowNum) const
 {
    if (rowNum >= this->orderedPeers.size())
       return QHostAddress();
-   return this->orderedPeers[rowNum]->ip;
+   return this->orderedPeers.getFromIndex(rowNum)->ip;
 }
 
 void PeerListModel::clear()
@@ -171,21 +171,21 @@ QVariant PeerListModel::data(const QModelIndex& index, int role) const
    case Qt::DisplayRole:
       switch (index.column())
       {
-      case 0: return QVariant::fromValue(this->orderedPeers[index.row()]->transferInformation);
-      case 1: return this->orderedPeers[index.row()]->nick;
-      case 2: return Common::Global::formatByteSize(this->orderedPeers[index.row()]->sharingAmount);
+      case 0: return QVariant::fromValue(this->orderedPeers.getFromIndex(index.row())->transferInformation);
+      case 1: return this->orderedPeers.getFromIndex(index.row())->nick;
+      case 2: return Common::Global::formatByteSize(this->orderedPeers.getFromIndex(index.row())->sharingAmount);
       default: return QVariant();
       }
 
    case Qt::BackgroundRole:
-      if (this->peersToColorize.contains(this->orderedPeers[index.row()]->peerID))
-         return this->peersToColorize[this->orderedPeers[index.row()]->peerID];
+      if (this->peersToColorize.contains(this->orderedPeers.getFromIndex(index.row())->peerID))
+         return this->peersToColorize[this->orderedPeers.getFromIndex(index.row())->peerID];
       if (this->isOurself(index.row()))
          return QColor(192, 255, 192);
       return QVariant();
 
    case Qt::ForegroundRole:
-      if (this->peersToColorize.contains(this->orderedPeers[index.row()]->peerID))
+      if (this->peersToColorize.contains(this->orderedPeers.getFromIndex(index.row())->peerID))
          return QColor(255, 255, 255);
       if (this->isOurself(index.row()))
          return QColor(0, 0, 0);
@@ -196,14 +196,15 @@ QVariant PeerListModel::data(const QModelIndex& index, int role) const
 
    case Qt::ToolTipRole:
       {
-         const QString coreVersion = this->orderedPeers[index.row()]->coreVersion;
-         QString toolTip = this->orderedPeers[index.row()]->nick;
+         const Peer* peer = this->orderedPeers.getFromIndex(index.row());
+         const QString coreVersion = peer->coreVersion;
+         QString toolTip = peer->nick;
          toolTip.append('\n');
          if (!coreVersion.isEmpty())
             toolTip += tr("Version %1\n").arg(coreVersion);
          toolTip +=
-            tr("Download rate: ") % Common::Global::formatByteSize(this->orderedPeers[index.row()]->transferInformation.downloadRate) % "/s\n" %
-            tr("Upload rate: ") % Common::Global::formatByteSize(this->orderedPeers[index.row()]->transferInformation.uploadRate) % "/s";
+            tr("Download rate: ") % Common::Global::formatByteSize(peer->transferInformation.downloadRate) % "/s\n" %
+            tr("Upload rate: ") % Common::Global::formatByteSize(peer->transferInformation.uploadRate) % "/s";
          return toolTip;
       }
 
@@ -229,7 +230,7 @@ void PeerListModel::colorize(const QModelIndex& index, const QColor& color)
    if (!index.isValid() || index.row() >= this->orderedPeers.size())
       return;
 
-   this->peersToColorize[this->orderedPeers[index.row()]->peerID] = color;
+   this->peersToColorize[this->orderedPeers.getFromIndex(index.row())->peerID] = color;
 
    emit dataChanged(this->createIndex(index.row(), 0), this->createIndex(index.row(), this->columnCount() - 1));
 }
@@ -239,7 +240,7 @@ void PeerListModel::uncolorize(const QModelIndex& index)
    if (!index.isValid() || index.row() >= this->orderedPeers.size())
       return;
 
-   if (this->peersToColorize.remove(this->orderedPeers[index.row()]->peerID))
+   if (this->peersToColorize.remove(this->orderedPeers.getFromIndex(index.row())->peerID))
       emit dataChanged(this->createIndex(index.row(), 0), this->createIndex(index.row(), this->columnCount() - 1));
 }
 
@@ -263,8 +264,7 @@ void PeerListModel::updatePeers(const google::protobuf::RepeatedPtrField<Protos:
       const QString& nick = Common::ProtoHelper::getStr(peers.Get(i), &Protos::GUI::State::Peer::nick);
       const QString& coreVersion = Common::ProtoHelper::getStr(peers.Get(i), &Protos::GUI::State::Peer::core_version);
       const quint64 sharingAmount(peers.Get(i).sharing_amount());
-      TransferInformation transferInformation { peers.Get(i).download_rate(), peers.Get(i).upload_rate(),  peersDownloadingOurData.contains(peerID) };
-
+      const TransferInformation transferInformation { peers.Get(i).download_rate(), peers.Get(i).upload_rate(),  peersDownloadingOurData.contains(peerID) };
       const QHostAddress ip =
          peers.Get(i).has_ip() ?
             Common::ProtoHelper::getIP(peers.Get(i).ip()) :
