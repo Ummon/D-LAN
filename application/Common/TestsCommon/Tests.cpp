@@ -256,8 +256,8 @@ void Tests::sortedArray()
       qDebug() << "Sorted values without a sorted function defined:";
       for (int i = 0; i < array.size(); i++)
       {
-         QCOMPARE(array[i], res1[i]);
-         qDebug() << array[i];
+         QCOMPARE(array.getFromIndex(i), res1[i]);
+         qDebug() << array.getFromIndex(i);
       }
 
       array.setSortedFunctions(
@@ -267,8 +267,8 @@ void Tests::sortedArray()
       qDebug() << "Sorted values with a sorted function defined:";
       for (int i = 0; i < array.size(); i++)
       {
-         QCOMPARE(array[i], res2[i]);
-         qDebug() << array[i];
+         QCOMPARE(array.getFromIndex(i), res2[i]);
+         qDebug() << array.getFromIndex(i);
       }
 
       array.insert("actual");
@@ -405,6 +405,8 @@ void Tests::mapArray()
    array.insert(h2, v2);
    array.insert(h3, v3);
 
+   QCOMPARE(array.size(), 3);
+
    QCOMPARE(array[h1], v1);
    QCOMPARE(array[h2], v2);
    QCOMPARE(array[h3], v3);
@@ -412,6 +414,8 @@ void Tests::mapArray()
    const Hash h4 = Hash::fromStr("e8f98b5a2dd96315dfcf7e490e31b2ba6234887c");
    const QString v4("I'm V4");
    array[h4] = v4;
+
+   QCOMPARE(array.size(), 4);
 
    QCOMPARE(array.getValueFromIndex(0), v1);
    QCOMPARE(array.getValueFromIndex(1), v2);
@@ -422,6 +426,25 @@ void Tests::mapArray()
    QCOMPARE(array.getKeyFromIndex(1), h2);
    QCOMPARE(array.getKeyFromIndex(2), h3);
    QCOMPARE(array.getKeyFromIndex(3), h4);
+
+   QCOMPARE(array.indexOf(h1), 0);
+   QCOMPARE(array.indexOf(h2), 1);
+   QCOMPARE(array.indexOf(h3), 2);
+   QCOMPARE(array.indexOf(h4), 3);
+
+   QVERIFY(!array.remove(Hash::fromStr("ccc5d1390828c75ccd508894d7484bcd6e2f16b9")));
+   QVERIFY(array.remove(h1));
+   QCOMPARE(array.size(), 3);
+   QCOMPARE(array.getKeyFromIndex(0), h2);
+
+   try
+   {
+      array.getValueFromIndex(10);
+      QFAIL("array.getValueFromIndex(10); should throw an exception");
+   }
+   catch (MapArray<Common::Hash, QString>::NotFoundException&)
+   {
+   }
 }
 
 void Tests::transferRateCalculator()

@@ -66,15 +66,15 @@ namespace Common
 
       int size() const;
       int insert(const T& value, bool* exists = nullptr);
-      void remove(int index);
+      void removeFromIndex(int index);
       bool remove(const T& value);
 
       bool contains(const T& value) const;
 
       int indexOf(const T& value) const;
 
-      const T& operator[](int index) const;
-      T& operator[](int index);
+      const T& getFromIndex(int index) const;
+      T& getFromIndex(int index);
 
       T& operator[](const T& value);
 
@@ -218,7 +218,7 @@ int Common::SortedArray<T, M>::insert(const T& value, bool* exists)
   * @exception NotFoundException
   */
 template <typename T, int M>
-void Common::SortedArray<T, M>::remove(int index)
+void Common::SortedArray<T, M>::removeFromIndex(int index)
 {
    int position;
    Node* node = getFromIndex(this->d->root, index, 0, position);
@@ -261,7 +261,7 @@ int Common::SortedArray<T, M>::indexOf(const T& value) const
   * @exception NotFoundException
   */
 template <typename T, int M>
-const T& Common::SortedArray<T, M>::operator[](int index) const
+const T& Common::SortedArray<T, M>::getFromIndex(int index) const
 {
    return this->get(index);
 }
@@ -270,7 +270,7 @@ const T& Common::SortedArray<T, M>::operator[](int index) const
   * @exception NotFoundException
   */
 template <typename T, int M>
-T& Common::SortedArray<T, M>::operator[](int index)
+T& Common::SortedArray<T, M>::getFromIndex(int index)
 {
    return this->get(index);
 }

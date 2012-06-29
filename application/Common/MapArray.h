@@ -14,17 +14,16 @@ namespace Common
       inline int size() const;
       inline int insert(const K& key, const T& value, bool* exists = nullptr);
 
-      const T& getValueFromIndex(int index) const;
-      T& getValueFromIndex(int index);
+      inline const T& getValueFromIndex(int index) const;
+      inline T& getValueFromIndex(int index);
+      inline const K& getKeyFromIndex(int index) const;
 
-      const K& getKeyFromIndex(int index) const;
+      inline T& operator[](const K& key);
 
-      T& operator[](const K& key);
+      inline void removeFromIndex(int index);
+      inline bool remove(const K& key);
 
-      void remove(int index);
-      void remove(const K& key);
-
-      int indexOf(const K& key);
+      inline int indexOf(const K& key);
 
    private:
       struct Element
@@ -58,7 +57,7 @@ inline int Common::MapArray<K, T>::insert(const K& key, const T& value, bool* ex
   * @exception NotFoundException
   */
 template <typename K, typename T>
-const T& Common::MapArray<K, T>::getValueFromIndex(int index) const
+inline const T& Common::MapArray<K, T>::getValueFromIndex(int index) const
 {
    try
    {
@@ -74,11 +73,11 @@ const T& Common::MapArray<K, T>::getValueFromIndex(int index) const
   * @exception NotFoundException
   */
 template <typename K, typename T>
-T& Common::MapArray<K, T>::getValueFromIndex(int index)
+inline T& Common::MapArray<K, T>::getValueFromIndex(int index)
 {
    try
    {
-      return this->array[index].value;
+      return this->array.getFromIndex(index).value;
    }
    catch (typename SortedArray<Element>::NotFoundException&)
    {
@@ -90,11 +89,11 @@ T& Common::MapArray<K, T>::getValueFromIndex(int index)
   * @exception NotFoundException
   */
 template <typename K, typename T>
-const K& Common::MapArray<K, T>::getKeyFromIndex(int index) const
+inline const K& Common::MapArray<K, T>::getKeyFromIndex(int index) const
 {
    try
    {
-      return this->array[index].key;
+      return this->array.getFromIndex(index).key;
    }
    catch (typename SortedArray<Element>::NotFoundException&)
    {
@@ -103,13 +102,35 @@ const K& Common::MapArray<K, T>::getKeyFromIndex(int index) const
 }
 
 template <typename K, typename T>
-T& Common::MapArray<K, T>::operator[](const K& key)
+inline T& Common::MapArray<K, T>::operator[](const K& key)
 {
    return this->array[Element {key, T()}].value;
 }
 
+/**
+  * @exception NotFoundException
+  */
 template <typename K, typename T>
-int Common::MapArray<K, T>::indexOf(const K& key)
+inline void Common::MapArray<K, T>::removeFromIndex(int index)
+{
+   try
+   {
+      this->array.remove(index);
+   }
+   catch(typename SortedArray<Element>::NotFoundException&)
+   {
+      throw NotFoundException();
+   }
+}
+
+template <typename K, typename T>
+inline bool Common::MapArray<K, T>::remove(const K& key)
+{
+   return this->array.remove(Element {key, T()});
+}
+
+template <typename K, typename T>
+inline int Common::MapArray<K, T>::indexOf(const K& key)
 {
    return this->array.indexOf(Element {key, T()});
 }
