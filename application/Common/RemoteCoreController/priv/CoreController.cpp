@@ -26,6 +26,12 @@ using namespace RCC;
 
 #include <priv/Log.h>
 
+#ifdef Q_OS_WIN32
+   const QString CoreController::CORE_EXE_NAME("D-LAN.Core.exe");
+#else
+   const QString CoreController::CORE_EXE_NAME("D-LAN.Core");
+#endif
+
 /**
   * Try to start the core as a service if it fails then try to launch it as a sub-process.
   */
@@ -34,7 +40,7 @@ CoreStatus CoreController::startCore(int port)
    QtServiceController controller(Common::Constants::SERVICE_NAME);
    if (!controller.isInstalled())
    {
-      if (!QtServiceController::install("D-LAN.Core.exe"))
+      if (!QtServiceController::install(CORE_EXE_NAME))
          L_USER(QObject::tr("D-LAN Core cannot be installed as a service"));
    }
 
@@ -50,7 +56,7 @@ CoreStatus CoreController::startCore(int port)
       {
          if (coreProcess.state() == QProcess::NotRunning)
          {
-            coreProcess.start("D-LAN.Core.exe -e" + (port != -1 ? QString() : QString(" --port %1").arg(port)));
+            coreProcess.start(QString("%1/%2 -e%3").arg(QCoreApplication::applicationDirPath()).arg(CORE_EXE_NAME).arg(port != -1 ? QString("") : QString(" --port %1").arg(port)));
             L_USER(QObject::tr("Core launched as subprocess"));
             return RUNNING_AS_SUB_PROCESS;
          }

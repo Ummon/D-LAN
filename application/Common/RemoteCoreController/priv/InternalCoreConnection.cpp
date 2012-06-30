@@ -271,7 +271,6 @@ void InternalCoreConnection::adressResolved(QHostInfo hostInfo)
    }
 
    this->addressesToTry = hostInfo.addresses();
-
    this->tryToConnectToTheNextAddress();
 }
 
@@ -324,7 +323,7 @@ void InternalCoreConnection::stateChanged(QAbstractSocket::SocketState socketSta
 
    case QAbstractSocket::ConnectedState:
       disconnect(this->socket, SIGNAL(stateChanged(QAbstractSocket::SocketState)), this, SLOT(stateChanged(QAbstractSocket::SocketState)));
-      // Now we wait a message 'Protos.GUI.AskForAuthentication' from the Core before being authenticated.
+      // Now we wait a message 'Protos.G  UI.AskForAuthentication' from the Core before being authenticated.
 
    default:;
    }
