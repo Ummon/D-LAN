@@ -128,8 +128,8 @@ QString Global::getVersionFull()
    const QString systemVersion = Global::getSystemVersion();
    return
       Global::getVersion() %
-      (versionTag.isEmpty() ? QString() : " " % Global::getVersionTag()) %
-      (systemVersion.isEmpty() ? QString() : " - " % Global::getSystemVersion());
+      (versionTag.isEmpty() ? QString() : " " % versionTag) %
+      (systemVersion.isEmpty() ? QString() : " - " % systemVersion);
 }
 
 QDateTime Global::getBuildTime()

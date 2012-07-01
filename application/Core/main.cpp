@@ -66,7 +66,8 @@ int main(int argc, char* argv[])
       else if (arg == "--version")
       {
          QTextStream out(stdout);
-         out << Common::Global::getVersionFull() << " " << Common::Global::getBuildTime().toString("yyyy-MM-dd_HH-mm") << endl;
+         const QString versionTag = Common::Global::getVersionTag();
+         out << Common::Global::getVersion() % (versionTag.isEmpty() ? QString() : " " % versionTag) << " " << Common::Global::getBuildTime().toString("yyyy-MM-dd_HH-mm") << endl;
          return 0;
       }
    }
