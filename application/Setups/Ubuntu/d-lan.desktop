@@ -1,0 +1,8 @@
+[Desktop Entry]
+Version=1.0
+Terminal=false
+Icon=d-lan
+Type=Application
+Categories=Network;
+Exec=d-lan-gui
+Name=D-LAN

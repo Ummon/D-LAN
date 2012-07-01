@@ -75,6 +75,8 @@ int main(int argc, char *argv[])
    // shared memory segment alreydy exists. There is actually no
    // easy way to bring the already existing GUI windows to the front without
    // dirty polling.
+#ifndef Q_OS_LINUX
+   // Under linux the flag can persist after process crash.
    if (!SETTINGS.get<bool>("multiple_instance_allowed"))
    {
       sharedMemory.lock();
@@ -87,6 +89,7 @@ int main(int argc, char *argv[])
       }
       sharedMemory.unlock();
    }
+#endif
 
    GUI::D_LAN_GUI gui(argc, argv);
    return gui.exec();
