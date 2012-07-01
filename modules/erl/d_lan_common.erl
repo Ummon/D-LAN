@@ -95,18 +95,28 @@ images(Filename_caption_list) ->
 % 'Platform' is a folder where the releases are put.
 % For example: "windows".
 download_button(A, Platform) ->
-   Platform_maj = [string:to_upper(hd(Platform)) | tl(Platform)],
+   Platform_formatted = [string:to_upper(hd(Platform)) | tl(Platform)],
    Relase_platform_folder = A#arg.docroot ++ "/" ++ ?RELEASES_FOLDER ++ "/" ++ Platform,
    {ok, Filenames} = file:list_dir(Relase_platform_folder),
    Filename = last(sort([F || F <- Filenames, lists:member(string:right(F, 4), [".exe", ".dmg", ".deb"])])),
-   {match, [Version, Version_tag, Year, Month, Day, Extension]} = re:run(Filename, "D-LAN-((?:\\d|\\.)+)([^-]*)-(\\d+)-(\\d+)-(\\d+).*\\.(.*)", [{capture, all_but_first, list}]),
+   Extension = string:right(Filename, 3),
+   {match, [Version, Version_tag, Year, Month, Day, Archi]} =
+      case Extension of
+         "deb" ->
+            re:run(Filename, "D-LAN-((?:\\d|\\.)+)([^-]*)-(\\d+)-(\\d+)-(\\d+)_.*-(\\w+)\\..*", [{capture, all_but_first, list}]);      
+         _ ->
+            {match, Values} = re:run(Filename, "D-LAN-((?:\\d|\\.)+)([^-]*)-(\\d+)-(\\d+)-(\\d+).*\\..*", [{capture, all_but_first, list}]),
+            {match, Values ++ [""]} % Archi is empty on Windows.
+      end,
    File_size = filelib:file_size(Relase_platform_folder ++ "/" ++ Filename),
    File_size_mb = float(File_size) / 1048576,
    {'div', [{class, "download" ++ " " ++ Extension}],
       [{a, [{class, "installer"}, {href, file_to_url(A, Filename, Platform)}], 
          [
             {em, [], [tr(download_button, download, A) ++ " (" ++ io_lib:format("~.2f", [File_size_mb]) ++ " MiB)"]}, {br},
-            tr(download_button, version, A, [Version ++ if Version_tag =/= [] -> " " ++ Version_tag; true -> [] end, Platform_maj]), {br},
+            tr(download_button, version, A,
+               [Version ++ if Version_tag =/= [] -> " " ++ Version_tag; true -> [] end ++ if Archi =/= [] -> " " ++ Archi; true -> [] end, Platform_formatted]
+            ), {br},
             tr(download_button, released, A, [httpd_util:month(list_to_integer(Month)) ++ " " ++ Day ++ " " ++ Year])
             %"Number of download : " ++ integer_to_list(d_lan_download_db(Filename))
          ]
