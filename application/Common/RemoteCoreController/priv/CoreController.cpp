@@ -58,7 +58,7 @@ CoreStatus CoreController::startCore(int port)
          {
             coreProcess.start(QString("%1/%2 -e%3").arg(QCoreApplication::applicationDirPath()).arg(CORE_EXE_NAME).arg(port != -1 ? QString("") : QString(" --port %1").arg(port)));
             L_USER(QObject::tr("Core launched as subprocess"));
-            return RUNNING_AS_SUB_PROCESS;
+            return coreProcess.state() == QProcess::Starting || coreProcess.state() == QProcess::Running ? RUNNING_AS_SUB_PROCESS : NOT_RUNNING;
          }
       }
       else

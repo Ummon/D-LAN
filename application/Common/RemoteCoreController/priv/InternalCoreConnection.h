@@ -24,7 +24,6 @@
 #include <QHostInfo>
 #include <QSharedPointer>
 #include <QWeakPointer>
-#include <QTimer>
 #include <QProcess>
 #include <QElapsedTimer>
 #include <QLocale>
