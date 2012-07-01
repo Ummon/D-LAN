@@ -315,8 +315,10 @@ void InternalCoreConnection::tryToConnectToTheNextAddress()
 
 void InternalCoreConnection::stateChanged(QAbstractSocket::SocketState socketState)
 {
-   if (socketState == QAbstractSocket::UnconnectedState)
+   switch (socketState)
    {
+   case QAbstractSocket::UnconnectedState:
+      disconnect(this->socket, SIGNAL(stateChanged(QAbstractSocket::SocketState)), this, SLOT(stateChanged(QAbstractSocket::SocketState)));
       if (!this->addressesToTry.isEmpty())
       {
          this->tryToConnectToTheNextAddress();
@@ -331,9 +333,14 @@ void InternalCoreConnection::stateChanged(QAbstractSocket::SocketState socketSta
       {
          emit connectingError(ICoreConnection::RCC_ERROR_HOST_TIMEOUT);
       }
-   }
+      break;
 
-   disconnect(this->socket, SIGNAL(stateChanged(QAbstractSocket::SocketState)), this, SLOT(stateChanged(QAbstractSocket::SocketState)));
+   case QAbstractSocket::ConnectedState:
+      disconnect(this->socket, SIGNAL(stateChanged(QAbstractSocket::SocketState)), this, SLOT(stateChanged(QAbstractSocket::SocketState)));
+      // Now we wait a message 'Protos.GUI.AskForAuthentication' from the Core before being authenticated.
+
+   default:;
+   }
 }
 
 void InternalCoreConnection::connectedAndAuthenticated()

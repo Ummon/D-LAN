@@ -33,7 +33,7 @@ namespace RCC
       static void stopCore();
 
    private:
-      static QProcess coreProcess; ///< Only used when unable to launch the core as a service.
+      static QProcess* coreProcess; ///< Only used when unable to launch the core as a service.
    };
 }
 
