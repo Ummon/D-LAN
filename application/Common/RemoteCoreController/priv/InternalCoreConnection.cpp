@@ -305,7 +305,11 @@ void InternalCoreConnection::tryToConnectToTheNextAddress()
 #ifndef DEBUG
    // If the address is local check if the core is launched, if not try to launch it.
    if (Global::isLocal(address))
+   {
       this->coreStatus = CoreController::startCore(this->connectionInfo.port);
+      if (this->coreStatus == NOT_RUNNING)
+         L_WARN("Unable to start the Core");
+   }
 #endif
 
    connect(this->socket, SIGNAL(stateChanged(QAbstractSocket::SocketState)), this, SLOT(stateChanged(QAbstractSocket::SocketState)));

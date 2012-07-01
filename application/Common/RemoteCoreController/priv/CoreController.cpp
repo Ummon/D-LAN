@@ -63,6 +63,8 @@ CoreStatus CoreController::startCore(int port)
             L_USER(QObject::tr("Core launched as subprocess"));
             return coreProcess->state() == QProcess::Starting || coreProcess->state() == QProcess::Running ? RUNNING_AS_SUB_PROCESS : NOT_RUNNING;
          }
+         else
+            return RUNNING_AS_SUB_PROCESS;
       }
       else
          L_USER(QObject::tr("Core service launched"));
@@ -87,6 +89,7 @@ void CoreController::stopCore()
          coreProcess->waitForFinished(2000);
       }
 
+      coreProcess->kill();
       delete coreProcess;
       coreProcess = nullptr;
    }
