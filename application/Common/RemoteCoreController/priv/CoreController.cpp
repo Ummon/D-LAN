@@ -41,7 +41,7 @@ CoreStatus CoreController::startCore(int port)
    if (!controller.isInstalled())
    {
       if (!QtServiceController::install(CORE_EXE_NAME))
-         L_USER(QObject::tr("D-LAN Core cannot be installed as a service"));
+         L_WARN(QObject::tr("D-LAN Core cannot be installed as a service"));
    }
 
    bool isRunning = false;

@@ -50,6 +50,8 @@ namespace RCC
    class InternalCoreConnection : public Common::MessageSocket
    {
       Q_OBJECT
+      static const int NB_RETRIES_MAX;
+      static const int TIME_BETWEEN_RETRIES; // [ms]
 
    protected:
       class Logger : public ILogger
@@ -108,10 +110,7 @@ namespace RCC
 
    private slots:
       void adressResolved(QHostInfo hostInfo);
-   private:
       void tryToConnectToTheNextAddress();
-
-   private slots:
       void stateChanged(QAbstractSocket::SocketState socketState);
 
    private:      
@@ -134,6 +133,8 @@ namespace RCC
       int currentHostLookupID;
 
       QList<QHostAddress> addressesToTry; // When a name is resolved many addresses can be returned, we will try all of them until a connection is successfuly established.
+      QList<QHostAddress> addressesToRetry;
+      int nbRetries;
 
       QList<QWeakPointer<BrowseResult>> browseResultsWithoutTag;
       QList<QWeakPointer<SearchResult>> searchResultsWithoutTag;

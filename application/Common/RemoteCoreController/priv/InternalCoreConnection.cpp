@@ -34,6 +34,9 @@ using namespace RCC;
 #include <priv/BrowseResult.h>
 #include <priv/SearchResult.h>
 
+const int InternalCoreConnection::NB_RETRIES_MAX(10);
+const int InternalCoreConnection::TIME_BETWEEN_RETRIES(200);
+
 void InternalCoreConnection::Logger::logDebug(const QString& message)
 {
    L_DEBU(message);
@@ -48,6 +51,7 @@ InternalCoreConnection::InternalCoreConnection() :
    Common::MessageSocket(new InternalCoreConnection::Logger()),
    coreStatus(NOT_RUNNING),
    currentHostLookupID(-1),
+   nbRetries(0),
    authenticated(false),
    forcedToClose(false),
    salt(0)
@@ -271,6 +275,8 @@ void InternalCoreConnection::adressResolved(QHostInfo hostInfo)
    }
 
    this->addressesToTry = hostInfo.addresses();
+   this->addressesToRetry.clear();
+   this->nbRetries = 0;
    this->tryToConnectToTheNextAddress();
 }
 
@@ -304,6 +310,7 @@ void InternalCoreConnection::tryToConnectToTheNextAddress()
 
    connect(this->socket, SIGNAL(stateChanged(QAbstractSocket::SocketState)), this, SLOT(stateChanged(QAbstractSocket::SocketState)));
    this->socket->connectToHost(address, this->connectionInfo.port);
+   this->addressesToRetry << address;
 }
 
 void InternalCoreConnection::stateChanged(QAbstractSocket::SocketState socketState)
@@ -314,6 +321,12 @@ void InternalCoreConnection::stateChanged(QAbstractSocket::SocketState socketSta
       if (!this->addressesToTry.isEmpty())
       {
          this->tryToConnectToTheNextAddress();
+      }
+      else if (this->nbRetries++ < NB_RETRIES_MAX)
+      {
+         this->addressesToTry = this->addressesToRetry;
+         this->addressesToRetry.clear();
+         QTimer::singleShot(TIME_BETWEEN_RETRIES, this, SLOT(tryToConnectToTheNextAddress()));
       }
       else
       {
