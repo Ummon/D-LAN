@@ -45,7 +45,10 @@ D_LAN_GUI::D_LAN_GUI(int argc, char *argv[]) :
    this->updateTrayIconMenu();
 
    this->trayIcon.setContextMenu(&this->trayIconMenu);
-   this->trayIcon.setToolTip("D-LAN");
+   #ifndef Q_OS_LINUX
+      // Fix a bug on ubuntu x86_64 (core dumped)
+      this->trayIcon.setToolTip("D-LAN");
+   #endif
    this->trayIcon.show();
 }
 
