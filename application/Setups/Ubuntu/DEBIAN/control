@@ -1,0 +1,14 @@
+Package: d-lan-all-in-one
+Version: _VERSION_
+License: GPL-3
+Section: base
+Priority: optional
+Architecture: _ARCH_
+Installed-Size: _INST_SIZE_
+Depends: xorg, libprotobuf7
+Maintainer: Hervé Martinet <herve.martinet@gmail.com>
+Homepage: http://www.d-lan.net
+Description: The goal is to easily exchange a large amount of data 
+ in a local area network environment like a LAN-Party. 
+ After you launched D-LAN, you will see all other people and their 
+ sharing automatically without special configuration.

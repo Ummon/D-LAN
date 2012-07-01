@@ -473,4 +473,4 @@ void DownloadManager::setQueueChanged()
    this->queueChanged = true;
 }
 
-const quint32 DownloadManager::MIN_DOWNLOAD_THREAD_STACK_SIZE(8 * 1024);
+const quint32 DownloadManager::MIN_DOWNLOAD_THREAD_STACK_SIZE(16 * 1024);
