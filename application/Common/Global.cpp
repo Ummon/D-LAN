@@ -132,6 +132,11 @@ QString Global::getVersionFull()
       (systemVersion.isEmpty() ? QString() : " - " % Global::getSystemVersion());
 }
 
+QDateTime Global::getBuildTime()
+{
+   return QDateTime::fromString(BUILD_TIME, "yyyy-MM-dd_HH-mm");
+}
+
 /**
   * The number of k-combinations (each of size k) from a set S with n elements (size n).
   * http://en.wikipedia.org/wiki/Combination
