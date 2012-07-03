@@ -46,6 +46,8 @@ Peer::Peer(PeerManager* peerManager, QSharedPointer<FM::IFileManager> fileManage
    alive(false),
    banned(false)
 {
+   this->speedTimer.invalidate();
+
    this->aliveTimer.setSingleShot(true);
    this->aliveTimer.setInterval(SETTINGS.get<double>("peer_timeout_factor") * SETTINGS.get<quint32>("peer_imalive_period"));
    connect(&this->aliveTimer, SIGNAL(timeout()), this, SLOT(consideredDead()));
@@ -109,7 +111,7 @@ quint32 Peer::getSpeed()
    // In [ms].
    static const quint32 SPEED_VALIDITY_PERIOD = 1000 * SETTINGS.get<quint32>("download_rate_valid_time_factor") / (SETTINGS.get<quint32>("lan_speed") / 1024 / 1024);
 
-   if (this->speedTimer.elapsed() > SPEED_VALIDITY_PERIOD)
+   if (this->speedTimer.isValid() && this->speedTimer.elapsed() > SPEED_VALIDITY_PERIOD)
       this->speed = MAX_SPEED;
    return this->speed;
 }
