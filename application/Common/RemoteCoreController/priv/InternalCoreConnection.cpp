@@ -29,7 +29,6 @@ using namespace RCC;
 
 #include <LogManager/Builder.h>
 
-#include <priv/CoreController.h>
 #include <priv/Log.h>
 #include <priv/BrowseResult.h>
 #include <priv/SearchResult.h>
@@ -47,8 +46,9 @@ void InternalCoreConnection::Logger::logError(const QString& message)
    L_WARN(message);
 }
 
-InternalCoreConnection::InternalCoreConnection() :
+InternalCoreConnection::InternalCoreConnection(CoreController& coreController) :
    Common::MessageSocket(new InternalCoreConnection::Logger()),
+   coreController(coreController),
    coreStatus(NOT_RUNNING),
    currentHostLookupID(-1),
    nbRetries(0),
@@ -306,7 +306,7 @@ void InternalCoreConnection::tryToConnectToTheNextAddress()
    // If the address is local check if the core is launched, if not try to launch it.
    if (Global::isLocal(address))
    {
-      this->coreStatus = CoreController::startCore(this->connectionInfo.port);
+      this->coreStatus = this->coreController.startCore(this->connectionInfo.port);
       if (this->coreStatus == NOT_RUNNING)
          L_WARN("Unable to start the Core");
    }

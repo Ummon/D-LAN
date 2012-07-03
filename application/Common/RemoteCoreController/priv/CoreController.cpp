@@ -54,14 +54,11 @@ CoreStatus CoreController::startCore(int port)
 
       if (!(isRunning = controller.start(arguments)))
       {
-         if (!coreProcess)
-            coreProcess = new QProcess();
-
-         if (coreProcess->state() == QProcess::NotRunning)
+         if (this->coreProcess.state() == QProcess::NotRunning)
          {
-            coreProcess->start(QString("%1/%2 -e%3").arg(QCoreApplication::applicationDirPath()).arg(CORE_EXE_NAME).arg(port != -1 ? QString("") : QString(" --port %1").arg(port)));
+            this->coreProcess.start(QString("%1/%2 -e%3").arg(QCoreApplication::applicationDirPath()).arg(CORE_EXE_NAME).arg(port != -1 ? QString("") : QString(" --port %1").arg(port)));
             L_USER(QObject::tr("Core launched as subprocess"));
-            return coreProcess->state() == QProcess::Starting || coreProcess->state() == QProcess::Running ? RUNNING_AS_SUB_PROCESS : NOT_RUNNING;
+            return this->coreProcess.state() == QProcess::Starting || this->coreProcess.state() == QProcess::Running ? RUNNING_AS_SUB_PROCESS : NOT_RUNNING;
          }
          else
             return RUNNING_AS_SUB_PROCESS;
@@ -81,18 +78,11 @@ void CoreController::stopCore()
    if (controller.isRunning())
       controller.stop();
 
-   if (coreProcess)
+   if (this->coreProcess.state() == QProcess::Running)
    {
-      if (coreProcess->state() == QProcess::Running)
-      {
-         coreProcess->write("quit\n");
-         coreProcess->waitForFinished(2000);
-      }
-
-      coreProcess->kill();
-      delete coreProcess;
-      coreProcess = nullptr;
+      this->coreProcess.write("quit\n");
+      this->coreProcess.waitForFinished(2000);
    }
-}
 
-QProcess* CoreController::coreProcess(nullptr);
+   this->coreProcess.kill();
+}

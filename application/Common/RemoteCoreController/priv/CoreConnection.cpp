@@ -33,7 +33,9 @@ using namespace RCC;
 #include <priv/SearchResult.h>
 
 CoreConnection::CoreConnection(int socketTimeout) :
-   currentConnected(0),
+   connection1(this->coreController),
+   connection2(this->coreController),
+   currentConnected(FIRST_CONNECTION),
    connectingInProgress(false),
    SOCKET_TIMEOUT(socketTimeout)
 {
@@ -41,6 +43,16 @@ CoreConnection::CoreConnection(int socketTimeout) :
 
 CoreConnection::~CoreConnection()
 {
+}
+
+CoreStatus CoreConnection::startLocalCore()
+{
+   return this->coreController.startCore();
+}
+
+void CoreConnection::stopLocalCore()
+{
+   this->coreController.stopCore();
 }
 
 void CoreConnection::connectToCore()
@@ -261,37 +273,25 @@ bool CoreConnection::connectToCorePrepare(const QString& address)
 
 InternalCoreConnection* CoreConnection::current()
 {
-   if (this->currentConnected < 0 || this->currentConnected > 1)
-      return &this->connections[0];
-
-   return &this->connections[this->currentConnected];
+   return this->currentConnected == FIRST_CONNECTION ? &this->connection1 : &this->connection2;
 }
 
 const InternalCoreConnection* CoreConnection::current() const
 {
-   if (this->currentConnected < 0 || this->currentConnected > 1)
-      return &this->connections[0];
-
-   return &this->connections[this->currentConnected];
+   return this->currentConnected == FIRST_CONNECTION ? &this->connection1 : &this->connection2;
 }
 
 InternalCoreConnection* CoreConnection::temp()
 {
-   if (this->currentConnected < 0 || this->currentConnected > 1)
-      return &this->connections[1];
-
-   return &this->connections[this->currentConnected == 0 ? 1 : 0];
+   return this->currentConnected == FIRST_CONNECTION ? &this->connection2 : &this->connection1;
 }
 
 const InternalCoreConnection* CoreConnection::temp() const
 {
-   if (this->currentConnected < 0 || this->currentConnected > 1)
-      return &this->connections[1];
-
-   return &this->connections[this->currentConnected == 0 ? 1 : 0];
+   return this->currentConnected == FIRST_CONNECTION ? &this->connection2 : &this->connection1;
 }
 
 void CoreConnection::swap()
 {
-   this->currentConnected = this->currentConnected == 0 ? 1 : 0;
+   this->currentConnected = this->currentConnected == FIRST_CONNECTION ? SECOND_CONNECTION : FIRST_CONNECTION;
 }

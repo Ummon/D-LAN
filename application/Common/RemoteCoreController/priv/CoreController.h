@@ -29,11 +29,11 @@ namespace RCC
       static const QString CORE_EXE_NAME;
 
    public:
-      static CoreStatus startCore(int port = -1);
-      static void stopCore();
+      CoreStatus startCore(int port = -1);
+      void stopCore();
 
    private:
-      static QProcess* coreProcess; ///< Only used when unable to launch the core as a service.
+      QProcess coreProcess; ///< Only used when unable to launch the core as a service.
    };
 }
 
