@@ -42,7 +42,7 @@ const uint32_t DirWatcherLinux::ROOT_EVENTS_OBS = EVENTS_OBS|IN_MOVE_SELF|IN_DEL
 
 class UnableToWatchException {};
 
-/**
+/**ath=/home/gburri/Downloads//Leonard - 35 albums/07 - Y a-t-il un gÃ©nie dans la salle
   * Constructor.
   */
 DirWatcherLinux::DirWatcherLinux()
@@ -283,7 +283,11 @@ const QList<WatcherEvent> DirWatcherLinux::waitEvent(int timeout, QList<WaitCond
          // the end of the loop, when every IN_MOVED_TO event is processed.
          events << WatcherEvent(WatcherEvent::NEW, getEventPath(event));
          if (event->mask & IN_ISDIR)
-            new Dir(this, this->dirs.value(event->wd), event->name);
+            try
+            {
+               new Dir(this, this->dirs.value(event->wd), event->name);
+            }
+            catch (UnableToWatchException&) {}
       }
       end_moved_to:
       if (event->mask & IN_DELETE)
@@ -298,7 +302,11 @@ const QList<WatcherEvent> DirWatcherLinux::waitEvent(int timeout, QList<WaitCond
          L_DEBU(QString("inotify event : IN_CREATE (path=%1)").arg(getEventPath(event)));
          events << WatcherEvent(WatcherEvent::NEW, getEventPath(event));
          if (event->mask & IN_ISDIR)
-            new Dir(this, this->dirs.value(event->wd), event->name);
+            try
+            {
+               new Dir(this, this->dirs.value(event->wd), event->name);
+            }
+            catch (UnableToWatchException&) {}
       }
       if (event->mask & IN_CLOSE_WRITE)
       {
@@ -342,36 +350,54 @@ const QList<WatcherEvent> DirWatcherLinux::waitEvent(int timeout, QList<WaitCond
   */
 DirWatcherLinux::Dir::Dir(DirWatcherLinux* dwl, Dir* parent, const QString& name) : dwl(dwl), parent(parent), name(name)
 {
+   const QByteArray& array = getFullPath().toUtf8();
+
+   this->wd = inotify_add_watch(
+      dwl->fileDescriptor,
+      array.constData(),
+      (this->parent ? EVENTS_OBS : ROOT_EVENTS_OBS)
+   );
+
+   if (this->wd < 0)
+   {
+      switch (errno)
+      {
+      case EACCES:
+         L_ERRO("inotify_add_watch ERROR : Read access to the given file is not permitted.");
+         break;
+      case EBADF:
+         L_ERRO("inotify_add_watch ERROR : The given file descriptor is not valid.");
+         break;
+      case EFAULT:
+         L_ERRO("inotify_add_watch ERROR : pathname points outside of the process's accessible address space.");
+         break;
+      case EINVAL:
+         L_ERRO("inotify_add_watch ERROR : The given event mask contains no valid events; or fd is not an inotify file descriptor.");
+         break;
+      case ENOENT:
+         L_ERRO("inotify_add_watch ERROR : A directory component in pathname does not exist or is a dangling symbolic link.");
+         break;
+      case ENOMEM:
+         L_ERRO("inotify_add_watch ERROR : Insufficient kernel memory was available.");
+         break;
+      case ENOSPC:
+         L_ERRO("inotify_add_watch ERROR : The user limit on the total number of inotify watches was reached or the kernel failed to allocate a needed resource.");
+         break;
+      }
+      throw UnableToWatchException();
+   }
+
    if (this->parent)
       this->parent->childs.insert(this->name, this);
 
-   const QByteArray& array = getFullPath().toUtf8();
-   this->wd = inotify_add_watch(
-         dwl->fileDescriptor,
-         array.constData(),
-         (this->parent ? EVENTS_OBS : ROOT_EVENTS_OBS));
-   if (this->wd < 0)
-   {
-      if (errno == EACCES)
-          L_ERRO("inotify_add_watch ERROR : Read access to the given file is not permitted.");
-      if (errno == EBADF)
-          L_ERRO("inotify_add_watch ERROR : The given file descriptor is not valid.");
-      if (errno == EFAULT)
-          L_ERRO("inotify_add_watch ERROR : pathname points outside of the process's accessible address space.");
-      if (errno == EINVAL)
-          L_ERRO("inotify_add_watch ERROR : The given event mask contains no valid events; or fd is not an inotify file descriptor.");
-      if (errno == ENOENT)
-          L_ERRO("inotify_add_watch ERROR : A directory component in pathname does not exist or is a dangling symbolic link.");
-      if (errno == ENOMEM)
-          L_ERRO("inotify_add_watch ERROR : Insufficient kernel memory was available.");
-      if (errno == ENOSPC)
-          L_ERRO("inotify_add_watch ERROR : The user limit on the total number of inotify watches was reached or the kernel failed to allocate a needed resource.");
-      throw UnableToWatchException();
-   }
    dwl->dirs.insert(this->wd, this);
 
    for (QListIterator<QString> i(QDir(this->getFullPath()).entryList(QDir::Dirs | QDir::NoDotAndDotDot)); i.hasNext();)
-      new Dir(this->dwl, this, (QString) i.next());
+      try
+      {
+         new Dir(this->dwl, this, (QString) i.next());
+      }
+      catch (UnableToWatchException&) {}
 }
 
 /**
