@@ -19,10 +19,18 @@
 #include <D-LAN_GUI.h>
 using namespace GUI;
 
+#include <QMessageBox>
+#include <QPushButton>
+#include <QSharedMemory>
+
+#include <Common/LogManager/Builder.h>
 #include <Common/Constants.h>
 #include <Common/Settings.h>
 
 #include <Common/RemoteCoreController/Builder.h>
+
+static const QString sharedMemoryKeyname("D-LAN GUI instance");
+static QSharedMemory sharedMemory;
 
 /**
   * @class GUI::D_LAN_GUI
@@ -36,6 +44,39 @@ D_LAN_GUI::D_LAN_GUI(int argc, char *argv[]) :
    coreConnection(RCC::Builder::newCoreConnection(SETTINGS.get<quint32>("socket_timeout"))),
    trayIcon(QIcon(":/icons/ressources/icon.png"))
 {
+   LM::Builder::setLogDirName("log_gui");
+
+   // If multiple instance isn't allowed we will test if a particular
+   // shared memory segment alreydy exists. There is actually no
+   // easy way to bring the already existing GUI windows to the front without
+   // dirty polling.
+   // Under linux the flag may persist after process crash.
+#ifndef Q_OS_LINUX
+   if (!SETTINGS.get<bool>("multiple_instance_allowed"))
+   {
+      sharedMemory.lock();
+      sharedMemory.setKey(sharedMemoryKeyname);
+      if (!sharedMemory.create(1))
+      {
+         QMessageBox message;
+         message.setWindowTitle(QObject::tr("D-LAN already launched"));
+         message.setText(QObject::tr("An instance of D-LAN is already launched"));
+         message.setIcon(QMessageBox::Information);
+         QAbstractButton* abortButton = message.addButton(QMessageBox::Abort);
+         message.addButton(QObject::tr("Launch anyway"), QMessageBox::ActionRole);
+         message.exec();
+         if (message.clickedButton() == abortButton)
+         {
+            sharedMemory.unlock();
+            QSharedPointer<LM::ILogger> mainLogger = LM::Builder::newLogger("D-LAN GUI");
+            mainLogger->log("GUI already launched, exited..", LM::SV_END_USER);
+            throw AbortException();
+         }
+      }
+      sharedMemory.unlock();
+   }
+#endif
+
    this->setQuitOnLastWindowClosed(false);
 
    this->showMainWindow();

@@ -33,6 +33,8 @@ namespace GUI
    {
       Q_OBJECT
    public:
+      class AbortException {};
+
       D_LAN_GUI(int argc, char *argv[]);
 
    protected:
