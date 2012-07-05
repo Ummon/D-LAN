@@ -139,23 +139,17 @@ translate(fr, faq, a4) ->
    "Si D-LAN est en train de calculer les empreintes, il faut attendre que l'opération soit terminée, voir la question précédente. "
    "Sinon il est possible de fermer la fenêtre de D-LAN, l'interface est alors déconnectée du coeur et consomme moins de ressources.";
 
-translate(en, faq, q5) -> "There is no Linux version!?";
-translate(fr, faq, q5) -> "Il n'y a pas de version pour Linux!?";
+translate(en, faq, q5) -> "There is no Mac OS X version!?";
+translate(fr, faq, q5) -> "Il n'y a pas de version pour Mac OS X!?";
 
-translate(en, faq, a5) -> "We are currently working on a Linux version, it will be released when it's done.";
-translate(fr, faq, a5) -> "Nous travaillons actuellement sur une version Linux, elle sortira quand elle sera prête.";
+translate(en, faq, a5) -> "We are currently working on a Mac OS X version, it will be released when it's done.";
+translate(fr, faq, a5) -> "Nous travaillons actuellement sur une version Mac OS X, elle sortira quand elle sera prête.";
 
-translate(en, faq, q6) -> "There is no Mac OS X version!?";
-translate(fr, faq, q6) -> "Il n'y a pas de version pour Mac OS X!?";
+translate(en, faq, q6) -> "Can I configure D-LAN to start automatically when my computer starting?";
+translate(fr, faq, q6) -> "Est-il possible de configurer D-LAN pour qu'il démarre automatiquement au démarrage de la machine?";
 
-translate(en, faq, a6) -> "We are currently working on a Mac OS X version, it will be released when it's done.";
-translate(fr, faq, a6) -> "Nous travaillons actuellement sur une version Mac OS X, elle sortira quand elle sera prête.";
-
-translate(en, faq, q7) -> "Can I configure D-LAN to start automatically when my computer starting?";
-translate(fr, faq, q7) -> "Est-il possible de configurer D-LAN pour qu'il démarre automatiquement au démarrage de la machine?";
-
-translate(en, faq, a7) -> "<i>Windows 7</i> : Go to <i>Control Panel</i> &gt; <i>Administrative Tools</i> &gt; <i>Services</i> . Open the properties of <i>D-LAN Core</i> and set the <i>Statup type</i> from <i>Manual</i> to <i>Automatic</i>.";
-translate(fr, faq, a7) -> "<i>Windows 7</i> : Allez dans <i>Panneau de configuration</i> > <i>Outils d'administrations</i> &gt; <i>Services</i>. Ouvrir la fenêtre de propriétés de <i>D-LAN Core</i> et définir le <i>Type de Démarrage</i> à <i>Automatique</i>.";
+translate(en, faq, a6) -> "<i>Windows 7</i> : Go to <i>Control Panel</i> &gt; <i>Administrative Tools</i> &gt; <i>Services</i> . Open the properties of <i>D-LAN Core</i> and set the <i>Statup type</i> from <i>Manual</i> to <i>Automatic</i>.";
+translate(fr, faq, a6) -> "<i>Windows 7</i> : Allez dans <i>Panneau de configuration</i> > <i>Outils d'administrations</i> &gt; <i>Services</i>. Ouvrir la fenêtre de propriétés de <i>D-LAN Core</i> et définir le <i>Type de Démarrage</i> à <i>Automatique</i>.";
 
 %%%%%%%%%%
 
