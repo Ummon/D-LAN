@@ -32,6 +32,8 @@ using namespace RCC;
    const QString CoreController::CORE_EXE_NAME("D-LAN.Core");
 #endif
 
+const int CoreController::TIMEOUT_SUBPROCESS_WAIT_FOR_STARTED(2000); // 2s.
+
 /**
   * Try to start the core as a service if it fails then try to launch it as a sub-process.
   */
@@ -58,6 +60,7 @@ CoreStatus CoreController::startCore(int port)
          {
             this->coreProcess.start(QString("%1/%2 -e%3").arg(QCoreApplication::applicationDirPath()).arg(CORE_EXE_NAME).arg(port != -1 ? QString("") : QString(" --port %1").arg(port)));
             L_USER(QObject::tr("Core launched as subprocess"));
+            this->coreProcess.waitForStarted(TIMEOUT_SUBPROCESS_WAIT_FOR_STARTED);
             return this->coreProcess.state() == QProcess::Starting || this->coreProcess.state() == QProcess::Running ? RUNNING_AS_SUB_PROCESS : NOT_RUNNING;
          }
          else

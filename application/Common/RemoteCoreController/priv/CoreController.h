@@ -27,6 +27,7 @@ namespace RCC
    class CoreController
    {
       static const QString CORE_EXE_NAME;
+      static const int TIMEOUT_SUBPROCESS_WAIT_FOR_STARTED; // [ms];
 
    public:
       CoreStatus startCore(int port = -1);
