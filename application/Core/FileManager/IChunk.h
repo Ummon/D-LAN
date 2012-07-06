@@ -52,12 +52,9 @@ namespace FM
       virtual bool populateEntry(Protos::Common::Entry* entry) const = 0;
 
       /**
-        * Returns the base path of the file. Not ending by a '/'.
-        * The full path to the file corresponds to :
-        * getAbsoluteBasePath() + entry.path + entry.name
-        * See 'populateEntry(..)'.
+        * Returns the absolute path of the file.
         */
-      virtual QString getBasePath() const = 0;
+      virtual QString getFullPath() const = 0;
 
       /**
         * The caller must not delete the IChunk as long as data is read with the IDataReader.

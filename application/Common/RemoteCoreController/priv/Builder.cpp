@@ -35,19 +35,3 @@ QSharedPointer<ICoreConnection> Builder::newCoreConnection(int socketTimeout)
    qRegisterMetaType<RCC::ICoreConnection::ConnectionErrorCode>("RCC::ICoreConnection::ConnectionErrorCode");
    return QSharedPointer<ICoreConnection>(new CoreConnection(socketTimeout));
 }
-
-/**
-  * @remarks Works only in local.
-  */
-CoreStatus Builder::startCore()
-{
-   return CoreController::startCore();
-}
-
-/**
-  * @remarks Works only in local.
-  */
-void Builder::stopCore()
-{
-   CoreController::stopCore();
-}

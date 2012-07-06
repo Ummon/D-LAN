@@ -29,13 +29,20 @@ using namespace RCC;
 
 #include <LogManager/Builder.h>
 
-#include <priv/CoreController.h>
 #include <priv/Log.h>
 #include <priv/BrowseResult.h>
 #include <priv/SearchResult.h>
 
-const int InternalCoreConnection::NB_RETRIES_MAX(10);
-const int InternalCoreConnection::TIME_BETWEEN_RETRIES(200);
+// The behavior under Windows and Linux are not the same when connecting a socket to a port.
+// On Linux 'connectToHost(..)' will immediately fail if there is no service behind the port,
+// on Windows there is a delay before 'stateChanged' is called with a 'UnconnectedState' type.
+#ifdef Q_OS_WIN32
+   const int InternalCoreConnection::NB_RETRIES_MAX(0);
+   const int InternalCoreConnection::TIME_BETWEEN_RETRIES(0);
+#else
+   const int InternalCoreConnection::NB_RETRIES_MAX(4);
+   const int InternalCoreConnection::TIME_BETWEEN_RETRIES(250);
+#endif
 
 void InternalCoreConnection::Logger::logDebug(const QString& message)
 {
@@ -47,8 +54,9 @@ void InternalCoreConnection::Logger::logError(const QString& message)
    L_WARN(message);
 }
 
-InternalCoreConnection::InternalCoreConnection() :
+InternalCoreConnection::InternalCoreConnection(CoreController& coreController) :
    Common::MessageSocket(new InternalCoreConnection::Logger()),
+   coreController(coreController),
    coreStatus(NOT_RUNNING),
    currentHostLookupID(-1),
    nbRetries(0),
@@ -305,7 +313,11 @@ void InternalCoreConnection::tryToConnectToTheNextAddress()
 #ifndef DEBUG
    // If the address is local check if the core is launched, if not try to launch it.
    if (Global::isLocal(address))
-      this->coreStatus = CoreController::startCore(this->connectionInfo.port);
+   {
+      this->coreStatus = this->coreController.startCore(this->connectionInfo.port);
+      if (this->coreStatus == NOT_RUNNING)
+         L_WARN("Unable to start the Core");
+   }
 #endif
 
    connect(this->socket, SIGNAL(stateChanged(QAbstractSocket::SocketState)), this, SLOT(stateChanged(QAbstractSocket::SocketState)));
@@ -318,6 +330,7 @@ void InternalCoreConnection::stateChanged(QAbstractSocket::SocketState socketSta
    switch (socketState)
    {
    case QAbstractSocket::UnconnectedState:
+      disconnect(this->socket, SIGNAL(stateChanged(QAbstractSocket::SocketState)), this, SLOT(stateChanged(QAbstractSocket::SocketState)));
       if (!this->addressesToTry.isEmpty())
       {
          this->tryToConnectToTheNextAddress();

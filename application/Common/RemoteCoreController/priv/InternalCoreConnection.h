@@ -41,6 +41,7 @@
 #include <IBrowseResult.h>
 #include <ISearchResult.h>
 #include <Types.h>
+#include <priv/CoreController.h>
 
 namespace RCC
 {
@@ -62,7 +63,7 @@ namespace RCC
       };
 
    public:
-      InternalCoreConnection();
+      InternalCoreConnection(CoreController& coreController);
       ~InternalCoreConnection();
 
       void connectToCore(const QString& address, quint16 port, Common::Hash password);
@@ -123,6 +124,8 @@ namespace RCC
 
       friend class BrowseResult;
       friend class SearchResult;
+
+      CoreController& coreController;
 
       CoreStatus coreStatus;
 

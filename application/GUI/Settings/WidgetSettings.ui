@@ -17,9 +17,6 @@
    <iconset resource="../ressources.qrc">
     <normaloff>:/icons/ressources/settings.png</normaloff>:/icons/ressources/settings.png</iconset>
   </property>
-  <property name="locale">
-   <locale language="English" country="UnitedStates"/>
-  </property>
   <layout class="QVBoxLayout" name="layMain">
    <property name="leftMargin">
     <number>0</number>
@@ -206,7 +203,7 @@
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>593</width>
+               <width>98</width>
                <height>89</height>
               </rect>
              </property>
@@ -239,7 +236,7 @@
                     <bool>true</bool>
                    </property>
                    <attribute name="buttonGroup">
-                    <string notr="true">grpAddressesToListenTo</string>
+                    <string>grpAddressesToListenTo</string>
                    </attribute>
                   </widget>
                  </item>
@@ -249,7 +246,7 @@
                     <string>IPv4</string>
                    </property>
                    <attribute name="buttonGroup">
-                    <string notr="true">grpAddressesToListenTo</string>
+                    <string>grpAddressesToListenTo</string>
                    </attribute>
                   </widget>
                  </item>

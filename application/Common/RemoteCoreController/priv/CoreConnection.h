@@ -39,6 +39,7 @@
 #include <ISearchResult.h>
 #include <Types.h>
 #include <priv/InternalCoreConnection.h>
+#include <priv/CoreController.h>
 
 namespace RCC
 {
@@ -53,6 +54,9 @@ namespace RCC
    public:
       CoreConnection(int socketTimeout = DEFAULT_SOCKET_TIMEOUT);
       ~CoreConnection();
+
+      CoreStatus startLocalCore();
+      void stopLocalCore();
 
       void connectToCore();
       void connectToCore(quint16 port);
@@ -112,8 +116,16 @@ namespace RCC
 
       void swap();
 
-      InternalCoreConnection connections[2];
-      int currentConnected;
+      CoreController coreController;
+
+      InternalCoreConnection connection1;
+      InternalCoreConnection connection2;
+      enum CoreConnectionNumber
+      {
+         FIRST_CONNECTION,
+         SECOND_CONNECTION
+      };
+      CoreConnectionNumber currentConnected;
 
       bool connectingInProgress;
 

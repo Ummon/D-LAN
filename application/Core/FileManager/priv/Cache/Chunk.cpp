@@ -97,10 +97,10 @@ bool Chunk::populateEntry(Protos::Common::Entry* entry) const
    return false;
 }
 
-QString Chunk::getBasePath() const
+QString Chunk::getFullPath() const
 {
    if (this->file)
-      return this->file->getRoot()->getFullPath();
+      return this->file->getFullPath();
    return QString();
 }
 

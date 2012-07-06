@@ -29,6 +29,8 @@
 #include <Common/Hash.h>
 #include <Common/LogManager/IEntry.h>
 
+#include <Common/RemoteCoreController/Types.h>
+
 namespace RCC
 {
    class IBrowseResult;
@@ -64,6 +66,10 @@ namespace RCC
       };
 
       virtual ~ICoreConnection() {}
+
+      virtual CoreStatus startLocalCore() = 0;
+
+      virtual void stopLocalCore() = 0;
 
       /**
         * Connect to a local core with the default port (59485).
