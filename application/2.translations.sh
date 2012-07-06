@@ -18,9 +18,8 @@ do
    TS_FILES_CORE="$TS_FILES_CORE d_lan_core.$Lang.ts"
 done
 
-lupdate -codecfortr UTF-8 ../GUI ../Common/RemoteCoreController -ts $TS_FILES_GUI
-lupdate -codecfortr UTF-8 ../Core -ts $TS_FILES_CORE
-
+lupdate -no-ui-lines -codecfortr UTF-8 ../GUI ../Common/RemoteCoreController -ts $TS_FILES_GUI
+lupdate -no-ui-lines -codecfortr UTF-8 ../Core -ts $TS_FILES_CORE
 
 for SubSystem in GUI Core
 do

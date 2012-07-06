@@ -68,7 +68,7 @@ D_LAN_GUI::D_LAN_GUI(int argc, char *argv[]) :
          message.setWindowTitle(QObject::tr("D-LAN already launched"));
          message.setText(QObject::tr("An instance of D-LAN is already launched"));
          message.setIcon(QMessageBox::Information);
-         QAbstractButton* abortButton = message.addButton(QMessageBox::Abort);
+         QAbstractButton* abortButton = message.addButton(QObject::tr("Quit"), QMessageBox::RejectRole);
          message.addButton(QObject::tr("Launch anyway"), QMessageBox::ActionRole);
          message.exec();
          if (message.clickedButton() == abortButton)
