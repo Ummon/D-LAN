@@ -33,8 +33,16 @@ using namespace RCC;
 #include <priv/BrowseResult.h>
 #include <priv/SearchResult.h>
 
-const int InternalCoreConnection::NB_RETRIES_MAX(10);
-const int InternalCoreConnection::TIME_BETWEEN_RETRIES(200);
+// The behavior under Windows and Linux are not the same when connecting a socket to a port.
+// On Linux 'connectToHost(..)' will immediately fail if there is no service behind the port,
+// on Windows there is a delay before 'stateChanged' is called with a 'UnconnectedState' type.
+#ifdef Q_OS_WIN32
+   const int InternalCoreConnection::NB_RETRIES_MAX(0);
+   const int InternalCoreConnection::TIME_BETWEEN_RETRIES(0);
+#else
+   const int InternalCoreConnection::NB_RETRIES_MAX(4);
+   const int InternalCoreConnection::TIME_BETWEEN_RETRIES(250);
+#endif
 
 void InternalCoreConnection::Logger::logDebug(const QString& message)
 {
