@@ -26,6 +26,7 @@ using namespace GUI;
 #include <Common/LogManager/Builder.h>
 #include <Common/Constants.h>
 #include <Common/Settings.h>
+#include <Common/Languages.h>
 
 #include <Common/RemoteCoreController/Builder.h>
 
@@ -44,7 +45,12 @@ D_LAN_GUI::D_LAN_GUI(int argc, char *argv[]) :
    coreConnection(RCC::Builder::newCoreConnection(SETTINGS.get<quint32>("socket_timeout"))),
    trayIcon(QIcon(":/icons/ressources/icon.png"))
 {
-   LM::Builder::setLogDirName("log_gui");
+   this->installTranslator(&this->translator);
+   QLocale current = QLocale::system();
+   if (SETTINGS.isSet("language"))
+      current = SETTINGS.get<QLocale>("language");
+   Common::Languages langs(QCoreApplication::applicationDirPath() + "/" + Common::Constants::LANGUAGE_DIRECTORY);
+   this->loadLanguage(langs.getBestMatchLanguage(Common::Languages::ExeType::GUI, current).filename);
 
    // If multiple instance isn't allowed we will test if a particular
    // shared memory segment alreydy exists. There is actually no
@@ -107,6 +113,11 @@ void D_LAN_GUI::trayIconActivated(QSystemTrayIcon::ActivationReason reason)
       this->showMainWindow();
 }
 
+void D_LAN_GUI::loadLanguage(const QString& filename)
+{
+   this->translator.load(filename, QCoreApplication::applicationDirPath() + "/" + Common::Constants::LANGUAGE_DIRECTORY);
+}
+
 void D_LAN_GUI::mainWindowClosed()
 {
    if (this->coreConnection->isConnected())
@@ -126,6 +137,7 @@ void D_LAN_GUI::showMainWindow()
    else
    {
       this->mainWindow = new MainWindow(this->coreConnection);
+      connect(this->mainWindow, SIGNAL(languageChanged(QString)), this, SLOT(loadLanguage(QString)));
       connect(this->mainWindow, SIGNAL(destroyed()), this, SLOT(mainWindowClosed()));
       this->mainWindow->show();
    }

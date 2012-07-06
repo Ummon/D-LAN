@@ -60,8 +60,6 @@ MainWindow::MainWindow(QSharedPointer<RCC::ICoreConnection> coreConnection, QWid
    autoScroll(true),
    logModel(coreConnection)
 {
-   QApplication::instance()->installTranslator(&this->translator);
-
    this->ui->setupUi(this);
 
    this->initialWindowFlags = this->windowFlags();
@@ -145,8 +143,6 @@ MainWindow::MainWindow(QSharedPointer<RCC::ICoreConnection> coreConnection, QWid
 
    this->restoreColorizedPeers();
 
-   this->loadLanguage(this->widgetSettings->getCurrentLanguageFilename());
-
    connect(this->coreConnection.data(), SIGNAL(newState(const Protos::GUI::State&)), this, SLOT(newState(const Protos::GUI::State&)));
    connect(this->coreConnection.data(), SIGNAL(connectingError(RCC::ICoreConnection::ConnectionErrorCode)), this, SLOT(coreConnectionError(RCC::ICoreConnection::ConnectionErrorCode)));
    connect(this->coreConnection.data(), SIGNAL(connected()), this, SLOT(coreConnected()));
@@ -196,11 +192,6 @@ void MainWindow::onGlobalProgressChanged(quint64 completed, quint64 total)
       this->taskbar.setStatus(TaskbarButtonStatus::BUTTON_STATUS_NORMAL);
       this->taskbar.setProgress(completed, total);
    }
-}
-
-void MainWindow::loadLanguage(const QString& filename)
-{
-   this->translator.load(filename, QCoreApplication::applicationDirPath() + "/" + Common::Constants::LANGUAGE_DIRECTORY);
 }
 
 void MainWindow::coreConnectionError(RCC::ICoreConnection::ConnectionErrorCode errorCode)
@@ -819,7 +810,7 @@ void MainWindow::removeMdiSubWindow(QMdiSubWindow* mdiSubWindow)
 void MainWindow::addWidgetSettings()
 {
    this->widgetSettings = new WidgetSettings(this->coreConnection, this->sharedDirsModel, this);
-   connect(this->widgetSettings, SIGNAL(languageChanged(QString)), this, SLOT(loadLanguage(QString)));
+   connect(this->widgetSettings, SIGNAL(languageChanged(QString)), this, SIGNAL(languageChanged(QString)));
    connect(this->widgetSettings, SIGNAL(styleChanged(QString)), this, SLOT(loadCustomStyle(QString)));
    this->ui->mdiArea->addSubWindow(this->widgetSettings, Qt::CustomizeWindowHint);
    this->mdiAreaTabBar->setTabData(this->mdiAreaTabBar->count() - 1, Protos::GUI::Settings_Window_WIN_SETTINGS);

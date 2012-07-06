@@ -20,6 +20,7 @@
 #define GUI_D_LAN_GUI_H
 
 #include <QApplication>
+#include <QTranslator>
 #include <QMenu>
 #include <QSystemTrayIcon>
 
@@ -42,6 +43,7 @@ namespace GUI
 
    private slots:
       void trayIconActivated(QSystemTrayIcon::ActivationReason reason);
+      void loadLanguage(const QString& filename);
       void mainWindowClosed();
       void showMainWindow();
       void exitGUI();
@@ -56,6 +58,8 @@ namespace GUI
 
       QSystemTrayIcon trayIcon;
       QMenu trayIconMenu;
+
+      QTranslator translator;
    };
 }
 

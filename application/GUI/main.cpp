@@ -24,6 +24,7 @@
 
 #include <Common/Settings.h>
 #include <Common/Constants.h>
+#include <Common/LogManager/Builder.h>
 
 #include <D-LAN_GUI.h>
 
@@ -62,6 +63,8 @@ int main(int argc, char *argv[])
    // 'locale' has been set with "--lang".
    if (locale != QLocale::system())
       return 0;
+
+   LM::Builder::setLogDirName("log_gui");
 
    try
    {
