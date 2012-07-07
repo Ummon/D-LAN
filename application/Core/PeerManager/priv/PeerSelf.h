@@ -25,6 +25,8 @@ namespace PM
 {
    class PeerSelf : public Peer
    {
+      Q_OBJECT
+
    public:
       PeerSelf(PeerManager* peerManager, QSharedPointer<FM::IFileManager> fileManager);
 

@@ -106,22 +106,22 @@ QString Entry::getSeverityStr() const
    return Entry::severityToStr(this->severity);
 }
 
-QString Entry::getName() const
+const QString& Entry::getName() const
 {
    return this->name;
 }
 
-QString Entry::getThread() const
+const QString& Entry::getThread() const
 {
    return this->thread;
 }
 
-QString Entry::getSource() const
+const QString& Entry::getSource() const
 {
    return this->source;
 }
 
-QString Entry::getMessage() const
+const QString& Entry::getMessage() const
 {
    return this->message;
 }

@@ -29,10 +29,20 @@ using namespace RCC;
 
 #include <LogManager/Builder.h>
 
-#include <priv/CoreController.h>
 #include <priv/Log.h>
 #include <priv/BrowseResult.h>
 #include <priv/SearchResult.h>
+
+// The behavior under Windows and Linux are not the same when connecting a socket to a port.
+// On Linux 'connectToHost(..)' will immediately fail if there is no service behind the port,
+// on Windows there is a delay before 'stateChanged' is called with a 'UnconnectedState' type.
+#ifdef Q_OS_WIN32
+   const int InternalCoreConnection::NB_RETRIES_MAX(0);
+   const int InternalCoreConnection::TIME_BETWEEN_RETRIES(0);
+#else
+   const int InternalCoreConnection::NB_RETRIES_MAX(4);
+   const int InternalCoreConnection::TIME_BETWEEN_RETRIES(250);
+#endif
 
 void InternalCoreConnection::Logger::logDebug(const QString& message)
 {
@@ -44,10 +54,12 @@ void InternalCoreConnection::Logger::logError(const QString& message)
    L_WARN(message);
 }
 
-InternalCoreConnection::InternalCoreConnection() :
+InternalCoreConnection::InternalCoreConnection(CoreController& coreController) :
    Common::MessageSocket(new InternalCoreConnection::Logger()),
+   coreController(coreController),
    coreStatus(NOT_RUNNING),
    currentHostLookupID(-1),
+   nbRetries(0),
    authenticated(false),
    forcedToClose(false),
    salt(0)
@@ -271,7 +283,8 @@ void InternalCoreConnection::adressResolved(QHostInfo hostInfo)
    }
 
    this->addressesToTry = hostInfo.addresses();
-
+   this->addressesToRetry.clear();
+   this->nbRetries = 0;
    this->tryToConnectToTheNextAddress();
 }
 
@@ -300,11 +313,16 @@ void InternalCoreConnection::tryToConnectToTheNextAddress()
 #ifndef DEBUG
    // If the address is local check if the core is launched, if not try to launch it.
    if (Global::isLocal(address))
-      this->coreStatus = CoreController::startCore(this->connectionInfo.port);
+   {
+      this->coreStatus = this->coreController.startCore(this->connectionInfo.port);
+      if (this->coreStatus == NOT_RUNNING)
+         L_WARN("Unable to start the Core");
+   }
 #endif
 
    connect(this->socket, SIGNAL(stateChanged(QAbstractSocket::SocketState)), this, SLOT(stateChanged(QAbstractSocket::SocketState)));
    this->socket->connectToHost(address, this->connectionInfo.port);
+   this->addressesToRetry << address;
 }
 
 void InternalCoreConnection::stateChanged(QAbstractSocket::SocketState socketState)
@@ -312,9 +330,16 @@ void InternalCoreConnection::stateChanged(QAbstractSocket::SocketState socketSta
    switch (socketState)
    {
    case QAbstractSocket::UnconnectedState:
+      disconnect(this->socket, SIGNAL(stateChanged(QAbstractSocket::SocketState)), this, SLOT(stateChanged(QAbstractSocket::SocketState)));
       if (!this->addressesToTry.isEmpty())
       {
          this->tryToConnectToTheNextAddress();
+      }
+      else if (this->nbRetries++ < NB_RETRIES_MAX)
+      {
+         this->addressesToTry = this->addressesToRetry;
+         this->addressesToRetry.clear();
+         QTimer::singleShot(TIME_BETWEEN_RETRIES, this, SLOT(tryToConnectToTheNextAddress()));
       }
       else
       {
@@ -421,14 +446,21 @@ void InternalCoreConnection::onNewMessage(Common::MessageHeader::MessageType typ
       }
       break;
 
-   case Common::MessageHeader::GUI_EVENT_LOG_MESSAGE:
+   case Common::MessageHeader::GUI_EVENT_LOG_MESSAGES:
       {
-         const Protos::GUI::EventLogMessage& eventLogMessage = static_cast<const Protos::GUI::EventLogMessage&>(message);
+         const Protos::GUI::EventLogMessages& eventLogMessages = static_cast<const Protos::GUI::EventLogMessages&>(message);
 
-         QDateTime dateTime = QDateTime::fromMSecsSinceEpoch(eventLogMessage.time());
-         const QString& message = Common::ProtoHelper::getStr(eventLogMessage, &Protos::GUI::EventLogMessage::message);
-         LM::Severity severity = LM::Severity(eventLogMessage.severity());
-         emit newLogMessage(LM::Builder::newEntry(dateTime, severity, message));
+         QList<QSharedPointer<LM::IEntry>> entries;
+
+         for (int i = 0; i < eventLogMessages.message_size(); i++)
+         {
+            const QDateTime dateTime = QDateTime::fromMSecsSinceEpoch(eventLogMessages.message(i).time());
+            const QString& message = Common::ProtoHelper::getStr(eventLogMessages.message(i), &Protos::GUI::EventLogMessages::EventLogMessage::message);
+            const LM::Severity severity = LM::Severity(eventLogMessages.message(i).severity());
+            entries << LM::Builder::newEntry(dateTime, severity, message);
+         }
+
+         emit newLogMessages(entries);
       }
       break;
 

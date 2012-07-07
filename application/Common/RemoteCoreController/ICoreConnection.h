@@ -29,6 +29,8 @@
 #include <Common/Hash.h>
 #include <Common/LogManager/IEntry.h>
 
+#include <Common/RemoteCoreController/Types.h>
+
 namespace RCC
 {
    class IBrowseResult;
@@ -64,6 +66,10 @@ namespace RCC
       };
 
       virtual ~ICoreConnection() {}
+
+      virtual CoreStatus startLocalCore() = 0;
+
+      virtual void stopLocalCore() = 0;
 
       /**
         * Connect to a local core with the default port (59485).
@@ -224,7 +230,7 @@ namespace RCC
 
       void newState(const Protos::GUI::State&);
       void newChatMessages(const Protos::GUI::EventChatMessages&);
-      void newLogMessage(QSharedPointer<const LM::IEntry>);
+      void newLogMessages(QList<QSharedPointer<LM::IEntry>>);
    };
 }
 

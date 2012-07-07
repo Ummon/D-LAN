@@ -33,7 +33,7 @@ namespace LM
       virtual ~ILoggerHook() {}
 
    signals:
-      void newLogEntry(QSharedPointer<const LM::IEntry> entry);
+      void newLogEntry(QSharedPointer<LM::IEntry> entry);
    };
 }
 

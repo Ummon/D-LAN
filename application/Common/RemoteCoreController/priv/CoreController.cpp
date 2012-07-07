@@ -26,6 +26,14 @@ using namespace RCC;
 
 #include <priv/Log.h>
 
+#ifdef Q_OS_WIN32
+   const QString CoreController::CORE_EXE_NAME("D-LAN.Core.exe");
+#else
+   const QString CoreController::CORE_EXE_NAME("D-LAN.Core");
+#endif
+
+const int CoreController::TIMEOUT_SUBPROCESS_WAIT_FOR_STARTED(2000); // 2s.
+
 /**
   * Try to start the core as a service if it fails then try to launch it as a sub-process.
   */
@@ -34,8 +42,8 @@ CoreStatus CoreController::startCore(int port)
    QtServiceController controller(Common::Constants::SERVICE_NAME);
    if (!controller.isInstalled())
    {
-      if (!QtServiceController::install("D-LAN.Core.exe"))
-         L_USER(QObject::tr("D-LAN Core cannot be installed as a service"));
+      if (!QtServiceController::install(CORE_EXE_NAME))
+         L_WARN(QObject::tr("D-LAN Core cannot be installed as a service"));
    }
 
    bool isRunning = false;
@@ -48,12 +56,15 @@ CoreStatus CoreController::startCore(int port)
 
       if (!(isRunning = controller.start(arguments)))
       {
-         if (coreProcess.state() == QProcess::NotRunning)
+         if (this->coreProcess.state() == QProcess::NotRunning)
          {
-            coreProcess.start("D-LAN.Core.exe -e" + (port != -1 ? QString() : QString(" --port %1").arg(port)));
+            this->coreProcess.start(QString("%1/%2 -e%3").arg(QCoreApplication::applicationDirPath()).arg(CORE_EXE_NAME).arg(port != -1 ? QString("") : QString(" --port %1").arg(port)));
             L_USER(QObject::tr("Core launched as subprocess"));
-            return RUNNING_AS_SUB_PROCESS;
+            this->coreProcess.waitForStarted(TIMEOUT_SUBPROCESS_WAIT_FOR_STARTED);
+            return this->coreProcess.state() == QProcess::Starting || this->coreProcess.state() == QProcess::Running ? RUNNING_AS_SUB_PROCESS : NOT_RUNNING;
          }
+         else
+            return RUNNING_AS_SUB_PROCESS;
       }
       else
          L_USER(QObject::tr("Core service launched"));
@@ -70,11 +81,11 @@ void CoreController::stopCore()
    if (controller.isRunning())
       controller.stop();
 
-   if (coreProcess.state() == QProcess::Running)
+   if (this->coreProcess.state() == QProcess::Running)
    {
-      coreProcess.write("quit\n");
-      coreProcess.waitForFinished(2000);
+      this->coreProcess.write("quit\n");
+      this->coreProcess.waitForFinished(2000);
    }
-}
 
-QProcess CoreController::coreProcess;
+   this->coreProcess.kill();
+}

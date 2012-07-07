@@ -21,6 +21,7 @@
 
 #include <functional>
 
+#include <QDateTime>
 #include <QObject>
 #include <QString>
 #include <QList>
@@ -44,6 +45,7 @@ namespace Common
       static QString getVersionTag();
       static QString getSystemVersion();
       static QString getVersionFull();
+      static QDateTime getBuildTime();
 
       static int nCombinations(int n, int k);
       static QString formatByteSize(qint64 bytes, int precision = 1);

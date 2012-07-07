@@ -26,12 +26,15 @@ namespace RCC
 {
    class CoreController
    {
+      static const QString CORE_EXE_NAME;
+      static const int TIMEOUT_SUBPROCESS_WAIT_FOR_STARTED; // [ms];
+
    public:
-      static CoreStatus startCore(int port = -1);
-      static void stopCore();
+      CoreStatus startCore(int port = -1);
+      void stopCore();
 
    private:
-      static QProcess coreProcess; ///< Only used when unable to lauche the core as a service.
+      QProcess coreProcess; ///< Only used when unable to launch the core as a service.
    };
 }
 

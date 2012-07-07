@@ -19,10 +19,19 @@
 #include <D-LAN_GUI.h>
 using namespace GUI;
 
+#include <QMessageBox>
+#include <QPushButton>
+#include <QSharedMemory>
+
+#include <Common/LogManager/Builder.h>
 #include <Common/Constants.h>
 #include <Common/Settings.h>
+#include <Common/Languages.h>
 
 #include <Common/RemoteCoreController/Builder.h>
+
+static const QString sharedMemoryKeyname("D-LAN GUI instance");
+static QSharedMemory sharedMemory;
 
 /**
   * @class GUI::D_LAN_GUI
@@ -36,6 +45,44 @@ D_LAN_GUI::D_LAN_GUI(int argc, char *argv[]) :
    coreConnection(RCC::Builder::newCoreConnection(SETTINGS.get<quint32>("socket_timeout"))),
    trayIcon(QIcon(":/icons/ressources/icon.png"))
 {
+   this->installTranslator(&this->translator);
+   QLocale current = QLocale::system();
+   if (SETTINGS.isSet("language"))
+      current = SETTINGS.get<QLocale>("language");
+   Common::Languages langs(QCoreApplication::applicationDirPath() + "/" + Common::Constants::LANGUAGE_DIRECTORY);
+   this->loadLanguage(langs.getBestMatchLanguage(Common::Languages::ExeType::GUI, current).filename);
+
+   // If multiple instance isn't allowed we will test if a particular
+   // shared memory segment alreydy exists. There is actually no
+   // easy way to bring the already existing GUI windows to the front without
+   // dirty polling.
+   // Under linux the flag may persist after process crash.
+#ifndef Q_OS_LINUX
+   if (!SETTINGS.get<bool>("multiple_instance_allowed"))
+   {
+      sharedMemory.lock();
+      sharedMemory.setKey(sharedMemoryKeyname);
+      if (!sharedMemory.create(1))
+      {
+         QMessageBox message;
+         message.setWindowTitle(QObject::tr("D-LAN already launched"));
+         message.setText(QObject::tr("An instance of D-LAN is already launched"));
+         message.setIcon(QMessageBox::Information);
+         QAbstractButton* abortButton = message.addButton(QObject::tr("Quit"), QMessageBox::RejectRole);
+         message.addButton(QObject::tr("Launch anyway"), QMessageBox::ActionRole);
+         message.exec();
+         if (message.clickedButton() == abortButton)
+         {
+            sharedMemory.unlock();
+            QSharedPointer<LM::ILogger> mainLogger = LM::Builder::newLogger("D-LAN GUI");
+            mainLogger->log("GUI already launched, exited..", LM::SV_END_USER);
+            throw AbortException();
+         }
+      }
+      sharedMemory.unlock();
+   }
+#endif
+
    this->setQuitOnLastWindowClosed(false);
 
    this->showMainWindow();
@@ -45,7 +92,10 @@ D_LAN_GUI::D_LAN_GUI(int argc, char *argv[]) :
    this->updateTrayIconMenu();
 
    this->trayIcon.setContextMenu(&this->trayIconMenu);
-   this->trayIcon.setToolTip("D-LAN");
+   #ifndef Q_OS_LINUX
+      // Fix a bug on ubuntu x86_64 (core dumped)
+      this->trayIcon.setToolTip("D-LAN");
+   #endif
    this->trayIcon.show();
 }
 
@@ -61,6 +111,11 @@ void D_LAN_GUI::trayIconActivated(QSystemTrayIcon::ActivationReason reason)
 {
    if (reason == QSystemTrayIcon::Trigger)
       this->showMainWindow();
+}
+
+void D_LAN_GUI::loadLanguage(const QString& filename)
+{
+   this->translator.load(filename, QCoreApplication::applicationDirPath() + "/" + Common::Constants::LANGUAGE_DIRECTORY);
 }
 
 void D_LAN_GUI::mainWindowClosed()
@@ -82,6 +137,7 @@ void D_LAN_GUI::showMainWindow()
    else
    {
       this->mainWindow = new MainWindow(this->coreConnection);
+      connect(this->mainWindow, SIGNAL(languageChanged(QString)), this, SLOT(loadLanguage(QString)));
       connect(this->mainWindow, SIGNAL(destroyed()), this, SLOT(mainWindowClosed()));
       this->mainWindow->show();
    }
@@ -100,7 +156,7 @@ void D_LAN_GUI::exit(bool stopTheCore)
    this->trayIcon.hide();
 
    if (stopTheCore)
-      RCC::Builder::stopCore();
+      this->coreConnection->stopLocalCore();
 
    if (this->mainWindow)
    {

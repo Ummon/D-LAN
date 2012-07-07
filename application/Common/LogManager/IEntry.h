@@ -43,10 +43,10 @@ namespace LM
       virtual QString getDateStr(bool withMs = true) const = 0;
       virtual Severity getSeverity() const = 0;
       virtual QString getSeverityStr() const = 0;
-      virtual QString getName() const = 0;
-      virtual QString getThread() const = 0;
-      virtual QString getSource() const = 0;
-      virtual QString getMessage() const = 0;
+      virtual const QString& getName() const = 0;
+      virtual const QString& getThread() const = 0;
+      virtual const QString& getSource() const = 0;
+      virtual const QString& getMessage() const = 0;
       virtual QString getMessageWithLF() const = 0;
    };
 }

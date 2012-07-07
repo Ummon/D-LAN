@@ -71,7 +71,7 @@ do
    qmake ${PROJECT_NAME}.pro -r -spec $SPEC "CONFIG+=release $PROF"
    if [ $CLEAN_COMMAND == on ]
    then
-      $MAKE release-clean -w || { echo "nothing to clean"; } # To avoid the command to fail.
+      $MAKE clean -w || { echo "nothing to clean"; } # To avoid the command to fail.
    fi
    $MAKE -w
    popd

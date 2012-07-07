@@ -37,7 +37,6 @@ using namespace Common;
   */
 
 /**
-  * Takes the ownership of 'socket'.
   * Build a non-connected message socket.
   * Take ownership of 'logger'.
   */
@@ -102,7 +101,6 @@ MessageSocket::~MessageSocket()
 
    this->close();
    this->socket->deleteLater();
-
    delete this->logger;
 }
 
@@ -278,7 +276,7 @@ bool MessageSocket::readMessage()
    case MessageHeader::GUI_STATE: return this->readMessage<Protos::GUI::State>();
    case MessageHeader::GUI_STATE_RESULT: return this->readMessage<Protos::Common::Null>();
    case MessageHeader::GUI_EVENT_CHAT_MESSAGES: return this->readMessage<Protos::GUI::EventChatMessages>();
-   case MessageHeader::GUI_EVENT_LOG_MESSAGE: return this->readMessage<Protos::GUI::EventLogMessage>();
+   case MessageHeader::GUI_EVENT_LOG_MESSAGES: return this->readMessage<Protos::GUI::EventLogMessages>();
    case MessageHeader::GUI_ASK_FOR_AUTHENTICATION: return this->readMessage<Protos::GUI::AskForAuthentication>();
    case MessageHeader::GUI_AUTHENTICATION: return this->readMessage<Protos::GUI::Authentication>();
    case MessageHeader::GUI_AUTHENTICATION_RESULT: return this->readMessage<Protos::GUI::AuthenticationResult>();

@@ -41,6 +41,7 @@
 #include <IBrowseResult.h>
 #include <ISearchResult.h>
 #include <Types.h>
+#include <priv/CoreController.h>
 
 namespace RCC
 {
@@ -50,6 +51,8 @@ namespace RCC
    class InternalCoreConnection : public Common::MessageSocket
    {
       Q_OBJECT
+      static const int NB_RETRIES_MAX;
+      static const int TIME_BETWEEN_RETRIES; // [ms]
 
    protected:
       class Logger : public ILogger
@@ -60,7 +63,7 @@ namespace RCC
       };
 
    public:
-      InternalCoreConnection();
+      InternalCoreConnection(CoreController& coreController);
       ~InternalCoreConnection();
 
       void connectToCore(const QString& address, quint16 port, Common::Hash password);
@@ -101,17 +104,14 @@ namespace RCC
 
       void newState(const Protos::GUI::State&);
       void newChatMessages(const Protos::GUI::EventChatMessages&);
-      void newLogMessage(QSharedPointer<const LM::IEntry>);
+      void newLogMessages(const QList<QSharedPointer<LM::IEntry>>&);
 
       void browseResult(const Protos::GUI::BrowseResult& browseResult);
       void searchResult(const Protos::Common::FindResult& findResult);
 
    private slots:
       void adressResolved(QHostInfo hostInfo);
-   private:
       void tryToConnectToTheNextAddress();
-
-   private slots:
       void stateChanged(QAbstractSocket::SocketState socketState);
 
    private:      
@@ -125,6 +125,8 @@ namespace RCC
       friend class BrowseResult;
       friend class SearchResult;
 
+      CoreController& coreController;
+
       CoreStatus coreStatus;
 
       ICoreConnection::ConnectionInfo connectionInfo;
@@ -134,6 +136,8 @@ namespace RCC
       int currentHostLookupID;
 
       QList<QHostAddress> addressesToTry; // When a name is resolved many addresses can be returned, we will try all of them until a connection is successfuly established.
+      QList<QHostAddress> addressesToRetry;
+      int nbRetries;
 
       QList<QWeakPointer<BrowseResult>> browseResultsWithoutTag;
       QList<QWeakPointer<SearchResult>> searchResultsWithoutTag;

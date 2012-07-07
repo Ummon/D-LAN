@@ -24,7 +24,7 @@ LoggerHook::LoggerHook(Severity severities) :
 {
 }
 
-void LoggerHook::newMessage(QSharedPointer<const IEntry> entry)
+void LoggerHook::newMessage(QSharedPointer<IEntry> entry)
 {
    if (entry->getSeverity() & this->severities)
       emit newLogEntry(entry);

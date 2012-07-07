@@ -93,4 +93,4 @@ void UploadManager::uploadTimeout()
       }
 }
 
-const quint32 UploadManager::MIN_UPLOAD_THREAD_STACK_SIZE(8 * 1024);
+const quint32 UploadManager::MIN_UPLOAD_THREAD_STACK_SIZE(32 * 1024);

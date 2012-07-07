@@ -339,11 +339,6 @@ void Tests::compareTwoHash()
    QVERIFY(h2 == h4);
 }
 
-Hash pouet()
-{
-   return Hash();
-}
-
 void Tests::hashMoveConstuctorAndAssignment()
 {
    QString str("2d73736f34a73837d422f7aba2740d8409ac60df");

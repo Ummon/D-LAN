@@ -44,10 +44,10 @@ namespace LM
       QString getDateStr(bool withMs = true) const;
       Severity getSeverity() const;
       QString getSeverityStr() const;
-      QString getName() const;
-      QString getThread() const;
-      QString getSource() const;
-      QString getMessage() const;
+      const QString& getName() const;
+      const QString& getThread() const;
+      const QString& getSource() const;
+      const QString& getMessage() const;
       QString getMessageWithLF() const;
 
    private:

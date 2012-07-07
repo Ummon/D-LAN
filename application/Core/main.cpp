@@ -18,6 +18,7 @@
   
 #include <QString>
 #include <QTextCodec>
+#include <QTextStream>
 #include <QLocale>
 
 #include <Common/Global.h>
@@ -33,11 +34,12 @@
 #endif
 
 /**
-  * Arguments : [-r <roaming data directory>] [-l <local data directory>] [--reset-settings] [--lang <language>] [<arguments from QtService>]
+  * Arguments : [-r <roaming data directory>] [-l <local data directory>] [--reset-settings] [--lang <language>] [--version] [<arguments from QtService>]
   *  <roaming data directory> : Where settings are put.
   *  <local data directory> : Where logs, download queue, and files cache are put.
   *  --reset-settings : Remove all settings except "nick" and "peerID", other settings are set to their default values. Core exist directly after.
   *  --lang <language> : set the language and save it to the settings file. (ISO-639, two letters)
+  *  --version : Print the version
   *  <arguments from QtService> : Type "D-LAN.Core.exe -h" to see them.
   */
 int main(int argc, char* argv[])
@@ -61,6 +63,13 @@ int main(int argc, char* argv[])
          locale = QLocale(QString::fromLatin1(argv[++i]));
       else if (arg == "--reset-settings")
          resetSettings = true;
+      else if (arg == "--version")
+      {
+         QTextStream out(stdout);
+         const QString versionTag = Common::Global::getVersionTag();
+         out << Common::Global::getVersion() % (versionTag.isEmpty() ? QString() : " " % versionTag) << " " << Common::Global::getBuildTime().toString("yyyy-MM-dd_HH-mm") << endl;
+         return 0;
+      }
    }
 
    LM::Builder::setLogDirName("log_core");
