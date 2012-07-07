@@ -71,14 +71,7 @@ D_LAN_GUI::D_LAN_GUI(int argc, char* argv[]) :
          message.exec();
          if (message.clickedButton() == abortButton)
          {
-            this->sharedMemory.u   this->updateTrayIconMenu();
-
-            this->trayIcon.setContextMenu(&this->trayIconMenu);
-            #ifndef Q_OS_LINUX
-               // Fix a bug on ubuntu x86_64 (core dumped)
-               this->trayIcon.setToolTip("D-LAN");
-            #endif
-            this->trayIcon.show();nlock();
+            this->sharedMemory.unlock();
             QSharedPointer<LM::ILogger> mainLogger = LM::Builder::newLogger("D-LAN GUI");
             mainLogger->log("GUI already launched, exited..", LM::SV_END_USER);
             throw AbortException();
