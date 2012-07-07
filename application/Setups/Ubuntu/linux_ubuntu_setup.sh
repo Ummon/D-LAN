@@ -12,6 +12,9 @@ ICON_16_DIR=$DEB_DIR/usr/share/icons/hicolor/16x16/apps
 ICON_24_DIR=$DEB_DIR/usr/share/icons/hicolor/24x24/apps
 ICON_32_DIR=$DEB_DIR/usr/share/icons/hicolor/32x32/apps
 ICON_48_DIR=$DEB_DIR/usr/share/icons/hicolor/48x48/apps
+ICON_64_DIR=$DEB_DIR/usr/share/icons/hicolor/64x64/apps
+ICON_128_DIR=$DEB_DIR/usr/share/icons/hicolor/128x128/apps
+ICON_256_DIR=$DEB_DIR/usr/share/icons/hicolor/256x256/apps
 
 STYLES_FILES=$DIR/styles/*
 I18N_FILES=$DIR/translations/*.qm
@@ -20,7 +23,7 @@ GUI_FILE=$DIR/GUI/output/release/D-LAN.GUI
 ICON_FILE=$DIR/Common/ressources/icon.ico
 
 rm -Rf $DEB_DIR
-mkdir -p $DESKTOP_DIR $STYLES_DIR $I18N_DIR $ICON_16_DIR $ICON_24_DIR $ICON_32_DIR $ICON_48_DIR
+mkdir -p $DESKTOP_DIR $STYLES_DIR $I18N_DIR $ICON_16_DIR $ICON_24_DIR $ICON_32_DIR $ICON_48_DIR $ICON_64_DIR $ICON_128_DIR $ICON_256_DIR
 
 cp -R $STYLES_FILES $STYLES_DIR/
 cp -R $I18N_FILES $I18N_DIR/
@@ -34,6 +37,9 @@ cp $WORK_DIR/temp/icon-0.png $ICON_16_DIR/d-lan.png
 cp $WORK_DIR/temp/icon-1.png $ICON_24_DIR/d-lan.png
 cp $WORK_DIR/temp/icon-2.png $ICON_32_DIR/d-lan.png
 cp $WORK_DIR/temp/icon-3.png $ICON_48_DIR/d-lan.png
+cp $WORK_DIR/temp/icon-4.png $ICON_64_DIR/d-lan.png
+cp $WORK_DIR/temp/icon-5.png $ICON_128_DIR/d-lan.png
+cp $WORK_DIR/temp/icon-6.png $ICON_256_DIR/d-lan.png
 
 cp d-lan.desktop $DESKTOP_DIR/
 
