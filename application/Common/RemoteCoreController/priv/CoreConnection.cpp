@@ -39,20 +39,26 @@ CoreConnection::CoreConnection(int socketTimeout) :
    connectingInProgress(false),
    SOCKET_TIMEOUT(socketTimeout)
 {
+   connect(&this->coreController, SIGNAL(statusChanged()), this, SIGNAL(localCoreStatusChanged()));
 }
 
 CoreConnection::~CoreConnection()
 {
 }
 
-CoreStatus CoreConnection::startLocalCore()
+void CoreConnection::startLocalCore()
 {
-   return this->coreController.startCore();
+   this->coreController.startCore();
 }
 
 void CoreConnection::stopLocalCore()
 {
    this->coreController.stopCore();
+}
+
+CoreStatus CoreConnection::getLocalCoreStatus() const
+{
+   return this->coreController.getStatus();
 }
 
 void CoreConnection::connectToCore()
@@ -195,11 +201,6 @@ void CoreConnection::refresh()
 void CoreConnection::refreshNetworkInterfaces()
 {
    this->current()->refreshNetworkInterfaces();
-}
-
-bool CoreConnection::isRunningAsSubProcess() const
-{
-   return this->current()->isRunningAsSubProcess();
 }
 
 ICoreConnection::ConnectionInfo CoreConnection::getConnectionInfo() const

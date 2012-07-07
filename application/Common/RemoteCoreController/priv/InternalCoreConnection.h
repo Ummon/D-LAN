@@ -127,8 +127,6 @@ namespace RCC
 
       CoreController& coreController;
 
-      CoreStatus coreStatus;
-
       ICoreConnection::ConnectionInfo connectionInfo;
 
       QLocale currentLanguage;

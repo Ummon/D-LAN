@@ -19,10 +19,7 @@
 #include <priv/CoreController.h>
 using namespace RCC;
 
-#include <QtServiceController>
 #include <QProcessEnvironment>
-
-#include <Common/Constants.h>
 
 #include <priv/Log.h>
 
@@ -34,52 +31,50 @@ using namespace RCC;
 
 const int CoreController::TIMEOUT_SUBPROCESS_WAIT_FOR_STARTED(2000); // 2s.
 
+CoreController::CoreController() :
+   controller(Common::Constants::SERVICE_NAME)
+{
+   connect(&this->coreProcess, SIGNAL(stateChanged(QProcess::ProcessState)), this, SIGNAL(statusChanged()));
+}
+
 /**
   * Try to start the core as a service if it fails then try to launch it as a sub-process.
   */
-CoreStatus CoreController::startCore(int port)
+void CoreController::startCore(int port)
 {
-   QtServiceController controller(Common::Constants::SERVICE_NAME);
-   if (!controller.isInstalled())
+   if (!this->controller.isInstalled())
    {
       if (!QtServiceController::install(CORE_EXE_NAME))
          L_WARN(QObject::tr("D-LAN Core cannot be installed as a service"));
    }
 
-   bool isRunning = false;
-
-   if (!(isRunning = controller.isRunning()))
+   if (!this->controller.isRunning())
    {
       QStringList arguments;
       if (port != -1)
          arguments << "--port" << QString::number(port);
 
-      if (!(isRunning = controller.start(arguments)))
+      if (!this->controller.start(arguments))
       {
          if (this->coreProcess.state() == QProcess::NotRunning)
          {
             this->coreProcess.start(QString("%1/%2 -e%3").arg(QCoreApplication::applicationDirPath()).arg(CORE_EXE_NAME).arg(port != -1 ? QString("") : QString(" --port %1").arg(port)));
             L_USER(QObject::tr("Core launched as subprocess"));
             this->coreProcess.waitForStarted(TIMEOUT_SUBPROCESS_WAIT_FOR_STARTED);
-            return this->coreProcess.state() == QProcess::Starting || this->coreProcess.state() == QProcess::Running ? RUNNING_AS_SUB_PROCESS : NOT_RUNNING;
          }
-         else
-            return RUNNING_AS_SUB_PROCESS;
       }
       else
+      {
          L_USER(QObject::tr("Core service launched"));
+         emit statusChanged();
+      }
    }
-
-   if (isRunning)
-      return RUNNING_AS_SERVICE;
-   return NOT_RUNNING;
 }
 
 void CoreController::stopCore()
 {
-   QtServiceController controller(Common::Constants::SERVICE_NAME);
-   if (controller.isRunning())
-      controller.stop();
+   if (this->controller.isRunning())
+      this->controller.stop();
 
    if (this->coreProcess.state() == QProcess::Running)
    {
@@ -88,4 +83,9 @@ void CoreController::stopCore()
    }
 
    this->coreProcess.kill();
+}
+
+CoreStatus CoreController::getStatus() const
+{
+   return this->controller.isRunning() ? RUNNING_AS_SERVICE : (this->coreProcess.state() == QProcess::Running || this->coreProcess.state() == QProcess::Starting ? RUNNING_AS_SUB_PROCESS : NOT_RUNNING);
 }
