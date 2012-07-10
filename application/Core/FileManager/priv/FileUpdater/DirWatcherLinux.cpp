@@ -19,6 +19,8 @@
 #include <priv/FileUpdater/DirWatcherLinux.h>
 using namespace FM;
 
+#include <unistd.h>
+
 #include <QMutexLocker>
 
 #include <priv/FileUpdater/WaitConditionLinux.h>

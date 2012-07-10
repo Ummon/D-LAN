@@ -19,6 +19,8 @@
 #include <priv/FileUpdater/WaitConditionLinux.h>
 using namespace FM;
 
+#include <unistd.h>
+
 #include <QtCore/QDebug>
 
 #include <stdint.h>

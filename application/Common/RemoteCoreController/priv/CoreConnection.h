@@ -55,8 +55,9 @@ namespace RCC
       CoreConnection(int socketTimeout = DEFAULT_SOCKET_TIMEOUT);
       ~CoreConnection();
 
-      CoreStatus startLocalCore();
+      void startLocalCore();
       void stopLocalCore();
+      CoreStatus getLocalCoreStatus() const;
 
       void connectToCore();
       void connectToCore(quint16 port);
@@ -94,8 +95,6 @@ namespace RCC
 
       void refresh();
       void refreshNetworkInterfaces();
-
-      bool isRunningAsSubProcess() const;
 
       ConnectionInfo getConnectionInfo() const;
       ConnectionInfo getConnectionInfoConnecting() const;

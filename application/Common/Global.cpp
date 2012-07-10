@@ -430,16 +430,16 @@ QString Global::getDataServiceFolder(DataFolderType type)
       return windowsPathSplit.first().replace('\\', '/') + "/Documents and Settings/LocalService" + (type == DataFolderType::ROAMING ? "/Application Data/" : "/Local Settings/Application Data/") + Constants::APPLICATION_FOLDER_NAME;
    }
 #else
-   return Global::getDataSystemFolder(type);
+   return QString();
 #endif
 }
 
 /**
+  * This method only works on Windows.
   * For example on Windows 7 : "C:\Windows\SysWOW64\config\systemprofile\AppData".
   */
 QString Global::getDataSystemFolder(DataFolderType type)
 {
-// TODO: other platforms.
 #ifdef Q_OS_WIN32
    TCHAR dataPathSystem[MAX_PATH];
    // SHGetKnownFolderPath should be use for vista a superior but it doesn't exist in mingw.

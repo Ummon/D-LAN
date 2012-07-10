@@ -57,7 +57,6 @@ void InternalCoreConnection::Logger::logError(const QString& message)
 InternalCoreConnection::InternalCoreConnection(CoreController& coreController) :
    Common::MessageSocket(new InternalCoreConnection::Logger()),
    coreController(coreController),
-   coreStatus(NOT_RUNNING),
    currentHostLookupID(-1),
    nbRetries(0),
    authenticated(false),
@@ -264,7 +263,7 @@ void InternalCoreConnection::refreshNetworkInterfaces()
 
 bool InternalCoreConnection::isRunningAsSubProcess() const
 {
-   return this->coreStatus == RUNNING_AS_SUB_PROCESS;
+   return this->coreController.getStatus() == RUNNING_AS_SUB_PROCESS;
 }
 
 ICoreConnection::ConnectionInfo InternalCoreConnection::getConnectionInfo() const
@@ -314,8 +313,8 @@ void InternalCoreConnection::tryToConnectToTheNextAddress()
    // If the address is local check if the core is launched, if not try to launch it.
    if (Global::isLocal(address))
    {
-      this->coreStatus = this->coreController.startCore(this->connectionInfo.port);
-      if (this->coreStatus == NOT_RUNNING)
+      this->coreController.startCore(this->connectionInfo.port);
+      if (this->coreController.getStatus() == NOT_RUNNING)
          L_WARN("Unable to start the Core");
    }
 #endif

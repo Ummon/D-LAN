@@ -19,8 +19,10 @@
 #include <priv/StdLogger.h>
 using namespace LM;
 
-#if defined( Q_OS_WIN32 )
+#if defined(Q_OS_WIN32)
    #include <fcntl.h>
+#elif defined (Q_OS_LINUX)
+   #include <unistd.h>
 #endif
 
 #include <IEntry.h>
