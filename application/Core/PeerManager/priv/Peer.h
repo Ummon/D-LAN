@@ -96,9 +96,6 @@ namespace PM
    protected:
       mutable QMutex mutex;
 
-      PeerManager* peerManager;
-      QSharedPointer<FM::IFileManager> fileManager;
-
       ConnectionPool connectionPool;
 
       Common::Hash ID;
