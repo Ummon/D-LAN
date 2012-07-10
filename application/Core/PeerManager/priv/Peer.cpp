@@ -35,8 +35,6 @@ using namespace PM;
 const quint32 Peer::MAX_SPEED = std::numeric_limits<quint32>::max();
 
 Peer::Peer(PeerManager* peerManager, QSharedPointer<FM::IFileManager> fileManager, Common::Hash ID, const QString& nick) :
-   peerManager(peerManager),
-   fileManager(fileManager),
    connectionPool(peerManager, fileManager, ID),
    ID(ID),
    port(0),
