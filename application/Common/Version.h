@@ -20,10 +20,10 @@
 #define COMMON_VERSION_H
 
 #define VERSION "1.1.0"
-#define VERSION_TAG "Beta11"
+#define VERSION_TAG "Beta12"
 
 // These two values are automatically updated during the release building process. See the script 'Application/Tools/update_version.sh'
-#define BUILD_TIME "2012-07-07_00-28"
-#define GIT_VERSION "3f0448be0039355edae12941e8949544042ee3bc"
+#define BUILD_TIME "2012-07-11_15-32"
+#define GIT_VERSION "2fd074fdb4a696e1081f14c9f97e5c14118299c7"
 
 #endif
