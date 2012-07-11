@@ -1,6 +1,6 @@
 Put here the released setup. The format must be (EBNF) :
 
-format = "D-LAN-", version, version tag, "-", year, "-", month, "-", day, "_", hour, "-", minute, "-", archi, ".deb" ;
+format = "D-LAN-", version, version tag, "-", year, "-", month, "-", day, "_", hour, "-", minute, "-amd64.deb" ;
 version = digit, ".", digit, ".", digit ;
 version tag = { alphabetic character } ;
 year = digit, digit, digit, digit ;
@@ -8,6 +8,5 @@ month = digit, digit ;
 day = digit, digit ;
 hour = digit, digit;
 minute = digit, digit;
-archi = "amd64" | "i686"
 
 The filename is parsed to print some information on the web page.

@@ -29,7 +29,8 @@
             {p, [], tr(home, warning_beta, A, ["http://dev.d-lan.net/projects/pmp/issues"])},
             d_lan_common:download_button(A, "windows"),
             %d_lan_common:download_button(A, "Mac OS X"),
-            d_lan_common:download_button(A, "Linux"),
+            d_lan_common:download_button(A, "Linux 64-bits"),
+            d_lan_common:download_button(A, "Linux 32-bits"),
             {'div', [{class, "spacer"}]}
          ]
       }. 

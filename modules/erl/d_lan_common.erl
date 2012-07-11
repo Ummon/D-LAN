@@ -100,6 +100,7 @@ download_button(A, Platform) ->
    {ok, Filenames} = file:list_dir(Relase_platform_folder),
    Filename = last(sort([F || F <- Filenames, lists:member(string:right(F, 4), [".exe", ".dmg", ".deb"])])),
    Extension = string:right(Filename, 3),
+   % 'Archi' isn't used for the moment.
    {match, [Version, Version_tag, Year, Month, Day, Archi]} =
       case Extension of
          "deb" ->
@@ -115,7 +116,7 @@ download_button(A, Platform) ->
          [
             {em, [], [tr(download_button, download, A) ++ " (" ++ io_lib:format("~.2f", [File_size_mb]) ++ " MiB)"]}, {br},
             tr(download_button, version, A,
-               [Version ++ if Version_tag =/= [] -> " " ++ Version_tag; true -> [] end ++ if Archi =/= [] -> " " ++ Archi; true -> [] end, Platform_formatted]
+               [Version ++ if Version_tag =/= [] -> " " ++ Version_tag; true -> [] end, Platform_formatted]
             ), {br},
             tr(download_button, released, A, [httpd_util:month(list_to_integer(Month)) ++ " " ++ Day ++ " " ++ Year])
             %"Number of download : " ++ integer_to_list(d_lan_download_db(Filename))
