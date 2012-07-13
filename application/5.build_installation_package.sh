@@ -12,3 +12,5 @@ else
    iscc windows_setup.iss
 fi
 
+cd Setups/Sources
+./make_source.sh
