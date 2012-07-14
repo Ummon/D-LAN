@@ -82,8 +82,8 @@ translate(fr, features, feat_7) -> "Chat global";
 translate(en, features, feat_8) -> "D-LAN can run without graphic interface (GUI) and be controlled remotely."; 
 translate(fr, features, feat_8) -> "D-LAN peut être lancé sans interface graphique (<i>GUI</i>) et être piloté à distance.";
 
-translate(en, features, feat_9) -> "Open source. Code source distributed under GPLv3 license.";
-translate(fr, features, feat_9) -> "Open source. Le code est distribué sous la licence GPLv3.";
+translate(en, features, feat_9) -> "<a href=\"https://github.com/Ummon/D-LAN\">Open source</a>. Code source distributed under GPLv3 license.";
+translate(fr, features, feat_9) -> "<a href=\"https://github.com/Ummon/D-LAN\">Open source</a>. Le code est distribué sous la licence GPLv3.";
 
 translate(en, features, feat_10) -> "Free of any sort of ads or <a href=\"http://en.wikipedia.org/wiki/Malware\">malwares</a>.";
 translate(fr, features, feat_10) -> "Ne contient aucune sorte de publicité ou de <a href=\"http://fr.wikipedia.org/wiki/Logiciel_malveillant\">'malware'</a>.";

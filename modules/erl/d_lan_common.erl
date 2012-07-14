@@ -101,7 +101,7 @@ download_button(A, Platform) ->
    Filename = last(sort([F || F <- Filenames, lists:member(string:right(F, 4), [".exe", ".dmg", ".deb"])])),
    Extension = string:right(Filename, 3),
    % 'Archi' isn't used for the moment.
-   {match, [Version, Version_tag, Year, Month, Day, Archi]} =
+   {match, [Version, Version_tag, Year, Month, Day, _Archi]} =
       case Extension of
          "deb" ->
             re:run(Filename, "D-LAN-((?:\\d|\\.)+)([^-]*)-(\\d+)-(\\d+)-(\\d+)_.*-(\\w+)\\..*", [{capture, all_but_first, list}]);      
