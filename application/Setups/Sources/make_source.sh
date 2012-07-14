@@ -2,7 +2,7 @@
 
 cd ../../Tools
 
-CURRENT_VERSION=`get_version.sh`
+CURRENT_VERSION=`./get_version.sh`
 CURRENT_DATE=`date -u +%Y-%m-%d_%H-%M`
 
 cd ../..
