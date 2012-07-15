@@ -18,9 +18,9 @@ INCLUDEPATH += . \
 
 DEFINES += UPLOADMANAGER_LIBRARY
 SOURCES += priv/UploadManager.cpp \
-    Builder.cpp \
     priv/Log.cpp \
-    priv/ChunkUploader.cpp
+    priv/ChunkUploader.cpp \
+    priv/Builder.cpp
 HEADERS += IUploadManager.h \
     priv/UploadManager.h \
     Builder.h \

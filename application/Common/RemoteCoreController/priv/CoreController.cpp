@@ -58,7 +58,7 @@ void CoreController::startCore(int port)
       {
          if (this->coreProcess.state() == QProcess::NotRunning)
          {
-            this->coreProcess.start(QString("%1/%2 -e%3").arg(QCoreApplication::applicationDirPath()).arg(CORE_EXE_NAME).arg(port != -1 ? QString("") : QString(" --port %1").arg(port)));
+            this->coreProcess.start(QString("\"%1/%2\" -e%3").arg(QCoreApplication::applicationDirPath()).arg(CORE_EXE_NAME).arg(port != -1 ? QString("") : QString(" --port %1").arg(port)));
             L_USER(QObject::tr("Core launched as subprocess"));
             this->coreProcess.waitForStarted(TIMEOUT_SUBPROCESS_WAIT_FOR_STARTED);
          }

@@ -478,6 +478,9 @@ void MainWindow::loadCustomStyle(const QString& filepath)
 
    if (!filepath.isNull())
    {
+      // The css images are search from the current path.
+      QDir::setCurrent(QCoreApplication::applicationDirPath());
+
       QFile file(filepath);
       if (file.open(QIODevice::ReadOnly))
       {
