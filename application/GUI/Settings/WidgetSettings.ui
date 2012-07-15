@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>639</width>
-    <height>342</height>
+    <height>356</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -203,8 +203,8 @@
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>98</width>
-               <height>89</height>
+               <width>589</width>
+               <height>98</height>
               </rect>
              </property>
              <property name="sizePolicy">
@@ -236,7 +236,7 @@
                     <bool>true</bool>
                    </property>
                    <attribute name="buttonGroup">
-                    <string>grpAddressesToListenTo</string>
+                    <string notr="true">grpAddressesToListenTo</string>
                    </attribute>
                   </widget>
                  </item>
@@ -246,7 +246,7 @@
                     <string>IPv4</string>
                    </property>
                    <attribute name="buttonGroup">
-                    <string>grpAddressesToListenTo</string>
+                    <string notr="true">grpAddressesToListenTo</string>
                    </attribute>
                   </widget>
                  </item>

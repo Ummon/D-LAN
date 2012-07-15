@@ -123,7 +123,7 @@ const QList<Common::SharedDir>& DirListModel::getDirs() const
 Common::SharedDir DirListModel::getDir(const Common::Hash& ID) const
 {
    for (QListIterator<Common::SharedDir> i(this->dirs); i.hasNext();)
-   {
+   {directory
       Common::SharedDir dir = i.next();
       if (dir.ID == ID)
          return dir;
@@ -178,7 +178,7 @@ QVariant DirListModel::headerData(int section, Qt::Orientation orientation, int 
    case Qt::DisplayRole:
       switch (section)
       {
-      case 0: return tr("Directory");
+      case 0: return tr("Folder");
       case 1: return tr("Size");
       case 2: return tr("Free space");
       default: return QAbstractTableModel::headerData(section, orientation, role);
