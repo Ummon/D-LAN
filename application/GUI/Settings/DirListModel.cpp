@@ -123,7 +123,7 @@ const QList<Common::SharedDir>& DirListModel::getDirs() const
 Common::SharedDir DirListModel::getDir(const Common::Hash& ID) const
 {
    for (QListIterator<Common::SharedDir> i(this->dirs); i.hasNext();)
-   {directory
+   {
       Common::SharedDir dir = i.next();
       if (dir.ID == ID)
          return dir;
