@@ -208,6 +208,7 @@ int Common::SortedArray<T, M>::insert(const T& value, bool* exists)
    else
       node->items[position] = value;
 
+   // If the argument 'exists' is given (is not a null pointer).
    if (exists)
       *exists = position != -1;
 
