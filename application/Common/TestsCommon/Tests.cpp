@@ -214,7 +214,7 @@ void Tests::sortedArray()
 
       SortedArray<char, 5> array;
 
-      // Insert the following items: A -> Z in a pseudo random order.
+      // Insert the elements in a pseudo random order.
       while (array.size() != orderedList.size())
          array.insert(orderedList[mtRand.randInt(orderedList.size()-1)]);
 
