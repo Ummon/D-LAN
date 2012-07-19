@@ -30,7 +30,7 @@
   *  - Access to element by integer index like an array: 0, 1, 2, ...
   *  - Found the index of a given value.
   *  - The elements are kept ordered when a new one is inserted.
-  * The type T must have the operator '<' defined. Otherwise a "lesser than" function can be given with the method 'setSortedFunctions'.
+  * The type T must have the operator '<' defined. Otherwise a "lesser than" function can be given with the method 'setSortedFunction'.
   *
   * 'SortedArray' is implemented as a B-Tree, see here for more information: http://en.wikipedia.org/wiki/B-tree
   * M is the order according Knuth's definition. This is the maximum number of children a node can have.
@@ -81,7 +81,7 @@ namespace Common
       int getM() const;
 
       //void sort();
-      void setSortedFunctions(const std::function<bool(const T&, const T&)>& lesserThan);
+      void setSortedFunction(const std::function<bool(const T&, const T&)>& lesserThan);
 
       /**
         * A very basic iterator to iterate on the sorted elements.
@@ -144,7 +144,7 @@ namespace Common
       static Node* add(Node* node, const T& value, const std::function<bool(const T&, const T&)>& lesserThan, Node* child = nullptr);
       static Node* split(Node* node, const T& value, const std::function<bool(const T&, const T&)>& lesserThan, Node* child = nullptr);
 
-      static void quickSort(const Position& first, const Position& last);
+      //static void quickSort(const Position& first, const Position& last);
       static Position partition(const Position& first, const Position& last, const Position& pivot);
 
       struct SortedArrayData : public QSharedData
@@ -312,7 +312,7 @@ void Common::SortedArray<T, M>::sort()
   * The array is automatically reordered after calling this method.
   */
 template <typename T, int M>
-void Common::SortedArray<T, M>::setSortedFunctions(const std::function<bool(const T&, const T&)>& lesserThan)
+void Common::SortedArray<T, M>::setSortedFunction(const std::function<bool(const T&, const T&)>& lesserThan)
 {
    this->d->lesserThanFun = lesserThan;
 
