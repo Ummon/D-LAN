@@ -112,7 +112,7 @@ IPeer* PeerManager::createPeer(const Hash& ID, const QString& nick)
       return existingPeer;
 
    Peer* peer = new Peer(this, this->fileManager, ID, nick);
-   connect(peer, SIGNAL(unbanned()), this, SLOT(peerUnbanned()));
+   connect(peer, SIGNAL(unblocked()), this, SLOT(peerUnblocked()));
    this->peers << peer;
 
    return peer;
@@ -132,7 +132,7 @@ void PeerManager::updatePeer(const Common::Hash& ID, const QHostAddress& IP, qui
    if (!peer)
    {
       peer = new Peer(this, this->fileManager, ID);
-      connect(peer, SIGNAL(unbanned()), this, SLOT(peerUnbanned()));
+      connect(peer, SIGNAL(unblocked()), this, SLOT(peerUnblocked()));
       this->peers << peer;
    }
 
@@ -247,7 +247,7 @@ void PeerManager::checkIdlePendingSockets()
       this->timer.stop();
 }
 
-void PeerManager::peerUnbanned()
+void PeerManager::peerUnblocked()
 {
    Peer* peer = static_cast<Peer*>(this->sender());
    if (peer->isAvailable())

@@ -87,11 +87,11 @@ namespace PM
       void newConnexion(QTcpSocket* tcpSocket);
 
    signals:
-      void unbanned();
+      void unblocked();
 
    protected slots:
       void consideredDead();
-      void unban();
+      void unblock();
 
    protected:
       mutable QMutex mutex;
@@ -116,9 +116,9 @@ namespace PM
       bool alive;
       QTimer aliveTimer;
 
-      bool banned;
-      QString bannedReason;
-      QTimer bannedTimer;
+      bool blocked;
+      QString blockedReason;
+      QTimer blockedTimer;
    };
 }
 #endif
