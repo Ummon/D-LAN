@@ -65,7 +65,7 @@ namespace PM
       virtual quint32 getSpeed();
       virtual void setSpeed(quint32 newSpeed);
 
-      virtual void ban(int duration, const QString& reason = QString());
+      virtual void block(int duration, const QString& reason = QString());
 
       virtual bool isAlive() const;
       virtual bool isAvailable() const;

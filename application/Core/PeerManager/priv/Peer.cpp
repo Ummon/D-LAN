@@ -127,7 +127,7 @@ void Peer::setSpeed(quint32 newSpeed)
       this->speed = (this->speed + newSpeed) / 2;
 }
 
-void Peer::ban(int duration, const QString& reason)
+void Peer::block(int duration, const QString& reason)
 {
    QMutexLocker locker(&this->mutex);
 

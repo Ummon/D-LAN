@@ -722,18 +722,18 @@
         <translation>Rechercher parmi les autres pairs &lt;ENTER&gt;</translation>
     </message>
     <message>
-        <location filename="../GUI/.tmp/release/ui_MainWindow.h" line="+4"/>
         <source>Search among its own files &lt;SHIFT-ENTER&gt;</source>
-        <translation>Rechercher parmi ses propres fichiers &lt;SHIFT-ENTER&gt;</translation>
+        <translation type="obsolete">Rechercher parmi ses propres fichiers &lt;SHIFT-ENTER&gt;</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.ui"/>
-        <location filename="../GUI/.tmp/release/ui_MainWindow.h" line="+3"/>
+        <location/>
+        <location filename="../GUI/.tmp/release/ui_MainWindow.h" line="+7"/>
         <source>Peers</source>
         <translation>Pairs</translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/release/ui_MainWindow.h" line="-3"/>
         <source>Search among my own files &lt;SHIFT-ENTER&gt;</source>
         <translation>Rechercher parmi ses propres fichiers &lt;SHIFT-ENTER&gt;</translation>
     </message>
