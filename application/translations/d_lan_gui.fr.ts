@@ -584,7 +584,7 @@
     <message>
         <location line="+1"/>
         <source>Are you sure to remove the selected downloads? There is one or more unfinished download.</source>
-        <translation>Êtes vous sûr de vouleur enlever les downloads sélectionnés. Certains ne sont pas terminés.</translation>
+        <translation>Êtes-vous sûr de vouloir enlever les downloads sélectionnés. Certains ne sont pas terminés.</translation>
     </message>
     <message>
         <location line="+51"/>
