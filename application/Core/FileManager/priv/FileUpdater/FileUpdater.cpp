@@ -345,18 +345,22 @@ void FileUpdater::computeSomeHashes()
          {
             locker.unlock();
             bool gotAllHashes;
-            try {
+            try
+            {
                int hashedAmount = 0;
                gotAllHashes = this->fileHasher.start(nextFileToHash->asFileForHasher(), 1, &hashedAmount); // Be carreful of methods 'prioritizeAFileToHash(..)' and 'rmRoot(..)' called concurrently here.
                this->remainingSizeToHash -= hashedAmount;
                this->updateHashingProgress();
-            } catch (IOErrorException&) {
+            }
+            catch (IOErrorException&)
+            {
                gotAllHashes = true; // The hashes may be recomputed when a peer ask the hashes with a GET_HASHES request.
             }
             locker.relock();
 
-            if (gotAllHashes)
+            if (gotAllHashes && !fileList->isEmpty())
                fileList->removeFirst();
+
             // Special case for the prioritized list, we put the file at the end after the computation of a hash.
             else if (fileList == &this->filesWithoutHashesPrioritized && fileList->size() > 1) // The current hashing file may have been removed from 'filesWithoutHashesPrioritized' by 'rmRoot(..)'.
                fileList->move(0, fileList->size() - 1);

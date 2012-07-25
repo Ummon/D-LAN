@@ -350,7 +350,8 @@ const QList<WatcherEvent> DirWatcherLinux::waitEvent(int timeout, QList<WaitCond
   * @param name    the name of the Dir
   * @exception UnableToWatchException
   */
-DirWatcherLinux::Dir::Dir(DirWatcherLinux* dwl, Dir* parent, const QString& name) : dwl(dwl), parent(parent), name(name)
+DirWatcherLinux::Dir::Dir(DirWatcherLinux* dwl, Dir* parent, const QString& name) :
+   dwl(dwl), parent(parent), name(name)
 {
    const QByteArray& array = getFullPath().toUtf8();
 
@@ -389,17 +390,27 @@ DirWatcherLinux::Dir::Dir(DirWatcherLinux* dwl, Dir* parent, const QString& name
       throw UnableToWatchException();
    }
 
+   for (QListIterator<QString> i(QDir(this->getFullPath()).entryList(QDir::Dirs | QDir::NoDotAndDotDot)); i.hasNext();)
+      try
+      {
+         new Dir(this->dwl, this, i.next());
+      }
+      catch (UnableToWatchException&)
+      {
+         for (QMapIterator<QString, Dir*> j(this->childs); j.hasNext();)
+         {
+            auto child = j.next();
+            child.value()->parent = nullptr;
+            delete child.value();
+         }
+         throw;
+      }
+
+
    if (this->parent)
       this->parent->childs.insert(this->name, this);
 
    dwl->dirs.insert(this->wd, this);
-
-   for (QListIterator<QString> i(QDir(this->getFullPath()).entryList(QDir::Dirs | QDir::NoDotAndDotDot)); i.hasNext();)
-      try
-      {
-         new Dir(this->dwl, this, (QString) i.next());
-      }
-      catch (UnableToWatchException&) {}
 }
 
 /**
@@ -407,14 +418,19 @@ DirWatcherLinux::Dir::Dir(DirWatcherLinux* dwl, Dir* parent, const QString& name
   */
 DirWatcherLinux::Dir::~Dir()
 {
-   this->dwl->dirs.remove(wd);
+   this->dwl->dirs.remove(this->wd);
    if (inotify_rm_watch(this->dwl->fileDescriptor, this->wd))
-       L_ERRO(QString("DirWatcherLinux::~DirWatcherLinux : Unable to remove an inotify watcher."));
+      L_ERRO(QString("DirWatcherLinux::~DirWatcherLinux : Unable to remove an inotify watcher."));
 
    if (this->parent)
       this->parent->childs.remove(this->name);
+
    for (QMapIterator<QString, Dir*> i(this->childs); i.hasNext();)
-      delete i.next().value();
+   {
+      auto child = i.next();
+      child.value()->parent = nullptr;
+      delete child.value();
+   }
 }
 
 /**
