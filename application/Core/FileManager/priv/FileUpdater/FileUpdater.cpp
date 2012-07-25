@@ -358,11 +358,12 @@ void FileUpdater::computeSomeHashes()
             }
             locker.relock();
 
-            if (gotAllHashes && !fileList->isEmpty())
+            // The current hashing file may have been removed from 'filesWithoutHashes' or 'filesWithoutHashesPrioritized' by 'rmRoot(..)'.
+            if (gotAllHashes && !fileList->isEmpty() && fileList->first() == nextFileToHash)
                fileList->removeFirst();
 
             // Special case for the prioritized list, we put the file at the end after the computation of a hash.
-            else if (fileList == &this->filesWithoutHashesPrioritized && fileList->size() > 1) // The current hashing file may have been removed from 'filesWithoutHashesPrioritized' by 'rmRoot(..)'.
+            else if (fileList == &this->filesWithoutHashesPrioritized && fileList->size() > 1 && fileList->first() == nextFileToHash)
                fileList->move(0, fileList->size() - 1);
          }
          else
