@@ -42,7 +42,7 @@ Peer::Peer(PeerManager* peerManager, QSharedPointer<FM::IFileManager> fileManage
    sharingAmount(0),
    speed(MAX_SPEED),
    alive(false),
-   banned(false)
+   blocked(false)
 {
    this->speedTimer.invalidate();
 
@@ -50,8 +50,8 @@ Peer::Peer(PeerManager* peerManager, QSharedPointer<FM::IFileManager> fileManage
    this->aliveTimer.setInterval(SETTINGS.get<double>("peer_timeout_factor") * SETTINGS.get<quint32>("peer_imalive_period"));
    connect(&this->aliveTimer, SIGNAL(timeout()), this, SLOT(consideredDead()));
 
-   this->bannedTimer.setSingleShot(true);
-   connect(&this->bannedTimer, SIGNAL(timeout()), this, SLOT(unban()));
+   this->blockedTimer.setSingleShot(true);
+   connect(&this->blockedTimer, SIGNAL(timeout()), this, SLOT(unblock()));
 }
 
 /**
@@ -125,15 +125,15 @@ void Peer::setSpeed(quint32 newSpeed)
       this->speed = (this->speed + newSpeed) / 2;
 }
 
-void Peer::ban(int duration, const QString& reason)
+void Peer::block(int duration, const QString& reason)
 {
    QMutexLocker locker(&this->mutex);
 
-   this->banned = true;
-   this->bannedReason = reason;
-   this->bannedTimer.setInterval(duration);
+   this->blocked = true;
+   this->blockedReason = reason;
+   this->blockedTimer.setInterval(duration);
 
-   QMetaObject::invokeMethod(&this->bannedTimer, "start");
+   QMetaObject::invokeMethod(&this->blockedTimer, "start");
 }
 
 bool Peer::isAlive() const
@@ -145,7 +145,7 @@ bool Peer::isAlive() const
 bool Peer::isAvailable() const
 {
    QMutexLocker locker(&this->mutex);
-   return this->alive && !this->banned;
+   return this->alive && !this->blocked;
 }
 
 void Peer::update(
@@ -215,8 +215,8 @@ void Peer::consideredDead()
    this->alive = false;
 }
 
-void Peer::unban()
+void Peer::unblock()
 {
-   this->banned = false;
-   emit unbanned();
+   this->blocked = false;
+   emit unblocked();
 }

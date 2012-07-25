@@ -66,6 +66,7 @@ RemoteConnection::RemoteConnection(
    uploadManager(uploadManager),
    downloadManager(downloadManager),
    networkListener(networkListener),
+   waitForStateResult(false),
    authenticated(false),
    saltChallenge(0)
  #if DEBUG
@@ -138,7 +139,10 @@ void RemoteConnection::sendMessageToItself(const QString& message)
 }
 
 void RemoteConnection::refresh()
-{   
+{
+   if (this->waitForStateResult)
+      return;
+
    const int downloadRate = this->downloadManager->getDownloadRate();
    const int uploadRate = this->uploadManager->getUploadRate();
 
@@ -268,6 +272,7 @@ void RemoteConnection::refresh()
       }
    }
 
+   this->waitForStateResult = true;
    this->send(Common::MessageHeader::GUI_STATE, state);
 }
 
@@ -378,6 +383,7 @@ void RemoteConnection::onNewMessage(Common::MessageHeader::MessageType type, con
    switch (type)
    {
    case Common::MessageHeader::GUI_STATE_RESULT:
+      this->waitForStateResult = false;
       this->timerRefresh.start();
       break;
 

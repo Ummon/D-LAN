@@ -65,7 +65,7 @@ namespace PM
       virtual quint32 getSpeed();
       virtual void setSpeed(quint32 newSpeed);
 
-      virtual void ban(int duration, const QString& reason = QString());
+      virtual void block(int duration, const QString& reason = QString());
 
       virtual bool isAlive() const;
       virtual bool isAvailable() const;
@@ -87,11 +87,11 @@ namespace PM
       void newConnexion(QTcpSocket* tcpSocket);
 
    signals:
-      void unbanned();
+      void unblocked();
 
    protected slots:
       void consideredDead();
-      void unban();
+      void unblock();
 
    protected:
       mutable QMutex mutex;
@@ -113,9 +113,9 @@ namespace PM
       bool alive;
       QTimer aliveTimer;
 
-      bool banned;
-      QString bannedReason;
-      QTimer bannedTimer;
+      bool blocked;
+      QString blockedReason;
+      QTimer blockedTimer;
    };
 }
 #endif

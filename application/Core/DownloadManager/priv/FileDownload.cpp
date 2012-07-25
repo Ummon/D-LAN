@@ -278,11 +278,6 @@ void FileDownload::getUnfinishedChunks(QList<QSharedPointer<IChunkDownloader>>& 
    }
 }
 
-QTime FileDownload::getLastTimeGetAllUnfinishedChunks() const
-{
-   return this->lastTimeGetAllUnfinishedChunks;
-}
-
 /**
   * When we explicitly remove a download, we must remove all unfinished files.
   */

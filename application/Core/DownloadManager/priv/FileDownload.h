@@ -75,7 +75,7 @@ namespace DM
 
       void getUnfinishedChunks(QList<QSharedPointer<IChunkDownloader>>& chunks, int nMax, bool notAlreadyAsked = true);
 
-      QTime getLastTimeGetAllUnfinishedChunks() const;
+      inline QTime getLastTimeGetAllUnfinishedChunks() const;
 
       void remove();
 
@@ -124,4 +124,10 @@ namespace DM
       QTime lastTimeGetAllUnfinishedChunks; // Updated when ALL hashes are send via the method 'getTheFirstUnfinishedChunks(..)'. Null if never.
    };
 }
+
+inline QTime DM::FileDownload::getLastTimeGetAllUnfinishedChunks() const
+{
+   return this->lastTimeGetAllUnfinishedChunks;
+}
+
 #endif

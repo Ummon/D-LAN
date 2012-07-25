@@ -219,7 +219,7 @@
      <item>
       <widget class="QPushButton" name="butSearchOwnFiles">
        <property name="toolTip">
-        <string>Search among its own files &lt;SHIFT-ENTER&gt;</string>
+        <string>Search among my own files &lt;SHIFT-ENTER&gt;</string>
        </property>
        <property name="text">
         <string/>
