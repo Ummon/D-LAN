@@ -79,6 +79,7 @@ namespace GUI
       void displayContextMenuPeers(const QPoint& point);
       void browse();
       void takeControlOfACore();
+      void copyIPToClipboard();
       void searchOtherPeers();
       void searchOwnFiles();
 

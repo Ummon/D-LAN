@@ -23,6 +23,7 @@ using namespace GUI;
 #include <cmath>
 
 #include <QTabBar>
+#include <QClipboard>
 #include <QStringBuilder>
 #include <QMdiSubWindow>
 #include <QPainter>
@@ -273,17 +274,20 @@ void MainWindow::tabMoved(int, int)
 
 void MainWindow::displayContextMenuPeers(const QPoint& point)
 {
+   QModelIndex i = this->ui->tblPeers->currentIndex();
+   QHostAddress addr = i.isValid() && this->peerListModel.getPeerID(i.row()) != this->coreConnection->getRemoteID() ? this->peerListModel.getPeerIP(i.row()) : QHostAddress();
+   QVariant addrVariant;
+   addrVariant.setValue(addr);
+
    QMenu menu;
    menu.addAction(QIcon(":/icons/ressources/folder.png"), tr("Browse"), this, SLOT(browse()));
 
-   QModelIndex i = this->ui->tblPeers->currentIndex();
-   if (i.isValid() && this->peerListModel.getPeerID(i.row()) != this->coreConnection->getRemoteID())
+   if (!addr.isNull())
    {
-      QHostAddress addr = this->peerListModel.getPeerIP(i.row());
       QAction* takeControlAction = menu.addAction(QIcon(":/icons/ressources/lightning.png"), tr("Take control"), this, SLOT(takeControlOfACore()));
-      QVariant data;
-      data.setValue(addr);
-      takeControlAction->setData(data);
+      takeControlAction->setData(addrVariant);
+      QAction* copyIPAction = menu.addAction(tr("Copy IP: %1").arg(addr.toString()), this, SLOT(copyIPToClipboard()));
+      copyIPAction->setData(addrVariant);
    }
 
    menu.addSeparator();
@@ -348,6 +352,16 @@ void MainWindow::takeControlOfACore()
       }
 
       this->coreConnection->connectToCore(address.toString(), SETTINGS.get<quint32>("core_port"), password);
+   }
+}
+
+void MainWindow::copyIPToClipboard()
+{
+   QAction* action = dynamic_cast<QAction*>(this->sender());
+   if (action)
+   {
+      QHostAddress address = action->data().value<QHostAddress>();
+      QApplication::clipboard()->setText(address.toString());
    }
 }
 
