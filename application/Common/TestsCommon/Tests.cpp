@@ -220,11 +220,11 @@ void Tests::sortedArray()
 
       // Test if all values are known.
       for (int i = 0; i < array.size(); i++)
-         QVERIFY(orderedList.contains(array[i]));
+         QVERIFY(orderedList.contains(array.getFromValue(orderedList[i])));
 
       // Access with integer index.
       for (int i = 0; i < array.size(); i++)
-         QCOMPARE(array[i], orderedList[i]);
+         QCOMPARE(array.getFromIndex(i), orderedList[i]);
 
       // Iterator.
       QListIterator<char> j(orderedList);
@@ -272,7 +272,7 @@ void Tests::sortedArray()
       }
 
       array.insert("actual");
-      QCOMPARE(array[0], QString("actual"));
+      QCOMPARE(array.getFromIndex(0), QString("actual"));
    }
 }
 

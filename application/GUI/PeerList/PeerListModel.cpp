@@ -112,7 +112,7 @@ void PeerListModel::setSortType(Protos::GUI::Settings::PeerSortType sortType)
    switch (this->currentSortType)
    {
    case Protos::GUI::Settings::BY_NICK:
-      this->orderedPeers.setSortedFunctions([](const Peer* p1, const Peer* p2) {
+      this->orderedPeers.setSortedFunction([](const Peer* p1, const Peer* p2) {
          if (!p1 || !p2)
             return false;
          const QString& nick1 = Common::StringUtils::toLowerAndRemoveAccents(p1->nick);
@@ -128,7 +128,7 @@ void PeerListModel::setSortType(Protos::GUI::Settings::PeerSortType sortType)
       break;
 
    case Protos::GUI::Settings::BY_SHARING_AMOUNT:
-      this->orderedPeers.setSortedFunctions([](const Peer* p1, const Peer* p2) {
+      this->orderedPeers.setSortedFunction([](const Peer* p1, const Peer* p2) {
          if (!p1 || !p2)
             return false;
          if (p1->sharingAmount == p2->sharingAmount)

@@ -53,19 +53,17 @@ namespace Common
    };
 }
 
-using namespace Common;
-
 /**
   * If no function 'lesserThan' is given then the operator < on T is used.
   */
 template <typename T>
-SortedList<T>::SortedList(std::function<bool(const T&, const T&)> lesserThan) :
+Common::SortedList<T>::SortedList(std::function<bool(const T&, const T&)> lesserThan) :
    lesserThan(lesserThan)
 {
 }
 
 template <typename T>
-void SortedList<T>::insert(const T& item)
+void Common::SortedList<T>::insert(const T& item)
 {
    for (QMutableLinkedListIterator<T> i(this->list); i.hasNext(); i.next())
    {
@@ -87,7 +85,7 @@ void SortedList<T>::insert(const T& item)
   */
 template <typename T>
 template <typename Container>
-void SortedList<T>::insert(const Container& items)
+void Common::SortedList<T>::insert(const Container& items)
 {   
    QMutableLinkedListIterator<T> j(list);
 
@@ -111,20 +109,20 @@ void SortedList<T>::insert(const Container& items)
 }
 
 template <typename T>
-void SortedList<T>::itemChanged(const T& item)
+void Common::SortedList<T>::itemChanged(const T& item)
 {
    this->list.removeOne(item);
    this->insert(item);
 }
 
 template <typename T>
-void SortedList<T>::removeOne(const T& item)
+void Common::SortedList<T>::removeOne(const T& item)
 {
    this->list.removeOne(item);
 }
 
 template <typename T>
-void SortedList<T>::clear()
+void Common::SortedList<T>::clear()
 {
    this->list.clear();
 }

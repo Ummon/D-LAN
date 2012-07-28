@@ -22,6 +22,7 @@
 #include <functional>
 
 #include <QSharedDataPointer>
+#include <QList>
 
 /**
   * @class Common::SortedArray
@@ -68,6 +69,9 @@ namespace Common
       int insert(const T& value, bool* exists = nullptr);
       void removeFromIndex(int index);
       bool remove(const T& value);
+      void clear();
+
+      inline bool isEmpty() const;
 
       bool contains(const T& value) const;
 
@@ -76,7 +80,12 @@ namespace Common
       const T& getFromIndex(int index) const;
       T& getFromIndex(int index);
 
+      const T& getFromValue(const T& value) const;
+      T& getFromValue(const T& value);
+
       T& operator[](const T& value);
+
+      QList<T> toList() const;
 
       int getM() const;
 
@@ -242,6 +251,19 @@ bool Common::SortedArray<T, M>::remove(const T& value)
 }
 
 template <typename T, int M>
+void Common::SortedArray<T, M>::clear()
+{
+    deleteNode(this->d->root);
+    this->d->root = new Node();
+}
+
+template <typename T, int M>
+inline bool Common::SortedArray<T, M>::isEmpty() const
+{
+   return this->size() == 0;
+}
+
+template <typename T, int M>
 bool Common::SortedArray<T, M>::contains(const T& value) const
 {
    int position;
@@ -280,11 +302,45 @@ T& Common::SortedArray<T, M>::getFromIndex(int index)
   * @exception NotFoundException
   */
 template <typename T, int M>
+const T& Common::SortedArray<T, M>::getFromValue(const T& value) const
+{
+   int position;
+   Node* node = getNode(this->d->root, value, position, this->d->lesserThanFun);
+   if (position == -1)
+      throw NotFoundException();
+   return node->items[position];
+}
+
+/**
+  * @exception NotFoundException
+  */
+template <typename T, int M>
+T& Common::SortedArray<T, M>::getFromValue(const T& value)
+{
+   int position;
+   Node* node = getNode(this->d->root, value, position, this->d->lesserThanFun);
+   if (position == -1)
+      throw NotFoundException();
+   return node->items[position];
+}
+
+/**
+  * Try to find a value. If can't then the value is inserted.
+  */
+template <typename T, int M>
 T& Common::SortedArray<T, M>::operator[](const T& value)
 {
    return this->getValue(value);
 }
 
+template <typename T, int M>
+QList<T> Common::SortedArray<T, M>::toList() const
+{
+   QList<T> l;
+   for (typename Common::SortedArray<T>::Iterator i(*this); i.hasNext();)
+      l << i.next();
+   return l;
+}
 
 template <typename T, int M>
 int Common::SortedArray<T, M>::getM() const
@@ -835,7 +891,10 @@ typename Common::SortedArray<T, M>::Node* Common::SortedArray<T, M>::duplicateNo
 
    for (int i = 0; i <= newNode->nbItems; i++)
       if (newNode->children[i])
+      {
          newNode->children[i] = duplicateNode(newNode->children[i]);
+         newNode->children[i]->parent = newNode;
+      }
 
    return newNode;
 }
