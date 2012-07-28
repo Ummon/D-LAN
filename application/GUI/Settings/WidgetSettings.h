@@ -52,8 +52,6 @@ namespace GUI
       explicit WidgetSettings(QSharedPointer<RCC::ICoreConnection> coreConnection, DirListModel& sharedDirsModel, QWidget *parent = 0);
       ~WidgetSettings();
 
-      QString getCurrentLanguageFilename();
-
    public slots:
       void resetCoreAddress();
       void connectToCore();

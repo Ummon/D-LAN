@@ -128,11 +128,6 @@ WidgetSettings::~WidgetSettings()
    delete this->ui;
 }
 
-QString WidgetSettings::getCurrentLanguageFilename()
-{
-   return this->ui->cmbLanguages->itemData(this->ui->cmbLanguages->currentIndex()).value<Common::Language>().filename;
-}
-
 void WidgetSettings::resetCoreAddress()
 {
    this->ui->txtCoreAddress->setText("localhost");

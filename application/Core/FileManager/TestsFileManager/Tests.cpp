@@ -686,9 +686,8 @@ void Tests::cleanupTestCase()
    qDebug() << "===== cleanupTestCase() =====";
    // This call is only used to stop the fileUpdater and wait for it to finish.
    // It's should not be used in a normal code.
-   //this->fileManager.clear();
-
-   QTest::qSleep(200);
+   this->fileManager.clear();
+   QTest::qWait(200);
 }
 
 void Tests::createInitialFiles()

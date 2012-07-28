@@ -20,8 +20,10 @@
 #define GUI_D_LAN_GUI_H
 
 #include <QApplication>
+#include <QTranslator>
 #include <QMenu>
 #include <QSystemTrayIcon>
+#include <QSharedMemory>
 
 #include <MainWindow.h>
 
@@ -31,29 +33,37 @@ namespace GUI
 {
    class D_LAN_GUI : public QApplication
    {
+      static const QString SHARED_MEMORY_KEYNAME;
+
       Q_OBJECT
    public:
-      D_LAN_GUI(int argc, char *argv[]);
+      class AbortException {};
+
+      D_LAN_GUI(int argc, char* argv[]);
 
    protected:
       bool event(QEvent* event);
 
    private slots:
       void trayIconActivated(QSystemTrayIcon::ActivationReason reason);
+      void updateTrayIconMenu();
+      void loadLanguage(const QString& filename);
       void mainWindowClosed();
       void showMainWindow();
       void exitGUI();
       void exit(bool stopTheCore = true);
 
    private:
-      void updateTrayIconMenu();
+      QSharedMemory sharedMemory;
 
       MainWindow* mainWindow;
 
-      QSharedPointer<RCC::ICoreConnection> coreConnection;
-
       QSystemTrayIcon trayIcon;
       QMenu trayIconMenu;
+
+      QSharedPointer<RCC::ICoreConnection> coreConnection;
+
+      QTranslator translator;
    };
 }
 

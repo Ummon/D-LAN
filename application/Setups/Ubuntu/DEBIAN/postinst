@@ -1,0 +1,4 @@
+#!/bin/bash
+
+ln -s /usr/share/d-lan/D-LAN.Core /usr/bin/d-lan-core 
+ln -s /usr/share/d-lan/D-LAN.GUI /usr/bin/d-lan-gui

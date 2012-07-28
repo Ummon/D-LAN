@@ -26,15 +26,7 @@ int main(int argc, char *argv[])
 {
    QCoreApplication a(argc, argv);
 
-   bool stressMode = false;
-   foreach (QString arg, a.arguments())
-      if (arg == "-stress")
-      {
-         stressMode = true;
-         break;
-      }
-
-   if (stressMode)
+   if (a.arguments().contains("-stress"))
    {
       StressTests tests;
       return QTest::qExec(&tests);

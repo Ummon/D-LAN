@@ -29,8 +29,8 @@ SOURCES += priv/FileDownload.cpp \
     priv/Log.cpp \
     priv/DownloadPredicate.cpp \
     priv/DownloadQueue.cpp \
-    Utils.cpp \
-    priv/ChunkDownloader.cpp
+    priv/ChunkDownloader.cpp \
+    priv/Utils.cpp
 HEADERS += IDownloadManager.h \
     IDownload.h \
     IChunkDownloader.h \

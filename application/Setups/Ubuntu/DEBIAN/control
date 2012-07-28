@@ -1,0 +1,15 @@
+Package: d-lan-all-in-one
+Version: _VERSION_
+License: GPL-3
+Section: base
+Priority: optional
+Architecture: _ARCH_
+Installed-Size: _INST_SIZE_
+Depends: libprotobuf7 (>= 2.4.1), libqtcore4 (>= 4:4.8), libqt4-network (>= 4:4.8), libc6 (>= 2.15), libstdc++6 (>= 4.6.3), libgcc1 (>= 1:4.6.3), zlib1g (>= 1:1.2.3.4), libglib2.0-0 (>= 2.32.3), libpcre3 (>= 8.12), libfontconfig1 (>= 2.8.0), libaudio2 (>= 1.9.3), libpng12-0 (>= 1.2.46), libfreetype6 (>= 2.4.8), libsm6 (>= 2:1.2.0), libice6 (>= 2:1.0.7), libxi6 (>= 2:1.6.0), libxrender1 (>= 1:0.9.6), libxext6 (>= 2:1.3.0), libx11-6 (>= 2:1.4.99.1), libexpat1 (>= 2.0.1), libxt6 (>= 1:1.1.1), libxau6 (>= 1:1.0.6), libffi6 (>= 3.0.11~rc1-5), libuuid1 (>= 2.20.1), libxcb1 (>= 1.8.1), libxdmcp6 (>= 1:1.1.0)
+Maintainer: Hervé Martinet <herve.martinet@gmail.com>
+Homepage: http://www.d-lan.net
+Description: A free LAN file sharing software. 
+ The goal is to easily exchange a large amount of data 
+ in a local area network environment like a LAN-Party. 
+ After you launched D-LAN, you will see all other people and their 
+ sharing automatically without special configuration.

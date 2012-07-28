@@ -40,7 +40,7 @@ message Settings {
    optional double switch_to_another_peer_factor = 43 [default = 1.5]; // To switch from the current peer to another the other download speed must be superior to this factor of the current speed.
    optional uint32 download_rate_valid_time_factor = 44 [default = 3000]; // A download rate for a peer is valid for a time period of 'download_rate_valid_time_factor' / 'lan_speed' [s].
    optional uint32 save_queue_period = 45 [default = 60000]; // [ms]. (1 min).
-   optional uint32 ban_duration_corrupted_data = 46 [default = 30000]; // [ms]. // When a received chunk do not match its hash, the sender is banned for a while.
+   optional uint32 block_duration_corrupted_data = 46 [default = 30000]; // [ms]. // When a received chunk do not match its hash, the sender is blocked for a while.
    
    ///// UploadManager /////
    optional uint32 upload_lifetime = 50 [default = 5000]; // [ms].

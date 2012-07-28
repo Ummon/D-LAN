@@ -256,11 +256,10 @@ void ChunkDownloader::run()
    }
    catch (FM::hashMissmatchException)
    {
-      static const quint32 BAN_DURATION = SETTINGS.get<quint32>("ban_duration_corrupted_data");
-      L_USER(QString(tr("Corrupted data received for the file \"%1\" from peer %2. Peer banned for %3 ms")).arg(this->chunk->getFilePath()).arg(this->currentDownloadingPeer->getNick()).arg(BAN_DURATION));
-
-      /*: A reason why the user has been banned */
-      this->currentDownloadingPeer->ban(BAN_DURATION, tr("Has sent corrupted data"));
+      static const quint32 BLOCK_DURATION = SETTINGS.get<quint32>("block_duration_corrupted_data");
+      L_USER(QString(tr("Corrupted data received for the file \"%1\" from peer %2. Peer blocked for %3 ms")).arg(this->chunk->getFilePath()).arg(this->currentDownloadingPeer->getNick()).arg(BLOCK_DURATION));
+      /*: A reason why the user has been blocked */
+      this->currentDownloadingPeer->block(BLOCK_DURATION, tr("Has sent corrupted data"));
       this->closeTheSocket = true;
       this->lastTransferStatus = HASH_MISSMATCH;
    }

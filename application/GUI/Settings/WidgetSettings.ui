@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>639</width>
-    <height>342</height>
+    <height>356</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -16,9 +16,6 @@
   <property name="windowIcon">
    <iconset resource="../ressources.qrc">
     <normaloff>:/icons/ressources/settings.png</normaloff>:/icons/ressources/settings.png</iconset>
-  </property>
-  <property name="locale">
-   <locale language="English" country="UnitedStates"/>
   </property>
   <layout class="QVBoxLayout" name="layMain">
    <property name="leftMargin">
@@ -206,8 +203,8 @@
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>593</width>
-               <height>89</height>
+               <width>589</width>
+               <height>98</height>
               </rect>
              </property>
              <property name="sizePolicy">

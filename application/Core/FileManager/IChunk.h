@@ -52,10 +52,7 @@ namespace FM
       virtual bool populateEntry(Protos::Common::Entry* entry) const = 0;
 
       /**
-        * Returns the path of the file.
-        * The full path to the file corresponds to:
-        * SharedDir::path + entry.path + entry.name
-        * See 'populateEntry(..)'.
+        * Returns the absolute path of the file.
         */
       virtual QString getFilePath() const = 0;
 

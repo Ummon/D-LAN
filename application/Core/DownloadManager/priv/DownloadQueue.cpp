@@ -67,6 +67,7 @@ void DownloadQueue::insert(int position, Download* download)
 
    if (FileDownload* fileDownload = dynamic_cast<FileDownload*>(download))
    {
+      this->downloadsIndexedByName.insert(download->getLocalEntry().name(), download);
       this->downloadsSortedByTime.insert(QTime(), fileDownload);
       connect(fileDownload, SIGNAL(lastTimeGetAllUnfinishedChunksChanged(QTime)), this, SLOT(fileDownloadTimeChanged(QTime)), Qt::QueuedConnection);
    }
@@ -91,6 +92,7 @@ void DownloadQueue::remove(int position)
    if (FileDownload* fileDownload = dynamic_cast<FileDownload*>(download))
       this->downloadsSortedByTime.remove(fileDownload->getLastTimeGetAllUnfinishedChunks(), fileDownload);
 
+   this->downloadsIndexedByName.remove(download->getLocalEntry().name(), download);
    this->downloadsIndexedBySourcePeer.remove(download->getPeerSource(), download);
    this->downloads.removeAt(position);
    this->erroneousDownloads.removeOne(download);
@@ -202,7 +204,10 @@ bool DownloadQueue::removeDownloads(const DownloadPredicate& predicate)
          queueChanged = true;
          (*j)->setAsDeleted();
          if (FileDownload* fileDownload = dynamic_cast<FileDownload*>(*j))
+         {
+            this->downloadsIndexedByName.remove((*j)->getLocalEntry().name(), *j);
             this->downloadsSortedByTime.remove(fileDownload->getLastTimeGetAllUnfinishedChunks(), fileDownload);
+         }
          this->downloadsIndexedBySourcePeer.remove((*j)->getPeerSource(), *j);
          downloadsToDelete << *j;
          this->erroneousDownloads.removeOne(*j);
@@ -259,16 +264,19 @@ bool DownloadQueue::pauseDownloads(QList<quint64> IDs, bool pause)
   */
 bool DownloadQueue::isEntryAlreadyQueued(const Protos::Common::Entry& localEntry)
 {
-   for (QListIterator<Download*> i(this->downloads); i.hasNext();)
+   QMap<std::string, Download*>::const_iterator i = this->downloadsIndexedByName.constFind(localEntry.name());
+
+   while (i != this->downloadsIndexedByName.constEnd() && i.key() == localEntry.name())
    {
-      const Download* download = i.next();
       if (
-         download->getLocalEntry().name() == localEntry.name() &&
-         download->getLocalEntry().path() == localEntry.path() &&
-         (!localEntry.has_shared_dir() || download->getLocalEntry().shared_dir().id().hash() == localEntry.shared_dir().id().hash())
+         i.value()->getLocalEntry().path() == localEntry.path() &&
+         (!localEntry.has_shared_dir() || i.value()->getLocalEntry().shared_dir().id().hash() == localEntry.shared_dir().id().hash())
       )
          return true;
+
+       ++i;
    }
+
    return false;
 }
 

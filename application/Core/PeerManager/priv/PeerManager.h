@@ -63,7 +63,6 @@ namespace PM
       QList<IPeer*> getPeers() const;
 
       IPeer* getPeer(const Common::Hash& ID);
-      Peer* getPeer_(const Common::Hash& ID);
       IPeer* createPeer(const Common::Hash& ID, const QString& nick);
 
       void updatePeer(const Common::Hash& ID, const QHostAddress& IP, quint16 port, const QString& nick, const quint64& sharingAmount, const QString& coreVersion, quint32 downloadRate, quint32 uploadRate);
@@ -76,7 +75,7 @@ namespace PM
       void dataReceived(QTcpSocket* tcpSocket = nullptr);
       void disconnected(QTcpSocket* tcpSocket = nullptr);
       void checkIdlePendingSockets();
-      void peerUnbanned();
+      void peerUnblocked();
 
    private:
       void removeFromPending(QTcpSocket* socket);

@@ -121,6 +121,8 @@ namespace RCM
       Protos::GUI::EventLogMessages eventLogMessages; // The next log messages to send are buffered in this member.
       QTimer sendLogMessagesTimer;
 
+      bool waitForStateResult; // To avoid to send refresh messages when we are already waitting an acknowledgment for a refresh message.
+
       QTimer timerRefresh;
       QTimer timerCloseSocket;
 

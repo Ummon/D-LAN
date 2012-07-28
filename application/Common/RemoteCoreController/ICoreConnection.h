@@ -29,6 +29,8 @@
 #include <Common/Hash.h>
 #include <Common/LogManager/IEntry.h>
 
+#include <Common/RemoteCoreController/Types.h>
+
 namespace RCC
 {
    class IBrowseResult;
@@ -64,6 +66,12 @@ namespace RCC
       };
 
       virtual ~ICoreConnection() {}
+
+      virtual void startLocalCore() = 0;
+
+      virtual void stopLocalCore() = 0;
+
+      virtual CoreStatus getLocalCoreStatus() const = 0;
 
       /**
         * Connect to a local core with the default port (59485).
@@ -204,8 +212,6 @@ namespace RCC
         */
       virtual void refreshNetworkInterfaces() = 0;
 
-      virtual bool isRunningAsSubProcess() const = 0;
-
       struct ConnectionInfo {
          void clear() { this->address.clear(); this->port = 0; this->password = Common::Hash(); }
          QString address;
@@ -220,7 +226,9 @@ namespace RCC
         */
       virtual ConnectionInfo getConnectionInfoConnecting() const = 0;
 
-   signals:
+   signals:      
+      void localCoreStatusChanged();
+
       void connecting();
       void connectingError(RCC::ICoreConnection::ConnectionErrorCode); // Can only be thrown during the connection process.
       void connected();

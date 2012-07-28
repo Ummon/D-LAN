@@ -36,7 +36,6 @@ using namespace Common;
   */
 
 /**
-  * Takes the ownership of 'socket'.
   * Build a non-connected message socket.
   * Take ownership of 'logger'.
   */
@@ -101,7 +100,6 @@ MessageSocket::~MessageSocket()
 
    this->close();
    this->socket->deleteLater();
-
    delete this->logger;
 }
 

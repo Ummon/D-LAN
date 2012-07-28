@@ -23,6 +23,7 @@ using namespace GUI;
 #include <cmath>
 
 #include <QTabBar>
+#include <QClipboard>
 #include <QStringBuilder>
 #include <QMdiSubWindow>
 #include <QPainter>
@@ -61,8 +62,6 @@ MainWindow::MainWindow(QSharedPointer<RCC::ICoreConnection> coreConnection, QWid
    autoScroll(true),
    logModel(coreConnection)
 {
-   QApplication::instance()->installTranslator(&this->translator);
-
    this->ui->setupUi(this);
 
    this->initialWindowFlags = this->windowFlags();
@@ -149,8 +148,6 @@ MainWindow::MainWindow(QSharedPointer<RCC::ICoreConnection> coreConnection, QWid
 
    this->restoreColorizedPeers();
 
-   this->loadLanguage(this->widgetSettings->getCurrentLanguageFilename());
-
    connect(this->coreConnection.data(), SIGNAL(newState(const Protos::GUI::State&)), this, SLOT(newState(const Protos::GUI::State&)));
    connect(this->coreConnection.data(), SIGNAL(connectingError(RCC::ICoreConnection::ConnectionErrorCode)), this, SLOT(coreConnectionError(RCC::ICoreConnection::ConnectionErrorCode)));
    connect(this->coreConnection.data(), SIGNAL(connected()), this, SLOT(coreConnected()));
@@ -200,11 +197,6 @@ void MainWindow::onGlobalProgressChanged(quint64 completed, quint64 total)
       this->taskbar.setStatus(TaskbarButtonStatus::BUTTON_STATUS_NORMAL);
       this->taskbar.setProgress(completed, total);
    }
-}
-
-void MainWindow::loadLanguage(const QString& filename)
-{
-   this->translator.load(filename, QCoreApplication::applicationDirPath() + "/" + Common::Constants::LANGUAGE_DIRECTORY);
 }
 
 void MainWindow::coreConnectionError(RCC::ICoreConnection::ConnectionErrorCode errorCode)
@@ -294,17 +286,20 @@ void MainWindow::subWindowActivated(QMdiSubWindow* window)
 
 void MainWindow::displayContextMenuPeers(const QPoint& point)
 {
+   QModelIndex i = this->ui->tblPeers->currentIndex();
+   QHostAddress addr = i.isValid() && this->peerListModel.getPeerID(i.row()) != this->coreConnection->getRemoteID() ? this->peerListModel.getPeerIP(i.row()) : QHostAddress();
+   QVariant addrVariant;
+   addrVariant.setValue(addr);
+
    QMenu menu;
    menu.addAction(QIcon(":/icons/ressources/folder.png"), tr("Browse"), this, SLOT(browse()));
 
-   QModelIndex i = this->ui->tblPeers->currentIndex();
-   if (i.isValid() && this->peerListModel.getPeerID(i.row()) != this->coreConnection->getRemoteID())
+   if (!addr.isNull())
    {
-      QHostAddress addr = this->peerListModel.getPeerIP(i.row());
       QAction* takeControlAction = menu.addAction(QIcon(":/icons/ressources/lightning.png"), tr("Take control"), this, SLOT(takeControlOfACore()));
-      QVariant data;
-      data.setValue(addr);
-      takeControlAction->setData(data);
+      takeControlAction->setData(addrVariant);
+      QAction* copyIPAction = menu.addAction(tr("Copy IP: %1").arg(addr.toString()), this, SLOT(copyIPToClipboard()));
+      copyIPAction->setData(addrVariant);
    }
 
    menu.addSeparator();
@@ -369,6 +364,16 @@ void MainWindow::takeControlOfACore()
       }
 
       this->coreConnection->connectToCore(address.toString(), SETTINGS.get<quint32>("core_port"), password);
+   }
+}
+
+void MainWindow::copyIPToClipboard()
+{
+   QAction* action = dynamic_cast<QAction*>(this->sender());
+   if (action)
+   {
+      QHostAddress address = action->data().value<QHostAddress>();
+      QApplication::clipboard()->setText(address.toString());
    }
 }
 
@@ -499,6 +504,9 @@ void MainWindow::loadCustomStyle(const QString& filepath)
 
    if (!filepath.isNull())
    {
+      // The css images are search from the current path.
+      QDir::setCurrent(QCoreApplication::applicationDirPath());
+
       QFile file(filepath);
       if (file.open(QIODevice::ReadOnly))
       {
@@ -831,7 +839,7 @@ void MainWindow::removeMdiSubWindow(QMdiSubWindow* mdiSubWindow)
 void MainWindow::addWidgetSettings()
 {
    this->widgetSettings = new WidgetSettings(this->coreConnection, this->sharedDirsModel, this);
-   connect(this->widgetSettings, SIGNAL(languageChanged(QString)), this, SLOT(loadLanguage(QString)));
+   connect(this->widgetSettings, SIGNAL(languageChanged(QString)), this, SIGNAL(languageChanged(QString)));
    connect(this->widgetSettings, SIGNAL(styleChanged(QString)), this, SLOT(loadCustomStyle(QString)));
    this->ui->mdiArea->addSubWindow(this->widgetSettings, Qt::CustomizeWindowHint);
    this->mdiAreaTabBar->setTabData(this->mdiAreaTabBar->count() - 1, Protos::GUI::Settings_Window_WIN_SETTINGS);

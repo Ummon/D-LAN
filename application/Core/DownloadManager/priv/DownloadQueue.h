@@ -104,6 +104,7 @@ namespace DM
       QList<Download*> erroneousDownloads;
       QMultiMap<QTime, FileDownload*> downloadsSortedByTime; // See 'FileDownload::lastTimeGetAllUnfinishedChunks'.
       QMultiHash<PM::IPeer*, Download*> downloadsIndexedBySourcePeer;
+      QMultiMap<std::string, Download*> downloadsIndexedByName;
    };
 }
 

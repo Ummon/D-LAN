@@ -50,13 +50,13 @@ namespace NL
       quint16 currentPort;
 
         // TODO: count the number of connection per ip per second and
-        // banned temporarely an ip with too much attempt.
-//      struct BannedIPs
+        // blocked temporarely an ip with too much attempt.
+//      struct BlockedIPs
 //      {
 //         QHostAddress address;
 //         QDateTime time;
 //      };
-//      QList<BannedIPs> bannedIPs;
+//      QList<BlockedIPs> blockedIPs;
    };
 }
 #endif

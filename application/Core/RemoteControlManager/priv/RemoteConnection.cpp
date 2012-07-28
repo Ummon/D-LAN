@@ -66,6 +66,7 @@ RemoteConnection::RemoteConnection(
    downloadManager(downloadManager),
    networkListener(networkListener),
    chatSystem(chatSystem),
+   waitForStateResult(false),
    authenticated(false),
    saltChallenge(0)
  #if DEBUG
@@ -123,7 +124,10 @@ void RemoteConnection::send(Common::MessageHeader::MessageType type, const googl
 }
 
 void RemoteConnection::refresh()
-{   
+{
+   if (this->waitForStateResult)
+      return;
+
    const int downloadRate = this->downloadManager->getDownloadRate();
    const int uploadRate = this->uploadManager->getUploadRate();
 
@@ -253,6 +257,7 @@ void RemoteConnection::refresh()
       }
    }
 
+   this->waitForStateResult = true;
    this->send(Common::MessageHeader::GUI_STATE, state);
 }
 
@@ -363,6 +368,7 @@ void RemoteConnection::onNewMessage(const Common::Message& message)
    switch (message.getHeader().getType())
    {
    case Common::MessageHeader::GUI_STATE_RESULT:
+      this->waitForStateResult = false;
       this->timerRefresh.start();
       break;
 

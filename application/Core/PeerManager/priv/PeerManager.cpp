@@ -89,11 +89,6 @@ QList<IPeer*> PeerManager::getPeers() const
 
 IPeer* PeerManager::getPeer(const Common::Hash& ID)
 {
-   return this->getPeer_(ID);
-}
-
-Peer* PeerManager::getPeer_(const Common::Hash& ID)
-{
    if (ID.isNull())
       return 0;
 
@@ -117,7 +112,7 @@ IPeer* PeerManager::createPeer(const Common::Hash& ID, const QString& nick)
       return existingPeer;
 
    Peer* peer = new Peer(this, this->fileManager, ID, nick);
-   connect(peer, SIGNAL(unbanned()), this, SLOT(peerUnbanned()));
+   connect(peer, SIGNAL(unblocked()), this, SLOT(peerUnblocked()));
    this->peers << peer;
 
    return peer;
@@ -133,11 +128,11 @@ void PeerManager::updatePeer(const Common::Hash& ID, const QHostAddress& IP, qui
 
    L_DEBU(QString("%1 (%2) is alive!").arg(ID.toStr()).arg(nick));
 
-   Peer* peer = this->getPeer_(ID);
+   Peer* peer = static_cast<Peer*>(this->getPeer(ID));
    if (!peer)
    {
       peer = new Peer(this, this->fileManager, ID);
-      connect(peer, SIGNAL(unbanned()), this, SLOT(peerUnbanned()));
+      connect(peer, SIGNAL(unblocked()), this, SLOT(peerUnblocked()));
       this->peers << peer;
    }
 
@@ -204,7 +199,7 @@ void PeerManager::dataReceived(QTcpSocket* tcpSocket)
    if (tcpSocket->bytesAvailable() >= Common::MessageHeader::HEADER_SIZE)
    {
       const Common::MessageHeader header = Common::MessageHeader::readHeader(*tcpSocket, false);
-      Peer* p = this->getPeer_(header.getSenderID());
+      Peer* p = static_cast<Peer*>(this->getPeer(header.getSenderID()));
 
       this->removeFromPending(tcpSocket);
       disconnect(tcpSocket, SIGNAL(readyRead()), 0, 0);
@@ -252,7 +247,7 @@ void PeerManager::checkIdlePendingSockets()
       this->timer.stop();
 }
 
-void PeerManager::peerUnbanned()
+void PeerManager::peerUnblocked()
 {
    Peer* peer = static_cast<Peer*>(this->sender());
    if (peer->isAvailable())

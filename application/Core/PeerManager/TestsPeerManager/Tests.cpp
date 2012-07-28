@@ -191,7 +191,7 @@ void Tests::askForRootEntries()
    while (this->resultListener.getNbEntriesResultReceived(0) != 1)
    {
       QTest::qWait(100);
-      if (timer.elapsed() > 3000)
+      if (timer.elapsed() > 5000)
          QFAIL("We don't receive the right number of root entry.");
    }
 }
@@ -295,7 +295,7 @@ void Tests::askForHashes()
    while (this->resultListener.getNbHashReceivedFromLastGetHashes() != NUMBER_OF_CHUNK)
    {
       QTest::qWait(100);
-      if (timer.elapsed() > 10000)
+      if (timer.elapsed() > 20000)
          QFAIL("We don't receive all the hashes");
    }
 }
@@ -319,7 +319,7 @@ void Tests::askForAChunk()
    while (!this->resultListener.isStreamReceived())
    {
       QTest::qWait(100);
-      if (timer.elapsed() > 3000)
+      if (timer.elapsed() > 5000)
          QFAIL("We don't receive the stream");
    }
 }

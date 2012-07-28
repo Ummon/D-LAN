@@ -24,7 +24,6 @@
 #include <QIcon>
 #include <QMdiSubWindow>
 #include <QKeyEvent>
-#include <QTranslator>
 
 #include <Protos/gui_protocol.pb.h>
 #include <Protos/common.pb.h>
@@ -64,10 +63,12 @@ namespace GUI
       explicit MainWindow(QSharedPointer<RCC::ICoreConnection> coreConnection, QWidget* parent = nullptr);
       ~MainWindow();
 
+   signals:
+      void languageChanged(const QString& filename);
+
    private slots:
       void newState(const Protos::GUI::State& state);
       void onGlobalProgressChanged(quint64 completed, quint64 total);
-      void loadLanguage(const QString& filename);
 
       void coreConnectionError(RCC::ICoreConnection::ConnectionErrorCode errorCode);
       void coreConnected();
@@ -79,6 +80,7 @@ namespace GUI
       void displayContextMenuPeers(const QPoint& point);
       void browse();
       void takeControlOfACore();
+      void copyIPToClipboard();
       void searchOtherPeers();
       void searchOwnFiles();
 
@@ -161,8 +163,6 @@ namespace GUI
       // of the cache (before the downloads are loaded).
       // This widget is owned by the tab bar of the 'QMdiArea'.
       BusyIndicator* downloadsBusyIndicator;
-
-      QTranslator translator;
 
       QPoint dragPosition; // Used by custome styles.
       bool customStyleLoaded;

@@ -19,19 +19,36 @@
 #ifndef RCC_CORECONTROLLER_H
 #define RCC_CORECONTROLLER_H
 
+#include <QtServiceController>
 #include <QProcess>
+
+#include <Common/Constants.h>
+
 #include <Types.h>
 
 namespace RCC
 {
-   class CoreController
+   class CoreController : public QObject
    {
+      static const QString CORE_EXE_NAME;
+      static const int TIMEOUT_SUBPROCESS_WAIT_FOR_STARTED; // [ms];
+
+      Q_OBJECT
+
    public:
-      static CoreStatus startCore(int port = -1);
-      static void stopCore();
+      CoreController();
+
+      void startCore(int port = -1);
+      void stopCore();
+
+      CoreStatus getStatus() const;
+
+   signals:
+      void statusChanged();
 
    private:
-      static QProcess coreProcess; ///< Only used when unable to lauche the core as a service.
+      QProcess coreProcess; ///< Only used when unable to launch the core as a service.
+      QtServiceController controller;
    };
 }
 
