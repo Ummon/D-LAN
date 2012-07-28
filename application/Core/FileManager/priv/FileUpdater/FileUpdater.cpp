@@ -251,7 +251,7 @@ void FileUpdater::run()
       // we wait for an added directory.
       if (!this->dirWatcher || this->dirWatcher->nbWatchedDir() == 0 || !this->dirsToScan.empty())
       {
-         if (this->dirsToScan.isEmpty())
+         if (this->dirsToScan.isEmpty() && this->filesWithoutHashes.isEmpty() && this->filesWithoutHashesPrioritized.isEmpty())
          {
             L_DEBU("Waiting for a new shared directory added..");
             this->mutex.unlock();
@@ -385,7 +385,8 @@ void FileUpdater::computeSomeHashes()
    }
 
 end:
-   L_DEBU("Computing some hashes ended");
+   L_DEBU(QString("Computing some hashes ended. this->filesWithoutHashes.size(): %1, this->filesWithoutHashesPrioritized.size(): %2").arg(this->filesWithoutHashes.size()).arg(this->filesWithoutHashesPrioritized.size()));
+
    if (this->filesWithoutHashes.isEmpty() && this->filesWithoutHashesPrioritized.isEmpty())
    {
       this->remainingSizeToHash = 0;
