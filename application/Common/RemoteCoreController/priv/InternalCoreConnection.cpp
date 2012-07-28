@@ -40,7 +40,7 @@ using namespace RCC;
    const int InternalCoreConnection::NB_RETRIES_MAX(0);
    const int InternalCoreConnection::TIME_BETWEEN_RETRIES(0);
 #else
-   const int InternalCoreConnection::NB_RETRIES_MAX(4);
+   const int InternalCoreConnection::NB_RETRIES_MAX(8);
    const int InternalCoreConnection::TIME_BETWEEN_RETRIES(250);
 #endif
 
