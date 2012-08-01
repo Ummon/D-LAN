@@ -55,17 +55,49 @@ Cache::~Cache()
 }
 
 /**
-  * a) Search among their shared directory the one who match the given directory.
-  * b) In the shared directory try to find the directory corresponding to 'entry.dir.path'.
-  * c) Populate the result with directories and files.
+  * Gets the roots directories.
   */
+Protos::Common::Entries Cache::getSharedEntries() const
+{
+   QMutexLocker locker(&this->mutex);
+
+   Protos::Common::Entries result;
+
+   foreach (SharedDirectory* sharedDir, this->sharedDirs)
+   {
+      Protos::Common::Entry* entry = result.add_entry();
+      sharedDir->populateEntry(entry);
+   }
+
+   return result;
+}
+
 Protos::Common::Entries Cache::getEntries(const Protos::Common::Entry& dir) const
 {
    Protos::Common::Entries result;
 
+   if (Directory* directory = this->getDirectory(dir))
+   {
+      foreach (Directory* dir, directory->getSubDirs())
+         dir->populateEntry(result.add_entry());
+
+      foreach (File* file, directory->getFiles())
+         if (file->isComplete())
+            file->populateEntry(result.add_entry());
+   }
+
+   return result;
+}
+
+/**
+  * a) Search among their shared directory the one who match the given directory.
+  * b) In the shared directory try to find the directory corresponding to 'entry.dir.path'.
+  */
+Directory* Cache::getDirectory(const Protos::Common::Entry& dir) const
+{
    // If we can't find the shared directory..
    if (!dir.has_shared_dir())
-      return result;
+      return nullptr;
 
    QMutexLocker locker(&this->mutex);
 
@@ -83,41 +115,14 @@ Protos::Common::Entries Cache::getEntries(const Protos::Common::Entry& dir) cons
          {
             currentDir = currentDir->getSubDir(folder);
             if (!currentDir)
-               return result;
+               return nullptr;
          }
 
-         foreach (Directory* dir, currentDir->getSubDirs())
-            dir->populateEntry(result.add_entry());
-
-         foreach (File* file, currentDir->getFiles())
-         {
-            if (file->isComplete())
-               file->populateEntry(result.add_entry());
-         }
-
-         return result;
+         return currentDir;
       }
    }
 
-   return result;
-}
-
-/**
-  * Gets the roots directories.
-  */
-Protos::Common::Entries Cache::getEntries() const
-{
-   QMutexLocker locker(&this->mutex);
-
-   Protos::Common::Entries result;
-
-   foreach (SharedDirectory* sharedDir, this->sharedDirs)
-   {
-      Protos::Common::Entry* entry = result.add_entry();
-      sharedDir->populateEntry(entry);
-   }
-
-   return result;
+   return nullptr;
 }
 
 /**
@@ -634,6 +639,11 @@ void Cache::onChunkHashKnown(const QSharedPointer<Chunk>& chunk)
 void Cache::onChunkRemoved(const QSharedPointer<Chunk>& chunk)
 {
    emit chunkRemoved(chunk);
+}
+
+void Cache::onScanned(Directory* dir)
+{
+   emit directoryScanned(dir);
 }
 
 /**

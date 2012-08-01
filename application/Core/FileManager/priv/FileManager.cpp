@@ -40,6 +40,7 @@ using namespace FM;
 #include <priv/Global.h>
 #include <priv/Constants.h>
 #include <priv/GetHashesResult.h>
+#include <priv/GetEntriesResult.h>
 #include <priv/Cache/Entry.h>
 #include <priv/Cache/File.h>
 #include <priv/Cache/Directory.h>
@@ -170,6 +171,11 @@ QSharedPointer<IGetHashesResult> FileManager::getHashes(const Protos::Common::En
    return QSharedPointer<IGetHashesResult>(new GetHashesResult(file, this->cache, this->fileUpdater));
 }
 
+QSharedPointer<IGetEntriesResult> FileManager::getScannedEntries(const Protos::Common::Entry& dir)
+{
+   return QSharedPointer<IGetEntriesResult>(new GetEntriesResult(this->cache.getDirectory(dir)));
+}
+
 Protos::Common::Entries FileManager::getEntries(const Protos::Common::Entry& dir)
 {
    return this->cache.getEntries(dir);
@@ -177,7 +183,7 @@ Protos::Common::Entries FileManager::getEntries(const Protos::Common::Entry& dir
 
 Protos::Common::Entries FileManager::getEntries()
 {
-   return this->cache.getEntries();
+   return this->cache.getSharedEntries();
 }
 
 QList<Protos::Common::FindResult> FileManager::find(const QString& words, int maxNbResult, int maxSize)

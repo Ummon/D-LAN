@@ -515,6 +515,8 @@ void FileUpdater::scan(Directory* dir, bool addUnfinished)
 
       foreach (Directory* d, currentSubDirs)
          this->deleteEntry(d);
+
+      currentDir->scanningFinished();
    }
 
    this->scanningMutex.lock();

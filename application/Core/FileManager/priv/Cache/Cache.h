@@ -49,8 +49,10 @@ namespace FM
       Cache();
       ~Cache();
 
+      Protos::Common::Entries getSharedEntries() const;
       Protos::Common::Entries getEntries(const Protos::Common::Entry& dir) const;
-      Protos::Common::Entries getEntries() const;
+      Directory* getDirectory(const Protos::Common::Entry& dir) const;
+
       Entry* getEntry(const QString& path) const;
       File* getFile(const Protos::Common::Entry& fileEntry) const;
       QList<QSharedPointer<IChunk>> newFile(Protos::Common::Entry& fileEntry);
@@ -82,12 +84,15 @@ namespace FM
       void onChunkHashKnown(const QSharedPointer<Chunk>& chunk);
       void onChunkRemoved(const QSharedPointer<Chunk>& chunk);
 
+      void onScanned(Directory* dir);
+
    signals:
       void entryAdded(Entry* entry);
       void entryRemoved(Entry* entry);
       void entryRenamed(Entry* entry, const QString& oldName);
       void chunkHashKnown(const QSharedPointer<Chunk>& chunk);
       void chunkRemoved(const QSharedPointer<Chunk>& chunk);
+      void directoryScanned(Directory* dir);
 
       void newSharedDirectory(SharedDirectory* dir);
       void sharedDirectoryRemoved(SharedDirectory* dir, Directory* dir2);

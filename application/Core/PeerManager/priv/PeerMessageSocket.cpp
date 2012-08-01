@@ -209,28 +209,48 @@ void PeerMessageSocket::nextAskedHash(Common::Hash hash)
    }
 }
 
-/**
-  *
-  */
+void PeerMessageSocket::entriesResult(const Protos::Common::Entries& entries)
+{
+   this->entriesResultMessage.add_entries()->CopyFrom(entries);
+
+   if (this->removeEntriesResultToReceive(this->sender()))
+      this->sendEntriesResultMessage();
+}
+
+void PeerMessageSocket::entriesResultTimeout()
+{
+   if (this->removeEntriesResultToReceive(this->sender()))
+      this->sendEntriesResultMessage();
+}
+
 void PeerMessageSocket::onNewMessage(Common::MessageHeader::MessageType type, const google::protobuf::Message& message)
 {
    switch (type)
    {
    case Common::MessageHeader::CORE_GET_ENTRIES:
       {
+         if (!this->entriesResultsToReceive.isEmpty())
+            return;
+
          const Protos::Core::GetEntries& getEntries = static_cast<const Protos::Core::GetEntries&>(message);
 
-         Protos::Core::GetEntriesResult result;
          for (int i = 0; i < getEntries.dirs().entry_size(); i++)
-            result.add_entries()->CopyFrom(this->fileManager->getEntries(getEntries.dirs().entry(i)));
+         {
+            QSharedPointer<FM::IGetEntriesResult> entriesResult = this->fileManager->getScannedEntries(getEntries.dirs().entry(i));
+            connect(entriesResult.data(), SIGNAL(result(const Protos::Common::Entries&)), this, SLOT(entriesResult(const Protos::Common::Entries&)), Qt::DirectConnection);
+            connect(entriesResult.data(), SIGNAL(timeout()), this, SLOT(entriesResultTimeout()), Qt::DirectConnection);
+            this->entriesResultsToReceive << entriesResult;
+         }
 
          // Add the root directories if asked.
          if (getEntries.dirs().entry_size() == 0 || getEntries.get_roots())
-            result.add_entries()->CopyFrom(this->fileManager->getEntries());
+            this->entriesResultMessage.add_entries()->CopyFrom(this->fileManager->getEntries());
 
-         this->send(Common::MessageHeader::CORE_GET_ENTRIES_RESULT, result);
-
-         this->finished();
+         if (this->entriesResultsToReceive.isEmpty())
+            this->sendEntriesResultMessage();
+         else
+            foreach (QSharedPointer<FM::IGetEntriesResult> entriesResult, this->entriesResultsToReceive)
+               entriesResult->start();
       }
       break;
 
@@ -329,4 +349,23 @@ void PeerMessageSocket::initUnactiveTimer()
    this->inactiveTimer.setInterval(SETTINGS.get<quint32>("idle_socket_timeout"));
    connect(&this->inactiveTimer, SIGNAL(timeout()), this, SLOT(close()));
    this->inactiveTimer.start();
+}
+
+bool PeerMessageSocket::removeEntriesResultToReceive(QObject* entriesResults)
+{
+   for (QMutableListIterator<QSharedPointer<FM::IGetEntriesResult>> i(this->entriesResultsToReceive); i.hasNext();)
+      if (i.next() == entriesResults)
+      {
+         i.remove();
+         break;
+      }
+
+   return this->entriesResultsToReceive.isEmpty();
+}
+
+void PeerMessageSocket::sendEntriesResultMessage()
+{
+   this->send(Common::MessageHeader::CORE_GET_ENTRIES_RESULT, this->entriesResultMessage);
+   this->entriesResultMessage.Clear();
+   this->finished();
 }

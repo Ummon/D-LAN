@@ -35,7 +35,12 @@ using namespace FM;
   * @exception UnableToCreateNewDirException (may be thrown only if 'createPhysically' is true).
   */
 Directory::Directory(Directory* parent, const QString& name, bool createPhysically) :
-   Entry(parent->cache, name), parent(parent), subDirs(&Directory::entrySortingFun), files(&Directory::entrySortingFun), mutex(QMutex::Recursive)
+   Entry(parent->cache, name),
+   parent(parent),
+   subDirs(&Directory::entrySortingFun),
+   files(&Directory::entrySortingFun),
+   scanned(false),
+   mutex(QMutex::Recursive)
 {
    QMutexLocker locker(&this->mutex);
    L_DEBU(QString("New Directory : %1, createPhysically = %2").arg(this->getFullPath()).arg(createPhysically));
@@ -406,13 +411,17 @@ void Directory::add(Directory* dir)
    this->subDirs.insert(dir);
 }
 
-/**
-  *
-  */
-void Directory::subdirNameChanged(Directory* dir)
+bool Directory::isScanned() const
 {
    QMutexLocker locker(&this->mutex);
-   this->subDirs.itemChanged(dir);
+   return this->scanned;
+}
+
+void Directory::scanningFinished()
+{
+   QMutexLocker locker(&this->mutex);
+   this->scanned = true;
+   this->cache->onScanned(this);
 }
 
 /**
@@ -422,6 +431,12 @@ void Directory::fileNameChanged(File* file)
 {
    QMutexLocker locker(&this->mutex);
    this->files.itemChanged(file);
+}
+
+void Directory::subdirNameChanged(Directory* dir)
+{
+   QMutexLocker locker(&this->mutex);
+   this->subDirs.itemChanged(dir);
 }
 
 /**
