@@ -22,7 +22,7 @@ macx {
    # For clang.
    QMAKE_CXXFLAGS += -std=c++11 -stdlib=libc++
 }
-unix {
+linux-g++ {
    QMAKE_CXXFLAGS += -std=c++0x
 }
 
