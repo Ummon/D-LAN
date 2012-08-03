@@ -92,6 +92,9 @@ namespace FM
 
       void fileNameChanged(File* file);
 
+   protected:
+      void deleteSubDirs();
+
    private:
       void subdirNameChanged(Directory* dir);
 

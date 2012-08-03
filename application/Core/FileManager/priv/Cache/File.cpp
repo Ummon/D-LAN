@@ -111,6 +111,8 @@ File::~File()
    this->cache->getFilePool().release(this->fileInReadMode, true);
 
    L_DEBU(QString("File deleted : %1").arg(this->getFullPath()));
+
+   QMutexLocker locker(&this->mutex); // We wait that all the current access to this file are finished.
 }
 
 FileForHasher* File::asFileForHasher()

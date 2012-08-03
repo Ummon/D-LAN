@@ -64,13 +64,13 @@ Directory::Directory(Cache* cache, const QString& name) :
 }
 
 Directory::~Directory()
-{
+{   
+   this->deleteSubDirs();
+
    QMutexLocker locker(&this->mutex);
 
    foreach (File* f, this->files.getList())
       delete f;
-   foreach (Directory* d, this->subDirs.getList())
-      delete d;
 
    if (this->parent)
       this->parent->subDirDeleted(this);
@@ -254,6 +254,7 @@ QString Directory::getFullPath() const
 
 SharedDirectory* Directory::getRoot() const
 {
+   QMutexLocker locker(&this->mutex);
    return this->parent->getRoot(); // A directory MUST have a parent.
 }
 
@@ -431,6 +432,12 @@ void Directory::fileNameChanged(File* file)
 {
    QMutexLocker locker(&this->mutex);
    this->files.itemChanged(file);
+}
+
+void Directory::deleteSubDirs()
+{
+   foreach (Directory* d, this->subDirs.getList())
+      delete d;
 }
 
 void Directory::subdirNameChanged(Directory* dir)
