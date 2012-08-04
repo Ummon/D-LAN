@@ -211,15 +211,37 @@ void PeerMessageSocket::nextAskedHash(Common::Hash hash)
 
 void PeerMessageSocket::entriesResult(const Protos::Common::Entries& entries)
 {
-   this->entriesResultMessage.add_entries()->CopyFrom(entries);
+   bool resultEmpty = true;
+   for (int i = 0; i < this->entriesResultsToReceive.count(); i++)
+   {
+      if (this->entriesResultsToReceive[i] == this->sender())
+      {
+         this->entriesResultMessage.mutable_entries(i)->CopyFrom(entries);
+         this->entriesResultsToReceive[i].clear();
+      }
 
-   if (this->removeEntriesResultToReceive(this->sender()))
+      if (!this->entriesResultsToReceive[i].isNull())
+         resultEmpty = false;
+   }
+
+   if (resultEmpty)
       this->sendEntriesResultMessage();
 }
 
 void PeerMessageSocket::entriesResultTimeout()
 {
-   if (this->removeEntriesResultToReceive(this->sender()))
+   L_DEBU("PeerMessageSocket::entriesResultTimeout()");
+
+   bool resultEmpty = true;
+   for (int i = 0; i < this->entriesResultsToReceive.count(); i++)
+   {
+      if (this->entriesResultsToReceive[i] == this->sender())
+         this->entriesResultsToReceive[i].clear();
+      if (!this->entriesResultsToReceive[i].isNull())
+         resultEmpty = false;
+   }
+
+   if (resultEmpty)
       this->sendEntriesResultMessage();
 }
 
@@ -240,6 +262,7 @@ void PeerMessageSocket::onNewMessage(Common::MessageHeader::MessageType type, co
             connect(entriesResult.data(), SIGNAL(result(const Protos::Common::Entries&)), this, SLOT(entriesResult(const Protos::Common::Entries&)), Qt::DirectConnection);
             connect(entriesResult.data(), SIGNAL(timeout()), this, SLOT(entriesResultTimeout()), Qt::DirectConnection);
             this->entriesResultsToReceive << entriesResult;
+            this->entriesResultMessage.add_entries();
          }
 
          // Add the root directories if asked.
@@ -351,21 +374,10 @@ void PeerMessageSocket::initUnactiveTimer()
    this->inactiveTimer.start();
 }
 
-bool PeerMessageSocket::removeEntriesResultToReceive(QObject* entriesResults)
-{
-   for (QMutableListIterator<QSharedPointer<FM::IGetEntriesResult>> i(this->entriesResultsToReceive); i.hasNext();)
-      if (i.next() == entriesResults)
-      {
-         i.remove();
-         break;
-      }
-
-   return this->entriesResultsToReceive.isEmpty();
-}
-
 void PeerMessageSocket::sendEntriesResultMessage()
 {
    this->send(Common::MessageHeader::CORE_GET_ENTRIES_RESULT, this->entriesResultMessage);
    this->entriesResultMessage.Clear();
+   this->entriesResultsToReceive.clear();
    this->finished();
 }

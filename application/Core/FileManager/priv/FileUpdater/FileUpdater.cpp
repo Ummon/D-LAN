@@ -175,7 +175,11 @@ void FileUpdater::prioritizeAFileToHash(File* file)
          this->remainingSizeToHash += file->getSize();
       }
 
-      this->fileHasher.stop();
+      // Commmented to avoid this behavior:
+      // When a lot of unhashed tiny file are asked the hashing process will constently abort the current hashing file
+      // and will never finish it thus slow down the global hashing rate.
+      // this->fileHasher.stop();
+
       this->toStopHashing = true;
    }
    else
