@@ -25,7 +25,7 @@ message Settings {
    optional uint32 minimum_free_space = 23 [default = 1048576]; // (1 MiB) After creating a file in a directory this is the minimum space it must be left.
    optional uint32 save_cache_period = 24 [default = 60000]; // [ms]. (1 min).
    optional bool check_received_data_integrity = 25 [default = true]; // All chunk data received will be checked against their hash if true.
-   optional uint32 get_entries_timeout = 101 [default = 3000]; // [ms].
+   optional uint32 get_entries_timeout = 101 [default = 5000]; // [ms].
    
    // PeerManager.
    optional uint32 pending_socket_timeout = 30 [default = 10000]; // [ms]. When a new connection is created we wait a maximum of this period before data incoming.
