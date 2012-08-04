@@ -16,40 +16,29 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
+#ifndef FILEMANAGER_IGET_ENTRIES_RESULT_H
+#define FILEMANAGER_IGET_ENTRIES_RESULT_H
+
+#include <QObject>
+
+#include <Protos/common.pb.h>
+
 #include <Common/Timeoutable.h>
-using namespace Common;
 
-/**
-  * @param time [ms]
-  */
-Timeoutable::Timeoutable(int time) :
-   timeouted(false)
+namespace FM
 {
-   this->timer.setInterval(time);
-   this->timer.setSingleShot(true);
-}
+   class IGetEntriesResult : public Common::Timeoutable
+   {
+      Q_OBJECT
+   protected:
+      IGetEntriesResult(int time) : Common::Timeoutable(time) {}
 
-bool Timeoutable::isTimedout() const
-{
-   return this->timeouted;
-}
+   public:
+      virtual ~IGetEntriesResult() {}
+      virtual void start() = 0;
 
-void Timeoutable::startTimer()
-{
-   if (!this->timer.isActive())
-      connect(&this->timer, SIGNAL(timeout()), this, SLOT(timeoutSlot()), Qt::DirectConnection);
-
-   this->timer.start();
+   signals:
+      void result(const Protos::Common::Entries&);
+   };
 }
-
-void Timeoutable::stopTimer()
-{
-   disconnect(&this->timer, SIGNAL(timeout()), this, SLOT(timeoutSlot()));
-   this->timer.stop();
-}
-
-void Timeoutable::timeoutSlot()
-{
-   this->timeouted = true;
-   emit timeout();
-}
+#endif

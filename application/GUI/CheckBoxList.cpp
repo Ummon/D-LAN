@@ -97,7 +97,7 @@ void CheckBoxList::paintEvent(QPaintEvent*)
             }
          }
          if (nothingChecked)
-            label = "<nothing>";
+            label = tr("<Nothing>");
       }
       opt.currentText = label;
    }

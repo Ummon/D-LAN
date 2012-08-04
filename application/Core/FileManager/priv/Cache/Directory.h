@@ -87,13 +87,17 @@ namespace FM
       void stealContent(Directory* dir);
       void add(Directory* dir);
 
+      bool isScanned() const;
+      void scanningFinished();
+
+      void fileNameChanged(File* file);
+
+   protected:
+      void deleteSubDirs();
+
    private:
       void subdirNameChanged(Directory* dir);
 
-   public:
-      void fileNameChanged(File* file);
-
-   private:
       Directory& operator+=(qint64);
       Directory& operator-=(qint64);
 
@@ -103,6 +107,8 @@ namespace FM
 
       SortedList<Directory*> subDirs; ///< Sorted by name.
       SortedList<File*> files; ///< Sorted by name.
+
+      bool scanned;
 
       mutable QMutex mutex;
    };

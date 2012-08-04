@@ -16,40 +16,36 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#include <Common/Timeoutable.h>
-using namespace Common;
+#ifndef FILEMANAGER_GET_ENTRIES_RESULT_H
+#define FILEMANAGER_GET_ENTRIES_RESULT_H
 
-/**
-  * @param time [ms]
-  */
-Timeoutable::Timeoutable(int time) :
-   timeouted(false)
+#include <QObject>
+
+#include <Common/Uncopyable.h>
+
+#include <IGetEntriesResult.h>
+#include <priv/Cache/Cache.h>
+#include <priv/Cache/Directory.h>
+
+namespace FM
 {
-   this->timer.setInterval(time);
-   this->timer.setSingleShot(true);
+   class GetEntriesResult : public IGetEntriesResult, Common::Uncopyable
+   {
+      Q_OBJECT
+   public:
+      GetEntriesResult(Directory* dir);
+      void start();
+
+   private slots:
+      void directoryScanned(Directory* dir);
+      void sendResult();
+
+   private:
+      void buildResult();
+
+      Protos::Common::Entries res;
+      Directory* dir;
+   };
 }
 
-bool Timeoutable::isTimedout() const
-{
-   return this->timeouted;
-}
-
-void Timeoutable::startTimer()
-{
-   if (!this->timer.isActive())
-      connect(&this->timer, SIGNAL(timeout()), this, SLOT(timeoutSlot()), Qt::DirectConnection);
-
-   this->timer.start();
-}
-
-void Timeoutable::stopTimer()
-{
-   disconnect(&this->timer, SIGNAL(timeout()), this, SLOT(timeoutSlot()));
-   this->timer.stop();
-}
-
-void Timeoutable::timeoutSlot()
-{
-   this->timeouted = true;
-   emit timeout();
-}
+#endif
