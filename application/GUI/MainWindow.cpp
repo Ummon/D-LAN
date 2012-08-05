@@ -476,7 +476,6 @@ void MainWindow::removeWidget(QWidget* widget)
 
 void MainWindow::logScrollChanged(int value)
 {
-   L_DEBU(QString("value: %1, this->ui->tblLog->verticalScrollBar()->maximum(): %2").arg(value).arg(this->ui->tblLog->verticalScrollBar()->maximum()));
    this->autoScroll = value == this->ui->tblLog->verticalScrollBar()->maximum();
 }
 

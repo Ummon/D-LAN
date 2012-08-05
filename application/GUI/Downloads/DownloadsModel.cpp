@@ -144,6 +144,13 @@ QVariant DownloadsModel::getData(const Protos::GUI::State::Download& download, c
          case Protos::GUI::State::Download::HASH_MISSMATCH:
             toolTip += tr("Data received do not match the hash");
             break;
+
+         case Protos::GUI::State::Download::DIRECTORY_SCANNING_IN_PROGRESS:
+            toolTip += tr("The remote directory is currently being scanned");
+            break;
+         case Protos::GUI::State::Download::UNABLE_TO_GET_ENTRIES:
+            toolTip += tr("Unable to retrieve the entries");
+            break;
          default:;
          }
          const QString& path = this->getPath(index);
@@ -206,6 +213,8 @@ QList<int> DownloadsModel::getNonFilteredDownloadIndices(const Protos::GUI::Stat
       case Protos::GUI::State::Download::FILE_NON_EXISTENT:
       case Protos::GUI::State::Download::GOT_TOO_MUCH_DATA:
       case Protos::GUI::State::Download::HASH_MISSMATCH:
+      case Protos::GUI::State::Download::DIRECTORY_SCANNING_IN_PROGRESS:
+      case Protos::GUI::State::Download::UNABLE_TO_GET_ENTRIES:
          if (!(statusToFilter & STATUS_INACTIVE))
             indices << i;
          break;

@@ -44,6 +44,9 @@ message State {
          FILE_NON_EXISTENT = 0x27;
          GOT_TOO_MUCH_DATA = 0x28;
          HASH_MISSMATCH = 0x29;
+
+         DIRECTORY_SCANNING_IN_PROGRESS = 0x31; // When a remote directory is being scanned it's not possible to browse it.
+         UNABLE_TO_GET_ENTRIES = 0x32;
       }
       required uint64 id = 1; // Cannot be 0.
       

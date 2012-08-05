@@ -43,7 +43,7 @@ namespace FM
    private:
       void buildResult();
 
-      Protos::Common::Entries res;
+      Protos::Core::GetEntriesResult::EntryResult res;
       Directory* dir;
    };
 }

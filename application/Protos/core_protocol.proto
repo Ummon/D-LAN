@@ -82,7 +82,17 @@ message GetEntries {
 // b -> a
 // id : 0x32
 message GetEntriesResult {
-   repeated Common.Entries entries = 1; // If an entry is empty or doesn't exist, it will be empty.
+   message EntryResult {
+      enum Status {
+         OK = 0;
+         DONT_HAVE = 1;
+         TIMEOUT_SCANNING_IN_PROGRESS = 2;
+         ERROR_UNKNOWN = 255;
+      }
+      optional Status status = 1 [default = OK];
+      optional Common.Entries entries = 2;
+   }
+   repeated EntryResult result = 1;
 }
 
 

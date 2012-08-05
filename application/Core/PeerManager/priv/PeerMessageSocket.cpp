@@ -209,19 +209,20 @@ void PeerMessageSocket::nextAskedHash(Common::Hash hash)
    }
 }
 
-void PeerMessageSocket::entriesResult(const Protos::Common::Entries& entries)
+void PeerMessageSocket::entriesResult(const Protos::Core::GetEntriesResult::EntryResult& result)
 {
    bool resultEmpty = true;
    for (int i = 0; i < this->entriesResultsToReceive.count(); i++)
    {
       if (this->entriesResultsToReceive[i] == this->sender())
       {
-         this->entriesResultMessage.mutable_entries(i)->CopyFrom(entries);
+         this->entriesResultMessage.mutable_result(i)->CopyFrom(result);
          this->entriesResultsToReceive[i].clear();
       }
-
-      if (!this->entriesResultsToReceive[i].isNull())
+      else if (!this->entriesResultsToReceive[i].isNull())
+      {
          resultEmpty = false;
+      }
    }
 
    if (resultEmpty)
@@ -236,9 +237,14 @@ void PeerMessageSocket::entriesResultTimeout()
    for (int i = 0; i < this->entriesResultsToReceive.count(); i++)
    {
       if (this->entriesResultsToReceive[i] == this->sender())
+      {
+         this->entriesResultMessage.mutable_result(i)->set_status(Protos::Core::GetEntriesResult::EntryResult::TIMEOUT_SCANNING_IN_PROGRESS);
          this->entriesResultsToReceive[i].clear();
-      if (!this->entriesResultsToReceive[i].isNull())
+      }
+      else if (!this->entriesResultsToReceive[i].isNull())
+      {
          resultEmpty = false;
+      }
    }
 
    if (resultEmpty)
@@ -259,15 +265,15 @@ void PeerMessageSocket::onNewMessage(Common::MessageHeader::MessageType type, co
          for (int i = 0; i < getEntries.dirs().entry_size(); i++)
          {
             QSharedPointer<FM::IGetEntriesResult> entriesResult = this->fileManager->getScannedEntries(getEntries.dirs().entry(i));
-            connect(entriesResult.data(), SIGNAL(result(const Protos::Common::Entries&)), this, SLOT(entriesResult(const Protos::Common::Entries&)), Qt::DirectConnection);
+            connect(entriesResult.data(), SIGNAL(result(const Protos::Core::GetEntriesResult::EntryResult&)), this, SLOT(entriesResult(const Protos::Core::GetEntriesResult::EntryResult&)), Qt::DirectConnection);
             connect(entriesResult.data(), SIGNAL(timeout()), this, SLOT(entriesResultTimeout()), Qt::DirectConnection);
             this->entriesResultsToReceive << entriesResult;
-            this->entriesResultMessage.add_entries();
+            this->entriesResultMessage.add_result();
          }
 
          // Add the root directories if asked.
          if (getEntries.dirs().entry_size() == 0 || getEntries.get_roots())
-            this->entriesResultMessage.add_entries()->CopyFrom(this->fileManager->getEntries());
+            this->entriesResultMessage.add_result()->mutable_entries()->CopyFrom(this->fileManager->getEntries());
 
          if (this->entriesResultsToReceive.isEmpty())
             this->sendEntriesResultMessage();

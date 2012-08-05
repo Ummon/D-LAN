@@ -33,6 +33,7 @@ void GetEntriesResult::start()
    if (!this->dir)
    {
       L_DEBU("FM::GetEntriesResult::start(): null directory");
+      this->res.set_status(Protos::Core::GetEntriesResult::EntryResult::DONT_HAVE);
       emit result(this->res);
    }
    else if (this->dir->isScanned())
@@ -75,10 +76,12 @@ void GetEntriesResult::sendResult()
 
 void GetEntriesResult::buildResult()
 {
+   this->res.set_status(Protos::Core::GetEntriesResult::EntryResult::OK);
+
    foreach (Directory* dir, this->dir->getSubDirs())
-      dir->populateEntry(this->res.add_entry());
+      dir->populateEntry(this->res.mutable_entries()->add_entry());
 
    foreach (File* file, this->dir->getFiles())
       if (file->isComplete())
-         file->populateEntry(this->res.add_entry());
+         file->populateEntry(this->res.mutable_entries()->add_entry());
 }

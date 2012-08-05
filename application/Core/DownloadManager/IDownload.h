@@ -55,7 +55,10 @@ namespace DM
       FILE_IO_ERROR = 0x26,
       FILE_NON_EXISTENT = 0x27,
       GOT_TOO_MUCH_DATA = 0x28,
-      HASH_MISSMATCH = 0x29
+      HASH_MISSMATCH = 0x29,
+
+      DIRECTORY_SCANNING_IN_PROGRESS = 0x31,
+      UNABLE_TO_GET_ENTRIES = 0x32
    };
 
    class IDownload

@@ -24,6 +24,7 @@
 namespace DM
 {
    const int RETRY_PEER_GET_HASHES_PERIOD = 10000; // [ms]. If the hashes cannot be retrieve frome a peer, we wait 10s before retrying.
+   const int RETRY_GET_ENTRIES_PERIOD = 10000; // [ms]. If a directory can't be browsed, we wait 10s before retrying.
    const int RESTART_DOWNLOADS_PERIOD_IF_ERROR = 10000; // [ms]. If one or more download has a status >= 0x20 then it will be restarted periodically.
 
    // 2 -> 3 : BLAKE -> Sha-1

@@ -97,7 +97,7 @@ namespace PM
 
    private slots:
       void nextAskedHash(Common::Hash hash);
-      void entriesResult(const Protos::Common::Entries& entries);
+      void entriesResult(const Protos::Core::GetEntriesResult::EntryResult& result);
       void entriesResultTimeout();
 
    private:

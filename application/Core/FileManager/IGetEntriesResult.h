@@ -21,7 +21,7 @@
 
 #include <QObject>
 
-#include <Protos/common.pb.h>
+#include <Protos/core_protocol.pb.h>
 
 #include <Common/Timeoutable.h>
 
@@ -38,7 +38,7 @@ namespace FM
       virtual void start() = 0;
 
    signals:
-      void result(const Protos::Common::Entries&);
+      void result(const Protos::Core::GetEntriesResult::EntryResult&);
    };
 }
 #endif
