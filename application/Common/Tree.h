@@ -31,6 +31,9 @@ namespace Common
    template <typename TreeType>
    class TreeDepthFirstIterator;
 
+   template <typename TreeType>
+   class TreeReverseDepthFirstIterator;
+
    class OutOfRangeException {};
 
    /**
@@ -74,6 +77,8 @@ namespace Common
         */
       bool mapDepthFirst(std::function<bool(TreeType*)> fun, bool iterateOnRoot = false);
 
+      bool mapReverseDepthFirst(std::function<bool(TreeType*)> fun, bool iterateOnRoot = false);
+
       virtual TreeType* getParent();
       virtual const TreeType* getParent() const;
       virtual int getNbChildren() const;
@@ -96,6 +101,7 @@ namespace Common
 
       friend class TreeBreadthFirstIterator<TreeType>;
       friend class TreeDepthFirstIterator<TreeType>;
+      friend class TreeReverseDepthFirstIterator<TreeType>;
 
       ItemType item;
       TreeType* parent;
@@ -141,6 +147,25 @@ namespace Common
       void readChildren(TreeType* parentTree);
       QList<TreeType*> nextTrees;
    };
+
+   /////
+
+   template <typename TreeType>
+   class TreeReverseDepthFirstIterator
+   {
+   public:
+      TreeReverseDepthFirstIterator(TreeType* tree, bool iterateOnRoot = false);
+      bool hasNext() const;
+      TreeType* next();
+
+   private:
+      TreeType* getDeepestTree(TreeType* tree, int subTreePosition = -1);
+      static int parentPosition(TreeType* tree);
+
+      bool iterateOnRoot;
+      TreeType* const root;
+      TreeType* nextTree;
+   };
 }
 
 using namespace Common;
@@ -182,6 +207,17 @@ template <typename ItemType, typename TreeType>
 bool Tree<ItemType, TreeType>::mapDepthFirst(std::function<bool(TreeType*)> fun, bool iterateOnRoot)
 {
    TreeDepthFirstIterator<TreeType> i(static_cast<TreeType*>(this), iterateOnRoot);
+   TreeType* currentTree;
+   while (currentTree = i.next())
+      if (!fun(currentTree))
+         return false;
+   return true;
+}
+
+template <typename ItemType, typename TreeType>
+bool Tree<ItemType, TreeType>::mapReverseDepthFirst(std::function<bool(TreeType*)> fun, bool iterateOnRoot)
+{
+   TreeReverseDepthFirstIterator<TreeType> i(static_cast<TreeType*>(this), iterateOnRoot);
    TreeType* currentTree;
    while (currentTree = i.next())
       if (!fun(currentTree))
@@ -381,6 +417,54 @@ void TreeDepthFirstIterator<TreeType>::readChildren(TreeType* parentTree)
    i.toBack();
    while (i.hasPrevious())
       this->nextTrees.prepend(i.previous());
+}
+
+/////
+
+template <typename TreeType>
+TreeReverseDepthFirstIterator<TreeType>::TreeReverseDepthFirstIterator(TreeType* tree, bool iterateOnRoot) :
+   iterateOnRoot(iterateOnRoot),
+   root(tree),
+   nextTree(nullptr)
+{
+   this->nextTree = this->getDeepestTree(tree);
+}
+
+template <typename TreeType>
+bool TreeReverseDepthFirstIterator<TreeType>::hasNext() const
+{
+   return this->nextTree != nullptr;
+}
+
+template <typename TreeType>
+TreeType* TreeReverseDepthFirstIterator<TreeType>::next()
+{
+   TreeType* nextTreeCopy = this->nextTree;
+
+   this->nextTree = this->nextTree && this->nextTree != this->root ? this->getDeepestTree(this->nextTree->parent, parentPosition(this->nextTree)) : nullptr;
+
+   return nextTreeCopy;
+}
+
+template <typename TreeType>
+TreeType* TreeReverseDepthFirstIterator<TreeType>::getDeepestTree(TreeType* tree, int subTreePosition)
+{
+   if (tree->children.size() > ++subTreePosition)
+      return getDeepestTree(tree->children[subTreePosition]);
+
+   if (tree == this->root && !this->iterateOnRoot)
+      return nullptr;
+
+   return tree;
+}
+
+template <typename TreeType>
+int TreeReverseDepthFirstIterator<TreeType>::parentPosition(TreeType* tree)
+{
+   if (!tree->parent)
+      return -1;
+
+   return tree->parent->children.indexOf(tree);
 }
 
 #endif
