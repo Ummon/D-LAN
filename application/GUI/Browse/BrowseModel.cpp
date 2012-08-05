@@ -173,7 +173,7 @@ void BrowseModel::refresh()
 
    Protos::Common::Entries entries;
 
-   this->root->mapBreadthFirst([&entries](Tree* tree) {
+   this->root->mapReverseDepthFirst([&entries](Tree* tree) {
       if (tree->getNbChildren() > 0)
          entries.add_entry()->CopyFrom(tree->getItem());
       return true;
@@ -211,34 +211,23 @@ int BrowseModel::nbSharedDirs() const
 
 void BrowseModel::resultRefresh(const google::protobuf::RepeatedPtrField<Protos::Common::Entries>& entries)
 {
-   QList<Tree*> TreesToDelete;
-
    // Synchronize the content of all directories.
    int j = -1;
-   this->root->mapBreadthFirst([&](Tree* tree) {
+   this->root->mapReverseDepthFirst([&](Tree* tree) {
       if (tree->getNbChildren() > 0)
       {
          if (++j >= entries.size() - 1)
             return false;
-         TreesToDelete << this->synchronize(tree, entries.Get(j));
+         this->synchronize(tree, entries.Get(j));
       }
       return true;
    });
 
    // Synchronize the root.
-   for (QListIterator<Tree*> i(this->synchronizeRoot(entries.Get(entries.size() - 1))); i.hasNext();)
-      TreesToDelete.prepend(i.next());
+   this->synchronizeRoot(entries.Get(entries.size() - 1));
 
-   QListIterator<Tree*> k(TreesToDelete);
-   k.toBack();
-   while (k.hasPrevious())
-   {
-      Tree* tree = k.previous();
-      this->beginRemoveRows(tree->getParent() == this->root ? QModelIndex() : this->createIndex(tree->getParent()->getOwnPosition(), 0, tree->getParent()), tree->getOwnPosition(), tree->getOwnPosition()); // Root cannot be deleted, so the Tree must have a parent.
-      delete tree;
-      this->endRemoveRows();
-   }
    this->browseResult.clear();
+
    emit loadingResultFinished();
 }
 
@@ -286,15 +275,13 @@ void BrowseModel::loadChildren(const QPersistentModelIndex &index)
 }
 
 /**
-  * Add the new elements in 'entries' and return the entries in 'Tree->children' which dont exist in 'entries'.
-  * 'entries' and 'Tree->children' must be sorted by their name.
+  * Synchronize the 'tree->children' with the given state.
+  * 'entries' and 'tree->children' must be sorted by their name.
   */
-QList<BrowseModel::Tree*> BrowseModel::synchronize(BrowseModel::Tree* tree, const Protos::Common::Entries& entries)
+void BrowseModel::synchronize(BrowseModel::Tree* tree, const Protos::Common::Entries& entries)
 {
-   QList<Tree*> TreesToDelete;
-
    if (!tree->getParent())
-      return TreesToDelete;
+      return;
 
    QModelIndex parentIndex = this->createIndex(tree->getOwnPosition(), 0, tree);
 
@@ -311,7 +298,9 @@ QList<BrowseModel::Tree*> BrowseModel::synchronize(BrowseModel::Tree* tree, cons
       }
       else if (j >= entries.entry_size() || tree->getChild(i)->getItem() < entries.entry(j)) // Entry deleted.
       {
-         TreesToDelete << tree->getChild(i++);
+         this->beginRemoveRows(parentIndex, i, i);
+         delete tree->getChild(i);
+         this->endRemoveRows();
       }
       else // Entry paths are equal.
       {
@@ -320,19 +309,16 @@ QList<BrowseModel::Tree*> BrowseModel::synchronize(BrowseModel::Tree* tree, cons
             tree->getChild(i)->setItem(entries.entry(j));
             emit dataChanged(this->createIndex(i, 0, tree->getChild(i)), this->createIndex(i, 1, tree->getChild(i)));
          }
-
          i++;
          j++;
       }
    }
-
-   return TreesToDelete;
 }
 
 /**
   * Special case for the shared directories (roots). They may not be sorted in a alphabetic way. They are identified by their ID.
   */
-QList<BrowseModel::Tree*> BrowseModel::synchronizeRoot(const Protos::Common::Entries& entries)
+void BrowseModel::synchronizeRoot(const Protos::Common::Entries& entries)
 {
    QModelIndex parentIndex = QModelIndex();
 
@@ -367,10 +353,12 @@ QList<BrowseModel::Tree*> BrowseModel::synchronizeRoot(const Protos::Common::Ent
       nextEntry:;
    }
 
-   QList<Tree*> TreesToDelete;
    while (j < this->root->getNbChildren())
-      TreesToDelete << this->root->getChild(j++);
-   return TreesToDelete;
+   {
+      this->beginRemoveRows(QModelIndex(), j, j);
+      delete this->root->getChild(j);
+      this->endRemoveRows();
+   }
 }
 
 void BrowseModel::reset()
@@ -446,16 +434,16 @@ void BrowseModel::Tree::copySharedDirFromParent()
 
 bool GUI::operator>(const Protos::Common::Entry& e1, const Protos::Common::Entry& e2)
 {
-   if (e1.type() != e2.type() || e1.size() != e2.size() || e1.is_empty() != e2.is_empty())
-      return false;
+   if (e1.type() != e2.type())
+      return e1.type() == Protos::Common::Entry::FILE;
 
    return Common::ProtoHelper::getStr(e1, &Protos::Common::Entry::name) > Common::ProtoHelper::getStr(e2, &Protos::Common::Entry::name);
 }
 
 bool GUI::operator<(const Protos::Common::Entry& e1, const Protos::Common::Entry& e2)
 {
-   if (e1.type() != e2.type() || e1.size() != e2.size() || e1.is_empty() != e2.is_empty())
-      return false;
+   if (e1.type() != e2.type())
+      return e1.type() == Protos::Common::Entry::DIR;
 
    return Common::ProtoHelper::getStr(e1, &Protos::Common::Entry::name) < Common::ProtoHelper::getStr(e2, &Protos::Common::Entry::name);
 }

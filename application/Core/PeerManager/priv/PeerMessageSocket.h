@@ -106,7 +106,6 @@ namespace PM
       void onDisconnected();
       void initUnactiveTimer();
 
-      bool removeEntriesResultToReceive(QObject* entriesResults);
       void sendEntriesResultMessage();
 
       QList<QSharedPointer<FM::IGetEntriesResult>> entriesResultsToReceive;

@@ -105,6 +105,23 @@ void TreeTests::iterateDepthFirst()
    }
 }
 
+void TreeTests::iterateReverseDepthFirst()
+{
+   {
+      QList<int> expected { 2, 7, 8, 4, 5, 9, 6, 3, 1 };
+      QList<int> actual;
+      this->tree.mapReverseDepthFirst([&](IntTree* tree) { actual << tree->getItem(); return true; }, true);
+      QVERIFY(expected == actual);
+   }
+
+   {
+      QList<int> expected { 7, 8, 4, 5, 9, 6 };
+      QList<int> actual;
+      this->tree[1].mapReverseDepthFirst([&](IntTree* tree) { actual << tree->getItem(); return true; });
+      QVERIFY(expected == actual);
+   }
+}
+
 void TreeTests::removeElements()
 {
    delete this->tree[1].getChild(0);
