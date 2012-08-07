@@ -76,8 +76,8 @@ namespace GUI
    protected:
       virtual void browse(const Common::Hash& peerID, Tree* Tree = nullptr);
       virtual void loadChildren(const QPersistentModelIndex &index);
-      virtual QList<Tree*> synchronize(BrowseModel::Tree* Tree, const Protos::Common::Entries& entries);
-      virtual QList<Tree*> synchronizeRoot(const Protos::Common::Entries& entries);
+      virtual void synchronize(BrowseModel::Tree* Tree, const Protos::Common::Entries& entries);
+      virtual void synchronizeRoot(const Protos::Common::Entries& entries);
       virtual void reset();
 
       class Tree : public Common::Tree<Protos::Common::Entry, Tree>

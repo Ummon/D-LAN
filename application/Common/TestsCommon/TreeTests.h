@@ -42,6 +42,7 @@ private slots:
    void retrieveElements();
    void iterateBreathFirst();
    void iterateDepthFirst();
+   void iterateReverseDepthFirst();
    void removeElements();
 
 private:
