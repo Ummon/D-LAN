@@ -228,21 +228,16 @@ void PeerMessageSocket::entriesResult(const Protos::Common::Entries& entries)
       this->sendEntriesResultMessage();
 }
 
+/**
+  * If one of the directories can't be browsed then we never send a respond.
+  */
 void PeerMessageSocket::entriesResultTimeout()
 {
    L_DEBU("PeerMessageSocket::entriesResultTimeout()");
 
-   bool resultEmpty = true;
-   for (int i = 0; i < this->entriesResultsToReceive.count(); i++)
-   {
-      if (this->entriesResultsToReceive[i] == this->sender())
-         this->entriesResultsToReceive[i].clear();
-      if (!this->entriesResultsToReceive[i].isNull())
-         resultEmpty = false;
-   }
-
-   if (resultEmpty)
-      this->sendEntriesResultMessage();
+   this->entriesResultMessage.Clear();
+   this->entriesResultsToReceive.clear();
+   this->finished();
 }
 
 void PeerMessageSocket::onNewMessage(Common::MessageHeader::MessageType type, const google::protobuf::Message& message)
