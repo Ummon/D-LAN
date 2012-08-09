@@ -207,7 +207,7 @@ QList<Protos::Common::FindResult> FileManager::find(const QString& words, int ma
       entry.value->populateEntry(entryLevel->mutable_entry(), true);
 
       // We wouldn't use 'findResults.last().ByteSize()' because is too slow. Instead we call 'ByteSize()' for each entry and sum it.
-      const int entryByteSize = entryLevel->ByteSize() + 8; // Each entry take a bit of memory overhead... (Value found in an empiric way..).
+      const int entryByteSize = entryLevel->ByteSize() + 8; // Each entry take a bit of memory overhead . . . (Value found in an empiric way . . .).
       findResultCurrentSize += entryByteSize;
 
       if (findResultCurrentSize > maxSize)
@@ -348,9 +348,9 @@ void FileManager::entryAdded(Entry* entry)
    if (entry->getName().isEmpty() || Global::isFileUnfinished(entry->getName()))
       return;
 
-   L_DEBU(QString("Adding entry '%1' to the index ..").arg(entry->getName()));
+   L_DEBU(QString("Adding entry '%1' to the index . . .").arg(entry->getName()));
    this->wordIndex.addItem(Common::StringUtils::splitInWords(entry->getName()), entry);
-   L_DEBU("Entry added to the index ..");
+   L_DEBU("Entry added to the index");
 }
 
 void FileManager::entryRemoved(Entry* entry)
@@ -358,31 +358,31 @@ void FileManager::entryRemoved(Entry* entry)
    if (entry->getName().isEmpty())
       return;
 
-   L_DEBU(QString("Removing entry '%1' from the index..").arg(entry->getName()));
+   L_DEBU(QString("Removing entry '%1' from the index . . .").arg(entry->getName()));
    this->wordIndex.rmItem(Common::StringUtils::splitInWords(entry->getName()), entry);
    L_DEBU("Entry removed from the index..");
 }
 
 void FileManager::entryRenamed(Entry* entry, const QString& oldName)
 {
-   L_DEBU(QString("Renaming entry '%1' to '%2' in the index..").arg(entry->getName()).arg(oldName));
+   L_DEBU(QString("Renaming entry '%1' to '%2' in the index . . .").arg(entry->getName()).arg(oldName));
    this->wordIndex.renameItem(Common::StringUtils::splitInWords(oldName), Common::StringUtils::splitInWords(entry->getName()), entry);
-   L_DEBU("Entry renamed in the index..");
+   L_DEBU("Entry renamed in the index");
 }
 
 void FileManager::chunkHashKnown(const QSharedPointer<Chunk>& chunk)
 {
-   L_DEBU(QString("Adding chunk '%1' to the index..").arg(chunk->getHash().toStr()));
+   L_DEBU(QString("Adding chunk '%1' to the index . . .").arg(chunk->getHash().toStr()));
    this->chunks.add(chunk);
-   L_DEBU("Chunk added to the index..");
+   L_DEBU("Chunk added to the index");
    this->setCacheChanged();
 }
 
 void FileManager::chunkRemoved(const QSharedPointer<Chunk>& chunk)
 {
-   L_DEBU(QString("Removing chunk '%1' from the index ..").arg(chunk->getHash().toStr()));
+   L_DEBU(QString("Removing chunk '%1' from the index . . .").arg(chunk->getHash().toStr()));
    this->chunks.rm(chunk);
-   L_DEBU("Chunk removed from the index..");
+   L_DEBU("Chunk removed from the index");
    this->setCacheChanged();
 }
 
@@ -444,7 +444,7 @@ void FileManager::persistCacheToFile()
    {
       lockerCacheChanged.unlock();
 
-      L_DEBU("Persisting cache..");
+      L_DEBU("Persisting cache . . .");
 
       Protos::FileCache::Hashes hashes;
       this->cache.populateHashes(hashes);

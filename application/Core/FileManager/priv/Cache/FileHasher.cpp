@@ -78,7 +78,7 @@ bool FileHasher::start(FileForHasher* fileCache, int n, int* amountHashed)
 
    const QString& filePath = this->currentFileCache->getFullPath();
 
-   L_USER(QString("Computing the hashes for %1 ..").arg(filePath));
+   L_USER(tr("Computing the hashes for %1 . . .").arg(filePath));
 
    // Same performance with or without "QIODevice::Unbuffered".
    AutoReleasedFile file(FileHasher::filePool, filePath, QIODevice::ReadOnly | QIODevice::Unbuffered, this->currentFileCache->getSize() <= Chunk::CHUNK_SIZE);
@@ -183,7 +183,7 @@ bool FileHasher::start(FileForHasher* fileCache, int n, int* amountHashed)
 
          const Common::Hash& hash = hasher.getResult();
 
-         if (chunks.size() <= chunkNum) // The size of the file has increased during the read..
+         if (chunks.size() <= chunkNum) // The size of the file has increased during the read . . .
          {
             QSharedPointer<Chunk> newChunk(new Chunk(this->currentFileCache, chunkNum, bytesReadChunk, hash));
             this->currentFileCache->addChunk(newChunk);
@@ -225,7 +225,7 @@ bool FileHasher::start(FileForHasher* fileCache, int n, int* amountHashed)
    this->toStopHashing = false;
    this->hashing = false;
 
-   // TODO: seriously rethink this part, a file being written shouldn't be shared or hashed...
+   // TODO: seriously rethink this part, a file being written shouldn't be shared or hashed . . .
    if (bytesReadTotal + bytesSkipped != this->currentFileCache->getSize())
    {
       if (n != 0)

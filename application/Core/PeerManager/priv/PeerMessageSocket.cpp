@@ -164,7 +164,7 @@ void PeerMessageSocket::finished(bool closeTheSocket)
 
    if (closeTheSocket)
    {
-      L_WARN("Socket forced to close..");
+      L_WARN("Socket forced to close");
       this->close();
       return;
    }
@@ -229,6 +229,9 @@ void PeerMessageSocket::entriesResult(const Protos::Core::GetEntriesResult::Entr
       this->sendEntriesResultMessage();
 }
 
+/**
+  * If one of the directories can't be browsed then we never send a respond.
+  */
 void PeerMessageSocket::entriesResultTimeout()
 {
    L_DEBU("PeerMessageSocket::entriesResultTimeout()");
