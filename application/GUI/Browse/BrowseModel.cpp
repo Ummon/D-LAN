@@ -65,7 +65,7 @@ QModelIndex BrowseModel::index(int row, int column, const QModelIndex& parent) c
 
    if (childTree)
        return this->createIndex(row, column, childTree);
-   else if (parentTree->hasUnloadedChildren()) // The view want some not yet loaded children.. so we will load them.
+   else if (parentTree->hasUnloadedChildren()) // The view want some not yet loaded children . . . so we will load them.
       const_cast<BrowseModel*>(this)->loadChildren(parent);
 
    return QModelIndex();

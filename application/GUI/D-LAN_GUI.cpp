@@ -73,7 +73,7 @@ D_LAN_GUI::D_LAN_GUI(int argc, char* argv[]) :
          {
             this->sharedMemory.unlock();
             QSharedPointer<LM::ILogger> mainLogger = LM::Builder::newLogger("D-LAN GUI");
-            mainLogger->log("GUI already launched, exited..", LM::SV_END_USER);
+            mainLogger->log("GUI already launched, exiting . . .", LM::SV_END_USER);
             throw AbortException();
          }
       }

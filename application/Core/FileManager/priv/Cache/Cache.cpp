@@ -95,7 +95,7 @@ Protos::Common::Entries Cache::getEntries(const Protos::Common::Entry& dir) cons
   */
 Directory* Cache::getDirectory(const Protos::Common::Entry& dir) const
 {
-   // If we can't find the shared directory..
+   // If we can't find the shared directory . . .
    if (!dir.has_shared_dir())
       return nullptr;
 

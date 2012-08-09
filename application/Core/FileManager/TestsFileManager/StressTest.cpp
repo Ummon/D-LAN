@@ -35,7 +35,7 @@ using namespace FM;
 #include <Exceptions.h>
 #include <Builder.h>
 
-// Beautiful macros..
+// Beautiful macros . . .
 #define PROB_100(A) if (this->randGen.percentRand() <= 100 - A) return;
 #define PROB_1000(A) if (this->randGen.permilRand() <= 1000 - A) return;
 
@@ -587,7 +587,7 @@ void StressTest::nextHash(Common::Hash hash)
          qDebug() << "nextHash : " << hash.toStr() << " for " << this->getHashesResults[i].filename;
          if (!--this->getHashesResults[i].nb)
          {
-            qDebug() << "It was the last hash! Removing the listener..";
+            qDebug() << "It was the last hash! Removing the listener . . .";
             this->getHashesResults.removeAt(i);
          }
          break;

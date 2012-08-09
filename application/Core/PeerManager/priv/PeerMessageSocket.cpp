@@ -164,7 +164,7 @@ void PeerMessageSocket::finished(bool closeTheSocket)
 
    if (closeTheSocket)
    {
-      L_WARN("Socket forced to close..");
+      L_WARN("Socket forced to close");
       this->close();
       return;
    }

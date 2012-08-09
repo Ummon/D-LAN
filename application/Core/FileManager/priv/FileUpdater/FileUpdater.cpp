@@ -412,7 +412,7 @@ void FileUpdater::updateHashingProgress()
 void FileUpdater::stopHashing()
 {
    QMutexLocker lockerHashing(&this->hashingMutex);
-   L_DEBU("Stop hashing...");
+   L_DEBU("Stop hashing . . .");
 
    this->fileHasher.stop();
 

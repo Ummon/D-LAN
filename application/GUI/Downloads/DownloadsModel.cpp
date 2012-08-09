@@ -32,7 +32,7 @@ DownloadsModel::DownloadsModel(QSharedPointer<RCC::ICoreConnection> coreConnecti
    sharedDirsModel(sharedDirsModel),
    filter(filter)
 {
-   qRegisterMetaTypeStreamOperators<Progress>("Progress"); // Don't know where to put this call..
+   qRegisterMetaTypeStreamOperators<Progress>("Progress"); // Don't know where to put this call . . .
    connect(this->coreConnection.data(), SIGNAL(newState(Protos::GUI::State)), this, SLOT(onNewState(Protos::GUI::State)));
 }
 

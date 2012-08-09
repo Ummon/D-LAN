@@ -310,7 +310,7 @@ void DownloadsTreeModel::onNewState(const Protos::GUI::State& state)
    {
       const Protos::GUI::State::Download& download = state.download(activeDownloadIndices[i]);
 
-      // This model do not show directories, maybe we should...
+      // This model do not show directories, maybe we should . . .
       if (download.local_entry().type() == Protos::Common::Entry::DIR)
          continue;
 

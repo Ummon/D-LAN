@@ -92,12 +92,12 @@ QList<File*> Directory::restoreFromFileCache(const Protos::FileCache::Hashes::Di
 
    if (Common::ProtoHelper::getStr(dir, &Protos::FileCache::Hashes_Dir::name) == this->getName())
    {
-      // Sub directories..
+      // Sub directories . . .
       for (int i = 0; i < dir.dir_size(); i++)
          for (QLinkedListIterator<Directory*> d(this->subDirs.getList()); d.hasNext();)
             ret << d.next()->restoreFromFileCache(dir.dir(i));
 
-      // .. And files.
+      // . . . And files.
       QLinkedList<File*> filesNotInDir = this->files.getList();
       for (int i = 0; i < dir.file_size(); i++)
          for (QLinkedListIterator<File*> j(this->files.getList()); j.hasNext();)

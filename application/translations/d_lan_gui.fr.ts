@@ -85,7 +85,7 @@
 <context>
     <name>GUI::CheckBoxList</name>
     <message>
-        <location filename="../GUI/CheckBoxList.cpp" line="+100"/>
+        <location filename="../GUI/CheckBoxList.cpp" line="+118"/>
         <source>&lt;Nothing&gt;</source>
         <translation>&lt;Aucun&gt;</translation>
     </message>
@@ -148,8 +148,12 @@
     </message>
     <message>
         <location line="+11"/>
+        <source>Download selected items to . . .</source>
+        <translation>Télécharger les éléments dans...</translation>
+    </message>
+    <message>
         <source>Download selected items to ...</source>
-        <translation>Télécharger les éléments dans ...</translation>
+        <translation type="obsolete">Télécharger les éléments dans ...</translation>
     </message>
 </context>
 <context>
@@ -505,18 +509,30 @@
     </message>
     <message>
         <location line="+5"/>
-        <source>loading cache..</source>
-        <translation>chargement du cache..</translation>
+        <source>loading cache . . .</source>
+        <translation>chargement du cache...</translation>
     </message>
     <message>
         <location line="+5"/>
-        <source>scanning in progress..</source>
-        <translation>Parcours des dossiers en cours..</translation>
+        <source>scanning in progress . . .</source>
+        <translation>Parcours des dossiers en cours...</translation>
     </message>
     <message>
         <location line="+4"/>
+        <source>hashing in progress . . .</source>
+        <translation>Calcul des empreintes en cours...</translation>
+    </message>
+    <message>
+        <source>loading cache..</source>
+        <translation type="obsolete">chargement du cache..</translation>
+    </message>
+    <message>
+        <source>scanning in progress..</source>
+        <translation type="obsolete">Parcours des dossiers en cours..</translation>
+    </message>
+    <message>
         <source>hashing in progress..</source>
-        <translation>Calcul des empreintes en cours..</translation>
+        <translation type="obsolete">Calcul des empreintes en cours..</translation>
     </message>
     <message>
         <location line="+5"/>
