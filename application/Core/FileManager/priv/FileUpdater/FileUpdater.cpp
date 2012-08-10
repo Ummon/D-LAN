@@ -460,6 +460,7 @@ void FileUpdater::scan(Directory* dir, bool addUnfinished)
          if (entry.isDir())
          {
             Directory* dir = currentDir->createSubDir(entry.fileName());
+            dir->setScanned(false);
             dirsToVisit << dir;
 
             currentSubDirs.removeOne(dir);
@@ -520,7 +521,7 @@ void FileUpdater::scan(Directory* dir, bool addUnfinished)
       foreach (Directory* d, currentSubDirs)
          this->deleteEntry(d);
 
-      currentDir->scanningFinished();
+      currentDir->setScanned(true);
    }
 
    this->scanningMutex.lock();

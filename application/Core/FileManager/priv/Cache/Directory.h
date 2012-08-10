@@ -88,7 +88,7 @@ namespace FM
       void add(Directory* dir);
 
       bool isScanned() const;
-      void scanningFinished();
+      void setScanned(bool value);
 
       void fileNameChanged(File* file);
 
