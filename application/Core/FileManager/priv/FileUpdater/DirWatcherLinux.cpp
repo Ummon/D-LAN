@@ -119,14 +119,15 @@ void DirWatcherLinux::rmDir(const QString& path)
    }
 }
 
-/**   return true;
+/**
   * Return the full path of the file notified by an inotify event.
   * @param path the full path
   */
-QString DirWatcherLinux::getEventPath(inotify_event *event) {
+QString DirWatcherLinux::getEventPath(inotify_event* event)
+{
    QMutexLocker locker(&this->mutex);
 
-   QString p = dirs.value(event->wd)->getFullPath();
+   QString p = this->dirs.value(event->wd)->getFullPath();
    if (event->len)
       p.append('/').append(event->name);
 
@@ -159,7 +160,6 @@ const QList<WatcherEvent> DirWatcherLinux::waitEvent(int timeout, QList<WaitCond
 
    fd_set fds;
    int fd_max;
-   char buf[BUF_LEN];
    struct timeval time;
 
    // Convert timeout in timeval.
@@ -203,51 +203,56 @@ const QList<WatcherEvent> DirWatcherLinux::waitEvent(int timeout, QList<WaitCond
    }
 
    // Test if select is released by a WaitCondition.
-   bool wsReleased = false;
    for (int i = 0; i < ws.size(); i++)
    {
       int wcfd = dynamic_cast<WaitConditionLinux*>(ws[i])->getFd();
-      if(FD_ISSET(wcfd, &fds))
+      if (FD_ISSET(wcfd, &fds))
       {
          L_DEBU(QString("DirWatcherLinux::waitEvent : exit select by WaitCondition release (fd=%1)").arg(wcfd));
          static char dummy[4096];
          while (read(wcfd, dummy, sizeof(dummy)) > 0);
-         wsReleased = true;
+         return QList<WatcherEvent>();
       }
    }
-   if (wsReleased) return QList<WatcherEvent>();
 
    L_DEBU("DirWatcherLinux::waitEvent : exit select by inotify");
+
+   char buf[BUF_LEN];
    int len = read(this->fileDescriptor, buf, BUF_LEN);
    if (len < 0)
    {
       if (errno == EINTR)
-         /* Need to reissue system call */
+         // Need to reissue system call.
          return QList<WatcherEvent>();
       else
          L_ERRO(QString("DirWatcherLinux::waitEvent : read inotify event failed."));
    }
    else if (!len)
-         L_ERRO(QString("DirWatcherLinux::waitEvent : BUF_LEN to small ?"));
+   {
+      L_ERRO(QString("DirWatcherLinux::waitEvent : BUF_LEN to small?"));
+   }
 
-   int i = 0;
    QList<WatcherEvent> events;
    QList<inotify_event*> movedFromEvents;
-   while (i < len)
-   {
-      struct inotify_event *event;
 
-      event = (struct inotify_event *) &buf[i];
+   for (int i = 0; i < len;)
+   {
+      struct inotify_event* event = (struct inotify_event*)&buf[i];
+      i += EVENT_SIZE + event->len;
+
+      if (!this->dirs.contains(event->wd))
+         continue;
 
       if (event->mask & IN_MOVED_FROM)
       {
-         L_DEBU(QString("inotify event : IN_MOVED_FROM (path=%1)").arg(getEventPath(event)));
+         L_DEBU(QString("inotify event : IN_MOVED_FROM (path=%1)").arg(this->getEventPath(event)));
          // Add the event to movedToEvents.
          movedFromEvents << event;
       }
+
       if (event->mask & IN_MOVED_TO)
       {
-         L_DEBU(QString("inotify event : IN_MOVED_TO (path=%1)").arg(getEventPath(event)));
+         L_DEBU(QString("inotify event : IN_MOVED_TO (path=%1)").arg(this->getEventPath(event)));
          // Check list of IN_MOVED_FROM events.
          for (QMutableListIterator<inotify_event*> i(movedFromEvents); i.hasNext();)
          {
@@ -255,7 +260,7 @@ const QList<WatcherEvent> DirWatcherLinux::waitEvent(int timeout, QList<WaitCond
             if (fromEvent->cookie == event->cookie)
             {
                // If an IN_MOVES_FROM event is linked, create a MOVE WatcherEvent.
-               events << WatcherEvent(WatcherEvent::MOVE, getEventPath(fromEvent), getEventPath(event));
+               events << WatcherEvent(WatcherEvent::MOVE, getEventPath(fromEvent), this->getEventPath(event));
 
                // If moved object is a directory, apply change to the local directory index
                if (event->mask & IN_ISDIR)
@@ -275,7 +280,9 @@ const QList<WatcherEvent> DirWatcherLinux::waitEvent(int timeout, QList<WaitCond
                   if (movedDir->parent->getFullPath() != toDir->getFullPath())
                      movedDir->move(toDir);
                }
+
                i.remove();
+
                // exit the IN_MOVED_TO process
                goto end_moved_to;
             }
@@ -283,7 +290,8 @@ const QList<WatcherEvent> DirWatcherLinux::waitEvent(int timeout, QList<WaitCond
          // if no IN_MOVED_FROM event is linked, create a NEW WatcherEvent.
          // IN_MOVED_FROM event without IN_MOVE_TO event have to be processed at
          // the end of the loop, when every IN_MOVED_TO event is processed.
-         events << WatcherEvent(WatcherEvent::NEW, getEventPath(event));
+         events << WatcherEvent(WatcherEvent::NEW, this->getEventPath(event));
+
          if (event->mask & IN_ISDIR)
             try
             {
@@ -291,18 +299,21 @@ const QList<WatcherEvent> DirWatcherLinux::waitEvent(int timeout, QList<WaitCond
             }
             catch (UnableToWatchException&) {}
       }
+
       end_moved_to:
+
       if (event->mask & IN_DELETE)
       {
-         L_DEBU(QString("inotify event : IN_DELETE (path=%1)").arg(getEventPath(event)));
-         events << WatcherEvent(WatcherEvent::DELETED, getEventPath(event));
+         L_DEBU(QString("inotify event : IN_DELETE (path=%1)").arg(this->getEventPath(event)));
+         events << WatcherEvent(WatcherEvent::DELETED, this->getEventPath(event));
          if (event->mask & IN_ISDIR)
             delete this->dirs.value(event->wd)->childs.value(event->name);
       }
+
       if (event->mask & IN_CREATE)
       {
-         L_DEBU(QString("inotify event : IN_CREATE (path=%1)").arg(getEventPath(event)));
-         events << WatcherEvent(WatcherEvent::NEW, getEventPath(event));
+         L_DEBU(QString("inotify event : IN_CREATE (path=%1)").arg(this->getEventPath(event)));
+         events << WatcherEvent(WatcherEvent::NEW, this->getEventPath(event));
          if (event->mask & IN_ISDIR)
             try
             {
@@ -310,28 +321,28 @@ const QList<WatcherEvent> DirWatcherLinux::waitEvent(int timeout, QList<WaitCond
             }
             catch (UnableToWatchException&) {}
       }
+
       if (event->mask & IN_CLOSE_WRITE)
       {
-         L_DEBU(QString("inotify event : IN_CLOSE_WRITE (path=%1)").arg(getEventPath(event)));
-         events << WatcherEvent(WatcherEvent::CONTENT_CHANGED, getEventPath(event));
-      }
-      if (event->mask & IN_DELETE_SELF || event->mask & IN_MOVE_SELF)
-      {
-         L_DEBU(QString("inotify event : IN_DELETE_SELF || IN_MOVE_SELF (path=%1)").arg(getEventPath(event)));
-         // processed only for ROOT directory
-         events << WatcherEvent(WatcherEvent::DELETED, getEventPath(event));
-         dirs.value(event->wd)->dwl->rmDir(getEventPath(event));
+         L_DEBU(QString("inotify event : IN_CLOSE_WRITE (path=%1)").arg(this->getEventPath(event)));
+         events << WatcherEvent(WatcherEvent::CONTENT_CHANGED, this->getEventPath(event));
       }
 
-      i += EVENT_SIZE + event->len;
+      if (event->mask & IN_DELETE_SELF || event->mask & IN_MOVE_SELF)
+      {
+         L_DEBU(QString("inotify event : IN_DELETE_SELF || IN_MOVE_SELF (path=%1)").arg(this->getEventPath(event)));
+         // processed only for ROOT directory
+         events << WatcherEvent(WatcherEvent::DELETED, this->getEventPath(event));
+         dirs.value(event->wd)->dwl->rmDir(this->getEventPath(event));
+      }
    }
 
    // Cause every IN_MOVED_FROM event with a linked IN_MOVED_TO event was removed of
    // the list, it contains only alone IN_MOVED_FROM event.
    for (QMutableListIterator<struct inotify_event*> i(movedFromEvents); i.hasNext();)
    {
-      struct inotify_event *e = i.next();
-      events << WatcherEvent(WatcherEvent::DELETED, getEventPath(e));
+      struct inotify_event* e = i.next();
+      events << WatcherEvent(WatcherEvent::DELETED, this->getEventPath(e));
    }
 
    return events;
