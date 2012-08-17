@@ -123,7 +123,6 @@ void FileUpdater::rmRoot(SharedDirectory* dir, Directory* dir2)
    QMutexLocker locker(&this->mutex);
 
    // Stop the hashing to modify 'this->fileWithoutHashes'.
-   // TODO: A suspend/resume hashing methods would be more readable.
    {
       QMutexLocker locker(&this->hashingMutex);
 
@@ -460,6 +459,7 @@ void FileUpdater::scan(Directory* dir, bool addUnfinished)
          if (entry.isDir())
          {
             Directory* dir = currentDir->createSubDir(entry.fileName());
+            dir->setScanned(false);
             dirsToVisit << dir;
 
             currentSubDirs.removeOne(dir);
@@ -520,7 +520,7 @@ void FileUpdater::scan(Directory* dir, bool addUnfinished)
       foreach (Directory* d, currentSubDirs)
          this->deleteEntry(d);
 
-      currentDir->scanningFinished();
+      currentDir->setScanned(true);
    }
 
    this->scanningMutex.lock();

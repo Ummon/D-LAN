@@ -39,7 +39,7 @@ Directory::Directory(Directory* parent, const QString& name, bool createPhysical
    parent(parent),
    subDirs(&Directory::entrySortingFun),
    files(&Directory::entrySortingFun),
-   scanned(false),
+   scanned(true),
    mutex(QMutex::Recursive)
 {
    QMutexLocker locker(&this->mutex);
@@ -260,6 +260,7 @@ SharedDirectory* Directory::getRoot() const
 
 void Directory::rename(const QString& newName)
 {
+   QMutexLocker locker(&this->mutex);
    Entry::rename(newName);
    if (this->parent)
       this->parent->subdirNameChanged(this);
@@ -418,11 +419,16 @@ bool Directory::isScanned() const
    return this->scanned;
 }
 
-void Directory::scanningFinished()
+void Directory::setScanned(bool value)
 {
    QMutexLocker locker(&this->mutex);
-   this->scanned = true;
-   this->cache->onScanned(this);
+
+   if (value == this->scanned)
+      return;
+
+   this->scanned = value;
+   if (this->scanned)
+      this->cache->onScanned(this);
 }
 
 /**
