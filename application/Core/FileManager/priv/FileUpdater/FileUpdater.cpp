@@ -123,7 +123,6 @@ void FileUpdater::rmRoot(SharedDirectory* dir, Directory* dir2)
    QMutexLocker locker(&this->mutex);
 
    // Stop the hashing to modify 'this->fileWithoutHashes'.
-   // TODO: A suspend/resume hashing methods would be more readable.
    {
       QMutexLocker locker(&this->hashingMutex);
 
@@ -175,7 +174,11 @@ void FileUpdater::prioritizeAFileToHash(File* file)
          this->remainingSizeToHash += file->getSize();
       }
 
-      this->fileHasher.stop();
+      // Commmented to avoid this behavior:
+      // When a lot of unhashed tiny file are asked the hashing process will constently abort the current hashing file
+      // and will never finish it thus slow down the global hashing rate.
+      // this->fileHasher.stop();
+
       this->toStopHashing = true;
    }
    else
@@ -408,7 +411,7 @@ void FileUpdater::updateHashingProgress()
 void FileUpdater::stopHashing()
 {
    QMutexLocker lockerHashing(&this->hashingMutex);
-   L_DEBU("Stop hashing...");
+   L_DEBU("Stop hashing . . .");
 
    this->fileHasher.stop();
 
@@ -456,6 +459,7 @@ void FileUpdater::scan(Directory* dir, bool addUnfinished)
          if (entry.isDir())
          {
             Directory* dir = currentDir->createSubDir(entry.fileName());
+            dir->setScanned(false);
             dirsToVisit << dir;
 
             currentSubDirs.removeOne(dir);
@@ -515,6 +519,8 @@ void FileUpdater::scan(Directory* dir, bool addUnfinished)
 
       foreach (Directory* d, currentSubDirs)
          this->deleteEntry(d);
+
+      currentDir->setScanned(true);
    }
 
    this->scanningMutex.lock();

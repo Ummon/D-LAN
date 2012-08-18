@@ -185,7 +185,7 @@ void UDPListener::sendIMAliveMessage()
       QSharedPointer<DM::IChunkDownloader> chunkDownloader = i.next();
       IMAliveMessage.add_chunk()->set_hash(chunkDownloader->getHash().getData(), Common::Hash::HASH_SIZE);
 
-      // If we already have the chunk...
+      // If we already have the chunk . . .
       QSharedPointer<FM::IChunk> chunk = this->fileManager->getChunk(chunkDownloader->getHash());
       if (!chunk.isNull() && chunk->isComplete())
          chunkDownloader->addPeer(this->peerManager->getSelf());
@@ -482,7 +482,7 @@ Common::MessageHeader UDPListener::readDatagramToBuffer(QUdpSocket& socket, QHos
 
    if (header.getSenderID() == this->peerManager->getSelf()->getID())
    {
-      // L_WARN("We receive a datagram from ourself, skip"); // Don't care..
+      // L_WARN("We receive a datagram from ourself, skip"); // Don't care . . .
       header.setNull();
       return header;
    }

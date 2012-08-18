@@ -163,7 +163,7 @@ void PeerMessageSocket::finished(bool closeTheSocket)
 
    if (closeTheSocket)
    {
-      L_WARN("Socket forced to close..");
+      L_WARN("Socket forced to close");
       this->close();
       return;
    }
@@ -208,28 +208,80 @@ void PeerMessageSocket::nextAskedHash(Common::Hash hash)
    }
 }
 
+void PeerMessageSocket::entriesResult(const Protos::Core::GetEntriesResult::EntryResult& result)
+{
+   bool resultEmpty = true;
+   for (int i = 0; i < this->entriesResultsToReceive.count(); i++)
+   {
+      if (this->entriesResultsToReceive[i] == this->sender())
+      {
+         this->entriesResultMessage.mutable_result(i)->CopyFrom(result);
+         this->entriesResultsToReceive[i].clear();
+      }
+      else if (!this->entriesResultsToReceive[i].isNull())
+      {
+         resultEmpty = false;
+      }
+   }
+
+   if (resultEmpty)
+      this->sendEntriesResultMessage();
+}
+
 /**
-  *
+  * If one of the directories can't be browsed then we never send a respond.
   */
+void PeerMessageSocket::entriesResultTimeout()
+{
+   L_DEBU("PeerMessageSocket::entriesResultTimeout()");
+
+   bool resultEmpty = true;
+   for (int i = 0; i < this->entriesResultsToReceive.count(); i++)
+   {
+      if (this->entriesResultsToReceive[i] == this->sender())
+      {
+         this->entriesResultMessage.mutable_result(i)->set_status(Protos::Core::GetEntriesResult::EntryResult::TIMEOUT_SCANNING_IN_PROGRESS);
+         this->entriesResultsToReceive[i].clear();
+      }
+      else if (!this->entriesResultsToReceive[i].isNull())
+      {
+         resultEmpty = false;
+      }
+   }
+
+   if (resultEmpty)
+      this->sendEntriesResultMessage();
+}
+
 void PeerMessageSocket::onNewMessage(const Common::Message& message)
 {
    switch (message.getHeader().getType())
    {
    case Common::MessageHeader::CORE_GET_ENTRIES:
       {
+         if (!this->entriesResultsToReceive.isEmpty())
+            return;
+
          const Protos::Core::GetEntries& getEntries = message.getMessage<Protos::Core::GetEntries>();
 
-         Protos::Core::GetEntriesResult result;
          for (int i = 0; i < getEntries.dirs().entry_size(); i++)
-            result.add_entries()->CopyFrom(this->fileManager->getEntries(getEntries.dirs().entry(i)));
+         {
+            QSharedPointer<FM::IGetEntriesResult> entriesResult = this->fileManager->getScannedEntries(getEntries.dirs().entry(i));
+            connect(entriesResult.data(), SIGNAL(result(const Protos::Core::GetEntriesResult::EntryResult&)), this, SLOT(entriesResult(const Protos::Core::GetEntriesResult::EntryResult&)), Qt::DirectConnection);
+            connect(entriesResult.data(), SIGNAL(timeout()), this, SLOT(entriesResultTimeout()), Qt::DirectConnection);
+            this->entriesResultsToReceive << entriesResult;
+            this->entriesResultMessage.add_result();
+         }
 
          // Add the root directories if asked.
          if (getEntries.dirs().entry_size() == 0 || getEntries.get_roots())
-            result.add_entries()->CopyFrom(this->fileManager->getEntries());
+            this->entriesResultMessage.add_result()->mutable_entries()->CopyFrom(this->fileManager->getEntries());
 
-         this->send(Common::MessageHeader::CORE_GET_ENTRIES_RESULT, result);
-
-         this->finished();
+         if (this->entriesResultsToReceive.isEmpty())
+            this->sendEntriesResultMessage();
+         else
+            foreach (QSharedPointer<FM::IGetEntriesResult> entriesResult, this->entriesResultsToReceive)
+               entriesResult->start();
       }
       break;
 
@@ -328,4 +380,12 @@ void PeerMessageSocket::initUnactiveTimer()
    this->inactiveTimer.setInterval(SETTINGS.get<quint32>("idle_socket_timeout"));
    connect(&this->inactiveTimer, SIGNAL(timeout()), this, SLOT(close()));
    this->inactiveTimer.start();
+}
+
+void PeerMessageSocket::sendEntriesResultMessage()
+{
+   this->send(Common::MessageHeader::CORE_GET_ENTRIES_RESULT, this->entriesResultMessage);
+   this->entriesResultMessage.Clear();
+   this->entriesResultsToReceive.clear();
+   this->finished();
 }

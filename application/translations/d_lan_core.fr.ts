@@ -48,6 +48,13 @@
     </message>
 </context>
 <context>
+    <name>FM::FileHasher</name>
+    <message>
+        <source>Computing the hashes for %1 . . .</source>
+        <translation>Calcul des empreintes pour %1...</translation>
+    </message>
+</context>
+<context>
     <name>PM::PeerManager</name>
     <message>
         <source>Our current ID: %1</source>

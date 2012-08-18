@@ -16,40 +16,36 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef TREETESTS_COMMON_H
-#define TREETESTS_COMMON_H
+#ifndef FILEMANAGER_GET_ENTRIES_RESULT_H
+#define FILEMANAGER_GET_ENTRIES_RESULT_H
 
-#include <QTest>
+#include <QObject>
 
-#include <Tree.h>
+#include <Common/Uncopyable.h>
 
-class IntTree : public Common::Tree<int, IntTree>
+#include <IGetEntriesResult.h>
+#include <priv/Cache/Cache.h>
+#include <priv/Cache/Directory.h>
+
+namespace FM
 {
-public:
-   IntTree() {}
-   IntTree(int v, IntTree* parent) : Common::Tree<int, IntTree>(v, parent) {}
-};
+   class GetEntriesResult : public IGetEntriesResult, Common::Uncopyable
+   {
+      Q_OBJECT
+   public:
+      GetEntriesResult(Directory* dir);
+      void start();
 
-class TreeTests : public QObject
-{
-   Q_OBJECT
-public:
-   TreeTests();
+   private slots:
+      void directoryScanned(Directory* dir);
+      void sendResult();
 
-private slots:
-   void initTestCase();
-   void insertElements();
-   void retrieveElements();
-   void iterateBreathFirst();
-   void iterateDepthFirst();
-   void iterateReverseDepthFirst();
-   void removeElements();
+   private:
+      void buildResult();
 
-private:
-   static void testElementsAgainstList(const QList<int>& expected, IntTree* tree, bool withRoot);
-
-private:
-   IntTree tree;
-};
+      Protos::Core::GetEntriesResult::EntryResult res;
+      Directory* dir;
+   };
+}
 
 #endif

@@ -220,7 +220,7 @@ const QList<WatcherEvent> DirWatcherWin::waitEvent(int timeout, QList<WaitCondit
          if (!notifyInformation->NextEntryOffset)
             break;
 
-         // The next notify information data is given in the current notify information..
+         // The next notify information data is given in the current notify information . . .
          notifyInformation = (FILE_NOTIFY_INFORMATION*)((LPBYTE)notifyInformation + notifyInformation->NextEntryOffset);
       }
 

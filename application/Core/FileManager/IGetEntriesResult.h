@@ -16,40 +16,29 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef TREETESTS_COMMON_H
-#define TREETESTS_COMMON_H
+#ifndef FILEMANAGER_IGET_ENTRIES_RESULT_H
+#define FILEMANAGER_IGET_ENTRIES_RESULT_H
 
-#include <QTest>
+#include <QObject>
 
-#include <Tree.h>
+#include <Protos/core_protocol.pb.h>
 
-class IntTree : public Common::Tree<int, IntTree>
+#include <Common/Timeoutable.h>
+
+namespace FM
 {
-public:
-   IntTree() {}
-   IntTree(int v, IntTree* parent) : Common::Tree<int, IntTree>(v, parent) {}
-};
+   class IGetEntriesResult : public Common::Timeoutable
+   {
+      Q_OBJECT
+   protected:
+      IGetEntriesResult(int time) : Common::Timeoutable(time) {}
 
-class TreeTests : public QObject
-{
-   Q_OBJECT
-public:
-   TreeTests();
+   public:
+      virtual ~IGetEntriesResult() {}
+      virtual void start() = 0;
 
-private slots:
-   void initTestCase();
-   void insertElements();
-   void retrieveElements();
-   void iterateBreathFirst();
-   void iterateDepthFirst();
-   void iterateReverseDepthFirst();
-   void removeElements();
-
-private:
-   static void testElementsAgainstList(const QList<int>& expected, IntTree* tree, bool withRoot);
-
-private:
-   IntTree tree;
-};
-
+   signals:
+      void result(const Protos::Core::GetEntriesResult::EntryResult&);
+   };
+}
 #endif

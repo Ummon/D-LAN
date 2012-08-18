@@ -35,6 +35,7 @@ namespace FM
 {
    class IChunk;
    class IGetHashesResult;
+   class IGetEntriesResult;
 
    /**
      * The file manager controls all shared directories and files. It offers these fonctions:
@@ -113,6 +114,8 @@ namespace FM
         * Method is non-blocking, when the hashes are ready a signal will be emited by the IGetHashesResult object.
         */
       virtual QSharedPointer<IGetHashesResult> getHashes(const Protos::Common::Entry& file) = 0;
+
+      virtual QSharedPointer<IGetEntriesResult> getScannedEntries(const Protos::Common::Entry& dir) = 0;
 
       /**
         * Returns the directories and files contained in the given directory.

@@ -194,7 +194,7 @@ QList<IDownload*> DownloadManager::getDownloads() const
 {
    QList<IDownload*> listDownloads;
 
-   // A bit heavy...
+   // A bit heavy . . .
    listDownloads.reserve(this->downloadQueue.size());
    for (int i = 0; i < this->downloadQueue.size(); i++)
    {
@@ -354,7 +354,7 @@ void DownloadManager::peerNoLongerDownloadingChunk(PM::IPeer* peer)
   */
 void DownloadManager::scanTheQueue()
 {
-   L_DEBU("Scanning the queue..");
+   L_DEBU("Scanning the queue . . .");
 
    int numberOfDownloadThreadRunningCopy = this->numberOfDownloadThreadRunning;
 

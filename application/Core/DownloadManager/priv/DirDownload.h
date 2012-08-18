@@ -60,6 +60,7 @@ namespace DM
       void newEntries(const Protos::Common::Entries& entries);
 
    private slots:
+      void retryToGetEntries();
       void result(const Protos::Core::GetEntriesResult& entries);
       void resultTimeout();
 

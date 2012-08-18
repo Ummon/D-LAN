@@ -19,6 +19,9 @@
 #include <Common/Timeoutable.h>
 using namespace Common;
 
+/**
+  * @param time [ms]
+  */
 Timeoutable::Timeoutable(int time) :
    timeouted(false)
 {

@@ -111,6 +111,8 @@ File::~File()
    this->cache->getFilePool().release(this->fileInReadMode, true);
 
    L_DEBU(QString("File deleted : %1").arg(this->getFullPath()));
+
+   QMutexLocker locker(&this->mutex); // We wait that all the current access to this file are finished.
 }
 
 FileForHasher* File::asFileForHasher()
@@ -324,7 +326,7 @@ void File::newDataReaderCreated()
 
 /**
   * 'setAsComplete()' must be called before 'dataWriter' and 'dataReader' are deleted.
-  * This is a bit tricky... We should use a signal 'void fileClosed(QFile* )' in 'FilePool' connected to a slot in the 'File' class.
+  * This is a bit tricky . . . We should use a signal 'void fileClosed(QFile* )' in 'FilePool' connected to a slot in the 'File' class.
   * In this case, 'File' must inherits 'QObject' which is actually too heavy.
   */
 void File::dataWriterDeleted()

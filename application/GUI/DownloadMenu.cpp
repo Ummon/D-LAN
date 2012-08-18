@@ -68,7 +68,7 @@ void DownloadMenu::show(const QPoint& globalPosition)
 
    QAction* actionChooseAndDownload = new QAction(
       QIcon(":/icons/ressources/download.png"),
-      tr("Download selected items to ..."),
+      tr("Download selected items to . . ."),
       &menu
    );
    connect(actionChooseAndDownload, SIGNAL(triggered()), this, SIGNAL(downloadTo()));

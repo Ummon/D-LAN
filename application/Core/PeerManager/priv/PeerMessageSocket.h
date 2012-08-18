@@ -33,6 +33,7 @@
 #include <Common/Network/MessageHeader.h>
 #include <Common/Network/MessageSocket.h>
 #include <Core/FileManager/IFileManager.h>
+#include <Core/FileManager/IGetEntriesResult.h>
 #include <Core/FileManager/IChunk.h>
 
 #include <ISocket.h>
@@ -96,12 +97,19 @@ namespace PM
 
    private slots:
       void nextAskedHash(Common::Hash hash);
+      void entriesResult(const Protos::Core::GetEntriesResult::EntryResult& result);
+      void entriesResultTimeout();
 
    private:
       void onNewMessage(const Common::Message& message);
       void onNewDataReceived();
       void onDisconnected();
       void initUnactiveTimer();
+
+      void sendEntriesResultMessage();
+
+      QList<QSharedPointer<FM::IGetEntriesResult>> entriesResultsToReceive;
+      Protos::Core::GetEntriesResult entriesResultMessage;
 
       QSharedPointer<FM::IFileManager> fileManager;
 

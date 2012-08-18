@@ -45,6 +45,7 @@ namespace FM
    class Directory;
    class IChunk;
    class IGetHashesResult;
+   class IGetEntriesResult;
 
    class FileManager : public IFileManager, Common::Uncopyable
    {
@@ -64,6 +65,7 @@ namespace FM
       void newDirectory(Protos::Common::Entry& entry);
       QSharedPointer<IGetHashesResult> getHashes(const Protos::Common::Entry& file);
 
+      QSharedPointer<IGetEntriesResult> getScannedEntries(const Protos::Common::Entry& dir);
       Protos::Common::Entries getEntries(const Protos::Common::Entry& dir);
       Protos::Common::Entries getEntries();
 

@@ -98,6 +98,11 @@ void SharedDirectory::init()
 SharedDirectory::~SharedDirectory()
 {
    L_DEBU(QString("SharedDirectory deleted : %1").arg(this->getFullPath()));
+
+   // The question is: why we don't let '~Directory' destroy its sub directories?
+   // This is because a concurrent access to 'Directory::getRoot()' during a delete of a shared directory must be
+   // able to access the shared director.
+   this->deleteSubDirs();
 }
 
 void SharedDirectory::moveInto(Directory* directory)

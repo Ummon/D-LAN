@@ -281,7 +281,13 @@ void RemoteConnection::getEntriesResult(const Protos::Core::GetEntriesResult& en
    PM::IGetEntriesResult* getEntriesResult = static_cast<PM::IGetEntriesResult*>(this->sender());
 
    Protos::GUI::BrowseResult result;
-   result.mutable_entries()->MergeFrom(entries.entries());
+   for (int i = 0; i < entries.result_size(); i++)
+   {
+      Protos::Common::Entries* entriesResult = result.add_entries();
+      if (entries.result(i).has_entries())
+         entriesResult->CopyFrom(entries.result(i).entries());
+   }
+
    result.set_tag(getEntriesResult->property("tag").toULongLong());
    this->send(Common::MessageHeader::GUI_BROWSE_RESULT, result);
 

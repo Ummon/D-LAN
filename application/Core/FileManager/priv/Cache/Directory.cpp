@@ -35,7 +35,12 @@ using namespace FM;
   * @exception UnableToCreateNewDirException (may be thrown only if 'createPhysically' is true).
   */
 Directory::Directory(Directory* parent, const QString& name, bool createPhysically) :
-   Entry(parent->cache, name), parent(parent), subDirs(&Directory::entrySortingFun), files(&Directory::entrySortingFun), mutex(QMutex::Recursive)
+   Entry(parent->cache, name),
+   parent(parent),
+   subDirs(&Directory::entrySortingFun),
+   files(&Directory::entrySortingFun),
+   scanned(true),
+   mutex(QMutex::Recursive)
 {
    QMutexLocker locker(&this->mutex);
    L_DEBU(QString("New Directory : %1, createPhysically = %2").arg(this->getFullPath()).arg(createPhysically));
@@ -59,13 +64,13 @@ Directory::Directory(Cache* cache, const QString& name) :
 }
 
 Directory::~Directory()
-{
+{   
+   this->deleteSubDirs();
+
    QMutexLocker locker(&this->mutex);
 
    foreach (File* f, this->files.getList())
       delete f;
-   foreach (Directory* d, this->subDirs.getList())
-      delete d;
 
    if (this->parent)
       this->parent->subDirDeleted(this);
@@ -87,12 +92,12 @@ QList<File*> Directory::restoreFromFileCache(const Protos::FileCache::Hashes::Di
 
    if (Common::ProtoHelper::getStr(dir, &Protos::FileCache::Hashes_Dir::name) == this->getName())
    {
-      // Sub directories..
+      // Sub directories . . .
       for (int i = 0; i < dir.dir_size(); i++)
          for (QLinkedListIterator<Directory*> d(this->subDirs.getList()); d.hasNext();)
             ret << d.next()->restoreFromFileCache(dir.dir(i));
 
-      // .. And files.
+      // . . . And files.
       QLinkedList<File*> filesNotInDir = this->files.getList();
       for (int i = 0; i < dir.file_size(); i++)
          for (QLinkedListIterator<File*> j(this->files.getList()); j.hasNext();)
@@ -249,11 +254,13 @@ QString Directory::getFullPath() const
 
 SharedDirectory* Directory::getRoot() const
 {
+   QMutexLocker locker(&this->mutex);
    return this->parent->getRoot(); // A directory MUST have a parent.
 }
 
 void Directory::rename(const QString& newName)
 {
+   QMutexLocker locker(&this->mutex);
    Entry::rename(newName);
    if (this->parent)
       this->parent->subdirNameChanged(this);
@@ -406,13 +413,22 @@ void Directory::add(Directory* dir)
    this->subDirs.insert(dir);
 }
 
-/**
-  *
-  */
-void Directory::subdirNameChanged(Directory* dir)
+bool Directory::isScanned() const
 {
    QMutexLocker locker(&this->mutex);
-   this->subDirs.itemChanged(dir);
+   return this->scanned;
+}
+
+void Directory::setScanned(bool value)
+{
+   QMutexLocker locker(&this->mutex);
+
+   if (value == this->scanned)
+      return;
+
+   this->scanned = value;
+   if (this->scanned)
+      this->cache->onScanned(this);
 }
 
 /**
@@ -422,6 +438,18 @@ void Directory::fileNameChanged(File* file)
 {
    QMutexLocker locker(&this->mutex);
    this->files.itemChanged(file);
+}
+
+void Directory::deleteSubDirs()
+{
+   foreach (Directory* d, this->subDirs.getList())
+      delete d;
+}
+
+void Directory::subdirNameChanged(Directory* dir)
+{
+   QMutexLocker locker(&this->mutex);
+   this->subDirs.itemChanged(dir);
 }
 
 /**

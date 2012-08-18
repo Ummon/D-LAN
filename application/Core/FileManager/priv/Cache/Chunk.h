@@ -62,6 +62,7 @@ namespace FM
 
       void removeItsIncompleteFile();
       bool populateEntry(Protos::Common::Entry* entry) const;
+
       QString getFilePath() const;
 
       QSharedPointer<IDataReader> getDataReader();

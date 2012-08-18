@@ -24,6 +24,7 @@ using namespace DM;
 #include <Core/FileManager/Exceptions.h>
 
 #include <priv/Log.h>
+#include <priv/Constants.h>
 
 /**
   * @class DM::DirDownload
@@ -72,7 +73,7 @@ void DirDownload::start()
   */
 bool DirDownload::retrieveEntries()
 {
-   if (!this->hasAValidPeerSource() || this->isStatusErroneous() || this->status == DELETED || !this->occupiedPeersAskingForEntries.setPeerAsOccupied(this->peerSource))
+   if (!this->hasAValidPeerSource() || this->isStatusErroneous() || this->status == ENTRY_NOT_FOUND || this->status == DELETED || !this->occupiedPeersAskingForEntries.setPeerAsOccupied(this->peerSource))
       return false;
 
    Protos::Core::GetEntries getEntries;
@@ -98,29 +99,62 @@ bool DirDownload::updateStatus()
    return false;
 }
 
+void DirDownload::retryToGetEntries()
+{
+   this->setStatus(QUEUED);
+   this->retrieveEntries();
+}
+
 void DirDownload::result(const Protos::Core::GetEntriesResult& entries)
 {
-   Protos::Common::Entries entriesCopy;
-
    // We asked for one directory, we shouldn't have zero result.
-   if (entries.entries_size() > 0)
+   if (entries.result_size() > 0 && entries.result(0).status() == Protos::Core::GetEntriesResult::EntryResult::OK)
    {
-      // We need to specify the shared directory for each entry.
-      entriesCopy.CopyFrom(entries.entries(0)); // We take the first one which should be the only set of entries.
-      for (int i = 0; i < entriesCopy.entry_size(); i++)
-         entriesCopy.mutable_entry(i)->mutable_shared_dir()->CopyFrom(this->remoteEntry.shared_dir());
+      Protos::Common::Entries entriesCopy;
+
+      if (entries.result(0).has_entries())
+      {
+         entriesCopy.CopyFrom(entries.result(0).entries());
+         // We need to specify the shared directory for each entry.
+         for (int i = 0; i < entriesCopy.entry_size(); i++)
+            entriesCopy.mutable_entry(i)->mutable_shared_dir()->CopyFrom(this->remoteEntry.shared_dir());
+      }
+
+      this->getEntriesResult.clear();
+      emit newEntries(entriesCopy);
    }
+   else
+   {
+      if (entries.result_size() == 0 || entries.result(0).status() == Protos::Core::GetEntriesResult::EntryResult::DONT_HAVE)
+      {
+         L_DEBU("Unable to get the entries: ENTRY_NOT_FOUND");
+         this->setStatus(ENTRY_NOT_FOUND);
+      }
+      else if (entries.result(0).status() == Protos::Core::GetEntriesResult::EntryResult::TIMEOUT_SCANNING_IN_PROGRESS)
+      {
+         L_DEBU("Unable to get the entries: DIRECTORY_SCANNING_IN_PROGRESS");
+         this->setStatus(DIRECTORY_SCANNING_IN_PROGRESS);
+      }
+      else
+      {
+         L_DEBU("Unable to get the entries: UNABLE_TO_GET_ENTRIES");
+         this->setStatus(UNABLE_TO_GET_ENTRIES);
+      }
 
-   this->getEntriesResult.clear();
-
-   emit newEntries(entriesCopy);
+      this->getEntriesResult.clear();
+      this->occupiedPeersAskingForEntries.setPeerAsFree(this->peerSource);
+      QTimer::singleShot(RETRY_GET_ENTRIES_PERIOD, this, SLOT(retryToGetEntries()));
+   }
 }
 
 void DirDownload::resultTimeout()
 {
    L_DEBU("Unable to retrieve the entries : timeout");
+   this->setStatus(UNABLE_TO_GET_ENTRIES);
+
    this->getEntriesResult.clear();
    this->occupiedPeersAskingForEntries.setPeerAsFree(this->peerSource);
+   QTimer::singleShot(RETRY_GET_ENTRIES_PERIOD, this, SLOT(retryToGetEntries()));
 }
 
 void DirDownload::createDirectory()

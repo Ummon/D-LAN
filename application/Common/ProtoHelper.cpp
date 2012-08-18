@@ -32,6 +32,11 @@ void ProtoHelper::setLang(Protos::Common::Language& langMess, const QLocale& loc
       ProtoHelper::setStr(langMess, &Protos::Common::Language::set_lang, langCountry[0]);
       ProtoHelper::setStr(langMess, &Protos::Common::Language::set_country, langCountry[1]);
    }
+   else
+   {
+      ProtoHelper::setStr(langMess, &Protos::Common::Language::set_lang, "en");
+      ProtoHelper::setStr(langMess, &Protos::Common::Language::set_country, "US");
+   }
 }
 
 QLocale ProtoHelper::getLang(const Protos::Common::Language& langMess)
