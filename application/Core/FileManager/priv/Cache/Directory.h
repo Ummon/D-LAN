@@ -101,8 +101,8 @@ namespace FM
 
       Directory* parent;
 
-      SortedList<Directory*> subDirs; ///< Sorted by name.
-      SortedList<File*> files; ///< Sorted by name.
+      Common::SortedList<Directory*> subDirs; ///< Sorted by name.
+      Common::SortedList<File*> files; ///< Sorted by name.
 
       mutable QMutex mutex;
    };
