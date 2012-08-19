@@ -40,7 +40,10 @@ namespace GUI
       static const int MAX_NICK_LENGTH = 12;
 
    public:
-      ChatModel(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel);
+      ChatModel(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel, const QString& roomName = QString());
+
+      bool isMainChat() const;
+      QString getRoomName() const;
 
       QString getLineStr(int row) const;
       bool isMessageIsOurs(int row) const;
@@ -73,6 +76,7 @@ namespace GUI
       QSharedPointer<RCC::ICoreConnection> coreConnection;
       PeerListModel& peerListModel;
 
+      QString roomName; // Empty for main chat.
       QList<Message> messages; // Always sorted by date-time.
    };
 

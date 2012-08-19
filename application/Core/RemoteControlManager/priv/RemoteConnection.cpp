@@ -654,6 +654,22 @@ void RemoteConnection::onNewMessage(const Common::Message& message)
       }
       break;
 
+   case Common::MessageHeader::GUI_JOIN_ROOM:
+      {
+         const Protos::GUI::JoinRoom joinRoomMessage = message.getMessage<Protos::GUI::JoinRoom>();
+
+         this->chatSystem->joinRoom(Common::ProtoHelper::getStr(joinRoomMessage, &Protos::GUI::JoinRoom::name));
+      }
+      break;
+
+   case Common::MessageHeader::GUI_LEAVE_ROOM:
+      {
+         const Protos::GUI::LeaveRoom leaveRoomMessage = message.getMessage<Protos::GUI::LeaveRoom>();
+
+         this->chatSystem->leaveRoom(Common::ProtoHelper::getStr(leaveRoomMessage, &Protos::GUI::LeaveRoom::name));
+      }
+      break;
+
    case Common::MessageHeader::GUI_REFRESH:
       this->refresh();
       break;

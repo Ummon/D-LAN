@@ -89,6 +89,8 @@ namespace GUI
       void colorizeSelectedPeer();
       void uncolorizeSelectedPeer();
 
+      void joinRoom();
+
       void removeWidget(QWidget* widget);
 
       void logScrollChanged(int value);
@@ -142,10 +144,15 @@ namespace GUI
       void removeWidgetUploads();
 
       WidgetBrowse* addWidgetBrowse(const Common::Hash& peerID);
-      private slots: WidgetBrowse* addWidgetBrowse(const Common::Hash& peerID, const Protos::Common::Entry& remoteEntry);
+
+   private slots:
+      WidgetBrowse* addWidgetBrowse(const Common::Hash& peerID, const Protos::Common::Entry& remoteEntry);
 
    private:
       WidgetSearch* addWidgetSearch(const QString& term, bool searchInOwnFiles = false);
+
+      WidgetChat* addWidgetChatRoom(const QString& roomName);
+
       void removeAllWidgets();
 
       Ui::MainWindow* ui;
@@ -158,6 +165,7 @@ namespace GUI
       WidgetUploads* widgetUploads;
       QList<WidgetBrowse*> widgetsBrowse;
       QList<WidgetSearch*> widgetsSearch;
+      QList<WidgetChat*> widgetsChatRoom;
 
       // This widget is shown on the tab of the downloads page. It is visible only after D-LAN has started and during the loading
       // of the cache (before the downloads are loaded).

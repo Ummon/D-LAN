@@ -75,7 +75,7 @@ WidgetBrowse::WidgetBrowse(QSharedPointer<RCC::ICoreConnection> coreConnection, 
 
    connect(&this->browseModel, SIGNAL(loadingResultFinished()), this, SLOT(tryToReachEntryToBrowse()));
 
-   this->setWindowTitle(QString("[%1]").arg(peerListModel.getNick(this->peerID)));
+   this->setWindowTitle(peerListModel.getNick(this->peerID));
 }
 
 WidgetBrowse::~WidgetBrowse()

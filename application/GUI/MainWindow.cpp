@@ -107,6 +107,8 @@ MainWindow::MainWindow(QSharedPointer<RCC::ICoreConnection> coreConnection, QWid
    connect(this->ui->tblPeers, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(displayContextMenuPeers(const QPoint&)));
    connect(this->ui->tblPeers, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(browse()));
 
+   connect(this->ui->butJoinRoom, SIGNAL(clicked()), this, SLOT(joinRoom()));
+
    this->ui->tblLog->setModel(&this->logModel);
 
    this->ui->tblLog->setItemDelegate(&this->logDelegate);
@@ -470,18 +472,28 @@ void MainWindow::uncolorizeSelectedPeer()
    this->ui->tblPeers->clearSelection();
 }
 
+void MainWindow::joinRoom()
+{
+   QString roomName = this->ui->txtRoomName->text().trimmed();
+
+   if (!roomName.isEmpty())
+   {
+      this->coreConnection->joinRoom(roomName);
+      this->addWidgetChatRoom(roomName);
+   }
+}
+
 /**
   * The widget can be a WidgetBrowse or a WidgetSearch.
   */
 void MainWindow::removeWidget(QWidget* widget)
 {
-   WidgetBrowse* widgetBrowse;
-   if (widgetBrowse = dynamic_cast<WidgetBrowse*>(widget))
+   if (WidgetBrowse* widgetBrowse = dynamic_cast<WidgetBrowse*>(widget))
       this->widgetsBrowse.removeOne(widgetBrowse);
-
-   WidgetSearch* widgetSearch;
-   if (widgetSearch = dynamic_cast<WidgetSearch*>(widget))
+   else if (WidgetSearch* widgetSearch = dynamic_cast<WidgetSearch*>(widget))
       this->widgetsSearch.removeOne(widgetSearch);
+   else if (WidgetChat* widgetChat = dynamic_cast<WidgetChat*>(widget))
+      this->widgetsChatRoom.removeOne(widgetChat);
 
    this->removeMdiSubWindow(dynamic_cast<QMdiSubWindow*>(widget->parent()));
 }
@@ -746,6 +758,10 @@ void MainWindow::setApplicationStateAsConnected()
    this->ui->txtSearch->setDisabled(false);
    this->ui->butSearch->setDisabled(false);
    this->ui->butSearchOwnFiles->setDisabled(false);
+
+   this->ui->butJoinRoom->setDisabled(false);
+   this->ui->txtRoomName->setDisabled(false);
+
    this->ui->mdiArea->setActiveSubWindow(dynamic_cast<QMdiSubWindow*>(this->widgetChat->parent()));
 }
 
@@ -756,9 +772,14 @@ void MainWindow::setApplicationStateAsDisconnected()
    this->removeWidgetDownloads();
    this->removeWidgetChat();
    this->removeAllWidgets();
+
    this->ui->txtSearch->setDisabled(true);
    this->ui->butSearch->setDisabled(true);
    this->ui->butSearchOwnFiles->setDisabled(true);
+
+   this->ui->butJoinRoom->setDisabled(true);
+   this->ui->txtRoomName->setDisabled(true);
+
    this->peerListModel.clear();
 }
 
@@ -982,6 +1003,33 @@ WidgetSearch* MainWindow::addWidgetSearch(const QString& term, bool searchInOwnF
    this->mdiAreaTabBar->setTabButton(this->mdiAreaTabBar->count() - 1, QTabBar::RightSide, closeButton);
 
    return widgetSearch;
+}
+
+WidgetChat* MainWindow::addWidgetChatRoom(const QString& roomName)
+{
+   // If the chat room is already open.
+   for (QListIterator<WidgetChat*> i(this->widgetsChatRoom); i.hasNext();)
+   {
+      WidgetChat* chatRoom = i.next();
+      if (chatRoom->getRoomName() == roomName)
+      {
+         this->ui->mdiArea->setActiveSubWindow(static_cast<QMdiSubWindow*>(chatRoom->parent()));
+         return chatRoom;
+      }
+   }
+
+   WidgetChat* widgetChat = new WidgetChat(this->coreConnection, this->peerListModel, roomName, this);
+   widgetChat->installEventFilterOnInput(this);
+   this->ui->mdiArea->addSubWindow(widgetChat, Qt::CustomizeWindowHint);
+   widgetChat->setWindowState(Qt::WindowMaximized);
+   this->widgetsChatRoom << widgetChat;
+
+   TabCloseButton* closeButton = new TabCloseButton(widgetChat);
+   closeButton->setObjectName("tabWidget");
+   connect(closeButton, SIGNAL(clicked(QWidget*)), this, SLOT(removeWidget(QWidget*)));
+   this->mdiAreaTabBar->setTabButton(this->mdiAreaTabBar->count() - 1, QTabBar::RightSide, closeButton);
+
+   return widgetChat;
 }
 
 void MainWindow::removeAllWidgets()

@@ -127,7 +127,6 @@ message State {
 
 
 /***** Events *****/
-// The messages are sorted from the oldest to the youngest.
 // Core -> GUI
 // id: 0x1011
 // Common.ChatMessages

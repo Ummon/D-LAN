@@ -1,4 +1,4 @@
-/**
+/*
   * D-LAN - A decentralized LAN file sharing software.
   * Copyright (C) 2010-2012 Greg Burri <greg.burri@gmail.com>
   *
@@ -53,8 +53,6 @@ QVariant RoomsModel::data(const QModelIndex& index, int role) const
    if (!index.isValid() || index.row() >= this->rooms.size())
       return QVariant();
 
-   //QMap<QString, Room*>::const_iterator i = this->rooms.begin() + 10;
-
    switch (role)
    {
    case Qt::DisplayRole:
@@ -75,6 +73,7 @@ QVariant RoomsModel::data(const QModelIndex& index, int role) const
 void RoomsModel::newState(const Protos::GUI::State& state)
 {
    Common::SortedArray<Room> roomsNewState;
+
    for (int i = 0; i < state.rooms_size(); i++)
    {
       const Protos::GUI::State::Room& room = state.rooms(i);
@@ -84,16 +83,42 @@ void RoomsModel::newState(const Protos::GUI::State& state)
       roomsNewState.insert(Room { Common::ProtoHelper::getStr(room, &Protos::GUI::State::Room::name), peers, room.joined() });
    }
 
-   // Merge 'roomsNewState' in 'this->rooms'.
-   // <TODO>
+   int n, o = 0; // 'new' and 'old'.
+   while (n < roomsNewState.size() || o < this->rooms.size())
+   {
+      // Add a new room.
+      if (o == this->rooms.size() || roomsNewState.getFromIndex(n) < this->rooms.getFromIndex(o))
+      {
+         this->beginInsertRows(QModelIndex(), o, o);
+         this->rooms.insert(roomsNewState.getFromIndex(n));
+         this->endInsertRows();
+      }
+      // Remove a room.
+      else if (n == roomsNewState.size() || this->rooms.getFromIndex(o) < roomsNewState.getFromIndex(n))
+      {
+         this->beginRemoveRows(QModelIndex(), o, o);
+         this->rooms.removeFromIndex(o--);
+         this->endRemoveRows();
+      }
+      // Update an existing room.
+      else
+      {
+         const Room& oldRoom = this->rooms.getFromIndex(o);
+         const Room& newRoom = roomsNewState.getFromIndex(n);
+
+         if (oldRoom.joined != newRoom.joined || oldRoom.peerIDs.size() != newRoom.peerIDs.size())
+            emit dataChanged(this->createIndex(o, 1), this->createIndex(o, 2));
+      }
+
+      if (n != roomsNewState.size())
+         n++;
+
+      if (o != this->rooms.size())
+         o++;
+   }
 }
 
 bool GUI::operator<(const RoomsModel::Room& r1, const RoomsModel::Room& r2)
 {
    return r1.name < r2.name;
-}
-
-bool GUI::operator==(const RoomsModel::Room& r1, const RoomsModel::Room& r2)
-{
-   return r1.name == r2.name;
 }

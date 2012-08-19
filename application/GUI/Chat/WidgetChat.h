@@ -48,7 +48,11 @@ namespace GUI
       Q_OBJECT
    public:
       explicit WidgetChat(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel, QWidget* parent = nullptr);
+      explicit WidgetChat(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel, const QString& roomName, QWidget* parent = nullptr);
       ~WidgetChat();
+
+      QString getRoomName() const;
+
       void installEventFilterOnInput(QObject* filterObj);
 
    private slots:
@@ -66,6 +70,8 @@ namespace GUI
       void changeEvent(QEvent* event);
 
    private:
+      void init();
+
       void onActivate();
 
       void setNewMessageState(bool newMessage);

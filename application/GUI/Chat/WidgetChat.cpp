@@ -114,40 +114,23 @@ QSize	ChatDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelInd
 WidgetChat::WidgetChat(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel, QWidget* parent) :
    WidgetDocument(parent), ui(new Ui::WidgetChat), coreConnection(coreConnection), chatModel(coreConnection, peerListModel), autoScroll(true)
 {
-   this->ui->setupUi(this);
+   this->init();
+}
 
-   this->ui->splitter->setStretchFactor(0, 1);
-   this->ui->splitter->setStretchFactor(1, 1);
-
-   this->ui->tblChat->setModel(&this->chatModel);
-   this->ui->tblChat->setItemDelegate(&this->chatDelegate);
-   this->ui->tblChat->setWordWrap(true);
-   this->ui->tblChat->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
-   this->ui->tblChat->horizontalHeader()->setVisible(false);
-   this->ui->tblChat->horizontalHeader()->setResizeMode(QHeaderView::Stretch);
-   this->ui->tblChat->verticalHeader()->setResizeMode(QHeaderView::ResizeToContents);
-   this->ui->tblChat->verticalHeader()->setVisible(false);
-   this->ui->tblChat->setSelectionBehavior(QAbstractItemView::SelectRows);
-   this->ui->tblChat->setSelectionMode(QAbstractItemView::ExtendedSelection);
-   this->ui->tblChat->setShowGrid(false);
-   this->ui->tblChat->setAutoScroll(false);
-
-   this->ui->tblChat->setEditTriggers(QAbstractItemView::AllEditTriggers);
-
-   this->ui->tblChat->setContextMenuPolicy(Qt::CustomContextMenu);
-   connect(this->ui->tblChat, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(displayContextMenuDownloads(const QPoint&)));
-
-   connect(&this->chatModel, SIGNAL(rowsInserted(const QModelIndex&, int, int)), this, SLOT(newRows(const QModelIndex&, int, int)));
-   connect(this->ui->tblChat->verticalScrollBar(), SIGNAL(valueChanged(int)), this, SLOT(scrollChanged(int)));
-
-   connect(this->ui->txtMessage, SIGNAL(returnPressed()), this, SLOT(sendMessage()));
-
-   connect(this->ui->butBold, SIGNAL(clicked()), this, SLOT(setToBold()));
+WidgetChat::WidgetChat(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel, const QString& roomName, QWidget* parent) :
+   WidgetDocument(parent), ui(new Ui::WidgetChat), coreConnection(coreConnection), chatModel(coreConnection, peerListModel, roomName), autoScroll(true)
+{
+   this->init();
 }
 
 WidgetChat::~WidgetChat()
 {
    delete this->ui;
+}
+
+QString WidgetChat::getRoomName() const
+{
+   return this->chatModel.getRoomName();
 }
 
 /**
@@ -234,6 +217,50 @@ void WidgetChat::changeEvent(QEvent* event)
       QWidget::changeEvent(event);
 }
 
+void WidgetChat::init()
+{
+   this->ui->setupUi(this);
+
+   if (this->chatModel.isMainChat())
+   {
+      this->ui->tblRoomPeers->hide();
+   }
+   else
+   {
+      this->ui->splitter->setStretchFactor(0, 4);
+      this->ui->splitter->setStretchFactor(1, 1);
+
+      this->setWindowTitle(this->chatModel.getRoomName());
+   }
+
+   this->ui->tblChat->setModel(&this->chatModel);
+   this->ui->tblChat->setItemDelegate(&this->chatDelegate);
+   this->ui->tblChat->setWordWrap(true);
+   this->ui->tblChat->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
+   this->ui->tblChat->horizontalHeader()->setVisible(false);
+   this->ui->tblChat->horizontalHeader()->setResizeMode(QHeaderView::Stretch);
+   this->ui->tblChat->verticalHeader()->setResizeMode(QHeaderView::ResizeToContents);
+   this->ui->tblChat->verticalHeader()->setVisible(false);
+   this->ui->tblChat->setSelectionBehavior(QAbstractItemView::SelectRows);
+   this->ui->tblChat->setSelectionMode(QAbstractItemView::ExtendedSelection);
+   this->ui->tblChat->setShowGrid(false);
+   this->ui->tblChat->setAutoScroll(false);
+
+   this->ui->tblChat->setEditTriggers(QAbstractItemView::AllEditTriggers);
+
+   this->ui->tblChat->setContextMenuPolicy(Qt::CustomContextMenu);
+   connect(this->ui->tblChat, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(displayContextMenuDownloads(const QPoint&)));
+
+   connect(&this->chatModel, SIGNAL(rowsInserted(const QModelIndex&, int, int)), this, SLOT(newRows(const QModelIndex&, int, int)));
+   connect(this->ui->tblChat->verticalScrollBar(), SIGNAL(valueChanged(int)), this, SLOT(scrollChanged(int)));
+
+   connect(this->ui->txtMessage, SIGNAL(returnPressed()), this, SLOT(sendMessage()));
+
+   connect(this->ui->butBold, SIGNAL(clicked()), this, SLOT(setToBold()));
+
+   this->setNewMessageState(false);
+}
+
 void WidgetChat::onActivate()
 {
    this->setNewMessageState(false);
@@ -242,14 +269,30 @@ void WidgetChat::onActivate()
 
 void WidgetChat::setNewMessageState(bool newMessage)
 {
-   if (newMessage && !this->isAncestorOf(QApplication::focusWidget()))
-   {
-      this->setWindowIcon(QIcon(":/icons/ressources/chat_new_message.png"));
-      this->parentWidget()->setWindowIcon(QIcon(":/icons/ressources/chat_new_message.png"));
+   if (newMessage /*&& !this->isAncestorOf(QApplication::focusWidget())*/)
+   {      
+      if (this->chatModel.isMainChat())
+      {
+         this->setWindowIcon(QIcon(":/icons/ressources/chat_new_mess.png"));
+         //this->parentWidget()->setWindowIcon(QIcon(":/icons/ressources/chat_new_mess.png"));
+      }
+      else
+      {
+         this->setWindowIcon(QIcon(":/icons/ressources/chat_room_new_mess.png"));
+         //this->parentWidget()->setWindowIcon(QIcon(":/icons/ressources/chat_room_new_mess.png"));
+      }
    }
    else
    {
-      this->setWindowIcon(QIcon(":/icons/ressources/chat.png"));
-      this->parentWidget()->setWindowIcon(QIcon(":/icons/ressources/chat.png"));
+      if (this->chatModel.isMainChat())
+      {
+         this->setWindowIcon(QIcon(":/icons/ressources/chat.png"));
+         //this->parentWidget()->setWindowIcon(QIcon(":/icons/ressources/chat.png"));
+      }
+      else
+      {
+         this->setWindowIcon(QIcon(":/icons/ressources/chat_room.png"));
+         //this->parentWidget()->setWindowIcon(QIcon(":/icons/ressources/chat_room.png"));
+      }
    }
 }

@@ -28,10 +28,20 @@ using namespace GUI;
 #include <Common/Global.h>
 #include <Common/Settings.h>
 
-ChatModel::ChatModel(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel) :
-   coreConnection(coreConnection), peerListModel(peerListModel)
+ChatModel::ChatModel(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel, const QString& roomName) :
+   coreConnection(coreConnection), peerListModel(peerListModel), roomName(roomName)
 {
    connect(this->coreConnection.data(), SIGNAL(newChatMessages(const Protos::Common::ChatMessages&)), this, SLOT(newChatMessages(const Protos::Common::ChatMessages&)));
+}
+
+bool ChatModel::isMainChat() const
+{
+   return this->roomName.isEmpty();
+}
+
+QString ChatModel::getRoomName() const
+{
+   return this->roomName;
 }
 
 /**
@@ -86,6 +96,10 @@ QVariant ChatModel::data(const QModelIndex& index, int role) const
 void ChatModel::newChatMessages(const Protos::Common::ChatMessages& messages)
 {
    if (messages.message_size() == 0)
+      return;
+
+   QString roomName = messages.message(0).has_chat_room() ? Common::ProtoHelper::getStr(messages.message(0), &Protos::Common::ChatMessage::chat_room) : QString();
+   if (roomName != this->roomName)
       return;
 
    int j = this->messages.size();

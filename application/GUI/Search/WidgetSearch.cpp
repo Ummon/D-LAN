@@ -203,7 +203,9 @@ WidgetSearch::WidgetSearch(QSharedPointer<RCC::ICoreConnection> coreConnection, 
    connect(&this->downloadMenu, SIGNAL(downloadTo(const QString&, const Common::Hash&)), this, SLOT(downloadTo(const QString&, const Common::Hash&)));
    connect(&this->downloadMenu, SIGNAL(browse()), this, SLOT(browseCurrents()));
 
-   this->setWindowTitle(QString("\"%1\"%2").arg(terms).arg(searchInOwnFiles ? " (Own files)" : ""));
+   this->setWindowTitle(terms);
+   if (searchInOwnFiles)
+      this->setWindowIcon(QIcon(":/icons/ressources/zoom_monitor.png"));
 }
 
 WidgetSearch::~WidgetSearch()
