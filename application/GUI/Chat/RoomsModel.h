@@ -60,9 +60,15 @@ namespace GUI
          bool joined;
       };
 
+      friend bool operator<(const Room& r1, const Room& r2);
+      friend bool operator==(const Room& r1, const Room& r2);
+
       //QMap<QString, Room> rooms;
       Common::SortedArray<Room> rooms;
    };
+
+   bool operator<(const RoomsModel::Room& r1, const RoomsModel::Room& r2);
+   bool operator==(const RoomsModel::Room& r1, const RoomsModel::Room& r2);
 }
 
 #endif

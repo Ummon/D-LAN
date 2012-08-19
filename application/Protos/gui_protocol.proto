@@ -98,7 +98,7 @@ message State {
    }
    message Room {
       required string name = 1;
-      repeated Common.Hash peer_id = 2;
+      repeated Common.Hash peer_id = 2; // It never includes ourself.
       required bool joined = 3;
    }
    

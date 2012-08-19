@@ -177,7 +177,7 @@ QList<QSharedPointer<ChatMessage>> ChatMessages::insert(const QList<QSharedPoint
          continue;
 
       while (j > 0 && this->messages[j-1]->getTime() > mess->getTime())
-         j--;      
+         j--;
 
       if (this->messages.size() != MAX_NUMBER_OF_STORED_CHAT_MESSAGES || j != 0) // We avoid to insert a message which will ne deleted right after.
       {

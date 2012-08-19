@@ -116,6 +116,9 @@ WidgetChat::WidgetChat(QSharedPointer<RCC::ICoreConnection> coreConnection, Peer
 {
    this->ui->setupUi(this);
 
+   this->ui->splitter->setStretchFactor(0, 1);
+   this->ui->splitter->setStretchFactor(1, 1);
+
    this->ui->tblChat->setModel(&this->chatModel);
    this->ui->tblChat->setItemDelegate(&this->chatDelegate);
    this->ui->tblChat->setWordWrap(true);
@@ -138,6 +141,8 @@ WidgetChat::WidgetChat(QSharedPointer<RCC::ICoreConnection> coreConnection, Peer
    connect(this->ui->tblChat->verticalScrollBar(), SIGNAL(valueChanged(int)), this, SLOT(scrollChanged(int)));
 
    connect(this->ui->txtMessage, SIGNAL(returnPressed()), this, SLOT(sendMessage()));
+
+   connect(this->ui->butBold, SIGNAL(clicked()), this, SLOT(setToBold()));
 }
 
 WidgetChat::~WidgetChat()
@@ -198,6 +203,13 @@ void WidgetChat::copySelectedLineToClipboard()
       lines.append(this->chatModel.getLineStr(i.next().row())).append('\n');
    }
    QApplication::clipboard()->setText(lines);
+}
+
+void WidgetChat::setToBold()
+{
+   //this->ui->txtMessage->setHtml("<h1>prout</h1>");
+   //QString html = this->ui->txtMessage->toHtml();
+   this->sendMessage();
 }
 
 void WidgetChat::keyPressEvent(QKeyEvent* event)

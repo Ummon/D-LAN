@@ -76,6 +76,7 @@ message FindResult {
    optional Common.Hash peer_id = 3;
 }
 
+// 'id' is randomly generated for each message.
 message ChatMessage {
    required uint64 id = 1;
    required string message = 2;
@@ -85,6 +86,8 @@ message ChatMessage {
    optional string chat_room = 6;
 }
 
+// All messages belong to the same chat room (or from no room if they are from the main chat).
+// The messages are always sorted from oldest to youngest.
 message ChatMessages {
    repeated ChatMessage message = 1;
 }

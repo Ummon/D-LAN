@@ -151,7 +151,7 @@ void ChatSystem::received(const Common::Message& message)
                room.peers.insert(peer);
             }
 
-            // We remove the peer from the rooms he is not.
+            // We remove the peer from the rooms he is not. If a room becomes empty, we remove it from the list.
             for (QMutableHashIterator<QString, Room> i(this->rooms); i.hasNext();)
             {
                auto room = i.next();
@@ -170,11 +170,29 @@ void ChatSystem::received(const Common::Message& message)
       {
          Protos::Common::ChatMessages chatMessages = message.getMessage<Protos::Common::ChatMessages>();
 
+         if (chatMessages.message_size() == 0)
+            break;
+
+         // Test if all messages belongs to the same chat room and set the peer ID of each message if not already set.
          for (int i = 0; i < chatMessages.message_size(); i++)
+         {
+            if (i != 0 && (
+               chatMessages.message(i).has_chat_room() != chatMessages.message(0).has_chat_room() ||
+               chatMessages.message(i).has_chat_room() && chatMessages.message(i).chat_room() != chatMessages.message(0).chat_room()
+            ))
+            {
+               L_ERRO(QString("The 'CORE_CHAT_MESSAGES' message received from %1 contains messages from different chat rooms").arg(message.getHeader().toStr()));
+               break;
+            }
+
             if (!chatMessages.message(i).has_peer_id())
                chatMessages.mutable_message(i)->mutable_peer_id()->set_hash(message.getHeader().getSenderID().getData(), Common::Hash::HASH_SIZE);
+         }
 
-         const QList<QSharedPointer<ChatMessage>>& messages = this->messages.add(chatMessages);
+         const QList<QSharedPointer<ChatMessage>>& messages =
+               chatMessages.message(0).has_chat_room() ?
+                  this->rooms[Common::ProtoHelper::getStr(chatMessages.message(0), &Protos::Common::ChatMessage::chat_room)].messages.add(chatMessages)
+                : this->messages.add(chatMessages);
 
          Protos::Common::ChatMessages filteredChatMessages;
          ChatMessages::fillProtoChatMessages(filteredChatMessages, messages);

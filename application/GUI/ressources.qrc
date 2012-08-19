@@ -33,5 +33,8 @@
         <file>ressources/marble_red.png</file>
         <file>ressources/marble_blue.png</file>
         <file>ressources/marble_green.png</file>
+        <file>ressources/text_bold.png</file>
+        <file>ressources/text_italic.png</file>
+        <file>ressources/text_underline.png</file>
     </qresource>
 </RCC>

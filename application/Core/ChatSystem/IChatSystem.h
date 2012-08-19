@@ -64,6 +64,7 @@ namespace CS
    signals:
       /**
         * Emitted when one or more messages are received.
+        * The message can come from the main chat or from a joined room.
         */
       void newMessages(const Protos::Common::ChatMessages&);
    };

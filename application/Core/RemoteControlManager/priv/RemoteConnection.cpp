@@ -257,6 +257,18 @@ void RemoteConnection::refresh()
       }
    }
 
+   // Chat rooms.
+   for (QListIterator<CS::IChatSystem::ChatRoom> i(this->chatSystem->getRooms()); i.hasNext();)
+   {
+      const CS::IChatSystem::ChatRoom& room = i.next();
+      Protos::GUI::State::Room* roomMess = state.add_rooms();
+
+      Common::ProtoHelper::setStr(*roomMess, &Protos::GUI::State::Room::set_name, room.name);
+      for (QSetIterator<PM::IPeer*> j(room.peers); j.hasNext();)
+         roomMess->add_peer_id()->set_hash(j.next()->getID().getData(), Common::Hash::HASH_SIZE);
+      roomMess->set_joined(room.joined);
+   }
+
    this->waitForStateResult = true;
    this->send(Common::MessageHeader::GUI_STATE, state);
 }

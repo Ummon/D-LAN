@@ -60,8 +60,8 @@ QVariant RoomsModel::data(const QModelIndex& index, int role) const
    case Qt::DisplayRole:
       switch (index.column())
       {
-      case 0: return this->rooms[index.row()].name;
-      case 1: return this->rooms[index.row()].peerIDs.size();
+      case 0: return this->rooms.getFromIndex(index.row()).name;
+      case 1: return this->rooms.getFromIndex(index.row()).peerIDs.size();
       }
       break;
 
@@ -74,7 +74,7 @@ QVariant RoomsModel::data(const QModelIndex& index, int role) const
 
 void RoomsModel::newState(const Protos::GUI::State& state)
 {
-   Common::SortedArray<Room> roomsNewState(state.rooms_size());
+   Common::SortedArray<Room> roomsNewState;
    for (int i = 0; i < state.rooms_size(); i++)
    {
       const Protos::GUI::State::Room& room = state.rooms(i);
@@ -88,3 +88,12 @@ void RoomsModel::newState(const Protos::GUI::State& state)
    // <TODO>
 }
 
+bool GUI::operator<(const RoomsModel::Room& r1, const RoomsModel::Room& r2)
+{
+   return r1.name < r2.name;
+}
+
+bool GUI::operator==(const RoomsModel::Room& r1, const RoomsModel::Room& r2)
+{
+   return r1.name == r2.name;
+}

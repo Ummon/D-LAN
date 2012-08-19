@@ -49,6 +49,7 @@ namespace CS
       const Common::Hash ownerID;
       const QDateTime time; // UTC.
       const QString ownerNick;
+      const QString room; // Empty if the message belongs to the main chat.
    };
 }
 

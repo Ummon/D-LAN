@@ -32,7 +32,7 @@ message IMAlive {
    optional uint64 tag = 5; // A random number, all responds ('ChunkOwned' message) must repeat this number.
    repeated Common.Hash chunk = 6; // The chunks the core wants to download. May be empty.
 
-   repeated string chat_rooms = 10;
+   repeated string chat_rooms = 10; // The joined chat rooms.
 }
 
 // This message is only sent if at least one requested chunks is known.
@@ -47,10 +47,8 @@ message ChunksOwned {
 
 
 // Send a chat message to all other peers.
-// 'id' is randomly generated for each message.
 // The field 'peer_id' is not set because it is already set in the header.
 // The field 'time' is not set because the receiver will set the time and not the sender.
-// The messages are always sorted from oldest to youngest.
 // a -> all
 // id : 0x11
 // Common.ChatMessages
@@ -68,8 +66,7 @@ message GetLastChatMessages {
 }
 
 // This message is only sent if 'b' has some messages not contained in the given list.
-// The messages are always sorted from oldest to youngest.
-// In this case the field 'time' is set.
+// The fields 'peer_id' and 'time' must be set for all messages.
 // b -> a
 // id : 0x11
 // Common.ChatMessages

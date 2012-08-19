@@ -61,6 +61,7 @@ namespace CS
 
    private:
       void getLastChatMessages(const QList<PM::IPeer*>& peers, const QString& roomName = QString());
+
       LOG_INIT_H("ChatSystem");
 
       QSharedPointer<PM::IPeerManager> peerManager;
@@ -74,7 +75,7 @@ namespace CS
          bool joined;
       };
 
-      QHash<QString, Room> rooms;
+      QHash<QString, Room> rooms; // All known rooms.
 
       QTimer saveChatMessagesTimer;
 

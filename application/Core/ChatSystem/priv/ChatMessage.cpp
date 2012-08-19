@@ -35,7 +35,8 @@ ChatMessage::ChatMessage(const Protos::Common::ChatMessage& chatMessage) :
    message(Common::ProtoHelper::getStr(chatMessage, &Protos::Common::ChatMessage::message)),
    ownerID(chatMessage.has_peer_id() ? chatMessage.peer_id().hash() : Common::Hash()),
    time(chatMessage.has_time() ? QDateTime::fromMSecsSinceEpoch(chatMessage.time()) : QDateTime::currentDateTimeUtc()),
-   ownerNick(chatMessage.has_peer_nick() ? Common::ProtoHelper::getStr(chatMessage, &Protos::Common::ChatMessage::peer_nick) : QString())
+   ownerNick(chatMessage.has_peer_nick() ? Common::ProtoHelper::getStr(chatMessage, &Protos::Common::ChatMessage::peer_nick) : QString()),
+   room(chatMessage.has_chat_room() ? Common::ProtoHelper::getStr(chatMessage, &Protos::Common::ChatMessage::chat_room) : QString())
 {
 }
 
@@ -56,6 +57,8 @@ void ChatMessage::fillProtoChatMessage(Protos::Common::ChatMessage& protoChatMes
    protoChatMessage.set_time(this->time.toMSecsSinceEpoch());
    protoChatMessage.mutable_peer_id()->set_hash(this->ownerID.getData(), Common::Hash::HASH_SIZE);
    Common::ProtoHelper::setStr(protoChatMessage, &Protos::Common::ChatMessage::set_peer_nick, this->ownerNick);
+   if (!this->room.isEmpty())
+      Common::ProtoHelper::setStr(protoChatMessage, &Protos::Common::ChatMessage::set_chat_room, this->room);
 }
 
 MTRand ChatMessage::mtrand;
