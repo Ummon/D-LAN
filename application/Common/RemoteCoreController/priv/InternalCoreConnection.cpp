@@ -111,10 +111,14 @@ void InternalCoreConnection::disconnectFromCore()
    this->connectionInfo.clear();
 }
 
-void InternalCoreConnection::sendChatMessage(const QString& message)
+void InternalCoreConnection::sendChatMessage(const QString& message, const QString& roomName)
 {
    Protos::GUI::ChatMessage chatMessage;
    Common::ProtoHelper::setStr(chatMessage, &Protos::GUI::ChatMessage::set_message, message);
+
+   if (!roomName.isEmpty())
+      Common::ProtoHelper::setStr(chatMessage, &Protos::GUI::ChatMessage::set_room, roomName);
+
    this->send(Common::MessageHeader::GUI_CHAT_MESSAGE, chatMessage);
 }
 

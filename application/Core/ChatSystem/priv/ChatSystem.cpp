@@ -70,7 +70,14 @@ ChatSystem::~ChatSystem()
   */
 void ChatSystem::send(const QString& message)
 {
-   QSharedPointer<ChatMessage> chatMessage = this->messages.add(message, this->peerManager->getSelf()->getID(), this->peerManager->getSelf()->getNick());
+   this->send(message, QString());
+}
+
+void ChatSystem::send(const QString& message, const QString& roomName)
+{
+   QSharedPointer<ChatMessage> chatMessage = roomName.isEmpty() ?
+         this->messages.add(message, this->peerManager->getSelf()->getID(), this->peerManager->getSelf()->getNick())
+       : this->rooms[roomName].messages.add(message, this->peerManager->getSelf()->getID(), this->peerManager->getSelf()->getNick(), roomName);
 
    Protos::Common::ChatMessages protoChatMessages;
    Protos::Common::ChatMessage* protochatMessage = protoChatMessages.add_message();

@@ -33,7 +33,7 @@ namespace CS
    class ChatMessage
    {
    public:
-      ChatMessage(const QString& message, const Common::Hash& ownerID, const QString& ownerNick);
+      ChatMessage(const QString& message, const Common::Hash& ownerID, const QString& ownerNick, const QString& roomName = QString());
       ChatMessage(const Protos::Common::ChatMessage& chatMessage);
 
       quint64 getID() const;

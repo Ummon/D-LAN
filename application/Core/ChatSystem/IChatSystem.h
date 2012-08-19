@@ -43,6 +43,8 @@ namespace CS
         */
       virtual void send(const QString& message) = 0;
 
+      virtual void send(const QString& message, const QString& roomName) = 0;
+
       /**
         * Retrieve the last 'number' known message.
         */

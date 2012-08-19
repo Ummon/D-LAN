@@ -48,6 +48,7 @@ namespace CS
       ~ChatSystem();
 
       void send(const QString& message);
+      void send(const QString& message, const QString& roomName);
       void getLastChatMessages(Protos::Common::ChatMessages& chatMessages, int number = std::numeric_limits<int>::max(), const QString& roomName = QString()) const;
       QList<ChatRoom> getRooms() const;
       void joinRoom(const QString& roomName);

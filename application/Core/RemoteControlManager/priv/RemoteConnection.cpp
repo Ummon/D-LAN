@@ -650,7 +650,10 @@ void RemoteConnection::onNewMessage(const Common::Message& message)
       {
          const Protos::GUI::ChatMessage& chatMessage = message.getMessage<Protos::GUI::ChatMessage>();
 
-         this->chatSystem->send(Common::ProtoHelper::getStr(chatMessage, &Protos::GUI::ChatMessage::message));
+         if (chatMessage.has_room())
+            this->chatSystem->send(Common::ProtoHelper::getStr(chatMessage, &Protos::GUI::ChatMessage::message), Common::ProtoHelper::getStr(chatMessage, &Protos::GUI::ChatMessage::room));
+         else
+            this->chatSystem->send(Common::ProtoHelper::getStr(chatMessage, &Protos::GUI::ChatMessage::message));
       }
       break;
 

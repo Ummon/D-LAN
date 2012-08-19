@@ -147,7 +147,7 @@ void WidgetChat::sendMessage()
    if (this->ui->txtMessage->toHtml().isEmpty())
       return;
 
-   this->coreConnection->sendChatMessage(this->ui->txtMessage->toHtml());
+   this->coreConnection->sendChatMessage(this->ui->txtMessage->toHtml(), this->chatModel.getRoomName());
    this->ui->txtMessage->clear();
 }
 

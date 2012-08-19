@@ -32,9 +32,9 @@ ChatMessages::ChatMessages() :
    changed(false)
 {}
 
-QSharedPointer<ChatMessage> ChatMessages::add(const QString& message, const Common::Hash& ownerID, const QString& ownerNick)
+QSharedPointer<ChatMessage> ChatMessages::add(const QString& message, const Common::Hash& ownerID, const QString& ownerNick, const QString& roomName)
 {
-   QSharedPointer<ChatMessage> mess = QSharedPointer<ChatMessage>(new ChatMessage(message, ownerID, ownerNick));
+   QSharedPointer<ChatMessage> mess = QSharedPointer<ChatMessage>(new ChatMessage(message, ownerID, ownerNick, roomName));
 
    this->insert(QList<QSharedPointer<ChatMessage>> { mess });
 

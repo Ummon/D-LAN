@@ -21,12 +21,13 @@ using namespace CS;
 
 #include <Common/ProtoHelper.h>
 
-ChatMessage::ChatMessage(const QString& message, const Common::Hash& ownerID, const QString& ownerNick) :
+ChatMessage::ChatMessage(const QString& message, const Common::Hash& ownerID, const QString& ownerNick, const QString& roomName) :
    ID(mtrand.randInt64()),
    message(message),
    ownerID(ownerID),
    time(QDateTime::currentDateTimeUtc()),
-   ownerNick(ownerNick)
+   ownerNick(ownerNick),
+   room(roomName)
 {
 }
 

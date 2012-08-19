@@ -115,6 +115,11 @@ void CoreConnection::sendChatMessage(const QString& message)
    this->current()->sendChatMessage(message);
 }
 
+void CoreConnection::sendChatMessage(const QString& message, const QString& roomName)
+{
+   this->current()->sendChatMessage(message, roomName);
+}
+
 void CoreConnection::joinRoom(const QString& room)
 {
    this->current()->joinRoom(room);

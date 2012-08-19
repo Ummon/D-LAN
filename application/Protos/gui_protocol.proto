@@ -321,9 +321,10 @@ message Download {
 
 // GUI -> Core
 // id: 0x1091
-// Send a chat message to everyone.
+// Send a chat message to the given room. The message goes to the main chat if 'room' isn't set.
 message ChatMessage {
    required string message = 1;
+   optional string room = 2;
 }
 
 

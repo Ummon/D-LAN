@@ -111,6 +111,8 @@ namespace RCC
 
       virtual void sendChatMessage(const QString& message) = 0;
 
+      virtual void sendChatMessage(const QString& message, const QString& roomName) = 0;
+
       virtual void joinRoom(const QString& room) = 0;
 
       virtual void leaveRoom(const QString& room) = 0;

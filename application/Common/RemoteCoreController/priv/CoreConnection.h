@@ -74,6 +74,7 @@ namespace RCC
       void disconnectFromCore();
 
       void sendChatMessage(const QString& message);
+      void sendChatMessage(const QString& message, const QString& roomName);
       void joinRoom(const QString& room);
       void leaveRoom(const QString& room);
       void setCoreSettings(const Protos::GUI::CoreSettings settings);
