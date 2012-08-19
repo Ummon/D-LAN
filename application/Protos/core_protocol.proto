@@ -1,6 +1,6 @@
 /**
   * Protocol between cores (peers).
-  * Version : 1
+  * Version : 4
   * All string are encoded in UTF-8.
   */
 

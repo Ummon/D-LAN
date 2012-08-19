@@ -52,7 +52,8 @@ namespace NL
       static const int BUFFER_SIZE = 65536;
 
       // 2 -> 3 : BLAKE -> Sha-1
-      static const quint32 PROTOCOL_VERSION = 3;
+      // 3 -> 4 : New chat protocol + changes of the 'GET_ENTRIES_RESULT' message.
+      static const quint32 PROTOCOL_VERSION = 4;
 
       static const int MAX_NICK_LENGTH = 255; // Datagram UDP are limited in size, this limit avoid to fill the whole datagram with only a nickname.
 
