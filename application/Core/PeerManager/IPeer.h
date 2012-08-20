@@ -103,7 +103,6 @@ namespace PM
         * Ask for the entries in a given directories.
         * This method is non-blocking, the entries will be delivered by the signal
         * 'entriesResult'.
-        * If a second getEntries
         */
       virtual QSharedPointer<IGetEntriesResult> getEntries(const Protos::Core::GetEntries& dirs) = 0;
 
