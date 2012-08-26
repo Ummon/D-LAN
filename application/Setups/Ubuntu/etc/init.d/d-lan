@@ -1,0 +1,32 @@
+#!/bin/sh -e
+
+### BEGIN INIT INFO
+# Provides:          d-lan-core
+# Short-Description: D-LAN core service
+### END INIT INFO
+
+case "$1" in
+start)
+  sudo -u d-lan d-lan-core
+  ;;
+stop)
+  sudo -u d-lan d-lan-core -t
+  ;;
+restart)
+  shift
+  $0 stop ${@}
+  sleep 1
+  $0 start ${@}
+  ;;
+status)
+  sudo -u d-lan d-lan-core -v >&2
+  ;;
+*)
+  echo "Usage: $0 {start|stop|restart|status}" >&2
+  exit 1
+  ;;
+esac
+
+exit 0
+
+# vim:set ai sts=2 sw=2 tw=0:

@@ -1,4 +1,21 @@
 #!/bin/bash
 
+USERID=d-lan
+
 ln -s /usr/share/d-lan/D-LAN.Core /usr/bin/d-lan-core 
 ln -s /usr/share/d-lan/D-LAN.GUI /usr/bin/d-lan-gui
+
+/bin/egrep  -i "^${USERID}" /etc/passwd
+if [ $? -eq 0 ]; then
+   echo "User $USERID exists, nothing to do..."
+else
+   useradd --home-dir /var/d-lan d-lan
+   mkdir -p /var/d-lan
+   chown d-lan:d-lan /var/d-lan
+   sudo -u d-lan mkdir -p /var/d-lan/share
+   sudo -u d-lan mkdir -p /var/d-lan/.d-lan
+   sudo -u d-lan echo "nick: \"$(hostname) (deamon)\"" >> /var/d-lan/.d-lan/core_settings.txt
+   sudo -u d-lan echo "shared-folders: [/var/d-lan/share]" >> /var/d-lan/.d-lan/core_settings.txt
+   d-lan-core -i d-lan
+fi
+

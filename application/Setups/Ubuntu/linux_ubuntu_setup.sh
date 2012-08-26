@@ -22,9 +22,10 @@ CORE_FILE=$DIR/Core/output/release/D-LAN.Core
 GUI_FILE=$DIR/GUI/output/release/D-LAN.GUI
 ICON_FILE=$DIR/Common/ressources/icon.ico
 
-rm -Rf $DEB_DIR
+sudo rm -Rf $DEB_DIR
 mkdir -p $DESKTOP_DIR $STYLES_DIR $I18N_DIR $ICON_16_DIR $ICON_24_DIR $ICON_32_DIR $ICON_48_DIR $ICON_64_DIR $ICON_128_DIR $ICON_256_DIR
 
+cp -R etc $DEB_DIR/
 cp -R $STYLES_FILES $STYLES_DIR/
 cp -R $I18N_FILES $I18N_DIR/
 cp $CORE_FILE $APP_DIR/
@@ -61,6 +62,7 @@ vdate=$(echo $version | cut -d' ' -f 3)
 sed -i "s/_VERSION_/$vhead-$vtag/g" $DEB_DIR/DEBIAN/control
 
 cd $WORK_DIR
+sudo chown -R root:root $DEB_DIR
 dpkg-deb --build d-lan
 mv d-lan.deb $INST_DIR/D-LAN-$vhead$vtag-$vdate-$arch.deb
  

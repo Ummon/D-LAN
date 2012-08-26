@@ -210,7 +210,7 @@ void Tests::askForSomeEntries()
    QVERIFY(!this->resultListener.getEntriesResultList().isEmpty());
 
    Protos::Core::GetEntries getEntriesMessage1;
-   getEntriesMessage1.mutable_dirs()->add_entry()->CopyFrom(this->resultListener.getEntriesResultList().last().entries(0).entry(0));
+   getEntriesMessage1.mutable_dirs()->add_entry()->CopyFrom(this->resultListener.getEntriesResultList().last().result(0).entries().entry(0));
    QSharedPointer<IGetEntriesResult> result1 = this->peerManagers[0]->getPeers()[0]->getEntries(getEntriesMessage1);
    connect(result1.data(), SIGNAL(result(Protos::Core::GetEntriesResult)), &this->resultListener, SLOT(entriesResult(Protos::Core::GetEntriesResult)));
    result1->start();
@@ -225,7 +225,7 @@ void Tests::askForSomeEntries()
 
    Protos::Core::GetEntries getEntriesMessage2;
    Protos::Common::Entry* entry = getEntriesMessage2.mutable_dirs()->add_entry();
-   entry->CopyFrom(this->resultListener.getEntriesResultList().last().entries(0).entry(0));
+   entry->CopyFrom(this->resultListener.getEntriesResultList().last().result(0).entries().entry(0));
    entry->mutable_shared_dir()->CopyFrom(getEntriesMessage1.dirs().entry(0).shared_dir());
    QSharedPointer<IGetEntriesResult> result2 = this->peerManagers[0]->getPeers()[0]->getEntries(getEntriesMessage2);
    connect(result2.data(), SIGNAL(result(Protos::Core::GetEntriesResult)), &this->resultListener, SLOT(entriesResult(Protos::Core::GetEntriesResult)));
@@ -276,7 +276,7 @@ void Tests::askForHashes()
    fileEntry.set_name("big.bin");
    fileEntry.set_size(0);
    // Sets the root directory.
-   fileEntry.mutable_shared_dir()->CopyFrom(this->resultListener.getEntriesResultList().first().entries(0).entry(0).shared_dir());
+   fileEntry.mutable_shared_dir()->CopyFrom(this->resultListener.getEntriesResultList().first().result(0).entries().entry(0).shared_dir());
 
    QSharedPointer<IGetHashesResult> result = this->peerManagers[0]->getPeers()[0]->getHashes(fileEntry);
    connect(result.data(), SIGNAL(result(const Protos::Core::GetHashesResult&)), &this->resultListener, SLOT(result(const Protos::Core::GetHashesResult&)));
