@@ -9,7 +9,9 @@ ln -s /usr/share/d-lan/D-LAN.GUI /usr/bin/d-lan-gui
 if [ $? -eq 0 ]; then
    echo "User $USERID exists, nothing to do..."
 else
-   sudo useradd --home-dir /var/d-lan d-lan
+   useradd --home-dir /var/d-lan d-lan
+   mkdir -p /var/d-lan
+   chown d-lan:d-lan /var/d-lan
    sudo -u d-lan mkdir -p /var/d-lan/share
    sudo -u d-lan mkdir -p /var/d-lan/.d-lan
    sudo -u d-lan echo "nick: \"$(hostname) (deamon)\"" >> /var/d-lan/.d-lan/core_settings.txt
