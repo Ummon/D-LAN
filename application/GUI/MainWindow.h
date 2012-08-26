@@ -38,6 +38,8 @@
 #include <Settings/WidgetSettings.h>
 #include <Settings/DirListModel.h>
 #include <Chat/WidgetChat.h>
+#include <Chat/RoomsModel.h>
+#include <Chat/RoomsDelegate.h>
 #include <Downloads/WidgetDownloads.h>
 #include <Uploads/WidgetUploads.h>
 #include <Browse/WidgetBrowse.h>
@@ -90,6 +92,7 @@ namespace GUI
       void uncolorizeSelectedPeer();
 
       void joinRoom();
+      void leaveRoom(QWidget* widgetChat);
 
       void removeWidget(QWidget* widget);
 
@@ -151,7 +154,7 @@ namespace GUI
    private:
       WidgetSearch* addWidgetSearch(const QString& term, bool searchInOwnFiles = false);
 
-      WidgetChat* addWidgetChatRoom(const QString& roomName);
+      WidgetChat* addWidgetChatRoom(const QString& roomName, bool switchTo = true);
 
       void removeAllWidgets();
 
@@ -186,6 +189,9 @@ namespace GUI
       bool autoScroll;
       LogModel logModel;
       LogDelegate logDelegate;
+
+      RoomsModel roomsModel;
+      RoomsDelegate roomsDelegate;
 
       Taskbar taskbar;
    };

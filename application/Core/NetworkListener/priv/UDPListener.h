@@ -72,6 +72,9 @@ namespace NL
       void rebindSockets();
 
    signals:
+      /**
+        * This signal is emitted when a message is received (unicast or multicast).
+        */
       void received(const Common::Message& message);
       void IMAliveMessageToBeSend(Protos::Core::IMAlive& IMAliveMessage);
       void newFindResultMessage(const Protos::Common::FindResult& findResult);

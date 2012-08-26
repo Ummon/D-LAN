@@ -30,7 +30,7 @@ using namespace GUI;
 RoomsModel::RoomsModel(QSharedPointer<RCC::ICoreConnection> coreConnection) :
    coreConnection(coreConnection)
 {
-   connect(coreConnection.data(), SIGNAL(newState(const Protos::GUI::State&)), this, SIGNAL(newState(const Protos::GUI::State&)));
+   connect(coreConnection.data(), SIGNAL(newState(const Protos::GUI::State&)), this, SLOT(newState(const Protos::GUI::State&)));
 }
 
 /*QModelIndex	RoomsModel::index(int row, int column, const QModelIndex& parent) const
@@ -83,7 +83,8 @@ void RoomsModel::newState(const Protos::GUI::State& state)
       roomsNewState.insert(Room { Common::ProtoHelper::getStr(room, &Protos::GUI::State::Room::name), peers, room.joined() });
    }
 
-   int n, o = 0; // 'new' and 'old'.
+   int n = 0; // 'new'.
+   int o = 0; // 'old'.
    while (n < roomsNewState.size() || o < this->rooms.size())
    {
       // Add a new room.

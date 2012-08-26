@@ -289,7 +289,7 @@ void UDPListener::processPendingMulticastDatagrams()
             }
             break;
 
-         default:;
+         default:; // Ignore other messages.
          }
 
          emit received(message);
@@ -354,9 +354,10 @@ void UDPListener::processPendingUnicastDatagrams()
             }
             break;
 
-         default:
-            emit received(message);
+         default:; // Ignore other messages.
          }
+
+         emit received(message);
       }
       catch(Common::ReadErrorException&)
       {

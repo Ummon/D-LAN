@@ -15,4 +15,18 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
+#include <Chat/RoomsDelegate.h>
+using namespace GUI;
+
+void RoomsDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
+{
+   QStyleOptionViewItemV4 newOption(option);
+   newOption.state = option.state & (~QStyle::State_HasFocus);
+
+   // Show the selection only if the widget is active.
+   if (!(newOption.state & QStyle::State_Active))
+      newOption.state = newOption.state & (~QStyle::State_Selected);
+
+   QStyledItemDelegate::paint(painter, newOption, index);
+}

@@ -47,7 +47,7 @@ namespace GUI
    {
        Q_OBJECT
    public:
-       TabCloseButton(QWidget* widget, QWidget* parent = nullptr);
+       TabCloseButton(QWidget* widget, QWidget* parent = nullptr, bool autoDelete = true);
 
    protected:
        void changeEvent(QEvent* event);
@@ -62,6 +62,7 @@ namespace GUI
    private:
       void setToolTipTranslate();
       QWidget* widget;
+      bool autoDelete;
    };
 
 /////

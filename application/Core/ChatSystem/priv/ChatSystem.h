@@ -63,6 +63,9 @@ namespace CS
    private:
       void getLastChatMessages(const QList<PM::IPeer*>& peers, const QString& roomName = QString());
 
+      void loadRoomListFromSettings();
+      void saveRoomListToSettings();
+
       LOG_INIT_H("ChatSystem");
 
       QSharedPointer<PM::IPeerManager> peerManager;

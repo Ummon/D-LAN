@@ -58,6 +58,8 @@ ChatSystem::ChatSystem(QSharedPointer<PM::IPeerManager> peerManager, QSharedPoin
    this->saveChatMessagesTimer.setInterval(SETTINGS.get<quint32>("save_chat_messages_period"));
    connect(&this->saveChatMessagesTimer, SIGNAL(timeout()), this, SLOT(saveChatMessages()));
    this->saveChatMessagesTimer.start();
+
+   this->loadRoomListFromSettings();
 }
 
 ChatSystem::~ChatSystem()
@@ -117,8 +119,13 @@ QList<IChatSystem::ChatRoom> ChatSystem::getRooms() const
 void ChatSystem::joinRoom(const QString& roomName)
 {
    Room& room = this->rooms[roomName];
-   room.joined = true;
-   this->getLastChatMessages(room.peers.toList(), roomName);
+
+   if (!room.joined)
+   {
+      room.joined = true;
+      this->saveRoomListToSettings();
+      this->getLastChatMessages(room.peers.toList(), roomName);
+   }
 }
 
 void ChatSystem::leaveRoom(const QString& roomName)
@@ -132,6 +139,8 @@ void ChatSystem::leaveRoom(const QString& roomName)
             this->rooms.remove(roomName);
          else
             room.joined = false;
+
+         this->saveRoomListToSettings();
       }
    }
 }
@@ -257,6 +266,29 @@ void ChatSystem::getLastChatMessages()
       auto room = i.next();
       this->getLastChatMessages(room.value().peers.toList(), room.key());
    }
+}
+
+/**
+  * Join all the room listed in the settings.
+  */
+void ChatSystem::loadRoomListFromSettings()
+{
+   foreach (QString roomName, SETTINGS.getRepeated<QString>("joined_chat_rooms"))
+      this->joinRoom(roomName);
+}
+
+/**
+  * Save the joined room to the settings.
+  */
+void ChatSystem::saveRoomListToSettings()
+{
+   QList<QString> joinedRoomNames;
+   for (QHashIterator<QString, Room> i(this->rooms); i.hasNext(); i.next())
+      if (i.value().joined)
+         joinedRoomNames << i.key();
+
+   SETTINGS.set("joined_chat_rooms", joinedRoomNames);
+   SETTINGS.save();
 }
 
 void ChatSystem::saveChatMessages()

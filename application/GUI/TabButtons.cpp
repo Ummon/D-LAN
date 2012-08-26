@@ -96,8 +96,8 @@ void TabButton::paintEvent(QPaintEvent* pe)
 
 /////
 
-TabCloseButton::TabCloseButton(QWidget* widget, QWidget* parent) :
-   TabButton(parent), widget(widget)
+TabCloseButton::TabCloseButton(QWidget* widget, QWidget* parent, bool autoDelete) :
+   TabButton(parent), widget(widget), autoDelete(autoDelete)
 {
    connect(this, SIGNAL(clicked()), this, SLOT(buttonClicked()));
    this->setToolTipTranslate();
@@ -120,12 +120,15 @@ void TabCloseButton::buttonClicked()
 {
    emit clicked(this->widget);
 
-   // Delete the widget added to the tabBar with 'QTabBar::setTabButton(..)'
-   // Why the QTabBar do not delete the widget set by 'setTabButton' when the tab is closed!?
-   QObject* widgetInTabBar = this;
-   while (!dynamic_cast<QTabBar*>(widgetInTabBar->parent()))
-      widgetInTabBar = widgetInTabBar->parent();
-   delete widgetInTabBar;
+   if (this->autoDelete)
+   {
+      // Delete the widget added to the tabBar with 'QTabBar::setTabButton(..)'
+      // Why the QTabBar do not delete the widget set by 'setTabButton' when the tab is closed!?
+      QObject* widgetInTabBar = this;
+      while (!dynamic_cast<QTabBar*>(widgetInTabBar->parent()))
+         widgetInTabBar = widgetInTabBar->parent();
+      delete widgetInTabBar;
+   }
 }
 
 void TabCloseButton::setToolTipTranslate()

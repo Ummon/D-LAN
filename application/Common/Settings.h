@@ -69,6 +69,8 @@ namespace Common
       void set(const QString& name, const QList<quint32>& values);
       void set(const QString& name, int index, quint32 value);
 
+      void set(const QString& name, const QList<QString>& values);
+
       template <typename T>
       T get(const QString& name) const;
 
@@ -90,6 +92,7 @@ namespace Common
       void get(const google::protobuf::FieldDescriptor* fieldDescriptor, google::protobuf::Message& message) const;
 
       void getRepeated(const google::protobuf::FieldDescriptor* fieldDescriptor, QList<quint32>& values) const;
+      void getRepeated(const google::protobuf::FieldDescriptor* fieldDescriptor, QList<QString>& values) const;
 
       void setDefaultValues();
 

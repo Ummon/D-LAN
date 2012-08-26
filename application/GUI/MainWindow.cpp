@@ -60,7 +60,8 @@ MainWindow::MainWindow(QSharedPointer<RCC::ICoreConnection> coreConnection, QWid
    coreConnection(coreConnection),
    peerListModel(coreConnection),
    autoScroll(true),
-   logModel(coreConnection)
+   logModel(coreConnection),
+   roomsModel(coreConnection)
 {
    this->ui->setupUi(this);
 
@@ -86,36 +87,43 @@ MainWindow::MainWindow(QSharedPointer<RCC::ICoreConnection> coreConnection, QWid
    connect(statusBar, SIGNAL(showDockLog(bool)), this->ui->dockLog, SLOT(setVisible(bool)));
 
    this->ui->tblPeers->setModel(&this->peerListModel);
-
    this->ui->tblPeers->setItemDelegate(&this->peerListDelegate);
    this->ui->tblPeers->horizontalHeader()->setResizeMode(0, QHeaderView::ResizeToContents);
    this->ui->tblPeers->horizontalHeader()->setResizeMode(1, QHeaderView::Stretch);
    this->ui->tblPeers->horizontalHeader()->setResizeMode(2, QHeaderView::ResizeToContents);
    this->ui->tblPeers->horizontalHeader()->setVisible(false);
-
-   // TODO: is there an another way to reduce the row size?
-   this->ui->tblPeers->verticalHeader()->setResizeMode(QHeaderView::Fixed);
+   this->ui->tblPeers->verticalHeader()->setResizeMode(QHeaderView::Fixed); // TODO: is there an another way to reduce the row size?
    this->ui->tblPeers->verticalHeader()->setDefaultSectionSize(QApplication::fontMetrics().height() + 4);
    this->ui->tblPeers->verticalHeader()->setVisible(false);
    this->ui->tblPeers->setSelectionBehavior(QAbstractItemView::SelectRows);
    this->ui->tblPeers->setSelectionMode(QAbstractItemView::ExtendedSelection);
    this->ui->tblPeers->setShowGrid(false);
    this->ui->tblPeers->setAlternatingRowColors(false);
-
    this->ui->tblPeers->setContextMenuPolicy(Qt::CustomContextMenu);
-
    connect(this->ui->tblPeers, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(displayContextMenuPeers(const QPoint&)));
    connect(this->ui->tblPeers, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(browse()));
 
+   this->ui->tblRooms->setModel(&this->roomsModel);
+   this->ui->tblRooms->setItemDelegate(&this->roomsDelegate);
+   this->ui->tblRooms->horizontalHeader()->setResizeMode(0, QHeaderView::ResizeToContents);
+   this->ui->tblRooms->horizontalHeader()->setResizeMode(1, QHeaderView::Stretch);
+   this->ui->tblRooms->horizontalHeader()->setVisible(false);
+   this->ui->tblRooms->verticalHeader()->setResizeMode(QHeaderView::Fixed);
+   this->ui->tblRooms->verticalHeader()->setDefaultSectionSize(QApplication::fontMetrics().height() + 4);
+   this->ui->tblRooms->verticalHeader()->setVisible(false);
+   this->ui->tblRooms->setSelectionBehavior(QAbstractItemView::SelectRows);
+   this->ui->tblRooms->setSelectionMode(QAbstractItemView::ExtendedSelection);
+   this->ui->tblRooms->setShowGrid(false);
+   this->ui->tblRooms->setAlternatingRowColors(false);
+   //connect(this->ui->tblRooms->selectionModel(), SIGNAL(selectionChanged(QItemSelection, QItemSelection)), this, );
+   //connect(this->ui->tblRooms, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(joinRoom()));
    connect(this->ui->butJoinRoom, SIGNAL(clicked()), this, SLOT(joinRoom()));
 
    this->ui->tblLog->setModel(&this->logModel);
-
    this->ui->tblLog->setItemDelegate(&this->logDelegate);
    this->ui->tblLog->horizontalHeader()->setResizeMode(0, QHeaderView::ResizeToContents);
    this->ui->tblLog->horizontalHeader()->setResizeMode(1, QHeaderView::Stretch);
    this->ui->tblLog->horizontalHeader()->setVisible(false);
-
    this->ui->tblLog->verticalHeader()->setResizeMode(QHeaderView::Fixed);
    this->ui->tblLog->verticalHeader()->setDefaultSectionSize(QApplication::fontMetrics().height() + 2);
    this->ui->tblLog->verticalHeader()->setVisible(false);
@@ -179,13 +187,29 @@ MainWindow::~MainWindow()
 
 void MainWindow::newState(const Protos::GUI::State& state)
 {
-   if (!this->downloadsBusyIndicator)
-      return;
+   // Synchronize the joined chat rooms with the opened windows.
+   // There is two reasons for doing that:
+   //  1) The joined room may be persisted by the core.
+   //  2) Another GUI connected to the same core may open or close a chat room.
+   QSet<QString> joinedRooms;
+   for (int i = 0; i < state.rooms_size(); i++)
+      if (state.rooms(i).joined())
+         joinedRooms.insert(Common::ProtoHelper::getStr(state.rooms(i), &Protos::GUI::State::Room::name));
 
-   if (state.stats().cache_status() == Protos::GUI::State::Stats::LOADING_CACHE_IN_PROGRESS)
-      this->downloadsBusyIndicator->show();
-   else
-      this->downloadsBusyIndicator->hide();
+   foreach (WidgetChat* widgetChat, this->widgetsChatRoom)
+      if (!joinedRooms.remove(widgetChat->getRoomName()))
+         this->removeWidget(widgetChat);
+
+   foreach (QString roomName, joinedRooms)
+      this->addWidgetChatRoom(roomName, false);
+
+   if (this->downloadsBusyIndicator)
+   {
+      if (state.stats().cache_status() == Protos::GUI::State::Stats::LOADING_CACHE_IN_PROGRESS)
+         this->downloadsBusyIndicator->show();
+      else
+         this->downloadsBusyIndicator->hide();
+   }
 }
 
 void MainWindow::onGlobalProgressChanged(quint64 completed, quint64 total)
@@ -483,8 +507,13 @@ void MainWindow::joinRoom()
    }
 }
 
+void MainWindow::leaveRoom(QWidget* widgetChat)
+{
+   this->coreConnection->leaveRoom(static_cast<WidgetChat*>(widgetChat)->getRoomName());
+}
+
 /**
-  * The widget can be a WidgetBrowse or a WidgetSearch.
+  * The widget can be a WidgetBrowse, WidgetSearch or WidgetChat (room).
   */
 void MainWindow::removeWidget(QWidget* widget)
 {
@@ -494,6 +523,9 @@ void MainWindow::removeWidget(QWidget* widget)
       this->widgetsSearch.removeOne(widgetSearch);
    else if (WidgetChat* widgetChat = dynamic_cast<WidgetChat*>(widget))
       this->widgetsChatRoom.removeOne(widgetChat);
+
+   // TODO : what if a widget is removed without clicking the close button, is this button will ne remain undeleted!?
+   //this->mdiAreaTabBar
 
    this->removeMdiSubWindow(dynamic_cast<QMdiSubWindow*>(widget->parent()));
 }
@@ -1005,7 +1037,7 @@ WidgetSearch* MainWindow::addWidgetSearch(const QString& term, bool searchInOwnF
    return widgetSearch;
 }
 
-WidgetChat* MainWindow::addWidgetChatRoom(const QString& roomName)
+WidgetChat* MainWindow::addWidgetChatRoom(const QString& roomName, bool switchTo)
 {
    // If the chat room is already open.
    for (QListIterator<WidgetChat*> i(this->widgetsChatRoom); i.hasNext();)
@@ -1013,10 +1045,13 @@ WidgetChat* MainWindow::addWidgetChatRoom(const QString& roomName)
       WidgetChat* chatRoom = i.next();
       if (chatRoom->getRoomName() == roomName)
       {
-         this->ui->mdiArea->setActiveSubWindow(static_cast<QMdiSubWindow*>(chatRoom->parent()));
+         if (switchTo)
+            this->ui->mdiArea->setActiveSubWindow(static_cast<QMdiSubWindow*>(chatRoom->parent()));
          return chatRoom;
       }
    }
+
+   QMdiSubWindow* currentWindow = this->ui->mdiArea->currentSubWindow();
 
    WidgetChat* widgetChat = new WidgetChat(this->coreConnection, this->peerListModel, roomName, this);
    widgetChat->installEventFilterOnInput(this);
@@ -1024,10 +1059,13 @@ WidgetChat* MainWindow::addWidgetChatRoom(const QString& roomName)
    widgetChat->setWindowState(Qt::WindowMaximized);
    this->widgetsChatRoom << widgetChat;
 
-   TabCloseButton* closeButton = new TabCloseButton(widgetChat);
+   TabCloseButton* closeButton = new TabCloseButton(widgetChat, nullptr, false);
    closeButton->setObjectName("tabWidget");
-   connect(closeButton, SIGNAL(clicked(QWidget*)), this, SLOT(removeWidget(QWidget*)));
+   connect(closeButton, SIGNAL(clicked(QWidget*)), this, SLOT(leaveRoom(QWidget*)));
    this->mdiAreaTabBar->setTabButton(this->mdiAreaTabBar->count() - 1, QTabBar::RightSide, closeButton);
+
+   if (!switchTo && currentWindow)
+      this->ui->mdiArea->setActiveSubWindow(currentWindow);
 
    return widgetChat;
 }
@@ -1038,5 +1076,8 @@ void MainWindow::removeAllWidgets()
       this->removeWidget(widget);
 
    foreach (WidgetSearch* widget, this->widgetsSearch)
+      this->removeWidget(widget);
+
+   foreach (WidgetChat* widget, this->widgetsChatRoom)
       this->removeWidget(widget);
 }
