@@ -14,6 +14,7 @@ moc_*.cpp
 *.dll
 Makefile*
 output/
+Installations/
 .tmp/
 /doc/doxygen/html
 qrc_*.cpp

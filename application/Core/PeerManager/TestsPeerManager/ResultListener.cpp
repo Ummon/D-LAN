@@ -46,7 +46,7 @@ int ResultListener::getNbEntriesResultReceived(int n) const
    if (n >= this->entriesResultList.size())
       return 0;
 
-   return this->entriesResultList.last().entries(n).entry_size();
+   return this->entriesResultList.last().result(n).entries().entry_size();
 }
 
 const Protos::Core::GetHashesResult& ResultListener::getLastGetHashesResult()
