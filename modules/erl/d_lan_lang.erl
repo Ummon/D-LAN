@@ -115,7 +115,7 @@ translate(fr, faq, a2) ->
    "<li>Vérifier que la dernière version de D-LAN est installée.</li>"
    "<li>S'assurer que les ports 59486 (<i>UDP</i>) et 59487 (<i>UDP + TCP</i>) sont ouvert sur le pare-feu (<i>firewall</i>).</li>"
    "<li>S'assurer que l'UDP multicast est autorisé sur le réseau. L'adresse utilisée est la suivante : 236.13.43.24.</li>"
-   "Tous les pairs doivent utiliser le même protocole : IPv4 ou IPv6, voir <i>Paramètres &gt; Réseau</i>.</li>"
+   "<li>Tous les pairs doivent utiliser le même protocole : IPv4 ou IPv6, voir <i>Paramètres &gt; Réseau</i>.</li>"
    "</ul>";
    
 translate(en, faq, q3) -> "D-LAN slows down my computer when hashing, what's that and why it's needed?";
