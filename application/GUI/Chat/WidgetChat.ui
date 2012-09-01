@@ -13,7 +13,7 @@
   <property name="windowTitle">
    <string>Chat</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout_2">
+  <layout class="QVBoxLayout" name="layMain">
    <property name="spacing">
     <number>6</number>
    </property>

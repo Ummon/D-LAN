@@ -24,7 +24,7 @@
 
 #include <Common/RemoteCoreController/ICoreConnection.h>
 
-#include <PeerList/PeerListModel.h>
+#include <Peers/PeerListModel.h>
 #include <Chat/ChatModel.h>
 #include <WidgetDocument.h>
 

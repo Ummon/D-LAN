@@ -30,7 +30,7 @@
 #include <Common/Hash.h>
 #include <Common/RemoteCoreController/ICoreConnection.h>
 
-#include <PeerList/PeerListModel.h>
+#include <Peers/PeerListModel.h>
 
 namespace GUI
 {

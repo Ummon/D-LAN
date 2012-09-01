@@ -62,7 +62,6 @@ SOURCES += main.cpp\
     Downloads/WidgetDownloads.cpp \
     Downloads/DownloadsFlatModel.cpp \
     Log/LogModel.cpp \
-    PeerList/PeerListModel.cpp \
     Search/WidgetSearch.cpp \
     Search/SearchModel.cpp \
     Settings/WidgetSettings.cpp \
@@ -78,12 +77,16 @@ SOURCES += main.cpp\
     Settings/AskNewPasswordDialog.cpp \
     Downloads/DownloadsTreeModel.cpp \
     Downloads/DownloadsModel.cpp \
-    PeerList/PeerListDelegate.cpp \
     BusyIndicator.cpp \
     Log/LogDelegate.cpp \
     WidgetDocument.cpp \
     Chat/RoomsModel.cpp \
-    Chat/RoomsDelegate.cpp
+    Chat/RoomsDelegate.cpp \
+    Peers/PeersDock.cpp \
+    Peers/PeerListModel.cpp \
+    Peers/PeerListDelegate.cpp \
+    Chat/RoomsDock.cpp \
+    Search/SearchDock.cpp
 
 HEADERS  += MainWindow.h \
     ../Protos/gui_protocol.pb.h \
@@ -104,7 +107,6 @@ HEADERS  += MainWindow.h \
     Downloads/WidgetDownloads.h \
     Downloads/DownloadFilterStatus.h \
     Log/LogModel.h \
-    PeerList/PeerListModel.h \
     Search/WidgetSearch.h \
     Search/SearchModel.h \
     Settings/WidgetSettings.h \
@@ -130,7 +132,12 @@ HEADERS  += MainWindow.h \
     Log/LogDelegate.h \
     WidgetDocument.h \
     Chat/RoomsModel.h \
-    Chat/RoomsDelegate.h
+    Chat/RoomsDelegate.h \
+    Peers/PeersDock.h \
+    Peers/PeerListModel.h \
+    Peers/PeerListDelegate.h \
+    Chat/RoomsDock.h \
+    Search/SearchDock.h
 
 FORMS    += MainWindow.ui \
     StatusBar.ui \
@@ -142,7 +149,10 @@ FORMS    += MainWindow.ui \
     Settings/WidgetSettings.ui \
     Uploads/WidgetUploads.ui \
     Settings/RemoteFileDialog.ui \
-    Settings/AskNewPasswordDialog.ui
+    Settings/AskNewPasswordDialog.ui \
+    Peers/PeersDock.ui \
+    Chat/RoomsDock.ui \
+    Search/SearchDock.ui
 
 RESOURCES += \
     ressources.qrc

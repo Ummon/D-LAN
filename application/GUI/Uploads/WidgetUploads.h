@@ -26,7 +26,7 @@
 #include <Common/RemoteCoreController/ICoreConnection.h>
 
 #include <Uploads/UploadsModel.h>
-#include <PeerList/PeerListModel.h>
+#include <Peers/PeerListModel.h>
 
 namespace Ui {
    class WidgetUploads;

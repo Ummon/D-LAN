@@ -28,7 +28,7 @@
 #include <Common/Hash.h>
 #include <Common/RemoteCoreController/ICoreConnection.h>
 
-#include <PeerList/PeerListModel.h>
+#include <Peers/PeerListModel.h>
 #include <Settings/DirListModel.h>
 #include <Browse/BrowseModel.h>
 #include <DownloadMenu.h>

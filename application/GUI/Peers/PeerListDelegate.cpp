@@ -16,14 +16,14 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#include <PeerList/PeerListDelegate.h>
+#include <Peers/PeerListDelegate.h>
 using namespace GUI;
 
 #include <QPainter>
 
 #include <Common/Settings.h>
 
-#include <PeerList/PeerListModel.h>
+#include <Peers/PeerListModel.h>
 
 /**
   * @class PeerListDelegate

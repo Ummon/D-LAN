@@ -388,7 +388,7 @@ void WidgetSettings::coreConnecting()
    this->ui->butConnect->setDisabled(true);
    this->ui->butDisconnect->setDisabled(true);
    this->ui->butResetCoreAddress->setDisabled(true);
-   this->ui->butConnect->setText(tr("Connecting.."));
+   this->ui->butConnect->setText(tr("Connecting . . ."));
 }
 
 void WidgetSettings::coreConnectingError()

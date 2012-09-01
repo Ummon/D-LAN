@@ -16,7 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#include <PeerList/PeerListModel.h>
+#include <Peers/PeerListModel.h>
 using namespace GUI;
 
 #include <QtAlgorithms>
@@ -55,6 +55,7 @@ PeerListModel::PeerListModel(QSharedPointer<RCC::ICoreConnection> coreConnection
    currentSortType(Protos::GUI::Settings::BY_SHARING_AMOUNT)
 {
    connect(this->coreConnection.data(), SIGNAL(newState(Protos::GUI::State)), this, SLOT(newState(Protos::GUI::State)));
+   connect(this->coreConnection.data(), SIGNAL(disconnected(bool)), this, SLOT(coreDisconnected(bool)));
 }
 
 PeerListModel::~PeerListModel()
@@ -93,12 +94,6 @@ QHostAddress PeerListModel::getPeerIP(int rowNum) const
    if (rowNum >= this->orderedPeers.size())
       return QHostAddress();
    return this->orderedPeers.getFromIndex(rowNum)->ip;
-}
-
-void PeerListModel::clear()
-{
-   google::protobuf::RepeatedPtrField<Protos::GUI::State_Peer> peers;
-   this->updatePeers(peers, QSet<Common::Hash>());
 }
 
 void PeerListModel::setSortType(Protos::GUI::Settings::PeerSortType sortType)
@@ -251,6 +246,12 @@ void PeerListModel::newState(const Protos::GUI::State& state)
       peersDownloadingOurData << Common::Hash(state.upload(i).peer_id().hash());
 
    this->updatePeers(state.peer(), peersDownloadingOurData);
+}
+
+void PeerListModel::coreDisconnected(bool forced)
+{
+   google::protobuf::RepeatedPtrField<Protos::GUI::State_Peer> peers;
+   this->updatePeers(peers, QSet<Common::Hash>());
 }
 
 void PeerListModel::updatePeers(const google::protobuf::RepeatedPtrField<Protos::GUI::State::Peer>& peers, const QSet<Common::Hash>& peersDownloadingOurData)

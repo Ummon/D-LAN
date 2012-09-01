@@ -30,7 +30,7 @@
 #include <Common/RemoteCoreController/ISearchResult.h>
 
 #include <Browse/BrowseModel.h>
-#include <PeerList/PeerListModel.h>
+#include <Peers/PeerListModel.h>
 #include <Settings/DirListModel.h>
 
 namespace GUI

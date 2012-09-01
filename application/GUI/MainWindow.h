@@ -30,25 +30,23 @@
 
 #include <Common/RemoteCoreController/ICoreConnection.h>
 
-#include <PeerList/PeerListModel.h>
-#include <PeerList/PeerListDelegate.h>
 #include <Log/LogModel.h>
 #include <Log/LogDelegate.h>
+
+// Dockable widgets.
+#include <Peers/PeersDock.h>
+#include <Chat/RoomsDock.h>
+#include <Search/SearchDock.h>
 
 #include <Settings/WidgetSettings.h>
 #include <Settings/DirListModel.h>
 #include <Chat/WidgetChat.h>
-#include <Chat/RoomsModel.h>
-#include <Chat/RoomsDelegate.h>
 #include <Downloads/WidgetDownloads.h>
 #include <Uploads/WidgetUploads.h>
 #include <Browse/WidgetBrowse.h>
 #include <Search/WidgetSearch.h>
 #include <Taskbar/Taskbar.h>
 #include <BusyIndicator.h>
-
-
-Q_DECLARE_METATYPE(QHostAddress)
 
 namespace Ui {
    class MainWindow;
@@ -79,19 +77,11 @@ namespace GUI
       void tabMoved(int from, int to);
       void subWindowActivated(QMdiSubWindow* window);
 
-      void displayContextMenuPeers(const QPoint& point);
-      void browse();
-      void takeControlOfACore();
-      void copyIPToClipboard();
-      void searchOtherPeers();
-      void searchOwnFiles();
+      void browsePeer(const Common::Hash& peerID);
 
-      void sortPeersBySharingAmount();
-      void sortPeersByNick();
-      void colorizeSelectedPeer();
-      void uncolorizeSelectedPeer();
+      void search(const QString& terms, bool ownFiles);
 
-      void joinRoom();
+      void roomJoined(const QString& name);
       void leaveRoom(QWidget* widgetChat);
 
       void removeWidget(QWidget* widget);
@@ -120,15 +110,11 @@ namespace GUI
 #endif
 
    private:
-      void search(bool ownFiles = false);
-
       void setApplicationStateAsConnected();
       void setApplicationStateAsDisconnected();
 
       void saveWindowsSettings();
       void restoreWindowsSettings();
-
-      void restoreColorizedPeers();
 
       QString getBusyIndicatorToolTip() const;
 
@@ -158,7 +144,12 @@ namespace GUI
 
       void removeAllWidgets();
 
+      QSharedPointer<RCC::ICoreConnection> coreConnection;
+
       Ui::MainWindow* ui;
+      SearchDock* searchDock;
+      PeersDock* peersDock;
+      RoomsDock* roomsDock;
 
       QTabBar* mdiAreaTabBar;
 
@@ -179,19 +170,11 @@ namespace GUI
       bool customStyleLoaded;
       Qt::WindowFlags initialWindowFlags;
 
-      QSharedPointer<RCC::ICoreConnection> coreConnection;
-
-      PeerListModel peerListModel;
-      PeerListDelegate peerListDelegate;
-
       DirListModel sharedDirsModel;
 
       bool autoScroll;
       LogModel logModel;
       LogDelegate logDelegate;
-
-      RoomsModel roomsModel;
-      RoomsDelegate roomsDelegate;
 
       Taskbar taskbar;
    };

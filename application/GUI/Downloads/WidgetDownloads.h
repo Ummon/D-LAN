@@ -32,7 +32,7 @@
 
 #include <CheckBoxList.h>
 #include <CheckBoxModel.h>
-#include <PeerList/PeerListModel.h>
+#include <Peers/PeerListModel.h>
 #include <Downloads/DownloadFilterStatus.h>
 #include <Downloads/DownloadsFlatModel.h>
 #include <Downloads/DownloadsTreeModel.h>

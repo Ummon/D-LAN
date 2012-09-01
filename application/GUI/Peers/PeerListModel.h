@@ -47,7 +47,6 @@ namespace GUI
       bool isOurself(int rowNum) const;
       Common::Hash getPeerID(int rowNum) const;
       QHostAddress getPeerIP(int rowNum) const;
-      void clear();
 
       void setSortType(Protos::GUI::Settings::PeerSortType sortType);
       Protos::GUI::Settings::PeerSortType getSortType() const;
@@ -81,6 +80,7 @@ namespace GUI
 
    private slots:
       void newState(const Protos::GUI::State& state);
+      void coreDisconnected(bool forced);
 
    private:
       void updatePeers(const google::protobuf::RepeatedPtrField<Protos::GUI::State::Peer>& orderedPeers, const QSet<Common::Hash>& peersDownloadingOurData);
