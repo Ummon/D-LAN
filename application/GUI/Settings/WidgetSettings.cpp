@@ -271,7 +271,7 @@ void WidgetSettings::updateNetworkInterfaces(const Protos::GUI::State& state)
    this->connectAllAddressButtons();
 }
 
-void WidgetSettings::updateAddresses(const Protos::Common::Interface& interface, QWidget* container)
+void WidgetSettings::updateAddresses(const Protos::Common::Interface& interfaceMess, QWidget* container)
 {
    QVBoxLayout* layout = container->findChild<QVBoxLayout*>();
    if (!layout)
@@ -284,9 +284,9 @@ void WidgetSettings::updateAddresses(const Protos::Common::Interface& interface,
 
    QList<QRadioButton*> addressesNotUpdated = container->findChildren<QRadioButton*>();
 
-   for (int i = 0; i < interface.address_size(); i++)
+   for (int i = 0; i < interfaceMess.address_size(); i++)
    {
-      const QString& addresseName = Common::ProtoHelper::getStr(interface.address(i), &Protos::Common::Interface::Address::address);
+      const QString& addresseName = Common::ProtoHelper::getStr(interfaceMess.address(i), &Protos::Common::Interface::Address::address);
 
       for (QListIterator<QRadioButton*> j(container->findChildren<QRadioButton*>()); j.hasNext();)
       {
@@ -294,7 +294,7 @@ void WidgetSettings::updateAddresses(const Protos::Common::Interface& interface,
          if (addressButton->text() == addresseName)
          {
             addressesNotUpdated.removeOne(addressButton);
-            if (interface.address(i).listened())
+            if (interfaceMess.address(i).listened())
                addressButton->setChecked(true);
             goto nextAddress;
          }
@@ -304,7 +304,7 @@ void WidgetSettings::updateAddresses(const Protos::Common::Interface& interface,
          // Address not found -> add a new one.
          QRadioButton* newAddressButton = new QRadioButton(addresseName, container);
          this->ui->grpAddressesToListenTo->addButton(newAddressButton);
-         if (interface.address(i).listened())
+         if (interfaceMess.address(i).listened())
             newAddressButton->setChecked(true);
          layout->addWidget(newAddressButton);
       }

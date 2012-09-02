@@ -25,9 +25,6 @@
 #include <QMdiSubWindow>
 #include <QKeyEvent>
 
-#include <Protos/gui_protocol.pb.h>
-#include <Protos/common.pb.h>
-
 #include <Common/RemoteCoreController/ICoreConnection.h>
 
 #include <Log/LogModel.h>
@@ -38,15 +35,9 @@
 #include <Chat/RoomsDock.h>
 #include <Search/SearchDock.h>
 
-#include <Settings/WidgetSettings.h>
-#include <Settings/DirListModel.h>
-#include <Chat/WidgetChat.h>
-#include <Downloads/WidgetDownloads.h>
-#include <Uploads/WidgetUploads.h>
-#include <Browse/WidgetBrowse.h>
-#include <Search/WidgetSearch.h>
 #include <Taskbar/Taskbar.h>
-#include <BusyIndicator.h>
+
+#include <MdiArea.h>
 
 namespace Ui {
    class MainWindow;
@@ -67,15 +58,9 @@ namespace GUI
       void languageChanged(const QString& filename);
 
    private slots:
-      void newState(const Protos::GUI::State& state);
-      void onGlobalProgressChanged(quint64 completed, quint64 total);
-
       void coreConnectionError(RCC::ICoreConnection::ConnectionErrorCode errorCode);
       void coreConnected();
       void coreDisconnected(bool forced);
-
-      void tabMoved(int from, int to);
-      void subWindowActivated(QMdiSubWindow* window);
 
       void browsePeer(const Common::Hash& peerID);
 
@@ -83,8 +68,6 @@ namespace GUI
 
       void roomJoined(const QString& name);
       void leaveRoom(QWidget* widgetChat);
-
-      void removeWidget(QWidget* widget);
 
       void logScrollChanged(int value);
       void newLogMessage();
@@ -110,69 +93,24 @@ namespace GUI
 #endif
 
    private:
-      void setApplicationStateAsConnected();
-      void setApplicationStateAsDisconnected();
-
       void saveWindowsSettings();
       void restoreWindowsSettings();
-
-      QString getBusyIndicatorToolTip() const;
-
-      void removeMdiSubWindow(QMdiSubWindow* mdiSubWindow);
-
-      void addWidgetSettings();
-      void removeWidgetSettings();
-
-      void addWidgetChat();      
-      void removeWidgetChat();
-
-      void addWidgetDownloads();
-      void removeWidgetDownloads();
-
-      void addWidgetUploads();
-      void removeWidgetUploads();
-
-      WidgetBrowse* addWidgetBrowse(const Common::Hash& peerID);
-
-   private slots:
-      WidgetBrowse* addWidgetBrowse(const Common::Hash& peerID, const Protos::Common::Entry& remoteEntry);
-
-   private:
-      WidgetSearch* addWidgetSearch(const QString& term, bool searchInOwnFiles = false);
-
-      WidgetChat* addWidgetChatRoom(const QString& roomName, bool switchTo = true);
-
-      void removeAllWidgets();
 
       QSharedPointer<RCC::ICoreConnection> coreConnection;
 
       Ui::MainWindow* ui;
+
       SearchDock* searchDock;
       PeersDock* peersDock;
       RoomsDock* roomsDock;
 
-      QTabBar* mdiAreaTabBar;
-
-      WidgetSettings* widgetSettings;
-      WidgetChat* widgetChat;
-      WidgetDownloads* widgetDownloads;
-      WidgetUploads* widgetUploads;
-      QList<WidgetBrowse*> widgetsBrowse;
-      QList<WidgetSearch*> widgetsSearch;
-      QList<WidgetChat*> widgetsChatRoom;
-
-      // This widget is shown on the tab of the downloads page. It is visible only after D-LAN has started and during the loading
-      // of the cache (before the downloads are loaded).
-      // This widget is owned by the tab bar of the 'QMdiArea'.
-      BusyIndicator* downloadsBusyIndicator;
+      MdiArea* mdiArea;
 
       QPoint dragPosition; // Used by custome styles.
       bool customStyleLoaded;
       Qt::WindowFlags initialWindowFlags;
 
-      DirListModel sharedDirsModel;
-
-      bool autoScroll;
+      bool logAutoScroll;
       LogModel logModel;
       LogDelegate logDelegate;
 

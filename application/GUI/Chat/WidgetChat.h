@@ -51,6 +51,7 @@ namespace GUI
       explicit WidgetChat(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel, const QString& roomName, QWidget* parent = nullptr);
       ~WidgetChat();
 
+      bool isGeneral() const;
       QString getRoomName() const;
 
       void installEventFilterOnInput(QObject* filterObj);

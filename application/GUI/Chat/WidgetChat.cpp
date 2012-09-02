@@ -128,6 +128,11 @@ WidgetChat::~WidgetChat()
    delete this->ui;
 }
 
+bool WidgetChat::isGeneral() const
+{
+   return this->getRoomName().isEmpty();
+}
+
 QString WidgetChat::getRoomName() const
 {
    return this->chatModel.getRoomName();

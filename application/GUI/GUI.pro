@@ -86,7 +86,8 @@ SOURCES += main.cpp\
     Peers/PeerListModel.cpp \
     Peers/PeerListDelegate.cpp \
     Chat/RoomsDock.cpp \
-    Search/SearchDock.cpp
+    Search/SearchDock.cpp \
+    MdiArea.cpp
 
 HEADERS  += MainWindow.h \
     ../Protos/gui_protocol.pb.h \
@@ -137,7 +138,8 @@ HEADERS  += MainWindow.h \
     Peers/PeerListModel.h \
     Peers/PeerListDelegate.h \
     Chat/RoomsDock.h \
-    Search/SearchDock.h
+    Search/SearchDock.h \
+    MdiArea.h
 
 FORMS    += MainWindow.ui \
     StatusBar.ui \
