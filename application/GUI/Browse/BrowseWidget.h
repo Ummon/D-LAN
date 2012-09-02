@@ -16,8 +16,8 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef GUI_WIDGETBROWSE_H
-#define GUI_WIDGETBROWSE_H
+#ifndef GUI_BROWSEWINDOW_H
+#define GUI_BROWSEWINDOW_H
 
 #include <QWidget>
 #include <QStringList>
@@ -34,7 +34,7 @@
 #include <DownloadMenu.h>
 
 namespace Ui {
-   class WidgetBrowse;
+   class BrowseWidget;
 }
 
 namespace GUI
@@ -45,12 +45,12 @@ namespace GUI
       void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const;
    };
 
-   class WidgetBrowse : public QWidget
+   class BrowseWidget : public QWidget
    {
       Q_OBJECT
    public:
-      explicit WidgetBrowse(QSharedPointer<RCC::ICoreConnection> coreConnection, const PeerListModel& peerListModel, const DirListModel& sharedDirsModel, const Common::Hash& peerID, QWidget* parent = 0);
-      ~WidgetBrowse();
+      explicit BrowseWidget(QSharedPointer<RCC::ICoreConnection> coreConnection, const PeerListModel& peerListModel, const DirListModel& sharedDirsModel, const Common::Hash& peerID, QWidget* parent = nullptr);
+      ~BrowseWidget();
       Common::Hash getPeerID() const;
       void browseTo(const Protos::Common::Entry& remoteEntry);
 
@@ -75,7 +75,7 @@ namespace GUI
    private:
       void openFile(const QModelIndex& index) const;
 
-      Ui::WidgetBrowse* ui;
+      Ui::BrowseWidget* ui;
       DownloadMenu downloadMenu;
 
       QSharedPointer<RCC::ICoreConnection> coreConnection;

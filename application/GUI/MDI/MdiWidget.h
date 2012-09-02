@@ -16,17 +16,18 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef GUI_WIDGETDOCUMENT_H
-#define GUI_WIDGETDOCUMENT_H
+#ifndef GUI_MDIWIDGET_H
+#define GUI_MDIWIDGET_H
 
 #include <QWidget>
 
 namespace GUI
 {
-   class WidgetDocument : public QWidget
+   class MdiWidget : public QWidget
    {
    public:
-      WidgetDocument(QWidget* parent = 0);
+      MdiWidget(QWidget* parent = nullptr);
+      virtual ~MdiWidget() {}
 
       void activate();
 

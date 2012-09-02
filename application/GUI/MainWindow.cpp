@@ -61,6 +61,11 @@ MainWindow::MainWindow(QSharedPointer<RCC::ICoreConnection> coreConnection, QWid
    this->taskbar.setStatus(TaskbarButtonStatus::BUTTON_STATUS_NOPROGRESS);
 
    this->mdiArea = new MdiArea(this->coreConnection, this->peersDock->getModel(), this->taskbar, this->ui->centralWidget);
+   /*QSizePolicy sizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+   sizePolicy.setHorizontalStretch(0);
+   sizePolicy.setVerticalStretch(0);
+   sizePolicy.setHeightForWidth(this->mdiArea->sizePolicy().hasHeightForWidth());
+   this->mdiArea->setSizePolicy(sizePolicy);*/
    this->ui->verticalLayout->addWidget(this->mdiArea);
    connect(this->mdiArea, SIGNAL(languageChanged(QString)), this, SIGNAL(languageChanged(QString)));
    connect(this->mdiArea, SIGNAL(styleChanged(QString)), this, SLOT(loadCustomStyle(QString)));
@@ -191,22 +196,17 @@ void MainWindow::coreDisconnected(bool forced)
 
 void MainWindow::browsePeer(const Common::Hash& peerID)
 {
-   this->mdiArea->openWindowBrowse(peerID);
+   this->mdiArea->openBrowseWindow(peerID);
 }
 
 void MainWindow::search(const QString& terms, bool ownFiles)
 {
-   this->mdiArea->openWindowSearch(terms, ownFiles);
+   this->mdiArea->openSearchWindow(terms, ownFiles);
 }
 
 void MainWindow::roomJoined(const QString& name)
 {
-   this->mdiArea->openWindowChat(name);
-}
-
-void MainWindow::leaveRoom(QWidget* widgetChat)
-{
-   this->coreConnection->leaveRoom(static_cast<WidgetChat*>(widgetChat)->getRoomName());
+   this->mdiArea->openChatWindow(name);
 }
 
 void MainWindow::logScrollChanged(int value)

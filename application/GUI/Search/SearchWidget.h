@@ -16,8 +16,8 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef GUI_WIDGETSEARCH_H
-#define GUI_WIDGETSEARCH_H
+#ifndef GUI_SEARCHWINDOW_H
+#define GUI_SEARCHWINDOW_H
 
 #include <QWidget>
 #include <QString>
@@ -34,7 +34,7 @@
 #include <DownloadMenu.h>
 
 namespace Ui {
-   class WidgetSearch;
+   class SearchWidget;
 }
 
 namespace GUI
@@ -66,12 +66,12 @@ namespace GUI
       virtual void onShowMenu(QMenu& menu);
    };
 
-   class WidgetSearch : public QWidget
+   class SearchWidget : public QWidget
    {
       Q_OBJECT
    public:
-      explicit WidgetSearch(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel, const DirListModel& sharedDirsModel, const QString& terms, bool searchInOwnFiles = true, QWidget *parent = 0);
-      ~WidgetSearch();
+      explicit SearchWidget(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel, const DirListModel& sharedDirsModel, const QString& terms, bool searchInOwnFiles, QWidget* parent = nullptr);
+      ~SearchWidget();
 
    signals:
       void browse(const Common::Hash&, const Protos::Common::Entry&);
@@ -99,7 +99,7 @@ namespace GUI
 
       void openFile(const QModelIndex& index) const;
 
-      Ui::WidgetSearch* ui;
+      Ui::SearchWidget* ui;
       SearchMenu downloadMenu;
 
       QSharedPointer<RCC::ICoreConnection> coreConnection;

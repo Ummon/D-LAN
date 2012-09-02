@@ -16,8 +16,8 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef GUI_WIDGETUPLOADS_H
-#define GUI_WIDGETUPLOADS_H
+#ifndef GUI_UPLOADSWINDOW_H
+#define GUI_UPLOADSWINDOW_H
 
 #include <QWidget>
 #include <QProgressBar>
@@ -29,7 +29,7 @@
 #include <Peers/PeerListModel.h>
 
 namespace Ui {
-   class WidgetUploads;
+   class UploadsWidget;
 }
 
 namespace GUI
@@ -45,18 +45,18 @@ namespace GUI
       QProgressBar model;
    };
 
-   class WidgetUploads : public QWidget
+   class UploadsWidget : public QWidget
    {
       Q_OBJECT
    public:
-      explicit WidgetUploads(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel, QWidget* parent = nullptr);
-      ~WidgetUploads();
+      explicit UploadsWidget(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel, QWidget* parent = nullptr);
+      ~UploadsWidget();
 
    protected:
       void changeEvent(QEvent* event);
 
    private:
-      Ui::WidgetUploads* ui;
+      Ui::UploadsWidget* ui;
 
       UploadsModel uploadsModel;
       UploadsDelegate uploadsDelegate;

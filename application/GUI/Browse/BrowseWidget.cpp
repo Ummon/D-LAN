@@ -16,8 +16,8 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#include <Browse/WidgetBrowse.h>
-#include <ui_WidgetBrowse.h>
+#include <Browse/BrowseWidget.h>
+#include <ui_BrowseWidget.h>
 using namespace GUI;
 
 #include <QMenu>
@@ -40,9 +40,9 @@ void BrowseDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option
 
 /////
 
-WidgetBrowse::WidgetBrowse(QSharedPointer<RCC::ICoreConnection> coreConnection, const PeerListModel& peerListModel, const DirListModel& sharedDirsModel, const Common::Hash& peerID, QWidget* parent) :
+BrowseWidget::BrowseWidget(QSharedPointer<RCC::ICoreConnection> coreConnection, const PeerListModel& peerListModel, const DirListModel& sharedDirsModel, const Common::Hash& peerID, QWidget* parent) :
    QWidget(parent),
-   ui(new Ui::WidgetBrowse),
+   ui(new Ui::BrowseWidget),
    downloadMenu(sharedDirsModel),
    coreConnection(coreConnection),
    peerID(peerID),
@@ -78,17 +78,17 @@ WidgetBrowse::WidgetBrowse(QSharedPointer<RCC::ICoreConnection> coreConnection, 
    this->setWindowTitle(peerListModel.getNick(this->peerID));
 }
 
-WidgetBrowse::~WidgetBrowse()
+BrowseWidget::~BrowseWidget()
 {
     delete this->ui;
 }
 
-Common::Hash WidgetBrowse::getPeerID() const
+Common::Hash BrowseWidget::getPeerID() const
 {
    return this->peerID;
 }
 
-void WidgetBrowse::browseTo(const Protos::Common::Entry& remoteEntry)
+void BrowseWidget::browseTo(const Protos::Common::Entry& remoteEntry)
 {
    this->tryingToReachEntryToBrowse = true;
    this->remoteEntryToBrowse = remoteEntry;
@@ -97,12 +97,12 @@ void WidgetBrowse::browseTo(const Protos::Common::Entry& remoteEntry)
       this->tryToReachEntryToBrowse();
 }
 
-void WidgetBrowse::refresh()
+void BrowseWidget::refresh()
 {
    this->browseModel.refresh();
 }
 
-void WidgetBrowse::changeEvent(QEvent* event)
+void BrowseWidget::changeEvent(QEvent* event)
 {
    if (event->type() == QEvent::LanguageChange)
       this->ui->retranslateUi(this);
@@ -110,7 +110,7 @@ void WidgetBrowse::changeEvent(QEvent* event)
       QWidget::changeEvent(event);
 }
 
-void WidgetBrowse::keyPressEvent(QKeyEvent* event)
+void BrowseWidget::keyPressEvent(QKeyEvent* event)
 {
    // Return key -> open all selected files.
    if (event->key() == Qt::Key_Return)
@@ -123,7 +123,7 @@ void WidgetBrowse::keyPressEvent(QKeyEvent* event)
       QWidget::keyPressEvent(event);
 }
 
-void WidgetBrowse::displayContextMenuDownload(const QPoint& point)
+void BrowseWidget::displayContextMenuDownload(const QPoint& point)
 {
    QPoint globalPosition = this->ui->treeView->mapToGlobal(point);
    if (this->coreConnection->getRemoteID() == this->peerID)
@@ -141,12 +141,12 @@ void WidgetBrowse::displayContextMenuDownload(const QPoint& point)
    }
 }
 
-void WidgetBrowse::entryDoubleClicked(const QModelIndex& index)
+void BrowseWidget::entryDoubleClicked(const QModelIndex& index)
 {
    this->openFile(index);
 }
 
-void WidgetBrowse::download()
+void BrowseWidget::download()
 {
    if (this->browseModel.nbSharedDirs() == 0)
    {
@@ -161,14 +161,14 @@ void WidgetBrowse::download()
       this->coreConnection->download(this->peerID, this->browseModel.getEntry(i.next()));
 }
 
-void WidgetBrowse::downloadTo()
+void BrowseWidget::downloadTo()
 {
    QStringList dirs = Utils::askForDirectoriesToDownloadTo(this->coreConnection);
    if (!dirs.isEmpty())
       this->downloadTo(dirs.first());
 }
 
-void WidgetBrowse::downloadTo(const QString& path, const Common::Hash& sharedDirID)
+void BrowseWidget::downloadTo(const QString& path, const Common::Hash& sharedDirID)
 {
    QModelIndexList selectedRows = this->ui->treeView->selectionModel()->selectedRows();
 
@@ -176,7 +176,7 @@ void WidgetBrowse::downloadTo(const QString& path, const Common::Hash& sharedDir
       this->coreConnection->download(this->peerID, this->browseModel.getEntry(i.next()), sharedDirID, path);
 }
 
-void WidgetBrowse::openLocation()
+void BrowseWidget::openLocation()
 {
    QModelIndexList selectedRows = this->ui->treeView->selectionModel()->selectedRows();
 
@@ -191,7 +191,7 @@ void WidgetBrowse::openLocation()
   * Try to select an entry from a remote peer in the browse tab.
   * The entry to browse is set in 'this->remoteEntryToBrowse'.
   */
-void WidgetBrowse::tryToReachEntryToBrowse()
+void BrowseWidget::tryToReachEntryToBrowse()
 {
    if (!this->tryingToReachEntryToBrowse)
       return;
@@ -229,7 +229,7 @@ void WidgetBrowse::tryToReachEntryToBrowse()
    this->tryingToReachEntryToBrowse = false;
 }
 
-void WidgetBrowse::openFile(const QModelIndex& index) const
+void BrowseWidget::openFile(const QModelIndex& index) const
 {
    if (this->coreConnection->getRemoteID() == this->peerID && !this->browseModel.isDir(index))
       Utils::openFile(this->browseModel.getPath(index));

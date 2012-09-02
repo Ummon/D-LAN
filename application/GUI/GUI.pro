@@ -54,18 +54,11 @@ SOURCES += main.cpp\
     DialogAbout.cpp \
     Log.cpp \
     CheckBoxList.cpp \
-    TabButtons.cpp \
-    Browse/WidgetBrowse.cpp \
     Browse/BrowseModel.cpp \
-    Chat/WidgetChat.cpp \
     Chat/ChatModel.cpp \
-    Downloads/WidgetDownloads.cpp \
     Downloads/DownloadsFlatModel.cpp \
     Log/LogModel.cpp \
-    Search/WidgetSearch.cpp \
     Search/SearchModel.cpp \
-    Settings/WidgetSettings.cpp \
-    Uploads/WidgetUploads.cpp \
     Uploads/UploadsModel.cpp \
     Settings/DirListModel.cpp \
     Settings/RemoteFileDialog.cpp \
@@ -79,7 +72,6 @@ SOURCES += main.cpp\
     Downloads/DownloadsModel.cpp \
     BusyIndicator.cpp \
     Log/LogDelegate.cpp \
-    WidgetDocument.cpp \
     Chat/RoomsModel.cpp \
     Chat/RoomsDelegate.cpp \
     Peers/PeersDock.cpp \
@@ -87,7 +79,15 @@ SOURCES += main.cpp\
     Peers/PeerListDelegate.cpp \
     Chat/RoomsDock.cpp \
     Search/SearchDock.cpp \
-    MdiArea.cpp
+    MDI/TabButtons.cpp \
+    MDI/MdiArea.cpp \
+    MDI/MdiSubWindow.cpp \
+    Browse/BrowseWidget.cpp \
+    Chat/ChatWidget.cpp \
+    Downloads/DownloadsWidget.cpp \
+    Search/SearchWidget.cpp \
+    Settings/SettingsWidget.cpp \
+    Uploads/UploadsWidget.cpp
 
 HEADERS  += MainWindow.h \
     ../Protos/gui_protocol.pb.h \
@@ -100,18 +100,11 @@ HEADERS  += MainWindow.h \
     CheckBoxList.h \
     CheckBoxModel.h \
     IFilter.h \
-    TabButtons.h \
-    Browse/WidgetBrowse.h \
     Browse/BrowseModel.h \
-    Chat/WidgetChat.h \
     Chat/ChatModel.h \
-    Downloads/WidgetDownloads.h \
     Downloads/DownloadFilterStatus.h \
     Log/LogModel.h \
-    Search/WidgetSearch.h \
     Search/SearchModel.h \
-    Settings/WidgetSettings.h \
-    Uploads/WidgetUploads.h \
     Uploads/UploadsModel.h \
     Settings/DirListModel.h \
     Settings/RemoteFileDialog.h \
@@ -131,7 +124,6 @@ HEADERS  += MainWindow.h \
     Taskbar/WinUtil.h \
     Taskbar/TaskbarTypes.h \
     Log/LogDelegate.h \
-    WidgetDocument.h \
     Chat/RoomsModel.h \
     Chat/RoomsDelegate.h \
     Peers/PeersDock.h \
@@ -139,22 +131,30 @@ HEADERS  += MainWindow.h \
     Peers/PeerListDelegate.h \
     Chat/RoomsDock.h \
     Search/SearchDock.h \
-    MdiArea.h
+    MDI/TabButtons.h \
+    MDI/MdiArea.h \
+    MDI/MdiWidget.h \
+    Browse/BrowseWidget.h \
+    Chat/ChatWidget.h \
+    Downloads/DownloadsWidget.h \
+    Search/SearchWidget.h \
+    Settings/SettingsWidget.h \
+    Uploads/UploadsWidget.h
 
 FORMS    += MainWindow.ui \
     StatusBar.ui \
     DialogAbout.ui \
-    Browse/WidgetBrowse.ui \
-    Chat/WidgetChat.ui \
-    Downloads/WidgetDownloads.ui \
-    Search/WidgetSearch.ui \
-    Settings/WidgetSettings.ui \
-    Uploads/WidgetUploads.ui \
     Settings/RemoteFileDialog.ui \
     Settings/AskNewPasswordDialog.ui \
     Peers/PeersDock.ui \
     Chat/RoomsDock.ui \
-    Search/SearchDock.ui
+    Search/SearchDock.ui \
+    Browse/BrowseWidget.ui \
+    Chat/ChatWidget.ui \
+    Downloads/DownloadsWidget.ui \
+    Search/SearchWidget.ui \
+    Settings/SettingsWidget.ui \
+    Uploads/UploadsWidget.ui
 
 RESOURCES += \
     ressources.qrc

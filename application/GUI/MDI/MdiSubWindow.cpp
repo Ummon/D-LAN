@@ -16,21 +16,20 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#include <WidgetDocument.h>
+#include <MDI/MdiWidget.h>
 using namespace GUI;
 
 /**
-  * @class WidgetDocument
-  * The widget used as sub window in the mdi area may inherit from this class
+  * @class MDIWidget
+  * The widget put into a MDI sub window in the MDI area may inherit from this class
   * to have access to additionnal features.
   */
 
-WidgetDocument::WidgetDocument(QWidget* parent) :
+MdiWidget::MdiWidget(QWidget* parent) :
    QWidget(parent)
-{
-}
+{}
 
-void WidgetDocument::activate()
+void MdiWidget::activate()
 {
    this->onActivate();
 }

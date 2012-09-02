@@ -56,13 +56,15 @@ QVariant RoomsModel::data(const QModelIndex& index, int role) const
    switch (role)
    {
    case Qt::DisplayRole:
+   {
+      const Room& room = this->rooms.getFromIndex(index.row());
       switch (index.column())
       {
-      case 0: return this->rooms.getFromIndex(index.row()).name;
-      case 1: return this->rooms.getFromIndex(index.row()).peerIDs.size();
+      case 0: return room.name;
+      case 1: return room.peerIDs.size() + (room.joined ? 1 : 0);
       }
       break;
-
+   }
    case Qt::TextAlignmentRole:
       return (index.column() == 1 ? Qt::AlignRight : Qt::AlignLeft) + Qt::AlignVCenter;
    }

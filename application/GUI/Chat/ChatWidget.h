@@ -16,8 +16,8 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef GUI_WIDGETCHAT_H
-#define GUI_WIDGETCHAT_H
+#ifndef GUI_CHATWINDOW_H
+#define GUI_CHATWINDOW_H
 
 #include <QWidget>
 #include <QStyledItemDelegate>
@@ -26,10 +26,10 @@
 
 #include <Peers/PeerListModel.h>
 #include <Chat/ChatModel.h>
-#include <WidgetDocument.h>
+#include <MDI/MdiWidget.h>
 
 namespace Ui {
-  class WidgetChat;
+  class ChatWidget;
 }
 
 namespace GUI
@@ -43,13 +43,13 @@ namespace GUI
 //      void setEditorData(QWidget* editor, const QModelIndex& index) const;
    };
 
-   class WidgetChat : public WidgetDocument
+   class ChatWidget : public MdiWidget
    {
       Q_OBJECT
    public:
-      explicit WidgetChat(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel, QWidget* parent = nullptr);
-      explicit WidgetChat(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel, const QString& roomName, QWidget* parent = nullptr);
-      ~WidgetChat();
+      explicit ChatWidget(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel, QWidget* parent = nullptr);
+      explicit ChatWidget(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel, const QString& roomName, QWidget* parent = nullptr);
+      ~ChatWidget();
 
       bool isGeneral() const;
       QString getRoomName() const;
@@ -77,7 +77,7 @@ namespace GUI
 
       void setNewMessageState(bool newMessage);
 
-      Ui::WidgetChat *ui;
+      Ui::ChatWidget* ui;
 
       QSharedPointer<RCC::ICoreConnection> coreConnection;
       ChatModel chatModel;

@@ -8,14 +8,14 @@
 
 #include <BusyIndicator.h>
 
-#include <Settings/WidgetSettings.h>
-#include <Settings/DirListModel.h>
 #include <Peers/PeerListModel.h>
-#include <Chat/WidgetChat.h>
-#include <Downloads/WidgetDownloads.h>
-#include <Uploads/WidgetUploads.h>
-#include <Browse/WidgetBrowse.h>
-#include <Search/WidgetSearch.h>
+#include <Settings/SettingsWidget.h>
+#include <Settings/DirListModel.h>
+#include <Chat/ChatWidget.h>
+#include <Downloads/DownloadsWidget.h>
+#include <Uploads/UploadsWidget.h>
+#include <Browse/BrowseWidget.h>
+#include <Search/SearchWidget.h>
 #include <Taskbar/Taskbar.h>
 
 namespace GUI
@@ -30,9 +30,9 @@ namespace GUI
       void focusNthWindow(int num);
       void closeCurrentWindow();
 
-      void openWindowBrowse(const Common::Hash& peerID);
-      void openWindowSearch(const QString& terms, bool ownFiles = false);
-      void openWindowChat(const QString& roomName);
+      void openBrowseWindow(const Common::Hash& peerID);
+      void openSearchWindow(const QString& terms, bool ownFiles = false);
+      void openChatWindow(const QString& roomName);
 
    signals:
       void languageChanged(const QString& filename);
@@ -48,7 +48,7 @@ namespace GUI
       void coreDisconnected(bool forced);
 
       void tabMoved(int from, int to);
-      void subWindowActivated(QMdiSubWindow* window);
+      void subWindowActivated(QMdiSubWindow* mdiWindow);
 
       void removeWidget(QWidget* widget);
 
@@ -57,44 +57,45 @@ namespace GUI
    private:
       QString getBusyIndicatorToolTip() const;
 
-      void removeMdiSubWindow(QMdiSubWindow* mdiSubWindow);
+      void addSettingsWindow();
+      void removeSettingsWindow();
 
-      void addWidgetSettings();
-      void removeWidgetSettings();
+      void addChatWindow();
+      void removeChatWindow();
 
-      void addWidgetChat();
-      void removeWidgetChat();
+      void addDownloadsWindow();
+      void removeDownloadsWindow();
 
-      void addWidgetDownloads();
-      void removeWidgetDownloads();
+      void addUploadsWindow();
+      void removeUploadsWindow();
 
-      void addWidgetUploads();
-      void removeWidgetUploads();
-
-      WidgetBrowse* addWidgetBrowse(const Common::Hash& peerID);
+      BrowseWidget* addBrowseWindow(const Common::Hash& peerID);
 
    private slots:
-      WidgetBrowse* addWidgetBrowse(const Common::Hash& peerID, const Protos::Common::Entry& remoteEntry);
+      BrowseWidget* addBrowseWindow(const Common::Hash& peerID, const Protos::Common::Entry& remoteEntry);
 
    private:
-      WidgetSearch* addWidgetSearch(const QString& term, bool searchInOwnFiles = false);
+      SearchWidget* addSearchWindow(const QString& term, bool searchInOwnFiles = false);
 
-      WidgetChat* addWidgetChatRoom(const QString& roomName, bool switchTo = true);
+      ChatWidget* addChatWindow(const QString& roomName, bool switchTo = true);
 
-      void removeAllWidgets();
+      void removeAllWindows();
 
       QSharedPointer<RCC::ICoreConnection> coreConnection;
       PeerListModel& peerListModel;
       Taskbar& taskbar;
 
       QTabBar* mdiAreaTabBar;
-      WidgetSettings* widgetSettings;
-      WidgetChat* widgetChat;
-      WidgetDownloads* widgetDownloads;
-      WidgetUploads* widgetUploads;
-      QList<WidgetBrowse*> widgetsBrowse;
-      QList<WidgetSearch*> widgetsSearch;
-      QList<WidgetChat*> widgetsChatRoom;
+
+      // Permanent windows.
+      SettingsWidget* settingsWidget;
+      ChatWidget* chatWidget;
+      DownloadsWidget* downloadsWidget;
+      UploadsWidget* uploadsWidget;
+
+      QList<BrowseWidget*> browseWidgets;
+      QList<SearchWidget*> searchWidgets;
+      QList<ChatWidget*> chatWidgets; // Rooms.
 
       // This widget is shown on the tab of the downloads page. It is visible only after D-LAN has started and during the loading
       // of the cache (before the downloads are loaded).

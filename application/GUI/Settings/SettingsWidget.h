@@ -16,8 +16,8 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef GUI_WIDGETSETTINGS_H
-#define GUI_WIDGETSETTINGS_H
+#ifndef GUI_SETTINGSWINDOWS_H
+#define GUI_SETTINGSWINDOWS_H
 
 #include <QWidget>
 #include <QDir>
@@ -29,10 +29,10 @@
 
 #include <Settings/DirListModel.h>
 #include <Settings/AskNewPasswordDialog.h>
-#include <WidgetDocument.h>
+#include <MDI/MdiWidget.h>
 
 namespace Ui {
-   class WidgetSettings;
+   class SettingsWidget;
 }
 
 namespace GUI
@@ -44,13 +44,13 @@ namespace GUI
       void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const;
    };
 
-   class WidgetSettings : public WidgetDocument
+   class SettingsWidget : public MdiWidget
    {
       Q_OBJECT
 
    public:
-      explicit WidgetSettings(QSharedPointer<RCC::ICoreConnection> coreConnection, DirListModel& sharedDirsModel, QWidget *parent = 0);
-      ~WidgetSettings();
+      explicit SettingsWidget(QSharedPointer<RCC::ICoreConnection> coreConnection, DirListModel& sharedDirsModel, QWidget* parent = nullptr);
+      ~SettingsWidget();
 
    public slots:
       void resetCoreAddress();
@@ -109,7 +109,7 @@ namespace GUI
    private:
       void onActivate();
 
-      Ui::WidgetSettings* ui;
+      Ui::SettingsWidget* ui;
 
       // To avoid to send a state (via 'saveCoreSettings()') without getting at least one state (via 'newState(..)').
       bool getAtLeastOneState;

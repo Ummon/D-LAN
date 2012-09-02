@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>WidgetUploads</class>
- <widget class="QWidget" name="WidgetUploads">
+ <class>UploadsWidget</class>
+ <widget class="QWidget" name="UploadsWidget">
   <property name="geometry">
    <rect>
     <x>0</x>

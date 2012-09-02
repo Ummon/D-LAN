@@ -283,9 +283,12 @@ void ChatSystem::loadRoomListFromSettings()
 void ChatSystem::saveRoomListToSettings()
 {
    QList<QString> joinedRoomNames;
-   for (QHashIterator<QString, Room> i(this->rooms); i.hasNext(); i.next())
+   for (QHashIterator<QString, Room> i(this->rooms); i.hasNext();)
+   {
+      i.next();
       if (i.value().joined)
          joinedRoomNames << i.key();
+   }
 
    SETTINGS.set("joined_chat_rooms", joinedRoomNames);
    SETTINGS.save();

@@ -16,7 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#include <TabButtons.h>
+#include <MDI/TabButtons.h>
 using namespace GUI;
 
 /**

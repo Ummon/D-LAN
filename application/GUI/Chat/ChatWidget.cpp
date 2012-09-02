@@ -16,8 +16,8 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#include <Chat/WidgetChat.h>
-#include <ui_WidgetChat.h>
+#include <Chat/ChatWidget.h>
+#include <ui_ChatWidget.h>
 using namespace GUI;
 
 #include <QMenu>
@@ -111,29 +111,37 @@ QSize	ChatDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelInd
 
 /////
 
-WidgetChat::WidgetChat(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel, QWidget* parent) :
-   WidgetDocument(parent), ui(new Ui::WidgetChat), coreConnection(coreConnection), chatModel(coreConnection, peerListModel), autoScroll(true)
+ChatWidget::ChatWidget(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel, QWidget* parent) :
+   MdiWidget(parent),
+   ui(new Ui::ChatWidget),
+   coreConnection(coreConnection),
+   chatModel(coreConnection, peerListModel),
+   autoScroll(true)
 {
    this->init();
 }
 
-WidgetChat::WidgetChat(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel, const QString& roomName, QWidget* parent) :
-   WidgetDocument(parent), ui(new Ui::WidgetChat), coreConnection(coreConnection), chatModel(coreConnection, peerListModel, roomName), autoScroll(true)
+ChatWidget::ChatWidget(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel, const QString& roomName, QWidget* parent) :
+   MdiWidget(parent),
+   ui(new Ui::ChatWidget),
+   coreConnection(coreConnection),
+   chatModel(coreConnection, peerListModel, roomName),
+   autoScroll(true)
 {
    this->init();
 }
 
-WidgetChat::~WidgetChat()
+ChatWidget::~ChatWidget()
 {
    delete this->ui;
 }
 
-bool WidgetChat::isGeneral() const
+bool ChatWidget::isGeneral() const
 {
    return this->getRoomName().isEmpty();
 }
 
-QString WidgetChat::getRoomName() const
+QString ChatWidget::getRoomName() const
 {
    return this->chatModel.getRoomName();
 }
@@ -141,12 +149,12 @@ QString WidgetChat::getRoomName() const
 /**
   * Install a event filter to the input widget (QLineEdit). For exemple, it allows to grap some key sequence as shortcut like CTRL-S to search.
   */
-void WidgetChat::installEventFilterOnInput(QObject* filterObj)
+void ChatWidget::installEventFilterOnInput(QObject* filterObj)
 {
    this->ui->txtMessage->installEventFilter(filterObj);
 }
 
-void WidgetChat::sendMessage()
+void ChatWidget::sendMessage()
 {
    //this->ui->txtMessage->setText(this->ui->txtMessage->text().trimmed());
    if (this->ui->txtMessage->toHtml().isEmpty())
@@ -156,7 +164,7 @@ void WidgetChat::sendMessage()
    this->ui->txtMessage->clear();
 }
 
-void WidgetChat::newRows(const QModelIndex& parent, int start, int end)
+void ChatWidget::newRows(const QModelIndex& parent, int start, int end)
 {
    for (int i = start; i <= end; i++)
       if (this->chatModel.isMessageIsOurs(i))
@@ -170,19 +178,19 @@ void WidgetChat::newRows(const QModelIndex& parent, int start, int end)
    this->setNewMessageState(true);
 }
 
-void WidgetChat::scrollChanged(int value)
+void ChatWidget::scrollChanged(int value)
 {
    this->autoScroll = value == this->ui->tblChat->verticalScrollBar()->maximum();
 }
 
-void WidgetChat::displayContextMenuDownloads(const QPoint& point)
+void ChatWidget::displayContextMenuDownloads(const QPoint& point)
 {
    QMenu menu;
    menu.addAction(tr("Copy selected lines"), this, SLOT(copySelectedLineToClipboard()));
    menu.exec(this->ui->tblChat->mapToGlobal(point));
 }
 
-void WidgetChat::copySelectedLineToClipboard()
+void ChatWidget::copySelectedLineToClipboard()
 {
    QString lines;
    QModelIndexList selection = this->ui->tblChat->selectionModel()->selectedRows();
@@ -193,14 +201,14 @@ void WidgetChat::copySelectedLineToClipboard()
    QApplication::clipboard()->setText(lines);
 }
 
-void WidgetChat::setToBold()
+void ChatWidget::setToBold()
 {
    //this->ui->txtMessage->setHtml("<h1>prout</h1>");
    //QString html = this->ui->txtMessage->toHtml();
    this->sendMessage();
 }
 
-void WidgetChat::keyPressEvent(QKeyEvent* event)
+void ChatWidget::keyPressEvent(QKeyEvent* event)
 {
    // CTRL.
    if (event->modifiers().testFlag(Qt::ControlModifier))
@@ -214,7 +222,7 @@ void WidgetChat::keyPressEvent(QKeyEvent* event)
    }
 }
 
-void WidgetChat::changeEvent(QEvent* event)
+void ChatWidget::changeEvent(QEvent* event)
 {
    if (event->type() == QEvent::LanguageChange)
       this->ui->retranslateUi(this);
@@ -222,7 +230,7 @@ void WidgetChat::changeEvent(QEvent* event)
       QWidget::changeEvent(event);
 }
 
-void WidgetChat::init()
+void ChatWidget::init()
 {
    this->ui->setupUi(this);
 
@@ -266,13 +274,13 @@ void WidgetChat::init()
    this->setNewMessageState(false);
 }
 
-void WidgetChat::onActivate()
+void ChatWidget::onActivate()
 {
    this->setNewMessageState(false);
    this->ui->txtMessage->setFocus();
 }
 
-void WidgetChat::setNewMessageState(bool newMessage)
+void ChatWidget::setNewMessageState(bool newMessage)
 {
    if (newMessage /*&& !this->isAncestorOf(QApplication::focusWidget())*/)
    {      

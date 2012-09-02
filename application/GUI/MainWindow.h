@@ -36,8 +36,7 @@
 #include <Search/SearchDock.h>
 
 #include <Taskbar/Taskbar.h>
-
-#include <MdiArea.h>
+#include <MDI/MdiArea.h>
 
 namespace Ui {
    class MainWindow;
@@ -67,7 +66,6 @@ namespace GUI
       void search(const QString& terms, bool ownFiles);
 
       void roomJoined(const QString& name);
-      void leaveRoom(QWidget* widgetChat);
 
       void logScrollChanged(int value);
       void newLogMessage();

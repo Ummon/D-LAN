@@ -16,8 +16,8 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#include <Search/WidgetSearch.h>
-#include <ui_WidgetSearch.h>
+#include <Search/SearchWidget.h>
+#include <ui_SearchWidget.h>
 using namespace GUI;
 
 #include <QTextDocument>
@@ -159,9 +159,9 @@ void SearchMenu::onShowMenu(QMenu& menu)
 
 /////
 
-WidgetSearch::WidgetSearch(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel, const DirListModel& sharedDirsModel, const QString& terms, bool searchInOwnFiles, QWidget *parent) :
+SearchWidget::SearchWidget(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel, const DirListModel& sharedDirsModel, const QString& terms, bool searchInOwnFiles, QWidget* parent) :
    QWidget(parent),
-   ui(new Ui::WidgetSearch),
+   ui(new Ui::SearchWidget),
    downloadMenu(sharedDirsModel),
    coreConnection(coreConnection),
    searchModel(coreConnection, peerListModel, sharedDirsModel)
@@ -208,13 +208,13 @@ WidgetSearch::WidgetSearch(QSharedPointer<RCC::ICoreConnection> coreConnection, 
       this->setWindowIcon(QIcon(":/icons/ressources/zoom_monitor.png"));
 }
 
-WidgetSearch::~WidgetSearch()
+SearchWidget::~SearchWidget()
 {
    disconnect(&this->searchModel, SIGNAL(progress(int)), this->ui->prgSearch, SLOT(setValue(int)));
    delete this->ui;
 }
 
-void WidgetSearch::changeEvent(QEvent* event)
+void SearchWidget::changeEvent(QEvent* event)
 {
    if (event->type() == QEvent::LanguageChange)
       this->ui->retranslateUi(this);
@@ -222,7 +222,7 @@ void WidgetSearch::changeEvent(QEvent* event)
       QWidget::changeEvent(event);
 }
 
-void WidgetSearch::keyPressEvent(QKeyEvent* event)
+void SearchWidget::keyPressEvent(QKeyEvent* event)
 {
    // Return key -> open all selected files.
    if (event->key() == Qt::Key_Return)
@@ -235,7 +235,7 @@ void WidgetSearch::keyPressEvent(QKeyEvent* event)
       QWidget::keyPressEvent(event);
 }
 
-void WidgetSearch::displayContextMenuDownload(const QPoint& point)
+void SearchWidget::displayContextMenuDownload(const QPoint& point)
 {   
    QPoint globalPosition = this->ui->treeView->viewport()->mapToGlobal(point);
 
@@ -265,12 +265,12 @@ void WidgetSearch::displayContextMenuDownload(const QPoint& point)
    }
 }
 
-void WidgetSearch::entryDoubleClicked(const QModelIndex& index)
+void SearchWidget::entryDoubleClicked(const QModelIndex& index)
 {
    this->openFile(index);
 }
 
-void WidgetSearch::download()
+void SearchWidget::download()
 {
    if (this->searchModel.nbSharedDirs() == 0)
    {
@@ -288,14 +288,14 @@ void WidgetSearch::download()
    }
 }
 
-void WidgetSearch::downloadTo()
+void SearchWidget::downloadTo()
 {
    QStringList dirs = Utils::askForDirectoriesToDownloadTo(this->coreConnection);
    if (!dirs.isEmpty())
       this->downloadTo(dirs.first());
 }
 
-void WidgetSearch::downloadTo(const QString& path, const Common::Hash& sharedDirID)
+void SearchWidget::downloadTo(const QString& path, const Common::Hash& sharedDirID)
 {
    QModelIndexList selectedRows = this->ui->treeView->selectionModel()->selectedRows();
    for (QListIterator<QModelIndex> i(selectedRows); i.hasNext();)
@@ -305,7 +305,7 @@ void WidgetSearch::downloadTo(const QString& path, const Common::Hash& sharedDir
    }
 }
 
-void WidgetSearch::openLocation()
+void SearchWidget::openLocation()
 {
    QModelIndexList selectedRows = this->ui->treeView->selectionModel()->selectedRows();
 
@@ -320,7 +320,7 @@ void WidgetSearch::openLocation()
    Utils::openLocations(locations.toList());
 }
 
-void WidgetSearch::browseCurrents()
+void SearchWidget::browseCurrents()
 {
    // We can only browse one item.
    QModelIndexList indexes = this->ui->treeView->selectionModel()->selectedRows();
@@ -328,7 +328,7 @@ void WidgetSearch::browseCurrents()
       emit browse(this->searchModel.getPeerID(indexes.first()), this->searchModel.getEntry(indexes.first()));
 }
 
-void WidgetSearch::progress(int value)
+void SearchWidget::progress(int value)
 {
    this->ui->prgSearch->setValue(value);
    const int nbFolders = this->searchModel.getNbFolders();
@@ -336,18 +336,18 @@ void WidgetSearch::progress(int value)
    this->ui->prgSearch->setFormat(QString("%1 director%2 / %3 file%4").arg(nbFolders).arg(nbFolders > 1 ? "ies" : "y").arg(nbFiles).arg(nbFiles > 1 ? "s" : ""));
 }
 
-void WidgetSearch::treeviewSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected)
+void SearchWidget::treeviewSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected)
 {
    this->ui->butDownload->setEnabled(this->atLeastOneRemotePeer(selected.indexes()));
 }
 
-void WidgetSearch::treeviewSectionResized(int logicalIndex, int oldSize, int newSize)
+void SearchWidget::treeviewSectionResized(int logicalIndex, int oldSize, int newSize)
 {
    SETTINGS.set("search_column_size", logicalIndex, static_cast<quint32>(newSize));
    SETTINGS.save();
 }
 
-bool WidgetSearch::atLeastOneRemotePeer(const QModelIndexList& indexes) const
+bool SearchWidget::atLeastOneRemotePeer(const QModelIndexList& indexes) const
 {
    for (QListIterator<QModelIndex> i(indexes); i.hasNext();)
       if (this->searchModel.getPeerID(i.next()) != this->coreConnection->getRemoteID())
@@ -356,7 +356,7 @@ bool WidgetSearch::atLeastOneRemotePeer(const QModelIndexList& indexes) const
    return false;
 }
 
-void WidgetSearch::openFile(const QModelIndex& index) const
+void SearchWidget::openFile(const QModelIndex& index) const
 {
    if (!SearchModel::isNonTerminalFile(index) && this->coreConnection->getRemoteID() == this->searchModel.getPeerID(index) && !this->searchModel.isDir(index))
       Utils::openFile(this->searchModel.getPath(index));

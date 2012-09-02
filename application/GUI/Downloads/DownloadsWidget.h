@@ -16,8 +16,8 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef GUI_WIDGETDOWNLOADS_H
-#define GUI_WIDGETDOWNLOADS_H
+#ifndef GUI_DOWNLOADSWINDOW_H
+#define GUI_DOWNLOADSWINDOW_H
 
 #include <QWidget>
 #include <QPoint>
@@ -36,11 +36,10 @@
 #include <Downloads/DownloadFilterStatus.h>
 #include <Downloads/DownloadsFlatModel.h>
 #include <Downloads/DownloadsTreeModel.h>
-
 #include <Settings/DirListModel.h>
 
 namespace Ui {
-   class WidgetDownloads;
+   class DownloadsWidget;
 }
 
 namespace GUI
@@ -57,12 +56,12 @@ namespace GUI
       QProgressBar model;
    };
 
-   class WidgetDownloads : public QWidget
+   class DownloadsWidget : public QWidget
    {
       Q_OBJECT
    public:
-      explicit WidgetDownloads(QSharedPointer<RCC::ICoreConnection> coreConnection, const PeerListModel& peerListModel, const DirListModel& sharedDirsModel, QWidget* parent = nullptr);
-      ~WidgetDownloads();
+      explicit DownloadsWidget(QSharedPointer<RCC::ICoreConnection> coreConnection, const PeerListModel& peerListModel, const DirListModel& sharedDirsModel, QWidget* parent = nullptr);
+      ~DownloadsWidget();
 
    signals:
       void globalProgressChanged(quint64 completed, quint64 total);
@@ -95,7 +94,7 @@ namespace GUI
 
       void openFile(const QModelIndex& index) const;
 
-      Ui::WidgetDownloads *ui;
+      Ui::DownloadsWidget *ui;
       CheckBoxList* filterStatusList;
 
       QSharedPointer<RCC::ICoreConnection> coreConnection;

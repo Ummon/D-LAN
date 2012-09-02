@@ -16,8 +16,8 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#include <Uploads/WidgetUploads.h>
-#include <ui_WidgetUploads.h>
+#include <Uploads/UploadsWidget.h>
+#include <ui_UploadsWidget.h>
 using namespace GUI;
 
 void UploadsDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
@@ -58,8 +58,10 @@ QSize UploadsDelegate::sizeHint(const QStyleOptionViewItem& option, const QModel
 
 /////
 
-WidgetUploads::WidgetUploads(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel, QWidget* parent) :
-   QWidget(parent), ui(new Ui::WidgetUploads), uploadsModel(coreConnection, peerListModel)
+UploadsWidget::UploadsWidget(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel, QWidget* parent) :
+   QWidget(parent),
+   ui(new Ui::UploadsWidget),
+   uploadsModel(coreConnection, peerListModel)
 {
    this->ui->setupUi(this);
 
@@ -83,12 +85,12 @@ WidgetUploads::WidgetUploads(QSharedPointer<RCC::ICoreConnection> coreConnection
    this->ui->tblUploads->setAlternatingRowColors(true);
 }
 
-WidgetUploads::~WidgetUploads()
+UploadsWidget::~UploadsWidget()
 {
    delete this->ui;
 }
 
-void WidgetUploads::changeEvent(QEvent* event)
+void UploadsWidget::changeEvent(QEvent* event)
 {
    if (event->type() == QEvent::LanguageChange)
       this->ui->retranslateUi(this);

@@ -16,8 +16,8 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#include <Settings/WidgetSettings.h>
-#include <ui_WidgetSettings.h>
+#include <Settings/SettingsWidget.h>
+#include <ui_SettingsWidget.h>
 using namespace GUI;
 
 #include <QFileDialog>
@@ -49,8 +49,13 @@ void DirListDelegate::paint(QPainter* painter, const QStyleOptionViewItem& optio
 
 /////
 
-WidgetSettings::WidgetSettings(QSharedPointer<RCC::ICoreConnection> coreConnection, DirListModel& sharedDirsModel, QWidget* parent) :
-   WidgetDocument(parent), ui(new Ui::WidgetSettings), getAtLeastOneState(false), coreConnection(coreConnection), sharedDirsModel(sharedDirsModel), corePasswordDefined(false)
+SettingsWidget::SettingsWidget(QSharedPointer<RCC::ICoreConnection> coreConnection, DirListModel& sharedDirsModel, QWidget* parent) :
+   MdiWidget(parent),
+   ui(new Ui::SettingsWidget),
+   getAtLeastOneState(false),
+   coreConnection(coreConnection),
+   sharedDirsModel(sharedDirsModel),
+   corePasswordDefined(false)
 {
    this->ui->setupUi(this);
 
@@ -123,18 +128,18 @@ WidgetSettings::WidgetSettings(QSharedPointer<RCC::ICoreConnection> coreConnecti
    this->coreDisconnected(); // To set the initial state.
 }
 
-WidgetSettings::~WidgetSettings()
+SettingsWidget::~SettingsWidget()
 {
    delete this->ui;
 }
 
-void WidgetSettings::resetCoreAddress()
+void SettingsWidget::resetCoreAddress()
 {
    this->ui->txtCoreAddress->setText("localhost");
    this->connectToCore();
 }
 
-void WidgetSettings::connectToCore()
+void SettingsWidget::connectToCore()
 {
    const QString newHost = this->ui->txtCoreAddress->text().trimmed().toLower();
 
@@ -142,7 +147,7 @@ void WidgetSettings::connectToCore()
       this->coreConnection->connectToCore(newHost, SETTINGS.get<quint32>("core_port"), this->ui->txtPassword->text());
 }
 
-void WidgetSettings::disconnectFromTheCore()
+void SettingsWidget::disconnectFromTheCore()
 {
    this->coreConnection->disconnectFromCore();
    SETTINGS.rm("password");
@@ -152,7 +157,7 @@ void WidgetSettings::disconnectFromTheCore()
 /**
   * Read the available language files and fill the combo box.
   */
-void WidgetSettings::fillComboBoxLanguages()
+void SettingsWidget::fillComboBoxLanguages()
 {
    QVariant dataEn;
    dataEn.setValue(Common::Language { "", QLocale("en") });
@@ -182,7 +187,7 @@ void WidgetSettings::fillComboBoxLanguages()
    }
 }
 
-void WidgetSettings::fillComboBoxStyles()
+void SettingsWidget::fillComboBoxStyles()
 {
    const QString& currentStyleFilename = SETTINGS.get<QString>("style");
 
@@ -198,19 +203,19 @@ void WidgetSettings::fillComboBoxStyles()
    }
 }
 
-void WidgetSettings::connectAllAddressButtons()
+void SettingsWidget::connectAllAddressButtons()
 {
    for (QListIterator<QRadioButton*> i(this->ui->scoInterfacesContent->findChildren<QRadioButton*>()); i.hasNext();)
       connect(i.next(), SIGNAL(toggled(bool)), this, SLOT(buttonAddressToggled(bool)));
 }
 
-void WidgetSettings::disconnectAllAddressButtons()
+void SettingsWidget::disconnectAllAddressButtons()
 {
    for (QListIterator<QRadioButton*> i(this->ui->scoInterfacesContent->findChildren<QRadioButton*>()); i.hasNext();)
       i.next()->disconnect(this);
 }
 
-void WidgetSettings::updateNetworkInterfaces(const Protos::GUI::State& state)
+void SettingsWidget::updateNetworkInterfaces(const Protos::GUI::State& state)
 {
    this->disconnectAllAddressButtons();
 
@@ -271,7 +276,7 @@ void WidgetSettings::updateNetworkInterfaces(const Protos::GUI::State& state)
    this->connectAllAddressButtons();
 }
 
-void WidgetSettings::updateAddresses(const Protos::Common::Interface& interfaceMess, QWidget* container)
+void SettingsWidget::updateAddresses(const Protos::Common::Interface& interfaceMess, QWidget* container)
 {
    QVBoxLayout* layout = container->findChild<QVBoxLayout*>();
    if (!layout)
@@ -325,7 +330,7 @@ void WidgetSettings::updateAddresses(const Protos::Common::Interface& interfaceM
    }
 }
 
-void WidgetSettings::newState(const Protos::GUI::State& state)
+void SettingsWidget::newState(const Protos::GUI::State& state)
 {
    if (!this->ui->txtNick->hasFocus())
       this->ui->txtNick->setText(Common::ProtoHelper::getStr(state.peer(0), &Protos::GUI::State_Peer::nick));
@@ -383,7 +388,7 @@ void WidgetSettings::newState(const Protos::GUI::State& state)
    }*/
 }
 
-void WidgetSettings::coreConnecting()
+void SettingsWidget::coreConnecting()
 {
    this->ui->butConnect->setDisabled(true);
    this->ui->butDisconnect->setDisabled(true);
@@ -391,7 +396,7 @@ void WidgetSettings::coreConnecting()
    this->ui->butConnect->setText(tr("Connecting . . ."));
 }
 
-void WidgetSettings::coreConnectingError()
+void SettingsWidget::coreConnectingError()
 {
    this->ui->butConnect->setDisabled(false);
    this->ui->butDisconnect->setDisabled(!this->coreConnection->isConnected());
@@ -399,7 +404,7 @@ void WidgetSettings::coreConnectingError()
    this->ui->butConnect->setText(tr("Connect"));
 }
 
-void WidgetSettings::coreConnected()
+void SettingsWidget::coreConnected()
 {
    SETTINGS.set("core_address", this->coreConnection->getConnectionInfo().address);
    SETTINGS.set("core_port", static_cast<quint32>(this->coreConnection->getConnectionInfo().port));
@@ -421,7 +426,7 @@ void WidgetSettings::coreConnected()
    this->ui->butOpenFolder->setDisabled(!this->coreConnection->isLocal());
 }
 
-void WidgetSettings::coreDisconnected()
+void SettingsWidget::coreDisconnected()
 {
    this->getAtLeastOneState = false;
 
@@ -437,7 +442,7 @@ void WidgetSettings::coreDisconnected()
    this->ui->butResetPassword->setDisabled(true);
 }
 
-void WidgetSettings::refreshNetworkInterfaces()
+void SettingsWidget::refreshNetworkInterfaces()
 {
    this->coreConnection->refreshNetworkInterfaces();
 }
@@ -445,7 +450,7 @@ void WidgetSettings::refreshNetworkInterfaces()
 /**
   * Send the settings to the core. A connection to a core must be established.
   */
-void WidgetSettings::saveCoreSettings()
+void SettingsWidget::saveCoreSettings()
 {
    if (!this->getAtLeastOneState)
       return;
@@ -477,7 +482,7 @@ void WidgetSettings::saveCoreSettings()
    this->coreConnection->setCoreSettings(settings);
 }
 
-void WidgetSettings::cmbLanguageChanged(int cmbIndex)
+void SettingsWidget::cmbLanguageChanged(int cmbIndex)
 {
    const Common::Language& lang = this->ui->cmbLanguages->itemData(cmbIndex).value<Common::Language>();
    emit languageChanged(lang.filename);
@@ -486,7 +491,7 @@ void WidgetSettings::cmbLanguageChanged(int cmbIndex)
    SETTINGS.save();
 }
 
-void WidgetSettings::cmbStyleChanged(int cmbIndex)
+void SettingsWidget::cmbStyleChanged(int cmbIndex)
 {
    const QString& dirname = this->ui->cmbStyles->itemData(cmbIndex).toString();
    emit styleChanged(dirname.isEmpty() ? QString() : QCoreApplication::applicationDirPath() % "/" % Common::Constants::STYLE_DIRECTORY % "/" % dirname % "/" % Common::Constants::STYLE_FILE_NAME);
@@ -494,26 +499,26 @@ void WidgetSettings::cmbStyleChanged(int cmbIndex)
    SETTINGS.save();
 }
 
-void WidgetSettings::reloadCurrentStyle()
+void SettingsWidget::reloadCurrentStyle()
 {
    const QString& dirname = this->ui->cmbStyles->itemData(this->ui->cmbStyles->currentIndex()).toString();
    emit styleChanged(dirname.isEmpty() ? QString() : QCoreApplication::applicationDirPath() % "/" % Common::Constants::STYLE_DIRECTORY % "/" % dirname % "/" % Common::Constants::STYLE_FILE_NAME);
 }
 
-void WidgetSettings::changePassword()
+void SettingsWidget::changePassword()
 {
    AskNewPasswordDialog dia(this->coreConnection, this->corePasswordDefined, this);
    dia.exec();
 }
 
-void WidgetSettings::resetPassword()
+void SettingsWidget::resetPassword()
 {
    this->coreConnection->resetCorePassword();
    if (!this->coreConnection->isLocal())
       this->coreConnection->disconnectFromCore();
 }
 
-void WidgetSettings::addShared()
+void SettingsWidget::addShared()
 {
    QStringList dirs = Utils::askForDirectories(this->coreConnection);
    if (!dirs.isEmpty())
@@ -523,7 +528,7 @@ void WidgetSettings::addShared()
    }
 }
 
-void WidgetSettings::removeShared()
+void SettingsWidget::removeShared()
 {
    QModelIndex index = this->ui->tblShareDirs->selectionModel()->currentIndex();
    if (index.isValid())
@@ -542,7 +547,7 @@ void WidgetSettings::removeShared()
    }
 }
 
-void WidgetSettings::moveUpShared()
+void SettingsWidget::moveUpShared()
 {
    QModelIndex index = this->ui->tblShareDirs->selectionModel()->currentIndex();
    if (index.isValid())
@@ -552,7 +557,7 @@ void WidgetSettings::moveUpShared()
    }
 }
 
-void WidgetSettings::moveDownShared()
+void SettingsWidget::moveDownShared()
 {
    QModelIndex index = this->ui->tblShareDirs->selectionModel()->currentIndex();
    if (index.isValid())
@@ -562,7 +567,7 @@ void WidgetSettings::moveDownShared()
    }
 }
 
-void WidgetSettings::displayContextMenuSharedDirs(const QPoint& point)
+void SettingsWidget::displayContextMenuSharedDirs(const QPoint& point)
 {
    QPoint globalPosition = this->ui->tblShareDirs->mapToGlobal(point);
    globalPosition.setY(globalPosition.y() + this->ui->tblShareDirs->horizontalHeader()->height());
@@ -587,7 +592,7 @@ void WidgetSettings::displayContextMenuSharedDirs(const QPoint& point)
    menu.exec(globalPosition);
 }
 
-void WidgetSettings::refreshButtonsAvailability(const QItemSelection& selected)
+void SettingsWidget::refreshButtonsAvailability(const QItemSelection& selected)
 {
    if (selected.indexes().isEmpty() || !selected.indexes().first().isValid())
    {
@@ -605,25 +610,25 @@ void WidgetSettings::refreshButtonsAvailability(const QItemSelection& selected)
    }
 }
 
-void WidgetSettings::refreshButtonsAvailability()
+void SettingsWidget::refreshButtonsAvailability()
 {
    this->refreshButtonsAvailability(QItemSelection(this->ui->tblShareDirs->selectionModel()->selection()));
 }
 
-void WidgetSettings::openLocation()
+void SettingsWidget::openLocation()
 {
    QModelIndexList selectedRows = this->ui->tblShareDirs->selectionModel()->selectedRows();
    foreach (QModelIndex index, selectedRows)
       QDesktopServices::openUrl(QUrl("file:///" + this->sharedDirsModel.getLocationPath(index), QUrl::TolerantMode));
 }
 
-void WidgetSettings::buttonAddressToggled(bool checked)
+void SettingsWidget::buttonAddressToggled(bool checked)
 {
    if (checked)
       this->saveCoreSettings();
 }
 
-bool WidgetSettings::eventFilter(QObject* obj, QEvent* event)
+bool SettingsWidget::eventFilter(QObject* obj, QEvent* event)
 {
    if (obj == this->ui->tabAdvancedSettings && event->type() == QEvent::Show)
    {
@@ -634,7 +639,7 @@ bool WidgetSettings::eventFilter(QObject* obj, QEvent* event)
    return QObject::eventFilter(obj, event);
 }
 
-void WidgetSettings::changeEvent(QEvent* event)
+void SettingsWidget::changeEvent(QEvent* event)
 {
    if (event->type() == QEvent::LanguageChange)
       this->ui->retranslateUi(this);
@@ -642,7 +647,7 @@ void WidgetSettings::changeEvent(QEvent* event)
       QWidget::changeEvent(event);
 }
 
-void WidgetSettings::onActivate()
+void SettingsWidget::onActivate()
 {
    if (this->ui->tabWidget->isTabEnabled(0))
       this->ui->tabWidget->setCurrentIndex(0);
