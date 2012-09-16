@@ -21,15 +21,6 @@
           var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
         })();
       </script>
-      <script>
-       (function() {
-           var s = document.createElement('script'), t = document.getElementsByTagName('script')[0];
-           s.type = 'text/javascript';
-           s.async = true;
-           s.src = 'http://api.flattr.com/js/0.6/load.js?mode=auto';
-           t.parentNode.insertBefore(s, t);
-       })();
-      </script>
    </head>   
    <!--[if IE ]><body class="ie"><![endif]-->
    <!--[if !IE]>--><body><!--<![endif]-->
@@ -42,7 +33,6 @@
             <li><a href="donate.html"><erl>
                   out(A) -> {html, d_lan_lang:tr(header, support_us, A)}.
             </erl></a></li>
-            <li><a class="FlattrButton" style="display:none;" data-flattr-button="compact" href="http://www.d-lan.net"></a></li>
          </ul>
          <ul id="langs">
             <erl>

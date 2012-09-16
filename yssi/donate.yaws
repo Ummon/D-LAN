@@ -10,13 +10,7 @@
                {a, [{href, "http://www.bitcoin.org"}], {img, [{src, "img/bitcoin_icon.png"}, {alt, "Bitcoin"}, {class, "bitcoin"}]}},
                {a, [{href, "http://blockchain.info/address/1H5CjVZj6Sm4mYxevYSbiMYdv6kgdD1ThX"}], tr(donate, bitcoin_address, A)},
                {input, [{class, "bitcoin-address-field"}, {type, "text"}, {spellcheck, "false"}, {size, 45}, {value, "1H5CjVZj6Sm4mYxevYSbiMYdv6kgdD1ThX"}]}
-            ]}, 
-            {'div', [{class, "box"}], [
-               {a, [{href, "http://flattr.com/thing/150434/D-LAN"}, {target, "_blank"}],
-                  {img, [{src, "http://api.flattr.com/button/flattr-badge-large.png"}, {alt, "Flattr this"}, {title, "Flattr this"}, {class, "flattr"}]}
-               },               
-               tr(donate, flattr_info, A)
-            ]}
+            ]} 
          ]
       }.
 

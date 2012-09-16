@@ -241,9 +241,6 @@ translate(fr, donate, intro) -> "Si vous aimez ce projet et que vous voulez le v
 translate(en, donate, bitcoin_address) -> "Bitcoin address: ";
 translate(fr, donate, bitcoin_address) -> "Adresse bitcoin : ";
 
-translate(en, donate, flattr_info) -> "Flattr is a social micro-payment system.";
-translate(fr, donate, flattr_info) -> "Flattr est un système de micro-paiements.";
-
 %%%%%%%%%%
 
 translate(en, gallery, browse) -> "Browsing";
