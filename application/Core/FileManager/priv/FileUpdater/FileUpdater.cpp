@@ -123,7 +123,6 @@ void FileUpdater::rmRoot(SharedDirectory* dir, Directory* dir2)
    QMutexLocker locker(&this->mutex);
 
    // Stop the hashing to modify 'this->fileWithoutHashes'.
-   // TODO: A suspend/resume hashing methods would be more readable.
    {
       QMutexLocker locker(&this->hashingMutex);
 

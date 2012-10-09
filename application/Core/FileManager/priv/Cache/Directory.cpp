@@ -260,6 +260,7 @@ SharedDirectory* Directory::getRoot() const
 
 void Directory::rename(const QString& newName)
 {
+   QMutexLocker locker(&this->mutex);
    Entry::rename(newName);
    if (this->parent)
       this->parent->subdirNameChanged(this);
