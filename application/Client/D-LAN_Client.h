@@ -36,7 +36,7 @@ namespace Client
    {
       Q_OBJECT
    public:
-      D_LAN_Client(int argc, char *argv[]);
+      D_LAN_Client(int argc, char* argv[]);
 
    public slots:
       QScriptValue newConnection();
