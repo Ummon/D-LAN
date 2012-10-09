@@ -188,7 +188,7 @@ void PeerMessageSocket::finished(bool closeTheSocket)
 void PeerMessageSocket::close()
 {
    this->active = false;
-
+   this->stopListening();
    emit closed(this);
 }
 
