@@ -26,12 +26,9 @@
 #include <D-LAN_Client.h>
 
 /**
-  * By default is will launch a new core.
-  *
-  * Arguments : [--run <script file>] [--core <ip>[:<port]]
-  *  --core : connect to the an existing core.
+  * Arguments : [--help | -h] [--run <script file>]
   */
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
    QTextCodec::setCodecForLocale(QTextCodec::codecForName("UTF-8"));
 
