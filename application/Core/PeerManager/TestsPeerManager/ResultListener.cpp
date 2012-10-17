@@ -51,7 +51,7 @@ int ResultListener::getNbEntriesResultReceived(int n) const
 
 const Protos::Core::GetHashesResult& ResultListener::getLastGetHashesResult()
 {
-   return this->lastGesHashesResult;
+   return this->lastGetHashesResult;
 }
 
 const Common::Hash& ResultListener::getLastReceivedHash()
