@@ -21,7 +21,7 @@
          ]
          ++
          d_lan_common:images([
-            {"browse", tr(gallery, browse, A)},
+            {"browse", tr(gallery, browse, A), tr(gallery, browse_comment, A)},
             {"search", tr(gallery, search, A), tr(gallery, search_comment, A)},
             {"download_folders", tr(gallery, download_folders, A), tr(gallery, download_folders_comment, A)},
             {"download_files", tr(gallery, download_files, A), tr(gallery, download_files_comment, A)},

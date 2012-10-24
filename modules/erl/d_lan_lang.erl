@@ -246,6 +246,9 @@ translate(fr, donate, bitcoin_address) -> "Adresse bitcoin : ";
 translate(en, gallery, browse) -> "Browsing";
 translate(fr, gallery, browse) -> "Navigation";
 
+translate(en, gallery, browse_comment) -> "Browsing files and folders of a peer";
+translate(fr, gallery, browse_comment) -> "Navigation dans les fichiers et dossiers d'un pair";
+
 translate(en, gallery, search) -> "Search result";
 translate(fr, gallery, search) -> "Résultat de la recherche";
 

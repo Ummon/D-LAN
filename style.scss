@@ -290,14 +290,17 @@ p {
          }
       }
       &.donate {
-         img {
-            &.bitcoin {
-               vertical-align: -10px;
-            }
+         .bitcoin {
+            vertical-align: -10px;
             margin-right: 10px;
+         }
+         .bitcoin-qr-code {
+            display: block;
+            margin: 20px auto 10px auto;
          }
          input {
             font-family: Monaco, "Courier New", "DejaVu Sans Mono", "Bitstream Vera Sans Mono", monospace;
+            text-align: center; 
          }
       }
       &.stats {

@@ -4,7 +4,7 @@
    image_of_the_day(A) ->      
       case calendar:day_of_the_week(date()) of
          1 -> % Monday.
-            d_lan_common:image("browse", tr(gallery, browse, A));
+            d_lan_common:image("browse", tr(gallery, browse, A), tr(gallery, browse_comment, A));
          2 -> % Thuesday.
             d_lan_common:image("search", tr(gallery, search, A), tr(gallery, search_comment, A));
          3 -> % Wednesday.
