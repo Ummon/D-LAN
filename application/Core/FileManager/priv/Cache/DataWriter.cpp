@@ -34,6 +34,32 @@ using namespace FM;
 DataWriter::DataWriter(Chunk& chunk) :
    CHECK_DATA_INTEGRITY(SETTINGS.get<bool>("check_received_data_integrity")), chunk(chunk)
 {
+   this->computeChunkHash();
+   this->chunk.newDataWriterCreated();
+}
+
+DataWriter::~DataWriter()
+{
+   this->chunk.dataWriterDeleted();
+}
+
+bool DataWriter::write(const char* buffer, int nbBytes)
+{
+   if (this->CHECK_DATA_INTEGRITY)
+   {
+      this->hasher.addData(buffer, nbBytes);
+      if (this->chunk.getKnownBytes() + nbBytes == this->chunk.getChunkSize() && this->hasher.getResult() != this->chunk.getHash())
+      {
+         this->chunk.setKnownBytes(0);
+         throw hashMissmatchException();
+      }
+   }
+
+   return this->chunk.write(buffer, nbBytes);
+}
+
+void DataWriter::computeChunkHash()
+{
    if (this->CHECK_DATA_INTEGRITY && this->chunk.getKnownBytes() > 0)
    {
       try
@@ -57,26 +83,4 @@ DataWriter::DataWriter(Chunk& chunk) :
          L_WARN("UnableToOpenFileInReadModeException");
       }
    }
-
-   this->chunk.newDataWriterCreated();
-}
-
-DataWriter::~DataWriter()
-{
-   this->chunk.dataWriterDeleted();
-}
-
-bool DataWriter::write(const char* buffer, int nbBytes)
-{
-   if (this->CHECK_DATA_INTEGRITY)
-   {
-      this->hasher.addData(buffer, nbBytes);
-      if (this->chunk.getKnownBytes() + nbBytes == this->chunk.getChunkSize() && this->hasher.getResult() != this->chunk.getHash())
-      {
-         this->chunk.setKnownBytes(0);
-         throw hashMissmatchException();
-      }
-   }
-
-   return this->chunk.write(buffer, nbBytes);
 }
