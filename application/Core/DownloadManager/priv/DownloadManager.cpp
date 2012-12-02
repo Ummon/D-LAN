@@ -393,6 +393,9 @@ void DownloadManager::scanTheQueue()
    L_DEBU("Scanning terminated");
 }
 
+/**
+  * Restart the first erroneous download.
+  */
 void DownloadManager::restartErroneousDownloads()
 {
    while (Download* download = this->downloadQueue.getAnErroneousDownload())
@@ -400,7 +403,7 @@ void DownloadManager::restartErroneousDownloads()
       if (download->isStatusErroneous())
       {
          download->start(); // We restart the download.
-         L_DEBU(QString("Rescan timer timedout, the queue will be recanned. File restarted: %1").arg(Common::ProtoHelper::getRelativePath(download->getLocalEntry())));
+         L_DEBU(QString("Rescan timer timedout, the queue will be rescanned. File restarted: %1").arg(Common::ProtoHelper::getRelativePath(download->getLocalEntry())));
          this->startErroneousDownloadTimer.start();
          break;
       }

@@ -26,6 +26,8 @@ linux-g++ {
    QMAKE_CXXFLAGS += -std=c++0x
 }
 
+CONFIG += exceptions rtti
+
 DESTDIR = output/$$FOLDER
 MOC_DIR = .tmp/$$FOLDER
 OBJECTS_DIR = .tmp/$$FOLDER

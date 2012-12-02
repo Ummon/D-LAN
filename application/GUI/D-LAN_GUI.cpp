@@ -37,7 +37,7 @@ const QString D_LAN_GUI::SHARED_MEMORY_KEYNAME("D-LAN GUI instance");
   * The main window can be hid and deleted, the tray icon will still remain and will permit to relaunch the main window.
   */
 
-D_LAN_GUI::D_LAN_GUI(int argc, char* argv[]) :
+D_LAN_GUI::D_LAN_GUI(int& argc, char* argv[]) :
    QApplication(argc, argv),
    mainWindow(0),
    trayIcon(QIcon(":/icons/ressources/icon.png")),

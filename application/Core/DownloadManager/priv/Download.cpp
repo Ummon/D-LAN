@@ -66,16 +66,6 @@ quint64 Download::getID() const
    return this->ID;
 }
 
-Status Download::getStatus() const
-{
-   return this->status;
-}
-
-bool Download::isStatusErroneous() const
-{
-   return this->status >= 0x20;
-}
-
 quint64 Download::getDownloadedBytes() const
 {
    return 0;

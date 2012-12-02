@@ -118,7 +118,7 @@ namespace FM
 
       QList<Directory*> unwatchableDirs;
       QElapsedTimer timerScanUnwatchable;
-      QList<Directory*> dirsToScan; ///< When a new shared directory is added, it is put in this list until it is scanned.
+      QList<Directory*> dirsToScan; ///< When something change in a directory we put it in this list until it is scanned.
       Directory* currentScanningDir;
       QWaitCondition scanningStopped;
       mutable QMutex scanningMutex;

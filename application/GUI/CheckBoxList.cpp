@@ -32,7 +32,7 @@ using namespace GUI;
   * From : http://da-crystal.net/2008/06/checkbox-in-qcombobox/
   * The model given to CheckBoxList must have :
   * - Values of type bool for UserRole.
-  * - First element must always exixst, it's used to check all the other items.
+  * - First element must always exist, it's used to check all the other items.
   */
 
 CheckBoxList::CheckBoxList(QWidget *parent ) :
@@ -55,7 +55,7 @@ bool CheckBoxList::eventFilter(QObject* object, QEvent* event)
 {
    // Don't close items view after we release the mouse button
    // by simple eating MouseButtonRelease in viewport of items view.
-   if(event->type() == QEvent::MouseButtonRelease && object == this->view()->viewport())
+   if (event->type() == QEvent::MouseButtonRelease && object == this->view()->viewport())
    {
       return true;
    }

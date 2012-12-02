@@ -499,14 +499,14 @@ Common::MessageHeader UDPListener::readDatagramToBuffer(QUdpSocket& socket, QHos
       PM::IPeer* peer = this->peerManager->getPeer(header.getSenderID());
       if (!peer)
       {
-         L_WARN("We receive a datagram from an unknown peer, skip");
+          L_WARN(QString("We receive a datagram from an unknown peer (%1), skip").arg(peerAddress.toString()));
          header.setNull();
          return header;
       }
 
       if (!peer->isAlive())
       {
-         L_WARN("We receive a datagram from a dead peer, skip");
+          L_WARN(QString("We receive a datagram from a dead peer (%1), skip").arg(peerAddress.toString()));
          header.setNull();
          return header;
       }

@@ -37,8 +37,8 @@ using namespace RCC;
 // On Linux 'connectToHost(..)' will immediately fail if there is no service behind the port,
 // on Windows there is a delay before 'stateChanged' is called with a 'UnconnectedState' type.
 #ifdef Q_OS_WIN32
-   const int InternalCoreConnection::NB_RETRIES_MAX(0);
-   const int InternalCoreConnection::TIME_BETWEEN_RETRIES(0);
+   const int InternalCoreConnection::NB_RETRIES_MAX(1);
+   const int InternalCoreConnection::TIME_BETWEEN_RETRIES(100);
 #else
    const int InternalCoreConnection::NB_RETRIES_MAX(8);
    const int InternalCoreConnection::TIME_BETWEEN_RETRIES(250);

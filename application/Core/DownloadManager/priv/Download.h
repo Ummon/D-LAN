@@ -64,9 +64,9 @@ namespace DM
       virtual void populateQueueEntry(Protos::Queue::Queue::Entry* entry) const;
 
       quint64 getID() const;
-      Status getStatus() const;
+      inline Status getStatus() const { return this->status; }
 
-      bool isStatusErroneous() const;
+      inline bool isStatusErroneous() const { return this->status >= 0x20; }
 
       virtual quint64 getDownloadedBytes() const;
       PM::IPeer* getPeerSource() const;
