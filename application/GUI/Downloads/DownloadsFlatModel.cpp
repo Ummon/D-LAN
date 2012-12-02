@@ -214,7 +214,7 @@ void DownloadsFlatModel::onNewState(const Protos::GUI::State& state)
       this->totalBytesDownloadedInQueue += state.download(i).downloaded_bytes();
    }
 
-   QList<int> activeDownloadIndices = this->getNonFilteredDownloadIndices(state);
+   const QList<int>& activeDownloadIndices = this->getNonFilteredDownloadIndices(state);
 
    int i = 0;
    for (; i < activeDownloadIndices.size() && i < this->downloads.size(); i++)

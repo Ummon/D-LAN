@@ -88,7 +88,6 @@ namespace DM
 
    private slots:
       bool updateStatus();
-      void retryToRetrieveHashes();
       void result(const Protos::Core::GetHashesResult& result);
       void nextHash(const Common::Hash& hash);
       void getHashTimeout();
