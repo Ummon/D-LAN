@@ -274,6 +274,10 @@ void UDPListener::processPendingMulticastDatagrams()
          }
          break;
 
+      case Common::MessageHeader::CORE_GOODBYE:
+         this->peerManager->removePeer(header.getSenderID());
+         break;
+
       case Common::MessageHeader::CORE_CHAT_MESSAGE:
          {
             Protos::Core::ChatMessage chatMessage;

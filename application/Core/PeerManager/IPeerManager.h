@@ -76,6 +76,11 @@ namespace PM
       virtual void updatePeer(const Common::Hash& ID, const QHostAddress& IP, quint16 port, const QString& nick, const quint64& sharingAmount, const QString& coreVersion, quint32 downloadRate, quint32 uploadRate) = 0;
 
       /**
+        * Set one peer as inactive.
+        */
+      virtual void removePeer(const Common::Hash& ID) = 0;
+
+      /**
         * Set all peers as inactive.
         */
       virtual void removeAllPeers() = 0;
