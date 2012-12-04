@@ -80,6 +80,8 @@ MainWindow::MainWindow(QSharedPointer<RCC::ICoreConnection> coreConnection, QWid
    StatusBar* statusBar = new StatusBar(this->coreConnection);
    ui->statusBar->addWidget(statusBar, 1);
    connect(statusBar, SIGNAL(showDockLog(bool)), this->ui->dockLog, SLOT(setVisible(bool)));
+   connect(statusBar, SIGNAL(downloadClicked()), this, SLOT(showDownloads()));
+   connect(statusBar, SIGNAL(uploadClicked()), this, SLOT(showUploads()));
 
    this->ui->tblPeers->setModel(&this->peerListModel);
 
@@ -456,6 +458,16 @@ void MainWindow::uncolorizeSelectedPeer()
    SETTINGS.save();
 
    this->ui->tblPeers->clearSelection();
+}
+
+void MainWindow::showDownloads()
+{
+   this->ui->mdiArea->setActiveSubWindow(static_cast<QMdiSubWindow*>(this->widgetDownloads->parent()));
+}
+
+void MainWindow::showUploads()
+{
+   this->ui->mdiArea->setActiveSubWindow(static_cast<QMdiSubWindow*>(this->widgetUploads->parent()));
 }
 
 /**
