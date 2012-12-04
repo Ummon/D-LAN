@@ -78,7 +78,7 @@ namespace PM
       /**
         * Set one peer as inactive.
         */
-      virtual void removePeer(const Common::Hash& ID) = 0;
+      virtual void removePeer(const Common::Hash& ID, const QHostAddress& IP) = 0;
 
       /**
         * Set all peers as inactive.

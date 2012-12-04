@@ -275,7 +275,7 @@ void UDPListener::processPendingMulticastDatagrams()
          break;
 
       case Common::MessageHeader::CORE_GOODBYE:
-         this->peerManager->removePeer(header.getSenderID());
+         this->peerManager->removePeer(header.getSenderID(), peerAddress);
          break;
 
       case Common::MessageHeader::CORE_CHAT_MESSAGE:
