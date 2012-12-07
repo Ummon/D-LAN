@@ -71,12 +71,7 @@ QVariant DownloadsModel::getData(const Protos::GUI::State::Download& download, c
 
    case Qt::DecorationRole:
       if (index.column() == 0)
-      {
-         if (download.status() >= Protos::GUI::State::Download::UNKNOWN_PEER_SOURCE)
-            return QPixmap(":/icons/ressources/error.png");
-         else
-            return IconProvider::getIcon(download.local_entry());
-      }
+         return IconProvider::getIcon(download.local_entry(), download.status() >= Protos::GUI::State::Download::UNKNOWN_PEER_SOURCE);
       return QVariant();
 
    case Qt::ToolTipRole:

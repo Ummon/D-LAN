@@ -33,5 +33,6 @@
         <file>ressources/marble_red.png</file>
         <file>ressources/marble_blue.png</file>
         <file>ressources/marble_green.png</file>
+        <file>ressources/error_mini.png</file>
     </qresource>
 </RCC>

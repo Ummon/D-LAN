@@ -19,6 +19,8 @@
 #include <IconProvider.h>
 using namespace GUI;
 
+#include <QPainter>
+
 #include <Common/ProtoHelper.h>
 
 #include <Log.h>
@@ -39,32 +41,59 @@ using namespace GUI;
   * @author Greg Burri
   */
 
-QIcon IconProvider::getIcon(const Protos::Common::Entry& entry)
+QIcon IconProvider::getIcon(const Protos::Common::Entry& entry, bool withWarning)
 {
    if (entry.type() == Protos::Common::Entry_Type_DIR)
    {
-     return IconProvider::qtIconProvider.icon(QFileIconProvider::Folder);
+      if (withWarning)
+      {
+         if (IconProvider::folderIconWithWarning.isNull())
+            IconProvider::folderIconWithWarning = IconProvider::drawWarning(IconProvider::iconProvider.icon(QFileIconProvider::Folder));
+         return IconProvider::folderIconWithWarning;
+      }
+      else
+         return IconProvider::iconProvider.icon(QFileIconProvider::Folder);
    }
    else
    {
       const QString& name = Common::ProtoHelper::getStr(entry, &Protos::Common::Entry::name);
       const int index = name.lastIndexOf(".");
       if (index != -1)
-         return IconProvider::getIconCache(name.mid(index));
+      {
+         return IconProvider::getIconCache(name.mid(index), withWarning);
+      }
       else
-         return IconProvider::qtIconProvider.icon(QFileIconProvider::File);
+      {
+         if (withWarning)
+         {
+            if (IconProvider::fileIconWithWarning.isNull())
+               IconProvider::fileIconWithWarning = IconProvider::drawWarning(IconProvider::iconProvider.icon(QFileIconProvider::File));
+            return IconProvider::fileIconWithWarning;
+         }
+         else
+            return IconProvider::iconProvider.icon(QFileIconProvider::File);
+      }
    }
 }
 
-QIcon IconProvider::getIconCache(const QString& extension)
+QIcon IconProvider::getIconCache(const QString& extension, bool withWarning)
 {
-   QIcon icon = cachedIcons.value(extension);
-   if (icon.isNull())
+   if (withWarning)
    {
-      icon = IconProvider::getIconNative(extension);
-      cachedIcons.insert(extension, icon);
+      QIcon icon = cachedIconsWithWarning.value(extension);
+      if (icon.isNull())
+         icon = IconProvider::drawWarning(IconProvider::getIconNative(extension));
+      cachedIconsWithWarning.insert(extension, icon);
+      return icon;
    }
-   return icon;
+   else
+   {
+      QIcon icon = cachedIcons.value(extension);
+      if (icon.isNull())
+         icon = IconProvider::getIconNative(extension);
+      cachedIcons.insert(extension, icon);
+      return icon;
+   }
 }
 
 QIcon IconProvider::getIconNative(const QString& extension)
@@ -84,5 +113,25 @@ QIcon IconProvider::getIconNative(const QString& extension)
    return icon;
 }
 
-QFileIconProvider IconProvider::qtIconProvider;
+QIcon IconProvider::drawWarning(const QIcon& icon)
+{
+   QPixmap miniError(":/icons/ressources/error_mini.png");
+   QIcon result;
+   foreach (auto size, icon.availableSizes())
+   {
+      QPixmap pixmap = icon.pixmap(size);
+      if (pixmap.width() >= miniError.width() && pixmap.height() >= miniError.height() + 1)
+      {
+         QPainter painter(&pixmap);
+         painter.drawPixmap(pixmap.width() - miniError.width(), pixmap.height() - miniError.height() - 1, miniError.width(), miniError.height(), miniError);
+      }
+      result.addPixmap(pixmap);
+   }
+   return result;
+}
+
+QFileIconProvider IconProvider::iconProvider;
 QMap<QString, QIcon> IconProvider::cachedIcons;
+QMap<QString, QIcon> IconProvider::cachedIconsWithWarning;
+QIcon IconProvider::fileIconWithWarning;
+QIcon IconProvider::folderIconWithWarning;
