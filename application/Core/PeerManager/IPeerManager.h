@@ -65,7 +65,7 @@ namespace PM
       virtual IPeer* getPeer(const Common::Hash& ID) = 0;
 
       /**
-        * Create an inactive peer and return it. If a peer with the given ID already exists then return this last one.
+        * Create an inactive peer and return it. If a peer with the given ID already exists it returns it.
         */
       virtual IPeer* createPeer(const Common::Hash& ID, const QString& nick) = 0;
 

@@ -127,6 +127,7 @@ namespace DM
 
       QTimer saveTimer; // To know when to save the queue, for exemple each 5min.
       bool queueChanged;
+      bool queueLoaded;
    };
 }
 #endif

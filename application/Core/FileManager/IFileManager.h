@@ -172,7 +172,7 @@ namespace FM
 
    signals:
       /**
-        * Emitted when the file cache has been loaded.
+        * Emitted when the file cache has been loaded. Guaranteed to be emmited once.
         */
       void fileCacheLoaded();
    };
