@@ -96,19 +96,19 @@ QIcon IconProvider::getIconCache(const QString& extension, bool withWarning)
    }
 }
 
+/**
+  * No specific implementation for Linux.
+  */
 QIcon IconProvider::getIconNative(const QString& extension)
 {
    QIcon icon;
 #if defined(Q_OS_WIN32)
    SHFILEINFO psfi;
-   SHGetFileInfo(extension.toStdWString().c_str(), FILE_ATTRIBUTE_NORMAL, &psfi, sizeof(psfi),
-                 SHGFI_ICON | SHGFI_SMALLICON | SHGFI_USEFILEATTRIBUTES);
+   SHGetFileInfo(extension.toStdWString().c_str(), FILE_ATTRIBUTE_NORMAL, &psfi, sizeof(psfi), SHGFI_ICON | SHGFI_SMALLICON | SHGFI_USEFILEATTRIBUTES);
    if (psfi.hIcon != NULL)
-   {
       icon = QIcon(QPixmap::fromWinHICON(psfi.hIcon));
-   }
 #else
-   icon = IconProvider::qtIconProvider.icon(QFileIconProvider::File);
+   icon = IconProvider::iconProvider.icon(QFileIconProvider::File);
 #endif
    return icon;
 }

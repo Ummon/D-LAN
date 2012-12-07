@@ -30,7 +30,7 @@ namespace GUI
    {
    public:
       /**
-        * Returnsan icon associated to a provided entry. The icon may depends of the entry type (file or directory) and of the file extension.
+        * Returns an icon associated to a provided entry. The icon may depends of the entry type (file or directory) and of the file extension.
         * @param entry The entry
         * @param withWarning If 'true' a little warning image is added to the returned icon
         * @return The corresponding icon
