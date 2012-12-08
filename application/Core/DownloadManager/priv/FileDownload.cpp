@@ -103,10 +103,8 @@ void FileDownload::start()
    if (this->localEntry.size() == 0 && !this->localEntry.exists())
       this->createFile();
 
-   if (this->hasAValidPeerSource())
+   if (!this->retrieveHashes() && this->hasAValidPeerSource())
       this->occupiedPeersDownloadingChunk.newPeer(this->peerSource);
-
-   this->retrieveHashes();
 }
 
 void FileDownload::stop()
@@ -304,7 +302,7 @@ bool FileDownload::retrieveHashes()
       this->status == COMPLETE ||
       this->status == DELETED ||
       this->status == PAUSED ||
-      this->status == UNABLE_TO_RETRIEVE_THE_HASHES ||
+      this->status == GETTING_THE_HASHES ||
       this->status == ENTRY_NOT_FOUND
    )
       return false;
@@ -406,13 +404,6 @@ bool FileDownload::updateStatus()
    return false;
 }
 
-void FileDownload::retryToRetrieveHashes()
-{
-   this->setStatus(QUEUED);
-   if (!this->retrieveHashes())
-      this->updateStatus();
-}
-
 void FileDownload::result(const Protos::Core::GetHashesResult& result)
 {
    if (result.status() == Protos::Core::GetHashesResult::OK)
@@ -435,7 +426,6 @@ void FileDownload::result(const Protos::Core::GetHashesResult& result)
 
       this->getHashesResult.clear();
       this->occupiedPeersAskingForHashes.setPeerAsFree(this->peerSource);
-      QTimer::singleShot(RETRY_PEER_GET_HASHES_PERIOD, this, SLOT(retryToRetrieveHashes()));
    }
 }
 
@@ -482,7 +472,6 @@ void FileDownload::getHashTimeout()
    this->getHashesResult.clear();
    this->setStatus(UNABLE_TO_RETRIEVE_THE_HASHES);
    this->occupiedPeersAskingForHashes.setPeerAsFree(this->peerSource);
-   QTimer::singleShot(RETRY_PEER_GET_HASHES_PERIOD, this, SLOT(retryToRetrieveHashes()));
 }
 
 void FileDownload::chunkDownloaderStarted()

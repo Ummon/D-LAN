@@ -80,6 +80,16 @@ void MdiArea::openChatWindow(const QString& roomName)
    this->addChatWindow(roomName);
 }
 
+void MdiArea::showDownloads()
+{
+   this->setActiveSubWindow(static_cast<QMdiSubWindow*>(this->downloadsWidget->parent()));
+}
+
+void MdiArea::showUploads()
+{
+   this->setActiveSubWindow(static_cast<QMdiSubWindow*>(this->uploadsWidget->parent()));
+}
+
 void MdiArea::changeEvent(QEvent* event)
 {
    if (event->type() == QEvent::LanguageChange)

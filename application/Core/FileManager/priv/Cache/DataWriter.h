@@ -36,6 +36,8 @@ namespace FM
       bool write(const char* buffer, int nbBytes);
 
    private:
+      void computeChunkHash();
+
       const bool CHECK_DATA_INTEGRITY;
 
       Common::Hasher hasher;

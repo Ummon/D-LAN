@@ -210,7 +210,7 @@ void Peer::newConnexion(QTcpSocket* tcpSocket)
 
 void Peer::consideredDead()
 {
-   L_DEBU(QString("Peer \"%1\" is dead").arg(this->nick));
+   L_DEBU(QString("Peer is dead: %1").arg(this->toStringLog()));
    this->connectionPool.closeAllSocket();
    this->alive = false;
 }

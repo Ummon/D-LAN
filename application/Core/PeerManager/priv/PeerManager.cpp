@@ -144,6 +144,16 @@ void PeerManager::updatePeer(const Common::Hash& ID, const QHostAddress& IP, qui
       emit peerBecomesAvailable(peer);
 }
 
+void PeerManager::removePeer(const Common::Hash& ID, const QHostAddress& IP)
+{
+   if (ID.isNull() || ID == this->self->getID())
+      return;
+
+   Peer* peer = static_cast<Peer*>(this->getPeer(ID));
+   if (peer && IP == peer->getIP())
+      peer->setAsDead();
+}
+
 void PeerManager::removeAllPeers()
 {
    for (QListIterator<Peer*> i(this->peers); i.hasNext();)
@@ -158,22 +168,23 @@ void PeerManager::newConnection(QTcpSocket* tcpSocket)
    // Detach the socket to use it into a thread.
    tcpSocket->setParent(0);
 
-   L_DEBU(QString("New pending socket from %1").arg(tcpSocket->peerAddress().toString()));
-   if (!this->timer.isActive())
-      this->timer.start();
-
-   this->pendingSockets << PendingSocket(tcpSocket);
-
-   connect(tcpSocket, SIGNAL(readyRead()), this, SLOT(dataReceived()));
-   connect(tcpSocket, SIGNAL(disconnected()), this, SLOT(disconnected()));
-
    if (!tcpSocket->isValid())
    {
-      L_DEBU("PeerManager::newConnection(..): socket isn't valid, disconnecting");
-      this->disconnect(tcpSocket);
+      L_DEBU("PeerManager::newConnection(..): socket isn't valid");
+      tcpSocket->deleteLater();
    }
    else
+   {
+      L_DEBU(QString("New pending socket from %1").arg(tcpSocket->peerAddress().toString()));
+
+      if (!this->timer.isActive())
+         this->timer.start();
+
+      connect(tcpSocket, SIGNAL(readyRead()), this, SLOT(dataReceived()), Qt::DirectConnection);
+      connect(tcpSocket, SIGNAL(disconnected()), this, SLOT(disconnected()), Qt::DirectConnection);
+      this->pendingSockets << PendingSocket(tcpSocket);
       this->dataReceived(tcpSocket); // The case where some data arrived before the 'connect' above.
+   }
 }
 
 void PeerManager::onGetChunk(QSharedPointer<FM::IChunk> chunk, int offset, QSharedPointer<PeerMessageSocket> socket)
@@ -181,7 +192,7 @@ void PeerManager::onGetChunk(QSharedPointer<FM::IChunk> chunk, int offset, QShar
    if (this->receivers(SIGNAL(getChunk(QSharedPointer<FM::IChunk>, int, QSharedPointer<PM::ISocket>))) < 1)
    {
       Protos::Core::GetChunkResult mess;
-      mess.set_status(Protos::Core::GetChunkResult_Status_ERROR_UNKNOWN);
+      mess.set_status(Protos::Core::GetChunkResult::ERROR_UNKNOWN);
       socket->send(Common::MessageHeader::CORE_GET_CHUNK_RESULT, mess);
       socket->finished();
       L_ERRO("PeerManager::onGetChunk(..) : no slot connected to the signal 'getChunk(..)'");
@@ -202,8 +213,6 @@ void PeerManager::dataReceived(QTcpSocket* tcpSocket)
       Peer* p = static_cast<Peer*>(this->getPeer(header.getSenderID()));
 
       this->removeFromPending(tcpSocket);
-      disconnect(tcpSocket, SIGNAL(readyRead()), 0, 0);
-      disconnect(tcpSocket, SIGNAL(disconnected()), 0, 0);
 
       if (p)
          p->newConnexion(tcpSocket);
@@ -220,10 +229,10 @@ void PeerManager::disconnected(QTcpSocket* tcpSocket)
    if (!tcpSocket)
       tcpSocket = static_cast<QTcpSocket*>(this->sender());
 
+   L_DEBU("Pending socket disconnected");
+
    this->removeFromPending(tcpSocket);
    tcpSocket->deleteLater();
-
-   L_DEBU("Pending socket disconnected and deleted");
 }
 
 void PeerManager::checkIdlePendingSockets()
@@ -234,12 +243,10 @@ void PeerManager::checkIdlePendingSockets()
       static const int SOCKET_TIMEOUT = SETTINGS.get<quint32>("pending_socket_timeout");
       if (pendingSocket.t.elapsed() > SOCKET_TIMEOUT)
       {
-         i.remove();
-         // Without these 'disconnect' this warning is printed by Qt : "QCoreApplication::postEvent: Unexpected null receiver".
-         disconnect(pendingSocket.socket, SIGNAL(readyRead()), 0, 0);
-         disconnect(pendingSocket.socket, SIGNAL(disconnected()), 0, 0);
+         L_DEBU("Pending socket timed out -> removed");
+         pendingSocket.socket->disconnect();
          pendingSocket.socket->deleteLater();
-         L_DEBU("Pending socket timeout -> deleted");
+         i.remove();
       }
    }
 
@@ -258,9 +265,10 @@ void PeerManager::removeFromPending(QTcpSocket* socket)
 {
    for (QMutableListIterator<PendingSocket> i(this->pendingSockets); i.hasNext();)
    {
-      PendingSocket pendingSocket = i.next();
+      PendingSocket& pendingSocket = i.next();
       if (pendingSocket.socket == socket)
       {
+         pendingSocket.socket->disconnect();
          i.remove();
          break;
       }

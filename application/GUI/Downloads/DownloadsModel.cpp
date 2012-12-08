@@ -71,12 +71,7 @@ QVariant DownloadsModel::getData(const Protos::GUI::State::Download& download, c
 
    case Qt::DecorationRole:
       if (index.column() == 0)
-      {
-         if (download.status() >= Protos::GUI::State::Download::UNKNOWN_PEER_SOURCE)
-            return QPixmap(":/icons/ressources/error.png");
-         else
-            return IconProvider::getIcon(download.local_entry());
-      }
+         return IconProvider::getIcon(download.local_entry(), download.status() >= Protos::GUI::State::Download::UNKNOWN_PEER_SOURCE);
       return QVariant();
 
    case Qt::ToolTipRole:
@@ -289,12 +284,12 @@ bool GUI::operator==(const Protos::GUI::State::Download& d1, const Protos::GUI::
 {
    if (
       d1.id() != d2.id() ||
+      d1.status() != d2.status() ||
+      d1.downloaded_bytes() != d2.downloaded_bytes() ||
       d1.local_entry().type() != d2.local_entry().type() ||
       d1.local_entry().path() != d2.local_entry().path() ||
       d1.local_entry().name() != d2.local_entry().name() ||
       d1.local_entry().size() != d2.local_entry().size() ||
-      d1.status() != d2.status() ||
-      d1.downloaded_bytes() != d2.downloaded_bytes() ||
       d1.peer_id_size() != d2.peer_id_size()
    )
       return false;
@@ -304,9 +299,4 @@ bool GUI::operator==(const Protos::GUI::State::Download& d1, const Protos::GUI::
          return false;
 
    return true;
-}
-
-bool GUI::operator!=(const Protos::GUI::State::Download& d1, const Protos::GUI::State::Download& d2)
-{
-   return !(d1 == d2);
 }

@@ -110,7 +110,7 @@ namespace Common
    private:
       struct Node
       {
-         Node(Node* parent = nullptr) : nbItems(0), parent(parent), children({}), size(0) {}
+         Node(Node* parent = nullptr) : nbItems(0), parent(parent), children{}, size(0) {}
 
          int nbItems;
          T items[M-1];

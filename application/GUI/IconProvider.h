@@ -29,14 +29,25 @@ namespace GUI
    class IconProvider
    {
    public:
-      static QIcon getIcon(const Protos::Common::Entry& entry);
+      /**
+        * Returns an icon associated to a provided entry. The icon may depends of the entry type (file or directory) and of the file extension.
+        * @param entry The entry
+        * @param withWarning If 'true' a little warning image is added to the returned icon
+        * @return The corresponding icon
+        */
+      static QIcon getIcon(const Protos::Common::Entry& entry, bool withWarning = false);
 
    private:
-      static QIcon getIconCache(const QString& icon);
+      static QIcon getIconCache(const QString& icon, bool withWarning);
       static QIcon getIconNative(const QString& icon);
 
-      static QFileIconProvider qtIconProvider;
+      static QIcon drawWarning(const QIcon& icon);
+
+      static QFileIconProvider iconProvider;      
       static QMap<QString, QIcon> cachedIcons;
+      static QMap<QString, QIcon> cachedIconsWithWarning;
+      static QIcon fileIconWithWarning;
+      static QIcon folderIconWithWarning;
    };
 }
 

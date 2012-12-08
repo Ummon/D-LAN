@@ -67,7 +67,7 @@ namespace NL
       );
 
       void send(Common::MessageHeader::MessageType type, const google::protobuf::Message& message, const Common::Hash& peerID);
-      void send(Common::MessageHeader::MessageType type, const google::protobuf::Message& message);
+      void send(Common::MessageHeader::MessageType type, const google::protobuf::Message& message = Protos::Common::Null());
 
       void rebindSockets();
 

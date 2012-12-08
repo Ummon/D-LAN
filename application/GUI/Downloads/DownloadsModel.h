@@ -84,7 +84,7 @@ namespace GUI
    QDataStream& operator>>(QDataStream& in, Progress& progress);
 
    bool operator==(const Protos::GUI::State::Download& d1, const Protos::GUI::State::Download& d2);
-   bool operator!=(const Protos::GUI::State::Download& d1, const Protos::GUI::State::Download& d2);
+   inline bool operator!=(const Protos::GUI::State::Download& d1, const Protos::GUI::State::Download& d2) { return !(d1 == d2); }
 }
 
 Q_DECLARE_METATYPE(GUI::Progress)

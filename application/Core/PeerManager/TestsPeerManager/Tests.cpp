@@ -244,6 +244,7 @@ void Tests::askForHashes()
    qDebug() << "===== askForHashes() =====";
 
    const quint32 NUMBER_OF_CHUNK = 4;
+   const quint32 CHUNK_SIZE = SETTINGS.get<quint32>("chunk_size");
 
    // 1) Create a big file.
    {
@@ -253,19 +254,19 @@ void Tests::askForHashes()
       // To have four different hashes.
       for (quint32 i = 0; i < NUMBER_OF_CHUNK; i++)
       {
-         QByteArray randomData(SETTINGS.get<quint32>("chunk_size"), i);
+         QByteArray randomData(CHUNK_SIZE, i);
          file.write(randomData);
       }
    }
 
    QElapsedTimer timer;
 
-   // Wait until the peer#2 has begun to read 'big.bin'.
+   // Wait until the peer#2 see the right size of 'big.bin'.
    timer.start();
-   while (this->fileManagers[1]->getAmount() < 32 * 1024)
+   while (this->fileManagers[1]->getAmount() < NUMBER_OF_CHUNK * CHUNK_SIZE)
    {
       QTest::qWait(100);
-      if (timer.elapsed() > 3000)
+      if (timer.elapsed() > 10000)
          QFAIL("After adding the big file 'big.bin' the amount of data must be greater the 32KiB");
    }
 
@@ -283,7 +284,7 @@ void Tests::askForHashes()
    result->start();
 
    timer.start();
-   while (this->resultListener.getLastGetHashesResult().status() != Protos::Core::GetHashesResult_Status_OK && this->resultListener.getLastGetHashesResult().nb_hash() != NUMBER_OF_CHUNK)
+   while (this->resultListener.getLastGetHashesResult().status() != Protos::Core::GetHashesResult::OK && this->resultListener.getLastGetHashesResult().nb_hash() != NUMBER_OF_CHUNK)
    {
       QTest::qWait(100);
       if (timer.elapsed() > 3000)

@@ -40,6 +40,7 @@ namespace Common
 
          // UDP.
          CORE_IM_ALIVE =                  0x0001,
+         CORE_GOODBYE =                   0x00FE,
          CORE_CHUNKS_OWNED =              0x0002,
 
          CORE_CHAT_MESSAGES =             0x0011,

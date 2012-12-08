@@ -82,6 +82,7 @@ QString MessageHeader::messToStr(MessageType type)
    case NULL_MESS: return "NULL";
 
    case CORE_IM_ALIVE: return "IM_ALIVE";
+   case CORE_GOODBYE: return "GOODBYE";
    case CORE_CHUNKS_OWNED: return "CHUNKS_OWNED";
    case CORE_CHAT_MESSAGES: return "CHAT_MESSAGES";
    case CORE_GET_LAST_CHAT_MESSAGES: return "CHAT_GET_LAST_MESSAGES";

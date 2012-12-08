@@ -35,6 +35,11 @@ StatusBar::StatusBar(QSharedPointer<RCC::ICoreConnection> coreConnection, QWidge
    connect(this->coreConnection.data(), SIGNAL(connected()), this, SLOT(coreConnected()));
    connect(this->coreConnection.data(), SIGNAL(disconnected(bool)), this, SLOT(coreDisconnected()));
 
+   this->ui->lblDownloadRate->installEventFilter(this);
+   this->ui->icoDownloadRate->installEventFilter(this);
+   this->ui->lblUploadRate->installEventFilter(this);
+   this->ui->icoUploadRate->installEventFilter(this);
+
    connect(this->ui->butHelp, SIGNAL(clicked()), this, SLOT(showAbout()));
 
    connect(this->ui->butLog, SIGNAL(toggled(bool)), this, SIGNAL(showDockLog(bool)));
@@ -44,6 +49,19 @@ StatusBar::~StatusBar()
 {
    this->coreConnection->disconnect(this); // Disconnect all signals from coreConnection.
    delete this->ui;
+}
+
+bool StatusBar::eventFilter(QObject* obj, QEvent* event)
+{
+   if (event->type() == QEvent::MouseButtonPress)
+   {
+      if (obj == this->ui->lblDownloadRate || obj == this->ui->icoDownloadRate)
+         emit downloadClicked();
+      else if (obj == this->ui->lblUploadRate || obj == this->ui->icoUploadRate)
+         emit uploadClicked();
+   }
+
+   return false;
 }
 
 void StatusBar::dockLogVisibilityChanged(bool visibility)

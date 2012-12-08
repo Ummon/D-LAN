@@ -34,6 +34,10 @@ namespace GUI
       void openSearchWindow(const QString& terms, bool ownFiles = false);
       void openChatWindow(const QString& roomName);
 
+   public slots:
+      void showDownloads();
+      void showUploads();
+
    signals:
       void languageChanged(const QString& filename);
       void styleChanged(const QString& path);

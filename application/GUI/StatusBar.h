@@ -20,6 +20,7 @@
 #define GUI_STATUSBAR_H
 
 #include <QWidget>
+#include <QEvent>
 
 #include <Protos/gui_protocol.pb.h>
 
@@ -39,8 +40,12 @@ namespace GUI
       explicit StatusBar(QSharedPointer<RCC::ICoreConnection> coreConnection, QWidget* parent = nullptr);
       ~StatusBar();
 
+      bool eventFilter(QObject* obj, QEvent* event);
+
    signals:
       void showDockLog(bool);
+      void downloadClicked();
+      void uploadClicked();
 
    public slots:
       void dockLogVisibilityChanged(bool);

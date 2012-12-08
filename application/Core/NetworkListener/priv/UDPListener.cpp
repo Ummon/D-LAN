@@ -269,10 +269,13 @@ void UDPListener::processPendingMulticastDatagrams()
             }
             break;
 
+         case Common::MessageHeader::CORE_GOODBYE:
+            this->peerManager->removePeer(header.getSenderID(), peerAddress);
+            break;
+
          case Common::MessageHeader::CORE_FIND:
             {
                const Protos::Core::Find& findMessage = message.getMessage<Protos::Core::Find>();
-
                QList<Protos::Common::FindResult> results =
                   this->fileManager->find(
                      Common::ProtoHelper::getStr(findMessage, &Protos::Core::Find::pattern),
@@ -493,14 +496,14 @@ Common::MessageHeader UDPListener::readDatagramToBuffer(QUdpSocket& socket, QHos
       PM::IPeer* peer = this->peerManager->getPeer(header.getSenderID());
       if (!peer)
       {
-         L_WARN("We receive a datagram from an unknown peer, skip");
+          L_WARN(QString("We receive a datagram from an unknown peer (%1), skip").arg(peerAddress.toString()));
          header.setNull();
          return header;
       }
 
       if (!peer->isAlive())
       {
-         L_WARN("We receive a datagram from a dead peer, skip");
+          L_WARN(QString("We receive a datagram from a dead peer (%1), skip").arg(peerAddress.toString()));
          header.setNull();
          return header;
       }

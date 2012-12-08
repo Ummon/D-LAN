@@ -9,7 +9,7 @@ import "common.proto";
 package Protos.Core;
 
 /***** Multicast UDP messages. *****/
-// Im alive.
+// I'm alive.
 // This message is sent periodically to all other peers (for example each 5s).
 // It contains some information about the peer and an array of hash chunks the peer wants to download.
 // If a peer owns one or more chunk corresponding to the given hashes then it
@@ -34,6 +34,11 @@ message IMAlive {
 
    repeated string chat_rooms = 10; // The joined chat rooms.
 }
+
+// Goodbye, my people needs me.
+// a -> all
+// id : 0xFE
+// No data
 
 // This message is only sent if at least one requested chunks is known.
 // Return an array with a bool value for each

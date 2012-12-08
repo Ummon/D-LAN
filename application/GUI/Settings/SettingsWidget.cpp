@@ -357,8 +357,8 @@ void SettingsWidget::newState(const Protos::GUI::State& state)
          Common::SharedDir {
             state.shared_directory(i).id().hash(),
             Common::ProtoHelper::getStr(state.shared_directory(i), &Protos::GUI::State_SharedDir::path),
-            state.shared_directory(i).size(),
-            state.shared_directory(i).free_space()
+            (qint64)state.shared_directory(i).size(),
+            (qint64)state.shared_directory(i).free_space()
          };
    this->sharedDirsModel.setDirs(sharedDirs);
 
