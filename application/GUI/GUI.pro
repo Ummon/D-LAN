@@ -81,13 +81,13 @@ SOURCES += main.cpp\
     Search/SearchDock.cpp \
     MDI/TabButtons.cpp \
     MDI/MdiArea.cpp \
-    MDI/MdiSubWindow.cpp \
     Browse/BrowseWidget.cpp \
     Chat/ChatWidget.cpp \
     Downloads/DownloadsWidget.cpp \
     Search/SearchWidget.cpp \
     Settings/SettingsWidget.cpp \
-    Uploads/UploadsWidget.cpp
+    Uploads/UploadsWidget.cpp \
+    MDI/MdiWidget.cpp
 
 HEADERS  += MainWindow.h \
     ../Protos/gui_protocol.pb.h \
