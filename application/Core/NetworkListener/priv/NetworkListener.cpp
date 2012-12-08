@@ -45,6 +45,7 @@ NetworkListener::NetworkListener(
 
 NetworkListener::~NetworkListener()
 {
+   this->uDPListener.send(Common::MessageHeader::CORE_GOODBYE);
    L_DEBU("NetworkListener deleted");
 }
 

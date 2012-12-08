@@ -65,7 +65,7 @@ namespace PM
       virtual IPeer* getPeer(const Common::Hash& ID) = 0;
 
       /**
-        * Create an inactive peer and return it. If a peer with the given ID already exists then return this last one.
+        * Create an inactive peer and return it. If a peer with the given ID already exists it returns it.
         */
       virtual IPeer* createPeer(const Common::Hash& ID, const QString& nick) = 0;
 
@@ -74,6 +74,11 @@ namespace PM
         * @see The protobuf message 'Protos.Core.IMAlive' in "Protos/core_protocol.proto".
         */
       virtual void updatePeer(const Common::Hash& ID, const QHostAddress& IP, quint16 port, const QString& nick, const quint64& sharingAmount, const QString& coreVersion, quint32 downloadRate, quint32 uploadRate) = 0;
+
+      /**
+        * Set one peer as inactive.
+        */
+      virtual void removePeer(const Common::Hash& ID, const QHostAddress& IP) = 0;
 
       /**
         * Set all peers as inactive.

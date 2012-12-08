@@ -144,6 +144,16 @@ void PeerManager::updatePeer(const Common::Hash& ID, const QHostAddress& IP, qui
       emit peerBecomesAvailable(peer);
 }
 
+void PeerManager::removePeer(const Hash& ID, const QHostAddress& IP)
+{
+   if (ID.isNull() || ID == this->self->getID())
+      return;
+
+   Peer* peer = static_cast<Peer*>(this->getPeer(ID));
+   if (peer && IP == peer->getIP())
+      peer->setAsDead();
+}
+
 void PeerManager::removeAllPeers()
 {
    for (QListIterator<Peer*> i(this->peers); i.hasNext();)

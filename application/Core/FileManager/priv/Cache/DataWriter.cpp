@@ -58,6 +58,9 @@ bool DataWriter::write(const char* buffer, int nbBytes)
    return this->chunk.write(buffer, nbBytes);
 }
 
+/**
+  * Compute the hash of the first known data of the current chunk ('this->chunk'), the result is held by 'this->hasher'.
+  */
 void DataWriter::computeChunkHash()
 {
    if (this->CHECK_DATA_INTEGRITY && this->chunk.getKnownBytes() > 0)

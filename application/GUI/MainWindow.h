@@ -88,6 +88,9 @@ namespace GUI
       void colorizeSelectedPeer();
       void uncolorizeSelectedPeer();
 
+      void showDownloads();
+      void showUploads();
+
       void removeWidget(QWidget* widget);
 
       void logScrollChanged(int value);

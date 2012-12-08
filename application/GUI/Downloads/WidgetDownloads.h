@@ -95,7 +95,7 @@ namespace GUI
 
       void openFile(const QModelIndex& index) const;
 
-      Ui::WidgetDownloads *ui;
+      Ui::WidgetDownloads* ui;
       CheckBoxList* filterStatusList;
 
       QSharedPointer<RCC::ICoreConnection> coreConnection;

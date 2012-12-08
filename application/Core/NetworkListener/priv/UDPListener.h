@@ -66,7 +66,7 @@ namespace NL
       );
 
       void send(Common::MessageHeader::MessageType type, const Common::Hash& peerID, const google::protobuf::Message& message);
-      void send(Common::MessageHeader::MessageType type, const google::protobuf::Message& message);
+      void send(Common::MessageHeader::MessageType type, const google::protobuf::Message& message = Protos::Common::Null());
 
       Common::Hash getOwnID() const;
 
