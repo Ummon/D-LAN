@@ -135,9 +135,10 @@ void CoreConnection::setCoreSettings(const Protos::GUI::CoreSettings settings)
    this->current()->setCoreSettings(settings);
 }
 
-void CoreConnection::setCoreLanguage(const QLocale locale)
+void CoreConnection::setCoreLanguage(const QLocale& locale)
 {
    this->current()->setCoreLanguage(locale);
+   this->temp()->setCoreLanguage(locale);
 }
 
 bool CoreConnection::setCorePassword(const QString& newPassword, const QString& oldPassword)
