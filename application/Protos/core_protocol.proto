@@ -131,7 +131,8 @@ message GetEntriesResult {
 // a -> b
 // id : 0x41
 message GetHashes {
-   required Common.Entry file = 1; // Must have the field shared_dir set. If it already contains some chunk hashes only the next ones will be sent.
+   required Common.Entry file = 1; // Must have the field 'shared_dir' set. If it already contains some chunk hashes only the next ones will be sent.
+   repeated Common.Entry nextFiles = 2; // The next files for which we want to know their hashes in the future.
 }
 
 // b -> a
