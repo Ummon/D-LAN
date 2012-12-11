@@ -75,7 +75,7 @@ namespace RCC
 
       void sendChatMessage(const QString& message);
       void setCoreSettings(const Protos::GUI::CoreSettings settings);
-      void setCoreLanguage(const QLocale locale);
+      void setCoreLanguage(const QLocale& locale);
       bool setCorePassword(const QString& newPassword, const QString& oldPassword = QString());
       void resetCorePassword();
 

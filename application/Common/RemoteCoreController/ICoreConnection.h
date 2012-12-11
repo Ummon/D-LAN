@@ -120,7 +120,7 @@ namespace RCC
         * Define the core language, as soon as a connection to a core is established the language
         * is sent to it.
         */
-      virtual void setCoreLanguage(const QLocale locale) = 0;
+      virtual void setCoreLanguage(const QLocale& locale) = 0;
 
       /**
         * Defines or changes the password. The old password is not mendatory in a local connection. See 'isLocal()'.

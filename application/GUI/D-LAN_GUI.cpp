@@ -45,7 +45,7 @@ D_LAN_GUI::D_LAN_GUI(int& argc, char* argv[]) :
 {
    this->installTranslator(&this->translator);
    QLocale current = QLocale::system();
-   if (SETTINGS.isSet("lhanguage"))
+   if (SETTINGS.isSet("language"))
       current = SETTINGS.get<QLocale>("language");
    Common::Languages langs(QCoreApplication::applicationDirPath() + "/" + Common::Constants::LANGUAGE_DIRECTORY);
    this->loadLanguage(langs.getBestMatchLanguage(Common::Languages::ExeType::GUI, current).filename);
@@ -129,7 +129,8 @@ void D_LAN_GUI::updateTrayIconMenu()
 
 void D_LAN_GUI::loadLanguage(const QString& filename)
 {
-   this->translator.load(filename, QCoreApplication::applicationDirPath() + "/" + Common::Constants::LANGUAGE_DIRECTORY);
+   if (!filename.isEmpty())
+      this->translator.load(filename, QCoreApplication::applicationDirPath() + "/" + Common::Constants::LANGUAGE_DIRECTORY);
 }
 
 void D_LAN_GUI::mainWindowClosed()

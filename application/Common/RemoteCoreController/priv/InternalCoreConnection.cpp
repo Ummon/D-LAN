@@ -124,7 +124,7 @@ void InternalCoreConnection::setCoreSettings(const Protos::GUI::CoreSettings set
    this->send(Common::MessageHeader::GUI_SETTINGS, settings);
 }
 
-void InternalCoreConnection::setCoreLanguage(const QLocale locale)
+void InternalCoreConnection::setCoreLanguage(const QLocale& locale)
 {
    this->currentLanguage = locale;
    this->sendCurrentLanguage();
@@ -368,9 +368,12 @@ void InternalCoreConnection::connectedAndAuthenticated()
 
 void InternalCoreConnection::sendCurrentLanguage()
 {
-   Protos::GUI::Language langMess;
-   ProtoHelper::setLang(*langMess.mutable_language(), this->currentLanguage);
-   this->send(Common::MessageHeader::GUI_LANGUAGE, langMess);
+   if (this->authenticated)
+   {
+      Protos::GUI::Language langMess;
+      ProtoHelper::setLang(*langMess.mutable_language(), this->currentLanguage);
+      this->send(Common::MessageHeader::GUI_LANGUAGE, langMess);
+   }
 }
 
 void InternalCoreConnection::onNewMessage(Common::MessageHeader::MessageType type, const google::protobuf::Message& message)
