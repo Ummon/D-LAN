@@ -161,6 +161,7 @@ void Core::checkSettingsIntegrity()
    this->checkSetting("minimum_free_space", 0u, 4294967295u);
    this->checkSetting("save_cache_period", 1000u, 4294967295u);
 
+   this->checkSetting("get_entries_timeout", 1000u, 60u * 1000u);
    this->checkSetting("pending_socket_timeout", 10u, 30u * 1000u);
    this->checkSetting("peer_timeout_factor", 1.0, 10.0);
    this->checkSetting("idle_socket_timeout", 1000u, 60u * 60u * 1000u);
