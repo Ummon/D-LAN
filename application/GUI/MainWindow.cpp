@@ -302,12 +302,14 @@ void MainWindow::keyPressEvent(QKeyEvent* event)
       case 'W':
          this->mdiArea->closeCurrentWindow();
          return;
-
-      default:
-         // Focus the nth window.
-         if (event->key() >= '1' && event->key() <= '9')
-            this->mdiArea->focusNthWindow(event->key() - '1');
       }
+   }
+   // ALT.
+   else if (event->modifiers().testFlag(Qt::AltModifier))
+   {
+      // Focus the nth window.
+      if (event->key() >= '1' && event->key() <= '9')
+         this->mdiArea->focusNthWindow(event->key() - '1');
    }
 
    QMainWindow::keyPressEvent(event);
