@@ -75,7 +75,7 @@ DirWatcherLinux::~DirWatcherLinux ()
 
    // Close file descriptor
    if (close(this->fileDescriptor) < 0) {
-       L_ERRO(QString("DirWatcherLinux::~DirWatcherLinux : Unable to close file descriptor (inotify)."));
+       L_WARN(QString("DirWatcherLinux::~DirWatcherLinux : Unable to close file descriptor (inotify)."));
    }
 }
 
@@ -429,9 +429,12 @@ DirWatcherLinux::Dir::Dir(DirWatcherLinux* dwl, Dir* parent, const QString& name
   */
 DirWatcherLinux::Dir::~Dir()
 {
-   this->dwl->dirs.remove(this->wd);
-   if (inotify_rm_watch(this->dwl->fileDescriptor, this->wd))
-      L_ERRO(QString("DirWatcherLinux::~DirWatcherLinux : Unable to remove an inotify watcher."));
+   if (this->wd >= 0)
+   {
+      this->dwl->dirs.remove(this->wd);
+      if (inotify_rm_watch(this->dwl->fileDescriptor, this->wd))
+         L_WARN(QString("Dir::~Dir : Unable to remove an inotify watcher."));
+   }
 
    if (this->parent)
       this->parent->childs.remove(this->name);
