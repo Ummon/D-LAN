@@ -467,6 +467,7 @@ void Tests::getHashesFromAFileEntry2()
       file1.resize(128 * 1024 * 1024); // 128Mo
       file2.resize(128 * 1024 * 1024); // 128Mo
    }
+
    QTest::qWait(2000); // Begin the computing of the big2.bin hashes.
 
    Protos::Common::Entries sharedDirs = this->fileManager->getEntries();
@@ -481,6 +482,7 @@ void Tests::getHashesFromAFileEntry2()
    HashesReceiver hashesReceiver;
    connect(result.data(), SIGNAL(nextHash(Common::Hash)), &hashesReceiver, SLOT(nextHash(Common::Hash)));
    Protos::Core::GetHashesResult res = result->start(); // Should stop the computing of 'big2.bin' and switch to 'big3.bin'.
+   qDebug() << res.status();
    QCOMPARE(res.status(), Protos::Core::GetHashesResult_Status_OK);
 
    QTest::qWait(4000);
@@ -659,10 +661,13 @@ void Tests::rmSharedDirectory()
 void Tests::chunksPerformance()
 {
    qDebug() << "===== chunksPerformance() =====";
-
+     
+   const int HASH_POOL_SIZE = 100000;
+   const int NB_HASHES_TO_CHECK = 10000000;
+ 
    Chunks chunks;
-
-   for (int i = 0; i < 100000; i++)
+  
+   for (int i = 0; i < HASH_POOL_SIZE; i++)
    {
       QSharedPointer<Chunk> chunk(new Chunk(nullptr, 0, 0));
       chunk->setHash(Common::Hash::rand());
@@ -674,11 +679,16 @@ void Tests::chunksPerformance()
    for (int i = 0; i < nbHashes; i++)
       hashes << Common::Hash::rand();
 
-   for (int i = 0; i < 100000000; i++)
+   QElapsedTimer timer;
+   timer.start();
+
+   for (int i = 0; i < NB_HASHES_TO_CHECK; i++)
    {
       if(chunks.contains(hashes[i % nbHashes]))
          QFAIL("chunks cannot contains a random chunk");
    }
+
+   qDebug() << "Time to check if" << NB_HASHES_TO_CHECK << "hashes exist among a pool of" << HASH_POOL_SIZE << "hashes:" << timer.elapsed() << "ms";
 }
 
 void Tests::cleanupTestCase()
