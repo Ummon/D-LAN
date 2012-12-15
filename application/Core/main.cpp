@@ -33,14 +33,25 @@
    extern FILE* new_output_fp;
 #endif
 
+void printUsage(QString appName)
+{
+   QTextStream out(stdout);
+   out << "Usage:" << endl <<
+          " " << appName << "[-r <roaming data directory>] [-l <local data directory>] [--reset-settings] [--lang <language>] [--version] [-i|-u|-e|-s|-v]" << endl <<
+          "  -i [account] [password] : Install the service, optionally using given account and password" << endl <<
+          "  -u : Uninstall the service." << endl <<
+          "  -e : Run as a regular application. Otherwise try to launch the installed service." << endl <<
+          "  -t : Stop the service." << endl <<
+          "  -v : Print service status information." << endl <<
+          "  <roaming data directory> : Where settings are put." << endl <<
+          "  <local data directory> : Where logs, download queue, and files cache are put." << endl <<
+          "  --reset-settings : Remove all settings except \"nick\" and \"peerID\" and quit, other settings are set to their default values." << endl <<
+          "  --lang <language> : set the language and save it to the settings file then quit. (ISO-639, two letters)" << endl <<
+          "  --version : Print the version" << endl;
+}
+
 /**
-  * Arguments : [-r <roaming data directory>] [-l <local data directory>] [--reset-settings] [--lang <language>] [--version] [<arguments from QtService>]
-  *  <roaming data directory> : Where settings are put.
-  *  <local data directory> : Where logs, download queue, and files cache are put.
-  *  --reset-settings : Remove all settings except "nick" and "peerID", other settings are set to their default values. Core exist directly after.
-  *  --lang <language> : set the language and save it to the settings file. (ISO-639, two letters)
-  *  --version : Print the version
-  *  <arguments from QtService> : Type "D-LAN.Core.exe -h" to see them.
+  * See 'printUsage(..)' for more information about arguments.
   */
 int main(int argc, char* argv[])
 {
@@ -49,6 +60,17 @@ int main(int argc, char* argv[])
 #endif
 
    QTextCodec::setCodecForLocale(QTextCodec::codecForName("UTF-8"));
+
+   // Look for "-h" or "--help".
+   for (int i = 1; i < argc; i++)
+   {
+      const QString arg = QString::fromLatin1(argv[i]);
+      if (arg == "-h" || arg == "--help")
+      {
+         printUsage(QString::fromLatin1(argv[0]).split(QRegExp("\\\\|/")).last());
+         return 0;
+      }
+   }
 
    bool resetSettings = false;
    QLocale locale;
