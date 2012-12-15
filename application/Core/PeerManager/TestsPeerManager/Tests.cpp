@@ -287,7 +287,7 @@ void Tests::askForHashes()
    while (this->resultListener.getLastGetHashesResult().status() != Protos::Core::GetHashesResult::OK && this->resultListener.getLastGetHashesResult().nb_hash() != NUMBER_OF_CHUNK)
    {
       QTest::qWait(100);
-      if (timer.elapsed() > 3000)
+      if (timer.elapsed() > 5000)
          QFAIL("We don't receive the correct receive after asking for hashes");
    }
 
@@ -296,7 +296,7 @@ void Tests::askForHashes()
    while (this->resultListener.getNbHashReceivedFromLastGetHashes() != NUMBER_OF_CHUNK)
    {
       QTest::qWait(100);
-      if (timer.elapsed() > 20000)
+      if (timer.elapsed() > 30000)
          QFAIL("We don't receive all the hashes");
    }
 }
@@ -320,7 +320,7 @@ void Tests::askForAChunk()
    while (!this->resultListener.isStreamReceived())
    {
       QTest::qWait(100);
-      if (timer.elapsed() > 5000)
+      if (timer.elapsed() > 10000)
          QFAIL("We don't receive the stream");
    }
 }
