@@ -21,6 +21,8 @@ using namespace CoreSpace;
 
 #include <Protos/core_settings.pb.h>
 
+#include <Libs/MersenneTwister.h>
+
 #include <Common/PersistentData.h>
 #include <Common/Constants.h>
 #include <Common/Hash.h>
@@ -116,6 +118,23 @@ void Core::start()
 void Core::dumpWordIndex() const
 {
    this->fileManager->dumpWordIndex();
+}
+
+void Core::changePassword(const QString& newPassword)
+{
+   MTRand mtrand;
+   quint64 salt = static_cast<quint64>(mtrand.randInt()) << 32 | mtrand.randInt();
+
+   SETTINGS.set("remote_password", Common::Hasher::hashWithSalt(newPassword, salt));
+   SETTINGS.set("salt", salt);
+   SETTINGS.save();
+}
+
+void Core::removePassword()
+{
+   SETTINGS.set("remote_password", Common::Hash());
+   SETTINGS.rm("salt");
+   SETTINGS.save();
 }
 
 void Core::setLanguage(QLocale locale, bool load)

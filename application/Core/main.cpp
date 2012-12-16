@@ -37,7 +37,7 @@ void printUsage(QString appName)
 {
    QTextStream out(stdout);
    out << "Usage:" << endl <<
-          " " << appName << "[-r <roaming data directory>] [-l <local data directory>] [--reset-settings] [--lang <language>] [--version] [-i|-u|-e|-s|-v]" << endl <<
+          " " << appName << "[-r <roaming data directory>] [-l <local data directory>] [--reset-settings] [--lang <language>] [--pass <password> | --rmpass] [--version] [-i|-u|-e|-s|-v]" << endl <<
           "  -i [account] [password] : Install the service, optionally using given account and password" << endl <<
           "  -u : Uninstall the service." << endl <<
           "  -e : Run as a regular application. Otherwise try to launch the installed service." << endl <<
@@ -47,6 +47,8 @@ void printUsage(QString appName)
           "  <local data directory> : Where logs, download queue, and files cache are put." << endl <<
           "  --reset-settings : Remove all settings except \"nick\" and \"peerID\" and quit, other settings are set to their default values." << endl <<
           "  --lang <language> : set the language and save it to the settings file then quit. (ISO-639, two letters)" << endl <<
+          "  --pass <password> : set a password then quit. The core can be remotely controlled." << endl <<
+          "  --rmpass : remove the current password." << endl <<
           "  --version : Print the version" << endl;
 }
 
@@ -73,7 +75,10 @@ int main(int argc, char* argv[])
    }
 
    bool resetSettings = false;
+   QString newPassword;
+   bool resetPassword = false;
    QLocale locale;
+
    for (int i = 1; i < argc; i++)
    {
       const QString arg = QString::fromLatin1(argv[i]);
@@ -85,6 +90,10 @@ int main(int argc, char* argv[])
          locale = QLocale(QString::fromLatin1(argv[++i]));
       else if (arg == "--reset-settings")
          resetSettings = true;
+      else if (arg == "--pass" && i < argc - 1)
+         newPassword = QString::fromLatin1(argv[++i]);
+      else if (arg == "--rmpass")
+         resetPassword = true;
       else if (arg == "--version")
       {
          QTextStream out(stdout);
@@ -97,6 +106,18 @@ int main(int argc, char* argv[])
    LM::Builder::setLogDirName("log_core");
 
    CoreSpace::CoreService core(resetSettings, locale, argc, argv);
+
+   if (!newPassword.isEmpty())
+   {
+      core.changePassword(newPassword);
+      return 0;
+   }
+
+   if (resetPassword)
+   {
+      core.removePassword();
+      return 0;
+   }
 
    if (resetSettings || locale != QLocale::system())
       return 0;

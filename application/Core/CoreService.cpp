@@ -36,7 +36,7 @@ CoreService::CoreService(bool resetSettings, QLocale locale, int argc, char** ar
    for (int i = 1; i < argc; i++)
    {
       QString currentArg = QString::fromAscii(argv[i]);
-      if (currentArg == "-e" || currentArg == "-exec")
+      if (currentArg == "-e" || currentArg == "--exec")
       {
          connect(&this->consoleReader, SIGNAL(newLine(QString)), this, SLOT(processUserInput(QString)), Qt::QueuedConnection);
          this->consoleReader.start();
@@ -54,6 +54,15 @@ CoreService::~CoreService()
    this->core = 0;
 }
 
+void CoreService::changePassword(const QString& newPassword)
+{
+   this->core->changePassword(newPassword);
+}
+
+void CoreService::removePassword()
+{
+   this->core->removePassword();
+}
 
 void CoreService::start()
 {

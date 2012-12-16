@@ -47,6 +47,9 @@ namespace CoreSpace
       void start();
       void dumpWordIndex() const;
 
+      void changePassword(const QString& newPassword);
+      void removePassword();
+
    public slots:
       void setLanguage(QLocale locale, bool load = true);
 
