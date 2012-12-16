@@ -22,6 +22,15 @@ CORE_FILE=$DIR/Core/output/release/D-LAN.Core
 GUI_FILE=$DIR/GUI/output/release/D-LAN.GUI
 ICON_FILE=$DIR/Common/ressources/icon.ico
 
+# Default dependencies, it may change depending the architecture and the Linux distribution.
+DEP_QTCORE=">= 4:4.8"
+DEP_QTGUI=">= 4:4.8"
+DEP_QTNETWORK=">= 4:4.8"
+DEP_PROTOBUF=">= 2.4.1"
+DEP_LIBC=">= 2.15"
+DEP_LIBSTDCPP=">= 4.6.3"
+DEP_LIBGCC=">= 1:4.6.3"
+
 rm -Rf $DEB_DIR
 mkdir -p $DESKTOP_DIR $STYLES_DIR $I18N_DIR $ICON_16_DIR $ICON_24_DIR $ICON_32_DIR $ICON_48_DIR $ICON_64_DIR $ICON_128_DIR $ICON_256_DIR
 
@@ -44,9 +53,22 @@ cp $WORK_DIR/temp/icon-6.png $ICON_256_DIR/d-lan.png
 cp d-lan.desktop $DESKTOP_DIR/
 
 cp -R ./DEBIAN $DEB_DIR/
-echo "For wich architecture ?"
-select arch in "i386" "amd64"; do
-    sed -i "s/_ARCH_/$arch/g" $DEB_DIR/DEBIAN/control
+echo "For which architecture ?"
+select arch in "i386" "amd64" "armhf"; do
+    CONTROL="$DEB_DIR/DEBIAN/control"
+    case $arch in
+       "armhf")
+          DEP_LIBC=">=2.13"
+          ;;
+    esac
+    sed -i "s/_ARCH_/$arch/g" $CONTROL
+    sed -i "s/_DEP_QTCORE_/$DEP_QTCORE/g" $CONTROL
+    sed -i "s/_DEP_QTGUI_/$DEP_QTGUI/g" $CONTROL
+    sed -i "s/_DEP_QTNETWORK_/$DEP_QTNETWORK/g" $CONTROL
+    sed -i "s/_DEP_PROTOBUF_/$DEP_PROTOBUF/g" $CONTROL
+    sed -i "s/_DEP_LIBC_/$DEP_LIBC/g" $CONTROL
+    sed -i "s/_DEP_LIBSTDCPP_/$DEP_LIBSTDCPP/g" $CONTROL
+    sed -i "s/_DEP_LIBGCC_/$DEP_LIBGCC/g" $CONTROL
     break
 done
 
