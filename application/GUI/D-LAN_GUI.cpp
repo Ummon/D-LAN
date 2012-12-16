@@ -126,11 +126,12 @@ void D_LAN_GUI::updateTrayIconMenu()
    this->trayIconMenu.addAction(tr("Exit"), this, SLOT(exit()));
 }
 
-
+/**
+  * Load a translation file. If 'filename' is empty the default language is loaded.
+  */
 void D_LAN_GUI::loadLanguage(const QString& filename)
 {
-   if (!filename.isEmpty())
-      this->translator.load(filename, QCoreApplication::applicationDirPath() + "/" + Common::Constants::LANGUAGE_DIRECTORY);
+   this->translator.load(filename, QCoreApplication::applicationDirPath() + "/" + Common::Constants::LANGUAGE_DIRECTORY);
 }
 
 void D_LAN_GUI::mainWindowClosed()

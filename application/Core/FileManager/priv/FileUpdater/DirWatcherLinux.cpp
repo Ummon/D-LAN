@@ -47,8 +47,8 @@ class UnableToWatchException {};
 /**ath=/home/gburri/Downloads//Leonard - 35 albums/07 - Y a-t-il un gÃ©nie dans la salle
   * Constructor.
   */
-DirWatcherLinux::DirWatcherLinux()
-   : mutex(QMutex::Recursive)
+DirWatcherLinux::DirWatcherLinux() :
+   mutex(QMutex::Recursive)
 {
    // Initialize inotify
    this->initialized = true;
@@ -75,7 +75,7 @@ DirWatcherLinux::~DirWatcherLinux ()
 
    // Close file descriptor
    if (close(this->fileDescriptor) < 0) {
-       L_WARN(QString("DirWatcherLinux::~DirWatcherLinux : Unable to close file descriptor (inotify)."));
+       L_WARN(QString("DirWatcherLinux::~DirWatcherLinux: Unable to close file descriptor (inotify)."));
    }
 }
 
@@ -177,26 +177,26 @@ const QList<WatcherEvent> DirWatcherLinux::waitEvent(int timeout, QList<WaitCond
    for (int i = 0; i < ws.size(); i++)
    {
       int wcfd = dynamic_cast<WaitConditionLinux*>(ws[i])->getFd();
-      L_DEBU(QString("DirWatcherLinux::waitEvent : add WaitCondition(fd=%1) to select fd_set").arg(wcfd));
+      L_DEBU(QString("DirWatcherLinux::waitEvent: add WaitCondition(fd=%1) to select fd_set").arg(wcfd));
       FD_SET(wcfd, &fds);
       if (wcfd > fd_max) fd_max = wcfd;
    }
 
    // Active select to wait events in unlocked mode.
-   L_DEBU("DirWatcherLinux::waitEvent : active select");
+   L_DEBU("DirWatcherLinux::waitEvent: active select");
    locker.unlock();
    int sel = select(fd_max + 1, &fds, NULL, NULL, (timeout==-1 ? 0 : &time));
    locker.relock();
 
    if (sel < 0)
    {
-      L_ERRO(QString("DirWatcherLinux::waitEvent : select error."));
+      L_ERRO(QString("DirWatcherLinux::waitEvent: select error."));
       return QList<WatcherEvent>();
    }
    else if (!sel)
    {
       // select is released by timeout.
-      L_DEBU("DirWatcherLinux::waitEvent : exit select by timeout");
+      L_DEBU("DirWatcherLinux::waitEvent: exit select by timeout");
       QList<WatcherEvent> events;
       events.append(WatcherEvent(WatcherEvent::TIMEOUT));
       return events;
@@ -208,14 +208,14 @@ const QList<WatcherEvent> DirWatcherLinux::waitEvent(int timeout, QList<WaitCond
       int wcfd = dynamic_cast<WaitConditionLinux*>(ws[i])->getFd();
       if (FD_ISSET(wcfd, &fds))
       {
-         L_DEBU(QString("DirWatcherLinux::waitEvent : exit select by WaitCondition release (fd=%1)").arg(wcfd));
+         L_DEBU(QString("DirWatcherLinux::waitEvent: exit select by WaitCondition release (fd=%1)").arg(wcfd));
          static char dummy[4096];
          while (read(wcfd, dummy, sizeof(dummy)) > 0);
          return QList<WatcherEvent>();
       }
    }
 
-   L_DEBU("DirWatcherLinux::waitEvent : exit select by inotify");
+   L_DEBU("DirWatcherLinux::waitEvent: exit select by inotify");
 
    char buf[BUF_LEN];
    int len = read(this->fileDescriptor, buf, BUF_LEN);
@@ -225,11 +225,11 @@ const QList<WatcherEvent> DirWatcherLinux::waitEvent(int timeout, QList<WaitCond
          // Need to reissue system call.
          return QList<WatcherEvent>();
       else
-         L_ERRO(QString("DirWatcherLinux::waitEvent : read inotify event failed."));
+         L_ERRO(QString("DirWatcherLinux::waitEvent: read inotify event failed."));
    }
    else if (!len)
    {
-      L_ERRO(QString("DirWatcherLinux::waitEvent : BUF_LEN to small?"));
+      L_ERRO(QString("DirWatcherLinux::waitEvent: BUF_LEN to small?"));
    }
 
    QList<WatcherEvent> events;
@@ -433,7 +433,7 @@ DirWatcherLinux::Dir::~Dir()
    {
       this->dwl->dirs.remove(this->wd);
       if (inotify_rm_watch(this->dwl->fileDescriptor, this->wd))
-         L_WARN(QString("Dir::~Dir : Unable to remove an inotify watcher."));
+         L_WARN(QString("Dir::~Dir: Unable to remove an inotify watcher."));
    
       if (this->parent)
          this->parent->childs.remove(this->name);
