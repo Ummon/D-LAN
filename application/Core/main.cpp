@@ -37,7 +37,7 @@ void printUsage(QString appName)
 {
    QTextStream out(stdout);
    out << "Usage:" << endl <<
-          " " << appName << "[-r <roaming data directory>] [-l <local data directory>] [--reset-settings] [--lang <language>] [--pass <password> | --rmpass] [--version] [-i|-u|-e|-s|-v]" << endl <<
+          " " << appName << " [-r <roaming data directory>] [-l <local data directory>] [--reset-settings] [--lang <language>] [--pass <password> | --rmpass] [--version] [-i|-u|-e|-s|-v]" << endl <<
           "  -i [account] [password] : Install the service, optionally using given account and password" << endl <<
           "  -u : Uninstall the service." << endl <<
           "  -e : Run as a regular application. Otherwise try to launch the installed service." << endl <<
