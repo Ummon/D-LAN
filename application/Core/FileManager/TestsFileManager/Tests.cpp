@@ -61,8 +61,8 @@ void Tests::initTestCase()
    try
    {
       QString tempFolder = Common::Global::setCurrentDirToTemp("FileManagerTests");
-      qDebug() << "Application folder path (where the persistent data is put) : " <<  Global::getDataFolder(Common::Global::DataFolderType::LOCAL, false);
-      qDebug() << "The file created during this test are put in : " << tempFolder;
+      qDebug() << "Application folder path (where the persistent data is put): " <<  Global::getDataFolder(Common::Global::DataFolderType::LOCAL, false);
+      qDebug() << "The file created during this test are put in: " << tempFolder;
    }
    catch(Common::Global::UnableToSetTempDirException& e)
    {
@@ -211,7 +211,7 @@ void Tests::addInexistingSharedDirectory()
    {
       QVERIFY(e.paths.size() == 1);
       QCOMPARE(e.paths.at(0), this->sharedDirs.last());
-      qDebug() << "This directory hasn't been found : " << e.paths.at(0) << " (Exception thrown)";
+      qDebug() << "This directory hasn't been found: " << e.paths.at(0) << " (Exception thrown)";
    }
    this->sharedDirs.removeLast();
 }
@@ -416,7 +416,7 @@ void Tests::getAnExistingChunk()
    if (chunk.isNull())
       QFAIL("Chunk not found");
    else
-      qDebug() << "Chunk found : " << chunk->getHash().toStr();
+      qDebug() << "Chunk found: " << chunk->getHash().toStr();
 }
 
 void Tests::getAnUnexistingChunk()
@@ -425,7 +425,7 @@ void Tests::getAnUnexistingChunk()
 
    QSharedPointer<IChunk> chunk = this->fileManager->getChunk(Common::Hash::fromStr("928e1bd85c0957c4af0cf69cf76f6ed6898cfd2d"));
    if (chunk.isNull())
-      qDebug() << "Chunk not found : ok" << Common::Hash::rand().toStr();
+      qDebug() << "Chunk not found: OK" << Common::Hash::rand().toStr();
    else
       QFAIL("No chunk must be found");
 }
@@ -598,7 +598,7 @@ void Tests::findFilesWithResultFragmentation()
 
    QString terms("bbb");
    QList<Protos::Common::FindResult> results = this->fileManager->find(terms, 10000, FRAGMENT_MAX_SIZE);
-   qDebug() << "Nb fragment : " << results.size();
+   qDebug() << "Nb fragment: " << results.size();
    for (int i = 0; i < results.size(); i++)
    {
       qDebug() << "Fragment number " << i << ", size = " << results[i].ByteSize();
@@ -630,7 +630,7 @@ void Tests::haveChunks()
    for (int i = 0; i < result.size(); i++)
    {
       QVERIFY(result[i] == expectedResult[i]);
-      qDebug() << hashes[i].toStr() << " : " << (result[i] ? "Yes" : "No");
+      qDebug() << hashes[i].toStr() << ":" << (result[i] ? "Yes" : "No");
    }
 }
 
@@ -638,7 +638,7 @@ void Tests::printAmount()
 {
    qDebug() << "===== printAmount() =====";
 
-   qDebug() << "Sharing amount : " << this->fileManager->getAmount() << " bytes";
+   qDebug() << "Sharing amount: " << this->fileManager->getAmount() << " bytes";
 }
 
 void Tests::rmSharedDirectory()
@@ -740,7 +740,7 @@ void Tests::deleteAllFiles()
 
 void Tests::printSearch(const QString& terms, const Protos::Common::FindResult& result)
 {
-   qDebug() << "Search : " << terms;
+   qDebug() << "Search: " << terms;
    for (int i = 0; i < result.entry_size(); i++)
       qDebug() << "[" << result.entry(i).level() << "] " << Common::ProtoHelper::getStr(result.entry(i).entry(), &Protos::Common::Entry::name);
 }
@@ -760,7 +760,7 @@ void Tests::compareStrRegexp(const QString& regexp, const QString& str)
    if (!expected.exactMatch(str))
    {
       int l = expected.matchedLength();
-      QByteArray message = QString("This string doesn't match the expected regular expression from character %1 : \n%2").arg(l).arg(str).toUtf8();
+      QByteArray message = QString("This string doesn't match the expected regular expression from character %1: \n%2").arg(l).arg(str).toUtf8();
       QFAIL(message.data());
    }
 }
