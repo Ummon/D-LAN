@@ -233,14 +233,20 @@ p {
          width: 300px;
          background-color: rgba(255, 255, 255, $opacity2);
          margin: 15px 15px 0px 15px;
-         &.exe {
+         &.win32 {
             background-image: url("img/download_for_windows.png");
          }
          &.dmg { 
             background-image: url("img/download_for_mac.png");
          }
-         &.deb { 
+         &.amd64 { 
             background-image: url("img/download_for_linux.png");
+         }
+         &.i386 { 
+            background-image: url("img/download_for_linux.png");
+         } 
+         &.armhf { 
+            background-image: url("img/download_for_raspberry.png");
          }
          background-repeat: no-repeat;
          background-position: 12px 18px;

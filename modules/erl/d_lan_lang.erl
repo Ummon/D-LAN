@@ -148,7 +148,7 @@ translate(fr, faq, a5) -> "Nous travaillons actuellement sur une version Mac OS 
 translate(en, faq, q6) -> "Can I configure D-LAN to start automatically when my computer starting?";
 translate(fr, faq, q6) -> "Est-il possible de configurer D-LAN pour qu'il démarre automatiquement au démarrage de la machine?";
 
-translate(en, faq, a6) -> "<i>Windows 7</i> : Go to <i>Control Panel</i> &gt; <i>Administrative Tools</i> &gt; <i>Services</i> . Open the properties of <i>D-LAN Core</i> and set the <i>Statup type</i> from <i>Manual</i> to <i>Automatic</i>.";
+translate(en, faq, a6) -> "<i>Windows 7</i> : Go to <i>Control Panel</i> &gt; <i>Administrative Tools</i> &gt; <i>Services</i> . Open the properties of <i>D-LAN Core</i> and set the <i>Startup type</i> from <i>Manual</i> to <i>Automatic</i>.";
 translate(fr, faq, a6) -> "<i>Windows 7</i> : Allez dans <i>Panneau de configuration</i> > <i>Outils d'administrations</i> &gt; <i>Services</i>. Ouvrir la fenêtre de propriétés de <i>D-LAN Core</i> et définir le <i>Type de Démarrage</i> à <i>Automatique</i>.";
 
 %%%%%%%%%%

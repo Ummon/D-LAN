@@ -101,17 +101,17 @@ download_button(A, Platform) ->
    Filename = last(sort([F || F <- Filenames, lists:member(string:right(F, 4), [".exe", ".dmg", ".deb"])])),
    Extension = string:right(Filename, 3),
    % 'Archi' isn't used for the moment.
-   {match, [Version, Version_tag, Year, Month, Day, _Archi]} =
+   {match, [Version, Version_tag, Year, Month, Day, Archi]} =
       case Extension of
          "deb" ->
             re:run(Filename, "D-LAN-((?:\\d|\\.)+)([^-]*)-(\\d+)-(\\d+)-(\\d+)_.*-(\\w+)\\..*", [{capture, all_but_first, list}]);      
          _ ->
             {match, Values} = re:run(Filename, "D-LAN-((?:\\d|\\.)+)([^-]*)-(\\d+)-(\\d+)-(\\d+).*\\..*", [{capture, all_but_first, list}]),
-            {match, Values ++ [""]} % Archi is empty on Windows.
+            {match, Values ++ ["win32"]}
       end,
    File_size = filelib:file_size(Relase_platform_folder ++ "/" ++ Filename),
    File_size_mb = float(File_size) / 1048576,
-   {'div', [{class, "download" ++ " " ++ Extension}],
+   {'div', [{class, "download" ++ " " ++ Extension ++ " " ++ Archi}],
       [{a, [{class, "installer"}, {href, file_to_url(A, Filename, Platform)}], 
          [
             {em, [], [tr(download_button, download, A) ++ " (" ++ io_lib:format("~.2f", [File_size_mb]) ++ " MiB)"]}, {br},

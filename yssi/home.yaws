@@ -31,6 +31,7 @@
             %d_lan_common:download_button(A, "Mac OS X"),
             d_lan_common:download_button(A, "Linux 64-bits"),
             d_lan_common:download_button(A, "Linux 32-bits"),
+            d_lan_common:download_button(A, "Raspberry Pi"),
             {'div', [{class, "spacer"}]}
          ]
       }. 
