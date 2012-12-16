@@ -39,10 +39,18 @@ CoreController::CoreController() :
 
 /**
   * Try to start the core as a service if it fails then try to launch it as a sub-process.
+  * When compiling with the DEBUG directive only the sub-process will be launched, not the service.
   */
 void CoreController::startCore(int port)
 {
-   if (!this->controller.isInstalled())
+   const bool debug =
+      #if defined(DEBUG)
+         true;
+      #else
+         false;
+      #endif
+
+   if (!debug && !this->controller.isInstalled())
    {
       if (!QtServiceController::install(CORE_EXE_NAME))
          L_WARN(QObject::tr("D-LAN Core cannot be installed as a service"));
@@ -54,7 +62,7 @@ void CoreController::startCore(int port)
       if (port != -1)
          arguments << "--port" << QString::number(port);
 
-      if (!this->controller.start(arguments))
+      if (debug || !this->controller.start(arguments))
       {
          if (this->coreProcess.state() == QProcess::NotRunning)
          {
