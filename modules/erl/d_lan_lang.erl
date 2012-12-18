@@ -50,8 +50,8 @@ translate(fr, home, title) -> "D-LAN - Un logiciel libre de partage de fichiers 
 translate(en, home, description) -> "The goal is to easily exchange a large amount of data in a local area network environment like a LAN-Party. After you launched D-LAN, you will see all other people and their sharing automatically without special configuration. See the <a href=\"~s\">features list</a> for more information.";
 translate(fr, home, description) -> "Le but est de permettre l'échange massif et facile de fichiers sur un réseau local, par exemple lors d'une LAN-Party. Après avoir lancé D-LAN, les autres personnes présentes sur le réseau sont visibles automatiquement sans aucune configuration particulière. Voir la <a href=\"~s\">page des fonctionnalités</a> pour plus d'informations.";
 
-translate(en, home, warning_beta) -> "<em>Warning:</em> The current version of D-LAN is a beta, it's only for test purpose. You can report any defect <a href=\"~s\">here</a>. The latest beta may not be compatible with the previous ones.";
-translate(fr, home, warning_beta) -> "<em>Attention :</em> La version actuelle de D-LAN est une bêta, elle ne doit être utilisée qu'à des fins de tests. Il est possible de rapporter les anomalies rencontrées <a href=\"~s\">ici</a>. La compatibilité de la dernière bêta avec les précédentes n'est pas garantie.";
+translate(en, home, warning_beta) -> "<em>Warning:</em> The current version of D-LAN is a beta, it's only for test purpose. You can report any defect <a href=\"~s\">here</a>.";
+translate(fr, home, warning_beta) -> "<em>Attention :</em> La version actuelle de D-LAN est une bêta, elle ne doit être utilisée qu'à des fins de tests. Il est possible de rapporter les anomalies rencontrées <a href=\"~s\">ici</a>.";
 
 %%%%%%%%%%
 
@@ -134,10 +134,10 @@ translate(fr, faq, q4) ->
    "D-LAN utilise trop de ressource, comment puis-je faire pour réduire sa consommation?";
 
 translate(en, faq, a4) ->
-   "If D-LAN is currently computing some hashes, you have to wait the end of this operation, see the previous question. Otherwise it's possible to close the main D-LAN window, the GUI will be disconnected from the core and take less ressources.";
+   "<p>If D-LAN is currently computing some hashes, you have to wait the end of this operation, see the previous question. Otherwise it's possible to close the main D-LAN window, the GUI will be disconnected from the core and take less ressources.</p><p>Try to not have more than 10'000 files in queue, periodically clear the queue.</p>";
 translate(fr, faq, a4) ->
-   "Si D-LAN est en train de calculer les empreintes, il faut attendre que l'opération soit terminée, voir la question précédente. "
-   "Sinon il est possible de fermer la fenêtre de D-LAN, l'interface est alors déconnectée du coeur et consomme moins de ressources.";
+   "<p>Si D-LAN est en train de calculer les empreintes, il faut attendre que l'opération soit terminée, voir la question précédente. "
+   "Sinon il est possible de fermer la fenêtre de D-LAN, l'interface est alors déconnectée du coeur et consomme moins de ressources.</p><p>Éviter d'avoir plus de 10'000 fichiers en queue, périodiquement enlever les fichiers complets.</p>";
 
 translate(en, faq, q5) -> "There is no Mac OS X version!?";
 translate(fr, faq, q5) -> "Il n'y a pas de version pour Mac OS X!?";
