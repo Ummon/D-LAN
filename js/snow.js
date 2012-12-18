@@ -42,7 +42,8 @@ var Snow = function(canvas) {
       this.x = x;
       this.y = y - this.radius;
       this.angle = Math.random() * Math.PI / 4;
-      this.verticalSpeed = this.distance * 8 + 2; // px/s.
+      this.verticalSpeed = this.distance * 8 + 2; // [px/s].
+      this.omegaSpeed = (Math.random() - 0.5) * Math.PI / 2; // [rad/s].
       this.offset = Math.random() * 2 * Math.PI;
    }
 
@@ -56,6 +57,7 @@ var Snow = function(canvas) {
 
    this.Flake.prototype.update = function() {
       this.y += this.snow.dt * this.verticalSpeed / 1000
+      this.angle += (this.snow.dt * this.omegaSpeed / 1000) % (2 * Math.PI);
    }
 
    this.Flake.prototype.draw = function() {
