@@ -10,6 +10,7 @@
       <link rel="stylesheet" href="colorbox/colorbox.css" />
       <script src="js/jquery-1.7.2.min.js"></script>
       <script src="colorbox/jquery.colorbox-min.js"></script>
+      <script src="js/snow.js"></script>
       <script src="js/d_lan.js"></script>
       <script>
         var _gaq = _gaq || [];
@@ -24,6 +25,8 @@
    </head>   
    <!--[if IE ]><body class="ie"><![endif]-->
    <!--[if !IE]>--><body><!--<![endif]-->
+   
+      <canvas id="canvas-snow"></canvas>
    
       <div id="header">      
          <ul id="external-links">
@@ -53,7 +56,7 @@
          <div class="spacer"></div>
       </div>
       
-      <div id="menu">     
+      <div id="menu">
          <ul>
             <erl>
                out(A) -> d_lan_common:menu(A).

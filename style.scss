@@ -153,6 +153,15 @@ p {
    @include border-radius-all(10px);
 }
 
+#canvas-snow {
+   /*display: block;*/
+   left: 0px;
+   top: 18px;
+   position: absolute; 
+   margin: 0px;
+   padding: 0px;
+}
+
 #header {
    font-style: italic;
    line-height: normal;
