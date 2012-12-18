@@ -1,13 +1,29 @@
 var Snow = function(canvas) {   
-   // Parameters.
-   this.flakePerSecond = 20;
-   this.maxFlakes = 5000;
-   this.fps = 25;
-   //////////
+   ///// Parameters.
+   this.flakePerSecond = 15;
+   this.maxFlakes = 500;
+   this.fps = 20;
+   // y is 0 (top) to 1 (bottom).
+   this.t = 0.8; // threshold for the transparency factor function.
+   // This function may be replaced, for instance by (function(y, r) { return 1; }) if you don't want any flake fade.
+   this.transparencyFactorFromPosition = function(y, r) {      
+      if (y >= this.t)
+      {
+         var slope = 1 / (1 - r - this.t);
+         var b = 1 + this.t * slope;
+         return -y * slope + b;
+      }
+      else
+         return 1;
+   }
+   this.flakeColor = { r: 255, g: 255, b: 255 }
+   /////
 
    this.canvas = canvas; 
    this.ct = this.canvas.getContext("2d");
    this.dt = 1000 / this.fps; // [ms].
+   
+   this.ct.lineWidth = 1;
       
    this.flakes = new Array();
    this.timeSinceLastFlakesAdd = 0;
@@ -47,8 +63,12 @@ var Snow = function(canvas) {
       this.snow.ct.translate(this.getX(), this.getY());
       this.snow.ct.rotate(this.angle);
 
-      this.snow.ct.lineWidth = 1;
-      this.snow.ct.strokeStyle = buildColor(255, 255, 255, this.transparency);
+      this.snow.ct.strokeStyle = buildColor(
+         this.snow.flakeColor.r,
+         this.snow.flakeColor.g,
+         this.snow.flakeColor.b,
+         this.transparency * this.snow.transparencyFactorFromPosition(this.y / this.snow.canvas.height, this.radius / this.snow.canvas.height)
+      );
 
       this.snow.ct.beginPath();
 
@@ -85,14 +105,14 @@ Snow.prototype.update = function() {
             
       this.timeSinceLastFlakesAdd = this.timeSinceLastFlakesAdd - flakePeriodMs;
    }
-
+   
    for (var i = 0; i < this.flakes.length; i++)
       this.flakes[i].update();
 }
 
 Snow.prototype.draw = function() {
    this.ct.clearRect(0, 0, this.canvas.width, this.canvas.height);
-
+   
    for (var i = 0; i < this.flakes.length; i++)
       this.flakes[i].draw(); 
 }
