@@ -45,6 +45,7 @@ var Snow = function(canvas) {
       this.verticalVelocity = this.distance * 8 + 2; // [px/s].
       this.angularVelocity = (Math.random() - 0.5) * Math.PI / 2; // [rad/s].
       this.offset = Math.random() * 2 * Math.PI;
+      this.type = Math.floor(Math.random() * 2); // Two types of flake: 0 and 1.
    }
 
    this.Flake.prototype.getX = function() {
@@ -74,15 +75,32 @@ var Snow = function(canvas) {
 
       this.snow.ct.beginPath();
 
-      this.snow.ct.moveTo(0, -this.radius);
-      this.snow.ct.lineTo(0, this.radius);
-      this.snow.ct.moveTo(-this.radius, 0);
-      this.snow.ct.lineTo(this.radius, 0);
+      if (this.type == 0)
+      {
+         var x = this.radius * Math.cos(Math.PI / 6);
+         var y = this.radius * Math.sin(Math.PI / 6);
+         
+         this.snow.ct.moveTo(0, -this.radius);
+         this.snow.ct.lineTo(0, this.radius);
+         
+         this.snow.ct.moveTo(-x, -y);
+         this.snow.ct.lineTo(x, y);
+         
+         this.snow.ct.moveTo(-x, y);
+         this.snow.ct.lineTo(x, -y);
+      }
+      else
+      {      
+         this.snow.ct.moveTo(0, -this.radius);
+         this.snow.ct.lineTo(0, this.radius);
+         this.snow.ct.moveTo(-this.radius, 0);
+         this.snow.ct.lineTo(this.radius, 0);
 
-      this.snow.ct.moveTo(-this.radius / 2, -this.radius / 2);
-      this.snow.ct.lineTo(this.radius / 2, this.radius / 2);
-      this.snow.ct.moveTo(-this.radius / 2, this.radius / 2);
-      this.snow.ct.lineTo(this.radius / 2, -this.radius / 2);
+         this.snow.ct.moveTo(-this.radius / 2, -this.radius / 2);
+         this.snow.ct.lineTo(this.radius / 2, this.radius / 2);
+         this.snow.ct.moveTo(-this.radius / 2, this.radius / 2);
+         this.snow.ct.lineTo(this.radius / 2, -this.radius / 2);
+      }
 
       this.snow.ct.stroke();
       this.snow.ct.restore();
