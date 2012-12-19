@@ -61,7 +61,6 @@ var Snow = function(canvas, parameters = SnowNS.littleFlakes) {
    this.running = false;
    this.canvas = canvas; 
    this.ct = this.canvas.getContext("2d");
-   this.ct.lineWidth = this.p.flakeSizeFactor;
    
    this.flakes = new Array();
    this.timeSinceLastFlakesAdd = 0;
@@ -109,6 +108,8 @@ var Snow = function(canvas, parameters = SnowNS.littleFlakes) {
          this.snow.p.flakeColor.b,
          this.transparency * this.snow.p.transparencyFactorFromPosition(this.y / this.snow.canvas.height, this.radius / this.snow.canvas.height)
       );
+      
+      this.snow.ct.lineWidth = this.snow.p.flakeSizeFactor;
 
       this.snow.ct.beginPath();
 
