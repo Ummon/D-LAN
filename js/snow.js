@@ -67,7 +67,8 @@ var Snow = function(canvas, parameters = SnowNS.littleFlakes) {
    this.timeSinceLastFlakesAdd = 0;
    
    var buildColor = function(r, g, b, a) {
-      return "rgba(" + r + "," + g + "," + b + "," + a + ")";
+      var normalize = function(v, max = 255) { return v < 0 ? 0 : (v > max ? max : v); }
+      return "rgba(" + normalize(r) + "," + normalize(g) + "," + normalize(b) + "," + normalize(a, 1) + ")";
    }
    
    this.Flake = function(x, y) {
@@ -151,12 +152,13 @@ Snow.prototype.update = function(dt) {
       
    // Add some new flakes.
    this.timeSinceLastFlakesAdd += dt;
+      
    var flakePeriodMs = 1000 / this.p.flakePerSecond;
    if (this.timeSinceLastFlakesAdd >= flakePeriodMs) {
       for (var i = 0; i < Math.floor(this.timeSinceLastFlakesAdd / flakePeriodMs) && this.flakes.length < this.p.maxFlakes; i++)
-          this.flakes.push(new this.Flake(Math.random() * this.canvas.width, 0));
+         this.flakes.push(new this.Flake(Math.random() * this.canvas.width, 0));
             
-      this.timeSinceLastFlakesAdd = this.timeSinceLastFlakesAdd - flakePeriodMs;
+      this.timeSinceLastFlakesAdd = this.timeSinceLastFlakesAdd % flakePeriodMs;
    }
    
    for (var i = 0; i < this.flakes.length; i++)
