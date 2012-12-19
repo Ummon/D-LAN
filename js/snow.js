@@ -1,10 +1,11 @@
 var Snow = function(canvas) {
-   ///// Public parameters.
+   ///// Public parameters, can be changed at any time.
    this.flakePerSecond = 15;
    this.maxFlakes = 500;
-   // y is 0 (top) to 1 (bottom).
    this.t = 0.8; // threshold for the transparency factor function.
-   // This function may be replaced, for instance by (function(y, r) { return 1; }) if you don't want any flake fade.
+   
+   // This function may be replaced, for instance by (function(y, r) { return 1; }) if you don't want any flake fade.   
+   // Value of y is 0 (top) to 1 (bottom).
    this.transparencyFactorFromPosition = function(y, r) {      
       if (y >= this.t)
       {
@@ -15,6 +16,7 @@ var Snow = function(canvas) {
       else
          return 1;
    }
+   
    this.flakeColor = { r: 255, g: 255, b: 255 }
    /////
    
@@ -148,7 +150,6 @@ Snow.prototype.start = function() {
    this.running = true;
    var lastUpdateTime = getCurrentTime();
    
-   var i = 0;
    var tick = function() {   
       if (!self.running)
          return;
