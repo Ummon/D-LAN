@@ -1,31 +1,67 @@
-var Snow = function(canvas) {
-   ///// Public parameters, can be changed at any time.
-   this.flakePerSecond = 15;
-   this.maxFlakes = 500;
-   this.t = 0.8; // threshold for the transparency factor function.
-   
-   // This function may be replaced, for instance by (function(y, r) { return 1; }) if you don't want any flake fade.   
-   // Value of y is 0 (top) to 1 (bottom).
-   this.transparencyFactorFromPosition = function(y, r) {      
-      if (y >= this.t)
-      {
-         var slope = 1 / (1 - r - this.t);
-         var b = 1 + this.t * slope;
-         return -y * slope + b;
-      }
-      else
-         return 1;
+/**
+  * Usage:
+  *  a) Default parameters:
+  *   var snow = new Snow(canvas);
+  *   snow.start();
+  *
+  *  b) Predefined parameters:
+  *   var snow = new Snow(canvas, SnowNS.bigFlakes);
+  *   snow.start();
+  *
+  *  c) Change parameters:
+  *   var snow = new Snow(canvas);
+  *   snow.p.flakePerSecond = 25;
+  *   snow.p.maxFlakes = 1000;
+  *   snow.start();
+  */
+  
+var SnowNS = {   
+   littleFlakes : {
+      flakePerSecond : 15,
+      maxFlakes : 500,
+      flakeSpeedFactor : 1,
+      flakeSizeFactor : 1,
+      
+      threshold : 0.8, // threshold for the default transparency factor function.   
+      // This function may be replaced, for instance by (function(y, r) { return 1; }) if you don't want any flake fade.   
+      // Value of y is 0 (top) to 1 (bottom).
+      transparencyFactorFromPosition : function(y, r) {      
+         if (y >= this.threshold)
+         {
+            var slope = 1 / (1 - r - this.threshold);
+            var b = 1 + this.threshold * slope;
+            return -y * slope + b;
+         }
+         else
+            return 1;
+      },
+      
+      flakeColor : { r: 255, g: 255, b: 255 }
+   },
+
+   clone : function(obj) {
+      if(obj == null || typeof(obj) != 'object')
+         return obj;
+      var temp = obj.constructor();
+      for(var key in obj)
+         temp[key] = this.clone(obj[key]);
+      return temp;
    }
-   
-   this.flakeColor = { r: 255, g: 255, b: 255 }
-   /////
-   
+}
+
+SnowNS.bigFlakes = SnowNS.clone(SnowNS.littleFlakes)
+SnowNS.bigFlakes.flakeSizeFactor = 4;
+SnowNS.bigFlakes.threshold = 0.6;
+  
+var Snow = function(canvas, parameters = SnowNS.littleFlakes) {   
    var self = this
+   
+   this.p = parameters;
    
    this.running = false;
    this.canvas = canvas; 
-   this.ct = this.canvas.getContext("2d");   
-   this.ct.lineWidth = 1;
+   this.ct = this.canvas.getContext("2d");
+   this.ct.lineWidth = this.p.flakeSizeFactor;
    
    this.flakes = new Array();
    this.timeSinceLastFlakesAdd = 0;
@@ -37,7 +73,7 @@ var Snow = function(canvas) {
    this.Flake = function(x, y) {
       this.snow = self;
       this.distance = 1 - Math.sin(Math.random() * Math.PI / 2); // 1 means the nearest and 0 the farest. We use 'sin' to have more farest flakes.
-      this.radius = this.distance * 3 + 1;
+      this.radius = (this.distance * 3 + 1) * this.snow.p.flakeSizeFactor;
       this.transparency = this.distance / 1.5 + 0.1;
       this.x = x;
       this.y = y - this.radius;
@@ -57,7 +93,7 @@ var Snow = function(canvas) {
    }
 
    this.Flake.prototype.update = function(dt) {
-      this.y += dt * this.verticalVelocity / 1000
+      this.y += this.snow.p.flakeSpeedFactor * dt * this.verticalVelocity / 1000
       this.angle += (dt * this.angularVelocity / 1000) % (2 * Math.PI);
    }
 
@@ -67,10 +103,10 @@ var Snow = function(canvas) {
       this.snow.ct.rotate(this.angle);
 
       this.snow.ct.strokeStyle = buildColor(
-         this.snow.flakeColor.r,
-         this.snow.flakeColor.g,
-         this.snow.flakeColor.b,
-         this.transparency * this.snow.transparencyFactorFromPosition(this.y / this.snow.canvas.height, this.radius / this.snow.canvas.height)
+         this.snow.p.flakeColor.r,
+         this.snow.p.flakeColor.g,
+         this.snow.p.flakeColor.b,
+         this.transparency * this.snow.p.transparencyFactorFromPosition(this.y / this.snow.canvas.height, this.radius / this.snow.canvas.height)
       );
 
       this.snow.ct.beginPath();
@@ -115,9 +151,9 @@ Snow.prototype.update = function(dt) {
       
    // Add some new flakes.
    this.timeSinceLastFlakesAdd += dt;
-   var flakePeriodMs = 1000 / this.flakePerSecond;
+   var flakePeriodMs = 1000 / this.p.flakePerSecond;
    if (this.timeSinceLastFlakesAdd >= flakePeriodMs) {
-      for (var i = 0; i < Math.floor(this.timeSinceLastFlakesAdd / flakePeriodMs) && this.flakes.length < this.maxFlakes; i++)
+      for (var i = 0; i < Math.floor(this.timeSinceLastFlakesAdd / flakePeriodMs) && this.flakes.length < this.p.maxFlakes; i++)
           this.flakes.push(new this.Flake(Math.random() * this.canvas.width, 0));
             
       this.timeSinceLastFlakesAdd = this.timeSinceLastFlakesAdd - flakePeriodMs;
