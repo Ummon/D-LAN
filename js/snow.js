@@ -53,7 +53,10 @@ SnowNS.bigFlakes = SnowNS.clone(SnowNS.littleFlakes)
 SnowNS.bigFlakes.flakeSizeFactor = 4;
 SnowNS.bigFlakes.threshold = 0.6;
   
-var Snow = function(canvas, parameters = SnowNS.littleFlakes) {   
+var Snow = function(canvas, parameters) {   
+   if (!parameters)
+      parameters = SnowNS.littleFlakes;
+   
    var self = this
    
    this.p = parameters;
@@ -66,7 +69,11 @@ var Snow = function(canvas, parameters = SnowNS.littleFlakes) {
    this.timeSinceLastFlakesAdd = 0;
    
    var buildColor = function(r, g, b, a) {
-      var normalize = function(v, max = 255) { return v < 0 ? 0 : (v > max ? max : v); }
+      var normalize = function(v, max) {
+         if (!max)
+            max = 255;
+         return v < 0 ? 0 : (v > max ? max : v);
+      }
       return "rgba(" + normalize(r) + "," + normalize(g) + "," + normalize(b) + "," + normalize(a, 1) + ")";
    }
    
