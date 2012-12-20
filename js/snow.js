@@ -19,8 +19,12 @@ var SnowNS = {
    littleFlakes : {
       flakePerSecond : 15,
       maxFlakes : 500,
+      
       flakeSpeedFactor : 1,
+      flakeAngularVelocityFactor : 1,
       flakeSizeFactor : 1,
+      flakeSinWidthFactor : 1,
+      flakeSinPeriodFactor : 1,
       
       threshold : 0.8, // threshold for the default transparency factor function.   
       // This function may be replaced, for instance by (function(y, r) { return 1; }) if you don't want any flake fade.   
@@ -54,8 +58,7 @@ SnowNS.bigFlakes.flakeSizeFactor = 4;
 SnowNS.bigFlakes.threshold = 0.6;
   
 var Snow = function(canvas, parameters) {   
-   if (!parameters)
-      parameters = SnowNS.littleFlakes;
+   parameters = typeof parameters !== 'undefined' ? parameters : SnowNS.littleFlakes;
    
    var self = this
    
@@ -70,8 +73,7 @@ var Snow = function(canvas, parameters) {
    
    var buildColor = function(r, g, b, a) {
       var normalize = function(v, max) {
-         if (!max)
-            max = 255;
+         max = typeof max !== 'undefined' ? max : 255;
          return v < 0 ? 0 : (v > max ? max : v);
       }
       return "rgba(" + normalize(r) + "," + normalize(g) + "," + normalize(b) + "," + normalize(a, 1) + ")";
@@ -84,15 +86,15 @@ var Snow = function(canvas, parameters) {
       this.transparency = this.distance / 1.5 + 0.1;
       this.x = x;
       this.y = y - this.radius;
-      this.angle = Math.random() * Math.PI / 4;
+      this.angle = Math.random() * 2 * Math.PI;
       this.verticalVelocity = this.distance * 8 + 2; // [px/s].
-      this.angularVelocity = (Math.random() - 0.5) * Math.PI / 2; // [rad/s].
+      this.angularVelocity = this.snow.p.flakeAngularVelocityFactor * (Math.random() - 0.5) * Math.PI / 2; // [rad/s].
       this.offset = Math.random() * 2 * Math.PI;
       this.type = Math.floor(Math.random() * 2); // Two types of flake: 0 and 1.
    }
 
    this.Flake.prototype.getX = function() {
-      return this.x + Math.sin(this.y / (8 * this.distance + 2) + this.offset) * (8 * this.distance + 2);
+      return this.x + Math.sin((this.y / (8 * this.distance + 2) + this.offset) / this.snow.p.flakeSinPeriodFactor) * this.snow.p.flakeSinWidthFactor * (8 * this.distance + 2);
    }
 
    this.Flake.prototype.getY = function() {
