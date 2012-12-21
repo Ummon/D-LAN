@@ -1,21 +1,21 @@
+/*jslint white: true, indent: 3 */
+
 /**
   * Usage:
   *  a) Default parameters:
-  *   var snow = new Snow(canvas);
-  *   snow.start();
+  *   (new Snow(canvas)).start();
   *
   *  b) Predefined parameters:
-  *   var snow = new Snow(canvas, SnowNS.bigFlakes);
-  *   snow.start();
+  *   (new Snow(canvas, SnowNS.bigFlakes)).start();
   *
-  *  c) Change parameters:
+  *  c) Changing some parameters, see the default parameter object 'SnowNS.littleFlakes' below:
   *   var snow = new Snow(canvas);
   *   snow.p.flakePerSecond = 25;
   *   snow.p.maxFlakes = 1000;
   *   snow.start();
   */
-  
-var SnowNS = {   
+
+var SnowNS = {
    littleFlakes : {
       flakePerSecond : 15,
       maxFlakes : 500,
@@ -26,25 +26,23 @@ var SnowNS = {
       flakeSinWidthFactor : 1,
       flakeSinPeriodFactor : 1,
       
-      threshold : 0.8, // threshold for the default transparency factor function.   
+      threshold : 0.8, // threshold for the default transparency factor function.
       // This function may be replaced, for instance by (function(y, r) { return 1; }) if you don't want any flake fade.   
       // Value of y is 0 (top) to 1 (bottom).
       transparencyFactorFromPosition : function(y, r) {      
-         if (y >= this.threshold)
-         {
-            var slope = 1 / (1 - r - this.threshold);
-            var b = 1 + this.threshold * slope;
+         if (y >= this.threshold) {
+            var slope = 1 / (1 - r - this.threshold),
+                b = 1 + this.threshold * slope;
             return -y * slope + b;
          }
-         else
-            return 1;
+         return 1;
       },
       
       flakeColor : { r: 255, g: 255, b: 255 }
    },
 
    clone : function(obj) {
-      if(obj == null || typeof(obj) != 'object')
+      if(obj === null || typeof obj !== 'object')
          return obj;
       var temp = obj.constructor();
       for(var key in obj)
@@ -53,11 +51,11 @@ var SnowNS = {
    }
 }
 
-SnowNS.bigFlakes = SnowNS.clone(SnowNS.littleFlakes)
+SnowNS.bigFlakes = SnowNS.clone(SnowNS.littleFlakes);
 SnowNS.bigFlakes.flakeSizeFactor = 4;
 SnowNS.bigFlakes.threshold = 0.6;
   
-var Snow = function(canvas, parameters) {   
+var Snow = function(canvas, parameters) {
    parameters = typeof parameters !== 'undefined' ? parameters : SnowNS.littleFlakes;
    
    var self = this
@@ -122,7 +120,7 @@ var Snow = function(canvas, parameters) {
 
       this.snow.ct.beginPath();
 
-      if (this.type == 0) {
+      if (this.type === 0) {
          var x = this.radius * Math.cos(Math.PI / 6);
          var y = this.radius * Math.sin(Math.PI / 6);
          
@@ -185,7 +183,7 @@ Snow.prototype.draw = function() {
 Snow.prototype.start = function() {   
    var self = this;
       
-   var requestAnimFrame = 
+   var requestAnimFrame =
       window.requestAnimationFrame || 
       window.webkitRequestAnimationFrame || 
       window.mozRequestAnimationFrame || 

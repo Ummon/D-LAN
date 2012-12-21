@@ -10,6 +10,5 @@ $(function() {
    $(window).resize(setCanvasSize);   
    setCanvasSize();
 
-   var snow = new Snow(canvas);
-   snow.start();
+   (new Snow(canvas)).start();
 });
