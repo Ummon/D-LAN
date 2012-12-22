@@ -333,8 +333,8 @@ Common::Hash Hasher::hash(const Common::Hash& hash)
 }
 
 /**
- * Returns hash(str) + salt.
- */
+  * Returns hash(str) + salt.
+  */
 Common::Hash Hasher::hashWithSalt(const QString& str, quint64 salt)
 {
    const QByteArray data = str.toUtf8();
