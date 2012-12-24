@@ -19,6 +19,8 @@
 #include <MDI/TabButtons.h>
 using namespace GUI;
 
+#include <Log.h>
+
 /**
   * @class GUI::TabButton
   *
@@ -119,16 +121,6 @@ void TabCloseButton::drawPrimitive(const QStyleOption& opt, QPainter& p)
 void TabCloseButton::buttonClicked()
 {
    emit clicked(this->widget);
-
-   if (this->autoDelete)
-   {
-      // Delete the widget added to the tabBar with 'QTabBar::setTabButton(..)'
-      // Why the QTabBar do not delete the widget set by 'setTabButton' when the tab is closed!?
-      QObject* widgetInTabBar = this;
-      while (!dynamic_cast<QTabBar*>(widgetInTabBar->parent()))
-         widgetInTabBar = widgetInTabBar->parent();
-      delete widgetInTabBar;
-   }
 }
 
 void TabCloseButton::setToolTipTranslate()

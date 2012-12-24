@@ -56,6 +56,8 @@ namespace GUI
 
       void removeWidget(QWidget* widget);
 
+      void leaveRoom(QWidget* widget);
+
       void onGlobalProgressChanged(quint64 completed, quint64 total);
 
    private:
@@ -99,7 +101,10 @@ namespace GUI
 
       QList<BrowseWidget*> browseWidgets;
       QList<SearchWidget*> searchWidgets;
-      QList<ChatWidget*> chatWidgets; // Rooms.
+      QList<ChatWidget*> chatRooms;
+
+      // The is to avoid to close a new joined room right after receiving a state without this new room.
+      QString newOpenedChatRoom;
 
       // This widget is shown on the tab of the downloads page. It is visible only after D-LAN has started and during the loading
       // of the cache (before the downloads are loaded).

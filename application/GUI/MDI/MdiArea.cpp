@@ -5,6 +5,7 @@ using namespace GUI;
 
 #include <Common/Settings.h>
 
+#include <Log.h>
 #include <MDI/MdiWidget.h>
 #include <MDI/TabButtons.h>
 
@@ -54,14 +55,19 @@ void MdiArea::focusNthWindow(int num)
       this->setActiveSubWindow(this->subWindowList()[num]);
 }
 
+/**
+  * Called when the user explicitely wants to close the current window.
+  */
 void MdiArea::closeCurrentWindow()
 {
    if (this->currentSubWindow())
    {
       QWidget* widget = this->currentSubWindow()->widget();
 
-      if (dynamic_cast<BrowseWidget*>(widget) || dynamic_cast<SearchWidget*>(widget) || (dynamic_cast<ChatWidget*>(widget) && !dynamic_cast<ChatWidget*>(widget)->isGeneral()))
+      if (dynamic_cast<BrowseWidget*>(widget) || dynamic_cast<SearchWidget*>(widget))
          this->removeWidget(widget);
+      else if (dynamic_cast<ChatWidget*>(widget) && !dynamic_cast<ChatWidget*>(widget)->isGeneral())
+         this->leaveRoom(widget);
    }
 }
 
@@ -78,6 +84,7 @@ void MdiArea::openSearchWindow(const QString& terms, bool ownFiles)
 void MdiArea::openChatWindow(const QString& roomName)
 {
    this->addChatWindow(roomName);
+   this->newOpenedChatRoom = roomName;
 }
 
 void MdiArea::showDownloads()
@@ -127,12 +134,14 @@ void MdiArea::newState(const Protos::GUI::State& state)
       if (state.rooms(i).joined())
          joinedRooms.insert(Common::ProtoHelper::getStr(state.rooms(i), &Protos::GUI::State::Room::name));
 
-   foreach (ChatWidget* chatWidget, this->chatWidgets)
-      if (!joinedRooms.remove(chatWidget->getRoomName()))
+   foreach (ChatWidget* chatWidget, this->chatRooms)
+      if (!joinedRooms.remove(chatWidget->getRoomName()) && chatWidget->getRoomName() != this->newOpenedChatRoom)
          this->removeWidget(chatWidget);
 
    foreach (QString roomName, joinedRooms)
       this->addChatWindow(roomName, false);
+
+   this->newOpenedChatRoom.clear();
 
    if (this->downloadsBusyIndicator)
    {
@@ -206,7 +215,7 @@ void MdiArea::subWindowActivated(QMdiSubWindow* mdiWindow)
 /**
   * Remove and delete a sub window from the MDI area.
   */
-void MdiArea::removeWidget(QWidget *widget)
+void MdiArea::removeWidget(QWidget* widget)
 {
    Q_ASSERT(widget);
 
@@ -215,10 +224,7 @@ void MdiArea::removeWidget(QWidget *widget)
    else if (SearchWidget* searchWindow = dynamic_cast<SearchWidget*>(widget))
       this->searchWidgets.removeOne(searchWindow);
    else if (ChatWidget* chatWindow = dynamic_cast<ChatWidget*>(widget))
-      this->chatWidgets.removeOne(chatWindow);
-
-   // TODO : what if a widget is removed without clicking the close button, is this button will ne remain undeleted!?
-   // this->mdiAreaTabBar
+      this->chatRooms.removeOne(chatWindow);
 
    // Set a another sub window as active. If we don't do that the windows are all minimised (bug?).
    if (widget == this->currentSubWindow()->widget())
@@ -237,9 +243,18 @@ void MdiArea::removeWidget(QWidget *widget)
             }
    }
 
-   this->removeSubWindow(widget);
+   // We ask to remove the 'MdiSubWindow' as well.
+   // The associated tab widget added with 'setTabButton' is automatically removed and deleted.
+   this->removeSubWindow(static_cast<QWidget*>(widget->parent()));
 
    delete widget;
+}
+
+void MdiArea::leaveRoom(QWidget* widget)
+{
+   ChatWidget* room = static_cast<ChatWidget*>(widget);
+   this->coreConnection->leaveRoom(room->getRoomName());
+   this->removeWidget(widget);
 }
 
 void MdiArea::onGlobalProgressChanged(quint64 completed, quint64 total)
@@ -412,7 +427,7 @@ SearchWidget* MdiArea::addSearchWindow(const QString& term, bool searchInOwnFile
 ChatWidget* MdiArea::addChatWindow(const QString& roomName, bool switchTo)
 {
    // If the chat room is already open.
-   for (QListIterator<ChatWidget*> i(this->chatWidgets); i.hasNext();)
+   for (QListIterator<ChatWidget*> i(this->chatRooms); i.hasNext();)
    {
       ChatWidget* chatWidget = i.next();
       if (chatWidget->getRoomName() == roomName)
@@ -429,7 +444,7 @@ ChatWidget* MdiArea::addChatWindow(const QString& roomName, bool switchTo)
    chatWindow->installEventFilterOnInput(this);
    this->addSubWindow(chatWindow, Qt::CustomizeWindowHint);
    chatWindow->setWindowState(Qt::WindowMaximized);
-   this->chatWidgets << chatWindow;
+   this->chatRooms << chatWindow;
 
    TabCloseButton* closeButton = new TabCloseButton(chatWindow, nullptr, false);
    closeButton->setObjectName("tabWidget");
@@ -450,6 +465,6 @@ void MdiArea::removeAllWindows()
    foreach (SearchWidget* widget, this->searchWidgets)
       this->removeWidget(widget);
 
-   foreach (ChatWidget* widget, this->chatWidgets)
+   foreach (ChatWidget* widget, this->chatRooms)
       this->removeWidget(widget);
 }

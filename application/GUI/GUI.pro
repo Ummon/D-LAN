@@ -87,7 +87,8 @@ SOURCES += main.cpp\
     Search/SearchWidget.cpp \
     Settings/SettingsWidget.cpp \
     Uploads/UploadsWidget.cpp \
-    MDI/MdiWidget.cpp
+    MDI/MdiWidget.cpp \
+    ColorBox.cpp
 
 HEADERS  += MainWindow.h \
     ../Protos/gui_protocol.pb.h \
@@ -139,7 +140,8 @@ HEADERS  += MainWindow.h \
     Downloads/DownloadsWidget.h \
     Search/SearchWidget.h \
     Settings/SettingsWidget.h \
-    Uploads/UploadsWidget.h
+    Uploads/UploadsWidget.h \
+    ColorBox.h
 
 FORMS    += MainWindow.ui \
     StatusBar.ui \

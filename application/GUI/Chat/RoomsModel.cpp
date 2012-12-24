@@ -21,6 +21,8 @@ using namespace GUI;
 
 #include <Common/ProtoHelper.h>
 
+#include <Log.h>
+
 /**
   * @class RoomsModel
   *
@@ -89,15 +91,18 @@ void RoomsModel::newState(const Protos::GUI::State& state)
    int o = 0; // 'old'.
    while (n < roomsNewState.size() || o < this->rooms.size())
    {
+      // For debugging.
+      // L_DEBU(QString("n: %1, roomsNewState.size(); %2, o: %3, this->rooms.size(): %4").arg(n).arg(roomsNewState.size()).arg(o).arg(this->rooms.size()));
+
       // Add a new room.
-      if (o == this->rooms.size() || roomsNewState.getFromIndex(n) < this->rooms.getFromIndex(o))
+      if (o == this->rooms.size() || n < roomsNewState.size() && roomsNewState.getFromIndex(n) < this->rooms.getFromIndex(o))
       {
          this->beginInsertRows(QModelIndex(), o, o);
          this->rooms.insert(roomsNewState.getFromIndex(n));
          this->endInsertRows();
       }
       // Remove a room.
-      else if (n == roomsNewState.size() || this->rooms.getFromIndex(o) < roomsNewState.getFromIndex(n))
+      else if (n == roomsNewState.size() || o < this->rooms.size() && this->rooms.getFromIndex(o) < roomsNewState.getFromIndex(n))
       {
          this->beginRemoveRows(QModelIndex(), o, o);
          this->rooms.removeFromIndex(o--);

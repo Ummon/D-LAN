@@ -64,7 +64,9 @@ namespace GUI
       void displayContextMenuDownloads(const QPoint& point);
       void copySelectedLineToClipboard();
 
-      void setToBold();
+      void toggleBold(bool toggled);
+      void toggleItalic(bool toggled);
+      void toggleUnderline(bool toggled);
 
    protected:
       void keyPressEvent(QKeyEvent* event);

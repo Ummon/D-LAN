@@ -119,6 +119,14 @@ ChatWidget::ChatWidget(QSharedPointer<RCC::ICoreConnection> coreConnection, Peer
    autoScroll(true)
 {
    this->init();
+
+   for (int fontSize = 6; fontSize <= 28; fontSize++)
+   {
+      this->ui->cmbFontSize->addItem(QString::number(fontSize), fontSize);
+      if (fontSize >= 12)
+         fontSize++;
+   }
+   this->ui->cmbFontSize->setCurrentIndex(2);
 }
 
 ChatWidget::ChatWidget(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel, const QString& roomName, QWidget* parent) :
@@ -201,11 +209,20 @@ void ChatWidget::copySelectedLineToClipboard()
    QApplication::clipboard()->setText(lines);
 }
 
-void ChatWidget::setToBold()
+void ChatWidget::toggleBold(bool toggled)
 {
-   //this->ui->txtMessage->setHtml("<h1>prout</h1>");
-   //QString html = this->ui->txtMessage->toHtml();
-   this->sendMessage();
+   // QTextCursor tc = this->ui->txtMessage->textCursor();
+
+   // this->ui->txtMessage->setHtml("<h1>prout</h1>");
+   // QString html = this->ui->txtMessage->toHtml();
+}
+
+void ChatWidget::toggleItalic(bool toggled)
+{
+}
+
+void ChatWidget::toggleUnderline(bool toggled)
+{
 }
 
 void ChatWidget::keyPressEvent(QKeyEvent* event)
@@ -269,7 +286,9 @@ void ChatWidget::init()
 
    connect(this->ui->txtMessage, SIGNAL(returnPressed()), this, SLOT(sendMessage()));
 
-   connect(this->ui->butBold, SIGNAL(clicked()), this, SLOT(setToBold()));
+   connect(this->ui->butBold, SIGNAL(toggled(bool)), this, SLOT(toggleBold(bool)));
+   connect(this->ui->butItalic, SIGNAL(toggled(bool)), this, SLOT(toggleItalic(bool)));
+   connect(this->ui->butUnderline, SIGNAL(toggled(bool)), this, SLOT(toggleUnderline(bool)));
 
    this->setNewMessageState(false);
 }
@@ -282,17 +301,15 @@ void ChatWidget::onActivate()
 
 void ChatWidget::setNewMessageState(bool newMessage)
 {
-   if (newMessage /*&& !this->isAncestorOf(QApplication::focusWidget())*/)
+   if (newMessage)
    {      
       if (this->chatModel.isMainChat())
       {
          this->setWindowIcon(QIcon(":/icons/ressources/chat_new_mess.png"));
-         //this->parentWidget()->setWindowIcon(QIcon(":/icons/ressources/chat_new_mess.png"));
       }
       else
       {
          this->setWindowIcon(QIcon(":/icons/ressources/chat_room_new_mess.png"));
-         //this->parentWidget()->setWindowIcon(QIcon(":/icons/ressources/chat_room_new_mess.png"));
       }
    }
    else
@@ -300,12 +317,10 @@ void ChatWidget::setNewMessageState(bool newMessage)
       if (this->chatModel.isMainChat())
       {
          this->setWindowIcon(QIcon(":/icons/ressources/chat.png"));
-         //this->parentWidget()->setWindowIcon(QIcon(":/icons/ressources/chat.png"));
       }
       else
       {
          this->setWindowIcon(QIcon(":/icons/ressources/chat_room.png"));
-         //this->parentWidget()->setWindowIcon(QIcon(":/icons/ressources/chat_room.png"));
       }
    }
 }
