@@ -19,6 +19,13 @@ ColorBox::ColorBox(QWidget* parent) :
 
 void ColorBox::setColor(const QColor& color)
 {
+   this->currentColor = color;
+   this->repaint();
+}
+
+QColor ColorBox::getCurrentColor() const
+{
+   return this->currentColor;
 }
 
 void ColorBox::chooseColor()
@@ -44,6 +51,4 @@ void ColorBox::paintEvent(QPaintEvent* event)
    size.setHeight(size.height() - 8);
    size.setWidth(size.width() - 8);
    painter.drawRect(QRect(QPoint(4, 4), size));
-
-   // pe->end();
 }

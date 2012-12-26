@@ -21,6 +21,7 @@
 
 #include <QWidget>
 #include <QStyledItemDelegate>
+#include <QTextCharFormat>
 
 #include <Common/RemoteCoreController/ICoreConnection.h>
 
@@ -64,9 +65,16 @@ namespace GUI
       void displayContextMenuDownloads(const QPoint& point);
       void copySelectedLineToClipboard();
 
-      void toggleBold(bool toggled);
-      void toggleItalic(bool toggled);
-      void toggleUnderline(bool toggled);
+      void currentCharFormatChanged(const QTextCharFormat& charFormat);
+      void cursorPositionChanged();
+
+      void setFocusTxtMessage();
+
+      void comboFontSizeChanged(int index);
+      void setBold(bool toggled);
+      void setItalic(bool toggled);
+      void setUnderline(bool toggled);
+      void setTextColor(QColor color);
 
    protected:
       void keyPressEvent(QKeyEvent* event);
@@ -74,6 +82,8 @@ namespace GUI
 
    private:
       void init();
+      void connectFormatWidgets();
+      void disconnectFormatWidgets();
 
       void onActivate();
 

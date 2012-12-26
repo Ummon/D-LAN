@@ -164,7 +164,6 @@ void ChatWidget::installEventFilterOnInput(QObject* filterObj)
 
 void ChatWidget::sendMessage()
 {
-   //this->ui->txtMessage->setText(this->ui->txtMessage->text().trimmed());
    if (this->ui->txtMessage->toHtml().isEmpty())
       return;
 
@@ -209,20 +208,63 @@ void ChatWidget::copySelectedLineToClipboard()
    QApplication::clipboard()->setText(lines);
 }
 
-void ChatWidget::toggleBold(bool toggled)
+/**
+  * Update the format widgets depending of the cursor position.
+  */
+void ChatWidget::currentCharFormatChanged(const QTextCharFormat& charFormat)
 {
-   // QTextCursor tc = this->ui->txtMessage->textCursor();
+   this->disconnectFormatWidgets();
 
-   // this->ui->txtMessage->setHtml("<h1>prout</h1>");
-   // QString html = this->ui->txtMessage->toHtml();
+   const int fontSize = charFormat.fontPointSize();
+   for (int i = 0; i < this->ui->cmbFontSize->count(); i++)
+      if (this->ui->cmbFontSize->itemData(i).toInt() == fontSize)
+      {
+         this->ui->cmbFontSize->setCurrentIndex(i);
+         break;
+      }
+
+   this->ui->butBold->setChecked(charFormat.fontWeight() >= QFont::Bold);
+   this->ui->butItalic->setChecked(charFormat.fontItalic());
+   this->ui->butUnderline->setChecked(charFormat.fontUnderline());
+
+   this->connectFormatWidgets();
 }
 
-void ChatWidget::toggleItalic(bool toggled)
+void ChatWidget::cursorPositionChanged()
 {
+   this->disconnectFormatWidgets();
+   this->ui->butColorBox->setColor(this->ui->txtMessage->textColor());
+   this->connectFormatWidgets();
 }
 
-void ChatWidget::toggleUnderline(bool toggled)
+void ChatWidget::setFocusTxtMessage()
 {
+   this->ui->txtMessage->setFocus();
+}
+
+void ChatWidget::comboFontSizeChanged(int index)
+{
+   this->ui->txtMessage->setFontPointSize(this->ui->cmbFontSize->itemData(index).toInt());
+}
+
+void ChatWidget::setBold(bool toggled)
+{
+   this->ui->txtMessage->setFontWeight(toggled ? QFont::Bold : QFont::Normal);
+}
+
+void ChatWidget::setItalic(bool toggled)
+{
+   this->ui->txtMessage->setFontItalic(toggled);
+}
+
+void ChatWidget::setUnderline(bool toggled)
+{
+   this->ui->txtMessage->setFontUnderline(toggled);
+}
+
+void ChatWidget::setTextColor(QColor color)
+{
+   this->ui->txtMessage->setTextColor(color);
 }
 
 void ChatWidget::keyPressEvent(QKeyEvent* event)
@@ -285,12 +327,36 @@ void ChatWidget::init()
    connect(this->ui->tblChat->verticalScrollBar(), SIGNAL(valueChanged(int)), this, SLOT(scrollChanged(int)));
 
    connect(this->ui->txtMessage, SIGNAL(returnPressed()), this, SLOT(sendMessage()));
+   connect(this->ui->txtMessage, SIGNAL(currentCharFormatChanged(QTextCharFormat)), this, SLOT(currentCharFormatChanged(QTextCharFormat)));
+   connect(this->ui->txtMessage, SIGNAL(cursorPositionChanged()), this, SLOT(cursorPositionChanged()));
 
-   connect(this->ui->butBold, SIGNAL(toggled(bool)), this, SLOT(toggleBold(bool)));
-   connect(this->ui->butItalic, SIGNAL(toggled(bool)), this, SLOT(toggleItalic(bool)));
-   connect(this->ui->butUnderline, SIGNAL(toggled(bool)), this, SLOT(toggleUnderline(bool)));
+   connect(this->ui->cmbFontSize, SIGNAL(currentIndexChanged(int)), this, SLOT(setFocusTxtMessage()));
+   connect(this->ui->butBold, SIGNAL(clicked()), this, SLOT(setFocusTxtMessage()));
+   connect(this->ui->butItalic, SIGNAL(clicked()), this, SLOT(setFocusTxtMessage()));
+   connect(this->ui->butUnderline, SIGNAL(clicked()), this, SLOT(setFocusTxtMessage()));
+   connect(this->ui->butColorBox, SIGNAL(clicked()), this, SLOT(setFocusTxtMessage()));
+
+   this->connectFormatWidgets();
 
    this->setNewMessageState(false);
+}
+
+void ChatWidget::connectFormatWidgets()
+{
+   connect(this->ui->cmbFontSize, SIGNAL(currentIndexChanged(int)), this, SLOT(comboFontSizeChanged(int)));
+   connect(this->ui->butBold, SIGNAL(toggled(bool)), this, SLOT(setBold(bool)));
+   connect(this->ui->butItalic, SIGNAL(toggled(bool)), this, SLOT(setItalic(bool)));
+   connect(this->ui->butUnderline, SIGNAL(toggled(bool)), this, SLOT(setUnderline(bool)));
+   connect(this->ui->butColorBox, SIGNAL(colorChanged(QColor)), this, SLOT(setTextColor(QColor)));
+}
+
+void ChatWidget::disconnectFormatWidgets()
+{
+   this->ui->cmbFontSize->disconnect(this, SLOT(comboFontSizeChanged(int)));
+   this->ui->butBold->disconnect(this, SLOT(setBold(bool)));
+   this->ui->butItalic->disconnect(this, SLOT(setItalic(bool)));
+   this->ui->butUnderline->disconnect(this, SLOT(setUnderline(bool)));
+   this->ui->butColorBox->disconnect(this, SLOT(setTextColor(QColor)));
 }
 
 void ChatWidget::onActivate()

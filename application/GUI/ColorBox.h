@@ -14,6 +14,8 @@ namespace GUI
 
       void setColor(const QColor& color);
 
+      QColor getCurrentColor() const;
+
    signals:
       void colorChanged(QColor newColor);
 
