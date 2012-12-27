@@ -111,6 +111,8 @@ QSize	ChatDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelInd
 
 /////
 
+const int ChatWidget::DEFAULT_FONT_SIZE(8);
+
 ChatWidget::ChatWidget(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel, QWidget* parent) :
    MdiWidget(parent),
    ui(new Ui::ChatWidget),
@@ -126,7 +128,10 @@ ChatWidget::ChatWidget(QSharedPointer<RCC::ICoreConnection> coreConnection, Peer
       if (fontSize >= 12)
          fontSize++;
    }
+
    this->ui->cmbFontSize->setCurrentIndex(2);
+
+   this->ui->txtMessage->installEventFilter(this);
 }
 
 ChatWidget::ChatWidget(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel, const QString& roomName, QWidget* parent) :
@@ -215,13 +220,7 @@ void ChatWidget::currentCharFormatChanged(const QTextCharFormat& charFormat)
 {
    this->disconnectFormatWidgets();
 
-   const int fontSize = charFormat.fontPointSize();
-   for (int i = 0; i < this->ui->cmbFontSize->count(); i++)
-      if (this->ui->cmbFontSize->itemData(i).toInt() == fontSize)
-      {
-         this->ui->cmbFontSize->setCurrentIndex(i);
-         break;
-      }
+   this->setComboFontSize(charFormat.fontPointSize());
 
    this->ui->butBold->setChecked(charFormat.fontWeight() >= QFont::Bold);
    this->ui->butItalic->setChecked(charFormat.fontItalic());
@@ -235,6 +234,14 @@ void ChatWidget::cursorPositionChanged()
    this->disconnectFormatWidgets();
    this->ui->butColorBox->setColor(this->ui->txtMessage->textColor());
    this->connectFormatWidgets();
+}
+
+/**
+  * Adjust the text edit size depending of the size of each lines.
+  */
+void ChatWidget::textChanged()
+{
+   this->ui->txtMessage->setFixedHeight(this->ui->txtMessage->document()->size().height());
 }
 
 void ChatWidget::setFocusTxtMessage()
@@ -289,6 +296,21 @@ void ChatWidget::changeEvent(QEvent* event)
       QWidget::changeEvent(event);
 }
 
+bool ChatWidget::eventFilter(QObject* obj, QEvent* event)
+{
+   if (obj == this->ui->txtMessage && event->type() == QEvent::KeyPress)
+   {
+      QKeyEvent* keyEvent = static_cast<QKeyEvent*>(event);
+      if (keyEvent->key() == Qt::Key_Return && !(keyEvent->modifiers() & Qt::ShiftModifier))
+      {
+         this->sendMessage();
+         return true;
+      }
+   }
+
+   return MdiWidget::eventFilter(obj, event);
+}
+
 void ChatWidget::init()
 {
    this->ui->setupUi(this);
@@ -329,6 +351,7 @@ void ChatWidget::init()
    connect(this->ui->txtMessage, SIGNAL(returnPressed()), this, SLOT(sendMessage()));
    connect(this->ui->txtMessage, SIGNAL(currentCharFormatChanged(QTextCharFormat)), this, SLOT(currentCharFormatChanged(QTextCharFormat)));
    connect(this->ui->txtMessage, SIGNAL(cursorPositionChanged()), this, SLOT(cursorPositionChanged()));
+   connect(this->ui->txtMessage, SIGNAL(textChanged()), this, SLOT(textChanged()));
 
    connect(this->ui->cmbFontSize, SIGNAL(currentIndexChanged(int)), this, SLOT(setFocusTxtMessage()));
    connect(this->ui->butBold, SIGNAL(clicked()), this, SLOT(setFocusTxtMessage()));
@@ -357,6 +380,26 @@ void ChatWidget::disconnectFormatWidgets()
    this->ui->butItalic->disconnect(this, SLOT(setItalic(bool)));
    this->ui->butUnderline->disconnect(this, SLOT(setUnderline(bool)));
    this->ui->butColorBox->disconnect(this, SLOT(setTextColor(QColor)));
+}
+
+void ChatWidget::setComboFontSize(int fontSize)
+{
+   int defaultIndex = 0;
+   for (int i = 0; i < this->ui->cmbFontSize->count(); i++)
+   {
+      const int currentFontSize = this->ui->cmbFontSize->itemData(i).toInt();
+      if (currentFontSize == fontSize)
+      {
+         this->ui->cmbFontSize->setCurrentIndex(i);
+         return;
+      }
+      else if (currentFontSize == DEFAULT_FONT_SIZE)
+      {
+         defaultIndex = i;
+      }
+   }
+
+   this->ui->cmbFontSize->setCurrentIndex(defaultIndex);
 }
 
 void ChatWidget::onActivate()

@@ -46,6 +46,8 @@ namespace GUI
 
    class ChatWidget : public MdiWidget
    {
+      static const int DEFAULT_FONT_SIZE;
+
       Q_OBJECT
    public:
       explicit ChatWidget(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel, QWidget* parent = nullptr);
@@ -67,6 +69,7 @@ namespace GUI
 
       void currentCharFormatChanged(const QTextCharFormat& charFormat);
       void cursorPositionChanged();
+      void textChanged();
 
       void setFocusTxtMessage();
 
@@ -79,11 +82,13 @@ namespace GUI
    protected:
       void keyPressEvent(QKeyEvent* event);
       void changeEvent(QEvent* event);
+      bool eventFilter(QObject* obj, QEvent* event);
 
    private:
       void init();
       void connectFormatWidgets();
       void disconnectFormatWidgets();
+      void setComboFontSize(int fontSize);
 
       void onActivate();
 
