@@ -19,8 +19,12 @@ ColorBox::ColorBox(QWidget* parent) :
 
 void ColorBox::setColor(const QColor& color)
 {
-   this->currentColor = color;
-   this->repaint();
+   if (this->currentColor != color)
+   {
+      this->currentColor = color;
+      emit colorChanged(this->currentColor);
+      this->repaint();
+   }
 }
 
 QColor ColorBox::getCurrentColor() const

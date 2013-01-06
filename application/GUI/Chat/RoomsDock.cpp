@@ -2,6 +2,9 @@
 #include <ui_RoomsDock.h>
 using namespace GUI;
 
+#include <QKeyEvent>
+#include <QMenu>
+
 RoomsDock::RoomsDock(QSharedPointer<RCC::ICoreConnection> coreConnection, QWidget *parent) :
    QDockWidget(parent),
    ui(new Ui::RoomsDock),
@@ -9,6 +12,8 @@ RoomsDock::RoomsDock(QSharedPointer<RCC::ICoreConnection> coreConnection, QWidge
    roomsModel(this->coreConnection)
 {
    this->ui->setupUi(this);
+
+   this->ui->txtRoomName->installEventFilter(this);
 
    this->ui->tblRooms->setModel(&this->roomsModel);
    this->ui->tblRooms->setItemDelegate(&this->roomsDelegate);
@@ -22,8 +27,11 @@ RoomsDock::RoomsDock(QSharedPointer<RCC::ICoreConnection> coreConnection, QWidge
    this->ui->tblRooms->setSelectionMode(QAbstractItemView::ExtendedSelection);
    this->ui->tblRooms->setShowGrid(false);
    this->ui->tblRooms->setAlternatingRowColors(false);
-   //connect(this->ui->tblRooms->selectionModel(), SIGNAL(selectionChanged(QItemSelection, QItemSelection)), this, );
-   //connect(this->ui->tblRooms, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(joinRoom()));
+   this->ui->tblRooms->setContextMenuPolicy(Qt::CustomContextMenu);
+
+   connect(this->ui->tblRooms, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(displayContextMenuRooms(QPoint)));
+   connect(this->ui->tblRooms, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(roomDoubleClicked(QModelIndex)));
+
    connect(this->ui->butJoinRoom, SIGNAL(clicked()), this, SLOT(joinRoom()));
 
    connect(this->coreConnection.data(), SIGNAL(connected()), this, SLOT(coreConnected()));
@@ -37,15 +45,38 @@ RoomsDock::~RoomsDock()
    delete ui;
 }
 
+bool RoomsDock::eventFilter(QObject* obj, QEvent* event)
+{
+   if (obj == this->ui->txtRoomName && event->type() == QEvent::KeyPress && static_cast<QKeyEvent*>(event)->key() == Qt::Key_Return)
+   {
+      this->joinRoom();
+   }
+
+   return QDockWidget::eventFilter(obj, event);
+}
+
+void RoomsDock::displayContextMenuRooms(const QPoint& point)
+{
+   QMenu menu;
+   menu.addAction(QIcon(":/icons/ressources/join_chat_room.png"), tr("Join"), this, SLOT(joinSelectedRoom()));
+
+   menu.exec(this->ui->tblRooms->mapToGlobal(point));
+}
+
+void RoomsDock::roomDoubleClicked(const QModelIndex& index)
+{
+   this->joinRoom(this->roomsModel.getRoomName(index));
+}
+
+void RoomsDock::joinSelectedRoom()
+{
+   QString roomName = this->roomsModel.getRoomName(this->ui->tblRooms->currentIndex());
+   this->joinRoom(roomName);
+}
+
 void RoomsDock::joinRoom()
 {
-   QString roomName = this->ui->txtRoomName->text().trimmed();
-
-   if (!roomName.isEmpty())
-   {
-      this->coreConnection->joinRoom(roomName);
-      emit roomJoined(roomName);
-   }
+   this->joinRoom(this->ui->txtRoomName->text().trimmed());
 }
 
 void RoomsDock::coreConnected()
@@ -58,4 +89,13 @@ void RoomsDock::coreDisconnected(bool force)
 {
    this->ui->butJoinRoom->setDisabled(true);
    this->ui->txtRoomName->setDisabled(true);
+}
+
+void RoomsDock::joinRoom(const QString& roomName)
+{
+   if (!roomName.isEmpty())
+   {
+      this->coreConnection->joinRoom(roomName);
+      emit roomJoined(roomName);
+   }
 }

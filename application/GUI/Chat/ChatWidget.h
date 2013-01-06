@@ -79,6 +79,8 @@ namespace GUI
       void setUnderline(bool toggled);
       void setTextColor(QColor color);
 
+      void resetFormat();
+
    protected:
       void keyPressEvent(QKeyEvent* event);
       void changeEvent(QEvent* event);

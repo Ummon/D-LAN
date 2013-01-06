@@ -83,8 +83,11 @@ void MdiArea::openSearchWindow(const QString& terms, bool ownFiles)
 
 void MdiArea::openChatWindow(const QString& roomName)
 {
-   this->addChatWindow(roomName);
-   this->newOpenedChatRoom = roomName;
+   if (!roomName.isEmpty())
+   {
+      this->addChatWindow(roomName);
+      this->newOpenedChatRoom = roomName;
+   }
 }
 
 void MdiArea::showDownloads()

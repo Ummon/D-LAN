@@ -124,16 +124,22 @@ void InternalCoreConnection::sendChatMessage(const QString& message, const QStri
 
 void InternalCoreConnection::joinRoom(const QString& room)
 {
-   Protos::GUI::JoinRoom joinRoomMessage;
-   Common::ProtoHelper::setStr(joinRoomMessage, &Protos::GUI::JoinRoom::set_name, room);
-   this->send(Common::MessageHeader::GUI_JOIN_ROOM, joinRoomMessage);
+   if (!room.isEmpty())
+   {
+      Protos::GUI::JoinRoom joinRoomMessage;
+      Common::ProtoHelper::setStr(joinRoomMessage, &Protos::GUI::JoinRoom::set_name, room);
+      this->send(Common::MessageHeader::GUI_JOIN_ROOM, joinRoomMessage);
+   }
 }
 
 void InternalCoreConnection::leaveRoom(const QString& room)
 {
-   Protos::GUI::LeaveRoom leaveRoomMessage;
-   Common::ProtoHelper::setStr(leaveRoomMessage, &Protos::GUI::LeaveRoom::set_name, room);
-   this->send(Common::MessageHeader::GUI_LEAVE_ROOM, leaveRoomMessage);
+   if (!room.isEmpty())
+   {
+      Protos::GUI::LeaveRoom leaveRoomMessage;
+      Common::ProtoHelper::setStr(leaveRoomMessage, &Protos::GUI::LeaveRoom::set_name, room);
+      this->send(Common::MessageHeader::GUI_LEAVE_ROOM, leaveRoomMessage);
+   }
 }
 
 void InternalCoreConnection::setCoreSettings(const Protos::GUI::CoreSettings settings)

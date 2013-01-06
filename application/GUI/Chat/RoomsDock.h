@@ -26,13 +26,21 @@ namespace GUI
    signals:
       void roomJoined(const QString&);
 
+   protected:
+      bool eventFilter(QObject* obj, QEvent* event);
+
    private slots:
+      void displayContextMenuRooms(const QPoint& point);
+      void roomDoubleClicked(const QModelIndex& index);
+      void joinSelectedRoom();
       void joinRoom();
 
       void coreConnected();
       void coreDisconnected(bool force);
 
    private:
+      void joinRoom(const QString& roomName);
+
       Ui::RoomsDock* ui;
 
       QSharedPointer<RCC::ICoreConnection> coreConnection;

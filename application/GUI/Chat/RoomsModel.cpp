@@ -74,6 +74,16 @@ QVariant RoomsModel::data(const QModelIndex& index, int role) const
    return QVariant();
 }
 
+QString RoomsModel::getRoomName(const QModelIndex& index)
+{
+   if (index.row() < this->rooms.size())
+   {
+      return this->rooms.getFromIndex(index.row()).name;
+   }
+
+   return QString();
+}
+
 void RoomsModel::newState(const Protos::GUI::State& state)
 {
    Common::SortedArray<Room> roomsNewState;

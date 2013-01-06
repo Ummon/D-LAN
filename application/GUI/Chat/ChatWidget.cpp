@@ -121,17 +121,6 @@ ChatWidget::ChatWidget(QSharedPointer<RCC::ICoreConnection> coreConnection, Peer
    autoScroll(true)
 {
    this->init();
-
-   for (int fontSize = 6; fontSize <= 28; fontSize++)
-   {
-      this->ui->cmbFontSize->addItem(QString::number(fontSize), fontSize);
-      if (fontSize >= 12)
-         fontSize++;
-   }
-
-   this->ui->cmbFontSize->setCurrentIndex(2);
-
-   this->ui->txtMessage->installEventFilter(this);
 }
 
 ChatWidget::ChatWidget(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel, const QString& roomName, QWidget* parent) :
@@ -218,22 +207,43 @@ void ChatWidget::copySelectedLineToClipboard()
   */
 void ChatWidget::currentCharFormatChanged(const QTextCharFormat& charFormat)
 {
-   this->disconnectFormatWidgets();
+   if (this->ui->txtMessage->textCursor().position() != 0)
+   {
+      this->disconnectFormatWidgets();
 
-   this->setComboFontSize(charFormat.fontPointSize());
+      this->setComboFontSize(charFormat.fontPointSize());
 
-   this->ui->butBold->setChecked(charFormat.fontWeight() >= QFont::Bold);
-   this->ui->butItalic->setChecked(charFormat.fontItalic());
-   this->ui->butUnderline->setChecked(charFormat.fontUnderline());
+      this->ui->butBold->setChecked(charFormat.fontWeight() >= QFont::Bold);
+      this->ui->butItalic->setChecked(charFormat.fontItalic());
+      this->ui->butUnderline->setChecked(charFormat.fontUnderline());
 
-   this->connectFormatWidgets();
+      this->connectFormatWidgets();
+   }
+   else // Special case to avoid to reset the formatting when the cursor is put at the begining.
+   {
+      this->ui->txtMessage->disconnect(this, SIGNAL(currentCharFormatChanged(QTextCharFormat)));
+      this->ui->txtMessage->setFontPointSize(this->ui->cmbFontSize->itemData(this->ui->cmbFontSize->currentIndex()).toInt());
+      this->ui->txtMessage->setFontWeight(this->ui->butBold->isChecked() ? QFont::Bold : QFont::Normal);
+      this->ui->txtMessage->setFontItalic(this->ui->butItalic->isChecked());
+      this->ui->txtMessage->setFontUnderline(this->ui->butUnderline->isChecked());
+      connect(this->ui->txtMessage, SIGNAL(currentCharFormatChanged(QTextCharFormat)), this, SLOT(currentCharFormatChanged(QTextCharFormat)));
+   }
 }
 
 void ChatWidget::cursorPositionChanged()
 {
-   this->disconnectFormatWidgets();
-   this->ui->butColorBox->setColor(this->ui->txtMessage->textColor());
-   this->connectFormatWidgets();
+   if (this->ui->txtMessage->textCursor().position() != 0)
+   {
+      this->disconnectFormatWidgets();
+      this->ui->butColorBox->setColor(this->ui->txtMessage->textColor());
+      this->connectFormatWidgets();
+   }
+   else
+   {
+      this->ui->txtMessage->disconnect(this, SIGNAL(cursorPositionChanged()));
+      this->ui->txtMessage->setTextColor(this->ui->butColorBox->getCurrentColor());
+      connect(this->ui->txtMessage, SIGNAL(cursorPositionChanged()), this, SLOT(cursorPositionChanged()));
+   }
 }
 
 /**
@@ -272,6 +282,24 @@ void ChatWidget::setUnderline(bool toggled)
 void ChatWidget::setTextColor(QColor color)
 {
    this->ui->txtMessage->setTextColor(color);
+}
+
+void ChatWidget::resetFormat()
+{
+   for (int i = 0; i < this->ui->cmbFontSize->count(); i++)
+   {
+      if (this->ui->cmbFontSize->itemData(i).toInt() == DEFAULT_FONT_SIZE)
+      {
+         this->ui->cmbFontSize->setCurrentIndex(i);
+         break;
+      }
+   }
+
+   this->ui->butBold->setChecked(false);
+   this->ui->butItalic->setChecked(false);
+   this->ui->butUnderline->setChecked(false);
+
+   this->ui->butColorBox->setColor(QColor(0, 0, 0));
 }
 
 void ChatWidget::keyPressEvent(QKeyEvent* event)
@@ -359,7 +387,21 @@ void ChatWidget::init()
    connect(this->ui->butUnderline, SIGNAL(clicked()), this, SLOT(setFocusTxtMessage()));
    connect(this->ui->butColorBox, SIGNAL(clicked()), this, SLOT(setFocusTxtMessage()));
 
+   connect(this->ui->butResetFormat, SIGNAL(clicked()), this, SLOT(setFocusTxtMessage()));
+   connect(this->ui->butResetFormat, SIGNAL(clicked()), this, SLOT(resetFormat()));
+
    this->connectFormatWidgets();
+
+   for (int fontSize = 6; fontSize <= 28; fontSize++)
+   {
+      this->ui->cmbFontSize->addItem(QString::number(fontSize), fontSize);
+      if (fontSize >= 12)
+         fontSize++;
+   }
+
+   this->setComboFontSize(DEFAULT_FONT_SIZE);
+
+   this->ui->txtMessage->installEventFilter(this);
 
    this->setNewMessageState(false);
 }

@@ -33,7 +33,7 @@ PeersDock::PeersDock(QSharedPointer<RCC::ICoreConnection> coreConnection, QWidge
    this->ui->tblPeers->setShowGrid(false);
    this->ui->tblPeers->setAlternatingRowColors(false);
    this->ui->tblPeers->setContextMenuPolicy(Qt::CustomContextMenu);
-   connect(this->ui->tblPeers, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(displayContextMenuPeers(const QPoint&)));
+   connect(this->ui->tblPeers, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(displayContextMenuPeers(QPoint)));
    connect(this->ui->tblPeers, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(browse()));
 
    this->restoreColorizedPeers();

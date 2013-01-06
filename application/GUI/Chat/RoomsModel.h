@@ -42,6 +42,8 @@ namespace GUI
       int columnCount(const QModelIndex& parent = QModelIndex()) const;
       QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const;
 
+      QString getRoomName(const QModelIndex& index);
+
    signals:
       void roomJoined(const QString& room);
       void roomLeft(const QString& room);
