@@ -26,6 +26,8 @@ var SnowNS = {
       flakeSinWidthFactor : 1,
       flakeSinPeriodFactor : 1,
       
+      blur : 0, // 0 = no blur, 1 = full blur
+      
       threshold : 0.8, // threshold for the default transparency factor function.
       // This function may be replaced, for instance by (function(y, r) { return 1; }) if you don't want any flake fade.   
       // Value of y is 0 (top) to 1 (bottom).
@@ -38,7 +40,8 @@ var SnowNS = {
          return 1;
       },
       
-      flakeColor : { r: 255, g: 255, b: 255 }
+      flakeColor : { r: 255, g: 255, b: 255 },
+      flakeColorFromPosition : undefined
    },
 
    clone : function(obj) {
@@ -104,16 +107,19 @@ var Snow = function(canvas, parameters) {
       this.angle += (dt * this.angularVelocity / 1000) % (2 * Math.PI);
    }
 
-   this.Flake.prototype.draw = function() {
+   this.Flake.prototype.draw = function() {    
+      var x = this.getX(),
+          y = this.getY();
       this.snow.ct.save();
-      this.snow.ct.translate(this.getX(), this.getY());
+      this.snow.ct.translate(x, y);
       this.snow.ct.rotate(this.angle);
+      
+      var normalizedY = y / this.snow.canvas.height;
 
-      this.snow.ct.strokeStyle = buildColor(
-         this.snow.p.flakeColor.r,
-         this.snow.p.flakeColor.g,
-         this.snow.p.flakeColor.b,
-         this.transparency * this.snow.p.transparencyFactorFromPosition(this.y / this.snow.canvas.height, this.radius / this.snow.canvas.height)
+      var color = this.snow.p.flakeColorFromPosition ? this.snow.p.flakeColorFromPosition(x / this.snow.canvas.width, normalizedY) : this.snow.p.flakeColor;
+      
+      this.snow.ct.strokeStyle = buildColor(color.r, color.g, color.b,
+         this.transparency * this.snow.p.transparencyFactorFromPosition(normalizedY, this.radius / this.snow.canvas.height)
       );
       
       this.snow.ct.lineWidth = this.snow.p.flakeSizeFactor;
@@ -174,10 +180,98 @@ Snow.prototype.update = function(dt) {
 }
 
 Snow.prototype.draw = function() {
-   this.ct.clearRect(0, 0, this.canvas.width, this.canvas.height);
+   // Apply the gaussian blur if 'this.p.blur' isn't 0.
+   if (this.p.blur !== 0)
+      this.drawBlur();
+   else   
+      this.ct.clearRect(0, 0, this.canvas.width, this.canvas.height);
    
    for (var i = 0; i < this.flakes.length; i++)
       this.flakes[i].draw(); 
+}
+
+/**
+  * Apply a gaussian blur depending of 'this.p.blur' (rho) to the whole canvas.
+  * See http://en.wikipedia.org/wiki/Gaussian_blur for more information.
+  */
+Snow.prototype.drawBlur = function() {
+   var w = this.canvas.width,
+       h = this.canvas.height,
+       transparentFading = 0.93;
+   
+   var matrixSize = 0;
+   
+   // Create the gaussian matrix if 'this.p.rho' hasn't been defined or if it has been modified.
+   if (!this.rho || this.rho != this.p.blur) {
+      this.rho = this.p.blur;
+      
+      var rowSquare = Math.pow(this.rho, 2);
+      var a = 1 / (2 * Math.PI * rowSquare);
+      
+      matrixSize = Math.floor(this.rho * 6);
+      if (matrixSize % 2 == 0)
+         matrixSize += 1;
+      if (matrixSize < 3)
+         matrixSize = 3;
+      
+      this.gaussianBlurMatrix = new Array(matrixSize);
+      this.gaussianBlurMatrixSum = 0;
+      
+      for (var i = 0; i < matrixSize; i++) {
+         var y = i - Math.floor(matrixSize / 2);
+         for (var j = 0; j < matrixSize; j++) {
+            var x = j - Math.floor(matrixSize / 2);
+            this.gaussianBlurMatrix[i * matrixSize + j] = a * Math.pow(Math.E, (-Math.pow(x,2) - Math.pow(y,2)) / (2 * rowSquare));
+            this.gaussianBlurMatrixSum += this.gaussianBlurMatrix[i * matrixSize + j];
+         }
+      }
+   } else {
+      matrixSize = Math.floor(this.rho * 6);
+   }
+   
+   var currentImage = this.ct.getImageData(0, 0, w, h),
+       bluredImage = this.ct.createImageData(w, h),
+       currentImageData = currentImage.data,
+       bluredImageData = bluredImage.data,
+       s2 = Math.floor(matrixSize / 2),
+       pixelValue = new Array(4);
+   
+   for (var y = 0; y < h; y++) { 
+      for (var x = 0; x < w; x++) {
+         var pixelPosition = (y * w + x) * 4;
+         pixelValue[0] = 0.0;
+         pixelValue[1] = 0.0;
+         pixelValue[2] = 0.0;
+         pixelValue[3] = 0.0;
+         
+         for (var i = 0; i < matrixSize; i++) {
+            for (var j = 0; j < matrixSize; j++) {     
+               var x2 = x + (j - s2),
+                   y2 = y + (i - s2),
+                   factor = this.gaussianBlurMatrix[i * matrixSize + j];
+               
+               if (x2 < 0 || y2 < 0 || x2 > w || y2 > h) {               
+                  pixelValue[0] += factor * currentImageData[pixelPosition];
+                  pixelValue[1] += factor * currentImageData[pixelPosition + 1];
+                  pixelValue[2] += factor * currentImageData[pixelPosition + 2];
+               } else {
+                  var pixelPosition2 = (y2 * w + x2) * 4;
+                  pixelValue[0] += factor * currentImageData[pixelPosition2];
+                  pixelValue[1] += factor * currentImageData[pixelPosition2 + 1];
+                  pixelValue[2] += factor * currentImageData[pixelPosition2 + 2];
+                  pixelValue[3] += factor * currentImageData[pixelPosition2 + 3];                  
+               }               
+            }
+         }
+         
+         bluredImageData[pixelPosition] = pixelValue[0] / this.gaussianBlurMatrixSum;
+         bluredImageData[pixelPosition + 1] = pixelValue[1] / this.gaussianBlurMatrixSum;
+         bluredImageData[pixelPosition + 2] = pixelValue[2] / this.gaussianBlurMatrixSum;
+         bluredImageData[pixelPosition + 3] = transparentFading * pixelValue[3] / this.gaussianBlurMatrixSum;
+      }
+   }
+   
+   this.ct.putImageData(bluredImage, 0, 0);
 }
 
 Snow.prototype.start = function() {   

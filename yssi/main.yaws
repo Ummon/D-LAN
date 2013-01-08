@@ -26,7 +26,7 @@
    <!--[if IE ]><body class="ie"><![endif]-->
    <!--[if !IE]>--><body><!--<![endif]-->
    
-      <canvas id="canvas-snow"></canvas>
+      <canvas id="canvas-menu"></canvas>
    
       <div id="header">      
          <ul id="external-links">
