@@ -291,16 +291,18 @@ void MainWindow::keyPressEvent(QKeyEvent* event)
    {
       switch (event->key())
       {
-      // Search
+      // Search.
       case 'f':
       case 'F':
          this->searchDock->setFocusToLineEdit();
+         event->accept();
          return;
 
       // Close the current window.
       case 'w':
       case 'W':
          this->mdiArea->closeCurrentWindow();
+         event->accept();
          return;
       }
    }

@@ -148,14 +148,6 @@ QString ChatWidget::getRoomName() const
    return this->chatModel.getRoomName();
 }
 
-/**
-  * Install a event filter to the input widget (QLineEdit). For exemple, it allows to grap some key sequence as shortcut like CTRL-S to search.
-  */
-void ChatWidget::installEventFilterOnInput(QObject* filterObj)
-{
-   this->ui->txtMessage->installEventFilter(filterObj);
-}
-
 void ChatWidget::sendMessage()
 {
    if (this->ui->txtMessage->toHtml().isEmpty())
@@ -302,18 +294,40 @@ void ChatWidget::resetFormat()
    this->ui->butColorBox->setColor(QColor(0, 0, 0));
 }
 
-void ChatWidget::keyPressEvent(QKeyEvent* event)
+void ChatWidget::keyPressEvent(QKeyEvent* keyEvent)
 {
    // CTRL.
-   if (event->modifiers().testFlag(Qt::ControlModifier))
+   if (keyEvent->modifiers().testFlag(Qt::ControlModifier))
    {
-      switch (event->key())
+      switch (keyEvent->key())
       {
       case 'c':
       case 'C':
          this->copySelectedLineToClipboard();
+         keyEvent->accept();
+         break;
+
+      case 'b':
+      case 'B':
+         this->ui->butBold->toggle();
+         keyEvent->accept();
+         break;
+
+      case 'i':
+      case 'I':
+         this->ui->butItalic->toggle();
+         keyEvent->accept();
+         break;
+
+      case 'u':
+      case 'U':
+         this->ui->butUnderline->toggle();
+         keyEvent->accept();
+         break;
       }
    }
+
+   MdiWidget::keyPressEvent(keyEvent);
 }
 
 void ChatWidget::changeEvent(QEvent* event)
@@ -324,6 +338,9 @@ void ChatWidget::changeEvent(QEvent* event)
       QWidget::changeEvent(event);
 }
 
+/**
+  * To grab events from the text box ('ui->txtMessage').
+  */
 bool ChatWidget::eventFilter(QObject* obj, QEvent* event)
 {
    if (obj == this->ui->txtMessage && event->type() == QEvent::KeyPress)

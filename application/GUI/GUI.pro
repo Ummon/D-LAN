@@ -88,7 +88,8 @@ SOURCES += main.cpp\
     Settings/SettingsWidget.cpp \
     Uploads/UploadsWidget.cpp \
     MDI/MdiWidget.cpp \
-    ColorBox.cpp
+    ColorBox.cpp \
+    Chat/ChatTextEdit.cpp
 
 HEADERS  += MainWindow.h \
     ../Protos/gui_protocol.pb.h \
@@ -141,7 +142,8 @@ HEADERS  += MainWindow.h \
     Search/SearchWidget.h \
     Settings/SettingsWidget.h \
     Uploads/UploadsWidget.h \
-    ColorBox.h
+    ColorBox.h \
+    Chat/ChatTextEdit.h
 
 FORMS    += MainWindow.ui \
     StatusBar.ui \

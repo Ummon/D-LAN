@@ -57,8 +57,6 @@ namespace GUI
       bool isGeneral() const;
       QString getRoomName() const;
 
-      void installEventFilterOnInput(QObject* filterObj);
-
    private slots:
       void sendMessage();
       void newRows(const QModelIndex& parent, int start, int end);
@@ -82,7 +80,7 @@ namespace GUI
       void resetFormat();
 
    protected:
-      void keyPressEvent(QKeyEvent* event);
+      void keyPressEvent(QKeyEvent* keyEvent);
       void changeEvent(QEvent* event);
       bool eventFilter(QObject* obj, QEvent* event);
 

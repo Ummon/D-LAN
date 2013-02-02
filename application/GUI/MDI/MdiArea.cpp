@@ -119,9 +119,14 @@ bool MdiArea::eventFilter(QObject* obj, QEvent* event)
       (event->type() == QEvent::MouseButtonPress || event->type() == QEvent::MouseButtonDblClick) &&
       static_cast<QMouseEvent*>(event)->button() == Qt::MiddleButton
    )
-   {
       return true;
-   }
+
+   // CTRL.
+   /*if (event->type() == QEvent::KeyPress && static_cast<QKeyEvent*>(event)->modifiers().testFlag(Qt::ControlModifier))
+   {
+      L_DEBU(QString("CTRL %1").arg(static_cast<QKeyEvent*>(event)->key()));
+      //return true;
+   }*/
 
    return QMdiArea::eventFilter(obj, event);
 }
@@ -178,7 +183,7 @@ void MdiArea::coreConnected()
       }
    }
 
-   //this->setActiveSubWindow(this->chatWindow);
+   //this->setActiveSubWindow(dynamic_cast<QMdiSubWindow*>(this->chatWidget->parent()));
 }
 
 void MdiArea::coreDisconnected(bool forced)
@@ -303,7 +308,6 @@ void MdiArea::addChatWindow()
       return;
 
    this->chatWidget = new ChatWidget(this->coreConnection, this->peerListModel);
-   this->chatWidget->installEventFilterOnInput(this);
    this->addSubWindow(this->chatWidget, Qt::CustomizeWindowHint);
    this->mdiAreaTabBar->setTabData(this->mdiAreaTabBar->count() - 1, Protos::GUI::Settings_Window_WIN_CHAT);
    this->chatWidget->setWindowState(Qt::WindowMaximized);
@@ -350,6 +354,8 @@ void MdiArea::addUploadsWindow()
 {
    if (this->uploadsWidget)
       return;
+
+   L_DEBU("Add upload window");
 
    this->uploadsWidget = new UploadsWidget(this->coreConnection, this->peerListModel);
    this->addSubWindow(this->uploadsWidget, Qt::CustomizeWindowHint);
@@ -429,6 +435,8 @@ SearchWidget* MdiArea::addSearchWindow(const QString& term, bool searchInOwnFile
 
 ChatWidget* MdiArea::addChatWindow(const QString& roomName, bool switchTo)
 {
+   L_DEBU(QString("Add chat window (channel) %1").arg(switchTo));
+
    // If the chat room is already open.
    for (QListIterator<ChatWidget*> i(this->chatRooms); i.hasNext();)
    {
@@ -444,7 +452,6 @@ ChatWidget* MdiArea::addChatWindow(const QString& roomName, bool switchTo)
    QMdiSubWindow* currentWindow = this->currentSubWindow();
 
    ChatWidget* chatWindow = new ChatWidget(this->coreConnection, this->peerListModel, roomName);
-   chatWindow->installEventFilterOnInput(this);
    this->addSubWindow(chatWindow, Qt::CustomizeWindowHint);
    chatWindow->setWindowState(Qt::WindowMaximized);
    this->chatRooms << chatWindow;
@@ -454,8 +461,8 @@ ChatWidget* MdiArea::addChatWindow(const QString& roomName, bool switchTo)
    connect(closeButton, SIGNAL(clicked(QWidget*)), this, SLOT(leaveRoom(QWidget*)));
    this->mdiAreaTabBar->setTabButton(this->mdiAreaTabBar->count() - 1, QTabBar::RightSide, closeButton);
 
-   if (!switchTo && currentWindow)
-      this->setActiveSubWindow(currentWindow);
+   /*if (!switchTo && currentWindow)
+      this->setActiveSubWindow(currentWindow);*/
 
    return chatWindow;
 }

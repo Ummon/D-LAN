@@ -145,7 +145,7 @@
         </layout>
        </item>
        <item>
-        <widget class="QTextEdit" name="txtMessage">
+        <widget class="GUI::ChatTextEdit" name="txtMessage">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
            <horstretch>0</horstretch>
@@ -198,6 +198,11 @@ p, li { white-space: pre-wrap; }
    <class>GUI::ColorBox</class>
    <extends>QPushButton</extends>
    <header>ColorBox.h</header>
+  </customwidget>
+  <customwidget>
+   <class>GUI::ChatTextEdit</class>
+   <extends>QTextEdit</extends>
+   <header>Chat/ChatTextEdit.h</header>
   </customwidget>
  </customwidgets>
  <resources>
