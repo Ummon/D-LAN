@@ -16,7 +16,7 @@ $(function() {
    
    // It snows from the begining of december to the end of february.
    var currentMonth = (new Date()).getMonth();
-   if (currentMonth >= 11 || currentMonth <= 1 && !dlan.isMobile())
+   if (currentMonth >= 11 || currentMonth <= 0 && !dlan.isMobile())
    {
       var snow = new Snow(canvas);
       
