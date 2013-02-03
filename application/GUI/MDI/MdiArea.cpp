@@ -121,13 +121,6 @@ bool MdiArea::eventFilter(QObject* obj, QEvent* event)
    )
       return true;
 
-   // CTRL.
-   /*if (event->type() == QEvent::KeyPress && static_cast<QKeyEvent*>(event)->modifiers().testFlag(Qt::ControlModifier))
-   {
-      L_DEBU(QString("CTRL %1").arg(static_cast<QKeyEvent*>(event)->key()));
-      //return true;
-   }*/
-
    return QMdiArea::eventFilter(obj, event);
 }
 
@@ -183,7 +176,7 @@ void MdiArea::coreConnected()
       }
    }
 
-   //this->setActiveSubWindow(dynamic_cast<QMdiSubWindow*>(this->chatWidget->parent()));
+   this->setActiveSubWindow(dynamic_cast<QMdiSubWindow*>(this->chatWidget->parent()));
 }
 
 void MdiArea::coreDisconnected(bool forced)
@@ -216,8 +209,9 @@ void MdiArea::tabMoved(int, int)
 
 void MdiArea::subWindowActivated(QMdiSubWindow* mdiWindow)
 {
-   if (MdiWidget* mdiWidget = dynamic_cast<MdiWidget*>(mdiWindow->widget()))
-      mdiWidget->activate();
+   if (mdiWindow)
+      if (MdiWidget* mdiWidget = dynamic_cast<MdiWidget*>(mdiWindow->widget()))
+         mdiWidget->activate();
 }
 
 /**
@@ -355,8 +349,6 @@ void MdiArea::addUploadsWindow()
    if (this->uploadsWidget)
       return;
 
-   L_DEBU("Add upload window");
-
    this->uploadsWidget = new UploadsWidget(this->coreConnection, this->peerListModel);
    this->addSubWindow(this->uploadsWidget, Qt::CustomizeWindowHint);
    this->mdiAreaTabBar->setTabData(this->mdiAreaTabBar->count() - 1, Protos::GUI::Settings_Window_WIN_UPLOAD);
@@ -435,8 +427,6 @@ SearchWidget* MdiArea::addSearchWindow(const QString& term, bool searchInOwnFile
 
 ChatWidget* MdiArea::addChatWindow(const QString& roomName, bool switchTo)
 {
-   L_DEBU(QString("Add chat window (channel) %1").arg(switchTo));
-
    // If the chat room is already open.
    for (QListIterator<ChatWidget*> i(this->chatRooms); i.hasNext();)
    {
@@ -461,8 +451,8 @@ ChatWidget* MdiArea::addChatWindow(const QString& roomName, bool switchTo)
    connect(closeButton, SIGNAL(clicked(QWidget*)), this, SLOT(leaveRoom(QWidget*)));
    this->mdiAreaTabBar->setTabButton(this->mdiAreaTabBar->count() - 1, QTabBar::RightSide, closeButton);
 
-   /*if (!switchTo && currentWindow)
-      this->setActiveSubWindow(currentWindow);*/
+   if (!switchTo && currentWindow)
+      this->setActiveSubWindow(currentWindow);
 
    return chatWindow;
 }

@@ -372,6 +372,18 @@ void ChatWidget::init()
       this->setWindowTitle(this->chatModel.getRoomName());
    }
 
+   int defaultFontIndex = 0;
+   for (int fontSize = 6, i = 0; fontSize <= 28; fontSize++, i++)
+   {
+      this->ui->cmbFontSize->addItem(QString::number(fontSize), fontSize);
+      if (fontSize >= 12)
+         fontSize++;
+      if (fontSize == DEFAULT_FONT_SIZE)
+         defaultFontIndex = i;
+   }
+   this->ui->cmbFontSize->setCurrentIndex(defaultFontIndex);
+   this->ui->txtMessage->setFontPointSize(DEFAULT_FONT_SIZE);
+
    this->ui->tblChat->setModel(&this->chatModel);
    this->ui->tblChat->setItemDelegate(&this->chatDelegate);
    this->ui->tblChat->setWordWrap(true);
@@ -393,7 +405,6 @@ void ChatWidget::init()
    connect(&this->chatModel, SIGNAL(rowsInserted(const QModelIndex&, int, int)), this, SLOT(newRows(const QModelIndex&, int, int)));
    connect(this->ui->tblChat->verticalScrollBar(), SIGNAL(valueChanged(int)), this, SLOT(scrollChanged(int)));
 
-   connect(this->ui->txtMessage, SIGNAL(returnPressed()), this, SLOT(sendMessage()));
    connect(this->ui->txtMessage, SIGNAL(currentCharFormatChanged(QTextCharFormat)), this, SLOT(currentCharFormatChanged(QTextCharFormat)));
    connect(this->ui->txtMessage, SIGNAL(cursorPositionChanged()), this, SLOT(cursorPositionChanged()));
    connect(this->ui->txtMessage, SIGNAL(textChanged()), this, SLOT(textChanged()));
@@ -409,16 +420,11 @@ void ChatWidget::init()
 
    this->connectFormatWidgets();
 
-   for (int fontSize = 6; fontSize <= 28; fontSize++)
-   {
-      this->ui->cmbFontSize->addItem(QString::number(fontSize), fontSize);
-      if (fontSize >= 12)
-         fontSize++;
-   }
-
-   this->setComboFontSize(DEFAULT_FONT_SIZE);
-
    this->ui->txtMessage->installEventFilter(this);
+
+   // ALT-<num> is used to switch bewteen windows, we tell the text edit widget to ignore them.
+   for (char c = '0'; c <= '9'; c++)
+      this->ui->txtMessage->addIgnoreKeyCombination({ Qt::AltModifier, c });
 
    this->setNewMessageState(false);
 }

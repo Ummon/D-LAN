@@ -8,8 +8,8 @@ ChatTextEdit::ChatTextEdit(QWidget* parent) :
    QTextEdit(parent)
 {
    // Ignore CTRL-I, we use it as a italic key combination.
-   this->addIgnoreKeyCombination(KeyCombination { Qt::ControlModifier, 'i' } );
-   this->addIgnoreKeyCombination(KeyCombination { Qt::ControlModifier, 'I' } );
+   this->addIgnoreKeyCombination({ Qt::ControlModifier, 'i' });
+   this->addIgnoreKeyCombination({ Qt::ControlModifier, 'I' });
 }
 
 void ChatTextEdit::addIgnoreKeyCombination(KeyCombination keyCombination)
