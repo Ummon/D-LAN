@@ -216,7 +216,7 @@ void MdiArea::tabMoved(int, int)
 
 void MdiArea::subWindowActivated(QMdiSubWindow* mdiWindow)
 {
-   if (MdiWidget* mdiWidget = dynamic_cast<MdiWidget*>(mdiWindow))
+   if (MdiWidget* mdiWidget = dynamic_cast<MdiWidget*>(mdiWindow->widget()))
       mdiWidget->activate();
 }
 
