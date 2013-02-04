@@ -139,7 +139,7 @@
 <context>
     <name>GUI::DownloadsDelegate</name>
     <message>
-        <location filename="../GUI/Downloads/WidgetDownloads.cpp" line="+54"/>
+        <location filename="../GUI/Downloads/WidgetDownloads.cpp" line="+55"/>
         <source>Queued</source>
         <translation>En queue</translation>
     </message>
@@ -221,11 +221,21 @@
         <translation>Erreur de transfert</translation>
     </message>
     <message>
+        <location line="+19"/>
+        <source>The remote directory is currently being scanned</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Unable to retrieve the entries</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <source>Transfert error</source>
         <translation type="obsolete">Erreur de transfert</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="-19"/>
         <source>Unable to open the file</source>
         <translation>Impossible d&apos;ouvrir le fichier</translation>
     </message>
@@ -362,7 +372,7 @@
         <translation>Entrez le mot de passe</translation>
     </message>
     <message>
-        <location line="+453"/>
+        <location line="+452"/>
         <source>Waiting the cache loading process is finished before loading the download queue</source>
         <translation>En attente de la fin de chargement du cache avant de pouvoir charger la queue de téléchargement</translation>
     </message>
@@ -375,7 +385,7 @@
         <translation type="obsolete">En attente que le cache soit chargé</translation>
     </message>
     <message>
-        <location line="-559"/>
+        <location line="-558"/>
         <source>Connected to the core</source>
         <translation>Connecté au core</translation>
     </message>
@@ -402,7 +412,7 @@
         <translation type="obsolete">Version %1</translation>
     </message>
     <message>
-        <location filename="../GUI/PeerList/PeerListModel.cpp" line="+168"/>
+        <location filename="../GUI/PeerList/PeerListModel.cpp" line="+169"/>
         <source>Version %1
 </source>
         <translation>Version %1
