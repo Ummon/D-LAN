@@ -84,6 +84,9 @@ sed -i "s/_VERSION_/$vhead-$vtag/g" $DEB_DIR/DEBIAN/control
 
 cd $WORK_DIR
 sudo chown -R root:root $DEB_DIR
+sudo chmod -R 0644 $DEB_DIR
+sudo chmod -R +X $DEB_DIR
+sudo chmod 755 $DEB_DIR/DEBIAN/postinst $DEB_DIR/DEBIAN/prerm
 dpkg-deb --build d-lan
 mv d-lan.deb $INST_DIR/D-LAN-$vhead$vtag-$vdate-$arch.deb
  

@@ -1,6 +1,5 @@
 Package: d-lan-all-in-one
 Version: _VERSION_
-License: GPL-3
 Section: base
 Priority: optional
 Architecture: _ARCH_
