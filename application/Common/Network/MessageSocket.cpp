@@ -224,7 +224,7 @@ void MessageSocket::dataReceivedSlot()
       {
          if (!this->readMessage())
          {
-            MESSAGE_SOCKET_LOG_DEBUG("Can't read the message -> finished");
+            MESSAGE_SOCKET_LOG_DEBUG(QString("Socket[%1]: Unable to read the received message, closing the socket. Message type: %2").arg(this->num).arg(this->currentHeader.getType()));
             this->socket->close();
             return;
          }
