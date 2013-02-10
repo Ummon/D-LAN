@@ -139,7 +139,7 @@
 <context>
     <name>GUI::DownloadsDelegate</name>
     <message>
-        <location filename="../GUI/Downloads/WidgetDownloads.cpp" line="+55"/>
+        <location filename="../GUI/Downloads/WidgetDownloads.cpp" line="+54"/>
         <source>Queued</source>
         <translation>En queue</translation>
     </message>
@@ -167,7 +167,7 @@
 <context>
     <name>GUI::DownloadsModel</name>
     <message>
-        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="+104"/>
+        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="+99"/>
         <source>Source peer offline (%1)</source>
         <translation>Le pair source n&apos;est pas en ligne (%1)</translation>
     </message>
@@ -221,21 +221,11 @@
         <translation>Erreur de transfert</translation>
     </message>
     <message>
-        <location line="+19"/>
-        <source>The remote directory is currently being scanned</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>Unable to retrieve the entries</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Transfert error</source>
         <translation type="obsolete">Erreur de transfert</translation>
     </message>
     <message>
-        <location line="-19"/>
+        <location line="+3"/>
         <source>Unable to open the file</source>
         <translation>Impossible d&apos;ouvrir le fichier</translation>
     </message>
@@ -267,7 +257,7 @@
 <context>
     <name>GUI::MainWindow</name>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="+204"/>
+        <location filename="../GUI/MainWindow.cpp" line="+206"/>
         <source>Already connected to this address</source>
         <translation>Déjà connecté à cette addresse</translation>
     </message>
@@ -372,7 +362,7 @@
         <translation>Entrez le mot de passe</translation>
     </message>
     <message>
-        <location line="+452"/>
+        <location line="+463"/>
         <source>Waiting the cache loading process is finished before loading the download queue</source>
         <translation>En attente de la fin de chargement du cache avant de pouvoir charger la queue de téléchargement</translation>
     </message>
@@ -385,7 +375,7 @@
         <translation type="obsolete">En attente que le cache soit chargé</translation>
     </message>
     <message>
-        <location line="-558"/>
+        <location line="-569"/>
         <source>Connected to the core</source>
         <translation>Connecté au core</translation>
     </message>
@@ -412,7 +402,7 @@
         <translation type="obsolete">Version %1</translation>
     </message>
     <message>
-        <location filename="../GUI/PeerList/PeerListModel.cpp" line="+169"/>
+        <location filename="../GUI/PeerList/PeerListModel.cpp" line="+168"/>
         <source>Version %1
 </source>
         <translation>Version %1
@@ -478,7 +468,7 @@
 <context>
     <name>GUI::StatusBar</name>
     <message>
-        <location filename="../GUI/StatusBar.cpp" line="+98"/>
+        <location filename="../GUI/StatusBar.cpp" line="+116"/>
         <source>peers</source>
         <translation>pairs</translation>
     </message>
@@ -763,7 +753,7 @@
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="+48"/>
+        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="+56"/>
         <source>D-LAN Core cannot be installed as a service</source>
         <translation>D-LAN ne peut pas être installé comme service</translation>
     </message>

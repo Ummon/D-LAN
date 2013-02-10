@@ -199,7 +199,7 @@ void ChatWidget::copySelectedLineToClipboard()
   */
 void ChatWidget::currentCharFormatChanged(const QTextCharFormat& charFormat)
 {
-   if (this->ui->txtMessage->textCursor().position() != 0)
+   if (this->ui->txtMessage->textCursor().position() > 0 || this->ui->txtMessage->document()->characterCount() > 1)
    {
       this->disconnectFormatWidgets();
 
@@ -214,10 +214,7 @@ void ChatWidget::currentCharFormatChanged(const QTextCharFormat& charFormat)
    else // Special case to avoid to reset the formatting when the cursor is put at the begining.
    {
       this->ui->txtMessage->disconnect(this, SIGNAL(currentCharFormatChanged(QTextCharFormat)));
-      this->ui->txtMessage->setFontPointSize(this->ui->cmbFontSize->itemData(this->ui->cmbFontSize->currentIndex()).toInt());
-      this->ui->txtMessage->setFontWeight(this->ui->butBold->isChecked() ? QFont::Bold : QFont::Normal);
-      this->ui->txtMessage->setFontItalic(this->ui->butItalic->isChecked());
-      this->ui->txtMessage->setFontUnderline(this->ui->butUnderline->isChecked());
+      this->applyCurrentFormat();
       connect(this->ui->txtMessage, SIGNAL(currentCharFormatChanged(QTextCharFormat)), this, SLOT(currentCharFormatChanged(QTextCharFormat)));
    }
 }
@@ -384,6 +381,8 @@ void ChatWidget::init()
    this->ui->cmbFontSize->setCurrentIndex(defaultFontIndex);
    this->ui->txtMessage->setFontPointSize(DEFAULT_FONT_SIZE);
 
+   this->applyCurrentFormat();
+
    this->ui->tblChat->setModel(&this->chatModel);
    this->ui->tblChat->setItemDelegate(&this->chatDelegate);
    this->ui->tblChat->setWordWrap(true);
@@ -426,7 +425,16 @@ void ChatWidget::init()
    for (char c = '0'; c <= '9'; c++)
       this->ui->txtMessage->addIgnoreKeyCombination({ Qt::AltModifier, c });
 
-   this->setNewMessageState(false);
+this->setNewMessageState(false);
+}
+
+void ChatWidget::applyCurrentFormat()
+{
+   this->ui->txtMessage->setFontPointSize(this->ui->cmbFontSize->itemData(this->ui->cmbFontSize->currentIndex()).toInt());
+   this->ui->txtMessage->setFontWeight(this->ui->butBold->isChecked() ? QFont::Bold : QFont::Normal);
+   this->ui->txtMessage->setFontItalic(this->ui->butItalic->isChecked());
+   this->ui->txtMessage->setFontUnderline(this->ui->butUnderline->isChecked());
+   this->ui->txtMessage->setTextColor(this->ui->butColorBox->getCurrentColor());
 }
 
 void ChatWidget::connectFormatWidgets()

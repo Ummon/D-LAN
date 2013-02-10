@@ -86,6 +86,7 @@ namespace GUI
 
    private:
       void init();
+      void applyCurrentFormat();
       void connectFormatWidgets();
       void disconnectFormatWidgets();
       void setComboFontSize(int fontSize);
