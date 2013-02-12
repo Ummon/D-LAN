@@ -150,10 +150,7 @@ QString ChatWidget::getRoomName() const
 
 void ChatWidget::sendMessage()
 {
-   if (this->ui->txtMessage->toHtml().isEmpty())
-      return;
-
-   this->coreConnection->sendChatMessage(this->ui->txtMessage->toHtml(), this->chatModel.getRoomName());
+   this->chatModel.sendMessage(this->ui->txtMessage->toHtml());
    this->ui->txtMessage->clear();
 }
 
@@ -289,6 +286,8 @@ void ChatWidget::resetFormat()
    this->ui->butUnderline->setChecked(false);
 
    this->ui->butColorBox->setColor(QColor(0, 0, 0));
+
+   this->applyCurrentFormat();
 }
 
 void ChatWidget::keyPressEvent(QKeyEvent* keyEvent)

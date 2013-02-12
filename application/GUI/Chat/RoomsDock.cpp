@@ -76,7 +76,7 @@ void RoomsDock::joinSelectedRoom()
 
 void RoomsDock::joinRoom()
 {
-   this->joinRoom(this->ui->txtRoomName->text().trimmed());
+   this->joinRoom(this->ui->txtRoomName->text());
 }
 
 void RoomsDock::coreConnected()
@@ -93,9 +93,11 @@ void RoomsDock::coreDisconnected(bool force)
 
 void RoomsDock::joinRoom(const QString& roomName)
 {
-   if (!roomName.isEmpty())
+   const QString cleanedName = roomName.trimmed().toLower();
+
+   if (!cleanedName.isEmpty())
    {
-      this->coreConnection->joinRoom(roomName);
-      emit roomJoined(roomName);
+      this->coreConnection->joinRoom(cleanedName);
+      emit roomJoined(cleanedName);
    }
 }

@@ -78,11 +78,25 @@ QVariant ChatModel::data(const QModelIndex& index, int role) const
    switch (role)
    {
    case Qt::DisplayRole:
-         return this->formatMessage(this->messages[index.row()]);
-      break;
+      return this->formatMessage(this->messages[index.row()]);
    }
 
    return QVariant();
+}
+
+void ChatModel::sendMessage(const QString& message)
+{
+   if (message.isEmpty())
+      return;
+
+   // Remove the header.
+   const int firstSpan = message.indexOf("<span");
+   const int lastSpan = message.lastIndexOf("</span>") + 6;
+
+   if (firstSpan > -1 && lastSpan > 5)
+      this->coreConnection->sendChatMessage(message.mid(firstSpan, lastSpan - firstSpan + 1), this->roomName);
+   else
+      this->coreConnection->sendChatMessage(message, this->roomName);
 }
 
 /*Qt::ItemFlags ChatModel::flags(const QModelIndex& index) const
@@ -156,7 +170,14 @@ void ChatModel::newChatMessages(const Protos::Common::ChatMessages& messages)
 QString ChatModel::formatMessage(const Message& message) const
 {
    return
-       message.dateTime.toString("[HH:mm:ss] ")
+      QString(
+         "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">"
+         "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">"
+         "p, li { white-space: pre-wrap; }"
+         "</style></head><body style=\" font-family:'Sans'; font-size:8pt; font-weight:400; font-style:normal;\">"
+         "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">")
+      .append(message.dateTime.toString("[HH:mm:ss] "))
       .append("<b>").append(message.nick).append("</b>: ")
-      .append(message.message);
+      .append(message.message)
+      .append("</p></body></html>");
 }

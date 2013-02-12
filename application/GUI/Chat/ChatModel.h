@@ -57,6 +57,8 @@ namespace GUI
       inline void insertCachedSize(const QModelIndex& index, const QSize& size) { this->messages[index.row()].size = size; }
       inline void removeCachedSize(const QModelIndex& index) { this->messages[index.row()].size = QSize(); }
 
+      void sendMessage(const QString& message);
+
    private slots:
       void newChatMessages(const Protos::Common::ChatMessages& messages);
 
