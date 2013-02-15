@@ -2,15 +2,19 @@
 using namespace GUI;
 
 #include <QMdiSubWindow>
+#include <QCoreApplication>
+#include <QStringBuilder>
 
 #include <Common/Settings.h>
 
 #include <Log.h>
+#include <Constants.h>
 #include <MDI/MdiWidget.h>
 #include <MDI/TabButtons.h>
 
 MdiArea::MdiArea(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel, Taskbar& taskbar, QWidget* parent) :
    QMdiArea(parent),
+   emoticon(QCoreApplication::applicationDirPath() % "/" % Constants::EMOTICONS_DIRECTORY, Constants::DEFAULT_EMOTICON_THEME),
    coreConnection(coreConnection),
    peerListModel(peerListModel),
    taskbar(taskbar),

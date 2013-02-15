@@ -28,6 +28,9 @@ using namespace GUI;
 #include <Common/Global.h>
 #include <Common/Settings.h>
 
+#include <QImage>
+#include <QResource>
+
 ChatModel::ChatModel(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel, const QString& roomName) :
    coreConnection(coreConnection), peerListModel(peerListModel), roomName(roomName)
 {

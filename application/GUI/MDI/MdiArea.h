@@ -7,6 +7,7 @@
 #include <Common/RemoteCoreController/ICoreConnection.h>
 
 #include <BusyIndicator.h>
+#include <Emoticons.h>
 
 #include <Peers/PeerListModel.h>
 #include <Settings/SettingsWidget.h>
@@ -86,6 +87,8 @@ namespace GUI
       ChatWidget* addChatWindow(const QString& roomName, bool switchTo = true);
 
       void removeAllWindows();
+
+      Emoticons emoticon;
 
       QSharedPointer<RCC::ICoreConnection> coreConnection;
       PeerListModel& peerListModel;

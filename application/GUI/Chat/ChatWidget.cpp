@@ -27,6 +27,7 @@ using namespace GUI;
 #include <QClipboard>
 #include <QKeyEvent>
 #include <QScrollBar>
+#include <QUrl>
 
 #include <Log.h>
 
@@ -46,6 +47,11 @@ void ChatDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, 
    QStyle* style = optionV4.widget ? optionV4.widget->style() : QApplication::style();
 
    QTextDocument doc;
+
+   // Replacement of emoticons.
+   QImage image("emoticons/riceballs/Angel.png");
+   doc.addResource(QTextDocument::ImageResource, QUrl("emoticons://riceballs/angel.png"), QVariant(image));
+
    doc.setHtml(optionV4.text);
    doc.setTextWidth(optionV4.rect.width());
 
