@@ -7,7 +7,7 @@
 # Uncomment this line to enable the leak detector.
 # DEFINES += ENABLE_NVWA
 
-QT       += core gui network
+QT       += core gui network xml
 TARGET = "D-LAN.GUI"
 TEMPLATE = app
 
@@ -90,8 +90,9 @@ SOURCES += main.cpp\
     MDI/MdiWidget.cpp \
     ColorBox.cpp \
     Chat/ChatTextEdit.cpp \
-    Emoticons.cpp \
-    Constants.cpp
+    Constants.cpp \
+    Emoticons/EmoticonsWidget.cpp \
+    Emoticons/Emoticons.cpp
 
 HEADERS  += MainWindow.h \
     ../Protos/gui_protocol.pb.h \
@@ -146,8 +147,9 @@ HEADERS  += MainWindow.h \
     Uploads/UploadsWidget.h \
     ColorBox.h \
     Chat/ChatTextEdit.h \
-    Emoticons.h \
-    Constants.h
+    Constants.h \
+    Emoticons/EmoticonsWidget.h \
+    Emoticons/Emoticons.h
 
 FORMS    += MainWindow.ui \
     StatusBar.ui \

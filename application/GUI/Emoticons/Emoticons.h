@@ -6,12 +6,15 @@
 #include <QList>
 #include <QMap>
 #include <QImage>
+#include <QPair>
+#include <QDomElement>
 
 namespace GUI
 {
    class Emoticons
    {
       static const QString DEFAULT_THEME_NAME;
+      static const QString META_FILE_NAME;
 
    public:
       Emoticons(const QString& directory, const QString& defaultTheme = "");
@@ -19,7 +22,7 @@ namespace GUI
       QStringList getThemes() const;
 
       void setDefaultTheme(const QString& name);
-      QString getDefaultTheme () const;
+      QString getDefaultTheme() const;
 
       QStringList getSmileNames(const QString& theme) const;
 
@@ -30,7 +33,11 @@ namespace GUI
       QString getSmileName(const QString& symbol) const;
 
    private:
-      QString directory;
+      void loadThemes(const QString& directory);
+
+      static QDomElement XmlNextValue(const QDomElement& domElement, const QString& key);
+      static QPair<QString, QDomElement> XmlNextValue(const QDomElement& domElement);
+
       QString defaultTheme;
 
       struct Smile

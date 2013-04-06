@@ -7,7 +7,7 @@
 #include <Common/RemoteCoreController/ICoreConnection.h>
 
 #include <BusyIndicator.h>
-#include <Emoticons.h>
+#include <Emoticons/Emoticons.h>
 
 #include <Peers/PeerListModel.h>
 #include <Settings/SettingsWidget.h>
