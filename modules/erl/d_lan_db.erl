@@ -39,6 +39,7 @@ start(Conf) ->
    % Prevent to start the service twice.
    case whereis(d_lan_db_process) of
       undefined ->
+         % io:format("~p~n", [Conf]), % Debug.
          Filepath = Conf#sconf.docroot ++ "/" ++ ?DOWNLOAD_DB_FILEPATH ++ "/" ++ ?DB_DOWNLOADS_COUNT,
          io:format("Opening dets table :~p~n", [Filepath]),
          case dets:open_file(?DB_DOWNLOADS_COUNT, [{file, Filepath}]) of
@@ -59,7 +60,7 @@ stop() ->
 new_download(Filename) ->
    d_lan_db_process ! {new_download, Filename}.
 
-nb_downloads_per_day(Nb_months) ->
+nb_downloads_per_day(_Nb_months) ->
    0.
    %~ {Y, M, _} = now_utc(),
    %~ Now = {Y, M, 1},

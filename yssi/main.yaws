@@ -84,7 +84,7 @@
                {Year, _, _} = date(),
                {html, "copyright 2010-" ++ integer_to_list(Year)}.
          </erl>
-         Greg Burri</span>
+         <a href="http://www.gburri.org">Greg Burri</a></span>
       </div>      
    </body>
 </html>

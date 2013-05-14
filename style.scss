@@ -347,4 +347,9 @@ p {
       color: white;
       font-size: 11px;
    }
+
+   a {
+      color: desaturate(lighten($blue-dark, 60%), 20%);
+      &:hover { color: lighten($blue-dark, 80%); }      
+   }
 }
