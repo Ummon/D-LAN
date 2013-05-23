@@ -319,6 +319,13 @@ p {
             text-align: center; 
          }
       }
+      &.about {
+         a.logo {
+            display: block;
+            float: right;
+            margin: 10px;
+         }
+      }
       &.stats {
          .filename {
             vertical-align: top;

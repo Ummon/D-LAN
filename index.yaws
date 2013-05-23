@@ -1,4 +1,7 @@
 <erl>
    out(A) ->
-      d_lan_common:get_data(A).
+      [
+         {header, ["Cache-Control:", "no-cache"]},
+         d_lan_common:get_data(A)
+      ].
 </erl>

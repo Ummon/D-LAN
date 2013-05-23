@@ -3,6 +3,7 @@
    
    out(A) ->
       {ehtml, [
+         {a, [{href, "files/D-LAN%20logo.svg"}, {class, "logo"}], {img, [{src, "img/d-lan_logo_128.png"}], []}},
          {p, [], tr(about, author, A, ["<a href=\"http://www.gburri.org\">Greg Burri</a>"])},
          {p, [], tr(about, linux, A, ["<a href=\"mailto:herve.martinet@gmail.com\">Hervé Martinet</a>"])},
          {p, [], tr(about, thanks, A, ["Maximilien Cuony (\"The Glu\")", "<a href=\"http://twitter.com/algorithme\">Olivier Morel</a>"])},
