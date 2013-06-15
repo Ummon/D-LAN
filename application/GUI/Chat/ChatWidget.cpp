@@ -37,6 +37,11 @@ using namespace GUI;
   * To be able to select some message text via a QLineEdit and copy it.
   */
 
+ChatDelegate::ChatDelegate(QTextDocument& textDocument)
+   : textDocument(textDocument)
+{
+}
+
 void ChatDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
    QStyleOptionViewItemV4 optionV4(option);
@@ -46,14 +51,8 @@ void ChatDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, 
 
    QStyle* style = optionV4.widget ? optionV4.widget->style() : QApplication::style();
 
-   QTextDocument doc;
-
-   // Replacement of emoticons.
-   QImage image("emoticons/riceballs/Angel.png");
-   doc.addResource(QTextDocument::ImageResource, QUrl("emoticons://riceballs/angel.png"), QVariant(image));
-
-   doc.setHtml(optionV4.text);
-   doc.setTextWidth(optionV4.rect.width());
+   this->textDocument.setHtml(optionV4.text);
+   this->textDocument.setTextWidth(optionV4.rect.width());
 
    optionV4.text = QString();
    style->drawControl(QStyle::CE_ItemViewItem, &optionV4, painter, optionV4.widget);
@@ -69,7 +68,7 @@ void ChatDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, 
    painter->save();
    painter->translate(textRect.topLeft());
    painter->setClipRect(textRect.translated(-textRect.topLeft()));
-   doc.documentLayout()->draw(painter, ctx);
+   this->textDocument.documentLayout()->draw(painter, ctx);
    painter->restore();
 }
 
@@ -92,10 +91,9 @@ QSize	ChatDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelInd
    QStyleOptionViewItemV4 optionV4 = option;
    initStyleOption(&optionV4, index);
 
-   QTextDocument doc;
-   doc.setHtml(optionV4.text);
-   doc.setTextWidth(optionV4.rect.width());
-   QSize size(optionV4.rect.width(), doc.size().height()); // Width should be "doc.idealWidth()".
+   this->textDocument.setHtml(optionV4.text);
+   this->textDocument.setTextWidth(optionV4.rect.width());
+   QSize size(optionV4.rect.width(), this->textDocument.size().height()); // Width should be "doc.idealWidth()".
    model->insertCachedSize(index, size);
    return size;
 }
@@ -119,21 +117,25 @@ QSize	ChatDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelInd
 
 const int ChatWidget::DEFAULT_FONT_SIZE(8);
 
-ChatWidget::ChatWidget(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel, QWidget* parent) :
+ChatWidget::ChatWidget(QSharedPointer<RCC::ICoreConnection> coreConnection, Emoticons& emoticons, PeerListModel& peerListModel, QWidget* parent) :
    MdiWidget(parent),
    ui(new Ui::ChatWidget),
    coreConnection(coreConnection),
+   emoticons(emoticons),
    chatModel(coreConnection, peerListModel),
+   chatDelegate(textDocument),
    autoScroll(true)
 {
    this->init();
 }
 
-ChatWidget::ChatWidget(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel, const QString& roomName, QWidget* parent) :
+ChatWidget::ChatWidget(QSharedPointer<RCC::ICoreConnection> coreConnection, Emoticons& emoticons, PeerListModel& peerListModel, const QString& roomName, QWidget* parent) :
    MdiWidget(parent),
    ui(new Ui::ChatWidget),
    coreConnection(coreConnection),
+   emoticons(emoticons),
    chatModel(coreConnection, peerListModel, roomName),
+   chatDelegate(textDocument),
    autoScroll(true)
 {
    this->init();
@@ -361,6 +363,11 @@ bool ChatWidget::eventFilter(QObject* obj, QEvent* event)
 void ChatWidget::init()
 {
    this->ui->setupUi(this);
+
+   this->textDocument.addResource(QTextDocument::ImageResource, QUrl("emoticons://riceballs/angel.png"), this->emoticons.getSmileImage("Riceballs", "Angel"));
+   foreach (QString theme, this->emoticons.getThemes())
+      foreach (QString smileName, this->emoticons.getSmileNames(theme))
+         this->textDocument.addResource(QTextDocument::ImageResource, QUrl(QString("emoticons://%1/%2").arg(theme).arg(smileName)), this->emoticons.getSmileImage(theme, smileName));
 
    if (this->chatModel.isMainChat())
    {

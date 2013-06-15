@@ -20,6 +20,7 @@
 #define GUI_CHATWINDOW_H
 
 #include <QWidget>
+#include <QTextDocument>
 #include <QStyledItemDelegate>
 #include <QTextCharFormat>
 
@@ -28,6 +29,7 @@
 #include <Peers/PeerListModel.h>
 #include <Chat/ChatModel.h>
 #include <MDI/MdiWidget.h>
+#include <Emoticons/Emoticons.h>
 
 namespace Ui {
   class ChatWidget;
@@ -38,10 +40,14 @@ namespace GUI
    class ChatDelegate : public QStyledItemDelegate
    {
    public:
+      ChatDelegate(QTextDocument& textDocument);
       void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const;
       QSize	sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const;
 //      QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const;
 //      void setEditorData(QWidget* editor, const QModelIndex& index) const;
+
+   private:
+      QTextDocument& textDocument;
    };
 
    class ChatWidget : public MdiWidget
@@ -50,8 +56,8 @@ namespace GUI
 
       Q_OBJECT
    public:
-      explicit ChatWidget(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel, QWidget* parent = nullptr);
-      explicit ChatWidget(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel, const QString& roomName, QWidget* parent = nullptr);
+      explicit ChatWidget(QSharedPointer<RCC::ICoreConnection> coreConnection, Emoticons& emoticons, PeerListModel& peerListModel, QWidget* parent = nullptr);
+      explicit ChatWidget(QSharedPointer<RCC::ICoreConnection> coreConnection, Emoticons& emoticons, PeerListModel& peerListModel, const QString& roomName, QWidget* parent = nullptr);
       ~ChatWidget();
 
       bool isGeneral() const;
@@ -97,7 +103,10 @@ namespace GUI
 
       Ui::ChatWidget* ui;
 
+      QTextDocument textDocument;
+
       QSharedPointer<RCC::ICoreConnection> coreConnection;
+      Emoticons& emoticons;
       ChatModel chatModel;
       ChatDelegate chatDelegate;
 

@@ -13,14 +13,17 @@ using namespace GUI;
   * Can manage different emoticon themes, each themes is a directory which contains
   * Some emoticon images and a meta-file called "Emoticons.plist" defining the name of
   * each emoticon and the associated symbols.
+  *
+  * At the moment, the name of emoticons corresponds to its filename.
   */
 
 const QString Emoticons::DEFAULT_THEME_NAME("Default");
 const QString Emoticons::META_FILE_NAME("Emoticons.plist");
 
 Emoticons::Emoticons(const QString& directory, const QString& defaultTheme)
+   : directory(directory)
 {
-   this->loadThemes(directory);
+   this->loadThemes();
 
    if (!defaultTheme.isEmpty())
       this->setDefaultTheme(defaultTheme);
@@ -83,13 +86,13 @@ QString Emoticons::getSmileName(const QString& symbol) const
    return QString();
 }
 
-void Emoticons::loadThemes(const QString& directory)
+void Emoticons::loadThemes()
 {
    this->smiles.clear();
 
-   foreach (QString themeDir, QDir(directory).entryList(QDir::Dirs | QDir::NoDotAndDotDot, QDir::Name))
+   foreach (QString themeDir, QDir(this->directory).entryList(QDir::Dirs | QDir::NoDotAndDotDot, QDir::Name))
    {
-      QString themePath = directory % '/' % themeDir;
+      QString themePath = this->directory % '/' % themeDir;
       QString metaFilePath = themePath % '/' % META_FILE_NAME;
       QFile metaFile(metaFilePath);
       if (!metaFile.open(QIODevice::ReadOnly))

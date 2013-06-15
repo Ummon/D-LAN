@@ -33,7 +33,7 @@ namespace GUI
       QString getSmileName(const QString& symbol) const;
 
    private:
-      void loadThemes(const QString& directory);
+      void loadThemes();
 
       static QDomElement XmlNextValue(const QDomElement& domElement, const QString& key);
       static QPair<QString, QDomElement> XmlNextValue(const QDomElement& domElement);
@@ -46,7 +46,9 @@ namespace GUI
          QStringList symbols;
       };
 
-      // Themes -> smiles -> symbols
+      const QString directory;
+
+      // Theme directory -> smile name -> (image, symbols).
       QMap<QString, QMap<QString, Smile>> smiles;
    };
 }
