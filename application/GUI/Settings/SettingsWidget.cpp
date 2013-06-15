@@ -107,6 +107,7 @@ SettingsWidget::SettingsWidget(QSharedPointer<RCC::ICoreConnection> coreConnecti
 
    this->ui->tblShareDirs->setContextMenuPolicy(Qt::CustomContextMenu);
    connect(this->ui->tblShareDirs, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(displayContextMenuSharedDirs(const QPoint&)));
+   connect(this->ui->tblShareDirs, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(openLocation()));
 
    // When the selection change or a shared dir is moved/deleted/inserted we must set the availability of the action buttons.
    connect(this->ui->tblShareDirs->selectionModel(), SIGNAL(selectionChanged(const QItemSelection&, const QItemSelection&)), this, SLOT(refreshButtonsAvailability(const QItemSelection&)));
