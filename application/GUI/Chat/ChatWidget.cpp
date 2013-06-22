@@ -298,6 +298,17 @@ void ChatWidget::resetFormat()
    this->applyCurrentFormat();
 }
 
+void ChatWidget::displayEmoticons()
+{
+   QWidget* sender = dynamic_cast<QWidget*>(this->sender());
+
+   QPoint positionSender = this->mapToGlobal(sender->pos());
+   QSize sizeSender = sender->size();
+   this->emoticonWidget->move(positionSender.x() + sizeSender.width(), positionSender.y() + sizeSender.height());
+
+   this->emoticonWidget->show();
+}
+
 void ChatWidget::keyPressEvent(QKeyEvent* keyEvent)
 {
    // CTRL.
@@ -364,10 +375,18 @@ void ChatWidget::init()
 {
    this->ui->setupUi(this);
 
-   this->textDocument.addResource(QTextDocument::ImageResource, QUrl("emoticons://riceballs/angel.png"), this->emoticons.getSmileImage("Riceballs", "Angel"));
+   this->emoticonWidget = new EmoticonsWidget(this->emoticons, this);
+   this->emoticonWidget->setWindowFlags(Qt::Popup);
+
    foreach (QString theme, this->emoticons.getThemes())
       foreach (QString smileName, this->emoticons.getSmileNames(theme))
-         this->textDocument.addResource(QTextDocument::ImageResource, QUrl(QString("emoticons://%1/%2").arg(theme).arg(smileName)), this->emoticons.getSmileImage(theme, smileName));
+      {
+         QUrl url(QString("emoticons://%1/%2").arg(theme).arg(smileName));
+         const QPixmap& image = this->emoticons.getSmileImage(theme, smileName);
+
+         this->textDocument.addResource(QTextDocument::ImageResource, url, image);
+         this->ui->txtMessage->document()->addResource(QTextDocument::ImageResource, url, image);
+      }
 
    if (this->chatModel.isMainChat())
    {
@@ -428,6 +447,8 @@ void ChatWidget::init()
 
    connect(this->ui->butResetFormat, SIGNAL(clicked()), this, SLOT(setFocusTxtMessage()));
    connect(this->ui->butResetFormat, SIGNAL(clicked()), this, SLOT(resetFormat()));
+
+   connect(this->ui->butEmoticons, SIGNAL(clicked()), this, SLOT(displayEmoticons()));
 
    this->connectFormatWidgets();
 

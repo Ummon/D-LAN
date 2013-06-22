@@ -5,7 +5,7 @@
 #include <QStringList>
 #include <QList>
 #include <QMap>
-#include <QImage>
+#include <QPixmap>
 #include <QPair>
 #include <QDomElement>
 
@@ -26,7 +26,7 @@ namespace GUI
 
       QStringList getSmileNames(const QString& theme) const;
 
-      QImage getSmileImage(const QString& theme, const QString& name) const;
+      QPixmap getSmileImage(const QString& theme, const QString& name) const;
 
       QStringList getSmileSymbols(const QString& theme, const QString& name) const;
 
@@ -42,7 +42,7 @@ namespace GUI
 
       struct Smile
       {
-         QImage image;
+         QPixmap image;
          QStringList symbols;
       };
 

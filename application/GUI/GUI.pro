@@ -92,7 +92,8 @@ SOURCES += main.cpp\
     Chat/ChatTextEdit.cpp \
     Constants.cpp \
     Emoticons/EmoticonsWidget.cpp \
-    Emoticons/Emoticons.cpp
+    Emoticons/Emoticons.cpp \
+    Emoticons/SingleEmoticonWidget.cpp
 
 HEADERS  += MainWindow.h \
     ../Protos/gui_protocol.pb.h \
@@ -149,7 +150,8 @@ HEADERS  += MainWindow.h \
     Chat/ChatTextEdit.h \
     Constants.h \
     Emoticons/EmoticonsWidget.h \
-    Emoticons/Emoticons.h
+    Emoticons/Emoticons.h \
+    Emoticons/SingleEmoticonWidget.h
 
 FORMS    += MainWindow.ui \
     StatusBar.ui \
@@ -164,7 +166,8 @@ FORMS    += MainWindow.ui \
     Downloads/DownloadsWidget.ui \
     Search/SearchWidget.ui \
     Settings/SettingsWidget.ui \
-    Uploads/UploadsWidget.ui
+    Uploads/UploadsWidget.ui \
+    Emoticons/SingleEmoticonWidget.ui
 
 RESOURCES += \
     ressources.qrc

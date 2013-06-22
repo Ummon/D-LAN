@@ -40,5 +40,6 @@
         <file>ressources/chat_room_new_mess.png</file>
         <file>ressources/chat.png</file>
         <file>ressources/error_mini.png</file>
+        <file>ressources/emoticon.png</file>
     </qresource>
 </RCC>

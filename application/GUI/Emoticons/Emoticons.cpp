@@ -56,7 +56,7 @@ QStringList Emoticons::getSmileNames(const QString& theme) const
    return this->smiles.value(theme).keys();
 }
 
-QImage Emoticons::getSmileImage(const QString& theme, const QString& name) const
+QPixmap Emoticons::getSmileImage(const QString& theme, const QString& name) const
 {
    return this->smiles.value(theme).value(name).image;
 }
@@ -120,7 +120,7 @@ void Emoticons::loadThemes()
       while (!currentSmile.second.isNull())
       {
          QString imagePath = themePath % '/' % currentSmile.first;
-         Smile smile { QImage(imagePath), QStringList() };
+         Smile smile { QPixmap(imagePath), QStringList() };
 
          if (!smile.image.isNull())
          {

@@ -30,6 +30,7 @@
 #include <Chat/ChatModel.h>
 #include <MDI/MdiWidget.h>
 #include <Emoticons/Emoticons.h>
+#include <Emoticons/EmoticonsWidget.h>
 
 namespace Ui {
   class ChatWidget;
@@ -85,6 +86,8 @@ namespace GUI
 
       void resetFormat();
 
+      void displayEmoticons();
+
    protected:
       void keyPressEvent(QKeyEvent* keyEvent);
       void changeEvent(QEvent* event);
@@ -102,6 +105,7 @@ namespace GUI
       void setNewMessageState(bool newMessage);
 
       Ui::ChatWidget* ui;
+      EmoticonsWidget* emoticonWidget;
 
       QTextDocument textDocument;
 
