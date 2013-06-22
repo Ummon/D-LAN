@@ -26,9 +26,40 @@ void SingleEmoticonWidget::setImage(const QPixmap& image)
 
 void SingleEmoticonWidget::setSymbols(const QStringList& list)
 {
-   QString symbols;
-   foreach (QString symbol, list)
-      symbols.append(symbol).append(" ");
+   this->ui->lblEmoticonImage->setToolTip(list.join(" "));
+}
 
-   this->ui->lblEmoticonSymbols->setText(symbols);
+void SingleEmoticonWidget::setTheme(const QString& theme)
+{
+   this->themeName = theme;
+}
+
+const QString& SingleEmoticonWidget::getTheme() const
+{
+   return this->themeName;
+}
+
+void SingleEmoticonWidget::setEmoticonName(const QString& emoticonName)
+{
+   this->emoticonName = emoticonName;
+}
+
+const QString& SingleEmoticonWidget::getEmoticonName() const
+{
+   return this->emoticonName;
+}
+
+void SingleEmoticonWidget::leaveEvent(QEvent*)
+{
+   this->setBackgroundRole(QPalette::Background);
+}
+
+void SingleEmoticonWidget::enterEvent(QEvent*)
+{
+   this->setBackgroundRole(QPalette::Highlight);
+}
+
+void	SingleEmoticonWidget::mousePressEvent(QMouseEvent*)
+{
+   emit clicked();
 }

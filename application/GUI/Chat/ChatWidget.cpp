@@ -27,7 +27,7 @@ using namespace GUI;
 #include <QClipboard>
 #include <QKeyEvent>
 #include <QScrollBar>
-#include <QUrl>
+#include <QDesktopWidget>
 
 #include <Log.h>
 
@@ -159,7 +159,7 @@ QString ChatWidget::getRoomName() const
 void ChatWidget::sendMessage()
 {
    this->chatModel.sendMessage(this->ui->txtMessage->toHtml());
-   this->ui->txtMessage->clear();
+   this->ui->txtMessage->document()->setHtml(""); // We avoid the 'clear()' method because it removes all ressources (emoticon images).
 }
 
 void ChatWidget::newRows(const QModelIndex& parent, int start, int end)
@@ -304,9 +304,24 @@ void ChatWidget::displayEmoticons()
 
    QPoint positionSender = this->mapToGlobal(sender->pos());
    QSize sizeSender = sender->size();
-   this->emoticonWidget->move(positionSender.x() + sizeSender.width(), positionSender.y() + sizeSender.height());
 
-   this->emoticonWidget->show();
+   this->emoticonsWidget->show();
+
+   this->emoticonsWidget->move(positionSender.x() + sizeSender.width(), positionSender.y() + sizeSender.height() - this->emoticonsWidget->height());
+
+   QDesktopWidget* desktop = QApplication::desktop();
+   QRect desktopGeom = desktop->availableGeometry(this);
+   if (this->emoticonsWidget->pos().y() < 0)
+      this->emoticonsWidget->move(this->emoticonsWidget->pos().x(), 0);
+
+   if (this->emoticonsWidget->pos().x() + this->emoticonsWidget->width() > desktopGeom.width())
+      this->emoticonsWidget->move(positionSender.x() - this->emoticonsWidget->width(), this->emoticonsWidget->pos().y());
+}
+
+void ChatWidget::insertEmoticon(const QString& theme, const QString& emoticonName)
+{
+   QString url = buildUrlEmoticon(theme, emoticonName).toString();
+   this->ui->txtMessage->insertHtml(QString("<img src=\"%1\" />").arg(buildUrlEmoticon(theme, emoticonName).toString()));
 }
 
 void ChatWidget::keyPressEvent(QKeyEvent* keyEvent)
@@ -375,15 +390,14 @@ void ChatWidget::init()
 {
    this->ui->setupUi(this);
 
-   this->emoticonWidget = new EmoticonsWidget(this->emoticons, this);
-   this->emoticonWidget->setWindowFlags(Qt::Popup);
+   this->emoticonsWidget = new EmoticonsWidget(this->emoticons, this);
+   this->emoticonsWidget->setWindowFlags(Qt::Popup);
 
    foreach (QString theme, this->emoticons.getThemes())
       foreach (QString smileName, this->emoticons.getSmileNames(theme))
       {
-         QUrl url(QString("emoticons://%1/%2").arg(theme).arg(smileName));
          const QPixmap& image = this->emoticons.getSmileImage(theme, smileName);
-
+         const QUrl& url = buildUrlEmoticon(theme, smileName);
          this->textDocument.addResource(QTextDocument::ImageResource, url, image);
          this->ui->txtMessage->document()->addResource(QTextDocument::ImageResource, url, image);
       }
@@ -448,7 +462,8 @@ void ChatWidget::init()
    connect(this->ui->butResetFormat, SIGNAL(clicked()), this, SLOT(setFocusTxtMessage()));
    connect(this->ui->butResetFormat, SIGNAL(clicked()), this, SLOT(resetFormat()));
 
-   connect(this->ui->butEmoticons, SIGNAL(clicked()), this, SLOT(displayEmoticons()));
+   connect(this->ui->butEmoticons, SIGNAL(pressed()), this, SLOT(displayEmoticons()));
+   connect(this->emoticonsWidget, SIGNAL(emoticonChoosen(QString, QString)), this, SLOT(insertEmoticon(QString, QString)));
 
    this->connectFormatWidgets();
 
@@ -538,4 +553,9 @@ void ChatWidget::setNewMessageState(bool newMessage)
          this->setWindowIcon(QIcon(":/icons/ressources/chat_room.png"));
       }
    }
+}
+
+QUrl ChatWidget::buildUrlEmoticon(const QString& theme, const QString& emoticonName)
+{
+   return QUrl(QString("emoticons://%1/%2").arg(theme).arg(emoticonName));
 }

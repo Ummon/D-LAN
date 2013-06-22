@@ -23,6 +23,7 @@
 #include <QTextDocument>
 #include <QStyledItemDelegate>
 #include <QTextCharFormat>
+#include <QUrl>
 
 #include <Common/RemoteCoreController/ICoreConnection.h>
 
@@ -87,6 +88,7 @@ namespace GUI
       void resetFormat();
 
       void displayEmoticons();
+      void insertEmoticon(const QString& theme, const QString& emoticonName);
 
    protected:
       void keyPressEvent(QKeyEvent* keyEvent);
@@ -104,8 +106,10 @@ namespace GUI
 
       void setNewMessageState(bool newMessage);
 
+      static QUrl buildUrlEmoticon(const QString& theme, const QString& emoticonName);
+
       Ui::ChatWidget* ui;
-      EmoticonsWidget* emoticonWidget;
+      EmoticonsWidget* emoticonsWidget;
 
       QTextDocument textDocument;
 

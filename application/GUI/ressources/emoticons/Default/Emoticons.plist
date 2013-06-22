@@ -7,7 +7,7 @@
 	<key>Emoticons</key>
 	<dict>
 	
-			<key>joyful.tif</key>
+         <key>joyful.png</key>
 		<dict>
 			<key>Equivalents</key>
 			<array>
@@ -21,7 +21,7 @@
 			<string>Joyful</string>
 		</dict>
 	
-		<key>annoyed.tif</key>
+      <key>annoyed.png</key>
 		<dict>
 			<key>Equivalents</key>
 			<array>
@@ -40,7 +40,7 @@
 			<string>Annoyed/Angry</string>
 		</dict>
 		
-		<key>crying.tif</key>
+      <key>crying.png</key>
 		<dict>
 			<key>Equivalents</key>
 			<array>
@@ -50,7 +50,7 @@
 			<key>Name</key>
 			<string>Crying</string>
 		</dict>
-		<key>pouty.tif</key>
+      <key>pouty.png</key>
 		<dict>
 			<key>Equivalents</key>
 			<array>
@@ -61,7 +61,7 @@
 			<key>Name</key>
 			<string>Pouty</string>
 		</dict>
-		<key>surprised.tif</key>
+      <key>surprised.png</key>
 		<dict>
 			<key>Equivalents</key>
 			<array>
@@ -78,7 +78,7 @@
 			<key>Name</key>
 			<string>Gasp</string>
 		</dict>
-		<key>biggrin.tif</key>
+      <key>biggrin.png</key>
 		<dict>
 			<key>Equivalents</key>
 			<array>
@@ -93,7 +93,7 @@
 			<key>Name</key>
 			<string>Grin</string>
 		</dict>
-		<key>innocent.tif</key>
+      <key>innocent.png</key>
 		<dict>
 			<key>Equivalents</key>
 			<array>
@@ -107,7 +107,7 @@
 			<key>Name</key>
 			<string>Innocent</string>
 		</dict>
-		<key>kissing.tif</key>
+      <key>kissing.png</key>
 		<dict>
 			<key>Equivalents</key>
 			<array>
@@ -117,7 +117,7 @@
 			<key>Name</key>
 			<string>Kissing</string>
 		</dict>
-		<key>smile.tif</key>
+      <key>smile.png</key>
 		<dict>
 			<key>Equivalents</key>
 			<array>
@@ -127,7 +127,7 @@
 			<key>Name</key>
 			<string>Smile</string>
 		</dict>
-		<key>tongue.tif</key>
+      <key>tongue.png</key>
 		<dict>
 			<key>Equivalents</key>
 			<array>
@@ -142,7 +142,7 @@
 			<key>Name</key>
 			<string>Sticking Out Tongue</string>
 		</dict>
-		<key>cool.tif</key>
+      <key>cool.png</key>
 		<dict>
 			<key>Equivalents</key>
 			<array>
@@ -153,7 +153,7 @@
 			<key>Name</key>
 			<string>Cool</string>
 		</dict>
-		<key>wink.tif</key>
+      <key>wink.png</key>
 		<dict>
 			<key>Equivalents</key>
 			<array>
@@ -166,7 +166,7 @@
 		</dict>
 
 
-		<key>happy.tif</key>
+      <key>happy.png</key>
 		<dict>
 			<key>Equivalents</key>
 			<array>
@@ -180,7 +180,7 @@
 		</dict>
 		
 		
-		<key>alien.tif</key>
+      <key>alien.png</key>
 		<dict>
 			<key>Equivalents</key>
 			<array>
@@ -192,7 +192,7 @@
 		</dict>
 		
 		
-		<key>andy.tif</key>
+      <key>andy.png</key>
 		<dict>
 			<key>Equivalents</key>
 			<array>
@@ -212,7 +212,7 @@
 			<string>Shocked</string>
 		</dict>
 		
-		<key>devil.tif</key>
+      <key>devil.png</key>
 		<dict>
 			<key>Equivalents</key>
 			<array>
@@ -222,7 +222,7 @@
 			<string>Devilish</string>
 		</dict>
 		
-		<key>unsure.tif</key>
+      <key>unsure.png</key>
 		<dict>
 			<key>Equivalents</key>
 			<array>
@@ -241,7 +241,7 @@
 			<string>Uncertain</string>
 		</dict>
 			
-		<key>lol.tif</key>
+      <key>lol.png</key>
 		<dict>
 			<key>Equivalents</key>
 			<array>
@@ -251,7 +251,7 @@
 			<string>Laughing Out Loud</string>
 		</dict>
 		
-		<key>ninja.tif</key>
+      <key>ninja.png</key>
 		<dict>
 			<key>Equivalents</key>
 			<array>
@@ -264,7 +264,7 @@
 		</dict>
 		
 
-		<key>pinched.tif</key>
+      <key>pinched.png</key>
 		<dict>
 			<key>Name</key>
 			<string>Pinching Eyes/Whatever!</string>
@@ -273,7 +273,7 @@
 				<string>&gt;_&lt;</string>
 			</array>
 		</dict>
-		<key>rightful.tif</key>
+      <key>rightful.png</key>
 		<dict>
 			<key>Name</key>
 			<string>Rightful</string>
@@ -284,7 +284,7 @@
 				<string>{):)</string>
 			</array>
 		</dict>
-		<key>sad.tif</key>
+      <key>sad.png</key>
 		<dict>
 			<key>Name</key>
 			<string>Unhappy</string>
@@ -296,7 +296,7 @@
 				<string>:-(</string>
 			</array>
 		</dict>
-		<key>sick.tif</key>
+      <key>sick.png</key>
 		<dict>
 			<key>Name</key>
 			<string>Sick</string>
@@ -306,7 +306,7 @@
 				<string>:-&amp;</string>
 			</array>
 		</dict>
-		<key>sideways.tif</key>
+      <key>sideways.png</key>
 		<dict>
 			<key>Name</key>
 			<string>Smiling Sideways</string>
@@ -315,7 +315,7 @@
 				<string>=]</string>
 			</array>
 		</dict>
-		<key>sleeping.tif</key>
+      <key>sleeping.png</key>
 		<dict>
 			<key>Name</key>
 			<string>Sleeping</string>
@@ -331,7 +331,7 @@
 			</array>
 		</dict>
 
-		<key>w00t.tif</key>
+      <key>w00t.png</key>
 		<dict>
 			<key>Name</key>
 			<string>W00T!</string>
@@ -342,7 +342,7 @@
 				<string>(wOOt)</string>
 			</array>
 		</dict>
-		<key>whistling.tif</key>
+      <key>whistling.png</key>
 		<dict>
 			<key>Name</key>
 			<string>Whistling</string>
@@ -351,7 +351,7 @@
 				<string>:-"</string>
 			</array>
 		</dict>
-		<key>love.tif</key>
+      <key>love.png</key>
 		<dict>
 			<key>Name</key>
 			<string>Luv You!</string>
@@ -366,7 +366,7 @@
 			</array>
 		</dict>
 		
-				<key>bandit.tif</key>
+            <key>bandit.png</key>
 		<dict>
 			<key>Name</key>
 			<string>Bandit</string>
