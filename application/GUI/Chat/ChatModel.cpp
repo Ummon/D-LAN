@@ -32,7 +32,10 @@ using namespace GUI;
 #include <QResource>
 
 ChatModel::ChatModel(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel, const QString& roomName) :
-   coreConnection(coreConnection), peerListModel(peerListModel), roomName(roomName)
+   coreConnection(coreConnection),
+   peerListModel(peerListModel),
+   roomName(roomName),
+   regexMatchMessageContent("<p[^>]+>")
 {
    connect(this->coreConnection.data(), SIGNAL(newChatMessages(const Protos::Common::ChatMessages&)), this, SLOT(newChatMessages(const Protos::Common::ChatMessages&)));
 }
@@ -92,14 +95,22 @@ void ChatModel::sendMessage(const QString& message)
    if (message.isEmpty())
       return;
 
-   // Remove the header.
-   const int firstSpan = message.indexOf("<span");
-   const int lastSpan = message.lastIndexOf("</span>") + 6;
+   // Remove the HTML header and footer with a regular expression ... I know: http://stackoverflow.com/a/1732454 ...
+   const int beginning = this->regexMatchMessageContent.indexIn(message);
+   const int end = message.lastIndexOf("</p>");
 
-   if (firstSpan > -1 && lastSpan > 5)
-      this->coreConnection->sendChatMessage(message.mid(firstSpan, lastSpan - firstSpan + 1), this->roomName);
+   if (beginning != -1 && end > beginning + this->regexMatchMessageContent.matchedLength())
+   {
+      const QString& innerMessage = message.mid(beginning + this->regexMatchMessageContent.matchedLength(), end - beginning - this->regexMatchMessageContent.matchedLength()).trimmed();
+      if (!innerMessage.isEmpty())
+         this->coreConnection->sendChatMessage(innerMessage, this->roomName);
+   }
    else
-      this->coreConnection->sendChatMessage(message, this->roomName);
+   {
+      const QString trimmedMessage = message.trimmed();
+      if (!trimmedMessage.isEmpty())
+         this->coreConnection->sendChatMessage(trimmedMessage, this->roomName);
+   }
 }
 
 /*Qt::ItemFlags ChatModel::flags(const QModelIndex& index) const
@@ -177,10 +188,9 @@ QString ChatModel::formatMessage(const Message& message) const
          "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">"
          "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">"
          "p, li { white-space: pre-wrap; }"
-         "</style></head><body style=\" font-family:'Sans'; font-size:8pt; font-weight:400; font-style:normal;\">"
-         "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">")
+         "</style></head><body style=\" font-family:'Sans'; font-size:8pt; font-weight:400; font-style:normal;\">")
       .append(message.dateTime.toString("[HH:mm:ss] "))
       .append("<b>").append(message.nick).append("</b>: ")
       .append(message.message)
-      .append("</p></body></html>");
+      .append("</body></html>");
 }

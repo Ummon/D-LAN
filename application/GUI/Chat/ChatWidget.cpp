@@ -320,8 +320,12 @@ void ChatWidget::displayEmoticons()
 
 void ChatWidget::insertEmoticon(const QString& theme, const QString& emoticonName)
 {
-   QString url = buildUrlEmoticon(theme, emoticonName).toString();
+   if (!this->ui->txtMessage->textCursor().atBlockStart())
+      this->ui->txtMessage->insertPlainText(" ");
+
    this->ui->txtMessage->insertHtml(QString("<img src=\"%1\" />").arg(buildUrlEmoticon(theme, emoticonName).toString()));
+
+   this->ui->txtMessage->insertPlainText(" ");
 }
 
 void ChatWidget::keyPressEvent(QKeyEvent* keyEvent)

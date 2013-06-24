@@ -24,6 +24,7 @@
 #include <QDateTime>
 #include <QList>
 #include <QSize>
+#include <QRegExp>
 
 #include <Protos/gui_protocol.pb.h>
 
@@ -80,6 +81,8 @@ namespace GUI
 
       QString roomName; // Empty for main chat.
       QList<Message> messages; // Always sorted by date-time.
+
+      QRegExp regexMatchMessageContent;
    };
 
 }
