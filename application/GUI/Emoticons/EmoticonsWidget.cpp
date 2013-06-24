@@ -56,8 +56,10 @@ void EmoticonsWidget::setDefaultTheme(const QString& theme)
       if (radio->text() == theme)
       {
          radio->setChecked(true);
-         break;
+         return;
       }
+
+   this->themeButtons.first()->setChecked(true); // Is not found.
 }
 
 void EmoticonsWidget::emoticonClicked()
@@ -75,3 +77,8 @@ void EmoticonsWidget::themeButtonToggled(bool checked)
    }
 }
 
+
+void EmoticonsWidget::hideEvent(QHideEvent*)
+{
+   emit hidden();
+}

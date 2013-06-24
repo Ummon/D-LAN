@@ -17,8 +17,12 @@ namespace GUI
       void setDefaultTheme(const QString& theme);
 
    signals:
+      void hidden();
       void emoticonChoosen(const QString& theme, const QString& emoticonName);
       void defaultThemeChanged(const QString& theme);
+
+   protected:
+      void hideEvent(QHideEvent* event) override;
 
    private slots:
       void emoticonClicked();

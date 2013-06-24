@@ -28,8 +28,10 @@ using namespace GUI;
 #include <QKeyEvent>
 #include <QScrollBar>
 #include <QDesktopWidget>
+#include <QTimer>
 
 #include <Log.h>
+#include <Common/Settings.h>
 
 /**
   * @class GUI::ChatDelegate
@@ -298,24 +300,32 @@ void ChatWidget::resetFormat()
    this->applyCurrentFormat();
 }
 
-void ChatWidget::displayEmoticons()
+void ChatWidget::emoticonsButtonToggled(bool checked)
 {
-   QWidget* sender = dynamic_cast<QWidget*>(this->sender());
+   L_DEBU(QString("emoticonsButtonToggled: %1").arg(checked));
 
-   QPoint positionSender = this->mapToGlobal(sender->pos());
-   QSize sizeSender = sender->size();
+   if (checked)
+   {
+      this->fuck = true;
+      QAbstractButton* sender = dynamic_cast<QAbstractButton*>(this->sender());
+         this->displayEmoticons(this->mapToGlobal(sender->pos()), sender->size());
+      this->fuck = false;
+   }
+}
 
-   this->emoticonsWidget->show();
+void ChatWidget::emoticonsWindowHidden()
+{
+   // I know it's bad but I didn't find another solution.
+   // The issue is when the emoticons window is displayed and the user press on the emoticons button again. In this
+   // case the window 'hidden' signal is triggered before the button 'toggled' signal, so the button is set to unchecked before it is pressed again...
+   QTimer::singleShot(100, this, SLOT(emoticonsWindowHiddenDelayed()));
+}
 
-   this->emoticonsWidget->move(positionSender.x() + sizeSender.width(), positionSender.y() + sizeSender.height() - this->emoticonsWidget->height());
-
-   QDesktopWidget* desktop = QApplication::desktop();
-   QRect desktopGeom = desktop->availableGeometry(this);
-   if (this->emoticonsWidget->pos().y() < 0)
-      this->emoticonsWidget->move(this->emoticonsWidget->pos().x(), 0);
-
-   if (this->emoticonsWidget->pos().x() + this->emoticonsWidget->width() > desktopGeom.width())
-      this->emoticonsWidget->move(positionSender.x() - this->emoticonsWidget->width(), this->emoticonsWidget->pos().y());
+void ChatWidget::emoticonsWindowHiddenDelayed()
+{
+   L_DEBU(QString("emoticonsWindowHidden, isChecked: %1").arg(this->ui->butEmoticons->isChecked()));
+   if (this->ui->butEmoticons->isChecked())
+      this->ui->butEmoticons->setChecked(false);
 }
 
 void ChatWidget::insertEmoticon(const QString& theme, const QString& emoticonName)
@@ -326,6 +336,12 @@ void ChatWidget::insertEmoticon(const QString& theme, const QString& emoticonNam
    this->ui->txtMessage->insertHtml(QString("<img src=\"%1\" />").arg(buildUrlEmoticon(theme, emoticonName).toString()));
 
    this->ui->txtMessage->insertPlainText(" ");
+}
+
+void ChatWidget::defaultEmoticonThemeChanged(const QString& theme)
+{
+   SETTINGS.set("default_emoticon_theme", theme);
+   SETTINGS.save();
 }
 
 void ChatWidget::keyPressEvent(QKeyEvent* keyEvent)
@@ -396,6 +412,7 @@ void ChatWidget::init()
 
    this->emoticonsWidget = new EmoticonsWidget(this->emoticons, this);
    this->emoticonsWidget->setWindowFlags(Qt::Popup);
+   this->emoticonsWidget->setDefaultTheme(SETTINGS.get<QString>("default_emoticon_theme"));
 
    foreach (QString theme, this->emoticons.getThemes())
       foreach (QString smileName, this->emoticons.getSmileNames(theme))
@@ -466,8 +483,10 @@ void ChatWidget::init()
    connect(this->ui->butResetFormat, SIGNAL(clicked()), this, SLOT(setFocusTxtMessage()));
    connect(this->ui->butResetFormat, SIGNAL(clicked()), this, SLOT(resetFormat()));
 
-   connect(this->ui->butEmoticons, SIGNAL(pressed()), this, SLOT(displayEmoticons()));
+   connect(this->ui->butEmoticons, SIGNAL(toggled(bool)), this, SLOT(emoticonsButtonToggled(bool)));
+   connect(this->emoticonsWidget, SIGNAL(hidden()), this, SLOT(emoticonsWindowHidden()));
    connect(this->emoticonsWidget, SIGNAL(emoticonChoosen(QString, QString)), this, SLOT(insertEmoticon(QString, QString)));
+   connect(this->emoticonsWidget, SIGNAL(defaultThemeChanged(QString)), this, SLOT(defaultEmoticonThemeChanged(QString)));
 
    this->connectFormatWidgets();
 
@@ -525,6 +544,21 @@ void ChatWidget::setComboFontSize(int fontSize)
    }
 
    this->ui->cmbFontSize->setCurrentIndex(defaultIndex);
+}
+
+void ChatWidget::displayEmoticons(const QPoint& positionSender, const QSize& sizeSender)
+{
+   this->emoticonsWidget->show();
+
+   this->emoticonsWidget->move(positionSender.x() + sizeSender.width(), positionSender.y() + sizeSender.height() - this->emoticonsWidget->height());
+
+   QDesktopWidget* desktop = QApplication::desktop();
+   QRect desktopGeom = desktop->availableGeometry(this);
+   if (this->emoticonsWidget->pos().y() < 0)
+      this->emoticonsWidget->move(this->emoticonsWidget->pos().x(), 0);
+
+   if (this->emoticonsWidget->pos().x() + this->emoticonsWidget->width() > desktopGeom.width())
+      this->emoticonsWidget->move(positionSender.x() - this->emoticonsWidget->width(), this->emoticonsWidget->pos().y());
 }
 
 void ChatWidget::onActivate()

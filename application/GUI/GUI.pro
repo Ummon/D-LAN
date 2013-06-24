@@ -123,7 +123,6 @@ HEADERS  += MainWindow.h \
     Downloads/DownloadsFlatModel.h \
     Downloads/DownloadsTreeModel.h \
     Downloads/DownloadsModel.h \
-    PeerList/PeerListDelegate.h \
     BusyIndicator.h \
     Taskbar/Taskbar.h \
     Taskbar/ITaskbarImpl.h \

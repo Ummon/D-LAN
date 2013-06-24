@@ -125,6 +125,9 @@
           <iconset resource="../ressources.qrc">
            <normaloff>:/icons/ressources/emoticon.png</normaloff>:/icons/ressources/emoticon.png</iconset>
          </property>
+         <property name="checkable">
+          <bool>true</bool>
+         </property>
         </widget>
        </item>
        <item>

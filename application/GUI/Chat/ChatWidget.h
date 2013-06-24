@@ -87,8 +87,11 @@ namespace GUI
 
       void resetFormat();
 
-      void displayEmoticons();
+      void emoticonsButtonToggled(bool);
+      void emoticonsWindowHidden();
+      void emoticonsWindowHiddenDelayed();
       void insertEmoticon(const QString& theme, const QString& emoticonName);
+      void defaultEmoticonThemeChanged(const QString& theme);
 
    protected:
       void keyPressEvent(QKeyEvent* keyEvent);
@@ -101,6 +104,7 @@ namespace GUI
       void connectFormatWidgets();
       void disconnectFormatWidgets();
       void setComboFontSize(int fontSize);
+      void displayEmoticons(const QPoint& positionSender, const QSize& sizeSender);
 
       void onActivate();
 
@@ -112,6 +116,8 @@ namespace GUI
       EmoticonsWidget* emoticonsWidget;
 
       QTextDocument textDocument;
+
+      bool fuck;
 
       QSharedPointer<RCC::ICoreConnection> coreConnection;
       Emoticons& emoticons;
