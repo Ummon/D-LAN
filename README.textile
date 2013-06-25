@@ -26,4 +26,4 @@ h2. Features
 
 h2. Development
 
-D-LAN can be built under Windows or Linux (Ubuntu), see the here for more information: http://dev.d-lan.net/projects/pmp/wiki/#Technical
+D-LAN can be built under Windows or Linux (Ubuntu), see here for more information: http://dev.d-lan.net/projects/pmp/wiki/#Technical
