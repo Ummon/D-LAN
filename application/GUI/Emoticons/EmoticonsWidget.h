@@ -14,17 +14,17 @@ namespace GUI
    public:
       explicit EmoticonsWidget(Emoticons& emoticons, QWidget* parent = 0);
 
-      void setDefaultTheme(const QString& theme);
-
    signals:
       void hidden();
       void emoticonChoosen(const QString& theme, const QString& emoticonName);
       void defaultThemeChanged(const QString& theme);
 
    protected:
+      void showEvent(QShowEvent* event) override;
       void hideEvent(QHideEvent* event) override;
 
    private slots:
+      void setDefaultTheme(const QString& theme);
       void emoticonClicked();
       void themeButtonToggled(bool checked);
 

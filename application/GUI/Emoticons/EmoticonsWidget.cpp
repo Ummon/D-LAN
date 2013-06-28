@@ -77,6 +77,10 @@ void EmoticonsWidget::themeButtonToggled(bool checked)
    }
 }
 
+void EmoticonsWidget::showEvent(QShowEvent*)
+{
+   this->setDefaultTheme(this->emoticons.getDefaultTheme());
+}
 
 void EmoticonsWidget::hideEvent(QHideEvent*)
 {

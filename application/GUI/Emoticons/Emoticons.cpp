@@ -73,8 +73,9 @@ QStringList Emoticons::getSmileSymbols(const QString& theme, const QString& name
 QString Emoticons::getSmileName(const QString& symbol) const
 {
    const QMap<QString, Smile>& smilesDefaultTheme = this->smiles.value(this->defaultTheme);
-   for (QMapIterator<QString, Smile> i(smilesDefaultTheme); i.hasNext(); i.next())
+   for (QMapIterator<QString, Smile> i(smilesDefaultTheme); i.hasNext();)
    {
+      i.next();
       for (QStringListIterator j(i.value().symbols); j.hasNext();)
       {
          const QString& s = j.next();

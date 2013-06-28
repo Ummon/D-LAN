@@ -21,8 +21,14 @@ namespace GUI
 
       void addIgnoreKeyCombination(KeyCombination keyCombination);
 
+   signals:
+      void wordTyped(int position, const QString&);
+
    protected:
       bool event(QEvent* e);
+
+   private slots:
+      void documentContentsChange(int position, int charsRemoved, int charsAdded);
 
    private:
       QList<KeyCombination> keyCombinationIgnored;

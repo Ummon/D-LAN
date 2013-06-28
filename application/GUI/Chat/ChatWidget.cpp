@@ -302,14 +302,20 @@ void ChatWidget::resetFormat()
 
 void ChatWidget::emoticonsButtonToggled(bool checked)
 {
-   L_DEBU(QString("emoticonsButtonToggled: %1").arg(checked));
-
    if (checked)
    {
-      this->fuck = true;
       QAbstractButton* sender = dynamic_cast<QAbstractButton*>(this->sender());
          this->displayEmoticons(this->mapToGlobal(sender->pos()), sender->size());
-      this->fuck = false;
+   }
+}
+
+void ChatWidget::messageWordTyped(int position, const QString& word)
+{
+   const QString& smile = this->emoticons.getSmileName(word);
+   if (!smile.isEmpty())
+   {
+      //this->ui->txtMessage->document()->
+      // TODO: Replace the word by the smile image
    }
 }
 
@@ -323,7 +329,6 @@ void ChatWidget::emoticonsWindowHidden()
 
 void ChatWidget::emoticonsWindowHiddenDelayed()
 {
-   L_DEBU(QString("emoticonsWindowHidden, isChecked: %1").arg(this->ui->butEmoticons->isChecked()));
    if (this->ui->butEmoticons->isChecked())
       this->ui->butEmoticons->setChecked(false);
 }
@@ -341,6 +346,7 @@ void ChatWidget::insertEmoticon(const QString& theme, const QString& emoticonNam
 void ChatWidget::defaultEmoticonThemeChanged(const QString& theme)
 {
    SETTINGS.set("default_emoticon_theme", theme);
+   this->emoticons.setDefaultTheme(theme);
    SETTINGS.save();
 }
 
@@ -410,9 +416,10 @@ void ChatWidget::init()
 {
    this->ui->setupUi(this);
 
+   this->emoticons.setDefaultTheme(SETTINGS.get<QString>("default_emoticon_theme"));
+
    this->emoticonsWidget = new EmoticonsWidget(this->emoticons, this);
    this->emoticonsWidget->setWindowFlags(Qt::Popup);
-   this->emoticonsWidget->setDefaultTheme(SETTINGS.get<QString>("default_emoticon_theme"));
 
    foreach (QString theme, this->emoticons.getThemes())
       foreach (QString smileName, this->emoticons.getSmileNames(theme))
@@ -484,6 +491,7 @@ void ChatWidget::init()
    connect(this->ui->butResetFormat, SIGNAL(clicked()), this, SLOT(resetFormat()));
 
    connect(this->ui->butEmoticons, SIGNAL(toggled(bool)), this, SLOT(emoticonsButtonToggled(bool)));
+   connect(this->ui->txtMessage, SIGNAL(wordTyped(int, QString)), this, SLOT(messageWordTyped(int, QString)));
    connect(this->emoticonsWidget, SIGNAL(hidden()), this, SLOT(emoticonsWindowHidden()));
    connect(this->emoticonsWidget, SIGNAL(emoticonChoosen(QString, QString)), this, SLOT(insertEmoticon(QString, QString)));
    connect(this->emoticonsWidget, SIGNAL(defaultThemeChanged(QString)), this, SLOT(defaultEmoticonThemeChanged(QString)));

@@ -88,6 +88,7 @@ namespace GUI
       void resetFormat();
 
       void emoticonsButtonToggled(bool);
+      void messageWordTyped(int position, const QString& word);
       void emoticonsWindowHidden();
       void emoticonsWindowHiddenDelayed();
       void insertEmoticon(const QString& theme, const QString& emoticonName);
@@ -116,8 +117,6 @@ namespace GUI
       EmoticonsWidget* emoticonsWidget;
 
       QTextDocument textDocument;
-
-      bool fuck;
 
       QSharedPointer<RCC::ICoreConnection> coreConnection;
       Emoticons& emoticons;
