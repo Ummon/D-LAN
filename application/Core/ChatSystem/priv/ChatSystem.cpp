@@ -70,16 +70,11 @@ ChatSystem::~ChatSystem()
 /**
   * Send a message to all other peers and save it into our list of messages.
   */
-void ChatSystem::send(const QString& message)
-{
-   this->send(message, QString());
-}
-
-void ChatSystem::send(const QString& message, const QString& roomName)
+void ChatSystem::send(const QString& message, const QString& roomName, const QList<Common::Hash>& peerIDsAnswer)
 {
    QSharedPointer<ChatMessage> chatMessage = roomName.isEmpty() ?
-         this->messages.add(message, this->peerManager->getSelf()->getID(), this->peerManager->getSelf()->getNick())
-       : this->rooms[roomName].messages.add(message, this->peerManager->getSelf()->getID(), this->peerManager->getSelf()->getNick(), roomName);
+         this->messages.add(message, this->peerManager->getSelf()->getID(), this->peerManager->getSelf()->getNick(), QString(), peerIDsAnswer)
+       : this->rooms[roomName].messages.add(message, this->peerManager->getSelf()->getID(), this->peerManager->getSelf()->getNick(), roomName, peerIDsAnswer);
 
    Protos::Common::ChatMessages protoChatMessages;
    Protos::Common::ChatMessage* protochatMessage = protoChatMessages.add_message();

@@ -58,7 +58,7 @@ namespace GUI
       inline void insertCachedSize(const QModelIndex& index, const QSize& size) { this->messages[index.row()].size = size; }
       inline void removeCachedSize(const QModelIndex& index) { this->messages[index.row()].size = QSize(); }
 
-      void sendMessage(const QString& message);
+      void sendMessage(const QString& message, const QList<Common::Hash>& peerIDsAnswered = QList<Common::Hash>());
 
    private slots:
       void newChatMessages(const Protos::Common::ChatMessages& messages);
@@ -68,6 +68,7 @@ namespace GUI
       {
          quint64 ID;
          Common::Hash peerID;
+         bool answeringToUs;
          QString nick;
          QDateTime dateTime;
          QString message;
@@ -83,6 +84,8 @@ namespace GUI
       QList<Message> messages; // Always sorted by date-time.
 
       QRegExp regexMatchMessageContent;
+      QRegExp regexMatchFirstBR;
+      QRegExp regexMatchLastBR;
    };
 
 }

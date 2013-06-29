@@ -21,6 +21,8 @@ using namespace GUI;
 
 #include <QtAlgorithms>
 #include <QStringBuilder>
+#include <QImage>
+#include <QResource>
 
 #include <Protos/common.pb.h>
 
@@ -28,14 +30,15 @@ using namespace GUI;
 #include <Common/Global.h>
 #include <Common/Settings.h>
 
-#include <QImage>
-#include <QResource>
+#include <Log.h>
 
 ChatModel::ChatModel(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel, const QString& roomName) :
    coreConnection(coreConnection),
    peerListModel(peerListModel),
    roomName(roomName),
-   regexMatchMessageContent("<p[^>]+>")
+   regexMatchMessageContent("<p[^>]+>"),
+   regexMatchFirstBR("^\\s*<br[^>]*>"),
+   regexMatchLastBR("<br[^>]*>\\s*$")
 {
    connect(this->coreConnection.data(), SIGNAL(newChatMessages(const Protos::Common::ChatMessages&)), this, SLOT(newChatMessages(const Protos::Common::ChatMessages&)));
 }
@@ -90,7 +93,7 @@ QVariant ChatModel::data(const QModelIndex& index, int role) const
    return QVariant();
 }
 
-void ChatModel::sendMessage(const QString& message)
+void ChatModel::sendMessage(const QString& message, const QList<Common::Hash>& peerIDsAnswered)
 {
    if (message.isEmpty())
       return;
@@ -101,7 +104,11 @@ void ChatModel::sendMessage(const QString& message)
 
    if (beginning != -1 && end > beginning + this->regexMatchMessageContent.matchedLength())
    {
-      const QString& innerMessage = message.mid(beginning + this->regexMatchMessageContent.matchedLength(), end - beginning - this->regexMatchMessageContent.matchedLength()).trimmed();
+      QString innerMessage = message.mid(beginning + this->regexMatchMessageContent.matchedLength(), end - beginning - this->regexMatchMessageContent.matchedLength()).trimmed();
+
+      innerMessage.remove(this->regexMatchFirstBR);
+      innerMessage.remove(this->regexMatchLastBR);
+
       if (!innerMessage.isEmpty())
          this->coreConnection->sendChatMessage(innerMessage, this->roomName);
    }
@@ -130,6 +137,8 @@ void ChatModel::newChatMessages(const Protos::Common::ChatMessages& messages)
    if (roomName != this->roomName)
       return;
 
+   const Common::Hash& ourPeerID = this->coreConnection->getRemoteID();
+
    int j = this->messages.size();
    int previousJ;
    QList<Message> toInsert;
@@ -137,9 +146,19 @@ void ChatModel::newChatMessages(const Protos::Common::ChatMessages& messages)
    for (int i = messages.message_size() - 1; i >= 0; i--)
    {
       const Common::Hash peerID(messages.message(i).peer_id().hash());
+
+      bool isTheMessageAnsweringToUs = false;
+      for (int j = 0; j < messages.message(i).peer_ids_answer_size(); j++)
+         if (Common::Hash(messages.message(i).peer_ids_answer(j).hash()) == ourPeerID)
+         {
+            isTheMessageAnsweringToUs = true;
+            break;
+         }
+
       Message message {
          messages.message(i).id(),
          peerID,
+         isTheMessageAnsweringToUs,
          this->peerListModel.getNick(peerID, Common::ProtoHelper::getStr(messages.message(i), &Protos::Common::ChatMessage::peer_nick)),
          QDateTime::fromMSecsSinceEpoch(messages.message(i).time()),
          Common::ProtoHelper::getStr(messages.message(i), &Protos::Common::ChatMessage::message)

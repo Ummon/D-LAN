@@ -2,6 +2,8 @@
 
 #include <QKeyEvent>
 
+#include <Log.h>
+
 using namespace GUI;
 
 ChatTextEdit::ChatTextEdit(QWidget* parent) :
@@ -43,11 +45,14 @@ void ChatTextEdit::documentContentsChange(int position, int charsRemoved, int ch
 {
    if (charsAdded > 0)
    {
-      if (this->document()->characterAt(position).isSpace())
+      if (!this->document()->characterAt(position).isSpace())
       {
-         int i = position - 1;
+         int i = position + charsAdded - 1;
+         if (this->document()->characterAt(i).isSpace())
+            i--;
+
          QString word;
-         while (i > 0 && !this->document()->characterAt(i).isSpace())
+         while (i >= 0 && !this->document()->characterAt(i).isSpace())
             word.prepend(this->document()->characterAt(i--));
          if (!word.isEmpty())
             emit wordTyped(i + 1, word);

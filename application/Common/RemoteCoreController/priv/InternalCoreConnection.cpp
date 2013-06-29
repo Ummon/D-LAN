@@ -111,13 +111,16 @@ void InternalCoreConnection::disconnectFromCore()
    this->connectionInfo.clear();
 }
 
-void InternalCoreConnection::sendChatMessage(const QString& message, const QString& roomName)
+void InternalCoreConnection::sendChatMessage(const QString& message, const QString& roomName, const QList<Common::Hash>& peerIDsAnswered)
 {
    Protos::GUI::ChatMessage chatMessage;
    Common::ProtoHelper::setStr(chatMessage, &Protos::GUI::ChatMessage::set_message, message);
 
    if (!roomName.isEmpty())
       Common::ProtoHelper::setStr(chatMessage, &Protos::GUI::ChatMessage::set_room, roomName);
+
+   for (QListIterator<Common::Hash> i(peerIDsAnswered); i.hasNext();)
+      chatMessage.add_peer_ids_answer()->set_hash(i.next().getData(), Common::Hash::HASH_SIZE);
 
    this->send(Common::MessageHeader::GUI_CHAT_MESSAGE, chatMessage);
 }

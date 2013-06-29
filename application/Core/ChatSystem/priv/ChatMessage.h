@@ -33,7 +33,7 @@ namespace CS
    class ChatMessage
    {
    public:
-      ChatMessage(const QString& message, const Common::Hash& ownerID, const QString& ownerNick, const QString& roomName = QString());
+      ChatMessage(const QString& message, const Common::Hash& ownerID, const QString& ownerNick, const QString& roomName = QString(), const QList<Common::Hash>& peerIDsAnswer = QList<Common::Hash>());
       ChatMessage(const Protos::Common::ChatMessage& chatMessage);
 
       quint64 getID() const;
@@ -47,6 +47,7 @@ namespace CS
       const quint64 ID;
       const QString message;
       const Common::Hash ownerID;
+      QList<Common::Hash> peerIDsAnswer;
       const QDateTime time; // UTC.
       const QString ownerNick;
       const QString room; // Empty if the message belongs to the main chat.

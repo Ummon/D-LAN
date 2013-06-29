@@ -325,6 +325,7 @@ message Download {
 message ChatMessage {
    required string message = 1;
    optional string room = 2;
+   repeated Common.Hash peer_ids_answer = 3; // The peers involved in the message.
 }
 
 

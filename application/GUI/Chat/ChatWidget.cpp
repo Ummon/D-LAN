@@ -314,8 +314,11 @@ void ChatWidget::messageWordTyped(int position, const QString& word)
    const QString& smile = this->emoticons.getSmileName(word);
    if (!smile.isEmpty())
    {
-      //this->ui->txtMessage->document()->
-      // TODO: Replace the word by the smile image
+      QTextCursor cursor(this->ui->txtMessage->document());
+      cursor.setPosition(position);
+      cursor.setPosition(position + word.length(), QTextCursor::KeepAnchor);
+      cursor.deleteChar();
+      cursor.insertHtml(htmlEmoticon(this->emoticons.getDefaultTheme(), smile));
    }
 }
 
@@ -338,7 +341,7 @@ void ChatWidget::insertEmoticon(const QString& theme, const QString& emoticonNam
    if (!this->ui->txtMessage->textCursor().atBlockStart())
       this->ui->txtMessage->insertPlainText(" ");
 
-   this->ui->txtMessage->insertHtml(QString("<img src=\"%1\" />").arg(buildUrlEmoticon(theme, emoticonName).toString()));
+   this->ui->txtMessage->insertHtml(htmlEmoticon(theme, emoticonName));
 
    this->ui->txtMessage->insertPlainText(" ");
 }
@@ -407,6 +410,11 @@ bool ChatWidget::eventFilter(QObject* obj, QEvent* event)
          this->sendMessage();
          return true;
       }
+      else if (keyEvent->key() == Qt::Key_Tab)
+      {
+         this->autoComplete->show();
+         return true;
+      }
    }
 
    return MdiWidget::eventFilter(obj, event);
@@ -420,6 +428,9 @@ void ChatWidget::init()
 
    this->emoticonsWidget = new EmoticonsWidget(this->emoticons, this);
    this->emoticonsWidget->setWindowFlags(Qt::Popup);
+
+   this->autoComplete = new AutoComplete(this);
+   this->autoComplete->setVisible(false);
 
    foreach (QString theme, this->emoticons.getThemes())
       foreach (QString smileName, this->emoticons.getSmileNames(theme))
@@ -604,4 +615,9 @@ void ChatWidget::setNewMessageState(bool newMessage)
 QUrl ChatWidget::buildUrlEmoticon(const QString& theme, const QString& emoticonName)
 {
    return QUrl(QString("emoticons://%1/%2").arg(theme).arg(emoticonName));
+}
+
+QString ChatWidget::htmlEmoticon(const QString& theme, const QString& emoticonName)
+{
+   return QString("<img src=\"%1\" />").arg(buildUrlEmoticon(theme, emoticonName).toString());
 }

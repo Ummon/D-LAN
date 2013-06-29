@@ -120,6 +120,11 @@ void CoreConnection::sendChatMessage(const QString& message, const QString& room
    this->current()->sendChatMessage(message, roomName);
 }
 
+void CoreConnection::sendChatMessage(const QString& message, const QString& roomName, const QList<Common::Hash>& peerIDsAnswered)
+{
+   this->current()->sendChatMessage(message, roomName, peerIDsAnswered);
+}
+
 void CoreConnection::joinRoom(const QString& room)
 {
    this->current()->joinRoom(room);

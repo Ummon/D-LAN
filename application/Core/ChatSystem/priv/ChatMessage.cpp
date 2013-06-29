@@ -21,10 +21,11 @@ using namespace CS;
 
 #include <Common/ProtoHelper.h>
 
-ChatMessage::ChatMessage(const QString& message, const Common::Hash& ownerID, const QString& ownerNick, const QString& roomName) :
+ChatMessage::ChatMessage(const QString& message, const Common::Hash& ownerID, const QString& ownerNick, const QString& roomName, const QList<Common::Hash>& peerIDsAnswer) :
    ID(mtrand.randInt64()),
    message(message),
    ownerID(ownerID),
+   peerIDsAnswer(peerIDsAnswer),
    time(QDateTime::currentDateTimeUtc()),
    ownerNick(ownerNick),
    room(roomName)
@@ -60,6 +61,8 @@ void ChatMessage::fillProtoChatMessage(Protos::Common::ChatMessage& protoChatMes
    Common::ProtoHelper::setStr(protoChatMessage, &Protos::Common::ChatMessage::set_peer_nick, this->ownerNick);
    if (!this->room.isEmpty())
       Common::ProtoHelper::setStr(protoChatMessage, &Protos::Common::ChatMessage::set_chat_room, this->room);
+   for (QListIterator<Common::Hash> i(this->peerIDsAnswer); i.hasNext();)
+      protoChatMessage.add_peer_ids_answer()->set_hash(i.next().getData(), Common::Hash::HASH_SIZE);
 }
 
 MTRand ChatMessage::mtrand;

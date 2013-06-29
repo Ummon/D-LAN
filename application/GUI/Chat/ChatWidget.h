@@ -32,6 +32,7 @@
 #include <MDI/MdiWidget.h>
 #include <Emoticons/Emoticons.h>
 #include <Emoticons/EmoticonsWidget.h>
+#include <AutoComplete.h>
 
 namespace Ui {
   class ChatWidget;
@@ -112,9 +113,11 @@ namespace GUI
       void setNewMessageState(bool newMessage);
 
       static QUrl buildUrlEmoticon(const QString& theme, const QString& emoticonName);
+      static QString htmlEmoticon(const QString& theme, const QString& emoticonName);
 
       Ui::ChatWidget* ui;
       EmoticonsWidget* emoticonsWidget;
+      AutoComplete* autoComplete; // TODO: Move in 'ChatTextEdit'.
 
       QTextDocument textDocument;
 

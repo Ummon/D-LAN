@@ -84,6 +84,7 @@ message ChatMessage {
    optional uint64 time = 4; // In [ms] since Epoch.
    optional string peer_nick = 5;
    optional string chat_room = 6;
+   repeated Common.Hash peer_ids_answer = 7;
 }
 
 // All messages belong to the same chat room (or from no room if they are from the main chat).
