@@ -17,7 +17,7 @@ using namespace GUI;
   * At the moment, the name of emoticons corresponds to its filename.
   */
 
-const QString Emoticons::DEFAULT_THEME_NAME("Default");
+const QString Emoticons::DEFAULT_THEME_NAME(cleanName("Default"));
 const QString Emoticons::META_FILE_NAME("Emoticons.plist");
 
 Emoticons::Emoticons(const QString& directory, const QString& defaultTheme)
@@ -133,7 +133,7 @@ void Emoticons::loadThemes()
                   smile.symbols << symbol.text();
             }
 
-            this->smiles[themeDir][currentSmile.first] = smile;
+            this->smiles[cleanName(themeDir)][cleanName(currentSmile.first)] = smile;
          }
          else
             L_WARN(QString("Unable to load the following emoticon: %1").arg(imagePath));
@@ -171,4 +171,11 @@ QPair<QString, QDomElement> Emoticons::XmlNextValue(const QDomElement& domElemen
    } while (!currentElement.isNull());
 
    return qMakePair(QString(), QDomElement());
+}
+
+QString Emoticons::cleanName(const QString& name)
+{
+   QString result = name.toLower();
+   result.replace(' ', "");
+   return result;
 }

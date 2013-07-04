@@ -37,6 +37,7 @@ namespace GUI
 
       static QDomElement XmlNextValue(const QDomElement& domElement, const QString& key);
       static QPair<QString, QDomElement> XmlNextValue(const QDomElement& domElement);
+      static QString cleanName(const QString& name);
 
       QString defaultTheme;
 

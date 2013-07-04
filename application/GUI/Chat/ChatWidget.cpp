@@ -124,7 +124,7 @@ ChatWidget::ChatWidget(QSharedPointer<RCC::ICoreConnection> coreConnection, Emot
    ui(new Ui::ChatWidget),
    coreConnection(coreConnection),
    emoticons(emoticons),
-   chatModel(coreConnection, peerListModel),
+   chatModel(coreConnection, peerListModel, emoticons),
    chatDelegate(textDocument),
    autoScroll(true)
 {
@@ -136,7 +136,7 @@ ChatWidget::ChatWidget(QSharedPointer<RCC::ICoreConnection> coreConnection, Emot
    ui(new Ui::ChatWidget),
    coreConnection(coreConnection),
    emoticons(emoticons),
-   chatModel(coreConnection, peerListModel, roomName),
+   chatModel(coreConnection, peerListModel, emoticons, roomName),
    chatDelegate(textDocument),
    autoScroll(true)
 {
@@ -196,7 +196,7 @@ void ChatWidget::copySelectedLineToClipboard()
    QModelIndexList selection = this->ui->tblChat->selectionModel()->selectedRows();
    for (QListIterator<QModelIndex> i(selection); i.hasNext();)
    {
-      lines.append(this->chatModel.getLineStr(i.next().row())).append('\n');
+      lines.append(this->chatModel.getLineStr(i.next().row(), false)).append('\n');
    }
    QApplication::clipboard()->setText(lines);
 }
@@ -614,7 +614,7 @@ void ChatWidget::setNewMessageState(bool newMessage)
 
 QUrl ChatWidget::buildUrlEmoticon(const QString& theme, const QString& emoticonName)
 {
-   return QUrl(QString("emoticons://%1/%2").arg(theme).arg(emoticonName));
+   return QUrl(QString("emoticons://%1/%2").arg(theme, emoticonName));
 }
 
 QString ChatWidget::htmlEmoticon(const QString& theme, const QString& emoticonName)

@@ -256,12 +256,12 @@ bool MessageSocket::readMessage()
    {
       const Message& message = Message::readMessageBodyFromDevice(this->currentHeader, this->socket);
 
-      MESSAGE_SOCKET_LOG_DEBUG(QString("Socket[%1]: Data received from %2, %3\n%4")
-         .arg(this->num)
-         .arg(this->socket->peerAddress().toString())
-         .arg(message.getHeader().toStr())
-         .arg(Common::ProtoHelper::getDebugStr(message.getMessage()))
-      );
+      MESSAGE_SOCKET_LOG_DEBUG(QString("Socket[%1]: Data received from %2, %3\n%4").arg(
+         QString::number(this->num),
+         this->socket->peerAddress().toString(),
+         message.getHeader().toStr(),
+         Common::ProtoHelper::getDebugStr(message.getMessage())
+      ));
 
       this->onNewMessage(message);
       emit newMessage(message);
