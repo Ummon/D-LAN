@@ -32,6 +32,7 @@
 #include <Common/RemoteCoreController/ICoreConnection.h>
 
 #include <Peers/PeerListModel.h>
+#include <Emoticons/Emoticons.h>
 
 namespace GUI
 {
@@ -41,12 +42,12 @@ namespace GUI
       static const int MAX_NICK_LENGTH = 12;
 
    public:
-      ChatModel(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel, const QString& roomName = QString());
+      ChatModel(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel, const Emoticons& emoticons, const QString& roomName = QString());
 
       bool isMainChat() const;
       QString getRoomName() const;
 
-      QString getLineStr(int row) const;
+      QString getLineStr(int row, bool withHTML = true) const;
       bool isMessageIsOurs(int row) const;
 
       int rowCount(const QModelIndex& parent = QModelIndex()) const;
@@ -79,6 +80,7 @@ namespace GUI
 
       QSharedPointer<RCC::ICoreConnection> coreConnection;
       PeerListModel& peerListModel;
+      const Emoticons& emoticons;
 
       QString roomName; // Empty for main chat.
       QList<Message> messages; // Always sorted by date-time.

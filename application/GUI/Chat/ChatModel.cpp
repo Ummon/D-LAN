@@ -23,6 +23,7 @@ using namespace GUI;
 #include <QStringBuilder>
 #include <QImage>
 #include <QResource>
+#include <QDomDocument>
 
 #include <Protos/common.pb.h>
 
@@ -32,9 +33,10 @@ using namespace GUI;
 
 #include <Log.h>
 
-ChatModel::ChatModel(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel, const QString& roomName) :
+ChatModel::ChatModel(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel, const Emoticons& emoticons, const QString& roomName) :
    coreConnection(coreConnection),
    peerListModel(peerListModel),
+   emoticons(emoticons),
    roomName(roomName),
    regexMatchMessageContent("<p[^>]+>"),
    regexMatchFirstBR("^\\s*<br[^>]*>"),
@@ -56,9 +58,50 @@ QString ChatModel::getRoomName() const
 /**
   * Return a string with all the field: "[<date>] <nick>: <message>".
   */
-QString ChatModel::getLineStr(int row) const
+QString ChatModel::getLineStr(int row, bool withHTML) const
 {
-   return this->formatMessage(this->messages[row]); // TODO: remove html markup.
+   QString result = this->formatMessage(this->messages[row]);
+   if (!withHTML)
+   {
+      QDomDocument doc;
+      QString* message = nullptr;
+      doc.setContent(result, message);
+
+      QDomElement HTMLElement = doc.firstChildElement("html");
+      QDomElement BodyElement = HTMLElement.firstChildElement("body");
+      QDomElement currentElement = BodyElement.firstChildElement();
+
+      while (!currentElement.isNull())
+      {
+         QDomElement nextElement = currentElement.nextSiblingElement();
+         if (currentElement.tagName() == "img")
+         {
+            QStringList srcEmoticon = currentElement.attribute("src").split('/', QString::SkipEmptyParts);
+            if (srcEmoticon.count() == 3)
+            {
+               QStringList emoticonSymbols = this->emoticons.getSmileSymbols(srcEmoticon[1], srcEmoticon[2]);
+               if (!emoticonSymbols.isEmpty())
+                  currentElement.parentNode().replaceChild(doc.createTextNode(emoticonSymbols.first()), currentElement);
+            }
+         }
+         else if (currentElement.tagName() == "span")
+         {
+            QDomElement innerSpanElement = currentElement.firstChildElement();
+            while (!innerSpanElement.isNull())
+            {
+               QDomElement nextInnerSpanElement = innerSpanElement.nextSiblingElement();
+               if (innerSpanElement.tagName() == "br")
+                  innerSpanElement.parentNode().replaceChild(doc.createTextNode("\n"), innerSpanElement);
+               innerSpanElement = nextInnerSpanElement;
+            }
+         }
+         currentElement = nextElement;
+      }
+
+      return BodyElement.text();
+   }
+
+   return result;
 }
 
 bool ChatModel::isMessageIsOurs(int row) const
