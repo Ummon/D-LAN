@@ -25,6 +25,7 @@
 #include <QList>
 #include <QSize>
 #include <QRegExp>
+#include <QPair>
 
 #include <Protos/gui_protocol.pb.h>
 
@@ -45,6 +46,8 @@ namespace GUI
 
       bool isMainChat() const;
       QString getRoomName() const;
+
+      QList<QPair<Common::Hash, QString>> getRelevantLastPeers() const;
 
       QString getLineStr(int row) const;
       bool isMessageIsOurs(int row) const;

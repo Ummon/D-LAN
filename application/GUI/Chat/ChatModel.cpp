@@ -53,6 +53,32 @@ QString ChatModel::getRoomName() const
    return this->roomName;
 }
 
+
+QList<QPair<Common::Hash, QString> > ChatModel::getRelevantLastPeers() const
+{
+   QList<QPair<Common::Hash, QString> > result;
+
+   QListIterator<Message> i(this->messages);
+   i.toBack();
+
+   while (i.hasPrevious())
+   {
+      const Message& message = i.previous();
+      if (message.answeringToUs)
+         result << QPair<Common::Hash, QString>(message.peerID, message.nick);
+   }
+
+   i.toBack();
+   while (i.hasPrevious())
+   {
+      const Message& message = i.previous();
+      if (!message.answeringToUs)
+         result << QPair<Common::Hash, QString>(message.peerID, message.nick);
+   }
+
+   return result;
+}
+
 /**
   * Return a string with all the field: "[<date>] <nick>: <message>".
   */
