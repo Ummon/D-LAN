@@ -5,7 +5,7 @@
 #define ApplicationDir "../.."
 
 #define AppName "D-LAN"
-#define ExePath "{#ApplicationDir}/Core/output/release/D-LAN.Core.exe"
+#define ExePath ApplicationDir + "/Core/output/release/D-LAN.Core.exe"
 #define Version GetStringFileInfo(ExePath, 'ProductVersion')
 #define VersionTag GetStringFileInfo(ExePath, 'VersionTag')
 #define BuildTime GetStringFileInfo(ExePath, 'BuildTime')
