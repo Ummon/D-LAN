@@ -94,7 +94,8 @@ SOURCES += main.cpp\
     Emoticons/EmoticonsWidget.cpp \
     Emoticons/Emoticons.cpp \
     Emoticons/SingleEmoticonWidget.cpp \
-    AutoComplete.cpp
+    AutoComplete/AutoComplete.cpp \
+    AutoComplete/AutoCompleteModel.cpp
 
 HEADERS  += MainWindow.h \
     ../Protos/gui_protocol.pb.h \
@@ -152,7 +153,8 @@ HEADERS  += MainWindow.h \
     Emoticons/EmoticonsWidget.h \
     Emoticons/Emoticons.h \
     Emoticons/SingleEmoticonWidget.h \
-    AutoComplete.h
+    AutoComplete/AutoComplete.h \
+    AutoComplete/AutoCompleteModel.h
 
 FORMS    += MainWindow.ui \
     StatusBar.ui \
@@ -169,7 +171,7 @@ FORMS    += MainWindow.ui \
     Settings/SettingsWidget.ui \
     Uploads/UploadsWidget.ui \
     Emoticons/SingleEmoticonWidget.ui \
-    AutoComplete.ui
+    AutoComplete/AutoComplete.ui
 
 RESOURCES += \
     ressources.qrc

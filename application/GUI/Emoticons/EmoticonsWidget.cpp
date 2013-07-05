@@ -14,7 +14,7 @@ EmoticonsWidget::EmoticonsWidget(Emoticons& emoticons, QWidget* parent) :
    QWidget(parent),
    emoticons(emoticons)
 {
-   const int NUMBER_OF_COLUMNS = 6;
+   const int NUMBER_OF_COLUMNS = 8;
    QGridLayout* layout = new QGridLayout(this);
 
    int row = 0;
