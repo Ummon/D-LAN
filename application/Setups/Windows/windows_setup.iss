@@ -32,7 +32,7 @@ Source: "{#ApplicationDir}/styles/*"; DestDir: "{app}/styles"; Flags: comparetim
 Source: "{#QtDir}/bin/QtCore4.dll"; DestDir: "{app}"; Flags: comparetimestamp
 Source: "{#QtDir}/bin/QtGui4.dll"; DestDir: "{app}"; Flags: comparetimestamp
 Source: "{#QtDir}/bin/QtNetwork4.dll"; DestDir: "{app}"; Flags: comparetimestamp
-Source: "{#QtDir}/bin/QtNetwork4.dll"; DestDir: "{app}"; Flags: comparetimestamp
+Source: "{#QtDir}/bin/QtXml4.dll"; DestDir: "{app}"; Flags: comparetimestamp
 Source: "{#MingwDir}/bin/mingwm10.dll"; DestDir: "{app}"; Flags: comparetimestamp
 Source: "{#MingwDir}/bin/libgcc_s_dw2-1.dll"; DestDir: "{app}"; Flags: comparetimestamp
 Source: "{#MingwDir}/bin/libstdc++-6.dll"; DestDir: "{app}"; Flags: comparetimestamp
