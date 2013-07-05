@@ -6,49 +6,97 @@
     <name>AskNewPasswordDialog</name>
     <message>
         <location filename="../GUI/Settings/AskNewPasswordDialog.ui"/>
+        <location filename="../GUI/.tmp/debug/ui_AskNewPasswordDialog.h" line="+100"/>
         <source>Change password</source>
         <translation>Changement de mot de passe</translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_AskNewPasswordDialog.h" line="+1"/>
         <source>Old password</source>
         <translation>Ancien mot de passe</translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_AskNewPasswordDialog.h" line="+1"/>
         <source>New password</source>
         <translation>Nouveau mot de passe</translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_AskNewPasswordDialog.h" line="+1"/>
         <source>Repeat new password</source>
         <translation>Répétez le nouveau mot de passe</translation>
+    </message>
+</context>
+<context>
+    <name>AutoComplete</name>
+    <message>
+        <location filename="../GUI/AutoComplete.ui"/>
+        <location filename="../GUI/.tmp/debug/ui_AutoComplete.h" line="+52"/>
+        <source>Form</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>BrowseWidget</name>
+    <message>
+        <location filename="../GUI/Browse/BrowseWidget.ui"/>
+        <location filename="../GUI/.tmp/debug/ui_BrowseWidget.h" line="+69"/>
+        <source>Download selected items to the first shared directory with enough free space</source>
+        <translation type="unfinished">Télécharger les éléments dans le premier dossier partagé avec assez de place</translation>
+    </message>
+    <message>
+        <location/>
+        <location filename="../GUI/.tmp/debug/ui_BrowseWidget.h" line="+2"/>
+        <source>Download selected items</source>
+        <translation type="unfinished">Télécharger les éléments sélectionnés</translation>
+    </message>
+</context>
+<context>
+    <name>ChatWidget</name>
+    <message>
+        <location filename="../GUI/Chat/ChatWidget.ui"/>
+        <location filename="../GUI/.tmp/debug/ui_ChatWidget.h" line="+175"/>
+        <source>Chat</source>
+        <translation type="unfinished">Chat</translation>
+    </message>
+    <message>
+        <location/>
+        <location filename="../GUI/.tmp/debug/ui_ChatWidget.h" line="+6"/>
+        <source>Reset current format</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>DialogAbout</name>
     <message>
         <location filename="../GUI/DialogAbout.ui"/>
+        <location filename="../GUI/.tmp/debug/ui_DialogAbout.h" line="+143"/>
         <source>About</source>
         <translation>À propos</translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_DialogAbout.h" line="+2"/>
         <source>D-LAN</source>
         <translation>D-LAN</translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_DialogAbout.h" line="+1"/>
         <source>Built on</source>
         <translation>Compilé le</translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_DialogAbout.h" line="+1"/>
         <source>From revision</source>
         <translation>À partir de la révision</translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_DialogAbout.h" line="+1"/>
         <source>Copyright 2010-%1 Greg Burri. All rights reserved.</source>
         <translation>Copyright 2010-%1 Greg Burri. Tous droits réservés.</translation>
     </message>
@@ -58,8 +106,58 @@
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_DialogAbout.h" line="+1"/>
         <source>Close</source>
         <translation>Fermer</translation>
+    </message>
+</context>
+<context>
+    <name>DownloadsWidget</name>
+    <message>
+        <location filename="../GUI/Downloads/DownloadsWidget.ui"/>
+        <location filename="../GUI/.tmp/debug/ui_DownloadsWidget.h" line="+128"/>
+        <source>Downloads</source>
+        <translation type="unfinished">Téléchargements</translation>
+    </message>
+    <message>
+        <location/>
+        <location filename="../GUI/.tmp/debug/ui_DownloadsWidget.h" line="+1"/>
+        <source>Item shown :</source>
+        <translation type="unfinished">Éléments affichés</translation>
+    </message>
+    <message>
+        <location/>
+        <location filename="../GUI/.tmp/debug/ui_DownloadsWidget.h" line="+5"/>
+        <source>Remove completed files from the queue</source>
+        <translation type="unfinished">Enlever les fichiers complets de la queue</translation>
+    </message>
+    <message>
+        <location/>
+        <location filename="../GUI/.tmp/debug/ui_DownloadsWidget.h" line="+4"/>
+        <source>Removed selected downloads from the queue</source>
+        <translation type="unfinished">Enlever les éléments sélectionnés de la queue</translation>
+    </message>
+    <message>
+        <location/>
+        <location filename="../GUI/.tmp/debug/ui_DownloadsWidget.h" line="+4"/>
+        <source>Pause or unpause selected downloads</source>
+        <translation type="unfinished">Mettre ou enlever la pause des éléments sélectionnés</translation>
+    </message>
+</context>
+<context>
+    <name>GUI::BrowseWidget</name>
+    <message>
+        <location filename="../GUI/Browse/BrowseWidget.cpp" line="+134"/>
+        <source>Open location</source>
+        <translation type="unfinished">Ouvrir le dossier</translation>
+    </message>
+</context>
+<context>
+    <name>GUI::ChatWidget</name>
+    <message>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="+189"/>
+        <source>Copy selected lines</source>
+        <translation type="unfinished">Copier les lignes sélectionnés</translation>
     </message>
 </context>
 <context>
@@ -139,7 +237,7 @@
 <context>
     <name>GUI::DownloadsDelegate</name>
     <message>
-        <location filename="../GUI/Downloads/WidgetDownloads.cpp" line="+54"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="+55"/>
         <source>Queued</source>
         <translation>En queue</translation>
     </message>
@@ -221,11 +319,21 @@
         <translation>Erreur de transfert</translation>
     </message>
     <message>
+        <location line="+19"/>
+        <source>The remote directory is currently being scanned</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Unable to retrieve the entries</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <source>Transfert error</source>
         <translation type="obsolete">Erreur de transfert</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="-19"/>
         <source>Unable to open the file</source>
         <translation>Impossible d&apos;ouvrir le fichier</translation>
     </message>
@@ -255,9 +363,85 @@
     </message>
 </context>
 <context>
+    <name>GUI::DownloadsWidget</name>
+    <message>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="+134"/>
+        <source>Open location</source>
+        <translation type="unfinished">Ouvrir le dossier</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Move to top</source>
+        <translation type="unfinished">Déplacer tout en haut</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Pause selected entries</source>
+        <translation type="unfinished">Mettre en pause les éléments sélectionnés</translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Unpause selected entries</source>
+        <translation type="unfinished">Enlever la pause des éléments sélectionnés</translation>
+    </message>
+    <message>
+        <location line="+83"/>
+        <source>Remove selected downloads</source>
+        <translation type="unfinished">Enlever les éléments sélectionnés</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Are you sure to remove the selected downloads? There is one or more unfinished download.</source>
+        <translation type="unfinished">Êtes-vous sûr de vouloir enlever les downloads sélectionnés. Certains ne sont pas terminés.</translation>
+    </message>
+    <message>
+        <location line="+51"/>
+        <source>Switch to file list view</source>
+        <translation type="unfinished">Basculer sur la liste des fichiers</translation>
+    </message>
+    <message>
+        <location line="+13"/>
+        <source>Switch to tree view</source>
+        <translation type="unfinished">Basculer sur la vue en arbre</translation>
+    </message>
+    <message>
+        <location line="+17"/>
+        <source>&lt;All&gt;</source>
+        <translation type="unfinished">&lt;Tous&gt;</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Complete</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Downloading</source>
+        <translation type="unfinished">En téléchargement</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Queued</source>
+        <translation type="unfinished">En queue</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Inactive</source>
+        <translation type="unfinished">Inactif</translation>
+    </message>
+</context>
+<context>
+    <name>GUI::EmoticonsWidget</name>
+    <message>
+        <location filename="../GUI/Emoticons/EmoticonsWidget.cpp" line="+26"/>
+        <source>Set as the default theme</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>GUI::MainWindow</name>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="+206"/>
+        <location filename="../GUI/MainWindow.cpp" line="+149"/>
         <source>Already connected to this address</source>
         <translation>Déjà connecté à cette addresse</translation>
     </message>
@@ -307,64 +491,53 @@
         <translation>Adresse du core distant:</translation>
     </message>
     <message>
-        <location line="+20"/>
+        <location line="+17"/>
         <source>Core address:</source>
         <translation>Adresse du core:</translation>
     </message>
     <message>
-        <location line="+37"/>
         <source>Take control</source>
-        <translation>Prendre le contrôle</translation>
+        <translation type="obsolete">Prendre le contrôle</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>Copy IP: %1</source>
-        <translation>Copier l&apos;IP: %1</translation>
+        <translation type="obsolete">Copier l&apos;IP: %1</translation>
     </message>
     <message>
-        <location line="+6"/>
         <source>Sort by the amount of sharing</source>
-        <translation>Trier par la quantité de partage</translation>
+        <translation type="obsolete">Trier par la quantité de partage</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Sort alphabetically</source>
-        <translation>Trier par ordre alphabétique</translation>
+        <translation type="obsolete">Trier par ordre alphabétique</translation>
     </message>
     <message>
-        <location line="+13"/>
         <source>Colorize in red</source>
-        <translation>Colorier en rouge</translation>
+        <translation type="obsolete">Colorier en rouge</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Colorize in blue</source>
-        <translation>Colorier en bleu</translation>
+        <translation type="obsolete">Colorier en bleu</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Colorize in green</source>
-        <translation>Colorier en vert</translation>
+        <translation type="obsolete">Colorier en vert</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Uncolorize</source>
-        <translation>Enlever la couleur</translation>
+        <translation type="obsolete">Enlever la couleur</translation>
     </message>
     <message>
-        <location line="+31"/>
         <source>Take control of %1</source>
-        <translation>Prendre le contrôle de %1</translation>
+        <translation type="obsolete">Prendre le contrôle de %1</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Enter a password</source>
-        <translation>Entrez le mot de passe</translation>
+        <translation type="obsolete">Entrez le mot de passe</translation>
     </message>
     <message>
-        <location line="+463"/>
         <source>Waiting the cache loading process is finished before loading the download queue</source>
-        <translation>En attente de la fin de chargement du cache avant de pouvoir charger la queue de téléchargement</translation>
+        <translation type="obsolete">En attente de la fin de chargement du cache avant de pouvoir charger la queue de téléchargement</translation>
     </message>
     <message>
         <source>Waiting the cache loading process is finished</source>
@@ -375,12 +548,12 @@
         <translation type="obsolete">En attente que le cache soit chargé</translation>
     </message>
     <message>
-        <location line="-569"/>
+        <location line="-9"/>
         <source>Connected to the core</source>
         <translation>Connecté au core</translation>
     </message>
     <message>
-        <location line="+11"/>
+        <location line="+8"/>
         <source>Connection lost</source>
         <translation>Connexion perdue</translation>
     </message>
@@ -390,9 +563,16 @@
         <translation>La connexion au core a été perdu</translation>
     </message>
     <message>
-        <location line="+33"/>
         <source>Browse</source>
-        <translation>Explorer</translation>
+        <translation type="obsolete">Explorer</translation>
+    </message>
+</context>
+<context>
+    <name>GUI::MdiArea</name>
+    <message>
+        <location filename="../GUI/MDI/MdiArea.cpp" line="+281"/>
+        <source>Waiting the cache loading process is finished before loading the download queue</source>
+        <translation type="unfinished">En attente de la fin de chargement du cache avant de pouvoir charger la queue de téléchargement</translation>
     </message>
 </context>
 <context>
@@ -402,7 +582,7 @@
         <translation type="obsolete">Version %1</translation>
     </message>
     <message>
-        <location filename="../GUI/PeerList/PeerListModel.cpp" line="+168"/>
+        <location filename="../GUI/Peers/PeerListModel.cpp" line="+199"/>
         <source>Version %1
 </source>
         <translation>Version %1
@@ -420,9 +600,75 @@
     </message>
 </context>
 <context>
+    <name>GUI::PeersDock</name>
+    <message>
+        <location filename="../GUI/Peers/PeersDock.cpp" line="+60"/>
+        <source>Browse</source>
+        <translation type="unfinished">Explorer</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Take control</source>
+        <translation type="unfinished">Prendre le contrôle</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Copy IP: %1</source>
+        <translation type="unfinished">Copier l&apos;IP: %1</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Sort by the amount of sharing</source>
+        <translation type="unfinished">Trier par la quantité de partage</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Sort alphabetically</source>
+        <translation type="unfinished">Trier par ordre alphabétique</translation>
+    </message>
+    <message>
+        <location line="+13"/>
+        <source>Colorize in red</source>
+        <translation type="unfinished">Colorier en rouge</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Colorize in blue</source>
+        <translation type="unfinished">Colorier en bleu</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Colorize in green</source>
+        <translation type="unfinished">Colorier en vert</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Uncolorize</source>
+        <translation type="unfinished">Enlever la couleur</translation>
+    </message>
+    <message>
+        <location line="+31"/>
+        <source>Take control of %1</source>
+        <translation type="unfinished">Prendre le contrôle de %1</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Enter a password</source>
+        <translation type="unfinished">Entrez le mot de passe</translation>
+    </message>
+</context>
+<context>
+    <name>GUI::RoomsDock</name>
+    <message>
+        <location filename="../GUI/Chat/RoomsDock.cpp" line="+61"/>
+        <source>Join</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>GUI::SearchMenu</name>
     <message>
-        <location filename="../GUI/Search/WidgetSearch.cpp" line="+157"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="+157"/>
         <source>Browse</source>
         <translation>Explorer</translation>
     </message>
@@ -463,6 +709,74 @@
         <location line="+65"/>
         <source>&lt;unknown&gt;</source>
         <translation>&lt;inconnu&gt;</translation>
+    </message>
+</context>
+<context>
+    <name>GUI::SearchWidget</name>
+    <message>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="+104"/>
+        <source>Open location</source>
+        <translation type="unfinished">Ouvrir le dossier</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Browse</source>
+        <translation type="unfinished">Explorer</translation>
+    </message>
+</context>
+<context>
+    <name>GUI::SettingsWidget</name>
+    <message>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="+195"/>
+        <source>Default</source>
+        <translation type="unfinished">Défaut</translation>
+    </message>
+    <message>
+        <location line="+40"/>
+        <source>Interface not active</source>
+        <translation type="unfinished">Interface inactive</translation>
+    </message>
+    <message>
+        <location line="+111"/>
+        <source>Change the password</source>
+        <translation type="unfinished">Changer le mot de passe</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Define a password</source>
+        <translation type="unfinished">Définir un mot de passe</translation>
+    </message>
+    <message>
+        <location line="+45"/>
+        <source>Connecting . . .</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <location line="+16"/>
+        <location line="+18"/>
+        <source>Connect</source>
+        <translation type="unfinished">Connecter</translation>
+    </message>
+    <message>
+        <location line="+138"/>
+        <source>Remove the shared directory</source>
+        <translation type="unfinished">Enlever le dossier partagé</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Move up</source>
+        <translation type="unfinished">Déplacer vers le haut</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Move down</source>
+        <translation type="unfinished">Déplacer vers le bas</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Open location</source>
+        <translation type="unfinished">Ouvrir le dossier</translation>
     </message>
 </context>
 <context>
@@ -528,7 +842,7 @@
 <context>
     <name>GUI::TabCloseButton</name>
     <message>
-        <location filename="../GUI/TabButtons.cpp" line="+133"/>
+        <location filename="../GUI/MDI/TabButtons.cpp" line="+128"/>
         <source>Close Tab</source>
         <translation>Fermer l&apos;onglet</translation>
     </message>
@@ -552,30 +866,26 @@
 <context>
     <name>GUI::WidgetBrowse</name>
     <message>
-        <location filename="../GUI/Browse/WidgetBrowse.cpp" line="+134"/>
         <source>Open location</source>
-        <translation>Ouvrir le dossier</translation>
+        <translation type="obsolete">Ouvrir le dossier</translation>
     </message>
 </context>
 <context>
     <name>GUI::WidgetChat</name>
     <message>
-        <location filename="../GUI/Chat/WidgetChat.cpp" line="+143"/>
         <source>Copy selected lines</source>
-        <translation>Copier les lignes sélectionnés</translation>
+        <translation type="obsolete">Copier les lignes sélectionnés</translation>
     </message>
 </context>
 <context>
     <name>GUI::WidgetDownloads</name>
     <message>
-        <location filename="../GUI/Downloads/WidgetDownloads.cpp" line="+134"/>
         <source>Open location</source>
-        <translation>Ouvrir le dossier</translation>
+        <translation type="obsolete">Ouvrir le dossier</translation>
     </message>
     <message>
-        <location line="+4"/>
         <source>Move to top</source>
-        <translation>Déplacer tout en haut</translation>
+        <translation type="obsolete">Déplacer tout en haut</translation>
     </message>
     <message>
         <source>Remove completed files</source>
@@ -586,168 +896,150 @@
         <translation type="obsolete">Enlever les éléments sélectionnés</translation>
     </message>
     <message>
-        <location line="+7"/>
         <source>Pause selected entries</source>
-        <translation>Mettre en pause les éléments sélectionnés</translation>
+        <translation type="obsolete">Mettre en pause les éléments sélectionnés</translation>
     </message>
     <message>
-        <location line="+0"/>
         <source>Unpause selected entries</source>
-        <translation>Enlever la pause des éléments sélectionnés</translation>
+        <translation type="obsolete">Enlever la pause des éléments sélectionnés</translation>
     </message>
     <message>
-        <location line="+83"/>
         <source>Remove selected downloads</source>
-        <translation>Enlever les éléments sélectionnés</translation>
+        <translation type="obsolete">Enlever les éléments sélectionnés</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Are you sure to remove the selected downloads? There is one or more unfinished download.</source>
-        <translation>Êtes-vous sûr de vouloir enlever les downloads sélectionnés. Certains ne sont pas terminés.</translation>
+        <translation type="obsolete">Êtes-vous sûr de vouloir enlever les downloads sélectionnés. Certains ne sont pas terminés.</translation>
     </message>
     <message>
-        <location line="+51"/>
         <source>Switch to file list view</source>
-        <translation>Basculer sur la liste des fichiers</translation>
+        <translation type="obsolete">Basculer sur la liste des fichiers</translation>
     </message>
     <message>
-        <location line="+13"/>
         <source>Switch to tree view</source>
-        <translation>Basculer sur la vue en arbre</translation>
+        <translation type="obsolete">Basculer sur la vue en arbre</translation>
     </message>
     <message>
-        <location line="+17"/>
         <source>&lt;All&gt;</source>
-        <translation>&lt;Tous&gt;</translation>
+        <translation type="obsolete">&lt;Tous&gt;</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Complete</source>
-        <translation>Complet</translation>
+        <translation type="obsolete">Complet</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Downloading</source>
-        <translation>En téléchargement</translation>
+        <translation type="obsolete">En téléchargement</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Queued</source>
-        <translation>En queue</translation>
+        <translation type="obsolete">En queue</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Inactive</source>
-        <translation>Inactif</translation>
+        <translation type="obsolete">Inactif</translation>
     </message>
 </context>
 <context>
     <name>GUI::WidgetSearch</name>
     <message>
-        <location filename="../GUI/Search/WidgetSearch.cpp" line="+102"/>
         <source>Open location</source>
-        <translation>Ouvrir le dossier</translation>
+        <translation type="obsolete">Ouvrir le dossier</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Browse</source>
-        <translation>Explorer</translation>
+        <translation type="obsolete">Explorer</translation>
     </message>
 </context>
 <context>
     <name>GUI::WidgetSettings</name>
     <message>
-        <location filename="../GUI/Settings/WidgetSettings.cpp" line="+390"/>
         <source>Connecting..</source>
-        <translation>Connexion..</translation>
+        <translation type="obsolete">Connexion..</translation>
     </message>
     <message>
-        <location line="+8"/>
-        <location line="+16"/>
-        <location line="+18"/>
         <source>Connect</source>
-        <translation>Connecter</translation>
+        <translation type="obsolete">Connecter</translation>
     </message>
     <message>
-        <location line="-204"/>
         <source>Interface not active</source>
-        <translation>Interface inactive</translation>
+        <translation type="obsolete">Interface inactive</translation>
     </message>
     <message>
-        <location line="-40"/>
         <source>Default</source>
-        <translation>Défaut</translation>
+        <translation type="obsolete">Défaut</translation>
     </message>
     <message>
-        <location line="+151"/>
         <source>Change the password</source>
-        <translation>Changer le mot de passe</translation>
+        <translation type="obsolete">Changer le mot de passe</translation>
     </message>
     <message>
-        <location line="+6"/>
         <source>Define a password</source>
-        <translation>Définir un mot de passe</translation>
+        <translation type="obsolete">Définir un mot de passe</translation>
     </message>
     <message>
-        <location line="+225"/>
         <source>Remove the shared directory</source>
-        <translation>Enlever le dossier partagé</translation>
+        <translation type="obsolete">Enlever le dossier partagé</translation>
     </message>
     <message>
         <source>Remove the shared folder</source>
         <translation type="obsolete">Enlever le dossier partagé</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Move up</source>
-        <translation>Déplacer vers le haut</translation>
+        <translation type="obsolete">Déplacer vers le haut</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Move down</source>
-        <translation>Déplacer vers le bas</translation>
+        <translation type="obsolete">Déplacer vers le bas</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Open location</source>
-        <translation>Ouvrir le dossier</translation>
+        <translation type="obsolete">Ouvrir le dossier</translation>
     </message>
 </context>
 <context>
     <name>MainWindow</name>
     <message>
         <location filename="../GUI/MainWindow.ui"/>
+        <location filename="../GUI/.tmp/debug/ui_MainWindow.h" line="+136"/>
         <source>D-LAN</source>
         <translation>D-LAN</translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_MainWindow.h" line="+5"/>
         <source>Log</source>
         <translation>Log</translation>
     </message>
     <message>
-        <location/>
         <source>Search</source>
-        <translation>Rechercher</translation>
+        <translation type="obsolete">Rechercher</translation>
     </message>
     <message>
-        <location/>
         <source>Search among other peers &lt;ENTER&gt;</source>
-        <translation>Rechercher parmi les autres pairs &lt;ENTER&gt;</translation>
+        <translation type="obsolete">Rechercher parmi les autres pairs &lt;ENTER&gt;</translation>
     </message>
     <message>
         <source>Search among its own files &lt;SHIFT-ENTER&gt;</source>
         <translation type="obsolete">Rechercher parmi ses propres fichiers &lt;SHIFT-ENTER&gt;</translation>
     </message>
     <message>
-        <location/>
         <source>Peers</source>
-        <translation>Pairs</translation>
+        <translation type="obsolete">Pairs</translation>
     </message>
     <message>
-        <location/>
         <source>Search among my own files &lt;SHIFT-ENTER&gt;</source>
-        <translation>Rechercher parmi ses propres fichiers &lt;SHIFT-ENTER&gt;</translation>
+        <translation type="obsolete">Rechercher parmi ses propres fichiers &lt;SHIFT-ENTER&gt;</translation>
+    </message>
+</context>
+<context>
+    <name>PeersDock</name>
+    <message>
+        <location filename="../GUI/Peers/PeersDock.ui"/>
+        <location filename="../GUI/.tmp/debug/ui_PeersDock.h" line="+59"/>
+        <source>Peers</source>
+        <translation type="unfinished">Pairs</translation>
     </message>
 </context>
 <context>
@@ -794,31 +1086,289 @@
     </message>
 </context>
 <context>
+    <name>RoomsDock</name>
+    <message>
+        <location filename="../GUI/Chat/RoomsDock.ui"/>
+        <location filename="../GUI/.tmp/debug/ui_RoomsDock.h" line="+83"/>
+        <source>Chat rooms</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
+        <location filename="../GUI/.tmp/debug/ui_RoomsDock.h" line="+2"/>
+        <source>Join the room</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>SearchDock</name>
+    <message>
+        <location filename="../GUI/Search/SearchDock.ui"/>
+        <location filename="../GUI/.tmp/debug/ui_SearchDock.h" line="+94"/>
+        <location line="+1"/>
+        <source>Search</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
+        <location filename="../GUI/.tmp/debug/ui_SearchDock.h" line="+2"/>
+        <source>Search among other peers &lt;ENTER&gt;</source>
+        <translation type="unfinished">Rechercher parmi les autres pairs &lt;ENTER&gt;</translation>
+    </message>
+    <message>
+        <location/>
+        <location filename="../GUI/.tmp/debug/ui_SearchDock.h" line="+4"/>
+        <source>Search among my own files &lt;SHIFT-ENTER&gt;</source>
+        <translation type="unfinished">Rechercher parmi ses propres fichiers &lt;SHIFT-ENTER&gt;</translation>
+    </message>
+</context>
+<context>
+    <name>SearchWidget</name>
+    <message>
+        <location filename="../GUI/Search/SearchWidget.ui"/>
+        <location filename="../GUI/.tmp/debug/ui_SearchWidget.h" line="+78"/>
+        <source>Search</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
+        <location filename="../GUI/.tmp/debug/ui_SearchWidget.h" line="+2"/>
+        <source>Download selected items to the first shared directory with enough free space</source>
+        <translation type="unfinished">Télécharger les éléments dans le premier dossier partagé avec assez de place</translation>
+    </message>
+    <message>
+        <location/>
+        <location filename="../GUI/.tmp/debug/ui_SearchWidget.h" line="+2"/>
+        <source>Download selected items</source>
+        <translation type="unfinished">Télécharger les éléments sélectionnés</translation>
+    </message>
+</context>
+<context>
+    <name>SettingsWidget</name>
+    <message>
+        <location filename="../GUI/Settings/SettingsWidget.ui"/>
+        <location filename="../GUI/.tmp/debug/ui_SettingsWidget.h" line="+419"/>
+        <source>Settings</source>
+        <translation type="unfinished">Paramètres</translation>
+    </message>
+    <message>
+        <location/>
+        <location filename="../GUI/.tmp/debug/ui_SettingsWidget.h" line="+23"/>
+        <source>Basic</source>
+        <translation type="unfinished">Basic</translation>
+    </message>
+    <message>
+        <location/>
+        <location filename="../GUI/.tmp/debug/ui_SettingsWidget.h" line="-22"/>
+        <source>Nick</source>
+        <translation type="unfinished">Pseudo</translation>
+    </message>
+    <message>
+        <location/>
+        <location filename="../GUI/.tmp/debug/ui_SettingsWidget.h" line="+1"/>
+        <source>Shared folders</source>
+        <translation type="unfinished">Dossiers partagés</translation>
+    </message>
+    <message>
+        <location/>
+        <location filename="../GUI/.tmp/debug/ui_SettingsWidget.h" line="+2"/>
+        <source>Add a new shared directory</source>
+        <translation type="unfinished">Ajouter un nouveau dossier partagé</translation>
+    </message>
+    <message>
+        <location/>
+        <location filename="../GUI/.tmp/debug/ui_SettingsWidget.h" line="+4"/>
+        <source>Remove the selected shared directory</source>
+        <translation type="unfinished">Enlever le dossier sélectionné</translation>
+    </message>
+    <message>
+        <location/>
+        <location filename="../GUI/.tmp/debug/ui_SettingsWidget.h" line="+4"/>
+        <source>Move down the selected shared directory</source>
+        <translation type="unfinished">Déplacer la dossier sélectionné vers le haut</translation>
+    </message>
+    <message>
+        <location/>
+        <location filename="../GUI/.tmp/debug/ui_SettingsWidget.h" line="+4"/>
+        <source>Move up the selected shared directory</source>
+        <translation type="unfinished">Déplacer le dossier sélectionné vers le bas</translation>
+    </message>
+    <message>
+        <location/>
+        <location filename="../GUI/.tmp/debug/ui_SettingsWidget.h" line="+4"/>
+        <source>Open location of the selected shared directory</source>
+        <translation type="unfinished">Ouvrir l&apos;emplacement du dossier sélectionné</translation>
+    </message>
+    <message>
+        <location/>
+        <location filename="../GUI/.tmp/debug/ui_SettingsWidget.h" line="+13"/>
+        <source>Network</source>
+        <translation type="unfinished">Réseau</translation>
+    </message>
+    <message>
+        <location/>
+        <location filename="../GUI/.tmp/debug/ui_SettingsWidget.h" line="-9"/>
+        <source>Interface to listen</source>
+        <translation type="unfinished">Interface à écouter</translation>
+    </message>
+    <message>
+        <location/>
+        <location filename="../GUI/.tmp/debug/ui_SettingsWidget.h" line="+1"/>
+        <source>Any</source>
+        <translation type="unfinished">Toutes</translation>
+    </message>
+    <message>
+        <location/>
+        <location filename="../GUI/.tmp/debug/ui_SettingsWidget.h" line="+1"/>
+        <source>IPv6</source>
+        <translation type="unfinished">IPv6</translation>
+    </message>
+    <message>
+        <location/>
+        <location filename="../GUI/.tmp/debug/ui_SettingsWidget.h" line="+1"/>
+        <source>IPv4</source>
+        <translation type="unfinished">IPv4</translation>
+    </message>
+    <message>
+        <location/>
+        <location filename="../GUI/.tmp/debug/ui_SettingsWidget.h" line="+1"/>
+        <source>Refresh interfaces</source>
+        <translation type="unfinished">Rafraichir les interfaces</translation>
+    </message>
+    <message>
+        <location/>
+        <location filename="../GUI/.tmp/debug/ui_SettingsWidget.h" line="+2"/>
+        <source>When activated all received data will be verified against their hashes.  It may consume CPU resources.</source>
+        <translation type="unfinished">Lorsque activé toutes les données reçues sont vérifiées par rapport à leur empreinte. Consomme un peu de puissance CPU.</translation>
+    </message>
+    <message>
+        <location/>
+        <location filename="../GUI/.tmp/debug/ui_SettingsWidget.h" line="+2"/>
+        <source>Data integrity check</source>
+        <translation type="unfinished">Verification de l&apos;intégrité des données</translation>
+    </message>
+    <message>
+        <location/>
+        <location filename="../GUI/.tmp/debug/ui_SettingsWidget.h" line="+15"/>
+        <source>GUI</source>
+        <translation type="unfinished">GUI</translation>
+    </message>
+    <message>
+        <location/>
+        <location filename="../GUI/.tmp/debug/ui_SettingsWidget.h" line="+1"/>
+        <source>Graphic User Interface</source>
+        <translation type="unfinished">Interface Graphique</translation>
+    </message>
+    <message>
+        <location/>
+        <location filename="../GUI/.tmp/debug/ui_SettingsWidget.h" line="-14"/>
+        <source>Language</source>
+        <translation type="unfinished">Langue</translation>
+    </message>
+    <message>
+        <location/>
+        <location filename="../GUI/.tmp/debug/ui_SettingsWidget.h" line="+1"/>
+        <source>Style</source>
+        <translation type="unfinished">Style</translation>
+    </message>
+    <message>
+        <location/>
+        <location filename="../GUI/.tmp/debug/ui_SettingsWidget.h" line="+2"/>
+        <source>Reload the current style</source>
+        <translation type="unfinished">Recharger le style courrant</translation>
+    </message>
+    <message>
+        <location/>
+        <location filename="../GUI/.tmp/debug/ui_SettingsWidget.h" line="+3"/>
+        <source>Core connection</source>
+        <translation type="unfinished">Connexion au core</translation>
+    </message>
+    <message>
+        <location/>
+        <location filename="../GUI/.tmp/debug/ui_SettingsWidget.h" line="+1"/>
+        <source>Address</source>
+        <translation type="unfinished">Adresse</translation>
+    </message>
+    <message>
+        <location/>
+        <location filename="../GUI/.tmp/debug/ui_SettingsWidget.h" line="+1"/>
+        <source>Reset to local</source>
+        <translation type="unfinished">Connexion locale</translation>
+    </message>
+    <message>
+        <location/>
+        <location filename="../GUI/.tmp/debug/ui_SettingsWidget.h" line="+1"/>
+        <source>Password</source>
+        <translation type="unfinished">Mot de passe</translation>
+    </message>
+    <message>
+        <location/>
+        <location filename="../GUI/.tmp/debug/ui_SettingsWidget.h" line="+1"/>
+        <source>Disconnect</source>
+        <translation type="unfinished">Se déconnecter</translation>
+    </message>
+    <message>
+        <location/>
+        <location filename="../GUI/.tmp/debug/ui_SettingsWidget.h" line="+1"/>
+        <source>Change the password</source>
+        <translation type="unfinished">Changer le mot de passe</translation>
+    </message>
+    <message>
+        <location/>
+        <location filename="../GUI/.tmp/debug/ui_SettingsWidget.h" line="+1"/>
+        <source>Reset the password</source>
+        <translation type="unfinished">Réinitialiser le mot de passe</translation>
+    </message>
+</context>
+<context>
+    <name>SingleEmoticonWidget</name>
+    <message>
+        <location filename="../GUI/Emoticons/SingleEmoticonWidget.ui"/>
+        <location filename="../GUI/.tmp/debug/ui_SingleEmoticonWidget.h" line="+53"/>
+        <source>Form</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>StatusBar</name>
     <message>
         <location filename="../GUI/StatusBar.ui"/>
+        <location filename="../GUI/.tmp/debug/ui_StatusBar.h" line="+165"/>
         <source>Show the log window</source>
         <translation>Voir le journal</translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_StatusBar.h" line="+4"/>
         <source>About</source>
         <translation>À propos</translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_StatusBar.h" line="+3"/>
         <source>Download rate</source>
         <translation>Débit de téléchargement</translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_StatusBar.h" line="+5"/>
         <source>Upload rate</source>
         <translation>Débit d&apos;upload</translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_StatusBar.h" line="+5"/>
         <source>Total sharing</source>
         <translation>Partage total</translation>
+    </message>
+</context>
+<context>
+    <name>UploadsWidget</name>
+    <message>
+        <location filename="../GUI/Uploads/UploadsWidget.ui"/>
+        <location filename="../GUI/.tmp/debug/ui_UploadsWidget.h" line="+53"/>
+        <source>Uploads</source>
+        <translation type="unfinished">Envois</translation>
     </message>
 </context>
 <context>
@@ -828,50 +1378,42 @@
         <translation type="obsolete">Télécharger les éléments sélectionnés dans le premier dossier partagé avec assez de place libre</translation>
     </message>
     <message>
-        <location filename="../GUI/Browse/WidgetBrowse.ui"/>
         <source>Download selected items to the first shared directory with enough free space</source>
-        <translation>Télécharger les éléments dans le premier dossier partagé avec assez de place</translation>
+        <translation type="obsolete">Télécharger les éléments dans le premier dossier partagé avec assez de place</translation>
     </message>
     <message>
-        <location/>
         <source>Download selected items</source>
-        <translation>Télécharger les éléments sélectionnés</translation>
+        <translation type="obsolete">Télécharger les éléments sélectionnés</translation>
     </message>
 </context>
 <context>
     <name>WidgetChat</name>
     <message>
-        <location filename="../GUI/Chat/WidgetChat.ui"/>
         <source>Chat</source>
-        <translation>Chat</translation>
+        <translation type="obsolete">Chat</translation>
     </message>
     <message>
-        <location/>
         <source>Send</source>
-        <translation>Envoyer</translation>
+        <translation type="obsolete">Envoyer</translation>
     </message>
 </context>
 <context>
     <name>WidgetDownloads</name>
     <message>
-        <location filename="../GUI/Downloads/WidgetDownloads.ui"/>
         <source>Downloads</source>
-        <translation>Téléchargements</translation>
+        <translation type="obsolete">Téléchargements</translation>
     </message>
     <message>
-        <location/>
         <source>Item shown :</source>
-        <translation>Éléments affichés</translation>
+        <translation type="obsolete">Éléments affichés</translation>
     </message>
     <message>
-        <location/>
         <source>Remove completed files from the queue</source>
-        <translation>Enlever les fichiers complets de la queue</translation>
+        <translation type="obsolete">Enlever les fichiers complets de la queue</translation>
     </message>
     <message>
-        <location/>
         <source>Removed selected downloads from the queue</source>
-        <translation>Enlever les éléments sélectionnés de la queue</translation>
+        <translation type="obsolete">Enlever les éléments sélectionnés de la queue</translation>
     </message>
     <message>
         <source>Remove completed files</source>
@@ -882,195 +1424,161 @@
         <translation type="obsolete">Enlever les fichiers sélectionnés</translation>
     </message>
     <message>
-        <location/>
         <source>Pause or unpause selected downloads</source>
-        <translation>Mettre ou enlever la pause des éléments sélectionnés</translation>
+        <translation type="obsolete">Mettre ou enlever la pause des éléments sélectionnés</translation>
     </message>
 </context>
 <context>
     <name>WidgetSearch</name>
     <message>
-        <location filename="../GUI/Search/WidgetSearch.ui"/>
         <source>Search</source>
-        <translation>Recherche</translation>
+        <translation type="obsolete">Recherche</translation>
     </message>
     <message>
-        <location/>
         <source>Download selected items to the first shared directory with enough free space</source>
-        <translation>Télécharger les éléments dans le premier dossier partagé avec assez de place</translation>
+        <translation type="obsolete">Télécharger les éléments dans le premier dossier partagé avec assez de place</translation>
     </message>
     <message>
         <source>Download selected items to the first shared folder with enough free space</source>
         <translation type="obsolete">Télécharger les éléments sélectionnés dans le premier dossier partagé avec assez de place libre</translation>
     </message>
     <message>
-        <location/>
         <source>Download selected items</source>
-        <translation>Télécharger les éléments sélectionnés</translation>
+        <translation type="obsolete">Télécharger les éléments sélectionnés</translation>
     </message>
 </context>
 <context>
     <name>WidgetSettings</name>
     <message>
-        <location filename="../GUI/Settings/WidgetSettings.ui"/>
         <source>Settings</source>
-        <translation>Paramètres</translation>
+        <translation type="obsolete">Paramètres</translation>
     </message>
     <message>
-        <location/>
         <source>Basic</source>
-        <translation>Basic</translation>
+        <translation type="obsolete">Basic</translation>
     </message>
     <message>
-        <location/>
         <source>Nick</source>
-        <translation>Pseudo</translation>
+        <translation type="obsolete">Pseudo</translation>
     </message>
     <message>
-        <location/>
         <source>Shared folders</source>
-        <translation>Dossiers partagés</translation>
+        <translation type="obsolete">Dossiers partagés</translation>
     </message>
     <message>
-        <location/>
         <source>Add a new shared directory</source>
-        <translation>Ajouter un nouveau dossier partagé</translation>
+        <translation type="obsolete">Ajouter un nouveau dossier partagé</translation>
     </message>
     <message>
-        <location/>
         <source>Remove the selected shared directory</source>
-        <translation>Enlever le dossier sélectionné</translation>
+        <translation type="obsolete">Enlever le dossier sélectionné</translation>
     </message>
     <message>
-        <location/>
         <source>Move down the selected shared directory</source>
-        <translation>Déplacer la dossier sélectionné vers le haut</translation>
+        <translation type="obsolete">Déplacer la dossier sélectionné vers le haut</translation>
     </message>
     <message>
-        <location/>
         <source>Move up the selected shared directory</source>
-        <translation>Déplacer le dossier sélectionné vers le bas</translation>
+        <translation type="obsolete">Déplacer le dossier sélectionné vers le bas</translation>
     </message>
     <message>
-        <location/>
         <source>Open location of the selected shared directory</source>
-        <translation>Ouvrir l&apos;emplacement du dossier sélectionné</translation>
+        <translation type="obsolete">Ouvrir l&apos;emplacement du dossier sélectionné</translation>
     </message>
     <message>
-        <location/>
         <source>Network</source>
-        <translation>Réseau</translation>
+        <translation type="obsolete">Réseau</translation>
     </message>
     <message>
-        <location/>
         <source>Interface to listen</source>
-        <translation>Interface à écouter</translation>
+        <translation type="obsolete">Interface à écouter</translation>
     </message>
     <message>
-        <location/>
         <source>Refresh interfaces</source>
-        <translation>Rafraichir les interfaces</translation>
+        <translation type="obsolete">Rafraichir les interfaces</translation>
     </message>
     <message>
-        <location/>
         <source>Address</source>
-        <translation>Adresse</translation>
+        <translation type="obsolete">Adresse</translation>
     </message>
     <message>
-        <location/>
         <source>IPv6</source>
-        <translation>IPv6</translation>
+        <translation type="obsolete">IPv6</translation>
     </message>
     <message>
-        <location/>
         <source>IPv4</source>
-        <translation>IPv4</translation>
+        <translation type="obsolete">IPv4</translation>
     </message>
     <message>
-        <location/>
         <source>GUI</source>
-        <translation>GUI</translation>
+        <translation type="obsolete">GUI</translation>
     </message>
     <message>
-        <location/>
         <source>Graphic User Interface</source>
-        <translation>Interface Graphique</translation>
+        <translation type="obsolete">Interface Graphique</translation>
     </message>
     <message>
         <source>Advanced</source>
         <translation type="obsolete">Avancé</translation>
     </message>
     <message>
-        <location/>
         <source>Language</source>
-        <translation>Langue</translation>
+        <translation type="obsolete">Langue</translation>
     </message>
     <message>
-        <location/>
         <source>Style</source>
-        <translation>Style</translation>
+        <translation type="obsolete">Style</translation>
     </message>
     <message>
-        <location/>
         <source>Reload the current style</source>
-        <translation>Recharger le style courrant</translation>
+        <translation type="obsolete">Recharger le style courrant</translation>
     </message>
     <message>
-        <location/>
         <source>Core connection</source>
-        <translation>Connexion au core</translation>
+        <translation type="obsolete">Connexion au core</translation>
     </message>
     <message>
         <source>address</source>
         <translation type="obsolete">Adresse</translation>
     </message>
     <message>
-        <location/>
         <source>Reset to local</source>
-        <translation>Connexion locale</translation>
+        <translation type="obsolete">Connexion locale</translation>
     </message>
     <message>
-        <location/>
         <source>Password</source>
-        <translation>Mot de passe</translation>
+        <translation type="obsolete">Mot de passe</translation>
     </message>
     <message>
-        <location/>
         <source>Change the password</source>
-        <translation>Changer le mot de passe</translation>
+        <translation type="obsolete">Changer le mot de passe</translation>
     </message>
     <message>
-        <location/>
         <source>Reset the password</source>
-        <translation>Réinitialiser le mot de passe</translation>
+        <translation type="obsolete">Réinitialiser le mot de passe</translation>
     </message>
     <message>
-        <location/>
         <source>Disconnect</source>
-        <translation>Se déconnecter</translation>
+        <translation type="obsolete">Se déconnecter</translation>
     </message>
     <message>
-        <location/>
         <source>When activated all received data will be verified against their hashes.  It may consume CPU resources.</source>
-        <translation>Lorsque activé toutes les données reçues sont vérifiées par rapport à leur empreinte. Consomme un peu de puissance CPU.</translation>
+        <translation type="obsolete">Lorsque activé toutes les données reçues sont vérifiées par rapport à leur empreinte. Consomme un peu de puissance CPU.</translation>
     </message>
     <message>
-        <location/>
         <source>Any</source>
-        <translation>Toutes</translation>
+        <translation type="obsolete">Toutes</translation>
     </message>
     <message>
-        <location/>
         <source>Data integrity check</source>
-        <translation>Verification de l&apos;intégrité des données</translation>
+        <translation type="obsolete">Verification de l&apos;intégrité des données</translation>
     </message>
 </context>
 <context>
     <name>WidgetUploads</name>
     <message>
-        <location filename="../GUI/Uploads/WidgetUploads.ui"/>
         <source>Uploads</source>
-        <translation>Envois</translation>
+        <translation type="obsolete">Envois</translation>
     </message>
 </context>
 </TS>

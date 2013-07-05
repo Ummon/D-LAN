@@ -64,8 +64,7 @@ QString ChatModel::getLineStr(int row, bool withHTML) const
    if (!withHTML)
    {
       QDomDocument doc;
-      QString* message = nullptr;
-      doc.setContent(result, message);
+      doc.setContent(result);
 
       QDomElement HTMLElement = doc.firstChildElement("html");
       QDomElement BodyElement = HTMLElement.firstChildElement("body");
@@ -245,13 +244,15 @@ void ChatModel::newChatMessages(const Protos::Common::ChatMessages& messages)
 
 QString ChatModel::formatMessage(const Message& message) const
 {
+   const QDateTime now = QDateTime::currentDateTime();
+
    return
       QString(
          "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">"
          "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">"
          "p, li { white-space: pre-wrap; }"
          "</style></head><body style=\" font-family:'Sans'; font-size:8pt; font-weight:400; font-style:normal;\">")
-      .append(message.dateTime.toString("[HH:mm:ss] "))
+      .append(now.date() == message.dateTime.date() ? message.dateTime.toString("[HH:mm:ss] ") : message.dateTime.toString("[%1 HH:mm:ss] ").arg(message.dateTime.date().toString(Qt::SystemLocaleShortDate))) // TODO : add date.
       .append("<b>").append(message.nick).append("</b>: ")
       .append(message.message)
       .append("</body></html>");

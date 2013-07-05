@@ -1,5 +1,5 @@
 [code]
-#define QtDir "E:/Qt/4.8.3"
+#define QtDir "E:/Qt/4.8.5"
 #define MingwDir "E:/mingw"
 #define ProtoBufDir "E:/protobuf"
 #define ApplicationDir "../.."
