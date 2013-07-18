@@ -23,7 +23,7 @@ cd ..
 mkdir $TARGET/db # Yaws should have the permission to write in this folder.
 
 rsync $RSYNC_OPTS colorbox $TARGET
-rsync $RSYNC_OPTS files $TARGET --exclude '*.*'
+rsync $RSYNC_OPTS files $TARGET --include '*.svg' --exclude '*.*'
 rsync $RSYNC_OPTS img $TARGET
 rsync $RSYNC_OPTS modules/ebin $TARGET/modules/
 rsync $RSYNC_OPTS modules/include $TARGET/modules/
