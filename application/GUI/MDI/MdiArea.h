@@ -31,11 +31,11 @@ namespace GUI
       void focusNthWindow(int num);
       void closeCurrentWindow();
 
+   public slots:
       void openBrowseWindow(const Common::Hash& peerID);
       void openSearchWindow(const QString& terms, bool ownFiles = false);
       void openChatWindow(const QString& roomName);
 
-   public slots:
       void showDownloads();
       void showUploads();
 

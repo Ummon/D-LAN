@@ -66,6 +66,9 @@ namespace GUI
       bool isGeneral() const;
       QString getRoomName() const;
 
+   signals:
+      void browsePeer(const Common::Hash& peerID);
+
    private slots:
       void sendMessage();
       void newRows(const QModelIndex& parent, int start, int end);
@@ -73,6 +76,7 @@ namespace GUI
 
       void displayContextMenuDownloads(const QPoint& point);
       void copySelectedLineToClipboard();
+      void browseSelectedPeers();
 
       void currentCharFormatChanged(const QTextCharFormat& charFormat);
       void cursorPositionChanged();

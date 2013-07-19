@@ -51,6 +51,7 @@ namespace GUI
       QList<QPair<Common::Hash, QString>> getRelevantLastPeers() const;
 
       QString getLineStr(int row, bool withHTML = true) const;
+      Common::Hash getPeerID(int row) const;
       bool isMessageIsOurs(int row) const;
 
       int rowCount(const QModelIndex& parent = QModelIndex()) const;

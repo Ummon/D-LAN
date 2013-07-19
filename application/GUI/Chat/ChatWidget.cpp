@@ -29,6 +29,7 @@ using namespace GUI;
 #include <QScrollBar>
 #include <QDesktopWidget>
 #include <QTimer>
+#include <QIcon>
 
 #include <Log.h>
 #include <Common/Settings.h>
@@ -187,6 +188,7 @@ void ChatWidget::displayContextMenuDownloads(const QPoint& point)
 {
    QMenu menu;
    menu.addAction(tr("Copy selected lines"), this, SLOT(copySelectedLineToClipboard()));
+   menu.addAction(QIcon(":/icons/ressources/folder.png"), tr("Browse selected peers"), this, SLOT(browseSelectedPeers()));
    menu.exec(this->ui->tblChat->mapToGlobal(point));
 }
 
@@ -199,6 +201,22 @@ void ChatWidget::copySelectedLineToClipboard()
       lines.append(this->chatModel.getLineStr(i.next().row(), false)).append('\n');
    }
    QApplication::clipboard()->setText(lines);
+}
+
+void ChatWidget::browseSelectedPeers()
+{
+   QSet<Common::Hash> peersSent;
+
+   foreach (QModelIndex i, this->ui->tblChat->selectionModel()->selectedIndexes())
+      if (i.isValid())
+      {
+         Common::Hash peerID = this->chatModel.getPeerID(i.row());
+         if (!peerID.isNull() && !peersSent.contains(peerID))
+         {
+            peersSent.insert(peerID);
+            emit browsePeer(peerID);
+         }
+      }
 }
 
 /**
