@@ -102,7 +102,7 @@ message Find {
 // id : 0x31
 message GetEntries {
    optional Common.Entries dirs = 1; // The shared directories must have the field 'shared_dir' defined but 'shared_dir.shared_name' is not mandatory.
-   optional bool get_roots = 2 [default = false]; // If true the roots directories will be appended to the end of the entries result. If the Dir field above is empty then the roots directories will always be sent whatever get_roots is true or false.
+   optional bool get_roots = 2 [default = false]; // If true the roots directories will be appended to the end of the entries result. If the field above ('dirs') is empty then the roots directories will always be sent whatever 'get_roots' is true or false.
 }
 
 // b -> a
