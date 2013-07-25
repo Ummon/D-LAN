@@ -104,20 +104,17 @@ loop() ->
    receive
       {new_download, Filename} ->        
          Date = now_utc(),
-         try
-            case dets:lookup(?DB_DOWNLOADS_COUNT, {Filename, Date}) of
-               [] ->
-                  dets:insert(?DB_DOWNLOADS_COUNT, [{{Filename, Date}, 1}]);
-               [{_, N}] ->
-                  dets:insert(?DB_DOWNLOADS_COUNT, [{{Filename, Date}, N + 1}])
-            end
-         catch
-            Exception ->
-               io:format("An exception has occured when inserting a download count: ~p~n", [Exception])
+         case dets:lookup(?DB_DOWNLOADS_COUNT, {Filename, Date}) of
+            [] ->
+               dets:insert(?DB_DOWNLOADS_COUNT, [{{Filename, Date}, 1}]);
+            [{_, N}] ->
+               dets:insert(?DB_DOWNLOADS_COUNT, [{{Filename, Date}, N + 1}])
          end,
          loop();
       stop ->
-         ok
+         ok;
+      _ ->
+         loop()
    end.
    
 now_utc() ->
