@@ -73,7 +73,7 @@ D_LAN_GUI::D_LAN_GUI(int& argc, char* argv[]) :
          {
             this->sharedMemory.unlock();
             QSharedPointer<LM::ILogger> mainLogger = LM::Builder::newLogger("D-LAN GUI");
-            mainLogger->log("GUI already launched, exiting . . .", LM::SV_END_USER);
+            mainLogger->log("User interface already launched, exiting . . .", LM::SV_END_USER);
             throw AbortException();
          }
       }
@@ -119,9 +119,9 @@ void D_LAN_GUI::trayIconActivated(QSystemTrayIcon::ActivationReason reason)
 void D_LAN_GUI::updateTrayIconMenu()
 {
    this->trayIconMenu.clear();
-   this->trayIconMenu.addAction(tr("Show the GUI"), this, SLOT(showMainWindow()));
+   this->trayIconMenu.addAction(tr("Show the user interface"), this, SLOT(showMainWindow()));
    if (this->coreConnection->getLocalCoreStatus() == RCC::RUNNING_AS_SERVICE) // We cannot stop a parent process without killing his child.
-      this->trayIconMenu.addAction(tr("Stop the GUI"), this, SLOT(exitGUI()));
+      this->trayIconMenu.addAction(tr("Stop the user interface"), this, SLOT(exitGUI()));
    this->trayIconMenu.addSeparator();
    this->trayIconMenu.addAction(tr("Exit"), this, SLOT(exit()));
 }
@@ -137,7 +137,7 @@ void D_LAN_GUI::loadLanguage(const QString& filename)
 void D_LAN_GUI::mainWindowClosed()
 {
    if (this->coreConnection->isConnected())
-      this->trayIcon.showMessage("D-LAN GUI closed", "D-LAN Core is still running in background. Select 'exit' from the contextual menu if you want to stop it.");
+      this->trayIcon.showMessage("D-LAN user interface closed", "D-LAN Core is still running in background. Select 'exit' from the contextual menu if you want to stop it.");
    this->coreConnection->disconnectFromCore();
    this->mainWindow = nullptr;
 }

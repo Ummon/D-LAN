@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>639</width>
-    <height>356</height>
+    <height>370</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -203,8 +203,8 @@
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>593</width>
-               <height>89</height>
+               <width>98</width>
+               <height>98</height>
               </rect>
              </property>
              <property name="sizePolicy">
@@ -297,7 +297,7 @@
      </widget>
      <widget class="QWidget" name="tabAdvancedSettings">
       <attribute name="title">
-       <string>GUI</string>
+       <string>User interface</string>
       </attribute>
       <attribute name="toolTip">
        <string>Graphic User Interface</string>
