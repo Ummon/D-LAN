@@ -126,6 +126,7 @@ Common::Message Common::Message::readMessageBody(const Common::MessageHeader& he
    case MessageHeader::GUI_MOVE_DOWNLOADS:               return readMessageBody<Protos::GUI::MoveDownloads>          (header, source);
    case MessageHeader::GUI_DOWNLOAD:                     return readMessageBody<Protos::GUI::Download>               (header, source);
    case MessageHeader::GUI_CHAT_MESSAGE:                 return readMessageBody<Protos::GUI::ChatMessage>            (header, source);
+   case MessageHeader::GUI_CHAT_MESSAGE_RESULT:          return readMessageBody<Protos::GUI::ChatMessageResult>      (header, source);
    case MessageHeader::GUI_JOIN_ROOM:                    return readMessageBody<Protos::GUI::JoinRoom>               (header, source);
    case MessageHeader::GUI_LEAVE_ROOM:                   return readMessageBody<Protos::GUI::LeaveRoom>              (header, source);
    case MessageHeader::GUI_REFRESH:                      return readMessageBody<Protos::Common::Null>                (header, source);

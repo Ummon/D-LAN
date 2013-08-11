@@ -23,7 +23,7 @@ using namespace NL;
 
 #include <priv/Search.h>
 
-LOG_INIT_CPP(NetworkListener);
+LOG_INIT_CPP(NetworkListener)
 
 NetworkListener::NetworkListener(
    QSharedPointer<FM::IFileManager> fileManager,
@@ -61,10 +61,10 @@ void NetworkListener::rebindSockets()
    this->tCPListener.rebindSockets();
 }
 
-void NetworkListener::send(Common::MessageHeader::MessageType type, const google::protobuf::Message& message, const Common::Hash& peerID)
+NetworkListener::SendStatus NetworkListener::send(Common::MessageHeader::MessageType type, const google::protobuf::Message& message, const Common::Hash& peerID)
 {
    if (peerID.isNull())
-      this->uDPListener.send(type, message);
+      return this->uDPListener.send(type, message);
    else
-      this->uDPListener.send(type, message, peerID);
+      return this->uDPListener.send(type, message, peerID);
 }

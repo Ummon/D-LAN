@@ -33,6 +33,7 @@ RoomsModel::RoomsModel(QSharedPointer<RCC::ICoreConnection> coreConnection) :
    coreConnection(coreConnection)
 {
    connect(coreConnection.data(), SIGNAL(newState(const Protos::GUI::State&)), this, SLOT(newState(const Protos::GUI::State&)));
+   connect(coreConnection.data(), SIGNAL(disconnected(bool)), this, SLOT(coreDisconnected(bool)));
 }
 
 /*QModelIndex	RoomsModel::index(int row, int column, const QModelIndex& parent) const
@@ -134,6 +135,13 @@ void RoomsModel::newState(const Protos::GUI::State& state)
       if (o != this->rooms.size())
          o++;
    }
+}
+
+void RoomsModel::coreDisconnected(bool force)
+{
+   this->beginResetModel();
+   this->rooms.clear();
+   this->endResetModel();
 }
 
 bool GUI::operator<(const RoomsModel::Room& r1, const RoomsModel::Room& r2)

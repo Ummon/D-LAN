@@ -117,6 +117,7 @@ QString MessageHeader::messToStr(MessageType type)
    case GUI_MOVE_DOWNLOADS: return "MOVE_DOWNLOADS";
    case GUI_DOWNLOAD: return "DOWNLOAD";
    case GUI_CHAT_MESSAGE: return "CHAT_MESSAGE";
+   case GUI_CHAT_MESSAGE_RESULT: return "CHAT_MESSAGE_RESULT";
    case GUI_JOIN_ROOM: return "JOIN_ROOM";
    case GUI_LEAVE_ROOM: return "LEAVE_ROOM";
    case GUI_REFRESH: return "REFRESH";

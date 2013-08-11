@@ -50,6 +50,7 @@ namespace GUI
 
    private slots:
       void newState(const Protos::GUI::State& state);
+      void coreDisconnected(bool force);
 
    private:
       QSharedPointer<RCC::ICoreConnection> coreConnection;

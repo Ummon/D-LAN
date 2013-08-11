@@ -83,12 +83,14 @@ void RoomsDock::coreConnected()
 {
    this->ui->butJoinRoom->setDisabled(false);
    this->ui->txtRoomName->setDisabled(false);
+   this->ui->tblRooms->setDisabled(false);
 }
 
 void RoomsDock::coreDisconnected(bool force)
 {
    this->ui->butJoinRoom->setDisabled(true);
    this->ui->txtRoomName->setDisabled(true);
+   this->ui->tblRooms->setDisabled(true);
 }
 
 void RoomsDock::joinRoom(const QString& roomName)

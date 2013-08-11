@@ -29,6 +29,7 @@ using namespace RCC;
 #include <LogManager/Builder.h>
 
 #include <priv/Log.h>
+#include <priv/SendChatMessageResult.h>
 #include <priv/BrowseResult.h>
 #include <priv/SearchResult.h>
 
@@ -111,18 +112,11 @@ void InternalCoreConnection::disconnectFromCore()
    this->connectionInfo.clear();
 }
 
-void InternalCoreConnection::sendChatMessage(const QString& message, const QString& roomName, const QList<Common::Hash>& peerIDsAnswered)
+QSharedPointer<ISendChatMessageResult> InternalCoreConnection::sendChatMessage(int socketTimeout, const QString& message, const QString& roomName, const QList<Common::Hash>& peerIDsAnswered)
 {
-   Protos::GUI::ChatMessage chatMessage;
-   Common::ProtoHelper::setStr(chatMessage, &Protos::GUI::ChatMessage::set_message, message);
-
-   if (!roomName.isEmpty())
-      Common::ProtoHelper::setStr(chatMessage, &Protos::GUI::ChatMessage::set_room, roomName);
-
-   for (QListIterator<Common::Hash> i(peerIDsAnswered); i.hasNext();)
-      chatMessage.add_peer_ids_answer()->set_hash(i.next().getData(), Common::Hash::HASH_SIZE);
-
-   this->send(Common::MessageHeader::GUI_CHAT_MESSAGE, chatMessage);
+   QSharedPointer<SendChatMessageResult> sendChatMessageResult = QSharedPointer<SendChatMessageResult>(new SendChatMessageResult(this, socketTimeout, message, roomName, peerIDsAnswered));
+   this->sendChatMessageResultWithoutReply << sendChatMessageResult.toWeakRef();
+   return sendChatMessageResult;
 }
 
 void InternalCoreConnection::joinRoom(const QString& room)
@@ -490,6 +484,19 @@ void InternalCoreConnection::onNewMessage(const Common::Message& message)
       }
       break;
 
+   case Common::MessageHeader::GUI_CHAT_MESSAGE_RESULT:
+      while (!this->sendChatMessageResultWithoutReply.isEmpty())
+      {
+         const Protos::GUI::ChatMessageResult result = message.getMessage<Protos::GUI::ChatMessageResult>();
+         QWeakPointer<SendChatMessageResult> sendChatMessageResult = this->sendChatMessageResultWithoutReply.takeFirst();
+         if (!sendChatMessageResult.isNull())
+         {
+            sendChatMessageResult.data()->setResult(result);
+            break;
+         }
+      }
+      break;
+
    case Common::MessageHeader::GUI_SEARCH_TAG:
       {
          const Protos::GUI::Tag& tagMessage = message.getMessage<Protos::GUI::Tag>();
@@ -509,7 +516,6 @@ void InternalCoreConnection::onNewMessage(const Common::Message& message)
    case Common::MessageHeader::GUI_SEARCH_RESULT:
       {
          const Protos::Common::FindResult& findResultMessage = message.getMessage<Protos::Common::FindResult>();
-
          emit searchResult(findResultMessage);
       }
       break;

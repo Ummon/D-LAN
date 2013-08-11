@@ -41,6 +41,7 @@
 #include <Core/PeerManager/IPeerManager.h>
 #include <Core/UploadManager/IUploadManager.h>
 #include <Core/DownloadManager/IDownloadManager.h>
+#include <INetworkListener.h>
 
 namespace NL
 {
@@ -66,8 +67,8 @@ namespace NL
          quint16 unicastPort
       );
 
-      void send(Common::MessageHeader::MessageType type, const google::protobuf::Message& message, const Common::Hash& peerID);
-      void send(Common::MessageHeader::MessageType type, const google::protobuf::Message& message = Protos::Common::Null());
+      INetworkListener::SendStatus send(Common::MessageHeader::MessageType type, const google::protobuf::Message& message, const Common::Hash& peerID);
+      INetworkListener::SendStatus send(Common::MessageHeader::MessageType type, const google::protobuf::Message& message = Protos::Common::Null());
 
       void rebindSockets();
 

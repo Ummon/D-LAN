@@ -38,6 +38,7 @@
 #include <Common/LogManager/IEntry.h>
 
 #include <ICoreConnection.h>
+#include <ISendChatMessageResult.h>
 #include <IBrowseResult.h>
 #include <ISearchResult.h>
 #include <Types.h>
@@ -45,6 +46,7 @@
 
 namespace RCC
 {
+   class SendChatMessageResult;
    class BrowseResult;
    class SearchResult;
 
@@ -73,7 +75,7 @@ namespace RCC
 
       void disconnectFromCore();
 
-      void sendChatMessage(const QString& message, const QString& roomName = QString(), const QList<Common::Hash>& peerIDsAnswered = QList<Common::Hash>());
+      QSharedPointer<ISendChatMessageResult> sendChatMessage(int socketTimeout, const QString& message, const QString& roomName = QString(), const QList<Common::Hash>& peerIDsAnswered = QList<Common::Hash>());
       void joinRoom(const QString& room);
       void leaveRoom(const QString& room);
       void setCoreSettings(const Protos::GUI::CoreSettings settings);
@@ -139,6 +141,7 @@ namespace RCC
       QList<QHostAddress> addressesToRetry;
       int nbRetries;
 
+      QList<QWeakPointer<SendChatMessageResult>> sendChatMessageResultWithoutReply;
       QList<QWeakPointer<BrowseResult>> browseResultsWithoutTag;
       QList<QWeakPointer<SearchResult>> searchResultsWithoutTag;
 

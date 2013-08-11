@@ -43,6 +43,9 @@ namespace GUI
       void colorizeSelectedPeer();
       void uncolorizeSelectedPeer();
 
+      void coreConnected();
+      void coreDisconnected(bool force);
+
    private:
       void restoreColorizedPeers();
 

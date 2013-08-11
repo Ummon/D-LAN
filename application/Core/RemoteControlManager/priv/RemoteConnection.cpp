@@ -650,10 +650,14 @@ void RemoteConnection::onNewMessage(const Common::Message& message)
       {
          const Protos::GUI::ChatMessage& chatMessage = message.getMessage<Protos::GUI::ChatMessage>();
 
-         if (chatMessage.has_room())
-            this->chatSystem->send(Common::ProtoHelper::getStr(chatMessage, &Protos::GUI::ChatMessage::message), Common::ProtoHelper::getStr(chatMessage, &Protos::GUI::ChatMessage::room));
-         else
-            this->chatSystem->send(Common::ProtoHelper::getStr(chatMessage, &Protos::GUI::ChatMessage::message));
+         CS::IChatSystem::SendStatus status =
+            chatMessage.has_room() ?
+                 this->chatSystem->send(Common::ProtoHelper::getStr(chatMessage, &Protos::GUI::ChatMessage::message), Common::ProtoHelper::getStr(chatMessage, &Protos::GUI::ChatMessage::room))
+               : this->chatSystem->send(Common::ProtoHelper::getStr(chatMessage, &Protos::GUI::ChatMessage::message));
+
+         Protos::GUI::ChatMessageResult result;
+         result.set_status(status == CS::IChatSystem::OK ? Protos::GUI::ChatMessageResult::OK : (status == CS::IChatSystem::MESSAGE_TOO_LARGE ? Protos::GUI::ChatMessageResult::MESSAGE_TOO_LARGE : Protos::GUI::ChatMessageResult::ERROR_UNKNOWN));
+         this->send(Common::MessageHeader::GUI_CHAT_MESSAGE_RESULT, result);
       }
       break;
 

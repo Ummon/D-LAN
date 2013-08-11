@@ -21,7 +21,7 @@ using namespace RCM;
 
 #include <Common/Settings.h>
 
-LOG_INIT_CPP(RemoteControlManager);
+LOG_INIT_CPP(RemoteControlManager)
 
 RemoteControlManager::RemoteControlManager(
    QSharedPointer<FM::IFileManager> fileManager,

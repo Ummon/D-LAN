@@ -328,6 +328,17 @@ message ChatMessage {
    repeated Common.Hash peer_ids_answer = 3; // The peers involved in the message.
 }
 
+// Core -> GUI (directly)
+// id: 0x1092
+message ChatMessageResult {
+   enum Status {
+      OK = 0;
+      MESSAGE_TOO_LARGE = 1;
+      ERROR_UNKNOWN = 255;
+   }
+   required Status status = 1 [default = OK];
+}
+
 
 // GUI -> Core
 // id: 0x1094

@@ -21,6 +21,7 @@
 using namespace GUI;
 
 #include <QMenu>
+#include <QMessageBox>
 #include <QTextDocument>
 #include <QAbstractTextDocumentLayout>
 #include <QPainter>
@@ -162,7 +163,6 @@ QString ChatWidget::getRoomName() const
 void ChatWidget::sendMessage()
 {
    this->chatModel.sendMessage(this->ui->txtMessage->toHtml());
-   this->ui->txtMessage->document()->setHtml(""); // We avoid the 'clear()' method because it removes all ressources (emoticon images).
 }
 
 void ChatWidget::newRows(const QModelIndex& parent, int start, int end)
@@ -177,6 +177,24 @@ void ChatWidget::newRows(const QModelIndex& parent, int start, int end)
    if (this->autoScroll)
       this->ui->tblChat->scrollToBottom();
    this->setNewMessageState(true);
+}
+
+void ChatWidget::sendMessageStatus(ChatModel::SendMessageStatus status)
+{
+   switch (status)
+   {
+   case  ChatModel::OK:
+      this->ui->txtMessage->document()->setHtml(""); // We avoid the 'clear()' method because it removes all ressources (emoticon images).
+      break;
+
+   case ChatModel::MESSAGE_TOO_LARGE:
+      QMessageBox::information(this, tr("Unable to send message"), tr("The message is too long"));
+      break;
+
+   default:
+      QMessageBox::information(this, tr("Unable to send message"), tr("The message can't be send, unknown error"));
+      break;
+   }
 }
 
 void ChatWidget::scrollChanged(int value)
@@ -430,7 +448,9 @@ bool ChatWidget::eventFilter(QObject* obj, QEvent* event)
       }
       else if (keyEvent->key() == Qt::Key_Tab)
       {
+         const QPoint& pos = this->autoComplete->mapFromGlobal(this->ui->txtMessage->cursor().pos());
          this->autoComplete->show();
+         this->autoComplete->move(pos.x(), pos.y());
          return true;
       }
    }
@@ -448,6 +468,7 @@ void ChatWidget::init()
    this->emoticonsWidget->setWindowFlags(Qt::Popup);
 
    this->autoComplete = new AutoComplete(this);
+   this->autoComplete->setWindowFlags(Qt::Popup);
    this->autoComplete->setVisible(false);
 
    foreach (QString theme, this->emoticons.getThemes())
@@ -504,6 +525,8 @@ void ChatWidget::init()
    connect(this->ui->tblChat, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(displayContextMenuDownloads(const QPoint&)));
 
    connect(&this->chatModel, SIGNAL(rowsInserted(const QModelIndex&, int, int)), this, SLOT(newRows(const QModelIndex&, int, int)));
+   connect(&this->chatModel, SIGNAL(sendMessageStatus(ChatModel::SendMessageStatus)), this, SLOT(sendMessageStatus(ChatModel::SendMessageStatus)));
+
    connect(this->ui->tblChat->verticalScrollBar(), SIGNAL(valueChanged(int)), this, SLOT(scrollChanged(int)));
 
    connect(this->ui->txtMessage, SIGNAL(currentCharFormatChanged(QTextCharFormat)), this, SLOT(currentCharFormatChanged(QTextCharFormat)));
@@ -533,7 +556,7 @@ void ChatWidget::init()
    for (char c = '0'; c <= '9'; c++)
       this->ui->txtMessage->addIgnoreKeyCombination({ Qt::AltModifier, c });
 
-this->setNewMessageState(false);
+   this->setNewMessageState(false);
 }
 
 void ChatWidget::applyCurrentFormat()

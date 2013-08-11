@@ -36,7 +36,11 @@ PeersDock::PeersDock(QSharedPointer<RCC::ICoreConnection> coreConnection, QWidge
    connect(this->ui->tblPeers, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(displayContextMenuPeers(QPoint)));
    connect(this->ui->tblPeers, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(browse()));
 
+   connect(this->coreConnection.data(), SIGNAL(connected()), this, SLOT(coreConnected()));
+   connect(this->coreConnection.data(), SIGNAL(disconnected(bool)), this, SLOT(coreDisconnected(bool)));
+
    this->restoreColorizedPeers();
+   this->coreDisconnected(false); // Initial state.
 }
 
 PeersDock::~PeersDock()
@@ -223,6 +227,16 @@ void PeersDock::uncolorizeSelectedPeer()
    SETTINGS.save();
 
    this->ui->tblPeers->clearSelection();
+}
+
+void PeersDock::coreConnected()
+{
+   this->ui->tblPeers->setEnabled(true);
+}
+
+void PeersDock::coreDisconnected(bool force)
+{
+   this->ui->tblPeers->setEnabled(false);
 }
 
 void PeersDock::restoreColorizedPeers()

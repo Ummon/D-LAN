@@ -39,7 +39,7 @@ using namespace CS;
   *
   */
 
-LOG_INIT_CPP(ChatSystem);
+LOG_INIT_CPP(ChatSystem)
 
 ChatSystem::ChatSystem(QSharedPointer<PM::IPeerManager> peerManager, QSharedPointer<NL::INetworkListener> networkListener) :
    peerManager(peerManager),
@@ -70,7 +70,7 @@ ChatSystem::~ChatSystem()
 /**
   * Send a message to all other peers and save it into our list of messages.
   */
-void ChatSystem::send(const QString& message, const QString& roomName, const QList<Common::Hash>& peerIDsAnswer)
+ChatSystem::SendStatus ChatSystem::send(const QString& message, const QString& roomName, const QList<Common::Hash>& peerIDsAnswer)
 {
    QSharedPointer<ChatMessage> chatMessage = roomName.isEmpty() ?
          this->messages.add(message, this->peerManager->getSelf()->getID(), this->peerManager->getSelf()->getNick(), QString(), peerIDsAnswer)
@@ -80,10 +80,25 @@ void ChatSystem::send(const QString& message, const QString& roomName, const QLi
    Protos::Common::ChatMessage* protochatMessage = protoChatMessages.add_message();
    chatMessage->fillProtoChatMessage(*protochatMessage);
 
-   emit newMessages(protoChatMessages);
+   quint64 time = protochatMessage->time();
 
    protochatMessage->clear_time(); // We let the receiver set the time.
-   this->networkListener->send(Common::MessageHeader::CORE_CHAT_MESSAGES, protoChatMessages);
+
+   NL::INetworkListener::SendStatus status = this->networkListener->send(Common::MessageHeader::CORE_CHAT_MESSAGES, protoChatMessages);
+
+   switch (status)
+   {
+   case NL::INetworkListener::OK:
+      protochatMessage->set_time(time);
+      emit newMessages(protoChatMessages);
+      return OK;
+
+   case NL::INetworkListener::MESSAGE_TOO_LARGE:
+      return MESSAGE_TOO_LARGE;
+
+   default:
+      return UNABLE_TO_SEND;
+   }
 }
 
 void ChatSystem::getLastChatMessages(Protos::Common::ChatMessages& chatMessages, int number, const QString& roomName) const

@@ -47,7 +47,7 @@ namespace CS
       ChatSystem(QSharedPointer<PM::IPeerManager> peerManager, QSharedPointer<NL::INetworkListener> networkListener);
       ~ChatSystem();
 
-      void send(const QString& message, const QString& roomName = QString(), const QList<Common::Hash>& peerIDsAnswer = QList<Common::Hash>());
+      SendStatus send(const QString& message, const QString& roomName = QString(), const QList<Common::Hash>& peerIDsAnswer = QList<Common::Hash>());
       void getLastChatMessages(Protos::Common::ChatMessages& chatMessages, int number = std::numeric_limits<int>::max(), const QString& roomName = QString()) const;
       QList<ChatRoom> getRooms() const;
       void joinRoom(const QString& roomName);

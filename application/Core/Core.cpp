@@ -35,7 +35,7 @@ using namespace CoreSpace;
 #include <ChatSystem/Builder.h>
 #include <RemoteControlManager/Builder.h>
 
-LOG_INIT_CPP(Core);
+LOG_INIT_CPP(Core)
 
 Core::Core(bool resetSettings, QLocale locale)
 {

@@ -55,7 +55,6 @@ QString ChatModel::getRoomName() const
    return this->roomName;
 }
 
-
 QList<QPair<Common::Hash, QString> > ChatModel::getRelevantLastPeers() const
 {
    QList<QPair<Common::Hash, QString> > result;
@@ -186,14 +185,22 @@ void ChatModel::sendMessage(const QString& message, const QList<Common::Hash>& p
       innerMessage.remove(this->regexMatchLastBR);
 
       if (!innerMessage.isEmpty())
-         this->coreConnection->sendChatMessage(innerMessage, this->roomName);
+         this->sendRawMessage(innerMessage, peerIDsAnswered);
    }
    else
    {
       const QString trimmedMessage = message.trimmed();
       if (!trimmedMessage.isEmpty())
-         this->coreConnection->sendChatMessage(trimmedMessage, this->roomName);
+         this->sendRawMessage(trimmedMessage, peerIDsAnswered);
    }
+}
+void ChatModel::sendRawMessage(const QString& message, const QList<Common::Hash>& peerIDsAnswered)
+{
+   QSharedPointer<RCC::ISendChatMessageResult> result = this->coreConnection->sendChatMessage(message, this->roomName, peerIDsAnswered);
+   connect(result.data(), SIGNAL(result(const Protos::GUI::ChatMessageResult&)), this, SLOT(result(const Protos::GUI::ChatMessageResult&)));
+   connect(result.data(), SIGNAL(timeout()), this, SLOT(resultTimeout()));
+   this->results << result;
+   result->start();
 }
 
 /*Qt::ItemFlags ChatModel::flags(const QModelIndex& index) const
@@ -274,6 +281,32 @@ void ChatModel::newChatMessages(const Protos::Common::ChatMessages& messages)
       this->messages.erase(this->messages.begin(), this->messages.begin() + nbMessageToDelete);
       this->endRemoveRows();
    }
+}
+
+void ChatModel::result(const Protos::GUI::ChatMessageResult& result)
+{
+   switch (result.status())
+   {
+   case Protos::GUI::ChatMessageResult::OK:
+      emit sendMessageStatus(OK);
+      break;
+
+   case Protos::GUI::ChatMessageResult::MESSAGE_TOO_LARGE:
+      emit sendMessageStatus(MESSAGE_TOO_LARGE);
+      break;
+
+   default:
+      emit sendMessageStatus(ERROR_UNKNOWN);
+      break;
+   }
+
+   this->results.removeFirst();
+}
+
+void ChatModel::resultTimeout()
+{
+   emit sendMessageStatus(TIMEOUT);
+   this->results.removeFirst();
 }
 
 QString ChatModel::formatMessage(const Message& message) const

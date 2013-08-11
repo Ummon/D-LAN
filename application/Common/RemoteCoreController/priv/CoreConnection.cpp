@@ -110,19 +110,19 @@ void CoreConnection::disconnectFromCore()
    this->temp()->disconnectFromCore();
 }
 
-void CoreConnection::sendChatMessage(const QString& message)
+QSharedPointer<ISendChatMessageResult> CoreConnection::sendChatMessage(const QString& message)
 {
-   this->current()->sendChatMessage(message);
+   return this->current()->sendChatMessage(this->SOCKET_TIMEOUT, message);
 }
 
-void CoreConnection::sendChatMessage(const QString& message, const QString& roomName)
+QSharedPointer<ISendChatMessageResult> CoreConnection::sendChatMessage(const QString& message, const QString& roomName)
 {
-   this->current()->sendChatMessage(message, roomName);
+   return this->current()->sendChatMessage(this->SOCKET_TIMEOUT, message, roomName);
 }
 
-void CoreConnection::sendChatMessage(const QString& message, const QString& roomName, const QList<Common::Hash>& peerIDsAnswered)
+QSharedPointer<ISendChatMessageResult> CoreConnection::sendChatMessage(const QString& message, const QString& roomName, const QList<Common::Hash>& peerIDsAnswered)
 {
-   this->current()->sendChatMessage(message, roomName, peerIDsAnswered);
+   return this->current()->sendChatMessage(this->SOCKET_TIMEOUT, message, roomName, peerIDsAnswered);
 }
 
 void CoreConnection::joinRoom(const QString& room)

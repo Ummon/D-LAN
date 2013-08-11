@@ -84,16 +84,17 @@ UDPListener::UDPListener(
 
 /**
   * Send an UDP unicast datagram to the given peer.
+  * @return 'false' if the datagram can't be sent.
   */
-void UDPListener::send(Common::MessageHeader::MessageType type, const google::protobuf::Message& message, const Common::Hash& peerID)
+INetworkListener::SendStatus UDPListener::send(Common::MessageHeader::MessageType type, const google::protobuf::Message& message, const Common::Hash& peerID)
 {
    PM::IPeer* peer = this->peerManager->getPeer(peerID);
    if (!peer)
-      return;
+      return INetworkListener::PEER_UNKNOWN;
 
    int messageSize;
    if (!(messageSize = this->writeMessageToBuffer(type, message)))
-      return;
+      return INetworkListener::MESSAGE_TOO_LARGE;
 
    L_DEBU(QString("Send unicast UDP to %1, header.getType(): %2, message size: %3 \n%4").
       arg(peer->toStringLog()).
@@ -103,17 +104,22 @@ void UDPListener::send(Common::MessageHeader::MessageType type, const google::pr
    );
 
    if (this->unicastSocket.writeDatagram(this->buffer, messageSize, peer->getIP(), peer->getPort()) == -1)
+   {
       L_WARN(QString("Unable to send datagram (unicast): error: %1").arg(this->unicastSocket.errorString()));
+      return INetworkListener::UNABLE_TO_SEND;
+   }
+
+   return INetworkListener::OK;
 }
 
 /**
   * Send an UDP multicast message.
   */
-void UDPListener::send(Common::MessageHeader::MessageType type, const google::protobuf::Message& message)
+INetworkListener::SendStatus UDPListener::send(Common::MessageHeader::MessageType type, const google::protobuf::Message& message)
 {
    int messageSize;
    if (!(messageSize = this->writeMessageToBuffer(type, message)))
-      return;
+      return INetworkListener::MESSAGE_TOO_LARGE;
 
 #if DEBUG
    QString logMess = QString("Send multicast UDP : header.getType() = %1, message size = %2 \n%3").
@@ -128,7 +134,12 @@ void UDPListener::send(Common::MessageHeader::MessageType type, const google::pr
 #endif
 
    if (this->multicastSocket.writeDatagram(this->buffer, messageSize, this->multicastGroup, MULTICAST_PORT) == -1)
+   {
       L_WARN(QString("Unable to send datagram (multicast): error: %1").arg(this->unicastSocket.errorString()));
+      return INetworkListener::UNABLE_TO_SEND;
+   }
+
+   return INetworkListener::OK;
 }
 
 void UDPListener::sendIMAliveMessage()

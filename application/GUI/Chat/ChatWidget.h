@@ -72,6 +72,7 @@ namespace GUI
    private slots:
       void sendMessage();
       void newRows(const QModelIndex& parent, int start, int end);
+      void sendMessageStatus(ChatModel::SendMessageStatus status);
       void scrollChanged(int value);
 
       void displayContextMenuDownloads(const QPoint& point);

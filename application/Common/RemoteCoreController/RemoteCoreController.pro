@@ -22,7 +22,8 @@ SOURCES += priv/Builder.cpp \
     priv/CoreController.cpp \
     ../../Protos/gui_protocol.pb.cc \
     priv/Log.cpp \
-    priv/InternalCoreConnection.cpp
+    priv/InternalCoreConnection.cpp \
+    priv/SendChatMessageResult.cpp
 HEADERS += \
     Builder.h \
     priv/SearchResult.h \
@@ -36,4 +37,6 @@ HEADERS += \
     ../../Protos/gui_protocol.pb.h \
     priv/Log.h \
     Types.h \
-    priv/InternalCoreConnection.h
+    priv/InternalCoreConnection.h \
+    ISendChatMessageResult.h \
+    priv/SendChatMessageResult.h

@@ -21,6 +21,7 @@
 
 #include <QAbstractTableModel>
 #include <QString>
+#include <QSharedPointer>
 #include <QDateTime>
 #include <QList>
 #include <QSize>
@@ -31,6 +32,7 @@
 
 #include <Common/Hash.h>
 #include <Common/RemoteCoreController/ICoreConnection.h>
+#include <Common/RemoteCoreController/ISendChatMessageResult.h>
 
 #include <Peers/PeerListModel.h>
 #include <Emoticons/Emoticons.h>
@@ -63,12 +65,30 @@ namespace GUI
       inline void insertCachedSize(const QModelIndex& index, const QSize& size) { this->messages[index.row()].size = size; }
       inline void removeCachedSize(const QModelIndex& index) { this->messages[index.row()].size = QSize(); }
 
+      enum SendMessageStatus
+      {
+         OK,
+         MESSAGE_TOO_LARGE,
+         TIMEOUT,
+         ERROR_UNKNOWN
+      };
+
       void sendMessage(const QString& message, const QList<Common::Hash>& peerIDsAnswered = QList<Common::Hash>());
+
+   private:
+      void sendRawMessage(const QString& message, const QList<Common::Hash>& peerIDsAnswered);
+
+   signals:
+      void sendMessageStatus(ChatModel::SendMessageStatus status);
 
    private slots:
       void newChatMessages(const Protos::Common::ChatMessages& messages);
+      void result(const Protos::GUI::ChatMessageResult& result);
+      void resultTimeout();
 
    private:
+      QList<QSharedPointer<RCC::ISendChatMessageResult>> results;
+
       struct Message
       {
          quint64 ID;

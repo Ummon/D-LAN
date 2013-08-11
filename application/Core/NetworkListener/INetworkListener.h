@@ -44,10 +44,18 @@ namespace NL
         */
       virtual void rebindSockets() = 0;
 
+      enum SendStatus
+      {
+         OK,
+         PEER_UNKNOWN,
+         MESSAGE_TOO_LARGE,
+         UNABLE_TO_SEND
+      };
+
       /**
         * Send a message to a particular peer, if the peer ID isn't given the message is sent to everyone.
         */
-      virtual void send(Common::MessageHeader::MessageType type, const google::protobuf::Message& message, const Common::Hash& peerID = Common::Hash()) = 0;
+      virtual SendStatus send(Common::MessageHeader::MessageType type, const google::protobuf::Message& message, const Common::Hash& peerID = Common::Hash()) = 0;
 
    signals:
       void received(const Common::Message& message);

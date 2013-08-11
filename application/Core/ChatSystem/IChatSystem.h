@@ -26,6 +26,7 @@
 #include <QSharedPointer>
 
 #include <Core/PeerManager/IPeer.h>
+#include <Core/NetworkListener/INetworkListener.h>
 
 #include <Protos/common.pb.h>
 
@@ -37,11 +38,19 @@ namespace CS
    public:
       virtual ~IChatSystem() {}
 
+      enum SendStatus
+      {
+         OK,
+         MESSAGE_TOO_LARGE,
+         UNABLE_TO_SEND
+      };
+
       /**
         * Send a message to everyone.
         * This will emit a 'newMessages' signal.
+        * @return 'false' if the message is too big to be send.
         */
-      virtual void send(const QString& message, const QString& roomName = QString(), const QList<Common::Hash>& peerIDsAnswer = QList<Common::Hash>()) = 0;
+      virtual SendStatus send(const QString& message, const QString& roomName = QString(), const QList<Common::Hash>& peerIDsAnswer = QList<Common::Hash>()) = 0;
 
       /**
         * Retrieve the last 'number' known message.

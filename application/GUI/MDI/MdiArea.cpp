@@ -447,7 +447,7 @@ ChatWidget* MdiArea::addChatWindow(const QString& roomName, bool switchTo)
    QMdiSubWindow* currentWindow = this->currentSubWindow();
 
    ChatWidget* chatWindow = new ChatWidget(this->coreConnection, this->emoticon, this->peerListModel, roomName);
-   connect(chatWidget, SIGNAL(browsePeer(Common::Hash)), this, SLOT(openBrowseWindow(Common::Hash)));
+   connect(chatWindow, SIGNAL(browsePeer(Common::Hash)), this, SLOT(openBrowseWindow(Common::Hash)));
    this->addSubWindow(chatWindow, Qt::CustomizeWindowHint);
    chatWindow->setWindowState(Qt::WindowMaximized);
    this->chatRooms << chatWindow;

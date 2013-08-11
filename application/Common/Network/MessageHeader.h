@@ -92,6 +92,7 @@ namespace Common
          GUI_DOWNLOAD =                   0x1081,
 
          GUI_CHAT_MESSAGE =               0x1091,
+         GUI_CHAT_MESSAGE_RESULT =        0x1092,
          GUI_JOIN_ROOM =                  0x1094,
          GUI_LEAVE_ROOM =                 0x1098,
 
