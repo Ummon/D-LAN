@@ -90,7 +90,7 @@ QList<IPeer*> PeerManager::getPeers() const
 IPeer* PeerManager::getPeer(const Common::Hash& ID)
 {
    if (ID.isNull())
-      return 0;
+      return nullptr;
 
    if (this->self->getID() == ID)
       return this->self;
@@ -102,7 +102,7 @@ IPeer* PeerManager::getPeer(const Common::Hash& ID)
          return peer;
    }
 
-   return 0;
+   return nullptr;
 }
 
 IPeer* PeerManager::createPeer(const Common::Hash& ID, const QString& nick)
