@@ -448,9 +448,11 @@ bool ChatWidget::eventFilter(QObject* obj, QEvent* event)
       }
       else if (keyEvent->key() == Qt::Key_Tab)
       {
-         const QPoint& pos = this->autoComplete->mapFromGlobal(this->ui->txtMessage->cursor().pos());
+         QRect cursorRect = this->ui->txtMessage->cursorRect();
+         const QPoint& pos = this->ui->txtMessage->viewport()->mapToGlobal(cursorRect.bottomRight());
          this->autoComplete->show();
-         this->autoComplete->move(pos.x(), pos.y());
+         this->autoComplete->move(pos.x(), pos.y());§
+         this->setFocus();
          return true;
       }
    }
