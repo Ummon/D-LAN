@@ -172,7 +172,8 @@ Entry* Cache::getEntry(const QString& path) const
 }
 
 /**
-  * Try to find the file into the cache from a reference.
+  * Try to find the file from the cache with the provided reference.
+  * @return Returns 'nullptr' if the file hasn't be found.
   */
 File* Cache::getFile(const Protos::Common::Entry& fileEntry) const
 {
@@ -181,7 +182,7 @@ File* Cache::getFile(const Protos::Common::Entry& fileEntry) const
    if (!fileEntry.has_shared_dir())
    {
       L_WARN(QString("Cache::getFile : 'fileEntry' doesn't have the field 'shared_dir' set!"));
-      return 0;
+      return nullptr;
    }
 
    foreach (SharedDirectory* sharedDir, this->sharedDirs)
@@ -203,23 +204,23 @@ File* Cache::getFile(const Protos::Common::Entry& fileEntry) const
 
                   if (file)
                      return file;
-                  return 0;
+                  return nullptr;
                }
             }
             else
-               return 0;
+               return nullptr;
 
             if (!i.hasNext())
-               return 0;
+               return nullptr;
 
             dir = dir->getSubDir(i.next());
          }
 
-         return 0;
+         return nullptr;
       }
    }
 
-   return 0;
+   return nullptr;
 }
 
 /**
@@ -361,7 +362,7 @@ SharedDirectory* Cache::getSharedDirectory(const Common::Hash& ID) const
       if (dir->getId() == ID)
          return dir;
    }
-   return 0;
+   return nullptr;
 }
 
 /**
@@ -489,7 +490,7 @@ SharedDirectory* Cache::getSuperSharedDirectory(const QString& path) const
       nextSharedDir:;
    }
 
-   return 0;
+   return nullptr;
 }
 
 QList<SharedDirectory*> Cache::getSubSharedDirectories(const QString& path) const
@@ -563,12 +564,12 @@ Directory* Cache::getFittestDirectory(const QString& path) const
       }
    }
 
-   return 0;
+   return nullptr;
 }
 
 /**
-  * Define the shared directories from the persisted given data.
-  * The directories and files are not created here but later by the fileUpdater, see the FileManager ctor.
+  * Defines the shared directories from the persisted given data.
+  * The directories and files are not created here but later by the FileUpdater, see the FileManager ctor.
   */
 void Cache::createSharedDirs(const Protos::FileCache::Hashes& hashes)
 {
@@ -586,7 +587,7 @@ void Cache::createSharedDirs(const Protos::FileCache::Hashes& hashes)
 }
 
 /**
-  * Populate the given structure to be persisted later.
+  * Populates the given structure to be persisted later.
   */
 void Cache::populateHashes(Protos::FileCache::Hashes& hashes) const
 {
@@ -647,7 +648,7 @@ void Cache::onScanned(Directory* dir)
 }
 
 /**
-  * Create a new shared directory.
+  * Creates a new shared directory.
   * The other shared directories may not be merged with the new one, use 'SharedDirectory::mergeSubSharedDirectories' to do that after this call.
   *
   * @exception DirNotFoundException
@@ -680,7 +681,7 @@ SharedDirectory* Cache::createSharedDir(const QString path, const Common::Hash& 
       L_WARN(QString("There is already a super directory: %1 for this directory : %2").arg(e.superDirectory).arg(e.subDirectory));
    }
 
-   return 0;
+   return nullptr;
 }
 
 Common::SharedDir Cache::makeSharedDir(const SharedDirectory* dir)
@@ -747,7 +748,7 @@ Directory* Cache::getWriteableDirectory(const QString& path, qint64 spaceNeeded)
    if (this->sharedDirs.isEmpty())
       throw NoWriteableDirectoryException();
 
-   // Search for the best fitted shared directory.
+   // Search for the fittest shared directory.
    SharedDirectory* currentSharedDir = nullptr;
    int currentNbDirsInCommon = -1;
 
