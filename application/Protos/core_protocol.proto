@@ -128,6 +128,7 @@ message GetEntriesResult {
 // If 'b' doesn't have the hashes but has the file
 // the hashes will be computed on the fly. Thus this request
 // can be a bit long (~20s).
+// The given entry shall not contain all the chunks ('GetHashes.file.chunk' size shall be lesser than the total).
 // a -> b
 // id : 0x41
 message GetHashes {
