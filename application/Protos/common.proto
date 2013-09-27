@@ -54,7 +54,7 @@ message Entry {
    optional bool exists = 6 [default = true]; // An entry may not yet be created.
    optional bool is_empty = 7 [default = true]; // Only for a Dir. Warning: a directory can be not empty and has a size of 0.
    
-   repeated Hash chunk = 8; // Only for a file. No chunk means that the peer doesn't know the hashes.
+   repeated Hash chunk = 8; // Only for a file. The number of chunk might be smaller than the total if some hashes are unknown. Empty if all hashes are unknown.
 }
 
 message Entries
