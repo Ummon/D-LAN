@@ -126,6 +126,9 @@ namespace GUI
 
       QTextDocument textDocument;
 
+      // Current peers answered.
+
+
       QSharedPointer<RCC::ICoreConnection> coreConnection;
       Emoticons& emoticons;
       ChatModel chatModel;

@@ -55,26 +55,35 @@ QString ChatModel::getRoomName() const
    return this->roomName;
 }
 
+/**
+  * Returns the most revelant peers from the last messages. The peers which have replied to us are put first.
+  */
 QList<QPair<Common::Hash, QString> > ChatModel::getRelevantLastPeers() const
 {
    QList<QPair<Common::Hash, QString> > result;
+   QSet<Common::Hash> processedPeers;
 
    QListIterator<Message> i(this->messages);
    i.toBack();
-
    while (i.hasPrevious())
    {
       const Message& message = i.previous();
-      if (message.answeringToUs)
+      if (message.answeringToUs && !processedPeers.contains(message.peerID))
+      {
          result << QPair<Common::Hash, QString>(message.peerID, message.nick);
+         processedPeers.insert(message.peerID);
+      }
    }
 
    i.toBack();
    while (i.hasPrevious())
    {
       const Message& message = i.previous();
-      if (!message.answeringToUs)
+      if (!message.answeringToUs && !processedPeers.contains(message.peerID))
+      {
          result << QPair<Common::Hash, QString>(message.peerID, message.nick);
+         processedPeers.insert(message.peerID);
+      }
    }
 
    return result;

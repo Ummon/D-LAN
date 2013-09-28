@@ -57,7 +57,7 @@ message Entry {
    optional bool is_empty = 7 [default = true]; // Warning: a directory can be not empty and has a size of 0.
 
    // Only for FILE type:
-   optional string mime_type = 9; // The mime type of the file.
+   // optional string mime_type = 9; // The mime type of the file. TODO: uncomment when #243 is implemented.
    repeated Hash chunk = 8; // The number of chunk might be smaller than the total if some hashes are unknown. Empty if all hashes are unknown.
 }
 
