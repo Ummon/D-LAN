@@ -21,10 +21,9 @@ using namespace NL;
 
 #include <Common/LogManager/Builder.h>
 
-#include <priv/Chat.h>
 #include <priv/Search.h>
 
-LOG_INIT_CPP(NetworkListener);
+LOG_INIT_CPP(NetworkListener)
 
 NetworkListener::NetworkListener(
    QSharedPointer<FM::IFileManager> fileManager,
@@ -37,21 +36,17 @@ NetworkListener::NetworkListener(
    uploadManager(uploadManager),
    downloadManager(downloadManager),
    tCPListener(peerManager),
-   uDPListener(fileManager, peerManager, uploadManager, downloadManager, tCPListener.getCurrentPort()),
-   chat(uDPListener)
+   uDPListener(fileManager, peerManager, uploadManager, downloadManager, tCPListener.getCurrentPort())
 {
    connect(&this->configManager, SIGNAL(configurationChanged(const QNetworkConfiguration&)), this, SLOT(rebindSockets()));
+   connect(&this->uDPListener, SIGNAL(received(const Common::Message&)), this, SIGNAL(received(const Common::Message&)));
+   connect(&this->uDPListener, SIGNAL(IMAliveMessageToBeSend(Protos::Core::IMAlive&)), this, SIGNAL(IMAliveMessageToBeSend(Protos::Core::IMAlive&)));
 }
 
 NetworkListener::~NetworkListener()
 {
    this->uDPListener.send(Common::MessageHeader::CORE_GOODBYE);
    L_DEBU("NetworkListener deleted");
-}
-
-IChat& NetworkListener::getChat()
-{
-   return this->chat;
 }
 
 QSharedPointer<ISearch> NetworkListener::newSearch()
@@ -64,4 +59,12 @@ void NetworkListener::rebindSockets()
    this->peerManager->removeAllPeers();
    this->uDPListener.rebindSockets();
    this->tCPListener.rebindSockets();
+}
+
+NetworkListener::SendStatus NetworkListener::send(Common::MessageHeader::MessageType type, const google::protobuf::Message& message, const Common::Hash& peerID)
+{
+   if (peerID.isNull())
+      return this->uDPListener.send(type, message);
+   else
+      return this->uDPListener.send(type, message, peerID);
 }

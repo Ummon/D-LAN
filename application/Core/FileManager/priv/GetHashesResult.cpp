@@ -85,7 +85,7 @@ Protos::Core::GetHashesResult GetHashesResult::start()
       {
          this->sendNextHash(chunk);
       }
-      else // If only one hash is missing we tell the file updater to compute the remaining ones.
+      else // If at least one hash is missing we tell the file updater to compute the remaining ones.
       {
          this->fileUpdater.prioritizeAFileToHash(this->file);
          break;

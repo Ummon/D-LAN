@@ -10,7 +10,9 @@ if [ `uname -s` = "Linux" ] ; then
    cd ../..
 else
    # MS.Windows. Inno Setup (isetup) + QuickStart Pack (ispack) must be both installed. The Inno Setup directory must be placed in the PATH variable environnment.
+   cd Setups/Windows/
    iscc windows_setup.iss
+   cd ../..
 fi
 
 cd Setups/Sources

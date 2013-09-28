@@ -49,7 +49,7 @@ quint64 Search::search(const QString& words)
 
    Protos::Core::Find findMessage;
 
-   this->tag = (static_cast<quint64>(this->mtrand.randInt()) << 32) | this->mtrand.randInt();
+   this->tag = this->mtrand.randInt64();
    findMessage.set_tag(this->tag);
 
    Common::ProtoHelper::setStr(findMessage, &Protos::Core::Find::set_pattern, words);

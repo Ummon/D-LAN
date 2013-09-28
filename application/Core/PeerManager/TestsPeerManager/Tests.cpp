@@ -30,7 +30,6 @@ using namespace PM;
 #include <Common/PersistentData.h>
 #include <Common/Constants.h>
 #include <Common/Global.h>
-#include <Common/ZeroCopyStreamQIODevice.h>
 #include <Common/Settings.h>
 
 #include <ResultListener.h>
@@ -56,7 +55,7 @@ void Tests::initTestCase()
    try
    {
       QString tempFolder = Common::Global::setCurrentDirToTemp("PeerManagerTests");
-      qDebug() << "Application directory path (where the persistent data is put) : " <<  Global::getDataFolder(Common::Global::DataFolderType::LOCAL, false);
+      qDebug() << "Application directory path (where the persistent data is put) : " <<  Common::Global::getDataFolder(Common::Global::DataFolderType::LOCAL, false);
       qDebug() << "The file created during this test are put in : " << tempFolder;
    }
    catch(Common::Global::UnableToSetTempDirException& e)
@@ -73,8 +72,8 @@ void Tests::initTestCase()
 
    this->fileManagers << FM::Builder::newFileManager() << FM::Builder::newFileManager();
 
-   this->peerIDs << Hash::fromStr("1111111111111111111111111111111111111111") <<
-                    Hash::fromStr("2222222222222222222222222222222222222222");
+   this->peerIDs << Common::Hash::fromStr("1111111111111111111111111111111111111111") <<
+                    Common::Hash::fromStr("2222222222222222222222222222222222222222");
 
    this->peerSharedDirs << "/sharedDirs/peer1" << "/sharedDirs/peer2";
 
@@ -288,7 +287,7 @@ void Tests::askForHashes()
    while (this->resultListener.getLastGetHashesResult().status() != Protos::Core::GetHashesResult::OK && this->resultListener.getLastGetHashesResult().nb_hash() != NUMBER_OF_CHUNK)
    {
       QTest::qWait(100);
-      if (timer.elapsed() > 3000)
+      if (timer.elapsed() > 5000)
          QFAIL("We don't receive the correct receive after asking for hashes");
    }
 
@@ -297,7 +296,7 @@ void Tests::askForHashes()
    while (this->resultListener.getNbHashReceivedFromLastGetHashes() != NUMBER_OF_CHUNK)
    {
       QTest::qWait(100);
-      if (timer.elapsed() > 20000)
+      if (timer.elapsed() > 30000)
          QFAIL("We don't receive all the hashes");
    }
 }
@@ -321,7 +320,7 @@ void Tests::askForAChunk()
    while (!this->resultListener.isStreamReceived())
    {
       QTest::qWait(100);
-      if (timer.elapsed() > 5000)
+      if (timer.elapsed() > 10000)
          QFAIL("We don't receive the stream");
    }
 }

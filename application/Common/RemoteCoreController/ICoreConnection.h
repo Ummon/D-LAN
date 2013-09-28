@@ -33,6 +33,7 @@
 
 namespace RCC
 {
+   class ISendChatMessageResult;
    class IBrowseResult;
    class ISearchResult;
 
@@ -109,7 +110,15 @@ namespace RCC
 
       virtual void disconnectFromCore() = 0;
 
-      virtual void sendChatMessage(const QString& message) = 0;
+      virtual QSharedPointer<ISendChatMessageResult> sendChatMessage(const QString& message) = 0;
+
+      virtual QSharedPointer<ISendChatMessageResult> sendChatMessage(const QString& message, const QString& roomName) = 0;
+
+      virtual QSharedPointer<ISendChatMessageResult> sendChatMessage(const QString& message, const QString& roomName, const QList<Common::Hash>& peerIDsAnswered) = 0;
+
+      virtual void joinRoom(const QString& room) = 0;
+
+      virtual void leaveRoom(const QString& room) = 0;
 
       /**
         * @remarks The signal 'newState' will be emitted right after a call.
@@ -120,7 +129,7 @@ namespace RCC
         * Define the core language, as soon as a connection to a core is established the language
         * is sent to it.
         */
-      virtual void setCoreLanguage(const QLocale locale) = 0;
+      virtual void setCoreLanguage(const QLocale& locale) = 0;
 
       /**
         * Defines or changes the password. The old password is not mendatory in a local connection. See 'isLocal()'.
@@ -231,7 +240,12 @@ namespace RCC
       void disconnected(bool asked); // Can only be thrown if 'coreConnected()' has been previously thrown. 'asked' = true if disconnected by 'disconnectFromCore()'.
 
       void newState(const Protos::GUI::State&);
-      void newChatMessages(const Protos::GUI::EventChatMessages&);
+
+      /**
+        * The messages are sorted from the oldest to the youngest.
+        */
+      void newChatMessages(const Protos::Common::ChatMessages&);
+
       void newLogMessages(QList<QSharedPointer<LM::IEntry>>);
    };
 }

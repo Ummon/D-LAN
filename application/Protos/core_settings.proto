@@ -18,7 +18,7 @@ message Settings {
    optional uint32 socket_buffer_size = 6 [default = 131072]; // (128 KiB). Max size of the socket buffer, using when receiving or sending data over the sockets.
    optional uint32 socket_timeout = 7 [default = 7000]; // [ms].
       
-   // FileManager.
+   ///// FileManager /////
    optional uint32 minimum_duration_when_hashing = 20 [default = 3000]; // [ms].
    optional uint32 scan_period_unwatchable_dirs = 21 [default = 30000]; // [ms].
    optional string unfinished_suffix_term = 22 [default = ".unfinished"];
@@ -27,14 +27,14 @@ message Settings {
    optional bool check_received_data_integrity = 25 [default = true]; // All chunk data received will be checked against their hash if true.
    optional uint32 get_entries_timeout = 101 [default = 5000]; // [ms].
    
-   // PeerManager.
+   ///// PeerManager /////
    optional uint32 pending_socket_timeout = 30 [default = 10000]; // [ms]. When a new connection is created we wait a maximum of this period before data incoming.
    optional double peer_timeout_factor = 31 [default = 3.2]; // If we don't receive any 'IMAlive' message from a peer during peer_timeout_factor * peer_imalive_period the peer is considering as dead.
    optional uint32 idle_socket_timeout = 32 [default = 60000]; // [ms], (1 min). Idle connections can exist for this duration.
    optional uint32 max_number_idle_socket = 33 [default = 6]; // The maximum number of idle socket per distant peer. (one for each TCP message : 'GetEntries',  'GetHashes', 'GetChunk').
    optional uint32 get_hashes_timeout = 34 [default = 20000]; // [ms] (20 s). After sending the message 'GetHashes' we will receive a stream of hashes, if the time between two hashes exceed this value, the request is aborted.
    
-   // DownloadManager.
+   ///// DownloadManager /////
    optional uint32 number_of_downloader = 40 [default = 3]; // Maximum number of simultaneous download.
    optional uint32 lan_speed = 41 [default = 52428800]; // [B/s]. (50 MiB/s).
    optional double time_recheck_chunk_factor = 42 [default = 4]; // If a chunk download take more than 4 times it should ('chunk_size' / 'lan_speed' is the minimum download time of a chunk) a better peer will be looking for.
@@ -43,33 +43,45 @@ message Settings {
    optional uint32 save_queue_period = 45 [default = 60000]; // [ms]. (1 min).
    optional uint32 block_duration_corrupted_data = 46 [default = 30000]; // [ms]. // When a received chunk do not match its hash, the sender is blocked for a while.
    
-   // UploadManager.
+   ///// UploadManager /////
    optional uint32 upload_lifetime = 50 [default = 5000]; // [ms].
    optional uint32 upload_min_nb_thread = 51 [default = 3]; // To be efficiant, there is always this number of thread prepared to upload a chunk.
    optional uint32 upload_thread_lifetime = 52 [default = 30000]; // [ms].
    
-   // NetworkListener.
+   ///// NetworkListener /////
    optional uint32 peer_imalive_period = 60 [default = 5000]; // [ms]. Send an IMAlive message each 5 s.
    optional uint32 unicast_base_port = 61 [default = 59487]; // If it's already taken we will look further to a free port. (UDP + TCP).
    optional uint32 multicast_port = 62 [default = 59486]; // (UDP)
    optional uint32 multicast_group = 63 [default = 3960285976]; // IPv4: 236.13.43.24 / IPv6: ff0e:ec0d:2b18::
    optional string channel = 89 [default = "main"]; // Used with 'multicast_group' to define the IPv6 multicast group.
    optional uint32 multicast_ttl = 64 [default = 31];
-   optional uint32 max_udp_datagram_size = 65 [default = 8164]; // (~8 KiB). It doesn't include the IP+UDP header (28 bits).
+   optional uint32 max_udp_datagram_size = 65 [default = 16356]; // (~16 KiB). It doesn't include the IP+UDP header (28 bytes).
 
    // This is the max throughput allowed for the 'IMAlive' message for the whole network.
    // It means thats n * s / 'peer_imalive_period' must not exceed this value. Where n is the number of peer and s the size of the 'IMAlive' message.
    // The 'IMAlive' message size may vary from ~100 bytes to ~'max_udp_datagram_size' depending the number of hashes in it.
    optional uint32 max_imalive_throughput = 91 [default = 1048576]; // [B/s]. (1 MiB/s).
 
-   optional uint32 udp_buffer_size = 66 [default = 81640]; // (10 * 8KiB).
+   optional uint32 udp_buffer_size = 66 [default = 163840]; // (10 * 16KiB).
    optional uint32 max_number_of_search_result_to_send = 68 [default = 300];
    optional uint32 max_number_of_result_shown = 69 [default = 5000]; // For one search we accept a maximum of 5000 results.
-   optional uint32 max_number_of_chat_message_saved = 70 [default = 1000]; // When a chat message arrive we saved it into a queue. When a GUI connects this queue is sent.
    optional string listen_address = 86 [default = ""]; // If address is empty then listen to any adresses, in this case the protocol is given by 'listenAny'.
    optional Common.Interface.Address.Protocol listen_any = 87 [default = IPv4];
+
+   ///// ChatSystem /////
+   optional uint32 max_number_of_stored_chat_messages = 70 [default = 500]; // When a chat message arrive we saved it into a queue. When a GUI connects this queue is sent.
+   optional uint32 number_of_chat_messages_to_retrieve = 92 [default = 500]; // Periodically we ask to a random peer the last messages.
+   repeated string joined_chat_rooms = 102; // The joined chat rooms, will be automatically joined at start.
+
+   // [ms]. (2 seconds). Average time in second for everyone to know a new message: t = log2(n) * 'get_last_chat_messages_period' / 1000. Where n = number of peers.
+   // Some examples for 'get_last_chat_messages_period' equals 2 seconds:
+   //  - For n = 10 peers: t = 6.6 seconds.
+   //  - For n = 100 peers: t = 13.3 seconds.
+   //  - For n = 1000 peers: t = 19.9 seconds.
+   optional uint32 get_last_chat_messages_period = 93 [default = 2000];
+   optional uint32 save_chat_messages_period = 94 [default = 90000]; // [ms]. (1.5 min).
    
-   // RemoteControlManager
+   ///// RemoteControlManager /////
    optional uint32 remote_control_port = 80 [default = 59485];
    optional Common.Hash remote_password = 81; // Hashed + salted. Only used for non-local connection. If defined salt field must be set.
    optional uint64 salt = 90 [default=42];

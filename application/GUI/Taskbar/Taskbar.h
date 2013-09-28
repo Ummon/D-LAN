@@ -20,9 +20,9 @@
 #define GUI_TASKBAR_H
 
 #include <QObject>
+#include <QWidget>
 #include <QEvent>
 #include <QSharedPointer>
-#include <QWidget>
 #include <QIcon>
 
 #include <Taskbar/ITaskbarImpl.h>
@@ -41,13 +41,13 @@ namespace GUI
 #ifdef Q_OS_WIN32
          impl(new TaskbarImplWin())
 #else
-         impl(0) // No implementation.
+         impl(nullptr) // No implementation.
 #endif
       {}
 
-      void setStatus(TaskbarButtonStatus status) { if (!impl.isNull()) this->impl->setStatus(status); }
-      void setProgress(quint64 completed, quint64 total) { if (!impl.isNull()) this->impl->setProgress(completed, total); }
-      void setOverlayIcon(const QIcon& icon, const QString& description) { if (!impl.isNull()) this->impl->setOverlayIcon(icon, description); }
+      void setStatus(TaskbarButtonStatus status) { if (!this->impl.isNull()) this->impl->setStatus(status); }
+      void setProgress(quint64 completed, quint64 total) { if (!this->impl.isNull()) this->impl->setProgress(completed, total); }
+      void setOverlayIcon(const QIcon& icon, const QString& description) { if (!this->impl.isNull()) this->impl->setOverlayIcon(icon, description); }
 
 #ifdef Q_OS_WIN32
       void setWinHandle(HWND winHandle) { this->impl->setWinHandle(winHandle); }

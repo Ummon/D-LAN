@@ -34,7 +34,7 @@
     </message>
     <message>
         <source>Corrupted data received for the file &quot;%1&quot; from peer %2. Peer blocked for %3 ms</source>
-        <translation>Données corrompues reçues pour le fichier &quot;%1&quot; du pair %2. Le pair est blocké durant %3 ms</translation>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>

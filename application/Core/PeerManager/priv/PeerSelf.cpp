@@ -52,7 +52,7 @@ void PeerSelf::setNick(const QString& nick)
 /**
   * Load the peer ID from the settings or create a new one if it doesn't exist.
   */
-Hash PeerSelf::loadID()
+Common::Hash PeerSelf::loadID()
 {
    Common::Hash ID;
    if (!SETTINGS.isSet("peer_id") || SETTINGS.get<Common::Hash>("peer_id").isNull())

@@ -32,26 +32,26 @@ void GetHashesResult::start()
 {
    Protos::Core::GetHashes message;
    message.mutable_file()->CopyFrom(this->file);
-   connect(this->socket.data(), SIGNAL(newMessage(Common::MessageHeader::MessageType, const google::protobuf::Message&)), this, SLOT(newMessage(Common::MessageHeader::MessageType, const google::protobuf::Message&)), Qt::DirectConnection);
+   connect(this->socket.data(), SIGNAL(newMessage(Common::Message)), this, SLOT(newMessage(Common::Message)), Qt::DirectConnection);
    socket->send(Common::MessageHeader::CORE_GET_HASHES, message);
    this->startTimer();
 }
 
 void GetHashesResult::doDeleteLater()
 {
-   disconnect(this->socket.data(), SIGNAL(newMessage(Common::MessageHeader::MessageType, const google::protobuf::Message&)), this, SLOT(newMessage(Common::MessageHeader::MessageType, const google::protobuf::Message&)));
+   disconnect(this->socket.data(), SIGNAL(newMessage(Common::Message)), this, SLOT(newMessage(Common::Message)));
    this->socket->finished();
    this->socket.clear();
    this->deleteLater();
 }
 
-void GetHashesResult::newMessage(Common::MessageHeader::MessageType type, const google::protobuf::Message& message)
+void GetHashesResult::newMessage(const Common::Message& message)
 {
-   switch (type)
+   switch (message.getHeader().getType())
    {
    case Common::MessageHeader::CORE_GET_HASHES_RESULT:
       {
-         const Protos::Core::GetHashesResult& hashesResult = static_cast<const Protos::Core::GetHashesResult&>(message);
+         const Protos::Core::GetHashesResult& hashesResult = message.getMessage<Protos::Core::GetHashesResult>();
          this->startTimer(); // Restart the timer.
          emit result(hashesResult);
       }
@@ -59,7 +59,7 @@ void GetHashesResult::newMessage(Common::MessageHeader::MessageType type, const 
 
    case Common::MessageHeader::CORE_HASH:
       {
-         const Protos::Common::Hash& hash = static_cast<const Protos::Common::Hash&>(message);
+         const Protos::Common::Hash& hash = message.getMessage<Protos::Common::Hash>();
          this->startTimer(); // Restart the timer.
          emit nextHash(Common::Hash(hash.hash()));
       }

@@ -41,6 +41,7 @@
 #include <Core/PeerManager/IPeerManager.h>
 #include <Core/UploadManager/IUploadManager.h>
 #include <Core/DownloadManager/IDownloadManager.h>
+#include <INetworkListener.h>
 
 namespace NL
 {
@@ -52,7 +53,8 @@ namespace NL
       static const int BUFFER_SIZE = 65536;
 
       // 2 -> 3 : BLAKE -> Sha-1
-      static const quint32 PROTOCOL_VERSION = 3;
+      // 3 -> 4 : New chat protocol + changes of the 'GET_ENTRIES_RESULT' message.
+      static const quint32 PROTOCOL_VERSION = 4;
 
       static const int MAX_NICK_LENGTH = 255; // Datagram UDP are limited in size, this limit avoid to fill the whole datagram with only a nickname.
 
@@ -65,15 +67,17 @@ namespace NL
          quint16 unicastPort
       );
 
-      void send(Common::MessageHeader::MessageType type, const Common::Hash& peerID, const google::protobuf::Message& message);
-      void send(Common::MessageHeader::MessageType type, const google::protobuf::Message& message = Protos::Common::Null());
-
-      Common::Hash getOwnID() const;
+      INetworkListener::SendStatus send(Common::MessageHeader::MessageType type, const google::protobuf::Message& message, const Common::Hash& peerID);
+      INetworkListener::SendStatus send(Common::MessageHeader::MessageType type, const google::protobuf::Message& message = Protos::Common::Null());
 
       void rebindSockets();
 
    signals:
-      void newChatMessage(const Common::Hash&, const Protos::Core::ChatMessage& chatMessage);
+      /**
+        * This signal is emitted when a message is received (unicast or multicast).
+        */
+      void received(const Common::Message& message);
+      void IMAliveMessageToBeSend(Protos::Core::IMAlive& IMAliveMessage);
       void newFindResultMessage(const Protos::Common::FindResult& findResult);
 
    private slots:
@@ -87,6 +91,8 @@ namespace NL
    private:
       int writeMessageToBuffer(Common::MessageHeader::MessageType type, const google::protobuf::Message& message);
       Common::MessageHeader readDatagramToBuffer(QUdpSocket& socket, QHostAddress& peerAddress);
+
+      Common::Hash getOwnID() const;
 
       const int MAX_UDP_DATAGRAM_PAYLOAD_SIZE;
 

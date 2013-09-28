@@ -35,7 +35,7 @@ using namespace GUI;
   * - First element must always exist, it's used to check all the other items.
   */
 
-CheckBoxList::CheckBoxList(QWidget *parent ) :
+CheckBoxList::CheckBoxList(QWidget* parent) :
    QComboBox(parent)
 {
    this->view()->setItemDelegate(new CheckBoxListDelegate(this));

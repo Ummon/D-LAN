@@ -26,7 +26,6 @@ using namespace RCM;
 #include <QDateTime>
 #include <QNetworkInterface>
 
-#include <Common/ZeroCopyStreamQIODevice.h>
 #include <Common/Settings.h>
 #include <Common/ProtoHelper.h>
 #include <Common/Hash.h>
@@ -36,7 +35,6 @@ using namespace RCM;
 #include <Core/FileManager/IChunk.h>
 #include <Core/FileManager/Exceptions.h>
 #include <Core/PeerManager/IPeer.h>
-#include <Core/NetworkListener/IChat.h>
 #include <Core/DownloadManager/IDownload.h>
 #include <Core/UploadManager/IChunkUploader.h>
 
@@ -58,6 +56,7 @@ RemoteConnection::RemoteConnection(
    QSharedPointer<UM::IUploadManager> uploadManager,
    QSharedPointer<DM::IDownloadManager> downloadManager,
    QSharedPointer<NL::INetworkListener> networkListener,
+   QSharedPointer<CS::IChatSystem> chatSystem,
    QTcpSocket* socket
 ) :
    MessageSocket(new RemoteConnection::Logger(), socket, peerManager->getSelf()->getID()),
@@ -66,6 +65,7 @@ RemoteConnection::RemoteConnection(
    uploadManager(uploadManager),
    downloadManager(downloadManager),
    networkListener(networkListener),
+   chatSystem(chatSystem),
    waitForStateResult(false),
    authenticated(false),
    saltChallenge(0)
@@ -98,7 +98,7 @@ RemoteConnection::RemoteConnection(
    this->timerCloseSocket.setSingleShot(true);
    connect(&this->timerCloseSocket, SIGNAL(timeout()), this, SLOT(closeSocket()));
 
-   connect(&this->networkListener->getChat(), SIGNAL(newMessage(const Protos::GUI::EventChatMessages_Message&)), this, SLOT(newChatMessage(const Protos::GUI::EventChatMessages_Message&)));
+   connect(this->chatSystem.data(), SIGNAL(newMessages(Protos::Common::ChatMessages)), this, SLOT(newChatMessages(Protos::Common::ChatMessages)));
 
    this->loggerHook = LM::Builder::newLoggerHook(LM::Severity(LM::SV_FATAL_ERROR | LM::SV_ERROR | LM::SV_END_USER | LM::SV_WARNING));
 
@@ -121,21 +121,6 @@ void RemoteConnection::send(Common::MessageHeader::MessageType type, const googl
       return;
 
    Common::MessageSocket::send(type, message);
-}
-
-/**
-  * @see RemoteControlManager::chatMessageSent
-  */
-void RemoteConnection::sendMessageToItself(const QString& message)
-{
-   Protos::GUI::EventChatMessages eventChatMessages;
-
-   Protos::GUI::EventChatMessages_Message* eventChatMessage = eventChatMessages.add_message();
-   eventChatMessage->mutable_peer_id()->set_hash(this->peerManager->getSelf()->getID().getData(), Common::Hash::HASH_SIZE);
-   eventChatMessage->set_time(QDateTime::currentMSecsSinceEpoch());
-   Common::ProtoHelper::setStr(*eventChatMessage, &Protos::GUI::EventChatMessages_Message::set_message, message);
-
-   this->send(Common::MessageHeader::GUI_EVENT_CHAT_MESSAGES, eventChatMessages);
 }
 
 void RemoteConnection::refresh()
@@ -272,6 +257,18 @@ void RemoteConnection::refresh()
       }
    }
 
+   // Chat rooms.
+   for (QListIterator<CS::IChatSystem::ChatRoom> i(this->chatSystem->getRooms()); i.hasNext();)
+   {
+      const CS::IChatSystem::ChatRoom& room = i.next();
+      Protos::GUI::State::Room* roomMess = state.add_rooms();
+
+      Common::ProtoHelper::setStr(*roomMess, &Protos::GUI::State::Room::set_name, room.name);
+      for (QSetIterator<PM::IPeer*> j(room.peers); j.hasNext();)
+         roomMess->add_peer_id()->set_hash(j.next()->getID().getData(), Common::Hash::HASH_SIZE);
+      roomMess->set_joined(room.joined);
+   }
+
    this->waitForStateResult = true;
    this->send(Common::MessageHeader::GUI_STATE, state);
 }
@@ -281,12 +278,9 @@ void RemoteConnection::closeSocket()
    this->close();
 }
 
-void RemoteConnection::newChatMessage(const Protos::GUI::EventChatMessages_Message& message)
+void RemoteConnection::newChatMessages(const Protos::Common::ChatMessages& messages)
 {
-   Protos::GUI::EventChatMessages eventChatMessages;
-   eventChatMessages.add_message()->CopyFrom(message);
-
-   this->send(Common::MessageHeader::GUI_EVENT_CHAT_MESSAGES, eventChatMessages);
+   this->send(Common::MessageHeader::GUI_EVENT_CHAT_MESSAGES, messages);
 }
 
 void RemoteConnection::searchFound(const Protos::Common::FindResult& result)
@@ -356,7 +350,7 @@ void RemoteConnection::askForAuthentication()
    Protos::GUI::AskForAuthentication askForAuthenticationMessage;
    askForAuthenticationMessage.set_salt(SETTINGS.get<quint64>("salt"));
 
-   this->saltChallenge = (static_cast<quint64>(this->mtrand.randInt()) << 32) | this->mtrand.randInt();
+   this->saltChallenge = this->mtrand.randInt64();
    askForAuthenticationMessage.set_salt_challenge(this->saltChallenge);
 
    this->timerCloseSocket.start();
@@ -372,8 +366,11 @@ void RemoteConnection::removeGetEntriesResult(const PM::IGetEntriesResult* getEn
 
 void RemoteConnection::sendLastChatMessages()
 {
+   Protos::Common::ChatMessages chatMessages;
+   this->chatSystem->getLastChatMessages(chatMessages);
+
    // We send all the last received messages to the GUI (history).
-   this->send(Common::MessageHeader::GUI_EVENT_CHAT_MESSAGES, this->networkListener->getChat().getLastMessages());
+   this->send(Common::MessageHeader::GUI_EVENT_CHAT_MESSAGES, chatMessages);
 }
 
 void RemoteConnection::refreshAllInterfaces()
@@ -381,12 +378,12 @@ void RemoteConnection::refreshAllInterfaces()
    this->interfaces = QNetworkInterface::allInterfaces();
 }
 
-void RemoteConnection::onNewMessage(Common::MessageHeader::MessageType type, const google::protobuf::Message& message)
+void RemoteConnection::onNewMessage(const Common::Message& message)
 {
-   if (!this->authenticated && type != Common::MessageHeader::GUI_AUTHENTICATION)
+   if (!this->authenticated && message.getHeader().getType() != Common::MessageHeader::GUI_AUTHENTICATION)
       return;
 
-   switch (type)
+   switch (message.getHeader().getType())
    {
    case Common::MessageHeader::GUI_STATE_RESULT:
       this->waitForStateResult = false;
@@ -395,7 +392,7 @@ void RemoteConnection::onNewMessage(Common::MessageHeader::MessageType type, con
 
    case Common::MessageHeader::GUI_AUTHENTICATION:
       {
-         const Protos::GUI::Authentication& authenticationMessage = static_cast<const Protos::GUI::Authentication&>(message);
+         const Protos::GUI::Authentication& authenticationMessage = message.getMessage<Protos::GUI::Authentication>();
 
          this->timerCloseSocket.stop();
 
@@ -427,14 +424,14 @@ void RemoteConnection::onNewMessage(Common::MessageHeader::MessageType type, con
 
    case Common::MessageHeader::GUI_LANGUAGE:
       {
-         const Protos::GUI::Language& langMessage = static_cast<const Protos::GUI::Language&>(message);
-         emit languageDefined(ProtoHelper::getLang(langMessage.language()));
+         const Protos::GUI::Language& langMessage = message.getMessage<Protos::GUI::Language>();
+         emit languageDefined(Common::ProtoHelper::getLang(langMessage.language()));
       }
       break;
 
    case Common::MessageHeader::GUI_CHANGE_PASSWORD:
       {
-         const Protos::GUI::ChangePassword& passMessage = static_cast<const Protos::GUI::ChangePassword&>(message);
+         const Protos::GUI::ChangePassword& passMessage = message.getMessage<Protos::GUI::ChangePassword>();
 
          Common::Hash newPassword(passMessage.new_password().hash());
          Common::Hash currentPassword = SETTINGS.get<Common::Hash>("remote_password");
@@ -458,7 +455,7 @@ void RemoteConnection::onNewMessage(Common::MessageHeader::MessageType type, con
 
    case Common::MessageHeader::GUI_SETTINGS:
       {
-         const Protos::GUI::CoreSettings& coreSettingsMessage = static_cast<const Protos::GUI::CoreSettings&>(message);
+         const Protos::GUI::CoreSettings& coreSettingsMessage = message.getMessage<Protos::GUI::CoreSettings>();
 
          if (coreSettingsMessage.has_nick())
             this->peerManager->setNick(Common::ProtoHelper::getStr(coreSettingsMessage, &Protos::GUI::CoreSettings::nick));
@@ -481,7 +478,7 @@ void RemoteConnection::onNewMessage(Common::MessageHeader::MessageType type, con
 
          QString currentAddressToListenTo = SETTINGS.get<QString>("listen_address");
          Protos::Common::Interface::Address::Protocol currentProtocol = static_cast<Protos::Common::Interface::Address::Protocol>(SETTINGS.get<quint32>("listen_any"));
-         const QString& newAddressToListenTo = ProtoHelper::getStr(coreSettingsMessage, &Protos::GUI::CoreSettings::listen_address);
+         const QString& newAddressToListenTo = Common::ProtoHelper::getStr(coreSettingsMessage, &Protos::GUI::CoreSettings::listen_address);
          Protos::Common::Interface::Address::Protocol newProtocol = coreSettingsMessage.listen_any();
          SETTINGS.set("listen_address", newAddressToListenTo);
          SETTINGS.set("listen_any", static_cast<quint32>(newProtocol));
@@ -500,22 +497,22 @@ void RemoteConnection::onNewMessage(Common::MessageHeader::MessageType type, con
             if (i.next()->elapsed() > SETTINGS.get<quint32>("search_lifetime"))
                i.remove();
 
-         const Protos::GUI::Search& searchMessage = static_cast<const Protos::GUI::Search&>(message);
+         const Protos::GUI::Search& searchMessage = message.getMessage<Protos::GUI::Search>();
          const QString& pattern = Common::ProtoHelper::getStr(searchMessage, &Protos::GUI::Search::pattern);
 
          // Special syntax to search in your own files.
          if (pattern.startsWith('<'))
          {
-            QList<Protos::Common::FindResult> results = this->fileManager->find(pattern, SETTINGS.get<quint32>("max_number_of_result_shown"), std::numeric_limits<int>::max());
+            const QList<Protos::Common::FindResult>& results = this->fileManager->find(pattern, SETTINGS.get<quint32>("max_number_of_result_shown"), std::numeric_limits<int>::max());
 
-            const quint64 tag = (static_cast<quint64>(this->mtrand.randInt()) << 32) | this->mtrand.randInt();
+            const quint64 tag = this->mtrand.randInt64();
             Protos::GUI::Tag tagMess;
             tagMess.set_tag(tag);
             this->send(Common::MessageHeader::GUI_SEARCH_TAG, tagMess);
 
             if (!results.isEmpty())
             {
-               Protos::Common::FindResult& result = results.first();
+               Protos::Common::FindResult result = results.first();
                result.mutable_peer_id()->set_hash(this->peerManager->getSelf()->getID().getData(), Common::Hash::HASH_SIZE);
                result.set_tag(tag);
                this->searchFound(result);
@@ -537,12 +534,12 @@ void RemoteConnection::onNewMessage(Common::MessageHeader::MessageType type, con
 
    case Common::MessageHeader::GUI_BROWSE:
       {
-         const Protos::GUI::Browse& browseMessage = static_cast<const Protos::GUI::Browse&>(message);
+         const Protos::GUI::Browse& browseMessage = message.getMessage<Protos::GUI::Browse>();
 
          Common::Hash peerID(browseMessage.peer_id().hash());
          PM::IPeer* peer = this->peerManager->getPeer(peerID);
 
-         quint64 tag = (static_cast<quint64>(this->mtrand.randInt()) << 32) | this->mtrand.randInt();
+         quint64 tag = this->mtrand.randInt64();
          Protos::GUI::Tag tagMess;
          tagMess.set_tag(tag);
          this->send(Common::MessageHeader::GUI_BROWSE_TAG, tagMess);
@@ -582,7 +579,7 @@ void RemoteConnection::onNewMessage(Common::MessageHeader::MessageType type, con
 
    case Common::MessageHeader::GUI_CANCEL_DOWNLOADS:
       {
-         const Protos::GUI::CancelDownloads& cancelDownloadsMessage = static_cast<const Protos::GUI::CancelDownloads&>(message);
+         const Protos::GUI::CancelDownloads& cancelDownloadsMessage = message.getMessage<Protos::GUI::CancelDownloads>();
 
          if (cancelDownloadsMessage.complete())
             this->downloadManager->removeAllCompleteDownloads();
@@ -599,7 +596,7 @@ void RemoteConnection::onNewMessage(Common::MessageHeader::MessageType type, con
 
    case Common::MessageHeader::GUI_PAUSE_DOWNLOADS:
       {
-         const Protos::GUI::PauseDownloads& pauseDownloadsMessage = static_cast<const Protos::GUI::PauseDownloads&>(message);
+         const Protos::GUI::PauseDownloads& pauseDownloadsMessage = message.getMessage<Protos::GUI::PauseDownloads>();
 
          QList<quint64> IDs;
          for (int i = 0; i < pauseDownloadsMessage.id_size(); i++)
@@ -613,7 +610,7 @@ void RemoteConnection::onNewMessage(Common::MessageHeader::MessageType type, con
 
    case Common::MessageHeader::GUI_MOVE_DOWNLOADS:
       {
-         const Protos::GUI::MoveDownloads& moveDownloadsMessage = static_cast<const Protos::GUI::MoveDownloads&>(message);
+         const Protos::GUI::MoveDownloads& moveDownloadsMessage = message.getMessage<Protos::GUI::MoveDownloads>();
 
          QList<quint64> downloadIDRefs;
          for (int i = 0; i < moveDownloadsMessage.id_ref_size(); i++)
@@ -631,7 +628,7 @@ void RemoteConnection::onNewMessage(Common::MessageHeader::MessageType type, con
 
    case Common::MessageHeader::GUI_DOWNLOAD:
       {
-         const Protos::GUI::Download& downloadMessage = static_cast<const Protos::GUI::Download&>(message);
+         const Protos::GUI::Download& downloadMessage = message.getMessage<Protos::GUI::Download>();
 
          PM::IPeer* peer = this->peerManager->getPeer(downloadMessage.peer_id().hash());
 
@@ -651,11 +648,32 @@ void RemoteConnection::onNewMessage(Common::MessageHeader::MessageType type, con
 
    case Common::MessageHeader::GUI_CHAT_MESSAGE:
       {
-         const Protos::GUI::ChatMessage& chatMessage = static_cast<const Protos::GUI::ChatMessage&>(message);
+         const Protos::GUI::ChatMessage& chatMessage = message.getMessage<Protos::GUI::ChatMessage>();
 
-         const QString& message = Common::ProtoHelper::getStr(chatMessage, &Protos::GUI::ChatMessage::message);
-         emit chatMessageSent(message);
-         this->networkListener->getChat().send(message);
+         CS::IChatSystem::SendStatus status =
+            chatMessage.has_room() ?
+                 this->chatSystem->send(Common::ProtoHelper::getStr(chatMessage, &Protos::GUI::ChatMessage::message), Common::ProtoHelper::getStr(chatMessage, &Protos::GUI::ChatMessage::room))
+               : this->chatSystem->send(Common::ProtoHelper::getStr(chatMessage, &Protos::GUI::ChatMessage::message));
+
+         Protos::GUI::ChatMessageResult result;
+         result.set_status(status == CS::IChatSystem::OK ? Protos::GUI::ChatMessageResult::OK : (status == CS::IChatSystem::MESSAGE_TOO_LARGE ? Protos::GUI::ChatMessageResult::MESSAGE_TOO_LARGE : Protos::GUI::ChatMessageResult::ERROR_UNKNOWN));
+         this->send(Common::MessageHeader::GUI_CHAT_MESSAGE_RESULT, result);
+      }
+      break;
+
+   case Common::MessageHeader::GUI_JOIN_ROOM:
+      {
+         const Protos::GUI::JoinRoom joinRoomMessage = message.getMessage<Protos::GUI::JoinRoom>();
+
+         this->chatSystem->joinRoom(Common::ProtoHelper::getStr(joinRoomMessage, &Protos::GUI::JoinRoom::name));
+      }
+      break;
+
+   case Common::MessageHeader::GUI_LEAVE_ROOM:
+      {
+         const Protos::GUI::LeaveRoom leaveRoomMessage = message.getMessage<Protos::GUI::LeaveRoom>();
+
+         this->chatSystem->leaveRoom(Common::ProtoHelper::getStr(leaveRoomMessage, &Protos::GUI::LeaveRoom::name));
       }
       break;
 

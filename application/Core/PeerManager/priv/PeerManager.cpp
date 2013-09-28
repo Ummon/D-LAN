@@ -33,7 +33,7 @@ using namespace PM;
   *
   */
 
-LOG_INIT_CPP(PeerManager);
+LOG_INIT_CPP(PeerManager)
 
 PeerManager::PeerManager(QSharedPointer<FM::IFileManager> fileManager) :
    fileManager(fileManager), self(new PeerSelf(this, this->fileManager))
@@ -90,7 +90,7 @@ QList<IPeer*> PeerManager::getPeers() const
 IPeer* PeerManager::getPeer(const Common::Hash& ID)
 {
    if (ID.isNull())
-      return 0;
+      return nullptr;
 
    if (this->self->getID() == ID)
       return this->self;
@@ -102,10 +102,10 @@ IPeer* PeerManager::getPeer(const Common::Hash& ID)
          return peer;
    }
 
-   return 0;
+   return nullptr;
 }
 
-IPeer* PeerManager::createPeer(const Hash& ID, const QString& nick)
+IPeer* PeerManager::createPeer(const Common::Hash& ID, const QString& nick)
 {
    IPeer* existingPeer = this->getPeer(ID);
    if (existingPeer)
@@ -144,7 +144,7 @@ void PeerManager::updatePeer(const Common::Hash& ID, const QHostAddress& IP, qui
       emit peerBecomesAvailable(peer);
 }
 
-void PeerManager::removePeer(const Hash& ID, const QHostAddress& IP)
+void PeerManager::removePeer(const Common::Hash& ID, const QHostAddress& IP)
 {
    if (ID.isNull() || ID == this->self->getID())
       return;

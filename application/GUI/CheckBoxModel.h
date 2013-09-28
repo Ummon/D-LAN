@@ -59,9 +59,6 @@ namespace GUI
    };
 }
 
-/***** Definition *****/
-using namespace GUI;
-
 /**
   * @class GUI::CheckBoxModel
   *
@@ -70,24 +67,24 @@ using namespace GUI;
   */
 
 template <typename T>
-CheckBoxModel<T>::CheckBoxModel()
+GUI::CheckBoxModel<T>::CheckBoxModel()
 {
 }
 
 template <typename T>
-int CheckBoxModel<T>::rowCount(const QModelIndex&) const
+int GUI::CheckBoxModel<T>::rowCount(const QModelIndex&) const
 {
    return this->items.size();
 }
 
 template <typename T>
-int CheckBoxModel<T>::columnCount(const QModelIndex&) const
+int GUI::CheckBoxModel<T>::columnCount(const QModelIndex&) const
 {
    return 1;
 }
 
 template <typename T>
-QVariant CheckBoxModel<T>::data(const QModelIndex& index, int role) const
+QVariant GUI::CheckBoxModel<T>::data(const QModelIndex& index, int role) const
 {
    if (!index.isValid() || index.row() >= this->items.size())
       return QVariant();
@@ -104,7 +101,7 @@ QVariant CheckBoxModel<T>::data(const QModelIndex& index, int role) const
 }
 
 template <typename T>
-bool CheckBoxModel<T>::setData(const QModelIndex& index, const QVariant& value, int role)
+bool GUI::CheckBoxModel<T>::setData(const QModelIndex& index, const QVariant& value, int role)
 {
    if (!index.isValid() || index.row() >= this->items.size())
       return false;
@@ -123,7 +120,7 @@ bool CheckBoxModel<T>::setData(const QModelIndex& index, const QVariant& value, 
 }
 
 template <typename T>
-Qt::ItemFlags CheckBoxModel<T>::flags(const QModelIndex& index) const
+Qt::ItemFlags GUI::CheckBoxModel<T>::flags(const QModelIndex& index) const
 {
    Qt::ItemFlags defaultFlags = QAbstractItemModel::flags(index);
 
@@ -134,7 +131,7 @@ Qt::ItemFlags CheckBoxModel<T>::flags(const QModelIndex& index) const
 }
 
 template <typename T>
-QList<T> CheckBoxModel<T>::getFilteredValues() const
+QList<T> GUI::CheckBoxModel<T>::getFilteredValues() const
 {
    QList<T> values;
    QListIterator<Item> i(this->items);
@@ -149,7 +146,7 @@ QList<T> CheckBoxModel<T>::getFilteredValues() const
 }
 
 template <typename T>
-void CheckBoxModel<T>::addElement(const QString& text, bool checked, T value)
+void GUI::CheckBoxModel<T>::addElement(const QString& text, bool checked, T value)
 {
    this->beginInsertRows(QModelIndex(), this->items.size(), this->items.size());
    this->items << Item(text, checked, value);
@@ -157,7 +154,7 @@ void CheckBoxModel<T>::addElement(const QString& text, bool checked, T value)
 }
 
 template <typename T>
-void CheckBoxModel<T>::clear(const QString& firstElementName)
+void GUI::CheckBoxModel<T>::clear(const QString& firstElementName)
 {
    this->beginRemoveRows(QModelIndex(), 0, this->items.size());
    this->items.clear();
@@ -169,7 +166,7 @@ void CheckBoxModel<T>::clear(const QString& firstElementName)
 }
 
 template <typename T>
-void CheckBoxModel<T>::setChecked(int row, bool checked)
+void GUI::CheckBoxModel<T>::setChecked(int row, bool checked)
 {
    if (row >= this->items.size() || this->items[row].checked == checked)
       return;
@@ -204,7 +201,7 @@ void CheckBoxModel<T>::setChecked(int row, bool checked)
 }
 
 template <typename T>
-void CheckBoxModel<T>::setText(int row, const QString& text)
+void GUI::CheckBoxModel<T>::setText(int row, const QString& text)
 {
    if (row >= this->items.size())
       return;

@@ -7,7 +7,7 @@
 # Uncomment this line to enable the leak detector.
 # DEFINES += ENABLE_NVWA
 
-QT       += core gui network
+QT       += core gui network xml
 TARGET = "D-LAN.GUI"
 TEMPLATE = app
 
@@ -54,19 +54,11 @@ SOURCES += main.cpp\
     DialogAbout.cpp \
     Log.cpp \
     CheckBoxList.cpp \
-    TabButtons.cpp \
-    Browse/WidgetBrowse.cpp \
     Browse/BrowseModel.cpp \
-    Chat/WidgetChat.cpp \
     Chat/ChatModel.cpp \
-    Downloads/WidgetDownloads.cpp \
     Downloads/DownloadsFlatModel.cpp \
     Log/LogModel.cpp \
-    PeerList/PeerListModel.cpp \
-    Search/WidgetSearch.cpp \
     Search/SearchModel.cpp \
-    Settings/WidgetSettings.cpp \
-    Uploads/WidgetUploads.cpp \
     Uploads/UploadsModel.cpp \
     Settings/DirListModel.cpp \
     Settings/RemoteFileDialog.cpp \
@@ -78,9 +70,32 @@ SOURCES += main.cpp\
     Settings/AskNewPasswordDialog.cpp \
     Downloads/DownloadsTreeModel.cpp \
     Downloads/DownloadsModel.cpp \
-    PeerList/PeerListDelegate.cpp \
     BusyIndicator.cpp \
-    Log/LogDelegate.cpp
+    Log/LogDelegate.cpp \
+    Chat/RoomsModel.cpp \
+    Chat/RoomsDelegate.cpp \
+    Peers/PeersDock.cpp \
+    Peers/PeerListModel.cpp \
+    Peers/PeerListDelegate.cpp \
+    Chat/RoomsDock.cpp \
+    Search/SearchDock.cpp \
+    MDI/TabButtons.cpp \
+    MDI/MdiArea.cpp \
+    Browse/BrowseWidget.cpp \
+    Chat/ChatWidget.cpp \
+    Downloads/DownloadsWidget.cpp \
+    Search/SearchWidget.cpp \
+    Settings/SettingsWidget.cpp \
+    Uploads/UploadsWidget.cpp \
+    MDI/MdiWidget.cpp \
+    ColorBox.cpp \
+    Chat/ChatTextEdit.cpp \
+    Constants.cpp \
+    Emoticons/EmoticonsWidget.cpp \
+    Emoticons/Emoticons.cpp \
+    Emoticons/SingleEmoticonWidget.cpp \
+    AutoComplete/AutoComplete.cpp \
+    AutoComplete/AutoCompleteModel.cpp
 
 HEADERS  += MainWindow.h \
     ../Protos/gui_protocol.pb.h \
@@ -93,19 +108,11 @@ HEADERS  += MainWindow.h \
     CheckBoxList.h \
     CheckBoxModel.h \
     IFilter.h \
-    TabButtons.h \
-    Browse/WidgetBrowse.h \
     Browse/BrowseModel.h \
-    Chat/WidgetChat.h \
     Chat/ChatModel.h \
-    Downloads/WidgetDownloads.h \
     Downloads/DownloadFilterStatus.h \
     Log/LogModel.h \
-    PeerList/PeerListModel.h \
-    Search/WidgetSearch.h \
     Search/SearchModel.h \
-    Settings/WidgetSettings.h \
-    Uploads/WidgetUploads.h \
     Uploads/UploadsModel.h \
     Settings/DirListModel.h \
     Settings/RemoteFileDialog.h \
@@ -118,25 +125,53 @@ HEADERS  += MainWindow.h \
     Downloads/DownloadsFlatModel.h \
     Downloads/DownloadsTreeModel.h \
     Downloads/DownloadsModel.h \
-    PeerList/PeerListDelegate.h \
     BusyIndicator.h \
     Taskbar/Taskbar.h \
     Taskbar/ITaskbarImpl.h \
     Taskbar/WinUtil.h \
     Taskbar/TaskbarTypes.h \
-    Log/LogDelegate.h
+    Log/LogDelegate.h \
+    Chat/RoomsModel.h \
+    Chat/RoomsDelegate.h \
+    Peers/PeersDock.h \
+    Peers/PeerListModel.h \
+    Peers/PeerListDelegate.h \
+    Chat/RoomsDock.h \
+    Search/SearchDock.h \
+    MDI/TabButtons.h \
+    MDI/MdiArea.h \
+    MDI/MdiWidget.h \
+    Browse/BrowseWidget.h \
+    Chat/ChatWidget.h \
+    Downloads/DownloadsWidget.h \
+    Search/SearchWidget.h \
+    Settings/SettingsWidget.h \
+    Uploads/UploadsWidget.h \
+    ColorBox.h \
+    Chat/ChatTextEdit.h \
+    Constants.h \
+    Emoticons/EmoticonsWidget.h \
+    Emoticons/Emoticons.h \
+    Emoticons/SingleEmoticonWidget.h \
+    AutoComplete/AutoComplete.h \
+    AutoComplete/AutoCompleteModel.h
 
 FORMS    += MainWindow.ui \
     StatusBar.ui \
     DialogAbout.ui \
-    Browse/WidgetBrowse.ui \
-    Chat/WidgetChat.ui \
-    Downloads/WidgetDownloads.ui \
-    Search/WidgetSearch.ui \
-    Settings/WidgetSettings.ui \
-    Uploads/WidgetUploads.ui \
     Settings/RemoteFileDialog.ui \
-    Settings/AskNewPasswordDialog.ui
+    Settings/AskNewPasswordDialog.ui \
+    Peers/PeersDock.ui \
+    Chat/RoomsDock.ui \
+    Search/SearchDock.ui \
+    Browse/BrowseWidget.ui \
+    Chat/ChatWidget.ui \
+    Downloads/DownloadsWidget.ui \
+    Search/SearchWidget.ui \
+    Settings/SettingsWidget.ui \
+    Uploads/UploadsWidget.ui \
+    Emoticons/SingleEmoticonWidget.ui \
+    AutoComplete/AutoComplete.ui
 
 RESOURCES += \
     ressources.qrc

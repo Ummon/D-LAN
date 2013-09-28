@@ -49,7 +49,7 @@ using namespace FM;
 #include <priv/Cache/SharedDirectory.h>
 #include <priv/Cache/Chunk.h>
 
-LOG_INIT_CPP(FileManager);
+LOG_INIT_CPP(FileManager)
 
 FileManager::FileManager() :
    fileUpdater(this),

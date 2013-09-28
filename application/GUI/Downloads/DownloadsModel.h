@@ -28,7 +28,7 @@
 #include <Common/RemoteCoreController/ICoreConnection.h>
 
 #include <IFilter.h>
-#include <PeerList/PeerListModel.h>
+#include <Peers/PeerListModel.h>
 #include <Downloads/DownloadFilterStatus.h>
 #include <Settings/DirListModel.h>
 

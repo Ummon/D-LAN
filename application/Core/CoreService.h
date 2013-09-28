@@ -36,6 +36,9 @@ namespace CoreSpace
       CoreService(bool resetSettings, QLocale locale, int argc, char** argv);
       virtual ~CoreService();
 
+      void changePassword(const QString& newPassword);
+      void removePassword();
+
    protected:
       void start();
       void stop();

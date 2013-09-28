@@ -44,7 +44,7 @@ namespace PM
       void doDeleteLater();
 
    private slots:
-      void newMessage(Common::MessageHeader::MessageType type, const google::protobuf::Message& message);
+      void newMessage(const Common::Message& message);
 
    private:
       const Protos::Common::Entry file;

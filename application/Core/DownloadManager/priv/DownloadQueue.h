@@ -108,16 +108,13 @@ namespace DM
    };
 }
 
-/***** Definitions *****/
-using namespace DM;
-
 /**
   * @class DM::DownloadQueue::ScanningIterator
   *
   * To iterate over the queue for all downloads which match a predicate 'P'.
   */
 template <typename P>
-DownloadQueue::ScanningIterator<P>::ScanningIterator(DownloadQueue& queue) :
+DM::DownloadQueue::ScanningIterator<P>::ScanningIterator(DM::DownloadQueue& queue) :
    queue(queue)
 {
    // Search if a marker of type 'P' already exists.
@@ -139,7 +136,7 @@ DownloadQueue::ScanningIterator<P>::ScanningIterator(DownloadQueue& queue) :
   * @return Return 0 at the end of the list.
   */
 template <typename P>
-Download* DownloadQueue::ScanningIterator<P>::next()
+DM::Download* DM::DownloadQueue::ScanningIterator<P>::next()
 {
    while (this->position < this->queue.size())
    {

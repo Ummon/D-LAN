@@ -70,29 +70,26 @@ namespace FM
    };
 }
 
-/***** Definitions *****/
-using namespace FM;
+template<typename T>
+const int FM::WordIndex<T>::MIN_WORD_SIZE_PARTIAL_MATCH(3);
 
 template<typename T>
-const int WordIndex<T>::MIN_WORD_SIZE_PARTIAL_MATCH(3);
+const int FM::WordIndex<T>::MIN_WORD_SIZE_PARTIAL_MATCH_KOREAN(1);
 
 template<typename T>
-const int WordIndex<T>::MIN_WORD_SIZE_PARTIAL_MATCH_KOREAN(1);
-
-template<typename T>
-WordIndex<T>::WordIndex() :
+FM::WordIndex<T>::WordIndex() :
    mutex(QMutex::Recursive)
 {}
 
 template<typename T>
-void WordIndex<T>::addItem(const QString& word, const T& item)
+void FM::WordIndex<T>::addItem(const QString& word, const T& item)
 {
    QMutexLocker locker(&this->mutex);
    this->root.addItem(&word, item);
 }
 
 template<typename T>
-void WordIndex<T>::addItem(const QStringList& words, const T& item)
+void FM::WordIndex<T>::addItem(const QStringList& words, const T& item)
 {
    QMutexLocker locker(&this->mutex);
    for (QStringListIterator i(words); i.hasNext();)
@@ -100,14 +97,14 @@ void WordIndex<T>::addItem(const QStringList& words, const T& item)
 }
 
 template<typename T>
-void WordIndex<T>::rmItem(const QString& word, const T& item)
+void FM::WordIndex<T>::rmItem(const QString& word, const T& item)
 {
    QMutexLocker locker(&this->mutex);
    this->root.rmItem(word, item);
 }
 
 template<typename T>
-void WordIndex<T>::rmItem(const QStringList& words, const T& item)
+void FM::WordIndex<T>::rmItem(const QStringList& words, const T& item)
 {
    QMutexLocker locker(&this->mutex);
    for (QStringListIterator i(words); i.hasNext();)
@@ -115,7 +112,7 @@ void WordIndex<T>::rmItem(const QStringList& words, const T& item)
 }
 
 template<typename T>
-void WordIndex<T>::renameItem(const QString& oldWord, const QString& newWord, const T& item)
+void FM::WordIndex<T>::renameItem(const QString& oldWord, const QString& newWord, const T& item)
 {
    QMutexLocker locker(&this->mutex);
    this->root.rmItem(oldWord, item);
@@ -123,7 +120,7 @@ void WordIndex<T>::renameItem(const QString& oldWord, const QString& newWord, co
 }
 
 template<typename T>
-void WordIndex<T>::renameItem(const QStringList& oldWords, const QStringList& newWords, const T& item)
+void FM::WordIndex<T>::renameItem(const QStringList& oldWords, const QStringList& newWords, const T& item)
 {
    QMutexLocker locker(&this->mutex);
    for (QStringListIterator i(oldWords); i.hasNext();)
@@ -137,7 +134,7 @@ void WordIndex<T>::renameItem(const QStringList& oldWords, const QStringList& ne
   * There is a particular case when the word length is below 'MIN_WORD_SIZE_PARTIAL_MATCH', see the comment associated to this constant for more information.
   */
 template<typename T>
-QList<NodeResult<T>> WordIndex<T>::search(const QString& word, int maxNbResult) const
+QList<FM::NodeResult<T>> FM::WordIndex<T>::search(const QString& word, int maxNbResult) const
 {
    QMutexLocker locker(&this->mutex);
    return this->root.search(word, word.size() >= (Common::StringUtils::isKorean(word) ? MIN_WORD_SIZE_PARTIAL_MATCH_KOREAN : MIN_WORD_SIZE_PARTIAL_MATCH), maxNbResult);
@@ -147,7 +144,7 @@ QList<NodeResult<T>> WordIndex<T>::search(const QString& word, int maxNbResult) 
   * @see http://dev.euphorik.ch/wiki/pmp/Algorithms#Word-indexing for more information.
   */
 template<typename T>
-QList<NodeResult<T>> WordIndex<T>::search(const QStringList& words, int maxNbResult) const
+QList<FM::NodeResult<T>> FM::WordIndex<T>::search(const QStringList& words, int maxNbResult) const
 {
    QMutexLocker locker(&this->mutex);
 
@@ -235,14 +232,14 @@ QList<NodeResult<T>> WordIndex<T>::search(const QStringList& words, int maxNbRes
 }
 
 template<typename T>
-QString WordIndex<T>::toStringLog() const
+QString FM::WordIndex<T>::toStringLog() const
 {
    QMutexLocker locker(&mutex);
    return this->root.toStringDebug();
 }
 
 template<typename T>
-QList<T> WordIndex<T>::resultToList(const QList<NodeResult<T>>& result)
+QList<T> FM::WordIndex<T>::resultToList(const QList<NodeResult<T>>& result)
 {
    QList<T> l;
    for (auto i = result.begin(); i != result.end(); ++i)

@@ -21,15 +21,21 @@
 
 #include <QAbstractTableModel>
 #include <QString>
+#include <QSharedPointer>
 #include <QDateTime>
 #include <QList>
+#include <QSize>
+#include <QRegExp>
+#include <QPair>
 
 #include <Protos/gui_protocol.pb.h>
 
 #include <Common/Hash.h>
 #include <Common/RemoteCoreController/ICoreConnection.h>
+#include <Common/RemoteCoreController/ISendChatMessageResult.h>
 
-#include <PeerList/PeerListModel.h>
+#include <Peers/PeerListModel.h>
+#include <Emoticons/Emoticons.h>
 
 namespace GUI
 {
@@ -39,34 +45,73 @@ namespace GUI
       static const int MAX_NICK_LENGTH = 12;
 
    public:
-      ChatModel(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel);
+      ChatModel(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel, const Emoticons& emoticons, const QString& roomName = QString());
 
-      QString getLineStr(int row) const;
+      bool isMainChat() const;
+      QString getRoomName() const;
+
+      QList<QPair<Common::Hash, QString>> getRelevantLastPeers() const;
+
+      QString getLineStr(int row, bool withHTML = true) const;
+      Common::Hash getPeerID(int row) const;
       bool isMessageIsOurs(int row) const;
 
       int rowCount(const QModelIndex& parent = QModelIndex()) const;
       int columnCount(const QModelIndex& parent = QModelIndex()) const;
       QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const;
-      Qt::ItemFlags flags(const QModelIndex& index) const;
+      //Qt::ItemFlags flags(const QModelIndex& index) const;
 
-      void newChatMessage(const Common::Hash& peerID, const QString& message);
+      inline QSize getCachedSize(const QModelIndex& index) { return this->messages[index.row()].size; }
+      inline void insertCachedSize(const QModelIndex& index, const QSize& size) { this->messages[index.row()].size = size; }
+      inline void removeCachedSize(const QModelIndex& index) { this->messages[index.row()].size = QSize(); }
 
-   private slots:
-      void newChatMessages(const Protos::GUI::EventChatMessages& messages);
+      enum SendMessageStatus
+      {
+         OK,
+         MESSAGE_TOO_LARGE,
+         TIMEOUT,
+         ERROR_UNKNOWN
+      };
+
+      void sendMessage(const QString& message, const QList<Common::Hash>& peerIDsAnswered = QList<Common::Hash>());
 
    private:
-      QSharedPointer<RCC::ICoreConnection> coreConnection;
-      PeerListModel& peerListModel;
+      void sendRawMessage(const QString& message, const QList<Common::Hash>& peerIDsAnswered);
+
+   signals:
+      void sendMessageStatus(ChatModel::SendMessageStatus status);
+
+   private slots:
+      void newChatMessages(const Protos::Common::ChatMessages& messages);
+      void result(const Protos::GUI::ChatMessageResult& result);
+      void resultTimeout();
+
+   private:
+      QList<QSharedPointer<RCC::ISendChatMessageResult>> results;
 
       struct Message
       {
+         quint64 ID;
          Common::Hash peerID;
+         bool answeringToUs;
          QString nick;
          QDateTime dateTime;
          QString message;
+         QSize size; // Ugly hack, we cache the rendered size to speed-up the method 'ChatDelegate::sizeHint'.
       };
 
-      QList<Message> messages;
+      QString formatMessage(const Message& message) const;
+
+      QSharedPointer<RCC::ICoreConnection> coreConnection;
+      PeerListModel& peerListModel;
+      const Emoticons& emoticons;
+
+      QString roomName; // Empty for main chat.
+      QList<Message> messages; // Always sorted by date-time.
+
+      QRegExp regexMatchMessageContent;
+      QRegExp regexMatchFirstBR;
+      QRegExp regexMatchLastBR;
    };
 
 }

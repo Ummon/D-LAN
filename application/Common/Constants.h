@@ -32,6 +32,7 @@ namespace Common
 
       static const QString FILE_CACHE;
       static const QString FILE_QUEUE;
+      static const QString FILE_CHAT_MESSAGES;
 
       static const QString CORE_SETTINGS_FILENAME;
       static const QString GUI_SETTINGS_FILENAME;

@@ -71,6 +71,7 @@ class MTRand {
 // Data
 public:
 	typedef unsigned long uint32;  // unsigned integer type, at least 32 bits
+   typedef unsigned long long uint64;  // unsigned integer type, at least 32 bits
 	
 	enum { N = 624 };       // length of state vector
 	enum { SAVE = N + 1 };  // length of array for save()
@@ -95,6 +96,7 @@ public:
 	
 	// Access to 32-bit random numbers
 	uint32 randInt();                     // integer in [0,2^32-1]
+   uint64 randInt64();                     // integer in [0,2^64-1]
 	uint32 randInt( const uint32 n );     // integer in [0,n] for n < 2^32
 	double rand();                        // real number in [0,1]
 	double rand( const double n );        // real number in [0,n]
@@ -295,6 +297,11 @@ inline MTRand::uint32 MTRand::randInt()
 	s1 ^= (s1 <<  7) & 0x9d2c5680UL;
 	s1 ^= (s1 << 15) & 0xefc60000UL;
 	return ( s1 ^ (s1 >> 18) );
+}
+
+inline MTRand::uint64 MTRand::randInt64()
+{
+   return uint64(this->randInt()) << 32 | this->randInt();
 }
 
 inline MTRand::uint32 MTRand::randInt( const uint32 n )

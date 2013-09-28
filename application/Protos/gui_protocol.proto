@@ -96,6 +96,11 @@ message State {
       required uint64 size = 3;
       required uint64 free_space = 4;
    }
+   message Room {
+      required string name = 1;
+      repeated Common.Hash peer_id = 2; // It never includes ourself.
+      required bool joined = 3;
+   }
    
    repeated Peer peer = 2; // The first peer is always ourself and always exists.
    
@@ -112,6 +117,8 @@ message State {
    
    optional Common.Interface.Address.Protocol listenAny = 8; // If this value is set then all the interfaces of the given protocol are listened. Otherwise see the following repeated 'interface' field.
    repeated Common.Interface interface = 9;
+
+   repeated Room rooms = 11;
 }
 
 // GUI -> Core
@@ -122,14 +129,7 @@ message State {
 /***** Events *****/
 // Core -> GUI
 // id: 0x1011
-message EventChatMessages {
-   message Message {
-      required uint64 time = 1; // In [ms] since Epoch.
-      required Common.Hash peer_id = 2;
-      required string message = 3;
-   }
-   repeated Message message = 1;
-}
+// Common.ChatMessages
 
 
 // Core -> GUI
@@ -321,9 +321,36 @@ message Download {
 
 // GUI -> Core
 // id: 0x1091
-// Send a chat message to everyone.
+// Send a chat message to the given room. The message goes to the main chat if 'room' isn't set.
 message ChatMessage {
    required string message = 1;
+   optional string room = 2;
+   repeated Common.Hash peer_ids_answer = 3; // The peers involved in the message.
+}
+
+// Core -> GUI (directly)
+// id: 0x1092
+message ChatMessageResult {
+   enum Status {
+      OK = 0;
+      MESSAGE_TOO_LARGE = 1;
+      ERROR_UNKNOWN = 255;
+   }
+   required Status status = 1 [default = OK];
+}
+
+
+// GUI -> Core
+// id: 0x1094
+message JoinRoom {
+   required string name = 1;
+}
+
+
+// GUI -> Core
+// id: 0x1098
+message LeaveRoom {
+   required string name = 1;
 }
 
 

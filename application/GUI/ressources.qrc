@@ -16,11 +16,9 @@
         <file>ressources/refresh-down.png</file>
         <file>ressources/refresh-hover.png</file>
         <file>ressources/settings.png</file>
-        <file>ressources/chat.png</file>
         <file>ressources/arrow_down.png</file>
         <file>ressources/arrow_up.png</file>
         <file>ressources/explore_folder.png</file>
-        <file>ressources/chat_new_message.png</file>
         <file>ressources/icon.png</file>
         <file>ressources/log.png</file>
         <file>ressources/log_active.png</file>
@@ -33,6 +31,15 @@
         <file>ressources/marble_red.png</file>
         <file>ressources/marble_blue.png</file>
         <file>ressources/marble_green.png</file>
+        <file>ressources/text_bold.png</file>
+        <file>ressources/text_italic.png</file>
+        <file>ressources/text_underline.png</file>
+        <file>ressources/join_chat_room.png</file>
+        <file>ressources/chat_new_mess.png</file>
+        <file>ressources/chat_room.png</file>
+        <file>ressources/chat_room_new_mess.png</file>
+        <file>ressources/chat.png</file>
         <file>ressources/error_mini.png</file>
+        <file>ressources/emoticon.png</file>
     </qresource>
 </RCC>

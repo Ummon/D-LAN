@@ -59,7 +59,7 @@ namespace GUI
 
    private:
       QCheckBox model;
-    };
+   };
 }
 
 #endif
