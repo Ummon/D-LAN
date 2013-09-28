@@ -21,8 +21,11 @@
 #include <QtDebug>
 #include <QByteArray>
 #include <QFile>
+#include <QMap>
 #include <QDir>
 #include <QElapsedTimer>
+
+#include <Libs/MersenneTwister.h>
 
 #include <Protos/common.pb.h>
 #include <Protos/core_settings.pb.h>
@@ -36,6 +39,8 @@
 #include <ZeroCopyStreamQIODevice.h>
 #include <ProtoHelper.h>
 #include <SortedList.h>
+#include <SortedArray.h>
+#include <MapArray.h>
 #include <BloomFilter.h>
 #include <TransferRateCalculator.h>
 using namespace Common;
@@ -46,6 +51,7 @@ Tests::Tests()
 
 void Tests::initTestCase()
 {
+   QTest::qSleep(100); // If there is no delay when debugging, the debugger is not attached fast enough and some breackpoints are not triggered... very strange.
    qDebug() << "Application directory path (where the settings and persistent data are put) : " << Global::getDataFolder(Common::Global::DataFolderType::ROAMING, false);
 }
 
@@ -194,6 +200,253 @@ void Tests::sortedList()
    QVERIFY(list.getList().isEmpty());
 }
 
+void Tests::sortedArray()
+{
+   // Insert 75 ASCII characters.
+   QList<char> orderedList;
+   for (char c = '0'; c <= 'z'; c++)
+      orderedList << c;
+
+   // Repeate the tests 1000 times with a random insert order and a random remove order each time.
+   for (int seed = 1; seed <= 1000; seed++)
+   {
+      MTRand mtRand(seed);
+
+      SortedArray<char, 5> array;
+
+      // Insert the elements in a pseudo random order.
+      while (array.size() != orderedList.size())
+         array.insert(orderedList[mtRand.randInt(orderedList.size()-1)]);
+
+      // Test if all values are known.
+      for (int i = 0; i < array.size(); i++)
+         QVERIFY(orderedList.contains(array.getFromValue(orderedList[i])));
+
+      // Access with integer index.
+      for (int i = 0; i < array.size(); i++)
+         QCOMPARE(array.getFromIndex(i), orderedList[i]);
+
+      // Iterator.
+      QListIterator<char> j(orderedList);
+      for (SortedArray<char, 5>::Iterator i(array); i.hasNext() && j.hasNext();)
+         QCOMPARE(i.next(), j.next());
+
+      int unknownElement = array.indexOf('*');
+      QCOMPARE(unknownElement, -1);
+
+      // Remove the elements in a pseudo random order.
+      while (array.size() != 0)
+      {
+         const char letter = orderedList[mtRand.randInt(orderedList.size()-1)];
+         array.remove(letter);
+         QVERIFY(!array.contains(letter));
+      }
+   }
+
+   {
+      // Test other comparaison functions.
+      QList<QString> values { "albinos", "Andrew", "double", "David" };
+      QList<QString> res1 { "Andrew", "David", "albinos", "double" };
+      QList<QString> res2 { "albinos", "Andrew", "David", "double" };
+      SortedArray<QString> array;
+
+      for (int i = 0; i < values.size(); i++)
+         array.insert(values[i]);
+
+      qDebug() << "Sorted values without a sorted function defined:";
+      for (int i = 0; i < array.size(); i++)
+      {
+         QCOMPARE(array.getFromIndex(i), res1[i]);
+         qDebug() << array.getFromIndex(i);
+      }
+
+      array.setSortedFunction(
+         [](const QString& s1, const QString& s2) { return s1.toLower() < s2.toLower(); }
+      );
+
+      qDebug() << "Sorted values with a sorted function defined:";
+      for (int i = 0; i < array.size(); i++)
+      {
+         QCOMPARE(array.getFromIndex(i), res2[i]);
+         qDebug() << array.getFromIndex(i);
+      }
+
+      array.insert("actual");
+      QCOMPARE(array.getFromIndex(0), QString("actual"));
+   }
+}
+
+void Tests::sortedArrayBenchmark()
+{
+   MTRand mtRand(42);
+   const int wordSize = 5;
+   const int nbWords = 200000;
+   const int M = 7;
+
+   QList<QString> names;
+   names.reserve(nbWords);
+   for (int i = 0; i < nbWords; i++)
+   {
+      QString word(wordSize, 'a');
+      for (int j = 0; j < word.size(); j++)
+         word[j] = 'A' + static_cast<char>(mtRand.randInt(25));
+      names << word;
+   }
+
+   QList<QString> namesNotInserted;
+   names.reserve(nbWords / 20);
+   for (int i = 0; i < nbWords / 20; i++)
+   {
+      QString word(wordSize, 'a');
+      for (int j = 0; j < word.size(); j++)
+         word[j] = 'A' + static_cast<char>(mtRand.randInt(25));
+      namesNotInserted << word;
+   }
+
+   QElapsedTimer timer;
+
+   ///// Insert /////
+   // SortedArray.
+   qDebug() << "SortedArray, insert: Elapsed time [ms]:";
+   timer.start();
+   QList<SortedArray<QString, M>> arrayBenchmarks;
+   for (int n = nbWords / 20; n <= nbWords; n += nbWords / 20)
+   {
+      SortedArray<QString, M> array;
+      for (int i = 0; i < n; i++)
+         array.insert(names[i]);
+      arrayBenchmarks << array;
+   }
+   qDebug() << timer.elapsed();
+
+   // QMap.
+   qDebug() << "QMap, insert: Elapsed time [ms]:";
+   timer.start();
+   QList<QMap<QString, int>> mapBenchmarks;
+   for (int n = nbWords / 20; n <= nbWords; n += nbWords / 20)
+   {
+      QMap<QString, int> map;
+      for (int i = 0; i < n; i++)
+         map.insert(names[i], 0);
+      mapBenchmarks << map;
+   }
+   qDebug() << timer.elapsed();
+
+   ///// Lookup /////
+   // SortedArray.
+   qDebug() << "SortedArray (M="<< M <<"), lookup [ms] for 100 *" << nbWords / 20 << "known elements + 100 *" << nbWords / 20 << "unknown elements";
+   for (int i = 0; i < arrayBenchmarks.size(); i++)
+   {
+      timer.start();
+      for (int k = 0; k < 100; k++)
+         for (int j = 0; j < nbWords / 20; j++)
+         {
+            arrayBenchmarks[i].contains(names[j]); // Known values.
+            arrayBenchmarks[i].contains(namesNotInserted[j]); // Unknown values.
+         }
+      qDebug() << arrayBenchmarks[i].size() << "\t" << timer.elapsed();
+   }
+
+   // QMap.
+   qDebug() << "QMap, lookup [ms] for 100 *" << nbWords / 20 << "known elements + 100 *" << nbWords / 20 << "unknown elements";
+   for (int i = 0; i < mapBenchmarks.size(); i++)
+   {
+      timer.start();
+      for (int k = 0; k < 100; k++)
+         for (int j = 0; j < nbWords / 20; j++)
+         {
+            mapBenchmarks[i].contains(names[j]); // Known values.
+            mapBenchmarks[i].contains(namesNotInserted[j]); // Unknown values.
+         }
+      qDebug() << mapBenchmarks[i].size() << "\t" << timer.elapsed();
+   }
+
+   ///// Delete /////
+   // SortedArray.
+   qDebug() << "SortedArray, delete: Elapsed time [ms]:";
+   timer.start();
+   int j = 0;
+   for (int n = nbWords / 20; n <= nbWords; n += nbWords / 20)
+   {
+      for (int i = 0; i < n; i++)
+         arrayBenchmarks[j].remove(names[i]);
+      QCOMPARE(arrayBenchmarks[j].size(), 0);
+      j++;
+   }
+   qDebug() << timer.elapsed();
+
+   // QMap.
+   qDebug() << "QMap, delete: Elapsed time [ms]:";
+   timer.start();
+   j = 0;
+   for (int n = nbWords / 20; n <= nbWords; n += nbWords / 20)
+   {
+      for (int i = 0; i < n; i++)
+         mapBenchmarks[j].remove(names[i]);
+      QCOMPARE(mapBenchmarks[j].size(), 0);
+      j++;
+   }
+   qDebug() << timer.elapsed();
+}
+
+void Tests::mapArray()
+{
+   MapArray<Common::Hash, QString> array;
+   const Hash h1 = Hash::fromStr("02e4a0f0e55a308eb83b00eb13023a42cbaffe77");
+   const QString v1("I'm V1");
+
+   const Hash h2 = Hash::fromStr("2c583d414e4a9eb956228209b367e48f59078a4b");
+   const QString v2("I'm V2");
+
+   const Hash h3 = Hash::fromStr("db23d79ed24b1c40b1f88294f877fac03f6dd789");
+   const QString v3("I'm V3");
+
+   array.insert(h1, v1);
+   array.insert(h2, v2);
+   array.insert(h3, v3);
+
+   QCOMPARE(array.size(), 3);
+
+   QCOMPARE(array[h1], v1);
+   QCOMPARE(array[h2], v2);
+   QCOMPARE(array[h3], v3);
+
+   const Hash h4 = Hash::fromStr("e8f98b5a2dd96315dfcf7e490e31b2ba6234887c");
+   const QString v4("I'm V4");
+   array[h4] = v4;
+
+   QCOMPARE(array.size(), 4);
+
+   QCOMPARE(array.getValueFromIndex(0), v1);
+   QCOMPARE(array.getValueFromIndex(1), v2);
+   QCOMPARE(array.getValueFromIndex(2), v3);
+   QCOMPARE(array.getValueFromIndex(3), v4);
+
+   QCOMPARE(array.getKeyFromIndex(0), h1);
+   QCOMPARE(array.getKeyFromIndex(1), h2);
+   QCOMPARE(array.getKeyFromIndex(2), h3);
+   QCOMPARE(array.getKeyFromIndex(3), h4);
+
+   QCOMPARE(array.indexOf(h1), 0);
+   QCOMPARE(array.indexOf(h2), 1);
+   QCOMPARE(array.indexOf(h3), 2);
+   QCOMPARE(array.indexOf(h4), 3);
+
+   QVERIFY(!array.remove(Hash::fromStr("ccc5d1390828c75ccd508894d7484bcd6e2f16b9")));
+   QVERIFY(array.remove(h1));
+   QCOMPARE(array.size(), 3);
+   QCOMPARE(array.getKeyFromIndex(0), h2);
+
+   try
+   {
+      array.getValueFromIndex(10);
+      QFAIL("array.getValueFromIndex(10); should throw an exception");
+   }
+   catch (MapArray<Common::Hash, QString>::NotFoundException&)
+   {
+   }
+}
+
 void Tests::transferRateCalculator()
 {
    TransferRateCalculator t;
@@ -279,12 +532,14 @@ void Tests::removeSettings()
 
 void Tests::generateAHash()
 {
+   // Negative values are cast to 'char' because of an error of GCC 4.6 on ARM architecture:
+   // "error: narrowing conversion of ‘-0x0000000000000002c’ from ‘int’ to ‘const char’ inside { } [-fpermissive]"
    const char array[Hash::HASH_SIZE] = {
        0x2d,  0x73,  0x73,  0x6f,
-       0x34, -0x59,  0x38,  0x37,
-      -0x2C,  0x22, -0x09, -0x55,
-      -0x5E,  0x74,  0x0D, -0x7C,
-       0x09, -0x54,  0x60, -0x21
+       0x34, (char)-0x59,  0x38,  0x37,
+      (char)-0x2C,  0x22, (char)-0x09, (char)-0x55,
+      (char)-0x5E,  0x74,  0x0D, (char)-0x7C,
+       0x09, (char)-0x54,  0x60, (char)-0x21
    };
    QByteArray byteArray(array, Hash::HASH_SIZE);
 
@@ -317,10 +572,10 @@ void Tests::compareTwoHash()
 {
    const char array[Hash::HASH_SIZE] = {
        0x2d,  0x73,  0x73,  0x6f,
-       0x34, -0x59,  0x38,  0x37,
-      -0x2C,  0x22, -0x09, -0x55,
-      -0x5E,  0x74,  0x0D, -0x7C,
-       0x09, -0x54,  0x60, -0x21
+       0x34, (char)-0x59,  0x38,  0x37,
+      (char)-0x2C,  0x22, (char)-0x09, (char)-0x55,
+      (char)-0x5E,  0x74,  0x0D, (char)-0x7C,
+       0x09, (char)-0x54,  0x60, (char)-0x21
    };
    QByteArray byteArray(array, Hash::HASH_SIZE);
    QString str("2d73736f34a73837d422f7aba2740d8409ac60df");
@@ -428,10 +683,10 @@ void Tests::messageHeader()
       0x00,  0x00,  0x00,  0x01,
       0x00,  0x00,  0x00,  0x2a,
       0x2d,  0x73,  0x73,  0x6f,
-      0x34, -0x59,  0x38,  0x37,
-     -0x2C,  0x22, -0x09, -0x55,
-     -0x5E,  0x74,  0x0D, -0x7C,
-      0x09, -0x54,  0x60, -0x21
+      0x34, (char)-0x59,  0x38,  0x37,
+     (char)-0x2C,  0x22, (char)-0x09, (char)-0x55,
+     (char)-0x5E,  0x74,  0x0D, (char)-0x7C,
+      0x09, (char)-0x54,  0x60, (char)-0x21
    };
 
    const QString peerID("2d73736f34a73837d422f7aba2740d8409ac60df");

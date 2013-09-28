@@ -31,6 +31,7 @@
 #include <Core/UploadManager/IUploadManager.h>
 #include <Core/DownloadManager/IDownloadManager.h>
 #include <Core/NetworkListener/INetworkListener.h>
+#include <Core/ChatSystem/IChatSystem.h>
 
 #include <IRemoteControlManager.h>
 #include <priv/RemoteConnection.h>
@@ -47,7 +48,8 @@ namespace RCM
          QSharedPointer<PM::IPeerManager> peerManager,
          QSharedPointer<UM::IUploadManager> uploadManager,
          QSharedPointer<DM::IDownloadManager> downloadManager,
-         QSharedPointer<NL::INetworkListener> networkListener
+         QSharedPointer<NL::INetworkListener> networkListener,
+         QSharedPointer<CS::IChatSystem> chatSystem
       );
 
       ~RemoteControlManager();
@@ -55,7 +57,6 @@ namespace RCM
    private slots:
       void newConnection();
       void connectionDeleted(RemoteConnection* sender);
-      void chatMessageSent(const QString& message);
 
    private:      
       LOG_INIT_H("RemoteControlManager");
@@ -65,6 +66,7 @@ namespace RCM
       QSharedPointer<UM::IUploadManager> uploadManager;
       QSharedPointer<DM::IDownloadManager> downloadManager;
       QSharedPointer<NL::INetworkListener> networkListener;
+      QSharedPointer<CS::IChatSystem> chatSystem;
 
       QTcpServer tcpServerIPv4;
       QTcpServer tcpServerIPv6;

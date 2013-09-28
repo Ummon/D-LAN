@@ -59,7 +59,7 @@ public slots:
 private:
    QList<Protos::Core::GetEntriesResult> entriesResultList;
 
-   Protos::Core::GetHashesResult lastGesHashesResult;
+   Protos::Core::GetHashesResult lastGetHashesResult;
 
    quint32 nbHashes;
    quint32 currentHash;

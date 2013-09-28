@@ -40,9 +40,11 @@ namespace Common
 
          // UDP.
          CORE_IM_ALIVE =                  0x0001,
+         CORE_GOODBYE =                   0x00FE,
          CORE_CHUNKS_OWNED =              0x0002,
 
-         CORE_CHAT_MESSAGE =              0x0011,
+         CORE_CHAT_MESSAGES =             0x0011,
+         CORE_GET_LAST_CHAT_MESSAGES =    0x0018,
 
          CORE_FIND =                      0x0021,
          CORE_FIND_RESULT =               0x0022,
@@ -90,6 +92,9 @@ namespace Common
          GUI_DOWNLOAD =                   0x1081,
 
          GUI_CHAT_MESSAGE =               0x1091,
+         GUI_CHAT_MESSAGE_RESULT =        0x1092,
+         GUI_JOIN_ROOM =                  0x1094,
+         GUI_LEAVE_ROOM =                 0x1098,
 
          GUI_REFRESH =                    0x10A1,
 
@@ -105,6 +110,7 @@ namespace Common
 
       bool isNull() const;
       void setNull();
+
       QString toStr() const;
 
       static QString messToStr(MessageType type);

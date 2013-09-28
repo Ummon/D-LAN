@@ -1,8 +1,8 @@
 h1. D-LAN
 
-D-LAN is an open source LAN file sharing software.
+D-LAN is an open source decentralized LAN file sharing software.
 
-The goal is to easily share some files and folders in a local area network environment like a LAN-Party. All clients are full-trusted. After you launched D-LAN, you will see all other people and theirs sharing automatically without special configuration.
+The goal is to easily share some files and folders on a local area network environment like a LAN-Party. After you launched D-LAN, you will see all other people and theirs sharing automatically without special configuration or central server.
 
 * "Website":http://www.d-lan.net
 * "Development wiki":http://dev.d-lan.net/projects/pmp/wiki
@@ -17,8 +17,13 @@ h2. Features
 * Very easy to use: no configuration, no central server.
 * Fast indexed search among all other peers.
 * Browse all files and folders of any other peer.
-* Manage the download queue. It includes adding, deleting or reordering.
-* Global chatting.
+* Manage the download queue. It includes adding, deleting, pausing or reordering.
+* A global persisted chat with channels, formatting and smiles features.
 * D-LAN can run without graphic interface (GUI) and be controlled remotely.
 * Open source. Code source distributed under GPLv3 license.
 * Free of any sort of ads or malwares.
+
+
+h2. Development
+
+D-LAN can be built under Windows or Linux (Ubuntu), see here for more information: http://dev.d-lan.net/projects/pmp/wiki/#Technical

@@ -23,7 +23,6 @@ using namespace RCC;
 #include <QCoreApplication>
 
 #include <LogManager/Builder.h>
-#include <ZeroCopyStreamQIODevice.h>
 #include <ProtoHelper.h>
 #include <Constants.h>
 
@@ -111,9 +110,29 @@ void CoreConnection::disconnectFromCore()
    this->temp()->disconnectFromCore();
 }
 
-void CoreConnection::sendChatMessage(const QString& message)
+QSharedPointer<ISendChatMessageResult> CoreConnection::sendChatMessage(const QString& message)
 {
-   this->current()->sendChatMessage(message);
+   return this->current()->sendChatMessage(this->SOCKET_TIMEOUT, message);
+}
+
+QSharedPointer<ISendChatMessageResult> CoreConnection::sendChatMessage(const QString& message, const QString& roomName)
+{
+   return this->current()->sendChatMessage(this->SOCKET_TIMEOUT, message, roomName);
+}
+
+QSharedPointer<ISendChatMessageResult> CoreConnection::sendChatMessage(const QString& message, const QString& roomName, const QList<Common::Hash>& peerIDsAnswered)
+{
+   return this->current()->sendChatMessage(this->SOCKET_TIMEOUT, message, roomName, peerIDsAnswered);
+}
+
+void CoreConnection::joinRoom(const QString& room)
+{
+   this->current()->joinRoom(room);
+}
+
+void CoreConnection::leaveRoom(const QString& room)
+{
+   this->current()->leaveRoom(room);
 }
 
 void CoreConnection::setCoreSettings(const Protos::GUI::CoreSettings settings)
@@ -121,9 +140,10 @@ void CoreConnection::setCoreSettings(const Protos::GUI::CoreSettings settings)
    this->current()->setCoreSettings(settings);
 }
 
-void CoreConnection::setCoreLanguage(const QLocale locale)
+void CoreConnection::setCoreLanguage(const QLocale& locale)
 {
    this->current()->setCoreLanguage(locale);
+   this->temp()->setCoreLanguage(locale);
 }
 
 bool CoreConnection::setCorePassword(const QString& newPassword, const QString& oldPassword)
@@ -233,7 +253,7 @@ void CoreConnection::tempConnected()
 
    connect(this->current(), SIGNAL(disconnected(bool)), this, SIGNAL(disconnected(bool)));
    connect(this->current(), SIGNAL(newState(const Protos::GUI::State&)), this, SIGNAL(newState(const Protos::GUI::State&)));
-   connect(this->current(), SIGNAL(newChatMessages(const Protos::GUI::EventChatMessages&)), this, SIGNAL(newChatMessages(const Protos::GUI::EventChatMessages&)));
+   connect(this->current(), SIGNAL(newChatMessages(const Protos::Common::ChatMessages&)), this, SIGNAL(newChatMessages(const Protos::Common::ChatMessages&)));
    connect(this->current(), SIGNAL(newLogMessages(QList<QSharedPointer<LM::IEntry>>)), this, SIGNAL(newLogMessages(QList<QSharedPointer<LM::IEntry>>)));
    emit connected();
 }

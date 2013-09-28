@@ -24,7 +24,6 @@ using namespace PM;
 #include <Protos/core_protocol.pb.h>
 #include <Protos/common.pb.h>
 
-#include <Common/ZeroCopyStreamQIODevice.h>
 #include <Common/Settings.h>
 #include <Common/ProtoHelper.h>
 
@@ -119,7 +118,7 @@ Common::Hash PeerMessageSocket::getRemotePeerID() const
    return this->MessageSocket::getRemoteID();
 }
 
-void PeerMessageSocket::send(MessageHeader::MessageType type, const google::protobuf::Message& message)
+void PeerMessageSocket::send(Common::MessageHeader::MessageType type, const google::protobuf::Message& message)
 {
    if (!this->isListening())
       return;
@@ -188,7 +187,7 @@ void PeerMessageSocket::finished(bool closeTheSocket)
 void PeerMessageSocket::close()
 {
    this->active = false;
-
+   this->stopListening();
    emit closed(this);
 }
 
@@ -254,16 +253,16 @@ void PeerMessageSocket::entriesResultTimeout()
       this->sendEntriesResultMessage();
 }
 
-void PeerMessageSocket::onNewMessage(Common::MessageHeader::MessageType type, const google::protobuf::Message& message)
+void PeerMessageSocket::onNewMessage(const Common::Message& message)
 {
-   switch (type)
+   switch (message.getHeader().getType())
    {
    case Common::MessageHeader::CORE_GET_ENTRIES:
       {
          if (!this->entriesResultsToReceive.isEmpty())
             return;
 
-         const Protos::Core::GetEntries& getEntries = static_cast<const Protos::Core::GetEntries&>(message);
+         const Protos::Core::GetEntries& getEntries = message.getMessage<Protos::Core::GetEntries>();
 
          for (int i = 0; i < getEntries.dirs().entry_size(); i++)
          {
@@ -292,7 +291,7 @@ void PeerMessageSocket::onNewMessage(Common::MessageHeader::MessageType type, co
 
    case Common::MessageHeader::CORE_GET_HASHES:
       {
-         const Protos::Core::GetHashes& getHashes = static_cast<const Protos::Core::GetHashes&>(message);
+         const Protos::Core::GetHashes& getHashes = message.getMessage<Protos::Core::GetHashes>();
 
          this->currentHashesResult = this->fileManager->getHashes(getHashes.file());
          connect(this->currentHashesResult.data(), SIGNAL(nextHash(Common::Hash)), this, SLOT(nextAskedHash(Common::Hash)), Qt::QueuedConnection);
@@ -312,7 +311,7 @@ void PeerMessageSocket::onNewMessage(Common::MessageHeader::MessageType type, co
 
    case Common::MessageHeader::CORE_GET_HASHES_RESULT:
       {
-         const Protos::Core::GetHashesResult& getHashesResult = static_cast<const Protos::Core::GetHashesResult&>(message);
+         const Protos::Core::GetHashesResult& getHashesResult = message.getMessage<Protos::Core::GetHashesResult>();
          this->nbHash = getHashesResult.nb_hash();
       }
       break;
@@ -326,7 +325,7 @@ void PeerMessageSocket::onNewMessage(Common::MessageHeader::MessageType type, co
 
    case Common::MessageHeader::CORE_GET_CHUNK:
       {
-         const Protos::Core::GetChunk& getChunkMessage = static_cast<const Protos::Core::GetChunk&>(message);
+         const Protos::Core::GetChunk& getChunkMessage = message.getMessage<Protos::Core::GetChunk>();
 
          const Common::Hash hash(getChunkMessage.chunk().hash());
          if (hash.isNull())

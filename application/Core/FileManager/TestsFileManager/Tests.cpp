@@ -61,7 +61,7 @@ void Tests::initTestCase()
    try
    {
       QString tempFolder = Common::Global::setCurrentDirToTemp("FileManagerTests");
-      qDebug() << "Application folder path (where the persistent data is put) : " <<  Global::getDataFolder(Common::Global::DataFolderType::LOCAL, false);
+      qDebug() << "Application folder path (where the persistent data is put) : " <<  Common::Global::getDataFolder(Common::Global::DataFolderType::LOCAL, false);
       qDebug() << "The file created during this test are put in : " << tempFolder;
    }
    catch(Common::Global::UnableToSetTempDirException& e)
@@ -156,7 +156,7 @@ void Tests::addASharedDirectoryIncoming()
 
    this->sharedDirs << QDir::currentPath().append("/incoming/");
    this->fileManager->setSharedDirs(this->sharedDirs);
-   QList<SharedDir> paths = this->fileManager->getSharedDirs();
+   QList<Common::SharedDir> paths = this->fileManager->getSharedDirs();
    QVERIFY(paths.size() == 1);
    QCOMPARE(paths.at(0).path, this->sharedDirs.at(0));
 }
@@ -167,7 +167,7 @@ void Tests::addASharedDirectory()
 
    this->sharedDirs << QDir::currentPath().append("/sharedDirs/share1/");
    this->fileManager->setSharedDirs(this->sharedDirs);
-   QList<SharedDir> paths = this->fileManager->getSharedDirs();
+   QList<Common::SharedDir> paths = this->fileManager->getSharedDirs();
    QVERIFY(paths.size() == 2);
    QCOMPARE(paths.at(1).path, this->sharedDirs.at(1));
 }
@@ -177,7 +177,7 @@ void Tests::addAnAlreadySharedDirectory()
    qDebug() << "===== addAnAlreadySharedDirectory() =====";
 
    this->fileManager->setSharedDirs(this->sharedDirs);
-   QList<SharedDir> paths = this->fileManager->getSharedDirs();
+   QList<Common::SharedDir> paths = this->fileManager->getSharedDirs();
    QVERIFY(paths.size() == 2);
    QCOMPARE(paths.at(1).path, this->sharedDirs.at(1));
 }
@@ -186,13 +186,13 @@ void Tests::swapTwoDirectories()
 {
    this->sharedDirs.move(1, 0);
    this->fileManager->setSharedDirs(this->sharedDirs);
-   QList<SharedDir> paths = this->fileManager->getSharedDirs();
+   QList<Common::SharedDir> paths = this->fileManager->getSharedDirs();
    QCOMPARE(paths.at(0).path, this->sharedDirs.at(0));
    QCOMPARE(paths.at(1).path, this->sharedDirs.at(1));
 
    this->sharedDirs.move(1, 0);
    this->fileManager->setSharedDirs(this->sharedDirs);
-   QList<SharedDir> paths2 = this->fileManager->getSharedDirs();
+   QList<Common::SharedDir> paths2 = this->fileManager->getSharedDirs();
    QCOMPARE(paths2.at(0).path, this->sharedDirs.at(0));
    QCOMPARE(paths2.at(1).path, this->sharedDirs.at(1));
 }
@@ -211,7 +211,7 @@ void Tests::addInexistingSharedDirectory()
    {
       QVERIFY(e.paths.size() == 1);
       QCOMPARE(e.paths.at(0), this->sharedDirs.last());
-      qDebug() << "This directory hasn't been found : " << e.paths.at(0) << " (Exception thrown)";
+      qDebug() << "This directory hasn't been found: " << e.paths.at(0) << " (Exception thrown)";
    }
    this->sharedDirs.removeLast();
 }
@@ -416,7 +416,7 @@ void Tests::getAnExistingChunk()
    if (chunk.isNull())
       QFAIL("Chunk not found");
    else
-      qDebug() << "Chunk found : " << chunk->getHash().toStr();
+      qDebug() << "Chunk found: " << chunk->getHash().toStr();
 }
 
 void Tests::getAnUnexistingChunk()
@@ -425,7 +425,7 @@ void Tests::getAnUnexistingChunk()
 
    QSharedPointer<IChunk> chunk = this->fileManager->getChunk(Common::Hash::fromStr("928e1bd85c0957c4af0cf69cf76f6ed6898cfd2d"));
    if (chunk.isNull())
-      qDebug() << "Chunk not found : ok" << Common::Hash::rand().toStr();
+      qDebug() << "Chunk not found: OK" << Common::Hash::rand().toStr();
    else
       QFAIL("No chunk must be found");
 }
@@ -467,6 +467,7 @@ void Tests::getHashesFromAFileEntry2()
       file1.resize(128 * 1024 * 1024); // 128Mo
       file2.resize(128 * 1024 * 1024); // 128Mo
    }
+
    QTest::qWait(2000); // Begin the computing of the big2.bin hashes.
 
    Protos::Common::Entries sharedDirs = this->fileManager->getEntries();
@@ -481,6 +482,7 @@ void Tests::getHashesFromAFileEntry2()
    HashesReceiver hashesReceiver;
    connect(result.data(), SIGNAL(nextHash(Common::Hash)), &hashesReceiver, SLOT(nextHash(Common::Hash)));
    Protos::Core::GetHashesResult res = result->start(); // Should stop the computing of 'big2.bin' and switch to 'big3.bin'.
+   qDebug() << res.status();
    QCOMPARE(res.status(), Protos::Core::GetHashesResult_Status_OK);
 
    QTest::qWait(4000);
@@ -596,7 +598,7 @@ void Tests::findFilesWithResultFragmentation()
 
    QString terms("bbb");
    QList<Protos::Common::FindResult> results = this->fileManager->find(terms, 10000, FRAGMENT_MAX_SIZE);
-   qDebug() << "Nb fragment : " << results.size();
+   qDebug() << "Nb fragment: " << results.size();
    for (int i = 0; i < results.size(); i++)
    {
       qDebug() << "Fragment number " << i << ", size = " << results[i].ByteSize();
@@ -628,7 +630,7 @@ void Tests::haveChunks()
    for (int i = 0; i < result.size(); i++)
    {
       QVERIFY(result[i] == expectedResult[i]);
-      qDebug() << hashes[i].toStr() << " : " << (result[i] ? "Yes" : "No");
+      qDebug() << hashes[i].toStr() << ":" << (result[i] ? "Yes" : "No");
    }
 }
 
@@ -636,7 +638,7 @@ void Tests::printAmount()
 {
    qDebug() << "===== printAmount() =====";
 
-   qDebug() << "Sharing amount : " << this->fileManager->getAmount() << " bytes";
+   qDebug() << "Sharing amount: " << this->fileManager->getAmount() << " bytes";
 }
 
 void Tests::rmSharedDirectory()
@@ -659,10 +661,13 @@ void Tests::rmSharedDirectory()
 void Tests::chunksPerformance()
 {
    qDebug() << "===== chunksPerformance() =====";
-
+     
+   const int HASH_POOL_SIZE = 100000;
+   const int NB_HASHES_TO_CHECK = 10000000;
+ 
    Chunks chunks;
-
-   for (int i = 0; i < 100000; i++)
+  
+   for (int i = 0; i < HASH_POOL_SIZE; i++)
    {
       QSharedPointer<Chunk> chunk(new Chunk(nullptr, 0, 0));
       chunk->setHash(Common::Hash::rand());
@@ -674,11 +679,16 @@ void Tests::chunksPerformance()
    for (int i = 0; i < nbHashes; i++)
       hashes << Common::Hash::rand();
 
-   for (int i = 0; i < 100000000; i++)
+   QElapsedTimer timer;
+   timer.start();
+
+   for (int i = 0; i < NB_HASHES_TO_CHECK; i++)
    {
       if(chunks.contains(hashes[i % nbHashes]))
          QFAIL("chunks cannot contains a random chunk");
    }
+
+   qDebug() << "Time to check if" << NB_HASHES_TO_CHECK << "hashes exist among a pool of" << HASH_POOL_SIZE << "hashes:" << timer.elapsed() << "ms";
 }
 
 void Tests::cleanupTestCase()
@@ -730,7 +740,7 @@ void Tests::deleteAllFiles()
 
 void Tests::printSearch(const QString& terms, const Protos::Common::FindResult& result)
 {
-   qDebug() << "Search : " << terms;
+   qDebug() << "Search: " << terms;
    for (int i = 0; i < result.entry_size(); i++)
       qDebug() << "[" << result.entry(i).level() << "] " << Common::ProtoHelper::getStr(result.entry(i).entry(), &Protos::Common::Entry::name);
 }
@@ -750,7 +760,7 @@ void Tests::compareStrRegexp(const QString& regexp, const QString& str)
    if (!expected.exactMatch(str))
    {
       int l = expected.matchedLength();
-      QByteArray message = QString("This string doesn't match the expected regular expression from character %1 : \n%2").arg(l).arg(str).toUtf8();
+      QByteArray message = QString("This string doesn't match the expected regular expression from character %1: \n%2").arg(l).arg(str).toUtf8();
       QFAIL(message.data());
    }
 }

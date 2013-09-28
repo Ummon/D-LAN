@@ -73,9 +73,13 @@ namespace RCC
 
       void disconnectFromCore();
 
-      void sendChatMessage(const QString& message);
+      QSharedPointer<ISendChatMessageResult> sendChatMessage(const QString& message);
+      QSharedPointer<ISendChatMessageResult> sendChatMessage(const QString& message, const QString& roomName);
+      QSharedPointer<ISendChatMessageResult> sendChatMessage(const QString& message, const QString& roomName, const QList<Common::Hash>& peerIDsAnswered);
+      void joinRoom(const QString& room);
+      void leaveRoom(const QString& room);
       void setCoreSettings(const Protos::GUI::CoreSettings settings);
-      void setCoreLanguage(const QLocale locale);
+      void setCoreLanguage(const QLocale& locale);
       bool setCorePassword(const QString& newPassword, const QString& oldPassword = QString());
       void resetCorePassword();
 

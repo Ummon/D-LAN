@@ -19,16 +19,23 @@
 #ifndef COMMON_BLOOMFILTER_H
 #define COMMON_BLOOMFILTER_H
 
+#include <qmath.h>
+
 #include <Common/Hash.h>
 
 /**
   * @class Common::BloomFilter
   * A very simple bloom filter implementation for the class 'Common::Hash'.
-  * Calibrated for n = 100'000 hashes (~6.1 TiB) and p = 0.006 (probability of false positive).
+  * Calibrated by default for n = 100'000 hashes (~6.1 TiB of chunks) and p = 0.006 (probability of false positive).
   *
   * We don't use any hash functions to compute the positions, instead we use part of the hash. See the 'position(..)' function.
   *
   * More information: http://en.wikipedia.org/wiki/Bloom_filter
+  *
+  * Description of the parameters:
+  *  - 'w' Is the number of bit allocated to compute a position in the filter. Thus the filter size (in bits) is 2^w. The default size (w = 20) takes 128 KiB of memory.
+  *  - w * k must be lower or equal than 8 * HASH_SIZE because we extract each 'k' positions from the hash data.
+  *  - 'w' must be lower or equal than 32 bits,
   *
   * @remarks (x >> 3) is used as a division by 8.
   */
@@ -37,12 +44,17 @@ namespace Common
 {
    class BloomFilter
    {
-      static const int w = 20; // Size of the integer used to find a position.
-      static const int m = 1048576; // Total number of positions: 2^20. It corresponds to a 128 KiB array.
-      static const int k = 7; // Number of positions set per hash.
-
    public:
-      BloomFilter() { this->reset(); }
+      BloomFilter(int w = 20, int n = 100000) :
+         w(w), m(qPow(2, w)), k(qLn(2) * m / n), wMask((1 << this->w) - 1)
+      {
+         this->bitArray = new uchar[this->m >> 3]();
+      }
+
+      ~BloomFilter()
+      {
+         delete[] this->bitArray;
+      }
 
       inline void add(const Hash& hash);
       inline bool test(const Hash& hash) const;
@@ -50,11 +62,17 @@ namespace Common
 
    private:
       /**
-        * Returns the position value of 'n',  0 <= n <= k.
+        * Returns the position value of 'i',  0 <= i <= k.
         */
-      inline static quint32 position(const Hash& hash, int n);
+      inline quint32 position(const Hash& hash, int i) const;
 
-      uchar bitArray[m >> 3];
+      const int w;
+      const int m; // Total number of positions.
+      const int k; // Number of positions set per hash: ln(2) * m / n.
+
+      const quint32 wMask;
+
+      uchar* bitArray;
    };
 }
 
@@ -83,16 +101,15 @@ inline bool Common::BloomFilter::test(const Hash& hash) const
 
 inline void Common::BloomFilter::reset()
 {
-   memset(this->bitArray, 0, sizeof(this->bitArray));
+   memset(this->bitArray, 0, sizeof(uchar) * (this->m >> 3));
 }
 
-inline quint32 Common::BloomFilter::position(const Hash& hash, int n)
+inline quint32 Common::BloomFilter::position(const Hash& hash, int i) const
 {
    const char* hashData = hash.getData();
-   const quint32 pPos = n * w; // Position in 'hashData' of 'p'.
-   const quint32* p = reinterpret_cast<const quint32*>(hashData + (pPos >> 3));
-   static const quint32 wMask = (1 << w) - 1;
-   return *p >> (32 - w - pPos % 8) & wMask;
+   const quint32 pPos = i * this->w; // Position in 'hashData' of 'p'.
+   const quint32* p = reinterpret_cast<const quint32*>(hashData + (pPos >> 3));   
+   return *p >> (32 - this->w - pPos % 8) & this->wMask;
 }
 
 #endif

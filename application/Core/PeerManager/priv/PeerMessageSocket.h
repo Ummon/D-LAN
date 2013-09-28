@@ -76,7 +76,7 @@ namespace PM
 
       Common::Hash getRemotePeerID() const;
 
-      void send(MessageHeader::MessageType type, const google::protobuf::Message& message);
+      void send(Common::MessageHeader::MessageType type, const google::protobuf::Message& message);
 
       bool isActive() const;
       void setActive();
@@ -101,7 +101,7 @@ namespace PM
       void entriesResultTimeout();
 
    private:
-      void onNewMessage(Common::MessageHeader::MessageType type, const google::protobuf::Message& message);
+      void onNewMessage(const Common::Message& message);
       void onNewDataReceived();
       void onDisconnected();
       void initUnactiveTimer();

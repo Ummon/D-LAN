@@ -34,7 +34,7 @@ using namespace DM;
 #include <priv/DownloadPredicate.h>
 #include <priv/Constants.h>
 
-LOG_INIT_CPP(DownloadManager);
+LOG_INIT_CPP(DownloadManager)
 
 DownloadManager::DownloadManager(QSharedPointer<FM::IFileManager> fileManager, QSharedPointer<PM::IPeerManager> peerManager) :
    NUMBER_OF_DOWNLOADER(static_cast<int>(SETTINGS.get<quint32>("number_of_downloader"))),
@@ -42,7 +42,8 @@ DownloadManager::DownloadManager(QSharedPointer<FM::IFileManager> fileManager, Q
    peerManager(peerManager),
    threadPool(NUMBER_OF_DOWNLOADER),
    numberOfDownloadThreadRunning(0),
-   queueChanged(false)
+   queueChanged(false),
+   queueLoaded(false)
 {
    this->threadPool.setStackSize(MIN_DOWNLOAD_THREAD_STACK_SIZE + SETTINGS.get<quint32>("buffer_size_writing"));
 
@@ -50,6 +51,7 @@ DownloadManager::DownloadManager(QSharedPointer<FM::IFileManager> fileManager, Q
    connect(&this->occupiedPeersAskingForEntries, SIGNAL(newFreePeer(PM::IPeer*)), this, SLOT(peerNoLongerAskingForEntries(PM::IPeer*)));
    connect(&this->occupiedPeersDownloadingChunk, SIGNAL(newFreePeer(PM::IPeer*)), this, SLOT(peerNoLongerDownloadingChunk(PM::IPeer*)));
 
+   // We wait the cache is loaded before loading the downloads queue.
    connect(this->fileManager.data(), SIGNAL(fileCacheLoaded()), this, SLOT(fileCacheLoaded()));
 
    this->startErroneousDownloadTimer.setInterval(RESTART_DOWNLOADS_PERIOD_IF_ERROR);
@@ -393,6 +395,9 @@ void DownloadManager::scanTheQueue()
    L_DEBU("Scanning terminated");
 }
 
+/**
+  * Restart the first erroneous download.
+  */
 void DownloadManager::restartErroneousDownloads()
 {
    while (Download* download = this->downloadQueue.getAnErroneousDownload())
@@ -400,7 +405,7 @@ void DownloadManager::restartErroneousDownloads()
       if (download->isStatusErroneous())
       {
          download->start(); // We restart the download.
-         L_DEBU(QString("Rescan timer timedout, the queue will be recanned. File restarted: %1").arg(Common::ProtoHelper::getRelativePath(download->getLocalEntry())));
+         L_DEBU(QString("Rescan timer timedout, the queue will be rescanned. File restarted: %1").arg(Common::ProtoHelper::getRelativePath(download->getLocalEntry())));
          this->startErroneousDownloadTimer.start();
          break;
       }
@@ -448,12 +453,13 @@ void DownloadManager::loadQueueFromFile()
       );
    }
 
+   this->queueLoaded = true;
    this->saveTimer.start();
 }
 
 void DownloadManager::saveQueueToFile()
 {
-   if (this->queueChanged)
+   if (this->queueChanged && this->queueLoaded)
    {
       L_DEBU("Persisting queue ..");
 

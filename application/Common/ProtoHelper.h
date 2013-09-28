@@ -67,32 +67,29 @@ namespace Common
    };
 }
 
-/***** Definitions *****/
-using namespace Common;
-
 template <typename T>
-void ProtoHelper::setStr(T& mess, void (T::*setter)(const char*), const QString& str)
+void Common::ProtoHelper::setStr(T& mess, void (T::*setter)(const char*), const QString& str)
 {
    const QByteArray& array = str.toUtf8();
    (mess.*setter)(array.constData());
 }
 
 template <typename T>
-QString ProtoHelper::getStr(const T& mess, const std::string& (T::*getter)() const)
+QString Common::ProtoHelper::getStr(const T& mess, const std::string& (T::*getter)() const)
 {
    const std::string& str = (mess.*getter)();
    return QString::fromUtf8(str.data(), str.length());
 }
 
 template <typename T>
-void ProtoHelper::addRepeatedStr(T& mess, void (T::*adder)(const char*), const QString& str)
+void Common::ProtoHelper::addRepeatedStr(T& mess, void (T::*adder)(const char*), const QString& str)
 {
    const QByteArray& array = str.toUtf8();
    (mess.*adder)(array.constData());
 }
 
 template <typename T>
-QString ProtoHelper::getRepeatedStr(const T& mess, const std::string& (T::*getter)(int) const, int i)
+QString Common::ProtoHelper::getRepeatedStr(const T& mess, const std::string& (T::*getter)(int) const, int i)
 {
    const std::string& str = (mess.*getter)(i);
    return QString::fromUtf8(str.data(), str.length());

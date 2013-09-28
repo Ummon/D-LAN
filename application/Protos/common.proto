@@ -1,6 +1,5 @@
 /**
   * Some common messages.
-  * Version : 1
   * All string are encoded in UTF-8.
   */
 
@@ -59,7 +58,7 @@ message Entry {
 
    // Only for FILE type:
    optional string mime_type = 9; // The mime type of the file.
-   repeated Hash chunk = 8; // No chunk means that the peer doesn't know the hashes.
+   repeated Hash chunk = 8; // The number of chunk might be smaller than the total if some hashes are unknown. Empty if all hashes are unknown.
 }
 
 message Entries
@@ -78,6 +77,23 @@ message FindResult {
    required uint64 tag = 1;
    repeated EntryLevel entry = 2;
    optional Common.Hash peer_id = 3;
+}
+
+// 'id' is randomly generated for each message.
+message ChatMessage {
+   required uint64 id = 1;
+   required string message = 2;
+   optional Common.Hash peer_id = 3;
+   optional uint64 time = 4; // In [ms] since Epoch.
+   optional string peer_nick = 5;
+   optional string chat_room = 6;
+   repeated Common.Hash peer_ids_answer = 7;
+}
+
+// All messages belong to the same chat room (or from no room if they are from the main chat).
+// The messages are always sorted from oldest to youngest.
+message ChatMessages {
+   repeated ChatMessage message = 1;
 }
 
 message Interface {

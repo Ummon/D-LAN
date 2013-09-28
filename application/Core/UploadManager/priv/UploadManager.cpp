@@ -23,7 +23,6 @@ using namespace UM;
 
 #include <Protos/core_protocol.pb.h>
 
-#include <Common/ZeroCopyStreamQIODevice.h>
 #include <Common/Settings.h>
 #include <Core/FileManager/Exceptions.h>
 #include <Core/FileManager/IChunk.h>
@@ -40,7 +39,7 @@ using namespace UM;
   * We cannot use a QThreadPool object instead of the class 'Uploader' because we have to use the method 'PM::ISocket::moveToThread' when using a socket in a thread. This isn't possible with the 'QRunnable' class.
   */
 
-LOG_INIT_CPP(UploadManager);
+LOG_INIT_CPP(UploadManager)
 
 UploadManager::UploadManager(QSharedPointer<PM::IPeerManager> peerManager) :
    peerManager(peerManager), threadPool(static_cast<int>(SETTINGS.get<quint32>("upload_min_nb_thread")), SETTINGS.get<quint32>("upload_thread_lifetime"))

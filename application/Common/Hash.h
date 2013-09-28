@@ -23,8 +23,6 @@
 
 #include <string>
 
-#include <Common/Uncopyable.h>
-
 #include <QString>
 #include <QByteArray>
 #include <QDataStream>
@@ -35,6 +33,8 @@
 #if WITH_MUTEX
 #  include <QMutex>
 #endif
+
+#include <Common/Uncopyable.h>
 
 namespace Common
 {
@@ -150,6 +150,11 @@ namespace Common
       return !(h1 == h2);
    }
 
+   inline bool operator<(const Hash& h1, const Hash& h2)
+   {
+      return memcmp(h1.getData(), h2.getData(), Hash::HASH_SIZE) < 0;
+   }
+
    /**
      * Used by QHash.
      */
@@ -186,9 +191,7 @@ namespace Common
    };
 }
 
-using namespace Common;
-
-inline void Hash::dereference()
+inline void Common::Hash::dereference()
 {
    if (this->data)
    {
@@ -198,7 +201,7 @@ inline void Hash::dereference()
    }
 }
 
-inline void Hash::newData()
+inline void Common::Hash::newData()
 {
    this->data = new SharedData;
    this->data->nbRef = 1;

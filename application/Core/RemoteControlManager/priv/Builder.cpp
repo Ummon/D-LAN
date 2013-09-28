@@ -26,8 +26,9 @@ QSharedPointer<IRemoteControlManager> Builder::newRemoteControlManager(
    QSharedPointer<PM::IPeerManager> peerManager,
    QSharedPointer<UM::IUploadManager> uploadManager,
    QSharedPointer<DM::IDownloadManager> downloadManager,
-   QSharedPointer<NL::INetworkListener> networkListener
+   QSharedPointer<NL::INetworkListener> networkListener,
+   QSharedPointer<CS::IChatSystem> chatSystem
 )
 {
-   return QSharedPointer<IRemoteControlManager>(new RemoteControlManager(fileManager, peerManager, uploadManager, downloadManager, networkListener));
+   return QSharedPointer<IRemoteControlManager>(new RemoteControlManager(fileManager, peerManager, uploadManager, downloadManager, networkListener, chatSystem));
 }

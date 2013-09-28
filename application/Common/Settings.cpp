@@ -492,6 +492,44 @@ void Settings::set(const QString& name, const QList<quint32>& values)
    }
 }
 
+void Settings::set(const QString& name, const QList<QString>& values)
+{
+   QMutexLocker locker(&this->mutex);
+
+   Q_ASSERT(!name.isEmpty());
+   Q_ASSERT(this->settings);
+
+   if (!this->settings)
+      return;
+
+   const google::protobuf::FieldDescriptor* fieldDescriptor = this->descriptor->FindFieldByName(name.toStdString());
+   if (!fieldDescriptor)
+   {
+      printErrorNameNotFound(name);
+      return;
+   }
+
+   if (!fieldDescriptor->is_repeated())
+   {
+      printError(QString("The field '%1' isn't a repeated field").arg(name));
+      return;
+   }
+
+   this->settings->GetReflection()->ClearField(this->settings, fieldDescriptor);
+
+   if (fieldDescriptor->type() != google::protobuf::FieldDescriptor::TYPE_STRING)
+   {
+      printErrorBadType(fieldDescriptor, "string");
+      return;
+   }
+
+   for (QListIterator<QString> i(values); i.hasNext();)
+   {
+      QByteArray array = i.next().toUtf8();
+      this->settings->GetReflection()->AddString(this->settings, fieldDescriptor, array.data());
+   }
+}
+
 void Settings::set(const QString& name, int index, quint32 value)
 {
    QMutexLocker locker(&this->mutex);
@@ -612,6 +650,14 @@ void Settings::getRepeated(const google::protobuf::FieldDescriptor* fieldDescrip
       for (int i = 0; i < this->settings->GetReflection()->FieldSize(*this->settings, fieldDescriptor); i++)
          values << this->settings->GetReflection()->GetRepeatedUInt32(*this->settings, fieldDescriptor, i);
    }
+}
+
+void Settings::getRepeated(const google::protobuf::FieldDescriptor* fieldDescriptor, QList<QString>& values) const
+{
+   Q_ASSERT(fieldDescriptor);
+
+   for (int i = 0; i < this->settings->GetReflection()->FieldSize(*this->settings, fieldDescriptor); i++)
+      values << QString::fromUtf8(this->settings->GetReflection()->GetRepeatedString(*this->settings, fieldDescriptor, i).data());
 }
 
 void Settings::setDefaultValues()

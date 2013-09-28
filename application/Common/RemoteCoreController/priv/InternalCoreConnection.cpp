@@ -22,7 +22,6 @@ using namespace RCC;
 #include <QHostAddress>
 #include <QCoreApplication>
 
-#include <Common/ZeroCopyStreamQIODevice.h>
 #include <Common/ProtoHelper.h>
 #include <Common/Constants.h>
 #include <Common/Global.h>
@@ -30,6 +29,7 @@ using namespace RCC;
 #include <LogManager/Builder.h>
 
 #include <priv/Log.h>
+#include <priv/SendChatMessageResult.h>
 #include <priv/BrowseResult.h>
 #include <priv/SearchResult.h>
 
@@ -37,8 +37,8 @@ using namespace RCC;
 // On Linux 'connectToHost(..)' will immediately fail if there is no service behind the port,
 // on Windows there is a delay before 'stateChanged' is called with a 'UnconnectedState' type.
 #ifdef Q_OS_WIN32
-   const int InternalCoreConnection::NB_RETRIES_MAX(0);
-   const int InternalCoreConnection::TIME_BETWEEN_RETRIES(0);
+   const int InternalCoreConnection::NB_RETRIES_MAX(1);
+   const int InternalCoreConnection::TIME_BETWEEN_RETRIES(100);
 #else
    const int InternalCoreConnection::NB_RETRIES_MAX(8);
    const int InternalCoreConnection::TIME_BETWEEN_RETRIES(250);
@@ -112,11 +112,31 @@ void InternalCoreConnection::disconnectFromCore()
    this->connectionInfo.clear();
 }
 
-void InternalCoreConnection::sendChatMessage(const QString& message)
+QSharedPointer<ISendChatMessageResult> InternalCoreConnection::sendChatMessage(int socketTimeout, const QString& message, const QString& roomName, const QList<Common::Hash>& peerIDsAnswered)
 {
-   Protos::GUI::ChatMessage chatMessage;
-   Common::ProtoHelper::setStr(chatMessage, &Protos::GUI::ChatMessage::set_message, message);
-   this->send(Common::MessageHeader::GUI_CHAT_MESSAGE, chatMessage);
+   QSharedPointer<SendChatMessageResult> sendChatMessageResult = QSharedPointer<SendChatMessageResult>(new SendChatMessageResult(this, socketTimeout, message, roomName, peerIDsAnswered));
+   this->sendChatMessageResultWithoutReply << sendChatMessageResult.toWeakRef();
+   return sendChatMessageResult;
+}
+
+void InternalCoreConnection::joinRoom(const QString& room)
+{
+   if (!room.isEmpty())
+   {
+      Protos::GUI::JoinRoom joinRoomMessage;
+      Common::ProtoHelper::setStr(joinRoomMessage, &Protos::GUI::JoinRoom::set_name, room);
+      this->send(Common::MessageHeader::GUI_JOIN_ROOM, joinRoomMessage);
+   }
+}
+
+void InternalCoreConnection::leaveRoom(const QString& room)
+{
+   if (!room.isEmpty())
+   {
+      Protos::GUI::LeaveRoom leaveRoomMessage;
+      Common::ProtoHelper::setStr(leaveRoomMessage, &Protos::GUI::LeaveRoom::set_name, room);
+      this->send(Common::MessageHeader::GUI_LEAVE_ROOM, leaveRoomMessage);
+   }
 }
 
 void InternalCoreConnection::setCoreSettings(const Protos::GUI::CoreSettings settings)
@@ -124,7 +144,7 @@ void InternalCoreConnection::setCoreSettings(const Protos::GUI::CoreSettings set
    this->send(Common::MessageHeader::GUI_SETTINGS, settings);
 }
 
-void InternalCoreConnection::setCoreLanguage(const QLocale locale)
+void InternalCoreConnection::setCoreLanguage(const QLocale& locale)
 {
    this->currentLanguage = locale;
    this->sendCurrentLanguage();
@@ -134,7 +154,7 @@ bool InternalCoreConnection::setCorePassword(const QString& newPassword, const Q
 {
    Protos::GUI::ChangePassword passMess;
 
-   const quint64 newSalt = static_cast<quint64>(mtrand.randInt()) << 32 | mtrand.randInt();
+   const quint64 newSalt = mtrand.randInt64();
    Common::Hash newPasswordHashed = Common::Hasher::hashWithSalt(newPassword, newSalt);
 
    passMess.mutable_new_password()->set_hash(newPasswordHashed.getData(), Common::Hash::HASH_SIZE);
@@ -309,15 +329,13 @@ void InternalCoreConnection::tryToConnectToTheNextAddress()
    if (address.isNull())
       address = this->addressesToTry.takeFirst();
 
-#ifndef DEBUG
    // If the address is local check if the core is launched, if not try to launch it.
-   if (Global::isLocal(address))
+   if (Common::Global::isLocal(address))
    {
       this->coreController.startCore(this->connectionInfo.port);
       if (this->coreController.getStatus() == NOT_RUNNING)
          L_WARN("Unable to start the Core");
    }
-#endif
 
    connect(this->socket, SIGNAL(stateChanged(QAbstractSocket::SocketState)), this, SLOT(stateChanged(QAbstractSocket::SocketState)));
    this->socket->connectToHost(address, this->connectionInfo.port);
@@ -368,22 +386,25 @@ void InternalCoreConnection::connectedAndAuthenticated()
 
 void InternalCoreConnection::sendCurrentLanguage()
 {
-   Protos::GUI::Language langMess;
-   ProtoHelper::setLang(*langMess.mutable_language(), this->currentLanguage);
-   this->send(Common::MessageHeader::GUI_LANGUAGE, langMess);
+   if (this->authenticated)
+   {
+      Protos::GUI::Language langMess;
+      Common::ProtoHelper::setLang(*langMess.mutable_language(), this->currentLanguage);
+      this->send(Common::MessageHeader::GUI_LANGUAGE, langMess);
+   }
 }
 
-void InternalCoreConnection::onNewMessage(Common::MessageHeader::MessageType type, const google::protobuf::Message& message)
+void InternalCoreConnection::onNewMessage(const Common::Message& message)
 {
    // While we are not authenticated we accept only two message types.
-   if (!this->authenticated && type != Common::MessageHeader::GUI_ASK_FOR_AUTHENTICATION && type != Common::MessageHeader::GUI_AUTHENTICATION_RESULT)
+   if (!this->authenticated && message.getHeader().getType() != Common::MessageHeader::GUI_ASK_FOR_AUTHENTICATION && message.getHeader().getType() != Common::MessageHeader::GUI_AUTHENTICATION_RESULT)
       return;
 
-   switch (type)
+   switch (message.getHeader().getType())
    {
    case Common::MessageHeader::GUI_ASK_FOR_AUTHENTICATION:
       {
-         const Protos::GUI::AskForAuthentication& askForAuthentication = static_cast<const Protos::GUI::AskForAuthentication&>(message);
+         const Protos::GUI::AskForAuthentication& askForAuthentication = message.getMessage<Protos::GUI::AskForAuthentication>();
 
          Protos::GUI::Authentication authentication;
 
@@ -400,7 +421,7 @@ void InternalCoreConnection::onNewMessage(Common::MessageHeader::MessageType typ
 
    case Common::MessageHeader::GUI_AUTHENTICATION_RESULT:
       {
-         const Protos::GUI::AuthenticationResult& authenticationResult = static_cast<const Protos::GUI::AuthenticationResult&>(message);
+         const Protos::GUI::AuthenticationResult& authenticationResult = message.getMessage<Protos::GUI::AuthenticationResult>();
 
          if (authenticationResult.status() == Protos::GUI::AuthenticationResult::AUTH_OK)
          {
@@ -430,7 +451,7 @@ void InternalCoreConnection::onNewMessage(Common::MessageHeader::MessageType typ
 
    case Common::MessageHeader::GUI_STATE:
       {
-         const Protos::GUI::State& state = static_cast<const Protos::GUI::State&>(message);
+         const Protos::GUI::State& state = message.getMessage<Protos::GUI::State>();
 
          emit newState(state);
          this->send(Common::MessageHeader::GUI_STATE_RESULT);
@@ -439,15 +460,15 @@ void InternalCoreConnection::onNewMessage(Common::MessageHeader::MessageType typ
 
    case Common::MessageHeader::GUI_EVENT_CHAT_MESSAGES:
       {
-         const Protos::GUI::EventChatMessages& eventChatMessages = static_cast<const Protos::GUI::EventChatMessages&>(message);
-         if (eventChatMessages.message_size() > 0)
-            emit newChatMessages(eventChatMessages);
+         const Protos::Common::ChatMessages& chatMessages = message.getMessage<Protos::Common::ChatMessages>();
+         if (chatMessages.message_size() > 0)
+            emit newChatMessages(chatMessages);
       }
       break;
 
    case Common::MessageHeader::GUI_EVENT_LOG_MESSAGES:
       {
-         const Protos::GUI::EventLogMessages& eventLogMessages = static_cast<const Protos::GUI::EventLogMessages&>(message);
+         const Protos::GUI::EventLogMessages& eventLogMessages = message.getMessage<Protos::GUI::EventLogMessages>();
 
          QList<QSharedPointer<LM::IEntry>> entries;
 
@@ -463,9 +484,22 @@ void InternalCoreConnection::onNewMessage(Common::MessageHeader::MessageType typ
       }
       break;
 
+   case Common::MessageHeader::GUI_CHAT_MESSAGE_RESULT:
+      while (!this->sendChatMessageResultWithoutReply.isEmpty())
+      {
+         const Protos::GUI::ChatMessageResult result = message.getMessage<Protos::GUI::ChatMessageResult>();
+         QWeakPointer<SendChatMessageResult> sendChatMessageResult = this->sendChatMessageResultWithoutReply.takeFirst();
+         if (!sendChatMessageResult.isNull())
+         {
+            sendChatMessageResult.data()->setResult(result);
+            break;
+         }
+      }
+      break;
+
    case Common::MessageHeader::GUI_SEARCH_TAG:
       {
-         const Protos::GUI::Tag& tagMessage = static_cast<const Protos::GUI::Tag&>(message);
+         const Protos::GUI::Tag& tagMessage = message.getMessage<Protos::GUI::Tag>();
 
          while (!this->searchResultsWithoutTag.isEmpty())
          {
@@ -481,15 +515,14 @@ void InternalCoreConnection::onNewMessage(Common::MessageHeader::MessageType typ
 
    case Common::MessageHeader::GUI_SEARCH_RESULT:
       {
-         const Protos::Common::FindResult& findResultMessage = static_cast<const Protos::Common::FindResult&>(message);
-
+         const Protos::Common::FindResult& findResultMessage = message.getMessage<Protos::Common::FindResult>();
          emit searchResult(findResultMessage);
       }
       break;
 
    case Common::MessageHeader::GUI_BROWSE_TAG:
       {
-         const Protos::GUI::Tag& tagMessage = static_cast<const Protos::GUI::Tag&>(message);
+         const Protos::GUI::Tag& tagMessage = message.getMessage<Protos::GUI::Tag>();
 
          while (!this->browseResultsWithoutTag.isEmpty())
          {
@@ -505,7 +538,7 @@ void InternalCoreConnection::onNewMessage(Common::MessageHeader::MessageType typ
 
    case Common::MessageHeader::GUI_BROWSE_RESULT:
       {
-         const Protos::GUI::BrowseResult& browseResultMessage = static_cast<const Protos::GUI::BrowseResult&>(message);
+         const Protos::GUI::BrowseResult& browseResultMessage = message.getMessage<Protos::GUI::BrowseResult>();
 
          emit browseResult(browseResultMessage);
       }

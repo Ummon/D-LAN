@@ -13,18 +13,18 @@ message Settings {
    
    optional Common.Language language = 20;
       
-   optional uint32 max_chat_message_displayed = 4 [default = 1000];
+   optional uint32 max_chat_message_displayed = 4 [default = 500];
    optional uint32 max_log_message_displayed = 5 [default = 500];
    optional uint32 search_time = 7 [default = 3000]; // [ms].
    optional uint32 socket_timeout = 8 [default = 7000]; // [ms].
    
    optional bytes windows_state = 9;
-   optional uint32 main_window_width = 10 [default = 900];   
-   optional uint32 main_window_height = 11 [default = 450];
+   optional uint32 main_window_width = 10 [default = 1200];
+   optional uint32 main_window_height = 11 [default = 620];
    optional bool main_window_maximized = 17 [default = false];
    
    repeated uint32 search_column_size = 19; // [Entry name, Folder name, Relvance, Peer, Size].
-   
+
    enum Window {
       WIN_SETTINGS = 1;
       WIN_CHAT = 2;
@@ -60,4 +60,6 @@ message Settings {
    optional string style = 25; // The directory of the style in the 'styles' directory.
    
    optional bool multiple_instance_allowed = 26 [default = false];
+
+   optional string default_emoticon_theme = 27 [default = "Default"];
 }

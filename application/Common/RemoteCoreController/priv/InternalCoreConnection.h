@@ -38,6 +38,7 @@
 #include <Common/LogManager/IEntry.h>
 
 #include <ICoreConnection.h>
+#include <ISendChatMessageResult.h>
 #include <IBrowseResult.h>
 #include <ISearchResult.h>
 #include <Types.h>
@@ -45,6 +46,7 @@
 
 namespace RCC
 {
+   class SendChatMessageResult;
    class BrowseResult;
    class SearchResult;
 
@@ -73,9 +75,11 @@ namespace RCC
 
       void disconnectFromCore();
 
-      void sendChatMessage(const QString& message);
+      QSharedPointer<ISendChatMessageResult> sendChatMessage(int socketTimeout, const QString& message, const QString& roomName = QString(), const QList<Common::Hash>& peerIDsAnswered = QList<Common::Hash>());
+      void joinRoom(const QString& room);
+      void leaveRoom(const QString& room);
       void setCoreSettings(const Protos::GUI::CoreSettings settings);
-      void setCoreLanguage(const QLocale locale);
+      void setCoreLanguage(const QLocale& locale);
       bool setCorePassword(const QString& newPassword, const QString& oldPassword = QString());
       void resetCorePassword();
 
@@ -103,7 +107,7 @@ namespace RCC
       void disconnected(bool asked); // 'asked' = true if disconnected by 'disconnectFromCore()'.
 
       void newState(const Protos::GUI::State&);
-      void newChatMessages(const Protos::GUI::EventChatMessages&);
+      void newChatMessages(const Protos::Common::ChatMessages&);
       void newLogMessages(const QList<QSharedPointer<LM::IEntry>>&);
 
       void browseResult(const Protos::GUI::BrowseResult& browseResult);
@@ -119,7 +123,7 @@ namespace RCC
 
       void sendCurrentLanguage();
 
-      void onNewMessage(Common::MessageHeader::MessageType type, const google::protobuf::Message& message);
+      void onNewMessage(const Common::Message& message);
       void onDisconnected();
 
       friend class BrowseResult;
@@ -137,6 +141,7 @@ namespace RCC
       QList<QHostAddress> addressesToRetry;
       int nbRetries;
 
+      QList<QWeakPointer<SendChatMessageResult>> sendChatMessageResultWithoutReply;
       QList<QWeakPointer<BrowseResult>> browseResultsWithoutTag;
       QList<QWeakPointer<SearchResult>> searchResultsWithoutTag;
 

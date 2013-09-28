@@ -21,6 +21,8 @@ using namespace CoreSpace;
 
 #include <Protos/core_settings.pb.h>
 
+#include <Libs/MersenneTwister.h>
+
 #include <Common/PersistentData.h>
 #include <Common/Constants.h>
 #include <Common/Hash.h>
@@ -30,9 +32,10 @@ using namespace CoreSpace;
 #include <UploadManager/Builder.h>
 #include <DownloadManager/Builder.h>
 #include <NetworkListener/Builder.h>
+#include <ChatSystem/Builder.h>
 #include <RemoteControlManager/Builder.h>
 
-LOG_INIT_CPP(Core);
+LOG_INIT_CPP(Core)
 
 Core::Core(bool resetSettings, QLocale locale)
 {
@@ -106,7 +109,8 @@ void Core::start()
    this->uploadManager = UM::Builder::newUploadManager(this->peerManager);
    this->downloadManager = DM::Builder::newDownloadManager(this->fileManager, this->peerManager);
    this->networkListener = NL::Builder::newNetworkListener(this->fileManager, this->peerManager, this->uploadManager, this->downloadManager);
-   this->remoteControlManager = RCM::Builder::newRemoteControlManager(this->fileManager, this->peerManager, this->uploadManager, this->downloadManager, this->networkListener);
+   this->chatSystem = CS::Builder::newChatSystem(this->peerManager, this->networkListener);
+   this->remoteControlManager = RCM::Builder::newRemoteControlManager(this->fileManager, this->peerManager, this->uploadManager, this->downloadManager, this->networkListener, this->chatSystem);
 
    connect(this->remoteControlManager.data(), SIGNAL(languageDefined(QLocale)), this, SLOT(setLanguage(QLocale)));
 
@@ -121,6 +125,23 @@ void Core::dumpWordIndex() const
 void Core::printSimilarFiles() const
 {
    this->fileManager->printSimilarFiles();
+}
+
+void Core::changePassword(const QString& newPassword)
+{
+   MTRand mtrand;
+   quint64 salt = static_cast<quint64>(mtrand.randInt()) << 32 | mtrand.randInt();
+
+   SETTINGS.set("remote_password", Common::Hasher::hashWithSalt(newPassword, salt));
+   SETTINGS.set("salt", salt);
+   SETTINGS.save();
+}
+
+void Core::removePassword()
+{
+   SETTINGS.set("remote_password", Common::Hash());
+   SETTINGS.rm("salt");
+   SETTINGS.save();
 }
 
 void Core::setLanguage(QLocale locale, bool load)
@@ -166,6 +187,7 @@ void Core::checkSettingsIntegrity()
    this->checkSetting("minimum_free_space", 0u, 4294967295u);
    this->checkSetting("save_cache_period", 1000u, 4294967295u);
 
+   this->checkSetting("get_entries_timeout", 1000u, 60u * 1000u);
    this->checkSetting("pending_socket_timeout", 10u, 30u * 1000u);
    this->checkSetting("peer_timeout_factor", 1.0, 10.0);
    this->checkSetting("idle_socket_timeout", 1000u, 60u * 60u * 1000u);
@@ -193,7 +215,9 @@ void Core::checkSettingsIntegrity()
    this->checkSetting("udp_buffer_size", 255u, 6684672u);
    this->checkSetting("max_number_of_search_result_to_send", 1u, 10000u);
    this->checkSetting("max_number_of_result_shown", 1u, 100000u);
-   this->checkSetting("max_number_of_chat_message_saved", 1u, 1000000u);
+
+   this->checkSetting("max_number_of_stored_chat_messages", 1u, 1000000u);
+   this->checkSetting("number_of_chat_messages_to_retrieve", 1u, 1000000u);
 
    this->checkSetting("remote_control_port", 1u, 65535u);
    this->checkSetting("remote_refresh_rate", 500u, 10u * 1000u);

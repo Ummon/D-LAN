@@ -23,8 +23,6 @@ using namespace Common;
 #include <Protos/core_protocol.pb.h>
 #include <Protos/gui_protocol.pb.h>
 
-#include <ZeroCopyStreamQIODevice.h>
-
 /**
   * @class Common::MessageHeader
   *
@@ -84,8 +82,10 @@ QString MessageHeader::messToStr(MessageType type)
    case NULL_MESS: return "NULL";
 
    case CORE_IM_ALIVE: return "IM_ALIVE";
+   case CORE_GOODBYE: return "GOODBYE";
    case CORE_CHUNKS_OWNED: return "CHUNKS_OWNED";
-   case CORE_CHAT_MESSAGE: return "CHAT_MESSAGE";
+   case CORE_CHAT_MESSAGES: return "CHAT_MESSAGES";
+   case CORE_GET_LAST_CHAT_MESSAGES: return "CHAT_GET_LAST_MESSAGES";
    case CORE_FIND: return "FIND";
    case CORE_FIND_RESULT: return "FIND_RESULT";
    case CORE_GET_ENTRIES: return "GET_ENTRIES";
@@ -98,7 +98,7 @@ QString MessageHeader::messToStr(MessageType type)
 
    case GUI_STATE: return "STATE";
    case GUI_STATE_RESULT: return "STATE_RESULT";
-   case GUI_EVENT_CHAT_MESSAGES:  return "EVENT_CHAT_MESSAGE";
+   case GUI_EVENT_CHAT_MESSAGES:  return "EVENT_CHAT_MESSAGES";
    case GUI_EVENT_LOG_MESSAGES: return "EVENT_LOG_MESSAGES";
    case GUI_ASK_FOR_AUTHENTICATION: return "ASK_FOR_AUTHENTICATION";
    case GUI_AUTHENTICATION: return "AUTHENTICATION";
@@ -117,6 +117,9 @@ QString MessageHeader::messToStr(MessageType type)
    case GUI_MOVE_DOWNLOADS: return "MOVE_DOWNLOADS";
    case GUI_DOWNLOAD: return "DOWNLOAD";
    case GUI_CHAT_MESSAGE: return "CHAT_MESSAGE";
+   case GUI_CHAT_MESSAGE_RESULT: return "CHAT_MESSAGE_RESULT";
+   case GUI_JOIN_ROOM: return "JOIN_ROOM";
+   case GUI_LEAVE_ROOM: return "LEAVE_ROOM";
    case GUI_REFRESH: return "REFRESH";
    case GUI_REFRESH_NETWORK_INTERFACES: return "REFRESH_NETWORK_INTERFACES";
    default: return "<UNKNOWN_MESSAGE_TYPE>";

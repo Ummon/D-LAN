@@ -130,7 +130,7 @@ Hash::~Hash()
   */
 Hash& Hash::operator=(const Hash& h)
 {
-   if (&h != this)
+   if (&h != this && h.data != this->data)
    {
       this->dereference();
       this->data = h.data;
@@ -333,8 +333,8 @@ Common::Hash Hasher::hash(const Common::Hash& hash)
 }
 
 /**
- * Returns hash(str) + salt.
- */
+  * Returns hash(str) + salt.
+  */
 Common::Hash Hasher::hashWithSalt(const QString& str, quint64 salt)
 {
    const QByteArray data = str.toUtf8();
@@ -354,12 +354,12 @@ Common::Hash Hasher::hashWithSalt(const Common::Hash& hash, quint64 salt)
 
 Hash Hasher::hashWithRandomSalt(const QString& str, quint64& salt)
 {
-   salt = static_cast<quint64>(Hash::mtrand.randInt()) << 32 | Hash::mtrand.randInt();
+   salt = Hash::mtrand.randInt64();
    return Hasher::hashWithSalt(str, salt);
 }
 
 Hash Hasher::hashWithRandomSalt(const Common::Hash& hash, quint64& salt)
 {
-   salt = static_cast<quint64>(Hash::mtrand.randInt()) << 32 | Hash::mtrand.randInt();
+   salt = Hash::mtrand.randInt64();
    return Hasher::hashWithSalt(hash, salt);
 }

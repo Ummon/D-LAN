@@ -30,7 +30,7 @@ using namespace Client;
   *  - Control a core via simple commands or javascript files.
   */
 
-D_LAN_Client::D_LAN_Client(int argc, char *argv[]) :
+D_LAN_Client::D_LAN_Client(int argc, char* argv[]) :
    QCoreApplication(argc, argv),
    out(stdout)
 {
@@ -45,7 +45,7 @@ QScriptValue D_LAN_Client::newConnection()
    return this->engine.newQObject(new CoreConnectionProxy(), QScriptEngine::ScriptOwnership);
 }
 
-Q_SCRIPT_DECLARE_QMETAOBJECT(QFile, QObject*)
+//Q_SCRIPT_DECLARE_QMETAOBJECT(QFile, QObject*)
 //Q_SCRIPT_DECLARE_QMETAOBJECT(QIODevice, QObject*)
 
 void D_LAN_Client::newCommandLine(QString line)

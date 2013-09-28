@@ -26,6 +26,7 @@
 #include <Core/UploadManager/IUploadManager.h>
 #include <Core/DownloadManager/IDownloadManager.h>
 #include <Core/NetworkListener/INetworkListener.h>
+#include <Core/ChatSystem/IChatSystem.h>
 
 #include <Core/RemoteControlManager/IRemoteControlManager.h>
 
@@ -34,12 +35,13 @@ namespace RCM
    class Builder
    {
    public:
-      static QSharedPointer<IRemoteControlManager> newRemoteControlManager(
+      static QSharedPointer<IRemoteControlManager> newRemoteControlManager(            
          QSharedPointer<FM::IFileManager> fileManager,
          QSharedPointer<PM::IPeerManager> peerManager,
          QSharedPointer<UM::IUploadManager> uploadManager,
          QSharedPointer<DM::IDownloadManager> downloadManager,
-         QSharedPointer<NL::INetworkListener> networkListener
+         QSharedPointer<NL::INetworkListener> networkListener,
+         QSharedPointer<CS::IChatSystem> chatSystem
       );
    };
 }

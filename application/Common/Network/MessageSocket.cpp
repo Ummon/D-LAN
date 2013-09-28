@@ -25,7 +25,6 @@ using namespace Common;
 #include <Protos/core_protocol.pb.h>
 #include <Protos/gui_protocol.pb.h>
 
-#include <ZeroCopyStreamQIODevice.h>
 #include <ProtoHelper.h>
 #include <Global.h>
 
@@ -117,9 +116,6 @@ Hash MessageSocket::getRemoteID() const
    return this->remoteID;
 }
 
-/**
-  * Send a given message, the message type must match the 'type' parameter.
-  */
 void MessageSocket::send(MessageHeader::MessageType type, const google::protobuf::Message& message)
 {
    this->send(type, &message);
@@ -130,7 +126,7 @@ void MessageSocket::send(MessageHeader::MessageType type, const google::protobuf
   */
 void MessageSocket::send(MessageHeader::MessageType type)
 {
-   this->send(type, 0);
+   this->send(type, nullptr);
 }
 
 void MessageSocket::send(MessageHeader::MessageType type, const google::protobuf::Message* message)
@@ -142,14 +138,7 @@ void MessageSocket::send(MessageHeader::MessageType type, const google::protobuf
 
    MESSAGE_SOCKET_LOG_DEBUG(QString("Socket[%1]::send : %2 to %3\n%4").arg(this->num).arg(header.toStr()).arg(this->remoteID.toStr()).arg(message ? ProtoHelper::getDebugStr(*message) : "<empty message>"));
 
-   MessageHeader::writeHeader(*this->socket, header);
-
-   if (message)
-   {
-      ZeroCopyOutputStreamQIODevice outputStream(this->socket);
-      if (!message->SerializeToZeroCopyStream(&outputStream))
-         MESSAGE_SOCKET_LOG_ERROR(QString("Unable to send\n%1").arg(ProtoHelper::getDebugStr(*message)));
-   }
+   Message::writeMessageToDevice(this->socket, header, message);
 }
 
 /**
@@ -235,7 +224,7 @@ void MessageSocket::dataReceivedSlot()
       {
          if (!this->readMessage())
          {
-            MESSAGE_SOCKET_LOG_DEBUG("Can't read the message -> finished");
+            MESSAGE_SOCKET_LOG_DEBUG(QString("Socket[%1]: Unable to read the received message, closing the socket. Message type: %2").arg(this->num).arg(this->currentHeader.getType()));
             this->socket->close();
             return;
          }
@@ -259,67 +248,29 @@ void MessageSocket::disconnectedSlot()
 }
 
 /**
-  * Read the next message corresponding to the header type.
+  * Read the next message corresponding to the current header type.
   */
 bool MessageSocket::readMessage()
 {
-   switch (this->currentHeader.getType())
+   try
    {
-   case MessageHeader::CORE_GET_ENTRIES: return this->readMessage<Protos::Core::GetEntries>();
-   case MessageHeader::CORE_GET_ENTRIES_RESULT: return this->readMessage<Protos::Core::GetEntriesResult>();
-   case MessageHeader::CORE_GET_HASHES: return this->readMessage<Protos::Core::GetHashes>();
-   case MessageHeader::CORE_GET_HASHES_RESULT: return this->readMessage<Protos::Core::GetHashesResult>();
-   case MessageHeader::CORE_HASH: return this->readMessage<Protos::Common::Hash>();
-   case MessageHeader::CORE_GET_CHUNK: return this->readMessage<Protos::Core::GetChunk>();
-   case MessageHeader::CORE_GET_CHUNK_RESULT: return this->readMessage<Protos::Core::GetChunkResult>();
+      const Message& message = Message::readMessageBodyFromDevice(this->currentHeader, this->socket);
 
-   case MessageHeader::GUI_STATE: return this->readMessage<Protos::GUI::State>();
-   case MessageHeader::GUI_STATE_RESULT: return this->readMessage<Protos::Common::Null>();
-   case MessageHeader::GUI_EVENT_CHAT_MESSAGES: return this->readMessage<Protos::GUI::EventChatMessages>();
-   case MessageHeader::GUI_EVENT_LOG_MESSAGES: return this->readMessage<Protos::GUI::EventLogMessages>();
-   case MessageHeader::GUI_ASK_FOR_AUTHENTICATION: return this->readMessage<Protos::GUI::AskForAuthentication>();
-   case MessageHeader::GUI_AUTHENTICATION: return this->readMessage<Protos::GUI::Authentication>();
-   case MessageHeader::GUI_AUTHENTICATION_RESULT: return this->readMessage<Protos::GUI::AuthenticationResult>();
-   case MessageHeader::GUI_LANGUAGE: return this->readMessage<Protos::GUI::Language>();
-   case MessageHeader::GUI_CHANGE_PASSWORD: return this->readMessage<Protos::GUI::ChangePassword>();
-   case MessageHeader::GUI_SETTINGS: return this->readMessage<Protos::GUI::CoreSettings>();
-   case MessageHeader::GUI_SEARCH: return this->readMessage<Protos::GUI::Search>();
-   case MessageHeader::GUI_SEARCH_TAG: return this->readMessage<Protos::GUI::Tag>();
-   case MessageHeader::GUI_SEARCH_RESULT: return this->readMessage<Protos::Common::FindResult>();
-   case MessageHeader::GUI_BROWSE: return this->readMessage<Protos::GUI::Browse>();
-   case MessageHeader::GUI_BROWSE_TAG: return this->readMessage<Protos::GUI::Tag>();
-   case MessageHeader::GUI_BROWSE_RESULT: return this->readMessage<Protos::GUI::BrowseResult>();
-   case MessageHeader::GUI_CANCEL_DOWNLOADS: return this->readMessage<Protos::GUI::CancelDownloads>();
-   case MessageHeader::GUI_PAUSE_DOWNLOADS: return this->readMessage<Protos::GUI::PauseDownloads>();
-   case MessageHeader::GUI_MOVE_DOWNLOADS: return this->readMessage<Protos::GUI::MoveDownloads>();
-   case MessageHeader::GUI_DOWNLOAD: return this->readMessage<Protos::GUI::Download>();
-   case MessageHeader::GUI_CHAT_MESSAGE: return this->readMessage<Protos::GUI::ChatMessage>();
-   case MessageHeader::GUI_REFRESH: return this->readMessage<Protos::Common::Null>();
-   case MessageHeader::GUI_REFRESH_NETWORK_INTERFACES: return this->readMessage<Protos::Common::Null>();
+      MESSAGE_SOCKET_LOG_DEBUG(QString("Socket[%1]: Data received from %2, %3\n%4").arg(
+         QString::number(this->num),
+         this->socket->peerAddress().toString(),
+         message.getHeader().toStr(),
+         Common::ProtoHelper::getDebugStr(message.getMessage())
+      ));
 
-   default:
+      this->onNewMessage(message);
+      emit newMessage(message);
+      return true;
+   }
+   catch (ReadErrorException& e)
+   {
       return false;
    }
-}
-
-bool MessageSocket::readProtoMessage(google::protobuf::Message& message)
-{
-   bool readOK = false;
-   {
-      ZeroCopyInputStreamQIODevice inputStream(this->socket);
-      readOK = message.ParseFromBoundedZeroCopyStream(&inputStream, this->currentHeader.getSize());
-   }
-
-   if (readOK)
-   {
-      MESSAGE_SOCKET_LOG_DEBUG(QString("Socket[%1]: Data received from %2, %3\n%4")
-         .arg(this->num)
-         .arg(this->socket->peerAddress().toString())
-         .arg(this->currentHeader.toStr())
-         .arg(Common::ProtoHelper::getDebugStr(message))
-      );
-   }
-   return readOK;
 }
 
 #ifdef DEBUG

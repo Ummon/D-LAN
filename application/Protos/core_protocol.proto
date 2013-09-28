@@ -1,6 +1,6 @@
 /**
   * Protocol between cores (peers).
-  * Version : 1
+  * Version : 4
   * All string are encoded in UTF-8.
   */
 
@@ -9,7 +9,7 @@ import "common.proto";
 package Protos.Core;
 
 /***** Multicast UDP messages. *****/
-// Im alive.
+// I'm alive.
 // This message is sent periodically to all other peers (for example each 5s).
 // It contains some information about the peer and an array of hash chunks the peer wants to download.
 // If a peer owns one or more chunk corresponding to the given hashes then it
@@ -31,7 +31,14 @@ message IMAlive {
    
    optional uint64 tag = 5; // A random number, all responds ('ChunkOwned' message) must repeat this number.
    repeated Common.Hash chunk = 6; // The chunks the core wants to download. May be empty.
+
+   repeated string chat_rooms = 10; // The joined chat rooms.
 }
+
+// Goodbye, my people needs me.
+// a -> all
+// id : 0xFE
+// No data
 
 // This message is only sent if at least one requested chunks is known.
 // Return an array with a bool value for each
@@ -44,11 +51,30 @@ message ChunksOwned {
 }
 
 
+// Send a chat message to all other peers.
+// The field 'peer_id' is not set because it is already set in the header.
+// The field 'time' is not set because the receiver will set the time and not the sender.
 // a -> all
 // id : 0x11
-message ChatMessage {
-   required string message = 1;
+// Common.ChatMessages
+
+
+// Ask to a peer the 'n' last messages.
+// We can ask periodically to a random peer to be sure we got all the messages of the network.
+// For example the last 500 messages each second.
+// a -> b
+// id : 0x18
+message GetLastChatMessages {
+   required uint32 number = 1;
+   repeated uint64 message_id = 2 [packed=true];
+   optional string chat_room = 3;
 }
+
+// This message is only sent if 'b' has some messages not contained in the given list.
+// The fields 'peer_id' and 'time' must be set for all messages.
+// b -> a
+// id : 0x11
+// Common.ChatMessages
 
 
 // Searching a file or a directory.
@@ -76,7 +102,7 @@ message Find {
 // id : 0x31
 message GetEntries {
    optional Common.Entries dirs = 1; // The shared directories must have the field 'shared_dir' defined but 'shared_dir.shared_name' is not mandatory.
-   optional bool get_roots = 2 [default = false]; // If true the roots directories will be appended to the end of the entries result. If the Dir field above is empty then the roots directories will always be sent whatever get_roots is true or false.
+   optional bool get_roots = 2 [default = false]; // If true the roots directories will be appended to the end of the entries result. If the field above ('dirs') is empty then the roots directories will always be sent whatever 'get_roots' is true or false.
 }
 
 // b -> a
@@ -102,10 +128,12 @@ message GetEntriesResult {
 // If 'b' doesn't have the hashes but has the file
 // the hashes will be computed on the fly. Thus this request
 // can be a bit long (~20s).
+// The given entry shall not contain all the chunks ('GetHashes.file.chunk' size shall be lesser than the total).
 // a -> b
 // id : 0x41
 message GetHashes {
-   required Common.Entry file = 1; // Must have the field shared_dir set. If it already contains some chunk hashes only the next ones will be sent.
+   required Common.Entry file = 1; // Must have the field 'shared_dir' set. If it already contains some chunk hashes only the next ones will be sent.
+   repeated Common.Entry nextFiles = 2; // The next files for which we want to know their hashes in the future.
 }
 
 // b -> a
