@@ -33,6 +33,7 @@ DEP_LIBC=">= 2.15"
 DEP_LIBSTDCPP=">= 4.6.3"
 DEP_LIBGCC=">= 1:4.6.3"
 
+sudo rm -Rf $DEB_DIR
 mkdir -p $DESKTOP_DIR $STYLES_DIR $I18N_DIR $ICON_16_DIR $ICON_24_DIR $ICON_32_DIR $ICON_48_DIR $ICON_64_DIR $ICON_128_DIR $ICON_256_DIR
 
 cp -R etc $DEB_DIR/
@@ -86,6 +87,10 @@ sed -i "s/_VERSION_/$vhead-$vtag/g" $DEB_DIR/DEBIAN/control
 
 cd $WORK_DIR
 sudo chown -R root:root $DEB_DIR
+sudo chmod -R 0644 $DEB_DIR
+sudo chmod -R +X $DEB_DIR
+sudo chmod 0755 $DEB_DIR/DEBIAN/postinst $DEB_DIR/DEBIAN/prerm
+sudo chmod 0777 $APP_DIR/D-LAN.Core $APP_DIR/D-LAN.GUI
 dpkg-deb --build d-lan
 mv d-lan.deb $INST_DIR/D-LAN-$vhead$vtag-$vdate-$arch.deb
  
