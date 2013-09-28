@@ -96,7 +96,7 @@ namespace PM
       void closed(PeerMessageSocket*);
 
    private slots:
-      void nextAskedHash(Common::Hash hash);
+      void nextAskedHash(const Protos::Core::HashResult& hash);
       void entriesResult(const Protos::Core::GetEntriesResult::EntryResult& result);
       void entriesResultTimeout();
 

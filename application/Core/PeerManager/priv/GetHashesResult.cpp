@@ -57,11 +57,11 @@ void GetHashesResult::newMessage(const Common::Message& message)
       }
       break;
 
-   case Common::MessageHeader::CORE_HASH:
+   case Common::MessageHeader::CORE_HASH_RESULT:
       {
-         const Protos::Common::Hash& hash = message.getMessage<Protos::Common::Hash>();
+         const Protos::Core::HashResult& hashResult = message.getMessage<Protos::Core::HashResult>();
          this->startTimer(); // Restart the timer.
-         emit nextHash(Common::Hash(hash.hash()));
+         emit nextHash(hashResult);
       }
       break;
 

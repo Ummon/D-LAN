@@ -90,6 +90,10 @@ namespace FM
       void entryAdded(Entry* entry);
       void entryRemoved(Entry* entry);
       void entryRenamed(Entry* entry, const QString& oldName);
+
+      /**
+        * May be emitted from a separated thread.
+        */
       void chunkHashKnown(const QSharedPointer<Chunk>& chunk);
       void chunkRemoved(const QSharedPointer<Chunk>& chunk);
       void directoryScanned(Directory* dir);

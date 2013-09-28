@@ -30,7 +30,7 @@
 using namespace FM;
 
 GetHashesResult::GetHashesResult(const Protos::Common::Entry& fileEntry, Cache& cache, FileUpdater& fileUpdater) :
-   fileEntry(fileEntry), file(0), cache(cache), fileUpdater(fileUpdater), nbHash(0), lastHashNumSent(-1)
+   fileEntry(fileEntry), file(nullptr), cache(cache), fileUpdater(fileUpdater)
 {
    qRegisterMetaType<Common::Hash>("Common::Hash");
 
@@ -62,37 +62,51 @@ Protos::Core::GetHashesResult GetHashesResult::start()
    }
    const QVector<QSharedPointer<Chunk>>& chunks = this->file->getChunks();
 
-   if (this->fileEntry.chunk_size() > chunks.size())
+   if (this->fileEntry.chunk_size() != chunks.size())
    {
-      L_ERRO("Impossible to known more hashes than the number of chunks.");
+      L_ERRO("The number of chunks of the given file entry doesn't match the cache file number.");
       result.set_status(Protos::Core::GetHashesResult_Status_ERROR_UNKNOWN);
       return result;
    }
 
-   connect(&this->cache, SIGNAL(chunkHashKnown(QSharedPointer<Chunk>)), this, SLOT(chunkHashKnown(QSharedPointer<Chunk>)), Qt::DirectConnection);
-   this->nbHash = chunks.size() - this->fileEntry.chunk_size();
-   this->lastHashNumSent = this->fileEntry.chunk_size() - 1;
+   int nbOfHashWillBeSent = 0;
 
-   result.set_nb_hash(this->nbHash);
-
-   for (QVectorIterator<QSharedPointer<Chunk>> i(chunks); i.hasNext();)
    {
-      QSharedPointer<Chunk> chunk(i.next());
-      if (chunk->getNum() < this->fileEntry.chunk_size())
-         continue;
+      QMutexLocker locker(&this->mutex);
 
-      if (chunk->hasHash())
+      connect(&this->cache, SIGNAL(chunkHashKnown(QSharedPointer<Chunk>)), this, SLOT(chunkHashKnown(QSharedPointer<Chunk>)), Qt::DirectConnection);
+
+      int j = 0;
+      for (QVectorIterator<QSharedPointer<Chunk>> i(chunks); i.hasNext();)
       {
-         this->sendNextHash(chunk);
+         QSharedPointer<Chunk> chunk { i.next() };
+         const Protos::Common::Hash& protoChunk = this->fileEntry.chunk(j++);
+
+         if (!protoChunk.has_hash())
+         {
+            nbOfHashWillBeSent++;
+            if (!chunk.isNull())
+               this->sendNextHash(chunk);
+            else
+               this->hashesRemaining << chunk->getNum();
+         }
       }
-      else // If at least one hash is missing we tell the file updater to compute the remaining ones.
-      {
-         this->fileUpdater.prioritizeAFileToHash(this->file);
-         break;
-      }
+
+      result.set_nb_hash(nbOfHashWillBeSent);
    }
 
-   result.set_status(Protos::Core::GetHashesResult_Status_OK);
+   // No hash to send.
+   if (nbOfHashWillBeSent == 0)
+   {
+      disconnect(&this->cache, SIGNAL(chunkHashKnown(QSharedPointer<Chunk>)), this, SLOT(chunkHashKnown(QSharedPointer<Chunk>)));
+   }
+   else
+   {
+      // If at least one hash is missing we tell the file updater to compute the remaining ones.
+      this->fileUpdater.prioritizeAFileToHash(this->file);
+      result.set_status(Protos::Core::GetHashesResult_Status_OK);
+   }
+
    return result;
 }
 
@@ -107,13 +121,12 @@ void GetHashesResult::chunkHashKnown(QSharedPointer<Chunk> chunk)
 
 void GetHashesResult::sendNextHash(QSharedPointer<Chunk> chunk)
 {
-   if (chunk->getNum() <= this->lastHashNumSent)
-      return;
-
-   this->lastHashNumSent = chunk->getNum();
-
-   if (!--this->nbHash)
-      disconnect(&this->cache, SIGNAL(chunkHashKnown(QSharedPointer<Chunk>)), this, SLOT(chunkHashKnown(QSharedPointer<Chunk>)));
-
-   emit nextHash(chunk->getHash());
+   int i = this->hashesRemaining.indexOf(chunk->getNum());
+   if (i != -1)
+   {
+      this->hashesRemaining.removeAt(i);
+      if (this->hashesRemaining.empty())
+         disconnect(&this->cache, SIGNAL(chunkHashKnown(QSharedPointer<Chunk>)), this, SLOT(chunkHashKnown(QSharedPointer<Chunk>)));
+      emit nextHash(chunk->getHash());
+   }
 }

@@ -56,8 +56,7 @@ namespace FM
       FileUpdater& fileUpdater;
 
       QMutex mutex;
-      int nbHash;
-      int lastHashNumSent;
+      QList<int> hashesRemaining;
    };
 }
 

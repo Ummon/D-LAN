@@ -55,7 +55,7 @@ namespace Common
 
          CORE_GET_HASHES =                0x0041,
          CORE_GET_HASHES_RESULT =         0x0042,
-         CORE_HASH =                      0x0043,
+         CORE_HASH_RESULT =               0x0043,
 
          CORE_GET_CHUNK =                 0x0051,
          CORE_GET_CHUNK_RESULT =          0x0052,

@@ -127,8 +127,8 @@ message GetEntriesResult {
 // it will ask the hashes to the source peer.
 // If 'b' doesn't have the hashes but has the file
 // the hashes will be computed on the fly. Thus this request
-// can be a bit long (~20s).
-// The given entry shall not contain all the chunks ('GetHashes.file.chunk' size shall be lesser than the total).
+// can be a bit long (> 20s for example).
+// The given entry shall not contain all the chunks (one or more 'GetHashes.file.chunk' are null).
 // a -> b
 // id : 0x41
 message GetHashes {
@@ -152,8 +152,10 @@ message GetHashesResult {
 // For each hash, this message is sent. Only if GetHashesResult.status == OK.
 // b -> a
 // id = 0x43
-// Common.Hash
-
+message HashResult {
+   required uint32 num = 1;
+   required Common.Hash hash = 2;
+}
 
 // Download.
 // a -> b

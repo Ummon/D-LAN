@@ -46,7 +46,7 @@ namespace PM
 
    signals:
       void result(const Protos::Core::GetHashesResult&);
-      void nextHash(const Common::Hash&);
+      void nextHash(const Protos::Core::HashResult&);
    };
 }
 #endif

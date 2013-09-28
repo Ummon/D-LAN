@@ -205,9 +205,9 @@ void File::populateEntry(Protos::Common::Entry* entry, bool setSharedDir) const
    for (QVectorIterator<QSharedPointer<Chunk>> i(this->chunks); i.hasNext();)
    {
       Common::Hash hash = i.next()->getHash();
-      if (hash.isNull())
-         break;
-      entry->add_chunk()->set_hash(hash.getData(), Common::Hash::HASH_SIZE);
+      Protos::Common::Hash* protoHash = entry->add_chunk();
+      if (!hash.isNull())
+         protoHash->set_hash(hash.getData(), Common::Hash::HASH_SIZE);
    }
 }
 
