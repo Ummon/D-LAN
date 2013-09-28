@@ -44,7 +44,7 @@ PeerManager::PeerManager(QSharedPointer<FM::IFileManager> fileManager) :
 
 PeerManager::~PeerManager()
 {
-   for (QListIterator<Peer*> i(this->peers); i.hasNext();)
+   for (QMapIterator<Common::Hash, Peer*> i(this->peers); i.hasNext();)
       delete i.next();
    delete this->self;
 
@@ -67,8 +67,8 @@ IPeer* PeerManager::getSelf()
 int PeerManager::getNbOfPeers() const
 {
    int n = 0;
-   for (QListIterator<Peer*> i(this->peers); i.hasNext();)
-      if (i.next()->isAlive())
+   for (QMapIterator<Common::Hash, Peer*> i(this->peers); i.hasNext();)
+      if (i.next().value()->isAlive())
          n++;
    return n;
 }
@@ -77,9 +77,9 @@ QList<IPeer*> PeerManager::getPeers() const
 {
    QList<IPeer*> peers;
 
-   for (QListIterator<Peer*> i(this->peers); i.hasNext();)
+   for (QMapIterator<Common::Hash, Peer*> i(this->peers); i.hasNext();)
    {
-      Peer* peer = i.next();
+      Peer* peer = i.next().value();
       if (peer->isAlive())
          peers << peer;
    }
@@ -95,12 +95,9 @@ IPeer* PeerManager::getPeer(const Common::Hash& ID)
    if (this->self->getID() == ID)
       return this->self;
 
-   for (QListIterator<Peer*> i(this->peers); i.hasNext();)
-   {
-      Peer* peer = i.next();
-      if (peer->getID() == ID)
-         return peer;
-   }
+   auto it = this->peers.find(ID);
+   if (it != this->peers.end())
+      return *it;
 
    return nullptr;
 }
@@ -113,7 +110,7 @@ IPeer* PeerManager::createPeer(const Common::Hash& ID, const QString& nick)
 
    Peer* peer = new Peer(this, this->fileManager, ID, nick);
    connect(peer, SIGNAL(unblocked()), this, SLOT(peerUnblocked()));
-   this->peers << peer;
+   this->peers.insert(peer->getID(), peer);
 
    return peer;
 }
@@ -133,7 +130,7 @@ void PeerManager::updatePeer(const Common::Hash& ID, const QHostAddress& IP, qui
    {
       peer = new Peer(this, this->fileManager, ID);
       connect(peer, SIGNAL(unblocked()), this, SLOT(peerUnblocked()));
-      this->peers << peer;
+      this->peers.insert(peer->getID(), peer);
    }
 
    const bool wasDead = !peer->isAlive();
@@ -156,8 +153,8 @@ void PeerManager::removePeer(const Common::Hash& ID, const QHostAddress& IP)
 
 void PeerManager::removeAllPeers()
 {
-   for (QListIterator<Peer*> i(this->peers); i.hasNext();)
-      i.next()->setAsDead();
+   for (QMapIterator<Common::Hash, Peer*> i(this->peers); i.hasNext();)
+      i.next().value()->setAsDead();
 }
 
 void PeerManager::newConnection(QTcpSocket* tcpSocket)

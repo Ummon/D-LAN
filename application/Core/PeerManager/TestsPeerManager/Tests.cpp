@@ -92,7 +92,7 @@ void Tests::initTestCase()
       this->fileManagers[i]->setSharedDirs(QStringList() << QDir::currentPath().append(this->peerSharedDirs[i]));
    }
 
-   // 3) Create the peer update (simulate the periodic update).
+   // 3) Create the peer update (to simulate the periodic update).
    this->peerUpdater = new PeerUpdater(this->fileManagers, this->peerManagers, PORT);
 
    // 4) Create the servers to listen new TCP connections and forward them to the right peer manager.
@@ -112,7 +112,7 @@ void Tests::updatePeers()
    QElapsedTimer timer;
    timer.start();
 
-   // Check if each peer know the other.
+   // Check if each peer knows the other.
    for (int i = 0; i < this->peerIDs.size(); i++)
    {
       QList<IPeer*> peers = this->peerManagers[i]->getPeers();
@@ -188,11 +188,12 @@ void Tests::askForRootEntries()
    QElapsedTimer timer;
    timer.start();
 
-   while (this->resultListener.getNbEntriesResultReceived(0) != 1)
+   int nbEntriesReceived;
+   while ((nbEntriesReceived = this->resultListener.getNbEntriesResultReceived(0)) != 1)
    {
       QTest::qWait(100);
       if (timer.elapsed() > 5000)
-         QFAIL("We don't receive the right number of root entry.");
+         QFAIL(QString("We don't receive the right number of root entry. Number received: %1").arg(nbEntriesReceived).toLatin1());
    }
 }
 

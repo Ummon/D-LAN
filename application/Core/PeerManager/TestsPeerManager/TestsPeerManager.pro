@@ -7,8 +7,9 @@ TARGET = TestsPeerManager
 CONFIG += link_prl console
 CONFIG -= app_bundle
 
-include(../../../Libs/protobuf.pri)
 include(../../../Common/common.pri)
+include(../../../Libs/protobuf.pri)
+include(../../../Protos/Protos.pri)
 
 LIBS += -L../output/$$FOLDER \
     -lPeerManager
@@ -34,13 +35,15 @@ TEMPLATE = app
 SOURCES += main.cpp \
     Tests.cpp \
     ../../../Protos/common.pb.cc \
+    ../../../Protos/core_settings.pb.cc \
+    ../../../Protos/core_protocol.pb.cc \
     TestServer.cpp \
     PeerUpdater.cpp \
-    ResultListener.cpp \
-    ../../../Protos/core_settings.pb.cc
+    ResultListener.cpp
 HEADERS += Tests.h \
     ../../../Protos/common.pb.h \
+    ../../../Protos/core_settings.pb.h \
+    ../../../Protos/core_protocol.pb.h \
     TestServer.h \
     PeerUpdater.h \
     ResultListener.h \
-    ../../../Protos/core_settings.pb.h

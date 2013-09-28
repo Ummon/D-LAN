@@ -20,6 +20,7 @@
 #define PEERMANAGER_PEERMANAGER_H
 
 #include <QObject>
+#include <QMap>
 #include <QString>
 #include <QTimer>
 #include <QTime>
@@ -86,7 +87,7 @@ namespace PM
       QSharedPointer<FM::IFileManager> fileManager;
 
       PeerSelf* self; // Ourself.
-      QList<Peer*> peers; // The other peers.
+      QMap<Common::Hash, Peer*> peers; // The other peers.
 
       QTimer timer; ///< Used to check periodically if some pending sockets have timeouted.
       QList<PendingSocket> pendingSockets;

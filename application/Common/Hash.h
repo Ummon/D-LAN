@@ -77,6 +77,7 @@ namespace Common
 
       static Hash rand();
       static Hash rand(quint32 seed);
+      static void setRandSeed(quint32 seed);
       static Hash fromStr(const QString& str);
 
    private:
