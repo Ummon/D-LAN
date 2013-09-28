@@ -451,7 +451,7 @@ bool ChatWidget::eventFilter(QObject* obj, QEvent* event)
          QRect cursorRect = this->ui->txtMessage->cursorRect();
          const QPoint& pos = this->ui->txtMessage->viewport()->mapToGlobal(cursorRect.bottomRight());
          this->autoComplete->show();
-         this->autoComplete->move(pos.x(), pos.y());§
+         this->autoComplete->move(pos.x(), pos.y());
          this->setFocus();
          return true;
       }
