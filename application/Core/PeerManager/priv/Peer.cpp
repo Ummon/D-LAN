@@ -42,7 +42,8 @@ Peer::Peer(PeerManager* peerManager, QSharedPointer<FM::IFileManager> fileManage
    sharingAmount(0),
    speed(MAX_SPEED),
    alive(false),
-   blocked(false)
+   blocked(false),
+   protocolVersion(0)
 {
    this->speedTimer.invalidate();
 
@@ -145,7 +146,13 @@ bool Peer::isAlive() const
 bool Peer::isAvailable() const
 {
    QMutexLocker locker(&this->mutex);
-   return this->alive && !this->blocked;
+   return this->alive && !this->blocked && this->isVersionCompatible();
+}
+
+quint32 Peer::getProtocolVersion() const
+{
+   QMutexLocker locker(&this->mutex);
+   return this->protocolVersion;
 }
 
 void Peer::update(
@@ -155,7 +162,8 @@ void Peer::update(
    const quint64& sharingAmount,
    const QString& coreVersion,
    quint32 downloadRate,
-   quint32 uploadRate
+   quint32 uploadRate,
+   quint32 protocolVersion
 )
 {
    this->alive = true;
@@ -168,6 +176,7 @@ void Peer::update(
    this->sharingAmount = sharingAmount;
    this->downloadRate = downloadRate;
    this->uploadRate = uploadRate;
+   this->protocolVersion = protocolVersion;
 
    this->connectionPool.setIP(this->IP, this->port);
 }
@@ -180,6 +189,9 @@ void Peer::setAsDead()
 
 QSharedPointer<IGetEntriesResult> Peer::getEntries(const Protos::Core::GetEntries& dirs)
 {
+   if (!this->isAvailable())
+      return QSharedPointer<IGetEntriesResult>();
+
    return QSharedPointer<IGetEntriesResult>(
       new GetEntriesResult(dirs, this->connectionPool.getASocket()),
       &IGetEntriesResult::doDeleteLater
@@ -188,6 +200,9 @@ QSharedPointer<IGetEntriesResult> Peer::getEntries(const Protos::Core::GetEntrie
 
 QSharedPointer<IGetHashesResult> Peer::getHashes(const Protos::Common::Entry& file)
 {
+   if (!this->isAvailable())
+      return QSharedPointer<IGetHashesResult>();
+
    return QSharedPointer<IGetHashesResult>(
       new GetHashesResult(file, this->connectionPool.getASocket()),
       &IGetHashesResult::doDeleteLater
@@ -196,6 +211,9 @@ QSharedPointer<IGetHashesResult> Peer::getHashes(const Protos::Common::Entry& fi
 
 QSharedPointer<IGetChunkResult> Peer::getChunk(const Protos::Core::GetChunk& chunk)
 {
+   if (!this->isAvailable())
+      return QSharedPointer<IGetChunkResult>();
+
    return QSharedPointer<IGetChunkResult>(
       new GetChunkResult(chunk, this->connectionPool.getASocket()),
       &IGetChunkResult::doDeleteLater

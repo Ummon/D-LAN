@@ -123,5 +123,5 @@ void Download::setStatus(Status newStatus)
 
 bool Download::hasAValidPeerSource()
 {
-   return this->peerSource->isAlive();
+   return this->peerSource->isAvailable();
 }

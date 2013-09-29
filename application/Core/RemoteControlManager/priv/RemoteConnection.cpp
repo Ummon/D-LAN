@@ -28,6 +28,7 @@ using namespace RCM;
 
 #include <Common/Settings.h>
 #include <Common/ProtoHelper.h>
+#include <Common/Constants.h>
 #include <Common/Hash.h>
 #include <Common/SharedDir.h>
 #include <Common/Global.h>
@@ -162,6 +163,10 @@ void RemoteConnection::refresh()
       protoPeer->set_download_rate(peer->getDownloadRate());
       protoPeer->set_upload_rate(peer->getUploadRate());
       Common::ProtoHelper::setIP(*protoPeer->mutable_ip(), peer->getIP());
+      protoPeer->set_status(
+         peer->getProtocolVersion() == Common::Constants::PROTOCOL_VERSION ? Protos::GUI::State::Peer::OK :
+         (peer->getProtocolVersion() < Common::Constants::PROTOCOL_VERSION ? Protos::GUI::State::Peer::VERSION_OUTDATED : Protos::GUI::State::Peer::MORE_RECENT_VERSION)
+      );
    }
 
    // Downloads.
@@ -550,6 +555,14 @@ void RemoteConnection::onNewMessage(const Common::Message& message)
             getEntries.mutable_dirs()->CopyFrom(browseMessage.dirs());
             getEntries.set_get_roots(browseMessage.get_roots());
             QSharedPointer<PM::IGetEntriesResult> entries = peer->getEntries(getEntries);
+            if (entries.isNull())
+            {
+               Protos::GUI::BrowseResult result;
+               result.set_tag(tag);
+               this->send(Common::MessageHeader::GUI_BROWSE_RESULT, result);
+               break;
+            }
+
             entries->setProperty("tag", tag);
             connect(entries.data(), SIGNAL(result(const Protos::Core::GetEntriesResult&)), this, SLOT(getEntriesResult(const Protos::Core::GetEntriesResult&)));
             connect(entries.data(), SIGNAL(timeout()), this, SLOT(getEntriesTimeout()));

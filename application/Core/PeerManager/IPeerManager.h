@@ -60,7 +60,8 @@ namespace PM
       /**
         * Return the IPeer* coresponding to ID.
         * May return ourself.
-        * Return 0 if the peer doesn't exist.
+        * May return a peer not alive or not available.
+        * Return 'nullptr' if the peer doesn't exist.
         */
       virtual IPeer* getPeer(const Common::Hash& ID) = 0;
 
@@ -73,7 +74,17 @@ namespace PM
         * The method must be call frequently to tell that a peer (ID) is still alive.
         * @see The protobuf message 'Protos.Core.IMAlive' in "Protos/core_protocol.proto".
         */
-      virtual void updatePeer(const Common::Hash& ID, const QHostAddress& IP, quint16 port, const QString& nick, const quint64& sharingAmount, const QString& coreVersion, quint32 downloadRate, quint32 uploadRate) = 0;
+      virtual void updatePeer(
+         const Common::Hash& ID,
+         const QHostAddress& IP,
+         quint16 port,
+         const QString& nick,
+         const quint64& sharingAmount,
+         const QString& coreVersion,
+         quint32 downloadRate,
+         quint32 uploadRate,
+         quint32 protocolVersion
+      ) = 0;
 
       /**
         * Set one peer as inactive.

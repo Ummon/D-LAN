@@ -95,27 +95,27 @@ namespace PM
       virtual bool isAlive() const = 0;
 
       /**
-        * True if the peer is alive and not blocked.
+        * True if the peer is alive, not blocked and has a compatible protocol version.
         */
       virtual bool isAvailable() const = 0;
 
+      virtual quint32 getProtocolVersion() const = 0;
+
       /**
         * Ask for the entries in a given directories.
-        * This method is non-blocking, the entries will be delivered by the signal
-        * 'entriesResult'.
+        * Return a null pointer if the peer is not available.
         */
       virtual QSharedPointer<IGetEntriesResult> getEntries(const Protos::Core::GetEntries& dirs) = 0;
 
       /**
         * Ask for the hashes of a given file.
-        * This method is non-blocking, the hashes will be delivered by the signal 'nextHashResult' followed by
-        * one or more 'nextHash' signal.
+        * Return a null pointer if the peer is not available.
         */
       virtual QSharedPointer<IGetHashesResult> getHashes(const Protos::Common::Entry& file) = 0;
 
       /**
         * Ask to download a chunk.
-        * @param deleteLater If you want to use 'QObject::deleteLate()' instead of the simple 'delete'.
+        * Return a null pointer if the peer is not available.
         */
       virtual QSharedPointer<IGetChunkResult> getChunk(const Protos::Core::GetChunk& chunk) = 0;
    };

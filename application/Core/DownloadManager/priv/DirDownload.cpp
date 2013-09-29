@@ -73,12 +73,19 @@ void DirDownload::start()
   */
 bool DirDownload::retrieveEntries()
 {
-   if (!this->hasAValidPeerSource() || this->isStatusErroneous() || this->status == ENTRY_NOT_FOUND || this->status == DELETED || !this->occupiedPeersAskingForEntries.setPeerAsOccupied(this->peerSource))
+   if (this->isStatusErroneous() || this->status == ENTRY_NOT_FOUND || this->status == DELETED)
       return false;
 
    Protos::Core::GetEntries getEntries;
    getEntries.mutable_dirs()->add_entry()->CopyFrom(this->remoteEntry);
    this->getEntriesResult = this->peerSource->getEntries(getEntries);
+
+   if (this->getEntriesResult.isNull() || !this->occupiedPeersAskingForEntries.setPeerAsOccupied(this->peerSource))
+   {
+      this->getEntriesResult.clear();
+      return false;
+   }
+
    connect(this->getEntriesResult.data(), SIGNAL(result(const Protos::Core::GetEntriesResult&)), this, SLOT(result(const Protos::Core::GetEntriesResult&)));
    connect(this->getEntriesResult.data(), SIGNAL(timeout()), this, SLOT(resultTimeout()));
    this->getEntriesResult->start();

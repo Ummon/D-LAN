@@ -20,6 +20,7 @@
 using namespace PM;
 
 #include <Common/Settings.h>
+#include <Common/Constants.h>
 
 #include <priv/Log.h>
 #include <priv/Constants.h>
@@ -30,6 +31,7 @@ PM::PeerSelf::PeerSelf(PM::PeerManager* peerManager, QSharedPointer<FM::IFileMan
    this->IP = QHostAddress::LocalHost;
    this->port = SETTINGS.get<quint32>("unicast_base_port");
    this->alive = true;
+   this->protocolVersion = Common::Constants::PROTOCOL_VERSION;
 
    this->connectionPool.setIP(this->IP, this->port);
 

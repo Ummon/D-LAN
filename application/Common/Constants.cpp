@@ -19,6 +19,8 @@
 #include <Common/Constants.h>
 using namespace Common;
 
+const quint32 Constants::PROTOCOL_VERSION { 4 };
+
 #ifdef Q_OS_WIN32
    const QString Constants::APPLICATION_FOLDER_NAME("D-LAN");
 #else

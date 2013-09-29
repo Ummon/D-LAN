@@ -82,6 +82,11 @@ message State {
       required uint32 upload_rate = 4; // [byte/s].
    }
    message Peer {
+      enum PeerStatus {
+         OK = 0;
+         VERSION_OUTDATED = 1; // Version not compatible : too old.
+         MORE_RECENT_VERSION = 2; // Version not compatible : more recent.
+      }
       required Common.Hash peer_id = 1;
       required string nick = 2;
       required uint64 sharing_amount = 3; // [byte].
@@ -89,6 +94,7 @@ message State {
       optional uint32 upload_rate = 7; // [byte/s]
       optional Common.IP ip = 4;
       optional string core_version = 5;
+      optional PeerStatus status = 8;
    }
    message SharedDir {
       required Common.Hash id = 1;

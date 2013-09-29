@@ -33,6 +33,7 @@ using namespace NL;
 #include <google/protobuf/message.h>
 
 #include <Common/Settings.h>
+#include <Common/Constants.h>
 #include <Common/Global.h>
 #include <Common/ProtoHelper.h>
 
@@ -145,7 +146,7 @@ INetworkListener::SendStatus UDPListener::send(Common::MessageHeader::MessageTyp
 void UDPListener::sendIMAliveMessage()
 {
    Protos::Core::IMAlive IMAliveMessage;
-   IMAliveMessage.set_version(PROTOCOL_VERSION);
+   IMAliveMessage.set_version(Common::Constants::PROTOCOL_VERSION);
    Common::ProtoHelper::setStr(IMAliveMessage, &Protos::Core::IMAlive::set_core_version, Common::Global::getVersionFull());
    IMAliveMessage.set_port(this->UNICAST_PORT);
 
@@ -234,19 +235,6 @@ void UDPListener::processPendingMulticastDatagrams()
             {
                const Protos::Core::IMAlive& IMAliveMessage = message.getMessage<Protos::Core::IMAlive>();
 
-               if (IMAliveMessage.version() != PROTOCOL_VERSION) // If the protocol version doesn't match we don't add the peer.
-               {
-                  L_WARN(
-                     QString("The peer %1 %2 %3 doesn't have the same protocol version (%4) as us (%5). It will be ignored.")
-                        .arg(Common::ProtoHelper::getStr(IMAliveMessage, &Protos::Core::IMAlive::nick))
-                        .arg(header.getSenderID().toStr())
-                        .arg(peerAddress.toString())
-                        .arg(IMAliveMessage.version())
-                        .arg(PROTOCOL_VERSION)
-                  );
-                  break;
-               }
-
                this->peerManager->updatePeer(
                   header.getSenderID(),
                   peerAddress,
@@ -255,7 +243,8 @@ void UDPListener::processPendingMulticastDatagrams()
                   IMAliveMessage.amount(),
                   Common::ProtoHelper::getStr(IMAliveMessage, &Protos::Core::IMAlive::core_version),
                   IMAliveMessage.download_rate(),
-                  IMAliveMessage.upload_rate()
+                  IMAliveMessage.upload_rate(),
+                  IMAliveMessage.version()
                );
 
                if (IMAliveMessage.chunk_size() > 0)
@@ -286,19 +275,24 @@ void UDPListener::processPendingMulticastDatagrams()
 
          case Common::MessageHeader::CORE_FIND:
             {
-               const Protos::Core::Find& findMessage = message.getMessage<Protos::Core::Find>();
-               QList<Protos::Common::FindResult> results =
-                  this->fileManager->find(
-                     Common::ProtoHelper::getStr(findMessage, &Protos::Core::Find::pattern),
-                     SETTINGS.get<quint32>("max_number_of_search_result_to_send"),
-                     this->MAX_UDP_DATAGRAM_PAYLOAD_SIZE - Common::MessageHeader::HEADER_SIZE
-                  );
+               PM::IPeer* peer = this->peerManager->getPeer(header.getSenderID());
 
-               for (QMutableListIterator<Protos::Common::FindResult> i(results); i.hasNext();)
+               if (peer && peer->isAvailable())
                {
-                  Protos::Common::FindResult& result = i.next();
-                  result.set_tag(findMessage.tag());
-                  this->send(Common::MessageHeader::CORE_FIND_RESULT, result, header.getSenderID());
+                  const Protos::Core::Find& findMessage = message.getMessage<Protos::Core::Find>();
+                  QList<Protos::Common::FindResult> results =
+                     this->fileManager->find(
+                        Common::ProtoHelper::getStr(findMessage, &Protos::Core::Find::pattern),
+                        SETTINGS.get<quint32>("max_number_of_search_result_to_send"),
+                        this->MAX_UDP_DATAGRAM_PAYLOAD_SIZE - Common::MessageHeader::HEADER_SIZE
+                     );
+
+                  for (QMutableListIterator<Protos::Common::FindResult> i(results); i.hasNext();)
+                  {
+                     Protos::Common::FindResult& result = i.next();
+                     result.set_tag(findMessage.tag());
+                     this->send(Common::MessageHeader::CORE_FIND_RESULT, result, header.getSenderID());
+                  }
                }
             }
             break;
@@ -330,6 +324,9 @@ void UDPListener::processPendingUnicastDatagrams()
       try
       {
          const Common::Message& message = Common::Message::readMessageBody(header, this->bodyBuffer);
+         PM::IPeer* peer = this->peerManager->getPeer(header.getSenderID());
+         if (!peer || !peer->isAvailable())
+            continue;
 
          switch (header.getType())
          {
@@ -350,13 +347,10 @@ void UDPListener::processPendingUnicastDatagrams()
                }
 
                for (int i = 0; i < chunksOwnedMessage.chunk_state_size(); i++)
-                  if (PM::IPeer* peer = this->peerManager->getPeer(header.getSenderID()))
-                  {
-                     if (chunksOwnedMessage.chunk_state(i))
-                        this->currentChunkDownloaders[i]->addPeer(peer);
-                     else
-                        this->currentChunkDownloaders[i]->rmPeer(peer);
-                  }
+                  if (chunksOwnedMessage.chunk_state(i))
+                     this->currentChunkDownloaders[i]->addPeer(peer);
+                  else
+                     this->currentChunkDownloaders[i]->rmPeer(peer);
             }
             break;
 

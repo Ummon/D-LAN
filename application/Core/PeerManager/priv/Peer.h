@@ -30,6 +30,7 @@
 #include <google/protobuf/text_format.h>
 
 #include <Common/Hash.h>
+#include <Common/Constants.h>
 #include <Common/Uncopyable.h>
 
 #include <Core/FileManager/IGetHashesResult.h>
@@ -69,6 +70,7 @@ namespace PM
 
       virtual bool isAlive() const;
       virtual bool isAvailable() const;
+      virtual quint32 getProtocolVersion() const;
       virtual void update(
          const QHostAddress& IP,
          quint16 port,
@@ -76,7 +78,8 @@ namespace PM
          const quint64& sharingAmount,
          const QString& coreVersion,
          quint32 downloadRate,
-         quint32 uploadRate
+         quint32 uploadRate,
+         quint32 protocolVersion
       );
       virtual void setAsDead();
 
@@ -94,6 +97,8 @@ namespace PM
       void unblock();
 
    protected:
+      bool isVersionCompatible() const { return this->protocolVersion == Common::Constants::PROTOCOL_VERSION; }
+
       mutable QMutex mutex;
 
       ConnectionPool connectionPool;
@@ -116,6 +121,8 @@ namespace PM
       bool blocked;
       QString blockedReason;
       QTimer blockedTimer;
+
+      quint32 protocolVersion;
    };
 }
 #endif

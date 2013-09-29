@@ -307,20 +307,21 @@ bool FileDownload::retrieveHashes()
    )
       return false;
 
-   // If the source peer isn't online, we can't ask the hashes.
-   if (!this->hasAValidPeerSource())
+   this->getHashesResult = this->peerSource->getHashes(this->remoteEntry);
+
+   if (this->getHashesResult.isNull())
    {
       this->setStatus(UNKNOWN_PEER_SOURCE);
       return false;
    }
-
    // If the peer source is already occupied, we can't ask the hashes.
-   if (!this->occupiedPeersAskingForHashes.setPeerAsOccupied(this->peerSource))
+   else if (!this->occupiedPeersAskingForHashes.setPeerAsOccupied(this->peerSource))
+   {
+      this->getHashesResult.clear();
       return false;
+   }
 
    this->setStatus(GETTING_THE_HASHES);
-
-   this->getHashesResult = this->peerSource->getHashes(this->remoteEntry);
    connect(this->getHashesResult.data(), SIGNAL(result(const Protos::Core::GetHashesResult&)), this, SLOT(result(const Protos::Core::GetHashesResult&)));
    connect(this->getHashesResult.data(), SIGNAL(nextHash(const Common::Hash&)), this, SLOT(nextHash(const Common::Hash&)));
    connect(this->getHashesResult.data(), SIGNAL(timeout()), this, SLOT(getHashTimeout()));

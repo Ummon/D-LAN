@@ -118,7 +118,17 @@ IPeer* PeerManager::createPeer(const Common::Hash& ID, const QString& nick)
 /**
   * A peer just send a IAmAlive packet, we update information about it
   */
-void PeerManager::updatePeer(const Common::Hash& ID, const QHostAddress& IP, quint16 port, const QString& nick, const quint64& sharingAmount, const QString& coreVersion, quint32 downloadRate, quint32 uploadRate)
+void PeerManager::updatePeer(
+   const Common::Hash& ID,
+   const QHostAddress& IP,
+   quint16 port,
+   const QString& nick,
+   const quint64& sharingAmount,
+   const QString& coreVersion,
+   quint32 downloadRate,
+   quint32 uploadRate,
+   quint32 protocolVersion
+)
 {
    if (ID.isNull() || ID == this->self->getID())
       return;
@@ -135,7 +145,7 @@ void PeerManager::updatePeer(const Common::Hash& ID, const QHostAddress& IP, qui
 
    const bool wasDead = !peer->isAlive();
 
-   peer->update(IP, port, nick, sharingAmount, coreVersion, downloadRate, uploadRate);
+   peer->update(IP, port, nick, sharingAmount, coreVersion, downloadRate, uploadRate, protocolVersion);
 
    if (wasDead && peer->isAvailable())
       emit peerBecomesAvailable(peer);

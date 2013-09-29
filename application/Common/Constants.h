@@ -25,7 +25,11 @@ namespace Common
 {
    class Constants
    {
-   public:
+   public:      
+      // 2 -> 3 : BLAKE -> Sha-1
+      // 3 -> 4 : New chat protocol + changes of the 'GET_ENTRIES_RESULT' message.
+      static const quint32 PROTOCOL_VERSION;
+
       static const QString APPLICATION_FOLDER_NAME;
 
       static const QString FILE_EXTENSION;

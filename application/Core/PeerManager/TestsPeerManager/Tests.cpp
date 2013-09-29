@@ -182,6 +182,9 @@ void Tests::askForRootEntries()
 
    Protos::Core::GetEntries getEntriesMessage;
    QSharedPointer<IGetEntriesResult> result = this->peerManagers[0]->getPeers()[0]->getEntries(getEntriesMessage);
+
+   QVERIFY(!result.isNull())
+
    connect(result.data(), SIGNAL(result(Protos::Core::GetEntriesResult)), &this->resultListener, SLOT(entriesResult(Protos::Core::GetEntriesResult)));
    result->start();
 
@@ -212,6 +215,7 @@ void Tests::askForSomeEntries()
    Protos::Core::GetEntries getEntriesMessage1;
    getEntriesMessage1.mutable_dirs()->add_entry()->CopyFrom(this->resultListener.getEntriesResultList().last().result(0).entries().entry(0));
    QSharedPointer<IGetEntriesResult> result1 = this->peerManagers[0]->getPeers()[0]->getEntries(getEntriesMessage1);
+   QVERIFY(!result1.isNull());
    connect(result1.data(), SIGNAL(result(Protos::Core::GetEntriesResult)), &this->resultListener, SLOT(entriesResult(Protos::Core::GetEntriesResult)));
    result1->start();
 
@@ -228,6 +232,7 @@ void Tests::askForSomeEntries()
    entry->CopyFrom(this->resultListener.getEntriesResultList().last().result(0).entries().entry(0));
    entry->mutable_shared_dir()->CopyFrom(getEntriesMessage1.dirs().entry(0).shared_dir());
    QSharedPointer<IGetEntriesResult> result2 = this->peerManagers[0]->getPeers()[0]->getEntries(getEntriesMessage2);
+   QVERIFY(!result2.isNull());
    connect(result2.data(), SIGNAL(result(Protos::Core::GetEntriesResult)), &this->resultListener, SLOT(entriesResult(Protos::Core::GetEntriesResult)));
    result2->start();
 
@@ -280,6 +285,7 @@ void Tests::askForHashes()
    fileEntry.mutable_shared_dir()->CopyFrom(this->resultListener.getEntriesResultList().first().result(0).entries().entry(0).shared_dir());
 
    QSharedPointer<IGetHashesResult> result = this->peerManagers[0]->getPeers()[0]->getHashes(fileEntry);
+   QVERIFY(!result.isNull());
    connect(result.data(), SIGNAL(result(const Protos::Core::GetHashesResult&)), &this->resultListener, SLOT(result(const Protos::Core::GetHashesResult&)));
    connect(result.data(), SIGNAL(nextHash(const Common::Hash&)), &this->resultListener, SLOT(nextHash(const Common::Hash&)));
    result->start();
@@ -312,6 +318,7 @@ void Tests::askForAChunk()
    getChunkMessage.mutable_chunk()->set_hash(this->resultListener.getLastReceivedHash().getData(), Common::Hash::HASH_SIZE);
    getChunkMessage.set_offset(0);
    QSharedPointer<IGetChunkResult> result = this->peerManagers[0]->getPeers()[0]->getChunk(getChunkMessage);
+   QVERIFY(!result.isNull());
    connect(result.data(), SIGNAL(result(const Protos::Core::GetChunkResult&)), &this->resultListener, SLOT(result(const Protos::Core::GetChunkResult&)));
    connect(result.data(), SIGNAL(stream(QSharedPointer<PM::ISocket>)), &this->resultListener, SLOT(stream(QSharedPointer<PM::ISocket>)));
    result->start();

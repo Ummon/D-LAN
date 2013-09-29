@@ -403,12 +403,19 @@ PM::IPeer* ChunkDownloader::startDownloading()
    if (this->chunk.isNull())
    {
       L_WARN(QString("Unable to download without the chunk. Hash : %1").arg(this->chunkHash.toStr()));
-      return 0;
+      return nullptr;
    }
 
    this->currentDownloadingPeer = this->getTheFastestFreePeer();
    if (!this->currentDownloadingPeer)
-      return 0;
+      return nullptr;
+
+   Protos::Core::GetChunk getChunkMess;
+   getChunkMess.mutable_chunk()->set_hash(this->chunkHash.getData(), Common::Hash::HASH_SIZE);
+   getChunkMess.set_offset(this->chunk->getKnownBytes());
+   this->getChunkResult = this->currentDownloadingPeer->getChunk(getChunkMess);
+   if (this->getChunkResult.isNull())
+      return nullptr;
 
    L_DEBU(QString("Starting downloading a chunk : %1 from %2").arg(this->chunk->toStringLog()).arg(this->currentDownloadingPeer->getID().toStr()));
 
@@ -417,10 +424,6 @@ PM::IPeer* ChunkDownloader::startDownloading()
 
    this->occupiedPeersDownloadingChunk.setPeerAsOccupied(this->currentDownloadingPeer);
 
-   Protos::Core::GetChunk getChunkMess;
-   getChunkMess.mutable_chunk()->set_hash(this->chunkHash.getData(), Common::Hash::HASH_SIZE);
-   getChunkMess.set_offset(this->chunk->getKnownBytes());
-   this->getChunkResult = this->currentDownloadingPeer->getChunk(getChunkMess);
    connect(this->getChunkResult.data(), SIGNAL(result(const Protos::Core::GetChunkResult&)), this, SLOT(result(const Protos::Core::GetChunkResult&)), Qt::DirectConnection);
    connect(this->getChunkResult.data(), SIGNAL(stream(QSharedPointer<PM::ISocket>)), this, SLOT(stream(QSharedPointer<PM::ISocket>)), Qt::DirectConnection);
    connect(this->getChunkResult.data(), SIGNAL(timeout()), this, SLOT(getChunkTimeout()), Qt::DirectConnection);
