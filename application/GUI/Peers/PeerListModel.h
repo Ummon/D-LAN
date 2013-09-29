@@ -47,6 +47,7 @@ namespace GUI
       bool isOurself(int rowNum) const;
       Common::Hash getPeerID(int rowNum) const;
       QHostAddress getPeerIP(int rowNum) const;
+      Protos::GUI::State::Peer::PeerStatus getStatus(int rowNum) const;
 
       void setSortType(Protos::GUI::Settings::PeerSortType sortType);
       Protos::GUI::Settings::PeerSortType getSortType() const;

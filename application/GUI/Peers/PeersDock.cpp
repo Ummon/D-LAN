@@ -56,17 +56,24 @@ PeerListModel& PeersDock::getModel()
 void PeersDock::displayContextMenuPeers(const QPoint& point)
 {
    QModelIndex i = this->ui->tblPeers->currentIndex();
-   QHostAddress addr = i.isValid() && this->peerListModel.getPeerID(i.row()) != this->coreConnection->getRemoteID() ? this->peerListModel.getPeerIP(i.row()) : QHostAddress();
+   QHostAddress addr = i.isValid() ? this->peerListModel.getPeerIP(i.row()) : QHostAddress();
    QVariant addrVariant;
    addrVariant.setValue(addr);
 
+   Protos::GUI::State::Peer::PeerStatus peerStatus = this->peerListModel.getStatus(i.row());
+
    QMenu menu;
-   menu.addAction(QIcon(":/icons/ressources/folder.png"), tr("Browse"), this, SLOT(browse()));
+   if (peerStatus == Protos::GUI::State::Peer::OK)
+      menu.addAction(QIcon(":/icons/ressources/folder.png"), tr("Browse"), this, SLOT(browse()));
 
    if (!addr.isNull())
    {
-      QAction* takeControlAction = menu.addAction(QIcon(":/icons/ressources/lightning.png"), tr("Take control"), this, SLOT(takeControlOfACore()));
-      takeControlAction->setData(addrVariant);
+      if (peerStatus == Protos::GUI::State::Peer::OK)
+      {
+         QAction* takeControlAction = menu.addAction(QIcon(":/icons/ressources/lightning.png"), tr("Take control"), this, SLOT(takeControlOfACore()));
+         takeControlAction->setData(addrVariant);
+      }
+
       QAction* copyIPAction = menu.addAction(tr("Copy IP: %1").arg(addr.toString()), this, SLOT(copyIPToClipboard()));
       copyIPAction->setData(addrVariant);
    }
@@ -101,9 +108,13 @@ void PeersDock::browse()
    {
       if (i.isValid())
       {
-         Common::Hash peerID = this->peerListModel.getPeerID(i.row());
-         if (!peerID.isNull())
-            emit browsePeer(peerID);
+         Protos::GUI::State::Peer::PeerStatus peerStatus = this->peerListModel.getStatus(i.row());
+         if (peerStatus == Protos::GUI::State::Peer::OK)
+         {
+            Common::Hash peerID = this->peerListModel.getPeerID(i.row());
+            if (!peerID.isNull())
+               emit browsePeer(peerID);
+         }
       }
    }
 

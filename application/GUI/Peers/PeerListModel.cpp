@@ -36,9 +36,6 @@ using namespace GUI;
 
 struct PeerListModel::Peer
 {
-   Peer(const Common::Hash& peerID, const QString& nick, const QString& coreVersion, quint64 sharingAmount, const QHostAddress& ip, TransferInformation transferInformation) :
-      peerID(peerID), nick(nick), coreVersion(coreVersion), sharingAmount(sharingAmount), ip(ip), transferInformation(transferInformation) {}
-
    bool operator==(const Peer& p) const { return this->peerID == p.peerID; }
    bool operator!=(const Peer& p) const { return this->peerID != p.peerID; }
 
@@ -48,6 +45,7 @@ struct PeerListModel::Peer
    quint64 sharingAmount;
    QHostAddress ip;
    TransferInformation transferInformation;
+   Protos::GUI::State::Peer::PeerStatus status;
 };
 
 PeerListModel::PeerListModel(QSharedPointer<RCC::ICoreConnection> coreConnection) :
@@ -94,6 +92,13 @@ QHostAddress PeerListModel::getPeerIP(int rowNum) const
    if (rowNum >= this->orderedPeers.size())
       return QHostAddress();
    return this->orderedPeers.getFromIndex(rowNum)->ip;
+}
+
+Protos::GUI::State::Peer::PeerStatus PeerListModel::getStatus(int rowNum) const
+{
+   if (rowNum >= this->orderedPeers.size())
+      return Protos::GUI::State::Peer::OK;
+   return this->orderedPeers.getFromIndex(rowNum)->status;
 }
 
 void PeerListModel::setSortType(Protos::GUI::Settings::PeerSortType sortType)
@@ -180,6 +185,8 @@ QVariant PeerListModel::data(const QModelIndex& index, int role) const
       return QVariant();
 
    case Qt::ForegroundRole:
+      if (this->orderedPeers.getFromIndex(index.row())->status != Protos::GUI::State::Peer::OK)
+         return QColor(140, 140, 140);
       if (this->peersToColorize.contains(this->orderedPeers.getFromIndex(index.row())->peerID))
          return QColor(255, 255, 255);
       if (this->isOurself(index.row()))
@@ -195,6 +202,12 @@ QVariant PeerListModel::data(const QModelIndex& index, int role) const
          const QString coreVersion = peer->coreVersion;
          QString toolTip = peer->nick;
          toolTip.append('\n');
+
+         if (peer->status == Protos::GUI::State::Peer::MORE_RECENT_VERSION)
+            toolTip.append(tr("Their protocol version is more recent and incompatible with ours. Upgrade you version!")).append('\n');
+         else if (peer->status == Protos::GUI::State::Peer::VERSION_OUTDATED)
+            toolTip.append(tr("Their protocol version is outaded and incompatible with ours. They should upgrade their version!")).append('\n');
+
          if (!coreVersion.isEmpty())
             toolTip += tr("Version %1\n").arg(coreVersion);
          toolTip +=
@@ -261,11 +274,12 @@ void PeerListModel::updatePeers(const google::protobuf::RepeatedPtrField<Protos:
 
    for (int i = 0; i < peers.size(); i++)
    {
-      const Common::Hash peerID(peers.Get(i).peer_id().hash());
+      const Common::Hash peerID { peers.Get(i).peer_id().hash() };
       const QString& nick = Common::ProtoHelper::getStr(peers.Get(i), &Protos::GUI::State::Peer::nick);
       const QString& coreVersion = Common::ProtoHelper::getStr(peers.Get(i), &Protos::GUI::State::Peer::core_version);
-      const quint64 sharingAmount(peers.Get(i).sharing_amount());
+      const quint64 sharingAmount = peers.Get(i).sharing_amount();
       const TransferInformation transferInformation { peers.Get(i).download_rate(), peers.Get(i).upload_rate(),  peersDownloadingOurData.contains(peerID) };
+      const Protos::GUI::State::Peer::PeerStatus status = peers.Get(i).status();
       const QHostAddress ip =
          peers.Get(i).has_ip() ?
             Common::ProtoHelper::getIP(peers.Get(i).ip()) :
@@ -316,10 +330,11 @@ void PeerListModel::updatePeers(const google::protobuf::RepeatedPtrField<Protos:
 
          peer->ip = ip;
          peer->coreVersion = coreVersion;
+         peer->status = status;
       }
       else
       {
-         peersToAdd << new Peer(peerID, nick, coreVersion, sharingAmount, ip, transferInformation);
+         peersToAdd << new Peer { peerID, nick, coreVersion, sharingAmount, ip, transferInformation, status };
       }
    }
 
