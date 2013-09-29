@@ -186,7 +186,7 @@ QVariant PeerListModel::data(const QModelIndex& index, int role) const
 
    case Qt::ForegroundRole:
       if (this->orderedPeers.getFromIndex(index.row())->status != Protos::GUI::State::Peer::OK)
-         return QColor(140, 140, 140);
+         return QColor(160, 160, 160);
       if (this->peersToColorize.contains(this->orderedPeers.getFromIndex(index.row())->peerID))
          return QColor(255, 255, 255);
       if (this->isOurself(index.row()))
