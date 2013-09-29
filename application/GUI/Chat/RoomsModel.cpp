@@ -1,4 +1,4 @@
-/*
+/**
   * D-LAN - A decentralized LAN file sharing software.
   * Copyright (C) 2010-2012 Greg Burri <greg.burri@gmail.com>
   *
