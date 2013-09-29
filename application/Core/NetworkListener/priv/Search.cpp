@@ -52,7 +52,7 @@ quint64 Search::search(const QString& words)
    this->tag = this->mtrand.randInt64();
    findMessage.set_tag(this->tag);
 
-   Common::ProtoHelper::setStr(findMessage, &Protos::Core::Find::set_pattern, words);
+   Common::ProtoHelper::setStr(*findMessage.mutable_pattern(), &Protos::Common::FindPattern::set_pattern, words);
 
    connect(&this->uDPListener, SIGNAL(newFindResultMessage(Protos::Common::FindResult)), this, SLOT(newFindResult(Protos::Common::FindResult)));
 

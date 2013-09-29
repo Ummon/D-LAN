@@ -83,7 +83,7 @@ message GetLastChatMessages {
 // id : 0x21
 message Find {
    required uint64 tag = 1; // A tag to identify the search. All answers must have the same tag.
-   required string pattern = 2;
+   required Common.FindPattern pattern = 2;
 }
 
 // Results.
