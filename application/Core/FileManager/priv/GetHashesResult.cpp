@@ -23,6 +23,8 @@
 #include <QMutexLocker>
 #include <QMetaType>
 
+#include <Protos/core_protocol.pb.h>
+
 #include <priv/Cache/File.h>
 #include <priv/Cache/Chunk.h>
 #include <priv/Log.h>
@@ -127,6 +129,10 @@ void GetHashesResult::sendNextHash(QSharedPointer<Chunk> chunk)
       this->hashesRemaining.removeAt(i);
       if (this->hashesRemaining.empty())
          disconnect(&this->cache, SIGNAL(chunkHashKnown(QSharedPointer<Chunk>)), this, SLOT(chunkHashKnown(QSharedPointer<Chunk>)));
-      emit nextHash(chunk->getHash());
+
+      Protos::Core::HashResult hashResult;
+      hashResult.set_num(chunk->getNum());
+      hashResult.mutable_hash()->set_hash(chunk->getHash().getData(), Common::Hash::HASH_SIZE);
+      emit nextHash(hashResult);
    }
 }

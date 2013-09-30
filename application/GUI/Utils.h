@@ -32,6 +32,8 @@ namespace GUI
       static QStringList askForDirectories(QSharedPointer<RCC::ICoreConnection> coreConnection, const QString& message = QString());
       static QStringList askForDirectoriesToDownloadTo(QSharedPointer<RCC::ICoreConnection> coreConnection);
 
+      static QString emoticonsDirectoryPath();
+
       static void openLocations(const QStringList& paths);
       static void openLocation(const QString& path);
       static void openFile(const QString& path);

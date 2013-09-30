@@ -195,7 +195,7 @@ void PeerMessageSocket::close()
   * When we ask to the fileManager some hashes for a given file this
   * slot will be called each time a new hash is available.
   */
-void PeerMessageSocket::nextAskedHash(const Protos::Core::HashResult& hash)
+void PeerMessageSocket::nextAskedHash(Protos::Core::HashResult hash)
 {
    this->send(Common::MessageHeader::CORE_HASH_RESULT, hash);
 
@@ -292,7 +292,7 @@ void PeerMessageSocket::onNewMessage(const Common::Message& message)
          const Protos::Core::GetHashes& getHashes = message.getMessage<Protos::Core::GetHashes>();
 
          this->currentHashesResult = this->fileManager->getHashes(getHashes.file());
-         connect(this->currentHashesResult.data(), SIGNAL(nextHash(const Protos::Core::HashResult&)), this, SLOT(nextAskedHash(const Protos::Core::HashResult&)), Qt::QueuedConnection);
+         connect(this->currentHashesResult.data(), SIGNAL(nextHash(Protos::Core::HashResult)), this, SLOT(nextAskedHash(Protos::Core::HashResult)), Qt::QueuedConnection);
          Protos::Core::GetHashesResult res = this->currentHashesResult->start();
 
          this->nbHash = res.nb_hash();

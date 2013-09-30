@@ -77,7 +77,8 @@ void EmoticonsWidget::setDefaultTheme(const QString& theme)
          return;
       }
 
-   this->themeButtons.first()->setChecked(true); // Is not found.
+   if (!this->themeButtons.isEmpty())
+      this->themeButtons.first()->setChecked(true); // Is not found.
 }
 
 void EmoticonsWidget::emoticonClicked()

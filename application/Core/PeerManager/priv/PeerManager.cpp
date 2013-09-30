@@ -45,7 +45,7 @@ PeerManager::PeerManager(QSharedPointer<FM::IFileManager> fileManager) :
 PeerManager::~PeerManager()
 {
    for (QMapIterator<Common::Hash, Peer*> i(this->peers); i.hasNext();)
-      delete i.next();
+      delete i.next().value();
    delete this->self;
 
    L_DEBU("PeerManager deleted");

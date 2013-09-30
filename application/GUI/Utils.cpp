@@ -20,7 +20,10 @@
 using namespace GUI;
 
 #include <QListView>
+#include <QStringBuilder>
+#include <QCoreApplication>
 #include <QFileDialog>
+#include <QDir>
 #include <QDesktopServices>
 #include <QUrl>
 #include <QProcess>
@@ -28,6 +31,7 @@ using namespace GUI;
 #include <QLabel>
 
 #include <Settings/RemoteFileDialog.h>
+#include <Constants.h>
 
 /**
   * Ask the user to choose one or more directories.
@@ -74,6 +78,16 @@ QStringList Utils::askForDirectories(QSharedPointer<RCC::ICoreConnection> coreCo
 QStringList Utils::askForDirectoriesToDownloadTo(QSharedPointer<RCC::ICoreConnection> coreConnection)
 {
    return Utils::askForDirectories(coreConnection, "<img src=\":/icons/ressources/information.png\" /> <strong>" + QObject::tr("The choosen directory will be shared") + "</strong>");
+}
+
+QString Utils::emoticonsDirectoryPath()
+{
+   QString defaultPath = QCoreApplication::applicationDirPath() % "/" % Constants::EMOTICONS_DIRECTORY;
+#if DEBUG
+   if (!QDir(defaultPath).exists())
+      return QCoreApplication::applicationDirPath() % "/../../ressources/emoticons";
+#endif
+   return defaultPath;
 }
 
 void Utils::openLocations(const QStringList& paths)

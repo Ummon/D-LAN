@@ -41,7 +41,7 @@ namespace FM
         * If not, the connected slot may be called right after the 'start()' call and thus don't
         * give the caller the time to treat the 'start()' return value.
         */
-      void nextHash(Common::Hash hash);
+      void nextHash(Protos::Core::HashResult hash);
    };
 }
 #endif

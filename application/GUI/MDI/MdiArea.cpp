@@ -27,12 +27,13 @@ using namespace GUI;
 
 #include <Log.h>
 #include <Constants.h>
+#include <Utils.h>
 #include <MDI/MdiWidget.h>
 #include <MDI/TabButtons.h>
 
 MdiArea::MdiArea(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel, Taskbar& taskbar, QWidget* parent) :
    QMdiArea(parent),
-   emoticon(QCoreApplication::applicationDirPath() % "/" % Constants::EMOTICONS_DIRECTORY, Constants::DEFAULT_EMOTICON_THEME),
+   emoticon(Utils::emoticonsDirectoryPath(), Constants::DEFAULT_EMOTICON_THEME),
    coreConnection(coreConnection),
    peerListModel(peerListModel),
    taskbar(taskbar),

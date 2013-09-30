@@ -20,6 +20,7 @@
 #define DOWNLOADMANAGER_FILEDOWNLOAD_H
 
 #include <QList>
+#include <QMap>
 #include <QSharedPointer>
 #include <QTime>
 
@@ -89,7 +90,7 @@ namespace DM
    private slots:
       bool updateStatus();
       void result(const Protos::Core::GetHashesResult& result);
-      void nextHash(const Common::Hash& hash);
+      void nextHash(const Protos::Core::HashResult&);
       void getHashTimeout();
 
       void chunkDownloaderStarted();
@@ -99,13 +100,15 @@ namespace DM
       bool tryToLinkToAnExistingFile();
       void connectChunkDownloaderSignals(const QSharedPointer<ChunkDownloader>& chunkDownload);
       bool createFile();
+      void giveChunksToDownloaders();
       void reset();
 
       LinkedPeers& linkedPeers;
 
       const int NB_CHUNK;
 
-      QList<QSharedPointer<FM::IChunk>> chunksWithoutDownload;
+      // Chunks without downloader associated.
+      QMap<int, QSharedPointer<FM::IChunk>> chunksWithoutDownloader;
       QList<QSharedPointer<ChunkDownloader>> chunkDownloaders;
 
       int nbChunkAsked;
