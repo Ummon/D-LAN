@@ -94,8 +94,8 @@ translate(fr, features, help_us) -> "N'oubliez pas de nous <a href=\"~s\">aider<
 
 %%%%%%%%%%
 
-translate(en, faq, q1) -> "A new file sharing tool is neat but I can already share some files with my system tools. What are the benefits to use D-LAN?";
-translate(fr, faq, q1) -> "Un nouvel outil de partage de fichier c'est bien mais je peux déjà faire des partages avec les outils de mon système. Quels sont les avantages d'utiliser D-LAN?";
+translate(en, faq, q1) -> "What are the benefits of using D-LAN instead of the default system tools?";
+translate(fr, faq, q1) -> "Quels sont les avantages d'utiliser D-LAN à la place des outils par défaut du système?";
 
 translate(en, faq, a1) -> "D-LAN is designed for massive transfers, you can manage a queue of files to be downloaded. A file may be downloaded automatically from many peers at the same time to speed up the transfer and prevent peer downtime. D-LAN has a fast global search feature that the default system file sharing doesn't have. You will find more information from the <a href=\"features.html\">feature page</a>.";
 translate(fr, faq, a1) -> "D-LAN est conçu pour des transfers massifs, il est possible de gérer une liste des fichiers à transferer. Un fichier peut être transferé depuis plusieurs pairs simultanément pour augmenter la vitesse ainsi que la fiabilité. Il est possible d'effectuer une recherche globale, ce que les partages système par défaut n'ont pas. Pour plus d'informations voir la <a href=\"features.html\">page des fonctionnalités</a>.";
