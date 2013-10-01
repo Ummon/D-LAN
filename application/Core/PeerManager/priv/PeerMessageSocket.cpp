@@ -294,7 +294,6 @@ void PeerMessageSocket::onNewMessage(const Common::Message& message)
          this->currentHashesResult = this->fileManager->getHashes(getHashes.file());
          connect(this->currentHashesResult.data(), SIGNAL(nextHash(Protos::Core::HashResult)), this, SLOT(nextAskedHash(Protos::Core::HashResult)), Qt::QueuedConnection);
          Protos::Core::GetHashesResult res = this->currentHashesResult->start();
-
          this->nbHash = res.nb_hash();
 
          this->send(Common::MessageHeader::CORE_GET_HASHES_RESULT, res);

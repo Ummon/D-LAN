@@ -620,7 +620,7 @@ void File::setHashes(const Common::Hashes& hashes)
    {
       int chunkKnownBytes = !this->isComplete() ? 0 : i == this->getNbChunks() - 1 && this->size % Chunk::CHUNK_SIZE != 0 ? this->size % Chunk::CHUNK_SIZE : Chunk::CHUNK_SIZE;
 
-      if (i < hashes.size())
+      if (i < hashes.size() && !hashes[i].isNull())
       {
          QSharedPointer<Chunk> chunk(new Chunk(this, i, chunkKnownBytes, hashes[i]));
          this->chunks << chunk;

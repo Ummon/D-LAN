@@ -325,7 +325,7 @@ void DownloadManager::peerNoLongerAskingForHashes(PM::IPeer* peer)
    // We can't use 'downloadsIndexedBySourcePeerID' because the order matters.
    DownloadQueue::ScanningIterator<IsDownloable> i(this->downloadQueue);
    while (FileDownload* fileDownload = static_cast<FileDownload*>(i.next()))
-      if (fileDownload->retrieveHashes())
+      if (!fileDownload->isStatusErroneous() && fileDownload->retrieveHashes())
          break;
 }
 
@@ -341,7 +341,7 @@ void DownloadManager::peerNoLongerAskingForEntries(PM::IPeer* peer)
 
    DownloadQueue::ScanningIterator<IsADirectory> i(this->downloadQueue);
    while (DirDownload* dirDownload = static_cast<DirDownload*>(i.next()))
-      if (dirDownload->retrieveEntries())
+      if (!dirDownload->isStatusErroneous() && dirDownload->retrieveEntries())
          break;
 }
 

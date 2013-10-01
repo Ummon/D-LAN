@@ -65,9 +65,9 @@ FileDownload::FileDownload(
    this->setStatus(static_cast<Status>(status));
 
    // We create a 'ChunkDownloader' for each known chunk in the entry.
-   for (int i = 0; i < this->remoteEntry.chunk_size(); i++)
+   for (int i = 0; i < this->NB_CHUNK; i++)
    {
-      QSharedPointer<ChunkDownloader> chunkDownloader = this->remoteEntry.chunk(i).has_hash() ?
+      QSharedPointer<ChunkDownloader> chunkDownloader = (i < this->remoteEntry.chunk_size() && this->remoteEntry.chunk(i).has_hash()) ?
          QSharedPointer<ChunkDownloader>(new ChunkDownloader(this->linkedPeers, this->occupiedPeersDownloadingChunk, this->transferRateCalculator, this->threadPool, Common::Hash(this->remoteEntry.chunk(i).hash())))
          : QSharedPointer<ChunkDownloader>();
 
@@ -169,12 +169,9 @@ void FileDownload::populateQueueEntry(Protos::Queue::Queue::Entry* entry) const
 {
    Download::populateQueueEntry(entry);
 
-   for (int i = entry->remote_entry().chunk_size(); i < this->chunkDownloaders.size(); i++)
-   {
-      Protos::Common::Hash* hash = entry->mutable_remote_entry()->add_chunk();
-      if (!this->chunkDownloaders[i].isNull())
-         hash->set_hash(this->chunkDownloaders[i]->getHash().getData(), Common::Hash::HASH_SIZE);
-   }
+   for (int i = 0; i < this->chunkDownloaders.size() && i < entry->remote_entry().chunk_size(); i++)
+      if (!entry->remote_entry().chunk(i).has_hash() && !this->chunkDownloaders[i].isNull())
+         entry->mutable_remote_entry()->mutable_chunk(i)->set_hash(this->chunkDownloaders[i]->getHash().getData(), Common::Hash::HASH_SIZE);
 }
 
 quint64 FileDownload::getDownloadedBytes() const
@@ -354,7 +351,7 @@ bool FileDownload::retrieveHashes()
 
    this->setStatus(GETTING_THE_HASHES);
    connect(this->getHashesResult.data(), SIGNAL(result(const Protos::Core::GetHashesResult&)), this, SLOT(result(const Protos::Core::GetHashesResult&)));
-   connect(this->getHashesResult.data(), SIGNAL(nextHash(const Protos::Core::HashResult&&)), this, SLOT(nextHash(const Protos::Core::HashResult&)));
+   connect(this->getHashesResult.data(), SIGNAL(nextHash(const Protos::Core::HashResult&)), this, SLOT(nextHash(const Protos::Core::HashResult&)));
    connect(this->getHashesResult.data(), SIGNAL(timeout()), this, SLOT(getHashTimeout()));
    this->getHashesResult->start();
 
@@ -482,14 +479,17 @@ void FileDownload::nextHash(const Protos::Core::HashResult& hashResult)
       return;
    }
 
-   if (!this->chunkDownloaders[num].isNull() && this->chunkDownloaders[num]->getHash() != hash)
+   if (!this->chunkDownloaders[num].isNull())
    {
-      L_WARN(
-         QString("The hash (%1) num %2 received doesn't match the hash (%3) in our entry").
-            arg(hash.toStr()).
-            arg(num).
-            arg(this->chunkDownloaders[num]->getHash().toStr())
-      );
+      if (this->chunkDownloaders[num]->getHash() != hash)
+      {
+         L_WARN(
+            QString("The hash (%1) num %2 received doesn't match the hash (%3) in our entry").
+               arg(hash.toStr()).
+               arg(num).
+               arg(this->chunkDownloaders[num]->getHash().toStr())
+         );
+      }
       return;
    }
 
@@ -512,7 +512,10 @@ void FileDownload::nextHash(const Protos::Core::HashResult& hashResult)
 
    this->connectChunkDownloaderSignals(chunkDownloader);
    chunkDownloader->setPeerSource(this->peerSource); // May start a download.
-   this->remoteEntry.add_chunk()->set_hash(hash.getData(), Common::Hash::HASH_SIZE); // Used during the saving of the queue, see Download::populateEntry(..).
+
+   if (num < static_cast<quint32>(this->remoteEntry.chunk_size()))
+      this->remoteEntry.mutable_chunk(num)->set_hash(hash.getData(), Common::Hash::HASH_SIZE); // Used during the saving of the queue, see Download::populateEntry(..).
+
    emit newHashKnown();
 }
 

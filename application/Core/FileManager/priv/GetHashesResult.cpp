@@ -34,7 +34,7 @@ using namespace FM;
 GetHashesResult::GetHashesResult(const Protos::Common::Entry& fileEntry, Cache& cache, FileUpdater& fileUpdater) :
    fileEntry(fileEntry), file(nullptr), cache(cache), fileUpdater(fileUpdater)
 {
-   qRegisterMetaType<Common::Hash>("Common::Hash");
+   qRegisterMetaType<Protos::Core::HashResult>("Protos::Core::HashResult");
 
    L_DEBU("GetHashesResult::GetHashesResult(..)");
 }
@@ -81,14 +81,14 @@ Protos::Core::GetHashesResult GetHashesResult::start()
       int j = 0;
       for (QVectorIterator<QSharedPointer<Chunk>> i(chunks); i.hasNext();)
       {
-         QSharedPointer<Chunk> chunk { i.next() };
+         auto chunk = i.next();
          const Protos::Common::Hash& protoChunk = this->fileEntry.chunk(j++);
 
          if (!protoChunk.has_hash())
          {
             nbOfHashWillBeSent++;
-            if (!chunk.isNull())
-               this->sendNextHash(chunk);
+            if (chunk->hasHash())
+               this->sendNextHash(chunk, true);
             else
                this->hashesRemaining << chunk->getNum();
          }
@@ -98,7 +98,7 @@ Protos::Core::GetHashesResult GetHashesResult::start()
    }
 
    // No hash to send.
-   if (nbOfHashWillBeSent == 0)
+   if (this->hashesRemaining.isEmpty())
    {
       disconnect(&this->cache, SIGNAL(chunkHashKnown(QSharedPointer<Chunk>)), this, SLOT(chunkHashKnown(QSharedPointer<Chunk>)));
    }
@@ -117,22 +117,25 @@ void GetHashesResult::chunkHashKnown(QSharedPointer<Chunk> chunk)
    if (chunk->isOwnedBy(this->file))
    {
       QMutexLocker locker(&this->mutex);
-      this->sendNextHash(chunk);
+      this->sendNextHash(chunk, false);
    }
 }
 
-void GetHashesResult::sendNextHash(QSharedPointer<Chunk> chunk)
+void GetHashesResult::sendNextHash(QSharedPointer<Chunk> chunk, bool direct)
 {
-   int i = this->hashesRemaining.indexOf(chunk->getNum());
-   if (i != -1)
+   if (!direct)
    {
-      this->hashesRemaining.removeAt(i);
-      if (this->hashesRemaining.empty())
-         disconnect(&this->cache, SIGNAL(chunkHashKnown(QSharedPointer<Chunk>)), this, SLOT(chunkHashKnown(QSharedPointer<Chunk>)));
-
-      Protos::Core::HashResult hashResult;
-      hashResult.set_num(chunk->getNum());
-      hashResult.mutable_hash()->set_hash(chunk->getHash().getData(), Common::Hash::HASH_SIZE);
-      emit nextHash(hashResult);
+      int i = this->hashesRemaining.indexOf(chunk->getNum());
+      if (i != -1)
+      {
+         this->hashesRemaining.removeAt(i);
+         if (this->hashesRemaining.empty())
+            disconnect(&this->cache, SIGNAL(chunkHashKnown(QSharedPointer<Chunk>)), this, SLOT(chunkHashKnown(QSharedPointer<Chunk>)));
+      }
    }
+
+   Protos::Core::HashResult hashResult;
+   hashResult.set_num(chunk->getNum());
+   hashResult.mutable_hash()->set_hash(chunk->getHash().getData(), Common::Hash::HASH_SIZE);
+   emit nextHash(hashResult);
 }

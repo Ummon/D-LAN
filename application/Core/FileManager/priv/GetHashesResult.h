@@ -48,7 +48,7 @@ namespace FM
       void chunkHashKnown(QSharedPointer<Chunk> chunk);
 
    private:
-      void sendNextHash(QSharedPointer<Chunk> chunk);
+      void sendNextHash(QSharedPointer<Chunk> chunk, bool direct);
 
       const Protos::Common::Entry fileEntry;
       File* file; // TODO: if the file is deleted how can we know, is it important?
