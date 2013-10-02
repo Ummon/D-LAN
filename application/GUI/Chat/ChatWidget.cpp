@@ -362,7 +362,7 @@ void ChatWidget::emoticonsWindowHidden()
 {
    // I know it's bad but I didn't find another solution.
    // The issue is when the emoticons window is displayed and the user press on the emoticons button again. In this
-   // case the window 'hidden' signal is triggered before the button 'toggled' signal, so the button is set to unchecked before it is pressed again...
+   // case the window 'hidden' signal is triggered before the button 'toggled' signal, so the button is set to unchecked before it is pressed again . . .
    QTimer::singleShot(100, this, SLOT(emoticonsWindowHiddenDelayed()));
 }
 

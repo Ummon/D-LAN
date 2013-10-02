@@ -182,7 +182,7 @@ void ChatModel::sendMessage(const QString& message, const QList<Common::Hash>& p
    if (message.isEmpty())
       return;
 
-   // Remove the HTML header and footer with a regular expression ... I know: http://stackoverflow.com/a/1732454 ...
+   // Remove the HTML header and footer with a regular expression . . . I know: http://stackoverflow.com/a/1732454 . . .
    const int beginning = this->regexMatchMessageContent.indexIn(message);
    const int end = message.lastIndexOf("</p>");
 

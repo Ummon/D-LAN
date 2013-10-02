@@ -269,7 +269,7 @@ void FileHasher::internalStop()
    this->toStopHashing = true;
    if (this->hashing)
    {
-      L_DEBU(QString("FileHasher::stop(): %1 ..").arg(this->currentFileCache ? this->currentFileCache->getFullPath() : "?"));
+      L_DEBU(QString("FileHasher::stop(): %1 . . .").arg(this->currentFileCache ? this->currentFileCache->getFullPath() : "?"));
       this->hashingStopped.wait(&this->hashingMutex);
       L_DEBU("File hashing stopped");
    }

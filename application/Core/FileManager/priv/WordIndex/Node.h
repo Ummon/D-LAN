@@ -321,7 +321,7 @@ QList<FM::NodeResult<T>> FM::Node<T>::getItems(bool alsoFromSubNodes, int maxNbR
 
       for (QListIterator<T> i(current->items); i.hasNext();)
       {
-         // 'level' == 0 means the item matches exactly, it's a bit tricky..
+         // 'level' == 0 means the item matches exactly, it's a bit tricky.
          result << NodeResult<T>(i.next(), current == this ? 0 : 1);
          if (result.size() == maxNbResult)
             return result;

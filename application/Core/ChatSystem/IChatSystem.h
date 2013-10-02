@@ -48,7 +48,7 @@ namespace CS
       /**
         * Send a message to everyone.
         * This will emit a 'newMessages' signal.
-        * @return 'false' if the message is too big to be send.
+        * @param roomName The
         */
       virtual SendStatus send(const QString& message, const QString& roomName = QString(), const QList<Common::Hash>& peerIDsAnswer = QList<Common::Hash>()) = 0;
 

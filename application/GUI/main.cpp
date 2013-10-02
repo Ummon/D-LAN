@@ -23,6 +23,7 @@
 #include <Protos/gui_settings.pb.h>
 
 #include <Common/Settings.h>
+#include <Common/Global.h>
 #include <Common/Constants.h>
 #include <Common/LogManager/Builder.h>
 
@@ -65,6 +66,8 @@ int main(int argc, char *argv[])
       return 0;
 
    LM::Builder::setLogDirName("log_gui");
+
+   LM::Builder::newLogger("Main")->log(QObject::tr("D-LAN GUI version %1").arg(Common::Global::getVersionFull()), LM::SV_END_USER);
 
    try
    {

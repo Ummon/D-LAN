@@ -330,7 +330,7 @@ void FileUpdater::computeSomeHashes()
    if (this->filesWithoutHashes.isEmpty() && this->filesWithoutHashesPrioritized.isEmpty())
       return;
 
-   L_DEBU("Start computing some hashes..");
+   L_DEBU("Start computing some hashes . . .");
 
    QElapsedTimer timer;
    timer.start();

@@ -102,7 +102,7 @@ void Core::start()
    QCoreApplication::instance()->installTranslator(&this->translator);
    this->setLanguage(SETTINGS.get<QLocale>("language"), true);
 
-   L_USER(QObject::tr("Starting.."));
+   L_USER(QObject::tr("D-LAN Core version %1 is starting . . .").arg(Common::Global::getVersionFull()));
 
    this->fileManager = FM::Builder::newFileManager();
    this->peerManager = PM::Builder::newPeerManager(this->fileManager);
@@ -162,7 +162,7 @@ void Core::setLanguage(QLocale locale, bool load)
 }
 
 /**
-  * Check if each value settings is valid, for example 'buffer_size' cannot be one byte or 3 TiB..
+  * Check if each value settings is valid, for example 'buffer_size' cannot be one byte or 3 TiB.
   */
 void Core::checkSettingsIntegrity()
 {

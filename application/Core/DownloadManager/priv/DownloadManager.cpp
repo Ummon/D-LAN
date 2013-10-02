@@ -461,7 +461,7 @@ void DownloadManager::saveQueueToFile()
 {
    if (this->queueChanged && this->queueLoaded)
    {
-      L_DEBU("Persisting queue ..");
+      L_DEBU("Persisting queue . . .");
 
       this->downloadQueue.saveToFile();
       this->queueChanged = false;

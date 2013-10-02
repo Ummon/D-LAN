@@ -28,7 +28,7 @@ CoreApplication::CoreApplication(int& argc, char** argv) :
     {
        /* Was used to rebind the sockets when the compute wake up.
           The issue is more general because if the network interface is restarted, the multicast socket
-          doesn't work anymore...
+          doesn't work anymore . . .
        if (msg->message == WM_DEVICECHANGE)
        {
           emit resumeFromLowPowerState();

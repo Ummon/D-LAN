@@ -28,7 +28,7 @@
   * @class Common::SortedArray
   *
   * The goal of the class is to be able to use an ordered list as an array, here are listed some properties:
-  *  - Access to element by integer index like an array: 0, 1, 2, ...
+  *  - Access to element by integer index like an array: 0, 1, 2, . . .
   *  - Found the index of a given value.
   *  - The elements are kept ordered when a new one is inserted.
   * The type T must have the operator '<' defined. Otherwise a "lesser than" function can be given with the method 'setSortedFunction'.

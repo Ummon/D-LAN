@@ -82,7 +82,7 @@ FileManager::FileManager() :
 
 FileManager::~FileManager()
 {
-   L_DEBU("~FileManager : Stopping the file updater..");
+   L_DEBU("~FileManager : Stopping the file updater . . .");
    this->fileUpdater.stop();
    this->cacheChanged = true;
    this->forcePersistCacheToFile();
@@ -360,7 +360,7 @@ void FileManager::entryRemoved(Entry* entry)
 
    L_DEBU(QString("Removing entry '%1' from the index . . .").arg(entry->getName()));
    this->wordIndex.rmItem(Common::StringUtils::splitInWords(entry->getName()), entry);
-   L_DEBU("Entry removed from the index..");
+   L_DEBU("Entry removed from the index");
 }
 
 void FileManager::entryRenamed(Entry* entry, const QString& oldName)

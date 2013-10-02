@@ -37,9 +37,10 @@ namespace FM
 
    signals:
       /**
-        * This signal must be connected as Qt::QueuedConnection!
+        * This signal must be connected as 'Qt::QueuedConnection'!
         * If not, the connected slot may be called right after the 'start()' call and thus don't
         * give the caller the time to treat the 'start()' return value.
+        * Another benefit to use 'Qt::QueuedConnection' is to avoid a call from a separated thread instead of the main thread.
         */
       void nextHash(Protos::Core::HashResult hash);
    };

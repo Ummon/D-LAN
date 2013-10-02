@@ -186,7 +186,7 @@ void ChunkDownloader::run()
          if (timer.elapsed() > TIME_PERIOD_CHOOSE_ANOTHER_PEER)
          {
             this->currentDownloadingPeer->setSpeed(deltaRead / timer.elapsed() * 1000);
-            L_DEBU(QString("Check for a better peer for the chunk: %1, current peer: %2 ..").arg(this->chunk->toStringLog()).arg(this->currentDownloadingPeer->toStringLog()));
+            L_DEBU(QString("Check for a better peer for the chunk: %1, current peer: %2 . . .").arg(this->chunk->toStringLog()).arg(this->currentDownloadingPeer->toStringLog()));
             timer.start();
             deltaRead = 0;
 

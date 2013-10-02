@@ -292,7 +292,7 @@ Directory* Directory::getSubDir(const QString& name) const
          return d;
    }
 
-   return 0;
+   return nullptr;
 }
 
 QLinkedList<Directory*> Directory::getSubDirs() const
@@ -344,7 +344,7 @@ Directory* Directory::createSubDirs(const QStringList& names, bool physically)
    {
       currentDir = currentDir->createSubDir(name, physically);
       if (!currentDir)
-         return 0;
+         return nullptr;
    }
    return currentDir;
 }
@@ -356,7 +356,7 @@ File* Directory::getFile(const QString& name) const
       if (f->getName() == name)
          return f;
 
-   return 0;
+   return nullptr;
 }
 
 /**
@@ -497,7 +497,7 @@ DirIterator::DirIterator(Directory* dir, bool includeRoot)
 Directory* DirIterator::next()
 {
    if (this->dirsToVisit.isEmpty())
-      return 0;
+      return nullptr;
 
    Directory* dir = this->dirsToVisit.front();
    this->dirsToVisit.removeFirst();

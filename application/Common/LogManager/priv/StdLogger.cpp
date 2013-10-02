@@ -31,7 +31,7 @@ using namespace LM;
   * @class LM::StdLogger
   *
   * A special logger created to handle all stdout or stderr text line and log them.
-  * Disable for the moment..
+  * Disable at the moment . . .
   */
 
 // const StdLogger StdLogger::stdoutLogger(STDOUT_FILENO, "stdout");
