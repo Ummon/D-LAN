@@ -105,9 +105,9 @@ namespace FM
 
       /**
         * Remove the item from the node.
-        * If the item doesn'exist nothing happen.
+        * If the item doesn't exist nothing happen and 'false' is returned else the item is removed and 'true' is returned.
         */
-      void rmItem(const QString& word, const T& item);
+      bool rmItem(const QString& word, const T& item);
 
       QList<NodeResult<T>> search(const QString& word, bool alsoFromSubNodes = false, int maxNbResult = -1) const;
 
@@ -199,11 +199,11 @@ void FM::Node<T>::addItem(const QStringRef& word, const T& item)
 }
 
 template <typename T>
-void FM::Node<T>::rmItem(const QString& word, const T& item)
+bool FM::Node<T>::rmItem(const QString& word, const T& item)
 {
    QPair<Node<T>*, int> nodes = this->getNode(word, true);
    if (!nodes.first)
-      return;
+      return false;
 
    Node<T>* node = nodes.first->children[nodes.second];
 
@@ -211,10 +211,11 @@ void FM::Node<T>::rmItem(const QString& word, const T& item)
    {
       node->items.clear();
       nodes.first->remove(nodes.second);
+      return true;
    }
    else
    {
-      node->items.removeOne(item);
+      return node->items.removeOne(item);
    }
 }
 

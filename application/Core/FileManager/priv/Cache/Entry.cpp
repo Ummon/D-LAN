@@ -28,14 +28,21 @@ using namespace FM;
 #include <priv/Cache/SharedDirectory.h>
 
 Entry::Entry(Cache* cache, const QString& name, qint64 size) :
-   cache(cache), name(name), size(size)
+   cache(cache), name(name), size(size), mutex(QMutex::Recursive)
 {
    this->cache->onEntryAdded(this);
 }
 
 Entry::~Entry()
 {
+}
+
+void Entry::del(bool invokeDelete)
+{
    this->cache->onEntryRemoved(this);
+
+   if (invokeDelete)
+      QMetaObject::invokeMethod(this->cache, "deleteEntry", Qt::QueuedConnection, Q_ARG(Entry*, this));
 }
 
 void Entry::populateEntry(Protos::Common::Entry* entry, bool setSharedDir) const

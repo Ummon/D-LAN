@@ -46,12 +46,13 @@ using namespace FM;
 Cache::Cache() :
    mutex(QMutex::Recursive)
 {
+   qRegisterMetaType<Entry*>("Entry*");
 }
 
 Cache::~Cache()
 {
    for (QListIterator<SharedDirectory*> i(this->sharedDirs); i.hasNext();)
-      delete i.next();
+      i.next()->del();
 }
 
 /**
@@ -645,6 +646,11 @@ void Cache::onChunkRemoved(const QSharedPointer<Chunk>& chunk)
 void Cache::onScanned(Directory* dir)
 {
    emit directoryScanned(dir);
+}
+
+void Cache::deleteEntry(Entry* entry)
+{
+   delete entry;
 }
 
 /**

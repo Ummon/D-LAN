@@ -69,8 +69,10 @@ bool HashesReceiver::waitToReceive(QList<Common::Hash>& hashes, int timeout)
    }
 }
 
-void HashesReceiver::nextHash(Common::Hash hash)
+void HashesReceiver::nextHash(Protos::Core::HashResult hashResult)
 {
+   Common::Hash hash { hashResult.hash().hash() };
+
    qDebug() << this->num << " : " << hash.toStr();
    this->receivedHashes << hash;
    this->num++;

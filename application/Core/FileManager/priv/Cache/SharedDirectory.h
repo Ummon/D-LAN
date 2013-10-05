@@ -44,6 +44,7 @@ namespace FM
 
    public:
       ~SharedDirectory();
+      void del(bool invokeDelete = true);
 
       void moveInto(Directory* directory);
       void moveInto(const QString& path);

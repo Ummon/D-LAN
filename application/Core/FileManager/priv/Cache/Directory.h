@@ -48,6 +48,7 @@ namespace FM
 
    public:
       virtual ~Directory();
+      virtual void del(bool invokeDelete = true);
 
       QList<File*> restoreFromFileCache(const Protos::FileCache::Hashes::Dir& dir);
       void populateHashesDir(Protos::FileCache::Hashes::Dir& dirToFill) const;
@@ -109,8 +110,6 @@ namespace FM
       Common::SortedList<File*> files; ///< Sorted by name.
 
       bool scanned;
-
-      mutable QMutex mutex;
    };
 
    class DirIterator

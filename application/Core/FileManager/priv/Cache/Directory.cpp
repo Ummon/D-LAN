@@ -39,8 +39,7 @@ Directory::Directory(Directory* parent, const QString& name, bool createPhysical
    parent(parent),
    subDirs(&Directory::entrySortingFun),
    files(&Directory::entrySortingFun),
-   scanned(true),
-   mutex(QMutex::Recursive)
+   scanned(true)
 {
    QMutexLocker locker(&this->mutex);
    L_DEBU(QString("New Directory : %1, createPhysically = %2").arg(this->getFullPath()).arg(createPhysically));
@@ -49,6 +48,7 @@ Directory::Directory(Directory* parent, const QString& name, bool createPhysical
       if (!QDir(this->parent->getFullPath()).mkdir(this->name))
       {
          L_ERRO(QString("Unable to create the directory : %1").arg(this->getFullPath()));
+         Entry::del(false);
          throw UnableToCreateNewDirException();
       }
 
@@ -59,23 +59,28 @@ Directory::Directory(Directory* parent, const QString& name, bool createPhysical
   * Called by the root (SharedDirectory) which will not have parent and name.
   */
 Directory::Directory(Cache* cache, const QString& name) :
-   Entry(cache, name), parent(0), subDirs(&Directory::entrySortingFun), files(&Directory::entrySortingFun), mutex(QMutex::Recursive)
+   Entry(cache, name), parent(0), subDirs(&Directory::entrySortingFun), files(&Directory::entrySortingFun)
 {
 }
 
 Directory::~Directory()
-{   
-   this->deleteSubDirs();
+{
+   L_DEBU(QString("Directory deleted: %1").arg(this->getName()));
+}
 
+void Directory::del(bool invokeDelete)
+{
    QMutexLocker locker(&this->mutex);
 
+   this->deleteSubDirs();
+
    foreach (File* f, this->files.getList())
-      delete f;
+      f->del();
 
    if (this->parent)
       this->parent->subDirDeleted(this);
 
-   L_DEBU(QString("Directory deleted : %1").arg(this->getFullPath()));
+   Entry::del(invokeDelete);
 }
 
 /**
@@ -117,7 +122,7 @@ QList<File*> Directory::restoreFromFileCache(const Protos::FileCache::Hashes::Di
          if (!file->isComplete())
          {
             file->removeUnfinishedFiles();
-            delete file;
+            file->del();
          }
       }
    }
@@ -443,7 +448,7 @@ void Directory::fileNameChanged(File* file)
 void Directory::deleteSubDirs()
 {
    foreach (Directory* d, this->subDirs.getList())
-      delete d;
+      d->del();
 }
 
 void Directory::subdirNameChanged(Directory* dir)

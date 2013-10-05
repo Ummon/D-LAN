@@ -20,6 +20,7 @@
 #define FILEMANAGER_ENTRY_H
 
 #include <QString>
+#include <QMutex>
 
 #include <Common/Uncopyable.h>
 
@@ -38,6 +39,7 @@ namespace FM
 
    public:
       virtual ~Entry();
+      virtual void del(bool invokeDelete = true);
 
       virtual void populateEntry(Protos::Common::Entry* entry, bool setSharedDir = false) const;
       void populateEntrySharedDir(Protos::Common::Entry* entry) const;
@@ -75,6 +77,8 @@ namespace FM
 
       QString name;
       qint64 size;
+
+      mutable QMutex mutex;
    };
 
    inline bool operator<(const Entry& e1, const Entry& e2)

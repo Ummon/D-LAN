@@ -174,7 +174,7 @@ void FilesAndDirs::createAFile()
    QFile file(filePath);
    if (!file.open(QIODevice::WriteOnly | QIODevice::Unbuffered))
    {
-      qDebug() << "Unable to open file " << filePath;
+      qDebug() << "Unable to open file:" << filePath;
       return;
    }
 
@@ -235,7 +235,9 @@ StressTest::StressTest()
 {
    this->fileManager = Builder::newFileManager();
 
-   QDir().mkdir(ROOT_DIR.dirName());
+   if (!QDir().mkdir(ROOT_DIR.dirName()))
+      qDebug() << "Unable to create the main directory:" << ROOT_DIR.absolutePath();
+
    Common::Global::recursiveDeleteDirectoryContent(ROOT_DIR.dirName());
 
    for (int i = 0; i < NB_FILES_AND_DIR_THREAD; i++)
@@ -565,7 +567,7 @@ void StressTest::getHashes()
    qDebug() << "Entry " << entryToStr(entry);
 
    QSharedPointer<IGetHashesResult> result = this->fileManager->getHashes(entry);
-   connect(result.data(), SIGNAL(nextHash(Common::Hash)), this, SLOT(nextHash(Common::Hash)), Qt::QueuedConnection);
+   connect(result.data(), SIGNAL(nextHash(Protos::Core::HashResult)), this, SLOT(nextHash(Protos::Core::HashResult)), Qt::QueuedConnection);
    Protos::Core::GetHashesResult result2 = result->start();
 
    if (result2.status() != Protos::Core::GetHashesResult_Status_OK)
@@ -579,8 +581,9 @@ void StressTest::getHashes()
    }
 }
 
-void StressTest::nextHash(Common::Hash hash)
+void StressTest::nextHash(Protos::Core::HashResult hashResult)
 {
+   Common::Hash hash(hashResult.hash().hash());
    for (int i = 0; i < this->getHashesResults.size(); i++)
       if (this->getHashesResults[i].result.data() == dynamic_cast<IGetHashesResult*>(this->sender()))
       {

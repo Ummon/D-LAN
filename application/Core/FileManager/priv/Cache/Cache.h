@@ -86,6 +86,9 @@ namespace FM
 
       void onScanned(Directory* dir);
 
+   public slots:
+      void deleteEntry(Entry* entry);
+
    signals:
       void entryAdded(Entry* entry);
       void entryRemoved(Entry* entry);

@@ -359,7 +359,8 @@ void FileManager::entryRemoved(Entry* entry)
       return;
 
    L_DEBU(QString("Removing entry '%1' from the index . . .").arg(entry->getName()));
-   this->wordIndex.rmItem(Common::StringUtils::splitInWords(entry->getName()), entry);
+   if (!this->wordIndex.rmItem(Common::StringUtils::splitInWords(entry->getName()), entry))
+      L_DEBU(QString("The entry '%1' hasn't been found in the index!").arg(entry->getName()));
    L_DEBU("Entry removed from the index");
 }
 

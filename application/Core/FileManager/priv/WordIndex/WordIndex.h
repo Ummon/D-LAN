@@ -51,8 +51,8 @@ namespace FM
 
       void addItem(const QString& word, const T& item);
       void addItem(const QStringList& words, const T& item);
-      void rmItem(const QString& word, const T& item);
-      void rmItem(const QStringList& words, const T& item);
+      bool rmItem(const QString& word, const T& item);
+      bool rmItem(const QStringList& words, const T& item);
       void renameItem(const QString& oldWord, const QString& newWord, const T& item);
       void renameItem(const QStringList& oldWords, const QStringList& newWords, const T& item);
 
@@ -97,18 +97,23 @@ void FM::WordIndex<T>::addItem(const QStringList& words, const T& item)
 }
 
 template<typename T>
-void FM::WordIndex<T>::rmItem(const QString& word, const T& item)
+bool FM::WordIndex<T>::rmItem(const QString& word, const T& item)
 {
    QMutexLocker locker(&this->mutex);
-   this->root.rmItem(word, item);
+   return this->root.rmItem(word, item);
 }
 
+/**
+  * @return 'true' if at least one item is removed.
+  */
 template<typename T>
-void FM::WordIndex<T>::rmItem(const QStringList& words, const T& item)
+bool FM::WordIndex<T>::rmItem(const QStringList& words, const T& item)
 {
    QMutexLocker locker(&this->mutex);
+   bool itemRemoved = false;
    for (QStringListIterator i(words); i.hasNext();)
-      this->root.rmItem(i.next(), item);
+      itemRemoved |= this->root.rmItem(i.next(), item);
+   return itemRemoved;
 }
 
 template<typename T>

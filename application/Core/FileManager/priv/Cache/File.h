@@ -58,6 +58,9 @@ namespace FM
 
       virtual ~File();
 
+   public:
+      void del(bool invokeDelete = true);
+
       FileForHasher* asFileForHasher();
 
       void setToUnfinished(qint64 size, const Common::Hashes& hashes = Common::Hashes());
@@ -123,7 +126,6 @@ namespace FM
       QFile* fileInReadMode;
       QMutex writeLock; ///< Protect the file from concurrent access from different downloaders.
       QMutex readLock; ///< Protect the file from concurrent access from different uploaders.
-      mutable QMutex mutex;
    };
 
    /**

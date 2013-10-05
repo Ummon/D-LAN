@@ -97,7 +97,7 @@ private:
    void getHashes();
 
 private slots:
-   void nextHash(Common::Hash hash);
+   void nextHash(Protos::Core::HashResult hashResult);
 
 private:
    void addEntries(const Protos::Common::Entries& entries);

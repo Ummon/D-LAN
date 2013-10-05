@@ -44,7 +44,7 @@ void StressTests::initTestCase()
    try
    {
       QString tempFolder = Common::Global::setCurrentDirToTemp("FileManagerStressTests");
-      qDebug() << "Application folder path (where the persistent data is put) : " <<  Common::Global::getDataFolder(Common::Global::DataFolderType::LOCAL, false);
+      qDebug() << "Application folder path (where the persistent data is put): " <<  Common::Global::getDataFolder(Common::Global::DataFolderType::LOCAL, false);
       qDebug() << "The file created during this test are put in : " << tempFolder;
    }
    catch(Common::Global::UnableToSetTempDirException& e)

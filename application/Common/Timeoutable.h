@@ -46,6 +46,11 @@ namespace Common
       void timeoutSlot();
 
    private:
+      /**
+        * Called before the timeout signal is emitted.
+        */
+      virtual void onTimeout() { }
+
       bool timeouted;
       QTimer timer;
    };

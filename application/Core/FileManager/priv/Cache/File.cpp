@@ -66,6 +66,7 @@ using namespace FM;
   * @param dateLastModified The date of the last modification of the file.
   * @param hashes Optional hashes, if given it must contain ALL hashes.
   * @param createPhysically If 'true' the file will be created. Default is 'false'.
+  * @exception UnableToCreateNewFileException
   */
 File::File(
    Directory* dir,
@@ -82,13 +83,20 @@ File::File(
    numDataWriter(0),
    numDataReader(0),
    fileInWriteMode(nullptr),
-   fileInReadMode(nullptr),
-   mutex(QMutex::Recursive)
+   fileInReadMode(nullptr)
 {
    L_DEBU(QString("New file : %1 (%2), createPhysically = %3").arg(this->getFullPath()).arg(Common::Global::formatByteSize(this->size)).arg(createPhysically));
 
    if (createPhysically)
-      this->createPhysicalFile();
+      try
+      {
+         this->createPhysicalFile();
+      }
+      catch (UnableToCreateNewFileException&)
+      {
+         Entry::del(false);
+         throw;
+      }
 
    this->setHashes(hashes);
 
@@ -96,6 +104,11 @@ File::File(
 }
 
 File::~File()
+{
+   L_DEBU(QString("File deleted: %1").arg(this->getName()));
+}
+
+void File::del(bool invokeDelete)
 {
    this->dir->fileDeleted(this);
 
@@ -110,9 +123,9 @@ File::~File()
    QMutexLocker lockerRead(&this->readLock);
    this->cache->getFilePool().release(this->fileInReadMode, true);
 
-   L_DEBU(QString("File deleted : %1").arg(this->getFullPath()));
-
    QMutexLocker locker(&this->mutex); // We wait that all the current access to this file are finished.
+
+   Entry::del(invokeDelete);
 }
 
 FileForHasher* File::asFileForHasher()

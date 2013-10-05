@@ -85,24 +85,38 @@ void SharedDirectory::init()
 {
    // Avoid two same directories.
    if (this->cache->isShared(this->getFullPath()))
+   {
+      Directory::del(false);
       throw DirAlreadySharedException();
+   }
 
    // First of all check is the directory physically exists.
    if (!QDir(this->getFullPath()).exists())
+   {
+      Directory::del(false);
       throw DirNotFoundException(this->getFullPath());
+   }
 
    if (SharedDirectory* dir = this->cache->getSuperSharedDirectory(this->getFullPath()))
+   {
+      Directory::del(false);
       throw SuperDirectoryExistsException(dir->getFullPath(), this->getFullPath());
+   }
 }
 
 SharedDirectory::~SharedDirectory()
 {
-   L_DEBU(QString("SharedDirectory deleted : %1").arg(this->getFullPath()));
+   L_DEBU(QString("SharedDirectory deleted: %1").arg(this->getName()));
+}
 
-   // The question is: why we don't let '~Directory' destroy its sub directories?
+void SharedDirectory::del(bool invokeDelete)
+{
+   // The question is: why we don't let 'Directory::del()' destroys its sub directories?
    // This is because a concurrent access to 'Directory::getRoot()' during a delete of a shared directory must be
    // able to access the shared director.
-   this->deleteSubDirs();
+   // this->deleteSubDirs();
+
+   Directory::del(invokeDelete);
 }
 
 void SharedDirectory::moveInto(Directory* directory)

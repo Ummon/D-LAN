@@ -22,6 +22,8 @@
 #include <QObject>
 #include <QList>
 
+#include <Protos/core_protocol.pb.h>
+
 #include <Common/Hash.h>
 
 class HashesReceiver : public QObject
@@ -32,7 +34,7 @@ public:
    bool waitToReceive(QList<Common::Hash>& hashes, int timeout);
 
 public slots:
-   void nextHash(Common::Hash hash);
+   void nextHash(Protos::Core::HashResult);
 
 private:
    QList<Common::Hash> receivedHashes;
