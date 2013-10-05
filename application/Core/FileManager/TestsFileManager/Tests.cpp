@@ -442,14 +442,16 @@ void Tests::getHashesFromAFileEntry1()
    entry.set_path("/share1/");
    entry.set_name("r.txt");
    entry.mutable_shared_dir()->mutable_id()->set_hash(sharedDirId);
+   entry.add_chunk();
+
    QSharedPointer<IGetHashesResult> result = this->fileManager->getHashes(entry);
 
    HashesReceiver hashesReceiver;
-   connect(result.data(), SIGNAL(nextHash(Common::Hash)), &hashesReceiver, SLOT(nextHash(Common::Hash)));
+   connect(result.data(), SIGNAL(nextHash(Protos::Core::HashResult)), &hashesReceiver, SLOT(nextHash(Protos::Core::HashResult)));
 
    Protos::Core::GetHashesResult res = result->start();
 
-   QCOMPARE(res.status(), Protos::Core::GetHashesResult_Status_OK);
+   QCOMPARE(res.status(), Protos::Core::GetHashesResult::OK);
    QVERIFY(hashesReceiver.waitToReceive(QList<Common::Hash>() << Common::Hash::fromStr("97d464813598e2e4299b5fe7db29aefffdf2641d"), 500));
 }
 
@@ -464,8 +466,8 @@ void Tests::getHashesFromAFileEntry2()
       QFile file2("sharedDirs/big3.bin");
       file2.open(QIODevice::WriteOnly);
 
-      file1.resize(128 * 1024 * 1024); // 128Mo
-      file2.resize(128 * 1024 * 1024); // 128Mo
+      file1.resize(128 * 1024 * 1024); // 128 MiB.
+      file2.resize(128 * 1024 * 1024); // 128 MiB.
    }
 
    QTest::qWait(2000); // Begin the computing of the big2.bin hashes.
@@ -477,13 +479,15 @@ void Tests::getHashesFromAFileEntry2()
    entry.set_path("/");
    entry.set_name("big3.bin");
    entry.mutable_shared_dir()->mutable_id()->set_hash(sharedDirId);
+   for (int i = 0; i < 2; i++) // 128 MiB -> 2 chunks.
+      entry.add_chunk();
    QSharedPointer<IGetHashesResult> result = this->fileManager->getHashes(entry);
 
    HashesReceiver hashesReceiver;
-   connect(result.data(), SIGNAL(nextHash(Common::Hash)), &hashesReceiver, SLOT(nextHash(Common::Hash)));
+   connect(result.data(), SIGNAL(nextHash(Protos::Core::HashResult)), &hashesReceiver, SLOT(nextHash(Protos::Core::HashResult)));
    Protos::Core::GetHashesResult res = result->start(); // Should stop the computing of 'big2.bin' and switch to 'big3.bin'.
    qDebug() << res.status();
-   QCOMPARE(res.status(), Protos::Core::GetHashesResult_Status_OK);
+   QCOMPARE(res.status(), Protos::Core::GetHashesResult::OK);
 
    QTest::qWait(4000);
 }
