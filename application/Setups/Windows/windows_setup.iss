@@ -25,22 +25,18 @@ OutputBaseFilename={#AppName}-{#Version}{#VersionTag}-{#BuildTime}-Setup
 [Files]
 Source: "{#ApplicationDir}/Core/output/release/D-LAN.Core.exe"; DestDir: "{app}"; Flags: comparetimestamp
 Source: "{#ApplicationDir}/GUI/output/release/D-LAN.GUI.exe"; DestDir: "{app}"; Flags: comparetimestamp
-Source: "{#ApplicationDir}/Tools/LogViewer/output/release/LogViewer.exe"; DestDir: "{app}"; Flags: comparetimestamp
-Source: "{#ApplicationDir}/Tools/PasswordHasher/output/release/PasswordHasher.exe"; DestDir: "{app}"; Flags: comparetimestamp
 Source: "{#ApplicationDir}/translations/*.qm"; DestDir: "{app}/languages"; Flags: comparetimestamp
 Source: "{#ApplicationDir}/styles/*"; DestDir: "{app}/styles"; Flags: comparetimestamp recursesubdirs createallsubdirs
 Source: "{#QtDir}/bin/QtCore4.dll"; DestDir: "{app}"; Flags: comparetimestamp
 Source: "{#QtDir}/bin/QtGui4.dll"; DestDir: "{app}"; Flags: comparetimestamp
 Source: "{#QtDir}/bin/QtNetwork4.dll"; DestDir: "{app}"; Flags: comparetimestamp
 Source: "{#QtDir}/bin/QtXml4.dll"; DestDir: "{app}"; Flags: comparetimestamp
-Source: "{#MingwDir}/bin/mingwm10.dll"; DestDir: "{app}"; Flags: comparetimestamp
 Source: "{#MingwDir}/bin/libgcc_s_dw2-1.dll"; DestDir: "{app}"; Flags: comparetimestamp
 Source: "{#MingwDir}/bin/libstdc++-6.dll"; DestDir: "{app}"; Flags: comparetimestamp
 ;Source: {#ProtoBufDir}/src/.libs/libprotobuf-7.dll; DestDir: {app}; Flags: comparetimestamp;
 
 [Icons]
 Name: "{group}\D-LAN"; Filename: "{app}/D-LAN.GUI.exe"; WorkingDir: "{app}"
-Name: "{group}\Password Hasher"; Filename: "{app}/PasswordHasher.exe"; WorkingDir: "{app}"
 
 [Languages]
 ; Name has to be coded as ISO-639 (two letters).
