@@ -34,7 +34,7 @@
     </message>
     <message>
         <source>Corrupted data received for the file &quot;%1&quot; from peer %2. Peer blocked for %3 ms</source>
-        <translation type="unfinished"></translation>
+        <translation>Données corrompues reçues pour le fichier &quot;%1&quot; du pair %2. Le pair est blocké durant %3 ms</translation>
     </message>
 </context>
 <context>
@@ -76,7 +76,7 @@
     <name>QObject</name>
     <message>
         <source>Starting..</source>
-        <translation>Démarrage..</translation>
+        <translation type="obsolete">Démarrage..</translation>
     </message>
     <message>
         <source>Ready to serve</source>
@@ -89,6 +89,10 @@
     <message>
         <source>Shutdown</source>
         <translation>Arrêté</translation>
+    </message>
+    <message>
+        <source>D-LAN Core version %1 is starting . . .</source>
+        <translation>D-LAN Core version %1 démarre...</translation>
     </message>
 </context>
 </TS>

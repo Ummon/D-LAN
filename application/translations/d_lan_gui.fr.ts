@@ -155,7 +155,23 @@
 <context>
     <name>GUI::ChatWidget</name>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="+190"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="+191"/>
+        <location line="+4"/>
+        <source>Unable to send message</source>
+        <translation>Impossible d&apos;envoyer le message</translation>
+    </message>
+    <message>
+        <location line="-4"/>
+        <source>The message is too long</source>
+        <translation>Le message est trop long</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>The message can&apos;t be send, unknown error</source>
+        <translation>Le message ne peut pas être envoyé, erreur inconnue</translation>
+    </message>
+    <message>
+        <location line="+13"/>
         <source>Copy selected lines</source>
         <translation>Copier les lignes sélectionnés</translation>
     </message>
@@ -446,7 +462,7 @@
 <context>
     <name>GUI::EmoticonsWidget</name>
     <message>
-        <location filename="../GUI/Emoticons/EmoticonsWidget.cpp" line="+26"/>
+        <location filename="../GUI/Emoticons/EmoticonsWidget.cpp" line="+44"/>
         <source>Set as the default theme</source>
         <translation>Définir comme le thème par défaut</translation>
     </message>
@@ -583,7 +599,7 @@
 <context>
     <name>GUI::MdiArea</name>
     <message>
-        <location filename="../GUI/MDI/MdiArea.cpp" line="+281"/>
+        <location filename="../GUI/MDI/MdiArea.cpp" line="+300"/>
         <source>Waiting the cache loading process is finished before loading the download queue</source>
         <translation>En attente de la fin de chargement du cache avant de pouvoir charger la queue de téléchargement</translation>
     </message>
@@ -595,7 +611,21 @@
         <translation type="obsolete">Version %1</translation>
     </message>
     <message>
-        <location filename="../GUI/Peers/PeerListModel.cpp" line="+199"/>
+        <source>Their protocol version is more recent and incompatible with ours. Upgrade you version!</source>
+        <translation type="obsolete">Son</translation>
+    </message>
+    <message>
+        <location filename="../GUI/Peers/PeerListModel.cpp" line="+207"/>
+        <source>His protocol version is more recent and incompatible with ours. Upgrade you version!</source>
+        <translation>La version de son protocole est plus récente et incompatible avec la notre. Mettez à jour votre version!</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>His protocol version is outaded and incompatible with ours. He should upgrade his version!</source>
+        <translation>La version de son protocole est obsolète et incompatible avec la notre. Il devrait mettre à jour sa version!</translation>
+    </message>
+    <message>
+        <location line="+3"/>
         <source>Version %1
 </source>
         <translation>Version %1
@@ -615,17 +645,17 @@
 <context>
     <name>GUI::PeersDock</name>
     <message>
-        <location filename="../GUI/Peers/PeersDock.cpp" line="+60"/>
+        <location filename="../GUI/Peers/PeersDock.cpp" line="+85"/>
         <source>Browse</source>
         <translation>Explorer</translation>
     </message>
     <message>
-        <location line="+4"/>
+        <location line="+6"/>
         <source>Take control</source>
         <translation>Prendre le contrôle</translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="+4"/>
         <source>Copy IP: %1</source>
         <translation>Copier l&apos;IP: %1</translation>
     </message>
@@ -660,7 +690,7 @@
         <translation>Enlever la couleur</translation>
     </message>
     <message>
-        <location line="+31"/>
+        <location line="+35"/>
         <source>Take control of %1</source>
         <translation>Prendre le contrôle de %1</translation>
     </message>
@@ -673,7 +703,7 @@
 <context>
     <name>GUI::RoomsDock</name>
     <message>
-        <location filename="../GUI/Chat/RoomsDock.cpp" line="+61"/>
+        <location filename="../GUI/Chat/RoomsDock.cpp" line="+79"/>
         <source>Join</source>
         <translation>Rejoindre</translation>
     </message>
@@ -1073,7 +1103,7 @@
         <translation>Core lancé comme service</translation>
     </message>
     <message>
-        <location filename="../GUI/Utils.cpp" line="+76"/>
+        <location filename="../GUI/Utils.cpp" line="+80"/>
         <source>The choosen directory will be shared</source>
         <translation>Le dossier choisi sera partagé</translation>
     </message>
@@ -1096,6 +1126,11 @@
         <location line="+1"/>
         <source>Launch anyway</source>
         <translation>Lancer quand même</translation>
+    </message>
+    <message>
+        <location filename="../GUI/main.cpp" line="+70"/>
+        <source>D-LAN GUI version %1</source>
+        <translation>D-LAN GUI version %1</translation>
     </message>
 </context>
 <context>
@@ -1261,13 +1296,12 @@
         <translation>Verification de l&apos;intégrité des données</translation>
     </message>
     <message>
-        <location filename="../GUI/.tmp/debug/ui_SettingsWidget.h" line="+15"/>
         <source>GUI</source>
-        <translation type="unfinished">GUI</translation>
+        <translation type="obsolete">GUI</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.ui"/>
-        <location filename="../GUI/.tmp/debug/ui_SettingsWidget.h" line="+1"/>
+        <location/>
+        <location filename="../GUI/.tmp/debug/ui_SettingsWidget.h" line="+16"/>
         <source>Graphic User Interface</source>
         <translation>Interface Graphique</translation>
     </message>
@@ -1333,6 +1367,7 @@
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_SettingsWidget.h" line="+1"/>
         <source>User interface</source>
         <translation>Interface utilisateur</translation>
     </message>
@@ -1395,42 +1430,50 @@
         <translation type="obsolete">Télécharger les éléments sélectionnés dans le premier dossier partagé avec assez de place libre</translation>
     </message>
     <message>
+        <location filename="../GUI/.tmp/debug/ui_WidgetBrowse.h" line="+67"/>
         <source>Download selected items to the first shared directory with enough free space</source>
-        <translation type="obsolete">Télécharger les éléments dans le premier dossier partagé avec assez de place</translation>
+        <translation>Télécharger les éléments dans le premier dossier partagé avec assez de place</translation>
     </message>
     <message>
+        <location line="+2"/>
         <source>Download selected items</source>
-        <translation type="obsolete">Télécharger les éléments sélectionnés</translation>
+        <translation>Télécharger les éléments sélectionnés</translation>
     </message>
 </context>
 <context>
     <name>WidgetChat</name>
     <message>
+        <location filename="../GUI/.tmp/debug/ui_WidgetChat.h" line="+76"/>
         <source>Chat</source>
-        <translation type="obsolete">Chat</translation>
+        <translation>Chat</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Send</source>
-        <translation type="obsolete">Envoyer</translation>
+        <translation>Envoyer</translation>
     </message>
 </context>
 <context>
     <name>WidgetDownloads</name>
     <message>
+        <location filename="../GUI/.tmp/debug/ui_WidgetDownloads.h" line="+129"/>
         <source>Downloads</source>
-        <translation type="obsolete">Téléchargements</translation>
+        <translation>Téléchargements</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Item shown :</source>
-        <translation type="obsolete">Éléments affichés</translation>
+        <translation>Éléments affichés :</translation>
     </message>
     <message>
+        <location line="+5"/>
         <source>Remove completed files from the queue</source>
-        <translation type="obsolete">Enlever les fichiers complets de la queue</translation>
+        <translation>Enlever les fichiers complets de la queue</translation>
     </message>
     <message>
+        <location line="+4"/>
         <source>Removed selected downloads from the queue</source>
-        <translation type="obsolete">Enlever les éléments sélectionnés de la queue</translation>
+        <translation>Enlever les éléments sélectionnés de la queue</translation>
     </message>
     <message>
         <source>Remove completed files</source>
@@ -1441,161 +1484,195 @@
         <translation type="obsolete">Enlever les fichiers sélectionnés</translation>
     </message>
     <message>
+        <location line="+4"/>
         <source>Pause or unpause selected downloads</source>
-        <translation type="obsolete">Mettre ou enlever la pause des éléments sélectionnés</translation>
+        <translation>Mettre ou enlever la pause des éléments sélectionnés</translation>
     </message>
 </context>
 <context>
     <name>WidgetSearch</name>
     <message>
+        <location filename="../GUI/.tmp/debug/ui_WidgetSearch.h" line="+76"/>
         <source>Search</source>
-        <translation type="obsolete">Recherche</translation>
+        <translation>Recherche</translation>
     </message>
     <message>
+        <location line="+2"/>
         <source>Download selected items to the first shared directory with enough free space</source>
-        <translation type="obsolete">Télécharger les éléments dans le premier dossier partagé avec assez de place</translation>
+        <translation>Télécharger les éléments dans le premier dossier partagé avec assez de place</translation>
     </message>
     <message>
         <source>Download selected items to the first shared folder with enough free space</source>
         <translation type="obsolete">Télécharger les éléments sélectionnés dans le premier dossier partagé avec assez de place libre</translation>
     </message>
     <message>
+        <location line="+2"/>
         <source>Download selected items</source>
-        <translation type="obsolete">Télécharger les éléments sélectionnés</translation>
+        <translation>Télécharger les éléments sélectionnés</translation>
     </message>
 </context>
 <context>
     <name>WidgetSettings</name>
     <message>
+        <location filename="../GUI/.tmp/debug/ui_WidgetSettings.h" line="+420"/>
         <source>Settings</source>
-        <translation type="obsolete">Paramètres</translation>
+        <translation>Paramètres</translation>
     </message>
     <message>
+        <location line="+23"/>
         <source>Basic</source>
-        <translation type="obsolete">Basic</translation>
+        <translation>Basic</translation>
     </message>
     <message>
+        <location line="-22"/>
         <source>Nick</source>
-        <translation type="obsolete">Pseudo</translation>
+        <translation>Pseudo</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Shared folders</source>
-        <translation type="obsolete">Dossiers partagés</translation>
+        <translation>Dossiers partagés</translation>
     </message>
     <message>
+        <location line="+2"/>
         <source>Add a new shared directory</source>
-        <translation type="obsolete">Ajouter un nouveau dossier partagé</translation>
+        <translation>Ajouter un nouveau dossier partagé</translation>
     </message>
     <message>
+        <location line="+4"/>
         <source>Remove the selected shared directory</source>
-        <translation type="obsolete">Enlever le dossier sélectionné</translation>
+        <translation>Enlever le dossier sélectionné</translation>
     </message>
     <message>
+        <location line="+4"/>
         <source>Move down the selected shared directory</source>
-        <translation type="obsolete">Déplacer la dossier sélectionné vers le haut</translation>
+        <translation>Déplacer la dossier sélectionné vers le haut</translation>
     </message>
     <message>
+        <location line="+4"/>
         <source>Move up the selected shared directory</source>
-        <translation type="obsolete">Déplacer le dossier sélectionné vers le bas</translation>
+        <translation>Déplacer le dossier sélectionné vers le bas</translation>
     </message>
     <message>
+        <location line="+4"/>
         <source>Open location of the selected shared directory</source>
-        <translation type="obsolete">Ouvrir l&apos;emplacement du dossier sélectionné</translation>
+        <translation>Ouvrir l&apos;emplacement du dossier sélectionné</translation>
     </message>
     <message>
+        <location line="+13"/>
         <source>Network</source>
-        <translation type="obsolete">Réseau</translation>
+        <translation>Réseau</translation>
     </message>
     <message>
+        <location line="-9"/>
         <source>Interface to listen</source>
-        <translation type="obsolete">Interface à écouter</translation>
+        <translation>Interface à écouter</translation>
     </message>
     <message>
+        <location line="+4"/>
         <source>Refresh interfaces</source>
-        <translation type="obsolete">Rafraichir les interfaces</translation>
+        <translation>Rafraichir les interfaces</translation>
     </message>
     <message>
+        <location line="+13"/>
         <source>Address</source>
-        <translation type="obsolete">Adresse</translation>
+        <translation>Adresse</translation>
     </message>
     <message>
+        <location line="-15"/>
         <source>IPv6</source>
-        <translation type="obsolete">IPv6</translation>
+        <translation>IPv6</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>IPv4</source>
-        <translation type="obsolete">IPv4</translation>
+        <translation>IPv4</translation>
     </message>
     <message>
+        <location line="+20"/>
         <source>GUI</source>
-        <translation type="obsolete">GUI</translation>
+        <translation>GUI</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Graphic User Interface</source>
-        <translation type="obsolete">Interface Graphique</translation>
+        <translation>Interface Graphique</translation>
     </message>
     <message>
         <source>Advanced</source>
         <translation type="obsolete">Avancé</translation>
     </message>
     <message>
+        <location line="-14"/>
         <source>Language</source>
-        <translation type="obsolete">Langue</translation>
+        <translation>Langue</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Style</source>
-        <translation type="obsolete">Style</translation>
+        <translation>Style</translation>
     </message>
     <message>
+        <location line="+2"/>
         <source>Reload the current style</source>
-        <translation type="obsolete">Recharger le style courrant</translation>
+        <translation>Recharger le style courrant</translation>
     </message>
     <message>
+        <location line="+3"/>
         <source>Core connection</source>
-        <translation type="obsolete">Connexion au core</translation>
+        <translation>Connexion au core</translation>
     </message>
     <message>
         <source>address</source>
         <translation type="obsolete">Adresse</translation>
     </message>
     <message>
+        <location line="+2"/>
         <source>Reset to local</source>
-        <translation type="obsolete">Connexion locale</translation>
+        <translation>Connexion locale</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Password</source>
-        <translation type="obsolete">Mot de passe</translation>
+        <translation>Mot de passe</translation>
     </message>
     <message>
+        <location line="+2"/>
         <source>Change the password</source>
-        <translation type="obsolete">Changer le mot de passe</translation>
+        <translation>Changer le mot de passe</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Reset the password</source>
-        <translation type="obsolete">Réinitialiser le mot de passe</translation>
+        <translation>Réinitialiser le mot de passe</translation>
     </message>
     <message>
+        <location line="-2"/>
         <source>Disconnect</source>
-        <translation type="obsolete">Se déconnecter</translation>
+        <translation>Se déconnecter</translation>
     </message>
     <message>
+        <location line="-14"/>
         <source>When activated all received data will be verified against their hashes.  It may consume CPU resources.</source>
-        <translation type="obsolete">Lorsque activé toutes les données reçues sont vérifiées par rapport à leur empreinte. Consomme un peu de puissance CPU.</translation>
+        <translation>Lorsque activé toutes les données reçues sont vérifiées par rapport à leur empreinte. Consomme un peu de puissance CPU.</translation>
     </message>
     <message>
+        <location line="-5"/>
         <source>Any</source>
-        <translation type="obsolete">Toutes</translation>
+        <translation>Toutes</translation>
     </message>
     <message>
+        <location line="+7"/>
         <source>Data integrity check</source>
-        <translation type="obsolete">Verification de l&apos;intégrité des données</translation>
+        <translation>Verification de l&apos;intégrité des données</translation>
     </message>
 </context>
 <context>
     <name>WidgetUploads</name>
     <message>
+        <location filename="../GUI/.tmp/debug/ui_WidgetUploads.h" line="+54"/>
         <source>Uploads</source>
-        <translation type="obsolete">Envois</translation>
+        <translation>Envois</translation>
     </message>
 </context>
 </TS>
