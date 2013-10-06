@@ -106,8 +106,8 @@ void BrowseWidget::changeEvent(QEvent* event)
 {
    if (event->type() == QEvent::LanguageChange)
       this->ui->retranslateUi(this);
-   else
-      QWidget::changeEvent(event);
+
+   QWidget::changeEvent(event);
 }
 
 void BrowseWidget::keyPressEvent(QKeyEvent* event)

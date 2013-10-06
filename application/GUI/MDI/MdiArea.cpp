@@ -130,8 +130,8 @@ void MdiArea::changeEvent(QEvent* event)
       if (this->downloadsBusyIndicator)
          this->downloadsBusyIndicator->setToolTip(this->getBusyIndicatorToolTip());
    }
-   else
-      QWidget::changeEvent(event);
+
+   QMdiArea::changeEvent(event);
 }
 
 bool MdiArea::eventFilter(QObject* obj, QEvent* event)

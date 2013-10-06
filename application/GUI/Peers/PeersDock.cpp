@@ -71,6 +71,14 @@ PeerListModel& PeersDock::getModel()
    return this->peerListModel;
 }
 
+void PeersDock::changeEvent(QEvent* event)
+{
+   if (event->type() == QEvent::LanguageChange)
+      this->ui->retranslateUi(this);
+
+   QDockWidget::changeEvent(event);
+}
+
 void PeersDock::displayContextMenuPeers(const QPoint& point)
 {
    QModelIndex i = this->ui->tblPeers->currentIndex();

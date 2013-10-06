@@ -99,3 +99,11 @@ void SearchDock::search(bool ownFiles)
    if (!this->ui->txtSearch->text().isEmpty())
       emit search(this->ui->txtSearch->text(), ownFiles);
 }
+
+void SearchDock::changeEvent(QEvent* event)
+{
+   if (event->type() == QEvent::LanguageChange)
+      this->ui->retranslateUi(this);
+
+   QDockWidget::changeEvent(event);
+}

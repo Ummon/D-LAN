@@ -44,6 +44,7 @@ namespace GUI
       void search(const QString& terms, bool ownFiles);
 
    protected:
+      void changeEvent(QEvent* event);
       bool eventFilter(QObject* obj, QEvent* event);
 
    private slots:

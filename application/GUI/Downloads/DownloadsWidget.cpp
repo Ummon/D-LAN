@@ -172,8 +172,8 @@ void DownloadsWidget::changeEvent(QEvent* event)
       this->ui->retranslateUi(this);
       this->updateCheckBoxElements();
    }
-   else
-      QWidget::changeEvent(event);
+
+   QWidget::changeEvent(event);
 }
 
 void DownloadsWidget::keyPressEvent(QKeyEvent* event)

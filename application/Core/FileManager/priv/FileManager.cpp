@@ -73,6 +73,7 @@ FileManager::FileManager() :
    connect(&this->fileUpdater, SIGNAL(deleteSharedDir(SharedDirectory*)), this, SLOT(deleteSharedDir(SharedDirectory*)),  Qt::QueuedConnection); // If the 'FileUpdater' wants to delete a shared directory.
 
    this->timerPersistCache.setInterval(SETTINGS.get<quint32>("save_cache_period"));
+   this->timerPersistCache.setSingleShot(true); // We use a single shot because if the time to save exceeds the property 'save_cache_period' it will cause some trouble (very rare case).
    connect(&this->timerPersistCache, SIGNAL(timeout()), this, SLOT(persistCacheToFile()));
 
    this->loadCacheFromFile();
@@ -434,6 +435,7 @@ void FileManager::loadCacheFromFile()
 
 /**
   * Save the cache to a file.
+  * Restart the timer at the end of the operation.
   * Called by the fileUpdater when it needs to persist the cache.
   */
 void FileManager::persistCacheToFile()
@@ -464,6 +466,8 @@ void FileManager::persistCacheToFile()
 
       L_DEBU("Persisting cache finished");
    }
+
+   this->timerPersistCache.start();
 }
 
 void FileManager::forcePersistCacheToFile()
@@ -474,7 +478,6 @@ void FileManager::forcePersistCacheToFile()
 
    QMutexLocker locker(&this->mutexPersistCache);
    this->persistCacheToFile();
-   this->timerPersistCache.start();
 }
 
 /**

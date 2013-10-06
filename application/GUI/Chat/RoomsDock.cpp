@@ -63,6 +63,14 @@ RoomsDock::~RoomsDock()
    delete ui;
 }
 
+void RoomsDock::changeEvent(QEvent* event)
+{
+   if (event->type() == QEvent::LanguageChange)
+      this->ui->retranslateUi(this);
+
+   QDockWidget::changeEvent(event);
+}
+
 bool RoomsDock::eventFilter(QObject* obj, QEvent* event)
 {
    if (obj == this->ui->txtRoomName && event->type() == QEvent::KeyPress && static_cast<QKeyEvent*>(event)->key() == Qt::Key_Return)

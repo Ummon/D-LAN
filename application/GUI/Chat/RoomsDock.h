@@ -45,6 +45,7 @@ namespace GUI
       void roomJoined(const QString&);
 
    protected:
+      void changeEvent(QEvent* event);
       bool eventFilter(QObject* obj, QEvent* event);
 
    private slots:

@@ -429,8 +429,8 @@ void ChatWidget::changeEvent(QEvent* event)
 {
    if (event->type() == QEvent::LanguageChange)
       this->ui->retranslateUi(this);
-   else
-      QWidget::changeEvent(event);
+
+   QWidget::changeEvent(event);
 }
 
 /**

@@ -326,8 +326,8 @@ void MainWindow::changeEvent(QEvent* event)
 {
    if (event->type() == QEvent::LanguageChange)
       this->ui->retranslateUi(this);
-   else
-      QWidget::changeEvent(event);
+
+   QMainWindow::changeEvent(event);
 }
 
 bool MainWindow::eventFilter(QObject* obj, QEvent* event)

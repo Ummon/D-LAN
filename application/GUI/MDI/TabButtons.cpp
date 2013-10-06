@@ -109,8 +109,8 @@ void TabCloseButton::changeEvent(QEvent* event)
 {
    if (event->type() == QEvent::LanguageChange)
       this->setToolTipTranslate();
-   else
-      TabButton::changeEvent(event);
+
+   TabButton::changeEvent(event);
 }
 
 void TabCloseButton::drawPrimitive(const QStyleOption& opt, QPainter& p)
@@ -143,8 +143,8 @@ void TabRefreshButton::changeEvent(QEvent* event)
 {
    if (event->type() == QEvent::LanguageChange)
       this->setToolTipTranslate();
-   else
-      TabButton::changeEvent(event);
+
+   TabButton::changeEvent(event);
 }
 
 void TabRefreshButton::drawPrimitive(const QStyleOption& opt, QPainter& p)

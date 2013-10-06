@@ -46,6 +46,9 @@ namespace GUI
 
       PeerListModel& getModel();
 
+   protected:
+      void changeEvent(QEvent* event);
+
    signals:
       void browsePeer(const Common::Hash& peerID);
 
