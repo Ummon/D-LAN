@@ -11,7 +11,7 @@ package Protos.Core;
 /***** Multicast UDP messages. *****/
 // I'm alive.
 // This message is sent periodically to all other peers (for example each 5s).
-// It contains some information about the peer and an array of hash chunks the peer wants to download.
+// It contains some information about the peer and an array of chunk hashes the peer wants to download.
 // If a peer owns one or more chunk corresponding to the given hashes then it
 // will reply with a 'ChunksOwned' message.
 // These hashes can come from different files.
@@ -35,11 +35,6 @@ message IMAlive {
    repeated string chat_rooms = 10; // The joined chat rooms.
 }
 
-// Goodbye, my people needs me.
-// a -> all
-// id : 0xFE
-// No data
-
 // This message is only sent if at least one requested chunks is known.
 // Return an array with a bool value for each
 // given chunks. 'true' means "I have this chunk".
@@ -49,6 +44,13 @@ message ChunksOwned {
    required uint64 tag = 1; // The repeated number.
    repeated bool chunk_state = 2 [packed=true]; // The array size must have the same size of HaveChunks.chunks.
 }
+
+
+// Goodbye, my people needs me.
+// Sent by a peer leaving the network. Not mendatory.
+// a -> all
+// id : 0xFE
+// No data
 
 
 // Send a chat message to all other peers.
