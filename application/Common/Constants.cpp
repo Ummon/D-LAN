@@ -37,6 +37,7 @@ const quint32 Constants::PROTOCOL_VERSION { 4 };
 const QString Constants::FILE_CACHE("cache." + FILE_EXTENSION); ///< The name of the file cache saved in the local data directory.
 const QString Constants::FILE_QUEUE("queue." + FILE_EXTENSION); ///< This file contains the current downloads.
 const QString Constants::FILE_CHAT_MESSAGES("chat_messages." + FILE_EXTENSION); ///< This file contains the last chat messages.
+const QString Constants::FILE_CHAT_ROOM_MESSAGES("chat_messages_room_%1." + FILE_EXTENSION); ///< This file contains the last chat messages for a room.
 
 const QString Constants::CORE_SETTINGS_FILENAME("core_settings.txt");
 const QString Constants::GUI_SETTINGS_FILENAME("gui_settings.txt");

@@ -24,10 +24,10 @@
 #include <QSharedPointer>
 #include <QLinkedList>
 #include <QTimer>
+#include <QList>
 #include <QSet>
 #include <QHash>
 
-#include <Common/Uncopyable.h>
 #include <Common/Network/MessageHeader.h>
 #include <Common/Hash.h>
 
@@ -60,7 +60,21 @@ namespace CS
       void saveChatMessages();
 
    private:
+      void loadChatMessages();
+
+      struct Room {
+         ChatMessages messages; // We may not know the message of not joined room.
+         QSet<PM::IPeer*> peers; // Do not include our ID.
+         bool joined;
+      };
+
+      Room& getRoom(const QString& name);
+
       void getLastChatMessages(const QList<PM::IPeer*>& peers, const QString& roomName = QString());
+
+      static const QList<QChar> FORBIDDEN_CHARS_IN_ROOM_NAME;
+      static QString sanitizeRoomName(QString roomName);
+      static QString unSanitizeRoomName(QString roomName);
 
       void loadRoomListFromSettings();
       void saveRoomListToSettings();
@@ -71,12 +85,6 @@ namespace CS
       QSharedPointer<NL::INetworkListener> networkListener;
 
       ChatMessages messages;
-
-      struct Room {
-         ChatMessages messages; // We may not know the message of not joined room.
-         QSet<PM::IPeer*> peers; // Do not include our ID.
-         bool joined;
-      };
 
       QHash<QString, Room> rooms; // All known rooms.
 

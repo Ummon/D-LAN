@@ -21,16 +21,19 @@ using namespace CS;
 
 #include <QSet>
 
-#include <Common/Constants.h>
 #include <Common/PersistentData.h>
 #include <Common/Settings.h>
 
 #include <priv/Log.h>
 
 ChatMessages::ChatMessages() :
-   MAX_NUMBER_OF_STORED_CHAT_MESSAGES(SETTINGS.get<quint32>("max_number_of_stored_chat_messages")),
-   changed(false)
+   d(new ChatMessagesData)
 {}
+
+ChatMessages::ChatMessages(const ChatMessages& other)
+   : d(other.d)
+{
+}
 
 QSharedPointer<ChatMessage> ChatMessages::add(const QString& message, const Common::Hash& ownerID, const QString& ownerNick, const QString& roomName, const QList<Common::Hash>& peerIDsAnswer)
 {
@@ -55,7 +58,7 @@ QList<quint64> ChatMessages::getLastMessageIDs(int nMax) const
 {
    QList<quint64> result;
 
-   QListIterator<QSharedPointer<ChatMessage>> i(this->messages);
+   QListIterator<QSharedPointer<ChatMessage>> i(this->d->messages);
    i.toBack();
    int n = 0;
    while (i.hasPrevious() && n++ < nMax)
@@ -76,10 +79,10 @@ QList<QSharedPointer<ChatMessage>> ChatMessages::getUnknownMessages(const Protos
       knownIDs.insert(getLastChatMessage.message_id(i));
 
    QList<QSharedPointer<ChatMessage>> result;
-   for (int i = this->messages.size() - 1; i >= 0 && this->messages.size() - i <= int(getLastChatMessage.number()); i--)
+   for (int i = this->d->messages.size() - 1; i >= 0 && this->d->messages.size() - i <= int(getLastChatMessage.number()); i--)
    {
-      if (!knownIDs.remove(this->messages[i]->getID()))
-         result.prepend(this->messages[i]);
+      if (!knownIDs.remove(this->d->messages[i]->getID()))
+         result.prepend(this->d->messages[i]);
    }
 
    return result;
@@ -87,9 +90,9 @@ QList<QSharedPointer<ChatMessage>> ChatMessages::getUnknownMessages(const Protos
 
 void ChatMessages::fillProtoChatMessages(Protos::Common::ChatMessages& chatMessages, int number) const
 {
-   int i = number > this->messages.size() ? 0 : this->messages.size() - number;
-   while (i < this->messages.size())
-      this->messages[i++]->fillProtoChatMessage(*chatMessages.add_message());
+   int i = number > this->d->messages.size() ? 0 : this->d->messages.size() - number;
+   while (i < this->d->messages.size())
+      this->d->messages[i++]->fillProtoChatMessage(*chatMessages.add_message());
 }
 
 /**
@@ -116,39 +119,39 @@ QList<QSharedPointer<ChatMessage>> ChatMessages::fillProtoChatMessages(Protos::C
 /**
   * Load the chat messages from the file previously saved in the user home and return it.
   */
-void ChatMessages::loadFromFile()
+void ChatMessages::loadFromFile(const QString& filename)
 {
    try
    {
       Protos::Common::ChatMessages chatMessages;
-      Common::PersistentData::getValue(Common::Constants::FILE_CHAT_MESSAGES, chatMessages, Common::Global::DataFolderType::LOCAL);
+      Common::PersistentData::getValue(filename, chatMessages, FOLDER_TYPE_MESSAGES_SAVED);
       this->add(chatMessages);
-      this->changed = false;
+      this->d->changed = false;
    }
    catch (Common::UnknownValueException& e)
    {
-      L_WARN(QString("The saved chat messages cannot be retrived (the file doesn't exist) : %1").arg(Common::Constants::FILE_CHAT_MESSAGES));
+      L_WARN(QString("The saved chat messages cannot be retrived (the file doesn't exist) : %1").arg(filename));
    }
    catch (...)
    {
-      L_WARN(QString("The saved chat messages cannot be retrived (Unkown exception) : %1").arg(Common::Constants::FILE_CHAT_MESSAGES));
+      L_WARN(QString("The saved chat messages cannot be retrived (Unkown exception) : %1").arg(filename));
    }
 }
 
 /**
   * Save the chat messages to a file in the user home.
   */
-void ChatMessages::saveToFile() const
+void ChatMessages::saveToFile(const QString& filename) const
 {
-   if (!this->changed)
+   if (!this->d->changed)
       return;
 
    try
    {
       Protos::Common::ChatMessages chatMessages;
       this->fillProtoChatMessages(chatMessages);
-      Common::PersistentData::setValue(Common::Constants::FILE_CHAT_MESSAGES, chatMessages, Common::Global::DataFolderType::LOCAL);
-      this->changed = false;
+      Common::PersistentData::setValue(filename, chatMessages, FOLDER_TYPE_MESSAGES_SAVED);
+      this->d->changed = false;
    }
    catch (Common::PersistentDataIOException& err)
    {
@@ -162,41 +165,43 @@ void ChatMessages::saveToFile() const
   *  - The message is already in the list.
   */
 QList<QSharedPointer<ChatMessage>> ChatMessages::insert(const QList<QSharedPointer<ChatMessage>>& messages)
-{
+{                                   
+   static const int MAX_NUMBER_OF_STORED_CHAT_MESSAGES = SETTINGS.get<quint32>("max_number_of_stored_chat_messages");
+
    QList<QSharedPointer<ChatMessage>> insertedMessages;
 
    QListIterator<QSharedPointer<ChatMessage>> i(messages);
    i.toBack();
 
-   int j = this->messages.size();
+   int j = this->d->messages.size();
    while (i.hasPrevious())
    {
       const QSharedPointer<ChatMessage>& mess = i.previous();
 
-      if (this->messageIDs.contains(mess->getID()))
+      if (this->d->messageIDs.contains(mess->getID()))
          continue;
 
-      while (j > 0 && this->messages[j-1]->getTime() > mess->getTime())
+      while (j > 0 && this->d->messages[j-1]->getTime() > mess->getTime())
          j--;
 
-      if (this->messages.size() != MAX_NUMBER_OF_STORED_CHAT_MESSAGES || j != 0) // We avoid to insert a message which will ne deleted right after.
+      if (this->d->messages.size() != MAX_NUMBER_OF_STORED_CHAT_MESSAGES || j != 0) // We avoid to insert a message which will ne deleted right after.
       {
          insertedMessages.prepend(mess);
-         this->messageIDs.insert(mess->getID());
-         this->messages.insert(j, mess);
+         this->d->messageIDs.insert(mess->getID());
+         this->d->messages.insert(j, mess);
       }
    }
 
-   if (this->messages.size() > MAX_NUMBER_OF_STORED_CHAT_MESSAGES)
+   if (this->d->messages.size() > MAX_NUMBER_OF_STORED_CHAT_MESSAGES)
    {
-      const auto begin = this->messages.begin();
-      const auto end = this->messages.begin() + (this->messages.size() - MAX_NUMBER_OF_STORED_CHAT_MESSAGES);
+      const auto begin = this->d->messages.begin();
+      const auto end = this->d->messages.begin() + (this->d->messages.size() - MAX_NUMBER_OF_STORED_CHAT_MESSAGES);
       for (auto m = begin; m != end; m++)
-         this->messageIDs.remove((*m)->getID());
-      this->messages.erase(begin, end);
+         this->d->messageIDs.remove((*m)->getID());
+      this->d->messages.erase(begin, end);
    }
 
-   this->changed = !insertedMessages.isEmpty();
+   this->d->changed = !insertedMessages.isEmpty();
 
    return insertedMessages;
 }

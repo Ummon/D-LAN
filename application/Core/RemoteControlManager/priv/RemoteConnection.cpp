@@ -369,13 +369,24 @@ void RemoteConnection::removeGetEntriesResult(const PM::IGetEntriesResult* getEn
          i.remove();
 }
 
+/**
+  * We send all the last received messages to the GUI (history).
+  */
 void RemoteConnection::sendLastChatMessages()
 {
-   Protos::Common::ChatMessages chatMessages;
-   this->chatSystem->getLastChatMessages(chatMessages);
+   {
+      Protos::Common::ChatMessages chatMessages;
+      this->chatSystem->getLastChatMessages(chatMessages);
+      this->send(Common::MessageHeader::GUI_EVENT_CHAT_MESSAGES, chatMessages);
+   }
 
-   // We send all the last received messages to the GUI (history).
-   this->send(Common::MessageHeader::GUI_EVENT_CHAT_MESSAGES, chatMessages);
+   foreach (CS::IChatSystem::ChatRoom room, this->chatSystem->getRooms())
+      if (room.joined)
+      {
+         Protos::Common::ChatMessages chatMessages;
+         this->chatSystem->getLastChatMessages(chatMessages,  std::numeric_limits<int>::max(), room.name);
+         this->send(Common::MessageHeader::GUI_EVENT_CHAT_MESSAGES, chatMessages);
+      }
 }
 
 void RemoteConnection::refreshAllInterfaces()

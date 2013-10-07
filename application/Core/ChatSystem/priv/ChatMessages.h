@@ -25,10 +25,13 @@
 #include <QList>
 #include <QSet>
 #include <QSharedPointer>
+#include <QSharedDataPointer>
+#include <QSharedData>
 
 #include <Protos/common.pb.h>
 #include <Protos/core_protocol.pb.h>
 
+#include <Common/Global.h>
 #include <Common/Hash.h>
 
 #include <priv/ChatMessage.h>
@@ -38,7 +41,10 @@ namespace CS
    class ChatMessages
    {
    public:
+      const static Common::Global::DataFolderType FOLDER_TYPE_MESSAGES_SAVED = Common::Global::DataFolderType::LOCAL;
+
       ChatMessages();
+      ChatMessages(const ChatMessages& other);
 
       QSharedPointer<ChatMessage> add(const QString& message, const Common::Hash& ownerID, const QString& ownerNick, const QString& roomName = QString(), const QList<Common::Hash>& peerIDsAnswer = QList<Common::Hash>());
       QList<QSharedPointer<ChatMessage>> add(const Protos::Common::ChatMessages& chatMessages);
@@ -50,18 +56,20 @@ namespace CS
       void fillProtoChatMessages(Protos::Common::ChatMessages& chatMessages, int number = std::numeric_limits<int>::max()) const;
       static QList<QSharedPointer<ChatMessage>> fillProtoChatMessages(Protos::Common::ChatMessages& chatMessages, const QList<QSharedPointer<ChatMessage>>& messages, int maxByteSize = std::numeric_limits<int>::max());
 
-      void loadFromFile();
-      void saveToFile() const;
+      void loadFromFile(const QString& filename);
+      void saveToFile(const QString& filename) const;
 
    private:
       QList<QSharedPointer<ChatMessage>> insert(const QList<QSharedPointer<ChatMessage>>& messages);
 
-      const int MAX_NUMBER_OF_STORED_CHAT_MESSAGES;
+      struct ChatMessagesData : public QSharedData
+      {
+         mutable bool changed = false;
+         QList<QSharedPointer<ChatMessage>> messages;
+         QSet<quint64> messageIDs;
+      };
 
-      mutable bool changed;
-
-      QList<QSharedPointer<ChatMessage>> messages;
-      QSet<quint64> messageIDs;
+      QSharedDataPointer<ChatMessagesData> d;
    };
 }
 

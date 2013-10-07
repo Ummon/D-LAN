@@ -97,7 +97,7 @@ message ChatMessage {
    repeated Common.Hash peer_ids_answer = 7;
 }
 
-// All messages belong to the same chat room (or from no room if they are from the main chat).
+// All messages must belong to the same chat room (or from no room if they are from the main chat).
 // The messages are always sorted from oldest to youngest.
 message ChatMessages {
    repeated ChatMessage message = 1;
