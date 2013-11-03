@@ -57,13 +57,17 @@ namespace CS
       void received(const Common::Message& message);
       void IMAliveMessageToBeSend(Protos::Core::IMAlive& IMAliveMessage);
       void getLastChatMessages();
-      void saveChatMessages();
+      void saveAllChatMessages();
 
    private:
-      void loadChatMessages();
+      void saveChatMessages(const QString& roomName = QString());
+
+      void loadChatMessagesFromAllFiles();
+      void loadChatMessages(const QString& roomName = QString());
+      void emitNewMessages(const ChatMessages& messages);
 
       struct Room {
-         ChatMessages messages; // We may not know the message of not joined room.
+         ChatMessages messages; // We may not know the messages of not joined rooms.
          QSet<PM::IPeer*> peers; // Do not include our ID.
          bool joined;
       };

@@ -51,7 +51,8 @@ namespace CS
 
       QList<quint64> getLastMessageIDs(int nMax) const;
 
-      QList<QSharedPointer<ChatMessage>> getUnknownMessages(const Protos::Core::GetLastChatMessages& getLastChatMessage);
+      QList<QSharedPointer<ChatMessage>> getMessages() const;
+      QList<QSharedPointer<ChatMessage>> getUnknownMessages(const Protos::Core::GetLastChatMessages& getLastChatMessage) const;
 
       void fillProtoChatMessages(Protos::Common::ChatMessages& chatMessages, int number = std::numeric_limits<int>::max()) const;
       static QList<QSharedPointer<ChatMessage>> fillProtoChatMessages(Protos::Common::ChatMessages& chatMessages, const QList<QSharedPointer<ChatMessage>>& messages, int maxByteSize = std::numeric_limits<int>::max());

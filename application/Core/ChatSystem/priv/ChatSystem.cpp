@@ -48,7 +48,7 @@ ChatSystem::ChatSystem(QSharedPointer<PM::IPeerManager> peerManager, QSharedPoin
    peerManager(peerManager),
    networkListener(networkListener)
 {
-   this->loadChatMessages();
+   this->loadChatMessagesFromAllFiles();
 
    connect(this->networkListener.data(), SIGNAL(received(const Common::Message&)), this, SLOT(received(const Common::Message&)));
    connect(this->networkListener.data(), SIGNAL(IMAliveMessageToBeSend(Protos::Core::IMAlive&)), this, SLOT(IMAliveMessageToBeSend(Protos::Core::IMAlive&)));
@@ -59,7 +59,7 @@ ChatSystem::ChatSystem(QSharedPointer<PM::IPeerManager> peerManager, QSharedPoin
    this->getLastChatMessages();
 
    this->saveChatMessagesTimer.setInterval(SETTINGS.get<quint32>("save_chat_messages_period"));
-   connect(&this->saveChatMessagesTimer, SIGNAL(timeout()), this, SLOT(saveChatMessages()));
+   connect(&this->saveChatMessagesTimer, SIGNAL(timeout()), this, SLOT(saveAllChatMessages()));
    this->saveChatMessagesTimer.start();
 
    this->loadRoomListFromSettings();
@@ -67,7 +67,7 @@ ChatSystem::ChatSystem(QSharedPointer<PM::IPeerManager> peerManager, QSharedPoin
 
 ChatSystem::~ChatSystem()
 {
-   this->saveChatMessages();
+   this->saveAllChatMessages();
 }
 
 /**
@@ -134,6 +134,7 @@ void ChatSystem::joinRoom(const QString& roomName)
    {
       room.joined = true;
       this->saveRoomListToSettings();
+      this->loadChatMessages(roomName);
       this->getLastChatMessages(room.peers.toList(), roomName);
    }
 }
@@ -145,6 +146,8 @@ void ChatSystem::leaveRoom(const QString& roomName)
       Room& room = this->rooms[roomName];
       if (room.joined)
       {
+         this->saveChatMessages(roomName);
+
          if (room.peers.isEmpty())
             this->rooms.remove(roomName);
          else
@@ -215,9 +218,15 @@ void ChatSystem::received(const Common::Message& message)
                chatMessages.mutable_message(i)->mutable_peer_id()->set_hash(message.getHeader().getSenderID().getData(), Common::Hash::HASH_SIZE);
          }
 
+         bool chatRoom = chatMessages.message(0).has_chat_room();
+         QString chatRoomName = chatRoom ? Common::ProtoHelper::getStr(chatMessages.message(0), &Protos::Common::ChatMessage::chat_room) : QString();
+
+         if (chatRoom && !this->rooms[chatRoomName].joined)
+            break;
+
          const QList<QSharedPointer<ChatMessage>>& messages =
-               chatMessages.message(0).has_chat_room() ?
-                  this->rooms[Common::ProtoHelper::getStr(chatMessages.message(0), &Protos::Common::ChatMessage::chat_room)].messages.add(chatMessages)
+               chatRoom ?
+                  this->rooms[chatRoomName].messages.add(chatMessages)
                 : this->messages.add(chatMessages);
 
          Protos::Common::ChatMessages filteredChatMessages;
@@ -316,20 +325,32 @@ void ChatSystem::saveRoomListToSettings()
    SETTINGS.save();
 }
 
-void ChatSystem::saveChatMessages()
+void ChatSystem::saveAllChatMessages()
 {
-   this->messages.saveToFile(Common::Constants::FILE_CHAT_MESSAGES);
+   this->saveChatMessages();
 
    for (QHashIterator<QString, Room> i(this->rooms); i.hasNext();)
    {
       i.next();
-      i.value().messages.saveToFile(Common::Constants::FILE_CHAT_ROOM_MESSAGES.arg(sanitizeRoomName(i.key())));
+      if (i.value().joined)
+         this->saveChatMessages(i.key());
    }
 }
 
-void ChatSystem::loadChatMessages()
+void ChatSystem::saveChatMessages(const QString& roomName)
 {
-   this->messages.loadFromFile(Common::Constants::FILE_CHAT_MESSAGES);
+   if (roomName.isEmpty())
+      this->messages.saveToFile(Common::Constants::FILE_CHAT_MESSAGES);
+   else if (this->rooms.contains(roomName))
+      this->rooms[roomName].messages.saveToFile(Common::Constants::FILE_CHAT_ROOM_MESSAGES.arg(sanitizeRoomName(roomName)));
+}
+
+/**
+  * Load all messages (main + rooms) and emit the signal 'newMessages'.
+  */
+void ChatSystem::loadChatMessagesFromAllFiles()
+{
+   this->loadChatMessages();
 
    QRegExp filenameRegExp(Common::Constants::FILE_CHAT_ROOM_MESSAGES.arg("(.*)"));
 
@@ -339,9 +360,40 @@ void ChatSystem::loadChatMessages()
       if (filenameRegExp.exactMatch(filename) && filenameRegExp.capturedTexts().length() >= 2)
       {
          const QString& roomName = unSanitizeRoomName(filenameRegExp.capturedTexts()[1]);
-         this->rooms[roomName].messages.loadFromFile(filename);
+         this->loadChatMessages(roomName);
       }
    }
+}
+
+/**
+  * Load messages from a room or from the main if the room name is not given. Emit the signal 'newMessages' for each message loaded.
+  */
+void ChatSystem::loadChatMessages(const QString& roomName)
+{
+   if (!roomName.isEmpty())
+   {
+      if (this->rooms.contains(roomName))
+      {
+         this->rooms[roomName].messages.loadFromFile(Common::Constants::FILE_CHAT_ROOM_MESSAGES.arg(sanitizeRoomName(roomName)));
+         this->emitNewMessages(this->rooms[roomName].messages);
+      }
+   }
+   else
+   {
+      this->messages.loadFromFile(Common::Constants::FILE_CHAT_MESSAGES);
+      this->emitNewMessages(this->messages);
+   }
+}
+
+void ChatSystem::emitNewMessages(const ChatMessages& messages)
+{
+   Protos::Common::ChatMessages protoChatMessages;
+   for (QListIterator<QSharedPointer<ChatMessage>> i(messages.getMessages()); i.hasNext();)
+   {
+      Protos::Common::ChatMessage* protochatMessage = protoChatMessages.add_message();
+      i.next()->fillProtoChatMessage(*protochatMessage);
+   }
+   emit newMessages(protoChatMessages);
 }
 
 void ChatSystem::getLastChatMessages(const QList<PM::IPeer*>& peers, const QString& roomName)
