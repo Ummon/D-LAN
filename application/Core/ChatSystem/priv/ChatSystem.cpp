@@ -48,6 +48,9 @@ ChatSystem::ChatSystem(QSharedPointer<PM::IPeerManager> peerManager, QSharedPoin
    peerManager(peerManager),
    networkListener(networkListener)
 {
+   if (!QDir(Common::Global::getDataFolder(ChatMessages::FOLDER_TYPE_MESSAGES_SAVED)).exists(Common::Constants::DIR_CHAT_MESSAGES))
+      QDir(Common::Global::getDataFolder(ChatMessages::FOLDER_TYPE_MESSAGES_SAVED)).mkdir(Common::Constants::DIR_CHAT_MESSAGES);
+
    this->loadChatMessagesFromAllFiles();
 
    connect(this->networkListener.data(), SIGNAL(received(const Common::Message&)), this, SLOT(received(const Common::Message&)));
@@ -340,9 +343,9 @@ void ChatSystem::saveAllChatMessages()
 void ChatSystem::saveChatMessages(const QString& roomName)
 {
    if (roomName.isEmpty())
-      this->messages.saveToFile(Common::Constants::FILE_CHAT_MESSAGES);
+      this->messages.saveToFile(getChatMessageFilename());
    else if (this->rooms.contains(roomName))
-      this->rooms[roomName].messages.saveToFile(Common::Constants::FILE_CHAT_ROOM_MESSAGES.arg(sanitizeRoomName(roomName)));
+      this->rooms[roomName].messages.saveToFile(getChatMessageFilename(roomName));
 }
 
 /**
@@ -354,12 +357,12 @@ void ChatSystem::loadChatMessagesFromAllFiles()
 
    QRegExp filenameRegExp(Common::Constants::FILE_CHAT_ROOM_MESSAGES.arg("(.*)"));
 
-   QDir dir(Common::Global::getDataFolder(ChatMessages::FOLDER_TYPE_MESSAGES_SAVED));
+   QDir dir(Common::Global::getDataFolder(ChatMessages::FOLDER_TYPE_MESSAGES_SAVED).append('/').append(Common::Constants::DIR_CHAT_MESSAGES));
    foreach (QString filename, dir.entryList(QDir::Files))
    {
       if (filenameRegExp.exactMatch(filename) && filenameRegExp.capturedTexts().length() >= 2)
       {
-         const QString& roomName = unSanitizeRoomName(filenameRegExp.capturedTexts()[1]);
+         const QString& roomName = Common::Global::unSanitizeFilename(filenameRegExp.capturedTexts()[1]);
          this->loadChatMessages(roomName);
       }
    }
@@ -374,13 +377,13 @@ void ChatSystem::loadChatMessages(const QString& roomName)
    {
       if (this->rooms.contains(roomName))
       {
-         this->rooms[roomName].messages.loadFromFile(Common::Constants::FILE_CHAT_ROOM_MESSAGES.arg(sanitizeRoomName(roomName)));
+         this->rooms[roomName].messages.loadFromFile(getChatMessageFilename(roomName));
          this->emitNewMessages(this->rooms[roomName].messages);
       }
    }
    else
    {
-      this->messages.loadFromFile(Common::Constants::FILE_CHAT_MESSAGES);
+      this->messages.loadFromFile(getChatMessageFilename());
       this->emitNewMessages(this->messages);
    }
 }
@@ -394,6 +397,14 @@ void ChatSystem::emitNewMessages(const ChatMessages& messages)
       i.next()->fillProtoChatMessage(*protochatMessage);
    }
    emit newMessages(protoChatMessages);
+}
+
+QString ChatSystem::getChatMessageFilename(const QString& roomName)
+{
+   if (roomName.isEmpty())
+      return Common::Constants::DIR_CHAT_MESSAGES % '/' % Common::Constants::FILE_CHAT_MESSAGES;
+   else
+      return Common::Constants::DIR_CHAT_MESSAGES % '/' % Common::Constants::FILE_CHAT_ROOM_MESSAGES.arg(Common::Global::sanitizeFilename(roomName));
 }
 
 void ChatSystem::getLastChatMessages(const QList<PM::IPeer*>& peers, const QString& roomName)
@@ -412,28 +423,4 @@ void ChatSystem::getLastChatMessages(const QList<PM::IPeer*>& peers, const QStri
       Common::ProtoHelper::setStr(getLastChatMessages, &Protos::Core::GetLastChatMessages::set_chat_room, roomName);
 
    this->networkListener->send(Common::MessageHeader::CORE_GET_LAST_CHAT_MESSAGES, getLastChatMessages, peers[this->mtrand.randInt(peers.size() - 1)]->getID());
-}
-
-const QList<QChar> ChatSystem::FORBIDDEN_CHARS_IN_ROOM_NAME { '?', '/', '\\','*', ':', '"', '<', '>', '|' };
-
-QString ChatSystem::sanitizeRoomName(QString roomName)
-{
-   for (QListIterator<QChar> i(FORBIDDEN_CHARS_IN_ROOM_NAME); i.hasNext();)
-   {
-      const QChar& currentChar = i.next();
-      const QString entity = QString("&#").append(QString::number(currentChar.cell())).append(';');
-      roomName.replace(currentChar, entity);
-   }
-   return roomName;
-}
-
-QString ChatSystem::unSanitizeRoomName(QString roomName)
-{
-   for (QListIterator<QChar> i(FORBIDDEN_CHARS_IN_ROOM_NAME); i.hasNext();)
-   {
-      const QChar& currentChar = i.next();
-      const QString entity = QString("&#").append(QString::number(currentChar.cell())).append(';');
-      roomName.replace(entity, currentChar);
-   }
-   return roomName;
 }

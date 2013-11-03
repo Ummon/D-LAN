@@ -66,6 +66,8 @@ namespace CS
       void loadChatMessages(const QString& roomName = QString());
       void emitNewMessages(const ChatMessages& messages);
 
+      static QString getChatMessageFilename(const QString& roomName = QString());
+
       struct Room {
          ChatMessages messages; // We may not know the messages of not joined rooms.
          QSet<PM::IPeer*> peers; // Do not include our ID.
@@ -75,10 +77,6 @@ namespace CS
       Room& getRoom(const QString& name);
 
       void getLastChatMessages(const QList<PM::IPeer*>& peers, const QString& roomName = QString());
-
-      static const QList<QChar> FORBIDDEN_CHARS_IN_ROOM_NAME;
-      static QString sanitizeRoomName(QString roomName);
-      static QString unSanitizeRoomName(QString roomName);
 
       void loadRoomListFromSettings();
       void saveRoomListToSettings();

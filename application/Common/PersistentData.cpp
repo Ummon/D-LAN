@@ -42,7 +42,7 @@ const QString PersistentData::TEMP_SUFFIX_TERM(".temp");
 
 /**
   * Define a value associated to a name.
-  * You may refer to the name policy of the platform. Try to avoid special characters or space.
+  * You may refer to the name policy of the platform. Try to avoid special characters or space, you may use 'Common::Global::sanitizeFileName(..)'.
   * You can use an extension in the name like "settings.conf".
   * @exception PersistentDataIOException if the value can't be persisted.
   */

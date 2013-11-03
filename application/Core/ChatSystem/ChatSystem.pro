@@ -25,7 +25,6 @@ SOURCES +=  Builder.cpp \
 HEADERS += IChatSystem.h \
     priv/ChatSystem.h \
     Builder.h \
-    priv/Constants.h \
     priv/Log.h \
     priv/ChatMessage.h \
     priv/ChatMessages.h

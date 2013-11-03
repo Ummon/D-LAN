@@ -305,6 +305,30 @@ bool Global::rename(const QString& existingFile, const QString& newFile)
 #endif
 }
 
+const QList<QChar> Global::FORBIDDEN_CHARS_IN_ROOM_NAME { '?', '/', '\\','*', ':', '"', '<', '>', '|' };
+
+QString Global::sanitizeFilename(QString filename)
+{
+   for (QListIterator<QChar> i(FORBIDDEN_CHARS_IN_ROOM_NAME); i.hasNext();)
+   {
+      const QChar& currentChar = i.next();
+      const QString entity = QString("&#").append(QString::number(currentChar.cell())).append(';');
+      filename.replace(currentChar, entity);
+   }
+   return filename;
+}
+
+QString Global::unSanitizeFilename(QString filename)
+{
+   for (QListIterator<QChar> i(FORBIDDEN_CHARS_IN_ROOM_NAME); i.hasNext();)
+   {
+      const QChar& currentChar = i.next();
+      const QString entity = QString("&#").append(QString::number(currentChar.cell())).append(';');
+      filename.replace(entity, currentChar);
+   }
+   return filename;
+}
+
 bool Global::isLocal(const QHostAddress& address)
 {
    return address == QHostAddress::LocalHost || address == QHostAddress::LocalHostIPv6 || QNetworkInterface::allAddresses().contains(address);
