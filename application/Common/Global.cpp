@@ -305,28 +305,34 @@ bool Global::rename(const QString& existingFile, const QString& newFile)
 #endif
 }
 
-const QList<QChar> Global::FORBIDDEN_CHARS_IN_ROOM_NAME { '?', '/', '\\','*', ':', '"', '<', '>', '|' };
+const QList<QChar> Global::FORBIDDEN_CHARS_IN_PATH { '?', '/', '\\','*', ':', '"', '<', '>', '|' };
 
-QString Global::sanitizeFilename(QString filename)
+/**
+  * Replaces forbidden characters from the given path with special token "#n;" where n is the unicode number.
+  */
+QString Global::sanitizePath(QString path)
 {
-   for (QListIterator<QChar> i(FORBIDDEN_CHARS_IN_ROOM_NAME); i.hasNext();)
+   for (QListIterator<QChar> i(FORBIDDEN_CHARS_IN_PATH); i.hasNext();)
    {
       const QChar& currentChar = i.next();
       const QString entity = QString("&#").append(QString::number(currentChar.cell())).append(';');
-      filename.replace(currentChar, entity);
+      path.replace(currentChar, entity);
    }
-   return filename;
+   return path;
 }
 
-QString Global::unSanitizeFilename(QString filename)
+/**
+  * Replace special token with their associated character.
+  */
+QString Global::unSanitizePath(QString path)
 {
-   for (QListIterator<QChar> i(FORBIDDEN_CHARS_IN_ROOM_NAME); i.hasNext();)
+   for (QListIterator<QChar> i(FORBIDDEN_CHARS_IN_PATH); i.hasNext();)
    {
       const QChar& currentChar = i.next();
       const QString entity = QString("&#").append(QString::number(currentChar.cell())).append(';');
-      filename.replace(entity, currentChar);
+      path.replace(entity, currentChar);
    }
-   return filename;
+   return path;
 }
 
 bool Global::isLocal(const QHostAddress& address)

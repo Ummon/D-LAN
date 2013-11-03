@@ -54,9 +54,9 @@ namespace Common
       static qint64 availableDiskSpace(const QString& path);
       static bool rename(const QString& existingFile, const QString& newFile);
 
-      static const QList<QChar> FORBIDDEN_CHARS_IN_ROOM_NAME;
-      static QString sanitizeFilename(QString filename);
-      static QString unSanitizeFilename(QString filename);
+      static const QList<QChar> FORBIDDEN_CHARS_IN_PATH;
+      static QString sanitizePath(QString filename);
+      static QString unSanitizePath(QString filename);
 
       static bool isLocal(const QHostAddress& address);
 

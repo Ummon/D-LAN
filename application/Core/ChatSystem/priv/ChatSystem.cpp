@@ -362,7 +362,7 @@ void ChatSystem::loadChatMessagesFromAllFiles()
    {
       if (filenameRegExp.exactMatch(filename) && filenameRegExp.capturedTexts().length() >= 2)
       {
-         const QString& roomName = Common::Global::unSanitizeFilename(filenameRegExp.capturedTexts()[1]);
+         const QString& roomName = Common::Global::unSanitizePath(filenameRegExp.capturedTexts()[1]);
          this->loadChatMessages(roomName);
       }
    }
@@ -404,7 +404,7 @@ QString ChatSystem::getChatMessageFilename(const QString& roomName)
    if (roomName.isEmpty())
       return Common::Constants::DIR_CHAT_MESSAGES % '/' % Common::Constants::FILE_CHAT_MESSAGES;
    else
-      return Common::Constants::DIR_CHAT_MESSAGES % '/' % Common::Constants::FILE_CHAT_ROOM_MESSAGES.arg(Common::Global::sanitizeFilename(roomName));
+      return Common::Constants::DIR_CHAT_MESSAGES % '/' % Common::Constants::FILE_CHAT_ROOM_MESSAGES.arg(Common::Global::sanitizePath(roomName));
 }
 
 void ChatSystem::getLastChatMessages(const QList<PM::IPeer*>& peers, const QString& roomName)
