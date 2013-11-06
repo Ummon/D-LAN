@@ -118,15 +118,20 @@ void RoomsModel::newState(const Protos::GUI::State& state)
          this->beginRemoveRows(QModelIndex(), o, o);
          this->rooms.removeFromIndex(o--);
          this->endRemoveRows();
+         n--;
       }
       // Update an existing room.
       else
       {
-         const Room& oldRoom = this->rooms.getFromIndex(o);
+         Room& oldRoom = this->rooms.getFromIndex(o);
          const Room& newRoom = roomsNewState.getFromIndex(n);
 
-         if (oldRoom.joined != newRoom.joined || oldRoom.peerIDs.size() != newRoom.peerIDs.size())
+         if (oldRoom.joined != newRoom.joined || oldRoom.peerIDs != newRoom.peerIDs)
+         {
+            oldRoom.joined = newRoom.joined;
+            oldRoom.peerIDs = newRoom.peerIDs;
             emit dataChanged(this->createIndex(o, 1), this->createIndex(o, 2));
+         }
       }
 
       if (n != roomsNewState.size())
