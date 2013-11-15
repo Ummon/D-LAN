@@ -324,7 +324,7 @@ void MdiArea::addChatWindow()
    if (this->chatWidget)
       return;
 
-   this->chatWidget = new ChatWidget(this->coreConnection, this->emoticon, this->peerListModel);
+   this->chatWidget = new ChatWidget(this->coreConnection, this->emoticon);
    connect(this->chatWidget, SIGNAL(browsePeer(Common::Hash)), this, SLOT(openBrowseWindow(Common::Hash)));
    this->addSubWindow(this->chatWidget, Qt::CustomizeWindowHint);
    this->mdiAreaTabBar->setTabData(this->mdiAreaTabBar->count() - 1, Protos::GUI::Settings_Window_WIN_CHAT);
@@ -465,7 +465,7 @@ ChatWidget* MdiArea::addChatWindow(const QString& roomName, bool switchTo)
 
    QMdiSubWindow* currentWindow = this->currentSubWindow();
 
-   ChatWidget* chatWindow = new ChatWidget(this->coreConnection, this->emoticon, this->peerListModel, roomName);
+   ChatWidget* chatWindow = new ChatWidget(this->coreConnection, this->emoticon, roomName);
    connect(chatWindow, SIGNAL(browsePeer(Common::Hash)), this, SLOT(openBrowseWindow(Common::Hash)));
    this->addSubWindow(chatWindow, Qt::CustomizeWindowHint);
    chatWindow->setWindowState(Qt::WindowMaximized);

@@ -298,7 +298,7 @@ void FileManager::printSimilarFiles() const
                if (!hash.isNull() && !knownHashes.contains(hash))
                {
                   knownHashes.insert(hash);
-                  const QList<QSharedPointer<Chunk> >& similarChunks = this->chunks.values(hash);
+                  const QList<QSharedPointer<Chunk>>& similarChunks = this->chunks.values(hash);
                   if (similarChunks.size() > 1)
                   {
                      foreach (QSharedPointer<Chunk> similarChunk, similarChunks)

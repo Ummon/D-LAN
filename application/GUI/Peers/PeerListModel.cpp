@@ -50,7 +50,9 @@ struct PeerListModel::Peer
 
 PeerListModel::PeerListModel(QSharedPointer<RCC::ICoreConnection> coreConnection) :
    coreConnection(coreConnection),
-   currentSortType(Protos::GUI::Settings::BY_SHARING_AMOUNT)
+   currentSortType(Protos::GUI::Settings::BY_SHARING_AMOUNT),
+   displayOnlyPeersWithStatusOK(false),
+   toolTipEnabled(true)
 {
    connect(this->coreConnection.data(), SIGNAL(newState(Protos::GUI::State)), this, SLOT(newState(Protos::GUI::State)));
    connect(this->coreConnection.data(), SIGNAL(disconnected(bool)), this, SLOT(coreDisconnected(bool)));
@@ -151,6 +153,29 @@ Protos::GUI::Settings::PeerSortType PeerListModel::getSortType() const
    return this->currentSortType;
 }
 
+void PeerListModel::setDisplayOnlyPeersWithStatusOK(bool displayed)
+{
+   this->displayOnlyPeersWithStatusOK = displayed;
+}
+
+void PeerListModel::setToolTipEnabled(bool enabled)
+{
+   this->toolTipEnabled = enabled;
+}
+
+/**
+  * To show only peer from a certain room.
+  */
+void PeerListModel::setRoom(const QString& room)
+{
+   this->room = room;
+}
+
+void PeerListModel::rmRoom()
+{
+   this->room = QString();
+}
+
 int PeerListModel::rowCount(const QModelIndex& parent) const
 {
    return this->orderedPeers.size();
@@ -197,6 +222,7 @@ QVariant PeerListModel::data(const QModelIndex& index, int role) const
       return (index.column() == 2 ? Qt::AlignRight : Qt::AlignLeft) + Qt::AlignVCenter;
 
    case Qt::ToolTipRole:
+      if (this->toolTipEnabled)
       {
          const Peer* peer = this->orderedPeers.getFromIndex(index.row());
          const QString coreVersion = peer->coreVersion;
@@ -215,6 +241,8 @@ QVariant PeerListModel::data(const QModelIndex& index, int role) const
             tr("Upload rate: ") % Common::Global::formatByteSize(peer->transferInformation.uploadRate) % "/s";
          return toolTip;
       }
+      else
+         return QVariant();
 
    default:
       return QVariant();
@@ -258,16 +286,29 @@ void PeerListModel::newState(const Protos::GUI::State& state)
    for (int i = 0; i < state.upload_size(); i++)
       peersDownloadingOurData << Common::Hash(state.upload(i).peer_id().hash());
 
-   this->updatePeers(state.peer(), peersDownloadingOurData);
+   QSet<Common::Hash> peersToDisplay;
+   if (!this->room.isEmpty())
+      for (int i = 0; i < state.rooms_size(); i++)
+         if (state.rooms(i).name() == this->room.toStdString())
+         {
+            for (int j = 0; j < state.rooms(i).peer_id_size(); j++)
+               peersToDisplay << Common::Hash(state.rooms(i).peer_id(i).hash());
+            break;
+         }
+
+   this->updatePeers(state.peer(), peersDownloadingOurData, peersToDisplay);
 }
 
 void PeerListModel::coreDisconnected(bool forced)
 {
    google::protobuf::RepeatedPtrField<Protos::GUI::State_Peer> peers;
-   this->updatePeers(peers, QSet<Common::Hash>());
+   this->updatePeers(peers);
 }
 
-void PeerListModel::updatePeers(const google::protobuf::RepeatedPtrField<Protos::GUI::State::Peer>& peers, const QSet<Common::Hash>& peersDownloadingOurData)
+/**
+  * @param peersToDisplay If empty then all peers are displayed.
+  */
+void PeerListModel::updatePeers(const google::protobuf::RepeatedPtrField<Protos::GUI::State::Peer>& peers, const QSet<Common::Hash>& peersDownloadingOurData, const QSet<Common::Hash>& peersToDisplay)
 {
    Common::SortedArray<Peer*> peersToRemove = this->orderedPeers;
    QList<Peer*> peersToAdd;
@@ -275,6 +316,10 @@ void PeerListModel::updatePeers(const google::protobuf::RepeatedPtrField<Protos:
    for (int i = 0; i < peers.size(); i++)
    {
       const Common::Hash peerID { peers.Get(i).peer_id().hash() };
+
+      if (!peersToDisplay.isEmpty() && !peersToDisplay.contains(peerID) || this->displayOnlyPeersWithStatusOK && peers.Get(i).status() != Protos::GUI::State::Peer::OK)
+         continue;
+
       const QString& nick = Common::ProtoHelper::getStr(peers.Get(i), &Protos::GUI::State::Peer::nick);
       const QString& coreVersion = Common::ProtoHelper::getStr(peers.Get(i), &Protos::GUI::State::Peer::core_version);
       const quint64 sharingAmount = peers.Get(i).sharing_amount();

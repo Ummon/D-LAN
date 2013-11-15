@@ -20,6 +20,7 @@
 #include <ui_ChatWidget.h>
 using namespace GUI;
 
+#include <QHostAddress>
 #include <QMenu>
 #include <QMessageBox>
 #include <QTextDocument>
@@ -34,6 +35,22 @@ using namespace GUI;
 
 #include <Log.h>
 #include <Common/Settings.h>
+
+Q_DECLARE_METATYPE(QHostAddress)
+
+void PeerListChatDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
+{
+   QStyleOptionViewItemV4 newOption(option);
+   newOption.state = option.state & (~QStyle::State_HasFocus);
+
+   // Show the selection only if the widget is active.
+   if (!(newOption.state & QStyle::State_Active))
+      newOption.state = newOption.state & (~QStyle::State_Selected);
+
+   QStyledItemDelegate::paint(painter, newOption, index);
+}
+
+/////
 
 /**
   * @class GUI::ChatDelegate
@@ -121,28 +138,31 @@ QSize	ChatDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelInd
 
 const int ChatWidget::DEFAULT_FONT_SIZE(8);
 
-ChatWidget::ChatWidget(QSharedPointer<RCC::ICoreConnection> coreConnection, Emoticons& emoticons, PeerListModel& peerListModel, QWidget* parent) :
+ChatWidget::ChatWidget(QSharedPointer<RCC::ICoreConnection> coreConnection, Emoticons& emoticons, QWidget* parent) :
    MdiWidget(parent),
    ui(new Ui::ChatWidget),
    coreConnection(coreConnection),
    emoticons(emoticons),
-   chatModel(coreConnection, peerListModel, emoticons),
+   peerListModel(coreConnection),
+   chatModel(coreConnection, this->peerListModel, emoticons),
    chatDelegate(textDocument),
    autoScroll(true)
 {
    this->init();
 }
 
-ChatWidget::ChatWidget(QSharedPointer<RCC::ICoreConnection> coreConnection, Emoticons& emoticons, PeerListModel& peerListModel, const QString& roomName, QWidget* parent) :
+ChatWidget::ChatWidget(QSharedPointer<RCC::ICoreConnection> coreConnection, Emoticons& emoticons, const QString& roomName, QWidget* parent) :
    MdiWidget(parent),
    ui(new Ui::ChatWidget),
    coreConnection(coreConnection),
    emoticons(emoticons),
-   chatModel(coreConnection, peerListModel, emoticons, roomName),
+   peerListModel(coreConnection),
+   chatModel(coreConnection, this->peerListModel, emoticons, roomName),
    chatDelegate(textDocument),
    autoScroll(true)
 {
    this->init();
+   this->peerListModel.setRoom(roomName);
 }
 
 ChatWidget::~ChatWidget()
@@ -202,11 +222,55 @@ void ChatWidget::scrollChanged(int value)
    this->autoScroll = value == this->ui->tblChat->verticalScrollBar()->maximum();
 }
 
-void ChatWidget::displayContextMenuDownloads(const QPoint& point)
+void ChatWidget::displayContextMenuPeers(const QPoint& point)
+{
+   QModelIndex i = this->ui->tblRoomPeers->currentIndex();
+   QHostAddress addr = i.isValid() ? this->peerListModel.getPeerIP(i.row()) : QHostAddress();
+   QVariant addrVariant;
+   addrVariant.setValue(addr);
+
+   QMenu menu;
+   menu.addAction(QIcon(":/icons/ressources/folder.png"), tr("Browse"), this, SLOT(browseSelectedPeers()));
+
+   if (!addr.isNull())
+   {
+      QAction* copyIPAction = menu.addAction(tr("Copy IP: %1").arg(addr.toString()), this, SLOT(copyIPToClipboard()));
+      copyIPAction->setData(addrVariant);
+   }
+
+   menu.exec(this->ui->tblRoomPeers->mapToGlobal(point));
+}
+
+void ChatWidget::browseSelectedPeers()
+{
+   foreach (QModelIndex i, this->ui->tblRoomPeers->selectionModel()->selectedIndexes())
+   {
+      if (i.isValid())
+      {
+         Common::Hash peerID = this->peerListModel.getPeerID(i.row());
+         if (!peerID.isNull())
+            emit browsePeer(peerID);
+      }
+   }
+
+   this->ui->tblRoomPeers->clearSelection();
+}
+
+void ChatWidget::copyIPToClipboard()
+{
+   QAction* action = dynamic_cast<QAction*>(this->sender());
+   if (action)
+   {
+      QHostAddress address = action->data().value<QHostAddress>();
+      QApplication::clipboard()->setText(address.toString());
+   }
+}
+
+void ChatWidget::displayContextMenu(const QPoint& point)
 {
    QMenu menu;
    menu.addAction(tr("Copy selected lines"), this, SLOT(copySelectedLineToClipboard()));
-   menu.addAction(QIcon(":/icons/ressources/folder.png"), tr("Browse selected peers"), this, SLOT(browseSelectedPeers()));
+   menu.addAction(QIcon(":/icons/ressources/folder.png"), tr("Browse selected peers"), this, SLOT(browseSelectedMessages()));
    menu.exec(this->ui->tblChat->mapToGlobal(point));
 }
 
@@ -221,7 +285,7 @@ void ChatWidget::copySelectedLineToClipboard()
    QApplication::clipboard()->setText(lines);
 }
 
-void ChatWidget::browseSelectedPeers()
+void ChatWidget::browseSelectedMessages()
 {
    QSet<Common::Hash> peersSent;
 
@@ -488,10 +552,31 @@ void ChatWidget::init()
    }
    else
    {
-      this->ui->splitter->setStretchFactor(0, 4);
+      this->ui->splitter->setStretchFactor(0, 5);
       this->ui->splitter->setStretchFactor(1, 1);
 
       this->setWindowTitle(this->chatModel.getRoomName());
+
+      this->peerListModel.setSortType(Protos::GUI::Settings::BY_NICK);
+      this->peerListModel.setDisplayOnlyPeersWithStatusOK(true);
+      this->peerListModel.setToolTipEnabled(false);
+
+      this->ui->tblRoomPeers->setModel(&this->peerListModel);
+      this->ui->tblRoomPeers->setItemDelegate(&this->peerListDelegate);
+      this->ui->tblRoomPeers->hideColumn(0);
+      this->ui->tblRoomPeers->hideColumn(2);
+      this->ui->tblRoomPeers->horizontalHeader()->setResizeMode(1, QHeaderView::Stretch);
+      this->ui->tblRoomPeers->horizontalHeader()->setVisible(false);
+      this->ui->tblRoomPeers->verticalHeader()->setResizeMode(QHeaderView::Fixed); // TODO: is there an another way to reduce the row size?
+      this->ui->tblRoomPeers->verticalHeader()->setDefaultSectionSize(QApplication::fontMetrics().height() + 4);
+      this->ui->tblRoomPeers->verticalHeader()->setVisible(false);
+      this->ui->tblRoomPeers->setSelectionBehavior(QAbstractItemView::SelectRows);
+      this->ui->tblRoomPeers->setSelectionMode(QAbstractItemView::ExtendedSelection);
+      this->ui->tblRoomPeers->setShowGrid(false);
+      this->ui->tblRoomPeers->setAlternatingRowColors(false);
+      this->ui->tblRoomPeers->setContextMenuPolicy(Qt::CustomContextMenu);
+      connect(this->ui->tblRoomPeers, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(displayContextMenuPeers(QPoint)));
+      connect(this->ui->tblRoomPeers, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(browseSelectedPeers()));
    }
 
    int defaultFontIndex = 0;
@@ -524,7 +609,7 @@ void ChatWidget::init()
    this->ui->tblChat->setEditTriggers(QAbstractItemView::AllEditTriggers);
 
    this->ui->tblChat->setContextMenuPolicy(Qt::CustomContextMenu);
-   connect(this->ui->tblChat, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(displayContextMenuDownloads(const QPoint&)));
+   connect(this->ui->tblChat, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(displayContextMenu(const QPoint&)));
 
    connect(&this->chatModel, SIGNAL(rowsInserted(const QModelIndex&, int, int)), this, SLOT(newRows(const QModelIndex&, int, int)));
    connect(&this->chatModel, SIGNAL(sendMessageStatus(ChatModel::SendMessageStatus)), this, SLOT(sendMessageStatus(ChatModel::SendMessageStatus)));

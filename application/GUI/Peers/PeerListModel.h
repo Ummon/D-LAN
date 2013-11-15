@@ -51,6 +51,10 @@ namespace GUI
 
       void setSortType(Protos::GUI::Settings::PeerSortType sortType);
       Protos::GUI::Settings::PeerSortType getSortType() const;
+      void setDisplayOnlyPeersWithStatusOK(bool displayed);
+      void setToolTipEnabled(bool enabled);
+      void setRoom(const QString& room);
+      void rmRoom();
 
       int rowCount(const QModelIndex& parent = QModelIndex()) const;
       int columnCount(const QModelIndex& parent = QModelIndex()) const;
@@ -84,7 +88,7 @@ namespace GUI
       void coreDisconnected(bool forced);
 
    private:
-      void updatePeers(const google::protobuf::RepeatedPtrField<Protos::GUI::State::Peer>& orderedPeers, const QSet<Common::Hash>& peersDownloadingOurData);
+      void updatePeers(const google::protobuf::RepeatedPtrField<Protos::GUI::State::Peer>& orderedPeers, const QSet<Common::Hash>& peersDownloadingOurData = QSet<Common::Hash>(), const QSet<Common::Hash>& peersToDisplay = QSet<Common::Hash>());
 
       QSharedPointer<RCC::ICoreConnection> coreConnection;
 
@@ -92,6 +96,10 @@ namespace GUI
       QHash<Common::Hash, Peer*> indexedPeers; // Peers indexed by their ID.
       QHash<Common::Hash, QColor> peersToColorize;
       Protos::GUI::Settings::PeerSortType currentSortType;
+
+      bool displayOnlyPeersWithStatusOK;
+      bool toolTipEnabled;
+      QString room;
    };
 }
 

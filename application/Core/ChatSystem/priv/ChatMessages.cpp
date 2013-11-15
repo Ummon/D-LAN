@@ -44,7 +44,7 @@ QSharedPointer<ChatMessage> ChatMessages::add(const QString& message, const Comm
    return mess;
 }
 
-QList<QSharedPointer<ChatMessage> > ChatMessages::add(const Protos::Common::ChatMessages& chatMessages)
+QList<QSharedPointer<ChatMessage>> ChatMessages::add(const Protos::Common::ChatMessages& chatMessages)
 {
    QList<QSharedPointer<ChatMessage>> messages;
 

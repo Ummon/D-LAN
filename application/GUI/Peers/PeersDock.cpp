@@ -20,12 +20,15 @@
 #include <ui_PeersDock.h>
 using namespace GUI;
 
+#include <QHostAddress>
 #include <QMenu>
 #include <QInputDialog>
 #include <QClipboard>
 
 #include <Common/Global.h>
 #include <Common/Settings.h>
+
+Q_DECLARE_METATYPE(QHostAddress)
 
 PeersDock::PeersDock(QSharedPointer<RCC::ICoreConnection> coreConnection, QWidget* parent) :
    QDockWidget(parent),

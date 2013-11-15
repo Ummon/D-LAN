@@ -21,14 +21,11 @@
 
 #include <QDockWidget>
 #include <QSharedPointer>
-#include <QHostAddress>
 
 #include <Common/RemoteCoreController/ICoreConnection.h>
 
 #include <Peers/PeerListModel.h>
 #include <Peers/PeerListDelegate.h>
-
-Q_DECLARE_METATYPE(QHostAddress)
 
 namespace Ui {
    class PeersDock;

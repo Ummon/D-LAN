@@ -40,6 +40,13 @@ namespace Ui {
 
 namespace GUI
 {
+   class PeerListChatDelegate : public QStyledItemDelegate
+   {
+   public:
+      void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const;
+      //QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const;
+   };
+
    class ChatDelegate : public QStyledItemDelegate
    {
    public:
@@ -59,8 +66,8 @@ namespace GUI
 
       Q_OBJECT
    public:
-      explicit ChatWidget(QSharedPointer<RCC::ICoreConnection> coreConnection, Emoticons& emoticons, PeerListModel& peerListModel, QWidget* parent = nullptr);
-      explicit ChatWidget(QSharedPointer<RCC::ICoreConnection> coreConnection, Emoticons& emoticons, PeerListModel& peerListModel, const QString& roomName, QWidget* parent = nullptr);
+      explicit ChatWidget(QSharedPointer<RCC::ICoreConnection> coreConnection, Emoticons& emoticons, QWidget* parent = nullptr);
+      explicit ChatWidget(QSharedPointer<RCC::ICoreConnection> coreConnection, Emoticons& emoticons, const QString& roomName, QWidget* parent = nullptr);
       ~ChatWidget();
 
       bool isGeneral() const;
@@ -75,9 +82,13 @@ namespace GUI
       void sendMessageStatus(ChatModel::SendMessageStatus status);
       void scrollChanged(int value);
 
-      void displayContextMenuDownloads(const QPoint& point);
-      void copySelectedLineToClipboard();
+      void displayContextMenuPeers(const QPoint& point);
       void browseSelectedPeers();
+      void copyIPToClipboard();
+
+      void displayContextMenu(const QPoint& point);
+      void copySelectedLineToClipboard();
+      void browseSelectedMessages();
 
       void currentCharFormatChanged(const QTextCharFormat& charFormat);
       void cursorPositionChanged();
@@ -131,6 +142,8 @@ namespace GUI
 
       QSharedPointer<RCC::ICoreConnection> coreConnection;
       Emoticons& emoticons;
+      PeerListModel peerListModel;
+      PeerListChatDelegate peerListDelegate;
       ChatModel chatModel;
       ChatDelegate chatDelegate;
 
