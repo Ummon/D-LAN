@@ -72,6 +72,8 @@ namespace FM
       void rename(const QString& newName);
       bool isAChildOf(const Directory* dir) const;
 
+      int getBeginingExtension() const;
+
       Directory* getSubDir(const QString& name) const;
       QLinkedList<Directory*> getSubDirs() const;
 

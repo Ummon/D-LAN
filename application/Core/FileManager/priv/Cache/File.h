@@ -102,6 +102,8 @@ namespace FM
 
       void moveInto(Directory* directory);
 
+      int getBeginingExtension() const;
+
       void changeDirectory(Directory* dir);
       bool hasAParentDir(Directory* dir);
 

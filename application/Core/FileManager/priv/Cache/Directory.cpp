@@ -283,6 +283,11 @@ bool Directory::isAChildOf(const Directory* dir) const
    return false;
 }
 
+int Directory::getBeginingExtension() const
+{
+   return -1; // No extension for a directory.
+}
+
 /**
   * @return Returns 0 if no one match.
   */

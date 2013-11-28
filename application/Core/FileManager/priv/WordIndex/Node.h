@@ -19,6 +19,8 @@
 #ifndef FILEMANAGER_NODE_H
 #define FILEMANAGER_NODE_H
 
+#include <functional>
+
 #include <QList>
 #include <QSet>
 #include <QString>
@@ -109,7 +111,7 @@ namespace FM
         */
       bool rmItem(const QString& word, const T& item);
 
-      QList<NodeResult<T>> search(const QString& word, bool alsoFromSubNodes = false, int maxNbResult = -1) const;
+      QList<NodeResult<T>> search(const QString& word, bool alsoFromSubNodes = false, int maxNbResult = -1, std::function<bool(const T&)> predicat = nullptr) const;
 
       QString toStringDebug() const;
 
@@ -123,7 +125,7 @@ namespace FM
         * Return all items from the current node and its sub nodes (recursively) if 'alsoFromSubNodes' is true.
         * For all direct sub nodes NodeResult::level is set to 0, for other sub nodes level is set to 1.
         */
-      QList<NodeResult<T>> getItems(bool alsoFromSubNodes = false, int maxNbResult = -1) const;
+      QList<NodeResult<T>> getItems(bool alsoFromSubNodes = false, int maxNbResult = -1, std::function<bool(const T&)> predicat = nullptr) const;
 
       void remove(int i);
 
@@ -220,13 +222,13 @@ bool FM::Node<T>::rmItem(const QString& word, const T& item)
 }
 
 template <typename T>
-QList<FM::NodeResult<T>> FM::Node<T>::search(const QString& word, bool alsoFromSubNodes, int maxNbResult) const
+QList<FM::NodeResult<T>> FM::Node<T>::search(const QString& word, bool alsoFromSubNodes, int maxNbResult, std::function<bool(const T&)> predicat) const
 {
    QPair<Node<T>*, int> nodes = this->getNode(word, !alsoFromSubNodes);
    if (!nodes.first)
       return QList<NodeResult<T>>();
 
-   return nodes.first->children[nodes.second]->getItems(alsoFromSubNodes, maxNbResult);
+   return nodes.first->children[nodes.second]->getItems(alsoFromSubNodes, maxNbResult, predicat);
 }
 
 template <typename T>
@@ -309,7 +311,7 @@ QPair<FM::Node<T>*, int> FM::Node<T>::getNode(const QString& word, bool exactMat
 }
 
 template <typename T>
-QList<FM::NodeResult<T>> FM::Node<T>::getItems(bool alsoFromSubNodes, int maxNbResult) const
+QList<FM::NodeResult<T>> FM::Node<T>::getItems(bool alsoFromSubNodes, int maxNbResult, std::function<bool(const T&)> predicat) const
 {
    QList<NodeResult<T>> result;
    QList<Node<T>*> nodesToVisit;
@@ -322,10 +324,13 @@ QList<FM::NodeResult<T>> FM::Node<T>::getItems(bool alsoFromSubNodes, int maxNbR
 
       for (QListIterator<T> i(current->items); i.hasNext();)
       {
-         // 'level' == 0 means the item matches exactly, it's a bit tricky.
-         result << NodeResult<T>(i.next(), current == this ? 0 : 1);
-         if (result.size() == maxNbResult)
-            return result;
+         const T& item = i.next();
+         if (!predicat || predicat(item))
+         {
+            result << NodeResult<T>(item, current == this ? 0 : 1); // 'level' == 0 means the item matches exactly, it's a bit tricky.
+            if (result.size() == maxNbResult)
+               return result;
+         }
       }
 
       if (!alsoFromSubNodes)

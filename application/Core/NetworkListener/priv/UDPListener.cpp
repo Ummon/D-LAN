@@ -280,9 +280,17 @@ void UDPListener::processPendingMulticastDatagrams()
                if (peer && peer->isAvailable())
                {
                   const Protos::Core::Find& findMessage = message.getMessage<Protos::Core::Find>();
+                  QList<QString> extensions;
+                  extensions.reserve(findMessage.pattern().extension_filter_size());
+                  for (int i = 0; i < findMessage.pattern().extension_filter_size(); i++)
+                     extensions << Common::ProtoHelper::getRepeatedStr(findMessage.pattern(), &Protos::Common::FindPattern::extension_filter, i);
+
                   QList<Protos::Common::FindResult> results =
                      this->fileManager->find(
                         Common::ProtoHelper::getStr(findMessage.pattern(), &Protos::Common::FindPattern::pattern),
+                        extensions,
+                        findMessage.pattern().min_size() == 0 ? std::numeric_limits<qint64>::min() : (qint64)findMessage.pattern().min_size(), // According the protocol.
+                        findMessage.pattern().max_size() == 0 ? std::numeric_limits<qint64>::max() : (qint64)findMessage.pattern().max_size(), // According the protocol.
                         SETTINGS.get<quint32>("max_number_of_search_result_to_send"),
                         this->MAX_UDP_DATAGRAM_PAYLOAD_SIZE - Common::MessageHeader::HEADER_SIZE
                      );

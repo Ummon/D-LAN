@@ -37,7 +37,8 @@ SOURCES += Hash.cpp \
     FileLocker.cpp \
     ConsoleReader.cpp \
     StringUtils.cpp \
-    Network/Message.cpp
+    Network/Message.cpp \
+    KnownExtensions.cpp
 
 HEADERS += Hashes.h \
     Hash.h \
@@ -69,6 +70,7 @@ HEADERS += Hashes.h \
     BloomFilter.h \
     Network/Message.h \
     SortedArray.h \
-    MapArray.h
+    MapArray.h \
+    KnownExtensions.h
 
 

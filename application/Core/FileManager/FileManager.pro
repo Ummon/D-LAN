@@ -92,5 +92,6 @@ HEADERS += IGetHashesResult.h \
     priv/Cache/FilePool.h \
     priv/Cache/FileHasher.h \
     IGetEntriesResult.h \
-    priv/GetEntriesResult.h
+    priv/GetEntriesResult.h \
+    priv/ExtensionIndex.h
 OTHER_FILES +=

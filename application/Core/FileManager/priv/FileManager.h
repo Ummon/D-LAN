@@ -19,6 +19,8 @@
 #ifndef FILEMANAGER_FILEMANAGER_H
 #define FILEMANAGER_FILEMANAGER_H
 
+#include <limits>
+
 #include <QObject>
 #include <QSharedPointer>
 #include <QList>
@@ -38,6 +40,7 @@
 #include <priv/Cache/Entry.h>
 #include <priv/ChunkIndex/Chunks.h>
 #include <priv/WordIndex/WordIndex.h>
+#include <priv/ExtensionIndex.h>
 
 namespace FM
 {
@@ -69,7 +72,8 @@ namespace FM
       Protos::Common::Entries getEntries(const Protos::Common::Entry& dir);
       Protos::Common::Entries getEntries();
 
-      QList<Protos::Common::FindResult> find(const QString& words, int maxNbResult, int maxSize);
+      inline QList<Protos::Common::FindResult> find(const QString& words, int maxNbResult, int maxSize) { return this->find(words, QList<QString>(), 0, std::numeric_limits<qint64>::max(), maxNbResult, maxSize); }
+      QList<Protos::Common::FindResult> find(const QString& words, const QList<QString>& extensions, qint64 minFileSize, qint64 maxFileSize, int maxNbResult, int maxSize);
       QBitArray haveChunks(const QList<Common::Hash>& hashes);
       quint64 getAmount();
       CacheStatus getCacheStatus() const;
@@ -106,7 +110,10 @@ namespace FM
       FileUpdater fileUpdater;
       Cache cache; ///< The files and directories.
       Chunks chunks; ///< The indexed chunks. It contains only completed chunks.
+
       WordIndex<Entry*> wordIndex; ///< The word index.
+      ExtensionIndex<Entry*> extensionIndex;
+      // SizeIndex<Entry*> sizeIndex;
 
       QTimer timerPersistCache;
       QMutex mutexPersistCache;

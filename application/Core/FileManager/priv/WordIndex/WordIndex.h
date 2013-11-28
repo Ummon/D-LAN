@@ -19,6 +19,8 @@
 #ifndef FILEMANAGER_WORDINDEX_H
 #define FILEMANAGER_WORDINDEX_H
 
+#include <functional>
+
 #include <QList>
 #include <QString>
 #include <QChar>
@@ -56,9 +58,8 @@ namespace FM
       void renameItem(const QString& oldWord, const QString& newWord, const T& item);
       void renameItem(const QStringList& oldWords, const QStringList& newWords, const T& item);
 
-      QList<NodeResult<T>> search(const QString& word, int maxNbResult = -1) const;
-
-      QList<NodeResult<T>> search(const QStringList& words, int maxNbResult = -1) const;
+      QList<NodeResult<T>> search(const QString& word, int maxNbResult = -1, std::function<bool(const T&)> predicat = nullptr) const;
+      QList<NodeResult<T>> search(const QStringList& words, int maxNbResult = -1, std::function<bool(const T&)> predicat = nullptr) const;
 
       QString toStringLog() const;
 
@@ -77,8 +78,8 @@ template<typename T>
 const int FM::WordIndex<T>::MIN_WORD_SIZE_PARTIAL_MATCH_KOREAN(1);
 
 template<typename T>
-FM::WordIndex<T>::WordIndex() :
-   mutex(QMutex::Recursive)
+   FM::WordIndex<T>::WordIndex() :
+      mutex(QMutex::Recursive)
 {}
 
 template<typename T>
@@ -139,17 +140,17 @@ void FM::WordIndex<T>::renameItem(const QStringList& oldWords, const QStringList
   * There is a particular case when the word length is below 'MIN_WORD_SIZE_PARTIAL_MATCH', see the comment associated to this constant for more information.
   */
 template<typename T>
-QList<FM::NodeResult<T>> FM::WordIndex<T>::search(const QString& word, int maxNbResult) const
+QList<FM::NodeResult<T>> FM::WordIndex<T>::search(const QString& word, int maxNbResult, std::function<bool(const T&)> predicat) const
 {
    QMutexLocker locker(&this->mutex);
-   return this->root.search(word, word.size() >= (Common::StringUtils::isKorean(word) ? MIN_WORD_SIZE_PARTIAL_MATCH_KOREAN : MIN_WORD_SIZE_PARTIAL_MATCH), maxNbResult);
+   return this->root.search(word, word.size() >= (Common::StringUtils::isKorean(word) ? MIN_WORD_SIZE_PARTIAL_MATCH_KOREAN : MIN_WORD_SIZE_PARTIAL_MATCH), maxNbResult, predicat);
 }
 
 /**
   * @see http://dev.euphorik.ch/wiki/pmp/Algorithms#Word-indexing for more information.
   */
 template<typename T>
-QList<FM::NodeResult<T>> FM::WordIndex<T>::search(const QStringList& words, int maxNbResult) const
+QList<FM::NodeResult<T>> FM::WordIndex<T>::search(const QStringList& words, int maxNbResult, std::function<bool(const T&)> predicat) const
 {
    QMutexLocker locker(&this->mutex);
 
@@ -159,7 +160,7 @@ QList<FM::NodeResult<T>> FM::WordIndex<T>::search(const QStringList& words, int 
    QVector<QSet<NodeResult<T>>> results(N);
    for (int i = 0; i < N; i++)
       // We can only limit the number of result for one term. When there is more than one term and thus some results set, say [a, b, c] for example, some good result may be contained in intersect, for example a & b or a & c.
-      results[i] += this->search(words[i], N == 1 ? maxNbResult : -1).toSet();
+      results[i] += this->search(words[i], N == 1 ? maxNbResult : -1, predicat).toSet();
 
    QList<NodeResult<T>> finalResult;
 

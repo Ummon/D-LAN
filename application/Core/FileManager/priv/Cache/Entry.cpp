@@ -75,6 +75,24 @@ QString Entry::getName() const
    return this->name;
 }
 
+QString Entry::getNameWithoutExtension() const
+{
+   int i = this->getBeginingExtension();
+   if (i != -1)
+      return this->name.left(i - 1);
+   else
+      return this->name;
+}
+
+QString Entry::getExtension() const
+{
+   int i = this->getBeginingExtension();
+   if (i != -1)
+      return this->name.right(this->name.length() - i);
+   else
+      return QString();
+}
+
 /**
   * When a file or a directory is renamed.
   */

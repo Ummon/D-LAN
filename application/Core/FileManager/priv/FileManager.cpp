@@ -19,7 +19,7 @@
 #include <priv/FileManager.h>
 using namespace FM;
 
-#include <limits>
+#include <functional>
 
 #include <QSharedPointer>
 #include <QStringList>
@@ -189,9 +189,26 @@ Protos::Common::Entries FileManager::getEntries()
    return this->cache.getSharedEntries();
 }
 
-QList<Protos::Common::FindResult> FileManager::find(const QString& words, int maxNbResult, int maxSize)
+QList<Protos::Common::FindResult> FileManager::find(const QString& words, const QList<QString>& extensions, qint64 minFileSize, qint64 maxFileSize, int maxNbResult, int maxSize)
 {
-   QList<NodeResult<Entry*>> result = this->wordIndex.search(Common::StringUtils::splitInWords(words), maxNbResult);
+   bool filterOn = !extensions.isEmpty() || minFileSize > 0 || maxFileSize != std::numeric_limits<qint64>::max();
+
+   QList<NodeResult<Entry*>> result;
+
+   if (!words.isEmpty())
+   {
+      result = !filterOn ?
+         this->wordIndex.search(Common::StringUtils::splitInWords(words), maxNbResult) :
+         this->wordIndex.search(Common::StringUtils::splitInWords(words), maxNbResult, [&](Entry* entry)
+            {
+               return entry->getSize() >= minFileSize && entry->getSize() <= maxFileSize && extensions.contains(entry->getExtension());
+            }
+         );
+   }
+   else if (filterOn)
+   {
+      // TODO
+   }
 
    QList<Protos::Common::FindResult> findResults;
    findResults << Protos::Common::FindResult();
@@ -226,6 +243,7 @@ QList<Protos::Common::FindResult> FileManager::find(const QString& words, int ma
 
    if (findResults.last().entry_size() == 0)
       findResults.removeLast();
+
    return findResults;
 }
 
@@ -350,7 +368,7 @@ void FileManager::entryAdded(Entry* entry)
       return;
 
    L_DEBU(QString("Adding entry '%1' to the index . . .").arg(entry->getName()));
-   this->wordIndex.addItem(Common::StringUtils::splitInWords(entry->getName()), entry);
+   this->wordIndex.addItem(Common::StringUtils::splitInWords(entry->getNameWithoutExtension()), entry);
    L_DEBU("Entry added to the index");
 }
 

@@ -19,6 +19,7 @@
 #ifndef FILEMANAGER_IFILEMANAGER_H
 #define FILEMANAGER_IFILEMANAGER_H
 
+#include <QList>
 #include <QStringList>
 #include <QBitArray>
 #include <QPair>
@@ -130,13 +131,14 @@ namespace FM
       /**
         * Find some entry from a given words.
         * The result is sorted by level.
-        * @param words The words to find, must contain at least one word.
+        * @param words The words to find. May be empty if some extensions or a size range is given.
         * @param maxNbResult The maximum total number of result, sum of all 'FindResult' sizes.
         * @param maxSize This is the size in bytes each 'FindResult' can't exceed. (Because UDP datagrams have a maximum size).
         * It should not be here but it's far more harder to split the result outside this method.
         * @remarks Will not fill the fields 'FindResult.tag' and 'FindResult.peer_id'.
         */
       virtual QList<Protos::Common::FindResult> find(const QString& words, int maxNbResult, int maxSize) = 0;
+      virtual QList<Protos::Common::FindResult> find(const QString& words, const QList<QString>& extensions, qint64 minFileSize, qint64 maxFileSize, int maxNbResult, int maxSize) = 0;
 
       /**
         * Ask if we have the given hashes. For each hashes a bit is set (1 if the hash is known or 0 otherwise) into the returned QBitArray.

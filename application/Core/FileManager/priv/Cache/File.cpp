@@ -31,6 +31,7 @@ using namespace FM;
 #include <Common/Global.h>
 #include <Common/Settings.h>
 #include <Common/ProtoHelper.h>
+#include <Common/KnownExtensions.h>
 
 #include <Exceptions.h>
 #include <priv/Global.h>
@@ -521,6 +522,26 @@ void File::moveInto(Directory* directory)
    this->dir->fileDeleted(this);
    directory->add(this);
    this->dir = directory;
+}
+
+/**
+  * Matches only the extensions from 'Common::KnownExtensions'.
+  */
+int File::getBeginingExtension() const
+{
+   QMutexLocker locker(&this->mutex);
+
+   int i = 0;
+   while ((i = this->name.indexOf('.', i + 1)) != -1)
+   {
+      if (i == this->name.length() - 1)
+         break;
+
+      if (Common::KnownExtensions::exists(this->name.right(this->name.length() - 1 - i)))
+         return i + 1;
+   }
+
+   return -1;
 }
 
 void File::changeDirectory(Directory* dir)
