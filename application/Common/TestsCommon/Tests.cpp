@@ -31,6 +31,9 @@
 #include <Protos/core_settings.pb.h>
 #include <Protos/gui_protocol.pb.h>
 
+#include <Containers/SortedList.h>
+#include <Containers/SortedArray.h>
+#include <Containers/MapArray.h>
 #include <Network/MessageHeader.h>
 #include <PersistentData.h>
 #include <Settings.h>
@@ -38,9 +41,6 @@
 #include <StringUtils.h>
 #include <ZeroCopyStreamQIODevice.h>
 #include <ProtoHelper.h>
-#include <SortedList.h>
-#include <SortedArray.h>
-#include <MapArray.h>
 #include <BloomFilter.h>
 #include <TransferRateCalculator.h>
 using namespace Common;

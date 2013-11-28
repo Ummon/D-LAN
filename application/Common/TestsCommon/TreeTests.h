@@ -21,7 +21,7 @@
 
 #include <QTest>
 
-#include <Tree.h>
+#include <Containers/Tree.h>
 
 class IntTree : public Common::Tree<int, IntTree>
 {

@@ -28,7 +28,7 @@
 #include <Protos/common.pb.h>
 #include <Protos/files_cache.pb.h>
 
-#include <Common/SortedList.h>
+#include <Common/Containers/SortedList.h>
 
 #include <priv/Cache/Entry.h>
 

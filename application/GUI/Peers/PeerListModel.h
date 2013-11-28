@@ -29,7 +29,7 @@
 #include <Protos/gui_settings.pb.h>
 
 #include <Common/Hash.h>
-#include <Common/SortedArray.h>
+#include <Common/Containers/SortedArray.h>
 #include <Common/RemoteCoreController/ICoreConnection.h>
 
 namespace GUI

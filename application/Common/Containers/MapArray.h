@@ -19,7 +19,7 @@
 #ifndef COMMON_MAPARRAY_H
 #define COMMON_MAPARRAY_H
 
-#include <Common/SortedArray.h>
+#include <Common/Containers/SortedArray.h>
 
 namespace Common
 {

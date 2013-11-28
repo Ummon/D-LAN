@@ -28,7 +28,7 @@
 #include <Protos/gui_settings.pb.h>
 
 #include <Common/RemoteCoreController/ICoreConnection.h>
-#include <Common/Tree.h>
+#include <Common/Containers/Tree.h>
 
 #include <CheckBoxList.h>
 #include <CheckBoxModel.h>

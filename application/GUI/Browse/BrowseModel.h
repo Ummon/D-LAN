@@ -26,7 +26,7 @@
 
 #include <Common/ProtoHelper.h>
 #include <Common/Hash.h>
-#include <Common/Tree.h>
+#include <Common/Containers/Tree.h>
 #include <Common/RemoteCoreController/ICoreConnection.h>
 #include <Common/RemoteCoreController/IBrowseResult.h>
 

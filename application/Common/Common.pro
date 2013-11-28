@@ -62,15 +62,15 @@ HEADERS += Hashes.h \
     ThreadPool.h \
     IRunnable.h \
     Languages.h \
-    Tree.h \
     FileLocker.h \
     ConsoleReader.h \
-    SortedList.h \
     StringUtils.h \
     BloomFilter.h \
     Network/Message.h \
-    SortedArray.h \
-    MapArray.h \
-    KnownExtensions.h
+    KnownExtensions.h \
+    Containers/Tree.h \
+    Containers/SortedList.h \
+    Containers/SortedArray.h \
+    Containers/MapArray.h
 
 

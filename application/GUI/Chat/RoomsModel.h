@@ -26,7 +26,7 @@
 #include <Protos/gui_protocol.pb.h>
 
 #include <Common/Hash.h>
-#include <Common/SortedArray.h>
+#include <Common/Containers/SortedArray.h>
 #include <Common/RemoteCoreController/ICoreConnection.h>
 
 namespace GUI

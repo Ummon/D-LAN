@@ -21,7 +21,7 @@
 
 #include <QDragEnterEvent>
 
-#include <Common/Tree.h>
+#include <Common/Containers/Tree.h>
 
 #include <Downloads/DownloadsModel.h>
 
