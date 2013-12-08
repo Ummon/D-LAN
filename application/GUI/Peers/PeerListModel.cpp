@@ -60,7 +60,7 @@ PeerListModel::PeerListModel(QSharedPointer<RCC::ICoreConnection> coreConnection
 
 PeerListModel::~PeerListModel()
 {
-   for (Common::SortedArray<Peer*>::Iterator i(this->orderedPeers); i.hasNext();)
+   for (Common::SortedArray<Peer*>::iterator i(this->orderedPeers); i.hasNext();)
       delete i.next();
 }
 
@@ -384,7 +384,7 @@ void PeerListModel::updatePeers(const google::protobuf::RepeatedPtrField<Protos:
    }
 
    QList<Common::Hash> peerIDsRemoved;
-   for (Common::SortedArray<Peer*>::Iterator i(peersToRemove); i.hasNext();)
+   for (Common::SortedArray<Peer*>::iterator i(peersToRemove); i.hasNext();)
    {
       Peer* const peer = i.next();
       peerIDsRemoved << peer->peerID;

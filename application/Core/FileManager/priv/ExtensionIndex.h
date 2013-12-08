@@ -1,5 +1,8 @@
-#ifndef FILEMANAGER_EXTENSIONINDEX_H
-#define FILEMANAGER_EXTENSIONINDEX_H
+#ifndef FILEMANAGER_EXTENSION_INDEX_H
+#define FILEMANAGER_EXTENSION_INDEX_H
+
+#include <functional>
+#include <limits>
 
 #include <QMultiHash>
 #include <QList>
@@ -18,7 +21,8 @@ namespace FM
       void rmItem(const QString& extension, const T& item);
       void changeItem(const QString& oldExtension, const QString& newExtension, const T& item);
 
-      QList<T> search(const QString& extension) const;
+      QList<T> search(const QString& extension, int limit = std::numeric_limits<int>::max(), std::function<bool(const T&)> predicat = nullptr) const;
+      QList<T> search(const QList<QString>& extensions, int limit = std::numeric_limits<int>::max(), std::function<bool(const T&)> predicat = nullptr) const;
 
    private:
       QMultiHash<QString, T> index;
@@ -35,6 +39,9 @@ FM::ExtensionIndex<T>::ExtensionIndex() :
 template<typename T>
 void FM::ExtensionIndex<T>::addItem(const QString& extension, const T& item)
 {
+   if (extension.isEmpty())
+      return;
+
    QMutexLocker locker(&this->mutex);
    this->index.insert(extension.toLower(), item);
 }
@@ -42,6 +49,9 @@ void FM::ExtensionIndex<T>::addItem(const QString& extension, const T& item)
 template<typename T>
 void FM::ExtensionIndex<T>::rmItem(const QString& extension, const T& item)
 {
+   if (extension.isEmpty())
+      return;
+
    QMutexLocker locker(&this->mutex);
    this->index.remove(extension.toLower(), item);
 }
@@ -50,17 +60,41 @@ template<typename T>
 void FM::ExtensionIndex<T>::changeItem(const QString& oldExtension, const QString& newExtension, const T& item)
 {
    QMutexLocker locker(&this->mutex);
-   this->index.remove(oldExtension.toLower(), item);
-   this->index.insert(newExtension.toLower(), item);
+
+   if (!oldExtension.isEmpty())
+      this->index.remove(oldExtension.toLower(), item);
+
+   if (!newExtension.isEmpty())
+      this->index.insert(newExtension.toLower(), item);
 }
 
 template<typename T>
-QList<T> FM::ExtensionIndex<T>::search(const QString& extension) const
+QList<T> FM::ExtensionIndex<T>::search(const QString& extension, int limit, std::function<bool(const T&)> predicat) const
+{
+   return this->search(QList<QString> { extension }, limit, predicat);
+}
+
+template<typename T>
+QList<T> FM::ExtensionIndex<T>::search(const QList<QString>& extensions, int limit, std::function<bool(const T&)> predicat) const
 {
    QMutexLocker locker(&this->mutex);
+
    QList<T> result;
-   for (typename QHash<QString, T>::const_iterator i = this->index.find(extension.toLower()); i != this->index.constEnd(); i++)
-      result << i.key();
+
+   for (QListIterator<QString> i(extensions); i.hasNext();)
+   {
+      const QString& extension = i.next();
+      for (typename QHash<QString, T>::const_iterator j = this->index.find(extension.toLower()); j != this->index.constEnd() && j.key() == extension; ++j)
+      {
+         if (!predicat || predicat(j.value()))
+            result << j.value();
+
+         if (result.size() >= limit)
+            goto end;
+      }
+   }
+
+   end:
    return result;
 }
 

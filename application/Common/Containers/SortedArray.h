@@ -54,13 +54,34 @@ namespace Common
       struct Position
       {
          bool operator==(const Position& other) const { return other.node == this->node && other.p == this->p; }
-         Node* node;
+         bool operator!=(const Position& other) const { return !(*this == other); }
+         Node* node; // Should never be 'nullptr'.
          int p;
       };
 
    public:      
       class NotFoundException {};
       class InvalidMException {};
+
+      class iterator
+      {
+         iterator(const SortedArray& array, const Position& position);
+
+      public:
+         iterator(const iterator& other);
+
+         bool operator==(const iterator& other) const;
+         bool operator!=(const iterator& other) const;
+         const T& operator*() const;
+         T* operator->() const;
+         iterator& operator++();
+
+         friend class SortedArray;
+
+      private:
+         const SortedArray& array;
+         Position currentPosition;
+      };
 
       SortedArray();
       SortedArray(const SortedArray& other);
@@ -76,6 +97,12 @@ namespace Common
       bool contains(const T& value) const;
 
       int indexOf(const T& value) const;
+      int indexOfNearest(const T& value) const;
+
+      iterator begin() const;
+      iterator end() const;
+      iterator iteratorOf(const T& value) const;
+      iterator iteratorOfNearest(const T& value) const;
 
       const T& getFromIndex(int index) const;
       T& getFromIndex(int index);
@@ -91,21 +118,6 @@ namespace Common
 
       //void sort();
       void setSortedFunction(const std::function<bool(const T&, const T&)>& lesserThan);
-
-      /**
-        * A very basic iterator to iterate on the sorted elements.
-        */
-      class Iterator
-      {
-      public:
-         Iterator(const SortedArray&);
-         bool hasNext() const;
-         const T& next();
-
-      private:
-         const SortedArray& array;
-         Position currentPosition;
-      };
 
    private:
       struct Node
@@ -128,9 +140,13 @@ namespace Common
       static Node* getRightmostNode(Node* node);
 
       static Position getNextPosition(const Position&);
+      static Position getPreviousPosition(const Position&);
       static Node* getFromIndex(Node* node, int index, int nbItemsBefore, int& position);
 
       static int indexOf(Node* node, const T& value, int nbItemsBefore, const std::function<bool(const T&, const T&)>& lesserThan);
+      static int indexOfNearest(Node* node, const T& value, int nbItemsBefore, const std::function<bool(const T&, const T&)>& lesserThan);
+      static Position positionOf(Node* node, const T& value, const std::function<bool(const T&, const T&)>& lesserThan);
+      static Position positionOfNearest(Node* node, const T& value, const std::function<bool(const T&, const T&)>& lesserThan);
       static Node* getNode(Node* node, const T& value, int& position, const std::function<bool(const T&, const T&)>& lesserThan);
       inline static int getPosition(Node* node, const T& value, bool& exists, const std::function<bool(const T&, const T&)>& lesserThan);
 
@@ -174,6 +190,53 @@ namespace Common
       QSharedDataPointer<SortedArrayData> d;
    };
 }
+
+/////
+
+template <typename T, int M>
+Common::SortedArray<T, M>::iterator::iterator(const SortedArray& array, const Position& position) :
+   array(array), currentPosition(position)
+{
+}
+
+template <typename T, int M>
+Common::SortedArray<T, M>::iterator::iterator(const iterator& other) :
+   array(other.array), currentPosition(other.currentPosition)
+{
+}
+
+template <typename T, int M>
+bool Common::SortedArray<T, M>::iterator::operator==(const iterator& other) const
+{
+   return other.currentPosition == this->currentPosition;
+}
+
+template <typename T, int M>
+bool Common::SortedArray<T, M>::iterator::operator!=(const iterator& other) const
+{
+   return other.currentPosition != this->currentPosition;
+}
+
+template <typename T, int M>
+const T& Common::SortedArray<T, M>::iterator::operator*() const
+{
+   return this->currentPosition.node->items[this->currentPosition.p];
+}
+
+template <typename T, int M>
+T* Common::SortedArray<T, M>::iterator::operator->() const
+{
+   return &this->currentPosition.node->items[this->currentPosition.p];
+}
+
+template <typename T, int M>
+typename Common::SortedArray<T, M>::iterator& Common::SortedArray<T, M>::iterator::operator++()
+{
+   this->currentPosition = getNextPosition(this->currentPosition);
+   return *this;
+}
+
+/////
 
 /**
   * @exception InvalidMException
@@ -272,12 +335,55 @@ bool Common::SortedArray<T, M>::contains(const T& value) const
 }
 
 /**
-  * @exception NotFoundException
+  * returns -1 if not found.
   */
 template <typename T, int M>
 int Common::SortedArray<T, M>::indexOf(const T& value) const
 {
-   return this->indexOf(this->d->root, value, 0, this->d->lesserThanFun);
+   return indexOf(this->d->root, value, 0, this->d->lesserThanFun);
+}
+
+/**
+  * If an item matches the given value returns its index. Otherwise the index of the previous item is returned.
+  * If the value is located before the first item then 0 is returned.
+  * If the value is located after the last item then the last item index is returned.
+  * Returns -1 if the array is empty.
+  */
+template <typename T, int M>
+int Common::SortedArray<T, M>::indexOfNearest(const T& value) const
+{
+   return indexOfNearest(this->d->root, value, 0, this->d->lesserThanFun);
+}
+
+template <typename T, int M>
+typename Common::SortedArray<T, M>::iterator Common::SortedArray<T, M>::begin() const
+{
+   Node* firstNode = getLeftmostNode(this->d->root);
+   return iterator(*this, { firstNode, 0 });
+}
+
+/**
+  * The end is always after the last item.
+  * Warning: the complexity is O(h) where h = log_M(n+1) - 1
+  * It's a good idea to compute it only once during a loop.
+  */
+template <typename T, int M>
+typename Common::SortedArray<T, M>::iterator Common::SortedArray<T, M>::end() const
+{
+   Node* lastNode = getRightmostNode(this->d->root);
+   return iterator(*this, { lastNode, lastNode->nbItems });
+}
+
+template <typename T, int M>
+typename Common::SortedArray<T, M>::iterator Common::SortedArray<T, M>::iteratorOf(const T& value) const
+{
+   return iterator(*this, positionOf(this->d->root, value, this->d->lesserThanFun));
+}
+
+template <typename T, int M>
+typename Common::SortedArray<T, M>::iterator Common::SortedArray<T, M>::iteratorOfNearest(const T& value) const
+{
+   return iterator(*this, positionOfNearest(this->d->root, value, this->d->lesserThanFun));
 }
 
 /**
@@ -337,7 +443,7 @@ template <typename T, int M>
 QList<T> Common::SortedArray<T, M>::toList() const
 {
    QList<T> l;
-   for (typename Common::SortedArray<T>::Iterator i(*this); i.hasNext();)
+   for (typename Common::SortedArray<T>::iterator i(*this); i.hasNext();)
       l << i.next();
    return l;
 }
@@ -376,10 +482,10 @@ void Common::SortedArray<T, M>::setSortedFunction(const std::function<bool(const
    // For the moment we recreate an entire new tree and inserting all the elements in it.
    // A better approach will be to re-sort the tree in place.
    QSharedDataPointer<SortedArrayData> newD(new SortedArrayData(lesserThan));
-   for (Iterator i(*this); i.hasNext();)
+   for (iterator i = this->begin(); i != this->end(); ++i)
    {
       int position;
-      const T& value = i.next();
+      const T& value = *i;
       Node* node = getNode(newD->root, value, position, newD->lesserThanFun);
 
       Q_ASSERT(position == -1); // The value should never be found.
@@ -388,34 +494,6 @@ void Common::SortedArray<T, M>::setSortedFunction(const std::function<bool(const
          newD->root = newRoot;
    }
    this->d = newD;
-}
-
-template <typename T, int M>
-Common::SortedArray<T, M>::Iterator::Iterator(const SortedArray& array) :
-   array(array), currentPosition({nullptr, 0})
-{
-   if (array.size() > 0)
-      this->currentPosition.node = getLeftmostNode(array.d->root);
-}
-
-template <typename T, int M>
-bool Common::SortedArray<T, M>::Iterator::hasNext() const
-{
-   return this->currentPosition.node != nullptr;
-}
-
-/**
-  * @exception NotFoundException
-  */
-template <typename T, int M>
-const T& Common::SortedArray<T, M>::Iterator::next()
-{
-   if (this->currentPosition.node == nullptr)
-      throw NotFoundException();
-
-   const T& value = this->currentPosition.node->items[this->currentPosition.p];
-   this->currentPosition = getNextPosition(this->currentPosition);
-   return value;
 }
 
 template <typename T, int M>
@@ -467,7 +545,6 @@ typename Common::SortedArray<T, M>::Node* Common::SortedArray<T, M>::getRightmos
 
 /**
   * Get the next position to the right.
-  * 'node' is set to 'nullptr' if there is no next position.
   */
 template <typename T, int M>
 typename Common::SortedArray<T, M>::Position Common::SortedArray<T, M>::getNextPosition(const Position& currentPosition)
@@ -497,8 +574,42 @@ typename Common::SortedArray<T, M>::Position Common::SortedArray<T, M>::getNextP
       nextPosition.node = nextPosition.node->parent;
    }
 
-   nextPosition.node = nullptr;
-   return nextPosition;
+   return { currentPosition.node, currentPosition.p + 1 };
+}
+
+/**
+  * If there is no previous element then p == -1.
+  */
+template <typename T, int M>
+typename Common::SortedArray<T, M>::Position Common::SortedArray<T, M>::getPreviousPosition(const Position& currentPosition)
+{
+   Position previousPosition = currentPosition;
+
+   if (Node* child = previousPosition.node->children[previousPosition.p])
+   {
+      previousPosition.node = getRightmostNode(child);
+      previousPosition.p = previousPosition.node->nbItems - 1;
+      return previousPosition;
+   }
+
+   previousPosition.p--;
+
+   if (previousPosition.p >= 0)
+      return previousPosition;
+
+   while (previousPosition.node->parent)
+   {
+      for (int i = 1; i <= previousPosition.node->parent->nbItems; i++)
+         if (previousPosition.node->parent->children[i] == previousPosition.node)
+         {
+            previousPosition.node = previousPosition.node->parent;
+            previousPosition.p = i - 1;
+            return previousPosition;
+         }
+      previousPosition.node = previousPosition.node->parent;
+   }
+
+   return { currentPosition.node, currentPosition.p - 1 };
 }
 
 template <typename T, int M>
@@ -543,6 +654,75 @@ int Common::SortedArray<T, M>::indexOf(Node* node, const T& value, int nbItemsBe
    }
 
    return nbItemsBefore;
+}
+
+template <typename T, int M>
+int Common::SortedArray<T, M>::indexOfNearest(Node* node, const T& value, int nbItemsBefore, const std::function<bool(const T&, const T&)>& lesserThan)
+{
+   bool exists;
+   int position = getPosition(node, value, exists, lesserThan);
+
+   nbItemsBefore += position;
+   for (int i = 0; i < position; i++)
+      if (node->children[i])
+         nbItemsBefore += node->children[i]->size;
+
+   if (!exists)
+   {
+      if (node->children[position])
+         return indexOfNearest(node->children[position], value, nbItemsBefore, lesserThan);
+
+      if (nbItemsBefore == 0)
+         return 0;
+      else
+         return nbItemsBefore - 1;
+   }
+
+   return nbItemsBefore;
+}
+
+/**
+  * @exception NotFoundException
+  */
+template <typename T, int M>
+typename Common::SortedArray<T, M>::Position Common::SortedArray<T, M>::positionOf(Node* node, const T& value, const std::function<bool(const T&, const T&)>& lesserThan)
+{
+   bool exists;
+   int position = getPosition(node, value, exists, lesserThan);
+
+   if (!exists)
+   {
+      if (node->children[position])
+         return iteratorOf(node->children[position], value, lesserThan);
+      throw NotFoundException();
+   }
+
+   return { node, position };
+}
+
+template <typename T, int M>
+typename Common::SortedArray<T, M>::Position Common::SortedArray<T, M>::positionOfNearest(Node* node, const T& value, const std::function<bool(const T&, const T&)>& lesserThan)
+{
+   bool exists;
+   int position = getPosition(node, value, exists, lesserThan);
+
+   if (!exists)
+   {
+      if (node->children[position])
+         return positionOfNearest(node->children[position], value, lesserThan);
+
+      if (position > 0)
+         return { node, position - 1};
+      else
+      {
+         Position previous = getPreviousPosition({ node, position });
+         if (previous.p != -1)
+            return previous;
+         return { node, position };
+      }
+   }
+
+   return { node, position };
 }
 
 /**

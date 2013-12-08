@@ -554,12 +554,12 @@ void Tests::findFilesWithSomeWords1()
    expectedResult[0] << "aaaa bbbb cccc.txt";
    expectedResult[4] << "aaaa bbbb.txt";
    expectedResult[5] << "aaaa cccc.txt";
-   expectedResult[6] << "cccc bbbb.txt" << "bbbb cccc.txt";
+   expectedResult[6] << "cccc bbbb.nfo" << "bbbb cccc.nfo";
    expectedResult[7] << "aaaaaa bbbb.txt";
    expectedResult[9] << "cccc bbbbbb.txt";
    expectedResult[10] << "aaaaaa bbbbbb.txt";
    expectedResult[13] << "aaaa dddddd.txt";
-   expectedResult[14] << "bbbb.txt" <<  "bbbb dddd.txt";
+   expectedResult[14] << "bbbb.txt" <<  "bbbb dddd.nfo";
    expectedResult[16] << "aaaaaa dddddd.txt";
 
    QList<Protos::Common::FindResult> results = this->fileManager->find(terms, 10000, 65536);
@@ -578,8 +578,8 @@ void Tests::findFilesWithSomeWords2()
    expectedResult[5] << "aaaa bbbb cccc.txt";
    expectedResult[21] << "aaaa bbbb.txt";
    expectedResult[22] << "aaaa cccc.txt";
-   expectedResult[24] << "bbbb cccc.txt" << "cccc bbbb.txt";
-   expectedResult[25] << "bbbb dddd.txt";
+   expectedResult[24] << "bbbb cccc.nfo" << "cccc bbbb.nfo";
+   expectedResult[25] << "bbbb dddd.nfo";
    expectedResult[27] << "aaaaaa bbbb.txt";
    expectedResult[29] << "aaaa dddddd.txt";
    expectedResult[30] << "cccc bbbbbb.txt";
@@ -609,6 +609,89 @@ void Tests::findFilesWithResultFragmentation()
       QVERIFY(results[i].ByteSize() <= FRAGMENT_MAX_SIZE);
       this->printSearch(terms, results[i]);
    }
+}
+
+void Tests::findFilesWithSomeWordsAndExtensions()
+{
+   qDebug() << "===== findFilesWithSomeWordsAndExtensions() =====";
+
+   QString terms("aaaa bbbb cccc");
+
+   FindResult expectedResult;
+   expectedResult[0] << "aaaa bbbb cccc.txt";
+   expectedResult[4] << "aaaa bbbb.txt";
+   expectedResult[5] << "aaaa cccc.txt";
+   expectedResult[7] << "aaaaaa bbbb.txt";
+   expectedResult[9] << "cccc bbbbbb.txt";
+   expectedResult[10] << "aaaaaa bbbbbb.txt";
+   expectedResult[13] << "aaaa dddddd.txt";
+   expectedResult[14] << "bbbb.txt";
+   expectedResult[16] << "aaaaaa dddddd.txt";
+
+   QList<Protos::Common::FindResult> results = this->fileManager->find(terms, QList<QString> { "txt" }, 0, std::numeric_limits<qint64>::max(), 10000, 65536);
+   QVERIFY(!results.isEmpty());
+   this->printSearch(terms, results.first());
+   this->compareExpectedResult(results.first(), expectedResult);
+}
+
+void Tests::findFilesWithSomeWordsAndExtensionsAndSizeRange()
+{
+   qDebug() << "===== findFilesWithSomeWordsAndSizeRange() =====";
+
+   QString terms("aaaa bbbb cccc");
+
+   FindResult expectedResult;
+   //expectedResult[0] << "aaaa bbbb cccc.txt"; // 18
+   //expectedResult[4] << "aaaa bbbb.txt"; // 13
+   //expectedResult[5] << "aaaa cccc.txt"; // 13
+   expectedResult[7] << "aaaaaa bbbb.txt";  // 15
+   expectedResult[9] << "cccc bbbbbb.txt"; // 15
+   //expectedResult[10] << "aaaaaa bbbbbb.txt"; // 17
+   expectedResult[13] << "aaaa dddddd.txt"; // 16
+   //expectedResult[14] << "bbbb.txt"; // 8
+   //expectedResult[16] << "aaaaaa dddddd.txt"; // 17
+
+   QList<Protos::Common::FindResult> results = this->fileManager->find(terms, QList<QString> { "txt" }, 15, 16, 10000, 65536);
+   QVERIFY(!results.isEmpty());
+   this->printSearch(terms, results.first());
+   this->compareExpectedResult(results.first(), expectedResult);
+}
+
+void Tests::findFilesByExtensions()
+{
+   qDebug() << "===== findFilesByExtensions() =====";
+
+   FindResult expectedResult;
+   expectedResult[0] << "bbbb cccc.nfo" << "cccc bbbb.nfo" << "bbbb dddd.nfo";
+
+   QList<Protos::Common::FindResult> results = this->fileManager->find("", QList<QString> { "nfo" }, 0, std::numeric_limits<qint64>::max(), 10000, 65536);
+   QVERIFY(!results.isEmpty());
+   this->compareExpectedResult(results.first(), expectedResult);
+}
+
+void Tests::findFilesByExtensionsAndSizeRange()
+{
+   qDebug() << "===== findFilesByExtensionsAndSizeRange() =====";
+
+   FindResult expectedResult;
+   expectedResult[0] << "aaaa bbbb.txt" << "aaaa cccc.txt" << "bbbb.txt";
+
+   QList<Protos::Common::FindResult> results = this->fileManager->find("", QList<QString> { "txt" }, 12, 13, 10000, 65536);
+   QVERIFY(!results.isEmpty());
+   this->compareExpectedResult(results.first(), expectedResult);
+}
+
+void Tests::findFilesBySizeRange()
+{
+   qDebug() << "===== findFilesBySizeRange() =====";
+
+   // TODO
+   /*FindResult expectedResult;
+   expectedResult[0] << "aaaaaa bbbb.txt" << "cccc bbbbbb.txt" << "aaaa dddddd.txt" << "bbbb cccc.nfo" << "cccc bbbb.nfo" << "bbbb dddd.nfo";
+
+   QList<Protos::Common::FindResult> results = this->fileManager->find("", QList<QString>(), 15, 16, 10000, 65536);
+   QVERIFY(!results.isEmpty());
+   this->compareExpectedResult(results.first(), expectedResult);*/
 }
 
 void Tests::haveChunks()
@@ -726,9 +809,9 @@ void Tests::createInitialFiles()
    QVERIFY(Common::Global::createFile("sharedDirs/share3/aaaa cccc.txt"));
    QVERIFY(Common::Global::createFile("sharedDirs/share3/aaaa dddddd.txt"));
    QVERIFY(Common::Global::createFile("sharedDirs/share3/aaaaaa dddddd.txt"));
-   QVERIFY(Common::Global::createFile("sharedDirs/share3/bbbb cccc.txt"));
-   QVERIFY(Common::Global::createFile("sharedDirs/share3/cccc bbbb.txt"));
-   QVERIFY(Common::Global::createFile("sharedDirs/share3/bbbb dddd.txt"));
+   QVERIFY(Common::Global::createFile("sharedDirs/share3/bbbb cccc.nfo"));
+   QVERIFY(Common::Global::createFile("sharedDirs/share3/cccc bbbb.nfo"));
+   QVERIFY(Common::Global::createFile("sharedDirs/share3/bbbb dddd.nfo"));
    QVERIFY(Common::Global::createFile("sharedDirs/share3/bbbb.txt"));
    QVERIFY(Common::Global::createFile("sharedDirs/share3/cccc bbbbbb.txt"));
    QVERIFY(Common::Global::createFile("sharedDirs/share3/dddd.txt"));

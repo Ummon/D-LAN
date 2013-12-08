@@ -33,6 +33,7 @@ using namespace FM;
 
 #include <Protos/files_cache.pb.h>
 
+#include <Common/KnownExtensions.h>
 #include <Common/PersistentData.h>
 #include <Common/Settings.h>
 #include <Common/Constants.h>
@@ -191,7 +192,8 @@ Protos::Common::Entries FileManager::getEntries()
 
 QList<Protos::Common::FindResult> FileManager::find(const QString& words, const QList<QString>& extensions, qint64 minFileSize, qint64 maxFileSize, int maxNbResult, int maxSize)
 {
-   bool filterOn = !extensions.isEmpty() || minFileSize > 0 || maxFileSize != std::numeric_limits<qint64>::max();
+   bool filterBySizeOn = minFileSize > 0 || maxFileSize != std::numeric_limits<qint64>::max();
+   bool filterOn = !extensions.isEmpty() || filterBySizeOn;
 
    QList<NodeResult<Entry*>> result;
 
@@ -199,15 +201,28 @@ QList<Protos::Common::FindResult> FileManager::find(const QString& words, const 
    {
       result = !filterOn ?
          this->wordIndex.search(Common::StringUtils::splitInWords(words), maxNbResult) :
-         this->wordIndex.search(Common::StringUtils::splitInWords(words), maxNbResult, [&](Entry* entry)
-            {
-               return entry->getSize() >= minFileSize && entry->getSize() <= maxFileSize && extensions.contains(entry->getExtension());
-            }
-         );
+         this->wordIndex.search(Common::StringUtils::splitInWords(words), maxNbResult, [&](Entry* entry) {
+            return entry->getSize() >= minFileSize && entry->getSize() <= maxFileSize && extensions.contains(entry->getExtension());
+         });
    }
    else if (filterOn)
    {
-      // TODO
+      QList<Entry*> intermediateResult;
+
+      if (!extensions.isEmpty())
+      {
+         if (filterBySizeOn)
+            intermediateResult = this->extensionIndex.search(extensions, maxNbResult, [&](Entry* entry) {
+               return entry->getSize() >= minFileSize && entry->getSize() <= maxFileSize;
+            });
+         else
+            intermediateResult = this->extensionIndex.search(extensions, maxNbResult);
+      }
+      else
+         intermediateResult = this->sizeIndex.search(minFileSize, maxFileSize);
+
+      for (QListIterator<Entry*> i(intermediateResult); i.hasNext();)
+         result << NodeResult<Entry*>(i.next());
    }
 
    QList<Protos::Common::FindResult> findResults;
@@ -369,6 +384,8 @@ void FileManager::entryAdded(Entry* entry)
 
    L_DEBU(QString("Adding entry '%1' to the index . . .").arg(entry->getName()));
    this->wordIndex.addItem(Common::StringUtils::splitInWords(entry->getNameWithoutExtension()), entry);
+   this->extensionIndex.addItem(entry->getExtension(), entry);
+   this->sizeIndex.addItem(entry);
    L_DEBU("Entry added to the index");
 }
 
@@ -380,6 +397,8 @@ void FileManager::entryRemoved(Entry* entry)
    L_DEBU(QString("Removing entry '%1' from the index . . .").arg(entry->getName()));
    if (!this->wordIndex.rmItem(Common::StringUtils::splitInWords(entry->getName()), entry))
       L_DEBU(QString("The entry '%1' hasn't been found in the index!").arg(entry->getName()));
+   this->extensionIndex.rmItem(entry->getExtension(), entry);
+   this->sizeIndex.rmItem(entry);
    L_DEBU("Entry removed from the index");
 }
 
@@ -387,6 +406,7 @@ void FileManager::entryRenamed(Entry* entry, const QString& oldName)
 {
    L_DEBU(QString("Renaming entry '%1' to '%2' in the index . . .").arg(entry->getName()).arg(oldName));
    this->wordIndex.renameItem(Common::StringUtils::splitInWords(oldName), Common::StringUtils::splitInWords(entry->getName()), entry);
+   this->extensionIndex.changeItem(Common::KnownExtensions::getExtension(oldName), entry->getExtension(), entry);
    L_DEBU("Entry renamed in the index");
 }
 

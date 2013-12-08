@@ -67,18 +67,12 @@ namespace FM
 
       virtual void moveInto(Directory* directory) = 0;
 
-      /**
-        * Returns '-1' if there is no extension.
-        * For example: "abc.zip" may return 4.
-        */
-      virtual int getBeginingExtension() const = 0;
-
       QString getName() const;
       QString getNameWithoutExtension() const;
       QString getExtension() const;
       virtual void rename(const QString& newName);
 
-      virtual qint64 getSize() const;
+      qint64 getSize() const;
 
    protected:
       Cache* cache; // To announce when an entry, chunk is created or deleted.

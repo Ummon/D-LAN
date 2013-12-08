@@ -19,6 +19,7 @@
 #include <priv/Cache/Entry.h>
 using namespace FM;
 
+#include <Common/KnownExtensions.h>
 #include <Common/ProtoHelper.h>
 #include <Common/Settings.h>
 
@@ -30,7 +31,8 @@ using namespace FM;
 Entry::Entry(Cache* cache, const QString& name, qint64 size) :
    cache(cache), name(name), size(size), mutex(QMutex::Recursive)
 {
-   this->cache->onEntryAdded(this);
+   if (cache)
+      this->cache->onEntryAdded(this);
 }
 
 Entry::~Entry()
@@ -77,20 +79,12 @@ QString Entry::getName() const
 
 QString Entry::getNameWithoutExtension() const
 {
-   int i = this->getBeginingExtension();
-   if (i != -1)
-      return this->name.left(i - 1);
-   else
-      return this->name;
+   return Common::KnownExtensions::removeExtension(this->name);
 }
 
 QString Entry::getExtension() const
 {
-   int i = this->getBeginingExtension();
-   if (i != -1)
-      return this->name.right(this->name.length() - i);
-   else
-      return QString();
+   return Common::KnownExtensions::getExtension(this->name);
 }
 
 /**

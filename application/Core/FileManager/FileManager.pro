@@ -57,7 +57,8 @@ SOURCES += priv/Builder.cpp \
     priv/Global.cpp \
     priv/Cache/FilePool.cpp \
     priv/Cache/FileHasher.cpp \
-    priv/GetEntriesResult.cpp
+    priv/GetEntriesResult.cpp \
+    priv/SizeIndexEntries.cpp
 HEADERS += IGetHashesResult.h \
     IFileManager.h \
     IChunk.h \
@@ -93,5 +94,6 @@ HEADERS += IGetHashesResult.h \
     priv/Cache/FileHasher.h \
     IGetEntriesResult.h \
     priv/GetEntriesResult.h \
-    priv/ExtensionIndex.h
+    priv/ExtensionIndex.h \
+    priv/SizeIndexEntries.h
 OTHER_FILES +=

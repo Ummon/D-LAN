@@ -227,12 +227,21 @@ void Tests::sortedArray()
          QCOMPARE(array.getFromIndex(i), orderedList[i]);
 
       // Iterator.
-      QListIterator<char> j(orderedList);
-      for (SortedArray<char, 5>::Iterator i(array); i.hasNext() && j.hasNext();)
-         QCOMPARE(i.next(), j.next());
+      QList<char>::iterator j = orderedList.begin();
+      for (SortedArray<char, 5>::iterator i = array.begin(); i != array.end() && j != orderedList.end(); ++i, ++j)
+         QCOMPARE(*i, *j);
 
       int unknownElement = array.indexOf('*');
       QCOMPARE(unknownElement, -1);
+
+      int first = array.indexOfNearest('*');
+      QCOMPARE(first, 0);
+
+      int last = array.indexOfNearest('~');
+      QCOMPARE(last, array.size() - 1);
+
+      char firstChar = *array.iteratorOfNearest('*');
+      QCOMPARE(firstChar, '0');
 
       // Remove the elements in a pseudo random order.
       while (array.size() != 0)
@@ -273,6 +282,19 @@ void Tests::sortedArray()
 
       array.insert("actual");
       QCOMPARE(array.getFromIndex(0), QString("actual"));
+
+      QCOMPARE(array.indexOfNearest("aligator"), 1);
+
+      const QString& albinos = *array.iteratorOfNearest("aligator");
+      QCOMPARE(albinos, QString("albinos"));
+   }
+
+   {
+      SortedArray<int> array;
+      SortedArray<int>::iterator begin = array.begin();
+      SortedArray<int>::iterator end = array.end();
+
+      QCOMPARE(begin, end);
    }
 }
 

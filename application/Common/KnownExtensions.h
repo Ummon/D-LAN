@@ -25,6 +25,14 @@ namespace Common
       static int nbCategory();
       static QList<QString> getExtension(ExtensionCategory cat);
 
+      /**
+        * Returns '-1' if there is no extension.
+        * For example: "abc.zip" may return 4.
+        */
+      static int getBeginingExtension(const QString& filename);
+      static QString removeExtension(const QString& filename);
+      static QString getExtension(const QString& filename);
+
    private:
       static void add(ExtensionCategory cat, const QString& extension);
       static QHash<QString, ExtensionCategory> extensions;

@@ -41,6 +41,7 @@
 #include <priv/ChunkIndex/Chunks.h>
 #include <priv/WordIndex/WordIndex.h>
 #include <priv/ExtensionIndex.h>
+#include <priv/SizeIndexEntries.h>
 
 namespace FM
 {
@@ -111,9 +112,9 @@ namespace FM
       Cache cache; ///< The files and directories.
       Chunks chunks; ///< The indexed chunks. It contains only completed chunks.
 
-      WordIndex<Entry*> wordIndex; ///< The word index.
+      WordIndex<Entry*> wordIndex;
       ExtensionIndex<Entry*> extensionIndex;
-      // SizeIndex<Entry*> sizeIndex;
+      SizeIndexEntries sizeIndex;
 
       QTimer timerPersistCache;
       QMutex mutexPersistCache;

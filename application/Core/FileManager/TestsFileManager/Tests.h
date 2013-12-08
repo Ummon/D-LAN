@@ -88,6 +88,11 @@ private slots:
    void findFilesWithSomeWords1();
    void findFilesWithSomeWords2();
    void findFilesWithResultFragmentation();
+   void findFilesWithSomeWordsAndExtensions();
+   void findFilesWithSomeWordsAndExtensionsAndSizeRange();
+   void findFilesByExtensions();
+   void findFilesByExtensionsAndSizeRange();
+   void findFilesBySizeRange();
 
    /***** Ask if the given hashes are known *****/
    void haveChunks();

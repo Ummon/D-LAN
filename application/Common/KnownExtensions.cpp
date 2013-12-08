@@ -19,6 +19,39 @@ QList<QString> KnownExtensions::getExtension(ExtensionCategory cat)
    else return QList<QString>();
 }
 
+int KnownExtensions::getBeginingExtension(const QString& filename)
+{
+   int i = 0;
+   while ((i = filename.indexOf('.', i + 1)) != -1)
+   {
+      if (i == filename.length() - 1)
+         break;
+
+      if (exists(filename.right(filename.length() - 1 - i)))
+         return i + 1;
+   }
+
+   return -1;
+}
+
+QString KnownExtensions::removeExtension(const QString& filename)
+{
+   int i = getBeginingExtension(filename);
+   if (i != -1)
+      return filename.left(i - 1);
+   else
+      return filename;
+}
+
+QString KnownExtensions::getExtension(const QString& filename)
+{
+   int i = getBeginingExtension(filename);
+   if (i != -1)
+      return filename.right(filename.length() - i);
+   else
+      return QString();
+}
+
 void KnownExtensions::add(ExtensionCategory cat, const QString& extension)
 {
    extensions.insert(extension, cat);
