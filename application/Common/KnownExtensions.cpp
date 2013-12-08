@@ -72,7 +72,10 @@ KnownExtensions::Init::Init()
    KnownExtensions::add(AUDIO, "wma");
    KnownExtensions::add(AUDIO, "aac");
    KnownExtensions::add(AUDIO, "flac");
+   KnownExtensions::add(AUDIO, "la");
    KnownExtensions::add(AUDIO, "au");
+   KnownExtensions::add(AUDIO, "aif");
+   KnownExtensions::add(AUDIO, "aifc");
    KnownExtensions::add(AUDIO, "aiff");
 
    KnownExtensions::add(VIDEO, "mpg");
@@ -84,24 +87,37 @@ KnownExtensions::Init::Init()
    KnownExtensions::add(VIDEO, "pxp");
    KnownExtensions::add(VIDEO, "wmv");
    KnownExtensions::add(VIDEO, "ogm");
-   KnownExtensions::add(VIDEO, "mlv");
+   KnownExtensions::add(VIDEO, "mkv");
    KnownExtensions::add(VIDEO, "rm");
    KnownExtensions::add(VIDEO, "rmvb");
    KnownExtensions::add(VIDEO, "divx");
 
    KnownExtensions::add(COMPRESSED, "zip");
+   KnownExtensions::add(COMPRESSED, "7z");
    KnownExtensions::add(COMPRESSED, "ace");
    KnownExtensions::add(COMPRESSED, "rar");
+   KnownExtensions::add(COMPRESSED, "bzip2");
    KnownExtensions::add(COMPRESSED, "tar.gz");
    KnownExtensions::add(COMPRESSED, "tar.gz2");
    KnownExtensions::add(COMPRESSED, "tar.gz");
+   KnownExtensions::add(COMPRESSED, "cab");
 
    KnownExtensions::add(DOCUMENT, "html");
    KnownExtensions::add(DOCUMENT, "htm");
+   KnownExtensions::add(DOCUMENT, "xhtml");
    KnownExtensions::add(DOCUMENT, "doc");
+   KnownExtensions::add(DOCUMENT, "docx");
+   KnownExtensions::add(DOCUMENT, "dot");
+   KnownExtensions::add(DOCUMENT, "dotx");
+   KnownExtensions::add(DOCUMENT, "epub");
+   KnownExtensions::add(DOCUMENT, "mobi");
    KnownExtensions::add(DOCUMENT, "txt");
    KnownExtensions::add(DOCUMENT, "nfo");
+   KnownExtensions::add(DOCUMENT, "odm");
    KnownExtensions::add(DOCUMENT, "odt");
+   KnownExtensions::add(DOCUMENT, "ott");
+   KnownExtensions::add(DOCUMENT, "pdf");
+   KnownExtensions::add(DOCUMENT, "rtf");
 
    KnownExtensions::add(PICTURE, "jpg");
    KnownExtensions::add(PICTURE, "jpeg");
@@ -109,16 +125,29 @@ KnownExtensions::Init::Init()
    KnownExtensions::add(PICTURE, "png");
    KnownExtensions::add(PICTURE, "eps");
    KnownExtensions::add(PICTURE, "img");
+   KnownExtensions::add(PICTURE, "ico");
    KnownExtensions::add(PICTURE, "pct");
    KnownExtensions::add(PICTURE, "psp");
+   KnownExtensions::add(PICTURE, "psd");
+   KnownExtensions::add(PICTURE, "xcf"); // GIMP.
    KnownExtensions::add(PICTURE, "pic");
    KnownExtensions::add(PICTURE, "tif");
+   KnownExtensions::add(PICTURE, "tiff");
    KnownExtensions::add(PICTURE, "rle");
    KnownExtensions::add(PICTURE, "bmp");
    KnownExtensions::add(PICTURE, "pcx");
 
    KnownExtensions::add(EXECUTABLE, "exe");
    KnownExtensions::add(EXECUTABLE, "msi");
+
+   KnownExtensions::add(MEDIA_ARCHIVE, "iso");
+   KnownExtensions::add(MEDIA_ARCHIVE, "nrg");
+   KnownExtensions::add(MEDIA_ARCHIVE, "sdi");
+   KnownExtensions::add(MEDIA_ARCHIVE, "mds");
+   KnownExtensions::add(MEDIA_ARCHIVE, "dmg");
+   KnownExtensions::add(MEDIA_ARCHIVE, "cdi");
+   KnownExtensions::add(MEDIA_ARCHIVE, "cue");
+   KnownExtensions::add(MEDIA_ARCHIVE, "cif");
 }
 
 QHash<QString, ExtensionCategory> KnownExtensions::extensions;

@@ -15,7 +15,8 @@ namespace Common
       DOCUMENT = 3,
       PICTURE = 4,
       SUBTITLE = 5,
-      EXECUTABLE = 6
+      EXECUTABLE = 6,
+      MEDIA_ARCHIVE = 7
    };
 
    class KnownExtensions

@@ -236,6 +236,7 @@ message CoreSettings {
 // id: 0x1041
 message Search  {
    required Common.FindPattern pattern = 1;
+   optional bool local = 2 [default = false]; // Search among the local files and directories if true.
 }
 
 // Core -> GUI (directly)

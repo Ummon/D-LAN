@@ -35,7 +35,6 @@ SearchDock::SearchDock(QSharedPointer<RCC::ICoreConnection> coreConnection, QWid
 #endif
 
    connect(this->ui->butSearch, SIGNAL(clicked()), this, SLOT(searchOtherPeers()));
-   connect(this->ui->butSearchOwnFiles, SIGNAL(clicked()), this, SLOT(searchOwnFiles()));
    this->ui->txtSearch->installEventFilter(this); // the signal 'returnPressed()' doesn't contain the key modifier information (shift = search among our files), we have to use a event filter.
 
    connect(this->coreConnection.data(), SIGNAL(connected()), this, SLOT(coreConnected()));
@@ -72,14 +71,12 @@ void SearchDock::coreConnected()
 {
    this->ui->txtSearch->setDisabled(false);
    this->ui->butSearch->setDisabled(false);
-   this->ui->butSearchOwnFiles->setDisabled(false);
 }
 
 void SearchDock::coreDisconnected(bool force)
 {
    this->ui->txtSearch->setDisabled(true);
    this->ui->butSearch->setDisabled(true);
-   this->ui->butSearchOwnFiles->setDisabled(true);
 }
 
 void SearchDock::searchOtherPeers()
