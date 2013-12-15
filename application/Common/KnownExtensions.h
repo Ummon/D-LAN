@@ -9,14 +9,14 @@ namespace Common
 {
    enum ExtensionCategory
    {
-      AUDIO = 0,
-      VIDEO = 1,
-      COMPRESSED = 2,
-      DOCUMENT = 3,
-      PICTURE = 4,
-      SUBTITLE = 5,
-      EXECUTABLE = 6,
-      MEDIA_ARCHIVE = 7
+      AUDIO = 1,
+      VIDEO = 2,
+      COMPRESSED = 3,
+      DOCUMENT = 4,
+      PICTURE = 5,
+      SUBTITLE = 6,
+      EXECUTABLE = 7,
+      MEDIA_ARCHIVE = 8
    };
 
    class KnownExtensions
