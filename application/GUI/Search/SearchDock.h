@@ -22,6 +22,8 @@
 #include <QDockWidget>
 #include <QSharedPointer>
 
+#include <Protos/common.pb.h>
+
 #include <Common/RemoteCoreController/ICoreConnection.h>
 
 namespace Ui {
@@ -41,7 +43,7 @@ namespace GUI
       void setFocusToLineEdit();
 
    signals:
-      void search(const QString& terms, bool ownFiles);
+      void search(const Protos::Common::FindPattern&);
 
    protected:
       void changeEvent(QEvent* event);
@@ -51,11 +53,12 @@ namespace GUI
       void coreConnected();
       void coreDisconnected(bool force);
 
-      void searchOtherPeers();
-      void searchOwnFiles();
+      void search();
+
+      void saveSettings();
 
    private:
-      void search(bool ownFiles = false);
+      void loadSettings();
 
       Ui::SearchDock* ui;
 

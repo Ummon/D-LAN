@@ -2,17 +2,19 @@
 <ui version="4.0">
  <class>SearchDock</class>
  <widget class="QDockWidget" name="SearchDock">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>309</width>
+    <height>163</height>
+   </rect>
+  </property>
   <property name="sizePolicy">
    <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
     <horstretch>0</horstretch>
     <verstretch>0</verstretch>
    </sizepolicy>
-  </property>
-  <property name="maximumSize">
-   <size>
-    <width>524287</width>
-    <height>183</height>
-   </size>
   </property>
   <property name="features">
    <set>QDockWidget::DockWidgetFloatable|QDockWidget::DockWidgetMovable|QDockWidget::DockWidgetVerticalTitleBar</set>
@@ -22,8 +24,77 @@
   </property>
   <widget class="QWidget" name="dockWidgetContents">
    <layout class="QVBoxLayout" name="verticalLayout">
+    <property name="spacing">
+     <number>3</number>
+    </property>
+    <property name="margin">
+     <number>2</number>
+    </property>
     <item>
-     <layout class="QGridLayout" name="gridLayout">
+     <layout class="QHBoxLayout" name="laySearch">
+      <item>
+       <widget class="QLineEdit" name="txtSearch">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>30</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="placeholderText">
+         <string>Search</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="butSearch">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="toolTip">
+         <string>Search among other peers &lt;ENTER&gt;</string>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+        <property name="icon">
+         <iconset resource="../ressources.qrc">
+          <normaloff>:/icons/ressources/zoom.png</normaloff>:/icons/ressources/zoom.png</iconset>
+        </property>
+        <property name="flat">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="butMoreOptions">
+        <property name="toolTip">
+         <string>Search among my own files &lt;SHIFT-ENTER&gt;</string>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+        <property name="icon">
+         <iconset resource="../ressources.qrc">
+          <normaloff>:/icons/ressources/plus.png</normaloff>:/icons/ressources/plus.png</iconset>
+        </property>
+        <property name="flat">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <layout class="QGridLayout" name="layOptions">
       <property name="sizeConstraint">
        <enum>QLayout::SetMinimumSize</enum>
       </property>
@@ -69,83 +140,49 @@
        <widget class="QComboBox" name="cmbFileType"/>
       </item>
       <item row="2" column="2">
-       <layout class="QHBoxLayout" name="horizontalLayout_2">
+       <layout class="QHBoxLayout" name="layMinSize">
         <item>
          <widget class="QLineEdit" name="txtMinSize"/>
         </item>
         <item>
-         <widget class="QComboBox" name="cmbMinSize"/>
+         <widget class="QComboBox" name="cmbMinSize">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="sizeAdjustPolicy">
+           <enum>QComboBox::AdjustToMinimumContentsLength</enum>
+          </property>
+          <property name="minimumContentsLength">
+           <number>3</number>
+          </property>
+         </widget>
         </item>
        </layout>
       </item>
       <item row="3" column="2">
-       <layout class="QHBoxLayout" name="horizontalLayout_3">
+       <layout class="QHBoxLayout" name="layMaxSize">
         <item>
          <widget class="QLineEdit" name="txtMaxSize"/>
         </item>
         <item>
-         <widget class="QComboBox" name="cmbMaxSize"/>
-        </item>
-       </layout>
-      </item>
-      <item row="0" column="1" colspan="2">
-       <layout class="QHBoxLayout" name="horizontalLayout">
-        <item>
-         <widget class="QLineEdit" name="txtSearch">
+         <widget class="QComboBox" name="cmbMaxSize">
           <property name="sizePolicy">
-           <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
             <horstretch>0</horstretch>
             <verstretch>0</verstretch>
            </sizepolicy>
           </property>
-          <property name="minimumSize">
-           <size>
-            <width>30</width>
-            <height>0</height>
-           </size>
+          <property name="editable">
+           <bool>false</bool>
           </property>
-          <property name="placeholderText">
-           <string>Search</string>
+          <property name="sizeAdjustPolicy">
+           <enum>QComboBox::AdjustToMinimumContentsLength</enum>
           </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QPushButton" name="butSearch">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="toolTip">
-           <string>Search among other peers &lt;ENTER&gt;</string>
-          </property>
-          <property name="text">
-           <string/>
-          </property>
-          <property name="icon">
-           <iconset resource="../ressources.qrc">
-            <normaloff>:/icons/ressources/zoom.png</normaloff>:/icons/ressources/zoom.png</iconset>
-          </property>
-          <property name="flat">
-           <bool>true</bool>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QPushButton" name="butMoreOptions">
-          <property name="toolTip">
-           <string>Search among my own files &lt;SHIFT-ENTER&gt;</string>
-          </property>
-          <property name="text">
-           <string/>
-          </property>
-          <property name="icon">
-           <iconset resource="../ressources.qrc">
-            <normaloff>:/icons/ressources/plus.png</normaloff>:/icons/ressources/plus.png</iconset>
-          </property>
-          <property name="flat">
-           <bool>true</bool>
+          <property name="minimumContentsLength">
+           <number>3</number>
           </property>
          </widget>
         </item>
@@ -158,10 +195,13 @@
       <property name="orientation">
        <enum>Qt::Vertical</enum>
       </property>
+      <property name="sizeType">
+       <enum>QSizePolicy::MinimumExpanding</enum>
+      </property>
       <property name="sizeHint" stdset="0">
        <size>
-        <width>20</width>
-        <height>40</height>
+        <width>0</width>
+        <height>0</height>
        </size>
       </property>
      </spacer>

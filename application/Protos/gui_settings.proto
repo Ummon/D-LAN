@@ -73,10 +73,10 @@ message Settings {
    }
 
    optional bool search_advanced_visible = 32 [default = false];
-   optional uint32 search_last_min_size_value = 28 [default = 0];
-   optional SizeUnit search_last_min_size_unit = 29 [default = MIB];
-   optional uint32 search_last_max_size_value = 30 [default = 0];
-   optional SizeUnit search_last_max_size_unit = 31 [default = MIB];
+   optional uint32 search_min_size_value = 28 [default = 0];
+   optional SizeUnit search_min_size_unit = 29 [default = MIB];
+   optional uint32 search_max_size_value = 30 [default = 0];
+   optional SizeUnit search_max_size_unit = 31 [default = MIB];
    optional uint32 search_file_category = 33 [default = 0]; // '0' means no category selected.
    optional bool search_local = 34 [default = false]; // Search among our own files.
 }

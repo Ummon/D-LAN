@@ -252,7 +252,7 @@ void MdiArea::removeWidget(QWidget* widget)
       this->chatRooms.removeOne(chatWindow);
 
    // Set a another sub window as active. If we don't do that the windows are all minimised (bug?).
-   if (widget == this->currentSubWindow()->widget())
+   if (this->currentSubWindow() && widget == this->currentSubWindow()->widget())
    {
       QList<QMdiSubWindow*> subWindows = this->subWindowList();
       if (subWindows.size() > 1)
@@ -315,7 +315,7 @@ void MdiArea::removeSettingsWindow()
    if (this->settingsWidget)
    {
       this->removeWidget(this->settingsWidget);
-      this->settingsWidget = 0;
+      this->settingsWidget = nullptr;
    }
 }
 
