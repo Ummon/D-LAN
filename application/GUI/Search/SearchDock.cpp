@@ -27,6 +27,24 @@ using namespace GUI;
 #include <Common/Settings.h>
 #include <Common/Constants.h>
 
+QString SearchDock::getCategoryText(Protos::Common::FindPattern_Category category)
+{
+   switch (category)
+   {
+   case Protos::Common::FindPattern_Category_FILE_DIR:
+      return tr("Files and directories");
+
+   case Protos::Common::FindPattern_Category_FILE:
+      return tr("Files");
+
+   case Protos::Common::FindPattern_Category_DIR:
+      return tr("Directories");
+
+   default:
+      return QString();
+   }
+}
+
 SearchDock::SearchDock(QSharedPointer<RCC::ICoreConnection> coreConnection, QWidget* parent) :
    QDockWidget(parent),
    ui(new Ui::SearchDock),
@@ -50,6 +68,10 @@ SearchDock::SearchDock(QSharedPointer<RCC::ICoreConnection> coreConnection, QWid
       this->ui->cmbMinSize->addItem(Common::Constants::BINARY_PREFIXS[i]);
       this->ui->cmbMaxSize->addItem(Common::Constants::BINARY_PREFIXS[i]);
    }
+
+   const ::google::protobuf::EnumDescriptor* catDescriptor = Protos::Common::FindPattern::Category_descriptor();
+   for (int cat = 0; cat <= catDescriptor->value_count(); ++cat)
+      this->ui->cmbCategory->addItem(getCategoryText(static_cast<Protos::Common::FindPattern_Category>(catDescriptor->value(cat)->number())));
 
    this->loadSettings();
 
@@ -112,18 +134,22 @@ void SearchDock::search()
 
    Common::ProtoHelper::setStr(pattern, &Protos::Common::FindPattern::set_pattern, this->ui->txtSearch->text());
 
-   //pattern.set_min_size(this->ui->
+   // pattern.set_min_size(this->ui->
 
    emit search(pattern);
 }
 
 void SearchDock::saveSettings()
 {
+   SETTINGS.set("search_advanced_visible", this->ui->butMoreOptions->isChecked());
+
    SETTINGS.set("search_min_size_value", this->ui->txtMinSize->text().toUInt());
    SETTINGS.set("search_max_size_value", this->ui->txtMaxSize->text().toUInt());
 
    SETTINGS.set("search_min_size_unit", (quint32)(this->ui->cmbMinSize->currentIndex() + 1));
    SETTINGS.set("search_max_size_unit", (quint32)(this->ui->cmbMaxSize->currentIndex() + 1));
+
+   //SETTINGS.set("search_file_category", this->ui->cmbFileType->currentIndex());
 }
 
 void SearchDock::loadSettings()

@@ -70,13 +70,13 @@ message FindPattern {
    required string pattern = 2;
    optional uint64 min_size = 3; // [B]. 0 means there is no minimum size.
    optional uint64 max_size = 4; // [B]. 0 means there is no maximum size.
-   repeated string extension_filter = 5; // Only the files that match one of the given extension will be returned.
-   enum Type {
-      FILE = 0;
-      DIR = 1;
-      FILE_DIR = 2;
+   repeated string extension_filter = 5; // Only files that match one of the given extension will be returned.
+   enum Category {
+      FILE_DIR = 0;
+      FILE = 1;
+      DIR = 2;
    }
-   optional Type type = 6 [default = FILE_DIR];
+   optional Category category = 6 [default = FILE_DIR];
 }
 
 // A result following a search.

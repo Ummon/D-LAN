@@ -19,6 +19,7 @@
 #ifndef GUI_SEARCHDOCK_H
 #define GUI_SEARCHDOCK_H
 
+#include <QString>
 #include <QDockWidget>
 #include <QSharedPointer>
 
@@ -35,6 +36,7 @@ namespace GUI
    class SearchDock : public QDockWidget
    {
       Q_OBJECT
+      static QString getCategoryText(Protos::Common::FindPattern_Category category);
 
    public:
       explicit SearchDock(QSharedPointer<RCC::ICoreConnection> coreConnection, QWidget* parent = 0);

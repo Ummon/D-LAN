@@ -73,6 +73,7 @@ message Settings {
    }
 
    optional bool search_advanced_visible = 32 [default = false];
+   optional uint32 search_type = 35 [default = 0];
    optional uint32 search_min_size_value = 28 [default = 0];
    optional SizeUnit search_min_size_unit = 29 [default = MIB];
    optional uint32 search_max_size_value = 30 [default = 0];
