@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>309</width>
-    <height>163</height>
+    <height>205</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -16,6 +16,12 @@
     <verstretch>0</verstretch>
    </sizepolicy>
   </property>
+  <property name="minimumSize">
+   <size>
+    <width>0</width>
+    <height>0</height>
+   </size>
+  </property>
   <property name="features">
    <set>QDockWidget::DockWidgetFloatable|QDockWidget::DockWidgetMovable|QDockWidget::DockWidgetVerticalTitleBar</set>
   </property>
@@ -23,15 +29,18 @@
    <string>Search</string>
   </property>
   <widget class="QWidget" name="dockWidgetContents">
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
+   </property>
    <layout class="QVBoxLayout" name="verticalLayout">
-    <property name="spacing">
-     <number>3</number>
-    </property>
-    <property name="margin">
-     <number>2</number>
-    </property>
     <item>
      <layout class="QHBoxLayout" name="laySearch">
+      <property name="spacing">
+       <number>3</number>
+      </property>
       <item>
        <widget class="QLineEdit" name="txtSearch">
         <property name="sizePolicy">
@@ -97,101 +106,118 @@
      </layout>
     </item>
     <item>
-     <layout class="QGridLayout" name="layOptions">
-      <property name="sizeConstraint">
-       <enum>QLayout::SetMinimumSize</enum>
-      </property>
-      <item row="4" column="2">
-       <widget class="QComboBox" name="cmbCategory"/>
-      </item>
-      <item row="1" column="1">
-       <widget class="QLabel" name="lblFileType">
-        <property name="text">
-         <string>File type</string>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="1">
-       <widget class="QLabel" name="lblMaxSize">
-        <property name="text">
-         <string>Maximum size</string>
-        </property>
-       </widget>
-      </item>
-      <item row="4" column="1">
-       <widget class="QLabel" name="lblCategory">
-        <property name="text">
-         <string>Category</string>
-        </property>
-       </widget>
-      </item>
-      <item row="5" column="2">
-       <widget class="QCheckBox" name="chkOwnFiles">
-        <property name="text">
-         <string>Own files</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="1">
-       <widget class="QLabel" name="lblMinSize">
-        <property name="text">
-         <string>Minimum size</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="2">
-       <widget class="QComboBox" name="cmbFileType"/>
-      </item>
-      <item row="2" column="2">
-       <layout class="QHBoxLayout" name="layMinSize">
-        <item>
-         <widget class="QLineEdit" name="txtMinSize"/>
-        </item>
-        <item>
-         <widget class="QComboBox" name="cmbMinSize">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="sizeAdjustPolicy">
-           <enum>QComboBox::AdjustToMinimumContentsLength</enum>
-          </property>
-          <property name="minimumContentsLength">
-           <number>3</number>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </item>
-      <item row="3" column="2">
-       <layout class="QHBoxLayout" name="layMaxSize">
-        <item>
-         <widget class="QLineEdit" name="txtMaxSize"/>
-        </item>
-        <item>
-         <widget class="QComboBox" name="cmbMaxSize">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="editable">
-           <bool>false</bool>
-          </property>
-          <property name="sizeAdjustPolicy">
-           <enum>QComboBox::AdjustToMinimumContentsLength</enum>
-          </property>
-          <property name="minimumContentsLength">
-           <number>3</number>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </item>
-     </layout>
+     <widget class="QWidget" name="advancedOptions" native="true">
+      <layout class="QGridLayout" name="gridLayout">
+       <property name="sizeConstraint">
+        <enum>QLayout::SetNoConstraint</enum>
+       </property>
+       <property name="leftMargin">
+        <number>0</number>
+       </property>
+       <property name="topMargin">
+        <number>0</number>
+       </property>
+       <property name="rightMargin">
+        <number>0</number>
+       </property>
+       <property name="bottomMargin">
+        <number>0</number>
+       </property>
+       <property name="horizontalSpacing">
+        <number>6</number>
+       </property>
+       <item row="0" column="0">
+        <widget class="QLabel" name="lblFileType">
+         <property name="text">
+          <string>File type</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QComboBox" name="cmbFileType"/>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="lblMinSize">
+         <property name="text">
+          <string>Minimum size</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <layout class="QHBoxLayout" name="layMinSize">
+         <item>
+          <widget class="QLineEdit" name="txtMinSize"/>
+         </item>
+         <item>
+          <widget class="QComboBox" name="cmbMinSize">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="sizeAdjustPolicy">
+            <enum>QComboBox::AdjustToMinimumContentsLength</enum>
+           </property>
+           <property name="minimumContentsLength">
+            <number>3</number>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="2" column="0">
+        <widget class="QLabel" name="lblMaxSize">
+         <property name="text">
+          <string>Maximum size</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <layout class="QHBoxLayout" name="layMaxSize">
+         <item>
+          <widget class="QLineEdit" name="txtMaxSize"/>
+         </item>
+         <item>
+          <widget class="QComboBox" name="cmbMaxSize">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="editable">
+            <bool>false</bool>
+           </property>
+           <property name="sizeAdjustPolicy">
+            <enum>QComboBox::AdjustToMinimumContentsLength</enum>
+           </property>
+           <property name="minimumContentsLength">
+            <number>3</number>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="3" column="0">
+        <widget class="QLabel" name="lblCategory">
+         <property name="text">
+          <string>Category</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="1">
+        <widget class="QComboBox" name="cmbCategory"/>
+       </item>
+       <item row="4" column="1">
+        <widget class="QCheckBox" name="chkOwnFiles">
+         <property name="text">
+          <string>Own files</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
     </item>
     <item>
      <spacer name="verticalSpacer">

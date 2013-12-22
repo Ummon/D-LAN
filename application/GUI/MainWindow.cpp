@@ -201,9 +201,9 @@ void MainWindow::browsePeer(const Common::Hash& peerID)
    this->mdiArea->openBrowseWindow(peerID);
 }
 
-void MainWindow::search(const QString& terms, bool ownFiles)
+void MainWindow::search(const Protos::Common::FindPattern& findPattern, bool local)
 {
-   this->mdiArea->openSearchWindow(terms, ownFiles);
+   this->mdiArea->openSearchWindow(findPattern, local);
 }
 
 void MainWindow::roomJoined(const QString& name)

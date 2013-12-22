@@ -51,7 +51,7 @@ namespace GUI
 
    public slots:
       void openBrowseWindow(const Common::Hash& peerID);
-      void openSearchWindow(const QString& terms, bool ownFiles = false);
+      void openSearchWindow(const Protos::Common::FindPattern& findPattern, bool local = false);
       void openChatWindow(const QString& roomName);
 
       void showDownloads();
@@ -100,7 +100,7 @@ namespace GUI
       BrowseWidget* addBrowseWindow(const Common::Hash& peerID, const Protos::Common::Entry& remoteEntry);
 
    private:
-      SearchWidget* addSearchWindow(const QString& term, bool searchInOwnFiles = false);
+      SearchWidget* addSearchWindow(const Protos::Common::FindPattern& findPattern, bool local = false);
 
       ChatWidget* addChatWindow(const QString& roomName, bool switchTo = true);
 

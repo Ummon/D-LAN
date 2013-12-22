@@ -205,9 +205,9 @@ QSharedPointer<IBrowseResult> InternalCoreConnection::browse(const Common::Hash&
    return browseResult;
 }
 
-QSharedPointer<ISearchResult> InternalCoreConnection::search(const QString& terms, int socketTimeout)
+QSharedPointer<ISearchResult> InternalCoreConnection::search(const Protos::Common::FindPattern& findPattern, bool local, int socketTimeout)
 {
-   QSharedPointer<SearchResult> searchResult = QSharedPointer<SearchResult>(new SearchResult(this, terms, socketTimeout));
+   QSharedPointer<SearchResult> searchResult = QSharedPointer<SearchResult>(new SearchResult(this, findPattern, local, socketTimeout));
    this->searchResultsWithoutTag << searchResult.toWeakRef();
    return searchResult;
 }

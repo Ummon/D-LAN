@@ -7,7 +7,7 @@
 
 namespace Common
 {
-   enum ExtensionCategory
+   enum class ExtensionCategory
    {
       AUDIO = 1,
       VIDEO = 2,
@@ -24,7 +24,7 @@ namespace Common
    public:
       static bool exists(const QString& extension);
       static int nbCategory();
-      static QList<QString> getExtension(ExtensionCategory cat);
+      static QList<QString> getExtensions(ExtensionCategory cat);
 
       /**
         * Returns '-1' if there is no extension.

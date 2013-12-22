@@ -514,12 +514,24 @@ void RemoteConnection::onNewMessage(const Common::Message& message)
                i.remove();
 
          const Protos::GUI::Search& searchMessage = message.getMessage<Protos::GUI::Search>();
-         const QString& pattern = Common::ProtoHelper::getStr(searchMessage.pattern(), &Protos::Common::FindPattern::pattern);
+         const Protos::Common::FindPattern& findPattern = searchMessage.pattern();
 
          // Special syntax to search in your own files.
-         if (pattern.startsWith('<'))
+         if (searchMessage.local())
          {
-            const QList<Protos::Common::FindResult>& results = this->fileManager->find(pattern, SETTINGS.get<quint32>("max_number_of_result_shown"), std::numeric_limits<int>::max());
+            QList<QString> extensions;
+            extensions.reserve(findPattern.extension_filter_size());
+            for (int i = 0; i < findPattern.extension_filter_size(); ++i)
+               extensions << Common::ProtoHelper::getRepeatedStr(findPattern, &Protos::Common::FindPattern::extension_filter, i);
+
+            const QList<Protos::Common::FindResult>& results = this->fileManager->find(
+               Common::ProtoHelper::getStr(findPattern, &Protos::Common::FindPattern::pattern),
+               extensions,
+               findPattern.min_size() == 0 ? std::numeric_limits<qint64>::min() : (qint64)findPattern.min_size(),
+               findPattern.max_size() == 0 ? std::numeric_limits<qint64>::max() : (qint64)findPattern.max_size(),
+               SETTINGS.get<quint32>("max_number_of_result_shown"),
+               std::numeric_limits<int>::max()
+            );
 
             const quint64 tag = this->mtrand.randInt64();
             Protos::GUI::Tag tagMess;
@@ -539,7 +551,7 @@ void RemoteConnection::onNewMessage(const Common::Message& message)
             QSharedPointer<NL::ISearch> search = this->networkListener->newSearch();
             connect(search.data(), SIGNAL(found(const Protos::Common::FindResult&)), this, SLOT(searchFound(const Protos::Common::FindResult&)));
             this->currentSearches << search;
-            const quint64 tag = search->search(pattern);
+            const quint64 tag = search->search(findPattern);
 
             Protos::GUI::Tag tagMess;
             tagMess.set_tag(tag);

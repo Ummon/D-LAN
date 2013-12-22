@@ -33,7 +33,7 @@ namespace RCC
    {
       Q_OBJECT
    public:
-      SearchResult(InternalCoreConnection* coreConnection, const QString& terms, int socketTimeout);
+      SearchResult(InternalCoreConnection* coreConnection, const Protos::Common::FindPattern& findPattern, bool local, int socketTimeout);
       void start();
       void setTag(quint64 tag);
 
@@ -42,7 +42,8 @@ namespace RCC
 
    private:
       InternalCoreConnection* coreConnection;
-      const QString terms;
+      const Protos::Common::FindPattern findPattern;
+      bool local;
       quint64 tag;
    };
 }

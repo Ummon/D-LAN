@@ -173,9 +173,9 @@ QSharedPointer<IBrowseResult> CoreConnection::browse(const Common::Hash& peerID,
    return this->current()->browse(peerID, entries, withRoots, this->SOCKET_TIMEOUT);
 }
 
-QSharedPointer<ISearchResult> CoreConnection::search(const QString& terms)
+QSharedPointer<ISearchResult> CoreConnection::search(const Protos::Common::FindPattern& findPattern, bool local)
 {
-   return this->current()->search(terms, this->SOCKET_TIMEOUT);
+   return this->current()->search(findPattern, local, this->SOCKET_TIMEOUT);
 }
 
 void CoreConnection::download(const Common::Hash& peerID, const Protos::Common::Entry& entry)

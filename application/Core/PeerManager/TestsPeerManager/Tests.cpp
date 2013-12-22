@@ -183,7 +183,7 @@ void Tests::askForRootEntries()
    Protos::Core::GetEntries getEntriesMessage;
    QSharedPointer<IGetEntriesResult> result = this->peerManagers[0]->getPeers()[0]->getEntries(getEntriesMessage);
 
-   QVERIFY(!result.isNull())
+   QVERIFY(!result.isNull());
 
    connect(result.data(), SIGNAL(result(Protos::Core::GetEntriesResult)), &this->resultListener, SLOT(entriesResult(Protos::Core::GetEntriesResult)));
    result->start();

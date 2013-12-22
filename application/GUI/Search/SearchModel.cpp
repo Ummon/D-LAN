@@ -62,13 +62,13 @@ Common::Hash SearchModel::getPeerID(const QModelIndex& index) const
    return tree->getPeerID();
 }
 
-void SearchModel::search(const QString& terms)
+void SearchModel::search(const Protos::Common::FindPattern& findPattern, bool local)
 {
    // Unable to perform more than one search.
    if (!this->searchResult.isNull())
       return;
 
-   this->searchResult = this->coreConnection->search(terms);
+   this->searchResult = this->coreConnection->search(findPattern, local);
    connect(this->searchResult.data(), SIGNAL(result(const Protos::Common::FindResult&)), this, SLOT(result(const Protos::Common::FindResult&)));
    // We don't use the 'timout' signal from 'ISearchResult', not useful.
    this->searchResult->start();

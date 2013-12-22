@@ -99,9 +99,9 @@ void MdiArea::openBrowseWindow(const Hash& peerID)
    this->addBrowseWindow(peerID);
 }
 
-void MdiArea::openSearchWindow(const QString& terms, bool ownFiles)
+void MdiArea::openSearchWindow(const Protos::Common::FindPattern& findPattern, bool local)
 {
-   this->addSearchWindow(terms, ownFiles);
+   this->addSearchWindow(findPattern, local);
 }
 
 void MdiArea::openChatWindow(const QString& roomName)
@@ -433,9 +433,9 @@ BrowseWidget* MdiArea::addBrowseWindow(const Common::Hash& peerID, const Protos:
    return browseWindow;
 }
 
-SearchWidget* MdiArea::addSearchWindow(const QString& term, bool searchInOwnFiles)
+SearchWidget* MdiArea::addSearchWindow(const Protos::Common::FindPattern& findPattern, bool local)
 {
-   SearchWidget* searchWindow = new SearchWidget(this->coreConnection, this->peerListModel, this->sharedDirsModel, term, searchInOwnFiles);
+   SearchWidget* searchWindow = new SearchWidget(this->coreConnection, this->peerListModel, this->sharedDirsModel, findPattern, local);
    this->addSubWindow(searchWindow, Qt::CustomizeWindowHint);
    searchWindow->setWindowState(Qt::WindowMaximized);
    this->searchWidgets << searchWindow;

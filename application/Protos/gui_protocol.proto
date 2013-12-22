@@ -234,14 +234,14 @@ message CoreSettings {
 
 // GUI -> Core
 // id: 0x1041
-message Search  {
+message Search {
    required Common.FindPattern pattern = 1;
    optional bool local = 2 [default = false]; // Search among the local files and directories if true.
 }
 
 // Core -> GUI (directly)
 // id: 0x1042
-message Tag  {
+message Tag {
    required uint64 tag = 1;
 }
 

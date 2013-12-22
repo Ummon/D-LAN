@@ -332,8 +332,8 @@ void PeerListModel::updatePeers(const google::protobuf::RepeatedPtrField<Protos:
             QHostAddress();
 
       Peer* peer = this->indexedPeers[peerID];
-      int j = this->orderedPeers.indexOf(peer);
-      if (j != -1)
+      int j;
+      if (peer && (j = this->orderedPeers.indexOf(peer)) != -1)
       {
          peersToRemove.remove(peer);
          if (peer->nick != nick)

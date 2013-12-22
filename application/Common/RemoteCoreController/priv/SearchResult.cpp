@@ -25,8 +25,8 @@ using namespace RCC;
 
 #include <priv/InternalCoreConnection.h>
 
-SearchResult::SearchResult(InternalCoreConnection* coreConnection, const QString& terms, int socketTimeout) :
-   ISearchResult(socketTimeout), coreConnection(coreConnection), terms(terms)
+SearchResult::SearchResult(InternalCoreConnection* coreConnection, const Protos::Common::FindPattern& findPattern, bool local, int socketTimeout) :
+   ISearchResult(socketTimeout), coreConnection(coreConnection), findPattern(findPattern), local(local)
 {
    connect(this->coreConnection, SIGNAL(searchResult(const Protos::Common::FindResult&)), this, SLOT(searchResult(const Protos::Common::FindResult&)));
 }
@@ -34,7 +34,8 @@ SearchResult::SearchResult(InternalCoreConnection* coreConnection, const QString
 void SearchResult::start()
 {
    Protos::GUI::Search search;
-   Common::ProtoHelper::setStr(*search.mutable_pattern(), &Protos::Common::FindPattern::set_pattern, this->terms);
+   search.mutable_pattern()->CopyFrom(this->findPattern);
+   search.set_local(this->local);
    this->coreConnection->send(Common::MessageHeader::GUI_SEARCH, search);
    this->startTimer();
 }

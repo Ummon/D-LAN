@@ -25,6 +25,7 @@
 
 #include <Protos/common.pb.h>
 
+#include <Common/KnownExtensions.h>
 #include <Common/RemoteCoreController/ICoreConnection.h>
 
 namespace Ui {
@@ -37,6 +38,7 @@ namespace GUI
    {
       Q_OBJECT
       static QString getCategoryText(Protos::Common::FindPattern_Category category);
+      static QString getExtensionText(Common::ExtensionCategory extension);
 
    public:
       explicit SearchDock(QSharedPointer<RCC::ICoreConnection> coreConnection, QWidget* parent = 0);
@@ -45,7 +47,7 @@ namespace GUI
       void setFocusToLineEdit();
 
    signals:
-      void search(const Protos::Common::FindPattern&);
+      void search(const Protos::Common::FindPattern&, bool local);
 
    protected:
       void changeEvent(QEvent* event);
@@ -57,10 +59,17 @@ namespace GUI
 
       void search();
 
+      void butMoreOptionsToggled(bool toggled);
+
       void saveSettings();
 
    private:
       void loadSettings();
+
+      std::underlying_type<Common::ExtensionCategory>::type currentExtension() const;
+      quint64 currentMinSize();
+      quint64 currentMaxSize();
+      int currentCategory() const;
 
       Ui::SearchDock* ui;
 

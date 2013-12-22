@@ -63,7 +63,7 @@ namespace GUI
 
       void browsePeer(const Common::Hash& peerID);
 
-      void search(const QString& terms, bool ownFiles);
+      void search(const Protos::Common::FindPattern& findPattern, bool local);
 
       void roomJoined(const QString& name);
 

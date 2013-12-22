@@ -25,6 +25,7 @@
 
 #include <Libs/MersenneTwister.h>
 
+#include <Protos/common.pb.h>
 #include <Protos/core_protocol.pb.h>
 
 #include <Common/Uncopyable.h>
@@ -39,7 +40,7 @@ namespace NL
       Q_OBJECT
    public:
       Search(UDPListener& uDPListener);
-      quint64 search(const QString& words);
+      quint64 search(const Protos::Common::FindPattern& findPattern);
       qint64 elapsed();
 
    private slots:

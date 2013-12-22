@@ -36,7 +36,7 @@ namespace NL
         * Begin a new search. This function can be called only ONE time.
         * @return An associated tag. This tag will be repeated in the result, see the signal 'found'.
         */
-      virtual quint64 search(const QString& words) = 0;
+      virtual quint64 search(const Protos::Common::FindPattern& findPattern) = 0;
 
       /**
         * @return ms elapsed from the call to 'search'.

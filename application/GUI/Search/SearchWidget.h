@@ -26,6 +26,8 @@
 #include <QItemSelection>
 #include <QProgressBar>
 
+#include <Protos/common.pb.h>
+
 #include <Common/RemoteCoreController/ICoreConnection.h>
 #include <Common/Hash.h>
 
@@ -70,7 +72,7 @@ namespace GUI
    {
       Q_OBJECT
    public:
-      explicit SearchWidget(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel, const DirListModel& sharedDirsModel, const QString& terms, bool searchInOwnFiles, QWidget* parent = nullptr);
+      explicit SearchWidget(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel, const DirListModel& sharedDirsModel, const Protos::Common::FindPattern& findPattern, bool local = false, QWidget* parent = nullptr);
       ~SearchWidget();
 
    signals:

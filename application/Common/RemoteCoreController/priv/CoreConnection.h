@@ -87,7 +87,7 @@ namespace RCC
       QSharedPointer<IBrowseResult> browse(const Common::Hash& peerID, const Protos::Common::Entry& entry);
       QSharedPointer<IBrowseResult> browse(const Common::Hash& peerID, const Protos::Common::Entries& entries, bool withRoots = true);
 
-      QSharedPointer<ISearchResult> search(const QString& terms);
+      QSharedPointer<ISearchResult> search(const Protos::Common::FindPattern& findPattern, bool local = false);
 
       void download(const Common::Hash& peerID, const Protos::Common::Entry& entry);
       void download(const Common::Hash& peerID, const Protos::Common::Entry& entry, const Common::Hash& sharedFolderID, const QString& path = "/");

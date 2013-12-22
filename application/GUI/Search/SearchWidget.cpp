@@ -159,7 +159,7 @@ void SearchMenu::onShowMenu(QMenu& menu)
 
 /////
 
-SearchWidget::SearchWidget(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel, const DirListModel& sharedDirsModel, const QString& terms, bool searchInOwnFiles, QWidget* parent) :
+SearchWidget::SearchWidget(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel, const DirListModel& sharedDirsModel, const Protos::Common::FindPattern& findPattern, bool local, QWidget* parent) :
    QWidget(parent),
    ui(new Ui::SearchWidget),
    downloadMenu(sharedDirsModel),
@@ -167,6 +167,9 @@ SearchWidget::SearchWidget(QSharedPointer<RCC::ICoreConnection> coreConnection, 
    searchModel(coreConnection, peerListModel, sharedDirsModel)
 {
    this->ui->setupUi(this);
+
+   const QString& terms = Common::ProtoHelper::getStr(findPattern, &Protos::Common::FindPattern::pattern);
+
    this->searchDelegate.setTerms(terms);
 
    connect(&this->searchModel, SIGNAL(progress(int)), this, SLOT(progress(int)));
@@ -189,7 +192,7 @@ SearchWidget::SearchWidget(QSharedPointer<RCC::ICoreConnection> coreConnection, 
    this->ui->treeView->setSelectionBehavior(QAbstractItemView::SelectRows);
    this->ui->treeView->setSelectionMode(QAbstractItemView::ExtendedSelection);
 
-   this->searchModel.search((searchInOwnFiles ? "<" : "") + terms);
+   this->searchModel.search(findPattern, local);
 
    this->ui->treeView->setContextMenuPolicy(Qt::CustomContextMenu);
    connect(this->ui->treeView, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(displayContextMenuDownload(const QPoint&)));
@@ -204,7 +207,7 @@ SearchWidget::SearchWidget(QSharedPointer<RCC::ICoreConnection> coreConnection, 
    connect(&this->downloadMenu, SIGNAL(browse()), this, SLOT(browseCurrents()));
 
    this->setWindowTitle(terms);
-   if (searchInOwnFiles)
+   if (local)
       this->setWindowIcon(QIcon(":/icons/ressources/zoom_monitor.png"));
 }
 

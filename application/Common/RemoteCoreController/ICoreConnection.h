@@ -169,7 +169,7 @@ namespace RCC
       /**
         * Search some files and folders to the entire network, do not search in our own folders.
         */
-      virtual QSharedPointer<ISearchResult> search(const QString& terms) = 0;
+      virtual QSharedPointer<ISearchResult> search(const Protos::Common::FindPattern& findPattern, bool local = false) = 0;
 
       /**
         * Queue an entry to download, it can be a folder or a file.

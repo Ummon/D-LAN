@@ -36,11 +36,11 @@ Search::Search(UDPListener& uDPListener) :
 {
 }
 
-quint64 Search::search(const QString& words)
+quint64 Search::search(const Protos::Common::FindPattern& findPattern)
 {
    if (this->tag != 0)
    {
-      L_ERRO(QString("You can't launch a search twice! : %1").arg(words));
+      L_ERRO(QString("You can't launch a search twice!"));
       return 0;
    }
 
@@ -51,8 +51,7 @@ quint64 Search::search(const QString& words)
 
    this->tag = this->mtrand.randInt64();
    findMessage.set_tag(this->tag);
-
-   Common::ProtoHelper::setStr(*findMessage.mutable_pattern(), &Protos::Common::FindPattern::set_pattern, words);
+   findMessage.mutable_pattern()->CopyFrom(findPattern);
 
    connect(&this->uDPListener, SIGNAL(newFindResultMessage(Protos::Common::FindResult)), this, SLOT(newFindResult(Protos::Common::FindResult)));
 
