@@ -30,6 +30,8 @@ using namespace GUI;
 
 #include <Common/StringUtils.h>
 #include <Common/Settings.h>
+
+#include <Search/SearchUtils.h>
 #include <Utils.h>
 #include <Log.h>
 
@@ -168,6 +170,8 @@ SearchWidget::SearchWidget(QSharedPointer<RCC::ICoreConnection> coreConnection, 
 {
    this->ui->setupUi(this);
 
+   this->ui->lblSearchTerm->setText(SearchUtils::getFindPatternSummary(findPattern, local));
+
    const QString& terms = Common::ProtoHelper::getStr(findPattern, &Protos::Common::FindPattern::pattern);
 
    this->searchDelegate.setTerms(terms);
@@ -206,7 +210,8 @@ SearchWidget::SearchWidget(QSharedPointer<RCC::ICoreConnection> coreConnection, 
    connect(&this->downloadMenu, SIGNAL(downloadTo(const QString&, const Common::Hash&)), this, SLOT(downloadTo(const QString&, const Common::Hash&)));
    connect(&this->downloadMenu, SIGNAL(browse()), this, SLOT(browseCurrents()));
 
-   this->setWindowTitle(terms);
+   this->setWindowTitle(SearchUtils::getFindPatternWindowTitle(findPattern));
+
    if (local)
       this->setWindowIcon(QIcon(":/icons/ressources/zoom_monitor.png"));
 }

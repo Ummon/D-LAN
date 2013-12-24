@@ -19,12 +19,15 @@ namespace Common
       MEDIA_ARCHIVE = 8
    };
 
+   class CategoryNotFoundException {};
+
    class KnownExtensions
    {
    public:
       static bool exists(const QString& extension);
       static int nbCategory();
       static QList<QString> getExtensions(ExtensionCategory cat);
+      static ExtensionCategory getCategoryFrom(const QString& extension);
 
       /**
         * Returns '-1' if there is no extension.

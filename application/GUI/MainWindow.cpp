@@ -80,7 +80,7 @@ MainWindow::MainWindow(QSharedPointer<RCC::ICoreConnection> coreConnection, QWid
 
    ///// Dockable widgets
    this->addDockWidget(Qt::LeftDockWidgetArea, this->searchDock);
-   connect(this->searchDock, SIGNAL(search(QString, bool)), this, SLOT(search(QString, bool)));
+   connect(this->searchDock, SIGNAL(search(const Protos::Common::FindPattern&, bool)), this, SLOT(search(const Protos::Common::FindPattern&, bool)));
    this->addDockWidget(Qt::LeftDockWidgetArea, this->peersDock);
    connect(this->peersDock, SIGNAL(browsePeer(Common::Hash)), this, SLOT(browsePeer(Common::Hash)));
    this->addDockWidget(Qt::LeftDockWidgetArea, this->roomsDock);

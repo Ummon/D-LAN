@@ -95,7 +95,8 @@ SOURCES += main.cpp\
     Emoticons/Emoticons.cpp \
     Emoticons/SingleEmoticonWidget.cpp \
     AutoComplete/AutoComplete.cpp \
-    AutoComplete/AutoCompleteModel.cpp
+    AutoComplete/AutoCompleteModel.cpp \
+    Search/SearchUtils.cpp
 
 HEADERS  += MainWindow.h \
     ../Protos/gui_protocol.pb.h \
@@ -154,7 +155,8 @@ HEADERS  += MainWindow.h \
     Emoticons/Emoticons.h \
     Emoticons/SingleEmoticonWidget.h \
     AutoComplete/AutoComplete.h \
-    AutoComplete/AutoCompleteModel.h
+    AutoComplete/AutoCompleteModel.h \
+    Search/SearchUtils.h
 
 FORMS    += MainWindow.ui \
     StatusBar.ui \

@@ -41,5 +41,6 @@
         <file>ressources/error_mini.png</file>
         <file>ressources/emoticon.png</file>
         <file>ressources/plus.png</file>
+        <file>ressources/zoom_monitor.png</file>
     </qresource>
 </RCC>

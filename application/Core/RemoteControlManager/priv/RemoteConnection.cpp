@@ -508,9 +508,11 @@ void RemoteConnection::onNewMessage(const Common::Message& message)
 
    case Common::MessageHeader::GUI_SEARCH:
       {
+         static const quint32 SEARCH_LIFETIME = SETTINGS.get<quint32>("search_lifetime");
+
          // Remove old searches.
          for (QMutableListIterator<QSharedPointer<NL::ISearch>> i(this->currentSearches); i.hasNext();)
-            if (i.next()->elapsed() > SETTINGS.get<quint32>("search_lifetime"))
+            if (i.next()->elapsed() > SEARCH_LIFETIME)
                i.remove();
 
          const Protos::GUI::Search& searchMessage = message.getMessage<Protos::GUI::Search>();
@@ -519,6 +521,8 @@ void RemoteConnection::onNewMessage(const Common::Message& message)
          // Special syntax to search in your own files.
          if (searchMessage.local())
          {
+            static const quint32 MAX_NUMBER_OF_RESULT_SHOWN = SETTINGS.get<quint32>("max_number_of_result_shown");
+
             QList<QString> extensions;
             extensions.reserve(findPattern.extension_filter_size());
             for (int i = 0; i < findPattern.extension_filter_size(); ++i)
@@ -529,7 +533,8 @@ void RemoteConnection::onNewMessage(const Common::Message& message)
                extensions,
                findPattern.min_size() == 0 ? std::numeric_limits<qint64>::min() : (qint64)findPattern.min_size(),
                findPattern.max_size() == 0 ? std::numeric_limits<qint64>::max() : (qint64)findPattern.max_size(),
-               SETTINGS.get<quint32>("max_number_of_result_shown"),
+               findPattern.category(),
+               MAX_NUMBER_OF_RESULT_SHOWN,
                std::numeric_limits<int>::max()
             );
 

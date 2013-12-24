@@ -30,81 +30,7 @@ using namespace GUI;
 #include <Common/Constants.h>
 
 #include <Log.h>
-
-QString SearchDock::getCategoryText(Protos::Common::FindPattern_Category category)
-{
-   switch (category)
-   {
-   case Protos::Common::FindPattern_Category_FILE_DIR:
-      return tr("Files and directories");
-
-   case Protos::Common::FindPattern_Category_FILE:
-      return tr("Files");
-
-   case Protos::Common::FindPattern_Category_DIR:
-      return tr("Directories");
-
-   default:
-      return QString();
-   }
-}
-
-QString SearchDock::getExtensionText(Common::ExtensionCategory extension)
-{
-   QString result;
-
-   switch (extension)
-   {
-   case Common::ExtensionCategory::AUDIO:
-      result.append(tr("Audio"));
-      break;
-
-   case Common::ExtensionCategory::VIDEO:
-      result.append(tr("Video"));
-      break;
-
-   case Common::ExtensionCategory::COMPRESSED:
-      result.append(tr("Compressed"));
-      break;
-
-   case Common::ExtensionCategory::DOCUMENT:
-      result.append(tr("Document"));
-      break;
-
-   case Common::ExtensionCategory::PICTURE:
-      result.append(tr("Picture"));
-      break;
-
-   case Common::ExtensionCategory::SUBTITLE:
-      result.append(tr("Subtitle"));
-      break;
-
-   case Common::ExtensionCategory::EXECUTABLE:
-      result.append(tr("Executable"));
-      break;
-
-   case Common::ExtensionCategory::MEDIA_ARCHIVE:
-      result.append(tr("Media archive"));
-      break;
-   }
-
-   result.append(": [");
-
-   bool begining = true;
-   foreach (QString e, Common::KnownExtensions::getExtensions(extension))
-   {
-      if (begining)
-         begining = false;
-      else
-         result.append(", ");
-
-      result.append(e);
-   }
-
-   result.append("]");
-
-   return result;
-}
+#include <Search/SearchUtils.h>
 
 SearchDock::SearchDock(QSharedPointer<RCC::ICoreConnection> coreConnection, QWidget* parent) :
    QDockWidget(parent),
@@ -142,11 +68,11 @@ SearchDock::SearchDock(QSharedPointer<RCC::ICoreConnection> coreConnection, QWid
 
    this->ui->cmbFileType->addItem(tr("All"), static_cast<std::underlying_type<Common::ExtensionCategory>::type>(0));
    foreach (Common::ExtensionCategory cat, extensions)
-      this->ui->cmbFileType->addItem(getExtensionText(cat), static_cast<std::underlying_type<Common::ExtensionCategory>::type>(cat));
+      this->ui->cmbFileType->addItem(SearchUtils::getExtensionText(cat), static_cast<std::underlying_type<Common::ExtensionCategory>::type>(cat));
 
    const ::google::protobuf::EnumDescriptor* catDescriptor = Protos::Common::FindPattern::Category_descriptor();
    for (int cat = 0; cat < catDescriptor->value_count(); ++cat)
-      this->ui->cmbCategory->addItem(getCategoryText(static_cast<Protos::Common::FindPattern_Category>(catDescriptor->value(cat)->number())), catDescriptor->value(cat)->number());
+      this->ui->cmbCategory->addItem(SearchUtils::getCategoryText(static_cast<Protos::Common::FindPattern_Category>(catDescriptor->value(cat)->number())), catDescriptor->value(cat)->number());
 
    this->loadSettings();
 
@@ -219,21 +145,32 @@ void SearchDock::search()
 {
    this->ui->txtSearch->setText(this->ui->txtSearch->text().trimmed());
 
-   Protos::Common::FindPattern pattern;
+   const bool moreOptions = this->ui->butMoreOptions->isChecked();
 
+   if (this->ui->txtSearch->text().isEmpty() && (!moreOptions || this->currentExtension() == 0 && this->currentMinSize() == 0 && this->currentMaxSize() == 0))
+      return;
+
+   Protos::Common::FindPattern pattern;
    Common::ProtoHelper::setStr(pattern, &Protos::Common::FindPattern::set_pattern, this->ui->txtSearch->text());
 
-   pattern.set_min_size(this->currentMinSize());
-   pattern.set_max_size(this->currentMaxSize());
+   bool local = false;
 
-   std::underlying_type<Common::ExtensionCategory>::type extension = this->currentExtension();
-   if (extension != 0)
+   if (moreOptions)
    {
-      foreach (QString e, Common::KnownExtensions::getExtensions(static_cast<Common::ExtensionCategory>(extension)))
-         Common::ProtoHelper::addRepeatedStr(pattern, &Protos::Common::FindPattern::add_extension_filter, e);
+      std::underlying_type<Common::ExtensionCategory>::type extension = this->currentExtension();
+      if (extension != 0)
+         foreach (QString e, Common::KnownExtensions::getExtensions(static_cast<Common::ExtensionCategory>(extension)))
+            Common::ProtoHelper::addRepeatedStr(pattern, &Protos::Common::FindPattern::add_extension_filter, e);
+
+      pattern.set_min_size(this->currentMinSize());
+      pattern.set_max_size(this->currentMaxSize());
+
+      pattern.set_category(static_cast<Protos::Common::FindPattern_Category>(this->currentCategory()));
+
+      local = this->ui->chkOwnFiles->checkState() == Qt::Checked;
    }
 
-   emit search(pattern, this->ui->chkOwnFiles->checkState() == Qt::Checked);
+   emit search(pattern, local);
 }
 
 void SearchDock::butMoreOptionsToggled(bool toggled)

@@ -190,10 +190,12 @@ Protos::Common::Entries FileManager::getEntries()
    return this->cache.getSharedEntries();
 }
 
-QList<Protos::Common::FindResult> FileManager::find(const QString& words, const QList<QString>& extensions, qint64 minFileSize, qint64 maxFileSize, int maxNbResult, int maxSize)
+QList<Protos::Common::FindResult> FileManager::find(const QString& words, const QList<QString>& extensions, qint64 minFileSize, qint64 maxFileSize, Protos::Common::FindPattern_Category category, int maxNbResult, int maxSize)
 {
    bool filterBySizeOn = minFileSize > 0 || maxFileSize != std::numeric_limits<qint64>::max();
-   bool filterOn = !extensions.isEmpty() || filterBySizeOn;
+   bool filterByExtensionsOn = !extensions.isEmpty();
+   bool filterByCategoryOn = category != Protos::Common::FindPattern::FILE_DIR;
+   bool filterOn = filterBySizeOn || filterByExtensionsOn || filterByCategoryOn;
 
    QList<NodeResult<Entry*>> result;
 
@@ -201,25 +203,34 @@ QList<Protos::Common::FindResult> FileManager::find(const QString& words, const 
    {
       result = !filterOn ?
          this->wordIndex.search(Common::StringUtils::splitInWords(words), maxNbResult) :
-         this->wordIndex.search(Common::StringUtils::splitInWords(words), maxNbResult, [&](Entry* entry) {
-            return entry->getSize() >= minFileSize && entry->getSize() <= maxFileSize && extensions.contains(entry->getExtension());
+         this->wordIndex.search(Common::StringUtils::splitInWords(words), maxNbResult, [&](const Entry* entry) {
+            return (!filterBySizeOn || entry->getSize() >= minFileSize && entry->getSize() <= maxFileSize) &&
+                   (!filterByExtensionsOn || extensions.contains(entry->getExtension())) &&
+                   (!filterByCategoryOn || (category == Protos::Common::FindPattern::FILE && dynamic_cast<const File*>(entry) || category == Protos::Common::FindPattern::DIR && dynamic_cast<const Directory*>(entry)));
          });
    }
-   else if (filterOn)
+   else if (filterBySizeOn || filterByExtensionsOn)
    {
       QList<Entry*> intermediateResult;
 
       if (!extensions.isEmpty())
       {
-         if (filterBySizeOn)
-            intermediateResult = this->extensionIndex.search(extensions, maxNbResult, [&](Entry* entry) {
-               return entry->getSize() >= minFileSize && entry->getSize() <= maxFileSize;
+         if (filterBySizeOn || filterByCategoryOn)
+            intermediateResult = this->extensionIndex.search(extensions, maxNbResult, [&](const Entry* entry) {
+               return (!filterBySizeOn || entry->getSize() >= minFileSize && entry->getSize() <= maxFileSize) && (!filterByCategoryOn || (category == Protos::Common::FindPattern::FILE && dynamic_cast<const File*>(entry) || category == Protos::Common::FindPattern::DIR && dynamic_cast<const Directory*>(entry)));
             });
          else
             intermediateResult = this->extensionIndex.search(extensions, maxNbResult);
       }
       else
-         intermediateResult = this->sizeIndex.search(minFileSize, maxFileSize);
+      {
+         if (filterByCategoryOn)
+            intermediateResult = this->sizeIndex.search(minFileSize, maxFileSize, [&](const Entry* entry) {
+               return category == Protos::Common::FindPattern::FILE && dynamic_cast<const File*>(entry) || category == Protos::Common::FindPattern::DIR && dynamic_cast<const Directory*>(entry);
+            });
+         else
+            intermediateResult = this->sizeIndex.search(minFileSize, maxFileSize);
+      }
 
       for (QListIterator<Entry*> i(intermediateResult); i.hasNext();)
          result << NodeResult<Entry*>(i.next());

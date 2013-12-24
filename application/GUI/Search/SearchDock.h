@@ -37,8 +37,6 @@ namespace GUI
    class SearchDock : public QDockWidget
    {
       Q_OBJECT
-      static QString getCategoryText(Protos::Common::FindPattern_Category category);
-      static QString getExtensionText(Common::ExtensionCategory extension);
 
    public:
       explicit SearchDock(QSharedPointer<RCC::ICoreConnection> coreConnection, QWidget* parent = 0);

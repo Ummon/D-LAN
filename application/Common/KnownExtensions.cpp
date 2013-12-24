@@ -19,6 +19,15 @@ QList<QString> KnownExtensions::getExtensions(ExtensionCategory cat)
    else return QList<QString>();
 }
 
+ExtensionCategory KnownExtensions::getCategoryFrom(const QString& extension)
+{
+   auto i = extensions.find(extension);
+   if (i == extensions.end())
+      throw CategoryNotFoundException();
+   else
+      return *i;
+}
+
 int KnownExtensions::getBeginingExtension(const QString& filename)
 {
    int i = 0;

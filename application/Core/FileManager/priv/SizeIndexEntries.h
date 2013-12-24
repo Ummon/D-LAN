@@ -1,6 +1,8 @@
 #ifndef FILEMANAGER_SIZE_INDEX_H
 #define FILEMANAGER_SIZE_INDEX_H
 
+#include <functional>
+
 #include <QMutex>
 
 #include <Common/Containers/SortedArray.h>
@@ -17,7 +19,7 @@ namespace FM
       void addItem(Entry* item);
       void rmItem(Entry* item);
 
-      QList<Entry*> search(qint64 sizeMin, qint64 sizeMax) const;
+      QList<Entry*> search(qint64 sizeMin, qint64 sizeMax, std::function<bool(const Entry*)> predicat = nullptr) const;
 
    private:
       Common::SortedArray<Entry*> index;

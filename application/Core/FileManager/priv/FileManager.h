@@ -73,8 +73,8 @@ namespace FM
       Protos::Common::Entries getEntries(const Protos::Common::Entry& dir);
       Protos::Common::Entries getEntries();
 
-      inline QList<Protos::Common::FindResult> find(const QString& words, int maxNbResult, int maxSize) { return this->find(words, QList<QString>(), 0, std::numeric_limits<qint64>::max(), maxNbResult, maxSize); }
-      QList<Protos::Common::FindResult> find(const QString& words, const QList<QString>& extensions, qint64 minFileSize, qint64 maxFileSize, int maxNbResult, int maxSize);
+      inline QList<Protos::Common::FindResult> find(const QString& words, int maxNbResult, int maxSize) { return this->find(words, QList<QString>(), 0, std::numeric_limits<qint64>::max(), Protos::Common::FindPattern::FILE_DIR, maxNbResult, maxSize); }
+      QList<Protos::Common::FindResult> find(const QString& words, const QList<QString>& extensions, qint64 minFileSize, qint64 maxFileSize, Protos::Common::FindPattern_Category category, int maxNbResult, int maxSize);
       QBitArray haveChunks(const QList<Common::Hash>& hashes);
       quint64 getAmount();
       CacheStatus getCacheStatus() const;

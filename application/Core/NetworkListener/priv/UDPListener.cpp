@@ -291,6 +291,7 @@ void UDPListener::processPendingMulticastDatagrams()
                         extensions,
                         findMessage.pattern().min_size() == 0 ? std::numeric_limits<qint64>::min() : (qint64)findMessage.pattern().min_size(), // According the protocol.
                         findMessage.pattern().max_size() == 0 ? std::numeric_limits<qint64>::max() : (qint64)findMessage.pattern().max_size(), // According the protocol.
+                        findMessage.pattern().category(),
                         SETTINGS.get<quint32>("max_number_of_search_result_to_send"),
                         this->MAX_UDP_DATAGRAM_PAYLOAD_SIZE - Common::MessageHeader::HEADER_SIZE
                      );

@@ -48,7 +48,7 @@ void SizeIndexEntries::rmItem(Entry* item)
    this->index.remove(item);
 }
 
-QList<Entry*> SizeIndexEntries::search(qint64 sizeMin, qint64 sizeMax) const
+QList<Entry*> SizeIndexEntries::search(qint64 sizeMin, qint64 sizeMax, std::function<bool(const Entry*)> predicat) const
 {
    QMutexLocker locker(&this->mutex);
    QList<Entry*> result;
@@ -65,7 +65,8 @@ QList<Entry*> SizeIndexEntries::search(qint64 sizeMin, qint64 sizeMax) const
    auto end = this->index.end();
 
    while (i != end && (*i)->getSize() <= sizeMax)
-      result << *i;
+      if (predicat == nullptr || predicat(*i))
+         result << *i;
 
    return result;
 }
