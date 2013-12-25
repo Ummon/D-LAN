@@ -137,12 +137,14 @@ void SearchDock::coreConnected()
 
 void SearchDock::coreDisconnected(bool force)
 {
-   this->ui->txtSearch->setDisabled(true);
    this->ui->butSearch->setDisabled(true);
 }
 
 void SearchDock::search()
 {
+   if (!this->coreConnection->isConnected())
+      return;
+
    this->ui->txtSearch->setText(this->ui->txtSearch->text().trimmed());
 
    const bool moreOptions = this->ui->butMoreOptions->isChecked();
