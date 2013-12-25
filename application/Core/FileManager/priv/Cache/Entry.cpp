@@ -104,3 +104,14 @@ qint64 Entry::getSize() const
 {
    return this->size;
 }
+
+void Entry::setSize(qint64 newSize)
+{
+   if (newSize != this->size)
+   {
+      this->cache->onEntryResizing(this);
+      qint64 oldSize = this->size;
+      this->size = newSize;
+      this->cache->onEntryResized(this, oldSize);
+   }
+}

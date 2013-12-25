@@ -93,6 +93,8 @@ namespace FM
       void entryAdded(Entry* entry);
       void entryRemoved(Entry* entry);
       void entryRenamed(Entry* entry, const QString& oldName);
+      void entryResizing(Entry* entry);
+      void entryResized(Entry* entry, qint64 oldSize);
       void chunkHashKnown(const QSharedPointer<Chunk>& chunk);
       void chunkRemoved(const QSharedPointer<Chunk>& chunk);
 

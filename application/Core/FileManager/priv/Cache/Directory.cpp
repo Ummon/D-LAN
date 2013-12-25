@@ -464,7 +464,9 @@ void Directory::subdirNameChanged(Directory* dir)
 Directory& Directory::operator+=(qint64 size)
 {
    QMutexLocker locker(&this->mutex);
-   this->size += size;
+
+   this->setSize(this->getSize() + size);
+
    if (this->parent)
       (*this->parent) += size;
 
@@ -474,7 +476,9 @@ Directory& Directory::operator+=(qint64 size)
 Directory& Directory::operator-=(qint64 size)
 {
    QMutexLocker locker(&this->mutex);
-   this->size -= size;
+
+   this->setSize(this->getSize() - size);
+
    if (this->parent)
       (*this->parent) -= size;
 

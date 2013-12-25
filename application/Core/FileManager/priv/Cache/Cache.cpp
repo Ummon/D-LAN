@@ -20,6 +20,7 @@
 using namespace FM;
 
 #include <QDir>
+#include <QQueue>
 
 #include <Common/Global.h>
 #include <Common/Settings.h>
@@ -53,6 +54,29 @@ Cache::~Cache()
 {
    for (QListIterator<SharedDirectory*> i(this->sharedDirs); i.hasNext();)
       i.next()->del();
+}
+
+
+void Cache::forall(std::function<void(Entry*)> fun) const
+{
+   QQueue<Entry*> entries;
+   foreach (Entry* entry, this->sharedDirs)
+      entries.enqueue(entry);
+
+   while (!entries.isEmpty())
+   {
+      Entry* current = entries.dequeue();
+      fun(current);
+
+      Directory* dir = dynamic_cast<Directory*>(current);
+      if (dir)
+      {
+         foreach (File* file, dir->getFiles())
+            fun(file);
+         foreach (Directory* subDir, dir->getSubDirs())
+            entries.enqueue(subDir);
+      }
+   }
 }
 
 /**
@@ -631,6 +655,16 @@ void Cache::onEntryRemoved(Entry* entry)
 void Cache::onEntryRenamed(Entry* entry, const QString& oldName)
 {
    emit entryRenamed(entry, oldName);
+}
+
+void Cache::onEntryResizing(Entry* entry)
+{
+   emit entryResizing(entry);
+}
+
+void Cache::onEntryResized(Entry* entry, qint64 oldSize)
+{
+   emit entryResized(entry, oldSize);
 }
 
 void Cache::onChunkHashKnown(const QSharedPointer<Chunk>& chunk)

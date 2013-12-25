@@ -61,17 +61,17 @@ FileManager::FileManager() :
 {
    Chunk::CHUNK_SIZE = SETTINGS.get<quint32>("chunk_size");
 
-   connect(&this->cache, SIGNAL(entryAdded(Entry*)),     this, SLOT(entryAdded(Entry*)),     Qt::DirectConnection);
-   connect(&this->cache, SIGNAL(entryRemoved(Entry*)),   this, SLOT(entryRemoved(Entry*)),   Qt::DirectConnection);
-   connect(&this->cache, SIGNAL(entryRenamed(Entry*, QString)),   this, SLOT(entryRenamed(Entry*, QString)),   Qt::DirectConnection);
+   connect(&this->cache, SIGNAL(entryAdded(Entry*)), this, SLOT(entryAdded(Entry*)), Qt::DirectConnection);
+   connect(&this->cache, SIGNAL(entryRemoved(Entry*)), this, SLOT(entryRemoved(Entry*)), Qt::DirectConnection);
+   connect(&this->cache, SIGNAL(entryRenamed(Entry*, QString)), this, SLOT(entryRenamed(Entry*, QString)), Qt::DirectConnection);
    connect(&this->cache, SIGNAL(chunkHashKnown(QSharedPointer<Chunk>)), this, SLOT(chunkHashKnown(QSharedPointer<Chunk>)), Qt::DirectConnection);
-   connect(&this->cache, SIGNAL(chunkRemoved(QSharedPointer<Chunk>)),   this, SLOT(chunkRemoved(QSharedPointer<Chunk>)),   Qt::DirectConnection);
+   connect(&this->cache, SIGNAL(chunkRemoved(QSharedPointer<Chunk>)), this, SLOT(chunkRemoved(QSharedPointer<Chunk>)), Qt::DirectConnection);
 
-   connect(&this->cache, SIGNAL(newSharedDirectory(SharedDirectory*)),                 this, SLOT(newSharedDirectory(SharedDirectory*)),                 Qt::DirectConnection);
+   connect(&this->cache, SIGNAL(newSharedDirectory(SharedDirectory*)), this, SLOT(newSharedDirectory(SharedDirectory*)), Qt::DirectConnection);
    connect(&this->cache, SIGNAL(sharedDirectoryRemoved(SharedDirectory*, Directory*)), this, SLOT(sharedDirectoryRemoved(SharedDirectory*, Directory*)), Qt::DirectConnection);
 
-   connect(&this->fileUpdater, SIGNAL(fileCacheLoaded()), this, SLOT(fileCacheLoadingComplete()),  Qt::QueuedConnection);
-   connect(&this->fileUpdater, SIGNAL(deleteSharedDir(SharedDirectory*)), this, SLOT(deleteSharedDir(SharedDirectory*)),  Qt::QueuedConnection); // If the 'FileUpdater' wants to delete a shared directory.
+   connect(&this->fileUpdater, SIGNAL(fileCacheLoaded()), this, SLOT(fileCacheLoadingComplete()), Qt::QueuedConnection);
+   connect(&this->fileUpdater, SIGNAL(deleteSharedDir(SharedDirectory*)), this, SLOT(deleteSharedDir(SharedDirectory*)), Qt::QueuedConnection); // If the 'FileUpdater' wants to delete a shared directory.
 
    this->timerPersistCache.setInterval(SETTINGS.get<quint32>("save_cache_period"));
    this->timerPersistCache.setSingleShot(true); // We use a single shot because if the time to save exceeds the property 'save_cache_period' it will cause some trouble (very rare case).
@@ -396,7 +396,8 @@ void FileManager::entryAdded(Entry* entry)
    L_DEBU(QString("Adding entry '%1' to the index . . .").arg(entry->getName()));
    this->wordIndex.addItem(Common::StringUtils::splitInWords(entry->getNameWithoutExtension()), entry);
    this->extensionIndex.addItem(entry->getExtension(), entry);
-   this->sizeIndex.addItem(entry);
+   if (!this->cacheLoading)
+      this->sizeIndex.addItem(entry);
    L_DEBU("Entry added to the index");
 }
 
@@ -419,6 +420,16 @@ void FileManager::entryRenamed(Entry* entry, const QString& oldName)
    this->wordIndex.renameItem(Common::StringUtils::splitInWords(oldName), Common::StringUtils::splitInWords(entry->getName()), entry);
    this->extensionIndex.changeItem(Common::KnownExtensions::getExtension(oldName), entry->getExtension(), entry);
    L_DEBU("Entry renamed in the index");
+}
+
+void FileManager::entryResizing(Entry* entry)
+{
+   this->sizeIndex.rmItem(entry);
+}
+
+void FileManager::entryResized(Entry* entry, qint64 oldSize)
+{
+   this->sizeIndex.addItem(entry);
 }
 
 void FileManager::chunkHashKnown(const QSharedPointer<Chunk>& chunk)
@@ -542,6 +553,13 @@ void FileManager::fileCacheLoadingComplete()
 {
    this->timerPersistCache.start();
    this->cacheLoading = false;
+
+   connect(&this->cache, SIGNAL(entryResizing(Entry*)), this, SLOT(entryResizing(Entry*)), Qt::DirectConnection);
+   connect(&this->cache, SIGNAL(entryResized(Entry*, qint64)), this, SLOT(entryResized(Entry*, qint64)), Qt::DirectConnection);
+
+   this->cache.forall([&](Entry* entry) {
+      this->sizeIndex.addItem(entry);
+   });
 
    emit fileCacheLoaded();
 }

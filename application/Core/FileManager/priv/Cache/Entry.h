@@ -73,12 +73,17 @@ namespace FM
       virtual void rename(const QString& newName);
 
       qint64 getSize() const;
+      void setSize(qint64 newSize);
 
    protected:
       Cache* cache; // To announce when an entry, chunk is created or deleted.
 
       QString name;
+
+   private:
       qint64 size;
+
+   protected:
 
       mutable QMutex mutex;
    };

@@ -22,15 +22,7 @@ SizeIndexEntries::SizeIndexEntries()
 {
    this->index.setSortedFunction([](Entry* e1, Entry* e2) {
       if (e1->getSize() == e2->getSize())
-      {
-         const QString& name1 = e1->getName().toLower();
-         const QString& name2 = e2->getName().toLower();
-
-         if (name1 == name2 )
-            return qHash(e1) < qHash(e2);
-
-         return name1 < name2;
-      }
+         return qHash(e1) < qHash(e2);
 
       return e1->getSize() < e2->getSize();
    });

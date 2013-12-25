@@ -49,6 +49,8 @@ namespace FM
       Cache();
       ~Cache();
 
+      void forall(std::function<void(Entry*)> fun) const;
+
       Protos::Common::Entries getSharedEntries() const;
       Protos::Common::Entries getEntries(const Protos::Common::Entry& dir) const;
       Directory* getDirectory(const Protos::Common::Entry& dir) const;
@@ -80,6 +82,8 @@ namespace FM
       void onEntryAdded(Entry* entry);
       void onEntryRemoved(Entry* entry);
       void onEntryRenamed(Entry* entry, const QString& oldName);
+      void onEntryResizing(Entry* entry);
+      void onEntryResized(Entry* entry, qint64 oldSize);
 
       void onChunkHashKnown(const QSharedPointer<Chunk>& chunk);
       void onChunkRemoved(const QSharedPointer<Chunk>& chunk);
@@ -93,6 +97,8 @@ namespace FM
       void entryAdded(Entry* entry);
       void entryRemoved(Entry* entry);
       void entryRenamed(Entry* entry, const QString& oldName);
+      void entryResizing(Entry* entry);
+      void entryResized(Entry* entry, qint64 oldSize);
 
       /**
         * May be emitted from a separated thread.

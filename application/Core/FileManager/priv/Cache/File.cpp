@@ -85,7 +85,7 @@ File::File(
    fileInWriteMode(nullptr),
    fileInReadMode(nullptr)
 {
-   L_DEBU(QString("New file : %1 (%2), createPhysically = %3").arg(this->getFullPath()).arg(Common::Global::formatByteSize(this->size)).arg(createPhysically));
+   L_DEBU(QString("New file : %1 (%2), createPhysically = %3").arg(this->getFullPath()).arg(Common::Global::formatByteSize(this->getSize())).arg(createPhysically));
 
    if (createPhysically)
       try
@@ -147,7 +147,7 @@ void File::setToUnfinished(qint64 size, const Common::Hashes& hashes)
    this->complete = false;
    this->cache->onEntryRemoved(this);
    this->name.append(Global::getUnfinishedSuffix());
-   this->size = size;
+   this->setSize(size);
    this->dateLastModified = QDateTime::currentDateTime();
    this->deleteAllChunks();
    this->setHashes(hashes);
@@ -162,7 +162,7 @@ void File::setToUnfinished(qint64 size, const Common::Hashes& hashes)
 bool File::restoreFromFileCache(const Protos::FileCache::Hashes::File& file)
 {
    if (
-      static_cast<qint64>(file.size()) == this->size &&
+      static_cast<qint64>(file.size()) == this->getSize() &&
       Common::ProtoHelper::getStr(file, &Protos::FileCache::Hashes_File::filename) == this->getName() &&
          (
             Global::isFileUnfinished(this->getName()) ||
@@ -193,7 +193,7 @@ void File::populateHashesFile(Protos::FileCache::Hashes_File& fileToFill) const
    QMutexLocker locker(&this->mutex);
 
    Common::ProtoHelper::setStr(fileToFill, &Protos::FileCache::Hashes_File::set_filename, this->name);
-   fileToFill.set_size(this->size);
+   fileToFill.set_size(this->getSize());
    fileToFill.set_date_last_modified(this->getDateLastModified().toMSecsSinceEpoch());
 
    for (QVectorIterator<QSharedPointer<Chunk>> i(this->chunks); i.hasNext();)
@@ -297,7 +297,7 @@ void File::newDataWriterCreated()
       bool fileReset = false;
       if (fileCreated)
       {
-         if (!this->fileInWriteMode->resize(this->size))
+         if (!this->fileInWriteMode->resize(this->getSize()))
             throw UnableToOpenFileInWriteModeException();
 
          this->setFileAsSparse(*this->fileInWriteMode);
@@ -377,10 +377,10 @@ qint64 File::write(const char* buffer, int nbBytes, qint64 offset)
 {
    QMutexLocker locker(&this->writeLock);
 
-   if (!this->fileInWriteMode || offset >= this->size || !this->fileInWriteMode->seek(offset))
+   if (!this->fileInWriteMode || offset >= this->getSize() || !this->fileInWriteMode->seek(offset))
       throw IOErrorException();
 
-   const qint64 maxSize = this->size - offset;
+   const qint64 maxSize = this->getSize() - offset;
    const qint64 n = this->fileInWriteMode->write(buffer, nbBytes > maxSize ? maxSize : nbBytes);
 
    if (n == -1)
@@ -401,7 +401,7 @@ qint64 File::read(char* buffer, qint64 offset, int maxBytesToRead)
 {
    QMutexLocker locker(&this->readLock);
 
-   if (!this->fileInReadMode || offset >= this->size)
+   if (!this->fileInReadMode || offset >= this->getSize())
       return 0;
 
    if (!this->fileInReadMode->seek(offset))
@@ -423,7 +423,7 @@ QVector<QSharedPointer<Chunk>> File::getChunks() const
 bool File::hasAllHashes()
 {
    QMutexLocker locker(&this->mutex);
-   if (this->size == 0)
+   if (this->getSize() == 0)
       return false;
 
    for (QVectorIterator<QSharedPointer<Chunk>> i(this->chunks); i.hasNext();)
@@ -470,7 +470,7 @@ void File::chunkComplete(const Chunk* chunk)
 
 int File::getNbChunks()
 {
-   return this->size / Chunk::CHUNK_SIZE + (this->size % Chunk::CHUNK_SIZE == 0 ? 0 : 1);
+   return this->getSize() / Chunk::CHUNK_SIZE + (this->getSize() % Chunk::CHUNK_SIZE == 0 ? 0 : 1);
 }
 
 void File::deleteIfIncomplete()
@@ -594,12 +594,12 @@ void File::deleteAllChunks()
   */
 void File::createPhysicalFile()
 {
-   if (this->size > 0 && !Global::isFileUnfinished(this->name))
+   if (this->getSize() > 0 && !Global::isFileUnfinished(this->name))
       L_ERRO(QString("File::createPhysicalFile(..) : Cannot create a file (%1) without the 'unfinished' suffix").arg(this->getPath()));
    else
    {
       QFile file(this->getFullPath());
-      if (!file.open(QIODevice::WriteOnly) || !file.resize(this->size))
+      if (!file.open(QIODevice::WriteOnly) || !file.resize(this->getSize()))
       {
          QFile::remove(this->getFullPath());
          throw UnableToCreateNewFileException();
@@ -631,7 +631,7 @@ void File::setHashes(const Common::Hashes& hashes)
    this->chunks.reserve(this->getNbChunks());
    for (int i = 0; i < this->getNbChunks(); i++)
    {
-      int chunkKnownBytes = !this->isComplete() ? 0 : i == this->getNbChunks() - 1 && this->size % Chunk::CHUNK_SIZE != 0 ? this->size % Chunk::CHUNK_SIZE : Chunk::CHUNK_SIZE;
+      int chunkKnownBytes = !this->isComplete() ? 0 : i == this->getNbChunks() - 1 && this->getSize() % Chunk::CHUNK_SIZE != 0 ? this->getSize() % Chunk::CHUNK_SIZE : Chunk::CHUNK_SIZE;
 
       if (i < hashes.size() && !hashes[i].isNull())
       {
@@ -650,10 +650,10 @@ void File::setHashes(const Common::Hashes& hashes)
 
 void FileForHasher::setSize(qint64 size)
 {
-   if (this->size != size)
+   if (this->getSize() != size)
    {
-      this->dir->fileSizeChanged(this->size, size);
-      this->size = size;
+      this->dir->fileSizeChanged(this->getSize(), size);
+      this->setSize(size);
    }
 }
 
