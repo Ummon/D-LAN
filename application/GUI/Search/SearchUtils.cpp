@@ -7,21 +7,22 @@ using namespace GUI;
 #include <Common/Global.h>
 #include <Common/KnownExtensions.h>
 
-QString SearchUtils::getCategoryText(Protos::Common::FindPattern_Category category)
+QString SearchUtils::getSearchTypeText(SearchType searchType, bool withAllExtensions)
 {
-   switch (category)
+   switch (searchType.entryType)
    {
-   case Protos::Common::FindPattern_Category_FILE_DIR:
-      return QObject::tr("Files and directories");
+   case SearchType::EntryType::ALL:
+      return QObject::tr("All");
 
-   case Protos::Common::FindPattern_Category_FILE:
-      return QObject::tr("Files");
-
-   case Protos::Common::FindPattern_Category_DIR:
+   case SearchType::EntryType::DIRS_ONLY:
       return QObject::tr("Directories");
 
+   case SearchType::EntryType::FILES_ONLY:
+      return QObject::tr("Files");
+
+   case SearchType::EntryType::FILES_BY_EXTENSION:
    default:
-      return QString();
+      return getExtensionText(searchType.extensionCategory, withAllExtensions);
    }
 }
 
@@ -101,11 +102,18 @@ QString SearchUtils::getFindPatternSummary(const Protos::Common::FindPattern& fi
          Common::ExtensionCategory cat = Common::KnownExtensions::getCategoryFrom(Common::ProtoHelper::getRepeatedStr(findPattern, &Protos::Common::FindPattern::extension_filter, 0));
          if (!result.isEmpty())
             result += SEPARATOR;
-         result += getExtensionText(cat, false);
+         result += getSearchTypeText(cat, false);
       }
       catch (const Common::CategoryNotFoundException&)
       {
       }
+   }
+   else if (findPattern.category() != Protos::Common::FindPattern::FILE_DIR)
+   {
+      if (!result.isEmpty())
+         result += SEPARATOR;
+
+      result += getSearchTypeText(static_cast<SearchType::EntryType>(findPattern.category()));
    }
 
    if (findPattern.min_size() > 0 || findPattern.max_size() > 0)
@@ -123,14 +131,6 @@ QString SearchUtils::getFindPatternSummary(const Protos::Common::FindPattern& fi
 
       if (findPattern.max_size() > 0)
          result += Common::Global::formatByteSize(findPattern.max_size());
-   }
-
-   if (findPattern.category() != Protos::Common::FindPattern::FILE_DIR)
-   {
-      if (!result.isEmpty())
-         result += SEPARATOR;
-
-      result += getCategoryText(findPattern.category());
    }
 
    if (local)

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>309</width>
-    <height>197</height>
+    <height>168</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -19,7 +19,7 @@
   <property name="minimumSize">
    <size>
     <width>215</width>
-    <height>197</height>
+    <height>168</height>
    </size>
   </property>
   <property name="features">
@@ -126,52 +126,8 @@
        <property name="horizontalSpacing">
         <number>6</number>
        </property>
-       <item row="0" column="0">
-        <widget class="QLabel" name="lblFileType">
-         <property name="text">
-          <string>File type</string>
-         </property>
-        </widget>
-       </item>
        <item row="0" column="1">
-        <widget class="QComboBox" name="cmbFileType"/>
-       </item>
-       <item row="1" column="0">
-        <widget class="QLabel" name="lblMinSize">
-         <property name="text">
-          <string>Minimum size</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="1">
-        <layout class="QHBoxLayout" name="layMinSize">
-         <item>
-          <widget class="QLineEdit" name="txtMinSize"/>
-         </item>
-         <item>
-          <widget class="QComboBox" name="cmbMinSize">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="sizeAdjustPolicy">
-            <enum>QComboBox::AdjustToMinimumContentsLength</enum>
-           </property>
-           <property name="minimumContentsLength">
-            <number>3</number>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-       <item row="2" column="0">
-        <widget class="QLabel" name="lblMaxSize">
-         <property name="text">
-          <string>Maximum size</string>
-         </property>
-        </widget>
+        <widget class="QComboBox" name="cmbType"/>
        </item>
        <item row="2" column="1">
         <layout class="QHBoxLayout" name="layMaxSize">
@@ -199,22 +155,56 @@
          </item>
         </layout>
        </item>
-       <item row="3" column="0">
-        <widget class="QLabel" name="lblCategory">
-         <property name="text">
-          <string>Category</string>
-         </property>
-        </widget>
-       </item>
        <item row="3" column="1">
-        <widget class="QComboBox" name="cmbCategory"/>
-       </item>
-       <item row="4" column="1">
         <widget class="QCheckBox" name="chkOwnFiles">
          <property name="text">
           <string>Own files</string>
          </property>
         </widget>
+       </item>
+       <item row="0" column="0">
+        <widget class="QLabel" name="lblType">
+         <property name="text">
+          <string>Type</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="lblMinSize">
+         <property name="text">
+          <string>Minimum size</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="0">
+        <widget class="QLabel" name="lblMaxSize">
+         <property name="text">
+          <string>Maximum size</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <layout class="QHBoxLayout" name="layMinSize">
+         <item>
+          <widget class="QLineEdit" name="txtMinSize"/>
+         </item>
+         <item>
+          <widget class="QComboBox" name="cmbMinSize">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="sizeAdjustPolicy">
+            <enum>QComboBox::AdjustToMinimumContentsLength</enum>
+           </property>
+           <property name="minimumContentsLength">
+            <number>3</number>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </item>
       </layout>
      </widget>

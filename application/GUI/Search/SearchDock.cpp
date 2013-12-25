@@ -30,7 +30,6 @@ using namespace GUI;
 #include <Common/Constants.h>
 
 #include <Log.h>
-#include <Search/SearchUtils.h>
 
 SearchDock::SearchDock(QSharedPointer<RCC::ICoreConnection> coreConnection, QWidget* parent) :
    QDockWidget(parent),
@@ -55,7 +54,10 @@ SearchDock::SearchDock(QSharedPointer<RCC::ICoreConnection> coreConnection, QWid
       this->ui->cmbMaxSize->addItem(Common::Constants::BINARY_PREFIXS[i]);
    }
 
-   QList<Common::ExtensionCategory> extensions = {
+   QList<SearchType> searchTypes = {
+      SearchType::EntryType::ALL,
+      SearchType::EntryType::DIRS_ONLY,
+      SearchType::EntryType::FILES_ONLY,
       Common::ExtensionCategory::AUDIO,
       Common::ExtensionCategory::VIDEO,
       Common::ExtensionCategory::COMPRESSED,
@@ -66,13 +68,12 @@ SearchDock::SearchDock(QSharedPointer<RCC::ICoreConnection> coreConnection, QWid
       Common::ExtensionCategory::MEDIA_ARCHIVE
    };
 
-   this->ui->cmbFileType->addItem(tr("All"), static_cast<std::underlying_type<Common::ExtensionCategory>::type>(0));
-   foreach (Common::ExtensionCategory cat, extensions)
-      this->ui->cmbFileType->addItem(SearchUtils::getExtensionText(cat), static_cast<std::underlying_type<Common::ExtensionCategory>::type>(cat));
-
-   const ::google::protobuf::EnumDescriptor* catDescriptor = Protos::Common::FindPattern::Category_descriptor();
-   for (int cat = 0; cat < catDescriptor->value_count(); ++cat)
-      this->ui->cmbCategory->addItem(SearchUtils::getCategoryText(static_cast<Protos::Common::FindPattern_Category>(catDescriptor->value(cat)->number())), catDescriptor->value(cat)->number());
+   foreach (SearchType searchType, searchTypes)
+   {
+      QVariant v;
+      v.setValue(searchType);
+      this->ui->cmbType->addItem(SearchUtils::getSearchTypeText(searchType), v);
+   }
 
    this->loadSettings();
 
@@ -84,15 +85,13 @@ SearchDock::SearchDock(QSharedPointer<RCC::ICoreConnection> coreConnection, QWid
 
    connect(this->ui->butMoreOptions, SIGNAL(toggled(bool)), this, SLOT(saveSettings()));
 
-   connect(this->ui->cmbFileType, SIGNAL(currentIndexChanged(int)), this, SLOT(saveSettings()));
+   connect(this->ui->cmbType, SIGNAL(currentIndexChanged(int)), this, SLOT(saveSettings()));
 
    connect(this->ui->txtMinSize, SIGNAL(textChanged(QString)), this, SLOT(saveSettings()));
    connect(this->ui->txtMaxSize, SIGNAL(textChanged(QString)), this, SLOT(saveSettings()));
 
    connect(this->ui->cmbMinSize, SIGNAL(currentIndexChanged(int)), this, SLOT(saveSettings()));
    connect(this->ui->cmbMaxSize, SIGNAL(currentIndexChanged(int)), this, SLOT(saveSettings()));
-
-   connect(this->ui->cmbCategory, SIGNAL(currentIndexChanged(int)), this, SLOT(saveSettings()));
 
    connect(this->ui->chkOwnFiles, SIGNAL(stateChanged(int)), this, SLOT(saveSettings()));
 
@@ -149,7 +148,7 @@ void SearchDock::search()
 
    const bool moreOptions = this->ui->butMoreOptions->isChecked();
 
-   if (this->ui->txtSearch->text().isEmpty() && (!moreOptions || this->currentExtension() == 0 && this->currentMinSize() == 0 && this->currentMaxSize() == 0))
+   if (this->ui->txtSearch->text().isEmpty() && (!moreOptions || this->currentType().entryType != SearchType::EntryType::FILES_BY_EXTENSION && this->currentMinSize() == 0 && this->currentMaxSize() == 0))
       return;
 
    Protos::Common::FindPattern pattern;
@@ -159,15 +158,20 @@ void SearchDock::search()
 
    if (moreOptions)
    {
-      std::underlying_type<Common::ExtensionCategory>::type extension = this->currentExtension();
-      if (extension != 0)
-         foreach (QString e, Common::KnownExtensions::getExtensions(static_cast<Common::ExtensionCategory>(extension)))
+      SearchType type = this->currentType();
+      if (type.entryType == SearchType::EntryType::FILES_BY_EXTENSION)
+      {
+         foreach (QString e, Common::KnownExtensions::getExtensions(type.extensionCategory))
             Common::ProtoHelper::addRepeatedStr(pattern, &Protos::Common::FindPattern::add_extension_filter, e);
+          pattern.set_category(Protos::Common::FindPattern::FILE);
+      }
+      else
+      {
+         pattern.set_category(static_cast<Protos::Common::FindPattern_Category>(type.entryType));
+      }
 
       pattern.set_min_size(this->currentMinSize());
       pattern.set_max_size(this->currentMaxSize());
-
-      pattern.set_category(static_cast<Protos::Common::FindPattern_Category>(this->currentCategory()));
 
       local = this->ui->chkOwnFiles->checkState() == Qt::Checked;
    }
@@ -185,15 +189,13 @@ void SearchDock::saveSettings()
 {
    SETTINGS.set("search_advanced_visible", this->ui->butMoreOptions->isChecked());
 
-   SETTINGS.set("search_type", static_cast<quint32>(this->currentExtension()));
+   SETTINGS.set("search_type", static_cast<quint32>(this->ui->cmbType->currentIndex()));
 
    SETTINGS.set("search_min_size_value", this->ui->txtMinSize->text().toUInt());
    SETTINGS.set("search_max_size_value", this->ui->txtMaxSize->text().toUInt());
 
    SETTINGS.set("search_min_size_unit", (quint32)(this->ui->cmbMinSize->currentIndex() + 1));
    SETTINGS.set("search_max_size_unit", (quint32)(this->ui->cmbMaxSize->currentIndex() + 1));
-
-   SETTINGS.set("search_file_category", static_cast<quint32>(this->currentCategory()));
 
    SETTINGS.set("search_local", this->ui->chkOwnFiles->checkState() == Qt::Checked);
 }
@@ -202,7 +204,7 @@ void SearchDock::loadSettings()
 {
    this->ui->butMoreOptions->setChecked(SETTINGS.get<bool>("search_advanced_visible"));
 
-   this->ui->cmbFileType->setCurrentIndex(this->ui->cmbFileType->findData(SETTINGS.get<quint32>("search_type")));
+   this->ui->cmbType->setCurrentIndex(SETTINGS.get<quint32>("search_type"));
 
    quint32 minSize = SETTINGS.get<quint32>("search_min_size_value");
    quint32 maxSize = SETTINGS.get<quint32>("search_max_size_value");
@@ -213,14 +215,12 @@ void SearchDock::loadSettings()
    this->ui->cmbMinSize->setCurrentIndex(SETTINGS.get<quint32>("search_min_size_unit") - 1);
    this->ui->cmbMaxSize->setCurrentIndex(SETTINGS.get<quint32>("search_max_size_unit") - 1);
 
-   this->ui->cmbCategory->setCurrentIndex(this->ui->cmbCategory->findData(SETTINGS.get<quint32>("search_file_category")));
-
    this->ui->chkOwnFiles->setChecked(SETTINGS.get<bool>("search_local"));
 }
 
-std::underlying_type<Common::ExtensionCategory>::type SearchDock::currentExtension() const
+SearchType SearchDock::currentType() const
 {
-   return this->ui->cmbFileType->itemData(this->ui->cmbFileType->currentIndex()).value<std::underlying_type<Common::ExtensionCategory>::type>();
+   return this->ui->cmbType->itemData(this->ui->cmbType->currentIndex()).value<SearchType>();
 }
 
 /**
@@ -253,9 +253,4 @@ quint64 SearchDock::currentMaxSize()
       result *= 1024;
 
    return result;
-}
-
-int SearchDock::currentCategory() const
-{
-   return this->ui->cmbCategory->itemData(this->ui->cmbCategory->currentIndex()).toInt();
 }

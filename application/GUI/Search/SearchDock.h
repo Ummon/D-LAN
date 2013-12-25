@@ -28,6 +28,8 @@
 #include <Common/KnownExtensions.h>
 #include <Common/RemoteCoreController/ICoreConnection.h>
 
+#include <Search/SearchUtils.h>
+
 namespace Ui {
    class SearchDock;
 }
@@ -64,10 +66,9 @@ namespace GUI
    private:
       void loadSettings();
 
-      std::underlying_type<Common::ExtensionCategory>::type currentExtension() const;
+      SearchType currentType() const;
       quint64 currentMinSize();
       quint64 currentMaxSize();
-      int currentCategory() const;
 
       Ui::SearchDock* ui;
 
