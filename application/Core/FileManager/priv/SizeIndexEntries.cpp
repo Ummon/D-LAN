@@ -65,8 +65,11 @@ QList<Entry*> SizeIndexEntries::search(qint64 sizeMin, qint64 sizeMax, std::func
    auto end = this->index.end();
 
    while (i != end && (*i)->getSize() <= sizeMax)
+   {
       if (predicat == nullptr || predicat(*i))
          result << *i;
+      ++i;
+   }
 
    return result;
 }
