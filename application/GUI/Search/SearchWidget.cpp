@@ -195,6 +195,7 @@ SearchWidget::SearchWidget(QSharedPointer<RCC::ICoreConnection> coreConnection, 
 
    this->ui->treeView->setSelectionBehavior(QAbstractItemView::SelectRows);
    this->ui->treeView->setSelectionMode(QAbstractItemView::ExtendedSelection);
+   this->ui->treeView->sortByColumn(SearchModel::column(SearchColumn::RELEVANCE), Qt::DescendingOrder);
 
    this->searchModel.search(findPattern, local);
 

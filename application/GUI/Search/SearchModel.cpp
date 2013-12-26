@@ -29,6 +29,16 @@ using namespace GUI;
 
 const int SearchModel::NB_SIGNAL_PROGRESS(50);
 
+SearchColumn SearchModel::column(int number)
+{
+   return static_cast<SearchColumn>(number);
+}
+
+int SearchModel::column(SearchColumn column)
+{
+   return static_cast<int>(column);
+}
+
 /**
   * @class GUI::SearchModel
   *
@@ -118,7 +128,7 @@ QVariant SearchModel::headerData(int section, Qt::Orientation orientation, int r
    case Qt::DisplayRole:
       switch (section)
       {
-      case 0: return tr("Filename");
+      case 0: return tr("Name");
       case 1: return tr("Directory");
       case 2: return tr("Relevance");
       case 3: return tr("Peer");
@@ -166,6 +176,11 @@ void SearchModel::loadChildren(const QPersistentModelIndex &index)
    BrowseModel::loadChildren(index);
 }
 
+void SearchModel::sort(int column, Qt::SortOrder order)
+{
+   std::cout << "column: " << column << std::endl;
+}
+
 bool entryLessThan(const Protos::Common::Entry& e1, const Protos::Common::Entry& e2)
 {
    std::string s1;
@@ -203,23 +218,15 @@ bool entryLessThan(const Protos::Common::Entry& e1, const Protos::Common::Entry&
 
 bool findEntryLessThan(const Protos::Common::FindResult_EntryLevel* e1, const Protos::Common::FindResult_EntryLevel* e2)
 {
-   if (e1->entry().type() == e2->entry().type())
-   {
-      if (e1->level() == e2->level())
-      {
-         return entryLessThan(e1->entry(), e2->entry());
-      }
-      else
-         return e1->level() < e2->level();
-   }
+   if (e1->level() == e2->level())
+      return entryLessThan(e1->entry(), e2->entry());
    else
-      return e1->entry().type() >= e2->entry().type();
+      return e1->level() < e2->level();
 }
 
 /**
   * This method is called several times, one per received entries. The entries are inserted into the model.
   * The given entries are sorted by their level, we will keep the sort when inserting the entry but with some modifications:
-  *  - The directories are put first.
   *  - All entries with the same level are sorted first by their path (prefixed with the shared directory name) and then by their name.
   *  - All file entries with the same chunks (identical data) are grouped. They can be owned by different peer.
   */
@@ -320,11 +327,10 @@ int SearchModel::insertTree(const Protos::Common::FindResult_EntryLevel& entry, 
 
    SearchTree* root = this->getRoot();
 
-   // Search a place to insert the new entry, order (type > level > path > name) must be kept.
+   // Search a place to insert the new entry, order (level > path > name) must be kept.
    while (currentIndex < root->getNbChildren() && (
-      root->getChild(currentIndex)->getItem().type() > entry.entry().type() ||
-      root->getChild(currentIndex)->getItem().type() == entry.entry().type() && static_cast<SearchTree*>(root->getChild(currentIndex))->getLevel() < static_cast<int>(entry.level()) ||
-      root->getChild(currentIndex)->getItem().type() == entry.entry().type() && static_cast<SearchTree*>(root->getChild(currentIndex))->getLevel() == static_cast<int>(entry.level()) && entryLessThan(root->getChild(currentIndex)->getItem(), entry.entry())
+      static_cast<SearchTree*>(root->getChild(currentIndex))->getLevel() < static_cast<int>(entry.level()) ||
+      static_cast<SearchTree*>(root->getChild(currentIndex))->getLevel() == static_cast<int>(entry.level()) && entryLessThan(root->getChild(currentIndex)->getItem(), entry.entry())
    ))
       currentIndex++;
 

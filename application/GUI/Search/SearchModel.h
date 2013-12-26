@@ -35,12 +35,26 @@
 
 namespace GUI
 {
+   enum class SearchColumn
+   {
+      NAME = 0,
+      DIRECTORY = 1,
+      RELEVANCE = 2,
+      PEER = 3,
+      SIZE = 4
+   };
+
    class SearchModel : public BrowseModel
    {
       class SearchTree;
       static const int NB_SIGNAL_PROGRESS; // The number of signal progress sent during a search.
+
       Q_OBJECT
+
    public:
+      static SearchColumn column(int number);
+      static int column(SearchColumn column);
+
       SearchModel(QSharedPointer<RCC::ICoreConnection> coreConnection, const PeerListModel& peerListModel, const DirListModel& sharedDirsModel);
       ~SearchModel();
 
@@ -50,6 +64,7 @@ namespace GUI
 
       QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const;
       QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const;
+
       int columnCount(const QModelIndex& parent = QModelIndex()) const;
 
       int getNbFolders() const;
@@ -65,6 +80,7 @@ namespace GUI
 
    protected:
       void loadChildren(const QPersistentModelIndex &index);
+      void sort(int column, Qt::SortOrder order = Qt::AscendingOrder) override;
 
    protected slots:
       void result(const Protos::Common::FindResult& findResult);
