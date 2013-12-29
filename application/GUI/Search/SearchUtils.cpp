@@ -102,7 +102,7 @@ QString SearchUtils::getFindPatternSummary(const Protos::Common::FindPattern& fi
          Common::ExtensionCategory cat = Common::KnownExtensions::getCategoryFrom(Common::ProtoHelper::getRepeatedStr(findPattern, &Protos::Common::FindPattern::extension_filter, 0));
          if (!result.isEmpty())
             result += SEPARATOR;
-         result += getSearchTypeText(cat, false);
+         result += getSearchTypeText(cat);
       }
       catch (const Common::CategoryNotFoundException&)
       {
@@ -122,15 +122,16 @@ QString SearchUtils::getFindPatternSummary(const Protos::Common::FindPattern& fi
          result += SEPARATOR;
 
       if (findPattern.min_size() > 0)
-      {
          result += Common::Global::formatByteSize(findPattern.min_size());
-         result += " ";
-      }
+      else
+         result += QString::fromUtf8("-∞");
 
-      result += "-> ";
+      result += " -> ";
 
       if (findPattern.max_size() > 0)
          result += Common::Global::formatByteSize(findPattern.max_size());
+      else
+         result += QString::fromUtf8("∞");
    }
 
    if (local)
@@ -167,15 +168,16 @@ QString SearchUtils::getFindPatternWindowTitle(const Protos::Common::FindPattern
       QString result;
 
       if (findPattern.min_size() > 0)
-      {
          result += Common::Global::formatByteSize(findPattern.min_size());
-         result += " ";
-      }
+      else
+         result += QString::fromUtf8("-∞");
 
-      result += "-> ";
+      result += " -> ";
 
       if (findPattern.max_size() > 0)
          result += Common::Global::formatByteSize(findPattern.max_size());
+      else
+         result += QString::fromUtf8("∞");
 
       return result;
    }

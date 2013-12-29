@@ -60,11 +60,11 @@ SearchDock::SearchDock(QSharedPointer<RCC::ICoreConnection> coreConnection, QWid
       SearchType::EntryType::FILES_ONLY,
       Common::ExtensionCategory::AUDIO,
       Common::ExtensionCategory::VIDEO,
-      Common::ExtensionCategory::COMPRESSED,
-      Common::ExtensionCategory::DOCUMENT,
       Common::ExtensionCategory::PICTURE,
-      Common::ExtensionCategory::SUBTITLE,
+      Common::ExtensionCategory::DOCUMENT,
       Common::ExtensionCategory::EXECUTABLE,
+      Common::ExtensionCategory::SUBTITLE,
+      Common::ExtensionCategory::COMPRESSED,
       Common::ExtensionCategory::MEDIA_ARCHIVE
    };
 
@@ -72,7 +72,7 @@ SearchDock::SearchDock(QSharedPointer<RCC::ICoreConnection> coreConnection, QWid
    {
       QVariant v;
       v.setValue(searchType);
-      this->ui->cmbType->addItem(SearchUtils::getSearchTypeText(searchType), v);
+      this->ui->cmbType->addItem(SearchUtils::getSearchTypeText(searchType, false), v);
    }
 
    this->loadSettings();
