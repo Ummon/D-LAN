@@ -28,16 +28,32 @@ using namespace NL;
 #include <Common/Settings.h>
 #include <Common/ProtoHelper.h>
 
+QNetworkInterface Utils::getCurrentInterfaceToListenTo()
+{
+   const QString addressToListen = SETTINGS.get<QString>("listen_address");
+   auto interfaces = QNetworkInterface::allInterfaces();
+
+   if (interfaces.isEmpty())
+      return QNetworkInterface();
+
+   for (QList<QNetworkInterface>::const_iterator i = interfaces.begin(); i != interfaces.end(); ++i)
+      foreach (QNetworkAddressEntry entry, i->addressEntries())
+         if (entry.ip().toString() == addressToListen)
+            return *i;
+
+   return interfaces.first();
+}
+
 QHostAddress Utils::getCurrentAddressToListenTo()
 {
-   QString adressToListen = SETTINGS.get<QString>("listen_address");
+   const QString addressToListen = SETTINGS.get<QString>("listen_address");
 
-   if (!adressToListen.isEmpty())
+   if (!addressToListen.isEmpty())
    {
       // Check if the address exists.
       foreach (QHostAddress address, QNetworkInterface::allAddresses())
-         if (address.toString() == adressToListen)
-            return QHostAddress(adressToListen);
+         if (address.toString() == addressToListen)
+            return QHostAddress(addressToListen);
 
       SETTINGS.set("listen_address", QString(""));
    }

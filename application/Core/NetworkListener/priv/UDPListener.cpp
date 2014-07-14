@@ -406,8 +406,9 @@ void UDPListener::initMulticastUDPSocket()
 
    this->multicastSocket.setSocketOption(QAbstractSocket::MulticastTtlOption, SETTINGS.get<quint32>("multicast_ttl"));
 
-   if (!this->multicastSocket.joinMulticastGroup(this->multicastGroup))
-      L_ERRO(QString("Unable to join the multicast group: %1").arg(this->multicastGroup.toString()));
+   QNetworkInterface networkInterface = Utils::getCurrentInterfaceToListenTo();
+   if (networkInterface.isValid() ? !this->multicastSocket.joinMulticastGroup(this->multicastGroup, networkInterface) : !this->multicastSocket.joinMulticastGroup(this->multicastGroup))
+      L_ERRO(QString("Unable to join the multicast group: %1 on the interface: %2").arg(this->multicastGroup.toString()).arg(networkInterface.name()));
 
    static const int BUFFER_SIZE_UDP = SETTINGS.get<quint32>("udp_buffer_size");
    const int multicastSocketDescriptor = this->multicastSocket.socketDescriptor();

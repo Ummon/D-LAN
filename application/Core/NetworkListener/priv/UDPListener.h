@@ -23,8 +23,8 @@
 #include <QUdpSocket>
 #include <QTimer>
 #include <QSharedPointer>
-#include <QtNetwork/QNetworkInterface>
-#include <QtNetwork/QUdpSocket>
+#include <QNetworkInterface>
+#include <QUdpSocket>
 
 #include <Libs/MersenneTwister.h>
 

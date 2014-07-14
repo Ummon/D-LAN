@@ -19,6 +19,7 @@
 #ifndef NETWORKLISTENER_UTILS_H
 #define NETWORKLISTENER_UTILS_H
 
+#include <QNetworkInterface>
 #include <QHostAddress>
 
 namespace NL
@@ -26,6 +27,7 @@ namespace NL
    class Utils
    {
    public:
+      static QNetworkInterface getCurrentInterfaceToListenTo();
       static QHostAddress getCurrentAddressToListenTo();
       static QHostAddress getMulticastGroup();
    };
