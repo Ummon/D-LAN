@@ -43,7 +43,7 @@ namespace GUI
    {
       Q_OBJECT
    public:
-      explicit MdiArea(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel, Taskbar& taskbar, QWidget* parent = 0);
+      explicit MdiArea(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel, Taskbar taskbar, QWidget* parent = 0);
       ~MdiArea();
 
       void focusNthWindow(int num);
@@ -110,7 +110,7 @@ namespace GUI
 
       QSharedPointer<RCC::ICoreConnection> coreConnection;
       PeerListModel& peerListModel;
-      Taskbar& taskbar;
+      Taskbar taskbar;
 
       QTabBar* mdiAreaTabBar;
 

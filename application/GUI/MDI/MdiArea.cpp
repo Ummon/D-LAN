@@ -31,7 +31,7 @@ using namespace GUI;
 #include <MDI/MdiWidget.h>
 #include <MDI/TabButtons.h>
 
-MdiArea::MdiArea(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel, Taskbar& taskbar, QWidget* parent) :
+MdiArea::MdiArea(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel, Taskbar taskbar, QWidget* parent) :
    QMdiArea(parent),
    emoticon(Utils::emoticonsDirectoryPath(), Constants::DEFAULT_EMOTICON_THEME),
    coreConnection(coreConnection),

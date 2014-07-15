@@ -45,6 +45,8 @@ namespace GUI
 #endif
       {}
 
+      Taskbar(const QSharedPointer<ITaskbarImpl>& other) : impl(other) { }
+
       void setStatus(TaskbarButtonStatus status) { if (!this->impl.isNull()) this->impl->setStatus(status); }
       void setProgress(quint64 completed, quint64 total) { if (!this->impl.isNull()) this->impl->setProgress(completed, total); }
       void setOverlayIcon(const QIcon& icon, const QString& description) { if (!this->impl.isNull()) this->impl->setOverlayIcon(icon, description); }
