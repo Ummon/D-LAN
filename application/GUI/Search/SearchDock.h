@@ -58,8 +58,7 @@ namespace GUI
       void coreDisconnected(bool force);
 
       void search();
-
-      void butMoreOptionsToggled(bool toggled);
+      void clear();
 
       void saveSettings();
 

@@ -77,13 +77,8 @@ SearchDock::SearchDock(QSharedPointer<RCC::ICoreConnection> coreConnection, QWid
 
    this->loadSettings();
 
-   this->butMoreOptionsToggled(this->ui->butMoreOptions->isChecked());
-
    connect(this->ui->butSearch, SIGNAL(clicked()), this, SLOT(search()));
-
-   connect(this->ui->butMoreOptions, SIGNAL(toggled(bool)), this, SLOT(butMoreOptionsToggled(bool)));
-
-   connect(this->ui->butMoreOptions, SIGNAL(toggled(bool)), this, SLOT(saveSettings()));
+   connect(this->ui->butClear, SIGNAL(clicked()), this, SLOT(clear()));
 
    connect(this->ui->cmbType, SIGNAL(currentIndexChanged(int)), this, SLOT(saveSettings()));
 
@@ -146,9 +141,7 @@ void SearchDock::search()
 
    this->ui->txtSearch->setText(this->ui->txtSearch->text().trimmed());
 
-   const bool moreOptions = this->ui->butMoreOptions->isChecked();
-
-   if (this->ui->txtSearch->text().isEmpty() && (!moreOptions || this->currentType().entryType != SearchType::EntryType::FILES_BY_EXTENSION && this->currentMinSize() == 0 && this->currentMaxSize() == 0))
+   if (this->ui->txtSearch->text().isEmpty() && this->currentType().entryType != SearchType::EntryType::FILES_BY_EXTENSION && this->currentMinSize() == 0 && this->currentMaxSize() == 0)
       return;
 
    Protos::Common::FindPattern pattern;
@@ -156,39 +149,42 @@ void SearchDock::search()
 
    bool local = false;
 
-   if (moreOptions)
+   SearchType type = this->currentType();
+   if (type.entryType == SearchType::EntryType::FILES_BY_EXTENSION)
    {
-      SearchType type = this->currentType();
-      if (type.entryType == SearchType::EntryType::FILES_BY_EXTENSION)
-      {
-         foreach (QString e, Common::KnownExtensions::getExtensions(type.extensionCategory))
-            Common::ProtoHelper::addRepeatedStr(pattern, &Protos::Common::FindPattern::add_extension_filter, e);
-          pattern.set_category(Protos::Common::FindPattern::FILE);
-      }
-      else
-      {
-         pattern.set_category(static_cast<Protos::Common::FindPattern_Category>(type.entryType));
-      }
-
-      pattern.set_min_size(this->currentMinSize());
-      pattern.set_max_size(this->currentMaxSize());
-
-      local = this->ui->chkOwnFiles->checkState() == Qt::Checked;
+      foreach (QString e, Common::KnownExtensions::getExtensions(type.extensionCategory))
+         Common::ProtoHelper::addRepeatedStr(pattern, &Protos::Common::FindPattern::add_extension_filter, e);
+       pattern.set_category(Protos::Common::FindPattern::FILE);
    }
+   else
+   {
+      pattern.set_category(static_cast<Protos::Common::FindPattern_Category>(type.entryType));
+   }
+
+   pattern.set_min_size(this->currentMinSize());
+   pattern.set_max_size(this->currentMaxSize());
+
+   local = this->ui->chkOwnFiles->checkState() == Qt::Checked;
 
    emit search(pattern, local);
 }
 
-void SearchDock::butMoreOptionsToggled(bool toggled)
+void SearchDock::clear()
 {
-   this->ui->advancedOptions->setVisible(toggled);
-   this->resize(this->width(), 10); // TODO: Doesn't work, don't know why.
+   this->ui->txtSearch->setText("");
+   this->ui->cmbType->setCurrentIndex(0);
+
+   this->ui->cmbMinSize->setCurrentIndex(2);
+   this->ui->txtMinSize->setText("");
+
+   this->ui->cmbMaxSize->setCurrentIndex(2);
+   this->ui->txtMaxSize->setText("");
+
+   this->ui->chkOwnFiles->setChecked(false);
 }
 
 void SearchDock::saveSettings()
 {
-   SETTINGS.set("search_advanced_visible", this->ui->butMoreOptions->isChecked());
-
    SETTINGS.set("search_type", static_cast<quint32>(this->ui->cmbType->currentIndex()));
 
    SETTINGS.set("search_min_size_value", this->ui->txtMinSize->text().toUInt());
@@ -202,8 +198,6 @@ void SearchDock::saveSettings()
 
 void SearchDock::loadSettings()
 {
-   this->ui->butMoreOptions->setChecked(SETTINGS.get<bool>("search_advanced_visible"));
-
    this->ui->cmbType->setCurrentIndex(SETTINGS.get<quint32>("search_type"));
 
    quint32 minSize = SETTINGS.get<quint32>("search_min_size_value");

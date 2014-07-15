@@ -2,24 +2,21 @@
 <ui version="4.0">
  <class>SearchDock</class>
  <widget class="QDockWidget" name="SearchDock">
+  <property name="windowModality">
+   <enum>Qt::NonModal</enum>
+  </property>
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>309</width>
-    <height>168</height>
+    <width>300</width>
+    <height>133</height>
    </rect>
-  </property>
-  <property name="sizePolicy">
-   <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
-    <horstretch>0</horstretch>
-    <verstretch>0</verstretch>
-   </sizepolicy>
   </property>
   <property name="minimumSize">
    <size>
-    <width>215</width>
-    <height>168</height>
+    <width>190</width>
+    <height>133</height>
    </size>
   </property>
   <property name="features">
@@ -29,17 +26,26 @@
    <string>Search</string>
   </property>
   <widget class="QWidget" name="dockWidgetContents">
-   <property name="sizePolicy">
-    <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
-     <horstretch>0</horstretch>
-     <verstretch>0</verstretch>
-    </sizepolicy>
-   </property>
    <layout class="QVBoxLayout" name="verticalLayout">
+    <property name="spacing">
+     <number>2</number>
+    </property>
+    <property name="leftMargin">
+     <number>2</number>
+    </property>
+    <property name="topMargin">
+     <number>2</number>
+    </property>
+    <property name="rightMargin">
+     <number>2</number>
+    </property>
+    <property name="bottomMargin">
+     <number>2</number>
+    </property>
     <item>
      <layout class="QHBoxLayout" name="laySearch">
       <property name="spacing">
-       <number>3</number>
+       <number>0</number>
       </property>
       <item>
        <widget class="QLineEdit" name="txtSearch">
@@ -84,19 +90,19 @@
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="butMoreOptions">
+       <widget class="QPushButton" name="butClear">
         <property name="toolTip">
-         <string>Show more options</string>
+         <string>Clear fields</string>
         </property>
         <property name="text">
          <string/>
         </property>
         <property name="icon">
          <iconset resource="../ressources.qrc">
-          <normaloff>:/icons/ressources/plus.png</normaloff>:/icons/ressources/plus.png</iconset>
+          <normaloff>:/icons/ressources/clear_fields.png</normaloff>:/icons/ressources/clear_fields.png</iconset>
         </property>
         <property name="checkable">
-         <bool>true</bool>
+         <bool>false</bool>
         </property>
         <property name="flat">
          <bool>true</bool>
@@ -124,13 +130,16 @@
         <number>0</number>
        </property>
        <property name="horizontalSpacing">
-        <number>6</number>
+        <number>0</number>
        </property>
        <item row="0" column="1">
         <widget class="QComboBox" name="cmbType"/>
        </item>
        <item row="2" column="1">
         <layout class="QHBoxLayout" name="layMaxSize">
+         <property name="spacing">
+          <number>2</number>
+         </property>
          <item>
           <widget class="QLineEdit" name="txtMaxSize"/>
          </item>
@@ -185,6 +194,9 @@
        </item>
        <item row="1" column="1">
         <layout class="QHBoxLayout" name="layMinSize">
+         <property name="spacing">
+          <number>2</number>
+         </property>
          <item>
           <widget class="QLineEdit" name="txtMinSize"/>
          </item>
