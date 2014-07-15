@@ -49,7 +49,7 @@ void StdLogger::run()
 {
    qint64 size;
    while((size = this->stdoutIn.readLine(this->buffer, BUFFER_SIZE)) != -1)
-      this->log(QString::fromAscii(this->buffer, size), SV_DEBUG);
+      this->log(QString::fromLatin1(this->buffer, size), SV_DEBUG);
 }
 
 StdLogger::StdLogger(int channel, const QString& name) :

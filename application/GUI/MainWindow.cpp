@@ -89,10 +89,10 @@ MainWindow::MainWindow(QSharedPointer<RCC::ICoreConnection> coreConnection, QWid
 
    this->ui->tblLog->setModel(&this->logModel);
    this->ui->tblLog->setItemDelegate(&this->logDelegate);
-   this->ui->tblLog->horizontalHeader()->setResizeMode(0, QHeaderView::ResizeToContents);
-   this->ui->tblLog->horizontalHeader()->setResizeMode(1, QHeaderView::Stretch);
+   this->ui->tblLog->horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
+   this->ui->tblLog->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Stretch);
    this->ui->tblLog->horizontalHeader()->setVisible(false);
-   this->ui->tblLog->verticalHeader()->setResizeMode(QHeaderView::Fixed);
+   this->ui->tblLog->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
    this->ui->tblLog->verticalHeader()->setDefaultSectionSize(QApplication::fontMetrics().height() + 2);
    this->ui->tblLog->verticalHeader()->setVisible(false);
    this->ui->tblLog->setSelectionBehavior(QAbstractItemView::SelectRows);
@@ -393,19 +393,19 @@ void MainWindow::resizeEvent(QResizeEvent* event)
    void MainWindow::showEvent(QShowEvent* /*event*/)
    {
       // It seems that the handle change every time the style is changed.
-      this->taskbar.setWinHandle(this->winId());
+      this->taskbar.setWinHandle((HWND)this->winId());
    }
 
-   bool MainWindow::winEvent(MSG* message, long* result)
+   bool MainWindow::nativeEvent(const QByteArray&, void* message, long* result)
    {
-      this->taskbar.winEvent(message, result);
+      this->taskbar.winEvent(reinterpret_cast<MSG*>(message), result);
       return false;
    }
 #endif
 
 void MainWindow::saveWindowsSettings()
 {
-   L_DEBU(QString("Save state : %1").arg(QString::fromAscii(this->saveState().toHex().data())));
+   L_DEBU(QString("Save state : %1").arg(QString::fromLatin1(this->saveState().toHex().data())));
 
    SETTINGS.set("windows_state", this->saveState());
 

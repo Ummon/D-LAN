@@ -68,7 +68,7 @@ FileDownload::FileDownload(
    for (int i = 0; i < this->NB_CHUNK; i++)
    {
       QSharedPointer<ChunkDownloader> chunkDownloader = (i < this->remoteEntry.chunk_size() && this->remoteEntry.chunk(i).has_hash()) ?
-         QSharedPointer<ChunkDownloader>(new ChunkDownloader(this->linkedPeers, this->occupiedPeersDownloadingChunk, this->transferRateCalculator, this->threadPool, Common::Hash(this->remoteEntry.chunk(i).hash())))
+         (new ChunkDownloader(this->linkedPeers, this->occupiedPeersDownloadingChunk, this->transferRateCalculator, this->threadPool, Common::Hash(this->remoteEntry.chunk(i).hash())))->getStrongRef()
          : QSharedPointer<ChunkDownloader>();
 
       this->chunkDownloaders << chunkDownloader;
@@ -493,7 +493,7 @@ void FileDownload::nextHash(const Protos::Core::HashResult& hashResult)
       return;
    }
 
-   QSharedPointer<ChunkDownloader> chunkDownloader = QSharedPointer<ChunkDownloader>(new ChunkDownloader(this->linkedPeers, this->occupiedPeersDownloadingChunk, this->transferRateCalculator, this->threadPool, hash));
+   QSharedPointer<ChunkDownloader> chunkDownloader = (new ChunkDownloader(this->linkedPeers, this->occupiedPeersDownloadingChunk, this->transferRateCalculator, this->threadPool, hash))->getStrongRef();
    this->chunkDownloaders[num] = chunkDownloader;
 
    // If the file has already been created, the chunks are known.

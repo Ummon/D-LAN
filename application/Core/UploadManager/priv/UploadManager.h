@@ -51,7 +51,7 @@ namespace UM
       void uploadTimeout();
 
    private:
-      LOG_INIT_H("UploadManager");
+      LOG_INIT_H("UploadManager")
 
       static const quint32 MIN_UPLOAD_THREAD_STACK_SIZE;
 

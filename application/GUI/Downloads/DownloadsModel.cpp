@@ -20,6 +20,7 @@
 using namespace GUI;
 
 #include <QPixmap>
+#include <QMimeData>
 
 #include <Common/ProtoHelper.h>
 #include <Common/Global.h>

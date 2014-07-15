@@ -87,7 +87,7 @@ namespace GUI
 
 #ifdef Q_OS_WIN32
       void showEvent(QShowEvent* event);
-      bool winEvent(MSG* message, long* result);
+      bool nativeEvent(const QByteArray& eventType, void* message, long* result);
 #endif
 
    private:

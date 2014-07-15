@@ -20,6 +20,7 @@
 using namespace GUI;
 
 #include <QPainter>
+#include <QtWinExtras>
 
 #include <Common/ProtoHelper.h>
 
@@ -106,7 +107,7 @@ QIcon IconProvider::getIconNative(const QString& extension)
    SHFILEINFO psfi;
    SHGetFileInfo(extension.toStdWString().c_str(), FILE_ATTRIBUTE_NORMAL, &psfi, sizeof(psfi), SHGFI_ICON | SHGFI_SMALLICON | SHGFI_USEFILEATTRIBUTES);
    if (psfi.hIcon != NULL)
-      icon = QIcon(QPixmap::fromWinHICON(psfi.hIcon));
+      icon = QIcon(QtWin::fromHICON(psfi.hIcon));
 #else
    icon = IconProvider::iconProvider.icon(QFileIconProvider::File);
 #endif

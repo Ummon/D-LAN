@@ -74,7 +74,7 @@ void ChunkDownloader::stop()
       this->downloading = false;
       this->mutex.unlock();
 
-      this->threadPool.wait(this);
+      this->threadPool.wait(this->getWeakRef());
 
       this->downloadingEnded();
    }
@@ -476,7 +476,7 @@ void ChunkDownloader::stream(const QSharedPointer<PM::ISocket>& socket)
    this->socket = socket;
    static const quint32 SOCKET_BUFFER_SIZE = SETTINGS.get<quint32>("socket_buffer_size");
    this->socket->setReadBufferSize(SOCKET_BUFFER_SIZE);
-   this->threadPool.run(this);
+   this->threadPool.run(this->getWeakRef());
 }
 
 void ChunkDownloader::getChunkTimeout()

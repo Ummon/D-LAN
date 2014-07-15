@@ -26,7 +26,6 @@ SOURCES += priv/UDPListener.cpp \
     priv/Utils.cpp
 HEADERS += ISearch.h \
     INetworkListener.h \
-    IChat.h \
     priv/UDPListener.h \
     priv/TCPListener.h \
     priv/Search.h \

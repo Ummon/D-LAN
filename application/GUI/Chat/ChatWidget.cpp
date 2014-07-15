@@ -565,9 +565,9 @@ void ChatWidget::init()
       this->ui->tblRoomPeers->setItemDelegate(&this->peerListDelegate);
       this->ui->tblRoomPeers->hideColumn(0);
       this->ui->tblRoomPeers->hideColumn(2);
-      this->ui->tblRoomPeers->horizontalHeader()->setResizeMode(1, QHeaderView::Stretch);
+      this->ui->tblRoomPeers->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Stretch);
       this->ui->tblRoomPeers->horizontalHeader()->setVisible(false);
-      this->ui->tblRoomPeers->verticalHeader()->setResizeMode(QHeaderView::Fixed); // TODO: is there an another way to reduce the row size?
+      this->ui->tblRoomPeers->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed); // TODO: is there an another way to reduce the row size?
       this->ui->tblRoomPeers->verticalHeader()->setDefaultSectionSize(QApplication::fontMetrics().height() + 4);
       this->ui->tblRoomPeers->verticalHeader()->setVisible(false);
       this->ui->tblRoomPeers->setSelectionBehavior(QAbstractItemView::SelectRows);
@@ -598,8 +598,8 @@ void ChatWidget::init()
    this->ui->tblChat->setWordWrap(true);
    this->ui->tblChat->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
    this->ui->tblChat->horizontalHeader()->setVisible(false);
-   this->ui->tblChat->horizontalHeader()->setResizeMode(QHeaderView::Stretch);
-   this->ui->tblChat->verticalHeader()->setResizeMode(QHeaderView::ResizeToContents);
+   this->ui->tblChat->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+   this->ui->tblChat->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
    this->ui->tblChat->verticalHeader()->setVisible(false);
    this->ui->tblChat->setSelectionBehavior(QAbstractItemView::SelectRows);
    this->ui->tblChat->setSelectionMode(QAbstractItemView::ExtendedSelection);

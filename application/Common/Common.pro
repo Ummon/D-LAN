@@ -71,6 +71,7 @@ HEADERS += Hashes.h \
     Containers/Tree.h \
     Containers/SortedList.h \
     Containers/SortedArray.h \
-    Containers/MapArray.h
+    Containers/MapArray.h \
+    SelfWeakPointer.h
 
 

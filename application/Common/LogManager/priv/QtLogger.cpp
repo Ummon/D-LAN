@@ -33,7 +33,7 @@ using namespace LM;
   * will create its own handle and discard the current one.
   */
 
-void handler(QtMsgType type, const char* msg)
+void handler(QtMsgType type, const QMessageLogContext& context, const QString& msg)
 {
    Severity s =
          type == QtDebugMsg ? SV_DEBUG :
@@ -52,7 +52,7 @@ const QtLogger QtLogger::me;
   */
 void QtLogger::initMsgHandler()
 {
-   qInstallMsgHandler(handler);
+   qInstallMessageHandler(handler);
 }
 
 QtLogger::QtLogger() :

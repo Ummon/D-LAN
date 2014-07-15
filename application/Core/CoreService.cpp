@@ -35,7 +35,7 @@ CoreService::CoreService(bool resetSettings, QLocale locale, int argc, char** ar
    // If Core is launched from the console we read user input.
    for (int i = 1; i < argc; i++)
    {
-      QString currentArg = QString::fromAscii(argv[i]);
+      QString currentArg = QString::fromLatin1(argv[i]);
       if (currentArg == "-e" || currentArg == "--exec")
       {
          connect(&this->consoleReader, SIGNAL(newLine(QString)), this, SLOT(processUserInput(QString)), Qt::QueuedConnection);

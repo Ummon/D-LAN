@@ -42,11 +42,11 @@ PeersDock::PeersDock(QSharedPointer<RCC::ICoreConnection> coreConnection, QWidge
 
    this->ui->tblPeers->setModel(&this->peerListModel);
    this->ui->tblPeers->setItemDelegate(&this->peerListDelegate);
-   this->ui->tblPeers->horizontalHeader()->setResizeMode(0, QHeaderView::ResizeToContents);
-   this->ui->tblPeers->horizontalHeader()->setResizeMode(1, QHeaderView::Stretch);
-   this->ui->tblPeers->horizontalHeader()->setResizeMode(2, QHeaderView::ResizeToContents);
+   this->ui->tblPeers->horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
+   this->ui->tblPeers->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Stretch);
+   this->ui->tblPeers->horizontalHeader()->setSectionResizeMode(2, QHeaderView::ResizeToContents);
    this->ui->tblPeers->horizontalHeader()->setVisible(false);
-   this->ui->tblPeers->verticalHeader()->setResizeMode(QHeaderView::Fixed); // TODO: is there an another way to reduce the row size?
+   this->ui->tblPeers->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed); // TODO: is there an another way to reduce the row size?
    this->ui->tblPeers->verticalHeader()->setDefaultSectionSize(QApplication::fontMetrics().height() + 4);
    this->ui->tblPeers->verticalHeader()->setVisible(false);
    this->ui->tblPeers->setSelectionBehavior(QAbstractItemView::SelectRows);

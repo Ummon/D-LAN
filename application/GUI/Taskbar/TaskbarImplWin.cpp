@@ -19,6 +19,8 @@
 #include <Taskbar/TaskbarImplWin.h>
 using namespace GUI;
 
+#include <QtWinExtras>
+
 TaskbarImplWin::TaskbarImplWin() :
    winHandle(nullptr),
    taskbarInterface(nullptr)
@@ -76,7 +78,7 @@ void TaskbarImplWin::setOverlayIcon(const QIcon& icon, const QString& descriptio
    if (!this->winHandle || !this->taskbarInterface)
       return;
 
-   HICON overlayIcon = icon.isNull() ? NULL : icon.pixmap(48).toWinHICON();
+   HICON overlayIcon = icon.isNull() ? NULL : QtWin::toHICON(icon.pixmap(48));
    this->taskbarInterface->SetOverlayIcon(this->winHandle, overlayIcon, description.toStdWString().c_str());
 
    if (overlayIcon)
@@ -98,6 +100,7 @@ void TaskbarImplWin::winEvent(MSG* message, long* /*result*/)
 
 void TaskbarImplWin::initTaskbarButton()
 {
+   static const GUID IID_ITaskbarList3 = {0xea1afb91, 0x9e28, 0x4b86, {0x90, 0xE9, 0x9e, 0x9f, 0x8a, 0x5e, 0xef, 0xaf}};
    HRESULT hr = CoCreateInstance(CLSID_TaskbarList, NULL, CLSCTX_INPROC_SERVER, IID_ITaskbarList3, reinterpret_cast<void**>(&(this->taskbarInterface)));
 
    if (SUCCEEDED(hr))

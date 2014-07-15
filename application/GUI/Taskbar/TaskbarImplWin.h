@@ -21,11 +21,11 @@
 
 #include <QEvent>
 #include <QObject>
-#include <QWidget>
 #include <QIcon>
 
+#include <shlobj.h>
+
 #include <Taskbar/ITaskbarImpl.h>
-#include <Taskbar/WinUtil.h>
 
 namespace GUI
 {

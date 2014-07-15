@@ -26,7 +26,6 @@ using namespace GUI;
 #include <QMenu>
 #include <QIcon>
 #include <QUrl>
-#include <QWindowsXPStyle>
 
 #include <Common/StringUtils.h>
 #include <Common/Settings.h>

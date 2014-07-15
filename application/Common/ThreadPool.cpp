@@ -54,10 +54,17 @@ void Thread::setRunnable(QWeakPointer<IRunnable> runnable)
       return;
    }
 
+   QSharedPointer<IRunnable> runnableStrongRef = runnable.toStrongRef();
+   if (runnableStrongRef.isNull())
+   {
+      this->mutex.unlock();
+      return;
+   }
+
    this->timer.stop();
 
    this->runnable = runnable;
-   this->runnable.data()->init(this);
+   runnableStrongRef->init(this);
 
    this->active = true;
    this->waitCondition.wakeOne();
@@ -85,7 +92,9 @@ void Thread::run()
          return;
       this->mutex.unlock();
 
-      this->runnable.data()->run();
+      QSharedPointer<IRunnable> runnableSharedPointer = this->runnable.toStrongRef();
+      if (runnableSharedPointer)
+         runnableSharedPointer->run();
 
       this->mutex.lock();
       this->active = false;
@@ -140,7 +149,7 @@ void ThreadPool::setStackSize(uint stackSize)
 }
 
 /**
-  * @param runnable A QWeakPointer is needed to know if the object is deleted. A 'QObject' can be given without being itself a 'QWeakPointer'.
+  * @param runnable A QWeakPointer is needed to know if the object is deleted.
   */
 void ThreadPool::run(QWeakPointer<IRunnable> runnable)
 {
@@ -181,8 +190,9 @@ void ThreadPool::runnableFinished()
    Thread* thread = static_cast<Thread*>(this->sender());
 
    // The runnable object may have been deleted right after the call to 'run()'.
-   if (!thread->getRunnable().isNull())
-      thread->getRunnable().data()->finished();
+   QSharedPointer<IRunnable> runnableSharedPointer = thread->getRunnable().toStrongRef();
+   if (!runnableSharedPointer.isNull())
+      runnableSharedPointer->finished();
 
    this->activeThreads.removeOne(thread);
    this->inactiveThreads << thread;

@@ -26,6 +26,7 @@
 
 #include <Protos/core_protocol.pb.h>
 
+#include <Common/SelfWeakPointer.h>
 #include <Common/TransferRateCalculator.h>
 #include <Common/Hash.h>
 #include <Common/Uncopyable.h>
@@ -46,7 +47,7 @@ namespace PM { class IPeer; }
 
 namespace DM
 {
-   class ChunkDownloader : public QObject, public Common::IRunnable, public IChunkDownloader, Common::Uncopyable
+   class ChunkDownloader : public QObject, public Common::SelfWeakPointer<ChunkDownloader>, public Common::IRunnable, public IChunkDownloader, Common::Uncopyable
    {
       static const int MINIMUM_DELTA_TIME_TO_COMPUTE_SPEED;
 

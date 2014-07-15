@@ -1,12 +1,11 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Contact: http://www.qt-project.org/legal
 **
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** This file is part of the Qt Solutions component.
 **
-** This file is part of a Qt Solutions component.
-**
+** $QT_BEGIN_LICENSE:BSD$
 ** You may use this file under the terms of the BSD license as follows:
 **
 ** "Redistribution and use in source and binary forms, with or without
@@ -18,10 +17,10 @@
 **     notice, this list of conditions and the following disclaimer in
 **     the documentation and/or other materials provided with the
 **     distribution.
-**   * Neither the name of Nokia Corporation and its Subsidiary(-ies) nor
-**     the names of its contributors may be used to endorse or promote
-**     products derived from this software without specific prior written
-**     permission.
+**   * Neither the name of Digia Plc and its Subsidiary(-ies) nor the names
+**     of its contributors may be used to endorse or promote products derived
+**     from this software without specific prior written permission.
+**
 **
 ** THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
 ** "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
@@ -35,27 +34,32 @@
 ** (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 ** OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE."
 **
+** $QT_END_LICENSE$
+**
 ****************************************************************************/
 
 #include "qtservice.h"
 #include "qtservice_p.h"
-#include <QtCore/QCoreApplication>
-#include <QtCore/QDateTime>
-#include <QtCore/QFile>
-#include <QtCore/QLibrary>
-#include <QtCore/QMutex>
-#include <QtCore/QSemaphore>
-#include <QtCore/QProcess>
-#include <QtCore/QSettings>
-#include <QtCore/QTextStream>
+#include <QCoreApplication>
+#include <QDateTime>
+#include <QFile>
+#include <QLibrary>
+#include <QMutex>
+#include <QSemaphore>
+#include <QProcess>
+#include <QSettings>
+#include <QTextStream>
 #include <qt_windows.h>
-#include <QtCore/QWaitCondition>
-#include <QtCore/QAbstractEventDispatcher>
-#include <QtCore/QVector>
-#include <QtCore/QThread>
+#include <QWaitCondition>
+#include <QAbstractEventDispatcher>
+#include <QVector>
+#include <QThread>
+#if QT_VERSION >= 0x050000
+#  include <QAbstractNativeEventFilter>
+#endif
 #include <stdio.h>
 #if defined(QTSERVICE_DEBUG)
-#include <QtCore/QDebug>
+#include <QDebug>
 #endif
 
 typedef SERVICE_STATUS_HANDLE(WINAPI*PRegisterServiceCtrlHandler)(const wchar_t*,LPHANDLER_FUNCTION);
@@ -486,7 +490,9 @@ public:
     QStringList serviceArgs;
 
     static QtServiceSysPrivate *instance;
+#if QT_VERSION < 0x050000
     static QCoreApplication::EventFilter nextFilter;
+#endif
 
     QWaitCondition condition;
     QMutex mutex;
@@ -511,7 +517,9 @@ void QtServiceControllerHandler::customEvent(QEvent *e)
 
 
 QtServiceSysPrivate *QtServiceSysPrivate::instance = 0;
+#if QT_VERSION < 0x050000
 QCoreApplication::EventFilter QtServiceSysPrivate::nextFilter = 0;
+#endif
 
 QtServiceSysPrivate::QtServiceSysPrivate()
 {
@@ -715,6 +723,30 @@ protected:
 /*
   Ignore WM_ENDSESSION system events, since they make the Qt kernel quit
 */
+
+#if QT_VERSION >= 0x050000
+
+class QtServiceAppEventFilter : public QAbstractNativeEventFilter
+{
+public:
+    QtServiceAppEventFilter() {}
+    bool nativeEventFilter(const QByteArray &eventType, void *message, long *result);
+};
+
+bool QtServiceAppEventFilter::nativeEventFilter(const QByteArray &, void *message, long *result)
+{
+    MSG *winMessage = (MSG*)message;
+    if (winMessage->message == WM_ENDSESSION && (winMessage->lParam & ENDSESSION_LOGOFF)) {
+        *result = TRUE;
+        return true;
+    }
+    return false;
+}
+
+Q_GLOBAL_STATIC(QtServiceAppEventFilter, qtServiceAppEventFilter)
+
+#else
+
 bool myEventFilter(void* message, long* result)
 {
     MSG* msg = reinterpret_cast<MSG*>(message);
@@ -727,6 +759,8 @@ bool myEventFilter(void* message, long* result)
         *result = TRUE;
     return true;
 }
+
+#endif
 
 /* There are three ways we can be started:
 
@@ -786,7 +820,12 @@ bool QtServiceBasePrivate::start()
     QCoreApplication *app = QCoreApplication::instance();
     if (!app)
         return false;
+
+#if QT_VERSION >= 0x050000
+    QAbstractEventDispatcher::instance()->installNativeEventFilter(qtServiceAppEventFilter());
+#else
     QtServiceSysPrivate::nextFilter = app->setEventFilter(myEventFilter);
+#endif
 
     sys->controllerHandler = new QtServiceControllerHandler(sys);
 

@@ -61,13 +61,13 @@ SettingsWidget::SettingsWidget(QSharedPointer<RCC::ICoreConnection> coreConnecti
 
    this->ui->tblShareDirs->setItemDelegate(&this->dirListDelegate);
    this->ui->tblShareDirs->setModel(&this->sharedDirsModel);
-   this->ui->tblShareDirs->horizontalHeader()->setResizeMode(0, QHeaderView::Stretch);
-   this->ui->tblShareDirs->horizontalHeader()->setResizeMode(1, QHeaderView::ResizeToContents);
-   this->ui->tblShareDirs->horizontalHeader()->setResizeMode(2, QHeaderView::ResizeToContents);
-   this->ui->tblShareDirs->horizontalHeader()->setClickable(false);
+   this->ui->tblShareDirs->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
+   this->ui->tblShareDirs->horizontalHeader()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
+   this->ui->tblShareDirs->horizontalHeader()->setSectionResizeMode(2, QHeaderView::ResizeToContents);
+   this->ui->tblShareDirs->horizontalHeader()->setSectionsClickable(false);
    this->ui->tblShareDirs->horizontalHeader()->setVisible(true);
 
-   this->ui->tblShareDirs->verticalHeader()->setResizeMode(QHeaderView::Fixed);
+   this->ui->tblShareDirs->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
    this->ui->tblShareDirs->verticalHeader()->setDefaultSectionSize(QApplication::fontMetrics().height() + 2);
    this->ui->tblShareDirs->verticalHeader()->setVisible(false);
    this->ui->tblShareDirs->setSelectionBehavior(QAbstractItemView::SelectRows);

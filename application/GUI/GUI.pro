@@ -7,7 +7,12 @@
 # Uncomment this line to enable the leak detector.
 # DEFINES += ENABLE_NVWA
 
-QT       += core gui network xml
+QT += core gui widgets network xml
+
+win32 {
+   QT += winextras
+}
+
 TARGET = "D-LAN.GUI"
 TEMPLATE = app
 
@@ -129,7 +134,6 @@ HEADERS  += MainWindow.h \
     BusyIndicator.h \
     Taskbar/Taskbar.h \
     Taskbar/ITaskbarImpl.h \
-    Taskbar/WinUtil.h \
     Taskbar/TaskbarTypes.h \
     Log/LogDelegate.h \
     Chat/RoomsModel.h \

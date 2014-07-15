@@ -143,12 +143,12 @@ QString ProtoHelper::getDebugStr(const google::protobuf::Message& mess)
       {
          if (str[pos] != '\\')
          {
-            hashHex.append(QString::number(str[pos].toAscii(), 16));
+            hashHex.append(QString::number(str[pos].toLatin1(), 16));
             pos++;
          }
          else
          {
-            switch (str[pos+1].toAscii())
+            switch (str[pos+1].toLatin1())
             {
             case 'r':
                hashHex.append("0d");
@@ -165,7 +165,7 @@ QString ProtoHelper::getDebugStr(const google::protobuf::Message& mess)
             case '"':
             case '\'':
             case '\\':
-               hashHex.append(QString::number(str[pos+1].toAscii(), 16));
+               hashHex.append(QString::number(str[pos+1].toLatin1(), 16));
                pos += 2;
                break;
             default: // It's an octal number, for example : "\123"
