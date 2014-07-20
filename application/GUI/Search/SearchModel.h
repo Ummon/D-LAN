@@ -52,8 +52,8 @@ namespace GUI
       Q_OBJECT
 
    public:
-      static SearchColumn column(int number);
-      static int column(SearchColumn column);
+      static SearchColumn toSearchColumn(int number);
+      static int toColumnNumber(SearchColumn column);
 
       SearchModel(QSharedPointer<RCC::ICoreConnection> coreConnection, const PeerListModel& peerListModel, const DirListModel& sharedDirsModel);
       ~SearchModel();
@@ -101,6 +101,9 @@ namespace GUI
       int nbFolders;
       int nbFiles;
 
+      SearchColumn currentSortedColumn;
+      Qt::SortOrder currentSortOrder;
+
       QTimer timerProgress;
       QTimer timerTimeout;
 
@@ -111,7 +114,7 @@ namespace GUI
       class SearchTree : public Tree
       {
       public:
-         static QString entryPath(const Protos::Common::Entry& entry);
+         //static QString entryPath(const Protos::Common::Entry& entry);
 
          SearchTree();
          SearchTree(const Protos::Common::Entry& entry, int level, const Common::Hash& peerID, const QString& peerNick, SearchTree* parent);

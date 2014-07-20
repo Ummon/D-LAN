@@ -27,7 +27,7 @@
 namespace Common
 {
    /**
-     * A little helper type.
+     * A little helper type for a local shared directory.
      * A tuple (ID, path) that identify a SharedDirectory.
      * Used by FM::IFileManager.
      */

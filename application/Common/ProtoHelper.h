@@ -29,6 +29,17 @@
 
 namespace Common
 {
+   enum class EntriesToAppend
+   {
+      NONE = 0,
+      FILE = 1,
+      DIR = 2,
+   };
+
+   constexpr EntriesToAppend operator|(EntriesToAppend e1, EntriesToAppend e2) { return static_cast<EntriesToAppend>(static_cast<int>(e1) | static_cast<int>(e2)); }
+   constexpr EntriesToAppend operator&(EntriesToAppend e1, EntriesToAppend e2) { return static_cast<EntriesToAppend>(static_cast<int>(e1) & static_cast<int>(e2)); }
+   constexpr bool contains(EntriesToAppend e1, EntriesToAppend e2) { return (e1 & e2) == e2; }
+
    /**
      * The ugliest class ever!
      * Has some methods to read and write string field from Protocol Buffer objects.
@@ -56,12 +67,16 @@ namespace Common
 
       /**
         * Return the relative path of an entry, for exemple:
-        *  - entry is a root: "/".
-        *  - entry is a directory: "/abc/xyz/".
-        *  - entry is a file: "/abc/xyz/file.txt" (with 'appendFilename' == true).
-        *  - entry is a file: "/abc/xyz/" (with 'appendFilename' == false).
+        *  - entry is a root: "/" (with 'prependSharedDir == false')
+        *  - entry is a root: "/root_dir/" ('prependSharedDir == true')
+        *  - entry is a directory: "/abc/xyz/" (with 'entriesToAppend == DIR' and 'prependSharedDir == false').
+        *  - entry is a file: "/abc/xyz/file.txt" (with 'entriesToAppend == DIR' and 'prependSharedDir == false').
+        *  - entry is a file: "/root_dir/abc/xyz/file.txt" (with 'entriesToAppend == DIR' and 'prependSharedDir == true').
+        *  - entry is a file: "/abc/xyz/" (with 'entriesToAppend != FILE' and 'prependSharedDir == false').
         */
-      static QString getRelativePath(const Protos::Common::Entry& entry, bool appendFilename = true);
+      static QString getRelativePath(const Protos::Common::Entry& entry, EntriesToAppend entriesToAppend = EntriesToAppend::FILE | EntriesToAppend::DIR, bool prependSharedDir = false);
+
+      static bool isRoot(const Protos::Common::Entry& entry);
 
       static QString getDebugStr(const google::protobuf::Message& mess);
    };

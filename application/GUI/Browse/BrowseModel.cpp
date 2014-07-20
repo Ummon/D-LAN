@@ -153,17 +153,22 @@ bool BrowseModel::isDir(const QModelIndex& index) const
    return this->getEntry(index).type() == Protos::Common::Entry_Type_DIR;
 }
 
+/**
+  * Returns the local path of the entry at the given index.
+  */
 QString BrowseModel::getPath(const QModelIndex& index, bool appendFilename) const
 {
    const Protos::Common::Entry entry = this->getEntry(index);
    const Common::SharedDir sharedDir = this->sharedDirsModel.getDir(entry.shared_dir().id().hash());
+
    if (sharedDir.isNull())
       return QString();
 
    QString path = sharedDir.path;
    if (!path.isEmpty())
       path.remove(path.size() - 1, 1); // Remove the '/' at the end because path given by 'Common::ProtoHelper::getRelativePath(..)' already begins with a '/'.
-   return path.append(Common::ProtoHelper::getRelativePath(entry, appendFilename));
+
+   return path.append(Common::ProtoHelper::getRelativePath(entry, Common::EntriesToAppend::DIR | (appendFilename ? Common::EntriesToAppend::FILE : Common::EntriesToAppend::NONE)));
 }
 
 void BrowseModel::refresh()

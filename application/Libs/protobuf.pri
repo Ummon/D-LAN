@@ -1,5 +1,5 @@
 win32 {
-   PROTOBUF = e:/protobuf
+   PROTOBUF = d:/protobuf
    LIBS += -L$$PROTOBUF/src/.libs -lprotobuf
    INCLUDEPATH += $$PROTOBUF/src
 }

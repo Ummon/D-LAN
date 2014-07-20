@@ -99,6 +99,9 @@ Protos::Common::Entry::Type DownloadsFlatModel::getType(const QModelIndex& index
    return this->downloads[index.row()].local_entry().type();
 }
 
+/**
+  * Returns the absolute local path.
+  */
 QString DownloadsFlatModel::getPath(const QModelIndex& index, bool appendFilename) const
 {
    if (index.row() >= this->downloads.size())
@@ -109,7 +112,7 @@ QString DownloadsFlatModel::getPath(const QModelIndex& index, bool appendFilenam
       return QString();
 
    QString path = sharedDir.path.left(sharedDir.path.count() - 1);
-   return path.append(Common::ProtoHelper::getRelativePath(this->downloads[index.row()].local_entry(), appendFilename));
+   return path.append(Common::ProtoHelper::getRelativePath(this->downloads[index.row()].local_entry(), Common::EntriesToAppend::DIR | (appendFilename ? Common::EntriesToAppend::FILE : Common::EntriesToAppend::NONE)));
 }
 
 int DownloadsFlatModel::rowCount(const QModelIndex& parent) const

@@ -23,6 +23,7 @@ using namespace Common;
 #include <QStringList>
 
 #include <Hash.h>
+#include <Global.h>
 
 void ProtoHelper::setLang(Protos::Common::Language& langMess, const QLocale& locale)
 {
@@ -110,16 +111,40 @@ QHostAddress ProtoHelper::getIP(const Protos::Common::IP& ipMess)
    }
 }
 
-QString ProtoHelper::getRelativePath(const Protos::Common::Entry& entry, bool appendFilename)
+QString ProtoHelper::getRelativePath(const Protos::Common::Entry& entry, EntriesToAppend entriesToAppend, bool prependSharedDir)
 {
    QString path = Common::ProtoHelper::getStr(entry, &Protos::Common::Entry::path);
+   QString sharedName = Common::ProtoHelper::getStr(entry.shared_dir(), &Protos::Common::SharedDir::shared_name);
+   if (!Common::Global::isWindowsPath(sharedName))
+      sharedName.prepend("/");
 
    // Empty relative path means the directory is a shared directory (root), see "application/Protos/common.proto" for more information.
    if (path.isEmpty())
-      path = "/";
-   else if (appendFilename || entry.type() == Protos::Common::Entry_Type_DIR)
-      path.append(Common::ProtoHelper::getStr(entry, &Protos::Common::Entry::name));
+   {
+      if (prependSharedDir)
+         path.append(sharedName).append("/");
+      else
+         path = "/";
+   }
+   else
+   {
+      if (prependSharedDir)
+         path.prepend(sharedName);
+
+      if (contains(entriesToAppend, EntriesToAppend::FILE) && entry.type() == Protos::Common::Entry_Type_FILE || contains(entriesToAppend, EntriesToAppend::DIR) && entry.type() == Protos::Common::Entry_Type_DIR)
+      {
+         path.append(Common::ProtoHelper::getStr(entry, &Protos::Common::Entry::name));
+         if (entry.type() == Protos::Common::Entry_Type_DIR)
+            path.append("/");
+      }
+   }
+
    return path;
+}
+
+bool ProtoHelper::isRoot(const Protos::Common::Entry& entry)
+{
+   return entry.path().empty();
 }
 
 QString ProtoHelper::getDebugStr(const google::protobuf::Message& mess)
