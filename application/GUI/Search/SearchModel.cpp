@@ -20,6 +20,7 @@
 using namespace GUI;
 
 #include <algorithm>
+#include <functional>
 #include <string>
 
 #include <QtAlgorithms>
@@ -176,59 +177,92 @@ void SearchModel::loadChildren(const QPersistentModelIndex &index)
    BrowseModel::loadChildren(index);
 }
 
+bool entryLessThan(const Protos::Common::Entry& e1, int level1, const QString& peerNick1, const Protos::Common::Entry& e2, int level2, const QString& peerNick2, SearchColumn column, Qt::SortOrder order)
+{
+   const QString& path1 = Common::ProtoHelper::getRelativePath(e1, Common::EntriesToAppend::NONE, !Common::ProtoHelper::isRoot(e1)).toLower();
+   const QString& path2 = Common::ProtoHelper::getRelativePath(e2, Common::EntriesToAppend::NONE, !Common::ProtoHelper::isRoot(e2)).toLower();
+
+   // It's not necessary to transform them to 'QString'.
+   std::string name1 = e1.name();
+   std::transform(name1.begin(), name1.end(), name1.begin(), tolower);
+   std::string name2 = e2.name();
+   std::transform(name2.begin(), name2.end(), name2.begin(), tolower);
+
+   switch (column)
+   {
+      case SearchColumn::NAME:
+         if (name1 != name2)
+            return order == Qt::AscendingOrder ? name1 < name2 : name1 > name2;
+         break;
+
+      case SearchColumn::DIRECTORY:
+         if (path1 != path2)
+            return order == Qt::AscendingOrder ? path1 < path2 : path1 > path2;
+         break;
+
+      case SearchColumn::RELEVANCE:
+         if (level1 != level2)
+            return order == Qt::AscendingOrder ? level1 < level2 : level1 > level2;
+         break;
+
+      case SearchColumn::PEER:
+         if (peerNick1 != peerNick2)
+            return order == Qt::AscendingOrder ? peerNick1 < peerNick2 : peerNick1 > peerNick2;
+         break;
+
+      case SearchColumn::SIZE:
+         if (e1.size() != e2.size())
+            return order == Qt::AscendingOrder ? e1.size() < e2.size() : e1.size() > e2.size();
+   }
+
+   if (column != SearchColumn::RELEVANCE && level1 != level2)
+      return order == Qt::AscendingOrder ? level1 < level2 : level1 > level2;
+
+   if (column != SearchColumn::DIRECTORY && path1 != path2)
+      return order == Qt::AscendingOrder ? path1 < path2 : path1 > path2;
+
+   if (column != SearchColumn::NAME && name1 != name2)
+      return order == Qt::AscendingOrder ? name1 < name2 : name1 > name2;
+
+   if (column != SearchColumn::PEER && peerNick1 != peerNick2)
+      return order == Qt::AscendingOrder ? peerNick1 < peerNick2 : peerNick1 > peerNick2;
+
+   return order == Qt::AscendingOrder ? e1.size() < e2.size() : e1.size() > e2.size();
+}
+
 /**
   * Sort the current data and save column and order if more date
   */
 void SearchModel::sort(int column, Qt::SortOrder order)
 {
-   this->currentSortedColumn = toSearchColumn(column);
+   this->currentSortedColumn = column == -1 ? SearchColumn::RELEVANCE : toSearchColumn(column);
    this->currentSortOrder = order;
 
+   emit layoutAboutToBeChanged(QList<QPersistentModelIndex> { QPersistentModelIndex(QModelIndex()) }, QAbstractItemModel::VerticalSortHint);
 
+   QHash<Tree*, QModelIndex> unsortedChildren;
+   for (int i = 0; i < this->root->getNbChildren(); i++)
+      unsortedChildren.insert(this->root->getChild(i), this->index(i, 0));
 
-}
-
-bool entryLessThan(const Protos::Common::Entry& e1, const Protos::Common::Entry& e2)
-{
-   std::string s1;
-   std::string s2;
-
-   if (e1.has_shared_dir() && e2.has_shared_dir())
+   this->root->sort([&](const Tree* t1, const Tree* t2)
    {
-      s1 = e1.shared_dir().shared_name();
-      s2 = e2.shared_dir().shared_name();
-      std::transform(s1.begin(), s1.end(), s1.begin(), tolower);
-      std::transform(s2.begin(), s2.end(), s2.begin(), tolower);
-   }
+      return entryLessThan(
+         t1->getItem(),
+         dynamic_cast<const SearchTree*>(t1)->getLevel(),
+         dynamic_cast<const SearchTree*>(t1)->getPeerNick(),
+         t2->getItem(),
+         dynamic_cast<const SearchTree*>(t2)->getLevel(),
+         dynamic_cast<const SearchTree*>(t2)->getPeerNick(),
+         this->currentSortedColumn,
+         this->currentSortOrder
+      );
+   });
 
-   if (s1 == s2)
-   {
-      std::string p1 = e1.path();
-      std::string p2 = e2.path();
-      std::transform(p1.begin(), p1.end(), p1.begin(), tolower);
-      std::transform(p2.begin(), p2.end(), p2.begin(), tolower);
+   // As the documentation says we have to tell the views which index goes who... it's a bit complicated and CPU consuming, is there a simplest way?
+   for (int i = 0; i < this->root->getNbChildren(); i++)
+      this->changePersistentIndex(unsortedChildren.value(this->root->getChild(i)), this->index(i, 0));
 
-      if (p1 == p2)
-      {
-         std::string n1 = e1.name();
-         std::string n2 = e2.name();
-         std::transform(n1.begin(), n1.end(), n1.begin(), tolower);
-         std::transform(n2.begin(), n2.end(), n2.begin(), tolower);
-         return n1 < n2;
-      }
-      else
-         return p1 < p2;
-   }
-   else
-      return s1 < s2;
-}
-
-bool findEntryLessThan(const Protos::Common::FindResult_EntryLevel* e1, const Protos::Common::FindResult_EntryLevel* e2)
-{
-   if (e1->level() == e2->level())
-      return entryLessThan(e1->entry(), e2->entry());
-   else
-      return e1->level() < e2->level();
+   emit layoutChanged(QList<QPersistentModelIndex> { QPersistentModelIndex(QModelIndex()) }, QAbstractItemModel::VerticalSortHint);
 }
 
 /**
@@ -245,10 +279,18 @@ void SearchModel::result(const Protos::Common::FindResult& findResult)
    QList<const Protos::Common::FindResult_EntryLevel*> sortedEntries;
    for (int i = 0; i < findResult.entry_size(); i++)
       sortedEntries << &findResult.entry(i);
-   qSort(sortedEntries.begin(), sortedEntries.end(), &findEntryLessThan);
+
+   std::sort(
+      sortedEntries.begin(),
+      sortedEntries.end(),
+      [&](const Protos::Common::FindResult_EntryLevel* e1, const Protos::Common::FindResult_EntryLevel* e2)
+      {
+         // The peer nick isn't necessary because the results are from the same peer.
+         return entryLessThan(e1->entry(), e1->level(), QString(), e2->entry(), e2->level(), QString(), this->currentSortedColumn, this->currentSortOrder);
+      }
+   );
 
    int currentIndex = 0;
-
    bool maxLevelChange = false;
 
    for (QListIterator<const Protos::Common::FindResult_EntryLevel*> i(sortedEntries); i.hasNext();)
@@ -332,17 +374,26 @@ int SearchModel::insertTree(const Protos::Common::FindResult_EntryLevel& entry, 
    else
       this->nbFolders++;
 
+   const QString peerNick = this->peerListModel.getNick(peerID, tr("<unknown>"));
+
    SearchTree* root = this->getRoot();
 
    // Search a place to insert the new entry, order (level > path > name) must be kept.
-   while (currentIndex < root->getNbChildren() && (
-      static_cast<SearchTree*>(root->getChild(currentIndex))->getLevel() < static_cast<int>(entry.level()) ||
-      static_cast<SearchTree*>(root->getChild(currentIndex))->getLevel() == static_cast<int>(entry.level()) && entryLessThan(root->getChild(currentIndex)->getItem(), entry.entry())
-   ))
+   while (currentIndex < root->getNbChildren() &&
+          entryLessThan(
+             root->getChild(currentIndex)->getItem(),
+             static_cast<SearchTree*>(root->getChild(currentIndex))->getLevel(),
+             static_cast<SearchTree*>(root->getChild(currentIndex))->getPeerNick(),
+             entry.entry(),
+             static_cast<int>(entry.level()),
+             peerNick,
+             this->currentSortedColumn,
+             this->currentSortOrder)
+          )
       currentIndex++;
 
    this->beginInsertRows(QModelIndex(), currentIndex, currentIndex);
-   SearchTree* newTree = root->insertChild(currentIndex++, entry, peerID, this->peerListModel.getNick(peerID, tr("<unknown>")));
+   SearchTree* newTree = root->insertChild(currentIndex++, entry, peerID, peerNick);
    this->endInsertRows();
 
    if (newTree->getItem().type() == Protos::Common::Entry_Type_FILE && newTree->getItem().chunk_size() > 0)
@@ -435,16 +486,20 @@ Common::Hash SearchModel::SearchTree::getPeerID() const
    return this->peerID;
 }
 
+const QString& SearchModel::SearchTree::getPeerNick() const
+{
+   return this->peerNick;
+}
+
 QVariant SearchModel::SearchTree::data(int column) const
 {
    switch (column)
    {
-   case 0: return Common::ProtoHelper::getStr(this->getItem(), &Protos::Common::Entry::name);
-   case 1:
-      if (this->parent->getParent() != nullptr && this->parent->getItem().type() == Protos::Common::Entry_Type_DIR)
-         return QVariant();
+   case 0:
+      return Common::ProtoHelper::getStr(this->getItem(), &Protos::Common::Entry::name);
 
-      if (this->getItem().type() == Protos::Common::Entry_Type_FILE && this->getNbChildren() > 0)
+   case 1:
+      if (this->parent->getParent() != nullptr && this->parent->getItem().type() == Protos::Common::Entry_Type_DIR || this->getItem().type() == Protos::Common::Entry_Type_FILE && this->getNbChildren() > 0)
          return QVariant();
 
       return Common::ProtoHelper::getRelativePath(this->getItem(), Common::EntriesToAppend::NONE, !Common::ProtoHelper::isRoot(this->getItem()));
@@ -460,8 +515,11 @@ QVariant SearchModel::SearchTree::data(int column) const
       }
       return this->peerNick;
 
-   case 4: return Common::Global::formatByteSize(this->getItem().size());
-   default: return QVariant();
+   case 4:
+      return Common::Global::formatByteSize(this->getItem().size());
+
+   default:
+      return QVariant();
    }
 }
 

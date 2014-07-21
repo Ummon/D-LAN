@@ -88,9 +88,9 @@ namespace GUI
       QPair<QList<quint64>, bool> getDownloadIDsToPause() const;
 
       void saveTreeViewState();
-      void saveTreeViewState(const QModelIndex& index, SimpleTree<quint32>* tree);
+      void saveTreeViewState(const QModelIndex& index, Common::SimpleTree<quint32>* tree);
       void restoreTreeViewState();
-      void restoreTreeViewState(const QModelIndex& index, SimpleTree<quint32>* tree);
+      void restoreTreeViewState(const QModelIndex& index, Common::SimpleTree<quint32>* tree);
 
       void openFile(const QModelIndex& index) const;
 
@@ -107,7 +107,7 @@ namespace GUI
 
       DownloadsDelegate downloadsDelegate;
 
-      SimpleTree<quint32> treeViewState;
+      Common::SimpleTree<quint32> treeViewState;
    };
 }
 

@@ -127,7 +127,7 @@ void SearchDelegate::setTerms(const QString& terms)
 
 QString SearchDelegate::toHtmlText(const QString& text) const
 {
-   QString textWithoutAccent = StringUtils::toLowerAndRemoveAccents(text);
+   QString textWithoutAccent = Common::StringUtils::toLowerAndRemoveAccents(text);
 
    QString htmlText(text);
 
@@ -194,7 +194,7 @@ SearchWidget::SearchWidget(QSharedPointer<RCC::ICoreConnection> coreConnection, 
 
    this->ui->treeView->setSelectionBehavior(QAbstractItemView::SelectRows);
    this->ui->treeView->setSelectionMode(QAbstractItemView::ExtendedSelection);
-   this->ui->treeView->sortByColumn(SearchModel::toColumnNumber(SearchColumn::RELEVANCE), Qt::DescendingOrder);
+   this->ui->treeView->sortByColumn(SearchModel::toColumnNumber(SearchColumn::RELEVANCE), Qt::AscendingOrder);
 
    this->searchModel.search(findPattern, local);
 

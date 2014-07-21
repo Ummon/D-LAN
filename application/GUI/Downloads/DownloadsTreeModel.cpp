@@ -329,7 +329,7 @@ void DownloadsTreeModel::onNewState(const Protos::GUI::State& state)
       }
       else
       {
-         const QStringList& path = ProtoHelper::getStr(download.local_entry(), &Protos::Common::Entry::path).split('/', QString::SkipEmptyParts);
+         const QStringList& path = Common::ProtoHelper::getStr(download.local_entry(), &Protos::Common::Entry::path).split('/', QString::SkipEmptyParts);
 
          // A node is created for each directory.
          Tree* currentTree = this->root;
@@ -337,7 +337,7 @@ void DownloadsTreeModel::onNewState(const Protos::GUI::State& state)
             currentTree = this->insertDirectory(
                currentTree,
                i.next(),
-               ProtoHelper::getStr(download, &Protos::GUI::State::Download::peer_source_nick),
+               Common::ProtoHelper::getStr(download, &Protos::GUI::State::Download::peer_source_nick),
                download.peer_id_size() == 0 ? Common::Hash() : Common::Hash(download.peer_id(0).hash()),
                download.local_entry().shared_dir().id().hash()
             );
@@ -397,8 +397,8 @@ QList<quint64> DownloadsTreeModel::getDownloadIDs(Tree* tree) const
 DownloadsTreeModel::Tree* DownloadsTreeModel::insertDirectory(Tree* parentTree, const QString& dir, const QString& peerSourceNick, const Common::Hash& peerSourceID, const Common::Hash& sharedDirID)
 {
    Protos::GUI::State::Download download;
-   ProtoHelper::setStr(*download.mutable_local_entry(), &Protos::Common::Entry::set_name, dir);
-   ProtoHelper::setStr(download, &Protos::GUI::State::Download::set_peer_source_nick, peerSourceNick);
+   Common::ProtoHelper::setStr(*download.mutable_local_entry(), &Protos::Common::Entry::set_name, dir);
+   Common::ProtoHelper::setStr(download, &Protos::GUI::State::Download::set_peer_source_nick, peerSourceNick);
    download.add_peer_id()->set_hash(peerSourceID.getData(), Common::Hash::HASH_SIZE);
    download.mutable_local_entry()->mutable_shared_dir()->mutable_id()->set_hash(sharedDirID.getData(), Common::Hash::HASH_SIZE);
    download.mutable_local_entry()->set_type(Protos::Common::Entry::DIR);

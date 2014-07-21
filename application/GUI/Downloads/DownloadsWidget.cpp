@@ -417,7 +417,7 @@ void DownloadsWidget::saveTreeViewState()
    this->saveTreeViewState(QModelIndex(), &this->treeViewState);
 }
 
-void DownloadsWidget::saveTreeViewState(const QModelIndex& index, SimpleTree<quint32>* tree)
+void DownloadsWidget::saveTreeViewState(const QModelIndex& index, Common::SimpleTree<quint32>* tree)
 {
    for (int row = 0; row < this->downloadsTreeModel.rowCount(index); row++)
    {
@@ -438,7 +438,7 @@ void DownloadsWidget::restoreTreeViewState()
    this->restoreTreeViewState(QModelIndex(), &this->treeViewState);
 }
 
-void DownloadsWidget::restoreTreeViewState(const QModelIndex& index, SimpleTree<quint32>* tree)
+void DownloadsWidget::restoreTreeViewState(const QModelIndex& index, Common::SimpleTree<quint32>* tree)
 {
    // O(n^2)
    for (int row = 0; row < this->downloadsTreeModel.rowCount(index); row++)

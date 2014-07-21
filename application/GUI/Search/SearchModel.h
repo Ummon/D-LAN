@@ -114,8 +114,6 @@ namespace GUI
       class SearchTree : public Tree
       {
       public:
-         //static QString entryPath(const Protos::Common::Entry& entry);
-
          SearchTree();
          SearchTree(const Protos::Common::Entry& entry, int level, const Common::Hash& peerID, const QString& peerNick, SearchTree* parent);
          SearchTree(const Protos::Common::Entry& entry, const Common::Hash& peerID,  SearchTree* parent);
@@ -126,6 +124,7 @@ namespace GUI
 
          int getLevel() const;
          Common::Hash getPeerID() const;
+         const QString& getPeerNick() const;
          QVariant data(int column) const;
 
          void copyFrom(const SearchTree* otherNode);

@@ -94,7 +94,7 @@ void MdiArea::closeCurrentWindow()
    }
 }
 
-void MdiArea::openBrowseWindow(const Hash& peerID)
+void MdiArea::openBrowseWindow(const Common::Hash& peerID)
 {
    this->addBrowseWindow(peerID);
 }
