@@ -44,7 +44,7 @@ namespace NL
         */
       virtual void rebindSockets() = 0;
 
-      enum SendStatus
+      enum class SendStatus
       {
          OK,
          PEER_UNKNOWN,

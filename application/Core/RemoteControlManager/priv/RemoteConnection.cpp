@@ -697,7 +697,7 @@ void RemoteConnection::onNewMessage(const Common::Message& message)
                : this->chatSystem->send(Common::ProtoHelper::getStr(chatMessage, &Protos::GUI::ChatMessage::message));
 
          Protos::GUI::ChatMessageResult result;
-         result.set_status(status == CS::IChatSystem::OK ? Protos::GUI::ChatMessageResult::OK : (status == CS::IChatSystem::MESSAGE_TOO_LARGE ? Protos::GUI::ChatMessageResult::MESSAGE_TOO_LARGE : Protos::GUI::ChatMessageResult::ERROR_UNKNOWN));
+         result.set_status(status == CS::IChatSystem::SendStatus::OK ? Protos::GUI::ChatMessageResult::OK : (status == CS::IChatSystem::SendStatus::MESSAGE_TOO_LARGE ? Protos::GUI::ChatMessageResult::MESSAGE_TOO_LARGE : Protos::GUI::ChatMessageResult::ERROR_UNKNOWN));
          this->send(Common::MessageHeader::GUI_CHAT_MESSAGE_RESULT, result);
       }
       break;

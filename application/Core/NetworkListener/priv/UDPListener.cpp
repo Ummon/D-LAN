@@ -91,11 +91,11 @@ INetworkListener::SendStatus UDPListener::send(Common::MessageHeader::MessageTyp
 {
    PM::IPeer* peer = this->peerManager->getPeer(peerID);
    if (!peer)
-      return INetworkListener::PEER_UNKNOWN;
+      return INetworkListener::SendStatus::PEER_UNKNOWN;
 
    int messageSize;
    if (!(messageSize = this->writeMessageToBuffer(type, message)))
-      return INetworkListener::MESSAGE_TOO_LARGE;
+      return INetworkListener::SendStatus::MESSAGE_TOO_LARGE;
 
    L_DEBU(QString("Send unicast UDP to %1, header.getType(): %2, message size: %3 \n%4").
       arg(peer->toStringLog()).
@@ -107,10 +107,10 @@ INetworkListener::SendStatus UDPListener::send(Common::MessageHeader::MessageTyp
    if (this->unicastSocket.writeDatagram(this->buffer, messageSize, peer->getIP(), peer->getPort()) == -1)
    {
       L_WARN(QString("Unable to send datagram (unicast): error: %1").arg(this->unicastSocket.errorString()));
-      return INetworkListener::UNABLE_TO_SEND;
+      return INetworkListener::SendStatus::UNABLE_TO_SEND;
    }
 
-   return INetworkListener::OK;
+   return INetworkListener::SendStatus::OK;
 }
 
 /**
@@ -120,7 +120,7 @@ INetworkListener::SendStatus UDPListener::send(Common::MessageHeader::MessageTyp
 {
    int messageSize;
    if (!(messageSize = this->writeMessageToBuffer(type, message)))
-      return INetworkListener::MESSAGE_TOO_LARGE;
+      return INetworkListener::SendStatus::MESSAGE_TOO_LARGE;
 
 #if DEBUG
    QString logMess = QString("Send multicast UDP : header.getType() = %1, message size = %2 \n%3").
@@ -137,10 +137,10 @@ INetworkListener::SendStatus UDPListener::send(Common::MessageHeader::MessageTyp
    if (this->multicastSocket.writeDatagram(this->buffer, messageSize, this->multicastGroup, MULTICAST_PORT) == -1)
    {
       L_WARN(QString("Unable to send datagram (multicast): error: %1").arg(this->unicastSocket.errorString()));
-      return INetworkListener::UNABLE_TO_SEND;
+      return INetworkListener::SendStatus::UNABLE_TO_SEND;
    }
 
-   return INetworkListener::OK;
+   return INetworkListener::SendStatus::OK;
 }
 
 void UDPListener::sendIMAliveMessage()

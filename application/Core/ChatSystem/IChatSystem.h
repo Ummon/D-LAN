@@ -38,7 +38,7 @@ namespace CS
    public:
       virtual ~IChatSystem() {}
 
-      enum SendStatus
+      enum class SendStatus
       {
          OK,
          MESSAGE_TOO_LARGE,

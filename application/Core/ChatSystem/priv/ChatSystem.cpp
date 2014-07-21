@@ -94,16 +94,16 @@ ChatSystem::SendStatus ChatSystem::send(const QString& message, const QString& r
 
    switch (status)
    {
-   case NL::INetworkListener::OK:
+   case NL::INetworkListener::SendStatus::OK:
       protochatMessage->set_time(time);
       emit newMessages(protoChatMessages);
-      return OK;
+      return SendStatus::OK;
 
-   case NL::INetworkListener::MESSAGE_TOO_LARGE:
-      return MESSAGE_TOO_LARGE;
+   case NL::INetworkListener::SendStatus::MESSAGE_TOO_LARGE:
+      return SendStatus::MESSAGE_TOO_LARGE;
 
    default:
-      return UNABLE_TO_SEND;
+      return SendStatus::UNABLE_TO_SEND;
    }
 }
 

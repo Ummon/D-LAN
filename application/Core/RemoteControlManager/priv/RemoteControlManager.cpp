@@ -40,7 +40,7 @@ RemoteControlManager::RemoteControlManager(
 {
    const quint32 PORT = SETTINGS.get<quint32>("remote_control_port");
 
-   const bool okIPv4 = this->tcpServerIPv4.listen(QHostAddress::Any, PORT);
+   const bool okIPv4 = this->tcpServerIPv4.listen(QHostAddress::AnyIPv4, PORT);
    const bool okIPv6 = this->tcpServerIPv6.listen(QHostAddress::AnyIPv6, PORT);
 
    if (!okIPv4 && !okIPv6)
