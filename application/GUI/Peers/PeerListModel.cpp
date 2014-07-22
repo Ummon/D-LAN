@@ -99,7 +99,7 @@ QHostAddress PeerListModel::getPeerIP(int rowNum) const
 
 Protos::GUI::State::Peer::PeerStatus PeerListModel::getStatus(int rowNum) const
 {
-   if (rowNum >= this->orderedPeers.size())
+   if (rowNum >= this->orderedPeers.size() || rowNum < 0)
       return Protos::GUI::State::Peer::OK;
    return this->orderedPeers.getFromIndex(rowNum)->status;
 }
