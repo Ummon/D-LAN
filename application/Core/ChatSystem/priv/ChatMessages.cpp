@@ -206,7 +206,8 @@ QList<QSharedPointer<ChatMessage>> ChatMessages::insert(const QList<QSharedPoint
       this->d->messages.erase(begin, end);
    }
 
-   this->d->changed = !insertedMessages.isEmpty();
+   if (!this->d->changed)
+      this->d->changed = !insertedMessages.isEmpty();
 
    return insertedMessages;
 }

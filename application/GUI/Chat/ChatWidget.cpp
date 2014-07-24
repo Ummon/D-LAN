@@ -145,8 +145,7 @@ ChatWidget::ChatWidget(QSharedPointer<RCC::ICoreConnection> coreConnection, Emot
    emoticons(emoticons),
    peerListModel(coreConnection),
    chatModel(coreConnection, this->peerListModel, emoticons),
-   chatDelegate(textDocument),
-   autoScroll(true)
+   chatDelegate(textDocument)
 {
    this->init();
 }
@@ -158,8 +157,7 @@ ChatWidget::ChatWidget(QSharedPointer<RCC::ICoreConnection> coreConnection, Emot
    emoticons(emoticons),
    peerListModel(coreConnection),
    chatModel(coreConnection, this->peerListModel, emoticons, roomName),
-   chatDelegate(textDocument),
-   autoScroll(true)
+   chatDelegate(textDocument)
 {
    this->init();
    this->peerListModel.setRoom(roomName);
@@ -183,6 +181,7 @@ QString ChatWidget::getRoomName() const
 void ChatWidget::sendMessage()
 {
    this->chatModel.sendMessage(this->ui->txtMessage->toHtml());
+   this->answers.clear();
 }
 
 void ChatWidget::newRows(const QModelIndex& parent, int start, int end)
@@ -328,6 +327,8 @@ void ChatWidget::currentCharFormatChanged(const QTextCharFormat& charFormat)
 
 void ChatWidget::cursorPositionChanged()
 {
+   L_DEBU("ChatWidget::cursorPositionChanged()");
+
    if (this->ui->txtMessage->textCursor().position() != 0)
    {
       this->disconnectFormatWidgets();
@@ -347,7 +348,22 @@ void ChatWidget::cursorPositionChanged()
   */
 void ChatWidget::textChanged()
 {
+   L_DEBU("ChatWidget::textChanged()");
    this->ui->txtMessage->setFixedHeight(this->ui->txtMessage->document()->size().height());
+}
+
+void ChatWidget::documentChanged(int position, int charsRemoved, int charsAdded)
+{
+   L_DEBU("ChatWidget::documentChanged()");
+   if (this->peerNameInsertionMode)
+   {
+      if (position > this->currentAnswer.end || position <  this->currentAnswer.begin)
+         this->deactivatePeerNameInsertionMode();
+   }
+   else
+   {
+
+   }
 }
 
 void ChatWidget::setFocusTxtMessage()
@@ -505,19 +521,25 @@ bool ChatWidget::eventFilter(QObject* obj, QEvent* event)
    if (obj == this->ui->txtMessage && event->type() == QEvent::KeyPress)
    {
       QKeyEvent* keyEvent = static_cast<QKeyEvent*>(event);
-      if (keyEvent->key() == Qt::Key_Return && !(keyEvent->modifiers() & Qt::ShiftModifier))
+      switch (keyEvent->key())
       {
-         this->sendMessage();
-         return true;
-      }
-      else if (keyEvent->key() == Qt::Key_Tab)
-      {
-         QRect cursorRect = this->ui->txtMessage->cursorRect();
-         const QPoint& pos = this->ui->txtMessage->viewport()->mapToGlobal(cursorRect.bottomRight());
-         this->autoComplete->show();
-         this->autoComplete->move(pos.x(), pos.y());
-         this->setFocus();
-         return true;
+      case Qt::Key_Return: // 'return' : It sends the current message or validate the current peer name in peer name insertion.
+         if (!(keyEvent->modifiers() & Qt::ShiftModifier))
+         {
+            this->sendMessage();
+            return true;
+         }
+         break;
+
+      case Qt::Key_Tab: // 'tab' : begins a peer name insertion or in peer name insertion mode step through each peer names.
+         {
+            /*if (this->peerNameInsertionMode)
+               this->autoComplete->selectNextItem();
+            else*/
+               this->activatePeerNameInsertionMode();
+            return true;
+         }
+         break;
       }
    }
 
@@ -526,6 +548,9 @@ bool ChatWidget::eventFilter(QObject* obj, QEvent* event)
 
 void ChatWidget::init()
 {
+   this->peerNameInsertionMode = false;
+   this->autoScroll = true;
+
    this->ui->setupUi(this);
 
    this->emoticons.setDefaultTheme(SETTINGS.get<QString>("default_emoticon_theme"));
@@ -548,6 +573,7 @@ void ChatWidget::init()
 
    if (this->chatModel.isMainChat())
    {
+      this->setWindowTitle(tr("Chat"));
       this->ui->tblRoomPeers->hide();
    }
    else
@@ -619,6 +645,7 @@ void ChatWidget::init()
    connect(this->ui->txtMessage, SIGNAL(currentCharFormatChanged(QTextCharFormat)), this, SLOT(currentCharFormatChanged(QTextCharFormat)));
    connect(this->ui->txtMessage, SIGNAL(cursorPositionChanged()), this, SLOT(cursorPositionChanged()));
    connect(this->ui->txtMessage, SIGNAL(textChanged()), this, SLOT(textChanged()));
+   connect(this->ui->txtMessage->document(), SIGNAL(contentsChange(int, int, int)), this, SLOT(documentChanged(int,int,int)));
 
    connect(this->ui->cmbFontSize, SIGNAL(currentIndexChanged(int)), this, SLOT(setFocusTxtMessage()));
    connect(this->ui->butBold, SIGNAL(clicked()), this, SLOT(setFocusTxtMessage()));
@@ -706,6 +733,35 @@ void ChatWidget::displayEmoticons(const QPoint& positionSender, const QSize& siz
 
    if (this->emoticonsWidget->pos().x() + this->emoticonsWidget->width() > desktopGeom.width())
       this->emoticonsWidget->move(positionSender.x() - this->emoticonsWidget->width(), this->emoticonsWidget->pos().y());
+}
+
+void ChatWidget::activatePeerNameInsertionMode()
+{
+   if (this->peerNameInsertionMode)
+      return;
+
+   this->ui->txtMessage->insertHtml("<span style=\"font-weight: bold\">@</span>");
+   int cursorPosition = this->ui->txtMessage->textCursor().position();
+   currentAnswer.begin = cursorPosition - 1;
+   currentAnswer.end = cursorPosition;
+   currentAnswer.peerID = Common::Hash();
+
+   QRect cursorRect = this->ui->txtMessage->cursorRect();
+   const QPoint& pos = this->ui->txtMessage->viewport()->mapToGlobal(cursorRect.bottomRight());
+
+   this->autoComplete->setValues(this->chatModel.getSortedOtherPeersByRevelance());
+   this->autoComplete->show();
+   this->autoComplete->move(pos.x(), pos.y());
+   //this->ui->txtMessage->setFocus();
+
+   this->peerNameInsertionMode = true;
+}
+
+void ChatWidget::deactivatePeerNameInsertionMode()
+{
+   this->peerNameInsertionMode = false;
+   this->autoComplete->hide();
+   this->currentAnswer.begin = 0;
 }
 
 void ChatWidget::onActivate()

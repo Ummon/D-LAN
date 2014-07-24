@@ -92,7 +92,8 @@ namespace GUI
 
       void currentCharFormatChanged(const QTextCharFormat& charFormat);
       void cursorPositionChanged();
-      void textChanged();
+      void textChanged();      
+      void documentChanged(int position, int charsRemoved, int charsAdded);
 
       void setFocusTxtMessage();
 
@@ -124,6 +125,9 @@ namespace GUI
       void setComboFontSize(int fontSize);
       void displayEmoticons(const QPoint& positionSender, const QSize& sizeSender);
 
+      void activatePeerNameInsertionMode();
+      void deactivatePeerNameInsertionMode();
+
       void onActivate();
 
       void setNewMessageState(bool newMessage);
@@ -133,12 +137,14 @@ namespace GUI
 
       Ui::ChatWidget* ui;
       EmoticonsWidget* emoticonsWidget;
-      AutoComplete* autoComplete;
-
       QTextDocument textDocument;
 
       // Current peers answered.
-
+      struct Answer { int begin; int end; Common::Hash peerID; };
+      QList<Answer> answers;
+      bool peerNameInsertionMode;
+      Answer currentAnswer;
+      AutoComplete* autoComplete;
 
       QSharedPointer<RCC::ICoreConnection> coreConnection;
       Emoticons& emoticons;

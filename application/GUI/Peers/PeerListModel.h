@@ -43,7 +43,8 @@ namespace GUI
       PeerListModel(QSharedPointer<RCC::ICoreConnection> coreConnection);
       ~PeerListModel();
 
-      QString getNick(const Common::Hash& peerID, const QString& defaultNick = QString()) const;
+      QString getNick(const Common::Hash& peerID, const QString& defaultNick = QString()) const;      
+      QString getNick(int rowNum) const;
       bool isOurself(int rowNum) const;
       Common::Hash getPeerID(int rowNum) const;
       QHostAddress getPeerIP(int rowNum) const;

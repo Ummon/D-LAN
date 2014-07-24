@@ -58,32 +58,44 @@ QString ChatModel::getRoomName() const
 /**
   * Returns the most revelant peers from the last messages. The peers which have replied to us are put first.
   */
-QList<QPair<Common::Hash, QString>> ChatModel::getRelevantLastPeers() const
+QList<QPair<Common::Hash, QString>> ChatModel::getSortedOtherPeersByRevelance() const
 {
    QList<QPair<Common::Hash, QString>> result;
    QSet<Common::Hash> processedPeers;
+   Common::Hash ourself = this->coreConnection->getRemoteID();
 
    QListIterator<Message> i(this->messages);
+
+   // First level: peers answering to us.
    i.toBack();
    while (i.hasPrevious())
    {
       const Message& message = i.previous();
-      if (message.answeringToUs && !processedPeers.contains(message.peerID))
+      if (message.peerID != ourself && message.answeringToUs && !processedPeers.contains(message.peerID))
       {
          result << QPair<Common::Hash, QString>(message.peerID, message.nick);
          processedPeers.insert(message.peerID);
       }
    }
 
+   // Second level: peers which have posted a message.
    i.toBack();
    while (i.hasPrevious())
    {
       const Message& message = i.previous();
-      if (!message.answeringToUs && !processedPeers.contains(message.peerID))
+      if (message.peerID != ourself && !message.answeringToUs && !processedPeers.contains(message.peerID))
       {
          result << QPair<Common::Hash, QString>(message.peerID, message.nick);
          processedPeers.insert(message.peerID);
       }
+   }
+
+   // Third level: the rest.
+   for (int i = 0; i < this->peerListModel.rowCount(); ++i)
+   {
+      const Common::Hash& peerID = this->peerListModel.getPeerID(i);
+      if (peerID != ourself && !processedPeers.contains(peerID))
+         result << QPair<Common::Hash, QString>(peerID, this->peerListModel.getNick(i));
    }
 
    return result;

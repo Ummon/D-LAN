@@ -20,6 +20,8 @@
 #include <ui_AutoComplete.h>
 using namespace GUI;
 
+#include <QKeyEvent>
+
 AutoComplete::AutoComplete(QWidget* parent) :
    QWidget(parent),
    ui(new Ui::AutoComplete)
@@ -28,7 +30,25 @@ AutoComplete::AutoComplete(QWidget* parent) :
    this->ui->listView->setModel(&this->model);
 }
 
-void AutoComplete::setFilter(const QString& pattern)
+void AutoComplete::setValues(const QList<QPair<Common::Hash, QString>> values)
+{
+   this->model.setValues(values);
+}
+
+/*void AutoComplete::setFilter(const QString& pattern)
 {
    this->model.setFilter(pattern);
+}
+
+void AutoComplete::selectNextItem()
+{
+
+}*/
+
+void AutoComplete::keyPressEvent(QKeyEvent* event)
+{
+   if (event->modifiers() == Qt::NoModifier)
+   {
+      emit keyPressed(event->key());
+   }
 }

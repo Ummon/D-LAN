@@ -50,7 +50,7 @@ namespace GUI
       bool isMainChat() const;
       QString getRoomName() const;
 
-      QList<QPair<Common::Hash, QString>> getRelevantLastPeers() const;
+      QList<QPair<Common::Hash, QString>> getSortedOtherPeersByRevelance() const;
 
       QString getLineStr(int row, bool withHTML = true) const;
       Common::Hash getPeerID(int row) const;
@@ -108,6 +108,7 @@ namespace GUI
 
       QString roomName; // Empty for main chat.
       QList<Message> messages; // Always sorted by date-time.
+      QList<Common::Hash> peersAnsweringToUs;
 
       QRegExp regexMatchMessageContent;
       QRegExp regexMatchFirstBR;

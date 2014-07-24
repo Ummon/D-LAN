@@ -28,12 +28,17 @@ AutoCompleteModel::~AutoCompleteModel()
 
 }
 
+void AutoCompleteModel::setValues(const QList<QPair<Common::Hash, QString>> values)
+{
+   this->values = values;
+}
+
 void AutoCompleteModel::setFilter(const QString& pattern)
 {
 
 }
 
-QModelIndex AutoCompleteModel::index(int row, int column, const QModelIndex& parent) const
+/*QModelIndex AutoCompleteModel::index(int row, int column, const QModelIndex& parent) const
 {
    return QModelIndex();
 }
@@ -41,19 +46,29 @@ QModelIndex AutoCompleteModel::index(int row, int column, const QModelIndex& par
 QModelIndex AutoCompleteModel::parent(const QModelIndex& child) const
 {
    return QModelIndex();
-}
+}*/
 
 int AutoCompleteModel::rowCount(const QModelIndex& parent) const
 {
-   return 0;
+   return this->values.count();
 }
 
 int AutoCompleteModel::columnCount(const QModelIndex& parent) const
 {
-   return 0;
+   return 1;
 }
 
 QVariant AutoCompleteModel::data(const QModelIndex& index, int role) const
 {
-   return QVariant();
+   if (!index.isValid() || index.row() >= this->values.count())
+      return QVariant();
+
+   switch (role)
+   {
+   case Qt::DisplayRole:
+      return this->values[index.row()].second;
+
+   default:
+      return QVariant();
+   }
 }

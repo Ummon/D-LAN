@@ -40,12 +40,15 @@ namespace GUI
       explicit AutoComplete(QWidget* parent = 0);
 
       void setValues(const QList<QPair<Common::Hash, QString>> values);
-      void setFilter(const QString& pattern);
+      //void setFilter(const QString& pattern);
+      //void selectNextItem();
 
    signals:
-      void selected(QPair<Common::Hash, QString> value);
+      void keyPressed(int key);
+      //void selected(QPair<Common::Hash, QString> value);
 
-   public slots:
+   protected:
+      void keyPressEvent(QKeyEvent* event);
 
    private:
       Ui::AutoComplete* ui;

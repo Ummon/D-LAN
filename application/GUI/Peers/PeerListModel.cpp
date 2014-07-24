@@ -76,6 +76,13 @@ QString PeerListModel::getNick(const Common::Hash& peerID, const QString& defaul
    return peer->nick;
 }
 
+QString PeerListModel::getNick(int rowNum) const
+{
+   if (rowNum >= this->orderedPeers.size())
+      return QString();
+   return this->orderedPeers.getFromIndex(rowNum)->nick;
+}
+
 bool PeerListModel::isOurself(int rowNum) const
 {
    if (rowNum >= this->orderedPeers.size())
@@ -294,6 +301,10 @@ void PeerListModel::newState(const Protos::GUI::State& state)
          {
             for (int j = 0; j < state.rooms(i).peer_id_size(); j++)
                peersToDisplay << Common::Hash(state.rooms(i).peer_id(i).hash());
+
+            if (state.rooms(i).joined())
+               peersToDisplay << this->coreConnection->getRemoteID();
+
             break;
          }
 
