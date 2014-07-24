@@ -35,15 +35,17 @@ QNetworkInterface Utils::getCurrentInterfaceToListenTo()
    const QString addressToListen = SETTINGS.get<QString>("listen_address");
    auto interfaces = QNetworkInterface::allInterfaces();
 
-   if (interfaces.isEmpty())
+   if (interfaces.isEmpty() || addressToListen.isEmpty())
       return QNetworkInterface();
+
+   // L_DEBU(QString("address to listen to: %1").arg(addressToListen));
 
    for (QList<QNetworkInterface>::const_iterator i = interfaces.begin(); i != interfaces.end(); ++i)
    {
-      L_WARN(QString("Interface: %2").arg(i->name()));
+      // L_DEBU(QString("Interface: %1").arg(i->name()));
       foreach (QNetworkAddressEntry entry, i->addressEntries())
       {
-         L_WARN(QString("IP: %1").arg(entry.ip().toString()));
+         // L_DEBU(QString("IP: %1").arg(entry.ip().toString()));
          if (entry.ip().toString() == addressToListen)
             return *i;
       }
