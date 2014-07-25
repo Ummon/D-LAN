@@ -19,7 +19,6 @@ PROJECTS=(
    Core/RemoteControlManager
    Core
    GUI
-   Tools/LogViewer
    Tools/PasswordHasher
 )
 if [ `uname -s` = "Linux" ] ; then

@@ -69,7 +69,8 @@ void PeerUpdater::update()
                this->fileManagers[j]->getAmount(),
                QString(),
                0,
-               0
+               0,
+               Common::Constants::PROTOCOL_VERSION
             );
       }
    }

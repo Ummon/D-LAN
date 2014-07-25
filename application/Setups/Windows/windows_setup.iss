@@ -1,7 +1,7 @@
 [code]
-#define QtDir "E:/Qt/4.8.5"
-#define MingwDir "E:/mingw"
-#define ProtoBufDir "E:/protobuf"
+#define QtDir "D:/Qt/5.3/mingw482_32"
+#define MingwDir "D:/Qt/Tools/mingw482_32"
+#define ProtoBufDir "D:/protobuf"
 #define ApplicationDir "../.."
 
 #define AppName "D-LAN"
@@ -27,12 +27,19 @@ Source: "{#ApplicationDir}/Core/output/release/D-LAN.Core.exe"; DestDir: "{app}"
 Source: "{#ApplicationDir}/GUI/output/release/D-LAN.GUI.exe"; DestDir: "{app}"; Flags: comparetimestamp
 Source: "{#ApplicationDir}/translations/*.qm"; DestDir: "{app}/languages"; Flags: comparetimestamp
 Source: "{#ApplicationDir}/styles/*"; DestDir: "{app}/styles"; Flags: comparetimestamp recursesubdirs createallsubdirs
-Source: "{#QtDir}/bin/QtCore4.dll"; DestDir: "{app}"; Flags: comparetimestamp
-Source: "{#QtDir}/bin/QtGui4.dll"; DestDir: "{app}"; Flags: comparetimestamp
-Source: "{#QtDir}/bin/QtNetwork4.dll"; DestDir: "{app}"; Flags: comparetimestamp
-Source: "{#QtDir}/bin/QtXml4.dll"; DestDir: "{app}"; Flags: comparetimestamp
-Source: "{#MingwDir}/bin/libgcc_s_dw2-1.dll"; DestDir: "{app}"; Flags: comparetimestamp
-Source: "{#MingwDir}/bin/libstdc++-6.dll"; DestDir: "{app}"; Flags: comparetimestamp
+Source: "{#QtDir}/bin/Qt5Core.dll"; DestDir: "{app}"; Flags: comparetimestamp
+Source: "{#QtDir}/bin/Qt5Gui.dll"; DestDir: "{app}"; Flags: comparetimestamp
+Source: "{#QtDir}/bin/Qt5Network.dll"; DestDir: "{app}"; Flags: comparetimestamp
+Source: "{#QtDir}/bin/Qt5Widgets.dll"; DestDir: "{app}"; Flags: comparetimestamp
+Source: "{#QtDir}/bin/Qt5WinExtras.dll"; DestDir: "{app}"; Flags: comparetimestamp
+Source: "{#QtDir}/bin/Qt5Xml.dll"; DestDir: "{app}"; Flags: comparetimestamp
+Source: "{#QtDir}/special_dll/icudt52.dll"; DestDir: "{app}"; Flags: comparetimestamp  
+Source: "{#QtDir}/bin/icuin52.dll"; DestDir: "{app}"; Flags: comparetimestamp
+Source: "{#QtDir}/bin/icuuc52.dll"; DestDir: "{app}"; Flags: comparetimestamp
+Source: "{#QtDir}/bin/libgcc_s_dw2-1.dll"; DestDir: "{app}"; Flags: comparetimestamp
+Source: "{#QtDir}/bin/libwinpthread-1.dll"; DestDir: "{app}"; Flags: comparetimestamp
+Source: "{#QtDir}/bin/libstdc++-6.dll"; DestDir: "{app}"; Flags: comparetimestamp
+Source: "{#QtDir}/plugins/platforms/qwindows.dll"; DestDir: "{app}/platforms"; Flags: comparetimestamp
 ;Source: {#ProtoBufDir}/src/.libs/libprotobuf-7.dll; DestDir: {app}; Flags: comparetimestamp;
 
 [Icons]

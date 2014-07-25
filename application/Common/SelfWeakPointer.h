@@ -11,25 +11,33 @@ namespace Common
    {
    public:
       SelfWeakPointer();
+      virtual ~SelfWeakPointer() {}
 
-      QSharedPointer<T> getStrongRef();
+      /**
+        * Get the strong ref, this method can be called only once! The next strong ref will be empty.
+        */
+      QSharedPointer<T> grabStrongRef();
+
       QWeakPointer<T> getWeakRef();
 
    private:
+      QSharedPointer<T> strongPointer;
       QWeakPointer<T> weakPointer;
    };
 }
 
 template <typename T>
 Common::SelfWeakPointer<T>::SelfWeakPointer()
-   : weakPointer(QSharedPointer<T>(reinterpret_cast<T*>(this)))
+   : strongPointer((T*)this), weakPointer(this->strongPointer)
 {
 }
 
 template <typename T>
-QSharedPointer<T> Common::SelfWeakPointer<T>::getStrongRef()
+QSharedPointer<T> Common::SelfWeakPointer<T>::grabStrongRef()
 {
-   return this->weakPointer.toStrongRef();
+   QSharedPointer<T> strongPointerCopy { this->strongPointer };
+   this->strongPointer.clear();
+   return strongPointerCopy;
 }
 
 template <typename T>
