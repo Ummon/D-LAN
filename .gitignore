@@ -21,3 +21,4 @@ qrc_*.cpp
 TODO
 *.session
 *.DS_STORE
+Thumbs.db
