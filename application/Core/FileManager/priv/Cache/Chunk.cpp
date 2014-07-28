@@ -143,9 +143,8 @@ void Chunk::dataReaderDeleted()
   */
 void Chunk::fileDeleted()
 {
-   this->file = 0;
+   this->file = nullptr;
 }
-
 
 int Chunk::getNum() const
 {
