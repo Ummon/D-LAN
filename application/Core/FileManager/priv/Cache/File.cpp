@@ -481,7 +481,7 @@ void File::deleteIfIncomplete()
    {
       this->removeUnfinishedFiles();
       this->mutex.unlock();
-      delete this;
+      this->del();
       return;
    }
 
