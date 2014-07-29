@@ -62,8 +62,8 @@ Protos::Core::GetHashesResult GetHashesResult::start()
       result.set_status(Protos::Core::GetHashesResult_Status_DONT_HAVE);
       return result;
    }
-   const QVector<QSharedPointer<Chunk>>& chunks = this->file->getChunks();
 
+   const QVector<QSharedPointer<Chunk>>& chunks = this->file->getChunks();
    if (this->fileEntry.chunk_size() != chunks.size())
    {
       L_ERRO("The number of chunks of the given file entry doesn't match the cache file number.");
@@ -71,7 +71,7 @@ Protos::Core::GetHashesResult GetHashesResult::start()
       return result;
    }
 
-   int nbOfHashWillBeSent = 0;
+   int nbOfHashToBeSent = 0;
 
    {
       QMutexLocker locker(&this->mutex);
@@ -86,7 +86,7 @@ Protos::Core::GetHashesResult GetHashesResult::start()
 
          if (!protoChunk.has_hash())
          {
-            nbOfHashWillBeSent++;
+            nbOfHashToBeSent++;
             if (chunk->hasHash())
                this->sendNextHash(chunk, true);
             else
@@ -94,20 +94,17 @@ Protos::Core::GetHashesResult GetHashesResult::start()
          }
       }
 
-      result.set_nb_hash(nbOfHashWillBeSent);
+      result.set_nb_hash(nbOfHashToBeSent);
    }
+
+   result.set_status(Protos::Core::GetHashesResult_Status_OK);
 
    // No hash to send.
    if (this->hashesRemaining.isEmpty())
-   {
       disconnect(&this->cache, SIGNAL(chunkHashKnown(QSharedPointer<Chunk>)), this, SLOT(chunkHashKnown(QSharedPointer<Chunk>)));
-   }
    else
-   {
       // If at least one hash is missing we tell the file updater to compute the remaining ones.
       this->fileUpdater.prioritizeAFileToHash(this->file);
-      result.set_status(Protos::Core::GetHashesResult_Status_OK);
-   }
 
    return result;
 }
