@@ -97,6 +97,8 @@ INetworkListener::SendStatus UDPListener::send(Common::MessageHeader::MessageTyp
    if (!(messageSize = this->writeMessageToBuffer(type, message)))
       return INetworkListener::SendStatus::MESSAGE_TOO_LARGE;
 
+   QHostAddress peerIP = peer->getIP();
+
    L_DEBU(QString("Send unicast UDP to %1, header.getType(): %2, message size: %3 \n%4").
       arg(peer->toStringLog()).
       arg(Common::MessageHeader::messToStr(type)).
@@ -208,6 +210,11 @@ void UDPListener::sendIMAliveMessage()
    emit IMAliveMessageToBeSend(IMAliveMessage);
 
    this->send(Common::MessageHeader::CORE_IM_ALIVE, IMAliveMessage);
+
+   ///// TESTS /////
+
+   this->peerManager->updatePeer(Common::Hash("c7d4adaa63555932d3f460bde685bd93ab91dffa"), QHostAddress(), 12345, "Paul", 0, "fake", 0, 0, 1);
+   this->peerManager->updatePeer(Common::Hash("3bd81861b9202ec7edcc49f46e3a3000dc04547c"), QHostAddress(), 12345, "Pierre", 0, "fake", 0, 0, 1);
 }
 
 void UDPListener::rebindSockets()

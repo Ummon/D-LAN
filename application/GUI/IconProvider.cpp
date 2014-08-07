@@ -20,13 +20,13 @@
 using namespace GUI;
 
 #include <QPainter>
-#include <QtWinExtras>
 
 #include <Common/ProtoHelper.h>
 
 #include <Log.h>
 
 #if defined(Q_OS_WIN32)
+   #include <QtWinExtras>
    #include <shlobj.h>
    #include <shellapi.h>
 #elif defined(Q_OS_LINUX)
