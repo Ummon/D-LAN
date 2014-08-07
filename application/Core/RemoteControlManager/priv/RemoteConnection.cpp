@@ -162,7 +162,11 @@ void RemoteConnection::refresh()
       protoPeer->set_sharing_amount(peer->getSharingAmount());
       protoPeer->set_download_rate(peer->getDownloadRate());
       protoPeer->set_upload_rate(peer->getUploadRate());
-      Common::ProtoHelper::setIP(*protoPeer->mutable_ip(), peer->getIP());
+
+      const auto& peerIP = peer->getIP();
+      if (!peerIP.isNull())
+         Common::ProtoHelper::setIP(*protoPeer->mutable_ip(), peer->getIP());
+
       protoPeer->set_status(
          peer->getProtocolVersion() == Common::Constants::PROTOCOL_VERSION ? Protos::GUI::State::Peer::OK :
          (peer->getProtocolVersion() < Common::Constants::PROTOCOL_VERSION ? Protos::GUI::State::Peer::VERSION_OUTDATED : Protos::GUI::State::Peer::MORE_RECENT_VERSION)

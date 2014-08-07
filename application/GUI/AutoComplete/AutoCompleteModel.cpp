@@ -28,14 +28,19 @@ AutoCompleteModel::~AutoCompleteModel()
 
 }
 
-void AutoCompleteModel::setValues(const QList<QPair<Common::Hash, QString>> values)
+void AutoCompleteModel::setValues(const QList<QPair<Common::Hash, QString>>& values)
 {
+   this->beginResetModel();
    this->values = values;
+   this->endResetModel();
 }
 
-void AutoCompleteModel::setFilter(const QString& pattern)
+Common::Hash AutoCompleteModel::getHash(const QModelIndex& index) const
 {
+   if (index.row() >= 0 && index.row() < this->values.size())
+      return this->values[index.row()].first;
 
+   return Common::Hash();
 }
 
 /*QModelIndex AutoCompleteModel::index(int row, int column, const QModelIndex& parent) const

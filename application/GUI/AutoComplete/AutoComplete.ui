@@ -43,6 +43,9 @@
      <property name="lineWidth">
       <number>1</number>
      </property>
+     <property name="editTriggers">
+      <set>QAbstractItemView::NoEditTriggers</set>
+     </property>
     </widget>
    </item>
   </layout>

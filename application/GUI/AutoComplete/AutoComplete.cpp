@@ -22,33 +22,97 @@ using namespace GUI;
 
 #include <QKeyEvent>
 
+#include <Log.h>
+
 AutoComplete::AutoComplete(QWidget* parent) :
    QWidget(parent),
    ui(new Ui::AutoComplete)
 {
    this->ui->setupUi(this);
-   this->ui->listView->setModel(&this->model);
+
+   this->filterModel.setFilterCaseSensitivity(Qt::CaseInsensitive);
+
+   this->filterModel.setSourceModel(&this->model);
+   this->ui->listView->setModel(&this->filterModel);
+
+   this->ui->listView->installEventFilter(this);
 }
 
-void AutoComplete::setValues(const QList<QPair<Common::Hash, QString>> values)
+void AutoComplete::setValues(const QList<QPair<Common::Hash, QString>>& values)
 {
    this->model.setValues(values);
+
+   if (this->filterModel.rowCount() > 0)
+      this->ui->listView->selectionModel()->select(this->filterModel.index(0, 0), QItemSelectionModel::Select);
 }
 
-/*void AutoComplete::setFilter(const QString& pattern)
+/**
+  * Returns the current selected hash. It may return a null hash if nothing is selected.
+  */
+Common::Hash AutoComplete::getCurrent() const
 {
-   this->model.setFilter(pattern);
+   /*auto selection = this->ui->listView->selectedIndexes();
+   if (selection.size() > 0)
+      return this->model.getHash(selection[0].row());*/
+   return Common::Hash();
 }
 
-void AutoComplete::selectNextItem()
+bool AutoComplete::eventFilter(QObject* obj, QEvent* event)
 {
+   // if (event->modifiers() == Qt::NoModifier)
 
-}*/
-
-void AutoComplete::keyPressEvent(QKeyEvent* event)
-{
-   if (event->modifiers() == Qt::NoModifier)
+   if (obj == this->ui->listView && event->type() == QEvent::KeyPress)
    {
-      emit keyPressed(event->key());
+      QKeyEvent* keyEvent = static_cast<QKeyEvent*>(event);
+
+      L_DEBU(QString("AutoComplete::eventFilter, key: %1, modifier: %2, text: %3").arg(keyEvent->key()).arg(keyEvent->modifiers()).arg(keyEvent->text()));
+
+      switch (keyEvent->key())
+      {
+      case Qt::Key_Backspace:
+         if (!this->currentPattern.isEmpty())
+         {
+            this->currentPattern.remove(this->currentPattern.size() - 1, 1);
+            this->filterModel.setFilterWildcard(this->currentPattern + "*");
+            emit lastCharRemoved();
+         }
+         break;
+
+      case Qt::Key_Escape:
+         this->currentPattern.clear();
+         this->model.setValues(QList<QPair<Common::Hash, QString>>());
+         this->close();
+         break;
+
+      case Qt::Key_Enter:
+      case Qt::Key_Return:
+      case Qt::Key_Space:
+         this->close();
+         break;
+
+      default:
+         if (keyEvent->key() < Qt::Key_Escape)
+         {
+            const QString& text = keyEvent->text();
+            if (!text.isEmpty())
+            {
+               this->currentPattern.append(text);
+               this->filterModel.setFilterWildcard(this->currentPattern + "*");
+               emit stringAdded(text);
+            }
+         }
+         break;
+      }
+
+      return true;
    }
+
+   return QWidget::eventFilter(obj, event);
+}
+
+void AutoComplete::showEvent(QShowEvent* event)
+{
+   this->currentPattern.clear();
+   this->filterModel.setFilterWildcard("");
+   this->ui->listView->setFocus();
 }

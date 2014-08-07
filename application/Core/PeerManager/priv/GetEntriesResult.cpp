@@ -30,16 +30,22 @@ GetEntriesResult::GetEntriesResult(const Protos::Core::GetEntries& dirs, QShared
 
 void GetEntriesResult::start()
 {
-   connect(this->socket.data(), SIGNAL(newMessage(Common::Message)), this, SLOT(newMessage(Common::Message)), Qt::DirectConnection);
-   socket->send(Common::MessageHeader::CORE_GET_ENTRIES, this->dirs);
+   if (!this->socket.isNull())
+   {
+      connect(this->socket.data(), SIGNAL(newMessage(Common::Message)), this, SLOT(newMessage(Common::Message)), Qt::DirectConnection);
+      socket->send(Common::MessageHeader::CORE_GET_ENTRIES, this->dirs);
+   }
    this->startTimer();
 }
 
 void GetEntriesResult::doDeleteLater()
 {
-   disconnect(this->socket.data(), SIGNAL(newMessage(Common::Message)), this, SLOT(newMessage(Common::Message)));
-   this->socket->finished();
-   this->socket.clear();
+   if (!this->socket.isNull())
+   {
+      disconnect(this->socket.data(), SIGNAL(newMessage(Common::Message)), this, SLOT(newMessage(Common::Message)));
+      this->socket->finished();
+      this->socket.clear();
+   }
    this->deleteLater();
 }
 
@@ -50,7 +56,8 @@ void GetEntriesResult::newMessage(const Common::Message& message)
 
    this->stopTimer();
 
-   disconnect(this->socket.data(), SIGNAL(newMessage(Common::Message)), this, SLOT(newMessage(Common::Message)));
+   if (!this->socket.isNull())
+      disconnect(this->socket.data(), SIGNAL(newMessage(Common::Message)), this, SLOT(newMessage(Common::Message)));
 
    const Protos::Core::GetEntriesResult& entries = message.getMessage<Protos::Core::GetEntriesResult>();
    emit result(entries);

@@ -23,6 +23,7 @@
 #include <QList>
 #include <QPair>
 #include <QAbstractItemModel>
+#include <QSortFilterProxyModel>
 
 #include <AutoComplete/AutoCompleteModel.h>
 #include <Common/Hash.h>
@@ -39,21 +40,26 @@ namespace GUI
    public:
       explicit AutoComplete(QWidget* parent = 0);
 
-      void setValues(const QList<QPair<Common::Hash, QString>> values);
-      //void setFilter(const QString& pattern);
-      //void selectNextItem();
+      void setValues(const QList<QPair<Common::Hash, QString>>& values);
+
+      Common::Hash getCurrent() const;
 
    signals:
-      void keyPressed(int key);
-      //void selected(QPair<Common::Hash, QString> value);
+      void stringAdded(QString str);
+      void lastCharRemoved();
 
    protected:
-      void keyPressEvent(QKeyEvent* event);
+      //void keyPressEvent(QKeyEvent* event) override;
+      bool eventFilter(QObject* obj, QEvent* event) override;
+      void showEvent(QShowEvent* event) override;
 
    private:
       Ui::AutoComplete* ui;
 
+      QString currentPattern;
+
       AutoCompleteModel model;
+      QSortFilterProxyModel filterModel;
    };
 }
 

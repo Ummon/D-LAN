@@ -112,9 +112,13 @@ namespace GUI
       void insertEmoticon(const QString& theme, const QString& emoticonName);
       void defaultEmoticonThemeChanged(const QString& theme);
 
+      void autoCompleteStringAdded(QString str);
+      void autoCompleteLastCharRemoved();
+
    protected:
       void keyPressEvent(QKeyEvent* keyEvent);
       void changeEvent(QEvent* event);
+
       bool eventFilter(QObject* obj, QEvent* event);
 
    private:

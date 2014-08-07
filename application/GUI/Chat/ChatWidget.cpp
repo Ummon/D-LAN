@@ -469,6 +469,32 @@ void ChatWidget::defaultEmoticonThemeChanged(const QString& theme)
    SETTINGS.save();
 }
 
+void ChatWidget::autoCompleteStringAdded(QString str)
+{
+   if (!this->peerNameInsertionMode)
+      return;
+
+   // L_DEBU(QString("autoCompleteStringAdded: begin: %1, end: %2").arg(this->currentAnswer.begin).arg(this->currentAnswer.end));
+
+   this->currentAnswer.end += str.size();
+   this->ui->txtMessage->insertPlainText(str);
+}
+
+void ChatWidget::autoCompleteLastCharRemoved()
+{
+   if (!this->peerNameInsertionMode)
+      return;
+
+   // L_DEBU(QString("autoCompleteLastCharRemoved: begin: %1, end: %2").arg(this->currentAnswer.begin).arg(this->currentAnswer.end));
+   // L_DEBU(QString("Cursor position: %1").arg(this->ui->txtMessage->textCursor().position()));
+
+   if (this->currentAnswer.end > this->currentAnswer.begin + 1)
+   {
+      this->ui->txtMessage->textCursor().deletePreviousChar();
+      this->currentAnswer.end -= 1;
+   }
+}
+
 void ChatWidget::keyPressEvent(QKeyEvent* keyEvent)
 {
    // CTRL.
@@ -532,14 +558,8 @@ bool ChatWidget::eventFilter(QObject* obj, QEvent* event)
          break;
 
       case Qt::Key_Tab: // 'tab' : begins a peer name insertion or in peer name insertion mode step through each peer names.
-         {
-            /*if (this->peerNameInsertionMode)
-               this->autoComplete->selectNextItem();
-            else*/
-               this->activatePeerNameInsertionMode();
-            return true;
-         }
-         break;
+         this->activatePeerNameInsertionMode();
+         return true;
       }
    }
 
@@ -661,6 +681,9 @@ void ChatWidget::init()
    connect(this->emoticonsWidget, SIGNAL(hidden()), this, SLOT(emoticonsWindowHidden()));
    connect(this->emoticonsWidget, SIGNAL(emoticonChoosen(QString, QString)), this, SLOT(insertEmoticon(QString, QString)));
    connect(this->emoticonsWidget, SIGNAL(defaultThemeChanged(QString)), this, SLOT(defaultEmoticonThemeChanged(QString)));
+
+   connect(this->autoComplete, &AutoComplete::stringAdded, this, &ChatWidget::autoCompleteStringAdded);
+   connect(this->autoComplete, &AutoComplete::lastCharRemoved, this, &ChatWidget::autoCompleteLastCharRemoved);
 
    this->connectFormatWidgets();
 

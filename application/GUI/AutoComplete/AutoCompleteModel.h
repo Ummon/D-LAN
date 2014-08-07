@@ -28,20 +28,19 @@ namespace GUI
 {
    class AutoCompleteModel : public QAbstractTableModel
    {
-      Q_OBJECT
-
    public:
       AutoCompleteModel();
       ~AutoCompleteModel();
 
-      void setValues(const QList<QPair<Common::Hash, QString>> values);
-      void setFilter(const QString& pattern);
+      void setValues(const QList<QPair<Common::Hash, QString>>& values);
+
+      Common::Hash getHash(const QModelIndex& index) const;
 
       /*QModelIndex index(int row, int column, const QModelIndex& parent = QModelIndex()) const;
       QModelIndex parent(const QModelIndex& child) const;*/
-      int rowCount(const QModelIndex& parent = QModelIndex()) const;
-      int columnCount(const QModelIndex& parent = QModelIndex()) const;
-      QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const;
+      int rowCount(const QModelIndex& parent = QModelIndex()) const override;
+      int columnCount(const QModelIndex& parent = QModelIndex()) const override;
+      QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
 
    private:
       QList<QPair<Common::Hash, QString>> values;
