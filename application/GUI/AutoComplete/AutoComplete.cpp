@@ -51,9 +51,9 @@ void AutoComplete::setValues(const QList<QPair<Common::Hash, QString>>& values)
   */
 Common::Hash AutoComplete::getCurrent() const
 {
-   /*auto selection = this->ui->listView->selectedIndexes();
+   auto selection = this->ui->listView->selectionModel()->selectedRows();
    if (selection.size() > 0)
-      return this->model.getHash(selection[0].row());*/
+      return this->model.getHash(this->filterModel.mapToSource(selection[0]));
    return Common::Hash();
 }
 
