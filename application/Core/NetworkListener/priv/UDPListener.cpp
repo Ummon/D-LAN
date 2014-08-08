@@ -210,11 +210,6 @@ void UDPListener::sendIMAliveMessage()
    emit IMAliveMessageToBeSend(IMAliveMessage);
 
    this->send(Common::MessageHeader::CORE_IM_ALIVE, IMAliveMessage);
-
-   ///// TESTS /////
-
-   this->peerManager->updatePeer(Common::Hash("c7d4adaa63555932d3f460bde685bd93ab91dffa"), QHostAddress(), 12345, "Paul", 0, "fake", 0, 0, 4);
-   this->peerManager->updatePeer(Common::Hash("3bd81861b9202ec7edcc49f46e3a3000dc04547c"), QHostAddress(), 12345, "Pierre", 0, "fake", 0, 0, 4);
 }
 
 void UDPListener::rebindSockets()

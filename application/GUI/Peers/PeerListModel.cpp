@@ -113,9 +113,6 @@ Protos::GUI::State::Peer::PeerStatus PeerListModel::getStatus(int rowNum) const
 
 void PeerListModel::setSortType(Protos::GUI::Settings::PeerSortType sortType)
 {
-   if (this->currentSortType == sortType)
-      return;
-
    this->currentSortType = sortType;
 
    emit layoutAboutToBeChanged();
@@ -414,6 +411,10 @@ void PeerListModel::updatePeers(const google::protobuf::RepeatedPtrField<Protos:
 
    if (!peerIDsRemoved.isEmpty())
       emit peersRemoved(peerIDsRemoved);
+
+   peersToAdd << new Peer { Common::Hash("c7d4adaa63555932d3f460bde685bd93ab91dffa"), "Pierre", QString(), 0, QHostAddress(), { 0, 0, false },  Protos::GUI::State::Peer::OK };
+   peersToAdd << new Peer { Common::Hash("c7d4adaa63555932d3f460bde685bd93ab91dffb"), "Paul", QString(), 0, QHostAddress(), { 0, 0, false },  Protos::GUI::State::Peer::OK };
+   peersToAdd << new Peer { Common::Hash("c7d4adaa63555932d3f460bde685bd93ab91dffc"), "Jacques", QString(), 0, QHostAddress(), { 0, 0, false },  Protos::GUI::State::Peer::OK };
 
    for (QListIterator<Peer*> i(peersToAdd); i.hasNext();)
    {
