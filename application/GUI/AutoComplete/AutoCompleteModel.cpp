@@ -25,7 +25,6 @@ AutoCompleteModel::AutoCompleteModel()
 
 AutoCompleteModel::~AutoCompleteModel()
 {
-
 }
 
 void AutoCompleteModel::setValues(const QList<QPair<Common::Hash, QString>>& values)

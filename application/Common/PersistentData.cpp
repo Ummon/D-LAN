@@ -86,7 +86,7 @@ try
    Q_ASSERT(!name.isEmpty());
    return QFile::remove(Global::getDataFolder(dataFolderType) + '/' + name);
 }
-catch(Global::UnableToGetFolder& e)
+catch (Global::UnableToGetFolder& e)
 {
    throw PersistentDataIOException(e.errorMessage);
 }
@@ -125,7 +125,7 @@ try
 
    Global::rename(TEMP_FILEPATH, filepath);
 }
-catch(Global::UnableToGetFolder& e)
+catch (Global::UnableToGetFolder& e)
 {
    throw PersistentDataIOException(e.errorMessage);
 }
@@ -151,7 +151,7 @@ try
    }
 #endif
 }
-catch(Global::UnableToGetFolder& e)
+catch (Global::UnableToGetFolder& e)
 {
    throw PersistentDataIOException(e.errorMessage);
 }

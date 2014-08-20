@@ -313,7 +313,7 @@ void UDPListener::processPendingMulticastDatagrams()
 
          emit received(message);
       }
-      catch(Common::ReadErrorException&)
+      catch (Common::ReadErrorException&)
       {
          L_WARN(QString("Unable to read a multicast message from peer %1 %2").arg(header.getSenderID().toStr()).arg(peerAddress.toString()));
       }
@@ -378,7 +378,7 @@ void UDPListener::processPendingUnicastDatagrams()
 
          emit received(message);
       }
-      catch(Common::ReadErrorException&)
+      catch (Common::ReadErrorException&)
       {
          L_WARN(QString("Unable to read an unicast message from peer %1 %2").arg(header.getSenderID().toStr()).arg(peerAddress.toString()));
       }

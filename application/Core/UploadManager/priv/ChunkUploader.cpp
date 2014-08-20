@@ -133,12 +133,12 @@ void ChunkUploader::run()
          this->transferRateCalculator.addData(bytesSent);
       }
    }
-   catch(FM::UnableToOpenFileInReadModeException&)
+   catch (FM::UnableToOpenFileInReadModeException&)
    {
       L_WARN("UnableToOpenFileInReadModeException");
       this->closeTheSocket = true;
    }
-   catch(FM::IOErrorException&)
+   catch (FM::IOErrorException&)
    {
       L_WARN("IOErrorException");
       this->closeTheSocket = true;

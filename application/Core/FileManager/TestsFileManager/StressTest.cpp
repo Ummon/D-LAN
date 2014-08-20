@@ -451,15 +451,15 @@ void StressTest::newFile()
          downloader->start();
       }
    }
-   catch(NoWriteableDirectoryException&)
+   catch (NoWriteableDirectoryException&)
    {
       qDebug() << "NoWriteableDirectoryException";
    }
-   catch(InsufficientStorageSpaceException&)
+   catch (InsufficientStorageSpaceException&)
    {
       qDebug() << "InsufficientStorageSpaceException";
    }
-   catch(UnableToCreateNewFileException&)
+   catch (UnableToCreateNewFileException&)
    {
       qDebug() << "UnableToCreateNewFileException";
    }
@@ -660,19 +660,19 @@ void Downloader::run()
 
       while (!writer->write(buffer, BUFFER_SIZE));
    }
-   catch(UnableToOpenFileInWriteModeException&)
+   catch (UnableToOpenFileInWriteModeException&)
    {
       qDebug() << "UnableToOpenFileInWriteModeException, file = " << this->filePath;
    }
-   catch(IOErrorException&)
+   catch (IOErrorException&)
    {
       qDebug() << "IOErrorException, file = " << this->filePath;
    }
-   catch(TryToWriteBeyondTheEndOfChunkException&)
+   catch (TryToWriteBeyondTheEndOfChunkException&)
    {
       qDebug() << "TryToWriteBeyondTheEndOfChunkException, file = " << this->filePath;
    }
-   catch(ChunkDeletedException&)
+   catch (ChunkDeletedException&)
    {
       qDebug() << "ChunkDeletedException, file = " << this->filePath;
    }
@@ -702,19 +702,19 @@ void Uploader::run()
          bytesReadTotal += bytesRead;
       qDebug() << "Uploader::run() : bytesRead = " << bytesReadTotal << " for the chunk " << this->chunk->getHash().toStr() << " num : " << this->chunk->getNum();
    }
-   catch(UnableToOpenFileInReadModeException&)
+   catch (UnableToOpenFileInReadModeException&)
    {
       qDebug() << "UnableToOpenFileInReadModeException";
    }
-   catch(IOErrorException&)
+   catch (IOErrorException&)
    {
       qDebug() << "IOErrorException";
    }
-   catch(ChunkDeletedException&)
+   catch (ChunkDeletedException&)
    {
       qDebug() << "ChunkDeletedException";
    }
-   catch(ChunkDataUnknownException&)
+   catch (ChunkDataUnknownException&)
    {
       qDebug() << "ChunkDataUnknownException";
    }

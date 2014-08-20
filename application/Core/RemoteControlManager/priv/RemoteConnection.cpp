@@ -490,7 +490,7 @@ void RemoteConnection::onNewMessage(const Common::Message& message)
                sharedDirs << Common::ProtoHelper::getRepeatedStr(coreSettingsMessage.shared_directories(), &Protos::GUI::CoreSettings::SharedDirectories::dir, i);
             this->fileManager->setSharedDirs(sharedDirs);
          }
-         catch(FM::DirsNotFoundException& e)
+         catch (FM::DirsNotFoundException& e)
          {
             foreach (QString path, e.paths)
                L_WARN(QString("Directory not found : %1").arg(path));

@@ -64,7 +64,7 @@ void Tests::initTestCase()
       qDebug() << "Application folder path (where the persistent data is put) : " <<  Common::Global::getDataFolder(Common::Global::DataFolderType::LOCAL, false);
       qDebug() << "The file created during this test are put in : " << tempFolder;
    }
-   catch(Common::Global::UnableToSetTempDirException& e)
+   catch (Common::Global::UnableToSetTempDirException& e)
    {
       QFAIL(e.errorMessage.toLatin1().constData());
    }
@@ -394,15 +394,15 @@ void Tests::createAnEmptyFile()
       for (int i = 0; i < chunks.size(); i++)
          QVERIFY(chunks[i]->getHash().isNull());
    }
-   catch(NoWriteableDirectoryException&)
+   catch (NoWriteableDirectoryException&)
    {
       QFAIL("NoWriteableDirectoryException");
    }
-   catch(InsufficientStorageSpaceException&)
+   catch (InsufficientStorageSpaceException&)
    {
       QFAIL("InsufficientStorageSpaceException");
    }
-   catch(UnableToCreateNewFileException&)
+   catch (UnableToCreateNewFileException&)
    {
       QFAIL("UnableToCreateNewFileException");
    }

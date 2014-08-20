@@ -173,12 +173,12 @@ void DirDownload::createDirectory()
       {
          this->fileManager->newDirectory(this->localEntry);
       }
-      catch(FM::NoWriteableDirectoryException&)
+      catch (FM::NoWriteableDirectoryException&)
       {
          L_DEBU(QString("There is no shared directory with writting rights for this download : %1").arg(Common::ProtoHelper::getStr(this->remoteEntry, &Protos::Common::Entry::name)));
          this->setStatus(NO_SHARED_DIRECTORY_TO_WRITE);
       }
-      catch(FM::UnableToCreateNewDirException&)
+      catch (FM::UnableToCreateNewDirException&)
       {
          L_DEBU(QString("Unable to create the directory, download : %1").arg(Common::ProtoHelper::getStr(this->remoteEntry, &Protos::Common::Entry::name)));
          this->setStatus(UNABLE_TO_CREATE_THE_DIRECTORY);

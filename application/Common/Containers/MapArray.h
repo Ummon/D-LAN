@@ -135,7 +135,7 @@ inline void Common::MapArray<K, T>::removeFromIndex(int index)
    {
       this->array.remove(index);
    }
-   catch(typename SortedArray<Element>::NotFoundException&)
+   catch (typename SortedArray<Element>::NotFoundException&)
    {
       throw NotFoundException();
    }
