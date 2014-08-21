@@ -13,19 +13,6 @@ CONFIG(debug, debug|release) {
    }
 }
 
-# C++11
-win32 {
-   # For mingw32.
-   QMAKE_CXXFLAGS += -std=c++11
-}
-macx {
-   # For clang.
-   QMAKE_CXXFLAGS += -std=c++11 -stdlib=libc++
-}
-linux-g++ {
-   QMAKE_CXXFLAGS += -std=c++11
-}
-
 CONFIG += exceptions rtti
 
 DESTDIR = output/$$FOLDER
@@ -34,4 +21,5 @@ OBJECTS_DIR = .tmp/$$FOLDER
 RCC_DIR = .tmp/$$FOLDER
 UI_DIR = .tmp/$$FOLDER
 
+QMAKE_CXXFLAGS += -std=c++11
 QMAKE_CXXFLAGS_WARN_ON = -Wall -Wno-parentheses
