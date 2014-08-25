@@ -41,7 +41,7 @@ namespace DM
 
       UNKNOWN_PEER_SOURCE = 0x10, // The source peer can't be found.
       ENTRY_NOT_FOUND = 0x11, // The source peer can't find the entry.
-      NO_SOURCE = 0x12, // Some chunk can't be downloaded. Only when there is no more downloading.
+      NO_SOURCE = 0x12, // Some chunks can't be downloaded. Only when there is no more downloading.
 
       // Error status:
       NO_SHARED_DIRECTORY_TO_WRITE = 0x20,

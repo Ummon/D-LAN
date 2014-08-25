@@ -50,7 +50,6 @@ namespace Common
       static const char NULL_HASH[HASH_SIZE];
 
    public:
-
       Hash();
       Hash(const Hash& h);
       Hash(Hash&& h);
@@ -192,6 +191,9 @@ namespace Common
    };
 }
 
+/**
+  * Removes the reference to the pointed data if it exists.
+  */
 inline void Common::Hash::dereference()
 {
    if (this->data)
