@@ -47,15 +47,20 @@ namespace GUI
    signals:
       void stringAdded(QString str);
       void lastCharRemoved();
+      void closed();
 
    protected:
       //void keyPressEvent(QKeyEvent* event) override;
       bool eventFilter(QObject* obj, QEvent* event) override;
       void showEvent(QShowEvent* event) override;
+      void closeEvent(QCloseEvent* event) override;
 
    private:
+      void reset();
+
       Ui::AutoComplete* ui;
 
+      bool validated;
       QString currentPattern;
 
       AutoCompleteModel model;

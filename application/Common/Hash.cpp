@@ -148,7 +148,7 @@ Hash& Hash::operator=(Hash&& h)
 
 /**
   * Return a human readable string.
-  * For example : 16bd4b1e656129eb9ddaa2ce0f0705f1cc161f77.
+  * For example : "16bd4b1e656129eb9ddaa2ce0f0705f1cc161f77".
   * @see fromStr to decode a such string.
   */
 QString Hash::toStr() const

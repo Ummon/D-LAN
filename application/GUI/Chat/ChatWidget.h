@@ -114,6 +114,7 @@ namespace GUI
 
       void autoCompleteStringAdded(QString str);
       void autoCompleteLastCharRemoved();
+      void autoCompleteClosed();
 
    protected:
       void keyPressEvent(QKeyEvent* keyEvent);
@@ -130,7 +131,6 @@ namespace GUI
       void displayEmoticons(const QPoint& positionSender, const QSize& sizeSender);
 
       void activatePeerNameInsertionMode();
-      void deactivatePeerNameInsertionMode();
 
       void onActivate();
 
@@ -144,7 +144,7 @@ namespace GUI
       QTextDocument textDocument;
 
       // Current peers answered.
-      struct Answer { int begin; int end; Common::Hash peerID; };
+      struct Answer { int begin; int end; bool startWithSpace; Common::Hash peerID; };
       QList<Answer> answers;
       bool peerNameInsertionMode;
       Answer currentAnswer;
