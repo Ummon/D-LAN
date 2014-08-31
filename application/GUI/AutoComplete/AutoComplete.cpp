@@ -26,7 +26,8 @@ using namespace GUI;
 
 AutoComplete::AutoComplete(QWidget* parent) :
    QWidget(parent),
-   ui(new Ui::AutoComplete)
+   ui(new Ui::AutoComplete),
+   validated(false)
 {
    this->ui->setupUi(this);
 
@@ -36,14 +37,23 @@ AutoComplete::AutoComplete(QWidget* parent) :
    this->ui->listView->setModel(&this->filterModel);
 
    this->ui->listView->installEventFilter(this);
+
+   // The next three 'connects' are here to automatically select the first list item when the list is populated and was previously empty.
+   auto selectFirstItem = [this](){
+      if (this->ui->listView->selectionModel()->selectedRows().isEmpty() && this->filterModel.rowCount() > 0)
+         this->ui->listView->selectionModel()->select(this->filterModel.index(0, 0), QItemSelectionModel::SelectCurrent);
+   };
+   connect(&this->filterModel, &QSortFilterProxyModel::rowsInserted, selectFirstItem);
+   connect(&this->filterModel, &QSortFilterProxyModel::rowsRemoved, selectFirstItem);
+   connect(&this->filterModel, &QSortFilterProxyModel::modelReset, [this](){
+      if (this->filterModel.rowCount() > 0)
+         this->ui->listView->selectionModel()->select(this->filterModel.index(0, 0), QItemSelectionModel::SelectCurrent);
+   });
 }
 
 void AutoComplete::setValues(const QList<QPair<Common::Hash, QString>>& values)
 {
    this->model.setValues(values);
-
-   if (this->filterModel.rowCount() > 0)
-      this->ui->listView->selectionModel()->select(this->filterModel.index(0, 0), QItemSelectionModel::Select);
 }
 
 /**
@@ -59,13 +69,11 @@ Common::Hash AutoComplete::getCurrent() const
 
 bool AutoComplete::eventFilter(QObject* obj, QEvent* event)
 {
-   // if (event->modifiers() == Qt::NoModifier)
-
    if (obj == this->ui->listView && event->type() == QEvent::KeyPress)
    {
       QKeyEvent* keyEvent = static_cast<QKeyEvent*>(event);
 
-      L_DEBU(QString("AutoComplete::eventFilter, key: %1, modifier: %2, text: %3").arg(keyEvent->key()).arg(keyEvent->modifiers()).arg(keyEvent->text()));
+      // L_DEBU(QString("AutoComplete::eventFilter, key: %1, modifier: %2, text: %3").arg(keyEvent->key()).arg(keyEvent->modifiers()).arg(keyEvent->text()));
 
       switch (keyEvent->key())
       {
@@ -76,19 +84,25 @@ bool AutoComplete::eventFilter(QObject* obj, QEvent* event)
             this->filterModel.setFilterWildcard(this->currentPattern + "*");
             emit lastCharRemoved();
          }
+         else
+            this->close();
          break;
 
       case Qt::Key_Escape:
-         this->currentPattern.clear();
-         this->model.setValues(QList<QPair<Common::Hash, QString>>());
          this->close();
          break;
 
+      // This is the only was to validate the selected entry.
       case Qt::Key_Enter:
       case Qt::Key_Return:
       case Qt::Key_Space:
+         this->validated = true;
          this->close();
          break;
+
+      case Qt::Key_Up:
+      case Qt::Key_Down:
+         return QWidget::eventFilter(obj, event);
 
       default:
          if (keyEvent->key() < Qt::Key_Escape)
@@ -112,7 +126,22 @@ bool AutoComplete::eventFilter(QObject* obj, QEvent* event)
 
 void AutoComplete::showEvent(QShowEvent* event)
 {
+   this->reset();
+   this->ui->listView->setFocus();
+}
+
+void AutoComplete::closeEvent(QCloseEvent*)
+{
+   if (!this->validated)
+      this->reset();
+
+   emit closed();
+}
+
+void AutoComplete::reset()
+{
+   this->validated = false;
+   this->model.setValues(QList<QPair<Common::Hash, QString>>());
    this->currentPattern.clear();
    this->filterModel.setFilterWildcard("");
-   this->ui->listView->setFocus();
 }
