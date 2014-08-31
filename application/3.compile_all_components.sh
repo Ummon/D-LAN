@@ -73,7 +73,7 @@ do
    then
       $MAKE clean -w || { echo "nothing to clean"; } # To avoid the command to fail.
    fi
-   $MAKE -w
+   $MAKE -w -j 4
    popd
 done
 
