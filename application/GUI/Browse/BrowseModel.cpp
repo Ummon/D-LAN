@@ -216,20 +216,27 @@ int BrowseModel::nbSharedDirs() const
 
 void BrowseModel::resultRefresh(const google::protobuf::RepeatedPtrField<Protos::Common::Entries>& entries)
 {
-   // Synchronize the content of all directories.
-   int j = -1;
-   this->root->mapReverseDepthFirst([&](Tree* tree) {
-      if (tree->getNbChildren() > 0)
-      {
-         if (++j >= entries.size() - 1)
-            return false;
-         this->synchronize(tree, entries.Get(j));
-      }
-      return true;
-   });
+   if (entries.size() == 0)
+   {
+      this->reset();
+   }
+   else
+   {
+      // Synchronize the content of all directories.
+      int j = -1;
+      this->root->mapReverseDepthFirst([&](Tree* tree) {
+         if (tree->getNbChildren() > 0)
+         {
+            if (++j >= entries.size() - 1)
+               return false;
+            this->synchronize(tree, entries.Get(j));
+         }
+         return true;
+      });
 
-   // Synchronize the root.
-   this->synchronizeRoot(entries.Get(entries.size() - 1));
+      // Synchronize the root.
+      this->synchronizeRoot(entries.Get(entries.size() - 1));
+   }
 
    this->browseResult.clear();
 

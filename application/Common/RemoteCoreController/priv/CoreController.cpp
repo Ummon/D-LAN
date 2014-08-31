@@ -52,7 +52,7 @@ void CoreController::startCore(int port)
 
    if (!debug && !this->controller.isInstalled())
    {
-      if (!QtServiceController::install(CORE_EXE_NAME))
+      if (!QtServiceController::install(CORE_EXE_NAME)) // FIXME: This call generates a zombie thread on Linux.
          L_WARN(QObject::tr("D-LAN Core cannot be installed as a service"));
    }
 
@@ -62,7 +62,7 @@ void CoreController::startCore(int port)
       if (port != -1)
          arguments << "--port" << QString::number(port);
 
-      if (debug || !this->controller.start(arguments))
+      if (debug || !this->controller.start(arguments)) // FIXME: This call generates a zombie thread on Linux.
       {
          if (this->coreProcess.state() == QProcess::NotRunning)
          {

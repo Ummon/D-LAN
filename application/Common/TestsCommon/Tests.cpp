@@ -581,6 +581,10 @@ void Tests::generateAHash()
    Hash h4(array);
    qDebug() << "h4 (from char[])              : " << h4.toStr();
    QVERIFY(memcmp(h4.getData(), array, Hash::HASH_SIZE) == 0);
+
+   Hash h5;
+   qDebug() << "h5 (empty)                    : " << h5.toStr();
+   QVERIFY(h5.isNull());
 }
 
 void Tests::buildAnHashFromAString()

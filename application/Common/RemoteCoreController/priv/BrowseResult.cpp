@@ -19,6 +19,7 @@
 #include <priv/BrowseResult.h>
 using namespace RCC;
 
+#include <priv/Log.h>
 #include <priv/InternalCoreConnection.h>
 
 BrowseResult::BrowseResult(InternalCoreConnection* coreConnection, const Common::Hash& peerID, int socketTimeout) :

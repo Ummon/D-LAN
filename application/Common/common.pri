@@ -4,7 +4,7 @@ CONFIG(debug, debug|release) {
 } else {
    FOLDER = release
    QMAKE_CXXFLAGS_RELEASE += -flto
-   QMAKE_LFLAGS_RELEASE += -flto -Wl,-allow-multiple-definition
+   QMAKE_LFLAGS_RELEASE += -flto
    prof {
       QMAKE_CXXFLAGS += -pg -g
       QMAKE_LFLAGS += -pg

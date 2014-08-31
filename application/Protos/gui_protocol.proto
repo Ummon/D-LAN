@@ -276,7 +276,7 @@ message BrowseResult {
 // is not finished the unfinished file is removed.
 message CancelDownloads {
    repeated uint64 id = 1 [packed = true];
-   optional bool complete= 2 [default = false];
+   optional bool complete = 2 [default = false]; // If true all completed downloads are removed from the download queue.
 }
 
 

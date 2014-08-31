@@ -33,30 +33,30 @@ namespace GUI
 
    public:
       DownloadsTreeModel(QSharedPointer<RCC::ICoreConnection> coreConnection, const PeerListModel& peerListModel, const DirListModel& sharedDirsModel, const IFilter<DownloadFilterStatus>& filter);
-      ~DownloadsTreeModel();
+      ~DownloadsTreeModel() override;
 
-      QList<quint64> getDownloadIDs(const QModelIndex& index) const;
+      QList<quint64> getDownloadIDs(const QModelIndex& index) const override;
 
-      bool isDownloadPaused(const QModelIndex& index) const;
-      bool isFileLocationKnown(const QModelIndex& index) const;
-      bool isFileComplete(const QModelIndex& index) const;
-      bool isSourceAlive(const QModelIndex& index) const;
-      Protos::Common::Entry::Type getType(const QModelIndex& index) const;
+      bool isDownloadPaused(const QModelIndex& index) const override;
+      bool isFileLocationKnown(const QModelIndex& index) const override;
+      bool isFileComplete(const QModelIndex& index) const override;
+      bool isSourceAlive(const QModelIndex& index) const override;
+      Protos::Common::Entry::Type getType(const QModelIndex& index) const override;
 
-      QString getPath(const QModelIndex& index, bool appendFilename = true) const;
+      QString getPath(const QModelIndex& index, bool appendFilename = true) const override;
 
-      int rowCount(const QModelIndex& parent = QModelIndex()) const;
-      QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const;
-      QModelIndex index(int row, int column, const QModelIndex& parent = QModelIndex()) const;
-      QModelIndex parent(const QModelIndex& index) const;
-      Qt::DropActions supportedDropActions() const;
-      Qt::ItemFlags flags(const QModelIndex& index) const;
+      int rowCount(const QModelIndex& parent = QModelIndex()) const override;
+      QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
+      QModelIndex index(int row, int column, const QModelIndex& parent = QModelIndex()) const override;
+      QModelIndex parent(const QModelIndex& index) const override;
+      Qt::DropActions supportedDropActions() const override;
+      Qt::ItemFlags flags(const QModelIndex& index) const override;
 
    protected:
-      bool dropMimeData(const QMimeData* data, Qt::DropAction action, int where, int column, const QModelIndex& parent);
+      bool dropMimeData(const QMimeData* data, Qt::DropAction action, int where, int column, const QModelIndex& parent) override;
 
    protected slots:
-      void onNewState(const Protos::GUI::State& state);
+      void onNewState(const Protos::GUI::State& state) override;
 
    private:
       class Tree : public Common::Tree<Protos::GUI::State::Download, Tree>

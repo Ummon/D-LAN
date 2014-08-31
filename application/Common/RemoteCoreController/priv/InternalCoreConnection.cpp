@@ -329,7 +329,7 @@ void InternalCoreConnection::tryToConnectToTheNextAddress()
    if (address.isNull())
       address = this->addressesToTry.takeFirst();
 
-   // If the address is local check if the core is launched, if not try to launch it.
+   // If the address is local then check if the core is launched, if not try to launch it.
    if (Common::Global::isLocal(address))
    {
       this->coreController.startCore(this->connectionInfo.port);

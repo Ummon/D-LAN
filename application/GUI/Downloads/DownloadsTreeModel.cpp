@@ -19,9 +19,12 @@
 #include <Downloads/DownloadsTreeModel.h>
 using namespace GUI;
 
+#include <QtGlobal>
+
 #include <Common/ProtoHelper.h>
 #include <Common/StringUtils.h>
-#include <QtGlobal>
+
+#include <Log.h>
 
 /**
   * @class DownloadsTreeModel
@@ -310,12 +313,12 @@ void DownloadsTreeModel::onNewState(const Protos::GUI::State& state)
    {
       const Protos::GUI::State::Download& download = state.download(activeDownloadIndices[i]);
 
-      // This model do not show directories, maybe we should . . .
+      // This model do not show directories, maybe we should . . . TODO
       if (download.local_entry().type() == Protos::Common::Entry::DIR)
          continue;
 
       Tree* fileTree = this->indexedFiles.value(download.id(), 0);
-      if (fileTree) // The file already exists in the tree, we will update its information and all parent directories.
+      if (fileTree) // The item already exists in the tree, we will update its information and all parent directories.
       {
          Tree* parentTree = fileTree;
          do
@@ -380,16 +383,19 @@ void DownloadsTreeModel::onNewState(const Protos::GUI::State& state)
 
 QList<quint64> DownloadsTreeModel::getDownloadIDs(Tree* tree) const
 {
-   if (tree->getItem().local_entry().type() == Protos::Common::Entry::FILE)
-      return QList<quint64>() << tree->getItem().id();
-
-   // We have to send all sub file ids, a directory doesn't have an id.
+   int id;
    QList<quint64> IDs;
+
+   if ((id = tree->getItem().id()) != 0)
+      IDs << id;
+
+   // We have to send all sub item IDs.
    for (Common::TreeBreadthFirstIterator<Tree> i(tree); i.hasNext();)
    {
       const Tree* current = i.next();
-      if (current->getItem().local_entry().type() == Protos::Common::Entry::FILE)
-         IDs << current->getItem().id();
+
+      if ((id = current->getItem().id()) != 0)
+         IDs << id;
    }
    return IDs;
 }
@@ -486,7 +492,7 @@ DownloadsTreeModel::Tree* DownloadsTreeModel::moveUp(DownloadsTreeModel::Tree* t
 }
 
 /**
-  * Update the given file. Then recursively update all parent directories.
+  * Update the given item. Then recursively update all parent directories.
   */
 DownloadsTreeModel::Tree* DownloadsTreeModel::update(Tree* tree, const Protos::GUI::State::Download& download)
 {
