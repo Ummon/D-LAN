@@ -38,7 +38,8 @@ SOURCES += Hash.cpp \
     ConsoleReader.cpp \
     StringUtils.cpp \
     Network/Message.cpp \
-    KnownExtensions.cpp
+    KnownExtensions.cpp \
+    Hash_noShare.cpp
 
 HEADERS += Hashes.h \
     Hash.h \
@@ -72,6 +73,7 @@ HEADERS += Hashes.h \
     Containers/SortedList.h \
     Containers/SortedArray.h \
     Containers/MapArray.h \
-    SelfWeakPointer.h
+    SelfWeakPointer.h \
+    Hash_noShare.h
 
 
