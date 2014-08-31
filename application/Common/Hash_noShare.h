@@ -46,15 +46,16 @@ namespace Common
    public:
       Hash() noexcept;
       Hash(const Hash&) = default;
+      Hash(Hash&&) = default;
 
       explicit Hash(const char* h); // It's too dangerous to construct an implicit Hash from a const char*.
       Hash(const std::string& str);
       Hash(const QByteArray& a);
 
-      Hash(Hash&&) = default;
-      Hash& operator=(const Hash&) = default;
-
       ~Hash() {}
+
+      Hash& operator=(const Hash&) = default;
+      Hash& operator=(Hash&&) = default;
 
       /**
         * Return a pointer to its internal data.
