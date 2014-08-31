@@ -17,18 +17,14 @@
   */
 
 #include <Common/Hash.h>
-using namespace Common;
 
-#if !NO_SHARED_DATA
+#if NO_SHARED_DATA
+
+#include <Common/Hash_noShare.h>
+using namespace Common;
 
 #include <QtGlobal>
 #include <QTime>
-
-/**
-  * @class Common::Hash
-  *
-  * An Über-optimized hash.
-  */
 
 MTRand Hash::mtrand;
 
@@ -38,25 +34,8 @@ const char Hash::NULL_HASH[HASH_SIZE] {};
   * Build a new empty hash, its value is set to 0.
   */
 Hash::Hash() noexcept :
-   data(nullptr)
+   data{}
 {
-}
-
-/**
-  * Build a new hash from an existing one.
-  * The data are shared between both.
-  */
-Hash::Hash(const Hash& h) noexcept
-{
-   this->data = h.data;
-   if (this->data)
-      this->data->nbRef += 1;
-}
-
-Hash::Hash(Hash&& h) noexcept
-{
-   this->data = h.data;
-   h.data = nullptr;
 }
 
 /**
@@ -69,13 +48,7 @@ Hash::Hash(const char* h)
 {
    Q_ASSERT(h);
 
-   if (h == nullptr || memcmp(h, NULL_HASH, Hash::HASH_SIZE) == 0)
-      this->data = nullptr;
-   else
-   {
-      this->newData();
-      memcpy(this->data->hash, h, HASH_SIZE);
-   }
+   memcpy(this->data, h == nullptr ? NULL_HASH : h, HASH_SIZE);
 }
 
 /**
@@ -90,13 +63,7 @@ Hash::Hash(const char* h)
   */
 Hash::Hash(const std::string& str)
 {
-   if (str.size() == 0 || static_cast<int>(str.size()) != HASH_SIZE || memcmp(str.data(), NULL_HASH, Hash::HASH_SIZE) == 0)
-      this->data = nullptr;
-   else
-   {
-      this->newData();
-      memcpy(this->data->hash, str.data(), HASH_SIZE);
-   }
+   memcpy(this->data, str.size() == 0 || static_cast<int>(str.size()) != HASH_SIZE ? NULL_HASH : str.data(), HASH_SIZE);
 }
 
 /**
@@ -105,47 +72,10 @@ Hash::Hash(const std::string& str)
   * The data are copied, no pointer is keept to 'a'.
   */
 Hash::Hash(const QByteArray& a)
-{   
+{
    Q_ASSERT_X(a.size() == HASH_SIZE, "Hash::Hash", QString("The given QByteArray must have a size of %1").arg(HASH_SIZE).toUtf8().constData());
 
-   if (a.isNull() || a.size() != HASH_SIZE || memcmp(a.constData(), NULL_HASH, Hash::HASH_SIZE) == 0)
-      this->data = nullptr;
-   else
-   {
-      this->newData();
-      memcpy(this->data->hash, a.constData(), HASH_SIZE);
-   }
-}
-
-/**
-  * Remove its reference to the shared data, if its the last
-  * then delete the data.
-  */
-Hash::~Hash()
-{
-   this->dereference();
-}
-
-/**
-  * Assign the data of a another hash.
-  * The data are shared.
-  */
-Hash& Hash::operator=(const Hash& h)
-{
-   if (&h != this && h.data != this->data)
-   {
-      this->dereference();
-      this->data = h.data;
-      if (this->data)
-         this->data->nbRef += 1;
-   }
-   return *this;
-}
-
-Hash& Hash::operator=(Hash&& h) noexcept
-{
-   std::swap(this->data, h.data);
-   return *this;
+   memcpy(this->data, a.isNull() || a.size() != HASH_SIZE ? NULL_HASH : a.constData(), HASH_SIZE);
 }
 
 /**
@@ -156,12 +86,11 @@ Hash& Hash::operator=(Hash&& h) noexcept
 QString Hash::toStr() const
 {
    QString ret(2 * HASH_SIZE);
-   const char* hashData = this->data ? this->data->hash : NULL_HASH;
 
    for (int i = 0; i < HASH_SIZE; i++)
    {
-      char p1 = (hashData[i] & 0xF0) >> 4;
-      char p2 = hashData[i] & 0x0F;
+      char p1 = (this->data[i] & 0xF0) >> 4;
+      char p2 = this->data[i] & 0x0F;
       ret[i*2] = p1 <= 9 ? '0' + p1 : 'a' + (p1-10);
       ret[i*2 + 1] = p2 <= 9 ? '0' + p2 : 'a' + (p2-10);
    }
@@ -182,14 +111,12 @@ QString Hash::toStr() const
   */
 QString Hash::toStrCArray() const
 {
-   const char* hashData = this->data ? this->data->hash : NULL_HASH;
-
    QString str("{");
    for (int i = 0; i < HASH_SIZE; i++)
    {
       if (i % 4 == 0)
          str += "\n";
-      str += QString("0x%1, ").arg((unsigned char)hashData[i], 2, 16, QLatin1Char('0'));
+      str += QString("0x%1, ").arg((unsigned char)this->data[i], 2, 16, QLatin1Char('0'));
    }
    str += "\n}";
    return str;
@@ -200,7 +127,7 @@ QString Hash::toStrCArray() const
   */
 bool Hash::isNull() const noexcept
 {
-   return this->data == nullptr;
+   return memcmp(this->data, NULL_HASH, HASH_SIZE) == 0;
 }
 
 /**
@@ -209,9 +136,8 @@ bool Hash::isNull() const noexcept
 Hash Hash::rand()
 {
    Hash hash;
-   hash.newData();
    for (int i = 0; i < HASH_SIZE; i++)
-      hash.data->hash[i] = static_cast<char>(Hash::mtrand.randInt(255));
+      hash.data[i] = static_cast<char>(Hash::mtrand.randInt(255));
    return hash;
 }
 
@@ -219,9 +145,8 @@ Hash Hash::rand(quint32 seed)
 {
    MTRand mtrand(seed);
    Hash hash;
-   hash.newData();
    for (int i = 0; i < HASH_SIZE; i++)
-      hash.data->hash[i] = static_cast<char>(mtrand.randInt(255));
+      hash.data[i] = static_cast<char>(mtrand.randInt(255));
    return hash;
 }
 
@@ -235,7 +160,6 @@ Hash Hash::fromStr(const QString& str)
    Q_ASSERT_X(str.size() == 2 * HASH_SIZE, "Hash::fromStr", "The string representation of an hash must have twice as character as the size (in byte) of the hash.");
 
    Hash hash;
-   hash.newData();
    const QString strLower = str.toLower();
 
    for (int i = 0; i < HASH_SIZE && 2*i + 1 < strLower.size(); i++)
@@ -246,7 +170,7 @@ Hash Hash::fromStr(const QString& str)
       char p1 = c1 <= '9' ? c1 - '0' : c1 - 'a' + 10;
       char p2 = c2 <= '9' ? c2 - '0' : c2 - 'a' + 10;
 
-      hash.data->hash[i] = (p1 << 4 & 0xF0) | (p2 & 0x0F);
+      hash.data[i] = (p1 << 4 & 0xF0) | (p2 & 0x0F);
    }
 
    return hash;
@@ -313,8 +237,7 @@ void Hasher::addData(const char* data, int size)
 Hash Hasher::getResult()
 {
    Hash result;
-   result.newData();
-   memcpy(result.data->hash, this->cryptographicHash.result().constData(), Hash::HASH_SIZE);
+   memcpy(result.data, this->cryptographicHash.result().constData(), Hash::HASH_SIZE);
    return result;
 }
 

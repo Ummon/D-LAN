@@ -15,17 +15,9 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
-#ifndef COMMON_HASH_H
-#define COMMON_HASH_H
 
-#define NO_SHARED_DATA true
-
-#if NO_SHARED_DATA
-#  include <Common/Hash_noShare.h>
-#else
-
-#define WITH_MUTEX false // Not implemented. Using a 'QAtomicPointer' instead of a mutex should be better.
+#ifndef COMMON_HASH_NO_SHARE_H
+#define COMMON_HASH_NO_SHARE_H
 
 #include <string>
 
@@ -35,10 +27,6 @@
 #include <QCryptographicHash>
 
 #include <Libs/MersenneTwister.h>
-
-#if WITH_MUTEX
-#  include <QMutex>
-#endif
 
 #include <Common/Uncopyable.h>
 
@@ -57,24 +45,23 @@ namespace Common
 
    public:
       Hash() noexcept;
-      Hash(const Hash& h) noexcept;
-      Hash(Hash&& h) noexcept;
+      Hash(const Hash&) = default;
 
       explicit Hash(const char* h); // It's too dangerous to construct an implicit Hash from a const char*.
       Hash(const std::string& str);
       Hash(const QByteArray& a);
 
-      ~Hash();
+      Hash(Hash&&) = default;
+      Hash& operator=(const Hash&) = default;
 
-      Hash& operator=(const Hash& h);
-      Hash& operator=(Hash&& h) noexcept;
+      ~Hash() {}
 
       /**
         * Return a pointer to its internal data.
         * The length of the returned value is exactly HASH_SIZE.
         */
-      inline const char* getData() const noexcept { return this->data ? this->data->hash : NULL_HASH; }
-      inline QByteArray getByteArray() const { return QByteArray(this->data ? this->data->hash : NULL_HASH, HASH_SIZE); }
+      inline const char* getData() const noexcept { return this->data; }
+      inline QByteArray getByteArray() const { return QByteArray(this->data, HASH_SIZE); }
 
       QString toStr() const;
       QString toStrCArray() const;
@@ -86,21 +73,12 @@ namespace Common
       static Hash fromStr(const QString& str);
 
    private:
-      inline void dereference();
-      inline void newData();
-
       friend QDataStream& operator>>(QDataStream&, Hash&);
       friend QDataStream& operator<<(QDataStream& stream, const Hash& hash);
       friend bool operator==(const Hash& h1, const Hash& h2);
       friend class Hasher;
 
-      struct SharedData
-      {
-         int nbRef;
-         char hash[HASH_SIZE];
-      };
-
-      SharedData* data;
+      char data[HASH_SIZE];
    };
 
    /**
@@ -112,20 +90,7 @@ namespace Common
       if (stream.readRawData(data, Hash::HASH_SIZE) != Hash::HASH_SIZE)
          return stream;
 
-      if (memcmp(Hash::NULL_HASH, data, Hash::HASH_SIZE) == 0)
-      {
-         if (hash.data)
-         {
-            hash.dereference();
-            hash.data = 0;
-         }
-      }
-      else if (!hash.data || memcmp(hash.data->hash, data, Hash::HASH_SIZE) != 0)
-      {
-         hash.dereference();
-         hash.newData();
-         memcpy(hash.data->hash, data, Hash::HASH_SIZE);
-      }
+      memcpy(hash.data, data, Hash::HASH_SIZE);
 
       return stream;
    }
@@ -135,17 +100,14 @@ namespace Common
      */
    inline QDataStream& operator<<(QDataStream& stream, const Hash& hash)
    {
-      if (hash.data)
-         stream.writeRawData(hash.data->hash, Hash::HASH_SIZE);
-      else
-         stream.writeRawData(Hash::NULL_HASH, Hash::HASH_SIZE);
+      stream.writeRawData(hash.data, Hash::HASH_SIZE);
 
       return stream;
    }
 
    inline bool operator==(const Hash& h1, const Hash& h2)
    {
-      return h1.data == h2.data || memcmp(h1.getData(), h2.getData(), Hash::HASH_SIZE) == 0;
+      return memcmp(h1.getData(), h2.getData(), Hash::HASH_SIZE) == 0;
    }
 
    inline bool operator!=(const Hash& h1, const Hash& h2)
@@ -164,10 +126,7 @@ namespace Common
    inline uint qHash(const Hash& h)
    {
       // Take the first sizeof(uint) bytes of the hash data.
-      if (h.isNull())
-         return 0;
-      else
-         return *(const uint*)(h.getData());
+      return *(const uint*)(h.getData());
    }
 
    class Hasher : Uncopyable
@@ -176,7 +135,6 @@ namespace Common
 
    public:
       Hasher();
-      // void addPredefinedSalt(); Deprecated.
       void addSalt(quint64 salt);
       void addData(const char*, int size);
       Hash getResult();
@@ -194,24 +152,4 @@ namespace Common
    };
 }
 
-/**
-  * Removes the reference to the pointed data if it exists.
-  */
-inline void Common::Hash::dereference()
-{
-   if (this->data)
-   {
-      this->data->nbRef -= 1;
-      if (this->data->nbRef == 0)
-         delete this->data;
-   }
-}
-
-inline void Common::Hash::newData()
-{
-   this->data = new SharedData;
-   this->data->nbRef = 1;
-}
-
-#endif
 #endif
