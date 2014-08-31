@@ -18,7 +18,7 @@ CONFIG += staticlib \
 INCLUDEPATH += . ..
 DEFINES += COMMON_LIBRARY
 
-SOURCES += Hash.cpp \
+SOURCES += \
     Global.cpp \
     ZeroCopyStreamQIODevice.cpp \
     Settings.cpp \
@@ -39,7 +39,8 @@ SOURCES += Hash.cpp \
     StringUtils.cpp \
     Network/Message.cpp \
     KnownExtensions.cpp \
-    Hash_noShare.cpp
+    Hash_noShare.cpp \
+    Hash_share.cpp
 
 HEADERS += Hashes.h \
     Hash.h \
@@ -74,6 +75,7 @@ HEADERS += Hashes.h \
     Containers/SortedArray.h \
     Containers/MapArray.h \
     SelfWeakPointer.h \
-    Hash_noShare.h
+    Hash_noShare.h \
+    Hash_share.h
 
 

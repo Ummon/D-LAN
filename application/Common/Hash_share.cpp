@@ -17,9 +17,11 @@
   */
 
 #include <Common/Hash.h>
-using namespace Common;
 
-#if !NO_SHARED_DATA
+#if SHARED_DATA
+
+#include <Common/Hash_share.h>
+using namespace Common;
 
 #include <QtGlobal>
 #include <QTime>
@@ -105,7 +107,7 @@ Hash::Hash(const std::string& str)
   * The data are copied, no pointer is keept to 'a'.
   */
 Hash::Hash(const QByteArray& a)
-{   
+{
    Q_ASSERT_X(a.size() == HASH_SIZE, "Hash::Hash", QString("The given QByteArray must have a size of %1").arg(HASH_SIZE).toUtf8().constData());
 
    if (a.isNull() || a.size() != HASH_SIZE || memcmp(a.constData(), NULL_HASH, Hash::HASH_SIZE) == 0)
