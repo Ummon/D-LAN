@@ -16,6 +16,8 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
+#include <iostream>
+
 #include <QString>
 #include <QTextCodec>
 #include <QTextStream>
@@ -56,6 +58,7 @@ void printUsage(QString appName)
   * See 'printUsage(..)' for more information about arguments.
   */
 int main(int argc, char* argv[])
+try
 {
 #if defined(DEBUG) && defined(ENABLE_NVWA)
    new_progname = argv[0];
@@ -123,4 +126,14 @@ int main(int argc, char* argv[])
       return 0;
    else
       return core.exec();
+}
+catch (const std::exception& e)
+{
+   std::cerr << "Fatal error, type: " << typeid(e).name() << ", what: " << e.what() << std::endl;
+   return 1;
+}
+catch (...)
+{
+   std::cerr << "Unknown fatal error" << std::endl;
+   return 2;
 }
