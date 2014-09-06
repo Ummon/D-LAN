@@ -59,7 +59,11 @@ Directory::Directory(Directory* parent, const QString& name, bool createPhysical
   * Called by the root (SharedDirectory) which will not have parent and name.
   */
 Directory::Directory(Cache* cache, const QString& name) :
-   Entry(cache, name), parent(0), subDirs(&Directory::entrySortingFun), files(&Directory::entrySortingFun)
+   Entry(cache, name),
+   parent(0),
+   subDirs(&Directory::entrySortingFun),
+   files(&Directory::entrySortingFun),
+   scanned(true)
 {
 }
 
