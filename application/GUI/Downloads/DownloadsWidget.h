@@ -50,7 +50,6 @@ namespace GUI
 
    public:
       void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const;
-      QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const;
 
    private:
       QProgressBar model;
@@ -61,14 +60,14 @@ namespace GUI
       Q_OBJECT
    public:
       explicit DownloadsWidget(QSharedPointer<RCC::ICoreConnection> coreConnection, const PeerListModel& peerListModel, const DirListModel& sharedDirsModel, QWidget* parent = nullptr);
-      ~DownloadsWidget();
+      ~DownloadsWidget() override;
 
    signals:
       void globalProgressChanged(quint64 completed, quint64 total);
 
    protected:
-      void changeEvent(QEvent* event);
-      void keyPressEvent(QKeyEvent* event);
+      void changeEvent(QEvent* event) override;
+      void keyPressEvent(QKeyEvent* event) override;
 
    private slots:
       void displayContextMenuDownloads(const QPoint& point);

@@ -72,19 +72,19 @@ namespace GUI
       };
 
       QList<quint64> getDownloadIDs(Tree* tree) const;
-      Tree* insertDirectory(Tree* parentTree, const QString& dir, const QString& peerSourceNick, const Common::Hash& peerSourceID, const Common::Hash& sharedDirID);
+      Tree* updateDirectoryFromPath(Tree* parentTree, const QString& dir, const QString& peerSourceNick, const Common::Hash& peerSourceID, const Common::Hash& sharedDirID);
       Tree* insert(Tree* tree, const Protos::GUI::State::Download& download);
       Tree* createEntry(const QModelIndex& parent, int position, const Protos::GUI::State::Download& download);
 
       Tree* moveUp(Tree* tree);
       Tree* update(Tree* tree, const Protos::GUI::State::Download& download);
-      Tree* updateDirectoriesEntryDeleted(Tree* file, const Protos::GUI::State::Download& oldDownload);
-      Tree* updateDirectoriesNewFile(Tree* file);
-      Tree* updateDirectoriesFileModified(Tree* file, const Protos::GUI::State::Download& oldDownload);
-      Tree* updateDirectories(Tree* file, quint64 fileSizeDelta, quint64 fileDownloadedBytesDelta, Protos::GUI::State::Download::Status oldStatus = Protos::GUI::State::Download::QUEUED);
+      Tree* updateDirectoriesEntryDeleted(Tree* entry, const Protos::GUI::State::Download& oldDownload);
+      Tree* updateDirectoriesNewEntry(Tree* entry);
+      Tree* updateDirectoriesEntryModified(Tree* file, const Protos::GUI::State::Download& oldDownload);
+      Tree* updateDirectories(Tree* file, qint64 fileSizeDelta, qint64 fileDownloadedBytesDelta, Protos::GUI::State::Download::Status oldStatus = Protos::GUI::State::Download::QUEUED);
 
       Tree* root;
-      QHash<int, Tree*> indexedFiles;
+      QHash<int, Tree*> indexedEntries; // Entries received from the Core. They all have an ID.
    };
 
    bool operator>(const Protos::GUI::State::Download& d1, const Protos::GUI::State::Download& d2);

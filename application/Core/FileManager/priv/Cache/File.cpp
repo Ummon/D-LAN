@@ -117,13 +117,17 @@ void File::del(bool invokeDelete)
 
    this->deleteAllChunks();
 
-   QMutexLocker lockerWrite(&this->writeLock);
-   this->cache->getFilePool().release(this->fileInWriteMode, true);
+   {
+      QMutexLocker lockerWrite(&this->writeLock);
+      this->cache->getFilePool().release(this->fileInWriteMode, true);
 
-   QMutexLocker lockerRead(&this->readLock);
-   this->cache->getFilePool().release(this->fileInReadMode, true);
+      QMutexLocker lockerRead(&this->readLock);
+      this->cache->getFilePool().release(this->fileInReadMode, true);
+   }
 
-   QMutexLocker locker(&this->mutex); // We wait that all the current access to this file are finished.
+   // We wait that all the current access to this file are finished.
+   this->mutex.lock();
+   this->mutex.unlock();
 
    Entry::del(invokeDelete);
 }

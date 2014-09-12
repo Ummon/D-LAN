@@ -89,24 +89,6 @@ void DownloadsDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opt
    }
 }
 
-QSize DownloadsDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const
-{
-   QSize size = QStyledItemDelegate::sizeHint(option, index);
-
-   switch (index.column())
-   {
-   case 2:
-      size.setWidth(120);
-      break;
-   case 4:
-      if (index.data().toString().isEmpty())
-         size.setWidth(0);
-      break;
-   }
-
-   return size;
-}
-
 /////
 
 DownloadsWidget::DownloadsWidget(QSharedPointer<RCC::ICoreConnection> coreConnection, const PeerListModel& peerListModel, const DirListModel& sharedDirsModel, QWidget* parent) :

@@ -84,7 +84,6 @@ namespace FM
       qint64 size;
 
    protected:
-
       mutable QMutex mutex;
    };
 

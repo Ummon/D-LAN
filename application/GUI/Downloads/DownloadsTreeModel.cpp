@@ -29,7 +29,7 @@ using namespace GUI;
 /**
   * @class DownloadsTreeModel
   *
-  * This model shows the download queue as a tree and is designed to be used with a 'QTreeView'. Each node is a directory and the leaves are the queued files.
+  * This model shows the download queue as a tree and is designed to be used with a 'QTreeView'. Each node is a directory and the leaves are the queued files or directories.
   * The method 'onNewState(..)' is automatically and periodically called by 'DownloadsModel' each time a new state is sent by the core.
   */
 
@@ -99,7 +99,7 @@ bool DownloadsTreeModel::isFileComplete(const QModelIndex& index) const
    if (!tree)
       return false;
 
-   if (tree->getItem().local_entry().type() == Protos::Common::Entry::DIR)
+   if (tree->getItem().local_entry().type() == Protos::Common::Entry::DIR && tree->getItem().id() == 0)
    {
       for (Common::TreeBreadthFirstIterator<Tree> i(tree); i.hasNext();)
       {
@@ -306,6 +306,7 @@ void DownloadsTreeModel::onNewState(const Protos::GUI::State& state)
 {
    QList<int> activeDownloadIndices = this->getNonFilteredDownloadIndices(state);
 
+   // All nodes set as unvisited.
    for (Common::TreeBreadthFirstIterator<Tree> i(this->root); i.hasNext();)
       i.next()->visited = false;
 
@@ -313,14 +314,10 @@ void DownloadsTreeModel::onNewState(const Protos::GUI::State& state)
    {
       const Protos::GUI::State::Download& download = state.download(activeDownloadIndices[i]);
 
-      // This model do not show directories, maybe we should . . . TODO
-      if (download.local_entry().type() == Protos::Common::Entry::DIR)
-         continue;
-
-      Tree* fileTree = this->indexedFiles.value(download.id(), 0);
-      if (fileTree) // The item already exists in the tree, we will update its information and all parent directories.
+      Tree* itemTree = this->indexedEntries.value(download.id(), 0);
+      if (itemTree) // The item already exists in the tree, we will update its information and all parent directories.
       {
-         Tree* parentTree = fileTree;
+         Tree* parentTree = itemTree;
          do
          {
             parentTree->visited = true;
@@ -328,16 +325,16 @@ void DownloadsTreeModel::onNewState(const Protos::GUI::State& state)
                this->moveUp(parentTree);
          } while (parentTree = parentTree->getParent());
 
-         this->update(fileTree, download);
+         this->update(itemTree, download);
       }
-      else
+      else // We have to create a new entry in the tree.
       {
          const QStringList& path = Common::ProtoHelper::getStr(download.local_entry(), &Protos::Common::Entry::path).split('/', QString::SkipEmptyParts);
 
          // A node is created for each directory.
          Tree* currentTree = this->root;
          for (QStringListIterator i(path); i.hasNext();)
-            currentTree = this->insertDirectory(
+            currentTree = this->updateDirectoryFromPath(
                currentTree,
                i.next(),
                Common::ProtoHelper::getStr(download, &Protos::GUI::State::Download::peer_source_nick),
@@ -366,8 +363,8 @@ void DownloadsTreeModel::onNewState(const Protos::GUI::State& state)
             for (Common::TreeBreadthFirstIterator<Tree> j(currentChildTree, true); j.hasNext();)
             {
                Tree* treeChild = j.next();
-               if (treeChild->getItem().local_entry().type() == Protos::Common::Entry::FILE)
-                  this->indexedFiles.remove(treeChild->getItem().id());
+               if (treeChild->getItem().id() != 0)
+                  this->indexedEntries.remove(treeChild->getItem().id());
             }
             delete currentChildTree;
             this->endRemoveRows();
@@ -400,7 +397,11 @@ QList<quint64> DownloadsTreeModel::getDownloadIDs(Tree* tree) const
    return IDs;
 }
 
-DownloadsTreeModel::Tree* DownloadsTreeModel::insertDirectory(Tree* parentTree, const QString& dir, const QString& peerSourceNick, const Common::Hash& peerSourceID, const Common::Hash& sharedDirID)
+/**
+  * Insert (or update if it already exists) the given directory ('dir') as a sub-node of the given tree ('parentTree').
+  * The id of all new directories equals 0.
+  */
+DownloadsTreeModel::Tree* DownloadsTreeModel::updateDirectoryFromPath(Tree* parentTree, const QString& dir, const QString& peerSourceNick, const Common::Hash& peerSourceID, const Common::Hash& sharedDirID)
 {
    Protos::GUI::State::Download download;
    Common::ProtoHelper::setStr(*download.mutable_local_entry(), &Protos::Common::Entry::set_name, dir);
@@ -425,12 +426,12 @@ DownloadsTreeModel::Tree* DownloadsTreeModel::insertDirectory(Tree* parentTree, 
   * @param download
   * @return
   */
-DownloadsTreeModel::Tree* DownloadsTreeModel::insert(Tree* tree, const Protos::GUI::State::Download& download)
+DownloadsTreeModel::Tree* DownloadsTreeModel::insert(Tree* entry, const Protos::GUI::State::Download& download)
 {
-   const int nbChildren = tree->getNbChildren();
+   const int nbChildren = entry->getNbChildren();
 
    // Special case, the children of the root aren't sorted in an alphabetic way.
-   if (tree == this->root)
+   if (entry == this->root)
    {
       int i = nbChildren;
       while (i >= 1 && !this->root->getChild(i-1)->visited)
@@ -441,9 +442,9 @@ DownloadsTreeModel::Tree* DownloadsTreeModel::insert(Tree* tree, const Protos::G
    // We find a place to create the new entry and to keep the children in alphabetic order.
    for (int i = 0; i <= nbChildren; i++)
    {
-      if (i == nbChildren || (tree != this->root && download < tree->getChild(i)->getItem())) // The root elements aren't sorted.
+      if (i == nbChildren || (entry != this->root && download < entry->getChild(i)->getItem())) // The root elements aren't sorted.
       {
-         QModelIndex parentIndex = tree == this->root ? QModelIndex() : this->createIndex(tree->getOwnPosition(), 0, tree);
+         QModelIndex parentIndex = entry == this->root ? QModelIndex() : this->createIndex(entry->getOwnPosition(), 0, entry);
          return this->createEntry(parentIndex, i, download);
       }
    }
@@ -455,18 +456,19 @@ DownloadsTreeModel::Tree* DownloadsTreeModel::createEntry(const QModelIndex& par
    this->beginInsertRows(parent, position, position);
    Tree* parentTree = parent.isValid() ? static_cast<Tree*>(parent.internalPointer()) : this->root;
    Tree* newTree = parentTree->insertChild(download, position);
-   if (newTree->getItem().local_entry().type() == Protos::Common::Entry::FILE)
-      this->indexedFiles.insert(download.id(), newTree);
+   if (newTree->getItem().id() != 0)
+      this->indexedEntries.insert(download.id(), newTree);
    this->endInsertRows();
 
-   if (download.local_entry().type() == Protos::Common::Entry::FILE)
-      this->updateDirectoriesNewFile(newTree);
+   // If the created entry is a leaf then its ancestor directories are updated.
+   if (download.id() != 0)
+      this->updateDirectoriesNewEntry(newTree);
 
    return newTree;
 }
 
 /**
-  * Move the given tree right after the last visited tree (Tree::visited = true).
+  * Move the given tree right after the last visited tree ('Tree::visited' == true).
   * The tree must be a direct child of the root.
   * Used when reordering the top items against the download file list.
   * @param tree
@@ -474,7 +476,8 @@ DownloadsTreeModel::Tree* DownloadsTreeModel::createEntry(const QModelIndex& par
   */
 DownloadsTreeModel::Tree* DownloadsTreeModel::moveUp(DownloadsTreeModel::Tree* tree)
 {
-   Q_ASSERT(tree && tree->getParent() == this->root);
+   Q_ASSERT(tree);
+   Q_ASSERT(tree->getParent() == this->root);
 
    const int ownPosition = tree->getOwnPosition();
    int i = ownPosition;
@@ -492,67 +495,72 @@ DownloadsTreeModel::Tree* DownloadsTreeModel::moveUp(DownloadsTreeModel::Tree* t
 }
 
 /**
-  * Update the given item. Then recursively update all parent directories.
+  * Update the given entry. Then recursively update all parent directories.
   */
-DownloadsTreeModel::Tree* DownloadsTreeModel::update(Tree* tree, const Protos::GUI::State::Download& download)
+DownloadsTreeModel::Tree* DownloadsTreeModel::update(Tree* entry, const Protos::GUI::State::Download& download)
 {
-   Q_ASSERT(tree);
+   Q_ASSERT(entry);
 
-   tree->visited = true;
-   if (download.local_entry().type() == Protos::Common::Entry::FILE && tree->getItem() != download)
+   entry->visited = true;
+
+   if (entry->getItem().id() != 0 && entry->getItem() != download)
    {
-      const Protos::GUI::State::Download oldDownload = tree->getItem();
-      tree->setItem(download);
-      this->updateDirectoriesFileModified(tree, oldDownload);
-      const int treePosition = tree->getOwnPosition();
-      emit dataChanged(this->createIndex(treePosition, 0, tree), this->createIndex(treePosition, 3, tree));
+      if (download.id() == 0)
+         this->indexedEntries.remove(entry->getItem().id());
+
+      const Protos::GUI::State::Download oldDownload = entry->getItem();
+      entry->setItem(download);
+      this->updateDirectoriesEntryModified(entry, oldDownload);
+      const int treePosition = entry->getOwnPosition();
+      emit dataChanged(this->createIndex(treePosition, 0, entry), this->createIndex(treePosition, 3, entry));
    }
-   return tree;
+
+   return entry;
 }
 
 DownloadsTreeModel::Tree* DownloadsTreeModel::updateDirectoriesEntryDeleted(Tree* entry, const Protos::GUI::State::Download& oldDownload)
 {
-   const quint64 size = -entry->getItem().local_entry().size();
-   const quint64 downloadedBytes = -entry->getItem().downloaded_bytes();
+   const qint64 size = entry->getItem().local_entry().size();
+   const qint64 downloadedBytes = entry->getItem().downloaded_bytes();
 
-   return this->updateDirectories(entry, size, downloadedBytes, oldDownload.status());
+   return this->updateDirectories(entry, -size, -downloadedBytes, oldDownload.status());
 }
 
-DownloadsTreeModel::Tree* DownloadsTreeModel::updateDirectoriesNewFile(Tree* file)
+DownloadsTreeModel::Tree* DownloadsTreeModel::updateDirectoriesNewEntry(Tree* entry)
 {
-   const quint64 fileSize = file->getItem().local_entry().size();
-   const quint64 fileDownloadedBytes = file->getItem().downloaded_bytes();
+   const qint64 size = entry->getItem().local_entry().size();
+   const qint64 downloadedBytes = entry->getItem().downloaded_bytes();
 
-   return this->updateDirectories(file, fileSize, fileDownloadedBytes);
+   return this->updateDirectories(entry, size, downloadedBytes);
 }
 
-DownloadsTreeModel::Tree* DownloadsTreeModel::updateDirectoriesFileModified(Tree* file, const Protos::GUI::State::Download& oldDownload)
+DownloadsTreeModel::Tree* DownloadsTreeModel::updateDirectoriesEntryModified(Tree* entry, const Protos::GUI::State::Download& oldDownload)
 {
-   const quint64 fileSizeDelta = file->getItem().local_entry().size() - oldDownload.local_entry().size();
-   const quint64 fileDownloadedBytesDelta = file->getItem().downloaded_bytes() - oldDownload.downloaded_bytes();
+   const qint64 itemSizeDelta = static_cast<qint64>(entry->getItem().local_entry().size()) - static_cast<qint64>(oldDownload.local_entry().size());
+   const qint64 itemDownloadedBytesDelta = static_cast<qint64>(entry->getItem().downloaded_bytes()) - static_cast<qint64>(oldDownload.downloaded_bytes());
 
-   return this->updateDirectories(file, fileSizeDelta, fileDownloadedBytesDelta, oldDownload.status());
+   return this->updateDirectories(entry, itemSizeDelta, itemDownloadedBytesDelta, oldDownload.status());
 }
 
 /**
-  * Update all parent directories of the given file.
+  * Update all parent directories of the given item.
   * The following data are updated:
   *  - Size
   *  - Bytes downloaded
   *  - Status
   */
-DownloadsTreeModel::Tree* DownloadsTreeModel::updateDirectories(Tree* file, quint64 fileSizeDelta, quint64 fileDownloadedBytesDelta, Protos::GUI::State::Download::Status oldStatus)
+DownloadsTreeModel::Tree* DownloadsTreeModel::updateDirectories(Tree* entry, qint64 entrySizeDelta, qint64 entryDownloadedBytesDelta, Protos::GUI::State::Download::Status oldStatus)
 {
-   Protos::GUI::State::Download::Status newStatus = file->getItem().status();
+   Protos::GUI::State::Download::Status newStatus = entry->getItem().status();
 
-   if (fileSizeDelta == 0 && fileDownloadedBytesDelta == 0 && newStatus == oldStatus)
-      return file;
+   if (entrySizeDelta == 0 && entryDownloadedBytesDelta == 0 && newStatus == oldStatus)
+      return entry;
 
-   Tree* currentDirectory = file->getParent();
+   Tree* currentDirectory = entry->getParent();
    while (currentDirectory != this->root)
    {
-      currentDirectory->getItem().mutable_local_entry()->set_size(currentDirectory->getItem().local_entry().size() + fileSizeDelta);
-      currentDirectory->getItem().set_downloaded_bytes(currentDirectory->getItem().downloaded_bytes() + fileDownloadedBytesDelta);
+      currentDirectory->getItem().mutable_local_entry()->set_size(static_cast<qint64>(currentDirectory->getItem().local_entry().size()) + entrySizeDelta);
+      currentDirectory->getItem().set_downloaded_bytes(static_cast<qint64>(currentDirectory->getItem().downloaded_bytes()) + entryDownloadedBytesDelta);
 
       currentDirectory->nbErrorFiles += oldStatus >= Protos::GUI::State::Download::UNKNOWN_PEER_SOURCE && newStatus < Protos::GUI::State::Download::UNKNOWN_PEER_SOURCE ? -1 : (oldStatus < Protos::GUI::State::Download::UNKNOWN_PEER_SOURCE && newStatus >= Protos::GUI::State::Download::UNKNOWN_PEER_SOURCE ? 1 : 0);
       currentDirectory->nbPausedFiles += oldStatus == Protos::GUI::State::Download::PAUSED && newStatus != Protos::GUI::State::Download::PAUSED ? -1 : (oldStatus != Protos::GUI::State::Download::PAUSED && newStatus == Protos::GUI::State::Download::PAUSED ? 1 : 0);
@@ -575,7 +583,7 @@ DownloadsTreeModel::Tree* DownloadsTreeModel::updateDirectories(Tree* file, quin
       currentDirectory = currentDirectory->getParent();
    }
 
-   return file;
+   return entry;
 }
 
 /////

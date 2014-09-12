@@ -74,15 +74,17 @@ Directory::~Directory()
 
 void Directory::del(bool invokeDelete)
 {
-   QMutexLocker locker(&this->mutex);
+   {
+      QMutexLocker locker(&this->mutex);
 
-   this->deleteSubDirs();
+      this->deleteSubDirs();
 
-   foreach (File* f, this->files.getList())
-      f->del();
+      foreach (File* f, this->files.getList())
+         f->del();
 
-   if (this->parent)
-      this->parent->subDirDeleted(this);
+      if (this->parent)
+         this->parent->subDirDeleted(this);
+   }
 
    Entry::del(invokeDelete);
 }

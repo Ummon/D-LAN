@@ -26,6 +26,7 @@ using namespace GUI;
 #include <Common/Global.h>
 
 #include <IconProvider.h>
+#include <Log.h>
 
 DownloadsModel::DownloadsModel(QSharedPointer<RCC::ICoreConnection> coreConnection, const PeerListModel& peerListModel, const DirListModel& sharedDirsModel, const IFilter<DownloadFilterStatus>& filter) :
    coreConnection(coreConnection),
@@ -76,94 +77,109 @@ QVariant DownloadsModel::getData(const Protos::GUI::State::Download& download, c
       return QVariant();
 
    case Qt::ToolTipRole:
-      if (index.column() == 4)
+      switch (index.column())
       {
-         QString peersStr;
-         for (int i = 1; i < download.peer_id_size(); i++)
+      case 0:
          {
-            Common::Hash peerID(download.peer_id(i).hash());
-            const QString nick = this->peerListModel.getNick(peerID);
-            if (nick.isNull())
-               continue;
-            if (!peersStr.isEmpty())
-               peersStr.append("\n");
-            peersStr += nick;
+            QString toolTip;
+            switch (download.status())
+            {
+            case Protos::GUI::State::Download::UNKNOWN_PEER_SOURCE:
+               toolTip += tr("Source peer offline (%1)").arg(Common::ProtoHelper::getStr(download, &Protos::GUI::State::Download::peer_source_nick));
+               break;
+            case Protos::GUI::State::Download::ENTRY_NOT_FOUND:
+               toolTip += tr("The source peer doesn't have the entry");
+               break;
+            case Protos::GUI::State::Download::NO_SOURCE:
+               toolTip += tr("There is no source to download from");
+               break;
+            case Protos::GUI::State::Download::NO_SHARED_DIRECTORY_TO_WRITE:
+               toolTip += tr("No incoming directory");
+               break;
+
+            case Protos::GUI::State::Download::NO_ENOUGH_FREE_SPACE:
+               toolTip += tr("Not enough free space left");
+               break;
+            case Protos::GUI::State::Download::UNABLE_TO_CREATE_THE_FILE:
+               toolTip += tr("Unable to create the file");
+               break;
+            case Protos::GUI::State::Download::UNABLE_TO_CREATE_THE_DIRECTORY:
+               toolTip += download.local_entry().type() == Protos::Common::Entry::DIR ? tr("Unable to create the directory") : tr("Unable to create the path of the file");
+               break;
+            case Protos::GUI::State::Download::UNABLE_TO_RETRIEVE_THE_HASHES:
+               toolTip += tr("Unable to retrieve the hashes");
+               break;
+
+            case Protos::GUI::State::Download::TRANSFER_ERROR:
+               toolTip += tr("Transfer error");
+               break;
+            case Protos::GUI::State::Download::UNABLE_TO_OPEN_THE_FILE:
+               toolTip += tr("Unable to open the file");
+               break;
+            case Protos::GUI::State::Download::FILE_IO_ERROR:
+               toolTip += tr("Unable to write the file");
+               break;
+            case Protos::GUI::State::Download::FILE_NON_EXISTENT:
+               toolTip += tr("The local file has been deleted");
+               break;
+            case Protos::GUI::State::Download::GOT_TOO_MUCH_DATA:
+               toolTip += tr("Too much data received");
+               break;
+            case Protos::GUI::State::Download::HASH_MISSMATCH:
+               toolTip += tr("Data received do not match the hash");
+               break;
+
+            case Protos::GUI::State::Download::DIRECTORY_SCANNING_IN_PROGRESS:
+               toolTip += tr("The remote directory is currently being scanned");
+               break;
+            case Protos::GUI::State::Download::UNABLE_TO_GET_ENTRIES:
+               toolTip += tr("Unable to retrieve the entries");
+               break;
+            default:;
+            }
+            const QString& path = this->getPath(index);
+            if (!path.isEmpty())
+            {
+               if (!toolTip.isEmpty())
+                  toolTip += " - ";
+               toolTip += this->getPath(index);
+            }
+            return toolTip;
          }
-         return peersStr;
+         break;
+
+      case 4:
+         {
+            QString peersStr;
+            for (int i = 1; i < download.peer_id_size(); i++)
+            {
+               Common::Hash peerID(download.peer_id(i).hash());
+               const QString nick = this->peerListModel.getNick(peerID);
+               if (nick.isNull())
+                  continue;
+               if (!peersStr.isEmpty())
+                  peersStr.append("\n");
+               peersStr += nick;
+            }
+            return peersStr;
+         }
+         break;
       }
-      else
-      {
-         QString toolTip;
-         switch (download.status())
-         {
-         case Protos::GUI::State::Download::UNKNOWN_PEER_SOURCE:
-            toolTip += tr("Source peer offline (%1)").arg(Common::ProtoHelper::getStr(download, &Protos::GUI::State::Download::peer_source_nick));
-            break;
-         case Protos::GUI::State::Download::ENTRY_NOT_FOUND:
-            toolTip += tr("The source peer doesn't have the entry");
-            break;
-         case Protos::GUI::State::Download::NO_SOURCE:
-            toolTip += tr("There is no source to download from");
-            break;
-         case Protos::GUI::State::Download::NO_SHARED_DIRECTORY_TO_WRITE:
-            toolTip += tr("No incoming directory");
-            break;
-
-         case Protos::GUI::State::Download::NO_ENOUGH_FREE_SPACE:
-            toolTip += tr("Not enough free space left");
-            break;
-         case Protos::GUI::State::Download::UNABLE_TO_CREATE_THE_FILE:
-            toolTip += tr("Unable to create the file");
-            break;
-         case Protos::GUI::State::Download::UNABLE_TO_CREATE_THE_DIRECTORY:
-            toolTip += download.local_entry().type() == Protos::Common::Entry::DIR ? tr("Unable to create the directory") : tr("Unable to create the path of the file");
-            break;
-         case Protos::GUI::State::Download::UNABLE_TO_RETRIEVE_THE_HASHES:
-            toolTip += tr("Unable to retrieve the hashes");
-            break;
-
-         case Protos::GUI::State::Download::TRANSFER_ERROR:
-            toolTip += tr("Transfer error");
-            break;
-         case Protos::GUI::State::Download::UNABLE_TO_OPEN_THE_FILE:
-            toolTip += tr("Unable to open the file");
-            break;
-         case Protos::GUI::State::Download::FILE_IO_ERROR:
-            toolTip += tr("Unable to write the file");
-            break;
-         case Protos::GUI::State::Download::FILE_NON_EXISTENT:
-            toolTip += tr("The local file has been deleted");
-            break;
-         case Protos::GUI::State::Download::GOT_TOO_MUCH_DATA:
-            toolTip += tr("Too much data received");
-            break;
-         case Protos::GUI::State::Download::HASH_MISSMATCH:
-            toolTip += tr("Data received do not match the hash");
-            break;
-
-         case Protos::GUI::State::Download::DIRECTORY_SCANNING_IN_PROGRESS:
-            toolTip += tr("The remote directory is currently being scanned");
-            break;
-         case Protos::GUI::State::Download::UNABLE_TO_GET_ENTRIES:
-            toolTip += tr("Unable to retrieve the entries");
-            break;
-         default:;
-         }
-         const QString& path = this->getPath(index);
-         if (!path.isEmpty())
-         {
-            if (!toolTip.isEmpty())
-               toolTip += " - ";
-            toolTip += this->getPath(index);
-         }
-         return toolTip;
-      }
+      break;
 
    case Qt::TextAlignmentRole:
       return static_cast<int>(index.column() == 1 ? Qt::AlignRight : Qt::AlignLeft) | Qt::AlignVCenter;
 
-   default: return QVariant();
+   case Qt::SizeHintRole:
+      if (index.column() == 2)
+         return QSize(120, 0);
+      else if (index.column() == 4 && download.peer_id_size() <= 1)
+         return QSize(0, 0);
+      else
+         return QVariant();
    }
+
+   return QVariant();
 }
 
 QList<int> DownloadsModel::getNonFilteredDownloadIndices(const Protos::GUI::State& state) const
@@ -288,9 +304,9 @@ bool GUI::operator==(const Protos::GUI::State::Download& d1, const Protos::GUI::
       d1.status() != d2.status() ||
       d1.downloaded_bytes() != d2.downloaded_bytes() ||
       d1.local_entry().type() != d2.local_entry().type() ||
-      d1.local_entry().path() != d2.local_entry().path() ||
-      d1.local_entry().name() != d2.local_entry().name() ||
       d1.local_entry().size() != d2.local_entry().size() ||
+      d1.local_entry().name() != d2.local_entry().name() ||
+      d1.local_entry().path() != d2.local_entry().path() ||
       d1.peer_id_size() != d2.peer_id_size()
    )
       return false;

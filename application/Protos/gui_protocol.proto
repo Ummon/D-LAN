@@ -50,12 +50,12 @@ message State {
       }
       required uint64 id = 1; // Cannot be 0.
       
-      // When the entry is physically created, Common.Entry.exists is set to true.
+      // When the entry is physically created, 'Common.Entry.exists' is set to true.
       // The hashes are never sent to save a bit of bandwidth.
       required Common.Entry local_entry = 2;
       
       required Status status = 3;
-      required uint64 downloaded_bytes = 4;
+      required uint64 downloaded_bytes = 4; // Always 0 when 'local_entry' is a directory.
       
       repeated Common.Hash peer_id = 5; // The first one always corresponds to the peer source.
       optional string peer_source_nick = 6;

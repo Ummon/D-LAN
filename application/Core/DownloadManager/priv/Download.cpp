@@ -101,6 +101,10 @@ void Download::remove()
    delete this;
 }
 
+/**
+  * Update the status depending of it's internal state.
+  * @return 'true' if the status can't be change.
+  */
 bool Download::updateStatus()
 {
    if (this->status == DELETED || this->status == COMPLETE || this->status == PAUSED)
