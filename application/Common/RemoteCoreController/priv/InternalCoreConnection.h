@@ -66,12 +66,13 @@ namespace RCC
 
    public:
       InternalCoreConnection(CoreController& coreController);
-      ~InternalCoreConnection();
+      ~InternalCoreConnection() override;
 
       void connectToCore(const QString& address, quint16 port, Common::Hash password);
       void connectToCore(const QString& address, quint16 port, const QString& password);
 
-      bool isConnected() const;
+      bool isLocal() const override;
+      bool isConnected() const override;
 
       void disconnectFromCore();
 
@@ -123,8 +124,8 @@ namespace RCC
 
       void sendCurrentLanguage();
 
-      void onNewMessage(const Common::Message& message);
-      void onDisconnected();
+      void onNewMessage(const Common::Message& message) override;
+      void onDisconnected() override;
 
       friend class BrowseResult;
       friend class SearchResult;

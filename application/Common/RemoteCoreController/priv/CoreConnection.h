@@ -111,11 +111,11 @@ namespace RCC
    private:
       bool connectToCorePrepare(const QString& address);
 
-      InternalCoreConnection* current();
-      const InternalCoreConnection* current() const;
+      InternalCoreConnection& current();
+      const InternalCoreConnection& current() const;
 
-      InternalCoreConnection* temp();
-      const InternalCoreConnection* temp() const;
+      InternalCoreConnection& temp();
+      const InternalCoreConnection& temp() const;
 
       void swap();
 

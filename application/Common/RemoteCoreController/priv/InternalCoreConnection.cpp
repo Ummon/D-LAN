@@ -98,6 +98,14 @@ void InternalCoreConnection::connectToCore(const QString& address, quint16 port,
    this->connectToCore(address, port, Common::Hash());
 }
 
+bool InternalCoreConnection::isLocal() const
+{
+   if (this->socket->peerAddress().isNull())
+      return Common::Global::isLocal(QHostAddress(this->connectionInfo.address));
+   else
+      return MessageSocket::isLocal();
+}
+
 bool InternalCoreConnection::isConnected() const
 {
    return MessageSocket::isConnected() && this->authenticated;

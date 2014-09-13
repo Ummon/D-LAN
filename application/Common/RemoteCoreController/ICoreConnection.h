@@ -99,6 +99,9 @@ namespace RCC
 
       virtual Common::Hash getRemoteID() const = 0;
 
+      /**
+        * This method can only be called when connecting or when a connection is established. Otherwise the result is undefined.
+        */
       virtual bool isLocal() const = 0;
 
       /**
