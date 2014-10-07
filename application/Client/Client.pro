@@ -1,4 +1,4 @@
-QT       += core network script
+QT += core network qml
 TARGET = "D-LAN.Client"
 TEMPLATE = app
 CONFIG += console

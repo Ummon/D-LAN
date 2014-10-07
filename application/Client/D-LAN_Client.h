@@ -20,7 +20,7 @@
 #define CLIENT_D_LAN_CLIENT_H
 
 #include <QCoreApplication>
-#include <QScriptEngine>
+#include <QJSEngine>
 #include <QList>
 #include <QTextStream>
 
@@ -39,7 +39,8 @@ namespace Client
       D_LAN_Client(int argc, char* argv[]);
 
    public slots:
-      QScriptValue newConnection();
+      QJSValue newConnection();
+      void print(QJSValue v);
 
    private slots:
       void newCommandLine(QString line);
@@ -47,7 +48,7 @@ namespace Client
    private:
       void printHelp();
 
-      QScriptEngine engine;
+      QJSEngine engine;
 
       QTextStream out;
       Common::ConsoleReader consoleReader;

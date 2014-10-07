@@ -19,33 +19,28 @@
 #ifndef COMMON_CONSOLEREADER_H
 #define COMMON_CONSOLEREADER_H
 
-#include <QThread>
+#include <QObject>
 #include <QTextStream>
 #include <QIODevice>
+#include <QSocketNotifier>
 
 namespace Common
 {
-   class ConsoleReader : public QThread
+   class ConsoleReader : public QObject
    {
       Q_OBJECT
    public:
-      static QString QUIT_COMMAND;
-
       explicit ConsoleReader(QObject* parent = nullptr);
-
-      static void setQuitCommand(const QString& quitCommand);
-
-      void stop();
-
-   protected:
-      void run();
 
    signals:
       void newLine(QString line);
 
+   private slots:
+      void inputAvailable();
+
    private:
       QTextStream inputStream;
-      bool stopping;
+      QSocketNotifier notifier;
    };
 }
 

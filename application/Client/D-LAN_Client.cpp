@@ -37,12 +37,16 @@ D_LAN_Client::D_LAN_Client(int argc, char* argv[]) :
    this->out << "D-LAN Client" << endl;
 
    connect(&this->consoleReader, SIGNAL(newLine(QString)), this, SLOT(newCommandLine(QString)), Qt::QueuedConnection);
-   this->consoleReader.start();
 }
 
-QScriptValue D_LAN_Client::newConnection()
+QJSValue D_LAN_Client::newConnection()
 {
-   return this->engine.newQObject(new CoreConnectionProxy(), QScriptEngine::ScriptOwnership);
+   return this->engine.newQObject(new CoreConnectionProxy());
+}
+
+void D_LAN_Client::print(QJSValue v)
+{
+   this->out << v.toString() << endl;
 }
 
 //Q_SCRIPT_DECLARE_QMETAOBJECT(QFile, QObject*)
@@ -50,10 +54,9 @@ QScriptValue D_LAN_Client::newConnection()
 
 void D_LAN_Client::newCommandLine(QString line)
 {
-   if (line == ConsoleReader::QUIT_COMMAND)
+   if (line == "quit")
    {
       this->quit();
-      this->consoleReader.stop();
    }
    else if (line == "help")
    {
@@ -61,24 +64,18 @@ void D_LAN_Client::newCommandLine(QString line)
    }
    else if (line == "run")
    {
-      foreach (QString e, this->engine.availableExtensions())
-         this->out << e << endl;
-
-      QScriptValue objectValue = this->engine.newQObject(this);
+      QJSValue objectValue = this->engine.newQObject(this);
       this->engine.globalObject().setProperty("dlan", objectValue);
-
-      QScriptValue qfileClass = this->engine.scriptValueFromQMetaObject<QFile>();
-      engine.globalObject().setProperty("QFile", qfileClass);
-//      QScriptValue qiodeviceClass = this->engine.scriptValueFromQMetaObject<QIODevice>();
-//      engine.globalObject().setProperty("QIOdevice", qiodeviceClass);
 
       QFile script("../../test_script_1.js");
       if (script.open(QIODevice::ReadOnly))
       {
-         QScriptValue value = this->engine.evaluate(script.readAll());
+         QJSValue value = this->engine.evaluate(script.readAll());
 
-         if (this->engine.hasUncaughtException())
+         if (value.isError())
             this->out << "Script error: " << value.toString() << endl;
+         else
+            this->out << "Script output: " << value.toString() << endl;
       }
       else
          this->out << "Unable to open the script file" << endl;
@@ -92,6 +89,7 @@ void D_LAN_Client::newCommandLine(QString line)
 void D_LAN_Client::printHelp()
 {
    this->out << "Commands:" << endl <<
+                " - quit : quit the client" << endl <<
                 " - help : print this help " << endl <<
                 " - run <script name> : run a script name" << endl;
 }

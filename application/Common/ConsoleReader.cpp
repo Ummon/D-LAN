@@ -16,6 +16,10 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
+#include <limits>
+
+#include <unistd.h> //Provides STDIN_FILENO
+
 #include <Common/ConsoleReader.h>
 using namespace Common;
 
@@ -25,53 +29,17 @@ using namespace Common;
 
 /**
   * @class ConsoleReader
-  *
-  * @remarks If the executable is used as a sub-process and the parent-process is killed the signal
-  * 'newLine(..)' is emitted with the 'QUIT_COMMAND'.
   */
 
-QString ConsoleReader::QUIT_COMMAND("quit");
-
-ConsoleReader::ConsoleReader(QObject *parent) :
-    QThread(parent), inputStream(stdin), stopping(false)
+ConsoleReader::ConsoleReader(QObject* parent) :
+   QObject(parent), inputStream(stdin), notifier(STDIN_FILENO, QSocketNotifier::Read)
 {
+   connect(&this->notifier, SIGNAL(activated(int)), this, SLOT(inputAvailable()));
 }
 
-void ConsoleReader::setQuitCommand(const QString& quitCommand)
+void ConsoleReader::inputAvailable()
 {
-   ConsoleReader::QUIT_COMMAND = quitCommand;
-}
-
-void ConsoleReader::stop()
-{
-   this->stopping = true;
-
-   // TODO: Don't know how to unblock 'readLine' in 'ConsoleReader::run()' which use 'fgets(..)' internaly...
-   // fclose(stdin); // Don't work, blocks.
-   /*QIODevice* in = this->inputStream.device();
-   close(((QFile*)in)->handle()); // Don't work.*/
-
-   this->wait();
-}
-
-void ConsoleReader::run()
-{
-   while(!this->stopping)
-   {
-      // To send a 'QUIT_COMMAND' command if the stdin is closed (for example in a process -> child process case).
-      if (std::feof(stdin))
-      {
-         emit newLine(QUIT_COMMAND);
-         this->stopping = true;
-         return;
-      }
-
-      QString str = this->inputStream.device()->readLine().trimmed();
-
-      if (str.size() > 0)
-         emit newLine(str);
-
-      if (str == QUIT_COMMAND) // Cheating, see the 'stop()' method above.
-         this->stopping = true;
-   }
+   QString line = this->inputStream.readLine().trimmed();
+   if (!line.isEmpty())
+      emit newLine(line);
 }

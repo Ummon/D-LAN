@@ -293,8 +293,20 @@ void Tests::sortedArray()
       SortedArray<int> array;
       SortedArray<int>::iterator begin = array.begin();
       SortedArray<int>::iterator end = array.end();
-
       QCOMPARE(begin, end);
+
+      for (int a : array)
+         QFAIL("The array is empty!!");
+
+      // Test the C++11 range-for-statement.
+      array.insert(7);
+      array.insert(3);
+      array.insert(9);
+      array.insert(2);
+      QString result;
+      for (int a : array)
+         result.append(QString::number(a)).append(' ');
+      qDebug() << result;
    }
 }
 

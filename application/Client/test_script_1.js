@@ -1,22 +1,22 @@
-print('Test core connection')
+dlan.print('Test core connection')
 
-var file = new QFile()
+//var file = new QFile()
 
-file.filename = "test_script_1.js";
-file.open(QFile.ReadOnly)
-print(file.readAll())
+//file.filename = "test_script_1.js";
+//file.open(QFile.ReadOnly)
+//print(file.readAll())
 
-var core = dlan.newConnection()
+//var core = dlan.newConnection()
 
-core.connected.connect(function(){
-   print("Connected!")   
-   /*for (var i = 0; i < 1; i++)
-      core.sendChatMessage("Hi, i equals " + i)*/
-   core.sendChatMessage("TAISTE")
-   core.disconnectFromCore()
-})
+//core.connected.connect(function(){
+//   print("Connected!")
+//   /*for (var i = 0; i < 1; i++)
+//      core.sendChatMessage("Hi, i equals " + i)*/
+//   core.sendChatMessage("TAISTE")
+//   core.disconnectFromCore()
+//})
 
-core.connectToCore()
+//core.connectToCore()
 
 
 /*
