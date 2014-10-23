@@ -18,6 +18,8 @@
   
 #include <Tests.h>
 
+#include <set>
+
 #include <QtDebug>
 #include <QByteArray>
 #include <QFile>
@@ -295,8 +297,8 @@ void Tests::sortedArray()
       SortedArray<int>::iterator end = array.end();
       QCOMPARE(begin, end);
 
-      for (int a : array)
-         QFAIL("The array is empty!!");
+      if (!array.isEmpty())
+         QFAIL("The array is not empty!");
 
       // Test the C++11 range-for-statement.
       array.insert(7);
@@ -366,6 +368,19 @@ void Tests::sortedArrayBenchmark()
    }
    qDebug() << timer.elapsed();
 
+   // std::set.
+   qDebug() << "std::set, insert: Elapsed time [ms]:";
+   timer.start();
+   QList<std::set<QString>> setBenchmarks;
+   for (int n = nbWords / 20; n <= nbWords; n += nbWords / 20)
+   {
+      std::set<QString> set;
+      for (int i = 0; i < n; i++)
+         set.insert(names[i]);
+      setBenchmarks << set;
+   }
+   qDebug() << timer.elapsed();
+
    ///// Lookup /////
    // SortedArray.
    qDebug() << "SortedArray (M="<< M <<"), lookup [ms] for 100 *" << nbWords / 20 << "known elements + 100 *" << nbWords / 20 << "unknown elements";
@@ -395,6 +410,20 @@ void Tests::sortedArrayBenchmark()
       qDebug() << mapBenchmarks[i].size() << "\t" << timer.elapsed();
    }
 
+   // std::set.
+   qDebug() << "std::set, lookup [ms] for 100 *" << nbWords / 20 << "known elements + 100 *" << nbWords / 20 << "unknown elements";
+   for (int i = 0; i < setBenchmarks.size(); i++)
+   {
+      timer.start();
+      for (int k = 0; k < 100; k++)
+         for (int j = 0; j < nbWords / 20; j++)
+         {
+            setBenchmarks[i].find(names[j]); // Known values.
+            setBenchmarks[i].find(namesNotInserted[j]); // Unknown values.
+         }
+      qDebug() << setBenchmarks[i].size() << "\t" << timer.elapsed();
+   }
+
    ///// Delete /////
    // SortedArray.
    qDebug() << "SortedArray, delete: Elapsed time [ms]:";
@@ -418,6 +447,19 @@ void Tests::sortedArrayBenchmark()
       for (int i = 0; i < n; i++)
          mapBenchmarks[j].remove(names[i]);
       QCOMPARE(mapBenchmarks[j].size(), 0);
+      j++;
+   }
+   qDebug() << timer.elapsed();
+
+   // std::set.
+   qDebug() << "std::set, delete: Elapsed time [ms]:";
+   timer.start();
+   j = 0;
+   for (int n = nbWords / 20; n <= nbWords; n += nbWords / 20)
+   {
+      for (int i = 0; i < n; i++)
+         setBenchmarks[j].erase(names[i]);
+      QCOMPARE(setBenchmarks[j].size(), 0UL);
       j++;
    }
    qDebug() << timer.elapsed();

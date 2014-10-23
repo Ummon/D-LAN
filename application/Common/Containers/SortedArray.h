@@ -758,6 +758,7 @@ inline int Common::SortedArray<T, M>::getPosition(Node* node, const T& value, bo
    if (lesserThan(node->items[node->nbItems-1], value))
       return node->nbItems;
 
+   // Value is equal to the first item.
    if (!lesserThan(node->items[0], value))
    {
       exists = true;
