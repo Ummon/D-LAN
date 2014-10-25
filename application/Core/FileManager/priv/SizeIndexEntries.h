@@ -4,6 +4,7 @@
 #include <functional>
 
 #include <QMutex>
+#include <QList>
 
 #include <Common/Containers/SortedArray.h>
 

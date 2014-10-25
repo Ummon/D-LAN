@@ -19,6 +19,8 @@
 #ifndef COMMON_SORTEDLIST_H
 #define COMMON_SORTEDLIST_H
 
+#include <functional>
+
 #include <QLinkedList>
 
 /**

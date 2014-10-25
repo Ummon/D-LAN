@@ -1,10 +1,10 @@
 dlan.print('Test core connection')
 
-//var file = new QFile()
+var file = newQFile()
 
-//file.filename = "test_script_1.js";
-//file.open(QFile.ReadOnly)
-//print(file.readAll())
+file.filename = "test_script_1.js";
+file.open(QFile.ReadOnly)
+dlan.print(file.readAll())
 
 //var core = dlan.newConnection()
 

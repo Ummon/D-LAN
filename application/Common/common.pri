@@ -3,6 +3,7 @@ CONFIG(debug, debug|release) {
    DEFINES += DEBUG
 } else {
    FOLDER = release
+   QMAKE_AR = gcc-ar cqs
    QMAKE_CXXFLAGS_RELEASE += -flto
    QMAKE_LFLAGS_RELEASE += -flto
    prof {
