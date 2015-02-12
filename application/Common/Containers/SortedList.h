@@ -19,6 +19,8 @@
 #ifndef COMMON_SORTEDLIST_H
 #define COMMON_SORTEDLIST_H
 
+#include <functional>
+
 #include <QLinkedList>
 
 /**
@@ -45,6 +47,7 @@ namespace Common
       void itemChanged(const T& item);
       void removeOne(const T& item);
       void clear();
+
       inline const QLinkedList<T>& getList() const { return this->list; }
 
    private:
