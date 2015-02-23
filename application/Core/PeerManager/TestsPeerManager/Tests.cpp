@@ -117,7 +117,7 @@ void Tests::updatePeers()
    {
       QList<IPeer*> peers = this->peerManagers[i]->getPeers();
 
-      // Wait peer i knows other peers.
+      // Wait peer knows other peers.
       if (peers.size() != this->peerIDs.size() - 1)
       {
          i--;
@@ -276,18 +276,21 @@ void Tests::askForHashes()
          QFAIL("After adding the big file 'big.bin' the amount of data must be greater the 32KiB");
    }
 
+   // Ask the ashes of "big.bin" from the first peer to the second one.
    Protos::Common::Entry fileEntry;
    fileEntry.set_type(Protos::Common::Entry_Type_FILE);
    fileEntry.set_path("/");
    fileEntry.set_name("big.bin");
-   fileEntry.set_size(0);
+   fileEntry.set_size(0); // No obligation to set the correct size.
+   for (int i = 0; i < NUMBER_OF_CHUNK; i++)
+      fileEntry.add_chunk();
    // Sets the root directory.
    fileEntry.mutable_shared_dir()->CopyFrom(this->resultListener.getEntriesResultList().first().result(0).entries().entry(0).shared_dir());
 
    QSharedPointer<IGetHashesResult> result = this->peerManagers[0]->getPeers()[0]->getHashes(fileEntry);
    QVERIFY(!result.isNull());
    connect(result.data(), SIGNAL(result(const Protos::Core::GetHashesResult&)), &this->resultListener, SLOT(result(const Protos::Core::GetHashesResult&)));
-   connect(result.data(), SIGNAL(nextHash(const Common::Hash&)), &this->resultListener, SLOT(nextHash(const Common::Hash&)));
+   connect(result.data(), SIGNAL(nextHash(const Protos::Core::HashResult&)), &this->resultListener, SLOT(nextHashResult(const Protos::Core::HashResult&)));
    result->start();
 
    timer.start();
