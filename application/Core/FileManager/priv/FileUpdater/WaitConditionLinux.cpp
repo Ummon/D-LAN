@@ -53,7 +53,7 @@ WaitConditionLinux::~WaitConditionLinux()
 void WaitConditionLinux::release()
 {
    L_DEBU(QString("WaitConditionLinux::release : begin write in pipe for read in fd=%1").arg(this->pfd[0]));
-   write(this->pfd[1], "",1);
+   write(this->pfd[1], "", 1);
    L_DEBU(QString("WaitConditionLinux::release : end write in pipe for read in fd=%1").arg(this->pfd[0]));
 
    this->released = true;

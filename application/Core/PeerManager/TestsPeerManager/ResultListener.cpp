@@ -82,10 +82,10 @@ void ResultListener::result(const Protos::Core::GetHashesResult& result)
    qDebug() << "ResultListener::result : " << Common::ProtoHelper::getDebugStr(result);
 }
 
-void ResultListener::nextHash(const Common::Hash& hash)
+void ResultListener::nextHashResult(const Protos::Core::HashResult& hashResult)
 {
-   this->lastHashReceived = hash;
-   qDebug() << "ResultListener::nextHash : [" << this->currentHash + 1 << "/" << this->nbHashes << "] " << hash.toStr();
+   this->lastHashReceived = hashResult.hash().hash();
+   qDebug() << "ResultListener::nextHashResult (" << hashResult.num() << ") : [" << this->currentHash + 1 << "/" << this->nbHashes << "] " << this->lastHashReceived.toStr();
    this->currentHash++;
 }
 

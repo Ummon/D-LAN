@@ -39,7 +39,6 @@ CoreService::CoreService(bool resetSettings, QLocale locale, int argc, char** ar
       if (currentArg == "-e" || currentArg == "--exec")
       {
          connect(&this->consoleReader, SIGNAL(newLine(QString)), this, SLOT(processUserInput(QString)), Qt::QueuedConnection);
-         this->consoleReader.start();
          QTextStream out(stdout);
          out << "D-LAN Core started with console support" << endl;
          CoreService::printCommands();
@@ -75,12 +74,11 @@ void CoreService::stop()
    this->core = 0;
 
    this->application()->quit();
-   this->consoleReader.stop();
 }
 
 void CoreService::processUserInput(QString input)
 {
-   if (input == Common::ConsoleReader::QUIT_COMMAND)
+   if (input == "quit")
    {
       this->stop();
    }
@@ -100,7 +98,7 @@ void CoreService::printCommands()
 {
    QTextStream out(stdout);
    out << "Commands:" << endl
-       << " - " << Common::ConsoleReader::QUIT_COMMAND << " : stop the core" << endl
+       << " - quit : stop the core" << endl
        << " - dumpwi : dump the word index in the log as a warning" << endl
        << " - printsf : print the similar files in the log as a warning" << endl;
 }

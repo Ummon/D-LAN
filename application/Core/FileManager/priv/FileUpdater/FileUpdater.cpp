@@ -484,9 +484,15 @@ void FileUpdater::scan(Directory* dir, bool addUnfinished)
                    file->isComplete() &&
                    !file->correspondTo(entry, file->hasAllHashes()) // If the hashes of a file can't be computed (IO error, the file is being written for example) we only compare their sizes.
                )
-                  file = nullptr;
-               else
+               {
                   currentFiles.removeOne(file);
+                  this->deleteEntry(file);
+                  file = nullptr;
+               }
+               else
+               {
+                  currentFiles.removeOne(file);
+               }
             }
 
             if (!file)
