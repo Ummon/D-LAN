@@ -459,7 +459,7 @@ void Tests::sortedArrayBenchmark()
    {
       for (int i = 0; i < n; i++)
          setBenchmarks[j].erase(names[i]);
-      QCOMPARE(setBenchmarks[j].size(), 0UL);
+      QCOMPARE(setBenchmarks[j].size(), (size_t)0);
       j++;
    }
    qDebug() << timer.elapsed();

@@ -3,9 +3,14 @@ CONFIG(debug, debug|release) {
    DEFINES += DEBUG
 } else {
    FOLDER = release
-   QMAKE_AR = gcc-ar cqs
-   QMAKE_CXXFLAGS_RELEASE += -flto
-   QMAKE_LFLAGS_RELEASE += -flto
+
+   # The standard Qt distribution on Windows doesn't support ar.
+   unix {
+      QMAKE_AR = gcc-ar cqs
+      QMAKE_CXXFLAGS_RELEASE += -flto
+      QMAKE_LFLAGS_RELEASE += -flto
+   }
+
    prof {
       QMAKE_CXXFLAGS += -pg -g
       QMAKE_LFLAGS += -pg
