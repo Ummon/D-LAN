@@ -657,7 +657,7 @@ void FileForHasher::setSize(qint64 size)
    if (this->getSize() != size)
    {
       this->dir->fileSizeChanged(this->getSize(), size);
-      this->setSize(size);
+      File::setSize(size);
    }
 }
 
