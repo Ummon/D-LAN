@@ -538,12 +538,19 @@ void SearchModel::SearchTree::copyFrom(const SearchModel::SearchTree* otherTree)
 
 bool SearchModel::SearchTree::isSameAs(const Protos::Common::Entry& otherEntry) const
 {
-   if (otherEntry.chunk_size() != this->getItem().chunk_size())
+   // Special case with empty files.
+   if (this->getItem().size() == 0 && otherEntry.size() == 0)
+      return true;
+
+   if (otherEntry.chunk_size() == 0 || otherEntry.chunk_size() != this->getItem().chunk_size())
       return false;
 
    for (int i = 0; i < otherEntry.chunk_size(); i++)
-      if (Common::Hash(otherEntry.chunk(i).hash()) != Common::Hash(this->getItem().chunk(i).hash()))
+   {
+      Common::Hash otherHash{otherEntry.chunk(i).hash()};
+      if (otherHash.isNull() || otherHash != Common::Hash(this->getItem().chunk(i).hash()))
          return false;
+   }
 
    return true;
 }
