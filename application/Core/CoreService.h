@@ -43,6 +43,8 @@ namespace CoreSpace
       void start();
       void stop();
 
+      int executeApplication() override;
+
    private slots:
       void processUserInput(QString);
 
@@ -50,7 +52,7 @@ namespace CoreSpace
       static void printCommands();
 
       Core* core;
-      Common::ConsoleReader consoleReader;
+      Common::ConsoleReader* consoleReader;
    };
 }
 #endif

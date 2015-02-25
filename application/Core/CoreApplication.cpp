@@ -23,12 +23,12 @@ CoreApplication::CoreApplication(int& argc, char** argv) :
 {
 }
 
-#ifdef Q_OS_WIN32
+/*#ifdef Q_OS_WIN32
     bool CoreApplication::winEventFilter(MSG* msg, long* result)
     {
-       /* Was used to rebind the sockets when the compute wake up.
-          The issue is more general because if the network interface is restarted, the multicast socket
-          doesn't work anymore . . .
+       // Was used to rebind the sockets when the compute wake up.
+       // The issue is more general because if the network interface is restarted, the multicast socket
+       // doesn't work anymore . . .
        if (msg->message == WM_DEVICECHANGE)
        {
           emit resumeFromLowPowerState();
@@ -40,7 +40,7 @@ CoreApplication::CoreApplication(int& argc, char** argv) :
           {
              emit resumeFromLowPowerState();
           }
-       }*/
+       }
        return false;
     }
-#endif
+#endif*/

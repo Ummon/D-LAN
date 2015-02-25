@@ -32,9 +32,9 @@ class CoreApplication : public QCoreApplication
 public:
    CoreApplication(int& argc, char** argv);
 
-#ifdef Q_OS_WIN32
+/*#ifdef Q_OS_WIN32
    bool winEventFilter(MSG* msg, long* result);
-#endif
+#endif*/
 
 /*signals:
    void resumeFromLowPowerState();*/

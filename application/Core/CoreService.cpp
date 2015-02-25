@@ -38,7 +38,6 @@ CoreService::CoreService(bool resetSettings, QLocale locale, int argc, char** ar
       QString currentArg = QString::fromLatin1(argv[i]);
       if (currentArg == "-e" || currentArg == "--exec")
       {
-         connect(&this->consoleReader, SIGNAL(newLine(QString)), this, SLOT(processUserInput(QString)), Qt::QueuedConnection);
          QTextStream out(stdout);
          out << "D-LAN Core started with console support" << endl;
          CoreService::printCommands();
@@ -74,6 +73,13 @@ void CoreService::stop()
    this->core = 0;
 
    this->application()->quit();
+}
+
+int CoreService::executeApplication()
+{
+   this->consoleReader = new Common::ConsoleReader(this);
+   connect(this->consoleReader, SIGNAL(newLine(QString)), this, SLOT(processUserInput(QString)), Qt::QueuedConnection);
+   return QtService::executeApplication();
 }
 
 void CoreService::processUserInput(QString input)
