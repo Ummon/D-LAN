@@ -104,12 +104,13 @@ void Utils::openLocations(const QStringList& paths)
 void Utils::openLocation(const QString& path)
 {
 #ifdef Q_OS_WIN32
-   static const QString EXPLORER = "explorer";
-   QStringList params;
+   QProcess explorer;
    if (!QFileInfo(path).isDir())
-      params.append("/select,");
-   params.append(QDir::toNativeSeparators(path));
-   QProcess::startDetached(EXPLORER, params);
+      explorer.setArguments(QStringList() << "/select,");
+   explorer.setNativeArguments("\"" + QDir::toNativeSeparators(path) + "\"");
+   explorer.setProgram("explorer");
+   explorer.start();
+   explorer.waitForFinished(5000);
 #else
    QFileInfo fileInfo(path);
    const QString dirPath = fileInfo.isDir() ? path : fileInfo.absolutePath();
