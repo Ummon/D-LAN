@@ -36,6 +36,7 @@ Source: "{#QtDir}/bin/Qt5WinExtras.dll"; DestDir: "{app}"; Flags: comparetimesta
 Source: "{#QtDir}/bin/Qt5Xml.dll"; DestDir: "{app}"; Flags: comparetimestamp
 Source: "{#QtDir}/bin/icuin53.dll"; DestDir: "{app}"; Flags: comparetimestamp
 Source: "{#QtDir}/bin/icuuc53.dll"; DestDir: "{app}"; Flags: comparetimestamp
+Source: "{#QtDir}/bin/icudt53.dll"; DestDir: "{app}"; Flags: comparetimestamp
 Source: "{#QtDir}/bin/libgcc_s_dw2-1.dll"; DestDir: "{app}"; Flags: comparetimestamp
 Source: "{#QtDir}/bin/libwinpthread-1.dll"; DestDir: "{app}"; Flags: comparetimestamp
 Source: "{#QtDir}/bin/libstdc++-6.dll"; DestDir: "{app}"; Flags: comparetimestamp

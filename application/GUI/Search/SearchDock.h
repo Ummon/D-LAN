@@ -57,6 +57,7 @@ namespace GUI
       void coreConnected();
       void coreDisconnected(bool force);
 
+      void advancedOptionsVisibility(bool shown);
       void search();
       void clear();
 
