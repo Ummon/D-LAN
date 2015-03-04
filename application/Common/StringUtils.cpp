@@ -121,6 +121,32 @@ QStringList StringUtils::splitInWords(const QString& words)
 }
 
 /**
+ * Take a string (like a command line) and split it in trimmed arguments.
+ * Arguments can be quoted, for instance :
+ *    abc "def ghi" => ["abc", "def ghi"]
+ */
+QStringList StringUtils::splitArguments(const QString& str)
+{
+   QStringList args;
+   int start = 0;
+   bool inQuotes = false;
+   for (int i = 0; i < str.length(); i++)
+   {
+      if (str[i] == ' ' && !inQuotes || i == str.length() - 1)
+      {
+         QString arg = str.mid(start, i - start + 1).trimmed();
+         start = i + 1;
+         if (!arg.isEmpty())
+            args << arg;
+      }
+      else if (str[i] == '"')
+         inQuotes = !inQuotes;
+   }
+
+   return args;
+}
+
+/**
   * http://www.tamasoft.co.jp/en/general-info/unicode.html
   * http://en.wikipedia.org/wiki/Hangul
   */

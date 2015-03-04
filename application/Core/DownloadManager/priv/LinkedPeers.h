@@ -44,7 +44,7 @@ namespace DM
       {
          quint32& n = (*this)[peer];
          n++;
-         L_DEBU(QString("addLink(..): peer: %1, n = %2").arg(peer->toStringLog()).arg(n));
+         // L_DEBU(QString("addLink(..): peer: %1, n = %2").arg(peer->toStringLog()).arg(n));
       }
 
       inline void rmLink(PM::IPeer* peer)
@@ -53,7 +53,7 @@ namespace DM
          n--;
          if (n == 0)
             this->remove(peer);
-         L_DEBU(QString("rmLink(..): peer: %1, n = %2").arg(peer->toStringLog()).arg(n));
+         // L_DEBU(QString("rmLink(..): peer: %1, n = %2").arg(peer->toStringLog()).arg(n));
       }
    };
 }

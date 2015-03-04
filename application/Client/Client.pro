@@ -1,4 +1,4 @@
-QT += core network qml
+QT += core network script
 TARGET = "D-LAN.Client"
 TEMPLATE = app
 CONFIG += console
@@ -28,11 +28,13 @@ SOURCES += D-LAN_Client.cpp \
     ../Protos/gui_settings.pb.cc \
     ../Protos/core_settings.pb.cc \
     main.cpp \
-    CoreConnectionProxy.cpp
+    CoreConnectionProxy.cpp \
+    Log.cpp
 
 HEADERS  += D-LAN_Client.h \
     ../Protos/gui_protocol.pb.h \
     ../Protos/common.pb.h \
     ../Protos/gui_settings.pb.h \
     ../Protos/core_settings.pb.h \
-    CoreConnectionProxy.h
+    CoreConnectionProxy.h \
+    Log.h

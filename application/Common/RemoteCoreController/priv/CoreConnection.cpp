@@ -45,6 +45,11 @@ CoreConnection::~CoreConnection()
 {
 }
 
+void CoreConnection::setCoreExecutableDirectory(const QString& dir)
+{
+   this->coreController.setCoreExecutableDirectory(dir);
+}
+
 void CoreConnection::startLocalCore()
 {
    this->coreController.startCore();
@@ -62,7 +67,7 @@ CoreStatus CoreConnection::getLocalCoreStatus() const
 
 void CoreConnection::connectToCore()
 {
-   this->connectToCore(59485);
+   this->connectToCore(Common::Constants::DEFAULT_CORE_REMOTE_CONTROL_PORT);
 }
 
 void CoreConnection::connectToCore(quint16 port)

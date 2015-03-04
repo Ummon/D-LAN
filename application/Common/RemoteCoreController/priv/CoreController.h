@@ -38,6 +38,7 @@ namespace RCC
    public:
       CoreController();
 
+      void setCoreExecutableDirectory(const QString& dir);
       void startCore(int port = -1);
       void stopCore();
 
@@ -49,6 +50,7 @@ namespace RCC
    private:
       QProcess coreProcess; ///< Only used when unable to launch the core as a service.
       QtServiceController controller;
+      QString coreDirectory;
    };
 }
 

@@ -37,9 +37,15 @@ CoreController::CoreController() :
    connect(&this->coreProcess, SIGNAL(stateChanged(QProcess::ProcessState)), this, SIGNAL(statusChanged()));
 }
 
+void CoreController::setCoreExecutableDirectory(const QString& dir)
+{
+   this->coreDirectory = dir;
+}
+
 /**
   * Try to start the core as a service if it fails then try to launch it as a sub-process.
   * When compiling with the DEBUG directive only the sub-process will be launched, not the service.
+  * @param port The port the core will listen to for managing it with a client (GUI for instance).
   */
 void CoreController::startCore(int port)
 {
@@ -66,9 +72,15 @@ void CoreController::startCore(int port)
       {
          if (this->coreProcess.state() == QProcess::NotRunning)
          {
-            this->coreProcess.start(QString("\"%1/%2\" -e%3").arg(QCoreApplication::applicationDirPath()).arg(CORE_EXE_NAME).arg(port != -1 ? QString("") : QString(" --port %1").arg(port)));
-            L_USER(QObject::tr("Core launched as subprocess"));
-            this->coreProcess.waitForStarted(TIMEOUT_SUBPROCESS_WAIT_FOR_STARTED);
+            this->coreProcess.start(
+               QString("\"%1/%2\" -e%3")
+                     .arg(this->coreDirectory.isNull() ? QCoreApplication::applicationDirPath() : this->coreDirectory)
+                     .arg(CORE_EXE_NAME)
+                     .arg(port != -1 ? QString("") : QString(" --port %1").arg(port)));
+            if (this->coreProcess.waitForStarted(TIMEOUT_SUBPROCESS_WAIT_FOR_STARTED))
+               L_USER(QObject::tr("Core launched as subprocess"));
+            else
+               L_USER(QObject::tr("Unable to launch the Core as subprocess"));
          }
       }
       else

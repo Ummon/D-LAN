@@ -337,6 +337,8 @@ void InternalCoreConnection::tryToConnectToTheNextAddress()
    if (address.isNull())
       address = this->addressesToTry.takeFirst();
 
+   L_DEBU(QString("Trying to connect to %1 (nb retry: %2) ...").arg(address.toString()).arg(this->nbRetries));
+
    // If the address is local then check if the core is launched, if not try to launch it.
    if (Common::Global::isLocal(address))
    {

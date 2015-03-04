@@ -20,6 +20,9 @@
 using namespace Client;
 
 #include <Common/RemoteCoreController/Builder.h>
+#include <Common/RemoteCoreController/ISendChatMessageResult.h>
+
+#include <Log.h>
 
 CoreConnectionProxy::CoreConnectionProxy() :
    coreConnection(RCC::Builder::newCoreConnection())
@@ -27,9 +30,24 @@ CoreConnectionProxy::CoreConnectionProxy() :
    connect(this->coreConnection.data(), SIGNAL(connected()), this, SIGNAL(connected()), Qt::DirectConnection);
 }
 
+CoreConnectionProxy::~CoreConnectionProxy()
+{
+   this->coreConnection->stopLocalCore();
+}
+
+void CoreConnectionProxy::setCoreExecutableDirectory(const QString& dir)
+{
+   this->coreConnection->setCoreExecutableDirectory(dir);
+}
+
 void CoreConnectionProxy::connectToCore()
 {
    this->coreConnection->connectToCore();
+}
+
+void CoreConnectionProxy::connectToCore(int port)
+{
+   this->coreConnection->connectToCore(port);
 }
 
 void CoreConnectionProxy::disconnectFromCore()
@@ -39,5 +57,7 @@ void CoreConnectionProxy::disconnectFromCore()
 
 void CoreConnectionProxy::sendChatMessage(const QString& message)
 {
-   this->coreConnection->sendChatMessage(message);
+   QSharedPointer<RCC::ISendChatMessageResult> result = this->coreConnection->sendChatMessage(message);
+   // We don't care about sending error.
+   result->start();
 }

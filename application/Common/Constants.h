@@ -30,6 +30,8 @@ namespace Common
       // 3 -> 4 : New chat protocol + changes of the 'GET_ENTRIES_RESULT' message.
       static const quint32 PROTOCOL_VERSION;
 
+      static const quint16 DEFAULT_CORE_REMOTE_CONTROL_PORT;
+
       static const QString APPLICATION_FOLDER_NAME;
 
       static const QString FILE_EXTENSION;

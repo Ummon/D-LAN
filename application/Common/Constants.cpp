@@ -21,6 +21,8 @@ using namespace Common;
 
 const quint32 Constants::PROTOCOL_VERSION { 4 };
 
+const quint16 Constants::DEFAULT_CORE_REMOTE_CONTROL_PORT { 59485 };
+
 #ifdef Q_OS_WIN32
    const QString Constants::APPLICATION_FOLDER_NAME("D-LAN");
 #else

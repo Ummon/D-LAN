@@ -16,36 +16,14 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef CLIENT_CORECONNECTIONPROXY_H
-#define CLIENT_CORECONNECTIONPROXY_H
+#ifndef CLIENT_LOG_H
+#define CLIENT_LOG_H
 
-#include <QObject>
-#include <QSharedPointer>
-
-#include <Common/RemoteCoreController/ICoreConnection.h>
+#include <Common/LogManager/Builder.h>
 
 namespace Client
 {
-   class CoreConnectionProxy : public QObject
-   {
-      Q_OBJECT
-   public:
-      CoreConnectionProxy();
-      ~CoreConnectionProxy();
-
-      Q_INVOKABLE void setCoreExecutableDirectory(const QString& dir);
-      Q_INVOKABLE void connectToCore();
-      Q_INVOKABLE void connectToCore(int port);
-      Q_INVOKABLE void disconnectFromCore();
-
-      Q_INVOKABLE void sendChatMessage(const QString& message);
-
-   signals:
-      void connected();
-
-   private:
-      QSharedPointer<RCC::ICoreConnection> coreConnection;
-   };
+   #include <Common/LogManager/LogMacros.h>
 }
 
 #endif

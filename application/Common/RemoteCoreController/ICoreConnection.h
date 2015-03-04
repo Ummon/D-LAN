@@ -68,6 +68,8 @@ namespace RCC
 
       virtual ~ICoreConnection() {}
 
+      virtual void setCoreExecutableDirectory(const QString& dir) = 0;
+
       virtual void startLocalCore() = 0;
 
       virtual void stopLocalCore() = 0;
@@ -75,19 +77,22 @@ namespace RCC
       virtual CoreStatus getLocalCoreStatus() const = 0;
 
       /**
-        * Connect to a local core with the default port (59485).
+        * Connect to a local core with the default port (59485), see also Common::Constants::DEFAULT_CORE_REMOTE_CONTROL_PORT.
         * When the connection is ready, the signal 'connected' is emitted.
         * If the connection fails, the signal 'connectingError(..)' is emitted.
+        * May try to launch a local core.
         */
       virtual void connectToCore() = 0;
 
       /**
         * Connect to a local core with a given port.
+        * * May try to launch a local core.
         */
       virtual void connectToCore(quint16 port) = 0;
 
       /**
         * Connect to a remote core. Password is mendatory and should be hashed and salted, see the class 'Common::Hasher'.
+        * If the given address is a local one it may try to launch a local core.
         * @param address the IP adress, it can be an IPv4 or IPv6 address.
         */
       virtual void connectToCore(const QString& address, quint16 port, Common::Hash password) = 0;
