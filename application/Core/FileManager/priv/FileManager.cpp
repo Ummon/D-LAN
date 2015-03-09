@@ -61,17 +61,17 @@ FileManager::FileManager() :
 {
    Chunk::CHUNK_SIZE = SETTINGS.get<quint32>("chunk_size");
 
-   connect(&this->cache, SIGNAL(entryAdded(Entry*)), this, SLOT(entryAdded(Entry*)), Qt::DirectConnection);
-   connect(&this->cache, SIGNAL(entryRemoved(Entry*)), this, SLOT(entryRemoved(Entry*)), Qt::DirectConnection);
-   connect(&this->cache, SIGNAL(entryRenamed(Entry*, QString)), this, SLOT(entryRenamed(Entry*, QString)), Qt::DirectConnection);
-   connect(&this->cache, SIGNAL(chunkHashKnown(QSharedPointer<Chunk>)), this, SLOT(chunkHashKnown(QSharedPointer<Chunk>)), Qt::DirectConnection);
-   connect(&this->cache, SIGNAL(chunkRemoved(QSharedPointer<Chunk>)), this, SLOT(chunkRemoved(QSharedPointer<Chunk>)), Qt::DirectConnection);
+   connect(&this->cache, &Cache::entryAdded, this, &FileManager::entryAdded, Qt::DirectConnection);
+   connect(&this->cache, &Cache::entryRemoved, this, &FileManager::entryRemoved, Qt::DirectConnection);
+   connect(&this->cache, &Cache::entryRenamed, this, &FileManager::entryRenamed, Qt::DirectConnection);
+   connect(&this->cache, &Cache::chunkHashKnown, this, &FileManager::chunkHashKnown, Qt::DirectConnection);
+   connect(&this->cache, &Cache::chunkRemoved, this, &FileManager::chunkRemoved, Qt::DirectConnection);
 
-   connect(&this->cache, SIGNAL(newSharedDirectory(SharedDirectory*)), this, SLOT(newSharedDirectory(SharedDirectory*)), Qt::DirectConnection);
-   connect(&this->cache, SIGNAL(sharedDirectoryRemoved(SharedDirectory*, Directory*)), this, SLOT(sharedDirectoryRemoved(SharedDirectory*, Directory*)), Qt::DirectConnection);
+   connect(&this->cache, &Cache::newSharedDirectory, this, &FileManager::newSharedDirectory, Qt::DirectConnection);
+   connect(&this->cache, &Cache::sharedDirectoryRemoved, this, &FileManager::sharedDirectoryRemoved, Qt::DirectConnection);
 
-   connect(&this->fileUpdater, SIGNAL(fileCacheLoaded()), this, SLOT(fileCacheLoadingComplete()), Qt::QueuedConnection);
-   connect(&this->fileUpdater, SIGNAL(deleteSharedDir(SharedDirectory*)), this, SLOT(deleteSharedDir(SharedDirectory*)), Qt::QueuedConnection); // If the 'FileUpdater' wants to delete a shared directory.
+   connect(&this->fileUpdater, &FileUpdater::fileCacheLoaded, this, &FileManager::fileCacheLoadingComplete, Qt::QueuedConnection);
+   connect(&this->fileUpdater, &FileUpdater::deleteSharedDir, this, &FileManager::deleteSharedDir, Qt::QueuedConnection); // If the 'FileUpdater' wants to delete a shared directory.
 
    this->timerPersistCache.setInterval(SETTINGS.get<quint32>("save_cache_period"));
    this->timerPersistCache.setSingleShot(true); // We use a single shot because if the time to save exceeds the property 'save_cache_period' it will cause some trouble (very rare case).

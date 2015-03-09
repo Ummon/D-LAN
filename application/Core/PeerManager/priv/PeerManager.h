@@ -93,7 +93,7 @@ namespace PM
    private:
       void removeFromPending(QTcpSocket* socket);
 
-      LOG_INIT_H("PeerManager");
+      LOG_INIT_H("PeerManager")
 
       QSharedPointer<FM::IFileManager> fileManager;
 

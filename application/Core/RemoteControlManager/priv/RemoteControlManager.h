@@ -59,7 +59,7 @@ namespace RCM
       void connectionDeleted(RemoteConnection* sender);
 
    private:      
-      LOG_INIT_H("RemoteControlManager");
+      LOG_INIT_H("RemoteControlManager")
 
       QSharedPointer<FM::IFileManager> fileManager;
       QSharedPointer<PM::IPeerManager> peerManager;

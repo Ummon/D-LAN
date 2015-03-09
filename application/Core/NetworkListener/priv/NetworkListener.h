@@ -58,7 +58,7 @@ namespace NL
       SendStatus send(Common::MessageHeader::MessageType type, const google::protobuf::Message& message, const Common::Hash& peerID = Common::Hash());
 
    private:      
-      LOG_INIT_H("NetworkListener");
+      LOG_INIT_H("NetworkListener")
 
       QSharedPointer<FM::IFileManager> fileManager;
       QSharedPointer<PM::IPeerManager> peerManager;
