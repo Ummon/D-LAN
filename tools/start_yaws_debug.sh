@@ -1,3 +1,3 @@
 #!/bin/bash
 cd ..
-yaws -i --nodebug --id yaws_pre --sname yaws_pre --conf yaws_conf/yaws.conf
+yaws -i --nodebug --id yaws_dlan_pre --sname yaws_dlan_pre --conf yaws_conf/yaws.conf
