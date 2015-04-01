@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS>
-<TS version="2.0" language="fr_FR">
-<defaultcodec>UTF-8</defaultcodec>
+<TS version="2.1" language="fr_FR">
 <context>
     <name>CoreSpace::CoreService</name>
     <message>
@@ -55,6 +54,10 @@
     <name>FM::FileHasher</name>
     <message>
         <source>Computing the hashes for %1 . . .</source>
+        <translation type="vanished">Calcul des empreintes pour %1...</translation>
+    </message>
+    <message>
+        <source>Computing hashes of %1 . . .</source>
         <translation>Calcul des empreintes pour %1...</translation>
     </message>
 </context>
