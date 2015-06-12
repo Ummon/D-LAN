@@ -81,7 +81,7 @@ namespace CS
       void loadRoomListFromSettings();
       void saveRoomListToSettings();
 
-      LOG_INIT_H("ChatSystem");
+      LOG_INIT_H("ChatSystem")
 
       QSharedPointer<PM::IPeerManager> peerManager;
       QSharedPointer<NL::INetworkListener> networkListener;

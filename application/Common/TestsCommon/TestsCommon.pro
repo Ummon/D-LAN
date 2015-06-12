@@ -24,6 +24,8 @@ SOURCES += main.cpp \
     Tests.cpp \
     ../../Protos/common.pb.cc \
     ../../Protos/core_settings.pb.cc \
-    TreeTests.cpp
+    TreeTests.cpp \
+    BenchmarkTests.cpp
 HEADERS += Tests.h \
-    TreeTests.h
+    TreeTests.h \
+    BenchmarkTests.h

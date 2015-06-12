@@ -49,7 +49,7 @@ CoreService::CoreService(bool resetSettings, QLocale locale, int argc, char** ar
 CoreService::~CoreService()
 {
    delete this->core;
-   this->core = 0;
+   this->core = nullptr;
 }
 
 void CoreService::changePassword(const QString& newPassword)
@@ -75,12 +75,12 @@ void CoreService::stop()
    this->application()->quit();
 }
 
-int CoreService::executeApplication()
+/*int CoreService::executeApplication()
 {
    this->consoleReader = new Common::ConsoleReader(this);
    connect(this->consoleReader, SIGNAL(newLine(QString)), this, SLOT(processUserInput(QString)), Qt::QueuedConnection);
    return QtService::executeApplication();
-}
+}*/
 
 void CoreService::processUserInput(QString input)
 {

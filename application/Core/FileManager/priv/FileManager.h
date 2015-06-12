@@ -108,7 +108,7 @@ namespace FM
       void fileCacheLoadingComplete();
 
    private:
-      LOG_INIT_H("FileManager");
+      LOG_INIT_H("FileManager")
 
       FileUpdater fileUpdater;
       Cache cache; ///< The files and directories.

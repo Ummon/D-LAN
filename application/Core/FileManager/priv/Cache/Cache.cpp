@@ -56,7 +56,10 @@ Cache::~Cache()
       i.next()->del();
 }
 
-
+/**
+  * Call the given lambda for each entries owned by the cache.
+  * It can be a shared directory, a sub-directory or a file.
+  */
 void Cache::forall(std::function<void(Entry*)> fun) const
 {
    QQueue<Entry*> entries;

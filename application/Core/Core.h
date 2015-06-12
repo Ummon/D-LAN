@@ -68,7 +68,7 @@ namespace CoreSpace
          google::protobuf::ShutdownProtobufLibrary();
       } } cleaner;
 
-      LOG_INIT_H("Core");
+      LOG_INIT_H("Core")
 
       QTranslator translator;
 

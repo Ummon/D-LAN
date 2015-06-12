@@ -18,14 +18,28 @@
   
 #include <QCoreApplication>
 #include <QTest>
+#include <QString>
+#include <QStringList>
 
 #include <Tests.h>
 #include <TreeTests.h>
+#include <BenchmarkTests.h>
 
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
-   Tests tests;
-   TreeTests treeTests;
+   QStringList args;
+   for (int i = 1; i < argc; i++)
+      args << argv[i];
 
-   return QTest::qExec(&tests, argc, argv) + QTest::qExec(&treeTests, argc, argv);
+   if (args.contains("benchmark"))
+   {
+      BenchmarkTests benchmarkTests;
+      return QTest::qExec(&benchmarkTests, argc, argv);
+   }
+   else
+   {
+      Tests tests;
+      TreeTests treeTests;
+      return QTest::qExec(&tests, argc, argv) + QTest::qExec(&treeTests, argc, argv);
+   }
 }
