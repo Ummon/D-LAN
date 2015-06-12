@@ -9,8 +9,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>493</width>
-    <height>260</height>
+    <width>408</width>
+    <height>279</height>
    </rect>
   </property>
   <property name="palette">
@@ -99,6 +99,19 @@
     </widget>
    </item>
    <item>
+    <widget class="QLabel" name="lblUrl">
+     <property name="text">
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;a href=&quot;http://www.d-lan.net&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#fd2435;&quot;&gt;http://www.d-lan.net&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
+     <property name="indent">
+      <number>15</number>
+     </property>
+     <property name="openExternalLinks">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item>
     <widget class="QLabel" name="lblBuiltOn">
      <property name="text">
       <string>Built on</string>
@@ -110,18 +123,11 @@
    </item>
    <item>
     <widget class="QLabel" name="lblFromRevision">
-     <property name="styleSheet">
-      <string notr="true">a { 
-	color: rgb(255, 70, 73);
-}
-
-* {
-	color: white;
-}
-</string>
-     </property>
      <property name="text">
       <string>From revision</string>
+     </property>
+     <property name="textFormat">
+      <enum>Qt::RichText</enum>
      </property>
      <property name="indent">
       <number>15</number>

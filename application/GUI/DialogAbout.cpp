@@ -41,9 +41,8 @@ DialogAbout::DialogAbout(QWidget *parent) :
 
    this->ui->lblTitle->setText(QString("%1 %2 %3").arg(this->ui->lblTitle->text()).arg(VERSION).arg(VERSION_TAG));
    this->ui->lblBuiltOn->setText(QString("%1 %2").arg(this->ui->lblBuiltOn->text()).arg(locale.toString(buildTime)));
-   this->ui->lblFromRevision->setText(QString("%1 <a href=\"https://github.com/Ummon/D-LAN/commit/%2\">%2</a>").arg(this->ui->lblFromRevision->text()).arg(GIT_VERSION));
+   this->ui->lblFromRevision->setText(QString("<html><head/><body><p>%1 <a href=\"https://github.com/Ummon/D-LAN/commit/%2\"><span style=\"color: #fd2435\">%2</span></a></p></body></html>").arg(this->ui->lblFromRevision->text()).arg(GIT_VERSION));
    this->ui->lblCopyright->setText(this->ui->lblCopyright->text().arg(buildTime.date().year()));
-
    const QString& compilerName = Common::Global::getCompilerName();
    const QString& compilerVersion = Common::Global::getCompilerVersion();
 
