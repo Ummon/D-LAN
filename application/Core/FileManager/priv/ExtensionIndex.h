@@ -4,7 +4,8 @@
 #include <functional>
 #include <limits>
 
-#include <QMultiHash>
+#include <QHash>
+#include <QSet>
 #include <QList>
 #include <QString>
 #include <QMutex>
@@ -25,7 +26,7 @@ namespace FM
       QList<T> search(const QList<QString>& extensions, int limit = std::numeric_limits<int>::max(), std::function<bool(const T&)> predicat = nullptr) const;
 
    private:
-      QMultiHash<QString, T> index;
+      QHash<QString, QSet<T>> index;
       mutable QMutex mutex;
    };
 }
@@ -43,7 +44,8 @@ void FM::ExtensionIndex<T>::addItem(const QString& extension, const T& item)
       return;
 
    QMutexLocker locker(&this->mutex);
-   this->index.insert(extension.toLower(), item);
+   QSet<T>& set = this->index[extension.toLower()];
+   set.insert(item);
 }
 
 template<typename T>
@@ -53,7 +55,14 @@ void FM::ExtensionIndex<T>::rmItem(const QString& extension, const T& item)
       return;
 
    QMutexLocker locker(&this->mutex);
-   this->index.remove(extension.toLower(), item);
+
+   auto setIterator = this->index.find(extension);
+   if (setIterator != this->index.end())
+   {
+      setIterator->remove(item);
+      if (setIterator->empty())
+         this->index.erase(setIterator);
+   }
 }
 
 template<typename T>
@@ -61,11 +70,8 @@ void FM::ExtensionIndex<T>::changeItem(const QString& oldExtension, const QStrin
 {
    QMutexLocker locker(&this->mutex);
 
-   if (!oldExtension.isEmpty())
-      this->index.remove(oldExtension.toLower(), item);
-
-   if (!newExtension.isEmpty())
-      this->index.insert(newExtension.toLower(), item);
+   this->rmItem(oldExtension, item);
+   this->addItem(newExtension, item);
 }
 
 template<typename T>
@@ -84,13 +90,22 @@ QList<T> FM::ExtensionIndex<T>::search(const QList<QString>& extensions, int lim
    for (QListIterator<QString> i(extensions); i.hasNext();)
    {
       const QString& extension = i.next();
-      for (typename QHash<QString, T>::const_iterator j = this->index.find(extension.toLower()); j != this->index.constEnd() && j.key() == extension; ++j)
-      {
-         if (!predicat || predicat(j.value()))
-            result << j.value();
 
-         if (result.size() >= limit)
-            goto end;
+      auto setIterator = this->index.find(extension.toLower());
+      if (setIterator != this->index.constEnd())
+      {
+         // Special case to speedup the process.
+         if (extensions.count() == 1 && !predicat && setIterator->count() <= limit)
+            return setIterator->toList();
+
+         for (auto j = setIterator->constBegin(); j != setIterator->constEnd(); ++j)
+         {
+            if (!predicat || predicat(*j))
+               result << *j;
+
+            if (result.size() >= limit)
+               goto end;
+         }
       }
    }
 

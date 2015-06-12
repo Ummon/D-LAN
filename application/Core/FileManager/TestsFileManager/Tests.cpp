@@ -778,6 +778,127 @@ void Tests::chunksPerformance()
    qDebug() << "Time to check if" << NB_HASHES_TO_CHECK << "hashes exist among a pool of" << HASH_POOL_SIZE << "hashes:" << timer.elapsed() << "ms";
 }
 
+#include <priv/ExtensionIndex.h>
+
+void Tests::extensionIndexAddItem()
+{
+   QList<QString> mp3s { "file1.mp3", "file2.MP3" };
+
+   ExtensionIndex<QString> index;
+   index.addItem(mp3s[0].right(3), mp3s[0]);
+   index.addItem(mp3s[1].right(3), mp3s[1]);
+   index.addItem("jpg", "file3.jpg");
+
+   for (int i = 0; i < 2; i++)
+   {
+      QList<QString> result = index.search(mp3s[i].right(3));
+      QVERIFY(result.count() == 2);
+      QVERIFY(mp3s.contains(result[0]));
+      QVERIFY(mp3s.contains(result[1]));
+   }
+
+   QList<QString> result = index.search("jpg");
+   QVERIFY(result.count() == 1);
+   QVERIFY(result[0] == "file3.jpg");
+}
+
+void Tests::extensionIndexRmItem()
+{
+   QList<QString> mp3s { "file1.mp3", "file2.MP3" };
+
+   ExtensionIndex<QString> index;
+   index.addItem(mp3s[0].right(3), mp3s[0]);
+   index.addItem(mp3s[1].right(3), mp3s[1]);
+   index.addItem("jpg", "file3.jpg");
+
+   index.rmItem(mp3s[0].right(3), mp3s[0]);
+   index.rmItem("jpg", "file3.jpg");
+
+   {
+      QList<QString> result = index.search(mp3s[1].right(3));
+      QVERIFY(result.count() == 1);
+      QVERIFY(result[0] == "file2.MP3");
+   }
+
+   {
+      QList<QString> result = index.search("jpg");
+      QVERIFY(result.count() == 0);
+   }
+}
+
+void Tests::extensionIndexChangeItem()
+{
+   QList<QString> mp3s { "file1.mp3", "file2.MP3" };
+
+   ExtensionIndex<QString> index;
+   index.addItem(mp3s[0].right(3), mp3s[0]);
+   index.addItem(mp3s[1].right(3), mp3s[1]);
+
+   index.changeItem("mp3", "JPG", mp3s[1]);
+
+   {
+      QList<QString> result = index.search("mp3");
+      QVERIFY(result.count() == 1);
+      QVERIFY(result[0] == "file1.mp3");
+   }
+
+   {
+      QList<QString> result = index.search("jpg");
+      QVERIFY(result.count() == 1);
+      QVERIFY(result[0] == "file2.MP3");
+   }
+}
+
+void Tests::extensionIndexSearchWithOneExtension()
+{
+   QList<QString> mp3s { "file1.mp3", "file2.MP3" };
+
+   ExtensionIndex<QString> index;
+   index.addItem(mp3s[0].right(3), mp3s[0]);
+   index.addItem(mp3s[1].right(3), mp3s[1]);
+   index.addItem("jpg", "file3.jpg");
+
+   {
+      QList<QString> result = index.search("jpg", 1, [](const QString& item){ return item == "file3.jpg"; });
+      QVERIFY(result.count() == 1);
+      QVERIFY(result[0] == "file3.jpg");
+   }
+
+   {
+      QList<QString> result = index.search("jpg", 1, [](const QString& item){ return item == "file3.mp3"; });
+      QVERIFY(result.count() == 0);
+   }
+
+   {
+      QList<QString> result = index.search("MP3", 1, [](const QString& item){ return item == "file1.mp3"; });
+      QVERIFY(result.count() == 1);
+      QVERIFY(result[0] == "file1.mp3");
+   }
+}
+
+void Tests::extensionIndexSearchWithSomeExtensions()
+{
+   QList<QString> mp3s { "file1.mp3", "file2.MP3" };
+
+   ExtensionIndex<QString> index;
+   index.addItem(mp3s[0].right(3), mp3s[0]);
+   index.addItem(mp3s[1].right(3), mp3s[1]);
+   index.addItem("jpg", "file3.jpg");
+
+   {
+      QList<QString> result = index.search(QList<QString>{ "jpg", "mp3", "png"}, 10);
+      QVERIFY(result.count() == 3);
+      QVERIFY(result.contains(mp3s[0]));
+      QVERIFY(result.contains(mp3s[1]));
+      QVERIFY(result.contains("file3.jpg"));
+   }
+
+   {
+      QList<QString> result = index.search(QList<QString>{ "png", "html"}, 10);
+      QVERIFY(result.count() == 0);
+   }
+}
+
 void Tests::cleanupTestCase()
 {
    qDebug() << "===== cleanupTestCase() =====";

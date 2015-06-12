@@ -41,6 +41,9 @@ using namespace FM;
 
 void Chunks::add(const QSharedPointer<Chunk>& chunk)
 {
+   if (chunk->getHash().isNull())
+      return;
+
    QMutexLocker locker(&this->mutex);
    this->insert(chunk->getHash(), chunk);
 #ifdef BLOOM_FILTER_ON
@@ -50,17 +53,23 @@ void Chunks::add(const QSharedPointer<Chunk>& chunk)
 
 void Chunks::rm(const QSharedPointer<Chunk>& chunk)
 {
+   if (chunk->getHash().isNull())
+      return;
+
    QMutexLocker locker(&this->mutex);
    this->remove(chunk->getHash(), chunk);
 #ifdef BLOOM_FILTER_ON
    if (this->isEmpty())
       this->bloomFilter.reset();
 #endif
-   L_DEBU(QString("Nb chunks: %1").arg(this->size()));
+   // L_DEBU(QString("Nb chunks: %1").arg(this->size()));
 }
 
 QSharedPointer<Chunk> Chunks::value(const Common::Hash& hash) const
 {
+   if (hash.isNull())
+      return QSharedPointer<Chunk>();
+
    QMutexLocker locker(&this->mutex);
 #ifdef BLOOM_FILTER_ON
    if (!this->bloomFilter.test(hash))
@@ -71,6 +80,9 @@ QSharedPointer<Chunk> Chunks::value(const Common::Hash& hash) const
 
 QList<QSharedPointer<Chunk>> Chunks::values(const Common::Hash& hash) const
 {
+   if (hash.isNull())
+      return QList<QSharedPointer<Chunk>>();
+
    QMutexLocker locker(&this->mutex);
 #ifdef BLOOM_FILTER_ON
    if (!this->bloomFilter.test(hash))
@@ -81,6 +93,9 @@ QList<QSharedPointer<Chunk>> Chunks::values(const Common::Hash& hash) const
 
 bool Chunks::contains(const Common::Hash& hash) const
 {
+   if (hash.isNull())
+      return false;
+
    QMutexLocker locker(&this->mutex);   
 #ifdef BLOOM_FILTER_ON
    if (!this->bloomFilter.test(hash))

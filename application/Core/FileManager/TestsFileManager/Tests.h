@@ -103,8 +103,17 @@ private slots:
    /***** Removing shared directories *****/
    void rmSharedDirectory();
 
+   /********** Unit tests of internals classes **********/
+
    /***** Speed test of the class 'Chunks' *****/
    void chunksPerformance();
+
+   /***** The exenstion index class *****/
+   void extensionIndexAddItem();
+   void extensionIndexRmItem();
+   void extensionIndexChangeItem();
+   void extensionIndexSearchWithOneExtension();
+   void extensionIndexSearchWithSomeExtensions();
 
    void cleanupTestCase();
 
