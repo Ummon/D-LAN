@@ -136,6 +136,24 @@ QDateTime Global::getBuildTime()
    return QDateTime::fromString(BUILD_TIME, "yyyy-MM-dd_HH-mm");
 }
 
+QString Global::getCompilerName()
+{
+#if defined(__GNUC__)
+   return "GCC";
+#else
+   return "";
+#endif
+}
+
+QString Global::getCompilerVersion()
+{
+#if defined(__GNUC__)
+   return QString::number(__GNUC__).append(".").append(QString::number(__GNUC_MINOR__)).append(".").append(QString::number(__GNUC_PATCHLEVEL__));
+#else
+   return "";
+#endif
+}
+
 /**
   * The number of k-combinations (each of size k) from a set S with n elements (size n).
   * http://en.wikipedia.org/wiki/Combination

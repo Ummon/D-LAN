@@ -5,6 +5,12 @@
   <property name="windowModality">
    <enum>Qt::NonModal</enum>
   </property>
+  <property name="maximumSize">
+   <size>
+    <width>524287</width>
+    <height>133</height>
+   </size>
+  </property>
   <property name="features">
    <set>QDockWidget::DockWidgetFloatable|QDockWidget::DockWidgetMovable|QDockWidget::DockWidgetVerticalTitleBar</set>
   </property>
@@ -12,18 +18,6 @@
    <string>Search</string>
   </property>
   <widget class="QWidget" name="dockWidgetContents">
-   <property name="sizePolicy">
-    <sizepolicy hsizetype="Preferred" vsizetype="MinimumExpanding">
-     <horstretch>0</horstretch>
-     <verstretch>0</verstretch>
-    </sizepolicy>
-   </property>
-   <property name="minimumSize">
-    <size>
-     <width>0</width>
-     <height>10</height>
-    </size>
-   </property>
    <layout class="QVBoxLayout" name="verticalLayout">
     <property name="spacing">
      <number>2</number>
@@ -129,9 +123,6 @@
     <item>
      <widget class="QWidget" name="advancedOptions" native="true">
       <layout class="QGridLayout" name="gridLayout">
-       <property name="sizeConstraint">
-        <enum>QLayout::SetNoConstraint</enum>
-       </property>
        <property name="leftMargin">
         <number>0</number>
        </property>
@@ -160,12 +151,6 @@
          </item>
          <item>
           <widget class="QComboBox" name="cmbMaxSize">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
            <property name="editable">
             <bool>false</bool>
            </property>
@@ -217,12 +202,6 @@
          </item>
          <item>
           <widget class="QComboBox" name="cmbMinSize">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
            <property name="sizeAdjustPolicy">
             <enum>QComboBox::AdjustToMinimumContentsLength</enum>
            </property>

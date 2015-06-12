@@ -31,6 +31,10 @@ using namespace GUI;
 
 #include <Log.h>
 
+// To activate the possibility to hide the advanced fields.
+// There is actually some difficulties to hide these controls.
+#define HIDE_BUTTON false
+
 SearchDock::SearchDock(QSharedPointer<RCC::ICoreConnection> coreConnection, QWidget* parent) :
    QDockWidget(parent),
    ui(new Ui::SearchDock),
@@ -93,7 +97,11 @@ SearchDock::SearchDock(QSharedPointer<RCC::ICoreConnection> coreConnection, QWid
    connect(this->coreConnection.data(), SIGNAL(connected()), this, SLOT(coreConnected()));
    connect(this->coreConnection.data(), SIGNAL(disconnected(bool)), this, SLOT(coreDisconnected(bool)));
 
+#if not HIDE_BUTTON
+   this->ui->butAdvanced->hide();
+#else
    connect(this->ui->butAdvanced, SIGNAL(clicked(bool)), this, SLOT(advancedOptionsVisibility(bool)));
+#endif
 
    this->coreDisconnected(false); // Initial state.
 }
@@ -212,7 +220,9 @@ void SearchDock::saveSettings()
 
    SETTINGS.set("search_local", this->ui->chkOwnFiles->checkState() == Qt::Checked);
 
+#if HIDE_BUTTON
    SETTINGS.set("search_advanced_visible", this->ui->advancedOptions->isVisible());
+#endif
 }
 
 void SearchDock::loadSettings()
@@ -230,9 +240,11 @@ void SearchDock::loadSettings()
 
    this->ui->chkOwnFiles->setChecked(SETTINGS.get<bool>("search_local"));
 
+#if HIDE_BUTTON
    const bool SHOW_ADVANCED_OPTIONS = SETTINGS.get<bool>("search_advanced_visible");
    this->ui->advancedOptions->setVisible(SHOW_ADVANCED_OPTIONS);
    this->ui->butAdvanced->setChecked(SHOW_ADVANCED_OPTIONS);
+#endif
 }
 
 SearchType SearchDock::currentType() const
