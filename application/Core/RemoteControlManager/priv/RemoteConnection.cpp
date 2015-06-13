@@ -270,7 +270,7 @@ void RemoteConnection::refresh()
    for (QListIterator<CS::IChatSystem::ChatRoom> i(this->chatSystem->getRooms()); i.hasNext();)
    {
       const CS::IChatSystem::ChatRoom& room = i.next();
-      Protos::GUI::State::Room* roomMess = state.add_rooms();
+      Protos::GUI::State::Room* roomMess = state.add_room();
 
       Common::ProtoHelper::setStr(*roomMess, &Protos::GUI::State::Room::set_name, room.name);
       for (QSetIterator<PM::IPeer*> j(room.peers); j.hasNext();)

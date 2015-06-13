@@ -79,4 +79,10 @@ message Settings {
    optional uint32 search_max_size_value = 30 [default = 0];
    optional SizeUnit search_max_size_unit = 31 [default = MIB];
    optional bool search_local = 34 [default = false]; // Search among our own files.
+
+   enum RoomSortType {
+     BY_NAME = 1;
+     BY_NB_PEERS = 2;
+   }
+   optional RoomSortType room_sort_type = 36 [default = BY_NAME];
 }

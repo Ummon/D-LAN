@@ -293,13 +293,13 @@ void PeerListModel::newState(const Protos::GUI::State& state)
 
    QSet<Common::Hash> peersToDisplay;
    if (!this->room.isEmpty())
-      for (int i = 0; i < state.rooms_size(); i++)
-         if (state.rooms(i).name() == this->room.toStdString())
+      for (int i = 0; i < state.room_size(); i++)
+         if (state.room(i).name() == this->room.toStdString())
          {
-            for (int j = 0; j < state.rooms(i).peer_id_size(); j++)
-               peersToDisplay << Common::Hash(state.rooms(i).peer_id(i).hash());
+            for (int j = 0; j < state.room(i).peer_id_size(); j++)
+               peersToDisplay << Common::Hash(state.room(i).peer_id(i).hash());
 
-            if (state.rooms(i).joined())
+            if (state.room(i).joined())
                peersToDisplay << this->coreConnection->getRemoteID();
 
             break;
@@ -339,7 +339,8 @@ void PeerListModel::updatePeers(const google::protobuf::RepeatedPtrField<Protos:
             Common::ProtoHelper::getIP(peers.Get(i).ip()) :
             QHostAddress();
 
-      Peer* peer = this->indexedPeers[peerID];
+      auto peerIterator = this->indexedPeers.find(peerID);
+      Peer* peer = peerIterator == this->indexedPeers.end() ? nullptr : *peerIterator;
       int j;
       if (peer && (j = this->orderedPeers.indexOf(peer)) != -1)
       {
@@ -412,9 +413,9 @@ void PeerListModel::updatePeers(const google::protobuf::RepeatedPtrField<Protos:
    if (!peerIDsRemoved.isEmpty())
       emit peersRemoved(peerIDsRemoved);
 
-   // peersToAdd << new Peer { Common::Hash("c7d4adaa63555932d3f460bde685bd93ab91dffa"), "Pierre", QString(), 0, QHostAddress(), { 0, 0, false },  Protos::GUI::State::Peer::OK };
-   // peersToAdd << new Peer { Common::Hash("c7d4adaa63555932d3f460bde685bd93ab91dffb"), "Paul", QString(), 0, QHostAddress(), { 0, 0, false },  Protos::GUI::State::Peer::OK };
-   // peersToAdd << new Peer { Common::Hash("c7d4adaa63555932d3f460bde685bd93ab91dffc"), "Jacques", QString(), 0, QHostAddress(), { 0, 0, false },  Protos::GUI::State::Peer::OK };
+   peersToAdd << new Peer { Common::Hash::fromStr(QString("c7d4adaa63555932d3f460bde685bd93ab91dffa")), "Pierre", QString(), 0, QHostAddress(), { 0, 0, false },  Protos::GUI::State::Peer::OK };
+   peersToAdd << new Peer { Common::Hash::fromStr(QString("c7d4adaa63555932d3f460bde685bd93ab91dffb")), "Paul", QString(), 0, QHostAddress(), { 0, 0, false },  Protos::GUI::State::Peer::OK };
+   peersToAdd << new Peer { Common::Hash::fromStr(QString("c7d4adaa63555932d3f460bde685bd93ab91dffc")), "Jacques", QString(), 0, QHostAddress(), { 0, 0, false },  Protos::GUI::State::Peer::OK };
 
    for (QListIterator<Peer*> i(peersToAdd); i.hasNext();)
    {

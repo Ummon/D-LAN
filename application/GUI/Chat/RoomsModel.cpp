@@ -23,6 +23,16 @@ using namespace GUI;
 
 #include <Log.h>
 
+struct RoomsModel::Room
+{
+   bool operator==(const Room& r) const { return this->name == r.name; }
+   bool operator!=(const Room& r) const { return this->name != r.name; }
+
+   QString name; // Room identifier.
+   QSet<Common::Hash> peerIDs;
+   bool joined;
+};
+
 /**
   * @class RoomsModel
   *
@@ -30,10 +40,18 @@ using namespace GUI;
   */
 
 RoomsModel::RoomsModel(QSharedPointer<RCC::ICoreConnection> coreConnection) :
-   coreConnection(coreConnection)
+   coreConnection(coreConnection),
+   currentSortType(Protos::GUI::Settings::BY_NAME)
 {
    connect(coreConnection.data(), SIGNAL(newState(const Protos::GUI::State&)), this, SLOT(newState(const Protos::GUI::State&)));
    connect(coreConnection.data(), SIGNAL(disconnected(bool)), this, SLOT(coreDisconnected(bool)));
+}
+
+RoomsModel::~RoomsModel()
+{
+   auto end = this->orderedRooms.end();
+   for (auto i = this->orderedRooms.begin(); i != end; ++i)
+      delete *i;
 }
 
 /*QModelIndex	RoomsModel::index(int row, int column, const QModelIndex& parent) const
@@ -43,7 +61,7 @@ RoomsModel::RoomsModel(QSharedPointer<RCC::ICoreConnection> coreConnection) :
 
 int RoomsModel::rowCount(const QModelIndex& /*parent*/) const
 {
-   return this->rooms.size();
+   return this->orderedRooms.size();
 }
 
 int RoomsModel::columnCount(const QModelIndex& /*parent*/) const
@@ -53,18 +71,18 @@ int RoomsModel::columnCount(const QModelIndex& /*parent*/) const
 
 QVariant RoomsModel::data(const QModelIndex& index, int role) const
 {
-   if (!index.isValid() || index.row() >= this->rooms.size())
+   if (!index.isValid() || index.row() >= this->orderedRooms.size())
       return QVariant();
 
    switch (role)
    {
    case Qt::DisplayRole:
    {
-      const Room& room = this->rooms.getFromIndex(index.row());
+      const Room* room = this->orderedRooms.getFromIndex(index.row());
       switch (index.column())
       {
-      case 0: return room.name;
-      case 1: return room.peerIDs.size() + (room.joined ? 1 : 0);
+      case 0: return room->name;
+      case 1: return room->peerIDs.size() + (room->joined ? 1 : 0);
       }
       break;
    }
@@ -77,79 +95,127 @@ QVariant RoomsModel::data(const QModelIndex& index, int role) const
 
 QString RoomsModel::getRoomName(const QModelIndex& index)
 {
-   if (index.row() < this->rooms.size())
-   {
-      return this->rooms.getFromIndex(index.row()).name;
-   }
+   if (index.row() < this->orderedRooms.size())
+      return this->orderedRooms.getFromIndex(index.row())->name;
 
    return QString();
 }
 
+void RoomsModel::setSortType(Protos::GUI::Settings::RoomSortType sortType)
+{
+   this->currentSortType = sortType;
+
+   emit layoutAboutToBeChanged();
+   switch (this->currentSortType)
+   {
+   case Protos::GUI::Settings::BY_NAME:
+      this->orderedRooms.setSortedFunction([](const Room* r1, const Room* r2) {
+         if (!r1 || !r2)
+            return false;
+         return r1->name < r2->name;
+      });
+      break;
+
+   case Protos::GUI::Settings::BY_NB_PEERS:
+      this->orderedRooms.setSortedFunction([](const Room* r1, const Room* r2) {
+         if (!r1 || !r2)
+            return false;
+         if (r1->peerIDs.count() == r2->peerIDs.count())
+            return r1->name < r2->name;
+         return r1->peerIDs.count() > r2->peerIDs.count();
+      });
+      break;
+   }
+   emit layoutChanged();
+}
+
+Protos::GUI::Settings::RoomSortType RoomsModel::getSortType() const
+{
+   return this->currentSortType;
+}
+
 void RoomsModel::newState(const Protos::GUI::State& state)
 {
-   Common::SortedArray<Room> roomsNewState;
-
-   for (int i = 0; i < state.rooms_size(); i++)
-   {
-      const Protos::GUI::State::Room& room = state.rooms(i);
-      QSet<Common::Hash> peers;
-      for (int j = 0; j < room.peer_id_size(); j++)
-         peers << Common::Hash(room.peer_id(j).hash());
-      roomsNewState.insert(Room { Common::ProtoHelper::getStr(room, &Protos::GUI::State::Room::name), peers, room.joined() });
-   }
-
-   int n = 0; // 'new'.
-   int o = 0; // 'old'.
-   while (n < roomsNewState.size() || o < this->rooms.size())
-   {
-      // For debugging.
-      // L_DEBU(QString("n: %1, roomsNewState.size(); %2, o: %3, this->rooms.size(): %4").arg(n).arg(roomsNewState.size()).arg(o).arg(this->rooms.size()));
-
-      // Add a new room.
-      if (o == this->rooms.size() || n < roomsNewState.size() && roomsNewState.getFromIndex(n) < this->rooms.getFromIndex(o))
-      {
-         this->beginInsertRows(QModelIndex(), o, o);
-         this->rooms.insert(roomsNewState.getFromIndex(n));
-         this->endInsertRows();
-      }
-      // Remove a room.
-      else if (n == roomsNewState.size() || o < this->rooms.size() && this->rooms.getFromIndex(o) < roomsNewState.getFromIndex(n))
-      {
-         this->beginRemoveRows(QModelIndex(), o, o);
-         this->rooms.removeFromIndex(o--);
-         this->endRemoveRows();
-         n--;
-      }
-      // Update an existing room.
-      else
-      {
-         Room& oldRoom = this->rooms.getFromIndex(o);
-         const Room& newRoom = roomsNewState.getFromIndex(n);
-
-         if (oldRoom.joined != newRoom.joined || oldRoom.peerIDs != newRoom.peerIDs)
-         {
-            oldRoom.joined = newRoom.joined;
-            oldRoom.peerIDs = newRoom.peerIDs;
-            emit dataChanged(this->createIndex(o, 1), this->createIndex(o, 2));
-         }
-      }
-
-      if (n != roomsNewState.size())
-         n++;
-
-      if (o != this->rooms.size())
-         o++;
-   }
+   this->updateRooms(state.room());
 }
 
 void RoomsModel::coreDisconnected(bool force)
 {
-   this->beginResetModel();
-   this->rooms.clear();
-   this->endResetModel();
+   google::protobuf::RepeatedPtrField<Protos::GUI::State_Room> rooms;
+   this->updateRooms(rooms);
 }
 
-bool GUI::operator<(const RoomsModel::Room& r1, const RoomsModel::Room& r2)
+void RoomsModel::updateRooms(const google::protobuf::RepeatedPtrField<Protos::GUI::State::Room>& rooms)
 {
-   return r1.name < r2.name;
+   Common::SortedArray<Room*> roomsToRemove = this->orderedRooms;
+   QList<Room*> roomsToAdd;
+
+   for (int i = 0; i < rooms.size(); i++)
+   {
+      QSet<Common::Hash> peerIDs;
+      for (int j = 0; j < rooms.Get(i).peer_id_size(); j++)
+         peerIDs << Common::Hash(rooms.Get(i).peer_id(j).hash());
+      const QString& name = Common::ProtoHelper::getStr(rooms.Get(i), &Protos::GUI::State::Room::name);
+      const bool joined = rooms.Get(i).joined();
+
+      auto roomIterator = this->indexedRooms.find(name);
+      Room* room = roomIterator == this->indexedRooms.end() ? nullptr : *roomIterator;
+      int j;
+      if (room && (j = this->orderedRooms.indexOf(room)) != -1)
+      {
+         roomsToRemove.remove(room);
+         if (room->peerIDs != peerIDs)
+         {
+            if (this->currentSortType == Protos::GUI::Settings::BY_NB_PEERS)
+            {
+               this->beginRemoveRows(QModelIndex(), j, j);
+               this->orderedRooms.remove(room);
+               this->endRemoveRows();
+               room->peerIDs = peerIDs;
+               roomsToAdd << room;
+            }
+            else
+            {
+               room->peerIDs = peerIDs;
+               emit dataChanged(this->createIndex(j, 1), this->createIndex(j, 1));
+            }
+         }
+
+         if (room->joined != joined)
+         {
+            room->joined = joined;
+            emit dataChanged(this->createIndex(j, 0), this->createIndex(j, 0));
+         }
+      }
+      else
+      {
+         roomsToAdd << new Room { name, peerIDs, joined };
+      }
+   }
+
+   QList<QString> roomNamesRemoved;
+   auto end = roomsToRemove.end();
+   for (auto i = roomsToRemove.begin(); i != end; ++i)
+   {
+      Room* const room = *i;
+      roomNamesRemoved << room->name;
+      int j = this->orderedRooms.indexOf(room);
+      if (j != -1)
+      {
+         this->beginRemoveRows(QModelIndex(), j, j);
+         this->indexedRooms.remove(room->name);
+         this->orderedRooms.remove(room);
+         delete room;
+         this->endRemoveRows();
+      }
+   }
+
+   for (QListIterator<Room*> i(roomsToAdd); i.hasNext();)
+   {
+      Room* const room = i.next();
+      int pos = this->orderedRooms.insert(room);
+      this->beginInsertRows(QModelIndex(), pos, pos);
+      this->indexedRooms.insert(room->name, room);
+      this->endInsertRows();
+   }
 }

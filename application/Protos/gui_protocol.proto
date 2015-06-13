@@ -124,7 +124,7 @@ message State {
    optional Common.Interface.Address.Protocol listenAny = 8; // If this value is set then all the interfaces of the given protocol are listened. Otherwise see the following repeated 'interface' field.
    repeated Common.Interface interface = 9;
 
-   repeated Room rooms = 11;
+   repeated Room room = 11;
 }
 
 // GUI -> Core

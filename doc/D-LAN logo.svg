@@ -14,7 +14,7 @@
    height="1052.3622047"
    id="svg6780"
    version="1.1"
-   inkscape:version="0.48.1 "
+   inkscape:version="0.91 r13725"
    sodipodi:docname="D-LAN logo.svg">
   <defs
      id="defs6782">
@@ -40,19 +40,6 @@
          offset="1"
          style="stop-color:#ffffff;stop-opacity:1;" />
     </linearGradient>
-    <filter
-       color-interpolation-filters="sRGB"
-       inkscape:collect="always"
-       id="filter3894"
-       x="-0.1968368"
-       width="1.3936737"
-       y="-0.1873952"
-       height="1.3747904">
-      <feGaussianBlur
-         inkscape:collect="always"
-         stdDeviation="4.68"
-         id="feGaussianBlur3896" />
-    </filter>
     <radialGradient
        inkscape:collect="always"
        xlink:href="#linearGradient3795"
@@ -150,7 +137,7 @@
        x2="437"
        y2="567.12091"
        gradientUnits="userSpaceOnUse"
-       gradientTransform="matrix(1,0,0,0.88785047,0,57.462617)" />
+       gradientTransform="matrix(1,0,0,0.88785047,0,57.462612)" />
     <radialGradient
        inkscape:collect="always"
        xlink:href="#linearGradient3795-7"
@@ -171,6 +158,19 @@
        x2="432.4939"
        y2="598.3952"
        gradientUnits="userSpaceOnUse" />
+    <filter
+       inkscape:collect="always"
+       style="color-interpolation-filters:sRGB"
+       id="filter4942"
+       x="-0.14507286"
+       width="1.2901457"
+       y="-0.13841675"
+       height="1.2768335">
+      <feGaussianBlur
+         inkscape:collect="always"
+         stdDeviation="3.4568142"
+         id="feGaussianBlur4944" />
+    </filter>
   </defs>
   <sodipodi:namedview
      id="base"
@@ -180,13 +180,13 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="1.0000001"
-     inkscape:cx="203.49842"
-     inkscape:cy="713.0433"
+     inkscape:cx="200.80278"
+     inkscape:cy="740.69832"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
      inkscape:window-width="1920"
-     inkscape:window-height="1024"
+     inkscape:window-height="1017"
      inkscape:window-x="-8"
      inkscape:window-y="-8"
      inkscape:window-maximized="1" />
@@ -198,7 +198,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -216,197 +216,179 @@
        width="465.20184"
        id="rect6776"
        style="fill:url(#radialGradient6816);fill-opacity:1.0;stroke:none" />
+    <rect
+       style="fill:url(#radialGradient3941);fill-opacity:1;stroke:none"
+       id="rect3929"
+       width="100"
+       height="100"
+       x="120.06747"
+       y="440.9444"
+       inkscape:export-filename="E:\projects\aybabtu\application\GUI\ressources\icon.png"
+       inkscape:export-xdpi="14.4"
+       inkscape:export-ydpi="14.4"
+       ry="0" />
     <g
-       inkscape:export-ydpi="90.000023"
-       inkscape:export-xdpi="90.000023"
-       inkscape:export-filename="E:\projects\aybabtu\application\GUI\ressources\logo.png"
-       transform="translate(88.205429,-238.96749)"
-       id="g6754">
-      <g
-         inkscape:export-ydpi="73.981827"
-         inkscape:export-xdpi="73.981827"
-         inkscape:export-filename="E:\projects\d-lan_web\text3911-4.png"
-         transform="translate(-196.58552,7.7394123)"
-         id="g6756"
-         style="font-size:83.74663544px;font-style:oblique;font-variant:normal;font-weight:bold;font-stretch:normal;line-height:125%;letter-spacing:-11.35999966px;word-spacing:1.75000012px;fill:#141615;fill-opacity:1;stroke:#141615;stroke-width:7.4000001;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;font-family:Arial;-inkscape-font-specification:Arial Bold Oblique">
-        <path
-           inkscape:connector-curvature="0"
-           id="path6758"
-           d="m 270.6875,329.4375 -3.9375,18.78125 12.3125,0 1.84375,-8.90625 7.15625,0 c 3.62572,5e-5 6.14487,0.25935 7.5625,0.75 2.01729,0.70884 3.71701,2.14128 5.09375,4.28125 1.37665,2.14005 2.06245,5.30978 2.0625,9.5625 -5e-5,4.98884 -0.83711,9.31975 -2.5,13 -1.66299,3.68029 -3.69879,6.6356 -6.125,8.84375 -1.69024,1.52664 -3.56282,2.56616 -5.59375,3.125 -2.03099,0.55887 -5.28716,0.84376 -9.8125,0.84375 l -6.25,0 1.90625,-9.125 -12.34375,0 -3.9375,18.78125 21.15625,0 c 5.31592,0 9.2499,-0.30651 11.8125,-0.90625 4.52533,-1.09045 8.23127,-2.77255 11.09375,-5.0625 3.73475,-2.94421 6.81405,-6.93505 9.28125,-11.9375 2.46709,-5.00243 3.71869,-10.72655 3.71875,-17.1875 -6e-5,-2.99871 -0.31055,-5.75954 -0.9375,-8.28125 -0.62707,-2.52162 -1.52896,-4.7519 -2.6875,-6.6875 -1.15866,-1.9355 -2.53027,-3.592 -4.125,-4.96875 -1.59483,-1.37664 -3.36337,-2.42412 -5.3125,-3.1875 -1.94923,-0.76325 -4.17552,-1.28583 -6.65625,-1.53125 -1.25406,-0.13626 -4.12693,-0.18744 -8.625,-0.1875 l -16.15625,0 z"
-           style="fill:#141615;fill-opacity:1;stroke:#141615;stroke-width:7.4000001;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none" />
-      </g>
-      <text
-         xml:space="preserve"
-         style="font-size:83.74663544px;font-style:oblique;font-variant:normal;font-weight:bold;font-stretch:normal;line-height:125%;letter-spacing:-11.35999966px;word-spacing:1.75000012px;fill:#ffffff;fill-opacity:1;stroke:#ffffff;stroke-width:7.4000001;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;font-family:Arial;-inkscape-font-specification:Arial Bold Oblique"
-         x="103.43504"
-         y="395.0856"
-         id="text6760"
-         sodipodi:linespacing="125%"
-         inkscape:export-filename="E:\projects\d-lan_web\text3911-4.png"
-         inkscape:export-xdpi="73.981827"
-         inkscape:export-ydpi="73.981827"><tspan
-           sodipodi:role="line"
-           id="tspan6762"
-           x="103.43504"
-           y="395.0856">LAN</tspan></text>
-      <g
-         id="g6764"
-         style="font-size:83.74663544px;font-style:oblique;font-variant:normal;font-weight:bold;font-stretch:normal;line-height:125%;letter-spacing:-11.35999966px;word-spacing:1.75000012px;fill:#fd2435;fill-opacity:1;stroke:#fd2435;stroke-width:7.4000001;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;filter:url(#filter3894);font-family:Arial;-inkscape-font-specification:Arial Bold Oblique"
-         transform="translate(-198.57143,5.7142857)"
-         inkscape:export-filename="E:\projects\d-lan_web\text3911-4.png"
-         inkscape:export-xdpi="73.981827"
-         inkscape:export-ydpi="73.981827">
-        <path
-           id="path6766"
-           d="m 270.6875,329.4375 -3.9375,18.78125 12.3125,0 1.84375,-8.90625 7.15625,0 c 3.62572,5e-5 6.14487,0.25935 7.5625,0.75 2.01729,0.70884 3.71701,2.14128 5.09375,4.28125 1.37665,2.14005 2.06245,5.30978 2.0625,9.5625 -5e-5,4.98884 -0.83711,9.31975 -2.5,13 -1.66299,3.68029 -3.69879,6.6356 -6.125,8.84375 -1.69024,1.52664 -3.56282,2.56616 -5.59375,3.125 -2.03099,0.55887 -5.28716,0.84376 -9.8125,0.84375 l -6.25,0 1.90625,-9.125 -12.34375,0 -3.9375,18.78125 21.15625,0 c 5.31592,0 9.2499,-0.30651 11.8125,-0.90625 4.52533,-1.09045 8.23127,-2.77255 11.09375,-5.0625 3.73475,-2.94421 6.81405,-6.93505 9.28125,-11.9375 2.46709,-5.00243 3.71869,-10.72655 3.71875,-17.1875 -6e-5,-2.99871 -0.31055,-5.75954 -0.9375,-8.28125 -0.62707,-2.52162 -1.52896,-4.7519 -2.6875,-6.6875 -1.15866,-1.9355 -2.53027,-3.592 -4.125,-4.96875 -1.59483,-1.37664 -3.36337,-2.42412 -5.3125,-3.1875 -1.94923,-0.76325 -4.17552,-1.28583 -6.65625,-1.53125 -1.25406,-0.13626 -4.12693,-0.18744 -8.625,-0.1875 l -16.15625,0 z"
-           style="fill:#fd2435;fill-opacity:1;stroke:#fd2435;stroke-width:7.4000001;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
-           inkscape:connector-curvature="0" />
-      </g>
-      <g
-         style="font-size:83.74663544px;font-style:oblique;font-variant:normal;font-weight:bold;font-stretch:normal;line-height:125%;letter-spacing:-11.35999966px;word-spacing:1.75000012px;fill:#fd2435;fill-opacity:1;stroke:#fd2435;stroke-width:7.4000001;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;font-family:Arial;-inkscape-font-specification:Arial Bold Oblique"
-         id="g6768"
-         transform="translate(-198.57143,5.7142857)"
-         inkscape:export-filename="E:\projects\d-lan_web\text3911-4.png"
-         inkscape:export-xdpi="73.981827"
-         inkscape:export-ydpi="73.981827">
-        <path
-           style="fill:#fd2435;fill-opacity:1;stroke:#fd2435;stroke-width:7.4000001;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
-           d="m 270.6875,329.4375 -3.9375,18.78125 12.3125,0 1.84375,-8.90625 7.15625,0 c 3.62572,5e-5 6.14487,0.25935 7.5625,0.75 2.01729,0.70884 3.71701,2.14128 5.09375,4.28125 1.37665,2.14005 2.06245,5.30978 2.0625,9.5625 -5e-5,4.98884 -0.83711,9.31975 -2.5,13 -1.66299,3.68029 -3.69879,6.6356 -6.125,8.84375 -1.69024,1.52664 -3.56282,2.56616 -5.59375,3.125 -2.03099,0.55887 -5.28716,0.84376 -9.8125,0.84375 l -6.25,0 1.90625,-9.125 -12.34375,0 -3.9375,18.78125 21.15625,0 c 5.31592,0 9.2499,-0.30651 11.8125,-0.90625 4.52533,-1.09045 8.23127,-2.77255 11.09375,-5.0625 3.73475,-2.94421 6.81405,-6.93505 9.28125,-11.9375 2.46709,-5.00243 3.71869,-10.72655 3.71875,-17.1875 -6e-5,-2.99871 -0.31055,-5.75954 -0.9375,-8.28125 -0.62707,-2.52162 -1.52896,-4.7519 -2.6875,-6.6875 -1.15866,-1.9355 -2.53027,-3.592 -4.125,-4.96875 -1.59483,-1.37664 -3.36337,-2.42412 -5.3125,-3.1875 -1.94923,-0.76325 -4.17552,-1.28583 -6.65625,-1.53125 -1.25406,-0.13626 -4.12693,-0.18744 -8.625,-0.1875 l -16.15625,0 z"
-           id="path6770"
-           inkscape:connector-curvature="0" />
-      </g>
-      <text
-         xml:space="preserve"
-         style="font-size:11.99934864px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#ffffff;fill-opacity:1;stroke:none;font-family:Arial;-inkscape-font-specification:Arial"
-         x="100.85263"
-         y="406.28757"
-         id="text6772"
-         sodipodi:linespacing="125%"
-         transform="scale(0.99510289,1.0049212)"
-         inkscape:export-filename="E:\projects\d-lan_web\text3911-4.png"
-         inkscape:export-xdpi="73.981827"
-         inkscape:export-ydpi="73.981827"><tspan
-           sodipodi:role="line"
-           id="tspan6774"
-           x="100.85263"
-           y="406.28757"
-           style="font-style:oblique;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#ffffff;fill-opacity:1;font-family:Arial;-inkscape-font-specification:Arial Oblique">DISTRIBUTE YOUR FILES</tspan></text>
+       style="font-style:oblique;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:83.74663544px;line-height:125%;font-family:Arial;-inkscape-font-specification:'Arial Bold Oblique';letter-spacing:-11.35999966px;word-spacing:1.75000012px;fill:#fd2435;fill-opacity:1;stroke:#fd2435;stroke-width:7.4000001;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="g4227"
+       transform="translate(-110.366,-233.2532)"
+       inkscape:export-filename="E:\projects\d-lan_web\text3911-4.png"
+       inkscape:export-xdpi="73.981827"
+       inkscape:export-ydpi="73.981827" />
+    <g
+       style="font-style:oblique;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:83.74663544px;line-height:125%;font-family:Arial;-inkscape-font-specification:'Arial Bold Oblique';letter-spacing:-11.35999966px;word-spacing:1.75000012px;fill:#fd2435;fill-opacity:1;stroke:#000000;stroke-width:7.4000001;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="g4223"
+       transform="translate(-108.83566,-232.07643)"
+       inkscape:export-filename="C:\projects\D-LAN_master\application\GUI\ressources\logo.png"
+       inkscape:export-xdpi="93.722008"
+       inkscape:export-ydpi="93.722008">
+      <path
+         style="fill:#fd2435;fill-opacity:1;stroke:#000000;stroke-width:7.4000001;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+         d="m 270.6875,329.4375 -2.125,10.03125 12.34375,-0.15625 7.15625,0 c 3.62572,5e-5 6.14487,0.25935 7.5625,0.75 2.01729,0.70884 3.71701,2.14128 5.09375,4.28125 1.37665,2.14005 2.06245,5.30978 2.0625,9.5625 -5e-5,4.98884 -0.83711,9.31975 -2.5,13 -1.66299,3.68029 -3.69879,6.6356 -6.125,8.84375 -1.69024,1.52664 -3.56282,2.56616 -5.59375,3.125 -2.03099,0.55887 -5.28716,0.84376 -9.8125,0.84375 l -6.25,0 5.01739,-21.75 -12.84375,0.125 L 258,389.375 l 21.28125,0 c 5.31592,0 9.2499,-0.30651 11.8125,-0.90625 4.52533,-1.09045 8.23127,-2.77255 11.09375,-5.0625 3.73475,-2.94421 6.81405,-6.93505 9.28125,-11.9375 2.46709,-5.00243 3.71869,-10.72655 3.71875,-17.1875 -6e-5,-2.99871 -0.31055,-5.75954 -0.9375,-8.28125 -0.62707,-2.52162 -1.52896,-4.7519 -2.6875,-6.6875 -1.15866,-1.9355 -2.53027,-3.592 -4.125,-4.96875 -1.59483,-1.37664 -3.36337,-2.42412 -5.3125,-3.1875 -1.94923,-0.76325 -4.17552,-1.28583 -6.65625,-1.53125 -1.25406,-0.13626 -4.12693,-0.18744 -8.625,-0.1875 z"
+         id="path4225"
+         inkscape:connector-curvature="0"
+         sodipodi:nodetypes="cccccccccssccccsccccccccccc" />
     </g>
     <g
-       style="font-size:83.74663544px;font-style:oblique;font-variant:normal;font-weight:bold;font-stretch:normal;line-height:125%;letter-spacing:-11.35999966px;word-spacing:1.75000012px;fill:#141615;fill-opacity:1;stroke:#141615;stroke-width:7.4000001;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;font-family:Arial;-inkscape-font-specification:Arial Bold Oblique"
-       id="g3060"
-       transform="translate(2.20932,203.7042)"
-       inkscape:export-filename="E:\projects\D-LAN\doc\d-lan_icon_16.png"
-       inkscape:export-xdpi="14.4"
-       inkscape:export-ydpi="14.4">
+       style="font-style:oblique;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:83.74663544px;line-height:125%;font-family:Arial;-inkscape-font-specification:'Arial Bold Oblique';letter-spacing:-11.35999966px;word-spacing:1.75000012px;fill:#ffffff;fill-opacity:1;stroke:#ffffff;stroke-width:7.4000001;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="text6760"
+       inkscape:export-filename="C:\projects\D-LAN_master\application\GUI\ressources\logo.png"
+       inkscape:export-xdpi="93.722008"
+       inkscape:export-ydpi="93.722008">
       <path
-         style="fill:#141615;fill-opacity:1;stroke:#141615;stroke-width:7.4000001;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
-         d="m 270.6875,329.4375 -3.9375,18.78125 12.3125,0 1.84375,-8.90625 7.15625,0 c 3.62572,5e-5 6.14487,0.25935 7.5625,0.75 2.01729,0.70884 3.71701,2.14128 5.09375,4.28125 1.37665,2.14005 2.06245,5.30978 2.0625,9.5625 -5e-5,4.98884 -0.83711,9.31975 -2.5,13 -1.66299,3.68029 -3.69879,6.6356 -6.125,8.84375 -1.69024,1.52664 -3.56282,2.56616 -5.59375,3.125 -2.03099,0.55887 -5.28716,0.84376 -9.8125,0.84375 l -6.25,0 1.90625,-9.125 -12.34375,0 -3.9375,18.78125 21.15625,0 c 5.31592,0 9.2499,-0.30651 11.8125,-0.90625 4.52533,-1.09045 8.23127,-2.77255 11.09375,-5.0625 3.73475,-2.94421 6.81405,-6.93505 9.28125,-11.9375 2.46709,-5.00243 3.71869,-10.72655 3.71875,-17.1875 -6e-5,-2.99871 -0.31055,-5.75954 -0.9375,-8.28125 -0.62707,-2.52162 -1.52896,-4.7519 -2.6875,-6.6875 -1.15866,-1.9355 -2.53027,-3.592 -4.125,-4.96875 -1.59483,-1.37664 -3.36337,-2.42412 -5.3125,-3.1875 -1.94923,-0.76325 -4.17552,-1.28583 -6.65625,-1.53125 -1.25406,-0.13626 -4.12693,-0.18744 -8.625,-0.1875 l -16.15625,0 z"
-         id="path3062"
-         inkscape:connector-curvature="0" />
+         d="m 195.40253,156.11812 12.55382,-59.947544 12.30846,0 -10.42744,49.929024 30.50537,0 -2.08549,10.01852 -42.85472,0 z"
+         style=""
+         id="path4965"
+         inkscape:export-filename="C:\projects\D-LAN_master\application\GUI\ressources\logo.png"
+         inkscape:export-xdpi="93.722008"
+         inkscape:export-ydpi="93.722008" />
+      <path
+         d="m 262.1683,142.86914 -23.7582,0 -7.19698,13.24898 -12.67649,0 33.8994,-59.947544 13.69879,0 9.73227,59.947544 -11.69508,0 -2.00371,-13.24898 z m -1.513,-9.97763 -3.47581,-24.12623 -14.47574,24.12623 17.95155,0 z"
+         id="path4967"
+         inkscape:connector-curvature="0"
+         inkscape:export-filename="C:\projects\D-LAN_master\application\GUI\ressources\logo.png"
+         inkscape:export-xdpi="93.722008"
+         inkscape:export-ydpi="93.722008" />
+      <path
+         d="m 319.99742,156.11812 -11.49063,0 -16.1932,-40.27853 -8.42373,40.27853 -11.49063,0 12.51293,-59.947544 11.53152,0 16.23409,40.114964 8.38284,-40.114964 11.44973,0 -12.51292,59.947544 z"
+         id="path4969"
+         inkscape:connector-curvature="0"
+         inkscape:export-filename="C:\projects\D-LAN_master\application\GUI\ressources\logo.png"
+         inkscape:export-xdpi="93.722008"
+         inkscape:export-ydpi="93.722008" />
+    </g>
+    <g
+       inkscape:export-ydpi="93.722008"
+       inkscape:export-xdpi="93.722008"
+       inkscape:export-filename="C:\projects\D-LAN_master\application\GUI\ressources\logo.png"
+       transform="translate(-110.366,-234.2532)"
+       id="g6768"
+       style="font-style:oblique;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:83.74663544px;line-height:125%;font-family:Arial;-inkscape-font-specification:'Arial Bold Oblique';letter-spacing:-11.35999966px;word-spacing:1.75000012px;fill:#fd2435;fill-opacity:1;stroke:#fd2435;stroke-width:7.4000001;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1">
+      <path
+         sodipodi:nodetypes="cccccccccssccccsccccccccccc"
+         inkscape:connector-curvature="0"
+         id="path6770"
+         d="m 270.6875,329.4375 -2.125,10.03125 12.34375,-0.15625 7.15625,0 c 3.62572,5e-5 6.14487,0.25935 7.5625,0.75 2.01729,0.70884 3.71701,2.14128 5.09375,4.28125 1.37665,2.14005 2.06245,5.30978 2.0625,9.5625 -5e-5,4.98884 -0.83711,9.31975 -2.5,13 -1.66299,3.68029 -3.69879,6.6356 -6.125,8.84375 -1.69024,1.52664 -3.56282,2.56616 -5.59375,3.125 -2.03099,0.55887 -5.28716,0.84376 -9.8125,0.84375 l -6.25,0 5.01739,-21.75 -12.84375,0.125 L 258,389.375 l 21.28125,0 c 5.31592,0 9.2499,-0.30651 11.8125,-0.90625 4.52533,-1.09045 8.23127,-2.77255 11.09375,-5.0625 3.73475,-2.94421 6.81405,-6.93505 9.28125,-11.9375 2.46709,-5.00243 3.71869,-10.72655 3.71875,-17.1875 -6e-5,-2.99871 -0.31055,-5.75954 -0.9375,-8.28125 -0.62707,-2.52162 -1.52896,-4.7519 -2.6875,-6.6875 -1.15866,-1.9355 -2.53027,-3.592 -4.125,-4.96875 -1.59483,-1.37664 -3.36337,-2.42412 -5.3125,-3.1875 -1.94923,-0.76325 -4.17552,-1.28583 -6.65625,-1.53125 -1.25406,-0.13626 -4.12693,-0.18744 -8.625,-0.1875 z"
+         style="fill:#fd2435;fill-opacity:1;stroke:#fd2435;stroke-width:7.4000001;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+    </g>
+    <text
+       inkscape:export-ydpi="93.722008"
+       inkscape:export-xdpi="93.722008"
+       inkscape:export-filename="C:\projects\D-LAN_master\application\GUI\ressources\logo.png"
+       transform="scale(0.99510289,1.0049212)"
+       sodipodi:linespacing="125%"
+       id="text6772"
+       y="168.26855"
+       x="189.52715"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:11.21148014px;line-height:125%;font-family:Arial;-inkscape-font-specification:Arial;letter-spacing:0px;word-spacing:0px;fill:#ffffff;fill-opacity:1;stroke:none"
+       xml:space="preserve"><tspan
+         style="font-style:oblique;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Arial;-inkscape-font-specification:'Arial Oblique';fill:#ffffff;fill-opacity:1"
+         y="168.26855"
+         x="189.52715"
+         id="tspan6774"
+         sodipodi:role="line">DISTRIBUTE YOUR FILES</tspan></text>
+    <g
+       style="font-style:oblique;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:83.74663544px;line-height:125%;font-family:Arial;-inkscape-font-specification:'Arial Bold Oblique';letter-spacing:-11.35999966px;word-spacing:1.75000012px;fill:#fd2435;fill-opacity:1;stroke:#000000;stroke-width:7.4000001;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="g4223-7"
+       transform="translate(-127.8696,131.34969)"
+       inkscape:export-filename="E:\projects\d-lan_web\text3911-4.png"
+       inkscape:export-xdpi="73.981827"
+       inkscape:export-ydpi="73.981827">
+      <path
+         style="fill:#fd2435;fill-opacity:1;stroke:#000000;stroke-width:7.4000001;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+         d="m 270.6875,329.4375 -2.125,10.03125 12.34375,-0.15625 7.15625,0 c 3.62572,5e-5 6.14487,0.25935 7.5625,0.75 2.01729,0.70884 3.71701,2.14128 5.09375,4.28125 1.37665,2.14005 2.06245,5.30978 2.0625,9.5625 -5e-5,4.98884 -0.83711,9.31975 -2.5,13 -1.66299,3.68029 -3.69879,6.6356 -6.125,8.84375 -1.69024,1.52664 -3.56282,2.56616 -5.59375,3.125 -2.03099,0.55887 -5.28716,0.84376 -9.8125,0.84375 l -6.25,0 5.01739,-21.75 -12.84375,0.125 L 258,389.375 l 21.28125,0 c 5.31592,0 9.2499,-0.30651 11.8125,-0.90625 4.52533,-1.09045 8.23127,-2.77255 11.09375,-5.0625 3.73475,-2.94421 6.81405,-6.93505 9.28125,-11.9375 2.46709,-5.00243 3.71869,-10.72655 3.71875,-17.1875 -6e-5,-2.99871 -0.31055,-5.75954 -0.9375,-8.28125 -0.62707,-2.52162 -1.52896,-4.7519 -2.6875,-6.6875 -1.15866,-1.9355 -2.53027,-3.592 -4.125,-4.96875 -1.59483,-1.37664 -3.36337,-2.42412 -5.3125,-3.1875 -1.94923,-0.76325 -4.17552,-1.28583 -6.65625,-1.53125 -1.25406,-0.13626 -4.12693,-0.18744 -8.625,-0.1875 z"
+         id="path4225-1"
+         inkscape:connector-curvature="0"
+         sodipodi:nodetypes="cccccccccssccccsccccccccccc" />
+    </g>
+    <path
+       inkscape:connector-curvature="0"
+       style="fill:#ffffff;fill-opacity:1;stroke:none"
+       d="m 186.62925,456.00568 -0.625,2.9375 -12.5625,59.93755 -0.9375,4.4687 4.5625,0 43,0 0,-17.4375 -24,0 9.5,-45.46875 0.90625,-4.4375 -4.53125,0 -12.3125,0 -3,0 z"
+       id="rect3943"
+       inkscape:export-filename="E:\projects\aybabtu\application\GUI\ressources\icon.png"
+       inkscape:export-xdpi="14.4"
+       inkscape:export-ydpi="14.4" />
+    <g
+       inkscape:export-ydpi="73.981827"
+       inkscape:export-xdpi="73.981827"
+       inkscape:export-filename="E:\projects\d-lan_web\text3911-4.png"
+       transform="translate(-129.39994,129.17292)"
+       id="g6768-3"
+       style="font-style:oblique;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:83.74663544px;line-height:125%;font-family:Arial;-inkscape-font-specification:'Arial Bold Oblique';letter-spacing:-11.35999966px;word-spacing:1.75000012px;fill:#fd2435;fill-opacity:1;stroke:#fd2435;stroke-width:7.4000001;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1">
+      <path
+         sodipodi:nodetypes="cccccccccssccccsccccccccccc"
+         inkscape:connector-curvature="0"
+         id="path6770-8"
+         d="m 270.6875,329.4375 -2.125,10.03125 12.34375,-0.15625 7.15625,0 c 3.62572,5e-5 6.14487,0.25935 7.5625,0.75 2.01729,0.70884 3.71701,2.14128 5.09375,4.28125 1.37665,2.14005 2.06245,5.30978 2.0625,9.5625 -5e-5,4.98884 -0.83711,9.31975 -2.5,13 -1.66299,3.68029 -3.69879,6.6356 -6.125,8.84375 -1.69024,1.52664 -3.56282,2.56616 -5.59375,3.125 -2.03099,0.55887 -5.28716,0.84376 -9.8125,0.84375 l -6.25,0 5.01739,-21.75 -12.84375,0.125 L 258,389.375 l 21.28125,0 c 5.31592,0 9.2499,-0.30651 11.8125,-0.90625 4.52533,-1.09045 8.23127,-2.77255 11.09375,-5.0625 3.73475,-2.94421 6.81405,-6.93505 9.28125,-11.9375 2.46709,-5.00243 3.71869,-10.72655 3.71875,-17.1875 -6e-5,-2.99871 -0.31055,-5.75954 -0.9375,-8.28125 -0.62707,-2.52162 -1.52896,-4.7519 -2.6875,-6.6875 -1.15866,-1.9355 -2.53027,-3.592 -4.125,-4.96875 -1.59483,-1.37664 -3.36337,-2.42412 -5.3125,-3.1875 -1.94923,-0.76325 -4.17552,-1.28583 -6.65625,-1.53125 -1.25406,-0.13626 -4.12693,-0.18744 -8.625,-0.1875 z"
+         style="fill:#fd2435;fill-opacity:1;stroke:#fd2435;stroke-width:7.4000001;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
     </g>
     <rect
        ry="21.5"
        inkscape:export-ydpi="14.4"
        inkscape:export-xdpi="14.4"
        inkscape:export-filename="E:\projects\D-LAN\doc\d-lan_icon_16.png"
-       y="512.36218"
-       x="248.9964"
+       y="440.9444"
+       x="256.06747"
        height="100"
        width="100"
        id="rect3120"
-       style="fill:url(#radialGradient3903);fill-opacity:1.0;stroke:none" />
+       style="fill:url(#radialGradient3903);fill-opacity:1;stroke:none"
+       rx="21.5" />
     <g
-       inkscape:export-ydpi="14.4"
-       inkscape:export-xdpi="14.4"
-       inkscape:export-filename="E:\projects\D-LAN\doc\d-lan_icon_16.png"
-       transform="translate(2.17605,203.96192)"
-       id="g3048-2"
-       style="font-size:83.74663544px;font-style:oblique;font-variant:normal;font-weight:bold;font-stretch:normal;line-height:125%;letter-spacing:-11.35999966px;word-spacing:1.75000012px;fill:#141615;fill-opacity:1;stroke:#141615;stroke-width:7.4000001;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;font-family:Arial;-inkscape-font-specification:Arial Bold Oblique">
+       style="font-style:oblique;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:83.74663544px;line-height:125%;font-family:Arial;-inkscape-font-specification:'Arial Bold Oblique';letter-spacing:-11.35999966px;word-spacing:1.75000012px;fill:#fd2435;fill-opacity:1;stroke:#000000;stroke-width:7.4000001;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="g4223-7-6"
+       transform="translate(8.1303871,131.34969)"
+       inkscape:export-filename="E:\projects\d-lan_web\text3911-4.png"
+       inkscape:export-xdpi="73.981827"
+       inkscape:export-ydpi="73.981827">
       <path
+         style="fill:#fd2435;fill-opacity:1;stroke:#000000;stroke-width:7.4000001;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+         d="m 270.6875,329.4375 -2.125,10.03125 12.34375,-0.15625 7.15625,0 c 3.62572,5e-5 6.14487,0.25935 7.5625,0.75 2.01729,0.70884 3.71701,2.14128 5.09375,4.28125 1.37665,2.14005 2.06245,5.30978 2.0625,9.5625 -5e-5,4.98884 -0.83711,9.31975 -2.5,13 -1.66299,3.68029 -3.69879,6.6356 -6.125,8.84375 -1.69024,1.52664 -3.56282,2.56616 -5.59375,3.125 -2.03099,0.55887 -5.28716,0.84376 -9.8125,0.84375 l -6.25,0 5.01739,-21.75 -12.84375,0.125 L 258,389.375 l 21.28125,0 c 5.31592,0 9.2499,-0.30651 11.8125,-0.90625 4.52533,-1.09045 8.23127,-2.77255 11.09375,-5.0625 3.73475,-2.94421 6.81405,-6.93505 9.28125,-11.9375 2.46709,-5.00243 3.71869,-10.72655 3.71875,-17.1875 -6e-5,-2.99871 -0.31055,-5.75954 -0.9375,-8.28125 -0.62707,-2.52162 -1.52896,-4.7519 -2.6875,-6.6875 -1.15866,-1.9355 -2.53027,-3.592 -4.125,-4.96875 -1.59483,-1.37664 -3.36337,-2.42412 -5.3125,-3.1875 -1.94923,-0.76325 -4.17552,-1.28583 -6.65625,-1.53125 -1.25406,-0.13626 -4.12693,-0.18744 -8.625,-0.1875 z"
+         id="path4225-1-4"
          inkscape:connector-curvature="0"
-         id="path3050-5"
-         d="m 270.6875,329.4375 -3.9375,18.78125 12.3125,0 1.84375,-8.90625 7.15625,0 c 3.62572,5e-5 6.14487,0.25935 7.5625,0.75 2.01729,0.70884 3.71701,2.14128 5.09375,4.28125 1.37665,2.14005 2.06245,5.30978 2.0625,9.5625 -5e-5,4.98884 -0.83711,9.31975 -2.5,13 -1.66299,3.68029 -3.69879,6.6356 -6.125,8.84375 -1.69024,1.52664 -3.56282,2.56616 -5.59375,3.125 -2.03099,0.55887 -5.28716,0.84376 -9.8125,0.84375 l -6.25,0 1.90625,-9.125 -12.34375,0 -3.9375,18.78125 21.15625,0 c 5.31592,0 9.2499,-0.30651 11.8125,-0.90625 4.52533,-1.09045 8.23127,-2.77255 11.09375,-5.0625 3.73475,-2.94421 6.81405,-6.93505 9.28125,-11.9375 2.46709,-5.00243 3.71869,-10.72655 3.71875,-17.1875 -6e-5,-2.99871 -0.31055,-5.75954 -0.9375,-8.28125 -0.62707,-2.52162 -1.52896,-4.7519 -2.6875,-6.6875 -1.15866,-1.9355 -2.53027,-3.592 -4.125,-4.96875 -1.59483,-1.37664 -3.36337,-2.42412 -5.3125,-3.1875 -1.94923,-0.76325 -4.17552,-1.28583 -6.65625,-1.53125 -1.25406,-0.13626 -4.12693,-0.18744 -8.625,-0.1875 l -16.15625,0 z"
-         style="fill:#141615;fill-opacity:1;stroke:#141615;stroke-width:7.4000001;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none" />
+         sodipodi:nodetypes="cccccccccssccccsccccccccccc" />
     </g>
     <path
        style="fill:#ffffff;fill-opacity:1;stroke:none"
-       d="m 315.56609,527.41551 -0.625,2.9375 -12.5625,59.9375 -0.9375,4.4688 4.5625,0 42.625,0 c 0.23119,-1.2678 0.375,-2.5698 0.375,-3.9063 l 0,-13.5312 -24,0 9.5,-45.4688 0.90625,-4.4375 -4.53125,0 -12.3125,0 -3,0 z"
+       d="m 322.63716,455.99773 -0.625,2.9375 -12.5625,59.9375 -0.9375,4.4688 4.5625,0 42.625,0 c 0.23119,-1.2678 0.375,-2.5698 0.375,-3.9063 l 0,-13.5312 -24,0 9.5,-45.4688 0.90625,-4.4375 -4.53125,0 -12.3125,0 -3,0 z"
        id="rect3949"
        inkscape:export-filename="E:\projects\D-LAN\doc\d-lan_icon_16.png"
        inkscape:export-xdpi="14.4"
        inkscape:export-ydpi="14.4"
        inkscape:connector-curvature="0" />
     <g
-       inkscape:export-ydpi="14.4"
-       inkscape:export-xdpi="14.4"
-       inkscape:export-filename="E:\projects\D-LAN\doc\d-lan_icon_16.png"
-       transform="translate(0.22341,201.67908)"
-       id="g3072"
-       style="font-size:83.74663544px;font-style:oblique;font-variant:normal;font-weight:bold;font-stretch:normal;line-height:125%;letter-spacing:-11.35999966px;word-spacing:1.75000012px;fill:#fd2435;fill-opacity:1;stroke:#fd2435;stroke-width:7.4000001;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;font-family:Arial;-inkscape-font-specification:Arial Bold Oblique">
+       inkscape:export-ydpi="73.981827"
+       inkscape:export-xdpi="73.981827"
+       inkscape:export-filename="E:\projects\d-lan_web\text3911-4.png"
+       transform="translate(6.6000471,129.17292)"
+       id="g6768-3-9"
+       style="font-style:oblique;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:83.74663544px;line-height:125%;font-family:Arial;-inkscape-font-specification:'Arial Bold Oblique';letter-spacing:-11.35999966px;word-spacing:1.75000012px;fill:#fd2435;fill-opacity:1;stroke:#fd2435;stroke-width:7.4000001;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1">
       <path
+         sodipodi:nodetypes="cccccccccssccccsccccccccccc"
          inkscape:connector-curvature="0"
-         id="path3074"
-         d="m 270.6875,329.4375 -3.9375,18.78125 12.3125,0 1.84375,-8.90625 7.15625,0 c 3.62572,5e-5 6.14487,0.25935 7.5625,0.75 2.01729,0.70884 3.71701,2.14128 5.09375,4.28125 1.37665,2.14005 2.06245,5.30978 2.0625,9.5625 -5e-5,4.98884 -0.83711,9.31975 -2.5,13 -1.66299,3.68029 -3.69879,6.6356 -6.125,8.84375 -1.69024,1.52664 -3.56282,2.56616 -5.59375,3.125 -2.03099,0.55887 -5.28716,0.84376 -9.8125,0.84375 l -6.25,0 1.90625,-9.125 -12.34375,0 -3.9375,18.78125 21.15625,0 c 5.31592,0 9.2499,-0.30651 11.8125,-0.90625 4.52533,-1.09045 8.23127,-2.77255 11.09375,-5.0625 3.73475,-2.94421 6.81405,-6.93505 9.28125,-11.9375 2.46709,-5.00243 3.71869,-10.72655 3.71875,-17.1875 -6e-5,-2.99871 -0.31055,-5.75954 -0.9375,-8.28125 -0.62707,-2.52162 -1.52896,-4.7519 -2.6875,-6.6875 -1.15866,-1.9355 -2.53027,-3.592 -4.125,-4.96875 -1.59483,-1.37664 -3.36337,-2.42412 -5.3125,-3.1875 -1.94923,-0.76325 -4.17552,-1.28583 -6.65625,-1.53125 -1.25406,-0.13626 -4.12693,-0.18744 -8.625,-0.1875 l -16.15625,0 z"
-         style="fill:#fd2435;fill-opacity:1;stroke:#fd2435;stroke-width:7.4000001;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none" />
-    </g>
-    <g
-       inkscape:export-ydpi="14.4"
-       inkscape:export-xdpi="14.4"
-       inkscape:export-filename="E:\projects\aybabtu\application\GUI\ressources\icon.png"
-       transform="translate(-133.79068,203.7042)"
-       id="g3925"
-       style="font-size:83.74663544px;font-style:oblique;font-variant:normal;font-weight:bold;font-stretch:normal;line-height:125%;letter-spacing:-11.35999966px;word-spacing:1.75000012px;fill:#141615;fill-opacity:1;stroke:#141615;stroke-width:7.4000001;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;font-family:Arial;-inkscape-font-specification:Arial Bold Oblique">
-      <path
-         inkscape:connector-curvature="0"
-         id="path3927"
-         d="m 270.6875,329.4375 -3.9375,18.78125 12.3125,0 1.84375,-8.90625 7.15625,0 c 3.62572,5e-5 6.14487,0.25935 7.5625,0.75 2.01729,0.70884 3.71701,2.14128 5.09375,4.28125 1.37665,2.14005 2.06245,5.30978 2.0625,9.5625 -5e-5,4.98884 -0.83711,9.31975 -2.5,13 -1.66299,3.68029 -3.69879,6.6356 -6.125,8.84375 -1.69024,1.52664 -3.56282,2.56616 -5.59375,3.125 -2.03099,0.55887 -5.28716,0.84376 -9.8125,0.84375 l -6.25,0 1.90625,-9.125 -12.34375,0 -3.9375,18.78125 21.15625,0 c 5.31592,0 9.2499,-0.30651 11.8125,-0.90625 4.52533,-1.09045 8.23127,-2.77255 11.09375,-5.0625 3.73475,-2.94421 6.81405,-6.93505 9.28125,-11.9375 2.46709,-5.00243 3.71869,-10.72655 3.71875,-17.1875 -6e-5,-2.99871 -0.31055,-5.75954 -0.9375,-8.28125 -0.62707,-2.52162 -1.52896,-4.7519 -2.6875,-6.6875 -1.15866,-1.9355 -2.53027,-3.592 -4.125,-4.96875 -1.59483,-1.37664 -3.36337,-2.42412 -5.3125,-3.1875 -1.94923,-0.76325 -4.17552,-1.28583 -6.65625,-1.53125 -1.25406,-0.13626 -4.12693,-0.18744 -8.625,-0.1875 l -16.15625,0 z"
-         style="fill:#141615;fill-opacity:1;stroke:#141615;stroke-width:7.4000001;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none" />
-    </g>
-    <rect
-       style="fill:url(#radialGradient3941);fill-opacity:1.0;stroke:none"
-       id="rect3929"
-       width="100"
-       height="100"
-       x="112.9964"
-       y="512.36218"
-       inkscape:export-filename="E:\projects\aybabtu\application\GUI\ressources\icon.png"
-       inkscape:export-xdpi="14.4"
-       inkscape:export-ydpi="14.4"
-       ry="0" />
-    <g
-       style="font-size:83.74663544px;font-style:oblique;font-variant:normal;font-weight:bold;font-stretch:normal;line-height:125%;letter-spacing:-11.35999966px;word-spacing:1.75000012px;fill:#141615;fill-opacity:1;stroke:#141615;stroke-width:7.4000001;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;font-family:Arial;-inkscape-font-specification:Arial Bold Oblique"
-       id="g3931"
-       transform="translate(-133.82395,203.96192)"
-       inkscape:export-filename="E:\projects\aybabtu\application\GUI\ressources\icon.png"
-       inkscape:export-xdpi="14.4"
-       inkscape:export-ydpi="14.4">
-      <path
-         style="fill:#141615;fill-opacity:1;stroke:#141615;stroke-width:7.4000001;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
-         d="m 270.6875,329.4375 -3.9375,18.78125 12.3125,0 1.84375,-8.90625 7.15625,0 c 3.62572,5e-5 6.14487,0.25935 7.5625,0.75 2.01729,0.70884 3.71701,2.14128 5.09375,4.28125 1.37665,2.14005 2.06245,5.30978 2.0625,9.5625 -5e-5,4.98884 -0.83711,9.31975 -2.5,13 -1.66299,3.68029 -3.69879,6.6356 -6.125,8.84375 -1.69024,1.52664 -3.56282,2.56616 -5.59375,3.125 -2.03099,0.55887 -5.28716,0.84376 -9.8125,0.84375 l -6.25,0 1.90625,-9.125 -12.34375,0 -3.9375,18.78125 21.15625,0 c 5.31592,0 9.2499,-0.30651 11.8125,-0.90625 4.52533,-1.09045 8.23127,-2.77255 11.09375,-5.0625 3.73475,-2.94421 6.81405,-6.93505 9.28125,-11.9375 2.46709,-5.00243 3.71869,-10.72655 3.71875,-17.1875 -6e-5,-2.99871 -0.31055,-5.75954 -0.9375,-8.28125 -0.62707,-2.52162 -1.52896,-4.7519 -2.6875,-6.6875 -1.15866,-1.9355 -2.53027,-3.592 -4.125,-4.96875 -1.59483,-1.37664 -3.36337,-2.42412 -5.3125,-3.1875 -1.94923,-0.76325 -4.17552,-1.28583 -6.65625,-1.53125 -1.25406,-0.13626 -4.12693,-0.18744 -8.625,-0.1875 l -16.15625,0 z"
-         id="path3933"
-         inkscape:connector-curvature="0" />
-    </g>
-    <path
-       inkscape:connector-curvature="0"
-       style="fill:#ffffff;fill-opacity:1;stroke:none"
-       d="m 179.55818,527.42346 -0.625,2.9375 -12.5625,59.93755 -0.9375,4.4687 4.5625,0 43,0 0,-17.4375 -24,0 9.5,-45.46875 0.90625,-4.4375 -4.53125,0 -12.3125,0 -3,0 z"
-       id="rect3943"
-       inkscape:export-filename="E:\projects\aybabtu\application\GUI\ressources\icon.png"
-       inkscape:export-xdpi="14.4"
-       inkscape:export-ydpi="14.4" />
-    <g
-       style="font-size:83.74663544px;font-style:oblique;font-variant:normal;font-weight:bold;font-stretch:normal;line-height:125%;letter-spacing:-11.35999966px;word-spacing:1.75000012px;fill:#fd2435;fill-opacity:1;stroke:#fd2435;stroke-width:7.4000001;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;font-family:Arial;-inkscape-font-specification:Arial Bold Oblique"
-       id="g3937"
-       transform="translate(-135.77659,201.67908)"
-       inkscape:export-filename="E:\projects\aybabtu\application\GUI\ressources\icon.png"
-       inkscape:export-xdpi="14.4"
-       inkscape:export-ydpi="14.4">
-      <path
-         style="fill:#fd2435;fill-opacity:1;stroke:#fd2435;stroke-width:7.4000001;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
-         d="m 270.6875,329.4375 -3.9375,18.78125 12.3125,0 1.84375,-8.90625 7.15625,0 c 3.62572,5e-5 6.14487,0.25935 7.5625,0.75 2.01729,0.70884 3.71701,2.14128 5.09375,4.28125 1.37665,2.14005 2.06245,5.30978 2.0625,9.5625 -5e-5,4.98884 -0.83711,9.31975 -2.5,13 -1.66299,3.68029 -3.69879,6.6356 -6.125,8.84375 -1.69024,1.52664 -3.56282,2.56616 -5.59375,3.125 -2.03099,0.55887 -5.28716,0.84376 -9.8125,0.84375 l -6.25,0 1.90625,-9.125 -12.34375,0 -3.9375,18.78125 21.15625,0 c 5.31592,0 9.2499,-0.30651 11.8125,-0.90625 4.52533,-1.09045 8.23127,-2.77255 11.09375,-5.0625 3.73475,-2.94421 6.81405,-6.93505 9.28125,-11.9375 2.46709,-5.00243 3.71869,-10.72655 3.71875,-17.1875 -6e-5,-2.99871 -0.31055,-5.75954 -0.9375,-8.28125 -0.62707,-2.52162 -1.52896,-4.7519 -2.6875,-6.6875 -1.15866,-1.9355 -2.53027,-3.592 -4.125,-4.96875 -1.59483,-1.37664 -3.36337,-2.42412 -5.3125,-3.1875 -1.94923,-0.76325 -4.17552,-1.28583 -6.65625,-1.53125 -1.25406,-0.13626 -4.12693,-0.18744 -8.625,-0.1875 l -16.15625,0 z"
-         id="path3939"
-         inkscape:connector-curvature="0" />
+         id="path6770-8-9"
+         d="m 270.6875,329.4375 -2.125,10.03125 12.34375,-0.15625 7.15625,0 c 3.62572,5e-5 6.14487,0.25935 7.5625,0.75 2.01729,0.70884 3.71701,2.14128 5.09375,4.28125 1.37665,2.14005 2.06245,5.30978 2.0625,9.5625 -5e-5,4.98884 -0.83711,9.31975 -2.5,13 -1.66299,3.68029 -3.69879,6.6356 -6.125,8.84375 -1.69024,1.52664 -3.56282,2.56616 -5.59375,3.125 -2.03099,0.55887 -5.28716,0.84376 -9.8125,0.84375 l -6.25,0 5.01739,-21.75 -12.84375,0.125 L 258,389.375 l 21.28125,0 c 5.31592,0 9.2499,-0.30651 11.8125,-0.90625 4.52533,-1.09045 8.23127,-2.77255 11.09375,-5.0625 3.73475,-2.94421 6.81405,-6.93505 9.28125,-11.9375 2.46709,-5.00243 3.71869,-10.72655 3.71875,-17.1875 -6e-5,-2.99871 -0.31055,-5.75954 -0.9375,-8.28125 -0.62707,-2.52162 -1.52896,-4.7519 -2.6875,-6.6875 -1.15866,-1.9355 -2.53027,-3.592 -4.125,-4.96875 -1.59483,-1.37664 -3.36337,-2.42412 -5.3125,-3.1875 -1.94923,-0.76325 -4.17552,-1.28583 -6.65625,-1.53125 -1.25406,-0.13626 -4.12693,-0.18744 -8.625,-0.1875 z"
+         style="fill:#fd2435;fill-opacity:1;stroke:#fd2435;stroke-width:7.4000001;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
     </g>
     <g
        inkscape:export-ydpi="42.35294"
@@ -414,88 +396,124 @@
        inkscape:export-filename="E:\projects\D-LAN\doc\d-lan_icon_48.png"
        transform="translate(136.20932,203.7042)"
        id="g3033"
-       style="font-size:83.74663544px;font-style:oblique;font-variant:normal;font-weight:bold;font-stretch:normal;line-height:125%;letter-spacing:-11.35999966px;word-spacing:1.75000012px;fill:#141615;fill-opacity:1;stroke:#141615;stroke-width:7.4000001;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;font-family:Arial;-inkscape-font-specification:Arial Bold Oblique">
-      <path
-         inkscape:connector-curvature="0"
-         id="path3035"
-         d="m 270.6875,329.4375 -3.9375,18.78125 12.3125,0 1.84375,-8.90625 7.15625,0 c 3.62572,5e-5 6.14487,0.25935 7.5625,0.75 2.01729,0.70884 3.71701,2.14128 5.09375,4.28125 1.37665,2.14005 2.06245,5.30978 2.0625,9.5625 -5e-5,4.98884 -0.83711,9.31975 -2.5,13 -1.66299,3.68029 -3.69879,6.6356 -6.125,8.84375 -1.69024,1.52664 -3.56282,2.56616 -5.59375,3.125 -2.03099,0.55887 -5.28716,0.84376 -9.8125,0.84375 l -6.25,0 1.90625,-9.125 -12.34375,0 -3.9375,18.78125 21.15625,0 c 5.31592,0 9.2499,-0.30651 11.8125,-0.90625 4.52533,-1.09045 8.23127,-2.77255 11.09375,-5.0625 3.73475,-2.94421 6.81405,-6.93505 9.28125,-11.9375 2.46709,-5.00243 3.71869,-10.72655 3.71875,-17.1875 -6e-5,-2.99871 -0.31055,-5.75954 -0.9375,-8.28125 -0.62707,-2.52162 -1.52896,-4.7519 -2.6875,-6.6875 -1.15866,-1.9355 -2.53027,-3.592 -4.125,-4.96875 -1.59483,-1.37664 -3.36337,-2.42412 -5.3125,-3.1875 -1.94923,-0.76325 -4.17552,-1.28583 -6.65625,-1.53125 -1.25406,-0.13626 -4.12693,-0.18744 -8.625,-0.1875 l -16.15625,0 z"
-         style="fill:#141615;fill-opacity:1;stroke:#141615;stroke-width:7.4000001;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none" />
-    </g>
+       style="font-size:83.74663544px;font-style:oblique;font-variant:normal;font-weight:bold;font-stretch:normal;line-height:125%;letter-spacing:-11.35999966px;word-spacing:1.75000012px;fill:#141615;fill-opacity:1;stroke:#141615;stroke-width:7.4000001;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;font-family:Arial;-inkscape-font-specification:Arial Bold Oblique" />
     <rect
-       style="fill:url(#radialGradient3049);fill-opacity:1.0;stroke:none"
+       ry="21.5"
+       inkscape:export-ydpi="903.53003"
+       inkscape:export-xdpi="903.53003"
+       inkscape:export-filename="C:\projects\D-LAN_master\application\GUI\ressources\icon_big.png"
+       y="440.9444"
+       x="390.06747"
+       height="100"
+       width="100"
+       id="rect3872"
+       style="opacity:0.23999999;fill:url(#linearGradient3882);fill-opacity:1;stroke:none"
+       rx="21.5" />
+    <rect
+       style="fill:url(#radialGradient3049);fill-opacity:1;stroke:none"
        id="rect3037"
        width="100"
        height="100"
-       x="382.9964"
-       y="512.36218"
-       inkscape:export-filename="E:\projects\D-LAN\doc\d-lan_icon_48.png"
-       inkscape:export-xdpi="42.35294"
-       inkscape:export-ydpi="42.35294"
-       ry="21.5" />
+       x="390.06747"
+       y="440.9444"
+       inkscape:export-filename="C:\projects\D-LAN_master\application\GUI\ressources\icon_big.png"
+       inkscape:export-xdpi="903.53003"
+       inkscape:export-ydpi="903.53003"
+       ry="21.5"
+       rx="21.5" />
     <g
        style="font-size:83.74663544px;font-style:oblique;font-variant:normal;font-weight:bold;font-stretch:normal;line-height:125%;letter-spacing:-11.35999966px;word-spacing:1.75000012px;fill:#141615;fill-opacity:1;stroke:#141615;stroke-width:7.4000001;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;font-family:Arial;-inkscape-font-specification:Arial Bold Oblique"
        id="g3039"
        transform="translate(136.17605,203.96192)"
        inkscape:export-filename="E:\projects\D-LAN\doc\d-lan_icon_48.png"
        inkscape:export-xdpi="42.35294"
-       inkscape:export-ydpi="42.35294">
+       inkscape:export-ydpi="42.35294" />
+    <g
+       inkscape:export-ydpi="903.53003"
+       inkscape:export-xdpi="903.53003"
+       inkscape:export-filename="C:\projects\D-LAN_master\application\GUI\ressources\icon_big.png"
+       transform="translate(142.13039,131.34969)"
+       id="g4841"
+       style="font-style:oblique;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:83.74663544px;line-height:125%;font-family:Arial;-inkscape-font-specification:'Arial Bold Oblique';letter-spacing:-11.35999966px;word-spacing:1.75000012px;fill:#fd2435;fill-opacity:1;stroke:#000000;stroke-width:7.4000001;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1">
       <path
-         style="fill:#141615;fill-opacity:1;stroke:#141615;stroke-width:7.4000001;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
-         d="m 270.6875,329.4375 -3.9375,18.78125 12.3125,0 1.84375,-8.90625 7.15625,0 c 3.62572,5e-5 6.14487,0.25935 7.5625,0.75 2.01729,0.70884 3.71701,2.14128 5.09375,4.28125 1.37665,2.14005 2.06245,5.30978 2.0625,9.5625 -5e-5,4.98884 -0.83711,9.31975 -2.5,13 -1.66299,3.68029 -3.69879,6.6356 -6.125,8.84375 -1.69024,1.52664 -3.56282,2.56616 -5.59375,3.125 -2.03099,0.55887 -5.28716,0.84376 -9.8125,0.84375 l -6.25,0 1.90625,-9.125 -12.34375,0 -3.9375,18.78125 21.15625,0 c 5.31592,0 9.2499,-0.30651 11.8125,-0.90625 4.52533,-1.09045 8.23127,-2.77255 11.09375,-5.0625 3.73475,-2.94421 6.81405,-6.93505 9.28125,-11.9375 2.46709,-5.00243 3.71869,-10.72655 3.71875,-17.1875 -6e-5,-2.99871 -0.31055,-5.75954 -0.9375,-8.28125 -0.62707,-2.52162 -1.52896,-4.7519 -2.6875,-6.6875 -1.15866,-1.9355 -2.53027,-3.592 -4.125,-4.96875 -1.59483,-1.37664 -3.36337,-2.42412 -5.3125,-3.1875 -1.94923,-0.76325 -4.17552,-1.28583 -6.65625,-1.53125 -1.25406,-0.13626 -4.12693,-0.18744 -8.625,-0.1875 l -16.15625,0 z"
-         id="path3041"
-         inkscape:connector-curvature="0" />
+         sodipodi:nodetypes="cccccccccssccccsccccccccccc"
+         inkscape:connector-curvature="0"
+         id="path4843"
+         d="m 270.6875,329.4375 -2.125,10.03125 12.34375,-0.15625 7.15625,0 c 3.62572,5e-5 6.14487,0.25935 7.5625,0.75 2.01729,0.70884 3.71701,2.14128 5.09375,4.28125 1.37665,2.14005 2.06245,5.30978 2.0625,9.5625 -5e-5,4.98884 -0.83711,9.31975 -2.5,13 -1.66299,3.68029 -3.69879,6.6356 -6.125,8.84375 -1.69024,1.52664 -3.56282,2.56616 -5.59375,3.125 -2.03099,0.55887 -5.28716,0.84376 -9.8125,0.84375 l -6.25,0 5.01739,-21.75 -12.84375,0.125 L 258,389.375 l 21.28125,0 c 5.31592,0 9.2499,-0.30651 11.8125,-0.90625 4.52533,-1.09045 8.23127,-2.77255 11.09375,-5.0625 3.73475,-2.94421 6.81405,-6.93505 9.28125,-11.9375 2.46709,-5.00243 3.71869,-10.72655 3.71875,-17.1875 -6e-5,-2.99871 -0.31055,-5.75954 -0.9375,-8.28125 -0.62707,-2.52162 -1.52896,-4.7519 -2.6875,-6.6875 -1.15866,-1.9355 -2.53027,-3.592 -4.125,-4.96875 -1.59483,-1.37664 -3.36337,-2.42412 -5.3125,-3.1875 -1.94923,-0.76325 -4.17552,-1.28583 -6.65625,-1.53125 -1.25406,-0.13626 -4.12693,-0.18744 -8.625,-0.1875 z"
+         style="fill:#fd2435;fill-opacity:1;stroke:#000000;stroke-width:7.4000001;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
     </g>
     <path
        inkscape:connector-curvature="0"
-       inkscape:export-ydpi="42.35294"
-       inkscape:export-xdpi="42.35294"
-       inkscape:export-filename="E:\projects\D-LAN\doc\d-lan_icon_48.png"
+       inkscape:export-ydpi="903.53003"
+       inkscape:export-xdpi="903.53003"
+       inkscape:export-filename="C:\projects\D-LAN_master\application\GUI\ressources\icon_big.png"
        id="path3043"
-       d="m 449.56609,527.41551 -0.625,2.9375 -12.5625,59.9375 -0.9375,4.4688 4.5625,0 42.625,0 c 0.23119,-1.2678 0.375,-2.5698 0.375,-3.9063 l 0,-13.5312 -24,0 9.5,-45.4688 0.90625,-4.4375 -4.53125,0 -12.3125,0 -3,0 z"
+       d="m 456.63716,455.99773 -0.625,2.9375 -12.5625,59.9375 -0.9375,4.4688 4.5625,0 42.625,0 c 0.23119,-1.2678 0.375,-2.5698 0.375,-3.9063 l 0,-13.5312 -24,0 9.5,-45.4688 0.90625,-4.4375 -4.53125,0 -12.3125,0 -3,0 z"
        style="fill:#ffffff;fill-opacity:1;stroke:none" />
+    <path
+       sodipodi:nodetypes="cccccccccssccccsccccccccccc"
+       inkscape:connector-curvature="0"
+       id="path4847"
+       d="m 411.28755,458.61042 -2.125,10.03125 12.34375,-0.15625 7.15625,0 c 3.62572,5e-5 6.14487,0.25935 7.5625,0.75 2.01729,0.70884 3.71701,2.14128 5.09375,4.28125 1.37665,2.14005 2.06245,5.30978 2.0625,9.5625 -5e-5,4.98884 -0.83711,9.31975 -2.5,13 -1.66299,3.68029 -3.69879,6.6356 -6.125,8.84375 -1.69024,1.52664 -3.56282,2.56616 -5.59375,3.125 -2.03099,0.55887 -5.28716,0.84376 -9.8125,0.84375 l -6.25,0 5.01739,-21.75 -12.84375,0.125 -6.67364,31.28125 21.28125,0 c 5.31592,0 9.2499,-0.30651 11.8125,-0.90625 4.52533,-1.09045 8.23127,-2.77255 11.09375,-5.0625 3.73475,-2.94421 6.81405,-6.93505 9.28125,-11.9375 2.46709,-5.00243 3.71869,-10.72655 3.71875,-17.1875 -6e-5,-2.99871 -0.31055,-5.75954 -0.9375,-8.28125 -0.62707,-2.52162 -1.52896,-4.7519 -2.6875,-6.6875 -1.15866,-1.9355 -2.53027,-3.592 -4.125,-4.96875 -1.59483,-1.37664 -3.36337,-2.42412 -5.3125,-3.1875 -1.94923,-0.76325 -4.17552,-1.28583 -6.65625,-1.53125 -1.25406,-0.13626 -4.12693,-0.18744 -8.625,-0.1875 z"
+       style="font-style:oblique;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:medium;line-height:125%;font-family:Arial;-inkscape-font-specification:'Arial Bold Oblique';letter-spacing:-11.35999966px;word-spacing:1.75000012px;fill:#fd2435;fill-opacity:1;stroke:#fd2435;stroke-width:7.4000001;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       inkscape:export-filename="C:\projects\D-LAN_master\application\GUI\ressources\icon_big.png"
+       inkscape:export-xdpi="903.53003"
+       inkscape:export-ydpi="903.53003" />
     <g
        style="font-size:83.74663544px;font-style:oblique;font-variant:normal;font-weight:bold;font-stretch:normal;line-height:125%;letter-spacing:-11.35999966px;word-spacing:1.75000012px;fill:#fd2435;fill-opacity:1;stroke:#fd2435;stroke-width:7.4000001;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;font-family:Arial;-inkscape-font-specification:Arial Bold Oblique"
        id="g3045"
        transform="translate(134.22341,201.67908)"
        inkscape:export-filename="E:\projects\D-LAN\doc\d-lan_icon_48.png"
        inkscape:export-xdpi="42.35294"
-       inkscape:export-ydpi="42.35294">
-      <path
-         style="fill:#fd2435;fill-opacity:1;stroke:#fd2435;stroke-width:7.4000001;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
-         d="m 270.6875,329.4375 -3.9375,18.78125 12.3125,0 1.84375,-8.90625 7.15625,0 c 3.62572,5e-5 6.14487,0.25935 7.5625,0.75 2.01729,0.70884 3.71701,2.14128 5.09375,4.28125 1.37665,2.14005 2.06245,5.30978 2.0625,9.5625 -5e-5,4.98884 -0.83711,9.31975 -2.5,13 -1.66299,3.68029 -3.69879,6.6356 -6.125,8.84375 -1.69024,1.52664 -3.56282,2.56616 -5.59375,3.125 -2.03099,0.55887 -5.28716,0.84376 -9.8125,0.84375 l -6.25,0 1.90625,-9.125 -12.34375,0 -3.9375,18.78125 21.15625,0 c 5.31592,0 9.2499,-0.30651 11.8125,-0.90625 4.52533,-1.09045 8.23127,-2.77255 11.09375,-5.0625 3.73475,-2.94421 6.81405,-6.93505 9.28125,-11.9375 2.46709,-5.00243 3.71869,-10.72655 3.71875,-17.1875 -6e-5,-2.99871 -0.31055,-5.75954 -0.9375,-8.28125 -0.62707,-2.52162 -1.52896,-4.7519 -2.6875,-6.6875 -1.15866,-1.9355 -2.53027,-3.592 -4.125,-4.96875 -1.59483,-1.37664 -3.36337,-2.42412 -5.3125,-3.1875 -1.94923,-0.76325 -4.17552,-1.28583 -6.65625,-1.53125 -1.25406,-0.13626 -4.12693,-0.18744 -8.625,-0.1875 l -16.15625,0 z"
-         id="path3047"
-         inkscape:connector-curvature="0" />
-    </g>
+       inkscape:export-ydpi="42.35294" />
     <path
-       style="opacity:0.19469027;fill:url(#linearGradient3843);fill-opacity:1;stroke:none"
-       d="M 403.375,512.375 C 391.98368,512.88437 383,521.21907 383,531.46379 l 0,28.41121 c 1.25901,-7.06186 6.61194,-5.20598 49.93474,-5.20801 42.61566,-0.002 49.13172,-1.33273 50.06526,5.20801 l 0,-28.41121 C 483,520.8886 473.411,512.375 461.5,512.375 l -57,0 c -0.37222,0 -0.75754,-0.0164 -1.125,0 z"
+       style="opacity:0.1946903;fill:url(#linearGradient3843);fill-opacity:1;stroke:none"
+       d="m 410.44607,440.95722 c -11.39132,0.50937 -20.375,8.84407 -20.375,19.08879 l 0,28.41121 c 1.25901,-7.06186 6.61194,-5.20598 49.93474,-5.20801 42.61566,-0.002 49.13172,-1.33273 50.06526,5.20801 l 0,-28.41121 c 0,-10.57519 -9.589,-19.08879 -21.5,-19.08879 l -57,0 c -0.37222,0 -0.75754,-0.0164 -1.125,0 z"
        id="rect3834"
        inkscape:connector-curvature="0"
        sodipodi:nodetypes="cscscsssc"
-       inkscape:export-filename="E:\projects\D-LAN\doc\d-lan_icon_48.png"
-       inkscape:export-xdpi="42.35294"
-       inkscape:export-ydpi="42.35294" />
+       inkscape:export-filename="C:\projects\D-LAN_master\application\GUI\ressources\icon_big.png"
+       inkscape:export-xdpi="903.53003"
+       inkscape:export-ydpi="903.53003" />
     <rect
-       ry="21.5"
-       inkscape:export-ydpi="42.35294"
-       inkscape:export-xdpi="42.35294"
-       inkscape:export-filename="E:\projects\D-LAN\doc\d-lan_icon_48.png"
-       y="512.36218"
-       x="382.9964"
-       height="100"
-       width="100"
-       id="rect3872"
-       style="fill:url(#linearGradient3882);fill-opacity:1;stroke:none;opacity:0.24" />
-    <rect
-       style="fill:none;fill-opacity:1;stroke:#12335b;opacity:1;stroke-opacity:1;stroke-width:2;stroke-miterlimit:4;stroke-dasharray:none"
+       style="opacity:1;fill:none;fill-opacity:1;stroke:#12335b;stroke-width:2;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        id="rect3884"
        width="100"
        height="100"
-       x="382.9964"
-       y="512.36218"
-       inkscape:export-filename="E:\projects\D-LAN\doc\d-lan_icon_48.png"
-       inkscape:export-xdpi="42.35294"
-       inkscape:export-ydpi="42.35294"
-       ry="21.5" />
+       x="390.06747"
+       y="440.9444"
+       inkscape:export-filename="C:\projects\D-LAN_master\application\GUI\ressources\icon_big.png"
+       inkscape:export-xdpi="903.53003"
+       inkscape:export-ydpi="903.53003"
+       ry="21.5"
+       rx="21.5" />
+    <g
+       style="font-style:oblique;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:83.74663544px;line-height:125%;font-family:Arial;-inkscape-font-specification:'Arial Bold Oblique';letter-spacing:-11.35999966px;word-spacing:1.75000012px;fill:#fd2435;fill-opacity:1;stroke:#fd2435;stroke-width:7.4000001;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;filter:url(#filter4942)"
+       id="g4866"
+       transform="translate(-110.366,-234.2532)"
+       inkscape:export-filename="C:\projects\D-LAN_master\application\GUI\ressources\logo.png"
+       inkscape:export-xdpi="93.722008"
+       inkscape:export-ydpi="93.722008">
+      <path
+         style="fill:#fd2435;fill-opacity:1;stroke:#fd2435;stroke-width:7.4000001;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+         d="m 270.6875,329.4375 -2.125,10.03125 12.34375,-0.15625 7.15625,0 c 3.62572,5e-5 6.14487,0.25935 7.5625,0.75 2.01729,0.70884 3.71701,2.14128 5.09375,4.28125 1.37665,2.14005 2.06245,5.30978 2.0625,9.5625 -5e-5,4.98884 -0.83711,9.31975 -2.5,13 -1.66299,3.68029 -3.69879,6.6356 -6.125,8.84375 -1.69024,1.52664 -3.56282,2.56616 -5.59375,3.125 -2.03099,0.55887 -5.28716,0.84376 -9.8125,0.84375 l -6.25,0 5.01739,-21.75 -12.84375,0.125 L 258,389.375 l 21.28125,0 c 5.31592,0 9.2499,-0.30651 11.8125,-0.90625 4.52533,-1.09045 8.23127,-2.77255 11.09375,-5.0625 3.73475,-2.94421 6.81405,-6.93505 9.28125,-11.9375 2.46709,-5.00243 3.71869,-10.72655 3.71875,-17.1875 -6e-5,-2.99871 -0.31055,-5.75954 -0.9375,-8.28125 -0.62707,-2.52162 -1.52896,-4.7519 -2.6875,-6.6875 -1.15866,-1.9355 -2.53027,-3.592 -4.125,-4.96875 -1.59483,-1.37664 -3.36337,-2.42412 -5.3125,-3.1875 -1.94923,-0.76325 -4.17552,-1.28583 -6.65625,-1.53125 -1.25406,-0.13626 -4.12693,-0.18744 -8.625,-0.1875 z"
+         id="path4868"
+         inkscape:connector-curvature="0"
+         sodipodi:nodetypes="cccccccccssccccsccccccccccc" />
+    </g>
+    <text
+       inkscape:export-ydpi="93.722008"
+       inkscape:export-xdpi="93.722008"
+       inkscape:export-filename="C:\projects\D-LAN_master\application\GUI\ressources\logo.png"
+       sodipodi:linespacing="125%"
+       id="text6760-9"
+       y="393.83603"
+       x="410.64044"
+       style="font-style:oblique;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:83.74663544px;line-height:125%;font-family:Arial;-inkscape-font-specification:'Arial Bold Oblique';letter-spacing:-11.35999966px;word-spacing:1.75000012px;fill:#ffffff;fill-opacity:1;stroke:#ffffff;stroke-width:7.4000001;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       xml:space="preserve"><tspan
+         y="393.83603"
+         x="410.64044"
+         id="tspan6762-3"
+         sodipodi:role="line">LAN</tspan></text>
   </g>
 </svg>

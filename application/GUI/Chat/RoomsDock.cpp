@@ -20,6 +20,8 @@
 #include <ui_RoomsDock.h>
 using namespace GUI;
 
+#include <Common/Settings.h>
+
 #include <QKeyEvent>
 #include <QMenu>
 
@@ -30,6 +32,8 @@ RoomsDock::RoomsDock(QSharedPointer<RCC::ICoreConnection> coreConnection, QWidge
    roomsModel(this->coreConnection)
 {
    this->ui->setupUi(this);
+
+   this->roomsModel.setSortType(static_cast<Protos::GUI::Settings::RoomSortType>(SETTINGS.get<quint32>("room_sort_type")));
 
    this->ui->txtRoomName->installEventFilter(this);
 
@@ -86,6 +90,20 @@ void RoomsDock::displayContextMenuRooms(const QPoint& point)
    QMenu menu;
    menu.addAction(QIcon(":/icons/ressources/join_chat_room.png"), tr("Join"), this, SLOT(joinSelectedRoom()));
 
+   menu.addSeparator();
+
+   QAction* sortByNbPeersAction = menu.addAction(tr("Sort by number of peers"), this, SLOT(sortByNbPeers()));
+   QAction* sortByNameAction = menu.addAction(tr("Sort alphabetically"), this, SLOT(sortByName()));
+
+   QActionGroup sortGroup(this);
+   sortGroup.setExclusive(true);
+   sortByNbPeersAction->setCheckable(true);
+   sortByNbPeersAction->setChecked(this->roomsModel.getSortType() == Protos::GUI::Settings::BY_NB_PEERS);
+   sortByNameAction->setCheckable(true);
+   sortByNameAction->setChecked(this->roomsModel.getSortType() == Protos::GUI::Settings::BY_NAME);
+   sortGroup.addAction(sortByNbPeersAction);
+   sortGroup.addAction(sortByNameAction);
+
    menu.exec(this->ui->tblRooms->mapToGlobal(point));
 }
 
@@ -103,6 +121,21 @@ void RoomsDock::joinSelectedRoom()
 void RoomsDock::joinRoom()
 {
    this->joinRoom(this->ui->txtRoomName->text());
+}
+
+void RoomsDock::sortByNbPeers()
+{
+   this->roomsModel.setSortType(Protos::GUI::Settings::BY_NB_PEERS);
+   SETTINGS.set("room_sort_type", static_cast<quint32>(Protos::GUI::Settings::BY_NB_PEERS));
+   SETTINGS.save();
+}
+
+void RoomsDock::sortByName()
+{
+   this->roomsModel.setSortType(Protos::GUI::Settings::BY_NAME);
+   SETTINGS.set("room_sort_type", static_cast<quint32>(Protos::GUI::Settings::BY_NAME));
+   SETTINGS.save();
+
 }
 
 void RoomsDock::coreConnected()

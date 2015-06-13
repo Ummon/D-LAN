@@ -24,6 +24,7 @@
 #include <QList>
 
 #include <Protos/gui_protocol.pb.h>
+#include <Protos/gui_settings.pb.h>
 
 #include <Common/Hash.h>
 #include <Common/Containers/SortedArray.h>
@@ -34,8 +35,11 @@ namespace GUI
    class RoomsModel : public QAbstractTableModel
    {
       Q_OBJECT
+      class Room;
+
    public:
       RoomsModel(QSharedPointer<RCC::ICoreConnection> coreConnection);
+      ~RoomsModel();
 
       //QModelIndex	index(int row, int column, const QModelIndex& parent = QModelIndex()) const;
       int rowCount(const QModelIndex& parent = QModelIndex()) const;
@@ -43,6 +47,9 @@ namespace GUI
       QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const;
 
       QString getRoomName(const QModelIndex& index);
+
+      void setSortType(Protos::GUI::Settings::RoomSortType sortType);
+      Protos::GUI::Settings::RoomSortType getSortType() const;
 
    signals:
       void roomJoined(const QString& room);
@@ -53,21 +60,14 @@ namespace GUI
       void coreDisconnected(bool force);
 
    private:
+      void updateRooms(const google::protobuf::RepeatedPtrField<Protos::GUI::State::Room>& rooms);
+
       QSharedPointer<RCC::ICoreConnection> coreConnection;
 
-      struct Room
-      {
-         QString name;
-         QSet<Common::Hash> peerIDs;
-         bool joined;
-      };
-
-      friend bool operator<(const Room& r1, const Room& r2);
-
-      Common::SortedArray<Room> rooms;
+      Common::SortedArray<Room*> orderedRooms;
+      QHash<QString, Room*> indexedRooms; // Rooms indexed by their name.
+      Protos::GUI::Settings::RoomSortType currentSortType;
    };
-
-   bool operator<(const RoomsModel::Room& r1, const RoomsModel::Room& r2);
 }
 
 #endif

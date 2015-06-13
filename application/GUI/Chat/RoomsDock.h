@@ -54,6 +54,9 @@ namespace GUI
       void joinSelectedRoom();
       void joinRoom();
 
+      void sortByNbPeers();
+      void sortByName();
+
       void coreConnected();
       void coreDisconnected(bool force);
 

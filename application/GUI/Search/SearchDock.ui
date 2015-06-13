@@ -5,6 +5,14 @@
   <property name="windowModality">
    <enum>Qt::NonModal</enum>
   </property>
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>273</width>
+    <height>133</height>
+   </rect>
+  </property>
   <property name="maximumSize">
    <size>
     <width>524287</width>
@@ -181,14 +189,14 @@
        <item row="1" column="0">
         <widget class="QLabel" name="lblMinSize">
          <property name="text">
-          <string>Minimum size</string>
+          <string>Min size</string>
          </property>
         </widget>
        </item>
        <item row="2" column="0">
         <widget class="QLabel" name="lblMaxSize">
          <property name="text">
-          <string>Maximum size</string>
+          <string>Max size</string>
          </property>
         </widget>
        </item>

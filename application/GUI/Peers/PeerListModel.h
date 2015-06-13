@@ -89,7 +89,7 @@ namespace GUI
       void coreDisconnected(bool forced);
 
    private:
-      void updatePeers(const google::protobuf::RepeatedPtrField<Protos::GUI::State::Peer>& orderedPeers, const QSet<Common::Hash>& peersDownloadingOurData = QSet<Common::Hash>(), const QSet<Common::Hash>& peersToDisplay = QSet<Common::Hash>());
+      void updatePeers(const google::protobuf::RepeatedPtrField<Protos::GUI::State::Peer>& peers, const QSet<Common::Hash>& peersDownloadingOurData = QSet<Common::Hash>(), const QSet<Common::Hash>& peersToDisplay = QSet<Common::Hash>());
 
       QSharedPointer<RCC::ICoreConnection> coreConnection;
 

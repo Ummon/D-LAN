@@ -858,21 +858,37 @@ void Tests::extensionIndexSearchWithOneExtension()
    index.addItem(mp3s[1].right(3), mp3s[1]);
    index.addItem("jpg", "file3.jpg");
 
+   // When we search an existing extension by using a precise predicate we should get one result.
    {
       QList<QString> result = index.search("jpg", 1, [](const QString& item){ return item == "file3.jpg"; });
       QVERIFY(result.count() == 1);
       QVERIFY(result[0] == "file3.jpg");
    }
 
+   // When we search by using a null string as the extension we should get nothing.
+   {
+      QList<QString> result = index.search(QString());
+      QVERIFY(result.count() == 0);
+   }
+
+   // When we search an existing extension but with a always wrong predicate we should get nothing.
    {
       QList<QString> result = index.search("jpg", 1, [](const QString& item){ return item == "file3.mp3"; });
       QVERIFY(result.count() == 0);
    }
 
+   // We search an existing extension among some possibilities but we keep the only one matching the given predicate.
+   // #1.
    {
       QList<QString> result = index.search("MP3", 1, [](const QString& item){ return item == "file1.mp3"; });
       QVERIFY(result.count() == 1);
       QVERIFY(result[0] == "file1.mp3");
+   }
+   // #2.
+   {
+      QList<QString> result = index.search("MP3", 1, [](const QString& item){ return item == "file2.MP3"; });
+      QVERIFY(result.count() == 1);
+      QVERIFY(result[0] == "file2.MP3");
    }
 }
 

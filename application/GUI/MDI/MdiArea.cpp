@@ -154,9 +154,9 @@ void MdiArea::newState(const Protos::GUI::State& state)
    //  1) The joined room may be persisted by the core.
    //  2) Another GUI connected to the same core may open or close a chat room.
    QSet<QString> joinedRooms;
-   for (int i = 0; i < state.rooms_size(); i++)
-      if (state.rooms(i).joined())
-         joinedRooms.insert(Common::ProtoHelper::getStr(state.rooms(i), &Protos::GUI::State::Room::name));
+   for (int i = 0; i < state.room_size(); i++)
+      if (state.room(i).joined())
+         joinedRooms.insert(Common::ProtoHelper::getStr(state.room(i), &Protos::GUI::State::Room::name));
 
    foreach (ChatWidget* chatWidget, this->chatRooms)
       if (!joinedRooms.remove(chatWidget->getRoomName()) && chatWidget->getRoomName() != this->newOpenedChatRoom)
@@ -471,7 +471,7 @@ ChatWidget* MdiArea::addChatWindow(const QString& roomName, bool switchTo)
    chatWindow->setWindowState(Qt::WindowMaximized);
    this->chatRooms << chatWindow;
 
-   TabCloseButton* closeButton = new TabCloseButton(chatWindow, nullptr, false);
+   TabCloseButton* closeButton = new TabCloseButton(chatWindow, nullptr, false, tr("Leave room"));
    closeButton->setObjectName("tabWidget");
    connect(closeButton, SIGNAL(clicked(QWidget*)), this, SLOT(leaveRoom(QWidget*)));
    this->mdiAreaTabBar->setTabButton(this->mdiAreaTabBar->count() - 1, QTabBar::RightSide, closeButton);
