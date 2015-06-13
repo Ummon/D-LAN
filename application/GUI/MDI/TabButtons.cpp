@@ -98,8 +98,8 @@ void TabButton::paintEvent(QPaintEvent* pe)
 
 /////
 
-TabCloseButton::TabCloseButton(QWidget* widget, QWidget* parent, bool autoDelete, QString tooltip) :
-   TabButton(parent), widget(widget), autoDelete(autoDelete), tooltip(tooltip)
+TabCloseButton::TabCloseButton(QWidget* widget, QWidget* parent, bool autoDelete, function<QString()> tooltipFun) :
+   TabButton(parent), widget(widget), autoDelete(autoDelete), tooltipFun(tooltipFun)
 {
    connect(this, SIGNAL(clicked()), this, SLOT(buttonClicked()));
    this->setToolTipTranslate();
@@ -125,10 +125,10 @@ void TabCloseButton::buttonClicked()
 
 void TabCloseButton::setToolTipTranslate()
 {
-   if (this->tooltip.isEmpty())
-      this->setToolTip(tr("Close tab"));
+   if (this->tooltipFun)
+      this->setToolTip(this->tooltipFun());
    else
-      this->setToolTip(this->tooltip);
+      this->setToolTip(tr("Close tab"));
 }
 
 /////

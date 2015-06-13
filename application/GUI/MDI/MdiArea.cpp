@@ -471,7 +471,7 @@ ChatWidget* MdiArea::addChatWindow(const QString& roomName, bool switchTo)
    chatWindow->setWindowState(Qt::WindowMaximized);
    this->chatRooms << chatWindow;
 
-   TabCloseButton* closeButton = new TabCloseButton(chatWindow, nullptr, false, tr("Leave room"));
+   TabCloseButton* closeButton = new TabCloseButton(chatWindow, nullptr, false, [](){ return tr("Leave room"); });
    closeButton->setObjectName("tabWidget");
    connect(closeButton, SIGNAL(clicked(QWidget*)), this, SLOT(leaveRoom(QWidget*)));
    this->mdiAreaTabBar->setTabButton(this->mdiAreaTabBar->count() - 1, QTabBar::RightSide, closeButton);

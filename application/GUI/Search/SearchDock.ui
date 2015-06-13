@@ -10,13 +10,13 @@
     <x>0</x>
     <y>0</y>
     <width>273</width>
-    <height>133</height>
+    <height>124</height>
    </rect>
   </property>
   <property name="maximumSize">
    <size>
     <width>524287</width>
-    <height>133</height>
+    <height>124</height>
    </size>
   </property>
   <property name="features">
@@ -144,7 +144,10 @@
         <number>0</number>
        </property>
        <property name="horizontalSpacing">
-        <number>0</number>
+        <number>2</number>
+       </property>
+       <property name="verticalSpacing">
+        <number>3</number>
        </property>
        <item row="0" column="1">
         <widget class="QComboBox" name="cmbType"/>

@@ -24,6 +24,9 @@
 #include <QPainter>
 #include <QEvent>
 
+#include <functional>
+using namespace std;
+
 namespace GUI
 {
    class TabButton : public QAbstractButton
@@ -47,7 +50,7 @@ namespace GUI
    {
        Q_OBJECT
    public:
-       TabCloseButton(QWidget* widget, QWidget* parent = nullptr, bool autoDelete = true, QString tooltip = QString());
+       TabCloseButton(QWidget* widget, QWidget* parent = nullptr, bool autoDelete = true, function<QString()> tooltipFun = nullptr);
 
    protected:
        void changeEvent(QEvent* event);
@@ -63,7 +66,7 @@ namespace GUI
       void setToolTipTranslate();
       QWidget* widget;
       bool autoDelete;
-      QString tooltip;
+      function<QString()> tooltipFun;
    };
 
 /////

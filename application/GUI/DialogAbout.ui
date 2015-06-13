@@ -101,7 +101,7 @@
    <item>
     <widget class="QLabel" name="lblUrl">
      <property name="text">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;a href=&quot;http://www.d-lan.net&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#fd2435;&quot;&gt;http://www.d-lan.net&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      <string notr="true">&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;a href=&quot;http://www.d-lan.net&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#fd2435;&quot;&gt;http://www.d-lan.net&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
      <property name="indent">
       <number>15</number>
