@@ -425,9 +425,9 @@ PM::IPeer* ChunkDownloader::startDownloading()
 
    this->occupiedPeersDownloadingChunk.setPeerAsOccupied(this->currentDownloadingPeer);
 
-   connect(this->getChunkResult.data(), SIGNAL(result(const Protos::Core::GetChunkResult&)), this, SLOT(result(const Protos::Core::GetChunkResult&)), Qt::DirectConnection);
-   connect(this->getChunkResult.data(), SIGNAL(stream(QSharedPointer<PM::ISocket>)), this, SLOT(stream(QSharedPointer<PM::ISocket>)), Qt::DirectConnection);
-   connect(this->getChunkResult.data(), SIGNAL(timeout()), this, SLOT(getChunkTimeout()), Qt::DirectConnection);
+   connect(this->getChunkResult.data(), PM::IGetChunkResult::result, this, result, Qt::DirectConnection);
+   connect(this->getChunkResult.data(), PM::IGetChunkResult::stream, this, stream, Qt::DirectConnection);
+   connect(this->getChunkResult.data(), PM::IGetChunkResult::timeout, this, getChunkTimeout, Qt::DirectConnection);
 
    this->getChunkResult->start();
    return this->currentDownloadingPeer;

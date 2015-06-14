@@ -32,7 +32,7 @@ void GetEntriesResult::start()
 {
    if (!this->socket.isNull())
    {
-      connect(this->socket.data(), SIGNAL(newMessage(Common::Message)), this, SLOT(newMessage(Common::Message)), Qt::DirectConnection);
+      connect(this->socket.data(), PeerMessageSocket::newMessage, this, newMessage, Qt::DirectConnection);
       socket->send(Common::MessageHeader::CORE_GET_ENTRIES, this->dirs);
    }
    this->startTimer();
@@ -42,7 +42,7 @@ void GetEntriesResult::doDeleteLater()
 {
    if (!this->socket.isNull())
    {
-      disconnect(this->socket.data(), SIGNAL(newMessage(Common::Message)), this, SLOT(newMessage(Common::Message)));
+      disconnect(this->socket.data(), PeerMessageSocket::newMessage, this, newMessage);
       this->socket->finished();
       this->socket.clear();
    }
@@ -57,7 +57,7 @@ void GetEntriesResult::newMessage(const Common::Message& message)
    this->stopTimer();
 
    if (!this->socket.isNull())
-      disconnect(this->socket.data(), SIGNAL(newMessage(Common::Message)), this, SLOT(newMessage(Common::Message)));
+      disconnect(this->socket.data(), PeerMessageSocket::newMessage, this, newMessage);
 
    const Protos::Core::GetEntriesResult& entries = message.getMessage<Protos::Core::GetEntriesResult>();
    emit result(entries);

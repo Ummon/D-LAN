@@ -26,5 +26,5 @@ OBJECTS_DIR = .tmp/$$FOLDER
 RCC_DIR = .tmp/$$FOLDER
 UI_DIR = .tmp/$$FOLDER
 
-QMAKE_CXXFLAGS += -std=c++11
+QMAKE_CXXFLAGS += -std=c++14
 QMAKE_CXXFLAGS_WARN_ON = -Wall -Wno-parentheses

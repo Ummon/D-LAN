@@ -56,7 +56,7 @@ namespace CS
    private slots:
       void received(const Common::Message& message);
       void IMAliveMessageToBeSend(Protos::Core::IMAlive& IMAliveMessage);
-      void getLastChatMessages();
+      void retrieveLastChatMessages();
       void saveAllChatMessages();
 
    private:
@@ -76,7 +76,7 @@ namespace CS
 
       Room& getRoom(const QString& name);
 
-      void getLastChatMessages(const QList<PM::IPeer*>& peers, const QString& roomName = QString());
+      void retrieveLastChatMessagesFromPeers(const QList<PM::IPeer*>& peers, const QString& roomName = QString());
 
       void loadRoomListFromSettings();
       void saveRoomListToSettings();
@@ -92,7 +92,7 @@ namespace CS
 
       QTimer saveChatMessagesTimer;
 
-      QTimer getLastChatMessageTimer;
+      QTimer retrieveLastChatMessageTimer;
       MTRand mtrand;
    };
 }

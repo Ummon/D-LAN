@@ -58,26 +58,7 @@ SearchDock::SearchDock(QSharedPointer<RCC::ICoreConnection> coreConnection, QWid
       this->ui->cmbMaxSize->addItem(Common::Constants::BINARY_PREFIXS[i]);
    }
 
-   QList<SearchType> searchTypes = {
-      SearchType::EntryType::ALL,
-      SearchType::EntryType::DIRS_ONLY,
-      SearchType::EntryType::FILES_ONLY,
-      Common::ExtensionCategory::AUDIO,
-      Common::ExtensionCategory::VIDEO,
-      Common::ExtensionCategory::PICTURE,
-      Common::ExtensionCategory::DOCUMENT,
-      Common::ExtensionCategory::EXECUTABLE,
-      Common::ExtensionCategory::SUBTITLE,
-      Common::ExtensionCategory::COMPRESSED,
-      Common::ExtensionCategory::MEDIA_ARCHIVE
-   };
-
-   foreach (SearchType searchType, searchTypes)
-   {
-      QVariant v;
-      v.setValue(searchType);
-      this->ui->cmbType->addItem(SearchUtils::getSearchTypeText(searchType, false), v);
-   }
+   this->updateComboTypes();
 
    this->loadSettings();
 
@@ -121,6 +102,8 @@ void SearchDock::changeEvent(QEvent* event)
 {
    if (event->type() == QEvent::LanguageChange)
       this->ui->retranslateUi(this);
+
+   this->updateComboTypes();
 
    QDockWidget::changeEvent(event);
 }
@@ -245,6 +228,37 @@ void SearchDock::loadSettings()
    this->ui->advancedOptions->setVisible(SHOW_ADVANCED_OPTIONS);
    this->ui->butAdvanced->setChecked(SHOW_ADVANCED_OPTIONS);
 #endif
+}
+
+void SearchDock::updateComboTypes()
+{
+   const int previousCurrentIndex = this->ui->cmbType->currentIndex();
+
+   this->ui->cmbType->clear();
+
+   const QList<SearchType> searchTypes = {
+      SearchType::EntryType::ALL,
+      SearchType::EntryType::DIRS_ONLY,
+      SearchType::EntryType::FILES_ONLY,
+      Common::ExtensionCategory::AUDIO,
+      Common::ExtensionCategory::VIDEO,
+      Common::ExtensionCategory::PICTURE,
+      Common::ExtensionCategory::DOCUMENT,
+      Common::ExtensionCategory::EXECUTABLE,
+      Common::ExtensionCategory::SUBTITLE,
+      Common::ExtensionCategory::COMPRESSED,
+      Common::ExtensionCategory::MEDIA_ARCHIVE
+   };
+
+   foreach (SearchType searchType, searchTypes)
+   {
+      QVariant v;
+      v.setValue(searchType);
+      this->ui->cmbType->addItem(SearchUtils::getSearchTypeText(searchType, false), v);
+   }
+
+   if (previousCurrentIndex != -1)
+      this->ui->cmbType->setCurrentIndex(previousCurrentIndex);
 }
 
 SearchType SearchDock::currentType() const

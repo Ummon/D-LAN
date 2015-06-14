@@ -38,9 +38,9 @@ NetworkListener::NetworkListener(
    tCPListener(peerManager),
    uDPListener(fileManager, peerManager, uploadManager, downloadManager, tCPListener.getCurrentPort())
 {
-   connect(&this->configManager, SIGNAL(configurationChanged(const QNetworkConfiguration&)), this, SLOT(rebindSockets()));
-   connect(&this->uDPListener, SIGNAL(received(const Common::Message&)), this, SIGNAL(received(const Common::Message&)));
-   connect(&this->uDPListener, SIGNAL(IMAliveMessageToBeSend(Protos::Core::IMAlive&)), this, SIGNAL(IMAliveMessageToBeSend(Protos::Core::IMAlive&)));
+   connect(&this->configManager, QNetworkConfigurationManager::configurationChanged, this, rebindSockets);
+   connect(&this->uDPListener, UDPListener::received, this, received);
+   connect(&this->uDPListener, UDPListener::IMAliveMessageToBeSend, this, IMAliveMessageToBeSend);
 }
 
 NetworkListener::~NetworkListener()

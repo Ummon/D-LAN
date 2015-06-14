@@ -68,5 +68,5 @@ void BrowseResult::browseResult(const Protos::GUI::BrowseResult& browseResult)
 void BrowseResult::init(InternalCoreConnection* coreConnection)
 {
    this->coreConnection = coreConnection;
-   connect(this->coreConnection, SIGNAL(browseResult(const Protos::GUI::BrowseResult&)), this, SLOT(browseResult(const Protos::GUI::BrowseResult&)));
+   connect(this->coreConnection, InternalCoreConnection::browseResult, this, browseResult);
 }

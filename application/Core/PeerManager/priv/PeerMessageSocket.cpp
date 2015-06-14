@@ -264,10 +264,10 @@ void PeerMessageSocket::onNewMessage(const Common::Message& message)
 
          for (int i = 0; i < getEntries.dirs().entry_size(); i++)
          {
-            QSharedPointer<FM::IGetEntriesResult> entriesResult = this->fileManager->getScannedEntries(getEntries.dirs().entry(i));
-            connect(entriesResult.data(), SIGNAL(result(const Protos::Core::GetEntriesResult::EntryResult&)), this, SLOT(entriesResult(const Protos::Core::GetEntriesResult::EntryResult&)), Qt::DirectConnection);
-            connect(entriesResult.data(), SIGNAL(timeout()), this, SLOT(entriesResultTimeout()), Qt::DirectConnection);
-            this->entriesResultsToReceive << entriesResult;
+            QSharedPointer<FM::IGetEntriesResult> result = this->fileManager->getScannedEntries(getEntries.dirs().entry(i));
+            connect(result.data(), FM::IGetEntriesResult::result, this, entriesResult, Qt::DirectConnection);
+            connect(result.data(), FM::IGetEntriesResult::timeout, this, entriesResultTimeout, Qt::DirectConnection);
+            this->entriesResultsToReceive << result;
             this->entriesResultMessage.add_result();
          }
 
@@ -292,7 +292,7 @@ void PeerMessageSocket::onNewMessage(const Common::Message& message)
          const Protos::Core::GetHashes& getHashes = message.getMessage<Protos::Core::GetHashes>();
 
          this->currentHashesResult = this->fileManager->getHashes(getHashes.file());
-         connect(this->currentHashesResult.data(), SIGNAL(nextHash(Protos::Core::HashResult)), this, SLOT(nextAskedHash(Protos::Core::HashResult)), Qt::QueuedConnection);
+         connect(this->currentHashesResult.data(), FM::IGetHashesResult::nextHash, this, nextAskedHash, Qt::QueuedConnection);
          Protos::Core::GetHashesResult res = this->currentHashesResult->start();
          this->nbHash = res.nb_hash();
 
@@ -375,7 +375,7 @@ void PeerMessageSocket::initUnactiveTimer()
 {
    this->inactiveTimer.setSingleShot(true);
    this->inactiveTimer.setInterval(SETTINGS.get<quint32>("idle_socket_timeout"));
-   connect(&this->inactiveTimer, SIGNAL(timeout()), this, SLOT(close()));
+   connect(&this->inactiveTimer, QTimer::timeout, this, close);
    this->inactiveTimer.start();
 }
 

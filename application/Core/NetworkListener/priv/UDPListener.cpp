@@ -77,7 +77,7 @@ UDPListener::UDPListener(
    this->initMulticastUDPSocket();
    this->initUnicastUDPSocket();
 
-   connect(&this->timerIMAlive, SIGNAL(timeout()), this, SLOT(sendIMAliveMessage()));
+   connect(&this->timerIMAlive, QTimer::timeout, this, sendIMAliveMessage);
    this->timerIMAlive.start(static_cast<int>(SETTINGS.get<quint32>("peer_imalive_period")));
 
    this->sendIMAliveMessage();
@@ -434,7 +434,7 @@ void UDPListener::initMulticastUDPSocket()
       return;
    }
 
-   connect(&this->multicastSocket, SIGNAL(readyRead()), this, SLOT(processPendingMulticastDatagrams()));
+   connect(&this->multicastSocket, QUdpSocket::readyRead, this, processPendingMulticastDatagrams);
 }
 
 void UDPListener::initUnicastUDPSocket()
@@ -461,7 +461,7 @@ void UDPListener::initUnicastUDPSocket()
 #endif
       L_ERRO(QString("Can't set socket option (unicast socket) : SO_SNDBUF : %1").arg(error));
 
-   connect(&this->unicastSocket, SIGNAL(readyRead()), this, SLOT(processPendingUnicastDatagrams()));
+   connect(&this->unicastSocket, QUdpSocket::readyRead, this, processPendingUnicastDatagrams);
 }
 
 /**

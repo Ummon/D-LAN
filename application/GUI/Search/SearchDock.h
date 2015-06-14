@@ -65,6 +65,7 @@ namespace GUI
 
    private:
       void loadSettings();
+      void updateComboTypes();
 
       SearchType currentType() const;
       quint64 currentMinSize();

@@ -447,7 +447,7 @@ void Tests::getHashesFromAFileEntry1()
    QSharedPointer<IGetHashesResult> result = this->fileManager->getHashes(entry);
 
    HashesReceiver hashesReceiver;
-   connect(result.data(), SIGNAL(nextHash(Protos::Core::HashResult)), &hashesReceiver, SLOT(nextHash(Protos::Core::HashResult)));
+   connect(result.data(), IGetHashesResult::nextHash, &hashesReceiver, HashesReceiver::nextHash);
 
    Protos::Core::GetHashesResult res = result->start();
 
@@ -484,7 +484,7 @@ void Tests::getHashesFromAFileEntry2()
    QSharedPointer<IGetHashesResult> result = this->fileManager->getHashes(entry);
 
    HashesReceiver hashesReceiver;
-   connect(result.data(), SIGNAL(nextHash(Protos::Core::HashResult)), &hashesReceiver, SLOT(nextHash(Protos::Core::HashResult)));
+   connect(result.data(), IGetHashesResult::nextHash, &hashesReceiver, HashesReceiver::nextHash);
    Protos::Core::GetHashesResult res = result->start(); // Should stop the computing of 'big2.bin' and switch to 'big3.bin'.
    qDebug() << res.status();
    QCOMPARE(res.status(), Protos::Core::GetHashesResult::OK);

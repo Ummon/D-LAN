@@ -34,7 +34,7 @@ using namespace Common;
 ConsoleReader::ConsoleReader(QObject* parent) :
    QObject(parent), inputStream(stdin), notifier(STDIN_FILENO, QSocketNotifier::Read)
 {
-   connect(&this->notifier, SIGNAL(activated(int)), this, SLOT(inputAvailable()));
+   connect(&this->notifier, QSocketNotifier::activated, this, inputAvailable);
 }
 
 void ConsoleReader::inputAvailable()

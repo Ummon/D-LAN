@@ -53,7 +53,7 @@ quint64 Search::search(const Protos::Common::FindPattern& findPattern)
    findMessage.set_tag(this->tag);
    findMessage.mutable_pattern()->CopyFrom(findPattern);
 
-   connect(&this->uDPListener, SIGNAL(newFindResultMessage(Protos::Common::FindResult)), this, SLOT(newFindResult(Protos::Common::FindResult)));
+   connect(&this->uDPListener, UDPListener::newFindResultMessage, this, newFindResult);
 
    this->uDPListener.send(Common::MessageHeader::CORE_FIND, findMessage);
 

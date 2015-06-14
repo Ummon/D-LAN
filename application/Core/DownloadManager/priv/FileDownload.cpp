@@ -350,9 +350,9 @@ bool FileDownload::retrieveHashes()
    }
 
    this->setStatus(GETTING_THE_HASHES);
-   connect(this->getHashesResult.data(), SIGNAL(result(const Protos::Core::GetHashesResult&)), this, SLOT(result(const Protos::Core::GetHashesResult&)));
-   connect(this->getHashesResult.data(), SIGNAL(nextHash(const Protos::Core::HashResult&)), this, SLOT(nextHash(const Protos::Core::HashResult&)));
-   connect(this->getHashesResult.data(), SIGNAL(timeout()), this, SLOT(getHashTimeout()));
+   connect(this->getHashesResult.data(), &PM::IGetHashesResult::result, this, &FileDownload::result);
+   connect(this->getHashesResult.data(), &PM::IGetHashesResult::nextHash, this, &FileDownload::nextHash);
+   connect(this->getHashesResult.data(), &PM::IGetHashesResult::timeout, this, &FileDownload::getHashTimeout);
    this->getHashesResult->start();
 
    return true;
@@ -573,9 +573,9 @@ bool FileDownload::tryToLinkToAnExistingFile()
 
 void FileDownload::connectChunkDownloaderSignals(const QSharedPointer<ChunkDownloader>& chunkDownloader)
 {
-   connect(chunkDownloader.data(), SIGNAL(downloadStarted()), this, SLOT(chunkDownloaderStarted()), Qt::DirectConnection);
-   connect(chunkDownloader.data(), SIGNAL(downloadFinished()), this, SLOT(chunkDownloaderFinished()), Qt::DirectConnection);
-   connect(chunkDownloader.data(), SIGNAL(numberOfPeersChanged()), this, SLOT(updateStatus()), Qt::DirectConnection);
+   connect(chunkDownloader.data(), &ChunkDownloader::downloadStarted, this, &FileDownload::chunkDownloaderStarted, Qt::DirectConnection);
+   connect(chunkDownloader.data(), &ChunkDownloader::downloadFinished, this, &FileDownload::chunkDownloaderFinished, Qt::DirectConnection);
+   connect(chunkDownloader.data(), &ChunkDownloader::numberOfPeersChanged, this, &FileDownload::updateStatus, Qt::DirectConnection);
 }
 
 /**

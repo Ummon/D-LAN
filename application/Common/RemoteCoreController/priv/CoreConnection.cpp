@@ -38,7 +38,7 @@ CoreConnection::CoreConnection(int socketTimeout) :
    connectingInProgress(false),
    SOCKET_TIMEOUT(socketTimeout)
 {
-   connect(&this->coreController, SIGNAL(statusChanged()), this, SIGNAL(localCoreStatusChanged()));
+   connect(&this->coreController, CoreController::statusChanged, this, localCoreStatusChanged);
 }
 
 CoreConnection::~CoreConnection()
@@ -259,10 +259,10 @@ void CoreConnection::tempConnected()
 
    this->swap();
 
-   connect(&this->current(), SIGNAL(disconnected(bool)), this, SIGNAL(disconnected(bool)));
-   connect(&this->current(), SIGNAL(newState(const Protos::GUI::State&)), this, SIGNAL(newState(const Protos::GUI::State&)));
-   connect(&this->current(), SIGNAL(newChatMessages(const Protos::Common::ChatMessages&)), this, SIGNAL(newChatMessages(const Protos::Common::ChatMessages&)));
-   connect(&this->current(), SIGNAL(newLogMessages(QList<QSharedPointer<LM::IEntry>>)), this, SIGNAL(newLogMessages(QList<QSharedPointer<LM::IEntry>>)));
+   connect(&this->current(), InternalCoreConnection::disconnected, this, disconnected);
+   connect(&this->current(), InternalCoreConnection::newState, this, newState);
+   connect(&this->current(), InternalCoreConnection::newChatMessages, this, newChatMessages);
+   connect(&this->current(), InternalCoreConnection::newLogMessages, this, newLogMessages);
    emit connected();
 }
 
@@ -293,9 +293,9 @@ bool CoreConnection::connectToCorePrepare(const QString& address)
       return false;
    }
 
-   connect(&this->temp(), SIGNAL(connectingError(RCC::ICoreConnection::ConnectionErrorCode)), this, SLOT(tempConnectingError(RCC::ICoreConnection::ConnectionErrorCode)));
-   connect(&this->temp(), SIGNAL(connected()), this, SLOT(tempConnected()));
-   connect(&this->temp(), SIGNAL(disconnected(bool)), this, SLOT(tempDisconnected()));
+   connect(&this->temp(), InternalCoreConnection::connectingError, this, tempConnectingError);
+   connect(&this->temp(), InternalCoreConnection::connected, this, tempConnected);
+   connect(&this->temp(), InternalCoreConnection::disconnected, this, tempDisconnected);
 
    return true;
 }

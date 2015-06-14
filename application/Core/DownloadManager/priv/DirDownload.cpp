@@ -86,8 +86,8 @@ bool DirDownload::retrieveEntries()
       return false;
    }
 
-   connect(this->getEntriesResult.data(), SIGNAL(result(const Protos::Core::GetEntriesResult&)), this, SLOT(result(const Protos::Core::GetEntriesResult&)));
-   connect(this->getEntriesResult.data(), SIGNAL(timeout()), this, SLOT(resultTimeout()));
+   connect(this->getEntriesResult.data(), PM::IGetEntriesResult::result, this, result);
+   connect(this->getEntriesResult.data(), PM::IGetEntriesResult::timeout, this, resultTimeout);
    this->getEntriesResult->start();
 
    return true;

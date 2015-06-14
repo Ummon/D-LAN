@@ -53,16 +53,16 @@ ChatSystem::ChatSystem(QSharedPointer<PM::IPeerManager> peerManager, QSharedPoin
 
    this->loadChatMessagesFromAllFiles();
 
-   connect(this->networkListener.data(), SIGNAL(received(const Common::Message&)), this, SLOT(received(const Common::Message&)));
-   connect(this->networkListener.data(), SIGNAL(IMAliveMessageToBeSend(Protos::Core::IMAlive&)), this, SLOT(IMAliveMessageToBeSend(Protos::Core::IMAlive&)));
+   connect(this->networkListener.data(), NL::INetworkListener::received, this, received);
+   connect(this->networkListener.data(), NL::INetworkListener::IMAliveMessageToBeSend, this, IMAliveMessageToBeSend);
 
-   connect(&this->getLastChatMessageTimer, SIGNAL(timeout()), this, SLOT(getLastChatMessages()));
-   this->getLastChatMessageTimer.setInterval(SETTINGS.get<quint32>("get_last_chat_messages_period"));
-   this->getLastChatMessageTimer.start();
-   this->getLastChatMessages();
+   connect(&this->retrieveLastChatMessageTimer, QTimer::timeout, this, retrieveLastChatMessages);
+   this->retrieveLastChatMessageTimer.setInterval(SETTINGS.get<quint32>("get_last_chat_messages_period"));
+   this->retrieveLastChatMessageTimer.start();
+   this->retrieveLastChatMessages();
 
    this->saveChatMessagesTimer.setInterval(SETTINGS.get<quint32>("save_chat_messages_period"));
-   connect(&this->saveChatMessagesTimer, SIGNAL(timeout()), this, SLOT(saveAllChatMessages()));
+   connect(&this->saveChatMessagesTimer, QTimer::timeout, this, saveAllChatMessages);
    this->saveChatMessagesTimer.start();
 
    this->loadRoomListFromSettings();
@@ -138,7 +138,7 @@ void ChatSystem::joinRoom(const QString& roomName)
       room.joined = true;
       this->saveRoomListToSettings();
       this->loadChatMessages(roomName);
-      this->getLastChatMessages(room.peers.toList(), roomName);
+      this->retrieveLastChatMessagesFromPeers(room.peers.toList(), roomName);
    }
 }
 
@@ -290,15 +290,15 @@ void ChatSystem::IMAliveMessageToBeSend(Protos::Core::IMAlive& IMAliveMessage)
 /**
   * Ask to a random peer its last messages.
   */
-void ChatSystem::getLastChatMessages()
+void ChatSystem::retrieveLastChatMessages()
 {
-   this->getLastChatMessages(this->peerManager->getPeers());
+   this->retrieveLastChatMessagesFromPeers(this->peerManager->getPeers());
 
    for (QHashIterator<QString, Room> i(this->rooms); i.hasNext();)
    {
       auto room = i.next();
       if (room.value().joined)
-         this->getLastChatMessages(room.value().peers.toList(), room.key());
+         this->retrieveLastChatMessagesFromPeers(room.value().peers.toList(), room.key());
    }
 }
 
@@ -407,7 +407,7 @@ QString ChatSystem::getChatMessageFilename(const QString& roomName)
       return Common::Constants::DIR_CHAT_MESSAGES % '/' % Common::Constants::FILE_CHAT_ROOM_MESSAGES.arg(Common::Global::sanitizePath(roomName));
 }
 
-void ChatSystem::getLastChatMessages(const QList<PM::IPeer*>& peers, const QString& roomName)
+void ChatSystem::retrieveLastChatMessagesFromPeers(const QList<PM::IPeer*>& peers, const QString& roomName)
 {
    if (peers.isEmpty())
       return;
