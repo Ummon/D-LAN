@@ -66,7 +66,7 @@ void TransferRateCalculator::reset()
    this->currentValuePos = 0;
    this->total = 0;
    this->t1 = 0;
-   memset(this->values, 0, sizeof(this->values));
+   memset(this->values, 0, NB_VALUE * sizeof(quint32));
    this->timer.start();
 }
 

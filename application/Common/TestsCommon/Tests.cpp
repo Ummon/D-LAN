@@ -631,11 +631,12 @@ void Tests::messageHeader()
 
    // We use a larger buffer to check if the last four bytes has been alterate.
    char buffer[MessageHeader::HEADER_SIZE + 4];
-   memset(buffer, 0, sizeof(buffer));
+   memset(buffer, '\0', MessageHeader::HEADER_SIZE + 4);
 
    MessageHeader::writeHeader(buffer, header);
    QVERIFY(qstrncmp(data, buffer, MessageHeader::HEADER_SIZE) == 0);
-   QVERIFY(qstrncmp(buffer + MessageHeader::HEADER_SIZE, "\0\0\0\0", 4) == 0);
+   for (int i = 0; i < 4; i++)
+      QVERIFY(buffer[MessageHeader::HEADER_SIZE + i] == '\0');
 }
 
 void Tests::readAndWriteWithZeroCopyStreamQIODevice()
