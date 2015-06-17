@@ -53,12 +53,12 @@ namespace PM
 
       /**
         * Return all alive peers. A peer is never deleted but can become inactive.
-        * @remarks This list doesn't include us.
+        * @remarks This list doesn't include us ('getSelf()').
         */
       virtual QList<IPeer*> getPeers() const = 0;
 
       /**
-        * Return the IPeer* coresponding to ID.
+        * Return the 'IPeer*' coresponding to ID.
         * May return ourself.
         * May return a peer not alive or not available.
         * Return 'nullptr' if the peer doesn't exist.
@@ -71,7 +71,10 @@ namespace PM
       virtual IPeer* createPeer(const Common::Hash& ID, const QString& nick) = 0;
 
       /**
+        * Tell a given peer exists and is alive. Calling 'createPeer(..)' before isn't necessary.
         * The method must be call frequently to tell that a peer (ID) is still alive.
+        * After a while, if a peer is not updated, it will not appear in the list given by 'IPeerManager::getPeers()'.
+        * The maximum live duration is 'peer_timeout_factor' * 'peer_imalive_period', these values are from the settings.
         * @see The protobuf message 'Protos.Core.IMAlive' in "Protos/core_protocol.proto".
         */
       virtual void updatePeer(

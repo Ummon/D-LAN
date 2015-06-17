@@ -436,7 +436,7 @@ void DownloadManager::downloadStatusBecomeErroneous(Download* download)
 
 /**
   * Load the queue, called once at the begining of the program.
-  * Will start the timer to save priodically the queue.
+  * Will start the timer to save periodically the queue.
   */
 void DownloadManager::loadQueueFromFile()
 {

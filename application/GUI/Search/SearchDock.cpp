@@ -49,8 +49,10 @@ SearchDock::SearchDock(QSharedPointer<RCC::ICoreConnection> coreConnection, QWid
 
    this->ui->txtSearch->installEventFilter(this); // the signal 'returnPressed()' doesn't contain the key modifier information (shift = search among our files), we have to use a event filter.
 
-   this->ui->txtMinSize->setValidator(new QIntValidator(this));
-   this->ui->txtMaxSize->setValidator(new QIntValidator(this));
+   auto sizeValidator = new QIntValidator(this);
+   sizeValidator->setBottom(0);
+   this->ui->txtMinSize->setValidator(sizeValidator);
+   this->ui->txtMaxSize->setValidator(sizeValidator);
 
    for (int i = 0; i < 5; i++)
    {

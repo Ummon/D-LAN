@@ -182,4 +182,4 @@ message GetChunkResult {
    optional uint32 chunk_size = 2; // This value must be between 1 and Proto.Core.Settings.chunk_size.
 }
 
-// b -> a : stream of data . . .
+// b -> a : stream of data (only if GetChunkResult.status == OK) . . .

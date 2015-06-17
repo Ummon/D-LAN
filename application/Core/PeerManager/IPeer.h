@@ -90,7 +90,7 @@ namespace PM
       virtual void block(int duration, const QString& reason = QString()) = 0;
 
       /**
-        * If we don't receive an IMAlive message from a peer during a certain time (for example 20 seconds), it will be concidered as dead.
+        * If we don't receive an IMAlive message from a peer during a certain time (for example 20 seconds), it will be considered as dead.
         */
       virtual bool isAlive() const = 0;
 

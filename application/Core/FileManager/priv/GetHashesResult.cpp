@@ -71,13 +71,12 @@ Protos::Core::GetHashesResult GetHashesResult::start()
       return result;
    }
 
-   int nbOfHashToBeSent = 0;
-
    {
       QMutexLocker locker(&this->mutex);
 
       connect(&this->cache, Cache::chunkHashKnown, this, chunkHashKnown, Qt::DirectConnection);
 
+      int nbOfHashToBeSent = 0;
       int j = 0;
       for (QVectorIterator<QSharedPointer<Chunk>> i(chunks); i.hasNext();)
       {

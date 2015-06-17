@@ -252,10 +252,9 @@ QString Global::formatTime(quint64 seconds)
    /* minutes */ ymwdhms[5] = seconds / (60) - (60 * 24 * 7 * 4 * 12 * ymwdhms[0] + 60 * 24 * 7 * 4 * ymwdhms[1] + 60 * 24 * 7 * ymwdhms[2] + 60 * 24 * ymwdhms[3] + 60 * ymwdhms[4]);
    /* seconds */ ymwdhms[6] = seconds  -  (60 * 60 * 24 * 7 * 4 * 12 * ymwdhms[0] + 60 * 60 * 24 * 7 * 4 * ymwdhms[1] + 60 * 60 * 24 * 7 * ymwdhms[2] + 60 * 60 * 24 * ymwdhms[3] + 60 * 60 * ymwdhms[4] + 60 * ymwdhms[5]);
 
-   bool exit = false;
    for (int i = 0; i < 7; i++)
    {
-      exit = !output.isEmpty();
+      bool exit = !output.isEmpty();
       if (ymwdhms[i] != 0)
       {
          if (!output.isEmpty())

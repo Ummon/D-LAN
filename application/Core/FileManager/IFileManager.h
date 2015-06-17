@@ -79,7 +79,7 @@ namespace FM
       virtual QString getSharedDir(const Common::Hash& ID) const = 0;
 
       /**
-        * Returns a chunk. If no chunk is found return a empty pointer.
+        * Returns a chunk. If no chunk is found return an empty pointer.
         */
       virtual QSharedPointer<IChunk> getChunk(const Common::Hash& hash) const = 0;
 

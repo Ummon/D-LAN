@@ -244,7 +244,6 @@ void ChatModel::newChatMessages(const Protos::Common::ChatMessages& messages)
    const Common::Hash& ourPeerID = this->coreConnection->getRemoteID();
 
    int j = this->messages.size();
-   int previousJ;
    QList<Message> toInsert;
 
    for (int i = messages.message_size() - 1; i >= 0; i--)
@@ -268,7 +267,7 @@ void ChatModel::newChatMessages(const Protos::Common::ChatMessages& messages)
          Common::ProtoHelper::getStr(messages.message(i), &Protos::Common::ChatMessage::message)
       };
 
-      previousJ = j;
+      int previousJ = j;
       while (j > 0 && this->messages[j-1].dateTime > message.dateTime)
          j--;
 

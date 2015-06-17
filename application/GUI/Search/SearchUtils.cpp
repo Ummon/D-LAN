@@ -124,7 +124,7 @@ QString SearchUtils::getFindPatternSummary(const Protos::Common::FindPattern& fi
       if (findPattern.min_size() > 0)
          result += Common::Global::formatByteSize(findPattern.min_size());
       else
-         result += QString::fromUtf8("-∞");
+         result += QString::fromUtf8("0");
 
       result += " -> ";
 
@@ -170,7 +170,7 @@ QString SearchUtils::getFindPatternWindowTitle(const Protos::Common::FindPattern
       if (findPattern.min_size() > 0)
          result += Common::Global::formatByteSize(findPattern.min_size());
       else
-         result += QString::fromUtf8("-∞");
+         result += QString::fromUtf8("0");
 
       result += " -> ";
 

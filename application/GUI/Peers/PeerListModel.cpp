@@ -27,6 +27,8 @@ using namespace GUI;
 #include <Common/Global.h>
 #include <Common/StringUtils.h>
 
+#include <Log.h>
+
 /**
   * @class PeerListModel
   *
@@ -297,7 +299,7 @@ void PeerListModel::newState(const Protos::GUI::State& state)
          if (state.room(i).name() == this->room.toStdString())
          {
             for (int j = 0; j < state.room(i).peer_id_size(); j++)
-               peersToDisplay << Common::Hash(state.room(i).peer_id(i).hash());
+               peersToDisplay << Common::Hash(state.room(i).peer_id(j).hash());
 
             if (state.room(i).joined())
                peersToDisplay << this->coreConnection->getRemoteID();
