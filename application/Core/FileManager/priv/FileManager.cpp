@@ -225,11 +225,11 @@ QList<Protos::Common::FindResult> FileManager::find(const QString& words, const 
       else
       {
          if (filterByCategoryOn)
-            intermediateResult = this->sizeIndex.search(minFileSize, maxFileSize, [&](const Entry* entry) {
+            intermediateResult = this->sizeIndex.search(minFileSize, maxFileSize, maxNbResult, [&](const Entry* entry) {
                return category == Protos::Common::FindPattern::FILE && dynamic_cast<const File*>(entry) || category == Protos::Common::FindPattern::DIR && dynamic_cast<const Directory*>(entry);
             });
          else
-            intermediateResult = this->sizeIndex.search(minFileSize, maxFileSize);
+            intermediateResult = this->sizeIndex.search(minFileSize, maxFileSize, maxNbResult);
       }
 
       for (QListIterator<Entry*> i(intermediateResult); i.hasNext();)
@@ -248,7 +248,12 @@ QList<Protos::Common::FindResult> FileManager::find(const QString& words, const 
       const NodeResult<Entry*>& entry = i.next();
       Protos::Common::FindResult::EntryLevel* entryLevel = findResults.last().add_entry();
       entryLevel->set_level(entry.level);
-      entry.value->populateEntry(entryLevel->mutable_entry(), true);
+
+      File* file = dynamic_cast<File*>(entry.value);
+      if (file)
+         file->populateEntry(entryLevel->mutable_entry(), true, NB_MAX_HASHES_PER_ENTRY_SEARCH);
+      else
+         entry.value->populateEntry(entryLevel->mutable_entry(), true);
 
       // We wouldn't use 'findResults.last().ByteSize()' because is too slow. Instead we call 'ByteSize()' for each entry and sum it.
       const int entryByteSize = entryLevel->ByteSize() + 8; // Each entry take a bit of memory overhead . . . (Value found in an empiric way . . .).

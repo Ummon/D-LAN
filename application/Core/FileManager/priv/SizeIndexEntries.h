@@ -20,7 +20,7 @@ namespace FM
       void addItem(Entry* item);
       void rmItem(Entry* item);
 
-      QList<Entry*> search(qint64 sizeMin, qint64 sizeMax, std::function<bool(const Entry*)> predicat = nullptr) const;
+      QList<Entry*> search(qint64 sizeMin, qint64 sizeMax, int limit = std::numeric_limits<int>::max(), std::function<bool(const Entry*)> predicat = nullptr) const;
 
    private:
       Common::SortedArray<Entry*> index;

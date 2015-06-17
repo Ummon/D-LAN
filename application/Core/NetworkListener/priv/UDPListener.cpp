@@ -413,26 +413,8 @@ void UDPListener::initMulticastUDPSocket()
       L_ERRO(QString("Unable to join the multicast group: %1 on the interface: %2").arg(this->multicastGroup.toString()).arg(networkInterface.name()));
 
    static const int BUFFER_SIZE_UDP = SETTINGS.get<quint32>("udp_buffer_size");
-   const int multicastSocketDescriptor = this->multicastSocket.socketDescriptor();
-#if defined(Q_OS_DARWIN)
-   if (int error = 0) // TODO: Mac OS X
-#else
-   if (int error = setsockopt(multicastSocketDescriptor, SOL_SOCKET, SO_RCVBUF, (char*)&BUFFER_SIZE_UDP, sizeof BUFFER_SIZE_UDP))
-#endif
-   {
-      L_ERRO(QString("Can't set socket option (multicast socket) : SO_RCVBUF : %1").arg(error));
-      return;
-   }
-
-#if defined(Q_OS_DARWIN)
-   if (int error = 0) // TODO: Mac OS X
-#else
-   if (int error = setsockopt(multicastSocketDescriptor, SOL_SOCKET, SO_SNDBUF, (char*)&BUFFER_SIZE_UDP, sizeof BUFFER_SIZE_UDP))
-#endif
-   {
-      L_ERRO(QString("Can't set socket option (multicast socket) : SO_SNDBUF : %1").arg(error));
-      return;
-   }
+   this->multicastSocket.setSocketOption(QAbstractSocket::SendBufferSizeSocketOption, BUFFER_SIZE_UDP);
+   this->multicastSocket.setSocketOption(QAbstractSocket::ReceiveBufferSizeSocketOption, BUFFER_SIZE_UDP);
 
    connect(&this->multicastSocket, QUdpSocket::readyRead, this, processPendingMulticastDatagrams);
 }
@@ -446,20 +428,8 @@ void UDPListener::initUnicastUDPSocket()
       L_ERRO("Can't bind the unicast socket");
 
    static const int BUFFER_SIZE_UDP = SETTINGS.get<quint32>("udp_buffer_size");
-
-#if defined(Q_OS_DARWIN)
-   if (int error = 0) // TODO
-#else
-   if (int error = setsockopt(this->unicastSocket.socketDescriptor(), SOL_SOCKET, SO_RCVBUF, (char*)&BUFFER_SIZE_UDP, sizeof BUFFER_SIZE_UDP))
-#endif
-      L_ERRO(QString("Can't set socket option (unicast socket) : SO_RCVBUF : %1").arg(error));
-
-#if defined(Q_OS_DARWIN)
-   if (int error = 0) // TODO
-#else
-   if (int error = setsockopt(this->unicastSocket.socketDescriptor(), SOL_SOCKET, SO_SNDBUF, (char*)&BUFFER_SIZE_UDP, sizeof BUFFER_SIZE_UDP))
-#endif
-      L_ERRO(QString("Can't set socket option (unicast socket) : SO_SNDBUF : %1").arg(error));
+   this->unicastSocket.setSocketOption(QAbstractSocket::SendBufferSizeSocketOption, BUFFER_SIZE_UDP);
+   this->unicastSocket.setSocketOption(QAbstractSocket::ReceiveBufferSizeSocketOption, BUFFER_SIZE_UDP);
 
    connect(&this->unicastSocket, QUdpSocket::readyRead, this, processPendingUnicastDatagrams);
 }

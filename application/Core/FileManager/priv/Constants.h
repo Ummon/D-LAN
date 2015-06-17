@@ -25,6 +25,10 @@ namespace FM
 {
    // 2 -> 3 : BLAKE -> Sha-1
    const int FILE_CACHE_VERSION = 3;
+
+   // When searching we don't want to send all the hashes of entries
+   // because it may take a lot of memory (UDP datagram are very small).
+   const int NB_MAX_HASHES_PER_ENTRY_SEARCH = 8;
 }
 
 #endif

@@ -212,6 +212,11 @@ void File::populateHashesFile(Protos::FileCache::Hashes_File& fileToFill) const
   */
 void File::populateEntry(Protos::Common::Entry* entry, bool setSharedDir) const
 {
+   this->populateEntry(entry, setSharedDir, std::numeric_limits<int>::max());
+}
+
+void File::populateEntry(Protos::Common::Entry* entry, bool setSharedDir, int maxHashes) const
+{
    QMutexLocker locker(&this->mutex);
 
    Entry::populateEntry(entry, setSharedDir);
@@ -219,11 +224,14 @@ void File::populateEntry(Protos::Common::Entry* entry, bool setSharedDir) const
    entry->set_type(Protos::Common::Entry_Type_FILE);
 
    entry->clear_chunk();
+
+   int nb = 0;
    for (QVectorIterator<QSharedPointer<Chunk>> i(this->chunks); i.hasNext();)
    {
-      Common::Hash hash = i.next()->getHash();
       Protos::Common::Hash* protoHash = entry->add_chunk();
-      if (!hash.isNull())
+
+      Common::Hash hash = i.next()->getHash();
+      if (!hash.isNull() && ++nb <= maxHashes)
          protoHash->set_hash(hash.getData(), Common::Hash::HASH_SIZE);
    }
 }

@@ -136,7 +136,7 @@ void MessageSocket::send(MessageHeader::MessageType type, const google::protobuf
 
    MessageHeader header(type, message ? message->ByteSize() : 0, this->localID);
 
-   MESSAGE_SOCKET_LOG_DEBUG(QString("Socket[%1]::send : %2 to %3\n%4").arg(this->num).arg(header.toStr()).arg(this->remoteID.toStr()).arg(message ? ProtoHelper::getDebugStr(*message) : "<empty message>"));
+   MESSAGE_SOCKET_LOG_DEBUG(QString("Socket[%1]::send: %2 to %3\n%4").arg(this->num).arg(header.toStr()).arg(this->remoteID.toStr()).arg(message ? ProtoHelper::getDebugStr(*message) : "<empty message>"));
 
    Message::writeMessageToDevice(this->socket, header, message);
 }

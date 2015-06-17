@@ -93,6 +93,7 @@ message Find {
 // The size can typically set to 8164 B.
 // Many of message can be sent by a peer for a given search. The core will only accept answers
 // for a limited duration. For example 3 seconds.
+// The file entries may or may not include the hashes depending of the core state and its policy.
 // all -> a
 // id : 0x22
 // Common.FindResult (see common.proto)
@@ -107,6 +108,7 @@ message GetEntries {
    optional bool get_roots = 2 [default = false]; // If true the roots directories will be appended to the end of the entries result. If the field above ('dirs') is empty then the roots directories will always be sent whatever 'get_roots' is true or false.
 }
 
+// The file entries may or may not include the hashes depending of the core state and its policy.
 // b -> a
 // id : 0x32
 message GetEntriesResult {

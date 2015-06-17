@@ -69,6 +69,7 @@ namespace FM
       void populateHashesFile(Protos::FileCache::Hashes_File& fileToFill) const;
 
       void populateEntry(Protos::Common::Entry* entry, bool setSharedDir = false) const;
+      void populateEntry(Protos::Common::Entry* entry, bool setSharedDir, int maxHashes) const;
       bool matchesEntry(const Protos::Common::Entry& entry) const;
 
       bool correspondTo(const QFileInfo& fileInfo, bool checkTheDateToo = true);
