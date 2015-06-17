@@ -23,8 +23,8 @@ using namespace FM;
 
 #include <priv/Log.h>
 
-GetEntriesResult::GetEntriesResult(Directory* dir) :
-   IGetEntriesResult(SETTINGS.get<quint32>("get_entries_timeout")), dir(dir)
+GetEntriesResult::GetEntriesResult(Directory* dir, int maxNbHashesPerEntry) :
+   IGetEntriesResult(SETTINGS.get<quint32>("get_entries_timeout")), dir(dir), maxNbHashesPerEntry(maxNbHashesPerEntry)
 {
 }
 
@@ -83,5 +83,5 @@ void GetEntriesResult::buildResult()
 
    foreach (File* file, this->dir->getFiles())
       if (file->isComplete())
-         file->populateEntry(this->res.mutable_entries()->add_entry());
+         file->populateEntry(this->res.mutable_entries()->add_entry(), false, this->maxNbHashesPerEntry);
 }

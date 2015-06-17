@@ -264,7 +264,7 @@ void PeerMessageSocket::onNewMessage(const Common::Message& message)
 
          for (int i = 0; i < getEntries.dirs().entry_size(); i++)
          {
-            QSharedPointer<FM::IGetEntriesResult> result = this->fileManager->getScannedEntries(getEntries.dirs().entry(i));
+            QSharedPointer<FM::IGetEntriesResult> result = this->fileManager->getScannedEntries(getEntries.dirs().entry(i), getEntries.has_nb_max_hashes_per_entry() ? getEntries.nb_max_hashes_per_entry() : std::numeric_limits<int>::max());
             connect(result.data(), FM::IGetEntriesResult::result, this, entriesResult, Qt::DirectConnection);
             connect(result.data(), FM::IGetEntriesResult::timeout, this, entriesResultTimeout, Qt::DirectConnection);
             this->entriesResultsToReceive << result;

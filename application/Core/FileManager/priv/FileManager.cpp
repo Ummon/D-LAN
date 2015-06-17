@@ -175,14 +175,14 @@ QSharedPointer<IGetHashesResult> FileManager::getHashes(const Protos::Common::En
    return QSharedPointer<IGetHashesResult>(new GetHashesResult(file, this->cache, this->fileUpdater));
 }
 
-QSharedPointer<IGetEntriesResult> FileManager::getScannedEntries(const Protos::Common::Entry& dir)
+QSharedPointer<IGetEntriesResult> FileManager::getScannedEntries(const Protos::Common::Entry& dir, int maxNbHashesPerEntry)
 {
-   return QSharedPointer<IGetEntriesResult>(new GetEntriesResult(this->cache.getDirectory(dir)));
+   return QSharedPointer<IGetEntriesResult>(new GetEntriesResult(this->cache.getDirectory(dir), maxNbHashesPerEntry));
 }
 
-Protos::Common::Entries FileManager::getEntries(const Protos::Common::Entry& dir)
+Protos::Common::Entries FileManager::getEntries(const Protos::Common::Entry& dir, int maxNbHashesPerEntry)
 {
-   return this->cache.getEntries(dir);
+   return this->cache.getEntries(dir, maxNbHashesPerEntry);
 }
 
 Protos::Common::Entries FileManager::getEntries()

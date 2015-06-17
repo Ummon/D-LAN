@@ -69,8 +69,8 @@ namespace FM
       void newDirectory(Protos::Common::Entry& entry);
       QSharedPointer<IGetHashesResult> getHashes(const Protos::Common::Entry& file);
 
-      QSharedPointer<IGetEntriesResult> getScannedEntries(const Protos::Common::Entry& dir);
-      Protos::Common::Entries getEntries(const Protos::Common::Entry& dir);
+      QSharedPointer<IGetEntriesResult> getScannedEntries(const Protos::Common::Entry& dir, int maxNbHashesPerEntry = std::numeric_limits<int>::max());
+      Protos::Common::Entries getEntries(const Protos::Common::Entry& dir, int maxNbHashesPerEntry = std::numeric_limits<int>::max());
       Protos::Common::Entries getEntries();
 
       inline QList<Protos::Common::FindResult> find(const QString& words, int maxNbResult, int maxSize) { return this->find(words, QList<QString>(), 0, std::numeric_limits<qint64>::max(), Protos::Common::FindPattern::FILE_DIR, maxNbResult, maxSize); }

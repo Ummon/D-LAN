@@ -245,6 +245,18 @@
    </layout>
   </widget>
  </widget>
+ <tabstops>
+  <tabstop>txtSearch</tabstop>
+  <tabstop>butSearch</tabstop>
+  <tabstop>butClear</tabstop>
+  <tabstop>butAdvanced</tabstop>
+  <tabstop>cmbType</tabstop>
+  <tabstop>txtMinSize</tabstop>
+  <tabstop>cmbMinSize</tabstop>
+  <tabstop>txtMaxSize</tabstop>
+  <tabstop>cmbMaxSize</tabstop>
+  <tabstop>chkOwnFiles</tabstop>
+ </tabstops>
  <resources>
   <include location="../ressources.qrc"/>
  </resources>

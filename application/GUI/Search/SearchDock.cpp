@@ -47,8 +47,6 @@ SearchDock::SearchDock(QSharedPointer<RCC::ICoreConnection> coreConnection, QWid
    this->ui->butSearchOwnFiles->setMaximumWidth(24);
 #endif
 
-   this->ui->txtSearch->installEventFilter(this); // the signal 'returnPressed()' doesn't contain the key modifier information (shift = search among our files), we have to use a event filter.
-
    auto sizeValidator = new QIntValidator(this);
    sizeValidator->setBottom(0);
    this->ui->txtMinSize->setValidator(sizeValidator);
@@ -110,12 +108,12 @@ void SearchDock::changeEvent(QEvent* event)
    QDockWidget::changeEvent(event);
 }
 
-bool SearchDock::eventFilter(QObject* obj, QEvent* event)
+void SearchDock::keyPressEvent(QKeyEvent* event)
 {
-   if (obj == this->ui->txtSearch && event->type() == QEvent::KeyPress && static_cast<QKeyEvent*>(event)->key() == Qt::Key_Return)
+   if (event->key() == Qt::Key_Return)
       this->search();
-
-   return QDockWidget::eventFilter(obj, event);
+   else
+      QDockWidget::keyPressEvent(event);
 }
 
 void SearchDock::coreConnected()

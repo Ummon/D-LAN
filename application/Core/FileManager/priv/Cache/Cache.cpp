@@ -100,7 +100,7 @@ Protos::Common::Entries Cache::getSharedEntries() const
    return result;
 }
 
-Protos::Common::Entries Cache::getEntries(const Protos::Common::Entry& dir) const
+Protos::Common::Entries Cache::getEntries(const Protos::Common::Entry& dir, int maxNbHashesPerEntry) const
 {
    Protos::Common::Entries result;
 
@@ -111,7 +111,7 @@ Protos::Common::Entries Cache::getEntries(const Protos::Common::Entry& dir) cons
 
       foreach (File* file, directory->getFiles())
          if (file->isComplete())
-            file->populateEntry(result.add_entry());
+            file->populateEntry(result.add_entry(), false, maxNbHashesPerEntry);
    }
 
    return result;

@@ -116,12 +116,15 @@ namespace FM
         */
       virtual QSharedPointer<IGetHashesResult> getHashes(const Protos::Common::Entry& file) = 0;
 
-      virtual QSharedPointer<IGetEntriesResult> getScannedEntries(const Protos::Common::Entry& dir) = 0;
+      /**
+        * Returns the directories and files contained in the given directory. It may wait a while ('get_entries_timeout') if the directory is being scanned.
+        */
+      virtual QSharedPointer<IGetEntriesResult> getScannedEntries(const Protos::Common::Entry& dir, int maxNbHashesPerEntry = std::numeric_limits<int>::max()) = 0;
 
       /**
         * Returns the directories and files contained in the given directory.
         */
-      virtual Protos::Common::Entries getEntries(const Protos::Common::Entry& dir) = 0;
+      virtual Protos::Common::Entries getEntries(const Protos::Common::Entry& dir, int maxNbHashesPerEntry = std::numeric_limits<int>::max()) = 0;
 
       /**
         * Returns the shared directories (roots).

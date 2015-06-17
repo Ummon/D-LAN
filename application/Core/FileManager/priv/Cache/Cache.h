@@ -52,7 +52,7 @@ namespace FM
       void forall(std::function<void(Entry*)> fun) const;
 
       Protos::Common::Entries getSharedEntries() const;
-      Protos::Common::Entries getEntries(const Protos::Common::Entry& dir) const;
+      Protos::Common::Entries getEntries(const Protos::Common::Entry& dir, int maxNbHashesPerEntry = std::numeric_limits<int>::max()) const;
       Directory* getDirectory(const Protos::Common::Entry& dir) const;
 
       Entry* getEntry(const QString& path) const;

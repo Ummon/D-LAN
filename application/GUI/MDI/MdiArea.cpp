@@ -136,11 +136,15 @@ void MdiArea::changeEvent(QEvent* event)
 
 bool MdiArea::eventFilter(QObject* obj, QEvent* event)
 {
-   if // Prohibits the user to close tab with the middle button.
+   if // Prohibits the user to close tab with the middle button or with the contextual menu.
    (
       obj == this->mdiAreaTabBar &&
-      (event->type() == QEvent::MouseButtonPress || event->type() == QEvent::MouseButtonDblClick) &&
-      static_cast<QMouseEvent*>(event)->button() == Qt::MiddleButton
+      (
+         (event->type() == QEvent::MouseButtonPress || event->type() == QEvent::MouseButtonDblClick) &&
+         (static_cast<QMouseEvent*>(event)->button() == Qt::MiddleButton)
+         ||
+         (event->type() == QEvent::ContextMenu)
+      )
    )
       return true;
 

@@ -33,7 +33,7 @@ namespace FM
    {
       Q_OBJECT
    public:
-      GetEntriesResult(Directory* dir);
+      GetEntriesResult(Directory* dir, int maxNbHashesPerEntry);
       void start();
 
    private slots:
@@ -45,6 +45,7 @@ namespace FM
 
       Protos::Core::GetEntriesResult::EntryResult res;
       Directory* dir;
+      const int maxNbHashesPerEntry;
    };
 }
 

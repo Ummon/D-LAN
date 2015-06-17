@@ -586,6 +586,7 @@ void RemoteConnection::onNewMessage(const Common::Message& message)
             Protos::Core::GetEntries getEntries;
             getEntries.mutable_dirs()->CopyFrom(browseMessage.dirs());
             getEntries.set_get_roots(browseMessage.get_roots());
+            getEntries.set_nb_max_hashes_per_entry(Common::Constants::MAX_NB_HASHES_PER_ENTRY_GUI_BROWSE);
             QSharedPointer<PM::IGetEntriesResult> entries = peer->getEntries(getEntries);
             if (entries.isNull())
             {
