@@ -66,7 +66,7 @@ message Settings {
    optional uint32 max_number_of_search_result_to_send = 68 [default = 300];
    optional uint32 max_number_of_result_shown = 69 [default = 5000]; // For one search we accept a maximum of 5000 results.
    optional string listen_address = 86 [default = ""]; // If address is empty then listen to any adresses, in this case the protocol is given by 'listenAny'.
-   optional Common.Interface.Address.Protocol listen_any = 87 [default = IPv4];
+   optional Common.Interface.Address.Protocol listen_any = 87 [default = IPv6];
 
    ///// ChatSystem /////
    optional uint32 max_number_of_stored_chat_messages = 70 [default = 500]; // This is the number of saved message per room.
