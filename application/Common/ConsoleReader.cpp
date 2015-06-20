@@ -18,28 +18,40 @@
   
 #include <limits>
 
-#include <unistd.h> //Provides STDIN_FILENO
-
 #include <Common/ConsoleReader.h>
 using namespace Common;
-
-#ifdef Q_OS_WIN32
-   #include <windows.h>
-#endif
 
 /**
   * @class ConsoleReader
   */
 
 ConsoleReader::ConsoleReader(QObject* parent) :
-   QObject(parent), inputStream(stdin), notifier(STDIN_FILENO, QSocketNotifier::Read)
+   QObject(parent)
 {
-   connect(&this->notifier, QSocketNotifier::activated, this, inputAvailable);
+   Reader* reader = new Reader;
+   reader->moveToThread(&this->readerThread);
+   connect(&this->readerThread, QThread::finished, reader, QObject::deleteLater);
+   connect(this, ConsoleReader::readNextLine, reader, Reader::readLine);
+   connect(reader, Reader::lineRead, this, nextLine);
+   this->readerThread.start();
+
+   emit readNextLine();
 }
 
-void ConsoleReader::inputAvailable()
+void ConsoleReader::nextLine(QString line)
 {
-   QString line = this->inputStream.readLine().trimmed();
-   if (!line.isEmpty())
-      emit newLine(line);
+   QString lineTrimmed = line.trimmed();
+   if (!lineTrimmed.isEmpty())
+      emit newLine(lineTrimmed);
+   emit readNextLine();
+}
+
+Reader::Reader()
+   : inputStream(stdin)
+{
+}
+
+void Reader::readLine()
+{
+   emit lineRead(this->inputStream.readLine());
 }

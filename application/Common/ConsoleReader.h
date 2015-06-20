@@ -20,9 +20,8 @@
 #define COMMON_CONSOLEREADER_H
 
 #include <QObject>
+#include <QThread>
 #include <QTextStream>
-#include <QIODevice>
-#include <QSocketNotifier>
 
 namespace Common
 {
@@ -34,13 +33,30 @@ namespace Common
 
    signals:
       void newLine(QString line);
+      void readNextLine();
 
    private slots:
-      void inputAvailable();
+      void nextLine(QString line);
 
    private:
-      QTextStream inputStream;
-      QSocketNotifier notifier;
+      QThread readerThread;
+   };
+
+   // Not public.
+   class Reader : public QObject
+   {
+      Q_OBJECT
+   public:
+      Reader();
+
+   public slots:
+      void readLine();
+
+   signals:
+       void lineRead(const QString& line);
+
+   private:
+       QTextStream inputStream;
    };
 }
 

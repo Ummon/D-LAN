@@ -75,16 +75,20 @@ void CoreService::stop()
    this->application()->quit();
 }
 
-/*int CoreService::executeApplication()
+int CoreService::executeApplication()
 {
    this->consoleReader = new Common::ConsoleReader(this);
    connect(this->consoleReader, SIGNAL(newLine(QString)), this, SLOT(processUserInput(QString)), Qt::QueuedConnection);
    return QtService::executeApplication();
-}*/
+}
 
 void CoreService::processUserInput(QString input)
 {
-   if (input == "quit")
+   if (input == "help")
+   {
+      this->printCommands();
+   }
+   else if (input == "quit")
    {
       this->stop();
    }
@@ -97,14 +101,18 @@ void CoreService::processUserInput(QString input)
       this->core->printSimilarFiles();
    }
    else
-      CoreService::printCommands();
+   {
+      QTextStream out(stdout);
+      out << "Command unknown : '" << input << "', type 'help' to list commands" << endl;
+   }
 }
 
 void CoreService::printCommands()
 {
    QTextStream out(stdout);
    out << "Commands:" << endl
-       << " - quit : stop the core" << endl
-       << " - dumpwi : dump the word index in the log as a warning" << endl
-       << " - printsf : print the similar files in the log as a warning" << endl;
+       << " - help: show this message" << endl
+       << " - quit: stop the core" << endl
+       << " - dumpwi: dump the word index in the log as a warning" << endl
+       << " - printsf: print the similar files in the log as a warning" << endl;
 }

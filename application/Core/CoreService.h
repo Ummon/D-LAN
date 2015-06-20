@@ -43,7 +43,7 @@ namespace CoreSpace
       void start();
       void stop();
 
-      //int executeApplication() override;
+      int executeApplication() override;
 
    private slots:
       void processUserInput(QString);
