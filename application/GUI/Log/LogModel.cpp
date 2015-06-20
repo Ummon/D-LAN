@@ -25,10 +25,10 @@ using namespace GUI;
 LogModel::LogModel(QSharedPointer<RCC::ICoreConnection> coreConnection) :
    coreConnection(coreConnection)
 {
-   connect(this->coreConnection.data(), SIGNAL(newLogMessages(QList<QSharedPointer<LM::IEntry>>)), this, SLOT(newLogEntries(QList<QSharedPointer<LM::IEntry>>)));
+   connect(this->coreConnection.data(), RCC::ICoreConnection::newLogMessages, this, newLogEntries);
 
    this->loggerHook = LM::Builder::newLoggerHook(LM::Severity(LM::SV_FATAL_ERROR | LM::SV_ERROR | LM::SV_END_USER | LM::SV_WARNING));
-   connect(this->loggerHook.data(), SIGNAL(newLogEntry(QSharedPointer<LM::IEntry>)), this, SLOT(newLogEntry(QSharedPointer<LM::IEntry>)));
+   connect(this->loggerHook.data(), LM::ILoggerHook::newLogEntry, this, newLogEntry);
 }
 
 int LogModel::rowCount(const QModelIndex& /*parent*/) const
@@ -91,18 +91,23 @@ void LogModel::newLogEntries(const QList<QSharedPointer<LM::IEntry>>& entries)
 {
    QList<QSharedPointer<LM::IEntry>> filteredEntries;
 
-   // Report Warnings only in DEBUG mode.
+   // Report Warnings only in DEBUG mode and do not repeat several same messages.
    for (QListIterator<QSharedPointer<LM::IEntry>> i(entries); i.hasNext();)
    {
       const QSharedPointer<LM::IEntry>& entry = i.next();
 #ifndef DEBUG
       if (entry->getSeverity() != LM::SV_WARNING)
 #endif
-         filteredEntries << entry;
+      {
+         if (filteredEntries.isEmpty() || entry->getMessage() != filteredEntries.last()->getMessage())
+            filteredEntries << entry;
+      }
    }
 
-   // Do not repeat several same messages.
-   if (filteredEntries.isEmpty() || !this->entries.isEmpty() && filteredEntries.size() == 1 && this->entries.last()->getMessage() == filteredEntries.first()->getMessage())
+   if (!filteredEntries.isEmpty() && !this->entries.isEmpty() && filteredEntries.last()->getMessage() == this->entries.last()->getMessage())
+      filteredEntries.removeLast();
+
+   if (filteredEntries.isEmpty())
       return;
 
    this->beginInsertRows(QModelIndex(), this->entries.size(), this->entries.size() + filteredEntries.size() - 1);
@@ -116,5 +121,4 @@ void LogModel::newLogEntries(const QList<QSharedPointer<LM::IEntry>>& entries)
       this->entries.erase(this->entries.begin(), this->entries.begin() + (quint32(this->entries.size()) - MAX_LOG_MESSAGE_DISPLAYED));
       this->endRemoveRows();
    }
-
 }
