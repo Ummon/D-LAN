@@ -321,13 +321,21 @@ void PeerListModel::coreDisconnected(bool forced)
   */
 void PeerListModel::updatePeers(const google::protobuf::RepeatedPtrField<Protos::GUI::State::Peer>& peers, const QSet<Common::Hash>& peersDownloadingOurData, const QSet<Common::Hash>& peersToDisplay)
 {
-   Common::SortedArray<Peer*> peersToRemove = this->orderedPeers;
-   QList<Peer*> peersToAdd;
+   bool dataChanged = false;
+   auto setDataChanged = [&dataChanged, this]()
+   {
+      if (!dataChanged)
+         emit layoutAboutToBeChanged(QList<QPersistentModelIndex>(), QAbstractItemModel::VerticalSortHint);
+      dataChanged = true;
+   };
+
+   QSet<Common::Hash> peersToRemove = this->indexedPeers.keys().toSet();
 
    for (int i = 0; i < peers.size(); i++)
    {
       const Common::Hash peerID { peers.Get(i).peer_id().hash() };
 
+      // We ignore some peers depending 'peersToDisplay' and 'this->displayOnlyPeersWithStatusOK'.
       if (!peersToDisplay.isEmpty() && !peersToDisplay.contains(peerID) || this->displayOnlyPeersWithStatusOK && peers.Get(i).status() != Protos::GUI::State::Peer::OK)
          continue;
 
@@ -343,46 +351,18 @@ void PeerListModel::updatePeers(const google::protobuf::RepeatedPtrField<Protos:
 
       auto peerIterator = this->indexedPeers.find(peerID);
       Peer* peer = peerIterator == this->indexedPeers.end() ? nullptr : *peerIterator;
-      int j;
-      if (peer && (j = this->orderedPeers.indexOf(peer)) != -1)
+      if (peer)
       {
-         peersToRemove.remove(peer);
-         if (peer->nick != nick)
+         peersToRemove.remove(peerID);
+
+         if (peer->nick != nick || peer->sharingAmount != sharingAmount || peer->transferInformation != transferInformation)
          {
-            if (this->currentSortType == Protos::GUI::Settings::BY_NICK)
-            {
-               this->beginRemoveRows(QModelIndex(), j, j);
-               this->orderedPeers.remove(peer);
-               this->endRemoveRows();
-               peer->nick = nick;
-               peersToAdd << peer;
-            }
-            else
-            {
-               peer->nick = nick;
-               emit dataChanged(this->createIndex(j, 1), this->createIndex(j, 1));
-            }
-         }
-         if (peer->sharingAmount != sharingAmount)
-         {
-            if (this->currentSortType == Protos::GUI::Settings::BY_SHARING_AMOUNT)
-            {
-               this->beginRemoveRows(QModelIndex(), j, j);
-               this->orderedPeers.remove(peer);
-               this->endRemoveRows();
-               peer->sharingAmount = sharingAmount;
-               peersToAdd << peer;
-            }
-            else
-            {
-               peer->sharingAmount = sharingAmount;
-               emit dataChanged(this->createIndex(j, 1), this->createIndex(j, 1));
-            }
-         }
-         if (peer->transferInformation != transferInformation)
-         {
+            setDataChanged();
+            this->orderedPeers.remove(peer);
+            peer->nick = nick;
+            peer->sharingAmount = sharingAmount;
             peer->transferInformation = transferInformation;
-            emit dataChanged(this->createIndex(j, 0), this->createIndex(j, 0));
+            this->orderedPeers.insert(peer);
          }
 
          peer->ip = ip;
@@ -391,40 +371,27 @@ void PeerListModel::updatePeers(const google::protobuf::RepeatedPtrField<Protos:
       }
       else
       {
-         peersToAdd << new Peer { peerID, nick, coreVersion, sharingAmount, ip, transferInformation, status };
+         setDataChanged();
+         Peer* p = new Peer { peerID, nick, coreVersion, sharingAmount, ip, transferInformation, status };
+         this->indexedPeers.insert(peerID, p);
+         this->orderedPeers.insert(p);
       }
    }
 
    QList<Common::Hash> peerIDsRemoved;
-   auto end = peersToRemove.end();
-   for (auto i = peersToRemove.begin(); i != end; ++i)
+   for (auto i = peersToRemove.begin(); i != peersToRemove.end(); ++i)
    {
-      Peer* const peer = *i;
+      setDataChanged();
+      Peer* peer = this->indexedPeers[*i];
       peerIDsRemoved << peer->peerID;
-      int j = this->orderedPeers.indexOf(peer);
-      if (j != -1)
-      {
-         this->beginRemoveRows(QModelIndex(), j, j);
-         this->indexedPeers.remove(peer->peerID);
-         this->orderedPeers.remove(peer);
-         delete peer;
-         this->endRemoveRows();
-      }
+      this->indexedPeers.remove(peer->peerID);
+      this->orderedPeers.remove(peer);
+      delete peer;
    }
+
+   if (dataChanged)
+      emit layoutChanged(QList<QPersistentModelIndex>(), QAbstractItemModel::VerticalSortHint);
 
    if (!peerIDsRemoved.isEmpty())
       emit peersRemoved(peerIDsRemoved);
-
-//   peersToAdd << new Peer { Common::Hash::fromStr(QString("c7d4adaa63555932d3f460bde685bd93ab91dffa")), "Pierre", QString(), 0, QHostAddress(), { 0, 0, false },  Protos::GUI::State::Peer::OK };
-//   peersToAdd << new Peer { Common::Hash::fromStr(QString("c7d4adaa63555932d3f460bde685bd93ab91dffb")), "Paul", QString(), 0, QHostAddress(), { 0, 0, false },  Protos::GUI::State::Peer::OK };
-//   peersToAdd << new Peer { Common::Hash::fromStr(QString("c7d4adaa63555932d3f460bde685bd93ab91dffc")), "Jacques", QString(), 0, QHostAddress(), { 0, 0, false },  Protos::GUI::State::Peer::OK };
-
-   for (QListIterator<Peer*> i(peersToAdd); i.hasNext();)
-   {
-      Peer* const peer = i.next();
-      int pos = this->orderedPeers.insert(peer);
-      this->beginInsertRows(QModelIndex(), pos, pos);
-      this->indexedPeers.insert(peer->peerID, peer);
-      this->endInsertRows();
-   }
 }

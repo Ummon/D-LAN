@@ -147,8 +147,15 @@ void RoomsModel::coreDisconnected(bool force)
 
 void RoomsModel::updateRooms(const google::protobuf::RepeatedPtrField<Protos::GUI::State::Room>& rooms)
 {
-   Common::SortedArray<Room*> roomsToRemove = this->orderedRooms;
-   QList<Room*> roomsToAdd;
+   bool dataChanged = false;
+   auto setDataChanged = [&dataChanged, this]()
+   {
+      if (!dataChanged)
+         emit layoutAboutToBeChanged(QList<QPersistentModelIndex>(), QAbstractItemModel::VerticalSortHint);
+      dataChanged = true;
+   };
+
+   QSet<QString> roomsToRemove = this->indexedRooms.keys().toSet();
 
    for (int i = 0; i < rooms.size(); i++)
    {
@@ -160,62 +167,38 @@ void RoomsModel::updateRooms(const google::protobuf::RepeatedPtrField<Protos::GU
 
       auto roomIterator = this->indexedRooms.find(name);
       Room* room = roomIterator == this->indexedRooms.end() ? nullptr : *roomIterator;
-      int j;
-      if (room && (j = this->orderedRooms.indexOf(room)) != -1)
+      if (room)
       {
-         roomsToRemove.remove(room);
-         if (room->peerIDs != peerIDs)
+         roomsToRemove.remove(name);
+
+         if (room->peerIDs != peerIDs || room->joined != joined)
          {
-            if (this->currentSortType == Protos::GUI::Settings::BY_NB_PEERS)
-            {
-               this->beginRemoveRows(QModelIndex(), j, j);
-               this->orderedRooms.remove(room);
-               this->endRemoveRows();
-               room->peerIDs = peerIDs;
-               roomsToAdd << room;
-            }
-            else
-            {
-               room->peerIDs = peerIDs;
-               emit dataChanged(this->createIndex(j, 1), this->createIndex(j, 1));
-            }
+            setDataChanged();
+            this->orderedRooms.remove(room);
+            room->peerIDs = peerIDs;
+            this->orderedRooms.insert(room);
          }
 
-         if (room->joined != joined)
-         {
-            room->joined = joined;
-            emit dataChanged(this->createIndex(j, 0), this->createIndex(j, 0));
-         }
+         room->joined = joined;
       }
       else
       {
-         roomsToAdd << new Room { name, peerIDs, joined };
+         setDataChanged();
+         Room* r = new Room { name, peerIDs, joined };
+         this->indexedRooms.insert(name, r);
+         this->orderedRooms.insert(r);
       }
    }
 
-   QList<QString> roomNamesRemoved;
-   auto end = roomsToRemove.end();
-   for (auto i = roomsToRemove.begin(); i != end; ++i)
+   for (auto i = roomsToRemove.begin(); i != roomsToRemove.end(); ++i)
    {
-      Room* const room = *i;
-      roomNamesRemoved << room->name;
-      int j = this->orderedRooms.indexOf(room);
-      if (j != -1)
-      {
-         this->beginRemoveRows(QModelIndex(), j, j);
-         this->indexedRooms.remove(room->name);
-         this->orderedRooms.remove(room);
-         delete room;
-         this->endRemoveRows();
-      }
+      setDataChanged();
+      Room* room = this->indexedRooms[*i];
+      this->indexedRooms.remove(room->name);
+      this->orderedRooms.remove(room);
+      delete room;
    }
 
-   for (QListIterator<Room*> i(roomsToAdd); i.hasNext();)
-   {
-      Room* const room = i.next();
-      int pos = this->orderedRooms.insert(room);
-      this->beginInsertRows(QModelIndex(), pos, pos);
-      this->indexedRooms.insert(room->name, room);
-      this->endInsertRows();
-   }
+   if (dataChanged)
+      emit layoutChanged(QList<QPersistentModelIndex>(), QAbstractItemModel::VerticalSortHint);
 }
