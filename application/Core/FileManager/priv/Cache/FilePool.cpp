@@ -35,7 +35,7 @@ FilePool::FilePool(QObject* parent) :
    QObject(parent)
 {
    this->timer.setInterval(TIME_RECHECK_TO_RELEASE);
-   connect(&this->timer, QTimer::timeout, this, tryToDeleteReleasedFiles);
+   connect(&this->timer, &QTimer::timeout, this, &FilePool::tryToDeleteReleasedFiles);
 }
 
 FilePool::~FilePool()

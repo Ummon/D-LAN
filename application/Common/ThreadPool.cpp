@@ -28,7 +28,7 @@ Thread::Thread(int lifetime, uint stackSize) :
       this->setStackSize(stackSize);
    this->timer.setInterval(lifetime);
    this->timer.setSingleShot(true);
-   connect(&this->timer, QTimer::timeout, this, timeout);
+   connect(&this->timer, &QTimer::timeout, this, &Thread::timeout);
    this->start();
 }
 
@@ -161,8 +161,8 @@ void ThreadPool::run(QWeakPointer<IRunnable> runnable)
    else
    {
       thread = new Thread(this->threadInactiveLifetime, this->stackSize);
-      connect(thread, Thread::runnableFinished, this, runnableFinished, Qt::QueuedConnection);
-      connect(thread, Thread::timeout, this, threadTimeout);
+      connect(thread, &Thread::runnableFinished, this, &ThreadPool::runnableFinished, Qt::QueuedConnection);
+      connect(thread, &Thread::timeout, this, &ThreadPool::threadTimeout);
    }
    this->activeThreads << thread;
    thread->setRunnable(runnable);

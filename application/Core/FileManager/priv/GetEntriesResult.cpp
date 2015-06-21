@@ -45,7 +45,7 @@ void GetEntriesResult::start()
    else
    {
       L_DEBU(QString("FM::GetEntriesResult::start(): directory not yet scanned: %1").arg(this->dir->getFullPath()));
-      connect(this->dir->getCache(), Cache::directoryScanned, this, directoryScanned, Qt::DirectConnection);
+      connect(this->dir->getCache(), &Cache::directoryScanned, this, &GetEntriesResult::directoryScanned, Qt::DirectConnection);
       this->startTimer();
    }
 }
@@ -67,7 +67,7 @@ void GetEntriesResult::directoryScanned(Directory* dir)
 
 void GetEntriesResult::sendResult()
 {
-   disconnect(this->dir->getCache(), Cache::directoryScanned, this, directoryScanned);
+   disconnect(this->dir->getCache(), &Cache::directoryScanned, this, &GetEntriesResult::directoryScanned);
    this->stopTimer();
 
    L_DEBU("FM::GetEntriesResult::sendResult()");

@@ -30,7 +30,7 @@ GetChunkResult::GetChunkResult(const Protos::Core::GetChunk& chunk, QSharedPoint
 
 void GetChunkResult::start()
 {
-   connect(this->socket.data(), PeerMessageSocket::newMessage, this, newMessage, Qt::DirectConnection);
+   connect(this->socket.data(), &PeerMessageSocket::newMessage, this, &GetChunkResult::newMessage, Qt::DirectConnection);
    socket->send(Common::MessageHeader::CORE_GET_CHUNK, this->chunk);
    this->startTimer();
 }
@@ -43,7 +43,7 @@ void GetChunkResult::setStatus(bool closeTheSocket)
 void GetChunkResult::doDeleteLater()
 {
    // We must disconnect because 'this->socket->finished' can read some data and emit 'newMessage'.
-   disconnect(this->socket.data(), PeerMessageSocket::newMessage, this, newMessage);
+   disconnect(this->socket.data(), &PeerMessageSocket::newMessage, this, &GetChunkResult::newMessage);
    this->socket->finished(this->isTimedout() ? true : this->closeTheSocket);
    this->socket.clear();
    this->deleteLater();

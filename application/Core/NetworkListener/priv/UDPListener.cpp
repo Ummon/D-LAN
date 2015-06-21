@@ -77,7 +77,7 @@ UDPListener::UDPListener(
    this->initMulticastUDPSocket();
    this->initUnicastUDPSocket();
 
-   connect(&this->timerIMAlive, QTimer::timeout, this, sendIMAliveMessage);
+   connect(&this->timerIMAlive, &QTimer::timeout, this, &UDPListener::sendIMAliveMessage);
    this->timerIMAlive.start(static_cast<int>(SETTINGS.get<quint32>("peer_imalive_period")));
 
    this->sendIMAliveMessage();
@@ -96,8 +96,6 @@ INetworkListener::SendStatus UDPListener::send(Common::MessageHeader::MessageTyp
    int messageSize;
    if (!(messageSize = this->writeMessageToBuffer(type, message)))
       return INetworkListener::SendStatus::MESSAGE_TOO_LARGE;
-
-   QHostAddress peerIP = peer->getIP();
 
    L_DEBU(QString("Send unicast UDP to %1, header.getType(): %2, message size: %3 \n%4").
       arg(peer->toStringLog()).
@@ -416,7 +414,7 @@ void UDPListener::initMulticastUDPSocket()
    this->multicastSocket.setSocketOption(QAbstractSocket::SendBufferSizeSocketOption, BUFFER_SIZE_UDP);
    this->multicastSocket.setSocketOption(QAbstractSocket::ReceiveBufferSizeSocketOption, BUFFER_SIZE_UDP);
 
-   connect(&this->multicastSocket, QUdpSocket::readyRead, this, processPendingMulticastDatagrams);
+   connect(&this->multicastSocket, &QUdpSocket::readyRead, this, &UDPListener::processPendingMulticastDatagrams);
 }
 
 void UDPListener::initUnicastUDPSocket()
@@ -431,7 +429,7 @@ void UDPListener::initUnicastUDPSocket()
    this->unicastSocket.setSocketOption(QAbstractSocket::SendBufferSizeSocketOption, BUFFER_SIZE_UDP);
    this->unicastSocket.setSocketOption(QAbstractSocket::ReceiveBufferSizeSocketOption, BUFFER_SIZE_UDP);
 
-   connect(&this->unicastSocket, QUdpSocket::readyRead, this, processPendingUnicastDatagrams);
+   connect(&this->unicastSocket, &QUdpSocket::readyRead, this, &UDPListener::processPendingUnicastDatagrams);
 }
 
 /**

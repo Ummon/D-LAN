@@ -347,7 +347,7 @@ void InternalCoreConnection::tryToConnectToTheNextAddress()
          L_WARN("Unable to start the Core");
    }
 
-   connect(this->socket, QAbstractSocket::stateChanged, this, stateChanged);
+   connect(this->socket, &QAbstractSocket::stateChanged, this, &InternalCoreConnection::stateChanged);
    this->socket->connectToHost(address, this->connectionInfo.port);
    this->addressesToRetry << address;
 }
@@ -357,7 +357,7 @@ void InternalCoreConnection::stateChanged(QAbstractSocket::SocketState socketSta
    switch (socketState)
    {
    case QAbstractSocket::UnconnectedState:
-      disconnect(this->socket, QAbstractSocket::stateChanged, this, stateChanged);
+      disconnect(this->socket, &QAbstractSocket::stateChanged, this, &InternalCoreConnection::stateChanged);
       if (!this->addressesToTry.isEmpty())
       {
          this->tryToConnectToTheNextAddress();
@@ -375,7 +375,7 @@ void InternalCoreConnection::stateChanged(QAbstractSocket::SocketState socketSta
       break;
 
    case QAbstractSocket::ConnectedState:
-      disconnect(this->socket, QAbstractSocket::stateChanged, this, stateChanged);
+      disconnect(this->socket, &QAbstractSocket::stateChanged, this, &InternalCoreConnection::stateChanged);
       // Now we wait a message 'Protos.GUI.AskForAuthentication' from the Core before being authenticated.
 
    default:;

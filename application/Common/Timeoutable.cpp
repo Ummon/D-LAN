@@ -37,14 +37,14 @@ bool Timeoutable::isTimedout() const
 void Timeoutable::startTimer()
 {
    if (!this->timer.isActive())
-      connect(&this->timer, QTimer::timeout, this, timeoutSlot);
+      connect(&this->timer, &QTimer::timeout, this, &Timeoutable::timeoutSlot);
 
    this->timer.start();
 }
 
 void Timeoutable::stopTimer()
 {
-   disconnect(&this->timer, QTimer::timeout, this, timeoutSlot);
+   disconnect(&this->timer, &QTimer::timeout, this, &Timeoutable::timeoutSlot);
    this->timer.stop();
 }
 

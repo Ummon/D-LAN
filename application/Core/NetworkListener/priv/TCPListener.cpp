@@ -60,7 +60,7 @@ void TCPListener::rebindSockets()
       }
       this->currentPort++;
    }
-   connect(&this->tcpServer, QTcpServer::newConnection, this, newConnection);
+   connect(&this->tcpServer, &QTcpServer::newConnection, this, &TCPListener::newConnection);
 }
 
 void TCPListener::newConnection()

@@ -65,7 +65,7 @@ bool FileHasher::start(FileForHasher* fileCache, int n, int* amountHashed)
 
    this->currentFileCache = fileCache;
 
-   connect(this->currentFileCache->getCache(), Cache::entryRemoved, this, entryRemoved, static_cast<Qt::ConnectionType>(Qt::UniqueConnection | Qt::DirectConnection));
+   connect(this->currentFileCache->getCache(), &Cache::entryRemoved, this, &FileHasher::entryRemoved, static_cast<Qt::ConnectionType>(Qt::UniqueConnection | Qt::DirectConnection));
 
    if (this->toStopHashing)
    {

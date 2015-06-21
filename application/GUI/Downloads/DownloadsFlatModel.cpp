@@ -155,7 +155,6 @@ bool DownloadsFlatModel::dropMimeData(const QMimeData* data, Qt::DropAction acti
    if (rows.isEmpty())
       return false;
 
-
    // Defines the reference ID.
    Protos::GUI::MoveDownloads::Position position = Protos::GUI::MoveDownloads::BEFORE;
    quint64 placeToMove = 0;

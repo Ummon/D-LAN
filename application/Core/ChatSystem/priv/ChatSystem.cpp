@@ -53,16 +53,16 @@ ChatSystem::ChatSystem(QSharedPointer<PM::IPeerManager> peerManager, QSharedPoin
 
    this->loadChatMessagesFromAllFiles();
 
-   connect(this->networkListener.data(), NL::INetworkListener::received, this, received);
-   connect(this->networkListener.data(), NL::INetworkListener::IMAliveMessageToBeSend, this, IMAliveMessageToBeSend);
+   connect(this->networkListener.data(), &NL::INetworkListener::received, this, &ChatSystem::received);
+   connect(this->networkListener.data(), &NL::INetworkListener::IMAliveMessageToBeSend, this, &ChatSystem::IMAliveMessageToBeSend);
 
-   connect(&this->retrieveLastChatMessageTimer, QTimer::timeout, this, retrieveLastChatMessages);
+   connect(&this->retrieveLastChatMessageTimer, &QTimer::timeout, this, &ChatSystem::retrieveLastChatMessages);
    this->retrieveLastChatMessageTimer.setInterval(SETTINGS.get<quint32>("get_last_chat_messages_period"));
    this->retrieveLastChatMessageTimer.start();
    this->retrieveLastChatMessages();
 
    this->saveChatMessagesTimer.setInterval(SETTINGS.get<quint32>("save_chat_messages_period"));
-   connect(&this->saveChatMessagesTimer, QTimer::timeout, this, saveAllChatMessages);
+   connect(&this->saveChatMessagesTimer, &QTimer::timeout, this, &ChatSystem::saveAllChatMessages);
    this->saveChatMessagesTimer.start();
 
    this->loadRoomListFromSettings();

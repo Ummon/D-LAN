@@ -38,7 +38,7 @@ CoreConnection::CoreConnection(int socketTimeout) :
    connectingInProgress(false),
    SOCKET_TIMEOUT(socketTimeout)
 {
-   connect(&this->coreController, CoreController::statusChanged, this, localCoreStatusChanged);
+   connect(&this->coreController, &CoreController::statusChanged, this, &CoreConnection::localCoreStatusChanged);
 }
 
 CoreConnection::~CoreConnection()
@@ -259,10 +259,10 @@ void CoreConnection::tempConnected()
 
    this->swap();
 
-   connect(&this->current(), InternalCoreConnection::disconnected, this, disconnected);
-   connect(&this->current(), InternalCoreConnection::newState, this, newState);
-   connect(&this->current(), InternalCoreConnection::newChatMessages, this, newChatMessages);
-   connect(&this->current(), InternalCoreConnection::newLogMessages, this, newLogMessages);
+   connect(&this->current(), &InternalCoreConnection::disconnected, this, &CoreConnection::disconnected);
+   connect(&this->current(), &InternalCoreConnection::newState, this, &CoreConnection::newState);
+   connect(&this->current(), &InternalCoreConnection::newChatMessages, this, &CoreConnection::newChatMessages);
+   connect(&this->current(), &InternalCoreConnection::newLogMessages, this, &CoreConnection::newLogMessages);
    emit connected();
 }
 
@@ -293,9 +293,9 @@ bool CoreConnection::connectToCorePrepare(const QString& address)
       return false;
    }
 
-   connect(&this->temp(), InternalCoreConnection::connectingError, this, tempConnectingError);
-   connect(&this->temp(), InternalCoreConnection::connected, this, tempConnected);
-   connect(&this->temp(), InternalCoreConnection::disconnected, this, tempDisconnected);
+   connect(&this->temp(), &InternalCoreConnection::connectingError, this, &CoreConnection::tempConnectingError);
+   connect(&this->temp(), &InternalCoreConnection::connected, this, &CoreConnection::tempConnected);
+   connect(&this->temp(), &InternalCoreConnection::disconnected, this, &CoreConnection::tempDisconnected);
 
    return true;
 }

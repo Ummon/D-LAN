@@ -34,7 +34,7 @@ const int CoreController::TIMEOUT_SUBPROCESS_WAIT_FOR_STARTED(2000); // 2s.
 CoreController::CoreController() :
    controller(Common::Constants::SERVICE_NAME)
 {
-   connect(&this->coreProcess, QProcess::stateChanged, this, statusChanged);
+   connect(&this->coreProcess, &QProcess::stateChanged, this, &CoreController::statusChanged);
 }
 
 void CoreController::setCoreExecutableDirectory(const QString& dir)

@@ -39,9 +39,11 @@ void DownloadsDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opt
 
    if (index.column() == 2)
    {
+      QStyledItemDelegate::paint(painter, option, QModelIndex()); // To draw the background (including the selection highlight).
+
       Progress progress = index.data().value<Progress>();
 
-      QStyleOptionProgressBarV2 progressBarOption;
+      QStyleOptionProgressBar progressBarOption;
       progressBarOption.QStyleOption::operator=(option);
 
       progressBarOption.minimum = 0;
@@ -73,8 +75,8 @@ void DownloadsDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opt
 
       progressBarOption.textVisible = true;
 
-      // I don't know why the commented code doesn't work ('widget' is 'tblDownloads' from the class 'DownloadsWindow' and has the type 'QTreeView').
-      QApplication::style()->drawControl(QStyle::CE_ProgressBar, &progressBarOption, painter, &this->model /*static_cast<const QStyleOptionViewItemV4&>(option).widget*/);
+      // FIXME: The text color of the progress bar is wrong when the row is selected.
+      QApplication::style()->drawControl(QStyle::CE_ProgressBar, &progressBarOption, painter, option.widget);
    }
    else
    {

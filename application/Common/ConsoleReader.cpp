@@ -30,9 +30,9 @@ ConsoleReader::ConsoleReader(QObject* parent) :
 {
    Reader* reader = new Reader;
    reader->moveToThread(&this->readerThread);
-   connect(&this->readerThread, QThread::finished, reader, QObject::deleteLater);
-   connect(this, ConsoleReader::readNextLine, reader, Reader::readLine);
-   connect(reader, Reader::lineRead, this, nextLine);
+   connect(&this->readerThread, &QThread::finished, reader, &QObject::deleteLater);
+   connect(this, &ConsoleReader::readNextLine, reader, &Reader::readLine);
+   connect(reader, &Reader::lineRead, this, &ConsoleReader::nextLine);
    this->readerThread.start();
 
    emit readNextLine();

@@ -154,8 +154,8 @@ void MessageSocket::startListening()
 
    this->listening = true;
 
-   connect(this->socket, QAbstractSocket::readyRead, this, dataReceivedSlot, Qt::DirectConnection);
-   connect(this->socket, QAbstractSocket::disconnected, this, disconnectedSlot, Qt::DirectConnection);
+   connect(this->socket, &QAbstractSocket::readyRead, this, &MessageSocket::dataReceivedSlot, Qt::DirectConnection);
+   connect(this->socket, &QAbstractSocket::disconnected, this, &MessageSocket::disconnectedSlot, Qt::DirectConnection);
 
    this->dataReceivedSlot();
 }
@@ -168,8 +168,8 @@ void MessageSocket::stopListening()
 {
    MESSAGE_SOCKET_LOG_DEBUG(QString("Socket[%1] stopping to listen").arg(this->num));
 
-   disconnect(this->socket, QAbstractSocket::readyRead, this, dataReceivedSlot);
-   disconnect(this->socket, QAbstractSocket::disconnected, this, disconnectedSlot);
+   disconnect(this->socket, &QAbstractSocket::readyRead, this, &MessageSocket::dataReceivedSlot);
+   disconnect(this->socket, &QAbstractSocket::disconnected, this, &MessageSocket::disconnectedSlot);
 
    this->listening = false;
 }

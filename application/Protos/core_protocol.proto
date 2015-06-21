@@ -80,7 +80,7 @@ message GetLastChatMessages {
 
 
 // Searching a file or a directory.
-// See http://dev.euphorik.ch/wiki/pmp/Algorithms#Searching for more details.
+// See http://dev.d-lan.net/projects/pmp/wiki/Algorithms#Searching-among-other-peers for more details.
 // a -> all
 // id : 0x21
 message Find {

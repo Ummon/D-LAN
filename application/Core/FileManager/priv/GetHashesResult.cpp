@@ -47,7 +47,7 @@ GetHashesResult::~GetHashesResult()
 
    L_DEBU("GetHashesResult::~GetHashesResult()");
 
-   disconnect(&this->cache, Cache::chunkHashKnown, this, chunkHashKnown);
+   disconnect(&this->cache, &Cache::chunkHashKnown, this, &GetHashesResult::chunkHashKnown);
 }
 
 /**
@@ -74,7 +74,7 @@ Protos::Core::GetHashesResult GetHashesResult::start()
    {
       QMutexLocker locker(&this->mutex);
 
-      connect(&this->cache, Cache::chunkHashKnown, this, chunkHashKnown, Qt::DirectConnection);
+      connect(&this->cache, &Cache::chunkHashKnown, this, &GetHashesResult::chunkHashKnown, Qt::DirectConnection);
 
       int nbOfHashToBeSent = 0;
       int j = 0;
@@ -100,7 +100,7 @@ Protos::Core::GetHashesResult GetHashesResult::start()
 
    // No hash to send.
    if (this->hashesRemaining.isEmpty())
-      disconnect(&this->cache, Cache::chunkHashKnown, this, chunkHashKnown);
+      disconnect(&this->cache, &Cache::chunkHashKnown, this, &GetHashesResult::chunkHashKnown);
    else
       // If at least one hash is missing we tell the file updater to compute the remaining ones.
       this->fileUpdater.prioritizeAFileToHash(this->file);
@@ -126,7 +126,7 @@ void GetHashesResult::sendNextHash(QSharedPointer<Chunk> chunk, bool direct)
       {
          this->hashesRemaining.removeAt(i);
          if (this->hashesRemaining.empty())
-            disconnect(&this->cache, Cache::chunkHashKnown, this, chunkHashKnown);
+            disconnect(&this->cache, &Cache::chunkHashKnown, this, &GetHashesResult::chunkHashKnown);
       }
    }
 

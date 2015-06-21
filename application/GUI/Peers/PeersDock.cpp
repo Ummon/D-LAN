@@ -54,11 +54,11 @@ PeersDock::PeersDock(QSharedPointer<RCC::ICoreConnection> coreConnection, QWidge
    this->ui->tblPeers->setShowGrid(false);
    this->ui->tblPeers->setAlternatingRowColors(false);
    this->ui->tblPeers->setContextMenuPolicy(Qt::CustomContextMenu);
-   connect(this->ui->tblPeers, QTableView::customContextMenuRequested, this, PeersDock::displayContextMenuPeers);
-   connect(this->ui->tblPeers, QTableView::doubleClicked, this, PeersDock::browse);
+   connect(this->ui->tblPeers, &QTableView::customContextMenuRequested, this, &PeersDock::displayContextMenuPeers);
+   connect(this->ui->tblPeers, &QTableView::doubleClicked, this, &PeersDock::browse);
 
-   connect(this->coreConnection.data(), RCC::ICoreConnection::connected, this, PeersDock::coreConnected);
-   connect(this->coreConnection.data(), RCC::ICoreConnection::disconnected, this, PeersDock::coreDisconnected);
+   connect(this->coreConnection.data(), &RCC::ICoreConnection::connected, this, &PeersDock::coreConnected);
+   connect(this->coreConnection.data(), &RCC::ICoreConnection::disconnected, this, &PeersDock::coreDisconnected);
 
    this->restoreColorizedPeers();
    this->coreDisconnected(false); // Initial state.

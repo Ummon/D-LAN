@@ -265,8 +265,8 @@ void PeerMessageSocket::onNewMessage(const Common::Message& message)
          for (int i = 0; i < getEntries.dirs().entry_size(); i++)
          {
             QSharedPointer<FM::IGetEntriesResult> result = this->fileManager->getScannedEntries(getEntries.dirs().entry(i), getEntries.has_nb_max_hashes_per_entry() ? getEntries.nb_max_hashes_per_entry() : std::numeric_limits<int>::max());
-            connect(result.data(), FM::IGetEntriesResult::result, this, entriesResult, Qt::DirectConnection);
-            connect(result.data(), FM::IGetEntriesResult::timeout, this, entriesResultTimeout, Qt::DirectConnection);
+            connect(result.data(), &FM::IGetEntriesResult::result, this, &PeerMessageSocket::entriesResult, Qt::DirectConnection);
+            connect(result.data(), &FM::IGetEntriesResult::timeout, this, &PeerMessageSocket::entriesResultTimeout, Qt::DirectConnection);
             this->entriesResultsToReceive << result;
             this->entriesResultMessage.add_result();
          }
@@ -292,7 +292,7 @@ void PeerMessageSocket::onNewMessage(const Common::Message& message)
          const Protos::Core::GetHashes& getHashes = message.getMessage<Protos::Core::GetHashes>();
 
          this->currentHashesResult = this->fileManager->getHashes(getHashes.file());
-         connect(this->currentHashesResult.data(), FM::IGetHashesResult::nextHash, this, nextAskedHash, Qt::QueuedConnection);
+         connect(this->currentHashesResult.data(), &FM::IGetHashesResult::nextHash, this, &PeerMessageSocket::nextAskedHash, Qt::QueuedConnection);
          Protos::Core::GetHashesResult res = this->currentHashesResult->start();
          this->nbHash = res.nb_hash();
 
@@ -375,7 +375,7 @@ void PeerMessageSocket::initUnactiveTimer()
 {
    this->inactiveTimer.setSingleShot(true);
    this->inactiveTimer.setInterval(SETTINGS.get<quint32>("idle_socket_timeout"));
-   connect(&this->inactiveTimer, QTimer::timeout, this, close);
+   connect(&this->inactiveTimer, &QTimer::timeout, this, &PeerMessageSocket::close);
    this->inactiveTimer.start();
 }
 

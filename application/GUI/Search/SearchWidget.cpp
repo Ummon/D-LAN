@@ -39,16 +39,27 @@ const QString SearchDelegate::MARKUP_SECOND_PART("</b>");
 
 void SearchDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
-   QStyleOptionViewItemV4 newOption(option);
+   if (!index.isValid())
+      return;
+
+   QStyleOptionViewItem newOption(option);
    newOption.state = option.state & (~QStyle::State_HasFocus);
 
    switch (index.column())
    {
-   case 0:
+   case 0: // Item name.
       {
          this->initStyleOption(&newOption, index);
 
          QTextDocument doc;
+         // We have to manually set the text color depending of the selection.
+         doc.setDefaultStyleSheet(
+            QString("span { color: %1 }").arg((
+               newOption.state & QStyle::State_Selected) == QStyle::State_Selected ?
+                                                 newOption.palette.color(QPalette::HighlightedText).name()
+                                               : newOption.palette.color(QPalette::Text).name()
+            )
+         );
          doc.setHtml(this->toHtmlText(newOption.text));
 
          // Painting item without text.
@@ -69,7 +80,7 @@ void SearchDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option
 
    case 2: // Match rate.
       {
-         QStyledItemDelegate::paint(painter, newOption, index);
+         QStyledItemDelegate::paint(painter, newOption, QModelIndex()); // To draw the background (including the selection highlight).
 
          if (index.data().isNull())
             return;
@@ -80,7 +91,7 @@ void SearchDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option
          progressBarOption.QStyleOption::operator=(option);
          progressBarOption.minimum = 0;
          progressBarOption.maximum = 100;
-         progressBarOption.textAlignment = Qt::AlignHCenter;
+         progressBarOption.textAlignment = Qt::AlignHCenter | Qt::AlignVCenter;
          progressBarOption.progress = value;
          progressBarOption.textVisible = false;
 
@@ -148,7 +159,7 @@ QString SearchDelegate::toHtmlText(const QString& text) const
          pos += term.size();
       }
    }
-   return htmlText;
+   return "<span>" + htmlText + "</span>";
 }
 
 /////

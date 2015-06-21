@@ -39,7 +39,7 @@ PeerManager::PeerManager(QSharedPointer<FM::IFileManager> fileManager) :
    fileManager(fileManager), self(new PeerSelf(this, this->fileManager))
 {
    this->timer.setInterval(SETTINGS.get<quint32>("pending_socket_timeout") / 10);
-   connect(&this->timer, QTimer::timeout, this, checkIdlePendingSockets);
+   connect(&this->timer, &QTimer::timeout, this, &PeerManager::checkIdlePendingSockets);
 }
 
 PeerManager::~PeerManager()
@@ -109,7 +109,7 @@ IPeer* PeerManager::createPeer(const Common::Hash& ID, const QString& nick)
       return existingPeer;
 
    Peer* peer = new Peer(this, this->fileManager, ID, nick);
-   connect(peer, Peer::unblocked, this, peerUnblocked);
+   connect(peer, &Peer::unblocked, this, &PeerManager::peerUnblocked);
    this->peers.insert(peer->getID(), peer);
 
    return peer;
@@ -139,7 +139,7 @@ void PeerManager::updatePeer(
    if (!peer)
    {
       peer = new Peer(this, this->fileManager, ID);
-      connect(peer, Peer::unblocked, this, peerUnblocked);
+      connect(peer, &Peer::unblocked, this, &PeerManager::peerUnblocked);
       this->peers.insert(peer->getID(), peer);
    }
 

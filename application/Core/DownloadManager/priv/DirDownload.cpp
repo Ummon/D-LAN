@@ -86,8 +86,8 @@ bool DirDownload::retrieveEntries()
       return false;
    }
 
-   connect(this->getEntriesResult.data(), PM::IGetEntriesResult::result, this, result);
-   connect(this->getEntriesResult.data(), PM::IGetEntriesResult::timeout, this, resultTimeout);
+   connect(this->getEntriesResult.data(), &PM::IGetEntriesResult::result, this, &DirDownload::result);
+   connect(this->getEntriesResult.data(), &PM::IGetEntriesResult::timeout, this, &DirDownload::resultTimeout);
    this->getEntriesResult->start();
 
    return true;

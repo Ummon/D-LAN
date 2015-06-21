@@ -425,9 +425,9 @@ PM::IPeer* ChunkDownloader::startDownloading()
 
    this->occupiedPeersDownloadingChunk.setPeerAsOccupied(this->currentDownloadingPeer);
 
-   connect(this->getChunkResult.data(), PM::IGetChunkResult::result, this, result, Qt::DirectConnection);
-   connect(this->getChunkResult.data(), PM::IGetChunkResult::stream, this, stream, Qt::DirectConnection);
-   connect(this->getChunkResult.data(), PM::IGetChunkResult::timeout, this, getChunkTimeout, Qt::DirectConnection);
+   connect(this->getChunkResult.data(), &PM::IGetChunkResult::result, this, &ChunkDownloader::result, Qt::DirectConnection);
+   connect(this->getChunkResult.data(), &PM::IGetChunkResult::stream, this, &ChunkDownloader::stream, Qt::DirectConnection);
+   connect(this->getChunkResult.data(), &PM::IGetChunkResult::timeout, this, &ChunkDownloader::getChunkTimeout, Qt::DirectConnection);
 
    this->getChunkResult->start();
    return this->currentDownloadingPeer;

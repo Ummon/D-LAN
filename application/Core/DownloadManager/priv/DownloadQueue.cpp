@@ -69,7 +69,7 @@ void DownloadQueue::insert(int position, Download* download)
    {
       this->downloadsIndexedByName.insert(download->getLocalEntry().name(), download);
       this->downloadsSortedByTime.insert(QTime(), fileDownload);
-      connect(fileDownload, FileDownload::lastTimeGetAllUnfinishedChunksChanged, this, fileDownloadTimeChanged, Qt::QueuedConnection);
+      connect(fileDownload, &FileDownload::lastTimeGetAllUnfinishedChunksChanged, this, &DownloadQueue::fileDownloadTimeChanged, Qt::QueuedConnection);
    }
 }
 

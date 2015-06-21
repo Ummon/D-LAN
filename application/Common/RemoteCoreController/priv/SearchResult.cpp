@@ -28,7 +28,7 @@ using namespace RCC;
 SearchResult::SearchResult(InternalCoreConnection* coreConnection, const Protos::Common::FindPattern& findPattern, bool local, int socketTimeout) :
    ISearchResult(socketTimeout), coreConnection(coreConnection), findPattern(findPattern), local(local)
 {
-   connect(this->coreConnection, InternalCoreConnection::searchResult, this, searchResult);
+   connect(this->coreConnection, &InternalCoreConnection::searchResult, this, &SearchResult::searchResult);
 }
 
 void SearchResult::start()
