@@ -51,15 +51,11 @@ void SearchDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option
       {
          this->initStyleOption(&newOption, index);
 
+         const QColor foregroundColor = index.data(Qt::ForegroundRole).value<QColor>();
+
          QTextDocument doc;
          // We have to manually set the text color depending of the selection.
-         doc.setDefaultStyleSheet(
-            QString("span { color: %1 }").arg((
-               newOption.state & QStyle::State_Selected) == QStyle::State_Selected ?
-                                                 newOption.palette.color(QPalette::HighlightedText).name()
-                                               : newOption.palette.color(QPalette::Text).name()
-            )
-         );
+         doc.setDefaultStyleSheet(QString("span { color: %1 }").arg(foregroundColor.name()));
          doc.setHtml(this->toHtmlText(newOption.text));
 
          // Painting item without text.
@@ -80,10 +76,10 @@ void SearchDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option
 
    case 2: // Match rate.
       {
-         QStyledItemDelegate::paint(painter, newOption, QModelIndex()); // To draw the background (including the selection highlight).
-
          if (index.data().isNull())
             return;
+
+         QStyledItemDelegate::paint(painter, newOption, index); // To draw the background (including the selection highlight).
 
          int value = index.data().toInt();
 
