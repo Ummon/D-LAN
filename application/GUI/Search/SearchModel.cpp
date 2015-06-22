@@ -24,6 +24,7 @@ using namespace GUI;
 #include <string>
 
 #include <QtAlgorithms>
+#include <QFont>
 
 #include <Common/Settings.h>
 #include <Common/Global.h>
@@ -108,6 +109,10 @@ QVariant SearchModel::data(const QModelIndex& index, int role) const
 
             return percentMatch > 100 ? 100 : percentMatch;
          }
+
+      // Trick to not draw the text. This value is drawn by a delegate.
+      case Qt::ForegroundRole :
+            return QColor(0, 0, 0, 0);
 
       default:
          return QVariant();

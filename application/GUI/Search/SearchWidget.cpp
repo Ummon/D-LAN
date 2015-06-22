@@ -42,20 +42,22 @@ void SearchDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option
    if (!index.isValid())
       return;
 
-   QStyleOptionViewItem newOption(option);
+   QStyleOptionViewItem newOption = option;
    newOption.state = option.state & (~QStyle::State_HasFocus);
+   this->initStyleOption(&newOption, index);
 
    switch (index.column())
    {
    case 0: // Item name.
       {
-         this->initStyleOption(&newOption, index);
-
-         const QColor foregroundColor = index.data(Qt::ForegroundRole).value<QColor>();
-
          QTextDocument doc;
          // We have to manually set the text color depending of the selection.
-         doc.setDefaultStyleSheet(QString("span { color: %1 }").arg(foregroundColor.name()));
+         doc.setDefaultStyleSheet(
+            QString("span { color: %1 }").arg(newOption.state & QStyle::State_Selected ?
+                                                 option.palette.text().color().name() // FIXME: Should be : option.palette.highlightedText().color().name(), doesn't work.
+                                               : option.palette.text().color().name()
+            )
+         );
          doc.setHtml(this->toHtmlText(newOption.text));
 
          // Painting item without text.
@@ -79,7 +81,7 @@ void SearchDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option
          if (index.data().isNull())
             return;
 
-         QStyledItemDelegate::paint(painter, newOption, index); // To draw the background (including the selection highlight).
+         QStyledItemDelegate::paint(painter, newOption, index); // To draw the background (including the selection highlight). FIXME: it also draw the value.
 
          int value = index.data().toInt();
 
