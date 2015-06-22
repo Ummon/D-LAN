@@ -54,7 +54,11 @@ void SearchDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option
          // We have to manually set the text color depending of the selection.
          doc.setDefaultStyleSheet(
             QString("span { color: %1 }").arg(newOption.state & QStyle::State_Selected ?
+                                        #ifdef Q_OS_WIN32
+                                                 newOption.palette.text().color().name() // FIXME: on Windows 'highlightedText' doesn't return the correct value.
+                                        #else
                                                  newOption.palette.highlightedText().color().name()
+                                        #endif
                                                : newOption.palette.text().color().name()
             )
          );
