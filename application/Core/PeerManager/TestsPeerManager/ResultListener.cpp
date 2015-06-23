@@ -75,11 +75,11 @@ void ResultListener::entriesResult(const Protos::Core::GetEntriesResult& result)
    qDebug() << "ResultListener::entriesResult : " << Common::ProtoHelper::getDebugStr(result);
 }
 
-void ResultListener::result(const Protos::Core::GetHashesResult& result)
+void ResultListener::hashesResult(const Protos::Core::GetHashesResult& result)
 {
    this->nbHashes = result.nb_hash();
    this->currentHash = 0;
-   qDebug() << "ResultListener::result : " << Common::ProtoHelper::getDebugStr(result);
+   qDebug() << "ResultListener::hashesResult : " << Common::ProtoHelper::getDebugStr(result);
 }
 
 void ResultListener::nextHashResult(const Protos::Core::HashResult& hashResult)
@@ -89,9 +89,9 @@ void ResultListener::nextHashResult(const Protos::Core::HashResult& hashResult)
    this->currentHash++;
 }
 
-void ResultListener::result(const Protos::Core::GetChunkResult& result)
+void ResultListener::chunkResult(const Protos::Core::GetChunkResult& result)
 {
-   qDebug() << "ResultListener::result : " << Common::ProtoHelper::getDebugStr(result);
+   qDebug() << "ResultListener::chunkResult : " << Common::ProtoHelper::getDebugStr(result);
 }
 
 static const QByteArray CHUNK_DATA("ALL YOUR BYTE ARE BELONG TO US");

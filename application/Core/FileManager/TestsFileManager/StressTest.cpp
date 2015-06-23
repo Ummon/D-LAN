@@ -567,7 +567,7 @@ void StressTest::getHashes()
    qDebug() << "Entry " << entryToStr(entry);
 
    QSharedPointer<IGetHashesResult> result = this->fileManager->getHashes(entry);
-   connect(result.data(), IGetHashesResult::nextHash, this, nextHash, Qt::QueuedConnection);
+   connect(result.data(), &IGetHashesResult::nextHash, this, &StressTest::nextHash, Qt::QueuedConnection);
    Protos::Core::GetHashesResult result2 = result->start();
 
    if (result2.status() != Protos::Core::GetHashesResult_Status_OK)

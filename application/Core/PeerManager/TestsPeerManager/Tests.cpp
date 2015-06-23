@@ -185,7 +185,7 @@ void Tests::askForRootEntries()
 
    QVERIFY(!result.isNull());
 
-   connect(result.data(), SIGNAL(result(Protos::Core::GetEntriesResult)), &this->resultListener, SLOT(entriesResult(Protos::Core::GetEntriesResult)));
+   connect(result.data(), &IGetEntriesResult::result, &this->resultListener, &ResultListener::entriesResult);
    result->start();
 
    QElapsedTimer timer;
@@ -216,7 +216,7 @@ void Tests::askForSomeEntries()
    getEntriesMessage1.mutable_dirs()->add_entry()->CopyFrom(this->resultListener.getEntriesResultList().last().result(0).entries().entry(0));
    QSharedPointer<IGetEntriesResult> result1 = this->peerManagers[0]->getPeers()[0]->getEntries(getEntriesMessage1);
    QVERIFY(!result1.isNull());
-   connect(result1.data(), SIGNAL(result(Protos::Core::GetEntriesResult)), &this->resultListener, SLOT(entriesResult(Protos::Core::GetEntriesResult)));
+   connect(result1.data(), &IGetEntriesResult::result, &this->resultListener, &ResultListener::entriesResult);
    result1->start();
 
    timer.start();
@@ -233,7 +233,7 @@ void Tests::askForSomeEntries()
    entry->mutable_shared_dir()->CopyFrom(getEntriesMessage1.dirs().entry(0).shared_dir());
    QSharedPointer<IGetEntriesResult> result2 = this->peerManagers[0]->getPeers()[0]->getEntries(getEntriesMessage2);
    QVERIFY(!result2.isNull());
-   connect(result2.data(), SIGNAL(result(Protos::Core::GetEntriesResult)), &this->resultListener, SLOT(entriesResult(Protos::Core::GetEntriesResult)));
+   connect(result2.data(), &IGetEntriesResult::result, &this->resultListener, &ResultListener::entriesResult);
    result2->start();
 
    timer.start();
@@ -282,15 +282,15 @@ void Tests::askForHashes()
    fileEntry.set_path("/");
    fileEntry.set_name("big.bin");
    fileEntry.set_size(0); // No obligation to set the correct size.
-   for (int i = 0; i < NUMBER_OF_CHUNK; i++)
+   for (quint32 i = 0; i < NUMBER_OF_CHUNK; i++)
       fileEntry.add_chunk();
    // Sets the root directory.
    fileEntry.mutable_shared_dir()->CopyFrom(this->resultListener.getEntriesResultList().first().result(0).entries().entry(0).shared_dir());
 
    QSharedPointer<IGetHashesResult> result = this->peerManagers[0]->getPeers()[0]->getHashes(fileEntry);
    QVERIFY(!result.isNull());
-   connect(result.data(), SIGNAL(result(const Protos::Core::GetHashesResult&)), &this->resultListener, SLOT(result(const Protos::Core::GetHashesResult&)));
-   connect(result.data(), SIGNAL(nextHash(const Protos::Core::HashResult&)), &this->resultListener, SLOT(nextHashResult(const Protos::Core::HashResult&)));
+   connect(result.data(), &IGetHashesResult::result, &this->resultListener, &ResultListener::hashesResult);
+   connect(result.data(), &IGetHashesResult::nextHash, &this->resultListener, &ResultListener::nextHashResult);
    result->start();
 
    timer.start();
@@ -315,15 +315,15 @@ void Tests::askForAChunk()
 {
    qDebug() << "===== askForAChunk() =====";
 
-   connect(this->peerManagers[1].data(), SIGNAL(getChunk(QSharedPointer<FM::IChunk>, int, QSharedPointer<PM::ISocket>)), &this->resultListener, SLOT(getChunk(QSharedPointer<FM::IChunk>, int, QSharedPointer<PM::ISocket>)));
+   connect(this->peerManagers[1].data(), &IPeerManager::getChunk, &this->resultListener, &ResultListener::getChunk);
 
    Protos::Core::GetChunk getChunkMessage;
    getChunkMessage.mutable_chunk()->set_hash(this->resultListener.getLastReceivedHash().getData(), Common::Hash::HASH_SIZE);
    getChunkMessage.set_offset(0);
    QSharedPointer<IGetChunkResult> result = this->peerManagers[0]->getPeers()[0]->getChunk(getChunkMessage);
    QVERIFY(!result.isNull());
-   connect(result.data(), SIGNAL(result(const Protos::Core::GetChunkResult&)), &this->resultListener, SLOT(result(const Protos::Core::GetChunkResult&)));
-   connect(result.data(), SIGNAL(stream(QSharedPointer<PM::ISocket>)), &this->resultListener, SLOT(stream(QSharedPointer<PM::ISocket>)));
+   connect(result.data(), &IGetChunkResult::result, &this->resultListener, &ResultListener::chunkResult);
+   connect(result.data(), &IGetChunkResult::stream, &this->resultListener, &ResultListener::stream);
    result->start();
 
    QElapsedTimer timer;

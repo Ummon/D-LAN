@@ -78,7 +78,7 @@ void CoreService::stop()
 int CoreService::executeApplication()
 {
    this->consoleReader = new Common::ConsoleReader(this);
-   connect(this->consoleReader, SIGNAL(newLine(QString)), this, SLOT(processUserInput(QString)), Qt::QueuedConnection);
+   connect(this->consoleReader, &Common::ConsoleReader::newLine, this, &CoreService::processUserInput, Qt::QueuedConnection);
    return QtService::executeApplication();
 }
 

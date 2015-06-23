@@ -34,7 +34,7 @@ PeerUpdater::PeerUpdater(QList<QSharedPointer<FM::IFileManager>> fileManagers, Q
    fileManagers(fileManagers), peerManagers(peerManagers), port(port)
 {
    this->timer.setInterval(1000);
-   connect(&this->timer, SIGNAL(timeout()), this, SLOT(update()));
+   connect(&this->timer, &QTimer::timeout, this, &PeerUpdater::update);
 
    for (int i = 0; i < this->peerManagers.size(); i++)
    {

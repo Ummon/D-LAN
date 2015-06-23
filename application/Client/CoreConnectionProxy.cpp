@@ -27,7 +27,7 @@ using namespace Client;
 CoreConnectionProxy::CoreConnectionProxy() :
    coreConnection(RCC::Builder::newCoreConnection())
 {
-   connect(this->coreConnection.data(), SIGNAL(connected()), this, SIGNAL(connected()), Qt::DirectConnection);
+   connect(this->coreConnection.data(), &RCC::ICoreConnection::connected, this, &CoreConnectionProxy::connected, Qt::DirectConnection);
 }
 
 CoreConnectionProxy::~CoreConnectionProxy()

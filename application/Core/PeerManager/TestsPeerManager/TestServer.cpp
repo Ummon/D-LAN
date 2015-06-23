@@ -42,6 +42,6 @@ void TestServer::newConnection()
 {
    qDebug() << "TestServer::newConnection()";
    QTcpSocket* socket = this->server.nextPendingConnection();
-   connect(socket, SIGNAL(disconnected()), socket, SLOT(deleteLater()));
+   connect(socket, &QTcpSocket::disconnected, socket, &QTcpSocket::deleteLater);
    this->peerManager->newConnection(socket);
 }

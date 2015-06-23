@@ -45,7 +45,7 @@ D_LAN_Client::D_LAN_Client(int argc, char* argv[]) :
 
    this->parseApplicationArguments();
 
-   connect(&this->consoleReader, SIGNAL(newLine(QString)), this, SLOT(newCommandLine(QString)), Qt::QueuedConnection);
+   connect(&this->consoleReader, &Common::ConsoleReader::newLine, this, &D_LAN_Client::newCommandLine, Qt::QueuedConnection);
 }
 
 QScriptValue D_LAN_Client::newConnection()
