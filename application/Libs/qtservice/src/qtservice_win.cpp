@@ -418,7 +418,11 @@ bool QtServiceController::sendCommand(int code)
 }
 
 #if defined(QTSERVICE_DEBUG)
+#  if QT_VERSION >= 0x050000
+extern void qtServiceLogDebug(QtMsgType type, const QMessageLogContext &context, const QString &msg);
+#  else
 extern void qtServiceLogDebug(QtMsgType type, const char* msg);
+#  endif
 #endif
 
 void QtServiceBase::logMessage(const QString &message, MessageType type,
@@ -433,8 +437,11 @@ void QtServiceBase::logMessage(const QString &message, MessageType type,
     case Information: //fall through
     default: dbgMsg += "Information] "; break;
     }
-    dbgMsg += message.toAscii();
-    qtServiceLogDebug((QtMsgType)-1, dbgMsg.constData());
+#  if QT_VERSION >= 0x050000
+    qtServiceLogDebug((QtMsgType)-1, QMessageLogContext(), QLatin1String(dbgMsg) + message);
+#  else
+    qtServiceLogDebug((QtMsgType)-1, (dbgMsg + message.toAscii()).constData());
+#  endif
 #endif
 
     Q_D(QtServiceBase);
@@ -688,16 +695,14 @@ class HandlerThread : public QThread
 {
 public:
     HandlerThread()
-        : success(true), console(false)
+        : success(true), console(false), QThread()
         {}
 
     bool calledOk() { return success; }
     bool runningAsConsole() { return console; }
 
 protected:
-    bool success;
-    bool console;
-
+    bool success, console;
     void run()
         {
             SERVICE_TABLE_ENTRYW st [2];
