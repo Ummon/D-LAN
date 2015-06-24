@@ -95,10 +95,7 @@ D_LAN_GUI::D_LAN_GUI(int& argc, char* argv[]) :
    this->updateTrayIconMenu();
 
    this->trayIcon.setContextMenu(&this->trayIconMenu);
-   #ifndef Q_OS_LINUX
-      // Fix a bug on ubuntu x86_64 (core dumped)
-      this->trayIcon.setToolTip("D-LAN");
-   #endif
+   this->trayIcon.setToolTip("D-LAN");
    this->trayIcon.show();
 }
 
@@ -120,7 +117,7 @@ void D_LAN_GUI::updateTrayIconMenu()
 {
    this->trayIconMenu.clear();
    this->trayIconMenu.addAction(tr("Show the user interface"), this, SLOT(showMainWindow()));
-   if (this->coreConnection->getLocalCoreStatus() == RCC::RUNNING_AS_SERVICE) // We cannot stop a parent process without killing his child.
+   if (this->coreConnection->getLocalCoreStatus() == RCC::RUNNING_AS_SERVICE) // We cannot stop a parent process without killing his child (case with RCC::RUNNING_AS_SUB_PROCESS).
       this->trayIconMenu.addAction(tr("Stop the user interface"), this, SLOT(exitGUI()));
    this->trayIconMenu.addSeparator();
    this->trayIconMenu.addAction(tr("Exit"), this, SLOT(exit()));

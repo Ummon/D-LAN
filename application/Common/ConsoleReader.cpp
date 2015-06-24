@@ -25,6 +25,28 @@ using namespace Common;
   * @class ConsoleReader
   */
 
+// Two different implementations: for UNIX and Windows.
+
+#if defined Q_OS_UNIX
+
+#include <limits>
+#include <unistd.h> //Provides STDIN_FILENO
+
+ConsoleReader::ConsoleReader(QObject* parent) :
+   QObject(parent), inputStream(stdin), notifier(STDIN_FILENO, QSocketNotifier::Read)
+{
+   connect(&this->notifier, &QSocketNotifier::activated, this, &ConsoleReader::inputAvailable);
+}
+
+void ConsoleReader::inputAvailable()
+{
+   QString line = this->inputStream.readLine().trimmed();
+   if (!line.isEmpty())
+      emit newLine(line);
+}
+
+#elif defined Q_OS_WIN32
+
 ConsoleReader::ConsoleReader(QObject* parent) :
    QObject(parent)
 {
@@ -55,3 +77,5 @@ void Reader::readLine()
 {
    emit lineRead(this->inputStream.readLine());
 }
+
+#endif

@@ -52,6 +52,8 @@ namespace CoreSpace
       static void printCommands();
 
       Core* core;
+
+      bool consoleSupport;
       Common::ConsoleReader* consoleReader;
    };
 }

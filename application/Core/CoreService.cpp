@@ -26,7 +26,7 @@ using namespace CoreSpace;
 #include <Common/Constants.h>
 
 CoreService::CoreService(bool resetSettings, QLocale locale, int argc, char** argv) :
-   QtService<CoreApplication>(argc, argv, Common::Constants::SERVICE_NAME), core(new Core(resetSettings, locale))
+   QtService<CoreApplication>(argc, argv, Common::Constants::SERVICE_NAME), core(new Core(resetSettings, locale)), consoleSupport(false)
 {
    this->setServiceDescription(tr("A LAN file sharing system"));
    this->setStartupType(QtServiceController::ManualStartup);
@@ -40,6 +40,7 @@ CoreService::CoreService(bool resetSettings, QLocale locale, int argc, char** ar
       {
          QTextStream out(stdout);
          out << "D-LAN Core started with console support" << endl;
+         this->consoleSupport = true;
          CoreService::printCommands();
          break;
       }
@@ -77,8 +78,12 @@ void CoreService::stop()
 
 int CoreService::executeApplication()
 {
-   this->consoleReader = new Common::ConsoleReader(this);
-   connect(this->consoleReader, &Common::ConsoleReader::newLine, this, &CoreService::processUserInput, Qt::QueuedConnection);
+   if (this->consoleSupport)
+   {
+      this->consoleReader = new Common::ConsoleReader(this);
+      connect(this->consoleReader, &Common::ConsoleReader::newLine, this, &CoreService::processUserInput, Qt::QueuedConnection);
+   }
+
    return QtService::executeApplication();
 }
 

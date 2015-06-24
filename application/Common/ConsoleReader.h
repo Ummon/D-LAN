@@ -20,8 +20,36 @@
 #define COMMON_CONSOLEREADER_H
 
 #include <QObject>
-#include <QThread>
 #include <QTextStream>
+
+#if defined Q_OS_UNIX
+
+#include <QIODevice>
+#include <QSocketNotifier>
+
+namespace Common
+{
+   class ConsoleReader : public QObject
+   {
+      Q_OBJECT
+   public:
+      explicit ConsoleReader(QObject* parent = nullptr);
+
+   signals:
+      void newLine(QString line);
+
+   private slots:
+      void inputAvailable();
+
+   private:
+      QTextStream inputStream;
+      QSocketNotifier notifier;
+   };
+}
+
+#elif defined Q_OS_WIN32
+
+#include <QThread>
 
 namespace Common
 {
@@ -42,7 +70,7 @@ namespace Common
       QThread readerThread;
    };
 
-   // Not public.
+   // Not public and only on Windows.
    class Reader : public QObject
    {
       Q_OBJECT
@@ -60,4 +88,5 @@ namespace Common
    };
 }
 
+#endif
 #endif
