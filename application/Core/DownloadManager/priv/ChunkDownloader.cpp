@@ -192,11 +192,12 @@ void ChunkDownloader::run()
 
             // If a another peer exists and its speed is greater than our by a factor 'switch_to_another_peer_factor'
             // then we will try to switch to this peer.
+            static const double SWITCH_TO_ANOTHER_PEER_FACTOR = SETTINGS.get<double>("switch_to_another_peer_factor");
             PM::IPeer* peer = this->getTheFastestFreePeer();
             if (
                peer &&
                peer != this->currentDownloadingPeer &&
-               peer->getSpeed() / SETTINGS.get<double>("switch_to_another_peer_factor") > this->currentDownloadingPeer->getSpeed()
+               peer->getSpeed() / SWITCH_TO_ANOTHER_PEER_FACTOR > this->currentDownloadingPeer->getSpeed()
             )
             {
                L_DEBU(QString("Switch to a better peer: %1").arg(peer->toStringLog()));

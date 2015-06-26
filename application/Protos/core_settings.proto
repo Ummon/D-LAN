@@ -55,7 +55,7 @@ message Settings {
    optional uint32 multicast_group = 63 [default = 3960285976]; // IPv4: 236.13.43.24 / IPv6: ff0e:ec0d:2b18::
    optional string channel = 89 [default = "main"]; // Used with 'multicast_group' to define the IPv6 multicast group.
    optional uint32 multicast_ttl = 64 [default = 31];
-   optional uint32 max_udp_datagram_size = 65 [default = 16356]; // (~16 KiB). It doesn't include the IP+UDP header (28 bytes).
+   optional uint32 max_udp_datagram_size = 65 [default = 16356]; // (~16 KiB). It doesn't include the IP+UDP header (28 bytes). It's an arbitrary limit and will not prevent IP fragmentation.
 
    // This is the max throughput allowed for the 'IMAlive' message for the whole network.
    // It means thats n * s / 'peer_imalive_period' must not exceed this value. Where n is the number of peer and s the size of the 'IMAlive' message.

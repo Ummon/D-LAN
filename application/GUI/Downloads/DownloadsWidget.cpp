@@ -60,8 +60,12 @@ void DownloadsDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opt
          progressBarOption.text = tr("Getting the hashes..");
          break;
       case Protos::GUI::State::Download::DOWNLOADING:
-         progressBarOption.text = QString("%1%").arg(static_cast<double>(progress.progress) / 100);
-         break;
+         {
+            // We avoid to disturb the user and to show "100 %" if the file is downloading.
+            const double percentProgress = static_cast<double>(progress.progress) / 100;
+            progressBarOption.text = QString("%1%").arg(percentProgress > 99.99 ? 99.99 : percentProgress);
+            break;
+         }
       case Protos::GUI::State::Download::COMPLETE:
          progressBarOption.text = tr("Complete");
          break;
