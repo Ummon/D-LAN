@@ -25,10 +25,12 @@ ICON_FILE=$DIR/Common/ressources/icon.ico
 sudo rm -Rf $DEB_DIR
 
 # Default dependencies, it may change depending the architecture and the Linux distribution.
-DEP_QTCORE=">= 4:4.8"
-DEP_QTGUI=">= 4:4.8"
-DEP_QTNETWORK=">= 4:4.8"
-DEP_PROTOBUF=">= 2.4.1"
+DEP_QTCORE=">= 5.3"
+DEP_QTGUI=">= 5.3"
+DEP_QTNETWORK=">= 5.3"
+DEP_QTWIDGETS=">= 5.3"
+DEP_QTXML=">= 5.3"
+DEP_PROTOBUF=">= 2.6.1"
 DEP_LIBC=">= 2.15"
 DEP_LIBSTDCPP=">= 4.6.3"
 DEP_LIBGCC=">= 1:4.6.3"
@@ -67,7 +69,9 @@ select arch in "i386" "amd64" "armhf"; do
     sed -i "s/_ARCH_/$arch/g" $CONTROL
     sed -i "s/_DEP_QTCORE_/$DEP_QTCORE/g" $CONTROL
     sed -i "s/_DEP_QTGUI_/$DEP_QTGUI/g" $CONTROL
-    sed -i "s/_DEP_QTNETWORK_/$DEP_QTNETWORK/g" $CONTROL
+    sed -i "s/_DEP_QTNETWORK_/$DEP_QTNETWORK/g" $CONTROL 
+    sed -i "s/_DEP_QTWIDGETS_/$DEP_QTWIDGETS/g" $CONTROL
+    sed -i "s/_DEP_QTXML_/$DEP_QTXML/g" $CONTROL
     sed -i "s/_DEP_PROTOBUF_/$DEP_PROTOBUF/g" $CONTROL
     sed -i "s/_DEP_LIBC_/$DEP_LIBC/g" $CONTROL
     sed -i "s/_DEP_LIBSTDCPP_/$DEP_LIBSTDCPP/g" $CONTROL

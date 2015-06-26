@@ -4,7 +4,7 @@ Section: base
 Priority: optional
 Architecture: _ARCH_
 Installed-Size: _INST_SIZE_
-Depends: libprotobuf7 (_DEP_PROTOBUF_), libqtcore4 (_DEP_QTCORE_), libqtgui4 (_DEP_QTGUI_), libqt4-network (_DEP_QTNETWORK_), libc6 (_DEP_LIBC_), libstdc++6 (_DEP_LIBSTDCPP_), libgcc1 (_DEP_LIBGCC_)
+Depends: libprotobuf9 (_DEP_PROTOBUF_), libqt5core5a (_DEP_QTCORE_), libqt5gui5 (_DEP_QTGUI_), libqt5network5 (_DEP_QTNETWORK_), libqt5widgets5 (_DEP_QTWIDGETS_), libqt5xml5 (_DEP_QTXML_), libc6 (_DEP_LIBC_), libstdc++6 (_DEP_LIBSTDCPP_), libgcc1 (_DEP_LIBGCC_)
 Maintainer: Hervé Martinet <herve.martinet@gmail.com>
 Homepage: http://www.d-lan.net
 Description: A free LAN file sharing software. 
