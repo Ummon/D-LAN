@@ -62,6 +62,12 @@ rm -f Core/.tmp/release/version_res.o
 rm -f GUI/.tmp/release/version_res.o
 rm -f GUI/.tmp/release/DialogAbout.o
 
+if ! type nbproc > /dev/null 2>&1; then
+   NB_PROC=4
+else
+   NB_PROC=`nbproc`
+fi
+
 for i in ${PROJECTS[@]}
 do
    pushd .
@@ -73,7 +79,7 @@ do
    then
       $MAKE release-clean -w || { echo "nothing to clean"; } # To avoid the command to fail.
    fi
-   $MAKE -w -j 4
+   $MAKE -w -j $NB_PROC
    popd
 done
 
