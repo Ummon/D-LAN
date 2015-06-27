@@ -1,0 +1,45 @@
+/**
+  * The persisted hashes.
+  * Replace hash_cache.proto.
+  * Version : 1
+  * All string are encoded in UTF-8.
+  */
+
+import "common.proto";
+
+package Protos.HashCache;
+
+// The index of each cache.
+message CacheIndex {
+   message IndexEntry {
+      required Common.Hash id = 1;
+      required string path = 2; // A path to a directory or a file.
+   }
+   repeated IndexEntry entry = 1;
+}
+
+// All the hashes for a directory
+message Hashes {
+   message File {
+      message Chunk {
+         required uint32 known_bytes = 1; // Used only when downloading a file, we have the hash but we don't have all the file content.
+         optional Common.Hash hash = 2;
+      }
+      optional Common.Hash external_file = 1;
+      optional string filename = 2;
+      optional uint64 size = 3;
+      optional uint64 date_last_modified = 4; // In ms since Epoch.
+      repeated Chunk chunk = 5; // Contains all the file chunk, if we don't have a chunk its hash is ommited.
+   }
+
+   message Dir {
+      optional Common.Hash external_dir = 1;
+      optional string name = 2; // Empty for the roots.
+      repeated File file = 3; // Contains only the files which have at least one hash known.
+      repeated Dir dir = 4;
+   }
+
+   required uint32 version = 1;
+   optional Dir dirRoot = 2;
+   optional Dir fileRoot = 3;
+}

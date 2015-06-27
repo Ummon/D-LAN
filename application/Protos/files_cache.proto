@@ -1,5 +1,6 @@
 /**
   * The persisted hashes.
+  * Now obsolete, replaced by hash_cache.proto.
   * Version : 2
   * All string are encoded in UTF-8.
   */

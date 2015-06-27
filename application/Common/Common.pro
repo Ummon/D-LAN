@@ -78,4 +78,7 @@ HEADERS += Hashes.h \
     Hash_noShare.h \
     Hash_share.h
 
+OTHER_FILES += \
+    ../Protos/hash_cache.proto
+
 

@@ -41,7 +41,7 @@ namespace FM
    /**
      * The file manager controls all shared directories and files. It offers these fonctions:
      * - Add or remove one ore more shared directory.
-     * - Watch the shared directories recursively to update the model if a file/directory is addes, changed, renamed or removed.
+     * - Watch the shared directories recursively to update the model if a file/directory is added, changed, renamed or removed.
      * - Browse the cache.
      * - Offer a quick indexed multi-term search based on the names of files and directories.
      * - Offer a way to indentify each chunk of a file by a hash.

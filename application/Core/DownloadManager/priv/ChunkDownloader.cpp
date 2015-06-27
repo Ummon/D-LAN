@@ -200,6 +200,11 @@ void ChunkDownloader::run()
             )
             {
                L_DEBU(QString("Switch to a better peer: %1").arg(peer->toStringLog()));
+
+               // Flush the buffer
+               if (bytesToWrite > 0)
+                  writer->write(buffer, bytesToWrite);
+
                this->closeTheSocket = true; // We ask to close the socket to avoid to get garbage data.
                break;
             }
