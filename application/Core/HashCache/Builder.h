@@ -16,14 +16,19 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef COMMON_VERSION_H
-#define COMMON_VERSION_H
+#ifndef HASHCACHE_BUILDER_H
+#define HASHCACHE_BUILDER_H
 
-#define VERSION "1.2.0"
-#define VERSION_TAG "Alpha"
+#include <QSharedPointer>
 
-// These two values are automatically updated during the release building process. See the script 'Application/Tools/update_version.sh'
-#define BUILD_TIME "2015-06-24_07-34"
-#define GIT_VERSION "d863b8bce7bafb7891be68209f9db203f2e1008e"
+namespace HC
+{
+   class IHashCache;
 
+   class Builder
+   {
+   public:
+      static QSharedPointer<IHashCache> newHashCache();
+   };
+}
 #endif

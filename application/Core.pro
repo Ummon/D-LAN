@@ -3,6 +3,7 @@ CONFIG += ordered
 MAKEFILE = Makefile-Core
 SUBDIRS = Common \
    Common/LogManager \
+   Core/HashCache \
    Core/FileManager \
    Core/PeerManager \
    Core/UploadManager \

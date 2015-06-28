@@ -16,14 +16,33 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef COMMON_VERSION_H
-#define COMMON_VERSION_H
+#ifndef HASHCACHE_IHASHCACHE_H
+#define HASHCACHE_IHASHCACHE_H
 
-#define VERSION "1.2.0"
-#define VERSION_TAG "Alpha"
+#include <QSharedPointer>
 
-// These two values are automatically updated during the release building process. See the script 'Application/Tools/update_version.sh'
-#define BUILD_TIME "2015-06-24_07-34"
-#define GIT_VERSION "d863b8bce7bafb7891be68209f9db203f2e1008e"
+#include <Protos/common.pb.h>
 
+#include <IRootEntry.h>
+
+namespace HC
+{
+   class IHashCache
+   {
+   public:
+      virtual ~IHashCache() {}
+
+      /**
+        * Load all known hashes from the path given by 'root.getPath()' into 'root'.
+        * It will use the path + file size + file date to match the file and thus to provide the hashes.
+        * During this call the hashe database will not change.
+        */
+      virtual void loadTo(IRootEntry& root) = 0;
+
+      /**
+        * Update the hashe database according the given root.
+        */
+      virtual void saveFrom(const IRootEntry& root) = 0;
+   };
+}
 #endif

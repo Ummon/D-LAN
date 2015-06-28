@@ -16,14 +16,14 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef COMMON_VERSION_H
-#define COMMON_VERSION_H
+#ifndef HASHCACHE_LOG_H
+#define HASHCACHE_LOG_H
 
-#define VERSION "1.2.0"
-#define VERSION_TAG "Alpha"
+#include <Common/LogManager/Builder.h>
 
-// These two values are automatically updated during the release building process. See the script 'Application/Tools/update_version.sh'
-#define BUILD_TIME "2015-06-24_07-34"
-#define GIT_VERSION "d863b8bce7bafb7891be68209f9db203f2e1008e"
+namespace HC
+{
+   #include <Common/LogManager/LogMacros.h>
+}
 
 #endif
