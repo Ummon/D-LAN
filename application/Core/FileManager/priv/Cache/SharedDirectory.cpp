@@ -23,6 +23,7 @@ using namespace FM;
 
 #include <Common/ProtoHelper.h>
 #include <Common/Global.h>
+#include <Common/Path.h>
 
 #include <Exceptions.h>
 #include <priv/Log.h>
@@ -129,7 +130,7 @@ void SharedDirectory::moveInto(Directory* directory)
 
 void SharedDirectory::moveInto(const QString& path)
 {
-   this->path = Common::Global::cleanDirPath(path);
+   this->path = Common::Path::cleanDirPath(path);
 }
 
 QString SharedDirectory::getPath() const
@@ -139,7 +140,7 @@ QString SharedDirectory::getPath() const
 
 QString SharedDirectory::getFullPath() const
 {
-   return this->path + (!this->name.isEmpty() && !Common::Global::isWindowsRootPath(this->name) ? this->name + '/' : "");
+   return this->path + (!this->name.isEmpty() && !Common::Path::isWindowsRootPath(this->name) ? this->name + '/' : QString(""));
 }
 
 SharedDirectory* SharedDirectory::getRoot() const
@@ -158,7 +159,7 @@ Common::Hash SharedDirectory::getId() const
   */
 QString SharedDirectory::dirName(const QString& path)
 {
-   if (Common::Global::isWindowsRootPath(path))
+   if (Common::Path::isWindowsRootPath(path))
       return path.left(2);
 
    return QDir(path).dirName();
@@ -166,7 +167,7 @@ QString SharedDirectory::dirName(const QString& path)
 
 QString SharedDirectory::pathWithoutDirName(const QString& path)
 {
-   if (Common::Global::isWindowsRootPath(path))
+   if (Common::Path::isWindowsRootPath(path))
       return path;
 
    const QString& cleanedPath(QDir::cleanPath(path));

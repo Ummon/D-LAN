@@ -40,6 +40,7 @@
 #include <PersistentData.h>
 #include <Settings.h>
 #include <Global.h>
+#include <Path.h>
 #include <StringUtils.h>
 #include <ZeroCopyStreamQIODevice.h>
 #include <ProtoHelper.h>
@@ -165,6 +166,41 @@ void Tests::hashStringToInt()
    QCOMPARE(StringUtils::hashStringToInt(""), 0u);
    QCOMPARE(StringUtils::hashStringToInt("abcde"), 444281822u);
    QCOMPARE(StringUtils::hashStringToInt("abcdef"), 3174932005u);
+}
+
+void Tests::path()
+{
+   Path p1(QString::null);
+   QCOMPARE(p1.getPath(), QString());
+   QCOMPARE(p1.getRoot(), QString());
+   QCOMPARE(p1.getDirs(), QStringList());
+   QCOMPARE(p1.getFilename(), QString());
+   QCOMPARE(p1.getExtension(), QString());
+
+   Path p2(QString(""));
+   QCOMPARE(p2.getPath(), QString());
+   QCOMPARE(p2.getRoot(), QString());
+   QCOMPARE(p2.getDirs(), QStringList());
+   QCOMPARE(p2.getFilename(), QString());
+   QCOMPARE(p2.getExtension(), QString());
+
+   Path p3(QString("/"));
+   QCOMPARE(p3.getPath(), QString("/"));
+   QCOMPARE(p3.isFile(), false);
+   QCOMPARE(p3.isAbsolute(), true);
+   QCOMPARE(p3.getRoot(), QString("/"));
+   QCOMPARE(p3.getDirs(), QStringList());
+   QCOMPARE(p3.getFilename(), QString(""));
+   QCOMPARE(p3.getExtension(), QString(""));
+
+   Path p4(QString("/tmp/dir/"));
+   QCOMPARE(p4.getPath(), QString("/tmp/dir/"));
+   QCOMPARE(p4.isFile(), false);
+   QCOMPARE(p4.isAbsolute(), true);
+   QCOMPARE(p4.getRoot(), QString("/"));
+   QCOMPARE(p4.getDirs(), (QStringList{ "tmp", "dir" }));
+   QCOMPARE(p4.getFilename(), QString(""));
+   QCOMPARE(p4.getExtension(), QString(""));
 }
 
 void Tests::sortedList()

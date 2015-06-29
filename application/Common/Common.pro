@@ -40,7 +40,8 @@ SOURCES += \
     Network/Message.cpp \
     KnownExtensions.cpp \
     Hash_noShare.cpp \
-    Hash_share.cpp
+    Hash_share.cpp \
+    Path.cpp
 
 HEADERS += Hashes.h \
     Hash.h \
@@ -76,7 +77,8 @@ HEADERS += Hashes.h \
     Containers/MapArray.h \
     SelfWeakPointer.h \
     Hash_noShare.h \
-    Hash_share.h
+    Hash_share.h \
+    Path.h
 
 OTHER_FILES += \
     ../Protos/hash_cache.proto

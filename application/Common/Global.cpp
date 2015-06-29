@@ -322,70 +322,9 @@ bool Global::rename(const QString& existingFile, const QString& newFile)
 #endif
 }
 
-const QList<QChar> Global::FORBIDDEN_CHARS_IN_PATH { '?', '/', '\\','*', ':', '"', '<', '>', '|' };
-
-/**
-  * Replaces forbidden characters from the given path with special token "#n;" where n is the unicode number.
-  */
-QString Global::sanitizePath(QString path)
-{
-   for (QListIterator<QChar> i(FORBIDDEN_CHARS_IN_PATH); i.hasNext();)
-   {
-      const QChar& currentChar = i.next();
-      const QString entity = QString("&#").append(QString::number(currentChar.cell())).append(';');
-      path.replace(currentChar, entity);
-   }
-   return path;
-}
-
-/**
-  * Replace special token with their associated character.
-  */
-QString Global::unSanitizePath(QString path)
-{
-   for (QListIterator<QChar> i(FORBIDDEN_CHARS_IN_PATH); i.hasNext();)
-   {
-      const QChar& currentChar = i.next();
-      const QString entity = QString("&#").append(QString::number(currentChar.cell())).append(';');
-      path.replace(entity, currentChar);
-   }
-   return path;
-}
-
 bool Global::isLocal(const QHostAddress& address)
 {
    return address == QHostAddress::LocalHost || address == QHostAddress::LocalHostIPv6 || QNetworkInterface::allAddresses().contains(address);
-}
-
-/**
-  * See QDir::cleanPath(..) documentation.
-  * Add a slash at the end.
-  */
-QString Global::cleanDirPath(const QString& path)
-{
-   Q_ASSERT(!path.isEmpty());
-
-   QString cleanedPath = QDir::cleanPath(path);
-   if (!cleanedPath.isEmpty() && cleanedPath[cleanedPath.size()-1] != '/')
-      cleanedPath.append('/');
-
-   return cleanedPath;
-}
-
-/**
-  * @return 'true' if path begins with  "<Drive letter>:", for example: "C:/Users/"
-  */
-bool Global::isWindowsPath(const QString& path)
-{
-   return path.length() >= 2 && path[0].isLetter() && path[1] == ':';
-}
-
-/**
-  * @return 'true' if path is a Windows root, for example: "C:", "C:\", "C:/"
-  */
-bool Global::isWindowsRootPath(const QString& path)
-{
-   return (path.length() == 3 || path.length() == 2) && path[0].isLetter() && path[1] == ':';
 }
 
 QString Global::dataFolders[2]; // The two folders (roaming and local), see DataFolderType enum.

@@ -19,6 +19,7 @@ CONFIG(debug, debug|release) {
 }
 
 CONFIG += exceptions rtti
+DEFINES *= QT_USE_QSTRINGBUILDER
 
 DESTDIR = output/$$FOLDER
 MOC_DIR = .tmp/$$FOLDER

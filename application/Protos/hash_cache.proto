@@ -34,12 +34,14 @@ message Hashes {
 
    message Dir {
       optional Common.Hash external_dir = 1;
-      optional string name = 2; // Empty for the roots.
+      optional string name = 2; // Empty for the root.
       repeated File file = 3; // Contains only the files which have at least one hash known.
       repeated Dir dir = 4;
    }
 
    required uint32 version = 1;
-   optional Dir dirRoot = 2;
+
+   // Directory XOR file.
+   optional Dir dirRoot = 2; // Empty name.
    optional Dir fileRoot = 3;
 }

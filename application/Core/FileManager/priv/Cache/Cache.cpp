@@ -25,6 +25,7 @@ using namespace FM;
 #include <Common/Global.h>
 #include <Common/Settings.h>
 #include <Common/ProtoHelper.h>
+#include <Common/Path.h>
 
 #include <Exceptions.h>
 #include <priv/Log.h>
@@ -407,7 +408,7 @@ void Cache::setSharedDirs(const QStringList& dirs)
    {
       for (int j2 = j; j2 < this->sharedDirs.size(); j2++)
       {
-         const QString dir = Common::Global::cleanDirPath(dirs[i]);
+         const QString dir = Common::Path::cleanDirPath(dirs[i]);
          if (dir == this->sharedDirs[j2]->getFullPath())
          {
             this->sharedDirs.move(j2, j++);
@@ -444,7 +445,7 @@ QPair<Common::SharedDir, QString> Cache::addASharedDir(const QString& absoluteDi
 {
    QMutexLocker locker(&this->mutex);
 
-   QString absoluteDirCleaned = Common::Global::cleanDirPath(absoluteDir);
+   QString absoluteDirCleaned = Common::Path::cleanDirPath(absoluteDir);
 
    // If the given directory is already a shared directory
    for (QListIterator<SharedDirectory*> i(this->sharedDirs); i.hasNext();)

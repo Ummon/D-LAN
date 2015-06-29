@@ -32,6 +32,7 @@ using namespace CS;
 #include <Common/ProtoHelper.h>
 #include <Common/Network/Message.h>
 #include <Common/Settings.h>
+#include <Common/Path.h>
 
 #include <Core/PeerManager/IPeer.h>
 
@@ -362,7 +363,7 @@ void ChatSystem::loadChatMessagesFromAllFiles()
    {
       if (filenameRegExp.exactMatch(filename) && filenameRegExp.capturedTexts().length() >= 2)
       {
-         const QString& roomName = Common::Global::unSanitizePath(filenameRegExp.capturedTexts()[1]);
+         const QString& roomName = Common::Path::unSanitizePath(filenameRegExp.capturedTexts()[1]);
          this->loadChatMessages(roomName);
       }
    }
@@ -404,7 +405,7 @@ QString ChatSystem::getChatMessageFilename(const QString& roomName)
    if (roomName.isEmpty())
       return Common::Constants::DIR_CHAT_MESSAGES % '/' % Common::Constants::FILE_CHAT_MESSAGES;
    else
-      return Common::Constants::DIR_CHAT_MESSAGES % '/' % Common::Constants::FILE_CHAT_ROOM_MESSAGES.arg(Common::Global::sanitizePath(roomName));
+      return Common::Constants::DIR_CHAT_MESSAGES % '/' % Common::Constants::FILE_CHAT_ROOM_MESSAGES.arg(Common::Path::sanitizePath(roomName));
 }
 
 void ChatSystem::retrieveLastChatMessagesFromPeers(const QList<PM::IPeer*>& peers, const QString& roomName)

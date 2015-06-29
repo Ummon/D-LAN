@@ -24,6 +24,7 @@ using namespace Common;
 
 #include <Hash.h>
 #include <Global.h>
+#include <Path.h>
 
 void ProtoHelper::setLang(Protos::Common::Language& langMess, const QLocale& locale)
 {
@@ -115,7 +116,7 @@ QString ProtoHelper::getRelativePath(const Protos::Common::Entry& entry, Entries
 {
    QString path = Common::ProtoHelper::getStr(entry, &Protos::Common::Entry::path);
    QString sharedName = Common::ProtoHelper::getStr(entry.shared_dir(), &Protos::Common::SharedDir::shared_name);
-   if (!Common::Global::isWindowsPath(sharedName))
+   if (!Common::Path::isWindowsPath(sharedName))
       sharedName.prepend("/");
 
    // Empty relative path means the directory is a shared directory (root), see "application/Protos/common.proto" for more information.

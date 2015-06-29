@@ -42,6 +42,9 @@ private slots:
    void splitInWords();
    void hashStringToInt();
 
+   // Path class.
+   void path();
+
    // SortedList class.
    void sortedList();
 
