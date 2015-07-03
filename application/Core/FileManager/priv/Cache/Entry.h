@@ -23,26 +23,27 @@
 #include <QMutex>
 
 #include <Common/Uncopyable.h>
+#include <Common/Path.h>
 
 #include <Protos/common.pb.h>
 
 namespace FM
 {
    class Directory;
-   class SharedDirectory;
+   class SharedEntry;
    class Cache;
 
    class Entry : Common::Uncopyable
    {
    protected:
-      Entry(Cache* cache, const QString& name, qint64 size = 0);
+      Entry(SharedEntry* root, const QString& name, qint64 size = 0);
 
    public:
       virtual ~Entry();
       virtual void del(bool invokeDelete = true);
 
-      virtual void populateEntry(Protos::Common::Entry* entry, bool setSharedDir = false) const;
-      void populateEntrySharedDir(Protos::Common::Entry* entry) const;
+      virtual void populateEntry(Protos::Common::Entry* entry, bool setSharedEntry = false) const;
+      void populateSharedEntry(Protos::Common::Entry* entry) const;
 
       Cache* getCache();
 
@@ -51,22 +52,21 @@ namespace FM
         * It's the directory in which the entry is.
         * For example : "/animals/fish/"
         * An entry in a root will have a path like "/".
-        * A root (SharedDirectory) will have an empty path ("").
+        * A root (SharedEntry) will have an empty path ("").
         */
-      virtual QString getPath() const = 0;
+      virtual Common::Path getPath() const = 0;
 
       /**
         * Return the full absolute path to the entry.
         * Directories always end with a '/'.
         */
-      virtual QString getFullPath() const = 0;
-
-      virtual SharedDirectory* getRoot() const = 0;
+      virtual Common::Path getFullPath() const = 0;
 
       virtual void removeUnfinishedFiles() = 0;
 
       virtual void moveInto(Directory* directory) = 0;
 
+      SharedEntry* getRoot() const;
       QString getName() const;
       QString getNameWithoutExtension() const;
       QString getExtension() const;
@@ -76,11 +76,10 @@ namespace FM
       void setSize(qint64 newSize);
 
    protected:
-      Cache* cache; // To announce when an entry, chunk is created or deleted.
-
       QString name;
 
    private:
+      SharedEntry* root;
       qint64 size;
 
    protected:

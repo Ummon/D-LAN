@@ -47,7 +47,7 @@ using namespace FM;
 #include <priv/Cache/Entry.h>
 #include <priv/Cache/File.h>
 #include <priv/Cache/Directory.h>
-#include <priv/Cache/SharedDirectory.h>
+#include <priv/Cache/SharedEntry.h>
 #include <priv/Cache/Chunk.h>
 
 LOG_INIT_CPP(FileManager)
@@ -67,8 +67,8 @@ FileManager::FileManager() :
    connect(&this->cache, &Cache::chunkHashKnown, this, &FileManager::chunkHashKnown, Qt::DirectConnection);
    connect(&this->cache, &Cache::chunkRemoved, this, &FileManager::chunkRemoved, Qt::DirectConnection);
 
-   connect(&this->cache, &Cache::newSharedDirectory, this, &FileManager::newSharedDirectory, Qt::DirectConnection);
-   connect(&this->cache, &Cache::sharedDirectoryRemoved, this, &FileManager::sharedDirectoryRemoved, Qt::DirectConnection);
+   connect(&this->cache, &Cache::newSharedEntry, this, &FileManager::newSharedEntry, Qt::DirectConnection);
+   connect(&this->cache, &Cache::sharedEntryRemoved, this, &FileManager::sharedEntryRemoved, Qt::DirectConnection);
 
    connect(&this->fileUpdater, &FileUpdater::fileCacheLoaded, this, &FileManager::fileCacheLoadingComplete, Qt::QueuedConnection);
    connect(&this->fileUpdater, &FileUpdater::deleteSharedDir, this, &FileManager::deleteSharedDir, Qt::QueuedConnection); // If the 'FileUpdater' wants to delete a shared directory.
@@ -94,24 +94,24 @@ FileManager::~FileManager()
 }
 
 /**
-  * @exception DirsNotFoundException
+  * @exception ItemsNotFoundException
   */
-void FileManager::setSharedDirs(const QStringList& dirs)
+void FileManager::setSharedPaths(const QStringList& paths)
 {
-   this->cache.setSharedDirs(dirs);
+   this->cache.setSharedPaths(dirs);
 }
 
 /**
-  * @exception DirsNotFoundException
+  * @exception ItemsNotFoundException
   */
-QPair<Common::SharedDir, QString> FileManager::addASharedDir(const QString& absoluteDir)
+QPair<Common::SharedItem, QString> FileManager::addASharedPath(const QString& absolutePath)
 {
-   return this->cache.addASharedDir(absoluteDir);
+   return this->cache.addASharedPath(absolutePath);
 }
 
-QList<Common::SharedDir> FileManager::getSharedDirs() const
+QList<Common::SharedItem> FileManager::getSharedEntries() const
 {
-   return this->cache.getSharedDirs();
+   return this->cache.getSharedEntries();
 }
 
 QString FileManager::getSharedDir(const Common::Hash& ID) const
@@ -461,6 +461,8 @@ void FileManager::chunkRemoved(const QSharedPointer<Chunk>& chunk)
   */
 void FileManager::loadCacheFromFile()
 {
+   // TODO : move old shared dir from cache file to settings.
+
    // This hashes will be unallocated by the fileUpdater.
    Protos::FileCache::Hashes* savedCache = new Protos::FileCache::Hashes();
 
@@ -480,7 +482,7 @@ void FileManager::loadCacheFromFile()
       {
          this->cache.createSharedDirs(*savedCache);
       }
-      catch (DirsNotFoundException& e)
+      catch (ItemsNotFoundException& e)
       {
          foreach (QString path, e.paths)
             L_WARN(QString("During the file cache loading, this directory hasn't been found : %1").arg(path));

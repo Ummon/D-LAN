@@ -38,11 +38,11 @@ namespace FM
       virtual ~FilesNotFoundException() throw () {}
    };
 
-   class DirsNotFoundException : public FileSystemEntriesNotFoundException
+   class ItemsNotFoundException : public FileSystemEntriesNotFoundException
    {
    public :
-      DirsNotFoundException(const QStringList& paths) : FileSystemEntriesNotFoundException(paths) {}
-      virtual ~DirsNotFoundException() throw () {}
+      ItemsNotFoundException(const QStringList& paths) : FileSystemEntriesNotFoundException(paths) {}
+      virtual ~ItemsNotFoundException() throw () {}
    };
 
    class hashMissmatchException {};
@@ -59,7 +59,7 @@ namespace FM
 
    class TryToWriteBeyondTheEndOfChunkException {};
 
-   class DirAlreadySharedException {};
+   class SharedEntryAlreadySharedException {};
 
    class ChunkDeletedException {};
 

@@ -180,8 +180,8 @@ void SearchModel::loadChildren(const QPersistentModelIndex &index)
 
 bool entryLessThan(const Protos::Common::Entry& e1, int level1, const QString& peerNick1, const Protos::Common::Entry& e2, int level2, const QString& peerNick2, SearchColumn column, Qt::SortOrder order)
 {
-   const QString& path1 = Common::ProtoHelper::getRelativePath(e1, Common::EntriesToAppend::NONE, !Common::ProtoHelper::isRoot(e1)).toLower();
-   const QString& path2 = Common::ProtoHelper::getRelativePath(e2, Common::EntriesToAppend::NONE, !Common::ProtoHelper::isRoot(e2)).toLower();
+   const QString& path1 = Common::ProtoHelper::getPath(e1, Common::EntriesToAppend::NONE, !Common::ProtoHelper::isRoot(e1)).toLower();
+   const QString& path2 = Common::ProtoHelper::getPath(e2, Common::EntriesToAppend::NONE, !Common::ProtoHelper::isRoot(e2)).toLower();
 
    // It's not necessary to transform them to 'QString'.
    std::string name1 = e1.name();
@@ -419,28 +419,6 @@ bool SearchModel::setMaxLevel(int newLevel)
 
 /////
 
-/**
-  * Will append the shared directory name to the relative path.
-  * Obsolete, 'Common::ProtoHelper::getRelativePath(..)' is used instead.
-  */
-/*QString SearchModel::SearchTree::entryPath(const Protos::Common::Entry& entry)
-{
-   const QString& path = Common::ProtoHelper::getStr(entry, &Protos::Common::Entry::path);
-
-   QString completePath;
-   if (path.isEmpty())
-      completePath.append("/");
-   else
-   {
-      const QString& sharedName = Common::ProtoHelper::getStr(entry.shared_dir(), &Protos::Common::SharedDir::shared_name);
-      if (!Common::Global::isWindowsPath(sharedName))
-         completePath.append("/");
-      completePath.append(sharedName).append(path);
-   }
-
-   return completePath;
-}*/
-
 SearchModel::SearchTree::SearchTree() :
    level(0)
 {
@@ -503,7 +481,7 @@ QVariant SearchModel::SearchTree::data(int column) const
       if (this->parent->getParent() != nullptr && this->parent->getItem().type() == Protos::Common::Entry_Type_DIR || this->getItem().type() == Protos::Common::Entry_Type_FILE && this->getNbChildren() > 0)
          return QVariant();
 
-      return Common::ProtoHelper::getRelativePath(this->getItem(), Common::EntriesToAppend::NONE, !Common::ProtoHelper::isRoot(this->getItem()));
+      return Common::ProtoHelper::getPath(this->getItem(), Common::EntriesToAppend::NONE, !Common::ProtoHelper::isRoot(this->getItem()));
 
    // case 2: // See 'SearchModel::data(..)'.
 

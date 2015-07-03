@@ -39,7 +39,7 @@ using namespace FM;
 #include <priv/Constants.h>
 #include <priv/Cache/Cache.h>
 #include <priv/Cache/Directory.h>
-#include <priv/Cache/SharedDirectory.h>
+#include <priv/Cache/SharedEntry.h>
 #include <priv/Cache/Chunk.h>
 
 /**
@@ -69,14 +69,15 @@ using namespace FM;
   * @exception UnableToCreateNewFileException
   */
 File::File(
-   Directory* dir,
+   SharedEntry* root,
    const QString& name,
    qint64 size,
    const QDateTime& dateLastModified,
+   Directory* dir,
    const Common::Hashes& hashes,
    bool createPhysically
 ) :
-   Entry(dir->getCache(), name + (createPhysically && size > 0 ? Global::getUnfinishedSuffix() : ""), size),
+   Entry(root, name + (createPhysically && size > 0 ? Global::getUnfinishedSuffix() : ""), size),
    dir(dir),
    dateLastModified(dateLastModified),
    complete(!Global::isFileUnfinished(Entry::getName())),
@@ -85,7 +86,7 @@ File::File(
    fileInWriteMode(nullptr),
    fileInReadMode(nullptr)
 {
-   L_DEBU(QString("New file : %1 (%2), createPhysically = %3").arg(this->getFullPath()).arg(Common::Global::formatByteSize(this->getSize())).arg(createPhysically));
+   L_DEBU(QString("New file: %1 (%2), createPhysically = %3").arg(this->getFullPath().getPath()).arg(Common::Global::formatByteSize(this->getSize())).arg(createPhysically));
 
    if (createPhysically)
       try
@@ -100,7 +101,8 @@ File::File(
 
    this->setHashes(hashes);
 
-   this->dir->add(this);
+   if (this->dir)
+      this->dir->add(this);
 }
 
 File::~File()
@@ -110,7 +112,8 @@ File::~File()
 
 void File::del(bool invokeDelete)
 {
-   this->dir->fileDeleted(this);
+   if (this->dir)
+      this->dir->fileDeleted(this);
 
    for (QVectorIterator<QSharedPointer<Chunk>> i(this->chunks); i.hasNext();)
       i.next()->fileDeleted();
@@ -119,10 +122,10 @@ void File::del(bool invokeDelete)
 
    {
       QMutexLocker lockerWrite(&this->writeLock);
-      this->cache->getFilePool().release(this->fileInWriteMode, true);
+      this->getCache()->getFilePool().release(this->fileInWriteMode, true);
 
       QMutexLocker lockerRead(&this->readLock);
-      this->cache->getFilePool().release(this->fileInReadMode, true);
+      this->getCache()->getFilePool().release(this->fileInReadMode, true);
    }
 
    // We wait that all the current access to this file are finished.
@@ -146,10 +149,10 @@ FileForHasher* File::asFileForHasher()
 void File::setToUnfinished(qint64 size, const Common::Hashes& hashes)
 {
    QMutexLocker locker(&this->mutex);
-   L_DEBU(QString("File::setToUnfinished : %1").arg(this->getFullPath()));
+   L_DEBU(QString("File::setToUnfinished: %1").arg(this->getFullPath().getPath()));
 
    this->complete = false;
-   this->cache->onEntryRemoved(this);
+   this->getCache()->onEntryRemoved(this);
    this->name.append(Global::getUnfinishedSuffix());
    this->setSize(size);
    this->dateLastModified = QDateTime::currentDateTime();
@@ -255,23 +258,20 @@ bool File::correspondTo(const QFileInfo& fileInfo, bool checkTheDateToo)
    return this->getSize() == fileInfo.size() && (!checkTheDateToo || this->getDateLastModified() == fileInfo.lastModified());
 }
 
-QString File::getPath() const
-{
-   QString path;
-   if (!dynamic_cast<SharedDirectory*>(this->dir))
-      path.append(this->dir->getPath()).append(this->dir->getName());
-
-   return path.append('/');
+Common::Path File::getPath() const
+{   
+   if (this->dir)
+      this->dir->getPath().appendDir(this->dir->getName()).setFilename(this->name);
+   else
+      Common::Path();
 }
 
-QString File::getFullPath() const
+Common::Path File::getFullPath() const
 {
-   return this->dir->getFullPath().append(this->name);
-}
-
-SharedDirectory* File::getRoot() const
-{
-   return this->dir->getRoot();
+   if (this->dir)
+      return this->dir->getFullPath().setFilename(this->name);
+   else
+      return this->getRoot()->getPath().setFilename(this->name);
 }
 
 void File::rename(const QString& newName)
@@ -279,7 +279,9 @@ void File::rename(const QString& newName)
    QMutexLocker locker(&this->mutex);
 
    Entry::rename(newName);
-   this->dir->fileNameChanged(this);
+
+   if (this->dir)
+      this->dir->fileNameChanged(this);
 }
 
 QDateTime File::getDateLastModified() const
@@ -530,9 +532,16 @@ void File::moveInto(Directory* directory)
    if (this->dir == directory)
       return;
 
-   this->dir->fileDeleted(this);
-   directory->add(this);
-   this->dir = directory;
+   if (this->dir)
+   {
+      this->dir->fileDeleted(this);
+      directory->add(this);
+      this->dir = directory;
+   }
+   else
+   {
+      // Special case when root entry: TODO
+   }
 }
 
 void File::changeDirectory(Directory* dir)
@@ -547,7 +556,10 @@ bool File::hasAParentDir(Directory* dir)
 {
    if (this->dir == dir)
       return true;
-   return this->dir->isAChildOf(dir);
+   else if (this->dir)
+      return this->dir->isAChildOf(dir);
+   else
+      return false;
 }
 
 /**
@@ -664,7 +676,8 @@ void FileForHasher::setSize(qint64 size)
 {
    if (this->getSize() != size)
    {
-      this->dir->fileSizeChanged(this->getSize(), size);
+      if (this->dir)
+         this->dir->fileSizeChanged(this->getSize(), size);
       File::setSize(size);
    }
 }

@@ -56,7 +56,6 @@ HEADERS += Hashes.h \
     Version.h \
     PersistentData.h \
     ../Libs/MersenneTwister.h \
-    SharedDir.h \
     Network/MessageSocket.h \
     Network/MessageHeader.h \
     ../Protos/gui_protocol.pb.h \
@@ -78,7 +77,8 @@ HEADERS += Hashes.h \
     SelfWeakPointer.h \
     Hash_noShare.h \
     Hash_share.h \
-    Path.h
+    Path.h \
+    SharedEntry.h
 
 OTHER_FILES += \
     ../Protos/hash_cache.proto

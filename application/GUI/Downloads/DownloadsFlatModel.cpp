@@ -112,7 +112,7 @@ QString DownloadsFlatModel::getPath(const QModelIndex& index, bool appendFilenam
       return QString();
 
    QString path = sharedDir.path.left(sharedDir.path.count() - 1);
-   return path.append(Common::ProtoHelper::getRelativePath(this->downloads[index.row()].local_entry(), Common::EntriesToAppend::DIR | (appendFilename ? Common::EntriesToAppend::FILE : Common::EntriesToAppend::NONE)));
+   return path.append(Common::ProtoHelper::getPath(this->downloads[index.row()].local_entry(), Common::EntriesToAppend::DIR | (appendFilename ? Common::EntriesToAppend::FILE : Common::EntriesToAppend::NONE)));
 }
 
 int DownloadsFlatModel::rowCount(const QModelIndex& parent) const

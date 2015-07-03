@@ -31,17 +31,17 @@ using namespace FM;
 #include <priv/Log.h>
 #include <priv/Exceptions.h>
 #include <priv/Constants.h>
-#include <priv/Cache/SharedDirectory.h>
+#include <priv/Cache/SharedEntry.h>
 #include <priv/Cache/File.h>
 
 /**
   * @class FM::Cache
   *
-  * Owns all the shared directories (roots), their content (directories and file) and the chunks.
+  * Owns all the shared items (roots), their content (directories and file) and the chunks.
   * Here are the main capabilities:
   *  - Browse directories and files.
   *  - Create a new file.
-  *  - Add or remove a shared directory (root).
+  *  - Add or remove a shared item (root).
   *  - Serialize or deserialize the hashes of the files in a 'Protos::FileCache::Hashes' structure (to be saved/loaded in/from a physical file).
   */
 
@@ -53,19 +53,19 @@ Cache::Cache() :
 
 Cache::~Cache()
 {
-   for (QListIterator<SharedDirectory*> i(this->sharedDirs); i.hasNext();)
-      i.next()->del();
+   for (auto i = this->sharedEntries.begin(); i != this->sharedEntries.end(); ++i)
+      (*i)->del();
 }
 
 /**
   * Call the given lambda for each entries owned by the cache.
-  * It can be a shared directory, a sub-directory or a file.
+  * It can be a a directory or a file.
   */
 void Cache::forall(std::function<void(Entry*)> fun) const
 {
    QQueue<Entry*> entries;
-   foreach (Entry* entry, this->sharedDirs)
-      entries.enqueue(entry);
+   foreach (SharedEntry* entry, this->sharedItems)
+      entries.enqueue(entry->getRootEntry());
 
    while (!entries.isEmpty())
    {
@@ -378,7 +378,7 @@ QList<Common::SharedDir> Cache::getSharedDirs() const
    QList<Common::SharedDir> list;
 
    for (QListIterator<SharedDirectory*> i(this->sharedDirs); i.hasNext();)
-      list << makeSharedDir(i.next());
+      list << makeSharedEntry(i.next());
 
    return list;
 }
@@ -395,9 +395,9 @@ SharedDirectory* Cache::getSharedDirectory(const Common::Hash& ID) const
 }
 
 /**
-  * @exception DirsNotFoundException
+  * @exception ItemsNotFoundException
   */
-void Cache::setSharedDirs(const QStringList& dirs)
+void Cache::setSharedPaths(const QStringList& dirs)
 {
    QMutexLocker locker(&this->mutex);
 
@@ -421,7 +421,7 @@ void Cache::setSharedDirs(const QStringList& dirs)
          if (this->createSharedDir(dirs[i], Common::Hash(), j))
             j++;
       }
-      catch (DirNotFoundException& e)
+      catch (SharedEntryNotFoundException& e)
       {
          dirsNotFound << e.path;
       }
@@ -432,16 +432,16 @@ void Cache::setSharedDirs(const QStringList& dirs)
       this->removeSharedDir(this->sharedDirs[j]);
 
    for (int k = 0; k < this->sharedDirs.size(); k++)
-      this->sharedDirs[k]->mergeSubSharedDirectories();
+      this->sharedDirs[k]->mergeSubSharedEntries();
 
    if (!dirsNotFound.isEmpty())
-      throw DirsNotFoundException(dirsNotFound);
+      throw ItemsNotFoundException(dirsNotFound);
 }
 
 /**
-  * @exception DirsNotFoundException
+  * @exception ItemsNotFoundException
   */
-QPair<Common::SharedDir, QString> Cache::addASharedDir(const QString& absoluteDir)
+QPair<Common::SharedEntry, QString> Cache::addASharedPath(const QString& absoluteDir)
 {
    QMutexLocker locker(&this->mutex);
 
@@ -452,7 +452,7 @@ QPair<Common::SharedDir, QString> Cache::addASharedDir(const QString& absoluteDi
    {
       SharedDirectory* current = i.next();
       if (absoluteDirCleaned == current->getFullPath())
-         return qMakePair(makeSharedDir(current), QString("/"));
+         return qMakePair(makeSharedEntry(current), QString("/"));
    }
 
    // If the given directory is a sub directory to an existing shared directory
@@ -462,7 +462,7 @@ QPair<Common::SharedDir, QString> Cache::addASharedDir(const QString& absoluteDi
       QString relativeDir(absoluteDirCleaned);
       relativeDir.remove(0, superDir->getFullPath().length());
       relativeDir.prepend('/');
-      return qMakePair(makeSharedDir(superDir), relativeDir);
+      return qMakePair(makeSharedEntry(superDir), relativeDir);
    }
 
    // Else we create a new shared directory
@@ -472,78 +472,57 @@ QPair<Common::SharedDir, QString> Cache::addASharedDir(const QString& absoluteDi
       if (dir)
       {
          dir->mergeSubSharedDirectories();
-         return qMakePair(makeSharedDir(dir), QString("/"));
+         return qMakePair(makeSharedEntry(dir), QString("/"));
       }
       else
          throw UnableToCreateSharedDirectory();
    }
-   catch (DirNotFoundException& e)
+   catch (SharedEntryNotFoundException& e)
    {
-      throw DirsNotFoundException(QStringList() << e.path);
+      throw ItemsNotFoundException(QStringList() << e.path);
    }
 }
 
 /**
-  * Will inform the fileUpdater and delete 'dir'.
-  * If 'dir2' is given 'dir' content (sub dirs + files) will be give to 'dir2'.
-  * The directory is deleted by fileUpdater.
+  * Will inform the fileUpdater and delete 'item'.
+  * If 'dir' is given 'item' content (sub dirs + files) will be given to 'dir'.
+  * The item is deleted by 'fileUpdater'.
   */
-void Cache::removeSharedDir(SharedDirectory* dir, Directory* dir2)
+void Cache::removeSharedEntry(SharedEntry* entry, Directory* dir)
 {
    QMutexLocker locker(&this->mutex);
 
-   if (this->sharedDirs.contains(dir))
+   if (this->sharedEntries.contains(entry))
    {
-      this->sharedDirs.removeOne(dir);
-      emit sharedDirectoryRemoved(dir, dir2);
+      this->sharedEntries.removeOne(entry);
+      emit sharedEntryRemoved(entry, dir);
    }
 }
 
-SharedDirectory* Cache::getSuperSharedDirectory(const QString& path) const
+SharedItem* Cache::getSuperSharedItem(const Common::Path& path) const
 {
    QMutexLocker locker(&this->mutex);
-   const QStringList& folders = path.split('/', QString::SkipEmptyParts);
 
-   for (QListIterator<SharedDirectory*> i(this->sharedDirs); i.hasNext();)
+   for (QListIterator<SharedItem*> i(this->sharedItems); i.hasNext();)
    {
-      SharedDirectory* sharedDir = i.next();
-      const QStringList& foldersShared = sharedDir->getFullPath().split('/', QString::SkipEmptyParts);
-      if (folders.size() <= foldersShared.size())
-         continue;
-
-      for (int i = 0; i < foldersShared.size(); i++)
-         if (folders[i] != foldersShared[i])
-            goto nextSharedDir;
-
-      return sharedDir;
-      nextSharedDir:;
+      SharedItem* sharedItem = i.next();
+      if (sharedItem->getFullPath().isSuperOf(path))
+         return sharedItem;
    }
 
    return nullptr;
 }
 
-QList<SharedDirectory*> Cache::getSubSharedDirectories(const QString& path) const
+QList<SharedItem*> Cache::getSubSharedItems(const Common::Path& path) const
 {
    QMutexLocker locker(&this->mutex);
-   QList<SharedDirectory*> ret;
+   QList<SharedItem*> ret;
 
-   const QStringList& folders = path.split('/', QString::SkipEmptyParts);
-
-   for (QListIterator<SharedDirectory*> i(this->sharedDirs); i.hasNext();)
+   for (QListIterator<SharedItem*> i(this->sharedItems); i.hasNext();)
    {
-      SharedDirectory* sharedDir = i.next();
-      const QStringList& foldersShared = sharedDir->getFullPath().split('/', QString::SkipEmptyParts);
-
-      if (foldersShared.size() <= folders.size())
-         continue;
-
-      for (int i = 0; i < folders.size(); i++)
-         if (folders[i] != foldersShared[i])
-            goto nextSharedDir;
-
-      ret << sharedDir;
-
-      nextSharedDir:;
+      SharedItem* sharedItem = i.next();
+      if (sharedItem->getFullPath().isSubOf(path))
+         ret << sharedItem;
    }
 
    return ret;
@@ -552,44 +531,45 @@ QList<SharedDirectory*> Cache::getSubSharedDirectories(const QString& path) cons
 /**
   * If path matches a shared directory or one of its sub directories then true is returned.
   */
-bool Cache::isShared(const QString& path) const
+bool Cache::isShared(const Common::Path& path) const
 {
    QMutexLocker locker(&this->mutex);
-   foreach (SharedDirectory* dir, this->sharedDirs)
-      if (dir->getFullPath() == path)
+   foreach (SharedItem* item, this->sharedItems)
+      if (item->getFullPath() == path)
          return true;
    return false;
 }
 
 /**
   * Returns the directory that best matches to the given path.
-  * For example, path = /home/peter/linux/distrib/debian/etch
-  *  This directory exists in cache : /home/peter/linux/distrib
+  * For example, path = "/home/peter/linux/distrib/debian/etch/"
+  *  This directory exists in cache : "/home/peter/linux/distrib/"
   *  Thus, this directory 'distrib' will be returned.
   * @param path An absolute path.
-  * @return If no directory can be match 0 is returned.
+  * @return If no directory can be match 'nullptr' is returned.
   */
-Directory* Cache::getFittestDirectory(const QString& path) const
+Directory* Cache::getFittestDirectory(const Common::Path& path) const
 {
    QMutexLocker locker(&this->mutex);
 
-   foreach (SharedDirectory* sharedDir, this->sharedDirs)
+   foreach (SharedItem* sharedItem, this->sharedItems)
    {
-      if (path.startsWith(sharedDir->getFullPath()))
-      {
-         QString relativePath(path);
-         relativePath.remove(0, sharedDir->getFullPath().size());
-         const QStringList folders = relativePath.split('/', QString::SkipEmptyParts);
+      const Common::Path& sharedPath = sharedItem->getFullPath();
 
-         Directory* currentDir = sharedDir;
-         foreach (QString folder, folders)
+      if (sharedPath = path)
+         return sharedItem->getEntry();
+
+      if (sharedPath.isSuperOf(path))
+      {
+         const QStringList& pathDirs = path.getDirs();
+         Directory* currentDir = dynamic_cast<Directory*>(sharedItem->getEntry());
+         for (int i = sharedPath.getDirs().size(); i < pathDirs.size(); i++)
          {
-            Directory* nextdir = currentDir->getSubDir(folder);
+            Directory* nextdir = currentDir->getSubDir(pathDirs[i]);
             if (!nextdir)
-               break;
+               return currentDir;
             currentDir = nextdir;
          }
-         return currentDir;
       }
    }
 
@@ -597,22 +577,21 @@ Directory* Cache::getFittestDirectory(const QString& path) const
 }
 
 /**
-  * Defines the shared directories from the persisted given data.
+  * Defines the shared items from the persisted given data.
   * The directories and files are not created here but later by the FileUpdater, see the FileManager ctor.
   */
-void Cache::createSharedDirs(const Protos::FileCache::Hashes& hashes)
+void Cache::createSharedItems(const google::protobuf::RepeatedPtrField<Protos::Common::SharedItem>& items)
 {
    QStringList paths;
    QList<Common::Hash> ids;
 
    // Add the shared directories from the file cache.
-   for (int i = 0; i < hashes.shareddir_size(); i++)
+   for (int i = 0; i < items.size(); i++)
    {
-      const Protos::FileCache::Hashes_SharedDir& dir = hashes.shareddir(i);
-      paths << Common::ProtoHelper::getStr(dir, &Protos::FileCache::Hashes_SharedDir::path);
-      ids << dir.id().hash();
+      paths << Common::ProtoHelper::getStr(items.Get(i), &Protos::Common::SharedItem::path);
+      ids << items.Get(i).id().hash();
    }
-   this->createSharedDirs(paths, ids);
+   this->createSharedItems(paths, ids);
 }
 
 /**
@@ -620,7 +599,9 @@ void Cache::createSharedDirs(const Protos::FileCache::Hashes& hashes)
   */
 void Cache::populateHashes(Protos::FileCache::Hashes& hashes) const
 {
-   QMutexLocker locker(&this->mutex);
+   //TODO
+
+   /*QMutexLocker locker(&this->mutex);
 
    hashes.set_version(FILE_CACHE_VERSION);
    hashes.set_chunksize(SETTINGS.get<quint32>("chunk_size"));
@@ -633,7 +614,7 @@ void Cache::populateHashes(Protos::FileCache::Hashes& hashes) const
       Common::ProtoHelper::setStr(*sharedDirMess, &Protos::FileCache::Hashes_SharedDir::set_path, sharedDir->getFullPath());
 
       sharedDir->populateHashesDir(*sharedDirMess->mutable_root());
-   }
+   }*/
 }
 
 quint64 Cache::getAmount() const
@@ -691,60 +672,60 @@ void Cache::deleteEntry(Entry* entry)
    delete entry;
 }
 
+Common::SharedEntry Cache::makeSharedEntry(const SharedEntry* entry)
+{
+   return Common::SharedEntry{ entry->getId(), entry->getFullPath(), entry->getSize(), Common::Global::availableDiskSpace(entry->getFullPath()) };
+}
+
 /**
-  * Creates a new shared directory.
-  * The other shared directories may not be merged with the new one, use 'SharedDirectory::mergeSubSharedDirectories' to do that after this call.
+  * Creates a new shared item.
+  * The other shared items may not be merged with the new one, use 'SharedItems::mergeSubSharedItems' to do that after this call.
   *
-  * @exception DirNotFoundException
+  * @exception SharedEntryNotFoundException
   */
-SharedDirectory* Cache::createSharedDir(const QString path, const Common::Hash& ID, int pos)
+SharedItem* Cache::createSharedItem(const QString& path, const Common::Hash& ID, int pos)
 {
    try
    {
-      SharedDirectory* dir = !ID.isNull() ?
-         new SharedDirectory(this, path, ID) :
-         new SharedDirectory(this, path);
+      SharedItem* item = !ID.isNull() ?
+         new SharedItem(this, path, ID) :
+         new SharedItem(this, path);
 
-      L_DEBU(QString("Add a new shared directory : %1").arg(path));
+      L_DEBU(QString("Add a new shared item: %1").arg(path));
 
-      if (pos == -1 || pos > this->sharedDirs.size())
-         this->sharedDirs << dir;
+      if (pos == -1 || pos > this->sharedItems.size())
+         this->sharedItems << item;
       else
-         this->sharedDirs.insert(pos, dir);
+         this->sharedItems.insert(pos, item);
 
-      emit newSharedDirectory(dir);
+      emit newSharedItem(dir);
 
-      return dir;
+      return item;
    }
-   catch (DirAlreadySharedException&)
+   catch (SharedEntryAlreadySharedException&)
    {
-      L_DEBU(QString("Directory already shared : %1").arg(path));
+      L_DEBU(QString("Shared entry already shared: %1").arg(path));
    }
    catch (SuperDirectoryExistsException& e)
    {
-      L_WARN(QString("There is already a super directory: %1 for this directory : %2").arg(e.superDirectory).arg(e.subDirectory));
+      L_WARN(QString("There is already a super directory: %1 for this directory: %2").arg(e.superDirectory).arg(e.subDirectory));
    }
 
    return nullptr;
 }
 
-Common::SharedDir Cache::makeSharedDir(const SharedDirectory* dir)
-{
-   return Common::SharedDir { dir->getId(), dir->getFullPath(), dir->getSize(), Common::Global::availableDiskSpace(dir->getFullPath()) };
-}
-
 /**
-  * Create new shared directories.
+  * Create new shared items.
   *
-  * @exception DirsNotFoundException
+  * @exception ItemsNotFoundException
   */
-void Cache::createSharedDirs(const QStringList& dirs, const QList<Common::Hash>& ids)
+void Cache::createSharedPaths(const QStringList& paths, const QList<Common::Hash>& ids)
 {
    QMutexLocker locker(&this->mutex);
 
-   QStringList dirsNotFound;
+   QStringList itemsNotFound;
 
-   QListIterator<QString> i(dirs);
+   QListIterator<QString> i(paths);
    QListIterator<Common::Hash> k(ids);
    while (i.hasNext())
    {
@@ -752,25 +733,26 @@ void Cache::createSharedDirs(const QStringList& dirs, const QList<Common::Hash>&
 
       try
       {
-         SharedDirectory* dir = k.hasNext() ?
-            this->createSharedDir(path, k.next()) :
-            this->createSharedDir(path);
+         SharedItem* item = k.hasNext() ?
+            this->createSharedItem(path, k.next()) :
+            this->createSharedItem(path);
 
-         if (dir)
-            dir->mergeSubSharedDirectories();
+         if (item)
+            item->mergeSubSharedItems();
       }
       catch (DirNotFoundException& e)
       {
-         dirsNotFound << e.path;
+         itemsNotFound << e.path;
       }
    }
 
-   if (!dirsNotFound.isEmpty())
-      throw DirsNotFoundException(dirsNotFound);
+   if (!itemsNotFound.isEmpty())
+      throw ItemsNotFoundException(itemsNotFound);
 }
 
 /**
-  * Returns a directory which matches to the path, it will choose the shared directory which :
+  * Returns a directory which matches to the path, it will choose the shared item which :
+  *  - Is a directory
   *  - Has at least the needed space.
   *  - Has the most directories in common with 'path'.
   *
@@ -783,29 +765,32 @@ void Cache::createSharedDirs(const QStringList& dirs, const QList<Common::Hash>&
   * @exception NoWriteableDirectoryException
   * @exception UnableToCreateNewDirException
   */
-Directory* Cache::getWriteableDirectory(const QString& path, qint64 spaceNeeded) const
+Directory* Cache::getWriteableDirectory(const Common::Path& path, qint64 spaceNeeded) const
 {
    QMutexLocker locker(&this->mutex);
 
-   const QStringList folders = path.split('/', QString::SkipEmptyParts);
 
-   if (this->sharedDirs.isEmpty())
+   QList<SharedItem*> sharedDirs;
+   for (auto i = this->sharedItems.begin(); i != this->sharedItems.end(); ++i)
+      if ((*i)->getKind() == SharedItem::Kind::DIR)
+         sharedDirs << *i;
+
+   if (sharedDirs.isEmpty())
       throw NoWriteableDirectoryException();
 
-   // Search for the fittest shared directory.
-   SharedDirectory* currentSharedDir = nullptr;
+   SharedItem* currentSharedDir = nullptr;
    int currentNbDirsInCommon = -1;
 
-   foreach (SharedDirectory* dir, this->sharedDirs)
+   for (SharedItem* dir : sharedDirs)
    {
       if (spaceNeeded > 0 && Common::Global::availableDiskSpace(dir->getFullPath()) < spaceNeeded)
          continue;
 
-      Directory* currentDir = dir;
+      Directory* currentDir = dynamic_cast<Directory*>(dir->getEntry());
       int nbDirsInCommon = 0;
-      foreach (QString folder, folders)
+      for (QString dirToSearch : path.getDirs())
       {
-         currentDir = currentDir->getSubDir(folder);
+         currentDir = currentDir->getSubDir(dirToSearch);
          if (currentDir)
             nbDirsInCommon += 1;
          else
@@ -822,5 +807,5 @@ Directory* Cache::getWriteableDirectory(const QString& path, qint64 spaceNeeded)
       throw InsufficientStorageSpaceException(); // Not executed if 'spaceNeeded' equals 0.
 
    // Create the missing directories.
-   return currentSharedDir->createSubDirs(folders, true);
+   return dynamic_cast<Directory*>(currentSharedDir->getEntry())->createSubDirs(folders, true);
 }

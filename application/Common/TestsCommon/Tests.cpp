@@ -168,6 +168,7 @@ void Tests::hashStringToInt()
    QCOMPARE(StringUtils::hashStringToInt("abcdef"), 3174932005u);
 }
 
+// Test of 'Common::Path' class.
 void Tests::path()
 {
    Path p1(QString::null);
@@ -201,6 +202,57 @@ void Tests::path()
    QCOMPARE(p4.getDirs(), (QStringList{ "tmp", "dir" }));
    QCOMPARE(p4.getFilename(), QString(""));
    QCOMPARE(p4.getExtension(), QString(""));
+
+   Path p5(QString("/tmp/dir/file.txt"));
+   QCOMPARE(p5.getPath(), QString("/tmp/dir/file.txt"));
+   QCOMPARE(p5.isFile(), true);
+   QCOMPARE(p5.isAbsolute(), true);
+   QCOMPARE(p5.getRoot(), QString("/"));
+   QCOMPARE(p5.getDirs(), (QStringList{ "tmp", "dir" }));
+   QCOMPARE(p5.getFilename(), QString("file.txt"));
+   QCOMPARE(p5.getExtension(), QString("txt"));
+
+   Path p6(QString("C:/tmp/dir/file.txt"));
+   QCOMPARE(p6.getPath(), QString("C:/tmp/dir/file.txt"));
+   QCOMPARE(p6.isFile(), true);
+   QCOMPARE(p6.isAbsolute(), true);
+   QCOMPARE(p6.getRoot(), QString("C:/"));
+   QCOMPARE(p6.getDirs(), (QStringList{ "tmp", "dir" }));
+   QCOMPARE(p6.getFilename(), QString("file.txt"));
+   QCOMPARE(p6.getExtension(), QString("txt"));
+
+   Path p7(QString("dir/.file.txt")); // (Hidden file).
+   QCOMPARE(p7.getPath(), QString("dir/.file.txt"));
+   QCOMPARE(p7.isFile(), true);
+   QCOMPARE(p7.isAbsolute(), false);
+   QCOMPARE(p7.getRoot(), QString());
+   QCOMPARE(p7.getDirs(), (QStringList{ "dir" }));
+   QCOMPARE(p7.getFilename(), QString(".file.txt"));
+   QCOMPARE(p7.getExtension(), QString("txt"));
+
+   Path p8 = p4;
+   Path p9 = p6;
+   Path p10 = p7;
+   QVERIFY(p8 == p4);
+   QVERIFY(p9 == p6);
+   QVERIFY(p10 == p7);
+
+   QVERIFY(p4.isSameDir(p5));
+   QVERIFY(!p4.isSameDir(Path("tmp/dir/")));
+   QVERIFY(!p5.isSameDir(p6));
+
+   QVERIFY(!p4.isSubOf(p4));
+   QVERIFY(!p4.isSuperOf(p4));
+
+   QVERIFY(Path("/tmp/dir1/dir2/").isSubOf(Path("/tmp/dir1/")));
+   QVERIFY(Path("/tmp/").isSubOf(Path("/")));
+   QVERIFY(!Path("/tmp/dir1/").isSubOf(Path("/tmp/dir1/dir2/")));
+   QVERIFY(!Path("/").isSubOf(Path("/tmp/")));
+
+   QVERIFY(Path("/tmp/dir1/").isSuperOf(Path("/tmp/dir1/dir2/")));
+   QVERIFY(Path("/").isSuperOf(Path("/tmp/")));
+   QVERIFY(!Path("/tmp/dir1/dir2/").isSuperOf(Path("/tmp/dir1/")));
+   QVERIFY(!Path("/tmp/").isSuperOf(Path("/")));
 }
 
 void Tests::sortedList()
@@ -725,7 +777,7 @@ void Tests::readAndWriteWithZeroCopyStreamQIODevice()
   *  - getLang(..)
   *  - setIP(..)
   *  - getIP(..)
-  *  - getRelativePath(..)
+  *  - getPath(..)
   */
 void Tests::protoHelper()
 {

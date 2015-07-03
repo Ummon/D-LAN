@@ -112,25 +112,31 @@ QHostAddress ProtoHelper::getIP(const Protos::Common::IP& ipMess)
    }
 }
 
-QString ProtoHelper::getRelativePath(const Protos::Common::Entry& entry, EntriesToAppend entriesToAppend, bool prependSharedDir)
+/**
+  * Return the path of a given entry, the path can be relative to the shared item or absolute ('prependSharedPath = true').
+  *
+  */
+QString ProtoHelper::getPath(const Protos::Common::Entry& entry, EntriesToAppend entriesToAppend, bool prependSharedPath)
 {
-   QString path = Common::ProtoHelper::getStr(entry, &Protos::Common::Entry::path);
-   QString sharedName = Common::ProtoHelper::getStr(entry.shared_dir(), &Protos::Common::SharedDir::shared_name);
-   if (!Common::Path::isWindowsPath(sharedName))
-      sharedName.prepend("/");
+   const QString& relativePath = Common::ProtoHelper::getStr(entry, &Protos::Common::Entry::path);
+   const QString& sharedPath = Common::ProtoHelper::getStr(entry.shared_entry(), &Protos::Common::SharedEntry::path);
 
-   // Empty relative path means the directory is a shared directory (root), see "application/Protos/common.proto" for more information.
-   if (path.isEmpty())
+   // Empty relative path means the directory/file is a shared item, see "application/Protos/common.proto" for more information.
+   if (relativePath.isEmpty())
    {
-      if (prependSharedDir)
-         path.append(sharedName).append("/");
+      QString path;
+      if (prependSharedPath)
+         path.append(sharedPath).append("/");
       else
          path = "/";
+      return path;
    }
    else
    {
-      if (prependSharedDir)
-         path.prepend(sharedName);
+      QString path = relativePath;
+
+      if (prependSharedPath)
+         path.prepend(sharedPath);
 
       if (contains(entriesToAppend, EntriesToAppend::FILE) && entry.type() == Protos::Common::Entry_Type_FILE || contains(entriesToAppend, EntriesToAppend::DIR) && entry.type() == Protos::Common::Entry_Type_DIR)
       {
@@ -138,9 +144,9 @@ QString ProtoHelper::getRelativePath(const Protos::Common::Entry& entry, Entries
          if (entry.type() == Protos::Common::Entry_Type_DIR)
             path.append("/");
       }
-   }
 
-   return path;
+      return path;
+   }
 }
 
 bool ProtoHelper::isRoot(const Protos::Common::Entry& entry)

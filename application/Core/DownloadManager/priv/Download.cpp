@@ -120,7 +120,7 @@ void Download::setStatus(Status newStatus)
    if (!this->isStatusErroneous() && newStatus >= 0x20)
       emit becomeErroneous(this);
 
-   L_DEBU(QString("Download (%1) status change from %2 to %3").arg(Common::ProtoHelper::getRelativePath(this->localEntry)).arg(Utils::getStatusStr(this->status)).arg(Utils::getStatusStr(newStatus)));
+   L_DEBU(QString("Download (%1) status change from %2 to %3").arg(Common::ProtoHelper::getPath(this->localEntry)).arg(Utils::getStatusStr(this->status)).arg(Utils::getStatusStr(newStatus)));
 
    this->status = newStatus;
 }

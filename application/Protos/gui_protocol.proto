@@ -96,9 +96,9 @@ message State {
       optional string core_version = 5;
       optional PeerStatus status = 8;
    }
-   message SharedDir {
+   message SharedEntry {
       required Common.Hash id = 1;
-      required string path = 2; // Always ended with a '/'.
+      required string path = 2; // A directory is terminated by a '/' otherwise it's a file.
       required uint64 size = 3;
       required uint64 free_space = 4;
    }
@@ -110,7 +110,7 @@ message State {
    
    repeated Peer peer = 2; // The first peer is always ourself and always exists.
    
-   repeated SharedDir shared_directory = 3;
+   repeated SharedEntry shared_entry = 3;
    
    required bool integrity_check_enabled = 7;
    
@@ -219,13 +219,9 @@ message ChangePassword {
 // id: 0x1031
 // Set the settings.
 message CoreSettings {
-   message SharedDirectories {
-      repeated string dir = 1; // A directory always ends with a slash ('/').
-   }
-   
    optional string nick = 1;
-   optional SharedDirectories shared_directories = 2;
-   optional bool enable_integrity_check = 3;   
+   repeated string entry_path = 2; // A directory always ends with a slash ('/') otherwise it's a file.
+   optional bool enable_integrity_check = 3;
    
    optional string listen_address = 4 [default = ""]; // If address is empty then listen to any adresses, in this case the protocol is given by 'listenAny'.
    optional Common.Interface.Address.Protocol listen_any = 5 [default = IPv6];
@@ -321,7 +317,10 @@ message Download {
    required Common.Hash peer_id = 1; // From where the file/dir is.
    required Common.Entry entry = 2;
    
-   optional Common.Hash destination_directory_id = 3; // Where to put the folder/file. It must one of the directory of State.destination_directory. If this directory is not set, the first directory with enough free space will be taken.
+   // Where to put the folder/file.
+   // It must one of the directory of State.shared_entry. (It can't be a shared file entry).
+   // If this directory is not set, the first directory with enough free space will be taken.
+   optional Common.Hash destination_directory_id = 3;
    optional string destination_path = 4 [default="/"]; // Must ended with an '/'. If 'Common.Hash destination_directory_id' isn't set then a new shred directory will be created (if needed).
 }
 

@@ -34,7 +34,7 @@
 namespace FM
 {
    class FileManager;
-   class SharedDirectory;
+   class SharedEntry;
    class Directory;
    class File;
    class Entry;
@@ -57,8 +57,8 @@ namespace FM
       int getProgress() const;
 
    public slots:
-      void addRoot(SharedDirectory* dir);
-      void rmRoot(SharedDirectory* dir, Directory* dir2 = nullptr);
+      void addRoot(SharedEntry* entry);
+      void rmRoot(SharedEntry* entry, Directory* dir2 = nullptr);
 
    signals:
       void fileCacheLoaded();
@@ -81,7 +81,7 @@ namespace FM
       void removeFromDirsToScan(Directory* dir);
       void removeFromFilesWithoutHashes(Directory* dir);
 
-      void restoreFromFileCache(SharedDirectory* dir);
+      //void restoreFromFileCache(SharedDirectory* dir);
 
       bool processEvents(const QList<WatcherEvent>& events);
 
@@ -116,9 +116,9 @@ namespace FM
       WaitCondition* dirEvent; ///< Using to wait when a sharing directory is added or deleted.
       mutable QMutex mutex; ///< Prevent the access from many thread to the internal data like 'filesWithoutHashes' for example.
 
-      QList<Directory*> unwatchableDirs;
+      QList<Entry*> unwatchableEntries;
       QElapsedTimer timerScanUnwatchable;
-      QList<Directory*> dirsToScan; ///< When something change in a directory we put it in this list until it is scanned.
+      QList<Entry*> entriesToScan; ///< When something change in a directory or in a file we put it in this list until it is scanned.
       Directory* currentScanningDir;
       QWaitCondition scanningStopped;
       mutable QMutex scanningMutex;

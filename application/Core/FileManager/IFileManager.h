@@ -27,7 +27,7 @@
 
 #include <Common/Hash.h>
 #include <Common/Hashes.h>
-#include <Common/SharedDir.h>
+#include <Common/SharedEntry.h>
 
 #include <Protos/common.pb.h>
 #include <Protos/core_protocol.pb.h>
@@ -55,22 +55,22 @@ namespace FM
       virtual ~IFileManager() {}
 
       /**
-        * @exception DirsNotFoundException
+        * @exception ItemsNotFoundException
         */
-      virtual void setSharedDirs(const QStringList& dirs) = 0;
+      virtual void setSharedPaths(const QStringList& paths) = 0;
 
       /**
-        * Add a shared directory and return a Common::SharedDir object and the relative path to this directory.
+        * Add a shared item and return a 'Common::SharedEntry' object and the relative path into the shared directory (not for file item).
         * If the given absolute directory is a child of an existing shared directory, no new shared directory is created and
         * the existing one is returned.
         * If the given absolute directory is a parent of one or more existing directory, all the existing directories are merged into
         * a new shared directory and this new one is returned. In this case, the relative path is '/'.
-        * @exception DirsNotFoundException
+        * @exception ItemsNotFoundException
         * @exception UnableToCreateSharedDirectory
         */
-      virtual QPair<Common::SharedDir, QString> addASharedDir(const QString& absoluteDir) = 0;
+      virtual QPair<Common::SharedEntry, QString> addASharedPath(const QString& absolutePath) = 0;
 
-      virtual QList<Common::SharedDir> getSharedDirs() const = 0;
+      virtual QList<Common::SharedEntry> getSharedEntries() const = 0;
 
       /**
         * Returns the absolute path to the corresponding shared directory.

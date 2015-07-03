@@ -303,9 +303,9 @@ void StressTest::createASharedDir()
       this->sharedDirs << ROOT_DIR.dirName().append("/").append(name);
       this->fileManager->setSharedDirs(this->sharedDirs);
    }
-   catch (DirsNotFoundException& e)
+   catch (ItemsNotFoundException& e)
    {
-      qDebug() << "createASharedDir() : This dirs wasn't found : " << e.paths;
+      qDebug() << "createASharedDir(): These items wasn't found: " << e.paths;
    }
 }
 
@@ -323,9 +323,9 @@ void StressTest::removeASharedDir()
       this->sharedDirs.removeAt(i);
       this->fileManager->setSharedDirs(this->sharedDirs);
    }
-   catch (DirsNotFoundException& e)
+   catch (ItemsNotFoundException& e)
    {
-      qDebug() << "removeASharedDir() : This dirs wasn't found : " << e.paths;
+      qDebug() << "removeASharedDir(): These items wasn't found: " << e.paths;
    }
 }
 

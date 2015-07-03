@@ -43,21 +43,20 @@ namespace FM
       friend class DirIterator;
 
    protected:
-      Directory(Directory* parent, const QString& name, bool createPhysically = false);
-      Directory(Cache* cache, const QString& name);
+      Directory(SharedEntry* root, const QString& name, Directory* parent = nullptr, bool createPhysically = false);
 
    public:
       virtual ~Directory();
-      virtual void del(bool invokeDelete = true);
+      void del(bool invokeDelete = true);
 
       QList<File*> restoreFromFileCache(const Protos::FileCache::Hashes::Dir& dir);
       void populateHashesDir(Protos::FileCache::Hashes::Dir& dirToFill) const;
 
-      virtual void populateEntry(Protos::Common::Entry* dir, bool setSharedDir = false) const;
+      void populateEntry(Protos::Common::Entry* dir, bool setSharedDir = false) const;
 
-      virtual void removeUnfinishedFiles();
+      void removeUnfinishedFiles();
 
-      virtual void moveInto(Directory* directory);
+      void moveInto(Directory* directory);
 
       void fileDeleted(File* file);
 
@@ -65,9 +64,8 @@ namespace FM
       void subDirDeleted(Directory* dir);
 
    public:
-      virtual QString getPath() const;
-      virtual QString getFullPath() const;
-      virtual SharedDirectory* getRoot() const;
+      Common::Path getPath() const;
+      Common::Path getFullPath() const;
 
       void rename(const QString& newName);
       bool isAChildOf(const Directory* dir) const;

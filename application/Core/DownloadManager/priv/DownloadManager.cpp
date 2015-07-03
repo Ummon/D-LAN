@@ -92,9 +92,9 @@ void DownloadManager::addDownload(const Protos::Common::Entry& remoteEntry, PM::
       QPair<Common::SharedDir, QString> result = this->fileManager->addASharedDir(absolutePath);
       this->addDownload(remoteEntry, peerSource, result.first.ID, result.second, Protos::Queue::Queue::Entry::QUEUED, this->downloadQueue.size());
    }
-   catch (FM::DirsNotFoundException& e)
+   catch (FM::ItemsNotFoundException& e)
    {
-      L_WARN(QString("The following directory isn't found: %1").arg(absolutePath));
+      L_WARN(QString("The following item isn't found: %1").arg(absolutePath));
    }
    catch (FM::UnableToCreateSharedDirectory& e)
    {
@@ -140,7 +140,7 @@ Download* DownloadManager::addDownload(const Protos::Common::Entry& remoteEntry,
       if (!sharedDir.isEmpty())
          sharedDir.remove(sharedDir.size() - 1, 1); // Remove the ending '/'.
 
-      L_USER(tr("The file '%1' is already in queue").arg(sharedDir % Common::ProtoHelper::getRelativePath(localEntry)));
+      L_USER(tr("The file '%1' is already in queue").arg(sharedDir % Common::ProtoHelper::getPath(localEntry)));
       return newDownload;
    }
 
@@ -405,7 +405,7 @@ void DownloadManager::restartErroneousDownloads()
       if (download->isStatusErroneous())
       {
          download->start(); // We restart the download.
-         L_DEBU(QString("Rescan timer timedout, the queue will be rescanned. File restarted: %1").arg(Common::ProtoHelper::getRelativePath(download->getLocalEntry())));
+         L_DEBU(QString("Rescan timer timedout, the queue will be rescanned. File restarted: %1").arg(Common::ProtoHelper::getPath(download->getLocalEntry())));
          this->startErroneousDownloadTimer.start();
          break;
       }

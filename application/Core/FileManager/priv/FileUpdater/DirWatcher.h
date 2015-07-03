@@ -75,6 +75,8 @@ namespace FM
         */
       virtual bool addDir(const QString& path) = 0;
 
+      virtual bool addFile(const QString& path) = 0;
+
       /**
         * Remove a watched directory.
         */

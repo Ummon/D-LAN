@@ -155,7 +155,7 @@ QString DownloadsTreeModel::getPath(const QModelIndex& index, bool appendFilenam
    else
    {
       path = sharedDir.path.left(sharedDir.path.count() - 1);
-      path.append(Common::ProtoHelper::getRelativePath(tree->getItem().local_entry(), Common::EntriesToAppend::DIR | (appendFilename ? Common::EntriesToAppend::FILE : Common::EntriesToAppend::NONE)));
+      path.append(Common::ProtoHelper::getPath(tree->getItem().local_entry(), Common::EntriesToAppend::DIR | (appendFilename ? Common::EntriesToAppend::FILE : Common::EntriesToAppend::NONE)));
    }
    return path;
 }

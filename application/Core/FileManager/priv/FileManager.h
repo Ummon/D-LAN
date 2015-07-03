@@ -58,9 +58,9 @@ namespace FM
       FileManager();
       ~FileManager();
 
-      void setSharedDirs(const QStringList& dirs);
-      QPair<Common::SharedDir, QString> addASharedDir(const QString& absoluteDir);
-      QList<Common::SharedDir> getSharedDirs() const;
+      void setSharedPaths(const QStringList& paths);
+      QPair<Common::SharedEntry, QString> addASharedPath(const QString& absolutePath);
+      QList<Common::SharedEntry> getSharedEntries() const;
       QString getSharedDir(const Common::Hash& ID) const;
 
       QSharedPointer<IChunk> getChunk(const Common::Hash& hash) const;
@@ -87,8 +87,8 @@ namespace FM
       Entry* getEntry(const QString& path);
 
    private slots:
-      void newSharedDirectory(SharedDirectory*);
-      void sharedDirectoryRemoved(SharedDirectory*, Directory*);
+      void newSharedEntry(SharedEntry*);
+      void sharedEntryRemoved(SharedEntry*, Directory*);
       void deleteSharedDir(SharedDirectory* sharedDirectory);
       void entryAdded(Entry* entry);
       void entryRemoved(Entry* entry);

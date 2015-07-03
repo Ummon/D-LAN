@@ -29,42 +29,31 @@ using namespace FM;
 #include <priv/Log.h>
 #include <priv/FileManager.h>
 #include <priv/Cache/File.h>
-#include <priv/Cache/SharedDirectory.h>
+#include <priv/Cache/SharedEntry.h>
 
 /**
   * @exception UnableToCreateNewDirException (may be thrown only if 'createPhysically' is true).
   */
-Directory::Directory(Directory* parent, const QString& name, bool createPhysically) :
-   Entry(parent->cache, name),
+Directory::Directory(SharedEntry* root, const QString& name, Directory* parent, bool createPhysically) :
+   Entry(root, name),
    parent(parent),
    subDirs(&Directory::entrySortingFun),
    files(&Directory::entrySortingFun),
    scanned(true)
 {
    QMutexLocker locker(&this->mutex);
-   L_DEBU(QString("New Directory : %1, createPhysically = %2").arg(this->getFullPath()).arg(createPhysically));
+   L_DEBU(QString("New Directory: %1, createPhysically = %2").arg(this->getFullPath()).arg(createPhysically));
 
    if (createPhysically)
-      if (!QDir(this->parent->getFullPath()).mkdir(this->name))
+      if (!QDir(this->getFullPath().removeLastDir()).mkdir(this->name))
       {
-         L_ERRO(QString("Unable to create the directory : %1").arg(this->getFullPath()));
+         L_ERRO(QString("Unable to create the directory: %1").arg(this->getFullPath()));
          Entry::del(false);
          throw UnableToCreateNewDirException();
       }
 
-   this->parent->add(this);
-}
-
-/**
-  * Called by the root (SharedDirectory) which will not have parent and name.
-  */
-Directory::Directory(Cache* cache, const QString& name) :
-   Entry(cache, name),
-   parent(0),
-   subDirs(&Directory::entrySortingFun),
-   files(&Directory::entrySortingFun),
-   scanned(true)
-{
+   if (this->parent)
+      this->parent->add(this);
 }
 
 Directory::~Directory()
@@ -236,37 +225,24 @@ void Directory::subDirDeleted(Directory* dir)
    this->subDirs.removeOne(dir);
 }
 
-QString Directory::getPath() const
+Common::Path Directory::getPath() const
 {
-   QString path('/');
-
+   Common::Path path;
    const Directory* dir = this;
-   while (dir->parent && dir->parent->parent) // We don't care about the name of the root (SharedDirectory).
+   while (dir->parent) // We don't care about the name of the root (SharedDirectory).
    {
       dir = dir->parent;
-      path.prepend(dir->getName());
-      path.prepend('/');
+      path.prependDir(dir->getName());
    }
    return path;
 }
 
 /**
-  * We use "this->name" instead of "this->getName()" to improve a bit the performance during searching (See 'QSort(..)' in 'FileManager::find(..)').
+  * TODO: benchmark the use of Common::Path instead of QString during searching (See 'QSort(..)' in 'FileManager::find(..)').
   */
-QString Directory::getFullPath() const
+Common::Path Directory::getFullPath() const
 {
-   // In case of a partially constructed ShareDirectory.
-   // (When a exception is thrown from the SharedDirectory ctor).
-   if (!this->parent)
-      return this->getName().append('/');
-
-   return this->parent->getFullPath().append(this->name).append('/');
-}
-
-SharedDirectory* Directory::getRoot() const
-{
-   QMutexLocker locker(&this->mutex);
-   return this->parent->getRoot(); // A directory MUST have a parent.
+   this->getRoot()->getPath().append(this->getPath().appendDir(this->name));
 }
 
 void Directory::rename(const QString& newName)

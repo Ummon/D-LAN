@@ -41,17 +41,18 @@ namespace FM
 {
    class Chunk;
    class Directory;
-   class SharedDirectory;
+   class SharedEntry;
    class FileForHasher;
 
    class File : public Entry
    {
    public:
       File(
-         Directory* dir,
+         SharedEntry* root,
          const QString& name,
          qint64 size,
          const QDateTime& dateLastModified,
+         Directory* dir = nullptr,
          const Common::Hashes& hashes = Common::Hashes(),
          bool createPhysically = false
       );
@@ -74,9 +75,8 @@ namespace FM
 
       bool correspondTo(const QFileInfo& fileInfo, bool checkTheDateToo = true);
 
-      QString getPath() const;
-      QString getFullPath() const;
-      SharedDirectory* getRoot() const;
+      Common::Path getPath() const;
+      Common::Path getFullPath() const;
       void rename(const QString& newName);
       QDateTime getDateLastModified() const;
 

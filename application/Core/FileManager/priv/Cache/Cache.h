@@ -19,6 +19,8 @@
 #ifndef FILEMANAGER_CACHE_H
 #define FILEMANAGER_CACHE_H
 
+#include <functional>
+
 #include <QObject>
 #include <QPair>
 #include <QList>
@@ -30,10 +32,11 @@
 #include <Protos/core_protocol.pb.h>
 
 #include <Common/Uncopyable.h>
-#include <Common/SharedDir.h>
+#include <Common/SharedEntry.h>
 
 #include <priv/FileUpdater/DirWatcher.h>
-#include <priv/Cache/SharedDirectory.h>
+#include <priv/Cache/Entry.h>
+#include <priv/Cache/SharedEntry.h>
 #include <priv/Cache/Chunk.h>
 #include <priv/Cache/FilePool.h>
 
@@ -60,19 +63,19 @@ namespace FM
       QList<QSharedPointer<IChunk>> newFile(Protos::Common::Entry& fileEntry);
       void newDirectory(Protos::Common::Entry& dirEntry);
 
-      QList<Common::SharedDir> getSharedDirs() const;
+      QList<Common::SharedEntry> getSharedEntrys() const;
       SharedDirectory* getSharedDirectory(const Common::Hash& ID) const;
-      void setSharedDirs(const QStringList& dirs);
-      QPair<Common::SharedDir, QString> addASharedDir(const QString& absoluteDir);
-      void removeSharedDir(SharedDirectory* dir, Directory* dir2 = nullptr);
+      void setSharedPaths(const QStringList& paths);
+      QPair<Common::SharedEntry, QString> addASharedPath(const QString& absolutePath);
+      void removeSharedEntry(SharedEntry* item, Directory* dir2 = nullptr);
 
-      SharedDirectory* getSuperSharedDirectory(const QString& path) const;
-      QList<SharedDirectory*> getSubSharedDirectories(const QString& path) const;
-      bool isShared(const QString& path) const;
+      SharedEntry* getSuperSharedEntry(const Common::Path& path) const;
+      QList<SharedDirectory*> getSubSharedEntrys(const Common::Path& path) const;
+      bool isShared(const Common::Path& path) const;
 
-      Directory* getFittestDirectory(const QString& path) const;
+      Directory* getFittestDirectory(const Common::Path& path) const;
 
-      void createSharedDirs(const Protos::FileCache::Hashes& hashes);
+      void createSharedEntrys(const Protos::FileCache::Hashes& hashes);
       void populateHashes(Protos::FileCache::Hashes& hashes) const;
 
       quint64 getAmount() const;
@@ -107,17 +110,17 @@ namespace FM
       void chunkRemoved(const QSharedPointer<Chunk>& chunk);
       void directoryScanned(Directory* dir);
 
-      void newSharedDirectory(SharedDirectory* dir);
-      void sharedDirectoryRemoved(SharedDirectory* dir, Directory* dir2);
+      void newSharedEntry(SharedEntry* item);
+      void sharedEntryRemoved(SharedEntry* item, Directory* dir);
 
    private:
-      static Common::SharedDir makeSharedDir(const SharedDirectory* dir);
-      SharedDirectory* createSharedDir(const QString path, const Common::Hash& ID = Common::Hash(), int pos = -1);
-      void createSharedDirs(const QStringList& dirs, const QList<Common::Hash>& ids = QList<Common::Hash>());
+      static Common::SharedEntry makeSharedEntry(const SharedEntry* entry);
+      SharedDirectory* createShareItem(const QString& path, const Common::Hash& ID = Common::Hash(), int pos = -1);
+      void createSharedEntrys(const QStringList& paths, const QList<Common::Hash>& ids = QList<Common::Hash>());
 
-      Directory* getWriteableDirectory(const QString& path, qint64 spaceNeeded = 0) const;
+      Directory* getWriteableDirectory(const Common::Path& path, qint64 spaceNeeded = 0) const;
 
-      QList<SharedDirectory*> sharedDirs;
+      QList<SharedEntry*> sharedEntries;
 
       FilePool filePool;
 

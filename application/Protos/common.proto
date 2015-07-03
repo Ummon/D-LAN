@@ -31,12 +31,16 @@ message IP {
    required bytes ip = 2; // type == IPv4: 4 bytes. type == IPv6: 16 bytes. Big endian.
 }
 
-// A shared directory matches an existing handle, thus there is no need to have the complete path to it.
-message SharedDir {
-   required Hash id = 1; // Identify a shared directory.
-   // A name to identify the shared directory by human. It may correspond to the name of the shared directory itself. It may be used when creating the directories of a new downloading file.
-   // This value is never used to build a path to a directory or a file.
+// A shared entry matches an existing handle, thus it's optional to have the complete path to it.
+message SharedEntry {
+   required Hash id = 1; // Identify a shared entry.
+
+   // A name to identify the shared entry by human.
+   // It may correspond to the name of the shared entry itself (directory or file name).
+   // It may be used when creating the directories of a new downloading file.
    optional string shared_name = 2;
+
+   optional string path = 3; // A dir must end with a "/" otherwise it's a file.
 }
 
 // Used for a directory or a file.
@@ -46,14 +50,19 @@ message Entry {
       DIR = 1;
    }
    required Type type = 1;
-   required string path = 2; // Relative path from the sharing directory. For example : "/Videos/My cat/". A root directory or file has a one slash : "/". A shared directory has an empty path.
-   required string name = 3; // Directory name or file name. For example : "MyLOLCat.avi".
+
+   // Relative path from the sharing entry. For example : "/Videos/My cat/".
+   // A root directory or file has a one slash : "/".
+   // A shared directory or a shared file has an empty path.
+   required string path = 2;
+
+   required string name = 3; // Directory name or file name. For example: "MyLOLCat.avi".
    required uint64 size = 4; // [bytes]. For the directory it's the sum of all sub-items.
    
-   optional SharedDir shared_dir = 5; // The shared directory of the entry.
+   optional SharedEntry shared_entry = 5; // The shared entry of the entry.
    optional bool exists = 6 [default = true]; // An entry may not yet be created.
 
-   // Only for a Dir.
+   // Only for DIR type.
    optional bool is_empty = 7 [default = true]; // Warning: a directory can be not empty and has a size of 0.
 
    // Only for FILE type:

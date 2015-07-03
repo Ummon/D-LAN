@@ -26,13 +26,12 @@ using namespace FM;
 #include <priv/Log.h>
 #include <priv/FileManager.h>
 #include <priv/Cache/Cache.h>
-#include <priv/Cache/SharedDirectory.h>
+#include <priv/Cache/SharedEntry.h>
 
-Entry::Entry(Cache* cache, const QString& name, qint64 size) :
-   cache(cache), name(name), size(size), mutex(QMutex::Recursive)
+Entry::Entry(SharedEntry* root, const QString& name, qint64 size) :
+    name(name), root(root), size(size), mutex(QMutex::Recursive)
 {
-   if (cache)
-      this->cache->onEntryAdded(this);
+   this->getCache()->onEntryAdded(this);
 }
 
 Entry::~Entry()
@@ -41,35 +40,40 @@ Entry::~Entry()
 
 void Entry::del(bool invokeDelete)
 {
-   this->cache->onEntryRemoved(this);
+   this->getCache()->onEntryRemoved(this);
 
    if (invokeDelete)
-      QMetaObject::invokeMethod(this->cache, "deleteEntry", Qt::QueuedConnection, Q_ARG(Entry*, this));
+      QMetaObject::invokeMethod(this->getCache(), "deleteEntry", Qt::QueuedConnection, Q_ARG(Entry*, this));
 }
 
-void Entry::populateEntry(Protos::Common::Entry* entry, bool setSharedDir) const
+void Entry::populateEntry(Protos::Common::Entry* entry, bool setSharedEntry) const
 {
    Common::ProtoHelper::setStr(*entry, &Protos::Common::Entry::set_path, this->getPath());
    Common::ProtoHelper::setStr(*entry, &Protos::Common::Entry::set_name, this->getName());
    entry->set_size(this->getSize());
 
-   if (setSharedDir)
-      this->populateEntrySharedDir(entry);
+   if (setSharedEntry)
+      this->populateSharedEntry(entry);
 }
 
-void Entry::populateEntrySharedDir(Protos::Common::Entry* entry) const
+void Entry::populateSharedEntry(Protos::Common::Entry* entry) const
 {
-   SharedDirectory* dir = dynamic_cast<SharedDirectory*>(this->getRoot());
-   if (dir)
+   SharedEntry* root = this->getRoot();
+   if (root)
    {
-      entry->mutable_shared_dir()->mutable_id()->set_hash(dir->getId().getData(), Common::Hash::HASH_SIZE);
-      Common::ProtoHelper::setStr(*entry->mutable_shared_dir(), &Protos::Common::SharedDir::set_shared_name, dir->getName());
+      entry->mutable_shared_entry()->mutable_id()->set_hash(root->getId().getData(), Common::Hash::HASH_SIZE);
+      Common::ProtoHelper::setStr(*entry->mutable_shared_entry(), &Protos::Common::SharedEntry::set_shared_name, root->getName());
    }
 }
 
 Cache* Entry::getCache()
 {
-   return this->cache;
+   return this->root->getCache();
+}
+
+SharedEntry* Entry::getRoot() const
+{
+   return this->root;
 }
 
 QString Entry::getName() const
@@ -97,7 +101,7 @@ void Entry::rename(const QString& newName)
 
    const QString oldName = this->name;
    this->name = newName;
-   this->cache->onEntryRenamed(this, oldName);
+   this->getCache()->onEntryRenamed(this, oldName);
 }
 
 qint64 Entry::getSize() const
@@ -109,9 +113,9 @@ void Entry::setSize(qint64 newSize)
 {
    if (newSize != this->size)
    {
-      this->cache->onEntryResizing(this);
+      this->getCache()->onEntryResizing(this);
       qint64 oldSize = this->size;
       this->size = newSize;
-      this->cache->onEntryResized(this, oldSize);
+      this->getCache()->onEntryResized(this, oldSize);
    }
 }

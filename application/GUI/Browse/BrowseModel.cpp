@@ -166,9 +166,9 @@ QString BrowseModel::getPath(const QModelIndex& index, bool appendFilename) cons
 
    QString path = sharedDir.path;
    if (!path.isEmpty())
-      path.remove(path.size() - 1, 1); // Remove the '/' at the end because path given by 'Common::ProtoHelper::getRelativePath(..)' already begins with a '/'.
+      path.remove(path.size() - 1, 1); // Remove the '/' at the end because path given by 'Common::ProtoHelper::getPath(..)' already begins with a '/'.
 
-   return path.append(Common::ProtoHelper::getRelativePath(entry, Common::EntriesToAppend::DIR | (appendFilename ? Common::EntriesToAppend::FILE : Common::EntriesToAppend::NONE)));
+   return path.append(Common::ProtoHelper::getPath(entry, Common::EntriesToAppend::DIR | (appendFilename ? Common::EntriesToAppend::FILE : Common::EntriesToAppend::NONE)));
 }
 
 void BrowseModel::refresh()

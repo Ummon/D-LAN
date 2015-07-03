@@ -43,9 +43,14 @@ Path::Path(const QString& path)
    }
 }
 
+Path::Path(const QString& root, const QStringList& dirs, const QString& filename)
+   : root(root), dirs(dirs), filename(filename)
+{
+}
+
 QString Path::getPath() const
 {
-   return this->root + this->dirs.join('/') + (this->isFile() ? this->filename : (this->root.isEmpty() || this->dirs.isEmpty() ? "" : "/"));
+   return this->root + this->dirs.join('/') + (this->isAbsolute() && !this->dirs.isEmpty() || !this->dirs.isEmpty() ? "/" : "") + this->filename;
 }
 
 bool Path::isFile() const
@@ -83,6 +88,111 @@ QString Path::getExtension() const
       return QString();
 
    return this->filename.right(this->filename.size() - 1 - dotPosition);
+}
+
+/**
+  * 'this' can be a file but other can't.
+  * Both paths must be absolute.
+  */
+bool Path::isSubOf(const Path& other) const
+{
+   if (!this->isAbsolute() || !other.isAbsolute())
+      return false;
+
+   if (this->getRoot() != other.getRoot())
+      return false;
+
+   if (other.isFile())
+      return false;
+
+   const auto& thisDirs = this->getDirs();
+   const auto& otherDirs = other.getDirs();
+
+   if (thisDirs.size() <= otherDirs.size())
+      return false;
+
+   for (int i = 0; i < otherDirs.size(); i++)
+      if (thisDirs[i] != otherDirs[i])
+         return false;
+
+   return true;
+}
+
+/**
+  * Both paths can be directory or file.
+  * Both paths must be absolute.
+  */
+bool Path::isSuperOf(const Path& other) const
+{
+   return other.isSubOf(*this);
+}
+
+/**
+  * Both paths can be directory or file.
+  * Both paths must be absolute.
+  */
+bool Path::isSameDir(const Path& other) const
+{
+   if (!this->isAbsolute() || !other.isAbsolute())
+      return false;
+
+   if (this->getRoot() != other.getRoot())
+      return false;
+
+   return this->getDirs() == other.getDirs();
+}
+
+bool Path::operator==(const Path& other) const
+{
+   return this->getRoot() == other.getRoot() && this->getFilename() == other.getFilename() && this->getDirs() == other.getDirs();
+}
+
+Path Path::removeFilename() const
+{
+   return Path(this->root, this->dirs, QString());
+}
+
+Path Path::removeLastDir() const
+{
+   QStringList dirs = this->dirs;
+   if (!dirs.isEmpty())
+      dirs.removeLast();
+   return Path(this->root, dirs, this->filename);
+}
+
+Path Path::setFilename(const QString& filename) const
+{
+   return Path(this->root, this->dirs, filename);
+}
+
+/**
+  * Append an other directory.
+  * if 'this' is a file, the filename is discared.
+  */
+Path Path::append(const Common::Path& other) const
+{
+   QStringList dirs = this->dirs;
+   dirs.append(other.dirs);
+   return Path(this->root, dirs, other.filename);
+}
+
+Path Path::prepend(const Common::Path& other) const
+{
+   return other.append(*this);
+}
+
+Path Path::appendDir(const QString& dir) const
+{
+   QStringList dirs = this->dirs;
+   dirs.append(dir);
+   return Path(this->root, dirs, this->filename);
+}
+
+Path Path::prependDir(const QString& dir) const
+{
+   QStringList dirs = this->dirs;
+   dirs.prepend(dir);
+   return Path(this->root, dirs, this->filename);
 }
 
 const QList<QChar> Path::FORBIDDEN_CHARS_IN_PATH { '?', '/', '\\','*', ':', '"', '<', '>', '|' };

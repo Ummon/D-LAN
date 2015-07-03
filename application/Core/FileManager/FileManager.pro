@@ -42,7 +42,6 @@ SOURCES += priv/Builder.cpp \
     priv/Cache/Entry.cpp \
     priv/Cache/File.cpp \
     priv/Cache/Directory.cpp \
-    priv/Cache/SharedDirectory.cpp \
     priv/ChunkIndex/Chunks.cpp \
     ../../Protos/core_protocol.pb.cc \
     ../../Protos/common.pb.cc \
@@ -58,7 +57,8 @@ SOURCES += priv/Builder.cpp \
     priv/Cache/FilePool.cpp \
     priv/Cache/FileHasher.cpp \
     priv/GetEntriesResult.cpp \
-    priv/SizeIndexEntries.cpp
+    priv/SizeIndexEntries.cpp \
+    priv/Cache/SharedEntry.cpp
 HEADERS += IGetHashesResult.h \
     IFileManager.h \
     IChunk.h \
@@ -70,7 +70,6 @@ HEADERS += IGetHashesResult.h \
     priv/Cache/Entry.h \
     priv/Cache/File.h \
     priv/Cache/Directory.h \
-    priv/Cache/SharedDirectory.h \
     priv/ChunkIndex/Chunks.h \
     priv/WordIndex/WordIndex.h \
     priv/WordIndex/Node.h \
@@ -95,5 +94,6 @@ HEADERS += IGetHashesResult.h \
     IGetEntriesResult.h \
     priv/GetEntriesResult.h \
     priv/ExtensionIndex.h \
-    priv/SizeIndexEntries.h
+    priv/SizeIndexEntries.h \
+    priv/Cache/SharedEntry.h
 OTHER_FILES +=

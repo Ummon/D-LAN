@@ -31,7 +31,7 @@ using namespace FM;
 #include <priv/Log.h>
 #include <priv/Constants.h>
 #include <priv/FileManager.h>
-#include <priv/Cache/SharedDirectory.h>
+#include <priv/Cache/SharedEntry.h>
 #include <priv/Cache/Directory.h>
 #include <priv/Cache/File.h>
 #include <priv/FileUpdater/WaitCondition.h>
@@ -91,20 +91,27 @@ void FileUpdater::stop()
   * Called by another thread.
   * @exception DirNotFoundException
   */
-void FileUpdater::addRoot(SharedDirectory* dir)
+void FileUpdater::addRoot(SharedEntry* entry)
 {
    QMutexLocker locker(&this->mutex);
 
+   const Common::Path& entryPath = entry->getFullPath();
+
    bool watchable = false;
    if (this->dirWatcher)
-      watchable = this->dirWatcher->addDir(dir->getFullPath());
+   {
+      if (entryPath.isFile())
+         watchable = this->dirWatcher->addFile(entryPath.getPath());
+      else
+         watchable = this->dirWatcher->addDir(entryPath.getPath());
+   }
 
-   this->dirsToScan << dir;
+   this->entriesToScan << entry->getRootEntry();
 
    if (!watchable)
    {
-      L_WARN(QString("This directory is not watchable : %1").arg(dir->getFullPath()));
-      this->unwatchableDirs << dir;
+      L_WARN(QString("This entry is not watchable: %1").arg(entryPath.getPath()));
+      this->unwatchableEntries << entry;
    }
 
    this->dirEvent->release();
@@ -135,7 +142,7 @@ void FileUpdater::rmRoot(SharedDirectory* dir, Directory* dir2)
 
       this->removeFromFilesWithoutHashes(dir);
       this->removeFromDirsToScan(dir);
-      this->unwatchableDirs.removeOne(dir);
+      this->unwatchableEntries.removeOne(dir);
       this->dirsToRemove << dir;
    }
 
@@ -218,11 +225,12 @@ void FileUpdater::run()
    // synchronize it with the file system.
    if (this->fileCacheInformation)
    {
-      while (!this->dirsToScan.isEmpty())
+      while (!this->entriesToScan.isEmpty())
       {
-         Directory* dir = this->dirsToScan.takeFirst();
-         this->scan(dir, true);
-         this->restoreFromFileCache(static_cast<SharedDirectory*>(dir));
+         Entry* entry = this->entriesToScan.takeFirst();
+         this->scan(entry, true);
+         // TODO:
+         //this->restoreFromFileCache(static_cast<SharedDirectory*>(dir));
       }
 
       delete this->fileCacheInformation;
@@ -258,7 +266,7 @@ void FileUpdater::run()
          {
             L_DEBU("Waiting for a new shared directory added..");
             this->mutex.unlock();
-            this->dirEvent->wait(this->unwatchableDirs.isEmpty() ? -1 : SCAN_PERIOD_UNWATCHABLE_DIRS);
+            this->dirEvent->wait(this->unwatchableEntries.isEmpty() ? -1 : SCAN_PERIOD_UNWATCHABLE_DIRS);
          }
          else
             this->mutex.unlock();
@@ -282,7 +290,7 @@ void FileUpdater::run()
          if (this->dirsToScan.isEmpty() && this->filesWithoutHashes.isEmpty() && this->filesWithoutHashesPrioritized.isEmpty())
          {
             this->mutex.unlock();
-            this->processEvents(this->dirWatcher->waitEvent(this->unwatchableDirs.isEmpty() ? -1 : SCAN_PERIOD_UNWATCHABLE_DIRS, QList<WaitCondition*>() << this->dirEvent));
+            this->processEvents(this->dirWatcher->waitEvent(this->unwatchableEntries.isEmpty() ? -1 : SCAN_PERIOD_UNWATCHABLE_DIRS, QList<WaitCondition*>() << this->dirEvent));
          }
          else
          {
@@ -294,11 +302,11 @@ void FileUpdater::run()
       if (timerScanUnwatchable.elapsed() >= SCAN_PERIOD_UNWATCHABLE_DIRS)
       {
          this->mutex.lock();
-         QList<Directory*> unwatchableDirsCopy = this->unwatchableDirs;
+         QList<Directory*> unwatchableEntriesCopy = this->unwatchableEntries;
          this->mutex.unlock();
 
          // Synchronize the new directory.
-         for (QListIterator<Directory*> i(unwatchableDirsCopy); i.hasNext();)
+         for (QListIterator<Directory*> i(unwatchableEntriesCopy); i.hasNext();)
          {
             Directory* dir = i.next();
                this->scan(dir);
@@ -422,13 +430,13 @@ void FileUpdater::stopHashing()
 /**
   * Synchronize the cache with the file system.
   * Scan recursively all the directories and files contained
-  * in dir. Create the associated cached tree structure under the
+  * in entry (if 'entry' is a directory). Create the associated cached tree structure under the
   * given 'Directory*'.
   * The directories may already exist in the cache.
   */
-void FileUpdater::scan(Directory* dir, bool addUnfinished)
+void FileUpdater::scan(Entry* entry, bool addUnfinished)
 {
-   L_DEBU("Start scanning a shared directory : " + dir->getFullPath());
+   L_DEBU("Start scanning a shared entry: " + entry->getFullPath());
 
    this->scanningMutex.lock();
    this->currentScanningDir = dir;
@@ -535,7 +543,7 @@ void FileUpdater::scan(Directory* dir, bool addUnfinished)
    this->scanningMutex.unlock();
 
    this->mutex.lock();
-   if (this->unwatchableDirs.contains(dir))
+   if (this->unwatchableEntries.contains(dir))
       this->timerScanUnwatchable.start();
    this->mutex.unlock();
 
@@ -635,8 +643,10 @@ void FileUpdater::removeFromFilesWithoutHashes(Directory* dir)
   * Try to restore the chunk hashes from 'fileCache'.
   * 'fileCache' is set by 'retrieveFromFile(..)'.
   */
-void FileUpdater::restoreFromFileCache(SharedDirectory* dir)
+/*void FileUpdater::restoreFromFileCache(SharedDirectory* dir)
 {
+   //TODO
+
    L_DEBU("Start restoring hashes of a shared directory : " + dir->getFullPath());
 
    if (!this->fileCacheInformation)
@@ -664,6 +674,7 @@ void FileUpdater::restoreFromFileCache(SharedDirectory* dir)
       }
 
    L_DEBU("Restoring terminated: " + dir->getFullPath());
+   */
 }
 
 /**

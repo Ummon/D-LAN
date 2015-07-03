@@ -207,7 +207,7 @@ void Tests::addInexistingSharedDirectory()
       this->fileManager->setSharedDirs(this->sharedDirs);
       QFAIL("An exception must be thrown");
    }
-   catch (DirsNotFoundException& e)
+   catch (ItemsNotFoundException& e)
    {
       QVERIFY(e.paths.size() == 1);
       QCOMPARE(e.paths.at(0), this->sharedDirs.last());

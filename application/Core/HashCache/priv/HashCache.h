@@ -1,10 +1,10 @@
 #ifndef HASHCACHE_HASHCACHE_H
 #define HASHCACHE_HASHCACHE_H
 
-#include <QHash>
 #include <QString>
 
 #include <Common/Hash.h>
+#include <Common/Path.h>
 
 #include <IHashCache.h>
 #include <IRootEntry.h>
@@ -23,7 +23,13 @@ namespace HC
    private:
       void updateFromOldVersion();
 
-      QHash<QString, Common::Hash> index; // Directory paths -> root ID.
+      struct Entry
+      {
+         Common::Path path;
+         Common::Hash ID;
+      };
+
+      QList<Entry> index; // Directory paths -> root ID.
 
 
       LOG_INIT_H("HashCache")
