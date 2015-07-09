@@ -21,6 +21,9 @@
 #include <QString>
 #include <QStringList>
 
+#include <google/protobuf/stubs/common.h>
+
+#include <Common/Settings.h>
 #include <Tests.h>
 #include <TreeTests.h>
 #include <BenchmarkTests.h>
@@ -31,15 +34,22 @@ int main(int argc, char* argv[])
    for (int i = 1; i < argc; i++)
       args << argv[i];
 
+   int ret = 0;
+
    if (args.contains("benchmark"))
    {
       BenchmarkTests benchmarkTests;
-      return QTest::qExec(&benchmarkTests, argc, argv);
+      ret = QTest::qExec(&benchmarkTests, 0, nullptr);
    }
    else
    {
       Tests tests;
       TreeTests treeTests;
-      return QTest::qExec(&tests, argc, argv) + QTest::qExec(&treeTests, argc, argv);
+      ret = QTest::qExec(&tests, argc, argv) + QTest::qExec(&treeTests, argc, argv);
    }
+
+   SETTINGS.free();
+   google::protobuf::ShutdownProtobufLibrary();
+
+   return ret;
 }

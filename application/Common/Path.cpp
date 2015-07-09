@@ -9,31 +9,32 @@ using namespace Common;
   * The path can be absolute or relative.
   */
 
+/**
+  * @param path Considered as directory if ended with a slash '/' otherwise it's a file.
+  */
 Path::Path(const QString& path)
 {
-   QString cleanedPath = QDir::cleanPath(path);
+   QString cleanedPath = QDir::cleanPath(path).trimmed();
 
    if (cleanedPath.isEmpty())
       return;
 
-   // Absolutes cases:
-   // Linux.
-   if (cleanedPath[0] == '/')
+   // Absolutes cases:   
+   if (cleanedPath[0] == '/') // Linux.
    {
       this->root = "/";
       cleanedPath.remove(0, 1);
    }
-   // Windows.
-   else if (isWindowsPath(cleanedPath))
+   else if (isWindowsPath(cleanedPath)) // Windows.
    {
       this->root = cleanedPath.left(3);
       cleanedPath.remove(0, 3);
    }
-   // Else case: an relative path.
+   // Else case: an relative path (no root).
 
    const bool isDir = path.endsWith('/');
 
-   QStringList names = cleanedPath.split('/', QString::SkipEmptyParts);
+   const QStringList names = cleanedPath.split('/', QString::SkipEmptyParts);
    for (int i = 0; i < names.size(); i++)
    {
       if (!isDir && i == names.size() - 1)
@@ -45,6 +46,11 @@ Path::Path(const QString& path)
 
 Path::Path(const QString& root, const QStringList& dirs, const QString& filename)
    : root(root), dirs(dirs), filename(filename)
+{
+}
+
+Path::Path(const QString&& root, const QStringList&& dirs, const QString&& filename)
+   : root(std::move(root)), dirs(std::move(dirs)), filename(std::move(filename))
 {
 }
 
@@ -61,6 +67,11 @@ bool Path::isFile() const
 bool Path::isAbsolute() const
 {
    return !this->root.isEmpty();
+}
+
+bool Path::isNull() const
+{
+   return this->root.isEmpty() && this->dirs.isEmpty() && this->filename.isEmpty();
 }
 
 QString Path::getRoot() const
@@ -147,12 +158,17 @@ bool Path::operator==(const Path& other) const
    return this->getRoot() == other.getRoot() && this->getFilename() == other.getFilename() && this->getDirs() == other.getDirs();
 }
 
-Path Path::removeFilename() const
+Path Path::removeFilename() const &
 {
    return Path(this->root, this->dirs, QString());
 }
 
-Path Path::removeLastDir() const
+Path Path::removeFilename() &&
+{
+   return Path(std::move(this->root), std::move(this->dirs), QString());
+}
+
+Path Path::removeLastDir() const &
 {
    QStringList dirs = this->dirs;
    if (!dirs.isEmpty())
@@ -160,39 +176,74 @@ Path Path::removeLastDir() const
    return Path(this->root, dirs, this->filename);
 }
 
-Path Path::setFilename(const QString& filename) const
+Path Path::removeLastDir() &&
+{
+   if (!this->dirs.isEmpty())
+      this->dirs.removeLast();
+   return Path(std::move(this->root), std::move(this->dirs), std::move(this->filename));
+}
+
+Path Path::setFilename(const QString& filename) const &
 {
    return Path(this->root, this->dirs, filename);
+}
+
+Path Path::setFilename(QString&& filename) &&
+{
+   return Path(std::move(this->root), std::move(this->dirs), std::move(filename));
 }
 
 /**
   * Append an other directory.
   * if 'this' is a file, the filename is discared.
   */
-Path Path::append(const Common::Path& other) const
+Path Path::append(const Common::Path& other) const &
 {
    QStringList dirs = this->dirs;
    dirs.append(other.dirs);
    return Path(this->root, dirs, other.filename);
 }
 
-Path Path::prepend(const Common::Path& other) const
+Path Path::append(Common::Path&& other) &&
+{
+   this->dirs.append(other.dirs);
+   return Path(std::move(this->root), std::move(dirs), std::move(other.filename));
+}
+
+Path Path::prepend(const Common::Path& other) const &
 {
    return other.append(*this);
 }
 
-Path Path::appendDir(const QString& dir) const
+Path Path::prepend(Common::Path&& other) &&
+{
+   return std::move(other).append(std::move(*this));
+}
+
+Path Path::appendDir(const QString& dir) const &
 {
    QStringList dirs = this->dirs;
    dirs.append(dir);
    return Path(this->root, dirs, this->filename);
 }
 
-Path Path::prependDir(const QString& dir) const
+Path Path::appendDir(const QString& dir) &&
+{
+   this->dirs.append(dir);
+   return Path(std::move(this->root), std::move(this->dirs), std::move(this->filename));
+}
+
+Path Path::prependDir(const QString& dir) const &
 {
    QStringList dirs = this->dirs;
    dirs.prepend(dir);
    return Path(this->root, dirs, this->filename);
+}
+
+Path Path::prependDir(const QString& dir) &&
+{
+   this->dirs.prepend(dir);
+   return Path(std::move(this->root), std::move(this->dirs), std::move(this->filename));
 }
 
 const QList<QChar> Path::FORBIDDEN_CHARS_IN_PATH { '?', '/', '\\','*', ':', '"', '<', '>', '|' };

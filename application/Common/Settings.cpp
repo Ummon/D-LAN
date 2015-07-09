@@ -183,11 +183,8 @@ bool Settings::loadFromACutomDirectory(const QString& directory)
 
 void Settings::free()
 {
-   if (Settings::instance)
-   {
-      delete Settings::instance;
-      Settings::instance = 0;
-   }
+   delete Settings::instance;
+   Settings::instance = nullptr;
 }
 
 bool Settings::isSet(const QString& name) const

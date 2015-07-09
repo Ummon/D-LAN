@@ -244,6 +244,10 @@ void Tests::path()
    QVERIFY(!p4.isSubOf(p4));
    QVERIFY(!p4.isSuperOf(p4));
 
+   QVERIFY(Path().isNull());
+   QVERIFY(Path("").isNull());
+   QVERIFY(Path("  ").isNull());
+
    QVERIFY(Path("/tmp/dir1/dir2/").isSubOf(Path("/tmp/dir1/")));
    QVERIFY(Path("/tmp/").isSubOf(Path("/")));
    QVERIFY(!Path("/tmp/dir1/").isSubOf(Path("/tmp/dir1/dir2/")));
@@ -253,6 +257,31 @@ void Tests::path()
    QVERIFY(Path("/").isSuperOf(Path("/tmp/")));
    QVERIFY(!Path("/tmp/dir1/dir2/").isSuperOf(Path("/tmp/dir1/")));
    QVERIFY(!Path("/tmp/").isSuperOf(Path("/")));
+
+   QVERIFY(!Path("/tmp/dir1/file.txt").removeFilename().isFile());
+   QCOMPARE(Path("/tmp/dir1/file.txt").removeFilename().getDirs().last(), QString("dir1"));
+
+   QVERIFY(Path("/tmp/dir1/file.txt").removeLastDir().isFile());
+   QCOMPARE(Path("/tmp/dir1/file.txt").removeLastDir().getDirs().last(), QString("tmp"));
+
+   QVERIFY(Path("/tmp/dir1/").setFilename("file.txt").isFile());
+   QVERIFY(Path("/tmp/dir1/file.txt").setFilename("file2.txt").isFile());
+   QCOMPARE(Path("/tmp/dir1/file.txt").setFilename("file2.txt").getFilename(), QString("file2.txt"));
+
+   QCOMPARE(Path("/tmp/dir1/").append(Path("dir2/")), Path("/tmp/dir1/dir2/"));
+   QCOMPARE(Path("/tmp/dir1/").append(Path("/dir2/")), Path("/tmp/dir1/dir2/"));
+   QCOMPARE(Path("/tmp/dir1/").append(Path("file1")), Path("/tmp/dir1/file1"));
+   QCOMPARE(Path("/").append(Path("file1")), Path("/file1"));
+   QCOMPARE(Path().append(Path("file1")), Path("file1"));
+
+   QCOMPARE(Path("/tmp/dir1/").prepend(Path("dir2/")), Path("dir2/tmp/dir1/"));
+   QCOMPARE(Path("tmp/dir1/file.txt").prepend(Path("/dir2/")), Path("/dir2/tmp/dir1/file.txt"));
+
+   QCOMPARE(Path("/tmp/dir1/file.txt").appendDir("dir2"), Path("/tmp/dir1/dir2/file.txt"));
+   QCOMPARE(Path("").appendDir("dir"), Path("dir/"));
+
+   QCOMPARE(Path("/tmp/dir1/file.txt").prependDir("dir2"), Path("/dir2/tmp/dir1/file.txt"));
+   QCOMPARE(Path("").prependDir("dir"), Path("dir/"));
 }
 
 void Tests::sortedList()
@@ -793,12 +822,12 @@ void Tests::protoHelper()
    QCOMPARE(ProtoHelper::getStr(entry, &Protos::Common::Entry::path), path);
    QCOMPARE(ProtoHelper::getStr(entry, &Protos::Common::Entry::name), name);
 
-   Protos::GUI::CoreSettings::SharedDirectories sharedDirs;
-   const QList<QString> dirs = QList<QString>() << "abc" << "def" << "ghi";
-   foreach (QString dir, dirs)
-      ProtoHelper::addRepeatedStr(sharedDirs, &Protos::GUI::CoreSettings::SharedDirectories::add_dir, dir);
-   for (int i = 0; i < dirs.size(); i++)
-      QCOMPARE(ProtoHelper::getRepeatedStr(sharedDirs, &Protos::GUI::CoreSettings::SharedDirectories::dir, i), dirs[i]);
+   Protos::Common::FindPattern findPattern;
+   const QList<QString> extensions = QList<QString>() << "doc" << "txt" << "rtf";
+   foreach (QString ext, extensions)
+      ProtoHelper::addRepeatedStr(findPattern, &Protos::Common::FindPattern::add_extension_filter, ext);
+   for (int i = 0; i < extensions.size(); i++)
+      QCOMPARE(ProtoHelper::getRepeatedStr(findPattern, &Protos::Common::FindPattern::extension_filter, i), extensions[i]);
 
    for (int i = 0; i < 5; i++)
       entry.add_chunk()->set_hash(Hash::rand(i).getData(), Hash::HASH_SIZE);

@@ -30,7 +30,9 @@ namespace Common
       class NotFoundException {};
 
       inline int size() const;
-      inline int insert(const K& key, const T& value, bool* exists = nullptr);
+
+      template<typename K_, typename T_>
+      inline int insert(K_&& key, T_&& value, bool* exists = nullptr);
 
       inline const T& getValueFromIndex(int index) const;
       inline T& getValueFromIndex(int index);
@@ -59,16 +61,17 @@ namespace Common
    };
 }
 
-template <typename K, typename T>
+template<typename K, typename T>
 inline int Common::MapArray<K, T>::size() const
 {
    return this->array.size();
 }
 
-template <typename K, typename T>
-inline int Common::MapArray<K, T>::insert(const K& key, const T& value, bool* exists)
+template<typename K, typename T>
+template<typename K_, typename T_>
+inline int Common::MapArray<K, T>::insert(K_&& key, T_&& value, bool* exists)
 {
-   return this->array.insert(Element {key, value}, exists);
+   return this->array.insert(Element{ std::forward<K_>(key), std::forward<T_>(value) }, exists);
 }
 
 /**
@@ -122,7 +125,7 @@ inline const K& Common::MapArray<K, T>::getKeyFromIndex(int index) const
 template <typename K, typename T>
 inline T& Common::MapArray<K, T>::operator[](const K& key)
 {
-   return this->array[Element {key, T()}].value;
+   return this->array[Element{key, T()}].value;
 }
 
 /**
