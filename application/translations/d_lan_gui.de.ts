@@ -229,7 +229,7 @@
     <message>
         <location filename="../GUI/CheckBoxList.cpp" line="+100"/>
         <source>&lt;Nothing&gt;</source>
-        <translation type="unfinished">&lt;Nichts&gt;</translation>
+        <translation>&lt;Nichts&gt;</translation>
     </message>
 </context>
 <context>
@@ -339,17 +339,17 @@
     <message>
         <location filename="../GUI/Downloads/DownloadsModel.cpp" line="+88"/>
         <source>Source peer offline (%1)</source>
-        <translation>Le pair source n&apos;est pas en ligne (%1)</translation>
+        <translation type="unfinished">Quellknoten offline (%1)</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>The source peer doesn&apos;t have the entry</source>
-        <translation>Le pair source ne possède pas l&apos;élément</translation>
+        <translation type="unfinished">Der Quellknoten hat den Eintrag nicht</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>There is no source to download from</source>
-        <translation>Il n&apos;y a aucune source</translation>
+        <translation>Es gibt keine Quelle zum Herunterladen</translation>
     </message>
     <message>
         <source>No incoming folder</source>
@@ -358,47 +358,47 @@
     <message>
         <location line="+3"/>
         <source>No incoming directory</source>
-        <translation>Aucun dossier partagé défini</translation>
+        <translation type="unfinished">Es gibt kein freigegebenes Verzeichnis zum Speichern</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Not enough free space left</source>
-        <translation>Il ne reste pas assez d&apos;espace de stockage</translation>
+        <translation>Es ist nicht genug Speicherplatz vorhanden</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Unable to create the file</source>
-        <translation>Impossible de créer le fichier</translation>
+        <translation>Die Datei konnte nicht erstellt werden</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Unable to create the directory</source>
-        <translation>Impossible de créer le dossier</translation>
+        <translation>Der Ordner konnte nicht erstellt werden</translation>
     </message>
     <message>
         <location line="+0"/>
         <source>Unable to create the path of the file</source>
-        <translation>Impossible de créer le chemin du fichier</translation>
+        <translation type="unfinished">Der Pfad zur Datei konnte nicht erstellt werden</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Unable to retrieve the hashes</source>
-        <translation>Impossible de récupérer les empreintes</translation>
+        <translation type="unfinished">Konnte Prüfsummen nicht empfangen</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Transfer error</source>
-        <translation>Erreur de transfert</translation>
+        <translation>Fehler bei der Übertragung</translation>
     </message>
     <message>
         <location line="+19"/>
         <source>The remote directory is currently being scanned</source>
-        <translation>The dossier distant est en train d&apos;être parcourir</translation>
+        <translation type="unfinished">Das entfernte Verzeichnis wird gerade durchsucht</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Unable to retrieve the entries</source>
-        <translation>Impossible de récupérer les éléments</translation>
+        <translation type="unfinished">Konnte Einträge nicht empfangen</translation>
     </message>
     <message>
         <source>Transfert error</source>
@@ -407,22 +407,22 @@
     <message>
         <location line="-19"/>
         <source>Unable to open the file</source>
-        <translation>Impossible d&apos;ouvrir le fichier</translation>
+        <translation>Konnte die Datei nicht öffnen</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Unable to write the file</source>
-        <translation>Impossible d&apos;écrire dans le fichier</translation>
+        <translation>Konnte nicht in die Datei schreiben</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>The local file has been deleted</source>
-        <translation>Le fichier local a été supprimé</translation>
+        <translation type="unfinished">Die lokale Datei wurde gelöscht</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Too much data received</source>
-        <translation>Trop de données reçues</translation>
+        <translation>Zu viele Daten empfangen</translation>
     </message>
     <message>
         <source>We received too much data</source>
@@ -431,7 +431,7 @@
     <message>
         <location line="+3"/>
         <source>Data received do not match the hash</source>
-        <translation>Les données reçues ne correspondent pas aux empreintes</translation>
+        <translation type="unfinished">Die empfangenen Daten passen nicht zur Prüfsumme</translation>
     </message>
 </context>
 <context>
@@ -439,67 +439,67 @@
     <message>
         <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="+116"/>
         <source>Open location</source>
-        <translation>Ouvrir le dossier</translation>
+        <translation>Ordner anzeigen</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Move to top</source>
-        <translation>Déplacer tout en haut</translation>
+        <translation type="unfinished">Ganz nach oben verschieben</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>Pause selected entries</source>
-        <translation>Mettre en pause les éléments sélectionnés</translation>
+        <translation>Ausgewählte Einträge pausieren</translation>
     </message>
     <message>
         <location line="+0"/>
         <source>Unpause selected entries</source>
-        <translation>Enlever la pause des éléments sélectionnés</translation>
+        <translation>Ausgewählte Einträge fortsetzen</translation>
     </message>
     <message>
         <location line="+83"/>
         <source>Remove selected downloads</source>
-        <translation>Enlever les éléments sélectionnés</translation>
+        <translation type="unfinished">Ausgewählte Elemente entfernen</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Are you sure to remove the selected downloads? There is one or more unfinished download.</source>
-        <translation>Êtes-vous sûr de vouloir enlever les downloads sélectionnés. Certains ne sont pas terminés.</translation>
+        <translation type="unfinished">Möchten Sie die ausgewählten Einträge wirklich entfernen? Mindestens ein Download ist noch nicht abgeschlossen.</translation>
     </message>
     <message>
         <location line="+51"/>
         <source>Switch to file list view</source>
-        <translation>Basculervers la liste des fichiers</translation>
+        <translation>Zur Listenansicht wechseln</translation>
     </message>
     <message>
         <location line="+13"/>
         <source>Switch to tree view</source>
-        <translation>Basculer vers la vue en arbre</translation>
+        <translation>Zur Baumansicht wechseln</translation>
     </message>
     <message>
         <location line="+17"/>
         <source>&lt;All&gt;</source>
-        <translation>&lt;Tous&gt;</translation>
+        <translation>&lt;Alle&gt;</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Complete</source>
-        <translation>Complet</translation>
+        <translation>Fertig</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Downloading</source>
-        <translation>En téléchargement</translation>
+        <translation type="unfinished">Wird heruntergeladen</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Queued</source>
-        <translation>En queue</translation>
+        <translation>Eingereiht</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Inactive</source>
-        <translation>Inactif</translation>
+        <translation>Inaktiv</translation>
     </message>
 </context>
 <context>
@@ -507,7 +507,7 @@
     <message>
         <location filename="../GUI/Emoticons/EmoticonsWidget.cpp" line="+44"/>
         <source>Set as the default theme</source>
-        <translation>Définir comme le thème par défaut</translation>
+        <translation type="unfinished">Als Standardaussehen festlegen</translation>
     </message>
 </context>
 <context>
@@ -515,57 +515,57 @@
     <message>
         <location filename="../GUI/MainWindow.cpp" line="+149"/>
         <source>Already connected to this address</source>
-        <translation>Déjà connecté à cette addresse</translation>
+        <translation>Bereits mit dieser Adresse verbunden</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>There is already a connection process in progress</source>
-        <translation>Il y a déjà un processus de connexion en cours</translation>
+        <translation>Eine Verbindung wird bereits aufgebaut</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>The host is unknow</source>
-        <translation>L&apos;hôte est inconnu</translation>
+        <translation type="unfinished">Der Host ist nicht bekannt</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Host has timed out</source>
-        <translation>L&apos;hôte ne répond pas</translation>
+        <translation type="unfinished">Der Host antwortet nicht</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>The host hasn&apos;t defined any password</source>
-        <translation>Aucun mot de passe n&apos;est définit chez l&apos;hôte</translation>
+        <translation type="unfinished">Der Host hat kein Passwort festgelegt</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Wrong password</source>
-        <translation>Mauvais mot de passe</translation>
+        <translation>Falsches Passwort</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Invalid address</source>
-        <translation>Adresse invalide</translation>
+        <translation>Ungültige Adresse</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Error unknown</source>
-        <translation>Erreur inconnue</translation>
+        <translation>Unbekannter Fehler</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Unable to connect to the core</source>
-        <translation>Impossible de se connecter au core</translation>
+        <translation>Konnte keine Verbindung zum Kern herstellen</translation>
     </message>
     <message>
         <source>Remote core address:</source>
-        <translation>Adresse du core distant:</translation>
+        <translation>Adresse des entfernten Kerns:</translation>
     </message>
     <message>
         <location line="+1"/>
         <location line="+17"/>
         <source>Core address:</source>
-        <translation>Adresse du core:</translation>
+        <translation>Adresse des Kerns:</translation>
     </message>
     <message>
         <source>Take control</source>
@@ -622,17 +622,17 @@
     <message>
         <location line="-9"/>
         <source>Connected to the core</source>
-        <translation>Connecté au core</translation>
+        <translation>Mit dem Kern verbunden</translation>
     </message>
     <message>
         <location line="+8"/>
         <source>Connection lost</source>
-        <translation>Connexion perdue</translation>
+        <translation>Verbindung unterbrochen</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>The connection to the core has been lost</source>
-        <translation>La connexion au core a été perdu</translation>
+        <translation>Die Verbindung zum Kern wurde unterbrochen</translation>
     </message>
     <message>
         <source>Browse</source>
@@ -644,12 +644,12 @@
     <message>
         <location filename="../GUI/MDI/MdiArea.cpp" line="+300"/>
         <source>Waiting the cache loading process is finished before loading the download queue</source>
-        <translation>En attente de la fin de chargement du cache avant de pouvoir charger la queue de téléchargement</translation>
+        <translation type="unfinished">Warte auf das Laden des Zwischenspeichers bevor die Warteschlange geladen wird</translation>
     </message>
     <message>
         <location line="+174"/>
         <source>Leave room</source>
-        <translation>Quitter le salon</translation>
+        <translation>Raum verlassen</translation>
     </message>
 </context>
 <context>
@@ -665,12 +665,12 @@
     <message>
         <location filename="../GUI/Peers/PeerListModel.cpp" line="+238"/>
         <source>His protocol version is more recent and incompatible with ours. Upgrade you version!</source>
-        <translation>La version de son protocole est plus récente et incompatible avec la notre. Mettez à jour votre version!</translation>
+        <translation type="unfinished">Protokollversion ist neuer und inkompatibel mit unserer. Bitte aktualisieren!</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>His protocol version is outaded and incompatible with ours. He should upgrade his version!</source>
-        <translation>La version de son protocole est obsolète et incompatible avec la notre. Il devrait mettre à jour sa version!</translation>
+        <translation type="unfinished">Protokollversion ist veraltet und inkompatibel mit unserer. Nutzer sollte seine Version aktualisieren!</translation>
     </message>
     <message>
         <location line="+3"/>
@@ -682,12 +682,12 @@
     <message>
         <location line="+2"/>
         <source>Download rate: </source>
-        <translation>Vitesse de téléchargement: </translation>
+        <translation type="unfinished">Eingehender Datenverkehr: </translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Upload rate: </source>
-        <translation>Vitesse d&apos;envoi: </translation>
+        <translation type="unfinished">Ausgehender Datenverkehr: </translation>
     </message>
 </context>
 <context>
@@ -695,57 +695,57 @@
     <message>
         <location filename="../GUI/Peers/PeersDock.cpp" line="+96"/>
         <source>Browse</source>
-        <translation>Explorer</translation>
+        <translation>Durchsuchen</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>Take control</source>
-        <translation>Prendre le contrôle</translation>
+        <translation type="unfinished">Kontrolle übernehmen</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Copy IP: %1</source>
-        <translation>Copier l&apos;IP: %1</translation>
+        <translation>IP kopieren: %1</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>Sort by the amount of sharing</source>
-        <translation>Trier par la quantité de partage</translation>
+        <translation type="unfinished">Nach Größe der Freigabe sortieren</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Sort alphabetically</source>
-        <translation>Trier par ordre alphabétique</translation>
+        <translation type="unfinished">Nach Alphabet sortieren</translation>
     </message>
     <message>
         <location line="+13"/>
         <source>Colorize in red</source>
-        <translation>Colorier en rouge</translation>
+        <translation>Rot einfärben</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Colorize in blue</source>
-        <translation>Colorier en bleu</translation>
+        <translation>Blau einfärben</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Colorize in green</source>
-        <translation>Colorier en vert</translation>
+        <translation>Grün einfärben</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Uncolorize</source>
-        <translation>Enlever la couleur</translation>
+        <translation type="unfinished">Farbe zurücksetzen</translation>
     </message>
     <message>
         <location line="+35"/>
         <source>Take control of %1</source>
-        <translation>Prendre le contrôle de %1</translation>
+        <translation type="unfinished">Kontrolle über %1 übernehmen</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Enter a password</source>
-        <translation>Entrez le mot de passe</translation>
+        <translation>Passwort eingeben</translation>
     </message>
 </context>
 <context>
@@ -753,17 +753,17 @@
     <message>
         <location filename="../GUI/Chat/RoomsDock.cpp" line="+91"/>
         <source>Join</source>
-        <translation>Rejoindre</translation>
+        <translation>Beitreten</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Sort by number of peers</source>
-        <translation>Trier par nombre de personnes</translation>
+        <translation type="unfinished">Nach Anzahl der Personen sortieren</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Sort alphabetically</source>
-        <translation>Trier par ordre alphabétique</translation>
+        <translation type="unfinished">Nach Alphabet sortieren</translation>
     </message>
 </context>
 <context>
@@ -771,14 +771,14 @@
     <message>
         <location filename="../GUI/Search/SearchWidget.cpp" line="+158"/>
         <source>Browse</source>
-        <translation>Explorer</translation>
+        <translation>Durchsuchen</translation>
     </message>
 </context>
 <context>
     <name>GUI::SearchModel</name>
     <message>
         <source>Filename</source>
-        <translation>Fichier</translation>
+        <translation>Dateiname</translation>
     </message>
     <message>
         <source>Folder</source>
@@ -787,33 +787,33 @@
     <message>
         <location filename="../GUI/Search/SearchModel.cpp" line="+132"/>
         <source>Name</source>
-        <translation>Nom</translation>
+        <translation>Name</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Directory</source>
-        <translation>Dossier</translation>
+        <translation>Ordner</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Relevance</source>
-        <translation>Pertinance</translation>
+        <translation>Relevanz</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Peer</source>
-        <translation>Pair</translation>
+        <translation type="unfinished">Knoten</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Size</source>
-        <translation>Taille</translation>
+        <translation>Größe</translation>
     </message>
     <message>
         <location line="+187"/>
         <location line="+54"/>
         <source>&lt;unknown&gt;</source>
-        <translation>&lt;inconnu&gt;</translation>
+        <translation>&lt;unbekannt&gt;</translation>
     </message>
 </context>
 <context>
@@ -821,12 +821,12 @@
     <message>
         <location filename="../GUI/Search/SearchWidget.cpp" line="+111"/>
         <source>Open location</source>
-        <translation>Ouvrir le dossier</translation>
+        <translation>Ordner anzeigen</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Browse</source>
-        <translation>Explorer</translation>
+        <translation>Durchsuchen</translation>
     </message>
 </context>
 <context>
@@ -834,54 +834,54 @@
     <message>
         <location filename="../GUI/Settings/SettingsWidget.cpp" line="+195"/>
         <source>Default</source>
-        <translation>Défaut</translation>
+        <translation>Standard</translation>
     </message>
     <message>
         <location line="+40"/>
         <source>Interface not active</source>
-        <translation>Interface inactive</translation>
+        <translation type="unfinished">Schnittstelle inaktiv</translation>
     </message>
     <message>
         <location line="+111"/>
         <source>Change the password</source>
-        <translation>Changer le mot de passe</translation>
+        <translation>Passwort ändern</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>Define a password</source>
-        <translation>Définir un mot de passe</translation>
+        <translation>Passwort festlegen</translation>
     </message>
     <message>
         <location line="+45"/>
         <source>Connecting . . .</source>
-        <translation>Connexion...</translation>
+        <translation>Verbinde . . .</translation>
     </message>
     <message>
         <location line="+8"/>
         <location line="+16"/>
         <location line="+18"/>
         <source>Connect</source>
-        <translation>Connecter</translation>
+        <translation>Verbinden</translation>
     </message>
     <message>
         <location line="+138"/>
         <source>Remove the shared directory</source>
-        <translation>Enlever le dossier partagé</translation>
+        <translation type="unfinished">Freigegebenen Ordner entfernen</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Move up</source>
-        <translation>Déplacer vers le haut</translation>
+        <translation>Nach oben bewegen</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Move down</source>
-        <translation>Déplacer vers le bas</translation>
+        <translation>Nach unten bewegen</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Open location</source>
-        <translation>Ouvrir le dossier</translation>
+        <translation>Ordner anzeigen</translation>
     </message>
 </context>
 <context>
