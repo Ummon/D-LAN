@@ -12,7 +12,7 @@ message Settings {
    
    optional Common.Language language = 85;
 
-   repeated Common.SharedItem sharedItem = 103;
+   repeated Common.SharedEntry shared_entry = 103;
    
    optional uint32 chunk_size = 3 [default = 67108864]; // (64 MiB).
    optional uint32 buffer_size_reading = 4 [default = 131072]; // (128 KiB). Buffer used when reading files (uploading and computing hashes).

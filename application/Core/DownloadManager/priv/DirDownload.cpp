@@ -139,8 +139,8 @@ void DirDownload::result(const Protos::Core::GetEntriesResult& entries)
       }
       else if (entries.result(0).status() == Protos::Core::GetEntriesResult::EntryResult::TIMEOUT_SCANNING_IN_PROGRESS)
       {
-         L_DEBU("Unable to get the entries: DIRECTORY_SCANNING_IN_PROGRESS");
-         this->setStatus(DIRECTORY_SCANNING_IN_PROGRESS);
+         L_DEBU("Unable to get the entries: REMOTE_SCANNING_IN_PROGRESS");
+         this->setStatus(REMOTE_SCANNING_IN_PROGRESS);
       }
       else
       {

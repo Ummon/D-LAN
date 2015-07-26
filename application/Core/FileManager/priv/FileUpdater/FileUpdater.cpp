@@ -49,7 +49,7 @@ FileUpdater::FileUpdater(FileManager* fileManager) :
    toStop(false),
    progress(0),
    mutex(QMutex::Recursive),
-   currentScanningDir(nullptr),
+   currentScanningEntry(nullptr),
    toStopHashing(false),
    remainingSizeToHash(0)
 {
@@ -91,27 +91,22 @@ void FileUpdater::stop()
   * Called by another thread.
   * @exception DirNotFoundException
   */
-void FileUpdater::addRoot(SharedEntry* entry)
+void FileUpdater::addRoot(SharedEntry* sharedEntry)
 {
    QMutexLocker locker(&this->mutex);
 
-   const Common::Path& entryPath = entry->getFullPath();
+   const Common::Path& entryPath = sharedEntry->getFullPath();
 
    bool watchable = false;
    if (this->dirWatcher)
-   {
-      if (entryPath.isFile())
-         watchable = this->dirWatcher->addFile(entryPath.getPath());
-      else
-         watchable = this->dirWatcher->addDir(entryPath.getPath());
-   }
+      watchable = this->dirWatcher->addPath(entryPath.getPath());
 
-   this->entriesToScan << entry->getRootEntry();
+   this->entriesToScan << sharedEntry->getRootEntry();
 
    if (!watchable)
    {
       L_WARN(QString("This entry is not watchable: %1").arg(entryPath.getPath()));
-      this->unwatchableEntries << entry;
+      this->unwatchableEntries << sharedEntry;
    }
 
    this->dirEvent->release();
@@ -119,13 +114,13 @@ void FileUpdater::addRoot(SharedEntry* entry)
 
 /**
   * Called by another thread.
-  * If 'dir2' is given it will steal the subdirs of 'dir' and append
+  * If 'dir2' is given it will steal the content of 'entry' and append
   * them to itself.
   */
-void FileUpdater::rmRoot(SharedDirectory* dir, Directory* dir2)
+void FileUpdater::rmRoot(SharedEntry* sharedEntry, Directory* dir2)
 {
    // If there is a scanning for this directory stop it.
-   this->stopScanning(dir);
+   this->stopScanning(sharedEntry->getRootEntry());
 
    QMutexLocker locker(&this->mutex);
 
@@ -137,13 +132,14 @@ void FileUpdater::rmRoot(SharedDirectory* dir, Directory* dir2)
       this->toStopHashing = true;
 
       // TODO: Find a more elegant way!
-      if (dir2)
-         dir2->stealContent(dir);
+      Directory* rootDirectory = dynamic_cast<Directory*>(sharedEntry->getRootEntry());
+      if (dir2 && rootDirectory)
+         dir2->stealContent(rootDirectory);
 
-      this->removeFromFilesWithoutHashes(dir);
+      this->removeFromFilesWithoutHashes(sharedEntry->getRootEntry());
       this->removeFromDirsToScan(dir);
       this->unwatchableEntries.removeOne(dir);
-      this->dirsToRemove << dir;
+      this->entriesToRemove << sharedEntry->getRootEntry();
    }
 
    this->dirEvent->release();
@@ -155,10 +151,10 @@ void FileUpdater::rmRoot(SharedDirectory* dir, Directory* dir2)
   * The shared dirs in fileCache must be previously added by 'addRoot(..)'.
   * This object must unallocated the hashes.
   */
-void FileUpdater::setFileCache(const Protos::FileCache::Hashes* fileCache)
+/*void FileUpdater::setFileCache(const Protos::FileCache::Hashes* fileCache)
 {
    this->fileCacheInformation = new FileCacheInformation(fileCache);
-}
+}*/
 
 void FileUpdater::prioritizeAFileToHash(File* file)
 {
@@ -196,7 +192,7 @@ void FileUpdater::prioritizeAFileToHash(File* file)
 bool FileUpdater::isScanning() const
 {
    QMutexLocker scanningLocker(&this->scanningMutex);
-   return this->currentScanningDir != nullptr;
+   return this->currentScanningEntry != nullptr;
 }
 
 bool FileUpdater::isHashing() const
@@ -247,20 +243,20 @@ void FileUpdater::run()
 
       this->mutex.lock();
 
-      foreach (SharedDirectory* dir, this->dirsToRemove)
+      foreach (Entry* entry, this->entriesToRemove)
       {
-         L_DEBU(QString("Stop watching this directory : %1").arg(dir->getFullPath()));
+         L_DEBU(QString("Stop watching this path: %1").arg(entry->getFullPath()));
          if (this->dirWatcher)
-            this->dirWatcher->rmDir(dir->getFullPath());
+            this->dirWatcher->rmPath(entry->getFullPath());
 
-         dir->removeUnfinishedFiles();
-         dir->del();
+         entry->removeUnfinishedFiles();
+         entry->del();
       }
-      this->dirsToRemove.clear();
+      this->entriesToRemove.clear();
 
       // If there is no watcher capability or no directory to watch then
       // we wait for an added directory.
-      if (!this->dirWatcher || this->dirWatcher->nbWatchedDir() == 0 || !this->dirsToScan.empty())
+      if (!this->dirWatcher || this->dirWatcher->nbWatchedPath() == 0 || !this->dirsToScan.empty())
       {
          if (this->dirsToScan.isEmpty() && this->filesWithoutHashes.isEmpty() && this->filesWithoutHashesPrioritized.isEmpty())
          {
@@ -430,7 +426,7 @@ void FileUpdater::stopHashing()
 /**
   * Synchronize the cache with the file system.
   * Scan recursively all the directories and files contained
-  * in entry (if 'entry' is a directory). Create the associated cached tree structure under the
+  * in entry (if 'entry' is a directory). Create the associated cached tree structure under a
   * given 'Directory*'.
   * The directories may already exist in the cache.
   */
@@ -439,7 +435,7 @@ void FileUpdater::scan(Entry* entry, bool addUnfinished)
    L_DEBU("Start scanning a shared entry: " + entry->getFullPath());
 
    this->scanningMutex.lock();
-   this->currentScanningDir = dir;
+   this->currentScanningEntry = entry;
    this->scanningMutex.unlock();
 
    QLinkedList<Directory*> dirsToVisit;
@@ -452,29 +448,29 @@ void FileUpdater::scan(Entry* entry, bool addUnfinished)
       QLinkedList<Directory*> currentSubDirs = currentDir->getSubDirs();
       QList<File*> currentFiles = currentDir->getCompleteFiles(); // We don't care about the unfinished files.
 
-      foreach (QFileInfo entry, QDir(currentDir->getFullPath()).entryInfoList(QDir::AllEntries | QDir::NoDotAndDotDot | QDir::NoSymLinks)) // TODO: Add an option to follow or not symlinks.
+      foreach (QFileInfo fileInfo, QDir(currentDir->getFullPath()).entryInfoList(QDir::AllEntries | QDir::NoDotAndDotDot | QDir::NoSymLinks)) // TODO: Add an option to follow or not symlinks.
       {
          QMutexLocker locker(&this->scanningMutex);
 
-         if (!this->currentScanningDir || this->toStop)
+         if (!this->currentScanningEntry || this->toStop)
          {
-            L_DEBU("Scanning aborted : " + dir->getFullPath());
-            this->currentScanningDir = nullptr;
+            L_DEBU("Scanning aborted: " + entry->getFullPath());
+            this->currentScanningEntry = nullptr;
             this->scanningStopped.wakeOne();
             return;
          }
 
-         if (entry.isDir())
+         if (fileInfo.isDir())
          {
-            Directory* dir = currentDir->createSubDir(entry.fileName());
+            Directory* dir = currentDir->createSubDir(fileInfo.fileName());
             dir->setScanned(false);
             dirsToVisit << dir;
 
             currentSubDirs.removeOne(dir);
          }
-         else if (addUnfinished || !Global::isFileUnfinished(entry.fileName()))
+         else if (addUnfinished || !Global::isFileUnfinished(fileInfo.fileName()))
          {
-            File* file = currentDir->getFile(entry.fileName());
+            File* file = currentDir->getFile(fileInfo.fileName());
             QMutexLocker locker(&this->mutex);
 
             // Only used when loading the cache to compute the progress.
@@ -490,7 +486,7 @@ void FileUpdater::scan(Entry* entry, bool addUnfinished)
                    !this->filesWithoutHashes.contains(file) && // The case where a file is being copied and a lot of modification event is thrown (thus the file is in this->filesWithoutHashes).
                    !this->filesWithoutHashesPrioritized.contains(file) &&
                    file->isComplete() &&
-                   !file->correspondTo(entry, file->hasAllHashes()) // If the hashes of a file can't be computed (IO error, the file is being written for example) we only compare their sizes.
+                   !file->correspondTo(fileInfo, file->hasAllHashes()) // If the hashes of a file can't be computed (IO error, the file is being written for example) we only compare their sizes.
                )
                {
                   currentFiles.removeOne(file);
@@ -508,9 +504,9 @@ void FileUpdater::scan(Entry* entry, bool addUnfinished)
                // Very special case : there is a file 'a' without File* in cache and a file 'a.unfinished'.
                // This case occure when a file is redownloaded, the File* 'a' is renamed as 'a.unfinished' but the physical file 'a'
                // is not deleted.
-               File* unfinishedFile = currentDir->getFile(entry.fileName().append(Global::getUnfinishedSuffix()));
+               File* unfinishedFile = currentDir->getFile(fileInfo.fileName().append(Global::getUnfinishedSuffix()));
                if (!unfinishedFile)
-                  file = new File(currentDir, entry.fileName(), entry.size(), entry.lastModified());
+                  file = new File(currentDir, fileInfo.fileName(), fileInfo.size(), fileInfo.lastModified());
                else
                {
                   currentFiles.removeOne(unfinishedFile);
@@ -538,7 +534,7 @@ void FileUpdater::scan(Entry* entry, bool addUnfinished)
    }
 
    this->scanningMutex.lock();
-   this->currentScanningDir = nullptr;
+   this->currentScanningEntry = nullptr;
    this->scanningStopped.wakeOne();
    this->scanningMutex.unlock();
 
@@ -551,24 +547,24 @@ void FileUpdater::scan(Entry* entry, bool addUnfinished)
 }
 
 /**
-  * If you omit 'dir' then all scanning will be removed
+  * If you omit 'sharedEntry' then all scanning will be removed
   * from the queue.
   */
-void FileUpdater::stopScanning(Directory* dir)
+void FileUpdater::stopScanning(Entry* entry)
 {
    QMutexLocker scanningLocker(&this->scanningMutex);
-   if (!dir && this->currentScanningDir || dir && this->currentScanningDir == dir)
+   if (!entry && this->currentScanningEntry || entry && this->currentScanningEntry == entry)
    {
-      this->currentScanningDir = nullptr;
+      this->currentScanningEntry = nullptr;
       this->scanningStopped.wait(&this->scanningMutex);
    }
    else
    {
       QMutexLocker locker(&this->mutex);
-      if (dir)
-         this->dirsToScan.removeOne(dir);
+      if (entry)
+         this->entriesToScan.removeOne(entry);
       else
-         this->dirsToScan.clear();
+         this->entriesToScan.clear();
    }
 }
 
@@ -583,20 +579,8 @@ void FileUpdater::deleteEntry(Entry* entry)
 
    QMutexLocker locker(&this->mutex);
 
-   // Remove the directory and their sub child from the scan list (this->dirsToScan).
-   if (Directory* dir = dynamic_cast<Directory*>(entry))
-   {
-      this->removeFromFilesWithoutHashes(dir);
-      this->removeFromDirsToScan(dir);
-   }
-   else if (File* file = dynamic_cast<File*>(entry))
-   {
-      bool fileInAList = this->filesWithoutHashes.removeOne(file);
-      fileInAList |= this->filesWithoutHashesPrioritized.removeOne(file);
-
-      if (fileInAList)
-         this->remainingSizeToHash -= file->getSize();
-   }
+   this->removeFromFilesWithoutHashes(entry);
+   this->removeFromEntriesToScan(entry);
 
    entry->removeUnfinishedFiles();
    entry->del();
@@ -605,37 +589,52 @@ void FileUpdater::deleteEntry(Entry* entry)
 /**
   * Remove a directory and its sub directories from 'this->dirsToScan'.
   */
-void FileUpdater::removeFromDirsToScan(Directory* dir)
+void FileUpdater::removeFromEntriesToScan(Entry* entry)
 {
-   this->dirsToScan.removeOne(dir);
-   DirIterator i(dir);
-   while (Directory* subDir = i.next())
-      this->dirsToScan.removeOne(subDir);
+   this->entriesToScan.removeOne(entry);
+
+   if (Directory* dir = dynamic_cast<Directory*>(entry))
+   {
+      DirIterator i(dir);
+      while (Directory* subDir = i.next())
+         this->entriesToScan.removeOne(subDir);
+   }
 }
 
 /**
   * Remove all the pending files owned by 'dir'.
   */
-void FileUpdater::removeFromFilesWithoutHashes(Directory* dir)
+void FileUpdater::removeFromFilesWithoutHashes(Entry* entry)
 {
-   for (QMutableListIterator<File*> i(this->filesWithoutHashes); i.hasNext();)
+   if (Directory* dir = dynamic_cast<Directory*>(entry))
    {
-      File* f = i.next();
-      if (f->hasAParentDir(dir))
+      for (QMutableListIterator<File*> i(this->filesWithoutHashes); i.hasNext();)
       {
-         this->remainingSizeToHash -= f->getSize();
-         i.remove();
+         File* f = i.next();
+         if (f->hasAParentDir(dir))
+         {
+            this->remainingSizeToHash -= f->getSize();
+            i.remove();
+         }
+      }
+
+      for (QMutableListIterator<File*> i(this->filesWithoutHashesPrioritized); i.hasNext();)
+      {
+         File* f = i.next();
+         if (f->hasAParentDir(dir))
+         {
+            this->remainingSizeToHash -= f->getSize();
+            i.remove();
+         }
       }
    }
-
-   for (QMutableListIterator<File*> i(this->filesWithoutHashesPrioritized); i.hasNext();)
+   else if (File* file = dynamic_cast<File*>(entry))
    {
-      File* f = i.next();
-      if (f->hasAParentDir(dir))
-      {
-         this->remainingSizeToHash -= f->getSize();
-         i.remove();
-      }
+      bool fileInAList = this->filesWithoutHashes.removeOne(file);
+      fileInAList |= this->filesWithoutHashesPrioritized.removeOne(file);
+
+      if (fileInAList)
+         this->remainingSizeToHash -= file->getSize();
    }
 }
 
@@ -734,11 +733,15 @@ bool FileUpdater::processEvents(const QList<WatcherEvent>& events)
 
       case WatcherEvent::DELETED:
          {
-            Entry* entry = this->fileManager->getEntry(event.path1);
-            if (SharedDirectory* sharedDir = dynamic_cast<SharedDirectory*>(entry))
-               emit deleteSharedDir(sharedDir);
+            SharedEntry* sharedEntry = this->fileManager->getSharedEntry(event.path1);
+            if (sharedEntry)
+               emit deleteSharedEntry(sharedEntry);
             else
-               this->deleteEntry(entry);
+            {
+               Entry* entry = this->fileManager->getEntry(event.path1);
+               if (entry)
+                  this->deleteEntry(entry);
+            }
             break;
          }
 

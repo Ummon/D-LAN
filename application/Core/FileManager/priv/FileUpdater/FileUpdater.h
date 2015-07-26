@@ -49,20 +49,19 @@ namespace FM
       ~FileUpdater();
 
       void stop();
-      void setFileCache(const Protos::FileCache::Hashes* fileCache);
+      //void setFileCache(const Protos::FileCache::Hashes* fileCache);
       void prioritizeAFileToHash(File* file);
 
       bool isScanning() const;
       bool isHashing() const;
       int getProgress() const;
 
-   public slots:
-      void addRoot(SharedEntry* entry);
-      void rmRoot(SharedEntry* entry, Directory* dir2 = nullptr);
+      void addRoot(SharedEntry* sharedEntry);
+      void rmRoot(SharedEntry* sharedEntry, Directory* dir2 = nullptr);
 
    signals:
       void fileCacheLoaded();
-      void deleteSharedDir(SharedDirectory*);
+      void deleteSharedEntry(SharedEntry*);
 
    protected:
       void run();
@@ -73,13 +72,14 @@ namespace FM
 
       void stopHashing();
 
-      void scan(Directory* dir, bool addUnfinished = false);
+      void scan(Entry* entry, bool addUnfinished = false);
+      void addScannedFile(const FileInfo& fileInfo, File* fileCache = nullptr);
 
-      void stopScanning(Directory* dir = nullptr);
+      void stopScanning(Entry* entry = nullptr);
 
       void deleteEntry(Entry* entry);
-      void removeFromDirsToScan(Directory* dir);
-      void removeFromFilesWithoutHashes(Directory* dir);
+      void removeFromEntriesToScan(Entry* entry);
+      void removeFromFilesWithoutHashes(Entry* entry);
 
       //void restoreFromFileCache(SharedDirectory* dir);
 
@@ -90,7 +90,7 @@ namespace FM
       FileManager* fileManager;
       DirWatcher* dirWatcher;
 
-      class FileCacheInformation
+      /*class FileCacheInformation
       {
       public:
          FileCacheInformation(const Protos::FileCache::Hashes* fileCache);
@@ -107,7 +107,7 @@ namespace FM
          int fileCacheNbFiles;
          int fileCacheNbFilesLoaded;
       };
-      FileCacheInformation* fileCacheInformation; // Only used during the loading of 'fileCache'.
+      FileCacheInformation* fileCacheInformation; // Only used during the loading of 'fileCache'.*/
 
       bool toStop; ///< Set to true when the service must be stopped.
 
@@ -119,7 +119,7 @@ namespace FM
       QList<Entry*> unwatchableEntries;
       QElapsedTimer timerScanUnwatchable;
       QList<Entry*> entriesToScan; ///< When something change in a directory or in a file we put it in this list until it is scanned.
-      Directory* currentScanningDir;
+      Entry* currentScanningEntry;
       QWaitCondition scanningStopped;
       mutable QMutex scanningMutex;
 
@@ -127,7 +127,7 @@ namespace FM
       bool toStopHashing;
       FileHasher fileHasher;
 
-      QList<SharedDirectory*> dirsToRemove;
+      QList<Entry*> entriesToRemove;
 
       QList<File*> filesWithoutHashes;
       QList<File*> filesWithoutHashesPrioritized;

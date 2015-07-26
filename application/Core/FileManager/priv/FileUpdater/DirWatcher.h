@@ -53,7 +53,7 @@ namespace FM
    class DirWatcher
    {
    public:
-      virtual ~DirWatcher() {};
+      virtual ~DirWatcher() {}
 
       /**
         * Build a new watcher.
@@ -64,7 +64,7 @@ namespace FM
       static DirWatcher* getNewWatcher();
 
       /**
-        * Add a directory to watch.
+        * Add a path (directory or file) to watch.
         * Each new added directory is immediately watched. If some modification
         * occurs in the file system bewteen a call of 'addDir' and a call of 'waitEvent' they
         * will be recorded and the next call to 'waitEvent' will be no blocking.
@@ -73,19 +73,17 @@ namespace FM
         * @return 'true' if the dir is watchable else 'false'.
         * @exception DirNotFoundException
         */
-      virtual bool addDir(const QString& path) = 0;
-
-      virtual bool addFile(const QString& path) = 0;
+      virtual bool addPath(const QString& path) = 0;
 
       /**
-        * Remove a watched directory.
+        * Remove a watched path.
         */
-      virtual void rmDir(const QString& path) = 0;
+      virtual void rmPath(const QString& path) = 0;
 
       /**
-        * Return the number of watched directory.
+        * Return the number of watched path.
         */
-      virtual int nbWatchedDir() = 0;
+      virtual int nbWatchedPath() = 0;
 
       /**
         * Wait a new event from the listened directories or from a given wait condition.
@@ -106,17 +104,20 @@ namespace FM
    struct WatcherEvent
    {
       enum Type {
-         // A file or a directory is moved into the shared directory structure or a shared directory is moved somewhere else.
+         // A file or a directory is moved into the shared directory structure or a shared path (directory or file) is moved somewhere else.
          // The file or the directory can be renamed.
-         // Some examples on files:
+         // Some examples on files in shared directory:
          //  - /home/dlan/shared/a/x.txt -> /home/dlan/shared/a/y.txt
          //  - /home/dlan/shared/a/x.txt -> /home/dlan/shared/a/b/x.txt
          //  - /home/dlan/shared/a/x.txt -> /home/dlan/shared2/a/b/y.txt
-         // Some examples on directories:
+         // Some examples on shared directories:
          //  - /home/dlan/shared/a -> /home/dlan/shared/b
          //  - /home/dlan/shared/a -> /home/dlan/shared/x/a
          //  - /home/dlan/shared/a -> /home/dlan/shared2/a
-         // If a file is moved from outside a shared dir you may use 'NEW'
+         // Some examples on shared files:
+         //  - /home/dlan/shared/a/x.txt -> /home/dlan/shared/b/x.txt
+         //  - /home/dlan/shared/a/x.txt -> /home/dlan/shared/a/y.txt
+         // If a file is moved from outside a shared directory you may use 'NEW'
          // If a file is moved from a shared dir to outside you may use 'DELETED'
          MOVE,
          NEW,
@@ -128,20 +129,19 @@ namespace FM
 
       WatcherEvent();
       WatcherEvent(const WatcherEvent& e);
+      WatcherEvent(WatcherEvent&& e);
       WatcherEvent(Type type);
       WatcherEvent(Type type, const QString& path1);
       WatcherEvent(Type type, const QString& path1, const QString& path2);
 
-      /**
-        * Default assignment operator does nothing because all members are const.
-        */
-      WatcherEvent& operator=(const WatcherEvent&) { return *this; }
+      WatcherEvent& operator=(const WatcherEvent& event) = default;
+      WatcherEvent& operator=(WatcherEvent&& event) = default;
 
-      QString toStr();
+      QString toStr() const;
 
-      const Type type;
-      const QString path1;
-      const QString path2; // Only used when type is 'MOVE'.
+      Type type;
+      QString path1;
+      QString path2; // Only used when type is 'MOVE'.
    };
 }
 

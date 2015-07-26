@@ -45,7 +45,8 @@ message State {
          GOT_TOO_MUCH_DATA = 0x28;
          HASH_MISSMATCH = 0x29;
 
-         DIRECTORY_SCANNING_IN_PROGRESS = 0x31; // When a remote directory is being scanned it's not possible to browse it.
+         REMOTE_SCANNING_IN_PROGRESS = 0x31; // When a remote file or directory is being scanned it's not possible to browse it or download it.
+         LOCAL_SCANNING_IN_PROGRESS = 0x33; // When a local directory is being scanned it's not possible to download into.
          UNABLE_TO_GET_ENTRIES = 0x32;
       }
       required uint64 id = 1; // Cannot be 0.

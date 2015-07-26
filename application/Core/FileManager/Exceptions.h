@@ -49,6 +49,8 @@ namespace FM
 
    class NoWriteableDirectoryException{};
 
+   class ScanningException{};
+
    class IOErrorException {};
 
    class FileResetException {};

@@ -38,9 +38,9 @@ namespace FM
       ~DirWatcherWin();
 
       bool isReliable() const;
-      bool addDir(const QString& path);
-      void rmDir(const QString& path);
-      int nbWatchedDir();
+      bool addPath(const QString& path);
+      void rmPath(const QString& path);
+      int nbWatchedPath();
       const QList<WatcherEvent> waitEvent(QList<WaitCondition*> ws = QList<WaitCondition*>());
       const QList<WatcherEvent> waitEvent(int timeout, QList<WaitCondition*> ws = QList<WaitCondition*>());
 

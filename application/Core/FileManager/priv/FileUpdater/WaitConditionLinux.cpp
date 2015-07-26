@@ -38,7 +38,7 @@ WaitConditionLinux::WaitConditionLinux()
    : released(false)
 {   
    if(0 != pipe(this->pfd))
-      L_ERRO("WaitConditionLinux::WaitConditionLinux : Unable to create pipe.");
+      L_ERRO("WaitConditionLinux::WaitConditionLinux: Unable to create pipe.");
 
    fcntl(this->pfd[0],F_SETFL,fcntl(this->pfd[0],F_GETFL)|O_NONBLOCK);
    fcntl(this->pfd[1],F_SETFL,fcntl(this->pfd[1],F_GETFL)|O_NONBLOCK);
@@ -52,9 +52,9 @@ WaitConditionLinux::~WaitConditionLinux()
 
 void WaitConditionLinux::release()
 {
-   L_DEBU(QString("WaitConditionLinux::release : begin write in pipe for read in fd=%1").arg(this->pfd[0]));
+   L_DEBU(QString("WaitConditionLinux::release: begin write in pipe for read in fd=%1").arg(this->pfd[0]));
    write(this->pfd[1], "", 1);
-   L_DEBU(QString("WaitConditionLinux::release : end write in pipe for read in fd=%1").arg(this->pfd[0]));
+   L_DEBU(QString("WaitConditionLinux::release: end write in pipe for read in fd=%1").arg(this->pfd[0]));
 
    this->released = true;
 }
@@ -80,10 +80,10 @@ bool WaitConditionLinux::wait(int timeout)
    // Add the inotify fd to the fd_set.
    FD_SET(this->pfd[0], &fds);
 
-   L_DEBU(QString("WaitConditionLinux::wait : active select for fd=%1").arg(this->pfd[0]));
+   L_DEBU(QString("WaitConditionLinux::wait: active select for fd=%1").arg(this->pfd[0]));
    if(select(this->pfd[0] + 1, &fds, NULL, NULL, (timeout==-1 ? 0 : &time)))
    {
-      L_DEBU(QString("WaitConditionLinux::wait : exit select by release (fd=%1)").arg(this->pfd[0]));
+      L_DEBU(QString("WaitConditionLinux::wait: exit select by release (fd=%1)").arg(this->pfd[0]));
       static char dummy[4096];
       while (read(this->pfd[0], dummy, sizeof(dummy)) > 0);
       return false;

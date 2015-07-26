@@ -76,7 +76,7 @@ namespace FM
         * Returns the absolute path to the corresponding shared directory.
         * If the directory is not found an empty string is returned.
         */
-      virtual QString getSharedDir(const Common::Hash& ID) const = 0;
+      virtual QString getSharedEntry(const Common::Hash& ID) const = 0;
 
       /**
         * Returns a chunk. If no chunk is found return an empty pointer.
@@ -105,6 +105,7 @@ namespace FM
       virtual QList<QSharedPointer<IChunk>> newFile(Protos::Common::Entry& entry) = 0;
 
       /**
+        * @exception ScanningException The entry or one of their parents is currently being scanned
         * @exception NoWriteableDirectoryException
         * @exception UnableToCreateNewDirException
         */
@@ -183,11 +184,11 @@ namespace FM
         */
       virtual void printSimilarFiles() const = 0;
 
-   signals:
+   //signals:
       /**
         * Emitted when the file cache has been loaded. Guaranteed to be emmited once.
         */
-      void fileCacheLoaded();
+      //void fileCacheLoaded();
    };
 }
 #endif

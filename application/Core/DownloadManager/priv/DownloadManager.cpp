@@ -136,7 +136,7 @@ Download* DownloadManager::addDownload(const Protos::Common::Entry& remoteEntry,
    // We do not create a new download if a similar one is already in queue. This test can be CPU expensive.
    if (this->downloadQueue.isEntryAlreadyQueued(localEntry))
    {
-      QString sharedDir = this->fileManager->getSharedDir(localEntry.shared_dir().id().hash());
+      QString sharedDir = this->fileManager->getSharedEntry(localEntry.shared_dir().id().hash());
       if (!sharedDir.isEmpty())
          sharedDir.remove(sharedDir.size() - 1, 1); // Remove the ending '/'.
 

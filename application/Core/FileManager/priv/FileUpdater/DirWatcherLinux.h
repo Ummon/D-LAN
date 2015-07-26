@@ -19,7 +19,7 @@
 #ifndef FILEMANAGER_DIRWATCHERLINUX_H
 #define FILEMANAGER_DIRWATCHERLINUX_H
 
-#include <QMap>
+#include <QHash>
 #include <QList>
 #include <QMutex>
 
@@ -32,46 +32,62 @@ namespace FM
    class DirWatcherLinux : public DirWatcher
    {
    public:
-       DirWatcherLinux();
-       ~DirWatcherLinux();
+      DirWatcherLinux();
+      ~DirWatcherLinux();
 
-       bool addDir(const QString& path);
-       void rmDir(const QString& path);
-       int nbWatchedDir();
-       const QList<WatcherEvent> waitEvent(QList<WaitCondition*> ws = QList<WaitCondition*>());
-       const QList<WatcherEvent> waitEvent(int timeout, QList<WaitCondition*> ws = QList<WaitCondition*>());
+      bool addPath(const QString& path);
+      void rmPath(const QString& path);
+      int nbWatchedPath();
+      const QList<WatcherEvent> waitEvent(QList<WaitCondition*> ws = QList<WaitCondition*>());
+      const QList<WatcherEvent> waitEvent(int timeout, QList<WaitCondition*> ws = QList<WaitCondition*>());
 
    private:
-       static const int EVENT_SIZE; // Size of the event structure, not counting name.
-       static const size_t BUF_LEN; // Reasonable guess as to size of 1024 events.
-       static const uint32_t EVENTS_OBS; // Inotify events catched for subdirectories.
-       static const uint32_t ROOT_EVENTS_OBS; // Inotify events catched for root directories.
+      static const int EVENT_SIZE; // Size of the event structure, not counting name.
+      static const size_t BUF_LEN; // Reasonable guess as to size of 1024 events.
+      static const uint32_t EVENTS_OBS; // Inotify events catched for subdirectories.
+      static const uint32_t ROOT_EVENTS_OBS; // Inotify events catched for root directories.
+      static const uint32_t EVENTS_FILE; // Inotify events catched for files.
 
-       struct Dir
-       {
-          Dir(DirWatcherLinux* dwl, Dir* parent, const QString& name);
-          ~Dir();
-          QString getFullPath();
-          void rename(const QString& newName);
-          void move(Dir* to);
+      static int addWatch(int fileDescriptor, const QString& path, uint32_t mask);
 
-          DirWatcherLinux* dwl;
-          Dir* parent;
-          QMap<QString, Dir*> childs;
-          QString name;
-          int wd; // Watch descriptor.
-       };
+      struct Dir
+      {
+         Dir(DirWatcherLinux* dwl, Dir* parent, const QString& name);
+         ~Dir();
+         QString getFullPath();
+         void rename(const QString& newName);
+         void move(Dir* to);
 
-       QMap<int, Dir*> dirs; // The watched dirs, indexed by watch descriptor.
-       QList<Dir*> rootDirs; // The watched root dirs, indexed by full path.
+         DirWatcherLinux* dwl;
+         Dir* parent;
+         QHash<QString, Dir*> childs;
+         QString name;
+         int wd; // Watch descriptor.
+      };
 
-       void rmWatcher(int watcher);
-       QString getEventPath(inotify_event *event);
+      struct File
+      {
+         File(DirWatcherLinux* dwl, const QString& path);
+         ~File();
 
-       QMutex mutex;
+         DirWatcherLinux* dwl;
+         const QString path;
+         int wd; // Watch descriptor.
+      };
 
-       bool initialized;
-       int fileDescriptor;
+      QList<Dir*> dirs; // The watched root dirs, indexed by full path.
+      QHash<QString, File*> files; // Files indexed by their path.
+
+      File* getFile(int wd) const;
+      Dir* getDir(int wd) const;
+
+      void rmWatcher(int watcher);
+      QString getEventPath(inotify_event *event);
+
+      QMutex mutex;
+
+      bool initialized;
+      int fileDescriptor;
    };
 }
 

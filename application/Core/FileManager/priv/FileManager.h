@@ -61,7 +61,7 @@ namespace FM
       void setSharedPaths(const QStringList& paths);
       QPair<Common::SharedEntry, QString> addASharedPath(const QString& absolutePath);
       QList<Common::SharedEntry> getSharedEntries() const;
-      QString getSharedDir(const Common::Hash& ID) const;
+      QString getSharedEntry(const Common::Hash& ID) const;
 
       QSharedPointer<IChunk> getChunk(const Common::Hash& hash) const;
       QList<QSharedPointer<IChunk>> getAllChunks(const Protos::Common::Entry& localEntry, const Common::Hashes& hashes) const;
@@ -84,7 +84,8 @@ namespace FM
       void printSimilarFiles() const;
 
       Directory* getFittestDirectory(const QString& path);
-      Entry* getEntry(const QString& path);
+      Entry* getEntry(const QString& path) const;
+      SharedEntry* getSharedEntry(const QString& path) const;
 
    private slots:
       void newSharedEntry(SharedEntry*);

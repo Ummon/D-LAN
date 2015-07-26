@@ -49,6 +49,10 @@ WatcherEvent::WatcherEvent() :
     type(e.type), path1(e.path1), path2(e.path2)
  {}
 
+ WatcherEvent::WatcherEvent(WatcherEvent&& e) :
+    type(std::move(e.type)), path1(std::move(e.path1)), path2(std::move(e.path2))
+ {}
+
 WatcherEvent::WatcherEvent(Type type) :
    type(type)
 {}
@@ -61,7 +65,7 @@ WatcherEvent::WatcherEvent(WatcherEvent::Type type, const QString& path1, const 
    type(type), path1(QDir::cleanPath(path1)), path2(QDir::cleanPath(path2))
 {}
 
-QString WatcherEvent::toStr()
+QString WatcherEvent::toStr() const
 {
    QString str;
    switch (this->type)

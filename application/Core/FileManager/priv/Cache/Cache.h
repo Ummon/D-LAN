@@ -58,15 +58,16 @@ namespace FM
       Protos::Common::Entries getEntries(const Protos::Common::Entry& dir, int maxNbHashesPerEntry = std::numeric_limits<int>::max()) const;
       Directory* getDirectory(const Protos::Common::Entry& dir) const;
 
-      Entry* getEntry(const QString& path) const;
+      Entry* getEntry(const Common::Path& path) const;
+      SharedEntry* getSharedEntry(const Common::Path& path) const;
       File* getFile(const Protos::Common::Entry& fileEntry) const;
       QList<QSharedPointer<IChunk>> newFile(Protos::Common::Entry& fileEntry);
       void newDirectory(Protos::Common::Entry& dirEntry);
 
       QList<Common::SharedEntry> getSharedEntrys() const;
       SharedDirectory* getSharedDirectory(const Common::Hash& ID) const;
-      void setSharedPaths(const QStringList& paths);
-      QPair<Common::SharedEntry, QString> addASharedPath(const QString& absolutePath);
+      void setSharedPaths(const QList<Common::Path>& paths);
+      QPair<Common::SharedEntry, QString> addASharedPath(const Common::Path& absolutePath);
       void removeSharedEntry(SharedEntry* item, Directory* dir2 = nullptr);
 
       SharedEntry* getSuperSharedEntry(const Common::Path& path) const;
@@ -115,8 +116,8 @@ namespace FM
 
    private:
       static Common::SharedEntry makeSharedEntry(const SharedEntry* entry);
-      SharedDirectory* createShareItem(const QString& path, const Common::Hash& ID = Common::Hash(), int pos = -1);
-      void createSharedEntrys(const QStringList& paths, const QList<Common::Hash>& ids = QList<Common::Hash>());
+      SharedEntry* createShareEntry(const Common::Path& path, const Common::Hash& ID = Common::Hash(), int pos = -1);
+      void createSharedEntries(const QList<Common::Path>& paths, const QList<Common::Hash>& ids = QList<Common::Hash>());
 
       Directory* getWriteableDirectory(const Common::Path& path, qint64 spaceNeeded = 0) const;
 

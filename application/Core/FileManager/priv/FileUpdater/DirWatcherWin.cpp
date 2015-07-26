@@ -49,7 +49,7 @@ DirWatcherWin::~DirWatcherWin()
 /**
   * @exception DirNotFoundException
   */
-bool DirWatcherWin::addDir(const QString& path)
+bool DirWatcherWin::addPath(const QString& path)
 {
    QMutexLocker locker(&this->mutex);
 
@@ -88,7 +88,7 @@ bool DirWatcherWin::addDir(const QString& path)
    return true;
 }
 
-void DirWatcherWin::rmDir(const QString& path)
+void DirWatcherWin::rmPath(const QString& path)
 {
    QMutexLocker locker(&this->mutex);
 
@@ -103,7 +103,7 @@ void DirWatcherWin::rmDir(const QString& path)
    }
 }
 
-int DirWatcherWin::nbWatchedDir()
+int DirWatcherWin::nbWatchedPath()
 {
    QMutexLocker locker(&this->mutex);
    return this->dirs.size();
