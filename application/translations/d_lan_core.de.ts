@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS>
-<TS version="2.0" language="de_DE">
+<TS version="2.1" language="de_DE">
 <context>
     <name>CoreSpace::CoreService</name>
     <message>
@@ -55,7 +55,7 @@
     <name>FM::FileHasher</name>
     <message>
         <source>Computing the hashes for %1 . . .</source>
-        <translation>Berechne die Prüfsummen für %1 . . .</translation>
+        <translation type="vanished">Berechne die Prüfsummen für %1 . . .</translation>
     </message>
     <message>
         <source>Computing hashes of %1 . . .</source>
@@ -84,11 +84,11 @@
     </message>
     <message>
         <source>Ready to serve</source>
-        <translation type="unfinished">Bereit</translation>
+        <translation>Bereit</translation>
     </message>
     <message>
         <source>The version (%1) of the queue file &quot;%2&quot; doesn&apos;t match the current version (%3). Queue will be reset.</source>
-        <translation type="unfinished">Die Version (%1) der Warteschlangen-Datei &quot;%2&quot; entspricht nicht der aktuellen Version (%3). Die Warteschlange wird zurückgesetzt.</translation>
+        <translation>Die Version (%1) der Warteschlangen-Datei &quot;%2&quot; entspricht nicht der aktuellen Version (%3). Die Warteschlange wird zurückgesetzt.</translation>
     </message>
     <message>
         <source>Shutdown</source>
