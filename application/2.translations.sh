@@ -3,7 +3,7 @@
 #set -o errexit
 set -x
 
-LANGS="fr es"
+LANGS="fr es ru de"
 TS_DIR=translations
 QM_DIR=languages
 
