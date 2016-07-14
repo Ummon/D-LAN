@@ -1,5 +1,7 @@
 -module(d_lan_lang).
 -export([langs/0, plain_lang/1, current_lang/1, tr/3, tr/4]).
+
+-import(d_lan_common, [t/1]).
  
 -include("/usr/lib/yaws/include/yaws_api.hrl"). 
 -include("../include/d_lan_defines.hrl").
@@ -7,16 +9,16 @@
 -spec langs() -> atom().
 -spec plain_lang(atom()) -> string().
 -spec current_lang(#arg{}) -> atom().
--spec tr(atom(), atom(), #arg{}) -> string().
--spec tr(atom(), atom(), #arg{}, [term()]) -> string().
+-spec tr(atom(), atom(), #arg{}) -> binary().
+-spec tr(atom(), atom(), #arg{}, [term()]) -> binary().
 
 % See here for the language codes : http://en.wikipedia.org/wiki/List_of_ISO_639-1_codes
 % Return a list of all accepted languages.
 langs() ->
    [en, fr].
    
-plain_lang(en) -> "English";
-plain_lang(fr) -> "Français".
+plain_lang(en) -> t("English");
+plain_lang(fr) -> t("Français").
    
 %%%%%%%%%%
 
@@ -365,5 +367,4 @@ tr(Page, Section, A) ->
    tr(Page, Section, A, []).
 
 tr(Page, Section, A, Params) ->
-   io_lib:format(translate(current_lang(A), Page, Section), Params).
-
+   t(io_lib:format(translate(current_lang(A), Page, Section), Params)).
