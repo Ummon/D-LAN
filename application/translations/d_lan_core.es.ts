@@ -60,7 +60,7 @@
     <message>
         <location filename="../Core/Core.cpp" line="105"/>
         <source>D-LAN Core version %1 is starting . . .</source>
-        <translation type="unfinished">D-LAN Core versión %1 esta iniciando . . .</translation>
+        <translation>D-LAN Core versión %1 esta iniciando . . .</translation>
     </message>
     <message>
         <location filename="../Core/Core.cpp" line="117"/>
