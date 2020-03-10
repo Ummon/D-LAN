@@ -32,6 +32,7 @@ using namespace GUI;
 #include <QDesktopWidget>
 #include <QTimer>
 #include <QIcon>
+#include <QMutableLinkedListIterator>
 
 #include <Log.h>
 #include <Common/Settings.h>
@@ -180,8 +181,9 @@ QString ChatWidget::getRoomName() const
 
 void ChatWidget::sendMessage()
 {
-   this->chatModel.sendMessage(this->ui->txtMessage->toHtml());
+   this->chatModel.sendMessage(this->ui->txtMessage->toHtml(), this->getPeerAnswers());
    this->answers.clear();
+   this->currentAnswer = {};
 }
 
 void ChatWidget::newRows(const QModelIndex& parent, int start, int end)
@@ -327,8 +329,6 @@ void ChatWidget::currentCharFormatChanged(const QTextCharFormat& charFormat)
 
 void ChatWidget::cursorPositionChanged()
 {
-   L_DEBU("ChatWidget::cursorPositionChanged()");
-
    if (this->ui->txtMessage->textCursor().position() != 0)
    {
       this->disconnectFormatWidgets();
@@ -348,16 +348,38 @@ void ChatWidget::cursorPositionChanged()
   */
 void ChatWidget::textChanged()
 {
-   L_DEBU("ChatWidget::textChanged()");
-
    this->ui->txtMessage->setFixedHeight(this->ui->txtMessage->document()->size().height());
 }
 
+/**
+  * When a document changes, the answer references have to be updated. They may be deleted if the changes collide with them.
+  */
 void ChatWidget::documentChanged(int position, int charsRemoved, int charsAdded)
 {
-   L_DEBU("ChatWidget::documentChanged()");
+   if (this->answers.getList().isEmpty())
+      return;
 
-   // TODO
+   const int delta = charsAdded - charsRemoved;
+
+   // TODO.....
+   /*for (const auto& answer: )
+
+   QMutableLinkedListIterator i<Answer>{this->answers.getList()};
+   i.toBack();
+
+   while (i.hasPrevious()) {
+      const auto& answer = e.previous();
+
+      if (
+          charsRemoved > 0 && position < answer.begin && position + charsRemoved >= answer.begin || // If there is one or more character removed into the answer or . . .
+          position >= answer.begin && position < answer.end // . . . if there is one or more character added or removed into the answer
+          )
+      {
+         // The answer is removed.
+         i.remove();
+      }
+
+   } while (i != this->answers.getList().begin());*/
 }
 
 void ChatWidget::setFocusTxtMessage()
@@ -507,6 +529,7 @@ void ChatWidget::autoCompleteClosed()
       cursor.setPosition(this->currentAnswer.begin + 1);
       cursor.setPosition(this->currentAnswer.end, QTextCursor::KeepAnchor);
       cursor.insertText(nick + ' ');
+      this->answers.insert(this->currentAnswer);
    }
 
    this->currentAnswer = {};
@@ -803,6 +826,14 @@ void ChatWidget::activatePeerNameInsertionMode()
    this->peerNameInsertionMode = true;
 }
 
+QList<Common::Hash> ChatWidget::getPeerAnswers() const
+{
+   QList<Common::Hash> result;
+   for (const auto& a : this->answers.getList())
+      result.append(a.peerID);
+   return result;
+}
+
 void ChatWidget::onActivate()
 {
    this->setNewMessageState(false);
@@ -844,3 +875,8 @@ QString ChatWidget::htmlEmoticon(const QString& theme, const QString& emoticonNa
 {
    return QString("<img src=\"%1\" />").arg(buildUrlEmoticon(theme, emoticonName).toString());
 }
+
+/*bool operator<(const Answer& a1, const Answer& a2)
+{
+
+}*/

@@ -25,6 +25,7 @@
 #include <QTextCharFormat>
 #include <QUrl>
 
+#include <Common/Containers/SortedList.h>
 #include <Common/RemoteCoreController/ICoreConnection.h>
 
 #include <Peers/PeerListModel.h>
@@ -117,10 +118,9 @@ namespace GUI
       void autoCompleteClosed();
 
    protected:
-      void keyPressEvent(QKeyEvent* keyEvent);
-      void changeEvent(QEvent* event);
-
-      bool eventFilter(QObject* obj, QEvent* event);
+      void keyPressEvent(QKeyEvent* keyEvent) override;
+      void changeEvent(QEvent* event) override;
+      bool eventFilter(QObject* obj, QEvent* event) override;
 
    private:
       void init();
@@ -132,7 +132,9 @@ namespace GUI
 
       void activatePeerNameInsertionMode();
 
-      void onActivate();
+      QList<Common::Hash> getPeerAnswers() const;
+
+      void onActivate() override;
 
       void setNewMessageState(bool newMessage);
 
@@ -144,8 +146,15 @@ namespace GUI
       QTextDocument textDocument;
 
       // Current peers answered.
-      struct Answer { int begin; int end; bool startWithSpace; Common::Hash peerID; };
-      QList<Answer> answers;
+      struct Answer {
+         int begin;
+         int end;
+         bool startWithSpace;
+         Common::Hash peerID;
+         bool operator<(const Answer& other) const { return this->begin < other.begin; }
+         bool operator==(const Answer& other) const { return this->begin == other.begin; }
+      };
+      Common::SortedList<Answer> answers;
       bool peerNameInsertionMode;
       Answer currentAnswer;
       AutoComplete* autoComplete;

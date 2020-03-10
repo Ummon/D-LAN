@@ -73,7 +73,7 @@
     <name>DialogAbout</name>
     <message>
         <location filename="../GUI/DialogAbout.ui"/>
-        <location filename="../GUI/.tmp/debug/ui_DialogAbout.h" line="+149"/>
+        <location filename="../GUI/.tmp/debug/ui_DialogAbout.h" line="+150"/>
         <location filename="../GUI/.tmp/release/ui_DialogAbout.h" line="+150"/>
         <source>About</source>
         <translation>Acerca de</translation>
@@ -87,7 +87,7 @@
     </message>
     <message>
         <location/>
-        <location filename="../GUI/.tmp/debug/ui_DialogAbout.h" line="+2"/>
+        <location filename="../GUI/.tmp/debug/ui_DialogAbout.h" line="+1"/>
         <location filename="../GUI/.tmp/release/ui_DialogAbout.h" line="+1"/>
         <source>Built on</source>
         <translation>Compilado en</translation>
@@ -114,16 +114,11 @@
         <translation>Cerrar</translation>
     </message>
     <message>
-        <location filename="../GUI/.tmp/debug/ui_DialogAbout.h" line="-5"/>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;a href=&quot;http://www.d-lan.net&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#fd2435;&quot;&gt;http://www.d-lan.net&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../GUI/DialogAbout.ui"/>
-        <location filename="../GUI/.tmp/debug/ui_DialogAbout.h" line="+3"/>
+        <location/>
+        <location filename="../GUI/.tmp/debug/ui_DialogAbout.h" line="-2"/>
         <location filename="../GUI/.tmp/release/ui_DialogAbout.h" line="-2"/>
         <source>With</source>
-        <translation type="unfinished"></translation>
+        <translation>Con</translation>
     </message>
 </context>
 <context>
@@ -227,7 +222,7 @@
 <context>
     <name>GUI::D_LAN_GUI</name>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="+122"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="+119"/>
         <source>Show the user interface</source>
         <translation>Mostrar la interfaz de usuario</translation>
     </message>
@@ -281,7 +276,7 @@
 <context>
     <name>GUI::DownloadsDelegate</name>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="+55"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="+57"/>
         <source>Queued</source>
         <translation>En cola</translation>
     </message>
@@ -291,7 +286,7 @@
         <translation>Obteniendo los hashes..</translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="+10"/>
         <source>Complete</source>
         <translation>Completado</translation>
     </message>
@@ -542,20 +537,20 @@
 <context>
     <name>GUI::MdiArea</name>
     <message>
-        <location filename="../GUI/MDI/MdiArea.cpp" line="+300"/>
+        <location filename="../GUI/MDI/MdiArea.cpp" line="+304"/>
         <source>Waiting the cache loading process is finished before loading the download queue</source>
         <translation>Esperando que el proceso de carga de cache finalice antes de cargar la cola de descarga</translation>
     </message>
     <message>
         <location line="+174"/>
         <source>Leave room</source>
-        <translation type="unfinished"></translation>
+        <translation>Irse de la habitación</translation>
     </message>
 </context>
 <context>
     <name>GUI::PeerListModel</name>
     <message>
-        <location filename="../GUI/Peers/PeerListModel.cpp" line="+238"/>
+        <location filename="../GUI/Peers/PeerListModel.cpp" line="+240"/>
         <source>His protocol version is more recent and incompatible with ours. Upgrade you version!</source>
         <translation>Su versión de protocolo es mas reciente e incompatible con la nuestra. Actualice su versión!</translation>
     </message>
@@ -649,18 +644,18 @@
     <message>
         <location line="+4"/>
         <source>Sort by number of peers</source>
-        <translation type="unfinished"></translation>
+        <translation>Ordenar por cantidad de peers</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Sort alphabetically</source>
-        <translation type="unfinished">Ordenar alfabeticamente</translation>
+        <translation>Ordenar alfabeticamente</translation>
     </message>
 </context>
 <context>
     <name>GUI::SearchMenu</name>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="+158"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="+176"/>
         <source>Browse</source>
         <translation>Navegar</translation>
     </message>
@@ -668,7 +663,7 @@
 <context>
     <name>GUI::SearchModel</name>
     <message>
-        <location filename="../GUI/Search/SearchModel.cpp" line="+132"/>
+        <location filename="../GUI/Search/SearchModel.cpp" line="+133"/>
         <source>Name</source>
         <translation>Nombre</translation>
     </message>
@@ -715,7 +710,7 @@
 <context>
     <name>GUI::SettingsWidget</name>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="+195"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="+196"/>
         <source>Default</source>
         <translation>Por defecto</translation>
     </message>
@@ -824,7 +819,7 @@
     <message>
         <location filename="../GUI/MDI/TabButtons.cpp" line="+131"/>
         <source>Close tab</source>
-        <translation type="unfinished"></translation>
+        <translation>Cerrar pestaña</translation>
     </message>
 </context>
 <context>
@@ -873,7 +868,7 @@
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="-60"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="-57"/>
         <source>D-LAN already launched</source>
         <translation>D-LAN ya se ha ejecutado</translation>
     </message>
@@ -987,26 +982,33 @@
     <name>RoomsDock</name>
     <message>
         <location filename="../GUI/Chat/RoomsDock.ui"/>
-        <location filename="../GUI/.tmp/debug/ui_RoomsDock.h" line="+83"/>
+        <location filename="../GUI/.tmp/debug/ui_RoomsDock.h" line="+84"/>
         <location filename="../GUI/.tmp/release/ui_RoomsDock.h" line="+84"/>
         <source>Chat rooms</source>
         <translation>Habitaciones de Chat</translation>
     </message>
     <message>
         <location/>
-        <location filename="../GUI/.tmp/debug/ui_RoomsDock.h" line="+2"/>
-        <location filename="../GUI/.tmp/release/ui_RoomsDock.h" line="+2"/>
+        <location filename="../GUI/.tmp/debug/ui_RoomsDock.h" line="+3"/>
+        <location filename="../GUI/.tmp/release/ui_RoomsDock.h" line="+3"/>
         <source>Join the room</source>
         <translation>unirse a la habitación</translation>
+    </message>
+    <message>
+        <location/>
+        <location filename="../GUI/.tmp/debug/ui_RoomsDock.h" line="-2"/>
+        <location filename="../GUI/.tmp/release/ui_RoomsDock.h" line="-2"/>
+        <source>Room name</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>SearchDock</name>
     <message>
         <location filename="../GUI/Search/SearchDock.ui"/>
-        <location filename="../GUI/.tmp/debug/ui_SearchDock.h" line="+205"/>
+        <location filename="../GUI/.tmp/debug/ui_SearchDock.h" line="+215"/>
         <location line="+1"/>
-        <location filename="../GUI/.tmp/release/ui_SearchDock.h" line="+205"/>
+        <location filename="../GUI/.tmp/release/ui_SearchDock.h" line="+215"/>
         <location line="+1"/>
         <source>Search</source>
         <translation>Buscar</translation>
@@ -1052,14 +1054,14 @@
         <location filename="../GUI/.tmp/debug/ui_SearchDock.h" line="+1"/>
         <location filename="../GUI/.tmp/release/ui_SearchDock.h" line="+1"/>
         <source>Min size</source>
-        <translation type="unfinished"></translation>
+        <translation>Tamaño mínimo</translation>
     </message>
     <message>
         <location/>
         <location filename="../GUI/.tmp/debug/ui_SearchDock.h" line="+1"/>
         <location filename="../GUI/.tmp/release/ui_SearchDock.h" line="+1"/>
         <source>Max size</source>
-        <translation type="unfinished"></translation>
+        <translation>Tamaño máximo</translation>
     </message>
 </context>
 <context>
