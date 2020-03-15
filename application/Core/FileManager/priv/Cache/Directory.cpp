@@ -251,7 +251,7 @@ QString Directory::getPath() const
 }
 
 /**
-  * We use "this->name" instead of "this->getName()" to improve a bit the performance during searching (See 'QSort(..)' in 'FileManager::find(..)').
+  * We use "this->name" instead of "this->getName()" to improve a bit the performance during searching (See 'sort(..)' in 'FileManager::find(..)').
   */
 QString Directory::getFullPath() const
 {

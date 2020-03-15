@@ -19,6 +19,8 @@
 #include <Downloads/DownloadsTreeModel.h>
 using namespace GUI;
 
+#include <algorithm>
+
 #include <QtGlobal>
 
 #include <Common/ProtoHelper.h>
@@ -240,7 +242,7 @@ bool DownloadsTreeModel::dropMimeData(const QMimeData* data, Qt::DropAction acti
    if (rows.isEmpty())
       return false;
 
-   qSort(rows); // TODO: is 'getDraggedRows(..)' returns a sorted list?
+   std::sort(rows.begin(), rows.end()); // TODO: is 'getDraggedRows(..)' returns a sorted list?
 
    const int first = rows.first();
    const int last = rows.last();

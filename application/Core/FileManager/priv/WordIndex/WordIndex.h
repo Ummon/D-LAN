@@ -20,6 +20,7 @@
 #define FILEMANAGER_WORDINDEX_H
 
 #include <functional>
+#include <algorithm>
 
 #include <QList>
 #include <QString>
@@ -227,7 +228,7 @@ QList<FM::NodeResult<T>> FM::WordIndex<T>::search(const QStringList& words, int 
          level += 1;
       }
 
-      qSort(nodesToSort); // Sort by level
+      std::sort(nodesToSort.begin(), nodesToSort.end()); // Sort by level
 
       finalResult << nodesToSort;
 
