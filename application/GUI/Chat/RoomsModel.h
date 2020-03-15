@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef GUI_ROOMS_MODEL_H
-#define GUI_ROOMS_MODEL_H
+#pragma once
 
 #include <QAbstractTableModel>
 #include <QSet>
@@ -69,5 +68,3 @@ namespace GUI
       Protos::GUI::Settings::RoomSortType currentSortType;
    };
 }
-
-#endif

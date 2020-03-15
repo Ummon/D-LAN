@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef RCC_CORECONNECTION_H
-#define RCC_CORECONNECTION_H
+#pragma once
 
 #include <QObject>
 #include <QTcpSocket>
@@ -136,5 +135,3 @@ namespace RCC
       const int SOCKET_TIMEOUT;
    };
 }
-
-#endif

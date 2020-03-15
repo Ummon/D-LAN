@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef DOWNLOADMANAGER_LINKEDPEERS_H
-#define DOWNLOADMANAGER_LINKEDPEERS_H
+#pragma once
 
 #include <QMap>
 #include <QList>
@@ -57,5 +56,3 @@ namespace DM
       }
    };
 }
-
-#endif

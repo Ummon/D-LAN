@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef FILEMANAGER_FILEMANAGER_H
-#define FILEMANAGER_FILEMANAGER_H
+#pragma once
 
 #include <limits>
 
@@ -125,4 +124,3 @@ namespace FM
       bool cacheChanged;
    };
 }
-#endif

@@ -1,5 +1,4 @@
-#ifndef FILEMANAGER_EXTENSION_INDEX_H
-#define FILEMANAGER_EXTENSION_INDEX_H
+#pragma once
 
 #include <functional>
 #include <limits>
@@ -96,7 +95,7 @@ QList<T> FM::ExtensionIndex<T>::search(const QList<QString>& extensions, int lim
       {
          // Special case to speedup the process.
          if (extensions.count() == 1 && !predicat && setIterator->count() <= limit)
-            return setIterator->toList();
+            return setIterator->values();
 
          for (auto j = setIterator->constBegin(); j != setIterator->constEnd(); ++j)
          {
@@ -112,5 +111,3 @@ QList<T> FM::ExtensionIndex<T>::search(const QList<QString>& extensions, int lim
    end:
    return result;
 }
-
-#endif

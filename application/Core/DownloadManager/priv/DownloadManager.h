@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef DOWNLOADMANAGER_DOWNLOADMANAGER_H
-#define DOWNLOADMANAGER_DOWNLOADMANAGER_H
+#pragma once
 
 #include <QList>
 #include <QSet>
@@ -130,4 +129,3 @@ namespace DM
       bool queueLoaded;
    };
 }
-#endif

@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef DOWNLOADMANAGER_OCCUPIEDPEERS_H
-#define DOWNLOADMANAGER_OCCUPIEDPEERS_H
+#pragma once
 
 #include <QObject>
 #include <QSet>
@@ -53,5 +52,3 @@ namespace DM
       mutable QMutex mutex;
    };
 }
-
-#endif

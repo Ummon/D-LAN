@@ -15,9 +15,8 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
-#ifndef COMMON_SHAREDDIR_H
-#define COMMON_SHAREDDIR_H
+
+#pragma once
 
 #include <QString>
 #include <QMetaType>
@@ -46,5 +45,3 @@ namespace Common
 }
 
 Q_DECLARE_METATYPE(Common::SharedDir)
-
-#endif

@@ -26,8 +26,7 @@
 #include <QMap>
 #include <QDir>
 #include <QElapsedTimer>
-
-#include <Libs/MersenneTwister.h>
+#include <QRandomGenerator64>
 
 #include <Protos/common.pb.h>
 #include <Protos/core_settings.pb.h>
@@ -212,13 +211,13 @@ void Tests::sortedArray()
    // Repeate the tests 1000 times with a random insert order and a random remove order each time.
    for (int seed = 1; seed <= 1000; seed++)
    {
-      MTRand mtRand(seed);
+      QRandomGenerator64 rng(seed);
 
       SortedArray<char, 5> array;
 
       // Insert the elements in a pseudo random order.
       while (array.size() != orderedList.size())
-         array.insert(orderedList[mtRand.randInt(orderedList.size()-1)]);
+         array.insert(orderedList[rng.bounded(orderedList.size())]);
 
       // Test if all values are known.
       for (int i = 0; i < array.size(); i++)
@@ -248,7 +247,7 @@ void Tests::sortedArray()
       // Remove the elements in a pseudo random order.
       while (array.size() != 0)
       {
-         const char letter = orderedList[mtRand.randInt(orderedList.size()-1)];
+         const char letter = orderedList[rng.bounded(orderedList.size())];
          array.remove(letter);
          QVERIFY(!array.contains(letter));
       }

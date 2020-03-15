@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef GUI_TASKBARTYPES_H
-#define GUI_TASKBARTYPES_H
+#pragma once
 
 namespace GUI
 {
@@ -30,5 +29,3 @@ namespace GUI
       BUTTON_STATUS_NOPROGRESS
    };
 }
-
-#endif

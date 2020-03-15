@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef RCC_BROWSERESULT_H
-#define RCC_BROWSERESULT_H
+#pragma once
 
 #include <QtCore>
 
@@ -54,5 +53,3 @@ namespace RCC
       quint64 tag;
    };
 }
-
-#endif

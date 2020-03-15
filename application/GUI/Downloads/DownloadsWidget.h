@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef GUI_DOWNLOADSWINDOW_H
-#define GUI_DOWNLOADSWINDOW_H
+#pragma once
 
 #include <QWidget>
 #include <QPoint>
@@ -109,5 +108,3 @@ namespace GUI
       Common::SimpleTree<quint32> treeViewState;
    };
 }
-
-#endif

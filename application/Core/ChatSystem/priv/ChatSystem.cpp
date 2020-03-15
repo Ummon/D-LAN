@@ -137,7 +137,7 @@ void ChatSystem::joinRoom(const QString& roomName)
       room.joined = true;
       this->saveRoomListToSettings();
       this->loadChatMessages(roomName);
-      this->retrieveLastChatMessagesFromPeers(room.peers.toList(), roomName);
+      this->retrieveLastChatMessagesFromPeers(room.peers.values(), roomName);
    }
 }
 
@@ -297,7 +297,7 @@ void ChatSystem::retrieveLastChatMessages()
    {
       auto room = i.next();
       if (room.value().joined)
-         this->retrieveLastChatMessagesFromPeers(room.value().peers.toList(), room.key());
+         this->retrieveLastChatMessagesFromPeers(room.value().peers.values(), room.key());
    }
 }
 

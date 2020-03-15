@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef FILEMANAGER_IGETHASHESRESULT_H
-#define FILEMANAGER_IGETHASHESRESULT_H
+#pragma once
 
 #include <QObject>
 
@@ -45,4 +44,3 @@ namespace FM
       void nextHash(Protos::Core::HashResult hash);
    };
 }
-#endif

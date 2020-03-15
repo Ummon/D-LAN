@@ -15,9 +15,8 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
-#ifndef FILEMANAGER_IFILEMANAGER_H
-#define FILEMANAGER_IFILEMANAGER_H
+
+#pragma once
 
 #include <QList>
 #include <QStringList>
@@ -190,4 +189,3 @@ namespace FM
       void fileCacheLoaded();
    };
 }
-#endif

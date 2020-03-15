@@ -16,9 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef NETWORKLISTENER_SEARCH_H
-#define NETWORKLISTENER_SEARCH_H
-
+#pragma once
 
 #include <QSharedPointer>
 #include <QElapsedTimer>
@@ -57,4 +55,3 @@ namespace NL
       QElapsedTimer timer;
    };
 }
-#endif

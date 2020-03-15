@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef COMMON_BLOOMFILTER_H
-#define COMMON_BLOOMFILTER_H
+#pragma once
 
 #include <qmath.h>
 
@@ -111,5 +110,3 @@ inline quint32 Common::BloomFilter::position(const Hash& hash, int i) const
    const quint32* p = reinterpret_cast<const quint32*>(hashData + (pPos >> 3));   
    return *p >> (32 - this->w - pPos % 8) & this->wMask;
 }
-
-#endif

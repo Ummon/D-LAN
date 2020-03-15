@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef CORE_CORE_H
-#define CORE_CORE_H
+#pragma once
 
 #include <QObject>
 #include <QLocale>
@@ -112,5 +111,3 @@ void CoreSpace::Core::checkSetting(const QString& name, T min, T max)
       SETTINGS.set(name, newValue);
    }
 }
-
-#endif

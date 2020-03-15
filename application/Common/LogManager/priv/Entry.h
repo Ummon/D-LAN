@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef LOGMANAGER_ENTRY_H
-#define LOGMANAGER_ENTRY_H
+#pragma once
 
 #include <QString>
 #include <QDateTime>
@@ -62,4 +61,3 @@ namespace LM
       QString message;
    };
 }
-#endif

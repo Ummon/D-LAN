@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef PEERMANAGER_ISOCKET_H
-#define PEERMANAGER_ISOCKET_H
+#pragma once
 
 #include <QtGlobal>
 #include <QByteArray>
@@ -61,5 +60,3 @@ namespace PM
       virtual void finished(bool closeTheSocket = false) = 0;
    };
 }
-
-#endif

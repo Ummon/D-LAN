@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef PEERMANAGER_BUILDER__H
-#define PEERMANAGER_BUILDER__H
+#pragma once
 
 #include <QTextStream>
 #include <QSharedPointer>
@@ -34,4 +33,3 @@ namespace PM
          static QSharedPointer<IPeerManager> newPeerManager(QSharedPointer<FM::IFileManager> fileManager);
    };
 }
-#endif

@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef DOWNLOADMANAGER_CONSTANTS_H
-#define DOWNLOADMANAGER_CONSTANTS_H
+#pragma once
 
 #include <QString>
 
@@ -31,5 +30,3 @@ namespace DM
    // 3 -> 4 : Replace Entry::complete by a status.
    const int FILE_QUEUE_VERSION = 4;
 }
-
-#endif

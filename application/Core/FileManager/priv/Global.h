@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef FILEMANAGER_GLOBAL_H
-#define FILEMANAGER_GLOBAL_H
+#pragma once
 
 #include <QString>
 
@@ -31,5 +30,3 @@ namespace FM
       static QString removeUnfinishedSuffix(const QString& filename);
    };
 }
-
-#endif

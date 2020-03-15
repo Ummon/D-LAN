@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef GUI_SEARCHDOCK_H
-#define GUI_SEARCHDOCK_H
+#pragma once
 
 #include <QString>
 #include <QDockWidget>
@@ -76,5 +75,3 @@ namespace GUI
       QSharedPointer<RCC::ICoreConnection> coreConnection;
    };
 }
-
-#endif

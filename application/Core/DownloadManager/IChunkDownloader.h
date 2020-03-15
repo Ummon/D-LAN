@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef DOWNLOADMANAGER_ICHUNKDOWNLOADER_H
-#define DOWNLOADMANAGER_ICHUNKDOWNLOADER_H
+#pragma once
 
 #include <QObject>
 
@@ -43,4 +42,3 @@ namespace DM
       virtual void rmPeer(PM::IPeer* peer) = 0;
    };
 }
-#endif

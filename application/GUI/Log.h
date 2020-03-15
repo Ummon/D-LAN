@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef GUI_LOG_H
-#define GUI_LOG_H
+#pragma once
 
 #include <Common/LogManager/Builder.h>
 
@@ -25,5 +24,3 @@ namespace GUI
 {
    #include <Common/LogManager/LogMacros.h>
 }
-
-#endif

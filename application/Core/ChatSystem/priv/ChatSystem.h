@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef CHATSYSTEM_CHATMANAGER_H
-#define CHATSYSTEM_CHATMANAGER_H
+#pragma once
 
 #include <limits>
 
@@ -95,4 +94,3 @@ namespace CS
       QTimer retrieveLastChatMessageTimer;
    };
 }
-#endif

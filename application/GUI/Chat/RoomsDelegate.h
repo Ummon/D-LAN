@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef GUI_ROOMSDELEGATE_H
-#define GUI_ROOMSDELEGATE_H
+#pragma once
 
 #include <QStyledItemDelegate>
 
@@ -31,5 +30,3 @@ namespace GUI
       void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const;
    };
 }
-
-#endif

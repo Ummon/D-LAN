@@ -15,12 +15,9 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
-#ifndef UPLOADMANAGER_CONSTANTS_H
-#define UPLOADMANAGER_CONSTANTS_H
+
+#pragma once
 
 namespace UM
 {
 }
-
-#endif

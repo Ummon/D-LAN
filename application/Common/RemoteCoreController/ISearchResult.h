@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef RCC_ISEARCHRESULT_H
-#define RCC_ISEARCHRESULT_H
+#pragma once
 
 #include <Protos/common.pb.h>
 
@@ -39,5 +38,3 @@ namespace RCC
       void result(const Protos::Common::FindResult&);
    };
 }
-
-#endif

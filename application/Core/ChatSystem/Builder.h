@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef CHATSYSTEM_BUILDER_H
-#define CHATSYSTEM_BUILDER_H
+#pragma once
 
 #include <QSharedPointer>
 
@@ -34,4 +33,3 @@ namespace CS
       static QSharedPointer<IChatSystem> newChatSystem(QSharedPointer<PM::IPeerManager> peerManager, QSharedPointer<NL::INetworkListener> networkListener);
    };
 }
-#endif

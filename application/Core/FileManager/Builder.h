@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef FILEMANAGER_BUILDER_H
-#define FILEMANAGER_BUILDER_H
+#pragma once
 
 #include <QSharedPointer>
 
@@ -31,4 +30,3 @@ namespace FM
       static QSharedPointer<IFileManager> newFileManager();
    };
 }
-#endif

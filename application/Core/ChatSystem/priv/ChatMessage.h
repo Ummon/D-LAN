@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef CHATSYSTEM_CHATMESSAGE_H
-#define CHATSYSTEM_CHATMESSAGE_H
+#pragma once
 
 #include <QString>
 #include <QDateTime>
@@ -49,5 +48,3 @@ namespace CS
       const QString room; // Empty if the message belongs to the main chat.
    };
 }
-
-#endif

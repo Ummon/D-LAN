@@ -15,9 +15,8 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
-#ifndef UPLOADMANAGER_BUILDER_H
-#define UPLOADMANAGER_BUILDER_H
+
+#pragma once
 
 #include <QSharedPointer>
 
@@ -34,4 +33,3 @@ namespace UM
       static QSharedPointer<IUploadManager> newUploadManager(QSharedPointer<PM::IPeerManager> peerManager);
    };
 }
-#endif

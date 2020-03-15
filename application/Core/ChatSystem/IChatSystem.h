@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef ICHATSYSTEM_ICHAT_H
-#define ICHATSYSTEM_ICHAT_H
+#pragma once
 
 #include <limits>
 
@@ -78,4 +77,3 @@ namespace CS
       void newMessages(const Protos::Common::ChatMessages&);
    };
 }
-#endif

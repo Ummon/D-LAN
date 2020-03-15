@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef DOWNLOADMANAGER_FILEDOWNLOAD_H
-#define DOWNLOADMANAGER_FILEDOWNLOAD_H
+#pragma once
 
 #include <QList>
 #include <QMap>
@@ -129,5 +128,3 @@ inline QTime DM::FileDownload::getLastTimeGetAllUnfinishedChunks() const
 {
    return this->lastTimeGetAllUnfinishedChunks;
 }
-
-#endif

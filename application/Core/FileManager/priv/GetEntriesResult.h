@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef FILEMANAGER_GET_ENTRIES_RESULT_H
-#define FILEMANAGER_GET_ENTRIES_RESULT_H
+#pragma once
 
 #include <QObject>
 
@@ -48,5 +47,3 @@ namespace FM
       const int maxNbHashesPerEntry;
    };
 }
-
-#endif

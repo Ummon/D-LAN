@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef PEERMANAGER_CONNECTIONPOOL_H
-#define PEERMANAGER_CONNECTIONPOOL_H
+#pragma once
 
 #include <QtNetwork>
 #include <QList>
@@ -72,5 +71,3 @@ namespace PM
       const Common::Hash peerID;
    };
 }
-
-#endif

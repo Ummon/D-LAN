@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef COMMON_TRANSFERRATECALCULATOR_H
-#define COMMON_TRANSFERRATECALCULATOR_H
+#pragma once
 
 #include <QMutex>
 #include <QElapsedTimer>
@@ -54,5 +53,3 @@ namespace Common
       quint32 total; // Sum of all values.
    };
 }
-
-#endif

@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef FILEMANAGER_DIRWATCHER_H
-#define FILEMANAGER_DIRWATCHER_H
+#pragma once
 
 #include <QList>
 #include <QString>
@@ -142,5 +141,3 @@ namespace FM
       const QString path2; // Only used when type is 'MOVE'.
    };
 }
-
-#endif

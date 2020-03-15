@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef NETWORKLISTENER_UDPLISTENER_H
-#define NETWORKLISTENER_UDPLISTENER_H
+#pragma once
 
 #include <QObject>
 #include <QUdpSocket>
@@ -118,4 +117,3 @@ namespace NL
       QSharedPointer<LM::ILogger> loggerIMAlive; // A logger especially for the IMAlive message.
    };
 }
-#endif

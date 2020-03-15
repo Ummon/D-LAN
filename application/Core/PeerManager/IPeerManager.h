@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef PEERMANAGER_IPEERMANAGER_H
-#define PEERMANAGER_IPEERMANAGER_H
+#pragma once
 
 #include <QString>
 #include <QtNetwork>
@@ -117,4 +116,3 @@ namespace PM
       void peerBecomesAvailable(PM::IPeer* peer);
    };
 }
-#endif

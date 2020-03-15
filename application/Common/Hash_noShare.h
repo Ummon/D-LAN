@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
 
-#ifndef COMMON_HASH_NO_SHARE_H
-#define COMMON_HASH_NO_SHARE_H
+#pragma once
 
 #include <string>
 
@@ -65,7 +64,7 @@ namespace Common
       bool isNull() const noexcept;
 
       static Hash rand();
-      //static Hash rand(quint32 seed);
+      static Hash rand(quint32 seed);
       static Hash fromStr(const QString& str);
 
    private:
@@ -145,5 +144,3 @@ namespace Common
       QCryptographicHash cryptographicHash;
    };
 }
-
-#endif

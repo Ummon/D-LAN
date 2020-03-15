@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef COMMON_PROTOHELPER_H
-#define COMMON_PROTOHELPER_H
+#pragma once
 
 #include <QString>
 #include <QLocale>
@@ -109,5 +108,3 @@ QString Common::ProtoHelper::getRepeatedStr(const T& mess, const std::string& (T
    const std::string& str = (mess.*getter)(i);
    return QString::fromUtf8(str.data(), str.length());
 }
-
-#endif

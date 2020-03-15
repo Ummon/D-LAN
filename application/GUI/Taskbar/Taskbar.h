@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef GUI_TASKBAR_H
-#define GUI_TASKBAR_H
+#pragma once
 
 #include <QObject>
 #include <QWidget>
@@ -65,5 +64,3 @@ namespace GUI
       QSharedPointer<ITaskbarImpl> impl;
    };
 }
-
-#endif

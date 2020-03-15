@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef FILEMANAGER_ICHUNK_H
-#define FILEMANAGER_ICHUNK_H
+#pragma once
 
 #include <QSharedPointer>
 
@@ -108,4 +107,3 @@ namespace FM
       virtual bool isComplete() const = 0;
    };
 }
-#endif

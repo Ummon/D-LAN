@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef COMMON_DIALOGABOUT_H
-#define COMMON_DIALOGABOUT_H
+#pragma once
 
 #include <QDialog>
 #include <QPaintEvent>
@@ -43,5 +42,3 @@ namespace GUI
       Ui::DialogAbout *ui;
    };
 }
-
-#endif

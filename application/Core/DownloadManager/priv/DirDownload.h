@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef DOWNLOADMANAGER_DIRDOWNLOAD_H
-#define DOWNLOADMANAGER_DIRDOWNLOAD_H
+#pragma once
 
 #include <QSharedPointer>
 
@@ -71,4 +70,3 @@ namespace DM
       QSharedPointer<PM::IGetEntriesResult> getEntriesResult;
    };
 }
-#endif

@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef FILEMANAGER_DATAREADER_H
-#define FILEMANAGER_DATAREADER_H
+#pragma once
 
 #include <Common/Uncopyable.h>
 
@@ -41,5 +40,3 @@ namespace FM
       Chunk& chunk;
    };
 }
-
-#endif

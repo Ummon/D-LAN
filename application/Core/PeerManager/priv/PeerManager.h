@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef PEERMANAGER_PEERMANAGER_H
-#define PEERMANAGER_PEERMANAGER_H
+#pragma once
 
 #include <QObject>
 #include <QMap>
@@ -104,4 +103,3 @@ namespace PM
       QList<PendingSocket> pendingSockets;
    };
 }
-#endif

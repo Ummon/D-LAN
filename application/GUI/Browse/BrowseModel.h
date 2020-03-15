@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef GUI_BROWSEMODEL_H
-#define GUI_BROWSEMODEL_H
+#pragma once
 
 #include <QAbstractItemModel>
 #include <QVariant>
@@ -111,5 +110,3 @@ namespace GUI
    bool operator==(const Protos::Common::Entry& e1, const Protos::Common::Entry& e2);
    bool operator!=(const Protos::Common::Entry& e1, const Protos::Common::Entry& e2);
 }
-
-#endif

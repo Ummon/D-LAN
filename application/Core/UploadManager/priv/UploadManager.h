@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef UPLOADMANAGER_UPLOADMANAGER_H
-#define UPLOADMANAGER_UPLOADMANAGER_H
+#pragma once
 
 #include <QSharedPointer>
 #include <QList>
@@ -64,4 +63,3 @@ namespace UM
       Common::ThreadPool threadPool;
    };
 }
-#endif

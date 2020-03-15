@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef GUI_STATUSBAR_H
-#define GUI_STATUSBAR_H
+#pragma once
 
 #include <QWidget>
 #include <QEvent>
@@ -68,5 +67,3 @@ namespace GUI
       QSharedPointer<RCC::ICoreConnection> coreConnection;
    };
 }
-
-#endif

@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef GUI_FLATDOWNLOADSMODEL_H
-#define GUI_FLATDOWNLOADSMODEL_H
+#pragma once
 
 #include <QDragEnterEvent>
 
@@ -69,5 +68,3 @@ namespace GUI
       QList<Protos::GUI::State::Download> downloads;
    };
 }
-
-#endif

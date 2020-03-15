@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef COMMON_SETTINGS_H
-#define COMMON_SETTINGS_H
+#pragma once
 
 #include <QString>
 #include <QMutex>
@@ -147,5 +146,3 @@ QList<T> Common::Settings::getRepeated(const QString& name) const
    this->getRepeated(fieldDescriptor, values);
    return values;
 }
-
-#endif

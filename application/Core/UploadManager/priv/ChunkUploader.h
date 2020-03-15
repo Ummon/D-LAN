@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef UPLOADMANAGER_UPLOAD_H
-#define UPLOADMANAGER_UPLOAD_H
+#pragma once
 
 #include <QMutex>
 #include <QThread>
@@ -68,5 +67,3 @@ namespace UM
       bool toStop;
    };
 }
-
-#endif

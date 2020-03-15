@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef GUI_PEERSDOCK_H
-#define GUI_PEERSDOCK_H
+#pragma once
 
 #include <QDockWidget>
 #include <QSharedPointer>
@@ -75,5 +74,3 @@ namespace GUI
       PeerListDelegate peerListDelegate;
    };
 }
-
-#endif

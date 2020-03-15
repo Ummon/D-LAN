@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef RCC_INTERNAL_CORECONNECTION_H
-#define RCC_INTERNAL_CORECONNECTION_H
+#pragma once
 
 #include <QObject>
 #include <QTcpSocket>
@@ -152,5 +151,3 @@ namespace RCC
       quint64 salt;
    };
 }
-
-#endif

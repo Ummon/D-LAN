@@ -140,16 +140,14 @@ Hash Hash::rand()
    return hash;
 }
 
-/*
 Hash Hash::rand(quint32 seed)
 {
-   MTRand mtrand(seed);
+   QRandomGenerator64 rng(seed);
    Hash hash;
    for (int i = 0; i < HASH_SIZE; i++)
-      hash.data[i] = static_cast<char>(mtrand.randInt(255));
+      hash.data[i] = static_cast<char>(rng.bounded(256));
    return hash;
 }
-*/
 
 Hash Hash::fromStr(const QString& str)
 {

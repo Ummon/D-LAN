@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef FILEMANAGER_NODE_H
-#define FILEMANAGER_NODE_H
+#pragma once
 
 #include <functional>
 
@@ -384,5 +383,3 @@ void FM::Node<T>::remove(int i)
       nodeToDelete->remove(0);
    }
 }
-
-#endif

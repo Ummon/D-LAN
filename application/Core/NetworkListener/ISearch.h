@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef NETWORKLISTENER_ISEARCH_H
-#define NETWORKLISTENER_ISEARCH_H
+#pragma once
 
 #include <QObject>
 #include <QString>
@@ -47,4 +46,3 @@ namespace NL
       void found(const Protos::Common::FindResult& result);
    };
 }
-#endif

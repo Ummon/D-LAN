@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef GUI_MDIAREA_H
-#define GUI_MDIAREA_H
+#pragma once
 
 #include <QMdiArea>
 #include <QSharedPointer>
@@ -135,5 +134,3 @@ namespace GUI
       DirListModel sharedDirsModel;
    };
 }
-
-#endif

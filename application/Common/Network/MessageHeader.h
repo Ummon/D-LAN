@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef COMMON_MESSAGE_HEADER_H
-#define COMMON_MESSAGE_HEADER_H
+#pragma once
 
 #include <QIODevice>
 #include <QDataStream>
@@ -131,5 +130,3 @@ namespace Common
       static const int HEADER_SIZE;
    };
 }
-
-#endif

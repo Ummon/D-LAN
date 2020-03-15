@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef RCC_ICORECONNECTION_H
-#define RCC_ICORECONNECTION_H
+#pragma once
 
 #include <QObject>
 #include <QLocale>
@@ -257,5 +256,3 @@ namespace RCC
       void newLogMessages(QList<QSharedPointer<LM::IEntry>>);
    };
 }
-
-#endif

@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef GUI_CONSTANTS_H
-#define GUI_CONSTANTS_H
+#pragma once
 
 #include <QString>
 
@@ -30,5 +29,3 @@ namespace GUI
       static const QString DEFAULT_EMOTICON_THEME;
    };
 }
-
-#endif

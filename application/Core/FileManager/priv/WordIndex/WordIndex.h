@@ -15,9 +15,8 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
-#ifndef FILEMANAGER_WORDINDEX_H
-#define FILEMANAGER_WORDINDEX_H
+
+#pragma once
 
 #include <functional>
 #include <algorithm>
@@ -213,7 +212,7 @@ QList<FM::NodeResult<T>> FM::WordIndex<T>::search(const QStringList& words, int 
             const_cast<NodeResult<T>&>(k.next()).level += level;
 
          // Sort by level.
-         nodesToSort << currentLevelSet.toList();
+         nodesToSort << currentLevelSet.values();
 
          // Define positions of each intersect term.
          for (int k = NB_INTERSECTS - 1; k >= 0; k--)
@@ -256,5 +255,3 @@ QList<T> FM::WordIndex<T>::resultToList(const QList<NodeResult<T>>& result)
       l << i->value;
    return l;
 }
-
-#endif

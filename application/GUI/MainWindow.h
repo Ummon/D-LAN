@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef GUI_MAINWINDOW_H
-#define GUI_MAINWINDOW_H
+#pragma once
 
 #include <QMainWindow>
 #include <QLabel>
@@ -115,5 +114,3 @@ namespace GUI
       Taskbar taskbar;
    };
 }
-
-#endif

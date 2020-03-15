@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
 
-#ifndef COMMON_HASH_SHARE_H
-#define COMMON_HASH_SHARE_H
+#pragma once
 
 #include <string>
 
@@ -193,5 +192,3 @@ inline void Common::Hash::newData()
    this->data = new SharedData;
    this->data->nbRef = 1;
 }
-
-#endif

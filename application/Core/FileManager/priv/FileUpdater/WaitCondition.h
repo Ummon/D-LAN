@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef FILEMANAGER_WAITCONDITION_H
-#define FILEMANAGER_WAITCONDITION_H
+#pragma once
 
 namespace FM
 {
@@ -53,4 +52,3 @@ namespace FM
       virtual bool wait(int timeout = -1) = 0;
    };
 }
-#endif

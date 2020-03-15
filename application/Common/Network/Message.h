@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef COMMON_MESSAGE_H
-#define COMMON_MESSAGE_H
+#pragma once
 
 #include <google/protobuf/message.h>
 
@@ -165,5 +164,3 @@ Common::Message Common::Message::readMessageBody(const Common::MessageHeader& he
    }
    return Message(header, message);
 }
-
-#endif

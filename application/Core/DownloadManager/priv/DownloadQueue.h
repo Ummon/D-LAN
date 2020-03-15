@@ -15,9 +15,8 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
-#ifndef DOWNLOADMANAGER_DOWNLOADQUEUE_H
-#define DOWNLOADMANAGER_DOWNLOADQUEUE_H
+
+#pragma once
 
 #include <typeinfo>
 
@@ -152,5 +151,3 @@ DM::Download* DM::DownloadQueue::ScanningIterator<P>::next()
    }
    return 0;
 }
-
-#endif

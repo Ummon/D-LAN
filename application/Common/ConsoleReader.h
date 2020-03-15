@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef COMMON_CONSOLEREADER_H
-#define COMMON_CONSOLEREADER_H
+#pragma once
 
 #include <QObject>
 #include <QTextStream>
@@ -88,5 +87,4 @@ namespace Common
    };
 }
 
-#endif
 #endif

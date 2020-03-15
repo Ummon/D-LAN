@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef DOWNLOADMANAGER_BUILDER_H
-#define DOWNLOADMANAGER_BUILDER_H
+#pragma once
 
 #include <QSharedPointer>
 
@@ -34,4 +33,3 @@ namespace DM
       static QSharedPointer<IDownloadManager> newDownloadManager(QSharedPointer<FM::IFileManager> fileManager, QSharedPointer<PM::IPeerManager> peerManager);
    };
 }
-#endif
