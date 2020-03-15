@@ -693,7 +693,7 @@ typename Common::SortedArray<T, M>::Position Common::SortedArray<T, M>::position
    if (!exists)
    {
       if (node->children[position])
-         return iteratorOf(node->children[position], value, lesserThan);
+         return node->iteratorOf(node->children[position], value, lesserThan);
       throw NotFoundException();
    }
 

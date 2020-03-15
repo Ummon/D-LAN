@@ -44,7 +44,6 @@ HEADERS += IDownloadManager.h \
     priv/OccupiedPeers.h \
     priv/Log.h \
     ../../Protos/queue.pb.h \
-    ../../Libs/MersenneTwister.h \
     priv/DownloadPredicate.h \
     priv/DownloadQueue.h \
     Utils.h \

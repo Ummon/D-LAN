@@ -23,8 +23,6 @@
 #include <QSharedPointer>
 #include <QElapsedTimer>
 
-#include <Libs/MersenneTwister.h>
-
 #include <Protos/common.pb.h>
 #include <Protos/core_protocol.pb.h>
 
@@ -55,7 +53,6 @@ namespace NL
       int nbResult;
 
       quint64 tag;
-      MTRand mtrand;
 
       QElapsedTimer timer;
    };

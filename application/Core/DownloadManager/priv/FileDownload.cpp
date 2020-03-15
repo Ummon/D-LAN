@@ -20,6 +20,7 @@
 using namespace DM;
 
 #include <QTimer>
+#include <QRandomGenerator64>
 
 #include <limits>
 
@@ -31,8 +32,6 @@ using namespace DM;
 
 #include <priv/Log.h>
 #include <priv/Constants.h>
-
-MTRand FileDownload::mtrand;
 
 FileDownload::FileDownload(
    QSharedPointer<FM::IFileManager> fileManager,
@@ -250,7 +249,10 @@ QSharedPointer<ChunkDownloader> FileDownload::getAChunkToDownload()
       return QSharedPointer<ChunkDownloader>();
 
    // If there is many chunk with the same number of peer we choose randomly one of them.
-   QSharedPointer<ChunkDownloader> chunkDownloader = chunksReadyToDownload.size() == 1 ? chunksReadyToDownload.first() : chunksReadyToDownload[mtrand.randInt(chunksReadyToDownload.size() - 1)];
+   QSharedPointer<ChunkDownloader> chunkDownloader =
+         chunksReadyToDownload.size() == 1
+            ? chunksReadyToDownload.first()
+            : chunksReadyToDownload[QRandomGenerator64::global()->bounded(chunksReadyToDownload.size())];
 
    if (!this->localEntry.exists())
    {

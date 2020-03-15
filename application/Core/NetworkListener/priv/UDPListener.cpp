@@ -30,6 +30,8 @@ using namespace NL;
    #include <Winsock.h>
 #endif
 
+#include <QRandomGenerator64>
+
 #include <google/protobuf/message.h>
 
 #include <Common/Settings.h>
@@ -157,9 +159,7 @@ void UDPListener::sendIMAliveMessage()
    IMAliveMessage.set_download_rate(this->downloadManager->getDownloadRate());
    IMAliveMessage.set_upload_rate(this->uploadManager->getUploadRate());
 
-   this->currentIMAliveTag = this->mtrand.randInt();
-   this->currentIMAliveTag <<= 32;
-   this->currentIMAliveTag |= this->mtrand.randInt();
+   this->currentIMAliveTag = QRandomGenerator64::global()->generate64();
    IMAliveMessage.set_tag(this->currentIMAliveTag);
 
    // We fill the rest of the message with a maximum of needed hashes.

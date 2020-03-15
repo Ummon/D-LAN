@@ -5,21 +5,29 @@
     <name>AskNewPasswordDialog</name>
     <message>
         <location filename="../GUI/Settings/AskNewPasswordDialog.ui"/>
+        <location filename="../GUI/.tmp/debug/ui_AskNewPasswordDialog.h" line="+97"/>
+        <location filename="../GUI/.tmp/release/ui_AskNewPasswordDialog.h" line="+97"/>
         <source>Change password</source>
         <translation>Сменить пароль</translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_AskNewPasswordDialog.h" line="+1"/>
+        <location filename="../GUI/.tmp/release/ui_AskNewPasswordDialog.h" line="+1"/>
         <source>Old password</source>
         <translation>Старый пароль</translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_AskNewPasswordDialog.h" line="+1"/>
+        <location filename="../GUI/.tmp/release/ui_AskNewPasswordDialog.h" line="+1"/>
         <source>New password</source>
         <translation>Новый пароль</translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_AskNewPasswordDialog.h" line="+1"/>
+        <location filename="../GUI/.tmp/release/ui_AskNewPasswordDialog.h" line="+1"/>
         <source>Repeat new password</source>
         <translation>Повторите новый пароль</translation>
     </message>
@@ -28,6 +36,8 @@
     <name>AutoComplete</name>
     <message>
         <location filename="../GUI/AutoComplete/AutoComplete.ui"/>
+        <location filename="../GUI/.tmp/debug/ui_AutoComplete.h" line="+55"/>
+        <location filename="../GUI/.tmp/release/ui_AutoComplete.h" line="+55"/>
         <source>Form</source>
         <translation></translation>
     </message>
@@ -36,11 +46,15 @@
     <name>BrowseWidget</name>
     <message>
         <location filename="../GUI/Browse/BrowseWidget.ui"/>
+        <location filename="../GUI/.tmp/debug/ui_BrowseWidget.h" line="+68"/>
+        <location filename="../GUI/.tmp/release/ui_BrowseWidget.h" line="+68"/>
         <source>Download selected items to the first shared directory with enough free space</source>
         <translation>Скачать выбранные элементы в первую общую папку, где есть достаточно места</translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_BrowseWidget.h" line="+2"/>
+        <location filename="../GUI/.tmp/release/ui_BrowseWidget.h" line="+2"/>
         <source>Download selected items</source>
         <translation>Скачать выбранные элементы</translation>
     </message>
@@ -53,6 +67,8 @@
     </message>
     <message>
         <location filename="../GUI/Chat/ChatWidget.ui"/>
+        <location filename="../GUI/.tmp/debug/ui_ChatWidget.h" line="+180"/>
+        <location filename="../GUI/.tmp/release/ui_ChatWidget.h" line="+180"/>
         <source>Reset current format</source>
         <translation>Сбросить текущий формат</translation>
     </message>
@@ -61,26 +77,36 @@
     <name>DialogAbout</name>
     <message>
         <location filename="../GUI/DialogAbout.ui"/>
+        <location filename="../GUI/.tmp/debug/ui_DialogAbout.h" line="+149"/>
+        <location filename="../GUI/.tmp/release/ui_DialogAbout.h" line="+149"/>
         <source>About</source>
         <translation>О программе</translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_DialogAbout.h" line="+2"/>
+        <location filename="../GUI/.tmp/release/ui_DialogAbout.h" line="+2"/>
         <source>D-LAN</source>
         <translation>D-LAN</translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_DialogAbout.h" line="+1"/>
+        <location filename="../GUI/.tmp/release/ui_DialogAbout.h" line="+1"/>
         <source>Built on</source>
         <translation>Скомпилирован</translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_DialogAbout.h" line="+1"/>
+        <location filename="../GUI/.tmp/release/ui_DialogAbout.h" line="+1"/>
         <source>From revision</source>
         <translation>Ревизия</translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_DialogAbout.h" line="+2"/>
+        <location filename="../GUI/.tmp/release/ui_DialogAbout.h" line="+2"/>
         <source>Copyright 2010-%1 Greg Burri. All rights reserved.</source>
         <translation>Copyright 2010-%1 Greg Burri. Все права защищены.</translation>
     </message>
@@ -90,6 +116,8 @@
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_DialogAbout.h" line="+1"/>
+        <location filename="../GUI/.tmp/release/ui_DialogAbout.h" line="+1"/>
         <source>Close</source>
         <translation>Закрыть</translation>
     </message>
@@ -99,6 +127,8 @@
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_DialogAbout.h" line="-2"/>
+        <location filename="../GUI/.tmp/release/ui_DialogAbout.h" line="-2"/>
         <source>With</source>
         <translation>С</translation>
     </message>
@@ -107,26 +137,36 @@
     <name>DownloadsWidget</name>
     <message>
         <location filename="../GUI/Downloads/DownloadsWidget.ui"/>
+        <location filename="../GUI/.tmp/debug/ui_DownloadsWidget.h" line="+127"/>
+        <location filename="../GUI/.tmp/release/ui_DownloadsWidget.h" line="+127"/>
         <source>Downloads</source>
         <translation>Загрузки</translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_DownloadsWidget.h" line="+1"/>
+        <location filename="../GUI/.tmp/release/ui_DownloadsWidget.h" line="+1"/>
         <source>Item shown :</source>
         <translation></translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_DownloadsWidget.h" line="+5"/>
+        <location filename="../GUI/.tmp/release/ui_DownloadsWidget.h" line="+5"/>
         <source>Remove completed files from the queue</source>
         <translation>Удалить завершённые файлы из очереди</translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_DownloadsWidget.h" line="+4"/>
+        <location filename="../GUI/.tmp/release/ui_DownloadsWidget.h" line="+4"/>
         <source>Removed selected downloads from the queue</source>
         <translation>Завершённые файлы удалены из очереди</translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_DownloadsWidget.h" line="+4"/>
+        <location filename="../GUI/.tmp/release/ui_DownloadsWidget.h" line="+4"/>
         <source>Pause or unpause selected downloads</source>
         <translation>Поставить/снять с паузы выбранные загрузки</translation>
     </message>
@@ -142,7 +182,7 @@
 <context>
     <name>GUI::ChatWidget</name>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="+210"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="+212"/>
         <location line="+4"/>
         <source>Unable to send message</source>
         <translation>Не удалось отправить сообщение</translation>
@@ -178,7 +218,7 @@
         <translation>Открыть выделенных пиров</translation>
     </message>
     <message>
-        <location line="+341"/>
+        <location line="+362"/>
         <source>Chat</source>
         <translation>Чат</translation>
     </message>
@@ -1070,11 +1110,15 @@
     <name>MainWindow</name>
     <message>
         <location filename="../GUI/MainWindow.ui"/>
+        <location filename="../GUI/.tmp/debug/ui_MainWindow.h" line="+134"/>
+        <location filename="../GUI/.tmp/release/ui_MainWindow.h" line="+134"/>
         <source>D-LAN</source>
         <translation>D-LAN</translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_MainWindow.h" line="+5"/>
+        <location filename="../GUI/.tmp/release/ui_MainWindow.h" line="+5"/>
         <source>Log</source>
         <translation>Журнал</translation>
     </message>
@@ -1103,6 +1147,8 @@
     <name>PeersDock</name>
     <message>
         <location filename="../GUI/Peers/PeersDock.ui"/>
+        <location filename="../GUI/.tmp/debug/ui_PeersDock.h" line="+57"/>
+        <location filename="../GUI/.tmp/release/ui_PeersDock.h" line="+57"/>
         <source>Peers</source>
         <translation>Пиры</translation>
     </message>
@@ -1224,16 +1270,22 @@
     <name>RoomsDock</name>
     <message>
         <location filename="../GUI/Chat/RoomsDock.ui"/>
+        <location filename="../GUI/.tmp/debug/ui_RoomsDock.h" line="+83"/>
+        <location filename="../GUI/.tmp/release/ui_RoomsDock.h" line="+83"/>
         <source>Chat rooms</source>
         <translation>Чат-комнаты</translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_RoomsDock.h" line="+3"/>
+        <location filename="../GUI/.tmp/release/ui_RoomsDock.h" line="+3"/>
         <source>Join the room</source>
         <translation>Присоединится к комнате</translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_RoomsDock.h" line="-2"/>
+        <location filename="../GUI/.tmp/release/ui_RoomsDock.h" line="-2"/>
         <source>Room name</source>
         <translation></translation>
     </message>
@@ -1242,11 +1294,17 @@
     <name>SearchDock</name>
     <message>
         <location filename="../GUI/Search/SearchDock.ui"/>
+        <location filename="../GUI/.tmp/debug/ui_SearchDock.h" line="+213"/>
+        <location line="+1"/>
+        <location filename="../GUI/.tmp/release/ui_SearchDock.h" line="+213"/>
+        <location line="+1"/>
         <source>Search</source>
         <translation>Поиск</translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_SearchDock.h" line="+2"/>
+        <location filename="../GUI/.tmp/release/ui_SearchDock.h" line="+2"/>
         <source>Search among other peers &lt;ENTER&gt;</source>
         <translation>Поиск среди пиров &lt;ENTER&gt;</translation>
     </message>
@@ -1256,26 +1314,36 @@
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_SearchDock.h" line="+4"/>
+        <location filename="../GUI/.tmp/release/ui_SearchDock.h" line="+4"/>
         <source>Clear fields</source>
         <translation>Очистить поля</translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_SearchDock.h" line="+4"/>
+        <location filename="../GUI/.tmp/release/ui_SearchDock.h" line="+4"/>
         <source>Own files</source>
         <translation>Собственные файлы</translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_SearchDock.h" line="+1"/>
+        <location filename="../GUI/.tmp/release/ui_SearchDock.h" line="+1"/>
         <source>Type</source>
         <translation>Тип</translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_SearchDock.h" line="+1"/>
+        <location filename="../GUI/.tmp/release/ui_SearchDock.h" line="+1"/>
         <source>Min size</source>
         <translation>Минимальный размер</translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_SearchDock.h" line="+1"/>
+        <location filename="../GUI/.tmp/release/ui_SearchDock.h" line="+1"/>
         <source>Max size</source>
         <translation>Максимальный размер</translation>
     </message>
@@ -1284,16 +1352,22 @@
     <name>SearchWidget</name>
     <message>
         <location filename="../GUI/Search/SearchWidget.ui"/>
+        <location filename="../GUI/.tmp/debug/ui_SearchWidget.h" line="+85"/>
+        <location filename="../GUI/.tmp/release/ui_SearchWidget.h" line="+85"/>
         <source>Search</source>
         <translation>Поиск</translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_SearchWidget.h" line="+3"/>
+        <location filename="../GUI/.tmp/release/ui_SearchWidget.h" line="+3"/>
         <source>Download selected items to the first shared directory with enough free space</source>
         <translation>Скачать выбранные элементы в первую общую папку, где есть достаточно места</translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_SearchWidget.h" line="+2"/>
+        <location filename="../GUI/.tmp/release/ui_SearchWidget.h" line="+2"/>
         <source>Download selected items</source>
         <translation>Скачать выбранные элементы</translation>
     </message>
@@ -1302,86 +1376,120 @@
     <name>SettingsWidget</name>
     <message>
         <location filename="../GUI/Settings/SettingsWidget.ui"/>
+        <location filename="../GUI/.tmp/debug/ui_SettingsWidget.h" line="+419"/>
+        <location filename="../GUI/.tmp/release/ui_SettingsWidget.h" line="+419"/>
         <source>Settings</source>
         <translation>Настройки</translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_SettingsWidget.h" line="+23"/>
+        <location filename="../GUI/.tmp/release/ui_SettingsWidget.h" line="+23"/>
         <source>Basic</source>
         <translation>Основное</translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_SettingsWidget.h" line="-22"/>
+        <location filename="../GUI/.tmp/release/ui_SettingsWidget.h" line="-22"/>
         <source>Nick</source>
         <translation>Имя</translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_SettingsWidget.h" line="+1"/>
+        <location filename="../GUI/.tmp/release/ui_SettingsWidget.h" line="+1"/>
         <source>Shared folders</source>
         <translation>Общие папки</translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_SettingsWidget.h" line="+2"/>
+        <location filename="../GUI/.tmp/release/ui_SettingsWidget.h" line="+2"/>
         <source>Add a new shared directory</source>
         <translation>Добавить новую общую папку</translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_SettingsWidget.h" line="+4"/>
+        <location filename="../GUI/.tmp/release/ui_SettingsWidget.h" line="+4"/>
         <source>Remove the selected shared directory</source>
         <translation>Удалить выбранную общую папку</translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_SettingsWidget.h" line="+4"/>
+        <location filename="../GUI/.tmp/release/ui_SettingsWidget.h" line="+4"/>
         <source>Move down the selected shared directory</source>
         <translation>Переместить выбранную общую папку на позицию ниже</translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_SettingsWidget.h" line="+4"/>
+        <location filename="../GUI/.tmp/release/ui_SettingsWidget.h" line="+4"/>
         <source>Move up the selected shared directory</source>
         <translation>Переместить выбранную общую папку на позицию выше</translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_SettingsWidget.h" line="+4"/>
+        <location filename="../GUI/.tmp/release/ui_SettingsWidget.h" line="+4"/>
         <source>Open location of the selected shared directory</source>
         <translation>Открыть расположение выбранной общей папки</translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_SettingsWidget.h" line="+13"/>
+        <location filename="../GUI/.tmp/release/ui_SettingsWidget.h" line="+13"/>
         <source>Network</source>
         <translation>Сеть</translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_SettingsWidget.h" line="-9"/>
+        <location filename="../GUI/.tmp/release/ui_SettingsWidget.h" line="-9"/>
         <source>Interface to listen</source>
         <translation>Сетевой интерфейс</translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_SettingsWidget.h" line="+1"/>
+        <location filename="../GUI/.tmp/release/ui_SettingsWidget.h" line="+1"/>
         <source>Any</source>
         <translation>Любой</translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_SettingsWidget.h" line="+1"/>
+        <location filename="../GUI/.tmp/release/ui_SettingsWidget.h" line="+1"/>
         <source>IPv6</source>
         <translation>IPv6</translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_SettingsWidget.h" line="+1"/>
+        <location filename="../GUI/.tmp/release/ui_SettingsWidget.h" line="+1"/>
         <source>IPv4</source>
         <translation>IPv4</translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_SettingsWidget.h" line="+1"/>
+        <location filename="../GUI/.tmp/release/ui_SettingsWidget.h" line="+1"/>
         <source>Refresh interfaces</source>
         <translation>Обновить список интерфейсов</translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_SettingsWidget.h" line="+2"/>
+        <location filename="../GUI/.tmp/release/ui_SettingsWidget.h" line="+2"/>
         <source>When activated all received data will be verified against their hashes.  It may consume CPU resources.</source>
         <translation>При активации все получаемые данные будут проверяться по контрольным суммам. Надежнее, но требует ресурсов процессора.</translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_SettingsWidget.h" line="+2"/>
+        <location filename="../GUI/.tmp/release/ui_SettingsWidget.h" line="+2"/>
         <source>Data integrity check</source>
         <translation>Проверять целостность данных</translation>
     </message>
@@ -1391,61 +1499,85 @@
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_SettingsWidget.h" line="+17"/>
+        <location filename="../GUI/.tmp/release/ui_SettingsWidget.h" line="+17"/>
         <source>Graphic User Interface</source>
         <translation>Пользовательский интерфейс</translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_SettingsWidget.h" line="-15"/>
+        <location filename="../GUI/.tmp/release/ui_SettingsWidget.h" line="-15"/>
         <source>Language</source>
         <translation>Язык</translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_SettingsWidget.h" line="+1"/>
+        <location filename="../GUI/.tmp/release/ui_SettingsWidget.h" line="+1"/>
         <source>Style</source>
         <translation>Скин</translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_SettingsWidget.h" line="+2"/>
+        <location filename="../GUI/.tmp/release/ui_SettingsWidget.h" line="+2"/>
         <source>Reload the current style</source>
         <translation>Перезагрузить текущий скин</translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_SettingsWidget.h" line="+3"/>
+        <location filename="../GUI/.tmp/release/ui_SettingsWidget.h" line="+3"/>
         <source>Core connection</source>
         <translation>Подключение к ядру</translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_SettingsWidget.h" line="+1"/>
+        <location filename="../GUI/.tmp/release/ui_SettingsWidget.h" line="+1"/>
         <source>Address</source>
         <translation>Адрес</translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_SettingsWidget.h" line="+1"/>
+        <location filename="../GUI/.tmp/release/ui_SettingsWidget.h" line="+1"/>
         <source>Reset to local</source>
         <translation>Сброс на localhost</translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_SettingsWidget.h" line="+1"/>
+        <location filename="../GUI/.tmp/release/ui_SettingsWidget.h" line="+1"/>
         <source>Password</source>
         <translation>Пароль</translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_SettingsWidget.h" line="+1"/>
+        <location filename="../GUI/.tmp/release/ui_SettingsWidget.h" line="+1"/>
         <source>Disconnect</source>
         <translation>Отключиться</translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_SettingsWidget.h" line="+1"/>
+        <location filename="../GUI/.tmp/release/ui_SettingsWidget.h" line="+1"/>
         <source>Change the password</source>
         <translation>Сменить пароль</translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_SettingsWidget.h" line="+1"/>
+        <location filename="../GUI/.tmp/release/ui_SettingsWidget.h" line="+1"/>
         <source>Reset the password</source>
         <translation>Сбросить пароль</translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_SettingsWidget.h" line="+1"/>
+        <location filename="../GUI/.tmp/release/ui_SettingsWidget.h" line="+1"/>
         <source>User interface</source>
         <translation>Пользовательский интерфейс</translation>
     </message>
@@ -1454,6 +1586,8 @@
     <name>SingleEmoticonWidget</name>
     <message>
         <location filename="../GUI/Emoticons/SingleEmoticonWidget.ui"/>
+        <location filename="../GUI/.tmp/debug/ui_SingleEmoticonWidget.h" line="+50"/>
+        <location filename="../GUI/.tmp/release/ui_SingleEmoticonWidget.h" line="+50"/>
         <source>Form</source>
         <translation></translation>
     </message>
@@ -1462,26 +1596,36 @@
     <name>StatusBar</name>
     <message>
         <location filename="../GUI/StatusBar.ui"/>
+        <location filename="../GUI/.tmp/debug/ui_StatusBar.h" line="+165"/>
+        <location filename="../GUI/.tmp/release/ui_StatusBar.h" line="+165"/>
         <source>Show the log window</source>
         <translation>Открыть журнал</translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_StatusBar.h" line="+4"/>
+        <location filename="../GUI/.tmp/release/ui_StatusBar.h" line="+4"/>
         <source>About</source>
         <translation>О программе</translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_StatusBar.h" line="+3"/>
+        <location filename="../GUI/.tmp/release/ui_StatusBar.h" line="+3"/>
         <source>Download rate</source>
         <translation>Скорость скачивания</translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_StatusBar.h" line="+5"/>
+        <location filename="../GUI/.tmp/release/ui_StatusBar.h" line="+5"/>
         <source>Upload rate</source>
         <translation>Скорость отдачи</translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_StatusBar.h" line="+5"/>
+        <location filename="../GUI/.tmp/release/ui_StatusBar.h" line="+5"/>
         <source>Total sharing</source>
         <translation>Всего общее</translation>
     </message>
@@ -1490,6 +1634,8 @@
     <name>UploadsWidget</name>
     <message>
         <location filename="../GUI/Uploads/UploadsWidget.ui"/>
+        <location filename="../GUI/.tmp/debug/ui_UploadsWidget.h" line="+52"/>
+        <location filename="../GUI/.tmp/release/ui_UploadsWidget.h" line="+52"/>
         <source>Uploads</source>
         <translation>Отдачи</translation>
     </message>

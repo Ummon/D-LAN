@@ -16,13 +16,15 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
+#include <QRandomGenerator64>
+
 #include <priv/ChatMessage.h>
 using namespace CS;
 
 #include <Common/ProtoHelper.h>
 
 ChatMessage::ChatMessage(const QString& message, const Common::Hash& ownerID, const QString& ownerNick, const QString& roomName, const QList<Common::Hash>& peerIDsAnswer) :
-   ID(mtrand.randInt64()),
+   ID(QRandomGenerator64::global()->generate64()),
    message(message),
    ownerID(ownerID),
    peerIDsAnswer(peerIDsAnswer),
@@ -64,6 +66,4 @@ void ChatMessage::fillProtoChatMessage(Protos::Common::ChatMessage& protoChatMes
    for (QListIterator<Common::Hash> i(this->peerIDsAnswer); i.hasNext();)
       protoChatMessage.add_peer_ids_answer()->set_hash(i.next().getData(), Common::Hash::HASH_SIZE);
 }
-
-MTRand ChatMessage::mtrand;
 

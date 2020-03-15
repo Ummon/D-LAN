@@ -19,9 +19,9 @@
 #include <Core.h>
 using namespace CoreSpace;
 
-#include <Protos/core_settings.pb.h>
+#include <QRandomGenerator64>
 
-#include <Libs/MersenneTwister.h>
+#include <Protos/core_settings.pb.h>
 
 #include <Common/PersistentData.h>
 #include <Common/Constants.h>
@@ -129,8 +129,7 @@ void Core::printSimilarFiles() const
 
 void Core::changePassword(const QString& newPassword)
 {
-   MTRand mtrand;
-   quint64 salt = static_cast<quint64>(mtrand.randInt()) << 32 | mtrand.randInt();
+   quint64 salt = QRandomGenerator64::global()->generate64();
 
    SETTINGS.set("remote_password", Common::Hasher::hashWithSalt(newPassword, salt));
    SETTINGS.set("salt", salt);

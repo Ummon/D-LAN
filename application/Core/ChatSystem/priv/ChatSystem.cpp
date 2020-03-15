@@ -20,9 +20,8 @@
 using namespace CS;
 
 #include <QDateTime>
+#include <QRandomGenerator64>
 #include <QRegExp>
-
-#include <Libs/MersenneTwister.h>
 
 #include <Protos/common.pb.h>
 #include <Protos/core_protocol.pb.h>
@@ -422,5 +421,5 @@ void ChatSystem::retrieveLastChatMessagesFromPeers(const QList<PM::IPeer*>& peer
    if (!roomName.isEmpty())
       Common::ProtoHelper::setStr(getLastChatMessages, &Protos::Core::GetLastChatMessages::set_chat_room, roomName);
 
-   this->networkListener->send(Common::MessageHeader::CORE_GET_LAST_CHAT_MESSAGES, getLastChatMessages, peers[this->mtrand.randInt(peers.size() - 1)]->getID());
+   this->networkListener->send(Common::MessageHeader::CORE_GET_LAST_CHAT_MESSAGES, getLastChatMessages, peers[QRandomGenerator64::global()->bounded(peers.size())]->getID());
 }

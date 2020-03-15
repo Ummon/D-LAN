@@ -22,8 +22,6 @@
 #include <QString>
 #include <QDateTime>
 
-#include <Libs/MersenneTwister.h>
-
 #include <Protos/common.pb.h>
 
 #include <Common/Hash.h>
@@ -42,8 +40,6 @@ namespace CS
       void fillProtoChatMessage(Protos::Common::ChatMessage& protoChatMessage) const;
 
    private:
-      static MTRand mtrand;
-
       const quint64 ID;
       const QString message;
       const Common::Hash ownerID;

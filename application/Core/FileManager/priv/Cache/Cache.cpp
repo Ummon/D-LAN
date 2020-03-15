@@ -295,9 +295,9 @@ QList<QSharedPointer<IChunk>> Cache::newFile(Protos::Common::Entry& fileEntry)
 
    const QString& name = Common::ProtoHelper::getStr(fileEntry, &Protos::Common::Entry::name);
 
-   // If a file with the same name already exists we will compare its hashes with the given entry.
-   File* file;
-   if (file = dir->getFile(name))
+   // If a file with the same name already exists we will compare its hashes with the given entry.   
+   File* file = dir->getFile(name);
+   if (file != nullptr)
    {
       bool resetExistingFile = false;
       const QVector<QSharedPointer<Chunk>>& existingChunks = file->getChunks();

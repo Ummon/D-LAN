@@ -21,10 +21,11 @@ using namespace RCM;
 
 #include <limits>
 
-#include <QSet>
 #include <QCoreApplication>
 #include <QDateTime>
 #include <QNetworkInterface>
+#include <QRandomGenerator64>
+#include <QSet>
 
 #include <Common/Settings.h>
 #include <Common/ProtoHelper.h>
@@ -359,7 +360,7 @@ void RemoteConnection::askForAuthentication()
    Protos::GUI::AskForAuthentication askForAuthenticationMessage;
    askForAuthenticationMessage.set_salt(SETTINGS.get<quint64>("salt"));
 
-   this->saltChallenge = this->mtrand.randInt64();
+   this->saltChallenge = QRandomGenerator64::global()->generate64();
    askForAuthenticationMessage.set_salt_challenge(this->saltChallenge);
 
    this->timerCloseSocket.start();
@@ -542,7 +543,7 @@ void RemoteConnection::onNewMessage(const Common::Message& message)
                std::numeric_limits<int>::max()
             );
 
-            const quint64 tag = this->mtrand.randInt64();
+            const quint64 tag = QRandomGenerator64::global()->generate64();
             Protos::GUI::Tag tagMess;
             tagMess.set_tag(tag);
             this->send(Common::MessageHeader::GUI_SEARCH_TAG, tagMess);
@@ -576,7 +577,7 @@ void RemoteConnection::onNewMessage(const Common::Message& message)
          Common::Hash peerID(browseMessage.peer_id().hash());
          PM::IPeer* peer = this->peerManager->getPeer(peerID);
 
-         quint64 tag = this->mtrand.randInt64();
+         const quint64 tag = QRandomGenerator64::global()->generate64();
          Protos::GUI::Tag tagMess;
          tagMess.set_tag(tag);
          this->send(Common::MessageHeader::GUI_BROWSE_TAG, tagMess);

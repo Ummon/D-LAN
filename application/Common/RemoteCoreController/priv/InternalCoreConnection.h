@@ -28,8 +28,6 @@
 #include <QElapsedTimer>
 #include <QLocale>
 
-#include <Libs/MersenneTwister.h>
-
 #include <Protos/gui_protocol.pb.h>
 #include <Protos/common.pb.h>
 
@@ -152,8 +150,6 @@ namespace RCC
       // Temporary text password. Once we got the salt sent by the Core we set 'connectionInfo.password' with the salted password and we erase this member.
       QString password;
       quint64 salt;
-
-      MTRand mtrand;
    };
 }
 

@@ -26,8 +26,6 @@
 #include <QDataStream>
 #include <QCryptographicHash>
 
-#include <Libs/MersenneTwister.h>
-
 #include <Common/Uncopyable.h>
 
 namespace Common
@@ -35,8 +33,6 @@ namespace Common
    class Hasher;
    class Hash
    {
-      static MTRand mtrand;
-
    public:
       static const int HASH_SIZE = 20;
 
@@ -70,7 +66,6 @@ namespace Common
 
       static Hash rand();
       static Hash rand(quint32 seed);
-      static void setRandSeed(quint32 seed);
       static Hash fromStr(const QString& str);
 
    private:
@@ -160,8 +155,6 @@ namespace Common
 
    class Hasher : Uncopyable
    {
-      static MTRand mtrand;
-
    public:
       Hasher();
       // void addPredefinedSalt(); Deprecated.

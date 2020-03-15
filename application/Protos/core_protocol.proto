@@ -21,14 +21,14 @@ package Protos.Core;
 message IMAlive {
    required uint32 version = 1; // The version of the protocol used. If 'version' from another peer doesn't correspond to our own version, this peer is ignored.
    optional string core_version = 9; // The core version, for example: "1.1.4 - Linux Mr. 3.2.0-24-generic".
-   
+
    required uint32 port = 2; // The port listened by the core (UDP + TCP).
    required string nick = 3;
-   
+
    required uint64 amount = 4; // [byte] Amount of sharing.
    optional uint32 download_rate = 7; // [byte/s]
    optional uint32 upload_rate = 8; // [byte/s]
-   
+
    optional uint64 tag = 5; // A random number, all responds ('ChunkOwned' message) must repeat this number.
    repeated Common.Hash chunk = 6; // The chunks the core wants to download. May be empty.
 
@@ -46,8 +46,8 @@ message ChunksOwned {
 }
 
 
-// Goodbye, my people needs me.
-// Sent by a peer leaving the network. Not mendatory.
+// Goodbye, my people need me.
+// Sent by a peer leaving the network. Not mandatory.
 // a -> all
 // id : 0xFE
 // No data

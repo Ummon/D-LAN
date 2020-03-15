@@ -26,8 +26,6 @@
 #include <QList>
 #include <QLocale>
 
-#include <Libs/MersenneTwister.h>
-
 #include <google/protobuf/message.h>
 
 #include <Protos/gui_protocol.pb.h>
@@ -128,8 +126,6 @@ namespace RCM
 
       QList<QSharedPointer<NL::ISearch>> currentSearches;
       QList<QSharedPointer<PM::IGetEntriesResult>> getEntriesResults;
-
-      MTRand mtrand;
 
       bool authenticated;
       quint64 saltChallenge;

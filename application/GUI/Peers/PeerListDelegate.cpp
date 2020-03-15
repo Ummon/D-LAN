@@ -19,6 +19,8 @@
 #include <Peers/PeerListDelegate.h>
 using namespace GUI;
 
+#include <cmath>
+
 #include <QPainter>
 
 #include <Common/Settings.h>

@@ -93,7 +93,6 @@ namespace CS
       QTimer saveChatMessagesTimer;
 
       QTimer retrieveLastChatMessageTimer;
-      MTRand mtrand;
    };
 }
 #endif

@@ -26,8 +26,6 @@
 #include <QNetworkInterface>
 #include <QUdpSocket>
 
-#include <Libs/MersenneTwister.h>
-
 #include <google/protobuf/message.h>
 
 #include <Protos/core_protocol.pb.h>
@@ -107,7 +105,6 @@ namespace NL
       QUdpSocket multicastSocket;
       QUdpSocket unicastSocket;
 
-      MTRand mtrand;
       quint64 currentIMAliveTag;
       QList<QSharedPointer<DM::IChunkDownloader>> currentChunkDownloaders;
       enum HashRequestType
