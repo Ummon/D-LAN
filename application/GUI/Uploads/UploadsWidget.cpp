@@ -27,7 +27,7 @@ void UploadsDelegate::paint(QPainter* painter, const QStyleOptionViewItem& optio
 
    if (index.column() == 2)
    {
-      QStyleOptionProgressBarV2 progressBarOption;
+      QStyleOptionProgressBar progressBarOption;
       progressBarOption.QStyleOption::operator=(option);
 
       progressBarOption.minimum = 0;
@@ -41,7 +41,7 @@ void UploadsDelegate::paint(QPainter* painter, const QStyleOptionViewItem& optio
    else
    {
       // Remove the focus box, not very useful.
-      QStyleOptionViewItemV4 newOption(option);
+      QStyleOptionViewItem newOption(option);
       newOption.state = option.state & (~QStyle::State_HasFocus);
       QStyledItemDelegate::paint(painter, newOption, index);
    }

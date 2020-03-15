@@ -42,7 +42,7 @@ using namespace GUI;
 
 void DirListDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
-   QStyleOptionViewItemV4 newOption(option);
+   QStyleOptionViewItem newOption(option);
    newOption.state = option.state & (~QStyle::State_HasFocus);
    QStyledItemDelegate::paint(painter, newOption, index);
 }

@@ -159,8 +159,11 @@ QList<FM::NodeResult<T>> FM::WordIndex<T>::search(const QStringList& words, int 
    // Launch a search for each term.
    QVector<QSet<NodeResult<T>>> results(N);
    for (int i = 0; i < N; i++)
+   {
       // We can only limit the number of result for one term. When there is more than one term and thus some results set, say [a, b, c] for example, some good result may be contained in intersect, for example a & b or a & c.
-      results[i] += this->search(words[i], N == 1 ? maxNbResult : -1, predicat).toSet();
+      auto result = this->search(words[i], N == 1 ? maxNbResult : -1, predicat);
+      results[i] += QSet(result.begin(), result.end());
+   }
 
    QList<NodeResult<T>> finalResult;
 

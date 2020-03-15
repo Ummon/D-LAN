@@ -20,7 +20,7 @@
 using namespace GUI;
 
 #include <QStylePainter>
-#include <QStyleOptionProgressBarV2>
+#include <QStyleOptionProgressBar>
 
 /**
   * @class GUI::ProgressBar
@@ -36,7 +36,7 @@ ProgressBar::ProgressBar(QWidget *parent) :
 void ProgressBar::paintEvent(QPaintEvent* paintEvent)
 {
    QStylePainter paint(this);
-   QStyleOptionProgressBarV2 opt;
+   QStyleOptionProgressBar opt;
    initStyleOption(&opt);
    opt.text = QString("%1%").arg(static_cast<double>(this->value()) / 100);
    paint.drawControl(QStyle::CE_ProgressBar, opt);

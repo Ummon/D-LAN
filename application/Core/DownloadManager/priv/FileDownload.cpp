@@ -20,6 +20,7 @@
 using namespace DM;
 
 #include <QTimer>
+#include <QSet>
 #include <QRandomGenerator64>
 
 #include <limits>
@@ -195,7 +196,10 @@ QSet<PM::IPeer*> FileDownload::getPeers() const
    {
       auto chunkDownloader = i.next();
       if (!chunkDownloader.isNull())
-         peers += chunkDownloader->getPeers().toSet();
+      {
+         auto peersFromChunkDownloader = chunkDownloader->getPeers();
+         peers += QSet(peersFromChunkDownloader.begin(), peersFromChunkDownloader.end());
+      }
    }
    return peers;
 }

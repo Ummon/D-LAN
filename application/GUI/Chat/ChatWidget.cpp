@@ -41,7 +41,7 @@ Q_DECLARE_METATYPE(QHostAddress)
 
 void PeerListChatDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
-   QStyleOptionViewItemV4 newOption(option);
+   QStyleOptionViewItem newOption(option);
    newOption.state = option.state & (~QStyle::State_HasFocus);
 
    // Show the selection only if the widget is active.
@@ -66,27 +66,27 @@ ChatDelegate::ChatDelegate(QTextDocument& textDocument)
 
 void ChatDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
-   QStyleOptionViewItemV4 optionV4(option);
-   this->initStyleOption(&optionV4, index);
+   QStyleOptionViewItem newOption(option);
+   this->initStyleOption(&newOption, index);
 
-   optionV4.state = option.state & (~QStyle::State_HasFocus);
+   newOption.state = option.state & (~QStyle::State_HasFocus);
 
-   QStyle* style = optionV4.widget ? optionV4.widget->style() : QApplication::style();
+   QStyle* style = newOption.widget ? newOption.widget->style() : QApplication::style();
 
-   this->textDocument.setHtml(optionV4.text);
-   this->textDocument.setTextWidth(optionV4.rect.width());
+   this->textDocument.setHtml(newOption.text);
+   this->textDocument.setTextWidth(newOption.rect.width());
 
-   optionV4.text = QString();
-   style->drawControl(QStyle::CE_ItemViewItem, &optionV4, painter, optionV4.widget);
+   newOption.text = QString();
+   style->drawControl(QStyle::CE_ItemViewItem, &newOption, painter, newOption.widget);
 
    QAbstractTextDocumentLayout::PaintContext ctx;
-   ctx.palette = optionV4.palette;
+   ctx.palette = newOption.palette;
 
    // Highlighting text if item is selected.
-   if (optionV4.state & QStyle::State_Selected && optionV4.state & QStyle::State_Active)
-       ctx.palette.setColor(QPalette::Text, optionV4.palette.color(QPalette::Active, QPalette::HighlightedText));
+   if (newOption.state & QStyle::State_Selected && newOption.state & QStyle::State_Active)
+       ctx.palette.setColor(QPalette::Text, newOption.palette.color(QPalette::Active, QPalette::HighlightedText));
 
-   QRect textRect = style->subElementRect(QStyle::SE_ItemViewItemText, &optionV4);
+   QRect textRect = style->subElementRect(QStyle::SE_ItemViewItemText, &newOption);
    painter->save();
    painter->translate(textRect.topLeft());
    painter->setClipRect(textRect.translated(-textRect.topLeft()));
@@ -110,12 +110,12 @@ QSize	ChatDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelInd
          model->removeCachedSize(index);
    }
 
-   QStyleOptionViewItemV4 optionV4 = option;
-   initStyleOption(&optionV4, index);
+   QStyleOptionViewItem newOption = option;
+   initStyleOption(&newOption, index);
 
-   this->textDocument.setHtml(optionV4.text);
-   this->textDocument.setTextWidth(optionV4.rect.width());
-   QSize size(optionV4.rect.width(), this->textDocument.size().height()); // Width should be "doc.idealWidth()".
+   this->textDocument.setHtml(newOption.text);
+   this->textDocument.setTextWidth(newOption.rect.width());
+   QSize size(newOption.rect.width(), this->textDocument.size().height()); // Width should be "doc.idealWidth()".
    model->insertCachedSize(index, size);
    return size;
 }

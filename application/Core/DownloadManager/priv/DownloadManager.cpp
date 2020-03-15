@@ -364,7 +364,8 @@ void DownloadManager::scanTheQueue()
    FileDownload* fileDownload = nullptr;
 
    // To know the number of peers not occupied that own at least one chunk in the queue.
-   QSet<PM::IPeer*> linkedPeersNotOccupied = this->linkedPeers.getPeers().toSet();
+   auto peers = this->linkedPeers.getPeers();
+   QSet<PM::IPeer*> linkedPeersNotOccupied(peers.begin(), peers.end());
    linkedPeersNotOccupied -= this->occupiedPeersDownloadingChunk.getOccupiedPeers();
 
    DownloadQueue::ScanningIterator<IsDownloable> i(this->downloadQueue);

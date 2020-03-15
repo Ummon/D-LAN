@@ -85,7 +85,7 @@ void DownloadsDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opt
    else
    {
       // Remove the focus box, not very useful.
-      QStyleOptionViewItemV4 newOption(option);
+      QStyleOptionViewItem newOption(option);
       newOption.state = option.state & (~QStyle::State_HasFocus);
 
       if (index.column() == 3 && !static_cast<const DownloadsModel*>(index.model())->isSourceAlive(index))
@@ -222,7 +222,7 @@ void DownloadsWidget::openLocationSelectedEntries()
          locations.insert(this->currentDownloadsModel->getPath(index, false));
    }
 
-   Utils::openLocations(locations.toList());
+   Utils::openLocations(locations.values());
 }
 
 void DownloadsWidget::moveSelectedEntriesToTop()
@@ -233,7 +233,8 @@ void DownloadsWidget::moveSelectedEntriesToTop()
    for (QListIterator<QModelIndex> i(selectedRows); i.hasNext();)
    {
       const QModelIndex& index = i.next();
-      downloadIDs += this->currentDownloadsModel->getDownloadIDs(index).toSet();
+      auto downloadIDsList = this->currentDownloadsModel->getDownloadIDs(index);
+      downloadIDs += QSet(downloadIDsList.begin(), downloadIDsList.end());
    }
 
    // Search a download which is not selected
@@ -272,7 +273,8 @@ void DownloadsWidget::removeSelectedEntries()
    for (QListIterator<QModelIndex> i(selectedRows); i.hasNext();)
    {
       const QModelIndex& index = i.next();
-      downloadIDs += this->currentDownloadsModel->getDownloadIDs(index).toSet();
+      auto downloadIDsList = this->currentDownloadsModel->getDownloadIDs(index);
+      downloadIDs += QSet(downloadIDsList.begin(), downloadIDsList.end());
       if (!this->currentDownloadsModel->isFileComplete(index))
          allComplete = false;
    }

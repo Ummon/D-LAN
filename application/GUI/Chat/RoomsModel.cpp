@@ -155,7 +155,8 @@ void RoomsModel::updateRooms(const google::protobuf::RepeatedPtrField<Protos::GU
       dataChanged = true;
    };
 
-   QSet<QString> roomsToRemove = this->indexedRooms.keys().toSet();
+   QList<QString> roomsToRemoveList = this->indexedRooms.keys();
+   QSet<QString> roomsToRemove(roomsToRemoveList.begin(), roomsToRemoveList.end());
 
    for (int i = 0; i < rooms.size(); i++)
    {

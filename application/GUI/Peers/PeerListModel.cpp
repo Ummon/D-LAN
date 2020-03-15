@@ -329,7 +329,8 @@ void PeerListModel::updatePeers(const google::protobuf::RepeatedPtrField<Protos:
       dataChanged = true;
    };
 
-   QSet<Common::Hash> peersToRemove = this->indexedPeers.keys().toSet();
+   auto peersList = this->indexedPeers.keys();
+   QSet<Common::Hash> peersToRemove(peersList.begin(), peersList.end());
 
    for (int i = 0; i < peers.size(); i++)
    {

@@ -94,7 +94,7 @@ void SearchDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option
 
          int value = index.data().toInt();
 
-         QStyleOptionProgressBarV2 progressBarOption;
+         QStyleOptionProgressBar progressBarOption;
          progressBarOption.QStyleOption::operator=(option);
          progressBarOption.minimum = 0;
          progressBarOption.maximum = 100;
@@ -123,7 +123,7 @@ QSize SearchDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelI
    {
    case 1:
       {
-         QStyleOptionViewItemV4 optionV4 = option;
+         QStyleOptionViewItem optionV4 = option;
          initStyleOption(&optionV4, index);
 
          QTextDocument doc;
@@ -343,7 +343,7 @@ void SearchWidget::openLocation()
          locations.insert(this->searchModel.getPath(index, true));
    }
 
-   Utils::openLocations(locations.toList());
+   Utils::openLocations(locations.values());
 }
 
 void SearchWidget::browseCurrents()
