@@ -1,0 +1,29 @@
+/**
+  * Some common types.
+  * All string are encoded in UTF-8.
+  */
+
+namespace DLAN.Common;
+
+table Error {
+    message: string;
+}
+
+table Language {
+    lang: string (required);
+    country: string;
+}
+
+table Hash {
+    hash: [byte];
+}
+
+enum IPType : byte {
+    IPv4 = 0,
+    IPv6 = 1
+}
+
+table IP {
+    type: IPType;
+    ip: [byte]; // type == IPv4: 4 bytes. type == IPv6: 16 bytes. Big endian.
+}
