@@ -237,9 +237,9 @@ QVariant PeerListModel::data(const QModelIndex& index, int role) const
          toolTip.append('\n');
 
          if (peer->status == Protos::GUI::State::Peer::MORE_RECENT_VERSION)
-            toolTip.append(tr("His protocol version is more recent and incompatible with ours. Upgrade you version!")).append('\n');
+            toolTip.append(tr("They protocol version is more recent and incompatible with ours. Upgrade you version!")).append('\n');
          else if (peer->status == Protos::GUI::State::Peer::VERSION_OUTDATED)
-            toolTip.append(tr("His protocol version is outaded and incompatible with ours. He should upgrade his version!")).append('\n');
+            toolTip.append(tr("They protocol version is outaded and incompatible with ours. They should upgrade his version!")).append('\n');
 
          if (!coreVersion.isEmpty())
             toolTip += tr("Version %1\n").arg(coreVersion);

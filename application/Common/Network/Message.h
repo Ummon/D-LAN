@@ -45,6 +45,8 @@ namespace Common
       template <typename T = google::protobuf::Message>
       const T& getMessage() const;
 
+      getOldIMAliveMessage();
+
       static int writeMessageToBuffer(char* buffer, quint32 bufferSize, const MessageHeader& header, const google::protobuf::Message* message = 0);
       static int writeMessageToDevice(QIODevice* ioDevice, const MessageHeader& header, const google::protobuf::Message* message = 0);
 

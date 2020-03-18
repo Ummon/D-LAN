@@ -55,12 +55,12 @@ QSharedPointer<FM::IGetHashesResult> MockFileManager::getHashes(const Protos::Co
    return QSharedPointer<FM::IGetHashesResult>();
 }
 
-QSharedPointer<FM::IGetEntriesResult> MockFileManager::getScannedEntries(const Protos::Common::Entry& dir)
+QSharedPointer<FM::IGetEntriesResult> MockFileManager::getScannedEntries(const Protos::Common::Entry& dir, int maxNbHashesPerEntry)
 {
    return QSharedPointer<FM::IGetEntriesResult>();
 }
 
-Protos::Common::Entries MockFileManager::getEntries(const Protos::Common::Entry& dir)
+Protos::Common::Entries MockFileManager::getEntries(const Protos::Common::Entry& dir, int maxNbHashesPerEntry)
 {
    return Protos::Common::Entries();
 }

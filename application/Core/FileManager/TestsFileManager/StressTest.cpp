@@ -26,6 +26,7 @@ using namespace FM;
 #include <QDirIterator>
 #include <QMutex>
 #include <QMutexLocker>
+#include <QRandomGenerator64>
 
 #include <Common/Global.h>
 #include <Common/Settings.h>
@@ -43,17 +44,17 @@ const QDir ROOT_DIR("stress");
 
 int RandGenerator::percentRand()
 {
-   return this->mtrand.randInt(100);
+   QRandomGenerator64::global()->bounded(101);
 }
 
 int RandGenerator::permilRand()
 {
-   return this->mtrand.randInt(1000);
+   QRandomGenerator64::global()->bounded(1001);
 }
 
 int RandGenerator::rand(int n)
 {
-   return this->mtrand.randInt(n);
+   QRandomGenerator64::global()->bounded(n + 1);
 }
 
 QString RandGenerator::generateAName()

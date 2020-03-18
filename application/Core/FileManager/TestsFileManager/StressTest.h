@@ -23,8 +23,6 @@
 #include <QDir>
 #include <QThread>
 
-#include <Libs/MersenneTwister.h>
-
 #include <IFileManager.h>
 #include <IGetHashesResult.h>
 #include <IDataWriter.h>
@@ -39,9 +37,6 @@ public:
    int permilRand();
    int rand(int n);
    QString generateAName();
-
-private:
-   MTRand mtrand;
 };
 
 class StressTest;
