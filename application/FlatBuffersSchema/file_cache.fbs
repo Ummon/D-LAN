@@ -1,0 +1,41 @@
+/**
+  * The persisted hashes.
+  * Version: 2
+  * All string are encoded in UTF-8.
+  */
+
+include "common.fbs";
+
+namespace DLAN.FileCache;
+
+// All the hashes for a set of file.
+table Hashes {
+   version: uint32;
+   chunk_size: uint32;
+
+   shared_dirs: [SharedDir];
+}
+
+table SharedDir {
+   id: Common.Hash;
+   path: string; // Always ended with a '/'.
+   root: Dir;
+}
+
+table Dir {
+   name: string; // Empty for the roots.
+   files: [File]; // Contains only the files which have at least one hash known.
+   dirs: [Dir];
+}
+
+table File {
+   filename: string;
+   size: uint64;
+   date_last_modified: uint64; // In ms since Epoch.
+   chunks: [Chunk]; // Contains all the file chunk, if we don't have a chunk its hash is ommited.
+}
+
+table Chunk {
+   known_bytes: uint32; // Used only when downloading a file, we have the hash but we don't have all the file content.
+   hash: Common.Hash;
+}
