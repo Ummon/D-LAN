@@ -1,0 +1,90 @@
+/**
+  * All the GUI settings.
+  */
+
+include "common.fbs";
+
+namespace DLAN.GUI;
+
+enum Window : ubyte {
+   WIN_CHAT = 0,
+   WIN_SETTINGS = 1,
+   WIN_DOWNLOAD = 2,
+   WIN_UPLOAD = 3,
+}
+
+enum DownloadView : ubyte {
+   TREE_VIEW = 1,
+   LIST_VIEW = 2
+}
+
+enum PeerSortType : ubyte {
+   BY_NICK = 1,
+   BY_SHARING_AMOUNT = 2
+}
+
+enum SizeUnit : ubyte {
+   BYTE = 1,
+   KIB = 2,
+   MIB = 3,
+   GIB = 4,
+   TIB = 5,
+   PIB = 6
+}
+
+enum RoomSortType : ubyte {
+   BY_NAME = 1,
+   BY_NB_PEERS = 2
+}
+
+table Settings {
+   core_address: string; // Default = "localhost".
+   core_port: uint16 = 59485;
+   password: Common.Hash; // Hashed with the salt given by the core. See the 'Protos.GUI.AskForAuthentication' message.
+
+   language: Common.Language;
+
+   max_chat_message_displayed: uint32 = 500;
+   max_log_message_displayed: uint32 = 500;
+   search_time: uint32 = 3000; // [ms].
+   socket_timeout: uint32 = 7000; // [ms].
+
+   windows_state: [byte];
+   main_window_width: uint32 = 1200;
+   main_window_height: uint32 = 620;
+   main_window_maximized: bool = false;
+
+   search_column_sizes: [uint32]; // [Entry name, Folder name, Relevance, Peer, Size].
+
+   window_orders: [Window];
+
+   download_view: DownloadView = TREE_VIEW;
+
+   peer_sort_type: PeerSortType = BY_SHARING_AMOUNT;
+
+   highlighted_peers: [Peer];
+
+   // Used to show the little speed rate charts int the peers list.
+   lan_speed: uint32 = 104857600; // [B/s]. (100 MiB/s).
+
+   style: string; // The directory of the style in the 'styles' directory.
+
+   multiple_instance_allowed: bool = false;
+
+   default_emoticon_theme: string; // Default = "Default";
+
+   search_advanced_visible: bool = false;
+   search_type: uint32 = 0;
+   search_min_size_value: uint32 = 0;
+   search_min_size_unit: SizeUnit = MIB;
+   search_max_size_value: uint32 = 0;
+   search_max_size_unit: SizeUnit = MIB;
+   search_local: bool = false; // Search among our own files.
+
+   room_sort_type: RoomSortType = BY_NAME;
+}
+
+table Peer {
+   color: uint32; // RGB.
+   id: Common.Hash (required);
+}

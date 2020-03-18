@@ -1,0 +1,371 @@
+/**
+  * Protocol between core and GUI.
+  * When a command is sent to the core, one or more responds will be sent back,
+  * there cannot be other message like 'event message' between theses messages.
+  * Version: 1
+  * All string are encoded in UTF-8.
+  */
+
+include "common.fbs";
+
+namespace DLAN.GUI;
+
+/***** Core state *****/
+// Core -> GUI
+// id: 0x1001
+// The state is sent periodically to the GUI (each second for example)
+// or right after a GUI command.
+// The size of this message should be lesser than 63kB to fit in one IP packet.
+table State {
+   peers: [Peer]; // The first peer is always ourself and always exists.
+
+   shared_directories: [SharedDir];
+
+   integrity_check_enabled: bool;
+
+   password_defined: bool = false;
+
+   downloads: [Download];
+   uploads: [Upload];
+
+   stats: Stats;
+
+   listenAny: Common.IPType; // If this value is set then all the interfaces of the given protocol are listened. Otherwise see the following repeated 'interface' field.
+   interfaces: [Common.Interface];
+
+   rooms: [Room];
+}
+
+enum DownloadStatus : ubyte {
+   QUEUED = 0x1,
+   GETTING_THE_HASHES = 0x2,
+   DOWNLOADING = 0x3,
+   COMPLETE = 0x4,
+   PAUSED = 0x5,
+   DELETED = 0x6, // Should not be seen by the user.
+
+   UNKNOWN_PEER_SOURCE = 0x10, // The source peer isn't found and we don't have all the hashes.
+   ENTRY_NOT_FOUND = 0x11, // The entry isn't found in the source peer shared directories.
+   NO_SOURCE = 0x12, // All the hashes are known but one ore more chunk are not present among the other peers.
+
+   // All the following status will pause the download.
+   NO_SHARED_DIRECTORY_TO_WRITE = 0x20,
+   NO_ENOUGH_FREE_SPACE = 0x21,
+   UNABLE_TO_CREATE_THE_FILE = 0x22,
+   UNABLE_TO_RETRIEVE_THE_HASHES = 0x23,
+
+   TRANSFER_ERROR = 0x24,
+   UNABLE_TO_OPEN_THE_FILE = 0x25,
+   FILE_IO_ERROR = 0x26,
+   FILE_NON_EXISTENT = 0x27,
+   GOT_TOO_MUCH_DATA = 0x28,
+   HASH_MISSMATCH = 0x29,
+
+   UNABLE_TO_CREATE_THE_DIRECTORY = 0x30,
+
+   DIRECTORY_SCANNING_IN_PROGRESS = 0x31, // When a remote directory is being scanned it's not possible to browse it.
+   UNABLE_TO_GET_ENTRIES = 0x32
+}
+
+table Download {
+   id: uint64; // Cannot be 0.
+
+   // When the entry is physically created, 'Common.Entry.exists' is set to true.
+   // The hashes are never sent to save a bit of bandwidth (for file entry).
+   local_entry: [Common.Entry];
+
+   status: DownloadStatus = QUEUED;
+   downloaded_bytes: uint64; // Always 0 when 'local_entry' is a directory.
+
+   peer_ids: [Common.Hash]; // The first one always corresponds to the peer source.
+   peer_source_nick: string;
+}
+
+table Upload {
+   id: uint64;
+   file: Common.FileEntry; // As the download, the hashes aren't sent to save bandwidth.
+   current_part: uint32;
+   nb_part: uint32;
+   progress: uint32; // 0 to 10000.
+   peer_id: Common.Hash;
+}
+
+enum CacheStatus : ubyte {
+   LOADING_CACHE_IN_PROGRESS = 0, // Initial pass: synchronize the cache with the file system.
+   SCANNING_IN_PROGRESS = 1, // 1st pass: grab all file/dir names and their size and index it.
+   HASHING_IN_PROGRESS = 2, // 2nd pass: compute the hashes of all files.
+   UP_TO_DATE = 3,
+   UNKNOWN = 4
+}
+
+table Stats {
+   cache_status: CacheStatus;
+   progress: uint32; // 0 to 10000.
+   download_rate: uint32; // [byte/s].
+   upload_rate: uint32; // [byte/s].
+}
+
+enum PeerStatus : ubyte {
+   OK = 0,
+   VERSION_OUTDATED = 1, // Version not compatible : too old.
+   MORE_RECENT_VERSION = 2 // Version not compatible : more recent.
+}
+
+table Peer {
+   peer_id: Common.Hash (required);
+   nick: string (required);
+   sharing_amount: uint64; // [byte].
+   download_rate: uint32; // [byte/s].
+   upload_rate: uint32; // [byte/s]
+   ip: Common.IP;
+   core_version: string;
+   status: PeerStatus;
+}
+
+table SharedDir {
+   id: Common.Hash (required);
+   path: string (required); // Always ended with a '/'.
+   size: uint64;
+   free_space: uint64;
+}
+
+table Room {
+   name: string (required);
+   peer_ids: [Common.Hash]; // It never includes ourself.
+   joined: bool;
+}
+
+// GUI -> Core
+// id: 0x1002
+// Empty message to tell the core that we have finished to process the state message.
+
+
+/***** Events *****/
+// Core -> GUI
+// id: 0x1011
+// Common.ChatMessages
+
+// Core -> GUI
+// id: 0x1012
+table EventLogMessages {
+   messages: [EventLogMessage];
+}
+
+enum LogSeverity : ubyte {
+   SV_FATAL_ERROR = 0x01,
+   SV_ERROR = 0x02,
+   SV_WARNING = 0x04, // Send to the GUI but should not be shown to the user.
+   SV_DEBUG = 0x08, // Never send to the GUI, there are only logged in the core log file.
+   SV_END_USER = 0x10,
+   SV_UNKNOWN = 0x20
+}
+
+table EventLogMessage {
+   time: uint64; // In [ms] since Epoch.
+   severity: LogSeverity = SV_UNKNOWN;
+   message: string;
+
+   // Only in debug mode. (not used at all for the moment).
+   // component: string;
+}
+
+/***** Commands. *****/
+// Authentication.
+// Always send by the core when a new connection is established.
+// All other messages can't be sent or received without a proper authentication.
+// A new salt is randomly generated each time a new connection is created.
+// Core -> GUI
+// id: 0x1021
+table AskForAuthentication {
+   salt: uint64;
+   salt_challenge: uint64;
+}
+
+// Password is optional for local connections.
+// GUI -> Core
+// id: 0x1022
+table Authentication {
+   password_challenge: Common.Hash; // (hash(password) + salt) + salt_challenge
+}
+
+// Core -> GUI
+// id: 0x1023
+// If BAD_PASSWORD the core should wait a bit before sending the result (for example 1s) to avoid dictionary attack.
+enum AuthenticationStatus : ubyte {
+   AUTH_OK = 0x01,
+   AUTH_BAD_PASSWORD = 0x02,
+   AUTH_PASSWORD_NOT_DEFINED = 0x03, // The core doesn't have defined a password (empty password).
+   AUTH_ERROR = 0xFF
+}
+
+table AuthenticationResult {
+   status: AuthenticationStatus = AUTH_ERROR;
+}
+
+// GUI -> Core
+// id: 0x10B1
+// Set the language of the core.
+table Language {
+   language: Common.Language (required);
+}
+
+// GUI -> Core
+// id: 0x10D1
+// Change the core password.
+// Both sent passwords are salted with 'AskForAuthentication.new_salt'.
+// If 'new_password' is set to a null hash, the password is removed, in this case the old password isn't needed.
+table ChangePassword {
+   new_password: Common.Hash (required); // Salted with the new salt.
+   new_salt: uint64;
+
+   old_password: Common.Hash; // Salted with the old salt. Required only if a password has already been set. 'See State.password_defined'.
+}
+
+// GUI -> Core
+// id: 0x1031
+// Set the settings.
+table CoreSettings {
+   nick: string;
+   shared_directories: SharedDirectories;
+   enable_integrity_check: bool;
+
+   listen_address: string; // If address is empty then listen to any adresses, in this case the protocol is given by 'listenAny'.
+   listen_any: Common.IPType = IPv6;
+}
+
+table SharedDirectories {
+   dirs: [string]; // A directory always ends with a slash ('/').
+}
+
+// GUI -> Core
+// id: 0x1041
+table Search {
+   pattern: Common.FindPattern;
+   local: bool = false; // Search among the local files and directories if true.
+}
+
+// Core -> GUI (directly)
+// id: 0x1042
+table Tag {
+   tag: uint64;
+}
+
+// Core -> GUI (deferred)
+// This message is sent for each UDP datagram received.
+// id: 0x1043
+// Common.FindResult
+
+// GUI -> Core
+// id: 0x1051
+table Browse {
+   peer_id: Common.Hash;
+   dirs: [Common.DirEntry];
+   get_roots: bool = false; // If true the roots directories will be appended to the entries result. If the Dir field above is empty then the roots folders will always be sent whatever get_roots is true or false.
+}
+
+// Core -> GUI (directly)
+// id: 0x1052
+// Tag
+// Core -> GUI (deferred)
+// id: 0x1053
+table BrowseResult {
+   tag: uint64;
+   entries: [Common.Entries];
+}
+
+// GUI -> Core
+// id: 0x1061
+// Remove one or several download from the queue. If this download
+// is not finished the unfinished file is removed.
+table CancelDownloads {
+   ids: [uint64];
+   complete: bool; // If true all completed downloads are removed from the download queue.
+}
+
+// GUI -> Core
+// id: 0x10C1
+// Pause or unpause the given downloads.
+table PauseDownloads {
+   ids: [uint64];
+   pause: bool = true; // Id false -> unpause.
+}
+
+// GUI -> Core
+// id: 0x1071
+// Tell the core to move one or more downloads in the list right before or after a given set of downloads.
+// 'id_ref' and 'id_to_move' must have at least one item each.
+// The order of the moved downloads are kept unchanged.
+//
+// Example #1: id_ref = [21], id_to_move = [16, 18], position = BEFORE
+// Initial list: [34, 21, 18, 54, 16]
+// After the operation: [34, 18, 16, 21, 54]
+//
+// Example #2: id_ref = [8, 2, 5], id_to_move = [3, 6], position = AFTER
+// Initial list : [3, 8, 5, 6, 2]
+// After the operation: [8, 5, 2, 3, 6]
+enum Position : ubyte {
+   BEFORE = 1,
+   AFTER = 2
+}
+
+table MoveDownloads {
+   ids_ref: [uint64];
+   ids_to_move: [uint64];
+   position: Position = BEFORE;
+}
+
+// GUI -> Core
+// id: 0x1081
+// Says to the core to download a file or a directory.
+// The given path can be relative to a shared directory (if destination_directory_id is set)  or absolute (if destination_directory_id is null).
+table NewDownload {
+   peer_id: Common.Hash; // From where the file/dir is.
+   entry: Common.Entry;
+
+   destination_directory_id: Common.Hash; // Where to put the folder/file. It must one of the directory of State.destination_directory. If this directory is not set, the first directory with enough free space will be taken.
+   destination_path: string; // Default = "/". Must ended with an '/'. If 'Common.Hash destination_directory_id' isn't set then a new shred directory will be created (if needed).
+}
+
+// GUI -> Core
+// id: 0x1091
+// Send a chat message to the given room. The message goes to the main chat if 'room' isn't set.
+table ChatMessage {
+   message: string;
+   room: string;
+   peer_ids_answer: [Common.Hash]; // The peers involved in the message.
+}
+
+enum ChatMessageResultStatus : ubyte {
+   OK = 0,
+   MESSAGE_TOO_LARGE = 1,
+   ERROR_UNKNOWN = 255
+}
+
+// Core -> GUI (directly)
+// id: 0x1092
+table ChatMessageResult {
+   status: ChatMessageResultStatus = OK;
+}
+
+// GUI -> Core
+// id: 0x1094
+table JoinRoom {
+   name: string;
+}
+
+// GUI -> Core
+// id: 0x1098
+table LeaveRoom {
+   name: string;
+}
+
+// GUI -> Core
+// id: 0x10A1
+// Ask to receive a new state.
+// This message doesn't have a body.
+
+// GUI -> Core
+// id: 0x10E1
+// Ask to refresh the known network interfaces.
+// A new state is immediately sent by the core.
+// This message doesn't have a body.
