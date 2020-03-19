@@ -17,7 +17,7 @@ namespace DLAN.Core;
 // These hashes can come from different files.
 // Remember that the peer ID of the sender is in the message header.
 // a -> all
-// id : 0x01
+// id : 0xA1
 table IMAlive {
    protocol_version: uint32; // If 'version' from another peer doesn't correspond to our own version, this peer is ignored.
    core_version: string; // The core version, for example: "1.1.4 - Linux Mr. 3.2.0-24-generic".
@@ -39,7 +39,7 @@ table IMAlive {
 // Return an array with a bool value for each
 // given chunks. 'true' means "I have this chunk".
 // all -> a
-// id : 0x02
+// id : 0xA2
 table ChunksOwned {
    tag: uint64; // The repeated number from 'IMAlive.tag'.
    chunk_state: [bool]; // The array size must have the same size of 'IMAlive.chunks'.
