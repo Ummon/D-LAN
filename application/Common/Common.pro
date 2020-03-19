@@ -8,6 +8,7 @@ TARGET = Common
 include(common.pri)
 include(../Libs/protobuf.pri)
 include(../Protos/Protos.pri)
+include(../FlatBuffersSchema/FlatBuffers.pri)
 
 INCLUDEPATH += . \
     ..
@@ -76,5 +77,3 @@ HEADERS += Hashes.h \
     SelfWeakPointer.h \
     Hash_noShare.h \
     Hash_share.h
-
-

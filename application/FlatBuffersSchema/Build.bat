@@ -1,1 +1,1 @@
-flatc --cpp common.fbs core_protocol.fbs core_settings.fbs file_cache.fbs gui_protocol.fbs gui_settings.fbs
+..\Tools\flatc --cpp --scoped-enums --filename-suffix _fbs common.fbs core_protocol.fbs core_settings.fbs file_cache.fbs gui_protocol.fbs gui_settings.fbs queue.fbs
