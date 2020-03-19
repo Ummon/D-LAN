@@ -1,0 +1,31 @@
+/**
+  * The persisted queued.
+  * The entry status is not saved, it's defined during the download process.
+  * Version : 4
+  * All string are encoded in UTF-8.
+  */
+
+include "common.fbs";
+
+namespace DLAN.Queue;
+
+table Queue {
+   version: uint32;
+   entries: [Entry];
+}
+
+enum Status : ubyte {
+   QUEUED = 1,
+   COMPLETE = 4,
+   PAUSED = 5
+}
+
+table Entry {
+   remote_entry: Common.Entry;
+   local_entry: Common.Entry;
+
+   peer_source_id: Common.Hash;
+   peer_source_nick: string;
+
+   status: Status = QUEUED;
+}
