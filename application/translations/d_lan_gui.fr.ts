@@ -664,7 +664,7 @@
     </message>
     <message>
         <location line="+2"/>
-        <source>His protocol version is outaded and incompatible with ours. He should upgrade his version!</source>
+        <source>Their protocol version is outaded and incompatible with ours. They should upgrade their version!</source>
         <translation>La version de son protocole est obsolète et incompatible avec la notre. Il devrait mettre à jour sa version!</translation>
     </message>
     <message>

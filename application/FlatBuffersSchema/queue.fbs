@@ -7,7 +7,7 @@
 
 include "common.fbs";
 
-namespace DLAN.Queue;
+namespace FBS.Queue;
 
 table Queue {
    version: uint32;

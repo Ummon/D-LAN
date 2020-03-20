@@ -4,7 +4,7 @@
 
 include "common.fbs";
 
-namespace DLAN.Core;
+namespace FBS.Core;
 
 table Settings {
    nick: string;

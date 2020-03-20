@@ -6,7 +6,7 @@
 
 include "common.fbs";
 
-namespace DLAN.Core;
+namespace FBS.Core;
 
 /***** Multicast UDP messages. *****/
 // I'm alive.

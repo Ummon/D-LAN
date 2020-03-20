@@ -15,7 +15,7 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #include <Peers/PeerListModel.h>
 using namespace GUI;
 
@@ -239,7 +239,7 @@ QVariant PeerListModel::data(const QModelIndex& index, int role) const
          if (peer->status == Protos::GUI::State::Peer::MORE_RECENT_VERSION)
             toolTip.append(tr("They protocol version is more recent and incompatible with ours. Upgrade you version!")).append('\n');
          else if (peer->status == Protos::GUI::State::Peer::VERSION_OUTDATED)
-            toolTip.append(tr("They protocol version is outaded and incompatible with ours. They should upgrade his version!")).append('\n');
+            toolTip.append(tr("They protocol version is outaded and incompatible with ours. They should upgrade their version!")).append('\n');
 
          if (!coreVersion.isEmpty())
             toolTip += tr("Version %1\n").arg(coreVersion);

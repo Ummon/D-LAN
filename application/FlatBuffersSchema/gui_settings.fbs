@@ -4,7 +4,7 @@
 
 include "common.fbs";
 
-namespace DLAN.GUI;
+namespace FBS.GUI;
 
 enum Window : ubyte {
    WIN_CHAT = 0,

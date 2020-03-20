@@ -31,6 +31,8 @@ fbs_common.commands = cd $$PWD && $$FLATC $$FLATBUFFERS_PARAMS common.fbs
 
 INCLUDEPATH += $$PWD/../Libs
 
+HEADERS += $$PWD/../Libs/flatbuffers.h
+
 QMAKE_EXTRA_TARGETS += fbs_queue fbs_gui_settings fbs_gui_protocol fbs_files_cache fbs_core_settings fbs_core_protocol fbs_common
 PRE_TARGETDEPS += $$PWD/queue_fbs.h $$PWD/gui_settings_fbs.h $$PWD/gui_protocol_fbs.h $$PWD/files_cache_fbs.h $$PWD/core_settings_fbs.h $$PWD/core_protocol_fbs.h $$PWD/common_fbs.h
 

@@ -3,7 +3,7 @@
   * All string are encoded in UTF-8.
   */
 
-namespace DLAN.Common;
+namespace FBS.Common;
 
 table Null {
 }

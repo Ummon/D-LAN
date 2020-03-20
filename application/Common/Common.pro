@@ -21,6 +21,7 @@ DEFINES += COMMON_LIBRARY
 
 SOURCES += \
     Global.cpp \
+    Network/MessageFBS.cpp \
     ZeroCopyStreamQIODevice.cpp \
     Settings.cpp \
     TransferRateCalculator.cpp \
@@ -47,6 +48,7 @@ HEADERS += Hashes.h \
     Hash.h \
     Constants.h \
     Global.h \
+    Network/MessageFBS.h \
     Uncopyable.h \
     ZeroCopyStreamQIODevice.h \
     Settings.h \

@@ -6,7 +6,7 @@
 
 include "common.fbs";
 
-namespace DLAN.FileCache;
+namespace FBS.FileCache;
 
 // All the hashes for a set of file.
 table Hashes {

@@ -37,10 +37,12 @@ namespace Common
 
          /***** CORE *****/
 
+         CORE_IM_ALIVE_PRIOR_V4 =         0x0001,
+
          // UDP.
-         CORE_IM_ALIVE =                  0x0001,
+         CORE_IM_ALIVE =                  0x00A1,
          CORE_GOODBYE =                   0x00FE,
-         CORE_CHUNKS_OWNED =              0x0002,
+         CORE_CHUNKS_OWNED =              0x00A2,
 
          CORE_CHAT_MESSAGES =             0x0011,
          CORE_GET_LAST_CHAT_MESSAGES =    0x0018,

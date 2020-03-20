@@ -8,7 +8,7 @@
 
 include "common.fbs";
 
-namespace DLAN.GUI;
+namespace FBS.GUI;
 
 /***** Core state *****/
 // Core -> GUI

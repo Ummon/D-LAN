@@ -15,8 +15,10 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #pragma once
+
+#include <tuple>
 
 #include <google/protobuf/message.h>
 
@@ -45,8 +47,6 @@ namespace Common
       template <typename T = google::protobuf::Message>
       const T& getMessage() const;
 
-      // getOldIMAliveMessage();
-
       static int writeMessageToBuffer(char* buffer, quint32 bufferSize, const MessageHeader& header, const google::protobuf::Message* message = 0);
       static int writeMessageToDevice(QIODevice* ioDevice, const MessageHeader& header, const google::protobuf::Message* message = 0);
 
@@ -63,7 +63,7 @@ namespace Common
       template <typename T>
       static Message readMessageBody(const MessageHeader& header, T source);
 
-   private:      
+   private:
       static MessageHeader::MessageType getType(const google::protobuf::Message& message);
 
       template <typename T>
