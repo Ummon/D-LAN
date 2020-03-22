@@ -120,8 +120,8 @@ message ChatMessages {
 message Interface {
    message Address {
       enum Protocol {
-         IPv4 = 0;
-         IPv6 = 1;
+         IPv6 = 0;
+         IPv4 = 1;
       }
       string address = 1;
       Protocol protocol = 2;

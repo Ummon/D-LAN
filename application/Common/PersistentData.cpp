@@ -51,13 +51,13 @@ const QString PersistentData::TEMP_SUFFIX_TERM(".temp");
 void PersistentData::setValue(const QString& name, const google::protobuf::Message& data, Global::DataFolderType dataFolderType, bool humanReadable)
 {
    Q_ASSERT(!name.isEmpty());
-   PersistentData::setValueFilepath(Global::getDataFolder(dataFolderType) + '/' + name, data, dataFolderType, humanReadable);
+   PersistentData::setValueFilepath(Global::getDataFolder(dataFolderType) + '/' + name, data, humanReadable);
 }
 
 void PersistentData::setValue(const QString& directory, const QString& name, const google::protobuf::Message& data, Global::DataFolderType dataFolderType, bool humanReadable)
 {
    Q_ASSERT(!name.isEmpty());
-   PersistentData::setValueFilepath(directory + '/' + name, data, dataFolderType, humanReadable);
+   PersistentData::setValueFilepath(directory + '/' + name, data, humanReadable);
 }
 
 /**
@@ -68,13 +68,13 @@ void PersistentData::setValue(const QString& directory, const QString& name, con
 void PersistentData::getValue(const QString& name, google::protobuf::Message& data, Global::DataFolderType dataFolderType, bool humanReadable)
 {
    Q_ASSERT(!name.isEmpty());
-   PersistentData::getValueFilepath(Global::getDataFolder(dataFolderType) + '/' + name, data, dataFolderType, humanReadable);
+   PersistentData::getValueFilepath(Global::getDataFolder(dataFolderType) + '/' + name, data, humanReadable);
 }
 
 void PersistentData::getValue(const QString& name, const QString& directory, google::protobuf::Message& data, Global::DataFolderType dataFolderType, bool humanReadable)
 {
    Q_ASSERT(!name.isEmpty());
-   PersistentData::getValueFilepath(directory + '/' + name, data, dataFolderType, humanReadable);
+   PersistentData::getValueFilepath(directory + '/' + name, data, humanReadable);
 }
 
 /**
@@ -94,13 +94,13 @@ catch (Global::UnableToGetFolder& e)
 }
 
 
-void PersistentData::setValueFilepath(const QString& filepath, const google::protobuf::Message& data, Global::DataFolderType dataFolderType, bool humanReadable)
+void PersistentData::setValueFilepath(const QString& filepath, const google::protobuf::Message& data, bool humanReadable)
 try
 {
    const QString TEMP_FILEPATH(filepath + TEMP_SUFFIX_TERM);
 
    // To avoid ::Print(..) to crash, see defect #153.
-   if (Global::availableDiskSpace(Global::getDataFolder(dataFolderType)) < 20 * 1024 * 1024)
+   if (Global::availableDiskSpace(filepath) < 20 * 1024 * 1024)
       return;
 
    {
@@ -139,7 +139,7 @@ catch (Global::UnableToGetFolder& e)
    throw PersistentDataIOException(e.errorMessage);
 }
 
-void PersistentData::getValueFilepath(const QString& filepath, google::protobuf::Message& data, Global::DataFolderType dataFolderType, bool humanReadable)
+void PersistentData::getValueFilepath(const QString& filepath, google::protobuf::Message& data, bool humanReadable)
 try
 {
    QFile file(filepath);

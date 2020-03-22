@@ -15,7 +15,7 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #include <Common/Network/MessageSocket.h>
 using namespace Common;
 
@@ -134,7 +134,7 @@ void MessageSocket::send(MessageHeader::MessageType type, const google::protobuf
    if (!this->listening)
       return;
 
-   MessageHeader header(type, message ? message->ByteSize() : 0, this->localID);
+   MessageHeader header(type, message ? message->ByteSizeLong() : 0, this->localID);
 
    MESSAGE_SOCKET_LOG_DEBUG(QString("Socket[%1]::send: %2 to %3\n%4").arg(this->num).arg(header.toStr()).arg(this->remoteID.toStr()).arg(message ? ProtoHelper::getDebugStr(*message) : "<empty message>"));
 

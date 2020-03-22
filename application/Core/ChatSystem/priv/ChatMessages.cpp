@@ -15,7 +15,7 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #include <priv/ChatMessages.h>
 using namespace CS;
 
@@ -110,7 +110,7 @@ QList<QSharedPointer<ChatMessage>> ChatMessages::fillProtoChatMessages(Protos::C
    for (QMutableListIterator<QSharedPointer<ChatMessage>> i(result); i.hasNext();)
    {
       i.next()->fillProtoChatMessage(*chatMessages.add_message());
-      if (maxByteSize != std::numeric_limits<int>::max() && chatMessages.ByteSize() > maxByteSize)
+      if (maxByteSize != std::numeric_limits<int>::max() && int(chatMessages.ByteSizeLong()) > maxByteSize)
       {
          chatMessages.mutable_message()->RemoveLast();
          return result;
@@ -170,7 +170,7 @@ void ChatMessages::saveToFile(const QString& filename) const
   *  - The message is already in the list.
   */
 QList<QSharedPointer<ChatMessage>> ChatMessages::insert(const QList<QSharedPointer<ChatMessage>>& messages)
-{                                   
+{
    static const int MAX_NUMBER_OF_STORED_CHAT_MESSAGES = SETTINGS.get<quint32>("max_number_of_stored_chat_messages");
 
    QList<QSharedPointer<ChatMessage>> insertedMessages;

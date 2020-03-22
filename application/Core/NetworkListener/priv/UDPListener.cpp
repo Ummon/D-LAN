@@ -172,7 +172,7 @@ void UDPListener::sendIMAliveMessage()
    const int numberOfPeers = this->peerManager->getNbOfPeers();
    const int maxNumberOfHashesToSend = numberOfPeers == 0 ? std::numeric_limits<int>::max() : IMALIVE_PERIOD * (MAX_IMALIVE_THROUGHPUT - numberOfPeers * FIXED_RATE_PER_PEER) / (numberOfPeers * HASH_SIZE);
 
-   int numberOfHashesToSend = (this->MAX_UDP_DATAGRAM_PAYLOAD_SIZE - IMAliveMessage.ByteSize() - Common::MessageHeader::HEADER_SIZE) / HASH_SIZE;
+   int numberOfHashesToSend = (this->MAX_UDP_DATAGRAM_PAYLOAD_SIZE - IMAliveMessage.ByteSizeLong() - Common::MessageHeader::HEADER_SIZE) / HASH_SIZE;
    if (numberOfHashesToSend > maxNumberOfHashesToSend)
       numberOfHashesToSend = maxNumberOfHashesToSend;
 
@@ -438,7 +438,7 @@ void UDPListener::initUnicastUDPSocket()
   */
 int UDPListener::writeMessageToBuffer(Common::MessageHeader::MessageType type, const google::protobuf::Message& message)
 {
-   const Common::MessageHeader header(type, message.ByteSize(), this->getOwnID());
+   const Common::MessageHeader header(type, message.ByteSizeLong(), this->getOwnID());
 
    const int nbBytesWritten = Common::Message::writeMessageToBuffer(this->buffer, this->MAX_UDP_DATAGRAM_PAYLOAD_SIZE, header, &message);
    if (!nbBytesWritten)
