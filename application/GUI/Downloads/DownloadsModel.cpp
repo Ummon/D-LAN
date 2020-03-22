@@ -15,7 +15,7 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #include <Downloads/DownloadsModel.h>
 using namespace GUI;
 
@@ -59,9 +59,7 @@ QVariant DownloadsModel::getData(const Protos::GUI::State::Download& download, c
             download.local_entry().type()
          ));
       case 3:
-         if (download.has_peer_source_nick())
-            return Common::ProtoHelper::getStr(download, &Protos::GUI::State::Download::peer_source_nick);
-         return QString();
+         return Common::ProtoHelper::getStr(download, &Protos::GUI::State::Download::peer_source_nick);
 
       case 4:
          if (download.peer_id_size() > 1)

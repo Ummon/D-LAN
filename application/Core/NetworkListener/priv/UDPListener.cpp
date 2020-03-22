@@ -227,16 +227,6 @@ void UDPListener::processPendingMulticastDatagrams()
 
       try
       {
-         if (header.getType() == Common::MessageHeader::CORE_IM_ALIVE_PRIOR_V4)
-         {
-            QString nick;
-            quint64 amount;
-            quint32 protocolVersion;
-            std::tie(nick, amount, protocolVersion) = Common::MessageFBS::readOldIMAliveMessage(this->bodyBuffer);
-            this->peerManager->updatePeer(header.getSenderID(), QHostAddress(), 0, nick, amount, QString("SALUT"), 0, 0, protocolVersion);
-            return;
-         }
-
          const Common::Message& message = Common::Message::readMessageBody(header, this->bodyBuffer);
 
          switch (header.getType())
@@ -470,7 +460,7 @@ Common::MessageHeader UDPListener::readDatagramToBuffer(QUdpSocket& socket, QHos
       return Common::MessageHeader();
    }
 
-   Common::MessageHeader header = Common::MessageHeader::readHeader(buffer);
+   Common::MessageHeader header = Common::MessageHeader::readHeader(this->buffer);
 
    if (header.getSize() > datagramSize - Common::MessageHeader::HEADER_SIZE)
    {
@@ -486,7 +476,7 @@ Common::MessageHeader UDPListener::readDatagramToBuffer(QUdpSocket& socket, QHos
       return header;
    }
 
-   if (header.getType() != Common::MessageHeader::CORE_IM_ALIVE && header.getType() != Common::MessageHeader::CORE_IM_ALIVE_PRIOR_V4)
+   if (header.getType() != Common::MessageHeader::CORE_IM_ALIVE)
    {
       PM::IPeer* peer = this->peerManager->getPeer(header.getSenderID());
       if (!peer)

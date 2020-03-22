@@ -15,7 +15,7 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #include <priv/RemoteConnection.h>
 using namespace RCM;
 
@@ -478,11 +478,11 @@ void RemoteConnection::onNewMessage(const Common::Message& message)
       {
          const Protos::GUI::CoreSettings& coreSettingsMessage = message.getMessage<Protos::GUI::CoreSettings>();
 
-         if (coreSettingsMessage.has_nick())
+         if (coreSettingsMessage.nickOptional_case() == Protos::GUI::CoreSettings::NickOptionalCase::kNick)
             this->peerManager->setNick(Common::ProtoHelper::getStr(coreSettingsMessage, &Protos::GUI::CoreSettings::nick));
 
-         if (coreSettingsMessage.has_enable_integrity_check())
-            SETTINGS.set("check_received_data_integrity", coreSettingsMessage.enable_integrity_check());
+         if (coreSettingsMessage.enable_integrity_check() != Protos::Common::TS_NO_CHANGE)
+            SETTINGS.set("check_received_data_integrity", coreSettingsMessage.enable_integrity_check() == Protos::Common::TriState::TS_TRUE);
 
          try
          {
@@ -683,7 +683,7 @@ void RemoteConnection::onNewMessage(const Common::Message& message)
          {
             if (downloadMessage.has_destination_directory_id())
                this->downloadManager->addDownload(downloadMessage.entry(), peer, downloadMessage.destination_directory_id().hash(), Common::ProtoHelper::getStr(downloadMessage, &Protos::GUI::Download::destination_path));
-            else if (downloadMessage.has_destination_path())
+            else if (downloadMessage.destination_path().size() > 0)
                this->downloadManager->addDownload(downloadMessage.entry(), peer, Common::ProtoHelper::getStr(downloadMessage, &Protos::GUI::Download::destination_path));
             else
                this->downloadManager->addDownload(downloadMessage.entry(), peer);
@@ -698,7 +698,7 @@ void RemoteConnection::onNewMessage(const Common::Message& message)
          const Protos::GUI::ChatMessage& chatMessage = message.getMessage<Protos::GUI::ChatMessage>();
 
          CS::IChatSystem::SendStatus status =
-            chatMessage.has_room() ?
+            chatMessage.room().size() > 0 ?
                  this->chatSystem->send(Common::ProtoHelper::getStr(chatMessage, &Protos::GUI::ChatMessage::message), Common::ProtoHelper::getStr(chatMessage, &Protos::GUI::ChatMessage::room))
                : this->chatSystem->send(Common::ProtoHelper::getStr(chatMessage, &Protos::GUI::ChatMessage::message));
 

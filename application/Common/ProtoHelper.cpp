@@ -43,7 +43,7 @@ void ProtoHelper::setLang(Protos::Common::Language& langMess, const QLocale& loc
 QLocale ProtoHelper::getLang(const Protos::Common::Language& langMess)
 {
    QString langStr = ProtoHelper::getStr(langMess, &Protos::Common::Language::lang);
-   if (langMess.has_country())
+   if (ProtoHelper::getStr(langMess, &Protos::Common::Language::country).isEmpty())
       langStr.append("_").append(ProtoHelper::getStr(langMess, &Protos::Common::Language::country));
 
    return QLocale(langStr);

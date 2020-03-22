@@ -15,7 +15,7 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #pragma once
 
 #include <QIODevice>
@@ -37,12 +37,10 @@ namespace Common
 
          /***** CORE *****/
 
-         CORE_IM_ALIVE_PRIOR_V4 =         0x0001,
-
          // UDP.
-         CORE_IM_ALIVE =                  0x00A1,
+         CORE_IM_ALIVE =                  0x0001,
          CORE_GOODBYE =                   0x00FE,
-         CORE_CHUNKS_OWNED =              0x00A2,
+         CORE_CHUNKS_OWNED =              0x0002,
 
          CORE_CHAT_MESSAGES =             0x0011,
          CORE_GET_LAST_CHAT_MESSAGES =    0x0018,
@@ -100,7 +98,7 @@ namespace Common
          GUI_REFRESH =                    0x10A1,
 
          GUI_REFRESH_NETWORK_INTERFACES = 0x10E1
-      };      
+      };
 
       MessageHeader();
       MessageHeader(MessageType type, quint32 size, const Hash senderID);

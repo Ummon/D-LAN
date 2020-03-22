@@ -1,76 +1,77 @@
 /**
   * All the core settings.
   */
-  
+
+syntax = "proto3";
+
 import "common.proto";
 
 package Protos.Core;
 
 message Settings {
-   optional string nick = 1;
-   optional Common.Hash peer_id = 2;
-   
-   optional Common.Language language = 85;
-   
-   optional uint32 chunk_size = 3 [default = 67108864]; // (64 MiB).
-   optional uint32 buffer_size_reading = 4 [default = 131072]; // (128 KiB). Buffer used when reading files (uploading and computing hashes).
-   optional uint32 buffer_size_writing = 5 [default = 524288]; // (512 KiB). Buffer used when writing files (downloading).
-   optional uint32 socket_buffer_size = 6 [default = 131072]; // (128 KiB). Max size of the socket buffer, using when receiving or sending data over the sockets.
-   optional uint32 socket_timeout = 7 [default = 7000]; // [ms].
-      
+   string nick = 1;
+   Common.Hash peer_id = 2;
+
+   Common.Language language = 85;
+
+   uint32 buffer_size_reading = 4; // [default = 131072] (128 KiB). Buffer used when reading files (uploading and computing hashes).
+   uint32 buffer_size_writing = 5; // [default = 524288] (512 KiB). Buffer used when writing files (downloading).
+   uint32 socket_buffer_size = 6; // [default = 131072] (128 KiB). Max size of the socket buffer, using when receiving or sending data over the sockets.
+   uint32 socket_timeout = 7; // [default = 7000] [ms].
+
    ///// FileManager /////
-   optional uint32 minimum_duration_when_hashing = 20 [default = 3000]; // [ms].
-   optional uint32 scan_period_unwatchable_dirs = 21 [default = 30000]; // [ms].
-   optional string unfinished_suffix_term = 22 [default = ".unfinished"];
-   optional uint32 minimum_free_space = 23 [default = 1048576]; // (1 MiB) After creating a file in a directory this is the minimum space it must be left.
-   optional uint32 save_cache_period = 24 [default = 60000]; // [ms]. (1 min).
-   optional bool check_received_data_integrity = 25 [default = true]; // All chunk data received will be checked against their hash if true.
-   optional uint32 get_entries_timeout = 101 [default = 5000]; // [ms].
-   
+   uint32 minimum_duration_when_hashing = 20; // [default = 3000] [ms].
+   uint32 scan_period_unwatchable_dirs = 21; // [default = 30000] [ms].
+   string unfinished_suffix_term = 22; // [default = ".unfinished"].
+   uint32 minimum_free_space = 23; // [default = 1048576] (1 MiB) After creating a file in a directory this is the minimum space it must be left.
+   uint32 save_cache_period = 24; // [default = 60000] [ms]. (1 min).
+   bool check_received_data_integrity = 25; // [default = true] All chunk data received will be checked against their hash if true.
+   uint32 get_entries_timeout = 101; // [default = 5000] [ms].
+
    ///// PeerManager /////
-   optional uint32 pending_socket_timeout = 30 [default = 10000]; // [ms]. When a new connection is created we wait a maximum of this period before data incoming.
-   optional double peer_timeout_factor = 31 [default = 3.2]; // If we don't receive any 'IMAlive' message from a peer during peer_timeout_factor * peer_imalive_period the peer is considering as dead.
-   optional uint32 idle_socket_timeout = 32 [default = 60000]; // [ms], (1 min). Idle connections can exist for this duration.
-   optional uint32 max_number_idle_socket = 33 [default = 6]; // The maximum number of idle socket per distant peer. (one for each TCP message : 'GetEntries',  'GetHashes', 'GetChunk').
-   optional uint32 get_hashes_timeout = 34 [default = 20000]; // [ms] (20 s). After sending the message 'GetHashes' we will receive a stream of hashes, if the time between two hashes exceed this value, the request is aborted.
-   
+   uint32 pending_socket_timeout = 30; // [default = 10000] [ms]. When a new connection is created we wait a maximum of this period before data incoming.
+   double peer_timeout_factor = 31; // [default = 3.2] If we don't receive any 'IMAlive' message from a peer during peer_timeout_factor * peer_imalive_period the peer is considering as dead.
+   uint32 idle_socket_timeout = 32; // [default = 60000] [ms], (1 min). Idle connections can exist for this duration.
+   uint32 max_number_idle_socket = 33; // [default = 6] The maximum number of idle socket per distant peer. (one for each TCP message : 'GetEntries',  'GetHashes', 'GetChunk').
+   uint32 get_hashes_timeout = 34; // [default = 20000] [ms] (20 s). After sending the message 'GetHashes' we will receive a stream of hashes, if the time between two hashes exceed this value, the request is aborted.
+
    ///// DownloadManager /////
-   optional uint32 number_of_downloader = 40 [default = 3]; // Maximum number of simultaneous download.
-   optional uint32 lan_speed = 41 [default = 52428800]; // [B/s]. (50 MiB/s).
-   optional double time_recheck_chunk_factor = 42 [default = 4]; // If a chunk download take more than 4 times it should ('chunk_size' / 'lan_speed' is the minimum download time of a chunk) a better peer will be looking for.
-   optional double switch_to_another_peer_factor = 43 [default = 1.5]; // To switch from the current peer to another the other download speed must be superior to this factor of the current speed.
-   optional uint32 download_rate_valid_time_factor = 44 [default = 3000]; // A download rate for a peer is valid for a time period of 'download_rate_valid_time_factor' / 'lan_speed' [s].
-   optional uint32 save_queue_period = 45 [default = 60000]; // [ms]. (1 min).
-   optional uint32 block_duration_corrupted_data = 46 [default = 30000]; // [ms]. // When a received chunk do not match its hash, the sender is blocked for a while.
-   
+   uint32 number_of_downloader = 40; // [default = 3] Maximum number of simultaneous download.
+   uint32 lan_speed = 41; // [default = 52428800] [B/s]. (50 MiB/s).
+   double time_recheck_chunk_factor = 42; // [default = 4] If a chunk download take more than 4 times it should ('chunk_size' / 'lan_speed' is the minimum download time of a chunk) a better peer will be looking for.
+   double switch_to_another_peer_factor = 43; // [default = 1.5] To switch from the current peer to another the other download speed must be superior to this factor of the current speed.
+   uint32 download_rate_valid_time_factor = 44; // [default = 3000] A download rate for a peer is valid for a time period of 'download_rate_valid_time_factor' / 'lan_speed' [s].
+   uint32 save_queue_period = 45; // [default = 60000] [ms]. (1 min).
+   uint32 block_duration_corrupted_data = 46; // [default = 30000] [ms]. // When a received chunk do not match its hash, the sender is blocked for a while.
+
    ///// UploadManager /////
-   optional uint32 upload_lifetime = 50 [default = 5000]; // [ms].
-   optional uint32 upload_min_nb_thread = 51 [default = 3]; // To be efficiant, there is always this number of thread prepared to upload a chunk.
-   optional uint32 upload_thread_lifetime = 52 [default = 30000]; // [ms].
-   
+   uint32 upload_lifetime = 50; // [default = 5000] [ms].
+   uint32 upload_min_nb_thread = 51; // [default = 3] To be efficiant, there is always this number of thread prepared to upload a chunk.
+   uint32 upload_thread_lifetime = 52; // [default = 30000] [ms].
+
    ///// NetworkListener /////
-   optional uint32 peer_imalive_period = 60 [default = 5000]; // [ms]. Send an IMAlive message each 5 s.
-   optional uint32 unicast_base_port = 61 [default = 59487]; // If it's already taken we will look further to a free port. (UDP + TCP).
-   optional uint32 multicast_port = 62 [default = 59486]; // (UDP)
-   optional uint32 multicast_group = 63 [default = 3960285976]; // IPv4: 236.13.43.24 / IPv6: ff0e:ec0d:2b18::
-   optional string channel = 89 [default = "main"]; // Used with 'multicast_group' to define the IPv6 multicast group.
-   optional uint32 multicast_ttl = 64 [default = 31];
-   optional uint32 max_udp_datagram_size = 65 [default = 16356]; // (~16 KiB). It doesn't include the IP+UDP header (28 bytes). It's an arbitrary limit and will not prevent IP fragmentation.
+   uint32 peer_imalive_period = 60; // [default = 5000] [ms]. Send an IMAlive message each 5 s.
+   uint32 unicast_base_port = 61; // [default = 59487] If it's already taken we will look further to a free port. (UDP + TCP).
+   uint32 multicast_port = 62; // [default = 59486] (UDP)
+   uint32 multicast_group = 63; // [default = 3960285976] IPv4: 236.13.43.24 / IPv6: ff0e:ec0d:2b18::
+   string channel = 89; // [default = "main"] Used with 'multicast_group' to define the IPv6 multicast group.
+   uint32 multicast_ttl = 64; // [default = 31].
+   uint32 max_udp_datagram_size = 65; // [default = 16356] (~16 KiB). It doesn't include the IP+UDP header (28 bytes). It's an arbitrary limit and will not prevent IP fragmentation.
 
    // This is the max throughput allowed for the 'IMAlive' message for the whole network.
    // It means thats n * s / 'peer_imalive_period' must not exceed this value. Where n is the number of peer and s the size of the 'IMAlive' message.
    // The 'IMAlive' message size may vary from ~100 bytes to ~'max_udp_datagram_size' depending the number of hashes in it.
-   optional uint32 max_imalive_throughput = 91 [default = 1048576]; // [B/s]. (1 MiB/s).
+   uint32 max_imalive_throughput = 91; // [default = 1048576] [B/s]. (1 MiB/s).
 
-   optional uint32 udp_buffer_size = 66 [default = 163840]; // (10 * 16KiB).
-   optional uint32 max_number_of_search_result_to_send = 68 [default = 300];
-   optional uint32 max_number_of_result_shown = 69 [default = 5000]; // For one search we accept a maximum of 5000 results.
-   optional string listen_address = 86 [default = ""]; // If address is empty then listen to any adresses, in this case the protocol is given by 'listenAny'.
-   optional Common.Interface.Address.Protocol listen_any = 87 [default = IPv6];
+   uint32 udp_buffer_size = 66; // [default = 163840] (10 * 16KiB).
+   uint32 max_number_of_search_result_to_send = 68; // [default = 300]
+   uint32 max_number_of_result_shown = 69; // [default = 5000] For one search we accept a maximum of 5000 results.
+   string listen_address = 86; // [default = ""] If address is empty then listen to any adresses, in this case the protocol is given by 'listenAny'.
+   Common.Interface.Address.Protocol listen_any = 87; // [default = IPv6].
 
    ///// ChatSystem /////
-   optional uint32 max_number_of_stored_chat_messages = 70 [default = 500]; // This is the number of saved message per room.
-   optional uint32 number_of_chat_messages_to_retrieve = 92 [default = 500]; // Periodically we ask to a random peer the last messages.
+   uint32 max_number_of_stored_chat_messages = 70; // [default = 500] This is the number of saved message per room.
+   uint32 number_of_chat_messages_to_retrieve = 92; // [default = 500] Periodically we ask to a random peer the last messages.
    repeated string joined_chat_rooms = 102; // The joined chat rooms, will be automatically joined at start.
 
    // [ms]. (2 seconds). Average time in second for everyone to know a new message: t = log2(n) * 'get_last_chat_messages_period' / 1000. Where n = number of peers.
@@ -78,16 +79,16 @@ message Settings {
    //  - For n = 10 peers: t = 6.6 seconds.
    //  - For n = 100 peers: t = 13.3 seconds.
    //  - For n = 1000 peers: t = 19.9 seconds.
-   optional uint32 get_last_chat_messages_period = 93 [default = 2000];
-   optional uint32 save_chat_messages_period = 94 [default = 90000]; // [ms]. (1.5 min).
-   
+   uint32 get_last_chat_messages_period = 93; // [default = 2000] [ms]. (2 s).
+   uint32 save_chat_messages_period = 94; // [default = 90000] [ms]. (1.5 min).
+
    ///// RemoteControlManager /////
-   optional uint32 remote_control_port = 80 [default = 59485];
-   optional Common.Hash remote_password = 81; // Hashed + salted. Only used for non-local connection. If defined salt field must be set.
-   optional uint64 salt = 90 [default=42];
-   optional uint32 remote_refresh_rate = 82 [default = 1000]; // [ms].
-   optional uint32 remote_max_nb_connection = 83 [default = 5];
-   optional uint32 search_lifetime = 84 [default = 5000]; // [ms]. (5s)
-   optional uint32 delay_gui_connection_fail = 88 [default = 200]; // When a GUI fails to connect to the core (for example by giving a wrong password) the answer is delayed [ms]. (0.2s)
-   optional uint32 delay_before_sending_log_messages = 100 [default = 250]; // [ms]. When a new log message should be sent to the Core we wait this time for another log messages to try to send many at the same time.
+   uint32 remote_control_port = 80; // [default = 59485].
+   Common.Hash remote_password = 81; // Hashed + salted. Only used for non-local connection. If defined salt field must be set.
+   uint64 salt = 90; // [default = 42]
+   uint32 remote_refresh_rate = 82; // [default = 1000] [ms].
+   uint32 remote_max_nb_connection = 83; // [default = 5].
+   uint32 search_lifetime = 84; // [default = 5000] [ms]. (5s)
+   uint32 delay_gui_connection_fail = 88; // [default = 200] When a GUI fails to connect to the core (for example by giving a wrong password) the answer is delayed [ms]. (0.2s)
+   uint32 delay_before_sending_log_messages = 100; // [default = 250] [ms]. When a new log message should be sent to the Core we wait this time for another log messages to try to send many at the same time.
 }

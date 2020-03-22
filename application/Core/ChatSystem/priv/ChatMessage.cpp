@@ -15,7 +15,7 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #include <QRandomGenerator64>
 
 #include <priv/ChatMessage.h>
@@ -37,10 +37,10 @@ ChatMessage::ChatMessage(const QString& message, const Common::Hash& ownerID, co
 ChatMessage::ChatMessage(const Protos::Common::ChatMessage& chatMessage) :
    ID(chatMessage.id()),
    message(Common::ProtoHelper::getStr(chatMessage, &Protos::Common::ChatMessage::message)),
-   ownerID(chatMessage.has_peer_id() ? chatMessage.peer_id().hash() : Common::Hash()),
-   time(chatMessage.has_time() ? QDateTime::fromMSecsSinceEpoch(chatMessage.time()) : QDateTime::currentDateTimeUtc()),
-   ownerNick(chatMessage.has_peer_nick() ? Common::ProtoHelper::getStr(chatMessage, &Protos::Common::ChatMessage::peer_nick) : QString()),
-   room(chatMessage.has_chat_room() ? Common::ProtoHelper::getStr(chatMessage, &Protos::Common::ChatMessage::chat_room) : QString())
+   ownerID(chatMessage.peer_id().hash()),
+   time(chatMessage.time() > 0 ? QDateTime::fromMSecsSinceEpoch(chatMessage.time()) : QDateTime::currentDateTimeUtc()),
+   ownerNick(Common::ProtoHelper::getStr(chatMessage, &Protos::Common::ChatMessage::peer_nick)),
+   room(Common::ProtoHelper::getStr(chatMessage, &Protos::Common::ChatMessage::chat_room))
 {
 }
 

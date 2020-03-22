@@ -15,7 +15,7 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #include <priv/FileDownload.h>
 using namespace DM;
 
@@ -28,6 +28,7 @@ using namespace DM;
 #include <Common/Settings.h>
 #include <Common/ProtoHelper.h>
 #include <Common/Hashes.h>
+#include <Common/Constants.h>
 
 #include <Core/FileManager/Exceptions.h>
 
@@ -48,7 +49,7 @@ FileDownload::FileDownload(
 ) :
    Download(fileManager, peerSource, remoteEntry, localEntry),
    linkedPeers(linkedPeers),
-   NB_CHUNK(this->remoteEntry.size() / SETTINGS.get<quint32>("chunk_size") + (this->remoteEntry.size() % SETTINGS.get<quint32>("chunk_size") == 0 ? 0 : 1)),
+   NB_CHUNK(this->remoteEntry.size() / Common::Constants::CHUNK_SIZE + (this->remoteEntry.size() % Common::Constants::CHUNK_SIZE == 0 ? 0 : 1)),
    nbChunkAsked(0),
    occupiedPeersAskingForHashes(occupiedPeersAskingForHashes),
    occupiedPeersDownloadingChunk(occupiedPeersDownloadingChunk),
@@ -67,7 +68,7 @@ FileDownload::FileDownload(
    // We create a 'ChunkDownloader' for each known chunk in the entry.
    for (int i = 0; i < this->NB_CHUNK; i++)
    {
-      QSharedPointer<ChunkDownloader> chunkDownloader = (i < this->remoteEntry.chunk_size() && this->remoteEntry.chunk(i).has_hash()) ?
+      QSharedPointer<ChunkDownloader> chunkDownloader = (i < this->remoteEntry.chunk_size() && this->remoteEntry.chunk(i).hash().size() > 0) ?
          (new ChunkDownloader(this->linkedPeers, this->occupiedPeersDownloadingChunk, this->transferRateCalculator, this->threadPool, Common::Hash(this->remoteEntry.chunk(i).hash())))->grabStrongRef()
          : QSharedPointer<ChunkDownloader>();
 
@@ -170,7 +171,7 @@ void FileDownload::populateQueueEntry(Protos::Queue::Queue::Entry* entry) const
    Download::populateQueueEntry(entry);
 
    for (int i = 0; i < this->chunkDownloaders.size() && i < entry->remote_entry().chunk_size(); i++)
-      if (!entry->remote_entry().chunk(i).has_hash() && !this->chunkDownloaders[i].isNull())
+      if (!entry->remote_entry().chunk(i).hash().size() > 0 && !this->chunkDownloaders[i].isNull())
          entry->mutable_remote_entry()->mutable_chunk(i)->set_hash(this->chunkDownloaders[i]->getHash().getData(), Common::Hash::HASH_SIZE);
 }
 
@@ -468,7 +469,7 @@ void FileDownload::result(const Protos::Core::GetHashesResult& result)
 
 void FileDownload::nextHash(const Protos::Core::HashResult& hashResult)
 {
-   if (!hashResult.hash().has_hash())
+   if (hashResult.hash().hash().size() == 0)
    {
       L_DEBU("The received hash contains no data");
       return;

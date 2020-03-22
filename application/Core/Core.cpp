@@ -15,13 +15,11 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #include <Core.h>
 using namespace CoreSpace;
 
 #include <QRandomGenerator64>
-
-#include <Protos/core_settings.pb.h>
 
 #include <Common/PersistentData.h>
 #include <Common/Constants.h>
@@ -41,7 +39,7 @@ Core::Core(bool resetSettings, QLocale locale)
 {
    GOOGLE_PROTOBUF_VERIFY_VERSION;
    SETTINGS.setFilename(Common::Constants::CORE_SETTINGS_FILENAME);
-   SETTINGS.setSettingsMessage(new Protos::Core::Settings());
+   SETTINGS.setSettingsMessage(createDefaultValuesSettings());
    SETTINGS.load();
 
    if (resetSettings || locale != QLocale::system())
@@ -70,7 +68,7 @@ Core::Core(bool resetSettings, QLocale locale)
             const Protos::Common::Interface::Address::Protocol listen_any = static_cast<Protos::Common::Interface::Address::Protocol>(SETTINGS.get<quint32>("listen_any"));
 
             SETTINGS.saveTo(Common::Constants::CORE_SETTINGS_FILENAME + ".backup");
-            SETTINGS.rmAll();
+            SETTINGS.setSettingsMessage(createDefaultValuesSettings());
             SETTINGS.set("nick", nick);
             SETTINGS.set("peer_id", peerID);
             SETTINGS.set("listen_any", static_cast<quint32>(listen_any));
@@ -160,13 +158,85 @@ void Core::setLanguage(QLocale locale, bool load)
    }
 }
 
+Protos::Core::Settings* Core::createDefaultValuesSettings()
+{
+   auto settings = new Protos::Core::Settings();
+   settings->set_buffer_size_reading(131072);
+   settings->set_buffer_size_writing(524288);
+   settings->set_socket_buffer_size(131072);
+   settings->set_socket_timeout(7000);
+
+   ///// FileManager /////
+   settings->set_minimum_duration_when_hashing(3000);
+   settings->set_scan_period_unwatchable_dirs(30000);
+   settings->set_unfinished_suffix_term(".unfinished");
+   settings->set_minimum_free_space(1048576);
+   settings->set_save_cache_period(60000);
+   settings->set_check_received_data_integrity(true);
+   settings->set_get_entries_timeout(5000);
+
+   ///// PeerManager /////
+   settings->set_pending_socket_timeout(10000);
+   settings->set_peer_timeout_factor(3.2);
+   settings->set_idle_socket_timeout(60000);
+   settings->set_max_number_idle_socket(6);
+   settings->set_get_hashes_timeout(20000);
+
+   ///// DownloadManager /////
+   settings->set_number_of_downloader(3);
+   settings->set_lan_speed(52428800);
+   settings->set_time_recheck_chunk_factor(4);
+   settings->set_switch_to_another_peer_factor(1.5);
+   settings->set_download_rate_valid_time_factor(3000);
+   settings->set_save_queue_period(60000);
+   settings->set_block_duration_corrupted_data(30000);
+
+   ///// UploadManager /////
+   settings->set_upload_lifetime(5000);
+   settings->set_upload_min_nb_thread(3);
+   settings->set_upload_thread_lifetime(30000);
+
+   ///// NetworkListener /////
+   settings->set_peer_imalive_period(5000);
+   settings->set_unicast_base_port(59487);
+   settings->set_multicast_port(59486);
+   settings->set_multicast_group(3960285976);
+   settings->set_channel("main");
+   settings->set_multicast_ttl(31);
+   settings->set_max_udp_datagram_size(16356);
+
+   settings->set_max_imalive_throughput(1048576);
+
+   settings->set_udp_buffer_size(163840);
+   settings->set_max_number_of_search_result_to_send(300);
+   settings->set_max_number_of_result_shown(5000);
+   settings->set_listen_address("");
+   settings->set_listen_any(Protos::Common::Interface_Address_Protocol_IPv6);
+
+   ///// ChatSystem /////
+   settings->set_max_number_of_stored_chat_messages(500);
+   settings->set_number_of_chat_messages_to_retrieve(500);
+
+   settings->set_get_last_chat_messages_period(2000);
+   settings->set_save_chat_messages_period(90000);
+
+   ///// RemoteControlManager /////
+   settings->set_remote_control_port(59485);
+   settings->set_salt(42);
+   settings->set_remote_refresh_rate(1000);
+   settings->set_remote_max_nb_connection(5);
+   settings->set_search_lifetime(5000);
+   settings->set_delay_gui_connection_fail(200);
+   settings->set_delay_before_sending_log_messages(250);
+
+   return settings;
+}
+
 /**
   * Check if each value settings is valid, for example 'buffer_size' cannot be one byte or 3 TiB.
   */
 void Core::checkSettingsIntegrity()
 {
-   SETTINGS.rm("chunk_size"); // The size of the chunks must never change.
-
    if (SETTINGS.get<QString>("nick").isEmpty())
       SETTINGS.set("nick", Common::Global::getCurrenMachineName());
 

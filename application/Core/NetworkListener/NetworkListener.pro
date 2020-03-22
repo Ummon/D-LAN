@@ -8,7 +8,6 @@ TEMPLATE = lib
 
 include(../../Common/common.pri)
 include(../../Libs/protobuf.pri)
-include(../../FlatBuffersSchema/FlatBuffers.pri)
 
 CONFIG += staticlib create_prl link_prl
 
@@ -34,7 +33,5 @@ HEADERS += ISearch.h \
     Builder.h \
     ../../Protos/common.pb.h \
     ../../Protos/core_protocol.pb.h \
-    ../../FlatBuffersSchema/common_fbs.h \
-    ../../FlatBuffersSchema/core_protocol_fbs.h \
     priv/Log.h \
     priv/Utils.h

@@ -15,15 +15,17 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #include <Common/PersistentData.h>
 using namespace Common;
 
 #include <QFile>
 #include <QDir>
+#include <QTextStream>
 #include <QtDebug>
 
 #include <google/protobuf/text_format.h>
+#include <google/protobuf/util/json_util.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 
 #include <Constants.h>
@@ -110,10 +112,17 @@ try
       if (humanReadable)
       {
 #endif
-         google::protobuf::io::FileOutputStream fileStream(file.handle());
-         google::protobuf::TextFormat::Printer printer;
-         printer.SetUseShortRepeatedPrimitives(true);
-         printer.Print(data, &fileStream);
+         std::string json;
+
+         google::protobuf::util::JsonPrintOptions jsonOptions;
+         jsonOptions.add_whitespace = true;
+         jsonOptions.always_print_primitive_fields = true;
+         jsonOptions.always_print_enums_as_ints = false;
+         jsonOptions.preserve_proto_field_names = true;
+
+         google::protobuf::util::MessageToJsonString(data, &json, jsonOptions);
+         QTextStream stream(&file);
+         stream << QString::fromStdString(json);
 #if !DEBUG
       }
       else
@@ -141,8 +150,15 @@ try
    if (humanReadable)
    {
 #endif
-      google::protobuf::io::FileInputStream fileStream(file.handle());
-      google::protobuf::TextFormat::Parse(&fileStream, &data);
+      QTextStream stream(&file);
+      std::string json = stream.readAll().toStdString();
+
+      google::protobuf::util::JsonParseOptions jsonOptions;
+      jsonOptions.case_insensitive_enum_parsing = true;
+      jsonOptions.ignore_unknown_fields = true;
+
+      google::protobuf::util::JsonStringToMessage(json, &data, jsonOptions);
+
 #if !DEBUG
    }
    else

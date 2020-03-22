@@ -15,13 +15,15 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #pragma once
 
 #include <QObject>
 #include <QLocale>
 #include <QSharedPointer>
 #include <QTranslator>
+
+#include <Protos/core_settings.pb.h>
 
 #include <Common/Settings.h>
 #include <Common/Uncopyable.h>
@@ -56,6 +58,7 @@ namespace CoreSpace
       void setLanguage(QLocale locale, bool load = true);
 
    private:
+      static Protos::Core::Settings* createDefaultValuesSettings();
       void checkSettingsIntegrity();
 
       template <typename T>

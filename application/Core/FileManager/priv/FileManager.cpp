@@ -15,7 +15,7 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #include <priv/FileManager.h>
 using namespace FM;
 
@@ -59,7 +59,7 @@ FileManager::FileManager() :
    cacheLoading(true),
    cacheChanged(false)
 {
-   Chunk::CHUNK_SIZE = SETTINGS.get<quint32>("chunk_size");
+   Chunk::CHUNK_SIZE = Common::Constants::CHUNK_SIZE;
 
    connect(&this->cache, &Cache::entryAdded, this, &FileManager::entryAdded, Qt::DirectConnection);
    connect(&this->cache, &Cache::entryRemoved, this, &FileManager::entryRemoved, Qt::DirectConnection);

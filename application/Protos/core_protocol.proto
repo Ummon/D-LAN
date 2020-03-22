@@ -4,6 +4,8 @@
   * All string are encoded in UTF-8.
   */
 
+syntax = "proto3";
+
 import "common.proto";
 
 package Protos.Core;
@@ -19,17 +21,17 @@ package Protos.Core;
 // a -> all
 // id : 0x01
 message IMAlive {
-   required uint32 version = 1; // The version of the protocol used. If 'version' from another peer doesn't correspond to our own version, this peer is ignored.
-   optional string core_version = 9; // The core version, for example: "1.1.4 - Linux Mr. 3.2.0-24-generic".
+   uint32 version = 1; // The version of the protocol used. If 'version' from another peer doesn't correspond to our own version, this peer is ignored.
+   string core_version = 9; // The core version, for example: "1.1.4 - Linux Mr. 3.2.0-24-generic".
 
-   required uint32 port = 2; // The port listened by the core (UDP + TCP).
-   required string nick = 3;
+   uint32 port = 2; // The port listened by the core (UDP + TCP).
+   string nick = 3;
 
-   required uint64 amount = 4; // [byte] Amount of sharing.
-   optional uint32 download_rate = 7; // [byte/s]
-   optional uint32 upload_rate = 8; // [byte/s]
+   uint64 amount = 4; // [byte] Amount of sharing.
+   uint32 download_rate = 7; // [byte/s]
+   uint32 upload_rate = 8; // [byte/s]
 
-   optional uint64 tag = 5; // A random number, all responds ('ChunkOwned' message) must repeat this number.
+   uint64 tag = 5; // A random number, all responds ('ChunkOwned' message) must repeat this number.
    repeated Common.Hash chunk = 6; // The chunks the core wants to download. May be empty.
 
    repeated string chat_rooms = 10; // The joined chat rooms.
@@ -41,7 +43,7 @@ message IMAlive {
 // all -> a
 // id : 0x02
 message ChunksOwned {
-   required uint64 tag = 1; // The repeated number.
+   uint64 tag = 1; // The repeated number.
    repeated bool chunk_state = 2 [packed=true]; // The array size must have the same size of HaveChunks.chunks.
 }
 
@@ -67,9 +69,9 @@ message ChunksOwned {
 // a -> b
 // id : 0x18
 message GetLastChatMessages {
-   required uint32 number = 1;
+   uint32 number = 1;
    repeated uint64 message_id = 2 [packed=true];
-   optional string chat_room = 3;
+   string chat_room = 3;
 }
 
 // This message is only sent if 'b' has some messages not contained in the given list.
@@ -84,8 +86,8 @@ message GetLastChatMessages {
 // a -> all
 // id : 0x21
 message Find {
-   required uint64 tag = 1; // A tag to identify the search. All answers must have the same tag.
-   required Common.FindPattern pattern = 2;
+   uint64 tag = 1; // A tag to identify the search. All answers must have the same tag.
+   Common.FindPattern pattern = 2;
 }
 
 // Results.
@@ -104,9 +106,9 @@ message Find {
 // a -> b
 // id : 0x31
 message GetEntries {
-   optional Common.Entries dirs = 1; // The shared directories must have the field 'shared_dir' defined but 'shared_dir.shared_name' is not mandatory.
-   optional bool get_roots = 2 [default = false]; // If true the roots directories will be appended to the end of the entries result. If the field above ('dirs') is empty then the roots directories will always be sent whatever 'get_roots' is true or false.
-   optional uint32 nb_max_hashes_per_entry = 3; // If given it limits the number of hashes per entry. It allows to use less memory if we don't care about hashes.
+   Common.Entries dirs = 1; // The shared directories must have the field 'shared_dir' defined but 'shared_dir.shared_name' is not mandatory.
+   bool get_roots = 2; // [default = false] If true the roots directories will be appended to the end of the entries result. If the field above ('dirs') is empty then the roots directories will always be sent whatever 'get_roots' is true or false.
+   uint32 nb_max_hashes_per_entry = 3; // If given it limits the number of hashes per entry. It allows to use less memory if we don't care about hashes.
 }
 
 // The file entries may or may not include the hashes depending of the core state and its policy.
@@ -120,8 +122,8 @@ message GetEntriesResult {
          TIMEOUT_SCANNING_IN_PROGRESS = 2;
          ERROR_UNKNOWN = 255;
       }
-      optional Status status = 1 [default = OK];
-      optional Common.Entries entries = 2;
+      Status status = 1; // [default = OK].
+      Common.Entries entries = 2;
    }
    repeated EntryResult result = 1;
 }
@@ -137,7 +139,7 @@ message GetEntriesResult {
 // a -> b
 // id : 0x41
 message GetHashes {
-   required Common.Entry file = 1; // Must have the field 'shared_dir' set. If it already contains some chunk hashes only the next ones will be sent.
+   Common.Entry file = 1; // Must have the field 'shared_dir' set. If it already contains some chunk hashes only the next ones will be sent.
    repeated Common.Entry nextFiles = 2; // The next files for which we want to know their hashes in the future.
 }
 
@@ -150,24 +152,24 @@ message GetHashesResult {
       HASHES_DONT_MATCH = 2; // If one or more hashes of the given entry (GetHashes.file) don't match the hashes of the 'b' entry. Not implemented (no check is performed).
       ERROR_UNKNOWN = 255;
    }
-   required Status status = 1; // If status != OK nb_hash is not set.
-   optional uint32 nb_hash = 2; // The number of hashe that will be sent. Only the unknown hashes are sent, not the total. Depend of 'GetHashes.file.chunk'.
+   Status status = 1; // If status != OK nb_hash is not set.
+   uint32 nb_hash = 2; // The number of hashe that will be sent. Only the unknown hashes are sent, not the total. Depend of 'GetHashes.file.chunk'.
 }
 
 // For each hash, this message is sent. Only if GetHashesResult.status == OK.
 // b -> a
 // id = 0x43
 message HashResult {
-   required uint32 num = 1;
-   required Common.Hash hash = 2;
+   uint32 num = 1;
+   Common.Hash hash = 2;
 }
 
 // Download.
 // a -> b
 // id : 0x51
 message GetChunk {
-   required Common.Hash chunk = 1;
-   required uint32 offset = 2; // [byte] Relative to the beginning of the chunk.
+   Common.Hash chunk = 1;
+   uint32 offset = 2; // [byte] Relative to the beginning of the chunk.
 }
 
 // b -> a
@@ -181,8 +183,8 @@ message GetChunkResult {
       DONT_HAVE_DATA_FROM_OFFSET = 4; // If we have the chunk but we don't have the data from the given offset.
       ERROR_UNKNOWN = 255;
    }
-   required Status status = 1;
-   optional uint32 chunk_size = 2; // This value must be between 1 and Proto.Core.Settings.chunk_size.
+   Status status = 1;
+   uint32 chunk_size = 2; // This value must be between 1 and Proto.Core.Settings.chunk_size.
 }
 
 // b -> a : stream of data (only if GetChunkResult.status == OK) . . .

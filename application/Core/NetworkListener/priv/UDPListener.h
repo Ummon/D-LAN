@@ -30,13 +30,9 @@
 #include <Protos/core_protocol.pb.h>
 #include <Protos/common.pb.h>
 
-#include <FlatBuffersSchema/core_protocol_fbs.h>
-#include <FlatBuffersSchema/common_fbs.h>
-
 #include <Common/Uncopyable.h>
 #include <Common/Network/MessageHeader.h>
 #include <Common/Network/Message.h>
-#include <Common/Network/MessageFBS.h>
 #include <Common/LogManager/Builder.h>
 #include <Common/LogManager/ILogger.h>
 #include <Core/FileManager/IFileManager.h>

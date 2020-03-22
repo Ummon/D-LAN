@@ -15,7 +15,7 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #include <StressTest.h>
 using namespace FM;
 
@@ -31,6 +31,7 @@ using namespace FM;
 #include <Common/Global.h>
 #include <Common/Settings.h>
 #include <Common/ProtoHelper.h>
+#include <Common/Constants.h>
 
 #include <priv/Constants.h>
 #include <Exceptions.h>
@@ -426,8 +427,7 @@ void StressTest::newFile()
 
    // Size is from 1 B to 100 MB.
    int bytes = this->randGen.rand(100 * 1024 * 1024 - 1) + 1;
-   static const int CHUNK_SIZE = SETTINGS.get<quint32>("chunk_size");
-   int nbChunk = bytes / CHUNK_SIZE + (bytes % CHUNK_SIZE == 0 ? 0 : 1);
+   int nbChunk = bytes / Common::Constants::CHUNK_SIZE + (bytes % Common::Constants::CHUNK_SIZE == 0 ? 0 : 1);
 
    Protos::Common::Entry entry;
    entry.set_type(Protos::Common::Entry_Type_DIR);

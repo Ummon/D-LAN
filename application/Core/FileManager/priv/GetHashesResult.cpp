@@ -15,7 +15,7 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #include <priv/GetHashesResult.h>
 
 #include <QSharedPointer>
@@ -83,7 +83,7 @@ Protos::Core::GetHashesResult GetHashesResult::start()
          auto chunk = i.next();
          const Protos::Common::Hash& protoChunk = this->fileEntry.chunk(j++);
 
-         if (!protoChunk.has_hash())
+         if (protoChunk.hash().size() > 0)
          {
             nbOfHashToBeSent++;
             if (chunk->hasHash())

@@ -84,7 +84,7 @@ Hash::Hash(const QByteArray& a)
   */
 QString Hash::toStr() const
 {
-   QString ret(2 * HASH_SIZE);
+   QString ret(2 * HASH_SIZE, QChar());
 
    for (int i = 0; i < HASH_SIZE; i++)
    {
