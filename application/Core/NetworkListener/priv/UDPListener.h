@@ -15,9 +15,8 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
-#ifndef NETWORKLISTENER_UDPLISTENER_H
-#define NETWORKLISTENER_UDPLISTENER_H
+
+#pragma once
 
 #include <QObject>
 #include <QUdpSocket>
@@ -26,8 +25,6 @@
 #include <QNetworkInterface>
 #include <QUdpSocket>
 
-#include <Libs/MersenneTwister.h>
-
 #include <google/protobuf/message.h>
 
 #include <Protos/core_protocol.pb.h>
@@ -35,6 +32,7 @@
 
 #include <Common/Uncopyable.h>
 #include <Common/Network/MessageHeader.h>
+#include <Common/Network/Message.h>
 #include <Common/LogManager/Builder.h>
 #include <Common/LogManager/ILogger.h>
 #include <Core/FileManager/IFileManager.h>
@@ -107,7 +105,6 @@ namespace NL
       QUdpSocket multicastSocket;
       QUdpSocket unicastSocket;
 
-      MTRand mtrand;
       quint64 currentIMAliveTag;
       QList<QSharedPointer<DM::IChunkDownloader>> currentChunkDownloaders;
       enum HashRequestType
@@ -121,4 +118,3 @@ namespace NL
       QSharedPointer<LM::ILogger> loggerIMAlive; // A logger especially for the IMAlive message.
    };
 }
-#endif

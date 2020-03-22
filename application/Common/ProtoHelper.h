@@ -15,9 +15,8 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
-#ifndef COMMON_PROTOHELPER_H
-#define COMMON_PROTOHELPER_H
+
+#pragma once
 
 #include <QString>
 #include <QLocale>
@@ -79,6 +78,15 @@ namespace Common
       static bool isRoot(const Protos::Common::Entry& entry);
 
       static QString getDebugStr(const google::protobuf::Message& mess);
+
+      template<typename T>
+      static T readUInt(const quint8*& p);
+
+      static QString readString(const quint8*& p);
+
+   private:
+      static void readUInt(const quint8*& p, quint32 res, quint32& result);
+      static void readUInt(const quint8*& p, quint32 res, quint64& result);
    };
 }
 
@@ -110,4 +118,27 @@ QString Common::ProtoHelper::getRepeatedStr(const T& mess, const std::string& (T
    return QString::fromUtf8(str.data(), str.length());
 }
 
-#endif
+template<typename T>
+T Common::ProtoHelper::readUInt(const quint8*& p)
+{
+   p += 1; // Skip the first byte (type + field n°)
+
+   quint32 res = p[0];
+   if (!(res & 0x80))
+   {
+      p += 1;
+      return res;
+   }
+
+   quint32 byte = p[1];
+   res += (byte - 1) << 7;
+   if (!(byte & 0x80))
+   {
+      p += 2;
+      return res;
+   }
+
+   T result;
+   readUInt(p, res, result);
+   return result;
+}

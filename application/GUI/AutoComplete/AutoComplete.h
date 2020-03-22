@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef GUI_AUTOCOMPLETE_H
-#define GUI_AUTOCOMPLETE_H
+#pragma once
 
 #include <QWidget>
 #include <QList>
@@ -67,5 +66,3 @@ namespace GUI
       QSortFilterProxyModel filterModel;
    };
 }
-
-#endif

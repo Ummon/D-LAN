@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef LOG_MANAGER_LOGGERHOOK_H
-#define LOG_MANAGER_LOGGERHOOK_H
+#pragma once
 
 #include <ILoggerHook.h>
 
@@ -33,5 +32,3 @@ namespace LM
       Severity severities; // Only these severities will be caught.
    };
 }
-
-#endif

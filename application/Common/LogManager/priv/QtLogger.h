@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef QTLOGGER_H
-#define QTLOGGER_H
+#pragma once
 
 #include <priv/Logger.h>
 
@@ -33,5 +32,3 @@ namespace LM
       QtLogger();
    };
 }
-
-#endif

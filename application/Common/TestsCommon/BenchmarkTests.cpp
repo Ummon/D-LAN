@@ -5,8 +5,7 @@
 #include <QtDebug>
 #include <QMap>
 #include <QElapsedTimer>
-
-#include <Libs/MersenneTwister.h>
+#include <QRandomGenerator64>
 
 #include <Containers/SortedArray.h>
 using namespace Common;
@@ -17,7 +16,7 @@ BenchmarkTests::BenchmarkTests()
 
 void BenchmarkTests::sortedArray()
 {
-   MTRand mtRand(42);
+   QRandomGenerator64 rng(42);
    const int wordSize = 5;
    const int nbWords = 200000;
    const int M = 7;
@@ -28,7 +27,7 @@ void BenchmarkTests::sortedArray()
    {
       QString word(wordSize, 'a');
       for (int j = 0; j < word.size(); j++)
-         word[j] = 'A' + static_cast<char>(mtRand.randInt(25));
+         word[j] = 'A' + static_cast<char>(rng.bounded(26));
       names << word;
    }
 
@@ -38,7 +37,7 @@ void BenchmarkTests::sortedArray()
    {
       QString word(wordSize, 'a');
       for (int j = 0; j < word.size(); j++)
-         word[j] = 'A' + static_cast<char>(mtRand.randInt(25));
+         word[j] = 'A' + static_cast<char>(rng.bounded(26));
       namesNotInserted << word;
    }
 

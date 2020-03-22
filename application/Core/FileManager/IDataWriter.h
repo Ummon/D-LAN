@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef FILEMANAGER_IDATAWRITER_H
-#define FILEMANAGER_IDATAWRITER_H
+#pragma once
 
 namespace FM
 {
@@ -38,5 +37,3 @@ namespace FM
       virtual bool write(const char* buffer, int nbBytes) = 0;
    };
 }
-
-#endif

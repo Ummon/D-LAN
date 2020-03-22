@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef RCC_CORECONTROLLER_H
-#define RCC_CORECONTROLLER_H
+#pragma once
 
 #include <QtServiceController>
 #include <QProcess>
@@ -53,5 +52,3 @@ namespace RCC
       QString coreDirectory;
    };
 }
-
-#endif

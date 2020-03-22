@@ -1,7 +1,6 @@
 [code]
-#define QtDir "D:/Qt/5.4/mingw491_32"
-#define MingwDir "D:/Qt/Tools/mingw491_32"
-#define ProtoBufDir "D:/protobuf"
+#define QtDir "H:/Qt/5.14.1/mingw73_64"
+#define MingwDir "H:/Qt/Tools/mingw730_64"
 #define ApplicationDir "../.."
 
 #define AppName "D-LAN"
@@ -37,11 +36,10 @@ Source: "{#QtDir}/bin/Qt5Xml.dll"; DestDir: "{app}"; Flags: comparetimestamp
 Source: "{#QtDir}/bin/icuin53.dll"; DestDir: "{app}"; Flags: comparetimestamp
 Source: "{#QtDir}/bin/icuuc53.dll"; DestDir: "{app}"; Flags: comparetimestamp
 ;Source: "{#QtDir}/bin/icudt53.dll"; DestDir: "{app}"; Flags: comparetimestamp
-Source: "{#QtDir}/bin/libgcc_s_dw2-1.dll"; DestDir: "{app}"; Flags: comparetimestamp
+Source: "{#QtDir}/bin/libgcc_s_seh-1.dll"; DestDir: "{app}"; Flags: comparetimestamp
 Source: "{#QtDir}/bin/libwinpthread-1.dll"; DestDir: "{app}"; Flags: comparetimestamp
 Source: "{#QtDir}/bin/libstdc++-6.dll"; DestDir: "{app}"; Flags: comparetimestamp
 Source: "{#QtDir}/plugins/platforms/qwindows.dll"; DestDir: "{app}/platforms"; Flags: comparetimestamp
-;Source: {#ProtoBufDir}/src/.libs/libprotobuf-7.dll; DestDir: {app}; Flags: comparetimestamp;
 
 [Icons]
 Name: "{group}\D-LAN"; Filename: "{app}/D-LAN.GUI.exe"; WorkingDir: "{app}"
@@ -64,9 +62,9 @@ Filename: "{app}/D-LAN.GUI.exe"; Flags: nowait postinstall runasoriginaluser; De
 
 [UninstallRun]
 Filename: {app}/D-LAN.Core.exe; Parameters: -u;
-Filename: {sys}/netsh.exe; Parameters: "firewall delete allowedprogram program=""{app}/D-LAN.Core.exe"""; Flags: runhidden; MinVersion: 0,5.01.2600sp2; Tasks: Firewall; 
+Filename: {sys}/netsh.exe; Parameters: "firewall delete allowedprogram program=""{app}/D-LAN.Core.exe"""; Flags: runhidden; MinVersion: 0,5.01.2600sp2; Tasks: Firewall;
 
-[code] 
+[code]
 // Will stop the Core service.
 function PrepareToInstall(var NeedsRestart: Boolean): String;
 var

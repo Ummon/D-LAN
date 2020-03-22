@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef GUI_BUSYINDICATOR_H
-#define GUI_BUSYINDICATOR_H
+#pragma once
 
 #include <QWidget>
 #include <QElapsedTimer>
@@ -49,5 +48,3 @@ namespace GUI
       QElapsedTimer timer;
    };
 }
-
-#endif

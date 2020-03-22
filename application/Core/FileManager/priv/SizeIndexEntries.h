@@ -1,5 +1,4 @@
-#ifndef FILEMANAGER_SIZE_INDEX_H
-#define FILEMANAGER_SIZE_INDEX_H
+#pragma once
 
 #include <functional>
 
@@ -27,5 +26,3 @@ namespace FM
       mutable QMutex mutex;
    };
 }
-
-#endif

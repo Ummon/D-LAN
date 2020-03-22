@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef GUI_LOGMODEL_H
-#define GUI_LOGMODEL_H
+#pragma once
 
 #include <QAbstractTableModel>
 
@@ -49,5 +48,3 @@ namespace GUI
       QList<QSharedPointer<LM::IEntry>> entries;
    };
 }
-
-#endif

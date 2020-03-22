@@ -15,7 +15,7 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #include <StressTest.h>
 using namespace FM;
 
@@ -26,10 +26,12 @@ using namespace FM;
 #include <QDirIterator>
 #include <QMutex>
 #include <QMutexLocker>
+#include <QRandomGenerator64>
 
 #include <Common/Global.h>
 #include <Common/Settings.h>
 #include <Common/ProtoHelper.h>
+#include <Common/Constants.h>
 
 #include <priv/Constants.h>
 #include <Exceptions.h>
@@ -43,17 +45,17 @@ const QDir ROOT_DIR("stress");
 
 int RandGenerator::percentRand()
 {
-   return this->mtrand.randInt(100);
+   QRandomGenerator64::global()->bounded(101);
 }
 
 int RandGenerator::permilRand()
 {
-   return this->mtrand.randInt(1000);
+   QRandomGenerator64::global()->bounded(1001);
 }
 
 int RandGenerator::rand(int n)
 {
-   return this->mtrand.randInt(n);
+   QRandomGenerator64::global()->bounded(n + 1);
 }
 
 QString RandGenerator::generateAName()
@@ -425,8 +427,7 @@ void StressTest::newFile()
 
    // Size is from 1 B to 100 MB.
    int bytes = this->randGen.rand(100 * 1024 * 1024 - 1) + 1;
-   static const int CHUNK_SIZE = SETTINGS.get<quint32>("chunk_size");
-   int nbChunk = bytes / CHUNK_SIZE + (bytes % CHUNK_SIZE == 0 ? 0 : 1);
+   int nbChunk = bytes / Common::Constants::CHUNK_SIZE + (bytes % Common::Constants::CHUNK_SIZE == 0 ? 0 : 1);
 
    Protos::Common::Entry entry;
    entry.set_type(Protos::Common::Entry_Type_DIR);

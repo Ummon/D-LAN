@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef GUI_TASKBARIMPLWIN_H
-#define GUI_TASKBARIMPLWIN_H
+#pragma once
 
 #include <QEvent>
 #include <QObject>
@@ -52,5 +51,3 @@ namespace GUI
       ITaskbarList3* taskbarInterface;
    };
 }
-
-#endif

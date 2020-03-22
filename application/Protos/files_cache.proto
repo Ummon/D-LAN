@@ -5,6 +5,8 @@
   * All string are encoded in UTF-8.
   */
 
+syntax = "proto3";
+
 import "common.proto";
 
 package Protos.FileCache;
@@ -12,31 +14,31 @@ package Protos.FileCache;
 // All the hashes for a set of file.
 message Hashes {
    message Chunk {
-      required uint32 known_bytes = 1; // Used only when downloading a file, we have the hash but we don't have all the file content.
-      optional Common.Hash hash = 2; // 
+      uint32 known_bytes = 1; // Used only when downloading a file, we have the hash but we don't have all the file content.
+      Common.Hash hash = 2; //
    }
-   
+
    message File {
-      required string filename = 1;
-      required uint64 size = 2;
-      required uint64 date_last_modified = 3; // In ms since Epoch.
+      string filename = 1;
+      uint64 size = 2;
+      uint64 date_last_modified = 3; // In ms since Epoch.
       repeated Chunk chunk = 4; // Contains all the file chunk, if we don't have a chunk its hash is ommited.
    }
-   
+
    message SharedDir {
-      required Common.Hash id = 1;
-      required string path = 2; // Always ended with a '/'.
-      required Dir root = 3;
+      Common.Hash id = 1;
+      string path = 2; // Always ended with a '/'.
+      Dir root = 3;
    }
 
    message Dir {
-      required string name = 1; // Empty for the roots.
+      string name = 1; // Empty for the roots.
       repeated File file = 2; // Contains only the files which have at least one hash known.
       repeated Dir dir = 3;
    }
-   
-   required uint32 version = 1;
-   required uint32 chunkSize = 2;
-   
+
+   uint32 version = 1;
+   uint32 chunkSize = 2;
+
    repeated SharedDir sharedDir = 3;
 }

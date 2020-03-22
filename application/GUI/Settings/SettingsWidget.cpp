@@ -15,7 +15,7 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #include <Settings/SettingsWidget.h>
 #include <ui_SettingsWidget.h>
 using namespace GUI;
@@ -42,7 +42,7 @@ using namespace GUI;
 
 void DirListDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
-   QStyleOptionViewItemV4 newOption(option);
+   QStyleOptionViewItem newOption(option);
    newOption.state = option.state & (~QStyle::State_HasFocus);
    QStyledItemDelegate::paint(painter, newOption, index);
 }
@@ -267,13 +267,10 @@ void SettingsWidget::updateNetworkInterfaces(const Protos::GUI::State& state)
    }
 
    // Set the current address.
-   if (state.has_listenany())
-   {
-      if (state.listenany() == Protos::Common::Interface::Address::IPv6)
-         this->ui->radIPv6->setChecked(true);
-      else
-         this->ui->radIPv4->setChecked(true);
-   }
+   if (state.listenany() == Protos::Common::Interface::Address::IPv6)
+      this->ui->radIPv6->setChecked(true);
+   else
+      this->ui->radIPv4->setChecked(true);
 
    this->connectAllAddressButtons();
 }
@@ -459,7 +456,7 @@ void SettingsWidget::saveCoreSettings()
 
    Protos::GUI::CoreSettings settings;
    Common::ProtoHelper::setStr(settings, &Protos::GUI::CoreSettings::set_nick, this->ui->txtNick->text());
-   settings.set_enable_integrity_check(this->ui->chkEnableIntegrityCheck->isChecked());
+   settings.set_enable_integrity_check(this->ui->chkEnableIntegrityCheck->isChecked() ? Protos::Common::TS_TRUE : Protos::Common::TS_FALSE);
 
    for (QListIterator<Common::SharedDir> i(this->sharedDirsModel.getDirs()); i.hasNext();)
       Common::ProtoHelper::addRepeatedStr(*settings.mutable_shared_directories(), &Protos::GUI::CoreSettings::SharedDirectories::add_dir, i.next().path);

@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef PEERMANAGER_IGET_CHUNK_RESULT_H
-#define PEERMANAGER_IGET_CHUNK_RESULT_H
+#pragma once
 
 #include <QObject>
 #include <QIODevice>
@@ -56,4 +55,3 @@ namespace PM
       void stream(const QSharedPointer<PM::ISocket>& socket);
    };
 }
-#endif

@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef PEERMANAGER_IGET_ENTRIES_RESULT_H
-#define PEERMANAGER_IGET_ENTRIES_RESULT_H
+#pragma once
 
 #include <QObject>
 
@@ -46,4 +45,3 @@ namespace PM
       void result(const Protos::Core::GetEntriesResult& entries);
    };
 }
-#endif

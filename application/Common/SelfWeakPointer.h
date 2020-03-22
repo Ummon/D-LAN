@@ -1,5 +1,4 @@
-#ifndef COMMON_SELFWEAKPOINTER_H
-#define COMMON_SELFWEAKPOINTER_H
+#pragma once
 
 #include <QSharedPointer>
 #include <QWeakPointer>
@@ -45,5 +44,3 @@ QWeakPointer<T> Common::SelfWeakPointer<T>::getWeakRef()
 {
    return this->weakPointer;
 }
-
-#endif

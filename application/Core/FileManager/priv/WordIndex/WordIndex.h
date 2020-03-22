@@ -15,11 +15,11 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
-#ifndef FILEMANAGER_WORDINDEX_H
-#define FILEMANAGER_WORDINDEX_H
+
+#pragma once
 
 #include <functional>
+#include <algorithm>
 
 #include <QList>
 #include <QString>
@@ -159,8 +159,11 @@ QList<FM::NodeResult<T>> FM::WordIndex<T>::search(const QStringList& words, int 
    // Launch a search for each term.
    QVector<QSet<NodeResult<T>>> results(N);
    for (int i = 0; i < N; i++)
+   {
       // We can only limit the number of result for one term. When there is more than one term and thus some results set, say [a, b, c] for example, some good result may be contained in intersect, for example a & b or a & c.
-      results[i] += this->search(words[i], N == 1 ? maxNbResult : -1, predicat).toSet();
+      auto result = this->search(words[i], N == 1 ? maxNbResult : -1, predicat);
+      results[i] += QSet(result.begin(), result.end());
+   }
 
    QList<NodeResult<T>> finalResult;
 
@@ -209,7 +212,7 @@ QList<FM::NodeResult<T>> FM::WordIndex<T>::search(const QStringList& words, int 
             const_cast<NodeResult<T>&>(k.next()).level += level;
 
          // Sort by level.
-         nodesToSort << currentLevelSet.toList();
+         nodesToSort << currentLevelSet.values();
 
          // Define positions of each intersect term.
          for (int k = NB_INTERSECTS - 1; k >= 0; k--)
@@ -224,7 +227,7 @@ QList<FM::NodeResult<T>> FM::WordIndex<T>::search(const QStringList& words, int 
          level += 1;
       }
 
-      qSort(nodesToSort); // Sort by level
+      std::sort(nodesToSort.begin(), nodesToSort.end()); // Sort by level
 
       finalResult << nodesToSort;
 
@@ -252,5 +255,3 @@ QList<T> FM::WordIndex<T>::resultToList(const QList<NodeResult<T>>& result)
       l << i->value;
    return l;
 }
-
-#endif

@@ -19,6 +19,8 @@
 #include <Peers/PeerListDelegate.h>
 using namespace GUI;
 
+#include <cmath>
+
 #include <QPainter>
 
 #include <Common/Settings.h>
@@ -37,7 +39,7 @@ const QColor PeerListDelegate::UPLOAD_COLOR(100, 100, 255);
 
 void PeerListDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
-   QStyleOptionViewItemV4 newOption(option);
+   QStyleOptionViewItem newOption(option);
    newOption.state = option.state & (~QStyle::State_HasFocus);
 
    // Show the selection only if the widget is active.

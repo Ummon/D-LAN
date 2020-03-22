@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef GUI_DIRLISTMODEL_H
-#define GUI_DIRLISTMODEL_H
+#pragma once
 
 #include <QString>
 #include <QStringList>
@@ -53,5 +52,3 @@ namespace GUI
       QList<Common::SharedDir> dirs;
    };
 }
-
-#endif

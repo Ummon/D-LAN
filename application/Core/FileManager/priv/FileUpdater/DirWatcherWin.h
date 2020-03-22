@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef FILEMANAGER_DIRWATCHERWIN_H
-#define FILEMANAGER_DIRWATCHERWIN_H
+#pragma once
 
 #include <QMutex>
 
@@ -66,5 +65,3 @@ namespace FM
       QMutex mutex;
    };
 }
-
-#endif

@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef RCC_ISENDCHATMESSAGERESULT_H
-#define RCC_ISENDCHATMESSAGERESULT_H
+#pragma once
 
 #include <Protos/gui_protocol.pb.h>
 
@@ -39,5 +38,3 @@ namespace RCC
       void result(const Protos::GUI::ChatMessageResult&);
    };
 }
-
-#endif

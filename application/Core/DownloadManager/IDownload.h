@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef DOWNLOADMANAGER_IDOWNLOAD_H
-#define DOWNLOADMANAGER_IDOWNLOAD_H
+#pragma once
 
 #include <QObject>
 #include <QSet>
@@ -93,4 +92,3 @@ namespace DM
       virtual const Protos::Common::Entry& getLocalEntry() const = 0;
    };
 }
-#endif

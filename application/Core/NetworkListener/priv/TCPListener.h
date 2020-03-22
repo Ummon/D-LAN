@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef NETWORKLISTENER_TCPLISTENER_H
-#define NETWORKLISTENER_TCPLISTENER_H
+#pragma once
 
 #include <QObject>
 #include <QList>
@@ -59,4 +58,3 @@ namespace NL
 //      QList<BlockedIPs> blockedIPs;
    };
 }
-#endif

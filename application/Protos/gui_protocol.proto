@@ -6,6 +6,8 @@
   * All string are encoded in UTF-8.
   */
 
+syntax = "proto3";
+
 import "common.proto";
 
 package Protos.GUI;
@@ -20,24 +22,24 @@ message State {
    // A download can be a file or a directory.
    message Download {
       enum Status {
-         QUEUED = 0x1;
-         GETTING_THE_HASHES = 0x2;
-         DOWNLOADING = 0x3;
-         COMPLETE = 0x4;
-         PAUSED = 0x5;
-         DELETED = 0x6; // Should not be seen by the user.
-         
+         QUEUED = 0x0;
+         GETTING_THE_HASHES = 0x1;
+         DOWNLOADING = 0x2;
+         COMPLETE = 0x3;
+         PAUSED = 0x4;
+         DELETED = 0x5; // Should not be seen by the user.
+
          UNKNOWN_PEER_SOURCE = 0x10; // The source peer isn't found and we don't have all the hashes.
          ENTRY_NOT_FOUND = 0x11; // The entry isn't found in the source peer shared directories.
          NO_SOURCE = 0x12; // All the hashes are known but one ore more chunk are not present among the other peers.
-         
+
          // All the following status will pause the download.
          NO_SHARED_DIRECTORY_TO_WRITE = 0x20;
          NO_ENOUGH_FREE_SPACE = 0x21;
          UNABLE_TO_CREATE_THE_FILE = 0x22;
          UNABLE_TO_CREATE_THE_DIRECTORY = 0x30;
          UNABLE_TO_RETRIEVE_THE_HASHES = 0x23;
-         
+
          TRANSFER_ERROR = 0x24;
          UNABLE_TO_OPEN_THE_FILE = 0x25;
          FILE_IO_ERROR = 0x26;
@@ -49,25 +51,25 @@ message State {
          LOCAL_SCANNING_IN_PROGRESS = 0x33; // When a local directory is being scanned it's not possible to download into.
          UNABLE_TO_GET_ENTRIES = 0x32;
       }
-      required uint64 id = 1; // Cannot be 0.
-      
+      uint64 id = 1; // Cannot be 0.
+
       // When the entry is physically created, 'Common.Entry.exists' is set to true.
       // The hashes are never sent to save a bit of bandwidth.
-      required Common.Entry local_entry = 2;
-      
-      required Status status = 3;
-      required uint64 downloaded_bytes = 4; // Always 0 when 'local_entry' is a directory.
-      
+      Common.Entry local_entry = 2;
+
+      Status status = 3;
+      uint64 downloaded_bytes = 4; // Always 0 when 'local_entry' is a directory.
+
       repeated Common.Hash peer_id = 5; // The first one always corresponds to the peer source.
-      optional string peer_source_nick = 6;
+      string peer_source_nick = 6;
    }
    message Upload {
-      required uint64 id = 1;
-      required Common.Entry file = 2; // As the download, the hashes aren't sent to save bandwidth.
-      required uint32 current_part = 3;
-      required uint32 nb_part = 4;
-      required uint32 progress = 5; // 0 to 10000.
-      required Common.Hash peer_id = 6;
+      uint64 id = 1;
+      Common.Entry file = 2; // As the download, the hashes aren't sent to save bandwidth.
+      uint32 current_part = 3;
+      uint32 nb_part = 4;
+      uint32 progress = 5; // 0 to 10000.
+      Common.Hash peer_id = 6;
    }
    message Stats {
       enum CacheStatus {
@@ -77,10 +79,10 @@ message State {
          UP_TO_DATE = 3;
          UNKNOWN = 4;
       }
-      required CacheStatus cache_status = 1;
-      required uint32 progress = 2; // 0 to 10000.
-      required uint32 download_rate = 3; // [byte/s].
-      required uint32 upload_rate = 4; // [byte/s].
+      CacheStatus cache_status = 1;
+      uint32 progress = 2; // 0 to 10000.
+      uint32 download_rate = 3; // [byte/s].
+      uint32 upload_rate = 4; // [byte/s].
    }
    message Peer {
       enum PeerStatus {
@@ -88,41 +90,41 @@ message State {
          VERSION_OUTDATED = 1; // Version not compatible : too old.
          MORE_RECENT_VERSION = 2; // Version not compatible : more recent.
       }
-      required Common.Hash peer_id = 1;
-      required string nick = 2;
-      required uint64 sharing_amount = 3; // [byte].
-      optional uint32 download_rate = 6; // [byte/s].
-      optional uint32 upload_rate = 7; // [byte/s]
-      optional Common.IP ip = 4;
-      optional string core_version = 5;
-      optional PeerStatus status = 8;
+      Common.Hash peer_id = 1;
+      string nick = 2;
+      uint64 sharing_amount = 3; // [byte].
+      uint32 download_rate = 6; // [byte/s].
+      uint32 upload_rate = 7; // [byte/s]
+      Common.IP ip = 4;
+      string core_version = 5;
+      PeerStatus status = 8;
    }
    message SharedEntry {
-      required Common.Hash id = 1;
-      required string path = 2; // A directory is terminated by a '/' otherwise it's a file.
-      required uint64 size = 3;
-      required uint64 free_space = 4;
+      Common.Hash id = 1;
+      string path = 2; // A directory is terminated by a '/' otherwise it's a file.
+      uint64 size = 3;
+      uint64 free_space = 4;
    }
    message Room {
-      required string name = 1;
+      string name = 1;
       repeated Common.Hash peer_id = 2; // It never includes ourself.
-      required bool joined = 3;
+      bool joined = 3;
    }
-   
+
    repeated Peer peer = 2; // The first peer is always ourself and always exists.
-   
+
    repeated SharedEntry shared_entry = 3;
-   
-   required bool integrity_check_enabled = 7;
-   
-   optional bool password_defined = 10 [default = false];
-      
+
+   bool integrity_check_enabled = 7;
+
+   bool password_defined = 10; // [default = false].
+
    repeated Download download = 4;
    repeated Upload upload = 5;
-   
-   optional Stats stats = 6;
-   
-   optional Common.Interface.Address.Protocol listenAny = 8; // If this value is set then all the interfaces of the given protocol are listened. Otherwise see the following repeated 'interface' field.
+
+   Stats stats = 6;
+
+   Common.Interface.Address.Protocol listenAny = 8; // If this value is set then all the interfaces of the given protocol are listened. Otherwise see the following repeated 'interface' field.
    repeated Common.Interface interface = 9;
 
    repeated Room room = 11;
@@ -144,20 +146,21 @@ message State {
 message EventLogMessages {
    message EventLogMessage {
       enum Severity {
+         NONE =           0x00;
          SV_FATAL_ERROR = 0x01;
-         SV_ERROR = 0x02;
-         SV_WARNING = 0x04; // Send to the GUI but should not be shown to the user.
-         SV_DEBUG = 0x08; // Never send to the GUI, there are only logged in the core log file.
-         SV_END_USER = 0x10;
-         SV_UNKNOWN = 0x20;
+         SV_ERROR =       0x02;
+         SV_WARNING =     0x04; // Send to the GUI but should not be shown to the user.
+         SV_DEBUG =       0x08; // Never send to the GUI, there are only logged in the core log file.
+         SV_END_USER =    0x10;
+         SV_UNKNOWN =     0x20;
       }
 
-      required uint64 time = 1; // In [ms] since Epoch.
-      required Severity severity = 2;
-      required string message = 3;
+      uint64 time = 1; // In [ms] since Epoch.
+      Severity severity = 2;
+      string message = 3;
 
       // Only in debug mode. (not used at all for the moment).
-      // optional string component = 4;
+      // string component = 4;
    }
    repeated EventLogMessage message = 1;
 }
@@ -170,15 +173,15 @@ message EventLogMessages {
 // Core -> GUI
 // id: 0x1021
 message AskForAuthentication {
-   required uint64 salt = 1;
-   required uint64 salt_challenge = 2;
+   uint64 salt = 1;
+   uint64 salt_challenge = 2;
 }
 
-// Password is optional for local connections.
+// Password is for local connections.
 // GUI -> Core
 // id: 0x1022
 message Authentication {
-   optional Common.Hash password_challenge = 1; // (hash(password) + salt) + salt_challenge
+   Common.Hash password_challenge = 1; // (hash(password) + salt) + salt_challenge
 }
 
 // Core -> GUI
@@ -186,12 +189,12 @@ message Authentication {
 // If BAD_PASSWORD the core should wait a bit before sending the result (for example 1s) to avoid dictionary attack.
 message AuthenticationResult {
    enum Status {
-      AUTH_OK = 0x01;
-      AUTH_BAD_PASSWORD = 0x02;
-      AUTH_PASSWORD_NOT_DEFINED = 0x03; // The core doesn't have defined a password (empty password).
+      AUTH_OK = 0x00;
+      AUTH_BAD_PASSWORD = 0x01;
+      AUTH_PASSWORD_NOT_DEFINED = 0x02; // The core doesn't have defined a password (empty password).
       AUTH_ERROR = 0xFF;
    }
-   required Status status = 1;
+   Status status = 1;
 }
 
 
@@ -199,7 +202,7 @@ message AuthenticationResult {
 // id: 0x10B1
 // Set the language of the core.
 message Language {
-   required Common.Language language = 1;
+   Common.Language language = 1;
 }
 
 
@@ -209,10 +212,10 @@ message Language {
 // Both sent passwords are salted with 'AskForAuthentication.new_salt'.
 // If 'new_password' is set to a null hash, the password is removed, in this case the old password isn't needed.
 message ChangePassword {
-   required Common.Hash new_password = 1; // Salted with the new salt.
-   required uint64 new_salt = 2;
-   
-   optional Common.Hash old_password = 3; // Salted with the old salt. Required only if a password has already been set. 'See State.password_defined'.
+   Common.Hash new_password = 1; // Salted with the new salt.
+   uint64 new_salt = 2;
+
+   Common.Hash old_password = 3; // Salted with the old salt. only if a password has already been set. 'See State.password_defined'.
 }
 
 
@@ -220,26 +223,33 @@ message ChangePassword {
 // id: 0x1031
 // Set the settings.
 message CoreSettings {
-   optional string nick = 1;
-   repeated string entry_path = 2; // A directory always ends with a slash ('/') otherwise it's a file.
-   optional bool enable_integrity_check = 3;
-   
-   optional string listen_address = 4 [default = ""]; // If address is empty then listen to any adresses, in this case the protocol is given by 'listenAny'.
-   optional Common.Interface.Address.Protocol listen_any = 5 [default = IPv6];
+   message SharedDirectories {
+      repeated string dir = 1; // A directory always ends with a slash ('/').
+   }
+
+   oneof nickOptional {
+      string nick = 1;
+   }
+
+   SharedDirectories shared_directories = 2;
+   Common.TriState enable_integrity_check = 3;
+
+   string listen_address = 4; // [default = ""] If address is empty then listen to any adresses, in this case the protocol is given by 'listenAny'.
+   Common.Interface.Address.Protocol listen_any = 5; // [default = IPv6]
 }
 
 
 // GUI -> Core
 // id: 0x1041
 message Search {
-   required Common.FindPattern pattern = 1;
-   optional bool local = 2 [default = false]; // Search among the local files and directories if true.
+   Common.FindPattern pattern = 1;
+   bool local = 2; // [default = false] Search among the local files and directories if true.
 }
 
 // Core -> GUI (directly)
 // id: 0x1042
 message Tag {
-   required uint64 tag = 1;
+   uint64 tag = 1;
 }
 
 // Core -> GUI (deferred)
@@ -251,9 +261,9 @@ message Tag {
 // GUI -> Core
 // id: 0x1051
 message Browse {
-   required Common.Hash peer_id = 1;
-   optional Common.Entries dirs = 2;
-   optional bool get_roots = 3 [default = false]; // If true the roots directories will be appended to the entries result. If the Dir field above is empty then the roots folders will always be sent whatever get_roots is true or false.
+   Common.Hash peer_id = 1;
+   Common.Entries dirs = 2;
+   bool get_roots = 3; // [default = false] If true the roots directories will be appended to the entries result. If the Dir field above is empty then the roots folders will always be sent whatever get_roots is true or false.
 }
 
 // Core -> GUI (directly)
@@ -262,8 +272,8 @@ message Browse {
 // Core -> GUI (deferred)
 // id: 0x1053
 message BrowseResult {
-   required uint64 tag = 1;
-   repeated Common.Entries entries = 2; 
+   uint64 tag = 1;
+   repeated Common.Entries entries = 2;
 }
 
 
@@ -272,8 +282,8 @@ message BrowseResult {
 // Remove one or several download from the queue. If this download
 // is not finished the unfinished file is removed.
 message CancelDownloads {
-   repeated uint64 id = 1 [packed = true];
-   optional bool complete = 2 [default = false]; // If true all completed downloads are removed from the download queue.
+   repeated uint64 id = 1;
+   bool complete = 2; // [default = false] If true all completed downloads are removed from the download queue.
 }
 
 
@@ -281,8 +291,8 @@ message CancelDownloads {
 // id: 0x10C1
 // Pause or unpause the given downloads.
 message PauseDownloads {
-   repeated uint64 id = 1 [packed = true];
-   optional bool pause = 2 [default = true]; // Id false -> unpause.
+   repeated uint64 id = 1;
+   bool pause = 2; // [default = true] Id false -> unpause.
 }
 
 
@@ -301,12 +311,12 @@ message PauseDownloads {
 // After the operation: [8, 5, 2, 3, 6]
 message MoveDownloads {
    enum Position {
-      BEFORE = 1;
-      AFTER = 2;
+      BEFORE = 0;
+      AFTER = 1;
    }
    repeated uint64 id_ref = 1;
    repeated uint64 id_to_move = 2;
-   optional Position position = 3 [default = BEFORE];
+   Position position = 3; // [default = BEFORE].
 }
 
 
@@ -315,14 +325,14 @@ message MoveDownloads {
 // Says to the core to download a file or a directory.
 // The given path can be relative to a shared directory (if destination_directory_id is set)  or absolute (if destination_directory_id is null).
 message Download {
-   required Common.Hash peer_id = 1; // From where the file/dir is.
-   required Common.Entry entry = 2;
-   
+   Common.Hash peer_id = 1; // From where the file/dir is.
+   Common.Entry entry = 2;
+
    // Where to put the folder/file.
    // It must one of the directory of State.shared_entry. (It can't be a shared file entry).
    // If this directory is not set, the first directory with enough free space will be taken.
-   optional Common.Hash destination_directory_id = 3;
-   optional string destination_path = 4 [default="/"]; // Must ended with an '/'. If 'Common.Hash destination_directory_id' isn't set then a new shred directory will be created (if needed).
+   Common.Hash destination_directory_id = 3;
+   string destination_path = 4; // [default="/"]. Must ended with an '/'. If 'Common.Hash destination_directory_id' isn't set then a new shred directory will be created (if needed).
 }
 
 
@@ -330,8 +340,8 @@ message Download {
 // id: 0x1091
 // Send a chat message to the given room. The message goes to the main chat if 'room' isn't set.
 message ChatMessage {
-   required string message = 1;
-   optional string room = 2;
+   string message = 1;
+   string room = 2;
    repeated Common.Hash peer_ids_answer = 3; // The peers involved in the message.
 }
 
@@ -343,21 +353,21 @@ message ChatMessageResult {
       MESSAGE_TOO_LARGE = 1;
       ERROR_UNKNOWN = 255;
    }
-   required Status status = 1 [default = OK];
+   Status status = 1; // [default = OK].
 }
 
 
 // GUI -> Core
 // id: 0x1094
 message JoinRoom {
-   required string name = 1;
+   string name = 1;
 }
 
 
 // GUI -> Core
 // id: 0x1098
 message LeaveRoom {
-   required string name = 1;
+   string name = 1;
 }
 
 

@@ -16,9 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef LOGMANAGER_BUILDER_H
-#define LOGMANAGER_BUILDER_H
-
+#pragma once
 #include <QDir>
 #include <QSharedPointer>
 
@@ -63,5 +61,3 @@ namespace LM
    struct LogInitializer { LogInitializer() { logNbRef++; Log::logger = LM::Builder::newLogger(NAME); } ~LogInitializer() { if (--logNbRef == 0) Log::logger.clear(); } } logInitializer;
 
 #define LOG_INIT_CPP(CLASS) int CLASS::logNbRef(0);
-
-#endif

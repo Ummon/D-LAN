@@ -15,7 +15,7 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #include <Peers/PeerListModel.h>
 using namespace GUI;
 
@@ -151,6 +151,8 @@ void PeerListModel::setSortType(Protos::GUI::Settings::PeerSortType sortType)
          return p1->sharingAmount > p2->sharingAmount;
       });
       break;
+
+   default:;
    }
    emit layoutChanged();
 }
@@ -237,9 +239,9 @@ QVariant PeerListModel::data(const QModelIndex& index, int role) const
          toolTip.append('\n');
 
          if (peer->status == Protos::GUI::State::Peer::MORE_RECENT_VERSION)
-            toolTip.append(tr("His protocol version is more recent and incompatible with ours. Upgrade you version!")).append('\n');
+            toolTip.append(tr("They protocol version is more recent and incompatible with ours. Upgrade you version!")).append('\n');
          else if (peer->status == Protos::GUI::State::Peer::VERSION_OUTDATED)
-            toolTip.append(tr("His protocol version is outaded and incompatible with ours. He should upgrade his version!")).append('\n');
+            toolTip.append(tr("They protocol version is outaded and incompatible with ours. They should upgrade their version!")).append('\n');
 
          if (!coreVersion.isEmpty())
             toolTip += tr("Version %1\n").arg(coreVersion);
@@ -329,7 +331,8 @@ void PeerListModel::updatePeers(const google::protobuf::RepeatedPtrField<Protos:
       dataChanged = true;
    };
 
-   QSet<Common::Hash> peersToRemove = this->indexedPeers.keys().toSet();
+   auto peersList = this->indexedPeers.keys();
+   QSet<Common::Hash> peersToRemove(peersList.begin(), peersList.end());
 
    for (int i = 0; i < peers.size(); i++)
    {

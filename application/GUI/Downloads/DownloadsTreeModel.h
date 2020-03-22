@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef GUI_DOWNLOADSTREEMODEL_H
-#define GUI_DOWNLOADSTREEMODEL_H
+#pragma once
 
 #include <QDragEnterEvent>
 
@@ -90,5 +89,3 @@ namespace GUI
    bool operator>(const Protos::GUI::State::Download& d1, const Protos::GUI::State::Download& d2);
    bool operator<(const Protos::GUI::State::Download& d1, const Protos::GUI::State::Download& d2);
 }
-
-#endif

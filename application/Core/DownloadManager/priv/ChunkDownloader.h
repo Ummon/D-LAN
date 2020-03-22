@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef DOWNLOADMANAGER_CHUNKDOWNLOADER_H
-#define DOWNLOADMANAGER_CHUNKDOWNLOADER_H
+#pragma once
 
 #include <QSharedPointer>
 #include <QList>
@@ -131,4 +130,3 @@ namespace DM
       mutable QMutex mutex; // To protect 'peers' and 'downloading'.
    };
 }
-#endif

@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef PEERMANAGER_CONSTANTS_H
-#define PEERMANAGER_CONSTANTS_H
+#pragma once
 
 #include <QString>
 
@@ -25,5 +24,3 @@ namespace PM
 {
    const int MAX_NICK_LENGTH = 255; // To avoid infinite nick length ;).
 }
-
-#endif

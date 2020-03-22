@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef FILEMANAGER_WAITCONDITIONLINUX_H
-#define FILEMANAGER_WAITCONDITIONLINUX_H
+#pragma once
 
 #include <QMutex>
 #include <QWaitCondition>
@@ -44,5 +43,3 @@ namespace FM
       QWaitCondition waitCondition;
    };
 }
-
-#endif

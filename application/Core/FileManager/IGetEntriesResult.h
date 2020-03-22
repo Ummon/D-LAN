@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef FILEMANAGER_IGET_ENTRIES_RESULT_H
-#define FILEMANAGER_IGET_ENTRIES_RESULT_H
+#pragma once
 
 #include <QObject>
 
@@ -41,4 +40,3 @@ namespace FM
       void result(const Protos::Core::GetEntriesResult::EntryResult&);
    };
 }
-#endif

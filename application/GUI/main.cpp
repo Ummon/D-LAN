@@ -15,7 +15,7 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #include <QApplication>
 #include <QTextCodec>
 #include <QLocale>
@@ -33,6 +33,8 @@
    // For Common/debug_new.cpp.
    extern const char* new_progname;
 #endif
+
+Protos::GUI::Settings* createDefaultValuesSettings();
 
 /**
   * Arguments : [--lang <language>]
@@ -55,7 +57,7 @@ int main(int argc, char *argv[])
    }
 
    SETTINGS.setFilename(Common::Constants::GUI_SETTINGS_FILENAME);
-   SETTINGS.setSettingsMessage(new Protos::GUI::Settings());
+   SETTINGS.setSettingsMessage(createDefaultValuesSettings());
    SETTINGS.load();
    if (locale != QLocale::system())
       SETTINGS.set("language", locale);
@@ -78,4 +80,44 @@ int main(int argc, char *argv[])
    {
       return 1;
    }
+}
+
+Protos::GUI::Settings* createDefaultValuesSettings()
+{
+   auto settings = new Protos::GUI::Settings();
+
+   settings->set_core_address("localhost");
+   settings->set_core_port(59485);
+
+   settings->set_max_chat_message_displayed(500);
+   settings->set_max_log_message_displayed(500);
+   settings->set_search_time(3000);
+   settings->set_socket_timeout(7000);
+
+   settings->set_main_window_width(1200);
+   settings->set_main_window_height(620);
+   settings->set_main_window_maximized(false);
+
+   settings->set_download_view(Protos::GUI::Settings::TREE_VIEW);
+
+   settings->set_peer_sort_type(Protos::GUI::Settings::BY_SHARING_AMOUNT);
+
+   settings->set_lan_speed(104857600);
+
+   settings->set_multiple_instance_allowed(false);
+
+   settings->set_default_emoticon_theme("Default");
+
+   settings->set_search_advanced_visible(false);
+   settings->set_search_type(0);
+   settings->set_search_min_size_value(0);
+   settings->set_search_min_size_unit(Protos::GUI::Settings::MIB);
+   settings->set_search_max_size_value(0);
+   settings->set_search_max_size_unit(Protos::GUI::Settings::MIB);
+   settings->set_search_local(false);
+
+   settings->set_room_sort_type(Protos::GUI::Settings::BY_NAME);
+
+   return settings;
+
 }

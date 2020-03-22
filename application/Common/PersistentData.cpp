@@ -15,15 +15,17 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #include <Common/PersistentData.h>
 using namespace Common;
 
 #include <QFile>
 #include <QDir>
+#include <QTextStream>
 #include <QtDebug>
 
 #include <google/protobuf/text_format.h>
+#include <google/protobuf/util/json_util.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 
 #include <Constants.h>
@@ -49,13 +51,13 @@ const QString PersistentData::TEMP_SUFFIX_TERM(".temp");
 void PersistentData::setValue(const QString& name, const google::protobuf::Message& data, Global::DataFolderType dataFolderType, bool humanReadable)
 {
    Q_ASSERT(!name.isEmpty());
-   PersistentData::setValueFilepath(Global::getDataFolder(dataFolderType) + '/' + name, data, dataFolderType, humanReadable);
+   PersistentData::setValueFilepath(Global::getDataFolder(dataFolderType) + '/' + name, data, humanReadable);
 }
 
 void PersistentData::setValue(const QString& directory, const QString& name, const google::protobuf::Message& data, Global::DataFolderType dataFolderType, bool humanReadable)
 {
    Q_ASSERT(!name.isEmpty());
-   PersistentData::setValueFilepath(directory + '/' + name, data, dataFolderType, humanReadable);
+   PersistentData::setValueFilepath(directory + '/' + name, data, humanReadable);
 }
 
 /**
@@ -66,13 +68,13 @@ void PersistentData::setValue(const QString& directory, const QString& name, con
 void PersistentData::getValue(const QString& name, google::protobuf::Message& data, Global::DataFolderType dataFolderType, bool humanReadable)
 {
    Q_ASSERT(!name.isEmpty());
-   PersistentData::getValueFilepath(Global::getDataFolder(dataFolderType) + '/' + name, data, dataFolderType, humanReadable);
+   PersistentData::getValueFilepath(Global::getDataFolder(dataFolderType) + '/' + name, data, humanReadable);
 }
 
 void PersistentData::getValue(const QString& name, const QString& directory, google::protobuf::Message& data, Global::DataFolderType dataFolderType, bool humanReadable)
 {
    Q_ASSERT(!name.isEmpty());
-   PersistentData::getValueFilepath(directory + '/' + name, data, dataFolderType, humanReadable);
+   PersistentData::getValueFilepath(directory + '/' + name, data, humanReadable);
 }
 
 /**
@@ -92,13 +94,13 @@ catch (Global::UnableToGetFolder& e)
 }
 
 
-void PersistentData::setValueFilepath(const QString& filepath, const google::protobuf::Message& data, Global::DataFolderType dataFolderType, bool humanReadable)
+void PersistentData::setValueFilepath(const QString& filepath, const google::protobuf::Message& data, bool humanReadable)
 try
 {
    const QString TEMP_FILEPATH(filepath + TEMP_SUFFIX_TERM);
 
    // To avoid ::Print(..) to crash, see defect #153.
-   if (Global::availableDiskSpace(Global::getDataFolder(dataFolderType)) < 20 * 1024 * 1024)
+   if (Global::availableDiskSpace(filepath) < 20 * 1024 * 1024)
       return;
 
    {
@@ -110,10 +112,17 @@ try
       if (humanReadable)
       {
 #endif
-         google::protobuf::io::FileOutputStream fileStream(file.handle());
-         google::protobuf::TextFormat::Printer printer;
-         printer.SetUseShortRepeatedPrimitives(true);
-         printer.Print(data, &fileStream);
+         std::string json;
+
+         google::protobuf::util::JsonPrintOptions jsonOptions;
+         jsonOptions.add_whitespace = true;
+         jsonOptions.always_print_primitive_fields = true;
+         jsonOptions.always_print_enums_as_ints = false;
+         jsonOptions.preserve_proto_field_names = true;
+
+         google::protobuf::util::MessageToJsonString(data, &json, jsonOptions);
+         QTextStream stream(&file);
+         stream << QString::fromStdString(json);
 #if !DEBUG
       }
       else
@@ -130,7 +139,7 @@ catch (Global::UnableToGetFolder& e)
    throw PersistentDataIOException(e.errorMessage);
 }
 
-void PersistentData::getValueFilepath(const QString& filepath, google::protobuf::Message& data, Global::DataFolderType dataFolderType, bool humanReadable)
+void PersistentData::getValueFilepath(const QString& filepath, google::protobuf::Message& data, bool humanReadable)
 try
 {
    QFile file(filepath);
@@ -141,8 +150,15 @@ try
    if (humanReadable)
    {
 #endif
-      google::protobuf::io::FileInputStream fileStream(file.handle());
-      google::protobuf::TextFormat::Parse(&fileStream, &data);
+      QTextStream stream(&file);
+      std::string json = stream.readAll().toStdString();
+
+      google::protobuf::util::JsonParseOptions jsonOptions;
+      jsonOptions.case_insensitive_enum_parsing = true;
+      jsonOptions.ignore_unknown_fields = true;
+
+      google::protobuf::util::JsonStringToMessage(json, &data, jsonOptions);
+
 #if !DEBUG
    }
    else

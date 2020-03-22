@@ -15,9 +15,8 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
-#ifndef COMMON_SORTARRAY_H
-#define COMMON_SORTARRAY_H
+
+#pragma once
 
 #include <functional>
 
@@ -59,7 +58,7 @@ namespace Common
          int p;
       };
 
-   public:      
+   public:
       class NotFoundException {};
       class InvalidMException {};
 
@@ -1266,4 +1265,3 @@ typename Common::SortedArray<T, M>::Position Common::SortedArray<T, M>::partitio
 
 }*/
 
-#endif

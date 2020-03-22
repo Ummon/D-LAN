@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef RCC_SEARCHRESULT_H
-#define RCC_SEARCHRESULT_H
+#pragma once
 
 #include <QString>
 
@@ -47,5 +46,3 @@ namespace RCC
       quint64 tag;
    };
 }
-
-#endif

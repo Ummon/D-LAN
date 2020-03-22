@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef GUI_PROGRESSBAR_H
-#define GUI_PROGRESSBAR_H
+#pragma once
 
 #include <QProgressBar>
 #include <QPaintEvent>
@@ -34,5 +33,3 @@ namespace GUI
       void paintEvent(QPaintEvent* paintEvent);
    };
 }
-
-#endif

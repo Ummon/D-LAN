@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef COMMON_UNCOPYABLE_H
-#define COMMON_UNCOPYABLE_H
+#pragma once
 
 namespace Common
 {
@@ -36,5 +35,3 @@ namespace Common
       Uncopyable& operator=(const Uncopyable&) = delete;
    };
 }
-
-#endif

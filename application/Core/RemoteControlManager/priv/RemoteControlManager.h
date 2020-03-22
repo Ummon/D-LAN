@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef REMOTECONTROLMANAGER_REMOTECONTROLMANAGER_H
-#define REMOTECONTROLMANAGER_REMOTECONTROLMANAGER_H
+#pragma once
 
 #include <QObject>
 #include <QSharedPointer>
@@ -73,4 +72,3 @@ namespace RCM
       QList<RemoteConnection*> connections;
    };
 }
-#endif

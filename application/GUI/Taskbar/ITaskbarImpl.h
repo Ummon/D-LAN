@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef GUI_ITASKBARIMPL_H
-#define GUI_ITASKBARIMPL_H
+#pragma once
 
 #include <QtGlobal>
 
@@ -40,5 +39,3 @@ namespace GUI
 #endif
    };
 }
-
-#endif

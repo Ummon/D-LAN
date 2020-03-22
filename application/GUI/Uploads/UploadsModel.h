@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef GUI_UPLOADSMODEL_H
-#define GUI_UPLOADSMODEL_H
+#pragma once
 
 #include <QAbstractTableModel>
 
@@ -52,5 +51,3 @@ namespace GUI
    bool operator==(const Protos::GUI::State_Upload& u1, const Protos::GUI::State_Upload& u2);
    bool operator!=(const Protos::GUI::State_Upload& u1, const Protos::GUI::State_Upload& u2);
 }
-
-#endif

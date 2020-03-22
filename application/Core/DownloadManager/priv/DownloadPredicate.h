@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef DOWNLOADMANAGER_DOWNLOADPREDICATE_H
-#define DOWNLOADMANAGER_DOWNLOADPREDICATE_H
+#pragma once
 
 #include <QSet>
 #include <QList>
@@ -56,5 +55,3 @@ namespace DM
       QSet<quint64> downloadIDs; // We us a QSet to decrease the complexity.
    };
 }
-
-#endif

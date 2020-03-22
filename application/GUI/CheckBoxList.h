@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef GUI_CHECKBOXLIST_H
-#define GUI_CHECKBOXLIST_H
+#pragma once
 
 #include <QComboBox>
 #include <QCheckBox>
@@ -61,5 +60,3 @@ namespace GUI
       QCheckBox model;
    };
 }
-
-#endif

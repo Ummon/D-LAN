@@ -15,7 +15,7 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #include <priv/FileManager.h>
 using namespace FM;
 
@@ -59,7 +59,7 @@ FileManager::FileManager() :
    cacheLoading(true),
    cacheChanged(false)
 {
-   Chunk::CHUNK_SIZE = SETTINGS.get<quint32>("chunk_size");
+   Chunk::CHUNK_SIZE = Common::Constants::CHUNK_SIZE;
 
    connect(&this->cache, &Cache::entryAdded, this, &FileManager::entryAdded, Qt::DirectConnection);
    connect(&this->cache, &Cache::entryRemoved, this, &FileManager::entryRemoved, Qt::DirectConnection);
@@ -240,7 +240,7 @@ QList<Protos::Common::FindResult> FileManager::find(const QString& words, const 
    findResults << Protos::Common::FindResult();
    findResults.last().set_tag(std::numeric_limits<quint64>::max()); // Worst case to compute the size (int fields have a variable size).
 
-   const int EMPTY_FIND_RESULT_SIZE = findResults.last().ByteSize();
+   const int EMPTY_FIND_RESULT_SIZE = findResults.last().ByteSizeLong();
    int findResultCurrentSize = EMPTY_FIND_RESULT_SIZE; // [Byte].
 
    for (QListIterator<NodeResult<Entry*>> i(result); i.hasNext();)
@@ -256,7 +256,7 @@ QList<Protos::Common::FindResult> FileManager::find(const QString& words, const 
          entry.value->populateEntry(entryLevel->mutable_entry(), true);
 
       // We wouldn't use 'findResults.last().ByteSize()' because is too slow. Instead we call 'ByteSize()' for each entry and sum it.
-      const int entryByteSize = entryLevel->ByteSize() + 8; // Each entry take a bit of memory overhead . . . (Value found in an empiric way . . .).
+      const int entryByteSize = entryLevel->ByteSizeLong() + 8; // Each entry take a bit of memory overhead . . . (Value found in an empiric way . . .).
       findResultCurrentSize += entryByteSize;
 
       if (findResultCurrentSize > maxSize)

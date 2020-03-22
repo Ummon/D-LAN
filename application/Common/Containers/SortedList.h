@@ -15,9 +15,8 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
-#ifndef COMMON_SORTEDLIST_H
-#define COMMON_SORTEDLIST_H
+
+#pragma once
 
 #include <functional>
 
@@ -129,5 +128,3 @@ void Common::SortedList<T>::clear()
 {
    this->list.clear();
 }
-
-#endif

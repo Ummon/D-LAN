@@ -15,7 +15,7 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #include <priv/Cache/Directory.h>
 using namespace FM;
 
@@ -239,6 +239,7 @@ Common::Path Directory::getPath() const
 
 /**
   * TODO: benchmark the use of Common::Path instead of QString during searching (See 'QSort(..)' in 'FileManager::find(..)').
+  * We use "this->name" instead of "this->getName()" to improve a bit the performance during searching (See 'sort(..)' in 'FileManager::find(..)').
   */
 Common::Path Directory::getFullPath() const
 {

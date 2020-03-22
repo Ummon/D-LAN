@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef UPLOADMANAGER_LOG_H
-#define UPLOADMANAGER_LOG_H
+#pragma once
 
 #include <Common/LogManager/Builder.h>
 
@@ -25,5 +24,3 @@ namespace UM
 {
    #include <Common/LogManager/LogMacros.h>
 }
-
-#endif

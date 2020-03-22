@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef GUI_SETTINGSWINDOWS_H
-#define GUI_SETTINGSWINDOWS_H
+#pragma once
 
 #include <QWidget>
 #include <QDir>
@@ -123,5 +122,3 @@ namespace GUI
       bool corePasswordDefined;
    };
 }
-
-#endif

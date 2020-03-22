@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef GUI_REMOTEFILEDIALOG_H
-#define GUI_REMOTEFILEDIALOG_H
+#pragma once
 
 #include <QDialog>
 
@@ -41,5 +40,3 @@ namespace GUI
       Ui::RemoteFileDialog* ui;
    };
 }
-
-#endif

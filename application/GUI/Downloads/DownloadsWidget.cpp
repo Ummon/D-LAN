@@ -15,7 +15,7 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #include <Downloads/DownloadsWidget.h>
 #include <ui_DownloadsWidget.h>
 using namespace GUI;
@@ -85,7 +85,7 @@ void DownloadsDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opt
    else
    {
       // Remove the focus box, not very useful.
-      QStyleOptionViewItemV4 newOption(option);
+      QStyleOptionViewItem newOption(option);
       newOption.state = option.state & (~QStyle::State_HasFocus);
 
       if (index.column() == 3 && !static_cast<const DownloadsModel*>(index.model())->isSourceAlive(index))
@@ -222,7 +222,7 @@ void DownloadsWidget::openLocationSelectedEntries()
          locations.insert(this->currentDownloadsModel->getPath(index, false));
    }
 
-   Utils::openLocations(locations.toList());
+   Utils::openLocations(locations.values());
 }
 
 void DownloadsWidget::moveSelectedEntriesToTop()
@@ -233,7 +233,8 @@ void DownloadsWidget::moveSelectedEntriesToTop()
    for (QListIterator<QModelIndex> i(selectedRows); i.hasNext();)
    {
       const QModelIndex& index = i.next();
-      downloadIDs += this->currentDownloadsModel->getDownloadIDs(index).toSet();
+      auto downloadIDsList = this->currentDownloadsModel->getDownloadIDs(index);
+      downloadIDs += QSet(downloadIDsList.begin(), downloadIDsList.end());
    }
 
    // Search a download which is not selected
@@ -242,7 +243,7 @@ void DownloadsWidget::moveSelectedEntriesToTop()
       const quint64 id = this->downloadsFlatModel.getDownloadIDs(this->downloadsFlatModel.index(r, 0)).first();
       if (!downloadIDs.contains(id))
       {
-         this->coreConnection->moveDownloads(QList<quint64>() << id, downloadIDs.toList());
+         this->coreConnection->moveDownloads(QList<quint64>() << id, downloadIDs.values());
          break;
       }
    }
@@ -272,7 +273,8 @@ void DownloadsWidget::removeSelectedEntries()
    for (QListIterator<QModelIndex> i(selectedRows); i.hasNext();)
    {
       const QModelIndex& index = i.next();
-      downloadIDs += this->currentDownloadsModel->getDownloadIDs(index).toSet();
+      auto downloadIDsList = this->currentDownloadsModel->getDownloadIDs(index);
+      downloadIDs += QSet(downloadIDsList.begin(), downloadIDsList.end());
       if (!this->currentDownloadsModel->isFileComplete(index))
          allComplete = false;
    }
@@ -289,10 +291,10 @@ void DownloadsWidget::removeSelectedEntries()
          msgBox.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
          msgBox.setDefaultButton(QMessageBox::Ok);
          if (msgBox.exec() == QMessageBox::Ok)
-            this->coreConnection->cancelDownloads(downloadIDs.toList());
+            this->coreConnection->cancelDownloads(downloadIDs.values());
       }
       else
-         this->coreConnection->cancelDownloads(downloadIDs.toList());
+         this->coreConnection->cancelDownloads(downloadIDs.values());
    }
 }
 
@@ -390,7 +392,7 @@ QPair<QList<quint64>, bool> DownloadsWidget::getDownloadIDsToPause() const
          }
    }
 
-   return qMakePair(downloadIDs.toList(), !allPaused);
+   return qMakePair(downloadIDs.values(), !allPaused);
 }
 
 /**

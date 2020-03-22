@@ -242,7 +242,7 @@ bool DownloadQueue::removeDownloads(const DownloadPredicate& predicate)
   */
 bool DownloadQueue::pauseDownloads(QList<quint64> IDs, bool pause)
 {
-   QSet<quint64> IDsRemaining(IDs.toSet());
+   QSet<quint64> IDsRemaining(IDs.begin(), IDs.end());
 
    bool stateChanged = false;
 

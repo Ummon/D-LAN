@@ -15,9 +15,8 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
-#ifndef COMMON_MESSAGE_SOCKET_H
-#define COMMON_MESSAGE_SOCKET_H
+
+#pragma once
 
 #include <QString>
 #include <QTcpSocket>
@@ -128,5 +127,3 @@ namespace Common
 #endif
    };
 }
-
-#endif

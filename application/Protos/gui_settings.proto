@@ -1,88 +1,90 @@
 /**
   * All the GUI settings.
   */
-  
+
+syntax = "proto3";
+
 import "common.proto";
-  
+
 package Protos.GUI;
 
 message Settings {
-   optional string core_address = 1 [default = "localhost"];
-   optional uint32 core_port = 2 [default = 59485];   
-   optional Common.Hash password = 3; // Hashed with the salt given by the core. See the 'Protos.GUI.AskForAuthentication' message.
-   
-   optional Common.Language language = 20;
-      
-   optional uint32 max_chat_message_displayed = 4 [default = 500];
-   optional uint32 max_log_message_displayed = 5 [default = 500];
-   optional uint32 search_time = 7 [default = 3000]; // [ms].
-   optional uint32 socket_timeout = 8 [default = 7000]; // [ms].
-   
-   optional bytes windows_state = 9;
-   optional uint32 main_window_width = 10 [default = 1200];
-   optional uint32 main_window_height = 11 [default = 620];
-   optional bool main_window_maximized = 17 [default = false];
-   
+   string core_address = 1; // [default = "localhost"].
+   uint32 core_port = 2; // [default = 59485]
+   Common.Hash password = 3; // Hashed with the salt given by the core. See the 'Protos.GUI.AskForAuthentication' message.
+
+   Common.Language language = 20;
+
+   uint32 max_chat_message_displayed = 4; // [default = 500].
+   uint32 max_log_message_displayed = 5; // [default = 500]
+   uint32 search_time = 7; // [default = 3000] [ms].
+   uint32 socket_timeout = 8; // [default = 7000] [ms].
+
+   bytes windows_state = 9;
+   uint32 main_window_width = 10; // [default = 1200].
+   uint32 main_window_height = 11; // [default = 620].
+   bool main_window_maximized = 17; // [default = false].
+
    repeated uint32 search_column_size = 19; // [Entry name, Folder name, Relvance, Peer, Size].
 
    enum Window {
-      WIN_SETTINGS = 1;
-      WIN_CHAT = 2;
-      WIN_DOWNLOAD = 3;
-      WIN_UPLOAD = 4;
-   }   
-   repeated Window windowOrder = 18;   
-   
+      WIN_SETTINGS = 0;
+      WIN_CHAT = 1;
+      WIN_DOWNLOAD = 2;
+      WIN_UPLOAD = 3;
+   }
+   repeated Window windowOrder = 18;
+
    enum DownloadView {
-      TREE_VIEW = 1;
-      LIST_VIEW = 2;
+      TREE_VIEW = 0;
+      LIST_VIEW = 1;
    }
-   optional DownloadView download_view = 21 [default = TREE_VIEW];
-   
+   DownloadView download_view = 21; // [default = TREE_VIEW].
+
    enum PeerSortType {
-      BY_NICK = 1;
-      BY_SHARING_AMOUNT = 2;
+      BY_NICK = 0;
+      BY_SHARING_AMOUNT = 1;
    }
-   optional PeerSortType peer_sort_type = 22 [default = BY_SHARING_AMOUNT];
-   
+   PeerSortType peer_sort_type = 22; // [default = BY_SHARING_AMOUNT].
+
    message HighlightedPeers {
       message Peer {
-         required uint32 color = 1; // RGB.
-         required Common.Hash id = 2;
+         uint32 color = 1; // RGB.
+         Common.Hash id = 2;
       }
       repeated Peer peer = 1;
    }
-   optional HighlightedPeers highlighted_peers = 23;
-   
-   // Used to show the little speed rate charts int the peers list.
-   optional uint32 lan_speed = 24 [default = 104857600]; // [B/s]. (100 MiB/s).
-   
-   optional string style = 25; // The directory of the style in the 'styles' directory.
-   
-   optional bool multiple_instance_allowed = 26 [default = false];
+   HighlightedPeers highlighted_peers = 23;
 
-   optional string default_emoticon_theme = 27 [default = "Default"];
+   // Used to show the little speed rate charts int the peers list.
+   uint32 lan_speed = 24; // [default = 104857600] [B/s]. (100 MiB/s).
+
+   string style = 25; // The directory of the style in the 'styles' directory.
+
+   bool multiple_instance_allowed = 26; // [default = false].
+
+   string default_emoticon_theme = 27; // [default = "Default"].
 
    enum SizeUnit {
-      BYTE = 1;
-      KIB = 2;
-      MIB = 3;
-      GIB = 4;
-      TIB = 5;
-      PIB = 6;
+      BYTE = 0;
+      KIB = 1;
+      MIB = 2;
+      GIB = 3;
+      TIB = 4;
+      PIB = 5;
    }
 
-   optional bool search_advanced_visible = 32 [default = false];
-   optional uint32 search_type = 35 [default = 0];
-   optional uint32 search_min_size_value = 28 [default = 0];
-   optional SizeUnit search_min_size_unit = 29 [default = MIB];
-   optional uint32 search_max_size_value = 30 [default = 0];
-   optional SizeUnit search_max_size_unit = 31 [default = MIB];
-   optional bool search_local = 34 [default = false]; // Search among our own files.
+   bool search_advanced_visible = 32; // [default = false].
+   uint32 search_type = 35; // [default = 0].
+   uint32 search_min_size_value = 28; // [default = 0].
+   SizeUnit search_min_size_unit = 29; // [default = MIB].
+   uint32 search_max_size_value = 30; // [default = 0].
+   SizeUnit search_max_size_unit = 31; // [default = MIB].
+   bool search_local = 34; // [default = false] Search among our own files.
 
    enum RoomSortType {
-     BY_NAME = 1;
-     BY_NB_PEERS = 2;
+     BY_NAME = 0;
+     BY_NB_PEERS = 1;
    }
-   optional RoomSortType room_sort_type = 36 [default = BY_NAME];
+   RoomSortType room_sort_type = 36; // [default = BY_NAME].
 }

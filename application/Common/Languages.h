@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef COMMON_LANGUAGES_H
-#define COMMON_LANGUAGES_H
+#pragma once
 
 #include <QString>
 #include <QList>
@@ -48,5 +47,3 @@ namespace Common
 }
 
 Q_DECLARE_METATYPE(Common::Language)
-
-#endif

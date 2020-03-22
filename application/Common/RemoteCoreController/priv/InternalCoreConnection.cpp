@@ -15,12 +15,13 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #include <priv/CoreConnection.h>
 using namespace RCC;
 
 #include <QHostAddress>
 #include <QCoreApplication>
+#include <QRandomGenerator64>
 
 #include <Common/ProtoHelper.h>
 #include <Common/Constants.h>
@@ -162,7 +163,7 @@ bool InternalCoreConnection::setCorePassword(const QString& newPassword, const Q
 {
    Protos::GUI::ChangePassword passMess;
 
-   const quint64 newSalt = mtrand.randInt64();
+   const quint64 newSalt = QRandomGenerator64::global()->generate64();
    Common::Hash newPasswordHashed = Common::Hasher::hashWithSalt(newPassword, newSalt);
 
    passMess.mutable_new_password()->set_hash(newPasswordHashed.getData(), Common::Hash::HASH_SIZE);
@@ -501,7 +502,7 @@ void InternalCoreConnection::onNewMessage(const Common::Message& message)
          QWeakPointer<SendChatMessageResult> sendChatMessageResult = this->sendChatMessageResultWithoutReply.takeFirst();
          if (!sendChatMessageResult.isNull())
          {
-            sendChatMessageResult.data()->setResult(result);
+            sendChatMessageResult.toStrongRef()->setResult(result);
             break;
          }
       }
@@ -516,7 +517,7 @@ void InternalCoreConnection::onNewMessage(const Common::Message& message)
             QWeakPointer<SearchResult> searchResult = this->searchResultsWithoutTag.takeFirst();
             if (!searchResult.isNull())
             {
-               searchResult.data()->setTag(tagMessage.tag());
+               searchResult.toStrongRef()->setTag(tagMessage.tag());
                break;
             }
          }
@@ -539,7 +540,7 @@ void InternalCoreConnection::onNewMessage(const Common::Message& message)
             QWeakPointer<BrowseResult> browseResult = this->browseResultsWithoutTag.takeFirst();
             if (!browseResult.isNull())
             {
-               browseResult.data()->setTag(tagMessage.tag());
+               browseResult.toStrongRef()->setTag(tagMessage.tag());
                break;
             }
          }

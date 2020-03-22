@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef REMOTECONTROLMANAGER_IREMOTECONTROLMANAGER_H
-#define REMOTECONTROLMANAGER_IREMOTECONTROLMANAGER_H
+#pragma once
 
 #include <QObject>
 #include <QLocale>
@@ -39,4 +38,3 @@ namespace RCM
       void languageDefined(QLocale);
    };
 }
-#endif

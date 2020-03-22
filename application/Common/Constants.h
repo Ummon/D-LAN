@@ -15,9 +15,8 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
-#ifndef COMMON_CONSTANTS_H
-#define COMMON_CONSTANTS_H
+
+#pragma once
 
 #include <QDir>
 
@@ -25,7 +24,7 @@ namespace Common
 {
    class Constants
    {
-   public:      
+   public:
       // 2 -> 3 : BLAKE -> Sha-1
       // 3 -> 4 : New chat protocol + changes of the 'GET_ENTRIES_RESULT' message.
       static const quint32 PROTOCOL_VERSION;
@@ -62,7 +61,6 @@ namespace Common
       static const QString BINARY_PREFIXS[];
 
       static const int MAX_NB_HASHES_PER_ENTRY_GUI_BROWSE;
+      static const int CHUNK_SIZE;
    };
 }
-
-#endif

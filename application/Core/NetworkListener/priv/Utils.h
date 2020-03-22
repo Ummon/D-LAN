@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef NETWORKLISTENER_UTILS_H
-#define NETWORKLISTENER_UTILS_H
+#pragma once
 
 #include <QNetworkInterface>
 #include <QHostAddress>
@@ -32,5 +31,3 @@ namespace NL
       static QHostAddress getMulticastGroup();
    };
 }
-
-#endif

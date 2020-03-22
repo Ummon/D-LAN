@@ -16,15 +16,12 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef DOWNLOADMANAGER_FILEDOWNLOAD_H
-#define DOWNLOADMANAGER_FILEDOWNLOAD_H
+#pragma once
 
 #include <QList>
 #include <QMap>
 #include <QSharedPointer>
 #include <QTime>
-
-#include <Libs/MersenneTwister.h>
 
 #include <Common/ThreadPool.h>
 
@@ -44,7 +41,7 @@ namespace DM
    class FileDownload : public Download
    {
       Q_OBJECT
-      static MTRand mtrand;
+
    public:
       FileDownload(
          QSharedPointer<FM::IFileManager> fileManager,
@@ -131,5 +128,3 @@ inline QTime DM::FileDownload::getLastTimeGetAllUnfinishedChunks() const
 {
    return this->lastTimeGetAllUnfinishedChunks;
 }
-
-#endif

@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef TESTS_COMMON_H
-#define TESTS_COMMON_H
+#pragma once
 
 #include <QTest>
 
@@ -88,5 +87,3 @@ private slots:
 private:
    Common::Hash hash;
 };
-
-#endif

@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef FILEMANAGER_CHUNK_H
-#define FILEMANAGER_CHUNK_H
+#pragma once
 
 #include <exception>
 
@@ -166,5 +165,3 @@ inline bool FM::Chunk::write(const char* buffer, int nbBytes)
 
    return COMPLETE;
 }
-
-#endif

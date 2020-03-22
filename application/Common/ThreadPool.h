@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef COMMON_THREADPOOL_H
-#define COMMON_THREADPOOL_H
+#pragma once
 
 #include <QTimer>
 #include <QThread>
@@ -85,5 +84,3 @@ namespace Common
       bool active;
    };
 }
-
-#endif

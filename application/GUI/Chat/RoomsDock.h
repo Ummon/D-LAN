@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef GUI_ROOMSDOCK_H
-#define GUI_ROOMSDOCK_H
+#pragma once
 
 #include <QDockWidget>
 #include <QSharedPointer>
@@ -71,5 +70,3 @@ namespace GUI
       RoomsDelegate roomsDelegate;
    };
 }
-
-#endif

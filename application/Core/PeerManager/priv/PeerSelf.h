@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef PEERMANAGER_PEERSELF_H
-#define PEERMANAGER_PEERSELF_H
+#pragma once
 
 #include <priv/Peer.h>
 
@@ -36,5 +35,3 @@ namespace PM
       static Common::Hash loadID();
    };
 }
-
-#endif

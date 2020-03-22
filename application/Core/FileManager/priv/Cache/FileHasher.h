@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef FILEMANAGER_FILEHASHER_H
-#define FILEMANAGER_FILEHASHER_H
+#pragma once
 
 #include <QObject>
 #include <QMutex>
@@ -57,5 +56,3 @@ namespace FM
       static FilePool filePool;
    };
 }
-
-#endif

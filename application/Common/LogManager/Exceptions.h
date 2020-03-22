@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef LOGMANAGER_EXCEPTIONS_H
-#define LOGMANAGER_EXCEPTIONS_H
+#pragma once
 
 #include <QString>
 
@@ -36,4 +35,3 @@ namespace LM
       const QString message;
    };
 }
-#endif

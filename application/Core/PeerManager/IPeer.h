@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef PEERMANAGER_IPEER_H
-#define PEERMANAGER_IPEER_H
+#pragma once
 
 #include <QObject>
 #include <QSharedPointer>
@@ -120,4 +119,3 @@ namespace PM
       virtual QSharedPointer<IGetChunkResult> getChunk(const Protos::Core::GetChunk& chunk) = 0;
    };
 }
-#endif

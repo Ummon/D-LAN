@@ -32,8 +32,6 @@ using namespace Common;
   * An Über-optimized hash.
   */
 
-MTRand Hash::mtrand;
-
 const char Hash::NULL_HASH[HASH_SIZE] {};
 
 /**
@@ -227,11 +225,6 @@ Hash Hash::rand(quint32 seed)
    return hash;
 }
 
-void Hash::setRandSeed(quint32 seed)
-{
-   Hash::mtrand.seed(seed);
-}
-
 Hash Hash::fromStr(const QString& str)
 {
    Q_ASSERT_X(str.size() == 2 * HASH_SIZE, "Hash::fromStr", "The string representation of an hash must have twice as character as the size (in byte) of the hash.");
@@ -261,8 +254,6 @@ Hash Hash::fromStr(const QString& str)
   *
   * To create hash from row data.
   */
-
-MTRand Hasher::mtrand;
 
 Hasher::Hasher() :
    cryptographicHash(QCryptographicHash::Sha1)

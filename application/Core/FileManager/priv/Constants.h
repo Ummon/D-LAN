@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef FILEMANAGER_CONSTANTS_H
-#define FILEMANAGER_CONSTANTS_H
+#pragma once
 
 #include <QString>
 
@@ -30,5 +29,3 @@ namespace FM
    // because it may take a lot of memory (UDP datagram are very small).
    const int NB_MAX_HASHES_PER_ENTRY_SEARCH = 8;
 }
-
-#endif

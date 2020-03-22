@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef COMMON_MAPARRAY_H
-#define COMMON_MAPARRAY_H
+#pragma once
 
 #include <Common/Containers/SortedArray.h>
 
@@ -155,5 +154,3 @@ inline int Common::MapArray<K, T>::indexOf(const K& key)
 {
    return this->array.indexOf(Element {key, T()});
 }
-
-#endif

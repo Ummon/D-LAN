@@ -25,8 +25,7 @@ using namespace Common;
 
 #include <QtGlobal>
 #include <QTime>
-
-MTRand Hash::mtrand;
+#include <QRandomGenerator64>
 
 const char Hash::NULL_HASH[HASH_SIZE] {};
 
@@ -85,7 +84,7 @@ Hash::Hash(const QByteArray& a)
   */
 QString Hash::toStr() const
 {
-   QString ret(2 * HASH_SIZE);
+   QString ret(2 * HASH_SIZE, QChar());
 
    for (int i = 0; i < HASH_SIZE; i++)
    {
@@ -137,22 +136,17 @@ Hash Hash::rand()
 {
    Hash hash;
    for (int i = 0; i < HASH_SIZE; i++)
-      hash.data[i] = static_cast<char>(Hash::mtrand.randInt(255));
+      hash.data[i] = static_cast<char>(QRandomGenerator64::global()->bounded(256));
    return hash;
 }
 
 Hash Hash::rand(quint32 seed)
 {
-   MTRand mtrand(seed);
+   QRandomGenerator64 rng(seed);
    Hash hash;
    for (int i = 0; i < HASH_SIZE; i++)
-      hash.data[i] = static_cast<char>(mtrand.randInt(255));
+      hash.data[i] = static_cast<char>(rng.bounded(256));
    return hash;
-}
-
-void Hash::setRandSeed(quint32 seed)
-{
-   Hash::mtrand.seed(seed);
 }
 
 Hash Hash::fromStr(const QString& str)
@@ -183,8 +177,6 @@ Hash Hash::fromStr(const QString& str)
   *
   * To create hash from row data.
   */
-
-MTRand Hasher::mtrand;
 
 Hasher::Hasher() :
    cryptographicHash(QCryptographicHash::Sha1)
@@ -284,13 +276,13 @@ Common::Hash Hasher::hashWithSalt(const Common::Hash& hash, quint64 salt)
 
 Hash Hasher::hashWithRandomSalt(const QString& str, quint64& salt)
 {
-   salt = Hash::mtrand.randInt64();
+   salt = QRandomGenerator64::global()->generate64();
    return Hasher::hashWithSalt(str, salt);
 }
 
 Hash Hasher::hashWithRandomSalt(const Common::Hash& hash, quint64& salt)
 {
-   salt = Hash::mtrand.randInt64();
+   salt = QRandomGenerator64::global()->generate64();
    return Hasher::hashWithSalt(hash, salt);
 }
 

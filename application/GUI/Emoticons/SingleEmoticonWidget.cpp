@@ -15,7 +15,7 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #include <Emoticons/SingleEmoticonWidget.h>
 #include <ui_SingleEmoticonWidget.h>
 using namespace GUI;
@@ -69,7 +69,7 @@ const QString& SingleEmoticonWidget::getEmoticonName() const
 
 void SingleEmoticonWidget::leaveEvent(QEvent*)
 {
-   this->setBackgroundRole(QPalette::Background);
+   this->setBackgroundRole(QPalette::Window);
 }
 
 void SingleEmoticonWidget::enterEvent(QEvent*)

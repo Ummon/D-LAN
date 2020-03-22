@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef GUI_EMOTICONSWIDGET_H
-#define GUI_EMOTICONSWIDGET_H
+#pragma once
 
 #include <QWidget>
 #include <QRadioButton>
@@ -51,5 +50,3 @@ namespace GUI
       QList<QRadioButton*> themeButtons;
    };
 }
-
-#endif

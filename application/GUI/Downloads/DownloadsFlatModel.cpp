@@ -20,6 +20,7 @@
 using namespace GUI;
 
 #include <limits>
+#include <algorithm>
 
 #include <QPixmap>
 
@@ -178,7 +179,7 @@ bool DownloadsFlatModel::dropMimeData(const QMimeData* data, Qt::DropAction acti
    // We remove the moved download from the list (not necessery but nicer for the user experience).
    if (!rows.isEmpty())
    {
-      qSort(rows.begin(), rows.end());
+      std::sort(rows.begin(), rows.end());
 
       int rowBegin = rows.size() - 1;
       int rowEnd = rowBegin;

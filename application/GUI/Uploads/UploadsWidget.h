@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef GUI_UPLOADSWINDOW_H
-#define GUI_UPLOADSWINDOW_H
+#pragma once
 
 #include <QWidget>
 #include <QProgressBar>
@@ -62,5 +61,3 @@ namespace GUI
       UploadsDelegate uploadsDelegate;
    };
 }
-
-#endif

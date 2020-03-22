@@ -15,9 +15,8 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
-#ifndef COMMON_PERSISTANTDATA_H
-#define COMMON_PERSISTANTDATA_H
+
+#pragma once
 
 #include <google/protobuf/message.h>
 
@@ -48,8 +47,7 @@ namespace Common
       static bool rmValue(const QString& name, Global::DataFolderType dataFolderType);
 
    private:
-      static void setValueFilepath(const QString& filepath, const google::protobuf::Message& data, Global::DataFolderType dataFolderType, bool humanReadable = false);
-      static void getValueFilepath(const QString& filepath, google::protobuf::Message& data, Global::DataFolderType dataFolderType, bool humanReadable = false);
+      static void setValueFilepath(const QString& filepath, const google::protobuf::Message& data, bool humanReadable = false);
+      static void getValueFilepath(const QString& filepath, google::protobuf::Message& data, bool humanReadable = false);
    };
 }
-#endif

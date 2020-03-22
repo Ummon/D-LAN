@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef GUI_SEARCHMODEL_H
-#define GUI_SEARCHMODEL_H
+#pragma once
 
 #include <QAbstractItemModel>
 #include <QTimer>
@@ -140,5 +139,3 @@ namespace GUI
       };
    };
 }
-
-#endif

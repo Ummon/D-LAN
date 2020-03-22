@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef GUI_DOWNLOADSMODEL_H
-#define GUI_DOWNLOADSMODEL_H
+#pragma once
 
 #include <QAbstractTableModel>
 #include <QDragEnterEvent>
@@ -88,5 +87,3 @@ namespace GUI
 }
 
 Q_DECLARE_METATYPE(GUI::Progress)
-
-#endif

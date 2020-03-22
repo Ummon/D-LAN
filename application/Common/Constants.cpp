@@ -15,7 +15,7 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #include <Common/Constants.h>
 using namespace Common;
 
@@ -31,7 +31,7 @@ const quint16 Constants::DEFAULT_CORE_REMOTE_CONTROL_PORT { 59485 };
 
 // Some files are saved as text format in debug and as binary in release.
 #ifdef DEBUG
-   const QString Constants::FILE_EXTENSION("txt");
+   const QString Constants::FILE_EXTENSION("json");
 #else
    const QString Constants::FILE_EXTENSION("bin");
 #endif
@@ -47,8 +47,8 @@ const QString Constants::DIR_CHAT_MESSAGES("chat");
 const QString Constants::FILE_CHAT_MESSAGES("messages." + FILE_EXTENSION); ///< This file contains the last chat messages.
 const QString Constants::FILE_CHAT_ROOM_MESSAGES("messages_room_%1." + FILE_EXTENSION); ///< This file contains the last chat messages for a room.
 
-const QString Constants::CORE_SETTINGS_FILENAME("core_settings.txt");
-const QString Constants::GUI_SETTINGS_FILENAME("gui_settings.txt");
+const QString Constants::CORE_SETTINGS_FILENAME("core_settings.json");
+const QString Constants::GUI_SETTINGS_FILENAME("gui_settings.json");
 
 const QString Constants::LANGUAGE_DIRECTORY("languages");
 
@@ -62,3 +62,5 @@ const int Constants::PROTOBUF_STREAMING_BUFFER_SIZE(4 * 1024); ///< 4kB.
 const QString Constants::BINARY_PREFIXS[] = {"B", "KiB", "MiB", "GiB", "TiB", "PiB", "EiB", "ZiB"};
 
 const int Constants::MAX_NB_HASHES_PER_ENTRY_GUI_BROWSE = 8;
+
+const int Constants::CHUNK_SIZE = 67108864;

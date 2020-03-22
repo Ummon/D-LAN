@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef GUI_ICONPROVIDER_H
-#define GUI_ICONPROVIDER_H
+#pragma once
 
 #include <QIcon>
 #include <QMap>
@@ -50,5 +49,3 @@ namespace GUI
       static QIcon folderIconWithWarning;
    };
 }
-
-#endif

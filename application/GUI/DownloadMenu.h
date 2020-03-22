@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef GUI_DOWNLOADMENU_H
-#define GUI_DOWNLOADMENU_H
+#pragma once
 
 #include <QObject>
 #include <QSharedPointer>
@@ -52,5 +51,3 @@ namespace GUI
       const DirListModel& sharedDirsModel;
    };
 }
-
-#endif

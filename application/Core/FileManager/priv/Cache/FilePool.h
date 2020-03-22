@@ -16,14 +16,14 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef FILEMANAGER_FILEPOOL_H
-#define FILEMANAGER_FILEPOOL_H
+#pragma once
 
 #include <QObject>
 #include <QMutex>
 #include <QFile>
 #include <QTime>
 #include <QTimer>
+#include <QElapsedTimer>
 #include <QScopedPointer>
 
 #include <Common/Uncopyable.h>
@@ -52,7 +52,7 @@ namespace FM
       {
          QFile* file;
          QIODevice::OpenMode mode;
-         QTime releasedTime; // Null if not released.
+         QElapsedTimer releasedTime; // '!isValid()' if not released.
       };
 
       QList<OpenedFile> files;
@@ -88,5 +88,3 @@ namespace FM
       bool forceToClose;
    };
 }
-
-#endif

@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef COMMON_COMMON_H
-#define COMMON_COMMON_H
+#pragma once
 
 #include <functional>
 
@@ -90,5 +89,3 @@ namespace Common
       static QString getQObjectHierarchy(const QObject* root, std::function<QString(const QObject*)> fun);
    };
 }
-
-#endif

@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef LOGMANAGER_ILOGGER_H
-#define LOGMANAGER_ILOGGER_H
+#pragma once
 
 #include <QString>
 
@@ -41,4 +40,3 @@ namespace LM
       virtual bool log(const ILoggable& object, Severity severity, const char* filename = nullptr, int line = 0) const = 0;
    };
 }
-#endif

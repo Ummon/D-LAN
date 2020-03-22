@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef CORE_CORE_SERVICE_H
-#define CORE_CORE_SERVICE_H
+#pragma once
 
 #include <Libs/qtservice/src/qtservice.h>
 
@@ -57,4 +56,3 @@ namespace CoreSpace
       Common::ConsoleReader* consoleReader;
    };
 }
-#endif

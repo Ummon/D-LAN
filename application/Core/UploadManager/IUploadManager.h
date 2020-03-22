@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef UPLOADMANAGER_IUPLOADMANAGER_H
-#define UPLOADMANAGER_IUPLOADMANAGER_H
+#pragma once
 
 #include <QList>
 
@@ -37,4 +36,3 @@ namespace UM
       virtual int getUploadRate() = 0;
    };
 }
-#endif

@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef FILEMANAGER_EXCEPTIONS_H
-#define FILEMANAGER_EXCEPTIONS_H
+#pragma once
 
 #include <QStringList>
 
@@ -75,5 +74,3 @@ namespace FM
 
    class UnableToCreateSharedDirectory {};
 }
-
-#endif

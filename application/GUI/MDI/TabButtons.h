@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef GUI_TABBUTTONS_H
-#define GUI_TABBUTTONS_H
+#pragma once
 
 #include <QAbstractButton>
 #include <QStyleOption>
@@ -86,5 +85,3 @@ namespace GUI
        QIcon icon;
    };
 }
-
-#endif

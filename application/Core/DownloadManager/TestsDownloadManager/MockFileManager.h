@@ -19,8 +19,8 @@ public:
    QList<QSharedPointer<FM::IChunk>> newFile(Protos::Common::Entry& entry);
    void newDirectory(Protos::Common::Entry& entry);
    QSharedPointer<FM::IGetHashesResult> getHashes(const Protos::Common::Entry& file);
-   QSharedPointer<FM::IGetEntriesResult> getScannedEntries(const Protos::Common::Entry& dir);
-   Protos::Common::Entries getEntries(const Protos::Common::Entry& dir);
+   QSharedPointer<FM::IGetEntriesResult> getScannedEntries(const Protos::Common::Entry& dir, int maxNbHashesPerEntry = std::numeric_limits<int>::max());
+   Protos::Common::Entries getEntries(const Protos::Common::Entry& dir, int maxNbHashesPerEntry = std::numeric_limits<int>::max());
    Protos::Common::Entries getEntries();
    QList<Protos::Common::FindResult> find(const QString& words, int maxNbResult, int maxSize);
    QList<Protos::Common::FindResult> find(const QString& words, const QList<QString>& extensions, qint64 minFileSize, qint64 maxFileSize, Protos::Common::FindPattern_Category category, int maxNbResult, int maxSize);

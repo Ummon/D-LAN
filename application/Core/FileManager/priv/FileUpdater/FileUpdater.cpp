@@ -657,7 +657,8 @@ void FileUpdater::removeFromFilesWithoutHashes(Entry* entry)
    for (int i = 0; i < this->fileCacheInformation->getFileCache()->shareddir_size(); i++)
       if (this->fileCacheInformation->getFileCache()->shareddir(i).id().hash() == dir->getId())
       {
-         QSet<File*> filesWithHashes = dir->restoreFromFileCache(this->fileCacheInformation->getFileCache()->shareddir(i).root()).toSet();
+         auto filesWithHashesList = dir->restoreFromFileCache(this->fileCacheInformation->getFileCache()->shareddir(i).root());
+         QSet<File*> filesWithHashes(filesWithHashesList.begin(), filesWithHashesList.end());
 
          for (QMutableListIterator<File*> i(this->filesWithoutHashes); i.hasNext();)
          {

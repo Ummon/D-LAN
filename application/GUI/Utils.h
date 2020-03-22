@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef GUI_UTILS_H
-#define GUI_UTILS_H
+#pragma once
 
 #include <QSharedPointer>
 #include <QStringList>
@@ -39,5 +38,3 @@ namespace GUI
       static void openFile(const QString& path);
    };
 }
-
-#endif

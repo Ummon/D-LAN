@@ -5,21 +5,29 @@
     <name>AskNewPasswordDialog</name>
     <message>
         <location filename="../GUI/Settings/AskNewPasswordDialog.ui"/>
+        <location filename="../GUI/.tmp/debug/ui_AskNewPasswordDialog.h" line="+97"/>
+        <location filename="../GUI/.tmp/release/ui_AskNewPasswordDialog.h" line="+97"/>
         <source>Change password</source>
         <translation>Passwort ändern</translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_AskNewPasswordDialog.h" line="+1"/>
+        <location filename="../GUI/.tmp/release/ui_AskNewPasswordDialog.h" line="+1"/>
         <source>Old password</source>
         <translation>Altes Passwort</translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_AskNewPasswordDialog.h" line="+1"/>
+        <location filename="../GUI/.tmp/release/ui_AskNewPasswordDialog.h" line="+1"/>
         <source>New password</source>
         <translation>Neues Passwort</translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_AskNewPasswordDialog.h" line="+1"/>
+        <location filename="../GUI/.tmp/release/ui_AskNewPasswordDialog.h" line="+1"/>
         <source>Repeat new password</source>
         <translation>Neues Passwort wiederholen</translation>
     </message>
@@ -28,6 +36,8 @@
     <name>AutoComplete</name>
     <message>
         <location filename="../GUI/AutoComplete/AutoComplete.ui"/>
+        <location filename="../GUI/.tmp/debug/ui_AutoComplete.h" line="+55"/>
+        <location filename="../GUI/.tmp/release/ui_AutoComplete.h" line="+55"/>
         <source>Form</source>
         <translation></translation>
     </message>
@@ -36,11 +46,15 @@
     <name>BrowseWidget</name>
     <message>
         <location filename="../GUI/Browse/BrowseWidget.ui"/>
+        <location filename="../GUI/.tmp/debug/ui_BrowseWidget.h" line="+68"/>
+        <location filename="../GUI/.tmp/release/ui_BrowseWidget.h" line="+68"/>
         <source>Download selected items to the first shared directory with enough free space</source>
         <translation>Ausgewählte Elemente in den ersten freigegebenen Ordner mit genug freiem Speicherplatz herunterladen</translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_BrowseWidget.h" line="+2"/>
+        <location filename="../GUI/.tmp/release/ui_BrowseWidget.h" line="+2"/>
         <source>Download selected items</source>
         <translation>Ausgewählte Elemente herunterladen</translation>
     </message>
@@ -53,6 +67,8 @@
     </message>
     <message>
         <location filename="../GUI/Chat/ChatWidget.ui"/>
+        <location filename="../GUI/.tmp/debug/ui_ChatWidget.h" line="+180"/>
+        <location filename="../GUI/.tmp/release/ui_ChatWidget.h" line="+180"/>
         <source>Reset current format</source>
         <translation>Formatierung zurücksetzen</translation>
     </message>
@@ -61,26 +77,36 @@
     <name>DialogAbout</name>
     <message>
         <location filename="../GUI/DialogAbout.ui"/>
+        <location filename="../GUI/.tmp/debug/ui_DialogAbout.h" line="+149"/>
+        <location filename="../GUI/.tmp/release/ui_DialogAbout.h" line="+149"/>
         <source>About</source>
         <translation>Über</translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_DialogAbout.h" line="+2"/>
+        <location filename="../GUI/.tmp/release/ui_DialogAbout.h" line="+2"/>
         <source>D-LAN</source>
         <translation>D-LAN</translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_DialogAbout.h" line="+1"/>
+        <location filename="../GUI/.tmp/release/ui_DialogAbout.h" line="+1"/>
         <source>Built on</source>
         <translation>Kompiliert am</translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_DialogAbout.h" line="+1"/>
+        <location filename="../GUI/.tmp/release/ui_DialogAbout.h" line="+1"/>
         <source>From revision</source>
         <translation>Aus Version</translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_DialogAbout.h" line="+2"/>
+        <location filename="../GUI/.tmp/release/ui_DialogAbout.h" line="+2"/>
         <source>Copyright 2010-%1 Greg Burri. All rights reserved.</source>
         <translation>Copyright 2010-%1 Greg Burri. Alle Rechte vorbehalten.</translation>
     </message>
@@ -90,11 +116,15 @@
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_DialogAbout.h" line="+1"/>
+        <location filename="../GUI/.tmp/release/ui_DialogAbout.h" line="+1"/>
         <source>Close</source>
         <translation>Schließen</translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_DialogAbout.h" line="-2"/>
+        <location filename="../GUI/.tmp/release/ui_DialogAbout.h" line="-2"/>
         <source>With</source>
         <translation>Mit</translation>
     </message>
@@ -103,26 +133,36 @@
     <name>DownloadsWidget</name>
     <message>
         <location filename="../GUI/Downloads/DownloadsWidget.ui"/>
+        <location filename="../GUI/.tmp/debug/ui_DownloadsWidget.h" line="+127"/>
+        <location filename="../GUI/.tmp/release/ui_DownloadsWidget.h" line="+127"/>
         <source>Downloads</source>
         <translation>Downloads</translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_DownloadsWidget.h" line="+1"/>
+        <location filename="../GUI/.tmp/release/ui_DownloadsWidget.h" line="+1"/>
         <source>Item shown :</source>
         <translation>Elemente anzeigen :</translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_DownloadsWidget.h" line="+5"/>
+        <location filename="../GUI/.tmp/release/ui_DownloadsWidget.h" line="+5"/>
         <source>Remove completed files from the queue</source>
         <translation>Abgeschlossene Übertragungen aus der Warteschlange entfernen</translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_DownloadsWidget.h" line="+4"/>
+        <location filename="../GUI/.tmp/release/ui_DownloadsWidget.h" line="+4"/>
         <source>Removed selected downloads from the queue</source>
         <translation>Ausgewählte Übertragungen aus der Warteschlange entfernen</translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_DownloadsWidget.h" line="+4"/>
+        <location filename="../GUI/.tmp/release/ui_DownloadsWidget.h" line="+4"/>
         <source>Pause or unpause selected downloads</source>
         <translation>Ausgewählte Übertragungen pausieren oder fortsetzen</translation>
     </message>
@@ -138,7 +178,7 @@
 <context>
     <name>GUI::ChatWidget</name>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="+210"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="+212"/>
         <location line="+4"/>
         <source>Unable to send message</source>
         <translation>Nachricht konnte nicht gesendet werden</translation>
@@ -174,7 +214,7 @@
         <translation>Ausgewählte Peers durchsuchen</translation>
     </message>
     <message>
-        <location line="+341"/>
+        <location line="+362"/>
         <source>Chat</source>
         <translation>Chat</translation>
     </message>
@@ -1066,11 +1106,15 @@
     <name>MainWindow</name>
     <message>
         <location filename="../GUI/MainWindow.ui"/>
+        <location filename="../GUI/.tmp/debug/ui_MainWindow.h" line="+134"/>
+        <location filename="../GUI/.tmp/release/ui_MainWindow.h" line="+134"/>
         <source>D-LAN</source>
         <translation>D-LAN</translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_MainWindow.h" line="+5"/>
+        <location filename="../GUI/.tmp/release/ui_MainWindow.h" line="+5"/>
         <source>Log</source>
         <translation>Log</translation>
     </message>
@@ -1099,6 +1143,8 @@
     <name>PeersDock</name>
     <message>
         <location filename="../GUI/Peers/PeersDock.ui"/>
+        <location filename="../GUI/.tmp/debug/ui_PeersDock.h" line="+57"/>
+        <location filename="../GUI/.tmp/release/ui_PeersDock.h" line="+57"/>
         <source>Peers</source>
         <translation>Knoten</translation>
     </message>
@@ -1220,16 +1266,22 @@
     <name>RoomsDock</name>
     <message>
         <location filename="../GUI/Chat/RoomsDock.ui"/>
+        <location filename="../GUI/.tmp/debug/ui_RoomsDock.h" line="+83"/>
+        <location filename="../GUI/.tmp/release/ui_RoomsDock.h" line="+83"/>
         <source>Chat rooms</source>
         <translation>Räume</translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_RoomsDock.h" line="+3"/>
+        <location filename="../GUI/.tmp/release/ui_RoomsDock.h" line="+3"/>
         <source>Join the room</source>
         <translation>Raum betreten</translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_RoomsDock.h" line="-2"/>
+        <location filename="../GUI/.tmp/release/ui_RoomsDock.h" line="-2"/>
         <source>Room name</source>
         <translation></translation>
     </message>
@@ -1238,11 +1290,17 @@
     <name>SearchDock</name>
     <message>
         <location filename="../GUI/Search/SearchDock.ui"/>
+        <location filename="../GUI/.tmp/debug/ui_SearchDock.h" line="+213"/>
+        <location line="+1"/>
+        <location filename="../GUI/.tmp/release/ui_SearchDock.h" line="+213"/>
+        <location line="+1"/>
         <source>Search</source>
         <translation>Suchen</translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_SearchDock.h" line="+2"/>
+        <location filename="../GUI/.tmp/release/ui_SearchDock.h" line="+2"/>
         <source>Search among other peers &lt;ENTER&gt;</source>
         <translation>Dateien auf anderen Knoten durchsuchen &lt;ENTER&gt;</translation>
     </message>
@@ -1252,26 +1310,36 @@
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_SearchDock.h" line="+4"/>
+        <location filename="../GUI/.tmp/release/ui_SearchDock.h" line="+4"/>
         <source>Clear fields</source>
         <translation>Felder leeren</translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_SearchDock.h" line="+4"/>
+        <location filename="../GUI/.tmp/release/ui_SearchDock.h" line="+4"/>
         <source>Own files</source>
         <translation>Eigene Dateien</translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_SearchDock.h" line="+1"/>
+        <location filename="../GUI/.tmp/release/ui_SearchDock.h" line="+1"/>
         <source>Type</source>
         <translation>Typ</translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_SearchDock.h" line="+1"/>
+        <location filename="../GUI/.tmp/release/ui_SearchDock.h" line="+1"/>
         <source>Min size</source>
         <translation>Min. Größe</translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_SearchDock.h" line="+1"/>
+        <location filename="../GUI/.tmp/release/ui_SearchDock.h" line="+1"/>
         <source>Max size</source>
         <translation>Max. Größe</translation>
     </message>
@@ -1280,16 +1348,22 @@
     <name>SearchWidget</name>
     <message>
         <location filename="../GUI/Search/SearchWidget.ui"/>
+        <location filename="../GUI/.tmp/debug/ui_SearchWidget.h" line="+85"/>
+        <location filename="../GUI/.tmp/release/ui_SearchWidget.h" line="+85"/>
         <source>Search</source>
         <translation>Suchen</translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_SearchWidget.h" line="+3"/>
+        <location filename="../GUI/.tmp/release/ui_SearchWidget.h" line="+3"/>
         <source>Download selected items to the first shared directory with enough free space</source>
         <translation>Ausgewählte Elemente in den ersten freigegebenen Ordner mit genug freiem Speicherplatz herunterladen</translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_SearchWidget.h" line="+2"/>
+        <location filename="../GUI/.tmp/release/ui_SearchWidget.h" line="+2"/>
         <source>Download selected items</source>
         <translation>Ausgewählte Elemente herunterladen</translation>
     </message>
@@ -1298,86 +1372,120 @@
     <name>SettingsWidget</name>
     <message>
         <location filename="../GUI/Settings/SettingsWidget.ui"/>
+        <location filename="../GUI/.tmp/debug/ui_SettingsWidget.h" line="+419"/>
+        <location filename="../GUI/.tmp/release/ui_SettingsWidget.h" line="+419"/>
         <source>Settings</source>
         <translation>Einstellungen</translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_SettingsWidget.h" line="+23"/>
+        <location filename="../GUI/.tmp/release/ui_SettingsWidget.h" line="+23"/>
         <source>Basic</source>
         <translation>Allgemein</translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_SettingsWidget.h" line="-22"/>
+        <location filename="../GUI/.tmp/release/ui_SettingsWidget.h" line="-22"/>
         <source>Nick</source>
         <translation>Anzeigename</translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_SettingsWidget.h" line="+1"/>
+        <location filename="../GUI/.tmp/release/ui_SettingsWidget.h" line="+1"/>
         <source>Shared folders</source>
         <translation>Freigegebene Ordner</translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_SettingsWidget.h" line="+2"/>
+        <location filename="../GUI/.tmp/release/ui_SettingsWidget.h" line="+2"/>
         <source>Add a new shared directory</source>
         <translation>Eine neue Freigabe hinzufügen</translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_SettingsWidget.h" line="+4"/>
+        <location filename="../GUI/.tmp/release/ui_SettingsWidget.h" line="+4"/>
         <source>Remove the selected shared directory</source>
         <translation>Die ausgewählte Freigabe entfernen</translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_SettingsWidget.h" line="+4"/>
+        <location filename="../GUI/.tmp/release/ui_SettingsWidget.h" line="+4"/>
         <source>Move down the selected shared directory</source>
         <translation>Die ausgewählte Freigabe nach unten bewegen</translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_SettingsWidget.h" line="+4"/>
+        <location filename="../GUI/.tmp/release/ui_SettingsWidget.h" line="+4"/>
         <source>Move up the selected shared directory</source>
         <translation>Die ausgewählte Freigabe nach oben bewegen</translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_SettingsWidget.h" line="+4"/>
+        <location filename="../GUI/.tmp/release/ui_SettingsWidget.h" line="+4"/>
         <source>Open location of the selected shared directory</source>
         <translation>Die ausgewählte Freigabe anzeigen</translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_SettingsWidget.h" line="+13"/>
+        <location filename="../GUI/.tmp/release/ui_SettingsWidget.h" line="+13"/>
         <source>Network</source>
         <translation>Netzwerk</translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_SettingsWidget.h" line="-9"/>
+        <location filename="../GUI/.tmp/release/ui_SettingsWidget.h" line="-9"/>
         <source>Interface to listen</source>
         <translation>Zu verwendende Schnittstelle</translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_SettingsWidget.h" line="+1"/>
+        <location filename="../GUI/.tmp/release/ui_SettingsWidget.h" line="+1"/>
         <source>Any</source>
         <translation>Alle</translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_SettingsWidget.h" line="+1"/>
+        <location filename="../GUI/.tmp/release/ui_SettingsWidget.h" line="+1"/>
         <source>IPv6</source>
         <translation>IPv6</translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_SettingsWidget.h" line="+1"/>
+        <location filename="../GUI/.tmp/release/ui_SettingsWidget.h" line="+1"/>
         <source>IPv4</source>
         <translation>IPv4</translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_SettingsWidget.h" line="+1"/>
+        <location filename="../GUI/.tmp/release/ui_SettingsWidget.h" line="+1"/>
         <source>Refresh interfaces</source>
         <translation>Liste aktualisieren</translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_SettingsWidget.h" line="+2"/>
+        <location filename="../GUI/.tmp/release/ui_SettingsWidget.h" line="+2"/>
         <source>When activated all received data will be verified against their hashes.  It may consume CPU resources.</source>
         <translation>Prüft alle empfangenen Daten mithilfe ihrer Prüfsummen. Beansprucht etwas Rechenleistung.</translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_SettingsWidget.h" line="+2"/>
+        <location filename="../GUI/.tmp/release/ui_SettingsWidget.h" line="+2"/>
         <source>Data integrity check</source>
         <translation>Datenintegrität prüfen</translation>
     </message>
@@ -1387,61 +1495,85 @@
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_SettingsWidget.h" line="+17"/>
+        <location filename="../GUI/.tmp/release/ui_SettingsWidget.h" line="+17"/>
         <source>Graphic User Interface</source>
         <translation>Grafische Benutzeroberfläche</translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_SettingsWidget.h" line="-15"/>
+        <location filename="../GUI/.tmp/release/ui_SettingsWidget.h" line="-15"/>
         <source>Language</source>
         <translation>Sprache</translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_SettingsWidget.h" line="+1"/>
+        <location filename="../GUI/.tmp/release/ui_SettingsWidget.h" line="+1"/>
         <source>Style</source>
         <translation>Aussehen</translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_SettingsWidget.h" line="+2"/>
+        <location filename="../GUI/.tmp/release/ui_SettingsWidget.h" line="+2"/>
         <source>Reload the current style</source>
         <translation>Aktuelles Aussehen neu laden</translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_SettingsWidget.h" line="+3"/>
+        <location filename="../GUI/.tmp/release/ui_SettingsWidget.h" line="+3"/>
         <source>Core connection</source>
         <translation>Verbindung zum Kern</translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_SettingsWidget.h" line="+1"/>
+        <location filename="../GUI/.tmp/release/ui_SettingsWidget.h" line="+1"/>
         <source>Address</source>
         <translation>Adresse</translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_SettingsWidget.h" line="+1"/>
+        <location filename="../GUI/.tmp/release/ui_SettingsWidget.h" line="+1"/>
         <source>Reset to local</source>
         <translation>Auf lokale Verbindung zurücksetzen</translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_SettingsWidget.h" line="+1"/>
+        <location filename="../GUI/.tmp/release/ui_SettingsWidget.h" line="+1"/>
         <source>Password</source>
         <translation>Passwort</translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_SettingsWidget.h" line="+1"/>
+        <location filename="../GUI/.tmp/release/ui_SettingsWidget.h" line="+1"/>
         <source>Disconnect</source>
         <translation>Verbindung trennen</translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_SettingsWidget.h" line="+1"/>
+        <location filename="../GUI/.tmp/release/ui_SettingsWidget.h" line="+1"/>
         <source>Change the password</source>
         <translation>Passwort ändern</translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_SettingsWidget.h" line="+1"/>
+        <location filename="../GUI/.tmp/release/ui_SettingsWidget.h" line="+1"/>
         <source>Reset the password</source>
         <translation>Passwort zurücksetzen</translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_SettingsWidget.h" line="+1"/>
+        <location filename="../GUI/.tmp/release/ui_SettingsWidget.h" line="+1"/>
         <source>User interface</source>
         <translation>Oberfläche</translation>
     </message>
@@ -1450,6 +1582,8 @@
     <name>SingleEmoticonWidget</name>
     <message>
         <location filename="../GUI/Emoticons/SingleEmoticonWidget.ui"/>
+        <location filename="../GUI/.tmp/debug/ui_SingleEmoticonWidget.h" line="+50"/>
+        <location filename="../GUI/.tmp/release/ui_SingleEmoticonWidget.h" line="+50"/>
         <source>Form</source>
         <translation></translation>
     </message>
@@ -1458,26 +1592,36 @@
     <name>StatusBar</name>
     <message>
         <location filename="../GUI/StatusBar.ui"/>
+        <location filename="../GUI/.tmp/debug/ui_StatusBar.h" line="+165"/>
+        <location filename="../GUI/.tmp/release/ui_StatusBar.h" line="+165"/>
         <source>Show the log window</source>
         <translation>Protokollfenster anzeigen</translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_StatusBar.h" line="+4"/>
+        <location filename="../GUI/.tmp/release/ui_StatusBar.h" line="+4"/>
         <source>About</source>
         <translation>Über</translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_StatusBar.h" line="+3"/>
+        <location filename="../GUI/.tmp/release/ui_StatusBar.h" line="+3"/>
         <source>Download rate</source>
         <translation>Eingehender Datenverkehr</translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_StatusBar.h" line="+5"/>
+        <location filename="../GUI/.tmp/release/ui_StatusBar.h" line="+5"/>
         <source>Upload rate</source>
         <translation>Ausgehender Datenverkehr</translation>
     </message>
     <message>
         <location/>
+        <location filename="../GUI/.tmp/debug/ui_StatusBar.h" line="+5"/>
+        <location filename="../GUI/.tmp/release/ui_StatusBar.h" line="+5"/>
         <source>Total sharing</source>
         <translation>Gesamte Freigaben</translation>
     </message>
@@ -1486,6 +1630,8 @@
     <name>UploadsWidget</name>
     <message>
         <location filename="../GUI/Uploads/UploadsWidget.ui"/>
+        <location filename="../GUI/.tmp/debug/ui_UploadsWidget.h" line="+52"/>
+        <location filename="../GUI/.tmp/release/ui_UploadsWidget.h" line="+52"/>
         <source>Uploads</source>
         <translation>Uploads</translation>
     </message>

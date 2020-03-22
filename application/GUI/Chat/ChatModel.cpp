@@ -15,7 +15,7 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #include <Chat/ChatModel.h>
 using namespace GUI;
 
@@ -237,7 +237,7 @@ void ChatModel::newChatMessages(const Protos::Common::ChatMessages& messages)
    if (messages.message_size() == 0)
       return;
 
-   QString roomName = messages.message(0).has_chat_room() ? Common::ProtoHelper::getStr(messages.message(0), &Protos::Common::ChatMessage::chat_room) : QString();
+   QString roomName = Common::ProtoHelper::getStr(messages.message(0), &Protos::Common::ChatMessage::chat_room);
    if (roomName != this->roomName)
       return;
 

@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef GUI_PEERLISTMODEL_H
-#define GUI_PEERLISTMODEL_H
+#pragma once
 
 #include <QAbstractTableModel>
 #include <QHostAddress>
@@ -105,5 +104,3 @@ namespace GUI
 }
 
 Q_DECLARE_METATYPE(GUI::PeerListModel::TransferInformation)
-
-#endif

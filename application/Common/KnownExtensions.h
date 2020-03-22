@@ -1,5 +1,4 @@
-#ifndef COMMON_KNOWNEXTENSIONS_H
-#define COMMON_KNOWNEXTENSIONS_H
+#pragma once
 
 #include <QString>
 #include <QList>
@@ -45,5 +44,3 @@ namespace Common
       static struct Init { Init(); } initializer;
    };
 }
-
-#endif

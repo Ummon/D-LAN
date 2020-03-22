@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef FILEMANAGER_FILE_H
-#define FILEMANAGER_FILE_H
+#pragma once
 
 #include <exception>
 
@@ -142,4 +141,3 @@ namespace FM
       QSharedPointer<Chunk> removeLastChunk();
    };
 }
-#endif

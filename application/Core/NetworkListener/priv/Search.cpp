@@ -19,6 +19,8 @@
 #include <priv/Search.h>
 using namespace NL;
 
+#include <QRandomGenerator64>
+
 #include <Common/ProtoHelper.h>
 #include <Common/Network/MessageHeader.h>
 #include <Common/Settings.h>
@@ -49,7 +51,7 @@ quint64 Search::search(const Protos::Common::FindPattern& findPattern)
 
    Protos::Core::Find findMessage;
 
-   this->tag = this->mtrand.randInt64();
+   this->tag = QRandomGenerator64::global()->generate64();
    findMessage.set_tag(this->tag);
    findMessage.mutable_pattern()->CopyFrom(findPattern);
 

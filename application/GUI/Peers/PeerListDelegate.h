@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef GUI_PEERLISTDELEGATE_H
-#define GUI_PEERLISTDELEGATE_H
+#pragma once
 
 #include <QStyledItemDelegate>
 #include <QPixmap>
@@ -43,5 +42,3 @@ namespace GUI
       mutable QPixmap* miniChartBackground; // Caching to improve performance.
    };
 }
-
-#endif

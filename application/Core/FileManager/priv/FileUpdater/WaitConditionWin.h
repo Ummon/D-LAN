@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef FILEMANAGER_WAITCONDITIONWIN_H
-#define FILEMANAGER_WAITCONDITIONWIN_H
+#pragma once
 
 #include <priv/FileUpdater/WaitCondition.h>
 
@@ -43,5 +42,3 @@ namespace FM
       HANDLE handle;
    };
 }
-
-#endif

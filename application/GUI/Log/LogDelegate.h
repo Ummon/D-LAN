@@ -15,9 +15,8 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
-#ifndef GUI_LOGDELEGATE_H
-#define GUI_LOGDELEGATE_H
+
+#pragma once
 
 #include <QStyledItemDelegate>
 
@@ -30,5 +29,3 @@ namespace GUI
       void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const;
    };
 }
-
-#endif

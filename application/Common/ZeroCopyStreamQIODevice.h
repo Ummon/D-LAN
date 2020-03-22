@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef COMMON_ZERO_COPY_STREAM_QIODEVICE_H
-#define COMMON_ZERO_COPY_STREAM_QIODEVICE_H
+#pragma once
 
 #include <QIODevice>
 #include <QVector>
@@ -66,5 +65,3 @@ namespace Common
       google::protobuf::int64 bytesRead;
    };
 }
-
-#endif

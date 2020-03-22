@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef GUI_D_LAN_GUI_H
-#define GUI_D_LAN_GUI_H
+#pragma once
 
 #include <QApplication>
 #include <QTranslator>
@@ -66,5 +65,3 @@ namespace GUI
       QTranslator translator;
    };
 }
-
-#endif
