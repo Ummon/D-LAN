@@ -15,7 +15,7 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #include <Downloads/DownloadsWidget.h>
 #include <ui_DownloadsWidget.h>
 using namespace GUI;
@@ -243,7 +243,7 @@ void DownloadsWidget::moveSelectedEntriesToTop()
       const quint64 id = this->downloadsFlatModel.getDownloadIDs(this->downloadsFlatModel.index(r, 0)).first();
       if (!downloadIDs.contains(id))
       {
-         this->coreConnection->moveDownloads(QList<quint64>() << id, downloadIDs.toList());
+         this->coreConnection->moveDownloads(QList<quint64>() << id, downloadIDs.values());
          break;
       }
    }
@@ -291,10 +291,10 @@ void DownloadsWidget::removeSelectedEntries()
          msgBox.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
          msgBox.setDefaultButton(QMessageBox::Ok);
          if (msgBox.exec() == QMessageBox::Ok)
-            this->coreConnection->cancelDownloads(downloadIDs.toList());
+            this->coreConnection->cancelDownloads(downloadIDs.values());
       }
       else
-         this->coreConnection->cancelDownloads(downloadIDs.toList());
+         this->coreConnection->cancelDownloads(downloadIDs.values());
    }
 }
 
@@ -392,7 +392,7 @@ QPair<QList<quint64>, bool> DownloadsWidget::getDownloadIDsToPause() const
          }
    }
 
-   return qMakePair(downloadIDs.toList(), !allPaused);
+   return qMakePair(downloadIDs.values(), !allPaused);
 }
 
 /**

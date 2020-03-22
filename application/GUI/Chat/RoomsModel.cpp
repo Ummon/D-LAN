@@ -15,7 +15,7 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #include <Chat/RoomsModel.h>
 using namespace GUI;
 
@@ -125,6 +125,8 @@ void RoomsModel::setSortType(Protos::GUI::Settings::RoomSortType sortType)
          return r1->peerIDs.count() > r2->peerIDs.count();
       });
       break;
+
+   default:;
    }
    emit layoutChanged();
 }

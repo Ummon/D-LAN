@@ -15,7 +15,7 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #include <priv/CoreConnection.h>
 using namespace RCC;
 
@@ -502,7 +502,7 @@ void InternalCoreConnection::onNewMessage(const Common::Message& message)
          QWeakPointer<SendChatMessageResult> sendChatMessageResult = this->sendChatMessageResultWithoutReply.takeFirst();
          if (!sendChatMessageResult.isNull())
          {
-            sendChatMessageResult.data()->setResult(result);
+            sendChatMessageResult.toStrongRef()->setResult(result);
             break;
          }
       }
@@ -517,7 +517,7 @@ void InternalCoreConnection::onNewMessage(const Common::Message& message)
             QWeakPointer<SearchResult> searchResult = this->searchResultsWithoutTag.takeFirst();
             if (!searchResult.isNull())
             {
-               searchResult.data()->setTag(tagMessage.tag());
+               searchResult.toStrongRef()->setTag(tagMessage.tag());
                break;
             }
          }
@@ -540,7 +540,7 @@ void InternalCoreConnection::onNewMessage(const Common::Message& message)
             QWeakPointer<BrowseResult> browseResult = this->browseResultsWithoutTag.takeFirst();
             if (!browseResult.isNull())
             {
-               browseResult.data()->setTag(tagMessage.tag());
+               browseResult.toStrongRef()->setTag(tagMessage.tag());
                break;
             }
          }

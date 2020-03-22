@@ -151,6 +151,8 @@ void PeerListModel::setSortType(Protos::GUI::Settings::PeerSortType sortType)
          return p1->sharingAmount > p2->sharingAmount;
       });
       break;
+
+   default:;
    }
    emit layoutChanged();
 }

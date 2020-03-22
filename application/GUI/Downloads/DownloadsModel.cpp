@@ -229,7 +229,7 @@ QList<int> DownloadsModel::getNonFilteredDownloadIndices(const Protos::GUI::Stat
             indices << i;
          break;
 
-      case Protos::GUI::State_Download_Status_DELETED:; // We don't care about deleted entries.
+      case Protos::GUI::State_Download_Status_DELETED: default:; // We don't care about deleted entries.
       }
    }
 
