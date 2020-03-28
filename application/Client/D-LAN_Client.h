@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef CLIENT_D_LAN_CLIENT_H
-#define CLIENT_D_LAN_CLIENT_H
+#pragma once
 
 #include <QCoreApplication>
 #include <QScriptEngine>
@@ -57,5 +56,3 @@ namespace Client
       QString scriptDirectory;
    };
 }
-
-#endif

@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef FILEMANAGER_SHAREDENTRY_H
-#define FILEMANAGER_SHAREDENTRY_H
+#pragma once
 
 #include <QString>
 
@@ -112,4 +111,3 @@ namespace FM
       File* file;
    };
 }
-#endif

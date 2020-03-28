@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef CLIENT_CORECONNECTIONPROXY_H
-#define CLIENT_CORECONNECTIONPROXY_H
+#pragma once
 
 #include <QObject>
 #include <QSharedPointer>
@@ -47,5 +46,3 @@ namespace Client
       QSharedPointer<RCC::ICoreConnection> coreConnection;
    };
 }
-
-#endif

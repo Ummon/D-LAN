@@ -1,5 +1,4 @@
-#ifndef COMMON_PATH_H
-#define COMMON_PATH_H
+#pragma once
 
 #include <QChar>
 #include <QString>
@@ -81,5 +80,3 @@ namespace Common
       QString filename;
    };
 }
-
-#endif
