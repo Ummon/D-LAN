@@ -75,12 +75,26 @@ QString Global::getSystemVersion()
       versionInfo.dwOSVersionInfoSize = sizeof(versionInfo);
       GetVersionEx((OSVERSIONINFO*)&versionInfo);
 
-      if (versionInfo.dwMajorVersion == 6 && versionInfo.dwMinorVersion == 0)
+      if (versionInfo.dwMajorVersion == 10 && versionInfo.dwMinorVersion == 0)
       {
          if (versionInfo.wProductType == VER_NT_WORKSTATION)
-            systemVersion = "Windows Vista";
+            systemVersion = "Windows 10";
          else
-            systemVersion = "Windows Server 2008";
+            systemVersion = "Windows Server 2016";
+      }
+      if (versionInfo.dwMajorVersion == 6 && versionInfo.dwMinorVersion == 3)
+      {
+         if (versionInfo.wProductType == VER_NT_WORKSTATION)
+            systemVersion = "Windows 8.1";
+         else
+            systemVersion = "Windows Server 2012 R2";
+      }
+      else if (versionInfo.dwMajorVersion == 6 && versionInfo.dwMinorVersion == 2)
+      {
+         if (versionInfo.wProductType == VER_NT_WORKSTATION)
+            systemVersion = "Windows 8";
+         else
+            systemVersion = "Windows Server 2012";
       }
       else if (versionInfo.dwMajorVersion == 6 && versionInfo.dwMinorVersion == 1)
       {
@@ -88,6 +102,13 @@ QString Global::getSystemVersion()
             systemVersion = "Windows 7";
          else
             systemVersion = "Windows Server 2008 R2";
+      }
+      else if (versionInfo.dwMajorVersion == 6 && versionInfo.dwMinorVersion == 0)
+      {
+         if (versionInfo.wProductType == VER_NT_WORKSTATION)
+            systemVersion = "Windows Vista";
+         else
+            systemVersion = "Windows Server 2008";
       }
       else if (versionInfo.dwMajorVersion == 5 && versionInfo.dwMinorVersion == 2)
       {
