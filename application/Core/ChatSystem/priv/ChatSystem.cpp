@@ -15,14 +15,13 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #include <priv/ChatSystem.h>
 using namespace CS;
 
 #include <QDateTime>
+#include <QRandomGenerator64>
 #include <QRegExp>
-
-#include <Libs/MersenneTwister.h>
 
 #include <Protos/common.pb.h>
 #include <Protos/core_protocol.pb.h>
@@ -138,7 +137,7 @@ void ChatSystem::joinRoom(const QString& roomName)
       room.joined = true;
       this->saveRoomListToSettings();
       this->loadChatMessages(roomName);
-      this->retrieveLastChatMessagesFromPeers(room.peers.toList(), roomName);
+      this->retrieveLastChatMessagesFromPeers(room.peers.values(), roomName);
    }
 }
 
@@ -208,10 +207,7 @@ void ChatSystem::received(const Common::Message& message)
          // Test if all messages belongs to the same chat room and set the peer ID of each message if not already set.
          for (int i = 0; i < chatMessages.message_size(); i++)
          {
-            if (i != 0 && (
-               chatMessages.message(i).has_chat_room() != chatMessages.message(0).has_chat_room() ||
-               chatMessages.message(i).has_chat_room() && chatMessages.message(i).chat_room() != chatMessages.message(0).chat_room()
-            ))
+            if (i != 0 && chatMessages.message(i).chat_room() != chatMessages.message(0).chat_room())
             {
                L_ERRO(QString("The 'CORE_CHAT_MESSAGES' message received from %1 contains messages from different chat rooms").arg(message.getHeader().toStr()));
                break;
@@ -221,14 +217,14 @@ void ChatSystem::received(const Common::Message& message)
                chatMessages.mutable_message(i)->mutable_peer_id()->set_hash(message.getHeader().getSenderID().getData(), Common::Hash::HASH_SIZE);
          }
 
-         bool chatRoom = chatMessages.message(0).has_chat_room();
-         QString chatRoomName = chatRoom ? Common::ProtoHelper::getStr(chatMessages.message(0), &Protos::Common::ChatMessage::chat_room) : QString();
+         bool hasChatRoom = chatMessages.message(0).chat_room().size() > 0;
+         QString chatRoomName = hasChatRoom ? Common::ProtoHelper::getStr(chatMessages.message(0), &Protos::Common::ChatMessage::chat_room) : QString();
 
-         if (chatRoom && !this->rooms[chatRoomName].joined)
+         if (hasChatRoom && !this->rooms[chatRoomName].joined)
             break;
 
          const QList<QSharedPointer<ChatMessage>>& messages =
-               chatRoom ?
+               hasChatRoom ?
                   this->rooms[chatRoomName].messages.add(chatMessages)
                 : this->messages.add(chatMessages);
 
@@ -245,7 +241,7 @@ void ChatSystem::received(const Common::Message& message)
          const Protos::Core::GetLastChatMessages& getLastChatMessages = message.getMessage<Protos::Core::GetLastChatMessages>();
 
          QString roomName;
-         if (getLastChatMessages.has_chat_room())
+         if (getLastChatMessages.chat_room().size() > 0)
             roomName = Common::ProtoHelper::getStr(getLastChatMessages, &Protos::Core::GetLastChatMessages::chat_room);
 
          QHash<QString, Room>::Iterator i = roomName.isEmpty() ? this->rooms.end() : this->rooms.find(roomName);
@@ -298,7 +294,7 @@ void ChatSystem::retrieveLastChatMessages()
    {
       auto room = i.next();
       if (room.value().joined)
-         this->retrieveLastChatMessagesFromPeers(room.value().peers.toList(), room.key());
+         this->retrieveLastChatMessagesFromPeers(room.value().peers.values(), room.key());
    }
 }
 
@@ -422,5 +418,5 @@ void ChatSystem::retrieveLastChatMessagesFromPeers(const QList<PM::IPeer*>& peer
    if (!roomName.isEmpty())
       Common::ProtoHelper::setStr(getLastChatMessages, &Protos::Core::GetLastChatMessages::set_chat_room, roomName);
 
-   this->networkListener->send(Common::MessageHeader::CORE_GET_LAST_CHAT_MESSAGES, getLastChatMessages, peers[this->mtrand.randInt(peers.size() - 1)]->getID());
+   this->networkListener->send(Common::MessageHeader::CORE_GET_LAST_CHAT_MESSAGES, getLastChatMessages, peers[QRandomGenerator64::global()->bounded(peers.size())]->getID());
 }

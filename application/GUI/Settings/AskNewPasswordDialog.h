@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef GUI_ASKNEWPASSWORDDIALOG_H
-#define GUI_ASKNEWPASSWORDDIALOG_H
+#pragma once
 
 #include <QDialog>
 
@@ -47,5 +46,3 @@ namespace GUI
       QSharedPointer<RCC::ICoreConnection> coreConnection;
    };
 }
-
-#endif

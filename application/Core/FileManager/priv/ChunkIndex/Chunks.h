@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef FILEMANAGER_CHUNKS_H
-#define FILEMANAGER_CHUNKS_H
+#pragma once
 
 // Uncomment this directive to enable the Bloom filter.
 // It will speed up the call to the methods 'value(..)', 'values(..)' and 'contains(..)' by 15% for less than 100'000 chunks in memory
@@ -54,4 +53,3 @@ namespace FM
 #endif
    };
 }
-#endif

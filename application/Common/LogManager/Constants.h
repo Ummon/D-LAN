@@ -16,12 +16,11 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef LOGMANAGER_CONSTANTS_H
-#define LOGMANAGER_CONSTANTS_H
+#pragma once
+
+#include <QString>
 
 namespace LM
 {
    const QString DEFAULT_LOG_FOLDER_NAME("log");
 }
-
-#endif

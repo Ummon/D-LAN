@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef FILEMANAGER_DIRWATCHERLINUX_H
-#define FILEMANAGER_DIRWATCHERLINUX_H
+#pragma once
 
 #include <QMap>
 #include <QList>
@@ -74,5 +73,3 @@ namespace FM
        int fileDescriptor;
    };
 }
-
-#endif

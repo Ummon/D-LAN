@@ -15,7 +15,7 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #include <MDI/MdiArea.h>
 using namespace GUI;
 
@@ -189,7 +189,7 @@ void MdiArea::coreConnected()
       Protos::GUI::Settings_Window_WIN_DOWNLOAD <<
       Protos::GUI::Settings_Window_WIN_UPLOAD;
 
-   if (!QSet<quint32>::fromList(windowsOrder).contains(QSet<quint32>::fromList(windowsOrderDefault)))
+   if (!QSet<quint32>(windowsOrder.begin(), windowsOrder.end()).contains(QSet<quint32>(windowsOrderDefault.begin(), windowsOrderDefault.end())))
       windowsOrder = windowsOrderDefault;
 
    for (QListIterator<quint32> i(windowsOrder); i.hasNext();)

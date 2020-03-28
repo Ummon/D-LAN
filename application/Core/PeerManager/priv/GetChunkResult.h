@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef PEERMANAGER_GET_CHUNK_RESULT_H
-#define PEERMANAGER_GET_CHUNK_RESULT_H
+#pragma once
 
 #include <QObject>
 #include <QTimer>
@@ -54,5 +53,3 @@ namespace PM
       bool closeTheSocket;
    };
 }
-
-#endif

@@ -33,7 +33,7 @@ using namespace GUI;
 
 void BrowseDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
-   QStyleOptionViewItemV4 newOption(option);
+   QStyleOptionViewItem newOption(option);
    newOption.state = option.state & (~QStyle::State_HasFocus);
    QStyledItemDelegate::paint(painter, newOption, index);
 }
@@ -184,7 +184,7 @@ void BrowseWidget::openLocation()
    for (QListIterator<QModelIndex> i(selectedRows); i.hasNext();)
       locations.insert(this->browseModel.getPath(i.next(), true));
 
-   Utils::openLocations(locations.toList());
+   Utils::openLocations(locations.values());
 }
 
 /**

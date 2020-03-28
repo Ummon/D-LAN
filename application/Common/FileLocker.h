@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef COMMON_FILELOCKER_H
-#define COMMON_FILELOCKER_H
+#pragma once
 
 #include <QtGlobal>
 
@@ -50,5 +49,3 @@ namespace Common
 #endif
    };
 }
-
-#endif

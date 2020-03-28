@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef GETHASHESRESULT_H
-#define GETHASHESRESULT_H
+#pragma once
 
 #include <QObject>
 #include <QMutex>
@@ -59,5 +58,3 @@ namespace FM
       QList<int> hashesRemaining;
    };
 }
-
-#endif

@@ -15,7 +15,7 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #include <Chat/RoomsModel.h>
 using namespace GUI;
 
@@ -125,6 +125,8 @@ void RoomsModel::setSortType(Protos::GUI::Settings::RoomSortType sortType)
          return r1->peerIDs.count() > r2->peerIDs.count();
       });
       break;
+
+   default:;
    }
    emit layoutChanged();
 }
@@ -155,7 +157,8 @@ void RoomsModel::updateRooms(const google::protobuf::RepeatedPtrField<Protos::GU
       dataChanged = true;
    };
 
-   QSet<QString> roomsToRemove = this->indexedRooms.keys().toSet();
+   QList<QString> roomsToRemoveList = this->indexedRooms.keys();
+   QSet<QString> roomsToRemove(roomsToRemoveList.begin(), roomsToRemoveList.end());
 
    for (int i = 0; i < rooms.size(); i++)
    {

@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef FILEMANAGER_IDATAREADER_H
-#define FILEMANAGER_IDATAREADER_H
+#pragma once
 
 #include <QtGlobal>
 
@@ -39,5 +38,3 @@ namespace FM
       virtual int read(char* buffer, uint offset) = 0;
    };
 }
-
-#endif

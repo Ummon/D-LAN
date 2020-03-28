@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef DOWNLOADMANAGER_UTILS_H
-#define DOWNLOADMANAGER_UTILS_H
+#pragma once
 
 #include <QString>
 
@@ -33,5 +32,3 @@ namespace DM
 #endif
    };
 }
-
-#endif

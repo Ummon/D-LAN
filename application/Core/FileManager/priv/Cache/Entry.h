@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef FILEMANAGER_ENTRY_H
-#define FILEMANAGER_ENTRY_H
+#pragma once
 
 #include <QString>
 #include <QMutex>
@@ -106,4 +105,3 @@ namespace FM
       return h;
    }
 }
-#endif

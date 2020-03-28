@@ -32,6 +32,7 @@ using namespace GUI;
 #include <QDesktopWidget>
 #include <QTimer>
 #include <QIcon>
+#include <QMutableLinkedListIterator>
 
 #include <Log.h>
 #include <Common/Settings.h>
@@ -40,7 +41,7 @@ Q_DECLARE_METATYPE(QHostAddress)
 
 void PeerListChatDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
-   QStyleOptionViewItemV4 newOption(option);
+   QStyleOptionViewItem newOption(option);
    newOption.state = option.state & (~QStyle::State_HasFocus);
 
    // Show the selection only if the widget is active.
@@ -65,27 +66,27 @@ ChatDelegate::ChatDelegate(QTextDocument& textDocument)
 
 void ChatDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
-   QStyleOptionViewItemV4 optionV4(option);
-   this->initStyleOption(&optionV4, index);
+   QStyleOptionViewItem newOption(option);
+   this->initStyleOption(&newOption, index);
 
-   optionV4.state = option.state & (~QStyle::State_HasFocus);
+   newOption.state = option.state & (~QStyle::State_HasFocus);
 
-   QStyle* style = optionV4.widget ? optionV4.widget->style() : QApplication::style();
+   QStyle* style = newOption.widget ? newOption.widget->style() : QApplication::style();
 
-   this->textDocument.setHtml(optionV4.text);
-   this->textDocument.setTextWidth(optionV4.rect.width());
+   this->textDocument.setHtml(newOption.text);
+   this->textDocument.setTextWidth(newOption.rect.width());
 
-   optionV4.text = QString();
-   style->drawControl(QStyle::CE_ItemViewItem, &optionV4, painter, optionV4.widget);
+   newOption.text = QString();
+   style->drawControl(QStyle::CE_ItemViewItem, &newOption, painter, newOption.widget);
 
    QAbstractTextDocumentLayout::PaintContext ctx;
-   ctx.palette = optionV4.palette;
+   ctx.palette = newOption.palette;
 
    // Highlighting text if item is selected.
-   if (optionV4.state & QStyle::State_Selected && optionV4.state & QStyle::State_Active)
-       ctx.palette.setColor(QPalette::Text, optionV4.palette.color(QPalette::Active, QPalette::HighlightedText));
+   if (newOption.state & QStyle::State_Selected && newOption.state & QStyle::State_Active)
+       ctx.palette.setColor(QPalette::Text, newOption.palette.color(QPalette::Active, QPalette::HighlightedText));
 
-   QRect textRect = style->subElementRect(QStyle::SE_ItemViewItemText, &optionV4);
+   QRect textRect = style->subElementRect(QStyle::SE_ItemViewItemText, &newOption);
    painter->save();
    painter->translate(textRect.topLeft());
    painter->setClipRect(textRect.translated(-textRect.topLeft()));
@@ -109,12 +110,12 @@ QSize	ChatDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelInd
          model->removeCachedSize(index);
    }
 
-   QStyleOptionViewItemV4 optionV4 = option;
-   initStyleOption(&optionV4, index);
+   QStyleOptionViewItem newOption = option;
+   initStyleOption(&newOption, index);
 
-   this->textDocument.setHtml(optionV4.text);
-   this->textDocument.setTextWidth(optionV4.rect.width());
-   QSize size(optionV4.rect.width(), this->textDocument.size().height()); // Width should be "doc.idealWidth()".
+   this->textDocument.setHtml(newOption.text);
+   this->textDocument.setTextWidth(newOption.rect.width());
+   QSize size(newOption.rect.width(), this->textDocument.size().height()); // Width should be "doc.idealWidth()".
    model->insertCachedSize(index, size);
    return size;
 }
@@ -180,8 +181,9 @@ QString ChatWidget::getRoomName() const
 
 void ChatWidget::sendMessage()
 {
-   this->chatModel.sendMessage(this->ui->txtMessage->toHtml());
+   this->chatModel.sendMessage(this->ui->txtMessage->toHtml(), this->getPeerAnswers());
    this->answers.clear();
+   this->currentAnswer = {};
 }
 
 void ChatWidget::newRows(const QModelIndex& parent, int start, int end)
@@ -327,8 +329,6 @@ void ChatWidget::currentCharFormatChanged(const QTextCharFormat& charFormat)
 
 void ChatWidget::cursorPositionChanged()
 {
-   L_DEBU("ChatWidget::cursorPositionChanged()");
-
    if (this->ui->txtMessage->textCursor().position() != 0)
    {
       this->disconnectFormatWidgets();
@@ -348,16 +348,38 @@ void ChatWidget::cursorPositionChanged()
   */
 void ChatWidget::textChanged()
 {
-   L_DEBU("ChatWidget::textChanged()");
-
    this->ui->txtMessage->setFixedHeight(this->ui->txtMessage->document()->size().height());
 }
 
+/**
+  * When a document changes, the answer references have to be updated. They may be deleted if the changes collide with them.
+  */
 void ChatWidget::documentChanged(int position, int charsRemoved, int charsAdded)
 {
-   L_DEBU("ChatWidget::documentChanged()");
+   if (this->answers.getList().isEmpty())
+      return;
 
-   // TODO
+   const int delta = charsAdded - charsRemoved;
+
+   // TODO.....
+   /*for (const auto& answer: )
+
+   QMutableLinkedListIterator i<Answer>{this->answers.getList()};
+   i.toBack();
+
+   while (i.hasPrevious()) {
+      const auto& answer = e.previous();
+
+      if (
+          charsRemoved > 0 && position < answer.begin && position + charsRemoved >= answer.begin || // If there is one or more character removed into the answer or . . .
+          position >= answer.begin && position < answer.end // . . . if there is one or more character added or removed into the answer
+          )
+      {
+         // The answer is removed.
+         i.remove();
+      }
+
+   } while (i != this->answers.getList().begin());*/
 }
 
 void ChatWidget::setFocusTxtMessage()
@@ -507,6 +529,7 @@ void ChatWidget::autoCompleteClosed()
       cursor.setPosition(this->currentAnswer.begin + 1);
       cursor.setPosition(this->currentAnswer.end, QTextCursor::KeepAnchor);
       cursor.insertText(nick + ' ');
+      this->answers.insert(this->currentAnswer);
    }
 
    this->currentAnswer = {};
@@ -803,6 +826,14 @@ void ChatWidget::activatePeerNameInsertionMode()
    this->peerNameInsertionMode = true;
 }
 
+QList<Common::Hash> ChatWidget::getPeerAnswers() const
+{
+   QList<Common::Hash> result;
+   for (const auto& a : this->answers.getList())
+      result.append(a.peerID);
+   return result;
+}
+
 void ChatWidget::onActivate()
 {
    this->setNewMessageState(false);
@@ -844,3 +875,8 @@ QString ChatWidget::htmlEmoticon(const QString& theme, const QString& emoticonNa
 {
    return QString("<img src=\"%1\" />").arg(buildUrlEmoticon(theme, emoticonName).toString());
 }
+
+/*bool operator<(const Answer& a1, const Answer& a2)
+{
+
+}*/

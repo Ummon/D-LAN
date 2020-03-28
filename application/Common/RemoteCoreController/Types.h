@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef RCC_TYPES_H
-#define RCC_TYPES_H
+#pragma once
 
 namespace RCC
 {
@@ -28,5 +27,3 @@ namespace RCC
       NOT_RUNNING
    };
 }
-
-#endif

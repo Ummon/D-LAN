@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef FILEMANAGER_DATAWRITER_H
-#define FILEMANAGER_DATAWRITER_H
+#pragma once
 
 #include <Common/Uncopyable.h>
 #include <Common/Hash.h>
@@ -44,5 +43,3 @@ namespace FM
       Chunk& chunk;
    };
 }
-
-#endif

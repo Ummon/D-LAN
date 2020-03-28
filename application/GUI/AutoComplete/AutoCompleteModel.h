@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef GUI_AUTOCOMPLETEMODEL_H
-#define GUI_AUTOCOMPLETEMODEL_H
+#pragma once
 
 #include <QAbstractTableModel>
 #include <QString>
@@ -46,5 +45,3 @@ namespace GUI
       QList<QPair<Common::Hash, QString>> values;
    };
 }
-
-#endif

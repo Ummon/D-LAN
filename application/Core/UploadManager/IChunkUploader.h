@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef UPLOADMANAGER_IUPLOAD_H
-#define UPLOADMANAGER_IUPLOAD_H
+#pragma once
 
 #include <QSharedPointer>
 
@@ -56,4 +55,3 @@ namespace UM
       virtual QSharedPointer<FM::IChunk> getChunk() const = 0;
    };
 }
-#endif

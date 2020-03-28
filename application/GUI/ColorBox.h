@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef COLORBOX_H
-#define COLORBOX_H
+#pragma once
 
 #include <QPushButton>
 #include <QColor>
@@ -48,5 +47,3 @@ namespace GUI
 
    };
 }
-
-#endif

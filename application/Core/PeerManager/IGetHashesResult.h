@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef PEERMANAGER_IGET_HASHES_H
-#define PEERMANAGER_IGET_HASHES_H
+#pragma once
 
 #include <QObject>
 
@@ -49,4 +48,3 @@ namespace PM
       void nextHash(const Protos::Core::HashResult&);
    };
 }
-#endif

@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef GUI_SINGLEEMOTICONWIDGET_H
-#define GUI_SINGLEEMOTICONWIDGET_H
+#pragma once
 
 #include <QWidget>
 #include <QPixmap>
@@ -61,5 +60,3 @@ namespace GUI
       QString emoticonName;
    };
 }
-
-#endif

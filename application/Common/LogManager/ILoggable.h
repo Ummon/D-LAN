@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef LOGMANAGER_ILOGGABLE_H
-#define LOGMANAGER_ILOGGABLE_H
+#pragma once
 
 #include <QString>
 
@@ -31,4 +30,3 @@ namespace LM
       virtual QString toStringLog() const = 0;
    };
 }
-#endif

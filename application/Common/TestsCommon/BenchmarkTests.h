@@ -1,5 +1,4 @@
-#ifndef BENCHMARK_TESTS_H
-#define BENCHMARK_TESTS_H
+#pragma once
 
 #include <QTest>
 
@@ -13,5 +12,3 @@ private slots:
    void sortedArray();
 
 };
-
-#endif

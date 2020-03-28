@@ -15,9 +15,8 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
-#ifndef COMMON_MESSAGE_HEADER_H
-#define COMMON_MESSAGE_HEADER_H
+
+#pragma once
 
 #include <QIODevice>
 #include <QDataStream>
@@ -99,7 +98,7 @@ namespace Common
          GUI_REFRESH =                    0x10A1,
 
          GUI_REFRESH_NETWORK_INTERFACES = 0x10E1
-      };      
+      };
 
       MessageHeader();
       MessageHeader(MessageType type, quint32 size, const Hash senderID);
@@ -131,5 +130,3 @@ namespace Common
       static const int HEADER_SIZE;
    };
 }
-
-#endif

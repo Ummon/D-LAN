@@ -16,14 +16,10 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef NETWORKLISTENER_SEARCH_H
-#define NETWORKLISTENER_SEARCH_H
-
+#pragma once
 
 #include <QSharedPointer>
 #include <QElapsedTimer>
-
-#include <Libs/MersenneTwister.h>
 
 #include <Protos/common.pb.h>
 #include <Protos/core_protocol.pb.h>
@@ -55,9 +51,7 @@ namespace NL
       int nbResult;
 
       quint64 tag;
-      MTRand mtrand;
 
       QElapsedTimer timer;
    };
 }
-#endif

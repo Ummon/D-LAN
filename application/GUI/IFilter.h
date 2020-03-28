@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef GUI_IFILTER_H
-#define GUI_IFILTER_H
+#pragma once
 
 namespace GUI
 {
@@ -30,5 +29,3 @@ namespace GUI
       virtual QList<T> getFilteredValues() const = 0;
    };
 }
-
-#endif

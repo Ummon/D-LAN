@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef DOWNLOADMANAGER_DOWNLOAD_H
-#define DOWNLOADMANAGER_DOWNLOAD_H
+#pragma once
 
 #include <QSharedPointer>
 #include <QTimer>
@@ -105,4 +104,3 @@ namespace DM
       Status status;
    };
 }
-#endif

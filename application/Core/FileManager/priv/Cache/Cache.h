@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef FILEMANAGER_CACHE_H
-#define FILEMANAGER_CACHE_H
+#pragma once
 
 #include <QObject>
 #include <QPair>
@@ -124,4 +123,3 @@ namespace FM
       mutable QMutex mutex; ///< To protect all the data into the cache, files and directories.
    };
 }
-#endif

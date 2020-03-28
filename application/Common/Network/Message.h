@@ -15,9 +15,10 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
-#ifndef COMMON_MESSAGE_H
-#define COMMON_MESSAGE_H
+
+#pragma once
+
+#include <tuple>
 
 #include <google/protobuf/message.h>
 
@@ -62,7 +63,7 @@ namespace Common
       template <typename T>
       static Message readMessageBody(const MessageHeader& header, T source);
 
-   private:      
+   private:
       static MessageHeader::MessageType getType(const google::protobuf::Message& message);
 
       template <typename T>
@@ -165,5 +166,3 @@ Common::Message Common::Message::readMessageBody(const Common::MessageHeader& he
    }
    return Message(header, message);
 }
-
-#endif

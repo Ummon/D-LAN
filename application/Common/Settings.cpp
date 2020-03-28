@@ -15,7 +15,7 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #include <Common/Settings.h>
 using namespace Common;
 
@@ -44,7 +44,7 @@ Settings& Settings::getInstance()
 }
 
 Settings::Settings() :
-   filename("settings.txt"), // The default name.
+   filename("settings.json"), // The default name.
    settings(0),
    mutex(QMutex::Recursive)
 {
@@ -65,6 +65,7 @@ void Settings::setFilename(const QString& filename)
 
 /**
   * Define the settings structure.
+  * The settings may contain default values.
   * The object will be deleted by this settings class.
   */
 void Settings::setSettingsMessage(google::protobuf::Message* settings)
@@ -76,8 +77,6 @@ void Settings::setSettingsMessage(google::protobuf::Message* settings)
 
    this->settings = settings;
    this->descriptor = this->settings->GetDescriptor();
-
-   this->setDefaultValues();
 }
 
 bool Settings::save() const
@@ -660,40 +659,6 @@ void Settings::getRepeated(const google::protobuf::FieldDescriptor* fieldDescrip
       values << QString::fromUtf8(this->settings->GetReflection()->GetRepeatedString(*this->settings, fieldDescriptor, i).data());
 }
 
-void Settings::setDefaultValues()
-{
-   // Very ugly : to force the optional field to be written. TODO: find a another way.
-   for (int i = 0; i < this->descriptor->field_count(); i++)
-   {
-      const google::protobuf::FieldDescriptor* fieldDescriptor = this->descriptor->field(i);
-
-      // It doesn't work, an optional field with a default value is defined as non-set (HasField returns 'false').
-      /*if (!this->settings->GetReflection()->HasField(*this->settings, fieldDescriptor))
-         continue;*/
-
-      if (fieldDescriptor->is_repeated())
-         this->settings->GetReflection()->ClearField(this->settings, fieldDescriptor);
-      else
-         switch (fieldDescriptor->type())
-         {
-         case google::protobuf::FieldDescriptor::TYPE_UINT32:
-            this->settings->GetReflection()->SetUInt32(this->settings, fieldDescriptor, fieldDescriptor->default_value_uint32());
-            break;
-         case google::protobuf::FieldDescriptor::TYPE_ENUM:
-            this->settings->GetReflection()->SetEnum(this->settings, fieldDescriptor, fieldDescriptor->default_value_enum());
-            break;
-         case google::protobuf::FieldDescriptor::TYPE_DOUBLE:
-            this->settings->GetReflection()->SetDouble(this->settings, fieldDescriptor, fieldDescriptor->default_value_double());
-            break;
-         case google::protobuf::FieldDescriptor::TYPE_STRING:
-            this->settings->GetReflection()->SetString(this->settings, fieldDescriptor, fieldDescriptor->default_value_string());
-            break;
-         default:
-            break;
-         }
-   }
-}
-
 void Settings::rm(const QString& name)
 {
    QMutexLocker locker(&this->mutex);
@@ -711,25 +676,6 @@ void Settings::rm(const QString& name)
       return;
    }
    this->settings->GetReflection()->ClearField(this->settings, fieldDescriptor);
-}
-
-void Settings::rmAll()
-{
-   QMutexLocker locker(&this->mutex);
-
-   Q_ASSERT(this->settings);
-
-   if (!this->settings)
-      return;
-
-   /* ClearField doesn't work, because if we save the settings the fields will not be written in it.
-   for (int i = 0; i < this->descriptor->field_count(); i++)
-   {
-      const google::protobuf::FieldDescriptor* fieldDescriptor = this->descriptor->field(i);
-      this->settings->GetReflection()->ClearField(this->settings, fieldDescriptor);
-   }*/
-
-   this->setDefaultValues();
 }
 
 void Settings::printError(const QString& name)

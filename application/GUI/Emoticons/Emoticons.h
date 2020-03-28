@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef GUI_EMOTICONS_H
-#define GUI_EMOTICONS_H
+#pragma once
 
 #include <QString>
 #include <QStringList>
@@ -71,5 +70,3 @@ namespace GUI
       QMap<QString, QMap<QString, Smile>> smiles;
    };
 }
-
-#endif

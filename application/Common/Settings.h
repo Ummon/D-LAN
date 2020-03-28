@@ -15,9 +15,8 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
-#ifndef COMMON_SETTINGS_H
-#define COMMON_SETTINGS_H
+
+#pragma once
 
 #include <QString>
 #include <QMutex>
@@ -78,7 +77,6 @@ namespace Common
       QList<T> getRepeated(const QString& name) const;
 
       void rm(const QString& name);
-      void rmAll();
 
    private:
       void get(const google::protobuf::FieldDescriptor* fieldDescriptor, quint32& value) const;
@@ -93,8 +91,6 @@ namespace Common
 
       void getRepeated(const google::protobuf::FieldDescriptor* fieldDescriptor, QList<quint32>& values) const;
       void getRepeated(const google::protobuf::FieldDescriptor* fieldDescriptor, QList<QString>& values) const;
-
-      void setDefaultValues();
 
       static void printError(const QString& error);
       static void printErrorNameNotFound(const QString& name);
@@ -147,5 +143,3 @@ QList<T> Common::Settings::getRepeated(const QString& name) const
    this->getRepeated(fieldDescriptor, values);
    return values;
 }
-
-#endif

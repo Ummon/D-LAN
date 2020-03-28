@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef LOG_MANAGER_ILOGGERHOOK_H
-#define LOG_MANAGER_ILOGGERHOOK_H
+#pragma once
 
 #include <QObject>
 #include <QSharedPointer>
@@ -36,5 +35,3 @@ namespace LM
       void newLogEntry(QSharedPointer<LM::IEntry> entry);
    };
 }
-
-#endif

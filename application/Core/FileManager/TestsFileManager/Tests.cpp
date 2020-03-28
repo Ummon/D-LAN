@@ -15,7 +15,7 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #include <Tests.h>
 using namespace FM;
 
@@ -605,8 +605,8 @@ void Tests::findFilesWithResultFragmentation()
    qDebug() << "Nb fragment: " << results.size();
    for (int i = 0; i < results.size(); i++)
    {
-      qDebug() << "Fragment number " << i << ", size = " << results[i].ByteSize();
-      QVERIFY(results[i].ByteSize() <= FRAGMENT_MAX_SIZE);
+      qDebug() << "Fragment number " << i << ", size = " << results[i].ByteSizeLong();
+      QVERIFY(results[i].ByteSizeLong() <= FRAGMENT_MAX_SIZE);
       this->printSearch(terms, results[i]);
    }
 }
@@ -748,12 +748,12 @@ void Tests::rmSharedDirectory()
 void Tests::chunksPerformance()
 {
    qDebug() << "===== chunksPerformance() =====";
-     
+
    const int HASH_POOL_SIZE = 100000;
    const int NB_HASHES_TO_CHECK = 10000000;
- 
+
    Chunks chunks;
-  
+
    for (int i = 0; i < HASH_POOL_SIZE; i++)
    {
       QSharedPointer<Chunk> chunk(new Chunk(nullptr, 0, 0));

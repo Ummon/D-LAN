@@ -15,9 +15,8 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
-#ifndef DOWNLOADMANAGER_IDOWNLOADMANAGER_H
-#define DOWNLOADMANAGER_IDOWNLOADMANAGER_H
+
+#pragma once
 
 #include <QList>
 #include <QSharedPointer>
@@ -98,4 +97,3 @@ namespace DM
       virtual int getDownloadRate() = 0;
    };
 }
-#endif

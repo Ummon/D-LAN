@@ -16,13 +16,10 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef CHATSYSTEM_CHATMESSAGE_H
-#define CHATSYSTEM_CHATMESSAGE_H
+#pragma once
 
 #include <QString>
 #include <QDateTime>
-
-#include <Libs/MersenneTwister.h>
 
 #include <Protos/common.pb.h>
 
@@ -42,8 +39,6 @@ namespace CS
       void fillProtoChatMessage(Protos::Common::ChatMessage& protoChatMessage) const;
 
    private:
-      static MTRand mtrand;
-
       const quint64 ID;
       const QString message;
       const Common::Hash ownerID;
@@ -53,5 +48,3 @@ namespace CS
       const QString room; // Empty if the message belongs to the main chat.
    };
 }
-
-#endif

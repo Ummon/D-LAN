@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef NETWORKLISTENER_NETWORKLISTENER_H
-#define NETWORKLISTENER_NETWORKLISTENER_H
+#pragma once
 
 #include <QObject>
 #include <QSharedPointer>
@@ -71,4 +70,3 @@ namespace NL
       UDPListener uDPListener;
    };
 }
-#endif

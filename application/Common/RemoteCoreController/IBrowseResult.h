@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef RCC_IBROWSERESULT_H
-#define RCC_IBROWSERESULT_H
+#pragma once
 
 #include <google/protobuf/repeated_field.h>
 
@@ -41,5 +40,3 @@ namespace RCC
       void result(const google::protobuf::RepeatedPtrField<Protos::Common::Entries>&);
    };
 }
-
-#endif

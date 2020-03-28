@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef TREETESTS_COMMON_H
-#define TREETESTS_COMMON_H
+#pragma once
 
 #include <QTest>
 
@@ -51,5 +50,3 @@ private:
 private:
    IntTree tree;
 };
-
-#endif

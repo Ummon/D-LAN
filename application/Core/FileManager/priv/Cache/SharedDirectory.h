@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef FILEMANAGER_SHAREDDIRECTORY_H
-#define FILEMANAGER_SHAREDDIRECTORY_H
+#pragma once
 
 #include <QString>
 
@@ -74,4 +73,3 @@ namespace FM
       Common::Hash id;
    };
 }
-#endif

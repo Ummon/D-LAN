@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef COMMON_SORTARRAY_H
-#define COMMON_SORTARRAY_H
+#pragma once
 
 #include <functional>
 
@@ -693,7 +692,7 @@ typename Common::SortedArray<T, M>::Position Common::SortedArray<T, M>::position
    if (!exists)
    {
       if (node->children[position])
-         return iteratorOf(node->children[position], value, lesserThan);
+         return node->iteratorOf(node->children[position], value, lesserThan);
       throw NotFoundException();
    }
 
@@ -1249,4 +1248,3 @@ typename Common::SortedArray<T, M>::Position Common::SortedArray<T, M>::partitio
 
 }*/
 
-#endif

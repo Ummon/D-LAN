@@ -1,5 +1,4 @@
-#ifndef GUI_SEARCHUTILS_H
-#define GUI_SEARCHUTILS_H
+#pragma once
 
 #include <QString>
 #include <QMetaType>
@@ -39,5 +38,3 @@ namespace GUI
 }
 
 Q_DECLARE_METATYPE(GUI::SearchType)
-
-#endif

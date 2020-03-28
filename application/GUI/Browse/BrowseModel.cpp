@@ -15,7 +15,7 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #include <Browse/BrowseModel.h>
 using namespace GUI;
 
@@ -397,7 +397,7 @@ BrowseModel::Tree::Tree(const Protos::Common::Entry& entry, Tree* parent) :
    Common::Tree<Protos::Common::Entry, BrowseModel::Tree>(entry, parent)
 {
    this->copySharedDirFromParent();
-   if (!this->getItem().shared_dir().has_shared_name())
+   if (this->getItem().shared_dir().shared_name().size() == 0)
       this->getItem().mutable_shared_dir()->set_shared_name(this->getItem().name()); // For the root.
 }
 

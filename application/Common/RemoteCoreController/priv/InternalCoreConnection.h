@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef RCC_INTERNAL_CORECONNECTION_H
-#define RCC_INTERNAL_CORECONNECTION_H
+#pragma once
 
 #include <QObject>
 #include <QTcpSocket>
@@ -27,8 +26,6 @@
 #include <QProcess>
 #include <QElapsedTimer>
 #include <QLocale>
-
-#include <Libs/MersenneTwister.h>
 
 #include <Protos/gui_protocol.pb.h>
 #include <Protos/common.pb.h>
@@ -152,9 +149,5 @@ namespace RCC
       // Temporary text password. Once we got the salt sent by the Core we set 'connectionInfo.password' with the salted password and we erase this member.
       QString password;
       quint64 salt;
-
-      MTRand mtrand;
    };
 }
-
-#endif

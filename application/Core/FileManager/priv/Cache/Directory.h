@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef FILEMANAGER_DIRECTORY_H
-#define FILEMANAGER_DIRECTORY_H
+#pragma once
 
 #include <QString>
 #include <QList>
@@ -123,5 +122,3 @@ namespace FM
       QLinkedList<Directory*> dirsToVisit;
    };
 }
-
-#endif

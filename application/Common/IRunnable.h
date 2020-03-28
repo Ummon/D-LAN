@@ -15,9 +15,8 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
-#ifndef COMMON_IRUNNABLE_H
-#define COMMON_IRUNNABLE_H
+
+#pragma once
 
 #include <QThread>
 
@@ -39,5 +38,3 @@ namespace Common
       virtual void finished() = 0;
    };
 }
-
-#endif

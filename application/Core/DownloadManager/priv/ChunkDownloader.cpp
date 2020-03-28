@@ -15,7 +15,7 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #include <priv/ChunkDownloader.h>
 using namespace DM;
 
@@ -459,9 +459,9 @@ void ChunkDownloader::result(const Protos::Core::GetChunkResult& result)
    }
    else
    {
-      if (!result.has_chunk_size())
+      if (result.chunk_size() == 0)
       {
-         L_ERRO(QString("Message 'GetChunkResult' doesn't contain the size of the chunk : %1. Download aborted.").arg(this->chunk->getHash().toStr()));
+         L_ERRO(QString("Message 'GetChunkResult' doesn't contain the size of the chunk: %1. Download aborted.").arg(this->chunk->getHash().toStr()));
          this->closeTheSocket = true;
          this->downloadingEnded();
       }

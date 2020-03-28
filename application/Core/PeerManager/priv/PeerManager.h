@@ -15,15 +15,14 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
-#ifndef PEERMANAGER_PEERMANAGER_H
-#define PEERMANAGER_PEERMANAGER_H
+
+#pragma once
 
 #include <QObject>
 #include <QMap>
 #include <QString>
 #include <QTimer>
-#include <QTime>
+#include <QElapsedTimer>
 #include <QList>
 #include <QTcpSocket>
 
@@ -44,10 +43,14 @@ namespace PM
 
    struct PendingSocket
    {
-      PendingSocket(QTcpSocket* socket) : socket(socket) { this->t.start(); }
+      PendingSocket(QTcpSocket* socket)
+         : socket(socket)
+      {
+         this->t.start();
+      }
 
       QTcpSocket* socket;
-      QTime t;
+      QElapsedTimer t;
    };
 
    class PeerManager : public IPeerManager, Common::Uncopyable
@@ -104,4 +107,3 @@ namespace PM
       QList<PendingSocket> pendingSockets;
    };
 }
-#endif

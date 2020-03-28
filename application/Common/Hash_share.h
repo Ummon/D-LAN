@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
 
-#ifndef COMMON_HASH_SHARE_H
-#define COMMON_HASH_SHARE_H
+#pragma once
 
 #include <string>
 
@@ -26,8 +25,6 @@
 #include <QDataStream>
 #include <QCryptographicHash>
 
-#include <Libs/MersenneTwister.h>
-
 #include <Common/Uncopyable.h>
 
 namespace Common
@@ -35,8 +32,6 @@ namespace Common
    class Hasher;
    class Hash
    {
-      static MTRand mtrand;
-
    public:
       static const int HASH_SIZE = 20;
 
@@ -70,7 +65,6 @@ namespace Common
 
       static Hash rand();
       static Hash rand(quint32 seed);
-      static void setRandSeed(quint32 seed);
       static Hash fromStr(const QString& str);
 
    private:
@@ -160,8 +154,6 @@ namespace Common
 
    class Hasher : Uncopyable
    {
-      static MTRand mtrand;
-
    public:
       Hasher();
       // void addPredefinedSalt(); Deprecated.
@@ -200,5 +192,3 @@ inline void Common::Hash::newData()
    this->data = new SharedData;
    this->data->nbRef = 1;
 }
-
-#endif

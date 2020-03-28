@@ -54,7 +54,6 @@ HEADERS += Hashes.h \
     Timeoutable.h \
     Version.h \
     PersistentData.h \
-    ../Libs/MersenneTwister.h \
     SharedDir.h \
     Network/MessageSocket.h \
     Network/MessageHeader.h \
@@ -77,5 +76,3 @@ HEADERS += Hashes.h \
     SelfWeakPointer.h \
     Hash_noShare.h \
     Hash_share.h
-
-

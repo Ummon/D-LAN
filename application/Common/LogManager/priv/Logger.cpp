@@ -19,6 +19,8 @@
 #include <priv/Logger.h>
 using namespace LM;
 
+#include <algorithm>
+
 #include <QtDebug>
 #include <QThread>
 #include <QSharedPointer>
@@ -51,7 +53,7 @@ QWeakPointer<LoggerHook> LoggerHooks::operator[] (int i)
 void LoggerHooks::removeDeletedHooks()
 {
    for (QMutableListIterator<QWeakPointer<LoggerHook>> i(this->loggerHooks); i.hasNext();)
-      if (!i.next().data())
+      if (i.next().isNull())
          i.remove();
 }
 
@@ -103,7 +105,7 @@ bool Logger::log(const QString& message, Severity severity, const char* filename
 
    // Say to all hooks there is a new message.
    for (int i = 0; i < this->loggerHooks.size(); i++)
-      this->loggerHooks[i].data()->newMessage(entry);
+      this->loggerHooks[i].toStrongRef()->newMessage(entry);
 
    if (!Logger::createFileLog())
       return false;
@@ -189,7 +191,7 @@ void Logger::deleteOldestLog(const QDir& logDir)
       if (entry.isFile())
          entries.append(entry);
    }
-   qSort(entries.begin(), entries.end(), fileInfoLessThan);
+   std::sort(entries.begin(), entries.end(), fileInfoLessThan);
 
    while (entries.size() > NB_LOGFILE)
       QFile::remove(entries.takeFirst().absoluteFilePath());

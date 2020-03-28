@@ -41,7 +41,7 @@ bool IsComplete::operator() (const Download* download) const
 }
 
 IsContainedInAList::IsContainedInAList(const QList<quint64>& downloadIDs) :
-   downloadIDs(downloadIDs.toSet())
+   downloadIDs(downloadIDs.begin(), downloadIDs.end())
 {
 }
 

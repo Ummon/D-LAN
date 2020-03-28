@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef PEERMANAGER_SOCKET_H
-#define PEERMANAGER_SOCKET_H
+#pragma once
 
 #include <QTcpSocket>
 #include <QDateTime>
@@ -122,5 +121,3 @@ namespace PM
       int nbHash;
    };
 }
-
-#endif

@@ -3,23 +3,31 @@
   * All string are encoded in UTF-8.
   */
 
+syntax = "proto3";
+
 package Protos.Common;
 
 message Null {
 }
 
+enum TriState {
+   TS_NO_CHANGE = 0;
+   TS_TRUE = 1;
+   TS_FALSE = 2;
+}
+
 message Error {
-   optional string message = 1;
+   string message = 1;
 }
 
 message Language {
-   required string lang = 1; // ISO-639 (two letters)
-   optional string country = 2; // ISO-3166
+   string lang = 1; // ISO-639 (two letters)
+   string country = 2; // ISO-3166
 }
 
 // For identify a chunk or a user.
 message Hash {
-   optional bytes hash = 1; // 20 bytes. If it doesn't exist the hash is null.
+   bytes hash = 1; // 20 bytes. If it doesn't exist the hash is null.
 }
 
 message IP {
@@ -27,16 +35,16 @@ message IP {
       IPv4 = 0;
       IPv6 = 1;
    }
-   required Type type = 1;
-   required bytes ip = 2; // type == IPv4: 4 bytes. type == IPv6: 16 bytes. Big endian.
+   Type type = 1;
+   bytes ip = 2; // type == IPv4: 4 bytes. type == IPv6: 16 bytes. Big endian.
 }
 
 // A shared directory matches an existing handle, thus there is no need to have the complete path to it.
 message SharedDir {
-   required Hash id = 1; // Identify a shared directory.
+   Hash id = 1; // Identify a shared directory.
    // A name to identify the shared directory by human. It may correspond to the name of the shared directory itself. It may be used when creating the directories of a new downloading file.
    // This value is never used to build a path to a directory or a file.
-   optional string shared_name = 2;
+   string shared_name = 2;
 }
 
 // Used for a directory or a file.
@@ -45,16 +53,16 @@ message Entry {
       FILE = 0;
       DIR = 1;
    }
-   required Type type = 1;
-   required string path = 2; // Relative path from the sharing directory. For example : "/Videos/My cat/". A root directory or file has a one slash : "/". A shared directory has an empty path.
-   required string name = 3; // Directory name or file name. For example : "MyLOLCat.avi".
-   required uint64 size = 4; // [bytes]. For the directory it's the sum of all sub-items.
-   
-   optional SharedDir shared_dir = 5; // The shared directory of the entry.
-   optional bool exists = 6 [default = true]; // An entry may not yet be created.
+   Type type = 1;
+   string path = 2; // Relative path from the sharing directory. For example : "/Videos/My cat/". A root directory or file has a one slash : "/". A shared directory has an empty path.
+   string name = 3; // Directory name or file name. For example : "MyLOLCat.avi".
+   uint64 size = 4; // [bytes]. For the directory it's the sum of all sub-items.
+
+   SharedDir shared_dir = 5; // The shared directory of the entry.
+   bool exists = 6; // [default = true] An entry may not yet be created.
 
    // Only for a Dir.
-   optional bool is_empty = 7 [default = true]; // Warning: a directory can be not empty and has a size of 0.
+   bool is_empty = 7; // [default = true] Warning: a directory can be not empty and has a size of 0.
 
    // Only for FILE type:
    // optional string mime_type = 9; // The mime type of the file. TODO: uncomment when #243 is implemented.
@@ -67,16 +75,16 @@ message Entries
 }
 
 message FindPattern {
-   required string pattern = 2;
-   optional uint64 min_size = 3; // [B]. 0 means there is no minimum size.
-   optional uint64 max_size = 4; // [B]. 0 means there is no maximum size.
+   string pattern = 2;
+   uint64 min_size = 3; // [B]. 0 means there is no minimum size.
+   uint64 max_size = 4; // [B]. 0 means there is no maximum size.
    repeated string extension_filter = 5; // Only files that match one of the given extension will be returned.
    enum Category {
       FILE_DIR = 0;
       FILE = 1;
       DIR = 2;
    }
-   optional Category category = 6 [default = FILE_DIR];
+   Category category = 6; // [default = FILE_DIR].
 }
 
 // A result following a search.
@@ -84,22 +92,22 @@ message FindPattern {
 // See 'Core.Find' and 'GUI.Search' for more information.
 message FindResult {
    message EntryLevel {
-      required uint32 level = 1;
-      required Entry entry = 2; // The entry must have the field 'shared_dir'.
+      uint32 level = 1;
+      Entry entry = 2; // The entry must have the field 'shared_dir'.
    }
-   required uint64 tag = 1;
+   uint64 tag = 1;
    repeated EntryLevel entry = 2;
-   optional Common.Hash peer_id = 3;
+   Common.Hash peer_id = 3;
 }
 
 // 'id' is randomly generated for each message.
 message ChatMessage {
-   required uint64 id = 1;
-   required string message = 2;
-   optional Common.Hash peer_id = 3;
-   optional uint64 time = 4; // In [ms] since Epoch.
-   optional string peer_nick = 5;
-   optional string chat_room = 6;
+   uint64 id = 1;
+   string message = 2;
+   Common.Hash peer_id = 3;
+   uint64 time = 4; // In [ms] since Epoch.
+   string peer_nick = 5;
+   string chat_room = 6;
    repeated Common.Hash peer_ids_answer = 7;
 }
 
@@ -112,15 +120,15 @@ message ChatMessages {
 message Interface {
    message Address {
       enum Protocol {
+         IPv6 = 0;
          IPv4 = 1;
-         IPv6 = 2;
       }
-      required string address = 1;
-      required Protocol protocol = 2;
-      required bool listened = 3;
+      string address = 1;
+      Protocol protocol = 2;
+       bool listened = 3;
    }
-   required uint32 id = 1;
-   required string name = 2;
+   uint32 id = 1;
+   string name = 2;
    repeated Address address = 3;
-   optional bool isUp = 4;
+   bool isUp = 4;
 }

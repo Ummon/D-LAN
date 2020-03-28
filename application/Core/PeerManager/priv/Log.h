@@ -16,14 +16,10 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef PEERMANAGER_LOG_H
-#define PEERMANAGER_LOG_H
-
+#pragma once
 #include <Common/LogManager/Builder.h>
 
 namespace PM
 {
    #include <Common/LogManager/LogMacros.h>
 }
-
-#endif

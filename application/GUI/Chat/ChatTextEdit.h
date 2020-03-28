@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef GUI_TEXTEDIT_H
-#define GUI_TEXTEDIT_H
+#pragma once
 
 #include <QEvent>
 #include <QTextEdit>
@@ -52,4 +51,3 @@ namespace GUI
       QList<KeyCombination> keyCombinationIgnored;
    };
 }
-#endif

@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef RCC_SENDCHATMESSAGERESULT_H
-#define RCC_SENDCHATMESSAGERESULT_H
+#pragma once
 
 #include <QString>
 #include <QList>
@@ -49,5 +48,3 @@ namespace RCC
       QList<Common::Hash> peerIDsAnswered;
    };
 }
-
-#endif

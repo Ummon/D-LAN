@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef CORE_COREAPPLICATION_H
-#define CORE_COREAPPLICATION_H
+#pragma once
 
 #ifdef Q_OS_WIN32
    #include <windows.h>
@@ -39,5 +38,3 @@ public:
 /*signals:
    void resumeFromLowPowerState();*/
 };
-
-#endif

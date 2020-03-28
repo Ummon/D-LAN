@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef STDOUTLOGGER_H
-#define STDOUTLOGGER_H
+#pragma once
 
 #include <QObject>
 #include <QThread>
@@ -52,5 +51,3 @@ namespace LM
       char buffer[BUFFER_SIZE];
    };
 }
-
-#endif

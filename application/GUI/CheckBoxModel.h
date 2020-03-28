@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef GUI_CHECKBOXMODEL_H
-#define GUI_CHECKBOXMODEL_H
+#pragma once
 
 #include <QAbstractTableModel>
 
@@ -207,5 +206,3 @@ void GUI::CheckBoxModel<T>::setText(int row, const QString& text)
       return;
    this->items[row].text = text;
 }
-
-#endif

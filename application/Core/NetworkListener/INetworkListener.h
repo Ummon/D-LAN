@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef NETWORKLISTENER_INETWORKLISTENER_H
-#define NETWORKLISTENER_INETWORKLISTENER_H
+#pragma once
 
 #include <QObject>
 #include <QSharedPointer>
@@ -62,4 +61,3 @@ namespace NL
       void IMAliveMessageToBeSend(Protos::Core::IMAlive& IMAliveMessage);
    };
 }
-#endif

@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef CHATSYSTEM_CHATMESSAGES_H
-#define CHATSYSTEM_CHATMESSAGES_H
+#pragma once
 
 #include <limits>
 
@@ -73,5 +72,3 @@ namespace CS
       QSharedDataPointer<ChatMessagesData> d;
    };
 }
-
-#endif

@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef GUI_DOWNLOAD_FILTER_STATUS_H
-#define GUI_DOWNLOAD_FILTER_STATUS_H
+#pragma once
 
 namespace GUI
 {
@@ -29,5 +28,3 @@ namespace GUI
       STATUS_INACTIVE = 0x08,
    };
 }
-
-#endif

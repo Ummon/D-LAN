@@ -89,17 +89,21 @@ KnownExtensions::Init::Init()
 
    KnownExtensions::add(ExtensionCategory::VIDEO, "mpg");
    KnownExtensions::add(ExtensionCategory::VIDEO, "mpeg");
-   KnownExtensions::add(ExtensionCategory::VIDEO, "mov");
+   KnownExtensions::add(ExtensionCategory::VIDEO, "mp4");
    KnownExtensions::add(ExtensionCategory::VIDEO, "m4v");
+   KnownExtensions::add(ExtensionCategory::VIDEO, "m4p");
+   KnownExtensions::add(ExtensionCategory::VIDEO, "mov");
    KnownExtensions::add(ExtensionCategory::VIDEO, "asf");
    KnownExtensions::add(ExtensionCategory::VIDEO, "avi");
    KnownExtensions::add(ExtensionCategory::VIDEO, "pxp");
    KnownExtensions::add(ExtensionCategory::VIDEO, "wmv");
    KnownExtensions::add(ExtensionCategory::VIDEO, "ogm");
+   KnownExtensions::add(ExtensionCategory::VIDEO, "ogv");
    KnownExtensions::add(ExtensionCategory::VIDEO, "mkv");
    KnownExtensions::add(ExtensionCategory::VIDEO, "rm");
    KnownExtensions::add(ExtensionCategory::VIDEO, "rmvb");
    KnownExtensions::add(ExtensionCategory::VIDEO, "divx");
+   KnownExtensions::add(ExtensionCategory::VIDEO, "webm");
 
    KnownExtensions::add(ExtensionCategory::COMPRESSED, "zip");
    KnownExtensions::add(ExtensionCategory::COMPRESSED, "7z");

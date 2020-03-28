@@ -20,6 +20,7 @@
 
 #include <iostream>
 
+#include <QRandomGenerator>
 #include <QTest>
 #include <QtGlobal>
 
@@ -33,8 +34,6 @@ using namespace LM;
   * A thread to logg some random messages.
   */
 
-MTRand ThreadLogger::mtrand;
-
 ThreadLogger::ThreadLogger(const QString& name, int delta) :
    logger(Builder::newLogger(name)), delta(delta)
 {
@@ -44,10 +43,9 @@ void ThreadLogger::run()
 {
    const QString mess("A random message from thread");
 
-   qsrand(QTime::currentTime().msec());
    for (int i = 0; i < 100; i++)
    {
-      int severity = mtrand.randInt(5);
+      int severity = QRandomGenerator::global()->bounded(6);
       switch (severity)
       {
       case 0 :
@@ -135,6 +133,7 @@ void Tests::startTheThreadLoggers()
       logger->start();
       QTest::qWait(100);
    }
+
    foreach (QSharedPointer<ThreadLogger> logger, this->threadLoggers)
    {
       logger->wait();

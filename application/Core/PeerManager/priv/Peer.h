@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef PEERMANAGER_PEER_H
-#define PEERMANAGER_PEER_H
+#pragma once
 
 #include <QElapsedTimer>
 #include <QTimer>
@@ -125,4 +124,3 @@ namespace PM
       quint32 protocolVersion;
    };
 }
-#endif

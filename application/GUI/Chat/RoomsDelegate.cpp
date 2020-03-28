@@ -21,7 +21,7 @@ using namespace GUI;
 
 void RoomsDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
-   QStyleOptionViewItemV4 newOption(option);
+   QStyleOptionViewItem newOption(option);
    newOption.state = option.state & (~QStyle::State_HasFocus);
 
    // Show the selection only if the widget is active.

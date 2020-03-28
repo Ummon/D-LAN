@@ -28,7 +28,7 @@ void LogDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, c
 {
    const LogModel* model = static_cast<const LogModel*>(index.model());
 
-   QStyleOptionViewItemV4 newOption(option);
+   QStyleOptionViewItem newOption(option);
    newOption.state = option.state & (~QStyle::State_HasFocus);
 
    switch (model->getSeverity(index.row()))

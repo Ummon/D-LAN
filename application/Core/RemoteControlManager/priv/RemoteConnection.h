@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef REMOTECONTROLMANAGER_REMOTECONNECTION_H
-#define REMOTECONTROLMANAGER_REMOTECONNECTION_H
+#pragma once
 
 #include <QObject>
 #include <QSharedPointer>
@@ -25,8 +24,6 @@
 #include <QTimer>
 #include <QList>
 #include <QLocale>
-
-#include <Libs/MersenneTwister.h>
 
 #include <google/protobuf/message.h>
 
@@ -129,8 +126,6 @@ namespace RCM
       QList<QSharedPointer<NL::ISearch>> currentSearches;
       QList<QSharedPointer<PM::IGetEntriesResult>> getEntriesResults;
 
-      MTRand mtrand;
-
       bool authenticated;
       quint64 saltChallenge;
 
@@ -141,4 +136,3 @@ namespace RCM
 #endif
    };
 }
-#endif

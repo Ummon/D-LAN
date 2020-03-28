@@ -67,10 +67,10 @@ QFile* FilePool::open(const QString& path, QIODevice::OpenMode mode, bool* fileC
    {
       OpenedFile& file = i.next();
 
-      if (file.file->fileName() == path && file.mode == mode && !file.releasedTime.isNull())
+      if (file.file->fileName() == path && file.mode == mode && file.releasedTime.isValid())
       {
          L_DEBU(QString("FilePool::open(%1, %2): file already in cache").arg(path).arg(mode));
-         file.releasedTime = QTime();
+         file.releasedTime.invalidate();
          return file.file;
       }
    }
@@ -89,7 +89,7 @@ QFile* FilePool::open(const QString& path, QIODevice::OpenMode mode, bool* fileC
    }
 
    L_DEBU(QString("FilePool::open(%1, %2): file added to the cache").arg(path).arg(mode));
-   this->files << OpenedFile { file, mode };
+   this->files << OpenedFile { file, mode, QElapsedTimer() };
    return file;
 }
 
@@ -162,7 +162,7 @@ void FilePool::tryToDeleteReleasedFiles()
    for (QMutableListIterator<OpenedFile> i(this->files); i.hasNext();)
    {
       const OpenedFile& openedFile = i.next();
-      if (!openedFile.releasedTime.isNull())
+      if (openedFile.releasedTime.isValid())
       {
          if (openedFile.releasedTime.elapsed() > TIME_KEEP_FILE_OPEN_MIN)
          {

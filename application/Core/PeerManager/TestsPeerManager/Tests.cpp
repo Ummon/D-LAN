@@ -15,7 +15,7 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #include <Tests.h>
 using namespace PM;
 
@@ -250,7 +250,7 @@ void Tests::askForHashes()
    qDebug() << "===== askForHashes() =====";
 
    const quint32 NUMBER_OF_CHUNK = 4;
-   const quint32 CHUNK_SIZE = SETTINGS.get<quint32>("chunk_size");
+   const quint32 CHUNK_SIZE = Common::Constants::CHUNK_SIZE;
 
    // 1) Create a big file.
    {

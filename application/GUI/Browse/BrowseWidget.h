@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef GUI_BROWSEWINDOW_H
-#define GUI_BROWSEWINDOW_H
+#pragma once
 
 #include <QWidget>
 #include <QStringList>
@@ -88,4 +87,3 @@ namespace GUI
       Protos::Common::Entry remoteEntryToBrowse;
    };
 }
-#endif

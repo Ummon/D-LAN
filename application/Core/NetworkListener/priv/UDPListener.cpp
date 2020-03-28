@@ -15,7 +15,7 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #include <priv/UDPListener.h>
 using namespace NL;
 
@@ -29,6 +29,8 @@ using namespace NL;
 #elif defined(Q_OS_WIN32)
    #include <Winsock.h>
 #endif
+
+#include <QRandomGenerator64>
 
 #include <google/protobuf/message.h>
 
@@ -157,9 +159,7 @@ void UDPListener::sendIMAliveMessage()
    IMAliveMessage.set_download_rate(this->downloadManager->getDownloadRate());
    IMAliveMessage.set_upload_rate(this->uploadManager->getUploadRate());
 
-   this->currentIMAliveTag = this->mtrand.randInt();
-   this->currentIMAliveTag <<= 32;
-   this->currentIMAliveTag |= this->mtrand.randInt();
+   this->currentIMAliveTag = QRandomGenerator64::global()->generate64();
    IMAliveMessage.set_tag(this->currentIMAliveTag);
 
    // We fill the rest of the message with a maximum of needed hashes.
@@ -172,7 +172,7 @@ void UDPListener::sendIMAliveMessage()
    const int numberOfPeers = this->peerManager->getNbOfPeers();
    const int maxNumberOfHashesToSend = numberOfPeers == 0 ? std::numeric_limits<int>::max() : IMALIVE_PERIOD * (MAX_IMALIVE_THROUGHPUT - numberOfPeers * FIXED_RATE_PER_PEER) / (numberOfPeers * HASH_SIZE);
 
-   int numberOfHashesToSend = (this->MAX_UDP_DATAGRAM_PAYLOAD_SIZE - IMAliveMessage.ByteSize() - Common::MessageHeader::HEADER_SIZE) / HASH_SIZE;
+   int numberOfHashesToSend = (this->MAX_UDP_DATAGRAM_PAYLOAD_SIZE - IMAliveMessage.ByteSizeLong() - Common::MessageHeader::HEADER_SIZE) / HASH_SIZE;
    if (numberOfHashesToSend > maxNumberOfHashesToSend)
       numberOfHashesToSend = maxNumberOfHashesToSend;
 
@@ -438,7 +438,7 @@ void UDPListener::initUnicastUDPSocket()
   */
 int UDPListener::writeMessageToBuffer(Common::MessageHeader::MessageType type, const google::protobuf::Message& message)
 {
-   const Common::MessageHeader header(type, message.ByteSize(), this->getOwnID());
+   const Common::MessageHeader header(type, message.ByteSizeLong(), this->getOwnID());
 
    const int nbBytesWritten = Common::Message::writeMessageToBuffer(this->buffer, this->MAX_UDP_DATAGRAM_PAYLOAD_SIZE, header, &message);
    if (!nbBytesWritten)
@@ -460,7 +460,7 @@ Common::MessageHeader UDPListener::readDatagramToBuffer(QUdpSocket& socket, QHos
       return Common::MessageHeader();
    }
 
-   Common::MessageHeader header = Common::MessageHeader::readHeader(buffer);
+   Common::MessageHeader header = Common::MessageHeader::readHeader(this->buffer);
 
    if (header.getSize() > datagramSize - Common::MessageHeader::HEADER_SIZE)
    {

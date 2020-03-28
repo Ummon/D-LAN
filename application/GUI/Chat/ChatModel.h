@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef GUI_CHATMODEL_H
-#define GUI_CHATMODEL_H
+#pragma once
 
 #include <QAbstractTableModel>
 #include <QString>
@@ -116,5 +115,3 @@ namespace GUI
    };
 
 }
-
-#endif

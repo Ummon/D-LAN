@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef NETWORKLISTENER_BUILDER_H
-#define NETWORKLISTENER_BUILDER_H
+#pragma once
 
 #include <QSharedPointer>
 
@@ -41,4 +40,3 @@ namespace NL
       );
    };
 }
-#endif

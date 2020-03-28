@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef REMOTECORECONTROLLER_BUILDER_H
-#define REMOTECORECONTROLLER_BUILDER_H
+#pragma once
 
 #include <Common/RemoteCoreController/ICoreConnection.h>
 
@@ -30,5 +29,3 @@ namespace RCC
       static QSharedPointer<ICoreConnection> newCoreConnection(int socketTimeout);
    };
 }
-
-#endif

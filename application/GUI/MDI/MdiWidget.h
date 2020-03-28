@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef GUI_MDIWIDGET_H
-#define GUI_MDIWIDGET_H
+#pragma once
 
 #include <QWidget>
 
@@ -35,5 +34,3 @@ namespace GUI
       virtual void onActivate() = 0;
    };
 }
-
-#endif

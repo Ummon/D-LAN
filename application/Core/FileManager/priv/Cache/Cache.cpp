@@ -15,7 +15,7 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #include <priv/Cache/Cache.h>
 using namespace FM;
 
@@ -25,6 +25,7 @@ using namespace FM;
 #include <Common/Global.h>
 #include <Common/Settings.h>
 #include <Common/ProtoHelper.h>
+#include <Common/Constants.h>
 
 #include <Exceptions.h>
 #include <priv/Log.h>
@@ -291,13 +292,13 @@ QList<QSharedPointer<IChunk>> Cache::newFile(Protos::Common::Entry& fileEntry)
 
    Common::Hashes hashes;
    for (int i = 0; i < fileEntry.chunk_size(); i++)
-      hashes << (fileEntry.chunk(i).has_hash() ? fileEntry.chunk(i).hash() : Common::Hash());
+      hashes << fileEntry.chunk(i).hash();
 
    const QString& name = Common::ProtoHelper::getStr(fileEntry, &Protos::Common::Entry::name);
 
    // If a file with the same name already exists we will compare its hashes with the given entry.
-   File* file;
-   if (file = dir->getFile(name))
+   File* file = dir->getFile(name);
+   if (file != nullptr)
    {
       bool resetExistingFile = false;
       const QVector<QSharedPointer<Chunk>>& existingChunks = file->getChunks();
@@ -622,7 +623,7 @@ void Cache::populateHashes(Protos::FileCache::Hashes& hashes) const
    QMutexLocker locker(&this->mutex);
 
    hashes.set_version(FILE_CACHE_VERSION);
-   hashes.set_chunksize(SETTINGS.get<quint32>("chunk_size"));
+   hashes.set_chunksize(Common::Constants::CHUNK_SIZE);
 
    for (QListIterator<SharedDirectory*> i(this->sharedDirs); i.hasNext();)
    {

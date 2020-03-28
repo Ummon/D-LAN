@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef REMOTECONTROLMANAGER_BUILDER_H
-#define REMOTECONTROLMANAGER_BUILDER_H
+#pragma once
 
 #include <QSharedPointer>
 
@@ -45,5 +44,3 @@ namespace RCM
       );
    };
 }
-
-#endif

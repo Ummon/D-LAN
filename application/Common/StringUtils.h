@@ -15,9 +15,8 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
-#ifndef COMMON_STRINGUTILS_H
-#define COMMON_STRINGUTILS_H
+
+#pragma once
 
 #include <string>
 
@@ -56,4 +55,3 @@ inline int Common::StringUtils::commonPrefix(const QStringRef& s1, const QString
    return i;
 }
 
-#endif
