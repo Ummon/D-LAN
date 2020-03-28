@@ -15,9 +15,8 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
-#ifndef HASHCACHE_BUILDER_H
-#define HASHCACHE_BUILDER_H
+
+#pragma once
 
 #include <QSharedPointer>
 
@@ -31,4 +30,3 @@ namespace HC
       static QSharedPointer<IHashCache> newHashCache();
    };
 }
-#endif

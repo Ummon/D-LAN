@@ -13,7 +13,7 @@
    height="297mm"
    id="svg2"
    version="1.1"
-   inkscape:version="0.92.2 (5c3e80d, 2017-08-06)"
+   inkscape:version="0.92.4 (5da689c313, 2019-01-14)"
    sodipodi:docname="network_protocol.svg"
    inkscape:output_extension="org.inkscape.output.svg.inkscape"
    inkscape:export-filename="C:\Users\gburri\AppData\Local\Temp\network_protocol.png"
@@ -663,17 +663,18 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.98994949"
-     inkscape:cx="208.95887"
-     inkscape:cy="836.42788"
+     inkscape:zoom="1.4"
+     inkscape:cx="432.35479"
+     inkscape:cy="742.59122"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
-     inkscape:window-width="1366"
-     inkscape:window-height="725"
-     inkscape:window-x="277"
-     inkscape:window-y="1080"
-     inkscape:window-maximized="1" />
+     inkscape:window-width="1680"
+     inkscape:window-height="987"
+     inkscape:window-x="1912"
+     inkscape:window-y="28"
+     inkscape:window-maximized="1"
+     showborder="false" />
   <metadata
      id="metadata7">
     <rdf:RDF>
@@ -682,7 +683,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title />
+        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -1519,7 +1520,7 @@
     <text
        id="text4214"
        y="106.66531"
-       x="674.72229"
+       x="706.72229"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:0%;font-family:Monaco;-inkscape-font-specification:Monaco;text-align:end;text-anchor:end;fill:#000000;fill-opacity:1;stroke:none"
        xml:space="preserve"
        inkscape:export-filename="C:\Users\gburri\network_protocol.png"
@@ -1527,15 +1528,15 @@
        inkscape:export-ydpi="119.91233"><tspan
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:20.61837196px;line-height:1.25;font-family:'Bitstream Vera Sans Mono';-inkscape-font-specification:'Bitstream Vera Sans Mono';text-align:end;text-anchor:end;fill:#000000;fill-opacity:1;stroke:none"
          y="106.66531"
-         x="674.72229"
+         x="706.72229"
          id="tspan4216"
          sodipodi:role="line">Unicast<tspan
    style="font-size:12px"
-   id="tspan2599"> (TCP)</tspan></tspan><tspan
+   id="tspan2599"> (TCP - SSL)</tspan></tspan><tspan
          id="tspan4218"
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:20.61837196px;line-height:1.25;font-family:'Bitstream Vera Sans Mono';-inkscape-font-specification:'Bitstream Vera Sans Mono';text-align:end;text-anchor:end;fill:#000000;fill-opacity:1;stroke:none"
          y="132.43828"
-         x="687.12555"
+         x="719.12555"
          sodipodi:role="line"> </tspan></text>
     <path
        style="fill:none;stroke:#b22828;stroke-width:2.12599993;stroke-miterlimit:4;stroke-dasharray:8.50399971, 4.25199986;stroke-dashoffset:0;stroke-opacity:1;marker-start:url(#Arrow1Mstart);marker-mid:none"
@@ -1644,7 +1645,7 @@
          id="tspan2869-2-3"> </tspan></text>
     <path
        id="path4056-6-1"
-       d="m 492.14286,112.24442 0,469.86429"
+       d="M 492.14287,112.24442 V 821.39443"
        style="stroke:#000000;stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
        sodipodi:nodetypes="cc"
        inkscape:export-filename="C:\Users\gburri\network_protocol.png"

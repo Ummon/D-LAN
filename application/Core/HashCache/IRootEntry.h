@@ -1,5 +1,4 @@
-#ifndef HASHCACHE_IROOTENTRY_H
-#define HASHCACHE_IROOTENTRY_H
+#pragma once
 
 #include <QString>
 
@@ -23,5 +22,3 @@ namespace HC
       virtual IEntry& getRoot() = 0;
    };
 }
-
-#endif

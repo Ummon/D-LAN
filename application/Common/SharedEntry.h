@@ -43,4 +43,4 @@ namespace Common
    };
 }
 
-Q_DECLARE_METATYPE(Common::SharedDir)
+Q_DECLARE_METATYPE(Common::SharedEntry)

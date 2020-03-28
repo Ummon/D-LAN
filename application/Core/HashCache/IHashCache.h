@@ -15,9 +15,8 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
-#ifndef HASHCACHE_IHASHCACHE_H
-#define HASHCACHE_IHASHCACHE_H
+
+#pragma once
 
 #include <QSharedPointer>
 
@@ -45,4 +44,3 @@ namespace HC
       virtual void saveFrom(const IRootEntry& root) = 0;
    };
 }
-#endif

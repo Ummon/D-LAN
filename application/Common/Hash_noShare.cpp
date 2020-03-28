@@ -179,7 +179,7 @@ Hash Hash::fromStr(const QString& str)
   */
 
 Hasher::Hasher() :
-   cryptographicHash(QCryptographicHash::Sha1)
+   cryptographicHash(QCryptographicHash::Sha3_224)
 {
    this->reset();
 }

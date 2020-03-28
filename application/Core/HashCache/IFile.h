@@ -1,5 +1,4 @@
-#ifndef HASHCACHE_IFILE_H
-#define HASHCACHE_IFILE_H
+#pragma once
 
 #include <Common/Hash.h>
 #include <IEntry.h>
@@ -21,5 +20,3 @@ namespace HC
       virtual QDateTime getDateLastModified() = 0;
    };
 }
-
-#endif

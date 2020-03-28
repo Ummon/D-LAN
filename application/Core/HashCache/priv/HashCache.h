@@ -1,5 +1,4 @@
-#ifndef HASHCACHE_HASHCACHE_H
-#define HASHCACHE_HASHCACHE_H
+#pragma once
 
 #include <QString>
 
@@ -35,5 +34,3 @@ namespace HC
       LOG_INIT_H("HashCache")
    };
 }
-
-#endif

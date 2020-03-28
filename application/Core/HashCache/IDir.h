@@ -1,5 +1,4 @@
-#ifndef HASHCACHE_IDIR_H
-#define HASHCACHE_IDIR_H
+#pragma once
 
 #include <QList>
 
@@ -17,5 +16,3 @@ namespace HC
       virtual QList<IDir> getDirs() = 0;
    };
 }
-
-#endif

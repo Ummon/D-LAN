@@ -1,5 +1,4 @@
-#ifndef HASHCACHE_IENTRY_H
-#define HASHCACHE_IENTRY_H
+#pragma once
 
 #include <QString>
 
@@ -13,5 +12,3 @@ namespace HC
       virtual QString getName() = 0;
    };
 }
-
-#endif
