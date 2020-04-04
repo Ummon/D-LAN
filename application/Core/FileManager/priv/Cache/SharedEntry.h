@@ -15,13 +15,17 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #pragma once
 
 #include <QString>
 
+#include <Protos/common.pb.h>
+
+#include <Common/Uncopyable.h>
 #include <Common/Hash.h>
 #include <Common/Path.h>
+
 #include <priv/Cache/Entry.h>
 
 namespace FM
@@ -31,7 +35,7 @@ namespace FM
    class Directory;
    class File;
 
-   class SharedEntry /*: public Entry*/
+   class SharedEntry : Common::Uncopyable
    {
    protected:
       SharedEntry(Cache* cache, const Common::Path& path, const Common::Hash& id = Common::Hash());
@@ -60,6 +64,8 @@ namespace FM
         *  - 'G:/'
         */
       virtual Common::Path getFullPath() const = 0;
+
+      void populateEntry(Protos::Common::Entry* entry) const;
 
       void del(bool invokeDelete = true);
 

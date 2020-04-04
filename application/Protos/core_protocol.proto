@@ -106,7 +106,7 @@ message Find {
 // a -> b
 // id : 0x31
 message GetEntries {
-   Common.Entries dirs = 1; // The shared directories must have the field 'shared_dir' defined but 'shared_dir.shared_name' is not mandatory.
+   Common.Entries dirs = 1; // The shared directories must have the field 'shared_entry' defined but 'shared_entry.shared_name' is not mandatory.
    bool get_roots = 2; // [default = false] If true the roots directories will be appended to the end of the entries result. If the field above ('dirs') is empty then the roots directories will always be sent whatever 'get_roots' is true or false.
    uint32 nb_max_hashes_per_entry = 3; // If given it limits the number of hashes per entry. It allows to use less memory if we don't care about hashes.
 }

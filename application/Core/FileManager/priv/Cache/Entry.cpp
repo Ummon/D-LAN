@@ -15,7 +15,7 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #include <priv/Cache/Entry.h>
 using namespace FM;
 
@@ -54,16 +54,6 @@ void Entry::populateEntry(Protos::Common::Entry* entry, bool setSharedEntry) con
 
    if (setSharedEntry)
       this->populateSharedEntry(entry);
-}
-
-void Entry::populateSharedEntry(Protos::Common::Entry* entry) const
-{
-   SharedEntry* root = this->getRoot();
-   if (root)
-   {
-      entry->mutable_shared_entry()->mutable_id()->set_hash(root->getId().getData(), Common::Hash::HASH_SIZE);
-      Common::ProtoHelper::setStr(*entry->mutable_shared_entry(), &Protos::Common::SharedEntry::set_shared_name, root->getName());
-   }
 }
 
 Cache* Entry::getCache()
@@ -117,5 +107,15 @@ void Entry::setSize(qint64 newSize)
       qint64 oldSize = this->size;
       this->size = newSize;
       this->getCache()->onEntryResized(this, oldSize);
+   }
+}
+
+void Entry::populateSharedEntry(Protos::Common::Entry* entry) const
+{
+   SharedEntry* root = this->getRoot();
+   if (root)
+   {
+      entry->mutable_shared_entry()->mutable_id()->set_hash(root->getId().getData(), Common::Hash::HASH_SIZE);
+      Common::ProtoHelper::setStr(*entry->mutable_shared_entry(), &Protos::Common::SharedEntry::set_shared_name, root->getName());
    }
 }

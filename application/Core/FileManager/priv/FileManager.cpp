@@ -52,9 +52,9 @@ using namespace FM;
 
 LOG_INIT_CPP(FileManager)
 
-FileManager::FileManager() :
+FileManager::FileManager(QSharedPointer<HC::IHashCache> hashCache) :
    fileUpdater(this),
-   cache(),
+   cache(hashCache),
    mutexPersistCache(QMutex::Recursive),
    cacheLoading(true),
    cacheChanged(false)
@@ -71,7 +71,7 @@ FileManager::FileManager() :
    connect(&this->cache, &Cache::sharedEntryRemoved, this, &FileManager::sharedEntryRemoved, Qt::DirectConnection);
 
    connect(&this->fileUpdater, &FileUpdater::fileCacheLoaded, this, &FileManager::fileCacheLoadingComplete, Qt::QueuedConnection);
-   connect(&this->fileUpdater, &FileUpdater::deleteSharedDir, this, &FileManager::deleteSharedDir, Qt::QueuedConnection); // If the 'FileUpdater' wants to delete a shared directory.
+   connect(&this->fileUpdater, &FileUpdater::deleteSharedEntry, this, &FileManager::deleteSharedEntry, Qt::QueuedConnection); // If the 'FileUpdater' wants to delete a shared directory.
 
    this->timerPersistCache.setInterval(SETTINGS.get<quint32>("save_cache_period"));
    this->timerPersistCache.setSingleShot(true); // We use a single shot because if the time to save exceeds the property 'save_cache_period' it will cause some trouble (very rare case).
@@ -201,13 +201,15 @@ QList<Protos::Common::FindResult> FileManager::find(const QString& words, const 
 
    if (!words.isEmpty())
    {
-      result = !filterOn ?
-         this->wordIndex.search(Common::StringUtils::splitInWords(words), maxNbResult) :
-         this->wordIndex.search(Common::StringUtils::splitInWords(words), maxNbResult, [&](const Entry* entry) {
-            return (!filterBySizeOn || entry->getSize() >= minFileSize && entry->getSize() <= maxFileSize) &&
-                   (!filterByExtensionsOn || extensions.contains(entry->getExtension())) &&
-                   (!filterByCategoryOn || (category == Protos::Common::FindPattern::FILE && dynamic_cast<const File*>(entry) || category == Protos::Common::FindPattern::DIR && dynamic_cast<const Directory*>(entry)));
-         });
+      result = !filterOn
+         ? this->wordIndex.search(Common::StringUtils::splitInWords(words), maxNbResult)
+         : this->wordIndex.search(
+            Common::StringUtils::splitInWords(words), maxNbResult, [&](const Entry* entry) {
+               return (!filterBySizeOn || entry->getSize() >= minFileSize && entry->getSize() <= maxFileSize) &&
+                      (!filterByExtensionsOn || extensions.contains(entry->getExtension())) &&
+                      (!filterByCategoryOn || (category == Protos::Common::FindPattern::FILE && dynamic_cast<const File*>(entry) || category == Protos::Common::FindPattern::DIR && dynamic_cast<const Directory*>(entry)));
+            }
+         );
    }
    else if (filterBySizeOn || filterByExtensionsOn)
    {
@@ -216,18 +218,31 @@ QList<Protos::Common::FindResult> FileManager::find(const QString& words, const 
       if (!extensions.isEmpty())
       {
          if (filterBySizeOn || filterByCategoryOn)
-            intermediateResult = this->extensionIndex.search(extensions, maxNbResult, [&](const Entry* entry) {
-               return (!filterBySizeOn || entry->getSize() >= minFileSize && entry->getSize() <= maxFileSize) && (!filterByCategoryOn || (category == Protos::Common::FindPattern::FILE && dynamic_cast<const File*>(entry) || category == Protos::Common::FindPattern::DIR && dynamic_cast<const Directory*>(entry)));
-            });
+            intermediateResult =
+                  this->extensionIndex.search(
+                     extensions,
+                     maxNbResult,
+                     [&](const Entry* entry)
+                     {
+                        return (!filterBySizeOn || entry->getSize() >= minFileSize && entry->getSize() <= maxFileSize) && (!filterByCategoryOn || (category == Protos::Common::FindPattern::FILE && dynamic_cast<const File*>(entry) || category == Protos::Common::FindPattern::DIR && dynamic_cast<const Directory*>(entry)));
+                     }
+                  );
          else
             intermediateResult = this->extensionIndex.search(extensions, maxNbResult);
       }
       else
       {
          if (filterByCategoryOn)
-            intermediateResult = this->sizeIndex.search(minFileSize, maxFileSize, maxNbResult, [&](const Entry* entry) {
-               return category == Protos::Common::FindPattern::FILE && dynamic_cast<const File*>(entry) || category == Protos::Common::FindPattern::DIR && dynamic_cast<const Directory*>(entry);
-            });
+            intermediateResult =
+               this->sizeIndex.search(
+                     minFileSize,
+                     maxFileSize,
+                     maxNbResult,
+                     [&](const Entry* entry)
+                     {
+                        return category == Protos::Common::FindPattern::FILE && dynamic_cast<const File*>(entry) || category == Protos::Common::FindPattern::DIR && dynamic_cast<const Directory*>(entry);
+                     }
+               );
          else
             intermediateResult = this->sizeIndex.search(minFileSize, maxFileSize, maxNbResult);
       }
@@ -381,21 +396,21 @@ SharedEntry* FileManager::getSharedEntry(const QString& path) const
    return this->cache.getSharedEntry(path);
 }
 
-void FileManager::newSharedDirectory(SharedDirectory* sharedDir)
+void FileManager::newSharedEntry(SharedEntry* sharedEntry)
 {
-   this->fileUpdater.addRoot(sharedDir);
+   this->fileUpdater.addRoot(sharedEntry);
    this->forcePersistCacheToFile();
 }
 
-void FileManager::sharedDirectoryRemoved(SharedDirectory* sharedDir, Directory* dir)
+void FileManager::sharedEntryRemoved(SharedEntry* sharedEntry, Directory* dir)
 {
-   this->fileUpdater.rmRoot(sharedDir, dir);
+   this->fileUpdater.rmRoot(sharedEntry, dir);
    this->forcePersistCacheToFile();
 }
 
-void FileManager::deleteSharedDir(SharedDirectory* sharedDirectory)
+void FileManager::deleteSharedEntry(SharedEntry* sharedEntry)
 {
-   this->cache.removeSharedDir(sharedDirectory);
+   this->cache.removeSharedEntry(sharedEntry);
 }
 
 void FileManager::entryAdded(Entry* entry)

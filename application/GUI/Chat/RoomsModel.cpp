@@ -150,12 +150,13 @@ void RoomsModel::coreDisconnected(bool force)
 void RoomsModel::updateRooms(const google::protobuf::RepeatedPtrField<Protos::GUI::State::Room>& rooms)
 {
    bool dataChanged = false;
-   auto setDataChanged = [&dataChanged, this]()
-   {
-      if (!dataChanged)
-         emit layoutAboutToBeChanged(QList<QPersistentModelIndex>(), QAbstractItemModel::VerticalSortHint);
-      dataChanged = true;
-   };
+   auto setDataChanged =
+      [&dataChanged, this]()
+      {
+         if (!dataChanged)
+            emit layoutAboutToBeChanged(QList<QPersistentModelIndex>(), QAbstractItemModel::VerticalSortHint);
+         dataChanged = true;
+      };
 
    QList<QString> roomsToRemoveList = this->indexedRooms.keys();
    QSet<QString> roomsToRemove(roomsToRemoveList.begin(), roomsToRemoveList.end());

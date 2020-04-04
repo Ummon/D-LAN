@@ -77,6 +77,6 @@ namespace Common
    private:
       QString root; // For example: Windows: "C:/", Linux: "/".
       QStringList dirs;
-      QString filename;
+      QString filename; // Empty if file.
    };
 }

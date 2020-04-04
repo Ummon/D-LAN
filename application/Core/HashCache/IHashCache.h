@@ -19,8 +19,11 @@
 #pragma once
 
 #include <QSharedPointer>
+#include <QString>
 
 #include <Protos/common.pb.h>
+
+#include <Common/Path.h>
 
 #include <IRootEntry.h>
 
@@ -31,16 +34,6 @@ namespace HC
    public:
       virtual ~IHashCache() {}
 
-      /**
-        * Load all known hashes from the path given by 'root.getPath()' into 'root'.
-        * It will use the path + file size + file date to match the file and thus to provide the hashes.
-        * During this call the hashe database will not change.
-        */
-      virtual void loadTo(IRootEntry& root) = 0;
-
-      /**
-        * Update the hashe database according the given root.
-        */
-      virtual void saveFrom(const IRootEntry& root) = 0;
+      getHashes(const QString& )
    };
 }

@@ -25,6 +25,7 @@ INCLUDEPATH += . \
 TEMPLATE = app
 
 SOURCES += main.cpp \
+    CacheTest.cpp \
     Tests.cpp \
     ../../../Protos/common.pb.cc \
     HashesReceiver.cpp \
@@ -33,6 +34,7 @@ SOURCES += main.cpp \
     StressTests.cpp
 HEADERS += Tests.h \
     ../../../Protos/common.pb.h \
+    CacheTest.h \
     HashesReceiver.h \
     StressTest.h \
     ../../../Protos/core_settings.pb.h \

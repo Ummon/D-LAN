@@ -27,7 +27,7 @@ message Language {
 
 // For identify a chunk or a user.
 message Hash {
-   bytes hash = 1; // 20 bytes. If it doesn't exist the hash is null.
+   bytes hash = 1; // 28 bytes. If it doesn't exist the hash is null.
 }
 
 message IP {
@@ -67,7 +67,8 @@ message Entry {
    string name = 3; // Directory name or file name. For example: "MyLOLCat.avi".
    uint64 size = 4; // [bytes]. For the directory it's the sum of all sub-items.
 
-   SharedEntry shared_entry = 5; // The shared entry of the entry.
+   SharedEntry shared_entry = 5; // The shared entry of the entry. If the entry is a file the shared_entry must be the same file.
+
    bool exists = 6; // [default = true] An entry may not yet be created.
 
    // Only for DIR type.

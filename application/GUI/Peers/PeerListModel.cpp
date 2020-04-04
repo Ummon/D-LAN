@@ -324,12 +324,13 @@ void PeerListModel::coreDisconnected(bool forced)
 void PeerListModel::updatePeers(const google::protobuf::RepeatedPtrField<Protos::GUI::State::Peer>& peers, const QSet<Common::Hash>& peersDownloadingOurData, const QSet<Common::Hash>& peersToDisplay)
 {
    bool dataChanged = false;
-   auto setDataChanged = [&dataChanged, this]()
-   {
-      if (!dataChanged)
-         emit layoutAboutToBeChanged(QList<QPersistentModelIndex>(), QAbstractItemModel::VerticalSortHint);
-      dataChanged = true;
-   };
+   auto setDataChanged =
+      [&dataChanged, this]()
+      {
+         if (!dataChanged)
+            emit layoutAboutToBeChanged(QList<QPersistentModelIndex>(), QAbstractItemModel::VerticalSortHint);
+         dataChanged = true;
+      };
 
    auto peersList = this->indexedPeers.keys();
    QSet<Common::Hash> peersToRemove(peersList.begin(), peersList.end());

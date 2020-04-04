@@ -15,7 +15,7 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #pragma once
 
 #include <limits>
@@ -31,6 +31,8 @@
 #include <Protos/core_protocol.pb.h>
 
 #include <Common/Uncopyable.h>
+
+#include <Core/HashCache/IHashCache.h>
 
 #include <IFileManager.h>
 #include <priv/Log.h>
@@ -54,7 +56,7 @@ namespace FM
    {
       Q_OBJECT
    public:
-      FileManager();
+      FileManager(QSharedPointer<HC::IHashCache> hashCache);
       ~FileManager();
 
       void setSharedPaths(const QStringList& paths);
@@ -89,7 +91,7 @@ namespace FM
    private slots:
       void newSharedEntry(SharedEntry*);
       void sharedEntryRemoved(SharedEntry*, Directory*);
-      void deleteSharedDir(SharedDirectory* sharedDirectory);
+      void deleteSharedEntry(SharedEntry* sharedEntry);
       void entryAdded(Entry* entry);
       void entryRemoved(Entry* entry);
       void entryRenamed(Entry* entry, const QString& oldName);

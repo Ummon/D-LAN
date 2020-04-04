@@ -48,7 +48,6 @@ namespace FM
       ~FileUpdater();
 
       void stop();
-      //void setFileCache(const Protos::FileCache::Hashes* fileCache);
       void prioritizeAFileToHash(File* file);
 
       bool isScanning() const;
@@ -72,7 +71,7 @@ namespace FM
       void stopHashing();
 
       void scan(Entry* entry, bool addUnfinished = false);
-      void addScannedFile(const FileInfo& fileInfo, File* fileCache = nullptr);
+      // void addScannedFile(const FileInfo& fileInfo, File* fileCache = nullptr); TODO: To remove
 
       void stopScanning(Entry* entry = nullptr);
 

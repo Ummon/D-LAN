@@ -31,7 +31,7 @@ using namespace RCM;
 #include <Common/ProtoHelper.h>
 #include <Common/Constants.h>
 #include <Common/Hash.h>
-#include <Common/SharedDir.h>
+#include <Common/SharedEntry.h>
 #include <Common/Global.h>
 #include <Common/StringUtils.h>
 #include <Core/FileManager/IChunk.h>
@@ -216,15 +216,15 @@ void RemoteConnection::refresh()
          state.mutable_upload()->RemoveLast();
    }
 
-   // Shared Dirs.
-   for (QListIterator<Common::SharedDir> i(this->fileManager->getSharedDirs()); i.hasNext();)
+   // Shared entries.
+   for (QListIterator<Common::SharedEntry> i(this->fileManager->getSharedEntries()); i.hasNext();)
    {
-      Common::SharedDir sharedDir = i.next();
-      Protos::GUI::State::SharedDir* sharedDirProto = state.add_shared_directory();
-      Common::ProtoHelper::setStr(*sharedDirProto, &Protos::GUI::State::SharedDir::set_path, sharedDir.path);
-      sharedDirProto->set_size(sharedDir.size);
-      sharedDirProto->set_free_space(sharedDir.freeSpace);
-      sharedDirProto->mutable_id()->set_hash(sharedDir.ID.getData(), Common::Hash::HASH_SIZE);
+      Common::SharedEntry sharedEntry = i.next();
+      Protos::GUI::State::SharedEntry* sharedEntryProto = state.add_shared_entry();
+      Common::ProtoHelper::setStr(*sharedEntryProto, &Protos::GUI::State::SharedEntry::set_path, sharedEntry.path.getPath());
+      sharedEntryProto->set_size(sharedEntry.size);
+      sharedEntryProto->set_free_space(sharedEntry.freeSpace);
+      sharedEntryProto->mutable_id()->set_hash(sharedEntry.ID.getData(), Common::Hash::HASH_SIZE);
    }
 
    // Stats.
@@ -486,10 +486,10 @@ void RemoteConnection::onNewMessage(const Common::Message& message)
 
          try
          {
-            QStringList sharedDirs;
-            for (int i = 0; i < coreSettingsMessage.shared_directories().dir_size(); i++)
-               sharedDirs << Common::ProtoHelper::getRepeatedStr(coreSettingsMessage.shared_directories(), &Protos::GUI::CoreSettings::SharedDirectories::dir, i);
-            this->fileManager->setSharedDirs(sharedDirs);
+            QStringList sharedPaths;
+            for (int i = 0; i < coreSettingsMessage.shared_paths().path_size(); i++)
+               sharedPaths << Common::ProtoHelper::getRepeatedStr(coreSettingsMessage.shared_paths(), &Protos::GUI::CoreSettings::SharedPaths::path, i);
+            this->fileManager->setSharedPaths(sharedPaths);
          }
          catch (FM::ItemsNotFoundException& e)
          {

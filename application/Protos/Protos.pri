@@ -24,10 +24,6 @@ proto_hash_cache.target = $$PWD/hash_cache.pb.cc
 proto_hash_cache.depends = $$PWD/hash_cache.proto
 proto_hash_cache.commands = cd $$PWD && protoc --cpp_out . hash_cache.proto
 
-proto_files_cache.target = $$PWD/files_cache.pb.cc
-proto_files_cache.depends = $$PWD/files_cache.proto
-proto_files_cache.commands = cd $$PWD && protoc --cpp_out . files_cache.proto
-
 proto_core_settings.target = $$PWD/core_settings.pb.cc
 proto_core_settings.depends = $$PWD/core_settings.proto
 proto_core_settings.commands = cd $$PWD && protoc --cpp_out . core_settings.proto

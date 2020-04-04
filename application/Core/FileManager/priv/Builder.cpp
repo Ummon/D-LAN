@@ -15,14 +15,14 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #include <Builder.h>
 using namespace FM;
 
 #include <IFileManager.h>
 #include <priv/FileManager.h>
 
-QSharedPointer<IFileManager> Builder::newFileManager()
+QSharedPointer<IFileManager> Builder::newFileManager(QSharedPointer<HC::IHashCache> hashCache)
 {
-   return QSharedPointer<IFileManager>(new FileManager());
+   return QSharedPointer<IFileManager>(new FileManager(hashCache));
 }

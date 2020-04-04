@@ -178,11 +178,14 @@ void BrowseModel::refresh()
 
    Protos::Common::Entries entries;
 
-   this->root->mapReverseDepthFirst([&entries](Tree* tree) {
-      if (tree->getNbChildren() > 0)
-         entries.add_entry()->CopyFrom(tree->getItem());
-      return true;
-   });
+   this->root->mapReverseDepthFirst(
+      [&entries](Tree* tree)
+      {
+         if (tree->getNbChildren() > 0)
+            entries.add_entry()->CopyFrom(tree->getItem());
+         return true;
+      }
+   );
 
    this->browseResult = this->coreConnection->browse(this->peerID, entries, true);
    connect(this->browseResult.data(), SIGNAL(result(const google::protobuf::RepeatedPtrField<Protos::Common::Entries>&)), this, SLOT(resultRefresh(const google::protobuf::RepeatedPtrField<Protos::Common::Entries>&)));

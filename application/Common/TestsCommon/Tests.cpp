@@ -15,7 +15,7 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #include <Tests.h>
 
 #include <set>
@@ -293,11 +293,13 @@ void Tests::sortedList()
    list.insert(10);
    list.insert(3);
 
-   auto test = [&](const QList<int>& expected) {
-      int i = 0;
-      foreach (int n, list.getList())
-         QCOMPARE(n, expected[i++]);
-   };
+   auto test =
+      [&](const QList<int>& expected)
+      {
+         int i = 0;
+         foreach (int n, list.getList())
+            QCOMPARE(n, expected[i++]);
+      };
 
    test(QList<int> { 2, 3, 9, 10, 16 });
 

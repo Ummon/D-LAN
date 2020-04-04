@@ -15,7 +15,7 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #include <priv/FileUpdater/FileUpdater.h>
 using namespace FM;
 
@@ -144,17 +144,6 @@ void FileUpdater::rmRoot(SharedEntry* sharedEntry, Directory* dir2)
 
    this->dirEvent->release();
 }
-
-/**
-  * Set the file cache to retrieve the hashes frome it.
-  * Muste be called before starting the fileUpdater.
-  * The shared dirs in fileCache must be previously added by 'addRoot(..)'.
-  * This object must unallocated the hashes.
-  */
-/*void FileUpdater::setFileCache(const Protos::FileCache::Hashes* fileCache)
-{
-   this->fileCacheInformation = new FileCacheInformation(fileCache);
-}*/
 
 void FileUpdater::prioritizeAFileToHash(File* file)
 {

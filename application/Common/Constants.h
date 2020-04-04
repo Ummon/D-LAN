@@ -35,11 +35,7 @@ namespace Common
 
       static const QString FILE_EXTENSION;
 
-      static const QString FILE_CACHE;
-
-      static const QString HASH_CACHE_DIR;
       static const QString HASH_CACHE_INDEX_FILENAME;
-      static const QString HASH_CACHE_EXTENSION;
 
       static const QString FILE_QUEUE;
       static const QString DIR_CHAT_MESSAGES;

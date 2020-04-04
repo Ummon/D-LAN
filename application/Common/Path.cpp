@@ -19,7 +19,7 @@ Path::Path(const QString& path)
    if (cleanedPath.isEmpty())
       return;
 
-   // Absolutes cases:   
+   // Absolutes cases:
    if (cleanedPath[0] == '/') // Linux.
    {
       this->root = "/";
@@ -155,7 +155,7 @@ bool Path::isSameDir(const Path& other) const
 
 bool Path::operator==(const Path& other) const
 {
-   return this->getRoot() == other.getRoot() && this->getFilename() == other.getFilename() && this->getDirs() == other.getDirs();
+   return this->root == other.root && this->filename == other.filename && this->dirs == other.dirs;
 }
 
 Path Path::removeFilename() const &

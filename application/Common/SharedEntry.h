@@ -22,6 +22,7 @@
 #include <QMetaType>
 
 #include <Common/Hash.h>
+#include <Common/Path.h>
 
 namespace Common
 {
@@ -37,7 +38,7 @@ namespace Common
       bool equalTo(const SharedEntry& other) const { return this->ID == other.ID && this->path == other.path && this->size == other.size && this->freeSpace == other.freeSpace; }
 
       Common::Hash ID; ///< The unique identifier of the shared entry.
-      QString path; ///< The absolute path of the shared entry (file or directory).
+      Path path; ///< The absolute path of the shared entry (file or directory).
       qint64 size;
       qint64 freeSpace;
    };

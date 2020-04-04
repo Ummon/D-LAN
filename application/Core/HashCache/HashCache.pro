@@ -21,9 +21,5 @@ HEADERS += IHashCache.h \
     priv/Log.h \
     ../../Protos/common.pb.h \
     ../../Protos/hash_cache.pb.h \
-    IRootEntry.h \
-    IEntry.h \
-    IDir.h \
-    IFile.h \
     priv/HashCache.h
 OTHER_FILES +=

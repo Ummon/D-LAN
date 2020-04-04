@@ -223,15 +223,15 @@ message ChangePassword {
 // id: 0x1031
 // Set the settings.
 message CoreSettings {
-   message SharedDirectories {
-      repeated string dir = 1; // A directory always ends with a slash ('/').
+   message SharedPaths {
+      repeated string path = 1; // It can be a file or a directory. A directory always ends with a slash ('/').
    }
 
-   oneof nickOptional {
+   oneof nick_optional {
       string nick = 1;
    }
 
-   SharedDirectories shared_directories = 2;
+   SharedPaths shared_paths = 2;
    Common.TriState enable_integrity_check = 3;
 
    string listen_address = 4; // [default = ""] If address is empty then listen to any adresses, in this case the protocol is given by 'listenAny'.

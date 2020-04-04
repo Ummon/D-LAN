@@ -15,7 +15,7 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #pragma once
 
 #include <functional>
@@ -27,8 +27,9 @@
 #include <QMutex>
 #include <QSharedPointer>
 
-#include <Protos/files_cache.pb.h>
 #include <Protos/core_protocol.pb.h>
+
+#include <Core/HashCache/IHashCache.h>
 
 #include <Common/Uncopyable.h>
 #include <Common/SharedEntry.h>
@@ -48,7 +49,7 @@ namespace FM
    {
       Q_OBJECT
    public:
-      Cache();
+      Cache(QSharedPointer<HC::IHashCache> hashCache);
       ~Cache();
 
       void forall(std::function<void(Entry*)> fun) const;
@@ -64,7 +65,7 @@ namespace FM
       void newDirectory(Protos::Common::Entry& dirEntry);
 
       QList<Common::SharedEntry> getSharedEntrys() const;
-      SharedDirectory* getSharedDirectory(const Common::Hash& ID) const;
+      SharedEntry* getSharedEntry(const Common::Hash& ID) const;
       void setSharedPaths(const QList<Common::Path>& paths);
       QPair<Common::SharedEntry, QString> addASharedPath(const Common::Path& absolutePath);
       void removeSharedEntry(SharedEntry* item, Directory* dir2 = nullptr);
@@ -119,6 +120,8 @@ namespace FM
       void createSharedEntries(const QList<Common::Path>& paths, const QList<Common::Hash>& ids = QList<Common::Hash>());
 
       Directory* getWriteableDirectory(const Common::Path& path, qint64 spaceNeeded = 0) const;
+
+      QSharedPointer<HC::IHashCache> hashCache;
 
       QList<SharedEntry*> sharedEntries;
 

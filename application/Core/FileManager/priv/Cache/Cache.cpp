@@ -33,6 +33,7 @@ using namespace FM;
 #include <priv/Exceptions.h>
 #include <priv/Constants.h>
 #include <priv/Cache/SharedEntry.h>
+#include <priv/Cache/Directory.h>
 #include <priv/Cache/File.h>
 
 /**
@@ -43,10 +44,11 @@ using namespace FM;
   *  - Browse directories and files.
   *  - Create a new file.
   *  - Add or remove a shared item (root).
-  *  - Serialize or deserialize the hashes of the files in a 'Protos::FileCache::Hashes' structure (to be saved/loaded in/from a physical file).
+  *  - Give or retrieve hashes from hash cache (namespace HC).
   */
 
-Cache::Cache() :
+Cache::Cache(QSharedPointer<HC::IHashCache> hashCache) :
+   hashCache(hashCache),
    mutex(QMutex::Recursive)
 {
    qRegisterMetaType<Entry*>("Entry*");
@@ -65,7 +67,7 @@ Cache::~Cache()
 void Cache::forall(std::function<void(Entry*)> fun) const
 {
    QQueue<Entry*> entries;
-   foreach (SharedEntry* entry, this->sharedItems)
+   foreach (SharedEntry* entry, this->sharedEntries)
       entries.enqueue(entry->getRootEntry());
 
    while (!entries.isEmpty())
@@ -85,7 +87,7 @@ void Cache::forall(std::function<void(Entry*)> fun) const
 }
 
 /**
-  * Gets the roots directories.
+  * Gets the roots shared entries (it can be a mix of files and directories).
   */
 Protos::Common::Entries Cache::getSharedEntries() const
 {
@@ -93,10 +95,10 @@ Protos::Common::Entries Cache::getSharedEntries() const
 
    Protos::Common::Entries result;
 
-   foreach (SharedDirectory* sharedDir, this->sharedDirs)
+   foreach (SharedEntry* sharedEntry, this->sharedEntries)
    {
       Protos::Common::Entry* entry = result.add_entry();
-      sharedDir->populateEntry(entry);
+      sharedEntry->populateEntry(entry);
    }
 
    return result;
@@ -126,26 +128,30 @@ Protos::Common::Entries Cache::getEntries(const Protos::Common::Entry& dir, int 
 Directory* Cache::getDirectory(const Protos::Common::Entry& dir) const
 {
    // If we can't find the shared directory . . .
-   if (!dir.has_shared_dir())
+   if (!dir.has_shared_entry())
       return nullptr;
 
    QMutexLocker locker(&this->mutex);
 
-   foreach (SharedDirectory* sharedDir, this->sharedDirs)
+   foreach (SharedEntry* sharedEntry, this->sharedEntries)
    {
-      if (sharedDir->getId() == dir.shared_dir().id().hash())
+      if (sharedEntry->getId() == dir.shared_entry().id().hash())
       {
          QStringList folders = QDir::cleanPath(Common::ProtoHelper::getStr(dir, &Protos::Common::Entry::path)).split('/', QString::SkipEmptyParts);
 
          if (!dir.path().empty()) // An empty path means the dir is the root (a SharedDirectory).
             folders << Common::ProtoHelper::getStr(dir, &Protos::Common::Entry::name);
 
-         Directory* currentDir = sharedDir;
-         foreach (QString folder, folders)
+         Directory* currentDir = dynamic_cast<Directory*>(sharedEntry->getRootEntry());
+
+         if (currentDir != nullptr)
          {
-            currentDir = currentDir->getSubDir(folder);
-            if (!currentDir)
-               return nullptr;
+            foreach (QString folder, folders)
+            {
+               currentDir = currentDir->getSubDir(folder);
+               if (!currentDir)
+                  return nullptr;
+            }
          }
 
          return currentDir;
@@ -157,18 +163,41 @@ Directory* Cache::getDirectory(const Protos::Common::Entry& dir) const
 
 /**
   * @param path The absolute path to a directory or a file.
-  * @return Returns a directory or a file, it can be a shared directory. Returns 'nullptr' if no entry found.
+  * @return Returns a directory or a file, it can be a shared file or a shared directory. Returns 'nullptr' if no entry found.
   */
 Entry* Cache::getEntry(const Common::Path& path) const
 {
+   Q_ASSERT(path.isAbsolute());
+
    QMutexLocker locker(&this->mutex);
 
-   TODO...
-
-   foreach (SharedDirectory* sharedEntry, this->sharedEntries)
+   foreach (SharedEntry* sharedEntry, this->sharedEntries)
    {
-      // We remove the end '/'.
-      Common::Path currentPath = sharedEntry->getFullPath();
+      const Common::Path sharedEntryPath = sharedEntry->getFullPath();
+
+      // Cover the case where 'sharedEntry' is a file.
+      if (path == sharedEntryPath)
+         return sharedEntry->getRootEntry();
+
+      if (path.isSuperOf(sharedEntryPath))
+      {
+         QStringList relativeDirs = path.getDirs();
+         if (!sharedEntryPath.getDirs().isEmpty())
+            relativeDirs.erase(relativeDirs.begin(), relativeDirs.begin() + sharedEntryPath.getDirs().length());
+
+         Directory* currentDirectory = dynamic_cast<Directory*>(sharedEntry->getRootEntry());
+
+         for (QStringListIterator i(relativeDirs); i.hasNext();)
+            currentDirectory = currentDirectory->getSubDir(i.next());
+
+         if (path.isFile())
+            return dynamic_cast<File*>(currentDirectory->getFile(path.getFilename()));
+         else
+            return currentDirectory;
+      }
+
+      /*
+       TODO: Old code -> to remove.
 
       if (path.startsWith(currentPath) && (path.size() == currentPath.size() || path[currentPath.size()] == '/'))
       {
@@ -196,6 +225,7 @@ Entry* Cache::getEntry(const Common::Path& path) const
 
          return currentDir;
       }
+      */
    }
 
    return nullptr;
@@ -205,7 +235,7 @@ SharedEntry* Cache::getSharedEntry(const Common::Path& path) const
 {
    QMutexLocker locker(&this->mutex);
 
-   foreach (SharedDirectory* sharedEntry, this->sharedEntries)
+   foreach (SharedEntry* sharedEntry, this->sharedEntries)
       if (sharedEntry->getFullPath() == path)
          return sharedEntry;
 
@@ -218,9 +248,27 @@ SharedEntry* Cache::getSharedEntry(const Common::Path& path) const
   */
 File* Cache::getFile(const Protos::Common::Entry& fileEntry) const
 {
+   if (fileEntry.type() == Protos::Common::Entry_Type_DIR)
+   {
+      L_WARN(QString("Cache::getFile : 'fileEntry' must be a file (and not a directory)"));
+      return nullptr;
+   }
+
+   if (!fileEntry.has_shared_entry())
+   {
+      L_WARN(QString("Cache::getFile : 'fileEntry' doesn't have the field 'shared_dir' set!"));
+      return nullptr;
+   }
+
+   return dynamic_cast<File*>(this->getEntry(Common::ProtoHelper::getPath(fileEntry, Common::EntriesToAppend::FILE, true)));
+
+
+   /*
+   TODO: Old code -> to remove.
+
    QMutexLocker locker(&this->mutex);
 
-   if (!fileEntry.has_shared_dir())
+   if (!fileEntry.has_shared_entry())
    {
       L_WARN(QString("Cache::getFile : 'fileEntry' doesn't have the field 'shared_dir' set!"));
       return nullptr;
@@ -262,6 +310,7 @@ File* Cache::getFile(const Protos::Common::Entry& fileEntry) const
    }
 
    return nullptr;
+   */
 }
 
 /**
@@ -281,7 +330,7 @@ QList<QSharedPointer<IChunk>> Cache::newFile(Protos::Common::Entry& fileEntry)
 
    // If we know where to put the file.
    Directory* dir = nullptr;
-   if (fileEntry.has_shared_dir())
+   if (fileEntry.has_shared_entry())
    {
       SharedDirectory* sharedDir = this->getSharedDirectory(fileEntry.shared_dir().id().hash());
 
@@ -398,13 +447,13 @@ QList<Common::SharedDir> Cache::getSharedDirs() const
    return list;
 }
 
-SharedDirectory* Cache::getSharedDirectory(const Common::Hash& ID) const
+SharedEntry* Cache::getSharedEntry(const Common::Hash& ID) const
 {
-   for (QListIterator<SharedDirectory*> i(this->sharedDirs); i.hasNext();)
+   for (QListIterator<SharedEntry*> i(this->sharedEntries); i.hasNext();)
    {
-      SharedDirectory* dir = i.next();
-      if (dir->getId() == ID)
-         return dir;
+      SharedEntry* entry = i.next();
+      if (entry->getId() == ID)
+         return entry;
    }
    return nullptr;
 }

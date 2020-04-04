@@ -15,7 +15,7 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #pragma once
 
 #include <QString>
@@ -42,7 +42,6 @@ namespace FM
       virtual void del(bool invokeDelete = true);
 
       virtual void populateEntry(Protos::Common::Entry* entry, bool setSharedEntry = false) const;
-      void populateSharedEntry(Protos::Common::Entry* entry) const;
 
       Cache* getCache();
 
@@ -78,6 +77,8 @@ namespace FM
       QString name;
 
    private:
+      void populateSharedEntry(Protos::Common::Entry* entry) const;
+
       SharedEntry* root;
       qint64 size;
 

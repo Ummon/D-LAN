@@ -15,7 +15,7 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #include <priv/Cache/SharedEntry.h>
 using namespace FM;
 
@@ -76,6 +76,12 @@ SharedEntry::~SharedEntry()
    L_DEBU(QString("SharedEntry deleted: %1").arg(this->getUserName()));
 }
 
+void SharedEntry::populateEntry(Protos::Common::Entry* entry) const
+{
+   this->getRootEntry()->populateEntry(entry, true);
+   entry->set_path(""); // The path of a shared directory is private (we don't want the other peers to see absolute paths).
+}
+
 void SharedEntry::del(bool invokeDelete)
 {
    // The question is: why we don't let 'Directory::del()' destroys its sub directories?
@@ -130,7 +136,7 @@ QString SharedEntry::getUserName() const
 QString SharedEntry::entryName(const Common::Path& path)
 {
    if (path.isFile())
-      return path.filename;
+      return path.getFilename();
 
    if (path.getDirs().isEmpty())
       return path.getRoot();

@@ -83,7 +83,6 @@ HEADERS += IGetHashesResult.h \
     priv/Cache/Cache.h \
     priv/Exceptions.h \
     Exceptions.h \
-    ../../Protos/files_cache.pb.h \
     priv/FileUpdater/WaitCondition.h \
     priv/Constants.h \
     priv/GetHashesResult.h \

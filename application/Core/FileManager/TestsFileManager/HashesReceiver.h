@@ -15,9 +15,8 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
-#ifndef TESTS_FILEMANAGER_HASHESRECEIVER_H
-#define TESTS_FILEMANAGER_HASHESRECEIVER_H
+
+#pragma once
 
 #include <QObject>
 #include <QList>
@@ -40,5 +39,3 @@ private:
    QList<Common::Hash> receivedHashes;
    int num;
 };
-
-#endif

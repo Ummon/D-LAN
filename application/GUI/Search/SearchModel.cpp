@@ -15,7 +15,7 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #include <Search/SearchModel.h>
 using namespace GUI;
 
@@ -245,19 +245,21 @@ void SearchModel::sort(int column, Qt::SortOrder order)
    for (int i = 0; i < this->root->getNbChildren(); i++)
       unsortedChildren.insert(this->root->getChild(i), this->index(i, 0));
 
-   this->root->sort([&](const Tree* t1, const Tree* t2)
-   {
-      return entryLessThan(
-         t1->getItem(),
-         dynamic_cast<const SearchTree*>(t1)->getLevel(),
-         dynamic_cast<const SearchTree*>(t1)->getPeerNick(),
-         t2->getItem(),
-         dynamic_cast<const SearchTree*>(t2)->getLevel(),
-         dynamic_cast<const SearchTree*>(t2)->getPeerNick(),
-         this->currentSortedColumn,
-         this->currentSortOrder
-      );
-   });
+   this->root->sort(
+      [&](const Tree* t1, const Tree* t2)
+      {
+         return entryLessThan(
+            t1->getItem(),
+            dynamic_cast<const SearchTree*>(t1)->getLevel(),
+            dynamic_cast<const SearchTree*>(t1)->getPeerNick(),
+            t2->getItem(),
+            dynamic_cast<const SearchTree*>(t2)->getLevel(),
+            dynamic_cast<const SearchTree*>(t2)->getPeerNick(),
+            this->currentSortedColumn,
+            this->currentSortOrder
+         );
+      }
+   );
 
    // As the documentation says we have to tell the views which index goes who... it's a bit complicated and CPU consuming, is there a simplest way?
    for (int i = 0; i < this->root->getNbChildren(); i++)
