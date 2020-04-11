@@ -254,9 +254,9 @@
     </message>
 </context>
 <context>
-    <name>GUI::DirListModel</name>
+    <name>GUI::SharedEntryListModel</name>
     <message>
-        <location filename="../GUI/Settings/DirListModel.cpp" line="+181"/>
+        <location filename="../GUI/Settings/SharedEntryListModel.cpp" line="+181"/>
         <source>Folder</source>
         <translation>Dossier</translation>
     </message>

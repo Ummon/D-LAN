@@ -15,7 +15,7 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #pragma once
 
 #include <QObject>
@@ -25,8 +25,9 @@
 #include <QMenu>
 
 #include <Common/Hash.h>
+#include <Common/Path.h>
 
-#include <Settings/DirListModel.h>
+#include <Settings/SharedEntryListModel.h>
 
 namespace GUI
 {
@@ -34,13 +35,13 @@ namespace GUI
    {
       Q_OBJECT
    public:
-      DownloadMenu(const DirListModel& sharedDirsModel);
+      DownloadMenu(const SharedEntryListModel& sharedEntryListModel);
       void show(const QPoint& globalPosition);
 
    signals:
       void download();
       void downloadTo();
-      void downloadTo(const QString&, const Common::Hash&);
+      void downloadTo(const Common::Path&, const Common::Hash&);
 
    private slots:
       void actionTriggered();
@@ -48,6 +49,6 @@ namespace GUI
    private:
       virtual void onShowMenu(QMenu&) {}
 
-      const DirListModel& sharedDirsModel;
+      const SharedEntryListModel& sharedEntryListModel;
    };
 }

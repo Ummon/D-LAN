@@ -15,7 +15,7 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #include <Downloads/DownloadsTreeModel.h>
 using namespace GUI;
 
@@ -35,8 +35,8 @@ using namespace GUI;
   * The method 'onNewState(..)' is automatically and periodically called by 'DownloadsModel' each time a new state is sent by the core.
   */
 
-DownloadsTreeModel::DownloadsTreeModel(QSharedPointer<RCC::ICoreConnection> coreConnection, const PeerListModel& peerListModel, const DirListModel& sharedDirsModel, const IFilter<DownloadFilterStatus>& filter) :
-   DownloadsModel(coreConnection, peerListModel, sharedDirsModel, filter), root(new Tree())
+DownloadsTreeModel::DownloadsTreeModel(QSharedPointer<RCC::ICoreConnection> coreConnection, const PeerListModel& peerListModel, const SharedEntryListModel& sharedEntryListModel, const IFilter<DownloadFilterStatus>& filter) :
+   DownloadsModel(coreConnection, peerListModel, sharedEntryListModel, filter), root(new Tree())
 {
 }
 
@@ -61,7 +61,7 @@ QList<quint64> DownloadsTreeModel::getDownloadIDs(const QModelIndex& index) cons
   * @return 'true' is all files in the tree corresponding to the given index are paused, the completed files are ignored.
   */
 bool DownloadsTreeModel::isDownloadPaused(const QModelIndex& index) const
-{   
+{
    Tree* tree = static_cast<Tree*>(index.internalPointer());
    if (!tree)
       return true;
@@ -139,27 +139,36 @@ QString DownloadsTreeModel::getPath(const QModelIndex& index, bool appendFilenam
    if (!tree)
       return QString();
 
-   const Common::SharedDir sharedDir = this->sharedDirsModel.getDir(tree->getItem().local_entry().shared_dir().id().hash());
-   if (sharedDir.isNull())
+   const Common::SharedEntry& sharedEntry = this->sharedEntryListModel.getSharedEntry(tree->getItem().local_entry().shared_entry().id().hash());
+   if (sharedEntry.isNull())
       return QString();
 
-   QString path;
-   if (tree->getItem().local_entry().type() == Protos::Common::Entry::DIR)
+   if (sharedEntry.path.isFile())
    {
-      Tree* superTree = tree;
-      while (superTree != this->root)
-      {
-         path.prepend(Common::ProtoHelper::getStr(superTree->getItem().local_entry(), &Protos::Common::Entry::name)).prepend('/');
-         superTree = superTree->getParent();
-      }
-      path.prepend(sharedDir.path.left(sharedDir.path.count() - 1));
+      return sharedEntry.path.getPath(appendFilename);
    }
    else
    {
-      path = sharedDir.path.left(sharedDir.path.count() - 1);
-      path.append(Common::ProtoHelper::getPath(tree->getItem().local_entry(), Common::EntriesToAppend::DIR | (appendFilename ? Common::EntriesToAppend::FILE : Common::EntriesToAppend::NONE)));
+      const QString& sharedPath = sharedEntry.path.getPath();
+      QString path;
+
+      if (tree->getItem().local_entry().type() == Protos::Common::Entry::DIR)
+      {
+         Tree* superTree = tree;
+         while (superTree != this->root)
+         {
+            path.prepend(Common::ProtoHelper::getStr(superTree->getItem().local_entry(), &Protos::Common::Entry::name)).prepend('/');
+            superTree = superTree->getParent();
+         }
+         path.prepend(sharedPath.left(sharedPath.count() - 1));
+      }
+      else
+      {
+         path = sharedPath.left(sharedPath.count() - 1);
+         path.append(Common::ProtoHelper::getPath(tree->getItem().local_entry(), Common::EntriesToAppend::DIR | (appendFilename ? Common::EntriesToAppend::FILE : Common::EntriesToAppend::NONE)));
+      }
+      return path;
    }
-   return path;
 }
 
 int DownloadsTreeModel::rowCount(const QModelIndex& parent) const
@@ -283,6 +292,7 @@ bool DownloadsTreeModel::dropMimeData(const QMimeData* data, Qt::DropAction acti
    }
 
    if (downloadRefs.isEmpty())
+   {
       if (last < this->root->getNbChildren() - 1 && (where > (first + last + 1) / 2 || first == 0))
       {
 
@@ -294,6 +304,7 @@ bool DownloadsTreeModel::dropMimeData(const QMimeData* data, Qt::DropAction acti
          downloadRefs << this->getDownloadIDs(this->root->getChild(first - 1));
          position = Protos::GUI::MoveDownloads::AFTER;
       }
+   }
 
    // Some rows to move may not have be processed by the last loop.
    for (QListIterator<int> i(rows); i.hasNext();)
@@ -325,7 +336,7 @@ void DownloadsTreeModel::onNewState(const Protos::GUI::State& state)
             parentTree->visited = true;
             if (parentTree->getParent() == this->root)
                this->moveUp(parentTree);
-         } while (parentTree = parentTree->getParent());
+         } while ((parentTree = parentTree->getParent()));
 
          this->update(itemTree, download);
       }
@@ -341,7 +352,7 @@ void DownloadsTreeModel::onNewState(const Protos::GUI::State& state)
                i.next(),
                Common::ProtoHelper::getStr(download, &Protos::GUI::State::Download::peer_source_nick),
                download.peer_id_size() == 0 ? Common::Hash() : Common::Hash(download.peer_id(0).hash()),
-               download.local_entry().shared_dir().id().hash()
+               download.local_entry().shared_entry().id().hash()
             );
 
          this->insert(currentTree, download);
@@ -409,7 +420,7 @@ DownloadsTreeModel::Tree* DownloadsTreeModel::updateDirectoryFromPath(Tree* pare
    Common::ProtoHelper::setStr(*download.mutable_local_entry(), &Protos::Common::Entry::set_name, dir);
    Common::ProtoHelper::setStr(download, &Protos::GUI::State::Download::set_peer_source_nick, peerSourceNick);
    download.add_peer_id()->set_hash(peerSourceID.getData(), Common::Hash::HASH_SIZE);
-   download.mutable_local_entry()->mutable_shared_dir()->mutable_id()->set_hash(sharedDirID.getData(), Common::Hash::HASH_SIZE);
+   download.mutable_local_entry()->mutable_shared_entry()->mutable_id()->set_hash(sharedDirID.getData(), Common::Hash::HASH_SIZE);
    download.mutable_local_entry()->set_type(Protos::Common::Entry::DIR);
 
    // If the directory already exist, we just update it.

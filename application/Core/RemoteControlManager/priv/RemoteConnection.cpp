@@ -478,7 +478,7 @@ void RemoteConnection::onNewMessage(const Common::Message& message)
       {
          const Protos::GUI::CoreSettings& coreSettingsMessage = message.getMessage<Protos::GUI::CoreSettings>();
 
-         if (coreSettingsMessage.nickOptional_case() == Protos::GUI::CoreSettings::NickOptionalCase::kNick)
+         if (coreSettingsMessage.nick_optional_case() == Protos::GUI::CoreSettings::NickOptionalCase::kNick)
             this->peerManager->setNick(Common::ProtoHelper::getStr(coreSettingsMessage, &Protos::GUI::CoreSettings::nick));
 
          if (coreSettingsMessage.enable_integrity_check() != Protos::Common::TS_NO_CHANGE)

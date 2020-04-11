@@ -103,8 +103,8 @@ Common::Message Common::Message::readMessageBody(const Common::MessageHeader& he
    case MessageHeader::CORE_GET_HASHES:                  return readMessageBody<Protos::Core::GetHashes>             (header, source);
    case MessageHeader::CORE_GET_HASHES_RESULT:           return readMessageBody<Protos::Core::GetHashesResult>       (header, source);
    case MessageHeader::CORE_HASH_RESULT:                 return readMessageBody<Protos::Core::HashResult>            (header, source);
-   case MessageHeader::CORE_GET_CHUNK:                   return readMessageBody<Protos::Core::GetChunk>              (header, source);
-   case MessageHeader::CORE_GET_CHUNK_RESULT:            return readMessageBody<Protos::Core::GetChunkResult>        (header, source);
+   case MessageHeader::CORE_GET_CHUNKS:                  return readMessageBody<Protos::Core::GetChunks>             (header, source);
+   case MessageHeader::CORE_GET_CHUNKS_RESULT:           return readMessageBody<Protos::Core::GetChunksResult>       (header, source);
 
    case MessageHeader::GUI_STATE:                        return readMessageBody<Protos::GUI::State>                  (header, source);
    case MessageHeader::GUI_STATE_RESULT:                 return readMessageBody<Protos::Common::Null>                (header, source);

@@ -140,7 +140,7 @@ message GetEntriesResult {
 // id : 0x41
 message GetHashes {
    Common.Entry file = 1; // Must have the field 'shared_dir' set. If it already contains some chunk hashes only the next ones will be sent.
-   repeated Common.Entry nextFiles = 2; // The next files for which we want to know their hashes in the future.
+   repeated Common.Entry next_files = 2; // The next files for which we want to know their hashes in the future.
 }
 
 // b -> a
@@ -164,27 +164,41 @@ message HashResult {
    Common.Hash hash = 2;
 }
 
-// Download.
+// Download one or more chunks.
 // a -> b
 // id : 0x51
-message GetChunk {
-   Common.Hash chunk = 1;
-   uint32 offset = 2; // [byte] Relative to the beginning of the chunk.
+message GetChunks {
+   message Chunk {
+      Common.Hash hash = 1;
+      uint32 offset = 2; // [byte] Relative to the beginning of the chunk.
+   }
+
+   repeated Chunk chunks = 1; // Must contain a least one chunk.
 }
 
 // b -> a
 // id : 0x52
-message GetChunkResult {
+message GetChunksResult {
    enum Status {
       OK = 0;
-      DONT_HAVE = 1; // 'b' doesn't have this chunk.
       ALREADY_DOWNLOADING = 2; // If 'a' is already downloading a chunk from 'b'.
       TOO_MANY_CONNECTIONS = 3;
-      DONT_HAVE_DATA_FROM_OFFSET = 4; // If we have the chunk but we don't have the data from the given offset.
       ERROR_UNKNOWN = 255;
    }
+
+   message ChunkResult {
+      enum ChunkStatus {
+         OK = 0;
+         DONT_HAVE = 1; // 'b' doesn't have this chunk.
+         DONT_HAVE_DATA_FROM_OFFSET = 4; // If we have the chunk but we don't have the data from the given offset.
+         ERROR_UNKNOWN = 255;
+      }
+      ChunkStatus status = 1;
+      uint32 chunk_size = 2; // This value must be between 1 and 'Proto.Core.Settings.chunk_size'.
+   }
+
    Status status = 1;
-   uint32 chunk_size = 2; // This value must be between 1 and Proto.Core.Settings.chunk_size.
+   repeated ChunkResult results = 2; // The number of results must be the same as the asked chunks.
 }
 
-// b -> a : stream of data (only if GetChunkResult.status == OK) . . .
+// b -> a : stream of data of each chunk in the same order as requested. Only if 'GetChunkResult.status == OK' and only for the chunks with 'ChunkResult.status == OK').

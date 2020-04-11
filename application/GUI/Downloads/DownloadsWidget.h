@@ -15,7 +15,7 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #pragma once
 
 #include <QWidget>
@@ -35,7 +35,7 @@
 #include <Downloads/DownloadFilterStatus.h>
 #include <Downloads/DownloadsFlatModel.h>
 #include <Downloads/DownloadsTreeModel.h>
-#include <Settings/DirListModel.h>
+#include <Settings/SharedEntryListModel.h>
 
 namespace Ui {
    class DownloadsWidget;
@@ -58,7 +58,7 @@ namespace GUI
    {
       Q_OBJECT
    public:
-      explicit DownloadsWidget(QSharedPointer<RCC::ICoreConnection> coreConnection, const PeerListModel& peerListModel, const DirListModel& sharedDirsModel, QWidget* parent = nullptr);
+      explicit DownloadsWidget(QSharedPointer<RCC::ICoreConnection> coreConnection, const PeerListModel& peerListModel, const SharedEntryListModel& sharedEntryListModel, QWidget* parent = nullptr);
       ~DownloadsWidget() override;
 
    signals:

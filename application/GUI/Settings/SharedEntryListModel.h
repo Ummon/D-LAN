@@ -15,33 +15,39 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #pragma once
 
 #include <QString>
 #include <QStringList>
 #include <QAbstractTableModel>
 
-#include <Common/SharedDir.h>
+#include <Common/SharedEntry.h>
 
 namespace GUI
 {
-   class DirListModel : public QAbstractTableModel
+   class SharedEntryListModel : public QAbstractTableModel
    {
       Q_OBJECT
 
    public:
-      void setDirs(const QList<Common::SharedDir>& dirs);
-      void addDir(const Common::SharedDir& dir);
-      void addDirs(const QStringList& dirs);
+      void setEntries(const QList<Common::SharedEntry>& entries);
+      void addEntry(const Common::SharedEntry& entry);
+      void addEntries(const QStringList& entries);
 
-      void rmDir(int row);
-      void mvUpDir(int row);
-      void mvDownDir(int row);
+      void rmEntry(int row);
+      void mvUpEntry(int row);
+      void mvDownEntry(int row);
 
       QString getLocationPath(const QModelIndex& index) const;
-      const QList<Common::SharedDir>& getDirs() const;
-      Common::SharedDir getDir(const Common::Hash& ID) const;
+      const QList<Common::SharedEntry>& getSharedEntries() const;
+
+      Common::SharedEntry getSharedEntry(const Common::Hash& ID) const;
+      Common::SharedEntry getSharedDir(const Common::Hash& ID) const;
+      Common::SharedEntry getSharedFile(const Common::Hash& ID) const;
+
+      QList<Common::SharedEntry> getSharedDirectories() const;
+      QList<Common::SharedEntry> getSharedFiles() const;
 
       int rowCount(const QModelIndex& parent = QModelIndex()) const;
       int columnCount(const QModelIndex& parent = QModelIndex()) const;
@@ -49,6 +55,6 @@ namespace GUI
       QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const;
 
    private:
-      QList<Common::SharedDir> dirs;
+      QList<Common::SharedEntry> sharedEntries;
    };
 }

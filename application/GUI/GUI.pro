@@ -55,6 +55,7 @@ SOURCES += main.cpp\
     ../Protos/common.pb.cc \
     ../Protos/gui_settings.pb.cc \
     ../Protos/core_settings.pb.cc \
+    Settings/SharedEntryListModel.cpp \
     StatusBar.cpp \
     DialogAbout.cpp \
     Log.cpp \
@@ -65,7 +66,6 @@ SOURCES += main.cpp\
     Log/LogModel.cpp \
     Search/SearchModel.cpp \
     Uploads/UploadsModel.cpp \
-    Settings/DirListModel.cpp \
     Settings/RemoteFileDialog.cpp \
     DownloadMenu.cpp \
     D-LAN_GUI.cpp \
@@ -108,6 +108,7 @@ HEADERS  += MainWindow.h \
     ../Protos/common.pb.h \
     ../Protos/gui_settings.pb.h \
     ../Protos/core_settings.pb.h \
+    Settings/SharedEntryListModel.h \
     StatusBar.h \
     Log.h \
     DialogAbout.h \
@@ -120,7 +121,6 @@ HEADERS  += MainWindow.h \
     Log/LogModel.h \
     Search/SearchModel.h \
     Uploads/UploadsModel.h \
-    Settings/DirListModel.h \
     Settings/RemoteFileDialog.h \
     DownloadMenu.h \
     D-LAN_GUI.h \

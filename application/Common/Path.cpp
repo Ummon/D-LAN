@@ -54,9 +54,9 @@ Path::Path(const QString&& root, const QStringList&& dirs, const QString&& filen
 {
 }
 
-QString Path::getPath() const
+QString Path::getPath(bool withFilename) const
 {
-   return this->root + this->dirs.join('/') + (this->isAbsolute() && !this->dirs.isEmpty() || !this->dirs.isEmpty() ? "/" : "") + this->filename;
+   return this->root + this->dirs.join('/') + (this->isAbsolute() && !this->dirs.isEmpty() || !this->dirs.isEmpty() ? "/" : "") + (withFilename ? this->filename : QString());
 }
 
 bool Path::isFile() const

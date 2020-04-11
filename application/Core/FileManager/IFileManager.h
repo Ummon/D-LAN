@@ -54,13 +54,14 @@ namespace FM
       virtual ~IFileManager() {}
 
       /**
+        * Define the shared paths. A path can be a file or a directory.
         * @exception ItemsNotFoundException
         */
       virtual void setSharedPaths(const QStringList& paths) = 0;
 
       /**
         * Add a shared item and return a 'Common::SharedEntry' object and the relative path into the shared directory (not for file item).
-        * If the given absolute directory is a child of an existing shared directory, no new shared directory is created and
+        * If the given absolute directory or file is a child of an existing shared directory, no new shared directory is created and
         * the existing one is returned.
         * If the given absolute directory is a parent of one or more existing directory, all the existing directories are merged into
         * a new shared directory and this new one is returned. In this case, the relative path is '/'.

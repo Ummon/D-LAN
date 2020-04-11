@@ -15,7 +15,7 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #include <Browse/BrowseWidget.h>
 #include <ui_BrowseWidget.h>
 using namespace GUI;
@@ -40,10 +40,10 @@ void BrowseDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option
 
 /////
 
-BrowseWidget::BrowseWidget(QSharedPointer<RCC::ICoreConnection> coreConnection, const PeerListModel& peerListModel, const DirListModel& sharedDirsModel, const Common::Hash& peerID, QWidget* parent) :
+BrowseWidget::BrowseWidget(QSharedPointer<RCC::ICoreConnection> coreConnection, const PeerListModel& peerListModel, const SharedEntryListModel& sharedEntryListModel, const Common::Hash& peerID, QWidget* parent) :
    QWidget(parent),
    ui(new Ui::BrowseWidget),
-   downloadMenu(sharedDirsModel),
+   downloadMenu(sharedEntryListModel),
    coreConnection(coreConnection),
    peerID(peerID),
    browseModel(coreConnection, sharedDirsModel, peerID),

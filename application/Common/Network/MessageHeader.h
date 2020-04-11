@@ -56,8 +56,8 @@ namespace Common
          CORE_GET_HASHES_RESULT =         0x0042,
          CORE_HASH_RESULT =               0x0043,
 
-         CORE_GET_CHUNK =                 0x0051,
-         CORE_GET_CHUNK_RESULT =          0x0052,
+         CORE_GET_CHUNKS =                0x0051,
+         CORE_GET_CHUNKS_RESULT =         0x0052,
 
          /***** GUI *****/
          GUI_STATE =                      0x1001,

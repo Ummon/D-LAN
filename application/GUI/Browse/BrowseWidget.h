@@ -15,7 +15,7 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #pragma once
 
 #include <QWidget>
@@ -28,7 +28,7 @@
 #include <Common/RemoteCoreController/ICoreConnection.h>
 
 #include <Peers/PeerListModel.h>
-#include <Settings/DirListModel.h>
+#include <Settings/SharedEntryListModel.h>
 #include <Browse/BrowseModel.h>
 #include <DownloadMenu.h>
 
@@ -48,7 +48,7 @@ namespace GUI
    {
       Q_OBJECT
    public:
-      explicit BrowseWidget(QSharedPointer<RCC::ICoreConnection> coreConnection, const PeerListModel& peerListModel, const DirListModel& sharedDirsModel, const Common::Hash& peerID, QWidget* parent = nullptr);
+      explicit BrowseWidget(QSharedPointer<RCC::ICoreConnection> coreConnection, const PeerListModel& peerListModel, const SharedEntryListModel& sharedEntryListModel, const Common::Hash& peerID, QWidget* parent = nullptr);
       ~BrowseWidget();
       Common::Hash getPeerID() const;
       void browseTo(const Protos::Common::Entry& remoteEntry);

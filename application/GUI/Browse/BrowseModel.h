@@ -15,7 +15,7 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #pragma once
 
 #include <QAbstractItemModel>
@@ -29,7 +29,7 @@
 #include <Common/RemoteCoreController/ICoreConnection.h>
 #include <Common/RemoteCoreController/IBrowseResult.h>
 
-#include <Settings/DirListModel.h>
+#include <Settings/SharedEntryListModel.h>
 
 namespace GUI
 {
@@ -42,7 +42,7 @@ namespace GUI
       Q_OBJECT
 
    public:
-      BrowseModel(QSharedPointer<RCC::ICoreConnection> coreConnection, const DirListModel& sharedDirsModel, const Common::Hash& peerID, bool loadRoots = true);
+      BrowseModel(QSharedPointer<RCC::ICoreConnection> coreConnection, const SharedEntryListModel& sharedEntryListModel, const Common::Hash& peerID, bool loadRoots = true);
       virtual ~BrowseModel();
 
       virtual QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const;
@@ -73,7 +73,7 @@ namespace GUI
       virtual void resultTimeout();
 
    protected:
-      virtual void browse(const Common::Hash& peerID, Tree* Tree = nullptr);
+      virtual void browse(Tree* Tree = nullptr);
       virtual void loadChildren(const QPersistentModelIndex &index);
       virtual void synchronize(BrowseModel::Tree* Tree, const Protos::Common::Entries& entries);
       virtual void synchronizeRoot(const Protos::Common::Entries& entries);
@@ -96,7 +96,7 @@ namespace GUI
       };
 
       QSharedPointer<RCC::ICoreConnection> coreConnection;
-      const DirListModel& sharedDirsModel;
+      const SharedEntryListModel& sharedEntryListModel;
       Common::Hash peerID;
 
       QPersistentModelIndex currentBrowseIndex; // When we receive some entries after a browse query, they will be added as children to this index.

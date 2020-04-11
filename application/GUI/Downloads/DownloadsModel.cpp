@@ -28,10 +28,10 @@ using namespace GUI;
 #include <IconProvider.h>
 #include <Log.h>
 
-DownloadsModel::DownloadsModel(QSharedPointer<RCC::ICoreConnection> coreConnection, const PeerListModel& peerListModel, const DirListModel& sharedDirsModel, const IFilter<DownloadFilterStatus>& filter) :
+DownloadsModel::DownloadsModel(QSharedPointer<RCC::ICoreConnection> coreConnection, const PeerListModel& peerListModel, const SharedEntryListModel& sharedEntryListModel, const IFilter<DownloadFilterStatus>& filter) :
    coreConnection(coreConnection),
    peerListModel(peerListModel),
-   sharedDirsModel(sharedDirsModel),
+   sharedEntryListModel(sharedEntryListModel),
    filter(filter)
 {
    qRegisterMetaTypeStreamOperators<Progress>("Progress"); // Don't know where to put this call . . .

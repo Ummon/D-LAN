@@ -48,8 +48,8 @@ int SearchModel::toColumnNumber(SearchColumn column)
   * The directories from the result can be browsed, thus this model inherits from the 'BrowseModel'.
   */
 
-SearchModel::SearchModel(QSharedPointer<RCC::ICoreConnection> coreConnection, const PeerListModel& peerListModel, const DirListModel& sharedDirsModel) :
-   BrowseModel(coreConnection, sharedDirsModel, Common::Hash()), peerListModel(peerListModel), maxLevel(0), nbFolders(0), nbFiles(0), currentProgress(0)
+SearchModel::SearchModel(QSharedPointer<RCC::ICoreConnection> coreConnection, const PeerListModel& peerListModel, const SharedEntryListModel& sharedEntryListModel) :
+   BrowseModel(coreConnection, sharedEntryListModel, Common::Hash()), peerListModel(peerListModel), maxLevel(0), nbFolders(0), nbFiles(0), currentProgress(0)
 {
    delete this->root;
    this->root = new SearchTree();
@@ -149,10 +149,11 @@ QVariant SearchModel::headerData(int section, Qt::Orientation orientation, int r
    return QAbstractItemModel::headerData(section, orientation, role);
 }
 
-int SearchModel::columnCount(const QModelIndex& parent) const
+int SearchModel::columnCount(const QModelIndex&) const
 {
    return 5;
 }
+
 int SearchModel::getNbFolders() const
 {
    return this->nbFolders;
@@ -535,6 +536,3 @@ bool SearchModel::SearchTree::isSameAs(const Protos::Common::Entry& otherEntry) 
 
    return true;
 }
-
-
-

@@ -31,13 +31,12 @@ using namespace FM;
 
 #include <google/protobuf/text_format.h>
 
-#include <Protos/files_cache.pb.h>
-
 #include <Common/KnownExtensions.h>
 #include <Common/PersistentData.h>
 #include <Common/Settings.h>
 #include <Common/Constants.h>
 #include <Common/Global.h>
+#include <Common/SharedEntry.h>
 #include <Common/StringUtils.h>
 #include <Exceptions.h>
 #include <priv/Global.h>
@@ -98,7 +97,7 @@ FileManager::~FileManager()
   */
 void FileManager::setSharedPaths(const QStringList& paths)
 {
-   this->cache.setSharedPaths(dirs);
+   this->cache.setSharedPaths(paths);
 }
 
 /**
@@ -347,7 +346,7 @@ void FileManager::printSimilarFiles() const
    QString result("Similar files:\n");
 
    QSet<Common::Hash> knownHashes;
-   foreach (Common::SharedDir sharedDir, this->cache.getSharedDirs())
+   foreach (Common::SharedEntry sharedEntry, this->cache.getSharedDirs())
    {
       Directory* dir = this->cache.getSharedDirectory(sharedDir.ID);
       DirIterator i(dir, true);
@@ -391,9 +390,9 @@ Entry* FileManager::getEntry(const QString& path) const
    return this->cache.getEntry(path);
 }
 
-SharedEntry* FileManager::getSharedEntry(const QString& path) const
+QString FileManager::getSharedEntry(const QString& path) const
 {
-   return this->cache.getSharedEntry(path);
+   return this->cache.getSharedEntry(path)->getFullPath().getPath(false);
 }
 
 void FileManager::newSharedEntry(SharedEntry* sharedEntry)
@@ -525,6 +524,7 @@ void FileManager::loadCacheFromFile()
   * Restart the timer at the end of the operation.
   * Called by the fileUpdater when it needs to persist the cache.
   */
+/*
 void FileManager::persistCacheToFile()
 {
    QMutexLocker locker(&this->mutexPersistCache);
@@ -556,6 +556,7 @@ void FileManager::persistCacheToFile()
 
    this->timerPersistCache.start();
 }
+*/
 
 void FileManager::forcePersistCacheToFile()
 {

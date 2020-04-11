@@ -15,13 +15,16 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #pragma once
 
 #include <QIcon>
 #include <QMap>
 #include <QFileIconProvider>
+
 #include <Protos/common.pb.h>
+
+#include <Common/Path.h>
 
 namespace GUI
 {
@@ -36,13 +39,17 @@ namespace GUI
         */
       static QIcon getIcon(const Protos::Common::Entry& entry, bool withWarning = false);
 
+      static QIcon getIcon(const Common::Path& path);
+
    private:
-      static QIcon getIconCache(const QString& icon, bool withWarning);
+
+      static QIcon getIconCache(const QString& filename, bool withWarning);
+      static QIcon getIconCacheByExtension(const QString& extension, bool withWarning);
       static QIcon getIconNative(const QString& icon);
 
       static QIcon drawWarning(const QIcon& icon);
 
-      static QFileIconProvider iconProvider;      
+      static QFileIconProvider iconProvider;
       static QMap<QString, QIcon> cachedIcons;
       static QMap<QString, QIcon> cachedIconsWithWarning;
       static QIcon fileIconWithWarning;

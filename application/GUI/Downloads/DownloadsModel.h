@@ -15,7 +15,7 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #pragma once
 
 #include <QAbstractTableModel>
@@ -29,7 +29,7 @@
 #include <IFilter.h>
 #include <Peers/PeerListModel.h>
 #include <Downloads/DownloadFilterStatus.h>
-#include <Settings/DirListModel.h>
+#include <Settings/SharedEntryListModel.h>
 
 namespace GUI
 {
@@ -37,7 +37,7 @@ namespace GUI
    {
       Q_OBJECT
    public:
-      DownloadsModel(QSharedPointer<RCC::ICoreConnection> coreConnection, const PeerListModel& peerListModel, const DirListModel& sharedDirsModel, const IFilter<DownloadFilterStatus>& filter);
+      DownloadsModel(QSharedPointer<RCC::ICoreConnection> coreConnection, const PeerListModel& peerListModel, const SharedEntryListModel& sharedEntryListModel, const IFilter<DownloadFilterStatus>& filter);
       virtual ~DownloadsModel() {}
 
       virtual QList<quint64> getDownloadIDs(const QModelIndex& index) const = 0;
@@ -65,7 +65,7 @@ namespace GUI
 
       QSharedPointer<RCC::ICoreConnection> coreConnection;
       const PeerListModel& peerListModel;
-      const DirListModel& sharedDirsModel;
+      const SharedEntryListModel& sharedEntryListModel;
       const IFilter<DownloadFilterStatus>& filter;
    };
 

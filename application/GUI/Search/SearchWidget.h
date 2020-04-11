@@ -15,7 +15,7 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #pragma once
 
 #include <QWidget>
@@ -31,7 +31,7 @@
 #include <Common/Hash.h>
 
 #include <Search/SearchModel.h>
-#include <Settings/DirListModel.h>
+#include <Settings/SharedEntryListModel.h>
 #include <DownloadMenu.h>
 
 namespace Ui {
@@ -60,7 +60,7 @@ namespace GUI
    {
       Q_OBJECT
    public:
-      SearchMenu(const DirListModel& sharedDirsModel) : DownloadMenu(sharedDirsModel) {}
+      SearchMenu(const SharedEntryListModel& sharedEntryListModel) : DownloadMenu(sharedDirsModel) {}
    signals:
       void browse();
    private:
@@ -71,7 +71,7 @@ namespace GUI
    {
       Q_OBJECT
    public:
-      explicit SearchWidget(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel, const DirListModel& sharedDirsModel, const Protos::Common::FindPattern& findPattern, bool local = false, QWidget* parent = nullptr);
+      explicit SearchWidget(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel, const SharedEntryListModel& sharedEntryListModel, const Protos::Common::FindPattern& findPattern, bool local = false, QWidget* parent = nullptr);
       ~SearchWidget();
 
    signals:

@@ -97,12 +97,12 @@ void DownloadsDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opt
 
 /////
 
-DownloadsWidget::DownloadsWidget(QSharedPointer<RCC::ICoreConnection> coreConnection, const PeerListModel& peerListModel, const DirListModel& sharedDirsModel, QWidget* parent) :
+DownloadsWidget::DownloadsWidget(QSharedPointer<RCC::ICoreConnection> coreConnection, const PeerListModel& peerListModel, const SharedEntryListModel& sharedEntryListModel, QWidget* parent) :
    QWidget(parent),
    ui(new Ui::DownloadsWidget),
    coreConnection(coreConnection),
-   downloadsFlatModel(coreConnection, peerListModel, sharedDirsModel, checkBoxModel),
-   downloadsTreeModel(coreConnection, peerListModel, sharedDirsModel, checkBoxModel),
+   downloadsFlatModel(coreConnection, peerListModel, sharedEntryListModel, checkBoxModel),
+   downloadsTreeModel(coreConnection, peerListModel, sharedEntryListModel, checkBoxModel),
    currentDownloadsModel(0)
 {
    this->ui->setupUi(this);
@@ -328,7 +328,7 @@ void DownloadsWidget::updateGlobalProgressBar()
          QString("%1 / %2%3")
             .arg(Common::Global::formatByteSize(bytesDownloaded))
             .arg(Common::Global::formatByteSize(bytesInQueue))
-            .arg(eta == 0 || eta > 604800 ? "" : " (" + Common::Global::formatTime(eta) + ")")
+            .arg(eta == 0 || eta > 604800 ? QString("") : " (" + Common::Global::formatTime(eta) + ")")
             );
 }
 

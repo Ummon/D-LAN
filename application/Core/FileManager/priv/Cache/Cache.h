@@ -127,6 +127,8 @@ namespace FM
 
       FilePool filePool;
 
+      const quint32 MINIMUM_FREE_SPACE;
+
       mutable QMutex mutex; ///< To protect all the data into the cache, files and directories.
    };
 }

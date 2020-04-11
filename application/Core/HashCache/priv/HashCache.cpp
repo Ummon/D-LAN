@@ -15,22 +15,3 @@ HashCache::HashCache()
 
    this->updateFromOldVersion();
 }
-
-void HashCache::loadTo(IRootEntry& root)
-{
-   // auto rootPath = root.getPath();
-
-
-   //auto id = this->index.find(rootPath);
-
-}
-
-void HashCache::saveFrom(const IRootEntry& root)
-{
-
-}
-
-void HashCache::updateFromOldVersion()
-{
-
-}

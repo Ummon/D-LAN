@@ -171,7 +171,7 @@ void FileDownload::populateQueueEntry(Protos::Queue::Queue::Entry* entry) const
    Download::populateQueueEntry(entry);
 
    for (int i = 0; i < this->chunkDownloaders.size() && i < entry->remote_entry().chunk_size(); i++)
-      if (!entry->remote_entry().chunk(i).hash().size() > 0 && !this->chunkDownloaders[i].isNull())
+      if (entry->remote_entry().chunk(i).hash().size() == 0 && !this->chunkDownloaders[i].isNull())
          entry->mutable_remote_entry()->mutable_chunk(i)->set_hash(this->chunkDownloaders[i]->getHash().getData(), Common::Hash::HASH_SIZE);
 }
 
@@ -425,7 +425,7 @@ bool FileDownload::updateStatus()
 
    if (newStatus == COMPLETE)
    {
-      const QString sharedDir = this->fileManager->getSharedEntry(this->localEntry.shared_dir().id().hash());
+      const QString sharedDir = this->fileManager->getSharedEntry(this->localEntry.shared_entry().id().hash());
       L_USER(QString(tr("File completed: %1%2%3"))
          .arg(sharedDir.left(sharedDir.size() - 1)) // remove the ending '/'.
          .arg(Common::ProtoHelper::getStr(this->localEntry, &Protos::Common::Entry::path))
@@ -652,5 +652,5 @@ void FileDownload::reset()
    for (QListIterator<QSharedPointer<ChunkDownloader>> i(this->chunkDownloaders); i.hasNext();)
       i.next()->reset();
    this->localEntry.set_exists(false);
-   this->localEntry.clear_shared_dir();
+   this->localEntry.clear_shared_entry();
 }

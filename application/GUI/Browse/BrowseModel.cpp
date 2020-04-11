@@ -34,11 +34,11 @@ using namespace GUI;
   * Used by 'WidgetBrowse'.
   */
 
-BrowseModel::BrowseModel(QSharedPointer<RCC::ICoreConnection> coreConnection, const DirListModel& sharedDirsModel, const Common::Hash& peerID, bool loadRoots) :
-    coreConnection(coreConnection), sharedDirsModel(sharedDirsModel), peerID(peerID), root(new Tree())
+BrowseModel::BrowseModel(QSharedPointer<RCC::ICoreConnection> coreConnection, const SharedEntryListModel& sharedEntryListModel, const Common::Hash& peerID, bool loadRoots) :
+    coreConnection(coreConnection), sharedEntryListModel(sharedEntryListModel), peerID(peerID), root(new Tree())
 {
-   if (loadRoots && !peerID.isNull())
-      this->browse(this->peerID);
+   if (loadRoots && !this->peerID.isNull())
+      this->browse();
 }
 
 BrowseModel::~BrowseModel()
@@ -106,7 +106,7 @@ int BrowseModel::rowCount(const QModelIndex& parent) const
       return 0;
 }
 
-int BrowseModel::columnCount(const QModelIndex& parent) const
+int BrowseModel::columnCount(const QModelIndex&) const
 {
    return 2;
 }
@@ -159,16 +159,23 @@ bool BrowseModel::isDir(const QModelIndex& index) const
 QString BrowseModel::getPath(const QModelIndex& index, bool appendFilename) const
 {
    const Protos::Common::Entry entry = this->getEntry(index);
-   const Common::SharedDir sharedDir = this->sharedDirsModel.getDir(entry.shared_dir().id().hash());
+   const Common::SharedEntry sharedEntry = this->sharedEntryListModel.getSharedEntry(entry.shared_entry().id().hash());
 
-   if (sharedDir.isNull())
+   if (sharedEntry.isNull())
       return QString();
 
-   QString path = sharedDir.path;
-   if (!path.isEmpty())
-      path.remove(path.size() - 1, 1); // Remove the '/' at the end because path given by 'Common::ProtoHelper::getPath(..)' already begins with a '/'.
+   if (sharedEntry.path.isFile())
+   {
+      return sharedEntry.path.getPath(appendFilename);
+   }
+   else
+   {
+      QString path = sharedEntry.path.getPath();
+      if (!path.isEmpty())
+         path.remove(path.size() - 1, 1); // Remove the '/' at the end because path given by 'Common::ProtoHelper::getPath(..)' already begins with a '/'.
 
-   return path.append(Common::ProtoHelper::getPath(entry, Common::EntriesToAppend::DIR | (appendFilename ? Common::EntriesToAppend::FILE : Common::EntriesToAppend::NONE)));
+      return path.append(Common::ProtoHelper::getPath(entry, Common::EntriesToAppend::DIR | (appendFilename ? Common::EntriesToAppend::FILE : Common::EntriesToAppend::NONE)));
+   }
 }
 
 void BrowseModel::refresh()
@@ -214,7 +221,7 @@ bool BrowseModel::isWaitingResult() const
 
 int BrowseModel::nbSharedDirs() const
 {
-   return this->sharedDirsModel.getDirs().size();
+   return this->sharedEntryListModel.getSharedDirectories().size();
 }
 
 void BrowseModel::resultRefresh(const google::protobuf::RepeatedPtrField<Protos::Common::Entries>& entries)
@@ -275,7 +282,7 @@ void BrowseModel::resultTimeout()
    emit loadingResultFinished();
 }
 
-void BrowseModel::browse(const Common::Hash& peerID, Tree* tree)
+void BrowseModel::browse(Tree* tree)
 {
    this->browseResult = tree ? this->coreConnection->browse(this->peerID, tree->getItem()) : this->coreConnection->browse(this->peerID);
    connect(this->browseResult.data(), SIGNAL(result(const google::protobuf::RepeatedPtrField<Protos::Common::Entries>&)), this, SLOT(result(const google::protobuf::RepeatedPtrField<Protos::Common::Entries>&)));
@@ -286,7 +293,7 @@ void BrowseModel::browse(const Common::Hash& peerID, Tree* tree)
 void BrowseModel::loadChildren(const QPersistentModelIndex &index)
 {
    this->currentBrowseIndex = index;
-   this->browse(this->peerID, static_cast<Tree*>(index.internalPointer()));
+   this->browse(static_cast<Tree*>(index.internalPointer()));
 }
 
 /**
@@ -343,7 +350,7 @@ void BrowseModel::synchronizeRoot(const Protos::Common::Entries& entries)
       // We've searching if the entry alredy exists.
       for (int j2 = j; j2 < this->root->getNbChildren(); j2++)
       {
-         if (entries.entry(i).shared_dir().id().hash() == this->root->getChild(j2)->getItem().shared_dir().id().hash()) // ID's are equal -> same entry.
+         if (entries.entry(i).shared_entry().id().hash() == this->root->getChild(j2)->getItem().shared_entry().id().hash()) // ID's are equal -> same entry.
          {
             if (entries.entry(i) != this->root->getChild(j2)->getItem()) // The entry data may have changed.
             {
@@ -400,8 +407,8 @@ BrowseModel::Tree::Tree(const Protos::Common::Entry& entry, Tree* parent) :
    Common::Tree<Protos::Common::Entry, BrowseModel::Tree>(entry, parent)
 {
    this->copySharedDirFromParent();
-   if (this->getItem().shared_dir().shared_name().size() == 0)
-      this->getItem().mutable_shared_dir()->set_shared_name(this->getItem().name()); // For the root.
+   if (this->getItem().shared_entry().shared_name().size() == 0)
+      this->getItem().mutable_shared_entry()->set_shared_name(this->getItem().name()); // For the root.
 }
 
 BrowseModel::Tree::~Tree()
@@ -443,8 +450,8 @@ QVariant BrowseModel::Tree::data(int column) const
 void BrowseModel::Tree::copySharedDirFromParent()
 {
    // Copy the shared directory ID from the parent.
-   if (!this->getItem().has_shared_dir() && this->getParent() && this->getParent()->getParent())
-      this->getItem().mutable_shared_dir()->CopyFrom(this->getParent()->getItem().shared_dir());
+   if (!this->getItem().has_shared_entry() && this->getParent() && this->getParent()->getParent())
+      this->getItem().mutable_shared_entry()->CopyFrom(this->getParent()->getItem().shared_entry());
 }
 
 bool GUI::operator>(const Protos::Common::Entry& e1, const Protos::Common::Entry& e2)

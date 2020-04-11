@@ -15,7 +15,7 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #include <Search/SearchWidget.h>
 #include <ui_SearchWidget.h>
 using namespace GUI;
@@ -178,10 +178,10 @@ void SearchMenu::onShowMenu(QMenu& menu)
 
 /////
 
-SearchWidget::SearchWidget(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel, const DirListModel& sharedDirsModel, const Protos::Common::FindPattern& findPattern, bool local, QWidget* parent) :
+SearchWidget::SearchWidget(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel, const SharedEntryListModel& sharedEntryListModel, const Protos::Common::FindPattern& findPattern, bool local, QWidget* parent) :
    QWidget(parent),
    ui(new Ui::SearchWidget),
-   downloadMenu(sharedDirsModel),
+   downloadMenu(sharedEntryListModel),
    coreConnection(coreConnection),
    searchModel(coreConnection, peerListModel, sharedDirsModel)
 {
@@ -262,7 +262,7 @@ void SearchWidget::keyPressEvent(QKeyEvent* event)
 }
 
 void SearchWidget::displayContextMenuDownload(const QPoint& point)
-{   
+{
    QPoint globalPosition = this->ui->treeView->viewport()->mapToGlobal(point);
 
    // Special case: one of a selected entries is a remote peer.

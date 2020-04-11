@@ -15,7 +15,7 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #pragma once
 
 #include <QWidget>
@@ -26,7 +26,7 @@
 
 #include <Common/RemoteCoreController/ICoreConnection.h>
 
-#include <Settings/DirListModel.h>
+#include <Settings/SharedEntryListModel.h>
 #include <Settings/AskNewPasswordDialog.h>
 #include <MDI/MdiWidget.h>
 
@@ -48,7 +48,7 @@ namespace GUI
       Q_OBJECT
 
    public:
-      explicit SettingsWidget(QSharedPointer<RCC::ICoreConnection> coreConnection, DirListModel& sharedDirsModel, QWidget* parent = nullptr);
+      explicit SettingsWidget(QSharedPointer<RCC::ICoreConnection> coreConnection, SharedEntryListModel& sharedEntryListModel, QWidget* parent = nullptr);
       ~SettingsWidget();
 
    public slots:
@@ -115,7 +115,7 @@ namespace GUI
 
       QSharedPointer<RCC::ICoreConnection> coreConnection;
 
-      DirListModel& sharedDirsModel;
+      SharedEntryListModel& sharedEntryListModel;
 
       DirListDelegate dirListDelegate;
 

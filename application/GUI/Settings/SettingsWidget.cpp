@@ -49,18 +49,18 @@ void DirListDelegate::paint(QPainter* painter, const QStyleOptionViewItem& optio
 
 /////
 
-SettingsWidget::SettingsWidget(QSharedPointer<RCC::ICoreConnection> coreConnection, DirListModel& sharedDirsModel, QWidget* parent) :
+SettingsWidget::SettingsWidget(QSharedPointer<RCC::ICoreConnection> coreConnection, SharedEntryListModel& sharedEntryListModel, QWidget* parent) :
    MdiWidget(parent),
    ui(new Ui::SettingsWidget),
    getAtLeastOneState(false),
    coreConnection(coreConnection),
-   sharedDirsModel(sharedDirsModel),
+   sharedEntryListModel(sharedEntryListModel),
    corePasswordDefined(false)
 {
    this->ui->setupUi(this);
 
    this->ui->tblShareDirs->setItemDelegate(&this->dirListDelegate);
-   this->ui->tblShareDirs->setModel(&this->sharedDirsModel);
+   this->ui->tblShareDirs->setModel(&this->sharedEntryListModel);
    this->ui->tblShareDirs->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
    this->ui->tblShareDirs->horizontalHeader()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
    this->ui->tblShareDirs->horizontalHeader()->setSectionResizeMode(2, QHeaderView::ResizeToContents);
@@ -111,10 +111,10 @@ SettingsWidget::SettingsWidget(QSharedPointer<RCC::ICoreConnection> coreConnecti
 
    // When the selection change or a shared dir is moved/deleted/inserted we must set the availability of the action buttons.
    connect(this->ui->tblShareDirs->selectionModel(), SIGNAL(selectionChanged(const QItemSelection&, const QItemSelection&)), this, SLOT(refreshButtonsAvailability(const QItemSelection&)));
-   connect(&this->sharedDirsModel, SIGNAL(layoutChanged()), this, SLOT(refreshButtonsAvailability()));
-   connect(&this->sharedDirsModel, SIGNAL(rowsInserted(const QModelIndex&, int, int)), this, SLOT(refreshButtonsAvailability()));
-   connect(&this->sharedDirsModel, SIGNAL(rowsRemoved(const QModelIndex&, int, int)), this, SLOT(refreshButtonsAvailability()));
-   connect(&this->sharedDirsModel, SIGNAL(rowsMoved(const QModelIndex&, int, int, QModelIndex, int)), this, SLOT(refreshButtonsAvailability()));
+   connect(&this->sharedEntryListModel, SIGNAL(layoutChanged()), this, SLOT(refreshButtonsAvailability()));
+   connect(&this->sharedEntryListModel, SIGNAL(rowsInserted(const QModelIndex&, int, int)), this, SLOT(refreshButtonsAvailability()));
+   connect(&this->sharedEntryListModel, SIGNAL(rowsRemoved(const QModelIndex&, int, int)), this, SLOT(refreshButtonsAvailability()));
+   connect(&this->sharedEntryListModel, SIGNAL(rowsMoved(const QModelIndex&, int, int, QModelIndex, int)), this, SLOT(refreshButtonsAvailability()));
 
    this->fillComboBoxLanguages();
    connect(this->ui->cmbLanguages, SIGNAL(currentIndexChanged(int)), this, SLOT(cmbLanguageChanged(int)));
@@ -233,7 +233,7 @@ void SettingsWidget::updateNetworkInterfaces(const Protos::GUI::State& state)
          if (lblInterface && lblInterface->property("id").toUInt() == state.interface(i).id())
          {
             interfaceNotUpdated.removeOne(lblInterface);
-            lblInterface->setText(interfaceName + (state.interface(i).isup() ? "" : " <img src= \":/icons/ressources/error.png\" /> <em>" + tr("Interface not active") + "</em>"));
+            lblInterface->setText(interfaceName + (state.interface(i).isup() ? QString("") : " <img src= \":/icons/ressources/error.png\" /> <em>" + tr("Interface not active") + "</em>"));
             this->updateAddresses(state.interface(i), static_cast<QWidget*>(j.next()));
             goto nextInterface;
          }

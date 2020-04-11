@@ -15,7 +15,7 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #pragma once
 
 #include <QMdiArea>
@@ -28,7 +28,7 @@
 
 #include <Peers/PeerListModel.h>
 #include <Settings/SettingsWidget.h>
-#include <Settings/DirListModel.h>
+#include <Settings/SharedEntryListModel.h>
 #include <Chat/ChatWidget.h>
 #include <Downloads/DownloadsWidget.h>
 #include <Uploads/UploadsWidget.h>
@@ -131,6 +131,6 @@ namespace GUI
       // This widget is owned by the tab bar of the 'QMdiArea'.
       BusyIndicator* downloadsBusyIndicator;
 
-      DirListModel sharedDirsModel;
+      SharedEntryListModel sharedEntryListModel;
    };
 }

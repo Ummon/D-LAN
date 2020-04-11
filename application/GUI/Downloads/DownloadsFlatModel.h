@@ -15,7 +15,7 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #pragma once
 
 #include <QDragEnterEvent>
@@ -30,7 +30,7 @@ namespace GUI
       static const int WEIGHT_LAST_ETA = 3; // Used in the weighted mean computation.
 
    public:
-      DownloadsFlatModel(QSharedPointer<RCC::ICoreConnection> coreConnection, const PeerListModel& peerListModel, const DirListModel& sharedDirsModel, const IFilter<DownloadFilterStatus>& filter);
+      DownloadsFlatModel(QSharedPointer<RCC::ICoreConnection> coreConnection, const PeerListModel& peerListModel, const SharedEntryListModel& sharedEntryListModel, const IFilter<DownloadFilterStatus>& filter);
 
       quint64 getTotalBytesInQueue() const;
       quint64 getTotalBytesDownloadedInQueue() const;

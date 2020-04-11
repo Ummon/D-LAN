@@ -15,9 +15,11 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #include <DownloadMenu.h>
 using namespace GUI;
+
+#include <algorithm>
 
 #include <QAction>
 
@@ -32,8 +34,8 @@ using namespace GUI;
   * - Can be sub-classed to add some entries. In this case 'onShowMenu(..)' must be overridden.
   */
 
-DownloadMenu::DownloadMenu(const DirListModel& sharedDirsModel) :
-   sharedDirsModel(sharedDirsModel)
+DownloadMenu::DownloadMenu(const SharedEntryListModel& sharedEntryListModel) :
+   sharedEntryListModel(sharedEntryListModel)
 {
 }
 
@@ -41,7 +43,9 @@ void DownloadMenu::show(const QPoint& globalPosition)
 {
    QMenu menu;
 
-   if (this->sharedDirsModel.getDirs().size() > 0)
+   const QList<Common::SharedEntry>& sharedDirs = this->sharedEntryListModel.getSharedDirectories();
+
+   if (!sharedDirs.isEmpty())
    {
       QAction* actionDownload = new QAction(
          QIcon(":/icons/ressources/download.png"),
@@ -52,15 +56,16 @@ void DownloadMenu::show(const QPoint& globalPosition)
       menu.addAction(actionDownload);
    }
 
-   for (QListIterator<Common::SharedDir> i(this->sharedDirsModel.getDirs()); i.hasNext();)
+   for (QListIterator<Common::SharedEntry> i(sharedDirs); i.hasNext();)
    {
-      Common::SharedDir sharedDir = i.next();
+      const auto& sharedDir = i.next();
       QAction* action = new QAction(
          QIcon(":/icons/ressources/download.png"),
-         QString(tr("Download selected items to %1")).arg(sharedDir.path),
+         QString(tr("Download selected items to %1")).arg(sharedDir.path.getPath()),
          &menu
       );
-      sharedDir.path = "/"; // A bit dirty, path semantic change, it's now the relative path (not the absolute path).
+      // TODO: do something here.
+      // sharedDir.path = "/"; // A bit dirty, path semantic change, it's now the relative path (not the absolute path).
       action->setData(QVariant::fromValue(sharedDir));
       connect(action, SIGNAL(triggered()), this, SLOT(actionTriggered()));
       menu.addAction(action);
@@ -85,7 +90,7 @@ void DownloadMenu::actionTriggered()
 
    if (!action->data().isNull())
    {
-      Common::SharedDir sharedDir = action->data().value<Common::SharedDir>();
+      Common::SharedEntry sharedDir = action->data().value<Common::SharedEntry>();
       emit downloadTo(sharedDir.path, sharedDir.ID);
    }
 }

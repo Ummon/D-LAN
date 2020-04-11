@@ -206,7 +206,7 @@ void MdiArea::coreConnected()
    this->setActiveSubWindow(dynamic_cast<QMdiSubWindow*>(this->chatWidget->parent()));
 }
 
-void MdiArea::coreDisconnected(bool forced)
+void MdiArea::coreDisconnected(bool)
 {
    this->taskbar.setStatus(TaskbarButtonStatus::BUTTON_STATUS_NOPROGRESS);
 
@@ -306,7 +306,7 @@ QString MdiArea::getBusyIndicatorToolTip() const
 
 void MdiArea::addSettingsWindow()
 {
-   this->settingsWidget = new SettingsWidget(this->coreConnection, this->sharedDirsModel);
+   this->settingsWidget = new SettingsWidget(this->coreConnection, this->sharedEntryListModel);
    connect(this->settingsWidget, SIGNAL(languageChanged(QString)), this, SIGNAL(languageChanged(QString)));
    connect(this->settingsWidget, SIGNAL(styleChanged(QString)), this, SIGNAL(styleChanged(QString)));
    this->addSubWindow(this->settingsWidget, Qt::CustomizeWindowHint);

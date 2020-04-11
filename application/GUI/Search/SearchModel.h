@@ -15,7 +15,7 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #pragma once
 
 #include <QAbstractItemModel>
@@ -30,7 +30,7 @@
 
 #include <Browse/BrowseModel.h>
 #include <Peers/PeerListModel.h>
-#include <Settings/DirListModel.h>
+#include <Settings/SharedEntryListModel.h>
 
 namespace GUI
 {
@@ -54,7 +54,7 @@ namespace GUI
       static SearchColumn toSearchColumn(int number);
       static int toColumnNumber(SearchColumn column);
 
-      SearchModel(QSharedPointer<RCC::ICoreConnection> coreConnection, const PeerListModel& peerListModel, const DirListModel& sharedDirsModel);
+      SearchModel(QSharedPointer<RCC::ICoreConnection> coreConnection, const PeerListModel& peerListModel, const SharedEntryListModel& sharedEntryListModel);
       ~SearchModel();
 
       Common::Hash getPeerID(const QModelIndex& index) const;

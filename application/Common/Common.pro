@@ -55,7 +55,6 @@ HEADERS += Hashes.h \
     Timeoutable.h \
     Version.h \
     PersistentData.h \
-    SharedDir.h \
     Network/MessageSocket.h \
     Network/MessageHeader.h \
     ../Protos/gui_protocol.pb.h \

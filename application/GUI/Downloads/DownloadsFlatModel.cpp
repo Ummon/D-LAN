@@ -15,7 +15,7 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #include <Downloads/DownloadsFlatModel.h>
 using namespace GUI;
 
@@ -28,10 +28,10 @@ using namespace GUI;
 #include <Common/Global.h>
 
 #include <Log.h>
-#include <Settings/DirListModel.h>
+#include <Settings/SharedEntryListModel.h>
 
-DownloadsFlatModel::DownloadsFlatModel(QSharedPointer<RCC::ICoreConnection> coreConnection, const PeerListModel& peerListModel, const DirListModel& sharedDirsModel, const IFilter<DownloadFilterStatus>& filter) :
-   DownloadsModel(coreConnection, peerListModel, sharedDirsModel, filter),
+DownloadsFlatModel::DownloadsFlatModel(QSharedPointer<RCC::ICoreConnection> coreConnection, const PeerListModel& peerListModel, const SharedEntryListModel& sharedEntryListModel, const IFilter<DownloadFilterStatus>& filter) :
+   DownloadsModel(coreConnection, peerListModel, sharedEntryListModel, filter),
    totalBytesInQueue(0),
    totalBytesDownloadedInQueue(0),
    eta(0)
@@ -108,12 +108,23 @@ QString DownloadsFlatModel::getPath(const QModelIndex& index, bool appendFilenam
    if (index.row() >= this->downloads.size())
       return QString();
 
-   const Common::SharedDir sharedDir = this->sharedDirsModel.getDir(this->downloads[index.row()].local_entry().shared_dir().id().hash());
-   if (sharedDir.isNull())
+   const Common::SharedEntry& sharedEntry = this->sharedEntryListModel.getSharedEntry(this->downloads[index.row()].local_entry().shared_entry().id().hash());
+
+   if (sharedEntry.isNull())
       return QString();
 
-   QString path = sharedDir.path.left(sharedDir.path.count() - 1);
-   return path.append(Common::ProtoHelper::getPath(this->downloads[index.row()].local_entry(), Common::EntriesToAppend::DIR | (appendFilename ? Common::EntriesToAppend::FILE : Common::EntriesToAppend::NONE)));
+   if (sharedEntry.path.isFile())
+   {
+      return sharedEntry.path.getPath(appendFilename);
+   }
+   else
+   {
+      QString path = sharedEntry.path.getPath();
+      if (!path.isEmpty())
+         path.remove(path.size() - 1, 1); // Remove the '/' at the end because path given by 'Common::ProtoHelper::getPath(..)' already begins with a '/'.
+
+      return path.append(Common::ProtoHelper::getPath(this->downloads[index.row()].local_entry(), Common::EntriesToAppend::DIR | (appendFilename ? Common::EntriesToAppend::FILE : Common::EntriesToAppend::NONE)));
+   }
 }
 
 int DownloadsFlatModel::rowCount(const QModelIndex& parent) const

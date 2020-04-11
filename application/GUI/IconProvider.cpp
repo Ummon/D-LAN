@@ -15,7 +15,7 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #include <IconProvider.h>
 using namespace GUI;
 
@@ -58,26 +58,39 @@ QIcon IconProvider::getIcon(const Protos::Common::Entry& entry, bool withWarning
    else
    {
       const QString& name = Common::ProtoHelper::getStr(entry, &Protos::Common::Entry::name);
-      const int index = name.lastIndexOf(".");
-      if (index != -1)
-      {
-         return IconProvider::getIconCache(name.mid(index), withWarning);
-      }
-      else
-      {
-         if (withWarning)
-         {
-            if (IconProvider::fileIconWithWarning.isNull())
-               IconProvider::fileIconWithWarning = IconProvider::drawWarning(IconProvider::iconProvider.icon(QFileIconProvider::File));
-            return IconProvider::fileIconWithWarning;
-         }
-         else
-            return IconProvider::iconProvider.icon(QFileIconProvider::File);
-      }
+      return IconProvider::getIconCache(name, withWarning);
    }
 }
 
-QIcon IconProvider::getIconCache(const QString& extension, bool withWarning)
+QIcon IconProvider::getIcon(const Common::Path& path)
+{
+   if (path.isFile())
+      return IconProvider::getIconCache(path.getFilename(), false);
+   else
+      return IconProvider::iconProvider.icon(QFileIconProvider::Folder);
+}
+
+QIcon IconProvider::getIconCache(const QString& filename, bool withWarning)
+{
+   const int index = filename.lastIndexOf(".");
+   if (index != -1)
+   {
+      return IconProvider::getIconCacheByExtension(filename.mid(index), withWarning);
+   }
+   else
+   {
+      if (withWarning)
+      {
+         if (IconProvider::fileIconWithWarning.isNull())
+            IconProvider::fileIconWithWarning = IconProvider::drawWarning(IconProvider::iconProvider.icon(QFileIconProvider::File));
+         return IconProvider::fileIconWithWarning;
+      }
+      else
+         return IconProvider::iconProvider.icon(QFileIconProvider::File);
+   }
+}
+
+QIcon IconProvider::getIconCacheByExtension(const QString& extension, bool withWarning)
 {
    if (withWarning)
    {

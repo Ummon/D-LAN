@@ -33,7 +33,7 @@
    <item>
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>1</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="tabBasicSettings">
       <attribute name="title">
@@ -57,7 +57,7 @@
        <item>
         <widget class="QLabel" name="lblShared">
          <property name="text">
-          <string>Shared folders</string>
+          <string>Shared folders and files</string>
          </property>
         </widget>
        </item>
@@ -203,8 +203,8 @@
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>593</width>
-               <height>89</height>
+               <width>591</width>
+               <height>93</height>
               </rect>
              </property>
              <property name="sizePolicy">

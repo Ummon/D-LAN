@@ -28,7 +28,7 @@ namespace Common
       Path& operator=(const Path&) = default;
       Path& operator=(Path&&) = default;
 
-      QString getPath() const;
+      QString getPath(bool withFilename = true) const;
       bool isFile() const;
       bool isAbsolute() const;
       bool isNull() const;
@@ -76,7 +76,7 @@ namespace Common
 
    private:
       QString root; // For example: Windows: "C:/", Linux: "/".
-      QStringList dirs;
+      QStringList dirs; // Can be empty.
       QString filename; // Empty if file.
    };
 }

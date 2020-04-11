@@ -25,8 +25,6 @@
 
 #include <Common/Path.h>
 
-#include <IRootEntry.h>
-
 namespace HC
 {
    class IHashCache

@@ -93,8 +93,8 @@ QString MessageHeader::messToStr(MessageType type)
    case CORE_GET_HASHES: return "GET_HASHES";
    case CORE_GET_HASHES_RESULT: return "GET_HASHES_RESULT";
    case CORE_HASH_RESULT: return "HASH_RESULT";
-   case CORE_GET_CHUNK: return "GET_CHUNK";
-   case CORE_GET_CHUNK_RESULT: return "GET_CHUNK_RESULT";
+   case CORE_GET_CHUNKS: return "GET_CHUNKS";
+   case CORE_GET_CHUNKS_RESULT: return "GET_CHUNKS_RESULT";
 
    case GUI_STATE: return "STATE";
    case GUI_STATE_RESULT: return "STATE_RESULT";

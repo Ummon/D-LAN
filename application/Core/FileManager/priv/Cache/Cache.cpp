@@ -49,6 +49,7 @@ using namespace FM;
 
 Cache::Cache(QSharedPointer<HC::IHashCache> hashCache) :
    hashCache(hashCache),
+   MINIMUM_FREE_SPACE(SETTINGS.get<quint32>("minimum_free_space")),
    mutex(QMutex::Recursive)
 {
    qRegisterMetaType<Entry*>("Entry*");
@@ -314,7 +315,7 @@ File* Cache::getFile(const Protos::Common::Entry& fileEntry) const
 }
 
 /**
-  * Creates a new file in the path defined in 'fileEntry' and returns its chunks.
+  * Create a new file in the path defined in 'fileEntry' and return its chunks.
   *
   * @exception NoWriteableDirectoryException
   * @exception InsufficientStorageSpaceException
@@ -326,13 +327,13 @@ QList<QSharedPointer<IChunk>> Cache::newFile(Protos::Common::Entry& fileEntry)
    QMutexLocker locker(&this->mutex);
 
    const QString& dirPath = QDir::cleanPath(Common::ProtoHelper::getStr(fileEntry, &Protos::Common::Entry::path));
-   const qint64 spaceNeeded = fileEntry.size() + SETTINGS.get<quint32>("minimum_free_space");
+   const qint64 spaceNeeded = fileEntry.size() + this->MINIMUM_FREE_SPACE;
 
    // If we know where to put the file.
    Directory* dir = nullptr;
    if (fileEntry.has_shared_entry())
    {
-      SharedDirectory* sharedDir = this->getSharedDirectory(fileEntry.shared_dir().id().hash());
+      SharedDirectory* sharedDir = this->getSharedEntry(fileEntry.shared_dir().id().hash());
 
       if (sharedDir)
       {
@@ -661,11 +662,12 @@ void Cache::createSharedItems(const google::protobuf::RepeatedPtrField<Protos::C
 /**
   * Populates the given structure to be persisted later.
   */
+/*
 void Cache::populateHashes(Protos::FileCache::Hashes& hashes) const
 {
    // TODO during hash cache implementation.
 
-   /*QMutexLocker locker(&this->mutex);
+   QMutexLocker locker(&this->mutex);
 
    hashes.set_version(FILE_CACHE_VERSION);
    hashes.set_chunksize(Common::Constants::CHUNK_SIZE);
@@ -678,8 +680,9 @@ void Cache::populateHashes(Protos::FileCache::Hashes& hashes) const
       Common::ProtoHelper::setStr(*sharedDirMess, &Protos::FileCache::Hashes_SharedDir::set_path, sharedDir->getFullPath());
 
       sharedDir->populateHashesDir(*sharedDirMess->mutable_root());
-   }*/
+   }
 }
+*/
 
 quint64 Cache::getAmount() const
 {
